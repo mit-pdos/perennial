@@ -10,7 +10,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 Theorem wp_wrbuf__UpdateTuples wrbuf (tid : u64) sid mods tpls γ :
   {{{ own_wrbuf wrbuf mods tpls ∗
-      own_tuples_updated (int.nat tid) mods tpls γ ∗
+      own_tuples_updated (uint.nat tid) mods tpls γ ∗
       active_tid γ tid sid
   }}}
     WrBuf__UpdateTuples #wrbuf #tid
@@ -35,9 +35,9 @@ Proof.
   wp_pures.
   set P :=
     (λ (i : u64),
-       let mods' := (list_to_map (wrent_to_key_dbval <$> (drop (int.nat i) ents))) in
-       let tpls' := (list_to_map (wrent_to_key_tpl <$> (drop (int.nat i) ents))) in
-       own_tuples_updated (int.nat tid) mods' tpls' γ ∗ active_tid γ tid sid)%I.
+       let mods' := (list_to_map (wrent_to_key_dbval <$> (drop (uint.nat i) ents))) in
+       let tpls' := (list_to_map (wrent_to_key_tpl <$> (drop (uint.nat i) ents))) in
+       own_tuples_updated (uint.nat tid) mods' tpls' γ ∗ active_tid γ tid sid)%I.
   iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
   wp_apply (wp_forSlice P with "[] [$HentsS Htpls $Hactive]").
   { clear Φ.
@@ -48,7 +48,7 @@ Proof.
     apply wrent_to_val_with_lookup in Hlookup as (k & v & w & t & Eqx & Hlookup).
     subst x.
     wp_pures.
-    (* Deduce [k ∉ (drop (S (int.nat i)) ents).*1.*1.*1]. *)
+    (* Deduce [k ∉ (drop (S (uint.nat i)) ents).*1.*1.*1]. *)
     apply take_drop_middle in Hlookup as Eqents.
     rewrite -Eqents in HNoDup.
     do 3 rewrite fmap_app in HNoDup.
@@ -58,7 +58,7 @@ Proof.
     apply NoDup_cons in HNoDup as [Hnotin _].
     wp_if_destruct.
     { (* Case [AppendVersion]. *)
-      replace (int.nat (word.add _ _)) with (S (int.nat i)) by word.
+      replace (uint.nat (word.add _ _)) with (S (uint.nat i)) by word.
       rewrite (drop_S _ _ _ Hlookup).
       do 2 rewrite list_to_map_cons.
       unfold own_tuples_updated. simpl.
@@ -72,7 +72,7 @@ Proof.
       iFrame.
     }
     { (* Case [KillVersion]. *)
-      replace (int.nat (word.add _ _)) with (S (int.nat i)) by word.
+      replace (uint.nat (word.add _ _)) with (S (uint.nat i)) by word.
       rewrite (drop_S _ _ _ Hlookup).
       do 2 rewrite list_to_map_cons.
       unfold own_tuples_updated. simpl.
@@ -87,7 +87,7 @@ Proof.
     }
   }
   { subst P. simpl.
-    replace (int.nat 0) with 0%nat by word.
+    replace (uint.nat 0) with 0%nat by word.
     rewrite drop_0.
     by rewrite -Hmods -Htpls.
   }

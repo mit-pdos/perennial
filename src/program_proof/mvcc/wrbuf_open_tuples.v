@@ -16,7 +16,7 @@ Theorem wp_wrbuf__OpenTuples wrbuf (tid : u64) (idx : loc) sid mods γ :
   {{{ (ok : bool), RET #ok;
       active_tid γ tid sid ∗
       if ok
-      then ∃ (tpls : gmap u64 loc), own_wrbuf wrbuf mods tpls ∗ own_tuples_locked (int.nat tid) tpls γ
+      then ∃ (tpls : gmap u64 loc), own_wrbuf wrbuf mods tpls ∗ own_tuples_locked (uint.nat tid) tpls γ
       else own_wrbuf_xtpls wrbuf mods
   }}}.
 Proof.
@@ -64,9 +64,9 @@ Proof.
                "Hactive"  ∷ active_tid γ tid sid ∗
                "HentsS"   ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents') ∗
                "HposR"    ∷ pos ↦[uint64T] #n ∗
-               "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls, mods_token γ k (int.nat tid)) ∗
+               "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls, mods_token γ k (uint.nat tid)) ∗
                "#HtplsRP" ∷ ([∗ map] k ↦ t ∈ tpls, is_tuple t k γ) ∗
-               "%Htpls"   ∷ ⌜tpls = list_to_map (wrent_to_key_tpl <$> (take (int.nat n) ents'))⌝ ∗
+               "%Htpls"   ∷ ⌜tpls = list_to_map (wrent_to_key_tpl <$> (take (uint.nat n) ents'))⌝ ∗
                "%Hm"      ∷ ⌜m = list_to_map (wrent_to_key_dbval <$> ents')⌝ ∗
                "%Hlen"    ∷ ⌜length ents = length ents'⌝ ∗
                "%HNoDup"  ∷ ⌜NoDup ents'.*1.*1.*1⌝
@@ -85,7 +85,7 @@ Proof.
       eauto 10 with iFrame.
     }
     wp_load.
-    destruct (list_lookup_lt _ (wrent_to_val <$> ents') (int.nat n)) as [ent Hlookup].
+    destruct (list_lookup_lt _ (wrent_to_val <$> ents') (uint.nat n)) as [ent Hlookup].
     { rewrite fmap_length. word. }
     wp_apply (wp_SliceGet with "[$HentsS]"); first done.
     iIntros "[HentsS %Hty]".
@@ -113,14 +113,14 @@ Proof.
     wp_store.
     iApply "HΦ".
     subst P. simpl.
-    replace (int.Z 0) with 0 by word.
+    replace (uint.Z 0) with 0 by word.
     set tpls := list_to_map (wrent_to_key_tpl <$> _).
     iExists _, (<[k := tpl]> tpls), _.
     rewrite wrent_to_val_unfold -list_fmap_insert.
     iFrame "HentsS Hactive HposR".
-    replace (int.nat (word.add _ _)) with (S (int.nat n)) by word.
+    replace (uint.nat (word.add _ _)) with (S (uint.nat n)) by word.
     rewrite take_S_insert; last word.
-    (* Deduce [k ∉ (take (int.nat i) ents).*1.*1.*1]. *)
+    (* Deduce [k ∉ (take (uint.nat i) ents).*1.*1.*1]. *)
     apply wrent_to_val_with_lookup in Hlookup as (k' & v' & w' & t' & Eqx & Hlookup).
     inversion Eqx. subst k' v' w' t'.
     apply take_drop_middle in Hlookup as Eqents.
@@ -133,7 +133,7 @@ Proof.
     destruct H as (_ & Hnotin' & _).
     apply NoDup_app_comm in HNoDup.
     apply NoDup_app in HNoDup as (HNoDup1 & Hnotin & HNoDup2).
-    pose proof (elem_of_list_here k (drop (S (int.nat n)) ents').*1.*1.*1) as Helem.
+    pose proof (elem_of_list_here k (drop (S (uint.nat n)) ents').*1.*1.*1) as Helem.
     specialize (Hnotin k Helem).
     assert (HNone : tpls !! k = None).
     { apply not_elem_of_list_to_map_1. clear -Hnotin. set_solver. }
@@ -174,7 +174,7 @@ Proof.
     subst P. simpl.
     iExists _, ∅, _.
     iFrame.
-    replace (int.nat 0) with 0%nat by word.
+    replace (uint.nat 0) with 0%nat by word.
     rewrite take_0. simpl.
     by do 2 rewrite big_sepM_empty.
   }
@@ -205,11 +205,11 @@ Proof.
     iIntros (i) "HiR".
     wp_pures.
     set P := (λ (b : bool), ∃ (m : u64),
-                 let tpls' := list_to_map (wrent_to_key_tpl <$> drop (int.nat m) (take (int.nat n) ents')) in
+                 let tpls' := list_to_map (wrent_to_key_tpl <$> drop (uint.nat m) (take (uint.nat n) ents')) in
                  "HentsS"   ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents') ∗
                  "HposR"    ∷ pos ↦[uint64T] #n ∗
                  "HiR"      ∷ i ↦[uint64T] #m ∗
-                 "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls', mods_token γ k (int.nat tid)))%I.
+                 "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls', mods_token γ k (uint.nat tid)))%I.
     wp_apply (wp_forBreak_cond P with "[] [HentsS HposR HiR Htokens]").
     { (* Loop body. *)
       clear Φ.
@@ -223,7 +223,7 @@ Proof.
         eauto 10 with iFrame.
       }
       wp_load.
-      destruct (list_lookup_lt _ (wrent_to_val <$> ents') (int.nat m)) as [ent Hlookup].
+      destruct (list_lookup_lt _ (wrent_to_val <$> ents') (uint.nat m)) as [ent Hlookup].
       { rewrite fmap_length. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".
@@ -238,16 +238,16 @@ Proof.
       { rewrite Htpls.
         rewrite -elem_of_list_to_map; last first.
         { pose proof HNoDup as HNoDup'.
-          rewrite -(take_drop (int.nat m) ents') in HNoDup.
+          rewrite -(take_drop (uint.nat m) ents') in HNoDup.
           do 3 rewrite fmap_app in HNoDup.
           apply NoDup_app in HNoDup as [HNoDup _].
           replace _.*1 with ents''.*1.*1.*1; last first.
           { do 3 rewrite -list_fmap_compose. set_solver. }
-          rewrite -(take_drop (int.nat n) ents') in HNoDup'.
+          rewrite -(take_drop (uint.nat n) ents') in HNoDup'.
           do 3 rewrite fmap_app in HNoDup'.
           by apply NoDup_app in HNoDup' as [HNoDup' _].
         }
-        apply (elem_of_list_lookup_2 _ (int.nat m)).
+        apply (elem_of_list_lookup_2 _ (uint.nat m)).
         rewrite fmap_take.
         rewrite lookup_take; last word.
         by rewrite list_lookup_fmap Hlookup.
@@ -262,7 +262,7 @@ Proof.
         do 3 rewrite fmap_app in HNoDup.
         apply NoDup_app in HNoDup as (_ & _ & HNoDup).
         apply NoDup_cons in HNoDup as [Hnotin _]. simpl in Hnotin.
-        rewrite -(take_drop (int.nat n) ents') in Hnotin.
+        rewrite -(take_drop (uint.nat n) ents') in Hnotin.
         rewrite drop_app_le in Hnotin; last first.
         { rewrite take_length_le; first word. rewrite -Hlen. word. }
         clear -Hnotin. set_solver.
@@ -275,12 +275,12 @@ Proof.
       iApply "HΦ".
       iExists _.
       iFrame.
-      replace (int.nat (word.add _ _)) with (S (int.nat m)) by word.
+      replace (uint.nat (word.add _ _)) with (S (uint.nat m)) by word.
       by iFrame.
     }
     { subst P. simpl.
       iExists _. iFrame.
-      replace (int.nat 0) with 0%nat by word.
+      replace (uint.nat 0) with 0%nat by word.
       rewrite drop_0. by subst tpls.
     }
     iIntros "HP".
@@ -297,13 +297,13 @@ Proof.
   (*     ent.tpl.WriteOpen()                                 *)
   (* }                                                       *)
   (***********************************************************)
-  replace (take (int.nat n) ents') with ents' in Htpls; last first.
+  replace (take (uint.nat n) ents') with ents' in Htpls; last first.
   { apply Znot_lt_ge in Heqb. symmetry. apply take_ge. word. }
   set P := (λ (i : u64),
-              let tpls_take := (list_to_map (wrent_to_key_tpl <$> (take (int.nat i) ents'))) in
-              let tpls_drop := (list_to_map (wrent_to_key_tpl <$> (drop (int.nat i) ents'))) in
-              "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls_drop, mods_token γ k (int.nat tid)) ∗
-              "HtplsOwn" ∷ own_tuples_locked (int.nat tid) tpls_take γ
+              let tpls_take := (list_to_map (wrent_to_key_tpl <$> (take (uint.nat i) ents'))) in
+              let tpls_drop := (list_to_map (wrent_to_key_tpl <$> (drop (uint.nat i) ents'))) in
+              "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls_drop, mods_token γ k (uint.nat tid)) ∗
+              "HtplsOwn" ∷ own_tuples_locked (uint.nat tid) tpls_take γ
            )%I.
   wp_apply (wp_forSlice P with "[] [$HentsS Htokens]").
   { (* Loop body. *)
@@ -326,8 +326,8 @@ Proof.
       done.
     }
     (**
-     * Deduce [k ∉ (drop (S (int.nat i)) ents').*1.*1.*1], which we need in [big_sepM_insert].
-     * Deduce [k ∉ (take (int.nat i) ents').*1.*1.*1], which we need in [list_to_map_snoc] and [big_sepM_insert].
+     * Deduce [k ∉ (drop (S (uint.nat i)) ents').*1.*1.*1], which we need in [big_sepM_insert].
+     * Deduce [k ∉ (take (uint.nat i) ents').*1.*1.*1], which we need in [list_to_map_snoc] and [big_sepM_insert].
      *)
     apply take_drop_middle in Hlookup as Eqents.
     rewrite -Eqents in HNoDup.
@@ -339,7 +339,7 @@ Proof.
     apply NoDup_cons in HNoDup as [Hnotin _].
     apply NoDup_app in HNoDup' as (_ & Hnotin' & _).
     specialize (Hnotin' k).
-    pose proof (elem_of_list_here k (drop (S (int.nat j)) ents').*1.*1.*1) as Helem.
+    pose proof (elem_of_list_here k (drop (S (uint.nat j)) ents').*1.*1.*1) as Helem.
     specialize (Hnotin' Helem).
     (* Q: How to rewrite [P -> Q] to [Q] and prove [P]. *)
     (* specialize (Hnotin' elem_of_list_here). doesn't work. *)
@@ -353,7 +353,7 @@ Proof.
     wp_apply (wp_tuple__WriteOpen with "HtplRP Htoken").
     iIntros (phys) "Htpl".
     iApply "HΦ".
-    replace (int.nat (word.add _ _)) with (S (int.nat j)) by word.
+    replace (uint.nat (word.add _ _)) with (S (uint.nat j)) by word.
     iFrame "Htokens".
     rewrite (take_S_r _ _ _ Hlookup).
     rewrite fmap_snoc list_to_map_snoc; last first.
@@ -366,7 +366,7 @@ Proof.
   }
   { (* Loop entry. *)
     subst P. simpl.
-    replace (int.nat 0) with 0%nat by word.
+    replace (uint.nat 0) with 0%nat by word.
     rewrite drop_0 take_0 -Htpls. simpl.
     iFrame "Htokens".
     by iApply big_sepM_empty.

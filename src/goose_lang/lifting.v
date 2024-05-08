@@ -872,7 +872,7 @@ Lemma alloc_list_loc_not_null:
   ∀ v (n : u64) σg1 l,
     isFresh σg1 l
     → ∀ l0 (x : val),
-      heap_array l (concat_replicate (int.nat n) (flatten_struct v)) !! l0 = Some x
+      heap_array l (concat_replicate (uint.nat n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.
 Proof.
   intros v n σg1 l H l0 x Heq.
@@ -885,7 +885,7 @@ Lemma allocN_loc_not_null:
   ∀ v (n : u64) σg1 l,
     isFresh σg1 l
     → ∀ l0 (x : val),
-      heap_array l (concat_replicate (int.nat n) (flatten_struct v)) !! l0 = Some x
+      heap_array l (concat_replicate (uint.nat n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.
 Proof.
   intros v n σg1 l H l0 x Heq.
@@ -921,11 +921,11 @@ Qed.
 
 Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
-                              na_block_size l (int.nat n * length (flatten_struct v))%nat ∗
-                              [∗ list] i ∈ seq 0 (int.nat n),
+                              na_block_size l (uint.nat n * length (flatten_struct v))%nat ∗
+                              [∗ list] i ∈ seq 0 (uint.nat n),
                               (pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
                                                 (flatten_struct v))
                               }}}.
@@ -934,10 +934,10 @@ Proof.
   iIntros (σ1 g1 ns mj D κ κs k) "[Hσ ?] Hg !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
   iMod (na_heap_alloc_list tls (heap σ1) l
-                           (concat_replicate (int.nat n) (flatten_struct v))
+                           (concat_replicate (uint.nat n) (flatten_struct v))
                            (Reading O) with "Hσ")
     as "(Hσ & Hblock & Hl)".
-  { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
+  { rewrite concat_replicate_length. cut (0 < uint.nat n)%nat; first by lia.
     word. }
   { destruct H as (?&?); eauto. }
   { destruct H as (H'&?); eauto. eapply H'. }
@@ -952,7 +952,7 @@ Proof.
   iApply "HΦ".
   unfold pointsto_vals.
   rewrite concat_replicate_length. iFrame.
-  iDestruct (heap_seq_replicate_to_nested_pointsto l (flatten_struct v) (int.nat n)
+  iDestruct (heap_seq_replicate_to_nested_pointsto l (flatten_struct v) (uint.nat n)
                                                  (λ l v, l ↦ v ∗ meta_token l ⊤)%I
                with "[Hl]") as "Hl".
   {
@@ -972,7 +972,7 @@ Qed.
 
 Lemma wp_allocN_seq0 s E v (n: u64) :
   length (flatten_struct v) = 0%nat →
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); True }}}.
 Proof.
@@ -980,7 +980,7 @@ Proof.
   iIntros (σ1 g1 ns mj D κ κs k) "[Hσ ?] Hg !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
   rewrite /state_interp/=.
-  assert (concat_replicate (int.nat n) (flatten_struct v) = []) as ->.
+  assert (concat_replicate (uint.nat n) (flatten_struct v) = []) as ->.
   { apply nil_length_inv. rewrite concat_replicate_length. lia. }
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
@@ -991,9 +991,9 @@ Qed.
    so they can use this lemma, which removes the assumption about the struct being non zero
    sized *)
 Lemma wp_allocN_seq s E v (n: u64) :
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (int.nat n),
+  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (uint.nat n),
                               (pointsto_vals (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1 (flatten_struct v)) }}}.
 Proof.
   iIntros (??) "_ HΦ".
@@ -1001,7 +1001,7 @@ Proof.
   - iApply wp_allocN_seq0; auto. iNext. iIntros (l) "_". iApply "HΦ".
     apply nil_length_inv in Hlen. rewrite Hlen //=.
     rewrite /pointsto_vals. setoid_rewrite big_sepL_nil.
-    iInduction (seq 0 (int.nat n)) as [| ??] "IH"; eauto => //=.
+    iInduction (seq 0 (uint.nat n)) as [| ??] "IH"; eauto => //=.
   - iApply wp_allocN_seq_sized_meta; auto.
     { lia. }
     iNext. iIntros (?) "(_&_&H)". iApply "HΦ".
@@ -1014,10 +1014,10 @@ Lemma wp_alloc_untyped stk E v v0 :
   {{{ True }}} ref (Val v) @ stk; E
   {{{ l, RET LitV (LitLoc l); l ↦ v0 }}}.
 Proof.
-  assert (0 < int.Z (I64 1)) by (change (int.Z 1) with 1; lia).
+  assert (0 < uint.Z (I64 1)) by (change (uint.Z 1) with 1; lia).
   iIntros (Hflat ?) "_ HΦ". iApply wp_allocN_seq; auto.
   iNext. iIntros (?) "H". iApply "HΦ".
-  change (int.nat 1) with 1%nat; simpl.
+  change (uint.nat 1) with 1%nat; simpl.
   rewrite /pointsto_vals Hflat big_sepL_singleton //=.
   replace (1% nat * 0%nat)%Z with 0 by lia.
   rewrite !loc_add_0 right_id. eauto.

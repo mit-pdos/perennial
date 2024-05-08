@@ -38,7 +38,7 @@ Proof.
   { apply encoding.unsigned_64_nonneg. }
   iIntros (enc_ptr) "Henc_sl".
   simpl.
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   simpl.
 
   wp_apply (wp_ref_to).
@@ -55,7 +55,7 @@ Proof.
   replace (conf_sl.(Slice.sz)) with (I64 (length conf)) by word.
   set (P:=(λ (i:u64),
       ∃ enc_sl,
-      "Henc_sl" ∷ own_slice enc_sl byteT 1 ((u64_le (length conf)) ++ concat (u64_le <$> (take (int.nat i) conf))) ∗
+      "Henc_sl" ∷ own_slice enc_sl byteT 1 ((u64_le (length conf)) ++ concat (u64_le <$> (take (uint.nat i) conf))) ∗
       "Henc" ∷ enc ↦[slice.T byteT] (slice_val enc_sl)
     )%I)
   .
@@ -87,7 +87,7 @@ Proof.
     replace (u64_le srv) with (concat (u64_le <$> [srv])) by done.
     rewrite -concat_app.
     rewrite -fmap_app.
-    replace (int.nat (word.add i 1)) with (int.nat i + 1)%nat by word.
+    replace (uint.nat (word.add i 1)) with (uint.nat i + 1)%nat by word.
     f_equal.
     f_equal.
     (* TODO: list_solver *)
@@ -218,7 +218,7 @@ Proof.
 
   iDestruct (own_slice_small_sz with "Henc_sl") as %Henc_sz.
   (* prove that conf's length is below I64_MAX *)
-  assert (int.nat (length conf) = length conf) as Hlen_no_overflow.
+  assert (uint.nat (length conf) = length conf) as Hlen_no_overflow.
   {
     assert (length (concat (u64_le <$> conf)) ≥ length conf).
     {
@@ -239,10 +239,10 @@ Proof.
   iDestruct (own_slice_to_small with "Hconf_sl") as "Hconf_sl".
   set (P:=(λ (i:u64),
       ∃ enc_sl,
-      "Henc_sl" ∷ own_slice_small enc_sl byteT q (concat (u64_le <$> (drop (int.nat i) conf))) ∗
+      "Henc_sl" ∷ own_slice_small enc_sl byteT q (concat (u64_le <$> (drop (uint.nat i) conf))) ∗
       "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
-      "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 ((take (int.nat i) conf) ++
-                                                replicate (length conf - int.nat i) (I64 0))
+      "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 ((take (uint.nat i) conf) ++
+                                                replicate (length conf - uint.nat i) (I64 0))
     )%I)
   .
   wp_apply (wp_ref_to).
@@ -252,14 +252,14 @@ Proof.
 
   iAssert (∃ (i:u64),
               "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-              "%Hi_bound" ∷  ⌜int.nat i ≤ length conf⌝ ∗
+              "%Hi_bound" ∷  ⌜uint.nat i ≤ length conf⌝ ∗
               P i)%I with "[Henc Henc_sl Hi Hconf_sl]" as "HP".
   {
     iExists _.
     iFrame.
     iSplitR; first iPureIntro.
     { word. }
-    replace (int.nat 0) with 0%nat by word.
+    replace (uint.nat 0) with 0%nat by word.
     rewrite Nat.sub_0_r.
     iFrame.
   }
@@ -272,12 +272,12 @@ Proof.
   wp_load.
   iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
 
-  (* Show that int.nat conf_sl.(Slice.sz) == int.nat (length conf) *)
+  (* Show that uint.nat conf_sl.(Slice.sz) == uint.nat (length conf) *)
   rewrite app_length in Hconf_sz.
   rewrite replicate_length in Hconf_sz.
   rewrite take_length_le in Hconf_sz; last first.
   { word. }
-  assert (int.nat conf_sl.(Slice.sz) = length conf) as Hconf_sz_eq.
+  assert (uint.nat conf_sl.(Slice.sz) = length conf) as Hconf_sz_eq.
   { word. }
 
   wp_apply (wp_slice_len).
@@ -285,16 +285,16 @@ Proof.
 
   wp_if_destruct.
   { (* continue with the loop *)
-    assert (int.nat i < length conf) as Hi_bound_lt.
+    assert (uint.nat i < length conf) as Hi_bound_lt.
     {
-      assert (int.nat i < int.nat conf_sl.(Slice.sz)) as Heqb_nat by word.
+      assert (uint.nat i < uint.nat conf_sl.(Slice.sz)) as Heqb_nat by word.
       rewrite Hconf_sz_eq in Heqb_nat.
       done.
     }
 
     wp_pures.
     wp_load.
-    destruct (drop (int.nat i) conf) as [|] eqn:Hdrop.
+    destruct (drop (uint.nat i) conf) as [|] eqn:Hdrop.
     { (* contradiction with i < length *)
       exfalso.
       apply (f_equal length) in Hdrop.
@@ -333,7 +333,7 @@ Proof.
     }
     unfold P.
     iFrame "∗".
-    replace (int.nat (word.add i 1)) with (int.nat i + 1)%nat by word.
+    replace (uint.nat (word.add i 1)) with (uint.nat i + 1)%nat by word.
     iSplitL "Henc_sl".
     {
       iApply to_named.
@@ -354,7 +354,7 @@ Proof.
         f_equal.
         word.
       }
-      replace (int.nat i) with (int.nat i + 0)%nat by word.
+      replace (uint.nat i) with (uint.nat i + 0)%nat by word.
       rewrite -(lookup_drop _ _ 0).
       rewrite Hdrop.
       done.
@@ -368,8 +368,8 @@ Proof.
   wp_pures.
   iApply "HΦ".
 
-  replace (length conf - int.nat i)%nat with (0)%nat by word.
-  replace (int.nat i) with (length conf) by word.
+  replace (length conf - uint.nat i)%nat with (0)%nat by word.
+  replace (uint.nat i) with (length conf) by word.
   simpl.
   rewrite app_nil_r.
   rewrite firstn_all.

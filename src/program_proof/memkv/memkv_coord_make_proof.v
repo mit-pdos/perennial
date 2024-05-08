@@ -30,20 +30,20 @@ Proof.
   wp_apply (typed_slice.wp_NewSlice (V:=u64)).
   iIntros (shardMap_sl) "HshardMap_sl".
   wp_storeField.
-  remember (replicate (int.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
+  remember (replicate (uint.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
   wp_apply (wp_ref_to); first val_ty.
   iIntros (iptr) "Hi".
   wp_pures.
   wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ shardMapping,
   "%Hlen_shardMapping" ∷ ⌜ Z.of_nat (length shardMapping) = uNSHARD ⌝ ∗
-  "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
+  "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, uint.Z i < uint.Z uNSHARD → is_Some (shardMapping !! uint.nat i)) ⌝ ∗
   "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ @typed_slice.own_slice grove_op grove_model grove_interp Σ _ grove_ty u64
                      (@u64_IntoVal grove_op) shardMap_sl HostName 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ rangeSet 0 uNSHARD, ∃ (hid : u64),
-                  ⌜ shardMapping !! int.nat sid = Some hid ⌝ ∗
-                  (⌜ hid = 0 ∧ int.nat i ≤ int.nat sid ⌝  ∨ ∃ hγ, ⌜ hγ.(kv_gn) = γ.(coord_kv_gn) ⌝ ∗ is_shard_server hid hγ)
+                  ⌜ shardMapping !! uint.nat sid = Some hid ⌝ ∗
+                  (⌜ hid = 0 ∧ uint.nat i ≤ uint.nat sid ⌝  ∨ ∃ hγ, ⌜ hγ.(kv_gn) = γ.(coord_kv_gn) ⌝ ∗ is_shard_server hid hγ)
                   ))%I with "[] [$Hi HshardMap_sl shardMap]").
   { word. }
   { iIntros (i Φ') "!# H HΦ".
@@ -66,7 +66,7 @@ Proof.
       { iPureIntro. rewrite insert_length //. }
       iSplit.
       { iPureIntro. intros.
-        destruct (decide (int.nat i0 = int.nat i)) as [->|Hneq].
+        destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
         { eexists. apply list_lookup_insert. eapply lookup_lt_is_Some_1; eauto.
           apply HshardMapping_dom. rewrite Heq_uNSHARD. eauto.
         }
@@ -95,7 +95,7 @@ Proof.
         iExists _. iFrame "#". eauto. }
       iApply (big_sepS_mono with "HownShards").
       { iIntros (? Hin) "H".
-        assert (int.nat i ≠ int.nat x).
+        assert (uint.nat i ≠ uint.nat x).
         { cut (i ≠ x).
           { intros. intros Heq. apply Z2Nat.inj in Heq; try word.
              apply int_Z_inj in Heq; eauto with *.
@@ -183,7 +183,7 @@ Proof.
       iDestruct "H" as (??) "H". iExists _.
       assert (host = hid) as ->.
       {
-        assert (int.nat (I64 (Z.of_nat sid)) = sid) as Hcoerce.
+        assert (uint.nat (I64 (Z.of_nat sid)) = sid) as Hcoerce.
         { word_cleanup.
           rewrite wrap_small; first lia.
           { split.

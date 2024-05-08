@@ -127,7 +127,7 @@ Section prog.
       Paxos__Lookup #px #i @ ↑mpaxosN
     <<< ∃∃ l', own_consensus_half γ l' >>>
     {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
-        ⌜if ok then l' !! (int.nat i) = Some v else True⌝
+        ⌜if ok then l' !! (uint.nat i) = Some v else True⌝
     }}}.
   Admitted.
 

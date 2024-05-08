@@ -137,7 +137,7 @@ Lemma wp_Clerk_ReserveEpochAndGetConfig2 ck γ γconf Φ :
   own_proposal_unused γ.(s_pb) epoch ∗
   own_init_proposal_unused γ.(s_prim) epoch ∗
   is_epoch_config γ.(s_pb) epoch_lb (r_pb <$> confγs) ∗
-  (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip) ∗
+  (∀ epoch_skip, ⌜uint.nat epoch_lb < uint.nat epoch_skip⌝ → ⌜uint.nat epoch_skip < uint.nat epoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip) ∗
   ([∗ list] γsrv ; host ∈ confγs; conf, is_pb_host host γ γsrv) ∗
   (∀ γsrv, ⌜γsrv ∈ (r_pb <$> confγs)⌝ → is_epoch_lb γsrv epoch_lb)) -∗
    Φ (#epoch, slice_val config_sl)%V
@@ -200,7 +200,7 @@ Proof.
         }
       }
       iIntros (???).
-      assert (int.nat epoch_skip = int.nat reservedEpoch ∨ int.nat epoch_skip < int.nat reservedEpoch ∨ int.nat epoch_skip >= int.nat (word.add reservedEpoch (I64 1))) as Hineq.
+      assert (uint.nat epoch_skip = uint.nat reservedEpoch ∨ uint.nat epoch_skip < uint.nat reservedEpoch ∨ uint.nat epoch_skip >= uint.nat (word.add reservedEpoch (I64 1))) as Hineq.
       { word. }
       destruct Hineq as [Heq|[Hineq|Hineq]].
       {
@@ -222,7 +222,7 @@ Proof.
 
     (* TODO: repetetive proof *)
     iIntros.
-    assert (int.nat epoch_skip = int.nat reservedEpoch ∨ int.nat epoch_skip < int.nat reservedEpoch ∨ int.nat epoch_skip >= int.nat (word.add reservedEpoch (I64 1))) as Hineq.
+    assert (uint.nat epoch_skip = uint.nat reservedEpoch ∨ uint.nat epoch_skip < uint.nat reservedEpoch ∨ uint.nat epoch_skip >= uint.nat (word.add reservedEpoch (I64 1))) as Hineq.
     { word. }
     destruct Hineq as [Heq|[Hineq|Hineq]].
     {
@@ -262,7 +262,7 @@ Proof.
       iIntros (???).
       exfalso.
       rewrite Hset in H.
-      replace (int.nat (word.add reservedEpoch 1%Z)) with (int.nat reservedEpoch + 1) in H0 by word.
+      replace (uint.nat (word.add reservedEpoch 1%Z)) with (uint.nat reservedEpoch + 1) in H0 by word.
       word.
     }
     iModIntro.
@@ -273,7 +273,7 @@ Proof.
     iIntros (???).
     exfalso.
     rewrite Hset in H.
-    replace (int.nat (word.add reservedEpoch 1%Z)) with (int.nat reservedEpoch + 1) in H0 by word.
+    replace (uint.nat (word.add reservedEpoch 1%Z)) with (uint.nat reservedEpoch + 1) in H0 by word.
     word.
   }
 Qed.

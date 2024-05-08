@@ -189,7 +189,7 @@ Proof.
 
     (* start ghost reasoning *)
     iIntros "Hghost". iNamed "Hghost".
-    assert (int.nat args.(enterNewEpochArgs.epoch) > int.nat pst.(paxosState.epoch)) as Hineq by word.
+    assert (uint.nat args.(enterNewEpochArgs.epoch) > uint.nat pst.(paxosState.epoch)) as Hineq by word.
     iDestruct (ghost_replica_helper1 with "Hghost") as "%HepochIneq".
     simpl in *.
     iMod (ghost_replica_enter_new_epoch with "Hghost") as "(Hghost & Htok & #Hrest)".

@@ -39,7 +39,7 @@ Proof.
   (*@                                                                         @*)
   do 2 wp_loadField.
   iMod (readonly_load with "HsitesS") as (q) "HsitesS'".
-  list_elem sitesL (int.nat sidcur) as site.
+  list_elem sitesL (uint.nat sidcur) as site.
   wp_apply (wp_SliceGet with "[$HsitesS']").
   { iPureIntro.
     rewrite list_lookup_fmap.
@@ -106,7 +106,7 @@ Proof.
   iApply "HΦ".
   iMod (readonly_alloc_1 with "idx") as "#Hidx_txn".
   iMod (readonly_alloc_1 with "proph") as "#Hproph_txn".
-  replace (int.nat 0) with 0%nat by word.
+  replace (uint.nat 0) with 0%nat by word.
   simpl.
   do 7 iExists _.
   iFrame.

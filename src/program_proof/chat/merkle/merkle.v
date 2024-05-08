@@ -23,7 +23,7 @@ Fixpoint containsNodeAtEnd (tr : tree) (id : list u8) (node : tree) : Prop :=
     match id with
     | [] => False
     | pos :: rest =>
-      ∃ child, children !! int.nat pos = Some child ∧ containsNodeAtEnd child rest node
+      ∃ child, children !! uint.nat pos = Some child ∧ containsNodeAtEnd child rest node
     end
   end.
 
@@ -433,12 +433,12 @@ Proof.
       "Hptr_err" ∷ ptr_err ↦[uint64T] #err ∗
       "Herr_pred" ∷ if bool_decide (err = 0) then
         "Hpath_val" ∷ is_path_val
-          (drop (length proof.(PathProof.Id) - int.nat loopIdx)
+          (drop (length proof.(PathProof.Id) - uint.nat loopIdx)
           proof.(PathProof.Id)) val currHash
       else True)%I : u64 → iProp Σ.
   wp_apply (wp_forUpto for_inv with "[] [$HId $Hptr_Id $Hptr_ChildHashes $HloopIdx $HcurrHash $Hro_NodeHash $Hptr_err Hhash]"); [word|..].
   2: {
-    assert ((length proof.(PathProof.Id) - int.nat 0)%nat = length proof.(PathProof.Id)) as H by word;
+    assert ((length proof.(PathProof.Id) - uint.nat 0)%nat = length proof.(PathProof.Id)) as H by word;
       iEval (rewrite H); clear H.
     iEval (rewrite drop_all).
     iFrame.
@@ -455,7 +455,7 @@ Proof.
     (* Note: move all the sep fetches into one block, like this. *)
     iMod (readonly_load with "Hro_sl_dim0") as (?) "Hsl_dim0".
     assert (∃ (sl_dim1' : Slice.t),
-      list_dim0 !! int.nat (length list_dim0 - 1 - int.nat loopIdx) =
+      list_dim0 !! uint.nat (length list_dim0 - 1 - uint.nat loopIdx) =
       Some sl_dim1') as [sl_dim1' Hlook_sl_dim1'].
     { apply lookup_lt_is_Some. word. }
     iDestruct (big_sepL2_lookup_1_some with "Hsep_dim0") as %[obj_dim1' Hlook_obj_dim1']; [done|].
@@ -469,7 +469,7 @@ Proof.
     (* Rewrite this early since it appears in multiple sub-terms. *)
     replace (i64_instance.i64.(word.sub) (i64_instance.i64.(word.sub)
       sl_ChildHashes.(Slice.sz) 1) loopIdx) with
-      (I64 (length list_dim0 - 1 - int.nat loopIdx)) by word.
+      (I64 (length list_dim0 - 1 - uint.nat loopIdx)) by word.
 
     wp_apply (wp_SliceGet with "[$Hsl_dim0]"); [done|];
       iIntros "Hsl_dim0".
@@ -488,7 +488,7 @@ Proof.
     wp_apply (wp_loadField with "[$Hptr_Id]");
       iIntros "Hptr_Id".
     assert (∃ (pos : u8),
-      proof.(PathProof.Id) !! int.nat (length list_dim0 - 1 - int.nat loopIdx) =
+      proof.(PathProof.Id) !! uint.nat (length list_dim0 - 1 - uint.nat loopIdx) =
       Some pos) as [pos Hlook_pos].
     { apply lookup_lt_is_Some. word. }
     wp_apply (wp_SliceGet with "[$HId]"); [done|];
@@ -512,8 +512,8 @@ Proof.
     iEval (rewrite u8_to_u64_Z) in "Hsl_before".
     iEval (rewrite u8_to_u64_Z) in "Hsl_after".
     (* TODO: we really shouldn't need to type in the entire P here. *)
-    iMod (readonly_alloc (own_slice_small (slice_take sl_dim1' (u8_to_u64 pos)) (slice.T byteT) 1 (take (int.nat pos) list_dim1')) with "[$Hsl_before]") as "#Hro_sl_before".
-    iMod (readonly_alloc (own_slice_small (slice_skip sl_dim1' (slice.T byteT) (u8_to_u64 pos)) (slice.T byteT) 1 (drop (int.nat pos) list_dim1')) with "[$Hsl_after]") as "#Hro_sl_after".
+    iMod (readonly_alloc (own_slice_small (slice_take sl_dim1' (u8_to_u64 pos)) (slice.T byteT) 1 (take (uint.nat pos) list_dim1')) with "[$Hsl_before]") as "#Hro_sl_before".
+    iMod (readonly_alloc (own_slice_small (slice_skip sl_dim1' (slice.T byteT) (u8_to_u64 pos)) (slice.T byteT) 1 (drop (uint.nat pos) list_dim1')) with "[$Hsl_after]") as "#Hro_sl_after".
 
     wp_apply wp_ref_of_zero; [done|];
       iIntros (ptr_hr) "Hptr_hr".
@@ -524,7 +524,7 @@ Proof.
       iApply big_sepL2_prefix.
       4: iFrame "#".
       1: apply prefix_take.
-      1: apply (prefix_take _ (int.nat pos)).
+      1: apply (prefix_take _ (uint.nat pos)).
       { do 2 rewrite take_length. lia. }
     }
     iIntros (sl_hr) "H"; iNamed "H".
@@ -536,7 +536,7 @@ Proof.
       iApply big_sepL2_suffix.
       4: iFrame "#".
       1: apply suffix_drop.
-      1: apply (suffix_drop _ (int.nat pos)) .
+      1: apply (suffix_drop _ (uint.nat pos)) .
       { do 2 rewrite drop_length. lia. }
     }
     clear sl_hr; iIntros (sl_hr) "H"; iNamed "H".
@@ -565,16 +565,16 @@ Proof.
     rewrite /is_path_val.
     iDestruct "Hpath_val" as (tr) "[Htr_hash %Htr_contains]".
     iExists (Interior (
-      ((λ h, Cut h) <$> (take (int.nat pos) obj_dim1')) ++
+      ((λ h, Cut h) <$> (take (uint.nat pos) obj_dim1')) ++
       [tr] ++
-      ((λ h, Cut h) <$> (drop (int.nat pos) obj_dim1')))).
+      ((λ h, Cut h) <$> (drop (uint.nat pos) obj_dim1')))).
     iIntros "!>".
     iSplit.
     {
       iExists (
-        (take (int.nat pos) obj_dim1') ++
+        (take (uint.nat pos) obj_dim1') ++
         [currHash] ++
-        (drop (int.nat pos) obj_dim1')).
+        (drop (uint.nat pos) obj_dim1')).
       iSplit.
       {
         iEval (rewrite fmap_app).
@@ -607,8 +607,8 @@ Proof.
     rewrite (drop_S _ pos _ _).
     2: { rewrite <-Hlook_pos. f_equal. word. }
     (* TODO: is there a good way of extracting this goal automatically? *)
-    replace (S (length proof.(PathProof.Id) - int.nat (i64_instance.i64.(word.add) loopIdx 1))) with
-      ((length proof.(PathProof.Id) - int.nat loopIdx)%nat) by word.
+    replace (S (length proof.(PathProof.Id) - uint.nat (i64_instance.i64.(word.add) loopIdx 1))) with
+      ((length proof.(PathProof.Id) - uint.nat loopIdx)%nat) by word.
     exists tr.
     split; [|done].
     rewrite (lookup_app_r _ _ _ _).
@@ -621,7 +621,7 @@ Proof.
     rewrite fmap_length.
     rewrite (take_length_le _ _ _).
     2: { pose proof (word.unsigned_range pos) as Hpos_bound. lia. }
-    replace ((int.nat pos - int.nat pos)%nat) with (0%nat) by lia.
+    replace ((uint.nat pos - uint.nat pos)%nat) with (0%nat) by lia.
     naive_solver.
   }
 
@@ -638,7 +638,7 @@ Proof.
   wp_apply (wp_BytesEqual with "[$Hsl_currHash $HDigest]");
     iIntros "[Hsl_currHash HDigest]".
   wp_if_destruct; [by iApply "HΦ"|].
-  iEval (replace ((length proof.(PathProof.Id) - int.nat sl_ChildHashes.(Slice.sz))%nat)
+  iEval (replace ((length proof.(PathProof.Id) - uint.nat sl_ChildHashes.(Slice.sz))%nat)
     with (0%nat) by word) in "Hpath_val".
   iEval (rewrite drop_0 Heqb) in "Hpath_val".
   by iApply "HΦ".

@@ -39,8 +39,8 @@ Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op 
         "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
         "%Hghost_op_σ" ∷ ⌜∃ γ, last opsfull = Some (op, γ)⌝ ∗
         "%Hghost_op_op" ∷ ⌜has_op_encoding op_bytes op⌝ ∗
-        "%Hσ_index" ∷ ⌜length (get_rwops opsfull) = ((int.nat index) + 1)%nat⌝ ∗
-        "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
+        "%Hσ_index" ∷ ⌜length (get_rwops opsfull) = ((uint.nat index) + 1)%nat⌝ ∗
+        "%HnoOverflow" ∷ ⌜uint.nat index < uint.nat (word.add index 1)⌝ ∗
 
         "#HargEpoch" ∷ readonly (args_ptr ↦[ApplyAsBackupArgs :: "epoch"] #epoch) ∗
         "#HargIndex" ∷ readonly (args_ptr ↦[ApplyAsBackupArgs :: "index"] #index) ∗

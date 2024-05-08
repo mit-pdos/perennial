@@ -38,7 +38,7 @@ Lemma lease_acc_update N e P Q :
   £ 1 -∗
   £ 1 -∗
   ∀ (t:u64),
-  ⌜int.nat t < int.nat e⌝ →
+  ⌜uint.nat t < uint.nat e⌝ →
   own_time t ={↑N,∅}=∗
   (P ∗ (∀ P', P' -∗ (P' -∗ Q) ={∅,↑N}=∗ own_time t ∗ underLease N e P' Q))
 .
@@ -281,7 +281,7 @@ Proof.
     iIntros (low high t) "%Hineq1 %Hineq2 Htime".
     iNamed "HH".
 
-    destruct (decide (int.nat LEASE_EXP <= int.nat high)).
+    destruct (decide (uint.nat LEASE_EXP <= uint.nat high)).
     2:{ (* case: lease is not expired *)
       iDestruct (lease_acc_update with "Hlease Hlc1 Hlc2") as "HH".
       iDestruct ("HH" $! t with "[%] Htime") as "HH".
@@ -374,7 +374,7 @@ Proof.
   iAssert (_) with "Hsrv" as "Hsrv2".
   iNamed "Hsrv2".
 
-  destruct (decide (int.nat LEASE_EXP < int.nat low)).
+  destruct (decide (uint.nat LEASE_EXP < uint.nat low)).
   {
     iDestruct (mono_nat_lb_own_get with "Htime") as "#Hlb".
     unfold postLease.

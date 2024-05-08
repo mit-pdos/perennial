@@ -142,7 +142,7 @@ Fixpoint atomically_val_interp (t: sty) {struct t} :=
   | arrowT t1 t2 => atomically_arrowT_interp t1 t2 atomically_val_interp
   | extT AllocT => λ vspec vimpl,
     (∃ (ls li: loc) (max : u64),
-                 ⌜ vimpl = #li ⌝ ∗ ⌜ vspec = #ls ⌝ ∗ ⌜ (0 < int.Z max)%Z ⌝ ∗ is_alloc max li ∗ jrnl_alloc ls max)%I
+                 ⌜ vimpl = #li ⌝ ∗ ⌜ vspec = #ls ⌝ ∗ ⌜ (0 < uint.Z max)%Z ⌝ ∗ is_alloc max li ∗ jrnl_alloc ls max)%I
   | _ => λ _ _, False%I
   end.
 

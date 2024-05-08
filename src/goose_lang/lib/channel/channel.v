@@ -96,7 +96,7 @@ Qed.
 Theorem wp_IncCap chanref cap (eff_cap: Z) closed ty l:
     {{{ own_chan chanref cap eff_cap closed ty l}}}
         IncCap #chanref
-    {{{ RET #(); own_chan chanref cap (int.Z (word.add 1 eff_cap)) closed ty l}}}.
+    {{{ RET #(); own_chan chanref cap (uint.Z (word.add 1 eff_cap)) closed ty l}}}.
 Proof.
     iIntros (Φ) "HPre HΦ".
     wp_lam.
@@ -122,7 +122,7 @@ Qed.
 Theorem wp_DecCap chanref cap (eff_cap: Z) closed ty l:
     {{{ own_chan chanref cap eff_cap closed ty l}}}
         DecCap #chanref
-    {{{ RET #(); own_chan chanref cap (int.Z (word.sub eff_cap 1)) closed ty l}}}.
+    {{{ RET #(); own_chan chanref cap (uint.Z (word.sub eff_cap 1)) closed ty l}}}.
 Proof.
     iIntros (Φ) "HPre HΦ".
     wp_lam.

@@ -28,15 +28,15 @@ Section proof.
   Definition rfrac: Qp :=
     (Qp.inv (Qp_of_Z (2^64)))%Qp.
 
-  Definition num_readers (n : u64) := 0 `max` int.Z (word.sub n 1).
+  Definition num_readers (n : u64) := 0 `max` uint.Z (word.sub n 1).
   Definition remaining_readers (n : u64) : Z :=
     (2^64 - num_readers n).
   Definition remaining_frac (n: u64) :=
     ((Qp_of_Z (remaining_readers n)) * rfrac)%Qp.
 
   Lemma remaining_frac_read_acquire n :
-    1 ≤ int.Z n →
-    int.Z n < int.Z (word.add n 1) →
+    1 ≤ uint.Z n →
+    uint.Z n < uint.Z (word.add n 1) →
     remaining_frac n = Qp.add (remaining_frac (word.add n 1)) rfrac.
   Proof.
     intros Hle1 Hle2.
@@ -57,7 +57,7 @@ Section proof.
     assert (Heq3: (remaining_readers (word.add n 1)) = remaining_readers n - 1).
     { rewrite /remaining_readers/num_readers.
       word_cleanup.
-      assert ((int.Z (word.add n 1) - 1) = int.Z n) as ->.
+      assert ((uint.Z (word.add n 1) - 1) = uint.Z n) as ->.
       { word_cleanup. }
       lia.
     }
@@ -68,7 +68,7 @@ Section proof.
   Qed.
 
   Lemma remaining_frac_read_release n :
-    1 < int.Z n →
+    1 < uint.Z n →
     Qp.add (remaining_frac n) rfrac = remaining_frac (word.sub n 1).
   Proof.
     intros Hlt.
@@ -248,7 +248,7 @@ Section proof.
     iSplitL "Hl HR".
     { iNext. iExists _. iFrame. }
     wp_pures.
-    destruct (decide (int.Z 1 ≤ int.Z u ∧ int.Z u < int.Z (word.add u 1))).
+    destruct (decide (uint.Z 1 ≤ uint.Z u ∧ uint.Z u < uint.Z (word.add u 1))).
     - rewrite ?bool_decide_eq_true_2; try naive_solver.
       wp_pures. wp_bind (CmpXchg _ _ _). iInv N as (u') "[>Hl HR]".
       destruct (decide (u' = u)).
@@ -286,7 +286,7 @@ Section proof.
         { iFrame.
           rewrite (decide_False); last first.
           { intros Heq0. rewrite Heq0 in a. word_cleanup.
-            assert (int.Z 0 = 0%Z) by word.
+            assert (uint.Z 0 = 0%Z) by word.
             lia. }
           iFrame.
         }
@@ -359,13 +359,13 @@ Section proof.
         { iFrame.
           rewrite (decide_False); last first.
           { intros Heq.
-            assert (int.Z (word.sub u 1) = int.Z 0) as Heqsub.
+            assert (uint.Z (word.sub u 1) = uint.Z 0) as Heqsub.
             { rewrite Heq //. }
             rewrite word.unsigned_sub in Heqsub.
             rewrite wrap_small in Heqsub.
             {
-              replace (int.Z 0) with 0 in * by auto.
-              replace (int.Z 1) with 1 in * by auto.
+              replace (uint.Z 0) with 0 in * by auto.
+              replace (uint.Z 1) with 1 in * by auto.
               lia.
             }
             split.

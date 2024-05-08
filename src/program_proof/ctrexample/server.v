@@ -23,7 +23,7 @@ Definition own_CtrServer_durable (c:u64) : iProp Σ :=
 .
 
 Definition own_CtrServer_ghost γ (c:u64) : iProp Σ :=
-  counter_own γ (int.nat c)
+  counter_own γ (uint.nat c)
 .
 
 Definition own_CtrServer (s:loc) (c:u64) : iProp Σ :=
@@ -184,7 +184,7 @@ Proof.
     iIntros "Hghost".
     iMod ("Hpre" with "Hghost") as "[Hghost HQ]".
     unfold own_CtrServer_ghost.
-    replace ((int.nat c) + 1)%nat with (int.nat (word.add c 1)); last first.
+    replace ((uint.nat c) + 1)%nat with (uint.nat (word.add c 1)); last first.
     {
       admit.
     }
@@ -333,7 +333,7 @@ Proof using Type*.
         destruct Hpure as [Hpure|Hbad].
         { naive_solver. }
         exfalso.
-        replace (int.nat 0) with (0)%nat in HslSize by word.
+        replace (uint.nat 0) with (0)%nat in HslSize by word.
         apply nil_length_inv in HslSize.
         rewrite HslSize in Hbad.
         apply has_encoding_length in Hbad.

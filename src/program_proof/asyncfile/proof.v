@@ -81,7 +81,7 @@ Definition is_write_inv N γ idx Q : iProp Σ :=
 
 Definition own_unused γ (idx:u64): iProp Σ :=
   [∗ set] i ∈ fin_to_set u64,
-                 if decide (int.nat idx < int.nat i)%nat then
+                 if decide (uint.nat idx < uint.nat i)%nat then
                    own_write_token γ i ∗ own_escrow_token γ i
                  else
                    True
@@ -89,7 +89,7 @@ Definition own_unused γ (idx:u64): iProp Σ :=
 
 Definition is_witnesses γ (durableIndex: u64) : iProp Σ :=
   □ ([∗ set] x ∈ fin_to_set u64,
-                 if decide (int.nat x <= int.nat durableIndex)%nat then
+                 if decide (uint.nat x <= uint.nat durableIndex)%nat then
                    is_write_witness γ x
                  else
                    True)
@@ -151,7 +151,7 @@ Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (dat
 .
 
 Lemma get_write_witness i N γ fname data P idx durableIndex closeRequested closed :
-  int.nat i <= int.nat durableIndex →
+  uint.nat i <= uint.nat durableIndex →
   own_AsyncFile_ghost N γ P fname data idx durableIndex closeRequested closed -∗
   is_write_witness γ i.
 Proof.
@@ -247,7 +247,7 @@ Proof.
 Qed.
 
 Lemma write_step N γ fname somedata olddata data P Q idx durableIndex closeRequested closed :
-  int.nat (word.add idx 1) = (int.nat idx + 1)%nat →
+  uint.nat (word.add idx 1) = (uint.nat idx + 1)%nat →
   own_close_req_token γ -∗
   own_vol_data γ olddata -∗
   own_AsyncFile_ghost N γ P fname somedata idx durableIndex closeRequested closed -∗
@@ -317,7 +317,7 @@ Proof.
       replace (x) with (word.add idx 1).
       { iFrame "#". }
       {
-        assert (int.Z (word.add idx 1) = int.Z x) by word.
+        assert (uint.Z (word.add idx 1) = uint.Z x) by word.
         apply int_Z_inj in H1; first done.
         apply _. (* FIXME: why is this typeclass left? *)
       }
@@ -337,7 +337,7 @@ Proof.
     replace (x) with (word.add idx 1).
     { iFrame "#". }
     {
-      assert (int.Z (word.add idx 1) = int.Z x) by word.
+      assert (uint.Z (word.add idx 1) = uint.Z x) by word.
       apply int_Z_inj in H1; first done.
       apply _. (* FIXME: why is this typeclass left? *)
     }
@@ -651,7 +651,7 @@ Proof.
   iApply big_sepS_forall.
   { intros. destruct (decide _); apply _. }
   iIntros.
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   destruct (decide _).
   { replace (x) with (I64 0).
     { done. }

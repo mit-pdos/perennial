@@ -27,9 +27,9 @@ Opaque nfstypes.SETATTR3res.
 Opaque slice_val.
 
 Lemma is_inode_data_shrink: forall state blk (u: u64) M,
-   ¬ (int.Z (length state) < int.Z u)%Z ->
+   ¬ (uint.Z (length state) < uint.Z u)%Z ->
   is_inode_data (length state) blk state M -∗
-  is_inode_data (Σ:=Σ) (length (take (int.nat u) state)) blk (take (int.nat u) state) M.
+  is_inode_data (Σ:=Σ) (length (take (uint.nat u) state)) blk (take (uint.nat u) state) M.
 Proof.
   iIntros (state blk u γtxn) "%H Hinode_data".
   iNamed "Hinode_data".
@@ -280,21 +280,21 @@ Proof using Ptimeless.
             iIntros "? !>".
             iExists _. iFrame. iExists _.
 
-            assert (length state < int.Z u)%Z by (revert Heqb; word).
+            assert (length state < uint.Z u)%Z by (revert Heqb; word).
             rewrite -> Z.max_r in Heqb0 by word.
             rewrite -Heqb0. word_cleanup.
             rewrite -> Z.max_r by word.
             rewrite !app_length !replicate_length take_length_ge.
             2: word.
-            replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
-            replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
-            replace (length state + (int.nat u - length state)) with (int.nat u) by lia.
-            replace (I64 (int.nat u)) with (I64 (int.Z u)) by word. iFrame.
+            replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
+            replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
+            replace (length state + (uint.nat u - length state)) with (uint.nat u) by lia.
+            replace (I64 (uint.nat u)) with (I64 (uint.Z u)) by word. iFrame.
             replace (Z.to_nat (length state)) with (length state) by lia.
             rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
             rewrite drop_ge; last by lia. rewrite app_nil_r.
             rewrite firstn_all2. 2: rewrite replicate_length; lia.
-            replace (Z.to_nat (int.Z u - length state)) with (int.nat u - length state) by lia.
+            replace (Z.to_nat (uint.Z u - length state)) with (uint.nat u - length state) by lia.
             iFrame.
           }
 
@@ -346,21 +346,21 @@ Proof using Ptimeless.
               2: { iModIntro. iSplit; try (iIntros "? !>"); done. }
 
               iRight.
-              assert (length state < int.Z u)%Z by (revert Heqb; word).
+              assert (length state < uint.Z u)%Z by (revert Heqb; word).
               rewrite -> Z.max_r in Heqb0 by word.
               rewrite -Heqb0. word_cleanup.
               rewrite -> Z.max_r by word.
               rewrite !app_length !replicate_length take_length_ge.
               2: word.
-              replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
-              replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
-              replace (length state + (int.nat u - length state)) with (int.nat u) by lia.
-              replace (I64 (int.nat u)) with (I64 (int.Z u)) by word. iFrame.
+              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
+              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
+              replace (length state + (uint.nat u - length state)) with (uint.nat u) by lia.
+              replace (I64 (uint.nat u)) with (I64 (uint.Z u)) by word. iFrame.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
               rewrite firstn_all2. 2: rewrite replicate_length; lia.
-              replace (Z.to_nat (int.Z u - length state)) with (int.nat u - length state) by lia.
+              replace (Z.to_nat (uint.Z u - length state)) with (uint.nat u - length state) by lia.
               iFrame. }
 
             iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
@@ -374,21 +374,21 @@ Proof using Ptimeless.
             2: {
               iExists _. iFrame "Hinode_state".
               iExists _.
-              assert (length state < int.Z u)%Z by (revert Heqb; word).
+              assert (length state < uint.Z u)%Z by (revert Heqb; word).
               rewrite -> Z.max_r in Heqb0 by word.
               rewrite -Heqb0. word_cleanup.
               rewrite -> Z.max_r by word.
               rewrite !app_length !replicate_length take_length_ge.
               2: word.
-              replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
-              replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
-              replace (length state + (int.nat u - length state)) with (int.nat u) by lia.
-              replace (I64 (int.nat u)) with (I64 (int.Z u)) by word. iFrame.
+              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
+              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
+              replace (length state + (uint.nat u - length state)) with (uint.nat u) by lia.
+              replace (I64 (uint.nat u)) with (I64 (uint.Z u)) by word. iFrame.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
               rewrite firstn_all2. 2: rewrite replicate_length; lia.
-              replace (Z.to_nat (int.Z u - length state)) with (int.nat u - length state) by lia.
+              replace (Z.to_nat (uint.Z u - length state)) with (uint.nat u - length state) by lia.
               iFrame. }
 
             iIntros "Hcrashlocked".
@@ -573,7 +573,7 @@ Proof using Ptimeless.
         iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
         iMod "Hfupd" as "[HP HQ]".
 
-        assert (int.nat u - length state = 0).
+        assert (uint.nat u - length state = 0).
         1: { revert Heqb. word. }
         rewrite H.
         rewrite replicate_0.
@@ -597,7 +597,7 @@ Proof using Ptimeless.
         iDestruct (is_inode_data_shrink _ _ u with "H1") as "H1".
         { word. }
         rewrite -> firstn_length_le by word.
-        replace (I64 (Z.of_nat (int.nat u))) with u by word. iFrame.
+        replace (I64 (Z.of_nat (uint.nat u))) with u by word. iFrame.
       }
 
       iModIntro.
@@ -628,7 +628,7 @@ Proof using Ptimeless.
         iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
         iMod "Hfupd" as "[HP HQ]".
 
-        assert (int.nat u - length state = 0).
+        assert (uint.nat u - length state = 0).
         1: { revert Heqb. word. }
         rewrite H.
         rewrite replicate_0.
@@ -653,7 +653,7 @@ Proof using Ptimeless.
           2: { iModIntro. iSplit; try (iIntros "? !>"); done. }
           iRight.
           repeat rewrite -> firstn_length_le by word.
-          replace (I64 (Z.of_nat (int.nat u))) with u by word. iFrame. }
+          replace (I64 (Z.of_nat (uint.nat u))) with u by word. iFrame. }
 
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
         wp_storeField.
@@ -665,7 +665,7 @@ Proof using Ptimeless.
         2: {
           iExists _. iFrame "Hinode_state". iExists _.
           repeat rewrite -> firstn_length_le by word.
-          replace (I64 (Z.of_nat (int.nat u))) with u by word. iFrame. }
+          replace (I64 (Z.of_nat (uint.nat u))) with u by word. iFrame. }
 
         iIntros "Hcrashlocked".
         iSplit.

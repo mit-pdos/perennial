@@ -111,10 +111,10 @@ Proof.
 Qed.
 
 Local Definition encode_byte_maplist (l:list (u64 * list u8)) : list u8 :=
-  flat_map (λ u, (u64_le u.1) ++ (u64_le (int.Z (length (u.2)))) ++ u.2) l.
+  flat_map (λ u, (u64_le u.1) ++ (u64_le (uint.Z (length (u.2)))) ++ u.2) l.
 
 Local Lemma encode_byte_maplist_cons k data l :
-  encode_byte_maplist ((k, data)::l) = (u64_le k) ++ (u64_le (int.Z (length data))) ++ data ++ encode_byte_maplist l.
+  encode_byte_maplist ((k, data)::l) = (u64_le k) ++ (u64_le (uint.Z (length data))) ++ data ++ encode_byte_maplist l.
 Proof. done. Qed.
 
 Local Definition has_partial_byte_map_encoding (enc:list u8) (fullsize: u64) (m:gmap u64 (list u8)) : Prop :=
@@ -124,7 +124,7 @@ Local Definition has_partial_byte_map_encoding (enc:list u8) (fullsize: u64) (m:
   enc = (u64_le fullsize) ++ encode_byte_maplist l.
 
 Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop :=
-  int.Z (size m) = size m ∧ has_partial_byte_map_encoding enc (size m) m.
+  uint.Z (size m) = size m ∧ has_partial_byte_map_encoding enc (size m) m.
 
 Lemma wp_EncodeMapU64ToBytes mptr m :
   {{{
@@ -226,23 +226,23 @@ Proof.
   wp_apply (wp_ReadInt with "Henc_sl"). iIntros (s') "Hs". wp_store. clear enc_sl.
   wp_apply wp_ref_to; first by val_ty. iIntros (li) "Hli". wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ s,
-              "Hm" ∷ own_byte_map mptr (list_to_map (take (int.nat i) ls)) ∗
+              "Hm" ∷ own_byte_map mptr (list_to_map (take (uint.nat i) ls)) ∗
               "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
-              "Hs" ∷ own_slice_small s byteT q (encode_byte_maplist (drop (int.nat i) ls) ++ enc_rest)
+              "Hs" ∷ own_slice_small s byteT q (encode_byte_maplist (drop (uint.nat i) ls) ++ enc_rest)
   )%I with "[] [$Hli Hm Hl Hs]"); first word.
   2:{ iExists _. iFrame. }
   { (* core loop *)
     clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
-    replace (int.nat (i64_instance.i64.(word.add) i 1)) with (1 + int.nat i)%nat by word.
-    assert (is_Some (ls !! (int.nat i))) as [[k data] Hk].
+    replace (uint.nat (i64_instance.i64.(word.add) i 1)) with (1 + uint.nat i)%nat by word.
+    assert (is_Some (ls !! (uint.nat i))) as [[k data] Hk].
     { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.
       rewrite Hls. word. }
     rewrite -(take_drop_middle _ _ _ Hk) in Hls Hnodup.
     move:Hnodup. clear Hls.
     erewrite take_S_r by done.
     rewrite (drop_S _ _ _ Hk).
-    set ls_head := take (int.nat i) ls.
-    set ls_tail := drop (1+int.nat i) ls.
+    set ls_head := take (uint.nat i) ls.
+    set ls_tail := drop (1+uint.nat i) ls.
     intros Hnodup.
     rewrite encode_byte_maplist_cons -!app_assoc.
     wp_load.
@@ -285,7 +285,7 @@ Local Definition has_partial_u64_map_encoding (enc:list u8) (fullsize: u64) (m:g
   enc = (u64_le fullsize) ++ encode_u64_maplist l.
 
 Definition has_u64_map_encoding (enc:list u8) (m:gmap u64 u64) : Prop :=
-  (int.Z (size m) = size m) ∧ has_partial_u64_map_encoding enc (size m) m.
+  (uint.Z (size m) = size m) ∧ has_partial_u64_map_encoding enc (size m) m.
 
 Lemma wp_EncodeMapU64ToU64 mptr m :
   {{{
@@ -374,23 +374,23 @@ Proof.
   wp_apply (wp_ReadInt with "Henc_sl"). iIntros (s') "Hs". wp_store. clear enc_sl.
   wp_apply wp_ref_to; first by val_ty. iIntros (li) "Hli". wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ s,
-              "Hm" ∷ own_map mptr 1 (list_to_map (take (int.nat i) ls)) ∗
+              "Hm" ∷ own_map mptr 1 (list_to_map (take (uint.nat i) ls)) ∗
               "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
-              "Hs" ∷ own_slice_small s byteT q (encode_u64_maplist (drop (int.nat i) ls) ++ enc_rest)
+              "Hs" ∷ own_slice_small s byteT q (encode_u64_maplist (drop (uint.nat i) ls) ++ enc_rest)
   )%I with "[] [$Hli Hm Hl Hs]"); first word.
   2:{ iExists _. iFrame. }
   { (* core loop *)
     clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
-    replace (int.nat (i64_instance.i64.(word.add) i 1)) with (1 + int.nat i)%nat by word.
-    assert (is_Some (ls !! (int.nat i))) as [[k data] Hk].
+    replace (uint.nat (i64_instance.i64.(word.add) i 1)) with (1 + uint.nat i)%nat by word.
+    assert (is_Some (ls !! (uint.nat i))) as [[k data] Hk].
     { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.
       rewrite Hls. word. }
     rewrite -(take_drop_middle _ _ _ Hk) in Hls Hnodup.
     move:Hnodup. clear Hls.
     erewrite take_S_r by done.
     rewrite (drop_S _ _ _ Hk).
-    set ls_head := take (int.nat i) ls.
-    set ls_tail := drop (1+int.nat i) ls.
+    set ls_head := take (uint.nat i) ls.
+    set ls_tail := drop (1+uint.nat i) ls.
     intros Hnodup.
     rewrite encode_u64_maplist_cons -!app_assoc.
     wp_apply wp_ref_of_zero. { done. } iIntros (lkey) "?".

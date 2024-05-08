@@ -9,7 +9,7 @@ Theorem wp_DB__getSafeTS db γ :
   is_db db γ -∗
   {{{ True }}}
     DB__getSafeTS #db
-  {{{ (tid : u64), RET #tid; min_tid_lb γ (int.nat tid) }}}.
+  {{{ (tid : u64), RET #tid; min_tid_lb γ (uint.nat tid) }}}.
 Proof.
   iIntros "#Hdb" (Φ) "!> _ HΦ".
   wp_call.
@@ -34,7 +34,7 @@ Proof.
   wp_pures.
   set P := λ (i : u64), (∃ (tidmin : u64),
     "HminRef" ∷ minRef ↦[uint64T] #tidmin ∗
-    "Htidlbs" ∷ [∗ list] sid ∈ (take (int.nat i) sids_all), site_min_tid_lb γ sid (int.nat tidmin))%I.
+    "Htidlbs" ∷ [∗ list] sid ∈ (take (uint.nat i) sids_all), site_min_tid_lb γ sid (uint.nat tidmin))%I.
   wp_apply (wp_forUpto P _ _ (I64 0) (I64 N_TXN_SITES) sidRef with "[] [HminRef HsidRef]"); first done.
   { clear Φ.
     iIntros (i Φ) "!> (Hloop & HsidRef & %Hbound) HΦ".
@@ -43,7 +43,7 @@ Proof.
     wp_load.
 
     iNamed "Hdb".
-    list_elem sitesL (int.nat i) as site.
+    list_elem sitesL (uint.nat i) as site.
     { revert HsitesLen. unfold N_TXN_SITES in *. word. }
     wp_loadField.
     iMod (readonly_load with "HsitesS") as (q) "HsitesS'".
@@ -69,7 +69,7 @@ Proof.
       iApply "HΦ".
       iModIntro.
       iFrame.
-      replace (int.nat (word.add _ _)) with (S (int.nat i)); last by word.
+      replace (uint.nat (word.add _ _)) with (S (uint.nat i)); last by word.
       rewrite (take_S_r _ _ i); last by apply sids_all_lookup.
       iApply big_sepL_app.
       iSplitL "Htidlbs".
@@ -85,7 +85,7 @@ Proof.
       iApply "HΦ".
       iModIntro.
       iFrame.
-      replace (int.nat (word.add _ _)) with (S (int.nat i)); last by word.
+      replace (uint.nat (word.add _ _)) with (S (uint.nat i)); last by word.
       rewrite (take_S_r _ _ i); last by apply sids_all_lookup.
       iApply big_sepL_app.
       iSplitL "Htidlbs"; first done.
@@ -96,7 +96,7 @@ Proof.
       word.
   }
   { iFrame.
-    replace (int.nat 0) with 0%nat; last word.
+    replace (uint.nat 0) with 0%nat; last word.
     rewrite take_0.
     auto.
   }

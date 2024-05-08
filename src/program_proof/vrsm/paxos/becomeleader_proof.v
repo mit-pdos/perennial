@@ -216,7 +216,7 @@ Proof.
           iFrame.
         }
 
-        replace (<[int.nat i:=x2]> γ.(s_hosts)) with (γ.(s_hosts)) ; last first.
+        replace (<[uint.nat i:=x2]> γ.(s_hosts)) with (γ.(s_hosts)) ; last first.
         {
           symmetry.
           by apply list_insert_id.
@@ -280,12 +280,12 @@ Proof.
 
   set (I:=λ (i:u64), (
                  ∃ (W: gset nat) (latestReply_loc:loc),
-                 "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < int.nat i⌝ ∗
-                 "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
+                 "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < uint.nat i⌝ ∗
+                 "%HW_size_nooverflow" ∷ ⌜(size W) ≤ uint.nat i⌝ ∗
                  "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(I64 (size W)) ∗
                  "HlatestReply_loc" ∷ latestReply_ptr ↦[ptrT] #latestReply_loc ∗
                  "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts) ,
-                  ⌜int.nat i ≤ j⌝ →
+                  ⌜uint.nat i ≤ j⌝ →
                  ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
                                            (if decide (reply.(enterNewEpochReply.err) = (I64 0)) then
                                              enterNewEpoch_post γ γsrv' reply newepoch
@@ -298,8 +298,8 @@ Proof.
                    ∃ latestReply latestLog,
                   "HlatestReply" ∷ (enterNewEpochReply.own latestReply_loc latestReply 1) ∗
                   "%Hlatestlog" ∷ ⌜latestReply.(enterNewEpochReply.state) = get_state latestLog⌝ ∗
-                  "%HlatestlogLen" ∷ ⌜int.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
-                  "%HlatestEpoch_ineq" ∷ ⌜int.nat latestReply.(enterNewEpochReply.acceptedEpoch) < int.nat newepoch⌝ ∗
+                  "%HlatestlogLen" ∷ ⌜uint.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
+                  "%HlatestEpoch_ineq" ∷ ⌜uint.nat latestReply.(enterNewEpochReply.acceptedEpoch) < uint.nat newepoch⌝ ∗
                   "#Hlatest_prop" ∷ is_proposal (config:=γ.(s_hosts)) (N:=N)
                                   γ.(s_mp) latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
                   "#HP_latest" ∷ (□ Pwf latestReply.(enterNewEpochReply.state)) ∗
@@ -358,10 +358,10 @@ Proof.
           {
             assert (size W = 0) as Hsz.
             {
-              apply (f_equal int.Z) in Heqb3.
+              apply (f_equal uint.Z) in Heqb3.
               rewrite Z_u64 in Heqb3.
               2:{ word. }
-              replace (int.Z (I64 0)) with (0%Z) in Heqb3 by word.
+              replace (uint.Z (I64 0)) with (0%Z) in Heqb3 by word.
               word.
             }
             apply size_empty_inv in Hsz.
@@ -370,7 +370,7 @@ Proof.
           iModIntro.
           iApply "HΦ".
 
-          iExists {[ int.nat i ]}, x.
+          iExists {[ uint.nat i ]}, x.
           iSplitR.
           {
             iPureIntro.
@@ -401,13 +401,13 @@ Proof.
               iIntros (?).
               iApply "Hwand".
               iPureIntro.
-              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in * by word.
+              replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in * by word.
               word.
             }
             {
               iIntros.
               exfalso.
-              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in * by word.
+              replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in * by word.
               word.
             }
           }
@@ -468,7 +468,7 @@ Proof.
             iModIntro.
             iApply "HΦ".
 
-            iExists (W ∪ {[ int.nat i ]}), x.
+            iExists (W ∪ {[ uint.nat i ]}), x.
 
             iSplitR.
             {
@@ -487,10 +487,10 @@ Proof.
             rewrite size_union; last first.
             {
               apply disjoint_singleton_r.
-              destruct (decide (int.nat i ∈ W)).
+              destruct (decide (uint.nat i ∈ W)).
               {
                 exfalso.
-                specialize (HW_in_range (int.nat i) e).
+                specialize (HW_in_range (uint.nat i) e).
                 word.
               }
               done.
@@ -513,13 +513,13 @@ Proof.
                 iIntros (?).
                 iApply "Hwand".
                 iPureIntro.
-                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                 word.
               }
               {
                 iIntros.
                 exfalso.
-                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                 word.
               }
             }
@@ -611,7 +611,7 @@ Proof.
                 iApply "HΦ".
 
                 (* establish loop invariant *)
-                iExists (W ∪ {[ int.nat i ]}), x.
+                iExists (W ∪ {[ uint.nat i ]}), x.
                 iSplitR.
                 {
                   iPureIntro.
@@ -629,10 +629,10 @@ Proof.
                 rewrite size_union; last first.
                 {
                   apply disjoint_singleton_r.
-                  destruct (decide (int.nat i ∈ W)).
+                  destruct (decide (uint.nat i ∈ W)).
                   {
                     exfalso.
-                    specialize (HW_in_range (int.nat i) e).
+                    specialize (HW_in_range (uint.nat i) e).
                     word.
                   }
                   done.
@@ -655,13 +655,13 @@ Proof.
                     iIntros (?).
                     iApply "Hwand".
                     iPureIntro.
-                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                     word.
                   }
                   {
                     iIntros.
                     exfalso.
-                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                     word.
                   }
                 }
@@ -739,7 +739,7 @@ Proof.
                 iApply "HΦ".
 
                 (* establish loop invariant *)
-                iExists (W ∪ {[ int.nat i ]}), _.
+                iExists (W ∪ {[ uint.nat i ]}), _.
                 iSplitR.
                 {
                   iPureIntro.
@@ -757,10 +757,10 @@ Proof.
                 rewrite size_union; last first.
                 {
                   apply disjoint_singleton_r.
-                  destruct (decide (int.nat i ∈ W)).
+                  destruct (decide (uint.nat i ∈ W)).
                   {
                     exfalso.
-                    specialize (HW_in_range (int.nat i) e).
+                    specialize (HW_in_range (uint.nat i) e).
                     word.
                   }
                   done.
@@ -783,13 +783,13 @@ Proof.
                     iIntros (?).
                     iApply "Hwand".
                     iPureIntro.
-                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                     word.
                   }
                   {
                     iIntros.
                     exfalso.
-                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                     word.
                   }
                 }
@@ -875,7 +875,7 @@ Proof.
             iApply "HΦ".
 
             (* establish loop invariant *)
-            iExists (W ∪ {[ int.nat i ]}), _.
+            iExists (W ∪ {[ uint.nat i ]}), _.
             iSplitR.
             {
               iPureIntro.
@@ -893,10 +893,10 @@ Proof.
             rewrite size_union; last first.
             {
               apply disjoint_singleton_r.
-              destruct (decide (int.nat i ∈ W)).
+              destruct (decide (uint.nat i ∈ W)).
               {
                 exfalso.
-                specialize (HW_in_range (int.nat i) e).
+                specialize (HW_in_range (uint.nat i) e).
                 word.
               }
               done.
@@ -920,13 +920,13 @@ Proof.
                 iIntros (?).
                 iApply "Hwand".
                 iPureIntro.
-                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                 word.
               }
               {
                 iIntros.
                 exfalso.
-                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                 word.
               }
             }
@@ -990,7 +990,7 @@ Proof.
                 iDestruct (is_accepted_upper_bound_mono_epoch with "Hacc_ub") as "Hacc_ub2".
                 {
                   instantiate (1:=latestReply.(enterNewEpochReply.acceptedEpoch)).
-                  destruct (decide (int.nat reply.(enterNewEpochReply.acceptedEpoch) = int.nat latestReply.(enterNewEpochReply.acceptedEpoch))).
+                  destruct (decide (uint.nat reply.(enterNewEpochReply.acceptedEpoch) = uint.nat latestReply.(enterNewEpochReply.acceptedEpoch))).
                   {
                     exfalso.
                     replace (reply.(enterNewEpochReply.acceptedEpoch)) with (latestReply.(enterNewEpochReply.acceptedEpoch)) in X by word.
@@ -1014,7 +1014,7 @@ Proof.
         iApply "HΦ".
         iExists W, _.
         iFrame "∗#%".
-        replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) by word.
+        replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) by word.
         iSplitR.
         {
           iPureIntro.
@@ -1036,13 +1036,13 @@ Proof.
           iIntros (?).
           iApply "Hwand".
           iPureIntro.
-          replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+          replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
           word.
         }
         {
           iIntros.
           exfalso.
-          replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+          replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
           word.
         }
       }
@@ -1053,7 +1053,7 @@ Proof.
       iExists W, _.
       iFrame "∗#%".
 
-      replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) by word.
+      replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) by word.
       iSplitR.
       {
         iPureIntro.
@@ -1086,7 +1086,7 @@ Proof.
     {
       exfalso.
       rewrite e in Heqb1.
-      replace (int.Z (word.mul 2%Z 0%nat)) with (0)%Z in Heqb1; last first.
+      replace (uint.Z (word.mul 2%Z 0%nat)) with (0)%Z in Heqb1; last first.
       { eauto. }
       word.
     }
@@ -1146,7 +1146,7 @@ Proof.
         word.
       }
       {
-        enough (int.Z (word.mul 2 (size W)) <= (2 * size W))%Z.
+        enough (uint.Z (word.mul 2 (size W)) <= (2 * size W))%Z.
         { simpl in *. word. }
         rewrite word.unsigned_mul.
         rewrite /word.wrap /=.

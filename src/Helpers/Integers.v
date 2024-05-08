@@ -276,39 +276,39 @@ Proof. apply _. Qed.
 Instance i8_countable : Countable byte.
 Proof. apply _. Qed.
 
-(* int and the u64_through* theorems are for backwards compatibility *)
+(* uint and the u64_through* theorems are for backwards compatibility *)
 
-Module int.
+Module uint.
   Notation Z := word.unsigned.
 
   Notation nat x := (Z.to_nat (Z x)).
-End int.
+End uint.
 
 Module sint.
   Notation Z := word.signed.
 End sint.
 
-Theorem u64_Z_through_nat (x:i64) : Z.of_nat (int.nat x) = int.Z x.
+Theorem u64_Z_through_nat (x:i64) : Z.of_nat (uint.nat x) = uint.Z x.
 Proof.
   rewrite Z2Nat.id; auto.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
 (* should maybe convert this into an explicit match on ints at some point *)
-Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (int.nat x).
+Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (uint.nat x).
 
 (* conversion to string *)
 Definition u8_to_string (x:byte) : String.string := String.String (u8_to_ascii x) String.EmptyString.
 
 (* conversions up *)
-Definition u8_to_u32 (x:byte) : i32 := I32 (int.Z x).
-Definition u8_to_u64 (x:byte) : i64 := I64 (int.Z x).
-Definition u32_to_u64 (x:i32) : i64 := I64 (int.Z x).
+Definition u8_to_u32 (x:byte) : i32 := I32 (uint.Z x).
+Definition u8_to_u64 (x:byte) : i64 := I64 (uint.Z x).
+Definition u32_to_u64 (x:i32) : i64 := I64 (uint.Z x).
 
 (* conversions down *)
-Definition u32_from_u64 (x:i64) : u32 := I32 (int.Z x).
-Definition u8_from_u64 (x:u64) : byte := I8 (int.Z x).
-Definition u8_from_u32 (x:u32) : byte := I8 (int.Z x).
+Definition u32_from_u64 (x:i64) : u32 := I32 (uint.Z x).
+Definition u8_from_u64 (x:u64) : byte := I8 (uint.Z x).
+Definition u8_from_u32 (x:u32) : byte := I8 (uint.Z x).
 
 Theorem wrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
   0 <= x < 2^width ->
@@ -328,7 +328,7 @@ Proof.
   rewrite Zmod_small; lia.
 Qed.
 
-Theorem u8_to_u64_Z x : int.Z (u8_to_u64 x) = int.Z x.
+Theorem u8_to_u64_Z x : uint.Z (u8_to_u64 x) = uint.Z x.
 Proof.
   unfold u8_to_u64, I64.
   rewrite word.unsigned_of_Z.
@@ -336,7 +336,7 @@ Proof.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
-Theorem u32_to_u64_Z x : int.Z (u32_to_u64 x) = int.Z x.
+Theorem u32_to_u64_Z x : uint.Z (u32_to_u64 x) = uint.Z x.
 Proof.
   unfold u32_to_u64, I64.
   rewrite word.unsigned_of_Z.
@@ -344,8 +344,8 @@ Proof.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
-Theorem u32_from_u64_Z (x: u64) : int.Z x < 2^32 ->
-                                    int.Z (u32_from_u64 x) = int.Z x.
+Theorem u32_from_u64_Z (x: u64) : uint.Z x < 2^32 ->
+                                    uint.Z (u32_from_u64 x) = uint.Z x.
 Proof.
   unfold u32_from_u64, I32; intros.
   rewrite word.unsigned_of_Z.
@@ -360,13 +360,13 @@ Proof.
 Qed.
 
 (* these make sure that s/64/32/ changes 64-bit code to 32-bit code *)
-Notation u64_bytes := 8%nat (only parsing).
-Notation u32_bytes := 4%nat (only parsing).
+Notation i64_bytes := 8%nat (only parsing).
+Notation i32_bytes := 4%nat (only parsing).
 
 (** 64-bit encoding *)
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x in
-  let t := split (byte:=i8_instance.i8) u64_bytes n in
+  let t := split (byte:=i8_instance.i8) i64_bytes n in
   tuple.to_list t.
 Global Arguments u64_le : simpl never.
 
@@ -377,12 +377,12 @@ Proof.
   exact (combine (byte:=i8_instance.i8) _ t).
 Defined.
 
-Theorem u64_le_length x : length (u64_le x) = u64_bytes.
+Theorem u64_le_length x : length (u64_le x) = i64_bytes.
 Proof.
   reflexivity.
 Qed.
 
-Theorem tuple_of_to_list_u64 A (t: tuple A u64_bytes) :
+Theorem tuple_of_to_list_u64 A (t: tuple A i64_bytes) :
   tuple.of_list (tuple.to_list t) = t.
 Proof.
   unfold tuple in t.
@@ -400,7 +400,7 @@ Proof.
   f_equal.
   rewrite tuple_of_to_list_u64.
   rewrite combine_split.
-  change (Z.of_nat u64_bytes * 8) with 64.
+  change (Z.of_nat i64_bytes * 8) with 64.
   rewrite word.wrap_unsigned by lia.
   by rewrite word.of_Z_unsigned.
 Qed.
@@ -410,7 +410,7 @@ Qed.
 (** 32-bit encoding *)
 Definition u32_le (x: u32) : list byte :=
   let n := word.unsigned x in
-  let t := split (byte:=i8_instance.i8) u32_bytes n in
+  let t := split (byte:=i8_instance.i8) i32_bytes n in
   tuple.to_list t.
 Global Arguments u32_le : simpl never.
 
@@ -421,12 +421,12 @@ Proof.
   exact (combine (byte:=i8_instance.i8) _ t).
 Defined.
 
-Theorem u32_le_length x : length (u32_le x) = u32_bytes.
+Theorem u32_le_length x : length (u32_le x) = i32_bytes.
 Proof.
   reflexivity.
 Qed.
 
-Theorem tuple_of_to_list_u32 A (t: tuple A u32_bytes) :
+Theorem tuple_of_to_list_u32 A (t: tuple A i32_bytes) :
   tuple.of_list (tuple.to_list t) = t.
 Proof.
   unfold tuple in t.
@@ -444,7 +444,7 @@ Proof.
   f_equal.
   rewrite tuple_of_to_list_u32.
   rewrite combine_split.
-  change (Z.of_nat u32_bytes * 8) with 32.
+  change (Z.of_nat i32_bytes * 8) with 32.
   rewrite word.wrap_unsigned by lia.
   by rewrite word.of_Z_unsigned.
 Qed.
@@ -452,7 +452,7 @@ Qed.
 
 Lemma combine_unfold n b (t: HList.tuple byte n) :
   combine (S n) {| PrimitivePair.pair._1 := b; PrimitivePair.pair._2 := t |} =
-  Z.lor (int.Z b) (combine n t ≪ 8).
+  Z.lor (uint.Z b) (combine n t ≪ 8).
 Proof.
   reflexivity.
 Qed.
@@ -520,22 +520,22 @@ Proof.
   exact H.
 Qed.
 
-Lemma unsigned_U64 z : int.Z (I64 z) = word.wrap (word:=i64_instance.i64) z.
+Lemma unsigned_U64 z : uint.Z (I64 z) = word.wrap (word:=i64_instance.i64) z.
 Proof.
   unfold I64; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U32 z : int.Z (I32 z) = word.wrap (word:=i32_instance.i32) z.
+Lemma unsigned_U32 z : uint.Z (I32 z) = word.wrap (word:=i32_instance.i32) z.
 Proof.
   unfold I32; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U64_0 : int.Z (I64 0) = 0.
+Lemma unsigned_U64_0 : uint.Z (I64 0) = 0.
 Proof.
   reflexivity.
 Qed.
 
-Lemma unsigned_U32_0 : int.Z (I32 0) = 0.
+Lemma unsigned_U32_0 : uint.Z (I32 0) = 0.
 Proof.
   reflexivity.
 Qed.
@@ -577,22 +577,22 @@ Ltac word_cleanup :=
   ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
   try autorewrite with word;
   repeat match goal with
-         | [ H: context[word.unsigned (I64 (Zpos ?x))] |- _ ] => change (int.Z (Zpos x)) with (Zpos x) in *
-         | [ |- context[word.unsigned (I64 (Zpos ?x))] ] => change (int.Z (Zpos x)) with (Zpos x)
-         | [ H: context[word.unsigned (I32 (Zpos ?x))] |- _ ] => change (int.Z (I32 (Zpos x))) with (Zpos x) in *
-         | [ |- context[word.unsigned (I32 (Zpos ?x))] ] => change (int.Z (I32 (Zpos x))) with (Zpos x)
+         | [ H: context[word.unsigned (I64 (Zpos ?x))] |- _ ] => change (uint.Z (Zpos x)) with (Zpos x) in *
+         | [ |- context[word.unsigned (I64 (Zpos ?x))] ] => change (uint.Z (Zpos x)) with (Zpos x)
+         | [ H: context[word.unsigned (I32 (Zpos ?x))] |- _ ] => change (uint.Z (I32 (Zpos x))) with (Zpos x) in *
+         | [ |- context[word.unsigned (I32 (Zpos ?x))] ] => change (uint.Z (I32 (Zpos x))) with (Zpos x)
          end;
   repeat match goal with
-         | [ |- context[int.Z ?x] ] =>
+         | [ |- context[uint.Z ?x] ] =>
            lazymatch goal with
-           | [ H': 0 <= int.Z x < 2^64 |- _ ] => fail
-           | [ H': 0 <= int.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
+           | [ H': 0 <= uint.Z x < 2^64 |- _ ] => fail
+           | [ H': 0 <= uint.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
-         | [ H: context[int.Z ?x] |- _ ] =>
+         | [ H: context[uint.Z ?x] |- _ ] =>
            lazymatch goal with
-           | [ H': 0 <= int.Z x < 2^64 |- _ ] => fail
-           | [ H': 0 <= int.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
+           | [ H': 0 <= uint.Z x < 2^64 |- _ ] => fail
+           | [ H': 0 <= uint.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          end;
@@ -608,7 +608,7 @@ Ltac word := solve [ word_cleanup ].
 
 Theorem Z_u32 z :
   0 <= z < 2 ^ 32 ->
-  int.Z (I32 z) = z.
+  uint.Z (I32 z) = z.
 Proof.
   intros.
   unfold I32.
@@ -617,14 +617,14 @@ Proof.
 Qed.
 
 Lemma u32_Z (x : u32) :
-  I32 (int.Z x) = x.
+  I32 (uint.Z x) = x.
 Proof.
   unfold I32. apply word.of_Z_unsigned.
 Qed.
 
 Theorem Z_u64 z :
   0 <= z < 2 ^ 64 ->
-  int.Z (I64 z) = z.
+  uint.Z (I64 z) = z.
 Proof.
   intros.
   unfold I64.
@@ -633,7 +633,7 @@ Proof.
 Qed.
 
 Lemma u64_Z (x : u64) :
-  I64 (int.Z x) = x.
+  I64 (uint.Z x) = x.
 Proof.
   unfold I64. apply word.of_Z_unsigned.
 Qed.
@@ -657,7 +657,7 @@ Qed.
 Instance word_finite `(word: Interface.word width) {word_ok: word.ok word} : Finite word.
 Proof.
   apply (enc_finite
-    (λ w, int.nat w)
+    (λ w, uint.nat w)
     (λ n, word.of_Z (Z.of_nat n))
     (Z.to_nat (2^width))).
   - intros w. rewrite Z2Nat.id.
@@ -691,11 +691,11 @@ Qed.
 Definition u64_round_up (x div : u64) := let x' := word.add x div in word.mul (word.divu x' div) div.
 
 Lemma u64_round_up_spec x div :
-  int.Z x + int.Z div < 2^64 →
-  int.Z div > 0 →
-  int.Z (u64_round_up x div) `mod` (int.Z div) = 0 ∧
-  int.Z x < int.Z (u64_round_up x div) ∧
-  int.Z (u64_round_up x div) < 2^64.
+  uint.Z x + uint.Z div < 2^64 →
+  uint.Z div > 0 →
+  uint.Z (u64_round_up x div) `mod` (uint.Z div) = 0 ∧
+  uint.Z x < uint.Z (u64_round_up x div) ∧
+  uint.Z (u64_round_up x div) < 2^64.
 Proof.
   intros. unfold u64_round_up.
   rewrite word.unsigned_mul, word.unsigned_divu. 2:word.
@@ -706,7 +706,7 @@ Proof.
     split.
     - apply Z_div_nonneg_nonneg; word.
     - assert (0 < word.unsigned div) as Hdiv by lia.
-      pose proof (ZLib.Z.div_mul_undo_le (int.Z x + int.Z div) (int.Z div) Hdiv) as Hdivle.
+      pose proof (ZLib.Z.div_mul_undo_le (uint.Z x + uint.Z div) (uint.Z div) Hdiv) as Hdivle.
       lia. }
   rewrite wrap_small.
   2:{
@@ -715,8 +715,8 @@ Proof.
     - apply Z.lt_le_pred. etrans. 1: apply ZLib.Z.div_mul_undo_le. all: word. }
   split.
   { rewrite Z.mul_comm. apply ZLib.Z.Z_mod_mult'. }
-  set (x' := int.Z x).
-  set (div' := int.Z div).
+  set (x' := uint.Z x).
+  set (div' := uint.Z div).
   opose proof (Z.div_mod (x' + div') div' _) as Heq. 1:word.
   replace ((x' + div') `div` div' * div') with (x' + div' - (x' + div') `mod` div') by lia.
   assert ((x' + div') `mod` div' < div').

@@ -870,7 +870,7 @@ Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: In
   match op with
   | StringGetOp => mbind (M:=option)
                   (λ (x:u8), Some $ LitByte x)
-                  ((string_to_bytes s1) !! (int.nat w2))
+                  ((string_to_bytes s1) !! (uint.nat w2))
   | _ => None
   end.
 
@@ -925,7 +925,7 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     | LitV (LitLoc l), LitV (LitInt off) => match op with
                                            | OffsetOp k =>
-                                             Some $ LitV $ LitLoc (l +ₗ k * (int.Z (off: u64)))
+                                             Some $ LitV $ LitLoc (l +ₗ k * (uint.Z (off: u64)))
                                            | _ => None
                                            end
     | LitV (LitString s1), LitV (LitByte n) => LitV <$> bin_op_eval_string_word op s1 n
@@ -1112,9 +1112,9 @@ Definition base_trans (e: expr) :
       ret $ LitV $ LitInt x)
   | AllocN (Val (LitV (LitInt n))) (Val v) =>
     atomically
-      (check (0 < int.Z n)%Z;;
+      (check (0 < uint.Z n)%Z;;
        l ← allocateN;
-       modifyσ (state_init_heap l (int.Z n) v);;
+       modifyσ (state_init_heap l (uint.Z n) v);;
        ret $ LitV $ LitLoc l)
    | StartRead (Val (LitV (LitLoc l))) => (* non-atomic load part 1 (used for map accesses) *)
      atomically
@@ -1311,9 +1311,9 @@ Qed.
 
 Lemma alloc_fresh v (n: u64) σ g :
   let l := fresh_locs (dom σ.(heap)) in
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   base_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ g []
-            (Val $ LitV $ LitLoc l) (state_init_heap l (int.Z n) v σ) g [].
+            (Val $ LitV $ LitLoc l) (state_init_heap l (uint.Z n) v σ) g [].
 Proof.
   intros.
   constructor 1.

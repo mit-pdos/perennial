@@ -500,7 +500,7 @@ Section go_refinement.
       destruct iv1 => //=;
         inversion 1; eauto; subst; destruct iv2; inversion 1;
         subst; destruct l => //=; destruct l0 => //=;
-        destruct (string_to_bytes s !! (int.nat n)) => //=; eauto.
+        destruct (string_to_bytes s !! (uint.nat n)) => //=; eauto.
     }
 
     rewrite /bin_op_eval /bin_op_eval_eq /=.
@@ -1104,7 +1104,7 @@ Section go_refinement.
     - rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
       * inv_expr_impl; inv_base_step. monad_inv.
-        destruct (decide (0 < int.Z n)); monad_inv.
+        destruct (decide (0 < uint.Z n)); monad_inv.
         ** let sσ2 := fresh "sσ2" in evar (sσ2:sstate).
            let sg2 := fresh "sg2" in evar (sg2:sgstate).
            let rv := fresh "rv" in evar (rv:sval).
@@ -1122,7 +1122,7 @@ Section go_refinement.
            simpl in Hstep.
            apply foheap_union_inv_l in Hstep.
            rewrite /foheap in Hstep.
-           assert (Hforall: Forall foval (concat_replicate (int.nat n) (flatten_struct v0))).
+           assert (Hforall: Forall foval (concat_replicate (uint.nat n) (flatten_struct v0))).
            { eapply (heap_array_forall _ l0). intros. eapply Hstep.
              rewrite -heap_array_fmap. rewrite lookup_fmap fmap_Some. eauto. }
            apply Forall_concat_replicate in Hforall; auto. lia.
@@ -1365,7 +1365,7 @@ Section go_refinement.
     - rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
       * inv_expr_impl; inv_base_step. monad_inv.
-        destruct (decide (0 < int.Z n)); monad_inv.
+        destruct (decide (0 < uint.Z n)); monad_inv.
         ** let iσ2 := fresh "iσ2" in evar (iσ2:istate).
            let ig2 := fresh "ig2" in evar (ig2:igstate).
            let rv := fresh "rv" in evar (rv:ival).

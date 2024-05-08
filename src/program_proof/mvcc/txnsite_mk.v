@@ -11,7 +11,7 @@ Definition init_txnsite sid γ : iProp Σ :=
     "#Hinvtid"     ∷ have_gentid γ ∗
     "#Hinvgc"      ∷ mvcc_inv_gc γ ∗
     "#Hinvsst"     ∷ mvcc_inv_sst γ proph ∗
-    "%HsidBounded" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝.
+    "%HsidBounded" ∷ ⌜(uint.Z sid) < N_TXN_SITES⌝.
 
 Theorem wp_MkTxnSite (sid : u64) γ :
   {{{ init_txnsite sid γ }}}
@@ -45,7 +45,7 @@ Proof.
   { iNext.
     unfold own_txnsite.
     iExists (Slice.mk tids 0 8), [], ∅.
-    replace (int.nat (I64 0)) with 0%nat by word.
+    replace (uint.nat (I64 0)) with 0%nat by word.
     iFrame "∗%#".
     iPureIntro.
     rewrite fmap_nil.

@@ -570,7 +570,7 @@ Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 string) : 
   "Htoks" ∷ ghost_map_auth γ.(req_gn) 1 (gset_to_gmap () usedIds) ∗
   "Hreplies" ∷ ghost_map_auth γ.(reply_gn) 1 lastReplies ∗
   "#Hwits" ∷ ([∗ map] opId ↦ r ∈ lastReplies, is_executed_witness γ opId ∗ is_request_receipt γ opId r) ∗
-  "%Htoks" ∷ ⌜ set_Forall (λ id, int.nat id < int.nat nextFreshId) usedIds ⌝
+  "%Htoks" ∷ ⌜ set_Forall (λ id, uint.nat id < uint.nat nextFreshId) usedIds ⌝
 .
 
 Lemma alloc_erpc_server :
@@ -589,7 +589,7 @@ Proof.
 Qed.
 
 Lemma server_fresh_id_step γ nextFreshId lastReplies :
-  int.nat (word.add nextFreshId 1) = int.nat nextFreshId + 1 →
+  uint.nat (word.add nextFreshId 1) = uint.nat nextFreshId + 1 →
   own_erpc_server γ nextFreshId lastReplies ==∗
   own_erpc_server γ (word.add nextFreshId 1) lastReplies ∗
   own_unexecuted_token γ nextFreshId
@@ -879,7 +879,7 @@ Definition is_Server (s:loc) γ : iProp Σ :=
 .
 
 Lemma ghost_getFreshNum γ st :
-  int.nat (word.add st.(server.nextFreshId) 1) = int.nat st.(server.nextFreshId) + 1 →
+  uint.nat (word.add st.(server.nextFreshId) 1) = uint.nat st.(server.nextFreshId) + 1 →
   server.own_ghost γ st ==∗
   server.own_ghost γ (st <|(server.nextFreshId) := word.add st.(server.nextFreshId) 1|>) ∗
   getFreshNum_core_post γ st.(server.nextFreshId)

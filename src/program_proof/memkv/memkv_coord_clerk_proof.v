@@ -21,7 +21,7 @@ Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
   }}}
     decodeShardMap (slice_val data_sl)
   {{{  rep_sl , RET (slice_val rep_sl);
-       ⌜ length shardMapping = int.nat 65536 ⌝ ∗
+       ⌜ length shardMapping = uint.nat 65536 ⌝ ∗
        typed_slice.own_slice rep_sl uint64T 1 shardMapping }}}.
 Proof.
   wp_pures. iIntros (Φ) "H HΦ".

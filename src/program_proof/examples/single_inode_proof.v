@@ -56,7 +56,7 @@ Section goose.
     "#alloc" ∷ readonly (l ↦[SingleInode :: "alloc"] #alloc_ref).
 
   (** State of unallocated blocks *)
-  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.Z a d↦ b.
+  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, uint.Z a d↦ b.
 
   Definition pre_s_inode l (sz: Z) σ : iProp Σ :=
     ∃ inode_ref alloc_ref γused γblocks,
@@ -112,7 +112,7 @@ Section goose.
     rewrite big_sepL_app.
     iDestruct "Hd" as "[Hinodes Hfree]".
     iDestruct "Hinodes" as "[Hzero _]".
-    change (0%nat + 0)%Z with (int.Z (I64 0)).
+    change (0%nat + 0)%Z with (uint.Z (I64 0)).
     iDestruct (init_inode with "Hzero") as "Hinode".
     simpl.
     iMod (ghost_var_alloc (nil : list Block)) as
@@ -161,11 +161,11 @@ Section goose.
   Opaque alloc_crash_cond.
 
   Theorem wpc_Open (sz: u64) σ0 :
-    (0 < int.Z sz)%Z →
-    {{{ "Hcinv" ∷ s_inode_cinv (int.Z sz) σ0 true }}}
+    (0 < uint.Z sz)%Z →
+    {{{ "Hcinv" ∷ s_inode_cinv (uint.Z sz) σ0 true }}}
       Open (disk_val tt) #sz @ ⊤
-    {{{ l, RET #l; pre_s_inode l (int.Z sz) σ0 }}}
-    {{{ s_inode_cinv (int.Z sz) σ0 true }}}.
+    {{{ l, RET #l; pre_s_inode l (uint.Z sz) σ0 }}}
+    {{{ s_inode_cinv (uint.Z sz) σ0 true }}}.
   Proof.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     rewrite /Open.
@@ -221,7 +221,7 @@ Section goose.
     iDestruct (unify_used_set with "HPalloc HPinode") as %Hused_inode.
 
     iCache with "HΦ Hs_inode Hpre_inode HPinode HPalloc Hunused".
-    { iAssert (alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (int.Z sz - 1)) true)
+    { iAssert (alloc_crash_cond (Palloc γused) allocΨ (rangeSet 1 (uint.Z sz - 1)) true)
             with "[HPalloc Hunused]" as "Halloc".
       { iExists _; iFrame "∗ %". }
       iFromCache. }
@@ -312,7 +312,7 @@ Section goose.
 
   Theorem wpc_SingleInode__Read l sz (i: u64) :
     ⊢ {{{ "#Hinode" ∷ is_single_inode l sz }}}
-      <<{ ∀∀ σ mb, ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ ∗ ▷ P σ }>>
+      <<{ ∀∀ σ mb, ⌜mb = σ.(s_inode.blocks) !! uint.nat i⌝ ∗ ▷ P σ }>>
         SingleInode__Read #l #i @ ↑N
       <<{ ▷ P σ }>>
       {{{ (s:Slice.t), RET (slice_val s);
@@ -350,7 +350,7 @@ Section goose.
   Theorem wpc_SingleInode__Read_triple (Q: option Block → iProp Σ) l sz (i: u64) :
     {{{ "#Hinode" ∷ is_single_inode l sz ∗
         "Hfupd" ∷ (∀ σ mb,
-                      ⌜mb = σ.(s_inode.blocks) !! int.nat i⌝ -∗
+                      ⌜mb = σ.(s_inode.blocks) !! uint.nat i⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ ∗ Q mb)
     }}}
       SingleInode__Read #l #i @ ⊤

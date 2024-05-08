@@ -82,10 +82,10 @@ Proof using waitgroupG0.
   iMod (readonly_load with "Hconf_sl") as (?) "Hconf_sl2".
   iDestruct (own_slice_small_sz with "Hconf_sl2") as %Hconf_len.
   set (oldNodeId:=word.modu randId config_sl.(Slice.sz)).
-  assert (int.nat oldNodeId < length conf) as Hlookup_conf.
+  assert (uint.nat oldNodeId < length conf) as Hlookup_conf.
   { rewrite Hconf_len.
     unfold oldNodeId.
-    enough (int.Z randId `mod` int.Z config_sl.(Slice.sz) < int.Z config_sl.(Slice.sz))%Z.
+    enough (uint.Z randId `mod` uint.Z config_sl.(Slice.sz) < uint.Z config_sl.(Slice.sz))%Z.
     { word. }
     apply Z.mod_pos_bound.
     word.
@@ -149,7 +149,7 @@ Proof using waitgroupG0.
   (* err = 0; keep going with reconfig *)
   (* Got the old state now *)
   iDestruct "Hpost" as (????) "(%Hepoch_lb_ineq & %Hepoch_ub_ineq & #Hacc_ro & #Hprop_facts & #Hprim_facts & #Hprop_lb & #HcommitFacts & Hreply & %Henc & %Hlen_no_overflow)".
-  destruct (decide (int.nat epochacc = int.nat epoch)) as [Heq|Hepochacc_ne_epoch].
+  destruct (decide (uint.nat epochacc = uint.nat epoch)) as [Heq|Hepochacc_ne_epoch].
   {
     replace (epochacc) with (epoch) by word.
     iExFalso.
@@ -199,7 +199,7 @@ Proof using waitgroupG0.
   iAssert (
         ∃ (i:u64) clerksComplete clerksLeft,
           "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-          "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
+          "%HcompleteLen" ∷ ⌜length clerksComplete = uint.nat i⌝ ∗
           "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
           "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
           "Hservers_sl" ∷ own_slice_small servers_sl uint64T 1 servers ∗
@@ -227,7 +227,7 @@ Proof using waitgroupG0.
   { (* loop not finished *)
     wp_pures.
     wp_load.
-    assert (int.nat i < length servers) as Hlookup.
+    assert (uint.nat i < length servers) as Hlookup.
     { word. }
     apply list_lookup_lt in Hlookup as [host Hlookup].
     wp_apply (wp_SliceGet with "[$Hservers_sl]").
@@ -340,7 +340,7 @@ Proof using waitgroupG0.
   iRight.
   iSplitR; first done.
   iModIntro.
-  assert (int.nat i = length servers) as Hi_done.
+  assert (uint.nat i = length servers) as Hi_done.
   {
     rewrite Hclerks_sz.
     rewrite app_length in Hlen.
@@ -380,8 +380,8 @@ Proof using waitgroupG0.
   iMod (fupd_mask_subseteq (↑adminN)) as "Hmask".
   { set_solver. }
   set (P:= (λ i, ∃ (err:u64) γsrv',
-      ⌜server_γs !! int.nat i = Some γsrv'⌝ ∗
-        readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
+      ⌜server_γs !! uint.nat i = Some γsrv'⌝ ∗
+        readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] uint.Z i)↦[uint64T] #err) ∗
         □ if (decide (err = I64 0)) then
             protocol.is_epoch_lb γsrv'.(r_pb) epoch
           else
@@ -401,8 +401,8 @@ Proof using waitgroupG0.
   iAssert (
         ∃ (i:u64),
           "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-          "%Hi_ineq" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
-          "Herrs" ∷ (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦∗[uint64T] (replicate (int.nat clerks_sl.(Slice.sz)- int.nat i) #0) ∗
+          "%Hi_ineq" ∷ ⌜uint.nat i ≤ length clerks⌝ ∗
+          "Herrs" ∷ (errs_sl.(Slice.ptr) +ₗ[uint64T] uint.Z i)↦∗[uint64T] (replicate (uint.nat clerks_sl.(Slice.sz)- uint.nat i) #0) ∗
           "Hwg" ∷ own_WaitGroup adminN wg γwg i P
           )%I with "[Herrs_sl Hi Hwg]" as "HH".
   {
@@ -415,9 +415,9 @@ Proof using waitgroupG0.
     iSplitR; first iPureIntro.
     { word. }
     simpl.
-    replace (1 * int.Z _)%Z with (0%Z) by word.
+    replace (1 * uint.Z _)%Z with (0%Z) by word.
     rewrite loc_add_0.
-    replace (int.nat _ - int.nat 0) with (int.nat clerks_sl.(Slice.sz)) by word.
+    replace (uint.nat _ - uint.nat 0) with (uint.nat clerks_sl.(Slice.sz)) by word.
     iFrame "Herrs_sl".
   } (* FIXME: copy/pasted from pb_apply_proof *)
 
@@ -453,7 +453,7 @@ Proof using waitgroupG0.
     wp_pures.
     wp_load.
 
-    assert (int.nat i < int.nat clerks_sl.(Slice.sz)) as Hlookup by word.
+    assert (uint.nat i < uint.nat clerks_sl.(Slice.sz)) as Hlookup by word.
     rewrite -Hclerks_sz in Hlookup.
     rewrite app_nil_r in Hlen.
     rewrite -Hlen in Hlookup.
@@ -464,7 +464,7 @@ Proof using waitgroupG0.
 
     wp_pures.
 
-    replace (int.nat clerks_sl.(Slice.sz) - int.nat i) with (S (int.nat clerks_sl.(Slice.sz) - (int.nat (word.add i 1)))) by word.
+    replace (uint.nat clerks_sl.(Slice.sz) - uint.nat i) with (S (uint.nat clerks_sl.(Slice.sz) - (uint.nat (word.add i 1)))) by word.
     rewrite replicate_S.
     iDestruct (array_cons with "Herrs") as "[Herr_ptr Herr_ptrs]".
     wp_load.
@@ -558,7 +558,7 @@ Proof using waitgroupG0.
     rewrite loc_add_assoc.
     f_equal.
     simpl.
-    replace (int.Z (word.add i 1%Z)) with (int.Z i + 1)%Z by word.
+    replace (uint.Z (word.add i 1%Z)) with (uint.Z i + 1)%Z by word.
     word.
   }
   (* loop completed *)
@@ -570,7 +570,7 @@ Proof using waitgroupG0.
   wp_apply (wp_WaitGroup__Wait with "[$Hwg]").
   iIntros "#Hwg_post".
   wp_pures.
-  replace (int.nat i) with (length clerks); last first.
+  replace (uint.nat i) with (length clerks); last first.
   {
     rewrite app_nil_r in Hlen.
     word.
@@ -587,10 +587,10 @@ Proof using waitgroupG0.
   (* This was copy/pasted and modified from apply_proof *)
   iAssert (∃ (i err:u64),
               "Hj" ∷ i_ptr ↦[uint64T] #i ∗
-              "%Hj_ub" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
+              "%Hj_ub" ∷ ⌜uint.nat i ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (I64 0)%Z)) then
-                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ protocol.is_epoch_lb γsrv.(r_pb) epoch)
+                (∀ (k:u64) γsrv, ⌜uint.nat k < uint.nat i⌝ -∗ ⌜server_γs !! (uint.nat k) = Some γsrv⌝ -∗ protocol.is_epoch_lb γsrv.(r_pb) epoch)
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -603,7 +603,7 @@ Proof using waitgroupG0.
     destruct (decide (_)); last first.
     { done. }
     iIntros.
-    exfalso. replace (int.nat 0%Z) with 0 in H by word.
+    exfalso. replace (uint.nat 0%Z) with 0 in H by word.
     word.
   }
 
@@ -628,7 +628,7 @@ Proof using waitgroupG0.
     iDestruct (big_sepS_elem_of_acc _ _ i0 with "Hwg_post") as "[HH _]".
     { set_solver. }
 
-    assert (int.nat i0 < int.nat errs_sl.(Slice.sz)) by word.
+    assert (uint.nat i0 < uint.nat errs_sl.(Slice.sz)) by word.
 
     iDestruct "HH" as "[%Hbad|HH]".
     { exfalso.
@@ -658,9 +658,9 @@ Proof using waitgroupG0.
       destruct (decide (err = 0%Z)).
       {
         iIntros.
-        assert (int.nat k < int.nat i0 ∨ int.nat k = int.nat i0) as [|].
+        assert (uint.nat k < uint.nat i0 ∨ uint.nat k = uint.nat i0) as [|].
         {
-          replace (int.nat (word.add i0 1%Z)) with (int.nat i0 + 1) in * by word.
+          replace (uint.nat (word.add i0 1%Z)) with (uint.nat i0 + 1) in * by word.
           word.
         }
         {
@@ -670,7 +670,7 @@ Proof using waitgroupG0.
           destruct (decide (_)); last by exfalso.
           replace (γsrv') with (γsrv); last first.
           {
-            replace (int.nat i0) with (int.nat k) in * by word.
+            replace (uint.nat i0) with (uint.nat k) in * by word.
             naive_solver.
           }
           iDestruct "Hpost" as "#$".
@@ -712,7 +712,7 @@ Proof using waitgroupG0.
   }
 
   (* no errors *)
-  replace (int.nat i0) with (length clerks); last first.
+  replace (uint.nat i0) with (length clerks); last first.
   { word. }
 
   destruct (decide (_)); last first.
@@ -758,7 +758,7 @@ Proof using waitgroupG0.
       eexists. done.
     }
     replace (length clerks) with (length server_γs) in * by word.
-    assert (int.nat i = i) as Hi.
+    assert (uint.nat i = i) as Hi.
     { word. }
 
     iDestruct "HH" as "[%Hbad|HP]".
@@ -872,7 +872,7 @@ Proof using waitgroupG0.
       {
         iPureIntro.
         instantiate (1:=k).
-        replace (int.nat k) with (k).
+        replace (uint.nat k) with (k).
         { done. }
         assert (k < length servers).
         { apply lookup_lt_Some in H. done. }
@@ -880,7 +880,7 @@ Proof using waitgroupG0.
       }
       { iPureIntro.
         apply lookup_lt_Some in H.
-        replace (int.nat k) with (k).
+        replace (uint.nat k) with (k).
         { rewrite Hlen. done. }
         assert (k < length servers). (* FIXME: why do I have to assert this when it's already in context? *)
         { done. }

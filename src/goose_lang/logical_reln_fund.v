@@ -1657,7 +1657,7 @@ Proof using spec_trans.
     iApply wp_fupd.
     Transparent val_interp.
     iDestruct "Hv1" as (nint) "(->&->)".
-    destruct (decide (0 < int.Z nint)) as [Hnonneg|]; last first.
+    destruct (decide (0 < uint.Z nint)) as [Hnonneg|]; last first.
     {
       iMod (ghost_allocN_non_pos_stuck with "[$] [$]") as %[].
       { eauto. }
@@ -1677,11 +1677,11 @@ Proof using spec_trans.
     { iApply "Hspec". }
     iExists _. iFrame "Hj".
     rewrite val_interp_array_unfold /arrayT_interp.
-    iLeft. unshelve (iExists l, ls, (int.nat nint), 0, _, _); eauto.
+    iLeft. unshelve (iExists l, ls, (uint.nat nint), 0, _, _); eauto.
     { lia. }
     rewrite -Hsize -Hspecsize.
-    iFrame. replace ((int.nat nint * length (flatten_ty t)))%Z with
-                   (Z.of_nat (int.nat nint * length (flatten_ty t)))%nat by lia.
+    iFrame. replace ((uint.nat nint * length (flatten_ty t)))%Z with
+                   (Z.of_nat (uint.nat nint * length (flatten_ty t)))%nat by lia.
     iFrame.
     iSplitL "".
     { iPureIntro. split_and!; eauto.
@@ -1752,8 +1752,8 @@ Proof using spec_trans.
     }
     iModIntro.
     iExists _. iFrame. iLeft.
-    unshelve (iExists (addr_plus_off l (ty_size t * int.Z off)),
-                                      (addr_plus_off ls (ty_size t * int.Z off)), _, (idx + int.Z off), _, _; iFrame); eauto.
+    unshelve (iExists (addr_plus_off l (ty_size t * uint.Z off)),
+                                      (addr_plus_off ls (ty_size t * uint.Z off)), _, (idx + uint.Z off), _, _; iFrame); eauto.
     rewrite ?addr_base_of_plus ?addr_offset_of_plus. iPureIntro; split_and!; eauto.
     * rewrite Hoff. rewrite -ty_size_length.
       specialize (ty_size_ge_0 t). intros.
@@ -1802,7 +1802,7 @@ Proof using spec_trans.
     }
     iModIntro.
     iExists _. iFrame.
-    replace (k * int.Z 1) with k by word.
+    replace (k * uint.Z 1) with k by word.
     iLeft.
     rewrite ?map_length.
     unshelve (iExists (l' +ₗ k), (ls' +ₗ k), _, _, _; iFrame).

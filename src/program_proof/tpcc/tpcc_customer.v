@@ -38,7 +38,7 @@ Proof.
   (***********************************************************)
   wp_apply wp_NewSliceWithCap; first word.
   iIntros (kPtr) "HkS".
-  replace (int.nat 0) with 0%nat by word. rewrite replicate_0.
+  replace (uint.nat 0) with 0%nat by word. rewrite replicate_0.
   wp_apply wp_ref_to; first by auto.
   iIntros (kRef) "HkRef".
   wp_load.
@@ -107,7 +107,7 @@ Proof.
   (***********************************************************)
   wp_apply wp_NewSliceWithCap; first word.
   iIntros (kPtr) "HkS".
-  replace (int.nat 0) with 0%nat by word. rewrite replicate_0.
+  replace (uint.nat 0) with 0%nat by word. rewrite replicate_0.
   wp_apply wp_ref_to; first by auto.
   iIntros (kRef) "HkRef".
   wp_load.
@@ -162,7 +162,7 @@ Proof.
   (***********************************************************)
   wp_apply wp_NewSliceWithCap; first word.
   iIntros (kPtr) "HkS".
-  replace (int.nat 0) with 0%nat by word. rewrite replicate_0.
+  replace (uint.nat 0) with 0%nat by word. rewrite replicate_0.
   wp_apply wp_ref_to; first by auto.
   iIntros (kRef) "HkRef".
   wp_load.

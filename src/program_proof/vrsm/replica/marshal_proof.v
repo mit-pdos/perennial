@@ -63,7 +63,7 @@ Proof.
   wp_apply (wp_WriteInt with "Henc_sl").
   iIntros (enc_sl) "Henc_sl".
   wp_store.
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   simpl.
 
   wp_loadField.
@@ -178,7 +178,7 @@ Proof.
   wp_pures.
   wp_apply (wp_NewSliceWithCap).
   { apply encoding.unsigned_64_nonneg. }
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   simpl.
   iIntros (?) "Henc_sl".
   wp_apply (wp_ref_to).
@@ -397,7 +397,7 @@ Proof.
   wp_pures.
   wp_apply (wp_NewSliceWithCap).
   { apply encoding.unsigned_64_nonneg. }
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   simpl.
   iIntros (?) "Henc_sl".
   wp_apply (wp_ref_to).
@@ -532,7 +532,7 @@ Proof.
   wp_pures.
   wp_apply (wp_NewSliceWithCap).
   { apply encoding.unsigned_64_nonneg. }
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   simpl.
   iIntros (?) "Henc_sl".
   wp_apply (wp_ref_to).
@@ -559,7 +559,7 @@ Proof.
               (λ j,
                 ∃ enc_sl (replicas_so_far:list chan),
   "%Hreplicas_prefix" ∷ ⌜replicas_so_far `prefix_of` args.(replicas)⌝ ∗
-  "%Hreplicas_len" ∷ ⌜length replicas_so_far = int.nat j⌝ ∗
+  "%Hreplicas_len" ∷ ⌜length replicas_so_far = uint.nat j⌝ ∗
   "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
   "Henc_sl" ∷ own_slice enc_sl byteT 1 (([] ++ u64_le args.(epoch)) ++ u64_le (length args.(replicas)) ++ (flat_map u64_le replicas_so_far))
               )%I
@@ -593,7 +593,7 @@ Proof.
       { rewrite Hreplicas_len. done. }
       f_equal.
       rewrite Hreplicas_len in Hlookup.
-      replace (int.nat i - int.nat i)%nat with (0%nat) in Hlookup by word.
+      replace (uint.nat i - uint.nat i)%nat with (0%nat) in Hlookup by word.
       assert (length replicas_so_far < length args.(replicas)) by word.
       destruct rest.
       { done. }
@@ -691,13 +691,13 @@ Proof.
               (λ j,
                 ∃ (replicas_done replicas_left:list chan) enc_sl,
   "%Hreplicas_prefix" ∷ ⌜args.(replicas) = replicas_done ++ replicas_left⌝ ∗
-  "%Hreplicas_len" ∷ ⌜length replicas_done = int.nat j⌝ ∗
+  "%Hreplicas_len" ∷ ⌜length replicas_done = uint.nat j⌝ ∗
   "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
   "Henc_sl" ∷ own_slice_small enc_sl byteT 1 (flat_map u64_le replicas_left) ∗
   "HReplicas" ∷ args_ptr ↦[BecomePrimaryArgs :: "Replicas"] (slice_val replicas_sl) ∗
   "Hreplicas_sl" ∷ own_slice_small replicas_sl uint64T 1 (replicas_done ++ (replicate (length replicas_left) (I64 0)))
               )%I
-              _ _ _ _ _ (replicate (int.nat (length args.(replicas))) u64_IntoVal.(IntoVal_def u64))
+              _ _ _ _ _ (replicate (uint.nat (length args.(replicas))) u64_IntoVal.(IntoVal_def u64))
               with "[] [] [Hreplicas_sl Henc Henc_sl $Replicas]"
            ).
   {
@@ -729,7 +729,7 @@ Proof.
     wp_call.
     wp_load.
     rewrite replicate_length in Hreplicas_sz.
-    assert (int.nat i < length args.(replicas)).
+    assert (uint.nat i < length args.(replicas)).
     {
       apply lookup_lt_Some in Hlookup.
       rewrite replicate_length in Hlookup.
@@ -795,7 +795,7 @@ Proof.
     f_equal.
     apply list_eq.
     intros j.
-    destruct (decide (j = int.nat i)).
+    destruct (decide (j = uint.nat i)).
     {
       rewrite e.
       rewrite list_lookup_insert; last first.
@@ -816,7 +816,7 @@ Proof.
           rewrite Hreplicas_len.
           word.
         }
-        replace (int.nat i - length replicas_done)%nat with (0%nat) by word.
+        replace (uint.nat i - length replicas_done)%nat with (0%nat) by word.
         rewrite list_lookup_singleton.
         done.
       }
@@ -922,7 +922,7 @@ Proof.
   wp_apply (wp_WriteInt with "Henc_sl").
   iIntros (enc_sl) "Henc_sl".
   wp_store.
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   simpl.
 
   wp_loadField.

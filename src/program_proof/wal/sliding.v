@@ -22,21 +22,21 @@ Module slidingM.
   Definition endPos (σ:t): u64 :=
     word.add σ.(start) (I64 $ Z.of_nat $ length σ.(log)).
   Definition memEnd σ : Z :=
-    int.Z σ.(start) + length σ.(log).
+    uint.Z σ.(start) + length σ.(log).
   Definition numMutable (σ:t): u64 :=
     word.sub σ.(mutable) σ.(start).
   Definition addrPosMap (σ:t): gmap u64 u64 :=
     compute_memLogMap σ.(log) σ.(start).
   Definition logIndex (σ:t) (pos: u64) : nat :=
-    (int.nat pos - int.nat σ.(start))%nat.
+    (uint.nat pos - uint.nat σ.(start))%nat.
 
   Definition wf (σ:t) :=
-    int.Z σ.(start) ≤ int.Z σ.(mutable) ∧
-    int.Z σ.(start) + length σ.(log) < 2^64 ∧
-    int.Z σ.(mutable) - int.Z σ.(start) <= length σ.(log).
+    uint.Z σ.(start) ≤ uint.Z σ.(mutable) ∧
+    uint.Z σ.(start) + length σ.(log) < 2^64 ∧
+    uint.Z σ.(mutable) - uint.Z σ.(start) <= length σ.(log).
 
   Theorem memEnd_ok σ :
-    wf σ -> int.Z (endPos σ) = memEnd σ.
+    wf σ -> uint.Z (endPos σ) = memEnd σ.
   Proof.
     rewrite /wf /endPos /memEnd; intros.
     word.
@@ -45,7 +45,7 @@ End slidingM.
 
 Definition memWrite_one memLog (u: update.t) : slidingM.t :=
   match find_highest_index (update.addr <$> memLog.(slidingM.log)) u.(update.addr) with
-  | Some i => if decide (int.Z memLog.(slidingM.mutable) - int.Z memLog.(slidingM.start) ≤ i) then
+  | Some i => if decide (uint.Z memLog.(slidingM.mutable) - uint.Z memLog.(slidingM.start) ≤ i) then
                 set slidingM.log <[i := u]> memLog
               else
                 set slidingM.log (λ log, log ++ [u]) memLog
@@ -109,7 +109,7 @@ Proof.
   - etransitivity; [ apply IHupds | ].
     rewrite /memWrite_one.
     destruct (find_highest_index (update.addr <$> memLog.(slidingM.log)) a.(update.addr)).
-    1: destruct (decide (int.Z memLog.(slidingM.mutable) - int.Z memLog.(slidingM.start) ≤ n)).
+    1: destruct (decide (uint.Z memLog.(slidingM.mutable) - uint.Z memLog.(slidingM.start) ≤ n)).
     all: rewrite /slidingM.memEnd ?app_length ?insert_length /=.
     all: try lia.
 Qed.
@@ -141,15 +141,15 @@ Proof.
 Qed.
 
 Theorem apply_upds_insert_other upds (z: Z) (a: u64) b d :
-  z ≠ int.Z a →
-  apply_upds upds (<[int.Z a := b]> d) !! z =
+  z ≠ uint.Z a →
+  apply_upds upds (<[uint.Z a := b]> d) !! z =
   apply_upds upds d !! z.
 Proof.
   revert z a b d.
   induction upds; simpl; intros.
   - rewrite lookup_insert_ne; auto.
   - destruct a as [a b'].
-    destruct (decide (int.Z a = int.Z a0)).
+    destruct (decide (uint.Z a = uint.Z a0)).
     + rewrite e.
       rewrite insert_insert //.
     + rewrite insert_commute; auto.
@@ -157,7 +157,7 @@ Qed.
 
 Theorem apply_upds_lookup_insert_highest upds (a: u64) b d :
   a ∉ update.addr <$> upds →
-  apply_upds upds (<[int.Z a:=b]> d) !! int.Z a = Some b.
+  apply_upds upds (<[uint.Z a:=b]> d) !! uint.Z a = Some b.
 Proof.
   revert a b d.
   induction upds; simpl; intros.
@@ -170,12 +170,12 @@ Qed.
 
 Theorem apply_upds_insert_commute upds (a: u64) b d :
   a ∉ update.addr <$> upds →
-  apply_upds upds (<[int.Z a := b]> d) =
-  <[int.Z a := b]> (apply_upds upds d).
+  apply_upds upds (<[uint.Z a := b]> d) =
+  <[uint.Z a := b]> (apply_upds upds d).
 Proof.
   intros Hnotin.
   apply map_eq; intros z.
-  destruct (decide (z = int.Z a)); subst.
+  destruct (decide (z = uint.Z a)); subst.
   2: {
     rewrite apply_upds_insert_other; auto.
     rewrite lookup_insert_ne; auto.
@@ -220,7 +220,7 @@ Qed.
 
 Lemma memWrite_one_NoDup σ u :
   NoDup (update.addr <$> σ.(slidingM.log)) →
-  int.Z σ.(slidingM.mutable) - int.Z σ.(slidingM.start) = 0 →
+  uint.Z σ.(slidingM.mutable) - uint.Z σ.(slidingM.start) = 0 →
   NoDup (update.addr <$> (memWrite_one σ u).(slidingM.log)).
 Proof.
   intros Hnodup Hro_len.
@@ -246,7 +246,7 @@ Qed.
 
 Lemma memWrite_all_NoDup σ bufs:
   NoDup (update.addr <$> σ.(slidingM.log)) →
-  int.Z σ.(slidingM.mutable) - int.Z σ.(slidingM.start) = 0 →
+  uint.Z σ.(slidingM.mutable) - uint.Z σ.(slidingM.start) = 0 →
   NoDup (update.addr <$> (memWrite σ bufs).(slidingM.log)).
 Proof.
   generalize dependent σ.

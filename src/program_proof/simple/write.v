@@ -204,13 +204,13 @@ Proof using Ptimeless.
     { iModIntro. iExists _. iFrame "∗%#". }
     iModIntro. iClear "Hnooverflow".
 
-    replace (int.Z (length state)
-              `max` (int.Z offset + int.Z (u32_to_u64 (I32 (length databuf)))))%Z
-      with (length (take (int.nat offset) state ++
-                    databuf ++ drop (int.nat offset + length databuf) state) : Z).
+    replace (uint.Z (length state)
+              `max` (uint.Z offset + uint.Z (u32_to_u64 (I32 (length databuf)))))%Z
+      with (length (take (uint.nat offset) state ++
+                    databuf ++ drop (uint.nat offset + length databuf) state) : Z).
     2: {
       rewrite /u32_to_u64. word_cleanup.
-      destruct (decide (int.Z offset + length databuf ≤ length state)%Z).
+      destruct (decide (uint.Z offset + length databuf ≤ length state)%Z).
       { rewrite Z.max_l; last by lia.
         rewrite !app_length. rewrite drop_length.
         rewrite take_length_le; lia. }

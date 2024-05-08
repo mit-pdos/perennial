@@ -251,13 +251,13 @@ Context `{pconf:!init.t}.
 Context `{pNtop:!Ntop.t}. *)
 
 Definition own_latest_epoch γ (epoch:u64) : iProp Σ :=
-  mono_nat_auth_own γ.(epoch_gn) (1/2) (int.nat epoch).
+  mono_nat_auth_own γ.(epoch_gn) (1/2) (uint.nat epoch).
 
 Definition own_reserved_epoch γ (epoch:u64) : iProp Σ :=
-  mono_nat_auth_own γ.(repoch_gn) (1/2) (int.nat epoch).
+  mono_nat_auth_own γ.(repoch_gn) (1/2) (uint.nat epoch).
 
 Definition is_reserved_epoch_lb γ (epoch:u64) : iProp Σ :=
-  mono_nat_lb_own γ.(repoch_gn) (int.nat epoch).
+  mono_nat_lb_own γ.(repoch_gn) (uint.nat epoch).
 
 Definition own_config γ (conf:list u64) : iProp Σ :=
   ghost_var γ.(config_val_gn) (1/2) conf
@@ -270,7 +270,7 @@ Program Definition ReserveEpochAndGetConfig_core_spec γ Φ :=
   (
     £ 1 -∗
     (|={⊤∖↑N,∅}=> ∃ reservedEpoch conf, own_reserved_epoch γ reservedEpoch ∗ own_config γ conf ∗
-    (⌜int.nat reservedEpoch < int.nat (word.add reservedEpoch (I64 1))⌝ -∗
+    (⌜uint.nat reservedEpoch < uint.nat (word.add reservedEpoch (I64 1))⌝ -∗
       own_reserved_epoch γ (word.add reservedEpoch (I64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
       Φ (word.add reservedEpoch 1) conf
       ))
@@ -377,7 +377,7 @@ Definition own_Config_ghost γ (st:state.t) : iProp Σ :=
   "Hreserved_ghost" ∷ own_reserved_epoch γ st.(state.reservedEpoch) ∗
   "Hlatest_epoch" ∷ post_lease epochLeaseN γl (own_latest_epoch γ st.(state.epoch)) ∗
   "HleaseExp" ∷ own_lease_expiration γl st.(state.leaseExpiration) ∗
-  "%HresIneq" ∷ ⌜ int.nat st.(state.epoch) <= int.nat st.(state.reservedEpoch) ⌝
+  "%HresIneq" ∷ ⌜ uint.nat st.(state.epoch) <= uint.nat st.(state.reservedEpoch) ⌝
 .
 
 Definition is_config_inv γ : iProp Σ :=
@@ -660,7 +660,7 @@ Proof.
       iDestruct (own_slice_to_small with "Henc_conf_sl") as "$".
     }
     iIntros (?) "[Hrep_sl Henc_conf_sl]".
-    replace (int.nat 0%Z) with 0%nat by word.
+    replace (uint.nat 0%Z) with 0%nat by word.
     wp_store.
     iApply "HΦ".
     iFrame "Hrep".
@@ -868,7 +868,7 @@ Proof.
         iDestruct (mono_nat_auth_own_agree with "Hepoch_ghost Hepoch_ghost2") as %[_ Heq].
         assert (latest_epoch = st.(state.epoch)) by word; subst.
         iCombine "Hepoch_ghost Hepoch_ghost2" as "Hepoch_ghost".
-        iMod (mono_nat_own_update (int.nat new_epoch) with "Hepoch_ghost") as "[[Hepoch_ghost Hepoch_ghost2] _]".
+        iMod (mono_nat_own_update (uint.nat new_epoch) with "Hepoch_ghost") as "[[Hepoch_ghost Hepoch_ghost2] _]".
         { word. }
         iDestruct (ghost_var_agree with "Hconf_ghost Hconf_ghost2") as %->.
         iCombine "Hconf_ghost Hconf_ghost2" as "Hconf_ghost".
@@ -1126,9 +1126,9 @@ Proof.
     wp_apply (wp_wand with "[HleaseExpiration]").
     {
       instantiate (1:=(λ _, ∃ (newLeaseExpiration:u64),
-                        "%Hineq1" ∷ ⌜ int.nat st.(state.leaseExpiration) <= int.nat newLeaseExpiration⌝ ∗
-                        "%Hineq2" ∷ ⌜ int.nat (word.add l 1000000000%Z) <=
-                          int.nat newLeaseExpiration⌝ ∗
+                        "%Hineq1" ∷ ⌜ uint.nat st.(state.leaseExpiration) <= uint.nat newLeaseExpiration⌝ ∗
+                        "%Hineq2" ∷ ⌜ uint.nat (word.add l 1000000000%Z) <=
+                          uint.nat newLeaseExpiration⌝ ∗
                         "HleaseExpiration" ∷ st_ptr ↦[state :: "leaseExpiration"] #newLeaseExpiration )%I).
       wp_if_destruct.
       {
@@ -1211,7 +1211,7 @@ Qed.
 Definition own_Clerk_inv (ck:loc) l : iProp Σ :=
   ∃ (leader:u64),
   "Hleader" ∷ ck ↦[Clerk :: "leader"] #leader ∗
-  "%HleaderBound" ∷ ⌜ int.nat leader < l ⌝
+  "%HleaderBound" ∷ ⌜ uint.nat leader < l ⌝
 .
 
 Definition is_Clerk (ck:loc) γ : iProp Σ :=
@@ -1252,7 +1252,7 @@ Proof.
                "Hcls" ∷ cls_ptr ↦[slice.T ptrT] (slice_val sl) ∗
                "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
                "#Hrpc" ∷ ([∗ list] cl ∈ cls, ∃ srv : u64, is_ReconnectingClient cl srv ∗ is_config_host srv γ) ∗
-               "%Hsz" ∷ ⌜ length cls = int.nat i ⌝
+               "%Hsz" ∷ ⌜ length cls = uint.nat i ⌝
                )%I
              with "[] [Hcls Hcls_sl $Hhosts_sl]").
   2:{
@@ -1314,7 +1314,7 @@ Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
   □ (£ 1 -∗
       (|={⊤∖↑N,∅}=> ∃ epoch conf, own_reserved_epoch γ epoch ∗ own_config γ conf ∗
-       (⌜int.nat epoch < int.nat (word.add epoch (I64 1))⌝ -∗
+       (⌜uint.nat epoch < uint.nat (word.add epoch (I64 1))⌝ -∗
         own_reserved_epoch γ (word.add epoch (I64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
          (∀ conf_sl, readonly (own_slice_small conf_sl uint64T 1 conf) -∗
            Φ (#(LitInt $ word.add epoch (I64 1)), slice_val conf_sl)%V)))
@@ -1542,7 +1542,7 @@ Proof.
   iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
   iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
   set (idx:=(i64_instance.i64.(word.modu) r cls_sl.(Slice.sz))).
-  assert (int.nat idx < length cls) as Hlookup.
+  assert (uint.nat idx < length cls) as Hlookup.
   {
     subst idx.
     rewrite Hsl_sz.
@@ -1637,7 +1637,7 @@ Proof.
   wp_store.
   wp_pures.
   iDestruct (own_slice_to_small with "Hargs_sl") as "Hargs_sl".
-  replace (int.nat 0%Z) with (0%nat) by word.
+  replace (uint.nat 0%Z) with (0%nat) by word.
   iAssert ( ∃ sl,
       "Hreply" ∷ reply_ptr ↦[slice.T byteT] (slice_val sl)
     )%I with "[Hreply]" as "HH".

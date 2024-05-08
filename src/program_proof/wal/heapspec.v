@@ -50,7 +50,7 @@ Definition wal_heap_inv_addr (ls : log_state.t) (a : u64) (b : heap_block) : iPr
       ∃ (txn_id : nat),
       (* TODO: why is this _less than_ the installed lower-bound? *)
         (txn_id ≤ ls.(log_state.installed_lb))%nat ∧
-        disk_at_txn_id txn_id ls !! int.Z a = Some installed_block ∧
+        disk_at_txn_id txn_id ls !! uint.Z a = Some installed_block ∧
         updates_since txn_id a ls = blocks_since_install
     end ⌝.
 
@@ -79,7 +79,7 @@ Global Instance wal_heap_gnames_eta : Settable _ :=
 Definition wal_heap_inv_crash (crashheap : gmap u64 Block)
       (base : disk) (txns_prefix : list (u64 * list update.t)) : iProp Σ :=
   let txn_disk := apply_upds (txn_upds txns_prefix) base in
-    "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), crashheap !! a = txn_disk !! int.Z a ⌝.
+    "%Hcrashheap_contents" ∷ ⌜ ∀ (a : u64), crashheap !! a = txn_disk !! uint.Z a ⌝.
 
 Definition wal_heap_inv_crashes (heaps : async (gmap u64 Block)) (ls : log_state.t) : iProp Σ :=
   "%Hcrashes_complete" ∷ ⌜ length (possible heaps) = length ls.(log_state.txns) ⌝ ∗
@@ -89,7 +89,7 @@ Definition wal_heap_inv_crashes (heaps : async (gmap u64 Block)) (ls : log_state
 
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (gmap u64 Block)),
-    "%Hgh_complete" ∷ ⌜set_map int.Z (dom gh) = dom ls.(log_state.d)⌝ ∗
+    "%Hgh_complete" ∷ ⌜set_map uint.Z (dom gh) = dom ls.(log_state.d)⌝ ∗
     "Hctx" ∷ ghost_map_auth γ.(wal_heap_h) 1 gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
@@ -211,7 +211,7 @@ Local Hint Resolve  disk_index_nodup : core.
 Lemma lookup_init_disk (bs: list Block) (idx: nat) b :
   513 + Z.of_nat (length bs) < 2^64 →
   bs !! idx = Some b →
-  list_to_map (M:=gmap _ _) (imap (λ (i0 : nat) (x0 : Block), (513 + i0, x0)) bs) !! int.Z (I64 (513 + idx)) = Some b.
+  list_to_map (M:=gmap _ _) (imap (λ (i0 : nat) (x0 : Block), (513 + i0, x0)) bs) !! uint.Z (I64 (513 + idx)) = Some b.
 Proof.
   intros Hbound Hlookup.
   pose proof (lookup_lt_Some _ _ _ Hlookup) as Hlt.
@@ -334,7 +334,7 @@ Proof.
   rewrite fst_imap.
   apply NoDup_fmap_2_strong; auto using NoDup_seq.
   intros i1 i2.
-  rewrite !elem_of_seq => Hi1 Hi2 /(f_equal int.Z).
+  rewrite !elem_of_seq => Hi1 Hi2 /(f_equal uint.Z).
   word.
 Qed.
 
@@ -495,7 +495,7 @@ Qed.
 Lemma wal_heap_inv_addr_latest_update ls a hb :
   wal_wf ls →
   wal_heap_inv_addr ls a hb -∗
-  ⌜last_disk ls !! int.Z a = Some (hb_latest_update hb)⌝.
+  ⌜last_disk ls !! uint.Z a = Some (hb_latest_update hb)⌝.
 Proof.
   iIntros (Hwf [Ha_wf Hinv]).
   iPureIntro.
@@ -551,7 +551,7 @@ Qed.
 
 Lemma wal_heap_inv_crash_as_last_disk crash_heap ls :
   wal_heap_inv_crash crash_heap ls.(log_state.d) ls.(log_state.txns) -∗
-  ⌜∀ (a: u64), crash_heap !! a = last_disk ls !! int.Z a⌝.
+  ⌜∀ (a: u64), crash_heap !! a = last_disk ls !! uint.Z a⌝.
 Proof.
   rewrite /wal_heap_inv_crash.
   iPureIntro; intros.
@@ -563,7 +563,7 @@ Qed.
 
 Lemma apply_upds_dom_eq upds d :
   dom (apply_upds upds d) =
-  list_to_set ((λ u, int.Z u.(update.addr)) <$> upds) ∪ dom d.
+  list_to_set ((λ u, uint.Z u.(update.addr)) <$> upds) ∪ dom d.
 Proof.
   apply set_eq.
   intros.
@@ -660,7 +660,7 @@ Qed.
 
 Lemma wal_heap_h_latest_updates γwal_heap_h crash_heaps gh ls :
   wal_wf ls →
-  set_map int.Z (dom gh) = dom ls.(log_state.d) →
+  set_map uint.Z (dom gh) = dom ls.(log_state.d) →
   ([∗ map] a↦hb ∈ gh,
    wal_heap_inv_addr ls a hb ∗
    a ↪[γwal_heap_h] hb) -∗
@@ -681,7 +681,7 @@ Proof.
 
   (* NOTE(tej): the other direction doesn't seem guaranteed if [last_disk ls]
   maps addresses >2^64... *)
-  assert (set_map int.Z (dom crash_heaps.(latest)) ⊆
+  assert (set_map uint.Z (dom crash_heaps.(latest)) ⊆
          dom (last_disk ls)).
   { apply elem_of_subseteq; intros a.
     rewrite elem_of_map.
@@ -696,7 +696,7 @@ Proof.
     rewrite /last_disk in H.
     rewrite disk_at_txn_id_same_dom // in H.
     rewrite -Hgh_complete in H.
-    apply (inj (set_map int.Z)) in H.
+    apply (inj (set_map uint.Z)) in H.
     auto.
   }
   iIntros (a Helem) "H".
@@ -1109,9 +1109,9 @@ Qed.
 
 Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
   wal_wf σ ->
-  disk_at_txn_id txn_id σ !! int.Z a = Some installed ->
+  disk_at_txn_id txn_id σ !! uint.Z a = Some installed ->
   (txn_id ≤ σ.(log_state.installed_lb))%nat ->
-  last_disk σ !! int.Z a = Some (latest_update installed (updates_since txn_id a σ)).
+  last_disk σ !! uint.Z a = Some (latest_update installed (updates_since txn_id a σ)).
 Proof.
   destruct σ.
   unfold last_disk, updates_since, disk_at_txn_id.
@@ -1192,7 +1192,7 @@ Qed.
 Theorem lookup_apply_update_ne a:
   forall l d u,
     u.(update.addr) ≠ a ->
-    apply_upds l (apply_upds [u] d) !! int.Z a = apply_upds l d !! int.Z a.
+    apply_upds l (apply_upds [u] d) !! uint.Z a = apply_upds l d !! uint.Z a.
 Proof.
   intros.
   generalize dependent d.
@@ -1263,7 +1263,7 @@ Qed.
 Theorem apply_no_updates_since_lookup txn_id a:
   forall d l,
   Forall (λ u : update.t, u.(update.addr) = a → False) (txn_upds (drop txn_id l)) ->
-  d !! int.Z a = apply_upds (txn_upds (drop txn_id l)) d !! int.Z a.
+  d !! uint.Z a = apply_upds (txn_upds (drop txn_id l)) d !! uint.Z a.
 Proof.
   intros.
   induction (txn_upds (drop txn_id l)).
@@ -1288,7 +1288,7 @@ Qed.
 Theorem no_updates_since_last_disk σ a (txn_id : nat) :
   wal_wf σ ->
   no_updates_since σ a txn_id ->
-  disk_at_txn_id txn_id σ !! int.Z a = last_disk σ !! int.Z a.
+  disk_at_txn_id txn_id σ !! uint.Z a = last_disk σ !! uint.Z a.
 Proof.
   unfold last_disk, no_updates_since, wal_wf, last_disk, disk_at_txn_id.
   generalize (σ.(log_state.txns)).
@@ -1324,8 +1324,8 @@ Qed.
 Theorem lookup_apply_upds_cons_ne:
   forall l d (a: u64) u b,
     u.(update.addr) ≠ a ->
-    apply_upds l (apply_upds [u] d) !! int.Z a = Some b ->
-    apply_upds l d !! int.Z a = Some b \/ (d !! int.Z a = Some b).
+    apply_upds l (apply_upds [u] d) !! uint.Z a = Some b ->
+    apply_upds l d !! uint.Z a = Some b \/ (d !! uint.Z a = Some b).
 Proof.
   intros.
   generalize dependent d.
@@ -1354,7 +1354,7 @@ Qed.
 Theorem apply_upds_lookup_eq d (a: u64) b:
   forall a0,
     a0.(update.addr) = a ->
-    apply_upds [a0] d !! int.Z a = Some b ->
+    apply_upds [a0] d !! uint.Z a = Some b ->
     a0.(update.b) = b.
 Proof.
   intros.
@@ -1369,7 +1369,7 @@ Theorem apply_upds_no_updates l (a: u64):
    forall d u,
     u.(update.addr) = a ->
     no_updates l a ->
-    apply_upds l (apply_upds [u] d) !! int.Z a = apply_upds [u] d !! int.Z a.
+    apply_upds l (apply_upds [u] d) !! uint.Z a = apply_upds [u] d !! uint.Z a.
 Proof.
   intros.
   generalize dependent d.
@@ -1393,8 +1393,8 @@ Proof.
     rewrite apply_update_ne; auto.
     specialize (IHl H0' (apply_upds [a0] d)).
     rewrite IHl.
-    assert (apply_upds [u] (apply_upds [a0] d) !! int.Z u.(update.addr) =
-            apply_upds [u] d !! int.Z u.(update.addr)).
+    assert (apply_upds [u] (apply_upds [a0] d) !! uint.Z u.(update.addr) =
+            apply_upds [u] d !! uint.Z u.(update.addr)).
     1: apply lookup_apply_update_ne; auto.
     auto.
 Qed.
@@ -1402,7 +1402,7 @@ Qed.
 Theorem lookup_apply_upds_cons_eq l (a: u64) b:
   forall d u,
     u.(update.addr) = a ->
-    apply_upds l (apply_upds [u] d) !! int.Z a = Some b ->
+    apply_upds l (apply_upds [u] d) !! uint.Z a = Some b ->
     no_updates l a \/ is_update l a b.
 Proof.
   induction l.
@@ -1457,8 +1457,8 @@ Qed.
 
 Theorem lookup_apply_upds d:
   forall l a b,
-    apply_upds l d !! int.Z a = Some b ->
-    d !! int.Z a = Some b \/ is_update l a b.
+    apply_upds l d !! uint.Z a = Some b ->
+    d !! uint.Z a = Some b \/ is_update l a b.
 Proof.
   intros.
   induction l.
@@ -1519,8 +1519,8 @@ Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
   forall l a b b1,
     txn_id <= txn_id' ->
     txn_id' < length l ->
-    apply_upds (txn_upds (take (S txn_id) l)) d !! int.Z a = Some b ->
-    apply_upds (txn_upds (take (S txn_id') l)) d !! int.Z a = Some b1 ->
+    apply_upds (txn_upds (take (S txn_id) l)) d !! uint.Z a = Some b ->
+    apply_upds (txn_upds (take (S txn_id') l)) d !! uint.Z a = Some b1 ->
     b ≠ b1 ->
     (exists u, u ∈ (txn_upds (drop (S txn_id) l))
           /\ u.(update.addr) = a /\ u.(update.b) = b1).
@@ -1547,8 +1547,8 @@ Qed.
 Theorem updates_since_apply_upds σ a (txn_id txn_id' : nat) installedb b :
   txn_id ≤ txn_id' ->
   txn_id' < length (log_state.txns σ) ->
-  disk_at_txn_id txn_id σ !! int.Z a = Some installedb ->
-  disk_at_txn_id txn_id' σ !! int.Z a = Some b ->
+  disk_at_txn_id txn_id σ !! uint.Z a = Some installedb ->
+  disk_at_txn_id txn_id' σ !! uint.Z a = Some b ->
   b ∈ installedb :: updates_since txn_id a σ.
 Proof using walheapG0 Σ.
   unfold updates_since, disk_at_txn_id in *.
@@ -1611,7 +1611,7 @@ Theorem wal_wf_append_txns σ pos' bs txns :
   txns = σ.(log_state.txns) ->
   addrs_wf bs σ.(log_state.d) ->
   (∀ (pos : u64) (txn_id : nat),
-    is_txn σ.(log_state.txns) txn_id pos → int.nat pos' >= int.nat pos) ->
+    is_txn σ.(log_state.txns) txn_id pos → uint.nat pos' >= uint.nat pos) ->
   wal_wf (set log_state.txns (λ _, txns ++ [(pos', bs)]) σ).
 Proof.
   intros Hwf -> Haddrs_wf Hhighest.
@@ -2117,9 +2117,9 @@ Qed.
 
 Lemma apply_upds_u64_apply_upds bs :
   ∀ heapdisk d,
-  ( ∀ (a : u64), heapdisk !! a = d !! int.Z a ) ->
+  ( ∀ (a : u64), heapdisk !! a = d !! uint.Z a ) ->
   ∀ (a : u64), apply_upds_u64 heapdisk bs !! a =
-    apply_upds bs d !! int.Z a.
+    apply_upds bs d !! uint.Z a.
 Proof.
   induction bs; simpl; eauto; intros.
   destruct a; simpl.
@@ -2424,8 +2424,8 @@ Qed.
 
 Lemma apply_upds_wf_some σ (a : u64) :
   wal_wf σ ->
-  is_Some (apply_upds (txn_upds σ.(log_state.txns)) σ.(log_state.d) !! int.Z a) ->
-  is_Some (σ.(log_state.d) !! int.Z a).
+  is_Some (apply_upds (txn_upds σ.(log_state.txns)) σ.(log_state.d) !! uint.Z a) ->
+  is_Some (σ.(log_state.d) !! uint.Z a).
 Proof.
   rewrite /wal_wf /addrs_wf. intuition.
   destruct H0.
@@ -2437,7 +2437,7 @@ Proof.
 Qed.
 
 Lemma wal_heap_inv_apply_upds_in_bounds γ walptr dinit wn σd σtxns a b :
-  apply_upds (txn_upds σtxns) σd !! int.Z a = Some b ->
+  apply_upds (txn_upds σtxns) σd !! uint.Z a = Some b ->
   is_wal (wal_heap_inv γ) walptr wn dinit -∗
   ghost_var γ.(wal_heap_txns) (1 / 2) (σd, σtxns) -∗ |NC={⊤}=>
   ghost_var γ.(wal_heap_txns) (1 / 2) (σd, σtxns) ∗
@@ -2466,7 +2466,7 @@ Qed.
 Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn dinit :
   {{{ is_wal (wal_heap_inv γ) l wn dinit ∗
       is_locked_walheap γ lwh ∗
-      ⌜ locked_wh_disk lwh !! int.Z blkno = Some b ⌝
+      ⌜ locked_wh_disk lwh !! uint.Z blkno = Some b ⌝
   }}}
     wal.Walog__Read #l #blkno
   {{{ bl, RET (slice_val bl);
@@ -2597,7 +2597,7 @@ Theorem wal_heap_pointsto_latest_helper γ dq lwh (a : u64) (v : heap_block) σ 
   wal_heap_inv γ σ ∗
   is_locked_walheap γ lwh ∗
   a ↪[γ.(wal_heap_h)] {dq} v -∗
-  ⌜ locked_wh_disk lwh !! int.Z a = Some (hb_latest_update v) ⌝.
+  ⌜ locked_wh_disk lwh !! uint.Z a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros "(Hheap & Htxnsfrag & Hmapsto)".
   iNamed "Hheap".
@@ -2621,7 +2621,7 @@ Theorem wal_heap_pointsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit 
   a ↪[γ.(wal_heap_h)] v -∗ |NC={E}=>
     is_locked_walheap γ lwh ∗
     a ↪[γ.(wal_heap_h)] v ∗
-    ⌜ locked_wh_disk lwh !! int.Z a = Some (hb_latest_update v) ⌝.
+    ⌜ locked_wh_disk lwh !! uint.Z a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros (HNE) "(#Hwal & Htxnsfrag & Hmapsto)".
   iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; first by solve_ndisj.

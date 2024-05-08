@@ -20,7 +20,7 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__IncreaseCommit γ γsrv ck (epoch:u64) (newCommitIndex:u64) σ :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "%HcommitLen" ∷ ⌜int.nat newCommitIndex = length σ⌝ ∗
+        "%HcommitLen" ∷ ⌜uint.nat newCommitIndex = length σ⌝ ∗
         "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) epoch ∗
         "#Hcomm_fact" ∷ □committed_log_fact γ epoch σ ∗
         "#Hlog_lb" ∷ is_pb_log_lb γ.(s_pb) σ ∗
@@ -79,7 +79,7 @@ Lemma getEpoch_ineq γ γsrv st epoch {own_StateMachine} :
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
-  ⌜int.nat epoch <= int.nat st.(server.epoch)⌝
+  ⌜uint.nat epoch <= uint.nat st.(server.epoch)⌝
 .
 Proof.
   iIntros "#? Hlc HaccP Hstate".
@@ -92,9 +92,9 @@ Proof.
 Qed.
 
 Lemma increase_commitIndex_step γ γsrv st epoch committedOps :
-  int.nat (length committedOps) >= int.nat st.(server.committedNextIndex) →
-  int.nat (length committedOps) <= length st.(server.ops_full_eph) →
-  int.nat epoch <= int.nat st.(server.epoch) →
+  uint.nat (length committedOps) >= uint.nat st.(server.committedNextIndex) →
+  uint.nat (length committedOps) <= length st.(server.ops_full_eph) →
+  uint.nat epoch <= uint.nat st.(server.epoch) →
   no_overflow (length committedOps) →
   is_pb_log_lb γ.(s_pb) committedOps -∗
   is_proposal_lb γ.(s_pb) epoch committedOps -∗

@@ -29,7 +29,7 @@ Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHosts:list u64) ops
         "#Hhost" ∷ is_pb_host host γ γsrv ∗
 
         "#Hconf_host_sl" ∷ readonly (own_slice_small (confHosts_sl) uint64T 1 confHosts) ∗
-        "%HnextIndex" ∷ ⌜int.nat nextIndex = length (get_rwops opsfull)⌝ ∗
+        "%HnextIndex" ∷ ⌜uint.nat nextIndex = length (get_rwops opsfull)⌝ ∗
         (* XXX: this is basically a guarantee that the list of ops being
            implicitly passed in via own_StateMachine has been made durable. It
            would now be buggy to buffer an op in memory before passing a
@@ -331,7 +331,7 @@ Proof.
       iIntros (?) "Hrep_sl".
       wp_store.
       simpl.
-      replace (int.nat 0%Z) with (0) by word.
+      replace (uint.nat 0%Z) with (0) by word.
       simpl.
       iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iApply "HΦ". iFrame.
@@ -381,7 +381,7 @@ Proof.
       iIntros (?) "Hrep_sl".
       wp_store.
       simpl.
-      replace (int.nat 0%Z) with (0) by word.
+      replace (uint.nat 0%Z) with (0) by word.
       simpl.
       iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iApply "HΦ". iFrame.
@@ -409,7 +409,7 @@ Proof.
       iIntros (?) "Hrep_sl".
       wp_store.
       simpl.
-      replace (int.nat 0%Z) with (0) by word.
+      replace (uint.nat 0%Z) with (0) by word.
       simpl.
       iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iApply "HΦ". iFrame.

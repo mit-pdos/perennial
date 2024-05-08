@@ -79,7 +79,7 @@ Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   frontend_inv γ -∗
   {{{
         |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗
-      (⌜int.nat v < int.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
+      (⌜uint.nat v < uint.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
   }}}
     Server__FetchAndIncrement #s #key
   {{{
@@ -140,7 +140,7 @@ Proof.
         iIntros "Hmask".
 
         iExists latestEpoch.
-        destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+        destruct (decide (uint.Z latestEpoch < uint.Z epoch)%Z) as [Hineq|Hineq].
         { (* case: epoch number is new *)
           iDestruct "Hghost1" as "[Hunused | Hbad]"; last first.
           { (* is_latest_epoch_lb contradicts inequality *)
@@ -174,7 +174,7 @@ Proof.
           { (* derive a contradiction with e == latestEpoch; the cast e <
                latestEpoch should require proving True, not proving Φ. We'll have to
                strengthen the spec for ctr *)
-            destruct (decide (int.Z latestEpoch = int.Z epoch)).
+            destruct (decide (uint.Z latestEpoch = uint.Z epoch)).
             {
               replace (latestEpoch) with (epoch) by word.
               iMod (fupd_mask_subseteq (↑ctr.unusedN)).
@@ -195,7 +195,7 @@ Proof.
               done.
             }
             iRight.
-            assert (int.Z epoch < int.Z latestEpoch)%Z as Hineq2 by word.
+            assert (uint.Z epoch < uint.Z latestEpoch)%Z as Hineq2 by word.
             iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
             iMod ("Hclose" with "[Hval Hlatest Hkv]").
             {
@@ -203,7 +203,7 @@ Proof.
               iExists _, _. iFrame.
             }
             iModIntro.
-            iApply (mono_nat_lb_own_le (n:=int.nat latestEpoch)).
+            iApply (mono_nat_lb_own_le (n:=uint.nat latestEpoch)).
             { word. }
             iFrame "#".
           }
@@ -231,7 +231,7 @@ Proof.
           iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hbad") as "[%_ %Hineq]".
           iExists latestEpoch.
           iFrame.
-          destruct (decide (int.Z latestEpoch = int.Z epoch)).
+          destruct (decide (uint.Z latestEpoch = uint.Z epoch)).
           { (* contradicts the fact that we're in the stale case *)
             exfalso.
             word.
@@ -250,7 +250,7 @@ Proof.
         iDestruct "Hval2" as (v2) "Hval2".
         iExists latestEpoch.
         iFrame.
-        destruct (decide (int.Z latestEpoch = int.Z epoch)).
+        destruct (decide (uint.Z latestEpoch = uint.Z epoch)).
         { (* e is the latest number seen by the ctr server (i.e. our request is not stale)*)
           replace (latestEpoch) with (epoch) by naive_solver.
           iDestruct (own_val_combine with "Hval2 Hval") as "[Hval %Hveq]".
@@ -328,7 +328,7 @@ Proof.
     }
     iIntros "Hmask".
     iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
-    destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+    destruct (decide (uint.Z latestEpoch < uint.Z epoch)%Z) as [Hineq|Hineq].
     { (* case: server's first time seeing epoch; cannot be true *)
       exfalso.
       word.
@@ -462,7 +462,7 @@ Proof.
         iIntros "Hmask".
 
         iExists latestEpoch.
-        destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+        destruct (decide (uint.Z latestEpoch < uint.Z epoch)%Z) as [Hineq|Hineq].
         { (* case: epoch number is new *)
           iDestruct "Hghost2" as "[Hunused | Hbad]"; last first.
           { (* is_latest_epoch_lb contradicts inequality *)
@@ -496,7 +496,7 @@ Proof.
           { (* derive a contradiction with e == latestEpoch; the cast e <
                latestEpoch should require proving True, not proving Φ. We'll have to
                strengthen the spec for ctr *)
-            destruct (decide (int.Z latestEpoch = int.Z epoch)).
+            destruct (decide (uint.Z latestEpoch = uint.Z epoch)).
             {
               replace (latestEpoch) with (epoch) by word.
               iMod (fupd_mask_subseteq (↑ctr.unusedN)).
@@ -517,7 +517,7 @@ Proof.
               done.
             }
             iRight.
-            assert (int.Z epoch < int.Z latestEpoch)%Z as Hineq2 by word.
+            assert (uint.Z epoch < uint.Z latestEpoch)%Z as Hineq2 by word.
             iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
             iMod ("Hclose" with "[Hval Hlatest Hkv]").
             {
@@ -525,7 +525,7 @@ Proof.
               iExists _, _. iFrame.
             }
             iModIntro.
-            iApply (mono_nat_lb_own_le (n:=int.nat latestEpoch)).
+            iApply (mono_nat_lb_own_le (n:=uint.nat latestEpoch)).
             { word. }
             iFrame "#".
           }
@@ -553,7 +553,7 @@ Proof.
           iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hbad") as "[%_ %Hineq]".
           iExists latestEpoch.
           iFrame.
-          destruct (decide (int.Z latestEpoch = int.Z epoch)).
+          destruct (decide (uint.Z latestEpoch = uint.Z epoch)).
           { (* contradicts the fact that we're in the stale case *)
             exfalso.
             word.
@@ -572,7 +572,7 @@ Proof.
         iDestruct "Hval2" as (v2) "Hval2".
         iExists latestEpoch.
         iFrame.
-        destruct (decide (int.Z latestEpoch = int.Z epoch)).
+        destruct (decide (uint.Z latestEpoch = uint.Z epoch)).
         { (* e is the latest number seen by the ctr server (i.e. our request is not stale)*)
           replace (latestEpoch) with (epoch) by naive_solver.
           iDestruct (own_val_combine with "Hval2 Hval") as "[Hval %Hveq]".
@@ -651,7 +651,7 @@ Proof.
     }
     iIntros "Hmask".
     iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
-    destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+    destruct (decide (uint.Z latestEpoch < uint.Z epoch)%Z) as [Hineq|Hineq].
     { (* case: server's first time seeing epoch; cannot be true *)
       exfalso.
       word.
@@ -751,7 +751,7 @@ Program Definition FAISpec_tada γ :=
   λ reqData, λne (Φ : list u8 -d> iPropO Σ),
   (∃ k, ⌜k = 0 ∨ k = 1⌝ ∗ ⌜has_encoding reqData [EncUInt64 k]⌝ ∗
       |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) k v ∗
-        (⌜int.nat v < int.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) k (word.add v 1) ={∅,⊤∖↑frontendN}=∗
+        (⌜uint.nat v < uint.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) k (word.add v 1) ={∅,⊤∖↑frontendN}=∗
                 (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ Φ l))
     )%I
 .
@@ -930,7 +930,7 @@ key = 0 ∨ key = 1 →
   is_Clerk γ ck -∗
   ret_ptr ↦[uint64T] #ret_placeholder -∗
   □ (|={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗
-      (⌜int.nat v < int.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1)
+      (⌜uint.nat v < uint.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1)
        ={∅,⊤∖↑frontendN}=∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))) -∗
   □ (∀ (err:u64), ⌜err ≠ 0⌝ -∗ (ret_ptr ↦[uint64T] #ret_placeholder) -∗ Φ #err) -∗
   WP Clerk__FetchAndIncrement #ck #key #ret_ptr {{ Φ }}
@@ -966,7 +966,7 @@ Proof.
     iModIntro.
     iNext.
     simpl.
-    iExists (int.nat key).
+    iExists (uint.nat key).
     iSplitL "".
     {
       iPureIntro.
@@ -978,7 +978,7 @@ Proof.
       iPureIntro.
       naive_solver.
     }
-    replace (I64 (int.nat key)) with (key) by word.
+    replace (I64 (uint.nat key)) with (key) by word.
     iMod "HΦ1".
     iModIntro.
     iDestruct "HΦ1" as (?) "[Hkv HΦ1]".

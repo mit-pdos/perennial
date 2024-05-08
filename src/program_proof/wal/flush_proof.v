@@ -90,7 +90,7 @@ Qed.
 Theorem simulate_flush l γ Q σ dinit pos txn_id nextDiskEnd_txn_id mutable :
   is_circular circN (circular_pred γ) γ.(circ_name) -∗
   (is_wal_inner l γ σ dinit ∗ P σ) -∗
-  diskEnd_at_least γ.(circ_name) (int.Z pos) -∗
+  diskEnd_at_least γ.(circ_name) (uint.Z pos) -∗
   txn_pos γ txn_id pos -∗
   memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id -∗
   (∀ (σ σ' : log_state.t) (b : ()),
@@ -135,7 +135,7 @@ Proof.
   iFrame "HQ".
 
   iAssert (⌜
-    int.Z pos = int.Z diskEnd →
+    uint.Z pos = uint.Z diskEnd →
     Forall (λ x, x.2 = []) (
       subslice
         (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))
@@ -305,7 +305,7 @@ Proof.
   iSplit.
   {
     iPureIntro.
-    destruct (decide (int.Z pos < int.Z diskEnd)) as [Hcmp|Hcmp].
+    destruct (decide (uint.Z pos < uint.Z diskEnd)) as [Hcmp|Hcmp].
     {
       apply Hpos_diskEnd in Hcmp.
       replace (_ `max` _)%nat
@@ -314,7 +314,7 @@ Proof.
       eassumption.
     }
     rewrite -HdiskEnd_val in Hlb.
-    assert (int.Z pos = int.Z diskEnd) as Hpos_diskEnd_eq by lia.
+    assert (uint.Z pos = uint.Z diskEnd) as Hpos_diskEnd_eq by lia.
     apply word.unsigned_inj in Hpos_diskEnd_eq.
     subst pos.
     rewrite Nat.max_l; last by lia.
@@ -407,7 +407,7 @@ Proof.
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (λ b,
     wal_linv σₛ.(wal_st) γ ∗ locked #σₛ.(memLock) ∗
-    if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.Z pos)
+    if b then ⊤ else diskEnd_at_least γ.(circ_name) (uint.Z pos)
   )%I with "[] [$Hlkinv $Hlocked]").
   { iIntros "!>" (Φ') "(Hlkinv&Hlocked&_) HΦ".
     wp_loadField.

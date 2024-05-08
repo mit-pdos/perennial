@@ -73,7 +73,7 @@ Section goose.
     "#alloc" ∷ readonly (l ↦[SingleInode :: "alloc"] #alloc_ref).
 
   (** State of unallocated blocks *)
-  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, int.Z a d↦ b.
+  Local Definition allocΨ (a: u64): iProp Σ := ∃ b, uint.Z a d↦ b.
 
   Definition pre_s_inode γdur γbuf l (sz: Z) σ : iProp Σ :=
     ∃ inode_ref alloc_ref δused δdur δbuf,
@@ -170,7 +170,7 @@ Section goose.
     rewrite big_sepL_app.
     iDestruct "Hd" as "[Hinodes Hfree]".
     iDestruct "Hinodes" as "[Hzero _]".
-    change (0%nat + 0)%Z with (int.Z (I64 0)).
+    change (0%nat + 0)%Z with (uint.Z (I64 0)).
     iDestruct (init_inode with "Hzero") as "Hinode".
     simpl.
     iMod (ghost_var_alloc (nil : list Block)) as
@@ -240,11 +240,11 @@ Section goose.
 
   Theorem wpc_Open {k} γdur γbuf (d_ref: loc) (sz: u64) k' σ0 :
     (k' < k)%nat →
-    (0 < int.Z sz)%Z →
-    {{{ "Hcinv" ∷ s_inode_cinv γdur γbuf (int.Z sz) σ0 true }}}
+    (0 < uint.Z sz)%Z →
+    {{{ "Hcinv" ∷ s_inode_cinv γdur γbuf (uint.Z sz) σ0 true }}}
       Open #d_ref #sz @ S k; ⊤
     {{{ l, RET #l;
-       ∃ γbuf', pre_s_inode γdur γbuf' l (int.Z sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
+       ∃ γbuf', pre_s_inode γdur γbuf' l (uint.Z sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
                 (* New buf points to fact *)
                 inode_pointsto γbuf' (s_inode.durable_blocks σ0) ∗
                 (* Durable lb for current state *)
@@ -252,7 +252,7 @@ Section goose.
                 (* Old buf points to fact *)
                 inode_pointsto γbuf (s_inode.durable_blocks σ0 ++ s_inode.buffered_blocks σ0)
     }}}
-    {{{ s_inode_cinv γdur γbuf (int.Z sz) σ0 true }}}.
+    {{{ s_inode_cinv γdur γbuf (uint.Z sz) σ0 true }}}.
   Proof.
     iIntros (?? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_call.
@@ -316,7 +316,7 @@ Section goose.
 
     iMod (P_get_lbs with "HP") as "(HP&Hdurable_lb&Hcurr_lb)".
     iCache with "HΦ Hδdurable_blocks Hpre_inode HPinode HPalloc Hunused HP".
-    { iAssert (alloc_crash_cond (Palloc δused) allocΨ (rangeSet 1 (int.Z sz - 1)) true)
+    { iAssert (alloc_crash_cond (Palloc δused) allocΨ (rangeSet 1 (uint.Z sz - 1)) true)
             with "[HPalloc Hunused]" as "Halloc".
       { iExists _; iFrame "∗ %". }
       iFromCache. }
@@ -436,7 +436,7 @@ Section goose.
   Theorem wpc_SingleInode__Read {k} (Q: option Block → iProp Σ) γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
-        "Hfupd" ∷ ∀ blks, inode_pointsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_pointsto γbuf blks ∗ Q (blks !! int.nat i)
+        "Hfupd" ∷ ∀ blks, inode_pointsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_pointsto γbuf blks ∗ Q (blks !! uint.nat i)
     }}}
       SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
@@ -490,7 +490,7 @@ Section goose.
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks, inode_pointsto γbuf blks ∗
-                                (inode_pointsto γbuf blks -∗ |={E, ⊤∖↑N}=> Q (blks !! int.nat i))
+                                (inode_pointsto γbuf blks -∗ |={E, ⊤∖↑N}=> Q (blks !! uint.nat i))
     }}}
       SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
@@ -516,7 +516,7 @@ Section goose.
   Theorem wpc_SingleInode__Read2 {k} (Q: Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
-        "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks b, ⌜ blks !! int.nat i = Some b ⌝ ∧ inode_current_lb γbuf blks
+        "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks b, ⌜ blks !! uint.nat i = Some b ⌝ ∧ inode_current_lb γbuf blks
                                  ∗ |={E, ⊤∖↑N}=> Q b
     }}}
       SingleInode__Read #l #i @ (S k); ⊤

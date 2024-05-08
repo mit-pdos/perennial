@@ -382,7 +382,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
-  destruct (bool_decide (int.Z src < int.Z accts_s.(Slice.sz))) eqn:Hsrc.
+  destruct (bool_decide (uint.Z src < uint.Z accts_s.(Slice.sz))) eqn:Hsrc.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
     repeat iExists _. iFrame "∗% Hlck_is #".
@@ -391,7 +391,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
-  destruct (bool_decide (int.Z dst < int.Z accts_s.(Slice.sz))) eqn:Hdst.
+  destruct (bool_decide (uint.Z dst < uint.Z accts_s.(Slice.sz))) eqn:Hdst.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
     repeat iExists _. iFrame "∗% Hlck_is #".
@@ -405,8 +405,8 @@ Proof.
 
   iDestruct (own_slice_small_sz with "Haccts_slice") as %Hslicelen.
 
-  destruct (list_lookup_lt _ accts_l (int.nat src)) as (asrc & Hasrc); first by word.
-  destruct (list_lookup_lt _ accts_l (int.nat dst)) as (adst & Hadst); first by word.
+  destruct (list_lookup_lt _ accts_l (uint.nat src)) as (asrc & Hasrc); first by word.
+  destruct (list_lookup_lt _ accts_l (uint.nat dst)) as (adst & Hadst); first by word.
 
   wp_loadField.
   wp_apply (wp_SliceGet with "[$Haccts_slice]"); first by eauto.

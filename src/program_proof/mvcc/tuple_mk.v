@@ -99,7 +99,7 @@ Proof.
       iPureIntro.
       simpl.
       intros tid Htid.
-      assert (H : int.Z tid = 0 ∨ int.Z tid = 1) by word.
+      assert (H : uint.Z tid = 0 ∨ uint.Z tid = 1) by word.
       destruct H.
       - by replace tid with (I64 0) by word.
       - by replace tid with (I64 1) by word.

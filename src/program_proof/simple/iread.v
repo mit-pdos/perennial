@@ -85,9 +85,9 @@ Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (byt
       is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
       is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
-      ⌜ firstn (length vs) (skipn (int.nat offset) contents) = vs ⌝ ∗
-      ⌜ length vs ≤ int.nat bytesToRead ⌝ ∗
-      ⌜ eof = true <-> (int.nat offset + length vs ≥ int.nat len)%nat ⌝
+      ⌜ firstn (length vs) (skipn (uint.nat offset) contents) = vs ⌝ ∗
+      ⌜ length vs ≤ uint.nat bytesToRead ⌝ ∗
+      ⌜ eof = true <-> (uint.nat offset + length vs ≥ uint.nat len)%nat ⌝
   }}}.
 Proof.
   iIntros (Φ) "(Hjrnl & Hmem & Hdata) HΦ".
@@ -113,8 +113,8 @@ Proof.
     (∃ (countval : u64),
       "Hcount" ∷ count ↦[uint64T] #countval ∗
       "Hisize" ∷ ip ↦[Inode :: "Size"] #len ∗
-      "%Hcountval0" ∷ ⌜(int.Z countval ≤ int.Z bytesToRead)%Z⌝ ∗
-      "%Hcountval1" ∷ ⌜(int.Z offset + int.Z countval ≤ int.Z len)%Z⌝
+      "%Hcountval0" ∷ ⌜(uint.Z countval ≤ uint.Z bytesToRead)%Z⌝ ∗
+      "%Hcountval1" ∷ ⌜(uint.Z offset + uint.Z countval ≤ uint.Z len)%Z⌝
     ) with "[Hcount Hisize]").
   1: iSplit.
   { iIntros "%Hdec". apply bool_decide_eq_true_1 in Hdec.
@@ -152,14 +152,14 @@ Proof.
   iIntros (b) "Hb".
   wp_pures.
 
-  replace (replicate (int.nat 0%Z) (IntoVal_def _)) with (@nil u8) by reflexivity.
+  replace (replicate (uint.nat 0%Z) (IntoVal_def _)) with (@nil u8) by reflexivity.
 
   wp_apply (wp_forUpto (λ i,
     ∃ dataslice vs,
       "Hdatavar" ∷ datavar ↦[slice.T byteT] (slice_val dataslice) ∗
       "Hdataslice" ∷ own_slice dataslice byteT 1 vs ∗
-      "%Hcontent" ∷ ⌜ firstn (int.nat i) (skipn (int.nat offset) contents) = vs ⌝ ∗
-      "%Hvslen" ∷ ⌜ length vs = (int.nat i) ⌝ ∗
+      "%Hcontent" ∷ ⌜ firstn (uint.nat i) (skipn (uint.nat offset) contents) = vs ⌝ ∗
+      "%Hvslen" ∷ ⌜ length vs = (uint.nat i) ⌝ ∗
       "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
          bufKind := projT1 (existT KindBlock (bufBlock bbuf));
          bufData := projT2 (existT KindBlock (bufBlock bbuf));
@@ -179,11 +179,11 @@ Proof.
     apply (f_equal length) in Hcontent as Hlens.
     autorewrite with len in Hlens.
 
-    destruct (vec_to_list bbuf !! int.nat (word.add offset b')) eqn:He.
+    destruct (vec_to_list bbuf !! uint.nat (word.add offset b')) eqn:He.
     2: {
       exfalso.
       eapply lookup_ge_None_1 in He.
-      assert (int.nat (word.add offset b') < length contents).
+      assert (uint.nat (word.add offset b') < length contents).
       { revert Hcountval1. revert Hbound. word. }
       assert (length bbuf ≥ length contents).
       2: { lia. }
@@ -202,12 +202,12 @@ Proof.
     iFrame "Hdataslice".
     iSplit.
     { iPureIntro. word_cleanup.
-      replace (Z.to_nat (int.Z b' + 1)) with (S (int.nat b')) by word.
+      replace (Z.to_nat (uint.Z b' + 1)) with (S (uint.nat b')) by word.
       erewrite take_S_r.
       { rewrite Hcontent. eauto. }
       rewrite lookup_drop. rewrite -Hdiskdata.
       rewrite lookup_take.
-      { replace (int.nat (word.add offset b')) with (int.nat offset + int.nat b') in He by word. done. }
+      { replace (uint.nat (word.add offset b')) with (uint.nat offset + uint.nat b') in He by word. done. }
       lia.
     }
     iSplit.

@@ -12,7 +12,7 @@ Definition spaxosN := nroot .@ "spaxos".
 Definition max_nodes : Z := 16.
 
 Definition is_term_of_node (x : u64) (n : nat) :=
-  n `mod` max_nodes = (int.Z x).
+  n `mod` max_nodes = (uint.Z x).
 
 (* TODO: make this a typeclass. *)
 Lemma is_term_of_node_partitioned x1 x2 n :
@@ -107,17 +107,17 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 Definition own_paxos (paxos : loc) (nid : u64) γ : iProp Σ :=
   ∃ (termc termp : u64) (decreep : string) (learned : bool) (blt : ballot),
     "Htermc" ∷ paxos ↦[Paxos :: "termc"] #termc ∗
-    "%Hnz"   ∷ ⌜int.nat termc ≠ O⌝ ∗
+    "%Hnz"   ∷ ⌜uint.nat termc ≠ O⌝ ∗
     "Htermp" ∷ paxos ↦[Paxos :: "termp"] #termp ∗
     "Hdecreep" ∷ paxos ↦[Paxos :: "decreep"] #(LitString decreep) ∗
     "Hlearned" ∷ paxos ↦[Paxos :: "learned"] #learned ∗
     "Hballot" ∷ own_ballot γ nid blt ∗
-    "Hterm" ∷ own_term γ nid (int.nat termp) ∗
-    "#Hproposed" ∷ is_proposal_nz γ (int.nat termp) decreep ∗
+    "Hterm" ∷ own_term γ nid (uint.nat termp) ∗
+    "#Hproposed" ∷ is_proposal_nz γ (uint.nat termp) decreep ∗
     "#Hcommitment" ∷ is_chosen_commitment_learned γ learned decreep ∗
-    "%Hcurrent" ∷ ⌜length blt = int.nat termc⌝ ∗
-    "%Hlatest" ∷ ⌜latest_term blt = (int.nat termp)⌝ ∗
-    "%Htermpnz" ∷ ⌜if learned then (int.nat termp) ≠ O else True⌝.
+    "%Hcurrent" ∷ ⌜length blt = uint.nat termc⌝ ∗
+    "%Hlatest" ∷ ⌜latest_term blt = (uint.nat termp)⌝ ∗
+    "%Htermpnz" ∷ ⌜if learned then (uint.nat termp) ≠ O else True⌝.
 
 (* TODO: figure the clean way of defining node ID. *)
 Definition is_paxos_node (paxos : loc) (nid : u64) (sc : nat) γ : iProp Σ :=
@@ -125,7 +125,7 @@ Definition is_paxos_node (paxos : loc) (nid : u64) (sc : nat) γ : iProp Σ :=
     "#Hmu"   ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
     "#Hlock" ∷ is_lock spaxosN #mu (own_paxos paxos nid γ) ∗
     "#Hnid" ∷ readonly (paxos ↦[Paxos :: "nid"] #nid) ∗
-    "%Hnid" ∷ ⌜0 ≤ int.Z nid < max_nodes⌝ ∗
+    "%Hnid" ∷ ⌜0 ≤ uint.Z nid < max_nodes⌝ ∗
     "#Hinv" ∷ know_sapxos_inv sc γ.
 
 (* NB: We don't really need read-only map since reconfiguration is to be supported. *)
@@ -141,7 +141,7 @@ Definition is_paxos_comm (paxos : loc) (nid : u64) sc γ : iProp Σ :=
     "%Hszpeers" ∷ ⌜size peersM < max_nodes⌝ ∗
     "%Hnotin"   ∷ ⌜nid ∉ dom peersM⌝ ∗
     "#Hsc"      ∷ readonly (paxos ↦[Paxos :: "sc"] #scu64) ∗
-    "%Hscu64"   ∷ ⌜int.nat scu64 = sc⌝.
+    "%Hscu64"   ∷ ⌜uint.nat scu64 = sc⌝.
 
 Definition is_paxos (paxos : loc) (nid : u64) sc γ : iProp Σ :=
   "#Hnode" ∷ is_paxos_node paxos nid sc γ ∗
@@ -184,12 +184,12 @@ Proof.
 Qed.
 
 Theorem wp_NextAligned (current : u64) (interval : u64) (low : u64) :
-  int.Z interval < 2 ^ 63 ->
-  0 ≤ int.Z low < int.Z interval ->
+  uint.Z interval < 2 ^ 63 ->
+  0 ≤ uint.Z low < uint.Z interval ->
   {{{ True }}}
     NextAligned #current #interval #low
   {{{ (n : u64), RET #n;
-      ⌜int.Z current < int.Z n ∧ int.Z n `mod` int.Z interval = int.Z low⌝
+      ⌜uint.Z current < uint.Z n ∧ uint.Z n `mod` uint.Z interval = uint.Z low⌝
   }}}.
 Proof.
   iIntros (Hitv Horder Φ) "_ HΦ".
@@ -229,7 +229,7 @@ Proof.
     rewrite word.unsigned_modu_nowrap; last lia.
     rewrite word.unsigned_modu_nowrap in Heqb; last lia.
     split; first lia.
-    rewrite -Z.add_sub_assoc Z.add_assoc (Z.add_comm (int.Z current)) -Z.add_assoc.
+    rewrite -Z.add_sub_assoc Z.add_assoc (Z.add_comm (uint.Z current)) -Z.add_assoc.
     rewrite Zplus_mod Z_mod_same_full Z.add_0_l Zmod_mod.
     apply Z_next_aligned.
     lia.
@@ -331,9 +331,9 @@ Qed.
 Definition node_prepared (term termp : u64) (decree : string) nid γ : iProp Σ :=
   ∃ (l : ballot),
     "#Hlb"     ∷ is_ballot_lb γ nid l ∗
-    "#Hdecree" ∷ is_proposal_nz γ (int.nat termp) decree ∗
-    "%Hlen"    ∷ ⌜(int.nat term ≤ length l)%nat⌝ ∗
-    "%Hlatest" ∷ ⌜latest_before (int.nat term) l = int.nat termp⌝.
+    "#Hdecree" ∷ is_proposal_nz γ (uint.nat termp) decree ∗
+    "%Hlen"    ∷ ⌜(uint.nat term ≤ length l)%nat⌝ ∗
+    "%Hlatest" ∷ ⌜latest_before (uint.nat term) l = uint.nat termp⌝.
 
 Theorem wp_Paxos__prepare (px : loc) (term : u64) nid sc γ :
   is_paxos_node px nid sc γ -∗
@@ -377,7 +377,7 @@ Proof.
   (*@     // Extending the ballot of this node with [false] to @term to extract a @*)
   (*@     // promise that this node won't accept any proposal before @term.   @*)
   (*@                                                                         @*)
-  set blt' := extend false (int.nat term) blt.
+  set blt' := extend false (uint.nat term) blt.
   iAssert (|={⊤}=> own_ballot γ nid blt')%I with "[Hballot]" as "> Hballot".
   { iInv "Hinv" as ">HinvO" "HinvC".
     iNamed "HinvO".
@@ -385,9 +385,9 @@ Proof.
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply extend_prefix. }
     rewrite -lookup_alter_Some; last done.
-    pose proof (vb_inv_prepare nid (int.nat term) Hvbs) as Hvbs'.
-    pose proof (vp_inv_prepare nid (int.nat term) Hvps) as Hvps'.
-    pose proof (vc_inv_prepare nid (int.nat term) Hvc) as Hvc'.
+    pose proof (vb_inv_prepare nid (uint.nat term) Hvbs) as Hvbs'.
+    pose proof (vp_inv_prepare nid (uint.nat term) Hvps) as Hvps'.
+    pose proof (vc_inv_prepare nid (uint.nat term) Hvc) as Hvc'.
     by iMod ("HinvC" with "[Hv Hvs Hc Hbs Hps Hts]") as "_"; first by eauto 20 with iFrame.
   }
   iDestruct (ballot_witness with "Hballot") as "#Hbltlb".
@@ -423,7 +423,7 @@ Proof.
   iPureIntro.
   split.
   { rewrite extend_length. lia. }
-  replace (int.nat term) with (length blt'); last first.
+  replace (uint.nat term) with (length blt'); last first.
   { rewrite extend_length. lia. }
   rewrite -Hlatest.
   replace (latest_before _ _) with (latest_term blt') by done.
@@ -435,7 +435,7 @@ Theorem wp_Paxos__advance (px : loc) nid sc γ :
   {{{ True }}}
     Paxos__advance #px
   {{{ (term : u64) (termp : u64) (decree : string), RET (#term, #termp, #(LitString decree));
-      node_prepared term termp decree nid γ ∗ ⌜is_term_of_node nid (int.nat term) ∧ int.nat term ≠ O⌝
+      node_prepared term termp decree nid γ ∗ ⌜is_term_of_node nid (uint.nat term) ∧ uint.nat term ≠ O⌝
   }}}.
 Proof.
   iIntros "#Hnode" (Φ) "!> _ HΦ".
@@ -467,7 +467,7 @@ Proof.
   (*@     // Extending the ballot of this node with [false] to @term to extract a @*)
   (*@     // promise that this node won't accept any proposal before @term.   @*)
   (*@                                                                         @*)
-  set blt' := extend false (int.nat term) blt.
+  set blt' := extend false (uint.nat term) blt.
   iAssert (|={⊤}=> own_ballot γ nid blt')%I with "[Hballot]" as "> Hballot".
   { iInv "Hinv" as ">HinvO" "HinvC".
     iNamed "HinvO".
@@ -475,9 +475,9 @@ Proof.
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply extend_prefix. }
     rewrite -lookup_alter_Some; last done.
-    pose proof (vb_inv_prepare nid (int.nat term) Hvbs) as Hvbs'.
-    pose proof (vp_inv_prepare nid (int.nat term) Hvps) as Hvps'.
-    pose proof (vc_inv_prepare nid (int.nat term) Hvc) as Hvc'.
+    pose proof (vb_inv_prepare nid (uint.nat term) Hvbs) as Hvbs'.
+    pose proof (vp_inv_prepare nid (uint.nat term) Hvps) as Hvps'.
+    pose proof (vc_inv_prepare nid (uint.nat term) Hvc) as Hvc'.
     by iMod ("HinvC" with "[Hv Hvs Hc Hbs Hps Hts]") as "_"; first by eauto 20 with iFrame.
   }
   iDestruct (ballot_witness with "Hballot") as "#Hbltlb".
@@ -512,7 +512,7 @@ Proof.
   iPureIntro.
   split.
   { rewrite extend_length. lia. }
-  replace (int.nat term) with (length blt'); last first.
+  replace (uint.nat term) with (length blt'); last first.
   { rewrite extend_length. lia. }
   rewrite -Hlatest.
   replace (latest_before _ _) with (latest_term blt') by done.
@@ -522,10 +522,10 @@ Qed.
 Definition node_accepted (term : u64) (decree : string) nid γ : iProp Σ :=
   ∃ (l : ballot),
     "#Hlb"    ∷ is_ballot_lb γ nid l ∗
-    "%Haccin" ∷ ⌜accepted_in l (int.nat term)⌝.
+    "%Haccin" ∷ ⌜accepted_in l (uint.nat term)⌝.
 
 Theorem wp_Paxos__accept (px : loc) (term : u64) (decree : string) nid sc γ :
-  is_proposal γ (int.nat term) decree -∗
+  is_proposal γ (uint.nat term) decree -∗
   is_paxos_node px nid sc γ -∗
   {{{ True }}}
     Paxos__accept #px #term #(LitString decree)
@@ -582,30 +582,30 @@ Proof.
   (*@     // Extending the ballot of this node with [false] to @term and append one @*)
   (*@     // [true] at index @term.                                           @*)
   (*@                                                                         @*)
-  set accept := λ l, (extend false (int.nat term) l) ++ [true].
+  set accept := λ l, (extend false (uint.nat term) l) ++ [true].
   set blt' := accept blt.
-  set R := (own_ballot γ nid blt' ∗ own_term γ nid (int.nat term))%I.
+  set R := (own_ballot γ nid blt' ∗ own_term γ nid (uint.nat term))%I.
   iAssert (|={⊤}=> R)%I with "[Hballot Hterm]" as "> [Hballot Hterm]".
   { iInv "Hinv" as ">HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
     iDestruct (proposal_lookup with "Hproposal Hps") as %Hpsl.
     iDestruct (term_lookup with "Hterm Hts") as %Htm.
-    assert (Hprev : gt_prev_term ts nid (int.nat term)).
-    { exists (int.nat termp). split; first done.
-      assert (int.nat termp < int.nat termc)%nat.
+    assert (Hprev : gt_prev_term ts nid (uint.nat term)).
+    { exists (uint.nat termp). split; first done.
+      assert (uint.nat termp < uint.nat termc)%nat.
       { rewrite -Hcurrent -Hlatest. apply latest_before_lt. lia. }
       lia.
     }
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply prefix_app_r, extend_prefix. }
     rewrite -lookup_alter_Some; last done.
-    iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
-    unshelve epose proof (vb_inv_accept nid (int.nat term) _ _ Hvbs) as Hvbs'.
+    iMod (term_update (uint.nat term) with "Hterm Hts") as "[Hterm Hts]".
+    unshelve epose proof (vb_inv_accept nid (uint.nat term) _ _ Hvbs) as Hvbs'.
     { done. }
     { exists blt. split; first done. lia. }
-    pose proof (vp_inv_accept nid (int.nat term) Hvps) as Hvps'.
-    pose proof (vc_inv_accept nid (int.nat term) Hvc) as Hvc'.
+    pose proof (vp_inv_accept nid (uint.nat term) Hvps) as Hvps'.
+    pose proof (vc_inv_accept nid (uint.nat term) Hvc) as Hvc'.
     pose proof (vt_inv_advance Hprev Hvts) as Hvts'.
     iMod ("HinvC" with "[Hv Hvs Hc Hbs Hps Hts]") as "_"; first by eauto 20 with iFrame.
     by iFrame.
@@ -617,12 +617,12 @@ Proof.
   (*@                                                                         @*)
   wp_loadField.
   iClear "Hproposed".
-  iAssert (is_proposal_nz γ (int.nat term) decree)%I as "#Hproposed".
+  iAssert (is_proposal_nz γ (uint.nat term) decree)%I as "#Hproposed".
   { unfold is_proposal_nz. case_decide; done. }
   wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
-    replace (int.nat (word.add _ _)) with (S (int.nat term)) by word.
+    replace (uint.nat (word.add _ _)) with (S (uint.nat term)) by word.
     split; first done.
     split.
     { rewrite last_length extend_length. lia. }
@@ -649,10 +649,10 @@ Definition quorum_prepared
   (term : u64) (terml : u64) (decreel : string) (sc : nat) (γ : spaxos_names) : iProp Σ :=
   ∃ (bsqlb : gmap u64 ballot),
     "#Hlbs"      ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
-    "#Hproposal" ∷ is_proposal_nz γ (int.nat terml) decreel ∗
+    "#Hproposal" ∷ is_proposal_nz γ (uint.nat terml) decreel ∗
     "%Hnprep"    ∷ ⌜reached_quorum sc (size (dom bsqlb))⌝ ∗
-    "%Hlen"      ∷ ⌜map_Forall (λ _ l, ((int.nat term) ≤ length l)%nat) bsqlb⌝ ∗
-    "%Hlargest"  ∷ ⌜latest_before_quorum (int.nat term) bsqlb = int.nat terml⌝.
+    "%Hlen"      ∷ ⌜map_Forall (λ _ l, ((uint.nat term) ≤ length l)%nat) bsqlb⌝ ∗
+    "%Hlargest"  ∷ ⌜latest_before_quorum (uint.nat term) bsqlb = uint.nat terml⌝.
 
 #[global]
 Instance quorum_prepared_persistent term terml decree sc γ :
@@ -662,9 +662,9 @@ Proof. apply _. Qed.
 Theorem wp_Paxos__accept__proposer
   {px : loc} {term : u64} {decree : string}
   (v : string) (terml : u64) decreel nid sc γ :
-  is_term_of_node nid (int.nat term) ->
-  decree = (if decide (int.nat terml = O) then v else decreel) ->
-  (* (if decide (int.nat terml = O) then True else decree = decreel) -> *)
+  is_term_of_node nid (uint.nat term) ->
+  decree = (if decide (uint.nat terml = O) then v else decreel) ->
+  (* (if decide (uint.nat terml = O) then True else decree = decreel) -> *)
   quorum_prepared term terml decreel sc γ -∗
   is_paxos_node px nid sc γ -∗
   {{{ True }}}
@@ -672,7 +672,7 @@ Theorem wp_Paxos__accept__proposer
     Paxos__accept #px #term #(LitString decree) @ ↑spaxosN
   <<< own_candidates_half γ ({[v]} ∪ vs) >>>
   {{{ (ok : bool), RET #ok;
-      if ok then node_accepted term decree nid γ ∗ is_proposal γ (int.nat term) decree else True
+      if ok then node_accepted term decree nid γ ∗ is_proposal γ (uint.nat term) decree else True
   }}}.
 Proof.
   iIntros "%Hofnode %Hdecree #Hprepares #Hnode" (Φ) "!> _ HAU".
@@ -772,28 +772,28 @@ Proof.
   (*@     // belongs to the node *and* that the node has not accepted the term. Hence @*)
   (*@     // this design saves one physical state.                            @*)
   (*@                                                                         @*)
-  assert (Htermcp : (int.nat termp < int.nat termc)%nat).
+  assert (Htermcp : (uint.nat termp < uint.nat termc)%nat).
   { rewrite -Hcurrent -Hlatest. apply latest_before_lt. lia. }
-  assert (Htermorder : (int.nat termp < int.nat term)%nat) by lia.
+  assert (Htermorder : (uint.nat termp < uint.nat term)%nat) by lia.
   set P := (∀ ok : bool,
               (if ok
-               then node_accepted term decree nid γ ∗ is_proposal γ (int.nat term) decree
+               then node_accepted term decree nid γ ∗ is_proposal γ (uint.nat term) decree
                else True) -∗ Φ #ok)%I.
-  set R := (own_term γ nid (int.nat term) ∗ P ∗ is_proposal γ (int.nat term) decree)%I.
+  set R := (own_term γ nid (uint.nat term) ∗ P ∗ is_proposal γ (uint.nat term) decree)%I.
   iAssert (|={⊤}=> R)%I with "[Hterm HAU]" as "> (Hterm & HΦ & #Hproposal)".
   { iInv "Hinv" as ">HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (term_lookup with "Hterm Hts") as %Htermc.
-    assert (Hprev : gt_prev_term ts nid (int.nat term)).
-    { exists (int.nat termp). split; [done | word]. }
+    assert (Hprev : gt_prev_term ts nid (uint.nat term)).
+    { exists (uint.nat termp). split; [done | word]. }
     pose proof (vt_impl_freshness Htermc Htermorder Hofnode Hvts) as Hfresh.
-    iAssert (⌜valid_proposal bs ps (int.nat term) decree⌝)%I as %Hvalid.
+    iAssert (⌜valid_proposal bs ps (uint.nat term) decree⌝)%I as %Hvalid.
     { iNamed "Hprepares".
       iDestruct (ballots_prefix with "Hlbs Hbs") as "[%Hsubseteq %Hprefix]".
       unfold is_proposal_nz.
-      iAssert (⌜if decide (int.nat terml = O)
+      iAssert (⌜if decide (uint.nat terml = O)
                then True
-               else ps !! (int.nat terml) = Some decree⌝)%I as %Hatterm.
+               else ps !! (uint.nat terml) = Some decree⌝)%I as %Hatterm.
       { case_decide; first done. rewrite Hdecree. by iApply proposal_lookup. }
       iPureIntro.
       set bsq := bs ∩ bsqlb.
@@ -826,25 +826,25 @@ Proof.
       - left. by rewrite Hcase in Hlargest.
       - right. by rewrite Hlargest.
     }
-    iAssert (⌜int.nat terml ≠ O -> ps !! (int.nat terml) = Some decreel⌝)%I as %Hterml.
+    iAssert (⌜uint.nat terml ≠ O -> ps !! (uint.nat terml) = Some decreel⌝)%I as %Hterml.
     { iNamed "Hprepares".
       unfold is_proposal_nz.
-      destruct (decide (int.nat terml = O)); first done.
+      destruct (decide (uint.nat terml = O)); first done.
       by iDestruct (proposal_lookup with "Hproposal Hps") as %Hgoal.
     }
     iMod (proposals_insert _ _ decree with "Hps") as "[Hps #Hp]"; first apply Hfresh.
-    iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
-    assert (Htermnz : int.nat term ≠ O) by lia.
+    iMod (term_update (uint.nat term) with "Hterm Hts") as "[Hterm Hts]".
+    assert (Htermnz : uint.nat term ≠ O) by lia.
     pose proof (vp_inv_propose Hfresh Htermnz Hvalid Hvps) as Hvps'.
-    pose proof (vb_inv_propose (int.nat term) decree Hvbs) as Hvbs'.
-    pose proof (vc_inv_propose (int.nat term) decree Hfresh Hvc) as Hvc'.
+    pose proof (vb_inv_propose (uint.nat term) decree Hvbs) as Hvbs'.
+    pose proof (vc_inv_propose (uint.nat term) decree Hfresh Hvc) as Hvc'.
     pose proof (vt_inv_propose_advance decree Hprev Hofnode Hvts) as Hvts'.
     iMod "HAU" as (vs') "[Hvs' HAU]".
     iDestruct (candidates_combine with "Hvs Hvs'") as "[Hvs <-]".
     iMod (candidates_update ({[v]} ∪ vs) with "Hvs") as "Hvs"; first set_solver.
     iDestruct (candidates_split with "Hvs") as "[Hvs Hvs']".
     iMod ("HAU" with "Hvs'") as "HΦ".
-    assert (Hpic' : proposals_incl_candidates ({[v]} ∪ vs) (<[int.nat term:=decree]> ps)).
+    assert (Hpic' : proposals_incl_candidates ({[v]} ∪ vs) (<[uint.nat term:=decree]> ps)).
     { unfold proposals_incl_candidates.
       case_decide; subst decree.
       - (* Case: Adding [v] to [ps]. *)
@@ -866,7 +866,7 @@ Proof.
   (*@     // Extending the ballot of this node with [false] to @term and append one @*)
   (*@     // [true] at index @term.                                           @*)
   (*@                                                                         @*)
-  set accept := λ l, (extend false (int.nat term) l) ++ [true].
+  set accept := λ l, (extend false (uint.nat term) l) ++ [true].
   set blt' := accept blt.
   iAssert (|={⊤}=> own_ballot γ nid blt')%I with "[Hballot]" as "> Hballot".
   { iInv "Hinv" as ">HinvO" "HinvC".
@@ -876,11 +876,11 @@ Proof.
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply prefix_app_r, extend_prefix. }
     rewrite -lookup_alter_Some; last done.
-    unshelve epose proof (vb_inv_accept nid (int.nat term) _ _ Hvbs) as Hvbs'.
+    unshelve epose proof (vb_inv_accept nid (uint.nat term) _ _ Hvbs) as Hvbs'.
     { done. }
     { exists blt. split; first done. lia. }
-    pose proof (vp_inv_accept nid (int.nat term) Hvps) as Hvps'.
-    pose proof (vc_inv_accept nid (int.nat term) Hvc) as Hvc'.
+    pose proof (vp_inv_accept nid (uint.nat term) Hvps) as Hvps'.
+    pose proof (vc_inv_accept nid (uint.nat term) Hvc) as Hvc'.
     iMod ("HinvC" with "[Hv Hvs Hc Hbs Hps Hts]") as "_"; first by eauto 20 with iFrame.
     by iFrame.
   }
@@ -889,12 +889,12 @@ Proof.
   (*@     px.mu.Unlock()                                                      @*)
   (*@                                                                         @*)
   wp_loadField.
-  iAssert (is_proposal_nz γ (int.nat term) decree)%I as "#Hproposed".
-  { unfold is_proposal_nz. destruct (decide (int.nat term = _)); done. }
+  iAssert (is_proposal_nz γ (uint.nat term) decree)%I as "#Hproposed".
+  { unfold is_proposal_nz. destruct (decide (uint.nat term = _)); done. }
   wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
-    replace (int.nat (word.add _ _)) with (S (int.nat term)) by word.
+    replace (uint.nat (word.add _ _)) with (S (uint.nat term)) by word.
     split; first done.
     split.
     { rewrite last_length extend_length. lia. }
@@ -917,11 +917,11 @@ Proof.
 Qed.
 
 Theorem wp_Paxos__major (px : loc) (n : u64) (sc : nat) (scu64 : u64) :
-  int.nat scu64 = sc ->
+  uint.nat scu64 = sc ->
   readonly (px ↦[Paxos :: "sc"] #scu64) -∗
   {{{ True }}}
     Paxos__major #px #n
-  {{{ (ok : bool), RET #ok; ⌜if ok then reached_quorum sc (int.nat n) else True⌝ }}}.
+  {{{ (ok : bool), RET #ok; ⌜if ok then reached_quorum sc (uint.nat n) else True⌝ }}}.
 Proof.
   iIntros "%Hscu64 #Hsc" (Φ) "!> _ HΦ".
   wp_call.
@@ -987,14 +987,14 @@ Proof.
       "HdecreelRef" ∷ decreelRef ↦[stringT] #(str decreel) ∗
       "HnRef"  ∷ nRef ↦[uint64T] #n ∗
       "#Hlbs"  ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
-      "#Hpsl"  ∷ is_proposal_nz γ (int.nat terml) decreel ∗
+      "#Hpsl"  ∷ is_proposal_nz γ (uint.nat terml) decreel ∗
       (* [Hm], [Hdom] and [Hszpeers] in [is_paxos_comm] gives [size (dom bsqlb) ≤ max_nodes]. *)
       "%Hm"    ∷ ⌜m ⊆ peersM⌝ ∗
       (* [Hdom] gives [bsqlb !! nidpeer = None], where [nidpeer] is the nid of current iteration. *)
       "%Hdom"  ∷ ⌜dom bsqlb ⊆ {[ nid ]} ∪ dom m⌝ ∗
-      "%Hlens" ∷ ⌜map_Forall (λ _ l, (int.nat term ≤ length l)%nat) bsqlb⌝ ∗
-      "%Hlq"   ∷ ⌜latest_before_quorum (int.nat term) bsqlb = int.nat terml⌝ ∗
-      "%Hn"    ∷ ⌜size (dom bsqlb) = int.nat n⌝)%I.
+      "%Hlens" ∷ ⌜map_Forall (λ _ l, (uint.nat term ≤ length l)%nat) bsqlb⌝ ∗
+      "%Hlq"   ∷ ⌜latest_before_quorum (uint.nat term) bsqlb = uint.nat terml⌝ ∗
+      "%Hn"    ∷ ⌜size (dom bsqlb) = uint.nat n⌝)%I.
   wp_apply (wp_MapIter_fold _ _ _ P with "HpeersM [HtermlRef HdecreelRef HnRef]").
   { do 3 iExists _. iFrame.
     iNamed "Hprep".
@@ -1113,7 +1113,7 @@ Definition quorum_accepted (term : u64) (sc : nat) (γ : spaxos_names) : iProp �
   ∃ (bsqlb : gmap u64 ballot),
     "#Hlbs"    ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
     "%Hnacpt " ∷ ⌜reached_quorum sc (size (dom bsqlb))⌝ ∗
-    "%Haccin"  ∷ ⌜map_Forall (λ _ l, accepted_in l (int.nat term)) bsqlb⌝.
+    "%Haccin"  ∷ ⌜map_Forall (λ _ l, accepted_in l (uint.nat term)) bsqlb⌝.
 
 #[global]
 Instance quorum_accepted_persistent term sc γ :
@@ -1122,7 +1122,7 @@ Proof. apply _. Qed.
 
 Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid sc γ :
   node_accepted term decree nid γ -∗
-  is_proposal γ (int.nat term) decree -∗
+  is_proposal γ (uint.nat term) decree -∗
   is_paxos_comm px nid sc γ -∗
   {{{ True }}}
     Paxos__acceptAll #px #term #(LitString decree)
@@ -1156,8 +1156,8 @@ Proof.
       "%Hm"     ∷ ⌜m ⊆ peersM⌝ ∗
       (* [Hdom] gives [bsqlb !! nidpeer = None], where [nidpeer] is the nid of current iteration. *)
       "%Hdom"   ∷ ⌜dom bsqlb ⊆ {[ nid ]} ∪ dom m⌝ ∗
-      "%Haccin" ∷ ⌜map_Forall (λ _ l, accepted_in l (int.nat term)) bsqlb⌝ ∗
-      "%Hn"     ∷ ⌜size (dom bsqlb) = int.nat n⌝)%I.
+      "%Haccin" ∷ ⌜map_Forall (λ _ l, accepted_in l (uint.nat term)) bsqlb⌝ ∗
+      "%Hn"     ∷ ⌜size (dom bsqlb) = uint.nat n⌝)%I.
   wp_apply (wp_MapIter_fold _ _ _ P with "HpeersM [HnRef]").
   { iExists _. iFrame.
     iNamed "Hacpt".
@@ -1232,7 +1232,7 @@ Proof.
 Qed.
 
 Theorem wp_Paxos__learn (px : loc) (term : u64) (decree : string) nid sc γ :
-  is_proposal γ (int.nat term) decree -∗
+  is_proposal γ (uint.nat term) decree -∗
   is_chosen_commitment γ decree -∗
   is_paxos_node px nid sc γ -∗
   {{{ True }}}
@@ -1278,30 +1278,30 @@ Proof.
   (*@     // Extending the ballot of this node with [false] to @term and append one @*)
   (*@     // [true] at index @term.                                           @*)
   (*@                                                                         @*)
-  set accept := λ l, (extend false (int.nat term) l) ++ [true].
+  set accept := λ l, (extend false (uint.nat term) l) ++ [true].
   set blt' := accept blt.
-  set R := (own_ballot γ nid blt' ∗ own_term γ nid (int.nat term))%I.
+  set R := (own_ballot γ nid blt' ∗ own_term γ nid (uint.nat term))%I.
   iAssert (|={⊤}=> R)%I with "[Hballot Hterm]" as "> [Hballot Hterm]".
   { iInv "Hinv" as ">HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
     iDestruct (proposal_lookup with "Hproposal Hps") as %Hpsl.
     iDestruct (term_lookup with "Hterm Hts") as %Htm.
-    assert (Hprev : gt_prev_term ts nid (int.nat term)).
-    { exists (int.nat termp). split; first done.
-      assert (int.nat termp < int.nat termc)%nat.
+    assert (Hprev : gt_prev_term ts nid (uint.nat term)).
+    { exists (uint.nat termp). split; first done.
+      assert (uint.nat termp < uint.nat termc)%nat.
       { rewrite -Hcurrent -Hlatest. apply latest_before_lt. lia. }
       lia.
     }
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply prefix_app_r, extend_prefix. }
     rewrite -lookup_alter_Some; last done.
-    iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
-    unshelve epose proof (vb_inv_accept nid (int.nat term) _ _ Hvbs) as Hvbs'.
+    iMod (term_update (uint.nat term) with "Hterm Hts") as "[Hterm Hts]".
+    unshelve epose proof (vb_inv_accept nid (uint.nat term) _ _ Hvbs) as Hvbs'.
     { done. }
     { exists blt. split; first done. lia. }
-    pose proof (vp_inv_accept nid (int.nat term) Hvps) as Hvps'.
-    pose proof (vc_inv_accept nid (int.nat term) Hvc) as Hvc'.
+    pose proof (vp_inv_accept nid (uint.nat term) Hvps) as Hvps'.
+    pose proof (vc_inv_accept nid (uint.nat term) Hvc) as Hvc'.
     pose proof (vt_inv_advance Hprev Hvts) as Hvts'.
     iMod ("HinvC" with "[Hv Hvs Hc Hbs Hps Hts]") as "_"; first by eauto 20 with iFrame.
     by iFrame.
@@ -1313,12 +1313,12 @@ Proof.
   (*@ }                                                                       @*)
   wp_loadField.
   iClear "Hproposed".
-  iAssert (is_proposal_nz γ (int.nat term) decree)%I as "#Hproposed".
+  iAssert (is_proposal_nz γ (uint.nat term) decree)%I as "#Hproposed".
   { unfold is_proposal_nz. case_decide; done. }
   wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
-    replace (int.nat (word.add _ _)) with (S (int.nat term)) by word.
+    replace (uint.nat (word.add _ _)) with (S (uint.nat term)) by word.
     split; first done.
     split.
     { rewrite last_length extend_length. lia. }
@@ -1330,7 +1330,7 @@ Proof.
 Qed.
 
 Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) nid sc γ :
-  is_proposal γ (int.nat term) decree -∗
+  is_proposal γ (uint.nat term) decree -∗
   is_chosen_commitment γ decree -∗
   is_paxos_comm px nid sc γ -∗
   {{{ True }}}
@@ -1471,7 +1471,7 @@ Proof.
   { case_bool_decide.
     { case_decide; first done.
       inversion H as [Hterml]. subst terml.
-      by replace (int.nat (I64 0)) with O by word.
+      by replace (uint.nat (I64 0)) with O by word.
     }
     { case_decide; last done.
       replace terml with (I64 0) in H by word. done.
@@ -1530,7 +1530,7 @@ Proof.
       iDestruct (ballots_prefix with "Hlbs Hbs") as "[%Hsubseteq %Hprefix]".
       iDestruct (proposal_lookup with "Hpsl Hps") as %Hatterm.
       iPureIntro.
-      exists (int.nat term).
+      exists (uint.nat term).
       split; first done.
       split; first apply Hatterm.
       set bsq := bs ∩ bsqlb.

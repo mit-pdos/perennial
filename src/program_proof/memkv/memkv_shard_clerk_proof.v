@@ -86,7 +86,7 @@ Lemma wp_KVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
   {{{
        own_KVShardClerk ck γkv ∗
        is_shard_server dst γdst ∗
-       ⌜int.Z sid < uNSHARD⌝ ∗
+       ⌜uint.Z sid < uNSHARD⌝ ∗
        ⌜ γdst.(kv_gn) = γkv ⌝
   }}}
     KVShardClerk__MoveShard #ck #sid #dst
@@ -148,7 +148,7 @@ Lemma wp_KVShardClerk__InstallShard γkv (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:g
        own_KVShardClerk ck γkv ∗
        own_shard_phys kvs_ref sid kvs ∗
        own_shard γkv sid kvs ∗
-       ⌜int.Z sid < uNSHARD⌝
+       ⌜uint.Z sid < uNSHARD⌝
   }}}
     KVShardClerk__InstallShard #ck #sid #kvs_ref
   {{{

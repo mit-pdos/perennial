@@ -322,7 +322,7 @@ Proof.
   iModIntro. iSpecialize ("HΦ" with "[//]").
   iExactEq "HΦ".
   f_equal. f_equal.
-  change (int.Z 1) with 1.
+  change (uint.Z 1) with 1.
   rewrite Z.mul_1_r //.
 Qed.
 

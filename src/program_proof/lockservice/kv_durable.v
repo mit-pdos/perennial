@@ -25,7 +25,7 @@ Context `{!filesysG Σ}.
 (* TODO: move to marshal_proof *)
 Definition has_map_encoding (m:gmap u64 u64) (r:Rec) :=
   ∃ l,
-  (int.Z (size m) = size m) ∧
+  (uint.Z (size m) = size m) ∧
   NoDup l.*1 ∧
   (list_to_map l) = m ∧
   r = [EncUInt64 (size m)] ++ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l)
@@ -284,7 +284,7 @@ Proof.
     rewrite (map_size_insert_None); last first.
     { eapply map_disjoint_Some_l; eauto.
       simpl. apply lookup_insert. }
-    replace (word.add (size mdone) 1) with (int.Z (size mdone) + 1:u64) by word.
+    replace (word.add (size mdone) 1) with (uint.Z (size mdone) + 1:u64) by word.
     rewrite Z_u64; last first.
     { split; first lia.
       word_cleanup.
@@ -535,7 +535,7 @@ Proof.
   iIntros (enc_v) "Henc".
   iNamed 1.
 
-  replace (int.Z (I64 (_))) with
+  replace (uint.Z (I64 (_))) with
       ((8 * 2 * ((size rpc_server'.(lastSeqM)) + (size rpc_server'.(lastSeqM)) + (size server.(kvsM))+ 3))); last first.
   { (* want to know that the entire expression has not overflowed *) admit. }
 

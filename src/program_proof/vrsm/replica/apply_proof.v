@@ -191,7 +191,7 @@ Proof.
 Qed.
 
 Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : iProp Σ :=
-  (sl.(Slice.ptr) +ₗ[typ] (int.Z idx)) ↦[typ]{q} (to_val v).
+  (sl.(Slice.ptr) +ₗ[typ] (uint.Z idx)) ↦[typ]{q} (to_val v).
 
 Lemma slice_elements_split {V} {H:IntoVal V} sl typ q (l:list V):
   own_slice_small sl typ q l -∗
@@ -202,7 +202,7 @@ Proof.
   unfold own_slice_elt.
   destruct sl. simpl.
   iDestruct "Hsl" as "(Hsl & #Hsz & #Hcap)".
-  iAssert (⌜int.Z sz <= 2^64⌝%Z)%I with "[]" as "#Hsz2".
+  iAssert (⌜uint.Z sz <= 2^64⌝%Z)%I with "[]" as "#Hsz2".
   { iPureIntro. word. }
   iClear "Hcap".
   iRevert "Hsz2".
@@ -216,7 +216,7 @@ Proof.
   iSplitL "Helt".
   {
     unfold own_slice_elt.
-    replace (ty_size typ * int.Z 0%nat)%Z with (0%Z) by word.
+    replace (ty_size typ * uint.Z 0%nat)%Z with (0%Z) by word.
     rewrite loc_add_0.
     iFrame.
   }
@@ -238,7 +238,7 @@ Proof.
   iExactEq "H". f_equal.
   rewrite loc_add_assoc.
   repeat f_equal.
-  replace (int.Z (S k)) with (1 + int.Z k)%Z.
+  replace (uint.Z (S k)) with (1 + uint.Z k)%Z.
   { word. }
   { rewrite cons_length fmap_length in H1.
     apply lookup_lt_Some in H2. word.
@@ -268,7 +268,7 @@ Qed.
 Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:val) :
   (∀ (i:u64) (v:V),
     {{{
-          ⌜int.nat i < length l⌝ ∗ ⌜l !! (int.nat i) = Some v⌝ ∗ ϕ (int.nat i) v ∗ I i
+          ⌜uint.nat i < length l⌝ ∗ ⌜l !! (uint.nat i) = Some v⌝ ∗ ϕ (uint.nat i) v ∗ I i
     }}}
       body #i (to_val v)
     {{{
@@ -289,15 +289,15 @@ Proof.
   iIntros "#Hwp".
   iIntros (?) "!# (Hsl & Hl & HI) HΦ".
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  wp_apply (wp_forSlice (λ i, I i ∗ [∗ list] j ↦ v ∈ (drop (int.nat i) l), ϕ (j + int.nat i) v) %I
+  wp_apply (wp_forSlice (λ i, I i ∗ [∗ list] j ↦ v ∈ (drop (uint.nat i) l), ϕ (j + uint.nat i) v) %I
              with "[] [$Hsl Hl HI]").
   2: { rewrite drop_0.
-       replace (int.nat (I64 0)) with (0) by word.
+       replace (uint.nat (I64 0)) with (0) by word.
        setoid_rewrite <- plus_n_O. iFrame. }
   {
     clear Φ.
     iIntros (???Φ) "!# ([HI Hl] & % & %) HΦ".
-    assert ((drop (int.nat i) l) !! 0 = Some x) as ?.
+    assert ((drop (uint.nat i) l) !! 0 = Some x) as ?.
     {
       rewrite lookup_drop. rewrite <- H1.
       f_equal. word.
@@ -319,11 +319,11 @@ Proof.
     iApply "HΦ".
     iFrame.
     rewrite drop_drop.
-    replace (int.nat (i64_instance.i64.(word.add) i 1%Z)) with (int.nat i + 1) by word.
+    replace (uint.nat (i64_instance.i64.(word.add) i 1%Z)) with (uint.nat i + 1) by word.
     iApply (big_sepL_impl with "Hl").
     iModIntro.
     iIntros.
-    replace (k + (int.nat i + 1)) with (1 + k + int.nat i) by word.
+    replace (k + (uint.nat i + 1)) with (1 + k + uint.nat i) by word.
     done.
   }
   iIntros "[[HI _] _]".
@@ -340,7 +340,7 @@ Proof.
   iIntros "#Hcom #Hprop_lb".
   iModIntro.
   iIntros (????) "#Hprop_lb2 #Hprop_facts2".
-  destruct (decide (int.nat epoch = int.nat epoch')).
+  destruct (decide (uint.nat epoch = uint.nat epoch')).
   { assert (epoch = epoch'); last subst.
     { apply word.unsigned_inj. word. }
     subst. destruct H0; last by lia. by iDestruct (fmlist_ptsto_lb_longer with "Hprop_lb Hprop_lb2") as %?.
@@ -580,7 +580,7 @@ Proof.
   wp_pures.
   set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
 
-  assert (int.nat clerkIdx < length clerkss) as Hlookup_clerks.
+  assert (uint.nat clerkIdx < length clerkss) as Hlookup_clerks.
   { (* FIXME: better lemmas about mod? *)
     rewrite Hclerkss_sz.
     unfold clerkIdx.
@@ -590,13 +590,13 @@ Proof.
       unfold numClerks in Hclerkss_sz.
       word.
     }
-    enough (int.Z randint `mod` 32 < int.Z 32)%Z.
+    enough (uint.Z randint `mod` 32 < uint.Z 32)%Z.
     { word. }
     apply Z.mod_pos_bound.
     word.
   }
 
-  assert (∃ clerks_sl_inner, clerkss !! int.nat clerkIdx%Z = Some clerks_sl_inner) as [clerks_sl_inner Hclerkss_lookup].
+  assert (∃ clerks_sl_inner, clerkss !! uint.nat clerkIdx%Z = Some clerks_sl_inner) as [clerks_sl_inner Hclerkss_lookup].
   {
     apply list_lookup_lt.
     rewrite Hclerkss_len.
@@ -618,7 +618,7 @@ Proof.
   iMod (free_WaitGroup_alloc pbN _
           (λ i,
             ∃ (err:u64) γsrv',
-            ⌜backups !! int.nat i = Some γsrv'⌝ ∗
+            ⌜backups !! uint.nat i = Some γsrv'⌝ ∗
             readonly (own_slice_elt errs_sl i uint64T 1 err) ∗
             □ if (decide (err = I64 0)) then
               is_accepted_lb γsrv'.(r_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
@@ -700,7 +700,7 @@ Proof.
       }
 
       iEval (replace (#err) with (to_val err) by done).
-      replace (I64 (int.nat i)) with (i) by word.
+      replace (I64 (uint.nat i)) with (i) by word.
       wp_apply (wp_SliceSet_elt with "Herr").
       iIntros "Herr".
       wp_pures.
@@ -745,10 +745,10 @@ Proof.
   set (conf:=(γsrv::backups)).
   iAssert (∃ (j err:u64),
               "Hj" ∷ j_ptr ↦[uint64T] #j ∗
-              "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
+              "%Hj_ub" ∷ ⌜uint.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (I64 0)%Z)) then
-                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗
+                (∀ (k:u64) γsrv', ⌜uint.nat k ≤ uint.nat j⌝ -∗ ⌜conf !! (uint.nat k) = Some γsrv'⌝ -∗
                   is_accepted_lb γsrv'.(r_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [_]))
               else
                 True
@@ -763,8 +763,8 @@ Proof.
       { iPureIntro. word. }
       iModIntro.
       iIntros.
-      replace (int.nat 0%Z) with (0) in H by word.
-      replace (int.nat k) with (0) in H0 by word.
+      replace (uint.nat 0%Z) with (0) in H by word.
+      replace (uint.nat k) with (0) in H0 by word.
       unfold conf in H0.
       simpl in H0.
       injection H0 as <-.
@@ -797,7 +797,7 @@ Proof.
     { exfalso.
       rewrite Hclerks_sz in Hbad.
       revert Hbad.
-      eassert (int.nat (int.nat (_:u64)) = int.nat (_:u64)) as ->.
+      eassert (uint.nat (uint.nat (_:u64)) = uint.nat (_:u64)) as ->.
       { instantiate (1:=clerks_sl_inner.(Slice.sz)).
         word. }
       word.
@@ -825,9 +825,9 @@ Proof.
       destruct (decide (err = 0%Z)).
       {
         iIntros.
-        assert (int.nat k ≤ int.nat j ∨ int.nat k = int.nat (word.add j 1%Z)) as [|].
+        assert (uint.nat k ≤ uint.nat j ∨ uint.nat k = uint.nat (word.add j 1%Z)) as [|].
         {
-          replace (int.nat (word.add j 1%Z)) with (int.nat j + 1) in * by word.
+          replace (uint.nat (word.add j 1%Z)) with (uint.nat j + 1) in * by word.
           word.
         }
         {
@@ -838,7 +838,7 @@ Proof.
           replace (γsrv'0) with (γsrv'); last first.
           {
             rewrite H1 in H0.
-            replace (int.nat (word.add j 1%Z)) with (S (int.nat j)) in H0 by word.
+            replace (uint.nat (word.add j 1%Z)) with (S (uint.nat j)) in H0 by word.
             unfold conf in H0.
             rewrite lookup_cons in H0.
             rewrite H0 in HbackupLookup.
@@ -927,10 +927,10 @@ Proof.
     destruct H as (? & ? & H).
     subst.
     apply elem_of_list_lookup_1 in H as [k Hlookup_conf].
-    replace (int.nat j) with (length clerks); last first.
+    replace (uint.nat j) with (length clerks); last first.
     { word. }
     epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
-    replace (k) with (int.nat k) in *; last first.
+    replace (k) with (uint.nat k) in *; last first.
     {
       rewrite cons_length /= in HH.
       rewrite -Hclerks_conf in HH.

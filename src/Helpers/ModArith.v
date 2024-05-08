@@ -34,12 +34,12 @@ Proof.
 Qed.
 
 Theorem sum_overflow_check (x y: u64) :
-  int.Z (word.add x y) < int.Z x <-> int.Z x + int.Z y >= 2^64.
+  uint.Z (word.add x y) < uint.Z x <-> uint.Z x + uint.Z y >= 2^64.
 Proof.
   split; intros.
   - revert H; word_cleanup; intros.
     rewrite /word.wrap in H1.
-    destruct (decide (int.Z x + int.Z y >= 2^64)); [ auto | exfalso ].
+    destruct (decide (uint.Z x + uint.Z y >= 2^64)); [ auto | exfalso ].
     lia.
   - word_cleanup.
     rewrite /word.wrap.
@@ -47,12 +47,12 @@ Proof.
 Qed.
 
 Lemma sum_nooverflow_l (x y : u64) :
-  int.Z x ≤ int.Z (word.add x y) →
-  int.Z (word.add x y) = (int.Z x) + (int.Z y).
+  uint.Z x ≤ uint.Z (word.add x y) →
+  uint.Z (word.add x y) = (uint.Z x) + (uint.Z y).
 Proof.
   intros. word_cleanup. rewrite wrap_small //.
   split; first word.
-  destruct (Z_lt_ge_dec (int.Z x + int.Z y) (2 ^ 64)) as [Hlt|Hge]; first done.
+  destruct (Z_lt_ge_dec (uint.Z x + uint.Z y) (2 ^ 64)) as [Hlt|Hge]; first done.
   apply sum_overflow_check in Hge.
   lia.
 Qed.
@@ -65,20 +65,20 @@ Proof.
 Qed.
 
 Lemma sum_nooverflow_r (x y : u64) :
-  int.Z y ≤ int.Z (word.add x y) →
-  int.Z (word.add x y) = (int.Z x) + (int.Z y).
+  uint.Z y ≤ uint.Z (word.add x y) →
+  uint.Z (word.add x y) = (uint.Z x) + (uint.Z y).
 Proof.
   rewrite word_add_comm. intros ?%sum_nooverflow_l.
   rewrite Z.add_comm //.
 Qed.
 
 Theorem word_add1_neq (x: u64) :
-  int.Z x ≠ int.Z (word.add x (I64 1)).
+  uint.Z x ≠ uint.Z (word.add x (I64 1)).
 Proof.
   simpl.
-  destruct (decide (int.Z x + 1 < 2^64)%Z); [ word | ].
+  destruct (decide (uint.Z x + 1 < 2^64)%Z); [ word | ].
   rewrite word.unsigned_add.
-  change (int.Z (I64 1)) with 1%Z.
+  change (uint.Z (I64 1)) with 1%Z.
   rewrite /word.wrap.
   lia.
 Qed.

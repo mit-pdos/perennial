@@ -61,7 +61,7 @@ Definition is_proposal_facts_prim γ epoch σ: iProp Σ :=
 .
 
 Definition own_escrow_toks γsrv epoch : iProp Σ :=
-  [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' ≤ int.nat epoch⌝ ∨ own_tok γsrv epoch'
+  [∗ set] epoch' ∈ (fin_to_set u64), ⌜uint.nat epoch' ≤ uint.nat epoch⌝ ∨ own_tok γsrv epoch'
 .
 
 Definition own_primary_escrow_ghost γsrv epoch : iProp Σ :=
@@ -70,7 +70,7 @@ Definition own_primary_escrow_ghost γsrv epoch : iProp Σ :=
 .
 
 Lemma ghost_primary_accept_new_epoch γsrv epoch epoch' :
-  int.nat epoch < int.nat epoch' →
+  uint.nat epoch < uint.nat epoch' →
   own_primary_escrow_ghost γsrv epoch -∗
   own_primary_escrow_ghost γsrv epoch' ∗ own_tok γsrv epoch'.
 Proof.
@@ -182,7 +182,7 @@ Proof.
 Qed.
 
 Definition primary_init_for_config γ : iProp Σ :=
-  ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝
+  ([∗ set] epoch' ∈ (fin_to_set u64), ⌜uint.nat 0 < uint.nat epoch'⌝
                                   → own_init_proposal_unused γ epoch')
 .
 
@@ -200,7 +200,7 @@ Proof.
   iSplitL.
   { iApply "H".
     { iModIntro. iIntros. iFrame. }
-    { iIntros. exfalso. replace (int.nat (I64 0)) with 0 in H0 by word. word. }
+    { iIntros. exfalso. replace (uint.nat (I64 0)) with 0 in H0 by word. word. }
   }
   by iExists _; iFrame "#".
 Qed.

@@ -169,7 +169,7 @@ Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iP
   ∀ ops_prev ops snap snap_sl (nextIndex:u64),
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
-        ⌜int.nat nextIndex = length ops⌝ ∗
+        ⌜uint.nat nextIndex = length ops⌝ ∗
         readonly (own_slice_small snap_sl byteT 1 snap) ∗
         own_InMemoryStateMachine ops_prev
   }}}
@@ -204,8 +204,8 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
   {{{
         reply_sl q (lastModifiedIndex:u64),
         RET (#lastModifiedIndex, slice_val reply_sl);
-        ⌜int.nat lastModifiedIndex <= length ops ⌝ ∗
-        ⌜∀ ops', prefix ops' ops → int.nat lastModifiedIndex <= length ops' →
+        ⌜uint.nat lastModifiedIndex <= length ops ⌝ ∗
+        ⌜∀ ops', prefix ops' ops → uint.nat lastModifiedIndex <= length ops' →
                (compute_reply ops op = compute_reply ops' op)⌝ ∗
         own_InMemoryStateMachine ops ∗
         own_slice_small reply_sl byteT q (compute_reply ops op)
@@ -275,7 +275,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
     "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
 
-    "%Hopssafe" ∷ ⌜length ops = int.nat (length ops)⌝ ∗
+    "%Hopssafe" ∷ ⌜length ops = uint.nat (length ops)⌝ ∗
 
     "#Hcur_state_var" ∷ fmlist_idx γ.(sl_state) (length data) (ops, sealed) ∗
     "Hallstates" ∷ fmlist γ.(sl_state) (DfracOwn 1) allstates ∗
@@ -359,7 +359,7 @@ Proof.
   iDestruct (own_slice_to_small with "HopWithLen_sl") as "HopWithLen_sl".
 
   (* simplify marshalled opWithLen list *)
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   rewrite replicate_0.
   rewrite app_nil_l.
   replace (op_sl.(Slice.sz)) with (I64 (length op_bytes)); last first.
@@ -477,7 +477,7 @@ Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (
   {{{
         ⌜ (length ops < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap ops⌝ ∗
-        ⌜int.nat nextIndex = length ops⌝ ∗
+        ⌜uint.nat nextIndex = length ops⌝ ∗
         readonly (own_slice_small snap_sl byteT 1 snap) ∗
         (P epoch_prev ops_prev sealed_prev ={⊤}=∗ P epoch ops false ∗ Q) ∗
         own_StateMachine s epoch_prev ops_prev sealed_prev P
@@ -553,7 +553,7 @@ Proof.
   wp_pures.
   wp_store.
 
-  replace (int.nat 0) with (0%nat) by word.
+  replace (uint.nat 0) with (0%nat) by word.
   rewrite replicate_0.
   rewrite app_nil_l.
   replace (snap_sl.(Slice.sz)) with (I64 (length snap)); last first.
@@ -878,10 +878,10 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
     StateMachine__applyReadonly #s (slice_val op_sl)
   {{{
         reply_sl q (lastModifiedIndex : u64), RET (#lastModifiedIndex, slice_val reply_sl);
-        ⌜int.nat lastModifiedIndex ≤ length ops⌝ ∗
+        ⌜uint.nat lastModifiedIndex ≤ length ops⌝ ∗
         ⌜∀ ops' : list OpType,
             ops' `prefix_of` ops
-            → int.nat lastModifiedIndex ≤ length ops' → compute_reply ops op = compute_reply ops' op⌝ ∗
+            → uint.nat lastModifiedIndex ≤ length ops' → compute_reply ops op = compute_reply ops' op⌝ ∗
         own_slice_small reply_sl byteT q (compute_reply ops op) ∗
         own_StateMachine s epoch ops sealed P
   }}}
@@ -1277,7 +1277,7 @@ Proof.
   wp_load.
   iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
 
-  assert (int.nat (length snap) = length snap) as HsnapNoOverflow.
+  assert (uint.nat (length snap) = length snap) as HsnapNoOverflow.
   { rewrite HdataEnc in Hdata_sz. rewrite ?app_length in Hdata_sz. word. }
   wp_apply (wp_SliceSubslice_small with "Hdata_sl").
   {
@@ -1290,7 +1290,7 @@ Proof.
   rewrite -> subslice_drop_take by word.
   rewrite drop_0.
   rewrite Nat.sub_0_r.
-  replace (int.nat (length snap)) with (length snap).
+  replace (uint.nat (length snap)) with (length snap).
   rewrite take_app_length.
   wp_store.
 
@@ -1318,7 +1318,7 @@ Proof.
   {
     rewrite app_length; word.
   }
-  replace (int.nat (length snap)) with (length snap).
+  replace (uint.nat (length snap)) with (length snap).
   rewrite drop_app_length.
   iEval (rewrite app_length) in "Hdata_sl".
   replace (length snap +
@@ -1449,7 +1449,7 @@ Proof.
 
     (* split the slice into two parts; copy/pasted from above *)
     iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
-    assert (int.nat (length op_bytes) = length op_bytes).
+    assert (uint.nat (length op_bytes) = length op_bytes).
     { apply (take_drop_middle) in Hrest_ops_bytes_lookup.
       rewrite -Hrest_ops_bytes_lookup ?concat_app in HdataEnc.
       rewrite HdataEnc in Hdata_sz. clear -Hdata_sz. rewrite ?app_length in Hdata_sz.
@@ -1466,7 +1466,7 @@ Proof.
     rewrite -> subslice_drop_take by word.
     rewrite drop_0.
     rewrite Nat.sub_0_r.
-    replace (int.nat (length op_bytes)) with (length op_bytes).
+    replace (uint.nat (length op_bytes)) with (length op_bytes).
     rewrite take_app_length.
 
     wp_pures.
@@ -1498,7 +1498,7 @@ Proof.
     {
       rewrite app_length; word.
     }
-    replace (int.nat (length op_bytes)) with (length op_bytes).
+    replace (uint.nat (length op_bytes)) with (length op_bytes).
     rewrite drop_app_length.
     iEval (rewrite app_length) in "Hdata_sl".
     replace ((length op_bytes + length (concat new_rest_ops_bytes ++ sealed_bytes) -
@@ -1575,8 +1575,8 @@ Proof.
       rewrite -[a in a = _]unsigned_U64.
       f_equal.
       replace (Z.of_nat (length snap_ops + (numOpsApplied + 1)))%Z with
-        (Z.of_nat (length snap_ops + numOpsApplied) + int.Z (I64 1))%Z; last first.
-      { replace (int.Z 1%Z) with 1%Z.
+        (Z.of_nat (length snap_ops + numOpsApplied) + uint.Z (I64 1))%Z; last first.
+      { replace (uint.Z 1%Z) with 1%Z.
         { clear. f_equal. lia. }
         rewrite //=.
       }
@@ -1601,7 +1601,7 @@ Proof.
     erewrite drop_S in Hrest_data_sz; eauto.
     rewrite /= ?app_length in Hrest_data_sz.
     rewrite Hlen_bytes u64_le_length in Hrest_data_sz.
-    assert (int.nat (rest_ops_sl.(Slice.sz)) <= 1).
+    assert (uint.nat (rest_ops_sl.(Slice.sz)) <= 1).
     { word. }
     lia.
   }
@@ -1669,8 +1669,8 @@ Proof.
   destruct sealed.
   {
     exfalso.
-    assert (int.nat rest_ops_sl.(Slice.sz) = 0%nat).
-    { assert (int.Z 0 = 0%Z) as Heq_Z0 by auto.
+    assert (uint.nat rest_ops_sl.(Slice.sz) = 0%nat).
+    { assert (uint.Z 0 = 0%Z) as Heq_Z0 by auto.
       rewrite Heq_Z0 in Heqb1. word.
     }
     rewrite -Hdata_sl_sz in H0.

@@ -233,7 +233,7 @@ Qed.
 
 Definition compute_memLogMap (memLog: list update.t) (memStart: u64): gmap u64 u64 :=
   (λ (n:nat), I64 (Z.of_nat n)) <$>
-    pos_indices (update.addr <$> memLog) (int.nat memStart).
+    pos_indices (update.addr <$> memLog) (uint.nat memStart).
 
 
 

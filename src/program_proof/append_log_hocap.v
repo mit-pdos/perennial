@@ -337,7 +337,7 @@ Proof using PStartedOpening_Timeless.
 Qed.
 
 Theorem wpc_Init (sz: u64) k k' E2 Qc Q:
-  int.nat sz = SIZE →
+  uint.nat sz = SIZE →
   (S k < k')%nat →
   (∀ l, Q l -∗ Qc) →
   {{{ log_inv k'

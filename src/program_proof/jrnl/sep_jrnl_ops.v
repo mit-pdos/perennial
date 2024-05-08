@@ -95,7 +95,7 @@ Section goose_lang.
                        bufDirty := dirty |}.
 
   Theorem wp_Op__ReadBuf l γ dinit γtxn γdurable (a: addr) (sz: u64) obj :
-    bufSz (objKind obj) = int.nat sz →
+    bufSz (objKind obj) = uint.nat sz →
     {{{ is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a obj }}}
       Op__ReadBuf #l (addr2val a) #sz
     {{{ dirty (bufptr:loc), RET #bufptr;
@@ -195,7 +195,7 @@ Section goose_lang.
 
   Theorem wp_Op__OverWrite l γ dinit γtxn γdurable (a: addr) (sz: u64)
           (data_s: Slice.t) (data: list byte) obj0 obj :
-    bufSz (objKind obj) = int.nat sz →
+    bufSz (objKind obj) = uint.nat sz →
     data_has_obj data a obj →
     objKind obj = objKind obj0 →
     {{{ is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a obj0 ∗

@@ -104,7 +104,7 @@ Proof using Type*.
   wp_loadField.
   iDestruct (own_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
-  assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
+  assert (uint.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
   destruct HsidLe_nat as [hostID HsidLe_nat].
   wp_apply (wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
@@ -117,7 +117,7 @@ Proof using Type*.
   wp_loadField.
 
   unfold all_are_shard_servers.
-  iDestruct ("HshardServers" $! (int.nat sid) hostID HsidLe_nat) as "HH".
+  iDestruct ("HshardServers" $! (uint.nat sid) hostID HsidLe_nat) as "HH".
   iNamed "HH".
 
   wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet]").
@@ -208,7 +208,7 @@ Proof using Type*.
   wp_loadField.
   iDestruct (own_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
-  assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
+  assert (uint.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
   destruct HsidLe_nat as [hostID HsidLe_nat].
   wp_apply (wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
@@ -221,7 +221,7 @@ Proof using Type*.
   wp_loadField.
 
   unfold all_are_shard_servers.
-  iDestruct ("HshardServers" $! (int.nat sid) hostID HsidLe_nat) as "HH".
+  iDestruct ("HshardServers" $! (uint.nat sid) hostID HsidLe_nat) as "HH".
   iNamed "HH".
   wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet $HH]").
   iClear "HH".
@@ -299,7 +299,7 @@ Proof using Type*.
   wp_loadField.
   iDestruct (own_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
-  assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
+  assert (uint.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
   destruct HsidLe_nat as [hostID HsidLe_nat].
   wp_apply (wp_SliceGet (V:=u64) with "[$Hsmall_sl]").
@@ -312,7 +312,7 @@ Proof using Type*.
   wp_loadField.
 
   unfold all_are_shard_servers.
-  iDestruct ("HshardServers" $! (int.nat sid) hostID HsidLe_nat) as "HH".
+  iDestruct ("HshardServers" $! (uint.nat sid) hostID HsidLe_nat) as "HH".
   iNamed "HH".
   wp_apply (wp_ShardClerkSet__GetClerk with "[$HshardClerksSet $HH]").
   iClear "HH".

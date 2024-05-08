@@ -37,12 +37,12 @@ Section goose.
   when the lock is free as well as a weaker crash invariant [rblock_cinv] that
   holds at all intermediate points *)
   Definition rblock_linv addr σ : iProp Σ :=
-    ("Hprimary" ∷ int.Z addr d↦ σ ∗
-     "Hbackup" ∷ int.Z (word.add addr 1) d↦ σ)%I.
+    ("Hprimary" ∷ uint.Z addr d↦ σ ∗
+     "Hbackup" ∷ uint.Z (word.add addr 1) d↦ σ)%I.
 
   Definition rblock_cinv addr σ :=
-    ("Hprimary" ∷ int.Z addr d↦ σ ∗
-     "Hbackup" ∷ ∃ b0, int.Z (word.add addr 1) d↦ b0)%I.
+    ("Hprimary" ∷ uint.Z addr d↦ σ ∗
+     "Hbackup" ∷ ∃ b0, uint.Z (word.add addr 1) d↦ b0)%I.
   (* Let eauto unfold this *)
   Local Hint Extern 1 (environments.envs_entails _ (rblock_cinv _ _)) => unfold rblock_cinv : core.
 
@@ -95,7 +95,7 @@ Section goose.
   Proof. apply _. Qed.
 
   Theorem init_zero_cinv addr :
-    int.Z addr d↦ block0 ∗ int.Z (word.add addr 1) d↦ block0 -∗
+    uint.Z addr d↦ block0 ∗ uint.Z (word.add addr 1) d↦ block0 -∗
     rblock_cinv addr block0.
   Proof.
     iIntros "(Hp&Hb)".
@@ -213,8 +213,8 @@ Section goose.
     iSplit.
     { iLeft in "Hfupd". iModIntro. iFrame.
       iApply rblock_linv_to_cinv; iFrame. }
-    iAssert (int.Z addr' d↦ σ ∗
-                   (int.Z addr' d↦ σ -∗ rblock_linv addr σ))%I
+    iAssert (uint.Z addr' d↦ σ ∗
+                   (uint.Z addr' d↦ σ -∗ rblock_linv addr σ))%I
       with "[Hlkinv]" as "(Haddr'&Hlkinv)".
     { iNamed "Hlkinv".
       destruct Haddr'_eq; subst; iFrame; auto. }
@@ -514,8 +514,8 @@ Existing Instances subG_stagedG.
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].
 
 Lemma ffi_start_OpenRead {hG: heapGS repΣ} σ addr (d : ()) :
-  int.Z addr ∈ dom (σ.(world) : (@ffi_state disk_model)) →
-  int.Z (word.add addr 1) ∈ dom (σ.(world) : (@ffi_state disk_model)) →
+  uint.Z addr ∈ dom (σ.(world) : (@ffi_state disk_model)) →
+  uint.Z (word.add addr 1) ∈ dom (σ.(world) : (@ffi_state disk_model)) →
   ffi_local_start goose_ffiLocalGS σ.(world)
   -∗ wpr NotStuck ⊤ (OpenRead d addr) (OpenRead d addr) (λ _ : goose_lang.val, True)
        (λ _, True) (λ _ _, True).
@@ -526,8 +526,8 @@ Proof.
   iApply wpr_OpenRead.
   rewrite /ffi_local_start//=.
   rewrite /rblock_cinv.
-  iDestruct (big_sepM_delete _ _ (int.Z addr) with "Hstart") as "(Hd1&Hmap)"; first eapply Hin1.
-  iDestruct (big_sepM_delete _ _ (int.Z (word.add addr 1)) with "Hmap") as "(Hd2&Hmap)".
+  iDestruct (big_sepM_delete _ _ (uint.Z addr) with "Hstart") as "(Hd1&Hmap)"; first eapply Hin1.
+  iDestruct (big_sepM_delete _ _ (uint.Z (word.add addr 1)) with "Hmap") as "(Hd2&Hmap)".
   { rewrite lookup_delete_ne //=.
     apply word_add1_neq. }
   iFrame.
@@ -535,8 +535,8 @@ Qed.
 
 Theorem OpenRead_adequate σ g addr :
   (* We assume the addresses we replicate are in the disk domain *)
-  int.Z addr ∈ dom (σ.(world) : (@ffi_state disk_model)) →
-  int.Z (word.add addr 1) ∈ dom (σ.(world) : (@ffi_state disk_model)) →
+  uint.Z addr ∈ dom (σ.(world) : (@ffi_state disk_model)) →
+  uint.Z (word.add addr 1) ∈ dom (σ.(world) : (@ffi_state disk_model)) →
   recv_adequate (CS := goose_crash_lang) NotStuck (OpenRead () addr) (OpenRead () addr)
                 σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
 Proof.
@@ -564,8 +564,8 @@ Definition OpenRead_init_cfg dref addr σ :=
 
 Theorem OpenRead_dist_adequate σ g addr :
   (* We assume the addresses we replicate are in the disk domain *)
-  int.Z addr ∈ dom (σ.(world) : (@ffi_state disk_model)) →
-  int.Z (word.add addr 1) ∈ dom (σ.(world) : (@ffi_state disk_model)) →
+  uint.Z addr ∈ dom (σ.(world) : (@ffi_state disk_model)) →
+  uint.Z (word.add addr 1) ∈ dom (σ.(world) : (@ffi_state disk_model)) →
   dist_adequate (CS := goose_crash_lang)
                 [OpenRead_init_cfg () addr σ;
                  OpenRead_init_cfg () addr σ]

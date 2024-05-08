@@ -235,7 +235,7 @@ Proof using Ptimeless.
         destruct (decide (length vs = 0)) eqn:He; eauto. right.
         rewrite -Hvs. rewrite take_length.
         rewrite drop_length.
-        destruct (decide (int.nat offset ≤ length state)); first by lia.
+        destruct (decide (uint.nat offset ≤ length state)); first by lia.
         exfalso.
         rewrite -> drop_ge in Hvs by lia. rewrite take_nil in Hvs.
         subst. simpl in n. congruence.
@@ -281,11 +281,11 @@ Transparent nfstypes.READ3res.
     assert (length state < 2^64)%Z as Hlenstatebound.
     { eapply Hnooverflow; clear Hnooverflow. }
     clear Hnooverflow.
-    assert (int.nat (I64 (Z.of_nat (length state))) = length state) as Hlenstate.
+    assert (uint.nat (I64 (Z.of_nat (length state))) = length state) as Hlenstate.
     { word. }
     f_equal. f_equal. f_equal.
     { destruct eof; (intuition idtac);
-        destruct (ge_dec (int.nat offset + length vs) (length state)); try reflexivity.
+        destruct (ge_dec (uint.nat offset + length vs) (length state)); try reflexivity.
       { lia. }
       { symmetry. eapply H2. lia. }
     }

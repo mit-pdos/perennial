@@ -38,12 +38,12 @@ Global Instance is_allocator_Persistent l P :
 Proof. apply _. Qed.
 
 Theorem wp_newAllocator mref (start sz: u64) used P E :
-  int.Z start + int.Z sz < 2^64 →
+  uint.Z start + uint.Z sz < 2^64 →
   {{{
        □ (∀ σ1 σ2, ⌜ σ1 ## σ2 ⌝ → P (σ1 ∪ σ2) -∗ post_expr ∅ (P σ1 ∗ P σ2)) ∗
        □ (∀ σ1 σ2, P σ1 -∗ P σ2 -∗ post_expr ∅ (P (σ1 ∪ σ2))) ∗
        is_addrset mref used ∗
-      let σ0 := (rangeSet (int.Z start) (int.Z sz)) ∖ used in
+      let σ0 := (rangeSet (uint.Z start) (uint.Z sz)) ∖ used in
        ▷ P σ0 }}}
     New #start #sz #mref @ E
   {{{ l, RET #l; is_allocator l P }}}.
@@ -203,8 +203,8 @@ Definition is_crash_allocator l P Pc :=
   is_allocator l (λ σ, crash_borrow (P σ) (Pc σ)).
 
 Theorem wpc_newAllocator Φ Φc (mref : loc) (start sz: u64) used P Pc K `{!LanguageCtx K} :
-  int.Z start + int.Z sz < 2^64 →
-  let σ := (rangeSet (int.Z start) (int.Z sz)) ∖ used in
+  uint.Z start + uint.Z sz < 2^64 →
+  let σ := (rangeSet (uint.Z start) (uint.Z sz)) ∖ used in
   valid_allocPred P Pc ⊢@{_}
   P σ -∗
   is_addrset mref used -∗

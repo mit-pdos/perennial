@@ -31,14 +31,14 @@ Implicit Types aof_ctx : (list u8) → iProp Σ.
 Definition aof_lenN := nroot .@ "aof_len".
 Definition aof_len_invariant γ : iProp Σ :=
   ∃ (l:u64),
-    own γ.(len) (mono_nat_auth (1/2) (int.nat l)) ∗
-    [∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x > int.nat l⌝
+    own γ.(len) (mono_nat_auth (1/2) (uint.nat l)) ∗
+    [∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜uint.nat x > uint.nat l⌝
 .
 
 Definition aof_length_lb γ (l:u64) : iProp Σ :=
-  own γ.(len) (mono_nat_lb (int.nat l)).
+  own γ.(len) (mono_nat_lb (uint.nat l)).
 
-Definition list_safe_size (l:list u8) := int.nat (length l) = length l.
+Definition list_safe_size (l:list u8) := uint.nat (length l) = length l.
 
 Definition aof_mu_invariant (aof_ptr:loc) γ aof_ctx : iProp Σ :=
   ∃ membuf_sl membufC predurableC (durlen genlength:u64),
@@ -49,10 +49,10 @@ Definition aof_mu_invariant (aof_ptr:loc) γ aof_ctx : iProp Σ :=
   "Hlogdata" ∷ fmlist γ.(logdata) (1/2)%Qp (predurableC ++ membufC) ∗
   "Hlength" ∷ aof_ptr ↦[AppendOnlyFile :: "length"] #genlength ∗
   "%Hlengthsafe" ∷ ⌜list_safe_size (predurableC ++ membufC)⌝ ∗
-  "Hlen_toks" ∷ ([∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜int.nat x ≤ int.nat genlength⌝) ∗
+  "Hlen_toks" ∷ ([∗ set] x ∈ (fin_to_set u64), x [[γ.(len_toks)]]↦ () ∨ ⌜uint.nat x ≤ uint.nat genlength⌝) ∗
   "Hmembuf_fupd" ∷ (aof_ctx predurableC ={⊤}=∗ aof_ctx (predurableC ++ membufC)
      ∗ (∀ oldlen, own γ.(len) (mono_nat_auth (1/2) oldlen) ={⊤}=∗
-        own γ.(len) (mono_nat_auth (1/2) (int.nat genlength))
+        own γ.(len) (mono_nat_auth (1/2) (uint.nat genlength))
        )
   ) ∗
   "#Hdurlen_lb" ∷ aof_length_lb γ durlen
@@ -333,11 +333,11 @@ Proof.
   set (membufC' := membufC ++ newData) in *.
 
   iAssert (([∗ set] x ∈ fin_to_set u64, x [[γ.(len_toks)]]↦ () ∨
-                      ⌜int.nat x <= length (predurableC ++ membufC)⌝ ∨
-                      ⌜length (predurableC ++ membufC') < int.nat x⌝
+                      ⌜uint.nat x <= length (predurableC ++ membufC)⌝ ∨
+                      ⌜length (predurableC ++ membufC') < uint.nat x⌝
           ) ∗
           ([∗ set] x ∈ fin_to_set u64, x [[γ.(len_toks)]]↦ () ∨
-                      ⌜int.nat x ≤ length (predurableC ++ membufC')⌝
+                      ⌜uint.nat x ≤ length (predurableC ++ membufC')⌝
           ))%I
     with "[Hlen_toks]"
     as "HH".
@@ -348,7 +348,7 @@ Proof.
     iIntros (x ?) "Hx".
     iDestruct "Hx" as "[Hx|%Hineq]".
     {
-      destruct (bool_decide (length (predurableC ++ membufC') < int.nat x)) as [|] eqn:Hineq.
+      destruct (bool_decide (length (predurableC ++ membufC') < uint.nat x)) as [|] eqn:Hineq.
       {
         apply bool_decide_eq_true in Hineq.
         iSplitR "Hx".
@@ -380,11 +380,11 @@ Proof.
   iDestruct "HH" as "[Htoks Hlen_toks]".
 
   (* TODO: factor this into a lemma *)
-  assert (int.Z (word.add (I64 (length (predurableC ++ membufC))) (I64 (length newData))) =
-          int.Z (I64 (length (predurableC ++ membufC))) + int.Z (I64 (length newData))).
+  assert (uint.Z (word.add (I64 (length (predurableC ++ membufC))) (I64 (length newData))) =
+          uint.Z (I64 (length (predurableC ++ membufC))) + uint.Z (I64 (length newData))).
   {
-    assert (int.Z (word.add (length (predurableC ++ membufC)) (length newData)) >= int.Z (length (predurableC ++ membufC)))%Z by lia.
-    destruct (bool_decide ((int.Z (I64 (length (predurableC ++ membufC)))) + (int.Z (I64 (length newData))) < 2 ^ 64 ))%Z eqn:Hnov.
+    assert (uint.Z (word.add (length (predurableC ++ membufC)) (length newData)) >= uint.Z (length (predurableC ++ membufC)))%Z by lia.
+    destruct (bool_decide ((uint.Z (I64 (length (predurableC ++ membufC)))) + (uint.Z (I64 (length newData))) < 2 ^ 64 ))%Z eqn:Hnov.
     {
       apply bool_decide_eq_true in Hnov.
       rewrite word.unsigned_add.
@@ -399,12 +399,12 @@ Proof.
       { done. }
     }
     apply bool_decide_eq_false in Hnov.
-    assert (int.Z (I64 (length (predurableC ++ membufC))) + int.Z (I64 (length newData)) >= 2 ^ 64)%Z.
+    assert (uint.Z (I64 (length (predurableC ++ membufC))) + uint.Z (I64 (length newData)) >= 2 ^ 64)%Z.
     { lia. }
     apply sum_overflow_check in H0.
     contradiction.
   }
-  assert (int.nat (I64 (length (predurableC ++ membufC'))) = (length (predurableC ++ membufC'))) as Hsafesize'.
+  assert (uint.nat (I64 (length (predurableC ++ membufC'))) = (length (predurableC ++ membufC'))) as Hsafesize'.
   {
     replace (membufC') with (membufC ++ newData) by done.
     rewrite app_assoc.
@@ -427,13 +427,13 @@ Proof.
           {
             rewrite Nat2Z.id.
             rewrite -HnewDataSafe.
-            replace (Z.of_nat (int.nat (length newData))) with (int.Z (length newData)); last first.
+            replace (Z.of_nat (uint.nat (length newData))) with (uint.Z (length newData)); last first.
             { rewrite u64_Z_through_nat. done. }
-            destruct (bool_decide (int.Z (length (predurableC ++ membufC)) + (int.Z (length newData)) < 2 ^ 64)) eqn:Hnov.
+            destruct (bool_decide (uint.Z (length (predurableC ++ membufC)) + (uint.Z (length newData)) < 2 ^ 64)) eqn:Hnov.
             { apply bool_decide_eq_true in Hnov. done. }
             {
               apply bool_decide_eq_false in Hnov.
-              assert (int.Z (I64 (length (predurableC ++ membufC))) + (int.Z (length newData)) >= 2 ^ 64)%Z.
+              assert (uint.Z (I64 (length (predurableC ++ membufC))) + (uint.Z (length newData)) >= 2 ^ 64)%Z.
               { lia. }
               apply sum_overflow_check in H4.
               contradiction.
@@ -570,7 +570,7 @@ Proof.
 
       iModIntro.
       iIntros (x ?) "Hx".
-      destruct (bool_decide (int.nat (length (predurableC ++ membufC')) < int.nat x)) as [|] eqn:Hineq.
+      destruct (bool_decide (uint.nat (length (predurableC ++ membufC')) < uint.nat x)) as [|] eqn:Hineq.
       {
         apply bool_decide_eq_true in Hineq.
         iRight.
@@ -675,12 +675,12 @@ Proof.
   }
   iSpecialize ("HΦ" with "[Hdurlen_lb]").
   {
-    assert (int.nat l ≤ int.nat durlen) as Hineq.
+    assert (uint.nat l ≤ uint.nat durlen) as Hineq.
     {
       word.
     }
     unfold aof_length_lb.
-    replace (int.nat durlen)%nat with ((int.nat durlen) `max` int.nat l)%nat by word.
+    replace (uint.nat durlen)%nat with ((uint.nat durlen) `max` uint.nat l)%nat by word.
     rewrite -mono_nat_lb_op.
     iDestruct "Hdurlen_lb" as "[_ $]".
   }

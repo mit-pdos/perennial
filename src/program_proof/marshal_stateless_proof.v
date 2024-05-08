@@ -26,7 +26,7 @@ Proof.
 Qed.
 
 Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
-  length head = int.nat len →
+  length head = uint.nat len →
   {{{ own_slice_small s byteT q (head ++ tail) }}}
     ReadBytes (slice_val s) #len
   {{{ b s' q', RET (slice_val b, slice_val s'); own_slice_small b byteT q' head ∗ own_slice_small s' byteT q' tail }}}.
@@ -43,7 +43,7 @@ Proof.
 Qed.
 
 Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
-  length head = int.nat len →
+  length head = uint.nat len →
   {{{ own_slice_small s byteT q (head ++ tail) }}}
     ReadBytesCopy (slice_val s) #len
   {{{ b s', RET (slice_val b, slice_val s'); own_slice b byteT 1 head ∗ own_slice_small s' byteT q tail }}}.
@@ -76,7 +76,7 @@ Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
   {{{ own_slice_small s byteT q (bit :: tail) }}}
     ReadBool (slice_val s)
   {{{ (b: bool) s', RET (#b, slice_val s');
-      ⌜b = if decide (int.Z bit = 0) then false else true⌝ ∗
+      ⌜b = if decide (uint.Z bit = 0) then false else true⌝ ∗
       own_slice_small s' byteT q tail }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_call.
@@ -100,7 +100,7 @@ Admitted.
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
     compute_new_cap #old_cap #min_cap
-  {{{ (new_cap : u64), RET #new_cap; ⌜int.Z min_cap ≤ int.Z new_cap⌝ }}}.
+  {{{ (new_cap : u64), RET #new_cap; ⌜uint.Z min_cap ≤ uint.Z new_cap⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ". wp_call.
   wp_apply wp_ref_to. { val_ty. }
@@ -114,7 +114,7 @@ Qed.
 Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
   {{{ own_slice s byteT 1 vs }}}
     reserve (slice_val s) #extra
-  {{{ s', RET slice_val s'; ⌜int.Z extra ≤ Slice.extra s'⌝ ∗ own_slice s' byteT 1 vs }}}.
+  {{{ s', RET slice_val s'; ⌜uint.Z extra ≤ Slice.extra s'⌝ ∗ own_slice s' byteT 1 vs }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_lam.
   iDestruct (own_slice_wf with "Hs") as %Hwf.

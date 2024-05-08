@@ -110,7 +110,7 @@ Proof.
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
-  change (<[int.nat 0%Z:=I8 0]> (replicate (int.nat 1%Z) (I8 0))) with [I8 0].
+  change (<[uint.nat 0%Z:=I8 0]> (replicate (uint.nat 1%Z) (I8 0))) with [I8 0].
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
   wp_loadField. wp_load.
   wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store. clear ptr.
@@ -189,7 +189,7 @@ Proof.
   { word. }
   iDestruct (slice_small_split with "Hkv_sl") as "[Hk Hv]".
   { shelve. }
-  replace (int.nat (length (string_to_bytes key))) with (length (string_to_bytes key)) by word.
+  replace (uint.nat (length (string_to_bytes key))) with (length (string_to_bytes key)) by word.
   Unshelve.
   2:{ rewrite app_length. word. }
   wp_apply (wp_StringFromBytes with "[$Hk]").
@@ -232,7 +232,7 @@ Proof.
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
-  change (<[int.nat 0%Z:=I8 1]> (replicate (int.nat 1%Z) (I8 0))) with [I8 1].
+  change (<[uint.nat 0%Z:=I8 1]> (replicate (uint.nat 1%Z) (I8 0))) with [I8 1].
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
   wp_apply wp_StringToBytes.
   iIntros (?) "Hsl".
@@ -297,7 +297,7 @@ Proof.
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
-  change (<[int.nat 0%Z:=I8 0]> (replicate (int.nat 1%Z) (I8 0))) with [I8 0].
+  change (<[uint.nat 0%Z:=I8 0]> (replicate (uint.nat 1%Z) (I8 0))) with [I8 0].
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
   wp_pures.
   wp_loadField. wp_load.
@@ -403,7 +403,7 @@ Proof.
   { word. }
   iDestruct (slice_small_split with "Hsl") as "[He Hv]".
   { shelve. }
-  replace (int.nat (length (string_to_bytes expect))) with (length (string_to_bytes expect)) by word.
+  replace (uint.nat (length (string_to_bytes expect))) with (length (string_to_bytes expect)) by word.
   Unshelve.
   2:{ rewrite app_length. word. }
   wp_apply (wp_StringFromBytes with "[$He]").
@@ -435,11 +435,11 @@ Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp �
   "Hkvs_map" ∷ own_map kvs_loc 1 (compute_state ops) ∗
   "Hvnums_map" ∷ own_map vnums_loc 1 vnumsM ∗
   "#Hst" ∷ □ (∀ (k:string),
-              (∀ (vnum':u64), ⌜int.nat vnum' <= int.nat latestVnum⌝ →
-                             ⌜int.nat (default minVnum (vnumsM !! k)) <= int.nat vnum'⌝ →
+              (∀ (vnum':u64), ⌜uint.nat vnum' <= uint.nat latestVnum⌝ →
+                             ⌜uint.nat (default minVnum (vnumsM !! k)) <= uint.nat vnum'⌝ →
               ∃ someOps, is_state γst vnum' someOps ∗
                       ⌜compute_reply someOps (getOp k) = compute_reply ops (getOp k)⌝)) ∗
-  "%Hle" ∷ ⌜∀ (k:string), int.nat (default minVnum (vnumsM !! k)) <= int.nat latestVnum⌝
+  "%Hle" ∷ ⌜∀ (k:string), uint.nat (default minVnum (vnumsM !! k)) <= uint.nat latestVnum⌝
 .
 
 Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.
@@ -524,9 +524,9 @@ Proof.
           by rewrite lookup_insert_ne.
         }
         rewrite lookup_insert_ne in H0; last done.
-        destruct (decide (int.nat vnum' <= int.nat latestVnum)).
+        destruct (decide (uint.nat vnum' <= uint.nat latestVnum)).
         { by iApply "Hst". }
-        destruct (decide (int.nat vnum' = int.nat vnum)).
+        destruct (decide (uint.nat vnum' = uint.nat vnum)).
         { replace (vnum') with (vnum) by word.
           iExists _.
           iDestruct "Hintermediate" as "[_ $]".
@@ -549,7 +549,7 @@ Proof.
         }
         {
           rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
-          transitivity (int.nat latestVnum).
+          transitivity (uint.nat latestVnum).
           { apply Hle. }
           word.
         }
@@ -601,7 +601,7 @@ Proof.
         { subst.
           by rewrite /typed_map.map_insert lookup_insert /=. }
         { rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
-          transitivity (int.nat latestVnum).
+          transitivity (uint.nat latestVnum).
           { apply Hle. }
           word. }
       }
@@ -620,9 +620,9 @@ Proof.
         rewrite foldl_snoc /=. done.
       }
       rewrite lookup_insert_ne in H0; last done.
-      destruct (decide (int.nat vnum' <= int.nat latestVnum)).
+      destruct (decide (uint.nat vnum' <= uint.nat latestVnum)).
       { by iApply "Hst". }
-      destruct (decide (int.nat vnum' = int.nat vnum)).
+      destruct (decide (uint.nat vnum' = uint.nat vnum)).
       { replace (vnum') with (vnum) by word.
         iExists _.
         iDestruct "Hintermediate" as "[_ $]".
@@ -712,9 +712,9 @@ Proof.
             by rewrite lookup_insert_ne.
           }
           rewrite lookup_insert_ne in H1; last done.
-          destruct (decide (int.nat vnum' <= int.nat latestVnum)).
+          destruct (decide (uint.nat vnum' <= uint.nat latestVnum)).
           { by iApply "Hst". }
-          destruct (decide (int.nat vnum' = int.nat vnum)).
+          destruct (decide (uint.nat vnum' = uint.nat vnum)).
           { replace (vnum') with (vnum) by word.
             iExists _.
             iDestruct "Hintermediate" as "[_ $]".
@@ -739,7 +739,7 @@ Proof.
           }
           {
             rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
-            transitivity (int.nat latestVnum).
+            transitivity (uint.nat latestVnum).
             { apply Hle. }
             word.
           }
@@ -775,9 +775,9 @@ Proof.
             rewrite decide_False; done.
           }
           setoid_rewrite Heq.
-          destruct (decide (int.nat vnum' <= int.nat latestVnum)).
+          destruct (decide (uint.nat vnum' <= uint.nat latestVnum)).
           { by iApply "Hst". }
-          destruct (decide (int.nat vnum' = int.nat vnum)).
+          destruct (decide (uint.nat vnum' = uint.nat vnum)).
           { replace (vnum') with (vnum) by word.
             iExists _.
             iFrame "Hcurst".
@@ -943,7 +943,7 @@ Proof.
   iModIntro. repeat iExists _; iFrame.
   iSplitR.
   { iModIntro. iIntros.
-    assert (int.nat vnum' = int.nat vnum).
+    assert (uint.nat vnum' = uint.nat vnum).
     { rewrite lookup_empty /= in H0. word. }
     replace (vnum) with vnum' by word.
     by iExists _; iFrame "HstNew". }
@@ -1028,8 +1028,8 @@ Proof.
   repeat iExists _; iFrame.
   iSplitL.
   { iModIntro. iIntros. rewrite lookup_empty /= in H3.
-    replace (int.nat (I64 0)) with (0) in * by word.
-    assert (int.nat vnum' = int.nat 0) by word.
+    replace (uint.nat (I64 0)) with (0) in * by word.
+    assert (uint.nat vnum' = uint.nat 0) by word.
     replace (vnum') with (I64 0) by word.
     iExists _; by iFrame "#".
   }

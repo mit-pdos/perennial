@@ -187,7 +187,7 @@ Theorem wp_BufMap__Ndirty l m stk E1 :
     BufMap__Ndirty #l @ stk ; E1
   {{{
     (n : u64), RET #n;
-    ⌜int.nat n = size (filter (λ x, (snd x).(bufDirty) = true) m)⌝ ∗
+    ⌜uint.nat n = size (filter (λ x, (snd x).(bufDirty) = true) m)⌝ ∗
     is_bufmap l m}}}.
 Proof using.
   iIntros (Φ) "Hisbufmap HΦ".
@@ -210,7 +210,7 @@ Proof using.
      ∃ (n : u64),
       ∃ (mtodo mdone : gmap addr buf) (amdone amtodo : gmap addr loc),
       "Hn" ∷ n_l ↦[uint64T] #n ∗
-      "%Hn" ∷ ⌜int.nat n = size (filter (λ x, (x.2).(bufDirty) = true) mdone)⌝ ∗
+      "%Hn" ∷ ⌜uint.nat n = size (filter (λ x, (x.2).(bufDirty) = true) mdone)⌝ ∗
         "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧
                   dom mtodo ## dom mdone ∧
                   am = amtodo ∪ amdone
@@ -265,7 +265,7 @@ Proof using.
         rewrite map_filter_insert_True //.
         rewrite map_size_insert_None.
         - rewrite -Hn.
-          assert (int.nat n ≤ size mdone)%nat.
+          assert (uint.nat n ≤ size mdone)%nat.
           { rewrite Hn.
             apply map_size_filter. }
           assert (Z.of_nat (size bm) < 2^64).

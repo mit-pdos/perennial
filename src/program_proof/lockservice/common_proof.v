@@ -18,7 +18,7 @@ Lemma overflow_guard_incr_spec stk E (v:u64) :
 {{{ True }}}
   overflow_guard_incr #v @ stk ; E
 {{{
-     RET #(); ⌜((int.Z v) + 1 = int.Z (word.add v 1))%Z⌝
+     RET #(); ⌜((uint.Z v) + 1 = uint.Z (word.add v 1))%Z⌝
 }}}.
 Proof.
   iIntros (Φ) "_ Hpost".
@@ -34,15 +34,15 @@ Proof.
     apply bool_decide_eq_false in Hineq.
     wp_pures. iRight. iSplitR; first done.
     iApply "Hpost". iPureIntro.
-    assert (int.Z (word.add v 1) >= int.Z v)%Z by lia.
-    destruct (bool_decide ((int.Z v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
+    assert (uint.Z (word.add v 1) >= uint.Z v)%Z by lia.
+    destruct (bool_decide ((uint.Z v) + 1 < 2 ^ 64 ))%Z eqn:Hnov.
     {
       apply bool_decide_eq_true in Hnov.
       word.
     }
     apply bool_decide_eq_false in Hnov.
-    assert (int.Z v + (int.Z 1) >= 2 ^ 64)%Z.
-    { replace (int.Z 1)%Z with (1)%Z by word. lia. }
+    assert (uint.Z v + (uint.Z 1) >= 2 ^ 64)%Z.
+    { replace (uint.Z 1)%Z with (1)%Z by word. lia. }
     apply sum_overflow_check in H0.
     contradiction.
   }

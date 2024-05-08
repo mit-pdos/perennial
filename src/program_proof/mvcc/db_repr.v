@@ -19,7 +19,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Definition own_db (db : loc) : iProp Σ := 
   ∃ (sidcur : u64),
     "Hsidcur" ∷ db ↦[DB :: "sid"] #sidcur ∗
-    "%HsidcurB" ∷ ⌜(int.Z sidcur) < N_TXN_SITES⌝ ∗
+    "%HsidcurB" ∷ ⌜(uint.Z sidcur) < N_TXN_SITES⌝ ∗
     "_" ∷ True.
 
 Definition is_db (db : loc) γ : iProp Σ := 

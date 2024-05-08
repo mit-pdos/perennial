@@ -59,7 +59,7 @@ Record server_chan_gnames := {
 
 Definition reply_chan_inner_msg (Γ : client_chan_gnames) m : iProp Σ :=
     ∃ (rpcid seqno : u64) reqData replyData Post γ d rep,
-       "%Hlen_reply" ∷ ⌜ length replyData = int.nat (length replyData) ⌝ ∗
+       "%Hlen_reply" ∷ ⌜ length replyData = uint.nat (length replyData) ⌝ ∗
        "%Henc" ∷ ⌜ msg_data m = u64_le seqno ++ replyData ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid reqData γ d rep) ∗
        "#HPost_saved" ∷ saved_pred_own γ DfracDiscarded (Post) ∗
@@ -74,7 +74,7 @@ Implicit Type Spec : savedSpecO Σ (list u8) (list u8).
 (* Crucially, this is persistent: note the □Spec *)
 Definition server_chan_inner_msg Γsrv m : iProp Σ :=
     ∃ rpcid seqno args Spec Post Γ γ1 γ2 d rep rpcdom,
-       "%Hlen_args" ∷ ⌜ length args = int.nat (I64 (Z.of_nat (length args))) ⌝ ∗
+       "%Hlen_args" ∷ ⌜ length args = uint.nat (I64 (Z.of_nat (length args))) ⌝ ∗
        "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
        "%Hdom2" ∷ ⌜ rpcid ∈ rpcdom ⌝ ∗
        "%Henc" ∷ ⌜ msg_data m = u64_le rpcid ++ u64_le seqno ++ args  ⌝ ∗
@@ -138,8 +138,8 @@ Definition is_urpc_handler_pred (f:val)
 
 Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
-            "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
-            "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom reqs ⌝ ∗
+            "%Hnpos" ∷ ⌜ 0 < uint.Z n ⌝%Z ∗
+            "%Hdom_range" ∷ ⌜ ∀ id, (0 < uint.Z id < uint.Z n)%Z ↔ id ∈ dom reqs ⌝ ∗
             "%Hdom_eq_es" ∷ ⌜ dom reqs = dom estoks ⌝ ∗
             "%Hdom_eq_ex" ∷ ⌜ dom reqs = dom extoks ⌝ ∗
             "%Hdom_pending" ∷ ⌜ dom pending ⊆ dom reqs  ⌝ ∗
@@ -811,13 +811,13 @@ Proof.
   wp_apply (release_spec with "[-Hslice Hhandler HΦ Hextracted]").
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
-    replace (int.Z (word.add n 1)) with (int.Z n + 1)%Z by word.
+    replace (uint.Z (word.add n 1)) with (uint.Z n + 1)%Z by word.
     iSplit.
     { iPureIntro. word. }
     iSplit.
     { iPureIntro. intros. set_unfold. split.
       * intros Hrange.
-        assert (0 < int.Z id < int.Z n ∨ int.Z id = int.Z n)%Z.
+        assert (0 < uint.Z id < uint.Z n ∨ uint.Z id = uint.Z n)%Z.
         { word. }
         { naive_solver word. }
       * intros [Heq|Hin].
@@ -876,7 +876,7 @@ Proof.
     iExists _, _, _, _, _, _, _.
     iExists _, _, _, _.
     iFrame "Hreg".
-    assert (I64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as Heqlen.
+    assert (I64 (Z.of_nat (uint.nat (req.(Slice.sz)))) = req.(Slice.sz)) as Heqlen.
     { word. }
     iFrame "#". iSplit; last by eauto.
     iPureIntro. word.

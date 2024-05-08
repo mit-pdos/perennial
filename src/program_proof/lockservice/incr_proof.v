@@ -143,7 +143,7 @@ Proof.
     wpc_pures.
     iDestruct (slice.own_slice_sz with "Hcontent_slice") as "%Hslice_len".
     simpl in Hslice_len.
-    assert (int.Z content.(Slice.sz) = 0) as -> by word.
+    assert (uint.Z content.(Slice.sz) = 0) as -> by word.
     destruct bool_decide eqn:Hs.
     {
       apply bool_decide_eq_true in Hs.

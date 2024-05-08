@@ -122,7 +122,7 @@ Definition old_conf_max_pre (Φ:(reconf_names -d> u64 -d> (list (leibnizO LogEnt
          (∃ mval'' term'',
              ⌜mval_lt mval' mval''⌝ ∗
              ⌜mval_le mval'' mval⌝ ∗
-             ⌜int.nat term'' ≤ int.nat term⌝ ∗
+             ⌜uint.nat term'' ≤ uint.nat term⌝ ∗
              committed_at_term γ term'' mval'' ∗
              Φ γ term mval'' ∗
              ⌜overlapping_quorums (get_config mval') (get_config mval'')⌝
@@ -136,7 +136,7 @@ Definition old_conf_max_pre_least γ Φ (p:leibnizO(u64 * list (leibnizO LogEntr
         (⌜overlapping_quorums (get_config mval') (get_config p.2)⌝ ∨
          (∃ mval'' term'',
              ⌜mval_lt p.2 mval''⌝ ∗
-             ⌜int.nat term'' ≤ int.nat p.1⌝ ∗
+             ⌜uint.nat term'' ≤ uint.nat p.1⌝ ∗
              committed_at_term γ term'' mval'' ∗
              Φ ((term'', mval''):leibnizO _) ∗
              ⌜overlapping_quorums (get_config mval') (get_config mval'')⌝
@@ -157,7 +157,7 @@ Definition old_conf_max_orig γ term mval: iProp Σ :=
         (⌜overlapping_quorums (get_config mval') (get_config mval)⌝ ∨
          (∃ mval'' term'',
              ⌜mval_lt mval' mval''⌝ ∗
-             ⌜int.nat term'' ≤ int.nat term⌝ ∗
+             ⌜uint.nat term'' ≤ uint.nat term⌝ ∗
              committed_at_term γ term'' mval'' ∗
              (* FIXME: want to be able to put another old_conf_max here *)
              ⌜overlapping_quorums (get_config mval') (get_config mval'')⌝
@@ -173,7 +173,7 @@ Definition old_conf_max_single γ mval: iProp Σ :=
   ∀ term mval', committed_at_term γ term mval -∗ ⌜mval_lt mval' mval⌝ →
       □(∃ mval'' term'',
            ⌜mval_lt mval' mval''⌝ ∗
-           ⌜int.nat term'' ≤ int.nat term⌝ ∗
+           ⌜uint.nat term'' ≤ uint.nat term⌝ ∗
            committed_at_term γ term'' mval'' ∗
            ⌜overlapping_quorums (get_config mval') (get_config mval'')⌝
       )
@@ -183,7 +183,7 @@ Definition old_conf_max γ mval : iProp Σ :=
   □(∀ mval_pfx, ⌜mval_le mval_pfx mval⌝ -∗ old_conf_max_single γ mval).
 
 Definition old_term_max γ term mval : iProp Σ :=
-  ∀ term' mval', □(⌜int.nat term' < int.nat term⌝ →
+  ∀ term' mval', □(⌜uint.nat term' < uint.nat term⌝ →
   proposed_lb γ term' mval' -∗
   committed_at_term γ term' mval' -∗
   old_conf_max γ mval' -∗
@@ -251,13 +251,13 @@ Proof.
   iModIntro.
   iAssert (⌜mval_le mval commitVal ∨ mval_le commitVal mval⌝)%I as "%Hcomparable".
   {
-    destruct (decide (int.nat term < int.nat commitTerm)).
+    destruct (decide (uint.nat term < uint.nat commitTerm)).
     { (* case: term < commitTerm *)
       iDestruct ("HoldCommit" with "[] Hproposed HcommitAt Hconf") as "%HvalLe".
       { done. }
       eauto.
     }
-    destruct (decide (int.nat term = int.nat commitTerm)).
+    destruct (decide (uint.nat term = uint.nat commitTerm)).
     { (* case: term == commitTerm *)
       replace (commitTerm) with (term) by word.
       iDestruct (own_valid_2 with "Hproposed HproposedCommit") as %Hvalid.
@@ -267,7 +267,7 @@ Proof.
       done.
     }
     (* case: term > commitTerm *)
-    assert (int.nat term > int.nat commitTerm) by word.
+    assert (uint.nat term > uint.nat commitTerm) by word.
     iDestruct ("Hold" with "[] HproposedCommit HcommitAcc HconfCommit") as "%HvalLe".
     { done. }
     eauto.
@@ -310,7 +310,7 @@ Proof.
 Qed.
 
 Lemma become_leader γ term highestVal highestTerm W:
-    int.nat highestTerm < int.nat term →
+    uint.nat highestTerm < uint.nat term →
     (get_config highestVal).(is_quorum) W →
     sys_inv γ -∗
     proposed_lb γ highestTerm highestVal -∗
@@ -319,7 +319,7 @@ Lemma become_leader γ term highestVal highestTerm W:
     □(
       [∗ set] srv ∈ W,
         (∃ srvVal, ⌜mval_le srvVal highestVal⌝ ∗ accepted_ro γ srv highestTerm srvVal) ∗
-        (∀ term', ⌜int.nat highestTerm < int.nat term'⌝ → ⌜int.nat term' < int.nat term⌝ → accepted_ro_none γ srv term')
+        (∀ term', ⌜uint.nat highestTerm < uint.nat term'⌝ → ⌜uint.nat term' < uint.nat term⌝ → accepted_ro_none γ srv term')
     ) -∗
     old_term_max γ term highestVal.
 Proof.
@@ -330,11 +330,11 @@ Proof.
   iIntros "%Hterm'Ineq".
   iIntros "#Hproposed'".
   iIntros "#Hcommit' #Hconf'".
-  destruct (decide (int.nat term' < int.nat highestTerm)).
+  destruct (decide (uint.nat term' < uint.nat highestTerm)).
   { (* term' < highestTerm, so we can just use the old_term_max of (highestTerm,highestVal) *)
     iApply "Hold"; try done.
   }
-  destruct (decide (int.nat term' = int.nat highestTerm)).
+  destruct (decide (uint.nat term' = uint.nat highestTerm)).
   { (* for term' == highestTerm, we have the first part of "oldInfo" *)
     replace (term') with (highestTerm); last first.
     { (* FIXME: why doesn't word work? *)
@@ -381,7 +381,7 @@ Proof.
 
     iDestruct "Hconf3" as (mval'' term'') "(%Hmval''lt & %Hterm''Ineq & #Hcommit'' & %Hoverlap)".
       (* if term'' < highestTerm, then (old_term_max highestTerm highestVal) takes care of it *)
-      destruct (decide (int.nat term'' < int.nat highestTerm)).
+      destruct (decide (uint.nat term'' < uint.nat highestTerm)).
       { (* if term'' < highestTerm, we use old_term_max *)
         unfold old_term_max.
         iDestruct ("Hold" $! term'' mval'' with "[] [] Hcommit'' [Hconf'']") as "%HlogLe2".

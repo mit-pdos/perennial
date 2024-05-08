@@ -83,7 +83,7 @@ Axiom wpc_AtomicAppend : ∀ filename content_old content (content_sl:Slice.t) q
       filename f↦ (content_old ++ content)
   }}}.
 
-Definition u64_to_string : u64 -> string := λ u, NilZero.string_of_int (Z.to_int (int.Z u)).
+Definition u64_to_string : u64 -> string := λ u, NilZero.string_of_int (Z.to_int (uint.Z u)).
 
 (* Spec for I64ToString will be annoying *)
 Axiom wp_U64ToString : ∀ (u:u64),

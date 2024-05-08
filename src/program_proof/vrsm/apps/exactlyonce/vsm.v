@@ -30,11 +30,11 @@ Definition is_Versioned_applyVolatileFn (applyVolatileFn:val) own_VersionedState
   ∀ ops γst op op_sl op_bytes (latestVnum vnum:u64),
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        ⌜int.nat vnum > int.nat latestVnum⌝ ∗
+        ⌜uint.nat vnum > uint.nat latestVnum⌝ ∗
         readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
         own_VersionedStateMachine γst ops latestVnum ∗
-        (∀ (vnum':u64), ⌜int.nat latestVnum <= int.nat vnum'⌝ →
-                  ⌜int.nat vnum' < int.nat vnum⌝ → is_state γst vnum' ops) ∗
+        (∀ (vnum':u64), ⌜uint.nat latestVnum <= uint.nat vnum'⌝ →
+                  ⌜uint.nat vnum' < uint.nat vnum⌝ → is_state γst vnum' ops) ∗
         is_state γst vnum (ops ++ [op])
   }}}
     applyVolatileFn (slice_val op_sl) #vnum
@@ -84,10 +84,10 @@ Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedState
   {{{
         reply_sl q (lastModifiedVnum:u64),
         RET (#lastModifiedVnum, slice_val reply_sl);
-        ⌜int.nat lastModifiedVnum <= int.nat latestVnum⌝ ∗
+        ⌜uint.nat lastModifiedVnum <= uint.nat latestVnum⌝ ∗
         own_VersionedStateMachine γst ops latestVnum ∗
         own_slice_small reply_sl byteT q (compute_reply ops op) ∗
-        □(∀ (vnum:u64), ⌜int.nat vnum < int.nat latestVnum⌝ → ⌜int.nat lastModifiedVnum <= int.nat vnum⌝ →
+        □(∀ (vnum:u64), ⌜uint.nat vnum < uint.nat latestVnum⌝ → ⌜uint.nat lastModifiedVnum <= uint.nat vnum⌝ →
             ∃ someOps, is_state γst vnum someOps ∗
                        ⌜compute_reply someOps op = compute_reply ops op⌝)
   }}}

@@ -71,8 +71,8 @@ Theorem wp_tuple__removeVersions tuple (tid : u64) vers :
         (∃ vers',
            own_tuple_phys_vers tuple vers' ∧
            (∃ vers_prefix, ⌜vers_prefix ≠ [] ∧ vers = vers_prefix ++ vers'⌝) ∧
-           (⌜Forall (λ ver, int.Z tid ≤ int.Z ver.1.1) (tail vers')⌝) ∧
-           (∃ ver, ⌜ver ∈ vers' ∧ int.Z ver.1.1 < int.Z tid⌝)) ∨
+           (⌜Forall (λ ver, uint.Z tid ≤ uint.Z ver.1.1) (tail vers')⌝) ∧
+           (∃ ver, ⌜ver ∈ vers' ∧ uint.Z ver.1.1 < uint.Z tid⌝)) ∨
         (own_tuple_phys_vers tuple vers)
   }}}.
 Proof.
@@ -103,17 +103,17 @@ Proof.
   wp_store.
   wp_pures.
   set P := λ (b : bool), (∃ (idx : u64),
-             "%Hbound" ∷ (⌜int.Z 0 ≤ int.Z idx < Z.of_nat (length vers)⌝) ∗
+             "%Hbound" ∷ (⌜uint.Z 0 ≤ uint.Z idx < Z.of_nat (length vers)⌝) ∗
              "HidxR" ∷ idxR ↦[uint64T] #idx ∗
              "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
              "HversX" ∷ own_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
-             "%HallLe" ∷ (⌜Forall (λ ver, int.Z tid ≤ int.Z ver.1.1) (drop (S (int.nat idx)) vers)⌝) ∗
+             "%HallLe" ∷ (⌜Forall (λ ver, uint.Z tid ≤ uint.Z ver.1.1) (drop (S (uint.nat idx)) vers)⌝) ∗
              "%Hexit" ∷ if b
                         then ⌜True⌝
-                        else ⌜(int.Z idx = 0) ∨
-                              (0 < int.Z idx ∧
-                               ∃ ver, ver ∈ (drop (int.nat idx) vers) ∧
-                               int.Z ver.1.1 < int.Z tid)⌝)%I.
+                        else ⌜(uint.Z idx = 0) ∨
+                              (0 < uint.Z idx ∧
+                               ∃ ver, ver ∈ (drop (uint.nat idx) vers) ∧
+                               uint.Z ver.1.1 < uint.Z tid)⌝)%I.
   wp_apply (wp_forBreak_cond P with "[] [-HΦ HversS]").
   { (* Loop body. *)
     clear Φ.
@@ -133,7 +133,7 @@ Proof.
     }
     wp_load.
     wp_loadField.
-    destruct (list_lookup_lt _ (ver_to_val <$> vers) (int.nat idx)) as [ver HSome].
+    destruct (list_lookup_lt _ (ver_to_val <$> vers) (uint.nat idx)) as [ver HSome].
     { rewrite fmap_length. word. }
     wp_apply (wp_SliceGet with "[HversX]"); first auto.
     iIntros "[HversX %Hval_ty]".
@@ -169,7 +169,7 @@ Proof.
     iPureIntro.
     split; first word.
     split; last done.
-    replace (S _) with (int.nat idx); last word.
+    replace (S _) with (uint.nat idx); last word.
     rewrite (drop_S _ (b, d, v)); last first.
     { rewrite Hlookup. f_equal. by apply inv_ver_to_val. }
     apply Forall_cons_2; last done.
@@ -182,7 +182,7 @@ Proof.
     iExists _.
     iFrame.
     iPureIntro.
-    assert (Hgt : 0 < int.Z versS.(Slice.sz)).
+    assert (Hgt : 0 < uint.Z versS.(Slice.sz)).
     { destruct (nil_or_length_pos vers); first contradiction. word. }
     split; first word.
     split; last done.
@@ -217,7 +217,7 @@ Proof.
     iExists _.
     iFrame.
   - iLeft.
-    set vers' := drop (int.nat idx) vers.
+    set vers' := drop (uint.nat idx) vers.
     iExists vers'.
     iSplit.
     { iExists _.
@@ -225,7 +225,7 @@ Proof.
     }
     iPureIntro.
     split.
-    { exists (take (int.nat idx) vers).
+    { exists (take (uint.nat idx) vers).
       split.
       { apply length_nonzero_neq_nil.
         rewrite take_length_le; first word.
@@ -235,7 +235,7 @@ Proof.
     }
     split.
     { subst vers'.
-      replace (tail _) with (drop (S (int.nat idx)) vers); first done.
+      replace (tail _) with (drop (S (uint.nat idx)) vers); first done.
       destruct vers; by rewrite drop_tail_commute.
     }
     { auto. }
@@ -257,7 +257,7 @@ Qed.
 
 Local Lemma spec_lookup_suffix vers vers_prefix vers_suffix (tid : u64) :
   vers = vers_prefix ++ vers_suffix ->
-  Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers_suffix ->
+  Exists (λ ver, uint.Z ver.1.1 < uint.Z tid) vers_suffix ->
   spec_lookup vers tid = spec_lookup vers_suffix tid.
 Proof.
   intros Hsuffix HexistsLt.
@@ -281,7 +281,7 @@ Qed.
 (*****************************************************************)
 Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ min_tid_lb γ (int.nat tid) }}}
+  {{{ min_tid_lb γ (uint.nat tid) }}}
     Tuple__RemoveVersions #tuple #tid
   {{{ RET #(); True }}}.
 Proof.
@@ -325,10 +325,10 @@ Proof.
   iNamed "HtuplePhys".
   wp_pures.
 
-  assert (H2 : int.Z tidgc < int.Z tid).
+  assert (H2 : uint.Z tidgc < uint.Z tid).
   { destruct Hsuffix as [versPrefix [Hnotnil' Hsuffix]].
     destruct HtidGt as [verPivot [Hin HtidGt]].
-    apply Z.le_lt_trans with (int.Z verPivot.1.1); last done.
+    apply Z.le_lt_trans with (uint.Z verPivot.1.1); last done.
     rewrite Forall_forall in HtidgcLe.
     apply HtidgcLe.
     rewrite Hsuffix.

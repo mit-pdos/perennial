@@ -95,7 +95,7 @@ Proof.
     + apply rangeSet_lookup in e; [ | word .. ].
       split; [ naive_solver | ].
       inversion 1; subst.
-      eexists (Z.to_nat (int.Z i - 513)), _.
+      eexists (Z.to_nat (uint.Z i - 513)), _.
       split_and!; eauto; try lia.
       f_equal; word.
     + rewrite -> rangeSet_lookup in n by word.
@@ -108,7 +108,7 @@ Proof.
     intros x y Hx Hy Heq.
     eapply elem_of_seq in Hx.
     eapply elem_of_seq in Hy.
-    assert (int.Z (I64 (513 + Z.of_nat x)) = int.Z (I64 (513 + Z.of_nat y))).
+    assert (uint.Z (I64 (513 + Z.of_nat x)) = uint.Z (I64 (513 + Z.of_nat y))).
     { rewrite Heq. eauto. }
     revert H. word.
 Qed.
@@ -167,7 +167,7 @@ Proof. rewrite /block_bytes. lia. Qed.
 
 Lemma lookup_bit0_map (off: u64) o :
   bit0_map !! off = Some o ↔
-  int.Z off < block_bytes * 8 ∧
+  uint.Z off < block_bytes * 8 ∧
   o = existT KindBit (bufBit false).
 Proof.
   rewrite /bit0_map.
@@ -181,13 +181,13 @@ Proof.
     destruct H0 as [off' [? ?]]; subst.
     word.
   - intuition (subst; auto).
-    exists (int.Z off); split; word.
+    exists (uint.Z off); split; word.
 Qed.
 
 Lemma lookup_inode0_map (off: u64) o :
   inode0_map !! off = Some o ↔
   ∃ (i:Z), i < 32 ∧
-           int.Z off = i * 8 * 128 ∧
+           uint.Z off = i * 8 * 128 ∧
            o = existT KindInode (bufInode inode_buf0).
 Proof.
   rewrite /inode0_map.
@@ -268,9 +268,9 @@ Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Lemma extract_inode0 (off: u64) :
   (* off is actually less than 8*8*128 *)
-  int.Z off `mod` 1024 = 0 →
-  int.Z off < 8*4096 → (* TODO: not sure what bound is *)
-  extract_nth block0 inode_bytes (int.nat off `div` (inode_bytes * 8)) =
+  uint.Z off `mod` 1024 = 0 →
+  uint.Z off < 8*4096 → (* TODO: not sure what bound is *)
+  extract_nth block0 inode_bytes (uint.nat off `div` (inode_bytes * 8)) =
   inode_to_vals inode_buf0.
 Proof.
   intros.
@@ -287,8 +287,8 @@ Proof.
   change (Z.to_nat 128 * 8)%nat with 1024%nat.
   change (Z.to_nat 4096) with 4096%nat.
   change (Z.to_nat 128) with 128%nat.
-  assert (int.nat off < 8 * 4096)%nat by lia.
-  cut (int.nat off `div` 1024 < 32)%nat; try lia.
+  assert (uint.nat off < 8 * 4096)%nat by lia.
+  cut (uint.nat off `div` 1024 < 32)%nat; try lia.
   change (8*4096)%nat with (Z.to_nat 32768) in H1.
   apply Nat2Z.inj_lt.
   rewrite Nat2Z.inj_div.
@@ -297,7 +297,7 @@ Qed.
 
 Lemma bufDataT_in_block0_bit off o (n: u64) :
   bit0_map !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 KindBit n off o.
 Proof.
   intros H H0.
@@ -322,7 +322,7 @@ Proof.
       rewrite block_bytes_eq in H1 |- *.
       rewrite !Nat.mul_1_r.
       rewrite Nat.min_l; [ lia | ].
-      replace (int.nat i) with i by word.
+      replace (uint.nat i) with i by word.
       apply Z.div_lt_upper_bound in H1; [ | lia ].
       rewrite -> Z2Nat.id in H1 by lia.
       replace (Nat.div i 8) with (Z.to_nat $ Z.div (Z.of_nat i) 8); try lia.
@@ -332,16 +332,16 @@ Proof.
       lia.
     * rewrite /get_bit.
       rewrite decide_False //.
-      intros Heq%(f_equal int.Z); move: Heq.
+      intros Heq%(f_equal uint.Z); move: Heq.
       rewrite word.unsigned_and_nowrap.
       rewrite word.unsigned_sru_nowrap.
-      { change (int.Z (I8 0)) with 0; simpl.
+      { change (uint.Z (I8 0)) with 0; simpl.
         rewrite Z.shiftr_0_l //. }
       rewrite /u8_from_u64.
       rewrite word.unsigned_of_Z word.unsigned_modu_nowrap //.
-      change (int.Z 8) with 8.
+      change (uint.Z 8) with 8.
       rewrite block_bytes_eq in H1.
-      replace (int.Z i) with (Z.of_nat i) by word.
+      replace (uint.Z i) with (Z.of_nat i) by word.
       rewrite /word.wrap.
       assert (0 ≤ i `mod` 8 < 8) by (apply Z.mod_bound_pos; lia).
       rewrite Z.mod_small; lia.
@@ -352,7 +352,7 @@ Qed.
 
 Lemma bufDataT_in_block0_inode off o (n: u64) :
   inode0_map !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 KindInode n off o.
 Proof.
   intros.
@@ -382,14 +382,14 @@ Ltac Zify.zify_post_hook ::= idtac.
 
 Lemma bufDataT_in_block0_block off o (n: u64) :
   block0_map !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 KindBlock n off o.
 Proof.
   rewrite /block0_map => H H0.
   eapply lookup_singleton_Some in H. intuition subst.
   assert (valid_off KindBlock (I64 0)).
   { rewrite /valid_off.
-    replace (int.Z (I64 0)) with 0 by reflexivity.
+    replace (uint.Z (I64 0)) with 0 by reflexivity.
     rewrite Zmod_0_l. done. }
   rewrite /bufDataT_in_block /=. intuition eauto.
   + rewrite /is_bufData_at_off. intuition eauto.
@@ -404,7 +404,7 @@ Lemma bufDataT_in_block0 kind off o n :
   | KindInode => inode0_map
   | KindBlock => block0_map
   end !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 kind n off o.
 Proof.
   intros. destruct kind;
@@ -530,7 +530,7 @@ Proof.
     eapply elem_of_list_to_set in Hs.
     eapply elem_of_list_fmap_2 in Hs. destruct Hs as [y [Hs0 Hs1]]. rewrite Hs0.
     eapply elem_of_seqZ in Hs1. intuition subst.
-    replace (int.Z (I64 y)) with y by word.
+    replace (uint.Z (I64 y)) with y by word.
     rewrite -Z.mul_assoc. rewrite -Z.mul_assoc in Hbound.
     eapply Z.le_lt_trans; last by apply Hbound.
     pose proof (block_bytes_pos).
@@ -586,7 +586,7 @@ Proof.
     eapply elem_of_list_to_set in Hs.
     eapply elem_of_list_fmap_2 in Hs. destruct Hs as [y [Hs0 Hs1]].
     eapply elem_of_seqZ in Hs1. intuition subst.
-    replace (int.Z (I64 y)) with y by word.
+    replace (uint.Z (I64 y)) with y by word.
     rewrite -Z.mul_assoc. rewrite -Z.mul_assoc in Hbound.
     etransitivity; last by apply Hbound.
     pose proof (block_bytes_pos).

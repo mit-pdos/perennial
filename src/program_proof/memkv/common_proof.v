@@ -9,7 +9,7 @@ Definition uNSHARD : Z := 65536%Z.
 
 Definition shardOfC (key:u64) : u64 := (word.modu key uNSHARD).
 
-Lemma shardOfC_bound k : int.Z (shardOfC k) < uNSHARD.
+Lemma shardOfC_bound k : uint.Z (shardOfC k) < uNSHARD.
 Proof.
   rewrite /shardOfC /uNSHARD.
   rewrite word.unsigned_modu_nowrap //.
@@ -37,7 +37,7 @@ Lemma wp_shardOf_bound (key:u64) :
   }}}
     shardOf #key
   {{{
-     (s:u64), RET #s; ⌜int.Z s < uNSHARD⌝
+     (s:u64), RET #s; ⌜uint.Z s < uNSHARD⌝
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".

@@ -49,7 +49,7 @@ Proof.
   iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
   set (sid:=shardOfC args.(CPR_Key)) in *.
 
-  assert (∃ b, shardMapping !! int.nat sid = Some b) as [? ?].
+  assert (∃ b, shardMapping !! uint.nat sid = Some b) as [? ?].
   {
     eapply list_lookup_lt.
     move: HshardMapLength. rewrite /sid /shardOfC /uNSHARD.

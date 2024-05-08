@@ -169,7 +169,7 @@ Lemma wp_Lookup ptr arg (uname:u64) :
     "Harg" ∷ own ptr arg ∗
     if ok then
       "Hfound" ∷ own_slice_small sl_found byteT 1 found ∗
-      "%Hfound_idx" ∷ ⌜arg.(Log) !! int.nat idx = Some (UnameKey.mk uname found)⌝
+      "%Hfound_idx" ∷ ⌜arg.(Log) !! uint.nat idx = Some (UnameKey.mk uname found)⌝
     else True%I
   }}}.
 Proof. Admitted.

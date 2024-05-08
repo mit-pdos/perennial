@@ -34,10 +34,10 @@ Definition own_Replica (r:loc) (pid:nat) γ : iProp Σ :=
   "HacceptedPN" ∷ r ↦[Replica :: "acceptedPN"] #acceptedPN ∗
   "HacceptedVal" ∷ r ↦[Replica :: "acceptedVal"] #v ∗
   "HcommittedVal" ∷ r ↦[Replica :: "committedVal"] #cv ∗
-  "#Hacc_prop" ∷ pn_ptsto f γ (int.nat acceptedPN) v ∗
-  "#Hrej" ∷ (∀ pn', ⌜(int.nat acceptedPN) < pn'⌝ → ⌜pn' ≤ int.nat promisePN⌝ → rejected γ pid pn') ∗
-  "Hundec" ∷ ([∗ set] pn' ∈ (fin_to_set (C:=gset u64) u64), ⌜int.nat pn' < int.nat promisePN⌝ ∨ ⌜int.nat pn' ≤ int.nat acceptedPN⌝ ∨ undecided γ pid (int.nat pn')) ∗
-  "#Haccepted" ∷ accepted γ pid (int.nat acceptedPN) ∗
+  "#Hacc_prop" ∷ pn_ptsto f γ (uint.nat acceptedPN) v ∗
+  "#Hrej" ∷ (∀ pn', ⌜(uint.nat acceptedPN) < pn'⌝ → ⌜pn' ≤ uint.nat promisePN⌝ → rejected γ pid pn') ∗
+  "Hundec" ∷ ([∗ set] pn' ∈ (fin_to_set (C:=gset u64) u64), ⌜uint.nat pn' < uint.nat promisePN⌝ ∨ ⌜uint.nat pn' ≤ uint.nat acceptedPN⌝ ∨ undecided γ pid (uint.nat pn')) ∗
+  "#Haccepted" ∷ accepted γ pid (uint.nat acceptedPN) ∗
   "Hvotes" ∷ True
   (* "Hpeers" ∷ *)
 .
@@ -64,8 +64,8 @@ Lemma wp_PrepareRPC (r:loc) γ pid (reply_ptr:loc) (pn:u64) dummy_rep :
        reply, RET #();
             own_PrepareReply reply_ptr reply ∗
             (⌜reply.(Prep_Success) = false⌝ ∨
-             pn_ptsto f γ (int.nat reply.(Prep_Pn)) (reply.(Prep_Val)) ∗
-             (∀ pn', ⌜pn' < int.nat pn⌝ → ⌜int.nat reply.(Prep_Pn) < pn'⌝ → rejected γ pid pn')
+             pn_ptsto f γ (uint.nat reply.(Prep_Pn)) (reply.(Prep_Val)) ∗
+             (∀ pn', ⌜pn' < uint.nat pn⌝ → ⌜uint.nat reply.(Prep_Pn) < pn'⌝ → rejected γ pid pn')
              )
   }}}
 .
@@ -122,12 +122,12 @@ Admitted.
 Lemma wp_ProposeRPC (r:loc) γ pid (args_ptr reply_ptr:loc) (pn:u64) (val:u64) (dummy_rep:bool) :
   is_Replica r pid γ -∗
   {{{
-       pn_ptsto f γ (int.nat pn) val
+       pn_ptsto f γ (uint.nat pn) val
   }}}
     Replica__ProposeRPC #r #pn #val
   {{{
        (ret:bool), RET #ret;
-       ⌜ret = false⌝ ∨ accepted γ pid (int.nat pn)
+       ⌜ret = false⌝ ∨ accepted γ pid (uint.nat pn)
   }}}
 .
 Proof.
@@ -149,7 +149,7 @@ Proof.
     wp_if_destruct.
     { (* able to accept *)
       (* undecided ==∗ accepted *)
-      assert (int.nat acceptedPN = int.nat pn ∨ int.nat acceptedPN < int.nat pn) as [HacceptedBefore|Hfresh] by word.
+      assert (uint.nat acceptedPN = uint.nat pn ∨ uint.nat acceptedPN < uint.nat pn) as [HacceptedBefore|Hfresh] by word.
       { (* just send old accept witness *)
         assert (acceptedPN = pn) as -> by word.
         iDestruct (pn_ptsto_agree with "Hpre Hacc_prop") as %->.
@@ -187,7 +187,7 @@ Proof.
         iSplitL "".
         { (* XXX: acceptedPN > promisePN now, so we don't need to keep any reject witnesses *)
           iIntros (pn' Hle1 Hle2).
-          assert (int.nat pn < int.nat acceptedPN) as Hineq by word.
+          assert (uint.nat pn < uint.nat acceptedPN) as Hineq by word.
           iApply "Hrej".
           { word. }
           { word. }

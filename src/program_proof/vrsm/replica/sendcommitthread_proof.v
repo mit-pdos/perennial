@@ -20,7 +20,7 @@ Context `{!pbG Σ}.
 Lemma get_commitIndex_facts st γ γsrv :
   own_Server_ghost_eph_f st γ γsrv -∗
   ∃ σ,
-  ⌜int.nat st.(server.committedNextIndex) = length σ⌝ ∗
+  ⌜uint.nat st.(server.committedNextIndex) = length σ⌝ ∗
   is_pb_log_lb γ.(s_pb) σ ∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) σ ∗
   □ committed_log_fact γ st.(server.epoch) σ
@@ -139,7 +139,7 @@ Proof.
   rename clerkss into clerkss'.
   rename t0 into x.
   set (clerkss := (x :: clerkss')) in *.
-  assert (int.nat clerkIdx < length clerkss) as Hlookup_clerks.
+  assert (uint.nat clerkIdx < length clerkss) as Hlookup_clerks.
   { (* FIXME: better lemmas about mod? *)
     rewrite Hclerkss_sz.
     unfold clerkIdx.
@@ -149,13 +149,13 @@ Proof.
       unfold numClerks in Hclerkss_sz.
       word.
     }
-    enough (int.Z randint `mod` 32 < int.Z 32)%Z.
+    enough (uint.Z randint `mod` 32 < uint.Z 32)%Z.
     { word. }
     apply Z.mod_pos_bound.
     word.
   }
 
-  assert (∃ clerks_sl_inner, clerkss !! int.nat clerkIdx%Z = Some clerks_sl_inner) as [clerks_sl_inner Hclerkss_lookup].
+  assert (∃ clerks_sl_inner, clerkss !! uint.nat clerkIdx%Z = Some clerks_sl_inner) as [clerks_sl_inner Hclerkss_lookup].
   {
     apply list_lookup_lt.
     rewrite Hclerkss_len.

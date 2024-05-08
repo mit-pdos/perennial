@@ -84,7 +84,7 @@ Notation "lhs ⪯ rhs" := (prefix lhs rhs)
 
 Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
   □(∀ epoch_old σ_old,
-   ⌜int.nat epoch_old < int.nat epoch⌝ →
+   ⌜uint.nat epoch_old < uint.nat epoch⌝ →
    committed_by epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition ghostN := N .@ "ghost".
@@ -124,8 +124,8 @@ Definition is_accepted_upper_bound γsrv log (acceptedEpoch newEpoch:u64) : iPro
   ∃ logPrefix,
   ⌜logPrefix ⪯ log⌝ ∗
   is_accepted_ro γsrv acceptedEpoch logPrefix ∗
-  □ (∀ epoch', ⌜int.nat acceptedEpoch < int.nat epoch'⌝ -∗
-            ⌜int.nat epoch' < int.nat newEpoch⌝ -∗
+  □ (∀ epoch', ⌜uint.nat acceptedEpoch < uint.nat epoch'⌝ -∗
+            ⌜uint.nat epoch' < uint.nat newEpoch⌝ -∗
             is_accepted_ro γsrv epoch' [])
 .
 
@@ -134,19 +134,19 @@ Definition own_replica_ghost γsys γsrv (st:MPaxosState) : iProp Σ :=
   "#Hprop_lb" ∷ is_proposal_lb γsys st.(mp_acceptedEpoch) st.(mp_log) ∗
   "#Hprop_facts" ∷ is_proposal_facts γsys st.(mp_acceptedEpoch) st.(mp_log) ∗
   "#Hacc_lb" ∷ is_accepted_lb γsrv st.(mp_acceptedEpoch) st.(mp_log) ∗
-  "%HepochIneq" ∷ ⌜int.nat st.(mp_acceptedEpoch) ≤ int.nat st.(mp_epoch)⌝ ∗
+  "%HepochIneq" ∷ ⌜uint.nat st.(mp_acceptedEpoch) ≤ uint.nat st.(mp_epoch)⌝ ∗
 
   "Hacc" ∷ own_accepted γsrv st.(mp_epoch)
-                                  (if (decide (int.nat st.(mp_acceptedEpoch) = int.nat st.(mp_epoch))) then
+                                  (if (decide (uint.nat st.(mp_acceptedEpoch) = uint.nat st.(mp_epoch))) then
                                      st.(mp_log)
                                    else []) ∗
    (* XXX: could combine this with the previous proposition *)
-  "#Hacc_ub" ∷ (⌜int.nat st.(mp_acceptedEpoch) < int.nat st.(mp_epoch)⌝ →
+  "#Hacc_ub" ∷ (⌜uint.nat st.(mp_acceptedEpoch) < uint.nat st.(mp_epoch)⌝ →
                  is_accepted_upper_bound γsrv st.(mp_log) st.(mp_acceptedEpoch) st.(mp_epoch)) ∗
 
 
-  "Hunused" ∷ ([∗ set] e ∈ (fin_to_set u64), (⌜int.nat e > int.nat st.(mp_epoch)⌝ → own_accepted γsrv e [])) ∗
-  "Hvotes" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' ≤ int.nat st.(mp_epoch)⌝ ∨ own_vote_tok γsrv epoch')
+  "Hunused" ∷ ([∗ set] e ∈ (fin_to_set u64), (⌜uint.nat e > uint.nat st.(mp_epoch)⌝ → own_accepted γsrv e [])) ∗
+  "Hvotes" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜uint.nat epoch' ≤ uint.nat st.(mp_epoch)⌝ ∨ own_vote_tok γsrv epoch')
 .
 
 Definition own_leader_ghost γsys (st:MPaxosState): iProp Σ :=
@@ -316,8 +316,8 @@ Qed.
 
 (* Similar to ghost_accept in pb_ghost.v *)
 Lemma ghost_replica_accept_same_epoch γsys γsrv st epoch' log' :
-  int.nat st.(mp_epoch) ≤ int.nat epoch' →
-  int.nat st.(mp_acceptedEpoch) = int.nat epoch' →
+  uint.nat st.(mp_epoch) ≤ uint.nat epoch' →
+  uint.nat st.(mp_acceptedEpoch) = uint.nat epoch' →
   length st.(mp_log) ≤ length log' →
   own_replica_ghost γsys γsrv st -∗
   is_proposal γsys epoch' log'
@@ -363,8 +363,8 @@ Proof.
 Qed.
 
 Lemma ghost_replica_accept_same_epoch_old γsys γsrv st epoch' log' :
-  int.nat st.(mp_epoch) ≤ int.nat epoch' →
-  int.nat st.(mp_acceptedEpoch) = int.nat epoch' →
+  uint.nat st.(mp_epoch) ≤ uint.nat epoch' →
+  uint.nat st.(mp_acceptedEpoch) = uint.nat epoch' →
   length log' ≤ length st.(mp_log) →
   own_replica_ghost γsys γsrv st -∗
   is_proposal γsys epoch' log' -∗
@@ -396,8 +396,8 @@ Proof.
 Qed.
 
 Lemma ghost_replica_accept_new_epoch γsys γsrv st epoch' log' :
-  int.nat st.(mp_epoch) ≤ int.nat epoch' →
-  int.nat st.(mp_acceptedEpoch) ≠ int.nat epoch' →
+  uint.nat st.(mp_epoch) ≤ uint.nat epoch' →
+  uint.nat st.(mp_acceptedEpoch) ≠ uint.nat epoch' →
   own_replica_ghost γsys γsrv st -∗
   is_proposal γsys epoch' log'
   ==∗
@@ -406,7 +406,7 @@ Proof.
   intros Hineq1 Hneq2.
   iNamed 1.
   iIntros "[#Hprop_lb2 #Hprop_facts2]".
-  assert (int.nat st.(mp_epoch) < int.nat epoch' ∨ int.nat st.(mp_epoch) = int.nat epoch') as Hcases.
+  assert (uint.nat st.(mp_epoch) < uint.nat epoch' ∨ uint.nat st.(mp_epoch) = uint.nat epoch') as Hcases.
   { word. }
   destruct Hcases as [HnewEpoch|HcurrentEpoch].
   { (* case: mp_acceptedEpoch < mp_epoch == epoch'; get stuff out of Hunused *)
@@ -523,7 +523,7 @@ Proof.
   iDestruct "Hprop_facts" as "(Hmax & Hvalid)".
   iAssert (⌜σcommit ⪯ σ⌝ ∨ ⌜σ ⪯ σcommit⌝)%I as "%Hlog".
   {
-    assert (int.nat epoch < int.nat epoch_commit ∨ int.nat epoch = int.nat epoch_commit ∨ int.nat epoch > int.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
+    assert (uint.nat epoch < uint.nat epoch_commit ∨ uint.nat epoch = uint.nat epoch_commit ∨ uint.nat epoch > uint.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
     { (* case epoch < epoch_commit: use old_proposal_max of epoch_commit. *)
       iRight.
       by iApply "Hmax_com".
@@ -576,8 +576,8 @@ Proof.
 Qed.
 
 Lemma is_accepted_upper_bound_mono_epoch γsrv log acceptedEpoch acceptedEpoch' newEpoch :
-  int.nat acceptedEpoch < int.nat acceptedEpoch' →
-  int.nat acceptedEpoch' < int.nat newEpoch →
+  uint.nat acceptedEpoch < uint.nat acceptedEpoch' →
+  uint.nat acceptedEpoch' < uint.nat newEpoch →
   is_accepted_upper_bound γsrv log acceptedEpoch newEpoch -∗
   is_accepted_upper_bound γsrv [] acceptedEpoch' newEpoch
 .
@@ -780,8 +780,8 @@ Proof.
 Qed.
 
 Lemma accepted_upper_bound_lb2 γsrv acceptedEpoch epoch newEpoch log log':
-  int.nat acceptedEpoch < int.nat epoch →
-  int.nat epoch < int.nat newEpoch →
+  uint.nat acceptedEpoch < uint.nat epoch →
+  uint.nat epoch < uint.nat newEpoch →
   is_accepted_lb γsrv epoch log -∗
   is_accepted_upper_bound γsrv log' acceptedEpoch newEpoch -∗
   ⌜log ⪯ log'⌝
@@ -830,7 +830,7 @@ Proof.
   simpl.
   iIntros (? HepochIneq) "#Hcom_old".
 
-  destruct (decide (int.nat epoch_old < int.nat acceptedEpoch)).
+  destruct (decide (uint.nat epoch_old < uint.nat acceptedEpoch)).
   { (* case: epoch_old < acceptedEpoch, just use prev old_prop_max *)
     iApply "Hmax".
     { done. }
@@ -847,18 +847,18 @@ Proof.
   { done. }
   iSpecialize ("Hacc_lb" with "[%//]").
 
-  destruct (decide (int.nat acceptedEpoch = int.nat epoch_old)).
+  destruct (decide (uint.nat acceptedEpoch = uint.nat epoch_old)).
   { (* case: epoch_old = acceptedEpoch *)
     replace (acceptedEpoch) with (epoch_old); last first.
     {
-      assert (int.Z acceptedEpoch = int.Z epoch_old) by word.
+      assert (uint.Z acceptedEpoch = uint.Z epoch_old) by word.
       naive_solver. (* XXX: why do I have to assert this Z inequalit? *)
-    } (* we have int.nat a = int.nat b, and need to show a = b *)
+    } (* we have uint.nat a = uint.nat b, and need to show a = b *)
     iDestruct (accepted_upper_bound_lb with "Hacc_lb Hacc_ub") as %Hineq.
     done.
   }
   { (* case: acceptedEpoch < epoch_old < newEpoch *)
-    assert (int.nat acceptedEpoch < int.nat epoch_old) as Hineq by word.
+    assert (uint.nat acceptedEpoch < uint.nat epoch_old) as Hineq by word.
     iDestruct (accepted_upper_bound_lb2 with "Hacc_lb Hacc_ub") as %Hineq2.
     { done. }
     { done. }
@@ -886,7 +886,7 @@ Proof.
 Qed.
 
 Lemma ghost_replica_leader_init γsys γsrv st1 st2 :
-  int.nat st2.(mp_epoch) ≤ int.nat st1.(mp_epoch) →
+  uint.nat st2.(mp_epoch) ≤ uint.nat st1.(mp_epoch) →
   own_leader_ghost γsys st1 -∗
   own_replica_ghost γsys γsrv st2
   ==∗
@@ -897,7 +897,7 @@ Proof.
   iRename "Hprop_facts" into "Hprop_facts2".
   iIntros "Hghost".
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb2".
-  destruct (decide (int.nat st1.(mp_epoch) = int.nat st2.(mp_acceptedEpoch))).
+  destruct (decide (uint.nat st1.(mp_epoch) = uint.nat st2.(mp_acceptedEpoch))).
   2:{ (* case: replica is entering new epoch *)
     iMod (ghost_replica_accept_new_epoch  with "[$] [$]") as "Hghost".
     { word. }
@@ -927,7 +927,7 @@ Qed.
 
 Lemma ghost_replica_helper1 γsys γsrv st :
   own_replica_ghost γsys γsrv st -∗
-  ⌜int.nat st.(mp_acceptedEpoch) ≤ int.nat st.(mp_epoch)⌝.
+  ⌜uint.nat st.(mp_acceptedEpoch) ≤ uint.nat st.(mp_epoch)⌝.
 Proof.
   iNamed 1.
   iPureIntro.
@@ -935,7 +935,7 @@ Proof.
 Qed.
 
 Lemma ghost_replica_enter_new_epoch γsys γsrv st newEpoch :
-  int.nat newEpoch > int.nat st.(mp_epoch) →
+  uint.nat newEpoch > uint.nat st.(mp_epoch) →
   own_replica_ghost γsys γsrv st ==∗
   own_replica_ghost γsys γsrv (mkMPaxosState newEpoch st.(mp_acceptedEpoch) st.(mp_log)) ∗
   own_vote_tok γsrv newEpoch ∗
@@ -947,16 +947,16 @@ Proof.
   iNamed 1.
 
   (* FIXME: take points-tos out of Hunused, with e < newEpoch *)
-  set (F1:=(λ e, (⌜int.nat e > int.nat st.(mp_epoch)⌝ → ⌜int.nat e < int.nat newEpoch⌝ → own_accepted γsrv e []))%I).
-  set (F2:=(λ e, (⌜int.nat e > int.nat newEpoch⌝ → own_accepted γsrv e []))%I).
-  set (F3:=(λ e, (⌜int.nat e = int.nat newEpoch⌝ → own_accepted γsrv e []))%I).
+  set (F1:=(λ e, (⌜uint.nat e > uint.nat st.(mp_epoch)⌝ → ⌜uint.nat e < uint.nat newEpoch⌝ → own_accepted γsrv e []))%I).
+  set (F2:=(λ e, (⌜uint.nat e > uint.nat newEpoch⌝ → own_accepted γsrv e []))%I).
+  set (F3:=(λ e, (⌜uint.nat e = uint.nat newEpoch⌝ → own_accepted γsrv e []))%I).
   iDestruct (big_sepS_impl with "Hunused []") as "Hunused".
   {
     instantiate (1:=(λ e, (F1 e ∗ F3 e) ∗ F2 e)%I).
     iModIntro.
     iIntros (??) "Hwand".
     unfold F1. unfold F2. unfold F3.
-    destruct (decide (int.nat x < int.nat newEpoch)).
+    destruct (decide (uint.nat x < uint.nat newEpoch)).
     {
       iSplitL "Hwand".
       {
@@ -967,7 +967,7 @@ Proof.
       { iIntros. exfalso. word. }
     }
     {
-      destruct (decide (int.nat x = int.nat newEpoch)).
+      destruct (decide (uint.nat x = uint.nat newEpoch)).
       {
         iSplitL "Hwand".
         {
@@ -978,7 +978,7 @@ Proof.
         { iIntros. exfalso. word. }
     }
     {
-      assert (int.nat x > int.nat newEpoch) by word.
+      assert (uint.nat x > uint.nat newEpoch) by word.
       iSplitR "Hwand".
       {
         iSplitL.
@@ -996,8 +996,8 @@ Proof.
   (* Now, we can do whatever we want with Hunused (F1); let's freeze it all! *)
 
   set (G1:=(λ (e:u64),
-        |==> (⌜int.nat e > int.nat st.(mp_epoch)⌝
-          → ⌜int.nat e < int.nat newEpoch⌝ -∗
+        |==> (⌜uint.nat e > uint.nat st.(mp_epoch)⌝
+          → ⌜uint.nat e < uint.nat newEpoch⌝ -∗
           is_accepted_ro γsrv e [])%I
                   )%I).
   iDestruct (big_sepS_impl with "Hunused []") as "Hunused".
@@ -1008,12 +1008,12 @@ Proof.
     unfold F1.
     unfold G1.
 
-    destruct (decide (int.nat st.(mp_epoch) < int.nat x)); last first.
+    destruct (decide (uint.nat st.(mp_epoch) < uint.nat x)); last first.
     {
       iModIntro.
       iIntros. exfalso; word.
     }
-    destruct (decide (int.nat x < int.nat newEpoch)); last first.
+    destruct (decide (uint.nat x < uint.nat newEpoch)); last first.
     {
       iModIntro.
       iIntros. exfalso; word.
@@ -1063,13 +1063,13 @@ Proof.
       iFrame "Hacc_ro2".
       iModIntro.
       iIntros.
-      destruct (decide (int.nat epoch' < int.nat st.(mp_epoch))).
+      destruct (decide (uint.nat epoch' < uint.nat st.(mp_epoch))).
       { iApply "Hacc_ub"; done. }
-      assert (int.nat st.(mp_epoch) ≤ int.nat epoch') by word.
+      assert (uint.nat st.(mp_epoch) ≤ uint.nat epoch') by word.
 
       iDestruct (big_sepS_elem_of_acc_impl epoch' with "Hunused") as "[Hunused2 _]".
       { set_solver. }
-      destruct (decide (int.nat epoch' = int.nat st.(mp_epoch))).
+      destruct (decide (uint.nat epoch' = uint.nat st.(mp_epoch))).
       {
         replace (epoch') with (st.(mp_epoch)) by word.
         iFrame "#".
@@ -1143,7 +1143,7 @@ Qed.
 
 Definition own_server_pre γsrv : iProp Σ :=
   "Haccepted" ∷ own_accepted γsrv 0 [] ∗
-  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat e'⌝ →
+  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜uint.nat 0 < uint.nat e'⌝ →
                                                       own_accepted γsrv e' []) ∗
   "Hvotes" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), own_vote_tok γsrv epoch')
 .
@@ -1170,7 +1170,7 @@ Proof.
     iFrame.
   }
   {
-    iIntros. exfalso. replace (int.nat 0%Z) with 0 in H; word.
+    iIntros. exfalso. replace (uint.nat 0%Z) with 0 in H; word.
   }
 Qed.
 
@@ -1213,7 +1213,7 @@ Proof.
     {
       iIntros (???).
       exfalso.
-      replace (int.nat (I64 0)) with (0) in H by word.
+      replace (uint.nat (I64 0)) with (0) in H by word.
       lia.
     }
     iModIntro.

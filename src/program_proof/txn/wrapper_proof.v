@@ -1314,10 +1314,10 @@ Section proof.
     1: rewrite Hk //.
     {
       assert (
-        Z.of_nat (length data) = int.Z data_s.(Slice.sz)
+        Z.of_nat (length data) = uint.Z data_s.(Slice.sz)
       ) as Hsz' by word.
-      replace (int.nat (word.mul data_s.(Slice.sz) 8))
-        with ((int.nat data_s.(Slice.sz)) * 8)%nat;
+      replace (uint.nat (word.mul data_s.(Slice.sz) 8))
+        with ((uint.nat data_s.(Slice.sz)) * 8)%nat;
         last by (rewrite word.unsigned_mul; word).
       rewrite -Hsz -objSz_bufObj_to_obj.
       erewrite <- data_has_obj_not_bit.

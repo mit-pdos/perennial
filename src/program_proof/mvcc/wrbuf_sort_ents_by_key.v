@@ -11,7 +11,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 Local Lemma wp_swap (entsS : Slice.t) (ents : list wrent) (i j : u64) :
   {{{ slice.own_slice_small entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
-      ⌜(int.nat i < length ents ∧ int.nat j < length ents)%nat⌝
+      ⌜(uint.nat i < length ents ∧ uint.nat j < length ents)%nat⌝
   }}}
     swap (to_val entsS) #i #j
   {{{ (ents' : list wrent), RET #();
@@ -126,7 +126,7 @@ Proof.
                 "HentsS" ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents'') ∗
                 "HjRef"  ∷ jRef ↦[uint64T] #j ∗
                 "%Hperm" ∷ ⌜ents'' ≡ₚ ents'⌝ ∗
-                "%Hle" ∷ ⌜int.Z j ≤ int.Z i⌝
+                "%Hle" ∷ ⌜uint.Z j ≤ uint.Z i⌝
             )%I.
     wp_apply (wp_forBreak_cond Q with "[] [HentsS HjRef]").
     { (* Inner loop body. *)
@@ -142,12 +142,12 @@ Proof.
       }
       wp_pures.
 
-      assert (Hboundj : (int.nat j < length ents'')%nat).
+      assert (Hboundj : (uint.nat j < length ents'')%nat).
       { apply Permutation_length in Hperm, Hperm0. word. }
 
       (* Read key of entry at [j - 1]. *)
       wp_load.
-      destruct (list_lookup_lt _ (wrent_to_val <$> ents'') (int.nat (word.sub j (I64 1)))) as [entx Hlookupx].
+      destruct (list_lookup_lt _ (wrent_to_val <$> ents'') (uint.nat (word.sub j (I64 1)))) as [entx Hlookupx].
       { rewrite fmap_length. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".
@@ -158,7 +158,7 @@ Proof.
 
       (* Read key of entry at [j]. *)
       wp_load.
-      destruct (list_lookup_lt _ (wrent_to_val <$> ents'') (int.nat j)) as [enty Hlookupy].
+      destruct (list_lookup_lt _ (wrent_to_val <$> ents'') (uint.nat j)) as [enty Hlookupy].
       { rewrite fmap_length. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".

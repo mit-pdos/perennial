@@ -38,7 +38,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iExists _, [].
-  change (int.nat 0) with 0%nat.
+  change (uint.nat 0) with 0%nat.
   rewrite replicate_0.
   iFrame.
   iPureIntro.
@@ -48,7 +48,7 @@ Qed.
 Definition spec_search (key : u64) (ents : list wrent) (pos : u64) (found : bool) :=
   match found with
   | false => key ∉ ents.*1.*1.*1
-  | true  => (∃ ent, ents !! (int.nat pos) = Some ent ∧ ent.1.1.1 = key)
+  | true  => (∃ ent, ents !! (uint.nat pos) = Some ent ∧ ent.1.1.1 = key)
   end.
 
 (*****************************************************************)
@@ -81,9 +81,9 @@ Proof.
                "HentsS" ∷ (slice.own_slice entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents)) ∗
                "HposR" ∷ posR ↦[uint64T] #pos ∗
                "%Hexit" ∷ (⌜if b then True
-                            else (∃ (ent : wrent), ents !! (int.nat pos) = Some ent ∧ ent.1.1.1 = key) ∨
-                                 (int.Z entsS.(Slice.sz)) ≤ (int.Z pos)⌝) ∗
-               "%Hnotin" ∷ (⌜key ∉ (take (int.nat pos) ents.*1.*1.*1)⌝))%I.
+                            else (∃ (ent : wrent), ents !! (uint.nat pos) = Some ent ∧ ent.1.1.1 = key) ∨
+                                 (uint.Z entsS.(Slice.sz)) ≤ (uint.Z pos)⌝) ∗
+               "%Hnotin" ∷ (⌜key ∉ (take (uint.nat pos) ents.*1.*1.*1)⌝))%I.
   wp_apply (wp_forBreak_cond P with "[] [$HentsS HposR]").
   { clear Φ.
     iIntros (Φ) "!> HP HΦ".
@@ -118,7 +118,7 @@ Proof.
     iDestruct (slice.own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
     iDestruct (slice.own_slice_small_sz with "[$HentsS]") as "%HentsSz".
     wp_load.
-    destruct (list_lookup_lt _ (wrent_to_val <$> ents) (int.nat pos)) as [ent Hlookup]; first word.
+    destruct (list_lookup_lt _ (wrent_to_val <$> ents) (uint.nat pos)) as [ent Hlookup]; first word.
     wp_apply (slice.wp_SliceGet with "[$HentsS]"); first done.
     iIntros "[HentsS %HentsT]".
     iDestruct ("HentsC" with "HentsS") as "HentsS".
@@ -148,7 +148,7 @@ Proof.
     iFrame "∗ %".
     iPureIntro.
     (* Show preservation of the loop invariant after one iteration. *)
-    replace (int.nat (word.add pos 1)) with (S (int.nat pos)) by word.
+    replace (uint.nat (word.add pos 1)) with (S (uint.nat pos)) by word.
     intros Helem.
     rewrite (take_S_r _ _ k) in Helem; last first.
     { rewrite list_lookup_fmap in Hlookup.
@@ -165,7 +165,7 @@ Proof.
     iFrame.
     iPureIntro.
     split; first done.
-    change (int.nat 0) with 0%nat.
+    change (uint.nat 0) with 0%nat.
     rewrite take_0.
     set_solver.
   }
@@ -251,7 +251,7 @@ Proof.
     rewrite Hmods.
     rewrite -elem_of_list_to_map; last by apply NoDup_wrent_to_key_dbval.
     apply elem_of_list_fmap_1_alt with ent.
-    { by apply elem_of_list_lookup_2 with (int.nat pos). }
+    { by apply elem_of_list_lookup_2 with (uint.nat pos). }
     { rewrite -Hkey. auto using surjective_pairing. }
   }
   (* cache miss *)
@@ -317,7 +317,7 @@ Proof.
     wp_pures.
     unfold own_slice_small.
     iDestruct "HentsS" as "[HentsA [%HentsLen %HentsCap]]".
-    iDestruct (update_array (off:=int.nat pos) with "HentsA") as "[HentsP HentsA]".
+    iDestruct (update_array (off:=uint.nat pos) with "HentsA") as "[HentsP HentsA]".
     { by rewrite list_lookup_fmap Hlookup. }
     iDestruct (struct_fields_split with "HentsP") as "HentsP".
     iNamed "HentsP".
@@ -339,7 +339,7 @@ Proof.
     }
     iIntros "wr".
     word_cleanup.
-    set entR := (entsS.(Slice.ptr) +ₗ[_] (int.Z pos)).
+    set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, val, true, ent.2).
     iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
                 with "[key val wr tpl]") as "HentsP".
@@ -474,7 +474,7 @@ Proof.
     wp_pures.
     unfold own_slice_small.
     iDestruct "HentsS" as "[HentsA [%HentsLen %HentsCap]]".
-    iDestruct (update_array (off:=int.nat pos) with "HentsA") as "[HentsP HentsA]".
+    iDestruct (update_array (off:=uint.nat pos) with "HentsA") as "[HentsP HentsA]".
     { by rewrite list_lookup_fmap Hlookup. }
     iDestruct (struct_fields_split with "HentsP") as "HentsP".
     iNamed "HentsP".
@@ -487,7 +487,7 @@ Proof.
     }
     iIntros "wr".
     word_cleanup.
-    set entR := (entsS.(Slice.ptr) +ₗ[_] (int.Z pos)).
+    set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, ent.1.1.2, false, ent.2).
     iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
                 with "[key val wr tpl]") as "HentsP".
@@ -599,7 +599,7 @@ Proof.
   iModIntro.
   iExists _, [].
   iDestruct (own_slice_take_cap _ _ _ (I64 0) with "HentsS") as "HentsS"; first word.
-  change (int.nat 0) with 0%nat.
+  change (uint.nat 0) with 0%nat.
   rewrite take_0.
   do 2 rewrite fmap_nil.
   iFrame.

@@ -21,7 +21,7 @@ Context `{Hin_nat_ctx: inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lan
                                                                        spec_lang.(language.expr)))))))}.
 Context (SIZE: nat).
 Context (SIZE_nonzero: 0 < SIZE).
-Context (SIZE_bounds: int.nat SIZE = SIZE).
+Context (SIZE_bounds: uint.nat SIZE = SIZE).
 
 Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field (* spec_ffi_interp_field  *) spec_ffi_interp_adequacy_field.
 

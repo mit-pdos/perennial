@@ -15,21 +15,21 @@ Implicit Types (l: loc) (σ: slidingM.t).
 Definition readonly_log logSlice σ : iProp Σ :=
       readonly (updates_slice_frag
                   (slice_take logSlice (slidingM.numMutable σ)) 1
-                  (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
+                  (take (uint.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner' logSlice σ (q : Qp) : iProp Σ :=
                (updates_slice_frag
                   (slice_take logSlice (slidingM.numMutable σ)) q
-                  (take (int.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
+                  (take (uint.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner logSlice σ : iProp Σ :=
    ∃ (q : Qp), ⌜q < 1⌝%Qp ∗ readonly_log_inner' logSlice σ q.
 
 Definition mutable_log logSlice q σ : iProp Σ :=
-  "%logSlice_wf" ∷ ⌜int.nat logSlice.(Slice.sz) = length σ.(slidingM.log) ∧ int.Z logSlice.(Slice.sz) ≤ int.Z logSlice.(Slice.cap)⌝ ∗
+  "%logSlice_wf" ∷ ⌜uint.nat logSlice.(Slice.sz) = length σ.(slidingM.log) ∧ uint.Z logSlice.(Slice.sz) ≤ uint.Z logSlice.(Slice.cap)⌝ ∗
   "log_mutable" ∷ updates_slice' q
         (slice_skip logSlice (struct.t Update) (slidingM.numMutable σ))
-        (drop (int.nat (slidingM.numMutable σ)) σ.(slidingM.log)).
+        (drop (uint.nat (slidingM.numMutable σ)) σ.(slidingM.log)).
 
 Definition is_sliding (l: loc) (q: Qp) (σ: slidingM.t) : iProp Σ :=
   "%Hwf" ∷ ⌜slidingM.wf σ⌝ ∗
@@ -50,7 +50,7 @@ Qed.
 
 Theorem memLog_sz s q σ :
   mutable_log s q σ -∗
-  ⌜int.nat s.(Slice.sz) = length (slidingM.log σ)⌝.
+  ⌜uint.nat s.(Slice.sz) = length (slidingM.log σ)⌝.
 Proof.
   iNamed 1.
   iPureIntro; word.
@@ -58,7 +58,7 @@ Qed.
 
 Theorem memLog_wf s q σ :
   mutable_log s q σ -∗
-  ⌜int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap)⌝.
+  ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
 Proof.
   iNamed 1.
   iPureIntro; word.
@@ -110,8 +110,8 @@ Proof.
 Qed.
 
 Theorem memLogMap_append log start u (i: u64) :
-  int.nat i = length log ->
-  int.nat start + length log < 2^64 ->
+  uint.nat i = length log ->
+  uint.nat start + length log < 2^64 ->
   compute_memLogMap (log ++ [u]) start =
   map_insert (compute_memLogMap log start) u.(update.addr) (word.add start i).
 Proof.
@@ -136,10 +136,10 @@ Proof.
 Qed.
 
 Theorem updates_slice_frag_split s q q_b (n: u64) log :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
+  (uint.nat n <= uint.nat s.(Slice.sz))%nat ->
   updates_slice_frag' s q q_b log -∗
-  updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (int.nat n) log) ∗
-  updates_slice_frag' (slice_take s n) q q_b (take (int.nat n) log).
+  updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (uint.nat n) log) ∗
+  updates_slice_frag' (slice_take s n) q q_b (take (uint.nat n) log).
 Proof.
   iIntros (Hbound) "Hs".
   iDestruct (updates_slice_frag_len with "Hs") as %Hlen.
@@ -147,7 +147,7 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs") as %Hbks_len.
   autorewrite with len in Hbks_len.
   iDestruct (own_slice_small_take_drop _ _ _ n with "Hs") as "[Hs1 Hs2]"; eauto.
-  rewrite -{1}(take_drop (int.nat n) log) -{1}(take_drop (int.nat n) bks).
+  rewrite -{1}(take_drop (uint.nat n) log) -{1}(take_drop (uint.nat n) bks).
   iDestruct (big_sepL2_app_inv with "Hblocks") as "[Hblocks2 Hblocks1]".
   { len. }
   rewrite -fmap_drop -fmap_take.
@@ -157,9 +157,9 @@ Proof.
 Qed.
 
 Theorem updates_slice_frag_combine s q q_b (n: u64) log :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-  updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (int.nat n) log) ∗
-  updates_slice_frag' (slice_take s n) q q_b (take (int.nat n) log) -∗
+  (uint.nat n <= uint.nat s.(Slice.sz))%nat ->
+  updates_slice_frag' (slice_skip s (struct.t Update) n) q q_b (drop (uint.nat n) log) ∗
+  updates_slice_frag' (slice_take s n) q q_b (take (uint.nat n) log) -∗
   updates_slice_frag' s q q_b log.
 Proof.
   iIntros (Hbound) "[Hs2 Hs1]".
@@ -180,15 +180,15 @@ Proof.
     rewrite Hsz1 Nat.sub_diag drop_0.
     iFrame. }
   iExists _; iFrame.
-  rewrite -{3}(take_drop (int.nat n) log).
+  rewrite -{3}(take_drop (uint.nat n) log).
   iApply (big_sepL2_app with "Hblocks1 Hblocks2").
 Qed.
 
 Theorem wp_mkSliding s q log (start: u64) :
-  int.Z start + length log < 2^64 ->
+  uint.Z start + length log < 2^64 ->
   {{{ updates_slice_frag s q log ∗ own_slice_cap s (struct.t Update) }}}
     mkSliding (slice_val s) #start
-  {{{ (l: loc), RET #l; is_sliding l q (slidingM.mk log start (int.Z start + length log)) }}}.
+  {{{ (l: loc), RET #l; is_sliding l q (slidingM.mk log start (uint.Z start + length log)) }}}.
 Proof.
   iIntros (Hbound Φ) "[Hs Hcap] HΦ".
   rewrite /mkSliding; wp_pures.
@@ -200,7 +200,7 @@ Proof.
 
   wp_apply (wp_forSlice
               (fun i => "Hm" ∷ own_map addrPosPtr 1
-                               (compute_memLogMap (take (int.nat i) log) start) ∗
+                               (compute_memLogMap (take (uint.nat i) log) start) ∗
                       "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd q upd
               )%I
            with "[] [Hown_map $Hblocks $Hs]").
@@ -216,8 +216,8 @@ Proof.
     wp_apply (wp_MapInsert with "Hm"); auto.
     iIntros "Hm".
     iApply "HΦ".
-    replace (int.nat (word.add i 1)) with (1 + int.nat i)%nat by word.
-    destruct (list_lookup_lt _ log (int.nat i)) as [u Hlookup']; first by word.
+    replace (uint.nat (word.add i 1)) with (1 + uint.nat i)%nat by word.
+    destruct (list_lookup_lt _ log (uint.nat i)) as [u Hlookup']; first by word.
     iDestruct (big_sepL2_lookup_acc with "Hblocks") as "[[%Huaddr Hb] Hblocks]"; eauto.
     iSpecialize ("Hblocks" with "[$Hb //]").
     iFrame "Hblocks".
@@ -255,7 +255,7 @@ Proof.
   iSplitR.
   - rewrite /readonly_log /slidingM.numMutable /=.
     rewrite -> take_ge by word.
-    replace (word.sub (int.Z start + length log) start)
+    replace (word.sub (uint.Z start + length log) start)
             with (I64 (length log)) by word.
     iFrame "Hreadonly".
   - rewrite /mutable_log /slidingM.numMutable /=.
@@ -263,7 +263,7 @@ Proof.
     + iPureIntro.
       word.
     + rewrite -> drop_ge by word.
-      replace (word.sub (int.Z start + length log) start)
+      replace (word.sub (uint.Z start + length log) start)
               with (I64 (length log)) by word.
       iExists []; simpl.
       rewrite right_id.
@@ -317,7 +317,7 @@ Hint Unfold slidingM.endPos : word.
 
 Theorem slidingM_endPos_val σ :
   slidingM.wf σ ->
-  int.Z (slidingM.endPos σ) = int.Z σ.(slidingM.start) + length σ.(slidingM.log).
+  uint.Z (slidingM.endPos σ) = uint.Z σ.(slidingM.start) + length σ.(slidingM.log).
 Proof.
   intros.
   word.
@@ -345,7 +345,7 @@ Qed.
 Hint Unfold slidingM.logIndex : word.
 
 Theorem wp_sliding__get l σ (pos: u64) (u: update.t) :
-  int.Z σ.(slidingM.start) ≤ int.Z pos ->
+  uint.Z σ.(slidingM.start) ≤ uint.Z pos ->
   σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u ->
   {{{ is_sliding l 1 σ }}}
     sliding__get #l #pos
@@ -379,7 +379,7 @@ Proof.
 Qed.
 
 Theorem addrPosMap_lookup_inv σ pos :
-  slidingM.addrPosMap σ !! pos = (λ (n:nat), I64 (Z.of_nat (int.nat σ.(slidingM.start) + n)%nat)) <$> (find_highest_index (update.addr <$> σ.(slidingM.log)) pos).
+  slidingM.addrPosMap σ !! pos = (λ (n:nat), I64 (Z.of_nat (uint.nat σ.(slidingM.start) + n)%nat)) <$> (find_highest_index (update.addr <$> σ.(slidingM.log)) pos).
 Proof.
   rewrite /slidingM.addrPosMap /compute_memLogMap.
   rewrite lookup_fmap.
@@ -393,7 +393,7 @@ Theorem wp_sliding__posForAddr l q σ (a: u64) :
     sliding__posForAddr #l #a
   {{{ (pos: u64) (ok: bool), RET (#pos, #ok);
       is_sliding l q σ ∗
-      ⌜if ok then int.Z σ.(slidingM.start) ≤ int.Z pos < slidingM.memEnd σ ∧
+      ⌜if ok then uint.Z σ.(slidingM.start) ≤ uint.Z pos < slidingM.memEnd σ ∧
                   find_highest_index (update.addr <$> σ.(slidingM.log)) a = Some (slidingM.logIndex σ pos)
       else find_highest_index (update.addr <$> σ.(slidingM.log)) a = None⌝
   }}}.
@@ -431,11 +431,11 @@ Qed.
 
 Lemma readonly_log_update_mutable logSlice σ (pos: u64) u :
   slidingM.wf σ ->
-  int.Z σ.(slidingM.mutable) ≤ int.Z pos ->
+  uint.Z σ.(slidingM.mutable) ≤ uint.Z pos ->
   readonly_log logSlice σ -∗
   readonly_log logSlice (set slidingM.log
     (λ log : list update.t,
-      <[(int.nat pos - int.nat σ.(slidingM.start))%nat:=u]> log) σ).
+      <[(uint.nat pos - uint.nat σ.(slidingM.start))%nat:=u]> log) σ).
 Proof.
   iIntros (Hwf Hbound) "Hreadonly".
   rewrite /readonly_log.
@@ -486,7 +486,7 @@ Lemma addrPosMap_absorb_eq pos u u0 σ :
   slidingM.addrPosMap
     (set slidingM.log
           (λ log : list update.t,
-                  <[(int.nat pos - int.nat σ.(slidingM.start))%nat:=u]> log) σ) =
+                  <[(uint.nat pos - uint.nat σ.(slidingM.start))%nat:=u]> log) σ) =
   slidingM.addrPosMap σ.
 Proof.
   intros Hlookup Haddreq.
@@ -505,12 +505,12 @@ Qed.
 Theorem wp_sliding__update l q σ (pos: u64) uv u :
   (* must be an absorption update, since we don't update addrPos map *)
   update.addr <$> σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u.(update.addr) ->
-  int.Z σ.(slidingM.mutable) ≤ int.Z pos ->
+  uint.Z σ.(slidingM.mutable) ≤ uint.Z pos ->
   {{{ is_sliding l q σ ∗ is_update uv q u }}}
     sliding__update #l #pos (update_val uv)
   {{{ RET #();
       is_sliding l q (set slidingM.log
-                        (λ log, <[ (int.nat pos - int.nat σ.(slidingM.start))%nat := u]> log) σ)
+                        (λ log, <[ (uint.nat pos - uint.nat σ.(slidingM.start))%nat := u]> log) σ)
   }}}.
 Proof.
   iIntros (Hlookup Hmutable_bound Φ) "[Hsliding Hu] HΦ".
@@ -599,7 +599,7 @@ Qed.
 Lemma addrPosMap_insert_fresh:
   ∀ σ (uv : u64 * Slice.t) (u : update.t) (logSlice : Slice.t),
     uv.1 = update.addr u
-    → int.nat logSlice.(Slice.sz) = length σ.(slidingM.log)
+    → uint.nat logSlice.(Slice.sz) = length σ.(slidingM.log)
     → slidingM.wf (set slidingM.log (λ log : list update.t, log ++ [u]) σ)
     → slidingM.addrPosMap
           (set slidingM.log (λ log : list update.t, log ++ [u]) σ) =
@@ -655,7 +655,7 @@ Qed.
 Theorem wp_if_mutable l q_b memLog (ok: bool) (pos: u64) :
   {{{ is_sliding l q_b memLog }}}
     if: #ok then #pos ≥ struct.loadF sliding "mutable" #l else #false
-  {{{ RET #(bool_decide (ok = true ∧ int.Z memLog.(slidingM.mutable) ≤ int.Z pos));
+  {{{ RET #(bool_decide (ok = true ∧ uint.Z memLog.(slidingM.mutable) ≤ uint.Z pos));
       is_sliding l q_b memLog }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
@@ -726,7 +726,7 @@ Proof.
       replace u.(update.addr).
       rewrite Hlookup.
       destruct (decide
-      (int.Z memLog'.(slidingM.mutable) - int.Z memLog'.(slidingM.start)
+      (uint.Z memLog'.(slidingM.mutable) - uint.Z memLog'.(slidingM.start)
        ≤ slidingM.logIndex memLog' pos)); [ auto | word ].
 
     (* append *)
@@ -758,8 +758,8 @@ Proof.
       replace (u.(update.addr)).
       destruct_with_eqn (find_highest_index (update.addr <$> (memWrite memLog done).(slidingM.log)) uv.1); auto.
       destruct (decide
-                  (int.Z (memWrite memLog done).(slidingM.mutable) -
-                  int.Z (memWrite memLog done).(slidingM.start) ≤ n)); auto.
+                  (uint.Z (memWrite memLog done).(slidingM.mutable) -
+                  uint.Z (memWrite memLog done).(slidingM.start) ≤ n)); auto.
       exfalso.
       destruct ok; try congruence.
       destruct Hlookup as [? Heq]; inversion Heq; subst.
@@ -774,7 +774,7 @@ Qed.
 Lemma wp_sliding__intoMutable l q_b σ :
   (* this doesn't make sense because numMutable is actually mutable-start, which
   is the number of read-only elements... *)
-  int.Z (slidingM.numMutable σ) = 0 →
+  uint.Z (slidingM.numMutable σ) = 0 →
   {{{ is_sliding l q_b σ }}}
     sliding__intoMutable #l
   {{{ s, RET (slice_val s);
@@ -839,7 +839,7 @@ Qed.
 Hint Unfold slidingM.numMutable : word.
 
 Theorem wp_sliding__takeFrom l q_b σ (start: u64) :
-  int.Z σ.(slidingM.start) ≤ int.Z start ≤ int.Z σ.(slidingM.mutable) ->
+  uint.Z σ.(slidingM.start) ≤ uint.Z start ≤ uint.Z σ.(slidingM.mutable) ->
   {{{ is_sliding l q_b σ }}}
     sliding__takeFrom #l #start
   {{{ q s, RET (slice_val s); is_sliding l q_b σ ∗
@@ -876,13 +876,13 @@ Proof.
   iExists _.
   rewrite -fmap_drop.
   iFrame "Hs2".
-  set (numMutable := int.nat (slidingM.numMutable σ)) in *.
+  set (numMutable := uint.nat (slidingM.numMutable σ)) in *.
   assert (numMutable ≤ length σ.(slidingM.log))%nat by (rewrite /numMutable; word).
   replace (numMutable `min` length σ.(slidingM.log))%nat with numMutable in * by word.
-  assert (int.nat (word.sub start σ.(slidingM.start)) = int.nat start - int.nat σ.(slidingM.start))%nat
+  assert (uint.nat (word.sub start σ.(slidingM.start)) = uint.nat start - uint.nat σ.(slidingM.start))%nat
     as Hstart_off by word.
   rewrite Hstart_off.
-  rewrite -{1}(take_drop (int.nat start - int.nat σ.(slidingM.start)) bks).
+  rewrite -{1}(take_drop (uint.nat start - uint.nat σ.(slidingM.start)) bks).
   iDestruct (big_sepL2_app_inv_l with "Hblocks") as (bks1 bks2 Hbks12) "[Hblocks1 Hblocks2]".
   iDestruct (big_sepL2_length with "Hblocks1") as %Hlen1.
   iDestruct (big_sepL2_length with "Hblocks2") as %Hlen2.
@@ -891,7 +891,7 @@ Proof.
   f_equal.
   rewrite subslice_take_drop.
   replace (slidingM.logIndex σ σ.(slidingM.mutable)) with
-      (int.nat (slidingM.numMutable σ)) by word.
+      (uint.nat (slidingM.numMutable σ)) by word.
   rewrite -/numMutable.
   rewrite Hbks12.
   assert (length bks1 = slidingM.logIndex σ start).
@@ -903,11 +903,11 @@ Proof.
 Qed.
 
 Theorem wp_SliceTake_updates s (n: u64) q q_b (upds: list update.t) :
-  int.Z n ≤ length upds →
+  uint.Z n ≤ length upds →
   {{{ updates_slice_frag' s q q_b upds }}}
     SliceTake (slice_val s) #n
   {{{ RET (slice_val (slice_take s n));
-      updates_slice_frag' (slice_take s n) q q_b (take (int.nat n) upds) }}}.
+      updates_slice_frag' (slice_take s n) q q_b (take (uint.nat n) upds) }}}.
 Proof.
   iIntros (Hbound Φ) "Hupds HΦ".
   iDestruct (updates_slice_frag_len with "Hupds") as %Hlen.
@@ -919,7 +919,7 @@ Proof.
 Qed.
 
 Theorem wp_sliding__takeTill l q_b σ (endPos: u64) :
-  int.Z σ.(slidingM.start) ≤ int.Z endPos ≤ int.Z σ.(slidingM.mutable) ->
+  uint.Z σ.(slidingM.start) ≤ uint.Z endPos ≤ uint.Z σ.(slidingM.mutable) ->
   {{{ is_sliding l q_b σ }}}
     sliding__takeTill #l #endPos
   {{{ q s, RET (slice_val s); is_sliding l q_b σ ∗
@@ -1042,7 +1042,7 @@ Proof.
 Qed.
 
 Theorem wp_sliding__deleteFrom l q_b σ (newStart: u64) :
-  int.Z σ.(slidingM.start) ≤ int.Z newStart ≤ int.Z σ.(slidingM.mutable) ->
+  uint.Z σ.(slidingM.start) ≤ uint.Z newStart ≤ uint.Z σ.(slidingM.mutable) ->
   {{{ is_sliding l q_b σ }}}
     sliding__deleteFrom #l #newStart
   {{{ RET #(); is_sliding l q_b
@@ -1070,10 +1070,10 @@ Proof.
     "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
     "HaddrPos" ∷ own_map addrPosPtr 1 (slidingM.addrPosMap
       (set slidingM.start (word.add i)
-        (set slidingM.log (drop (int.nat i)) σ)
+        (set slidingM.log (drop (uint.nat i)) σ)
       )
     ) ∗
-    "Hbks" ∷ [∗ list] uv;upd ∈ bks; take (int.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log),
+    "Hbks" ∷ [∗ list] uv;upd ∈ bks; take (uint.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log),
       is_update uv q upd
   )%I with "[] [$HlogSlice $start $addrPos is_addrPos $Hbks]").
   2: {
@@ -1086,7 +1086,7 @@ Proof.
     iIntros "!>" (Φ) "(HI & %Hlt & %Hlookup) HΦ".
     iNamed "HI".
     rewrite /slice_take /= in Hlt.
-    replace (int.Z (word.sub newStart σ.(slidingM.start))) with ((int.Z newStart) - (int.Z σ.(slidingM.start))) in Hlt by word.
+    replace (uint.Z (word.sub newStart σ.(slidingM.start))) with ((uint.Z newStart) - (uint.Z σ.(slidingM.start))) in Hlt by word.
     fmap_Some in Hlookup as uv.
     wp_pures.
     wp_loadField.
@@ -1094,8 +1094,8 @@ Proof.
     iIntros (pos ok) "[%Hmapget HaddrPos]".
     wp_pures.
 
-    assert ((int.nat i) <
-      length (take (int.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log))
+    assert ((uint.nat i) <
+      length (take (uint.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log))
     )%nat as Hlt' by (rewrite take_length; word).
     destruct (list_lookup_lt _ _ _ Hlt') as (upd & Hupd).
     clear Hlt'.
@@ -1113,7 +1113,7 @@ Proof.
       apply fmap_None in Hmapget.
       apply find_highest_index_none with (txn_id := O) in Hmapget.
       rewrite Huaddr list_lookup_fmap lookup_drop Nat.add_0_r in Hmapget.
-      replace (slidingM.logIndex σ (word.add σ.(slidingM.start) i)) with (int.nat i) in Hmapget by word.
+      replace (slidingM.logIndex σ (word.add σ.(slidingM.start) i)) with (uint.nat i) in Hmapget by word.
       rewrite Hupd //= in Hmapget.
     }
     apply map_get_true in Hmapget as Hindex.
@@ -1125,10 +1125,10 @@ Proof.
     rewrite fmap_length drop_length in Hlookup_oldPos.
 
     remember (set slidingM.start (word.add i)
-      (set slidingM.log (drop (int.nat i)) σ))
+      (set slidingM.log (drop (uint.nat i)) σ))
       as σtrunc.
     replace (set slidingM.start (word.add (word.add i 1))
-      (set slidingM.log (drop (int.nat (word.add i 1))) σ))
+      (set slidingM.log (drop (uint.nat (word.add i 1))) σ))
       with (set slidingM.start (word.add 1)
       (set slidingM.log (drop 1) σtrunc)).
     2: {
@@ -1145,10 +1145,10 @@ Proof.
         lia.
     }
 
-    replace (int.nat (word.add i σ.(slidingM.start))) with (int.nat i + int.nat σ.(slidingM.start))%nat by word.
-    replace (int.Z (word.add σ.(slidingM.start) i)) with (int.Z (int.nat i + int.nat σ.(slidingM.start))%nat) by word.
-    replace (int.Z (int.nat i + int.nat σ.(slidingM.start) + oldPos)%nat) with (int.Z i + int.Z σ.(slidingM.start) + oldPos) by word.
-    replace (int.Z (int.nat i + int.nat σ.(slidingM.start))%nat) with (int.Z i + int.Z σ.(slidingM.start)) by word.
+    replace (uint.nat (word.add i σ.(slidingM.start))) with (uint.nat i + uint.nat σ.(slidingM.start))%nat by word.
+    replace (uint.Z (word.add σ.(slidingM.start) i)) with (uint.Z (uint.nat i + uint.nat σ.(slidingM.start))%nat) by word.
+    replace (uint.Z (uint.nat i + uint.nat σ.(slidingM.start) + oldPos)%nat) with (uint.Z i + uint.Z σ.(slidingM.start) + oldPos) by word.
+    replace (uint.Z (uint.nat i + uint.nat σ.(slidingM.start))%nat) with (uint.Z i + uint.Z σ.(slidingM.start)) by word.
 
     wp_if_destruct.
     2: {
@@ -1198,19 +1198,19 @@ Proof.
   iAssert (∀ q, (updates_slice_frag
                       (slice_take logSlice
                          (word.sub mutable start)) q
-                      (take (int.nat (word.sub mutable start))
+                      (take (uint.nat (word.sub mutable start))
                          log)) -∗
     (updates_slice_frag
        (slice_take
           (slice_skip logSlice (uint64T * (blockT * unitT)%ht)
              (word.sub newStart start))
           (word.sub mutable newStart)) q
-       (take (int.nat (word.sub mutable newStart))
-          (drop (int.nat newStart - int.nat start) log))))%I as "Hlog_implies".
+       (take (uint.nat (word.sub mutable newStart))
+          (drop (uint.nat newStart - uint.nat start) log))))%I as "Hlog_implies".
   {
     clear q.
     iIntros (q) "Hlog".
-    iPoseProof (updates_slice_frag_split _ _ _ (int.nat newStart - int.nat start) with "Hlog") as "[Hlog _]".
+    iPoseProof (updates_slice_frag_split _ _ _ (uint.nat newStart - uint.nat start) with "Hlog") as "[Hlog _]".
     {
       rewrite /slice_take /=.
       word.
@@ -1261,7 +1261,7 @@ Proof.
 Qed.
 
 Theorem own_slice_small_take_all s t q vs (n: u64) :
-  int.Z n = int.nat s.(Slice.sz) →
+  uint.Z n = uint.nat s.(Slice.sz) →
   own_slice_small (slice_take s n) t q vs ⊣⊢
   own_slice_small s t q vs.
 Proof.

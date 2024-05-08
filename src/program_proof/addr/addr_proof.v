@@ -22,15 +22,15 @@ Definition addr2val (a : addr) : val :=
   (#a.(addrBlock), (#a.(addrOff), #())).
 
 Definition addr2flat_z (a : addr) : Z :=
-  int.Z a.(addrBlock) * block_bytes * 8 + int.Z a.(addrOff).
+  uint.Z a.(addrBlock) * block_bytes * 8 + uint.Z a.(addrOff).
 
 Definition addr2flat (a : addr) : u64 :=
   addr2flat_z a.
 
 Definition valid_addr (a : addr) : Prop :=
-  int.Z a.(addrOff) < block_bytes*8 ∧
-  int.Z a.(addrBlock) * block_bytes < 2^64 ∧
-  int.Z a.(addrBlock) * block_bytes * 8 < 2^64 ∧
+  uint.Z a.(addrOff) < block_bytes*8 ∧
+  uint.Z a.(addrBlock) * block_bytes < 2^64 ∧
+  uint.Z a.(addrBlock) * block_bytes * 8 < 2^64 ∧
   addr2flat_z a < 2^64.
 
 Theorem addr2flat_z_eq `(valid_addr a0) `(valid_addr a1) :
@@ -40,7 +40,7 @@ Proof.
   destruct a0, a1.
   unfold addr2flat, valid_addr, addr2flat_z, block_bytes in *.
   simpl in *; intuition.
-  apply (f_equal int.Z) in H.
+  apply (f_equal uint.Z) in H.
   revert H.
   word.
 Qed.
@@ -57,7 +57,7 @@ Proof.
   intuition.
   replace u0 with u2 in *.
   { replace u with u1; auto.
-    assert (int.Z u * Z.to_nat 4096 * 8 = int.Z u1 * Z.to_nat 4096 * 8) by lia.
+    assert (uint.Z u * Z.to_nat 4096 * 8 = uint.Z u1 * Z.to_nat 4096 * 8) by lia.
     word.
   }
   word.

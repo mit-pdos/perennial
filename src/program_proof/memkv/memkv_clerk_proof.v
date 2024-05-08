@@ -42,7 +42,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
-  destruct (decide (int.nat freeClerks_sl.(Slice.sz) = 0)) as [Hzero|Hnzero].
+  destruct (decide (uint.nat freeClerks_sl.(Slice.sz) = 0)) as [Hzero|Hnzero].
   - (* creating new clerk *)
     rewrite bool_decide_true; last first.
     { do 2 f_equal. word. }
@@ -70,7 +70,7 @@ Proof.
     iDestruct (own_slice_small_read with "HfreeClerks_sl") as "[HfreeClerks_sl HfreeClerks_close]".
     wp_apply (wp_SliceGet (V:=loc) with "[$HfreeClerks_sl]").
     { iPureIntro.
-      replace (int.nat (word.sub freeClerks_sl.(Slice.sz) 1%Z)) with (int.nat freeClerks_sl.(Slice.sz) - 1) by word.
+      replace (uint.nat (word.sub freeClerks_sl.(Slice.sz) 1%Z)) with (uint.nat freeClerks_sl.(Slice.sz) - 1) by word.
       rewrite lookup_app_r; last by word. rewrite -Hlen.
       replace (length Hck + 1 - 1 - length Hck) with 0 by lia.
       done. }
@@ -315,7 +315,7 @@ Proof using Type*.
        own that one element, not the entire slice! *)
     rewrite /SliceGet. wp_pures.
     wp_apply wp_slice_ptr. wp_pures.
-    replace (int.nat i : Z) with (int.Z i) by word.
+    replace (uint.nat i : Z) with (uint.Z i) by word.
     wp_load.
 
     wp_apply (wp_KVClerk__Get_seq with "[$Hkey //]").

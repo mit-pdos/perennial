@@ -156,7 +156,7 @@ Definition Q_Increment (r w : dbmap) :=
   ∃ (v u : u64),
     r !! (I64 0) = Some (Value v) ∧
     w !! (I64 0) = Some (Value u) ∧
-    int.Z u = int.Z v + 1.
+    uint.Z u = uint.Z v + 1.
 Definition Ri_Increment (p : loc) : iProp Σ :=
   ∃ (v : u64), p ↦[uint64T] #v.
 Definition Rc_Increment (p : loc) (r w : dbmap) : iProp Σ :=
@@ -249,7 +249,7 @@ Theorem wp_Increment (txn : loc) γ :
       Increment #txn @ ↑mvccN
     <<< ∃∃ (ok : bool),
           if ok
-          then ∃ (u : u64), dbmap_ptsto γ (I64 0) 1 (Value u) ∗ ⌜int.Z u = (int.Z v + 1)%Z⌝
+          then ∃ (u : u64), dbmap_ptsto γ (I64 0) 1 (Value u) ∗ ⌜uint.Z u = (uint.Z v + 1)%Z⌝
           else dbmap_ptsto γ (I64 0) 1 (Value v)
     >>>
     {{{ RET (#v, #ok); own_txn_uninit txn γ }}}.
@@ -333,7 +333,7 @@ Definition Q_Decrement (r w : dbmap) :=
   ∃ (v u : u64),
     r !! (I64 0) = Some (Value v) ∧
     w !! (I64 0) = Some (Value u) ∧
-    int.Z u = int.Z v - 1.
+    uint.Z u = uint.Z v - 1.
 Definition Ri_Decrement (p : loc) : iProp Σ :=
   ∃ (v : u64), p ↦[uint64T] #v.
 Definition Rc_Decrement (p : loc) (r w : dbmap) : iProp Σ :=
@@ -413,7 +413,7 @@ Proof.
     split.
     { by rewrite lookup_singleton. }
     apply u64_val_ne in Heqb.
-    replace (int.Z 0) with 0 in Heqb by word.
+    replace (uint.Z 0) with 0 in Heqb by word.
     word.
   }
   unfold Rc_Decrement, Ra_Decrement.
@@ -427,7 +427,7 @@ Theorem wp_Decrement (txn : loc) γ :
       Decrement #txn @ ↑mvccN
     <<< ∃∃ (ok : bool),
           if ok
-          then ∃ (u : u64), dbmap_ptsto γ (I64 0) 1 (Value u) ∗ ⌜int.Z u = (int.Z v - 1)%Z⌝
+          then ∃ (u : u64), dbmap_ptsto γ (I64 0) 1 (Value u) ∗ ⌜uint.Z u = (uint.Z v - 1)%Z⌝
           else dbmap_ptsto γ (I64 0) 1 (Value v)
     >>>
     {{{ RET (#v, #ok); own_txn_uninit txn γ }}}.
@@ -511,7 +511,7 @@ Qed.
 Definition mvcc_inv_app_def γ α : iProp Σ :=
   ∃ (v : u64),
     "Hdbpt" ∷ dbmap_ptsto γ (I64 0) 1 (Value v) ∗
-    "Hmn"   ∷ mono_nat_auth_own α 1 (int.nat v).
+    "Hmn"   ∷ mono_nat_auth_own α 1 (uint.nat v).
 
 Instance mvcc_inv_app_timeless γ α :
   Timeless (mvcc_inv_app_def γ α).
@@ -631,7 +631,7 @@ Proof.
   subst P. simpl.
   iDestruct "HP" as "[Htxn [%v Hdbpt]]".
   (* Allocate [mono_nat_auth_own]. *)
-  iMod (mono_nat_own_alloc (int.nat v)) as (α) "[Hmn _]".
+  iMod (mono_nat_own_alloc (uint.nat v)) as (α) "[Hmn _]".
   iApply "HΦ".
   iMod (inv_alloc mvccNApp _ (mvcc_inv_app_def γ α) with "[-]") as "#Hinv".
   { iExists _. iFrame. }
@@ -702,8 +702,8 @@ Proof.
   destruct ok eqn:E.
   { (* Case COMMIT. *)
     iDestruct "H" as (u) "[Hdbpt %Huv]".
-    iMod (mono_nat_own_update (int.nat u) with "Hmn") as "[Hmn #Hmnlb]".
-    { (* Show [int.nat v' ≤ int.nat u']. *) word. }
+    iMod (mono_nat_own_update (uint.nat u) with "Hmn") as "[Hmn #Hmnlb]".
+    { (* Show [uint.nat v' ≤ uint.nat u']. *) word. }
     iMod ("HinvC" with "[- HΦ]") as "_".
     { (* Close the invariant. *) iExists _. iFrame. }
     iIntros "!> Htxn".
@@ -759,8 +759,8 @@ Proof.
   destruct ok eqn:E.
   { (* Case COMMIT. *)
     iDestruct "H" as (u) "[Hdbpt %Huv]".
-    iMod (mono_nat_own_update (int.nat u) with "Hmn") as "[Hmn #Hmnlb]".
-    { (* Show [int.nat v' ≤ int.nat u']. *) Fail word.
+    iMod (mono_nat_own_update (uint.nat u) with "Hmn") as "[Hmn #Hmnlb]".
+    { (* Show [uint.nat v' ≤ uint.nat u']. *) Fail word.
 Abort.
 
 (**
@@ -803,14 +803,14 @@ Proof.
   (* Merge. *)
   iAssert (
       |==> mvcc_inv_app_def γ α ∗
-           if ok then mono_nat_lb_own α (S (int.nat v)) else True
+           if ok then mono_nat_lb_own α (S (uint.nat v)) else True
     )%I with "[Hmn H]" as "> [HinvO Hmnlb]".
   { destruct ok eqn:E.
     { (* Case COMMIT. *)
       iDestruct "H" as (u) "[Hdbpt %Huv]".
-      iMod (mono_nat_own_update (int.nat u) with "Hmn") as "[Hmn #Hmnlb]".
-      { (* Show [int.nat v ≤ int.nat u]. *) word. }
-      replace (S (int.nat v)) with (int.nat u) by word.
+      iMod (mono_nat_own_update (uint.nat u) with "Hmn") as "[Hmn #Hmnlb]".
+      { (* Show [uint.nat v ≤ uint.nat u]. *) word. }
+      replace (S (uint.nat v)) with (uint.nat u) by word.
       iFrame "Hmnlb". iExists _. by iFrame.
     }
     { (* Case ABORT. *)
@@ -840,7 +840,7 @@ Proof.
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
   iNamed "HinvO".
-  (* Deduce [S (int.nat n1) ≤ int.nat v], which we'll need for the assertion below. *)
+  (* Deduce [S (uint.nat n1) ≤ uint.nat v], which we'll need for the assertion below. *)
   iDestruct (mono_nat_lb_own_valid with "Hmn Hmnlb") as %[_ Hle].
   (* Give atomic precondition. *)
   iExists _.
@@ -858,7 +858,7 @@ Proof.
   (* machine.Assert(n1 < n2)                                 *)
   (***********************************************************)
   wp_apply wp_Assert.
-  { (* Prove [int.Z n1 < int.Z n2]. *) rewrite bool_decide_eq_true. word. }
+  { (* Prove [uint.Z n1 < uint.Z n2]. *) rewrite bool_decide_eq_true. word. }
   wp_pures.
   by iApply "HΦ".
 Qed.

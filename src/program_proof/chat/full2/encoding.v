@@ -268,7 +268,7 @@ Lemma wp_decode sl fullB q :
     | None =>
       "%Henc" ∷ ⌜encodes fullB args⌝ ∗
       "Hargs" ∷ own args_ptr args ∗
-      "%Hinb" ∷ ⌜(int.nat args.(Sender) < max_senders)%nat⌝
+      "%Hinb" ∷ ⌜(uint.nat args.(Sender) < max_senders)%nat⌝
     end
   }}}.
 Proof. Admitted.

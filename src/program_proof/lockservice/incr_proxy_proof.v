@@ -404,7 +404,7 @@ Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
 Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
   "Hctx" ∷ map_ctx γ.(incr_mapGN) 1 server.(kvsM) ∗
   "Hback" ∷ ([∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦{1/2} v)) ∗
-  "HownCIDs" ∷ ([∗ set] cid ∈ (fin_to_set u64), RPCClient_own γback.(incr_rpcGN) cid 0 ∨ ⌜int.Z cid < int.Z server.(lastCID)⌝%Z) ∗
+  "HownCIDs" ∷ ([∗ set] cid ∈ (fin_to_set u64), RPCClient_own γback.(incr_rpcGN) cid 0 ∨ ⌜uint.Z cid < uint.Z server.(lastCID)⌝%Z) ∗
   "Hfown_lastCID" ∷ (∃ data, "lastCID" f↦ data ∗ ⌜has_encoding data [EncUInt64 server.(lastCID)]⌝)
 .
 
@@ -533,7 +533,7 @@ Proof.
     { iExists _; iFrame. iExists _; iFrame. done. }
     { (* Case that lastCID was updated on durable storage *)
       iDestruct (big_sepS_impl _ (λ cid, RPCClient_own γback.(incr_rpcGN) cid 0 ∨
-                                         ⌜int.Z cid < int.Z server.(lastCID) + 1⌝%Z)%I with "HownCIDs []") as "HownCIDs".
+                                         ⌜uint.Z cid < uint.Z server.(lastCID) + 1⌝%Z)%I with "HownCIDs []") as "HownCIDs".
       {
         iModIntro. iIntros (x Hxin) "[Hrpcclient_own|%Hineq]".
         { iLeft. iFrame. }
@@ -553,7 +553,7 @@ Proof.
   iDestruct "HownCID" as "[HownCID|%Hbad]"; last by lia.
   (* Weaken the big_sepS; after this, we won't be able to get RPCClient anymore, because lastCID will have increased *)
   iDestruct ("HownCIDs_rest" $! (λ cid, RPCClient_own γback.(incr_rpcGN) cid 0 ∨
-                                     ⌜int.Z cid < int.Z server.(lastCID) + 1⌝%Z)%I with "[] []") as "HownCIDs".
+                                     ⌜uint.Z cid < uint.Z server.(lastCID) + 1⌝%Z)%I with "[] []") as "HownCIDs".
   {
     iModIntro. iIntros (x Hxin Hdistinct) "[Hrpcclient_own|%Hineq]".
     { iLeft. iFrame. }
@@ -564,7 +564,7 @@ Proof.
   }
 
   (* Set RPCClient_own seq to 1*)
-  iMod (fmcounter_map_update (int.nat 1) with "HownCID") as "[HownCID _]".
+  iMod (fmcounter_map_update (uint.nat 1) with "HownCID") as "[HownCID _]".
   { word. }
 
   iCache with "HΦ Hctx Hback Hfown_lastCID HownCIDs".
@@ -704,7 +704,7 @@ Proof.
     wpc_pures.
     iDestruct (slice.own_slice_sz with "Hcontent_slice") as "%Hslice_len".
     simpl in Hslice_len.
-    assert (int.Z content.(Slice.sz) = 0) as -> by word.
+    assert (uint.Z content.(Slice.sz) = 0) as -> by word.
     destruct bool_decide eqn:Hs.
     {
       apply bool_decide_eq_true in Hs.
@@ -912,8 +912,8 @@ Proof.
         iDestruct (client_stale_seqno with "Hstale Hrpc_clientown") as %Hbad.
         exfalso.
         simpl in Hbad.
-        replace (int.nat 1 + 1) with (2) in Hbad by word.
-        replace (int.nat 2%nat) with (2) in Hbad by word.
+        replace (uint.nat 1 + 1) with (2) in Hbad by word.
+        replace (uint.nat 2%nat) with (2) in Hbad by word.
         done.
       }
       wpc_pures.
@@ -959,14 +959,14 @@ Proof.
       iExFalso.
       iDestruct (own_slice_sz with "Hcontent_slice") as %Hbad.
       apply bool_decide_eq_false in Hlen.
-      assert (int.Z content.(Slice.sz) = 0)%Z.
+      assert (uint.Z content.(Slice.sz) = 0)%Z.
       { apply Znot_lt_ge in Hlen.
-        replace (int.Z (I64 0)) with 0%Z in Hlen by word.
+        replace (uint.Z (I64 0)) with 0%Z in Hlen by word.
         word.
       }
       assert (content.(Slice.sz) = 0)%Z by word.
       rewrite H0 in Hbad.
-      replace (int.nat 0%Z) with (0) in Hbad by word.
+      replace (uint.nat 0%Z) with (0) in Hbad by word.
       apply length_zero_iff_nil in Hbad.
       rewrite Hbad in Henc.
       unfold has_encoding_for_onetime_clerk in Henc.

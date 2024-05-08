@@ -447,7 +447,7 @@ Proof.
   wp_loadField.
   wp_pures.
 
-  destruct (bool_decide (int.Z 0 < int.Z nwaiters))%Z.
+  destruct (bool_decide (uint.Z 0 < uint.Z nwaiters))%Z.
 
   {
     wp_pures.
@@ -561,7 +561,7 @@ Proof.
 Qed.
 
 
-Definition NSHARD_def : Z := Eval vm_compute in (match NSHARD with #(LitInt z) => int.Z z | _ => 0 end).
+Definition NSHARD_def : Z := Eval vm_compute in (match NSHARD with #(LitInt z) => uint.Z z | _ => 0 end).
 Definition NSHARD_aux : seal (@NSHARD_def). Proof. by eexists. Qed.
 Definition NSHARD := NSHARD_aux.(unseal).
 Definition NSHARD_eq : @NSHARD = @NSHARD_def := NSHARD_aux.(seal_eq).
@@ -571,11 +571,11 @@ Ltac unseal_nshard := rewrite NSHARD_eq /NSHARD_def.
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Definition covered_by_shard (shardnum : Z) (covered: gset u64) : gset u64 :=
-  filter (λ x, Z.modulo (int.Z x) NSHARD = shardnum) covered.
+  filter (λ x, Z.modulo (uint.Z x) NSHARD = shardnum) covered.
 
 Lemma covered_by_shard_mod addr covered :
   addr ∈ covered <->
-  addr ∈ covered_by_shard (int.nat (word.modu addr NSHARD)) covered.
+  addr ∈ covered_by_shard (uint.nat (word.modu addr NSHARD)) covered.
 Proof.
   intros.
   rewrite /covered_by_shard.
@@ -591,8 +591,8 @@ Lemma covered_by_shard_empty x :
 Proof. done. Qed.
 
 Lemma covered_by_shard_insert x X :
-  covered_by_shard (int.Z (word.modu x (I64 NSHARD))) ({[x]} ∪ X) =
-  {[x]} ∪ covered_by_shard (int.Z (word.modu x (I64 NSHARD))) X.
+  covered_by_shard (uint.Z (word.modu x (I64 NSHARD))) ({[x]} ∪ X) =
+  {[x]} ∪ covered_by_shard (uint.Z (word.modu x (I64 NSHARD))) X.
 Proof.
   rewrite /covered_by_shard filter_union_L filter_singleton_L //.
   unseal_nshard.
@@ -600,9 +600,9 @@ Proof.
 Qed.
 
 Lemma covered_by_shard_insert_ne (x x' : u64) X :
-  (int.Z x `mod` NSHARD)%Z ≠ int.Z x' ->
-  covered_by_shard (int.Z x') ({[x]} ∪ X) =
-    covered_by_shard (int.Z x') X.
+  (uint.Z x `mod` NSHARD)%Z ≠ uint.Z x' ->
+  covered_by_shard (uint.Z x') ({[x]} ∪ X) =
+    covered_by_shard (uint.Z x') X.
 Proof.
   intros.
   rewrite /covered_by_shard filter_union_L filter_singleton_not_L.
@@ -623,7 +623,7 @@ Qed.
 Lemma covered_by_shard_split (P : u64 -> iProp Σ) covered :
   ( [∗ set] a ∈ covered, P a ) -∗
   [∗ set] shardnum ∈ rangeSet 0 NSHARD,
-    [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a.
+    [∗ set] a ∈ covered_by_shard (uint.Z shardnum) covered, P a.
 Proof.
   induction covered using set_ind_L.
   - setoid_rewrite big_sepS_empty.
@@ -671,7 +671,7 @@ Qed.
 
 Lemma covered_by_shard_join (P : u64 -> iProp Σ) covered :
   ([∗ set] shardnum ∈ rangeSet 0 NSHARD,
-    [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a) -∗
+    [∗ set] a ∈ covered_by_shard (uint.Z shardnum) covered, P a) -∗
   ( [∗ set] a ∈ covered, P a ).
 Proof.
   induction covered using set_ind_L.
@@ -680,7 +680,7 @@ Proof.
     eauto.
   - iIntros "H".
     iApply (big_sepS_insert); try assumption.
-    iAssert (P x ∗ [∗ set] shardnum ∈ rangeSet 0 NSHARD, [∗ set] a ∈ covered_by_shard (int.Z shardnum) X, P a)%I
+    iAssert (P x ∗ [∗ set] shardnum ∈ rangeSet 0 NSHARD, [∗ set] a ∈ covered_by_shard (uint.Z shardnum) X, P a)%I
        with "[H]" as "($&H)"; last first.
     { iApply IHcovered. eauto. }
     replace (rangeSet 0 NSHARD) with ({[ word.modu x NSHARD ]} ∪
@@ -736,7 +736,7 @@ Definition is_free_lockMap (l: loc) : iProp Σ :=
 
 Definition Locked (ghs : list gname) (addr : u64) : iProp Σ :=
   ∃ gh,
-    ⌜ ghs !! (Z.to_nat (Z.modulo (int.Z addr) NSHARD)) = Some gh ⌝ ∗
+    ⌜ ghs !! (Z.to_nat (Z.modulo (uint.Z addr) NSHARD)) = Some gh ⌝ ∗
     locked gh addr.
 
 Definition CrashLocked lk (ghs : list gname) (addr : u64) P Pcrash : iProp Σ :=
@@ -767,7 +767,7 @@ Proof.
                           ∃ s shardlocs,
                             "Hvar" ∷ shards ↦[slice.T ptrT] (slice_val s) ∗
                             "Hslice" ∷ own_slice s ptrT 1 shardlocs ∗
-                            "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
+                            "%Hlen" ∷ ⌜ length shardlocs = uint.nat i ⌝ ∗
                             "Hshards" ∷ [∗ list] shardnum ↦ shardloc ∈ shardlocs,
                               is_free_lockShard shardloc)%I
             with "[] [$Hi Hvar Hcovered]").
@@ -854,7 +854,7 @@ Qed.
 Lemma big_sepS_rangeSet_sepL {A} i (n : Z) (Φ : Z → iProp Σ) (ls : list A):
   0 ≤ i → 0 ≤ n → i + n < 2 ^ 64 →
   length ls = Z.to_nat n →
-  ([∗ set] k ∈ rangeSet i n, Φ (int.Z k)) ⊣⊢ ([∗ list] k ↦ _ ∈ ls, Φ (i + k)).
+  ([∗ set] k ∈ rangeSet i n, Φ (uint.Z k)) ⊣⊢ ([∗ list] k ↦ _ ∈ ls, Φ (i + k)).
 Proof.
   intros Hlen1 Hlen2 Hlen3 Hlen4.
   rewrite /rangeSet.
@@ -958,9 +958,9 @@ Proof.
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
 
-  list_elem shards (int.nat (word.modu addr NSHARD)) as shard.
+  list_elem shards (uint.nat (word.modu addr NSHARD)) as shard.
   { revert Hlen. unseal_nshard. word. }
-  list_elem ghs (int.nat (word.modu addr NSHARD)) as gh.
+  list_elem ghs (uint.nat (word.modu addr NSHARD)) as gh.
   { revert Hlen. unseal_nshard. word. }
 
   wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
@@ -996,7 +996,7 @@ Proof.
 
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
 
-  list_elem shards (int.nat (word.modu addr NSHARD)) as shard.
+  list_elem shards (uint.nat (word.modu addr NSHARD)) as shard.
   { revert Hlen. unseal_nshard. word. }
 
   iDestruct "Hlocked" as (gh) "[% Hlocked]".

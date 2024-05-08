@@ -193,7 +193,7 @@ Proof.
   wp_pures.
   wp_apply wp_GetTimeRange.
   iIntros "* %Hh %Hl Htime".
-  destruct (decide (ok = true ∧ int.nat h < int.nat v.(cacheValueC.l))) as [Hvalid|Hnot].
+  destruct (decide (ok = true ∧ uint.nat h < uint.nat v.(cacheValueC.l))) as [Hvalid|Hnot].
   {
     (* case: cache is valid *)
     destruct Hvalid as [? Hvalid]. subst.
@@ -294,7 +294,7 @@ Qed.
 Lemma wp_max (a b : u64) :
   {{{ True }}}
   cachekv.max #a #b
-  {{{ (v:u64), RET #v; ⌜int.nat a <= int.nat v⌝ ∗ ⌜int.nat b ≤ int.nat v⌝ }}}
+  {{{ (v:u64), RET #v; ⌜uint.nat a <= uint.nat v⌝ ∗ ⌜uint.nat b ≤ uint.nat v⌝ }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".

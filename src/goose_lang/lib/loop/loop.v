@@ -101,9 +101,9 @@ Qed.
 Local Opaque load_ty store_ty.
 
 Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (start max:u64) (l:loc) (body: val) :
-  int.Z start <= int.Z max ->
+  uint.Z start <= uint.Z max ->
   (∀ (i:u64),
-      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.Z i < int.Z max⌝ }}}
+      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z i < uint.Z max⌝ }}}
         body #() @ stk; E
       {{{ RET #true; I (word.add i (I64 1)) ∗ l ↦[uint64T] #i }}}) -∗
   {{{ I start ∗ l ↦[uint64T] #start }}}
@@ -122,7 +122,7 @@ Proof.
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
   end.
   remember start as x.
-  assert (int.Z start <= int.Z x <= int.Z max) as Hbounds by (subst; word).
+  assert (uint.Z start <= uint.Z x <= uint.Z max) as Hbounds by (subst; word).
   clear Heqx Hstart_max.
   iDestruct "H0" as "HIx".
   iLöb as "IH" forall (x Hbounds).
@@ -142,7 +142,7 @@ Proof.
     { iPureIntro; word. }
     iFrame.
   - wp_pures.
-    assert (int.Z x = int.Z max) by word.
+    assert (uint.Z x = uint.Z max) by word.
     apply word.unsigned_inj in H; subst.
     iApply ("HΦ" with "[$]").
 Qed.
@@ -155,7 +155,7 @@ applies to just the For combinator rather than the sequence of allocation +
 For. *)
 Theorem wp_simpleFor (I: u64 -> iProp Σ) (max:u64) (body: val) :
   (∀ (l:loc) (i:u64),
-      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.Z i < int.Z max⌝ }}}
+      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z i < uint.Z max⌝ }}}
         body #l
       {{{ RET #true; I (word.add i (I64 1)) ∗ l ↦[uint64T] #i }}}) -∗
   {{{ I (I64 0) }}}
@@ -281,10 +281,10 @@ Proof.
 Qed.
 
 Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk E1 (start max:u64) (l:loc) (body: val) :
-  int.Z start <= int.Z max ->
-  (∀ (i:u64), ⌜int.Z start ≤ int.Z i ≤ int.Z max⌝ -∗ I i -∗ I' i) →
+  uint.Z start <= uint.Z max ->
+  (∀ (i:u64), ⌜uint.Z start ≤ uint.Z i ≤ uint.Z max⌝ -∗ I i -∗ I' i) →
   (∀ (i:u64),
-      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.Z i < int.Z max⌝ }}}
+      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z i < uint.Z max⌝ }}}
         body #() @ stk; E1
       {{{ RET #true; I (word.add i (I64 1)) ∗ l ↦[uint64T] #i }}}
       {{{ I' i ∨ I' (word.add i (I64 1)) }}}) -∗
@@ -292,7 +292,7 @@ Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk E1 (start max:u64) (l:loc) (body
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
        body) @ stk; E1
   {{{ RET #(); I max ∗ l ↦[uint64T] #max }}}
-  {{{ ∃ (i:u64), I' i ∗ ⌜int.Z start <= int.Z i <= int.Z max⌝ }}}.
+  {{{ ∃ (i:u64), I' i ∗ ⌜uint.Z start <= uint.Z i <= uint.Z max⌝ }}}.
 Proof.
   iIntros (Hstart_max Himpl) "#Hbody".
   iIntros (Φ Φc) "!> (H0 & Hl) HΦ".
@@ -322,7 +322,7 @@ Proof.
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
   end.
   remember start as x.
-  assert (int.Z start <= int.Z x <= int.Z max) as Hbounds by (subst; word).
+  assert (uint.Z start <= uint.Z x <= uint.Z max) as Hbounds by (subst; word).
   clear Heqx Hstart_max.
   iDestruct "H0" as "HIx".
   clear Hcrash.
@@ -378,7 +378,7 @@ Proof.
       iPureIntro; revert H; word.
     + iRight in "HΦ".
       iFrame.
-  - assert (int.Z x = int.Z max) by word.
+  - assert (uint.Z x = uint.Z max) by word.
     apply word.unsigned_inj in H; subst.
     iApply ("HΦ" with "[$]").
 Qed.

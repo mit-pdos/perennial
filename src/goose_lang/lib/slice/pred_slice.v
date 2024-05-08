@@ -47,14 +47,14 @@ Definition is_pred_slice s q l: iProp Σ :=
                   [∗ list] v;x ∈ vs;l, Ψ v x.
 
 Theorem wp_SliceGet {stk E} s q l (i: u64) (x: A) :
-  l !! int.nat i = Some x →
+  l !! uint.nat i = Some x →
   {{{ is_pred_slice s q l }}}
     SliceGet t (slice_val s) #i @ stk; E
   {{{ (v:V), RET (to_val v); Ψ v x ∗ (Ψ v x -∗ is_pred_slice s q l) }}}.
 Proof.
   iIntros (Hlookup Φ) "Hs HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
-  iDestruct (big_sepL2_lookup_2 (int.nat i) with "Hxs") as (v) "%Hlookup1"; eauto.
+  iDestruct (big_sepL2_lookup_2 (uint.nat i) with "Hxs") as (v) "%Hlookup1"; eauto.
   iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
   wp_apply (slice.wp_SliceGet with "[$Hs]").
   { iPureIntro.

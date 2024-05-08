@@ -1296,7 +1296,7 @@ Qed.
 
 Theorem wp_Txn__readBufNoAcquire l γ γ' dinit ex_pointsto objs_dom mt_changed a obj (sz: u64) :
   modified <$> (mt_changed !! a) = Some obj →
-  bufSz (objKind obj) = int.nat sz →
+  bufSz (objKind obj) = uint.nat sz →
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_pointsto objs_dom mt_changed
@@ -1354,7 +1354,7 @@ Theorem wp_Txn__ReadBuf_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (e
   a ∈ objs_dom →
   bufSz <$> (
     γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock)
-  ) = Some (int.nat sz) →
+  ) = Some (uint.nat sz) →
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_pointsto objs_dom mt_changed
@@ -1441,7 +1441,7 @@ Proof.
 Qed.
 
 Lemma u8_val_ne (x1 x2:u8) :
-  #x1 ≠ #x2 -> int.Z x1 ≠ int.Z x2.
+  #x1 ≠ #x2 -> uint.Z x1 ≠ uint.Z x2.
 Proof.
   intros Hne.
   intros Heq%word.unsigned_inj.
@@ -1529,7 +1529,7 @@ Qed.
 Theorem wp_Txn__OverWrite_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} objs_dom mt_changed a sz data_s data obj' :
   a ∈ objs_dom →
   γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some (objKind obj') →
-  bufSz (objKind obj') = int.nat sz →
+  bufSz (objKind obj') = uint.nat sz →
   data_has_obj data a obj' →
   {{{
     "Htwophase" ∷ is_twophase_raw
@@ -1683,19 +1683,19 @@ Proof.
     apply map_Forall_insert_1_2 in Hvalids; assumption.
 Qed.
 
-Lemma unsigned_U8 z : int.Z (I8 z) = word.wrap (word:=i8_instance.i8) z.
+Lemma unsigned_U8 z : uint.Z (I8 z) = word.wrap (word:=i8_instance.i8) z.
 Proof.
   unfold I8; rewrite word.unsigned_of_Z; auto.
 Qed.
 
 Theorem wp_bitToByte (off: u64) (b: bool) :
-  (0 ≤ int.Z off < 8)%Z →
+  (0 ≤ uint.Z off < 8)%Z →
   {{{
     True
   }}}
     bitToByte #off #b
   {{{
-    RET #(I8 (if b then (1 ≪ int.Z off) else 0));
+    RET #(I8 (if b then (1 ≪ uint.Z off) else 0));
     True
   }}}.
 Proof.
@@ -1709,13 +1709,13 @@ Proof.
   }
   wp_pures.
   assert (
-    int.Z (word.slu (I8 1) (u8_from_u64 off)) = int.Z (I8 (1 ≪ int.Z off))
+    uint.Z (word.slu (I8 1) (u8_from_u64 off)) = uint.Z (I8 (1 ≪ uint.Z off))
   ) as Harith.
   {
     rewrite /u8_from_u64 word.unsigned_slu.
     2: rewrite unsigned_U8 /word.wrap !Z.mod_small; lia.
     rewrite !unsigned_U8 /word.wrap !(Z.mod_small 1); last by lia.
-    rewrite !(Z.mod_small (int.Z off)); last by lia.
+    rewrite !(Z.mod_small (uint.Z off)); last by lia.
     reflexivity.
   }
   apply word.unsigned_inj in Harith.

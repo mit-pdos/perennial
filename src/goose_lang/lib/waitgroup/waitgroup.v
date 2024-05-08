@@ -63,11 +63,11 @@ Section proof.
       ⌜wg = (lk, #vptr)%V⌝ ∗
       is_lock N lk (
         ∃ (remaining:gset u64) (total:u64),
-          "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → int.nat r < int.nat total)⌝ ∗
+          "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → uint.nat r < uint.nat total)⌝ ∗
           "Htotal" ∷ ghost_var γ.(total_gn) (1/2) total ∗
           "Hv" ∷ vptr ↦[uint64T] #(size remaining) ∗
           "Htoks" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
-          "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
+          "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜uint.nat i ≥ uint.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
       ).
 
   (* XXX: here, wg is a value. Maybe it should be a loc? *)
@@ -179,7 +179,7 @@ Qed.
 Local Opaque load_ty store_ty.
 
 Lemma u64_set_size_all_lt (W : gset u64) (n : nat) :
- (∀ s : u64, s ∈ W → int.nat s < n)%Z → (size W ≤ n)%Z.
+ (∀ s : u64, s ∈ W → uint.nat s < n)%Z → (size W ≤ n)%Z.
 Proof.
   revert W.
   induction n as [| n IHn] => W Hvalid.
@@ -191,7 +191,7 @@ Proof.
     rewrite size_union ?size_singleton; last by set_solver.
     refine (_ (IHn (W ∖ {[I64 n]}) _)); first lia.
     { set_unfold. intros x (Hin&Hneq). opose proof (Hvalid x _); auto.
-      cut (int.nat x ≠ n); first lia.
+      cut (uint.nat x ≠ n); first lia.
       intros Heq.
       move: Hneq.
       rewrite -Heq.
@@ -201,7 +201,7 @@ Proof.
 Qed.
 
 Lemma wp_WaitGroup__Add wg γ n P :
-int.nat (word.add n 1) > int.nat n →
+uint.nat (word.add n 1) > uint.nat n →
   {{{
       own_WaitGroup wg γ n P
   }}}
@@ -286,7 +286,7 @@ Proof.
     iModIntro.
     iIntros (??) "[%H1|[%H2|H3]]".
     {
-      assert (int.nat x = int.nat total ∨ int.nat x ≥ int.nat (word.add total 1)) as Hcases.
+      assert (uint.nat x = uint.nat total ∨ uint.nat x ≥ uint.nat (word.add total 1)) as Hcases.
       { word. }
       destruct Hcases as [|].
       {
@@ -400,7 +400,7 @@ Lemma wp_WaitGroup__Wait wg γ P n :
   }}}
     waitgroup.Wait wg
   {{{
-        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat n⌝ ∨ (P i)
+        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜uint.nat i ≥ uint.nat n⌝ ∨ (P i)
   }}}.
 Proof.
   iIntros (Φ) "(Htotal'&#Hwg) HΦ".

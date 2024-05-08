@@ -20,11 +20,11 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!renewable_leaseG Σ}.
 
 Definition is_lease_valid_lb γl (t:u64) :=
-  mono_nat_lb_own γl (int.nat t)
+  mono_nat_lb_own γl (uint.nat t)
 .
 
 Definition own_lease_expiration γl (t:u64) :=
-  mono_nat_auth_own γl (1/2) (int.nat t)
+  mono_nat_auth_own γl (1/2) (uint.nat t)
 .
 
 Local Definition is_lease_inv N γl γtok R : iProp Σ :=
@@ -41,7 +41,7 @@ Definition post_lease N γl (R:iProp Σ) : iProp Σ :=
 
 Lemma lease_acc N e R γl t {E} :
   ↑N ⊆ E →
-  int.nat t < int.nat e →
+  uint.nat t < uint.nat e →
   is_lease_valid_lb γl e -∗
   is_lease N γl R -∗
   own_time t ={E,E∖↑N}=∗
@@ -76,7 +76,7 @@ Lemma lease_alloc e N R :
 Proof.
   iIntros "HR".
   iMod (ghost_var_alloc ()) as (γtok) "Htok".
-  iMod (mono_nat_own_alloc (int.nat e)) as (γl) "[Hexp _]".
+  iMod (mono_nat_own_alloc (uint.nat e)) as (γl) "[Hexp _]".
   iDestruct "Hexp" as "[Hexp Hexp2]".
   iExists γl.
   iFrame "Hexp".
@@ -91,7 +91,7 @@ Proof.
 Qed.
 
 Lemma lease_renew e' γl e N R :
-  int.nat e <= int.nat e' →
+  uint.nat e <= uint.nat e' →
   own_lease_expiration γl e -∗
   post_lease N γl R
   ={↑N}=∗
@@ -114,7 +114,7 @@ Proof.
   }
   iCombine "Hexp Hexp2" as "Hexp".
   iMod (mono_nat_own_update with "Hexp") as "[Hexp _]".
-  { instantiate (1:=int.nat e'). lia. }
+  { instantiate (1:=uint.nat e'). lia. }
   iDestruct "Hexp" as "[Hexp Hexp2]".
   iFrame "Hexp2".
   iMod ("Hclose" with "[-Htok]"); by iFrame.
@@ -182,7 +182,7 @@ Lemma lease_get_lb γl e :
 Proof. iApply mono_nat_lb_own_get. Qed.
 
 Lemma lease_lb_mono γl e e' :
-  int.nat e' <= int.nat e →
+  uint.nat e' <= uint.nat e →
   is_lease_valid_lb γl e -∗
   is_lease_valid_lb γl e'.
 Proof. intros. by iApply mono_nat_lb_own_le. Qed.

@@ -13,17 +13,17 @@ Context `{erpcG Σ, urpcregG Σ, kvMapG Σ}.
 Context `{!gooseGlobalGS Σ}.
 
 Definition uKV_FRESHCID: nat :=
-  Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match KV_FRESHCID with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uKV_PUT: nat :=
-  Eval vm_compute in match KV_PUT with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match KV_PUT with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uKV_CONDITIONAL_PUT: nat :=
-  Eval vm_compute in match KV_CONDITIONAL_PUT with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match KV_CONDITIONAL_PUT with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uKV_GET: nat :=
-  Eval vm_compute in match KV_GET with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match KV_GET with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uKV_INS_SHARD: nat :=
-  Eval vm_compute in match KV_INS_SHARD with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match KV_INS_SHARD with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uKV_MOV_SHARD: nat :=
-  Eval vm_compute in match KV_MOV_SHARD with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match KV_MOV_SHARD with LitV (LitInt n) => uint.nat n | _ => 0 end.
 
 Record memkv_shard_names := {
  erpc_gn : erpc_names ;
@@ -78,7 +78,7 @@ Definition is_shard_server_conditionalPutSpec γkv : eRPCSpec :=
 Definition is_shard_server_installSpec γkv : eRPCSpec :=
   {| espec_ty := ();
      espec_Pre := (λ _ reqData, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
-                            ⌜int.Z args.(IR_Sid) < uNSHARD⌝ ∗
+                            ⌜uint.Z args.(IR_Sid) < uNSHARD⌝ ∗
                             own_shard γkv args.(IR_Sid) args.(IR_Kvs)
              )%I;
      espec_Post := (λ _ reqData repData, True)%I |}.
@@ -92,7 +92,7 @@ Definition is_shard_server_freshSpec γrpc : RpcSpec :=
 Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : RpcSpec :=
   {| spec_ty := memkv_shard_names;
      spec_Pre :=(λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
-                                  ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
+                                  ⌜uint.Z args.(MR_Sid) < uNSHARD⌝ ∗
                                   (▷ ρ args.(MR_Dst) x) ∗
                                   ⌜ x.(kv_gn) = γkv ⌝
              )%I;
@@ -172,10 +172,10 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
   "%HshardMapLength" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
   "%HkvssLength" ∷ ⌜Z.of_nat (length kvs_ptrs) = uNSHARD⌝ ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
-                  ⌜(shardMapping !! (int.nat sid)) ≠ Some true⌝ ∨
+                  ⌜(shardMapping !! (uint.nat sid)) ≠ Some true⌝ ∨
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
                       own_shard γ.(kv_gn) sid m ∗ (* own shard *)
-                      ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
+                      ⌜kvs_ptrs !! (uint.nat sid) = Some kvs_ptr⌝ ∗
                       ⌜dom m = dom mv⌝ ∗
                       map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),

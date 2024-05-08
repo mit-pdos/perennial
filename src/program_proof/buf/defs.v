@@ -128,4 +128,4 @@ Definition get_bit (b0 : u8) (off : u64) : bool :=
   else false.
 
 Definition valid_off K (off : u64) : Prop :=
-  int.Z off `mod` bufSz K = 0.
+  uint.Z off `mod` bufSz K = 0.

@@ -148,7 +148,7 @@ Section log.
     | GetOp, PairV (LitV (LitLoc logPtr)) (LitV (LitInt a)) =>
       openΣ ≫= λ '(log, logPtr_),
       check (logPtr = logPtr_);;
-      b ← unwrap (log !! int.nat a);
+      b ← unwrap (log !! uint.nat a);
       l ← allocateN;
       modify (prod_map (state_insert_list l (disk.Block_to_vals b)) id);;
       ret $ #(LitLoc l)

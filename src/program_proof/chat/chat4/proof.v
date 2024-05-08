@@ -269,7 +269,7 @@ Proof using ghost_varG0 heapGS0 waitgroupG0 Σ.
 
   wp_apply (wp_NewWaitGroup nroot (
     λ i,
-    match int.Z i with
+    match uint.Z i with
     | 0%Z => party_ret γ aliceSn aliceErr
     | 1%Z => party_ret γ bobSn bobErr
     | _ => True%I
@@ -291,7 +291,7 @@ Proof using ghost_varG0 heapGS0 waitgroupG0 Σ.
     wp_apply (wp_WaitGroup__Done with "[-]"); try done.
     iFrame "∗#".
     iModIntro.
-    change (int.Z 0) with 0.
+    change (uint.Z 0) with 0.
     repeat iExists _.
     iFrame "#".
   }
@@ -307,7 +307,7 @@ Proof using ghost_varG0 heapGS0 waitgroupG0 Σ.
     iMod (readonly_alloc_1 with "Hb_err") as "#Hb_err".
     wp_apply (wp_WaitGroup__Done with "[$Hwt $Hiwg Hb_sn Hb_err Hbob]"); try done.
     iModIntro.
-    change (int.Z 0) with 0.
+    change (uint.Z 0) with 0.
     repeat iExists _.
     iFrame "#".
   }
@@ -329,8 +329,8 @@ Proof using ghost_varG0 heapGS0 waitgroupG0 Σ.
     revert Hbad.
     word.
   }
-  change (int.Z 0) with 0.
-  change (int.Z 1) with 1.
+  change (uint.Z 0) with 0.
+  change (uint.Z 1) with 1.
   simpl.
   rewrite /party_ret.
   iDestruct "Halice" as (a_sn a_err) "(#Ha_sn & #Ha_err & Halice)".

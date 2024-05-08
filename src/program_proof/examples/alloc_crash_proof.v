@@ -333,8 +333,8 @@ Qed.
 End new_alloc_state.
 
 Theorem wp_newAllocator {mref} {start sz: u64} σ (used: gset u64) :
-  int.Z start + int.Z sz < 2^64 →
-  alloc.domain σ = rangeSet (int.Z start) (int.Z sz) →
+  uint.Z start + uint.Z sz < 2^64 →
+  alloc.domain σ = rangeSet (uint.Z start) (uint.Z sz) →
   alloc.used σ = used →
   alloc_post_crash σ →
   {{{ is_addrset mref used  }}}

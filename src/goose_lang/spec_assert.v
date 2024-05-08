@@ -778,7 +778,7 @@ Proof.
 Qed.
 
 Lemma ghost_allocN_non_pos_stuck j K `{LanguageCtx _ K} E v (n: u64) :
-  ¬ (0 < int.Z n)%Z →
+  ¬ (0 < uint.Z n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=> False.
@@ -804,15 +804,15 @@ Definition spec_pointsto_vals_toks l q vs : iProp Σ :=
 Lemma ghost_allocN_seq_sized_meta_own_resv j K `{LanguageCtx _ K} E D d v (n: u64) :
   d ∈ D →
   (0 < length (flatten_struct v))%nat →
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
   ownfCP (refinement_resv_name) 1 D -∗
   j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=>
    let l := {| loc_car := Zpos d; loc_off := 0 |} in
    j ⤇ K (#l) ∗
-   na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
-   [∗ list] i ∈ seq 0 (int.nat n),
+   na_block_size (hG := refinement_na_heapG) l (uint.nat n * length (flatten_struct v))%nat ∗
+   [∗ list] i ∈ seq 0 (uint.nat n),
    (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
                      (flatten_struct v)).
 Proof.
@@ -839,10 +839,10 @@ Proof.
   }
   { solve_ndisj. }
   iMod (na_heap_alloc_list tls (heap _) l
-                           (concat_replicate (int.nat n) (flatten_struct v))
+                           (concat_replicate (uint.nat n) (flatten_struct v))
                            (Reading O) with "Hσ")
     as "(Hσ & Hblock & Hl)".
-  { rewrite concat_replicate_length. cut (0 < int.nat n)%nat; first by lia.
+  { rewrite concat_replicate_length. cut (0 < uint.nat n)%nat; first by lia.
     lia. }
   { destruct Hfresh as (?&?). rewrite //=. }
   { destruct Hfresh as (H'&?); eauto. eapply H'. }
@@ -880,7 +880,7 @@ Proof.
   iFrame.
   unfold pointsto_vals.
   rewrite concat_replicate_length. iFrame.
-  iDestruct (heap_seq_replicate_to_nested_pointsto l (flatten_struct v) (int.nat n)
+  iDestruct (heap_seq_replicate_to_nested_pointsto l (flatten_struct v) (uint.nat n)
                                                  (λ l v, l s↦ v ∗ meta_token l ⊤)%I
                with "[Hl]") as "Hl".
   {
@@ -899,14 +899,14 @@ Qed.
 
 Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (AllocN (Val $ LitV $ LitInt $ n) (Val v)) -∗ |NC={E}=>
   ∃ l : loc, j ⤇ K (#l) ∗
              ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
-             na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
-             [∗ list] i ∈ seq 0 (int.nat n),
+             na_block_size (hG := refinement_na_heapG) l (uint.nat n * length (flatten_struct v))%nat ∗
+             [∗ list] i ∈ seq 0 (uint.nat n),
              (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
                                (flatten_struct v)).
 Proof.
