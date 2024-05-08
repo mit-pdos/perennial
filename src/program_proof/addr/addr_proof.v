@@ -55,9 +55,9 @@ Proof.
   unfold valid_addr, addr2flat_z, block_bytes in *.
   simpl in *.
   intuition.
-  replace i0 with i2 in *.
-  { replace i with i1; auto.
-    assert (uint.Z i * Z.to_nat 4096 * 8 = uint.Z i1 * Z.to_nat 4096 * 8) by lia.
+  replace w0 with w2 in *.
+  { replace w with w1; auto.
+    assert (uint.Z w * Z.to_nat 4096 * 8 = uint.Z w1 * Z.to_nat 4096 * 8) by lia.
     word.
   }
   word.
