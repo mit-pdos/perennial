@@ -76,7 +76,7 @@ Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
   {{{ own_slice_small s byteT q (bit :: tail) }}}
     ReadBool (slice_val s)
   {{{ (b: bool) s', RET (#b, slice_val s');
-      ⌜b = if decide (int.Z bit = 0) then false else true⌝ ∗
+      ⌜b = bool_decide (int.Z bit ≠ 0)⌝ ∗
       own_slice_small s' byteT q tail }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_call.
@@ -90,12 +90,20 @@ Proof.
   wp_pures. iModIntro.
   iApply "HΦ".
   iSplit.
-  { iPureIntro. rewrite -bool_decide_not bool_decide_decide.
-    (* TODO: forgot how to deal with injectivity of to_val *)
-    admit.
+  { iPureIntro. rewrite -bool_decide_not !bool_decide_decide.
+    assert (#bit ≠ #(U8 0) ↔ int.Z bit ≠ 0).
+    { apply not_iff_compat.
+      split.
+    - inversion 1; subst; auto.
+    - intros H.
+      do 2 f_equal.
+      apply (inj int.Z). (* don't know how I even figured this out *)
+      change (int.Z (U8 0)) with 0%Z; assumption.
+    }
+    destruct (decide _), (decide _); auto; tauto.
   }
   iApply "Hs".
-Admitted.
+Qed.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
