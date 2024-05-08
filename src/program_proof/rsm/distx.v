@@ -14,11 +14,6 @@ Inductive command :=
 | CmdAbt (tid : nat)
 | CmdRead (tid : nat) (key : dbkey).
 
-#[local]
-Instance cmd_eq_decision :
-  EqDecision command.
-Proof. solve_decision. Qed.
-
 (* Transaction status *)
 Inductive txnst :=
 | Prepared (wrs : dbmap)
@@ -178,12 +173,12 @@ Definition per_key_inv (key : dbkey) (db : dbmap) (kcmts : gmap dbkey (nat * dbv
     diff_by_linearized cmtd lnrz txns.
 
 Definition exclusive
-  (key : dbkey) (acts : list action) (cmds : list command)
+  (acts : list action) (cmds : list command)
   (kcmts : gmap dbkey (nat * dbval)) :=
-  match kcmts !! key with
-  | Some (ts, _) => (∃ wrs, ActCmt ts wrs ∈ acts) ∧ CmdCmt ts ∉ cmds
-  | _ => True
-  end.
+  ∀ key, match kcmts !! key with
+         | Some (ts, _) => (∃ wrs, ActCmt ts wrs ∈ acts) ∧ CmdCmt ts ∉ cmds
+         | _ => True
+         end.
 
 Definition repl_impl_cmtd (acts : list action) (cmds : list command) :=
   ∀ ts, CmdCmt ts ∈ cmds → ∃ wrs, ActCmt ts wrs ∈ acts.
@@ -212,12 +207,62 @@ Definition safe_read (acts : list action) (cmds : list command) :=
   ∀ ts key, ActRead ts key ∈ acts → has_extended ts key cmds.
 
 Definition distx_inv :=
-  ∃ txnst tpls acts_future acts_past cmds_paxos kcmts_ongoing db txns_cmt txns_abt,
+  ∃ (db : dbmap) (txnm : gmap nat txnst) (tpls : gmap dbkey dbtpl)
+    (acts_future acts_past : list action)
+    (cmds_paxos : list command) (kcmts_ongoing : gmap dbkey (nat * dbval))
+    (txns_cmt txns_abt : gmap nat dbmap),
     (∀ key, per_key_inv key db kcmts_ongoing txns_cmt tpls) ∧
-    (∀ key, exclusive key acts_past cmds_paxos kcmts_ongoing) ∧
+    exclusive acts_past cmds_paxos kcmts_ongoing ∧
     repl_impl_cmtd acts_past cmds_paxos ∧
     conflict_free acts_future txns_cmt ∧
     conflict_past acts_future acts_past txns_abt ∧
     safe_commit acts_past cmds_paxos ∧
     safe_read acts_past cmds_paxos ∧
-    apply_cmds cmds_paxos = State txnst tpls.
+    apply_cmds cmds_paxos = State txnm tpls.
+
+(* TODO: move to distx_action.v once stable. *)
+Definition commit__kcmts_ongoing_key
+  (tid: nat) (wr : option dbval) (kcmt : option (nat * dbval)) :=
+  match wr with
+  | Some v => Some (tid, v)
+  | None => kcmt
+  end.
+
+Definition commit__kcmts_ongoing
+  (tid : nat) (wrs : dbmap) (kcmts : gmap dbkey (nat * dbval)) :=
+  merge (commit__kcmts_ongoing_key tid) wrs kcmts.
+
+Definition commit__actions_past
+  (tid : nat) (wrs : dbmap) (acts_past : list action) :=
+  acts_past ++ [ActCmt tid wrs].
+(* TODO: move to distx_action.v once stable. *)
+
+(* TODO: move to distx_inv_proof.v once stable. *)
+Theorem exclusive_inv_commit tid wrs acts_past cmds_paxos kcmts_ongoing :
+  let acts_past' := commit__actions_past tid wrs acts_past in
+  let kcmts_ongoing' := commit__kcmts_ongoing tid wrs kcmts_ongoing in
+  repl_impl_cmtd acts_past cmds_paxos ->
+  exclusive acts_past cmds_paxos kcmts_ongoing ->
+  exclusive acts_past' cmds_paxos kcmts_ongoing'.
+Proof.
+  intros ? ? Hrlc Hexcl key.
+  subst acts_past'. unfold commit__actions_past.
+  subst kcmts_ongoing'. unfold commit__kcmts_ongoing.
+  unfold exclusive.
+  destruct (decide (key ∈ dom wrs)) as [Hin | Hnotin]; rewrite lookup_merge.
+  { apply elem_of_dom in Hin as [v Hv].
+    rewrite Hv /=.
+    specialize (Hexcl key). unfold exclusive in Hexcl.
+    split.
+    { exists wrs. set_solver. }
+    intros Hin.
+    specialize (Hrlc _ Hin).
+    admit.
+  }
+  { rewrite not_elem_of_dom in Hnotin.
+    rewrite Hnotin /=.
+    unfold exclusive in Hexcl.
+    admit.
+  }
+Admitted.
+(* TODO: move to distx_inv_proof.v once stable. *)

@@ -57,12 +57,4 @@ Definition example2: val :=
       #()
     else #()).
 
-(* The goal of this failed example is to show how setting up suitable invariants
-   prevents unrestricted (as defined by the application) usage. *)
-Definition example3: val :=
-  rec: "example3" <> :=
-    let: "px" := MkPaxos #() in
-    Paxos__Propose "px" #(str"world");;
-    #().
-
 End code.
