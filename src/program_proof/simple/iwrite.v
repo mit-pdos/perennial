@@ -172,7 +172,7 @@ Proof.
       rewrite vec_to_list_length /block_bytes in H.
       rewrite /block_bytes; lia.
     }
-    iExists (vinsert (nat_to_fin fin) u bbuf'). iFrame.
+    iExists (vinsert (nat_to_fin fin) w bbuf'). iFrame.
     iSplit.
     { iExactEq "Hbufdata".
       rewrite /= /Block_to_vals vec_to_list_insert.
