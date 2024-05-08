@@ -890,8 +890,8 @@ lemmas. *)
     {
       instantiate (1:=(int.nat ((if
            int.Z g1.(global_world).(grove_global_time) <=?
-           int.Z (u64_instance.u64.(word.add) g1.(global_world).(grove_global_time) x)
-          then u64_instance.u64.(word.add) g1.(global_world).(grove_global_time) x
+           int.Z (i64_instance.i64.(word.add) g1.(global_world).(grove_global_time) x)
+          then i64_instance.i64.(word.add) g1.(global_world).(grove_global_time) x
           else g1.(global_world).(grove_global_time))))).
       destruct (Z.leb (int.Z _) (int.Z (word.add _ _))) eqn:Hlt.
       {

@@ -148,7 +148,7 @@ Proof.
   2:{ repeat iExists _. iFrame. }
   { (* core loop *)
     clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
-    replace (int.nat (u64_instance.u64.(word.add) i 1)) with (1 + int.nat i)%nat by word.
+    replace (int.nat (i64_instance.i64.(word.add) i 1)) with (1 + int.nat i)%nat by word.
     assert (is_Some (ls !! (int.nat i))) as [[k data] Hk].
     { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.
       rewrite Hls. word. }

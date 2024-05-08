@@ -41,9 +41,9 @@ Add Ring wring8 : (Properties.word.ring_theory (word := word8))
        morphism (Properties.word.ring_morph (word := word8)),
        constants [Properties.word_cst]).
 
-Record u64_rep := Word64 { u64_car : word64 }.
-Record u32_rep := Word32 { u32_car : word32 }.
-Record u8_rep := Word8 { u8_car : word8 }.
+Record i64_rep := Word64 { i64_car : word64 }.
+Record i32_rep := Word32 { i32_car : word32 }.
+Record i8_rep := Word8 { i8_car : word8 }.
 
 Definition width64_ok : 0 < 64 := eq_refl.
 Definition width32_ok : 0 < 32 := eq_refl.
@@ -55,16 +55,16 @@ Hint Resolve width64_ok width32_ok width8_ok : typeclass_instances.
 Opaque Naive.word.
 
 
-Module u64_instance.
+Module i64_instance.
   Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word64 (f w.(u64_car))) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word64 (f w1.(u64_car) w2.(u64_car))) (at level 10, only parsing).
+  Notation "'lift1' f" := (fun w => Word64 (f w.(i64_car))) (at level 10, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word64 (f w1.(i64_car) w2.(i64_car))) (at level 10, only parsing).
   #[global]
-  Instance u64 : word 64 :=
+  Instance i64 : word 64 :=
     {|
-      rep := u64_rep;
-      unsigned w := unsigned w.(u64_car);
-      signed w := signed (w.(u64_car));
+      rep := i64_rep;
+      unsigned w := unsigned w.(i64_car);
+      signed w := signed (w.(i64_car));
       of_Z z := Word64 (of_Z z);
       add := lift2 add;
       sub := lift2 sub;
@@ -85,13 +85,13 @@ Module u64_instance.
       slu := lift2 slu;
       sru := lift2 sru;
       srs := lift2 srs;
-      eqb w1 w2 := eqb w1.(u64_car) w2.(u64_car);
-      ltu w1 w2 := ltu w1.(u64_car) w2.(u64_car);
-      lts w1 w2 := lts w1.(u64_car) w2.(u64_car);
+      eqb w1 w2 := eqb w1.(i64_car) w2.(i64_car);
+      ltu w1 w2 := ltu w1.(i64_car) w2.(i64_car);
+      lts w1 w2 := lts w1.(i64_car) w2.(i64_car);
       sextend width' := lift1 (sextend width');
     |}.
 
-  Global Instance u64_word_ok : word.ok u64.
+  Global Instance i64_word_ok : word.ok i64.
   Proof.
     destruct word64_ok.
     constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
@@ -100,18 +100,18 @@ Module u64_instance.
     rewrite <- of_Z_unsigned0; auto.
   Qed.
 
-End u64_instance.
+End i64_instance.
 
-Module u32_instance.
+Module i32_instance.
   Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word32 (f w.(u32_car))) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word32 (f w1.(u32_car) w2.(u32_car))) (at level 10, only parsing).
+  Notation "'lift1' f" := (fun w => Word32 (f w.(i32_car))) (at level 10, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word32 (f w1.(i32_car) w2.(i32_car))) (at level 10, only parsing).
   #[global]
-  Instance u32 : word 32 :=
+  Instance i32 : word 32 :=
     {|
-      rep := u32_rep;
-      unsigned w := unsigned w.(u32_car);
-      signed w := signed (w.(u32_car));
+      rep := i32_rep;
+      unsigned w := unsigned w.(i32_car);
+      signed w := signed (w.(i32_car));
       of_Z z := Word32 (of_Z z);
       add := lift2 add;
       sub := lift2 sub;
@@ -132,13 +132,13 @@ Module u32_instance.
       slu := lift2 slu;
       sru := lift2 sru;
       srs := lift2 srs;
-      eqb w1 w2 := eqb w1.(u32_car) w2.(u32_car);
-      ltu w1 w2 := ltu w1.(u32_car) w2.(u32_car);
-      lts w1 w2 := lts w1.(u32_car) w2.(u32_car);
+      eqb w1 w2 := eqb w1.(i32_car) w2.(i32_car);
+      ltu w1 w2 := ltu w1.(i32_car) w2.(i32_car);
+      lts w1 w2 := lts w1.(i32_car) w2.(i32_car);
       sextend width' := lift1 (sextend width');
     |}.
 
-  Global Instance u32_word_ok : word.ok u32.
+  Global Instance i32_word_ok : word.ok i32.
   Proof.
     destruct word32_ok.
     constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
@@ -147,18 +147,18 @@ Module u32_instance.
     rewrite <- of_Z_unsigned0; auto.
   Qed.
 
-End u32_instance.
+End i32_instance.
 
-Module u8_instance.
+Module i8_instance.
   Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word8 (f w.(u8_car))) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word8 (f w1.(u8_car) w2.(u8_car))) (at level 10, only parsing).
+  Notation "'lift1' f" := (fun w => Word8 (f w.(i8_car))) (at level 10, only parsing).
+  Notation "'lift2' f" := (fun w1 w2 => Word8 (f w1.(i8_car) w2.(i8_car))) (at level 10, only parsing).
   #[global]
-  Instance u8 : word 8 :=
+  Instance i8 : word 8 :=
     {|
-      rep := u8_rep;
-      unsigned w := unsigned w.(u8_car);
-      signed w := signed (w.(u8_car));
+      rep := i8_rep;
+      unsigned w := unsigned w.(i8_car);
+      signed w := signed (w.(i8_car));
       of_Z z := Word8 (of_Z z);
       add := lift2 add;
       sub := lift2 sub;
@@ -179,13 +179,13 @@ Module u8_instance.
       slu := lift2 slu;
       sru := lift2 sru;
       srs := lift2 srs;
-      eqb w1 w2 := eqb w1.(u8_car) w2.(u8_car);
-      ltu w1 w2 := ltu w1.(u8_car) w2.(u8_car);
-      lts w1 w2 := lts w1.(u8_car) w2.(u8_car);
+      eqb w1 w2 := eqb w1.(i8_car) w2.(i8_car);
+      ltu w1 w2 := ltu w1.(i8_car) w2.(i8_car);
+      lts w1 w2 := lts w1.(i8_car) w2.(i8_car);
       sextend width' := lift1 (sextend width');
     |}.
 
-  Global Instance u8_word_ok : word.ok u8.
+  Global Instance i8_word_ok : word.ok i8.
   Proof.
     destruct word8_ok.
     constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
@@ -194,29 +194,32 @@ Module u8_instance.
     rewrite <- of_Z_unsigned0; auto.
   Qed.
 
-End u8_instance.
+End i8_instance.
 
-Global Opaque u64_instance.u64 u32_instance.u32 u8_instance.u8.
+Global Opaque i64_instance.i64 i32_instance.i32 i8_instance.i8.
 
 (* these are identity coercions to make notation.v work out (this is still black
 magic to me) *)
 
-Global SubClass u64 := @word.rep _ u64_instance.u64.
-Global SubClass u32 := @word.rep _ u32_instance.u32.
-Global SubClass u8 := @word.rep _ u8_instance.u8.
+Global SubClass i64 := @word.rep _ i64_instance.i64.
+Global SubClass i32 := @word.rep _ i32_instance.i32.
+Global SubClass i8 := @word.rep _ i8_instance.i8.
 
 (* TODO: ideally this is rarely or never used, but it's useful for backwards
 compatibility while we're still experimenting *)
-Notation byte := u8 (only parsing).
+Notation byte := i8 (only parsing).
 
-Definition I64 (x:Z) : u64 := word.of_Z x.
-Definition I32 (x:Z) : u32 := word.of_Z x.
-Definition I8 (x:Z)  : u8  := word.of_Z x.
+Definition I64 (x:Z) : i64 := word.of_Z x.
+Definition I32 (x:Z) : i32 := word.of_Z x.
+Definition I8 (x:Z)  : i8  := word.of_Z x.
 
-(* Compatibility for Goose code that explicitly emits U64/U32/U8 for now *)
-Definition U64 (x:Z) := I64 x.
-Definition U32 (x:Z) := I32 x.
-Definition U8 (x:Z)  := I8 x.
+(* Compatibility for existing code that refers to U64, u64, etc *)
+Notation U64 x := (I64 x) (only parsing).
+Notation U32 x := (I32 x) (only parsing).
+Notation U8 x := (I8 x) (only parsing).
+Notation u64 := i64 (only parsing).
+Notation u32 := i32 (only parsing).
+Notation u8 := i8 (only parsing).
 
 #[global]
 Instance word_eq_dec {width} (word: word width) {word_ok: word.ok word} : EqDecision word.
@@ -228,11 +231,11 @@ Proof.
 Defined.
 
 #[global]
-Instance u64_eq_dec : EqDecision u64 := _.
+Instance i64_eq_dec : EqDecision i64 := _.
 #[global]
-Instance u32_eq_dec : EqDecision u32 := _.
+Instance i32_eq_dec : EqDecision i32 := _.
 #[global]
-Instance u8_eq_dec : EqDecision u8 := _.
+Instance i8_eq_dec : EqDecision i8 := _.
 
 #[global]
 Instance int_Z_inj `(word: Interface.word width) {word_ok: word.ok word} : Inj eq eq (@word.unsigned width _).
@@ -264,13 +267,13 @@ Proof.
 Qed.
 
 #[global]
-Instance u64_countable : Countable u64.
+Instance i64_countable : Countable i64.
 Proof. apply _. Qed.
 #[global]
-Instance u32_countable : Countable u32.
+Instance i32_countable : Countable i32.
 Proof. apply _. Qed.
 #[global]
-Instance u8_countable : Countable byte.
+Instance i8_countable : Countable byte.
 Proof. apply _. Qed.
 
 (* int and the u64_through* theorems are for backwards compatibility *)
@@ -285,7 +288,7 @@ Module sint.
   Notation Z := word.signed.
 End sint.
 
-Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.Z x.
+Theorem u64_Z_through_nat (x:i64) : Z.of_nat (int.nat x) = int.Z x.
 Proof.
   rewrite Z2Nat.id; auto.
   pose proof (word.unsigned_range x); lia.
@@ -298,12 +301,12 @@ Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (int.nat x).
 Definition u8_to_string (x:byte) : String.string := String.String (u8_to_ascii x) String.EmptyString.
 
 (* conversions up *)
-Definition u8_to_u32 (x:byte) : u32 := I32 (int.Z x).
-Definition u8_to_u64 (x:byte) : u64 := I64 (int.Z x).
-Definition u32_to_u64 (x:u32) : u64 := I64 (int.Z x).
+Definition u8_to_u32 (x:byte) : i32 := I32 (int.Z x).
+Definition u8_to_u64 (x:byte) : i64 := I64 (int.Z x).
+Definition u32_to_u64 (x:i32) : i64 := I64 (int.Z x).
 
 (* conversions down *)
-Definition u32_from_u64 (x:u64) : u32 := I32 (int.Z x).
+Definition u32_from_u64 (x:i64) : u32 := I32 (int.Z x).
 Definition u8_from_u64 (x:u64) : byte := I8 (int.Z x).
 Definition u8_from_u32 (x:u32) : byte := I8 (int.Z x).
 
@@ -363,7 +366,7 @@ Notation u32_bytes := 4%nat (only parsing).
 (** 64-bit encoding *)
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x in
-  let t := split (byte:=u8_instance.u8) u64_bytes n in
+  let t := split (byte:=i8_instance.i8) u64_bytes n in
   tuple.to_list t.
 Global Arguments u64_le : simpl never.
 
@@ -371,7 +374,7 @@ Definition le_to_u64 (l: list byte) : u64.
 Proof.
   refine (word.of_Z _).
   set (t := tuple.of_list l).
-  exact (combine (byte:=u8_instance.u8) _ t).
+  exact (combine (byte:=i8_instance.i8) _ t).
 Defined.
 
 Theorem u64_le_length x : length (u64_le x) = u64_bytes.
@@ -407,7 +410,7 @@ Qed.
 (** 32-bit encoding *)
 Definition u32_le (x: u32) : list byte :=
   let n := word.unsigned x in
-  let t := split (byte:=u8_instance.u8) u32_bytes n in
+  let t := split (byte:=i8_instance.i8) u32_bytes n in
   tuple.to_list t.
 Global Arguments u32_le : simpl never.
 
@@ -415,7 +418,7 @@ Definition le_to_u32 (l: list byte) : u32.
 Proof.
   refine (word.of_Z _).
   set (t := tuple.of_list l).
-  exact (combine (byte:=u8_instance.u8) _ t).
+  exact (combine (byte:=i8_instance.i8) _ t).
 Defined.
 
 Theorem u32_le_length x : length (u32_le x) = u32_bytes.
@@ -517,12 +520,12 @@ Proof.
   exact H.
 Qed.
 
-Lemma unsigned_U64 z : int.Z (I64 z) = word.wrap (word:=u64_instance.u64) z.
+Lemma unsigned_U64 z : int.Z (I64 z) = word.wrap (word:=i64_instance.i64) z.
 Proof.
   unfold I64; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U32 z : int.Z (I32 z) = word.wrap (word:=u32_instance.u32) z.
+Lemma unsigned_U32 z : int.Z (I32 z) = word.wrap (word:=i32_instance.i32) z.
 Proof.
   unfold I32; rewrite word.unsigned_of_Z; auto.
 Qed.
@@ -537,12 +540,12 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma signed_U64 z : sint.Z (I64 z) = word.swrap (word:=u64_instance.u64) z.
+Lemma signed_U64 z : sint.Z (I64 z) = word.swrap (word:=i64_instance.i64) z.
 Proof.
   unfold I64; rewrite word.signed_of_Z; auto.
 Qed.
 
-Lemma signed_U32 z : sint.Z (I32 z) = word.swrap (word:=u32_instance.u32) z.
+Lemma signed_U32 z : sint.Z (I32 z) = word.swrap (word:=i32_instance.i32) z.
 Proof.
   unfold I32; rewrite word.signed_of_Z; auto.
 Qed.

@@ -605,7 +605,7 @@ Notation esm_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=esm_r
 Notation esm_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=esm_record)).
 
 Lemma u64_plus_1_le_no_overflow (y: u64) (n : nat) :
-  n + 1 = int.nat (u64_instance.u64.(word.add) n 1) →
+  n + 1 = int.nat (i64_instance.i64.(word.add) n 1) →
   I64 (n + 1)%Z ≠ y →
   int.nat y ≤ n + 1 →
   int.nat y ≤ n.

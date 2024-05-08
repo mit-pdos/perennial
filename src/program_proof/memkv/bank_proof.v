@@ -14,7 +14,7 @@ Definition kv_gn γ := γ.(bank_ks_names).
 Definition lk_gn γ := γ.(bank_ls_names).
 Definition log_gn γ := γ.(bank_logBalGN).
 
-Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
+Add Ring u64ring : (word.ring_theory (word := i64_instance.i64)).
 
 
 Section bank_defs.
