@@ -209,7 +209,7 @@ Proof.
   iDestruct (slice_small_split _ 1 with "Hsl") as "[H0 Hsl]".
   { simpl. word. }
   rewrite /slice_take /slice_subslice.
-  replace (u :: l) with ([u] ++ l) by done.
+  replace (i :: l) with ([i] ++ l) by done.
   rewrite drop_app_length'; last done.
   wp_apply ("Hwp" with "[$]").
   iIntros "Hsl".

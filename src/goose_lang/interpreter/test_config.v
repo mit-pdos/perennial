@@ -68,9 +68,9 @@ Definition runWithTrace (e: expr) : Error (val * list string) :=
   (fun p => (fst p, reverse $ snd (snd p))) <$> runStateT (interpret 100 e) startstate.
 
 (* these notations make vm_compute'd values more readable *)
-Notation I64_val z := {| u64_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
-Notation I32_val z := {| u32_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
-Notation I8_val z := {| u8_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation I64_val z := {| i64_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation I32_val z := {| i32_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation I8_val z := {| i8_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
 
 Module Examples.
   Coercion Var' := Var.
