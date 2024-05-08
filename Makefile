@@ -71,7 +71,7 @@ endif
 SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/goose_lang/interpreter/interpreter.v\
 	src/goose_lang/logical_reln_fund.v\
-	$(shell find src/program_logic/ -name "*.v" )
+	$(shell find src/program_proof/ -name "*.v" )
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
