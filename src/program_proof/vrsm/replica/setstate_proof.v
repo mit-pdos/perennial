@@ -22,16 +22,16 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (prevEpoch epoch committedNextInde
         "#Hprop_facts" ∷ is_proposal_facts γ.(s_pb) epoch opsfull ∗
         "#Hprop_facts_prim" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
         "%Henc" ∷ ⌜has_snap_encoding snap (get_rwops opsfull)⌝ ∗
-        "%Hno_overflow" ∷ ⌜length (get_rwops opsfull) = int.nat (length (get_rwops opsfull))⌝ ∗
+        "%Hno_overflow" ∷ ⌜length (get_rwops opsfull) = uint.nat (length (get_rwops opsfull))⌝ ∗
         "#Hin_conf" ∷ is_in_config γ γsrv epoch ∗
-        "%Hle" ∷ ⌜int.nat prevEpoch < int.nat epoch⌝ ∗
+        "%Hle" ∷ ⌜uint.nat prevEpoch < uint.nat epoch⌝ ∗
         "#HcommitFacts" ∷ commitIndex_facts γ prevEpoch committedNextIndex ∗
         "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length (get_rwops opsfull)) committedNextIndex snap)
   }}}
     Clerk__SetState #ck #args_ptr
   {{{
         (err:u64), RET #err;
-        □(if (decide (err = U64 0)) then
+        □(if (decide (err = W64 0)) then
             is_epoch_lb γsrv.(r_pb) epoch
           else
             True)
@@ -138,7 +138,7 @@ Proof.
 Qed.
 
 Lemma setstate_primary_eph_step γ γsrv epoch isPrimary canBecomePrimary committedNextIndex epoch' ops ops' :
-  int.nat epoch < int.nat epoch' →
+  uint.nat epoch < uint.nat epoch' →
   is_proposal_lb γ.(s_pb) epoch' ops' -∗
   is_proposal_facts_prim γ.(s_prim) epoch' ops' -∗
   own_tok γsrv.(r_prim) epoch' -∗
@@ -160,7 +160,7 @@ Proof.
 Qed.
 
 Lemma setstate_eph_step γ γsrv st epoch' ops' :
-  int.nat st.(server.epoch) < int.nat epoch' →
+  uint.nat st.(server.epoch) < uint.nat epoch' →
   is_proposal_lb γ.(s_pb) epoch' ops' -∗
   is_proposal_facts γ.(s_pb) epoch' ops' -∗
   is_proposal_facts_prim γ.(s_prim) epoch' ops' -∗
@@ -203,7 +203,7 @@ Proof.
 Qed.
 
 Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':
-  int.nat epoch < int.nat epoch' →
+  uint.nat epoch < uint.nat epoch' →
   is_proposal_lb γ.(s_pb) epoch' opsfull' -∗
   is_proposal_facts γ.(s_pb) epoch' opsfull' -∗
   is_proposal_facts_prim γ.(s_prim) epoch' opsfull' -∗
@@ -318,12 +318,12 @@ Proof.
     wp_loadField.
 
     iDestruct "HΨ" as (prevEpoch) "(%Henc_snap &  %Hlen_nooverflow & %Hle & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf & #HcommitFacts & HΨ)".
-    replace (args.(SetStateArgs.nextIndex)) with (U64 (length (get_rwops opsfull))) by word.
+    replace (args.(SetStateArgs.nextIndex)) with (W64 (length (get_rwops opsfull))) by word.
 
-    assert (int.nat st.(server.epoch) < int.nat args.(SetStateArgs.epoch)) as HepochIneq.
+    assert (uint.nat st.(server.epoch) < uint.nat args.(SetStateArgs.epoch)) as HepochIneq.
     (* FIXME: should be trivial, almost `word` proof. Have (a ≠ b) and ¬(a < b) *)
     {
-      assert (int.nat st.(server.epoch) ≠ int.nat args.(SetStateArgs.epoch)).
+      assert (uint.nat st.(server.epoch) ≠ uint.nat args.(SetStateArgs.epoch)).
       { intros ?. apply Heqb0.
         repeat f_equal. word. }
       word.

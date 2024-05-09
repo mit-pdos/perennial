@@ -32,10 +32,10 @@ Implicit Types (γ : lockservice_names).
 Definition lockservice_is_lock γ (ln:u64) : iProp Σ :=
   ln [[ γ.(ls_locksAllocGN) ]]↦ro ().
 
-Definition TryLock_Pre γ : RPCValsC -> iProp Σ := (λ args, lockservice_is_lock γ args.(U64_1))%I.
-Definition TryLock_Post : RPCValsC -> u64 -> iProp Σ := λ args reply, (⌜reply = 0⌝ ∨ ⌜reply = 1⌝ ∗ (Ps args.(U64_1)))%I.
+Definition TryLock_Pre γ : RPCValsC -> iProp Σ := (λ args, lockservice_is_lock γ args.(W64_1))%I.
+Definition TryLock_Post : RPCValsC -> u64 -> iProp Σ := λ args reply, (⌜reply = 0⌝ ∨ ⌜reply = 1⌝ ∗ (Ps args.(W64_1)))%I.
 
-Definition Unlock_Pre γ : RPCValsC -> iProp Σ := (λ args, lockservice_is_lock γ args.(U64_1) ∗ (Ps args.(U64_1)))%I.
+Definition Unlock_Pre γ : RPCValsC -> iProp Σ := (λ args, lockservice_is_lock γ args.(W64_1) ∗ (Ps args.(W64_1)))%I.
 Definition Unlock_Post : RPCValsC -> u64 -> iProp Σ := λ args reply, True %I.
 
 (** Lockserver invariant (maintained even when the Mutex is held) *)
@@ -149,7 +149,7 @@ Proof.
       iSplitR "HP"; last by eauto with iFrame.
 
       iExists _, _; iFrame.
-      set (ln := args.(U64_1)) in *.
+      set (ln := args.(W64_1)) in *.
       replace (dom (<[ln:=true]> locksM)) with (dom locksM); first done.
       rewrite dom_insert_L.
       assert (ln ∈ dom locksM).
@@ -160,7 +160,7 @@ Proof.
       iApply fupd_wp.
       iInv "Hinv" as (locksAlloc locksDom) "(>Hdom & >Hlocks & >HlocksEx &  HlocksNew)".
       iDestruct (ghost_var_agree with "HmapDom Hdom") as %<-.
-      set (ln := args.(U64_1)) in *.
+      set (ln := args.(W64_1)) in *.
       iMod (ghost_var_update_halves ({[ ln ]} ∪ dom locksM) with "HmapDom Hdom") as "[HmapDom Hdom]".
       iDestruct (map_valid with "Hlocks Hpre") as %Halloc.
       iDestruct (big_sepM_delete with "HlocksNew") as "[HP HlocksNew]"; first exact Halloc.
@@ -222,7 +222,7 @@ Proof.
     wp_pures. iApply "Hpost".
     iSplit; last by eauto.
     iExists _, _; iFrame.
-    set (ln:=args.(U64_1)) in *.
+    set (ln:=args.(W64_1)) in *.
     replace (dom (<[ln:=false]> locksM)) with (dom locksM); first done.
     rewrite dom_insert_L.
     assert (ln ∈ dom locksM).

@@ -10,7 +10,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Definition N_IDX_BUCKET : Z := 8192.
 Definition hash_modu (key : u64) : nat :=
-  int.nat (word.modu (word.add (word.sru key 52) key) N_IDX_BUCKET).
+  uint.nat (word.modu (word.add (word.sru key 52) key) N_IDX_BUCKET).
 
 Definition keys_hashed (hash : nat) :=
   filter (λ x, hash_modu x = hash) keys_all.
@@ -215,7 +215,7 @@ Proof.
     subst P. simpl.
     iNamed "HP".
     wp_pures.
-    list_elem bktsL (int.nat i) as bkt.
+    list_elem bktsL (uint.nat i) as bkt.
     iDestruct (big_sepL_lookup with "HbktsRP") as "HbktRP"; first apply Hbkt_lookup.
     iNamed "HbktRP".
     rewrite list_lookup_fmap Hbkt_lookup in Hlookup.
@@ -277,7 +277,7 @@ Qed.
 (*****************************************************************)
 Theorem wp_index__DoGC idx (tidmin : u64) γ :
   is_index idx γ -∗
-  min_tid_lb γ (int.nat tidmin) -∗
+  min_tid_lb γ (uint.nat tidmin) -∗
   {{{ True }}}
     Index__DoGC #idx #tidmin
   {{{ RET #(); True }}}.
@@ -380,11 +380,11 @@ Proof.
   wp_apply (wp_forUpto
               (λ n, (∃ bktsL, (own_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
                               (⌜Z.of_nat (length bktsL) = N_IDX_BUCKET⌝) ∗
-                              ([∗ list] i ↦ bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt i γ)) ∗
+                              ([∗ list] i ↦ bkt ∈ (take (uint.nat n) bktsL), is_index_bucket bkt i γ)) ∗
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
-                    ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
+                    ([∗ set] key ∈ filter (λ x, (uint.nat n) ≤ hash_modu x)%nat keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
                     ⌜True⌝)%I
-              _ _ (U64 0) (U64 N_IDX_BUCKET) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
+              _ _ (W64 0) (W64 N_IDX_BUCKET) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
   { clear Φ.
     iIntros (i Φ) "!> ((HbktsInv & Hidx & Hvchains & _) & HidxRef & %Hbound) HΦ".
     iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".
@@ -430,7 +430,7 @@ Proof.
       lia.
     }
     iDestruct "Hvchains" as "[Hvchains Hvchain]".
-    iMod (alloc_lock mvccN _ latch (own_index_bucket bkt (int.nat i) γ) with "[$Hfree] [m Hm Hvchain]") as "#Hlock".
+    iMod (alloc_lock mvccN _ latch (own_index_bucket bkt (uint.nat i) γ) with "[$Hfree] [m Hm Hvchain]") as "#Hlock".
     { iNext.
       iExists _, _.
       iFrame.
@@ -443,13 +443,13 @@ Proof.
     rewrite -list_fmap_insert.
     iSplitR "Hvchains"; last first.
     { iSplit; last done.
-      by replace (int.nat (word.add _ _))%nat with (S (int.nat i))%nat; last word.
+      by replace (uint.nat (word.add _ _))%nat with (S (uint.nat i))%nat; last word.
     }
     iExists _.
     iFrame.
     rewrite insert_length.
     iSplit; first done.
-    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
     rewrite (take_S_r _ _ bkt); last first.
     { apply list_lookup_insert. word. }
     iApply (big_sepL_app).
@@ -458,7 +458,7 @@ Proof.
     iApply (big_sepL_singleton).
     rewrite take_length_le; last first.
     { rewrite insert_length. word. }
-    replace (int.nat i + 0)%nat with (int.nat i); last word.
+    replace (uint.nat i + 0)%nat with (uint.nat i); last word.
     rewrite /is_index_bucket.
     eauto 10 with iFrame.
   }
@@ -488,7 +488,7 @@ Proof.
   iModIntro.
   iSplitL ""; first done.
   iSplit; last iFrame "#".
-  replace (int.nat N_IDX_BUCKET) with (length bktsL); last first.
+  replace (uint.nat N_IDX_BUCKET) with (length bktsL); last first.
   { unfold N_IDX_BUCKET. word. }
   by rewrite firstn_all.
 Qed.

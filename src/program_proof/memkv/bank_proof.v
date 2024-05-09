@@ -14,7 +14,7 @@ Definition kv_gn γ := γ.(bank_ks_names).
 Definition lk_gn γ := γ.(bank_ls_names).
 Definition log_gn γ := γ.(bank_logBalGN).
 
-Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
+Add Ring u64ring : (word.ring_theory (word := w64_instance.w64)).
 
 
 Section bank_defs.
@@ -119,7 +119,7 @@ Definition init_lock_inv γlock γkv accts : iProp Σ :=
   (* Already init case *)
   (∃ γlog,
    let γ := {| bank_ls_names := γlock; bank_ks_names := γkv; bank_logBalGN := γlog |} in
-   kvptsto γkv init_flag [U8 0] ∗ inv bankN (bank_inv γ accts) ∗
+   kvptsto γkv init_flag [W8 0] ∗ inv bankN (bank_inv γ accts) ∗
     [∗ set] acc ∈ accts, is_lock lockN γlock acc (bankPs γ acc)).
 
 End bank_defs.
@@ -328,7 +328,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
-  destruct (bool_decide (int.Z src < int.Z accts_s.(Slice.sz))) eqn:Hsrc.
+  destruct (bool_decide (uint.Z src < uint.Z accts_s.(Slice.sz))) eqn:Hsrc.
   2: {
     wp_pures. iModIntro. iLeft. by iFrame "Hkck_own ∗#%".
   }
@@ -336,7 +336,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
-  destruct (bool_decide (int.Z dst < int.Z accts_s.(Slice.sz))) eqn:Hdst.
+  destruct (bool_decide (uint.Z dst < uint.Z accts_s.(Slice.sz))) eqn:Hdst.
   2: {
     wp_pures. iModIntro. iLeft. by iFrame "Hkck_own ∗#%".
   }
@@ -348,8 +348,8 @@ Proof.
 
   iDestruct (own_slice_small_sz with "Haccts_slice") as %Hslicelen.
 
-  destruct (list_lookup_lt _ accts_l (int.nat src)) as (asrc & Hasrc); first by word.
-  destruct (list_lookup_lt _ accts_l (int.nat dst)) as (adst & Hadst); first by word.
+  destruct (list_lookup_lt _ accts_l (uint.nat src)) as (asrc & Hasrc); first by word.
+  destruct (list_lookup_lt _ accts_l (uint.nat dst)) as (adst & Hadst); first by word.
 
   wp_loadField.
   wp_apply (wp_SliceGet with "[$Haccts_slice]"); first by eauto.
@@ -675,7 +675,7 @@ Proof.
           "Hkv1" ∷ kvptsto γ1.(coord_kv_gn) acc []) ∗
         "%Hdone_dom" ∷ ⌜Permutation (elements (dom mdone)) done⌝ ∗
         "Hdone" ∷ [∗ map] acc ↦ bal ∈ mdone,
-          ⌜bal = U64 0⌝ ∗
+          ⌜bal = W64 0⌝ ∗
           ∃ data,
             kvptsto γ1.(coord_kv_gn) acc [] ∗
             kvptsto γ2.(coord_kv_gn) acc data ∗
@@ -713,7 +713,7 @@ Proof.
         specialize (Hnodup x). apply Hnodup; eauto. constructor.
       }
 
-      iApply "HΨ". iExists (<[x := U64 0]> mdone).
+      iApply "HΨ". iExists (<[x := W64 0]> mdone).
       iFrame. iSplitR.
       { iPureIntro. rewrite dom_insert_L. rewrite elements_disj_union; last by set_solver.
         rewrite elements_singleton. rewrite Hdone_dom. apply Permutation_app_comm.

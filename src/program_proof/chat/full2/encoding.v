@@ -10,8 +10,8 @@ Section err.
 Inductive fc_err := ErrSome.
 Definition fc_errno (err:option fc_err) : u64 :=
   match err with
-  | None => U64 0
-  | Some ErrSome => U64 1
+  | None => W64 0
+  | Some ErrSome => W64 1
   end.
 End err.
 
@@ -268,7 +268,7 @@ Lemma wp_decode sl fullB q :
     | None =>
       "%Henc" ∷ ⌜encodes fullB args⌝ ∗
       "Hargs" ∷ own args_ptr args ∗
-      "%Hinb" ∷ ⌜(int.nat args.(Sender) < max_senders)%nat⌝
+      "%Hinb" ∷ ⌜(uint.nat args.(Sender) < max_senders)%nat⌝
     end
   }}}.
 Proof. Admitted.

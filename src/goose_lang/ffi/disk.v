@@ -62,7 +62,7 @@ Definition BlockSize {ext: ffi_syntax}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 (* TODO: could use vreplicate; not sure how much easier it is to work with *)
-Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
+Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (W8 0)).
 
 
 Lemma block_bytes_eq : block_bytes = Z.to_nat 4096.
@@ -94,7 +94,7 @@ Proof.
 Qed.
 
 Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
-  replicate (int.nat 4096) (zero_val byteT) =
+  replicate (uint.nat 4096) (zero_val byteT) =
   Block_to_vals block0.
 Proof. reflexivity. Qed.
 
@@ -187,12 +187,12 @@ Section disk.
   Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) expr :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
-      b ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
+      b ← reads (λ '(σ,g), σ.(world) !! uint.Z a) ≫= unwrap;
       l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l (Block_to_vals b) σ, g));;
       ret $ Val $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
-      _ ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
+      _ ← reads (λ '(σ,g), σ.(world) !! uint.Z a) ≫= unwrap;
         (* TODO: use Sydney's executable version from disk_interpreter.v as
         the generator here *)
       b ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) b, (forall (i:Z), 0 <= i -> i < 4096 ->
@@ -200,7 +200,7 @@ Section disk.
                 | Some (Reading _, v) => Block_to_vals b !! Z.to_nat i = Some v
                 | _ => False
                 end));
-      modify (λ '(σ,g), (set world <[ int.Z a := b ]> σ, g));;
+      modify (λ '(σ,g), (set world <[ uint.Z a := b ]> σ, g));;
       ret $ Val $ #()
     | SizeOp, LitV LitUnit =>
       sz ← reads (λ '(σ,g), disk_size σ.(world));
@@ -255,7 +255,7 @@ lemmas. *)
 
   Theorem read_fresh : forall σ g a b,
       let l := fresh_locs (dom (heap σ)) in
-      σ.(world) !! int.Z a = Some b ->
+      σ.(world) !! uint.Z a = Some b ->
       relation.denote (ffi_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) (LitV $ LitLoc $ l).
   Proof.
     intros.
@@ -288,9 +288,9 @@ lemmas. *)
     ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
   Lemma wp_ReadOp s E (a: u64) q b :
-    {{{ ▷ int.Z a d↦{q} b }}}
+    {{{ ▷ uint.Z a d↦{q} b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
-    {{{ l, RET LitV (LitLoc l); int.Z a d↦{q} b ∗
+    {{{ l, RET LitV (LitLoc l); uint.Z a d↦{q} b ∗
                                   pointsto_block l 1 b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -404,9 +404,9 @@ lemmas. *)
   Qed.
 
   Lemma wp_WriteOp s E (a: u64) b q l :
-    {{{ ▷ ∃ b0, int.Z a d↦{#1} b0 ∗ pointsto_block l q b }}}
+    {{{ ▷ ∃ b0, uint.Z a d↦{#1} b0 ∗ pointsto_block l q b }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
-    {{{ RET LitV LitUnit; int.Z a d↦{#1} b ∗ pointsto_block l q b}}}.
+    {{{ RET LitV LitUnit; uint.Z a d↦{#1} b ∗ pointsto_block l q b}}}.
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_base_step_no_fork; first by auto.

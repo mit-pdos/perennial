@@ -35,7 +35,7 @@ Section goose_lang.
 
   Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
     dom dinit = list_to_set (seqZ 513 sz) →
-    dom kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
+    dom kinds = list_to_set (W64 <$> (seqZ 513 sz)) →
     (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
     0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
   |==> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in

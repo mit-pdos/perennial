@@ -8,7 +8,7 @@ Theorem wp_TxnSite__GetSafeTS site (sid : u64) γ :
   is_txnsite site sid γ -∗
   {{{ True }}}
     TxnSite__GetSafeTS #site
-  {{{ (tid : u64), RET #tid; site_min_tid_lb γ sid (int.nat tid) }}}.
+  {{{ (tid : u64), RET #tid; site_min_tid_lb γ sid (uint.nat tid) }}}.
 Proof.
   iIntros "#Hsite" (Φ) "!> _ HΦ".
   iNamed "Hsite".
@@ -124,13 +124,13 @@ Proof.
   (*@         }                                                               @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
-  set u64_to_nat := (λ x : u64, int.nat x).
+  set u64_to_nat := (λ x : u64, uint.nat x).
   iDestruct (own_slice_small_acc with "HactiveL") as "[HactiveS HactiveC]".
   wp_loadField.
-  set P := λ (i : u64), (∃ (tidloop : u64), let tids := tidnew :: (take (int.nat i) tidsactiveL) in
+  set P := λ (i : u64), (∃ (tidloop : u64), let tids := tidnew :: (take (uint.nat i) tidsactiveL) in
     "HtidminRef" ∷ tidminRef ↦[uint64T] #tidloop ∗
     "%Helem'" ∷ ⌜tidloop ∈ tids⌝ ∗
-    "%Htidloop" ∷ (⌜Forall (λ tid, (int.nat tidloop ≤ tid)%nat) (u64_to_nat <$> tids)⌝))%I.
+    "%Htidloop" ∷ (⌜Forall (λ tid, (uint.nat tidloop ≤ tid)%nat) (u64_to_nat <$> tids)⌝))%I.
   wp_apply (typed_slice.wp_forSlice P _ _ _ _ _ tidsactiveL with "[] [HtidminRef $HactiveS]").
   { clear Φ.
     iIntros (i tidx Φ) "!> (Hloop & %Hbound' & %Hlookup) HΦ".
@@ -142,7 +142,7 @@ Proof.
       iModIntro.
       iExists _.
       iFrame.
-      do 2 replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+      do 2 replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
       rewrite (take_S_r _ _ tidx); last done.
       iSplit; iPureIntro.
       { set_solver. }
@@ -156,7 +156,7 @@ Proof.
       iModIntro.
       iExists _.
       iFrame.
-      do 2 replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+      do 2 replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
       rewrite (take_S_r _ _ tidx); last done.
       iSplit; iPureIntro.
       { set_solver. }
@@ -190,12 +190,12 @@ Proof.
   (*@ }                                                                       @*)
   (* Deduce [tidmin' = tidloop]. *)
   rewrite -HtidsactiveSz firstn_all in Htidloop Helem'.
-  replace tidmin' with (int.nat tidloop); last first.
+  replace tidmin' with (uint.nat tidloop); last first.
   { subst tids tidsactiveM.
     clear -Helem Htidmin' Helem' Htidloop.
     rewrite -list_to_set_cons elem_of_list_to_set in Helem.
     rewrite -list_to_set_cons set_Forall_list_to_set in Htidmin'.
-    replace (int.nat tidnew) with (u64_to_nat tidnew) in Helem, Htidmin'; last done.
+    replace (uint.nat tidnew) with (u64_to_nat tidnew) in Helem, Htidmin'; last done.
     rewrite -fmap_cons in Helem Htidmin'.
     apply (elem_of_list_fmap_1 u64_to_nat) in Helem'.
     rewrite Forall_forall in Htidmin'.

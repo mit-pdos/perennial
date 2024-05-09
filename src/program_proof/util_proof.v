@@ -10,26 +10,26 @@ Implicit Types (v:val).
 Implicit Types (stk:stuckness) (E: coPset).
 
 Theorem wp_Min_l stk E (n m: u64) Φ :
-  int.Z n <= int.Z m ->
+  uint.Z n <= uint.Z m ->
   Φ #n -∗ WP (Min #n #m) @ stk; E {{ Φ }}.
 Proof.
   iIntros (Hlt) "HΦ".
   wp_call.
   wp_if_destruct.
   - by iFrame.
-  - assert (int.Z n = int.Z m) by word.
+  - assert (uint.Z n = uint.Z m) by word.
     apply word.unsigned_inj in H; subst.
     by iFrame.
 Qed.
 
 Theorem wp_Min_r stk E (n m: u64) Φ :
-  int.Z n >= int.Z m ->
+  uint.Z n >= uint.Z m ->
   Φ #m -∗ WP (Min #n #m) @ stk; E {{ Φ }}.
 Proof.
   iIntros (Hlt) "HΦ".
   wp_call.
   wp_if_destruct.
-  - assert (int.Z n = int.Z m) by word.
+  - assert (uint.Z n = uint.Z m) by word.
     apply word.unsigned_inj in H; subst.
     by iFrame.
   - by iFrame.
@@ -49,7 +49,7 @@ Qed.
 Theorem wp_SumOverflows stk E (x y: u64) :
   {{{ True }}}
     util.SumOverflows #x #y @ stk; E
-  {{{ (ok: bool), RET #ok; ⌜ok = bool_decide (int.Z x + int.Z y >= 2^64)⌝ }}}.
+  {{{ (ok: bool), RET #ok; ⌜ok = bool_decide (uint.Z x + uint.Z y >= 2^64)⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.

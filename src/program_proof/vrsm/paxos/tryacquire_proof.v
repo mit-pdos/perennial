@@ -48,7 +48,7 @@ Definition own_releaseFn (f:val) γ sl_ptr oldstate : iProp Σ :=
   "Hupd" ∷ (|={⊤∖↑N,∅}=> ∃ oldstate', own_state γ oldstate' ∗
               (⌜ oldstate' = oldstate ⌝ -∗ own_state γ newstate ={∅,⊤∖↑N}=∗ Φ #0))
   ) -∗
-  (∀ (err:u64), ⌜ err ≠ U64 0 ⌝ → Φ #err) -∗
+  (∀ (err:u64), ⌜ err ≠ W64 0 ⌝ → Φ #err) -∗
   WP f #() {{ Φ }}
 .
 
@@ -232,7 +232,7 @@ Proof.
   rename pst0 into pst.
   iAssert (|={⊤}=> applyAsFollowerArgs.own args_ptr (applyAsFollowerArgs.mkC
                                                pst.(paxosState.epoch)
-                                               (U64 (length log + 1))
+                                               (W64 (length log + 1))
                                                newstate
           ))%I with "[Hargs]" as "Hargs".
   {
@@ -244,7 +244,7 @@ Proof.
 
     rewrite Z2Nat.id; last word.
     rewrite -Hno_overflow.
-    unfold U64.
+    unfold W64.
     rewrite word.of_Z_unsigned.
 
     iMod (readonly_alloc_1 with "nextIndex") as "$".
@@ -277,7 +277,7 @@ Proof.
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
                     "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts),
                     ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
-                                                   if decide (reply.(applyAsFollowerReply.err) = (U64 0)) then
+                                                   if decide (reply.(applyAsFollowerReply.err) = (W64 0)) then
                                                      is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)])
                                                    else
                                                      True
@@ -380,7 +380,7 @@ Proof.
           iFrame "#".
         }
 
-        replace (<[int.nat i:=x2]> γ.(s_hosts)) with (γ.(s_hosts)) ; last first.
+        replace (<[uint.nat i:=x2]> γ.(s_hosts)) with (γ.(s_hosts)) ; last first.
         {
           symmetry.
           by apply list_insert_id.
@@ -434,9 +434,9 @@ Proof.
   iDestruct (big_sepL2_length with "Hclerks_rpc") as %Hconf_clerk_len.
   set (I:=λ (i:u64), (
                  ∃ (W: gset nat),
-                 "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < int.nat i⌝ ∗
-                 "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
-                 "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
+                 "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < uint.nat i⌝ ∗
+                 "%HW_size_nooverflow" ∷ ⌜(size W) ≤ uint.nat i⌝ ∗
+                 "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(W64 (size W)) ∗
                  "#Hacc_lbs" ∷ ([∗ list] s ↦ γsrv' ∈ γ.(s_hosts), ⌜s ∈ W⌝ → is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)]))
       )%I).
 
@@ -483,10 +483,10 @@ Proof.
         iEval (rewrite decide_True) in "Hpost".
         iApply "HΦ".
         iModIntro.
-        iExists (W ∪ {[ int.nat i ]}).
+        iExists (W ∪ {[ uint.nat i ]}).
         iSplitR.
         { (* prove that the new set W is still in range *)
-          replace (int.nat (word.add i (U64 1))) with (int.nat i + 1) by word.
+          replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1) by word.
           iPureIntro.
           intros ? Hin.
           rewrite elem_of_union in Hin.
@@ -504,10 +504,10 @@ Proof.
         rewrite size_union; last first.
         {
           apply disjoint_singleton_r.
-          destruct (decide (int.nat i ∈ W)).
+          destruct (decide (uint.nat i ∈ W)).
           {
             exfalso.
-            specialize (HW_in_range (int.nat i) e).
+            specialize (HW_in_range (uint.nat i) e).
             word.
           }
           done.
@@ -529,7 +529,7 @@ Proof.
 
           apply lookup_lt_Some in Hi_conf_lookup.
           rewrite -Hconf_clerk_len Hclerks_sz in Hi_conf_lookup.
-          assert (Z.of_nat (size W) < int.Z clerks_sl.(Slice.sz))%Z by word.
+          assert (Z.of_nat (size W) < uint.Z clerks_sl.(Slice.sz))%Z by word.
           repeat f_equal. word.
         }
 
@@ -560,7 +560,7 @@ Proof.
         iFrame "HnumSuccesses".
         iFrame "Hacc_lbs".
         iPureIntro.
-        replace (int.nat (word.add i (U64 1))) with (int.nat i + 1) by word.
+        replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1) by word.
         split.
         {
           intros.
@@ -579,7 +579,7 @@ Proof.
       iFrame "HnumSuccesses".
       iFrame "Hacc_lbs".
       iPureIntro.
-      replace (int.nat (word.add i (U64 1))) with (int.nat i + 1) by word.
+      replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1) by word.
       split.
       {
         intros.
@@ -607,13 +607,13 @@ Proof.
     wp_pures.
 
     iDestruct (big_sepL2_length with "Hreplies") as "%Hreplies_len_eq_conf".
-    replace (int.nat replies_sl.(Slice.sz)) with (length γ.(s_hosts)) in HW_in_range; last first.
+    replace (uint.nat replies_sl.(Slice.sz)) with (length γ.(s_hosts)) in HW_in_range; last first.
     { word. }
 
     iDestruct (establish_committed_by with "[$Hacc_lbs]") as "Hcom".
     { done. }
     {
-      assert (2 * size W >= int.Z (word.mul 2 (size W)))%Z.
+      assert (2 * size W >= uint.Z (word.mul 2 (size W)))%Z.
       {
         rewrite word.unsigned_mul.
         rewrite /word.wrap /=.
@@ -766,7 +766,7 @@ Proof.
   }
   iIntros "* (Hlc1 & Hlc3 & Hpost)".
 
-  destruct (decide (err = U64 0)).
+  destruct (decide (err = W64 0)).
   { (* no error *)
     subst.
     setoid_rewrite decide_True.

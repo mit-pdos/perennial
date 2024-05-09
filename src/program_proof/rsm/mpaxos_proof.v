@@ -127,14 +127,14 @@ Section prog.
       Paxos__Lookup #px #i @ ↑mpaxosN
     <<< ∃∃ l', own_consensus_half γ l' >>>
     {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
-        ⌜if ok then l' !! (int.nat i) = Some v else True⌝
+        ⌜if ok then l' !! (uint.nat i) = Some v else True⌝
     }}}.
   Admitted.
 
   Definition paxos_init px γ : iProp Σ :=
   "Hvs"  ∷ own_candidates_half γ ∅ ∗
   "Hv"   ∷ own_consensus_half γ [] ∗
-  "#Hpx" ∷ is_paxos px (U64 0) 3%nat γ.
+  "#Hpx" ∷ is_paxos px (W64 0) 3%nat γ.
 
   Theorem wp_MkPaxos :
     {{{ True }}}

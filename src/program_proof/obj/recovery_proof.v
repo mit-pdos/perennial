@@ -54,14 +54,14 @@ Definition is_txn_durable γ dinit : iProp Σ :=
 
 Definition inode0_map : gmap u64 object :=
   gset_to_gmap (existT _ (bufInode inode_buf0))
-               (list_to_set $ (λ i, U64 (i*8*128)%Z) <$> (seqZ 0 32)).
+               (list_to_set $ (λ i, W64 (i*8*128)%Z) <$> (seqZ 0 32)).
 
 Definition bit0_map : gmap u64 object :=
   gset_to_gmap (existT _ (bufBit false))
-               (list_to_set $ U64 <$> seqZ 0 (8*block_bytes)).
+               (list_to_set $ W64 <$> seqZ 0 (8*block_bytes)).
 
 Definition block0_map : gmap u64 object :=
-  {[U64 0 := existT _ (bufBlock block0)]}.
+  {[W64 0 := existT _ (bufBlock block0)]}.
 
 Definition kind_heap0 (kinds: gmap u64 bufDataKind) : gmap addr object :=
   gmap_uncurry ((λ K, match K with
@@ -95,7 +95,7 @@ Proof.
     + apply rangeSet_lookup in e; [ | word .. ].
       split; [ naive_solver | ].
       inversion 1; subst.
-      eexists (Z.to_nat (int.Z i - 513)), _.
+      eexists (Z.to_nat (uint.Z i - 513)), _.
       split_and!; eauto; try lia.
       f_equal; word.
     + rewrite -> rangeSet_lookup in n by word.
@@ -108,7 +108,7 @@ Proof.
     intros x y Hx Hy Heq.
     eapply elem_of_seq in Hx.
     eapply elem_of_seq in Hy.
-    assert (int.Z (U64 (513 + Z.of_nat x)) = int.Z (U64 (513 + Z.of_nat y))).
+    assert (uint.Z (W64 (513 + Z.of_nat x)) = uint.Z (W64 (513 + Z.of_nat y))).
     { rewrite Heq. eauto. }
     revert H. word.
 Qed.
@@ -167,7 +167,7 @@ Proof. rewrite /block_bytes. lia. Qed.
 
 Lemma lookup_bit0_map (off: u64) o :
   bit0_map !! off = Some o ↔
-  int.Z off < block_bytes * 8 ∧
+  uint.Z off < block_bytes * 8 ∧
   o = existT KindBit (bufBit false).
 Proof.
   rewrite /bit0_map.
@@ -181,13 +181,13 @@ Proof.
     destruct H0 as [off' [? ?]]; subst.
     word.
   - intuition (subst; auto).
-    exists (int.Z off); split; word.
+    exists (uint.Z off); split; word.
 Qed.
 
 Lemma lookup_inode0_map (off: u64) o :
   inode0_map !! off = Some o ↔
   ∃ (i:Z), i < 32 ∧
-           int.Z off = i * 8 * 128 ∧
+           uint.Z off = i * 8 * 128 ∧
            o = existT KindInode (bufInode inode_buf0).
 Proof.
   rewrite /inode0_map.
@@ -207,7 +207,7 @@ Qed.
 
 Lemma lookup_block0_map (off: u64) o :
   block0_map !! off = Some o ↔
-  off = (U64 0) ∧
+  off = (W64 0) ∧
   o = existT KindBlock (bufBlock block0).
 Proof.
   rewrite /block0_map.
@@ -220,9 +220,9 @@ Opaque block_bytes.
 Lemma bit0_map_not_empty : ∅ ≠ bit0_map.
 Proof.
   intro H.
-  assert (bit0_map !! (U64 0) = None).
+  assert (bit0_map !! (W64 0) = None).
   { rewrite -H. apply lookup_empty. }
-  assert (bit0_map !! (U64 0) = Some (existT KindBit (bufBit false))).
+  assert (bit0_map !! (W64 0) = Some (existT KindBit (bufBit false))).
   { apply lookup_bit0_map.
     split; auto.
     pose proof block_bytes_pos.
@@ -233,7 +233,7 @@ Qed.
 
 Lemma inode0_map_not_empty : ∅ ≠ inode0_map.
 Proof.
-  intro H. assert (inode0_map !! (U64 0) = None).
+  intro H. assert (inode0_map !! (W64 0) = None).
   { rewrite -H. apply lookup_empty. }
   apply lookup_gset_to_gmap_None in H0.
   apply H0.
@@ -244,7 +244,7 @@ Qed.
 
 Lemma block0_map_not_empty : ∅ ≠ block0_map.
 Proof.
-  intro H. assert (block0_map !! (U64 0) = None).
+  intro H. assert (block0_map !! (W64 0) = None).
   { rewrite -H. apply lookup_empty. }
   rewrite lookup_singleton in H0. congruence.
 Qed.
@@ -261,16 +261,16 @@ Proof.
   inversion H; eauto.
 Qed.
 
-Lemma block0_to_vals : Block_to_vals block0 = replicate block_bytes (#(U8 0)).
+Lemma block0_to_vals : Block_to_vals block0 = replicate block_bytes (#(W8 0)).
 Proof. reflexivity. Qed.
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Lemma extract_inode0 (off: u64) :
   (* off is actually less than 8*8*128 *)
-  int.Z off `mod` 1024 = 0 →
-  int.Z off < 8*4096 → (* TODO: not sure what bound is *)
-  extract_nth block0 inode_bytes (int.nat off `div` (inode_bytes * 8)) =
+  uint.Z off `mod` 1024 = 0 →
+  uint.Z off < 8*4096 → (* TODO: not sure what bound is *)
+  extract_nth block0 inode_bytes (uint.nat off `div` (inode_bytes * 8)) =
   inode_to_vals inode_buf0.
 Proof.
   intros.
@@ -287,8 +287,8 @@ Proof.
   change (Z.to_nat 128 * 8)%nat with 1024%nat.
   change (Z.to_nat 4096) with 4096%nat.
   change (Z.to_nat 128) with 128%nat.
-  assert (int.nat off < 8 * 4096)%nat by lia.
-  cut (int.nat off `div` 1024 < 32)%nat; try lia.
+  assert (uint.nat off < 8 * 4096)%nat by lia.
+  cut (uint.nat off `div` 1024 < 32)%nat; try lia.
   change (8*4096)%nat with (Z.to_nat 32768) in H1.
   apply Nat2Z.inj_lt.
   rewrite Nat2Z.inj_div.
@@ -297,7 +297,7 @@ Qed.
 
 Lemma bufDataT_in_block0_bit off o (n: u64) :
   bit0_map !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 KindBit n off o.
 Proof.
   intros H H0.
@@ -311,7 +311,7 @@ Proof.
   apply lookup_seqZ in H1 as [-> ?].
   intuition eauto.
   + rewrite /is_bufData_at_off. intuition eauto.
-    exists (U8 0).
+    exists (W8 0).
     rewrite !Z.add_0_l.
     split.
     * rewrite /extract_nth block0_to_vals.
@@ -322,7 +322,7 @@ Proof.
       rewrite block_bytes_eq in H1 |- *.
       rewrite !Nat.mul_1_r.
       rewrite Nat.min_l; [ lia | ].
-      replace (int.nat i) with i by word.
+      replace (uint.nat i) with i by word.
       apply Z.div_lt_upper_bound in H1; [ | lia ].
       rewrite -> Z2Nat.id in H1 by lia.
       replace (Nat.div i 8) with (Z.to_nat $ Z.div (Z.of_nat i) 8); try lia.
@@ -332,16 +332,16 @@ Proof.
       lia.
     * rewrite /get_bit.
       rewrite decide_False //.
-      intros Heq%(f_equal int.Z); move: Heq.
+      intros Heq%(f_equal uint.Z); move: Heq.
       rewrite word.unsigned_and_nowrap.
       rewrite word.unsigned_sru_nowrap.
-      { change (int.Z (U8 0)) with 0; simpl.
+      { change (uint.Z (W8 0)) with 0; simpl.
         rewrite Z.shiftr_0_l //. }
       rewrite /u8_from_u64.
       rewrite word.unsigned_of_Z word.unsigned_modu_nowrap //.
-      change (int.Z 8) with 8.
+      change (uint.Z 8) with 8.
       rewrite block_bytes_eq in H1.
-      replace (int.Z i) with (Z.of_nat i) by word.
+      replace (uint.Z i) with (Z.of_nat i) by word.
       rewrite /word.wrap.
       assert (0 ≤ i `mod` 8 < 8) by (apply Z.mod_bound_pos; lia).
       rewrite Z.mod_small; lia.
@@ -352,7 +352,7 @@ Qed.
 
 Lemma bufDataT_in_block0_inode off o (n: u64) :
   inode0_map !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 KindInode n off o.
 Proof.
   intros.
@@ -382,14 +382,14 @@ Ltac Zify.zify_post_hook ::= idtac.
 
 Lemma bufDataT_in_block0_block off o (n: u64) :
   block0_map !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 KindBlock n off o.
 Proof.
   rewrite /block0_map => H H0.
   eapply lookup_singleton_Some in H. intuition subst.
-  assert (valid_off KindBlock (U64 0)).
+  assert (valid_off KindBlock (W64 0)).
   { rewrite /valid_off.
-    replace (int.Z (U64 0)) with 0 by reflexivity.
+    replace (uint.Z (W64 0)) with 0 by reflexivity.
     rewrite Zmod_0_l. done. }
   rewrite /bufDataT_in_block /=. intuition eauto.
   + rewrite /is_bufData_at_off. intuition eauto.
@@ -404,7 +404,7 @@ Lemma bufDataT_in_block0 kind off o n :
   | KindInode => inode0_map
   | KindBlock => block0_map
   end !! off = Some o ->
-  int.Z n * block_bytes * 8 < 2 ^ 64 ->
+  uint.Z n * block_bytes * 8 < 2 ^ 64 ->
   bufDataT_in_block block0 kind n off o.
 Proof.
   intros. destruct kind;
@@ -416,7 +416,7 @@ Qed.
 (* sz is the number of blocks besides the log (so the size of the disk - 513) *)
 Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
   dom dinit = list_to_set (seqZ 513 sz) →
-  dom kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
+  dom kinds = list_to_set (W64 <$> (seqZ 513 sz)) →
   (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
  |==> ∃ γ,
@@ -525,12 +525,12 @@ Proof.
     apply repeat_lookup_inv in Hhb1; subst.
 
     eapply bufDataT_in_block0; eauto.
-    assert (is_Some (γ.(txn_kinds) !! U64 (513 + Z.of_nat hb_i))) as Hs; eauto.
+    assert (is_Some (γ.(txn_kinds) !! W64 (513 + Z.of_nat hb_i))) as Hs; eauto.
     eapply elem_of_dom in Hs. rewrite Hkinds_dom in Hs.
     eapply elem_of_list_to_set in Hs.
     eapply elem_of_list_fmap_2 in Hs. destruct Hs as [y [Hs0 Hs1]]. rewrite Hs0.
     eapply elem_of_seqZ in Hs1. intuition subst.
-    replace (int.Z (U64 y)) with y by word.
+    replace (uint.Z (W64 y)) with y by word.
     rewrite -Z.mul_assoc. rewrite -Z.mul_assoc in Hbound.
     eapply Z.le_lt_trans; last by apply Hbound.
     pose proof (block_bytes_pos).
@@ -586,7 +586,7 @@ Proof.
     eapply elem_of_list_to_set in Hs.
     eapply elem_of_list_fmap_2 in Hs. destruct Hs as [y [Hs0 Hs1]].
     eapply elem_of_seqZ in Hs1. intuition subst.
-    replace (int.Z (U64 y)) with y by word.
+    replace (uint.Z (W64 y)) with y by word.
     rewrite -Z.mul_assoc. rewrite -Z.mul_assoc in Hbound.
     etransitivity; last by apply Hbound.
     pose proof (block_bytes_pos).
@@ -997,7 +997,7 @@ Proof.
     { simpl. eauto. }
     { exact (Build_async (∅: gmap addr object) []). }
     { exact (Build_async (∅: gmap addr object) []). }
-    { exact (U64 0). }
+    { exact (W64 0). }
 Qed.
 
 End goose_lang.

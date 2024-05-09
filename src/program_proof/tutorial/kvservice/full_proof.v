@@ -443,7 +443,7 @@ Context `{!heapGS Σ}.
 
 (* TODO: copied this naming convention from "u64_le". What does le actually
    mean? *)
-Definition bool_le (b:bool) : list u8 := if b then [U8 1] else [U8 0].
+Definition bool_le (b:bool) : list u8 := if b then [W8 1] else [W8 0].
 
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
@@ -570,7 +570,7 @@ Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 string) : 
   "Htoks" ∷ ghost_map_auth γ.(req_gn) 1 (gset_to_gmap () usedIds) ∗
   "Hreplies" ∷ ghost_map_auth γ.(reply_gn) 1 lastReplies ∗
   "#Hwits" ∷ ([∗ map] opId ↦ r ∈ lastReplies, is_executed_witness γ opId ∗ is_request_receipt γ opId r) ∗
-  "%Htoks" ∷ ⌜ set_Forall (λ id, int.nat id < int.nat nextFreshId) usedIds ⌝
+  "%Htoks" ∷ ⌜ set_Forall (λ id, uint.nat id < uint.nat nextFreshId) usedIds ⌝
 .
 
 Lemma alloc_erpc_server :
@@ -589,7 +589,7 @@ Proof.
 Qed.
 
 Lemma server_fresh_id_step γ nextFreshId lastReplies :
-  int.nat (word.add nextFreshId 1) = int.nat nextFreshId + 1 →
+  uint.nat (word.add nextFreshId 1) = uint.nat nextFreshId + 1 →
   own_erpc_server γ nextFreshId lastReplies ==∗
   own_erpc_server γ (word.add nextFreshId 1) lastReplies ∗
   own_unexecuted_token γ nextFreshId
@@ -879,7 +879,7 @@ Definition is_Server (s:loc) γ : iProp Σ :=
 .
 
 Lemma ghost_getFreshNum γ st :
-  int.nat (word.add st.(server.nextFreshId) 1) = int.nat st.(server.nextFreshId) + 1 →
+  uint.nat (word.add st.(server.nextFreshId) 1) = uint.nat st.(server.nextFreshId) + 1 →
   server.own_ghost γ st ==∗
   server.own_ghost γ (st <|(server.nextFreshId) := word.add st.(server.nextFreshId) 1|>) ∗
   getFreshNum_core_post γ st.(server.nextFreshId)
@@ -1530,10 +1530,10 @@ Defined.
 Definition is_kvserver_host host γ : iProp Σ :=
   ∃ γrpc,
   "#H0" ∷ is_urpc_spec γrpc host (getFreshNum_spec γ) ∗
-  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (put_spec γ) ∗
-  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (conditionalPut_spec γ) ∗
-  "#H3" ∷ is_urpc_spec_pred γrpc host (U64 3) (get_spec γ) ∗
-  "#Hdom" ∷ is_urpc_dom γrpc {[ U64 0; U64 1; U64 2; U64 3 ]}
+  "#H1" ∷ is_urpc_spec_pred γrpc host (W64 1) (put_spec γ) ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (W64 2) (conditionalPut_spec γ) ∗
+  "#H3" ∷ is_urpc_spec_pred γrpc host (W64 3) (get_spec γ) ∗
+  "#Hdom" ∷ is_urpc_dom γrpc {[ W64 0; W64 1; W64 2; W64 3 ]}
   .
 
 End encoded_rpc_definitions.

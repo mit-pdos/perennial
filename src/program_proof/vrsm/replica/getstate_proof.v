@@ -28,10 +28,10 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
     Clerk__GetState #ck #args_ptr
   {{{
         (reply:loc) (err:u64), RET #reply;
-        if (decide (err = U64 0)) then
+        if (decide (err = W64 0)) then
             ∃ epochacc opsfull enc committedNextIndex,
-            ⌜int.nat epoch_lb ≤ int.nat epochacc⌝ ∗
-            ⌜int.nat epochacc ≤ int.nat epoch⌝ ∗
+            ⌜uint.nat epoch_lb ≤ uint.nat epochacc⌝ ∗
+            ⌜uint.nat epochacc ≤ uint.nat epoch⌝ ∗
             is_accepted_ro γsrv.(r_pb) epochacc opsfull ∗
             is_proposal_facts γ.(s_pb) epochacc opsfull ∗
             is_proposal_facts_prim γ.(s_prim) epochacc opsfull ∗
@@ -39,7 +39,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
             commitIndex_facts γ epochacc committedNextIndex ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length (get_rwops opsfull)) committedNextIndex enc) ∗
             ⌜has_snap_encoding enc (get_rwops opsfull)⌝ ∗
-            ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝
+            ⌜length (get_rwops opsfull) = uint.nat (W64 (length (get_rwops opsfull)))⌝
           else
             GetStateReply.own reply (GetStateReply.mkC err 0 0 [])
   }}}.
@@ -168,7 +168,7 @@ Lemma getstate_step γ γsrv epoch_lb epoch ops sealed :
   is_proposal_lb γ.(s_pb) epoch opsfull ∗
   is_proposal_facts γ.(s_pb) epoch opsfull ∗
   is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
-  ⌜int.nat epoch_lb ≤ int.nat epoch⌝
+  ⌜uint.nat epoch_lb ≤ uint.nat epoch⌝
 .
 Proof.
   iIntros "#Hepoch_lb Hghost".

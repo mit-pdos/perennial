@@ -54,8 +54,8 @@ Module log_state.
 End log_state.
 
 Definition addr_wf (a: u64) (d: disk) :=
-  2 + LogSz ≤ int.Z a ∧
-  ∃ (b: Block), d !! (int.Z a) = Some b.
+  2 + LogSz ≤ uint.Z a ∧
+  ∃ (b: Block), d !! (uint.Z a) = Some b.
 
 Definition addrs_wf (updates: list update.t) (d: disk) :=
   Forall (λ u, addr_wf u.(update.addr) d) updates.
@@ -131,12 +131,12 @@ End list_mono.
 Definition wal_wf (s : log_state.t) :=
   addrs_wf (log_state.updates s) s.(log_state.d) ∧
   (* monotonicity of txnids  *)
-  list_mono (λ pos1 pos2, int.Z pos1 ≤ int.Z pos2) (fst <$> s.(log_state.txns)) ∧
+  list_mono (λ pos1 pos2, uint.Z pos1 ≤ uint.Z pos2) (fst <$> s.(log_state.txns)) ∧
   s.(log_state.installed_lb) ≤ s.(log_state.durable_lb) < length s.(log_state.txns).
 
 (** * apply_upds: interpret txns on top of disk *)
 Definition apply_upds (upds: list update.t) (d: disk): disk :=
-  fold_left (fun d '(update.mk a b) => <[int.Z a := b]> d) upds d.
+  fold_left (fun d '(update.mk a b) => <[uint.Z a := b]> d) upds d.
 
 Definition has_updates (log: list update.t) (txns: list (u64 * list update.t)) :=
   forall d, apply_upds log d =
@@ -269,7 +269,7 @@ Qed.
 
 Lemma apply_upds_notin d upds (a: u64) :
   a ∉ (update.addr <$> upds) →
-  apply_upds upds d !! int.Z a = d !! int.Z a.
+  apply_upds upds d !! uint.Z a = d !! uint.Z a.
 Proof.
   rewrite -(reverse_involutive upds).
   remember (reverse upds) as upds_r.
@@ -288,7 +288,7 @@ Proof.
   2: {
     simpl in Hneq.
     apply not_elem_of_cons in Hneq.
-    destruct (decide (int.Z addr = int.Z a)).
+    destruct (decide (uint.Z addr = uint.Z a)).
     2: intuition.
     assert (addr = a) by word.
     intuition.
@@ -297,9 +297,9 @@ Proof.
 Qed.
 
 (* this looks very similar to the previous one, but it doesn't seem like one implies the other
-  since there may not exist an addr such that a = int.Z addr *)
+  since there may not exist an addr such that a = uint.Z addr *)
 Lemma apply_upds_notin' d upds (a: Z) :
-  a ∉ ((λ u, int.Z u.(update.addr)) <$> upds) →
+  a ∉ ((λ u, uint.Z u.(update.addr)) <$> upds) →
   apply_upds upds d !! a = d !! a.
 Proof.
   rewrite -(reverse_involutive upds).
@@ -327,7 +327,7 @@ Qed.
 Lemma apply_upds_NoDup_lookup d upds i a b :
   NoDup (update.addr <$> upds) →
   upds !! i = Some {| update.addr := a; update.b := b |} →
-  (apply_upds upds d) !! int.Z a = Some b.
+  (apply_upds upds d) !! uint.Z a = Some b.
 Proof.
   intros Hnodup Hlookup.
   rewrite -(take_drop (S i) upds).
@@ -348,7 +348,7 @@ Qed.
 
 Lemma apply_upds_dom upds d :
   ∀ (a: Z), a ∈ dom (apply_upds upds d) ↔
-            a ∈ ((λ u, int.Z u.(update.addr)) <$> upds) ∨ a ∈ (dom d).
+            a ∈ ((λ u, uint.Z u.(update.addr)) <$> upds) ∨ a ∈ (dom d).
 Proof.
   induction upds as [|[a b] upds] using rev_ind.
   - simpl.
@@ -360,7 +360,7 @@ Qed.
 
 Lemma apply_upds_empty_dom upds :
   ∀ a, a ∈ dom (apply_upds upds ∅) ↔
-       a ∈ ((λ u, int.Z u.(update.addr)) <$> upds).
+       a ∈ ((λ u, uint.Z u.(update.addr)) <$> upds).
 Proof.
   intros.
   rewrite apply_upds_dom.
@@ -369,8 +369,8 @@ Qed.
 
 Lemma equiv_upds_addrs_subseteq upds1 upds2 :
   (apply_upds upds1 ∅ = apply_upds upds2 ∅) →
-  (λ u : update.t, int.Z u.(update.addr)) <$> upds2 ⊆
-  (λ u : update.t, int.Z u.(update.addr)) <$> upds1.
+  (λ u : update.t, uint.Z u.(update.addr)) <$> upds2 ⊆
+  (λ u : update.t, uint.Z u.(update.addr)) <$> upds1.
 Proof.
   intros.
   intros a.
@@ -380,7 +380,7 @@ Qed.
 
 Lemma has_updates_addrs upds txns :
   has_updates upds txns →
-  (λ u, int.Z u.(update.addr)) <$> upds ⊆ (λ u, int.Z u.(update.addr)) <$> txn_upds txns.
+  (λ u, uint.Z u.(update.addr)) <$> upds ⊆ (λ u, uint.Z u.(update.addr)) <$> txn_upds txns.
 Proof.
   rewrite /has_updates /txn_upds; intros ?.
   specialize (H ∅).
@@ -400,8 +400,8 @@ Proof. apply list_to_set_subseteq. Qed.
 
 Lemma equiv_upds_addrs_eq (upds1 upds2: list update.t) :
   (∀ d, apply_upds upds1 d = apply_upds upds2 d) →
-  list_to_set (C:=gset Z) ((λ u : update.t, int.Z u.(update.addr)) <$> upds2) =
-  list_to_set (C:=gset Z) ((λ u : update.t, int.Z u.(update.addr)) <$> upds1).
+  list_to_set (C:=gset Z) ((λ u : update.t, uint.Z u.(update.addr)) <$> upds2) =
+  list_to_set (C:=gset Z) ((λ u : update.t, uint.Z u.(update.addr)) <$> upds1).
 Proof.
   intros Hequiv.
   apply (iffRL (set_eq_subseteq _ _)).

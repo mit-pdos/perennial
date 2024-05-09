@@ -17,7 +17,7 @@ Definition own_txnsite (txnsite : loc) (sid : u64) γ : iProp Σ :=
     "Hsid" ∷ txnsite ↦[TxnSite :: "sid"] #sid ∗
     "HactiveL" ∷ typed_slice.own_slice tidsactive uint64T 1 tidsactiveL ∗
     "HactiveAuth" ∷ site_active_tids_half_auth γ sid tidsactiveM ∗
-    "%HactiveLM" ∷ ⌜list_to_set ((λ tid, int.nat tid) <$> tidsactiveL) = tidsactiveM⌝ ∗
+    "%HactiveLM" ∷ ⌜list_to_set ((λ tid, uint.nat tid) <$> tidsactiveL) = tidsactiveM⌝ ∗
     "%HactiveND" ∷ ⌜NoDup tidsactiveL⌝ ∗
     "Hsidtok" ∷ sid_own γ sid.
 
@@ -28,7 +28,7 @@ Definition is_txnsite (site : loc) (sid : u64) γ : iProp Σ :=
     "#Hinvtid" ∷ have_gentid γ ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "#Hinvsst" ∷ mvcc_inv_sst γ proph ∗
-    "%HsidBounded" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝.
+    "%HsidBounded" ∷ ⌜(uint.Z sid) < N_TXN_SITES⌝.
 
 End repr.
 

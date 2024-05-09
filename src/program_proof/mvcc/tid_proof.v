@@ -8,19 +8,19 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Local Definition sid_of (ts: u64) : u64 := word.modu ts (U64 N_TXN_SITES).
+Local Definition sid_of (ts: u64) : u64 := word.modu ts (W64 N_TXN_SITES).
 
 Local Definition gentid_au (γ : mvcc_names) (sid : u64) (Φ : val → iProp Σ) : iProp Σ :=
   (|NC={⊤ ∖ ↑mvccNTID,∅}=>
     ∃ ts : nat, ts_auth γ ts ∗
        (∀ ts' : nat, ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ -∗
-         |NC={∅,⊤ ∖ ↑mvccNTID}=> ∀ tid : u64, ⌜int.nat tid = ts'⌝ ∗ sid_own γ sid -∗ Φ #tid)).
+         |NC={∅,⊤ ∖ ↑mvccNTID}=> ∀ tid : u64, ⌜uint.nat tid = ts'⌝ ∗ sid_own γ sid -∗ Φ #tid)).
 
 Local Definition reserved_inv γ γr now (ts : u64): iProp Σ :=
   ∃ Φ, let sid := sid_of ts in
     saved_pred_own γr DfracDiscarded Φ ∗
     sid_own γ sid ∗
-    if bool_decide (int.nat ts ≤ now)%nat then
+    if bool_decide (uint.nat ts ≤ now)%nat then
       (* This ts has already happened *)
       sid_own γ sid -∗ Φ #ts
     else
@@ -63,7 +63,7 @@ Local Lemma gentid_reserve γ now sid Φ :
     (* The user can pick a timestamp with the right sid, but only gets something
     out of this if they pick one that is strictly greater than [clock]. *)
     (∀ ts, ⌜sid = sid_of ts⌝ ==∗
-       (if bool_decide (now < int.Z ts) then ∃ γr, tid_reserved γ γr ts Φ else True) ∗
+       (if bool_decide (now < uint.Z ts) then ∃ γr, tid_reserved γ γr ts Φ else True) ∗
        gentid_inv γ now).
 Proof.
   iIntros "(%last & %reserved & %Hlast & Hts & #Htsc & Hreserved_map & Hreserved) Hsid HAU".
@@ -88,16 +88,16 @@ Proof.
 Qed.
 
 Local Lemma reserved_inc_clock γ now reserved :
-  reserved !! (U64 (S now)) = None →
+  reserved !! (W64 (S now)) = None →
   ([∗ map] ts↦γr ∈ reserved, reserved_inv γ γr now ts) -∗
   [∗ map] ts↦γr ∈ reserved, reserved_inv γ γr (S now) ts.
 Proof.
   intros Hnotnow.
   iIntros "Hm". iApply (big_sepM_impl with "Hm").
   iIntros "!> %ts %γr %Hts (%Φ & HΦ & Hsid & HAU)".
-  assert (int.nat ts ≠ S now).
+  assert (uint.nat ts ≠ S now).
   { intros Heq. rewrite -Heq in Hnotnow.
-    replace (U64 (int.nat ts)) with ts in Hnotnow by word. congruence. }
+    replace (W64 (uint.nat ts)) with ts in Hnotnow by word. congruence. }
   iExists _. iFrame.
   case_bool_decide.
   - rewrite bool_decide_true. 2:lia. done.
@@ -119,7 +119,7 @@ Proof.
   { iApply tsc_lb_weaken; last done. lia. }
   iDestruct "Hgentid" as "(%last & %reserved & %Hlast & Hts & _ & Hreserved_map & Hreserved)".
   set ts := S m.
-  destruct (reserved !! (U64 ts)) as [γr|] eqn:Hts; last first.
+  destruct (reserved !! (W64 ts)) as [γr|] eqn:Hts; last first.
   { (* Nothing reserved at this timestamp, not much to do. *)
     iExists _, _. iFrame. iSplitR; first by eauto with lia.
     iFrame "Htsc".
@@ -151,17 +151,17 @@ Local Lemma gentid_completed γ γr clock ts Φ :
   £1 -∗
   gentid_inv γ clock -∗
   tid_reserved γ γr ts Φ -∗
-  tsc_lb (int.nat ts) -∗
+  tsc_lb (uint.nat ts) -∗
   |NC={⊤∖↑mvccNTID}=> ∃ clock', gentid_inv γ clock' ∗ Φ #ts.
 Proof.
   iIntros "LC Hgentid Hreserved Htsc".
-  set clock' := max clock (int.nat ts).
+  set clock' := max clock (uint.nat ts).
   iAssert (|NC={⊤∖↑mvccNTID}=> gentid_inv γ clock')%I with "[Htsc Hgentid]" as ">Hgentid".
-  { destruct (decide (clock <= int.nat ts)%nat); last first.
+  { destruct (decide (clock <= uint.nat ts)%nat); last first.
     { replace clock' with clock by lia. done. }
     iMod (gentid_inc_clock with "Hgentid Htsc") as "Hgentid"; first done.
     { word. }
-    replace clock' with (int.nat ts) by lia. done.
+    replace clock' with (uint.nat ts) by lia. done.
   }
   iDestruct "Hgentid" as "(%last & %reserved & %Hlast & Hts & #Htsc & Hreserved_map & Hreserved_all)".
   iExists clock'.
@@ -181,20 +181,20 @@ Proof.
 Qed.
 
 (**
- * [int.nat tid = ts] means no overflow, which we would have to assume.
+ * [uint.nat tid = ts] means no overflow, which we would have to assume.
  * It takes around 120 years for TSC to overflow on a 4-GHz CPU.
  *)
 (*****************************************************************)
 (* func GenTID(sid uint64) uint64                                *)
 (*****************************************************************)
 Theorem wp_GenTID (sid : u64) γ :
-  int.Z sid < N_TXN_SITES →
+  uint.Z sid < N_TXN_SITES →
   ⊢ have_gentid γ -∗
     {{{ sid_own γ sid }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       GenTID #sid @ ↑mvccNTID
     <<< ∃∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
-    {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts'⌝ ∗ sid_own γ sid }}}.
+    {{{ (tid : u64), RET #tid; ⌜uint.nat tid = ts'⌝ ∗ sid_own γ sid }}}.
 Proof.
   iIntros "%Hsid #Hinv !>" (Φ) "Hsid HAU".
   wp_call.
@@ -220,27 +220,27 @@ Proof.
   iExists _. iFrame "Hclock".
   iIntros (clock2) "[%Hclock Hclock2]".
   iMod "Hclose2" as "_".
-  set inbounds := bool_decide (int.Z clock2 + 32 < 2^64).
+  set inbounds := bool_decide (uint.Z clock2 + 32 < 2^64).
   set clock2_boundsafe := if inbounds then clock2 else 0.
-  opose proof (u64_round_up_spec clock2_boundsafe (U64 32) _ _) as H.
+  opose proof (u64_round_up_spec clock2_boundsafe (W64 32) _ _) as H.
   { subst clock2_boundsafe inbounds. case_bool_decide; word. }
   { word. }
   move:H.
-  set rounded_ts := u64_round_up clock2_boundsafe (U64 32).
+  set rounded_ts := u64_round_up clock2_boundsafe (W64 32).
   intros (Hmod & Hbound1 & Hbound2).
   set reserved_ts := word.add rounded_ts sid.
-  assert ((int.Z rounded_ts + int.Z sid) `mod` 32 = int.Z sid) as Hsidmod.
+  assert ((uint.Z rounded_ts + uint.Z sid) `mod` 32 = uint.Z sid) as Hsidmod.
   { rewrite Z.add_mod. 2:lia.
-    rewrite Hmod. rewrite [int.Z sid `mod` _]Z.mod_small. 2:split;[word|done].
+    rewrite Hmod. rewrite [uint.Z sid `mod` _]Z.mod_small. 2:split;[word|done].
     rewrite Z.mod_small. 1:lia. split;[word|done]. }
-  assert (int.Z (sid_of reserved_ts) = int.Z sid) as Hsid_of.
+  assert (uint.Z (sid_of reserved_ts) = uint.Z sid) as Hsid_of.
   { rewrite /sid_of /reserved_ts.
     rewrite word.unsigned_modu. 2:done.
     rewrite word.unsigned_add. rewrite (wrap_small (_+_)). 2:word.
     rewrite wrap_small. 1:done.
     split.
     - apply Z_mod_nonneg_nonneg. all:try word. all:done.
-    - trans (int.Z N_TXN_SITES). 2:done. apply Z.mod_pos_bound. done.
+    - trans (uint.Z N_TXN_SITES). 2:done. apply Z.mod_pos_bound. done.
   }
   iMod ("Hcont" $! reserved_ts with "[]") as "[Hreserved Hgentid]".
   { iPureIntro. rewrite /sid_of /reserved_ts. apply word.unsigned_inj. done. }
@@ -273,7 +273,7 @@ Proof.
   (* }                                                       *)
   (***********************************************************)
   set P := λ (b : bool), (tidRef ↦[uint64T] #(reserved_ts : u64) ∗
-     if b then True else tsc_lb (int.nat reserved_ts))%I.
+     if b then True else tsc_lb (uint.nat reserved_ts))%I.
   wp_apply (wp_forBreak_cond P with "[] [Htid]").
   { clear Φ. iIntros "!> %Φ [Htid _] HΦ".
     wp_apply (wp_GetTSC).

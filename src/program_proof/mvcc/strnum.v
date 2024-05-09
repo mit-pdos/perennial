@@ -20,7 +20,7 @@ Admitted.
 
 Theorem wp_U64ToString (n : u64) :
   {{{ True }}}
-    U64ToString #n
+    W64ToString #n
   {{{ (s : string), RET #(LitString s); ⌜u64_to_string n = s⌝ }}}.
 Admitted.
 

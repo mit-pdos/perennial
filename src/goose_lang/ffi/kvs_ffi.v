@@ -104,7 +104,7 @@ Section kvs.
   Fixpoint init_keys (keys: list u64) (sz: nat) : list u64 :=
   match sz with
   | O => keys
-  | S n => init_keys ((U64 (Z.of_nat n)) :: keys) n
+  | S n => init_keys ((W64 (Z.of_nat n)) :: keys) n
   end.
   Definition kvs_keys_all : list u64 := init_keys [] kvs_sz.
 
@@ -112,7 +112,7 @@ Section kvs.
   Fixpoint init_kvs (kvs: kvs_state_typ) (sz: nat) : kvs_state_typ :=
   match sz with
   | O => kvs
-  | S n => <[(U64 (Z.of_nat n)) := (inhabitant disk.Block0)]> (init_kvs kvs n)
+  | S n => <[(W64 (Z.of_nat n)) := (inhabitant disk.Block0)]> (init_kvs kvs n)
   end.
   Definition kvs_init_s : gmap u64 disk.Block := init_kvs ∅ kvs_sz.
 

@@ -66,12 +66,12 @@ Definition get_state {A} (σ:list (list u8 * A)) := default initstate (last (fst
 Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
   (
    "%Hstate" ∷ ⌜ args.(applyAsFollowerArgs.state) = get_state σ ⌝ ∗
-   "%Hσ_index" ∷ ⌜ length σ = (int.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
+   "%Hσ_index" ∷ ⌜ length σ = (uint.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
    "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
    "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
-   (* "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗ *)
+   (* "%Hno_overflow" ∷ ⌜uint.nat args.(applyAsFollowerArgs.nextIndex) < uint.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗ *)
    "#Hprop" ∷ is_proposal (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
+   "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (W64 0))) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (applyAsFollowerReply.mkC err)))
     )%I
 .
@@ -91,9 +91,9 @@ Defined.
 
 Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
  ∃ log,
-  ⌜int.nat reply.(enterNewEpochReply.acceptedEpoch) < int.nat epoch⌝ ∗
+  ⌜uint.nat reply.(enterNewEpochReply.acceptedEpoch) < uint.nat epoch⌝ ∗
   ⌜reply.(enterNewEpochReply.state) = get_state log⌝ ∗
-  ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
+  ⌜uint.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
   is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
   is_proposal (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) reply.(enterNewEpochReply.acceptedEpoch) log ∗
   □ Pwf reply.(enterNewEpochReply.state) ∗
@@ -161,10 +161,10 @@ Defined.
 
 Definition is_paxos_host (host:u64) γ (γsrv:mp_server_names) : iProp Σ :=
   ∃ γrpc,
-  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0); (U64 1); (U64 2) ]} ∗
-  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) (applyAsFollower_spec γ γsrv) ∗
-  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
-  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (becomeLeader_spec)
+  "#Hdom" ∷ is_urpc_dom γrpc {[ (W64 0); (W64 1); (W64 2) ]} ∗
+  "#H0" ∷ is_urpc_spec_pred γrpc host (W64 0) (applyAsFollower_spec γ γsrv) ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (W64 1) (enterNewEpoch_spec γ γsrv) ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (W64 2) (becomeLeader_spec)
 .
 
 Global Instance is_paxos_host_pers host γ γsrv: Persistent (is_paxos_host host γ γsrv) := _.
@@ -173,7 +173,7 @@ Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
   ∃ (log:list (list u8 * gname)),
   "Hghost" ∷ own_replica_ghost (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) γsrv
            (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log) ∗
-  "%HlogLen" ∷ ⌜ length log = int.nat st.(paxosState.nextIndex) ⌝ ∗
+  "%HlogLen" ∷ ⌜ length log = uint.nat st.(paxosState.nextIndex) ⌝ ∗
   "%Hlog" ∷ ⌜ default initstate (last log.*1) = st.(paxosState.state) ⌝ ∗
   "#Hinv" ∷ is_repl_inv (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) ∗
   "#Hvote_inv" ∷ is_vote_inv (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) ∗
@@ -182,7 +182,7 @@ Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
   "HleaderOnly" ∷ (if st.(paxosState.isLeader) then
                      own_leader_ghost (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
                    else True) ∗
-  "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
+  "%HnextIndex_nooverflow" ∷ ⌜ length log = uint.nat (length log) ⌝ ∗
   "%HaccEpochEq" ∷ ⌜ if st.(paxosState.isLeader) then st.(paxosState.acceptedEpoch) = st.(paxosState.epoch) else True ⌝
 .
 

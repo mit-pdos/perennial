@@ -4,7 +4,7 @@ Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Definition post_tuple__Own ts key (ret : u64) γ : iProp Σ :=
-  match int.Z ret with
+  match uint.Z ret with
   | 0 => mods_token γ key ts
   | 200 | 400 => True
   | _ => False
@@ -19,11 +19,11 @@ Theorem wp_tuple__Own tuple (tid : u64) (key : u64) (sid : u64) γ :
     Tuple__Own #tuple #tid
   {{{ (ret : u64), RET #ret;
       active_tid γ tid sid ∗
-      post_tuple__Own (int.nat tid) key ret γ
+      post_tuple__Own (uint.nat tid) key ret γ
   }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
-  iAssert (⌜int.Z tid > 0⌝)%I with "[Hactive]" as "%Htid".
+  iAssert (⌜uint.Z tid > 0⌝)%I with "[Hactive]" as "%Htid".
   { iDestruct "Hactive" as "[_ %Htid]". iPureIntro. word. }
   iNamed "Htuple".
   wp_call.

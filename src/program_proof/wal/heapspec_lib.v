@@ -121,9 +121,9 @@ Qed.
 
 Theorem updates_since_to_last_disk σ a (txn_id : nat) installed :
   wal_wf σ ->
-  disk_at_txn_id txn_id σ !! int.Z a = Some installed ->
+  disk_at_txn_id txn_id σ !! uint.Z a = Some installed ->
   (txn_id ≤ σ.(log_state.installed_lb))%nat ->
-  last_disk σ !! int.Z a = Some (latest_update installed (updates_since txn_id a σ)).
+  last_disk σ !! uint.Z a = Some (latest_update installed (updates_since txn_id a σ)).
 Proof.
   destruct σ.
   unfold last_disk, updates_since, disk_at_txn_id.

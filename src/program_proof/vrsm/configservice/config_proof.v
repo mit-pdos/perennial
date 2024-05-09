@@ -23,7 +23,7 @@ Definition encode (x:t) : list u8 :=
   u64_le x.(epoch) ++
   u64_le x.(reservedEpoch) ++
   u64_le x.(leaseExpiration) ++
-  u64_le (if x.(wantLeaseToExpire) then U64 1 else U64 0) ++
+  u64_le (if x.(wantLeaseToExpire) then W64 1 else W64 0) ++
   (u64_le (length x.(config)) ++ concat (u64_le <$> x.(config))).
 
 
@@ -251,13 +251,13 @@ Context `{pconf:!init.t}.
 Context `{pNtop:!Ntop.t}. *)
 
 Definition own_latest_epoch γ (epoch:u64) : iProp Σ :=
-  mono_nat_auth_own γ.(epoch_gn) (1/2) (int.nat epoch).
+  mono_nat_auth_own γ.(epoch_gn) (1/2) (uint.nat epoch).
 
 Definition own_reserved_epoch γ (epoch:u64) : iProp Σ :=
-  mono_nat_auth_own γ.(repoch_gn) (1/2) (int.nat epoch).
+  mono_nat_auth_own γ.(repoch_gn) (1/2) (uint.nat epoch).
 
 Definition is_reserved_epoch_lb γ (epoch:u64) : iProp Σ :=
-  mono_nat_lb_own γ.(repoch_gn) (int.nat epoch).
+  mono_nat_lb_own γ.(repoch_gn) (uint.nat epoch).
 
 Definition own_config γ (conf:list u64) : iProp Σ :=
   ghost_var γ.(config_val_gn) (1/2) conf
@@ -270,8 +270,8 @@ Program Definition ReserveEpochAndGetConfig_core_spec γ Φ :=
   (
     £ 1 -∗
     (|={⊤∖↑N,∅}=> ∃ reservedEpoch conf, own_reserved_epoch γ reservedEpoch ∗ own_config γ conf ∗
-    (⌜int.nat reservedEpoch < int.nat (word.add reservedEpoch (U64 1))⌝ -∗
-      own_reserved_epoch γ (word.add reservedEpoch (U64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
+    (⌜uint.nat reservedEpoch < uint.nat (word.add reservedEpoch (W64 1))⌝ -∗
+      own_reserved_epoch γ (word.add reservedEpoch (W64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
       Φ (word.add reservedEpoch 1) conf
       ))
     )%I.
@@ -289,7 +289,7 @@ Program Definition TryWriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) �
    (⌜ reserved_epoch = epoch ⌝ -∗
     own_config γ new_conf -∗
     own_reserved_epoch γ reserved_epoch -∗
-    own_latest_epoch γ epoch ={∅,⊤∖↑N}=∗ Φ (U64 0))
+    own_latest_epoch γ epoch ={∅,⊤∖↑N}=∗ Φ (W64 0))
   ) ∗
   (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err)
 .
@@ -297,9 +297,9 @@ Program Definition TryWriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) �
 Program Definition GetLease_core_spec γ (epoch:u64) Φ : iProp Σ :=
   (∀ (leaseExpiration:u64) γl,
     is_lease epochLeaseN γl (own_latest_epoch γ epoch) -∗
-    is_lease_valid_lb γl leaseExpiration -∗ Φ (U64 0) leaseExpiration
+    is_lease_valid_lb γl leaseExpiration -∗ Φ (W64 0) leaseExpiration
   ) ∧
-  (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (U64 0))
+  (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (W64 0))
 .
 
 Program Definition ReserveEpochAndGetConfig_spec γ :=
@@ -310,7 +310,7 @@ Program Definition ReserveEpochAndGetConfig_spec γ :=
                                    ⌜Config.has_encoding enc_conf conf⌝ -∗
                                    Φ (u64_le 0 ++ u64_le newEpoch ++ enc_conf)
                                   ) ∗
-    (∀ err, ⌜ err ≠ U64 0 ⌝ -∗ Φ (u64_le err))
+    (∀ err, ⌜ err ≠ W64 0 ⌝ -∗ Φ (u64_le err))
     )%I.
 Next Obligation.
   rewrite /ReserveEpochAndGetConfig_core_spec.
@@ -360,11 +360,11 @@ Defined.
 
 Definition is_config_host (host:u64) γ : iProp Σ :=
   ∃ γrpc,
-  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
-  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (GetConfig_spec γ) ∗
-  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
-  "#H3" ∷ is_urpc_spec_pred γrpc host (U64 3) (GetLease_spec γ) ∗
-  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
+  "#H0" ∷ is_urpc_spec_pred γrpc host (W64 0) (ReserveEpochAndGetConfig_spec γ) ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (W64 1) (GetConfig_spec γ) ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (W64 2) (TryWriteConfig_spec γ) ∗
+  "#H3" ∷ is_urpc_spec_pred γrpc host (W64 3) (GetLease_spec γ) ∗
+  "#Hdom" ∷ is_urpc_dom γrpc {[ (W64 0) ; (W64 1) ; (W64 2) ; (W64 3) ]}
 .
 
 Definition configN := N .@ "paxos".
@@ -377,7 +377,7 @@ Definition own_Config_ghost γ (st:state.t) : iProp Σ :=
   "Hreserved_ghost" ∷ own_reserved_epoch γ st.(state.reservedEpoch) ∗
   "Hlatest_epoch" ∷ post_lease epochLeaseN γl (own_latest_epoch γ st.(state.epoch)) ∗
   "HleaseExp" ∷ own_lease_expiration γl st.(state.leaseExpiration) ∗
-  "%HresIneq" ∷ ⌜ int.nat st.(state.epoch) <= int.nat st.(state.reservedEpoch) ⌝
+  "%HresIneq" ∷ ⌜ uint.nat st.(state.epoch) <= uint.nat st.(state.reservedEpoch) ⌝
 .
 
 Definition is_config_inv γ : iProp Σ :=
@@ -660,7 +660,7 @@ Proof.
       iDestruct (own_slice_to_small with "Henc_conf_sl") as "$".
     }
     iIntros (?) "[Hrep_sl Henc_conf_sl]".
-    replace (int.nat 0%Z) with 0%nat by word.
+    replace (uint.nat 0%Z) with 0%nat by word.
     wp_store.
     iApply "HΦ".
     iFrame "Hrep".
@@ -868,7 +868,7 @@ Proof.
         iDestruct (mono_nat_auth_own_agree with "Hepoch_ghost Hepoch_ghost2") as %[_ Heq].
         assert (latest_epoch = st.(state.epoch)) by word; subst.
         iCombine "Hepoch_ghost Hepoch_ghost2" as "Hepoch_ghost".
-        iMod (mono_nat_own_update (int.nat new_epoch) with "Hepoch_ghost") as "[[Hepoch_ghost Hepoch_ghost2] _]".
+        iMod (mono_nat_own_update (uint.nat new_epoch) with "Hepoch_ghost") as "[[Hepoch_ghost Hepoch_ghost2] _]".
         { word. }
         iDestruct (ghost_var_agree with "Hconf_ghost Hconf_ghost2") as %->.
         iCombine "Hconf_ghost Hconf_ghost2" as "Hconf_ghost".
@@ -1126,9 +1126,9 @@ Proof.
     wp_apply (wp_wand with "[HleaseExpiration]").
     {
       instantiate (1:=(λ _, ∃ (newLeaseExpiration:u64),
-                        "%Hineq1" ∷ ⌜ int.nat st.(state.leaseExpiration) <= int.nat newLeaseExpiration⌝ ∗
-                        "%Hineq2" ∷ ⌜ int.nat (word.add l 1000000000%Z) <=
-                          int.nat newLeaseExpiration⌝ ∗
+                        "%Hineq1" ∷ ⌜ uint.nat st.(state.leaseExpiration) <= uint.nat newLeaseExpiration⌝ ∗
+                        "%Hineq2" ∷ ⌜ uint.nat (word.add l 1000000000%Z) <=
+                          uint.nat newLeaseExpiration⌝ ∗
                         "HleaseExpiration" ∷ st_ptr ↦[state :: "leaseExpiration"] #newLeaseExpiration )%I).
       wp_if_destruct.
       {
@@ -1211,7 +1211,7 @@ Qed.
 Definition own_Clerk_inv (ck:loc) l : iProp Σ :=
   ∃ (leader:u64),
   "Hleader" ∷ ck ↦[Clerk :: "leader"] #leader ∗
-  "%HleaderBound" ∷ ⌜ int.nat leader < l ⌝
+  "%HleaderBound" ∷ ⌜ uint.nat leader < l ⌝
 .
 
 Definition is_Clerk (ck:loc) γ : iProp Σ :=
@@ -1252,7 +1252,7 @@ Proof.
                "Hcls" ∷ cls_ptr ↦[slice.T ptrT] (slice_val sl) ∗
                "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
                "#Hrpc" ∷ ([∗ list] cl ∈ cls, ∃ srv : u64, is_ReconnectingClient cl srv ∗ is_config_host srv γ) ∗
-               "%Hsz" ∷ ⌜ length cls = int.nat i ⌝
+               "%Hsz" ∷ ⌜ length cls = uint.nat i ⌝
                )%I
              with "[] [Hcls Hcls_sl $Hhosts_sl]").
   2:{
@@ -1314,10 +1314,10 @@ Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
   □ (£ 1 -∗
       (|={⊤∖↑N,∅}=> ∃ epoch conf, own_reserved_epoch γ epoch ∗ own_config γ conf ∗
-       (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗
-        own_reserved_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
+       (⌜uint.nat epoch < uint.nat (word.add epoch (W64 1))⌝ -∗
+        own_reserved_epoch γ (word.add epoch (W64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
          (∀ conf_sl, readonly (own_slice_small conf_sl uint64T 1 conf) -∗
-           Φ (#(LitInt $ word.add epoch (U64 1)), slice_val conf_sl)%V)))
+           Φ (#(LitInt $ word.add epoch (W64 1)), slice_val conf_sl)%V)))
   ) -∗
   WP Clerk__ReserveEpochAndGetConfig #ck {{ Φ }}
 .
@@ -1542,7 +1542,7 @@ Proof.
   iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
   iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
   set (idx:=(word.modu r cls_sl.(Slice.sz))).
-  assert (int.nat idx < length cls) as Hlookup.
+  assert (uint.nat idx < length cls) as Hlookup.
   {
     subst idx.
     rewrite Hsl_sz.
@@ -1637,7 +1637,7 @@ Proof.
   wp_store.
   wp_pures.
   iDestruct (own_slice_to_small with "Hargs_sl") as "Hargs_sl".
-  replace (int.nat 0%Z) with (0%nat) by word.
+  replace (uint.nat 0%Z) with (0%nat) by word.
   iAssert ( ∃ sl,
       "Hreply" ∷ reply_ptr ↦[slice.T byteT] (slice_val sl)
     )%I with "[Hreply]" as "HH".
@@ -2142,10 +2142,10 @@ Context `{!gooseGlobalGS Σ}.
 
 Context `(params:configParams.t Σ).
 Definition config_spec_list γ :=
-  [ (U64 0, ReserveEpochAndGetConfig_spec γ) ;
-    (U64 1, GetConfig_spec γ) ;
-    (U64 2, TryWriteConfig_spec γ) ;
-    (U64 3, GetLease_spec γ)].
+  [ (W64 0, ReserveEpochAndGetConfig_spec γ) ;
+    (W64 1, GetConfig_spec γ) ;
+    (W64 2, TryWriteConfig_spec γ) ;
+    (W64 3, GetLease_spec γ)].
 
 
 Lemma alloc_config_rpc host γ :

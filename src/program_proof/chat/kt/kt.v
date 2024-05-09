@@ -141,7 +141,7 @@ Lemma wp_keyCli_reg ptr_keyCli ptr_entry entry log adtrParams :
     "Hentry" ∷ UnameKey.own ptr_entry entry ∗
     if bool_decide (#err = #0) then
       "%Hprefix" ∷ ⌜log.(KeyLog.Log) `prefix_of` newLog.(KeyLog.Log)⌝ ∗
-      "%Helem_of" ∷ ⌜newLog.(KeyLog.Log) !! int.nat epoch = Some entry⌝
+      "%Helem_of" ∷ ⌜newLog.(KeyLog.Log) !! uint.nat epoch = Some entry⌝
     else True%I
   }}}.
 Proof. Admitted.
@@ -158,7 +158,7 @@ Lemma wp_keyCli_look ptr_keyCli (uname:u64) log adtrParams :
     if bool_decide (#err = #0) then
       "Hkey" ∷ own_slice_small sl_key byteT 1 key ∗
       "%Hprefix" ∷ ⌜log.(KeyLog.Log) `prefix_of` newLog.(KeyLog.Log)⌝ ∗
-      "%Helem_of" ∷ ⌜newLog.(KeyLog.Log) !! int.nat epoch = Some (UnameKey.mk uname key)⌝
+      "%Helem_of" ∷ ⌜newLog.(KeyLog.Log) !! uint.nat epoch = Some (UnameKey.mk uname key)⌝
     else True%I
   }}}.
 Proof. Admitted.
@@ -166,16 +166,16 @@ Proof. Admitted.
 Lemma wp_keyCli_audit ptr_keyCli (adtrId:u64) log adtrParams :
   {{{
     "HkeyCli" ∷ own_keyCli ptr_keyCli log adtrParams ∗
-    "%HadtrId" ∷ ⌜int.nat adtrId < length adtrParams⌝
+    "%HadtrId" ∷ ⌜uint.nat adtrId < length adtrParams⌝
   }}}
   keyCli__audit #ptr_keyCli #adtrId
   {{{
     (epoch err:u64) param, RET (#epoch, #err);
     "HkeyCli" ∷ own_keyCli ptr_keyCli log adtrParams ∗
-    "%Hparam" ∷ ⌜adtrParams !! int.nat adtrId = Some param⌝ ∗
+    "%Hparam" ∷ ⌜adtrParams !! uint.nat adtrId = Some param⌝ ∗
     if bool_decide (#err = #0) && param.(Hon) then
       (* take is 1-idx'd, epoch is 0-idx'd. *)
-      "#Hlb_log" ∷ mono_list_lb_own param.(γ) (take (int.nat epoch + 1) log.(KeyLog.Log))
+      "#Hlb_log" ∷ mono_list_lb_own param.(γ) (take (uint.nat epoch + 1) log.(KeyLog.Log))
     else True%I
   }}}.
 Proof. Admitted.
@@ -415,7 +415,7 @@ Proof using heapGS0 mono_listG0 Σ.
   iIntros "%Herr".
   apply bool_decide_eq_true in Herr.
   rewrite Herr.
-  assert (int.nat 1%Z = 1) as H by word;
+  assert (uint.nat 1%Z = 1) as H by word;
     rewrite H in Hparam;
     clear H.
   assert (param = param1) by naive_solver;
@@ -436,7 +436,7 @@ Proof using heapGS0 mono_listG0 Σ.
   iIntros "%Herr".
   apply bool_decide_eq_true in Herr.
   rewrite Herr.
-  assert (int.nat 1%Z = 1) as H by word;
+  assert (uint.nat 1%Z = 1) as H by word;
     rewrite H in Hparam;
     clear H.
   assert (param = param1) by naive_solver;
@@ -461,12 +461,12 @@ Proof using heapGS0 mono_listG0 Σ.
   {
     (* When we take some number of elements, if we take more
        than our lookup index, that reduces to a normal lookup. *)
-    assert (int.nat epoch0 < int.nat auditEpoch0 + 1) as H by word.
+    assert (uint.nat epoch0 < uint.nat auditEpoch0 + 1) as H by word.
     rewrite lookup_take; [apply Helem_of1|apply H].
   }
   iDestruct (mono_list_idx_own_get with "[$Hlb_cLook1]") as "Hidx1".
   {
-    assert (int.nat epoch1 < int.nat auditEpoch1 + 1) as H by word.
+    assert (uint.nat epoch1 < uint.nat auditEpoch1 + 1) as H by word.
     rewrite lookup_take; [apply Helem_of2|apply H].
   }
   (* TODO: not sure why word doesn't handle this. *)

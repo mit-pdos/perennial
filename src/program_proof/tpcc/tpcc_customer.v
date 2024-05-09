@@ -16,10 +16,10 @@ Definition customer_record_to_val (cid : u64) (cwid : u64) (clast : Slice.t) :=
   (#cid, (#cwid, (to_val clast, #())))%V.
 
 Definition customer_tbl_txnpt (τ : gname) (tplid : u64) (data : u64 * u64 * (list u8)) :=
-  txnmaps_ptsto τ (U64 0) (u64_le tplid) (Value (u64_le data.1.1 ++ u64_le data.1.2 ++ data.2)).
+  txnmaps_ptsto τ (W64 0) (u64_le tplid) (Value (u64_le data.1.1 ++ u64_le data.1.2 ++ data.2)).
 
 Definition customer_tbl_dbpt (τ : gname) (tplid : u64) q (data : u64 * u64 * (list u8)) :=
-  dbmaps_ptsto τ (U64 0) (u64_le tplid) q (Value (u64_le data.1.1 ++ u64_le data.1.2 ++ data.2)).
+  dbmaps_ptsto τ (W64 0) (u64_le tplid) q (Value (u64_le data.1.1 ++ u64_le data.1.2 ++ data.2)).
 
 Theorem wp_readCustomer txn tplid cid cwid clast tid view γ τ :
   {{{ own_txn txn tid view γ τ ∗ customer_tbl_txnpt τ tplid (cid, cwid, clast) }}}
@@ -38,7 +38,7 @@ Proof.
   (***********************************************************)
   wp_apply wp_NewSliceWithCap; first word.
   iIntros (kPtr) "HkS".
-  replace (int.nat 0) with 0%nat by word. rewrite replicate_0.
+  replace (uint.nat 0) with 0%nat by word. rewrite replicate_0.
   wp_apply wp_ref_to; first by auto.
   iIntros (kRef) "HkRef".
   wp_load.
@@ -79,16 +79,16 @@ Qed.
 
 (* Resources and operations on the Customer index. *)
 Definition customer_idx_txnpt (τ : gname) (cid cwid : u64) (tplid : u64) :=
-  txnmaps_ptsto τ (U64 1) ((u64_le cid) ++ (u64_le cwid)) (Value (u64_le tplid)).
+  txnmaps_ptsto τ (W64 1) ((u64_le cid) ++ (u64_le cwid)) (Value (u64_le tplid)).
 
 Definition customer_idx_txnpt_nil (τ : gname) (cid cwid : u64) :=
-  txnmaps_ptsto τ (U64 1) ((u64_le cid) ++ (u64_le cwid)) Nil.
+  txnmaps_ptsto τ (W64 1) ((u64_le cid) ++ (u64_le cwid)) Nil.
 
 Definition customer_idx_dbpt (τ : gname) (cid cwid : u64) q (tplid : u64) :=
-  dbmaps_ptsto τ (U64 1) ((u64_le cid) ++ (u64_le cwid)) q (Value (u64_le tplid)).
+  dbmaps_ptsto τ (W64 1) ((u64_le cid) ++ (u64_le cwid)) q (Value (u64_le tplid)).
 
 Definition customer_idx_dbpt_nil (τ : gname) (cid cwid : u64) q :=
-  dbmaps_ptsto τ (U64 1) ((u64_le cid) ++ (u64_le cwid)) q Nil.
+  dbmaps_ptsto τ (W64 1) ((u64_le cid) ++ (u64_le cwid)) q Nil.
 
 Theorem wp_findCusomterByCID txn cid cwid tid tplid view γ τ :
   {{{ own_txn txn tid view γ τ ∗ customer_idx_txnpt τ cid cwid tplid }}}
@@ -107,7 +107,7 @@ Proof.
   (***********************************************************)
   wp_apply wp_NewSliceWithCap; first word.
   iIntros (kPtr) "HkS".
-  replace (int.nat 0) with 0%nat by word. rewrite replicate_0.
+  replace (uint.nat 0) with 0%nat by word. rewrite replicate_0.
   wp_apply wp_ref_to; first by auto.
   iIntros (kRef) "HkRef".
   wp_load.
@@ -148,7 +148,7 @@ Qed.
 Theorem wp_findCusomterByCID_nil txn cid cwid tid view γ τ :
   {{{ own_txn txn tid view γ τ ∗ customer_idx_txnpt_nil τ cid cwid }}}
     findCustomerByCID #txn #cid #cwid
-  {{{ RET (#(U64 0), #false);
+  {{{ RET (#(W64 0), #false);
       own_txn txn tid view γ τ ∗ customer_idx_txnpt_nil τ cid cwid
   }}}.
 Proof.
@@ -162,7 +162,7 @@ Proof.
   (***********************************************************)
   wp_apply wp_NewSliceWithCap; first word.
   iIntros (kPtr) "HkS".
-  replace (int.nat 0) with 0%nat by word. rewrite replicate_0.
+  replace (uint.nat 0) with 0%nat by word. rewrite replicate_0.
   wp_apply wp_ref_to; first by auto.
   iIntros (kRef) "HkRef".
   wp_load.
@@ -296,8 +296,8 @@ Proof.
   wp_pures.
   set m : u64 -> list u8 -> dbmaps :=
     λ (tplid : u64) (clast : list u8),
-      {[ (U64 1, u64_le cid ++ u64_le cwid) := Value (u64_le tplid) ]} ∪
-      {[ (U64 0, u64_le tplid) := Value (u64_le cid ++ u64_le cwid ++ clast) ]}.
+      {[ (W64 1, u64_le cid ++ u64_le cwid) := Value (u64_le tplid) ]} ∪
+      {[ (W64 0, u64_le tplid) := Value (u64_le cid ++ u64_le cwid ++ clast) ]}.
 
 
   (* Q: Can we automate converting [big_sepM] to individual points-tos? *)
@@ -330,8 +330,8 @@ Proof.
                 cRef ↦[structTy Customer] (customer_record_to_val cid cwid clastS))%I.
   set Ra := (λ (_ : dbmaps), Ri)%I.
   set Rc := (λ (r : dbmaps), ∃ (tplid : u64) (clast : list u8) (clastS : Slice.t),
-                ⌜r !! (U64 1, u64_le cid ++ u64_le cwid) = Some (Value (u64_le tplid)) ∧
-                 r !! (U64 0, u64_le tplid) = Some (Value (u64_le cid ++ u64_le cwid ++ clast))⌝ ∗
+                ⌜r !! (W64 1, u64_le cid ++ u64_le cwid) = Some (Value (u64_le tplid)) ∧
+                 r !! (W64 0, u64_le tplid) = Some (Value (u64_le cid ++ u64_le cwid ++ clast))⌝ ∗
                 cRef ↦[structTy Customer] (customer_record_to_val cid cwid clastS) ∗
                 own_slice_small clastS byteT 1 clast)%I.
   wp_apply (wp_txn__DoTxn_readonly _ _ P Rc Rc with "[$Htxn HcRef]").
@@ -344,7 +344,7 @@ Proof.
     wp_pures.
     wp_apply (wp_SelectCusomterByCID with "[$Htxn Hidxpt Htblpt HcRef]").
     { iFrame. rewrite /zero_val /=.
-      iExists (U64 0), (U64 0), Slice.nil.
+      iExists (W64 0), (W64 0), Slice.nil.
       iFrame.
     }
     iIntros (clastS) "(Htxn & Hidxpt & Htblpt & Hcid & Hcwid & Hclast & HclastS)".
@@ -431,7 +431,7 @@ Proof.
   wp_apply (wp_ref_of_zero); first by auto.
   iIntros (cRef) "HcRef".
   wp_pures.
-  set m : dbmaps := {[ (U64 1, u64_le cid ++ u64_le cwid) := Nil ]}.
+  set m : dbmaps := {[ (W64 1, u64_le cid ++ u64_le cwid) := Nil ]}.
   set P := λ (r : dbmaps), r = m.
   wp_apply (wp_txn__DoTxn_xres_readonly _ _ P with "[$Htxn]").
   { (* Transaction body. *)

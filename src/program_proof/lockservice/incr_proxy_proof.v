@@ -16,7 +16,7 @@ Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 
 Definition has_encoding_for_onetime_clerk data cid (args:RPCValsC) :=
-   has_encoding data [EncUInt64 cid ; EncUInt64 2 ; EncUInt64 args.(U64_1) ; EncUInt64 args.(U64_2)].
+   has_encoding data [EncUInt64 cid ; EncUInt64 2 ; EncUInt64 args.(W64_1) ; EncUInt64 args.(W64_2)].
 
 (* TODO: should probably make RPCValC to be nicer than (u64 * (u64 * ())); no need for the unit *)
 
@@ -70,8 +70,8 @@ Definition own_onetime_incr_clerk (ck isrv:loc) (cid:u64) : iProp Σ :=
 .
 
 Variable old_v:u64.
-Definition IncrPreCond : RPCValsC → iProp Σ := (λ a, a.(U64_1) [[γback.(incr_mapGN)]]↦ old_v)%I.
-Definition IncrPostCond : RPCValsC → u64 → iProp Σ := (λ a r, a.(U64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
+Definition IncrPreCond : RPCValsC → iProp Σ := (λ a, a.(W64_1) [[γback.(incr_mapGN)]]↦ old_v)%I.
+Definition IncrPostCond : RPCValsC → u64 → iProp Σ := (λ a r, a.(W64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
 
 Definition own_unalloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValsC) : iProp Σ :=
   "cid" ∷ ck ↦[ShortTermIncrClerk :: "cid"] #cid ∗
@@ -79,7 +79,7 @@ Definition own_unalloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCVa
   "incrserver" ∷ ck ↦[ShortTermIncrClerk :: "incrserver"] #isrv ∗
   "#req" ∷ (readonly (ck ↦[ShortTermIncrClerk :: "req"] (#cid,
                                               (#1,
-                                              (#args.(U64_1), (#args.(U64_2), #()), #())))))
+                                              (#args.(W64_1), (#args.(W64_2), #()), #())))))
 .
 
 Definition own_alloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValsC) : iProp Σ :=
@@ -306,7 +306,7 @@ Proof.
   iNamed "HArgs".
   wp_storeField.
   (* Close ref to args field in RPCRequest *)
-  iDestruct (RPCVals_merge with "U64_1 U64_2") as "HArgs".
+  iDestruct (RPCVals_merge with "U64_1 W64_2") as "HArgs".
   iDestruct (Hacc_Args with "HArgs") as "Args".
   clear Hacc_Args Args.
   (* Close ref to req field in ShortTermIncrClerk *)
@@ -330,7 +330,7 @@ Proof.
   iNamed "HArgs".
   wp_storeField.
   (* Close ref to args field in RPCRequest *)
-  iDestruct (RPCVals_merge with "U64_1 U64_2") as "HArgs".
+  iDestruct (RPCVals_merge with "U64_1 W64_2") as "HArgs".
   iDestruct (Hacc_Args with "HArgs") as "Args".
   clear Hacc_Args Args.
   (* Close ref to req field in ShortTermIncrClerk *)
@@ -404,7 +404,7 @@ Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
 Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
   "Hctx" ∷ map_ctx γ.(incr_mapGN) 1 server.(kvsM) ∗
   "Hback" ∷ ([∗ map] k ↦ v ∈ server.(kvsM), (k [[γback.(incr_mapGN)]]↦ v ∨ k [[γ.(incr_mapGN)]]↦{1/2} v)) ∗
-  "HownCIDs" ∷ ([∗ set] cid ∈ (fin_to_set u64), RPCClient_own γback.(incr_rpcGN) cid 0 ∨ ⌜int.Z cid < int.Z server.(lastCID)⌝%Z) ∗
+  "HownCIDs" ∷ ([∗ set] cid ∈ (fin_to_set u64), RPCClient_own γback.(incr_rpcGN) cid 0 ∨ ⌜uint.Z cid < uint.Z server.(lastCID)⌝%Z) ∗
   "Hfown_lastCID" ∷ (∃ data, "lastCID" f↦ data ∗ ⌜has_encoding data [EncUInt64 server.(lastCID)]⌝)
 .
 
@@ -533,7 +533,7 @@ Proof.
     { iExists _; iFrame. iExists _; iFrame. done. }
     { (* Case that lastCID was updated on durable storage *)
       iDestruct (big_sepS_impl _ (λ cid, RPCClient_own γback.(incr_rpcGN) cid 0 ∨
-                                         ⌜int.Z cid < int.Z server.(lastCID) + 1⌝%Z)%I with "HownCIDs []") as "HownCIDs".
+                                         ⌜uint.Z cid < uint.Z server.(lastCID) + 1⌝%Z)%I with "HownCIDs []") as "HownCIDs".
       {
         iModIntro. iIntros (x Hxin) "[Hrpcclient_own|%Hineq]".
         { iLeft. iFrame. }
@@ -553,7 +553,7 @@ Proof.
   iDestruct "HownCID" as "[HownCID|%Hbad]"; last by lia.
   (* Weaken the big_sepS; after this, we won't be able to get RPCClient anymore, because lastCID will have increased *)
   iDestruct ("HownCIDs_rest" $! (λ cid, RPCClient_own γback.(incr_rpcGN) cid 0 ∨
-                                     ⌜int.Z cid < int.Z server.(lastCID) + 1⌝%Z)%I with "[] []") as "HownCIDs".
+                                     ⌜uint.Z cid < uint.Z server.(lastCID) + 1⌝%Z)%I with "[] []") as "HownCIDs".
   {
     iModIntro. iIntros (x Hxin Hdistinct) "[Hrpcclient_own|%Hineq]".
     { iLeft. iFrame. }
@@ -564,7 +564,7 @@ Proof.
   }
 
   (* Set RPCClient_own seq to 1*)
-  iMod (fmcounter_map_update (int.nat 1) with "HownCID") as "[HownCID _]".
+  iMod (fmcounter_map_update (uint.nat 1) with "HownCID") as "[HownCID _]".
   { word. }
 
   iCache with "HΦ Hctx Hback Hfown_lastCID HownCIDs".
@@ -608,9 +608,9 @@ Qed.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
-   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
+   "Hpointsto" ∷ args.(W64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
   ("Hfown_oldv" ∷ ∃ data cid γreq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
-   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+   "Hpointsto" ∷ args.(W64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
    ⌜has_encoding_for_onetime_clerk data cid args⌝ ∗
    RPCClient_own γback.(incr_rpcGN) cid 2 ∗
    RPCRequest_token γreq ∗
@@ -634,7 +634,7 @@ is_RPCServer γback.(incr_rpcGN) -∗
         ProxyIncrServer_core_own_ghost server -∗
         SP ={⊤}=∗
         ProxyIncrServer_core_own_ghost server' ∗
-        args.(U64_1) [[γ.(incr_mapGN)]]↦ (word.add old_v 1)
+        args.(W64_1) [[γ.(incr_mapGN)]]↦ (word.add old_v 1)
       )
   }}}
   {{{
@@ -704,7 +704,7 @@ Proof.
     wpc_pures.
     iDestruct (slice.own_slice_sz with "Hcontent_slice") as "%Hslice_len".
     simpl in Hslice_len.
-    assert (int.Z content.(Slice.sz) = 0) as -> by word.
+    assert (uint.Z content.(Slice.sz) = 0) as -> by word.
     destruct bool_decide eqn:Hs.
     {
       apply bool_decide_eq_true in Hs.
@@ -912,16 +912,16 @@ Proof.
         iDestruct (client_stale_seqno with "Hstale Hrpc_clientown") as %Hbad.
         exfalso.
         simpl in Hbad.
-        replace (int.nat 1 + 1) with (2) in Hbad by word.
-        replace (int.nat 2%nat) with (2) in Hbad by word.
+        replace (uint.nat 1 + 1) with (2) in Hbad by word.
+        replace (uint.nat 2%nat) with (2) in Hbad by word.
         done.
       }
       wpc_pures.
       iDestruct "Hpost" as "[_ HΦ]".
-      iApply ("HΦ" $! (|={⊤}=> args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
-                       args.(U64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1)
+      iApply ("HΦ" $! (|={⊤}=> args.(W64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+                       args.(W64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1)
                       )%I
-              {| kvsM:= <[args.(U64_1):=(word.add old_v 1)]> server.(kvsM)|}
+              {| kvsM:= <[args.(W64_1):=(word.add old_v 1)]> server.(kvsM)|}
              ).
       iSplitL "Hincrserver HlastCID".
       { iFrame "HlastCID Hincrserver #". }
@@ -940,7 +940,7 @@ Proof.
       iIntros "Hghost >[Hγpointsto Hγbackpointsto]".
       iNamed "Hghost".
       iDestruct (map_valid with "Hctx Hγpointsto") as %HkInMap.
-      iDestruct (big_sepM_insert_acc _ _ args.(U64_1) old_v with "Hback") as "[Hk Hback]".
+      iDestruct (big_sepM_insert_acc _ _ args.(W64_1) old_v with "Hback") as "[Hk Hback]".
       { done. }
       iDestruct "Hk" as "[Hk|Hk]".
       { (* Impossible case: big_sepM has γback ptsto *)
@@ -959,14 +959,14 @@ Proof.
       iExFalso.
       iDestruct (own_slice_sz with "Hcontent_slice") as %Hbad.
       apply bool_decide_eq_false in Hlen.
-      assert (int.Z content.(Slice.sz) = 0)%Z.
+      assert (uint.Z content.(Slice.sz) = 0)%Z.
       { apply Znot_lt_ge in Hlen.
-        replace (int.Z (U64 0)) with 0%Z in Hlen by word.
+        replace (uint.Z (W64 0)) with 0%Z in Hlen by word.
         word.
       }
       assert (content.(Slice.sz) = 0)%Z by word.
       rewrite H0 in Hbad.
-      replace (int.nat 0%Z) with (0) in Hbad by word.
+      replace (uint.nat 0%Z) with (0) in Hbad by word.
       apply length_zero_iff_nil in Hbad.
       rewrite Hbad in Henc.
       unfold has_encoding_for_onetime_clerk in Henc.

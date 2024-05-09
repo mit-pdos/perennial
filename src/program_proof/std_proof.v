@@ -82,29 +82,29 @@ Proof.
   wp_load.
   wp_if_destruct; last first.
   { (* i >= length *)
-    assert (int.Z (length xs) ≤ int.Z i) as Hle by lia. clear Heqb.
+    assert (uint.Z (length xs) ≤ uint.Z i) as Hle by lia. clear Heqb.
     (* FIXME: can't some automation do this? *)
-    replace (int.Z i) with (Z.of_nat i) in Hle by word.
-    replace (int.Z (length xs)) with (Z.of_nat (length xs)) in Hle by word.
+    replace (uint.Z i) with (Z.of_nat i) in Hle by word.
+    replace (uint.Z (length xs)) with (Z.of_nat (length xs)) in Hle by word.
     apply Nat2Z.inj_le in Hle.
     iRight. iModIntro. iSplit; first done. wp_load.
     rewrite firstn_all2 //.
     rewrite firstn_all2; last by rewrite -Hlens.
     iIntros "!> HΦ". iApply "HΦ". eauto with iFrame. }
   wp_pures.
-  replace (int.Z i) with (Z.of_nat i) in Heqb by word.
-  replace (int.Z (length xs)) with (Z.of_nat (length xs)) in Heqb by word.
+  replace (uint.Z i) with (Z.of_nat i) in Heqb by word.
+  replace (uint.Z (length xs)) with (Z.of_nat (length xs)) in Heqb by word.
   apply Nat2Z.inj_lt in Heqb.
   destruct (lookup_lt_is_Some_2 xs i) as [xi Hxi]; first done.
   destruct (lookup_lt_is_Some_2 ys i) as [yi Hyi]; first by rewrite -Hlens.
   wp_load.
   (* FIXME: some typeclass is set up wrong so TC inference picks the wrong type here *)
   wp_apply (wp_SliceGet (V:=u8) with "[$Hx]").
-  { replace (int.nat i) with i by word. done. }
+  { replace (uint.nat i) with i by word. done. }
   iIntros "Hx".
   wp_load.
   wp_apply (wp_SliceGet (V:=u8) with "[$Hy]").
-  { replace (int.nat i) with i by word. done. }
+  { replace (uint.nat i) with i by word. done. }
   iIntros "Hy".
   wp_pures.
   wp_if_destruct.
@@ -121,7 +121,7 @@ Proof.
     iFrame "Hx Hy". iExists (S i).
     iSplit.
     { iPureIntro. word. }
-    replace (word.add i 1) with (U64 (S i)) by word.
+    replace (word.add i 1) with (W64 (S i)) by word.
     iFrame.
     case_bool_decide as Heq.
     + rewrite bool_decide_true; first done.
@@ -162,7 +162,7 @@ Proof.
     iSpecialize ("HΦ" $! Slice.nil).
     iApply "HΦ".
     inversion Heqb0.
-    apply (f_equal int.Z) in H1.
+    apply (f_equal uint.Z) in H1.
     iPoseProof (slice.own_slice_small_nil _ 1) as "Hsl_b'"; [done|].
     iDestruct (own_slice_small_agree with "[$Hsl_b] [$Hsl_b']") as %Heq.
     destruct b; [|done].
@@ -172,7 +172,7 @@ Proof.
   {
     wp_apply wp_NewSlice.
     iIntros (sl_b0) "Hsl_b0".
-    replace (int.nat 0) with (0%nat) by word.
+    replace (uint.nat 0) with (0%nat) by word.
     wp_apply (wp_SliceAppendSlice with "[$Hsl_b $Hsl_b0]"); [done|].
     iIntros (?) "[Hs' _]".
     iDestruct (own_slice_to_small with "Hs'") as "Hs'".
@@ -182,7 +182,7 @@ Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
   ∀ Φ : val → iProp Σ,
-    (⌜int.Z (word.add x y) = (int.Z x + int.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
+    (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
     WP SumAssumeNoOverflow #x #y {{ Φ }}.
 Proof.
   iIntros "%Φ HΦ". wp_lam; wp_pures.
@@ -195,8 +195,8 @@ Qed.
 (* We pass some "ghost data" from [elems] to each invocation; [length elems] determines
    how many threads there are. *)
 Lemma wp_Multipar `{!multiparG Σ} {X:Type} (P Q : nat → X → iProp Σ) (num:u64) (elems : list X) (op : val) :
-  length elems = int.nat num →
-  □(∀ (i : u64) x, ⌜elems !! int.nat i = Some x⌝ -∗ P (int.nat i) x -∗ WP op #i {{ _, Q (int.nat i) x }}) -∗
+  length elems = uint.nat num →
+  □(∀ (i : u64) x, ⌜elems !! uint.nat i = Some x⌝ -∗ P (uint.nat i) x -∗ WP op #i {{ _, Q (uint.nat i) x }}) -∗
   {{{ [∗ list] i ↦ x ∈ elems, P i x }}}
     Multipar #num op
   {{{ RET #(); [∗ list] i ↦ x ∈ elems, Q i x }}}.
@@ -210,13 +210,13 @@ Proof.
   { done. }
   set lock_inv := ( (∃ nleft : u64, nleft_l ↦[uint64T] #nleft ∗ own γtok (Excl ())) ∨
     ∃ (nleft : u64) (pending : gset nat),
-      "%Hsz" ∷ ⌜size pending = int.nat nleft⌝ ∗
+      "%Hsz" ∷ ⌜size pending = uint.nat nleft⌝ ∗
       "Hnleft" ∷ nleft_l ↦[uint64T] #nleft ∗
       "HPQ" ∷ ([∗ list] i ↦ x ∈ elems, ⌜i ∈ pending⌝ ∨ own γpending (GSet {[i]}) ∗ Q i x)
       )%I.
   wp_apply (newlock_spec nroot _ lock_inv with "[Hnleft]").
   { iModIntro. rewrite /lock_inv. iRight.
-    iExists num, (set_seq 0 (int.nat num)). iFrame. iSplit.
+    iExists num, (set_seq 0 (uint.nat num)). iFrame. iSplit.
     - iPureIntro. rewrite -list_to_set_seq size_list_to_set ?seq_length //.
       apply NoDup_seq.
     - iApply big_sepL_intro. iIntros "!> %k %i %Hlk". iLeft. iPureIntro.
@@ -229,21 +229,21 @@ Proof.
   wp_apply wp_ref_to. { val_ty. }
   iIntros (i_l) "Hi".
   set loop_inv := (λ cur : u64,
-    [∗ list] i ↦ x ∈ drop (int.nat cur) elems, own γpending (GSet {[(int.nat cur)+i]}) ∗ P ((int.nat cur)+i) x)%I%nat.
+    [∗ list] i ↦ x ∈ drop (uint.nat cur) elems, own γpending (GSet {[(uint.nat cur)+i]}) ∗ P ((uint.nat cur)+i) x)%I%nat.
   wp_apply (wp_forUpto loop_inv _ _ 0 with "[] [HPs Hpending Hi]").
   { word. }
   { clear Φ.
     iIntros "%cur !> %Φ (Hloop & Hcur & %Hcur) HΦ". wp_pures.
     wp_load.
-    assert (is_Some (elems !! int.nat cur)) as [x Hx].
+    assert (is_Some (elems !! uint.nat cur)) as [x Hx].
     { apply lookup_lt_is_Some. word. }
-    iAssert (loop_inv (word.add cur 1) ∗ own γpending (GSet {[int.nat cur]}) ∗ P (int.nat cur) x)%I with "[Hloop]"
+    iAssert (loop_inv (word.add cur 1) ∗ own γpending (GSet {[uint.nat cur]}) ∗ P (uint.nat cur) x)%I with "[Hloop]"
       as "(Hloop & Hpending & HP)".
     { rewrite /loop_inv.
       rewrite (drop_S _ _ _ Hx).
       simpl. rewrite Nat.add_0_r.
       iDestruct "Hloop" as "(($ & $) & Hloop)".
-      replace (int.nat (word.add cur 1)) with (S (int.nat cur)) by word.
+      replace (uint.nat (word.add cur 1)) with (S (uint.nat cur)) by word.
       setoid_rewrite Nat.add_succ_r. done. }
     wp_apply (wp_fork with "[HP Hpending]").
     { iModIntro. wp_bind (op _). iApply (wp_wand with "[HP]").
@@ -262,8 +262,8 @@ Proof.
       wp_load. wp_store.
       wp_apply (wp_condSignal with "Hcond").
       wp_apply (release_spec with "[-]"); last done. iFrame "Hlocked Hlk".
-      iRight. iExists _, (pending ∖ {[int.nat cur]}). iFrame "Hnleft".
-      iDestruct (big_sepL_lookup_acc_impl (int.nat cur) with "HPQ") as "[Hcur Hclose]".
+      iRight. iExists _, (pending ∖ {[uint.nat cur]}). iFrame "Hnleft".
+      iDestruct (big_sepL_lookup_acc_impl (uint.nat cur) with "HPQ") as "[Hcur Hclose]".
       { done. }
       iFreeze "Hclose".
       iDestruct "Hcur" as "[%Hpending|[Hpending2 _]]"; last first.
@@ -273,7 +273,7 @@ Proof.
       iModIntro. iSplit.
       { iPureIntro. rewrite size_difference; last set_solver.
         rewrite Hsz size_singleton.
-        assert (int.nat nleft ≠ 0%nat). 2:word.
+        assert (uint.nat nleft ≠ 0%nat). 2:word.
         rewrite -Hsz. intros Hemp%size_empty_inv.
         rewrite ->Hemp in Hpending. set_solver. }
       iThaw "Hclose". iApply "Hclose"; last by eauto with iFrame.
@@ -283,14 +283,14 @@ Proof.
     wp_pures. iApply "HΦ". eauto with iFrame. }
   { (* loop invariant holds initially *)
     iFrame "Hi". rewrite /loop_inv.
-    replace (int.nat num - int.nat 0%Z)%nat with (int.nat num) by word.
+    replace (uint.nat num - uint.nat 0%Z)%nat with (uint.nat num) by word.
     iClear "#". clear loop_inv lock_inv num Hlen.
     iInduction elems as [|x elems] "IH" using rev_ind; simpl.
     { done. }
     rewrite big_sepL_app big_sepL_singleton.
     rewrite big_sepL_app big_sepL_singleton.
     rewrite app_length /= Nat.add_0_r set_seq_add_L.
-    change (int.nat 0) with 0%nat. simpl.
+    change (uint.nat 0) with 0%nat. simpl.
     iDestruct "HPs" as "[HPs $]".
     rewrite [_ ∪ ∅]right_id_L -gset_disj_union; last first.
     { apply disjoint_singleton_r.
@@ -323,8 +323,8 @@ Proof.
   iIntros "!> !> %i' %i %Hlk [%Hpending|[_ $]]".
   exfalso.
   apply Znot_lt_ge in Hleft.
-  change (int.Z 0) with 0 in Hleft.
-  assert (int.nat nleft = 0%nat) as Hnotleft by word.
+  change (uint.Z 0) with 0 in Hleft.
+  assert (uint.nat nleft = 0%nat) as Hnotleft by word.
   rewrite Hnotleft in Hsz.
   apply size_empty_inv in Hsz.
   set_solver.

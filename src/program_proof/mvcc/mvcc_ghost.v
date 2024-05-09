@@ -11,8 +11,8 @@ Local Definition sid_min_tidR := gmapR u64 mono_natR.
 Local Definition sid_ownR := gmapR u64 (exclR unitO).
 
 Lemma sids_all_lookup (sid : u64) :
-  int.Z sid < N_TXN_SITES ->
-  sids_all !! (int.nat sid) = Some sid.
+  uint.Z sid < N_TXN_SITES ->
+  sids_all !! (uint.nat sid) = Some sid.
 Proof.
   intros H.
   unfold sids_all.
@@ -152,7 +152,7 @@ Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
 
 (* TODO: should be able to remove the second conjunct. *)
 Definition active_tid γ (tid sid : u64) : iProp Σ :=
-  (site_active_tids_frag γ sid (int.nat tid) ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜(0 < int.Z tid < 2 ^ 64 - 1)⌝ .
+  (site_active_tids_frag γ sid (uint.nat tid) ∧ ⌜uint.Z sid < N_TXN_SITES⌝) ∧ ⌜(0 < uint.Z tid < 2 ^ 64 - 1)⌝ .
 
 Definition site_min_tid_auth_def γ (sid : u64) q tid : iProp Σ :=
   own γ {[sid := (●MN{# q} tid)]}.

@@ -60,11 +60,11 @@ Definition marshalledMapSize (m:gmap u64 (list u8)) : nat :=
 
 Definition has_byte_map_encoding (m:gmap u64 (list u8)) (r:Rec) :=
   ∃ l,
-  (int.Z (size m) = size m) ∧
+  (uint.Z (size m) = size m) ∧
   NoDup l.*1 ∧
   (list_to_map l) = m ∧
   r = [EncUInt64 (size m)] ++
-      ((flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 (int.Z (length (u.2))); EncBytes u.2]) l)).
+      ((flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 (uint.Z (length (u.2))); EncBytes u.2]) l)).
 
 Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop :=
   ∃ r, (* (∀ k, k ∈ dom (gset _ ) args.(IR_Kvs) → shardOfC k = args.(IR_CID)) ∧ *)
@@ -171,7 +171,7 @@ Definition EncSliceMap_invariant m0 enc_v (r:Rec) sz map_sz
     ⌜remaining = (original_remaining - marshalledMapSize_data mdone)%Z⌝ ∗
     ⌜mtodo ##ₘ mdone ⌝ ∗
     is_enc enc_v sz (r ++ [EncUInt64 map_sz] ++
- (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 (int.Z (length (u.2))); EncBytes u.2]) l )) remaining
+ (flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 (uint.Z (length (u.2))); EncBytes u.2]) l )) remaining
 .
 
 
@@ -334,7 +334,7 @@ Proof using Type*.
   iNamed "Hinv".
   wp_pures. iModIntro.
   iApply ("HΦ" $! ([EncUInt64 (size m)] ++
-                 flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l)).
+                 flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (uint.Z (length u.2)); EncBytes u.2]) l)).
   iDestruct "Hinv" as "(?&?&%Hunion&%&%&%&->&%&Henc)".
   iFrame.
   rewrite /marshalledMapSize.
@@ -362,7 +362,7 @@ Definition SizeOfMarshalledMap_invariant m0 (s : loc) (mtodo' mdone':gmap u64 va
     ⌜ mtodo ∪ mdone = m0 ⌝ ∗
     ⌜mtodo ##ₘ mdone ⌝ ∗
     s ↦[uint64T] #z ∗
-    ⌜ (8 + marshalledMapSize_data mdone)%nat = int.nat z ⌝).
+    ⌜ (8 + marshalledMapSize_data mdone)%nat = uint.nat z ⌝).
 
 Lemma wp_SizeOfMarshalledMap mref mv m :
   {{{
@@ -371,7 +371,7 @@ Lemma wp_SizeOfMarshalledMap mref mv m :
   }}}
     SizeOfMarshalledMap #mref
   {{{
-       (z : u64), RET #z; ⌜ int.nat z = marshalledMapSize m ⌝ ∗
+       (z : u64), RET #z; ⌜ uint.nat z = marshalledMapSize m ⌝ ∗
        map.own_map mref 1 (mv, slice_val Slice.nil) ∗
        own_slicemap_rep mv m
   }}}.
@@ -389,7 +389,7 @@ Proof.
   wp_apply (map.wp_MapIter_2 _ _ _ _ _ (SizeOfMarshalledMap_invariant m s)
               with "HKvsMap [Hs Hvals] [] [HΦ]").
   {
-    iExists (U64 8), m, ∅.
+    iExists (W64 8), m, ∅.
     simpl. iFrame.
     iSplitL "".
     { rewrite /own_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }
@@ -447,7 +447,7 @@ Proof.
       apply elem_of_dom_2 in Heq2.
       eauto. }
     rewrite Hsz'.
-    transitivity (16 + int.nat vsl.(Slice.sz) + int.nat z)%nat.
+    transitivity (16 + uint.nat vsl.(Slice.sz) + uint.nat z)%nat.
     { lia. }
     rewrite Hnooverflow2. rewrite Hnooverflow1. word.
   }
@@ -601,32 +601,32 @@ Definition DecSliceMap_invariant dec_v i_ptr m (r:Rec) mref s data : iProp Σ :=
     map.own_map mref 1 (mdone', (slice_val Slice.nil)) ∗
     own_slicemap_rep mdone' mdone ∗
     is_dec dec_v
-          ((flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l) ++ r)
+          ((flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (uint.Z (length u.2)); EncBytes u.2]) l) ++ r)
           s q data
 .
 
 Lemma is_dec_EncBytes_length d v r s q l :
   is_dec d (EncBytes v :: r) s q l  -∗
-  ⌜int.Z (length v) = length v⌝.
+  ⌜uint.Z (length v) = length v⌝.
 Proof.
   iNamed 1.
   apply has_encoding_length in Henc.
   rewrite ?encoded_length_cons encode1_bytes_len in Henc.
   iDestruct (typed_slice.own_slice_small_sz with "Hs") as %Hlen.
   iPureIntro.
-  assert (length (drop (int.nat off) l) <= length l).
+  assert (length (drop (uint.nat off) l) <= length l).
   { rewrite drop_length. lia. }
   word.
 Qed.
 
 Lemma wp_DecSliceMap d l m args_sl argsData :
   NoDup l.*1 →
-  int.Z (size m) = size m →
+  uint.Z (size m) = size m →
   list_to_map l = m →
   {{{
       "Hdec" ∷ is_dec d
              ([EncUInt64 (size m)] ++
-              flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l)
+              flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (uint.Z (length u.2)); EncBytes u.2]) l)
              args_sl 1 argsData
   }}}
     DecSliceMap d
@@ -719,7 +719,7 @@ Proof.
     rewrite (map_size_insert_None); last first.
     { eapply map_disjoint_Some_l; eauto.
       simpl. apply lookup_insert. }
-    replace (word.add (size mdone') 1) with (int.Z (size mdone') + 1:u64) by word.
+    replace (word.add (size mdone') 1) with (uint.Z (size mdone') + 1:u64) by word.
     rewrite Z_u64; last first.
     { split; first lia.
       word_cleanup.

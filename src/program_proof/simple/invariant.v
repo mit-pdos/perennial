@@ -72,7 +72,7 @@ Definition is_source γ : iProp Σ :=
 Definition encodes_inode (len: u64) (blk: u64) data : Prop :=
   has_encoding data (EncUInt64 len :: EncUInt64 blk :: nil).
 
-Definition inum2addr (inum : u64) := Build_addr LogSz (int.nat inum * InodeSz * 8).
+Definition inum2addr (inum : u64) := Build_addr LogSz (uint.nat inum * InodeSz * 8).
 Definition blk2addr blk := Build_addr blk 0.
 
 Definition is_inode_enc (inum: u64) (len: u64) (blk: u64) (pointsto: addr -> object -> iProp Σ) : iProp Σ :=
@@ -83,7 +83,7 @@ Definition is_inode_enc (inum: u64) (len: u64) (blk: u64) (pointsto: addr -> obj
 Definition is_inode_data (len : u64) (blk: u64) (contents: list u8) (pointsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (bbuf : Block),
     "%Hdiskdata" ∷ ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
-    "%Hdisklen" ∷ ⌜ int.Z len = length contents ⌝ ∗
+    "%Hdisklen" ∷ ⌜ uint.Z len = length contents ⌝ ∗
     "Hdiskblk" ∷ pointsto (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
 
 Definition is_inode (inum: u64) (state: list u8) (pointsto: addr -> object -> iProp Σ) : iProp Σ :=

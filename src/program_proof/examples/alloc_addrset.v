@@ -30,11 +30,11 @@ Proof.
 Qed.
 
 Theorem wp_freeRange (start sz: u64) E :
-  int.Z start + int.Z sz < 2^64 ->
+  uint.Z start + uint.Z sz < 2^64 ->
   {{{ True }}}
     freeRange #start #sz @ E
   {{{ (mref: loc), RET #mref;
-      is_addrset mref (rangeSet (int.Z start) (int.Z sz)) }}}.
+      is_addrset mref (rangeSet (uint.Z start) (uint.Z sz)) }}}.
 Proof.
   iIntros (Hbound Φ) "_ HΦ".
   wp_call.
@@ -43,9 +43,9 @@ Proof.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (il) "i".
   wp_pures.
-  wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜int.Z start ≤ int.Z i⌝ ∗
+  wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜uint.Z start ≤ uint.Z i⌝ ∗
                              "*" ∷ ∃ m, "Hmap" ∷ own_map mref 1 m ∗
-                                        "%Hmapdom" ∷ ⌜dom m = rangeSet (int.Z start) (int.Z i - int.Z start)⌝)%I
+                                        "%Hmapdom" ∷ ⌜dom m = rangeSet (uint.Z start) (uint.Z i - uint.Z start)⌝)%I
             with "[] [Hmap $i]").
   - word.
 
@@ -65,7 +65,7 @@ Proof.
     iPureIntro.
     rewrite /map_insert dom_insert_L.
     rewrite Hmapdom.
-    replace (int.Z (word.add i 1) - int.Z start) with ((int.Z i - int.Z start) + 1) by word.
+    replace (uint.Z (word.add i 1) - uint.Z start) with ((uint.Z i - uint.Z start) + 1) by word.
     eapply rangeSet_append_one; eauto.
 
   - iSplitR; auto.

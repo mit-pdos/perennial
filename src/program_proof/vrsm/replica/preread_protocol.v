@@ -295,14 +295,14 @@ Lemma start_read_step (Q:list u8 → iProp Σ) γ γlog γreads (lastModifiedInd
   ↑prereadN ⊆ E →
   (* this hypothesis will require a bit of proof on the user of this lemma's
      side. They will know this property for some log LONGER than σ. *)
-  (∀ σ', prefix σ' σ → int.nat lastModifiedIndex <= length σ' → f σ' = f σ) →
+  (∀ σ', prefix σ' σ → uint.nat lastModifiedIndex <= length σ' → f σ' = f σ) →
   £ 1 -∗
   is_preread_inv γ γlog γreads -∗
   □(|={E∖↑prereadN∖↑ghostN,∅}=> ∃ σ, own_pre_log γlog σ ∗
         (own_pre_log γlog σ ={∅,E∖↑prereadN∖↑ghostN}=∗ □ Q (f σ))) -∗
   own_pb_log γ σ
   ={E}=∗
-  is_proposed_read γreads (int.nat lastModifiedIndex) (λ σ', Q (f σ')) ∗ own_pb_log γ σ
+  is_proposed_read γreads (uint.nat lastModifiedIndex) (λ σ', Q (f σ')) ∗ own_pb_log γ σ
 .
 Proof.
   intros ? HlastModified.
@@ -327,8 +327,8 @@ Proof.
   Unshelve. 2: solve_ndisj.
 
   set (Q':=λ σ', Q (f σ')).
-  iMod (update_map_mset_ipred (int.nat lastModifiedIndex) Q' with "HownRos") as "HownRos".
-  iDestruct (map_fmset_get_elem (int.nat lastModifiedIndex) Q' with "HownRos") as "#His_read".
+  iMod (update_map_mset_ipred (uint.nat lastModifiedIndex) Q' with "HownRos") as "HownRos".
+  iDestruct (map_fmset_get_elem (uint.nat lastModifiedIndex) Q' with "HownRos") as "#His_read".
   { rewrite lookup_insert. set_solver. }
   iMod ("Hclose" with "[-]"); last done.
   iNext.
@@ -348,7 +348,7 @@ Proof.
     iDestruct (own_log_agree with "Hlog Hlog2") as %?; subst.
     iMod ("Hupd" with "Hlog2") as "#HQ".
     iMod "Hmask" as "_".
-    destruct (ros !! (int.nat lastModifiedIndex)) as [] eqn:Hlookup.
+    destruct (ros !! (uint.nat lastModifiedIndex)) as [] eqn:Hlookup.
     { (* have some previous fupds *)
       iDestruct (big_sepM_lookup with "HreadUpds") as "#Hupds".
       { done. }
@@ -371,14 +371,14 @@ Proof.
   2: {
     iApply big_sepL_singleton.
     iModIntro.
-    epose proof (HlastModified (take (int.nat lastModifiedIndex) σ0) _ _).
+    epose proof (HlastModified (take (uint.nat lastModifiedIndex) σ0) _ _).
     by rewrite -H2.
     Unshelve.
     { eexists _. by setoid_rewrite take_drop. }
     { rewrite take_length. word. }
   }
   (* again, the rest of these follow from the previous Q's. *)
-  destruct (ros !! int.nat lastModifiedIndex) as [] eqn:Hlookup.
+  destruct (ros !! uint.nat lastModifiedIndex) as [] eqn:Hlookup.
   {
     iDestruct (big_sepM_lookup with "HcompletedRead") as "Hupds".
     { done. }

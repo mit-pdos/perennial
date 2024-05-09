@@ -257,8 +257,8 @@ Admitted.
 Definition valid_key (key: specs.addr) (sz: nat):=
   key = specs.Build_addr key.(specs.addrBlock) 0 ∧
   specs.valid_addr key ∧
-  int.Z key.(specs.addrBlock) >= int.Z LogSz ∧
-  int.Z key.(specs.addrBlock) < int.Z sz.
+  uint.Z key.(specs.addrBlock) >= uint.Z LogSz ∧
+  uint.Z key.(specs.addrBlock) < uint.Z sz.
 
 Lemma valid_key_under_sz (kvsblks : gmap specs.addr {K & defs.bufDataT K}) key sz :
   valid_key key sz -> ∃ b, kvsblks !! key = Some (existT defs.KindBlock b).
@@ -294,7 +294,7 @@ Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K
            (sz : nat) γDisk : iProp Σ :=
   ( ∃ (l : loc),
       kvsl↦[KVS :: "txn"] #l ∗
-      kvsl ↦[KVS :: "sz"] #(U64 (Z.of_nat sz)) ∗
+      kvsl ↦[KVS :: "sz"] #(W64 (Z.of_nat sz)) ∗
       is_txn l γDisk ∗
       ⌜(∀ n : nat, n < sz -> ∃ blk,
              kvsblks !! (nat_key_to_addr n) = Some (existT defs.KindBlock (defs.bufBlock blk))
@@ -307,7 +307,7 @@ Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
-    MkKVS #d #(U64(Z.of_nat sz)) @ E2
+    MkKVS #d #(W64(Z.of_nat sz)) @ E2
   {{{ kvsl kvsblks γDisk, RET #kvsl; ptsto_kvs kvsl kvsblks sz γDisk}}}
   {{{ True }}}.
 Proof.
@@ -341,22 +341,22 @@ Proof.
   wp_call.
   wp_loadField.
   wp_pures.
-  remember(bool_decide (int.Z sz < int.Z _)) as Hszcomp.
+  remember(bool_decide (uint.Z sz < uint.Z _)) as Hszcomp.
   destruct Hszcomp; wp_pures.
   - wp_apply wp_panic.
-    destruct (decide_rel Z.lt (int.Z sz) _); try discriminate. lia.
-  - change (u64_instance.u64.(@word.add 64) (u64_instance.u64.(@word.divu 64) (u64_instance.u64.(@word.sub 64) 4096 8) 8) 2)
-      with (U64 LogSz).
-    remember(bool_decide (int.Z _ < int.Z LogSz)) as Hlgszcomp.
+    destruct (decide_rel Z.lt (uint.Z sz) _); try discriminate. lia.
+  - change (w64_instance.w64.(@word.add 64) (w64_instance.w64.(@word.divu 64) (w64_instance.w64.(@word.sub 64) 4096 8) 8) 2)
+      with (W64 LogSz).
+    remember(bool_decide (uint.Z _ < uint.Z LogSz)) as Hlgszcomp.
     destruct Hlgszcomp; wp_pures.
     * wp_apply wp_panic.
-      destruct (decide_rel Z.lt _ (int.Z LogSz)); try discriminate. lia.
+      destruct (decide_rel Z.lt _ (uint.Z LogSz)); try discriminate. lia.
     * wp_loadField.
       wp_apply (wp_jrnl_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
       wp_let.
       wp_call.
-      change (u64_instance.u64.(@word.mul 64) 4096 8) with (U64 32768).
+      change (w64_instance.w64.(@word.mul 64) 4096 8) with (W64 32768).
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 

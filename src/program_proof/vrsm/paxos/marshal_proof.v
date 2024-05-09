@@ -409,7 +409,7 @@ Definition encode (st:t) : list u8 :=
   u64_le st.(epoch) ++
   u64_le st.(acceptedEpoch) ++
   u64_le st.(nextIndex) ++
-  u64_le (if st.(isLeader) then U64 1 else U64 0) ++
+  u64_le (if st.(isLeader) then W64 1 else W64 0) ++
   st.(state)
 .
 
@@ -440,7 +440,7 @@ Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
 Lemma wp_boolToU64 (b:bool) :
   {{{ True }}}
     boolToU64 #b
-  {{{ RET #((if b then U64 1 else U64 0) : u64); True }}}.
+  {{{ RET #((if b then W64 1 else W64 0) : u64); True }}}.
 Proof.
   iIntros (?) "_ HΦ".
   wp_lam. wp_if_destruct; by iApply "HΦ".

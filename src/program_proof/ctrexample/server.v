@@ -19,11 +19,11 @@ Definition ctrname := "ctr".
 
 Definition own_CtrServer_durable (c:u64) : iProp Σ :=
   ∃ l, ctrname f↦ l ∗
-               (⌜l = []⌝ ∗ ⌜c = U64 0⌝ ∨ ⌜has_encoding l [EncUInt64 c]⌝)
+               (⌜l = []⌝ ∗ ⌜c = W64 0⌝ ∨ ⌜has_encoding l [EncUInt64 c]⌝)
 .
 
 Definition own_CtrServer_ghost γ (c:u64) : iProp Σ :=
-  counter_own γ (int.nat c)
+  counter_own γ (uint.nat c)
 .
 
 Definition own_CtrServer (s:loc) (c:u64) : iProp Σ :=
@@ -184,7 +184,7 @@ Proof.
     iIntros "Hghost".
     iMod ("Hpre" with "Hghost") as "[Hghost HQ]".
     unfold own_CtrServer_ghost.
-    replace ((int.nat c) + 1)%nat with (int.nat (word.add c 1)); last first.
+    replace ((uint.nat c) + 1)%nat with (uint.nat (word.add c 1)); last first.
     {
       admit.
     }
@@ -329,11 +329,11 @@ Proof using Type*.
       assert (c = 0) as ->.
       {
         apply bool_decide_eq_true in Hslice_empty.
-        replace (sl.(Slice.sz)) with (U64 0) in HslSize by naive_solver.
+        replace (sl.(Slice.sz)) with (W64 0) in HslSize by naive_solver.
         destruct Hpure as [Hpure|Hbad].
         { naive_solver. }
         exfalso.
-        replace (int.nat 0) with (0)%nat in HslSize by word.
+        replace (uint.nat 0) with (0)%nat in HslSize by word.
         apply nil_length_inv in HslSize.
         rewrite HslSize in Hbad.
         apply has_encoding_length in Hbad.
@@ -350,7 +350,7 @@ Proof using Type*.
         destruct Hbad as [Hbad _].
         rewrite Hbad in HslSize.
         simpl in HslSize.
-        replace (sl.(Slice.sz)) with (U64 0) in Hslice_nonEmpty by word.
+        replace (sl.(Slice.sz)) with (W64 0) in Hslice_nonEmpty by word.
         done.
       }
       iDestruct (own_slice_to_small with "Hsl") as "Hsl".

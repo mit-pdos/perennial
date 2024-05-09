@@ -12,7 +12,7 @@ Section memkv_coord_start_proof.
 Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
-  length shardMapping = int.nat uNSHARD →
+  length shardMapping = uint.nat uNSHARD →
   {{{ "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
       "HshardMap_sl" ∷ typed_slice.own_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
   }}}
@@ -32,7 +32,7 @@ Proof.
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
-  change (int.Z (word.mul 8 65536)) with (8 * 65536).
+  change (uint.Z (word.mul 8 65536)) with (8 * 65536).
 
   wp_load.
   wp_apply (wp_Enc__PutInts with "[$Henc $HshardMap_sl]").
@@ -95,7 +95,7 @@ Proof.
 
   (* We want to generalize over the loop argument, which is 0, but there are many occurrences of 0.
      This is a hack to only eplace that one occurence. *)
-  pose (k' := U64 0).
+  pose (k' := W64 0).
   assert (k' = 0) as Heqk by auto.
   iEval (rewrite -{-1}Heqk).
   clear Heqk. remember k' as k eqn:Heqk. clear Heqk.
@@ -118,7 +118,7 @@ Proof.
       iFrame. iSplit; eauto. }
     wp_pures. iApply "HΦ". eauto. }
   iDestruct (typed_slice.own_slice_small_sz (V:=u64) with "[$]") as %Hsz.
-  edestruct (list_lookup_lt _ (shardMapping) (int.nat k)) as (v&Heq).
+  edestruct (list_lookup_lt _ (shardMapping) (uint.nat k)) as (v&Heq).
   { word_cleanup. }
   wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[HshardMap_sl]").
   { rewrite /HostName. iFrame "HshardMap_sl". iPureIntro. eauto. }
@@ -193,7 +193,7 @@ Proof.
         }
       }
       iModIntro. iIntros (? Hin Hlookup').
-      destruct (decide (sid = int.nat k)).
+      destruct (decide (sid = uint.nat k)).
       {
         subst. rewrite list_lookup_insert in Hlookup'; last by word.
         iExists _. inversion Hlookup'; subst. iFrame "His_shard".
@@ -256,7 +256,7 @@ Proof.
         }
       }
       iModIntro. iIntros (? Hin Hlookup').
-      destruct (decide (sid = int.nat k)).
+      destruct (decide (sid = uint.nat k)).
       {
         subst. rewrite list_lookup_insert in Hlookup'; last by word.
         iExists _. inversion Hlookup'; subst. iFrame "His_shard".
@@ -269,7 +269,7 @@ Proof.
 Qed.
 
 Lemma wp_KVCoordServer__Start (s:loc) (host : u64) γ :
-is_urpc_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
+is_urpc_dom γ.(coord_urpc_gn) {[ W64 1; W64 2 ]} -∗
 is_coord_server host γ -∗
 is_KVCoordServer s γ -∗
   {{{

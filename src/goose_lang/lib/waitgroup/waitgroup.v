@@ -63,11 +63,11 @@ Section proof.
       ⌜wg = (lk, #vptr)%V⌝ ∗
       is_lock N lk (
         ∃ (remaining:gset u64) (total:u64),
-          "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → int.nat r < int.nat total)⌝ ∗
+          "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → uint.nat r < uint.nat total)⌝ ∗
           "Htotal" ∷ ghost_var γ.(total_gn) (1/2) total ∗
           "Hv" ∷ vptr ↦[uint64T] #(size remaining) ∗
           "Htoks" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
-          "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
+          "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜uint.nat i ≥ uint.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
       ).
 
   (* XXX: here, wg is a value. Maybe it should be a loc? *)
@@ -118,7 +118,7 @@ Proof.
   iIntros "Hwg".
   iDestruct "Hwg" as (??) "(%Hwg & His_lock & Hv)".
   iMod (ghost_map_alloc_fin ()) as (γtok) "Htokens".
-  iMod (ghost_var_alloc (U64 0)) as (γtotal) "[Htotal Ht2]".
+  iMod (ghost_var_alloc (W64 0)) as (γtotal) "[Htotal Ht2]".
   iExists (mkwaitgroup_names γtok γtotal).
   iFrame.
   iExists _, _.
@@ -127,7 +127,7 @@ Proof.
 
   iMod (alloc_lock with "His_lock [-]") as "$"; last done.
   iNext.
-  iExists ∅, (U64 0).
+  iExists ∅, (W64 0).
   rewrite size_empty.
   iFrame "Hv Htotal".
   iSplitL "".
@@ -179,29 +179,29 @@ Qed.
 Local Opaque load_ty store_ty.
 
 Lemma u64_set_size_all_lt (W : gset u64) (n : nat) :
- (∀ s : u64, s ∈ W → int.nat s < n)%Z → (size W ≤ n)%Z.
+ (∀ s : u64, s ∈ W → uint.nat s < n)%Z → (size W ≤ n)%Z.
 Proof.
   revert W.
   induction n as [| n IHn] => W Hvalid.
   - destruct W as [| x W] using set_ind_L; auto.
     { rewrite size_empty. lia. }
     exfalso. opose proof (Hvalid x _); first by set_solver. lia.
-  - transitivity (size ({[U64 n]} ∪ (W ∖ {[U64 n]}))).
-    { apply Nat2Z.inj_le. apply subseteq_size. set_unfold. intros x. destruct (decide (x = U64 n)); auto. }
+  - transitivity (size ({[W64 n]} ∪ (W ∖ {[W64 n]}))).
+    { apply Nat2Z.inj_le. apply subseteq_size. set_unfold. intros x. destruct (decide (x = W64 n)); auto. }
     rewrite size_union ?size_singleton; last by set_solver.
-    refine (_ (IHn (W ∖ {[U64 n]}) _)); first lia.
+    refine (_ (IHn (W ∖ {[W64 n]}) _)); first lia.
     { set_unfold. intros x (Hin&Hneq). opose proof (Hvalid x _); auto.
-      cut (int.nat x ≠ n); first lia.
+      cut (uint.nat x ≠ n); first lia.
       intros Heq.
       move: Hneq.
       rewrite -Heq.
       rewrite Z2Nat.id; last by word.
-      rewrite /U64 word.of_Z_unsigned. auto.
+      rewrite /W64 word.of_Z_unsigned. auto.
     }
 Qed.
 
 Lemma wp_WaitGroup__Add wg γ n P :
-int.nat (word.add n 1) > int.nat n →
+uint.nat (word.add n 1) > uint.nat n →
   {{{
       own_WaitGroup wg γ n P
   }}}
@@ -252,7 +252,7 @@ Proof.
     iFrame "Htotal".
     iSplitL "Hv".
     {
-      replace ((word.add 1 (size remaining))) with (U64 (size (remaining ∪ {[total]}))); last first.
+      replace ((word.add 1 (size remaining))) with (W64 (size (remaining ∪ {[total]}))); last first.
       {
         rewrite size_union; last first.
         { set_unfold. intros x' Hin Heq. specialize (Hremaining x' Hin). subst. lia. }
@@ -286,7 +286,7 @@ Proof.
     iModIntro.
     iIntros (??) "[%H1|[%H2|H3]]".
     {
-      assert (int.nat x = int.nat total ∨ int.nat x ≥ int.nat (word.add total 1)) as Hcases.
+      assert (uint.nat x = uint.nat total ∨ uint.nat x ≥ uint.nat (word.add total 1)) as Hcases.
       { word. }
       destruct Hcases as [|].
       {
@@ -400,7 +400,7 @@ Lemma wp_WaitGroup__Wait wg γ P n :
   }}}
     waitgroup.Wait wg
   {{{
-        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat n⌝ ∨ (P i)
+        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜uint.nat i ≥ uint.nat n⌝ ∨ (P i)
   }}}.
 Proof.
   iIntros (Φ) "(Htotal'&#Hwg) HΦ".
@@ -435,7 +435,7 @@ Proof.
       eapply u64_set_size_all_lt in Hremaining.
       assert (size remaining = 0%nat) as Hzero.
       { word_cleanup.
-        rewrite /U64 in Heqb.
+        rewrite /W64 in Heqb.
         apply word.of_Z_inj_small in Heqb; try lia.
       }
       apply size_empty_inv in Hzero. set_solver.

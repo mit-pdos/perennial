@@ -61,7 +61,7 @@ Definition is_proposal_facts_prim γ epoch σ: iProp Σ :=
 .
 
 Definition own_escrow_toks γsrv epoch : iProp Σ :=
-  [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' ≤ int.nat epoch⌝ ∨ own_tok γsrv epoch'
+  [∗ set] epoch' ∈ (fin_to_set u64), ⌜uint.nat epoch' ≤ uint.nat epoch⌝ ∨ own_tok γsrv epoch'
 .
 
 Definition own_primary_escrow_ghost γsrv epoch : iProp Σ :=
@@ -70,7 +70,7 @@ Definition own_primary_escrow_ghost γsrv epoch : iProp Σ :=
 .
 
 Lemma ghost_primary_accept_new_epoch γsrv epoch epoch' :
-  int.nat epoch < int.nat epoch' →
+  uint.nat epoch < uint.nat epoch' →
   own_primary_escrow_ghost γsrv epoch -∗
   own_primary_escrow_ghost γsrv epoch' ∗ own_tok γsrv epoch'.
 Proof.
@@ -182,7 +182,7 @@ Proof.
 Qed.
 
 Definition primary_init_for_config γ : iProp Σ :=
-  ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝
+  ([∗ set] epoch' ∈ (fin_to_set u64), ⌜uint.nat 0 < uint.nat epoch'⌝
                                   → own_init_proposal_unused γ epoch')
 .
 
@@ -193,20 +193,20 @@ Lemma alloc_primary_protocol :
 Proof.
   iMod (fmlist_map_alloc_fin []) as (?) "H".
   iExists {| prim_init_proposal_gn := γ |}.
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "H") as "[Hprop H]".
+  iDestruct (big_sepS_elem_of_acc_impl (W64 0) with "H") as "[Hprop H]".
   { set_solver. }
   iMod (fmlist_ptsto_persist with "Hprop") as "#?".
   iModIntro.
   iSplitL.
   { iApply "H".
     { iModIntro. iIntros. iFrame. }
-    { iIntros. exfalso. replace (int.nat (U64 0)) with 0 in H0 by word. word. }
+    { iIntros. exfalso. replace (uint.nat (W64 0)) with 0 in H0 by word. word. }
   }
   by iExists _; iFrame "#".
 Qed.
 
 Lemma alloc_primary_protocol_server :
-  ⊢ |==> ∃ γsrv, own_primary_escrow_ghost γsrv (U64 0)
+  ⊢ |==> ∃ γsrv, own_primary_escrow_ghost γsrv (W64 0)
 .
 Proof.
   iMod (ghost_map_alloc_fin ()) as (?) "H".

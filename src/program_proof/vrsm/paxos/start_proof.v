@@ -68,9 +68,9 @@ Proof.
                ∃ sl cls,
                "Hcls" ∷ s ↦[Server :: "clerks"] (slice_val sl) ∗
                "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
-               "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ cls ; (take (int.nat i) γ.(s_hosts)),
+               "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ cls ; (take (uint.nat i) γ.(s_hosts)),
                                    is_singleClerk ck γ γsrv') ∗
-               "%Hsz" ∷ ⌜ length cls = int.nat i ⌝
+               "%Hsz" ∷ ⌜ length cls = uint.nat i ⌝
                )%I
              with "[] [clerks Hcls_sl $Hconf_sl]").
   2:{
@@ -99,7 +99,7 @@ Proof.
     repeat iExists _; iFrame.
     iSplitL.
     2:{ iPureIntro. rewrite app_length. simpl. word. }
-    replace (int.nat (word.add i 1%Z)) with (S (int.nat i)) by word.
+    replace (uint.nat (word.add i 1%Z)) with (S (uint.nat i)) by word.
     erewrite take_S_r; last done.
     iApply (big_sepL2_app with "[$]").
     iFrame "#". done.
@@ -127,7 +127,7 @@ Proof.
   wp_if_destruct.
   { (* case: empty file *)
     destruct data.
-    2:{ exfalso. rewrite Heqb /= in Hsz. replace (int.nat 0%Z) with 0%nat in Hsz by word. discriminate. }
+    2:{ exfalso. rewrite Heqb /= in Hsz. replace (uint.nat 0%Z) with 0%nat in Hsz by word. discriminate. }
     wp_apply wp_allocStruct; first by val_ty.
     iIntros (?) "Hps".
     iDestruct (struct_fields_split with "Hps") as "HH".

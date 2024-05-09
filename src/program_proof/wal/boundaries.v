@@ -67,7 +67,7 @@ Definition memLog_region_upds_match_some_txn (txns: list (u64 * _)) (upds: list 
     ∃ txn,
       txn ∈ txns ∧
       ∀ d,
-        apply_upds txn.2 d !! (int.Z upd.(update.addr)) =
+        apply_upds txn.2 d !! (uint.Z upd.(update.addr)) =
         Some upd.(update.b).
 
 Definition is_memLog_region txns upds :=
@@ -480,7 +480,7 @@ Local Lemma apply_upds_lookup_in_ind upds1 iupd upds2 d :
   highest_index_is
     (update.addr <$> upds)
     iupd.(update.addr) (length upds1) →
-  apply_upds upds d !! (int.Z iupd.(update.addr)) = Some iupd.(update.b).
+  apply_upds upds d !! (uint.Z iupd.(update.addr)) = Some iupd.(update.b).
 Proof.
   simpl.
   revert d.
@@ -512,7 +512,7 @@ Qed.
 Theorem apply_upds_lookup_in upds a i iupd d :
   highest_index_is (update.addr <$> upds) a i →
   upds !! i = Some iupd →
-  apply_upds upds d !! (int.Z a) = Some iupd.(update.b).
+  apply_upds upds d !! (uint.Z a) = Some iupd.(update.b).
 Proof.
   intros Hhighest Hiupd.
   pose proof Hhighest as [Ha _].
@@ -526,7 +526,7 @@ Qed.
 
 Theorem apply_upds_lookup_filter upds d a :
   apply_upds upds d !! a =
-  match last (filter (λ u, int.Z u.(update.addr) = a) upds) with
+  match last (filter (λ u, uint.Z u.(update.addr) = a) upds) with
   | Some upd => Some upd.(update.b)
   | None => d !! a
   end.
@@ -538,7 +538,7 @@ Proof.
   rewrite /= filter_nil apply_upds_app.
   destruct upd as [upda updb].
   simpl.
-  destruct (decide (a = int.Z upda)) as [->|Ha].
+  destruct (decide (a = uint.Z upda)) as [->|Ha].
   {
     rewrite lookup_insert decide_True; last by reflexivity.
     rewrite last_snoc //.
@@ -652,7 +652,7 @@ Proof.
     reflexivity.
   }
   rewrite filter_app in Hupdopt2.
-  destruct (decide (a = int.Z upd'.(update.addr))) as [->|Ha].
+  destruct (decide (a = uint.Z upd'.(update.addr))) as [->|Ha].
   2: {
     rewrite filter_cons_False in Hupdopt2; last by trivial.
     rewrite filter_nil app_nil_r in Hupdopt2.
@@ -774,10 +774,10 @@ Proof.
 Qed.
 
 Lemma memWrite_one_generic_apply_upds_lookup u_us upds aupd d a :
-  apply_upds (memWrite_one_generic u_us upds aupd) d !! int.Z a =
+  apply_upds (memWrite_one_generic u_us upds aupd) d !! uint.Z a =
   if decide (aupd.(update.addr) = a)
   then Some aupd.(update.b)
-  else apply_upds upds d !! int.Z a.
+  else apply_upds upds d !! uint.Z a.
 Proof.
   rewrite apply_upds_lookup_filter.
   pose proof (memWrite_one_generic_or u_us upds aupd) as HmemWrite.
@@ -911,10 +911,10 @@ Proof.
 Qed.
 
 Theorem memWrite_generic_apply_upds_lookup u_us upds aupds d a :
-  apply_upds (memWrite_generic u_us upds aupds) d !! int.Z a =
+  apply_upds (memWrite_generic u_us upds aupds) d !! uint.Z a =
   match last (filter (λ u, u.(update.addr) = a) aupds) with
   | Some aupd => Some aupd.(update.b)
-  | None => apply_upds upds d !! int.Z a
+  | None => apply_upds upds d !! uint.Z a
   end.
 Proof.
   revert upds.
@@ -930,8 +930,8 @@ Qed.
 Lemma memWrite_generic_apply_upds_lookup_in_aupds u_us upds aupds a d :
   (u_us ≤ length upds)%nat →
   a ∈ update.addr <$> aupds →
-  apply_upds (memWrite_generic u_us upds aupds) d !! int.Z a =
-  apply_upds aupds d !! int.Z a.
+  apply_upds (memWrite_generic u_us upds aupds) d !! uint.Z a =
+  apply_upds aupds d !! uint.Z a.
 Proof.
   intros Hbnd Hin.
   rewrite memWrite_generic_apply_upds; last by assumption.

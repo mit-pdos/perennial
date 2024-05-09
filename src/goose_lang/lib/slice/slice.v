@@ -14,8 +14,8 @@ Module Slice.
          cap: u64; }.
   Global Instance _eta: Settable _ := settable! mk <ptr; sz; cap>.
   Global Instance _witness: Inhabited _ := populate (mk inhabitant inhabitant inhabitant).
-  Notation extra s := (int.Z (cap s) - int.Z (sz s)).
-  Definition nil := mk null (U64 0) (U64 0).
+  Notation extra s := (uint.Z (cap s) - uint.Z (sz s)).
+  Definition nil := mk null (W64 0) (W64 0).
 End Slice.
 Add Printing Constructor Slice.t.
 
@@ -45,11 +45,11 @@ ignores the extra capacity; it allows for weaker preconditions for code which
 doesn't make use of capacity *)
 Definition own_slice_small (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
   s.(Slice.ptr) ↦∗[t]{q} vs ∗
-  ⌜length vs = int.nat s.(Slice.sz) ∧ int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap)⌝.
+  ⌜length vs = uint.nat s.(Slice.sz) ∧ uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
 
 Definition own_slice_cap (s: Slice.t) (t:ty): iProp Σ :=
   (∃ extra, ⌜Z.of_nat (length extra) = Slice.extra s⌝ ∗
-            (s.(Slice.ptr) +ₗ[t] int.Z s.(Slice.sz)) ↦∗[t] extra).
+            (s.(Slice.ptr) +ₗ[t] uint.Z s.(Slice.sz)) ↦∗[t] extra).
 
 Definition own_slice (s: Slice.t) (t:ty) (q:Qp) (vs: list val): iProp Σ :=
   own_slice_small s t q vs ∗ own_slice_cap s t.
@@ -97,13 +97,13 @@ Proof.
 Qed.
 
 Lemma own_slice_small_sz s t q vs :
-  own_slice_small s t q vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+  own_slice_small s t q vs -∗ ⌜length vs = uint.nat s.(Slice.sz)⌝.
 Proof.
   iIntros "(_&[%%]) !% //".
 Qed.
 
 Lemma own_slice_sz s t q vs :
-  own_slice s t q vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+  own_slice s t q vs -∗ ⌜length vs = uint.nat s.(Slice.sz)⌝.
 Proof.
   iIntros "((_&[%%])&_) !% //".
 Qed.
@@ -131,7 +131,7 @@ Lemma replicate_0 A (x:A) : replicate 0 x = [].
 Proof. reflexivity. Qed.
 
 Lemma own_slice_intro l t q (sz: u64) vs :
-  l ↦∗[t]{q} vs -∗ ⌜length vs = int.nat sz⌝ -∗
+  l ↦∗[t]{q} vs -∗ ⌜length vs = uint.nat sz⌝ -∗
   own_slice (Slice.mk l sz sz) t q vs.
 Proof.
   iIntros "H1 H2".
@@ -140,7 +140,7 @@ Proof.
 Qed.
 
 Theorem own_slice_elim s t q vs :
-  own_slice s t q vs -∗ s.(Slice.ptr) ↦∗[t]{q} vs ∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+  own_slice s t q vs -∗ s.(Slice.ptr) ↦∗[t]{q} vs ∗ ⌜length vs = uint.nat s.(Slice.sz)⌝.
 Proof.
   rewrite /own_slice.
   iIntros "[[Hs [%%]] _]".
@@ -204,7 +204,7 @@ Proof.
 Qed.
 
 Theorem own_slice_cap_wf s t :
-  own_slice_cap s t -∗ ⌜int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap)⌝.
+  own_slice_cap s t -∗ ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
 Proof.
   iIntros "Hcap".
   iDestruct "Hcap" as (extra) "[% Hcap]".
@@ -213,7 +213,7 @@ Proof.
 Qed.
 
 Theorem own_slice_wf s t q vs :
-  own_slice s t q vs -∗ ⌜int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap)⌝.
+  own_slice s t q vs -∗ ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
 Proof.
   rewrite own_slice_split.
   iIntros "[Hs Hcap]".
@@ -221,7 +221,7 @@ Proof.
 Qed.
 
 Theorem own_slice_small_wf s t q vs :
-  own_slice_small s t q vs -∗ ⌜int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap)⌝.
+  own_slice_small s t q vs -∗ ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
 Proof.
   iIntros "[_ [%%]]". done.
 Qed.
@@ -232,7 +232,7 @@ Transparent raw_slice.
 Lemma wp_make_cap stk E (sz: u64) :
   {{{ True }}}
     make_cap #sz @ stk; E
-  {{{ (cap:u64), RET #cap; ⌜int.Z cap >= int.Z sz⌝ }}}.
+  {{{ (cap:u64), RET #cap; ⌜uint.Z cap >= uint.Z sz⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
@@ -247,7 +247,7 @@ Proof.
 Qed.
 
 Lemma wp_raw_slice stk E l vs (sz: u64) t :
-  {{{ l ↦∗[t] vs ∗ ⌜length vs = int.nat sz⌝ }}}
+  {{{ l ↦∗[t] vs ∗ ⌜length vs = uint.nat sz⌝ }}}
     raw_slice t #l #sz @ stk; E
   {{{ sl, RET slice_val sl; own_slice sl t 1 vs }}}.
 Proof.
@@ -292,7 +292,7 @@ Proof.
 Qed.
 
 Theorem own_slice_small_nil t q s :
-  int.Z s.(Slice.sz) = 0 ->
+  uint.Z s.(Slice.sz) = 0 ->
   ⊢ own_slice_small s t q [].
 Proof.
   intros Hsz.
@@ -302,8 +302,8 @@ Proof.
 Qed.
 
 Lemma own_slice_nil s t q :
-  int.Z s.(Slice.sz) = 0 ->
-  int.Z s.(Slice.cap) = 0 ->
+  uint.Z s.(Slice.sz) = 0 ->
+  uint.Z s.(Slice.cap) = 0 ->
   ⊢ own_slice s t q [].
 Proof.
   destruct s as [ptr len cap]; simpl; intros.
@@ -331,7 +331,7 @@ Proof.
 Qed.
 
 Lemma u64_val_ne (x1 x2:u64) :
-  #x1 ≠ #x2 -> int.Z x1 ≠ int.Z x2.
+  #x1 ≠ #x2 -> uint.Z x1 ≠ uint.Z x2.
 Proof.
   intros Hne.
   intros Heq%word.unsigned_inj.
@@ -364,7 +364,7 @@ Lemma wp_new_slice s E t (sz: u64) :
   has_zero t ->
   {{{ True }}}
     NewSlice t #sz @ s; E
-  {{{ sl, RET slice_val sl; own_slice sl t 1 (replicate (int.nat sz) (zero_val t)) }}}.
+  {{{ sl, RET slice_val sl; own_slice sl t 1 (replicate (uint.nat sz) (zero_val t)) }}}.
 Proof.
   iIntros (Hzero Φ) "_ HΦ".
   wp_call.
@@ -378,18 +378,18 @@ Proof.
     wp_pures.
     wp_apply (wp_allocN t); eauto.
     { apply u64_val_ne in Heqb.
-      change (int.Z 0) with 0 in Heqb.
+      change (uint.Z 0) with 0 in Heqb.
       word. }
   iIntros (l) "Hl".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
-  iDestruct (array_replicate_split (int.nat sz) (int.nat cap - int.nat sz) with "Hl") as "[Hsz Hextra]";
+  iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
     first by word.
   rewrite replicate_length.
   iFrame.
   iSplitR.
   { iPureIntro. split; word. }
-  iExists (replicate (int.nat cap - int.nat sz) (zero_val t)); iFrame.
+  iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
   iSplitR.
   { iPureIntro.
     rewrite replicate_length.
@@ -401,10 +401,10 @@ Qed.
 
 Lemma wp_new_slice_cap s E t (sz cap: u64) :
   has_zero t →
-  int.Z sz ≤ int.Z cap →
+  uint.Z sz ≤ uint.Z cap →
   {{{ True }}}
     NewSliceWithCap t #sz #cap @ s; E
-  {{{ ptr, RET slice_val (Slice.mk ptr sz cap) ; own_slice (Slice.mk ptr sz cap) t 1 (replicate (int.nat sz) (zero_val t)) }}}.
+  {{{ ptr, RET slice_val (Slice.mk ptr sz cap) ; own_slice (Slice.mk ptr sz cap) t 1 (replicate (uint.nat sz) (zero_val t)) }}}.
 Proof.
   iIntros (Hzero Hsz Φ) "_ HΦ".
   wp_call.
@@ -419,18 +419,18 @@ Proof.
     iApply own_slice_zero.
   - wp_apply (wp_allocN t); eauto.
     { apply u64_val_ne in Heqb.
-      change (int.Z 0) with 0 in Heqb.
+      change (uint.Z 0) with 0 in Heqb.
       word. }
   iIntros (l) "Hl".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
-  iDestruct (array_replicate_split (int.nat sz) (int.nat cap - int.nat sz) with "Hl") as "[Hsz Hextra]";
+  iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
     first by word.
   rewrite replicate_length.
   iFrame.
   iSplitR.
   { iPureIntro. split; word. }
-  iExists (replicate (int.nat cap - int.nat sz) (zero_val t)); iFrame.
+  iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
   iSplitR.
   { iPureIntro.
     rewrite replicate_length.
@@ -449,7 +449,7 @@ Proof.
   wp_call.
   wp_apply (wp_allocN t); eauto.
   { word. }
-  change (replicate (int.nat 1) x) with [x].
+  change (replicate (uint.nat 1) x) with [x].
   iIntros (l) "Hl".
   wp_steps.
   rewrite slice_val_fold. iApply "HΦ".
@@ -466,42 +466,42 @@ Definition slice_take (sl: Slice.t) (n: u64) : Slice.t :=
   |}.
 
 Definition slice_skip (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
-  {| Slice.ptr := sl.(Slice.ptr) +ₗ[t] int.Z n;
+  {| Slice.ptr := sl.(Slice.ptr) +ₗ[t] uint.Z n;
      Slice.sz := word.sub sl.(Slice.sz) n;
      Slice.cap := word.sub sl.(Slice.cap) n;
   |}.
 
 Definition slice_subslice (sl: Slice.t) (t:ty) (n1 n2: u64) : Slice.t :=
-  Slice.mk (sl.(Slice.ptr) +ₗ[t] int.Z n1) (word.sub n2 n1) (word.sub sl.(Slice.cap) n1).
+  Slice.mk (sl.(Slice.ptr) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub sl.(Slice.cap) n1).
 
 (* TODO: this theorem isn't true as-is for a correct model of splitting (the
 above gets the capacities wrong) *)
 (*
 Lemma slice_split s (n: u64) t q vs :
-  0 <= int.Z n ->
-  int.nat n <= length vs ->
-  own_slice s t q vs -∗ own_slice (slice_take s t n) t q (take (int.nat n) vs) ∗
-           own_slice (slice_skip s t n) t q (drop (int.nat n) vs).
+  0 <= uint.Z n ->
+  uint.nat n <= length vs ->
+  own_slice s t q vs -∗ own_slice (slice_take s t n) t q (take (uint.nat n) vs) ∗
+           own_slice (slice_skip s t n) t q (drop (uint.nat n) vs).
  *)
 
 Theorem own_slice_take_cap s t vs n :
-  int.Z n <= length vs ->
+  uint.Z n <= length vs ->
   own_slice s t 1 vs -∗
-  own_slice (slice_take s n) t 1 (take (int.nat n) vs).
+  own_slice (slice_take s n) t 1 (take (uint.nat n) vs).
 Proof.
   intros.
   rewrite /own_slice /own_slice_small /own_slice_cap /slice_take /=.
   rewrite -> firstn_length_le by lia.
   iIntros "[[Hsmall %] Hcap]".
   iDestruct "Hcap" as (extra) "[% Hcap]".
-  iDestruct (array_split (int.nat n) with "Hsmall") as "[Hsmall0 Hsmall1]"; try lia.
+  iDestruct (array_split (uint.nat n) with "Hsmall") as "[Hsmall0 Hsmall1]"; try lia.
   word_cleanup.
   iSplitL "Hsmall0".
   - iFrame. iPureIntro. split; word.
   - iExists _. iSplitR.
     2: {
       iApply array_app. iFrame "Hsmall1".
-      replace (int.Z (Slice.sz s)) with (int.Z n + length (drop (int.nat n) vs)).
+      replace (uint.Z (Slice.sz s)) with (uint.Z n + length (drop (uint.nat n) vs)).
       2: { rewrite drop_length. lia. }
       rewrite Z.mul_add_distr_l -loc_add_assoc //.
     }
@@ -510,13 +510,13 @@ Proof.
 Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
-  int.Z n <= length vs →
-  own_slice_small s t q vs -∗ own_slice_small (slice_take s n) t q (take (int.nat n) vs) ∗
-           own_slice_small (slice_skip s t n) t q (drop (int.nat n) vs).
+  uint.Z n <= length vs →
+  own_slice_small s t q vs -∗ own_slice_small (slice_take s n) t q (take (uint.nat n) vs) ∗
+           own_slice_small (slice_skip s t n) t q (drop (uint.nat n) vs).
 Proof.
   iIntros (Hbounds) "Hs".
   iDestruct "Hs" as "[Ha %]".
-  iDestruct (array_split (int.nat n) with "Ha") as "[Ha1 Ha2]"; try lia.
+  iDestruct (array_split (uint.nat n) with "Ha") as "[Ha1 Ha2]"; try lia.
   iSplitL "Ha1".
   - iSplit; simpl.
     + iExactEq "Ha1".
@@ -533,9 +533,9 @@ Proof.
 Qed.
 
 Theorem own_slice_small_take_drop s t q n vs :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-   own_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-   own_slice_small (slice_take s n) t q (take (int.nat n) vs) ⊣⊢
+  (uint.nat n <= uint.nat s.(Slice.sz))%nat ->
+   own_slice_small (slice_skip s t n) t q (drop (uint.nat n) vs) ∗
+   own_slice_small (slice_take s n) t q (take (uint.nat n) vs) ⊣⊢
   own_slice_small s t q vs.
 Proof.
   intros Hbound.
@@ -551,7 +551,7 @@ Proof.
     revert Hlen1; word.
   - iIntros "Hs".
     iDestruct "Hs" as "[Ha %Hlen]".
-    iDestruct (array_split (int.nat n) with "Ha") as "[Ha1 Ha2]"; try word.
+    iDestruct (array_split (uint.nat n) with "Ha") as "[Ha1 Ha2]"; try word.
     rewrite Z2Nat.id; try word.
     iFrame.
     iPureIntro; simpl.
@@ -559,9 +559,9 @@ Proof.
 Qed.
 
 Theorem own_slice_small_take_drop_1 s t q n vs :
-  (int.nat n <= int.nat s.(Slice.sz))%nat ->
-  own_slice_small (slice_skip s t n) t q (drop (int.nat n) vs) ∗
-                  own_slice_small (slice_take s n) t q (take (int.nat n) vs) -∗
+  (uint.nat n <= uint.nat s.(Slice.sz))%nat ->
+  own_slice_small (slice_skip s t n) t q (drop (uint.nat n) vs) ∗
+                  own_slice_small (slice_take s n) t q (take (uint.nat n) vs) -∗
   own_slice_small s t q vs.
 Proof.
   intros Hbound.
@@ -569,7 +569,7 @@ Proof.
 Qed.
 
 Theorem own_slice_combine s t q n vs1 vs2 :
-  (int.nat n ≤ int.nat s.(Slice.sz))%nat →
+  (uint.nat n ≤ uint.nat s.(Slice.sz))%nat →
   own_slice_small (slice_take s n) t q vs1 ⊢@{_}
   own_slice_small (slice_skip s t n) t q vs2 -∗
   own_slice_small s t q (vs1 ++ vs2).
@@ -584,25 +584,25 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs1") as %Hsz1.
   iDestruct (own_slice_small_sz with "Hs2") as %Hsz2.
   simpl in Hsz1, Hsz2.
-  iApply (own_slice_small_take_drop _ _ _ (U64 (length vs1))).
+  iApply (own_slice_small_take_drop _ _ _ (W64 (length vs1))).
   { word. }
-  replace (int.nat (U64 (length vs1))) with (length vs1) by word.
+  replace (uint.nat (W64 (length vs1))) with (length vs1) by word.
   rewrite -> take_app_le by word.
   rewrite -> drop_app_ge, Nat.sub_diag by word.
   rewrite Hsz1.
   rewrite drop_0.
   rewrite -> take_ge by word.
-  replace (U64 (int.nat n)) with n; first by iFrame.
-  apply (inj int.Z).
+  replace (W64 (uint.nat n)) with n; first by iFrame.
+  apply (inj uint.Z).
   word.
 Qed.
 
 Lemma own_slice_split_acc n s t vs :
-  int.Z n <= length vs →
+  uint.Z n <= length vs →
   own_slice s t 1 vs -∗
-  own_slice_small (slice_skip s t n) t 1 (drop (int.nat n) vs) ∗
+  own_slice_small (slice_skip s t n) t 1 (drop (uint.nat n) vs) ∗
     (∀ vs', own_slice_small (slice_skip s t n) t 1 vs' -∗
-            own_slice s t 1 (take (int.nat n) vs ++ vs')).
+            own_slice s t 1 (take (uint.nat n) vs ++ vs')).
 Proof.
   iIntros (Hlen) "Hs".
   iDestruct (own_slice_sz with "Hs") as %Hsz.
@@ -615,8 +615,8 @@ Proof.
 Qed.
 
 Theorem slice_skip_skip (n m: u64) s t :
-  int.Z m ≤ int.Z n ≤ int.Z s.(Slice.sz) ->
-  int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap) ->
+  uint.Z m ≤ uint.Z n ≤ uint.Z s.(Slice.sz) ->
+  uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap) ->
   slice_skip s t n =
   slice_skip (slice_skip s t m) t (word.sub n m).
 Proof.
@@ -631,7 +631,7 @@ Proof.
 Qed.
 
 Theorem own_slice_cap_skip s t n :
-  int.Z n ≤ int.Z s.(Slice.sz) →
+  uint.Z n ≤ uint.Z s.(Slice.sz) →
   own_slice_cap s t -∗
   own_slice_cap (slice_skip s t n) t.
 Proof.
@@ -648,8 +648,8 @@ Proof.
 Qed.
 
 Theorem own_slice_cap_skip_more s n1 n2 t :
-  int.Z n1 ≤ int.Z n2 ≤ int.Z s.(Slice.sz) ->
-  int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap) ->
+  uint.Z n1 ≤ uint.Z n2 ≤ uint.Z s.(Slice.sz) ->
+  uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap) ->
   own_slice_cap (slice_skip s t n1) t -∗ own_slice_cap (slice_skip s t n2) t.
 Proof.
   iIntros (Hbound Hwf) "Hcap".
@@ -670,7 +670,7 @@ Qed.
 (** * Hoare triples *)
 
 Lemma wp_SliceSkip Φ stk E s t (n: u64):
-  int.Z n ≤ int.Z s.(Slice.sz) →
+  uint.Z n ≤ uint.Z s.(Slice.sz) →
   ▷ Φ (slice_val (slice_skip s t n)) -∗
   WP (SliceSkip t (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
@@ -683,10 +683,10 @@ Proof.
 Qed.
 
 Lemma wp_SliceSkip_small s t q vs (n : u64) :
-  int.Z n ≤ length vs →
+  uint.Z n ≤ length vs →
   {{{ own_slice_small s t q vs }}}
     SliceSkip t (slice_val s) #n
-  {{{ s', RET (slice_val s'); own_slice_small s' t q (drop (int.nat n) vs) }}}.
+  {{{ s', RET (slice_val s'); own_slice_small s' t q (drop (uint.nat n) vs) }}}.
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
@@ -698,7 +698,7 @@ Proof.
 Qed.
 
 Lemma wp_SliceTake {Φ stk E s} (n: u64):
-  int.Z n ≤ int.Z s.(Slice.cap) →
+  uint.Z n ≤ uint.Z s.(Slice.cap) →
   ▷ Φ (slice_val (slice_take s n)) -∗
   WP (SliceTake (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
@@ -714,10 +714,10 @@ Proof.
 Qed.
 
 Lemma wp_SliceTake_small {stk E s} t q vs (n: u64):
-  int.Z n ≤ length vs →
+  uint.Z n ≤ length vs →
   {{{ own_slice_small s t q vs }}}
     SliceTake (slice_val s) #n @ stk; E
-  {{{ RET (slice_val (slice_take s n)); own_slice_small (slice_take s n) t q (take (int.nat n) vs) }}}.
+  {{{ RET (slice_val (slice_take s n)); own_slice_small (slice_take s n) t q (take (uint.nat n) vs) }}}.
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
@@ -732,11 +732,11 @@ Qed.
 (** We have full ownership, and take into the capacity.
 Cannot be typed, since [extra] might not be valid at this type. *)
 Lemma wp_SliceTake_full_cap {stk E s} t vs (n: u64):
-  int.Z s.(Slice.sz) ≤ int.Z n ≤ int.Z s.(Slice.cap) →
+  uint.Z s.(Slice.sz) ≤ uint.Z n ≤ uint.Z s.(Slice.cap) →
   {{{ own_slice s t 1 vs }}}
     SliceTake (slice_val s) #n @ stk; E
   {{{ extra, RET (slice_val (slice_take s n));
-    ⌜length extra = int.nat n - int.nat (s.(Slice.sz))⌝%nat ∗
+    ⌜length extra = uint.nat n - uint.nat (s.(Slice.sz))⌝%nat ∗
     own_slice (slice_take s n) t 1 (vs ++ extra)
   }}}.
 Proof.
@@ -746,7 +746,7 @@ Proof.
   wp_apply (wp_SliceTake).
   { word. }
   iDestruct "Hs" as "[Hs [%extra [%Hextra Hextra]]]".
-  set elen := (int.nat n - int.nat (s.(Slice.sz)))%nat.
+  set elen := (uint.nat n - uint.nat (s.(Slice.sz)))%nat.
   iApply ("HΦ" $! (take elen extra)).
   iSplit.
   { iPureIntro. rewrite take_length. word. }
@@ -767,7 +767,7 @@ Proof.
 Qed.
 
 Lemma wp_SliceSubslice Φ stk E s t (n1 n2: u64):
-  int.Z n1 ≤ int.Z n2 ∧ int.Z n2 ≤ int.Z s.(Slice.cap) →
+  uint.Z n1 ≤ uint.Z n2 ∧ uint.Z n2 ≤ uint.Z s.(Slice.cap) →
   ▷ Φ (slice_val (slice_subslice s t n1 n2)) -∗
   WP (SliceSubslice t (slice_val s) #n1 #n2) @ stk; E {{ Φ }}.
 Proof.
@@ -784,11 +784,11 @@ Proof.
 Qed.
 
 Lemma own_slice_small_skipn s t q vs n:
-  ⌜int.Z n ≤ int.Z s.(Slice.sz)⌝ -∗
+  ⌜uint.Z n ≤ uint.Z s.(Slice.sz)⌝ -∗
   own_slice_small s t q vs -∗
-  own_slice_small (Slice.mk (s.(Slice.ptr) +ₗ[t] int.Z n)
+  own_slice_small (Slice.mk (s.(Slice.ptr) +ₗ[t] uint.Z n)
                            (word.sub s.(Slice.sz) n)
-                           (word.sub s.(Slice.cap) n)) t q (skipn (int.nat n) vs).
+                           (word.sub s.(Slice.cap) n)) t q (skipn (uint.nat n) vs).
 Proof.
   iIntros "% [Hs %]".
   iSplitL; simpl.
@@ -798,19 +798,19 @@ Proof.
     word.
   }
 
-  replace vs with (firstn (int.nat n) vs ++ skipn (int.nat n) vs) at 1 by apply firstn_skipn.
+  replace vs with (firstn (uint.nat n) vs ++ skipn (uint.nat n) vs) at 1 by apply firstn_skipn.
 
   rewrite array_app.
   iDestruct "Hs" as "[Hs0 Hs1]".
   rewrite -> firstn_length_le by lia.
-  replace (Z.of_nat (int.nat n)) with (int.Z n) by word.
+  replace (Z.of_nat (uint.nat n)) with (uint.Z n) by word.
   iFrame.
 Qed.
 
 Lemma own_slice_small_firstn s t q vs n:
-  ⌜int.Z n ≤ int.Z s.(Slice.sz)⌝ -∗
+  ⌜uint.Z n ≤ uint.Z s.(Slice.sz)⌝ -∗
   own_slice_small s t q vs -∗
-  own_slice_small (Slice.mk s.(Slice.ptr) n s.(Slice.cap)) t q (firstn (int.nat n) vs).
+  own_slice_small (Slice.mk s.(Slice.ptr) n s.(Slice.cap)) t q (firstn (uint.nat n) vs).
 Proof.
   iIntros "% [Hs %]".
   iSplitL; simpl.
@@ -820,7 +820,7 @@ Proof.
     word.
   }
 
-  replace vs with (firstn (int.nat n) vs ++ skipn (int.nat n) vs) at 1 by apply firstn_skipn.
+  replace vs with (firstn (uint.nat n) vs ++ skipn (uint.nat n) vs) at 1 by apply firstn_skipn.
 
   rewrite array_app.
   iDestruct "Hs" as "[Hs0 Hs1]".
@@ -828,11 +828,11 @@ Proof.
 Qed.
 
 Lemma own_slice_small_subslice s t q vs n1 n2:
-  int.Z n1 ≤ int.Z n2 ∧ int.Z n2 ≤ int.Z s.(Slice.sz) →
+  uint.Z n1 ≤ uint.Z n2 ∧ uint.Z n2 ≤ uint.Z s.(Slice.sz) →
   own_slice_small s t q vs -∗
-  own_slice_small (Slice.mk (s.(Slice.ptr) +ₗ[t] int.Z n1)
+  own_slice_small (Slice.mk (s.(Slice.ptr) +ₗ[t] uint.Z n1)
                            (word.sub n2 n1) (word.sub s.(Slice.cap) n1)) t q
-                 (skipn (int.nat n1) (firstn (int.nat n2) vs)).
+                 (skipn (uint.nat n1) (firstn (uint.nat n2) vs)).
 Proof.
   iIntros "% Hs".
   iDestruct (own_slice_small_firstn _ _ _ _ n2 with "[] Hs") as "Hs".
@@ -845,12 +845,12 @@ Qed.
 Lemma wp_SliceSubslice_small stk E s t (n1 n2: u64) q vs:
   {{{
     own_slice_small s t q vs ∗
-    ⌜int.Z n1 ≤ int.Z n2 ∧ int.Z n2 ≤ int.Z s.(Slice.sz)⌝
+    ⌜uint.Z n1 ≤ uint.Z n2 ∧ uint.Z n2 ≤ uint.Z s.(Slice.sz)⌝
   }}}
     SliceSubslice t (slice_val s) #n1 #n2 @ stk; E
   {{{
     (s': Slice.t), RET (slice_val s');
-    own_slice_small s' t q (skipn (int.nat n1) (firstn (int.nat n2) vs))
+    own_slice_small s' t q (skipn (uint.nat n1) (firstn (uint.nat n2) vs))
   }}}.
 Proof.
   iIntros (Φ) "[Hs [%%]] HΦ".
@@ -865,7 +865,7 @@ Proof.
 Qed.
 
 Lemma wp_SliceGet_body stk E sl t q vs (i: u64) v0 :
-  {{{ own_slice_small sl t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+  {{{ own_slice_small sl t q vs ∗ ⌜ vs !! uint.nat i = Some v0 ⌝ }}}
     ![t] (slice.ptr (sl) +ₗ[t] #i) @ stk; E
   {{{ RET v0; own_slice_small sl t q vs ∗ ⌜val_ty v0 t⌝ }}}.
 Proof.
@@ -887,7 +887,7 @@ Qed.
 
 
 Lemma wp_SliceGet stk E sl t q vs (i: u64) v0 :
-  {{{ own_slice_small sl t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+  {{{ own_slice_small sl t q vs ∗ ⌜ vs !! uint.nat i = Some v0 ⌝ }}}
     SliceGet t sl #i @ stk; E
   {{{ RET v0; own_slice_small sl t q vs ∗ ⌜val_ty v0 t⌝ }}}.
 Proof.
@@ -911,15 +911,15 @@ Qed.
 Theorem wp_forSlice_mut (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
   □ (∀ (i: u64),
         I i -∗ ∃ vs', ⌜ length vs' = length vs ⌝ ∗
-                      ⌜ vs' !! int.nat i = vs !! int.nat i ⌝ ∗
+                      ⌜ vs' !! uint.nat i = vs !! uint.nat i ⌝ ∗
                       own_slice_small s t q vs' ∗
                       (own_slice_small s t q vs' -∗ I i)) -∗
   (∀ (i: u64) (x: val),
-      {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
-                ⌜vs !! int.nat i = Some x⌝ }}}
+      {{{ I i ∗ ⌜uint.Z i < uint.Z s.(Slice.sz)⌝ ∗
+                ⌜vs !! uint.nat i = Some x⌝ }}}
         body #i x @ stk; E
-      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) }}}
+      {{{ (v : val), RET v; I (word.add i (W64 1)) }}}) -∗
+    {{{ I (W64 0) }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) }}}.
 Proof.
@@ -929,13 +929,13 @@ Proof.
   wp_apply wp_slice_len.
   wp_steps.
   remember 0 as z.
-  assert (0 <= z <= int.Z s.(Slice.sz)) by word.
+  assert (0 <= z <= uint.Z s.(Slice.sz)) by word.
   iDestruct ("Hslice_acc" with "[$]") as (vs' Hlen' Hlookup') "(Hs&Hclo)".
   iDestruct (own_slice_small_sz with "Hs") as %Hslen.
   clear Heqz; generalize dependent z.
   intros z Hzrange Hlookup'.
   pose proof (word.unsigned_range s.(Slice.sz)).
-  assert (int.Z (U64 z) = z) by (rewrite /U64; word).
+  assert (uint.Z (W64 z) = z) by (rewrite /W64; word).
   iDestruct ("Hclo" with "[$]") as "Hi0".
   iRename "Hi0" into "Hiz".
   rewrite Hlen' in Hslen.
@@ -945,38 +945,38 @@ Proof.
   - destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
     iDestruct ("Hslice_acc" with "[$]") as (vs' Hlen' Hlookup') "(Hs&Hclo)".
     wp_apply (wp_SliceGet with "[$Hs]").
-    { rewrite Hlookup'. replace (int.Z z); eauto. }
+    { rewrite Hlookup'. replace (uint.Z z); eauto. }
     iIntros "[Hs Hty]".
     iDestruct "Hty" as %Hty.
     wp_steps.
     iDestruct ("Hclo" with "[$]") as "Hiz".
     wp_apply ("Hind" with "[$Hiz]").
     { iPureIntro; split; eauto.
-      replace (int.Z z); eauto. }
+      replace (uint.Z z); eauto. }
     iIntros (v) "Hiz1".
     wp_steps.
-    assert (int.Z (z + 1) = int.Z z + 1).
+    assert (uint.Z (z + 1) = uint.Z z + 1).
     { rewrite word.unsigned_of_Z.
       rewrite wrap_small; try lia. }
-    replace (word.add z 1) with (U64 (z + 1)) by word.
+    replace (word.add z 1) with (W64 (z + 1)) by word.
     iSpecialize ("IH" $! (z+1) with "[] []").
     { iPureIntro; lia. }
     { iPureIntro; lia. }
     wp_apply ("IH" with "HΦ Hiz1").
-  - assert (z = int.Z s.(Slice.sz)) by lia; subst z.
+  - assert (z = uint.Z s.(Slice.sz)) by lia; subst z.
     iApply "HΦ"; iFrame.
-    replace (U64 (int.Z s.(Slice.sz))) with s.(Slice.sz); auto.
-    unfold U64.
+    replace (W64 (uint.Z s.(Slice.sz))) with s.(Slice.sz); auto.
+    unfold W64.
     rewrite word.of_Z_unsigned; auto.
 Qed.
 
 Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
   (∀ (i: u64) (x: val),
-      {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
-                ⌜vs !! int.nat i = Some x⌝ }}}
+      {{{ I i ∗ ⌜uint.Z i < uint.Z s.(Slice.sz)⌝ ∗
+                ⌜vs !! uint.nat i = Some x⌝ }}}
         body #i x @ stk; E
-      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) ∗ own_slice_small s t q vs }}}
+      {{{ (v : val), RET v; I (word.add i (W64 1)) }}}) -∗
+    {{{ I (W64 0) ∗ own_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) ∗ own_slice_small s t q vs }}}.
 Proof.
@@ -1001,7 +1001,7 @@ Theorem wp_forSlicePrefix (P: list val -> list val -> iProp Σ) stk E s t q vs (
 Proof.
   iIntros "#Hind".
   iIntros (Φ) "!> [Hs Hi0] HΦ".
-  iApply (wp_forSlice (λ i, P (take (int.nat i) vs) (drop (int.nat i) vs))
+  iApply (wp_forSlice (λ i, P (take (uint.nat i) vs) (drop (uint.nat i) vs))
     with "[] [$Hs $Hi0]").
   {
     iIntros (i x). iModIntro.
@@ -1035,18 +1035,18 @@ Proof.
   iIntros (Φ) "!> [Hs [Hi Hp]] HΦ".
   iDestruct (own_slice_small_sz with "Hs") as %Hlen.
   wp_apply (wp_forSlice
-    (λ i, ([∗ list] x ∈ firstn (int.nat i) vs, Q x) ∗
-          ([∗ list] x ∈ skipn (int.nat i) vs, P x) ∗
+    (λ i, ([∗ list] x ∈ firstn (uint.nat i) vs, Q x) ∗
+          ([∗ list] x ∈ skipn (uint.nat i) vs, P x) ∗
           I)%I with "[] [$Hs Hi Hp]").
   {
     iIntros (i x).
     iModIntro.
     iIntros (Φ0) "[(Hq & Hp & Hi) [% %]] HΦ0".
     apply take_drop_middle in H0.
-    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
-    assert (length (take (int.nat i) vs) = int.nat i) as Hivs.
+    replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
+    assert (length (take (uint.nat i) vs) = uint.nat i) as Hivs.
     { rewrite take_length. lia. }
-    replace (drop (int.nat i) vs) with (x :: drop (S (int.nat i)) vs).
+    replace (drop (uint.nat i) vs) with (x :: drop (S (uint.nat i)) vs).
     2: {
       rewrite <- H0 at 2.
       rewrite drop_app_length'; eauto.
@@ -1056,13 +1056,13 @@ Proof.
     iModIntro.
     iIntros (v) "[Hi Hqx]".
     iApply "HΦ0".
-    replace (take (S (int.nat i)) vs) with ((take (int.nat i) vs) ++ [x]).
+    replace (take (S (uint.nat i)) vs) with ((take (uint.nat i) vs) ++ [x]).
     2: {
       rewrite <- H0 at 2.
       rewrite firstn_app Hivs.
       rewrite (firstn_all2 (take _ _)); last lia.
       f_equal.
-      replace (S (int.nat i) - int.nat i)%nat with 1%nat by lia.
+      replace (S (uint.nat i) - uint.nat i)%nat with 1%nat by lia.
       rewrite /= firstn_O.
       reflexivity.
     }
@@ -1070,7 +1070,7 @@ Proof.
     iFrame.
   }
   {
-    repeat replace (int.nat 0) with 0%nat by reflexivity.
+    repeat replace (uint.nat 0) with 0%nat by reflexivity.
     rewrite drop_0 /=.
     iFrame.
   }
@@ -1079,7 +1079,7 @@ Proof.
   iApply "HΦ"; iFrame.
 Qed.
 
-Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
+Lemma u64_nat_0 (n: u64) : 0%nat = uint.nat n -> n = W64 0.
 Proof.
   intros.
   apply (f_equal Z.of_nat) in H.
@@ -1091,20 +1091,20 @@ Qed.
 
 Lemma wp_MemCpy_rec s E t q dst vs1 src vs2 (n: u64) :
   {{{ dst ↦∗[t] vs1 ∗ src ↦∗[t]{q} vs2 ∗
-            ⌜ length vs1 = int.nat n /\ length vs2 >= length vs1 ⌝ }}}
+            ⌜ length vs1 = uint.nat n /\ length vs2 >= length vs1 ⌝ }}}
     MemCpy_rec t #dst #src #n @ s; E
-  {{{ RET #(); dst ↦∗[t] (take (int.nat n) vs2) ∗ src ↦∗[t]{q} vs2 }}}.
+  {{{ RET #(); dst ↦∗[t] (take (uint.nat n) vs2) ∗ src ↦∗[t]{q} vs2 }}}.
 Proof.
   iIntros (Φ) "(Hdst&Hsrc&Hbounds) HΦ".
   iDestruct "Hbounds" as %(Hvs1&Hvs2).
   (iLöb as "IH" forall (vs1 vs2 n dst src Hvs1 Hvs2) "Hdst Hsrc HΦ").
   wp_call.
   wp_if_destruct.
-  - change (int.nat 0) with 0%nat.
+  - change (uint.nat 0) with 0%nat.
     iEval (rewrite firstn_O array_nil) in "HΦ" .
     iApply "HΦ"; by iFrame.
   - apply u64_val_ne in Heqb.
-    change (int.Z 0) with 0 in *.
+    change (uint.Z 0) with 0 in *.
     destruct vs1, vs2; simpl in Hvs1, Hvs2; try word.
     iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
     iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
@@ -1122,18 +1122,18 @@ Proof.
     + iIntros "(Hdst'&Hsrc')".
       iApply "HΦ".
       rewrite array_cons; iFrame.
-      replace (take (int.nat n) (v0 :: vs2)) with
-          (v0 :: take (int.nat n - 1) vs2).
-      { replace (int.nat n - 1)%nat with (int.nat (word.sub n 1)) by word.
+      replace (take (uint.nat n) (v0 :: vs2)) with
+          (v0 :: take (uint.nat n - 1) vs2).
+      { replace (uint.nat n - 1)%nat with (uint.nat (word.sub n 1)) by word.
         rewrite array_cons; iFrame. }
-      replace (int.nat n) with (1 + (int.nat n - 1))%nat at 2 by lia.
+      replace (uint.nat n) with (1 + (uint.nat n - 1))%nat at 2 by lia.
       auto.
 Qed.
 
 Lemma wp_SliceCopy_full stk E sl t q vs dst vs' :
   {{{ own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs' ∗ ⌜length vs = length vs'⌝ }}}
     SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
-  {{{ RET #(U64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs }}}.
+  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs }}}.
 Proof.
   iIntros (Φ) "(Hsrc&Hdst&%) HΦ".
   wp_call.
@@ -1153,7 +1153,7 @@ Proof.
     word. }
   iIntros "(Hdst & Hsrc)".
   wp_pures.
-  replace (Slice.sz sl) with (U64 (length vs)) by word.
+  replace (Slice.sz sl) with (W64 (length vs)) by word.
   iApply "HΦ".
   rewrite -> take_ge by word.
   iFrame.
@@ -1185,7 +1185,7 @@ Qed.
 Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) (n : u64) :
   has_zero t ->
   val_ty x t ->
-  0 ≤ int.Z n ≤ int.Z (Slice.sz s) ≤ int.Z (Slice.cap s) ->
+  0 ≤ uint.Z n ≤ uint.Z (Slice.sz s) ≤ uint.Z (Slice.cap s) ->
   (q < 1)%Qp ->
   {{{ own_slice_small (slice_take s n) t q vs1 ∗
       own_slice (slice_skip s t n) t 1 vs2 }}}
@@ -1193,8 +1193,8 @@ Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) (n : u64) :
   {{{ s', RET slice_val s';
       own_slice_small (slice_take s' n) t q vs1 ∗
       own_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
-      ⌜int.Z (Slice.sz s') ≤ int.Z (Slice.cap s') ∧
-       int.Z (Slice.sz s') = (int.Z (Slice.sz s) + 1)%Z ⌝}}}.
+      ⌜uint.Z (Slice.sz s') ≤ uint.Z (Slice.cap s') ∧
+       uint.Z (Slice.sz s') = (uint.Z (Slice.sz s) + 1)%Z ⌝}}}.
 Proof.
   iIntros (Hzero Hty Hn Hq Φ) "[Hprefix Hs] HΦ".
   wp_call.
@@ -1202,7 +1202,7 @@ Proof.
   wp_apply wp_Assume.
   iIntros (Hbound).
   apply bool_decide_eq_true in Hbound.
-  assert (int.Z s.(Slice.sz) + 1 < 2^64) by word.
+  assert (uint.Z s.(Slice.sz) + 1 < 2^64) by word.
   wp_pures.
   wp_apply wp_slice_len.
   wp_pures.
@@ -1225,8 +1225,8 @@ Proof.
     wp_pures.
     rewrite loc_add_assoc.
     rewrite -Z.mul_add_distr_l.
-    replace (int.Z n + int.Z (word.sub (Slice.sz s) n))
-      with (int.Z (Slice.sz s)) by word.
+    replace (uint.Z n + uint.Z (word.sub (Slice.sz s) n))
+      with (uint.Z (Slice.sz s)) by word.
     wp_apply (wp_StoreAt with "Hnew"); [ auto | iIntros "Hnew" ].
     wp_pures.
     wp_call.
@@ -1236,8 +1236,8 @@ Proof.
       rewrite Hlen.
       rewrite loc_add_assoc.
       rewrite -Z.mul_add_distr_l.
-      replace (int.Z n + int.nat (word.sub (Slice.sz s) n))
-        with (int.Z (Slice.sz s)) by word.
+      replace (uint.Z n + uint.nat (word.sub (Slice.sz s) n))
+        with (uint.Z (Slice.sz s)) by word.
       iExactEq "Hnew"; f_equal.
     }
     iFrame.
@@ -1268,9 +1268,9 @@ Proof.
     wp_apply (wp_allocN t); auto.
     { word. }
     iIntros (l) "Halloc".
-    iDestruct (array_replicate_split (int.nat s.(Slice.sz) + 1) (int.nat cap - int.nat s.(Slice.sz) - 1) with "Halloc") as "[Halloc HnewFree]";
+    iDestruct (array_replicate_split (uint.nat s.(Slice.sz) + 1) (uint.nat cap - uint.nat s.(Slice.sz) - 1) with "Halloc") as "[Halloc HnewFree]";
       first by word.
-    iDestruct (array_replicate_split (int.nat s.(Slice.sz)) 1%nat with "Halloc") as "[Halloc_sz Halloc1]";
+    iDestruct (array_replicate_split (uint.nat s.(Slice.sz)) 1%nat with "Halloc") as "[Halloc_sz Halloc1]";
       first by word.
     rewrite array_singleton.
     wp_pures.
@@ -1323,13 +1323,13 @@ Proof.
     iSplitL "Hvs Hlast".
     { iSplitL.
       * rewrite array_app array_singleton.
-        replace (length vs1) with (int.nat n) by done.
-        replace (int.nat n : Z) with (int.Z n) by word.
+        replace (length vs1) with (uint.nat n) by done.
+        replace (uint.nat n : Z) with (uint.Z n) by word.
         iFrame. iModIntro.
         rewrite loc_add_assoc.
         iExactEq "Hlast"; word_eq.
-        replace (int.Z n) with (int.nat n : Z) by word.
-        replace (int.nat n) with (length vs1) by done.
+        replace (uint.Z n) with (uint.nat n : Z) by word.
+        replace (uint.nat n) with (length vs1) by done.
         rewrite Hlen Hlen'.
         rewrite /slice_take /slice_skip /=. word.
       * iPureIntro.
@@ -1338,7 +1338,7 @@ Proof.
         word_cleanup. word_cleanup.
     }
 
-    iExists (replicate (int.nat cap - int.nat s.(Slice.sz) - 1) (zero_val t)).
+    iExists (replicate (uint.nat cap - uint.nat s.(Slice.sz) - 1) (zero_val t)).
     iSplitR.
     { rewrite replicate_length.
       iPureIntro.
@@ -1348,13 +1348,13 @@ Proof.
     iExactEq "HnewFree".
     rewrite loc_add_assoc.
     word_eq.
-    replace (int.Z n) with (int.nat n : Z) by word.
-    replace (int.nat n) with (length vs1) by done.
+    replace (uint.Z n) with (uint.nat n : Z) by word.
+    replace (uint.nat n) with (length vs1) by done.
     rewrite Hlen'.
     rewrite /slice_take /=.
     word_cleanup. word_cleanup.
-    replace (ty_size t * int.Z n + ty_size t * (int.Z (Slice.sz s) + 1 - int.Z n))
-       with (ty_size t * ( int.Z n + ( (int.Z (Slice.sz s) + 1 - int.Z n) ) ) ) by lia.
+    replace (ty_size t * uint.Z n + ty_size t * (uint.Z (Slice.sz s) + 1 - uint.Z n))
+       with (ty_size t * ( uint.Z n + ( (uint.Z (Slice.sz s) + 1 - uint.Z n) ) ) ) by lia.
     word_eq.
 Qed.
 
@@ -1374,7 +1374,7 @@ Proof.
     replace (word.sub (Slice.sz s) 0) with (Slice.sz s) by word.
     replace (word.sub (Slice.cap s) 0) with (Slice.cap s) by word.
     iSplitR "Hs".
-    2: { iExactEq "Hs". f_equal. destruct s; simpl; f_equal. replace (ty_size t * int.Z 0) with 0 by word.
+    2: { iExactEq "Hs". f_equal. destruct s; simpl; f_equal. replace (ty_size t * uint.Z 0) with 0 by word.
       rewrite loc_add_0. done. }
     rewrite /own_slice_small /=.
     rewrite array_nil. iPureIntro. word.
@@ -1387,7 +1387,7 @@ Proof.
   replace (word.sub (Slice.cap s') 0) with (Slice.cap s') by word.
   iApply "HΦ".
   iExactEq "Hs". f_equal. destruct s'; simpl; f_equal.
-  replace (ty_size t * int.Z 0) with 0 by word.
+  replace (ty_size t * uint.Z 0) with 0 by word.
   rewrite loc_add_0. done.
 Qed.
 
@@ -1443,12 +1443,12 @@ Proof.
   set for_inv :=
     (λ (loopIdx : u64), ∃ s,
       s_ptr ↦[slice.T t] (slice_val s) ∗
-      own_slice s t 1 (vs1 ++ (take (int.nat loopIdx) vs2)))%I.
+      own_slice s t 1 (vs1 ++ (take (uint.nat loopIdx) vs2)))%I.
   wp_apply (wp_forSlice for_inv with "[] [Hs_ptr Hs1 Hs2]");
     rewrite /for_inv;
     clear for_inv.
   2: {
-    replace (int.nat 0) with (0%nat) by word.
+    replace (uint.nat 0) with (0%nat) by word.
     rewrite take_0.
     rewrite app_nil_r.
     iFrame.
@@ -1456,7 +1456,7 @@ Proof.
   {
     iIntros (?? Φ2) "!> ([%s [Hs_ptr Hs]] & %Hlt & %Hlook) HΦ2".
     wp_load.
-    specialize (Hty (int.nat i) x Hlook).
+    specialize (Hty (uint.nat i) x Hlook).
     wp_apply (wp_SliceAppend with "[$Hs]"); [done..|].
     iIntros (?) "Hs'".
     (* TODO: why doesn't wp_store work here? *)
@@ -1464,7 +1464,7 @@ Proof.
     iIntros "Hs'_ptr".
     iApply "HΦ2".
     apply take_S_r in Hlook.
-    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
     rewrite Hlook.
     list_simplifier.
     iFrame.
@@ -1479,9 +1479,9 @@ Proof.
 Qed.
 
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
-  {{{ own_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
+  {{{ own_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! uint.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
     SliceSet t s #i x @ stk; E
-  {{{ RET #(); own_slice_small s t 1 (<[int.nat i:=x]> vs) }}}.
+  {{{ RET #(); own_slice_small s t 1 (<[uint.nat i:=x]> vs) }}}.
 Proof.
   iIntros (Φ) "[Hs %] HΦ".
   destruct H as [Hlookup Hty].
@@ -1490,7 +1490,7 @@ Proof.
   wp_call.
   iDestruct "Hs" as "(Hptr&%)".
   simpl in H |- *.
-  replace (int.Z i) with (Z.of_nat (int.nat i)) by word.
+  replace (uint.Z i) with (Z.of_nat (uint.nat i)) by word.
   wp_apply (wp_store_offset with "Hptr"); [ | done | iIntros "Hptr" ]; auto.
   iApply "HΦ".
   iSplitL.
@@ -1501,9 +1501,9 @@ Qed.
 
 (* using full ownership of the slice *)
 Lemma wp_SliceSet_full stk E s t vs (i: u64) (x: val) :
-  {{{ own_slice s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
+  {{{ own_slice s t 1 vs ∗ ⌜ is_Some (vs !! uint.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
     SliceSet t s #i x @ stk; E
-  {{{ RET #(); own_slice s t 1 (<[int.nat i:=x]> vs) }}}.
+  {{{ RET #(); own_slice s t 1 (<[uint.nat i:=x]> vs) }}}.
 Proof.
   iIntros (Φ) "[Hs %] HΦ".
   iDestruct (own_slice_small_acc with "Hs") as "[Hs Hs_upd]".

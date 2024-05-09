@@ -49,9 +49,9 @@ Implicit Type σ : list EntryType.
 Implicit Type epoch : u64.
 
 Definition own_epoch γ (epoch:u64) : iProp Σ :=
-  mono_nat_auth_own γ.(pb_epoch_gn) 1 (int.nat epoch).
+  mono_nat_auth_own γ.(pb_epoch_gn) 1 (uint.nat epoch).
 Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
-  mono_nat_lb_own γ.(pb_epoch_gn) (int.nat epoch).
+  mono_nat_lb_own γ.(pb_epoch_gn) (uint.nat epoch).
 
 Definition own_proposal_unused γsys epoch : iProp Σ :=
   epoch ⤳l[γsys.(pb_proposal_gn)] [].
@@ -97,7 +97,7 @@ Definition committed_by γsys epoch σ : iProp Σ :=
 
 Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
   □(∀ epoch_old σ_old,
-   ⌜int.nat epoch_old < int.nat epoch⌝ →
+   ⌜uint.nat epoch_old < uint.nat epoch⌝ →
    committed_by γsys epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition pbN := nroot .@ "pb".
@@ -136,7 +136,7 @@ Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
   "Hepoch_ghost" ∷ own_epoch γsrv epoch ∗
   "Haccepted" ∷ (if sealed then True else own_accepted γsrv epoch σ) ∗
   "#Haccepted_ro" ∷ □(if sealed then is_accepted_ro γsrv epoch σ else True) ∗
-  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat epoch⌝ ∨
+  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜uint.nat e' ≤ uint.nat epoch⌝ ∨
                                                       own_accepted γsrv e' []) ∗
   "#Hproposal_lb" ∷ is_proposal_lb γsys epoch σ ∗
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
@@ -148,7 +148,7 @@ Definition own_primary_ghost γsys epoch σ : iProp Σ :=
 .
 
 Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ' σ :
-  int.nat epoch < int.nat epoch' →
+  uint.nat epoch < uint.nat epoch' →
   own_replica_ghost γsys γsrv epoch σ sealed -∗
   is_proposal_lb γsys epoch' σ' -∗
   is_proposal_facts γsys epoch' σ'
@@ -208,7 +208,7 @@ Proof.
 Qed.
 
 Lemma ghost_accept γsys γsrv epoch epoch' σ σ' :
-  int.nat epoch ≤ int.nat epoch' →
+  uint.nat epoch ≤ uint.nat epoch' →
   length σ ≤ length σ' →
   own_replica_ghost γsys γsrv epoch σ false -∗
   is_proposal_lb γsys epoch' σ' -∗
@@ -233,7 +233,7 @@ Proof.
   }
   {
     iApply (ghost_accept_and_unseal with "Hown Hprop_lb Hprop_facts").
-    assert (int.nat epoch < int.nat epoch' ∨ int.nat epoch = int.nat epoch') as [|] by word.
+    assert (uint.nat epoch < uint.nat epoch' ∨ uint.nat epoch = uint.nat epoch') as [|] by word.
     { done. }
     { exfalso. assert (epoch = epoch') by word. done. }
   }
@@ -275,7 +275,7 @@ Qed.
 Lemma ghost_epoch_lb_ineq γsys γsrv epoch epoch_lb σ sealed:
   is_epoch_lb γsrv epoch_lb -∗
   own_replica_ghost γsys γsrv epoch σ sealed -∗
-  ⌜int.nat epoch_lb ≤ int.nat epoch⌝.
+  ⌜uint.nat epoch_lb ≤ uint.nat epoch⌝.
 Proof.
   iIntros "#Hlb".
   iNamed 1.
@@ -526,7 +526,7 @@ Proof.
   iDestruct "Hprop_facts" as "(Hmax & Hvalid)".
   iAssert (⌜σcommit ⪯ σ⌝ ∨ ⌜σ ⪯ σcommit⌝)%I as "%Hlog".
   {
-    assert (int.nat epoch < int.nat epoch_commit ∨ int.nat epoch = int.nat epoch_commit ∨ int.nat epoch > int.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
+    assert (uint.nat epoch < uint.nat epoch_commit ∨ uint.nat epoch = uint.nat epoch_commit ∨ uint.nat epoch > uint.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
     { (* case epoch < epoch_commit: use old_proposal_max of epoch_commit. *)
       iRight.
       by iApply "Hmax_com".
@@ -583,13 +583,13 @@ Qed.
 
 Lemma ghost_init_primary γsys γsrv σ epochconf epoch conf epoch_new :
   γsrv ∈ conf →
-  int.nat epoch < int.nat epoch_new →
-  int.nat epochconf ≤ int.nat epoch →
+  uint.nat epoch < uint.nat epoch_new →
+  uint.nat epochconf ≤ uint.nat epoch →
   is_proposal_lb γsys epoch σ -∗
   is_proposal_facts γsys epoch σ -∗
   is_epoch_config γsys epochconf conf -∗
   is_accepted_ro γsrv epoch σ -∗
-  (∀ epoch_skip, ⌜int.nat epochconf < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
+  (∀ epoch_skip, ⌜uint.nat epochconf < uint.nat epoch_skip⌝ → ⌜uint.nat epoch_skip < uint.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
   own_proposal_unused γsys epoch_new
   ==∗
   own_primary_ghost γsys epoch_new σ
@@ -607,7 +607,7 @@ Proof.
   iModIntro.
   iIntros (Hepoch).
   iIntros "#Hcom_old".
-  assert (int.nat epoch_old < int.nat epoch ∨ int.nat epoch_old = int.nat epoch ∨ int.nat epoch < int.nat epoch_old ) as Hcases.
+  assert (uint.nat epoch_old < uint.nat epoch ∨ uint.nat epoch_old = uint.nat epoch ∨ uint.nat epoch < uint.nat epoch_old ) as Hcases.
   { word. }
   destruct Hcases as [Hineq|[HepochEq|Hineq]].
   { (* for old enough epochs, use existing old_prop_max *)
@@ -620,7 +620,7 @@ Proof.
     iDestruct "Hcom_old" as (conf_old) "[Hconf_old Hcom_old]".
     iDestruct "Hconf_old" as "[Hconf_old _]".
     iDestruct "His_conf" as "[His_conf _]".
-    assert (int.nat epochconf = int.nat epoch ∨ int.nat epochconf < int.nat epoch) as [Heq|Hineq] by word.
+    assert (uint.nat epochconf = uint.nat epoch ∨ uint.nat epochconf < uint.nat epoch) as [Heq|Hineq] by word.
     {
       replace (epochconf) with (epoch) by word.
       iDestruct (own_valid_2 with "Hconf_old His_conf") as %Hvalid.
@@ -707,17 +707,17 @@ Definition pb_init_for_config γsys confγs : iProp Σ :=
   "#His_conf_prop" ∷ is_epoch_config_proposal γsys 0 confγs ∗
   (* "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗ *)
   "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_epoch_lb γsrv 0) ∗
-  "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝ →
+  "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜uint.nat 0 < uint.nat epoch'⌝ →
               config_proposal_unset γsys epoch' ∗ config_unset γsys epoch' ∗
               own_proposal_unused γsys epoch'
               ).
 
 Definition is_sys_init_witness γsys : iProp Σ :=
-  is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].
+  is_proposal_lb γsys (W64 0) [] ∗ is_proposal_facts γsys (W64 0) [].
 
 Lemma pb_system_init (confγs:list pb_server_names) :
 length confγs > 0 →
-(∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
+(∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (W64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
     ∃ γsys,
     is_repl_inv γsys ∗
     own_pb_log γsys [] ∗
@@ -743,12 +743,12 @@ Proof.
   { done. }
 
   (* set up proposal for epoch 0 *)
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hproposal") as "[Hprop Hprop_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl (W64 0) with "Hproposal") as "[Hprop Hprop_rest]".
   { set_solver. }
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
 
   (* set up initial config proposal *)
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig_prop") as "[Hconfig_prop Hconfig_prop_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl (W64 0) with "Hconfig_prop") as "[Hconfig_prop Hconfig_prop_rest]".
   { set_solver. }
   iMod (own_update with "Hconfig_prop") as "Hconf_prop".
   {
@@ -760,7 +760,7 @@ Proof.
   iDestruct "Hconf_prop" as "#Hconf_prop".
 
   (* set up initial config *)
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig") as "[Hconfig Hconfig_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl (W64 0) with "Hconfig") as "[Hconfig Hconfig_rest]".
   { set_solver. }
   iMod (own_update with "Hconfig") as "Hconf".
   {
@@ -792,7 +792,7 @@ Proof.
     {
       iIntros (???).
       exfalso.
-      replace (int.nat (U64 0)) with (0) in H by word.
+      replace (uint.nat (W64 0)) with (0) in H by word.
       lia.
     }
     iModIntro.
@@ -807,7 +807,7 @@ Proof.
   iMod (inv_alloc with "[Hghost2]") as "$".
   { (* establish is_repl_inv *)
     iNext.
-    iExists [], (U64 0).
+    iExists [], (W64 0).
     simpl.
     iFrame "∗#".
     iSplitL; first done.
@@ -825,29 +825,29 @@ Proof.
   }
 
   rewrite /own_proposal_unused /config_unset /config_proposal_unset /=.
-  iSpecialize ("Hprop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → own_proposal_unused γsys epoch)%I with "[] []").
+  iSpecialize ("Hprop_rest" $! (λ epoch, ⌜uint.nat 0 < uint.nat epoch⌝ → own_proposal_unused γsys epoch)%I with "[] []").
   {
     iModIntro.
     iIntros.
     iFrame.
   }
-  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+  { iIntros. exfalso. replace (uint.nat (W64 0)) with (0) in H by word. lia. }
 
-  iSpecialize ("Hconfig_prop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_proposal_unset γsys epoch)%I with "[] []").
+  iSpecialize ("Hconfig_prop_rest" $! (λ epoch, ⌜uint.nat 0 < uint.nat epoch⌝ → config_proposal_unset γsys epoch)%I with "[] []").
   {
     iModIntro.
     iIntros.
     iFrame.
   }
-  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+  { iIntros. exfalso. replace (uint.nat (W64 0)) with (0) in H by word. lia. }
 
-  iSpecialize ("Hconfig_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_unset γsys epoch)%I with "[] []").
+  iSpecialize ("Hconfig_rest" $! (λ epoch, ⌜uint.nat 0 < uint.nat epoch⌝ → config_unset γsys epoch)%I with "[] []").
   {
     iModIntro.
     iIntros.
     iFrame.
   }
-  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+  { iIntros. exfalso. replace (uint.nat (W64 0)) with (0) in H by word. lia. }
 
   iDestruct (big_sepS_sep_2 with "Hprop_rest Hconfig_prop_rest") as "HH".
   iDestruct (big_sepS_sep_2 with "HH Hconfig_rest") as "HH".
@@ -863,17 +863,17 @@ Qed.
 Definition own_server_pre γsrv : iProp Σ :=
   "Hepoch" ∷ own_epoch γsrv 0 ∗
   "Haccepted" ∷ own_accepted γsrv 0 [] ∗
-  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat 0⌝ ∨
+  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜uint.nat e' ≤ uint.nat 0⌝ ∨
                                                       own_accepted γsrv e' [])
 .
 
 Lemma pb_ghost_server_pre_init :
-  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0)
+  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (W64 0) [] ∗ is_epoch_lb γsrv (W64 0)
 .
 Proof.
   iMod (fmlist_map_alloc_fin []) as (γacc) "Hacc".
   iMod (mono_nat_own_alloc 0) as (γepoch) "[Hepoch Hepoch_lb]".
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hacc") as "[Hacc Haccrest]".
+  iDestruct (big_sepS_elem_of_acc_impl (W64 0) with "Hacc") as "[Hacc Haccrest]".
   { set_solver. }
   iDestruct (fmlist_ptsto_get_lb with "Hacc") as "#Hacc_lb".
 
@@ -902,7 +902,7 @@ Lemma pb_ghost_server_init γsys γsrv :
   is_sys_init_witness γsys -∗
   own_server_pre γsrv
   -∗
-  own_replica_ghost γsys γsrv (U64 0) [] false
+  own_replica_ghost γsys γsrv (W64 0) [] false
 .
 Proof.
   iIntros "[#Hprop_lb #Hfacts] Hown".

@@ -38,7 +38,7 @@ Lemma lease_acc_update N e P Q :
   £ 1 -∗
   £ 1 -∗
   ∀ (t:u64),
-  ⌜int.nat t < int.nat e⌝ →
+  ⌜uint.nat t < uint.nat e⌝ →
   own_time t ={↑N,∅}=∗
   (P ∗ (∀ P', P' -∗ (P' -∗ Q) ={∅,↑N}=∗ own_time t ∗ underLease N e P' Q))
 .
@@ -140,7 +140,7 @@ Definition own_Server s γ : iProp Σ :=
 .
 
 
-Definition LEASE_EXP := U64 10.
+Definition LEASE_EXP := W64 10.
 
 Definition minleaseN := nroot .@ "minlease".
 
@@ -222,8 +222,8 @@ Qed.
 
 Lemma wp_StartServer γ :
   {{{
-      "Hlease" ∷ underLease minleaseN LEASE_EXP (ghost_var γ (1/2) (U64 0)) (∃ (v:u64), (ghost_var γ (1/2) v)) ∗
-      "Hauth" ∷ ghost_var γ (1/2) (U64 0)
+      "Hlease" ∷ underLease minleaseN LEASE_EXP (ghost_var γ (1/2) (W64 0)) (∃ (v:u64), (ghost_var γ (1/2) v)) ∗
+      "Hauth" ∷ ghost_var γ (1/2) (W64 0)
   }}}
     StartServer #()
   {{{
@@ -281,7 +281,7 @@ Proof.
     iIntros (low high t) "%Hineq1 %Hineq2 Htime".
     iNamed "HH".
 
-    destruct (decide (int.nat LEASE_EXP <= int.nat high)).
+    destruct (decide (uint.nat LEASE_EXP <= uint.nat high)).
     2:{ (* case: lease is not expired *)
       iDestruct (lease_acc_update with "Hlease Hlc1 Hlc2") as "HH".
       iDestruct ("HH" $! t with "[%] Htime") as "HH".
@@ -374,7 +374,7 @@ Proof.
   iAssert (_) with "Hsrv" as "Hsrv2".
   iNamed "Hsrv2".
 
-  destruct (decide (int.nat LEASE_EXP < int.nat low)).
+  destruct (decide (uint.nat LEASE_EXP < uint.nat low)).
   {
     iDestruct (mono_nat_lb_own_get with "Htime") as "#Hlb".
     unfold postLease.
@@ -461,7 +461,7 @@ Lemma wp_main :
 Proof using Type*.
   iIntros (Φ) "_ HΦ".
   wp_lam.
-  iMod (ghost_var_alloc (U64 0)) as (γ) "[Hvar Hvar2]".
+  iMod (ghost_var_alloc (W64 0)) as (γ) "[Hvar Hvar2]".
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑minleaseN)) as "Hmask".
   { set_solver. }

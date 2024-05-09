@@ -80,9 +80,9 @@ Proof. apply _. Qed.
 (* TODO: prove something useful for initializing from zero blocks *)
 
 Theorem wp_newAllocator mref (start sz: u64) used :
-  int.Z start + int.Z sz < 2^64 →
+  uint.Z start + uint.Z sz < 2^64 →
   {{{ is_addrset mref used ∗
-      let σ0 := {| alloc.domain := rangeSet (int.Z start) (int.Z sz);
+      let σ0 := {| alloc.domain := rangeSet (uint.Z start) (uint.Z sz);
                    alloc.used := used |} in
       ⌜alloc.wf σ0⌝ ∗ allocator_durable σ0 ∗ ▷ P σ0 }}}
     New #start #sz #mref

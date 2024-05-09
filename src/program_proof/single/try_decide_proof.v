@@ -28,8 +28,8 @@ Lemma wp_Clerk__Prepare ck pid γ reply_ptr dummy_rep (pn:u64) :
        reply, RET #();
             own_PrepareReply reply_ptr reply ∗
             (⌜reply.(Prep_Success) = false⌝ ∨
-             pn_ptsto f γ (int.nat reply.(Prep_Pn)) (reply.(Prep_Val)) ∗
-             (∀ pn', ⌜pn' < int.nat pn⌝ → ⌜int.nat reply.(Prep_Pn) < pn'⌝ → rejected γ pid pn')
+             pn_ptsto f γ (uint.nat reply.(Prep_Pn)) (reply.(Prep_Val)) ∗
+             (∀ pn', ⌜pn' < uint.nat pn⌝ → ⌜uint.nat reply.(Prep_Pn) < pn'⌝ → rejected γ pid pn')
              )
   }}}.
 Proof.
@@ -38,12 +38,12 @@ Admitted.
 Lemma wp_Clerk__Propose ck pid γ (pn:u64) (val:u64) :
   is_Clerk γ ck pid -∗
   {{{
-       pn_ptsto f γ (int.nat pn) val
+       pn_ptsto f γ (uint.nat pn) val
   }}}
     Clerk__Propose #ck #pn #val
   {{{
        (ret:bool), RET #ret;
-       ⌜ret = false⌝ ∨ accepted γ pid (int.nat pn)
+       ⌜ret = false⌝ ∨ accepted γ pid (uint.nat pn)
   }}}.
 Proof.
 Admitted.
@@ -59,8 +59,8 @@ Definition peers_prop γ (peers:list loc) : iProp Σ :=
 .
 
 Notation "'[∗' 'range]' n1 < x < n2 , P" := ([∗ set] x ∈ (fin_to_set u64),
-                                                   ⌜int.nat x ≤ int.nat n1⌝ ∨
-                                           ⌜int.nat n2 ≤ int.nat x⌝ ∨
+                                                   ⌜uint.nat x ≤ uint.nat n1⌝ ∨
+                                           ⌜uint.nat n2 ≤ uint.nat x⌝ ∨
                                            ((λ x, P) x))%I
   (at level 200, n1 at level 10, n2 at level 10, x at level 1, right associativity,
    format "[∗ range]  n1 < x < n2 ,  P") : bi_scope.
@@ -70,23 +70,23 @@ Definition prepare_lock_inv γ γtok (pn:u64) (numPrepared_ptr highestVal_ptr hi
   "HnumPrepared" ∷ numPrepared_ptr ↦[uint64T] #numPrepared ∗
   "HhighestPn" ∷ highestPn_ptr ↦[uint64T] #highestPn ∗
   "HhighestVal" ∷ highestVal_ptr ↦[uint64T] #highestVal ∗
-  "%HpreparedSize" ∷ ⌜size S = int.nat numPrepared⌝ ∗
+  "%HpreparedSize" ∷ ⌜size S = uint.nat numPrepared⌝ ∗
   "Htoks" ∷ ([∗ set] pid ∈ S, pid ↪[γtok] ()) ∗
-  "#Hhighest_ptsto" ∷ pn_ptsto f γ (int.nat highestPn) highestVal ∗
+  "#Hhighest_ptsto" ∷ pn_ptsto f γ (uint.nat highestPn) highestVal ∗
   "#Hrejected" ∷ ([∗ set] pid ∈ S,
-                  ([∗ range] highestPn < pn' < pn, rejected γ pid (int.nat pn'))) ∗
+                  ([∗ range] highestPn < pn' < pn, rejected γ pid (uint.nat pn'))) ∗
   "%Hvalid" ∷ ⌜is_valid f S⌝
                   (* ([∗ set] pn' ∈ (fin_to_set u64),
-      ⌜int.nat pn' ≤ int.nat highestPn⌝ ∨ ⌜int.nat pn ≤ int.nat pn'⌝ ∨
-      (rejected γ pid (int.nat pn)))) *)
+      ⌜uint.nat pn' ≤ uint.nat highestPn⌝ ∨ ⌜uint.nat pn ≤ uint.nat pn'⌝ ∨
+      (rejected γ pid (uint.nat pn)))) *)
 .
 
 Definition propose_lock_inv γ γtok (pn:u64) (numAccepted_ptr:loc) : iProp Σ :=
   ∃ (numAccepted:u64) (S:gset nat),
   "HnumAccepted" ∷ numAccepted_ptr ↦[uint64T] #numAccepted ∗
-  "%HacceptedSize" ∷ ⌜size S = int.nat numAccepted⌝ ∗
+  "%HacceptedSize" ∷ ⌜size S = uint.nat numAccepted⌝ ∗
   "Htoks" ∷ ([∗ set] pid ∈ S, pid ↪[γtok] ()) ∗
-  "#Haccepted" ∷ ([∗ set] pid ∈ S, accepted γ pid (int.nat pn)) ∗
+  "#Haccepted" ∷ ([∗ set] pid ∈ S, accepted γ pid (uint.nat pn)) ∗
   "%Hvalid" ∷ ⌜is_valid f S⌝
 .
 
@@ -170,7 +170,7 @@ Proof.
   iMod (readonly_load with "HpeersSl") as (peersq) "HH".
   iDestruct (own_slice_small_sz with "HH") as %HpeersSz.
 
-  wp_apply (typed_slice.wp_forSlice (V:=loc) (λ i, [∗ list] k ↦ pid ∈ pids, ⌜k < int.nat i⌝ ∨ pid ↪[γtok] ()
+  wp_apply (typed_slice.wp_forSlice (V:=loc) (λ i, [∗ list] k ↦ pid ∈ pids, ⌜k < uint.nat i⌝ ∨ pid ↪[γtok] ()
                         )%I with "[] [$HH Hγtoks]").
   {
     iIntros.
@@ -181,7 +181,7 @@ Proof.
     iDestruct (big_sepL2_lookup_1_some with "Hclerks") as %Heq.
     { done. }
     destruct Heq as [pid' HpidLookup].
-    iDestruct (big_sepL_lookup_acc_impl (int.nat i) with "Hpre") as "[Hγtok Hγtoks]".
+    iDestruct (big_sepL_lookup_acc_impl (uint.nat i) with "Hpre") as "[Hγtok Hγtoks]".
     { naive_solver. }
     iDestruct "Hγtok" as "[%Hbad|Hγtok]".
     { exfalso. word. }
@@ -284,11 +284,11 @@ Proof.
                 iApply (big_sepS_intro).
                 iModIntro.
                 iIntros (y?).
-                assert (int.nat y ≤ int.nat reply.(Prep_Pn) ∨
-                        int.nat reply.(Prep_Pn) < int.nat y) as [Hdone|Hineq] by word.
+                assert (uint.nat y ≤ uint.nat reply.(Prep_Pn) ∨
+                        uint.nat reply.(Prep_Pn) < uint.nat y) as [Hdone|Hineq] by word.
                 { iLeft. done. }
-                assert (int.nat pn ≤ int.nat y ∨
-                        int.nat y < int.nat pn) as [Hdone|Hineq2] by word.
+                assert (uint.nat pn ≤ uint.nat y ∨
+                        uint.nat y < uint.nat pn) as [Hdone|Hineq2] by word.
                 { iRight; iLeft. done. }
                 iRight; iRight.
                 iApply "HrejectedPost".
@@ -365,11 +365,11 @@ Proof.
               iApply (big_sepS_intro).
               iModIntro.
               iIntros (y?).
-              assert (int.nat y ≤ int.nat highestPn ∨
-                      int.nat highestPn < int.nat y) as [Hdone|Hineq] by word.
+              assert (uint.nat y ≤ uint.nat highestPn ∨
+                      uint.nat highestPn < uint.nat y) as [Hdone|Hineq] by word.
               { iLeft. done. }
-              assert (int.nat pn ≤ int.nat y ∨
-                      int.nat y < int.nat pn) as [Hdone|Hineq2] by word.
+              assert (uint.nat pn ≤ uint.nat y ∨
+                      uint.nat y < uint.nat pn) as [Hdone|Hineq2] by word.
               { iRight; iLeft. done. }
               iRight; iRight.
               iDestruct "Hpost" as "[_ Hpost]".
@@ -415,7 +415,7 @@ Proof.
     iLeft.
     iPureIntro.
     clear -i HindexLe.
-    word. (* XXX: Because int.Z i < int.Z blah -> int.Z i < 2^64 - 1 *)
+    word. (* XXX: Because uint.Z i < uint.Z blah -> uint.Z i < 2^64 - 1 *)
   } (* end of first for loop *)
   {
     iApply (big_sepL_impl with "Hγtoks").
@@ -443,26 +443,26 @@ Proof.
   wp_if_destruct.
   { (* Got enough promises *)
     wp_pures.
-    iAssert (pn_undec γ (int.nat pn)) with "[]" as "Hunproposed"; first admit. (* TODO: use majority election *)
+    iAssert (pn_undec γ (uint.nat pn)) with "[]" as "Hunproposed"; first admit. (* TODO: use majority election *)
     iMod (key_fact2 with "Hunproposed Hhighest_ptsto []") as "#Hptsto".
     {
       iModIntro.
       iIntros (???) "#Hcommitted".
       iDestruct (big_sepS_sepS with "Hrejected") as "Hrejected2".
-      iDestruct (big_sepS_elem_of _ _ (U64 pn'') with "Hrejected2") as "Hrejected3".
+      iDestruct (big_sepS_elem_of _ _ (W64 pn'') with "Hrejected2") as "Hrejected3".
       { set_solver. }
-      iAssert ([∗ set] x ∈ S, rejected γ x (int.nat pn''))%I with "[Hrejected3]" as "HmajorityRejected".
+      iAssert ([∗ set] x ∈ S, rejected γ x (uint.nat pn''))%I with "[Hrejected3]" as "HmajorityRejected".
       {
         iApply (big_sepS_impl with "Hrejected3").
         iModIntro. iIntros (??) "[%Hbad|[%Hbad|$]]".
         {
           exfalso.
-          assert (int.nat highestPn < int.nat pn'') by word.
+          assert (uint.nat highestPn < uint.nat pn'') by word.
           word.
         }
         {
           exfalso.
-          assert (int.nat pn'' < int.nat pn) by word.
+          assert (uint.nat pn'' < uint.nat pn) by word.
           word.
         }
       }
@@ -506,7 +506,7 @@ Proof.
     iClear "Hrejected".
     clear Hvalid HpreparedSize S.
     wp_loadField.
-    wp_apply (typed_slice.wp_forSlice (V:=loc) (λ i, [∗ list] k ↦ pid ∈ pids, ⌜k < int.nat i⌝ ∨ pid ↪[γtok] ()
+    wp_apply (typed_slice.wp_forSlice (V:=loc) (λ i, [∗ list] k ↦ pid ∈ pids, ⌜k < uint.nat i⌝ ∨ pid ↪[γtok] ()
                           )%I with "[] [$HH Hγtoks]").
     {
       clear Φ.
@@ -517,7 +517,7 @@ Proof.
       iDestruct (big_sepL2_lookup_1_some with "Hclerks") as %Heq.
       { done. }
       destruct Heq as [pid' HpidLookup].
-      iDestruct (big_sepL_lookup_acc_impl (int.nat i) with "Hpre") as "[Hγtok Hγtoks]".
+      iDestruct (big_sepL_lookup_acc_impl (uint.nat i) with "Hpre") as "[Hγtok Hγtoks]".
       { naive_solver. }
       iDestruct "Hγtok" as "[%Hbad|Hγtok]".
       { exfalso. word. }
@@ -609,7 +609,7 @@ Proof.
       iLeft.
       iPureIntro.
       clear -i HindexLe.
-      word. (* XXX: Because int.Z i < int.Z blah -> int.Z i < 2^64 - 1 *)
+      word. (* XXX: Because uint.Z i < uint.Z blah -> uint.Z i < 2^64 - 1 *)
     }
     {
       iApply (big_sepL_impl with "Hγtoks").
@@ -640,7 +640,7 @@ Proof.
       iRight.
       iExists highestVal.
       iFrame.
-      iMod (key_fact1 f mutexN γ (int.nat pn) highestVal with "[] Hptsto [Haccepted]").
+      iMod (key_fact1 f mutexN γ (uint.nat pn) highestVal with "[] Hptsto [Haccepted]").
       { admit. } (* FIXME: add this invariant somewhere *)
       {
         iExists S.

@@ -15,8 +15,8 @@ Definition P (src dst : u64) (r : dbmap) :=
   ∃ (sbal dbal : u64), r = view_xfer src dst sbal dbal.
 
 Definition rel_bals_amt (sbalr dbalr sbalw dbalw amt : u64) :=
-  (int.Z sbalr) - (int.Z amt) = (int.Z sbalw) ∧
-  (int.Z dbalw) - (int.Z amt) = (int.Z dbalr).
+  (uint.Z sbalr) - (uint.Z amt) = (uint.Z sbalw) ∧
+  (uint.Z dbalw) - (uint.Z amt) = (uint.Z dbalr).
 
 Definition Q (src dst : u64) (amt : u64) (r w : dbmap) :=
   ∃ (sbalr dbalr sbalw dbalw : u64),
@@ -254,7 +254,7 @@ Proof.
   }
   { (* Case ABORT. *)
     iIntros "Hdbpts".
-    iDestruct ("HAU" $! false (U64 0) (U64 0) with "[Hdbpts]") as "HAU"; last done.
+    iDestruct ("HAU" $! false (W64 0) (W64 0) with "[Hdbpts]") as "HAU"; last done.
     iApply view_dbpts_xfer; done.
   }
 Qed.

@@ -48,8 +48,8 @@ Definition is_inode_durable addr σ (addrs: list u64) : iProp Σ :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
     "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-    "Hhdr" ∷ int.Z addr d↦ hdr ∗
-    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b
+    "Hhdr" ∷ uint.Z addr d↦ hdr ∗
+    "Hdata" ∷ [∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), uint.Z a d↦ b
 .
 Local Hint Extern 1 (environments.envs_entails _ (is_inode_durable _ _ _)) => unfold is_inode_durable : core.
 
@@ -59,10 +59,10 @@ Theorem is_inode_durable_read addr σ addrs :
       "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
       "%Hencoded" ∷ ⌜block_encodes hdr ([EncUInt64 (length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "%Haddrs_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      "Hhdr" ∷ int.Z addr d↦ hdr ∗
-      "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b) ∗
-      "Hdurable" ∷ □(int.Z addr d↦ hdr -∗
-                    ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b) -∗
+      "Hhdr" ∷ uint.Z addr d↦ hdr ∗
+      "Hdata" ∷ ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), uint.Z a d↦ b) ∗
+      "Hdurable" ∷ □(uint.Z addr d↦ hdr -∗
+                    ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), uint.Z a d↦ b) -∗
                    is_inode_durable addr σ addrs).
 Proof.
   iNamed 1.
@@ -85,7 +85,7 @@ Proof.
 Qed.
 
 Lemma blocks_slice_length' bk_s bks bs :
-  blocks_slice bk_s bks bs -∗ ⌜length bks = int.nat bk_s.(Slice.sz)⌝.
+  blocks_slice bk_s bks bs -∗ ⌜length bks = uint.nat bk_s.(Slice.sz)⌝.
 Proof.
   iDestruct 1 as (?) "(Hs&_)".
   iDestruct (own_slice_sz with "Hs") as "%".
@@ -170,7 +170,7 @@ Proof. apply _. Qed.
 valid post-crash inode state, which we can then recover with the usual [Open]
 recovery procedure. *)
 Theorem init_inode addr :
-  int.Z addr d↦ block0 -∗ inode_cinv addr (inode.mk ∅ [] []).
+  uint.Z addr d↦ block0 -∗ inode_cinv addr (inode.mk ∅ [] []).
 Proof.
   iIntros "Hhdr".
   iExists [], block0.
@@ -219,8 +219,8 @@ Theorem wpc_Open k {d:loc} {addr σ} :
   {{{ inode_cinv addr σ }}}.
 Proof.
   iIntros (Φ Φc) "Hinode HΦ"; iNamed "Hinode".
-  iAssert (□ (int.Z addr d↦ hdr ∗
-              ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), int.Z a d↦ b) -∗
+  iAssert (□ (uint.Z addr d↦ hdr ∗
+              ([∗ list] a;b ∈ addrs;σ.(inode.durable_blocks), uint.Z a d↦ b) -∗
               inode_cinv addr σ))%I as "#Hinode".
   { iIntros "!> (?&?)". eauto 10 with iFrame. }
   iDestruct (big_sepL2_length with "Hdata") as %Hblocklen.
@@ -370,7 +370,7 @@ Theorem wpc_Inode__Read {k} {l k' P addr} {off: u64} :
   ∀ Φ Φc,
       "Hinode" ∷ is_inode l (S k') P addr ∗
       "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ ∀ σ mb,
-        ⌜mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! int.nat off⌝ ∗
+        ⌜mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! uint.nat off⌝ ∗
         ▷ P σ -∗ |NC={⊤}=> ▷ P σ ∗ (<disc> ▷ Φc ∧ ∀ s,
           match mb with Some b => (∃ q, is_block s q b) | None => ⌜s = Slice.nil⌝ end -∗ Φ (slice_val s))) -∗
     WPC Inode__Read #l #off @ (S k); ⊤ {{ Φ }} {{ Φc }}.
@@ -428,8 +428,8 @@ Proof.
       rewrite lookup_ge_None_2 //.
       rewrite app_length.
       (* XXX show that this sum doesn't overflow *)
-      assert (int.Z (word.add addr_s.(Slice.sz) buffered_s.(Slice.sz)) =
-              int.Z (addr_s.(Slice.sz)) + int.Z (buffered_s.(Slice.sz))) as Heq.
+      assert (uint.Z (word.add addr_s.(Slice.sz) buffered_s.(Slice.sz)) =
+              uint.Z (addr_s.(Slice.sz)) + uint.Z (buffered_s.(Slice.sz))) as Heq.
       { admit. }
       word.
     }
@@ -466,7 +466,7 @@ Proof.
     wpc_if_destruct.
     * wpc_pures.
       wpc_frame_seq.
-      destruct (list_lookup_lt _ addrs (int.nat off)) as [addr' Hlookup].
+      destruct (list_lookup_lt _ addrs (uint.nat off)) as [addr' Hlookup].
       { word. }
       wp_loadField.
       wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
@@ -535,10 +535,10 @@ Proof.
       iEval (setoid_rewrite is_block_fractional) in "His_blocks".
       iEval (rewrite big_sepL2_sep) in "His_blocks".
       iDestruct "His_blocks" as "(His_blocks1&His_blocks2)".
-      destruct (list_lookup_lt _ bks (int.nat (word.sub off addr_s.(Slice.sz)))) as [blk Hlookup].
+      destruct (list_lookup_lt _ bks (uint.nat (word.sub off addr_s.(Slice.sz)))) as [blk Hlookup].
       {
         assert (word.sub off (addr_s.(Slice.sz)) =
-                int.Z off - int.Z addr_s.(Slice.sz)) as ->.
+                uint.Z off - uint.Z addr_s.(Slice.sz)) as ->.
         { admit. }
         admit.
       }
@@ -563,8 +563,8 @@ Proof.
       iDestruct (big_sepL2_lookup_1_some with "[$]") as %Hlookup2; eauto.
       destruct Hlookup2 as (?&Hlookup2).
       iDestruct (big_sepL2_lookup with "[$]") as "Hlookup"; eauto.
-      assert (int.nat off - length σ.(inode.durable_blocks) =
-              int.nat (word.sub off addr_s.(Slice.sz)))%nat as Heq_word.
+      assert (uint.nat off - length σ.(inode.durable_blocks) =
+              uint.nat (word.sub off addr_s.(Slice.sz)))%nat as Heq_word.
       { word. }
       rewrite Heq_word Hlookup2. eauto.
 Admitted.
@@ -573,7 +573,7 @@ Theorem wpc_Inode__Read_triple {k} {l k' P addr} {off: u64} Q :
   (S k < k')%nat →
   {{{ "Hinode" ∷ is_inode l (S k') P addr ∗
       "Hfupd" ∷ (∀ σ σ' mb,
-        ⌜σ' = σ ∧ mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! int.nat off⌝ ∗
+        ⌜σ' = σ ∧ mb = (σ.(inode.durable_blocks) ++ σ.(inode.buffered_blocks)) !! uint.nat off⌝ ∗
         ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q mb)
   }}}
     Inode__Read #l #off @ (S k); ⊤
@@ -600,7 +600,7 @@ Theorem wpc_Inode__Size {k} {l k' P addr}:
   ∀ Φ Φc,
       "Hinode" ∷ is_inode l (S k') P addr ∗
       "Hfupd" ∷ (<disc> ▷ Φc ∧ ▷ (∀ σ (sz: u64),
-          ⌜int.nat sz = inode.size σ⌝ ∗
+          ⌜uint.nat sz = inode.size σ⌝ ∗
           ▷ P σ -∗ |NC={⊤}=> ▷ P σ ∗ (<disc> ▷ Φc ∧ Φ (#sz: val)))) -∗
     WPC Inode__Size #l @ (S k); ⊤ {{ Φ }} {{ Φc }}.
 Proof.
@@ -674,7 +674,7 @@ Theorem wpc_Inode__Size_triple {k} {l k' P addr} (Q: u64 -> iProp Σ) (Qc: iProp
   {{{ "Hinode" ∷ is_inode l (S k') P addr ∗
       "HQc" ∷ (∀ a, Q a -∗ <disc> ▷ Qc) ∗
       "Hfupd" ∷ (<disc> ▷ Qc ∧ (∀ σ σ' sz,
-          ⌜σ' = σ ∧ int.nat sz = inode.size σ⌝ ∗
+          ⌜σ' = σ ∧ uint.nat sz = inode.size σ⌝ ∗
           ▷ P σ ={⊤}=∗ ▷ P σ' ∗ Q sz))
   }}}
     Inode__Size #l @ (S k); ⊤
@@ -700,7 +700,7 @@ Theorem wp_Inode__mkHdr {stk E} l addr_s addrs :
     Inode__mkHdr #l @ stk; E
   {{{ s b, RET (slice_val s);
       is_block s 1 b ∗
-      ⌜block_encodes b ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
+      ⌜block_encodes b ([EncUInt64 (W64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
   }}}.
@@ -782,7 +782,7 @@ Proof.
   iPureIntro. rewrite /= app_length in Hle. lia.
 Qed.
 
-Let Ψ (a: u64) := (∃ b, int.Z a d↦ b)%I.
+Let Ψ (a: u64) := (∃ b, uint.Z a d↦ b)%I.
 
 Theorem wpc_Inode__Append {k} {l k' P addr} q (b_s: Slice.t) (b0: Block) :
   (S k < k')%nat →
@@ -973,7 +973,7 @@ Proof.
     wpc_frame.
     wp_loadField.
     wp_apply wp_SliceSkip.
-    { cut (1 ≤ int.nat buffered_s.(Slice.sz)); first by word.
+    { cut (1 ≤ uint.nat buffered_s.(Slice.sz)); first by word.
       rewrite -Hlen' Hlen Hbuf_list /=. lia.
     }
     wp_apply (wp_storeField with "buffered").
@@ -988,7 +988,7 @@ Proof.
     iSplit; first by iFromCache.
     iIntros ">Hb Hreserved".
     iDeexHyp "Hb".
-    iAssert (□ ∀ b0, int.Z a d↦ b0 ∗
+    iAssert (□ ∀ b0, uint.Z a d↦ b0 ∗
                       (Φc) -∗
                       (Φc ∗ block_cinv Ψ γalloc a))%I as "#Hbc".
     { iIntros "!>" (b') "(Hb & Hfupd)".
@@ -1360,7 +1360,7 @@ Proof.
     (* TODO: argue that buffered_blocks must be = [] *)
     iDestruct (own_slice_sz with "Hbuffered") as "%".
     iDestruct (big_sepL2_length with "His_blocks") as "%".
-    assert (int.nat buffered_s0.(Slice.sz) = 0)%nat.
+    assert (uint.nat buffered_s0.(Slice.sz) = 0)%nat.
     { admit. }
     assert (Hemptybuf: σ0.(inode.buffered_blocks) = []).
     { apply nil_length_inv. lia. }

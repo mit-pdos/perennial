@@ -28,7 +28,7 @@ Local Definition has_partial_map_encoding (enc:list u8) (fullsize: u64) (m:gmap 
   enc = (u64_le fullsize) ++ encode_maplist l.
 
 Definition has_string_map_encoding (enc:list u8) (m:gmap string string) : Prop :=
-  int.Z (size m) = size m ∧ has_partial_map_encoding enc (size m) m.
+  uint.Z (size m) = size m ∧ has_partial_map_encoding enc (size m) m.
 
 Lemma wp_EncodeStringMap mptr m :
   {{{
@@ -141,23 +141,23 @@ Proof.
   wp_store. wp_store. wp_load.
   wp_apply wp_ref_to; first by val_ty. iIntros (li) "Hli". wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ s q,
-              "Hm" ∷ own_map mptr 1 (list_to_map (take (int.nat i) ls)) ∗
+              "Hm" ∷ own_map mptr 1 (list_to_map (take (uint.nat i) ls)) ∗
               "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
-              "Hs" ∷ own_slice_small s byteT q (encode_maplist (drop (int.nat i) ls) ++ enc_rest)
+              "Hs" ∷ own_slice_small s byteT q (encode_maplist (drop (uint.nat i) ls) ++ enc_rest)
   )%I with "[] [$Hli Hm Hl Hs]"); first word.
   2:{ repeat iExists _. iFrame. }
   { (* core loop *)
     clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
-    replace (int.nat (word.add i 1)) with (1 + int.nat i)%nat by word.
-    assert (is_Some (ls !! (int.nat i))) as [[k data] Hk].
+    replace (uint.nat (word.add i 1)) with (1 + uint.nat i)%nat by word.
+    assert (is_Some (ls !! (uint.nat i))) as [[k data] Hk].
     { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.
       rewrite Hls. word. }
     rewrite -(take_drop_middle _ _ _ Hk) in Hls Hnodup.
     move:Hnodup. clear Hls.
     erewrite take_S_r by done.
     rewrite (drop_S _ _ _ Hk).
-    set ls_head := take (int.nat i) ls.
-    set ls_tail := drop (1+int.nat i) ls.
+    set ls_head := take (uint.nat i) ls.
+    set ls_tail := drop (1+uint.nat i) ls.
     intros Hnodup.
     rewrite encode_maplist_cons -!app_assoc.
     wp_apply wp_ref_of_zero; first done.

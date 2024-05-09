@@ -10,7 +10,7 @@ Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
   is_KVShardServer s γ -∗
   {{{
        own_MoveShardRequest args_ptr args ∗
-       ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
+       ⌜uint.Z args.(MR_Sid) < uNSHARD⌝ ∗
        is_shard_server args.(MR_Dst) γsh ∗
        ⌜ γsh.(kv_gn) = γ.(kv_gn) ⌝
   }}}
@@ -69,7 +69,7 @@ Proof.
   iNamed 1.
   iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
 
-  assert (∃ b, shardMapping !! int.nat args.(MR_Sid) = Some b) as [? ?].
+  assert (∃ b, shardMapping !! uint.nat args.(MR_Sid) = Some b) as [? ?].
   {
     eapply list_lookup_lt.
     word.
@@ -200,9 +200,9 @@ Proof.
 
     assert (x ≠ args.(MR_Sid)).
     { set_solver. }
-    assert (int.nat x ≠ int.nat args.(MR_Sid)).
+    assert (uint.nat x ≠ uint.nat args.(MR_Sid)).
     {
-      destruct (bool_decide (int.Z x = int.Z args.(MR_Sid))) as [|] eqn:X.
+      destruct (bool_decide (uint.Z x = uint.Z args.(MR_Sid))) as [|] eqn:X.
       {
         apply bool_decide_eq_true in X.
         apply word.unsigned_inj in X.

@@ -12,10 +12,10 @@ Section goose_lang.
 
   Definition EncodeUInt32: val :=
     λ: "n" "p",
-    "p" +ₗ #0 <-[u8T] to_u8 ("n" ≫ #(U32 $ 0*8));;
-    "p" +ₗ #1 <-[u8T] to_u8 ("n" ≫ #(U32 $ 1*8));;
-    "p" +ₗ #2 <-[u8T] to_u8 ("n" ≫ #(U32 $ 2*8));;
-    "p" +ₗ #3 <-[u8T] to_u8 ("n" ≫ #(U32 $ 3*8)).
+    "p" +ₗ #0 <-[u8T] to_u8 ("n" ≫ #(W32 $ 0*8));;
+    "p" +ₗ #1 <-[u8T] to_u8 ("n" ≫ #(W32 $ 1*8));;
+    "p" +ₗ #2 <-[u8T] to_u8 ("n" ≫ #(W32 $ 2*8));;
+    "p" +ₗ #3 <-[u8T] to_u8 ("n" ≫ #(W32 $ 3*8)).
 
   Definition DecodeUInt32: val :=
     λ: "p",
@@ -23,7 +23,7 @@ Section goose_lang.
     let: "v1" := to_u32 ![u8T]("p" +ₗ #1) in
     let: "v2" := to_u32 ![u8T]("p" +ₗ #2) in
     let: "v3" := to_u32 ![u8T]("p" +ₗ #3) in
-    "v0" `or` ("v1" `or` ("v2" `or` "v3" ≪ #(U32 8)) ≪ #(U32 8)) ≪ #(U32 8).
+    "v0" `or` ("v1" `or` ("v2" `or` "v3" ≪ #(W32 8)) ≪ #(W32 8)) ≪ #(W32 8).
 
   Definition EncodeUInt64: val :=
     λ: "n" "p",
@@ -48,7 +48,7 @@ Section goose_lang.
     let: "v6" := to_u64 ![u8T]("p" +ₗ #6) in
     let: "v7" := to_u64 ![u8T]("p" +ₗ #7) in
     "v0" `or` ("v1" `or` ("v2" `or` ("v3" `or` ("v4" `or` ("v5" `or` ("v6" `or` "v7"
-      ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8)) ≪ #(U64 8).
+      ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8).
 
   Definition UInt64Put: val :=
     λ: "p" "n",

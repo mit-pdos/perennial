@@ -215,14 +215,14 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     bts <- mget;
       let '(σ,g) := fst bts in
-      _ <- mlift (σ.(world) !! int.Z a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
+      _ <- mlift (σ.(world) !! uint.Z a) ("Disk WriteOp failed: No block at write address " ++ (pretty a));
       b <- mlift (read_block_from_heap σ l) ("Disk WriteOp failed: Read from heap failed at location " ++ (pretty l));
-      _ <- mput ((set world <[ int.Z a := b ]> σ, g), snd bts);
+      _ <- mput ((set world <[ uint.Z a := b ]> σ, g), snd bts);
       mret (Val $ LitV (LitUnit))
   | (SizeOp, LitV LitUnit) =>
     bts <- mget;
     let '(σ,g) := fst (bts : btstate) in
-      mret (Val $ LitV $ LitInt (U64 (disk_size σ.(@world _ disk_model))))
+      mret (Val $ LitV $ LitInt (W64 (disk_size σ.(@world _ disk_model))))
   | _ => interpret_types.mfail ("DiskOp failed: Invalid argument types for " ++ (pretty op))
   end.
 
@@ -275,7 +275,7 @@ Proof.
     destruct arg2; try by inversion H1.
     destruct l; try by inversion H1.
     simpl in H1.
-    destruct (world σ !! int.Z n) eqn:disk_at_n; rewrite disk_at_n in H1; last by inversion H1.
+    destruct (world σ !! uint.Z n) eqn:disk_at_n; rewrite disk_at_n in H1; last by inversion H1.
     destruct (read_block_from_heap σ l) eqn:block_at_l; try by inversion H1.
     simpl in H1.
     inversion H1.

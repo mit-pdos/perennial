@@ -17,17 +17,17 @@ Local Fixpoint decode_dbmap (v : val) : dbmap :=
 
 Local Definition decode_ev_read (v : val) : option action :=
   match v with
-  | (#(LitInt tid), #(LitInt key))%V => Some (ActRead (int.nat tid) key)
+  | (#(LitInt tid), #(LitInt key))%V => Some (ActRead (uint.nat tid) key)
   | _ => None
   end.
 Local Definition decode_ev_abort (v : val) : option action :=
   match v with
-  | #(LitInt tid) => Some (ActAbort (int.nat tid))
+  | #(LitInt tid) => Some (ActAbort (uint.nat tid))
   | _ => None
   end.
 Local Definition decode_ev_commit (v : val) : option action :=
   match v with
-  | (#(LitInt tid), m)%V => Some (ActCommit (int.nat tid) (decode_dbmap m))
+  | (#(LitInt tid), m)%V => Some (ActCommit (uint.nat tid) (decode_dbmap m))
   | _ => None
   end.
 
@@ -69,7 +69,7 @@ Proof.
 Qed.
 
 Lemma wp_ResolveRead γ p (tid key : u64) (ts : nat) :
-  ⊢ {{{ ⌜int.nat tid = ts⌝ }}}
+  ⊢ {{{ ⌜uint.nat tid = ts⌝ }}}
     <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveRead #p #tid #key @ ∅
     <<< ∃ acs', ⌜acs = ActRead ts key :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
@@ -90,7 +90,7 @@ Proof.
 Qed.
 
 Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
-  ⊢ {{{ ⌜int.nat tid = ts⌝ }}}
+  ⊢ {{{ ⌜uint.nat tid = ts⌝ }}}
     <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveAbort #p #tid @ ∅
     <<< ∃ acs', ⌜acs = ActAbort ts :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
@@ -135,27 +135,27 @@ Proof.
   iNamed "Hwrbuf". wp_loadField. wp_pures.
   iDestruct (own_slice_split with "HentsS") as "[HentsS HentsC]".
   wp_apply (wp_forSlice (λ i, ∃ m' v,
-    ⌜decode_dbmap v = m' ∧ m' = list_to_map (wrbuf_prelude.wrent_to_key_dbval <$> (take (int.nat i) ents))⌝ ∗ l ↦ v
+    ⌜decode_dbmap v = m' ∧ m' = list_to_map (wrbuf_prelude.wrent_to_key_dbval <$> (take (uint.nat i) ents))⌝ ∗ l ↦ v
   )%I with "[] [Hl $HentsS]").
   2:{ iExists ∅, _. iFrame. iPureIntro. split; done. }
   { clear Φ. iIntros (i ent Φ) "!# (I & %Hi & %Hent) HΦ".
     iDestruct "I" as (m' v) "([%Hdecode %Hm'] & Hl)".
     wp_pures. rewrite ->list_lookup_fmap in Hent.
-    destruct (ents !! int.nat i) as [[[[key str'] present] tpl]|] eqn:Hent'.
+    destruct (ents !! uint.nat i) as [[[[key str'] present] tpl]|] eqn:Hent'.
     2:{ exfalso. done. }
     rewrite /= /wrent_to_val /= in Hent. inversion_clear Hent. wp_pures.
     wp_apply (wp_load with "Hl"). iIntros "Hl".
     wp_apply (wp_store with "Hl"). iIntros "Hl".
     iApply "HΦ". iExists (<[key:=to_dbval present str']> m'), _. iFrame "Hl". iPureIntro. split.
     - simpl. rewrite Hdecode. done.
-    - replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    - replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
       erewrite take_S_r; last done.
       rewrite fmap_app list_to_map_app -Hm' /=.
       rewrite [_ m']insert_union_singleton_r //.
       apply not_elem_of_dom. rewrite Hm'. rewrite dom_list_to_map_L.
       apply not_elem_of_list_to_set. apply NoDup_app_singleton.
       rewrite wrents_to_key_dbval in HNoDup.
-      apply (nodup_take _ (S (int.nat i))) in HNoDup.
+      apply (nodup_take _ (S (uint.nat i))) in HNoDup.
       erewrite take_S_r in HNoDup.
       2:{ rewrite !list_lookup_fmap Hent' //. }
       rewrite !fmap_take. exact HNoDup. }
@@ -178,7 +178,7 @@ Qed.
 Lemma wp_ResolveCommit
       γ p (tid : u64) (ts : nat) (wrbuf : loc)
       (m : dbmap) (tpls : gmap u64 loc) :
-  ⊢ {{{ ⌜int.nat tid = ts⌝ ∗ own_wrbuf wrbuf m tpls }}}
+  ⊢ {{{ ⌜uint.nat tid = ts⌝ ∗ own_wrbuf wrbuf m tpls }}}
     <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveCommit #p #tid #wrbuf @ ∅
     <<< ∃ acs', ⌜acs = ActCommit ts m :: acs'⌝ ∗ mvcc_proph γ p acs' >>>

@@ -192,7 +192,7 @@ Qed.
 Theorem wp_MapLen stk E mref m :
   {{{ own_map mref 1 m }}}
     MapLen #mref @ stk; E
-  {{{ RET #(size m); ⌜size m = int.nat (size m)⌝ ∗ own_map mref 1 m }}}.
+  {{{ RET #(size m); ⌜size m = uint.nat (size m)⌝ ∗ own_map mref 1 m }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "Hm HΦ".
   iDestruct (own_map_untype with "Hm") as "Hm".

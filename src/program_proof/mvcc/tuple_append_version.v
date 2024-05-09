@@ -9,7 +9,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Theorem wp_tuple__appendVersion tuple (tid : u64) (val : string) owned tidlast vers :
   {{{ own_tuple_phys tuple owned tidlast vers }}}
     Tuple__appendVersion #tuple #tid #(LitString val)
-  {{{ RET #(); own_tuple_phys tuple false (U64 (int.Z tid + 1)) (vers ++ [(tid, false, val)]) }}}.
+  {{{ RET #(); own_tuple_phys tuple false (W64 (uint.Z tid + 1)) (vers ++ [(tid, false, val)]) }}}.
 Proof.
   iIntros (Φ) "Hphys HΦ".
   iNamed "Hphys".
@@ -52,7 +52,7 @@ Theorem wp_tuple__AppendVersion
         tuple (tid : u64) (val : string) (key : u64) (sid : u64)
         (phys : list dbval) γ :
   {{{ active_tid γ tid sid ∗
-      own_tuple_locked tuple key (int.nat tid) phys (extend (S (int.nat tid)) phys ++ [Value val]) γ
+      own_tuple_locked tuple key (uint.nat tid) phys (extend (S (uint.nat tid)) phys ++ [Value val]) γ
   }}}
     Tuple__AppendVersion #tuple #tid #(LitString val)
   {{{ RET #(); active_tid γ tid sid }}}.
@@ -85,8 +85,8 @@ Proof.
   iMod ("HinvgcC" with "HinvgcO") as "_".
   iModIntro.
   wp_loadField.
-  assert (HlenN : length phys = S (int.nat tidlast)) by word.
-  iAssert (⌜int.Z tid < 2 ^ 64 - 1⌝)%I with "[Hactive]" as "%Htidmax".
+  assert (HlenN : length phys = S (uint.nat tidlast)) by word.
+  iAssert (⌜uint.Z tid < 2 ^ 64 - 1⌝)%I with "[Hactive]" as "%Htidmax".
   { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
   wp_apply (release_spec with "[-HΦ Hactive]").
   { iFrame "Hlock Hlocked".
@@ -94,7 +94,7 @@ Proof.
     erewrite extend_last_Some; last apply Hlast.
     rewrite -app_assoc.
     set phys' := phys ++ _ ++ _.
-    iExists false, (U64 (int.Z tid + 1)), tidgc, _, phys'.
+    iExists false, (W64 (uint.Z tid + 1)), tidgc, _, phys'.
     iFrame "Hphys Hptuple".
     iNamed "Hwellformed".
     iSplit.
@@ -102,7 +102,7 @@ Proof.
       iPureIntro.
       simpl.
       intros tidx Htidx.
-      destruct (decide (int.Z tidx ≤ int.Z tidlast)); subst phys'.
+      destruct (decide (uint.Z tidx ≤ uint.Z tidlast)); subst phys'.
       - (* Reading the non-extension part. *)
         rewrite lookup_app_l; last word.
         rewrite HtupleAbs; last word.
@@ -112,7 +112,7 @@ Proof.
       - (* Reading the extension part. *)
         rewrite lookup_app_r; last word.
         apply Znot_le_gt in n.
-        destruct (decide (int.Z tidx ≤ int.Z tid)).
+        destruct (decide (uint.Z tidx ≤ uint.Z tid)).
         + (* Reading the old value. *)
           rewrite lookup_app_l; last first.
           { rewrite HlenN replicate_length. word. }
@@ -124,9 +124,9 @@ Proof.
           apply Znot_le_gt in n0.
           rewrite lookup_app_r; last first.
           { rewrite HlenN replicate_length. word. }
-          replace (int.Z (U64 _)) with (int.Z tid + 1) in Htidx by word.
-          assert (Etidx : int.Z tidx = int.Z tid + 1) by word.
-          replace (int.nat tidx - _ - _)%nat with 0%nat; last first.
+          replace (uint.Z (W64 _)) with (uint.Z tid + 1) in Htidx by word.
+          assert (Etidx : uint.Z tidx = uint.Z tid + 1) by word.
+          replace (uint.nat tidx - _ - _)%nat with 0%nat; last first.
           { rewrite replicate_length. word. }
           simpl. f_equal.
           rewrite (spec_lookup_snoc_r _ _ _ tid); [done | auto | word].
@@ -155,7 +155,7 @@ Proof.
         apply Forall_app_2.
         - apply (Forall_impl _ _ _ HtidlastGt).
           intros verx Hverx.
-          trans (int.Z tid); word.
+          trans (uint.Z tid); word.
         - rewrite Forall_singleton. simpl. word.
       }
       split.

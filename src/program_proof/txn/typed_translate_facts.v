@@ -23,7 +23,7 @@ Proof.
 Qed.
 
 Lemma kind_heap0_ok kinds :
-  (∀ (a: u64), a ∈ dom kinds → int.Z a * 4096 * 8 < 2^64) →
+  (∀ (a: u64), a ∈ dom kinds → uint.Z a * 4096 * 8 < 2^64) →
   map_Forall  (kinds_pointsto_valid kinds) (recovery_proof.kind_heap0 kinds).
 Proof.
   intros Hdom.
@@ -41,7 +41,7 @@ Proof.
     apply elem_of_dom_2 in Hlookup.
     apply Hdom in Hlookup.
     change disk.block_bytes with (Z.to_nat 4096) in *.
-    assert (int.Z off < Z.to_nat 4096 * 8).
+    assert (uint.Z off < Z.to_nat 4096 * 8).
     { destruct k.
       - apply recovery_proof.lookup_bit0_map in Ho as [? ->]; simpl.
         unfold disk.block_bytes in *.

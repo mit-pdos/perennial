@@ -124,7 +124,7 @@ Proof.
 Qed.
 
 Lemma block_array_to_slice_raw l q b :
-  pointsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = int.nat 4096⌝.
+  pointsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = uint.nat 4096⌝.
 Proof.
   iIntros "Hm".
   rewrite /own_slice_small.
@@ -154,9 +154,9 @@ Local Ltac solve_atomic :=
 
 Theorem wp_Write_atomic (a: u64) s q b :
   ⊢ {{{ own_slice_small s byteT q (Block_to_vals b) }}}
-  <<< ∀∀ aset b0, int.Z a d↦[aset] b0 >>>
+  <<< ∀∀ aset b0, uint.Z a d↦[aset] b0 >>>
     Write #a (slice_val s) @ ∅
-  <<< ∃ b',⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b >>>
+  <<< ∃ b',⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b >>>
   {{{ RET #(); own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
@@ -187,8 +187,8 @@ Qed.
 
 Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
   {{{ own_slice_small s byteT q (Block_to_vals b) ∗
-      (|NC={⊤,E'}=> ∃ aset b0, int.Z a d↦[aset] b0 ∗
-                    (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b -∗ |NC={E',⊤}=> Q)) }}}
+      (|NC={⊤,E'}=> ∃ aset b0, uint.Z a d↦[aset] b0 ∗
+                    (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b -∗ |NC={E',⊤}=> Q)) }}}
     Write #a (slice_val s)
   {{{ RET #(); own_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
@@ -202,10 +202,10 @@ Proof.
 Qed.
 
 Theorem wp_Write (a: u64) aset s q b0 b :
-  {{{ int.Z a d↦[aset] b0 ∗ own_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ uint.Z a d↦[aset] b0 ∗ own_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s)
   {{{ RET #();
-      ∃ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b ∗ own_slice_small s byteT q (Block_to_vals b) }}}.
+      ∃ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b ∗ own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "[Hda Hs]".
@@ -217,7 +217,7 @@ Proof.
 Qed.
 
 Theorem wp_Write' (z: Z) (a: u64) aset s q b b0 :
-  {{{ ⌜int.Z a = z⌝ ∗ ▷ (z d↦[aset] b0 ∗ own_slice_small s byteT q (Block_to_vals b)) }}}
+  {{{ ⌜uint.Z a = z⌝ ∗ ▷ (z d↦[aset] b0 ∗ own_slice_small s byteT q (Block_to_vals b)) }}}
     Write #a (slice_val s)
   {{{ RET #();
       ∃ b', ⌜ b' = aset ∨ b' = b ⌝ ∗
@@ -229,9 +229,9 @@ Proof.
 Qed.
 
 Lemma wp_Read_atomic (a: u64) q :
-  ⊢ <<< ∀∀ aset b, int.Z a d↦{q}[aset] b >>>
+  ⊢ <<< ∀∀ aset b, uint.Z a d↦{q}[aset] b >>>
       Read #a @ ∅
-    <<< int.Z a d↦{q}[aset] b >>>
+    <<< uint.Z a d↦{q}[aset] b >>>
     {{{ s, RET slice_val s; is_block_full s b }}}.
 Proof.
   iIntros "!#" (Φ) "Hupd".
@@ -254,9 +254,9 @@ Qed.
 
 Lemma wp_ReadTo_atomic (a: u64) b0 s q :
   ⊢ {{{ is_block_full s b0 }}}
-  <<< ∀∀ aset b, int.Z a d↦{q}[aset] b >>>
+  <<< ∀∀ aset b, uint.Z a d↦{q}[aset] b >>>
       ReadTo #a (slice_val s) @ ∅
-    <<< int.Z a d↦{q}[aset] b >>>
+    <<< uint.Z a d↦{q}[aset] b >>>
     {{{ RET #(); is_block_full s b }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
@@ -300,7 +300,7 @@ Proof.
 Qed.
 
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
-  {{{ |NC={⊤,E'}=> ∃ aset b, int.Z a d↦{q}[aset] b ∗ (int.Z a d↦{q}[aset] b -∗ |NC={E',⊤}=> Q b) }}}
+  {{{ |NC={⊤,E'}=> ∃ aset b, uint.Z a d↦{q}[aset] b ∗ (uint.Z a d↦{q}[aset] b -∗ |NC={E',⊤}=> Q b) }}}
     Read #a
   {{{ s b, RET slice_val s;
       Q b ∗ is_block_full s b }}}.
@@ -315,10 +315,10 @@ Proof.
 Qed.
 
 Lemma wp_Read (a: u64) q b aset :
-  {{{ int.Z a d↦{q}[aset] b }}}
+  {{{ uint.Z a d↦{q}[aset] b }}}
     Read #a
   {{{ s, RET slice_val s;
-      int.Z a d↦{q}[aset] b ∗ is_block_full s b }}}.
+      uint.Z a d↦{q}[aset] b ∗ is_block_full s b }}}.
 Proof.
   iIntros (Φ) "Hda HΦ".
   wp_apply wp_Read_atomic.
@@ -433,12 +433,12 @@ Qed.
 
 
 Lemma wpc_Read stk E1 (a: u64) aset q b :
-  {{{ int.Z a d↦{q}[aset] b }}}
+  {{{ uint.Z a d↦{q}[aset] b }}}
     Read #a @ stk; E1
   {{{ s, RET slice_val s;
-      int.Z a d↦{q}[aset] b ∗
+      uint.Z a d↦{q}[aset] b ∗
       own_slice s byteT 1%Qp (Block_to_vals b) }}}
-  {{{ int.Z a d↦{q}[aset] b }}}.
+  {{{ uint.Z a d↦{q}[aset] b }}}.
 Proof.
   iIntros (Φ Φc) "Hda HΦ".
   rewrite /Read.
@@ -469,8 +469,8 @@ Qed.
 Theorem wpc_Write_ncfupd {stk E1} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
-    (Φc ∧ |NC={E1,E1'}=> ∃ aset b0, int.Z a d↦[aset] b0 ∗
-            ▷ (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b -∗ |NC={E1',E1}=>
+    (Φc ∧ |NC={E1,E1'}=> ∃ aset b0, uint.Z a d↦[aset] b0 ∗
+            ▷ (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b -∗ |NC={E1',E1}=>
           Φc ∧ (is_block s q b -∗ Φ #()))) -∗
     WPC Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
 Proof.
@@ -498,7 +498,7 @@ Proof.
   - iModIntro. iRight in "HQ". iApply "HQ".
     iFrame.
     destruct s; simpl in Hsz.
-    replace sz with (U64 4096).
+    replace sz with (W64 4096).
     + iDestruct (block_array_to_slice_raw with "Hmapsto") as "[? %]".
       rewrite /is_block /own_slice_small. iFrame.
       iPureIntro. simpl. split; first done. simpl in Hwf. word.
@@ -511,8 +511,8 @@ Qed.
 Theorem wpc_Write_fupd {stk E1} E1' (a: u64) s q b :
   ∀ Φ Φc,
     is_block s q b -∗
-    (Φc ∧ |={E1,E1'}=> ∃ aset b0, int.Z a d↦[aset] b0 ∗
-           ▷ (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b ={E1',E1}=∗
+    (Φc ∧ |={E1,E1'}=> ∃ aset b0, uint.Z a d↦[aset] b0 ∗
+           ▷ (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b ={E1',E1}=∗
           Φc ∧ (is_block s q b -∗ Φ #()))) -∗
     WPC Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
 Proof.
@@ -527,7 +527,7 @@ Qed.
 
 Theorem wpc_Write_fupd_triple {stk E1} E1' (Q Qc: iProp Σ) (a: u64) s q b :
   {{{ is_block s q b ∗
-      (Qc ∧ |={E1,E1'}=> ∃ aset b0, int.Z a d↦[aset] b0 ∗ ▷ (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b ={E1',E1}=∗ Qc ∧ Q)) }}}
+      (Qc ∧ |={E1,E1'}=> ∃ aset b0, uint.Z a d↦[aset] b0 ∗ ▷ (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b ={E1',E1}=∗ Qc ∧ Q)) }}}
     Write #a (slice_val s) @ stk; E1
   {{{ RET #(); is_block s q b ∗ Qc ∧ Q }}}
   {{{ Qc }}}.
@@ -544,10 +544,10 @@ Proof.
 Qed.
 
 Theorem wpc_Write' stk E1 (a: u64) aset s q b0 b :
-  {{{ int.Z a d↦[aset] b0 ∗ is_block s q b }}}
+  {{{ uint.Z a d↦[aset] b0 ∗ is_block s q b }}}
     Write #a (slice_val s) @ stk; E1
-  {{{ RET #(); ∃ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b ∗ is_block s q b }}}
-  {{{ (int.Z a d↦[aset] b0) ∨ (∃ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b) }}}.
+  {{{ RET #(); ∃ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b ∗ is_block s q b }}}
+  {{{ (uint.Z a d↦[aset] b0) ∨ (∃ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ uint.Z a d↦[b'] b) }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "[Hda Hs]".
@@ -566,10 +566,10 @@ Proof.
 Qed.
 
 Theorem wpc_Write stk E1 (a: u64) s q b :
-  {{{ ∃ aset b0, int.Z a d↦[aset] b0 ∗ is_block s q b }}}
+  {{{ ∃ aset b0, uint.Z a d↦[aset] b0 ∗ is_block s q b }}}
     Write #a (slice_val s) @ stk; E1
-  {{{ RET #(); ∃ aset, int.Z a d↦[aset] b ∗ is_block s q b }}}
-  {{{ ∃ aset' b', int.Z a d↦[aset'] b' }}}.
+  {{{ RET #(); ∃ aset, uint.Z a d↦[aset] b ∗ is_block s q b }}}
+  {{{ ∃ aset' b', uint.Z a d↦[aset'] b' }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as (aset b0) "[Hda Hs]".
@@ -592,7 +592,7 @@ Proof.
   iDestruct "Hs" as "[Hl %]".
   rewrite fmap_length in H.
   iApply (array_to_block with "Hl").
-  assert (int.Z (Slice.sz s) = 4096).
+  assert (uint.Z (Slice.sz s) = 4096).
   { rewrite Hsz. reflexivity. }
   lia.
 Qed.

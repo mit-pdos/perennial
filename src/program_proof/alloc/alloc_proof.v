@@ -5,16 +5,16 @@ From Goose.github_com.mit_pdos.go_journal Require Import alloc.
 
 (* TODO: this file isn't using typed_slice, should fix that *)
 
-Lemma Z_u8_to_u64 x : int.Z (u8_to_u64 x) = int.Z x.
+Lemma Z_u8_to_u64 x : uint.Z (u8_to_u64 x) = uint.Z x.
 Proof.
-  rewrite /u8_to_u64 /U64.
-  rewrite /U64.
+  rewrite /u8_to_u64 /W64.
+  rewrite /W64.
   rewrite word.unsigned_of_Z_nowrap //.
   pose proof (word.unsigned_range x).
   lia.
 Qed.
 
-Lemma and_1_u8 (x: u8) : 0 ≤ int.Z (word.and x (U8 1)) ≤ 1.
+Lemma and_1_u8 (x: u8) : 0 ≤ uint.Z (word.and x (W8 1)) ≤ 1.
 Proof.
   assert (Lt ≠ Gt) by congruence.
   assert (Eq ≠ Gt) by congruence.
@@ -30,13 +30,13 @@ Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
   ∃ (next: u64) (bitmap_s: Slice.t) (bits: list u8),
   "next" ∷ l ↦[Alloc :: "next"] #next ∗
   "bitmap" ∷ l ↦[Alloc :: "bitmap"] (slice_val bitmap_s) ∗
-  "%Hnext_bound" ∷ ⌜int.Z next < int.Z max⌝ ∗
-  "%Hbits_len" ∷ ⌜int.Z max = (8 * (Z.of_nat $ length bits))%Z⌝ ∗
+  "%Hnext_bound" ∷ ⌜uint.Z next < uint.Z max⌝ ∗
+  "%Hbits_len" ∷ ⌜uint.Z max = (8 * (Z.of_nat $ length bits))%Z⌝ ∗
   "Hbits" ∷ own_slice_small bitmap_s byteT 1 (b2val <$> bits).
 
 Definition is_alloc (max: u64) (l: loc) : iProp Σ :=
   ∃ (mu_l: loc),
-    "%Hmax_nonzero" ∷ ⌜0 < int.Z max⌝ ∗
+    "%Hmax_nonzero" ∷ ⌜0 < uint.Z max⌝ ∗
     "#mu" ∷ readonly (l ↦[Alloc :: "mu"] #mu_l) ∗
     "#His_lock" ∷ is_lock N #mu_l (alloc_linv max l).
 
@@ -48,9 +48,9 @@ Lemma wp_MkAlloc (bitmap_s: Slice.t) (data: list u8) :
   8 * Z.of_nat (length data) < 2^64 →
   {{{ own_slice_small bitmap_s byteT 1 (b2val <$> data) }}}
     MkAlloc (slice_val bitmap_s)
-  {{{ l, RET #l; is_alloc (U64 (8 * length data)) l }}}.
+  {{{ l, RET #l; is_alloc (W64 (8 * length data)) l }}}.
 Proof.
-  set (max := U64 (8 * length data)).
+  set (max := W64 (8 * length data)).
   intros Hlen_lb Hlen_ub.
   iIntros (Φ) "Hs HΦ".
   wp_call.
@@ -76,14 +76,14 @@ Proof.
 Qed.
 
 Lemma bits_lookup_byte (max: u64) (bits: list u8) (num: u64) :
-  int.Z max = 8 * length bits →
-  int.Z num < int.Z max →
-  ∃ (b:u8), (b2val <$> bits) !! int.nat (word.divu num 8) = Some (b2val b).
+  uint.Z max = 8 * length bits →
+  uint.Z num < uint.Z max →
+  ∃ (b:u8), (b2val <$> bits) !! uint.nat (word.divu num 8) = Some (b2val b).
 Proof.
   intros Hmax Hnum.
-  assert (int.Z num / 8 < length bits).
+  assert (uint.Z num / 8 < length bits).
   { apply Zdiv_lt_upper_bound; lia. }
-  destruct (list_lookup_lt _ bits (Z.to_nat (int.Z num / 8)%Z)) as [b Hlookup].
+  destruct (list_lookup_lt _ bits (Z.to_nat (uint.Z num / 8)%Z)) as [b Hlookup].
   { apply Nat2Z.inj_lt.
     word. }
   exists b.
@@ -95,7 +95,7 @@ Qed.
 
 (* TODO: identical to freeBit proof, would be nice to share some of this *)
 Lemma wp_MarkUsed max l (bn: u64) :
-  int.Z bn < int.Z max →
+  uint.Z bn < uint.Z max →
   {{{ is_alloc max l }}}
     Alloc__MarkUsed #l #bn
   {{{ RET #(); True }}}.
@@ -129,8 +129,8 @@ Qed.
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Lemma wp_MkMaxAlloc (max: u64) :
-  0 < int.Z max →
-  int.Z max `mod` 8 = 0 →
+  0 < uint.Z max →
+  uint.Z max `mod` 8 = 0 →
   {{{ True }}}
     MkMaxAlloc #max
   {{{ l, RET #l; is_alloc max l }}}.
@@ -146,8 +146,8 @@ Proof.
   iIntros (bitmap_s) "Hs".
   wp_pures.
   iApply own_slice_to_small in "Hs".
-  replace (replicate (int.nat (word.divu max 8)) (zero_val byteT))
-          with (b2val <$> replicate (int.nat (word.divu max 8)) (U8 0));
+  replace (replicate (uint.nat (word.divu max 8)) (zero_val byteT))
+          with (b2val <$> replicate (uint.nat (word.divu max 8)) (W8 0));
     last first.
   { rewrite fmap_replicate //. }
   wp_apply (wp_MkAlloc with "[$Hs]").
@@ -169,10 +169,10 @@ Proof.
 Qed.
 
 Lemma wp_incNext (max: u64) (l: loc) :
-  0 < int.Z max →
+  0 < uint.Z max →
   {{{ alloc_linv max l }}}
     Alloc__incNext #l
-  {{{ (next': u64), RET #next'; ⌜int.Z next' < int.Z max⌝ ∗
+  {{{ (next': u64), RET #next'; ⌜uint.Z next' < uint.Z max⌝ ∗
                                 alloc_linv max l }}}.
 Proof.
   iIntros (Hbound Φ) "Hl HΦ".
@@ -199,7 +199,7 @@ Proof.
     rewrite fmap_length in Hsz_len.
     rewrite word.unsigned_mul in Heqb.
     rewrite -> wrap_small in Heqb by word.
-    change (int.Z 8) with 8 in Heqb.
+    change (uint.Z 8) with 8 in Heqb.
     iSplit.
     + iPureIntro.
       revert Heqb. word.
@@ -212,7 +212,7 @@ Qed.
 Lemma wp_allocBit (max: u64) (l: loc) :
   {{{ is_alloc max l }}}
     Alloc__allocBit #l
-  {{{ (n: u64), RET #n; ⌜int.Z n < int.Z max⌝ }}}.
+  {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
@@ -230,7 +230,7 @@ Proof.
   wp_pures.
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak (λ _, ∃ (num: u64),
-                            "%Hnum_bound" ∷ ⌜int.Z num < int.Z max⌝ ∗
+                            "%Hnum_bound" ∷ ⌜uint.Z num < uint.Z max⌝ ∗
                             "num" ∷ num_l ↦[uint64T] #num ∗
                             "Hlinv" ∷ alloc_linv max l)%I
                         with "[] [num Hlinv]"); swap 1 2.
@@ -280,7 +280,7 @@ Proof.
 Qed.
 
 Lemma wp_freeBit max l (bn: u64) :
-  int.Z bn < int.Z max →
+  uint.Z bn < uint.Z max →
   {{{ is_alloc max l }}}
     Alloc__freeBit #l #bn
   {{{ RET #(); True }}}.
@@ -314,7 +314,7 @@ Qed.
 Lemma wp_AllocNum max l :
   {{{ is_alloc max l }}}
     Alloc__AllocNum #l
-  {{{ (n: u64), RET #n; ⌜int.Z n < int.Z max⌝ }}}.
+  {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
   iIntros (Φ) "H HΦ".
   wp_call.
@@ -325,8 +325,8 @@ Proof.
 Qed.
 
 Lemma wp_FreeNum max l (num: u64) :
-  int.Z num < int.Z max →
-  int.Z num ≠ 0 →
+  uint.Z num < uint.Z max →
+  uint.Z num ≠ 0 →
   {{{ is_alloc max l }}}
     Alloc__FreeNum #l #num
   {{{ RET #(); True }}}.
@@ -343,7 +343,7 @@ Qed.
 Lemma wp_popCnt (b: u8) :
   {{{ True }}}
     popCnt #b
-  {{{ (n: u64), RET #n; ⌜int.Z n ≤ 8⌝ }}}.
+  {{{ (n: u64), RET #n; ⌜uint.Z n ≤ 8⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
@@ -359,7 +359,7 @@ Proof.
   wp_apply (wp_forUpto (λ i, ∃ (x: u8) (count: u64),
                            "Hx" ∷ x_l ↦[byteT] #x ∗
                            "Hcount" ∷ count_l ↦[uint64T] #count ∗
-                           "%Hcount_bound" ∷ ⌜int.Z count ≤ int.Z i⌝)%I
+                           "%Hcount_bound" ∷ ⌜uint.Z count ≤ uint.Z i⌝)%I
               with "[] [Hx Hcount $Hi]").
   - word.
   - clear.
@@ -391,7 +391,7 @@ Qed.
 Lemma wp_NumFree max l :
   {{{ is_alloc max l }}}
     Alloc__NumFree #l
-  {{{ (n:u64), RET #n; ⌜0 ≤ int.Z n ≤ int.Z max⌝}}}.
+  {{{ (n:u64), RET #n; ⌜0 ≤ uint.Z n ≤ uint.Z max⌝}}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H".
   wp_call.
@@ -412,7 +412,7 @@ Proof.
 
   wp_apply (wp_forSlice (λ i, ∃ (count: u64),
                             "Hcount" ∷ count_l ↦[uint64T] #count ∗
-                            "%Hcount_bound" ∷ ⌜int.Z count ≤ 8 * int.Z i⌝)%I
+                            "%Hcount_bound" ∷ ⌜uint.Z count ≤ 8 * uint.Z i⌝)%I
            with "[] [Hcount $Hbits]").
   - clear Φ.
     iIntros (i x Φ) "!> [Hinv [%Hbound %Hlookup]] HΦ". iNamed "Hinv".

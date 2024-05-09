@@ -22,7 +22,7 @@ Proof.
   simpl.
   rewrite /string_to_bytes /bytes_to_string /= /u8_to_ascii.
   pose proof (word.unsigned_range x).
-  assert (int.nat x < 256)%nat.
+  assert (uint.nat x < 256)%nat.
   { lia. (* word_cleanup. *) } (* FIXME: word_cleanup doesn't have good support for u8  *)
   rewrite Ascii.nat_ascii_embedding.
   {
@@ -70,7 +70,7 @@ Proof.
     f_equal.
     rewrite /u8_to_string /u8_to_ascii.
     f_equal.
-    replace (int.nat (_)) with (Ascii.nat_of_ascii a).
+    replace (uint.nat (_)) with (Ascii.nat_of_ascii a).
     2:{ pose proof (Ascii.nat_ascii_bounded a) as H.
         revert H. generalize (Ascii.nat_of_ascii a).
         intros.
@@ -98,12 +98,12 @@ Proof. solve_pure_exec. Qed. *)
 
 Lemma wp_stringToBytes (i:u64) (s:string) :
   {{{
-        ⌜int.nat i <= String.length s⌝
+        ⌜uint.nat i <= String.length s⌝
   }}}
     stringToBytes #i #(str s)
   {{{
         (sl:Slice.t), RET (slice_val sl); own_slice sl byteT 1
-                                                    (take (int.nat i) (string_to_bytes s))
+                                                    (take (uint.nat i) (string_to_bytes s))
   }}}
 .
 Proof.
@@ -121,8 +121,8 @@ Proof.
   wp_pures.
   destruct (decide (i = 0)).
   { subst. by exfalso. }
-  assert (int.nat (word.sub i 1%Z) < String.length s)%nat as Hlookup.
-  { enough (int.nat i ≠ 0%nat) by word.
+  assert (uint.nat (word.sub i 1%Z) < String.length s)%nat as Hlookup.
+  { enough (uint.nat i ≠ 0%nat) by word.
     intros ?. apply n. word. }
   pose proof Hlookup as Hineq2.
   rewrite string_bytes_length in Hlookup.
@@ -140,8 +140,8 @@ Proof.
   iApply "HΦ".
   rewrite -take_S_r.
   2:{ done. }
-  replace (int.nat i) with (S $ int.nat (word.sub i 1%Z))%nat.
-  2:{ enough (int.nat i ≠ 0%nat) by word.
+  replace (uint.nat i) with (S $ uint.nat (word.sub i 1%Z))%nat.
+  2:{ enough (uint.nat i ≠ 0%nat) by word.
       intros ?. apply n. word. }
   iFrame.
 Qed.
@@ -209,7 +209,7 @@ Proof.
   iDestruct (slice_small_split _ 1 with "Hsl") as "[H0 Hsl]".
   { simpl. word. }
   rewrite /slice_take /slice_subslice.
-  replace (u :: l) with ([u] ++ l) by done.
+  replace (w :: l) with ([w] ++ l) by done.
   rewrite drop_app_length'; last done.
   wp_apply ("Hwp" with "[$]").
   iIntros "Hsl".

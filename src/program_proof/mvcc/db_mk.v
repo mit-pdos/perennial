@@ -138,11 +138,11 @@ Proof.
   set P := λ (n : u64), (∃ sitesL,
     "HsitesS" ∷ own_slice_small sites ptrT 1 (to_val <$> sitesL) ∗
     "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
-    "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ) ∗
+    "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (uint.nat n) sitesL), is_txnsite site sid γ) ∗
     "Hsites" ∷ (db ↦[DB :: "sites"] (to_val sites)) ∗
-    "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
-    "Hsids" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), sid_own γ sid))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS sites $HiRef HactiveAuths Hsids]"); first done.
+    "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (uint.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
+    "Hsids" ∷ ([∗ list] sid ∈ (drop (uint.nat n) sids_all), sid_own γ sid))%I.
+  wp_apply (wp_forUpto P _ _ (W64 0) (W64 N_TXN_SITES) with "[] [HsitesS sites $HiRef HactiveAuths Hsids]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -160,7 +160,7 @@ Proof.
     iIntros (site) "HsiteRP".
     wp_pures.
     
-    replace (int.Z 32) with (Z.of_nat (length sitesL)) in Hbound.
+    replace (uint.Z 32) with (Z.of_nat (length sitesL)) in Hbound.
     unfold N_TXN_SITES in *.
     wp_load.
     wp_loadField.
@@ -182,7 +182,7 @@ Proof.
     iFrame.
     rewrite insert_length.
     iSplit; first done.
-    replace (int.nat (word.add i 1)) with (S (int.nat i)); last word.
+    replace (uint.nat (word.add i 1)) with (S (uint.nat i)); last word.
     iFrame.
     rewrite (take_S_r _ _ site); last first.
     { apply list_lookup_insert. word. }
@@ -194,7 +194,7 @@ Proof.
     rewrite take_length_le; last first.
     { rewrite insert_length. word. }
     (* Set Printing Coercions. *)
-    replace (U64 _) with i by word.
+    replace (W64 _) with i by word.
     eauto 10 with iFrame.
   }
   { iExists (replicate 32 null).
@@ -221,7 +221,7 @@ Proof.
   iMod (readonly_alloc_1 with "proph") as "#Hp".
   iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
-  replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.
+  replace (uint.nat (W64 N_TXN_SITES)) with (length sitesL); last first.
   { unfold N_TXN_SITES in *. word. }
   iFrame "Hpts".
   rewrite firstn_all.

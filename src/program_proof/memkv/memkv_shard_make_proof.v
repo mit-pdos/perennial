@@ -36,8 +36,8 @@ Proof.
   wp_apply (wp_new_slice); first by auto.
   iIntros (kvss_sl) "Hkvss_sl".
   wp_storeField.
-  remember (replicate (int.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
-  remember (replicate (int.nat 65536) (@zero_val grove_op grove_ty KvMap)) as init_kvs_ptrs eqn:Heq_init_kvs_ptrs.
+  remember (replicate (uint.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
+  remember (replicate (uint.nat 65536) (@zero_val grove_op grove_ty KvMap)) as init_kvs_ptrs eqn:Heq_init_kvs_ptrs.
   wp_apply (wp_NewMap).
   iIntros (peers_ptr) "HpeersMap".
   wp_storeField.
@@ -50,20 +50,20 @@ Proof.
   wp_apply (wp_forUpto (λ i, ∃ shardMapping kvs_ptrs,
   "%Hlen_shardMapping" ∷ ⌜ Z.of_nat (length shardMapping) = uNSHARD ⌝ ∗
   "%Hlen_kvs_ptrs" ∷ ⌜ Z.of_nat (length kvs_ptrs) = uNSHARD ⌝ ∗
-  "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
-  "%Hkvss_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD →
-                               is_Some ((fmap (λ x : loc, #x) kvs_ptrs) !! int.nat i)) ⌝ ∗
-  "HghostShards" ∷ (if b then ([∗ set] sid ∈ rangeSet (int.Z i) (uNSHARD - int.Z i), own_shard γ.(kv_gn) sid ∅)
+  "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, uint.Z i < uint.Z uNSHARD → is_Some (shardMapping !! uint.nat i)) ⌝ ∗
+  "%Hkvss_dom" ∷ ⌜ (∀ i : u64, uint.Z i < uint.Z uNSHARD →
+                               is_Some ((fmap (λ x : loc, #x) kvs_ptrs) !! uint.nat i)) ⌝ ∗
+  "HghostShards" ∷ (if b then ([∗ set] sid ∈ rangeSet (uint.Z i) (uNSHARD - uint.Z i), own_shard γ.(kv_gn) sid ∅)
                    else True) ∗
   "kvss" ∷ srv ↦[KVShardServer :: "kvss"] (slice_val kvss_sl) ∗
   "Hkvss_sl" ∷ slice.own_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "shardMap" ∷ srv ↦[KVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷  typed_slice.own_slice shardMap_sl boolT 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
-                  ⌜(shardMapping !! (int.nat sid)) ≠ Some true⌝ ∨
+                  ⌜(shardMapping !! (uint.nat sid)) ≠ Some true⌝ ∨
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
                       own_shard γ.(kv_gn) sid m ∗ (* own shard *)
-                      ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
+                      ⌜kvs_ptrs !! (uint.nat sid) = Some kvs_ptr⌝ ∗
                       ⌜dom m = dom mv ⌝ ∗
                       map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
@@ -100,21 +100,21 @@ Proof.
         edestruct (Hkvss_dom) as (?&Heq); first eassumption. eexists.
         Search lookup fmap. eapply lookup_fmap_Some; eauto. } *)
       wp_pures. iModIntro. iApply "HΦ".
-      { iFrame. iExists (<[int.nat i := mv]>kvs_ptrs).
+      { iFrame. iExists (<[uint.nat i := mv]>kvs_ptrs).
         rewrite ?insert_length.
         do 2 (iSplit; first done).
         iSplit.
         { iPureIntro. intros.
-          destruct (decide (int.nat i0 = int.nat i)) as [->|Hneq].
+          destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
           { eexists. apply list_lookup_insert. eapply lookup_lt_is_Some_1; eauto. }
           rewrite list_lookup_insert_ne; auto.
         }
-        assert ((int.nat i < length kvs_ptrs)%nat).
+        assert ((uint.nat i < length kvs_ptrs)%nat).
         { erewrite <-fmap_length. eapply lookup_lt_is_Some_1; eauto. }
         iSplit.
         { iPureIntro. intros.
           rewrite list_lookup_fmap.
-          destruct (decide (int.nat i0 = int.nat i)) as [->|Hneq].
+          destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
           { rewrite fmap_is_Some. eexists. apply list_lookup_insert; eauto. }
           rewrite list_lookup_insert_ne; auto.
           rewrite -list_lookup_fmap. eauto. }
@@ -123,8 +123,8 @@ Proof.
         iDestruct (big_sepS_union with "HghostShards") as "(Hgi&HghostShards)".
         { apply rangeSet_first_disjoint; rewrite /uNSHARD; word. }
         iSplitL "HghostShards".
-        { cut (rangeSet (int.Z i + 1) (uNSHARD - int.Z i - 1) =
-               rangeSet (int.Z (word.add i 1)) (uNSHARD - int.Z (word.add i 1))).
+        { cut (rangeSet (uint.Z i + 1) (uNSHARD - uint.Z i - 1) =
+               rangeSet (uint.Z (word.add i 1)) (uNSHARD - uint.Z (word.add i 1))).
           { intros ->. eauto. }
           f_equal; word. }
         iSplitL "Hkvss_sl".
@@ -157,7 +157,7 @@ Proof.
         }
         iApply (big_sepS_mono with "HownShards").
         { iIntros (??) "H".
-          assert (int.nat i ≠ int.nat x).
+          assert (uint.nat i ≠ uint.nat x).
           { cut (i ≠ x).
             { intros. intros Heq. apply Z2Nat.inj in Heq; try word.
                apply int_Z_inj in Heq; eauto with *.
@@ -176,11 +176,11 @@ Proof.
         { eauto. }
         iSplit.
         { iPureIntro. intros.
-          destruct (decide (int.nat i0 = int.nat i)) as [->|Hneq].
+          destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
           { eexists. apply list_lookup_insert. eapply lookup_lt_is_Some_1; eauto. }
           rewrite list_lookup_insert_ne; auto.
         }
-        assert ((int.nat i < length kvs_ptrs)%nat).
+        assert ((uint.nat i < length kvs_ptrs)%nat).
         { erewrite <-fmap_length. eapply lookup_lt_is_Some_1; eauto. }
         iSplit.
         { iPureIntro. eauto. }
@@ -199,7 +199,7 @@ Proof.
           iLeft. rewrite list_lookup_insert //. eapply lookup_lt_is_Some_1; eauto. }
         iApply (big_sepS_mono with "HownShards").
         { iIntros (??) "H".
-          assert (int.nat i ≠ int.nat x).
+          assert (uint.nat i ≠ uint.nat x).
           { cut (i ≠ x).
             { intros. intros Heq. apply Z2Nat.inj in Heq; try word.
                apply int_Z_inj in Heq; eauto with *.
@@ -212,7 +212,7 @@ Proof.
   }
   {
     iExists initShardMapping.
-    iExists (replicate (int.nat 65536) null).
+    iExists (replicate (uint.nat 65536) null).
     iSplit.
     { iPureIntro. rewrite Heq_initShardMapping replicate_length /uNSHARD. word. }
     iSplit.

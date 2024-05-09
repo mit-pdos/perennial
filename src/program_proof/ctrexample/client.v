@@ -33,7 +33,7 @@ Proof.
   iIntros (localBound_ptr) "HlocalBound".
   wp_pures.
 
-  iAssert (∃ x, counter_lb γ x ∗ localBound_ptr ↦[uint64T] #(U64 x))%I with "[HlocalBound Hlb]" as "HH".
+  iAssert (∃ x, counter_lb γ x ∗ localBound_ptr ↦[uint64T] #(W64 x))%I with "[HlocalBound Hlb]" as "HH".
   {
     iExists 0%nat. iFrame "∗#".
   }
@@ -54,7 +54,7 @@ Proof.
   wp_apply (wp_Client__Call_pred with "[$Hrep $Hempty_sl]").
   { iFrame "Hcl". iDestruct "Hsrv" as "[$ _]".
   (* FIXME: why doesn't [$Hcl] work? *)
-    instantiate (1:=(λ l, ∃ (x:nat), ⌜has_encoding l [EncUInt64 (U64 x)] ∧ localBound ≤ x⌝ ∗ counter_lb γ x)%I).
+    instantiate (1:=(λ l, ∃ (x:nat), ⌜has_encoding l [EncUInt64 (W64 x)] ∧ localBound ≤ x⌝ ∗ counter_lb γ x)%I).
     iModIntro.
     iModIntro.
     simpl.

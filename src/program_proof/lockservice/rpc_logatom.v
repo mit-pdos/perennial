@@ -9,16 +9,16 @@ From Perennial.program_proof.lockservice Require Import grove_ffi.
 Section rpc_namespace.
 
 Definition rpcReqInvUpToN_list (seqno:u64) : list coPset :=
- ((λ (n:nat), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(U64 n) |} ) <$> (seq 0 (int.nat seqno))).
+ ((λ (n:nat), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(W64 n) |} ) <$> (seq 0 (uint.nat seqno))).
 Definition rpcReqInvUpToN (seqno:u64) : coPset :=
  ⋃ rpcReqInvUpToN_list seqno.
 
 (*
 Definition rpcReqInvUpToN (seqno:u64) : coPset :=
-  [^union list] x ∈ (seq 0 (int.nat seqno)), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(U64 (Z.of_nat x)) |}. *)
+  [^union list] x ∈ (seq 0 (uint.nat seqno)), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(W64 (Z.of_nat x)) |}. *)
 
 Lemma rpcReqInvUpToN_prop cid seq :
-  ∀ seq', int.nat seq' < int.nat seq → (↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |}) ⊆ rpcReqInvUpToN seq.
+  ∀ seq', uint.nat seq' < uint.nat seq → (↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |}) ⊆ rpcReqInvUpToN seq.
 Proof.
   intros seq' Hineq.
   enough (↑rpcRequestInvN {| Req_CID := cid; Req_Seq := seq' |} ∈ rpcReqInvUpToN_list seq).
@@ -28,18 +28,18 @@ Proof.
     eauto.
   }
   unfold rpcReqInvUpToN_list.
-  eapply (elem_of_fmap_2_alt _ _ (int.nat seq')).
+  eapply (elem_of_fmap_2_alt _ _ (uint.nat seq')).
   2:{
     unfold rpcRequestInvN.
     simpl.
-    replace (U64 (Z.of_nat (int.nat seq'))) with (seq'); first done.
+    replace (W64 (Z.of_nat (uint.nat seq'))) with (seq'); first done.
     admit.
   }
   admit.
 Admitted.
 
 Lemma rpcReqInvUpToN_prop_2 cid seq :
- ∀ seq', int.nat seq' ≥ int.nat seq → ↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |} ## rpcReqInvUpToN seq.
+ ∀ seq', uint.nat seq' ≥ uint.nat seq → ↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |} ## rpcReqInvUpToN seq.
 Admitted.
 
 End rpc_namespace.
@@ -50,7 +50,7 @@ Context `{!rpcG Σ u64}.
 
 (* This fupd grants resources R post-neutralization of the given sequence number *)
 Definition rpc_atomic_pre_fupd_def γrpc (cid seq:u64) R : iProp Σ :=
-  (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq ={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
+  (own γrpc.(proc) (Excl ()) -∗ cid fm[[γrpc.(lseq)]]≥ uint.nat seq ={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ R)%I.
 
 Definition rpc_atomic_pre_fupd_aux : seal (@rpc_atomic_pre_fupd_def). Proof. by eexists. Qed.
 Definition rpc_atomic_pre_fupd := rpc_atomic_pre_fupd_aux.(unseal).
@@ -70,10 +70,10 @@ Notation "|RN={ γrpc , cid , seq }=> R" :=
    *)
 Definition rpc_atomic_pre_def γrpc cid R : iProp Σ :=
   <disc> (cid fm[[γrpc.(cseq)]]≥ 0 -∗ (∃ seq,
-    cid fm[[γrpc.(cseq)]]≥ int.nat seq ∗
+    cid fm[[γrpc.(cseq)]]≥ uint.nat seq ∗
         <disc> (|RN={γrpc,cid,seq}=> R))).
-(*   (∀ seq, cid fm[[γrpc.(cseq)]]↦ int.nat seq -∗
-    cid fm[[γrpc.(cseq)]]↦ int.nat seq ∗
+(*   (∀ seq, cid fm[[γrpc.(cseq)]]↦ uint.nat seq -∗
+    cid fm[[γrpc.(cseq)]]↦ uint.nat seq ∗
     (laterable.make_laterable (|RN={γrpc , cid , seq}=> R))).
    *)
 
@@ -98,7 +98,7 @@ Notation "|PN={ γrpc , cid }=> R" :=
   : bi_scope.
 
 Lemma rpc_atomic_pre_fupd_mono_strong γrpc cid seq P Q:
-  (P -∗ cid fm[[γrpc.(lseq)]]≥ int.nat seq -∗
+  (P -∗ cid fm[[γrpc.(lseq)]]≥ uint.nat seq -∗
      own γrpc.(proc) (Excl ())={rpcReqInvUpToN seq}=∗ own γrpc.(proc) (Excl ()) ∗ Q) -∗
   |RN={γrpc,cid,seq}=> P -∗
   |RN={γrpc,cid,seq}=> Q.
@@ -152,7 +152,7 @@ Global Instance from_modal_rpc_atomic γrpc cid seq P :
 Proof. by rewrite /FromModal. Qed.
 
 Global Instance elim_modal_rpc_atomic γrpc p cid seq' seq P Q :
-  ElimModal (int.nat seq' ≤ int.nat seq) p false (|RN={γrpc,cid,seq'}=> P) P (|RN={γrpc,cid,seq}=> Q) (|RN={γrpc,cid,seq}=> Q).
+  ElimModal (uint.nat seq' ≤ uint.nat seq) p false (|RN={γrpc,cid,seq'}=> P) P (|RN={γrpc,cid,seq}=> Q) (|RN={γrpc,cid,seq}=> Q).
 Proof.
   rewrite /ElimModal.
   simpl.
@@ -249,7 +249,7 @@ Qed.
 (* IPM typeclasses for pnfupd *)
 
 Lemma rpc_atomic_pre_mono_strong cid γrpc P Q :
-  (∃ seq, cid fm[[γrpc.(cseq)]]≥ int.nat seq ∗ <disc>(P -∗ |RN={γrpc,cid,seq}=> Q )) -∗
+  (∃ seq, cid fm[[γrpc.(cseq)]]≥ uint.nat seq ∗ <disc>(P -∗ |RN={γrpc,cid,seq}=> Q )) -∗
   |PN={γrpc,cid}=> P -∗
   |PN={γrpc,cid}=> Q.
 Proof.
@@ -261,7 +261,7 @@ Proof.
   iIntros "Htype".
   iSpecialize ("HatomicP" with "Htype").
   iDestruct "HatomicP" as (seq) "[#Hlb HmodP]".
-  destruct (decide (int.nat seq < int.nat seq2)).
+  destruct (decide (uint.nat seq < uint.nat seq2)).
   - iExists (seq2). iFrame "Hlb2".
     iModIntro. iMod "HmodP"; first by word.
     iDestruct ("HPQ" with "HmodP") as "$".
@@ -308,7 +308,7 @@ Proof.
   rewrite rpc_atomic_pre_eq.
   iModIntro.
   iIntros "Htype".
-  iExists (U64 0).
+  iExists (W64 0).
   iFrame.
   iModIntro.
   by iModIntro.
@@ -326,12 +326,12 @@ Lemma modality_pnfupd_mixin γrpc cid :
     split; simpl; eauto.
     - rewrite rpc_atomic_pre_eq.
       iIntros (P) "#HP !> #Htype".
-      iExists (U64 0).
+      iExists (W64 0).
       iFrame "#".
       iModIntro. iModIntro. done.
     - iIntros (_).
       rewrite rpc_atomic_pre_eq.
-      iModIntro. iIntros "Htype". iExists (U64 0).
+      iModIntro. iIntros "Htype". iExists (W64 0).
       iFrame "Htype".
       by repeat iModIntro.
     - iIntros (?? HPQ). iApply pnfupd_wand. iModIntro. iIntros. iModIntro. iApply HPQ. done.
@@ -344,7 +344,7 @@ Lemma modality_pnfupd_mixin γrpc cid :
       iSpecialize ("HQ" with "Htype").
       iDestruct "HP" as (seq1) "[#Hlb1 HP]".
       iDestruct "HQ" as (seq2) "[#Hlb2 HQ]".
-      destruct (decide (int.nat seq1 < int.nat seq2)).
+      destruct (decide (uint.nat seq1 < uint.nat seq2)).
       + iExists seq2. iFrame "#". iModIntro.
         iMod "HP"; first by word.
         iMod "HQ".
@@ -397,7 +397,7 @@ Definition neutralized_pre γrpc cid PreCond PostCond : iProp Σ :=
   |PN={γrpc,cid}=> (▷ PreCond ∨ ▷ ∃ ret:u64, PostCond ret)%I.
 
 Lemma neutralize_request (req:RPCRequestID) γrpc γreq (PreCond:iProp Σ) PostCond  :
-  (int.nat (word.add req.(Req_Seq) 1) = int.nat req.(Req_Seq) + 1)%nat →
+  (uint.nat (word.add req.(Req_Seq) 1) = uint.nat req.(Req_Seq) + 1)%nat →
   is_RPCServer γrpc -∗
   is_RPCRequest γrpc γreq PreCond PostCond req -∗
   (RPCRequest_token γreq) ={⊤}=∗
@@ -463,7 +463,7 @@ Proof.
 Qed.
 
 Lemma neutralize_idemp γrpc cid seqno Q PreCond PostCond :
-  cid fm[[γrpc.(cseq)]]≥ int.nat seqno -∗
+  cid fm[[γrpc.(cseq)]]≥ uint.nat seqno -∗
   □(▷Q -∗ |RN={γrpc,cid,seqno}=> PreCond) -∗
   neutralized_pre γrpc cid Q (PostCond) -∗
   neutralized_pre γrpc cid PreCond PostCond.

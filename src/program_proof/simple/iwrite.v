@@ -80,26 +80,26 @@ Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (co
       is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
       is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
       own_slice_small dataslice u8T 1 databuf ∗
-      ⌜ int.nat count = length databuf ⌝ ∗
+      ⌜ uint.nat count = length databuf ⌝ ∗
       ⌜ inum ∈ covered_inodes ⌝
   }}}
     Inode__Write #ip #btxn #offset #count (slice_val dataslice)
   {{{ (wcount: u64) (ok: bool), RET (#wcount, #ok);
       is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
-      ( ( let contents' := ((firstn (int.nat offset) contents) ++
-                          (firstn (int.nat count) databuf) ++
-                          (skipn (int.nat offset + int.nat count) contents))%list in
-        let len' := U64 (Z.max (int.Z len) (int.Z offset + int.Z count)) in
+      ( ( let contents' := ((firstn (uint.nat offset) contents) ++
+                          (firstn (uint.nat count) databuf) ++
+                          (skipn (uint.nat offset + uint.nat count) contents))%list in
+        let len' := W64 (Z.max (uint.Z len) (uint.Z offset + uint.Z count)) in
         is_inode_mem ip inum len' blk ∗
         is_inode_enc inum len' blk (jrnl_maps_to γtxn) ∗
         is_inode_data len' blk contents' (jrnl_maps_to γtxn) ∗
         ⌜ wcount = count ∧ ok = true ∧
-          (int.Z offset + length databuf < 2^64)%Z ∧
-          (int.Z offset ≤ int.Z len)%Z ⌝ ) ∨
+          (uint.Z offset + length databuf < 2^64)%Z ∧
+          (uint.Z offset ≤ uint.Z len)%Z ⌝ ) ∨
       ( is_inode_mem ip inum len blk ∗
         is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
         is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
-        ⌜ int.Z wcount = 0 ∧ ok = false ⌝ ) )
+        ⌜ uint.Z wcount = 0 ∧ ok = false ⌝ ) )
   }}}.
 Proof.
   iIntros (Φ) "(Hjrnl & Hmem & Hienc & Hdata & Hdatabuf & %Hcount & %Hcovered) HΦ".
@@ -135,9 +135,9 @@ Proof.
              bufKind := objKind (existT KindBlock (bufBlock bbuf'));
              bufData := objData (existT KindBlock (bufBlock bbuf'));
              bufDirty := dirty |} ∗
-      "%Hbbuf" ∷ ⌜ vec_to_list bbuf' = ((firstn (int.nat offset) (vec_to_list bbuf)) ++
-                                       (firstn (int.nat i) databuf) ++
-                                       (skipn (int.nat offset + int.nat i) (vec_to_list bbuf)))%list ⌝
+      "%Hbbuf" ∷ ⌜ vec_to_list bbuf' = ((firstn (uint.nat offset) (vec_to_list bbuf)) ++
+                                       (firstn (uint.nat i) databuf) ++
+                                       (skipn (uint.nat offset + uint.nat i) (vec_to_list bbuf)))%list ⌝
     )%I with "[] [$Hcount Hdatabuf Hbuf]").
   { word. }
   {
@@ -146,7 +146,7 @@ Proof.
     iIntros "(HI & Hcount & %Hbound) HΦ'".
     iNamed "HI".
     wp_load.
-    destruct (databuf !! int.nat count') eqn:He.
+    destruct (databuf !! uint.nat count') eqn:He.
     2: {
       iDestruct (own_slice_small_sz with "Hdatabuf") as "%Hlen".
       eapply lookup_ge_None_1 in He. word.
@@ -156,7 +156,7 @@ Proof.
     wp_load.
     wp_apply (wp_buf_loadField_data with "Hbuf").
     iIntros (bufslice) "[Hbufdata Hbufnodata]".
-    assert (is_Some (vec_to_list bbuf' !! int.nat (word.add offset count'))).
+    assert (is_Some (vec_to_list bbuf' !! uint.nat (word.add offset count'))).
     { eapply lookup_lt_is_Some_2. rewrite vec_to_list_length /block_bytes.
       revert Heqb0. word. }
     wp_apply (wp_SliceSet (V:=u8) with "[$Hbufdata]"); eauto.
@@ -164,7 +164,7 @@ Proof.
     wp_pures.
     iApply "HΦ'". iModIntro. iFrame "Hcount".
 
-    assert ((int.nat (word.add offset count')) < block_bytes) as fin.
+    assert ((uint.nat (word.add offset count')) < block_bytes) as fin.
     {
       rewrite /is_Some in H.
       destruct H.
@@ -172,7 +172,7 @@ Proof.
       rewrite vec_to_list_length /block_bytes in H.
       rewrite /block_bytes; lia.
     }
-    iExists (vinsert (nat_to_fin fin) u bbuf'). iFrame.
+    iExists (vinsert (nat_to_fin fin) w bbuf'). iFrame.
     iSplit.
     { iExactEq "Hbufdata".
       rewrite /= /Block_to_vals vec_to_list_insert.
@@ -183,9 +183,9 @@ Proof.
     iPureIntro.
     rewrite vec_to_list_insert Hbbuf.
     erewrite fin_to_nat_to_fin.
-    replace (int.nat (word.add offset count')) with ((int.nat offset)+(int.nat count')).
+    replace (uint.nat (word.add offset count')) with ((uint.nat offset)+(uint.nat count')).
     2: { word. }
-    assert ((int.nat offset) = (length (take (int.nat offset) bbuf))) as Hoff.
+    assert ((uint.nat offset) = (length (take (uint.nat offset) bbuf))) as Hoff.
     1: {
       rewrite take_length.
       rewrite vec_to_list_length.
@@ -194,12 +194,12 @@ Proof.
     rewrite -> Hoff at 1.
     rewrite insert_app_r.
     f_equal.
-    replace (int.nat count') with (length (take (int.nat count') databuf) + 0) at 1.
+    replace (uint.nat count') with (length (take (uint.nat count') databuf) + 0) at 1.
     2: {
       rewrite take_length_le; first by lia. word.
     }
     rewrite insert_app_r.
-    replace (int.nat (word.add count' 1%Z)) with (S (int.nat count')) at 1 by word.
+    replace (uint.nat (word.add count' 1%Z)) with (S (uint.nat count')) at 1 by word.
     erewrite take_S_r; eauto.
     rewrite -app_assoc. f_equal.
     erewrite <- drop_take_drop.
@@ -212,11 +212,11 @@ Proof.
       2: { rewrite vec_to_list_length. revert fin. word. }
       revert fin. word.
     }
-    replace (int.nat (word.add count' 1%Z)) with (int.nat count' + 1) by word.
+    replace (uint.nat (word.add count' 1%Z)) with (uint.nat count' + 1) by word.
     rewrite Nat.add_assoc.
     rewrite skipn_firstn_comm.
-    replace (int.nat offset + int.nat count' + 1 - (int.nat offset + int.nat count')) with 1 by word.
-    edestruct (length_1_singleton (T:=u8) (take 1 (drop (int.nat offset + int.nat count') bbuf))) as [x Hx].
+    replace (uint.nat offset + uint.nat count' + 1 - (uint.nat offset + uint.nat count')) with 1 by word.
+    edestruct (length_1_singleton (T:=u8) (take 1 (drop (uint.nat offset + uint.nat count') bbuf))) as [x Hx].
     2: { rewrite Hx. done. }
     rewrite firstn_length_le; eauto.
     rewrite drop_length.
@@ -226,9 +226,9 @@ Proof.
   {
     iExists _. iFrame.
     iPureIntro.
-    replace (int.nat (U64 0)) with 0 by reflexivity.
+    replace (uint.nat (W64 0)) with 0 by reflexivity.
     rewrite take_0. rewrite app_nil_l.
-    replace (int.nat offset + 0) with (int.nat offset) by lia.
+    replace (uint.nat offset + 0) with (uint.nat offset) by lia.
     rewrite take_drop. done.
   }
 
@@ -242,18 +242,18 @@ Proof.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
 
-  assert (take (int.nat offset) contents =
-          take (int.nat offset) bbuf) as Hcontents0.
+  assert (take (uint.nat offset) contents =
+          take (uint.nat offset) bbuf) as Hcontents0.
   { rewrite -Hdiskdata.
     rewrite take_take. f_equal. lia. }
 
-  assert (drop (int.nat offset + int.nat dataslice.(Slice.sz)) contents =
-          drop (int.nat offset + int.nat dataslice.(Slice.sz)) (take (length contents) bbuf))
+  assert (drop (uint.nat offset + uint.nat dataslice.(Slice.sz)) contents =
+          drop (uint.nat offset + uint.nat dataslice.(Slice.sz)) (take (length contents) bbuf))
     as Hcontents1.
   { congruence. }
 
-  assert ( (drop (int.nat offset + int.nat dataslice.(Slice.sz)) bbuf) =
-           (drop (int.nat offset + int.nat dataslice.(Slice.sz))
+  assert ( (drop (uint.nat offset + uint.nat dataslice.(Slice.sz)) bbuf) =
+           (drop (uint.nat offset + uint.nat dataslice.(Slice.sz))
                  (take (length contents) bbuf ++ (drop (length contents) bbuf))))
      as Hbuf.
   { rewrite take_drop; done. }
@@ -285,7 +285,7 @@ Proof.
     rewrite take_length_le; last by ( rewrite vec_to_list_length /block_bytes; word ).
     rewrite take_length_le; last by ( rewrite Hcount; lia ).
     rewrite take_length_le; last by ( rewrite vec_to_list_length /block_bytes; word ).
-    replace (length contents) with (int.nat len) by word.
+    replace (length contents) with (uint.nat len) by word.
     split. 2: { revert Heqb2. word. }
     rewrite app_assoc. rewrite take_app_le.
     2: {
@@ -309,7 +309,7 @@ Proof.
     iApply "HΦ". iModIntro. iFrame "Hjrnl". iLeft.
     rewrite Z.max_l.
     2: { revert Heqb2. word. }
-    replace (U64 (int.Z len)) with (len) by word.
+    replace (W64 (uint.Z len)) with (len) by word.
     iFrame.
     iSplit.
     2: {
@@ -324,7 +324,7 @@ Proof.
     rewrite take_length_le. 2: { rewrite vec_to_list_length /block_bytes. revert Heqb0; word. }
     rewrite take_length_le. 2: { rewrite Hcount; lia. }
     rewrite take_length_le. 2: { lia. }
-    replace (length contents) with (int.nat len) by word.
+    replace (length contents) with (uint.nat len) by word.
     split. 2: { revert Heqb2. word. }
     rewrite drop_app_le.
     2: {

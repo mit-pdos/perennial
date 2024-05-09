@@ -10,7 +10,7 @@ Theorem wp_TxnSite__Activate (site : loc) (sid : u64) γ :
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       TxnSite__Activate #site @ ↑mvccNGC ∪ ↑mvccNTID
     <<< ∃∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
-    {{{ (tid : u64), RET #tid; active_tid γ tid sid ∧ ⌜int.nat tid = ts'⌝ }}}.
+    {{{ (tid : u64), RET #tid; active_tid γ tid sid ∧ ⌜uint.nat tid = ts'⌝ }}}.
 Proof.
   (*@ func (site *TxnSite) activate() uint64 {                                @*)
   (*@     site.latch.Lock()                                                   @*)
@@ -22,7 +22,7 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "[$Hlock]").
   iIntros "[Hlocked HsiteOwn]".
-  (* replace (U64 (Z.of_nat _)) with sid by word.  *)
+  (* replace (W64 (Z.of_nat _)) with sid by word.  *)
   iNamed "HsiteOwn".
   wp_pures.
 
@@ -125,10 +125,10 @@ Proof.
       intros tidx Helem contra.
       rewrite elem_of_list_singleton in contra.
       apply set_Forall_union_inv_2 in Hmax.
-      assert (Helem' : int.nat tidx ∈ tidsactiveM).
+      assert (Helem' : uint.nat tidx ∈ tidsactiveM).
       { rewrite -HactiveLM.
         rewrite elem_of_list_to_set.
-        apply (elem_of_list_fmap_1 (λ x : u64, int.nat x)).
+        apply (elem_of_list_fmap_1 (λ x : u64, uint.nat x)).
         done.
       }
       apply Hmax in Helem'.

@@ -90,7 +90,7 @@ Proof.
   iAssert (
         ∃ (i:u64) clerksComplete clerksLeft,
           "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-          "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
+          "%HcompleteLen" ∷ ⌜length clerksComplete = uint.nat i⌝ ∗
           "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
           "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
           "Hservers_sl" ∷ own_slice_small config_sl uint64T q servers ∗
@@ -118,7 +118,7 @@ Proof.
   { (* loop not finished *)
     wp_pures.
     wp_load.
-    assert (int.nat i < length servers) as Hlookup.
+    assert (uint.nat i < length servers) as Hlookup.
     { word. }
     apply list_lookup_lt in Hlookup as [host Hlookup].
     wp_apply (wp_SliceGet with "[$Hservers_sl]").
@@ -279,10 +279,10 @@ Proof.
     destruct (decide (config_sl.(Slice.sz) = 0)).
     { exfalso. rewrite e in Heqb. done. }
 
-    destruct (decide (int.nat config_sl.(Slice.sz) = 0)).
+    destruct (decide (uint.nat config_sl.(Slice.sz) = 0)).
     {
       exfalso.
-      replace (config_sl.(Slice.sz)) with (U64 0) in * by word.
+      replace (config_sl.(Slice.sz)) with (W64 0) in * by word.
       done.
     }
     word.
@@ -561,7 +561,7 @@ Proof.
     wp_pures.
 
     set (clerkIdx:=(word.modu (word.add ival prefReplica) clerks_sl.(Slice.sz))).
-    assert (int.nat clerkIdx < length clerks) as Hlookup_clerks.
+    assert (uint.nat clerkIdx < length clerks) as Hlookup_clerks.
     {
       rewrite /clerkIdx. rewrite Hclerks_sz.
        rewrite word.unsigned_modu_nowrap; last lia.

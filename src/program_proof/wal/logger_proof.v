@@ -63,7 +63,7 @@ Proof.
     wp_loadField. wp_loadField.
     wp_apply (wp_log_len with "His_memLog"); iIntros "His_memLog".
     wp_pures.
-    change (int.Z (word.divu (word.sub 4096 8) 8)) with LogSz.
+    change (uint.Z (word.divu (word.sub 4096 8) 8)) with LogSz.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
@@ -177,9 +177,9 @@ Proof.
 Qed.
 
 Lemma logIndex_diff memLog pos1 pos2 :
-  int.Z memLog.(slidingM.start) ≤ int.Z pos1 →
+  uint.Z memLog.(slidingM.start) ≤ uint.Z pos1 →
   (slidingM.logIndex memLog pos2 - slidingM.logIndex memLog pos1)%nat =
-  (int.nat pos2 - int.nat pos1)%nat.
+  (uint.nat pos2 - uint.nat pos1)%nat.
 Proof.
   rewrite /slidingM.logIndex; intros.
   lia.
@@ -465,8 +465,8 @@ Proof.
       rewrite /circΣ.diskEnd /slidingM.logIndex /=
         app_length subslice_length;
         last by word.
-      replace (int.nat (int.Z _ + ( _ + _ )%nat)) with
-        (int.nat σ.(memLog).(slidingM.mutable)) by word.
+      replace (uint.nat (uint.Z _ + ( _ + _ )%nat)) with
+        (uint.nat σ.(memLog).(slidingM.mutable)) by word.
       iFrame.
 
       iPureIntro.
@@ -517,7 +517,7 @@ Proof.
       rewrite Nat.max_l in Hdurable_lb_pos; last by lia.
       pose proof (wal_wf_txns_mono_pos'
         Hwf HnextDiskEnd' Hdurable_lb_pos Hcmp).
-      assert (int.Z σ.(memLog).(slidingM.mutable) = int.Z σ.(diskEnd))
+      assert (uint.Z σ.(memLog).(slidingM.mutable) = uint.Z σ.(diskEnd))
         as Hmutable_diskEnd by lia.
       apply word.unsigned_inj in Hmutable_diskEnd.
       rewrite Hmutable_diskEnd.
@@ -591,10 +591,10 @@ Proof.
   rewrite subslice_length in Hupds_len; last by word.
   rewrite logIndex_diff in Hupds_len; last by word.
 
-  replace (int.Z σ.(diskEnd) +
+  replace (uint.Z σ.(diskEnd) +
       (slidingM.logIndex σ.(memLog) σ.(memLog).(slidingM.mutable) -
       slidingM.logIndex σ.(memLog) σ.(diskEnd))%nat)
-    with (int.Z σ.(memLog).(slidingM.mutable))
+    with (uint.Z σ.(memLog).(slidingM.mutable))
     by (rewrite logIndex_diff; word).
   wp_seq.
   wp_bind Skip.
@@ -649,7 +649,7 @@ Proof.
     ) as %->.
     iCombine "HownDiskEndMem_linv HownDiskEndMem_walinv" as "HownDiskEndMem".
     iCombine "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv" as "HownDiskEndMemTxn".
-    iMod (mono_nat_own_update_halves (int.nat (circΣ.diskEnd cs)) with
+    iMod (mono_nat_own_update_halves (uint.nat (circΣ.diskEnd cs)) with
       "HownDiskEndMem_logger HownDiskEndMem"
     ) as "(HownDiskEndMem_logger&HownDiskEndMem&_)";
       first by lia.
@@ -684,7 +684,7 @@ Proof.
     iPureIntro.
     simpl in Hcirc_matches.
     rewrite /circ_matches_txns /circΣ.diskEnd.
-    replace (int.nat _ - int.nat _)%nat with (length (upds cs)) by word.
+    replace (uint.nat _ - uint.nat _)%nat with (length (upds cs)) by word.
     eapply (is_memLog_boundaries_move _ _ _ pmwrb_de) in Hcirc_matches;
       last by reflexivity.
     assumption.
@@ -727,7 +727,7 @@ Proof.
     HownDiskEnd_logger HownDiskEndTxn_logger
   ".
   2: { by iFrame. }
-  iExists (set diskEnd (λ _, int.Z σ.(diskEnd) + int.Z s.(Slice.sz))
+  iExists (set diskEnd (λ _, uint.Z σ.(diskEnd) + uint.Z s.(Slice.sz))
           (set locked_diskEnd_txn_id (λ _, nextDiskEnd_txn_id) σ0)).
   simpl.
   iSplitL "HmemLog HdiskEnd Hshutdown Hnthread His_memLog".
@@ -745,10 +745,10 @@ Proof.
   iSplitL "HdiskEnd_exactly".
   {
     rewrite Hupds_len.
-    replace (int.Z σ.(diskEnd) +
-         (int.nat σ.(memLog).(slidingM.mutable) - int.nat σ.(diskEnd))%nat)
-      with (int.Z σ.(memLog).(slidingM.mutable)) by word.
-    replace (U64 (int.Z σ.(memLog).(slidingM.mutable))) with σ.(memLog).(slidingM.mutable) by word.
+    replace (uint.Z σ.(diskEnd) +
+         (uint.nat σ.(memLog).(slidingM.mutable) - uint.nat σ.(diskEnd))%nat)
+      with (uint.Z σ.(memLog).(slidingM.mutable)) by word.
+    replace (W64 (uint.Z σ.(memLog).(slidingM.mutable))) with σ.(memLog).(slidingM.mutable) by word.
     by iFrame "∗ #".
   }
 
@@ -761,11 +761,11 @@ Proof.
   iFrame "HinstalledTxn_lb".
 
   simpl.
-  replace (int.Z _ + int.Z _) with (int.Z σ.(memLog).(slidingM.mutable))
+  replace (uint.Z _ + uint.Z _) with (uint.Z σ.(memLog).(slidingM.mutable))
     by word.
-  replace (int.nat (int.Z _)) with (int.nat σ.(memLog).(slidingM.mutable))
+  replace (uint.nat (uint.Z _)) with (uint.nat σ.(memLog).(slidingM.mutable))
     by word.
-  replace (U64 _) with (σ.(memLog).(slidingM.mutable)) by word.
+  replace (W64 _) with (σ.(memLog).(slidingM.mutable)) by word.
   iFrame.
   iSplit.
   { iPureIntro. word. }

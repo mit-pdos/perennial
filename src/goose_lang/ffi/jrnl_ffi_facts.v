@@ -861,7 +861,7 @@ Qed.
 Lemma always_steps_MarkUsedOp l n max σj:
   wf_jrnl σj →
   jrnlAllocs σj !! l = Some max →
-  (int.Z n < int.Z max) →
+  (uint.Z n < uint.Z max) →
   always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            MarkUsedOp
                            (PairV #(LitLoc l) #(LitInt n)))
@@ -890,7 +890,7 @@ Qed.
 Lemma always_steps_FreeNumOp l n max σj:
   wf_jrnl σj →
   jrnlAllocs σj !! l = Some max →
-  (int.Z n ≠ 0 ∧ int.Z n < int.Z max) →
+  (uint.Z n ≠ 0 ∧ uint.Z n < uint.Z max) →
   always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            FreeNumOp
                            (PairV #(LitLoc l) #(LitInt n)))
@@ -919,7 +919,7 @@ Qed.
 Lemma always_steps_AllocOp l n max σj:
   wf_jrnl σj →
   jrnlAllocs σj !! l = Some max →
-  (0 < int.Z max ∧ int.Z n < int.Z max) →
+  (0 < uint.Z max ∧ uint.Z n < uint.Z max) →
   always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            AllocOp
                            #(LitLoc l))
@@ -948,7 +948,7 @@ Qed.
 Lemma always_steps_NumFreeOp l n max σj:
   wf_jrnl σj →
   jrnlAllocs σj !! l = Some max →
-  (int.Z n ≤ int.Z max) →
+  (uint.Z n ≤ uint.Z max) →
   always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            NumFreeOp
                            #(LitLoc l))
@@ -977,7 +977,7 @@ Lemma always_steps_ReadBufOp a v (sz: u64) k σj:
   wf_jrnl σj →
   jrnlData σj !! a = Some v →
   jrnlKinds σj !! (addrBlock a) = Some k →
-  (k ≠ KindBit ∧ bufSz k = int.nat sz) →
+  (k ≠ KindBit ∧ bufSz k = uint.nat sz) →
   always_steps (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                            ReadBufOp
                            (PairV (addr2val' a) #sz))
@@ -1782,7 +1782,7 @@ Lemma not_stuck'_ReadBuf_inv K `{!LanguageCtx' K} a (sz : u64) s g:
   ∃ σj k, world s = Opened σj ∧
   is_Some (jrnlData σj !! a) ∧
   jrnlKinds σj !! (addrBlock a) = Some k ∧
-  bufSz k = int.nat sz ∧ k ≠ KindBit.
+  bufSz k = uint.nat sz ∧ k ≠ KindBit.
 Proof.
   intros Hnstuck. eapply NNPP.
   intros Hneg. apply Hnstuck.
@@ -1801,7 +1801,7 @@ Proof.
   destruct (jrnlKinds _ !! _) eqn:Heq3; last first.
   { inversion H1. inversion H2. eauto. }
   repeat (simpl in *; monad_inv).
-  destruct (decide (b ≠ KindBit ∧ bufSz b = int.nat sz)); last first.
+  destruct (decide (b ≠ KindBit ∧ bufSz b = uint.nat sz)); last first.
   { repeat (simpl in *; monad_inv). eauto. }
   eapply Hneg. naive_solver.
 Qed.
@@ -1838,7 +1838,7 @@ Qed.
 Lemma not_stuck_MkAllocOp_inv max s g:
   ¬ stuck ((ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         MkAllocOp #(LitInt max)%V)) s g →
-  ∃ σj, world s = Opened σj ∧ 0 < int.Z max ∧ int.Z max `mod` 8 = 0.
+  ∃ σj, world s = Opened σj ∧ 0 < uint.Z max ∧ uint.Z max `mod` 8 = 0.
 Proof.
   intros Hnstuck. eapply NNPP.
   intros Hneg. apply Hnstuck.
@@ -1858,7 +1858,7 @@ Lemma not_stuck'_MarkUsedOp_inv K `{!LanguageCtx' K} l n s g:
   ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         MarkUsedOp (PairV #(LitLoc l) #(LitInt n)%V))) s g →
   ∃ σj max, world s = Opened σj ∧
-  jrnlAllocs σj !! l = Some max ∧ int.Z n < int.Z max.
+  jrnlAllocs σj !! l = Some max ∧ uint.Z n < uint.Z max.
 Proof.
   intros Hnstuck. eapply NNPP.
   intros Hneg. apply Hnstuck.
@@ -1874,7 +1874,7 @@ Proof.
   destruct (jrnlAllocs _ !! _) eqn:Heq2; last first.
   { inversion H1. inversion H2. eauto. }
   repeat (simpl in *; monad_inv).
-  destruct (decide (int.Z n < int.Z r)); last first.
+  destruct (decide (uint.Z n < uint.Z r)); last first.
   { repeat (simpl in *; monad_inv). eauto. }
   eapply Hneg. naive_solver.
 Qed.
@@ -1883,7 +1883,7 @@ Lemma not_stuck'_FreeNumOp_inv K `{!LanguageCtx' K} l n s g:
   ¬ stuck' (K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext)
                         FreeNumOp (PairV #(LitLoc l) #(LitInt n)%V))) s g →
   ∃ σj max, world s = Opened σj ∧
-  jrnlAllocs σj !! l = Some max ∧ int.Z n ≠ 0 ∧ int.Z n < int.Z max.
+  jrnlAllocs σj !! l = Some max ∧ uint.Z n ≠ 0 ∧ uint.Z n < uint.Z max.
 Proof.
   intros Hnstuck. eapply NNPP.
   intros Hneg. apply Hnstuck.
@@ -1899,7 +1899,7 @@ Proof.
   destruct (jrnlAllocs _ !! _) eqn:Heq2; last first.
   { inversion H1. inversion H2. eauto. }
   repeat (simpl in *; monad_inv).
-  destruct (decide (int.Z n ≠ 0 ∧ int.Z n < int.Z r)); last first.
+  destruct (decide (uint.Z n ≠ 0 ∧ uint.Z n < uint.Z r)); last first.
   { repeat (simpl in *; monad_inv). eauto. }
   eapply Hneg. naive_solver.
 Qed.
@@ -1908,7 +1908,7 @@ Lemma ghost_step_jrnl_mkalloc E j K {HCTX: LanguageCtx K} (n: u64):
   nclose sN ⊆ E →
   spec_ctx -∗
   j ⤇ K (ExternalOp (ext := @spec_ffi_op_field jrnl_spec_ext) MkAllocOp #n)
-  -∗ |NC={E}=> ∃ (l: loc), ⌜ 0 < int.Z n ∧ int.Z n `mod` 8 = 0 ⌝ ∗ j ⤇ K #l ∗ jrnl_alloc l n.
+  -∗ |NC={E}=> ∃ (l: loc), ⌜ 0 < uint.Z n ∧ uint.Z n `mod` 8 = 0 ⌝ ∗ j ⤇ K #l ∗ jrnl_alloc l n.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hj".
   iInv "Hstate" as (s g) "(>H&Hinterp)" "Hclo".

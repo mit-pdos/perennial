@@ -118,15 +118,15 @@ Definition own_int_log γ σ := own γ.(s_internal_log) (●ML{#1/2} (σ : list 
 (* RPC specs *)
 
 Definition ApplyAsBackup_core_spec γ γsrv args opsfull op Q (Φ : u64 -> iProp Σ) : iProp Σ :=
-  ("%Hσ_index" ∷ ⌜length (get_rwops opsfull) = (int.nat args.(ApplyAsBackupArgs.index) + 1)%nat⌝ ∗
+  ("%Hσ_index" ∷ ⌜length (get_rwops opsfull) = (uint.nat args.(ApplyAsBackupArgs.index) + 1)%nat⌝ ∗
    "%Hhas_encoding" ∷ ⌜ has_op_encoding args.(ApplyAsBackupArgs.op) op⌝ ∗
    "%Hghost_op_σ" ∷ ⌜last opsfull = Some (op, Q)⌝ ∗
-   "%Hno_overflow" ∷ ⌜int.nat args.(ApplyAsBackupArgs.index) < int.nat (word.add args.(ApplyAsBackupArgs.index) 1)⌝ ∗
+   "%Hno_overflow" ∷ ⌜uint.nat args.(ApplyAsBackupArgs.index) < uint.nat (word.add args.(ApplyAsBackupArgs.index) 1)⌝ ∗
    "#Hepoch_lb" ∷ is_epoch_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) ∗
    "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) args.(ApplyAsBackupArgs.epoch) opsfull ∗
    "#Hprop_facts" ∷ is_proposal_facts γ.(s_pb) args.(ApplyAsBackupArgs.epoch) opsfull ∗
    "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) args.(ApplyAsBackupArgs.epoch) opsfull ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) opsfull -∗ Φ (U64 0)) ∧
+   "HΨ" ∷ ((is_accepted_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) opsfull -∗ Φ (W64 0)) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
     )%I
 .
@@ -151,8 +151,8 @@ Definition is_in_config γ γsrv epoch : iProp Σ :=
 .
 
 Definition committed_log_fact γ (epoch:u64) ops_commit_full : iProp Σ :=
-  (∀ σ' epoch', ⌜int.nat epoch <= int.nat epoch'⌝ -∗
-                ⌜length ops_commit_full <= length σ' ∨ int.nat epoch < int.nat epoch'⌝ -∗
+  (∀ σ' epoch', ⌜uint.nat epoch <= uint.nat epoch'⌝ -∗
+                ⌜length ops_commit_full <= length σ' ∨ uint.nat epoch < uint.nat epoch'⌝ -∗
                 is_proposal_lb γ.(s_pb) epoch' σ' -∗
                 is_proposal_facts γ.(s_pb) epoch' σ' -∗
                 ⌜prefix ops_commit_full σ'⌝)
@@ -164,15 +164,15 @@ Definition commitIndex_facts γ (epoch committedNextIndex:u64) : iProp Σ :=
   "#Hcommit_lb" ∷ is_pb_log_lb γ.(s_pb) ops_commit_full ∗
   "#Hcommit_fact" ∷ □ committed_log_fact γ epoch ops_commit_full ∗
   "#Hcommit_prop_lb" ∷ is_proposal_lb γ.(s_pb) epoch ops_commit_full ∗
-  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
+  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = uint.nat committedNextIndex⌝
 .
 
 Definition SetState_core_spec γ γsrv args opsfull :=
   λ (Φ : u64 -> iPropO Σ) ,
   ( ∃ prevEpoch,
     ⌜has_snap_encoding args.(SetStateArgs.state) (get_rwops opsfull)⌝ ∗
-    ⌜length (get_rwops opsfull) = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
-    ⌜int.nat prevEpoch <= int.nat args.(SetStateArgs.epoch) ⌝ ∗
+    ⌜length (get_rwops opsfull) = uint.nat args.(SetStateArgs.nextIndex)⌝ ∗
+    ⌜uint.nat prevEpoch <= uint.nat args.(SetStateArgs.epoch) ⌝ ∗
     is_proposal_lb γ.(s_pb) args.(SetStateArgs.epoch) opsfull ∗
     is_proposal_facts γ.(s_pb) args.(SetStateArgs.epoch) opsfull ∗
     is_proposal_facts_prim γ.(s_prim) args.(SetStateArgs.epoch) opsfull ∗
@@ -181,7 +181,7 @@ Definition SetState_core_spec γ γsrv args opsfull :=
     (
       (is_epoch_lb γsrv.(r_pb) args.(SetStateArgs.epoch) -∗
        Φ 0) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ -∗ Φ err))
+      (∀ err, ⌜err ≠ W64 0⌝ -∗ Φ err))
     )%I
 .
 
@@ -206,17 +206,17 @@ Definition GetState_core_spec γ γsrv (epoch:u64) ghost_epoch_lb :=
     (is_epoch_lb γsrv.(r_pb) ghost_epoch_lb ∗
       (
       (∀ epochacc opsfull snap committedNextIndex,
-            ⌜int.nat ghost_epoch_lb ≤ int.nat epochacc⌝ -∗
-            ⌜int.nat epochacc ≤ int.nat epoch⌝ -∗
+            ⌜uint.nat ghost_epoch_lb ≤ uint.nat epochacc⌝ -∗
+            ⌜uint.nat epochacc ≤ uint.nat epoch⌝ -∗
             is_accepted_ro γsrv.(r_pb) epochacc opsfull -∗
             is_proposal_facts γ.(s_pb) epochacc opsfull -∗
             is_proposal_facts_prim γ.(s_prim) epochacc opsfull -∗
             is_proposal_lb γ.(s_pb) epochacc opsfull -∗
             commitIndex_facts γ epochacc committedNextIndex -∗
             ⌜has_snap_encoding snap (get_rwops opsfull)⌝ -∗
-            ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝ -∗
+            ⌜length (get_rwops opsfull) = uint.nat (W64 (length (get_rwops opsfull)))⌝ -∗
                  Φ (GetStateReply.mkC 0 (length (get_rwops opsfull)) committedNextIndex snap)) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ -∗ Φ (GetStateReply.mkC err 0 0 [])))
+      (∀ err, ⌜err ≠ W64 0⌝ -∗ Φ (GetStateReply.mkC err 0 0 [])))
     )
     )%I
 .
@@ -324,7 +324,7 @@ Defined.
 Definition IncreaseCommit_core_spec γ γsrv (newCommitIndex:u64)  :=
   λ (Φ : unit → iPropO Σ) ,
   ( ∃ σ epoch,
-    ⌜int.nat newCommitIndex = length σ⌝ ∗
+    ⌜uint.nat newCommitIndex = length σ⌝ ∗
     is_epoch_lb γsrv.(r_pb) epoch ∗
     is_pb_log_lb γ.(s_pb) σ ∗
     is_proposal_lb γ.(s_pb) epoch σ ∗
@@ -351,14 +351,14 @@ Defined.
 Definition is_pb_rpcs_pre ρ : (u64 -d> replica_system_names -d> replica_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
   ∃ γrpc,
-  is_urpc_spec_pred γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
-  is_urpc_spec_pred γrpc host (U64 1) (SetState_spec γ γsrv) ∗
-  is_urpc_spec_pred γrpc host (U64 2) (GetState_spec γ γsrv) ∗
-  is_urpc_spec_pred γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
-  is_urpc_spec_pred γrpc host (U64 4) (Apply_spec γ) ∗
-  is_urpc_spec_pred γrpc host (U64 6) (ApplyRo_spec γ) ∗
-  is_urpc_spec_pred γrpc host (U64 7) (IncreaseCommit_spec γ γsrv) ∗
-  is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ; (U64 7) ]})%I
+  is_urpc_spec_pred γrpc host (W64 0) (ApplyAsBackup_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (W64 1) (SetState_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (W64 2) (GetState_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (W64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
+  is_urpc_spec_pred γrpc host (W64 4) (Apply_spec γ) ∗
+  is_urpc_spec_pred γrpc host (W64 6) (ApplyRo_spec γ) ∗
+  is_urpc_spec_pred γrpc host (W64 7) (IncreaseCommit_spec γ γsrv) ∗
+  is_urpc_dom γrpc {[ (W64 0) ; (W64 1) ; (W64 2) ; (W64 3) ; (W64 4) ; (W64 6) ; (W64 7) ]})%I
 .
 
 Instance is_pb_rpcs_pre_contr : Contractive is_pb_rpcs_pre.
@@ -453,14 +453,14 @@ Definition is_conf_inv γ γconf : iProp Σ :=
   "Hepoch" ∷ own_latest_epoch γconf epoch ∗
   "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
   "Hconf" ∷ own_config γconf conf ∗
-  "%HepochLe" ∷ ⌜int.nat epoch <= int.nat reservedEpoch⌝ ∗
+  "%HepochLe" ∷ ⌜uint.nat epoch <= uint.nat reservedEpoch⌝ ∗
   "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch (r_pb <$> confγs) ∗
   "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
   "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch) ∗
-  "Hunreserved" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat reservedEpoch < int.nat epoch'⌝ →
+  "Hunreserved" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜uint.nat reservedEpoch < uint.nat epoch'⌝ →
         config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗
-  "Hunset_or_set" ∷ (config_unset γ.(s_pb) reservedEpoch ∨ ⌜int.nat epoch = int.nat reservedEpoch⌝) ∗
-  "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat reservedEpoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip)
+  "Hunset_or_set" ∷ (config_unset γ.(s_pb) reservedEpoch ∨ ⌜uint.nat epoch = uint.nat reservedEpoch⌝) ∗
+  "#His_skip" ∷ (∀ epoch_skip, ⌜uint.nat epoch < uint.nat epoch_skip⌝ → ⌜uint.nat epoch_skip < uint.nat reservedEpoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip)
   )
 .
 (* End config client-side protocol. *)
@@ -562,7 +562,7 @@ Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp
         (P epoch_prev σ_prev sealed ={⊤∖↑pbAofN}=∗ P epoch σ false ∗ Q) ∗
         own_StateMachine epoch_prev σ_prev sealed P
   }}}
-    set_state_fn (slice_val snap_sl) #(U64 (length σ)) #epoch
+    set_state_fn (slice_val snap_sl) #(W64 (length σ)) #epoch
   {{{
         RET #();
         own_StateMachine epoch σ false P ∗
@@ -599,8 +599,8 @@ Definition is_ApplyReadonlyFn own_StateMachine (applyRoFn:val) (P:u64 → list (
   {{{
         reply_sl q (lastModifiedIndex:u64),
         RET (#lastModifiedIndex, slice_val reply_sl);
-        ⌜int.nat lastModifiedIndex <= length σ ⌝ ∗
-        ⌜∀ σ', prefix σ' σ → int.nat lastModifiedIndex <= length σ' →
+        ⌜uint.nat lastModifiedIndex <= length σ ⌝ ∗
+        ⌜∀ σ', prefix σ' σ → uint.nat lastModifiedIndex <= length σ' →
                (compute_reply σ op = compute_reply σ' op)⌝ ∗
         own_slice_small reply_sl byteT q (compute_reply σ op) ∗
         own_StateMachine epoch σ sealed P
@@ -656,7 +656,7 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
 .
 
 
-Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
+Definition no_overflow (x:nat) : Prop := uint.nat (W64 x) = x.
 Hint Unfold no_overflow : arith.
 
 (* physical (volatile) state; meant to be unfolded in code proof *)
@@ -665,7 +665,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
     (committedNextIndex_cond isPrimary_cond:loc) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
   (* non-persistent physical *)
   "Hepoch" ∷ s ↦[Server :: "epoch"] #st.(server.epoch) ∗
-  "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #(U64 (length (get_rwops st.(server.ops_full_eph)))) ∗
+  "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #(W64 (length (get_rwops st.(server.ops_full_eph)))) ∗
   "HisPrimary" ∷ s ↦[Server :: "isPrimary"] #st.(server.isPrimary) ∗
   "HcanBecomePrimary" ∷ s ↦[Server :: "canBecomePrimary"] #st.(server.canBecomePrimary) ∗
   "Hsealed" ∷ s ↦[Server :: "sealed"] #st.(server.sealed) ∗
@@ -743,7 +743,7 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   "#Hcommit_lb" ∷ is_pb_log_lb γ.(s_pb) ops_commit_full ∗
   "#Hcommit_fact" ∷ □ committed_log_fact γ st.(server.epoch) ops_commit_full ∗
   "#Hcommit_prop_lb" ∷ is_proposal_lb γ.(s_pb) st.(server.epoch) ops_commit_full ∗
-  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat st.(server.committedNextIndex)⌝
+  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = uint.nat st.(server.committedNextIndex)⌝
   )%I
 .
 
@@ -771,7 +771,7 @@ Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :
   }}}
     Server__isEpochStale #s #epoch @ stk
   {{{
-        RET #(negb (bool_decide (int.Z epoch = int.Z currEpoch)));
+        RET #(negb (bool_decide (uint.Z epoch = uint.Z currEpoch)));
         s ↦[Server :: "epoch"] #currEpoch
   }}}
 .

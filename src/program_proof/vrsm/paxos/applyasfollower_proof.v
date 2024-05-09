@@ -17,14 +17,14 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
         "Hargs" ∷ applyAsFollowerArgs.own args_ptr args ∗
 
         "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
-        "%Hσ_index" ∷ ⌜ length σ = (int.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
+        "%Hσ_index" ∷ ⌜ length σ = (uint.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
         "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
         "#Hprop" ∷ is_proposal (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ
   }}}
     singleClerk__applyAsFollower #ck #args_ptr
   {{{
         reply_ptr reply, RET #reply_ptr; applyAsFollowerReply.own reply_ptr reply 1 ∗
-                                                 □if (decide (reply.(applyAsFollowerReply.err) = (U64 0))) then
+                                                 □if (decide (reply.(applyAsFollowerReply.err) = (W64 0))) then
                                                    is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ
                                                  else
                                                    True
@@ -234,7 +234,7 @@ Proof.
         (* start ghost reasoning *)
         iIntros "Hghost".
         iNamed "Hghost".
-        assert (int.Z (length log) >= int.Z args.(applyAsFollowerArgs.nextIndex))%Z as Hineq.
+        assert (uint.Z (length log) >= uint.Z args.(applyAsFollowerArgs.nextIndex))%Z as Hineq.
         { word. }
 
         (* use protocol lemma *)
@@ -291,8 +291,8 @@ Proof.
       { simpl. word. }
       {
         simpl.
-        destruct (decide (int.nat pst.(paxosState.acceptedEpoch) =
-                          int.nat args.(applyAsFollowerArgs.epoch))).
+        destruct (decide (uint.nat pst.(paxosState.acceptedEpoch) =
+                          uint.nat args.(applyAsFollowerArgs.epoch))).
         { exfalso. apply Heqb0. repeat f_equal. word. }
         { done. }
       }

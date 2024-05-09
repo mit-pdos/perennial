@@ -10,7 +10,7 @@ Lemma wp_InstallShardRPC (s args_ptr:loc) args γ :
   is_KVShardServer s γ -∗
   {{{
        own_InstallShardRequest args_ptr args ∗
-       ⌜int.nat args.(IR_Sid) < uNSHARD⌝ ∗
+       ⌜uint.nat args.(IR_Sid) < uNSHARD⌝ ∗
        (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
   }}}
     KVShardServer__InstallShardRPC #s #args_ptr
@@ -110,9 +110,9 @@ Proof.
     iIntros.
     assert (x ≠ args.(IR_Sid)).
     { set_solver. }
-    assert (int.nat x ≠ int.nat args.(IR_Sid)).
+    assert (uint.nat x ≠ uint.nat args.(IR_Sid)).
     {
-      destruct (bool_decide (int.Z x = int.Z args.(IR_Sid))) as [|] eqn:X.
+      destruct (bool_decide (uint.Z x = uint.Z args.(IR_Sid))) as [|] eqn:X.
       {
         apply bool_decide_eq_true in X.
         apply word.unsigned_inj in X.

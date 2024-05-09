@@ -21,7 +21,7 @@ Context `{!simpleG Σ}.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Theorem wp_inum2Addr (inum : u64) :
-  {{{ ⌜ int.nat inum < NumInodes ⌝ }}}
+  {{{ ⌜ uint.nat inum < NumInodes ⌝ }}}
     inum2Addr #inum
   {{{ RET (addr2val (inum2addr inum)); True }}}.
 Proof.
@@ -34,11 +34,11 @@ Proof.
   rewrite /NumInodes /InodeSz in H.
   replace (4096 `div` 128) with (32) in H by reflexivity.
 
-  replace (word.add (word.divu (word.sub 4096 8) 8) 2)%Z with (U64 513) by reflexivity.
-  replace (word.mul (word.mul inum 128) 8)%Z with (U64 (int.nat inum * 128 * 8)%nat).
+  replace (word.add (word.divu (word.sub 4096 8) 8) 2)%Z with (W64 513) by reflexivity.
+  replace (word.mul (word.mul inum 128) 8)%Z with (W64 (uint.nat inum * 128 * 8)%nat).
   { iApply "HΦ". done. }
 
-  assert (int.Z (word.mul (word.mul inum 128) 8) = int.Z inum * 1024)%Z.
+  assert (uint.Z (word.mul (word.mul inum 128) 8) = uint.Z inum * 1024)%Z.
   { rewrite word.unsigned_mul.
     rewrite word.unsigned_mul. word. }
 
@@ -99,7 +99,7 @@ Proof.
 Qed.
 
 Lemma elem_of_covered_inodes (x:u64) :
-  x ∈ covered_inodes ↔ (2 ≤ int.Z x < 32)%Z.
+  x ∈ covered_inodes ↔ (2 ≤ uint.Z x < 32)%Z.
 Proof.
   rewrite /covered_inodes.
   rewrite rangeSet_lookup //.
@@ -123,7 +123,7 @@ Proof.
     split; [ inversion 1 | intros ].
     move: H; word. }
   wp_call.
-  change (int.Z (word.divu _ _)) with 32%Z.
+  change (uint.Z (word.divu _ _)) with 32%Z.
   wp_if_destruct.
   { iApply "HΦ". rewrite elem_of_covered_inodes.
     iPureIntro.
@@ -133,10 +133,10 @@ Proof.
   iPureIntro. intuition.
   rewrite elem_of_covered_inodes.
   split; [ | word ].
-  assert (i ≠ U64 0) as Hnot_0%(not_inj (f:=int.Z)) by congruence.
-  assert (i ≠ U64 1) as Hnot_1%(not_inj (f:=int.Z)) by congruence.
-  change (int.Z 0%Z) with 0%Z in *.
-  change (int.Z 1%Z) with 1%Z in *.
+  assert (i ≠ W64 0) as Hnot_0%(not_inj (f:=uint.Z)) by congruence.
+  assert (i ≠ W64 1) as Hnot_1%(not_inj (f:=uint.Z)) by congruence.
+  change (uint.Z 0%Z) with 0%Z in *.
+  change (uint.Z 1%Z) with 1%Z in *.
   word.
 Qed.
 
@@ -207,7 +207,7 @@ Proof.
   iDestruct 1 as (?) "(H1&H2)".
   iApply is_inode_crash_prev_own; iFrame "∗#".
   Unshelve.
-  exact (U64 0).
+  exact (W64 0).
 Qed.
 
 End heap.

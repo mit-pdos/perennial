@@ -4,9 +4,9 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.memkv Require Import common_proof memkv_shard_definitions.
 
 Definition uCOORD_ADD: nat :=
-  Eval vm_compute in match COORD_ADD with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match COORD_ADD with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uCOORD_GET: nat :=
-  Eval vm_compute in match COORD_GET with LitV (LitInt n) => int.nat n | _ => 0 end.
+  Eval vm_compute in match COORD_GET with LitV (LitInt n) => uint.nat n | _ => 0 end.
 
 Record memkv_coord_names := {
  coord_urpc_gn : server_chan_gnames ;
@@ -30,7 +30,7 @@ Definition is_coord_server_addSpec γkv : RpcSpec :=
 
 Definition has_encoding_shardMapping (data : list u8) (l: list u64) :=
   has_encoding data (EncUInt64 <$> l) ∧
-  length l = int.nat 65536.
+  length l = uint.nat 65536.
 
 Definition is_coord_server_getSpec γkv : RpcSpec :=
   {| spec_ty := unit;
@@ -64,7 +64,7 @@ Definition own_KVCoordServer (s : loc) γ : iProp Σ :=
   "hostShards" ∷ s ↦[KVCoord :: "hostShards"] #hostShards_ptr ∗
   "shardClerks" ∷ s ↦[KVCoord :: "shardClerks"] #clset ∗
   "%Hlen_shardMapping" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝%Z ∗
-  "%HshardMapping_dom" ∷ ⌜∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)⌝ ∗
+  "%HshardMapping_dom" ∷ ⌜∀ i : u64, uint.Z i < uint.Z uNSHARD → is_Some (shardMapping !! uint.nat i)⌝ ∗
   "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.own_slice (V:=u64) shardMap_sl HostName 1 shardMapping ∗
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ ∗

@@ -1,20 +1,20 @@
 From Perennial.program_proof.mvcc Require Import tuple_prelude.
 
-Definition TID_SENTINEL := (U64 18446744073709551615).
-Definition RET_SUCCESS := (U64 0).
-Definition RET_NONEXIST := (U64 1).
-Definition RET_RETRY := (U64 100).
-Definition RET_UNSERIALIZABLE := (U64 200).
+Definition TID_SENTINEL := (W64 18446744073709551615).
+Definition RET_SUCCESS := (W64 0).
+Definition RET_NONEXIST := (W64 1).
+Definition RET_RETRY := (W64 100).
+Definition RET_UNSERIALIZABLE := (W64 200).
 
 Section repr.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ :=
-  "%HtidlastGt" ∷ ⌜Forall (λ ver, int.Z ver.1.1 < int.Z tidlast) vers⌝ ∗
-  "%HexistsLt" ∷ ⌜∀ (tid : u64), 0 < int.Z tid ->
-                                 int.Z tidgc ≤ int.Z tid ->
-                                 Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝ ∗
-  "%HtidgcLe" ∷ ⌜Forall (λ ver, int.Z tidgc ≤ int.Z ver.1.1) (tail vers)⌝ ∗
+  "%HtidlastGt" ∷ ⌜Forall (λ ver, uint.Z ver.1.1 < uint.Z tidlast) vers⌝ ∗
+  "%HexistsLt" ∷ ⌜∀ (tid : u64), 0 < uint.Z tid ->
+                                 uint.Z tidgc ≤ uint.Z tid ->
+                                 Exists (λ ver, uint.Z ver.1.1 < uint.Z tid) vers⌝ ∗
+  "%HtidgcLe" ∷ ⌜Forall (λ ver, uint.Z tidgc ≤ uint.Z ver.1.1) (tail vers)⌝ ∗
   "%Hnotnil" ∷ ⌜vers ≠ []⌝.
 
 Definition own_tuple_phys
@@ -29,12 +29,12 @@ Definition own_tuple_phys
 Definition own_tuple_repr
            (key : u64) (tidlast tidgc : u64) (vers : list pver) (vchain : list dbval) γ
   : iProp Σ :=
-  "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast ->
-                         vchain !! (int.nat tid) = Some (spec_lookup vers tid)⌝) ∗
+  "%HtupleAbs" ∷ (∀ tid, ⌜uint.Z tidgc ≤ uint.Z tid ≤ uint.Z tidlast ->
+                         vchain !! (uint.nat tid) = Some (spec_lookup vers tid)⌝) ∗
   (* We need this as [HtupleAbs] is not useful when [tidlast < tidgc]. *)
   "%Hlast" ∷ ⌜last vchain = Some (spec_lookup vers tidlast)⌝ ∗
-  "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
-  "#Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
+  "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((uint.Z tidlast) + 1)%Z⌝ ∗
+  "#Hgclb" ∷  min_tid_lb γ (uint.nat tidgc) ∗
   "#Hwellformed" ∷ tuple_wellformed vers tidlast tidgc.
 
 Definition own_tuple (tuple : loc) (key : u64) γ : iProp Σ :=

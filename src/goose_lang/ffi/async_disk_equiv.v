@@ -61,22 +61,22 @@ Section translate.
            end.
 
   Lemma state_compat_write_inv (σ : dstate) (pσ : pstate) bnew ab (n : u64) :
-    world σ !! int.Z n = Some ab →
-    state_compat (RecordSet.set world <[int.Z n:=log_heap.async_put bnew ab]> σ) pσ →
-    ∃ cb, world pσ !! int.Z n = Some cb ∧
+    world σ !! uint.Z n = Some ab →
+    state_compat (RecordSet.set world <[uint.Z n:=log_heap.async_put bnew ab]> σ) pσ →
+    ∃ cb, world pσ !! uint.Z n = Some cb ∧
           ((cb = {| ADP.curr_val := bnew; ADP.crash_val := bnew |} ∧
-            state_compat σ (RecordSet.set world <[int.Z n:= {| ADP.curr_val := log_heap.latest ab;
+            state_compat σ (RecordSet.set world <[uint.Z n:= {| ADP.curr_val := log_heap.latest ab;
                                                                ADP.crash_val := log_heap.latest ab|}]>
                             pσ)) ∨
            (ADP.crash_val cb ≠ bnew ∧
-            state_compat σ (RecordSet.set world <[int.Z n:= {| ADP.curr_val := log_heap.latest ab;
+            state_compat σ (RecordSet.set world <[uint.Z n:= {| ADP.curr_val := log_heap.latest ab;
                                                                ADP.crash_val := ADP.crash_val cb |}]>
                             pσ))).
   Proof.
     intros Hlookup Hcompat.
     destruct Hcompat as (Hheap&Hdisk&?&?).
     destruct Hdisk as (Hdom&Hvals).
-    destruct (world pσ !! int.Z n) as [cb|] eqn:Heqp; last first.
+    destruct (world pσ !! uint.Z n) as [cb|] eqn:Heqp; last first.
     { exfalso. revert Heqp. rewrite -not_elem_of_dom.
       move: Hdom. rewrite /RecordSet.set//=. rewrite dom_insert_L. set_solver. }
     exists cb. split; first done.
@@ -96,7 +96,7 @@ Section translate.
         apply (elem_of_dom_2 (D := gset Z) (world σ)) in Hlookup.
         set_solver.
       * intros addr ab' Hlookup'.
-        destruct (decide (addr = int.Z n)).
+        destruct (decide (addr = uint.Z n)).
         { subst. assert (ab' = ab) by congruence; subst.
           exists (log_heap.latest ab); split.
           * rewrite /log_heap.possible. apply elem_of_app; right. econstructor.
@@ -114,7 +114,7 @@ Section translate.
         apply (elem_of_dom_2 (D := gset Z) (world σ)) in Hlookup.
         set_solver.
       * intros addr ab' Hlookup'.
-        destruct (decide (addr = int.Z n)).
+        destruct (decide (addr = uint.Z n)).
         { subst. assert (ab' = ab) by congruence; subst.
           exists (ADP.crash_val cb); split.
           * edestruct (Hvals) as (b'&Hin&Hlook'); eauto.
@@ -400,7 +400,7 @@ Section translate.
         inversion H3; monad_inv; subst; clear H3.
         inversion H4; monad_inv; subst; clear H4.
         destruct s0 as (?&[]).
-        destruct (decide (0 < int.Z n)); monad_inv.
+        destruct (decide (0 < uint.Z n)); monad_inv.
         monad_inv. inversion H1.
         exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
                    world := world pσ2 |}).
@@ -488,7 +488,7 @@ Section translate.
         inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
         destruct_head.
-        destruct (world σ1 !! int.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
+        destruct (world σ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
         { inv_monad_false. }
         inversion H1; monad_inv; clear H1. subst.
         inversion H2; monad_inv; subst; clear H2.
@@ -498,7 +498,7 @@ Section translate.
         destruct s0 as (?&[]); monad_inv.
         inversion H4; monad_inv; subst; clear H4.
         inversion H. intuition.
-        destruct (world pσ2 !! int.Z n) eqn:Hlook; last first.
+        destruct (world pσ2 !! uint.Z n) eqn:Hlook; last first.
         { exfalso. destruct H4.
           rewrite //= in H4.
           revert Hlook. rewrite -not_elem_of_dom.  intros Hfalso.
@@ -530,7 +530,7 @@ Section translate.
         inversion H2; monad_inv; subst; clear H2.
         destruct s0.
         monad_inv.
-        destruct (world σ1 !! int.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
+        destruct (world σ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
         { inv_monad_false. }
 
         inversion H4; monad_inv; subst; clear H4.
@@ -876,7 +876,7 @@ Section translate.
         inversion H3; monad_inv; subst; clear H3.
         inversion H4; monad_inv; subst; clear H4.
         destruct s0 as (?&[]).
-        destruct (decide (0 < int.Z n)); monad_inv.
+        destruct (decide (0 < uint.Z n)); monad_inv.
         monad_inv. inversion H1.
         eexists ({| heap := _; oracle := oracle σ1; trace := trace σ1;
                    world := world σ1 |}).
@@ -953,7 +953,7 @@ Section translate.
         inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
         destruct_head.
-        destruct (world pσ1 !! int.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
+        destruct (world pσ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
         { inv_monad_false. }
         inversion H1; monad_inv; clear H1. subst.
         inversion H2; monad_inv; subst; clear H2.
@@ -963,7 +963,7 @@ Section translate.
         destruct s0 as (?&[]); monad_inv.
         inversion H4; monad_inv; subst; clear H4.
         inversion H. intuition.
-        destruct (world σ1 !! int.Z n) eqn:Hlook; last first.
+        destruct (world σ1 !! uint.Z n) eqn:Hlook; last first.
         { exfalso. destruct H4.
           rewrite //= in H4.
           revert Hlook. rewrite -not_elem_of_dom.  intros Hfalso.
@@ -995,10 +995,10 @@ Section translate.
         inversion H2; monad_inv; subst; clear H2.
         destruct s0.
         monad_inv.
-        destruct (world pσ1 !! int.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
+        destruct (world pσ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
         { inv_monad_false. }
         inversion H. intuition.
-        destruct (world σ1 !! int.Z n) eqn:Hlook; last first.
+        destruct (world σ1 !! uint.Z n) eqn:Hlook; last first.
         { exfalso. inversion H4.
           subst. revert Hlook. rewrite -not_elem_of_dom.  intros Hfalso.
           apply Hfalso. destruct H7 as (Heqdom&_). rewrite Heqdom.
@@ -1020,7 +1020,7 @@ Section translate.
            split => //=.
            *** rewrite ?dom_insert_L; eauto. rewrite H1 //.
            *** intros addr ab Hlookup.
-               destruct (decide (addr = int.Z n)); last first.
+               destruct (decide (addr = uint.Z n)); last first.
                {
                  rewrite lookup_insert_ne // in Hlookup.
                  edestruct H7 as (bd&?&?); try eapply Hlookup; eauto. exists bd; split_and!; eauto.
@@ -1543,7 +1543,7 @@ Section translate.
         inversion H1; monad_inv; subst; clear H1.
         inversion H2; monad_inv; subst; clear H2.
         destruct s0 as (?&[]).
-        destruct (decide (0 < int.Z n)); monad_inv.
+        destruct (decide (0 < uint.Z n)); monad_inv.
         monad_inv. inversion H. subst.
         do 4 eexists.
         subst. inversion Hmatch_curr. intuition.
@@ -1619,7 +1619,7 @@ Section translate.
         inversion H0; monad_inv; subst; clear H0.
         inversion H1; monad_inv; subst; clear H1.
         destruct_head.
-        destruct (world pσ1 !! int.Z n) eqn:Heq; rewrite Heq in H2; subst; last first.
+        destruct (world pσ1 !! uint.Z n) eqn:Heq; rewrite Heq in H2; subst; last first.
         { inv_monad_false. }
         inversion H0; monad_inv; clear H0. subst.
         inversion H2; monad_inv; subst; clear H2.
@@ -1627,7 +1627,7 @@ Section translate.
         inversion H; monad_inv; subst; clear H.
         inversion H4; monad_inv; subst; clear H4.
         inversion Hmatch_curr. intuition.
-        destruct (world pσ1' !! int.Z n) eqn:Hlook; last first.
+        destruct (world pσ1' !! uint.Z n) eqn:Hlook; last first.
         { exfalso. destruct H3.
           rewrite //= in H3.
           revert Hlook. rewrite -not_elem_of_dom.  intros Hfalso.
@@ -1665,11 +1665,11 @@ Section translate.
         inversion H; monad_inv; subst; clear H.
         inversion H0.
         subst. monad_inv.
-        destruct (world pσ1 !! int.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
+        destruct (world pσ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
         { inv_monad_false. }
         inversion Hmatch_curr. intuition.
         inversion H4. subst.
-        destruct (world pσ1' !! int.Z n) eqn:Hlook; last first.
+        destruct (world pσ1' !! uint.Z n) eqn:Hlook; last first.
         { exfalso. inversion H4.
           subst. revert Hlook. rewrite -not_elem_of_dom.  intros Hfalso.
           apply Hfalso. destruct H5 as (Heqdom&_). rewrite -Heqdom.

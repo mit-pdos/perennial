@@ -145,7 +145,7 @@ Section grove.
   Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
 
   Global Instance chan_GenType Σ : GenType chan Σ :=
-    fun z _ => Some (exist _ (U64 z) I).
+    fun z _ => Some (exist _ (W64 z) I).
 
   Local Definition modify_g (f : grove_global_state → grove_global_state) : transition (state*global_state) () :=
     modify (λ '(σ, g), (σ, set global_world f g)).
@@ -173,7 +173,7 @@ Section grove.
       err_early ← any bool;
       if err_early is true then ret $ Val $ (*err*)#true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
@@ -207,7 +207,7 @@ Section grove.
       err_early ← any bool;
       if err_early is true then ret $ Val $ (*err*)#true else
       new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
@@ -220,7 +220,7 @@ Section grove.
       err_early ← any bool;
       if err_early is true then ret $ Val $ (*err*)#true else
       new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
@@ -305,11 +305,11 @@ Section grove.
     {| ffiGlobalGS := groveGS;
        ffiLocalGS := groveNodeGS;
        ffi_local_ctx _ _ σ :=
-         (mono_nat_auth_own grove_tsc_name 1 (int.nat σ.(grove_node_tsc)) ∗
+         (mono_nat_auth_own grove_tsc_name 1 (uint.nat σ.(grove_node_tsc)) ∗
           ⌜file_content_bounds σ.(grove_node_files)⌝ ∗ gen_heap_interp σ.(grove_node_files))%I;
        ffi_global_ctx _ _ g :=
          (gen_heap_interp g.(grove_net) ∗ ⌜chan_msg_bounds g.(grove_net)⌝ ∗
-          mono_nat_auth_own grove_time_name 1 (int.nat g.(grove_global_time))
+          mono_nat_auth_own grove_time_name 1 (uint.nat g.(grove_global_time))
          )%I;
        ffi_local_start _ _ σ :=
          ([∗ map] f↦c ∈ σ.(grove_node_files), (pointsto (L:=string) (V:=list byte) f (DfracOwn 1) c))%I;
@@ -347,8 +347,8 @@ Section lifting.
     mono_nat_lb_own grove_tsc_name time.
 
   (* FIXME: have to manually put some of this stuff here because of two mono_natG's in context *)
-  Definition is_time_lb (t:u64) := @mono_nat_lb_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name (int.nat t).
-  Definition own_time (t:u64) := @mono_nat_auth_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name 1 (int.nat t).
+  Definition is_time_lb (t:u64) := @mono_nat_lb_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name (uint.nat t).
+  Definition own_time (t:u64) := @mono_nat_auth_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name 1 (uint.nat t).
 
   Lemma own_time_get_lb t :
     own_time t -∗ is_time_lb t.
@@ -358,7 +358,7 @@ Section lifting.
   Qed.
 
   Lemma is_time_lb_mono t t':
-    int.nat t <= int.nat t' →
+    uint.nat t <= uint.nat t' →
     is_time_lb t' -∗ is_time_lb t.
   Proof.
     rewrite /own_time /is_time_lb. destruct goose_groveGS.
@@ -447,7 +447,7 @@ lemmas. *)
     { (* Failed to pick a fresh channel. *)
       monad_inv. simpl. iFrame. iModIntro.
       do 2 (iSplit; first done).
-      iApply ("HΦ" $! true (U64 0)). done. }
+      iApply ("HΦ" $! true (W64 0)). done. }
     simpl in *. monad_inv. simpl.
     iMod (@gen_heap_alloc with "Hg") as "[$ [Hr _]]"; first done.
     iIntros "!> /=".
@@ -471,7 +471,7 @@ lemmas. *)
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      1:by eapply (relation.suchThat_runs _ _ (W64 0)).
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
@@ -501,7 +501,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : Qp) s E :
-    length data = int.nat len →
+    length data = uint.nat len →
     {{{ c_r c↦ ms ∗ pointsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (connection_socket c_l c_r, (#l, #len))%V @ s; E
     {{{ (err_early err_late : bool), RET #(err_early || err_late);
@@ -568,7 +568,7 @@ lemmas. *)
     {{{ (err : bool) (l : loc) (len : u64) (data : list u8),
         RET (#err, (#l, #len));
         ⌜if err then l = null ∧ data = [] ∧ len = 0 else
-          Message c_r data ∈ ms ∧ length data = int.nat len⌝ ∗
+          Message c_r data ∈ ms ∧ length data = uint.nat len⌝ ∗
         c_l c↦ ms ∗ pointsto_vals l 1 (data_vals data)
     }}}.
   Proof.
@@ -642,7 +642,7 @@ lemmas. *)
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
     {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
-      f f↦{q} c ∗ if err then True else ⌜length c = int.nat len⌝ ∗ pointsto_vals l 1 (data_vals c)
+      f f↦{q} c ∗ if err then True else ⌜length c = uint.nat len⌝ ∗ pointsto_vals l 1 (data_vals c)
     }}}.
   Proof.
     iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -701,7 +701,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_FileWriteOp (f : string) old new l q (len : u64) E :
-    length new = int.nat len →
+    length new = uint.nat len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
     {{{ (err : bool), RET #err; f f↦ (if err then old else new) ∗ pointsto_vals l q (data_vals new) }}}.
@@ -755,7 +755,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_FileAppendOp (f : string) old new l q (len : u64) E :
-    length new = int.nat len →
+    length new = uint.nat len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
     {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ pointsto_vals l q (data_vals new) }}}.
@@ -816,7 +816,7 @@ lemmas. *)
     {{{ tsc_lb prev_time }}}
       ExternalOp GetTscOp #() @ s; E
     {{{ (new_time: u64), RET #new_time;
-      ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time)
+      ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time)
     }}}.
   Proof.
     iIntros (Φ) "Hprev HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -825,7 +825,7 @@ lemmas. *)
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      1:by eapply (relation.suchThat_runs _ _ (W64 0)).
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
@@ -837,8 +837,8 @@ lemmas. *)
     iDestruct (mono_nat_lb_own_valid with "Htsc Hprev") as %[_ Hlb].
     iClear "Hprev".
     evar (new: u64).
-    assert (int.nat old <= int.nat new) as Hupd.
-    2: iMod (mono_nat_own_update (int.nat new) with "Htsc") as "[Htsc Hnew]"; first lia.
+    assert (uint.nat old <= uint.nat new) as Hupd.
+    2: iMod (mono_nat_own_update (uint.nat new) with "Htsc") as "[Htsc Hnew]"; first lia.
     2: subst new; iFrame "Htsc Hfiles".
     { subst new. rewrite word.unsigned_ltu. clear.
       destruct (_ <? _)%Z eqn:Hlt; last by word.
@@ -850,7 +850,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_GetTimeRangeOp s E :
-   ∀ Φ, (∀ (l h t:u64), ⌜int.nat t <= int.nat h⌝ -∗ ⌜int.nat l <= int.nat t⌝ -∗
+   ∀ Φ, (∀ (l h t:u64), ⌜uint.nat t <= uint.nat h⌝ -∗ ⌜uint.nat l <= uint.nat t⌝ -∗
                   own_time t -∗ |NC={E}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
    WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}.
   Proof.
@@ -861,18 +861,18 @@ lemmas. *)
       econstructor. rewrite /base_step/=.
       monad_simpl.
       econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      1:by eapply (relation.suchThat_runs _ _ (W64 0)).
       monad_simpl.
       econstructor.
       1: {
-        eapply (relation.suchThat_runs _ _ (U64 0)).
+        eapply (relation.suchThat_runs _ _ (W64 0)).
         apply Is_true_true_2.
         word.
       }
       monad_simpl.
       econstructor.
       {
-        eapply (relation.suchThat_runs _ _ (U64 (2^64-1))).
+        eapply (relation.suchThat_runs _ _ (W64 (2^64-1))).
         apply Is_true_true_2.
         word.
       }
@@ -888,12 +888,12 @@ lemmas. *)
     iDestruct "Hg" as "((? & %Hg & Ht)&?)".
     iMod (mono_nat_own_update with "Ht") as "[Ht _]".
     {
-      instantiate (1:=(int.nat ((if
-           int.Z g1.(global_world).(grove_global_time) <=?
-           int.Z (word.add g1.(global_world).(grove_global_time) x)
+      instantiate (1:=(uint.nat ((if
+           uint.Z g1.(global_world).(grove_global_time) <=?
+           uint.Z (word.add g1.(global_world).(grove_global_time) x)
           then word.add g1.(global_world).(grove_global_time) x
           else g1.(global_world).(grove_global_time))))).
-      destruct (Z.leb (int.Z _) (int.Z (word.add _ _))) eqn:Hlt.
+      destruct (Z.leb (uint.Z _) (uint.Z (word.add _ _))) eqn:Hlt.
       {
         rewrite Z.leb_le in Hlt.
         apply Z2Nat.inj_le; [try word..|].
@@ -1078,8 +1078,8 @@ Section grove.
   Qed.
 
   Lemma pointsto_vals_own_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
-    int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap) →
-    length data = int.nat (Slice.sz s) →
+    uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap) →
+    length data = uint.nat (Slice.sz s) →
     pointsto_vals (Slice.ptr s) q (data_vals data) -∗
     own_slice_small s byteT q data.
   Proof.
@@ -1280,7 +1280,7 @@ Local Ltac solve_atomic2 :=
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
       GetTSC #() @ ∅
-    <<< ∃∃ (new_time: u64), ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time) >>>
+    <<< ∃∃ (new_time: u64), ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time) >>>
     {{{ RET #new_time; True }}}.
   Proof.
     iIntros "!>" (Φ) "HAU". wp_lam.
@@ -1296,7 +1296,7 @@ Local Ltac solve_atomic2 :=
 
   Lemma wp_GetTimeRange :
     ⊢ ∀ (Φ:goose_lang.val → iProp Σ),
-    (∀ (l h t:u64), ⌜int.nat t <= int.nat h⌝ -∗ ⌜int.nat l <= int.nat t⌝ -∗
+    (∀ (l h t:u64), ⌜uint.nat t <= uint.nat h⌝ -∗ ⌜uint.nat l <= uint.nat t⌝ -∗
                     own_time t -∗ |NC={⊤}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
   WP GetTimeRange #() {{ Φ }}.
   Proof.
@@ -1328,13 +1328,13 @@ Program Instance grove_interp_adequacy:
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
   iMod (gen_heap_init g.(grove_net)) as (names) "(H1&H2&H3)".
-  iMod (mono_nat_own_alloc (int.nat g.(grove_global_time))) as (?) "[Ht _]".
+  iMod (mono_nat_own_alloc (uint.nat g.(grove_global_time))) as (?) "[Ht _]".
   iExists (GroveGS _ names _ _). iFrame. eauto.
 Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ??).
-  iMod (mono_nat_own_alloc (int.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
+  iMod (mono_nat_own_alloc (uint.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
   iMod (gen_heap_init σ.(grove_node_files)) as (names) "(H1&H2&_)".
   iExists (GroveNodeGS _ _ tsc_name _). eauto with iFrame.
 Qed.

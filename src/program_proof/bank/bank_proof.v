@@ -12,7 +12,7 @@ Definition bankΣ :=
 Global Instance subG_pbΣ {Σ} : subG (bankΣ) Σ → (bankG Σ).
 Proof. solve_inG. Qed.
 
-Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
+Add Ring u64ring : (word.ring_theory (word := w64_instance.w64)).
 
 Section bank_defs.
 
@@ -382,7 +382,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
-  destruct (bool_decide (int.Z src < int.Z accts_s.(Slice.sz))) eqn:Hsrc.
+  destruct (bool_decide (uint.Z src < uint.Z accts_s.(Slice.sz))) eqn:Hsrc.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
     repeat iExists _. iFrame "∗% Hlck_is #".
@@ -391,7 +391,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_pures.
-  destruct (bool_decide (int.Z dst < int.Z accts_s.(Slice.sz))) eqn:Hdst.
+  destruct (bool_decide (uint.Z dst < uint.Z accts_s.(Slice.sz))) eqn:Hdst.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
     repeat iExists _. iFrame "∗% Hlck_is #".
@@ -405,8 +405,8 @@ Proof.
 
   iDestruct (own_slice_small_sz with "Haccts_slice") as %Hslicelen.
 
-  destruct (list_lookup_lt _ accts_l (int.nat src)) as (asrc & Hasrc); first by word.
-  destruct (list_lookup_lt _ accts_l (int.nat dst)) as (adst & Hadst); first by word.
+  destruct (list_lookup_lt _ accts_l (uint.nat src)) as (asrc & Hasrc); first by word.
+  destruct (list_lookup_lt _ accts_l (uint.nat dst)) as (adst & Hadst); first by word.
 
   wp_loadField.
   wp_apply (wp_SliceGet with "[$Haccts_slice]"); first by eauto.
@@ -714,7 +714,7 @@ Proof.
           "Hkv2" ∷ kvptsto_lock γlk acc "" ∗
           "Hkv1" ∷ kvptsto acc "") ∗
         "%Hdone_dom" ∷ ⌜Permutation (elements sdone) done⌝ ∗
-        "Hdone" ∷ [∗ map] acc ↦ bal ∈ (gset_to_gmap (U64 0) sdone),
+        "Hdone" ∷ [∗ map] acc ↦ bal ∈ (gset_to_gmap (W64 0) sdone),
             kvptsto_lock γlk acc "" ∗
             kvptsto acc (bytes_to_string $ u64_le bal)
             )%I with "[] [$Haccts_slice $kvck Haccs]").
@@ -782,7 +782,7 @@ Proof.
     wp_pures.
 
     wp_loadField.
-    iMod (map_init_many (<[acc0 := bal_total]> (gset_to_gmap (U64 0) sdone))) as (γlog) "[Hmap_ctx Haccs]".
+    iMod (map_init_many (<[acc0 := bal_total]> (gset_to_gmap (W64 0) sdone))) as (γlog) "[Hmap_ctx Haccs]".
     set γ := {| bank_ls_names := γlk;
                 bank_kvptsto := kvptsto;
                 bank_logBalGN := γlog |}.
@@ -814,7 +814,7 @@ Proof.
       iModIntro. iFrame "#".
     }
 
-    iAssert (⌜map_total (gset_to_gmap (U64 0) sdone) = 0⌝)%I as %Hdone_zero_total.
+    iAssert (⌜map_total (gset_to_gmap (W64 0) sdone) = 0⌝)%I as %Hdone_zero_total.
     { iPureIntro. apply map_total_zero.
       intros ?? H.
       rewrite lookup_gset_to_gmap_Some in H.

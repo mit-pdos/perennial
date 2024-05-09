@@ -17,7 +17,7 @@ Definition is_paxos_sys_init_witness γ : iProp Σ :=
 .
 
 Definition is_paxos_server_prealloc_witness γsrv : iProp Σ :=
-  is_accepted_lb γsrv (U64 0) [].
+  is_accepted_lb γsrv (W64 0) [].
 
 Lemma prealloc_paxos_server :
   ⊢ |={⊤}=> ∃ γsrv,
@@ -99,9 +99,9 @@ Proof.
 Qed.
 
 Definition pb_spec_list γ γsrv :=
-  [ (U64 0, applyAsFollower_spec γ γsrv) ;
-    (U64 1, enterNewEpoch_spec γ γsrv) ;
-    (U64 2, becomeLeader_spec)
+  [ (W64 0, applyAsFollower_spec γ γsrv) ;
+    (W64 1, enterNewEpoch_spec γ γsrv) ;
+    (W64 2, becomeLeader_spec)
   ]
 .
 

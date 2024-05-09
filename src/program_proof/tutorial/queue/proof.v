@@ -17,7 +17,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
 
 Definition valid_elems (slice : list u64) (first : u64) (count : u64) : list u64 :=
-  subslice (int.nat first) (int.nat first + int.nat count) (slice ++ slice).
+  subslice (uint.nat first) (uint.nat first + uint.nat count) (slice ++ slice).
 
 Definition queue_size_inv (count : u64) (first : u64) (queue_size : Z): iProp Σ :=
   (⌜word.unsigned count <= queue_size⌝ ∗ ⌜word.unsigned first < queue_size⌝ ∗ ⌜queue_size > 0⌝ ∗ ⌜queue_size + 1 < 2 ^ 63⌝)%I.
@@ -47,21 +47,21 @@ Proof.
 Qed.
 
 Lemma add_one_lemma_1 : forall slice (first : u64) (count : u64) (e : u64),
-  int.Z (length slice) ≠ 0 ->
+  uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
-  int.Z first < length slice ->
-  int.Z count < length slice ->
-  subslice (int.nat first) (int.nat first + int.nat count)
-  (<[Z.to_nat (int.Z (word.add first count) `mod` length slice):=e]>
+  uint.Z first < length slice ->
+  uint.Z count < length slice ->
+  subslice (uint.nat first) (uint.nat first + uint.nat count)
+  (<[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice ++
-   <[Z.to_nat (int.Z (word.add first count) `mod` length slice):=e]>
-     slice) = subslice (int.nat first) (int.nat first + int.nat count) (slice ++ slice).
+   <[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
+     slice) = subslice (uint.nat first) (uint.nat first + uint.nat count) (slice ++ slice).
 Proof.
   intuition.
-  assert (int.nat first0 + int.nat count0 < length slice ∨ (length slice <= int.nat first0 + int.nat count0 < length slice + length slice)).
+  assert (uint.nat first0 + uint.nat count0 < length slice ∨ (length slice <= uint.nat first0 + uint.nat count0 < length slice + length slice)).
   { word. }
   destruct H3.
-  - replace (Z.to_nat(int.Z (word.add first0 count0) `mod` length slice)) with (int.nat(int.nat first0 + int.nat count0)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0)).
     + rewrite subslice_take_drop.
       rewrite subslice_take_drop.
       rewrite take_app_le.
@@ -77,22 +77,22 @@ Proof.
       rewrite Z.mod_small.
       { done. }
       word.
-  - replace (Z.to_nat(int.Z (word.add first0 count0) `mod` length slice)) with (int.nat(int.nat first0 + int.nat count0 - length slice)).
-    + epose proof (subslice_split_r (int.nat first0) (length slice) _ (_ ++ _)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
+    + epose proof (subslice_split_r (uint.nat first0) (length slice) _ (_ ++ _)).
       rewrite H4.
       2: word.
       2: { rewrite app_length. rewrite insert_length. word. }
-      epose proof (subslice_split_r (int.nat first0) (length slice) _ (slice ++ slice)).
+      epose proof (subslice_split_r (uint.nat first0) (length slice) _ (slice ++ slice)).
       rewrite H5.
       2: word.
       2: { rewrite app_length. word. }
-      assert (subslice (int.nat first0) (length slice)
-      (<[int.nat
-           (int.nat first0 + int.nat count0 -
+      assert (subslice (uint.nat first0) (length slice)
+      (<[uint.nat
+           (uint.nat first0 + uint.nat count0 -
             length slice):=e]> slice ++
-       <[int.nat
-           (int.nat first0 + int.nat count0 -
-            length slice):=e]> slice) = subslice (int.nat first0) (length slice)
+       <[uint.nat
+           (uint.nat first0 + uint.nat count0 -
+            length slice):=e]> slice) = subslice (uint.nat first0) (length slice)
             (slice ++ slice)).
         {
           rewrite <- subslice_before_app_eq.
@@ -101,16 +101,16 @@ Proof.
           2: word.
           rewrite subslice_take_drop.
           rewrite subslice_take_drop.
-          epose proof (insert_length slice (int.nat (int.nat first0 + int.nat count0 - length slice)) e).
+          epose proof (insert_length slice (uint.nat (uint.nat first0 + uint.nat count0 - length slice)) e).
           rewrite firstn_all.
           replace ((take (length slice)
-          (<[int.nat
-               (int.nat first0 + int.nat count0 -
-                length slice):=e]> slice))) with (take (length (<[int.nat
-                (int.nat first0 + int.nat count0 -
+          (<[uint.nat
+               (uint.nat first0 + uint.nat count0 -
+                length slice):=e]> slice))) with (take (length (<[uint.nat
+                (uint.nat first0 + uint.nat count0 -
                  length slice):=e]> slice))
-                (<[int.nat
-                     (int.nat first0 + int.nat count0 -
+                (<[uint.nat
+                     (uint.nat first0 + uint.nat count0 -
                       length slice):=e]> slice)).
           2: { rewrite H6. eauto. }
           rewrite firstn_all.
@@ -123,21 +123,21 @@ Proof.
       rewrite subslice_comm.
       rewrite subslice_comm.
       rewrite drop_app_length.
-      epose proof (insert_length slice (int.nat (int.nat first0 + int.nat count0 - length slice)) e).
+      epose proof (insert_length slice (uint.nat (uint.nat first0 + uint.nat count0 - length slice)) e).
       replace ((drop (length slice)
-                (<[int.nat (int.nat first0 + int.nat count0 - length slice):=e]> slice ++
-                <[int.nat (int.nat first0 + int.nat count0 - length slice):=e]> slice))) with (drop (length (<[int.nat
-                (int.nat first0 + int.nat count0 -
+                (<[uint.nat (uint.nat first0 + uint.nat count0 - length slice):=e]> slice ++
+                <[uint.nat (uint.nat first0 + uint.nat count0 - length slice):=e]> slice))) with (drop (length (<[uint.nat
+                (uint.nat first0 + uint.nat count0 -
                  length slice):=e]> slice))
-                 (<[int.nat (int.nat first0 + int.nat count0 - length slice):=e]> slice ++
-                 <[int.nat (int.nat first0 + int.nat count0 - length slice):=e]> slice)).
+                 (<[uint.nat (uint.nat first0 + uint.nat count0 - length slice):=e]> slice ++
+                 <[uint.nat (uint.nat first0 + uint.nat count0 - length slice):=e]> slice)).
       2: { rewrite H7. eauto. }
       rewrite drop_app_length.
       rewrite take_insert.
       { eauto. }
       word_cleanup.
     + word_cleanup.
-      assert (int.Z first0 + int.Z count0 = int.Z first0 + int.Z count0 - length slice + 1 * length slice).
+      assert (uint.Z first0 + uint.Z count0 = uint.Z first0 + uint.Z count0 - length slice + 1 * length slice).
       { word. }
       rewrite H7.
       rewrite Z_mod_plus.
@@ -145,39 +145,39 @@ Proof.
       word.
   Unshelve.
   { exact u64. }
-  { exact (int.nat first0 + int.nat count0)%nat. }
-  { exact (<[int.nat
-  (int.nat first0 + int.nat count0 - length slice)%Z:=e]>
+  { exact (uint.nat first0 + uint.nat count0)%nat. }
+  { exact (<[uint.nat
+  (uint.nat first0 + uint.nat count0 - length slice)%Z:=e]>
 slice). }
-  { exact (<[int.nat
-  (int.nat first0 + int.nat count0 - length slice)%Z:=e]>
+  { exact (<[uint.nat
+  (uint.nat first0 + uint.nat count0 - length slice)%Z:=e]>
 slice). }
-  exact (int.nat first0 + int.nat count0)%nat.
+  exact (uint.nat first0 + uint.nat count0)%nat.
 Qed.
 
 Lemma add_one_lemma_2 : forall slice (first : u64) (count : u64) (e : u64),
-  int.Z (length slice) ≠ 0 ->
+  uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
-  int.Z first < length slice ->
-  int.Z count < length slice ->
-  subslice (int.nat first + int.nat count) (int.nat first + Z.to_nat(int.Z count + 1))
-  (<[Z.to_nat (int.Z (word.add first count) `mod` length slice):=e]>
+  uint.Z first < length slice ->
+  uint.Z count < length slice ->
+  subslice (uint.nat first + uint.nat count) (uint.nat first + Z.to_nat(uint.Z count + 1))
+  (<[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice ++
-   <[Z.to_nat (int.Z (word.add first count) `mod` length slice):=e]>
+   <[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice) = [e].
 Proof.
   intuition.
-  assert (int.nat first0 + int.nat count0 < length slice ∨ (length slice <= int.nat first0 + int.nat count0 < length slice + length slice)).
+  assert (uint.nat first0 + uint.nat count0 < length slice ∨ (length slice <= uint.nat first0 + uint.nat count0 < length slice + length slice)).
   { word. }
   destruct H3.
-  - replace (Z.to_nat(int.Z (word.add first0 count0) `mod` length slice)) with (int.nat(int.nat first0 + int.nat count0)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0)).
     + rewrite subslice_comm.
       rewrite drop_app_le.
       2: { rewrite insert_length. word. }
       rewrite drop_insert_le.
       2: { word. }
-      assert ((int.nat (int.nat first0 + int.nat count0)%Z -
-      (int.nat first0 + int.nat count0))%nat = int.nat 0).
+      assert ((uint.nat (uint.nat first0 + uint.nat count0)%Z -
+      (uint.nat first0 + uint.nat count0))%nat = uint.nat 0).
       { word_cleanup. }
       rewrite H4.
       match goal with
@@ -198,15 +198,15 @@ Proof.
       rewrite Z.mod_small.
       { done. }
       word.
-  - replace (Z.to_nat(int.Z (word.add first0 count0) `mod` length slice)) with (int.nat(int.nat first0 + int.nat count0 - length slice)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
     + rewrite subslice_comm.
       rewrite drop_app_ge.
       2: { rewrite insert_length. word. }
       rewrite insert_length.
       rewrite drop_insert_le.
       2: { word. }
-      assert ((int.nat (int.nat first0 + int.nat count0 - length slice)%Z -
-      (int.nat first0 + int.nat count0 - length slice))%nat = int.nat 0).
+      assert ((uint.nat (uint.nat first0 + uint.nat count0 - length slice)%Z -
+      (uint.nat first0 + uint.nat count0 - length slice))%nat = uint.nat 0).
       { word_cleanup. }
       rewrite H4.
       match goal with
@@ -224,7 +224,7 @@ Proof.
       }
       word.
     + word_cleanup.
-      assert (int.Z first0 + int.Z count0 = int.Z first0 + int.Z count0 - length slice + 1 * length slice).
+      assert (uint.Z first0 + uint.Z count0 = uint.Z first0 + uint.Z count0 - length slice + 1 * length slice).
       { word. }
       rewrite H7.
       rewrite Z_mod_plus.
@@ -233,17 +233,17 @@ Proof.
 Qed.
 
 Theorem add_one : forall slice (first : u64) (count : u64) e, 
-  int.Z (length slice) ≠ 0 ->
+  uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
-  int.Z first < length slice ->
-  int.Z count < length slice ->
-  valid_elems (<[int.nat (word.modu ((word.add) first count) (length slice)):= e]> slice) first (word.add count 1) 
+  uint.Z first < length slice ->
+  uint.Z count < length slice ->
+  valid_elems (<[uint.nat (word.modu ((word.add) first count) (length slice)):= e]> slice) first (word.add count 1) 
   = valid_elems slice first count ++ [e].
 Proof.
   intuition.
   unfold valid_elems.
   word_cleanup.
-  rewrite (subslice_split_r (int.nat first0) (int.nat first0 + int.nat count0) _ (_ ++ _)).
+  rewrite (subslice_split_r (uint.nat first0) (uint.nat first0 + uint.nat count0) _ (_ ++ _)).
   - rewrite add_one_lemma_1; eauto.
     rewrite app_inv_head_iff.
     apply add_one_lemma_2; eauto.
@@ -254,11 +254,11 @@ Proof.
 Qed.
 
 Lemma remove_one_lemma_1 : forall slice (first : u64) (e : u64),
-  int.Z (length slice) ≠ 0 ->
+  uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
-  int.Z first < length slice ->
-  slice !! int.nat first = Some e -> 
-  subslice (int.nat first) (int.nat first + 1) (slice ++ slice) = [e].
+  uint.Z first < length slice ->
+  slice !! uint.nat first = Some e -> 
+  subslice (uint.nat first) (uint.nat first + 1) (slice ++ slice) = [e].
 Proof.
   intuition.
   rewrite subslice_comm.
@@ -268,7 +268,7 @@ Proof.
   2: { word. }
   rewrite drop_app_le.
   2: word.
-  rewrite <- (take_drop_middle (slice) (int.nat first0) e).
+  rewrite <- (take_drop_middle (slice) (uint.nat first0) e).
   2: eauto.
   rewrite drop_app_length'.
   2: { rewrite take_length. word. }
@@ -278,20 +278,20 @@ Proof.
 Qed.
 
 Lemma remove_one_lemma_2 : forall (slice : list u64) (first : u64) (count : u64) (e : u64),
-  int.Z (length slice) ≠ 0 ->
+  uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
-  int.Z first < length slice ->
-  0 < int.Z count <= length slice ->
-  subslice (int.nat first + 1) (int.nat first + int.nat count) (slice ++ slice) = 
+  uint.Z first < length slice ->
+  0 < uint.Z count <= length slice ->
+  subslice (uint.nat first + 1) (uint.nat first + uint.nat count) (slice ++ slice) = 
   subslice (Z.to_nat
-  (int.Z (word.add first 1)
+  (uint.Z (word.add first 1)
     `mod` length slice))
   (Z.to_nat
-    (int.Z (word.add first 1)
-    `mod` length slice) + Z.to_nat (int.Z count - 1)) (slice ++ slice).
+    (uint.Z (word.add first 1)
+    `mod` length slice) + Z.to_nat (uint.Z count - 1)) (slice ++ slice).
 Proof.
   intuition.
-  assert (int.Z first0 < length slice - 1 ∨ int.Z first0 = length slice - 1).
+  assert (uint.Z first0 < length slice - 1 ∨ uint.Z first0 = length slice - 1).
   { word. }
   destruct H2.
   - rewrite Z.mod_small. 2: { word. }
@@ -308,9 +308,9 @@ Proof.
   - rewrite H2.
     replace (Init.Nat.add (Z.to_nat (Z.sub (Datatypes.length slice) 1)) 1) with ((length slice)).
     2: word.
-    replace (word.unsigned (word.add first0 1)) with (int.Z (length slice)).
+    replace (word.unsigned (word.add first0 1)) with (uint.Z (length slice)).
     2: word.
-    replace ((int.Z (length slice) `mod` length slice)) with 0.
+    replace ((uint.Z (length slice) `mod` length slice)) with 0.
     2: { rewrite Z_u64. { rewrite Z_mod_same. { done. } word. } word. }
     rewrite Z2Nat.inj_0.
     replace (Init.Nat.add 0 (Z.to_nat (Z.sub (word.unsigned count0) 1))) with (Z.to_nat (Z.sub (word.unsigned count0) 1)).
@@ -332,17 +332,17 @@ Proof.
 Qed.
 
 Theorem remove_one : forall slice (first : u64) (count : u64) e, 
-  int.Z (length slice) ≠ 0 ->
+  uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
-  int.Z first < length slice ->
-  0 < int.Z count <= length slice ->
-  slice !! int.nat first = Some e -> 
+  uint.Z first < length slice ->
+  0 < uint.Z count <= length slice ->
+  slice !! uint.nat first = Some e -> 
   valid_elems slice first count = e :: valid_elems slice (word.modu ((word.add) first 1) (length slice)) (word.sub count 1).
 Proof.
   intuition.
   unfold valid_elems.
   word_cleanup.
-  rewrite (subslice_split_r (int.nat first0) (int.nat first0 + 1) _ (_++_)).
+  rewrite (subslice_split_r (uint.nat first0) (uint.nat first0 + 1) _ (_++_)).
   - rewrite (remove_one_lemma_1 slice first0 e); eauto.
     rewrite app_inv_head_iff.
     apply remove_one_lemma_2; eauto.
@@ -369,7 +369,7 @@ Proof.
   - wp_loadField.
     wp_loadField.
     unfold queue_size_inv.
-    edestruct (list_lookup_Z_lt queue0 (int.Z first0)).
+    edestruct (list_lookup_Z_lt queue0 (uint.Z first0)).
     { word. }
     { wp_apply (wp_SliceGet with "[isSlice]"). 
       { 
@@ -438,7 +438,7 @@ Proof.
                 queue_size ↦[uint64T] #queueSlice.(Slice.sz) ∗ 
                 locked #lk0 ∗ 
                 match r with
-                  | false => ⌜int.Z queueSlice.(Slice.sz) > int.Z (count)⌝
+                  | false => ⌜uint.Z queueSlice.(Slice.sz) > uint.Z (count)⌝
                   | true => True
                 end
                 )%I with "[] [H0 Hqueue Hfirst Hcount isSlice H2 Helem]"). (* takes care of for loops of wait*)
@@ -500,7 +500,7 @@ Proof.
       (* Search word.modu. *)
       (* Search (_ `mod` _) (_ < _).  *)
       (* Z_mod_lt: ∀ a b : Z, b > 0 → 0 ≤ a `mod` b < b *)
-      epose proof (Z_mod_lt _ (int.Z queueSlice.(Slice.sz))).
+      epose proof (Z_mod_lt _ (uint.Z queueSlice.(Slice.sz))).
       destruct H1.
       { epose proof (u64_Z_through_nat (queueSlice.(Slice.sz))).
         (* Check u64_Z_through_nat. *)
@@ -510,14 +510,15 @@ Proof.
         apply Hqueue_size_inv0.
         }
       apply Nat2Z.inj_lt.
-      assert (int.Z queueSlice.(Slice.sz) ≠ 0).
+      assert (uint.Z queueSlice.(Slice.sz) ≠ 0).
       { epose proof (u64_Z_through_nat (queueSlice.(Slice.sz))).
         rewrite <- H3.
         rewrite <- H0.
         word.
       }
       epose proof (word.unsigned_modu_nowrap (word.add first1 count1) queueSlice.(Slice.sz)).
-      epose proof (u64_Z_through_nat (word.modu (word.add first1 count1)
+      epose proof (u64_Z_through_nat (word.modu
+      (word.add first1 count1)
       queueSlice.(Slice.sz))).
       rewrite H5.
       rewrite H4.
@@ -534,7 +535,10 @@ Proof.
     wp_apply (release_spec with "[H2 Hqueue Hfirst Hcount H4 Helem HP]").
     { iFrame "HlockC". 
       iFrame "H2". iNext. iExists _, (word.add count1 1).
-      iExists (<[int.nat (word.modu (word.add first1 count1) queueSlice.(Slice.sz)):=a]> queue1). 
+      iExists (<[uint.nat
+      (word.modu
+         (word.add first1 count1)
+         queueSlice.(Slice.sz)):=a]> queue1). 
       iFrame.
       iFrame "Hqueue".
       (* Search big_opL insert. *)
@@ -546,7 +550,10 @@ Proof.
         intuition eauto.
         word.
       }
-      edestruct (list_lookup_Z_lt queue1 (int.nat (word.modu (word.add first1 count1) queueSlice.(Slice.sz)))).
+      edestruct (list_lookup_Z_lt queue1 (uint.nat
+      (word.modu
+        (word.add first1 count1)
+        queueSlice.(Slice.sz)))).
         { split. { word. }
           epose proof (Z_mod_lt _ (length queue1)).
           destruct H1. { word. }
@@ -558,7 +565,7 @@ Proof.
             rewrite <- H0.
             apply H2. }
           word. }
-          replace queueSlice.(Slice.sz) with (U64 (length queue1)).
+          replace queueSlice.(Slice.sz) with (W64 (length queue1)).
           { rewrite add_one. 
             { rewrite big_sepL_app. simpl. iFrame. }
             { destruct Hqueue_size_inv. destruct H3. word. }
@@ -604,7 +611,7 @@ Proof.
             queue_size ↦[uint64T] #queueSlice.(Slice.sz) ∗ 
             locked #lk0 ∗ 
             match r with
-              | false => ⌜int.Z (count) ≠ 0⌝
+              | false => ⌜uint.Z (count) ≠ 0⌝
               | true => True
             end
             )%I with "[] [H0 Hqueue Hfirst Hcount isSlice H2 Helem]").
@@ -620,7 +627,7 @@ Proof.
     + wp_pures.
       wp_loadField.
       wp_apply (wp_condWait with "[H2 Hfirst Hcount isSlice Helem]").
-      { iFrame "# H2". iExists first1, (U64 0), queue1. iFrame. eauto. }
+      { iFrame "# H2". iExists first1, (W64 0), queue1. iFrame. eauto. }
       iIntros "[H2 H4]".
       wp_pures.
       iModIntro.
@@ -650,7 +657,7 @@ Proof.
     wp_loadField.
     wp_loadField.
     iPoseProof (own_slice_small_sz with "isSlice") as "%".
-    edestruct (list_lookup_Z_lt queue1 (int.Z first1)).
+    edestruct (list_lookup_Z_lt queue1 (uint.Z first1)).
     { word. }
     wp_apply (wp_SliceGet with "[isSlice]"). 
     { 

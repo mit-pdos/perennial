@@ -113,7 +113,7 @@ Definition twophase_val_interp {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_h
   | JrnlT => (∃ (l: loc) γ γ' dinit objs_dom,
                  ⌜ vimpl = #l ⌝ ∗ ⌜ vspec = #true ⌝ ∗ is_twophase_pre l γ γ' dinit objs_dom ∗ jrnl_open)%I
   | AllocT => (∃ (ls li: loc) (max : u64),
-                 ⌜ vimpl = #li ⌝ ∗ ⌜ vspec = #ls ⌝ ∗ ⌜ (0 < int.Z max)%Z ⌝ ∗ is_alloc max li ∗ jrnl_alloc ls max)%I
+                 ⌜ vimpl = #li ⌝ ∗ ⌜ vspec = #ls ⌝ ∗ ⌜ (0 < uint.Z max)%Z ⌝ ∗ is_alloc max li ∗ jrnl_alloc ls max)%I
   end.
 
 Instance twophaseTy_model : specTy_model jrnl_ty.

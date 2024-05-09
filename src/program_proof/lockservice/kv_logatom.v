@@ -56,7 +56,7 @@ Proof.
   iNamed 1.
   wpc_pures.
   iDestruct "HΦ" as "[_ HΦ]".
-  iApply ("HΦ" $! {| kvsM := <[args.(U64_1):=args.(U64_2)]> kvserver.(kvsM) |} _ (▷ Q)%I).
+  iApply ("HΦ" $! {| kvsM := <[args.(W64_1):=args.(W64_2)]> kvserver.(kvsM) |} _ (▷ Q)%I).
   iSplitL "Hpre".
   { iModIntro. iFrame. }
 
@@ -323,7 +323,7 @@ Proof.
   iNamed 1.
 
   wpc_loadField.
-  pose (args:={|U64_1:=key; U64_2:=value |}).
+  pose (args:={|U64_1:=key; W64_2:=value |}).
   replace (#key, (#value, #()))%V with (into_val.to_val args) by done.
   iDestruct ("Hfspec" $! args) as "#Hfspec2".
   iApply wpc_fupd.
@@ -408,7 +408,7 @@ Proof.
   iNamed 1.
 
   wpc_loadField.
-  pose (args:={|U64_1:=key; U64_2:=0 |}).
+  pose (args:={|U64_1:=key; W64_2:=0 |}).
   replace (#key, (#0, #()))%V with (into_val.to_val args) by done.
   iDestruct ("Hfspec" $! args) as "#Hfspec2".
   iApply wpc_fupd.

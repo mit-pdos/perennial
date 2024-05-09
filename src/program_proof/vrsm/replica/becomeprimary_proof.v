@@ -207,7 +207,7 @@ Proof.
     iAssert (
           ∃ (j:u64) clerkssComplete clerkssLeft,
             "Hj" ∷ j_ptr ↦[uint64T] #j ∗
-            "%HcompleteLens" ∷ ⌜length clerkssComplete = int.nat j⌝ ∗
+            "%HcompleteLens" ∷ ⌜length clerkssComplete = uint.nat j⌝ ∗
             "%Hlens" ∷ ⌜length (clerkssComplete ++ clerkssLeft) = numClerks⌝ ∗
             "Hclerkss_sl" ∷ own_slice_small new_clerkss_sl (slice.T ptrT) 1 (clerkssComplete ++ clerkssLeft) ∗
             "#Hclerkss_is" ∷ ([∗ list] clerks_sl ∈ clerkssComplete,
@@ -252,7 +252,7 @@ Proof.
       iAssert (
             ∃ (i:u64) clerksComplete clerksLeft,
               "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-              "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
+              "%HcompleteLen" ∷ ⌜length clerksComplete = uint.nat i⌝ ∗
               "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length backupγ⌝ ∗
               "Hclerks_sl" ∷ own_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
               "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) backupγ),
@@ -281,7 +281,7 @@ Proof.
       (* FIXME: this is quite complicated *)
       wp_if_destruct.
       { (* continue with loop *)
-        assert (int.nat i < length backupγ) as Hi.
+        assert (uint.nat i < length backupγ) as Hi.
         { (* XXX: annoying proof *)
           rewrite cons_length /= Hreplicas_sz in Hreplicas_backup_len.
           rewrite replicate_length in Hnew_clerks_sz.
@@ -290,15 +290,15 @@ Proof.
           rewrite HcompleteLen in Hlen.
           replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1) by word.
           rewrite Hreplicas_sz.
-          assert (int.nat i < int.nat new_clerks_sl.(Slice.sz)) by word.
+          assert (uint.nat i < uint.nat new_clerks_sl.(Slice.sz)) by word.
           rewrite -Hnew_clerks_sz in H.
-          replace (int.nat replicas_sl.(Slice.sz) - 1) with (int.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
+          replace (uint.nat replicas_sl.(Slice.sz) - 1) with (uint.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
           { done. }
           word.
         }
         pose proof Hi as Hlookup.
         apply list_lookup_lt in Hlookup as [γsrv' Hlookup].
-        assert (([γsrv] ++ backupγ) !! (int.nat i + 1) = Some γsrv').
+        assert (([γsrv] ++ backupγ) !! (uint.nat i + 1) = Some γsrv').
         {
           rewrite lookup_app_r.
           {
@@ -320,7 +320,7 @@ Proof.
         wp_apply (wp_SliceGet with "[$Hreplicas_sl]").
         {
           iPureIntro.
-          replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) by word.
+          replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) by word.
           done.
         }
         iIntros "Hreplicas_sl".
@@ -351,11 +351,11 @@ Proof.
 
         destruct clerksLeft.
         { exfalso. rewrite app_nil_r in Hlen. word. }
-        replace (<[int.nat i:=ck]> (clerksComplete ++ l :: clerksLeft))
+        replace (<[uint.nat i:=ck]> (clerksComplete ++ l :: clerksLeft))
           with
           (((clerksComplete ++ [ck]) ++ (clerksLeft))); last first.
         {
-          replace (int.nat i) with (length clerksComplete + 0) by word.
+          replace (uint.nat i) with (length clerksComplete + 0) by word.
           rewrite insert_app_r.
           rewrite -app_assoc.
           done.
@@ -396,7 +396,7 @@ Proof.
             rewrite HcompleteLen.
             rewrite -H.
             simpl.
-            replace (int.nat i + 1) with (S (int.nat i)) by word.
+            replace (uint.nat i + 1) with (S (uint.nat i)) by word.
             rewrite lookup_cons.
             f_equal. word.
           }
@@ -420,7 +420,7 @@ Proof.
         symmetry.
         apply nil_length_inv.
         rewrite HcompleteLen in Hlen.
-        enough (int.nat i ≥ length backupγ) by word.
+        enough (uint.nat i ≥ length backupγ) by word.
         rewrite cons_length in Hreplicas_backup_len.
         replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1); last first.
         { (* FIXME: why doesn't word work on is own? *)
@@ -429,12 +429,12 @@ Proof.
         }
         rewrite Hreplicas_sz.
         rewrite replicate_length in Hnew_clerks_sz.
-        assert (int.nat i ≥ int.nat new_clerks_sl.(Slice.sz)) by word.
+        assert (uint.nat i ≥ uint.nat new_clerks_sl.(Slice.sz)) by word.
         rewrite -Hnew_clerks_sz in H.
-        replace (int.nat replicas_sl.(Slice.sz) - 1) with (int.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
+        replace (uint.nat replicas_sl.(Slice.sz) - 1) with (uint.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
         { done. }
         (* FIXME: why doesn't word work here anymore? *)
-        enough (int.nat (replicas_sl.(Slice.sz)) > 0).
+        enough (uint.nat (replicas_sl.(Slice.sz)) > 0).
         { word. }
         rewrite -Hreplicas_sz.
         rewrite Hreplicas_backup_len.
@@ -451,7 +451,7 @@ Proof.
       wp_load.
       wp_loadField.
 
-      assert (numClerks = int.nat numClerks) as HnumClerksSafe.
+      assert (numClerks = uint.nat numClerks) as HnumClerksSafe.
       { unfold numClerks. word. }
 
       wp_apply (wp_SliceSet with "[$Hclerkss_sl]").
@@ -473,11 +473,11 @@ Proof.
       destruct clerkssLeft.
       { exfalso. rewrite app_nil_r in Hlens. word. }
       rename t0 into x.
-      replace (<[int.nat j:=new_clerks_sl]> (clerkssComplete ++ x :: clerkssLeft))
+      replace (<[uint.nat j:=new_clerks_sl]> (clerkssComplete ++ x :: clerkssLeft))
         with
         (((clerkssComplete ++ [new_clerks_sl]) ++ (clerkssLeft))); last first.
       {
-        replace (int.nat j) with (length clerkssComplete + 0) by word.
+        replace (uint.nat j) with (length clerkssComplete + 0) by word.
         rewrite insert_app_r.
         rewrite -app_assoc.
         done.
@@ -526,8 +526,8 @@ Proof.
       symmetry.
       apply nil_length_inv.
       rewrite HcompleteLens in Hlens.
-      enough (int.nat j ≥ numClerks) by word.
-      assert (numClerks = int.nat numClerks) as HnumClerksSafe.
+      enough (uint.nat j ≥ numClerks) by word.
+      assert (numClerks = uint.nat numClerks) as HnumClerksSafe.
       { unfold numClerks. word. }
       word.
     }

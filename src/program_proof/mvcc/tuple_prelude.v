@@ -10,7 +10,7 @@ Definition ver_to_val (x : pver) :=
 Definition spec_find_ver_step (tid : u64) (res : option pver) (ver : pver) : option pver :=
   match res with
   | Some x => Some x
-  | None => if decide (int.Z tid > int.Z ver.1.1) then Some ver else None
+  | None => if decide (uint.Z tid > uint.Z ver.1.1) then Some ver else None
   end.
 
 Definition spec_find_ver_reverse (vers : list pver) (tid : u64) : option pver :=
@@ -42,7 +42,7 @@ Qed.
 
 Lemma spec_find_ver_lt_Some (vers : list pver) (tid : u64) (ver : pver) :
   ver ∈ vers ->
-  int.Z ver.1.1 < int.Z tid ->
+  uint.Z ver.1.1 < uint.Z tid ->
   ∃ ver', spec_find_ver vers tid = Some ver'.
 Proof.
   intros Hin Hlt.
@@ -63,7 +63,7 @@ Lemma spec_find_ver_reverse_match vers tid :
   ∀ vers_take vers_drop ver,
     vers_take ++ ver :: vers_drop = vers ->
     spec_find_ver_reverse vers_take tid = None ->
-    (int.Z tid > int.Z ver.1.1) ->
+    (uint.Z tid > uint.Z ver.1.1) ->
     spec_find_ver_reverse vers tid = Some ver.
 Proof.
   intros vers_take vers_drop ver Hvers Htake Hver.
@@ -83,7 +83,7 @@ Lemma spec_find_ver_reverse_not_match vers tid :
   ∀ vers_take ver,
     vers_take ++ [ver] = vers ->
     spec_find_ver_reverse vers_take tid = None ->
-    (int.Z tid ≤ int.Z ver.1.1) ->
+    (uint.Z tid ≤ uint.Z ver.1.1) ->
     spec_find_ver_reverse vers tid = None.
 Proof.
   intros vers_take ver Hvers Htake Hver.
@@ -98,9 +98,9 @@ Proof.
 Qed.
 
 Lemma spec_find_ver_extensible vers (tidlast tid1 tid2 : u64) :
-  int.Z tidlast ≤ int.Z tid1 ->
-  int.Z tidlast ≤ int.Z tid2 ->
-  Forall (λ ver, int.Z ver.1.1 < int.Z tidlast) vers ->
+  uint.Z tidlast ≤ uint.Z tid1 ->
+  uint.Z tidlast ≤ uint.Z tid2 ->
+  Forall (λ ver, uint.Z ver.1.1 < uint.Z tidlast) vers ->
   spec_find_ver vers tid1 = spec_find_ver vers tid2.
 Proof.
   intros Htid1 Htid2 Hlast.
@@ -111,10 +111,10 @@ Proof.
   setoid_rewrite Forall_forall in Hlast.
   assert (H : p ∈ vers).
   { apply elem_of_reverse. rewrite E. apply elem_of_list_here. }
-  assert (H1 : int.Z p.1.1 < int.Z tid1).
-  { apply Hlast in H. apply Z.lt_le_trans with (int.Z tidlast); done. }
-  assert (H2 : int.Z p.1.1 < int.Z tid2).
-  { apply Hlast in H. apply Z.lt_le_trans with (int.Z tidlast); done. }
+  assert (H1 : uint.Z p.1.1 < uint.Z tid1).
+  { apply Hlast in H. apply Z.lt_le_trans with (uint.Z tidlast); done. }
+  assert (H2 : uint.Z p.1.1 < uint.Z tid2).
+  { apply Hlast in H. apply Z.lt_le_trans with (uint.Z tidlast); done. }
   apply Z.lt_gt in H1, H2.
   do 2 (case_decide; last contradiction).
   by do 2 rewrite spec_find_ver_step_Some_noop.
@@ -122,7 +122,7 @@ Qed.
 
 Lemma spec_lookup_snoc_l vers ver (tid tidx : u64) :
   ver.1.1 = tidx ->
-  int.Z tid ≤ int.Z tidx ->
+  uint.Z tid ≤ uint.Z tidx ->
   spec_lookup (vers ++ [ver]) tid = spec_lookup vers tid.
 Proof.
   intros Heq Hle.
@@ -136,7 +136,7 @@ Qed.
 
 Lemma spec_lookup_snoc_r vers ver (tid tidx : u64) :
   ver.1.1 = tidx ->
-  int.Z tidx < int.Z tid ->
+  uint.Z tidx < uint.Z tid ->
   spec_lookup (vers ++ [ver]) tid = (if ver.1.2 then Nil else Some ver.2).
 Proof.
   intros Heq Hle.
@@ -149,9 +149,9 @@ Proof.
 Qed.
 
 Lemma spec_lookup_extensible vers (tidlast tid1 tid2 : u64) :
-  int.Z tidlast ≤ int.Z tid1 ->
-  int.Z tidlast ≤ int.Z tid2 ->
-  Forall (λ ver, int.Z ver.1.1 < int.Z tidlast) vers ->
+  uint.Z tidlast ≤ uint.Z tid1 ->
+  uint.Z tidlast ≤ uint.Z tid2 ->
+  Forall (λ ver, uint.Z ver.1.1 < uint.Z tidlast) vers ->
   spec_lookup vers tid1 = spec_lookup vers tid2.
 Proof.
   intros Htid1 Htid2 Hlast.

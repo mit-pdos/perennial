@@ -18,14 +18,14 @@ Context `{!rpcregG Σ}.
 
 Record RPCValsC := mkRPCValsC
 {
-  U64_1:u64 ;
-  U64_2:u64 ;
+  W64_1:u64 ;
+  W64_2:u64 ;
 }.
 
 #[refine] Global Instance RPCValC_into_val : into_val.IntoVal (RPCValsC) :=
   {
-  to_val := λ x, (#x.(U64_1), (#x.(U64_2), #()))%V ;
-  IntoVal_def := {| U64_1 := 0; U64_2 := 0 |} ;
+  to_val := λ x, (#x.(W64_1), (#x.(W64_2), #()))%V ;
+  IntoVal_def := {| W64_1 := 0; W64_2 := 0 |} ;
   IntoVal_inj := _
   }.
 Proof.
@@ -36,7 +36,7 @@ Proof.
 Defined.
 
 Definition RPCRequest_own_ro (args_ptr:loc) (req : RPCRequestID) (args:RPCValsC) : iProp Σ :=
-    "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝ ∗
+    "%" ∷ ⌜uint.nat req.(Req_Seq) > 0⌝ ∗
     "#HArgsOwnArgs" ∷ readonly (args_ptr ↦[RPCRequest :: "Args"] (into_val.to_val args)) ∗
     "#HArgsOwnCID" ∷ readonly (args_ptr ↦[RPCRequest :: "CID"] #req.(Req_CID)) ∗
     "#HArgsOwnSeq" ∷ readonly (args_ptr ↦[RPCRequest :: "Seq"] #req.(Req_Seq))
@@ -60,7 +60,7 @@ Definition Reply64 := @RPCReply (u64).
 
 Definition RPCClient_own_vol (cl_ptr:loc) (cid seqno:u64) (host:string) : iProp Σ :=
   ∃ (rawCl:loc),
-    "%" ∷ ⌜int.nat seqno > 0⌝ ∗
+    "%" ∷ ⌜uint.nat seqno > 0⌝ ∗
     "Hcid" ∷ cl_ptr ↦[RPCClient :: "cid"] #cid ∗
     "Hseq" ∷ cl_ptr ↦[RPCClient :: "seq"] #seqno ∗
     "HrawCl" ∷ cl_ptr ↦[RPCClient :: "rawCl"] #rawCl ∗
@@ -74,7 +74,7 @@ Definition RPCClient_own (cl_ptr:loc) (host:string) γrpc : iProp Σ :=
 .
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
-int.nat req.(Req_Seq) > 0 →
+uint.nat req.(Req_Seq) > 0 →
 is_RPCServer γrpc -∗
 {{{
     "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
@@ -85,7 +85,7 @@ is_RPCServer γrpc -∗
 {{{
      (b:bool) (reply':Reply64), RET #b; "Hreply" ∷ RPCReply_own reply_ptr reply' ∗
       "Hcases" ∷ ("%" ∷ ⌜b = false⌝ ∗
-           "%" ∷ ⌜(int.Z req.(Req_Seq) > int.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝ ∗
+           "%" ∷ ⌜(uint.Z req.(Req_Seq) > uint.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝ ∗
            "%" ∷ ⌜reply'.(Rep_Stale) = false⌝ ∗
            "HlastSeqMap" ∷ own_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
          ∨ 
@@ -108,11 +108,11 @@ Proof.
   wp_pures.
   iNamed "Hreply".
   wp_storeField.
-  wp_apply (wp_and ok (int.Z req.(Req_Seq) ≤ int.Z v)%Z).
+  wp_apply (wp_and ok (uint.Z req.(Req_Seq) ≤ uint.Z v)%Z).
   { wp_pures. by destruct ok. }
   { iIntros "_". wp_pures. done. }
   rewrite bool_decide_decide.
-  destruct (decide (ok ∧ int.Z req.(Req_Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
+  destruct (decide (ok ∧ uint.Z req.(Req_Seq) ≤ uint.Z v)%Z) as [ [Hok Hineq]|Hmiss].
   { (* Cache hit *)
     destruct ok; last done. clear Hok. (* ok = false *)
     wp_pures.
@@ -143,7 +143,7 @@ Proof.
       iIntros "Hsrpc".
       iMod (server_replies_to_request with "[$] [Hsrpc]") as "[#Hreceipt Hsrpc]"; eauto.
       apply bool_decide_eq_false in Hineqstrict.
-      assert (int.Z req.(Req_Seq) = int.Z v) by lia.
+      assert (uint.Z req.(Req_Seq) = uint.Z v) by lia.
       naive_solver.
   }
   { (* Cache miss *)
@@ -281,11 +281,11 @@ Proof.
 Qed.
 
 Definition reqEncoded (req:RPCRequestID) (args:RPCValsC) (bs:list u8) : Prop :=
-  int.nat req.(Req_Seq) > 0 ∧
+  uint.nat req.(Req_Seq) > 0 ∧
   has_encoding bs [EncUInt64 req.(Req_CID);
                    EncUInt64 req.(Req_Seq);
-                   EncUInt64 args.(U64_1);
-                   EncUInt64 args.(U64_2)].
+                   EncUInt64 args.(W64_1);
+                   EncUInt64 args.(W64_2)].
 
 Theorem wp_rpcReqEncode (req_ptr:loc) (req:RPCRequestID) (args:RPCValsC) :
   {{{
@@ -304,7 +304,7 @@ Proof.
   wp_apply wp_new_enc.
   iIntros (e) "He".
   wp_loadField.
-  replace (word.mul 4%Z 8%Z) with (U64 32); last first.
+  replace (word.mul 4%Z 8%Z) with (W64 32); last first.
   {
     rewrite -word.ring_morph_mul.
     word.
@@ -630,7 +630,7 @@ Proof using Type*.
   iDestruct "HCallPost" as "[Hbad | #Hrcptstoro]"; simpl.
   {
     iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
-    simpl in bad. replace (int.nat (word.add seqno 1))%nat with (int.nat seqno + 1)%nat in bad by word.
+    simpl in bad. replace (uint.nat (word.add seqno 1))%nat with (uint.nat seqno + 1)%nat in bad by word.
     lia.
   }
   iMod (get_request_post with "Hreqinv_init Hrcptstoro HγP") as "HP"; first done.
@@ -644,7 +644,7 @@ Proof using Type*.
   iExists _, (word.add seqno 1)%nat; iFrame.
   iExists _; iFrame.
   simpl.
-  assert (int.nat seqno + 1 = int.nat (word.add seqno 1))%nat as <-; first by word.
+  assert (uint.nat seqno + 1 = uint.nat (word.add seqno 1))%nat as <-; first by word.
   iPureIntro. lia.
 Qed.
 

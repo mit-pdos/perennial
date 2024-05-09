@@ -34,7 +34,7 @@ Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
   let i := lazymatch type of i with
            | nat => i
            | Z => constr:(Z.to_nat i)
-           | u64 => constr:(int.nat i)
+           | u64 => constr:(uint.nat i)
            end in
   destruct (list_lookup_lt _ l i) as [x H];
   [ try solve [ len ]

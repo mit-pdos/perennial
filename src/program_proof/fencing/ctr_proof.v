@@ -36,13 +36,13 @@ Class ctrG Σ :=
 Context `{!ctrG Σ}.
 
 Definition own_latest_epoch γ (e:u64) (q:Qp) : iProp Σ :=
-  mono_nat_auth_own γ.(epoch_gn) q (int.nat e).
+  mono_nat_auth_own γ.(epoch_gn) q (uint.nat e).
 
 Definition is_latest_epoch_lb γ (e:u64) : iProp Σ :=
-  mono_nat_lb_own γ.(epoch_gn) (int.nat e).
+  mono_nat_lb_own γ.(epoch_gn) (uint.nat e).
 
 Definition is_latest_epoch_lb_strict γ (e:u64) : iProp Σ :=
-  mono_nat_lb_own γ.(epoch_gn) (int.nat e + 1).
+  mono_nat_lb_own γ.(epoch_gn) (uint.nat e + 1).
 
 Definition own_unused_epoch γ (e:u64) : iProp Σ :=
   e ⤳[γ.(epoch_token_gn)] false.
@@ -99,7 +99,7 @@ Proof.
 Qed.
 
 Lemma own_latest_epoch_update e γ eold :
-  int.nat eold ≤ int.nat e →
+  uint.nat eold ≤ uint.nat e →
   own_latest_epoch γ eold 1 ==∗ own_latest_epoch γ e 1.
 Proof.
   intros Hineq.
@@ -117,7 +117,7 @@ Proof.
 Qed.
 
 Lemma own_latest_epoch_with_lb γ e e' q :
-  own_latest_epoch γ e q -∗ is_latest_epoch_lb γ e' -∗ ⌜int.Z e' ≤ int.Z e⌝.
+  own_latest_epoch γ e q -∗ is_latest_epoch_lb γ e' -∗ ⌜uint.Z e' ≤ uint.Z e⌝.
 Proof.
   iIntros "H1 H2".
   iDestruct (mono_nat_lb_own_valid with "H1 H2") as "[_ %Hineq]".
@@ -220,7 +220,7 @@ Definition getN := nroot .@ "ctr.get".
 
 (* put getN and unusedN etc. as sub-namespaces of one big namespaces *)
 Definition EnterNewEpoch_spec γ (e:u64) (Φ:iProp Σ) : iProp Σ :=
-|={⊤∖↑getN, ↑unusedN}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+|={⊤∖↑getN, ↑unusedN}=> ∃ latestEpoch, if decide (uint.Z latestEpoch < uint.Z e)%Z then
     own_latest_epoch γ latestEpoch (1/2)%Qp ∗
     own_unused_epoch γ e ∗ (∀ v, own_val γ e v (1/2)%Qp -∗
                                  own_val γ latestEpoch v (1/2)%Qp -∗
@@ -294,7 +294,7 @@ Qed.
 *)
 Definition Get_server_spec γ (e:u64) (Φ:u64 → u64 → iProp Σ) : iProp Σ :=
 |={⊤∖↑getN,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-  if decide (int.Z latestEpoch = int.Z e)%Z then
+  if decide (uint.Z latestEpoch = uint.Z e)%Z then
     Get_core_spec γ e (λ v, own_latest_epoch γ e (1/2) ={∅,⊤∖↑getN}=∗ Φ 0 v)
   else
     (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤∖↑getN}=∗ (∀ dummy_val, Φ 1 dummy_val))
@@ -442,7 +442,7 @@ Program Definition Get_proph_spec γ :=
   (∃ (prophV e:u64) γreq Φclient,
     ⌜has_encoding reqData [EncUInt64 e]⌝ ∗
     (Get_req_inv prophV e γ γreq Φclient) ∗
-    (∀ (err v:u64), (if (decide (err = (U64 0) ∧ v = prophV)) then operation_receipt γreq else True) -∗
+    (∀ (err v:u64), (if (decide (err = (W64 0) ∧ v = prophV)) then operation_receipt γreq else True) -∗
                   (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ l))
   )%I
 .
@@ -460,7 +460,7 @@ Definition Put_core_spec γ (e v:u64) (Φ:iProp Σ) : iProp Σ :=
 
 Definition Put_server_spec γ (e v:u64) (Φ:u64 → iProp Σ) : iProp Σ :=
 |={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-  if decide (int.Z latestEpoch = int.Z e)%Z then
+  if decide (uint.Z latestEpoch = uint.Z e)%Z then
     Put_core_spec γ e v (own_latest_epoch γ e (1/2) ={∅,⊤}=∗ Φ 0)
   else
     (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ Φ 1)
@@ -500,10 +500,10 @@ Next Obligation.
 Defined.
 
 Definition is_host (host:u64) γ : iProp Σ :=
-  is_urpc_spec_pred γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
-  is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (U64 1) (Put_spec_erpc γ) ∗
-  is_urpc_spec_pred γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
-  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  is_urpc_spec_pred γ.(urpc_gn) host (W64 0) (Get_proph_spec γ) ∗
+  is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (W64 1) (Put_spec_erpc γ) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (W64 2) (GetFreshCID_spec γ) ∗
+  is_urpc_dom γ.(urpc_gn) {[ (W64 0) ; (W64 1) ; (W64 2)]}
 .
 
 Definition own_Clerk γ (ck:loc) : iProp Σ :=
@@ -520,7 +520,7 @@ Lemma wp_Clerk__Get γ ck (e:u64) :
   own_Clerk γ ck -∗
   EnterNewEpoch_spec γ e (
     |={⊤∖↑getN,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1 / 2) ∗
-    (if decide (int.Z latestEpoch = int.Z e)
+    (if decide (uint.Z latestEpoch = uint.Z e)
         then Get_core_spec γ e (λ v : u64, own_latest_epoch γ e (1 / 2) ={∅,⊤∖↑getN}=∗ (own_Clerk γ ck -∗ Φ #v))
         else
          own_latest_epoch γ latestEpoch (1 / 2) ={∅,⊤∖↑getN}=∗ True) (* Get_server_spec
@@ -585,7 +585,7 @@ Proof.
     iExists latestEpoch.
     iDestruct "Hupd" as "[$ Hupd]".
 
-    destruct (decide (int.Z latestEpoch = int.Z e)).
+    destruct (decide (uint.Z latestEpoch = uint.Z e)).
     {
       rewrite /Get_core_spec.
       iMod "Hupd".
@@ -614,7 +614,7 @@ Proof.
 
   wp_apply (wp_Client__Call_pred _ _ _ _ _ _ _ _ _ _
                           (λ (l:list u8), ∃ v e, ⌜has_GetReply_encoding l e v⌝ ∗
-                                  if (decide (e = (U64 0) ∧ v = prophVal)) then
+                                  if (decide (e = (W64 0) ∧ v = prophVal)) then
                                     operation_receipt _
                                   else
                                     True)%I
@@ -681,9 +681,9 @@ Proof.
   (* TODO: move the above to a different lemma *)
 
   wp_loadField.
-  destruct (decide (int.Z err = 0)).
+  destruct (decide (uint.Z err = 0)).
   { (* no error *)
-    replace (err) with (U64 0) by word.
+    replace (err) with (W64 0) by word.
     wp_pures.
 
     wp_pures.
@@ -776,7 +776,7 @@ Proof.
   wp_pures.
   wp_apply wp_value. (* FIXME: why do I have to do this manually? *)
 
-  destruct (bool_decide (int.Z e < int.Z latestEpoch)) as [] eqn:Hineq.
+  destruct (bool_decide (uint.Z e < uint.Z latestEpoch)) as [] eqn:Hineq.
   { (* case: Request epoch number is stale *)
     iMod ("Hclose" with "[$Hi]").
     iModIntro.
@@ -843,7 +843,7 @@ Proof.
        *)
       iDestruct "Hgood" as (?) "Hupd".
       iMod (complete_newepoch_operation with "HneIncomplete") as "#HneComplete".
-      destruct (decide (int.Z latestEpoch0 < int.Z e)).
+      destruct (decide (uint.Z latestEpoch0 < uint.Z e)).
       { (* first time seeing the number e *)
         iDestruct "Hupd" as "(Hlatest2 & Hunused & Hupd)".
         iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
@@ -952,7 +952,7 @@ Proof.
         clear Hineq latestEpoch.
         iDestruct "Hupd" as (latestEpoch) "[Hlatest2 Hupd]".
         iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
-        destruct (decide (int.Z latestEpoch = int.Z e)); last first.
+        destruct (decide (uint.Z latestEpoch = uint.Z e)); last first.
         { (* contradictory: we know for sure that own_latest_epoch e *)
           exfalso.
           naive_solver.
@@ -1072,7 +1072,7 @@ Proof.
     iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "Hupd".
     { set_solver. }
     iDestruct "Hupd" as (?) "Hupd".
-    destruct (decide (int.Z latestEpoch0 < int.Z e)).
+    destruct (decide (uint.Z latestEpoch0 < uint.Z e)).
     { (* case: epoch number is fresh; contradicts the fact that we're in the
          stale case already *)
       iDestruct "Hupd" as "[Hlatest2 Hupd]".
@@ -1089,7 +1089,7 @@ Proof.
     iMod "Hupd".
     clear latestEpoch0 n.
     iDestruct "Hupd" as (?) "[Hlatest2 Hupd]".
-    destruct (decide (int.Z latestEpoch0 = int.Z e)).
+    destruct (decide (uint.Z latestEpoch0 = uint.Z e)).
     { (* case: epoch number is fresh; contradicts the fact that we're in the
          stale case *)
       iDestruct (own_latest_epoch_combine with "Hlatest2 HghostLatestEpoch") as "[_ %Heq]".
@@ -1131,7 +1131,7 @@ Proof.
       { set_solver. }
       iDestruct "Hupd" as (?) "Hupd".
 
-      destruct (decide (int.Z latestEpoch0 < int.Z e)).
+      destruct (decide (uint.Z latestEpoch0 < uint.Z e)).
       { (* case: first time seeing client's epoch number *)
         iDestruct "Hupd" as "(Hlatest2 & Hunused & Hupd)".
         iMod (activate_unused_epoch v0 with "HunusedInv Hunused") as "Hval".
@@ -1203,7 +1203,7 @@ Lemma wp_Clerk__Put γ ck (e v:u64) :
   own_Clerk γ ck -∗
   EnterNewEpoch_spec γ e (
     |={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1 / 2) ∗
-    (if decide (int.Z latestEpoch = int.Z e)
+    (if decide (uint.Z latestEpoch = uint.Z e)
         then Put_core_spec γ e v (own_latest_epoch γ e (1 / 2) ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #()))
         else
          own_latest_epoch γ latestEpoch (1 / 2) ={∅,⊤}=∗ True) (* Put_server_spec

@@ -220,19 +220,19 @@ Section jrnl.
     | _ => undefined
     end.
 
-  Definition gen_lt (max: u64) (Hpf: 0 < int.Z max) : {n: u64 | int.Z n < int.Z max }.
-  Proof. exists (U64 0). auto. Defined.
+  Definition gen_lt (max: u64) (Hpf: 0 < uint.Z max) : {n: u64 | uint.Z n < uint.Z max }.
+  Proof. exists (W64 0). auto. Defined.
 
-  Definition gen_le (max: u64) : {n: u64 | int.Z n ≤ int.Z max }.
-  Proof. exists (U64 0). word. Defined.
+  Definition gen_le (max: u64) : {n: u64 | uint.Z n ≤ uint.Z max }.
+  Proof. exists (W64 0). word. Defined.
 
-  Global Instance allocnum_gen (max : u64) Hpf : GenPred u64 (state*global_state) (λ _ n, int.Z n < int.Z max) :=
+  Global Instance allocnum_gen (max : u64) Hpf : GenPred u64 (state*global_state) (λ _ n, uint.Z n < uint.Z max) :=
     fun _ σ => Some (gen_lt max Hpf).
 
-  Global Instance allocnumfree_gen (max : u64) : GenPred u64 (state*global_state) (λ _ n, int.Z n ≤ int.Z max) :=
+  Global Instance allocnumfree_gen (max : u64) : GenPred u64 (state*global_state) (λ _ n, uint.Z n ≤ uint.Z max) :=
     fun _ σ => Some (gen_le max).
 
-  Global Instance decide_gt0 (m : u64) : Decision (0 < int.Z m).
+  Global Instance decide_gt0 (m : u64) : Decision (0 < uint.Z m).
   Proof. apply _. Qed.
 
   Definition jrnl_step (op:JrnlOp) (v:val) : transition (state*global_state) expr :=
@@ -245,7 +245,7 @@ Section jrnl.
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       (* bit reads must be done with ReadBitOp *)
-      check (k ≠ KindBit ∧ bufSz k = int.nat sz);;
+      check (k ≠ KindBit ∧ bufSz k = uint.nat sz);;
       ret $ Val $ val_of_obj' d
     | ReadBitOp, (#(LitInt blkno), (#(LitInt off), #()))%V =>
       j ← openΣ;
@@ -275,29 +275,29 @@ Section jrnl.
     | MkAllocOp, #(LitInt max) =>
       j ← openΣ;
       l ← suchThat (λ _, isFreshAlloc (jrnlAllocs j));
-      check (0 < int.Z max ∧ int.Z max `mod` 8 = 0) ;;
+      check (0 < uint.Z max ∧ uint.Z max `mod` 8 = 0) ;;
       modifyΣ (λ j, updateAllocs j l max);;
       ret $ Val $ (LitV $ LitLoc $ l)
     | MarkUsedOp, PairV #(LitLoc l) #(LitInt n) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
-      check (int.Z n < int.Z max) ;;
+      check (uint.Z n < uint.Z max) ;;
       ret $ Val $ #()
     | FreeNumOp, PairV #(LitLoc l) #(LitInt n) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
-      check (int.Z n ≠ 0 ∧ int.Z n < int.Z max) ;;
+      check (uint.Z n ≠ 0 ∧ uint.Z n < uint.Z max) ;;
       ret $ Val $ #()
     | AllocOp, #(LitLoc l) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
-      Hpf ← @checkPf _ (0 < int.Z max) (decide_gt0 max);
-      n ← @suchThat _ _ (λ _ n, int.Z n < int.Z max) (allocnum_gen _ Hpf);
+      Hpf ← @checkPf _ (0 < uint.Z max) (decide_gt0 max);
+      n ← @suchThat _ _ (λ _ n, uint.Z n < uint.Z max) (allocnum_gen _ Hpf);
       ret $ Val $ #(LitInt n)
     | NumFreeOp, #(LitLoc l) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
-      n ← @suchThat _ _ (λ _ n, int.Z n ≤ int.Z max) (allocnumfree_gen _);
+      n ← @suchThat _ _ (λ _ n, uint.Z n ≤ uint.Z max) (allocnumfree_gen _);
       ret $ Val $ #(LitInt n)
     | _, _ => undefined
     end.

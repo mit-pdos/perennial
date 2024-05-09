@@ -95,13 +95,13 @@ Proof. reflexivity. Qed.
 
 Lemma circ_own_init :
   ⊢ |==> ∃ γaddrs γblocks,
-        let addrs := repeat (U64 0) 511 in
+        let addrs := repeat (W64 0) 511 in
         let blocks := repeat block0 511 in
         ⌜circ_low_wf addrs blocks⌝ ∗
         ghost_var γaddrs 1 addrs ∗
         ghost_var γblocks 1 blocks.
 Proof.
-  iMod (ghost_var_alloc (repeat (U64 0) 511)) as (γaddrs) "?".
+  iMod (ghost_var_alloc (repeat (W64 0) 511)) as (γaddrs) "?".
   iMod (ghost_var_alloc (repeat block0 511)) as (γblocks) "?".
   iModIntro.
   iExists _, _; iFrame.
@@ -111,9 +111,9 @@ Proof.
 Qed.
 
 Lemma zero_encodings :
-  let σ := {| upds := []; start := U64 0; |} in
+  let σ := {| upds := []; start := W64 0; |} in
   block_encodes block0
-    ([EncUInt64 (circΣ.diskEnd σ)] ++ map EncUInt64 (repeat (U64 0) 511))
+    ([EncUInt64 (circΣ.diskEnd σ)] ++ map EncUInt64 (repeat (W64 0) 511))
   ∧ block_encodes block0 [EncUInt64 (start σ)].
 Proof.
   rewrite /block_encodes /has_encoding.
@@ -124,12 +124,12 @@ Qed.
 
 Lemma circular_init :
   0 d↦∗ repeat block0 513 -∗
-  |==> ∃ γ, is_circular_state γ {| upds := []; start := U64 0; |} ∗
+  |==> ∃ γ, is_circular_state γ {| upds := []; start := W64 0; |} ∗
             is_circular_appender_pre γ ∗
-            start_is γ (1/2) (U64 0) ∗
+            start_is γ (1/2) (W64 0) ∗
             diskEnd_is γ (1/2) 0.
 Proof.
-  set (σ:={| upds := []; start := U64 0; |}).
+  set (σ:={| upds := []; start := W64 0; |}).
   assert (circΣ.diskEnd σ = 0) as HdiskEnd by reflexivity.
   rewrite split_513_blocks.
   iIntros "(Hhdr1 & Hhdr2 & Hlog)".
@@ -188,7 +188,7 @@ Theorem wpc_recoverCircular stk E1 d σ γ :
       is_circular_appender γ c ∗
       ⌜σ.(circΣ.start) = diskStart⌝ ∗
       ⌜σ.(circΣ.upds) = upds⌝ ∗
-      ⌜circΣ.diskEnd σ = int.Z diskEnd⌝
+      ⌜circΣ.diskEnd σ = uint.Z diskEnd⌝
   }}}
   {{{ is_circular_state γ σ ∗ is_circular_appender_pre γ }}}.
 Proof.
@@ -252,10 +252,10 @@ Proof.
 
   wpc_pures.
   wpc_apply (wpc_forUpto (fun i =>
-    ⌜int.Z σ.(start) <= int.Z i⌝ ∗
+    ⌜uint.Z σ.(start) <= uint.Z i⌝ ∗
     (∃ bufSlice,
       bufsloc ↦[slice.T (struct.t Update)] (slice_val bufSlice) ∗
-      updates_slice bufSlice (take (int.nat i - int.nat σ.(start)) σ.(upds))) ∗
+      updates_slice bufSlice (take (uint.nat i - uint.nat σ.(start)) σ.(upds))) ∗
       own_slice_small addrs uint64T 1 addrs0 ∗
       2 d↦∗ blocks0
     )%I
@@ -278,12 +278,12 @@ Proof.
 
     wpc_frame_seq.
     wp_load.
-    list_elem addrs0 (int.Z i `mod` LogSz) as a.
+    list_elem addrs0 (uint.Z i `mod` LogSz) as a.
     { destruct Hlow_wf.
       mod_bound; word. }
     wp_apply (wp_SliceGet _ _ _ _ 1 addrs0 with "[$Hdiskaddrs]"); eauto.
     { iPureIntro.
-      change (word.divu _ _) with (U64 LogSz).
+      change (word.divu _ _) with (W64 LogSz).
       word_cleanup.
       rewrite Ha_lookup.
       eauto. }
@@ -297,11 +297,11 @@ Proof.
     iNamed 1.
 
     wpc_pures.
-    change (word.divu _ _) with (U64 LogSz).
-    destruct (list_lookup_lt _ blocks0 (Z.to_nat (int.Z i `mod` LogSz))) as [b Hblookup].
+    change (word.divu _ _) with (W64 LogSz).
+    destruct (list_lookup_lt _ blocks0 (Z.to_nat (uint.Z i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }
-    iDestruct (disk_array_acc _ blocks0 (int.Z i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
+    iDestruct (disk_array_acc _ blocks0 (uint.Z i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.
     { mod_bound; word. }
     wpc_apply (wpc_Read with "[Hdi]").
     { iExactEq "Hdi".
@@ -347,14 +347,14 @@ Proof.
     word_cleanup.
     autorewrite with len in Hupdslen.
     revert H; word_cleanup; intros.
-    assert (int.nat i - int.nat σ.(start) < length σ.(upds))%nat as Hinbounds by word.
+    assert (uint.nat i - uint.nat σ.(start) < length σ.(upds))%nat as Hinbounds by word.
     apply list_lookup_lt in Hinbounds.
     destruct Hinbounds as [[a' b'] Hieq].
     pose proof (Hupds _ _ Hieq) as Haddr_block_eq. rewrite /LogSz /= in Haddr_block_eq.
-    replace (int.Z (start σ) + Z.of_nat (int.nat i - int.nat (start σ)))
-      with (int.Z i) in Haddr_block_eq by word.
+    replace (uint.Z (start σ) + Z.of_nat (uint.nat i - uint.nat (start σ)))
+      with (uint.Z i) in Haddr_block_eq by word.
     destruct Haddr_block_eq.
-    replace (Z.to_nat (int.Z i + 1) - int.nat (start σ))%nat with (S (int.nat i - int.nat (start σ))) by word.
+    replace (Z.to_nat (uint.Z i + 1) - uint.nat (start σ))%nat with (S (uint.nat i - uint.nat (start σ))) by word.
     erewrite take_S_r; eauto.
     rewrite Hieq /=.
     congruence.
@@ -367,7 +367,7 @@ Proof.
     iExists nil; simpl.
     iSplitL.
     { iApply (slice.own_slice_zero). }
-    replace (int.nat (start σ) - int.nat (start σ))%nat with 0%nat by lia.
+    replace (uint.nat (start σ) - uint.nat (start σ))%nat with 0%nat by lia.
     rewrite take_0.
     rewrite big_sepL2_nil.
     auto.
@@ -393,7 +393,7 @@ Proof.
 
     iMod (ghost_var_alloc addrs0) as (addrs_name') "[Haddrs' Hγaddrs]".
     iMod (ghost_var_alloc blocks0) as (blocks_name') "[Hblocks' Hγblocks]".
-    iMod (mono_nat_own_alloc (int.nat σ.(start))) as (start_name') "[[Hstart1 Hstart2] _]".
+    iMod (mono_nat_own_alloc (uint.nat σ.(start))) as (start_name') "[[Hstart1 Hstart2] _]".
     iMod (mono_nat_own_alloc (Z.to_nat (circΣ.diskEnd σ))) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".
     set (γ' := {| addrs_name := addrs_name';
                   blocks_name := blocks_name';

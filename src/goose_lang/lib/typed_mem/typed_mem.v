@@ -235,7 +235,7 @@ Section goose_lang.
   Proof.
     iIntros (Hty Φ) "_ HΦ".
     wp_apply wp_allocN_seq; first by word.
-    change (int.nat 1) with 1%nat; simpl.
+    change (uint.nat 1) with 1%nat; simpl.
     iIntros (l) "[Hl _]".
     iApply "HΦ".
     unseal.

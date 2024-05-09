@@ -102,7 +102,7 @@ Definition is_server rpc_srv_ptr γrpc : iProp Σ :=
 
 Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γrpc (lastSeq_ptr lastReply_ptr:loc) lastSeqM lastReplyM :
 {{{
-     "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
+     "%" ∷ ⌜uint.nat req.(Req_Seq) > 0⌝
     ∗ "#Hrinv" ∷ is_RPCServer γrpc
     ∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM
     ∗ "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM
@@ -114,7 +114,7 @@ CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply
      (b:bool) reply', RET #b;
       "Hreply" ∷ own_reply reply_ptr reply'
     ∗ "Hcases" ∷ ("%" ∷ ⌜b = false⌝
-         ∗ "%" ∷ ⌜(int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z⌝
+         ∗ "%" ∷ ⌜(uint.Z (map_get lastSeqM req.(Req_CID)).1 < uint.Z req.(Req_Seq))%Z⌝
          ∗ "%" ∷ ⌜reply'.(Rep_Stale) = false⌝
          ∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
          ∨ 
@@ -146,11 +146,11 @@ Proof.
   wp_pures.
   iNamed "Hreply".
   wp_storeField.
-  wp_apply (wp_and ok (int.Z req.(Req_Seq) ≤ int.Z v)%Z).
+  wp_apply (wp_and ok (uint.Z req.(Req_Seq) ≤ uint.Z v)%Z).
   { wp_pures. by destruct ok. }
   { iIntros "_". wp_pures. done. }
   rewrite bool_decide_decide.
-  destruct (decide (ok ∧ int.Z req.(Req_Seq) ≤ int.Z v)%Z) as [ [Hok Hineq]|Hmiss].
+  destruct (decide (ok ∧ uint.Z req.(Req_Seq) ≤ uint.Z v)%Z) as [ [Hok Hineq]|Hmiss].
   { (* Cache hit *)
     destruct ok; last done. clear Hok. (* ok = false *)
     wp_pures.
@@ -174,7 +174,7 @@ Proof.
       assert (v = req.(Req_Seq)) as ->. {
         (* not strict + non-strict ineq ==> eq *)
         apply bool_decide_eq_false in Hineqstrict.
-        assert (int.Z req.(Req_Seq) = int.Z v) by lia; word.
+        assert (uint.Z req.(Req_Seq) = uint.Z v) by lia; word.
       }
       wp_apply (wp_MapGet with "HlastReplyMap").
       iIntros (reply_v reply_get_ok) "(HlastReplyMapGet & HlastReplyMap)"; iDestruct "HlastReplyMapGet" as %HlastReplyMapGet.

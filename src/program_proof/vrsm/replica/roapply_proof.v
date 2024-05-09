@@ -25,7 +25,7 @@ own_slice_small op_sl byteT q op_bytes -∗
   (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
      □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             own_slice_small op_sl byteT q op_bytes -∗
-                Φ (#(U64 0), slice_val reply_sl)%V)))
+                Φ (#(W64 0), slice_val reply_sl)%V)))
 ∗
 (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ own_slice_small op_sl byteT q op_bytes -∗
                                      Φ (#err, (slice_val unused_sl))%V )) -∗
@@ -180,9 +180,9 @@ Qed.
 
 Lemma preread_step st γ γsrv t (lastModifiedIndex:u64) Q rop {own_StateMachine} :
   st.(server.leaseValid) = true →
-  int.nat t < int.nat st.(server.leaseExpiration) →
+  uint.nat t < uint.nat st.(server.leaseExpiration) →
   (∀ σ', prefix σ' st.(server.ops_full_eph) →
-         int.nat lastModifiedIndex <= length σ' → compute_reply (get_rwops σ') rop = compute_reply (get_rwops st.(server.ops_full_eph)) rop) →
+         uint.nat lastModifiedIndex <= length σ' → compute_reply (get_rwops σ') rop = compute_reply (get_rwops st.(server.ops_full_eph)) rop) →
   £ 1 -∗
   £ 1 -∗
   £ 1 -∗
@@ -197,7 +197,7 @@ Lemma preread_step st γ γsrv t (lastModifiedIndex:u64) Q rop {own_StateMachine
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
   is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
-  is_proposed_read γ.(s_reads) (int.nat lastModifiedIndex) (λ σ, Q (compute_reply (get_rwops σ) rop)) ∗
+  is_proposed_read γ.(s_reads) (uint.nat lastModifiedIndex) (λ σ, Q (compute_reply (get_rwops σ) rop)) ∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) st.(server.ops_full_eph) ∗
   own_time t ∗
   own_Server_ghost_eph_f st γ γsrv.
@@ -218,7 +218,7 @@ Proof.
   iInv "HpbInv" as "Hown" "HclosePb".
   iMod (lc_fupd_elim_later with "Hlc3 Hown") as "Hown".
   iDestruct "Hown" as (??) "(Hcommit & #Haccs & #? & #?)".
-  destruct (decide (int.nat st.(server.epoch) < int.nat epoch)).
+  destruct (decide (uint.nat st.(server.epoch) < uint.nat epoch)).
   { (* case: something has been committed in a higher epoch than the
        server's.
        Will use the lease that we have on the epoch number together with the
@@ -238,7 +238,7 @@ Proof.
     assert (epoch0 = st.(server.epoch)) by word; subst.
     unfold is_epoch_config.
     iDestruct "HsomeConf" as "[HsomeConf _]".
-    destruct (decide (int.nat reservedEpoch < int.nat epoch)).
+    destruct (decide (uint.nat reservedEpoch < uint.nat epoch)).
     {
       iDestruct (big_sepS_elem_of_acc _ _ epoch with "Hunreserved") as "[HH _]".
       { set_solver. }
@@ -250,7 +250,7 @@ Proof.
       rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hbad.
       by destruct Hbad as [Hbad _].
     }
-    assert (int.nat reservedEpoch = int.nat epoch ∨ int.nat epoch < int.nat reservedEpoch) as [|] by word.
+    assert (uint.nat reservedEpoch = uint.nat epoch ∨ uint.nat epoch < uint.nat reservedEpoch) as [|] by word.
     { replace (reservedEpoch) with epoch by word.
       iDestruct "Hunset_or_set" as "[Hbad|%Hbad]"; last exfalso.
       2:{ word. }
@@ -277,7 +277,7 @@ Proof.
    *)
   iAssert (⌜prefix σ st.(server.ops_full_eph)⌝)%I with "[-]" as "%".
   {
-    destruct (decide (int.nat epoch < int.nat st.(server.epoch))).
+    destruct (decide (uint.nat epoch < uint.nat st.(server.epoch))).
     { (* case: nothing is committed in st.(server.epoch). In this case, we use
          old_prop_max. To conclude that the server has all the committed ops. *)
       iDestruct "Hs_prop_facts" as "[Hmax _]".
@@ -362,7 +362,7 @@ Proof.
 Qed.
 
 Lemma roapply_finish_step st γ γsrv Q priorOps :
-  int.nat st.(server.committedNextIndex) >= length priorOps →
+  uint.nat st.(server.committedNextIndex) >= length priorOps →
   £ 1 -∗
   £ 1 -∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) priorOps -∗
@@ -482,7 +482,7 @@ Proof.
 
   wp_apply wp_GetTimeRange.
   iIntros (?????) "Htime".
-  destruct (decide (int.nat h < int.nat st.(server.leaseExpiration))).
+  destruct (decide (uint.nat h < uint.nat st.(server.leaseExpiration))).
   { (* case: got lease is not expired *)
 
     (* proof steps here:
@@ -564,7 +564,7 @@ Proof.
     { (* the read is finished! *)
       wp_storeField.
       iRight.
-      iMod (roapply_finish_step _ _ _ _ (take (int.nat lastModifiedIndex) st.(server.ops_full_eph))
+      iMod (roapply_finish_step _ _ _ _ (take (uint.nat lastModifiedIndex) st.(server.ops_full_eph))
              with "Hlc Hlc2 [] [Hprop_read] [] HghostEph") as "H".
       { rewrite fmap_length /no_overflow in Heqb2 HnextIndexNoOverflow.
         rewrite take_length. word. }
@@ -610,7 +610,7 @@ Proof.
         by rewrite H1.
       }
       {
-        exists (get_rwops (drop (int.nat lastModifiedIndex) st.(server.ops_full_eph))).
+        exists (get_rwops (drop (uint.nat lastModifiedIndex) st.(server.ops_full_eph))).
         rewrite -fmap_app. rewrite take_drop. done.
       }
     }

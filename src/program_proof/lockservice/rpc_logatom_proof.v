@@ -21,7 +21,7 @@ Definition is_rpcHandler' f γrpc cid args PreCond PostCond : iProp Σ :=
 Definition own_rpcclient_cid (cl_ptr:loc) (γrpc:rpc_names) (cid:u64) : iProp Σ
   :=
     ∃ (cseqno:u64),
-      "%" ∷ ⌜int.nat cseqno > 0⌝
+      "%" ∷ ⌜uint.nat cseqno > 0⌝
     ∗ "Hcid" ∷ cl_ptr ↦[RPCClient :: "cid"] #cid
     ∗ "Hseq" ∷ cl_ptr ↦[RPCClient :: "seq"] #cseqno
     ∗ "Hcrpc" ∷ RPCClient_own γrpc cid cseqno
@@ -194,7 +194,7 @@ Proof using Type*.
     iDestruct "HCallPost" as "[ [_ Hbad] | #Hrcptstoro]"; simpl.
     {
       iDestruct (client_stale_seqno with "Hbad Hcseq_own") as %bad. exfalso.
-      simpl in bad. replace (int.nat (word.add cseqno 1))%nat with (int.nat cseqno + 1)%nat in bad by word.
+      simpl in bad. replace (uint.nat (word.add cseqno 1))%nat with (uint.nat cseqno + 1)%nat in bad by word.
       lia.
     }
 

@@ -28,7 +28,7 @@ Local Definition encode_request (rid : eRPCRequestID) (payload : list u8) :=
 Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : RpcSpec :=
  {| spec_ty := erpc_request_names * eRPCRequestID * (list u8) * spec.(espec_ty);
     spec_Pre :=(λ '(γreq, rid, payload, x) req,
-                  ⌜req = encode_request rid payload ∧ int.Z rid.(Req_Seq) > 0⌝ ∗
+                  ⌜req = encode_request rid payload ∧ uint.Z rid.(Req_Seq) > 0⌝ ∗
                   is_eRPCRequest γerpc γreq
                      (spec.(espec_Pre) x payload)
                      (spec.(espec_Post) x payload)
@@ -83,7 +83,7 @@ Local Definition own_erpc_server (γ : erpc_names) (s : loc) : iProp Σ :=
   "HlastSeqMap" ∷ own_map lastSeq_ptr 1 lastSeqM ∗
   "HnextCID" ∷ s ↦[erpc.Server :: "nextCID"] #nextCID ∗
   "Herpc" ∷ eRPCServer_own_ghost γ lastSeqM lastReplyM ∗
-  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_eRPCClient_ghost γ cid 1)
+  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜uint.Z cid < uint.Z nextCID⌝%Z ∨ (is_eRPCClient_ghost γ cid 1)
 .
 
 Definition is_erpc_server (γ : erpc_names) (s:loc) : iProp Σ :=
@@ -99,7 +99,7 @@ Definition own_erpc_client (γ : erpc_names) (c:loc) : iProp Σ :=
     "Hseq" ∷ c ↦[erpc.Client :: "nextSeq"] #seq ∗
     "Hcrpc" ∷ is_eRPCClient_ghost γ cid seq ∗
     "#Hserv" ∷ is_eRPCServer γ ∗
-    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
+    "%HseqPostitive" ∷ ⌜0%Z < uint.Z seq⌝%Z
 .
 
 Definition is_erpc_handler (f : val) (spec : eRPCSpec)
@@ -199,7 +199,7 @@ Proof.
     wp_store.
 
     (* now split into stale/nonstale cases *)
-    destruct (Z.lt_ge_cases (int.Z rid.(Req_Seq)) (int.Z seqno)) as [Hcase|Hcase].
+    destruct (Z.lt_ge_cases (uint.Z rid.(Req_Seq)) (uint.Z seqno)) as [Hcase|Hcase].
     { (* Stale *)
       iMod (smaller_seqno_stale_fact _ rid seqno with "His_srv Herpc") as "HH".
       { done. }
@@ -245,7 +245,7 @@ Proof.
       done.
     }
   - (* we have to call the handler *)
-    assert (int.Z seqno < int.Z rid.(Req_Seq))%Z as HseqFresh.
+    assert (uint.Z seqno < uint.Z rid.(Req_Seq))%Z as HseqFresh.
     { simpl. word. }
 
     (* get resources out of escrow *)

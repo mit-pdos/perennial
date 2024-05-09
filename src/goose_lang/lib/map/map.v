@@ -315,9 +315,9 @@ Proof using IntoValComparable0.
 Qed.
 
 (* Want this for u64 addition commutativity in wp_MapLen' *)
-Add Ring u64ring : (word.ring_theory (word := u64_instance.u64))
+Add Ring u64ring : (word.ring_theory (word := w64_instance.w64))
                     (preprocess [autorewrite with rew_word_morphism],
-                      morphism (word.ring_morph (word := u64_instance.u64)),
+                      morphism (word.ring_morph (word := w64_instance.w64)),
                       constants [word_cst]).
 
 (* The postcondition guarantees that the size of the map actually fits in a u64 *)
@@ -327,7 +327,7 @@ Theorem wp_MapLen' stk E(mv:val) (m:gmap K val * val) :
   }}}
     MapLen' mv @ stk ; E
   {{{
-    RET #(U64 (size m.1)); ⌜size m.1 = int.nat (size m.1)⌝
+    RET #(W64 (size m.1)); ⌜size m.1 = uint.nat (size m.1)⌝
   }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "%Hmapval HΦ".
@@ -386,14 +386,14 @@ Proof using IntoValComparable0.
 
     simpl in *.
     replace (word.add 1 s) with (word.add s 1) by ring.
-    replace (word.add s 1) with (word.add (int.nat s) 1); last first.
+    replace (word.add s 1) with (word.add (uint.nat s) 1); last first.
     { by rewrite -HsizeConversion. }
     rewrite u64_Z_through_nat.
-    replace (word.add (int.Z s) 1%Z) with (int.Z (s + 1):u64); last first.
+    replace (word.add (uint.Z s) 1%Z) with (uint.Z (s + 1):u64); last first.
     { word. }
     replace (S s) with (s + 1)%nat in *; last lia.
 
-    assert (Z.of_nat (s + 1) = (int.Z (s + 1))).
+    assert (Z.of_nat (s + 1) = (uint.Z (s + 1))).
     {
       rewrite -u64_Z_through_nat.
       word.
@@ -412,7 +412,7 @@ Theorem wp_MapLen stk E mref q m :
     (MapLen #mref) @ stk ; E
   {{{
     RET #(size m.1);
-      ⌜size m.1 = int.nat (size m.1)⌝ ∗
+      ⌜size m.1 = uint.nat (size m.1)⌝ ∗
       own_map mref q m
   }}}.
 Proof using IntoValComparable0.
@@ -704,7 +704,7 @@ Theorem wp_MapLen2 stk E mref q m :
   }}}
     (MapLen2 #mref) @ stk ; E
   {{{ (s: u64),
-    RET #s; ⌜int.nat s = size m.1⌝ ∗ own_map mref q m
+    RET #s; ⌜uint.nat s = size m.1⌝ ∗ own_map mref q m
   }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "Hm HΦ".
@@ -717,10 +717,10 @@ Proof using IntoValComparable0.
               (λ m,
                 ∃ (s: u64),
                   l ↦ #s ∗
-                  ⌜int.nat s = size m ∧ (int.Z s < 2^64-1)%Z⌝)%I
+                  ⌜uint.nat s = size m ∧ (uint.Z s < 2^64-1)%Z⌝)%I
   with "Hm [Hlen]").
   { (* I ∅ *)
-    iExists (U64 0). iFrame.
+    iExists (W64 0). iFrame.
     by iPureIntro. }
   { (* inductive step *)
     clear.

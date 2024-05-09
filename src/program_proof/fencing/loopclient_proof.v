@@ -20,10 +20,10 @@ Definition kv_inv γ γm1 γm2 : iProp Σ :=
   inv kvN (
     (∃ v1,
     "Hkv1" ∷ frontend.kv_ptsto γ.(client.kv_gn) 0 v1 ∗
-    "Hmono1" ∷ mono_nat_auth_own γm1 1 (int.nat v1)) ∗
+    "Hmono1" ∷ mono_nat_auth_own γm1 1 (uint.nat v1)) ∗
     (∃ v2,
     "Hkv2" ∷ frontend.kv_ptsto γ.(client.kv_gn) 1 v2 ∗
-    "Hmono2" ∷ mono_nat_auth_own γm2 1 (int.nat v2))
+    "Hmono2" ∷ mono_nat_auth_own γm2 1 (uint.nat v2))
   )
 .
 
@@ -46,7 +46,7 @@ Proof.
   (* I'm just going to unwrap the definition of inv here. There should be a
      lemma for this. *)
   iAssert (∃ γm, inv kvN (∃ v, "Hkv" ∷ frontend.kv_ptsto γ.(client.kv_gn) key v ∗
-               "Hmono" ∷ mono_nat_auth_own γm 1 (int.nat v))
+               "Hmono" ∷ mono_nat_auth_own γm 1 (uint.nat v))
           )%I as "HH".
   {
     destruct Hkey as [-> | -> ].
@@ -81,7 +81,7 @@ Proof.
   iExists _; iFrame.
   iIntros (Hoverflow) "Hkv".
   iMod "Hmask".
-  iMod (mono_nat_own_update (int.nat (word.add v 1)) with "Hmono") as "[Hmono #Hlb]".
+  iMod (mono_nat_own_update (uint.nat (word.add v 1)) with "Hmono") as "[Hmono #Hlb]".
   {
     word.
   }
@@ -100,7 +100,7 @@ Proof.
 
     iClear "Hmask".
     (* weaken resources to loop invariant *)
-    iAssert (∃ (v v':u64), ⌜int.nat v' > int.nat v⌝ ∗ lowerBound ↦[uint64T] #v ∗ mono_nat_lb_own γm (int.nat v'))%I with "[HlowerBound]" as "HH".
+    iAssert (∃ (v v':u64), ⌜uint.nat v' > uint.nat v⌝ ∗ lowerBound ↦[uint64T] #v ∗ mono_nat_lb_own γm (uint.nat v'))%I with "[HlowerBound]" as "HH".
     {
       iExists _, _; iFrame "∗#".
       iPureIntro.
@@ -132,7 +132,7 @@ Proof.
     iIntros (Hoverflow) "Hkv".
     iMod "Hmask".
 
-    iMod (mono_nat_own_update (int.nat (word.add v0 1%nat)) with "Hmono") as "[Hmono #HlbNew]".
+    iMod (mono_nat_own_update (uint.nat (word.add v0 1%nat)) with "Hmono") as "[Hmono #HlbNew]".
     { word. }
     iMod ("Hclose" with "[Hkv Hmono]") as "_".
     {

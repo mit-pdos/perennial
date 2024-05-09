@@ -16,7 +16,7 @@ Theorem wp_txn__begin txn γ :
     <<< ∃∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
     {{{ (tid : u64) (wrbuf : loc), RET #();
         own_txn_impl txn wrbuf ts' γ ∗
-        own_wrbuf_xtpls wrbuf ∅ ∧ ⌜int.nat tid = ts'⌝
+        own_wrbuf_xtpls wrbuf ∅ ∧ ⌜uint.nat tid = ts'⌝
     }}}.
 Proof.
   iIntros "!>" (Φ) "Htxn HAU".

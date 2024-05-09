@@ -16,7 +16,7 @@ Definition own_txn_impl (txn : loc) (wrbuf : loc) (ts : nat) γ : iProp Σ :=
   ∃ (tid sid : u64) (site idx : loc) (proph : proph_id),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     (* This ensures we do not lose the info that [tid] does not overflow. *)
-    "%Etid" ∷ ⌜int.nat tid = ts⌝ ∗
+    "%Etid" ∷ ⌜uint.nat tid = ts⌝ ∗
     "Hsite" ∷ txn ↦[Txn :: "site"] #site ∗
     "#HsiteRI" ∷ is_txnsite site sid γ ∗
     "Hwrbuf"    ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
@@ -86,7 +86,7 @@ Qed.
 
 Lemma own_txn_impl_tid txn wrbuf ts γ :
   own_txn_impl txn wrbuf ts γ -∗
-  ∃ (tid : u64), ⌜int.nat tid = ts⌝.
+  ∃ (tid : u64), ⌜uint.nat tid = ts⌝.
 Proof. iIntros "Htxn". iNamed "Htxn". eauto. Qed.
 
 End lemma.

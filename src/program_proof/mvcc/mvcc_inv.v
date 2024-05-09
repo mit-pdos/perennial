@@ -127,7 +127,7 @@ Theorem active_ge_min γ (tid : u64) (tidlb : nat) (sid : u64) :
   mvcc_inv_gc_def γ -∗
   active_tid γ tid sid -∗
   min_tid_lb γ tidlb -∗
-  ⌜(tidlb ≤ int.nat tid)%nat⌝.
+  ⌜(tidlb ≤ uint.nat tid)%nat⌝.
 Proof.
   iIntros "Hinv Hactive Hlb".
   iDestruct "Hactive" as "[[Htid %Hlookup] _]".

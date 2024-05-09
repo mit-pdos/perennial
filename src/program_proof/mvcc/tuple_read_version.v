@@ -8,7 +8,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*******************************************************************)
 Local Theorem wp_findVersion (tid : u64) (versS : Slice.t)
                               (vers : list (u64 * bool * string)) :
-  {{{ ⌜∃ (ver : pver), (ver ∈ vers) ∧ (int.Z ver.1.1 < int.Z tid)⌝ ∗
+  {{{ ⌜∃ (ver : pver), (ver ∈ vers) ∧ (uint.Z ver.1.1 < uint.Z tid)⌝ ∗
       slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers)
   }}}
     findVersion #tid (to_val versS)
@@ -54,7 +54,7 @@ Proof.
              "HidxR" ∷ (idxR ↦[uint64T] #idx) ∗
              "HversS" ∷ own_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
              "%Hspec" ∷ if b
-                        then ⌜spec_find_ver_reverse (take (int.nat idx) (reverse vers)) tid = None⌝
+                        then ⌜spec_find_ver_reverse (take (uint.nat idx) (reverse vers)) tid = None⌝
                         else ⌜spec_find_ver_reverse (reverse vers) tid = Some ver⌝)%I.
   wp_apply (wp_forBreak_cond P with "[] [-HΦ HversC]").
   { (* Loop body. *)
@@ -71,7 +71,7 @@ Proof.
       iModIntro.
       iApply "HΦ".
       unfold P.
-      replace (take (int.nat idx) _) with (reverse vers) in Hspec; last first.
+      replace (take (uint.nat idx) _) with (reverse vers) in Hspec; last first.
       { symmetry.
         pose proof (reverse_length vers) as HversRevLen.
         rewrite take_ge; first done.
@@ -86,24 +86,24 @@ Proof.
     wp_pures.
     
     (* apply Znot_le_gt in Heqb. *)
-    destruct (list_lookup_lt _ vers (length vers - S (int.nat idx))%nat) as [ver' Hver']; first word.
+    destruct (list_lookup_lt _ vers (length vers - S (uint.nat idx))%nat) as [ver' Hver']; first word.
     wp_apply (wp_SliceGet with "[HversS]").
     { iFrame.
       iPureIntro.
       set x := versS.(Slice.sz).
       (**
        * Notes on rewriting between [word.sub] and [Z.sub].
-       * 1. In general, to rewrite from [int.Z (word.sub x y)] to [int.Z x - int.Z y],
-       * we need to have [int.Z x ≥ int.Z y] in the context.
-       * 2. For nested [word.sub], e.g., [int.Z (word.sub (word.sub x y) z)], we can
-       * first prove that [int.Z (word.sub x y) ≥ int.Z z], and then replace
-       * [int.Z (word.sub (word.sub x y) z)] with [int.Z x - int.Z y - int.Z z].
+       * 1. In general, to rewrite from [uint.Z (word.sub x y)] to [uint.Z x - uint.Z y],
+       * we need to have [uint.Z x ≥ uint.Z y] in the context.
+       * 2. For nested [word.sub], e.g., [uint.Z (word.sub (word.sub x y) z)], we can
+       * first prove that [uint.Z (word.sub x y) ≥ uint.Z z], and then replace
+       * [uint.Z (word.sub (word.sub x y) z)] with [uint.Z x - uint.Z y - uint.Z z].
        *)
-      assert (H : Z.ge (int.Z (word.sub x idx)) 1).
+      assert (H : Z.ge (uint.Z (word.sub x idx)) 1).
       { subst x. word. }
-      replace (int.Z (word.sub _ (U64 1))) with (int.Z versS.(Slice.sz) - int.Z idx - 1); last first.
+      replace (uint.Z (word.sub _ (W64 1))) with (uint.Z versS.(Slice.sz) - uint.Z idx - 1); last first.
       { subst x. word. }
-      replace (Z.to_nat _) with ((length vers) - (S (int.nat idx)))%nat; last first.
+      replace (Z.to_nat _) with ((length vers) - (S (uint.nat idx)))%nat; last first.
       { rewrite HversLen. word. }
       rewrite list_lookup_fmap.
       rewrite Hver'.
@@ -133,7 +133,7 @@ Proof.
     do 2 iExists _.
     iFrame.
     iPureIntro.
-    replace (int.nat (word.add _ _)) with (S (int.nat idx)); last word.
+    replace (uint.nat (word.add _ _)) with (S (uint.nat idx)); last word.
     rewrite -reverse_lookup in Hver'; last first.
     { rewrite HversLen. word. }
     rewrite (take_S_r _ _ ver'); last done.
@@ -144,11 +144,11 @@ Proof.
   }
   { (* Loop entry. *)
     unfold P.
-    iExists (U64 0, false, "").
+    iExists (W64 0, false, "").
     iExists _.
     iFrame.
     iPureIntro.
-    change (int.nat 0) with 0%nat.
+    change (uint.nat 0) with 0%nat.
     rewrite take_0.
     split; auto.
   }
@@ -181,7 +181,7 @@ Theorem wp_tuple__ReadWait tuple (tid : u64) (key : u64) γ :
       is_tuple_locked tuple key γ ∗
       own_tuple_read tuple key owned vchain γ ∗
       ptuple_auth_owned γ key owned vchain ∗
-      ⌜owned = false ∨ (int.nat tid < length vchain)%nat⌝
+      ⌜owned = false ∨ (uint.nat tid < length vchain)%nat⌝
   }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> _ HΦ".
@@ -208,7 +208,7 @@ Proof.
                  "Habst" ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
                  "Hlocked" ∷ locked #latch ∗
                  "Hptuple" ∷ ptuple_auth γ (if owned then (1 / 4) else (1 / 2))%Qp key vchain ∗
-                 "%Hexit" ∷ if b then ⌜True⌝ else ⌜owned = false ∨ (int.Z tid) ≤ (int.Z tidlast)⌝)%I.
+                 "%Hexit" ∷ if b then ⌜True⌝ else ⌜owned = false ∨ (uint.Z tid) ≤ (uint.Z tidlast)⌝)%I.
   wp_apply (wp_forBreak_cond P with "[] [-HΦ]").
   { (* Loop body preserves the invariant. *)
     clear Φ.
@@ -291,7 +291,7 @@ Qed.
  * to reading a physical verison.
  * 2. However, when GC is involved, the invariant holds only for those physical
  * versions created after a certain tid (i.e., [tidlbN] in [own_tuple]). Thus,
- * we need a proof of [tidlbN ≤ (int.nat tid)] in order to apply the invariant,
+ * we need a proof of [tidlbN ≤ (uint.nat tid)] in order to apply the invariant,
  * which can be deduced from [active_tid γ sid tid] and [min_tid_lb γ tidlbN].
  *)
 (*****************************************************************)
@@ -303,12 +303,12 @@ Theorem wp_tuple__ReadVersion
   {{{ active_tid γ tid sid ∗
       is_tuple_locked tuple key γ ∗
       own_tuple_read tuple key owned vchain γ ∗
-      ptuple_auth_owned γ key owned (extend (S (int.nat tid)) vchain) ∧
-      ⌜owned = false ∨ (int.nat tid < length vchain)%nat⌝
+      ptuple_auth_owned γ key owned (extend (S (uint.nat tid)) vchain) ∧
+      ⌜owned = false ∨ (uint.nat tid < length vchain)%nat⌝
   }}}
     Tuple__ReadVersion #tuple #tid
   {{{ (val : string) (found : bool), RET (#(LitString val), #found);
-      active_tid γ tid sid ∗ ptuple_ptsto γ key (to_dbval found val) (int.nat tid)
+      active_tid γ tid sid ∗ ptuple_ptsto γ key (to_dbval found val) (uint.nat tid)
   }}}.
 Proof.
   iIntros (Φ) "(Hactive & Htuple & HtupleOwn & Hptuple & %Hwait) HΦ".
@@ -326,7 +326,7 @@ Proof.
   iApply fupd_wp.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
   iDestruct (active_ge_min with "HinvgcO Hactive Hgclb") as "%HtidGe".
-  iAssert (⌜int.Z tid > 0⌝)%I with "[Hactive]" as "%HtidGZ".
+  iAssert (⌜uint.Z tid > 0⌝)%I with "[Hactive]" as "%HtidGZ".
   { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
   iMod ("HinvgcC" with "HinvgcO") as "_".
   iModIntro.
@@ -374,10 +374,10 @@ Proof.
   repeat rewrite ite_apply.
   set tidlast' := if bool_decide _ then tid else tidlast.
   set P : iProp Σ :=
-    ("%Hlen" ∷ ⌜Z.of_nat (length vchain') = (int.Z tidlast' + 1)%Z⌝ ∗
+    ("%Hlen" ∷ ⌜Z.of_nat (length vchain') = (uint.Z tidlast' + 1)%Z⌝ ∗
      "%Hwellformed" ∷ tuple_wellformed vers tidlast' tidgc ∗
-     "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast' ->
-                            vchain' !! (int.nat tid) = Some (spec_lookup vers tid)⌝))%I.
+     "%HtupleAbs" ∷ (∀ tid, ⌜uint.Z tidgc ≤ uint.Z tid ≤ uint.Z tidlast' ->
+                            vchain' !! (uint.nat tid) = Some (spec_lookup vers tid)⌝))%I.
   iAssert P with "[]" as "HP".
   { unfold P.
     subst q.
@@ -426,7 +426,7 @@ Proof.
           intros tidx Hbound.
           subst vchain'.
           rewrite (extend_last_Some _ _ _ Hv').
-          destruct (decide (int.Z tidx ≤ int.Z tidlast)).
+          destruct (decide (uint.Z tidx ≤ uint.Z tidlast)).
           { (* [x ≤ tidlast]. *)
             rewrite lookup_app_l; last word.
             apply HtupleAbs.
@@ -457,7 +457,7 @@ Proof.
   iNamed "HP".
   clear P.
 
-  iAssert (⌜vchain' !! int.nat tid = Some (spec_lookup vers tid)⌝)%I as "%Hlookup".
+  iAssert (⌜vchain' !! uint.nat tid = Some (spec_lookup vers tid)⌝)%I as "%Hlookup".
   { subst tidlast'.
     iPureIntro.
     case_bool_decide.
@@ -470,7 +470,7 @@ Proof.
     case_bool_decide; last by rewrite extend_last.
     rewrite last_lookup.
     rewrite extend_length; last by eauto.
-    replace (_ -  _ + _)%nat with (S (int.nat tid))%nat; last lia.
+    replace (_ -  _ + _)%nat with (S (uint.nat tid))%nat; last lia.
     by simpl.
   }
   clear Hlast.

@@ -223,10 +223,10 @@ Proof.
 Qed.
 
 Lemma wp_allocN t s E v (n: u64) :
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   val_ty v t ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); l ↦∗[t] replicate (int.nat n) v }}}.
+  {{{ l, RET LitV (LitLoc l); l ↦∗[t] replicate (uint.nat n) v }}}.
 Proof.
   iIntros (Hsz Hty Φ) "_ HΦ". wp_apply wp_allocN_seq; [done..|].
   iIntros (l) "Hlm". iApply "HΦ".

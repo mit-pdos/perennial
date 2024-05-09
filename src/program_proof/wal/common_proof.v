@@ -125,7 +125,7 @@ Proof.
   }
   eapply is_txn_bound in HdiskEnd_txn as HdiskEnd_txn_bound.
   eapply is_txn_bound in HnextDiskEnd_is_txn0 as HnextDiskEnd_txn0_bound.
-  destruct (decide (int.Z σ.(memLog).(slidingM.mutable) ≤ int.Z (slidingM.endPos σ.(memLog)))).
+  destruct (decide (uint.Z σ.(memLog).(slidingM.mutable) ≤ uint.Z (slidingM.endPos σ.(memLog)))).
   2: {
     epose proof (wal_wf_txns_mono_pos Hwf HmemEnd_is_txn HnextDiskEnd_is_txn0). lia.
   }
@@ -159,7 +159,7 @@ Proof.
   eapply (is_memLog_boundaries_move _ _ _ mwrb_us) in Htxns;
     last by reflexivity.
   simpl in Htxns.
-  replace (int.nat (word.add _ _) - int.nat _)%nat
+  replace (uint.nat (word.add _ _) - uint.nat _)%nat
     with (length σ.(memLog).(slidingM.log)) by word.
   assumption.
 Qed.

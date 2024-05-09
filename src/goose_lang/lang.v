@@ -811,7 +811,7 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | ToUInt8Op, LitV (LitInt32 v) => Some $ LitV $ LitByte (u8_from_u32 v)
   | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitByte v
   | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
-  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (U64 (String.length v))
+  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (String.length v))
   | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide ((String.length v) < 2^64))
   | _, _ => None
   end.
@@ -864,13 +864,13 @@ Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :
   end.
 
 Definition string_to_bytes (s:string): list u8 :=
-  (λ x, U8 $ Ascii.nat_of_ascii x) <$> list_ascii_of_string s.
+  (λ x, W8 $ Ascii.nat_of_ascii x) <$> list_ascii_of_string s.
 
 Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option base_lit :=
   match op with
   | StringGetOp => mbind (M:=option)
                   (λ (x:u8), Some $ LitByte x)
-                  ((string_to_bytes s1) !! (int.nat w2))
+                  ((string_to_bytes s1) !! (uint.nat w2))
   | _ => None
   end.
 
@@ -925,7 +925,7 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
     | LitV (LitLoc l), LitV (LitInt off) => match op with
                                            | OffsetOp k =>
-                                             Some $ LitV $ LitLoc (l +ₗ k * (int.Z (off: u64)))
+                                             Some $ LitV $ LitLoc (l +ₗ k * (uint.Z (off: u64)))
                                            | _ => None
                                            end
     | LitV (LitString s1), LitV (LitByte n) => LitV <$> bin_op_eval_string_word op s1 n
@@ -1066,7 +1066,7 @@ Definition newProphId: transition (state*global_state) proph_id :=
   suchThat (fun '(σ,g) p => p ∉ g.(used_proph_id)).
 
 Instance gen_anyInt Σ: GenPred u64 Σ (fun _ _ => True).
-  refine (fun z _ => Some (U64 z ↾ _)); auto.
+  refine (fun z _ => Some (W64 z ↾ _)); auto.
 Defined.
 
 Definition arbitraryInt {state}: transition state u64 :=
@@ -1112,9 +1112,9 @@ Definition base_trans (e: expr) :
       ret $ LitV $ LitInt x)
   | AllocN (Val (LitV (LitInt n))) (Val v) =>
     atomically
-      (check (0 < int.Z n)%Z;;
+      (check (0 < uint.Z n)%Z;;
        l ← allocateN;
-       modifyσ (state_init_heap l (int.Z n) v);;
+       modifyσ (state_init_heap l (uint.Z n) v);;
        ret $ LitV $ LitLoc l)
    | StartRead (Val (LitV (LitLoc l))) => (* non-atomic load part 1 (used for map accesses) *)
      atomically
@@ -1311,9 +1311,9 @@ Qed.
 
 Lemma alloc_fresh v (n: u64) σ g :
   let l := fresh_locs (dom σ.(heap)) in
-  (0 < int.Z n)%Z →
+  (0 < uint.Z n)%Z →
   base_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ g []
-            (Val $ LitV $ LitLoc l) (state_init_heap l (int.Z n) v σ) g [].
+            (Val $ LitV $ LitLoc l) (state_init_heap l (uint.Z n) v σ) g [].
 Proof.
   intros.
   constructor 1.
@@ -1328,7 +1328,7 @@ Qed.
 
 Lemma arbitrary_int_step σ g :
   base_step_atomic (ArbitraryInt) σ g []
-            (Val $ LitV $ LitInt $ U64 0) σ g [].
+            (Val $ LitV $ LitInt $ W64 0) σ g [].
 Proof.
   intros.
   constructor 1.

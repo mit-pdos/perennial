@@ -24,7 +24,7 @@ Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q :
     singleClerk__enterNewEpoch #ck #args_ptr
   {{{
         reply_ptr reply, RET #reply_ptr; enterNewEpochReply.own reply_ptr reply 1 ∗
-        if (decide (reply.(enterNewEpochReply.err) = (U64 0))) then
+        if (decide (reply.(enterNewEpochReply.err) = (W64 0))) then
           enterNewEpoch_post γ γsrv reply args.(enterNewEpochArgs.epoch)
         else
           True
@@ -189,7 +189,7 @@ Proof.
 
     (* start ghost reasoning *)
     iIntros "Hghost". iNamed "Hghost".
-    assert (int.nat args.(enterNewEpochArgs.epoch) > int.nat pst.(paxosState.epoch)) as Hineq by word.
+    assert (uint.nat args.(enterNewEpochArgs.epoch) > uint.nat pst.(paxosState.epoch)) as Hineq by word.
     iDestruct (ghost_replica_helper1 with "Hghost") as "%HepochIneq".
     simpl in *.
     iMod (ghost_replica_enter_new_epoch with "Hghost") as "(Hghost & Htok & #Hrest)".

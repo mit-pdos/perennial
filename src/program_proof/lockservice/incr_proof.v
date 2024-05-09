@@ -57,14 +57,14 @@ Definition IncrServer_core_own_ghost server : iProp Σ :=
 Definition IncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   (* Case 1: Before crash barrier *)
   ("Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ [] ∗
-   "Hptsto" ∷ |PN={γback.(ks_rpcGN),incr_cid}=> args.(U64_1) [[γback.(ks_kvMapGN)]]↦ old_v
+   "Hptsto" ∷ |PN={γback.(ks_rpcGN),incr_cid}=> args.(W64_1) [[γback.(ks_kvMapGN)]]↦ old_v
    ) ∨
 
   (* Case 2: After crash barrier *)
   ( ∃ data,
   "Hfown_oldv" ∷ (("incr_request_" +:+ u64_to_string sseq) +:+ "_oldv") f↦ data ∗
   "%Hencoding" ∷ ⌜has_encoding data [EncUInt64 old_v]⌝ ∗
-   "Hptsto" ∷ |PN={γback.(ks_rpcGN),incr_cid}=> (∃ v', args.(U64_1) [[γback.(ks_kvMapGN)]]↦ v')
+   "Hptsto" ∷ |PN={γback.(ks_rpcGN),incr_cid}=> (∃ v', args.(W64_1) [[γback.(ks_kvMapGN)]]↦ v')
   )
 .
 
@@ -143,7 +143,7 @@ Proof.
     wpc_pures.
     iDestruct (slice.own_slice_sz with "Hcontent_slice") as "%Hslice_len".
     simpl in Hslice_len.
-    assert (int.Z content.(Slice.sz) = 0) as -> by word.
+    assert (uint.Z content.(Slice.sz) = 0) as -> by word.
     destruct bool_decide eqn:Hs.
     {
       apply bool_decide_eq_true in Hs.
