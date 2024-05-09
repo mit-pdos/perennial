@@ -944,8 +944,8 @@ Proof.
     rewrite Henc.
     rewrite app_length.
     rewrite singleton_length.
-    replace (1 + length (u64_le u ++ u64_le u0 ++ x) - uint.nat 1%Z)
-      with (length (u64_le u ++ u64_le u0 ++ x)) by word.
+    replace (1 + length (u64_le w ++ u64_le w0 ++ x) - uint.nat 1%Z)
+      with (length (u64_le w ++ u64_le w0 ++ x)) by word.
     replace (uint.nat (W64 1)) with (length [W8 0]) by done.
     rewrite drop_app_length.
     rewrite take_ge; last word.
@@ -1036,7 +1036,7 @@ Proof.
       { word. }
       { done. }
       { instantiate (1:=o).
-        instantiate (1:=eop u u0 o).
+        instantiate (1:=eop w w0 o).
         rewrite compute_state_snoc.
         unfold apply_op.
         simpl.

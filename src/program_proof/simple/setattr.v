@@ -573,7 +573,7 @@ Proof using Ptimeless.
         iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
         iMod "Hfupd" as "[HP HQ]".
 
-        assert (uint.nat u - length state = 0).
+        assert (uint.nat w - length state = 0).
         1: { revert Heqb. word. }
         rewrite H.
         rewrite replicate_0.
@@ -594,10 +594,10 @@ Proof using Ptimeless.
         2: { iModIntro. iSplit; try (iIntros "? !>"); done. }
         iRight.
         rewrite -> firstn_length_le by word.
-        iDestruct (is_inode_data_shrink _ _ u with "H1") as "H1".
+        iDestruct (is_inode_data_shrink _ _ w with "H1") as "H1".
         { word. }
         rewrite -> firstn_length_le by word.
-        replace (W64 (Z.of_nat (uint.nat u))) with u by word. iFrame.
+        replace (W64 (Z.of_nat (uint.nat w))) with w by word. iFrame.
       }
 
       iModIntro.
@@ -628,7 +628,7 @@ Proof using Ptimeless.
         iMod (map_update with "Hsrcheap Hinode_state") as "[Hsrcheap Hinode_state]".
         iMod "Hfupd" as "[HP HQ]".
 
-        assert (uint.nat u - length state = 0).
+        assert (uint.nat w - length state = 0).
         1: { revert Heqb. word. }
         rewrite H.
         rewrite replicate_0.
@@ -646,14 +646,14 @@ Proof using Ptimeless.
         iModIntro.
 
         iDestruct "Hcommit" as "[Hinode_enc Hinode_data]".
-        iDestruct (is_inode_data_shrink _ _ u with "Hinode_data") as "Hinode_data"; first by word.
+        iDestruct (is_inode_data_shrink _ _ w with "Hinode_data") as "Hinode_data"; first by word.
 
         wpc_frame "Hinode_state Hinode_enc Hinode_data".
         { iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state Hinode_enc Hinode_data]") as "H".
           2: { iModIntro. iSplit; try (iIntros "? !>"); done. }
           iRight.
           repeat rewrite -> firstn_length_le by word.
-          replace (W64 (Z.of_nat (uint.nat u))) with u by word. iFrame. }
+          replace (W64 (Z.of_nat (uint.nat w))) with w by word. iFrame. }
 
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
         wp_storeField.
@@ -665,7 +665,7 @@ Proof using Ptimeless.
         2: {
           iExists _. iFrame "Hinode_state". iExists _.
           repeat rewrite -> firstn_length_le by word.
-          replace (W64 (Z.of_nat (uint.nat u))) with u by word. iFrame. }
+          replace (W64 (Z.of_nat (uint.nat w))) with w by word. iFrame. }
 
         iIntros "Hcrashlocked".
         iSplit.
