@@ -14,6 +14,7 @@ Global Open Scope Z. (* Make sure everyone gets this scope. *)
    ambiguous paths between Z and base_lit.
  *)
 Coercion W64 : Z >-> u64.
+Add Printing Coercion W64.
 
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
