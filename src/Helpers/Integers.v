@@ -585,14 +585,14 @@ Ltac word_cleanup :=
   repeat match goal with
          | [ |- context[uint.Z ?x] ] =>
            lazymatch goal with
-           | [ H': 0 <= uint.Z x < 2^64 |- _ ] => fail
-           | [ H': 0 <= uint.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
+           | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
+           | [ H': 0 <= uint.Z x <= 2^_ |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          | [ H: context[uint.Z ?x] |- _ ] =>
            lazymatch goal with
-           | [ H': 0 <= uint.Z x < 2^64 |- _ ] => fail
-           | [ H': 0 <= uint.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
+           | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
+           | [ H': 0 <= uint.Z x <= 2^_ |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          end;
