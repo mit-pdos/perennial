@@ -12,8 +12,9 @@ From Perennial.goose_lang Require
      refinement refinement_adequacy
      ffi.atomic_refinement
      logical_reln_adeq
-     popl_submission_proofs.
+     popl_submission_proofs
 .
+
 From Perennial.goose_lang.ffi Require async_disk async_disk_equiv.
 From Perennial.program_proof Require
      lockmap_proof
