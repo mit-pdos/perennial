@@ -3,6 +3,10 @@ From Goose.github_com.mit_pdos.gokv.tutorial Require Import kvservice.
 From Perennial.program_proof.grove_shared Require Import urpc_proof monotonic_pred.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof Require Import std_proof.
+From Perennial.goose_lang.automation Require Import extra_tactics.
+From Perennial.goose_lang Require Import proofmode.
+
+Unset Printing Projections.
 
 (********************************************************************************)
 
@@ -585,23 +589,11 @@ Lemma wp_Server__getFreshNum (s:loc) Ψ :
   {{{ (n:u64), RET #n; Ψ n }}}
 .
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_pures.
+  wp_start.
   iNamed "Hsrv".
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
-  wp_loadField.
-  wp_pures.
-  wp_loadField.
-  wp_apply (wp_SumAssumeNoOverflow).
-  iIntros (Hoverflow).
-  wp_storeField.
-  wp_loadField.
+  wp_auto.
+  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown"; wp_auto.
+  wp_apply (wp_SumAssumeNoOverflow) as (Hoverflow) "".
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
@@ -625,25 +617,15 @@ Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
   }}}
 .
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_pures.
+  wp_start.
   iNamed "Hsrv".
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
+  wp_auto.
+  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
   iNamed "Hargs".
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapGet with "HlastRepliesM").
-  iIntros (??) "[%HlastReply HlastRepliesM]".
-  wp_pures.
-  wp_if_destruct.
+  wp_auto.
+  wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
+  wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
-    wp_loadField.
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
@@ -651,23 +633,10 @@ Proof.
       iFrame.
     }
     wp_pures.
-    iApply "HΦ".
-    iApply "Hspec".
+    iApply ("HΦ" with "Hspec").
   }
-  wp_loadField.
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapInsert with "HkvsM").
-  { done. }
-  iIntros "HkvsM".
-  wp_pures.
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapInsert with "HlastRepliesM").
-  { done. }
-  iIntros "HlastRepliesM".
-  wp_pures.
-  wp_loadField.
+  wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; first done.
+  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
@@ -675,8 +644,7 @@ Proof.
     iFrame.
   }
   wp_pures.
-  iApply "HΦ".
-  iApply "Hspec".
+  iApply ("HΦ" with "Hspec").
 Qed.
 
 Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ :
@@ -689,25 +657,15 @@ Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ 
   {{{ r, RET #(str r); Ψ r }}}
 .
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_pures.
+  wp_start.
   iNamed "Hsrv".
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
+  wp_auto.
+  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
   iNamed "Hargs".
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapGet with "HlastRepliesM").
-  iIntros (??) "[%HlastReply HlastRepliesM]".
-  wp_pures.
-  wp_if_destruct.
+  wp_auto.
+  wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
+  wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
-    wp_loadField.
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
@@ -718,71 +676,35 @@ Proof.
     iApply "HΦ".
     iApply "Hspec".
   }
-  wp_apply (wp_ref_to).
-  { repeat econstructor. }
-  iIntros (ret2_ptr) "Hret".
-  wp_pures.
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapGet with "HkvsM").
-  iIntros (??) "[Hlookup HkvsM]".
-  wp_pures.
-  wp_loadField.
-  wp_pures.
-  wp_if_destruct.
+  wp_apply (wp_ref_to) as (ret2_ptr) "Hret"; first val_ty.
+  wp_apply (wp_MapGet with "HkvsM") as (??) "[Hlookup HkvsM]".
+  wp_if_destruct; wp_auto.
   { (* case: the old value matches the expected value *)
-    wp_loadField.
-    wp_loadField.
-    wp_loadField.
-    wp_apply (wp_MapInsert with "HkvsM").
-    { done. }
-    iIntros "HkvsM".
+    wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; first done.
     (* FIXME: delete typed_map.map_insert *)
     rewrite /typed_map.map_insert.
-    wp_pures.
-    wp_store.
-    wp_pures.
-    wp_load.
-    wp_loadField.
-    wp_loadField.
-    wp_apply (wp_MapInsert with "HlastRepliesM").
-    { done. }
-    iIntros "HlastRepliesM".
-    wp_pures.
-    wp_loadField.
+    wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
     wp_apply (release_spec with "[-HΦ Hspec Hret]").
     {
       iFrame "∗#". iNext.
       repeat iExists _.
       iFrame.
     }
-    wp_pures.
-    wp_load.
+    wp_auto.
     iModIntro.
-    iApply "HΦ".
-    iApply "Hspec".
+    iApply ("HΦ" with "Hspec").
   }
 
-  wp_pures.
-  wp_load.
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapInsert with "HlastRepliesM").
-  { done. }
-  iIntros "HlastRepliesM".
-  wp_pures.
-  wp_loadField.
+  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
   wp_apply (release_spec with "[-HΦ Hspec Hret]").
   {
     iFrame "∗#". iNext.
     repeat iExists _.
     iFrame.
   }
-  wp_pures.
-  wp_load.
+  wp_auto.
   iModIntro.
-  iApply "HΦ".
-  iApply "Hspec".
+  iApply ("HΦ" with "Hspec").
 Qed.
 
 Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
@@ -797,25 +719,15 @@ Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
   }}}
 .
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_pures.
+  wp_start.
   iNamed "Hsrv".
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
+  wp_auto.
+  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
   iNamed "Hargs".
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapGet with "HlastRepliesM").
-  iIntros (??) "[%HlastReply HlastRepliesM]".
-  wp_pures.
-  wp_if_destruct.
+  wp_auto.
+  wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
+  wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
-    wp_loadField.
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
@@ -826,18 +738,8 @@ Proof.
     iApply "HΦ".
     iApply "Hspec".
   }
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapGet with "HkvsM").
-  iIntros (?? )"[Hlookup HkvsM]".
-  wp_pures.
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapInsert with "HlastRepliesM").
-  { done. }
-  iIntros "HlastRepliesM".
-  wp_pures.
-  wp_loadField.
+  wp_apply (wp_MapGet with "HkvsM") as (??) "[%Hlookup HkvsM]".
+  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
