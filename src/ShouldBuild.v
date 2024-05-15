@@ -13,6 +13,7 @@ From Perennial.goose_lang Require
      ffi.atomic_refinement
      logical_reln_adeq
      popl_submission_proofs
+     automation.automation_test
 .
 
 From Perennial.goose_lang.ffi Require async_disk async_disk_equiv.
