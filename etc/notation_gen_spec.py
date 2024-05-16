@@ -8,27 +8,27 @@ def generate_notation(format_string, dict_iters):
 
 
 mask_opts = [
-    {
-        "mask_not1": "⟨ E1 , E2 ⟩ ",
-        "mask_not2": "⟨ E1 , E2 ⟩  ",
-        "mask_open": "(fupd E1 E2)",
-        "mask_close": "(fupd E2 E1)",
-        "mask_levels": "E1, E2 at level 9, ",
-        "mask_arg": "E1",
-    },
+    # {
+    #    "mask_not1": "⟨ E1 , E2 ⟩ ",
+    #    "mask_not2": "⟨ E1 , E2 ⟩  ",
+    #    "mask_open": "(fupd E1 E2)",
+    #    "mask_close": "(fupd E2 E1)",
+    #    "mask_levels": "E1, E2 at level 9, ",
+    #    "mask_arg": "E1",
+    # },
     {
         "mask_not1": "⟨ E1 ⟩ ",
         "mask_not2": "⟨ E1 ⟩  ",
-        "mask_open": "(fupd E1 E1)",
-        "mask_close": "(fupd E1 E1)",
+        "mask_open": "E1",
+        "mask_close": "E1",
         "mask_levels": "E1 at level 9, ",
         "mask_arg": "E1",
     },
     {
         "mask_not1": "",
         "mask_not2": "",
-        "mask_open": "(fupd ⊤ ⊤)",
-        "mask_close": "(fupd ⊤ ⊤)",
+        "mask_open": "⊤",
+        "mask_close": "⊤",
         "mask_levels": "",
         "mask_arg": "⊤",
     },
@@ -156,58 +156,48 @@ if __name__ == "__main__":
     print(header)
 
     generate_notation(
-        """Notation "'SPEC' {key_hyp1}{mask_not1}{binders_pre1}{{{{ Ps }} }} e{stuckness1} {{{{ {laters_not1}{binders_post1}'RET' e' ; Qs }} }}" :=
-  (ReductionStep'
-    wp_red_cond
-    {key_hyp_arg}%I
-    {laters_arg}
+        """Notation "'SPEC' {mask_not1}{binders_pre1}{{{{ Ps }} }} e {{{{ {binders_post1}'RET' e' ; Qs }} }}" :=
+  (PerennialSpec
     {mask_open}
-    {mask_close}
     {binders_tele}
     {binders_post_tele}
     {binders_pre_lmask}Ps%I{binders_pre_rmask}
     {binders_pre_lmask}{binders_post_lmask}Qs%I{binders_post_rmask}{binders_pre_rmask}
     e
     {binders_pre_lmask}{binders_post_lmask}e'{binders_post_rmask}{binders_pre_rmask}
-    [tele_arg3 {mask_arg} ; {stuckness_arg}] )
-  (at level 20, {laters_levels}{mask_levels}{binders_levels}{binders_post_levels}{stuckness_levels}e, Ps, {key_hyp_levels}e', Qs at level 200, format
-  "'[hv' SPEC  {key_hyp2}{mask_not2}{binders_pre2}'/ ' {{{{  Ps  }} }} '/  '  e{stuckness2}  '/ ' {{{{ '[hv'  {laters_not2}{binders_post2}'RET'  e' ; '/  '  Qs  ']' }} }} ']'"
+    )
+  (at level 20, {mask_levels}{binders_levels}{binders_post_levels}e, Ps, e', Qs at level 200, format
+  "'[hv' SPEC  {mask_not2}{binders_pre2}'/ ' {{{{  Ps  }} }} '/  '  e  '/ ' {{{{ '[hv'  {binders_post2}'RET'  e' ; '/  '  Qs  ']' }} }} ']'"
 ).
 """,
         [
             mask_opts,
             binder_pre_opts,
-            stuckness_opts,
-            key_hyp_opts,
-            later_opts,
             binder_post_opts,
         ],
     )
 
-    generate_notation(
-        """Notation "'SPEC2' {key_hyp1}{mask_not1}{binders_pre1}{{{{ Ps }} }} e{stuckness1} {{{{ {laters_not1}'RET' [ e' ] ; Qs }} }}" :=
-  (ReductionStep'
-    wp_red_cond
-    {key_hyp_arg}%I
-    {laters_arg}
-    {mask_open}
-    {mask_close}
-    {binders_tele}
-    _
-    {binders_pre_lmask}Ps%I{binders_pre_rmask}
-    Qs%I
-    e
-    e'
-    [tele_arg3 {mask_arg} ; {stuckness_arg}] )
-  (at level 20, {laters_levels}{mask_levels}{binders_levels}{stuckness_levels}e, Ps, {key_hyp_levels}e', Qs at level 200, format
-  "'[hv' SPEC2  {key_hyp2}{mask_not2}{binders_pre2}'/ ' {{{{  Ps  }} }} '/  '  e{stuckness2}  '/ ' {{{{  {laters_not2}'RET'  [ e' ] ; '/  '  Qs  }} }} ']'", only printing
-).
-""",
-        [
-            mask_opts,
-            [binder_pre_opts[0]],
-            stuckness_opts,
-            key_hyp_opts,
-            later_opts,
-        ],
-    )
+#    generate_notation(
+#        """Notation "'SPEC2' {key_hyp1}{mask_not1}{binders_pre1}{{{{ Ps }} }} e{stuckness1} {{{{ 'RET' [ e' ] ; Qs }} }}" :=
+#  (PerennialSpec
+#    {mask_open}
+#    {mask_close}
+#    {binders_tele}
+#    _
+#    {binders_pre_lmask}Ps%I{binders_pre_rmask}
+#    Qs%I
+#    e
+#    e'
+#    [tele_arg3 {mask_arg} ; {stuckness_arg}] )
+#  (at level 20, {laters_levels}{mask_levels}{binders_levels}{stuckness_levels}e, Ps, {key_hyp_levels}e', Qs at level 200, format
+#  "'[hv' SPEC2  {key_hyp2}{mask_not2}{binders_pre2}'/ ' {{{{  Ps  }} }} '/  '  e{stuckness2}  '/ ' {{{{  {laters_not2}'RET'  [ e' ] ; '/  '  Qs  }} }} ']'", only printing
+# ).
+# """,
+#        [
+#            mask_opts,
+#            [binder_pre_opts[0]],
+#            stuckness_opts,
+#            key_hyp_opts,
+#            later_opts,
+#        ],
+#    )

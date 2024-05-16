@@ -34,6 +34,7 @@ Section wp.
     iSteps.
     iApply lifting.wp_pure_step_later; first done.
     iSteps.
+    iFrame.
   Qed.
 
   Global Instance sym_exec_ref t Φ :
@@ -190,47 +191,51 @@ Section goose_lang_instances.
     - tc_solve.
   Qed.
 
-  Global Instance load_step_wp l E1 E2 s :
-    SPEC ⟨E1, E2⟩ v q, {{ ▷ l ↦{q} v }} ! #l @ s {{ RET v; l ↦{q} v }}.
+  Global Instance load_step_wp E l :
+    SPEC ⟨E⟩ v q, {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
   Proof.
-    iSteps as (v q) "Hl".
-    iApply (wp_load with "Hl").
+    unfold_spec_goal.
+    iSteps as (Φ v q) "Hl HΦ".
+    wp_apply (wp_load with "Hl").
     iSteps.
   Qed.
 
-  Global Instance load_type_step_wp l E s t :
-    SPEC ⟨E⟩ v q, {{ ▷ l ↦[t]{q} v }} ![t] #l @ s {{ RET v; l ↦[t]{q} v }}.
+  Global Instance load_type_step_wp l E t :
+    SPEC ⟨E⟩ v q, {{ ▷ l ↦[t]{q} v }} ![t] #l {{ RET v; l ↦[t]{q} v }}.
   Proof.
-    iSteps as (v q) "Hl".
+    unfold_spec_goal.
+    iSteps as (Φ v q) "Hl HΦ".
     wp_apply (wp_LoadAt with "Hl").
     iSteps.
   Qed.
 
-  Global Instance alloc_step_wp e v t s:
+  Global Instance alloc_step_wp e v t:
     IntoVal e v →
     val_ty v t →
-    SPEC {{ True }} ref_to t e @ s {{ l, RET #l; l ↦[t] v }} | 20.
+    SPEC {{ True }} ref_to t e {{ l, RET #l; l ↦[t] v }} | 20.
   Proof.
     move => <- Hty.
+    unfold_spec_goal.
     iSteps.
     iApply wp_ref_to => //.
-    iSteps.
   Qed.
 
-  Global Instance store_step_wp l v' E s :
-    SPEC ⟨E⟩ v, {{ ▷ l ↦ v }} #l <- v' @ s {{ RET #(); l ↦ v' }}.
+  Global Instance store_step_wp l v' E :
+    SPEC ⟨E⟩ v, {{ ▷ l ↦ v }} #l <- v' {{ RET #(); l ↦ v' }}.
   Proof.
-    iSteps as (v) "Hl".
+    unfold_spec_goal.
+    iSteps as (Φ v) "Hl HΦ".
     iApply (wp_store with "Hl").
     iSteps.
   Qed.
 
-  Global Instance store_type_step_wp l t v' E s :
+  Global Instance store_type_step_wp l t v' E :
     val_ty v' t →
-    SPEC ⟨E⟩ v, {{ ▷ l ↦[t] v }} #l <-[t] v' @ s {{ RET #(); l ↦[t] v' }}.
+    SPEC ⟨E⟩ v, {{ ▷ l ↦[t] v }} #l <-[t] v' {{ RET #(); l ↦[t] v' }}.
   Proof.
     move => Hty.
-    iSteps as (v) "Hl".
+    unfold_spec_goal.
+    iSteps as (Φ v) "Hl HΦ".
     wp_apply (wp_StoreAt with "Hl"); first done.
     iSteps.
   Qed.

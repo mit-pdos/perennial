@@ -539,17 +539,20 @@ Section abducts.
     HINT1 Q ✱ [MT' $ flip wp_execute_op R' ∘ K ∘ e_out'] ⊫ [id]; P.
   Proof. intros. eapply execution_abduct_lem => //. tc_solve. Qed.
 
-  Class PerennialSpec (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
-    perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗ Φ (tele_app (tele_app v tt1) tt2))) ⊢ WP e {{ Φ }}.
+  Class PerennialSpec E (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
+    perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
+                                                         Φ (tele_app (tele_app v tt1) tt2)))
+                             ⊢ WP e @ E {{ Φ }}.
 
-  Global Instance perennial_lang_apply_spec e Φ TT1 TT2 P Q v K e_in :
-    ReshapeExprAnd (expr Λ) e K e_in (PerennialSpec TT1 TT2 P Q e_in v) →
+  Global Instance perennial_lang_apply_spec e E Φ TT1 TT2 P Q v K e_in :
+    ReshapeExprAnd (expr Λ) e K e_in (PerennialSpec E TT1 TT2 P Q e_in v) →
     LanguageCtx K →
     HINT1 ε₀ ✱ [ ∃.. tt1 : TT1, tele_app P tt1 ∗
         (∀.. tt2 : TT2, tele_app (tele_app Q tt1) tt2 -∗
-                        WP (K $ of_val (tele_app (tele_app v tt1) tt2)) {{ Φ }} ) ] ⊫
-      [id]; WP e {{ Φ }}.
+                        WP (K $ of_val (tele_app (tele_app v tt1) tt2)) @ E {{ Φ }} ) ] ⊫
+      [id]; WP e @ E {{ Φ }}.
   Proof.
+    rewrite /PerennialSpec.
     case => -> He_in HK.
     unfold Abduct. simpl.
     iIntros "[_ [%tt1 [HP HQ]]]".
@@ -562,8 +565,9 @@ Section abducts.
     HINT1 ε₀ ✱ [fupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 10.
   Proof.
     rewrite /IntoVal /Abduct /= empty_hyp_first_eq left_id => <-.
-    (* erewrite (wp_value_fupd _ _ Φ) => //. *)
-  Admitted.
+    iMod 1 as "H".
+    iApply wp_value'; auto.
+  Qed.
 
   Global Instance prepend_modal_wp_expr e Φ E s :
     PrependModality (WP e @ s ; E {{ Φ }})%I (fupd E E) (WP e @ s; E {{ Φ }})%I | 20.
@@ -572,6 +576,24 @@ Section abducts.
     apply (anti_symm _).
     - by rewrite -{2}fupd_wp.
     - apply fupd_intro.
+  Qed.
+
+  Global Instance collect_nc_modal_wp_value s e v Φ E :
+    IntoVal e v →
+    HINT1 ε₀ ✱ [ncfupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 10.
+  Proof.
+    rewrite /IntoVal /Abduct /= empty_hyp_first_eq left_id => <-.
+    iMod 1 as "H".
+    iApply wp_value; done.
+  Qed.
+
+  Global Instance prepend_nc_modal_wp_expr e Φ E s :
+    PrependModality (WP e @ s ; E {{ Φ }})%I (ncfupd E E) (WP e @ s; E {{ Φ }})%I | 20.
+  Proof.
+    rewrite /PrependModality.
+    apply (anti_symm _).
+    - by rewrite -{2}ncfupd_wp.
+    - apply ncfupd_intro.
   Qed.
 
 End abducts.
