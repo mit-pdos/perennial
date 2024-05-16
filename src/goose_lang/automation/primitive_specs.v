@@ -1,7 +1,8 @@
 From Perennial.goose_lang Require Import automation.goose_lang_auto.
 From diaframe.lib Require Import iris_hints.
-From Perennial.goose_lang Require Import struct.struct.
-From Perennial.goose_lang Require Import typed_mem.typed_mem.
+From Perennial.goose_lang Require Import struct.
+From Perennial.goose_lang Require Import typed_mem.
+From Perennial.goose_lang Require Import lock.
 
 Set Default Proof Using "Type".
 
@@ -91,6 +92,20 @@ Section goose_lang_instances.
     iStep.
     iStep.
     wp_apply (wp_loadField_ro with "[$]"). auto.
+  Qed.
+
+  Global Instance lock_acquire_spec lk N R :
+    SPEC {{ is_lock N lk R }} lock.acquire lk {{ RET #(); locked lk ∗ R }}.
+  Proof.
+    iStep.
+    wp_apply (acquire_spec' with "[$]"); auto.
+  Qed.
+
+  Global Instance lock_release_spec lk N R :
+    SPEC {{ is_lock N lk R ∗ locked lk ∗ R }} lock.release lk {{ RET #(); emp }}.
+  Proof.
+    iStep as "Hlock Hlocked HR".
+    wp_apply (release_spec' with "[$Hlock $Hlocked $HR]"); auto.
   Qed.
 
 End goose_lang_instances.

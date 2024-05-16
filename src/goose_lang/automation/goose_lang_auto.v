@@ -138,6 +138,7 @@ Section goose_lang_instances.
 
   Open Scope expr_scope.
 
+  (* TODO: this doesn't seem set up correctly *)
   Global Instance automate_pure_exec n e e' φ Φ :
     PureExec φ n e e' →
     HINT1
