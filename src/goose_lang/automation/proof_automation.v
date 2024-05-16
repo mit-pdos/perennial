@@ -193,7 +193,7 @@ Section goose_lang_instances.
   Global Instance load_step_wp E l :
     SPEC ⟨E⟩ v q, {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
   Proof.
-    iSteps as (Φ v q) "Hl HΦ".
+    iSteps as (v q) "Hl".
     wp_apply (wp_load with "Hl").
     iSteps.
   Qed.
@@ -201,7 +201,7 @@ Section goose_lang_instances.
   Global Instance load_type_step_wp l E t :
     SPEC ⟨E⟩ v q, {{ ▷ l ↦[t]{q} v }} ![t] #l {{ RET v; l ↦[t]{q} v }}.
   Proof.
-    iSteps as (Φ v q) "Hl HΦ".
+    iSteps as (v q) "Hl".
     wp_apply (wp_LoadAt with "Hl").
     iSteps.
   Qed.
@@ -213,14 +213,16 @@ Section goose_lang_instances.
   Proof.
     move => <- Hty.
     iStep.
-    iStep.
+    (* TODO: using perennial_spec_red_no_Φ_not_value made this break, should I
+    be concerned? *)
     wp_apply wp_ref_to => //.
+    iSteps.
   Qed.
 
   Global Instance store_step_wp l v' E :
     SPEC ⟨E⟩ v, {{ ▷ l ↦ v }} #l <- v' {{ RET #(); l ↦ v' }}.
   Proof.
-    iSteps as (Φ v) "Hl HΦ".
+    iSteps as (v) "Hl".
     iApply (wp_store with "Hl").
     iSteps.
   Qed.
@@ -230,7 +232,7 @@ Section goose_lang_instances.
     SPEC ⟨E⟩ v, {{ ▷ l ↦[t] v }} #l <-[t] v' {{ RET #(); l ↦[t] v' }}.
   Proof.
     move => Hty.
-    iSteps as (Φ v) "Hl HΦ".
+    iSteps as (v) "Hl".
     wp_apply (wp_StoreAt with "Hl"); first done.
     iSteps.
   Qed.

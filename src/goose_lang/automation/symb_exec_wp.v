@@ -575,7 +575,7 @@ Section abducts.
     iExists tt1. iFrame.
   Qed.
 
-  Global Instance perennial_spec_red E TT1 TT2 P Q e v :
+  Instance perennial_spec_red E TT1 TT2 P Q e v :
     AsEmpValidWeak
       (PerennialSpec E TT1 TT2 P Q e v)
       (∀ Φ,
@@ -584,10 +584,27 @@ Section abducts.
                      Φ (tele_app (tele_app v tt1) tt2)) -∗
                    WP e @ E {{ Φ }})).
   Proof.
-    rewrite /PerennialSpec.
     move => H.
+    rewrite /PerennialSpec.
     iIntros (Φ) "[%tt1 [HP HΦ]]".
     iApply H; iFrame.
+  Qed.
+
+  Global Instance perennial_spec_red_no_Φ_not_value E TT1 TT2 P Q e v :
+    TCEq (to_val e) None →
+    AsEmpValidWeak
+      (PerennialSpec E TT1 TT2 P Q e v)
+      (∀.. tt1, tele_app P tt1 -∗
+                   WP e @ E {{ λ v', ∃.. tt2, ⌜v' = tele_app (tele_app v tt1) tt2⌝ ∗ tele_app (tele_app Q tt1) tt2 }}).
+  Proof.
+    move => Hnotval H.
+    rewrite /PerennialSpec.
+    iIntros (Φ) "[%tt1 [HP HΦ]]".
+    iDestruct (H with "HP") as "Hwp".
+    iApply (wp_strong_mono with "[Hwp]"); [done..|].
+    iIntros (v') "[%tt2 [-> HQ]]".
+    iModIntro.
+    iApply ("HΦ" with "HQ").
   Qed.
 
   Global Instance collect_modal_wp_value s e v Φ E :
