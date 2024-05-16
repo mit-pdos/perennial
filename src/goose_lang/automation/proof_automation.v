@@ -34,7 +34,6 @@ Section wp.
     iSteps.
     iApply lifting.wp_pure_step_later; first done.
     iSteps.
-    iFrame.
   Qed.
 
   Global Instance sym_exec_ref t Φ :
@@ -194,7 +193,6 @@ Section goose_lang_instances.
   Global Instance load_step_wp E l :
     SPEC ⟨E⟩ v q, {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
   Proof.
-    unfold_spec_goal.
     iSteps as (Φ v q) "Hl HΦ".
     wp_apply (wp_load with "Hl").
     iSteps.
@@ -203,7 +201,6 @@ Section goose_lang_instances.
   Global Instance load_type_step_wp l E t :
     SPEC ⟨E⟩ v q, {{ ▷ l ↦[t]{q} v }} ![t] #l {{ RET v; l ↦[t]{q} v }}.
   Proof.
-    unfold_spec_goal.
     iSteps as (Φ v q) "Hl HΦ".
     wp_apply (wp_LoadAt with "Hl").
     iSteps.
@@ -215,15 +212,14 @@ Section goose_lang_instances.
     SPEC {{ True }} ref_to t e {{ l, RET #l; l ↦[t] v }} | 20.
   Proof.
     move => <- Hty.
-    unfold_spec_goal.
-    iSteps.
-    iApply wp_ref_to => //.
+    iStep.
+    iStep.
+    wp_apply wp_ref_to => //.
   Qed.
 
   Global Instance store_step_wp l v' E :
     SPEC ⟨E⟩ v, {{ ▷ l ↦ v }} #l <- v' {{ RET #(); l ↦ v' }}.
   Proof.
-    unfold_spec_goal.
     iSteps as (Φ v) "Hl HΦ".
     iApply (wp_store with "Hl").
     iSteps.
@@ -234,7 +230,6 @@ Section goose_lang_instances.
     SPEC ⟨E⟩ v, {{ ▷ l ↦[t] v }} #l <-[t] v' {{ RET #(); l ↦[t] v' }}.
   Proof.
     move => Hty.
-    unfold_spec_goal.
     iSteps as (Φ v) "Hl HΦ".
     wp_apply (wp_StoreAt with "Hl"); first done.
     iSteps.

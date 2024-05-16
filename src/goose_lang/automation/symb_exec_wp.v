@@ -575,6 +575,21 @@ Section abducts.
     iExists tt1. iFrame.
   Qed.
 
+  Global Instance perennial_spec_red E TT1 TT2 P Q e v :
+    AsEmpValidWeak
+      (PerennialSpec E TT1 TT2 P Q e v)
+      (∀ Φ,
+         (∀.. tt1, tele_app P tt1 ∗
+                     (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
+                     Φ (tele_app (tele_app v tt1) tt2)) -∗
+                   WP e @ E {{ Φ }})).
+  Proof.
+    rewrite /PerennialSpec.
+    move => H.
+    iIntros (Φ) "[%tt1 [HP HΦ]]".
+    iApply H; iFrame.
+  Qed.
+
   Global Instance collect_modal_wp_value s e v Φ E :
     IntoVal e v →
     HINT1 ε₀ ✱ [fupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 10.
@@ -593,7 +608,8 @@ Section abducts.
     - apply fupd_intro.
   Qed.
 
-  Global Instance collect_nc_modal_wp_value s e v Φ E :
+  (* not exporting these instances, they don't seem to help *)
+  #[local] Instance collect_nc_modal_wp_value s e v Φ E :
     IntoVal e v →
     HINT1 ε₀ ✱ [ncfupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 15.
   Proof.
@@ -602,7 +618,7 @@ Section abducts.
     iApply wp_value; done.
   Qed.
 
-  Global Instance prepend_nc_modal_wp_expr e Φ E s :
+  #[local] Instance prepend_nc_modal_wp_expr e Φ E s :
     PrependModality (WP e @ s ; E {{ Φ }})%I (ncfupd E E) (WP e @ s; E {{ Φ }})%I | 20.
   Proof.
     rewrite /PrependModality.

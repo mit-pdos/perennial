@@ -31,9 +31,7 @@ Section wp.
       allocate_zero t #()
     {{{ (l:loc), RET #l; l ↦[t] (zero_val t) }}}.
   Proof.
-    (* TODO: stopped working with Perennial typeclass *)
     iSteps.
-    admit.
-  Abort.
+  Qed.
 
 End wp.
