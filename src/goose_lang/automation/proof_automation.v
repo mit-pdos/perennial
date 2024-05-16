@@ -7,6 +7,7 @@ From Perennial.goose_lang.automation Require Import symb_exec_wp spec_notation.
 From diaframe Require Import steps.pure_solver.
 From Perennial.goose_lang Require Export proofmode notation.
 From Perennial.goose_lang Require Import struct.struct.
+From Perennial.goose_lang Require Import typed_mem.typed_mem.
 
 (**
 mostly taken from
@@ -197,15 +198,13 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Global Instance load_type_step_wp l E1 E2 s t :
-    SPEC ⟨E1, E2⟩ v q, {{ ▷ l ↦[t]{q} v }} ![t] #l @ s {{ RET v; l ↦[t]{q} v }}.
+  Global Instance load_type_step_wp l E s t :
+    SPEC ⟨E⟩ v q, {{ ▷ l ↦[t]{q} v }} ![t] #l @ s {{ RET v; l ↦[t]{q} v }}.
   Proof.
-    (*
     iSteps as (v q) "Hl".
-    iApply (wp_load with "Hl").
+    wp_apply (wp_LoadAt with "Hl").
     iSteps.
-    *)
-  Abort.
+  Qed.
 
   Global Instance alloc_step_wp e v t s:
     IntoVal e v →
@@ -218,19 +217,23 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Global Instance store_step_wp l v' E1 E2 s :
-    SPEC ⟨E1, E2⟩ v, {{ ▷ l ↦ v }} #l <- v' @ s {{ RET #(); l ↦ v' }}.
+  Global Instance store_step_wp l v' E s :
+    SPEC ⟨E⟩ v, {{ ▷ l ↦ v }} #l <- v' @ s {{ RET #(); l ↦ v' }}.
   Proof.
-    (* TODO: why does load_step_wp work but not this? *)
-    (*
     iSteps as (v) "Hl".
     iApply (wp_store with "Hl").
     iSteps.
-*)
-  Abort.
+  Qed.
 
-  Opaque vals_compare_safe.
-
+  Global Instance store_type_step_wp l t v' E s :
+    val_ty v' t →
+    SPEC ⟨E⟩ v, {{ ▷ l ↦[t] v }} #l <-[t] v' @ s {{ RET #(); l ↦[t] v' }}.
+  Proof.
+    move => Hty.
+    iSteps as (v) "Hl".
+    wp_apply (wp_StoreAt with "Hl"); first done.
+    iSteps.
+  Qed.
 
   (* There is no PureExec for an If statement with an abstract boolean. We create a reduction step for
       the case where this boolean is a bool_decide. *)
