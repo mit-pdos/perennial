@@ -148,7 +148,7 @@ Section wp_executor.
     (* TODO(tej): Perennial does not have [wp_bind_inv], possibly because it's
     no longer true; is this instance important? *)
     (* by apply wp_bind_inv. *)
-  Admitted.
+  Abort.
 
   Lemma pure_wp_step_exec `(e : expr Λ) φ n e' E s P:
     Inhabited (state Λ) →
@@ -286,7 +286,7 @@ Section wp_executor.
       specialize (Hf' a); apply to_tforall with _ b in Hf'; rewrite Hf' => /=.
       (* TODO: wp_value_fupd is no longer bidirectional *)
       (* by erewrite (wp_value_fupd _ _ Φ); first rewrite fupd_trans //. *)
-  Admitted.
+  Abort.
 
   (* here is a slightly more readable version: *)
   Proposition sym_ex_fupd_exist (A B : tele) P e Q (f : A -t> B -t> val Λ) s E1 E2 K `{LanguageCtx Λ K} Ψ :
@@ -324,11 +324,14 @@ Section wp_executor.
     apply sep_mono_r.
     apply forall_intro => v.
     rewrite (forall_elim v) => /=.
+    iIntros "HΦΨ HΦ".
+    iMod "HΦΨ" as "[_ HΦΨ]".
+    iMod ("HΦΨ" with "HΦ") as "HΨ".
     (* TODO: wp_value_fupd is no longer bidirectional *)
     (* erewrite (wp_value_fupd _ _ Ψ); first rewrite !left_id fupd_trans; last done.
     iIntros "HΦΨ HΦ".
     by iMod ("HΦΨ" with "HΦ") as "H". *)
-  Admitted.
+  Abort.
 
   Proposition iris_goal_to_red_cond (A B : tele) n P e Q f' s E1 E2 pre (POST : (val Λ → iProp Σ) → A -t> B -t> iProp Σ) :
     TCOr (TCAnd (Atomic StronglyAtomic e) $
@@ -383,7 +386,7 @@ Section wp_executor.
           (* rewrite !wp_value_fupd' => /=.
           rewrite fupd_trans.
           exact: fupd_intro. *)
-  Admitted.
+  Abort.
 
   Global Instance red_cond_emp_valid_atomic_no_Φ (A B : tele) P e Q f' fv w s E1 E2 pre :
     TCEq (tele_app (TT := [tele_pair coPset; stuckness]) (λ E _, E) w) E1 →
@@ -400,6 +403,7 @@ Section wp_executor.
     drop_telescope w as E' s' => /= -> ->.
     rewrite /AsEmpValidWeak.
     move => He1 He2 Hfv HPQ.
+    (*
     eapply iris_goal_to_red_cond.
     - left. split => //. exists fv. done.
     - left. exists fv. done.
@@ -415,7 +419,8 @@ Section wp_executor.
       iSpecialize ("HΦ" $! b).
       rewrite !tele_map_app.
       by iApply "HΦ".
-  Qed.
+*)
+  Abort.
 
   Global Instance red_cond_emp_valid_value (A B : tele) n P e Q f' fv s E1 pre w :
     TCEq (tele_app (TT := [tele_pair coPset; stuckness]) (λ E _, E) w) E1 →
@@ -430,6 +435,7 @@ Section wp_executor.
     drop_telescope w as E' s' => /= -> ->.
     rewrite /AsEmpValidWeak.
     move => Hfv HPQ.
+    (*
     eapply iris_goal_to_red_cond.
     - tc_solve.
     - left. exists fv. done.
@@ -440,7 +446,8 @@ Section wp_executor.
       rewrite (bi.forall_elim Φ) => /wand_entails ->.
       iIntros "HWP HΦ". iApply "HWP". iStopProof.
       by do 2 setoid_rewrite tele_map_app.
-  Qed.
+     *)
+  Abort.
 
   Lemma red_cond_emp_valid_value_no_Φ (A B : tele) P e Q f' fv s E1 pre :
     (∀.. (a : A), ∀.. (b : B), (IntoVal (tele_app (tele_app f' a) b) (tele_app (tele_app fv a) b))) →
@@ -452,6 +459,7 @@ Section wp_executor.
   Proof. (* so.. the texan version is stronger, since it allows us to eliminate laters? *)
     rewrite /AsEmpValidWeak.
     move => Hfv HPQ.
+    (*
     eapply iris_goal_to_red_cond.
     - tc_solve.
     - left. exists fv. done.
@@ -463,7 +471,8 @@ Section wp_executor.
       iIntros "HWP HΦ". iApply (wp_wand with "HWP").
       iIntros (v) "[%b [-> HQ]]".
       iSpecialize ("HΦ" with "HQ"). by rewrite !tele_map_app.
-  Qed.
+*)
+  Abort.
 
   Global Instance red_cond_emp_valid_value_no_Φ_not_value (A B : tele) P e Q f' fv s E1 pre w :
     TCEq (tele_app (TT := [tele_pair coPset; stuckness]) (λ E _, E) w) E1 →
@@ -479,6 +488,7 @@ Section wp_executor.
     drop_telescope w as E' s' => /= -> ->.
     rewrite /AsEmpValidWeak.
     move => He Hfv HPQ.
+    (*
     eapply iris_goal_to_red_cond.
     - tc_solve.
     - left. exists fv. done.
@@ -495,7 +505,8 @@ Section wp_executor.
       iSpecialize ("HΦ" $! b).
       rewrite !tele_map_app.
       by iApply "HΦ".
-  Qed.
+*)
+  Abort.
 
   Global Instance red_cond_emp_valid_not_value (A B : tele) n P e Q f' s E1 pre w :
     TCEq (tele_app (TT := [tele_pair coPset; stuckness]) (λ E _, E) w) E1 →
@@ -508,6 +519,7 @@ Section wp_executor.
     drop_telescope w as E' s' => /= -> ->.
     rewrite /AsEmpValidWeak.
     move => HPQ.
+    (*
     eapply iris_goal_to_red_cond.
     - tc_solve.
     - right. tc_solve.
@@ -518,7 +530,8 @@ Section wp_executor.
       rewrite (bi.forall_elim Φ) => /wand_entails ->.
       do 2 setoid_rewrite tele_map_app.
       by iIntros "$".
-  Qed.
+*)
+  Abort.
 
 End wp_executor.
 
@@ -531,6 +544,7 @@ Proof. done. Qed.
 Section abducts.
   Context `{!irisGS Λ Σ, !generationGS Λ Σ}.
 
+  (*
   Global Instance abduct_from_execution P Q e R K e_in' T e_out' MT MT' R' :
     AsExecutionOf P wp_execute_op e R →
     ReshapeExprAnd (expr Λ) e K e_in' (ReductionTemplateStep wp_red_cond T Q%I ((λᵗ E s _, [tele_arg3 E; s]) R) e_in' e_out' MT) →
@@ -538,6 +552,7 @@ Section abducts.
     SatisfiesTemplateCondition wp_template_condition R MT R' MT' →
     HINT1 Q ✱ [MT' $ flip wp_execute_op R' ∘ K ∘ e_out'] ⊫ [id]; P.
   Proof. intros. eapply execution_abduct_lem => //. tc_solve. Qed.
+*)
 
   Class PerennialSpec E (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
     perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
@@ -580,7 +595,7 @@ Section abducts.
 
   Global Instance collect_nc_modal_wp_value s e v Φ E :
     IntoVal e v →
-    HINT1 ε₀ ✱ [ncfupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 10.
+    HINT1 ε₀ ✱ [ncfupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 15.
   Proof.
     rewrite /IntoVal /Abduct /= empty_hyp_first_eq left_id => <-.
     iMod 1 as "H".
