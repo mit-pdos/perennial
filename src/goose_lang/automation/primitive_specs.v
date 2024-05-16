@@ -36,15 +36,13 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Global Instance alloc_spec e v t:
+  Global Instance alloc_spec E e v t:
     IntoVal e v →
     val_ty v t →
-    SPEC {{ True }} ref_to t e {{ l, RET #l; l ↦[t] v }} | 20.
+    SPEC ⟨E⟩ {{ True }} ref_to t e {{ l, RET #l; l ↦[t] v }} | 20.
   Proof.
     move => <- Hty.
     iStep.
-    (* TODO: using perennial_spec_red_no_Φ_not_value made this break, should I
-    be concerned? *)
     wp_apply wp_ref_to => //.
     iSteps.
   Qed.
@@ -65,6 +63,34 @@ Section goose_lang_instances.
     iSteps as (v) "Hl".
     wp_apply (wp_StoreAt with "Hl"); first done.
     iSteps.
+  Qed.
+
+  Global Instance loadField_spec l q d f E :
+    SPEC ⟨E⟩ v, {{ ▷ l ↦[d :: f]{q} v }}
+                  struct.loadF d f #l
+                {{ RET v; l ↦[d :: f]{q} v }}.
+  Proof.
+    iSteps as (v) "Hx".
+    wp_apply (wp_loadField with "Hx"); auto.
+  Qed.
+
+  Global Instance storeField_spec l d f E fv' :
+    SPEC ⟨E⟩ fv, {{ ⌜val_ty fv' (field_ty d f)⌝ ∗ ▷ l ↦[d :: f] fv }}
+                  struct.storeF d f #l fv'
+                {{ RET #(); l ↦[d :: f] fv' }}.
+  Proof.
+    iSteps as (v' ?) "Hx".
+    wp_apply (wp_storeField with "Hx"); auto.
+  Qed.
+
+  Global Instance loadField_ro_spec l d f E :
+    SPEC ⟨E⟩ v, {{ readonly (struct_field_pointsto l 1%Qp d f v) }}
+                  struct.loadF d f #l
+                {{ RET v; emp }}.
+  Proof.
+    iStep.
+    iStep.
+    wp_apply (wp_loadField_ro with "[$]"). auto.
   Qed.
 
 End goose_lang_instances.
