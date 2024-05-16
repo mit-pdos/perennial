@@ -539,11 +539,11 @@ Section abducts.
     HINT1 Q ✱ [MT' $ flip wp_execute_op R' ∘ K ∘ e_out'] ⊫ [id]; P.
   Proof. intros. eapply execution_abduct_lem => //. tc_solve. Qed.
 
-  Class PerennialSpec (e : expr Λ) (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (v : TT1 -t> TT2 -t> val Λ) :=
+  Class PerennialSpec (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
     perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗ Φ (tele_app (tele_app v tt1) tt2))) ⊢ WP e {{ Φ }}.
 
   Global Instance perennial_lang_apply_spec e Φ TT1 TT2 P Q v K e_in :
-    ReshapeExprAnd (expr Λ) e K e_in (PerennialSpec e_in TT1 TT2 P Q v) →
+    ReshapeExprAnd (expr Λ) e K e_in (PerennialSpec TT1 TT2 P Q e_in v) →
     LanguageCtx K →
     HINT1 ε₀ ✱ [ ∃.. tt1 : TT1, tele_app P tt1 ∗
         (∀.. tt2 : TT2, tele_app (tele_app Q tt1) tt2 -∗
