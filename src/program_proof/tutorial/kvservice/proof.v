@@ -615,6 +615,9 @@ Proof.
   wp_apply wp_SumAssumeNoOverflow as (Hoverflow) "!% //".
 Qed.
 
+(* needed to use loadField within eval contexts *)
+Existing Instance loadField_spec.
+
 (* version of above using Diaframe *)
 Lemma wp_Server__getFreshNum_auto (s:loc) Ψ :
   {{{
@@ -630,6 +633,7 @@ Proof.
   iStep.
   iStep.
   iStep.
+  (* iStep. iStep. *) (* TODO: the hint [readonly_struct_field_hint] isn't working here *)
   iIntros "!> !>".
   wp_loadField. (* TODO: loadField from readonly without breaking regular loads *)
   iStep.
@@ -638,12 +642,7 @@ Proof.
   iNamed. (* TODO: automate *)
   do 6 iStep.
   iIntros "!> !> !>". (* this isn't automated? *)
-  iStep.
-  iStep.
-  iStep.
-  iStep.
-  iStep.
-  iStep.
+  do 6 iStep.
   iStep.
   iIntros "!>". do 3 iStep.
   do 3 iStep.
@@ -651,11 +650,7 @@ Proof.
   do 3 iStep.
   iModIntro. iStep. iStep. iStep.
   wp_loadField.
-  do 3 iStep.
-  do 3 iStep.
-  iStep.
-  iStep.
-  iModIntro. iSteps.
+  iSteps. iModIntro. iSteps.
   Unshelve.
   - iPureIntro. val_ty.
 Qed.

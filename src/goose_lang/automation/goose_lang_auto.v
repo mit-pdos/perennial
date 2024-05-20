@@ -229,6 +229,20 @@ Section goose_lang_instances.
     - tc_solve.
   Qed.
 
+  Global Instance ncfupd_mono E :
+    ModalityMono (ncfupd E E).
+  Proof.
+    move => P Q -> //.
+  Qed.
+
+  Global Instance ncfupd_strong_modality E :
+    ModalityStrongMono (ncfupd E E).
+  Proof.
+    split.
+    - tc_solve.
+    - iIntros (P Q) "[>$ $] //".
+  Qed.
+
   (* There is no PureExec for an If statement with an abstract boolean. We create a reduction step for
       the case where this boolean is a bool_decide. *)
 

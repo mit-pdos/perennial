@@ -74,13 +74,22 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Global Instance loadField_spec l d f E :
+  Global Instance loadField_hint l d q v f E Φ :
+    HINT1 (l ↦[d :: f]{q} v) ✱ [l ↦[d :: f]{q} v -∗ Φ v] ⊫
+      [fupd E E]; WP (struct.loadF d f #l) @ E {{ Φ }}.
+  Proof.
+    iSteps.
+    iModIntro.
+    wp_loadField.
+    iSteps.
+  Qed.
+
+  Lemma loadField_spec l d f E :
     SPEC ⟨E⟩ q v, {{ ▷ l ↦[d :: f]{q} v }}
                   struct.loadF d f #l
                 {{ RET v; l ↦[d :: f]{q} v }}.
   Proof.
-    iSteps as (q v) "Hx".
-    wp_apply (wp_loadField with "Hx"); auto.
+    iSteps. (* proven with previous hint *)
   Qed.
 
   Global Instance storeField_spec l d f E fv' :
@@ -90,6 +99,13 @@ Section goose_lang_instances.
   Proof.
     iSteps as (v' ?) "Hx".
     wp_apply (wp_storeField with "Hx"); auto.
+  Qed.
+
+  Global Instance readonly_struct_field_hint l d f v E :
+    HINT1 ε₀ ✱ [readonly (l ↦[d :: f] v)] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v).
+  Proof.
+    iSteps as "#Hf".
+    iMod (readonly_load with "[$]") as "H". done.
   Qed.
 
   (* TODO: how to make this lower priority? *)
