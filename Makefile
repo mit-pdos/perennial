@@ -3,6 +3,8 @@ ALL_VFILES := $(shell find $(SRC_DIRS) \
 	-not -path "external/coqutil/etc/coq-scripts/*" \
 	-not -path "external/diaframe/supplements/*" \
 	-not -path "external/diaframe/diaframe/legacy/*" \
+	-not -path "external/diaframe/tutorial/ex3_*" \
+	-not -path "external/diaframe/tutorial/ex4_*" \
 	-name "*.v")
 VFILES := $(shell find 'src' -name "*.v")
 QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
