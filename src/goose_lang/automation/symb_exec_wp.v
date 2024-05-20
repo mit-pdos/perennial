@@ -573,12 +573,12 @@ Section abducts.
     HINT1 ε₀ ✱ [ ∃.. tt1 : TT1, tele_app P tt1 ∗
         (∀.. tt2 : TT2, tele_app (tele_app Q tt1) tt2 -∗
                         WP (K $ of_val (tele_app (tele_app v tt1) tt2)) @ E {{ Φ }} ) ] ⊫
-      [id]; WP e @ E {{ Φ }}.
+      [fupd E E]; WP e @ E {{ Φ }}.
   Proof.
     rewrite /PerennialSpec.
     case => -> He_in HK.
     unfold Abduct. simpl.
-    iIntros "[_ [%tt1 [HP HQ]]]".
+    iIntros "[_ [%tt1 [HP HQ]]] !>".
     iApply wp_bind. iApply He_in.
     iExists tt1. iFrame.
   Qed.

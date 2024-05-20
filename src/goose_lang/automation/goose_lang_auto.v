@@ -5,7 +5,7 @@ From diaframe.lib Require Import iris_hints.
 From diaframe.symb_exec Require Import defs.
 From Perennial.goose_lang.automation Require Export symb_exec_wp spec_notation.
 From diaframe Require Import steps.pure_solver.
-From Perennial.goose_lang Require Export proofmode notation.
+From Perennial.goose_lang Require Export proofmode notation typed_mem.
 
 From iris_named_props Require Export named_props.
 
@@ -299,3 +299,5 @@ Global Hint Extern 4 (PureExecNoRec _ _ ?e1 _) =>
     unfold PureExecNoRec; tc_solve
   | _ => unfold PureExecNoRec; tc_solve
   end : typeclass_instances.
+
+Global Hint Extern 4 (val_ty _ _) => val_ty : solve_pure_add.

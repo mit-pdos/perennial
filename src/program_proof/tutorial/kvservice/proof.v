@@ -640,19 +640,10 @@ Proof.
   iStep.
   iStep.
   iNamed. (* TODO: automate *)
-  do 6 iStep.
-  iIntros "!> !> !>". (* this isn't automated? *)
-  do 6 iStep.
-  iStep.
-  iIntros "!>". do 3 iStep.
-  do 3 iStep.
-  do 3 iStep.
-  do 3 iStep.
-  iModIntro. iStep. iStep. iStep.
-  wp_loadField.
+  do 24 iStep.
+  iIntros "!> !> !>".
+  wp_loadField. (* need to get to readonly load *)
   iSteps. iModIntro. iSteps.
-  Unshelve.
-  - iPureIntro. val_ty.
 Qed.
 
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
