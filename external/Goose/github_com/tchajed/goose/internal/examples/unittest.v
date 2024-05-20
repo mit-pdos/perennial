@@ -762,12 +762,6 @@ Definition ReassignVars: val :=
 
 (* recursive.go *)
 
-Definition recur: val :=
-  rec: "recur" "n" :=
-    (if: "n" = #0
-    then #0
-    else "n" + (recur ("n" - #1))).
-
 (* replicated_disk.go *)
 
 Definition Block := struct.decl [
