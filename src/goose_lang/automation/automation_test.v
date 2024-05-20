@@ -1,5 +1,6 @@
 From Perennial.goose_lang Require Import proof_automation.
 From Perennial.goose_lang Require Import struct.struct.
+From Perennial.goose_lang Require Import typed_mem.
 
 Set Default Proof Using "Type".
 
@@ -33,5 +34,27 @@ Section wp.
   Proof.
     iSteps.
   Qed.
+
+  Lemma load_field l t v :
+    {{{ l ↦[t] v }}}
+      let: "x" := ![t] #l in Var "x"
+    {{{ RET v; l ↦[t] v }}}.
+  Proof.
+    (* why is this not fully automated? *)
+    iSteps.
+    iIntros "!> !> !> !>".
+    iSteps.
+  Qed.
+
+  Lemma load_readonly l d f v :
+    {{{ readonly (l ↦[d :: f] v) }}}
+      struct.loadF d f #l
+    {{{ RET v; emp }}}.
+  Proof.
+    iSteps.
+    (* TODO: gets stuck here rather than getting [∃ q, l ↦[d :: f]{q} v] from
+    the [readonly]. I wonder if the existentials are confusing it? Need to   *)
+    Fail iStep.
+  Abort.
 
 End wp.

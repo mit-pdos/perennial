@@ -74,7 +74,8 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Global Instance loadField_hint l d q v f E Φ :
+  (* this hint doesn't work because it doesn't plug into the eval context machinery *)
+  Lemma loadField_hint l d q v f E Φ :
     HINT1 (l ↦[d :: f]{q} v) ✱ [l ↦[d :: f]{q} v -∗ Φ v] ⊫
       [fupd E E]; WP (struct.loadF d f #l) @ E {{ Φ }}.
   Proof.
@@ -84,12 +85,12 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Lemma loadField_spec l d f E :
+  Global Instance loadField_spec l d f E :
     SPEC ⟨E⟩ q v, {{ ▷ l ↦[d :: f]{q} v }}
                   struct.loadF d f #l
                 {{ RET v; l ↦[d :: f]{q} v }}.
   Proof.
-    iSteps. (* proven with previous hint *)
+    iSteps. wp_loadField. iSteps.
   Qed.
 
   Global Instance storeField_spec l d f E fv' :
@@ -106,6 +107,14 @@ Section goose_lang_instances.
   Proof.
     iSteps as "#Hf".
     iMod (readonly_load with "[$]") as "H". done.
+  Qed.
+
+  Global Instance readonly_struct_field_hint' l d f v E :
+    HINT (readonly (l ↦[d :: f] v)) ✱ [- ; emp] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v) ✱ [emp] | 50.
+  Proof.
+    iSteps as "#Hf".
+    iMod (readonly_load with "[$]") as "H".
+    iSteps.
   Qed.
 
   (* TODO: how to make this lower priority? *)

@@ -5,6 +5,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang.automation Require Import extra_tactics proof_automation.
 From Perennial.goose_lang Require Import proofmode.
+From diaframe.lib Require Import persistently intuitionistically.
 
 Unset Printing Projections.
 
@@ -268,8 +269,7 @@ Lemma wp_decode  sl enc_args args q :
     decodeConditionalPutArgs (slice_val sl)
   {{{
         (args_ptr:loc), RET #args_ptr; own args_ptr args
-  }}}
-.
+  }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
@@ -615,8 +615,12 @@ Proof.
   wp_apply wp_SumAssumeNoOverflow as (Hoverflow) "!% //".
 Qed.
 
-(* needed to use loadField within eval contexts *)
-Existing Instance loadField_spec.
+Global Instance readonly_struct_field_hint' l d f v E :
+  HINT1 ε₀ ✱ [readonly (l ↦[d :: f] v)] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v).
+Proof.
+  iSteps as "#Hf".
+  iMod (readonly_load with "[$]") as "H". done.
+Qed.
 
 (* version of above using Diaframe *)
 Lemma wp_Server__getFreshNum_auto (s:loc) Ψ :
