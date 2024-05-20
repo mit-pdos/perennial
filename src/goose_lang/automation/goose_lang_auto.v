@@ -7,6 +7,8 @@ From Perennial.goose_lang.automation Require Export symb_exec_wp spec_notation.
 From diaframe Require Import steps.pure_solver.
 From Perennial.goose_lang Require Export proofmode notation.
 
+From iris_named_props Require Export named_props.
+
 (**
 mostly taken from
 https://gitlab.mpi-sws.org/iris/diaframe/-/blob/master/diaframe_heap_lang/specs.v

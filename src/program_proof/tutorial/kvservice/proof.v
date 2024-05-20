@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.tutorial Require Import kvservice.
 From Perennial.program_proof.grove_shared Require Import urpc_proof monotonic_pred.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof Require Import std_proof.
-From Perennial.goose_lang.automation Require Import extra_tactics.
+From Perennial.goose_lang.automation Require Import extra_tactics proof_automation.
 From Perennial.goose_lang Require Import proofmode.
 
 Unset Printing Projections.
@@ -603,6 +603,58 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iApply "Hspec".
+Qed.
+
+#[global] Instance SumAssumeNoOverflow_spec (x y : u64) :
+  SPEC
+    {{ True }}
+      std.SumAssumeNoOverflow #x #y
+    {{ RET #(LitInt $ word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}.
+Proof.
+  iSteps.
+  wp_apply wp_SumAssumeNoOverflow as (Hoverflow) "!% //".
+Qed.
+
+(* version of above using Diaframe *)
+Lemma wp_Server__getFreshNum_auto (s:loc) Ψ :
+  {{{
+        "#Hsrv" ∷ is_Server s ∗
+        "Hspec" ∷ getFreshNum_core_spec Ψ
+  }}}
+    Server__getFreshNum #s
+  {{{ (n:u64), RET #n; Ψ n }}}
+.
+Proof.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iIntros "!> !>".
+  wp_loadField.
+  iStep.
+  iStep.
+  iStep.
+  iNamed. (* TODO: automate *)
+  wp_pures. (* TODO: iStep doesn't take this next pure step *)
+  wp_loadField.
+  wp_loadField.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  wp_loadField.
+  iStep.
+  iStep.
+  iStep.
+  wp_pures.
+  iModIntro.
+  iStep.
+  iApply "Hspec".
+  Unshelve.
+  - iPureIntro. val_ty.
 Qed.
 
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :

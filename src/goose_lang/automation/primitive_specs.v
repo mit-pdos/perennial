@@ -84,6 +84,8 @@ Section goose_lang_instances.
     wp_apply (wp_storeField with "Hx"); auto.
   Qed.
 
+  (* TODO: how to make this lower priority? *)
+  (*
   Global Instance loadField_ro_spec l d f E :
     SPEC ⟨E⟩ v, {{ readonly (struct_field_pointsto l 1%Qp d f v) }}
                   struct.loadF d f #l
@@ -93,6 +95,7 @@ Section goose_lang_instances.
     iStep.
     wp_apply (wp_loadField_ro with "[$]"). auto.
   Qed.
+*)
 
   Global Instance lock_acquire_spec lk N R :
     SPEC {{ is_lock N lk R }} lock.acquire lk {{ RET #(); locked lk ∗ R }}.
