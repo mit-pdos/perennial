@@ -140,13 +140,14 @@ Section wp_executor.
   Proof.
     move => K e A e' M /= HK R R' M' [HM [<- <-]].
     drop_telescope R as E s Φ => /=.
-    rewrite -wp_bind.
     apply wand_elim_l'.
     rewrite forall_elim /=.
-    apply wand_mono => //.
-    apply HM => a /=.
-    (* TODO(tej): Perennial does not have [wp_bind_inv], possibly because it's
-    no longer true; is this instance important? *)
+    iIntros "H1 H2".
+    iApply wp_bind.
+    iApply "H1".
+    iApply HM; [ | iAssumption ].
+    iIntros (a) "/= HK".
+    (* TODO(tej): Perennial does not have [wp_bind_inv], so this lemma is false *)
     (* by apply wp_bind_inv. *)
   Abort.
 
@@ -544,15 +545,22 @@ Proof. done. Qed.
 Section abducts.
   Context `{!irisGS Λ Σ, !generationGS Λ Σ}.
 
-  (*
   Global Instance abduct_from_execution P Q e R K e_in' T e_out' MT MT' R' :
     AsExecutionOf P wp_execute_op e R →
     ReshapeExprAnd (expr Λ) e K e_in' (ReductionTemplateStep wp_red_cond T Q%I ((λᵗ E s _, [tele_arg3 E; s]) R) e_in' e_out' MT) →
     SatisfiesContextCondition language_ctx_condition K →
     SatisfiesTemplateCondition wp_template_condition R MT R' MT' →
     HINT1 Q ✱ [MT' $ flip wp_execute_op R' ∘ K ∘ e_out'] ⊫ [id]; P.
-  Proof. intros. eapply execution_abduct_lem => //. tc_solve. Qed.
-*)
+  Proof. intros. eapply execution_abduct_lem => //.
+    move => K' e' A e'' M /= HK R'' R''' M' [HM [<- <-]].
+    drop_telescope R'' as E s Φ => /=.
+    iIntros "[H1 H2]".
+    iApply wp_bind.
+    iApply "H1".
+    iApply HM; [ | done ].
+    iIntros (a) "/= H".
+    (* same wp_bind_inv issue *)
+  Abort.
 
   Class PerennialSpec E (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
     perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗

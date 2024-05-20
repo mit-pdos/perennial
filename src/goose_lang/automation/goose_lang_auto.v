@@ -21,6 +21,60 @@ Set Default Proof Using "Type".
 the start of the proof?) *)
 #[export] Existing Instance AsRecV_recv.
 
+Section unfold_functions.
+  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+
+  (*
+  Fixpoint occurs_in (s : string) (body : expr) : bool :=
+    match body with
+    | Val _ => false
+    | Var s' => if decide (s = s') then true else false
+    | Rec b x e => if decide (BNamed s ≠ b ∧ BNamed s ≠ x) then occurs_in s e else false
+    | App f a => (occurs_in s f) || (occurs_in s a)
+    | UnOp _ e => occurs_in s e
+    | BinOp _ l r => (occurs_in s l) || (occurs_in s r)
+    | If c t e => (occurs_in s c) || (occurs_in s t) || (occurs_in s e)
+    | Pair l r => (occurs_in s l) || (occurs_in s r)
+    | Fst e => (occurs_in s e)
+    | Snd e => (occurs_in s e)
+    | InjL e => (occurs_in s e)
+    | InjR e => (occurs_in s e)
+    | Case c l r => (occurs_in s c) || (occurs_in s l) || (occurs_in s r)
+    | Fork e => (occurs_in s e)
+    | AllocN n e => (occurs_in s n) || (occurs_in s e)
+    | Free e => (occurs_in s e)
+    | Load e => (occurs_in s e)
+    | Store l e => (occurs_in s l) || (occurs_in s e)
+    | CmpXchg l e1 e2 => (occurs_in s l) || (occurs_in s e1) || (occurs_in s e2)
+    | Xchg l e1 => (occurs_in s l) || (occurs_in s e1)
+    | FAA l n => (occurs_in s l) || (occurs_in s n)
+    | NewProph => false
+    | Resolve a1 a2 a3 => (occurs_in s a1) || (occurs_in s a2) || (occurs_in s a3)
+    end.
+*)
+
+  Definition is_recursive_fun (v : val) :=
+    false
+    (*
+    match v with
+    | RecV (BNamed f) x e => occurs_in f e
+    | _ => false
+    end
+*)
+  .
+
+  Global Instance pure_wp_step_exec_inst_last `(e : expr) φ n e' E s :
+    ((∀ f x e, SolveSepSideCondition (is_recursive_fun (RecV f x e) = false) →
+                AsRecV (RecV f x e) f x e) →
+      PureExec φ n e e') →
+    SolveSepSideCondition φ →
+    ReductionTemplateStep wp_red_cond [tele] (ε₁)%I [tele_arg3 E; s] e (tele_app (TT := [tele]) e') (template_I n (fupd E E)).
+  Proof.
+    intros. eapply pure_wp_step_exec2 => //; tc_solve.
+  Qed.
+
+End unfold_functions.
+
 Ltac find_reshape e K e' TC :=
 lazymatch e with
 | fill ?Kabs ?e_inner =>
@@ -138,7 +192,6 @@ Section goose_lang_instances.
 
   Open Scope expr_scope.
 
-  (* TODO: this doesn't seem set up correctly *)
   Global Instance automate_pure_exec n e e' φ Φ :
     PureExec φ n e e' →
     HINT1
@@ -219,3 +272,14 @@ Section goose_lang_instances.
   Qed.
 
 End goose_lang_instances.
+
+Global Hint Extern 4 (PureExecNoRec _ _ ?e1 _) =>
+  lazymatch e1 with
+  | (App (Val ?v1) (Val ?v2)) =>
+    assert_fails (assert (∃ f x erec,
+      TCAnd (AsRecV v1 f x erec) $
+      TCAnd (TCIf (TCEq f BAnon) False TCTrue)
+            (SolveSepSideCondition (is_recursive_fun (RecV f x erec) = true))) by (do 3 eexists; tc_solve));
+    unfold PureExecNoRec; tc_solve
+  | _ => unfold PureExecNoRec; tc_solve
+  end : typeclass_instances.
