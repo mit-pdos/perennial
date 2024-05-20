@@ -75,7 +75,7 @@ class TimingDb:
 
 class Classify:
     DEF_RE = re.compile(
-        r"""(?:#\[(local|global|export)\]\s+)?(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact|Program Lemma)\s+"""
+        r"""(?:#\[(local|global|export)\]\s+)?(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact|Program Lemma|Proposition)\s+"""
         + r"""(?P<ident>\w(\w|')*)"""
     )
     OBLIGATION_RE = re.compile(r"""Next Obligation\.""")
