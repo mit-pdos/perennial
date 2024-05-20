@@ -12,6 +12,14 @@ Section goose_lang_instances.
 
   Open Scope expr_scope.
 
+  Global Instance automate_let_in (e1 e2 : expr) (x : binder) (Φ : val → iProp Σ) :
+    HINT1 ε₁ ✱ (** We use [ε₁] here as key hypothesis: only apply this rule if no other can be found. *)
+      [WP e1 {{ v', ▷ WP (λ: x, e2)%V (of_val v') {{ Φ }} }} ]
+      (** New goal: the same expression, but after applying [wp_bind], and doing one additional pure reduction. *)
+      ⊫ [id];
+      WP (let: x := e1 in e2) {{ Φ }} (** Goal: an expression that features a let binding *).
+  Proof. iSteps as "HWP". wp_bind e1. iApply (wp_mono with "HWP"). iSteps. by wp_pure1. Qed.
+
   Global Instance ref_zero_spec t Φ :
     HINT1 ε₀ ✱
       [⌜has_zero t⌝ ∗ ▷ (∀ (l:loc), l ↦[t] (zero_val t) -∗ Φ #l)]
@@ -66,12 +74,12 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Global Instance loadField_spec l q d f E :
-    SPEC ⟨E⟩ v, {{ ▷ l ↦[d :: f]{q} v }}
+  Global Instance loadField_spec l d f E :
+    SPEC ⟨E⟩ q v, {{ ▷ l ↦[d :: f]{q} v }}
                   struct.loadF d f #l
                 {{ RET v; l ↦[d :: f]{q} v }}.
   Proof.
-    iSteps as (v) "Hx".
+    iSteps as (q v) "Hx".
     wp_apply (wp_loadField with "Hx"); auto.
   Qed.
 

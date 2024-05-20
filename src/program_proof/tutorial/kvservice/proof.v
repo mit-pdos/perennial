@@ -631,28 +631,31 @@ Proof.
   iStep.
   iStep.
   iIntros "!> !>".
-  wp_loadField.
+  wp_loadField. (* TODO: loadField from readonly without breaking regular loads *)
   iStep.
   iStep.
   iStep.
   iNamed. (* TODO: automate *)
-  wp_pures. (* TODO: iStep doesn't take this next pure step *)
+  do 6 iStep.
+  iIntros "!> !> !>". (* this isn't automated? *)
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iStep.
+  iIntros "!>". do 3 iStep.
+  do 3 iStep.
+  do 3 iStep.
+  do 3 iStep.
+  iModIntro. iStep. iStep. iStep.
   wp_loadField.
-  wp_loadField.
+  do 3 iStep.
+  do 3 iStep.
   iStep.
   iStep.
-  iStep.
-  iStep.
-  iStep.
-  iStep.
-  wp_loadField.
-  iStep.
-  iStep.
-  iStep.
-  wp_pures.
-  iModIntro.
-  iStep.
-  iApply "Hspec".
+  iModIntro. iSteps.
   Unshelve.
   - iPureIntro. val_ty.
 Qed.
