@@ -6,25 +6,27 @@ From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 
+#[local] Set Printing Universes.
+
 Section rpc_global_defs.
 
 Context `{!urpcregG Σ}.
 Context `{HPRE: !gooseGlobalGS Σ}.
 
 (* Higher-level interface for defining a uRPC spec. *)
-Polymorphic Record RpcSpec :=
+Polymorphic Record RpcSpec@{u} :=
   {
-    spec_ty : Type;
+    spec_ty : Type@{u};
     spec_Pre : spec_ty → list u8 → iProp Σ;
     spec_Post : spec_ty → list u8 → list u8 → iProp Σ
   }.
 
-Program Definition RpcSpec_Spec (spec : RpcSpec) : savedSpecO Σ (list u8) (list u8) :=
+Program Polymorphic Definition RpcSpec_Spec@{u} (spec : RpcSpec@{u}) : savedSpecO Σ (list u8) (list u8) :=
   λ args, λne (Φ : list u8 -d> iPropO Σ), (∃ x,
     spec.(spec_Pre) x args ∗ (∀ rep, spec.(spec_Post) x args rep -∗ Φ rep))%I.
 Next Obligation. solve_proper. Qed.
 
-Definition is_urpc_spec Γsrv (host:u64) (rpcid:u64) (spec : RpcSpec) :=
+Polymorphic Definition is_urpc_spec Γsrv (host:u64) (rpcid:u64) (spec : RpcSpec) :=
   is_urpc_spec_pred Γsrv host rpcid (RpcSpec_Spec spec).
 
 Local Example spec_iprop :=

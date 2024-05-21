@@ -12,7 +12,7 @@ Definition erpcN := nroot .@ "erpc".
 
 (** Spec for an eRPC handler.
 This is isomorphic to RpcSpec, but to avoid confusion we use distinct types. *)
-Record eRPCSpec {Σ} :=
+Polymorphic Record eRPCSpec {Σ} :=
   { espec_ty : Type;
     espec_Pre : espec_ty → list u8 → iProp Σ;
     espec_Post : espec_ty → list u8 → list u8 → iProp Σ }.
@@ -25,7 +25,7 @@ Local Definition encode_request (rid : eRPCRequestID) (payload : list u8) :=
 
 (** [Spec] is the spec of the eRPC handler;
     we compute the spec of the underlying uRPC handler. *)
-Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : RpcSpec :=
+Polymorphic Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : RpcSpec :=
  {| spec_ty := erpc_request_names * eRPCRequestID * (list u8) * spec.(espec_ty);
     spec_Pre :=(λ '(γreq, rid, payload, x) req,
                   ⌜req = encode_request rid payload ∧ uint.Z rid.(Req_Seq) > 0⌝ ∗
@@ -41,7 +41,7 @@ Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : RpcSpec :=
  |}.
 
 (** Convenience function to say that a given rpcid has such a handler *)
-Definition is_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (rpcid:u64) (spec : eRPCSpec) :=
+Polymorphic Definition is_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (rpcid:u64) (spec : eRPCSpec) :=
   is_urpc_spec Γsrv host rpcid (eRPCSpec_uRPC γerpc spec).
 
 (** What a client needs to get started *)
