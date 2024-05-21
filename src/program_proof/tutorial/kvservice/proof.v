@@ -605,13 +605,6 @@ Proof.
   iApply "Hspec".
 Qed.
 
-Global Instance readonly_struct_field_hint' l d f v E :
-  HINT1 ε₀ ✱ [readonly (l ↦[d :: f] v)] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v).
-Proof.
-  iSteps as "#Hf".
-  iMod (readonly_load with "[$]") as "H". done.
-Qed.
-
 (* version of above using Diaframe *)
 Lemma wp_Server__getFreshNum_auto (s:loc) Ψ :
   {{{
@@ -621,24 +614,7 @@ Lemma wp_Server__getFreshNum_auto (s:loc) Ψ :
     Server__getFreshNum #s
   {{{ (n:u64), RET #n; Ψ n }}}
 .
-Proof.
-  iStep.
-  iStep.
-  iStep.
-  iStep.
-  iStep.
-  (* iStep. iStep. *) (* TODO: the hint [readonly_struct_field_hint] isn't working here *)
-  iIntros "!> !>".
-  wp_loadField. (* TODO: loadField from readonly without breaking regular loads *)
-  iStep.
-  iStep.
-  iStep.
-  iNamed. (* TODO: automate *)
-  do 24 iStep.
-  iIntros "!> !> !>".
-  wp_loadField. (* need to get to readonly load *)
-  iSteps. iModIntro. iSteps.
-Qed.
+Proof. iSteps. Qed.
 
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
   {{{

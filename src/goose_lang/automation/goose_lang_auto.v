@@ -23,6 +23,7 @@ Set Default Proof Using "Type".
 the start of the proof?) *)
 #[export] Existing Instance AsRecV_recv.
 
+
 Section unfold_functions.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
@@ -194,17 +195,30 @@ Section goose_lang_instances.
 
   Open Scope expr_scope.
 
-  Global Instance automate_pure_exec n e e' φ Φ :
-    PureExec φ n e e' →
+  Global Instance automate_pure_exec n e_out K e e' φ Φ :
+    (* Instruct Diaframe how to reduce pure reductions. The evaluation context indirection
+      is necessary since [pure_exec_ctx] is not available to direct type class search *)
+    ReshapeExprAnd expr e_out K e (PureExec φ n e e') →
+    LanguageCtx K →
     HINT1
       ε₀ ✱
-      [⌜φ⌝ ∗ ▷^n (WP e' {{ Φ }})] ⊫
+    (* The [▷ (emp -∗ R)] pattern ensures Diaframe performs later introduction. If it is
+      omitted, Diaframe may end up in goals of the form [|={⊤}=> ▷ R], and it is unclear
+      for such goals whether one should introduce the later (and forego access to the [fupd]),
+      or use the [fupd] first. Diaframe will therefore halt automation on these goals,
+      if it cannot find a way to get [R]. *)
+      [⌜φ⌝ ∗ ▷^n (emp -∗ WP K e' {{ Φ }})] ⊫
       [id];
-      WP e {{ Φ }}.
+      WP e_out {{ Φ }} | 20.
+  (* We give this higher cost than looking for a PerennialSpec, to prevent
+    unfolding functions with a known specification *)
   Proof.
+    case => -> He HK.
     iSteps.
-    iApply lifting.wp_pure_step_later; first done.
-    iSteps.
+    iApply lifting.wp_pure_step_later.
+    - by apply pure_exec_ctx.
+    - done.
+    - iSteps.
   Qed.
 
   Global Instance pure_wp_step_exec_inst1 `(e : expr) φ n e' E s:

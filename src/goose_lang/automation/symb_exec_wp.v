@@ -563,7 +563,7 @@ Section abducts.
   Abort.
 
   Class PerennialSpec E (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
-    perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
+    perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ ▷ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
                                                          Φ (tele_app (tele_app v tt1) tt2)))
                              ⊢ WP e @ E {{ Φ }}.
 
@@ -571,9 +571,9 @@ Section abducts.
     ReshapeExprAnd (expr Λ) e K e_in (PerennialSpec E TT1 TT2 P Q e_in v) →
     LanguageCtx K →
     HINT1 ε₀ ✱ [ ∃.. tt1 : TT1, tele_app P tt1 ∗
-        (∀.. tt2 : TT2, tele_app (tele_app Q tt1) tt2 -∗
+        ▷ (∀.. tt2 : TT2, tele_app (tele_app Q tt1) tt2 -∗
                         WP (K $ of_val (tele_app (tele_app v tt1) tt2)) @ E {{ Φ }} ) ] ⊫
-      [fupd E E]; WP e @ E {{ Φ }}.
+      [fupd E E]; WP e @ E {{ Φ }} | 10.
   Proof.
     rewrite /PerennialSpec.
     case => -> He_in HK.
@@ -588,7 +588,7 @@ Section abducts.
       (PerennialSpec E TT1 TT2 P Q e v)
       (∀ Φ,
          (∀.. tt1, tele_app P tt1 ∗
-                     (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
+                     ▷(∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
                      Φ (tele_app (tele_app v tt1) tt2)) -∗
                    WP e @ E {{ Φ }})).
   Proof.
@@ -609,8 +609,9 @@ Section abducts.
     rewrite /PerennialSpec.
     iIntros (Φ) "[%tt1 [HP HΦ]]".
     iDestruct (H with "HP") as "Hwp".
+    iPoseProof (wp_frame_step_l' with "[$HΦ $Hwp]") as "Hwp".
     iApply (wp_strong_mono with "[Hwp]"); [done..|].
-    iIntros (v') "[%tt2 [-> HQ]]".
+    iIntros (v') "[HΦ [%tt2 [-> HQ]]]".
     iModIntro.
     iApply ("HΦ" with "HQ").
   Qed.

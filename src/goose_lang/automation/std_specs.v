@@ -59,7 +59,7 @@ Section goose_lang_instances.
         std.SumAssumeNoOverflow #x #y
       {{ RET #(LitInt $ word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}.
   Proof.
-    iSteps.
+    iStep. (* Careful not to call [iSteps], as this would unfold the function *)
     wp_apply wp_SumAssumeNoOverflow. iIntros (Hoverflow) "!% //".
   Qed.
 

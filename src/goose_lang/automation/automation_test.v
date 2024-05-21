@@ -40,9 +40,6 @@ Section wp.
       let: "x" := ![t] #l in Var "x"
     {{{ RET v; l ↦[t] v }}}.
   Proof.
-    (* why is this not fully automated? *)
-    iSteps.
-    iIntros "!> !> !> !>".
     iSteps.
   Qed.
 
@@ -52,9 +49,6 @@ Section wp.
     {{{ RET v; emp }}}.
   Proof.
     iSteps.
-    (* TODO: gets stuck here rather than getting [∃ q, l ↦[d :: f]{q} v] from
-    the [readonly]. I wonder if the existentials are confusing it? Need to   *)
-    Fail iStep.
-  Abort.
+  Qed.
 
 End wp.

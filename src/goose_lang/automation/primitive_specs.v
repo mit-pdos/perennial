@@ -12,6 +12,9 @@ Section goose_lang_instances.
 
   Open Scope expr_scope.
 
+  (*
+  Below [HINT1] is a poor version of [automate_pure_exec] in [goose_lang_auto.v], modeled after the
+  example in [diaframe/tuturiol/ex5_custom_proof_automation.v].
   Global Instance automate_let_in (e1 e2 : expr) (x : binder) (Φ : val → iProp Σ) :
     HINT1 ε₁ ✱ (** We use [ε₁] here as key hypothesis: only apply this rule if no other can be found. *)
       [WP e1 {{ v', ▷ WP (λ: x, e2)%V (of_val v') {{ Φ }} }} ]
@@ -19,6 +22,7 @@ Section goose_lang_instances.
       ⊫ [id];
       WP (let: x := e1 in e2) {{ Φ }} (** Goal: an expression that features a let binding *).
   Proof. iSteps as "HWP". wp_bind e1. iApply (wp_mono with "HWP"). iSteps. by wp_pure1. Qed.
+  *)
 
   Global Instance ref_zero_spec t Φ :
     HINT1 ε₀ ✱
@@ -100,20 +104,35 @@ Section goose_lang_instances.
     wp_apply (wp_storeField with "Hx"); auto.
   Qed.
 
-  Global Instance readonly_struct_field_hint l d f v E :
-    HINT1 ε₀ ✱ [readonly (l ↦[d :: f] v)] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v).
-  Proof.
-    iSteps as "#Hf".
-    iMod (readonly_load with "[$]") as "H". done.
-  Qed.
-
   Global Instance readonly_struct_field_hint' l d f v E :
-    HINT (readonly (l ↦[d :: f] v)) ✱ [- ; emp] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v) ✱ [emp] | 50.
+    (* Note that quantifier [q] is _before_ the semicolon!
+      The goal resource of the HINT (in this case [l ↦[d::f]{q} v]) should always be an atom:
+      ie not of the form [A ∗ B] or [∃ q, P q]. If the resource is existentially quantified,
+      move all these quantifiers to before the semicolon. *)
+    HINT (readonly (l ↦[d :: f] v)) ✱ [- ; emp] ⊫ [fupd E E] q; l ↦[d :: f]{q} v ✱ [emp] | 50.
   Proof.
     iSteps as "#Hf".
     iMod (readonly_load with "[$]") as "H".
     iSteps.
   Qed.
+
+  (* Unfortunately, above HINT does not work when looking for [∃ q v, l ↦[d:: f]{q} v]. It would work for
+    [∃ v q, l ↦[d:: f]{q} v], ie when the quantified variables are ordered differently. Diaframe is
+    not currently smart enough to handle that *)
+
+  (* To overcome that, we add this extra HINT: *)
+  Global Instance readonly_struct_field_hint2 l d f v E :
+    HINT (readonly (l ↦[d :: f] v)) ✱ [- ; emp] ⊫ [fupd E E] q v'; l ↦[d :: f]{q} v' ✱ [⌜v = v'⌝] | 50.
+  Proof.
+    iSteps as "#Hf".
+    iMod (readonly_load with "[$]") as "H".
+    iSteps.
+  Qed.
+
+  (* No need to add a [HINT1]: it follows automatically *)
+  Lemma readonly_struct_field_hint l d f v E :
+    HINT1 ε₀ ✱ [readonly (l ↦[d :: f] v)] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v).
+  Proof. iSteps. Qed.
 
   (* TODO: how to make this lower priority? *)
   (*
