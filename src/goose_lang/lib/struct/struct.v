@@ -538,13 +538,20 @@ Proof.
   auto.
 Qed.
 
-Theorem struct_field_pointsto_none l q d f v :
+Theorem struct_field_pointsto_none' l q d f v :
   field_offset d f = None ->
-  struct_field_pointsto l q d f v -∗ ⌜v = #()⌝.
+  struct_field_pointsto l q d f v ⊣⊢ ⌜v = #()⌝.
 Proof.
   unseal.
   intros ->.
   auto.
+Qed.
+
+Theorem struct_field_pointsto_none l q d f v :
+  field_offset d f = None ->
+  struct_field_pointsto l q d f v -∗ ⌜v = #()⌝.
+Proof.
+  intros. rewrite struct_field_pointsto_none' //. auto.
 Qed.
 
 Theorem wp_getField stk E d f0 (v: val) :

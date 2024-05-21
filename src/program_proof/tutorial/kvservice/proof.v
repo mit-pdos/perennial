@@ -59,6 +59,7 @@ Qed.
 (* TODO: since the coercion doesn't reverse properly, why not use this notation
 for making code in goals more readable? *)
 #[local] Notation "v" := (Var v)%E (at level 9, only printing).
+Opaque struct.t.
 
 Lemma wp_decode  sl enc_args args q :
   {{{
@@ -79,7 +80,7 @@ Proof.
   iIntros (e) "He".
   wp_pures.
   wp_apply wp_allocStruct.
-  { repeat econstructor. }
+  { val_ty. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -240,7 +241,7 @@ Proof.
   iIntros (?) "He".
   wp_pures.
   wp_apply wp_allocStruct.
-  { repeat econstructor. }
+  { val_ty. }
   iIntros (args_ptr) "Hargs".
   wp_pures.
   iDestruct (struct_fields_split with "Hargs") as "HH".

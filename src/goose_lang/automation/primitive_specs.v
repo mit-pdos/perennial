@@ -71,6 +71,110 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
+  (* [struct_fields] with f excluded *)
+  Local Fixpoint struct_big_fields_except_rec l q (d: descriptor) (fs:descriptor) (f_rem: string) (v:val): iProp Σ :=
+    match fs with
+    | [] => "_" ∷ ⌜v = #()⌝
+    | cons (f, t) fs =>
+        match v with
+        | PairV v1 v2 =>
+          if (f =? f_rem)%string then
+            struct.struct_big_fields_rec l q d fs v2
+          else
+            f ∷ struct_field_pointsto l q d f v1 ∗
+            struct_big_fields_except_rec l q d fs f_rem v2
+        | _ => False
+        end
+    end%core%I.
+
+  Lemma bi_sep_false_l {PROP: bi} (P: PROP) : False ∗ P ⊣⊢ False.
+  Proof.
+    iSplit.
+    - iIntros "[% _]"; contradiction.
+    - iIntros "%"; contradiction.
+  Qed.
+
+  Lemma bi_sep_false_r {PROP: bi} (P: PROP) : P ∗ False ⊣⊢ False.
+  Proof. rewrite (comm bi_sep) bi_sep_false_l //. Qed.
+
+  Local Lemma struct_big_fields_except_rec_split l q d fs v f_rem :
+    (∃ (i: nat), fs.*1 !! i = Some f_rem)%core%type →
+    struct.struct_big_fields_rec l q d fs v ⊣⊢
+        struct_big_fields_except_rec l q d fs f_rem v ∗
+        l ↦[d :: f_rem]{q} (getField_f fs f_rem v).
+  Proof.
+    generalize dependent v.
+    induction fs as [|[f t] fs']; simpl.
+    - intros v Hrem_ex. destruct Hrem_ex as [i Hlookup].
+      rewrite lookup_nil in Hlookup. congruence.
+    - intros v Hrem_ex. destruct v; rewrite ?bi_sep_false_l //.
+      destruct (String.eqb_spec f f_rem); subst.
+      + (* this is the right field *)
+        iSplit; iIntros "[$ $]".
+      + rewrite -assoc.
+        f_equiv.
+        rewrite IHfs' //.
+        destruct Hrem_ex as [i Hlookup].
+        destruct i.
+        { exfalso.
+          simpl in Hlookup; inversion Hlookup; congruence. }
+        exists i.
+        simpl in Hlookup; auto.
+  Qed.
+
+  Local Lemma struct_big_fields_except_missing l q d fs v f_rem :
+    f_rem ∉ fs.*1 →
+    struct_big_fields_except_rec l q d fs f_rem v ⊣⊢
+    struct.struct_big_fields_rec l q d fs v.
+  Proof.
+    generalize dependent v.
+    induction fs as [|[f t] fs']; simpl; intros v Hnotin.
+    - auto.
+    - destruct v; auto.
+      destruct (String.eqb_spec f f_rem); subst.
+      + contradiction Hnotin. apply elem_of_list_here.
+      + rewrite IHfs' //.
+        apply not_elem_of_cons in Hnotin; intuition auto.
+  Qed.
+
+  (** [struct_fields_except] is [l ↦[d :: f] fv -∗ struct_fields l q d v]. *)
+  Definition struct_fields_except l q d f_rem v : iProp Σ := struct_big_fields_except_rec l q d d f_rem v.
+
+  Lemma field_offset_none_not_in fs f_rem:
+    f_rem ∉ fs.*1 → field_offset fs f_rem = None.
+  Proof.
+    intros Hnotin.
+    induction fs as [|[f t] fs']; simpl; auto.
+    destruct (String.eqb_spec f f_rem); subst.
+    - contradiction Hnotin.
+      simpl; apply elem_of_list_here.
+    - rewrite IHfs' //.
+      apply not_elem_of_cons in Hnotin; intuition auto.
+  Qed.
+
+  Lemma struct_fields_except_split l q d v f_rem :
+    struct_fields l q d v ⊣⊢
+      struct_fields_except l q d f_rem v ∗ l ↦[d :: f_rem]{q} (getField_f d f_rem v).
+  Proof.
+    rewrite /struct_fields_except /struct_fields.
+    destruct (list_exist_dec (λ x, x = f_rem)%type d.*1).
+    { tc_solve. }
+    - rewrite struct_big_fields_except_rec_split //.
+      destruct e as [? [Helem%elem_of_list_lookup ->]].
+      intuition eauto.
+    - assert (f_rem ∉ d.*1).
+      { intuition eauto. }
+      assert (field_offset d f_rem = None).
+      { eauto using field_offset_none_not_in. }
+      rewrite struct_big_fields_except_missing //.
+      rewrite struct_field_pointsto_none' //.
+      assert (getField_f d f_rem v = #()).
+      { apply getField_f_none; auto. }
+      iSplit.
+      + iIntros "$ //".
+      + iIntros "[$ _]".
+  Qed.
+
   Global Instance struct_alloc_spec E d v :
       SPEC ⟨E⟩
         {{ ⌜val_ty v (struct.t d)⌝ }}

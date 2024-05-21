@@ -115,6 +115,20 @@ Fixpoint structTy d : ty :=
   | (_,t)::fs => prodT t (structTy fs)
   end.
 
+Fixpoint structTy_has_zero d : Prop :=
+  match d with
+  | [] => True
+  | (_,t)::fs => has_zero t ∧ structTy_has_zero fs
+  end.
+
+Lemma structTy_has_zero_ok d :
+  structTy_has_zero d → has_zero (structTy d).
+Proof.
+  induction d; simpl; [done |].
+  destruct a as [f t].
+  intuition auto.
+Qed.
+
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
@@ -218,3 +232,7 @@ Arguments mkStruct {ext ext_ty} _%struct_scope.
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)
 Global Opaque allocStruct structFieldRef loadStruct loadField storeStruct storeField.
+
+Hint Resolve structTy_has_zero_ok : core.
+(* try to do this by computation (which proves each field in turn) *)
+Hint Extern 3 (structTy_has_zero _) => compute; repeat (split; [trivial..|]) : core.
