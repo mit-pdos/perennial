@@ -3,9 +3,8 @@ From Goose.github_com.mit_pdos.gokv.tutorial Require Import kvservice.
 From Perennial.program_proof.grove_shared Require Import urpc_proof monotonic_pred.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof Require Import std_proof.
-From Perennial.goose_lang.automation Require Import extra_tactics proof_automation.
+From Perennial.goose_lang.automation Require Import extra_tactics proof_automation marshal_specs.
 From Perennial.goose_lang Require Import proofmode.
-From diaframe.lib Require Import persistently intuitionistically.
 
 Unset Printing Projections.
 
@@ -44,60 +43,22 @@ Lemma wp_encode args_ptr args :
   }}}
 .
 Proof.
-  iIntros (Φ) "Hargs HΦ".
-  iNamed "Hargs".
-  wp_lam.
-  wp_apply wp_NewSlice.
-  iIntros (sl) "Hsl".
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (e) "He".
+  iSteps.
 
-  wp_pures.
-  wp_loadField.
-  wp_load.
-  wp_apply (wp_WriteInt with "[$]").
-  iIntros (?) "Hsl".
-  rewrite replicate_0 /=.
-  wp_store.
-
-  wp_loadField.
-  wp_apply wp_StringToBytes.
-  iIntros (key_sl) "Hkey_sl".
-  wp_pures.
-
-  wp_apply wp_slice_len.
-  iDestruct (own_slice_sz with "Hkey_sl") as "%Hsz".
-  wp_load.
-  wp_apply (wp_WriteInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_store.
-
-  wp_load.
-  iDestruct (own_slice_to_small with "Hkey_sl") as "Hkey_sl".
-  wp_apply (wp_WriteBytes with "[$Hsl $Hkey_sl]").
-  iIntros (?) "[Hsl Hkey_sl]".
-  wp_store.
-
-  wp_loadField.
-  wp_apply (wp_StringToBytes).
-  iIntros (?) "Hval_sl".
-  iDestruct (own_slice_to_small with "Hval_sl") as "Hval_sl".
-  wp_load.
-  wp_apply (wp_WriteBytes with "[$Hsl $Hval_sl]").
-  iIntros (?) "[Hsl Hval_sl]".
-  wp_store.
-
-  wp_load.
-  iApply "HΦ".
-  iFrame.
+  unseal_diaframe => /=.
+  iModIntro. iExists _; iFrame.
   iPureIntro.
-  unfold encodes.
+  rewrite /encodes.
   repeat rewrite -assoc.
-  rewrite Hsz.
+  rewrite replicate_0.
+  rewrite app_nil_l.
   repeat f_equal.
   word.
 Qed.
+
+(* TODO: since the coercion doesn't reverse properly, why not use this notation
+for making code in goals more readable? *)
+#[local] Notation "v" := (Var v)%E (at level 9, only printing).
 
 Lemma wp_decode  sl enc_args args q :
   {{{

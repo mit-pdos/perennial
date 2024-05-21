@@ -98,7 +98,7 @@ Polymorphic Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard
              )%I;
      spec_Post := (λ x reqData repData, True)%I |}.
 
-Polymorphic Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
+Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   (λ host γ,
   "#HputSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_PUT (is_shard_server_putSpec γ.(kv_gn)) ∗
   "#HconditionalPutSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_CONDITIONAL_PUT

@@ -1,13 +1,11 @@
 From Perennial.goose_lang.automation Require Import goose_lang_auto.
-From diaframe.lib Require Import iris_hints.
-
 From Perennial.goose_lang.lib Require Import
   struct typed_mem lock into_val slice typed_slice
   string
   control.impl control.
 From Perennial.program_proof Require Import std_proof.
 
-Section goose_lang_instances.
+Section proofs.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
   Context {ext_ty: ext_types ext}.
 
@@ -25,7 +23,12 @@ Section goose_lang_instances.
     wp_apply (release_spec' with "[$Hlock $Hlocked $HR]"); auto.
   Qed.
 
-  #[global] Instance NewSlice_spec `{!IntoVal V} `{!IntoValForType V t} E (sz: w64) :
+  Section slice_specs.
+
+  Context `{!IntoVal V}.
+  Implicit Types (s: Slice.t) (vs: list V).
+
+  #[global] Instance NewSlice_spec `{!IntoValForType V t} E (sz: w64) :
     SPEC ⟨E⟩
         {{ emp }}
         NewSlice t #sz
@@ -38,11 +41,53 @@ Section goose_lang_instances.
 
   (* TODO: is this really a good idea? shouldn't we take the slice resource and
   not directly expose slice properties? *)
-  #[global] Instance slice_len_spec (s: Slice.t) E :
+  #[global] Instance slice_len_spec s E :
     SPEC ⟨E⟩ {{ emp }} slice.len s {{ RET #s.(Slice.sz); emp }}.
   Proof. iStep. wp_apply wp_slice_len. iSteps. Qed.
 
-  (* TODO: write hints for own_slice splitting/merging *)
+  #[global] Instance slice_len_hint s t q vs :
+   MergablePersist (own_slice_small s t q vs)
+   (λ p Pin Pout,
+     TCAnd (TCEq Pin (ε₀)%I)
+           (TCEq Pout ⌜length vs = uint.nat s.(Slice.sz)⌝)
+   )%I.
+  Proof.
+    move => p?? [-> ->].
+    rewrite own_slice_small_sz //.
+    iIntros "[% _] !> //".
+  Qed.
+
+  #[global] Instance own_slice_small_access_hint s t q vs :
+    HINT (own_slice s t q vs) ✱ [-; emp] ⊫ [id]; (own_slice_small s t q vs) ✱ [own_slice_cap s t].
+  Proof.
+    iSteps.
+  Qed.
+
+  #[global] Instance own_slice_merge_hint s t q vs :
+    HINT1 (own_slice_small s t q vs) ✱ [own_slice_cap s t] ⊫ [id]; (own_slice s t q vs).
+  Proof. iSteps. Qed.
+
+  #[global] Instance SliceAppend_spec `{!IntoValForType V t} s vs (x: V) :
+    SPEC {{ own_slice s t 1 vs }}
+      SliceAppend t s (to_val x)
+    {{ s', RET s'; own_slice s' t 1 (vs ++ [x]) }}.
+  Proof.
+    iSteps.
+    wp_apply (wp_SliceAppend with "[$]").
+    iSteps.
+  Qed.
+
+  #[global] Instance SliceAppendSlice_spec `{!IntoValForType V t} s vs s' q vs' :
+    SPEC {{ ⌜has_zero t⌝ ∗ own_slice s t 1 vs ∗ own_slice_small s' t q vs' }}
+      SliceAppendSlice t s s'
+    {{ s'', RET s''; own_slice s'' t 1 (vs ++ vs') ∗ own_slice_small s' t q vs' }}.
+  Proof.
+    iSteps.
+    wp_apply (wp_SliceAppendSlice with "[$]"); [ done.. | ].
+    iSteps.
+  Qed.
+
+  End slice_specs.
 
   #[global] Instance StringToBytes_spec (s: string) :
    SPEC
@@ -51,6 +96,15 @@ Section goose_lang_instances.
     {{ sl, RET (slice_val sl); own_slice sl byteT 1 (string_to_bytes s) }}.
   Proof.
     iStep. wp_apply wp_StringToBytes. iSteps.
+  Qed.
+
+  #[global] Instance StringFromBytes_spec sl (s: string) (bs: list w8) :
+   SPEC q,
+     {{ own_slice_small sl byteT q bs }}
+      impl.StringFromBytes sl
+    {{ RET #(str bytes_to_string bs); own_slice_small sl byteT q bs }}.
+  Proof.
+    iStep as (q). iStep. wp_apply (wp_StringFromBytes with "[$]"). iSteps.
   Qed.
 
   #[global] Instance SumAssumeNoOverflow_spec (x y : u64) :
@@ -84,4 +138,8 @@ Section goose_lang_instances.
         {{ RET #(); False }}.
   Proof. iSteps. wp_apply wp_Exit; auto. Qed.
 
-End goose_lang_instances.
+End proofs.
+
+#[global] Opaque typed_slice.own_slice.
+#[global] Opaque typed_slice.own_slice_small.
+#[global] Opaque own_slice_cap.

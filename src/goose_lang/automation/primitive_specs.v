@@ -24,14 +24,24 @@ Section goose_lang_instances.
   Proof. iSteps as "HWP". wp_bind e1. iApply (wp_mono with "HWP"). iSteps. by wp_pure1. Qed.
   *)
 
-  (* FIXME: Why is this not a SPEC? *)
-  Global Instance ref_zero_spec t Φ :
-    HINT1 ε₀ ✱
-      [⌜has_zero t⌝ ∗ ▷ (∀ (l:loc), l ↦[t] (zero_val t) -∗ Φ #l)]
-      ⊫ [id]; WP (ref (zero_val t)) {{ Φ }}.
+  Global Instance ref_zero_spec t E :
+    SPEC ⟨E⟩
+        {{ ⌜has_zero t⌝ }}
+          ref (zero_val t)
+        {{ (l: loc), RET #l; l ↦[t] (zero_val t) }}.
   Proof.
     iSteps.
     wp_apply wp_ref_of_zero; auto.
+  Qed.
+
+  Global Instance ref_to_spec t v E :
+    SPEC ⟨E⟩
+        {{ ⌜val_ty v t⌝ }}
+          ref_to t v
+        {{ (l: loc), RET #l; l ↦[t] v }}.
+  Proof.
+    iSteps.
+    wp_apply wp_ref_to; auto.
   Qed.
 
   Global Instance load_primitive_spec E l :
@@ -77,17 +87,6 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  (* this hint doesn't work because it doesn't plug into the eval context machinery *)
-  Lemma loadField_hint l d q v f E Φ :
-    HINT1 (l ↦[d :: f]{q} v) ✱ [l ↦[d :: f]{q} v -∗ Φ v] ⊫
-      [fupd E E]; WP (struct.loadF d f #l) @ E {{ Φ }}.
-  Proof.
-    iSteps.
-    iModIntro.
-    wp_loadField.
-    iSteps.
-  Qed.
-
   Global Instance loadField_spec l d f E :
     SPEC ⟨E⟩ q v, {{ ▷ l ↦[d :: f]{q} v }}
                   struct.loadF d f #l
@@ -105,7 +104,7 @@ Section goose_lang_instances.
     wp_apply (wp_storeField with "Hx"); auto.
   Qed.
 
-  Global Instance readonly_struct_field_hint' l d f v E :
+  Global Instance readonly_struct_field_hint l d f v E :
     (* Note that quantifier [q] is _before_ the semicolon!
       The goal resource of the HINT (in this case [l ↦[d::f]{q} v]) should always be an atom:
       ie not of the form [A ∗ B] or [∃ q, P q]. If the resource is existentially quantified,
@@ -130,24 +129,7 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  (* No need to add a [HINT1]: it follows automatically *)
-  Lemma readonly_struct_field_hint l d f v E :
-    HINT1 ε₀ ✱ [readonly (l ↦[d :: f] v)] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v).
-  Proof. iSteps. Qed.
-
-  (* TODO: how to make this lower priority? *)
-  (*
-  Global Instance loadField_ro_spec l d f E :
-    SPEC ⟨E⟩ v, {{ readonly (struct_field_pointsto l 1%Qp d f v) }}
-                  struct.loadF d f #l
-                {{ RET v; emp }}.
-  Proof.
-    iStep.
-    iStep.
-    wp_apply (wp_loadField_ro with "[$]"). auto.
-  Qed.
-*)
-
 End goose_lang_instances.
 
-Opaque ref_to.
+#[global] Typeclasses Opaque ref_to.
+#[global] Opaque ref_to.
