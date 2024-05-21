@@ -130,18 +130,4 @@ Section goose_lang_instances.
   Qed.
 *)
 
-  Global Instance lock_acquire_spec lk N R :
-    SPEC {{ is_lock N lk R }} lock.acquire lk {{ RET #(); locked lk ∗ R }}.
-  Proof.
-    iStep.
-    wp_apply (acquire_spec' with "[$]"); auto.
-  Qed.
-
-  Global Instance lock_release_spec lk N R :
-    SPEC {{ is_lock N lk R ∗ locked lk ∗ R }} lock.release lk {{ RET #(); emp }}.
-  Proof.
-    iStep as "Hlock Hlocked HR".
-    wp_apply (release_spec' with "[$Hlock $Hlocked $HR]"); auto.
-  Qed.
-
 End goose_lang_instances.

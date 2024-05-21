@@ -605,16 +605,6 @@ Proof.
   iApply "Hspec".
 Qed.
 
-#[global] Instance SumAssumeNoOverflow_spec (x y : u64) :
-  SPEC
-    {{ True }}
-      std.SumAssumeNoOverflow #x #y
-    {{ RET #(LitInt $ word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}.
-Proof.
-  iSteps.
-  wp_apply wp_SumAssumeNoOverflow as (Hoverflow) "!% //".
-Qed.
-
 Global Instance readonly_struct_field_hint' l d f v E :
   HINT1 ε₀ ✱ [readonly (l ↦[d :: f] v)] ⊫ [fupd E E]; (∃ q, l ↦[d :: f]{q} v).
 Proof.
