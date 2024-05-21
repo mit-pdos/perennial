@@ -71,6 +71,17 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
+  Global Instance struct_alloc_spec E d v :
+      SPEC ⟨E⟩
+        {{ ⌜val_ty v (struct.t d)⌝ }}
+        struct.alloc d v
+        {{ l, RET #l; l ↦[struct.t d] v }}.
+  Proof.
+    iSteps.
+    wp_apply wp_allocStruct; [ done | ].
+    iSteps.
+  Qed.
+
   Global Instance store_primitive_spec l v' E :
     SPEC ⟨E⟩ v, {{ ▷ l ↦ v }} #l <- v' {{ RET #(); l ↦ v' }}.
   Proof.

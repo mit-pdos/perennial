@@ -3,6 +3,8 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.program_proof Require Import marshal_proof marshal_stateless_proof.
 
 #[global] Opaque marshal.WriteInt.
+#[global] Opaque marshal.ReadInt.
+#[global] Opaque u64_le.
 
 Section proofs.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -17,6 +19,16 @@ Section proofs.
     iSteps.
     wp_apply (wp_WriteInt with "[$]").
     iSteps.
+  Qed.
+
+  #[global] Instance ReadInt_spec s (bs: list w8) (x: w64) :
+    SPEC q,
+      {{ own_slice_small s byteT q (u64_le x ++ bs) }}
+      marshal.ReadInt s
+      {{ s', RET (#x, s')%V; own_slice_small s' byteT q bs }}.
+  Proof.
+    iSteps.
+    wp_apply (wp_ReadInt with "[$]"). iSteps.
   Qed.
 
 End proofs.
