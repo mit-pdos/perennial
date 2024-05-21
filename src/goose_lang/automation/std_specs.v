@@ -145,3 +145,5 @@ End proofs.
 #[global] Opaque own_slice_cap.
 #[global] Opaque impl.StringFromBytes.
 #[global] Opaque impl.StringToBytes.
+
+Hint Extern 2 => rewrite !string_to_bytes_inj : solve_pure_add.

@@ -263,3 +263,6 @@ End goose_lang_instances.
 
 #[global] Typeclasses Opaque ref_to.
 #[global] Opaque ref_to.
+#[global] Opaque struct.t.
+#[global] Arguments struct.t : simpl never.
+#[global] Opaque struct.alloc.

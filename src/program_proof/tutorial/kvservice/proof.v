@@ -59,7 +59,6 @@ Qed.
 (* TODO: since the coercion doesn't reverse properly, why not use this notation
 for making code in goals more readable? *)
 #[local] Notation "v" := (Var v)%E (at level 9, only printing).
-Opaque struct.t.
 
 Lemma wp_decode  sl enc_args args q :
   {{{
@@ -128,7 +127,6 @@ Lemma wp_decode_auto  sl enc_args args q :
 Proof.
   rewrite /encodes.
   iSteps.
-  { iPureIntro. autorewrite with len in *. word. }
   rewrite !string_to_bytes_inj.
   iSteps.
 Qed.
@@ -171,6 +169,20 @@ Lemma wp_encode args_ptr args :
   }}}
 .
 Proof.
+  iSteps.
+  rewrite /encodes.
+  iSteps.
+  iModIntro.
+  match goal with
+  | |- envs_entails _ (own_slice ?x _ _ _) =>
+      iRename select (own_slice x _ _ _) into "H"; iExactEq "H"
+  end.
+  f_equal.
+  rewrite replicate_0 app_nil_l.
+  rewrite -!assoc.
+  repeat f_equal; word.
+
+  (* (*  this is the manual proof: *)
   iIntros (Φ) "Hargs HΦ".
   iNamed "Hargs".
   wp_lam.
@@ -240,6 +252,7 @@ Proof.
   repeat rewrite -assoc.
   rewrite Hsz.
   repeat f_equal; word.
+   *)
 Qed.
 
 Lemma wp_decode  sl enc_args args q :
@@ -252,60 +265,10 @@ Lemma wp_decode  sl enc_args args q :
         (args_ptr:loc), RET #args_ptr; own args_ptr args
   }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (?) "He".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { val_ty. }
-  iIntros (args_ptr) "Hargs".
-  wp_pures.
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_load.
-  rewrite Henc.
-
-  wp_apply (wp_ReadInt with "Hsl").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-
-  wp_load.
-  wp_apply (wp_ReadInt with "Hsl").
-  iIntros (?) "Hsl".
-  wp_pures.
-
-  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  wp_apply (wp_ReadBytes with "[$Hsl]").
-  { rewrite app_length in Hsz. word. }
-  iIntros (???) "[Hkey Hsl]".
-  wp_pures.
-  wp_apply (wp_StringFromBytes with "[$Hkey]").
-  iIntros "_".
-  wp_storeField.
-
-  wp_apply (wp_ReadInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_pures.
-
-  wp_apply (wp_ReadBytes with "[$Hsl]").
-  { repeat rewrite app_length in Hsz. word. }
-  iIntros (???) "[Hexpect Hval]".
-  wp_pures.
-
-  wp_apply (wp_StringFromBytes with "[$Hexpect]").
-  iIntros "_".
-  wp_storeField.
-  wp_apply (wp_StringFromBytes with "[$Hval]").
-  iIntros "_".
-  wp_storeField.
-  iModIntro. iApply "HΦ".
-  repeat rewrite string_to_bytes_to_string.
-  iFrame.
+  rewrite /encodes.
+  iSteps.
+  rewrite !string_to_bytes_to_string.
+  iSteps.
 Qed.
 
 End local_defs.
@@ -383,11 +346,7 @@ Lemma wp_encode_auto args_ptr args :
 .
 Proof.
   iSteps.
-  unseal_diaframe => /=.
-  iModIntro. iExists _; iFrame.
-  iPureIntro.
-  rewrite replicate_0 app_nil_l.
-  rewrite /encodes //.
+  rewrite /encodes. iSteps.
 Qed.
 
 Lemma wp_decode  sl enc_args args q :
@@ -401,6 +360,7 @@ Lemma wp_decode  sl enc_args args q :
   }}}
 .
 Proof.
+<<<<<<< HEAD
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
@@ -434,6 +394,46 @@ Proof.
   iApply "HΦ".
   repeat rewrite string_to_bytes_to_string.
   iFrame.
+||||||| parent of 0b0af386 (Use the automation for more proofs)
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (?) "He".
+  wp_pures.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (?) "HkeyBytes".
+  wp_pures.
+  wp_apply wp_allocStruct.
+  { repeat econstructor. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_load.
+  rewrite Henc.
+  wp_apply (wp_ReadInt with "[$Hsl]").
+  iIntros (?) "Hsl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+
+  wp_load.
+  wp_apply (wp_StringFromBytes with "[$Hsl]").
+  iIntros "_".
+  wp_storeField.
+  iModIntro.
+  iApply "HΦ".
+  repeat rewrite string_to_bytes_inj.
+  iFrame.
+=======
+  rewrite /encodes.
+  iSteps.
+  rewrite !string_to_bytes_inj.
+  iSteps.
+>>>>>>> 0b0af386 (Use the automation for more proofs)
 Qed.
 
 End local_defs.

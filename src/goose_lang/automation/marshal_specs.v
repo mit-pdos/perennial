@@ -57,3 +57,7 @@ Section proofs.
   Qed.
 
 End proofs.
+
+Ltac len_simpl := autorewrite with len in *.
+Hint Extern 2 (_ = _) => (progress len_simpl) : solve_pure_eq_add.
+Hint Extern 2 (_ = _) => word : solve_pure_eq_add.
