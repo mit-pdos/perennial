@@ -137,8 +137,9 @@ Section goose_lang_instances.
         apply not_elem_of_cons in Hnotin; intuition auto.
   Qed.
 
-  (** [struct_fields_except] is [l ↦[d :: f] fv -∗ struct_fields l q d v]. *)
-  Definition struct_fields_except l q d f_rem v : iProp Σ := struct_big_fields_except_rec l q d d f_rem v.
+  (* [struct_fields_except_split] fully characterizes this definition *)
+  Definition struct_fields_except l q d f_rem v : iProp Σ :=
+    struct_big_fields_except_rec l q d d f_rem v.
 
   Lemma field_offset_none_not_in fs f_rem:
     f_rem ∉ fs.*1 → field_offset fs f_rem = None.
@@ -152,7 +153,10 @@ Section goose_lang_instances.
       apply not_elem_of_cons in Hnotin; intuition auto.
   Qed.
 
-  Lemma struct_fields_except_split l q d v f_rem :
+  (* note that if f_rem is not actually in the struct, this lemma still holds.
+  The field points-to fact becomes a trivial statement ⌜#() = #()⌝, and
+  [struct_fields_except] is actually the entire struct. *)
+  Lemma struct_fields_except_split f_rem l q d v :
     struct_fields l q d v ⊣⊢
       struct_fields_except l q d f_rem v ∗ l ↦[d :: f_rem]{q} (getField_f d f_rem v).
   Proof.
@@ -173,6 +177,17 @@ Section goose_lang_instances.
       iSplit.
       + iIntros "$ //".
       + iIntros "[$ _]".
+  Qed.
+
+  Global Instance struct_pointsto_get_field l q d v f fv :
+    struct.wf d →
+    HINT (l ↦[struct.t d]{q} v) ✱ [-; ⌜fv = getField_f d f v⌝] ⊫
+      [id]; (l ↦[d :: f]{q} fv) ✱ [struct_fields_except l q d f v].
+  Proof.
+    intros Hwf.
+    rewrite struct_fields_split.
+    rewrite (struct_fields_except_split f).
+    iSteps.
   Qed.
 
   Global Instance struct_alloc_spec E d v :

@@ -114,6 +114,25 @@ Proof.
   iFrame.
 Qed.
 
+(* diaframe version of above *)
+Lemma wp_decode_auto  sl enc_args args q :
+  {{{
+        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
+        "Hsl" ∷ own_slice_small sl byteT q enc_args
+  }}}
+    decodePutArgs (slice_val sl)
+  {{{
+        (args_ptr:loc), RET #args_ptr; own args_ptr args
+  }}}
+.
+Proof.
+  rewrite /encodes.
+  iSteps.
+  { iPureIntro. autorewrite with len in *. word. }
+  rewrite !string_to_bytes_inj.
+  iSteps.
+Qed.
+
 End local_defs.
 End putArgs.
 
@@ -348,6 +367,27 @@ Proof.
   iModIntro. iApply "HΦ".
   iFrame.
   iPureIntro. done.
+Qed.
+
+(* diaframe version of above *)
+Lemma wp_encode_auto args_ptr args :
+  {{{
+        own args_ptr args
+  }}}
+    encodeGetArgs #args_ptr
+  {{{
+        (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
+          ⌜encodes enc_args args⌝ ∗
+          own_slice sl byteT 1 enc_args
+  }}}
+.
+Proof.
+  iSteps.
+  unseal_diaframe => /=.
+  iModIntro. iExists _; iFrame.
+  iPureIntro.
+  rewrite replicate_0 app_nil_l.
+  rewrite /encodes //.
 Qed.
 
 Lemma wp_decode  sl enc_args args q :

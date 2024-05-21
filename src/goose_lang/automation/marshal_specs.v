@@ -5,6 +5,7 @@ From Perennial.program_proof Require Import marshal_proof marshal_stateless_proo
 #[global] Opaque marshal.WriteInt.
 #[global] Opaque marshal.ReadInt.
 #[global] Opaque marshal.WriteBytes.
+#[global] Opaque marshal.ReadBytes.
 #[global] Opaque u64_le.
 
 Section proofs.
@@ -40,6 +41,19 @@ Section proofs.
   Proof.
     iSteps.
     wp_apply (wp_ReadInt with "[$]"). iSteps.
+  Qed.
+
+  #[global] Instance ReadBytes_spec s (len: w64) :
+   SPEC q (bs bs': list w8),
+      {{ own_slice_small s byteT q (bs ++ bs') ∗ ⌜length bs = uint.nat len⌝  }}
+         marshal.ReadBytes s #len
+      {{ b s' q', RET (b, s')%V; own_slice_small b byteT q' bs ∗
+           own_slice_small s' byteT q' bs' }}.
+  Proof.
+    iSteps.
+    wp_apply (wp_ReadBytes with "[$]").
+    { done. }
+    iSteps.
   Qed.
 
 End proofs.

@@ -98,13 +98,13 @@ Section proofs.
     iStep. wp_apply wp_StringToBytes. iSteps.
   Qed.
 
-  #[global] Instance StringFromBytes_spec sl (s: string) (bs: list w8) :
-   SPEC q,
+  #[global] Instance StringFromBytes_spec sl :
+   SPEC q (bs: list w8),
      {{ own_slice_small sl byteT q bs }}
       impl.StringFromBytes sl
     {{ RET #(str bytes_to_string bs); own_slice_small sl byteT q bs }}.
   Proof.
-    iStep as (q). iStep. wp_apply (wp_StringFromBytes with "[$]"). iSteps.
+    iStep as (q). iStep. iStep. wp_apply (wp_StringFromBytes with "[$]"). iSteps.
   Qed.
 
   #[global] Instance SumAssumeNoOverflow_spec (x y : u64) :
@@ -143,3 +143,5 @@ End proofs.
 #[global] Opaque typed_slice.own_slice.
 #[global] Opaque typed_slice.own_slice_small.
 #[global] Opaque own_slice_cap.
+#[global] Opaque impl.StringFromBytes.
+#[global] Opaque impl.StringToBytes.

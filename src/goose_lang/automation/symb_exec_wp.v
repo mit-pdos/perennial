@@ -565,6 +565,7 @@ Section abducts.
   Abort.
 *)
 
+  (* TODO: add a key hypothesis to precondition, instead of fixed [ε₀] in hint *)
   Class PerennialSpec E (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
     perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ ▷ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
                                                          Φ (tele_app (tele_app v tt1) tt2)))
