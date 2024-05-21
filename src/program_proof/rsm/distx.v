@@ -2,11 +2,29 @@ From Perennial.program_proof Require Export grove_prelude.
 
 Definition dbkey := string.
 Definition dbval := option string.
-Definition dbtpl := (list dbval * nat)%type.
+Definition dbhist := list dbval.
+Definition dbtpl := (dbhist * nat)%type.
 Canonical Structure dbvalO := leibnizO dbval.
 Notation Nil := (None : dbval).
 Notation Value x := (Some x : dbval).
 Definition dbmap := gmap dbkey dbval.
+
+Definition fstring := {k : string | (String.length k < 2 ^ 64)%nat}.
+
+#[local]
+Instance fstring_finite :
+  finite.Finite fstring.
+Admitted.
+
+(* Definition keys_all : gset string := fin_to_set fstring. *)
+Definition keys_all : gset string.
+Admitted.
+
+Definition groupid := nat.
+Definition gids_all := seq 0 2.
+
+Definition key_to_group (key : dbkey) : groupid.
+Admitted.
 
 Inductive command :=
 | CmdPrep (tid : nat) (wrs : dbmap)
@@ -14,11 +32,18 @@ Inductive command :=
 | CmdAbt (tid : nat)
 | CmdRead (tid : nat) (key : dbkey).
 
-(* Transaction status *)
+Definition dblog := list command.
+
+(* Transaction status on replica *)
 Inductive txnst :=
-| Prepared (wrs : dbmap)
-| Committed
-| Aborted.
+| StPrepared (wrs : dbmap)
+| StCommitted
+| StAborted.
+
+(* Transaction result *)
+Inductive txnres :=
+| ResCommitted (wrs : dbmap)
+| ResAborted.
 
 (* Replica state *)
 Inductive rpst :=
@@ -58,8 +83,8 @@ Definition apply_prepare st (tid : nat) (wrs : dbmap) :=
       match txns !! tid with
       | Some _ => st
       | None =>  match try_acquire tid wrs tpls with
-                | Acquired tpls' => State (<[ tid := Prepared wrs ]> txns) tpls'
-                | NotAcquired => State (<[ tid := Aborted ]> txns) tpls
+                | Acquired tpls' => State (<[ tid := StPrepared wrs ]> txns) tpls'
+                | NotAcquired => State (<[ tid := StAborted ]> txns) tpls
                 end
       end
   | Stuck => Stuck
@@ -67,12 +92,15 @@ Definition apply_prepare st (tid : nat) (wrs : dbmap) :=
 
 (* TODO: reorder [x] and [n]. *)
 Definition extend {X} (x : X) (n : nat) (l : list X) :=
-    l ++ replicate (n - length l) x.
+  l ++ replicate (n - length l) x.
+
+(* TODO *)
+Definition last_extend {A} (n : nat) (l : list A) := l.
 
 Definition multiwrite_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
   match wr, tpl with
   | None, Some (vs, tsprep) => Some (vs, tsprep)
-  | Some v, Some (vs, _) => Some (extend v tid vs, O)
+  | Some v, Some (vs, _) => Some (last_extend tid vs ++ [v], O)
   | _, _ => None
   end.
 
@@ -83,8 +111,8 @@ Definition apply_commit st (tid : nat) :=
   match st with
   | State txns tpls =>
       match txns !! tid with
-      | Some Committed => st
-      | Some (Prepared wrs) => State (<[ tid := Committed ]> txns) (multiwrite tid wrs tpls)
+      | Some StCommitted => st
+      | Some (StPrepared wrs) => State (<[ tid := StCommitted ]> txns) (multiwrite tid wrs tpls)
       | _ => Stuck
       end
   | Stuck => Stuck
@@ -104,16 +132,13 @@ Definition apply_abort st (tid : nat) :=
   match st with
   | State txns tpls =>
       match txns !! tid with
-      | Some Aborted => st
-      | Some (Prepared wrs) => State (<[ tid := Aborted ]> txns) (release tid wrs tpls)
-      | None => State (<[ tid := Aborted ]> txns) tpls
+      | Some StAborted => st
+      | Some (StPrepared wrs) => State (<[ tid := StAborted ]> txns) (release tid wrs tpls)
+      | None => State (<[ tid := StAborted ]> txns) tpls
       | _ => Stuck
       end
   | Stuck => Stuck
   end.
-
-(* TODO *)
-Definition last_extend {A} (n : nat) (l : list A) := l.
 
 Definition read (tid : nat) (vs : list dbval) (tsprep : nat) :=
   if decide (tsprep = 0 ∨ tid < tsprep)%nat
@@ -150,9 +175,15 @@ Definition diff_by_ongoing (repl cmtd : list dbval) (kcmt : option (nat * dbval)
   match kcmt with
   | Some (ts, v) => cmtd = last_extend ts repl ++ [v]
   | None => ∃ ts', repl = last_extend ts' cmtd
+end.
+
+Definition exclusive (ongoing : option (nat * dbval)) (tsprep : nat) (wr : option dbval) :=
+  match ongoing with
+  | Some (ts, v) => tsprep = ts ∧ wr = Some v
+  | None => True
   end.
 
-Definition diff_by_linearized (cmtd lnrz : list dbval) (txns : gmap nat dbmap) : Prop.
+Definition diff_by_linearized (cmtd lnrz : list dbval) (txns : gmap nat dbval) : Prop.
 Admitted.
 
 Definition conflict_free (acts : list action) (txns : gmap nat dbmap) : Prop.
@@ -161,108 +192,152 @@ Admitted.
 Definition conflict_past (acts_future acts_past : list action) (txns : gmap nat dbmap) : Prop.
 Admitted.
 
-Definition exec_eq (key : dbkey) (tpls : gmap dbkey dbtpl) (repl : list dbval) :=
-  ∃ ts, tpls !! key = Some (repl, ts).
-
-Definition per_key_inv (key : dbkey) (db : dbmap) (kcmts : gmap dbkey (nat * dbval)) txns tpls :=
-  ∃ repl cmtd lnrz,
-    db !! key = last lnrz ∧
-    exec_eq key tpls repl ∧
-    prefix cmtd lnrz ∧
-    diff_by_ongoing repl cmtd (kcmts !! key) ∧
-    diff_by_linearized cmtd lnrz txns.
-
-Definition exclusive
-  (acts : list action) (cmds : list command)
-  (kcmts : gmap dbkey (nat * dbval)) :=
-  ∀ key, match kcmts !! key with
-         | Some (ts, _) => (∃ wrs, ActCmt ts wrs ∈ acts) ∧ CmdCmt ts ∉ cmds
-         | _ => True
-         end.
-
 Definition repl_impl_cmtd (acts : list action) (cmds : list command) :=
   ∀ ts, CmdCmt ts ∈ cmds → ∃ wrs, ActCmt ts wrs ∈ acts.
 
-Definition has_prepared ts wrs cmds :=
-  ∃ cmdsp, prefix cmdsp cmds ∧
-           match apply_cmds cmdsp with
-           | State txnst _ => txnst !! ts = Some (Prepared wrs)
-           | _ => False
-           end.
-
-Definition safe_commit (acts : list action) (cmds : list command) :=
-  ∀ ts wrs, ActCmt ts wrs ∈ acts → has_prepared ts wrs cmds.
-
-Definition has_extended ts key cmds :=
-  ∃ cmdsp, prefix cmdsp cmds ∧
-           match apply_cmds cmdsp with
-           | State _ tpls => match tpls !! key with
-                            | Some (vs, _) => (ts < length vs)%nat
-                            | _ => False
-                            end
-           | _ => False
-           end.
-
-Definition safe_read (acts : list action) (cmds : list command) :=
-  ∀ ts key, ActRead ts key ∈ acts → has_extended ts key cmds.
-
-Definition distx_inv :=
-  ∃ (db : dbmap) (txnm : gmap nat txnst) (tpls : gmap dbkey dbtpl)
-    (acts_future acts_past : list action)
-    (cmds_paxos : list command) (kcmts_ongoing : gmap dbkey (nat * dbval))
-    (txns_cmt txns_abt : gmap nat dbmap),
-    (∀ key, per_key_inv key db kcmts_ongoing txns_cmt tpls) ∧
-    exclusive acts_past cmds_paxos kcmts_ongoing ∧
-    repl_impl_cmtd acts_past cmds_paxos ∧
-    conflict_free acts_future txns_cmt ∧
-    conflict_past acts_future acts_past txns_abt ∧
-    safe_commit acts_past cmds_paxos ∧
-    safe_read acts_past cmds_paxos ∧
-    apply_cmds cmds_paxos = State txnm tpls.
-
-(* TODO: move to distx_action.v once stable. *)
-Definition commit__kcmts_ongoing_key
-  (tid: nat) (wr : option dbval) (kcmt : option (nat * dbval)) :=
-  match wr with
-  | Some v => Some (tid, v)
-  | None => kcmt
+Definition has_prepared ts wrs log :=
+  match apply_cmds log with
+  | State txnst _ => txnst !! ts = Some (StPrepared wrs)
+  | _ => False
   end.
 
-Definition commit__kcmts_ongoing
-  (tid : nat) (wrs : dbmap) (kcmts : gmap dbkey (nat * dbval)) :=
-  merge (commit__kcmts_ongoing_key tid) wrs kcmts.
+Definition has_aborted ts log :=
+  match apply_cmds log with
+  | State txnst _ => txnst !! ts = Some StAborted
+  | _ => False
+  end.
 
-Definition commit__actions_past
-  (tid : nat) (wrs : dbmap) (acts_past : list action) :=
-  acts_past ++ [ActCmt tid wrs].
-(* TODO: move to distx_action.v once stable. *)
+Definition wrs_group (wrs : dbmap) gid :=
+  filter (λ x, key_to_group x.1 = gid) wrs.
 
-(* TODO: move to distx_inv_proof.v once stable. *)
-Theorem exclusive_inv_commit tid wrs acts_past cmds_paxos kcmts_ongoing :
-  let acts_past' := commit__actions_past tid wrs acts_past in
-  let kcmts_ongoing' := commit__kcmts_ongoing tid wrs kcmts_ongoing in
-  repl_impl_cmtd acts_past cmds_paxos ->
-  exclusive acts_past cmds_paxos kcmts_ongoing ->
-  exclusive acts_past' cmds_paxos kcmts_ongoing'.
-Proof.
-  intros ? ? Hrlc Hexcl key.
-  subst acts_past'. unfold commit__actions_past.
-  subst kcmts_ongoing'. unfold commit__kcmts_ongoing.
-  unfold exclusive.
-  destruct (decide (key ∈ dom wrs)) as [Hin | Hnotin]; rewrite lookup_merge.
-  { apply elem_of_dom in Hin as [v Hv].
-    rewrite Hv /=.
-    specialize (Hexcl key). unfold exclusive in Hexcl.
-    split.
-    { exists wrs. set_solver. }
-    intros Hin.
-    specialize (Hrlc _ Hin).
-    admit.
-  }
-  { rewrite not_elem_of_dom in Hnotin.
-    rewrite Hnotin /=.
-    unfold exclusive in Hexcl.
-    admit.
-  }
-Admitted.
-(* TODO: move to distx_inv_proof.v once stable. *)
+(* Participant groups. *)
+Definition ptgroups (keys : gset dbkey) :=
+  set_fold (λ k s, {[key_to_group k]} ∪ s) (∅ : gset groupid) keys.
+
+Definition all_prepared ts wrs (logs : gmap groupid dblog) :=
+  map_Forall (λ gid log, has_prepared ts (wrs_group wrs gid) log) logs ∧
+  dom logs = ptgroups (dom wrs).
+
+Definition some_aborted ts (logs : gmap groupid dblog) :=
+  map_Exists (λ gid log, has_aborted ts log) logs.
+
+Definition safe_finalize ts res logs :=
+  match res with
+  | ResCommitted wrs => all_prepared ts wrs logs
+  | ResAborted => some_aborted ts logs
+  end.
+
+Definition past_commit (acts : list action) (resm : gmap nat txnres) :=
+  ∀ ts wrs, ActCmt ts wrs ∈ acts → resm !! ts = Some (ResCommitted wrs).
+
+Definition has_extended ts key log :=
+  match apply_cmds log with
+  | State _ tpls => match tpls !! key with
+                   | Some (vs, _) => (ts < length vs)%nat
+                   | _ => False
+                   end
+  | _ => False
+  end.
+
+Definition past_read (acts : list action) (log : list command) :=
+  ∀ ts key, ActRead ts key ∈ acts → has_extended ts key log.
+
+(* TODO: move to distx_own.v once stable. *)
+Class distx_ghostG (Σ : gFunctors).
+
+Record distx_names := {}.
+
+(* TODO: consider decomposing them into smaller pieces. *)
+Section ghost.
+  Context `{!distx_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : distx_names).
+
+  Definition db_ptsto γ (k : dbkey) (v : dbval) : iProp Σ.
+  Admitted.
+
+  Definition repl_half γ (k : dbkey) (t : dbtpl) : iProp Σ.
+  Admitted.
+
+  Definition resm_auth γ (resm : gmap nat txnres) : iProp Σ.
+  Admitted.
+
+  Definition resm_evidence γ (ts : nat) (res : txnres) : iProp Σ.
+  Admitted.
+
+  Definition log_auth γ (gid : groupid) (log : dblog) : iProp Σ.
+  Admitted.
+
+  Definition log_lb γ (gid : groupid) (log : dblog) : iProp Σ.
+  Admitted.
+  
+  Definition ts_auth γ (ts : nat) : iProp Σ.
+  Admitted.
+
+  Definition ts_lb γ (ts : nat) : iProp Σ.
+  Admitted.
+
+  Definition txn_proph (p : proph_id) (acts : list action) : iProp Σ.
+  Admitted.
+End ghost.
+
+Section inv.
+  Context `{!distx_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : distx_names).
+
+  Definition mvcc_inv γ p : iProp Σ :=
+    ∃ (ts : nat) (future past : list action)
+      (txns_cmt txns_abt : gmap nat dbmap),
+      (* global timestamp *)
+      "Hts"    ∷ ts_auth γ ts ∗
+      (* prophecy variable *)
+      "Hproph" ∷ txn_proph p future ∗
+      (* TODO: asserting ownership of txns_cmt and txns_abt. *)
+      "%Hcf"   ∷ ⌜conflict_free future txns_cmt⌝ ∗
+      "%Hcp"   ∷ ⌜conflict_past future past txns_abt⌝.
+
+  Definition per_key_inv γ (key : dbkey) : iProp Σ :=
+    ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
+      (tslb : nat) (tsprep : nat)
+      (wrs : dbmap) (ongoing : option (nat * dbval))
+      (tmods : gmap nat dbval),
+      "Hdbv" ∷ db_ptsto γ key dbv ∗
+      "Hrepl" ∷ repl_half γ key (repl, tsprep) ∗
+      (* TODO: missing some ownership. *)
+      "#Htslb" ∷ ts_lb γ tslb ∗
+      "#Hresme" ∷ if ongoing then resm_evidence γ tsprep (ResCommitted wrs) else True ∗
+      "%Hlast" ∷ ⌜last lnrz = Some dbv⌝ ∗
+      "%Hprefix" ∷ ⌜prefix cmtd lnrz⌝ ∗
+      "%Hext" ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
+      "%Hlnrz" ∷ ⌜diff_by_linearized cmtd lnrz tmods⌝ ∗
+      "%Hongoing" ∷ ⌜diff_by_ongoing repl cmtd ongoing⌝ ∗
+      "%Hexcl" ∷ ⌜exclusive ongoing tsprep (wrs !! key)⌝.
+
+  Definition per_group_inv γ (gid : groupid) : iProp Σ :=
+    ∃ (log : dblog) (txnm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
+      "Hrepls" ∷ ([∗ map] key ↦ tpl ∈ tpls, repl_half γ key tpl) ∗
+      (* TODO: asserting the domain of tpls. *)
+      "%Hrsm" ∷ ⌜apply_cmds log = State txnm tpls⌝.
+
+  Definition per_res_inv γ (ts : nat) (res : txnres) : iProp Σ :=
+    ∃ (logs : gmap groupid dblog),
+      "#Hlogs" ∷ ([∗ map] gid ↦ log ∈ logs, log_lb γ gid log) ∗
+      "%Hsafeca" ∷ ⌜safe_finalize ts res logs⌝.
+
+  Definition commit_abort_inv γ : iProp Σ :=
+    ∃ (resm : gmap nat txnres),
+      "Hresm" ∷ resm_auth γ resm ∗
+      "#Hress" ∷ ([∗ map] tid ↦ res ∈ resm, per_res_inv γ tid res).
+
+  Definition distx_inv_def γ p : iProp Σ :=
+    (* MVCC invariant *)
+    "Hproph" ∷ mvcc_inv γ p ∗
+    (* keys invariant *)
+    "Hkeys"  ∷ ([∗ set] key ∈ keys_all, per_key_inv γ key) ∗
+    (* groups invariant *)
+    "Hgroups" ∷ ([∗ list] gid ∈ gids_all, per_group_inv γ gid) ∗
+    (* commit/abort invariant *)
+    "Hres" ∷ commit_abort_inv γ.
+End inv.
+(* TODO: move to distx_own.v once stable. *)
