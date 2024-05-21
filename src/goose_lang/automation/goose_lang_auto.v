@@ -23,7 +23,7 @@ Set Default Proof Using "Type".
 the start of the proof?) *)
 #[export] Existing Instance AsRecV_recv.
 
-
+(*
 Section unfold_functions.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
@@ -77,6 +77,7 @@ Section unfold_functions.
   Qed.
 
 End unfold_functions.
+*)
 
 Ltac find_reshape e K e' TC :=
 lazymatch e with
@@ -182,12 +183,14 @@ Global Hint Extern 4 => trySolvePureAdd1 : solve_pure_add.
 https://gitlab.mpi-sws.org/iris/diaframe/-/blob/master/diaframe_heap_lang/specs.v
 *)
 
+(*
 Class PureExecNoRec
   `{ffi_sem: ffi_semantics} φ n e1 e2 :=
   is_pure_exec : PureExec (Λ := goose_lang) φ n e1 e2.
 
 (* Diaframe does this, not sure why *)
 Unset Universe Polymorphism.
+*)
 
 Section goose_lang_instances.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -220,7 +223,7 @@ Section goose_lang_instances.
     - done.
     - iSteps.
   Qed.
-
+(*
   Global Instance pure_wp_step_exec_inst1 `(e : expr) φ n e' E s:
     PureExecNoRec φ n e e' → (* TODO: prevent unfolding explicit recs *)
     ReductionTemplateStep wp_red_cond (TeleO*TeleO) (ε₀)%I [tele_arg3 E;s] e
@@ -242,6 +245,7 @@ Section goose_lang_instances.
     - tc_solve.
     - tc_solve.
   Qed.
+*)
 
   Global Instance ncfupd_mono E :
     ModalityMono (ncfupd E E).
@@ -259,7 +263,7 @@ Section goose_lang_instances.
 
   (* There is no PureExec for an If statement with an abstract boolean. We create a reduction step for
       the case where this boolean is a bool_decide. *)
-
+(*
   Global Instance if_step_bool_decide P `{Decision P} e1 e2 E s :
     ReductionStep (wp_red_cond, [tele_arg3 E; s]) if: #(bool_decide P) then e1 else e2 ⊣ ⟨id⟩ emp; ε₀ =[▷^1]=>
       ∃ b : bool, ⟨id⟩ (if b then e1 else e2)%V ⊣ ⌜b = true⌝ ∗ ⌜P⌝ ∨ ⌜b = false⌝ ∗ ⌜¬P⌝| 50.
@@ -300,9 +304,11 @@ Section goose_lang_instances.
     - wp_pures.
       iApply ("H" $! true). eauto.
   Qed.
+*)
 
 End goose_lang_instances.
 
+(*
 Global Hint Extern 4 (PureExecNoRec _ _ ?e1 _) =>
   lazymatch e1 with
   | (App (Val ?v1) (Val ?v2)) =>
@@ -313,5 +319,6 @@ Global Hint Extern 4 (PureExecNoRec _ _ ?e1 _) =>
     unfold PureExecNoRec; tc_solve
   | _ => unfold PureExecNoRec; tc_solve
   end : typeclass_instances.
+*)
 
 Global Hint Extern 4 (val_ty _ _) => val_ty : solve_pure_add.

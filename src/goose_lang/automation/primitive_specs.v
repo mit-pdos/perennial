@@ -24,6 +24,7 @@ Section goose_lang_instances.
   Proof. iSteps as "HWP". wp_bind e1. iApply (wp_mono with "HWP"). iSteps. by wp_pure1. Qed.
   *)
 
+  (* FIXME: Why is this not a SPEC? *)
   Global Instance ref_zero_spec t Φ :
     HINT1 ε₀ ✱
       [⌜has_zero t⌝ ∗ ▷ (∀ (l:loc), l ↦[t] (zero_val t) -∗ Φ #l)]

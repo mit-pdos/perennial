@@ -7,7 +7,7 @@ Import bi.
 
 (* Replacement for diaframe/symb_exec/weakestpre.v for our copy of iris.program_logic.weakestpre *)
 (* This file instantiates the symbolic execution interface defined in defs for weakest preconditions *)
-
+(*
 Set Universe Polymorphism.
 Set Default Proof Using "Type".
 
@@ -541,9 +541,11 @@ Global Instance template_step_emp_valid {PROP : bi} (pre : PROP) `(red_cond : Re
   AsEmpValidWeak (PROP := PROP) (ReductionStep' red_cond pre n M1 M2 A B P' Q e f' w) G →
   AsEmpValidWeak (PROP := PROP) (ReductionTemplateStep red_cond (A * B) pre w e (λ pr: A * B, tele_app (tele_app f' pr.1) pr.2) (template_M (PROP := PROP) n M1 M2 A B P' Q)) G.
 Proof. done. Qed.
+*)
 
 Section abducts.
   Context `{!irisGS Λ Σ, !generationGS Λ Σ}.
+(*
 
   Global Instance abduct_from_execution P Q e R K e_in' T e_out' MT MT' R' :
     AsExecutionOf P wp_execute_op e R →
@@ -561,6 +563,7 @@ Section abducts.
     iIntros (a) "/= H".
     (* same wp_bind_inv issue *)
   Abort.
+*)
 
   Class PerennialSpec E (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
     perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ ▷ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
