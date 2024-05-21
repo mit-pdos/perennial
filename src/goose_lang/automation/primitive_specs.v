@@ -48,7 +48,7 @@ Section goose_lang_instances.
   Global Instance alloc_spec E e v t:
     IntoVal e v →
     val_ty v t →
-    SPEC ⟨E⟩ {{ True }} ref_to t e {{ l, RET #l; l ↦[t] v }} | 20.
+    SPEC ⟨E⟩ {{ emp }} ref_to t e {{ l, RET #l; l ↦[t] v }} | 20.
   Proof.
     move => <- Hty.
     iStep.
@@ -65,11 +65,9 @@ Section goose_lang_instances.
   Qed.
 
   Global Instance store_at_spec l t v' E :
-    val_ty v' t →
-    SPEC ⟨E⟩ v, {{ ▷ l ↦[t] v }} #l <-[t] v' {{ RET #(); l ↦[t] v' }}.
+    SPEC ⟨E⟩ v, {{ ⌜val_ty v' t ⌝ ∗ ▷ l ↦[t] v }} #l <-[t] v' {{ RET #(); l ↦[t] v' }}.
   Proof.
-    move => Hty.
-    iSteps as (v) "Hl".
+    iSteps as (v Hty) "Hl".
     wp_apply (wp_StoreAt with "Hl"); first done.
     iSteps.
   Qed.
@@ -131,3 +129,5 @@ Section goose_lang_instances.
 *)
 
 End goose_lang_instances.
+
+Opaque ref_to.
