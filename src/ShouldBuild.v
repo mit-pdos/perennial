@@ -4,8 +4,8 @@ default using make as well as in CI). *)
 (* TODO: these two cause a universe inconsistency. It requires something in
 memkv, not just the Grove libraries, and vrsm works. *)
 (*
-Error: Universe inconsistency. Cannot enforce urpc_spec.RpcSpec_Spec_obligation_1.u0 <
-universes.Quant because universes.Quant = urpc_spec.RpcSpec_Spec_obligation_1.u0.
+Error: Universe inconsistency. Cannot enforce memkv_shard_definitions.is_shard_server_unfold.u0 <
+universes.Quant because universes.Quant = memkv_shard_definitions.is_shard_server_unfold.u0.
  *)
 From diaframe Require Import solve_defs.
 From Perennial.program_proof.memkv Require memkv_shard_start_proof.
