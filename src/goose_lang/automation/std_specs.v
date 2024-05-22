@@ -2,7 +2,9 @@ From Perennial.goose_lang.automation Require Import goose_lang_auto.
 From Perennial.goose_lang.lib Require Import
   struct typed_mem lock into_val slice typed_slice
   string
-  control.impl control.
+  control.impl control
+  typed_map
+.
 From Perennial.program_proof Require Import std_proof.
 
 Section proofs.
@@ -138,6 +140,55 @@ Section proofs.
         {{ RET #(); False }}.
   Proof. iSteps. wp_apply wp_Exit; auto. Qed.
 
+
+  Section map_specs.
+
+  Context `{!IntoVal K}.
+  Context `{!EqDecision K, !Countable K}.
+  Context `{!IntoValComparable K}.
+  Context `{!IntoVal V}.
+
+  Implicit Types (m: gmap K V) (k: K) (v:V).
+
+  #[global] Instance NewMap_spec `{!IntoValForType V vt} kt E :
+    SPEC ⟨E⟩
+    {{ emp }}
+      NewMap kt vt #()
+    {{ mref, RET #mref;
+        own_map mref 1 (∅: gmap K V) }}.
+  Proof. iSteps. wp_apply wp_NewMap. iSteps. Qed.
+
+  #[global] Instance MapInsert_spec E mref k vv :
+    SPEC ⟨E⟩ v' m,
+    {{ own_map mref 1 m ∗ ⌜vv = to_val v'⌝ }}
+      impl.MapInsert #mref (to_val k) vv
+    {{ RET #(); own_map mref 1 (map_insert m k v') }}.
+  Proof.
+    iSteps. wp_apply (wp_MapInsert with "[$]"); auto.
+  Qed.
+
+  #[global] Instance MapGet_spec E mref kk :
+      SPEC ⟨E⟩ q m k,
+    {{ own_map mref q m ∗ ⌜kk = to_val k⌝ }}
+      impl.MapGet #mref kk
+    {{ v ok, RET (to_val v, #ok)%V;
+        ⌜map_get m k = (v, ok)⌝ ∗
+        own_map mref q m }}.
+  Proof using IntoValComparable0.
+    iSteps. wp_apply (wp_MapGet with "[$]"). iSteps.
+  Qed.
+
+  #[global] Instance MapDelete_spec E mref kk :
+    SPEC ⟨E⟩ m k,
+    {{ own_map mref 1 m ∗ ⌜kk = to_val k⌝ }}
+      impl.MapDelete #mref kk
+    {{ RET #(); own_map mref 1 (map_del m k) }}.
+  Proof using IntoValComparable0.
+    iSteps. wp_apply (wp_MapDelete with "[$]"). iSteps.
+  Qed.
+
+  End map_specs.
+
 End proofs.
 
 #[global] Opaque typed_slice.own_slice.
@@ -145,5 +196,7 @@ End proofs.
 #[global] Opaque own_slice_cap.
 #[global] Opaque impl.StringFromBytes.
 #[global] Opaque impl.StringToBytes.
+#[global] Opaque std.SumAssumeNoOverflow.
+#[global] Opaque NewMap impl.MapGet impl.MapInsert impl.MapDelete impl.MapLen.
 
 Hint Extern 2 => rewrite !string_to_bytes_inj : solve_pure_add.
