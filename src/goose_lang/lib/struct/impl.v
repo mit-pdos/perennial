@@ -129,6 +129,11 @@ Proof.
   intuition auto.
 Qed.
 
+Lemma structTy_unfold d :
+  structTy d =
+    match d with [] => unitT | (_,t)::fs => prodT t (structTy fs) end.
+Proof. destruct d; auto. Qed.
+
 Definition structRefTy (d:descriptor) : ty :=
   structRefT (flatten_ty (structTy d)).
 
@@ -236,3 +241,4 @@ Global Opaque allocStruct structFieldRef loadStruct loadField storeStruct storeF
 Hint Resolve structTy_has_zero_ok : core.
 (* try to do this by computation (which proves each field in turn) *)
 Hint Extern 3 (structTy_has_zero _) => compute; repeat (split; [trivial..|]) : core.
+Hint Extern 1 (val_ty _ (struct.t _)) => rewrite structTy_unfold /= : core.

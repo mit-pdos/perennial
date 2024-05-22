@@ -259,6 +259,30 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
+  Global Instance readonly_pointsto_hint l t v E :
+    HINT (readonly (l ↦[t] v)) ✱ [- ; emp] ⊫ [fupd E E] q; l ↦[t]{q} v ✱ [emp] | 50.
+  Proof.
+    iSteps as "#Hf".
+    iMod (readonly_load with "[$]") as "H".
+    iSteps.
+  Qed.
+
+  Global Instance readonly_pointsto_hint2 l t v E :
+    HINT (readonly (l ↦[t] v)) ✱ [- ; emp] ⊫ [fupd E E] q v'; l ↦[t]{q} v' ✱ [⌜v = v'⌝] | 50.
+  Proof.
+    iSteps as "#Hf".
+    iMod (readonly_load with "[$]") as "H".
+    iSteps.
+  Qed.
+
+  #[global] Instance readonly_alloc_hint (P: iProp Σ) (Φ: Qp → iProp Σ) `{!AsMapsTo P Φ} E :
+    HINT (ε₀) ✱ [q; Φ q] ⊫ [fupd E E]; readonly P ✱ [emp] | 20.
+  Proof.
+    iSteps as (q) "H".
+    iMod (readonly_alloc P (Φ:=Φ) with "[$]") as "H".
+    iSteps.
+  Qed.
+
 End goose_lang_instances.
 
 #[global] Typeclasses Opaque ref_to.

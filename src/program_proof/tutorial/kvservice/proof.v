@@ -360,80 +360,10 @@ Lemma wp_decode  sl enc_args args q :
   }}}
 .
 Proof.
-<<<<<<< HEAD
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_apply (wp_ref_to).
-  { done. }
-  iIntros (?) "He".
-  wp_pures.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (?) "HkeyBytes".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
-  wp_load.
-  rewrite Henc.
-  wp_apply (wp_ReadInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-
-  wp_load.
-  wp_apply (wp_StringFromBytes with "[$Hsl]").
-  iIntros "_".
-  wp_storeField.
-  iModIntro.
-  iApply "HΦ".
-  repeat rewrite string_to_bytes_to_string.
-  iFrame.
-||||||| parent of 0b0af386 (Use the automation for more proofs)
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_apply (wp_ref_to).
-  { done. }
-  iIntros (?) "He".
-  wp_pures.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (?) "HkeyBytes".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
-  wp_load.
-  rewrite Henc.
-  wp_apply (wp_ReadInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-
-  wp_load.
-  wp_apply (wp_StringFromBytes with "[$Hsl]").
-  iIntros "_".
-  wp_storeField.
-  iModIntro.
-  iApply "HΦ".
-  repeat rewrite string_to_bytes_inj.
-  iFrame.
-=======
   rewrite /encodes.
   iSteps.
-  rewrite !string_to_bytes_inj.
+  rewrite !string_to_bytes_to_string.
   iSteps.
->>>>>>> 0b0af386 (Use the automation for more proofs)
 Qed.
 
 End local_defs.
@@ -778,7 +708,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   wp_lam.
   wp_apply wp_allocStruct.
-  { repeat econstructor. }
+  { val_ty. }
   iIntros (s) "Hs".
   iDestruct (struct_fields_split with "Hs") as "HH".
   iNamed "HH".
@@ -1027,7 +957,7 @@ Proof.
   iIntros (?) "#?".
   iApply wp_fupd.
   wp_apply wp_allocStruct.
-  { repeat econstructor. }
+  { val_ty. }
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
@@ -1346,7 +1276,7 @@ Proof.
   wp_load.
   wp_pures.
   wp_apply (wp_allocStruct).
-  { repeat econstructor. }
+  { val_ty. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -1426,7 +1356,7 @@ Proof.
   wp_load.
   wp_pures.
   wp_apply (wp_allocStruct).
-  { repeat econstructor. }
+  { val_ty. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -1509,7 +1439,7 @@ Proof.
   wp_load.
   wp_pures.
   wp_apply (wp_allocStruct).
-  { repeat econstructor. }
+  { val_ty. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -1538,12 +1468,15 @@ Proof.
   iModIntro. iApply "HΦ". done.
 Qed.
 
+#[local] Opaque makeClient.
+
 Lemma wp_MakeClerk (host:u64) :
   {{{ is_kvserver_host host }}}
     MakeClerk #host
   {{{ ck, RET #ck; is_Clerk ck }}}
 .
 Proof.
+<<<<<<< HEAD
   iIntros (Φ) "#Hhost HΦ".
   wp_lam.
   wp_apply (wp_makeClient with "Hhost").
@@ -1558,6 +1491,27 @@ Proof.
   iMod (struct_field_pointsto_persist with "rpcCl") as "#?".
   iModIntro.
   iExists _; iFrame "#".
+||||||| parent of 7ec8c005 (Automate readonly alloc)
+  iIntros (Φ) "#Hhost HΦ".
+  wp_lam.
+  wp_apply (wp_makeClient with "Hhost").
+  iIntros (?) "#?".
+  iApply wp_fupd.
+  wp_apply wp_allocStruct.
+  { repeat econstructor. }
+  iIntros (?) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "HH".
+  iNamed "HH".
+  iApply "HΦ".
+  iMod (readonly_alloc_1 with "rpcCl") as "#?".
+  iModIntro.
+  iExists _; iFrame "#".
+=======
+  iSteps.
+  wp_apply (wp_makeClient).
+  { iSteps. }
+  iSteps.
+>>>>>>> 7ec8c005 (Automate readonly alloc)
 Qed.
 
 End clerk_proof.
