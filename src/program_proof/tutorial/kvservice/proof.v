@@ -618,6 +618,26 @@ Lemma wp_Server__getFreshNum_auto (s:loc) Ψ :
 .
 Proof. iSteps. Qed.
 
+(* TODO: this doesn't work due to the IntoVal typeclass, even though it looks
+similar to the typed slice specs. I think the key difference is that the slice
+functions all take a type as a parameter, which via IntoValForType can be used
+to find the value type V in typeclass search, whereas this needs to find it
+while unifying with a resource.
+
+Note that the map model puts a whole bunch of data in one value, but each
+operation is non-atomic so this is sound.
+ *)
+#[global] Instance MapGet_w64_string_spec E mref (k: w64) :
+    SPEC ⟨E⟩ q (m: gmap w64 string),
+  {{ own_map mref q m }}
+    impl.MapGet #mref #k
+  {{ v ok, RET (#(str v), #ok)%V;
+      ⌜map_get m k = (v, ok)⌝ ∗
+      own_map mref q m }}.
+Proof.
+  iSteps. wp_apply (wp_MapGet with "[$]"). iSteps.
+Qed.
+
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
   {{{
         "#Hsrv" ∷ is_Server s ∗
@@ -630,34 +650,15 @@ Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
   }}}
 .
 Proof.
-  wp_start.
-  iNamed "Hsrv".
-  wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
-  iNamed "Hargs".
-  wp_auto.
-  wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
-  wp_if_destruct; wp_auto.
-  { (* case: this is a duplicate request *)
-    wp_apply (release_spec with "[-HΦ Hspec]").
-    {
-      iFrame "∗#". iNext.
-      repeat iExists _.
-      iFrame.
-    }
-    wp_pures.
-    iApply ("HΦ" with "Hspec").
-  }
-  wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; first done.
-  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-  wp_apply (release_spec with "[-HΦ Hspec]").
-  {
-    iFrame "∗#". iNext.
-    repeat iExists _.
-    iFrame.
-  }
-  wp_pures.
-  iApply ("HΦ" with "Hspec").
+  iSteps.
+  wp_if_destruct; [ by iSteps | ].
+  iSteps.
+  iNamed.
+  wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; [ done | ].
+  rewrite /typed_map.map_insert.
+  iRename select (own_map x5 _ _) into "HlastRepliesM".
+  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; [ done | ].
+  iSteps.
 Qed.
 
 Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ :
