@@ -6,6 +6,8 @@ From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang.automation Require Import extra_tactics proof_automation marshal_specs.
 From Perennial.goose_lang Require Import proofmode.
 
+Set Default Proof Using "Type".
+
 Unset Printing Projections.
 
 (********************************************************************************)
@@ -446,32 +448,8 @@ Lemma wp_Server__getFreshNum (s:loc) Ψ :
   {{{ (n:u64), RET #n; Ψ n }}}
 .
 Proof.
-  wp_start.
-  iNamed "Hsrv".
-  wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown"; wp_auto.
-  wp_apply (wp_SumAssumeNoOverflow) as (Hoverflow) "".
-  wp_apply (release_spec with "[-HΦ Hspec]").
-  {
-    iFrame "∗#". iNext.
-    repeat iExists _.
-    iFrame.
-  }
-  wp_pures.
-  iApply "HΦ".
-  iApply "Hspec".
+  iSteps.
 Qed.
-
-(* version of above using Diaframe *)
-Lemma wp_Server__getFreshNum_auto (s:loc) Ψ :
-  {{{
-        "#Hsrv" ∷ is_Server s ∗
-        "Hspec" ∷ getFreshNum_core_spec Ψ
-  }}}
-    Server__getFreshNum #s
-  {{{ (n:u64), RET #n; Ψ n }}}
-.
-Proof. iSteps. Qed.
 
 (* TODO: this doesn't work due to the IntoVal typeclass, even though it looks
 similar to the typed slice specs. I think the key difference is that the slice
@@ -526,54 +504,27 @@ Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ 
   {{{ r, RET #(str r); Ψ r }}}
 .
 Proof.
-  wp_start.
-  iNamed "Hsrv".
-  wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
-  iNamed "Hargs".
-  wp_auto.
-  wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
-  wp_if_destruct; wp_auto.
-  { (* case: this is a duplicate request *)
-    wp_apply (release_spec with "[-HΦ Hspec]").
-    {
-      iFrame "∗#". iNext.
-      repeat iExists _.
-      iFrame.
-    }
-    wp_pures.
-    iApply "HΦ".
-    iApply "Hspec".
-  }
-  wp_apply (wp_ref_to) as (ret2_ptr) "Hret"; first val_ty.
-  wp_apply (wp_MapGet with "HkvsM") as (??) "[Hlookup HkvsM]".
-  wp_if_destruct; wp_auto.
-  { (* case: the old value matches the expected value *)
-    wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; first done.
-    (* FIXME: delete typed_map.map_insert *)
-    rewrite /typed_map.map_insert.
-    wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-    wp_apply (release_spec with "[-HΦ Hspec Hret]").
-    {
-      iFrame "∗#". iNext.
-      repeat iExists _.
-      iFrame.
-    }
-    wp_auto.
-    iModIntro.
-    iApply ("HΦ" with "Hspec").
-  }
+  iSteps.
+  wp_if_destruct; [ iSteps | ].
+  iSteps.
 
-  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-  wp_apply (release_spec with "[-HΦ Hspec Hret]").
-  {
-    iFrame "∗#". iNext.
-    repeat iExists _.
-    iFrame.
-  }
-  wp_auto.
-  iModIntro.
-  iApply ("HΦ" with "Hspec").
+  iNamed.
+  wp_apply (wp_MapGet' with "[$HkvsM //]").
+  iIntros (v ok) "(%Hget & HkvsM)".
+  iSteps.
+  wp_if_destruct.
+  - iSteps.
+    wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; [ eauto | ].
+    iRename select (own_map x5 _ _) into "HlastRepliesM".
+    wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; [ eauto | ].
+    iSteps.
+  - iSteps.
+    iRename select (own_map x5 _ _) into "HlastRepliesM".
+    wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; [ eauto | ].
+    iSteps.
+
+    Unshelve.
+    all: tc_solve.
 Qed.
 
 Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
