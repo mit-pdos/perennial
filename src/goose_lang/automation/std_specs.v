@@ -7,6 +7,9 @@ From Perennial.goose_lang.lib Require Import
 .
 From Perennial.program_proof Require Import std_proof.
 
+#[global] Opaque NewSlice SliceGet SliceAppend SliceAppendSlice.
+#[global] Opaque NewMap impl.MapGet impl.MapInsert impl.MapDelete impl.MapLen.
+
 Section proofs.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
   Context {ext_ty: ext_types ext}.
@@ -69,9 +72,21 @@ Section proofs.
     HINT1 (own_slice_small s t q vs) ✱ [own_slice_cap s t] ⊫ [id]; (own_slice s t q vs).
   Proof. iSteps. Qed.
 
-  #[global] Instance SliceAppend_spec `{!IntoValForType V t} s vs (x: V) :
-    SPEC {{ own_slice s t 1 vs }}
-      SliceAppend t s (to_val x)
+  #[global] Instance SliceGet_spec s t q vs (i: w64) :
+    SPEC (v: V),
+      {{ own_slice_small s t q vs ∗ ⌜vs !! uint.nat i = Some v⌝ }}
+      SliceGet t s #i
+      {{ RET (to_val v); own_slice_small s t q vs }}.
+  Proof.
+    iSteps.
+    wp_apply (wp_SliceGet with "[-]"); [ | iSteps ].
+    eauto with iFrame.
+  Qed.
+
+  #[global] Instance SliceAppend_spec `{!IntoValForType V t} s vs xx :
+    SPEC (x: V),
+      {{ own_slice s t 1 vs ∗ ⌜xx = to_val x⌝ }}
+      SliceAppend t s xx
     {{ s', RET s'; own_slice s' t 1 (vs ++ [x]) }}.
   Proof.
     iSteps.
@@ -197,6 +212,5 @@ End proofs.
 #[global] Opaque impl.StringFromBytes.
 #[global] Opaque impl.StringToBytes.
 #[global] Opaque std.SumAssumeNoOverflow.
-#[global] Opaque NewMap impl.MapGet impl.MapInsert impl.MapDelete impl.MapLen.
 
 Hint Extern 2 => rewrite !string_to_bytes_inj : solve_pure_add.
