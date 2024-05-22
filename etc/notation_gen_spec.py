@@ -126,10 +126,7 @@ From Perennial.goose_lang Require Import automation.symb_exec_wp.
 Import bi.
 
 Global Declare Reduction unfold_spec := cbv [
-  ReductionStep'
-  ReductionTemplateStep
-  template_M
-  wp_red_cond
+  PerennialSpec
   bi_texist
   bi_tforall
   tele_fold
