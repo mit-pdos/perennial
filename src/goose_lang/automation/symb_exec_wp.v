@@ -5,6 +5,8 @@ From diaframe Require Import util_classes tele_utils solve_defs.
 From diaframe.symb_exec Require Import defs.
 Import bi.
 
+Set Default Proof Using "Type".
+
 (* Replacement for diaframe/symb_exec/weakestpre.v for our copy of iris.program_logic.weakestpre *)
 (* This file instantiates the symbolic execution interface defined in defs for weakest preconditions *)
 (*
@@ -566,17 +568,20 @@ Section abducts.
 *)
 
   (* TODO: add a key hypothesis to precondition, instead of fixed [ε₀] in hint *)
-  Class PerennialSpec E (TT1 TT2 : tele) (P : TT1 -t> iProp Σ) (Q : TT1 -t> TT2 -t> iProp Σ) (e: expr Λ) (v : TT1 -t> TT2 -t> val Λ) :=
-    perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗ ▷ (∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
-                                                         Φ (tele_app (tele_app v tt1) tt2)))
+  Class PerennialSpec E (TT1: tele) (TT2 : TT1 -t> tele) (P : TT1 -t> iProp Σ) (Q : TT1 -td> TT2 -c> iProp Σ)
+    (e: expr Λ) (v : TT1 -td> TT2 -c> val Λ) :=
+    perennial_spec_sound Φ : (∃.. tt1, tele_app P tt1 ∗
+                                         ▷ (∀.. (tt2: tele_app TT2 tt1),
+                                              tele_app (tele_appd_dep Q tt1) tt2 -∗
+                                              Φ (tele_app (tele_appd_dep v tt1) tt2)))
                              ⊢ WP e @ E {{ Φ }}.
 
   Global Instance perennial_lang_apply_spec e E Φ TT1 TT2 P Q v K e_in :
     ReshapeExprAnd (expr Λ) e K e_in (PerennialSpec E TT1 TT2 P Q e_in v) →
     LanguageCtx K →
     HINT1 ε₀ ✱ [ ∃.. tt1 : TT1, tele_app P tt1 ∗
-        ▷ (∀.. tt2 : TT2, tele_app (tele_app Q tt1) tt2 -∗
-                        WP (K $ of_val (tele_app (tele_app v tt1) tt2)) @ E {{ Φ }} ) ] ⊫
+        ▷ (∀.. tt2 : tele_app TT2 tt1, tele_app (tele_appd_dep Q tt1) tt2 -∗
+                        WP (K $ of_val (tele_app (tele_appd_dep v tt1) tt2)) @ E {{ Φ }} ) ] ⊫
       [fupd E E]; WP e @ E {{ Φ }} | 10.
   Proof.
     rewrite /PerennialSpec.
@@ -592,8 +597,8 @@ Section abducts.
       (PerennialSpec E TT1 TT2 P Q e v)
       (∀ Φ,
          (∀.. tt1, tele_app P tt1 ∗
-                     ▷(∀.. tt2, tele_app (tele_app Q tt1) tt2 -∗
-                     Φ (tele_app (tele_app v tt1) tt2)) -∗
+                     ▷(∀.. tt2, tele_app (tele_appd_dep Q tt1) tt2 -∗
+                     Φ (tele_app (tele_appd_dep v tt1) tt2)) -∗
                    WP e @ E {{ Φ }})).
   Proof.
     move => H.
@@ -607,7 +612,7 @@ Section abducts.
     AsEmpValidWeak
       (PerennialSpec E TT1 TT2 P Q e v)
       (∀.. tt1, tele_app P tt1 -∗
-                   WP e @ E {{ λ v', ∃.. tt2, ⌜v' = tele_app (tele_app v tt1) tt2⌝ ∗ tele_app (tele_app Q tt1) tt2 }}).
+                   WP e @ E {{ λ v', ∃.. tt2, ⌜v' = tele_app (tele_appd_dep v tt1) tt2⌝ ∗ tele_app (tele_appd_dep Q tt1) tt2 }}).
   Proof.
     move => Hnotval H.
     rewrite /PerennialSpec.

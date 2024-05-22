@@ -31,7 +31,7 @@ Notation "'SPEC' ⟨ E1 ⟩ x1 .. xn , {{ Ps } } e {{ y1 .. yn , 'RET' e' ; Qs }
   (PerennialSpec
     E1
     (TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
-    (TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    (λ x1, .. (λ xn, TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. )) ..)
     (λ x1, .. (λ xn, Ps%I) .. )
     (λ x1, .. (λ xn, (λ y1, .. (λ yn, Qs%I) .. )) .. )
     e
@@ -45,7 +45,7 @@ Notation "'SPEC' ⟨ E1 ⟩ x1 .. xn , {{ Ps } } e {{ 'RET' e' ; Qs } }" :=
   (PerennialSpec
     E1
     (TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
-    TeleO
+    (λ x1, .. (λ xn, TeleO) ..)
     (λ x1, .. (λ xn, Ps%I) .. )
     (λ x1, .. (λ xn, Qs%I) .. )
     e
@@ -87,7 +87,7 @@ Notation "'SPEC' x1 .. xn , {{ Ps } } e {{ y1 .. yn , 'RET' e' ; Qs } }" :=
   (PerennialSpec
     ⊤
     (TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
-    (TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    (λ x1, .. (λ xn, TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. )) ..)
     (λ x1, .. (λ xn, Ps%I) .. )
     (λ x1, .. (λ xn, (λ y1, .. (λ yn, Qs%I) .. )) .. )
     e
@@ -101,7 +101,7 @@ Notation "'SPEC' x1 .. xn , {{ Ps } } e {{ 'RET' e' ; Qs } }" :=
   (PerennialSpec
     ⊤
     (TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
-    TeleO
+    (λ x1, .. (λ xn, TeleO) ..)
     (λ x1, .. (λ xn, Ps%I) .. )
     (λ x1, .. (λ xn, Qs%I) .. )
     e

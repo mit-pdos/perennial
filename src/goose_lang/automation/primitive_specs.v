@@ -44,8 +44,8 @@ Section goose_lang_instances.
     wp_apply wp_ref_to; auto.
   Qed.
 
-  Global Instance load_primitive_spec E l :
-    SPEC ⟨E⟩ v q, {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
+  Global Instance load_primitive_spec E (l: loc) :
+    SPEC ⟨E⟩ (v: val) (q: Qp), {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
   Proof.
     iSteps as (v q) "Hl".
     wp_apply (wp_load with "Hl").

@@ -23,7 +23,7 @@ Qed.
 
 (* IntoVal where the value is guaranteed to be comparable, e.g. OK to use as the
    key type in a map *)
-Class IntoValComparable V `{IntoVal V} : Set :=
+Class IntoValComparable V `{IntoVal V} : Prop :=
   {
     IntoValComparable_comparable (v:V): is_comparable (to_val v);
     IntoValComparable_inj (v:V) (vval:val) : from_val vval = Some v → to_val v = vval

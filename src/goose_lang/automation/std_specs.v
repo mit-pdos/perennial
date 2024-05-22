@@ -31,7 +31,7 @@ Section proofs.
   Qed.
 
   #[global] Instance lock_acquire_spec lk N R :
-    SPEC {{ is_lock N lk R }} lock.acquire lk {{ RET #(); locked lk ∗ R }}.
+    SPEC ⟨⊤⟩ {{ is_lock N lk R }} lock.acquire lk {{ RET #(); locked lk ∗ R }}.
   Proof.
     iStep.
     wp_apply (acquire_spec' with "[$]"); auto.
@@ -185,14 +185,20 @@ Section proofs.
 
   Section map_specs.
 
+    (*
   Context `{!IntoVal K}.
   Context `{!EqDecision K, !Countable K}.
   Context `{!IntoValComparable K}.
   Context `{!IntoVal V}.
+*)
 
-  Implicit Types (m: gmap K V) (k: K) (v:V).
+    (* TODO: currently trigger a diaframe bug related to dependent
+    existentials *)
 
-  #[global] Instance NewMap_spec `{!IntoValForType V vt} kt E :
+    (*
+  #[global] Instance NewMap_spec `{!IntoVal V}
+    `{!IntoVal K, !EqDecision K, !Countable K, !IntoValComparable K}
+    `{!IntoValForType V vt} `{!IntoValForType K kt} E :
     SPEC ⟨E⟩
     {{ emp }}
       NewMap kt vt #()
@@ -200,34 +206,40 @@ Section proofs.
         own_map mref 1 (∅: gmap K V) }}.
   Proof. iSteps. wp_apply wp_NewMap. iSteps. Qed.
 
-  #[global] Instance MapInsert_spec E mref k vv :
-    SPEC ⟨E⟩ v' m,
-    {{ own_map mref 1 m ∗ ⌜vv = to_val v'⌝ }}
-      impl.MapInsert #mref (to_val k) vv
+  #[global] Instance MapInsert_spec E mref kk vv :
+    SPEC ⟨E⟩ `(!IntoVal K) `(Countable K) `(!IntoVal V)
+      k v' (m: gmap K V),
+    {{ own_map mref 1 m ∗ ⌜kk = to_val k⌝ ∗ ⌜vv = to_val v'⌝ }}
+      impl.MapInsert #mref kk vv
     {{ RET #(); own_map mref 1 (map_insert m k v') }}.
   Proof.
     iSteps. wp_apply (wp_MapInsert with "[$]"); auto.
   Qed.
 
   #[global] Instance MapGet_spec E mref kk :
-      SPEC ⟨E⟩ q m k,
+      SPEC ⟨E⟩ `(!IntoVal K) `(Countable K) (_: IntoValComparable K)
+        `(!IntoVal V)
+        q (m: gmap K V) k,
     {{ own_map mref q m ∗ ⌜kk = to_val k⌝ }}
       impl.MapGet #mref kk
-    {{ v ok, RET (to_val v, #ok)%V;
+    {{ (v: V) ok, RET (to_val v, #ok)%V;
         ⌜map_get m k = (v, ok)⌝ ∗
         own_map mref q m }}.
-  Proof using IntoValComparable0.
+  Proof.
     iSteps. wp_apply (wp_MapGet with "[$]"). iSteps.
   Qed.
 
   #[global] Instance MapDelete_spec E mref kk :
-    SPEC ⟨E⟩ m k,
+      SPEC ⟨E⟩ `(!IntoVal K) `(Countable K) (_: IntoValComparable K)
+        `(!IntoVal V)
+      (m: gmap K V) k,
     {{ own_map mref 1 m ∗ ⌜kk = to_val k⌝ }}
       impl.MapDelete #mref kk
     {{ RET #(); own_map mref 1 (map_del m k) }}.
-  Proof using IntoValComparable0.
+  Proof.
     iSteps. wp_apply (wp_MapDelete with "[$]"). iSteps.
   Qed.
+*)
 
   End map_specs.
 

@@ -8,14 +8,6 @@ def generate_notation(format_string, dict_iters):
 
 
 mask_opts = [
-    # {
-    #    "mask_not1": "⟨ E1 , E2 ⟩ ",
-    #    "mask_not2": "⟨ E1 , E2 ⟩  ",
-    #    "mask_open": "(fupd E1 E2)",
-    #    "mask_close": "(fupd E2 E1)",
-    #    "mask_levels": "E1, E2 at level 9, ",
-    #    "mask_arg": "E1",
-    # },
     {
         "mask_not1": "⟨ E1 ⟩ ",
         "mask_not2": "⟨ E1 ⟩  ",
@@ -53,21 +45,6 @@ binder_pre_opts = [
     },
 ]
 
-stuckness_opts = [
-    {
-        "stuckness1": " @ s",
-        "stuckness2": "  @  s",
-        "stuckness_arg": "s",
-        "stuckness_levels": "s, ",
-    },
-    {
-        "stuckness1": "",
-        "stuckness2": "",
-        "stuckness_arg": "NotStuck",
-        "stuckness_levels": "",
-    },
-]
-
 key_hyp_opts = [
     {
         "key_hyp1": "[ pre ] ",
@@ -99,6 +76,9 @@ later_opts = [
 ]
 
 binder_post_opts = [
+    # TODO: binders_post_tele needs binders for x1 .. xn only if those are in binder_pre_opts
+    # (this can't be expressed directly here, some minor changes are needed to
+    # the way all combinations are formed)
     {
         "binders_post1": "y1 .. yn , ",
         "binders_post_tele": "(TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))",
@@ -193,7 +173,6 @@ if __name__ == "__main__":
 #        [
 #            mask_opts,
 #            [binder_pre_opts[0]],
-#            stuckness_opts,
 #            key_hyp_opts,
 #            later_opts,
 #        ],
