@@ -341,6 +341,7 @@ def main():
             rsm_dir,
             "./spaxos",
             "./mpaxos",
+            "./distx",
         )
 
     if marshal_dir is not None:

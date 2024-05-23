@@ -5,8 +5,6 @@ Definition dbval := option string.
 Definition dbhist := list dbval.
 Definition dbtpl := (dbhist * nat)%type.
 Canonical Structure dbvalO := leibnizO dbval.
-Notation Nil := (None : dbval).
-Notation Value x := (Some x : dbval).
 Definition dbmap := gmap dbkey dbval.
 
 Definition fstring := {k : string | (String.length k < 2 ^ 64)%nat}.
@@ -331,13 +329,13 @@ Section inv.
       "#Hress" ∷ ([∗ map] tid ↦ res ∈ resm, per_res_inv γ tid res).
 
   Definition distx_inv_def γ p : iProp Σ :=
-    (* MVCC invariant *)
+    (* MVCC invariants *)
     "Hproph" ∷ mvcc_inv γ p ∗
-    (* keys invariant *)
+    (* keys invariants *)
     "Hkeys"  ∷ ([∗ set] key ∈ keys_all, per_key_inv γ key) ∗
-    (* groups invariant *)
+    (* groups invariants *)
     "Hgroups" ∷ ([∗ list] gid ∈ gids_all, per_group_inv γ gid) ∗
-    (* commit/abort invariant *)
+    (* commit/abort invariants *)
     "Hres" ∷ commit_abort_inv γ.
 End inv.
 (* TODO: move to distx_own.v once stable. *)
