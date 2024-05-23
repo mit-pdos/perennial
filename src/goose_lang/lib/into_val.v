@@ -33,7 +33,7 @@ Class IntoValComparable V `{IntoVal V} : Prop :=
 Hint Mode IntoValComparable ! - - : typeclass_instances.
 
 (* IntoVal for a particular GooseLang type *)
-Class IntoValForType V {ext} {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) : Set :=
+Class IntoValForType V {ext} {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) : Prop :=
     { def_is_zero: to_val (IntoVal_def V) = zero_val t;
       to_val_has_zero: has_zero t;
       (* TODO: this isn't necessary, but it seems reasonable *)
