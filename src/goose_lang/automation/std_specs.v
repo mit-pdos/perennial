@@ -23,7 +23,7 @@ Section proofs.
   Qed.
 
   #[global] Instance alloc_lock_hint E (lk: loc) N R :
-    HINT (ε₀) ✱ [-; is_free_lock lk ∗ ▷ R] ⊫ [fupd E E]; is_lock N (#lk) R ✱ [emp].
+    HINT (is_free_lock lk) ✱ [-; ▷ R] ⊫ [fupd E E]; is_lock N (#lk) R ✱ [emp].
   Proof.
     iSteps.
     iMod (alloc_lock with "[$] [$]") as "Hlock".
@@ -49,11 +49,22 @@ Section proofs.
   Context `{!IntoVal V}.
   Implicit Types (s: Slice.t) (vs: list V).
 
+  #[global] Instance NewSlice_spec_0 `{!IntoValForType V t} E :
+    SPEC ⟨E⟩
+        {{ emp }}
+        NewSlice t #(W64 0)
+        {{ s, RET (slice_val s); own_slice s t 1 ([]: list V) }} | 10.
+  Proof.
+    iSteps.
+    wp_apply wp_NewSlice.
+    iSteps.
+  Qed.
+
   #[global] Instance NewSlice_spec `{!IntoValForType V t} E (sz: w64) :
     SPEC ⟨E⟩
         {{ emp }}
         NewSlice t #sz
-        {{ s, RET (slice_val s); own_slice s t 1 (replicate (uint.nat sz) (IntoVal_def V)) }}.
+        {{ s, RET (slice_val s); own_slice s t 1 (replicate (uint.nat sz) (IntoVal_def V)) }} | 15.
   Proof.
     iSteps.
     wp_apply wp_NewSlice.
