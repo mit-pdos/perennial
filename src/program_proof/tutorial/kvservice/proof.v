@@ -379,6 +379,16 @@ Proof.
   iSteps.
 Qed.
 
+Lemma wp_frame_wand' E stk e Φ R :
+  WP e @ stk; E {{ v, R -∗ Φ v }} ∗ R -∗ WP e @ stk; E {{ Φ }}.
+  iIntros "[Hwp HR]".
+  iApply (wp_strong_mono with "[Hwp]"); [ reflexivity | reflexivity | | ].
+  - iFrame.
+  - iIntros (v) "HΦ".
+    iModIntro.
+    iApply ("HΦ" with "HR").
+Qed.
+
 Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ :
   {{{
         "#Hsrv" ∷ is_Server s ∗
@@ -392,10 +402,11 @@ Proof.
   iSteps.
   wp_if_destruct; [ iSteps | ].
   iSteps.
-
   iNamed.
-  wp_apply (wp_MapGet' (K:=string) with "[$HkvsM //]").
-  iIntros (v ok) "(%Hget & HkvsM)".
+  wp_apply_delay (wp_MapGet' (K:=string)).
+  { iFrame. iSplit; [ eauto | ]. iNamedAccu. }
+  iNamed 1.
+  iIntros "!>" (v ok) "(%Hget & HkvsM)".
   iSteps.
   wp_if_destruct.
   - iSteps.

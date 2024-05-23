@@ -533,6 +533,29 @@ Tactic Notation "awp_apply" open_constr(lem) "without" constr(Hs) :=
   wp_apply_core lem (fun H => iApply wp_frame_wand_l; iSplitL Hs; [iAccu|iApplyHyp H; last iAuIntro]).
 *)
 
+Lemma wand_curry_1 {PROP: bi} (P Q R: PROP) :
+  (P -∗ Q -∗ R) → (P ∗ Q -∗ R).
+Proof.
+  rewrite wand_curry //.
+Qed.
+
+(* apply a WP lemma without providing it the precondition resources; instead,
+produce goals Δ ⊢ pre ∗ ?r (with the entire original context) and
+ ?r -∗ post -∗ WP e' {{ .. }} (with no context).
+
+This allows to prove the precondition with all resources, use [iNamedAccu] to
+solve [?r] with all the unused resources, and continue the proof in the other
+goal with [iNamed 1] using those resources.
+ *)
+Tactic Notation "wp_apply_delay" open_constr(lem) :=
+    lazymatch goal with
+    | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+      reshape_expr e ltac:(fun K e' =>
+        wp_bind_core K; iApply wand_curry_1; [ eapply lem | iSplitDelay ]) ||
+      fail "wp_apply: cannot apply" lem
+    | _ => fail "wp_apply: not a 'wp'"
+    end.
+
 Tactic Notation "wp_untyped_load" :=
   let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
