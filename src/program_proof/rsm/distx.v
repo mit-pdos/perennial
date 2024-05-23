@@ -30,6 +30,16 @@ Inductive command :=
 | CmdAbt (tid : nat)
 | CmdRead (tid : nat) (key : dbkey).
 
+#[local]
+Instance command_eq_decision :
+  EqDecision command.
+Proof. solve_decision. Qed.
+
+#[local]
+Instance command_countable :
+  Countable command.
+Admitted.
+
 Definition dblog := list command.
 
 (* Transaction status on replica *)
@@ -263,10 +273,16 @@ Section ghost.
   Definition resm_evidence γ (ts : nat) (res : txnres) : iProp Σ.
   Admitted.
 
-  Definition log_auth γ (gid : groupid) (log : dblog) : iProp Σ.
+  Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.
   Admitted.
 
-  Definition log_lb γ (gid : groupid) (log : dblog) : iProp Σ.
+  Definition clog_lb γ (gid : groupid) (log : dblog) : iProp Σ.
+  Admitted.
+
+  Definition cpool_half γ (gid : groupid) (pool : gset command) : iProp Σ.
+  Admitted.
+
+  Definition cmd_receipt γ (gid : groupid) (lsn : nat) (term : nat) (c : command) : iProp Σ.
   Admitted.
   
   Definition ts_auth γ (ts : nat) : iProp Σ.
@@ -320,7 +336,7 @@ Section inv.
 
   Definition per_res_inv γ (ts : nat) (res : txnres) : iProp Σ :=
     ∃ (logs : gmap groupid dblog),
-      "#Hlogs" ∷ ([∗ map] gid ↦ log ∈ logs, log_lb γ gid log) ∗
+      "#Hlogs" ∷ ([∗ map] gid ↦ log ∈ logs, clog_lb γ gid log) ∗
       "%Hsafeca" ∷ ⌜safe_finalize ts res logs⌝.
 
   Definition commit_abort_inv γ : iProp Σ :=
@@ -337,5 +353,6 @@ Section inv.
     "Hgroups" ∷ ([∗ list] gid ∈ gids_all, per_group_inv γ gid) ∗
     (* commit/abort invariants *)
     "Hres" ∷ commit_abort_inv γ.
+
 End inv.
 (* TODO: move to distx_own.v once stable. *)
