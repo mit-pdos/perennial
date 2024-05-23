@@ -149,7 +149,7 @@ Lemma wp_BytesClone sl_b q (b : list u8) :
   BytesClone (slice_val sl_b)
   {{{
     sl_b0, RET (slice_val sl_b0);
-    own_slice_small sl_b0 byteT 1 b
+    own_slice_small sl_b0 byteT (DfracOwn 1) b
   }}}.
 Proof.
   iIntros (Φ) "Hsl_b HΦ".
@@ -163,7 +163,7 @@ Proof.
     iApply "HΦ".
     inversion Heqb0.
     apply (f_equal uint.Z) in H1.
-    iPoseProof (slice.own_slice_small_nil _ 1) as "Hsl_b'"; [done|].
+    iPoseProof (slice.own_slice_small_nil _ (DfracOwn 1)) as "Hsl_b'"; [done|].
     iDestruct (own_slice_small_agree with "[$Hsl_b] [$Hsl_b']") as %Heq.
     destruct b; [|done].
     iApply own_slice_to_small.

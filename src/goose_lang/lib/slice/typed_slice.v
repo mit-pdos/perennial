@@ -146,21 +146,21 @@ Proof.
 Qed.
 
 Global Instance own_slice_small_Fractional s t vs :
-  fractional.Fractional (λ q, own_slice_small s t q vs).
+  fractional.Fractional (λ q, own_slice_small s t (DfracOwn q) vs).
 Proof. apply _. Qed.
 
 Global Instance own_slice_small_AsFractional s q t vs :
-  fractional.AsFractional (own_slice_small s t q vs) (λ q, own_slice_small s t q vs) q.
+  fractional.AsFractional (own_slice_small s t (DfracOwn q) vs) (λ q, own_slice_small s t (DfracOwn q) vs) q.
 Proof. split; auto; apply _. Qed.
 
 Global Instance own_slice_small_as_pointsto s t vs :
-  AsMapsTo (own_slice_small s t 1 vs) (λ q, own_slice_small s t q vs).
+  AsMapsTo (own_slice_small s t (DfracOwn 1) vs) (λ q, own_slice_small s t (DfracOwn q) vs).
 Proof. constructor; auto; intros; apply _. Qed.
 
 Lemma wp_NewSlice stk E t `{!IntoValForType V t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E
-  {{{ s, RET slice_val s; own_slice s t 1 (replicate (uint.nat sz) (IntoVal_def V)) }}}.
+  {{{ s, RET slice_val s; own_slice s t (DfracOwn 1) (replicate (uint.nat sz) (IntoVal_def V)) }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_apply slice.wp_new_slice.
@@ -178,7 +178,7 @@ Lemma wp_NewSliceWithCap stk E t `{!IntoValForType V t} (sz cap : u64) :
   {{{ True }}}
     NewSliceWithCap t #sz #cap @ stk; E
   {{{ ptr, RET slice_val (Slice.mk ptr sz cap);
-    own_slice (Slice.mk ptr sz cap) t 1 (replicate (uint.nat sz) (IntoVal_def V))
+    own_slice (Slice.mk ptr sz cap) t (DfracOwn 1) (replicate (uint.nat sz) (IntoVal_def V))
   }}}.
 Proof.
   iIntros (? Φ) "_ HΦ".
@@ -208,9 +208,9 @@ Proof.
 Qed.
 
 Lemma wp_SliceSet stk E s t `{!IntoValForType V t} vs (i: u64) v :
-  {{{ own_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! uint.nat i) ⌝ }}}
+  {{{ own_slice_small s t (DfracOwn 1) vs ∗ ⌜ is_Some (vs !! uint.nat i) ⌝ }}}
     SliceSet t (slice_val s) #i (to_val v) @ stk; E
-  {{{ RET #(); own_slice_small s t 1 (<[uint.nat i:=v]> vs) }}}.
+  {{{ RET #(); own_slice_small s t (DfracOwn 1) (<[uint.nat i:=v]> vs) }}}.
 Proof.
   iIntros (Φ) "[Hs %] HΦ".
   iApply (slice.wp_SliceSet with "[$Hs]").
@@ -227,12 +227,12 @@ Qed.
 Lemma wp_SliceAppend'' stk E s t `{!IntoValForType V t} vs1 vs2 (x: V) (q : Qp) (n : u64) :
   0 ≤ uint.Z n ≤ uint.Z (Slice.sz s) ≤ uint.Z (Slice.cap s) ->
   (q < 1)%Qp ->
-  {{{ own_slice_small (slice_take s n) t q vs1 ∗
-      own_slice (slice_skip s t n) t 1 vs2 }}}
+  {{{ own_slice_small (slice_take s n) t (DfracOwn q) vs1 ∗
+      own_slice (slice_skip s t n) t (DfracOwn 1) vs2 }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
   {{{ s', RET slice_val s';
-      own_slice_small (slice_take s' n) t q vs1 ∗
-      own_slice (slice_skip s' t n) t 1 (vs2 ++ [x]) ∗
+      own_slice_small (slice_take s' n) t (DfracOwn q) vs1 ∗
+      own_slice (slice_skip s' t n) t (DfracOwn 1) (vs2 ++ [x]) ∗
       ⌜uint.Z (Slice.sz s') ≤ uint.Z (Slice.cap s') ∧
        uint.Z (Slice.sz s') = (uint.Z (Slice.sz s) + 1)%Z⌝}}}.
 Proof.
@@ -250,9 +250,9 @@ Proof.
 Qed.
 
 Lemma wp_SliceAppend stk E s t `{!IntoValForType V t} vs (x: V) :
-  {{{ own_slice s t 1 vs }}}
+  {{{ own_slice s t (DfracOwn 1) vs }}}
     SliceAppend t (slice_val s) (to_val x) @ stk; E
-  {{{ s', RET slice_val s'; own_slice s' t 1 (vs ++ [x]) }}}.
+  {{{ s', RET slice_val s'; own_slice s' t (DfracOwn 1) (vs ++ [x]) }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
   wp_apply (slice.wp_SliceAppend' with "Hs").
@@ -270,11 +270,11 @@ Transparent SliceAppendSlice.
 
 Lemma wp_SliceAppendSlice stk E s1 s2 t vs1 vs2 q2 :
   has_zero t →
-  {{{ own_slice s1 t 1 vs1 ∗ own_slice_small s2 t q2 vs2 }}}
+  {{{ own_slice s1 t (DfracOwn 1) vs1 ∗ own_slice_small s2 t q2 vs2 }}}
     SliceAppendSlice t s1 s2 @ stk; E
   {{{
     s', RET slice_val s';
-    own_slice s' t 1 (vs1 ++ vs2) ∗
+    own_slice s' t (DfracOwn 1) (vs1 ++ vs2) ∗
     own_slice_small s2 t q2 vs2
   }}}.
 Proof.
@@ -294,9 +294,9 @@ Opaque SliceAppendSlice.
 the slice part to the extra part *)
 Lemma wp_SliceSubslice_full {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
   (uint.nat n ≤ uint.nat m ≤ length vs)%nat →
-  {{{ own_slice s t 1 vs }}}
+  {{{ own_slice s t (DfracOwn 1) vs }}}
     SliceSubslice t (slice_val s) #n #m @ stk; E
-  {{{ s', RET slice_val s'; own_slice s' t 1 (subslice (uint.nat n) (uint.nat m) vs) }}}.
+  {{{ s', RET slice_val s'; own_slice s' t (DfracOwn 1) (subslice (uint.nat n) (uint.nat m) vs) }}}.
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iDestruct (own_slice_sz with "Hs") as %Hsz.
@@ -383,9 +383,9 @@ Qed.
 Transparent SliceCopy.
 Lemma wp_SliceCopy stk E sl t q vs dst vs' :
   (length vs' ≥ length vs) →
-  {{{ own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs' }}}
+  {{{ own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) vs' }}}
     SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
-  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 (vs ++ drop (length vs) vs') }}}.
+  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) (vs ++ drop (length vs) vs') }}}.
 Proof.
   iIntros (Hbound Φ) "(Hsrc&Hdst) HΦ".
   wp_call.
@@ -431,9 +431,9 @@ Proof.
 Qed.
 
 Lemma wp_SliceCopy_full_typed stk E sl t q vs dst vs' :
-  {{{ own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs' ∗ ⌜length vs = length vs'⌝}}}
+  {{{ own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) vs' ∗ ⌜length vs = length vs'⌝}}}
     SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
-  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs }}}.
+  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) vs }}}.
 Proof.
   iIntros (Φ) "(Hsrc & Hdst & %Hlen) HΦ".
   wp_apply (wp_SliceCopy with "[$Hsrc $Hdst]"); [word|].
@@ -450,7 +450,7 @@ Lemma wp_SliceAppend_to_zero stk E t `{!IntoValForType V t} v (x: val) :
   x = to_val v ->
   {{{ True }}}
     SliceAppend t (zero_val (slice.T t)) x @ stk; E
-  {{{ s', RET slice_val s'; own_slice s' t 1 [v] }}}.
+  {{{ s', RET slice_val s'; own_slice s' t (DfracOwn 1) [v] }}}.
 Proof.
   intros ->.
   iIntros (Φ) "_ HΦ".

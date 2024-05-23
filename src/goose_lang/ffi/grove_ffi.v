@@ -500,7 +500,7 @@ lemmas. *)
     intros [b [? ->]]%fmap_Some_1. done.
   Qed.
 
-  Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : Qp) s E :
+  Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : dfrac) s E :
     length data = uint.nat len →
     {{{ c_r c↦ ms ∗ pointsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (connection_socket c_l c_r, (#l, #len))%V @ s; E
@@ -569,7 +569,7 @@ lemmas. *)
         RET (#err, (#l, #len));
         ⌜if err then l = null ∧ data = [] ∧ len = 0 else
           Message c_r data ∈ ms ∧ length data = uint.nat len⌝ ∗
-        c_l c↦ ms ∗ pointsto_vals l 1 (data_vals data)
+        c_l c↦ ms ∗ pointsto_vals l (DfracOwn 1) (data_vals data)
     }}}.
   Proof.
     iIntros (Φ) "He HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -608,7 +608,7 @@ lemmas. *)
     move: (Hg _ _ _ He Hm)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
     iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals m'.(msg_data)) ∪ σ1.(heap)) ∗
-      [∗ list] i↦v ∈ data_vals m'.(msg_data), na_heap_pointsto (addr_plus_off l i) 1 v)%I
+      [∗ list] i↦v ∈ data_vals m'.(msg_data), na_heap_pointsto (addr_plus_off l i) (DfracOwn 1) v)%I
       with "[> Hσ]" as "[Hσ Hl]".
     { destruct (decide (length m'.(msg_data) = 0%nat)) as [Heq%nil_length_inv|Hne].
       { (* Zero-length message... no actually new memory allocation, so the proof needs
@@ -642,7 +642,7 @@ lemmas. *)
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
     {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
-      f f↦{q} c ∗ if err then True else ⌜length c = uint.nat len⌝ ∗ pointsto_vals l 1 (data_vals c)
+      f f↦{q} c ∗ if err then True else ⌜length c = uint.nat len⌝ ∗ pointsto_vals l (DfracOwn 1) (data_vals c)
     }}}.
   Proof.
     iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -670,7 +670,7 @@ lemmas. *)
     move: (Hfilebound _ _ Hf)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
     iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals c) ∪ σ1.(heap)) ∗
-      [∗ list] i↦v ∈ data_vals c, na_heap_pointsto (addr_plus_off l i) 1 v)%I
+      [∗ list] i↦v ∈ data_vals c, na_heap_pointsto (addr_plus_off l i) (DfracOwn 1) v)%I
       with "[> Hσ]" as "[Hσ Hl]".
     { destruct (decide (length c = 0%nat)) as [Heq%nil_length_inv|Hne].
       { (* Zero-length file... no actually new memory allocation, so the proof needs
@@ -1065,7 +1065,7 @@ Section grove.
   Qed.
 
   (* FIXME move the next 2 lemmas some place more general *)
-  Lemma own_slice_small_byte_pointsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
+  Lemma own_slice_small_byte_pointsto_vals (s : Slice.t) (data : list u8) (q : dfrac) :
     own_slice_small s byteT q data -∗ pointsto_vals (Slice.ptr s) q (data_vals data).
   Proof.
     rewrite /own_slice_small /slice.own_slice_small.
@@ -1077,7 +1077,7 @@ Section grove.
     rewrite byte_pointsto_untype byte_offset_untype //.
   Qed.
 
-  Lemma pointsto_vals_own_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
+  Lemma pointsto_vals_own_slice_small_byte (s : Slice.t) (data : list u8) (q : dfrac) :
     uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap) →
     length data = uint.nat (Slice.sz s) →
     pointsto_vals (Slice.ptr s) q (data_vals data) -∗
@@ -1114,7 +1114,7 @@ Local Ltac solve_atomic2 :=
     | _ => case_match
     end; eauto.
 
-  Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : Qp) :
+  Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : dfrac) :
     ⊢ {{{ own_slice_small s byteT q data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
         Send (connection_socket c_l c_r) (slice_val s) @ ∅
@@ -1154,7 +1154,7 @@ Local Ltac solve_atomic2 :=
               "Err" ::= #err;
               "Data" ::= slice_val s
             ];
-          own_slice s byteT 1 data
+          own_slice s byteT (DfracOwn 1) data
       }}}.
   Proof.
     iIntros "!#" (Φ) "HΦ". wp_call. wp_pures.
@@ -1182,7 +1182,7 @@ Local Ltac solve_atomic2 :=
   Lemma wpc_FileRead f dq c E :
     ⊢ {{{ f f↦{dq} c }}}
         FileRead #(str f) @ E
-      {{{ (s : Slice.t), RET slice_val s; f f↦{dq} c ∗ own_slice s byteT 1 c }}}
+      {{{ (s : Slice.t), RET slice_val s; f f↦{dq} c ∗ own_slice s byteT (DfracOwn 1) c }}}
       {{{ f f↦{dq} c }}}.
   Proof.
     iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done.

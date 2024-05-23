@@ -9,9 +9,9 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 #[local]
 Theorem wp_swapWithEnd (xsS : Slice.t) (xs : list u64) (i : u64) (x : u64) :
-  {{{ typed_slice.own_slice xsS uint64T 1 xs ∧ (⌜xs !! (uint.nat i) = Some x⌝) }}}
+  {{{ typed_slice.own_slice xsS uint64T (DfracOwn 1) xs ∧ (⌜xs !! (uint.nat i) = Some x⌝) }}}
     swapWithEnd (to_val xsS) #i
-  {{{ (xs' : list u64), RET #(); typed_slice.own_slice xsS uint64T 1 (xs' ++ [x]) ∧
+  {{{ (xs' : list u64), RET #(); typed_slice.own_slice xsS uint64T (DfracOwn 1) (xs' ++ [x]) ∧
                                  (⌜xs' ≡ₚ delete (uint.nat i) xs⌝)
   }}}.
 Proof.
@@ -117,9 +117,9 @@ Qed.
 (*****************************************************************)
 #[local]
 Theorem wp_findTID (tid : u64) (tidsS : Slice.t) (tids : list u64) :
-  {{{ typed_slice.own_slice tidsS uint64T 1 tids ∗ ⌜tid ∈ tids⌝ }}}
+  {{{ typed_slice.own_slice tidsS uint64T (DfracOwn 1) tids ∗ ⌜tid ∈ tids⌝ }}}
     findTID #tid (to_val tidsS)
-  {{{ (idx : u64), RET #idx; typed_slice.own_slice tidsS uint64T 1 tids ∧
+  {{{ (idx : u64), RET #idx; typed_slice.own_slice tidsS uint64T (DfracOwn 1) tids ∧
                              (⌜tids !! (uint.nat idx) = Some tid⌝)
   }}}.
 Proof.
@@ -140,7 +140,7 @@ Proof.
   (***********************************************************)
   set P := λ (b : bool), (∃ (idx : u64),
     "HidxRef" ∷ idxRef ↦[uint64T] #idx ∗
-    "HtidsS" ∷  typed_slice.own_slice tidsS uint64T 1 tids ∗
+    "HtidsS" ∷  typed_slice.own_slice tidsS uint64T (DfracOwn 1) tids ∗
     "%Hne" ∷ (⌜Forall (λ tidx, tidx ≠ tid) (take (uint.nat idx) tids)⌝) ∗
     "%Hbound" ∷ ⌜(uint.Z idx < Z.of_nat (length tids))⌝ ∗
     "%Hexit" ∷ (⌜if b then True else tids !! (uint.nat idx) = Some tid⌝))%I.

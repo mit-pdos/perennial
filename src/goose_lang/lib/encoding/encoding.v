@@ -265,9 +265,9 @@ Qed.
 
 Theorem wp_UInt64Put stk E s x vs :
   length vs >= w64_bytes →
-  {{{ own_slice_small s byteT 1%Qp vs }}}
+  {{{ own_slice_small s byteT (DfracOwn 1) vs }}}
     UInt64Put (slice_val s) #x @ stk; E
-  {{{ RET #(); own_slice_small s byteT 1%Qp (u64_le_bytes x ++ (drop w64_bytes vs)) }}}.
+  {{{ RET #(); own_slice_small s byteT (DfracOwn 1) (u64_le_bytes x ++ (drop w64_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
   wp_lam.
@@ -299,9 +299,9 @@ Qed.
 
 Theorem wp_UInt32Put stk E s (x: u32) vs :
   length vs >= w32_bytes →
-  {{{ own_slice_small s byteT 1%Qp vs }}}
+  {{{ own_slice_small s byteT (DfracOwn 1) vs }}}
     UInt32Put (slice_val s) #x @ stk; E
-  {{{ RET #(); own_slice_small s byteT 1%Qp (u32_le_bytes x ++ (drop w32_bytes vs)) }}}.
+  {{{ RET #(); own_slice_small s byteT (DfracOwn 1) (u32_le_bytes x ++ (drop w32_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
   wp_lam.

@@ -8,17 +8,17 @@ Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
 (* TODO: these are common with disk_lib, but we don't want to import disk_lib *)
-Definition is_block (s:Slice.t) (q: Qp) (b:Block) :=
+Definition is_block (s:Slice.t) (q: dfrac) (b:Block) :=
   own_slice_small s byteT q (Block_to_vals b).
 
 Definition is_block_full (s:Slice.t) (b:Block) :=
-  own_slice s byteT 1 (Block_to_vals b).
+  own_slice s byteT (DfracOwn 1) (Block_to_vals b).
 
 Global Instance is_block_timeless s q b :
   Timeless (is_block s q b) := _.
 
 Global Instance is_block_fractional s b :
-  fractional.Fractional (λ q, is_block s q b).
+  fractional.Fractional (λ q, is_block s (DfracOwn q) b).
 Proof. apply own_slice_small_fractional. Qed.
 
 Theorem is_block_not_nil s q b :
@@ -437,7 +437,7 @@ Lemma wpc_Read stk E1 (a: u64) aset q b :
     Read #a @ stk; E1
   {{{ s, RET slice_val s;
       uint.Z a d↦{q}[aset] b ∗
-      own_slice s byteT 1%Qp (Block_to_vals b) }}}
+      own_slice s byteT (DfracOwn 1) (Block_to_vals b) }}}
   {{{ uint.Z a d↦{q}[aset] b }}}.
 Proof.
   iIntros (Φ Φc) "Hda HΦ".

@@ -52,7 +52,7 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
            (ghostHeap : gname) (covered : gset u64) (P Pc : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (m: gmap u64 loc) ghostMap,
-      own_map mptr 1 m ∗
+      own_map mptr (DfracOwn 1) m ∗
       ghost_map_auth ghostHeap 1 ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P Pc ) ∗
@@ -74,7 +74,7 @@ Definition is_free_lockShard (ls : loc) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
       "#Hls_mu" ∷ readonly (ls ↦[lockShard :: "mu"] #shardlock) ∗
       "#Hls_state" ∷ readonly (ls ↦[lockShard :: "state"] #mptr) ∗
-      "Hmap" ∷ own_map mptr 1 (∅ :gmap u64 loc) ∗
+      "Hmap" ∷ own_map mptr (DfracOwn 1) (∅ :gmap u64 loc) ∗
       "Hfree" ∷ crash_lock.is_free_crash_lock shardlock
   )%I.
 
@@ -722,7 +722,7 @@ Qed.
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P Pc: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT 1 shards) ∗
+    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT (DfracOwn 1) shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P Pc.
@@ -730,7 +730,7 @@ Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P Pc: u64 
 Definition is_free_lockMap (l: loc) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT 1 shards) ∗
+    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT (DfracOwn 1) shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "Hfree_shards" ∷ [∗ list] shardnum ↦ shardloc ∈ shards, is_free_lockShard shardloc.
 
@@ -766,7 +766,7 @@ Proof.
   wp_apply (wp_forUpto (λ (i : u64),
                           ∃ s shardlocs,
                             "Hvar" ∷ shards ↦[slice.T ptrT] (slice_val s) ∗
-                            "Hslice" ∷ own_slice s ptrT 1 shardlocs ∗
+                            "Hslice" ∷ own_slice s ptrT (DfracOwn 1) shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = uint.nat i ⌝ ∗
                             "Hshards" ∷ [∗ list] shardnum ↦ shardloc ∈ shardlocs,
                               is_free_lockShard shardloc)%I

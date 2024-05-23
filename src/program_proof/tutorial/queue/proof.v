@@ -26,7 +26,7 @@ Definition queue_inv_inner (q : loc) (queue : list u64) (first : u64) (count : u
   "#Hqueue" ∷ readonly (q ↦[Queue :: "queue"] (slice_val queueSlice)) ∗
   "Hfirst" ∷ (q ↦[Queue :: "first"] #first) ∗
   "Hcount" ∷ (q ↦[Queue :: "count"] #count) ∗
-  "isSlice" ∷ own_slice_small queueSlice uint64T 1 queue ∗
+  "isSlice" ∷ own_slice_small queueSlice uint64T (DfracOwn 1) queue ∗
   "%Hqueue_size_inv" ∷ queue_size_inv count first (length queue).
 
 Definition queue_inv (q : loc) (queueSlice: Slice.t) (P : u64 -> iProp Σ): iProp Σ :=

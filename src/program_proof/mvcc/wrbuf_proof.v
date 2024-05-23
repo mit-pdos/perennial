@@ -55,10 +55,10 @@ Definition spec_search (key : u64) (ents : list wrent) (pos : u64) (found : bool
 (* func search(ents []WrEnt, key uint64) (uint64, bool)          *)
 (*****************************************************************)
 Local Lemma wp_search (key : u64) (entsS : Slice.t) (ents : list wrent) :
-  {{{ slice.own_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) }}}
+  {{{ slice.own_slice entsS (structTy WrEnt) (DfracOwn 1) (wrent_to_val <$> ents) }}}
     search (to_val entsS) #key
   {{{ (pos : u64) (found : bool), RET (#pos, #found);
-      slice.own_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
+      slice.own_slice entsS (structTy WrEnt) (DfracOwn 1) (wrent_to_val <$> ents) ∗
       ⌜spec_search key ents pos found⌝
   }}}.
 Proof.
@@ -78,7 +78,7 @@ Proof.
   (* }                                                       *)
   (***********************************************************)
   set P := (λ (b : bool), ∃ (pos : u64),
-               "HentsS" ∷ (slice.own_slice entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents)) ∗
+               "HentsS" ∷ (slice.own_slice entsS (struct.t WrEnt) (DfracOwn 1) (wrent_to_val <$> ents)) ∗
                "HposR" ∷ posR ↦[uint64T] #pos ∗
                "%Hexit" ∷ (⌜if b then True
                             else (∃ (ent : wrent), ents !! (uint.nat pos) = Some ent ∧ ent.1.1.1 = key) ∨
@@ -341,7 +341,7 @@ Proof.
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, val, true, ent.2).
-    iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
+    iDestruct (struct_fields_split entR (DfracOwn 1) WrEnt (wrent_to_val ent')
                 with "[key val wr tpl]") as "HentsP".
     { rewrite /struct_fields. by iFrame. }
     iDestruct ("HentsA" with "HentsP") as "HentsA".
@@ -489,7 +489,7 @@ Proof.
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, ent.1.1.2, false, ent.2).
-    iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
+    iDestruct (struct_fields_split entR (DfracOwn 1) WrEnt (wrent_to_val ent')
                 with "[key val wr tpl]") as "HentsP".
     { rewrite /struct_fields. by iFrame. }
     iDestruct ("HentsA" with "HentsP") as "HentsA".

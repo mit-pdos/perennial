@@ -102,7 +102,7 @@ Lemma wp_stringToBytes (i:u64) (s:string) :
   }}}
     stringToBytes #i #(str s)
   {{{
-        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT 1
+        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1)
                                                     (take (uint.nat i) (string_to_bytes s))
   }}}
 .
@@ -152,7 +152,7 @@ Lemma wp_StringToBytes (s:string) :
   }}}
     StringToBytes #(str s)
   {{{
-        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT 1 (string_to_bytes s)
+        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (string_to_bytes s)
   }}}
 .
 Proof.

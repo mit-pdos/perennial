@@ -159,7 +159,7 @@ Theorem wp_NewMap stk E kt vt :
   {{{ True }}}
     NewMap kt vt #() @ stk; E
   {{{ mref, RET #mref;
-      own_map mref 1 (∅, zero_val vt) }}}.
+      own_map mref (DfracOwn 1) (∅, zero_val vt) }}}.
 Proof.
   iIntros (Φ) "_ HΦ". wp_lam.
   wp_apply wp_alloc_untyped.
@@ -239,9 +239,9 @@ Proof using IntoValComparable0.
 Qed.
 
 Theorem wp_MapInsert stk E mref (m: gmap K val * val) k v' :
-  {{{ own_map mref 1 m }}}
+  {{{ own_map mref (DfracOwn 1) m }}}
     MapInsert #mref (to_val k) v' @ stk; E
-  {{{ RET #(); own_map mref 1 (map_insert m k v') }}}.
+  {{{ RET #(); own_map mref (DfracOwn 1) (map_insert m k v') }}}.
 Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".
@@ -429,9 +429,9 @@ Proof using IntoValComparable0.
 Qed.
 
 Theorem wp_MapDelete stk E mref (m: gmap K val * val) k :
-  {{{ own_map mref 1 m }}}
+  {{{ own_map mref (DfracOwn 1) m }}}
     MapDelete #mref (to_val k) @ stk; E
-  {{{ RET #(); own_map mref 1 (map_del m k) }}}.
+  {{{ RET #(); own_map mref (DfracOwn 1) (map_del m k) }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".

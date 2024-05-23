@@ -95,13 +95,22 @@ Global Instance spec_crash_ctx_persistent P : Persistent (spec_crash_ctx P).
 Proof. apply _. Qed.
 
 (** Override the notations so that scopes and coercions work out *)
-Notation "l s↦{ q } v" := (heap_pointsto (hG := refinement_na_heapG) l q v%V)
-  (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
+Notation "l s↦{# q } v" := (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn q) v%V)
+  (at level 20, q at level 50, format "l  s↦{# q }  v") : bi_scope.
+Notation "l s↦□ v" := (heap_pointsto (hG := refinement_na_heapG) l DfracDiscarded v%V)
+  (at level 20, format "l  s↦□  v") : bi_scope.
+Notation "l s↦{ dq } v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
+  (at level 20, dq at level 50, format "l  s↦{ dq }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (heap_pointsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
-Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
-  (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
-Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+  (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn 1) v%V) (at level 20) : bi_scope.
+
+Notation "l s↦{# q } -" := (∃ v, l ↦{#q} v)%I
+  (at level 20, q at level 50, format "l  s↦{# q }  -") : bi_scope.
+Notation "l s↦□ -" := (∃ v, l ↦□ v)%I
+  (at level 20, format "l  s↦□  -") : bi_scope.
+Notation "l s↦{ dq } -" := (∃ v, l ↦{dq} v)%I
+  (at level 20, dq at level 50, format "l  s↦{ dq }  -") : bi_scope.
+Notation "l ↦ -" := (l ↦{#1} -)%I (at level 20) : bi_scope.
 
 Section go_ghost_step.
 
@@ -492,8 +501,8 @@ Qed.
 Lemma ghost_finish_store j K `{LanguageCtx _ K} E l (v' v: val) :
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_pointsto_st WSt l 1 v' -∗
-  (∀ v', na_heap_pointsto (hG := refinement_na_heapG) l 1 v' -∗ l s↦ v') -∗
+  na_heap_pointsto_st WSt l (DfracOwn 1) v' -∗
+  (∀ v', na_heap_pointsto (hG := refinement_na_heapG) l (DfracOwn 1) v' -∗ l s↦ v') -∗
   j ⤇ K (FinishStore (Val $ LitV $ LitLoc l) v) -∗ |NC={E}=>
   l s↦ v ∗ j ⤇ K #().
 Proof.
@@ -527,7 +536,7 @@ Lemma ghost_prepare_write j K `{LanguageCtx _ K} E l v :
   spec_ctx -∗
   l s↦ v -∗
   j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
-  na_heap_pointsto_st WSt l 1 v ∗ (∀ v', na_heap_pointsto l 1 v' -∗ l s↦ v') ∗ j ⤇ K #().
+  na_heap_pointsto_st WSt l (DfracOwn 1) v ∗ (∀ v', na_heap_pointsto l (DfracOwn 1) v' -∗ l s↦ v') ∗ j ⤇ K #().
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
@@ -813,7 +822,7 @@ Lemma ghost_allocN_seq_sized_meta_own_resv j K `{LanguageCtx _ K} E D d v (n: u6
    j ⤇ K (#l) ∗
    na_block_size (hG := refinement_na_heapG) l (uint.nat n * length (flatten_struct v))%nat ∗
    [∗ list] i ∈ seq 0 (uint.nat n),
-   (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
+   (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) (DfracOwn 1)
                      (flatten_struct v)).
 Proof.
   iIntros (HinD Hlen Hn Φ) "(#Hctx&Hstate) HresD Hj".
@@ -907,7 +916,7 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
              ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
              na_block_size (hG := refinement_na_heapG) l (uint.nat n * length (flatten_struct v))%nat ∗
              [∗ list] i ∈ seq 0 (uint.nat n),
-             (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
+             (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) (DfracOwn 1)
                                (flatten_struct v)).
 Proof.
   iIntros.
@@ -922,12 +931,21 @@ End go_spec_definitions.
 
 End go_refinement.
 
-Notation "l s↦{ q } v" := (heap_pointsto (hG := refinement_na_heapG) l q v%V)
-  (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
+Notation "l s↦{# q } v" := (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn q) v%V)
+  (at level 20, q at level 50, format "l  s↦{# q }  v") : bi_scope.
+Notation "l s↦□ v" := (heap_pointsto (hG := refinement_na_heapG) l DfracDiscarded v%V)
+  (at level 20, format "l  s↦□  v") : bi_scope.
+Notation "l s↦{ dq } v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
+  (at level 20, dq at level 50, format "l  s↦{ dq }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (heap_pointsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
-Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
-  (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
+  (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn 1) v%V) (at level 20) : bi_scope.
+
+Notation "l s↦{# q } -" := (∃ v, l ↦{#q} v)%I
+  (at level 20, q at level 50, format "l  s↦{# q }  -") : bi_scope.
+Notation "l s↦□ -" := (∃ v, l ↦□ v)%I
+  (at level 20, format "l  s↦□  -") : bi_scope.
+Notation "l s↦{ dq } -" := (∃ v, l ↦{dq} v)%I
+  (at level 20, dq at level 50, format "l  s↦{ dq }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
 
 Section trace_inv.
@@ -976,25 +994,25 @@ Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 
 Lemma test_resolution1 l v :
-  l ↦ v -∗ (heap_pointsto (hG := goose_na_heapGS) l 1 (v)).
+  l ↦ v -∗ (heap_pointsto (hG := goose_na_heapGS) l (DfracOwn 1) (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution2 l v :
-  l s↦ v -∗ (heap_pointsto (hG := refinement_na_heapG) l 1 (v)).
+  l s↦ v -∗ (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn 1) (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution3 l v :
-  l ↦ v -∗ (heap_pointsto l 1 (v)).
+  l ↦ v -∗ (heap_pointsto l (DfracOwn 1) (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution4 l v :
-  l s↦ v -∗ (heap_pointsto l 1 (v)).
+  l s↦ v -∗ (heap_pointsto l (DfracOwn 1) (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.

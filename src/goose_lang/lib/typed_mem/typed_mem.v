@@ -32,16 +32,22 @@ Section goose_lang.
     lia.
   Qed.
 
-  Definition struct_pointsto_def l (q:Qp) (t:ty) (v: val): iProp Σ :=
-    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} vj) ∗ ⌜val_ty v t⌝)%I.
+  Definition struct_pointsto_def l (dq:dfrac) (t:ty) (v: val): iProp Σ :=
+    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜val_ty v t⌝)%I.
   Definition struct_pointsto_aux : seal (@struct_pointsto_def). Proof. by eexists. Qed.
   Definition struct_pointsto := struct_pointsto_aux.(unseal).
   Definition struct_pointsto_eq : @struct_pointsto = @struct_pointsto_def := struct_pointsto_aux.(seal_eq).
 
-  Notation "l ↦[ t ]{ q } v" := (struct_pointsto l q t v%V)
+  Notation "l ↦[ t ]{# q } v" := (struct_pointsto l (DfracOwn q) t v%V)
                                    (at level 20, q at level 50, t at level 50,
-                                    format "l  ↦[ t ]{ q }  v") : bi_scope.
-  Notation "l ↦[ t ] v" := (struct_pointsto l 1 t v%V)
+                                    format "l  ↦[ t ]{# q }  v") : bi_scope.
+  Notation "l ↦[ t ]□ v" := (struct_pointsto l DfracDiscarded t v%V)
+                                   (at level 20, t at level 50,
+                                    format "l  ↦[ t ]□  v") : bi_scope.
+  Notation "l ↦[ t ]{ dq } v" := (struct_pointsto l dq t v%V)
+                                   (at level 20, dq at level 50, t at level 50,
+                                    format "l  ↦[ t ]{ dq }  v") : bi_scope.
+  Notation "l ↦[ t ] v" := (struct_pointsto l (DfracOwn 1) t v%V)
                               (at level 20, t at level 50,
                                format "l  ↦[ t ]  v") : bi_scope.
 
@@ -50,7 +56,7 @@ Section goose_lang.
   Global Instance struct_pointsto_timeless l t q v: Timeless (l ↦[t]{q} v).
   Proof. unseal. apply _. Qed.
 
-  Global Instance struct_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{q} v)%I.
+  Global Instance struct_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{#q} v)%I.
   Proof. unseal. apply _. Qed.
 
   Theorem struct_pointsto_singleton l q t v v0 :
@@ -72,7 +78,7 @@ Section goose_lang.
 
   Theorem struct_pointsto_frac_valid l q t v :
     0 < ty_size t →
-    l ↦[t]{q} v -∗ ⌜(q ≤ 1)%Qp⌝.
+    l ↦[t]{#q} v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.
     unseal.
     iIntros (?) "[Hvals %Hval_ty]".
@@ -443,10 +449,16 @@ Section goose_lang.
 
 End goose_lang.
 
-Notation "l ↦[ t ]{ q } v" := (struct_pointsto l q t v%V)
+Notation "l ↦[ t ]{# q } v" := (struct_pointsto l (DfracOwn q) t v%V)
                                  (at level 20, q at level 50, t at level 50,
-                                  format "l  ↦[ t ]{ q }  v") : bi_scope.
-Notation "l ↦[ t ] v" := (struct_pointsto l 1 t v%V)
+                                  format "l  ↦[ t ]{# q }  v") : bi_scope.
+Notation "l ↦[ t ]□ v" := (struct_pointsto l DfracDiscarded t v%V)
+                                 (at level 20, t at level 50,
+                                  format "l  ↦[ t ]□  v") : bi_scope.
+Notation "l ↦[ t ]{ dq } v" := (struct_pointsto l dq t v%V)
+                                 (at level 20, dq at level 50, t at level 50,
+                                  format "l  ↦[ t ]{ dq }  v") : bi_scope.
+Notation "l ↦[ t ] v" := (struct_pointsto l (DfracOwn 1) t v%V)
                             (at level 20, t at level 50,
                              format "l  ↦[ t ]  v") : bi_scope.
 

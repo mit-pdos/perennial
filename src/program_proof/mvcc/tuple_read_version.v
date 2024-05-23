@@ -9,12 +9,12 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Local Theorem wp_findVersion (tid : u64) (versS : Slice.t)
                               (vers : list (u64 * bool * string)) :
   {{{ ⌜∃ (ver : pver), (ver ∈ vers) ∧ (uint.Z ver.1.1 < uint.Z tid)⌝ ∗
-      slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers)
+      slice.own_slice versS (structTy Version) (DfracOwn 1) (ver_to_val <$> vers)
   }}}
     findVersion #tid (to_val versS)
   {{{ (ver : pver), RET (ver_to_val ver);
       ⌜spec_find_ver vers tid = Some ver⌝ ∗
-      slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers)
+      slice.own_slice versS (structTy Version) (DfracOwn 1) (ver_to_val <$> vers)
   }}}.
 Proof.
   iIntros (Φ) "[%Hlt HversS] HΦ".
@@ -52,7 +52,7 @@ Proof.
   set P := λ (b : bool), (∃ (ver : u64 * bool * string) (idx : u64),
              "HverR" ∷ (verR ↦[struct.t Version] ver_to_val ver) ∗
              "HidxR" ∷ (idxR ↦[uint64T] #idx) ∗
-             "HversS" ∷ own_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
+             "HversS" ∷ own_slice_small versS (struct.t Version) (DfracOwn 1) (ver_to_val <$> vers) ∗
              "%Hspec" ∷ if b
                         then ⌜spec_find_ver_reverse (take (uint.nat idx) (reverse vers)) tid = None⌝
                         else ⌜spec_find_ver_reverse (reverse vers) tid = Some ver⌝)%I.

@@ -106,11 +106,11 @@ Section proof.
   Qed.
 
   Definition rwlock_inv (l : loc) (R: Qp → iProp Σ) : iProp Σ :=
-    (∃ u : u64, l ↦{1/4} #u ∗
+    (∃ u : u64, l ↦{#1/4} #u ∗
                 if decide (u = W64 0) then
                   True
                 else
-                  l ↦{3/4} #u ∗
+                  l ↦{#3/4} #u ∗
                   R (remaining_frac u)).
 
   Definition is_rwlock (lk : val) R : iProp Σ :=
@@ -133,10 +133,10 @@ Section proof.
     val_ty.
   Qed.
 
-  Definition wlocked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ l ↦{3/4} #0.
+  Definition wlocked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ l ↦{#3/4} #0.
 
   Lemma locked_loc (l:loc) :
-    wlocked #l ⊣⊢ l ↦{3/4} #0.
+    wlocked #l ⊣⊢ l ↦{#3/4} #0.
   Proof.
     rewrite /wlocked.
     iSplit; auto.

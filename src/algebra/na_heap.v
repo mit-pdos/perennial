@@ -1,6 +1,7 @@
 From stdpp Require Export namespaces.
 From stdpp Require Import coPset.
 From iris.algebra Require Import big_op gmap frac agree reservation_map.
+From iris.algebra Require Export dfrac.
 From iris.algebra Require Import csum excl auth cmra_big_op numbers lib.gmap_view.
 From iris.bi Require Import fractional.
 From Perennial.base_logic Require Export lib.own.
@@ -20,7 +21,7 @@ Definition lock_stateR : cmra :=
   csumR unitR natR.
 
 Definition na_heapUR (L V: Type) `{Countable L} : ucmra :=
-  gmapUR L (prodR (prodR fracR lock_stateR) (agreeR (leibnizO V))).
+  gmapUR L (prodR (prodR dfracR lock_stateR) (agreeR (leibnizO V))).
 
 Definition na_sizeUR (L: Type) `{Countable L} : ucmra :=
   gmapUR L (agreeR (leibnizO Z)).
@@ -87,7 +88,7 @@ Definition to_lock_stateR (x : lock_state) : lock_stateR :=
 
 Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
   gmap L (LK * V) → na_heapUR L V :=
-  fmap (λ v, (1%Qp, to_lock_stateR (tls (v.1)), to_agree (v.2))).
+  fmap (λ v, (DfracOwn 1%Qp, to_lock_stateR (tls (v.1)), to_agree (v.2))).
 
 Definition to_na_size {L} `{Countable L} :
   gmap L Z → na_sizeUR L := fmap (λ v, to_agree v).
@@ -97,11 +98,11 @@ Section definitions.
   Context `{LK} (tls: LK → lock_state).
 
   Definition na_heap_pointsto_st (st : lock_state)
-             (l : L) (q : Qp) (v: V) : iProp Σ :=
-    own (na_heap_name hG) (◯ {[ l := (q, to_lock_stateR st, to_agree v) ]}).
+             (l : L) (dq : dfrac) (v: V) : iProp Σ :=
+    own (na_heap_name hG) (◯ {[ l := (dq, to_lock_stateR st, to_agree v) ]}).
 
-  Definition na_heap_pointsto_def (l : L) (q : Qp) (v: V) : iProp Σ :=
-    na_heap_pointsto_st (RSt 0) l q v.
+  Definition na_heap_pointsto_def (l : L) (dq : dfrac) (v: V) : iProp Σ :=
+    na_heap_pointsto_st (RSt 0) l dq v.
   Definition na_heap_pointsto_aux : seal (@na_heap_pointsto_def). by eexists. Qed.
   Definition na_heap_pointsto := unseal na_heap_pointsto_aux.
   Definition na_heap_pointsto_eq : @na_heap_pointsto = @na_heap_pointsto_def :=
@@ -144,13 +145,21 @@ Typeclasses Opaque na_heap_pointsto.
 #[global]
 Instance: Params (@na_heap_pointsto) 8 := {}.
 
-Notation "l ↦{ q } v" := (na_heap_pointsto l q v)
-  (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
-Notation "l ↦ v" := (na_heap_pointsto l 1 v) (at level 20) : bi_scope.
+Notation "l ↦{# q } v" := (na_heap_pointsto l (DfracOwn q) v)
+  (at level 20, q at level 50, format "l  ↦{# q }  v") : bi_scope.
+Notation "l ↦□ v" := (na_heap_pointsto l DfracDiscarded v)
+  (at level 20, format "l  ↦□  v") : bi_scope.
+Notation "l ↦{ dq } v" := (na_heap_pointsto l dq v)
+  (at level 20, dq at level 50, format "l  ↦{ dq }  v") : bi_scope.
+Notation "l ↦ v" := (na_heap_pointsto l (DfracOwn 1) v) (at level 20) : bi_scope.
 
-Local Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
-  (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
-Local Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+Local Notation "l ↦{# q } -" := (∃ v, l ↦{#q} v)%I
+  (at level 20, q at level 50, format "l  ↦{# q }  -") : bi_scope.
+Local Notation "l ↦□ -" := (∃ v, l ↦□ v)%I
+  (at level 20, format "l  ↦□  -") : bi_scope.
+Local Notation "l ↦{ dq } -" := (∃ v, l ↦{dq} v)%I
+  (at level 20, dq at level 50, format "l  ↦{ dq }  -") : bi_scope.
+Local Notation "l ↦ -" := (l ↦{#1} -)%I (at level 20) : bi_scope.
 
 Section to_na_heap.
   Context (L V LK : Type) `{Countable L}.
@@ -168,7 +177,7 @@ Section to_na_heap.
 
   Lemma to_na_heap_insert tls σ l x v :
     to_na_heap tls (<[l:=(x, v)]> σ)
-    = <[l:=(1%Qp, to_lock_stateR (tls x), to_agree v)]> (to_na_heap tls σ).
+    = <[l:=(DfracOwn 1%Qp, to_lock_stateR (tls x), to_agree v)]> (to_na_heap tls σ).
   Proof. by rewrite /to_na_heap fmap_insert. Qed.
 
   Lemma to_na_heap_delete tls σ l : to_na_heap tls (delete l σ) = delete l (to_na_heap tls σ).
@@ -221,26 +230,26 @@ Section na_heap.
   Implicit Types E : coPset.
 
   (** General properties of pointsto and freeable *)
-  Global Instance na_heap_pointsto_timeless l q v : Timeless (l↦{q}v).
+  Global Instance na_heap_pointsto_timeless l dq v : Timeless (l↦{dq}v).
   Proof. rewrite na_heap_pointsto_eq /na_heap_pointsto_def. apply _. Qed.
 
-  Global Instance na_heap_pointsto_st_fractional l v: Fractional (λ q, na_heap_pointsto_st WSt l q v)%I.
+  Global Instance na_heap_pointsto_st_fractional l v: Fractional (λ q, na_heap_pointsto_st WSt l (DfracOwn q) v)%I.
   Proof.
     intros p q. rewrite /na_heap_pointsto_st.
     rewrite -own_op -auth_frag_op singleton_op -?pair_op -Cinl_op ?agree_idemp //=.
   Qed.
 
   Global Instance na_heap_pointsto_st_as_fractional l q v:
-    AsFractional (na_heap_pointsto_st WSt l q v) (λ q, na_heap_pointsto_st WSt l q v)%I q.
+    AsFractional (na_heap_pointsto_st WSt l (DfracOwn q) v) (λ q, na_heap_pointsto_st WSt l (DfracOwn q) v)%I q.
   Proof. split; first done. apply _. Qed.
 
-  Global Instance na_heap_pointsto_fractional l v: Fractional (λ q, l ↦{q} v)%I.
+  Global Instance na_heap_pointsto_fractional l v: Fractional (λ q, l ↦{#q} v)%I.
   Proof.
     intros p q.
     by rewrite na_heap_pointsto_eq -own_op -auth_frag_op singleton_op -pair_op agree_idemp.
   Qed.
   Global Instance na_heap_pointsto_as_fractional l q v:
-    AsFractional (l ↦{q} v) (λ q, l ↦{q} v)%I q.
+    AsFractional (l ↦{#q} v) (λ q, l ↦{#q} v)%I q.
   Proof. split; first done. apply _. Qed.
 
   Lemma na_heap_pointsto_st_agree l st1 st2 q1 q2 v1 v2 :
@@ -267,33 +276,33 @@ Section na_heap.
   Lemma na_heap_pointsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 ∗ l ↦{q2} v2 ⊢ ⌜v1 = v2⌝.
   Proof. by rewrite na_heap_pointsto_eq na_heap_pointsto_st_agree. Qed.
 
-  Lemma na_heap_pointsto_st_frac_valid l q st v : na_heap_pointsto_st st l q v -∗ ⌜(q ≤ 1)%Qp⌝.
+  Lemma na_heap_pointsto_st_frac_valid l q st v : na_heap_pointsto_st st l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.
     rewrite /na_heap_pointsto_st.
     rewrite own_valid discrete_valid.
-    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid.
+    rewrite auth_frag_valid singleton_valid ?pair_valid dfrac_valid.
     iPureIntro. naive_solver.
   Qed.
 
-  Lemma na_heap_pointsto_frac_valid l q v : na_heap_pointsto l q v -∗ ⌜(q ≤ 1)%Qp⌝.
+  Lemma na_heap_pointsto_frac_valid l q v : na_heap_pointsto l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof. by rewrite na_heap_pointsto_eq; apply na_heap_pointsto_st_frac_valid. Qed.
 
   Lemma na_heap_pointsto_st_frac_valid2 l q q' st st' v v' :
-    na_heap_pointsto_st st l q v -∗
-    na_heap_pointsto_st st' l q' v' -∗
+    na_heap_pointsto_st st l (DfracOwn q) v -∗
+    na_heap_pointsto_st st' l (DfracOwn q') v' -∗
     ⌜(q ⋅ q' ≤ 1)%Qp⌝.
   Proof.
     iIntros "Hown1 Hown2". iCombine "Hown1 Hown2" as "Hown".
     rewrite /na_heap_pointsto_st own_valid discrete_valid.
-    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid.
+    rewrite auth_frag_valid singleton_valid ?pair_valid dfrac_valid.
     iDestruct "Hown" as %Hpure.
     iPureIntro. naive_solver.
   Qed.
 
   Lemma na_heap_pointsto_st_rd_frac l n n' q q' v :
-    na_heap_pointsto_st (RSt (n + n')) l (q + q') v ⊣⊢
-    na_heap_pointsto_st (RSt n) l (q) v ∗
-    na_heap_pointsto_st (RSt n') l (q') v.
+    na_heap_pointsto_st (RSt (n + n')) l (DfracOwn (q + q')) v ⊣⊢
+    na_heap_pointsto_st (RSt n) l (DfracOwn q) v ∗
+    na_heap_pointsto_st (RSt n') l (DfracOwn q') v.
   Proof.
     rewrite /na_heap_pointsto_st.
     rewrite -own_op -auth_frag_op singleton_op -?pair_op -Cinr_op ?agree_idemp nat_op //=.
@@ -381,7 +390,7 @@ Section na_heap.
     iDestruct 1 as (m sz Hσm) "[Hσ [Hm [Hsz Hwf]]]".
     iMod (own_update with "Hσ") as "[Hσ Hl]".
     { eapply auth_update_alloc,
-        (alloc_singleton_local_update _ _ (1%Qp, Cinr 0%nat, to_agree (v:leibnizO _)))=> //.
+        (alloc_singleton_local_update _ _ (DfracOwn 1%Qp, Cinr 0%nat, to_agree (v:leibnizO _)))=> //.
       apply lookup_to_na_heap_None, Hσl. }
     iMod (own_alloc (reservation_map_token ⊤)) as (γm) "Hγm".
     { apply reservation_map_token_valid. }
@@ -429,7 +438,7 @@ Section na_heap.
     iDestruct 1 as (m sz Hσm) "[Hσ [Hm [Hsz Hwf]]]".
     iMod (own_update with "Hσ") as "[Hσ Hl]".
     { eapply auth_update_alloc,
-        (alloc_singleton_local_update _ _ (1%Qp, Cinr 0%nat, to_agree (v:leibnizO _)))=> //.
+        (alloc_singleton_local_update _ _ (DfracOwn 1%Qp, Cinr 0%nat, to_agree (v:leibnizO _)))=> //.
       by apply lookup_to_na_heap_None. }
     iMod (own_alloc (reservation_map_token ⊤)) as (γm) "Hγm".
     { apply reservation_map_token_valid. }
@@ -633,7 +642,7 @@ Section na_heap.
   Qed.
    *)
 
-  Lemma na_heap_pointsto_lookup tls σ l lk (q: Qp) v :
+  Lemma na_heap_pointsto_lookup tls σ l lk (q: dfrac) v :
     own (na_heap_name hG) (● to_na_heap tls σ) -∗
     own (na_heap_name hG) (◯ {[ l := (q, to_lock_stateR lk, to_agree v) ]}) -∗
     ⌜∃ ls' (n' : nat),
@@ -660,7 +669,7 @@ Section na_heap.
 
   Lemma na_heap_pointsto_lookup_1 tls σ l lk v :
     own (na_heap_name hG) (● to_na_heap tls σ) -∗
-    own (na_heap_name hG) (◯ {[ l := (1%Qp, to_lock_stateR lk, to_agree v) ]}) -∗
+    own (na_heap_name hG) (◯ {[ l := (DfracOwn 1%Qp, to_lock_stateR lk, to_agree v) ]}) -∗
     ⌜∃ ls', σ !! l = Some (ls', v) ∧ tls ls' = lk⌝.
   Proof.
     iIntros "H● H◯".
@@ -739,7 +748,7 @@ Section na_heap.
   Qed.
 
   Lemma na_heap_read_1' tls σ n l v :
-    na_heap_ctx tls σ -∗ na_heap_pointsto_st (RSt n) l 1 v -∗ ⌜∃ lk, σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
+    na_heap_ctx tls σ -∗ na_heap_pointsto_st (RSt n) l (DfracOwn 1) v -∗ ⌜∃ lk, σ !! l = Some (lk, v) ∧ tls lk = RSt n⌝.
   Proof.
     iIntros "Hσ Hmt".
     iDestruct "Hσ" as (m sz Hσm) "[Hσ ?]".
@@ -784,12 +793,12 @@ Section na_heap.
     iExists _, _. rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
   Qed.
 
-  Lemma na_heap_read_prepare tls rl σ l q v :
+  Lemma na_heap_read_prepare tls rl σ l dq v :
     is_read_lock tls rl →
-    na_heap_ctx tls σ -∗ l ↦{q} v ==∗ ∃ lk n,
+    na_heap_ctx tls σ -∗ l ↦{dq} v ==∗ ∃ lk n,
       ⌜ σ !! l = Some (lk, v) ∧ tls lk = RSt n ⌝ ∗
       na_heap_ctx tls (<[l:=(rl lk, v)]> σ) ∗
-      na_heap_pointsto_st (RSt 1) l q v.
+      na_heap_pointsto_st (RSt 1) l dq v.
   Proof. rewrite na_heap_pointsto_eq. apply na_heap_read_prepare'. Qed.
 
   Lemma na_heap_read_finish_vs' tls url l n q v:
@@ -837,9 +846,9 @@ Section na_heap.
 
   Lemma na_heap_write_vs tls σ st1 st2 l v v':
     σ !! l = Some (st1, v) →
-    own (na_heap_name hG) (● to_na_heap tls σ) -∗ na_heap_pointsto_st (tls st1) l 1%Qp v
+    own (na_heap_name hG) (● to_na_heap tls σ) -∗ na_heap_pointsto_st (tls st1) l (DfracOwn 1%Qp) v
     ==∗ own (na_heap_name hG) (● to_na_heap tls (<[l:=(st2, v')]> σ))
-        ∗ na_heap_pointsto_st (tls st2) l 1%Qp v'.
+        ∗ na_heap_pointsto_st (tls st2) l (DfracOwn 1%Qp) v'.
   Proof.
     intros Hσv. apply entails_wand, wand_intro_r. rewrite -!own_op to_na_heap_insert.
     eapply own_update, auth_update. apply: singleton_local_update.
@@ -870,7 +879,7 @@ Section na_heap.
       ∃ lk1,
       ⌜ σ !! l = Some (lk1, v) ∧ tls lk1 = RSt 0 ⌝ ∗
       na_heap_ctx tls (<[l:=(lkw, v)]> σ) ∗
-      na_heap_pointsto_st WSt l 1%Qp v.
+      na_heap_pointsto_st WSt l (DfracOwn 1%Qp) v.
   Proof.
     iIntros (Hwrite) "Hσ Hmt".
     rewrite na_heap_pointsto_eq.
@@ -884,7 +893,7 @@ Section na_heap.
 
   Lemma na_heap_write_finish_vs tls l v v' lk' :
     tls lk' = RSt 0 →
-    na_heap_pointsto_st WSt l 1%Qp v -∗
+    na_heap_pointsto_st WSt l (DfracOwn 1%Qp) v -∗
     (∀ σ2, na_heap_ctx tls σ2 ==∗ ∃ lkw, ⌜σ2 !! l = Some (lkw, v) ∧ tls lkw = WSt⌝ ∗
         na_heap_ctx tls (<[l:=(lk', v')]> σ2) ∗ l ↦ v').
   Proof.

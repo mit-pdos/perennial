@@ -28,10 +28,10 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
   match d with
-  | bufBit b => ∃ (b0 : u8), slice.own_slice_small s u8T 1 (#b0 :: nil) ∗
+  | bufBit b => ∃ (b0 : u8), slice.own_slice_small s u8T (DfracOwn 1) (#b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
-  | bufInode i => slice.own_slice_small s u8T 1 (inode_to_vals i)
-  | bufBlock b => slice.own_slice_small s u8T 1 (Block_to_vals b)
+  | bufInode i => slice.own_slice_small s u8T (DfracOwn 1) (inode_to_vals i)
+  | bufBlock b => slice.own_slice_small s u8T (DfracOwn 1) (Block_to_vals b)
   end.
 
 Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
@@ -85,7 +85,7 @@ Definition data_has_obj (data: list byte) (a:addr) (obj: object) : Prop :=
 
 Theorem data_has_obj_to_buf_data s a obj data :
   data_has_obj data a obj →
-  own_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
+  own_slice_small s u8T (DfracOwn 1) data -∗ is_buf_data s (objData obj) a.
 Proof.
   rewrite /data_has_obj /is_buf_data.
   iIntros (?) "Hs".
@@ -98,7 +98,7 @@ Proof.
 Qed.
 
 Theorem is_buf_data_has_obj s a obj :
-  is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T 1 data ∗
+  is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T (DfracOwn 1) data ∗
                                            ⌜data_has_obj data a obj⌝.
 Proof.
   iSplit; intros.
@@ -328,7 +328,7 @@ Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) stk E :
   {{{
-    slice.own_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
+    slice.own_slice_small s u8T (DfracOwn 1) (Block_to_vals blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
@@ -886,14 +886,14 @@ Theorem wp_installBit
         (dst_s: Slice.t)  (dst_bs: list u8) (* destination *)
         (dstoff: u64) (* the offset we're modifying, in bits *) stk E :
   (uint.Z dstoff < 8 * Z.of_nat (length dst_bs)) →
-  {{{ own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT 1 dst_bs  }}}
+  {{{ own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT (DfracOwn 1) dst_bs  }}}
     installBit (slice_val src_s) (slice_val dst_s) #dstoff @ stk; E
   {{{ RET #();
       let dst_bs' :=
           alter
             (λ dst, install_one_bit src_b dst (Z.to_nat $ uint.Z dstoff `mod` 8))
             (Z.to_nat $ uint.Z dstoff `div` 8) dst_bs in
-      own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT 1 dst_bs' }}}.
+      own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT (DfracOwn 1) dst_bs' }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ".
   iDestruct "Hpre" as "[Hsrc Hdst]".
@@ -935,13 +935,13 @@ Theorem wp_installBytes
   uint.Z nbit `div` 8 ≤ Z.of_nat (length src_bs) →
   uint.Z dstoff `div` 8 + uint.Z nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
   {{{ own_slice_small src_s byteT q src_bs ∗
-      own_slice_small dst_s byteT 1 dst_bs
+      own_slice_small dst_s byteT (DfracOwn 1) dst_bs
   }}}
     installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit @ stk; E
   {{{ RET #(); own_slice_small src_s byteT q src_bs ∗
                let src_bs' := take (Z.to_nat $ uint.Z nbit `div` 8) src_bs in
                let dst_bs' := list_inserts (Z.to_nat $ uint.Z dstoff `div` 8) src_bs' dst_bs in
-               own_slice_small dst_s byteT 1 dst_bs'
+               own_slice_small dst_s byteT (DfracOwn 1) dst_bs'
   }}}.
 Proof.
   intros Hnbound Hdst_has_space.
@@ -1242,13 +1242,13 @@ Qed.
 Theorem wp_Buf__Install bufptr a b blk_s blk stk E :
   {{{
     is_buf bufptr a b ∗
-    is_block blk_s 1 blk
+    is_block blk_s (DfracOwn 1) blk
   }}}
     Buf__Install #bufptr (slice_val blk_s) @ stk; E
   {{{
     (blk': Block), RET #();
     is_buf bufptr a b ∗
-    is_block blk_s 1 blk' ∗
+    is_block blk_s (DfracOwn 1) blk' ∗
     ⌜ is_installed_block blk b a.(addrOff) blk' ⌝
   }}}.
 Proof.

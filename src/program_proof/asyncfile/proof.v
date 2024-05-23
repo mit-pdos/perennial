@@ -119,7 +119,7 @@ Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
     (closed closeRequested : bool) ,
   "#Hfilename" ∷ readonly (f ↦[AsyncFile :: "filename"] #(str fname)) ∗
   "Hdata_sl" ∷ f ↦[AsyncFile :: "data"] (slice_val data_sl) ∗
-  "#Hdata" ∷ readonly (own_slice_small data_sl byteT 1 data) ∗
+  "#Hdata" ∷ readonly (own_slice_small data_sl byteT (DfracOwn 1) data) ∗
   "Hindex" ∷ f ↦[AsyncFile :: "index"] #idx ∗
   "HdurableIndex" ∷ f ↦[AsyncFile :: "durableIndex"] #durableIndex ∗
   "HindexCond" ∷ f ↦[AsyncFile :: "indexCond"] #indexCond ∗
@@ -348,7 +348,7 @@ Qed.
 Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
   {{{
         "Hf" ∷ own_AsyncFile N f γ P olddata ∗
-        "Hdata_in" ∷ own_slice_small data_sl byteT 1 data ∗
+        "Hdata_in" ∷ own_slice_small data_sl byteT (DfracOwn 1) data ∗
         "Hupd" ∷ (P olddata ={⊤}=∗ P data ∗ Q)
   }}}
     asyncfile.AsyncFile__Write #f (slice_val data_sl)
@@ -666,7 +666,7 @@ Lemma wp_MakeAsyncFile fname N P data :
   }}}
     asyncfile.MakeAsyncFile #(str fname)
   {{{
-        γ sl f, RET (slice_val sl, #f); readonly (own_slice_small sl byteT 1 data) ∗
+        γ sl f, RET (slice_val sl, #f); readonly (own_slice_small sl byteT (DfracOwn 1) data) ∗
                                         own_AsyncFile N f γ P data
   }}}
 .

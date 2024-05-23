@@ -9,7 +9,7 @@ Context `{!ghost_mapG Σ u64 u64}.
 Definition tracker_state (t : loc) γ (m : gmap u64 u64) : iProp Σ :=
   ∃ (mref : loc),
     "Ht_mref" ∷ t ↦[Tracker :: "m"] #mref ∗
-    "Ht_m" ∷ own_map mref 1 m ∗
+    "Ht_m" ∷ own_map mref (DfracOwn 1) m ∗
     "Ht_g" ∷ ghost_map_auth γ 1 m
 .
 
@@ -84,7 +84,6 @@ Proof.
 
   iApply "HΦ".
   iFrame.
-  iExists _; iFrame.
 Qed.
 
 Lemma wp_registerLocked (t : loc) γ (m : gmap u64 u64) (k : u64) (v : u64) :
@@ -121,8 +120,6 @@ Proof.
     iMod (ghost_map_insert with "Ht_g") as "[Ht_g Hptsto]".
     { done. }
     iModIntro.
-    iFrame.
-    iExists _.
     iFrame.
   }
 Qed.

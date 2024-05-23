@@ -22,7 +22,7 @@ Section proof.
   Context `{!heapGS Σ} (N : namespace).
 
   Definition lock_inv (l : loc) (R : iProp Σ) : iProp Σ :=
-    (∃ b : bool, l ↦{1/4} #b ∗ if b then True else l ↦{3/4} #b ∗ R)%I.
+    (∃ b : bool, l ↦{#1/4} #b ∗ if b then True else l ↦{#3/4} #b ∗ R)%I.
 
   Definition is_lock (lk : val) (R : iProp Σ) : iProp Σ :=
     (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv l R))%I.
@@ -42,10 +42,10 @@ Section proof.
     val_ty.
   Qed.
 
-  Definition locked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ l ↦{3/4} #true.
+  Definition locked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ l ↦{#3/4} #true.
 
   Lemma locked_loc (l:loc) :
-    locked #l ⊣⊢ l ↦{3/4} #true.
+    locked #l ⊣⊢ l ↦{#3/4} #true.
   Proof.
     rewrite /locked.
     iSplit; auto.

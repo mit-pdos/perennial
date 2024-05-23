@@ -7,7 +7,7 @@ Context `{!heapGS Σ}.
 Definition tracker_state (t : loc) (m : gmap u64 u64) : iProp Σ :=
   ∃ (mref : loc),
     "Ht_mref" ∷ t ↦[Tracker :: "m"] #mref ∗
-    "Ht_m" ∷ own_map mref 1 m.
+    "Ht_m" ∷ own_map mref (DfracOwn 1) m.
 
 Definition tracker_inv (t : loc) : iProp Σ :=
   ∃ (m : gmap u64 u64),

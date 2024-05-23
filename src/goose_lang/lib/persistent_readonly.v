@@ -131,7 +131,7 @@ End goose_lang.
 #[global]
 Instance heap_pointsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
          (l: loc) (v: val) :
-  AsMapsTo (l ↦ v) (λ q, l ↦{q} v)%I.
+  AsMapsTo (l ↦ v) (λ q, l ↦{#q} v)%I.
 Proof.
   split; [done|apply _|apply _].
 Qed.

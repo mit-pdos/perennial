@@ -13,9 +13,15 @@ operations of GooseLang. *)
 Reserved Notation "l ↦∗[ t ] vs" (at level 20,
                                   t at level 50,
                                   format "l  ↦∗[ t ]  vs").
-Reserved Notation "l ↦∗[ t ]{ q } vs" (at level 20,
+Reserved Notation "l ↦∗[ t ]{# q } vs" (at level 20,
                                        t at level 50, q at level 50,
-                                       format "l  ↦∗[ t ]{ q }  vs").
+                                       format "l  ↦∗[ t ]{# q }  vs").
+Reserved Notation "l ↦∗[ t ]□ vs" (at level 20,
+                                       t at level 50,
+                                       format "l  ↦∗[ t ]□  vs").
+Reserved Notation "l ↦∗[ t ]{ dq } vs" (at level 20,
+                                       t at level 50, dq at level 50,
+                                       format "l  ↦∗[ t ]{ dq }  vs").
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
@@ -24,10 +30,12 @@ Context `{!ffi_interp ffi}.
 
 (* technically the definition of array doesn't depend on a state interp, only
 the ffiGS type; fixing this would require unbundling ffi_interp *)
-Definition array `{!heapGS Σ} (l : loc) (q:Qp) (t:ty) (vs : list val) : iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t]{q} v)%I.
-Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.
-Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
+Definition array `{!heapGS Σ} (l : loc) (dq:dfrac) (t:ty) (vs : list val) : iProp Σ :=
+  ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t]{dq} v)%I.
+Notation "l ↦∗[ t ]{# q } vs" := (array l (DfracOwn q) t vs) : bi_scope.
+Notation "l ↦∗[ t ]□ vs" := (array l DfracDiscarded t vs) : bi_scope.
+Notation "l ↦∗[ t ]{ dq } vs" := (array l dq t vs) : bi_scope.
+Notation "l ↦∗[ t ] vs" := (array l (DfracOwn 1) t vs) : bi_scope.
 
 (** We have no [FromSep] or [IntoSep] instances to remain forwards compatible
 with a fractional array assertion, that will split the fraction, not the
@@ -103,10 +111,10 @@ Proof.
 Qed.
 
 Global Instance array_fractional l t vs :
-  fractional.Fractional (λ q, array l q t vs) := _.
+  fractional.Fractional (λ q, array l (DfracOwn q) t vs) := _.
 
 Global Instance array_as_fractional l t q vs :
-  fractional.AsFractional (array l q t vs) (λ q, array l q t vs) q.
+  fractional.AsFractional (array l (DfracOwn q) t vs) (λ q, array l (DfracOwn q) t vs) q.
 Proof. constructor; auto; apply _. Qed.
 
 Theorem loc_add_stride_Sn l t n :
@@ -142,7 +150,7 @@ Qed.
 Lemma array_frac_valid l t q vs :
   0 < ty_size t →
   0 < length vs →
-  array l q t vs -∗ ⌜(q ≤ 1)%Qp⌝.
+  array l (DfracOwn q) t vs -∗ ⌜(q ≤ 1)%Qp⌝.
 Proof.
   iIntros (??) "Ha".
   destruct vs; [simpl in H0; lia|].
@@ -265,8 +273,10 @@ Qed.
 End lifting.
 End goose_lang.
 
-Notation "l ↦∗[ t ]{ q } vs" := (array l q t vs) : bi_scope.
-Notation "l ↦∗[ t ] vs" := (array l 1%Qp t vs) : bi_scope.
+Notation "l ↦∗[ t ]{# q } vs" := (array l (DfracOwn q) t vs) : bi_scope.
+Notation "l ↦∗[ t ]□ vs" := (array l DfracDiscarded t vs) : bi_scope.
+Notation "l ↦∗[ t ]{ dq } vs" := (array l dq t vs) : bi_scope.
+Notation "l ↦∗[ t ] vs" := (array l (DfracOwn 1) t vs) : bi_scope.
 Typeclasses Opaque array.
 
 Ltac iFramePtsTo_core tac :=

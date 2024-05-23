@@ -6,7 +6,7 @@ Context `{!heapGS Σ}.
 Definition own_wrbuf_xtpls (wrbuf : loc) (mods : dbmap) : iProp Σ :=
   ∃ (entsS : Slice.t) (ents : list wrent),
     "Hents"   ∷ wrbuf ↦[WrBuf :: "ents"] (to_val entsS) ∗
-    "HentsS"  ∷ slice.own_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
+    "HentsS"  ∷ slice.own_slice entsS (structTy WrEnt) (DfracOwn 1) (wrent_to_val <$> ents) ∗
     "%HNoDup" ∷ ⌜NoDup ents.*1.*1.*1⌝ ∗
     "%Hmods"  ∷ ⌜mods = (list_to_map (wrent_to_key_dbval <$> ents))⌝.
 
@@ -15,7 +15,7 @@ Definition own_wrbuf
   : iProp Σ :=
   ∃ (entsS : Slice.t) (ents : list wrent),
     "Hents"   ∷ wrbuf ↦[WrBuf :: "ents"] (to_val entsS) ∗
-    "HentsS"  ∷ slice.own_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
+    "HentsS"  ∷ slice.own_slice entsS (structTy WrEnt) (DfracOwn 1) (wrent_to_val <$> ents) ∗
     "%HNoDup" ∷ ⌜NoDup ents.*1.*1.*1⌝ ∗
     "%Hmods"  ∷ ⌜mods = (list_to_map (wrent_to_key_dbval <$> ents))⌝ ∗
     "%Htpls"  ∷ ⌜tpls = (list_to_map (wrent_to_key_tpl <$> ents))⌝.

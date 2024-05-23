@@ -144,7 +144,7 @@ Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=
   ∃ (s: Slice.t) (off_l: loc) (data: list u8),
     let off := encoded_length r in
     "->" ∷ ⌜enc_v = (slice_val s, (#off_l, #()))%V⌝ ∗
-    "Hs" ∷ own_slice_small s byteT 1 data ∗
+    "Hs" ∷ own_slice_small s byteT (DfracOwn 1) data ∗
     "Hs_cap" ∷ own_slice_cap s byteT ∗
     "%Hsz" ∷ ⌜length data = Z.to_nat sz⌝ ∗
     "%Hremaining" ∷ ⌜(off + remaining)%Z = sz⌝ ∗
@@ -154,7 +154,7 @@ Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=
 .
 
 Theorem wp_new_enc_from_slice stk E s (data: list u8) :
-  {{{ own_slice s byteT 1 data }}}
+  {{{ own_slice s byteT (DfracOwn 1) data }}}
     NewEncFromSlice (slice_val s) @ stk; E
   {{{ (enc_v:val), RET enc_v; is_enc enc_v (length data) [] (length data) }}}.
 Proof.
@@ -430,14 +430,14 @@ Theorem wp_Enc__Finish stk E enc_v r sz remaining :
     Enc__Finish enc_v @ stk; E
   {{{ s data, RET slice_val s; ⌜has_encoding data r⌝ ∗
                                ⌜length data = Z.to_nat sz⌝ ∗
-                               own_slice s byteT 1 data }}}.
+                               own_slice s byteT (DfracOwn 1) data }}}.
 Proof.
   iIntros (Φ) "Henc HΦ"; iNamed "Henc"; subst.
   wp_call.
   iApply "HΦ"; by iFrame "∗ %".
 Qed.
 
-Definition is_dec (dec_v:val) (r:Rec) (s:Slice.t) (q:Qp) (data: list u8): iProp Σ :=
+Definition is_dec (dec_v:val) (r:Rec) (s:Slice.t) (q:dfrac) (data: list u8): iProp Σ :=
   ∃ (off_l:loc) (off: u64),
     "->" ∷ ⌜dec_v = (slice_val s, (#off_l, #()))%V⌝ ∗
     "Hoff" ∷ off_l ↦[uint64T] #off ∗
@@ -599,10 +599,10 @@ Qed.
    give the full fraction to the returned slice *)
 Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s data :
   n = W64 (length bs) →
-  {{{ is_dec dec_v (EncBytes bs :: r) s 1 data ∗
-      (∀ vs' : list u8, own_slice_small s byteT 1 vs' -∗ own_slice s byteT 1 vs') }}}
+  {{{ is_dec dec_v (EncBytes bs :: r) s (DfracOwn 1) data ∗
+      (∀ vs' : list u8, own_slice_small s byteT (DfracOwn 1) vs' -∗ own_slice s byteT (DfracOwn 1) vs') }}}
     Dec__GetBytes dec_v #n @ stk; E
-  {{{ s', RET slice_val s'; own_slice s' byteT 1 bs }}}.
+  {{{ s', RET slice_val s'; own_slice s' byteT (DfracOwn 1) bs }}}.
 Proof.
   iIntros (-> Φ) "(Hdec&Hclo) HΦ"; iNamed "Hdec".
   pose proof (has_encoding_length Henc).
@@ -674,7 +674,7 @@ Theorem wp_Dec__GetBytes_ro stk E dec_v bs (n: u64) r s q data :
   n = W64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
     Dec__GetBytes dec_v #n @ stk; E
-  {{{ q' s', RET slice_val s'; readonly (own_slice_small s' byteT 1 bs) ∗ is_dec dec_v r s q' data }}}.
+  {{{ q' s', RET slice_val s'; readonly (own_slice_small s' byteT (DfracOwn 1) bs) ∗ is_dec dec_v r s q' data }}}.
 Proof.
   iIntros (-> Φ) "Hdec HΦ".
   iApply wp_ncfupd.
@@ -700,7 +700,7 @@ Theorem wp_Dec__GetInts stk E dec_v (xs: list u64) r (n: u64) s q data :
   length xs = uint.nat n →
   {{{ is_dec dec_v ((EncUInt64 <$> xs) ++ r) s q data }}}
     Dec__GetInts dec_v #n @ stk; E
-  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v r s q data ∗ own_slice s' uint64T 1 xs }}}.
+  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v r s q data ∗ own_slice s' uint64T (DfracOwn 1) xs }}}.
 Proof.
   iIntros (Hlen Φ) "Hdec HΦ".
   wp_rec; wp_pures.
@@ -716,7 +716,7 @@ Proof.
                         let todo := drop (uint.nat i) xs in
                         "Hdec" ∷ is_dec dec_v ((EncUInt64 <$> todo) ++ r) s q data ∗
                         "*" ∷ ∃ s, "Hsptr" ∷ s_l ↦[slice.T uint64T] (slice_val s) ∗
-                                   "Hdone" ∷ own_slice s uint64T 1 done
+                                   "Hdone" ∷ own_slice s uint64T (DfracOwn 1) done
            )%I with "[] [Hi Hsptr Hdec]").
   - word.
   - clear Φ.
@@ -750,7 +750,7 @@ Theorem wp_Dec__GetInts_complete stk E dec_v (xs: list u64) (n: u64) s q data :
   length xs = uint.nat n →
   {{{ is_dec dec_v (EncUInt64 <$> xs) s q data }}}
     Dec__GetInts dec_v #n @ stk; E
-  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v [] s q data ∗ own_slice s' uint64T 1 xs }}}.
+  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v [] s q data ∗ own_slice s' uint64T (DfracOwn 1) xs }}}.
 Proof.
   iIntros (? Φ) "Hpre HΦ".
   wp_apply (wp_Dec__GetInts _ _ _ _ [] with "[Hpre]"); first by eauto.

@@ -37,7 +37,7 @@ Context `{!IntoVal V}.
 Context `{!IntoValForType V t}.
 Context (Ψ: V → A → iProp Σ).
 
-Implicit Types (s: Slice.t) (t: ty) (q: Qp) (l: list A).
+Implicit Types (s: Slice.t) (t: ty) (l: list A).
 (* V is the type that represents the values in the slice (through IntoVal),
 while A is the type that represents the larger predicates at each address *)
 Implicit Types (v: V) (x: A).
@@ -66,9 +66,9 @@ Proof.
 Qed.
 
 Theorem wp_SliceAppend {stk E} s l v x :
-  {{{ is_pred_slice s 1 l ∗ own_slice_cap s t ∗ Ψ v x }}}
+  {{{ is_pred_slice s (DfracOwn 1) l ∗ own_slice_cap s t ∗ Ψ v x }}}
     SliceAppend t (slice_val s) (to_val v) @ stk; E
-  {{{ s', RET slice_val s'; is_pred_slice s' 1 (l ++ [x]) ∗ own_slice_cap s' t }}}.
+  {{{ s', RET slice_val s'; is_pred_slice s' (DfracOwn 1) (l ++ [x]) ∗ own_slice_cap s' t }}}.
 Proof using IntoValForType0.
   iIntros (Φ) "(Hs&Hcap&Hx) HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".

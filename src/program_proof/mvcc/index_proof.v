@@ -18,7 +18,7 @@ Definition keys_hashed (hash : nat) :=
 Definition own_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp Σ :=
   ∃ (lockm : loc) (lockmM : gmap u64 loc),
     "Hlockm" ∷ bkt ↦[IndexBucket :: "m"] #lockm ∗
-    "HlockmOwn" ∷ own_map lockm 1 lockmM ∗
+    "HlockmOwn" ∷ own_map lockm (DfracOwn 1) lockmM ∗
     "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), ptuple_auth γ (1/2) key [Nil; Nil]) ∗
     "#HtuplesRP" ∷ ([∗ map] key ↦ tuple ∈ lockmM, is_tuple tuple key γ) ∗
     "_" ∷ True.
@@ -40,7 +40,7 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
      * that have only one field to the type of that field, rather than the struct type.
      * So here we use [ptrT] instead of [structTy Index].
      *)
-    "#HbktsL" ∷ readonly (own_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
+    "#HbktsL" ∷ readonly (own_slice_small bkts ptrT (DfracOwn 1) (to_val <$> bktsL)) ∗
     "%HbktsLen" ∷ ⌜Z.of_nat (length bktsL) = N_IDX_BUCKET⌝ ∗
     "#HbktsRP" ∷ ([∗ list] i ↦ bkt ∈ bktsL, is_index_bucket bkt i γ) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
@@ -174,7 +174,7 @@ Theorem wp_index__getKeys idx γ :
   {{{ True }}}
     Index__getKeys #idx
   {{{ (keysS : Slice.t) (keys : list u64), RET (to_val keysS);
-      own_slice keysS uint64T 1 (to_val <$> keys)
+      own_slice keysS uint64T (DfracOwn 1) (to_val <$> keys)
   }}}.
 Proof.
   iIntros "#Hidx" (Φ) "!> _ HΦ".
@@ -207,7 +207,7 @@ Proof.
   rewrite fmap_length in HbktsSz.
   set P := (λ (_ : u64), ∃ keysS (keys : list u64),
                "HkeysR" ∷ keysR ↦[slice.T uint64T] (to_val keysS) ∗
-               "HkeysS" ∷ own_slice keysS uint64T 1 (to_val <$> keys))%I.
+               "HkeysS" ∷ own_slice keysS uint64T (DfracOwn 1) (to_val <$> keys))%I.
   wp_apply (wp_forSlice P _ _ _ _ _ (to_val <$> bktsL) with "[] [HkeysR HkeysS $HbktsS]").
   { (* Outer loop body. *)
     clear Φ.
@@ -228,7 +228,7 @@ Proof.
     wp_loadField.
     set P := (∃ keysS (keys : list u64),
                  "HkeysR" ∷ keysR ↦[slice.T uint64T] (to_val keysS) ∗
-                 "HkeysS" ∷ own_slice keysS uint64T 1 (to_val <$> keys))%I.
+                 "HkeysS" ∷ own_slice keysS uint64T (DfracOwn 1) (to_val <$> keys))%I.
     wp_apply (wp_MapIter _ _ _ _ _ P (λ _ _, True)%I (λ _ _, True)%I
                with "HlockmOwn [HkeysR HkeysS]"); [ | done | |].
     { (* Inner loop entry. *) subst P. eauto with iFrame. }
@@ -378,7 +378,7 @@ Proof.
   wp_pures.
   iDestruct (own_slice_to_small with "HbktsL") as "HbktsS".
   wp_apply (wp_forUpto
-              (λ n, (∃ bktsL, (own_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
+              (λ n, (∃ bktsL, (own_slice_small bkts ptrT (DfracOwn 1) (to_val <$> bktsL)) ∗
                               (⌜Z.of_nat (length bktsL) = N_IDX_BUCKET⌝) ∗
                               ([∗ list] i ↦ bkt ∈ (take (uint.nat n) bktsL), is_index_bucket bkt i γ)) ∗
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗

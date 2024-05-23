@@ -24,7 +24,7 @@ Section definitions.
   Definition heap_pointsto_eq : @heap_pointsto = @heap_pointsto_def :=
     seal_eq heap_pointsto_aux.
 
-  Global Instance heap_pointsto_fractional l v: Fractional (λ q, heap_pointsto l q v)%I.
+  Global Instance heap_pointsto_fractional l v: Fractional (λ q, heap_pointsto l (DfracOwn q) v)%I.
   Proof.
     intros p q.
     rewrite heap_pointsto_eq /heap_pointsto_def.
@@ -34,7 +34,7 @@ Section definitions.
     - by iIntros "[[% $] [% $]]".
   Qed.
   Global Instance heap_pointsto_as_fractional l q v:
-    AsFractional (heap_pointsto l q v) (λ q, heap_pointsto l q v)%I q.
+    AsFractional (heap_pointsto l (DfracOwn q) v) (λ q, heap_pointsto l (DfracOwn q) v)%I q.
   Proof. rewrite heap_pointsto_eq /heap_pointsto_def.
          econstructor; eauto.
          apply _.
@@ -66,7 +66,7 @@ Section definitions.
   Qed.
 
   Theorem heap_pointsto_frac_valid l q v:
-     heap_pointsto l q v -∗ ⌜(q ≤ 1)%Qp⌝.
+     heap_pointsto l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.
     iIntros "H".
     iDestruct (heap_pointsto_na_acc with "H") as "(Hna&_)".
@@ -85,12 +85,21 @@ Section definitions.
 End definitions.
 
 (** Override the notations so that scopes and coercions work out *)
+Notation "l ↦{# q } v" := (heap_pointsto l (DfracOwn q) v%V)
+  (at level 20, q at level 50, format "l  ↦{# q }  v") : bi_scope.
+Notation "l ↦□ v" := (heap_pointsto l DfracDiscarded v%V)
+  (at level 20, format "l  ↦□  v") : bi_scope.
 Notation "l ↦{ q } v" := (heap_pointsto l q v%V)
   (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
-Notation "l ↦ v" := (heap_pointsto l 1 v%V) (at level 20) : bi_scope.
+Notation "l ↦ v" := (heap_pointsto l (DfracOwn 1) v%V) (at level 20) : bi_scope.
+
+Notation "l ↦{# q } -" := (∃ v, l ↦{#q} v)%I
+  (at level 20, q at level 50, format "l  ↦{# q }  -") : bi_scope.
+Notation "l ↦□ -" := (∃ v, l ↦□ v)%I
+  (at level 20, format "l  ↦□  -") : bi_scope.
 Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
-Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+Notation "l ↦ -" := (l ↦{#1} -)%I (at level 20) : bi_scope.
 
 (* An FFI layer will use certain CMRAs for its primitive rules.
    Besides needing to know that these CMRAs are included in Σ, there may
@@ -926,7 +935,7 @@ Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
   {{{ l, RET LitV (LitLoc l); ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
                               na_block_size l (uint.nat n * length (flatten_struct v))%nat ∗
                               [∗ list] i ∈ seq 0 (uint.nat n),
-                              (pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
+                              (pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) (DfracOwn 1)
                                                 (flatten_struct v))
                               }}}.
 Proof.
@@ -994,7 +1003,7 @@ Lemma wp_allocN_seq s E v (n: u64) :
   (0 < uint.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (uint.nat n),
-                              (pointsto_vals (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1 (flatten_struct v)) }}}.
+                              (pointsto_vals (l +ₗ (length (flatten_struct v) * Z.of_nat i)) (DfracOwn 1) (flatten_struct v)) }}}.
 Proof.
   iIntros (??) "_ HΦ".
   destruct (length (flatten_struct v)) eqn:Hlen.
@@ -1050,7 +1059,7 @@ Hint Resolve is_Writing_Some : core.
 
 Lemma wp_prepare_write s E l v :
   {{{ ▷ l ↦ v }}} PrepareWrite (Val $ LitV (LitLoc l)) @ s; E
-  {{{ RET #(); na_heap_pointsto_st WSt l 1 v ∗ (∀ v', na_heap_pointsto l 1 v' -∗ l ↦ v') }}}.
+  {{{ RET #(); na_heap_pointsto_st WSt l (DfracOwn 1) v ∗ (∀ v', na_heap_pointsto l (DfracOwn 1) v' -∗ l ↦ v') }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_base_step_no_fork; auto.
@@ -1065,7 +1074,7 @@ Proof.
 Qed.
 
 Lemma wp_finish_store s E l v v' :
-  {{{ ▷ na_heap_pointsto_st WSt l 1 v' ∗ (∀ v', na_heap_pointsto l 1 v' -∗ l ↦ v') }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
+  {{{ ▷ na_heap_pointsto_st WSt l (DfracOwn 1) v' ∗ (∀ v', na_heap_pointsto l (DfracOwn 1) v' -∗ l ↦ v') }}} FinishStore (Val $ LitV (LitLoc l)) (Val v) @ s; E
   {{{ RET LitV LitUnit; l ↦ v }}}.
 Proof.
   iIntros (Φ) "[>Hl Hl_rest] HΦ".

@@ -78,7 +78,7 @@ Theorem wp_NewMap `{!IntoValForType V vt} kt stk E :
   {{{ True }}}
     NewMap kt vt #() @ stk; E
   {{{ mref, RET #mref;
-      own_map mref 1 ∅ }}}.
+      own_map mref (DfracOwn 1) ∅ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_apply map.wp_NewMap.
@@ -144,9 +144,9 @@ Qed.
 
 Theorem wp_MapInsert v' stk E mref m k vv :
   vv = to_val v' ->
-  {{{ own_map mref 1 m }}}
+  {{{ own_map mref (DfracOwn 1) m }}}
     MapInsert #mref (to_val k) vv @ stk; E
-  {{{ RET #(); own_map mref 1 (map_insert m k v') }}}.
+  {{{ RET #(); own_map mref (DfracOwn 1) (map_insert m k v') }}}.
 Proof.
   intros ->.
   iIntros (Φ) "Hm HΦ".
@@ -159,9 +159,9 @@ Proof.
 Qed.
 
 Theorem wp_MapInsert_to_val stk E mref m k v' :
-  {{{ own_map mref 1 m }}}
+  {{{ own_map mref (DfracOwn 1) m }}}
     MapInsert #mref (to_val k) (to_val v') @ stk; E
-  {{{ RET #(); own_map mref 1 (map_insert m k v') }}}.
+  {{{ RET #(); own_map mref (DfracOwn 1) (map_insert m k v') }}}.
 Proof.
   iIntros (Φ) "Hm HΦ".
   iApply (wp_MapInsert with "Hm"); first reflexivity.
@@ -169,9 +169,9 @@ Proof.
 Qed.
 
 Theorem wp_MapDelete stk E mref m k :
-  {{{ own_map mref 1 m }}}
+  {{{ own_map mref (DfracOwn 1) m }}}
     MapDelete #mref (to_val k) @ stk; E
-  {{{ RET #(); own_map mref 1 (map_del m k) }}}.
+  {{{ RET #(); own_map mref (DfracOwn 1) (map_del m k) }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "Hm HΦ".
   iDestruct (own_map_untype with "Hm") as "Hm".
@@ -189,10 +189,10 @@ Proof.
   by rewrite map_size_fmap.
 Qed.
 
-Theorem wp_MapLen stk E mref m :
-  {{{ own_map mref 1 m }}}
+Theorem wp_MapLen stk E mref m q :
+  {{{ own_map mref q m }}}
     MapLen #mref @ stk; E
-  {{{ RET #(size m); ⌜size m = uint.nat (size m)⌝ ∗ own_map mref 1 m }}}.
+  {{{ RET #(size m); ⌜size m = uint.nat (size m)⌝ ∗ own_map mref q m }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "Hm HΦ".
   iDestruct (own_map_untype with "Hm") as "Hm".

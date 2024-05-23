@@ -284,14 +284,14 @@ lemmas. *)
     apply H; eauto.
   Qed.
 
-  Definition pointsto_block (l: loc) (q: Qp) (b: Block) :=
+  Definition pointsto_block (l: loc) (q: dfrac) (b: Block) :=
     ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
   Lemma wp_ReadOp s E (a: u64) q b :
     {{{ ▷ uint.Z a d↦{q} b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
     {{{ l, RET LitV (LitLoc l); uint.Z a d↦{q} b ∗
-                                  pointsto_block l 1 b }}}.
+                                  pointsto_block l (DfracOwn 1) b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".

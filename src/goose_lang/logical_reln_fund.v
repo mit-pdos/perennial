@@ -470,10 +470,10 @@ Lemma logical_reln_prepare_write t ts vs v j K (Hctx: LanguageCtx K):
                        inv locN (loc_inv γ ls l (val_interp (hS := hS) t)) ∗
                        fc_tok γ (1/2)%Qp ∗
                        j ⤇ K #() ∗
-                       na_heap_pointsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp mem_vs ∗
-                       (∀ v' : sval, na_heap_pointsto ls 1 v' -∗ heap_pointsto ls 1 v') ∗
-                       na_heap_pointsto_st (hG := goose_na_heapGS) WSt l 1 mem_v ∗
-                       (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')}}}.
+                       na_heap_pointsto_st (hG := refinement_na_heapG) WSt ls (DfracOwn (1/2)%Qp) mem_vs ∗
+                       (∀ v' : sval, na_heap_pointsto ls (DfracOwn 1) v' -∗ heap_pointsto ls (DfracOwn 1) v') ∗
+                       na_heap_pointsto_st (hG := goose_na_heapGS) WSt l (DfracOwn 1) mem_v ∗
+                       (∀ v' : ival, na_heap_pointsto l (DfracOwn 1) v' -∗ heap_pointsto l (DfracOwn 1) v')}}}.
 Proof.
   intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
   rewrite val_interp_struct_unfold.
@@ -535,10 +535,10 @@ Lemma logical_reln_finish_store (ls l: loc) (vs vs': sval) (v v': ival) j K (Hct
   forall vTy,
   {{{ spec_ctx ∗ vTy vs v ∗ j ⤇ K (FinishStore #ls vs) ∗ fc_tok γ (1/2)%Qp ∗
       inv locN (loc_inv γ ls l vTy) ∗
-      na_heap_pointsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp vs' ∗
-      (∀ v' : sval, na_heap_pointsto ls 1 v' -∗ heap_pointsto ls 1 v') ∗
-      na_heap_pointsto_st (hG := goose_na_heapGS) WSt l 1 v' ∗
-      (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')
+      na_heap_pointsto_st (hG := refinement_na_heapG) WSt ls (DfracOwn (1/2)%Qp) vs' ∗
+      (∀ v' : sval, na_heap_pointsto ls (DfracOwn 1) v' -∗ heap_pointsto ls (DfracOwn 1) v') ∗
+      na_heap_pointsto_st (hG := goose_na_heapGS) WSt l (DfracOwn 1) v' ∗
+      (∀ v' : ival, na_heap_pointsto l (DfracOwn 1) v' -∗ heap_pointsto l (DfracOwn 1) v')
  }}}
     FinishStore #l v
  {{{ RET #(); j ⤇ K (of_val #()) }}}.
@@ -590,9 +590,9 @@ Lemma logical_reln_start_read t ts vs v j K (Hctx: LanguageCtx K):
                        fc_tok γ q ∗
                        j ⤇ K mem_vs ∗
                        val_interp (hS := hS) t mem_vs mem_v ∗
-                       na_heap_pointsto_st (hG := refinement_na_heapG) (RSt O) ls q mem_vs ∗
-                       na_heap_pointsto_st (hG := goose_na_heapGS) (RSt 1) l q mem_v ∗
-                       (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')}}}.
+                       na_heap_pointsto_st (hG := refinement_na_heapG) (RSt O) ls (DfracOwn q) mem_vs ∗
+                       na_heap_pointsto_st (hG := goose_na_heapGS) (RSt 1) l (DfracOwn q) mem_v ∗
+                       (∀ v' : ival, na_heap_pointsto l (DfracOwn 1) v' -∗ heap_pointsto l (DfracOwn 1) v')}}}.
 Proof.
   intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
   rewrite val_interp_struct_unfold.
@@ -701,9 +701,9 @@ Lemma logical_reln_finish_read (ls l: loc) (vs': sval) (v': ival) j K (Hctx: Lan
   forall vTy,
  {{{ spec_ctx ∗ j ⤇ K (FinishRead #ls) ∗ fc_tok γ q ∗
       inv locN (loc_inv γ ls l vTy) ∗
-      na_heap_pointsto_st (hG := refinement_na_heapG) (RSt O) ls q vs' ∗
-      na_heap_pointsto_st (hG := goose_na_heapGS) (RSt 1) l q v' ∗
-      (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')
+      na_heap_pointsto_st (hG := refinement_na_heapG) (RSt O) ls (DfracOwn q) vs' ∗
+      na_heap_pointsto_st (hG := goose_na_heapGS) (RSt 1) l (DfracOwn q) v' ∗
+      (∀ v' : ival, na_heap_pointsto l (DfracOwn 1) v' -∗ heap_pointsto l (DfracOwn 1) v')
  }}}
     FinishRead #l
  {{{ RET #(); j ⤇ K (of_val #()) }}}.

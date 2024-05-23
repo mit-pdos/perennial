@@ -14,16 +14,16 @@ Implicit Types (l: loc) (σ: slidingM.t).
 
 Definition readonly_log logSlice σ : iProp Σ :=
       readonly (updates_slice_frag
-                  (slice_take logSlice (slidingM.numMutable σ)) 1
+                  (slice_take logSlice (slidingM.numMutable σ)) (DfracOwn 1)
                   (take (uint.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
-Definition readonly_log_inner' logSlice σ (q : Qp) : iProp Σ :=
+Definition readonly_log_inner' logSlice σ (q : dfrac) : iProp Σ :=
                (updates_slice_frag
                   (slice_take logSlice (slidingM.numMutable σ)) q
                   (take (uint.nat (slidingM.numMutable σ)) σ.(slidingM.log))).
 
 Definition readonly_log_inner logSlice σ : iProp Σ :=
-   ∃ (q : Qp), ⌜q < 1⌝%Qp ∗ readonly_log_inner' logSlice σ q.
+   ∃ (q : Qp), ⌜q < 1⌝%Qp ∗ readonly_log_inner' logSlice σ (DfracOwn q).
 
 Definition mutable_log logSlice q σ : iProp Σ :=
   "%logSlice_wf" ∷ ⌜uint.nat logSlice.(Slice.sz) = length σ.(slidingM.log) ∧ uint.Z logSlice.(Slice.sz) ≤ uint.Z logSlice.(Slice.cap)⌝ ∗
@@ -31,7 +31,7 @@ Definition mutable_log logSlice q σ : iProp Σ :=
         (slice_skip logSlice (struct.t Update) (slidingM.numMutable σ))
         (drop (uint.nat (slidingM.numMutable σ)) σ.(slidingM.log)).
 
-Definition is_sliding (l: loc) (q: Qp) (σ: slidingM.t) : iProp Σ :=
+Definition is_sliding (l: loc) (q: dfrac) (σ: slidingM.t) : iProp Σ :=
   "%Hwf" ∷ ⌜slidingM.wf σ⌝ ∗
   "Hinv" ∷ ∃ (logSlice: Slice.t) (addrPosPtr: loc),
     "log" ∷ l ↦[sliding :: "log"] (slice_val logSlice) ∗
@@ -41,7 +41,7 @@ Definition is_sliding (l: loc) (q: Qp) (σ: slidingM.t) : iProp Σ :=
     "needFlush" ∷ (∃ (needFlush: bool), "needFlush" ∷ l ↦[sliding :: "needFlush"] #needFlush) ∗
     "#log_readonly" ∷ readonly_log logSlice σ ∗
     "log_mutable" ∷ mutable_log logSlice q σ ∗
-    "is_addrPos" ∷ own_map addrPosPtr 1 (slidingM.addrPosMap σ).
+    "is_addrPos" ∷ own_map addrPosPtr (DfracOwn 1) (slidingM.addrPosMap σ).
 
 Theorem is_sliding_wf l q σ : is_sliding l q σ -∗ ⌜slidingM.wf σ⌝.
 Proof.
@@ -199,7 +199,7 @@ Proof.
   iDestruct "Hs" as (bks) "[Hs Hblocks]".
 
   wp_apply (wp_forSlice
-              (fun i => "Hm" ∷ own_map addrPosPtr 1
+              (fun i => "Hm" ∷ own_map addrPosPtr (DfracOwn 1)
                                (compute_memLogMap (take (uint.nat i) log) start) ∗
                       "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd q upd
               )%I
@@ -241,7 +241,7 @@ Proof.
   rewrite -> drop_ge by word.
   rewrite -> take_ge by word.
   iMod (readonly_alloc
-          (updates_slice_frag (slice_take s (length log)) 1 log) q
+          (updates_slice_frag (slice_take s (length log)) (DfracOwn 1) log) q
           with "[$Hreadonly]") as "#Hreadonly".
   iModIntro.
   iApply "HΦ".
@@ -281,9 +281,9 @@ Hint Unfold slidingM.numMutable : word.
 Theorem memLog_combine s σ :
   slidingM.wf σ ->
   readonly_log s σ -∗
-  mutable_log s 1 σ -∗
+  mutable_log s (DfracOwn 1) σ -∗
   |={⊤}=> ∃ q, updates_slice_frag s q (slidingM.log σ) ∗
-       (updates_slice_frag s q (slidingM.log σ) -∗ mutable_log s 1 σ).
+       (updates_slice_frag s q (slidingM.log σ) -∗ mutable_log s (DfracOwn 1) σ).
 Proof.
   rewrite /mutable_log.
   iIntros (Hwf) "Hread Hmut".
@@ -347,11 +347,11 @@ Hint Unfold slidingM.logIndex : word.
 Theorem wp_sliding__get l σ (pos: u64) (u: update.t) :
   uint.Z σ.(slidingM.start) ≤ uint.Z pos ->
   σ.(slidingM.log) !! (slidingM.logIndex σ pos) = Some u ->
-  {{{ is_sliding l 1 σ }}}
+  {{{ is_sliding l (DfracOwn 1) σ }}}
     sliding__get #l #pos
   {{{ uv q, RET update_val uv;
       is_update uv q u ∗
-        (is_block uv.2 q u.(update.b) -∗ is_sliding l 1 σ)
+        (is_block uv.2 q u.(update.b) -∗ is_sliding l (DfracOwn 1) σ)
   }}}.
 Proof.
   iIntros (Hbound Hlookup Φ) "Hsliding HΦ".

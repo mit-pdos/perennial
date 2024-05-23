@@ -18,7 +18,7 @@ Qed.
 
 Hint Resolve update_val_t : core.
 
-Definition is_update (uv: u64*Slice.t) (q:Qp) (u: update.t): iProp Σ :=
+Definition is_update (uv: u64*Slice.t) (q:dfrac) (u: update.t): iProp Σ :=
   ⌜uv.1 = u.(update.addr)⌝ ∗
   is_block uv.2 q u.(update.b).
 
@@ -29,24 +29,24 @@ Proof.
 Qed.
 
 Definition updates_slice' q (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
-  ∃ bks, own_slice bk_s (struct.t Update) 1 (update_val <$> bks) ∗
+  ∃ bks, own_slice bk_s (struct.t Update) (DfracOwn 1) (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
                                      is_block (snd b_upd) q b ∗
                                      ⌜fst b_upd = a⌝.
 
 Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
-  updates_slice' 1 bk_s bs.
+  updates_slice' (DfracOwn 1) bk_s bs.
 
-Definition updates_slice_frag' (bk_s: Slice.t) (q1 q2:Qp) (bs: list update.t): iProp Σ :=
+Definition updates_slice_frag' (bk_s: Slice.t) (q1 q2:dfrac) (bs: list update.t): iProp Σ :=
   ∃ bks, own_slice_small bk_s (struct.t Update) q1 (update_val <$> bks) ∗
    [∗ list] _ ↦ uv;upd ∈ bks;bs, is_update uv q2 upd.
 
-Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
+Definition updates_slice_frag (bk_s: Slice.t) (q:dfrac) (bs: list update.t): iProp Σ :=
   updates_slice_frag' bk_s q q bs.
 
 Theorem updates_slice_cap_acc' bk_s q bs :
   updates_slice' q bk_s bs ⊣⊢
-  updates_slice_frag' bk_s 1 q bs ∗ own_slice_cap bk_s (struct.t Update).
+  updates_slice_frag' bk_s (DfracOwn 1) q bs ∗ own_slice_cap bk_s (struct.t Update).
 Proof.
   iSplit.
   - iIntros "Hupds".
@@ -67,13 +67,13 @@ Qed.
 
 Theorem updates_slice_cap_acc bk_s bs :
   updates_slice bk_s bs ⊣⊢
-  updates_slice_frag bk_s 1 bs ∗ own_slice_cap bk_s (struct.t Update).
+  updates_slice_frag bk_s (DfracOwn 1) bs ∗ own_slice_cap bk_s (struct.t Update).
 Proof. iApply updates_slice_cap_acc'. Qed.
 
 Theorem updates_slice_frag_acc q bk_s bs :
   updates_slice' q bk_s bs -∗
-  updates_slice_frag' bk_s 1 q bs ∗
-   (∀ bs', updates_slice_frag' bk_s 1 q bs' -∗ updates_slice' q bk_s bs').
+  updates_slice_frag' bk_s (DfracOwn 1) q bs ∗
+   (∀ bs', updates_slice_frag' bk_s (DfracOwn 1) q bs' -∗ updates_slice' q bk_s bs').
 Proof.
   iIntros "Hupds".
   rewrite updates_slice_cap_acc'.
@@ -85,7 +85,7 @@ Qed.
 
 Theorem updates_slice_to_frag bk_s q bs :
   updates_slice' q bk_s bs -∗
-  updates_slice_frag' bk_s 1 q bs.
+  updates_slice_frag' bk_s (DfracOwn 1) q bs.
 Proof.
   rewrite updates_slice_cap_acc'.
   iIntros "[$ _]".
@@ -149,8 +149,8 @@ Qed.
 
 Instance is_blocks_AsFractional bks q v :
   fractional.AsFractional
-    ([∗ list] b_upd;upd ∈ bks;v, is_update b_upd q upd)
-    (λ q, [∗ list] b_upd;upd ∈ bks;v, is_update b_upd q upd)%I
+    ([∗ list] b_upd;upd ∈ bks;v, is_update b_upd (DfracOwn q) upd)
+    (λ q, [∗ list] b_upd;upd ∈ bks;v, is_update b_upd (DfracOwn q) upd)%I
     q.
 Proof.
   constructor; auto.
@@ -187,7 +187,7 @@ Proof.
 Qed.
 
 Global Instance updates_slice_frag_fractional bk_s bs :
-  fractional.Fractional (λ q, updates_slice_frag bk_s q bs).
+  fractional.Fractional (λ q, updates_slice_frag bk_s (DfracOwn q) bs).
 Proof.
   hnf; intros q1 q2.
   iSplit.
@@ -209,11 +209,11 @@ Proof.
 Qed.
 
 Global Instance updates_slice_frag_as_fractional bk_s q bs :
-  fractional.AsFractional (updates_slice_frag bk_s q bs) (λ q, updates_slice_frag bk_s q bs) q.
+  fractional.AsFractional (updates_slice_frag bk_s (DfracOwn q) bs) (λ q, updates_slice_frag bk_s (DfracOwn q) bs) q.
 Proof. split; auto; apply _. Qed.
 
 Global Instance updates_slice_frag_AsMapsTo bk_s bs :
-  AsMapsTo (updates_slice_frag bk_s 1 bs) (λ q, updates_slice_frag bk_s q bs).
+  AsMapsTo (updates_slice_frag bk_s (DfracOwn 1) bs) (λ q, updates_slice_frag bk_s (DfracOwn q) bs).
 Proof. constructor; auto; apply _. Qed.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) q (u: update.t) :
@@ -246,9 +246,9 @@ Qed.
 
 Theorem wp_SliceSet_updates stk E bk_s q_b bs (i: u64) (u0 u: update.t) uv :
   bs !! uint.nat i = Some u0 ->
-  {{{ updates_slice_frag' bk_s 1 q_b bs ∗ is_update uv q_b u }}}
+  {{{ updates_slice_frag' bk_s (DfracOwn 1) q_b bs ∗ is_update uv q_b u }}}
     SliceSet (struct.t Update) (slice_val bk_s) #i (update_val uv) @ stk; E
-  {{{ RET #(); updates_slice_frag' bk_s 1 q_b (<[uint.nat i := u]> bs)
+  {{{ RET #(); updates_slice_frag' bk_s (DfracOwn 1) q_b (<[uint.nat i := u]> bs)
   }}}.
 Proof.
   iIntros (Hlookup Φ) "[Hupds Hu] HΦ".
@@ -275,9 +275,9 @@ Qed.
 
 Theorem wp_SliceSet_updates' stk E bk_s q_b bs (i: u64) (u0 u: update.t) uv :
   bs !! uint.nat i = Some u0 ->
-  {{{ updates_slice_frag' bk_s 1 q_b bs ∗ is_update uv q_b u }}}
+  {{{ updates_slice_frag' bk_s (DfracOwn 1) q_b bs ∗ is_update uv q_b u }}}
     SliceSet (struct.t Update) (slice_val bk_s) #i (update_val uv) @ stk; E
-  {{{ RET #(); updates_slice_frag' bk_s 1 q_b (<[uint.nat i := u]> bs)
+  {{{ RET #(); updates_slice_frag' bk_s (DfracOwn 1) q_b (<[uint.nat i := u]> bs)
   }}}.
 Proof.
   iIntros (Hlookup Φ) "[Hupds Hu] HΦ".
@@ -331,15 +331,15 @@ Proof.
   simpl. auto.
 Qed.
 
-Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q q_b q_b' : Qp) :
+Theorem wp_SliceAppend_updates_frag {stk E bk_s bs} {uv: u64 * Slice.t} {b} (n : u64) (q : Qp) (q_b q_b' : dfrac) :
   0 ≤ uint.Z n ≤ uint.Z (Slice.sz bk_s) ≤ uint.Z (Slice.cap bk_s) ->
   (q < 1)%Qp ->
-  {{{ updates_slice_frag' (slice_take bk_s n) q q_b (take (uint.nat n) bs) ∗
+  {{{ updates_slice_frag' (slice_take bk_s n) (DfracOwn q) q_b (take (uint.nat n) bs) ∗
       updates_slice' q_b' (slice_skip bk_s (struct.t Update) n) (drop (uint.nat n) bs) ∗
       is_block uv.2 q_b' b }}}
     SliceAppend (struct.t Update) (slice_val bk_s) (update_val uv) @ stk; E
   {{{ bk_s', RET slice_val bk_s';
-      updates_slice_frag' (slice_take bk_s' n) q q_b (take (uint.nat n) (bs ++ [update.mk uv.1 b])) ∗
+      updates_slice_frag' (slice_take bk_s' n) (DfracOwn q) q_b (take (uint.nat n) (bs ++ [update.mk uv.1 b])) ∗
       updates_slice' q_b' (slice_skip bk_s' (struct.t Update) n) (drop (uint.nat n) (bs ++ [update.mk uv.1 b])) ∗
       ⌜uint.Z (Slice.sz bk_s') ≤ uint.Z (Slice.cap bk_s') ∧
        uint.Z (Slice.sz bk_s') = (uint.Z (Slice.sz bk_s) + 1)%Z⌝
@@ -555,7 +555,7 @@ Qed.
 Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) q b :
   {{{ is_block (snd u) q b }}}
     copyUpdateBlock (update_val u) @ stk; E
-  {{{ (s':Slice.t), RET (slice_val s'); is_block (snd u) q b ∗ is_block s' 1 b }}}.
+  {{{ (s':Slice.t), RET (slice_val s'); is_block (snd u) q b ∗ is_block s' (DfracOwn 1) b }}}.
 Proof.
   iIntros (Φ) "Hb HΦ".
   destruct u as [a s]; simpl.

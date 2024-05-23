@@ -105,12 +105,12 @@ Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
    (∃ vs v, (fc_auth γ None ∗ ls s↦ vs ∗ l ↦ v ∗ vTy vs v) ∨
             (∃ q q' (n: positive), ⌜ (q + q' = 1)%Qp ⌝ ∗
                 fc_auth γ (Some (q, n)) ∗
-                na_heap_pointsto_st (RSt (Pos.to_nat n)) ls q' vs ∗
-                (∀ v', na_heap_pointsto (hG := refinement_na_heapG) ls 1 v' -∗ ls s↦ v') ∗
-                l ↦{q'} v ∗ vTy vs v)
+                na_heap_pointsto_st (RSt (Pos.to_nat n)) ls (DfracOwn q') vs ∗
+                (∀ v', na_heap_pointsto (hG := refinement_na_heapG) ls (DfracOwn 1) v' -∗ ls s↦ v') ∗
+                l ↦{#q'} v ∗ vTy vs v)
             ∨
             (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
-             na_heap_pointsto_st WSt ls (1/2)%Qp vs))%I.
+             na_heap_pointsto_st WSt ls (DfracOwn (1/2)%Qp) vs))%I.
 
 Definition locN := nroot.@"loc".
 

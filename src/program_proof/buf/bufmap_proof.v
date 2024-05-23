@@ -23,7 +23,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
     bufmap ↦[BufMap :: "addrs"] #mptr ∗
-    own_map mptr 1 m ∗
+    own_map mptr (DfracOwn 1) m ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
       is_buf bufptr a buf.
@@ -385,7 +385,7 @@ Theorem wp_BufMap__DirtyBufs l m stk E1 :
     BufMap__DirtyBufs #l @ stk ; E1
   {{{
     (s : Slice.t) (bufptrlist : list loc), RET (slice_val s);
-    own_slice s ptrT 1 bufptrlist ∗
+    own_slice s ptrT (DfracOwn 1) bufptrlist ∗
     let dirtybufs := filter (λ x, (snd x).(bufDirty) = true) m in
     [∗ maplist] a ↦ b;bufptr ∈ dirtybufs;bufptrlist,
       is_buf bufptr a b
@@ -410,7 +410,7 @@ Proof using.
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
                                            (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
         "Hbufs" ∷ bufs ↦[slice.T ptrT] (slice_val bufptrslice) ∗
-        "Hbufptrslice" ∷ own_slice bufptrslice ptrT 1 bufptrlist ∗
+        "Hbufptrslice" ∷ own_slice bufptrslice ptrT (DfracOwn 1) bufptrlist ∗
         "Hresult" ∷ ( [∗ maplist] a↦b;bufptr ∈ filter (λ x, (x.2).(bufDirty) = true) mdone;bufptrlist,
                                 is_buf bufptr a b )
     )%I

@@ -184,7 +184,7 @@ Section goose.
       <<{ ∀∀ σ, P σ }>>
         RepBlock__Read #l #primary @ ∅
       <<{ P σ }>>
-      {{{ s, RET (slice_val s); is_block s 1 σ }}}
+      {{{ s, RET (slice_val s); is_block s (DfracOwn 1) σ }}}
       {{{ True }}}.
   Proof.
     iIntros (Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
@@ -255,12 +255,12 @@ Section goose.
         "Hfupd" ∷ (Qc (* crash condition before "linearization point" *) ∧
                    (∀ σ, P σ ={⊤}=∗ P σ ∗ Q σ)) }}}
       RepBlock__Read #l #primary @ ⊤
-    {{{ s b, RET (slice_val s); is_block s 1 b ∗ Q b }}}
+    {{{ s b, RET (slice_val s); is_block s (DfracOwn 1) b ∗ Q b }}}
     {{{ Qc }}}.
   Proof.
     iIntros (Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     iApply (wpc_step_strong_mono _ _ _ _ _
-           (λ v, ∃ s b, ⌜ v = slice_val s ⌝ ∗ is_block s 1 b ∗ Q b)%I _ _ with "[-HΦ] [HΦ]"); auto.
+           (λ v, ∃ s b, ⌜ v = slice_val s ⌝ ∗ is_block s (DfracOwn 1) b ∗ Q b)%I _ _ with "[-HΦ] [HΦ]"); auto.
     2: { iSplit.
          * iNext. iIntros (?) "H". iDestruct "H" as (??) "(%&?)". subst.
            iModIntro. iRight in "HΦ". by iApply "HΦ".

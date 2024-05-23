@@ -9,9 +9,15 @@ Local Close Scope struct_scope.
 
 Set Default Proof Using "Type".
 
-Reserved Notation "l ↦[ d :: f ]{ q } v"
+Reserved Notation "l ↦[ d :: f ]{# q } v"
     (at level 20, q at level 50, d at level 50, f at level 50,
-    format "l  ↦[ d  ::  f ]{ q }  v").
+    format "l  ↦[ d  ::  f ]{# q }  v").
+Reserved Notation "l ↦[ d :: f ]□ v"
+    (at level 20, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]□  v").
+Reserved Notation "l ↦[ d :: f ]{ dq } v"
+    (at level 20, dq at level 50, d at level 50, f at level 50,
+    format "l  ↦[ d  ::  f ]{ dq }  v").
 Reserved Notation "l ↦[ d :: f ] v"
     (at level 20, d at level 50, f at level 50,
     format "l  ↦[ d  ::  f ]  v").
@@ -149,7 +155,7 @@ Proof.
   - refine _.
 Qed.
 
-Global Instance struct_field_pointsto_fractional l d f v : fractional.Fractional (λ q : Qp, struct_field_pointsto l q d f v).
+Global Instance struct_field_pointsto_fractional l d f v : fractional.Fractional (λ q : Qp, struct_field_pointsto l (DfracOwn q) d f v).
 Proof.
   unseal.
   destruct (field_offset d f).
@@ -157,7 +163,7 @@ Proof.
   - refine _.
 Qed.
 
-Global Instance struct_field_pointsto_as_fractional l q d f v : fractional.AsFractional (struct_field_pointsto l q d f v) (λ q0 : Qp, struct_field_pointsto l q0 d f v) q.
+Global Instance struct_field_pointsto_as_fractional l q d f v : fractional.AsFractional (struct_field_pointsto l (DfracOwn q) d f v) (λ q0 : Qp, struct_field_pointsto l (DfracOwn q0) d f v) q.
 Proof.
   split; [ done | apply _ ].
 Qed.
@@ -404,10 +410,14 @@ Proof.
   rewrite setField_getField_f_id //.
 Qed.
 
-Notation "l ↦[ d :: f ]{ q } v" :=
-  (struct_field_pointsto l q d f%string v%V).
+Notation "l ↦[ d :: f ]{# q } v" :=
+  (struct_field_pointsto l (DfracOwn q) d f%string v%V).
+Notation "l ↦[ d :: f ]□ v" :=
+  (struct_field_pointsto l DfracDiscarded d f%string v%V).
+Notation "l ↦[ d :: f ]{ dq } v" :=
+  (struct_field_pointsto l dq d f%string v%V).
 Notation "l ↦[ d :: f ] v" :=
-  (struct_field_pointsto l 1 d f%string v%V).
+  (struct_field_pointsto l (DfracOwn 1) d f%string v%V).
 
 Theorem getField_f_none d f0 v :
   field_offset d f0 = None ->
@@ -437,24 +447,24 @@ Proof.
 Qed.
 
 Lemma struct_pointsto_q l q t v :
-  struct_pointsto l q t v ⊣⊢
-  struct_pointsto l (q/2) t v ∗
-  struct_pointsto l (q/2) t v.
+  struct_pointsto l (DfracOwn q) t v ⊣⊢
+  struct_pointsto l (DfracOwn (q/2)) t v ∗
+  struct_pointsto l (DfracOwn (q/2)) t v.
 Proof.
   rewrite -typed_mem.struct_pointsto_fractional Qp.div_2. auto.
 Qed.
 
 Global Instance struct_pointsto_as_pointsto d l v :
-  AsMapsTo (struct_pointsto l 1 d v)
-           (fun q => struct_pointsto l q d v).
+  AsMapsTo (struct_pointsto l (DfracOwn 1) d v)
+           (fun q => struct_pointsto l (DfracOwn q) d v).
 Proof.
   split; [ done | apply _ | apply _ ].
 Qed.
 
 Lemma struct_field_pointsto_q l q d f v :
-  struct_field_pointsto l q d f v ⊣⊢
-  struct_field_pointsto l (q/2) d f v ∗
-  struct_field_pointsto l (q/2) d f v.
+  struct_field_pointsto l (DfracOwn q) d f v ⊣⊢
+  struct_field_pointsto l (DfracOwn (q/2)) d f v ∗
+  struct_field_pointsto l (DfracOwn (q/2)) d f v.
 Proof.
   unseal.
   destruct (field_offset d f).
@@ -476,8 +486,8 @@ Proof.
 Qed.
 
 Global Instance struct_field_pointsto_as_pointsto d f l v :
-  AsMapsTo (struct_field_pointsto l 1 d f v)
-           (fun q => struct_field_pointsto l q d f v).
+  AsMapsTo (struct_field_pointsto l (DfracOwn 1) d f v)
+           (fun q => struct_field_pointsto l (DfracOwn q) d f v).
 Proof.
   split; [ done | apply _ | apply _ ].
 Qed.
@@ -585,7 +595,7 @@ Proof.
 Qed.
 
 Theorem wp_load_ro l t v :
-  {{{ readonly (struct_pointsto l 1%Qp t v) }}}
+  {{{ readonly (struct_pointsto l (DfracOwn 1) t v) }}}
     load_ty t #l
   {{{ RET v; True }}}.
 Proof.
@@ -596,7 +606,7 @@ Proof.
 Qed.
 
 Theorem wp_loadField_ro {stk E} l d f fv :
-  {{{ readonly (struct_field_pointsto l 1%Qp d f fv) }}}
+  {{{ readonly (struct_field_pointsto l (DfracOwn 1) d f fv) }}}
     struct.loadF d f #l @ stk; E
   {{{ RET fv; True }}}.
 Proof.
@@ -607,7 +617,7 @@ Proof.
 Qed.
 
 Lemma tac_wp_loadField_ro {E} Δ s i l d f v Φ :
-  envs_lookup i Δ = Some (true, readonly (struct_field_pointsto l 1%Qp d f v))%I →
+  envs_lookup i Δ = Some (true, readonly (struct_field_pointsto l (DfracOwn 1) d f v))%I →
   envs_entails Δ (Φ v) →
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
@@ -629,9 +639,9 @@ Definition field_ty d f: ty :=
 
 Theorem wp_storeField stk E l d f fv fv' :
   val_ty fv' (field_ty d f) ->
-  {{{ ▷ struct_field_pointsto l 1 d f fv }}}
+  {{{ ▷ struct_field_pointsto l (DfracOwn 1) d f fv }}}
     struct.storeF d f #l fv' @ stk; E
-  {{{ RET #(); struct_field_pointsto l 1 d f fv' }}}.
+  {{{ RET #(); struct_field_pointsto l (DfracOwn 1) d f fv' }}}.
 Proof.
   rewrite /storeField /field_ty.
   intros Hty.
@@ -680,9 +690,9 @@ Qed.
 
 Theorem wp_storeField_struct stk E l d f v fv' :
   val_ty fv' (field_ty d f) ->
-  {{{ struct_pointsto l 1 (struct.t d) v }}}
+  {{{ struct_pointsto l (DfracOwn 1) (struct.t d) v }}}
     struct.storeF d f #l fv' @ stk; E
-  {{{ RET #(); struct_pointsto l 1 (struct.t d) (setField_f d f fv' v) }}}.
+  {{{ RET #(); struct_pointsto l (DfracOwn 1) (struct.t d) (setField_f d f fv' v) }}}.
 Proof.
   iIntros (Hty Φ) "Hs HΦ".
   iDestruct (struct_pointsto_acc f with "Hs") as "[Hf Hupd]".
@@ -694,7 +704,7 @@ Qed.
 
 Theorem wp_loadField_inv N l d f v stk E :
   ↑N ⊆ E →
-  {{{ inv N (∃ q, l ↦[d :: f]{q} v) }}}
+  {{{ inv N (∃ q, l ↦[d :: f]{#q} v) }}}
     struct.loadF d f #l @ stk; E
   {{{ RET v; True }}}.
 Proof.
@@ -709,10 +719,14 @@ End goose_lang.
 Typeclasses Opaque struct_pointsto.
 Typeclasses Opaque struct_field_pointsto.
 
-Notation "l ↦[ d :: f ]{ q } v" :=
-  (struct_field_pointsto l q d f%string v%V).
+Notation "l ↦[ d :: f ]{# q } v" :=
+  (struct_field_pointsto l (DfracOwn q) d f%string v%V).
+Notation "l ↦[ d :: f ]□ v" :=
+  (struct_field_pointsto l DfracDiscarded d f%string v%V).
+Notation "l ↦[ d :: f ]{ dq } v" :=
+  (struct_field_pointsto l dq d f%string v%V).
 Notation "l ↦[ d :: f ] v" :=
-  (struct_field_pointsto l 1 d f%string v%V).
+  (struct_field_pointsto l (DfracOwn 1) d f%string v%V).
 
 (* Enable solving of val_ty goals where the type is looked up from a struct declaration.
 ([simple apply] unification is too weak to do this automatically.)

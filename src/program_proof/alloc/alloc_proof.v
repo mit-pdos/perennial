@@ -31,7 +31,7 @@ Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
   "bitmap" ∷ l ↦[Alloc :: "bitmap"] (slice_val bitmap_s) ∗
   "%Hnext_bound" ∷ ⌜uint.Z next < uint.Z max⌝ ∗
   "%Hbits_len" ∷ ⌜uint.Z max = (8 * (Z.of_nat $ length bits))%Z⌝ ∗
-  "Hbits" ∷ own_slice_small bitmap_s byteT 1 (b2val <$> bits).
+  "Hbits" ∷ own_slice_small bitmap_s byteT (DfracOwn 1) (b2val <$> bits).
 
 Definition is_alloc (max: u64) (l: loc) : iProp Σ :=
   ∃ (mu_l: loc),
@@ -45,7 +45,7 @@ Proof. apply _. Qed.
 Lemma wp_MkAlloc (bitmap_s: Slice.t) (data: list u8) :
   0 < length data →
   8 * Z.of_nat (length data) < 2^64 →
-  {{{ own_slice_small bitmap_s byteT 1 (b2val <$> data) }}}
+  {{{ own_slice_small bitmap_s byteT (DfracOwn 1) (b2val <$> data) }}}
     MkAlloc (slice_val bitmap_s)
   {{{ l, RET #l; is_alloc (W64 (8 * length data)) l }}}.
 Proof.

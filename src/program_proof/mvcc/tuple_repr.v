@@ -24,7 +24,7 @@ Definition own_tuple_phys
     "Howned" ∷ tuple ↦[Tuple :: "owned"] #owned ∗
     "Htidlast" ∷ tuple ↦[Tuple :: "tslast"] #tidlast ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
-    "HversS" ∷ slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers).
+    "HversS" ∷ slice.own_slice versS (structTy Version) (DfracOwn 1) (ver_to_val <$> vers).
 
 Definition own_tuple_repr
            (key : u64) (tidlast tidgc : u64) (vers : list pver) (vchain : list dbval) γ
