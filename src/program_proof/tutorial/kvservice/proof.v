@@ -73,121 +73,9 @@ Lemma wp_decode  sl enc_args args q :
   }}}
 .
 Proof.
-<<<<<<< HEAD
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (e) "He".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { val_ty. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-
-  wp_pures.
-  wp_load.
-  rewrite Henc; clear dependent enc_args.
-  wp_apply (wp_ReadInt with "[$]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-  wp_load.
-  wp_apply (wp_ReadInt with "[$]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  wp_apply (wp_ReadBytes with "[$]").
-  { rewrite app_length in Hsz. word. }
-  iIntros (???) "[Hkey Hval]".
-  wp_pures.
-  wp_apply (wp_StringFromBytes with "[$Hkey]").
-  iIntros "Hkey".
-  wp_storeField.
-  wp_apply (wp_StringFromBytes with "[$Hval]").
-  iIntros "Hval".
-  wp_storeField.
-  iModIntro.
-  iApply "HΦ".
-  do 2 rewrite string_to_bytes_to_string.
-  iFrame.
-Qed.
-
-(* diaframe version of above *)
-Lemma wp_decode_auto  sl enc_args args q :
-  {{{
-        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
-        "Hsl" ∷ own_slice_small sl byteT q enc_args
-  }}}
-    decodePutArgs (slice_val sl)
-  {{{
-        (args_ptr:loc), RET #args_ptr; own args_ptr args
-  }}}
-.
-Proof.
-||||||| parent of d8a86079 (Use diaframe on a few more proofs)
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (e) "He".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { val_ty. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-
-  wp_pures.
-  wp_load.
-  rewrite Henc; clear dependent enc_args.
-  wp_apply (wp_ReadInt with "[$]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-  wp_load.
-  wp_apply (wp_ReadInt with "[$]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  wp_apply (wp_ReadBytes with "[$]").
-  { rewrite app_length in Hsz. word. }
-  iIntros (???) "[Hkey Hval]".
-  wp_pures.
-  wp_apply (wp_StringFromBytes with "[$Hkey]").
-  iIntros "Hkey".
-  wp_storeField.
-  wp_apply (wp_StringFromBytes with "[$Hval]").
-  iIntros "Hval".
-  wp_storeField.
-  iModIntro.
-  iApply "HΦ".
-  do 2 rewrite string_to_bytes_inj.
-  iFrame.
-Qed.
-
-(* diaframe version of above *)
-Lemma wp_decode_auto  sl enc_args args q :
-  {{{
-        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
-        "Hsl" ∷ own_slice_small sl byteT q enc_args
-  }}}
-    decodePutArgs (slice_val sl)
-  {{{
-        (args_ptr:loc), RET #args_ptr; own args_ptr args
-  }}}
-.
-Proof.
-=======
->>>>>>> d8a86079 (Use diaframe on a few more proofs)
   rewrite /encodes.
   iSteps.
-  rewrite !string_to_bytes_inj.
+  rewrite !string_to_bytes_to_string.
   iSteps.
 Qed.
 
@@ -539,36 +427,21 @@ Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
   }}}
 .
 Proof.
-  wp_start.
-  iNamed "Hsrv".
-  wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
-  iNamed "Hargs".
-  wp_auto.
-  wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
-  wp_if_destruct; wp_auto.
-  { (* case: this is a duplicate request *)
-    wp_apply (release_spec with "[-HΦ Hspec]").
-    {
-      iFrame "∗#". iNext.
-      repeat iExists _.
-      iFrame.
-    }
-    wp_pures.
-    iApply "HΦ".
-    iApply "Hspec".
-  }
-  wp_apply (wp_MapGet with "HkvsM") as (??) "[%Hlookup HkvsM]".
-  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-  wp_apply (release_spec with "[-HΦ Hspec]").
-  {
-    iFrame "∗#". iNext.
-    repeat iExists _.
-    iFrame.
-  }
-  wp_pures.
-  iApply "HΦ".
-  iApply "Hspec".
+  iSteps.
+  wp_if_destruct; [ iSteps | ].
+  iSteps.
+  iNamed.
+  wp_apply (wp_MapGet' with "[$HkvsM]"); [ by eauto | ].
+  iIntros (v ok) "(%Hget & HkvsM)".
+  iSteps.
+  iRename select (own_map x5 _ _) into "HlastRepliesM".
+  wp_apply (wp_MapInsert with "HlastRepliesM"); [ by eauto | ].
+  rewrite /typed_map.map_insert.
+  iIntros "hLastRepliesM".
+  iSteps.
+
+  Unshelve.
+  all: tc_solve.
 Qed.
 
 Lemma wp_MakeServer :
@@ -581,6 +454,7 @@ Lemma wp_MakeServer :
   }}}
 .
 Proof.
+<<<<<<< HEAD
   iIntros (Φ) "Hpre HΦ".
   wp_lam.
   wp_apply wp_allocStruct.
@@ -604,6 +478,37 @@ Proof.
   iMod (alloc_lock with "HmuInv [-]") as "$"; last done.
   iNext.
   repeat iExists _; iFrame.
+||||||| parent of 490fa52f (Automate some more proofs)
+  iIntros (Φ) "Hpre HΦ".
+  wp_lam.
+  wp_apply wp_allocStruct.
+  { val_ty. }
+  iIntros (s) "Hs".
+  iDestruct (struct_fields_split with "Hs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply (wp_new_free_lock).
+  iIntros (mu) "HmuInv".
+  wp_storeField.
+  wp_apply (wp_NewMap string).
+  iIntros (kvs_loc) "HkvsM".
+  wp_storeField.
+  wp_apply (wp_NewMap u64).
+  iIntros (lastReplies_loc) "HlastRepliesM".
+  wp_storeField.
+  iApply "HΦ".
+  iMod (readonly_alloc_1 with "mu") as "#Hmu".
+  iExists _; iFrame "#".
+  iMod (alloc_lock with "HmuInv [-]") as "$"; last done.
+  iNext.
+  repeat iExists _; iFrame.
+=======
+  iSteps.
+  wp_apply (wp_NewMap string string); iIntros (m1) "Hm1".
+  iSteps.
+  wp_apply (wp_NewMap w64 string); iIntros (m2) "Hm2".
+  iSteps.
+>>>>>>> 490fa52f (Automate some more proofs)
 Qed.
 
 End rpc_server_proofs.
@@ -816,6 +721,8 @@ Definition is_Client (cl:loc) : iProp Σ :=
   "#HurpcCl" ∷ is_uRPCClient urpcCl host ∗
   "#Hhost" ∷ is_kvserver_host host
 .
+
+#[local] Opaque urpc.MakeClient.
 
 Lemma wp_makeClient (host:u64) :
   {{{
@@ -1352,10 +1259,20 @@ Lemma wp_MakeClerk (host:u64) :
   {{{ ck, RET #ck; is_Clerk ck }}}
 .
 Proof.
-  iSteps.
-  wp_apply (wp_makeClient).
-  { iSteps. }
-  iSteps.
+  iIntros (Φ) "#Hhost HΦ".
+  wp_lam.
+  wp_apply (wp_makeClient with "Hhost").
+  iIntros (?) "#?".
+  iApply wp_fupd.
+  wp_apply wp_allocStruct.
+  { val_ty. }
+  iIntros (?) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "HH".
+  iNamed "HH".
+  iApply "HΦ".
+  iMod (readonly_alloc_1 with "rpcCl") as "#?".
+  iModIntro.
+  iExists _; iFrame "#".
 Qed.
 
 End clerk_proof.

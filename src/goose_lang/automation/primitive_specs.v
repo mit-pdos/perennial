@@ -226,7 +226,7 @@ Section goose_lang_instances.
   Qed.
 
   Global Instance storeField_spec l d f E fv' :
-    SPEC ⟨E⟩ fv, {{ ⌜val_ty fv' (field_ty d f)⌝ ∗ ▷ l ↦[d :: f] fv }}
+    SPEC ⟨E⟩ fv, {{ ▷ l ↦[d :: f] fv ∗ ⌜val_ty fv' (field_ty d f)⌝}}
                   struct.storeF d f #l fv'
                 {{ RET #(); l ↦[d :: f] fv' }}.
   Proof.

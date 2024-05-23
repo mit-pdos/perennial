@@ -9,10 +9,26 @@ From Perennial.program_proof Require Import std_proof.
 
 #[global] Opaque NewSlice SliceGet SliceAppend SliceAppendSlice.
 #[global] Opaque NewMap impl.MapGet impl.MapInsert impl.MapDelete impl.MapLen.
+#[global] Opaque lock.new lock.acquire lock.release.
 
 Section proofs.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
   Context {ext_ty: ext_types ext}.
+
+  #[global] Instance new_lock_spec :
+    SPEC {{ emp }} lock.new #() {{ (l: loc), RET #l; is_free_lock l }}.
+  Proof.
+    iSteps.
+    wp_apply wp_new_free_lock; iSteps.
+  Qed.
+
+  #[global] Instance alloc_lock_hint E (lk: loc) N R :
+    HINT (ε₀) ✱ [-; is_free_lock lk ∗ ▷ R] ⊫ [fupd E E]; is_lock N (#lk) R ✱ [emp].
+  Proof.
+    iSteps.
+    iMod (alloc_lock with "[$] [$]") as "Hlock".
+    iSteps.
+  Qed.
 
   #[global] Instance lock_acquire_spec lk N R :
     SPEC {{ is_lock N lk R }} lock.acquire lk {{ RET #(); locked lk ∗ R }}.
