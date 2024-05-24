@@ -285,7 +285,7 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     ghost_var γ.(addrs_name) (1/2) addrs ∗
     ghost_var γ.(blocks_name) (1/2) blocks ∗
     circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
-    own_slice_small s uint64T 1 addrs.
+    own_slice_small s uint64T (DfracOwn 1) addrs.
 
 Definition init_ghost_state γ :=
   ("Haddrs'" ∷ ghost_var γ.(addrs_name) 1 ([] : list u64) ∗
@@ -466,7 +466,7 @@ Qed.
 Theorem wp_hdr2 (newStart: u64) :
   {{{ True }}}
     hdr2 #newStart
-  {{{ s b, RET slice_val s; is_block s 1 b ∗
+  {{{ s b, RET slice_val s; is_block s (DfracOwn 1) b ∗
                             ⌜block_encodes b [EncUInt64 newStart]⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -486,12 +486,12 @@ Qed.
 Theorem wp_hdr1 (circ: loc) (newStart: u64) s (addrs: list u64) :
   length addrs = Z.to_nat LogSz ->
   {{{ circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
-       own_slice_small s uint64T 1 addrs }}}
+       own_slice_small s uint64T (DfracOwn 1) addrs }}}
     circularAppender__hdr1 #circ #newStart
   {{{ b_s b, RET slice_val b_s;
       circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
-      own_slice_small s uint64T 1 addrs ∗
-      is_block b_s 1 b ∗
+      own_slice_small s uint64T (DfracOwn 1) addrs ∗
+      is_block b_s (DfracOwn 1) b ∗
       ⌜block_encodes b ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
 Proof.
   iIntros (Haddrlen Φ) "[HdiskAddrs Hs] HΦ".
@@ -821,7 +821,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       start_at_least γ startpos_lb ∗
       diskEnd_is γ (1/2) (uint.Z endpos) ∗
       c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      own_slice_small diskaddrslice uint64T 1 addrs ∗
+      own_slice_small diskaddrslice uint64T (DfracOwn 1) addrs ∗
       updates_slice_frag bufs q upds
   }}}
     circularAppender__logBlocks #c d #endpos (slice_val bufs)
@@ -831,7 +831,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       ghost_var γ.(blocks_name) (1/2) blocks' ∗
       diskEnd_is γ (1/2) (uint.Z endpos) ∗
       c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      own_slice_small diskaddrslice uint64T 1 addrs' ∗
+      own_slice_small diskaddrslice uint64T (DfracOwn 1) addrs' ∗
       updates_slice_frag bufs q upds
   }}}.
 Proof.
@@ -849,7 +849,7 @@ Proof.
     let blocks' := update_blocks blocks (uint.Z endpos) (take (uint.nat i) upds) in
     ghost_var γ.(blocks_name) (1/2) blocks' ∗
     c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
-    own_slice_small diskaddrslice uint64T 1 addrs' ∗
+    own_slice_small diskaddrslice uint64T (DfracOwn 1) addrs' ∗
     diskEnd_is γ (1/2) (uint.Z endpos) ∗
     ( [∗ list] b_upd;upd ∈ bks;upds, is_update b_upd q upd)
     )%I (* XXX why is %I needed? *)
@@ -1198,10 +1198,10 @@ Qed.
 Theorem wp_decodeHdr1 stk E s (hdr1: Block) (endpos: u64) (addrs: list u64) :
   block_encodes hdr1 ([EncUInt64 endpos] ++ (EncUInt64 <$> addrs)) →
   length addrs = Z.to_nat LogSz ->
-  {{{ is_block s 1 hdr1 }}}
+  {{{ is_block s (DfracOwn 1) hdr1 }}}
     decodeHdr1 (slice_val s) @ stk; E
   {{{ (a_s:Slice.t), RET (#endpos, slice_val a_s);
-      own_slice a_s uint64T 1 addrs }}}.
+      own_slice a_s uint64T (DfracOwn 1) addrs }}}.
 Proof.
   iIntros (Hhdr1 Haddrlen Φ) "Hb HΦ".
   wp_call.
@@ -1222,7 +1222,7 @@ Qed.
 
 Theorem wp_decodeHdr2 stk E s (hdr2: Block) (startpos: u64) :
   block_encodes hdr2 [EncUInt64 startpos] ->
-  {{{ is_block s 1 hdr2 }}}
+  {{{ is_block s (DfracOwn 1) hdr2 }}}
     decodeHdr2 (slice_val s) @ stk; E
   {{{ RET #startpos; True }}}.
 Proof.

@@ -29,7 +29,7 @@ Definition own_GetReply reply_ptr rep : iProp Σ :=
   ∃ val_sl,
   "HErr" ∷ reply_ptr ↦[GetReply :: "Err"] #rep.(GR_Err) ∗
   "HValue" ∷ reply_ptr ↦[GetReply :: "Value"] (slice_val val_sl) ∗
-  "#HValue_sl" ∷ readonly (typed_slice.own_slice_small val_sl byteT (DfracOwn 1) rep.(GR_Value))
+  "#HValue_sl" ∷ typed_slice.own_slice_small val_sl byteT DfracDiscarded rep.(GR_Value)
 .
 
 Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
@@ -130,6 +130,8 @@ Proof.
   iIntros (??) "[Hsl Hdec]".
   wp_storeField.
 
+  iMod (own_slice_small_persist with "Hsl") as "#Hsl".
+
   wp_pures.
   iApply "HΦ".
   iModIntro.
@@ -170,15 +172,14 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  iMod (readonly_load with "HValue_sl") as (q) "HValue_sl'".
-  iDestruct (typed_slice.own_slice_small_sz with "HValue_sl'") as %Hsz.
+  iDestruct (typed_slice.own_slice_small_sz with "HValue_sl") as %Hsz.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
   iIntros "Henc".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl']").
+  wp_apply (wp_Enc__PutBytes with "[$Henc $HValue_sl]").
   { word. }
   iIntros "[Henc _]".
   wp_pures.

@@ -27,8 +27,8 @@ Definition own_ConditionalPutRequest args_ptr expv_sl newv_sl args : iProp Σ :=
   "HKey" ∷ args_ptr ↦[ConditionalPutRequest :: "Key"] #args.(CPR_Key) ∗
   "HExpValue" ∷ args_ptr ↦[ConditionalPutRequest :: "ExpectedValue"] (slice_val expv_sl) ∗
   "HNewValue" ∷ args_ptr ↦[ConditionalPutRequest :: "NewValue"] (slice_val newv_sl) ∗
-  "#HExpValue_sl" ∷ readonly (typed_slice.own_slice_small expv_sl byteT 1%Qp args.(CPR_ExpValue)) ∗
-  "#HNewValue_sl" ∷ readonly (typed_slice.own_slice_small newv_sl byteT 1%Qp args.(CPR_NewValue))
+  "#HExpValue_sl" ∷ typed_slice.own_slice_small expv_sl byteT DfracDiscarded args.(CPR_ExpValue) ∗
+  "#HNewValue_sl" ∷ typed_slice.own_slice_small newv_sl byteT DfracDiscarded args.(CPR_NewValue)
 .
 
 Definition own_ConditionalPutReply reply_ptr rep : iProp Σ :=
@@ -51,7 +51,7 @@ Lemma wp_EncodeConditionalPutRequest args_ptr expv_sl newv_sl args :
     EncodeConditionalPutRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_ConditionalPutRequest reqData args⌝ ∗
-         typed_slice.own_slice req_sl byteT 1%Qp reqData ∗
+         typed_slice.own_slice req_sl byteT (DfracOwn 1) reqData ∗
          own_ConditionalPutRequest args_ptr expv_sl newv_sl args
   }}}.
 Proof.
@@ -82,7 +82,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  iMod (readonly_load with "HExpValue_sl") as (q) "HExpValue_sl'".
+  iMod (own_slice_small_persist with "HExpValue_sl") as "#HExpValue_sl'".
   iDestruct (typed_slice.own_slice_small_sz with "HExpValue_sl'") as %Hsz.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
@@ -96,7 +96,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  iMod (readonly_load with "HNewValue_sl") as (q') "HNewValue_sl'".
+  iMod (own_slice_small_persist with "HNewValue_sl") as "#HNewValue_sl'".
   iDestruct (typed_slice.own_slice_small_sz with "HNewValue_sl'") as %Hsz'.
   wp_apply (wp_slice_len).
   wp_apply (wp_Enc__PutInt with "Henc").
@@ -124,7 +124,7 @@ Qed.
 Lemma wp_DecodeConditionalPutRequest req_sl reqData args :
   {{{
        ⌜has_encoding_ConditionalPutRequest reqData args⌝ ∗
-       typed_slice.own_slice_small req_sl byteT 1%Qp reqData
+       typed_slice.own_slice_small req_sl byteT (DfracOwn 1) reqData
   }}}
     DecodeConditionalPutRequest (slice_val req_sl)
   {{{
@@ -151,19 +151,23 @@ Proof.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
-  wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
+  wp_apply (wp_Dec__GetBytes with "[$Hdec]"); first done.
   iIntros (??) "[Hexp_sl Hdec]".
   wp_storeField.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
-  wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
+  wp_apply (wp_Dec__GetBytes with "[$Hdec]"); first done.
   iIntros (??) "[Hnew_sl Hdec]".
   wp_storeField.
 
   wp_pures.
   iApply "HΦ".
   iFrame.
+
+  iMod (own_slice_small_persist with "Hexp_sl") as "#Hexp_sl".
+  iMod (own_slice_small_persist with "Hnew_sl") as "#Hnew_sl".
+  iFrame "#".
   iPureIntro. done.
 Qed.
 
@@ -174,7 +178,7 @@ Lemma wp_EncodeConditionalPutReply rep_ptr rep :
     EncodeConditionalPutReply #rep_ptr
   {{{
        repData rep_sl, RET (slice_val rep_sl);
-       typed_slice.own_slice rep_sl byteT 1%Qp repData ∗
+       typed_slice.own_slice rep_sl byteT (DfracOwn 1) repData ∗
        ⌜has_encoding_ConditionalPutReply repData rep ⌝
   }}}.
 Proof.
@@ -212,7 +216,7 @@ Qed.
 
 Lemma wp_DecodeConditionalPutReply rep rep_sl repData :
   {{{
-       typed_slice.own_slice_small rep_sl byteT 1%Qp repData ∗
+       typed_slice.own_slice_small rep_sl byteT (DfracOwn 1) repData ∗
        ⌜has_encoding_ConditionalPutReply repData rep ⌝
   }}}
     DecodeConditionalPutReply (slice_val rep_sl)

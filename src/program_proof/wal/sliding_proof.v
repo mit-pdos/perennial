@@ -186,9 +186,9 @@ Qed.
 
 Theorem wp_mkSliding s q log (start: u64) :
   uint.Z start + length log < 2^64 ->
-  {{{ updates_slice_frag s q log ∗ own_slice_cap s (struct.t Update) }}}
+  {{{ updates_slice_frag s (DfracOwn q) log ∗ own_slice_cap s (struct.t Update) }}}
     mkSliding (slice_val s) #start
-  {{{ (l: loc), RET #l; is_sliding l q (slidingM.mk log start (uint.Z start + length log)) }}}.
+  {{{ (l: loc), RET #l; is_sliding l (DfracOwn q) (slidingM.mk log start (uint.Z start + length log)) }}}.
 Proof.
   iIntros (Hbound Φ) "[Hs Hcap] HΦ".
   rewrite /mkSliding; wp_pures.
@@ -201,7 +201,7 @@ Proof.
   wp_apply (wp_forSlice
               (fun i => "Hm" ∷ own_map addrPosPtr (DfracOwn 1)
                                (compute_memLogMap (take (uint.nat i) log) start) ∗
-                      "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd q upd
+                      "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd (DfracOwn q) upd
               )%I
            with "[] [Hown_map $Hblocks $Hs]").
   2: {
@@ -234,7 +234,7 @@ Proof.
   wp_apply wp_allocStruct; first val_ty.
   iIntros (l) "Hl".
   iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&HfneedFlush&Hf4&%)".
-  iAssert (updates_slice_frag s q log) with "[Hs Hblocks]" as "Hlog".
+  iAssert (updates_slice_frag s (DfracOwn q) log) with "[Hs Hblocks]" as "Hlog".
   { iExists _; iFrame. }
   iDestruct (updates_slice_frag_split _ _ _ (W64 $ length log) with "Hlog") as "[Hmut Hreadonly]".
   { word. }
@@ -301,7 +301,7 @@ Proof.
   iDestruct (updates_slice_frag_combine with "[$Hmut $HreadLog]") as "Hlog".
   { destruct Hwf as (?&?&?).
     revert Hlen1 Hlen2; word. }
-  iExists q; iFrame.
+  iExists (DfracOwn q); iFrame.
   iIntros "Hupds".
   rewrite -Hqq'.
   iDestruct (updates_slice_frag_split _ _ _ (slidingM.numMutable σ) with "Hupds") as "[Hupds2 Hupds1]".
@@ -634,7 +634,8 @@ Proof.
   { iPureIntro. intuition eauto. }
   iIntros (logSlice') "(log_readonly_inner&log_mutable&%Hwf')".
   iDestruct "log_readonly_inner" as (q) "[%Hq log_readonly_inner]".
-  iMod (readonly_alloc (readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) 1) (Φ := λ q, readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) q) with "log_readonly_inner") as "#log_readonly'".
+  iMod (readonly_alloc (readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) (DfracOwn 1))
+    (Φ := λ q, readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) (DfracOwn q)) with "log_readonly_inner") as "#log_readonly'".
   wp_apply (wp_storeField with "log").
   { rewrite /field_ty //=. }
   iIntros "log".
@@ -798,10 +799,10 @@ Proof.
 Qed.
 
 Theorem wp_absorbBufs b_s q q_b (bufs: list update.t) :
-  {{{ updates_slice_frag' b_s q q_b bufs }}}
+  {{{ updates_slice_frag' b_s q (DfracOwn q_b) bufs }}}
     absorbBufs (slice_val b_s)
   {{{ b_s' bufs', RET slice_val b_s';
-      "Habsorbed" ∷ updates_slice' q_b b_s' bufs' ∗
+      "Habsorbed" ∷ updates_slice' (DfracOwn q_b) b_s' bufs' ∗
       "%Hsame_upds" ∷ ⌜∀ d, apply_upds bufs d = apply_upds bufs' d⌝ ∗
       "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝  }}}.
 Proof.
@@ -1068,13 +1069,13 @@ Proof.
   wp_apply (wp_forSlice (fun i =>
     "start" ∷ l ↦[sliding :: "start"] #σ.(slidingM.start) ∗
     "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
-    "HaddrPos" ∷ own_map addrPosPtr 1 (slidingM.addrPosMap
+    "HaddrPos" ∷ own_map addrPosPtr (DfracOwn 1) (slidingM.addrPosMap
       (set slidingM.start (word.add i)
         (set slidingM.log (drop (uint.nat i)) σ)
       )
     ) ∗
     "Hbks" ∷ [∗ list] uv;upd ∈ bks; take (uint.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log),
-      is_update uv q upd
+      is_update uv (DfracOwn q) upd
   )%I with "[] [$HlogSlice $start $addrPos is_addrPos $Hbks]").
   2: {
     rewrite /set drop_0 /=.
@@ -1100,7 +1101,7 @@ Proof.
     destruct (list_lookup_lt _ _ _ Hlt') as (upd & Hupd).
     clear Hlt'.
     iDestruct (big_sepL2_lookup_acc with "Hbks") as "[[%Huaddr Hb] Hbks]"; eauto.
-    iAssert (is_update uv q upd) with "[Hb]" as "Hbk"; first by (iFrame; eauto).
+    iAssert (is_update uv (DfracOwn q) upd) with "[Hb]" as "Hbk"; first by (iFrame; eauto).
     iPoseProof ("Hbks" with "Hbk") as "Hbks".
     rewrite lookup_take in Hupd. 2: word.
 
@@ -1197,14 +1198,14 @@ Proof.
 
   iAssert (∀ q, (updates_slice_frag
                       (slice_take logSlice
-                         (word.sub mutable start)) q
+                         (word.sub mutable start)) (DfracOwn q)
                       (take (uint.nat (word.sub mutable start))
                          log)) -∗
     (updates_slice_frag
        (slice_take
           (slice_skip logSlice (uint64T * (blockT * unitT)%ht)
              (word.sub newStart start))
-          (word.sub mutable newStart)) q
+          (word.sub mutable newStart)) (DfracOwn q)
        (take (uint.nat (word.sub mutable newStart))
           (drop (uint.nat newStart - uint.nat start) log))))%I as "Hlog_implies".
   {
@@ -1273,9 +1274,9 @@ Proof.
 Qed.
 
 Theorem wp_sliding__clearMutable l σ :
-  {{{ is_sliding l 1 σ }}}
+  {{{ is_sliding l (DfracOwn 1) σ }}}
     sliding__clearMutable #l
-  {{{ RET #(); is_sliding l 1 (set slidingM.mutable (λ _, slidingM.endPos σ) σ) }}}.
+  {{{ RET #(); is_sliding l (DfracOwn 1) (set slidingM.mutable (λ _, slidingM.endPos σ) σ) }}}.
 Proof.
   iIntros (Φ) "Hsliding HΦ".
   wp_call.

@@ -398,7 +398,7 @@ Definition wal_linv_fields st σ: iProp Σ :=
           "Hshutdown" ∷ st ↦[WalogState :: "shutdown"] #σₗ.(shutdown) ∗
           "Hnthread" ∷ st ↦[WalogState :: "nthread"] #σₗ.(nthread)) ∗
   "%Hlocked_wf" ∷ ⌜locked_wf σ⌝ ∗
-  "His_memLog" ∷ is_sliding σₗ.(memLogPtr) 1 σ.(memLog)
+  "His_memLog" ∷ is_sliding σₗ.(memLogPtr) (DfracOwn 1) σ.(memLog)
   )%I.
 
 Definition diskEnd_linv γ (diskEnd: u64) : iProp Σ :=

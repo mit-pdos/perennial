@@ -79,7 +79,7 @@ Qed.
 essentially the same spec as sliding.memWrite *)
 Theorem wp_WalogState__doMemAppend l q_b memLog bufs upds :
   {{{ "His_memLog" ∷ is_sliding l q_b memLog ∗
-      "Hupds" ∷ updates_slice_frag' bufs 1 q_b upds ∗
+      "Hupds" ∷ updates_slice_frag' bufs (DfracOwn 1) q_b upds ∗
       "%Hoverflow" ∷ ⌜slidingM.memEnd memLog + length upds < 2 ^ 64⌝
   }}}
     doMemAppend #l (slice_val bufs)
@@ -742,7 +742,7 @@ Proof.
                                (if ok then Q txn ∗ ∃ txn_id, txn_pos γ txn_id txn else PreQ)) ∗
                      "Hlocked" ∷ locked #σₛ.(memLock) ∗
                      "Hlockinv" ∷ wal_linv σₛ.(wal_st) γ ∗
-                     "Hbufs" ∷ if b then updates_slice_frag bufs 1 bs else emp
+                     "Hbufs" ∷ if b then updates_slice_frag bufs (DfracOwn 1) bs else emp
                 )%I
                 with  "[] [-HΦ]"
              ).

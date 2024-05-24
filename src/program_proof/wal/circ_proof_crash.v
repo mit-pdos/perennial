@@ -256,7 +256,7 @@ Proof.
     (∃ bufSlice,
       bufsloc ↦[slice.T (struct.t Update)] (slice_val bufSlice) ∗
       updates_slice bufSlice (take (uint.nat i - uint.nat σ.(start)) σ.(upds))) ∗
-      own_slice_small addrs uint64T 1 addrs0 ∗
+      own_slice_small addrs uint64T (DfracOwn 1) addrs0 ∗
       2 d↦∗ blocks0
     )%I
     (fun i => 2 d↦∗ blocks0)%I with "[] [Hbufsloc $Hposl $Hd2 Hdiskaddrs]").
@@ -281,7 +281,7 @@ Proof.
     list_elem addrs0 (uint.Z i `mod` LogSz) as a.
     { destruct Hlow_wf.
       mod_bound; word. }
-    wp_apply (wp_SliceGet _ _ _ _ 1 addrs0 with "[$Hdiskaddrs]"); eauto.
+    wp_apply (wp_SliceGet _ _ _ _ (DfracOwn 1) addrs0 with "[$Hdiskaddrs]"); eauto.
     { iPureIntro.
       change (word.divu _ _) with (W64 LogSz).
       word_cleanup.

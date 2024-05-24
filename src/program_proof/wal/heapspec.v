@@ -2471,7 +2471,7 @@ Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn dinit :
     wal.Walog__Read #l #blkno
   {{{ bl, RET (slice_val bl);
       is_locked_walheap γ lwh ∗
-      is_block bl 1 b
+      is_block bl (DfracOwn 1) b
   }}}.
 Proof using walheapG0.
   iIntros (Φ) "(#Hwal & Htxnsfrag & %Hb) HΦ".

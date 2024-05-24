@@ -103,7 +103,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ dinit a :
          (P σ -∗ |NC={⊤ ∖↑ N}=> P σ' ∗ Q b))
    }}}
     Walog__ReadInstalled #l #a
-  {{{ bl, RET slice_val bl; ∃ b, is_block bl 1 b ∗ Q b}}}.
+  {{{ bl, RET slice_val bl; ∃ b, is_block bl (DfracOwn 1) b ∗ Q b}}}.
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   rewrite /Walog__ReadInstalled.

@@ -961,7 +961,7 @@ Proof.
       wp_apply (wp_Server__put with "[$Hsrv $Hargs Hspec //]").
       iIntros "HΨ". wp_pures.
       iApply "HΦ"; iFrame.
-      by iDestruct (own_slice_small_nil _ 1) as "$".
+      by iDestruct (own_slice_small_nil _ (DfracOwn 1)) as "$".
     }
     iApply (big_sepM_insert_2 with "").
     {
