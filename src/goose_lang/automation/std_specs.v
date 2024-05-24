@@ -244,5 +244,4 @@ End proofs.
 #[global] Opaque impl.StringToBytes.
 #[global] Opaque std.SumAssumeNoOverflow.
 
-Hint Extern 2 => rewrite !string_to_bytes_inj : solve_pure_add.
 Hint Extern 4 (IntoValComparable _) => tc_solve : solve_pure_add.
