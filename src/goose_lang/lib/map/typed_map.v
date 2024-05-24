@@ -393,6 +393,18 @@ Proof using IntoValComparable0.
   iApply "HΦ"; iFrame.
 Qed.
 
+Global Instance own_map_persistent mref m : Persistent (own_map mref DfracDiscarded m).
+Proof. apply _. Qed.
+
+Lemma own_map_persist mref q m :
+  own_map mref (DfracOwn q) m ==∗ own_map mref DfracDiscarded m.
+Proof.
+  iIntros "H".
+  iMod (map.own_map_persist with "H") as "H".
+  iModIntro.
+  iFrame.
+Qed.
+
 End heap.
 
 Arguments wp_NewMap {_ _ _ _ _ _ _} K {_ _ _} V {_} {vt}.

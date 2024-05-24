@@ -641,6 +641,12 @@ Proof.
   wp_call.
   wp_load.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
+
+(*
+XXX
+  iMod (own_slice_small_persist with "Hs") as "Hs".
+*)
+
   (* we split the decoder state into one half used to serve the client and one
      half to reconstruct the decoder (now with half the fraction) *)
   iDestruct "Hs" as "[Hs1 Hs2]".

@@ -157,6 +157,18 @@ Global Instance own_slice_small_as_pointsto s t vs :
   AsMapsTo (own_slice_small s t (DfracOwn 1) vs) (λ q, own_slice_small s t (DfracOwn q) vs).
 Proof. constructor; auto; intros; apply _. Qed.
 
+Global Instance own_slice_small_persistent s t vs : Persistent (own_slice_small s t DfracDiscarded vs).
+Proof. apply _. Qed.
+
+Lemma own_slice_small_persist s t q vs:
+  own_slice_small s t (DfracOwn q) vs ==∗ own_slice_small s t DfracDiscarded vs.
+Proof.
+  iIntros "Hs".
+  iMod (slice.own_slice_small_persist with "Hs") as "Hs".
+  iModIntro.
+  iFrame.
+Qed.
+
 Lemma wp_NewSlice stk E t `{!IntoValForType V t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E

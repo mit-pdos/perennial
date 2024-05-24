@@ -747,6 +747,19 @@ Proof using IntoValComparable0.
   eauto.
 Qed.
 
+Global Instance own_map_persistent mref m : Persistent (own_map mref DfracDiscarded m).
+Proof. apply _. Qed.
+
+Lemma own_map_persist mref q m :
+  own_map mref (DfracOwn q) m ==∗ own_map mref DfracDiscarded m.
+Proof.
+  rewrite /own_map.
+  iIntros "H". iDestruct "H" as (mv) "[% H]".
+  iMod (heap_pointsto_persist with "H") as "H".
+  iModIntro.
+  iExists _; iFrame. done.
+Qed.
+
 End heap.
 
 Typeclasses Opaque own_map.

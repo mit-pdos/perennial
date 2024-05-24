@@ -168,6 +168,19 @@ Proof.
   iDestruct (array_agree with "Hs1 Hs2") as %->; auto.
 Qed.
 
+Global Instance own_slice_small_persistent s t vs : Persistent (own_slice_small s t DfracDiscarded vs).
+Proof. apply _. Qed.
+
+Lemma own_slice_small_persist s t q vs:
+  own_slice_small s t (DfracOwn q) vs ==∗ own_slice_small s t DfracDiscarded vs.
+Proof.
+  rewrite /own_slice_small.
+  iIntros "[Hs %Hl]".
+  iMod (array_persist with "Hs") as "Hs".
+  iModIntro.
+  iFrame. done.
+Qed.
+
 Global Instance own_slice_small_timeless s t q vs :
   Timeless (own_slice_small s t q vs) := _.
 
