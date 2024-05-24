@@ -474,6 +474,8 @@ Section start_server_proof.
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
 
+#[local] Opaque MakeServer.
+
 Lemma wp_Server__Start (s:loc) (host:u64) :
   {{{
         "#Hsrv" ∷ is_Server s ∗

@@ -272,7 +272,7 @@ Proof.
   eauto with iFrame.
 Qed.
 
-Lemma wp_ConnMan__CallAtLeastOnce (spec : RpcSpec) (x : spec.(spec_ty))
+Polymorphic Lemma wp_ConnMan__CallAtLeastOnce (spec : RpcSpec) (x : spec.(spec_ty))
   (γsmap:server_chan_gnames) (c_ptr:loc) (host:u64) (rpcid:u64)
   req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8) :
   {{{

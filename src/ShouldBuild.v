@@ -1,18 +1,14 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
-(* TODO: these two cause a universe inconsistency. It requires something in
-memkv, not just the Grove libraries, and vrsm works. *)
-(*
-Error: Universe inconsistency. Cannot enforce memkv_shard_definitions.is_shard_server_unfold.u0 <
-universes.Quant because universes.Quant = memkv_shard_definitions.is_shard_server_unfold.u0.
- *)
+From Perennial.program_proof Require memkv_shard_start_proof.
 From diaframe Require Import solve_defs.
-From Perennial.program_proof.memkv Require memkv_shard_start_proof.
-
-From Perennial.program_proof.memkv Require
-     memkv_clerk_proof
-     .
+(*
+Error: Universe inconsistency. Cannot enforce memkv_get_proof.wp_GetRPC.u0 <
+interface.universes.Quant because interface.universes.Quant
+= memkv_get_proof.wp_GetRPC.u0.
+ *)
+From Perennial.program_proof.memkv Require closed.
 
 From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy

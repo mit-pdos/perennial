@@ -7,6 +7,8 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.grove_shared Require Export  erpc_lib urpc_proof urpc_spec erpc_proof.
 From Perennial.program_proof.memkv Require Export common_proof connman_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 
+#[local] Set Universe Polymorphism.
+
 Section memkv_shard_pre_definitions.
 
 Context `{erpcG Σ, urpcregG Σ, kvMapG Σ}.
@@ -98,7 +100,7 @@ Polymorphic Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard
              )%I;
      spec_Post := (λ x reqData repData, True)%I |}.
 
-Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
+Polymorphic Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   (λ host γ,
   "#HputSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_PUT (is_shard_server_putSpec γ.(kv_gn)) ∗
   "#HconditionalPutSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_CONDITIONAL_PUT
@@ -110,7 +112,7 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
 )%I.
 
 (* Actually, handler_is is contractive now so we can remove the ▷ in is_shard_server *)
-Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
+Polymorphic Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
@@ -121,22 +123,22 @@ Proof.
   repeat f_equiv.
 Qed.
 
-Definition is_shard_server_def :=
+Polymorphic Definition is_shard_server_def :=
   fixpoint (is_shard_server_pre).
-Definition is_shard_server_aux : seal (is_shard_server_def). by eexists. Qed.
-Definition is_shard_server := is_shard_server_aux.(unseal).
-Definition is_shard_server_eq : is_shard_server = is_shard_server_def := is_shard_server_aux.(seal_eq).
+Polymorphic Definition is_shard_server_aux : seal (is_shard_server_def). by eexists. Qed.
+Polymorphic Definition is_shard_server := is_shard_server_aux.(unseal).
+Polymorphic Definition is_shard_server_eq : is_shard_server = is_shard_server_def := is_shard_server_aux.(seal_eq).
 
 Definition is_shard_server_moveSpec γkv := is_shard_server_moveSpec_pre γkv is_shard_server.
 
-Lemma is_shard_server_unfold host γ :
-  is_shard_server host γ ⊣⊢ is_shard_server_pre (is_shard_server) host γ
+Polymorphic Lemma is_shard_server_unfold@{u1 u2 u3 u4} host γ :
+  is_shard_server@{u1 u2 u3 u4} host γ ≡ is_shard_server_pre@{u1 u2 u3 u4} (is_shard_server@{u1 u2 u3 u4}) host γ
 .
 Proof.
   rewrite is_shard_server_eq. apply (fixpoint_unfold (is_shard_server_pre)).
 Qed.
 
-Global Instance is_shard_server_pers host γ : Persistent (is_shard_server host γ).
+Global Polymorphic Instance is_shard_server_pers host γ : Persistent (is_shard_server host γ).
 Proof.
   rewrite is_shard_server_unfold.
   apply _.

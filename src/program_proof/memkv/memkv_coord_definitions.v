@@ -3,6 +3,8 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.memkv Require Import common_proof memkv_shard_definitions.
 
+#[local] Set Universe Polymorphism.
+
 Definition uCOORD_ADD: nat :=
   Eval vm_compute in match COORD_ADD with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uCOORD_GET: nat :=

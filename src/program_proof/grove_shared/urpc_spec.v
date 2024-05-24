@@ -6,8 +6,6 @@ From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 
-#[local] Set Printing Universes.
-
 Section rpc_global_defs.
 
 Context `{!urpcregG Σ}.
