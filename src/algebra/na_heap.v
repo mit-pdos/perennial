@@ -20,6 +20,9 @@ Import uPred.
 Definition lock_stateR : cmra :=
   csumR unitR natR.
 
+Instance lock_stateR_total : CmraTotal lock_stateR.
+Proof. rewrite /CmraTotal. destruct x; eauto. Qed.
+
 Definition na_heapUR (L V: Type) `{Countable L} : ucmra :=
   gmapUR L (prodR (prodR dfracR lock_stateR) (agreeR (leibnizO V))).
 
@@ -251,6 +254,33 @@ Section na_heap.
   Global Instance na_heap_pointsto_as_fractional l q v:
     AsFractional (l ↦{#q} v) (λ q, l ↦{#q} v)%I q.
   Proof. split; first done. apply _. Qed.
+
+  Global Instance na_heap_pointsto_persistent l v : Persistent (l ↦□ v).
+  Proof. rewrite na_heap_pointsto_eq. apply _. Qed.
+
+  Lemma na_heap_pointsto_persist l q v:
+    l ↦{#q} v ==∗ l ↦□ v.
+  Proof.
+    rewrite na_heap_pointsto_eq.
+    iApply own_update.
+    (* ??? *)
+
+(*
+    eapply (cmra_update_lift_updateP (λ dq, ◯ {[l := (dq, to_lock_stateR (RSt 0), to_agree v)]})).
+    2: apply dfrac_discard_update.
+    intros.
+*)
+
+(*
+    apply cmra_update_included.
+    apply auth_frag_mono.
+    apply singleton_included.
+    apply Some_included; right.
+    apply pair_included; split. 2: reflexivity.
+    apply pair_included; split. 2: reflexivity.
+    (* ??? *)
+*)
+  Abort.
 
   Lemma na_heap_pointsto_st_agree l st1 st2 q1 q2 v1 v2 :
     na_heap_pointsto_st st1 l q1 v1 ∗
