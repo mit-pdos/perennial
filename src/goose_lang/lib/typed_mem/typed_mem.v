@@ -132,8 +132,8 @@ Section goose_lang.
   Global Instance struct_pointsto_persistent l t v : Persistent (l ↦[t]□ v).
   Proof. rewrite struct_pointsto_eq. apply _. Qed.
 
-  Lemma struct_pointsto_persist l q t v:
-    l ↦[t]{#q} v ==∗ l ↦[t]□ v.
+  Lemma struct_pointsto_persist l dq t v:
+    l ↦[t]{dq} v ==∗ l ↦[t]□ v.
   Proof.
     rewrite struct_pointsto_eq /struct_pointsto_def.
     iIntros "[Ha %Ht]".

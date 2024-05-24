@@ -50,8 +50,8 @@ Section definitions.
   Global Instance heap_pointsto_persistent l v : Persistent (heap_pointsto l DfracDiscarded v).
   Proof. rewrite heap_pointsto_eq. apply _. Qed.
 
-  Lemma heap_pointsto_persist l q v:
-    heap_pointsto l (DfracOwn q) v ==∗ heap_pointsto l DfracDiscarded v.
+  Lemma heap_pointsto_persist l dq v:
+    heap_pointsto l dq v ==∗ heap_pointsto l DfracDiscarded v.
   Proof.
     rewrite heap_pointsto_eq.
     iIntros "[%Ha Hb]".

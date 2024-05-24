@@ -641,17 +641,9 @@ Proof.
   wp_call.
   wp_load.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
-
-(*
-XXX
-  iMod (own_slice_small_persist with "Hs") as "Hs".
-*)
-
-  (* we split the decoder state into one half used to serve the client and one
-     half to reconstruct the decoder (now with half the fraction) *)
-  iDestruct "Hs" as "[Hs1 Hs2]".
+  iMod (own_slice_small_persist with "Hs") as "#Hs".
   wp_pures.
-  wp_apply (wp_SliceSubslice_small with "Hs1"); first by word.
+  wp_apply (wp_SliceSubslice_small with "Hs"); first by word.
   iIntros (s') "Hbs".
   wp_pures.
   wp_load; wp_store.
@@ -666,7 +658,7 @@ XXX
     rewrite Hdataeq.
     rewrite take_app_length' //; lia.
   }
-  iExists _, _; iFrame.
+  iExists _, _; iFrame "∗#".
   iPureIntro.
   split_and!; auto; try len.
   replace (uint.nat (word.add off (length bs))) with (uint.nat off + uint.nat (length bs))%nat by word.

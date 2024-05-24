@@ -265,8 +265,8 @@ Section na_heap.
   Global Instance na_heap_pointsto_persistent l v : Persistent (l ↦□ v).
   Proof. rewrite na_heap_pointsto_eq. apply _. Qed.
 
-  Lemma na_heap_pointsto_persist l q v:
-    l ↦{#q} v ==∗ l ↦□ v.
+  Lemma na_heap_pointsto_persist l dq v:
+    l ↦{dq} v ==∗ l ↦□ v.
   Proof.
     rewrite na_heap_pointsto_eq.
     iApply own_update.

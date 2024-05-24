@@ -750,8 +750,8 @@ Qed.
 Global Instance own_map_persistent mref m : Persistent (own_map mref DfracDiscarded m).
 Proof. apply _. Qed.
 
-Lemma own_map_persist mref q m :
-  own_map mref (DfracOwn q) m ==∗ own_map mref DfracDiscarded m.
+Lemma own_map_persist mref dq m :
+  own_map mref dq m ==∗ own_map mref DfracDiscarded m.
 Proof.
   rewrite /own_map.
   iIntros "H". iDestruct "H" as (mv) "[% H]".

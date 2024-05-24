@@ -150,8 +150,8 @@ Qed.
 Global Instance array_persistent l t vs : Persistent (array l DfracDiscarded t vs).
 Proof. apply _. Qed.
 
-Lemma array_persist l q t vs:
-  array l (DfracOwn q) t vs ==∗ array l DfracDiscarded t vs.
+Lemma array_persist l dq t vs:
+  array l dq t vs ==∗ array l DfracDiscarded t vs.
 Proof.
   rewrite /array.
   iIntros "Ha".
