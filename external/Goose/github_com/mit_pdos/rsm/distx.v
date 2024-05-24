@@ -368,7 +368,11 @@ Definition Replica__applyCommit: val :=
       #()).
 
 Definition Replica__abort: val :=
-  rec: "Replica__abort" "rp" "ts" "wrs" :=
+  rec: "Replica__abort" "rp" "wrs" :=
+    ForSlice (struct.t WriteEntry) <> "ent" "wrs"
+      (let: "key" := struct.get WriteEntry "k" "ent" in
+      let: "tpl" := Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
+      Tuple__Free "tpl");;
     #().
 
 Definition Replica__applyAbort: val :=
@@ -379,7 +383,7 @@ Definition Replica__applyAbort: val :=
     else
       let: ("wrs", "prepared") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
       (if: "prepared"
-      then Replica__abort "rp" "ts" "wrs"
+      then Replica__abort "rp" "wrs"
       else #());;
       MapInsert (struct.loadF Replica "txntbl" "rp") "ts" #false;;
       #()).
@@ -496,18 +500,22 @@ Definition Txn__begin: val :=
 (* Main proof for this simplified program. *)
 Definition Txn__prepare: val :=
   rec: "Txn__prepare" "txn" :=
-    let: "prepared" := ref_to boolT #true in
-    ForSlice (struct.t ReplicaGroup) <> "rg" (struct.loadF Txn "rgs" "txn")
-      ((if: (MapLen (struct.get ReplicaGroup "wrs" "rg")) ≠ #0
-      then
-        let: "status" := ReplicaGroup__Prepare "rg" (struct.loadF Txn "ts" "txn") in
-        (if: "status" = TXN_ABORTED
-        then "prepared" <-[boolT] #false
-        else #())
-      else #()));;
-    ![boolT] "prepared".
+    let: "status" := ref_to uint64T TXN_PREPARED in
+    let: "gid" := ref_to uint64T #0 in
+    Skip;;
+    (for: (λ: <>, (![uint64T] "gid") < (slice.len (struct.loadF Txn "rgs" "txn"))); (λ: <>, Skip) := λ: <>,
+      let: "rg" := SliceGet (struct.t ReplicaGroup) (struct.loadF Txn "rgs" "txn") (![uint64T] "gid") in
+      (if: (MapLen (struct.get ReplicaGroup "wrs" "rg")) = #0
+      then Continue
+      else
+        "status" <-[uint64T] (ReplicaGroup__Prepare "rg" (struct.loadF Txn "ts" "txn"));;
+        (if: (![uint64T] "status") ≠ TXN_PREPARED
+        then Break
+        else
+          "gid" <-[uint64T] ((![uint64T] "gid") + #1);;
+          Continue)));;
+    ![uint64T] "status".
 
-(* Main proof for this simplified program. *)
 Definition Txn__commit: val :=
   rec: "Txn__commit" "txn" :=
     ForSlice (struct.t ReplicaGroup) <> "rg" (struct.loadF Txn "rgs" "txn")
@@ -516,7 +524,6 @@ Definition Txn__commit: val :=
       else #()));;
     #().
 
-(* Main proof for this simplified program. *)
 Definition Txn__abort: val :=
   rec: "Txn__abort" "txn" :=
     ForSlice (struct.t ReplicaGroup) <> "rg" (struct.loadF Txn "rgs" "txn")
@@ -525,13 +532,11 @@ Definition Txn__abort: val :=
       else #()));;
     #().
 
-(* Main proof for this simplifed program. *)
 Definition Txn__Read: val :=
   rec: "Txn__Read" "txn" "key" :=
     struct.mk Value [
     ].
 
-(* Main proof for this simplifed program. *)
 Definition Txn__Write: val :=
   rec: "Txn__Write" "txn" "key" "value" :=
     #().
@@ -548,14 +553,17 @@ Definition Txn__Run: val :=
     (if: (~ "cmt")
     then #false
     else
-      let: "ok" := Txn__prepare "txn" in
-      (if: (~ "ok")
-      then
-        Txn__abort "txn";;
-        #false
+      let: "status" := Txn__prepare "txn" in
+      (if: "status" = TXN_COMMITTED
+      then #true
       else
-        Txn__commit "txn";;
-        #true)).
+        (if: "status" = TXN_ABORTED
+        then
+          Txn__abort "txn";;
+          #false
+        else
+          Txn__commit "txn";;
+          #true))).
 
 Definition NewTxn: val :=
   rec: "NewTxn" <> :=

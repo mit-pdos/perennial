@@ -111,7 +111,9 @@ Section program.
     is_replica rp gid γ -∗
     {{{ True }}}
       Replica__Prepare #rp #ts (to_val wrs)
-    {{{ (status : u64) (ok : bool), RET (#status, #ok); True }}}.
+    {{{ (status : txnst) (ok : bool), RET (#(txnst_to_u64 status), #ok);
+        if ok then group_txnst γ gid (uint.nat ts) status else True
+    }}}.
   Proof.
     (*@ func (rp *Replica) Prepare(ts uint64, wrs []WriteEntry) (uint64, bool) { @*)
     (*@     // Return immediately if the transaction has already prepared, aborted, or @*)

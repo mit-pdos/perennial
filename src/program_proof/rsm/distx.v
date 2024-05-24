@@ -4,6 +4,7 @@ Definition dbkey := string.
 Definition dbval := option string.
 Definition dbhist := list dbval.
 Definition dbtpl := (dbhist * nat)%type.
+Definition dbmod := (dbkey * dbval)%type.
 Canonical Structure dbvalO := leibnizO dbval.
 Definition dbmap := gmap dbkey dbval.
 
@@ -53,6 +54,13 @@ Inductive txnst :=
 | StPrepared (wrs : dbmap)
 | StCommitted
 | StAborted.
+
+Definition txnst_to_u64 (s : txnst) :=
+  match s with
+  | StPrepared wrs => (U64 1)
+  | StCommitted => (U64 2)
+  | StAborted => (U64 3)
+  end.
 
 (* Transaction result *)
 Inductive txnres :=
@@ -211,13 +219,13 @@ Definition repl_impl_cmtd (acts : list action) (cmds : list command) :=
 
 Definition has_prepared ts wrs log :=
   match apply_cmds log with
-  | State txnst _ => txnst !! ts = Some (StPrepared wrs)
+  | State stm _ => stm !! ts = Some (StPrepared wrs)
   | _ => False
   end.
 
 Definition has_aborted ts log :=
   match apply_cmds log with
-  | State txnst _ => txnst !! ts = Some StAborted
+  | State stm _ => stm !! ts = Some StAborted
   | _ => False
   end.
 
@@ -259,6 +267,12 @@ Definition has_extended ts key log :=
 Definition past_read (acts : list action) (log : list command) :=
   ∀ ts key, ActRead ts key ∈ acts → has_extended ts key log.
 
+Definition log_txnst (ts : nat) (st : txnst) (log : dblog) :=
+  match apply_cmds log with
+  | State stm _ => stm !! ts = Some st
+  | _ => False
+  end.
+                   
 (* TODO: move to distx_own.v once stable. *)
 Class distx_ghostG (Σ : gFunctors).
 
@@ -272,6 +286,9 @@ Section ghost.
 
   Definition db_ptsto γ (k : dbkey) (v : dbval) : iProp Σ.
   Admitted.
+
+  Definition db_ptstos γ (m : dbmap) : iProp Σ :=
+    [∗ map] k ↦ v ∈ m, db_ptsto γ k v.
 
   Definition hist_repl_half γ (k : dbkey) (l : dbhist) : iProp Σ.
   Admitted.
@@ -303,6 +320,9 @@ Section ghost.
   Definition clog_lb γ (gid : groupid) (log : dblog) : iProp Σ.
   Admitted.
 
+  Definition clog_lbs γ (logs : gmap groupid dblog) : iProp Σ :=
+    [∗ map] gid ↦ log ∈ logs, clog_lb γ gid log.
+
   Definition cpool_half γ (gid : groupid) (pool : gset command) : iProp Σ.
   Admitted.
 
@@ -319,23 +339,39 @@ Section ghost.
   Admitted.
 End ghost.
 
-Section inv.
+Section spec.
   Context `{!distx_ghostG Σ}.
+
+  Definition group_txnst γ gid ts st : iProp Σ :=
+    ∃ log, clog_lb γ gid log ∧ ⌜log_txnst ts st log⌝.
+
+End spec.
+  
+Section inv.
+  Context `{!heapGS Σ, !distx_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : distx_names).
 
-  Definition mvcc_inv γ p : iProp Σ :=
+  Definition valid_res γ (ts : nat) (res : txnres) : iProp Σ :=
+    ∃ (logs : gmap groupid dblog),
+      clog_lbs γ logs ∧ ⌜safe_finalize ts res logs⌝.
+
+  Definition txn_inv γ p : iProp Σ :=
     ∃ (ts : nat) (future past : list action)
-      (txns_cmt txns_abt : gmap nat dbmap),
+      (txns_cmt txns_abt : gmap nat dbmap)
+      (resm : gmap nat txnres),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
       (* prophecy variable *)
       "Hproph" ∷ txn_proph p future ∗
+      (* transaction result map *)
+      "Hresm" ∷ txnres_auth γ resm ∗
+      "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       (* TODO: asserting ownership of txns_cmt and txns_abt. *)
       "%Hcf"   ∷ ⌜conflict_free future txns_cmt⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past future past txns_abt⌝.
 
-  Definition per_key_inv γ (key : dbkey) : iProp Σ :=
+  Definition key_inv γ (key : dbkey) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
       (tslb : nat) (tsprep : nat)
       (wrs : dbmap) (ongoing : option (nat * dbval))
@@ -360,7 +396,7 @@ Section inv.
     | _ => True
     end.
 
-  Definition per_group_inv γ (gid : groupid) : iProp Σ :=
+  Definition group_inv γ (gid : groupid) : iProp Σ :=
     ∃ (log : dblog) (cpool : gset command)
       (txnm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
       "Hlog"    ∷ clog_half γ gid log ∗
@@ -370,25 +406,18 @@ Section inv.
       "%Hshard" ∷ ⌜dom tpls = keys_group gid keys_all⌝ ∗
       "%Hrsm"   ∷ ⌜apply_cmds log = State txnm tpls⌝.
 
-  Definition valid_res γ (ts : nat) (res : txnres) : iProp Σ :=
-    ∃ (logs : gmap groupid dblog),
-      "#Hlogs"   ∷ ([∗ map] gid ↦ log ∈ logs, clog_lb γ gid log) ∗
-      "%Hsafeca" ∷ ⌜safe_finalize ts res logs⌝.
-
-  Definition commit_abort_inv γ : iProp Σ :=
-    ∃ (resm : gmap nat txnres),
-      "Hresm" ∷ txnres_auth γ resm ∗
-      "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res).
-
+  Definition distxN := nroot .@ "distx".
+  
   Definition distx_inv_def γ p : iProp Σ :=
-    (* MVCC invariants *)
-    "Hproph"  ∷ mvcc_inv γ p ∗
+    (* txn invariants *)
+    "Htxn"    ∷ txn_inv γ p ∗
     (* keys invariants *)
-    "Hkeys"   ∷ ([∗ set] key ∈ keys_all, per_key_inv γ key) ∗
+    "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)
-    "Hgroups" ∷ ([∗ list] gid ∈ gids_all, per_group_inv γ gid) ∗
-    (* commit/abort invariants *)
-    "Hca"     ∷ commit_abort_inv γ.
+    "Hgroups" ∷ ([∗ list] gid ∈ gids_all, group_inv γ gid).
+
+  Definition distx_inv γ p : iProp Σ :=
+    inv distxN (distx_inv_def γ p).
 
 End inv.
 (* TODO: move to distx_own.v once stable. *)
