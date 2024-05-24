@@ -23,7 +23,7 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
   }}}
     singleClerk__applyAsFollower #ck #args_ptr
   {{{
-        reply_ptr reply, RET #reply_ptr; applyAsFollowerReply.own reply_ptr reply 1 ∗
+        reply_ptr reply, RET #reply_ptr; applyAsFollowerReply.own reply_ptr reply (DfracOwn 1) ∗
                                                  □if (decide (reply.(applyAsFollowerReply.err) = (W64 0))) then
                                                    is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ
                                                  else
@@ -132,8 +132,8 @@ Qed.
 Lemma wp_Server__applyAsFollower (s:loc) (args_ptr reply_ptr:loc) γ γsrv args init_reply σ Φ Ψ :
   is_Server s γ γsrv -∗
   applyAsFollowerArgs.own args_ptr args -∗
-  applyAsFollowerReply.own reply_ptr init_reply 1 -∗
-  (∀ reply, Ψ reply -∗ applyAsFollowerReply.own reply_ptr reply 1 -∗ Φ #()) -∗
+  applyAsFollowerReply.own reply_ptr init_reply (DfracOwn 1) -∗
+  (∀ reply, Ψ reply -∗ applyAsFollowerReply.own reply_ptr reply (DfracOwn 1) -∗ Φ #()) -∗
   applyAsFollower_core_spec γ γsrv args σ Ψ -∗
   WP Server__applyAsFollower #s #args_ptr #reply_ptr {{ Φ }}
 .

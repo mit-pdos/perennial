@@ -75,12 +75,12 @@ Local Definition own_erpc_server (γ : erpc_names) (s : loc) : iProp Σ :=
     (lastReplyM:gmap u64 (list u8)) (lastReplyMV:gmap u64 goose_lang.val)
     (lastSeqM:gmap u64 u64) (nextCID:u64),
   "HlastReply" ∷ s ↦[erpc.Server :: "lastReply"] #lastReply_ptr ∗
-  "HlastReplyMap" ∷ map.own_map lastReply_ptr 1 (lastReplyMV, zero_val (slice.T byteT)) ∗ (* TODO: default *)
+  "HlastReplyMap" ∷ map.own_map lastReply_ptr (DfracOwn 1) (lastReplyMV, zero_val (slice.T byteT)) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom lastReplyMV = dom lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM,
     ∃ val_sl q, ⌜v = slice_val val_sl⌝ ∗ typed_slice.own_slice_small val_sl byteT q rep) ∗
   "HlastSeq" ∷ s ↦[erpc.Server :: "lastSeq"] #lastSeq_ptr ∗
-  "HlastSeqMap" ∷ own_map lastSeq_ptr 1 lastSeqM ∗
+  "HlastSeqMap" ∷ own_map lastSeq_ptr (DfracOwn 1) lastSeqM ∗
   "HnextCID" ∷ s ↦[erpc.Server :: "nextCID"] #nextCID ∗
   "Herpc" ∷ eRPCServer_own_ghost γ lastSeqM lastReplyM ∗
   "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜uint.Z cid < uint.Z nextCID⌝%Z ∨ (is_eRPCClient_ghost γ cid 1)
@@ -106,7 +106,7 @@ Definition is_erpc_handler (f : val) (spec : eRPCSpec)
    : iProp Σ :=
   ∀ (x : spec.(espec_ty)) (reqData : list u8) req repptr,
   {{{
-    own_slice_small req byteT 1 reqData ∗
+    own_slice_small req byteT (DfracOwn 1) reqData ∗
     repptr ↦[slice.T byteT] (slice_val Slice.nil) ∗
     spec.(espec_Pre) x reqData
   }}}
@@ -189,11 +189,11 @@ Proof.
     }
 
     subst reply.
-    iDestruct "Hsrv_val_sl" as "[Hsrv_val_sl Hrep_val_sl]".
+    iMod (own_slice_small_persist with "Hsrv_val_sl") as "#Hsrv_val_sl".
     iSpecialize ("HlastReply_structs" with "[Hsrv_val_sl]").
     {
       iExists _, _.
-      iFrame.
+      iFrame "∗#".
       done.
     }
     wp_store.
@@ -207,7 +207,7 @@ Proof.
       { done. }
       iDestruct "HH" as "[Hrpc #Hstale]".
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr]").
+      wp_apply (release_spec with "[-HΦ Hsrv_val_sl Hrepptr]").
       {
         iFrame "∗#".
         iNext.
@@ -216,7 +216,7 @@ Proof.
         done.
       }
       wp_pures. iApply "HΦ". iModIntro.
-      iFrame "Hrep_val_sl Hrepptr".
+      iFrame "Hsrv_val_sl Hrepptr".
       by iLeft.
     }
     { (* Not stale *)
@@ -230,7 +230,7 @@ Proof.
 
       (* prove that rid.(Req_CID) is in lastReplyMV (probably just add [∗ map] _ ↦ _;_ ∈ lastReplyMV ; lastSeq, True) *)
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr]").
+      wp_apply (release_spec with "[-HΦ Hsrv_val_sl Hrepptr]").
       {
         iFrame "∗#".
         iNext.
@@ -239,7 +239,7 @@ Proof.
         done.
       }
       wp_pures. iModIntro. iApply "HΦ".
-      iFrame "Hrep_val_sl Hrepptr".
+      iFrame "Hsrv_val_sl Hrepptr".
       iRight.
       rewrite HlastReplyMlookup.
       done.
@@ -275,8 +275,8 @@ Proof.
     iDestruct "HH" as "(#Hreceipt & Hrpc)".
 
     wp_loadField.
-    iDestruct "Hrep" as "[Hrep1 Hrep2]".
-    wp_apply (release_spec with "[-HΦ Hrep1 Hrepptr]").
+    iMod (own_slice_small_persist with "Hrep") as "#Hrep".
+    wp_apply (release_spec with "[-HΦ Hrep Hrepptr]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -289,14 +289,13 @@ Proof.
         rewrite !dom_insert_L.
         congruence.
       }
-      iApply (big_sepM2_insert_2 with "[Hrep2] HlastReply_structs").
+      iApply (big_sepM2_insert_2 with "[Hrep] HlastReply_structs").
       simpl.
       iExists _, _.
       iSplitR; first done.
       done.
     }
-    wp_pures. iApply "HΦ". iFrame.
-    iModIntro. iRight. done.
+    wp_pures. iApply "HΦ". iFrame "∗#". done.
 Qed.
 
 Lemma wp_erpc_MakeServer γ :
@@ -393,7 +392,7 @@ Lemma wp_erpc_NewRequest (spec : eRPCSpec) (x : spec.(espec_ty)) c payload paylo
   }}}
     Client__NewRequest #c (slice_val payload_sl)
   {{{ y req req_sl, RET (slice_val req_sl);
-    own_slice req_sl byteT 1 req ∗
+    own_slice req_sl byteT (DfracOwn 1) req ∗
     (* The newly computed request *persistently* satisfies the precondition
        of the underlying uRPC. *)
     □(eRPCSpec_uRPC γ spec).(spec_Pre) y req ∗

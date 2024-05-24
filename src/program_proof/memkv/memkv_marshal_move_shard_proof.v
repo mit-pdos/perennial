@@ -33,7 +33,7 @@ Lemma wp_encodeMoveShardRequest args_ptr args :
   {{{
      (reqData:list u8) req_sl, RET (slice_val req_sl);
        ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
-        typed_slice.own_slice req_sl byteT 1%Qp reqData ∗
+        typed_slice.own_slice req_sl byteT (DfracOwn 1) reqData ∗
         own_MoveShardRequest args_ptr args
   }}}.
 Proof.
@@ -71,7 +71,7 @@ Qed.
 
 Lemma wp_decodeMoveShardRequest args args_sl argsData :
   {{{
-       typed_slice.own_slice_small args_sl byteT 1%Qp argsData ∗
+       typed_slice.own_slice_small args_sl byteT (DfracOwn 1) argsData ∗
        ⌜has_encoding_MoveShardRequest argsData args ⌝
   }}}
     decodeMoveShardRequest (slice_val args_sl)

@@ -16,7 +16,7 @@ Lemma wp_EncodeUint64 cid :
   }}}
     EncodeUint64 #cid
   {{{
-       sl data, RET (slice_val sl); typed_slice.own_slice sl byteT 1%Qp data ∗
+       sl data, RET (slice_val sl); typed_slice.own_slice sl byteT (DfracOwn 1) data ∗
                                                          ⌜has_encoding_Uint64 data cid⌝
   }}}
 .

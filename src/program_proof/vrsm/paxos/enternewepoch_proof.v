@@ -23,7 +23,7 @@ Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q :
   }}}
     singleClerk__enterNewEpoch #ck #args_ptr
   {{{
-        reply_ptr reply, RET #reply_ptr; enterNewEpochReply.own reply_ptr reply 1 ∗
+        reply_ptr reply, RET #reply_ptr; enterNewEpochReply.own reply_ptr reply (DfracOwn 1) ∗
         if (decide (reply.(enterNewEpochReply.err) = (W64 0))) then
           enterNewEpoch_post γ γsrv reply args.(enterNewEpochArgs.epoch)
         else
@@ -103,7 +103,7 @@ Proof.
     }
     wp_pures.
 
-    iDestruct (own_slice_small_nil byteT 1 Slice.nil) as "Hsl".
+    iDestruct (own_slice_small_nil byteT (DfracOwn 1) Slice.nil) as "Hsl".
     { done. }
     iMod (readonly_alloc_1 with "Hsl") as "#Hsl2".
 
@@ -130,9 +130,9 @@ Qed.
 
 Lemma wp_Server__enterNewEpoch (s:loc) (args_ptr reply_ptr:loc) γ γsrv args init_reply Φ Ψ :
   is_Server s γ γsrv -∗
-  enterNewEpochArgs.own args_ptr args 1 -∗
-  enterNewEpochReply.own reply_ptr init_reply 1 -∗
-  (∀ reply, Ψ reply -∗ enterNewEpochReply.own reply_ptr reply 1 -∗ Φ #()) -∗
+  enterNewEpochArgs.own args_ptr args (DfracOwn 1) -∗
+  enterNewEpochReply.own reply_ptr init_reply (DfracOwn 1) -∗
+  (∀ reply, Ψ reply -∗ enterNewEpochReply.own reply_ptr reply (DfracOwn 1) -∗ Φ #()) -∗
   enterNewEpoch_core_spec γ γsrv args Ψ -∗
   WP Server__enterNewEpoch #s #args_ptr #reply_ptr {{ Φ }}
 .

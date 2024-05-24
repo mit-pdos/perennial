@@ -32,13 +32,13 @@ Definition has_string_map_encoding (enc:list u8) (m:gmap string string) : Prop :
 
 Lemma wp_EncodeStringMap mptr m :
   {{{
-        "Hmap" ∷ own_map mptr 1 m
+        "Hmap" ∷ own_map mptr (DfracOwn 1) m
   }}}
     EncodeStringMap #mptr
   {{{
         enc_sl enc, RET (slice_val enc_sl);
-        own_map mptr 1 m ∗
-        own_slice enc_sl byteT 1 enc ∗
+        own_map mptr (DfracOwn 1) m ∗
+        own_slice enc_sl byteT (DfracOwn 1) enc ∗
         ⌜has_string_map_encoding enc m⌝
   }}}.
 Proof.
@@ -56,7 +56,7 @@ Proof.
       "%Hdisk" ∷ ⌜dom m_todo ## dom m_done⌝ ∗
       "%Henc" ∷ ⌜ has_partial_map_encoding enc (size m) (map_zip_with (λ v _, v) m m_done)⌝ ∗
       "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
-      "Hs" ∷ own_slice s byteT 1 enc
+      "Hs" ∷ own_slice s byteT (DfracOwn 1) enc
     )%I with "Hmap [Hl Hs]").
   { iExists _, _. iFrame. iPureIntro.
     rewrite right_id_L. split; first done.
@@ -125,7 +125,7 @@ Lemma wp_DecodeStringMap enc_sl enc enc_rest q m :
   }}}
     DecodeStringMap (slice_val enc_sl)
   {{{
-        mptr, RET #mptr; own_map mptr 1 m
+        mptr, RET #mptr; own_map mptr (DfracOwn 1) m
   }}}.
 Proof.
   iIntros "%Φ H HΦ". iNamed "H". wp_call.
@@ -141,7 +141,7 @@ Proof.
   wp_store. wp_store. wp_load.
   wp_apply wp_ref_to; first by val_ty. iIntros (li) "Hli". wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ s q,
-              "Hm" ∷ own_map mptr 1 (list_to_map (take (uint.nat i) ls)) ∗
+              "Hm" ∷ own_map mptr (DfracOwn 1) (list_to_map (take (uint.nat i) ls)) ∗
               "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
               "Hs" ∷ own_slice_small s byteT q (encode_maplist (drop (uint.nat i) ls) ++ enc_rest)
   )%I with "[] [$Hli Hm Hl Hs]"); first word.
