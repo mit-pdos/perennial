@@ -336,26 +336,6 @@ Proof.
   iSteps.
 Qed.
 
-(* TODO: this doesn't work due to the IntoVal typeclass, even though it looks
-similar to the typed slice specs. I think the key difference is that the slice
-functions all take a type as a parameter, which via IntoValForType can be used
-to find the value type V in typeclass search, whereas this needs to find it
-while unifying with a resource.
-
-Note that the map model puts a whole bunch of data in one value, but each
-operation is non-atomic so this is sound.
- *)
-#[global] Instance MapGet_w64_string_spec E mref (k: w64) :
-    SPEC ⟨E⟩ q (m: gmap w64 string),
-  {{ own_map mref q m }}
-    impl.MapGet #mref #k
-  {{ v ok, RET (#(str v), #ok)%V;
-      ⌜map_get m k = (v, ok)⌝ ∗
-      own_map mref q m }}.
-Proof.
-  iSteps. wp_apply (wp_MapGet with "[$]"). iSteps.
-Qed.
-
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
   {{{
         "#Hsrv" ∷ is_Server s ∗
@@ -371,16 +351,11 @@ Proof.
   iSteps.
   wp_if_destruct; [ by iSteps | ].
   iSteps.
-  iNamed.
-  wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; [ done | ].
-  rewrite /typed_map.map_insert.
-  iRename select (own_map x5 _ _) into "HlastRepliesM".
-  wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; [ done | ].
-  iSteps.
 Qed.
 
 Lemma wp_frame_wand' E stk e Φ R :
   WP e @ stk; E {{ v, R -∗ Φ v }} ∗ R -∗ WP e @ stk; E {{ Φ }}.
+Proof.
   iIntros "[Hwp HR]".
   iApply (wp_strong_mono with "[Hwp]"); [ reflexivity | reflexivity | | ].
   - iFrame.
@@ -400,24 +375,8 @@ Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ 
 .
 Proof.
   iSteps.
-  wp_if_destruct; [ iSteps | ].
-  iSteps.
-  iNamed.
-  wp_apply_delay (wp_MapGet' (K:=string)).
-  { iFrame. iSplit; [ eauto | ]. iNamedAccu. }
-  iNamed 1.
-  iIntros "!>" (v ok) "(%Hget & HkvsM)".
-  iSteps.
-  wp_if_destruct.
-  - iSteps.
-    wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; [ eauto | ].
-    iRename select (own_map x5 _ _) into "HlastRepliesM".
-    wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; [ eauto | ].
-    iSteps.
-  - iSteps.
-    iRename select (own_map x5 _ _) into "HlastRepliesM".
-    wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; [ eauto | ].
-    iSteps.
+  wp_if_destruct; iSteps.
+  wp_if_destruct; iSteps.
 Qed.
 
 Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
@@ -433,17 +392,7 @@ Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
 .
 Proof.
   iSteps.
-  wp_if_destruct; [ iSteps | ].
-  iSteps.
-  iNamed.
-  wp_apply (wp_MapGet' (K:=string) with "[$HkvsM]"); [ by eauto | ].
-  iIntros (v ok) "(%Hget & HkvsM)".
-  iSteps.
-  iRename select (own_map x5 _ _) into "HlastRepliesM".
-  wp_apply (wp_MapInsert with "HlastRepliesM"); [ by eauto | ].
-  rewrite /typed_map.map_insert.
-  iIntros "hLastRepliesM".
-  iSteps.
+  wp_if_destruct; iSteps.
 Qed.
 
 Lemma wp_MakeServer :
@@ -456,10 +405,6 @@ Lemma wp_MakeServer :
   }}}
 .
 Proof.
-  iSteps.
-  wp_apply (wp_NewMap string string); iIntros (m1) "Hm1".
-  iSteps.
-  wp_apply (wp_NewMap w64 string); iIntros (m2) "Hm2".
   iSteps.
 Qed.
 

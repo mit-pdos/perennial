@@ -185,20 +185,13 @@ Section proofs.
 
   Section map_specs.
 
-    (*
-  Context `{!IntoVal K}.
-  Context `{!EqDecision K, !Countable K}.
-  Context `{!IntoValComparable K}.
-  Context `{!IntoVal V}.
-*)
-
-    (* TODO: currently trigger a diaframe bug related to dependent
-    existentials *)
-
-    (*
-  #[global] Instance NewMap_spec `{!IntoVal V}
-    `{!IntoVal K, !EqDecision K, !Countable K, !IntoValComparable K}
-    `{!IntoValForType V vt} `{!IntoValForType K kt} E :
+  #[global] Instance NewMap_spec
+    `{!IntoVal V}
+    `{!IntoVal K, !EqDecision K, !Countable K}
+    `{!IntoValForType V vt} `{!IntoValForType K kt}
+    (* the ordering here is crucial! [IntoValComparable] requires K to be resolved,
+      which is what the [IntoValForType] typeclass does, so that one should come first. *)
+    `{!IntoValComparable K} E :
     SPEC ⟨E⟩
     {{ emp }}
       NewMap kt vt #()
@@ -217,10 +210,10 @@ Section proofs.
   Qed.
 
   #[global] Instance MapGet_spec E mref kk :
-      SPEC ⟨E⟩ `(!IntoVal K) `(Countable K) (_: IntoValComparable K)
+      SPEC ⟨E⟩ `(!IntoVal K) `(Countable K)
         `(!IntoVal V)
         q (m: gmap K V) k,
-    {{ own_map mref q m ∗ ⌜kk = to_val k⌝ }}
+    {{ own_map mref q m ∗ ⌜kk = to_val k⌝ ∗ ⌜IntoValComparable K⌝ }}
       impl.MapGet #mref kk
     {{ (v: V) ok, RET (to_val v, #ok)%V;
         ⌜map_get m k = (v, ok)⌝ ∗
@@ -230,16 +223,15 @@ Section proofs.
   Qed.
 
   #[global] Instance MapDelete_spec E mref kk :
-      SPEC ⟨E⟩ `(!IntoVal K) `(Countable K) (_: IntoValComparable K)
+      SPEC ⟨E⟩ `(!IntoVal K) `(Countable K)
         `(!IntoVal V)
       (m: gmap K V) k,
-    {{ own_map mref 1 m ∗ ⌜kk = to_val k⌝ }}
+    {{ own_map mref 1 m ∗ ⌜kk = to_val k⌝ ∗ ⌜IntoValComparable K⌝ }}
       impl.MapDelete #mref kk
     {{ RET #(); own_map mref 1 (map_del m k) }}.
   Proof.
     iSteps. wp_apply (wp_MapDelete with "[$]"). iSteps.
   Qed.
-*)
 
   End map_specs.
 
@@ -253,3 +245,4 @@ End proofs.
 #[global] Opaque std.SumAssumeNoOverflow.
 
 Hint Extern 2 => rewrite !string_to_bytes_inj : solve_pure_add.
+Hint Extern 4 (IntoValComparable _) => tc_solve : solve_pure_add.
