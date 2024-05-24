@@ -762,6 +762,36 @@ Definition ReassignVars: val :=
 
 (* recursive.go *)
 
+(* Should be able to detect even if in nested scopes. *)
+Definition recur1: val :=
+  rec: "recur1" <> :=
+    (if: #true
+    then
+      "recur1" #();;
+      #()
+    else #()).
+
+Definition recurStruct1 := struct.decl [
+].
+
+Definition recurStruct1__recur2: val :=
+  rec: "recurStruct1__recur2" "s" :=
+    "recurStruct1__recur2" "s";;
+    #().
+
+Definition recurStruct2 := struct.decl [
+  "lam" :: (unitT -> unitT)%ht
+].
+
+Definition recurStruct2__recur3: val :=
+  rec: "recurStruct2__recur3" "s" :=
+    struct.storeF recurStruct2 "lam" "s" (λ: <>,
+      (struct.loadF recurStruct2 "lam" "s") #();;
+      #()
+      );;
+    (struct.loadF recurStruct2 "lam" "s") #();;
+    #().
+
 (* replicated_disk.go *)
 
 Definition Block := struct.decl [
