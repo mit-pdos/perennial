@@ -81,12 +81,6 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Definition dbval_to_val (v : dbval) : val :=
-    match v with
-    | Some s => (#true, (#(LitString s), #()))
-    | None => (#false, (zero_val stringT, #()))
-    end.
-
   Theorem wp_Tuple__ReadVersion (tuple : loc) (tid : u64) key hist tsprep α :
     is_tuple tuple key α -∗
     {{{ tuple_phys_half α key hist tsprep }}}

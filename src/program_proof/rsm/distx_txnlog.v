@@ -1,7 +1,6 @@
 From Perennial.program_proof.rsm Require Import distx.
 From Goose.github_com.mit_pdos.rsm Require Import distx.
 
-
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
 
