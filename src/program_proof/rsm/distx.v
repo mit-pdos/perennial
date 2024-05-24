@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Export grove_prelude.
+From Perennial.program_logic Require Export atomic. (* prefer the ncfupd atomics *)
 
 Definition dbkey := string.
 Definition dbval := option string.
@@ -308,6 +309,11 @@ Section ghost.
   Definition txnres_receipt γ (ts : nat) (res : txnres) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance txnres_receipt_persistent γ ts res :
+    Persistent (txnres_receipt γ ts res).
+  Admitted.
+
   Definition txnres_cmt  γ ts wrs :=
     txnres_receipt γ ts (ResCommitted wrs).
 
@@ -335,7 +341,7 @@ Section ghost.
   Definition ts_lb γ (ts : nat) : iProp Σ.
   Admitted.
 
-  Definition txn_proph (p : proph_id) (acts : list action) : iProp Σ.
+  Definition txn_proph γ (acts : list action) : iProp Σ.
   Admitted.
 End ghost.
 
@@ -356,14 +362,14 @@ Section inv.
     ∃ (logs : gmap groupid dblog),
       clog_lbs γ logs ∧ ⌜safe_finalize ts res logs⌝.
 
-  Definition txn_inv γ p : iProp Σ :=
+  Definition txn_inv γ : iProp Σ :=
     ∃ (ts : nat) (future past : list action)
       (txns_cmt txns_abt : gmap nat dbmap)
       (resm : gmap nat txnres),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
       (* prophecy variable *)
-      "Hproph" ∷ txn_proph p future ∗
+      "Hproph" ∷ txn_proph γ future ∗
       (* transaction result map *)
       "Hresm" ∷ txnres_auth γ resm ∗
       "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
@@ -396,6 +402,11 @@ Section inv.
     | _ => True
     end.
 
+  #[global]
+  Instance valid_cmd_persistent γ c :
+    Persistent (valid_cmd γ c).
+  Proof. destruct c; apply _. Qed.
+
   Definition group_inv γ (gid : groupid) : iProp Σ :=
     ∃ (log : dblog) (cpool : gset command)
       (txnm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
@@ -408,16 +419,21 @@ Section inv.
 
   Definition distxN := nroot .@ "distx".
   
-  Definition distx_inv_def γ p : iProp Σ :=
+  Definition distx_inv γ : iProp Σ :=
     (* txn invariants *)
-    "Htxn"    ∷ txn_inv γ p ∗
+    "Htxn"    ∷ txn_inv γ ∗
     (* keys invariants *)
     "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)
     "Hgroups" ∷ ([∗ list] gid ∈ gids_all, group_inv γ gid).
 
-  Definition distx_inv γ p : iProp Σ :=
-    inv distxN (distx_inv_def γ p).
+  #[global]
+  Instance distx_inv_timeless γ :
+    Timeless (distx_inv γ).
+  Admitted.
+
+  Definition know_distx_inv γ : iProp Σ :=
+    inv distxN (distx_inv γ).
 
 End inv.
 (* TODO: move to distx_own.v once stable. *)

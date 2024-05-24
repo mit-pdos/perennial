@@ -1,10 +1,12 @@
-From Perennial.program_proof.rsm Require Import distx.
+From Perennial.program_proof.rsm Require Import distx distx_txnlog.
 From Goose.github_com.mit_pdos.rsm Require Import distx.
 
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
 
   (*@ type Replica struct {                                                   @*)
+  (*@     // Mutex                                                            @*)
+  (*@     mu *sync.Mutex                                                      @*)
   (*@     // Replica ID.                                                      @*)
   (*@     rid uint64                                                          @*)
   (*@     // Replicated transaction log.                                      @*)
@@ -24,13 +26,14 @@ Section program.
   (*@     // Key-value map.                                                   @*)
   (*@     kvmap  map[string]*Tuple                                            @*)
   (*@ }                                                                       @*)
-  Definition own_replica (rp : loc) : iProp Σ :=
+  Definition own_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
     ∃ (rid : u64) (log : loc) (lsna : u64) (prepm : loc) (txntbl : loc)
       (idx : loc) (kvmap : loc)
       (prepmM : gmap u64 Slice.t) (txntblM : gmap u64 bool)
       (kvmapM : gmap string loc),
       "Hrid"     ∷ rp ↦[Replica :: "rid"] #rid ∗
       "Hlog"     ∷ rp ↦[Replica :: "log"] #log ∗
+      "Htxnlog"  ∷ own_txnlog log gid γ ∗
       "Hlsna"    ∷ rp ↦[Replica :: "lsna"] #lsna ∗
       "Hprepm"   ∷ rp ↦[Replica :: "prepm"] #prepm ∗
       "HprepmM"  ∷ own_map prepm 1 prepmM ∗
@@ -40,8 +43,11 @@ Section program.
       "Hkvmap"   ∷ rp ↦[Replica :: "kvmap"] #kvmap ∗
       "HkvmapM"  ∷ own_map kvmap 1 kvmapM.
 
-  Definition is_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ.
-  Admitted.
+  Definition is_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
+    ∃ (mu : loc),
+      "#Hmu"   ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
+      "#Hlock" ∷ is_lock distxN #mu (own_replica rp gid γ) ∗
+      "%Hgid"  ∷ ⌜gid ∈ gids_all⌝.
 
   Theorem wp_Replica__Abort (rp : loc) (ts : u64) (gid : groupid) γ :
     txnres_abt γ (uint.nat ts) -∗
@@ -184,22 +190,56 @@ Section program.
   Admitted.
 
   Theorem wp_Replica__Start (rp : loc) (gid : groupid) γ :
+    know_distx_inv γ -∗ 
     is_replica rp gid γ -∗
     {{{ True }}}
       Replica__Start #rp
     {{{ RET #(); True }}}.
   Proof.
+    iIntros "#Hinv #Hrp" (Φ) "!> _ HΦ".
+    wp_call.
+
+    wp_apply (wp_forBreak (λ _, True)%I); last first.
+    { wp_pures. by iApply "HΦ". }
     (*@ func (rp *Replica) Start() {                                            @*)
     (*@     for {                                                               @*)
-    (*@         // TODO: some sleep                                             @*)
+    (*@         rp.mu.Lock()                                                    @*)
+    (*@                                                                         @*)
+    clear Φ.
+    iIntros (Φ) "!> _ HΦ".
+    wp_call.
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (acquire_spec with "Hlock").
+    iIntros "[Hlocked Hrp]".
+    wp_pures.
+    iNamed "Hrp".
+
     (*@         lsn := rp.lsna + 1                                              @*)
     (*@         // TODO: a more efficient interface would return multiple safe commands @*)
     (*@         // at once (so as to reduce the frequency of acquiring Paxos mutex). @*)
     (*@                                                                         @*)
+    wp_loadField. wp_pures.
+
     (*@         // Ghost action: Learn a list of new commands.                  @*)
     (*@         cmd, ok := rp.log.Lookup(lsn)                                   @*)
     (*@                                                                         @*)
+    wp_loadField.
+    wp_apply (wp_TxnLog__Lookup with "Htxnlog").
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iApply ncfupd_mask_intro; first set_solver.
+    iIntros "Hmask".
+    iNamed "HinvO".
+    (* take the group invariant out *)
+    assert (Hgids : gids_all !! gid = Some gid) by admit.
+    iDestruct (big_sepL_lookup_acc with "Hgroups") as "[Hgroup Hgroups]"; first apply Hgids.
+    iRename "Hlog" into "Hlog'".
+    iNamed "Hgroup".
+
     (*@         if !ok {                                                        @*)
+    (*@             // Sleep for 1 ms.                                          @*)
+    (*@             rp.mu.Unlock()                                              @*)
+    (*@             machine.Sleep(1 * 1000000)                                  @*)
     (*@             continue                                                    @*)
     (*@         }                                                               @*)
     (*@                                                                         @*)

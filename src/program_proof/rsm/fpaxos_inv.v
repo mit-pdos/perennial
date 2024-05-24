@@ -840,7 +840,7 @@ Section pure.
     case_decide as Hfast; simpl in Hfast.
     { rewrite map_size_insert_Some; first done.
       rewrite (is_fast_prefix_iff l) in Hfast; [| done | done].
-      exists l. by apply map_filter_lookup_Some_2.
+      exists l. by apply map_lookup_filter_Some_2.
     }
     { rewrite map_filter_delete_not; first done.
       intros l' Hbsx' Hfast'. simpl in Hfast'.

@@ -156,6 +156,7 @@ Definition TxnLog__Lookup: val :=
      ], #false).
 
 Definition Replica := struct.decl [
+  "mu" :: ptrT;
   "rid" :: uint64T;
   "log" :: ptrT;
   "lsna" :: uint64T;
@@ -209,19 +210,27 @@ Definition Replica__queryTxnStatus: val :=
    @ok: If @true, @status is meaningful; otherwise, ignore @status. *)
 Definition Replica__Prepare: val :=
   rec: "Replica__Prepare" "rp" "ts" "wrs" :=
+    lock.acquire (struct.loadF Replica "mu" "rp");;
     let: "status" := Replica__queryTxnStatus "rp" "ts" in
     (if: "status" ≠ TXN_RUNNING
-    then ("status", #true)
+    then
+      lock.release (struct.loadF Replica "mu" "rp");;
+      ("status", #true)
     else
       let: ("lsn", "term") := TxnLog__SubmitPrepare (struct.loadF Replica "log" "rp") "ts" "wrs" in
       (if: "lsn" = #0
-      then (#0, #false)
+      then
+        lock.release (struct.loadF Replica "mu" "rp");;
+        (#0, #false)
       else
         let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
         (if: (~ "safe")
-        then (#0, #false)
+        then
+          lock.release (struct.loadF Replica "mu" "rp");;
+          (#0, #false)
         else
           Replica__waitUntilExec "rp" "lsn";;
+          lock.release (struct.loadF Replica "mu" "rp");;
           (Replica__queryTxnStatus "rp" "ts", #true)))).
 
 (* Arguments:
@@ -231,18 +240,27 @@ Definition Replica__Prepare: val :=
    @ok: If @true, this transaction is committed. *)
 Definition Replica__Commit: val :=
   rec: "Replica__Commit" "rp" "ts" :=
+    lock.acquire (struct.loadF Replica "mu" "rp");;
     let: (<>, "committed") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
     (if: "committed"
-    then #true
+    then
+      lock.release (struct.loadF Replica "mu" "rp");;
+      #true
     else
       let: ("lsn", "term") := TxnLog__SubmitCommit (struct.loadF Replica "log" "rp") "ts" in
       (if: "lsn" = #0
-      then #false
+      then
+        lock.release (struct.loadF Replica "mu" "rp");;
+        #false
       else
         let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
         (if: (~ "safe")
-        then #false
-        else #true))).
+        then
+          lock.release (struct.loadF Replica "mu" "rp");;
+          #false
+        else
+          lock.release (struct.loadF Replica "mu" "rp");;
+          #true))).
 
 (* Arguments:
    @ts: Transaction timestamp.
@@ -251,18 +269,27 @@ Definition Replica__Commit: val :=
    @ok: If @true, this transaction is aborted. *)
 Definition Replica__Abort: val :=
   rec: "Replica__Abort" "rp" "ts" :=
+    lock.acquire (struct.loadF Replica "mu" "rp");;
     let: (<>, "aborted") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
     (if: "aborted"
-    then #true
+    then
+      lock.release (struct.loadF Replica "mu" "rp");;
+      #true
     else
       let: ("lsn", "term") := TxnLog__SubmitAbort (struct.loadF Replica "log" "rp") "ts" in
       (if: "lsn" = #0
-      then #false
+      then
+        lock.release (struct.loadF Replica "mu" "rp");;
+        #false
       else
         let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
         (if: (~ "safe")
-        then #false
-        else #true))).
+        then
+          lock.release (struct.loadF Replica "mu" "rp");;
+          #false
+        else
+          lock.release (struct.loadF Replica "mu" "rp");;
+          #true))).
 
 (* Arguments:
    @ts: Transaction timestamp.
@@ -275,27 +302,32 @@ Definition Replica__Abort: val :=
    @ok: @value is meaningful iff @ok is true. *)
 Definition Replica__Read: val :=
   rec: "Replica__Read" "rp" "ts" "key" :=
+    lock.acquire (struct.loadF Replica "mu" "rp");;
     let: (<>, "terminated") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
     (if: "terminated"
     then
+      lock.release (struct.loadF Replica "mu" "rp");;
       (struct.mk Value [
        ], #false)
     else
       let: ("lsn", "term") := TxnLog__SubmitRead (struct.loadF Replica "log" "rp") "ts" "key" in
       (if: "lsn" = #0
       then
+        lock.release (struct.loadF Replica "mu" "rp");;
         (struct.mk Value [
          ], #false)
       else
         let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
         (if: (~ "safe")
         then
+          lock.release (struct.loadF Replica "mu" "rp");;
           (struct.mk Value [
            ], #false)
         else
           Replica__waitUntilExec "rp" "lsn";;
           let: "tpl" := Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
           let: ("v", "ok") := Tuple__ReadVersion "tpl" "ts" in
+          lock.release (struct.loadF Replica "mu" "rp");;
           ("v", "ok")))).
 
 Definition Replica__applyRead: val :=
@@ -412,10 +444,14 @@ Definition Replica__Start: val :=
   rec: "Replica__Start" "rp" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      lock.acquire (struct.loadF Replica "mu" "rp");;
       let: "lsn" := (struct.loadF Replica "lsna" "rp") + #1 in
       let: ("cmd", "ok") := TxnLog__Lookup (struct.loadF Replica "log" "rp") "lsn" in
       (if: (~ "ok")
-      then Continue
+      then
+        lock.release (struct.loadF Replica "mu" "rp");;
+        time.Sleep (#1 * #1000000);;
+        Continue
       else
         Replica__apply "rp" "cmd";;
         struct.storeF Replica "lsna" "rp" "lsn";;

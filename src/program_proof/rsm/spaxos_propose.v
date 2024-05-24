@@ -780,7 +780,7 @@ Proof.
                then node_accepted term decree nid γ ∗ is_proposal γ (uint.nat term) decree
                else True) -∗ Φ #ok)%I.
   set R := (own_term γ nid (uint.nat term) ∗ P ∗ is_proposal γ (uint.nat term) decree)%I.
-  iAssert (|={⊤}=> R)%I with "[Hterm HAU]" as "> (Hterm & HΦ & #Hproposal)".
+  iAssert (|NC={⊤}=> R)%I with "[Hterm HAU]" as "> (Hterm & HΦ & #Hproposal)".
   { iInv "Hinv" as ">HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (term_lookup with "Hterm Hts") as %Htermc.
