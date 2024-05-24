@@ -62,7 +62,7 @@ Proof.
   set P := (λ (b : bool), ∃ (n : u64) (tpls : gmap u64 loc) (ents' : list wrent),
                let m : dbmap := list_to_map (wrent_to_key_dbval <$> ents) in
                "Hactive"  ∷ active_tid γ tid sid ∗
-               "HentsS"   ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents') ∗
+               "HentsS"   ∷ own_slice_small entsS (struct.t WrEnt) (DfracOwn 1) (wrent_to_val <$> ents') ∗
                "HposR"    ∷ pos ↦[uint64T] #n ∗
                "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls, mods_token γ k (uint.nat tid)) ∗
                "#HtplsRP" ∷ ([∗ map] k ↦ t ∈ tpls, is_tuple t k γ) ∗
@@ -206,7 +206,7 @@ Proof.
     wp_pures.
     set P := (λ (b : bool), ∃ (m : u64),
                  let tpls' := list_to_map (wrent_to_key_tpl <$> drop (uint.nat m) (take (uint.nat n) ents')) in
-                 "HentsS"   ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents') ∗
+                 "HentsS"   ∷ own_slice_small entsS (struct.t WrEnt) (DfracOwn 1) (wrent_to_val <$> ents') ∗
                  "HposR"    ∷ pos ↦[uint64T] #n ∗
                  "HiR"      ∷ i ↦[uint64T] #m ∗
                  "Htokens"  ∷ ([∗ map] k ↦ _ ∈ tpls', mods_token γ k (uint.nat tid)))%I.

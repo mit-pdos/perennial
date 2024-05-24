@@ -243,7 +243,7 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#Hclerks" ∷ readonly (s ↦[Server :: "clerks"] (slice_val clerks_sl)) ∗
 
   (* clerks *)
-  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
+  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT (DfracOwn 1) clerks) ∗
   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; γ.(s_hosts), is_singleClerk ck γ γsrv') ∗
   "#HhelpingInv" ∷ is_helping_inv γ
 .

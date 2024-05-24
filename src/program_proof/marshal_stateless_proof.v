@@ -31,13 +31,15 @@ Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
     ReadBytes (slice_val s) #len
   {{{ b s' q', RET (slice_val b, slice_val s'); own_slice_small b byteT q' head ∗ own_slice_small s' byteT q' tail }}}.
 Proof.
-  iIntros (Hlen Φ) "[Hs1 Hs2] HΦ". wp_call.
-  wp_apply (wp_SliceTake_small with "Hs1").
+  iIntros (Hlen Φ) "Hs HΦ".
+  iMod (own_slice_small_persist with "Hs") as "#Hs".
+  wp_call.
+  wp_apply (wp_SliceTake_small with "Hs").
   { rewrite /list.untype fmap_app app_length !fmap_length. word. }
   iIntros "Hs1".
-  wp_apply (wp_SliceSkip_small with "Hs2").
+  wp_apply (wp_SliceSkip_small with "Hs").
   { rewrite /list.untype fmap_length app_length /=. word. }
-  iIntros (s') "Hs'". wp_pures. iApply "HΦ".
+  iIntros (s') "Hs2". wp_pures. iApply "HΦ".
   { rewrite /list.untype -fmap_take -fmap_drop.
     rewrite take_app_length' // drop_app_length' //. iFrame. done. }
 Qed.

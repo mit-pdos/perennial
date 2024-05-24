@@ -28,7 +28,7 @@ Context `{!heapGS Σ}.
 Theorem wp_Enc__Finish stk E enc_v r remaining :
   {{{ is_benc enc_v r remaining }}}
     Enc__Finish enc_v @ stk; E
-  {{{ s b, RET slice_val s; ⌜block_encodes b r⌝ ∗ is_block s 1 b }}}.
+  {{{ s b, RET slice_val s; ⌜block_encodes b r⌝ ∗ is_block s (DfracOwn 1) b }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
   wp_apply (marshal_proof.wp_Enc__Finish with "Hpre").

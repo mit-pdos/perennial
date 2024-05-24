@@ -125,7 +125,7 @@ Definition is_urpc_handler_pred (f:val)
    : iProp Σ :=
   ∀ (reqData:list u8) Post req rep,
   {{{
-    own_slice_small req byteT 1 reqData ∗
+    own_slice_small req byteT (DfracOwn 1) reqData ∗
     rep ↦[slice.T byteT] (slice_val Slice.nil) ∗
     Spec reqData Post
   }}}
@@ -147,7 +147,7 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
             "Hmapping_ctx" ∷ map_ctx (ccmapping_name Γ) 1 reqs ∗
             "Hescrow_ctx" ∷ map_ctx (ccescrow_name Γ) 1 estoks ∗
             "Hextracted_ctx" ∷ map_ctx (ccextracted_name Γ) 1 extoks ∗
-            "Hpending_map" ∷ map.own_map mref 1 (pending, zero_val ptrT) ∗
+            "Hpending_map" ∷ map.own_map mref (DfracOwn 1) (pending, zero_val ptrT) ∗
             "Hreqs" ∷ [∗ map] seqno ↦ req ∈ reqs,
                  ∃ (Post : list u8 → iProp Σ),
                  "Hreg_entry" ∷  ptsto_ro (ccmapping_name Γ) seqno req ∗
@@ -169,7 +169,7 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                     "%Hpending_cb" ∷ ⌜ pending !! seqno  = None ⌝ ∗
                     "HPost" ∷ (Post reply) ∗
                     "Hrep_ptr" ∷ (urpc_reg_rep_ptr req) ↦[slice.T byteT] (slice_val rep_sl) ∗
-                    "Hrep_data" ∷ own_slice_small rep_sl byteT 1 reply ∗
+                    "Hrep_data" ∷ own_slice_small rep_sl byteT (DfracOwn 1) reply ∗
                     "Hstate" ∷ (urpc_reg_done req) ↦[uint64T] #1) ∨
                  (* (3) Caller has extracted ownership *)
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
@@ -192,7 +192,7 @@ Definition Client_reply_own (cl : loc) : iProp Σ :=
 
 (* TODO: move this *)
 Global Instance own_map_AsMapsTo mref (hd:gmap u64 val * val) :
-  AsMapsTo (map.own_map mref 1 hd) (λ q, map.own_map mref q hd).
+  AsMapsTo (map.own_map mref (DfracOwn 1) hd) (λ q, map.own_map mref (DfracOwn q) hd).
 Proof.
   split; try apply _; eauto.
   rewrite /fractional.Fractional.
@@ -211,12 +211,12 @@ Qed.
 
 Definition own_Server (s : loc) (handlers: gmap u64 val) : iProp Σ :=
   ∃ mref def,
-  "#Hhandlers_map" ∷ readonly (map.own_map mref 1 (handlers, def)) ∗
+  "#Hhandlers_map" ∷ readonly (map.own_map mref (DfracOwn 1) (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[Server :: "handlers"] #mref).
 
 Lemma wp_MakeServer (handlers : gmap u64 val) (mref:loc) (def : val) :
   {{{
-       map.own_map mref 1 (handlers, def)
+       map.own_map mref (DfracOwn 1) (handlers, def)
   }}}
     MakeServer #mref @ ⊤
   {{{
@@ -280,7 +280,7 @@ Lemma wp_Server__readThread γ s host client handlers mref def :
   dom handlers ≠ ∅ →
   "#Hcomplete" ∷ handlers_complete γ handlers ∗
   "#His_rpc_map" ∷ urpc_handler_mapping γ host handlers ∗
-  "#Hhandlers_map" ∷ readonly (map.own_map mref 1 (handlers, def)) ∗
+  "#Hhandlers_map" ∷ readonly (map.own_map mref (DfracOwn 1) (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[Server :: "handlers"] #mref) -∗
   WP Server__readThread #s (connection_socket host client) {{ _, True }}.
 Proof.
@@ -904,7 +904,7 @@ Lemma wp_Client__CallComplete_pred (cl_ptr cb_ptr:loc) rep_out_ptr
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          own_slice_small rep_sl byteT 1 repData ∗
+          own_slice_small rep_sl byteT (DfracOwn 1) repData ∗
           (Post repData))
   }}}.
 Proof.
@@ -1035,7 +1035,7 @@ Lemma wp_Client__Call_pred γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ou
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          own_slice_small rep_sl byteT 1 repData ∗
+          own_slice_small rep_sl byteT (DfracOwn 1) repData ∗
           (Post repData))
   }}}.
 Proof.
@@ -1068,7 +1068,7 @@ Lemma wp_Client__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_pt
        own_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
-          own_slice_small rep_sl byteT 1 reply -∗
+          own_slice_small rep_sl byteT (DfracOwn 1) reply -∗
           Φ #0)
   ) ∧
   (

@@ -39,7 +39,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT 1 enc_args
+          own_slice sl byteT (DfracOwn 1) enc_args
   }}}
 .
 Proof.
@@ -185,7 +185,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT 1 enc_args
+          own_slice sl byteT (DfracOwn 1) enc_args
   }}}
 .
 Proof.
@@ -356,7 +356,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT 1 enc_args
+          own_slice sl byteT (DfracOwn 1) enc_args
   }}}
 .
 Proof.
@@ -450,7 +450,7 @@ Definition bool_le (b:bool) : list u8 := if b then [W8 1] else [W8 0].
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
     EncodeBool #b
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (bool_le b) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (bool_le b) }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -498,7 +498,7 @@ Qed.
 Lemma wp_EncodeUint64 x:
   {{{ True }}}
     EncodeUint64 #x
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (u64_le x) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (u64_le x) }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -569,8 +569,8 @@ Definition own_Server (s:loc) : iProp Σ :=
   "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #nextFreshId ∗
   "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
   "Hkvs" ∷ s ↦[Server :: "kvs"] #kvs_loc ∗
-  "HlastRepliesM" ∷ own_map lastReplies_loc 1 lastReplies ∗
-  "HkvsM" ∷ own_map kvs_loc 1 kvs
+  "HlastRepliesM" ∷ own_map lastReplies_loc (DfracOwn 1) lastReplies ∗
+  "HkvsM" ∷ own_map kvs_loc (DfracOwn 1) kvs
 .
 
 Definition is_Server (s:loc) : iProp Σ :=

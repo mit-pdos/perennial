@@ -23,7 +23,7 @@ Definition own args_ptr args : iProp Σ :=
   "#Hargs_epoch" ∷ readonly (args_ptr ↦[applyAsFollowerArgs :: "epoch"] #args.(epoch)) ∗
   "#Hargs_index" ∷ readonly (args_ptr ↦[applyAsFollowerArgs :: "nextIndex"] #args.(nextIndex)) ∗
   "#Hargs_state" ∷ readonly (args_ptr ↦[applyAsFollowerArgs :: "state"] (slice_val state_sl)) ∗
-  "#Hargs_state_sl" ∷ readonly (own_slice_small state_sl byteT 1 args.(state))
+  "#Hargs_state_sl" ∷ readonly (own_slice_small state_sl byteT (DfracOwn 1) args.(state))
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -34,7 +34,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (?) "H HΦ".
@@ -64,7 +64,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        own_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT (DfracOwn 1) enc
   }}}
     decodeApplyAsFollowerArgs (slice_val enc_sl)
   {{{
@@ -119,7 +119,7 @@ Lemma wp_Encode (reply_ptr:loc) (reply:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc reply⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (?) "H HΦ".
@@ -135,11 +135,11 @@ Qed.
 Lemma wp_Decode enc enc_sl (reply:C) :
   {{{
         ⌜has_encoding enc reply⌝ ∗
-        own_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT (DfracOwn 1) enc
   }}}
     decodeApplyAsFollowerReply (slice_val enc_sl)
   {{{
-        reply_ptr, RET #reply_ptr; own reply_ptr reply 1
+        reply_ptr, RET #reply_ptr; own reply_ptr reply (DfracOwn 1)
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
@@ -185,7 +185,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (?) "H HΦ".
@@ -210,11 +210,11 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        own_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT (DfracOwn 1) enc
   }}}
     decodeApplyReply (slice_val enc_sl)
   {{{
-        args_ptr, RET #args_ptr; own args_ptr args 1
+        args_ptr, RET #args_ptr; own args_ptr args (DfracOwn 1)
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
@@ -262,7 +262,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (?) "H HΦ".
@@ -278,11 +278,11 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        own_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT (DfracOwn 1) enc
   }}}
     decodeEnterNewEpochArgs (slice_val enc_sl)
   {{{
-        args_ptr, RET #args_ptr; own args_ptr args 1
+        args_ptr, RET #args_ptr; own args_ptr args (DfracOwn 1)
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
@@ -321,7 +321,7 @@ Definition own args_ptr args q : iProp Σ :=
   "Hreply_nextIndex" ∷ args_ptr ↦[enterNewEpochReply :: "nextIndex"]{q} #args.(nextIndex) ∗
   "Hreply_acceptedEpoch" ∷ args_ptr ↦[enterNewEpochReply :: "acceptedEpoch"]{q} #args.(acceptedEpoch) ∗
   "Hreply_ret" ∷ args_ptr ↦[enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
-  "Hreply_ret_sl" ∷ readonly (own_slice_small state_sl byteT 1 args.(state))
+  "Hreply_ret_sl" ∷ readonly (own_slice_small state_sl byteT (DfracOwn 1) args.(state))
 .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) q :
@@ -332,7 +332,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (?) "H HΦ".
@@ -364,11 +364,11 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        own_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT (DfracOwn 1) enc
   }}}
     decodeEnterNewEpochReply (slice_val enc_sl)
   {{{
-        args_ptr, RET #args_ptr; own args_ptr args 1
+        args_ptr, RET #args_ptr; own args_ptr args (DfracOwn 1)
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
@@ -434,7 +434,7 @@ Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
   "HaccEpoch" ∷ s ↦[paxosState :: "acceptedEpoch"] #st.(acceptedEpoch) ∗
   "HnextIndex" ∷ s ↦[paxosState :: "nextIndex"] #st.(nextIndex) ∗
   "Hstate" ∷ s ↦[paxosState :: "state"] (slice_val state_sl) ∗
-  "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT 1 st.(state)) ∗
+  "#Hstate_sl" ∷ own_slice_small state_sl byteT DfracDiscarded st.(state) ∗
   "HisLeader" ∷ s ↦[paxosState :: "isLeader"] #st.(isLeader)
 .
 Lemma wp_boolToU64 (b:bool) :
@@ -454,7 +454,7 @@ Lemma wp_encode s st :
   {{{
         sl, RET (slice_val sl);
         own_vol s st ∗
-        own_slice sl byteT 1 (encode st)
+        own_slice sl byteT (DfracOwn 1) (encode st)
   }}}
 .
 Proof.
@@ -468,8 +468,7 @@ Proof.
   wp_loadField. wp_load. wp_apply (wp_WriteInt with "[$]"). iIntros (?) "Hsl". wp_store.
   wp_loadField. wp_apply wp_boolToU64. wp_load.
   wp_apply (wp_WriteInt with "[$]"). iIntros (?) "Hsl". wp_store.
-  iMod (readonly_load with "Hstate_sl") as (?) "Hstate_sl2".
-  wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl2]").
+  wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
   iIntros (?) "[Hsl _]". wp_store. wp_load.
   iApply "HΦ".
   by iFrame.
@@ -497,8 +496,7 @@ Proof.
   wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "?".
   wp_pures. wp_storeField. wp_store.
   wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "Hsl".
-  iMod (readonly_alloc (own_slice_small s'2 byteT 1 st.(state)) with "[Hsl]") as "#Hsl".
-  { done. }
+  iMod (own_slice_small_persist with "Hsl") as "#Hsl".
   wp_pures. wp_store. wp_storeField. wp_load. wp_pures. wp_storeField.
   iApply "HΦ".
   iModIntro. repeat iExists _; iFrame "∗#".

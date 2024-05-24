@@ -90,7 +90,7 @@ Definition is_cachekv_inv kvptsto_int γ : iProp Σ :=
 Definition own_CacheKv (k:loc) γ : iProp Σ :=
   ∃ (cache_ptr:loc) (cache:gmap string cacheValueC.t),
   "Hcache_ptr" ∷ k ↦[CacheKv :: "cache"] #cache_ptr ∗
-  "Hcache" ∷ own_map cache_ptr 1 cache ∗
+  "Hcache" ∷ own_map cache_ptr (DfracOwn 1) cache ∗
   "#Hleases" ∷ ([∗ map] k ↦ cv ∈ cache,
                   ∃ γl, is_lease leaseN γl (s_kvptsto γ k cv.(cacheValueC.v)) ∗
                         is_lease_valid_lb γl cv.(cacheValueC.l)

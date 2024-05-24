@@ -79,7 +79,7 @@ Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "Hdurable" ∷ is_inode_durable addr σ addrs ∗
     "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-    "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
+    "Haddrs" ∷ own_slice addr_s uint64T (DfracOwn 1) addrs
 .
 Local Hint Extern 1 (environments.envs_entails _ (inode_linv _ _ _)) => unfold inode_linv : core.
 
@@ -257,7 +257,7 @@ Definition used_blocks_pre l σ addrs: iProp Σ :=
   ∃ addr_s,
     "%Haddr_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
     "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-    "Haddrs" ∷ own_slice addr_s uint64T 1 addrs.
+    "Haddrs" ∷ own_slice addr_s uint64T (DfracOwn 1) addrs.
 
 (* this lets the caller frame out the durable state for the crash invariant and
 the memory state for UsedBlocks *)
@@ -285,9 +285,9 @@ Theorem wp_Inode__UsedBlocks {l σ addrs} :
   {{{ used_blocks_pre l σ addrs }}}
     Inode__UsedBlocks #l
   {{{ (s:Slice.t), RET (slice_val s);
-      own_slice s uint64T 1 addrs ∗
+      own_slice s uint64T (DfracOwn 1) addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      (own_slice s uint64T 1 addrs -∗ used_blocks_pre l σ addrs) }}}.
+      (own_slice s uint64T (DfracOwn 1) addrs -∗ used_blocks_pre l σ addrs) }}}.
 Proof.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
   wp_call.
@@ -301,9 +301,9 @@ Theorem wpc_Inode__UsedBlocks {l σ addr} :
   {{{ pre_inode l addr σ  }}}
     Inode__UsedBlocks #l @ ⊤
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
-      own_slice s uint64T 1 addrs ∗
+      own_slice s uint64T (DfracOwn 1) addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      (own_slice s uint64T 1 addrs -∗ pre_inode l addr σ) ∧ inode_cinv addr σ }}}
+      (own_slice s uint64T (DfracOwn 1) addrs -∗ pre_inode l addr σ) ∧ inode_cinv addr σ }}}
   {{{ inode_cinv addr σ }}}.
 Proof.
   iIntros (Φ Φc) "Hinode HΦ"; iNamed "Hinode".
@@ -346,7 +346,7 @@ Theorem wpc_Inode__Read {l P addr} {off: u64} :
     <<{ ∀∀ σ mb, ⌜mb = σ.(inode.blocks) !! uint.nat off⌝ ∗ P σ }>>
       Inode__Read #l #off @ ∅
     <<{ P σ }>>
-    {{{ s, RET (slice_val s); match mb with Some b => is_block s 1 b | None => ⌜s = Slice.nil⌝ end }}}
+    {{{ s, RET (slice_val s); match mb with Some b => is_block s (DfracOwn 1) b | None => ⌜s = Slice.nil⌝ end }}}
     {{{ True }}}.
 Proof.
   iIntros (Φ Φc) "!# Hpre Hfupd"; iNamed "Hpre".
@@ -472,7 +472,7 @@ Theorem wpc_Inode__Read_triple {l P addr} {off: u64} Q :
     Inode__Read #l #off @ ⊤
   {{{ s mb, RET slice_val s;
       (match mb with
-       | Some b => is_block s 1 b
+       | Some b => is_block s (DfracOwn 1) b
        | None => ⌜s = Slice.nil⌝
        end) ∗ Q mb }}}
   {{{ True }}}.
@@ -481,7 +481,7 @@ Proof.
   iApply (wpc_step_strong_mono _ _ _ _ _
          (λ v, (∃ s mb, ⌜ v = slice_val s ⌝ ∗
                 match mb with
-                | Some b => is_block s 1 b
+                | Some b => is_block s (DfracOwn 1) b
                 | None => ⌜s = Slice.nil⌝
                 end ∗ Q mb))%I _ True with "[-HΦ] [HΦ]"); auto.
   2: { iSplit.
@@ -592,14 +592,14 @@ Qed.
 Theorem wp_Inode__mkHdr {stk} l addr_s addrs :
   length addrs ≤ InodeMaxBlocks ->
   {{{ "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-      "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
+      "Haddrs" ∷ own_slice addr_s uint64T (DfracOwn 1) addrs
   }}}
     Inode__mkHdr #l @ stk
   {{{ s b, RET (slice_val s);
-      is_block s 1 b ∗
+      is_block s (DfracOwn 1) b ∗
       ⌜block_encodes b ([EncUInt64 (W64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-      "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
+      "Haddrs" ∷ own_slice addr_s uint64T (DfracOwn 1) addrs
   }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".

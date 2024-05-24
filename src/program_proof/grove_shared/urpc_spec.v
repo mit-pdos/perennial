@@ -119,7 +119,7 @@ Definition is_urpc_handler (f : val) (spec : RpcSpec)
    : iProp Σ :=
   ∀ (x : spec.(spec_ty)) (reqData : list u8) req rep,
   {{{
-    own_slice_small req byteT 1 reqData ∗
+    own_slice_small req byteT (DfracOwn 1) reqData ∗
     rep ↦[slice.T byteT] (slice_val Slice.nil) ∗
     spec.(spec_Pre) x reqData
   }}}
@@ -148,7 +148,7 @@ Qed.
 Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) (spec : RpcSpec) (x : spec.(spec_ty)) :
   {{{
-      "Hslice" ∷ own_slice_small req byteT 1 reqData ∗
+      "Hslice" ∷ own_slice_small req byteT (DfracOwn 1) reqData ∗
       "Hrep_out_ptr" ∷ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       "#Hclient" ∷ is_uRPCClient cl_ptr host ∗
       "#Hhandler" ∷ is_urpc_spec γsmap host rpcid spec ∗
@@ -157,11 +157,11 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
     urpc.Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
   {{{
        (err : option call_err), RET #(call_errno err);
-       own_slice_small req byteT 1 reqData ∗
+       own_slice_small req byteT (DfracOwn 1) reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          own_slice_small rep_sl byteT 1 repData ∗
+          own_slice_small rep_sl byteT (DfracOwn 1) repData ∗
           (spec.(spec_Post) x reqData repData))
   }}}.
 Proof.

@@ -150,7 +150,7 @@ Definition own_bank_clerk (bank_ck:loc) (accts : gset string) : iProp Σ :=
   "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
   "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
   "Haccts" ∷ bank_ck ↦[BankClerk :: "accts"] (slice_val accts_s) ∗
-  "Haccts_slice" ∷ own_slice_small accts_s stringT 1 accts_l ∗
+  "Haccts_slice" ∷ own_slice_small accts_s stringT (DfracOwn 1) accts_l ∗
 
   "#Haccts_is_lock" ∷ [∗ list] acc ∈ accts_l, is_lock lockN (lock_gn γ) acc (bankPs γ acc)
 .
@@ -646,7 +646,7 @@ Lemma wp_MakeBankClerkSlice (lck kck : loc) γlk kvptsto E accts (accts_s : Slic
        is_Kv kck kvptsto E ∗
        is_lock lockN γlk init_flag
          (init_lock_inv init_flag γlk kvptsto accts) ∗
-       own_slice_small accts_s stringT 1 (acc0 :: accts_l) ∗
+       own_slice_small accts_s stringT (DfracOwn 1) (acc0 :: accts_l) ∗
        ⌜Permutation (elements accts) (acc0 :: accts_l)⌝
   }}}
     MakeBankClerkSlice #lck #kck #(str init_flag) (slice_val accts_s)

@@ -318,7 +318,7 @@ Section goose.
       {{{ (s:Slice.t), RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
-        | Some b => is_block s 1 b
+        | Some b => is_block s (DfracOwn 1) b
         end }}}
       {{{ True }}}.
   Proof.
@@ -357,7 +357,7 @@ Section goose.
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
-        | Some b => is_block s 1 b
+        | Some b => is_block s (DfracOwn 1) b
         end ∗ Q mb }}}
     {{{ True }}}.
   Proof.
@@ -397,7 +397,7 @@ Section goose.
   Theorem wpc_SingleInode__Append l sz b_s b0 :
     ∀ Φ Φc,
         "Hinode" ∷ is_single_inode l sz ∗
-        "Hb" ∷ is_block b_s 1 b0 ∗
+        "Hb" ∷ is_block b_s (DfracOwn 1) b0 ∗
         "Hfupd" ∷ (Φc ∧ ▷ (Φ #false ∧ ∀ σ σ',
           ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
           ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ (Φc ∧ Φ #true))) -∗
@@ -449,7 +449,7 @@ Section goose.
   failure, the resources put into "Hfupd" are lost! *)
   Theorem wpc_SingleInode__Append_triple (Q: iProp Σ) l sz b_s b0 :
     {{{ "Hinode" ∷ is_single_inode l sz ∗
-        "Hb" ∷ is_block b_s 1 b0 ∗
+        "Hb" ∷ is_block b_s (DfracOwn 1) b0 ∗
         "Hfupd" ∷ ((∀ σ σ',
           ⌜σ' = s_inode.mk (σ.(s_inode.blocks) ++ [b0])⌝ -∗
          ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P σ' ∗ Q))

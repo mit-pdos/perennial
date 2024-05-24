@@ -136,7 +136,7 @@ Proof.
   wp_pures.
   iDestruct (own_slice_to_small with "HsitesL") as "HsitesS".
   set P := λ (n : u64), (∃ sitesL,
-    "HsitesS" ∷ own_slice_small sites ptrT 1 (to_val <$> sitesL) ∗
+    "HsitesS" ∷ own_slice_small sites ptrT (DfracOwn 1) (to_val <$> sitesL) ∗
     "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (uint.nat n) sitesL), is_txnsite site sid γ) ∗
     "Hsites" ∷ (db ↦[DB :: "sites"] (to_val sites)) ∗

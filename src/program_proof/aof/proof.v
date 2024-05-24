@@ -151,7 +151,7 @@ Definition is_aof_ctx_inv γ P :=
 Definition aof_close_resources (aof_ptr:loc) γ P Pcrash fname : iProp Σ :=
   ∃ (isClosed closeRequested:bool),
   "HcloseRequested" ∷ aof_ptr ↦[AppendOnlyFile :: "closeRequested"] #closeRequested ∗
-  "Hclosed" ∷ aof_ptr ↦[AppendOnlyFile :: "closed"]{1/2} #isClosed ∗ (* other half owned by background thread *)
+  "Hclosed" ∷ aof_ptr ↦[AppendOnlyFile :: "closed"]{#1/2} #isClosed ∗ (* other half owned by background thread *)
   "#HexpectedData" ∷ (if closeRequested then ∃ expectedData, (fmlist γ.(logdata) (DfracDiscarded) expectedData) else True) ∗
   "Hreq_tok" ∷ (if closeRequested && negb isClosed then ghost_var γ.(close_req_tok) 1 () else True) ∗
   "HfileEscrow" ∷ (if isClosed then
@@ -170,9 +170,9 @@ Definition aof_mu_invariant (aof_ptr:loc) mu γ fname P Pcrash : iProp Σ :=
   let memlen := length (predurableC ++ membufC) in
   "#Hcrash_wand" ∷ □ (∀ data, ▷ P data ={⊤}=∗ ▷ Pcrash data) ∗
   "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile :: "membuf"] (slice_val membuf_sl) ∗
-  "HdurableLength" ∷ aof_ptr ↦[AppendOnlyFile :: "durableLength"]{1/2} #durlen ∗
+  "HdurableLength" ∷ aof_ptr ↦[AppendOnlyFile :: "durableLength"]{#1/2} #durlen ∗
   "Hlength" ∷ aof_ptr ↦[AppendOnlyFile :: "length"] #(W64 memlen) ∗
-  "Hmembuf_sl" ∷ typed_slice.own_slice membuf_sl byteT 1 membufC ∗
+  "Hmembuf_sl" ∷ typed_slice.own_slice membuf_sl byteT (DfracOwn 1) membufC ∗
 
   "Hpredurable" ∷ fmlist γ.(predurabledata) (DfracOwn (1/2)) (γ.(initdata) ++ predurableC) ∗
   "Hlogdata" ∷ fmlist γ.(logdata) (DfracOwn (1/2)) (γ.(initdata) ++ predurableC ++ membufC) ∗
@@ -422,7 +422,7 @@ Proof.
   iAssert ((|={⊤}=> is_aof l γ fname P Pcrash ∗
                       fmlist γ.(predurabledata) (DfracOwn (1/2)) γ.(initdata) ∗
                       fmlist γ.(durabledata) (DfracOwn (1/2)) γ.(initdata) ∗
-                      l ↦[AppendOnlyFile :: "durableLength"]{1/2} #0 ∗
+                      l ↦[AppendOnlyFile :: "durableLength"]{#1/2} #0 ∗
                       own γ.(len) (●MN{#1/2} 0) ∗
                       aof_log_own γ γ.(initdata) ∗
                       ⌜data = γ.(initdata)⌝
@@ -502,7 +502,7 @@ Proof.
 
               fmlist γ.(predurabledata) (DfracOwn (1/2)) (γ.(initdata) ++ data') ∗
               fmlist γ.(durabledata) (DfracOwn (1/2)) (γ.(initdata) ++ data') ∗
-              l ↦[AppendOnlyFile :: "durableLength"]{1 / 2} #(W64 (length data')) ∗
+              l ↦[AppendOnlyFile :: "durableLength"]{#1 / 2} #(W64 (length data')) ∗
               own γ.(len) (●MN{#1/2} (length (data')))
             )%I with "[Hpre Hdur Hpredur HdurLen Hlen]" as "Hfile_ctx".
     { iExists []; iFrame. rewrite app_nil_r. iFrame. }

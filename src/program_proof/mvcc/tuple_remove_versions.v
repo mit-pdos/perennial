@@ -135,7 +135,8 @@ Proof.
     wp_loadField.
     destruct (list_lookup_lt _ (ver_to_val <$> vers) (uint.nat idx)) as [ver HSome].
     { rewrite fmap_length. word. }
-    wp_apply (wp_SliceGet with "[HversX]"); first auto.
+    wp_apply (wp_SliceGet with "[HversX]").
+    { iFrame. done. }
     iIntros "[HversX %Hval_ty]".
     destruct (val_to_ver_with_val_ty ver) as (b & d & v & ->); first auto.
     wp_pures.

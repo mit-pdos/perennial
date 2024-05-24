@@ -15,8 +15,8 @@ Local Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
   ∃ (rpcCls making:loc) (rpcClsM makingM:gmap u64 loc),
     "HrpcCls" ∷ c_ptr ↦[ConnMan :: "rpcCls"] #rpcCls ∗
     "Hmaking" ∷ c_ptr ↦[ConnMan :: "making"] #making ∗
-    "Hcls_map" ∷ own_map rpcCls 1 rpcClsM ∗
-    "Hmaking_map" ∷ own_map making 1 makingM ∗
+    "Hcls_map" ∷ own_map rpcCls (DfracOwn 1) rpcClsM ∗
+    "Hmaking_map" ∷ own_map making (DfracOwn 1) makingM ∗
     "#HownRpcCls" ∷ ([∗ map] host ↦ cl ∈ rpcClsM, is_uRPCClient cl host) ∗
     "#HownMaking" ∷ ([∗ map] host ↦ c ∈ makingM, is_cond c lock)
 .
@@ -165,7 +165,7 @@ Lemma wp_ConnMan__CallAtLeastOnce_pred (γsmap:server_chan_gnames) (c_ptr:loc) (
     req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
     Spec Post :
   {{{
-      "Hslice" ∷ own_slice_small req byteT 1 reqData ∗
+      "Hslice" ∷ own_slice_small req byteT (DfracOwn 1) reqData ∗
       "Hrep" ∷ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       "#Hconn" ∷ is_ConnMan c_ptr ∗
       "#Hrpc" ∷ is_urpc_spec_pred γsmap host rpcid Spec ∗
@@ -174,10 +174,10 @@ Lemma wp_ConnMan__CallAtLeastOnce_pred (γsmap:server_chan_gnames) (c_ptr:loc) (
       ConnMan__CallAtLeastOnce #c_ptr #host #rpcid (slice_val req) #rep_out_ptr #timeout_ms
     {{{
       RET #();
-      own_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT (DfracOwn 1) reqData ∗
       ∃ rep_sl (repData:list u8),
         rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-        own_slice_small rep_sl byteT 1 repData ∗
+        own_slice_small rep_sl byteT (DfracOwn 1) repData ∗
         (▷ Post repData)
     }}}
     .
@@ -276,7 +276,7 @@ Lemma wp_ConnMan__CallAtLeastOnce (spec : RpcSpec) (x : spec.(spec_ty))
   (γsmap:server_chan_gnames) (c_ptr:loc) (host:u64) (rpcid:u64)
   req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8) :
   {{{
-      "Hsl" ∷ own_slice_small req byteT 1 reqData ∗
+      "Hsl" ∷ own_slice_small req byteT (DfracOwn 1) reqData ∗
       "Hrep" ∷ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       "#Hconn" ∷ is_ConnMan c_ptr ∗
       "#Hhandler" ∷ is_urpc_spec γsmap host rpcid spec ∗
@@ -285,10 +285,10 @@ Lemma wp_ConnMan__CallAtLeastOnce (spec : RpcSpec) (x : spec.(spec_ty))
       ConnMan__CallAtLeastOnce #c_ptr #host #rpcid (slice_val req) #rep_out_ptr #timeout_ms
     {{{
       RET #();
-      own_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT (DfracOwn 1) reqData ∗
       ∃ rep_sl (repData:list u8),
         rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-        own_slice_small rep_sl byteT 1 repData ∗
+        own_slice_small rep_sl byteT (DfracOwn 1) repData ∗
         (▷ spec.(spec_Post) x reqData repData)
     }}}
     .

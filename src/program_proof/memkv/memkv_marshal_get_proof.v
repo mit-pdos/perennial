@@ -29,7 +29,7 @@ Definition own_GetReply reply_ptr rep : iProp Σ :=
   ∃ val_sl,
   "HErr" ∷ reply_ptr ↦[GetReply :: "Err"] #rep.(GR_Err) ∗
   "HValue" ∷ reply_ptr ↦[GetReply :: "Value"] (slice_val val_sl) ∗
-  "#HValue_sl" ∷ readonly (typed_slice.own_slice_small val_sl byteT 1 rep.(GR_Value))
+  "#HValue_sl" ∷ readonly (typed_slice.own_slice_small val_sl byteT (DfracOwn 1) rep.(GR_Value))
 .
 
 Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
@@ -45,7 +45,7 @@ Lemma wp_EncodeGetRequest args_ptr args :
     EncodeGetRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_GetRequest reqData args⌝ ∗
-                                               typed_slice.own_slice req_sl byteT 1%Qp reqData ∗
+                                               typed_slice.own_slice req_sl byteT (DfracOwn 1) reqData ∗
                                                own_GetRequest args_ptr args
   }}}.
 Proof.
@@ -72,7 +72,7 @@ Qed.
 Lemma wp_DecodeGetRequest req_sl reqData args :
   {{{
        ⌜has_encoding_GetRequest reqData args⌝ ∗
-       typed_slice.own_slice_small req_sl byteT 1%Qp reqData
+       typed_slice.own_slice_small req_sl byteT (DfracOwn 1) reqData
   }}}
     DecodeGetRequest (slice_val req_sl)
   {{{
@@ -99,7 +99,7 @@ Qed.
 
 Lemma wp_DecodeGetReply rep rep_sl repData :
   {{{
-       typed_slice.own_slice_small rep_sl byteT 1%Qp repData ∗
+       typed_slice.own_slice_small rep_sl byteT (DfracOwn 1) repData ∗
        ⌜has_encoding_GetReply repData rep ⌝
   }}}
     DecodeGetReply (slice_val rep_sl)
@@ -126,7 +126,7 @@ Proof.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
-  wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
+  wp_apply (wp_Dec__GetBytes with "[$Hdec]"); first done.
   iIntros (??) "[Hsl Hdec]".
   wp_storeField.
 
@@ -144,7 +144,7 @@ Lemma wp_EncodeGetReply rep_ptr rep :
     EncodeGetReply #rep_ptr
   {{{
        repData rep_sl , RET (slice_val rep_sl);
-       typed_slice.own_slice rep_sl byteT 1%Qp repData ∗
+       typed_slice.own_slice rep_sl byteT (DfracOwn 1) repData ∗
        ⌜has_encoding_GetReply repData rep ⌝
   }}}.
 Proof.

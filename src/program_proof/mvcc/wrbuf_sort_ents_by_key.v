@@ -10,12 +10,12 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func swap(ents []WrEnt, i, j uint64)                          *)
 (*****************************************************************)
 Local Lemma wp_swap (entsS : Slice.t) (ents : list wrent) (i j : u64) :
-  {{{ slice.own_slice_small entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
+  {{{ slice.own_slice_small entsS (structTy WrEnt) (DfracOwn 1) (wrent_to_val <$> ents) ∗
       ⌜(uint.nat i < length ents ∧ uint.nat j < length ents)%nat⌝
   }}}
     swap (to_val entsS) #i #j
   {{{ (ents' : list wrent), RET #();
-      slice.own_slice_small entsS (structTy WrEnt) 1 (wrent_to_val <$> ents') ∗
+      slice.own_slice_small entsS (structTy WrEnt) (DfracOwn 1) (wrent_to_val <$> ents') ∗
       ⌜ents' ≡ₚ ents⌝
   }}}.
 Proof.
@@ -99,7 +99,7 @@ Proof.
   (* }                                                       *)
   (***********************************************************)
   set P := (λ (b : bool), ∃ (ents' : list wrent) (i : u64),
-               "HentsS" ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents') ∗
+               "HentsS" ∷ own_slice_small entsS (struct.t WrEnt) (DfracOwn 1) (wrent_to_val <$> ents') ∗
                "HiRef"  ∷ iRef ↦[uint64T] #i ∗
                "%Hperm" ∷ ⌜ents' ≡ₚ ents⌝
            )%I.
@@ -123,7 +123,7 @@ Proof.
 
     (* Inner loop. *)
     set Q := (λ (b : bool), ∃ (ents'' : list wrent) (j : u64),
-                "HentsS" ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents'') ∗
+                "HentsS" ∷ own_slice_small entsS (struct.t WrEnt) (DfracOwn 1) (wrent_to_val <$> ents'') ∗
                 "HjRef"  ∷ jRef ↦[uint64T] #j ∗
                 "%Hperm" ∷ ⌜ents'' ≡ₚ ents'⌝ ∗
                 "%Hle" ∷ ⌜uint.Z j ≤ uint.Z i⌝

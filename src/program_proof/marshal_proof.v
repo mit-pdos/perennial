@@ -668,20 +668,6 @@ Proof.
   rewrite drop_app_length' //; word.
 Qed.
 
-Theorem wp_Dec__GetBytes_ro stk E dec_v bs (n: u64) r s q data :
-  n = W64 (length bs) →
-  {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
-    Dec__GetBytes dec_v #n @ stk; E
-  {{{ q' s', RET slice_val s'; readonly (own_slice_small s' byteT (DfracOwn 1) bs) ∗ is_dec dec_v r s q' data }}}.
-Proof.
-  iIntros (-> Φ) "Hdec HΦ".
-  iApply wp_ncfupd.
-  iApply (wp_Dec__GetBytes with "Hdec"); first done.
-  iIntros "!>" (q' s') "[Hsl Hdec]".
-  iApply "HΦ". iFrame "Hdec".
-  iMod (readonly_alloc with "[Hsl]") as "$"; by iFrame.
-Qed.
-
 (* TODO: use this to replace list_lookup_lt (it's much easier to remember) *)
 Local Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
   let H := fresh "H" x "_lookup" in

@@ -134,7 +134,7 @@ Lemma wp_ReconnectingClient__Call2 γsmap q (cl_ptr:loc) (rpcid:u64) (host:u64) 
        own_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
-          own_slice_small rep_sl byteT 1 reply -∗
+          own_slice_small rep_sl byteT (DfracOwn 1) reply -∗
           Φ #0)
   ) -∗
   (

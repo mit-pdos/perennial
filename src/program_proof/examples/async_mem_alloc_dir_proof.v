@@ -167,7 +167,7 @@ Section goose.
       "#d" ∷ readonly (l ↦[Dir :: "d"] (disk_val d)) ∗
       "#allocator" ∷ readonly (l ↦[Dir :: "allocator"] #alloc_l) ∗
       "#inodes" ∷ readonly (l ↦[Dir :: "inodes"] (slice_val inodes_s)) ∗
-      "#inodes_s" ∷ readonly (own_slice_small inodes_s ptrT 1 (inode_refs))
+      "#inodes_s" ∷ readonly (own_slice_small inodes_s ptrT (DfracOwn 1) (inode_refs))
   .
 
   (** State of unallocated blocks *)
@@ -491,7 +491,7 @@ Section goose.
       }}}
       openInodes (disk_val d) @ ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
-        own_slice_small inode_s ptrT 1 inode_refs ∗
+        own_slice_small inode_s ptrT (DfracOwn 1) inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
             pre_inode inode_ref (W64 (Z.of_nat i)) s_inode
     }}}
@@ -517,7 +517,7 @@ Section goose.
     wpc_apply (wpc_forUpto
                (λ n, ∃ (inode_s: Slice.t) (inode_refs: list loc),
                    "Hinodes" ∷ ino_l ↦[slice.T ptrT] (slice_val inode_s) ∗
-                   "Hinode_slice" ∷ own_slice inode_s ptrT 1 inode_refs ∗
+                   "Hinode_slice" ∷ own_slice inode_s ptrT (DfracOwn 1) inode_refs ∗
                    "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;(take (uint.nat n) s_inodes),
                     pre_inode inode_ref i s_inode) ∗
                    "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ (drop (uint.nat n) s_inodes),
@@ -642,14 +642,14 @@ Section goose.
   Qed.
 
   Theorem wpc_inodeUsedBlocks inode_s inode_refs s_inodes :
-    {{{ "Hinode_s" ∷ own_slice_small inode_s ptrT 1 inode_refs ∗
+    {{{ "Hinode_s" ∷ own_slice_small inode_s ptrT (DfracOwn 1) inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                     pre_inode inode_ref i s_inode }}}
       inodeUsedBlocks (slice_val inode_s) @ ⊤
     {{{ (addrs_ref:loc) used, RET #addrs_ref;
         "Hused_set" ∷ is_addrset addrs_ref used ∗
         "%Hused_eq" ∷ ⌜used = ⋃ (inode.addrs <$> s_inodes)⌝ ∗
-        "Hinode_s" ∷ own_slice_small inode_s ptrT 1 inode_refs ∗
+        "Hinode_s" ∷ own_slice_small inode_s ptrT (DfracOwn 1) inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                   pre_inode inode_ref i s_inode }}}
     {{{ [∗ list] i↦s_inode ∈ s_inodes,
@@ -916,7 +916,7 @@ Section goose.
     {{{ (s:Slice.t) mb, RET (slice_val s);
         match mb with
         | None => ⌜s = Slice.nil⌝
-        | Some b => is_block s 1 b
+        | Some b => is_block s (DfracOwn 1) b
         end ∗ Q mb }}}
     {{{ True }}}.
   Proof.
@@ -941,7 +941,7 @@ Section goose.
     iApply (wpc_step_strong_mono _ _ _ _ _
          (λ v, (∃ s mb, ⌜ v = slice_val s ⌝ ∗
                 match mb with
-                | Some b => is_block s 1 b
+                | Some b => is_block s (DfracOwn 1) b
                 | None => ⌜s = Slice.nil⌝
                 end ∗ Q mb))%I _ True with "[-HΦ] [HΦ]"); auto.
     2: { iSplit.
@@ -1095,7 +1095,7 @@ Section goose.
   Theorem wpc_Dir__Append (Q: iProp Σ) l sz b_s b0 (idx: u64) :
     uint.nat idx < num_inodes →
     {{{ "#Hdir" ∷ is_dir l sz ∗
-        "Hb" ∷ is_block b_s 1 b0 ∗
+        "Hb" ∷ is_block b_s (DfracOwn 1) b0 ∗
         "Hfupd" ∷ (∀ σ blocks,
                       ⌜σ.(dir.inodes) !! uint.nat idx = Some blocks⌝ -∗
                       ▷ P σ ={⊤ ∖ ↑N}=∗ ▷ P (dir.mk $ <[ uint.nat idx := blocks ++ [b0] ]> σ.(dir.inodes)) ∗ Q)

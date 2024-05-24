@@ -30,7 +30,7 @@ Definition is_db (db : loc) γ : iProp Σ :=
     "#Hidx" ∷ readonly (db ↦[DB :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Hsites" ∷ readonly (db ↦[DB :: "sites"] (to_val sites)) ∗
-    "#HsitesS" ∷ readonly (own_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
+    "#HsitesS" ∷ readonly (own_slice_small sites ptrT (DfracOwn 1) (to_val <$> sitesL)) ∗
     "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝ ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ sitesL, is_txnsite site sid γ) ∗
     "#Hp" ∷ readonly (db ↦[DB :: "proph"] #p) ∗

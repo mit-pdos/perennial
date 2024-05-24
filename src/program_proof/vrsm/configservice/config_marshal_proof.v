@@ -14,7 +14,7 @@ Definition has_encoding (encoded:list u8) (args:C) : Prop :=
 Context `{!heapGS Σ}.
 
 Definition own conf_sl (conf:list u64) : iProp Σ :=
-  "Hargs_state_sl" ∷ readonly (own_slice_small conf_sl uint64T 1 conf).
+  "Hargs_state_sl" ∷ readonly (own_slice_small conf_sl uint64T (DfracOwn 1) conf).
 
 Lemma wp_Encode conf_sl (conf:C) :
   {{{
@@ -25,7 +25,7 @@ Lemma wp_Encode conf_sl (conf:C) :
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc conf⌝ ∗
         own conf_sl conf ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (Φ) "Hconf HΦ".
@@ -55,7 +55,7 @@ Proof.
   replace (conf_sl.(Slice.sz)) with (W64 (length conf)) by word.
   set (P:=(λ (i:u64),
       ∃ enc_sl,
-      "Henc_sl" ∷ own_slice enc_sl byteT 1 ((u64_le (length conf)) ++ concat (u64_le <$> (take (uint.nat i) conf))) ∗
+      "Henc_sl" ∷ own_slice enc_sl byteT (DfracOwn 1) ((u64_le (length conf)) ++ concat (u64_le <$> (take (uint.nat i) conf))) ∗
       "Henc" ∷ enc ↦[slice.T byteT] (slice_val enc_sl)
     )%I)
   .
@@ -122,8 +122,8 @@ Proof.
   wp_load.
   iApply "HΦ".
   iMod (readonly_alloc
-          (Φ:=(λ (p:Qp), own_slice_small conf_sl uint64T p conf)%I)
-          (own_slice_small conf_sl uint64T 1 conf)
+          (Φ:=(λ (p:Qp), own_slice_small conf_sl uint64T (DfracOwn p) conf)%I)
+          (own_slice_small conf_sl uint64T (DfracOwn 1) conf)
           q with "[Hconf_sl]") as "Hconf_sl".
   { iFrame. }
   iModIntro.
@@ -241,7 +241,7 @@ Proof.
       ∃ enc_sl,
       "Henc_sl" ∷ own_slice_small enc_sl byteT q (concat (u64_le <$> (drop (uint.nat i) conf))) ∗
       "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
-      "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 ((take (uint.nat i) conf) ++
+      "Hconf_sl" ∷ own_slice_small conf_sl uint64T (DfracOwn 1) ((take (uint.nat i) conf) ++
                                                 replicate (length conf - uint.nat i) (W64 0))
     )%I)
   .
