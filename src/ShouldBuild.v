@@ -55,6 +55,9 @@ From Perennial.program_proof.vrsm Require
 (* MVCC *)
 From Perennial.program_proof.mvcc Require mvcc_proof.
 
+(* rsm *)
+From Perennial.program_proof.rsm Require rsm_proof.
+
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
