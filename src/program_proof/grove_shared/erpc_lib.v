@@ -58,6 +58,13 @@ Definition is_eRPCClient_ghost (γrpc:erpc_names) (cid cseqno:u64) : iProp Σ :=
 Implicit Types γrpc : erpc_names.
 Implicit Types γreq : erpc_request_names.
 
+(* Why does this notation not get imported properly from iris ghost_map? *)
+Notation "k ↪[ γ ]□ v" := (ghost_map_elem γ k DfracDiscarded v)
+  (at level 20).
+Notation "k ↪[ γ ] v" := (ghost_map_elem γ k (DfracOwn 1) v)
+  (at level 20).
+
+
 (** Ownership of *all* the server-side sequence number tracking tokens *)
 Definition RPCServer_lseq γrpc (lastSeqM:gmap u64 u64) : iProp Σ :=
   ([∗ set] cid ∈ (fin_to_set u64), cid fm[[γrpc.(lseq)]]↦ uint.nat (default (W64 0) (lastSeqM !! cid)))%I.
