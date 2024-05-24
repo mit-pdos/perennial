@@ -110,12 +110,12 @@ Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : g
     Log__installBufsMap #l (slice_val bufs)
   {{{ (blkmapref : loc) (blkmap : gmap u64 Slice.t), RET #blkmapref;
       is_locked_walheap γ.(txn_walnames) lwh ∗
-      own_map blkmapref 1 blkmap ∗
+      own_map blkmapref (DfracOwn 1) blkmap ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
         pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
       [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap,
         ∃ b,
-          is_block blkslice 1 b ∗
+          is_block blkslice (DfracOwn 1) b ∗
           ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝
   }}}.
 Proof using txnG0 txnG0 Σ.
@@ -133,11 +133,11 @@ Opaque struct.t.
         "<-" ∷ ⌜ done ++ todo = buflist ⌝ ∗
         "->" ∷ ⌜ bufamap_done = bufamap ∖ bufamap_todo ⌝ ∗
         "%" ∷ ⌜ bufamap_todo ⊆ bufamap ⌝ ∗
-        "Hblks" ∷ own_map blks 1 blkmap ∗
+        "Hblks" ∷ own_map blks (DfracOwn 1) blkmap ∗
         "Hbufamap_todo" ∷ ( [∗ maplist] a↦buf;bufptrval ∈ bufamap_todo;todo, is_txn_buf_pre γ bufptrval a buf ) ∗
         "Hbufamap_done" ∷ ( [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap_done,
           ∃ b,
-            is_block blkslice 1 b ∗
+            is_block blkslice (DfracOwn 1) b ∗
             ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ ) ∗
         "Hbufamap_done_pointsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
         "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh
@@ -252,16 +252,16 @@ Opaque struct.t.
       wp_apply (wp_If_join
         ( ∃ blkslice blk blkmap',
             "Hblkvar" ∷ blkvar ↦[slice.T byteT] (slice_val blkslice) ∗
-            "Hisblock" ∷ is_block blkslice 1 blk ∗
+            "Hisblock" ∷ is_block blkslice (DfracOwn 1) blk ∗
             "Hbufamap_done" ∷ ( [∗ map] blkno↦blkslice;offmap ∈ delete a.(addrBlock) blkmap';
                   delete a.(addrBlock) (gmap_addr_by_block (bufamap ∖ bufamap_todo)),
                   ∃ b0 : Block,
-                    is_block blkslice 1 b0
+                    is_block blkslice (DfracOwn 1) b0
                     ∗ ⌜updBlockKindOK blkno b0 γ
                          (locked_wh_disk lwh) (buf_ <$> offmap)⌝ ) ∗
             "Hisbuf" ∷ is_buf b a buf.(buf_) ∗
             "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh ∗
-            "Hblks" ∷ own_map blks 1 blkmap' ∗
+            "Hblks" ∷ own_map blks (DfracOwn 1) blkmap' ∗
             "%" ∷ ⌜ blkmap' !! a.(addrBlock) = Some blkslice ⌝ ∗
             "%" ∷ ⌜ updBlockOK a.(addrBlock) blk buf.(buf_).(bufKind) (locked_wh_disk lwh) (default ∅ ((gmap_addr_by_block (buf_ <$> (bufamap ∖ bufamap_todo))) !! a.(addrBlock))) ⌝
         )%I
@@ -446,7 +446,7 @@ Proof.
         "%" ∷ ⌜ gmap_addr_by_block bufamap = offmaps_todo ∪ offmaps_done ⌝ ∗
         "%" ∷ ⌜ dom offmaps_todo ## dom offmaps_done ⌝ ∗
         "Hmtodo" ∷ ( [∗ map] blkno↦blkslice;offmap ∈ mtodo;offmaps_todo, ∃ b : Block,
-                                          is_block blkslice 1 b ∗
+                                          is_block blkslice (DfracOwn 1) b ∗
                                           ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ ) ∗
         "Hmdone" ∷ ( [∗ maplist] blkno↦offmap;upd ∈ offmaps_done;upds,
                                           ⌜ upd.(update.addr) = blkno ⌝ ∗

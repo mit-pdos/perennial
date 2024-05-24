@@ -75,8 +75,8 @@ Context `{!heapGS Σ}.
 
 Definition own_slicemap_rep (mv : gmap u64 val) (m : gmap u64 (list u8)) : iProp Σ :=
   "%Hmdoms" ∷ ⌜ dom mv = dom m ⌝ ∗
-  "Hmvals" ∷ ([∗ map] k ↦ v ∈ mv, (∃ (q : Qp) vsl, ⌜ v = slice_val vsl ⌝ ∗
-              typed_slice.own_slice_small vsl byteT q (default [] (m !! k))))%I.
+  "Hmvals" ∷ ([∗ map] k ↦ v ∈ mv, (∃ vsl, ⌜ v = slice_val vsl ⌝ ∗
+              typed_slice.own_slice_small vsl byteT DfracDiscarded (default [] (m !! k))))%I.
 
 Lemma own_slicemap_rep_dom  mv m :
   own_slicemap_rep mv m -∗ ⌜ dom mv = dom m ⌝.
@@ -99,12 +99,10 @@ Proof.
   rewrite -big_sepM_sep.
   iApply (big_sepM_mono with "Hmvals").
   iIntros (k x Hlookup) "H".
-  iDestruct "H" as (q vsl Heq) "Hslice".
-  rewrite -(Qp.div_2 q).
-  iDestruct "Hslice" as "[Hl1 Hl2]".
-  iSplitL "Hl1".
-  { iExists _, _. iFrame. eauto. }
-  { iExists _, _. iFrame. eauto. }
+  iDestruct "H" as (vsl Heq) "#Hslice".
+  iSplitL.
+  { iExists _. iFrame. eauto. }
+  { iExists _. iFrame. eauto. }
 Qed.
 
 Lemma own_slicemap_rep_move1 m1 m1' m2 m2' k l l':
@@ -126,17 +124,17 @@ Proof.
   { iSplit; first iPureIntro.
     { rewrite ?dom_delete_L Hmdoms. eauto. }
     iApply (big_sepM_mono with "Hmvals1").
-    { iIntros (?? Hldel) "H". iDestruct "H" as (?? Heq) "H". iExists _, _. iFrame "%".
+    { iIntros (?? Hldel) "H". iDestruct "H" as (? Heq) "H". iExists _. iFrame "%".
       rewrite lookup_delete_ne //.
       intros Heq'. rewrite Heq' lookup_delete in Hldel. congruence. }
   }
   iSplit; first iPureIntro.
   { rewrite ?dom_insert_L; congruence. }
   iApply (big_sepM_insert_2 with "[Hl]"); auto.
-  { simpl. iDestruct "Hl" as (?? Heql) "H". iExists _, _. iFrame "%".
+  { simpl. iDestruct "Hl" as (? Heql) "H". iExists _. iFrame "%".
     rewrite lookup_insert. rewrite Hl'. eauto. }
   iApply (big_sepM_mono with "Hmvals2").
-  { iIntros (k' ? Hldel) "H". iDestruct "H" as (?? Heq) "H". iExists _, _. iFrame "%".
+  { iIntros (k' ? Hldel) "H". iDestruct "H" as (? Heq) "H". iExists _. iFrame "%".
     destruct (decide (k = k')).
     { subst. congruence. }
     rewrite lookup_insert_ne //.
@@ -153,10 +151,10 @@ Proof.
   iIntros (Hlookup) "Hrep".
   iDestruct (own_slicemap_rep_dup with "Hrep") as "(Hrep&$)".
   iNamed "Hrep".
-  iDestruct (big_sepM_lookup with "Hmvals") as (q vsl Heq) "H"; eauto.
+  iDestruct (big_sepM_lookup with "Hmvals") as (vsl Heq) "H"; eauto.
   assert (is_Some (m !! k)) as (l&Heq').
   { apply elem_of_dom_2 in Hlookup. rewrite Hmdoms in Hlookup. apply elem_of_dom in Hlookup. eauto. }
-  iExists q, vsl, l. iFrame "%". rewrite Heq' //.
+  iExists DfracDiscarded, vsl, l. iFrame "%". rewrite Heq' //.
 Qed.
 
 Definition EncSliceMap_invariant m0 enc_v (r:Rec) sz map_sz
@@ -179,7 +177,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   ∃ (kvs_ptr:loc) (mv:gmap u64 goose_lang.val),
   "HKey" ∷ args_ptr ↦[InstallShardRequest :: "Sid"] #args.(IR_Sid) ∗
   "HKvs" ∷ args_ptr ↦[InstallShardRequest :: "Kvs"] #kvs_ptr ∗
-  "HKvsMap" ∷ map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+  "HKvsMap" ∷ map.own_map kvs_ptr (DfracOwn 1) (mv, (slice_val Slice.nil)) ∗
   "%Hdom_install" ∷ ⌜dom args.(IR_Kvs) = dom mv ⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
         ⌜shardOfC k ≠ args.(IR_Sid) ∧ mv !! k = None ∧ args.(IR_Kvs) !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
@@ -188,7 +186,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
 Lemma wp_EncSliceMap e mref mv m sz r remaining :
   marshalledMapSize m <= remaining →
   {{{
-      "HKvsMap" ∷ map.own_map mref 1 (mv, slice_val Slice.nil) ∗
+      "HKvsMap" ∷ map.own_map mref (DfracOwn 1) (mv, slice_val Slice.nil) ∗
       "Henc" ∷ is_enc e sz r remaining ∗
       "Hvals" ∷ own_slicemap_rep mv m
   }}}
@@ -196,7 +194,7 @@ Lemma wp_EncSliceMap e mref mv m sz r remaining :
   {{{
        rmap, RET #();
        ⌜has_byte_map_encoding m rmap⌝ ∗
-       map.own_map mref 1 (mv, slice_val Slice.nil) ∗
+       map.own_map mref (DfracOwn 1) (mv, slice_val Slice.nil) ∗
        own_slicemap_rep mv m ∗
        is_enc e sz (r ++ rmap) (remaining - marshalledMapSize m)
   }}}.
@@ -366,13 +364,13 @@ Definition SizeOfMarshalledMap_invariant m0 (s : loc) (mtodo' mdone':gmap u64 va
 
 Lemma wp_SizeOfMarshalledMap mref mv m :
   {{{
-      "HKvsMap" ∷ map.own_map mref 1 (mv, slice_val Slice.nil) ∗
+      "HKvsMap" ∷ map.own_map mref (DfracOwn 1) (mv, slice_val Slice.nil) ∗
       "Hvals" ∷ own_slicemap_rep mv m
   }}}
     SizeOfMarshalledMap #mref
   {{{
        (z : u64), RET #z; ⌜ uint.nat z = marshalledMapSize m ⌝ ∗
-       map.own_map mref 1 (mv, slice_val Slice.nil) ∗
+       map.own_map mref (DfracOwn 1) (mv, slice_val Slice.nil) ∗
        own_slicemap_rep mv m
   }}}.
 Proof.
@@ -469,7 +467,7 @@ Qed.
 
 Definition shard_own (mv : gmap u64 val) (m : gmap u64 (list u8)) id : iProp Σ :=
   ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
-                               ∨ (∃ (q : Qp) (vsl : Slice.t),
+                               ∨ (∃ (q : dfrac) (vsl : Slice.t),
                                      ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
                                              typed_slice.own_slice_small vsl byteT q
                                              (default [] (m !! k)))).
@@ -495,10 +493,8 @@ Proof.
   iApply (big_sepS_mono with "H").
   iIntros (x Hin) "H". iDestruct "H" as "[%Hl|Hr]".
   { iFrame "%". }
-  iDestruct "Hr" as (q vsl Heq) "Hslice".
-  rewrite -(Qp.div_2 q).
-  iDestruct "Hslice" as "[Hl1 Hl2]".
-  iSplitL "Hl1".
+  iDestruct "Hr" as (q vsl Heq) "#Hslice".
+  iSplitL.
   { iRight. iExists _, _. iFrame. eauto. }
   { iRight. iExists _, _. iFrame. eauto. }
 Qed.
@@ -506,7 +502,7 @@ Qed.
 Lemma shard_to_own_slicemap_rep (mv : gmap u64 val) m id:
   dom mv = dom m →
   ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
-                               ∨ (∃ (q : Qp) (vsl : Slice.t),
+                               ∨ (∃ (q : dfrac) (vsl : Slice.t),
                                      ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
                                              typed_slice.own_slice_small vsl byteT q
                                              (default [] (m !! k)))) -∗
@@ -555,7 +551,7 @@ Lemma wp_encodeInstallShardRequest args_ptr args :
     encodeInstallShardRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
-                                               typed_slice.own_slice req_sl byteT 1%Qp reqData ∗
+                                               typed_slice.own_slice req_sl byteT (DfracOwn 1) reqData ∗
                                                own_InstallShardRequest args_ptr args
   }}}.
 Proof.
@@ -598,7 +594,7 @@ Definition DecSliceMap_invariant dec_v i_ptr m (r:Rec) mref s data : iProp Σ :=
     ⌜(list_to_map l) ##ₘ mdone⌝ ∗
     ⌜(list_to_map l) ∪ mdone = m⌝ ∗
     i_ptr ↦[uint64T] #(size mdone) ∗
-    map.own_map mref 1 (mdone', (slice_val Slice.nil)) ∗
+    map.own_map mref (DfracOwn 1) (mdone', (slice_val Slice.nil)) ∗
     own_slicemap_rep mdone' mdone ∗
     is_dec dec_v
           ((flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (uint.Z (length u.2)); EncBytes u.2]) l) ++ r)
@@ -627,7 +623,7 @@ Lemma wp_DecSliceMap d l m args_sl argsData :
       "Hdec" ∷ is_dec d
              ([EncUInt64 (size m)] ++
               flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (uint.Z (length u.2)); EncBytes u.2]) l)
-             args_sl 1 argsData
+             args_sl (DfracOwn 1) argsData
   }}}
     DecSliceMap d
   {{{
@@ -828,7 +824,7 @@ Qed.
 
 Lemma wp_decodeInstallShardRequest args args_sl argsData :
   {{{
-       typed_slice.own_slice_small args_sl byteT 1%Qp argsData ∗
+       typed_slice.own_slice_small args_sl byteT (DfracOwn 1) argsData ∗
        ⌜has_encoding_InstallShardRequest argsData args ⌝
   }}}
     decodeInstallShardRequest (slice_val args_sl)
