@@ -147,6 +147,21 @@ Proof.
   iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
 Qed.
 
+Global Instance array_persistent l t vs : Persistent (array l DfracDiscarded t vs).
+Proof. apply _. Qed.
+
+Lemma array_persist l q t vs:
+  array l (DfracOwn q) t vs ==∗ array l DfracDiscarded t vs.
+Proof.
+  rewrite /array.
+  iIntros "Ha".
+  iDestruct (big_sepL_mono with "Ha") as "Ha".
+  2: iMod (big_sepL_bupd with "Ha") as "Ha".
+  { iIntros (???) "H".
+    iMod (struct_pointsto_persist with "H") as "H". iModIntro. iExact "H". }
+  iModIntro. iFrame "Ha".
+Qed.
+
 Lemma array_frac_valid l t q vs :
   0 < ty_size t →
   0 < length vs →

@@ -47,6 +47,19 @@ Section definitions.
     iApply (na_heap_pointsto_agree with "[$Hv1 $Hv2]").
   Qed.
 
+  Global Instance heap_pointsto_persistent l v : Persistent (heap_pointsto l DfracDiscarded v).
+  Proof. rewrite heap_pointsto_eq. apply _. Qed.
+
+  Lemma heap_pointsto_persist l q v:
+    heap_pointsto l (DfracOwn q) v ==∗ heap_pointsto l DfracDiscarded v.
+  Proof.
+    rewrite heap_pointsto_eq.
+    iIntros "[%Ha Hb]".
+    iMod (na_heap_pointsto_persist with "Hb") as "Hb".
+    iModIntro.
+    iFrame. done.
+  Qed.
+
   Theorem na_pointsto_to_heap l q v :
     l ≠ null ->
     na_heap_pointsto l q v -∗ heap_pointsto l q v.

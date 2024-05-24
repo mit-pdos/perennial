@@ -129,6 +129,21 @@ Section goose_lang.
     eapply flatten_struct_inj; eauto.
   Qed.
 
+  Global Instance struct_pointsto_persistent l t v : Persistent (l ↦[t]□ v).
+  Proof. rewrite struct_pointsto_eq. apply _. Qed.
+
+  Lemma struct_pointsto_persist l q t v:
+    l ↦[t]{#q} v ==∗ l ↦[t]□ v.
+  Proof.
+    rewrite struct_pointsto_eq /struct_pointsto_def.
+    iIntros "[Ha %Ht]".
+    iDestruct (big_sepL_mono with "Ha") as "Ha".
+    2: iMod (big_sepL_bupd with "Ha") as "Ha".
+    { iIntros (???) "H".
+      iMod (heap_pointsto_persist with "H") as "H". iModIntro. iExact "H". }
+    iModIntro. iFrame "Ha". done.
+  Qed.
+
   Lemma byte_pointsto_untype l q (x: u8) :
     l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
   Proof.
