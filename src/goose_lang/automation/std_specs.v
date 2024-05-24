@@ -3,6 +3,7 @@ From Perennial.goose_lang.lib Require Import
   struct typed_mem lock into_val slice typed_slice
   string
   control.impl control
+  loop.impl
   typed_map
 .
 From Perennial.program_proof Require Import std_proof.
@@ -243,5 +244,7 @@ End proofs.
 #[global] Opaque impl.StringFromBytes.
 #[global] Opaque impl.StringToBytes.
 #[global] Opaque std.SumAssumeNoOverflow.
+
+#[global] Opaque loop.impl.For loop.impl.Loop.
 
 Hint Extern 4 (IntoValComparable _) => tc_solve : solve_pure_add.

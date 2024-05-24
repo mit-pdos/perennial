@@ -130,8 +130,8 @@ Qed.
 
 #[global] Instance wp_decode  sl :
   SPEC enc_args args q, {{
-        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
-        "Hsl" ∷ own_slice_small sl byteT q enc_args
+        ⌜encodes enc_args args⌝ ∗
+        own_slice_small sl byteT q enc_args
   }}
     decodeConditionalPutArgs (slice_val sl)
   {{
@@ -640,9 +640,10 @@ Proof.
     rewrite decide_False //.
   }
 Qed.
+#[global] Opaque Client__getFreshNumRpc.
 
-#[local] Opaque urpc.Client__Call.
-#[local] Opaque encodePutArgs.
+#[global] Opaque urpc.Client__Call.
+#[global] Opaque encodePutArgs.
 
 Lemma wp_Client__putRpc Post cl args args_ptr :
   {{{
@@ -818,6 +819,7 @@ Proof.
   iIntros (Φ) "#Hck HΦ".
   wp_lam.
   (* symbolic execution *)
+  wp_pures.
   wp_apply wp_ref_of_zero.
   { done. }
   iIntros (err_ptr) "Herr".
