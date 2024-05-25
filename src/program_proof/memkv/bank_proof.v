@@ -139,7 +139,7 @@ Definition own_bank_clerk γ (bank_ck:loc) (accts : gset u64) : iProp Σ :=
   "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
   "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
   "Haccts" ∷ bank_ck ↦[BankClerk :: "accts"] (slice_val accts_s) ∗
-  "Haccts_slice" ∷ own_slice_small accts_s uint64T 1 accts_l ∗
+  "Haccts_slice" ∷ own_slice_small accts_s uint64T (DfracOwn 1) accts_l ∗
 
   "#Haccts_is_lock" ∷ [∗ list] acc ∈ accts_l, is_lock lockN γ.(bank_ls_names) acc (bankPs γ acc)
 .
@@ -244,7 +244,7 @@ Proof.
     iIntros (v_bal1_g' bytes1') "(Hsl&%)".
     wp_loadField.
     iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-    iMod (readonly_alloc_1 with "Hsl") as "#Hsl".
+    iMod (own_slice_small_persist with "Hsl") as "#Hsl".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkck_own]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hacc1_phys".
@@ -265,7 +265,7 @@ Proof.
 
     wp_loadField.
     iDestruct (own_slice_to_small with "Hsl2") as "Hsl2".
-    iMod (readonly_alloc_1 with "Hsl2") as "#Hsl2".
+    iMod (own_slice_small_persist with "Hsl2") as "#Hsl2".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkck_own]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hacc2_phys".
@@ -592,7 +592,7 @@ Lemma wp_MakeBankClerkSlice (lockhost kvhost : u64) cm γ1 γ2 cid accts (accts_
        is_ConnMan cm ∗
        is_lock lockN (γ1.(coord_kv_gn)) init_flag
          (init_lock_inv init_flag γ1.(coord_kv_gn) γ2.(coord_kv_gn) accts) ∗
-       own_slice_small accts_s uint64T 1 (acc0 :: accts_l) ∗
+       own_slice_small accts_s uint64T (DfracOwn 1) (acc0 :: accts_l) ∗
        ⌜Permutation (elements accts) (acc0 :: accts_l)⌝
   }}}
     MakeBankClerkSlice #lockhost #kvhost #cm #init_flag (slice_val accts_s) #cid
@@ -642,7 +642,7 @@ Proof.
     iIntros (??) "(Hval_slice0&%)".
     wp_loadField.
     iDestruct (own_slice_to_small with "Hval_slice0") as "Hval_slice0".
-    iMod (readonly_alloc_1 with "Hval_slice0") as "#Hval_slice0".
+    iMod (own_slice_small_persist with "Hval_slice0") as "#Hval_slice0".
 
     wp_apply (wp_SliceGet with "[$Haccts_slice]"); first by eauto.
     iIntros "Haccts_slice".
@@ -688,7 +688,7 @@ Proof.
       iIntros (??) "(Hval_slice&%)".
       wp_loadField.
       iDestruct (own_slice_to_small with "Hval_slice") as "Hval_slice".
-      iMod (readonly_alloc_1 with "Hval_slice") as "#Hval_slice".
+      iMod (own_slice_small_persist with "Hval_slice") as "#Hval_slice".
       wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
 
       iDestruct "Htodo" as "[Hx Htodo]".
@@ -734,7 +734,7 @@ Proof.
     iIntros (?) "Hflag_val_slice".
     wp_loadField.
     iDestruct (own_slice_to_small with "Hflag_val_slice") as "Hflag_val_slice".
-    iMod (readonly_alloc_1 with "Hflag_val_slice") as "#Hflag_val_Slice".
+    iMod (own_slice_small_persist with "Hflag_val_slice") as "#Hflag_val_Slice".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hflag_phys".

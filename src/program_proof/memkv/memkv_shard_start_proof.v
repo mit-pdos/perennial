@@ -92,9 +92,9 @@ Proof.
     wp_apply (wp_DecodeGetRequest with "[$Hreq_sl]").
     { done. }
     iIntros (args_ptr) "Hargs".
-    iDestruct (typed_slice.own_slice_zero byteT 1%Qp) as "Hzero_sl".
+    iDestruct (typed_slice.own_slice_zero byteT (DfracOwn 1)) as "Hzero_sl".
     iDestruct (typed_slice.own_slice_small_acc with "Hzero_sl") as "{Hzero_sl} [Hzero_sl _]".
-    iMod (readonly_alloc_1 with "Hzero_sl") as "{Hzero_sl} Hzero_sl".
+    iMod (own_slice_small_persist with "Hzero_sl") as "{Hzero_sl} #Hzero_sl".
     wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep $Hpre Hzero_sl]").
     {
       rewrite 2!zero_prod_val zero_slice_val.
@@ -102,7 +102,7 @@ Proof.
       iDestruct (struct_fields_split with "Hrep") as "HH".
       iNamed "HH".
       iExists (mkGetReplyC _ []).
-      iFrame.
+      iFrame "∗#".
     }
     iIntros (rep') "[Hrep Hpost']".
     wp_pures.
@@ -272,6 +272,10 @@ Proof.
     done.
   }
   wp_pures. by iApply "HΦ".
+
+Unshelve.
+  - exact w64.
+  - typeclasses eauto.
 Qed.
 
 End memkv_shard_start_proof.

@@ -56,18 +56,18 @@ Proof.
   "HghostShards" ∷ (if b then ([∗ set] sid ∈ rangeSet (uint.Z i) (uNSHARD - uint.Z i), own_shard γ.(kv_gn) sid ∅)
                    else True) ∗
   "kvss" ∷ srv ↦[KVShardServer :: "kvss"] (slice_val kvss_sl) ∗
-  "Hkvss_sl" ∷ slice.own_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
+  "Hkvss_sl" ∷ slice.own_slice kvss_sl (mapT (slice.T byteT)) (DfracOwn 1) (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "shardMap" ∷ srv ↦[KVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷  typed_slice.own_slice shardMap_sl boolT 1 shardMapping ∗
+  "HshardMap_sl" ∷  typed_slice.own_slice shardMap_sl boolT (DfracOwn 1) shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
                   ⌜(shardMapping !! (uint.nat sid)) ≠ Some true⌝ ∨
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
                       own_shard γ.(kv_gn) sid m ∗ (* own shard *)
                       ⌜kvs_ptrs !! (uint.nat sid) = Some kvs_ptr⌝ ∗
                       ⌜dom m = dom mv ⌝ ∗
-                      map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+                      map.own_map kvs_ptr (DfracOwn 1) (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
-                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (m !! k))))
+                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT DfracDiscarded (default [] (m !! k))))
                   )))%I with "[] [$Hi HshardMap_sl shardMap HghostShards kvss Hkvss_sl]").
   { word. }
   { iIntros (i Φ') "!# H HΦ".
@@ -150,7 +150,7 @@ Proof.
           iApply big_sepS_intro.
           iIntros "!#" (??).
           destruct (decide (shardOfC x = i)); last by eauto.
-          { iRight. iExists 1%Qp, _. rewrite ?lookup_empty //=.
+          { iRight. iExists _. rewrite ?lookup_empty //=.
             iSplit; first eauto.
             iApply (typed_slice.own_slice_to_small (V:=u8)).
             iApply typed_slice.own_slice_zero. }

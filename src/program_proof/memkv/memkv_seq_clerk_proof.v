@@ -13,7 +13,7 @@ Definition own_SeqKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "HcoordCk" ∷ ck ↦[SeqKVClerk :: "coordCk"] #coordCk ∗
   "HcoordCk_own" ∷ own_KVCoordClerk coordCk γ ∗
   "HshardMap" ∷ ck ↦[SeqKVClerk :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ own_slice shardMap_sl uint64T 1%Qp shardMapping ∗
+  "HshardMap_sl" ∷ own_slice shardMap_sl uint64T (DfracOwn 1) shardMapping ∗
   "%HshardMap_length" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ
 .
@@ -143,9 +143,8 @@ Proof using Type*.
     iDestruct "HshardGetPost" as "(HshardCk & [[%Hbad _]|[_ Hpost]])".
     { by exfalso. }
     iNamed "Hpost".
-    iDestruct "Hpost" as "(Hrep & Hval_sl & HΦ)".
+    iDestruct "Hpost" as "(Hrep & #Hval_sl & HΦ)".
     wp_load.
-    iMod (readonly_load with "Hval_sl") as (?) "Hval_sl".
     iModIntro.
     iApply "HΦ".
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
@@ -187,7 +186,7 @@ Proof using Type*.
 Qed.
 
 Lemma wp_SeqKVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
-⊢ {{{ own_SeqKVClerk ck γ ∗ readonly (own_slice_small val_sl byteT 1 v) }}}
+⊢ {{{ own_SeqKVClerk ck γ ∗ own_slice_small val_sl byteT DfracDiscarded v }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     SeqKVClerk__Put #ck #key (slice_val val_sl) @ ∅
   <<< kvptsto γ key v >>>
@@ -269,8 +268,8 @@ Qed.
 
 Lemma wp_SeqKVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
 ⊢ {{{ own_SeqKVClerk ck γ ∗
-      readonly (own_slice_small expv_sl byteT 1 expv) ∗
-      readonly (own_slice_small newv_sl byteT 1 newv) }}}
+      own_slice_small expv_sl byteT DfracDiscarded expv ∗
+      own_slice_small newv_sl byteT DfracDiscarded newv }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     SeqKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ∅
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>

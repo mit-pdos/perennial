@@ -17,12 +17,12 @@ Definition own_KVCoordClerk ck γkv : iProp Σ :=
 Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
   {{{
        "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
-      "Hsl" ∷ typed_slice.own_slice_small (V:=u8) data_sl byteT 1 data
+      "Hsl" ∷ typed_slice.own_slice_small (V:=u8) data_sl byteT (DfracOwn 1) data
   }}}
     decodeShardMap (slice_val data_sl)
   {{{  rep_sl , RET (slice_val rep_sl);
        ⌜ length shardMapping = uint.nat 65536 ⌝ ∗
-       typed_slice.own_slice rep_sl uint64T 1 shardMapping }}}.
+       typed_slice.own_slice rep_sl uint64T (DfracOwn 1) shardMapping }}}.
 Proof.
   wp_pures. iIntros (Φ) "H HΦ".
   iNamed "H".
@@ -88,7 +88,7 @@ Lemma wp_KVCoordClerk__GetShardMap (ck:loc) γkv :
   {{{
        shardMap_sl (shardMapping:list u64), RET (slice_val shardMap_sl);
        own_KVCoordClerk ck γkv ∗
-       typed_slice.own_slice shardMap_sl uint64T 1%Qp shardMapping ∗
+       typed_slice.own_slice shardMap_sl uint64T (DfracOwn 1) shardMapping ∗
        ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
        all_are_shard_servers shardMapping γkv
   }}}

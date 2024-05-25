@@ -11,7 +11,7 @@ Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ, !urpcregG Σ
 Local Definition own_KVClerk (p:loc) (γ:gname) : iProp Σ :=
   ∃ (freeClerks_sl:Slice.t) (freeClerks:list loc),
   "HfreeClerks" ∷ p ↦[KVClerk :: "freeClerks"] (slice_val freeClerks_sl) ∗
-  "HfreeClerks_sl" ∷ own_slice (V:=loc) freeClerks_sl ptrT 1 freeClerks ∗
+  "HfreeClerks_sl" ∷ own_slice (V:=loc) freeClerks_sl ptrT (DfracOwn 1) freeClerks ∗
   "HfreeClerks_own" ∷ [∗ list] ck ∈ freeClerks, own_SeqKVClerk ck γ
 .
 
@@ -191,11 +191,11 @@ Proof.
   iApply fupd_mask_intro; first done. iNext.
   iIntros "Hclose". iExists _. iFrame "Hkey".
   iIntros "Hkey". iMod "Hclose" as "_". iModIntro.
-  iIntros (??) "[Hclerk Hsl]". iApply "HΦ". iFrame.
+  iIntros (??) "Hsl". iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_KVClerk__Put (p:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8) :
-⊢ {{{ is_KVClerk p γ ∗ readonly (own_slice_small val_sl byteT 1 v) }}}
+⊢ {{{ is_KVClerk p γ ∗ own_slice_small val_sl byteT DfracDiscarded v }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     KVClerk__Put #p #key (slice_val val_sl) @ ∅
   <<< kvptsto γ key v >>>
@@ -214,7 +214,7 @@ Proof.
 Qed.
 
 Lemma wp_KVClerk__Put_seq (p:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v oldv:list u8) :
-  {{{ is_KVClerk p γ ∗ readonly (own_slice_small val_sl byteT 1 v) ∗ kvptsto γ key oldv }}}
+  {{{ is_KVClerk p γ ∗ own_slice_small val_sl byteT DfracDiscarded v ∗ kvptsto γ key oldv }}}
     KVClerk__Put #p #key (slice_val val_sl) @ ⊤
   {{{ RET #(); kvptsto γ key v }}}.
 Proof.
@@ -228,8 +228,8 @@ Qed.
 
 Lemma wp_KVClerk__ConditionalPut (p:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
 ⊢ {{{ is_KVClerk p γ ∗
-      readonly (own_slice_small expv_sl byteT 1 expv) ∗
-      readonly (own_slice_small newv_sl byteT 1 newv) }}}
+      own_slice_small expv_sl byteT DfracDiscarded expv ∗
+      own_slice_small newv_sl byteT DfracDiscarded newv }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     KVClerk__ConditionalPut #p #key (slice_val expv_sl) (slice_val newv_sl) @ ∅
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
@@ -274,9 +274,9 @@ Lemma wp_KVClerk__MGet (p:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64
     KVClerk__MGet #p (slice_val keys_sl) @ ⊤
   {{{ (vals_sl:Slice.t) (val_sls:list Slice.t), RET slice_val vals_sl;
       own_slice_small keys_sl uint64T q (keys_vals.*1) ∗
-      own_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
+      own_slice_small vals_sl (slice.T byteT) (DfracOwn 1) val_sls ∗
       [∗ list] key_val;sl ∈ keys_vals;val_sls, kvptsto γ key_val.1 key_val.2 ∗
-        readonly (own_slice_small sl byteT 1 key_val.2)
+        own_slice_small sl byteT DfracDiscarded key_val.2
   }}}.
 Proof using Type*.
   iIntros (Φ) "(#Hclerk & Hkeys_sl & Hkeys) HΦ". wp_lam.
@@ -301,7 +301,7 @@ Proof using Type*.
       (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
       kvptsto γ key val ∗
       (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
-      readonly (own_slice_small val_sl byteT 1 val))%I
+      own_slice_small val_sl byteT DfracDiscarded val)%I
     keys_sl.(Slice.sz)
     keys_vals
     with "[] [Hkeys_sl Hkeys Hvals_sl]").
@@ -326,7 +326,7 @@ Proof using Type*.
     wp_store.
 
     iExists _.
-    iMod (readonly_alloc with "[Hval_sl]") as "$"; first done.
+    iMod (own_slice_small_persist with "Hval_sl") as "$".
     eauto with iFrame. }
   { rewrite /array /list.untype !big_sepL_fmap.
     iDestruct (big_sepL2_sepL_2 with "Hkeys_sl Hvals_sl") as "Hsl".

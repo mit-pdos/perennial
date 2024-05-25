@@ -90,16 +90,13 @@ Proof.
     { set_solver. }
     iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
     { exfalso. naive_solver. }
-    iDestruct "Hsrv_val_sl" as (q curv_sl) "[%HvalSliceRe Hsrv_val_sl]".
+    iDestruct "Hsrv_val_sl" as (curv_sl) "[%HvalSliceRe #Hsrv_val_sl]".
     rewrite HvalSliceRe.
 
     wp_loadField.
-    iMod (readonly_load with "HExpValue_sl") as (?) "HExpValue_sl'".
-    (*
-      iDestruct (own_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl Hsrv_val_close]".
-     *)
-    wp_apply (wp_BytesEqual with "[$HExpValue_sl' $Hsrv_val_sl]").
-    iIntros "[_ Hsrv_val_sl]".
+    wp_apply (wp_BytesEqual with "[HExpValue_sl Hsrv_val_sl]").
+    { iFrame "∗#". }
+    iIntros "[_ Hsrv_val_sl']".
 
     (* Avoid duplicating the proof of the merged control flow after this if *)
     wp_apply (wp_If_join_evar with "[HkvsMap HKey HNewValue]").
@@ -143,7 +140,6 @@ Proof.
     iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
     iModIntro.
     wp_loadField.
-    iMod (readonly_load with "HNewValue_sl") as (?) "HNewValue_sl'".
     wp_apply (release_spec with "[-HΦ HKey HErr HSucc Q]").
     {
       iFrame "HmuInv Hlocked".
@@ -183,14 +179,14 @@ Proof.
           destruct succ; done. }
         iApply (big_sepS_delete _ _ args.(CPR_Key) with "[-]").
         { set_solver. }
-        simpl. iSplitL "HNewValue_sl' Hsrv_val_sl".
+        simpl. iSplitL "HNewValue_sl Hsrv_val_sl".
         {
           simpl. iRight. destruct succ.
-          - iExists _, newv_sl.
+          - iExists newv_sl.
             rewrite lookup_insert.
             rewrite lookup_insert.
             eauto with iFrame.
-          - iExists _, curv_sl.
+          - iExists curv_sl.
             eauto with iFrame.
         }
         iApply (big_sepS_impl with "HvalSlices").
@@ -200,8 +196,8 @@ Proof.
         * rewrite ?lookup_insert_ne; last first.
           { set_solver. }
           { set_solver. }
-          iFrame.
-        * iFrame.
+          iFrame "∗#".
+        * iFrame "∗#".
       }
       destruct succ; rewrite ?dom_insert_L; iPureIntro; congruence.
     }

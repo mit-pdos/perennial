@@ -67,10 +67,10 @@ Qed.
 
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   ∃ (mv:gmap u64 val),
-  "Hmap_phys" ∷ map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+  "Hmap_phys" ∷ map.own_map kvs_ptr (DfracOwn 1) (mv, (slice_val Slice.nil)) ∗
   "%Hdom_phys" ∷ ⌜ dom kvs = dom mv ⌝ ∗
   ([∗ set] k ∈ (fin_to_set u64),
-           (⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ kvs !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (kvs !! k)))))
+           (⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ kvs !! k = None ⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT DfracDiscarded (default [] (kvs !! k)))))
 .
 
 (*
@@ -221,7 +221,7 @@ Qed.
 Lemma wp_KVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q))) ∗
-       readonly (typed_slice.own_slice_small value_sl byteT 1%Qp v) ∗
+       typed_slice.own_slice_small value_sl byteT DfracDiscarded v ∗
        own_KVShardClerk ck γkv
   }}}
     KVShardClerk__Put #ck #key (slice_val value_sl)
@@ -315,7 +315,7 @@ Lemma wp_KVShardClerk__Get γkv (ck:loc) (key:u64) (value_ptr:loc) Q :
 
         ⌜e = 0⌝ ∗
               ∃ some_sl v, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
-                           readonly (typed_slice.own_slice_small some_sl byteT 1 v) ∗
+                           typed_slice.own_slice_small some_sl byteT DfracDiscarded v ∗
                            Q v
         )
   }}}
@@ -392,8 +392,8 @@ Lemma wp_KVShardClerk__ConditionalPut γkv (ck:loc) (key:u64) (expv newv:list u8
   {{{
        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗
          (let succ := bool_decide (expv = oldv) in kvptsto γkv key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
-       readonly (typed_slice.own_slice_small expv_sl byteT 1 expv) ∗
-       readonly (typed_slice.own_slice_small newv_sl byteT 1 newv) ∗
+       typed_slice.own_slice_small expv_sl byteT DfracDiscarded expv ∗
+       typed_slice.own_slice_small newv_sl byteT DfracDiscarded newv ∗
        own_KVShardClerk ck γkv ∗
        (∃ b : bool, succ_ptr ↦[boolT] #b)
   }}}

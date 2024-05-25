@@ -179,7 +179,7 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
                       ⌜dom m = dom mv⌝ ∗
                       map.own_map kvs_ptr (DfracOwn 1) (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
-                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (m !! k))) )
+                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None ⌝ ∨ (∃ vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT DfracDiscarded (default [] (m !! k))) )
                   )
                  ) ∗
   "HpeersMap" ∷ own_map (V:=loc) peers_ptr (DfracOwn 1) peersM ∗

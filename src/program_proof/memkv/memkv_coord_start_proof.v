@@ -14,14 +14,14 @@ Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
   length shardMapping = uint.nat uNSHARD →
   {{{ "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
-      "HshardMap_sl" ∷ typed_slice.own_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
+      "HshardMap_sl" ∷ typed_slice.own_slice_small (V:=u64) shardMap_sl HostName (DfracOwn 1) shardMapping
   }}}
     encodeShardMap #s
   {{{ (sl: Slice.t) (data: list u8), RET (slice_val sl);
       "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
-      "Hdata" ∷  typed_slice.own_slice sl byteT 1 data ∗
+      "Hdata" ∷  typed_slice.own_slice sl byteT (DfracOwn 1) data ∗
       "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
-      "HshardMap_sl" ∷ typed_slice.own_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
+      "HshardMap_sl" ∷ typed_slice.own_slice_small (V:=u64) shardMap_sl HostName (DfracOwn 1) shardMapping
   }}}.
 Proof.
   wp_pures. iIntros (Hshards Φ) "H HΦ".
@@ -369,7 +369,7 @@ Proof.
         iFrame "His_shard". eauto.
       }
       wp_pures. iModIntro. iApply "HΦ". iFrame.
-      iDestruct (own_slice_zero byteT 1%Qp) as "Hnil".
+      iDestruct (own_slice_zero byteT (DfracOwn 1)) as "Hnil".
       rewrite own_slice_to_small. iFrame "Hnil".
     }
     rewrite big_sepM_empty. eauto.

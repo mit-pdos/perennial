@@ -78,8 +78,8 @@ Proof.
   simpl.
   iDestruct (own_slice_to_small with "Hsl0") as "Hsl0".
   iDestruct (own_slice_to_small with "Hsl1") as "Hsl1".
-  iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
-  iMod (readonly_alloc_1 with "Hsl1") as "#Hsl1".
+  iMod (own_slice_small_persist with "Hsl0") as "#Hsl0".
+  iMod (own_slice_small_persist with "Hsl1") as "#Hsl1".
   wp_apply (wp_KVClerk__ConditionalPut with "[$Hclerk]").
   { iFrame "#". }
   rewrite /is_lock.
@@ -126,7 +126,7 @@ Proof.
   iIntros (s0) "Hsl0".
   wp_loadField.
   iDestruct (own_slice_to_small with "Hsl0") as "Hsl0".
-  iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
+  iMod (own_slice_small_persist with "Hsl0") as "#Hsl0".
   wp_apply (wp_KVClerk__Put with "[$Hclerk]").
   { iFrame "#". }
   rewrite /is_lock.

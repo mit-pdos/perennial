@@ -128,7 +128,7 @@ Proof.
     iDestruct "Hsrv_val_sl" as "[%Hbad|Hsrv_val_sl]".
     { exfalso. naive_solver. }
 
-    iDestruct "Hsrv_val_sl" as (q ?) "[%HvalSliceRe Hsrv_val_sl]".
+    iDestruct "Hsrv_val_sl" as (?) "[%HvalSliceRe Hsrv_val_sl]".
     rewrite HvalSliceRe.
     (*
       iDestruct (typed_slice.own_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl_small Hsrv_val_sl]".
@@ -162,14 +162,13 @@ Proof.
     iMod ("HfupdQ" with "Hkvptsto") as "Q".
     iMod "Hclose" as "_".
 
-    iDestruct "Hsrv_val_sl" as "[Hsrv_val_sl Hval_sl]".
+    iMod (own_slice_small_persist with "Hsrv_val_sl") as "#Hsrv_val_sl".
 
     iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
     iModIntro.
     wp_loadField.
-    iDestruct "Hval_sl" as "[Hrep_val_sl Hsrv_rep_val_sl]".
     iApply wp_ncfupd.
-    wp_apply (release_spec with "[-HΦ Q Hrep_val_sl HErr HValue]").
+    wp_apply (release_spec with "[-HΦ Q HErr HValue]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -181,19 +180,18 @@ Proof.
       iRight.
       iExists _, _, _.
       iFrame.
-      iSpecialize ("HvalSlices" with "[Hsrv_val_sl]").
+      iSpecialize ("HvalSlices" with "[]").
       {
-        iRight. iExists _, _; iFrame. done.
+        iRight. iExists _; iFrame "#". done.
       }
       iFrame "HvalSlices".
       done.
     }
     wp_pures. iApply "HΦ".
     instantiate (1:= mkGetReplyC _ _).
-    iSplitL "HErr HValue Hrep_val_sl".
+    iSplitL "HErr HValue".
     {
-      iExists _; iFrame.
-      iMod (readonly_alloc with "[Hrep_val_sl]") as "$"; by iFrame.
+      iExists _; iFrame "∗#". done.
     }
     iRight.
     iSimpl.
@@ -208,7 +206,6 @@ Proof.
     wp_apply (release_spec with "[> -HΦ Hpre HValue HErr]").
     {
       iFrame "HmuInv Hlocked".
-      iMod (readonly_load with "HValue_sl") as (?) "HValue_sl'".
       iModIntro. iNext.
       iExists _,_,_, _, _, _.
       iFrame.

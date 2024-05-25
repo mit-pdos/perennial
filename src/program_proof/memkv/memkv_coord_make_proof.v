@@ -40,7 +40,7 @@ Proof.
   "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, uint.Z i < uint.Z uNSHARD → is_Some (shardMapping !! uint.nat i)) ⌝ ∗
   "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ @typed_slice.own_slice grove_op grove_model grove_interp Σ _ grove_ty u64
-                     (@u64_IntoVal grove_op) shardMap_sl HostName 1 shardMapping ∗
+                     (@u64_IntoVal grove_op) shardMap_sl HostName (DfracOwn 1) shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ rangeSet 0 uNSHARD, ∃ (hid : u64),
                   ⌜ shardMapping !! uint.nat sid = Some hid ⌝ ∗
                   (⌜ hid = 0 ∧ uint.nat i ≤ uint.nat sid ⌝  ∨ ∃ hγ, ⌜ hγ.(kv_gn) = γ.(coord_kv_gn) ⌝ ∗ is_shard_server hid hγ)
