@@ -40,15 +40,12 @@ Definition own (a:loc) (args:t) : iProp Σ :=
     encodePutArgs #args_ptr
   {{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
-          ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT (DfracOwn 1) enc_args
-  }}}
+          own_slice sl byteT (DfracOwn 1) enc_args ∗
+          ⌜encodes enc_args args⌝
+  }}
 .
 Proof.
   iSteps.
-
-  unseal_diaframe => /=.
-  iModIntro. iExists _; iFrame.
   iPureIntro.
   rewrite /encodes.
   repeat rewrite -assoc.
@@ -208,14 +205,12 @@ End getArgs.
 Section marshal_proof.
 Context `{!heapGS Σ}.
 
-(* TODO: copied this naming convention from "u64_le". What does le actually
-   mean? *)
-Definition bool_le (b:bool) : list u8 := if b then [W8 1] else [W8 0].
+Definition bool_bytes (b:bool) : list u8 := [W8 (if b then 1 else 0)].
 
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
     EncodeBool #b
-  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (bool_le b) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (bool_bytes b) }}}
 .
 Proof.
   iSteps.
@@ -225,27 +220,22 @@ Proof.
 Qed.
 
 Lemma wp_DecodeBool sl b q :
-  {{{ own_slice_small sl byteT q (bool_le b) }}}
+  {{{ own_slice_small sl byteT q (bool_bytes b) }}}
     DecodeBool (slice_val sl)
   {{{ RET #b; True }}}
 .
 Proof.
   iSteps.
-  iRename select (own_slice_small sl _ _ _) into "Hs".
-  rewrite /bool_le.
-  destruct b; simpl.
-  { wp_apply (wp_SliceGet with "[$Hs]").
-    { iPureIntro. reflexivity. }
-    iSteps. }
-  { wp_apply (wp_SliceGet with "[$Hs]").
-    { iPureIntro. reflexivity. }
-    iSteps. }
+  iModIntro. iModIntro.
+  destruct b.
+  - rewrite bool_decide_true //. iSteps.
+  - rewrite bool_decide_false //. iSteps.
 Qed.
 
 Lemma wp_EncodeUint64 x:
   {{{ True }}}
     EncodeUint64 #x
-  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (u64_le x) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (u64_le x) }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -666,7 +656,7 @@ Proof.
   iIntros (rep_ptr) "Hrep".
   wp_pures.
   wp_apply (putArgs.wp_encode) => /=. iExists _; iFrame.
-  iIntros (sl bs) "!> (Hargs & %Henc & Hreq_sl)".
+  iIntros (sl bs) "!> (Hargs & Hreq_sl & %Henc)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.

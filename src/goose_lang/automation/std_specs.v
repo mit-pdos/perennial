@@ -100,12 +100,12 @@ Section proofs.
     HINT1 (own_slice_small s t q vs) ✱ [own_slice_cap s t] ⊫ [id]; (own_slice s t q vs).
   Proof. iSteps. Qed.
 
-  #[global] Instance SliceGet_spec s t q vs (i: w64) :
-    SPEC (v: V),
+  #[global] Instance SliceGet_spec s t (i: w64) :
+    SPEC V `(!IntoVal V) (v: V) q (vs: list V),
       {{ own_slice_small s t q vs ∗ ⌜vs !! uint.nat i = Some v⌝ }}
       SliceGet t s #i
       {{ RET (to_val v); own_slice_small s t q vs }}.
-  Proof.
+  Proof using.
     iSteps.
     wp_apply (wp_SliceGet with "[-]"); [ | iSteps ].
     eauto with iFrame.
