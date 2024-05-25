@@ -361,7 +361,7 @@ Section pure.
       by replace (S n' - length l)%nat with O by lia.
     }
     replace (S n' - length l)%nat with (S (n' - length l)%nat) by lia.
-    by rewrite replicate_S_end app_assoc latest_term_snoc_false.
+    by rewrite replicate_S_end assoc latest_term_snoc_false.
   Qed.
 
   Lemma latest_term_snoc_true (l : ballot) :
@@ -614,7 +614,7 @@ Section pure.
     pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
     simpl in Hlen.
     unfold extend.
-    rewrite app_assoc_reverse.
+    rewrite -!assoc.
     by rewrite latest_before_append_eq.
   Qed.
 
@@ -845,7 +845,7 @@ Section pure.
     apply map_Forall_alter; last done.
     intros y Hy.
     specialize (Haccin _ _ Hy).
-    rewrite -app_assoc.
+    rewrite -assoc.
     by apply accepted_in_app_eq.
   Qed.
 
