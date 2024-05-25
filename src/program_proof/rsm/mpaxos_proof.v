@@ -416,7 +416,7 @@ Section prog.
   {{{ True }}}
     example2 #()
   {{{ RET #(); True }}}.
-  Proof.
+  Proof using heapGS0 mpaxos_ghostG0 Σ.
     iIntros (Φ) "_ HΦ".
     wp_call.
 
