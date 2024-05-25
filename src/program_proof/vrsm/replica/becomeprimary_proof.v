@@ -209,10 +209,10 @@ Proof.
             "Hj" ∷ j_ptr ↦[uint64T] #j ∗
             "%HcompleteLens" ∷ ⌜length clerkssComplete = uint.nat j⌝ ∗
             "%Hlens" ∷ ⌜length (clerkssComplete ++ clerkssLeft) = numClerks⌝ ∗
-            "Hclerkss_sl" ∷ own_slice_small new_clerkss_sl (slice.T ptrT) 1 (clerkssComplete ++ clerkssLeft) ∗
+            "Hclerkss_sl" ∷ own_slice_small new_clerkss_sl (slice.T ptrT) (DfracOwn 1) (clerkssComplete ++ clerkssLeft) ∗
             "#Hclerkss_is" ∷ ([∗ list] clerks_sl ∈ clerkssComplete,
                                   (∃ clerks,
-                                  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
+                                  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT (DfracOwn 1) clerks) ∗
                                   "Hclerks" ∷ ⌜length clerks = length backupγ⌝ ∗
                                   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backupγ, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.(r_pb) args.(BecomePrimaryArgs.epoch))
                                   )
@@ -254,7 +254,7 @@ Proof.
               "Hi" ∷ i_ptr ↦[uint64T] #i ∗
               "%HcompleteLen" ∷ ⌜length clerksComplete = uint.nat i⌝ ∗
               "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length backupγ⌝ ∗
-              "Hclerks_sl" ∷ own_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
+              "Hclerks_sl" ∷ own_slice_small new_clerks_sl ptrT (DfracOwn 1) (clerksComplete ++ clerksLeft) ∗
               "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) backupγ),
                                   is_Clerk ck γ γsrv ∗
                                   is_epoch_lb γsrv.(r_pb) args.(BecomePrimaryArgs.epoch)

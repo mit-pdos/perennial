@@ -25,8 +25,8 @@ Definition adminN := nroot .@ "admin".
 
 Lemma wp_Reconfig γ configHosts_sl (configHosts:list u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
   {{{
-        "Hservers_sl" ∷ own_slice servers_sl uint64T 1 servers ∗
-        "#HconfHost_sl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+        "Hservers_sl" ∷ own_slice servers_sl uint64T (DfracOwn 1) servers ∗
+        "#HconfHost_sl" ∷ readonly (own_slice_small configHosts_sl uint64T (DfracOwn 1) configHosts) ∗
         "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host host γ γsrv) ∗
         "#Hconf_host" ∷ is_pb_config_hosts configHosts γ
   }}}
@@ -201,8 +201,8 @@ Proof using waitgroupG0.
           "Hi" ∷ i_ptr ↦[uint64T] #i ∗
           "%HcompleteLen" ∷ ⌜length clerksComplete = uint.nat i⌝ ∗
           "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
-          "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
-          "Hservers_sl" ∷ own_slice_small servers_sl uint64T 1 servers ∗
+          "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT (DfracOwn 1) (clerksComplete ++ clerksLeft) ∗
+          "Hservers_sl" ∷ own_slice_small servers_sl uint64T (DfracOwn 1) servers ∗
           "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) server_γs),
                               is_Clerk ck γ γsrv
                               )

@@ -70,7 +70,7 @@ Definition own (l:loc) (x:t) : iProp Σ :=
   "HleaseExpiration" ∷ l ↦[state :: "leaseExpiration"] #x.(leaseExpiration) ∗
   "HwantLeaseToExpire" ∷ l ↦[state :: "wantLeaseToExpire"] #x.(wantLeaseToExpire) ∗
   "Hconf" ∷ l ↦[state :: "config"] (slice_val conf_sl) ∗
-  "#Hconf_sl" ∷ readonly (own_slice_small conf_sl uint64T 1 x.(config))
+  "#Hconf_sl" ∷ readonly (own_slice_small conf_sl uint64T (DfracOwn 1) x.(config))
 .
 
 Lemma wp_decode (x:t) sl q :
@@ -127,7 +127,7 @@ Lemma wp_encode l (x:t) :
   }}}
     encodeState #l
   {{{
-        sl, RET (slice_val sl);  own_slice_small sl byteT 1 (encode x) ∗
+        sl, RET (slice_val sl);  own_slice_small sl byteT (DfracOwn 1) (encode x) ∗
         own l x
   }}}
 .
@@ -1219,14 +1219,14 @@ Definition is_Clerk (ck:loc) γ : iProp Σ :=
   "#Hmu" ∷ readonly (ck ↦[Clerk :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock N mu (own_Clerk_inv ck (length cls)) ∗
   "#Hcls" ∷ readonly (ck ↦[Clerk :: "cls"] (slice_val cls_sl)) ∗
-  "#Hcls_sl" ∷ readonly (own_slice_small cls_sl ptrT 1 cls) ∗
+  "#Hcls_sl" ∷ readonly (own_slice_small cls_sl ptrT (DfracOwn 1) cls) ∗
   "#Hrpc" ∷ ([∗ list] cl ∈ cls, ∃ srv, is_ReconnectingClient cl srv ∗ is_config_host srv γ) ∗
   "%HszNonzero" ∷ ⌜ length cls > 0 ⌝
 .
 
 Lemma wp_MakeClerk hosts hosts_sl γ:
   {{{
-      "Hhosts_sl" ∷ readonly (own_slice_small hosts_sl uint64T 1 hosts) ∗
+      "Hhosts_sl" ∷ readonly (own_slice_small hosts_sl uint64T (DfracOwn 1) hosts) ∗
       "#Hhosts" ∷ is_config_hosts hosts γ
   }}}
     MakeClerk (slice_val hosts_sl)
@@ -1250,7 +1250,7 @@ Proof.
               (λ i,
                ∃ sl cls,
                "Hcls" ∷ cls_ptr ↦[slice.T ptrT] (slice_val sl) ∗
-               "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
+               "Hcls_sl" ∷ own_slice sl ptrT (DfracOwn 1) (cls) ∗
                "#Hrpc" ∷ ([∗ list] cl ∈ cls, ∃ srv : u64, is_ReconnectingClient cl srv ∗ is_config_host srv γ) ∗
                "%Hsz" ∷ ⌜ length cls = uint.nat i ⌝
                )%I
@@ -1316,7 +1316,7 @@ Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :
       (|={⊤∖↑N,∅}=> ∃ epoch conf, own_reserved_epoch γ epoch ∗ own_config γ conf ∗
        (⌜uint.nat epoch < uint.nat (word.add epoch (W64 1))⌝ -∗
         own_reserved_epoch γ (word.add epoch (W64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
-         (∀ conf_sl, readonly (own_slice_small conf_sl uint64T 1 conf) -∗
+         (∀ conf_sl, readonly (own_slice_small conf_sl uint64T (DfracOwn 1) conf) -∗
            Φ (#(LitInt $ word.add epoch (W64 1)), slice_val conf_sl)%V)))
   ) -∗
   WP Clerk__ReserveEpochAndGetConfig #ck {{ Φ }}
@@ -1510,7 +1510,7 @@ Qed.
 
 Lemma wp_Clerk__GetConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
-  □ (∀ conf conf_sl, Pwf conf -∗ readonly (own_slice_small conf_sl uint64T 1 conf)
+  □ (∀ conf conf_sl, Pwf conf -∗ readonly (own_slice_small conf_sl uint64T (DfracOwn 1) conf)
                                  -∗ Φ (slice_val conf_sl)%V) -∗
   WP Clerk__GetConfig #ck {{ Φ }}
 .
@@ -1592,7 +1592,7 @@ Qed.
 
 Lemma wp_Clerk__TryWriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
   is_Clerk ck γ -∗
-  readonly (own_slice_small new_conf_sl uint64T 1 new_conf) -∗
+  readonly (own_slice_small new_conf_sl uint64T (DfracOwn 1) new_conf) -∗
   is_reserved_epoch_lb γ epoch -∗
   (□ Pwf new_conf) -∗
   □ (£ 1 -∗ |={⊤∖↑N,∅}=> ∃ latest_epoch reserved_epoch conf,
@@ -1988,8 +1988,8 @@ Qed.
 
 Lemma wp_makeServer γ γsrv fname data (paxosMe:u64) hosts_sl init_sl (hosts: list u64) :
   {{{
-        "Hhosts_sl" ∷ (own_slice_small hosts_sl uint64T 1 hosts) ∗
-        "#Hinit" ∷ readonly (own_slice_small init_sl uint64T 1 initconfig) ∗
+        "Hhosts_sl" ∷ (own_slice_small hosts_sl uint64T (DfracOwn 1) hosts) ∗
+        "#Hinit" ∷ readonly (own_slice_small init_sl uint64T (DfracOwn 1) initconfig) ∗
         "#Hhost" ∷ is_paxos_server_host paxosMe γ.(paxos_gn) γsrv ∗
         "Hfile" ∷ crash_borrow (config_crash_resources γ γsrv data ∗ fname f↦ data)
                 (∃ d, config_crash_resources γ γsrv d ∗ fname f↦ d) ∗
@@ -2038,8 +2038,8 @@ Qed.
 
 Lemma wp_StartServer γ γsrv fname me (paxosMe:u64) (data:list u8) hosts_sl init_sl (hosts: list u64) :
   {{{
-        "Hhosts_sl" ∷ (own_slice_small hosts_sl uint64T 1 hosts) ∗
-        "#Hinit" ∷ readonly (own_slice_small init_sl uint64T 1 initconfig) ∗
+        "Hhosts_sl" ∷ (own_slice_small hosts_sl uint64T (DfracOwn 1) hosts) ∗
+        "#Hinit" ∷ readonly (own_slice_small init_sl uint64T (DfracOwn 1) initconfig) ∗
         "Hfile" ∷ crash_borrow (config_crash_resources γ γsrv data ∗ fname f↦ data)
                 (∃ d, config_crash_resources γ γsrv d ∗ fname f↦ d) ∗
 

@@ -225,10 +225,10 @@ Qed.
 Lemma wp_Clerk__ApplyExactlyOnce ck γoplog lowop op_sl lowop_bytes Φ:
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
-  own_slice op_sl byteT 1 lowop_bytes -∗
+  own_slice op_sl byteT (DfracOwn 1) lowop_bytes -∗
   (|={⊤∖↑pbN∖↑prophReadN∖↑esmN,∅}=> ∃ oldops, own_log γoplog oldops ∗
     (own_log γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑prophReadN∖↑esmN}=∗
-    (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
+    (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT (DfracOwn 1) (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyExactlyOnce #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -293,7 +293,7 @@ Proof.
   instantiate(1:=
           (λ reply, ∀ reply_sl,
             own_Clerk ck γoplog -∗
-            own_slice_small reply_sl byteT 1 reply -∗
+            own_slice_small reply_sl byteT (DfracOwn 1) reply -∗
             Φ (slice_val reply_sl))
         %I).
   (* assert that it equals low_compute_reply *)
@@ -495,10 +495,10 @@ Lemma wp_Clerk__ApplyReadonly ck γoplog lowop op_sl lowop_bytes Φ:
   low_is_readonly_op lowop →
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
-  own_slice op_sl byteT 1 lowop_bytes -∗
+  own_slice op_sl byteT (DfracOwn 1) lowop_bytes -∗
   (|={⊤∖↑pbN∖↑prophReadN∖↑esmN,∅}=> ∃ oldops, own_log γoplog oldops ∗
     (own_log γoplog (oldops) ={∅,⊤∖↑pbN∖↑prophReadN∖↑esmN}=∗
-    (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
+    (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT (DfracOwn 1) (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyReadonly #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -586,7 +586,7 @@ Definition own_StateMachine (s:loc) (ops:list EOp) : iProp Σ :=
   "HnextCID" ∷ s ↦[eStateMachine:: "nextCID"] #st.(nextCID) ∗
   "HlastSeq_ptr" ∷ s ↦[eStateMachine :: "lastSeq"] #lastSeq_ptr ∗
   "HlastReply_ptr" ∷ s ↦[eStateMachine :: "lastReply"] #lastReply_ptr ∗
-  "HlastSeq" ∷ own_map lastSeq_ptr 1 st.(lastSeq) ∗
+  "HlastSeq" ∷ own_map lastSeq_ptr (DfracOwn 1) st.(lastSeq) ∗
   "HlastReply" ∷ own_byte_map lastReply_ptr st.(lastReply) ∗
 
   "HesmNextIndex" ∷ s ↦[eStateMachine :: "esmNextIndex"] #(W64 (length ops)) ∗
@@ -1027,7 +1027,7 @@ Proof.
       iNamed "Hislow2".
       wp_loadField.
 
-      iMod (readonly_alloc (own_slice_small s'0 byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
+      iMod (readonly_alloc (own_slice_small s'0 byteT (DfracOwn 1) eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
       { simpl. iFrame. }
       wp_loadField.
       unfold is_Versioned_applyVolatileFn.
@@ -1077,7 +1077,7 @@ Proof.
       wp_pures.
       wp_load.
 
-      iMod (readonly_alloc (own_slice_small reply_sl byteT 1 (low_compute_reply
+      iMod (readonly_alloc (own_slice_small reply_sl byteT (DfracOwn 1) (low_compute_reply
                    {|
                      nextCID := nextCID0;
                      lastSeq := lastSeq0;
@@ -1186,7 +1186,7 @@ Proof.
     iAssert (_) with "Hislow" as "#Hislow2".
     iNamed "Hislow2".
     wp_loadField.
-    iMod (readonly_alloc (own_slice_small eeop_sl byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
+    iMod (readonly_alloc (own_slice_small eeop_sl byteT (DfracOwn 1) eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
     { simpl. iFrame. }
     wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
     { iFrame "#". done. }
@@ -1368,7 +1368,7 @@ Proof.
   iAssert (_) with "Hislow" as "#Hislow2".
   iNamed "Hislow2".
   wp_loadField.
-  iMod (readonly_alloc (own_slice_small rest_enc_sl0 byteT 1 lowsnap) with "[Hsnap_sl2]") as "#Hsnap_sl2".
+  iMod (readonly_alloc (own_slice_small rest_enc_sl0 byteT (DfracOwn 1) lowsnap) with "[Hsnap_sl2]") as "#Hsnap_sl2".
   { simpl. iFrame. }
   unfold is_Versioned_setStateFn.
   iClear "Hghost".
@@ -1646,7 +1646,7 @@ Proof.
   iAssert (_) with "Hislow" as "#Hislow2".
   iNamed "Hislow2".
   wp_loadField.
-  iMod (readonly_alloc (own_slice_small eeop_sl byteT 1 lowop_bytes) with "[Hop_sl]") as "#Hop_sl".
+  iMod (readonly_alloc (own_slice_small eeop_sl byteT (DfracOwn 1) lowop_bytes) with "[Hop_sl]") as "#Hop_sl".
   { simpl. iFrame. }
   wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
   { iFrame "#". rewrite /esm_record /= in Hro. iPureIntro; split; done. }
@@ -1770,7 +1770,7 @@ Qed.
 
 Lemma wp_MakeClerk configHosts_sl configHosts γ γoplog γerpc :
   {{{
-    "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+    "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T (DfracOwn 1) configHosts) ∗
     "#Hconf" ∷ config_protocol_proof.is_pb_config_hosts configHosts γ ∗
     "#Hesm_inv" ∷ is_esm_inv γ γoplog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc

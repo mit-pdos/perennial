@@ -23,7 +23,7 @@ is_Clerk ck γ γsrv -∗
 own_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
   (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
-     □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+     □(∀ reply_sl, own_slice_small reply_sl byteT (DfracOwn 1) (compute_reply ops op) -∗
             own_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(W64 0), slice_val reply_sl)%V)))
 ∗
@@ -399,7 +399,7 @@ Qed.
 
 Lemma wp_Server__ApplyRo (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
-  readonly (own_slice_small op_sl byteT 1 enc_op) -∗
+  readonly (own_slice_small op_sl byteT (DfracOwn 1) enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
   ApplyRo_core_spec γ op enc_op Ψ -∗
   WP (Server__ApplyRoWaitForCommit #s (slice_val op_sl)) {{ Φ }}
@@ -448,7 +448,7 @@ Proof.
     iModIntro. iIntros "HΦ".
     iApply ("HΦ" $! (ApplyReply.mkC _ _)).
     2:{
-      iExists _, 1%Qp; iFrame.
+      iExists _, (DfracOwn 1); iFrame.
       by iApply own_slice_small_nil.
     }
     by iApply "Hfail_Φ".

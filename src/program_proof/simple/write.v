@@ -30,7 +30,7 @@ Lemma nfstypes_write3res_merge reply s ok fail :
   ( reply ↦[nfstypes.WRITE3res :: "Status"] s ∗
     reply ↦[nfstypes.WRITE3res :: "Resok"] ok ∗ 
     reply ↦[nfstypes.WRITE3res :: "Resfail"] fail ) -∗
-  reply ↦[struct.t nfstypes.WRITE3res]{1} (s, (ok, (fail, #()))).
+  reply ↦[struct.t nfstypes.WRITE3res] (s, (ok, (fail, #()))).
 Proof.
   iIntros "(Status & Resok & Resfail)".
   iApply struct_fields_split. iFrame. done.
@@ -39,7 +39,7 @@ Qed.
 Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (dataslice : Slice.t) (databuf : list u8) (Q : SimpleNFS.res u32 -> iProp Σ) (stab : u32) dinit :
   {{{ is_fs P γ nfs dinit ∗
       is_fh fhslice fh ∗
-      own_slice dataslice u8T 1%Qp databuf ∗
+      own_slice dataslice u8T (DfracOwn 1) databuf ∗
       ⌜ (length databuf < 2^32)%Z ⌝ ∗
       ( ∀ σ σ' (r : SimpleNFS.res u32) E,
         ⌜relation.denote (SimpleNFS.wrapper fh (SimpleNFS.write fh offset databuf)) σ σ' r⌝ -∗

@@ -82,9 +82,9 @@ Proof.
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "%HlenEq" ∷ ⌜length reply_ptrs = length γ.(s_hosts) ⌝ ∗
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
-                    "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
+                    "Hreplies_sl" ∷ own_slice_small replies_sl ptrT (DfracOwn 1) reply_ptrs ∗
                     "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts),
-                    ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
+                    ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply (DfracOwn 1)) ∗
                                               (if decide (reply.(enterNewEpochReply.err) = (W64 0)) then
                                                 enterNewEpoch_post γ γsrv' reply newepoch
                                               else
@@ -286,7 +286,7 @@ Proof.
                  "HlatestReply_loc" ∷ latestReply_ptr ↦[ptrT] #latestReply_loc ∗
                  "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts) ,
                   ⌜uint.nat i ≤ j⌝ →
-                 ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
+                 ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply (DfracOwn 1)) ∗
                                            (if decide (reply.(enterNewEpochReply.err) = (W64 0)) then
                                              enterNewEpoch_post γ γsrv' reply newepoch
                                            else
@@ -296,7 +296,7 @@ Proof.
                    True
                  else
                    ∃ latestReply latestLog,
-                  "HlatestReply" ∷ (enterNewEpochReply.own latestReply_loc latestReply 1) ∗
+                  "HlatestReply" ∷ (enterNewEpochReply.own latestReply_loc latestReply (DfracOwn 1)) ∗
                   "%Hlatestlog" ∷ ⌜latestReply.(enterNewEpochReply.state) = get_state latestLog⌝ ∗
                   "%HlatestlogLen" ∷ ⌜uint.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
                   "%HlatestEpoch_ineq" ∷ ⌜uint.nat latestReply.(enterNewEpochReply.acceptedEpoch) < uint.nat newepoch⌝ ∗

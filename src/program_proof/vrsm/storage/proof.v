@@ -153,7 +153,7 @@ Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMa
   ∀ ops op op_sl op_bytes,
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         own_InMemoryStateMachine ops
   }}}
     applyVolatileFn (slice_val op_sl)
@@ -161,7 +161,7 @@ Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMa
         reply_sl q, RET (slice_val reply_sl);
         ⌜apply_postcond  ops op⌝ ∗
         own_InMemoryStateMachine (ops ++ [op]) ∗
-        own_slice_small reply_sl byteT q (compute_reply ops op)
+        own_slice_small reply_sl byteT (DfracOwn q) (compute_reply ops op)
   }}}
 .
 
@@ -170,7 +170,7 @@ Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iP
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
         ⌜uint.nat nextIndex = length ops⌝ ∗
-        readonly (own_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap) ∗
         own_InMemoryStateMachine ops_prev
   }}}
     setStateFn (slice_val snap_sl) #nextIndex
@@ -188,7 +188,7 @@ Definition is_InMemory_getStateFn (getStateFn:val) own_InMemoryStateMachine : iP
   {{{
         snap snap_sl, RET (slice_val snap_sl); own_InMemoryStateMachine ops ∗
         ⌜has_snap_encoding snap ops⌝ ∗
-        readonly (own_slice_small snap_sl byteT 1 snap)
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap)
   }}}
 .
 
@@ -197,7 +197,7 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         ⌜is_readonly_op op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         own_InMemoryStateMachine ops
   }}}
     applyReadonlyFn (slice_val op_sl)
@@ -208,7 +208,7 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
         ⌜∀ ops', prefix ops' ops → uint.nat lastModifiedIndex <= length ops' →
                (compute_reply ops op = compute_reply ops' op)⌝ ∗
         own_InMemoryStateMachine ops ∗
-        own_slice_small reply_sl byteT q (compute_reply ops op)
+        own_slice_small reply_sl byteT (DfracOwn q) (compute_reply ops op)
   }}}
 .
 
@@ -286,7 +286,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
 Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         (⌜apply_postcond ops op⌝ -∗ P epoch ops false
          ={⊤∖↑pbAofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
         own_StateMachine s epoch ops false P
@@ -478,7 +478,7 @@ Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (
         ⌜ (length ops < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap ops⌝ ∗
         ⌜uint.nat nextIndex = length ops⌝ ∗
-        readonly (own_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap) ∗
         (P epoch_prev ops_prev sealed_prev ={⊤}=∗ P epoch ops false ∗ Q) ∗
         own_StateMachine s epoch_prev ops_prev sealed_prev P
   }}}
@@ -725,7 +725,7 @@ Lemma wp_getStateAndSeal s P epoch ops sealed Q :
   {{{
         snap_sl snap,
         RET (slice_val snap_sl);
-        readonly (own_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap) ∗
         ⌜has_snap_encoding snap ops⌝ ∗
         own_StateMachine s epoch ops true P ∗
         Q
@@ -872,7 +872,7 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         ⌜is_readonly_op op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         own_StateMachine s epoch ops sealed P
   }}}
     StateMachine__applyReadonly #s (slice_val op_sl)
@@ -1350,7 +1350,7 @@ Proof.
   wp_storeField.
   wp_store.
 
-  iMod (readonly_alloc (own_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
+  iMod (readonly_alloc (own_slice_small snap_sl byteT (DfracOwn 1) snap) with "[Hsnap_sl]") as "#Hsnap_sl".
   {
     simpl.
     iFrame.
@@ -1373,7 +1373,7 @@ Proof.
   iAssert (
       ∃ rest_ops_sl (numOpsApplied:nat) q,
       "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val rest_ops_sl) ∗
-      "Hdata_sl" ∷ own_slice_small rest_ops_sl byteT q (concat (drop numOpsApplied rest_ops_bytes) ++ sealed_bytes) ∗
+      "Hdata_sl" ∷ own_slice_small rest_ops_sl byteT (DfracOwn q) (concat (drop numOpsApplied rest_ops_bytes) ++ sealed_bytes) ∗
       "Hmemstate" ∷ own_InMemoryStateMachine (snap_ops ++ (take numOpsApplied rest_ops)) ∗
       "HnextIndex" ∷ s ↦[StateMachine :: "nextIndex"] #(length snap_ops + numOpsApplied)%nat ∗
       "%HnumOpsApplied_le" ∷ ⌜numOpsApplied <= length rest_ops⌝
@@ -1507,7 +1507,7 @@ Proof.
     iEval (rewrite take_ge) in "Hdata_sl"; last first.
     (* done splitting slices into two parts *)
 
-    iMod (readonly_alloc (own_slice_small op_sl byteT 1 op_bytes) with "[Hop_sl]") as "#Hop_sl".
+    iMod (readonly_alloc (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) with "[Hop_sl]") as "#Hop_sl".
     {
       simpl.
       iFrame.
@@ -1757,7 +1757,7 @@ Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHos
   {{{
        "#Hinvs" ∷ is_pb_host me γ γsrv ∗
        "#HisConfHost" ∷ config_protocol_proof.is_pb_config_hosts confHosts γ ∗
-       "#Hconf_sl" ∷ readonly (own_slice_small confHosts_sl uint64T 1 confHosts) ∗
+       "#Hconf_sl" ∷ readonly (own_slice_small confHosts_sl uint64T (DfracOwn 1) confHosts) ∗
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
        "#HisMemSm" ∷ is_InMemoryStateMachine (sm_record:=pb_record) smMem own_InMemoryStateMachine ∗

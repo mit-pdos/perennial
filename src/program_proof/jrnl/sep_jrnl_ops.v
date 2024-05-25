@@ -159,7 +159,7 @@ Section goose_lang.
 
   Theorem data_has_obj_to_buf_data s a obj data :
     data_has_obj data a obj →
-    own_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
+    own_slice_small s u8T (DfracOwn 1) data -∗ is_buf_data s (objData obj) a.
   Proof.
     rewrite /data_has_obj /is_buf_data.
     iIntros (?) "Hs".
@@ -172,7 +172,7 @@ Section goose_lang.
   Qed.
 
   Theorem is_buf_data_has_obj s a obj :
-    is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T 1 data ∗ ⌜data_has_obj data a obj⌝.
+    is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T (DfracOwn 1) data ∗ ⌜data_has_obj data a obj⌝.
   Proof.
     iSplit; intros.
     - rewrite /data_has_obj /is_buf_data.
@@ -202,7 +202,7 @@ Section goose_lang.
         (* NOTE(tej): this has to be a 1 fraction, because the slice is
         incorporated into the jrnl, is handed out in ReadBuf, and should then
         be mutable. *)
-        own_slice_small data_s byteT 1 data }}}
+        own_slice_small data_s byteT (DfracOwn 1) data }}}
       Op__OverWrite #l (addr2val a) #sz (slice_val data_s)
     {{{ RET #(); is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a obj }}}.
   Proof.

@@ -79,7 +79,7 @@ Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (co
       is_inode_mem ip inum len blk ∗
       is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
       is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
-      own_slice_small dataslice u8T 1 databuf ∗
+      own_slice_small dataslice u8T (DfracOwn 1) databuf ∗
       ⌜ uint.nat count = length databuf ⌝ ∗
       ⌜ inum ∈ covered_inodes ⌝
   }}}
@@ -130,7 +130,7 @@ Proof.
 
   wp_apply (wp_forUpto (λ i,
     ∃ bbuf',
-      "Hdatabuf" ∷ own_slice_small dataslice byteT 1 databuf ∗
+      "Hdatabuf" ∷ own_slice_small dataslice byteT (DfracOwn 1) databuf ∗
       "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
              bufKind := objKind (existT KindBlock (bufBlock bbuf'));
              bufData := objData (existT KindBlock (bufBlock bbuf'));

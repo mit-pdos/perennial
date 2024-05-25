@@ -24,7 +24,7 @@ is_Clerk ck γ γsrv -∗
 own_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
   (⌜apply_postcond ops op⌝ -∗ own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+     (∀ reply_sl, own_slice_small reply_sl byteT (DfracOwn 1) (compute_reply ops op) -∗
             own_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(W64 0), slice_val reply_sl)%V)))
 ∗
@@ -247,11 +247,11 @@ Qed.
 
 Lemma wp_SliceSet_elt {V typ} `{!IntoVal V} `{!IntoValForType V typ} (sl:Slice.t) (i:u64) (v v':V) :
   {{{
-        own_slice_elt sl i typ 1 v
+        own_slice_elt sl i typ (DfracOwn 1) v
   }}}
       SliceSet typ (slice_val sl) #i (to_val v')
   {{{
-        RET #(); own_slice_elt sl i typ 1 v'
+        RET #(); own_slice_elt sl i typ (DfracOwn 1) v'
   }}}.
 Proof.
   iIntros (?) "Hown HΦ".
@@ -370,7 +370,7 @@ Qed.
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
         (£ 1 -∗ £ 1 -∗ |={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗
           (⌜apply_postcond (get_rwops σ) op⌝ -∗ own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
@@ -459,7 +459,7 @@ Proof.
     wp_storeField.
     iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
     iFrame.
-    iExists 1%Qp.
+    iExists (DfracOwn 1).
     iApply own_slice_small_nil.
     done.
   }
@@ -619,7 +619,7 @@ Proof.
           (λ i,
             ∃ (err:u64) γsrv',
             ⌜backups !! uint.nat i = Some γsrv'⌝ ∗
-            readonly (own_slice_elt errs_sl i uint64T 1 err) ∗
+            readonly (own_slice_elt errs_sl i uint64T (DfracOwn 1) err) ∗
             □ if (decide (err = W64 0)) then
               is_accepted_lb γsrv'.(r_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
             else
@@ -979,12 +979,12 @@ Proof.
     iApply establish_committed_log_fact.
     1-2: iFrame "#".
   }
-  Unshelve. 1: exact 1%Qp. exact True%I. (* this is from the "doomed" path in the proof. *)
+  Unshelve. 1: exact (DfracOwn 1). exact True%I. (* this is from the "doomed" path in the proof. *)
 Qed.
 
 Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
-  readonly (own_slice_small op_sl byteT 1 enc_op) -∗
+  readonly (own_slice_small op_sl byteT (DfracOwn 1) enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
   Apply_core_spec γ op enc_op Ψ -∗
   WP (Server__Apply #s (slice_val op_sl)) {{ Φ }}

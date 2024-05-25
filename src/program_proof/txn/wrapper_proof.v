@@ -598,11 +598,11 @@ Section proof.
     length data1 + length data2 < 2^64 →
     Forall (λ v, val_ty v t) data2 →
     {{{
-      "Hslice" ∷ own_slice data1_s t 1 data1
+      "Hslice" ∷ own_slice data1_s t (DfracOwn 1) data1
     }}}
       ListToSliceApp t (val_of_list data2) (slice_val data1_s)
     {{{ data_s, RET (slice_val data_s);
-      "Hslice" ∷ own_slice data_s t 1 (data1 ++ data2)
+      "Hslice" ∷ own_slice data_s t (DfracOwn 1) (data1 ++ data2)
     }}}.
   Proof.
     iLöb as "IH" forall (data1_s data1 data2).
@@ -647,7 +647,7 @@ Section proof.
     }}}
       ListToSlice t (val_of_list data)
     {{{ data_s, RET (slice_val data_s);
-      "Hslice" ∷ own_slice data_s t 1 data
+      "Hslice" ∷ own_slice data_s t (DfracOwn 1) data
     }}}.
   Proof.
     iIntros (Ht Hwf Hty Φ) "_ HΦ".

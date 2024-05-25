@@ -18,7 +18,7 @@ Definition own_int_Clerk ck γ : iProp Σ :=
     "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica ∗
     "HlastPreferenceRefresh" ∷ ck ↦[clerk.Clerk :: "lastPreferenceRefresh"] #lastPreferenceRefresh ∗
     "#HisConfCk" ∷ is_Clerk2 confCk γ γconf ∗ (* config clerk *)
-    "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
+    "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT (DfracOwn 1) clerks) ∗
     "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, is_Clerk ck γ γsrv) ∗
     "%Hlen" ∷ ⌜length γsrvs > 0⌝
 .
@@ -64,7 +64,7 @@ Lemma wp_makeClerks γ config_sl servers γsrvs q :
     makeClerks (slice_val config_sl)
   {{{
         clerks_sl clerks, RET (slice_val clerks_sl);
-     readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
+     readonly (own_slice_small clerks_sl ptrT (DfracOwn 1) clerks) ∗
     ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, is_Clerk ck γ γsrv)
   }}}
 .
@@ -92,7 +92,7 @@ Proof.
           "Hi" ∷ i_ptr ↦[uint64T] #i ∗
           "%HcompleteLen" ∷ ⌜length clerksComplete = uint.nat i⌝ ∗
           "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
-          "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
+          "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT (DfracOwn 1) (clerksComplete ++ clerksLeft) ∗
           "Hservers_sl" ∷ own_slice_small config_sl uint64T q servers ∗
           "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) γsrvs),
                               is_Clerk ck γ γsrv
@@ -227,7 +227,7 @@ Qed.
 
 Lemma wp_MakeClerk_int γ configHosts configHosts_sl :
   {{{
-        "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+        "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T (DfracOwn 1) configHosts) ∗
         "#Hconf" ∷ is_pb_config_hosts configHosts γ
   }}}
     Make (slice_val configHosts_sl)
@@ -312,11 +312,11 @@ Qed.
 Lemma wp_Clerk__Apply_int γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 own_int_Clerk ck γ -∗
-own_slice_small op_sl byteT 1 op_bytes -∗
+own_slice_small op_sl byteT (DfracOwn 1) op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
   (⌜apply_postcond ops op⌝ -∗ own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                  own_slice_small op_sl byteT 1 op_bytes -∗
+     (∀ reply_sl, own_slice_small reply_sl byteT (DfracOwn 1) (compute_reply ops op) -∗
+                  own_slice_small op_sl byteT (DfracOwn 1) op_bytes -∗
                   own_int_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -371,7 +371,7 @@ Proof.
       instantiate (1:=(λ (v:goose_lang.val),
         (∃ (reply_sl:Slice.t),
         ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_int_Clerk ck γ -∗ Φ (slice_val reply_sl))) ∨
-        (∃ (err:u64) unused_sl, own_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
+        (∃ (err:u64) unused_sl, own_slice_small op_sl byteT (DfracOwn 1) op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
       simpl.
       iLeft.
       iExists _.
@@ -461,11 +461,11 @@ Lemma wp_Clerk__ApplyReadonly_int γ ck op_sl op (op_bytes:list u8) (Φ:val → 
 is_readonly_op op →
 has_op_encoding op_bytes op →
 own_int_Clerk ck γ -∗
-own_slice_small op_sl byteT 1 op_bytes -∗
+own_slice_small op_sl byteT (DfracOwn 1) op_bytes -∗
 □(|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
        (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
-       □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                    own_slice_small op_sl byteT 1 op_bytes -∗
+       □(∀ reply_sl, own_slice_small reply_sl byteT (DfracOwn 1) (compute_reply ops op) -∗
+                    own_slice_small op_sl byteT (DfracOwn 1) op_bytes -∗
                     own_int_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))
  -∗
 WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
@@ -508,7 +508,7 @@ Proof.
     "Hloopcase" ∷ match b with
     | true =>
       ∃ (prefReplica' prefRefresh' : u64),
-      "Hop_sl" ∷ own_slice_small op_sl byteT 1 op_bytes ∗
+      "Hop_sl" ∷ own_slice_small op_sl byteT (DfracOwn 1) op_bytes ∗
       "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] clerks_sl ∗
       "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica' ∗
       "HlastPreferenceRefresh" ∷ ck ↦[clerk.Clerk :: "lastPreferenceRefresh"] #prefRefresh' ∗
@@ -521,7 +521,7 @@ Proof.
         "HΦ" ∷ Φ (slice_val ret_sl)) ∨
       ( ∃ (prefReplica' prefRefresh' : u64),
         "%Herrval" ∷ ⌜errval ≠ 0⌝ ∗
-        "Hop_sl" ∷ own_slice_small op_sl byteT 1 op_bytes ∗
+        "Hop_sl" ∷ own_slice_small op_sl byteT (DfracOwn 1) op_bytes ∗
         "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] clerks_sl ∗
         "HlastPreferenceRefresh" ∷ ck ↦[clerk.Clerk :: "lastPreferenceRefresh"] #prefRefresh' ∗
         "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica')
@@ -603,7 +603,7 @@ Proof.
             ⌜v = (#0, slice_val reply_sl)%V⌝ ∗
             (own_int_Clerk ck γ -∗ Φ (slice_val reply_sl))) ∨
           (∃ (err:u64) unused_sl,
-            own_slice_small op_sl byteT 1 op_bytes ∗
+            own_slice_small op_sl byteT (DfracOwn 1) op_bytes ∗
             ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
         simpl.
         iLeft.

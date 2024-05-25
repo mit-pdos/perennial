@@ -69,7 +69,7 @@ Qed.
 Lemma nfstypes_getattr3res_merge reply s ok :
   ( reply ↦[nfstypes.GETATTR3res :: "Status"] s ∗
     reply ↦[nfstypes.GETATTR3res :: "Resok"] ok ) -∗
-  reply ↦[struct.t nfstypes.GETATTR3res]{1} (s, (ok, #())).
+  reply ↦[struct.t nfstypes.GETATTR3res] (s, (ok, #())).
 Proof.
   iIntros "(Status & Resok)".
   iApply struct_fields_split. iFrame. done.

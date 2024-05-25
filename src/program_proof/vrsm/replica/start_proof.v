@@ -28,7 +28,7 @@ Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHosts:list u64) ops
         "#Hconf_host" ∷ is_pb_config_hosts confHosts γ ∗
         "#Hhost" ∷ is_pb_host host γ γsrv ∗
 
-        "#Hconf_host_sl" ∷ readonly (own_slice_small (confHosts_sl) uint64T 1 confHosts) ∗
+        "#Hconf_host_sl" ∷ readonly (own_slice_small (confHosts_sl) uint64T (DfracOwn 1) confHosts) ∗
         "%HnextIndex" ∷ ⌜uint.nat nextIndex = length (get_rwops opsfull)⌝ ∗
         (* XXX: this is basically a guarantee that the list of ops being
            implicitly passed in via own_StateMachine has been made durable. It
@@ -268,7 +268,7 @@ Proof.
       iIntros "Hspec".
       wp_pures.
       iApply "HΦ". iFrame.
-      instantiate (1:=1%Qp).
+      instantiate (1:=DfracOwn 1).
       iApply own_slice_small_nil.
       done.
     }

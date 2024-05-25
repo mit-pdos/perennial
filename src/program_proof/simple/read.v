@@ -30,7 +30,7 @@ Lemma nfstypes_read3res_merge reply s ok fail :
   ( reply ↦[nfstypes.READ3res :: "Status"] s ∗
     reply ↦[nfstypes.READ3res :: "Resok"] ok ∗
     reply ↦[nfstypes.READ3res :: "Resfail"] fail ) -∗
-  reply ↦[struct.t nfstypes.READ3res]{1} (s, (ok, (fail, #()))).
+  reply ↦[struct.t nfstypes.READ3res] (s, (ok, (fail, #()))).
 Proof.
   iIntros "(Status & Resok & Resfail)".
   iApply struct_fields_split. iFrame. done.
@@ -58,7 +58,7 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         ⌜ getField_f nfstypes.READ3res "Resok" v = resok ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Eof" resok = #eof ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Data" resok = slice_val dataslice ⌝ ∗
-        own_slice dataslice u8T 1%Qp databuf ∗
+        own_slice dataslice u8T (DfracOwn 1) databuf ∗
         Q (SimpleNFS.OK (eof, databuf)) ) ∨
       ( ∃ (stat : Z),
         ⌜ getField_f nfstypes.READ3res "Status" v = #(W32 stat) ⌝ ∗

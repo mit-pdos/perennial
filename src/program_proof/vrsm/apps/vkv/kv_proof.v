@@ -107,7 +107,7 @@ Context {params:ekvParams.t}.
 Existing Instance toEsmParams1.
 Lemma wp_Start fname configHosts_sl configHosts (host:chan) γ γsrv data :
   {{{
-      "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+      "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T (DfracOwn 1) configHosts) ∗
       "#Hconf" ∷ is_kv_config_hosts configHosts γ ∗
       "#Hhost" ∷ is_kv_replica_host host γ γsrv ∗
       "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ kv_crash_resources γ γsrv data)
@@ -150,7 +150,7 @@ Definition own_Clerk ck γkv : iProp Σ :=
 
 Lemma wp_MakeClerk γkv configHosts configHosts_sl :
   {{{
-      "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+      "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T (DfracOwn 1) configHosts) ∗
       "#Hhost" ∷ is_kv_config_hosts configHosts γkv
   }}}
     vkv.MakeClerk (slice_val configHosts_sl)

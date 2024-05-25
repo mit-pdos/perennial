@@ -78,7 +78,7 @@ Section goose_lang.
         "Hfupd" ∷ (∀ σ, P σ ={⊤}=∗ P σ ∗ Q σ)
     }}}
       RepBlock__Read #l
-    {{{ s σ (ok:bool), RET (slice_val s, #ok); own_slice s u8T 1 σ ∗ Q σ }}}.
+    {{{ s σ (ok:bool), RET (slice_val s, #ok); own_slice s u8T (DfracOwn 1) σ ∗ Q σ }}}.
   Proof.
     iIntros (Hdisj1 Hdisj2 Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hrb".

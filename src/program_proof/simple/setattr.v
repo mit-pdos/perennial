@@ -48,7 +48,7 @@ Lemma nfstypes_setattr3res_merge reply s ok fail :
   ( reply ↦[nfstypes.SETATTR3res :: "Status"] s ∗
     reply ↦[nfstypes.SETATTR3res :: "Resok"] ok ∗ 
     reply ↦[nfstypes.SETATTR3res :: "Resfail"] fail ) -∗
-  reply ↦[struct.t nfstypes.SETATTR3res]{1} (s, (ok, (fail, #()))).
+  reply ↦[struct.t nfstypes.SETATTR3res] (s, (ok, (fail, #()))).
 Proof.
   iIntros "(Status & Resok & Resfail)".
   iApply struct_fields_split. iFrame. done.

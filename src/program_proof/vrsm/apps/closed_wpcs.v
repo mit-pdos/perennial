@@ -108,7 +108,7 @@ Definition lr2Host: u64 := (W64 102).
 Lemma wp_mk_dconfig_hosts :
   {{{ True }}}
     mk_dconfig_hosts #()
-  {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T 1 [ dconfigHost ]) }}}
+  {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T (DfracOwn 1) [ dconfigHost ]) }}}
 .
   iIntros (?) "_ HΦ".
   wp_lam. wp_apply (wp_NewSlice).
@@ -123,7 +123,7 @@ Qed.
 Lemma wp_mk_lconfig_hosts :
   {{{ True }}}
     mk_lconfig_hosts #()
-  {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T 1 [ lconfigHost ]) }}}
+  {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T (DfracOwn 1) [ lconfigHost ]) }}}
 .
   iIntros (?) "_ HΦ".
   wp_lam. wp_apply (wp_NewSlice).
@@ -138,7 +138,7 @@ Qed.
 Lemma wp_mk_dconfig_paxosHosts :
   {{{ True }}}
     mk_dconfig_paxosHosts #()
-  {{{ sl, RET (slice_val sl); own_slice_small sl uint64T 1 [ dconfigHostPaxos ] }}}
+  {{{ sl, RET (slice_val sl); own_slice_small sl uint64T (DfracOwn 1) [ dconfigHostPaxos ] }}}
 .
   iIntros (?) "_ HΦ".
   wp_lam. wp_apply (wp_NewSlice).
@@ -152,7 +152,7 @@ Qed.
 Lemma wp_mk_lconfig_paxosHosts :
   {{{ True }}}
     mk_lconfig_paxosHosts #()
-  {{{ sl, RET (slice_val sl); own_slice_small sl uint64T 1 [ lconfigHostPaxos ] }}}
+  {{{ sl, RET (slice_val sl); own_slice_small sl uint64T (DfracOwn 1) [ lconfigHostPaxos ] }}}
 .
   iIntros (?) "_ HΦ".
   wp_lam. wp_apply (wp_NewSlice).

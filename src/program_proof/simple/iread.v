@@ -81,7 +81,7 @@ Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (byt
   }}}
     Inode__Read #ip #btxn #offset #bytesToRead
   {{{ resSlice (eof : bool) (vs : list u8), RET (slice_val resSlice, #eof);
-      own_slice resSlice u8T 1 vs ∗
+      own_slice resSlice u8T (DfracOwn 1) vs ∗
       is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
       is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
@@ -157,7 +157,7 @@ Proof.
   wp_apply (wp_forUpto (λ i,
     ∃ dataslice vs,
       "Hdatavar" ∷ datavar ↦[slice.T byteT] (slice_val dataslice) ∗
-      "Hdataslice" ∷ own_slice dataslice byteT 1 vs ∗
+      "Hdataslice" ∷ own_slice dataslice byteT (DfracOwn 1) vs ∗
       "%Hcontent" ∷ ⌜ firstn (uint.nat i) (skipn (uint.nat offset) contents) = vs ⌝ ∗
       "%Hvslen" ∷ ⌜ length vs = (uint.nat i) ⌝ ∗
       "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|

@@ -31,7 +31,7 @@ Definition is_Versioned_applyVolatileFn (applyVolatileFn:val) own_VersionedState
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         ⌜uint.nat vnum > uint.nat latestVnum⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         own_VersionedStateMachine γst ops latestVnum ∗
         (∀ (vnum':u64), ⌜uint.nat latestVnum <= uint.nat vnum'⌝ →
                   ⌜uint.nat vnum' < uint.nat vnum⌝ → is_state γst vnum' ops) ∗
@@ -41,7 +41,7 @@ Definition is_Versioned_applyVolatileFn (applyVolatileFn:val) own_VersionedState
   {{{
         reply_sl q, RET (slice_val reply_sl);
         own_VersionedStateMachine γst (ops ++ [op]) vnum ∗
-        own_slice_small reply_sl byteT q (compute_reply ops op)
+        own_slice_small reply_sl byteT (DfracOwn q) (compute_reply ops op)
   }}}
 .
 
@@ -49,7 +49,7 @@ Definition is_Versioned_setStateFn (setStateFn:val) own_VersionedStateMachine : 
   ∀ ops_prev ops snap snap_sl (latestVnum:u64) γst γst' vnum,
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
-        readonly (own_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap) ∗
         own_VersionedStateMachine γst ops_prev latestVnum ∗
         is_state γst' vnum ops
   }}}
@@ -68,7 +68,7 @@ Definition is_Versioned_getStateFn (getStateFn:val) own_VersionedStateMachine : 
   {{{
         snap snap_sl, RET (slice_val snap_sl); own_VersionedStateMachine γst ops latestVnum ∗
         ⌜has_snap_encoding snap ops⌝ ∗
-        readonly (own_slice_small snap_sl byteT 1 snap)
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap)
   }}}
 .
 
@@ -77,7 +77,7 @@ Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedState
   {{{
         ⌜is_readonly_op op⌝ ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         own_VersionedStateMachine γst ops latestVnum
   }}}
     applyReadonlyFn (slice_val op_sl)
@@ -86,7 +86,7 @@ Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedState
         RET (#lastModifiedVnum, slice_val reply_sl);
         ⌜uint.nat lastModifiedVnum <= uint.nat latestVnum⌝ ∗
         own_VersionedStateMachine γst ops latestVnum ∗
-        own_slice_small reply_sl byteT q (compute_reply ops op) ∗
+        own_slice_small reply_sl byteT (DfracOwn q) (compute_reply ops op) ∗
         □(∀ (vnum:u64), ⌜uint.nat vnum < uint.nat latestVnum⌝ → ⌜uint.nat lastModifiedVnum <= uint.nat vnum⌝ →
             ∃ someOps, is_state γst vnum someOps ∗
                        ⌜compute_reply someOps op = compute_reply ops op⌝)

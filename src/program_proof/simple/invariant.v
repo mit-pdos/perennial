@@ -107,7 +107,7 @@ Definition N := nroot .@ "simplenfs".
 
 Definition is_fh (s : Slice.t) (fh : u64) : iProp Σ :=
   ∃ vs,
-    "#Hfh_slice" ∷ readonly (own_slice_small s u8T 1 vs) ∗
+    "#Hfh_slice" ∷ readonly (own_slice_small s u8T (DfracOwn 1) vs) ∗
     "%Hfh_enc" ∷ ⌜ has_encoding vs (EncUInt64 fh :: nil) ⌝.
 
 Definition is_fs γ (nfs: loc) dinit : iProp Σ :=

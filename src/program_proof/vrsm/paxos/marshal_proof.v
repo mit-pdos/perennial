@@ -434,7 +434,7 @@ Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
   "HaccEpoch" ∷ s ↦[paxosState :: "acceptedEpoch"] #st.(acceptedEpoch) ∗
   "HnextIndex" ∷ s ↦[paxosState :: "nextIndex"] #st.(nextIndex) ∗
   "Hstate" ∷ s ↦[paxosState :: "state"] (slice_val state_sl) ∗
-  "#Hstate_sl" ∷ own_slice_small state_sl byteT DfracDiscarded st.(state) ∗
+  "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT (DfracOwn 1) st.(state)) ∗
   "HisLeader" ∷ s ↦[paxosState :: "isLeader"] #st.(isLeader)
 .
 Lemma wp_boolToU64 (b:bool) :
@@ -468,7 +468,8 @@ Proof.
   wp_loadField. wp_load. wp_apply (wp_WriteInt with "[$]"). iIntros (?) "Hsl". wp_store.
   wp_loadField. wp_apply wp_boolToU64. wp_load.
   wp_apply (wp_WriteInt with "[$]"). iIntros (?) "Hsl". wp_store.
-  wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
+  iMod (readonly_load with "Hstate_sl") as (?) "Hstate_sl2".
+  wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl2]").
   iIntros (?) "[Hsl _]". wp_store. wp_load.
   iApply "HΦ".
   by iFrame.
@@ -476,7 +477,7 @@ Qed.
 
 Lemma wp_decode sl st q :
   {{{
-        own_slice_small sl byteT q (encode st)
+        own_slice_small sl byteT (DfracOwn q) (encode st)
   }}}
     decodePaxosState (slice_val sl)
   {{{
@@ -496,7 +497,8 @@ Proof.
   wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "?".
   wp_pures. wp_storeField. wp_store.
   wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "Hsl".
-  iMod (own_slice_small_persist with "Hsl") as "#Hsl".
+  iMod (readonly_alloc (own_slice_small s'2 byteT (DfracOwn 1) st.(state)) with "[Hsl]") as "#Hsl".
+  { done. }
   wp_pures. wp_store. wp_storeField. wp_load. wp_pures. wp_storeField.
   iApply "HΦ".
   iModIntro. repeat iExists _; iFrame "∗#".

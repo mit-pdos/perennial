@@ -10,7 +10,7 @@ Context {params:ekvParams.t}.
 Definition own_ClerkPool c γkv : iProp Σ :=
   ∃ (cls:list loc) cls_sl,
   "Hcls" ∷ c ↦[ClerkPool :: "cls"] (slice_val cls_sl) ∗
-  "Hcls_sl" ∷ own_slice cls_sl ptrT 1 (cls) ∗
+  "Hcls_sl" ∷ own_slice cls_sl ptrT (DfracOwn 1) (cls) ∗
   "Hcls_own" ∷ ([∗ list] cl ∈ cls, own_Clerk cl γkv)
 .
 
@@ -19,7 +19,7 @@ Definition is_ClerkPool c γkv : iProp Σ :=
   "#Hmu" ∷ readonly (c ↦[ClerkPool :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock nroot mu (own_ClerkPool c γkv) ∗
   "#HconfHosts" ∷ readonly (c ↦[ClerkPool :: "confHosts"] (slice_val confHost_sl)) ∗
-  "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
+  "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T (DfracOwn 1) confHosts) ∗
   "#Hhost" ∷ is_kv_config_hosts confHosts γkv
 .
 
@@ -133,7 +133,7 @@ Qed.
 
 Lemma wp_MakeClerkPool γkv confHosts confHost_sl :
   {{{
-        "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
+        "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T (DfracOwn 1) confHosts) ∗
         "#Hhost" ∷ is_kv_config_hosts confHosts γkv
   }}}
     MakeClerkPool (slice_val confHost_sl)
@@ -168,7 +168,7 @@ Definition vkvE : coPset := (↑protocol.pbN ∪ ↑definitions.prophReadN ∪ �
                                      ↑stateN).
 Lemma wp_MakeKv γkv confHost_sl confHosts :
   {{{
-        "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
+        "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T (DfracOwn 1) confHosts) ∗
         "#Hhost" ∷ is_kv_config_hosts confHosts γkv
   }}}
     MakeKv (slice_val confHost_sl)

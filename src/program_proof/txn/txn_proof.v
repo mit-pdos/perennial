@@ -69,7 +69,7 @@ Definition is_twophase_locks l γ γ' ex_pointsto objs_dom_flat (locks_held: gse
     "Htxn.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
     "Htxn.acquired" ∷
       l ↦[Txn :: "acquired"] #acquired_m ∗
-    "Hacquired_m" ∷ own_map acquired_m 1
+    "Hacquired_m" ∷ own_map acquired_m (DfracOwn 1)
       (set_to_map (λ k, (k, true)) locks_held) ∗
     "Hlockeds" ∷ ([∗ set] flat_a ∈ locks_held,
       "Hlocked" ∷ Locked ghs flat_a
@@ -1306,7 +1306,7 @@ Theorem wp_Txn__readBufNoAcquire l γ γ' dinit ex_pointsto objs_dom mt_changed 
     data_s data, RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_pointsto objs_dom mt_changed ∗
-    "Hdata_s" ∷ own_slice data_s byteT 1 data ∗
+    "Hdata_s" ∷ own_slice data_s byteT (DfracOwn 1) data ∗
     "%Hdata" ∷ ⌜data_has_obj data a obj⌝
   }}}.
 Proof.
@@ -1364,7 +1364,7 @@ Theorem wp_Txn__ReadBuf_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (e
     data_s data obj mt_changed', RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_pointsto objs_dom mt_changed' ∗
-    "Hdata_s" ∷ own_slice data_s byteT 1 data ∗
+    "Hdata_s" ∷ own_slice data_s byteT (DfracOwn 1) data ∗
     "%Hdata" ∷ ⌜data_has_obj data a obj⌝ ∗
     "%Hobj" ∷ ⌜modified <$> (mt_changed' !! a) = Some obj⌝ ∗
     "%Hmt_changed'" ∷ ⌜
@@ -1534,7 +1534,7 @@ Theorem wp_Txn__OverWrite_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless 
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_pointsto objs_dom mt_changed ∗
-    "Hdata_s" ∷ own_slice_small data_s byteT 1 data
+    "Hdata_s" ∷ own_slice_small data_s byteT (DfracOwn 1) data
   }}}
     Txn__OverWrite #l (addr2val a) #sz (slice_val data_s)
   {{{

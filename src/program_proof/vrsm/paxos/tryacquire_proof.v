@@ -22,7 +22,7 @@ Definition own_releaseFn_internal (f:val) γ sl_ptr oldstate : iProp Σ :=
   ∀ sl Φ newstate Q,
   ( (* precondition: *)
   "Hsl_ptr" ∷ sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-  "#Hsl" ∷ readonly (own_slice_small sl byteT 1 newstate) ∗
+  "#Hsl" ∷ readonly (own_slice_small sl byteT (DfracOwn 1) newstate) ∗
   "#HP" ∷ (□ Pwf newstate) ∗
   "Hupd" ∷ (|={⊤∖↑ghostN,∅}=> ∃ σ, own_log γ.(s_mp) σ ∗
               (⌜ get_state σ = oldstate ⌝ -∗ own_log γ.(s_mp) (σ ++ [(newstate, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
@@ -43,7 +43,7 @@ Definition own_releaseFn (f:val) γ sl_ptr oldstate : iProp Σ :=
   ∀ sl Φ newstate,
   ( (* precondition: *)
   "Hsl_ptr" ∷ sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-  "Hsl" ∷ readonly (own_slice_small sl byteT 1 newstate) ∗
+  "Hsl" ∷ readonly (own_slice_small sl byteT (DfracOwn 1) newstate) ∗
   "Hwf" ∷ (□ Pwf newstate) ∗
   "Hupd" ∷ (|={⊤∖↑N,∅}=> ∃ oldstate', own_state γ oldstate' ∗
               (⌜ oldstate' = oldstate ⌝ -∗ own_state γ newstate ={∅,⊤∖↑N}=∗ Φ #0))
@@ -63,7 +63,7 @@ Lemma wp_Server__TryAcquire_internal s γ γsrv  :
         if (decide (err = 0%Z)) then
           ∃ sl oldstate,
             sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-            readonly (own_slice_small sl byteT 1 oldstate) ∗
+            readonly (own_slice_small sl byteT (DfracOwn 1) oldstate) ∗
             Pwf oldstate ∗
             own_releaseFn_internal rel γ sl_ptr oldstate
         else
@@ -274,9 +274,9 @@ Proof.
   set (replyInv:=(
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
-                    "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
+                    "Hreplies_sl" ∷ own_slice_small replies_sl ptrT (DfracOwn 1) reply_ptrs ∗
                     "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts),
-                    ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
+                    ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply (DfracOwn 1)) ∗
                                                    if decide (reply.(applyAsFollowerReply.err) = (W64 0)) then
                                                      is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)])
                                                    else
@@ -847,7 +847,7 @@ Lemma wp_Server__TryAcquire s γ γsrv  :
         if (decide (err = 0%Z)) then
           ∃ sl oldstate,
             sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-            readonly (own_slice_small sl byteT 1 oldstate) ∗
+            readonly (own_slice_small sl byteT (DfracOwn 1) oldstate) ∗
             Pwf oldstate ∗
             own_releaseFn rel γ sl_ptr oldstate
         else

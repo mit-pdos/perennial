@@ -532,7 +532,7 @@ Definition is_ApplyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpTyp
   ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType) Q,
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         (* XXX: This is the weakest mask that the pb library is compatible with.
            By making the mask weak, we allow for more possible implementations
            of startApplyFn, so we give a stronger spec to the client. The chain
@@ -558,7 +558,7 @@ Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp
   {{{
         ⌜ (length σ < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap σ⌝ ∗
-        readonly (own_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap) ∗
         (P epoch_prev σ_prev sealed ={⊤∖↑pbAofN}=∗ P epoch σ false ∗ Q) ∗
         own_StateMachine epoch_prev σ_prev sealed P
   }}}
@@ -580,7 +580,7 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
   {{{
         snap_sl snap,
         RET (slice_val snap_sl);
-        readonly (own_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT (DfracOwn 1) snap) ∗
         ⌜has_snap_encoding snap σ⌝ ∗
         own_StateMachine epoch σ true P ∗
         Q
@@ -592,7 +592,7 @@ Definition is_ApplyReadonlyFn own_StateMachine (applyRoFn:val) (P:u64 → list (
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         ⌜is_readonly_op op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT (DfracOwn 1) op_bytes) ∗
         own_StateMachine epoch σ sealed P
   }}}
     applyRoFn (slice_val op_sl)
@@ -646,10 +646,10 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
   "#Hconf" ∷ is_epoch_config γ.(s_pb) s.(server.epoch) (r_pb <$> (γsrv :: backups)) ∗
             (* FIXME: ptrT vs refT (struct.t Clerk) *)
-  "#Hclerkss_sl" ∷ readonly (own_slice_small clerks_sl (slice.T ptrT) 1 clerkss) ∗
+  "#Hclerkss_sl" ∷ readonly (own_slice_small clerks_sl (slice.T ptrT) (DfracOwn 1) clerkss) ∗
   "#Hclerkss_rpc" ∷ ([∗ list] clerks_sl ∈ clerkss,
                         ∃ clerks,
-                        "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
+                        "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT (DfracOwn 1) clerks) ∗
                         "%Hclerks_conf" ∷ ⌜length clerks = length backups⌝ ∗
                         "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.(r_pb) s.(server.epoch))
                     )
@@ -678,7 +678,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "HleaseExpiration" ∷ s ↦[Server :: "leaseExpiration"] #st.(server.leaseExpiration) ∗
   (* backup sequencer *)
   "HopAppliedConds" ∷ s ↦[Server :: "opAppliedConds"] #opAppliedConds_loc ∗
-  "HopAppliedConds_map" ∷ own_map opAppliedConds_loc 1 opAppliedConds ∗
+  "HopAppliedConds_map" ∷ own_map opAppliedConds_loc (DfracOwn 1) opAppliedConds ∗
 
   (* ownership of the statemachine *)
   "Hstate" ∷ own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗

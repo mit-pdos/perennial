@@ -20,10 +20,10 @@ Lemma wp_makeServer γ γsrv (fname:string) data conf_sl (hosts:list u64) init_s
         "Hfile" ∷ crash_borrow (own_file_inv γ γsrv data ∗ fname f↦ data)
                 (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗
         "#HP" ∷ (□ Pwf initstate) ∗
-        "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
+        "Hconf_sl" ∷ own_slice_small conf_sl uint64T (DfracOwn 1) hosts ∗
         "#Hhosts" ∷ is_paxos_hosts hosts γ ∗
         "#HinvHelping" ∷ is_helping_inv γ ∗
-        "Hinitstate" ∷ own_slice_small init_sl byteT 1 initstate
+        "Hinitstate" ∷ own_slice_small init_sl byteT (DfracOwn 1) initstate
 
   }}}
     makeServer #(str fname) (slice_val init_sl) (slice_val conf_sl)
@@ -67,7 +67,7 @@ Proof.
               (λ i,
                ∃ sl cls,
                "Hcls" ∷ s ↦[Server :: "clerks"] (slice_val sl) ∗
-               "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
+               "Hcls_sl" ∷ own_slice sl ptrT (DfracOwn 1) (cls) ∗
                "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ cls ; (take (uint.nat i) γ.(s_hosts)),
                                    is_singleClerk ck γ γsrv') ∗
                "%Hsz" ∷ ⌜ length cls = uint.nat i ⌝
@@ -185,10 +185,10 @@ Lemma wp_StartServer γ γsrv (me:u64) (fname:string) data init_sl conf_sl (host
         "Hfile" ∷ crash_borrow (own_file_inv γ γsrv data ∗ fname f↦ data)
                 (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗
         "#HP" ∷ (□ Pwf initstate) ∗
-        "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
+        "Hconf_sl" ∷ own_slice_small conf_sl uint64T (DfracOwn 1) hosts ∗
         "#Hhost" ∷ is_paxos_server_host me γ γsrv ∗
         "#Hhosts" ∷ is_paxos_hosts hosts γ ∗
-        "Hinitstate" ∷ own_slice_small init_sl byteT 1 initstate
+        "Hinitstate" ∷ own_slice_small init_sl byteT (DfracOwn 1) initstate
 
   }}}
     StartServer #(str fname) (slice_val init_sl) #me (slice_val conf_sl)
@@ -260,7 +260,7 @@ Proof.
       wp_pures.
 
       iApply ("HΦ" with "[HΨ $Hrep]").
-      iDestruct (own_slice_small_nil _ 1) as "$"; first done.
+      iDestruct (own_slice_small_nil _ (DfracOwn 1)) as "$"; first done.
       iApply "HΨ".
     }
 
@@ -286,7 +286,7 @@ Proof.
       wp_pures.
 
 
-      iDestruct (own_slice_small_nil byteT 1 Slice.nil) as "Hsl".
+      iDestruct (own_slice_small_nil byteT (DfracOwn 1) Slice.nil) as "Hsl".
       { done. }
       iMod (readonly_alloc_1 with "Hsl") as "#Hsl2".
       wp_apply (wp_Server__enterNewEpoch with "His_srv Hargs [Hreply] [Hrep HΦ] Hspec").

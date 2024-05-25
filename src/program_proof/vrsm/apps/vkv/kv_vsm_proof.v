@@ -95,7 +95,7 @@ Lemma wp_encodePutArgs (args_ptr:loc) (key val:string) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜ has_op_encoding enc (putOp key val)⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -217,7 +217,7 @@ Lemma wp_encodeGetArgs (key:string) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_op_encoding enc (getOp key)⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -282,7 +282,7 @@ Lemma wp_encodeCondPutArgs (args_ptr:loc) (key expect val:string) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜ has_op_encoding enc (condPutOp key expect val)⌝ ∗
-        own_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT (DfracOwn 1) enc
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -432,8 +432,8 @@ Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp �
   "Hkvs" ∷ s ↦[KVState :: "kvs"] #kvs_loc ∗
   "Hvnums" ∷ s ↦[KVState :: "vnums"] #vnums_loc ∗
   "HminVnum" ∷ s ↦[KVState :: "minVnum"] #minVnum ∗
-  "Hkvs_map" ∷ own_map kvs_loc 1 (compute_state ops) ∗
-  "Hvnums_map" ∷ own_map vnums_loc 1 vnumsM ∗
+  "Hkvs_map" ∷ own_map kvs_loc (DfracOwn 1) (compute_state ops) ∗
+  "Hvnums_map" ∷ own_map vnums_loc (DfracOwn 1) vnumsM ∗
   "#Hst" ∷ □ (∀ (k:string),
               (∀ (vnum':u64), ⌜uint.nat vnum' <= uint.nat latestVnum⌝ →
                              ⌜uint.nat (default minVnum (vnumsM !! k)) <= uint.nat vnum'⌝ →
