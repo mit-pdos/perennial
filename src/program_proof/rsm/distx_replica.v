@@ -36,12 +36,12 @@ Section program.
       "Htxnlog"  ∷ own_txnlog log gid γ ∗
       "Hlsna"    ∷ rp ↦[Replica :: "lsna"] #lsna ∗
       "Hprepm"   ∷ rp ↦[Replica :: "prepm"] #prepm ∗
-      "HprepmM"  ∷ own_map prepm 1 prepmM ∗
+      "HprepmM"  ∷ own_map prepm (DfracOwn 1) prepmM ∗
       "Htxntbl"  ∷ rp ↦[Replica :: "txntbl"] #txntbl ∗
-      "HtxntblM" ∷ own_map txntbl 1 txntblM ∗
+      "HtxntblM" ∷ own_map txntbl (DfracOwn 1) txntblM ∗
       "Hidx"     ∷ rp ↦[Replica :: "idx"] #idx ∗
       "Hkvmap"   ∷ rp ↦[Replica :: "kvmap"] #kvmap ∗
-      "HkvmapM"  ∷ own_map kvmap 1 kvmapM.
+      "HkvmapM"  ∷ own_map kvmap (DfracOwn 1) kvmapM.
 
   Definition is_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
     ∃ (mu : loc),
