@@ -154,7 +154,6 @@ Proof.
       iDestruct "Hptsto" as "[Hptsto Hprop]".
       iDestruct ("Hprop" $! pn' with "[] Hcom'") as "Hptsto'2".
       { done. }
-      Search "ghost_map".
       iDestruct "Hptsto'" as "[Hptsto' Hprop']".
       iDestruct (ghost_map_elem_agree with "Hptsto' Hptsto'2") as %Heq.
       replace (c) with (c') by naive_solver.

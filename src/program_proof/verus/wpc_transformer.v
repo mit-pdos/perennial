@@ -149,7 +149,6 @@ Proof.
   wpc_apply (wpc_step_strong_mono _ _ _ _ _ Q _ True _ with "[Hcrash]").
   1-3: done.
   2:{
-    Search crash_borrow.
     iSplit.
     { iRight in "HΦ". iNext. iIntros "* HQ". iModIntro.
       by iApply "HΦ". }
