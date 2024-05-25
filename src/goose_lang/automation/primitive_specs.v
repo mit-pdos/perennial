@@ -239,7 +239,7 @@ Section goose_lang_instances.
       The goal resource of the HINT (in this case [l ↦[d::f]{q} v]) should always be an atom:
       ie not of the form [A ∗ B] or [∃ q, P q]. If the resource is existentially quantified,
       move all these quantifiers to before the semicolon. *)
-    HINT (readonly (l ↦[d :: f] v)) ✱ [- ; emp] ⊫ [fupd E E] q; l ↦[d :: f]{q} v ✱ [emp] | 50.
+    HINT (readonly (l ↦[d :: f] v)) ✱ [- ; emp] ⊫ [fupd E E] v' q; l ↦[d :: f]{q} v' ✱ [⌜v = v'⌝] | 50.
   Proof.
     iSteps as "#Hf".
     iMod (readonly_load with "[$]") as "H".
@@ -276,7 +276,7 @@ Section goose_lang_instances.
   Qed.
 
   #[global] Instance readonly_alloc_hint (P: iProp Σ) (Φ: Qp → iProp Σ) `{!AsMapsTo P Φ} E :
-    HINT (ε₀) ✱ [q; Φ q] ⊫ [fupd E E]; readonly P ✱ [emp] | 20.
+    HINT (ε₁) ✱ [q; Φ q] ⊫ [fupd E E]; readonly P ✱ [emp] | 20.
   Proof.
     iSteps as (q) "H".
     iMod (readonly_alloc P (Φ:=Φ) with "[$]") as "H".

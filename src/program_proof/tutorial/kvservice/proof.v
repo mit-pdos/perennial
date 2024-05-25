@@ -1043,6 +1043,7 @@ Proof.
 Qed.
 
 #[local] Opaque makeClient.
+#[local] Opaque readonly.
 
 Lemma wp_MakeClerk (host:u64) :
   {{{ is_kvserver_host host }}}
@@ -1050,20 +1051,9 @@ Lemma wp_MakeClerk (host:u64) :
   {{{ ck, RET #ck; is_Clerk ck }}}
 .
 Proof.
-  iIntros (Φ) "#Hhost HΦ".
-  wp_lam.
-  wp_apply (wp_makeClient with "Hhost").
-  iIntros (?) "#?".
-  iApply wp_fupd.
-  wp_apply wp_allocStruct.
-  { val_ty. }
-  iIntros (?) "Hl".
-  iDestruct (struct_fields_split with "Hl") as "HH".
-  iNamed "HH".
-  iApply "HΦ".
-  iMod (readonly_alloc_1 with "rpcCl") as "#?".
-  iModIntro.
-  iExists _; iFrame "#".
+  iSteps.
+  wp_apply (wp_makeClient with "[$]").
+  iSteps.
 Qed.
 
 End clerk_proof.
