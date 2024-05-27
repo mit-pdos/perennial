@@ -6,8 +6,9 @@ Definition dbval := option string.
 Definition dbhist := list dbval.
 Definition dbtpl := (dbhist * nat)%type.
 Definition dbmod := (dbkey * dbval)%type.
-Canonical Structure dbvalO := leibnizO dbval.
+(* Canonical Structure dbvalO := leibnizO dbval. *)
 Definition dbmap := gmap dbkey dbval.
+Definition dbkmods := gmap nat dbval.
 
 Definition dbval_to_val (v : dbval) : val :=
   match v with
@@ -194,9 +195,10 @@ Inductive action :=
 | ActCmt (tid : nat) (wrs : dbmap)
 | ActRead (tid : nat) (key : dbkey).
 
-Definition diff_by_ongoing (repl cmtd : list dbval) (kcmt : option (nat * dbval)) :=
-  match kcmt with
-  | Some (ts, v) => cmtd = last_extend ts repl ++ [v]
+Definition diff_by_cmtd
+  (repl cmtd : list dbval) (tmods : dbkmods) (ts : nat) :=
+  match tmods !! ts with
+  | Some v => cmtd = last_extend ts repl ++ [v]
   | None => ∃ ts', repl = last_extend ts' cmtd
 end.
 
@@ -206,7 +208,7 @@ Definition exclusive (ongoing : option (nat * dbval)) (tsprep : nat) (wr : optio
   | None => True
   end.
 
-Definition diff_by_linearized (cmtd lnrz : list dbval) (txns : gmap nat dbval) : Prop.
+Definition diff_by_lnrz (cmtd lnrz : list dbval) (txns : dbkmods) : Prop.
 Admitted.
 
 Definition conflict_free (acts : list action) (txns : gmap nat dbmap) : Prop.
@@ -273,7 +275,27 @@ Definition log_txnst (ts : nat) (st : txnst) (log : dblog) :=
   | State stm _ => stm !! ts = Some st
   | _ => False
   end.
-                   
+
+Definition lookup_twice
+  {V} `{Countable K1} `{Countable K2}
+  (m : gmap K1 (gmap K2 V)) (k1 : K1) (k2 : K2) :=
+  match m !! k1 with
+  | Some im => im !! k2
+  | None => None
+  end.
+
+Definition tmods_kmods_consistent (m1 : gmap nat dbmap) (m2 : gmap dbkey dbkmods) :=
+  ∀ t k, lookup_twice m1 t k = lookup_twice m2 k t.
+
+Definition res_to_tmod (res : txnres) :=
+  match res with
+  | ResCommitted wrs => Some wrs
+  | ResAborted => None
+  end.
+
+Definition resm_to_tmods (resm : gmap nat txnres) :=
+  omap res_to_tmod resm.
+
 (* TODO: move to distx_own.v once stable. *)
 Class distx_ghostG (Σ : gFunctors).
 
@@ -295,6 +317,12 @@ Section ghost.
   Admitted.
 
   Definition hist_repl_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ.
+  Admitted.
+
+  Definition hist_lnrz_half γ (k : dbkey) (l : dbhist) : iProp Σ.
+  Admitted.
+
+  Definition hist_lnrz_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ.
   Admitted.
 
   Definition ts_repl_half γ (k : dbkey) (ts : nat) : iProp Σ.
@@ -320,6 +348,18 @@ Section ghost.
   Definition txnres_abt  γ ts :=
     txnres_receipt γ ts ResAborted.
 
+  Definition kmods_lnrz_auth γ (kmods : gmap dbkey dbkmods) : iProp Σ.
+  Admitted.
+
+  Definition kmods_lnrz_frag γ (k : dbkey) (kmods : dbkmods) : iProp Σ.
+  Admitted.
+
+  Definition kmods_cmtd_auth γ (kmods : gmap dbkey dbkmods) : iProp Σ.
+  Admitted.
+
+  Definition kmods_cmtd_frag γ (k : dbkey) (kmods : dbkmods) : iProp Σ.
+  Admitted.
+
   Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.
   Admitted.
 
@@ -343,6 +383,7 @@ Section ghost.
 
   Definition txn_proph γ (acts : list action) : iProp Σ.
   Admitted.
+
 End ghost.
 
 Section spec.
@@ -365,35 +406,43 @@ Section inv.
   Definition txn_inv γ : iProp Σ :=
     ∃ (ts : nat) (future past : list action)
       (txns_cmt txns_abt : gmap nat dbmap)
-      (resm : gmap nat txnres),
+      (resm : gmap nat txnres)
+      (kmods_lnrz kmods_cmtd : gmap dbkey dbkmods),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
       (* prophecy variable *)
       "Hproph" ∷ txn_proph γ future ∗
       (* transaction result map *)
       "Hresm" ∷ txnres_auth γ resm ∗
+      (* key modifications *)
+      "Hkmodsl" ∷ kmods_lnrz_auth γ kmods_lnrz ∗
+      "Hkmodsc" ∷ kmods_cmtd_auth γ kmods_cmtd ∗
+      (* safe commit/abort invariant *)
       "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
-      (* TODO: asserting ownership of txns_cmt and txns_abt. *)
+      (* TODO: for coordinator recovery, add a monotonically growing set of
+      active txns; each active txn either appears in [txns_cmt]/[txns_abt] or in
+      the result map [resm]. *)
       "%Hcf"   ∷ ⌜conflict_free future txns_cmt⌝ ∗
-      "%Hcp"   ∷ ⌜conflict_past future past txns_abt⌝.
+      "%Hcp"   ∷ ⌜conflict_past future past txns_abt⌝ ∗
+      "%Htkcl" ∷ ⌜tmods_kmods_consistent txns_cmt kmods_lnrz⌝ ∗
+      "%Htkcc" ∷ ⌜tmods_kmods_consistent (resm_to_tmods resm) kmods_cmtd⌝.
 
   Definition key_inv γ (key : dbkey) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
-      (tslb : nat) (tsprep : nat)
-      (wrs : dbmap) (ongoing : option (nat * dbval))
-      (tmods : gmap nat dbval),
+      (tslb tsprep : nat)
+      (tmods_lnrz tmods_cmtd : dbkmods),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
-      "Hreplh"    ∷ hist_repl_half γ key repl ∗
-      "Hreplt"    ∷ ts_repl_half γ key tsprep ∗
-      (* TODO: missing some ownership. *)
+      "Hlnrz"     ∷ hist_repl_half γ key lnrz ∗
+      "Hrepl"     ∷ hist_repl_half γ key repl ∗
+      "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
+      "Htmlnrz"   ∷ kmods_lnrz_frag γ key tmods_lnrz ∗
+      "Htmcmtd"   ∷ kmods_cmtd_frag γ key tmods_cmtd ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
-      "#Hresme"   ∷ if ongoing then txnres_cmt γ tsprep wrs else True ∗
       "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
       "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
       "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
-      "%Hlnrz"    ∷ ⌜diff_by_linearized cmtd lnrz tmods⌝ ∗
-      "%Hongoing" ∷ ⌜diff_by_ongoing repl cmtd ongoing⌝ ∗
-      "%Hexcl"    ∷ ⌜exclusive ongoing tsprep (wrs !! key)⌝.
+      "%Hdiffl"   ∷ ⌜diff_by_lnrz cmtd lnrz tmods_lnrz⌝ ∗
+      "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd tmods_cmtd tsprep⌝.
 
   Definition valid_cmd γ (c : command) : iProp Σ :=
     match c with
@@ -409,16 +458,16 @@ Section inv.
 
   Definition group_inv γ (gid : groupid) : iProp Σ :=
     ∃ (log : dblog) (cpool : gset command)
-      (txnm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
+      (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
       "Hlog"    ∷ clog_half γ gid log ∗
       "Hcpool"  ∷ cpool_half γ gid cpool ∗
       "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls, tuple_repl_half γ key tpl) ∗
       "#Hvc"    ∷ ([∗ set] c ∈ cpool, valid_cmd γ c) ∗
       "%Hshard" ∷ ⌜dom tpls = keys_group gid keys_all⌝ ∗
-      "%Hrsm"   ∷ ⌜apply_cmds log = State txnm tpls⌝.
+      "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝.
 
   Definition distxN := nroot .@ "distx".
-  
+
   Definition distx_inv γ : iProp Σ :=
     (* txn invariants *)
     "Htxn"    ∷ txn_inv γ ∗
