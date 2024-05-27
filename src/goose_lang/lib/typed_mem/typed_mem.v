@@ -358,6 +358,21 @@ Section goose_lang.
     by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
 
+  Lemma tac_wp_load_ty_persistent Δ s E i K l t v Φ :
+    envs_lookup i Δ = Some (true, struct_pointsto l DfracDiscarded t v)%I →
+    envs_entails Δ (WP fill K (Val v) @ s; E {{ Φ }}) →
+    envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
+  Proof.
+    rewrite envs_entails_unseal=> ? HΦ.
+    rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_LoadAt.
+    rewrite envs_lookup_split //; simpl.
+    iIntros "[#Hp Henvs]".
+    iSplitR; auto.
+    iIntros "!> _".
+    iApply HΦ.
+    iApply ("Henvs" with "Hp").
+  Qed.
+
   Theorem wp_store stk E l v v' :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
     {{{ RET LitV LitUnit; l ↦ v }}}.
@@ -484,12 +499,17 @@ Tactic Notation "wp_load" :=
   wp_pures;
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty _ _ _ _ _ K))
-      |fail 1 "wp_load: cannot find 'load_ty' in" e];
-    [tc_solve
-    |solve_pointsto ()
-    |wp_finish]
+    ( first
+        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty _ _ _ _ _ K))
+        |fail 1 "wp_load: cannot find 'load_ty' in" e];
+      [tc_solve
+      |solve_pointsto ()
+      |wp_finish] ) ||
+    ( first
+        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty_persistent _ _ _ _ K))
+        |fail 1 "wp_load: cannot find 'load_ty' in" e];
+      [solve_pointsto ()
+      |wp_finish] )
   | _ => fail "wp_load: not a 'wp'"
   end.
 

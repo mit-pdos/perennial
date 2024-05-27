@@ -396,6 +396,21 @@ Proof.
   by apply later_mono, sep_mono_r, wand_mono.
 Qed.
 
+Lemma tac_wp_load_persistent Δ s E i K l v Φ :
+  envs_lookup i Δ = Some (true, l ↦□ v)%I →
+  envs_entails Δ (WP fill K (Val v) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP fill K (Load (LitV l)) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_unseal=> ? HΦ.
+  rewrite -wp_bind. eapply wand_apply; first by apply bi.wand_entails, wp_load.
+  rewrite envs_lookup_split //; simpl.
+  iIntros "[#Hp Henvs]".
+  iSplitR; auto.
+  iIntros "!> _".
+  iApply HΦ.
+  iApply ("Henvs" with "Hp").
+Qed.
+
 Lemma tac_wp_cmpxchg Δ Δ' Δ'' s E i K l v v1 v2 Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_lookup i Δ' = Some (false, l ↦ v)%I →
@@ -483,17 +498,22 @@ Tactic Notation "awp_apply" open_constr(lem) "without" constr(Hs) :=
 Tactic Notation "wp_untyped_load" :=
   let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_load: cannot find" l "↦ ?" in
+    iAssumptionCore || fail "wp_untyped_load: cannot find" l "↦ ?" in
   wp_pures;
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load _ _ _ _ _ K))
-      |fail 1 "wp_load: cannot find 'Load' in" e];
-    [tc_solve
-    |solve_pointsto ()
-    |wp_finish]
-  | _ => fail "wp_load: not a 'wp'"
+    ( first
+        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load _ _ _ _ _ K))
+        |fail 1 "wp_untyped_load: cannot find 'Load' in" e];
+      [tc_solve
+      |solve_pointsto ()
+      |wp_finish] ) ||
+    ( first
+        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_persistent _ _ _ _ K))
+        |fail 1 "wp_untyped_load: cannot find 'Load' in" e];
+      [solve_pointsto ()
+      |wp_finish] )
+  | _ => fail "wp_untyped_load: not a 'wp'"
   end.
 
 Tactic Notation "wp_cmpxchg" "as" simple_intropattern(H1) "|" simple_intropattern(H2) :=

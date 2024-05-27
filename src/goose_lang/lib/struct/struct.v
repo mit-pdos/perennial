@@ -168,6 +168,24 @@ Proof.
   split; [ done | apply _ ].
 Qed.
 
+Global Instance struct_field_pointsto_persistent l d f v : Persistent (struct_field_pointsto l DfracDiscarded d f v).
+Proof.
+  unseal.
+  destruct (field_offset d f).
+  - destruct p. refine _.
+  - refine _.
+Qed.
+
+Lemma struct_field_pointsto_persist l q d f v :
+  struct_field_pointsto l q d f v ==∗ struct_field_pointsto l DfracDiscarded d f v.
+Proof.
+  unseal.
+  destruct (field_offset d f).
+  - destruct p.
+    apply struct_pointsto_persist.
+  - iIntros "%". done.
+Qed.
+
 Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
   match d with
   | [] => ⌜v = #()⌝
@@ -594,6 +612,21 @@ Proof.
   by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
 Qed.
 
+Lemma tac_wp_loadField_persistent Δ s E i l d f v Φ :
+  envs_lookup i Δ = Some (true, struct_field_pointsto l DfracDiscarded d f v)%I →
+  envs_entails Δ (Φ v) →
+  envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_unseal=> ? HΦ.
+  eapply bi.wand_apply; first by apply bi.wand_entails, wp_loadField.
+  rewrite envs_lookup_split //; simpl.
+  iIntros "[#Hp Henvs]".
+  iSplitR; auto.
+  iIntros "!> _".
+  iApply HΦ.
+  iApply ("Henvs" with "Hp").
+Qed.
+
 Theorem wp_load_ro l t v :
   {{{ readonly (struct_pointsto l (DfracOwn 1) t v) }}}
     load_ty t #l
@@ -744,7 +777,7 @@ Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
 Tactic Notation "wp_loadField" :=
   let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
-    iAssumptionCore || fail 1 "wp_load: cannot find" l "↦[d :: f] ?" in
+    iAssumptionCore || fail "wp_loadField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
   wp_bind (struct.loadF _ _ (Val _));
   match goal with
@@ -757,9 +790,15 @@ Tactic Notation "wp_loadField" :=
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
       [eapply tac_wp_loadField
-      |fail 2 "wp_loadField: cannot find 'struct.loadF' in" e];
+      |fail 1 "wp_loadField: cannot find 'struct.loadF' in" e];
     [tc_solve
     |solve_pointsto ()
+    |]
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    first
+      [eapply tac_wp_loadField_persistent
+      |fail 2 "wp_loadField: cannot find 'struct.loadF' in" e];
+    [solve_pointsto ()
     |]
   | _ => fail 1 "wp_loadField: not a 'wp'"
   end.

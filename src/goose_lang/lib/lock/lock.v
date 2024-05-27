@@ -6,7 +6,6 @@ From Perennial.program_logic Require Import weakestpre.
 
 From Perennial.goose_lang Require Import lang typing.
 From Perennial.goose_lang Require Import proofmode notation.
-From Perennial.goose_lang Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.goose_lang.lib Require Export lock.impl.
 Set Default Proof Using "Type".
@@ -192,7 +191,7 @@ Section proof.
   (** cond var proofs *)
 
   Definition is_cond (c: loc) (lk : val) : iProp Σ :=
-    readonly (c ↦ lk).
+    c ↦□ lk.
 
   Global Instance is_cond_persistent c lk :
     Persistent (is_cond c lk) := _.
@@ -209,7 +208,7 @@ Section proof.
     iIntros (c) "Hc".
     (* FIXME: need a let binding in the implementation to do an iMod after the
     Alloc (so the goal needs to still be a WP) *)
-    iMod (readonly_alloc_1 with "Hc") as "Hcond".
+    iMod (heap_pointsto_persist with "Hc") as "Hcond".
     wp_pures.
     iApply "HΦ". by iFrame.
   Qed.
@@ -227,7 +226,7 @@ Section proof.
     iIntros (c) "Hc".
     (* FIXME: need a let binding in the implementation to do an iMod after the
     Alloc (so the goal needs to still be a WP) *)
-    iMod (readonly_alloc_1 with "Hc") as "Hcond".
+    iMod (heap_pointsto_persist with "Hc") as "Hcond".
     wp_pures.
     by iApply "HΦ".
   Qed.
@@ -260,7 +259,6 @@ Section proof.
     iIntros (Φ) "(#Hcond&#Hlock&Hlocked&HR) HΦ".
     wp_call.
     rewrite /is_cond.
-    iMod (readonly_load with "Hcond") as (q) "Hc".
     wp_untyped_load.
     wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
     wp_pures.

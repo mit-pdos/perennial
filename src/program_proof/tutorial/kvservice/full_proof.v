@@ -39,7 +39,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT 1 enc_args
+          own_slice sl byteT (DfracOwn 1) enc_args
   }}}
 .
 Proof.
@@ -185,7 +185,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT 1 enc_args
+          own_slice sl byteT (DfracOwn 1) enc_args
   }}}
 .
 Proof.
@@ -355,7 +355,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT 1 enc_args
+          own_slice sl byteT (DfracOwn 1) enc_args
   }}}
 .
 Proof.
@@ -448,7 +448,7 @@ Definition bool_le (b:bool) : list u8 := if b then [W8 1] else [W8 0].
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
     EncodeBool #b
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (bool_le b) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (bool_le b) }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -496,7 +496,7 @@ Qed.
 Lemma wp_EncodeUint64 x:
   {{{ True }}}
     EncodeUint64 #x
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (u64_le x) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (u64_le x) }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -545,6 +545,12 @@ Class erpcG Σ := {
 }.
 
 Context `{!erpcG Σ}.
+
+(* Why does this notation not get imported properly from iris ghost_map? *)
+Notation "k ↪[ γ ]□ v" := (ghost_map_elem γ k DfracDiscarded v)
+  (at level 20).
+Notation "k ↪[ γ ] v" := (ghost_map_elem γ k (DfracOwn 1) v)
+  (at level 20).
 
 Definition own_unexecuted_token γ (opId:u64) : iProp Σ :=
   opId ↪[γ.(req_gn)] ().
@@ -874,7 +880,7 @@ Context `{!kvserviceG Σ}.
 
 Definition is_Server (s:loc) γ : iProp Σ :=
   ∃ mu,
-  "#Hmu" ∷ readonly (s ↦[Server :: "mu"] mu) ∗
+  "#Hmu" ∷ s ↦[Server :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_lock nroot mu (server.own s γ)
 .
 
@@ -1469,7 +1475,7 @@ Proof.
   iMod (ghost_make with "Hauth") as (?) "Hghost".
   { done. }
   iApply "HΦ".
-  iMod (readonly_alloc_1 with "mu") as "#Hmu".
+  iMod (struct_field_pointsto_persist with "mu") as "#Hmu".
   iExists _; iFrame "#".
   iMod (alloc_lock with "HmuInv [-]") as "$"; last done.
   iNext.
@@ -1701,7 +1707,7 @@ Section client_proof.
 Context `{!heapGS Σ, !urpcregG Σ, !kvserviceG Σ}.
 Definition is_Client (cl:loc) γ : iProp Σ :=
   ∃ (urpcCl:loc) host,
-  "#Hcl" ∷ readonly (cl ↦[Client :: "cl"] #urpcCl) ∗
+  "#Hcl" ∷ cl ↦[Client :: "cl"]□ #urpcCl ∗
   "#HurpcCl" ∷ is_uRPCClient urpcCl host ∗
   "#Hhost" ∷ is_kvserver_host host γ
 .
@@ -1726,7 +1732,7 @@ Proof.
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
-  iMod (readonly_alloc_1 with "cl") as "#?".
+  iMod (struct_field_pointsto_persist with "cl") as "#?".
   iModIntro.
   iApply "HΦ".
   repeat iExists _.
@@ -1982,7 +1988,7 @@ Context `{!kvserviceG Σ}.
 
 Definition is_Clerk (ck:loc) γ : iProp Σ :=
   ∃ (cl:loc),
-  "#Hcl" ∷ readonly (ck ↦[Clerk :: "rpcCl"] #cl) ∗
+  "#Hcl" ∷ ck ↦[Clerk :: "rpcCl"]□ #cl ∗
   "#HisCl" ∷ is_Client cl γ
 .
 
@@ -2299,7 +2305,7 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
   iApply "HΦ".
-  iMod (readonly_alloc_1 with "rpcCl") as "#?".
+  iMod (struct_field_pointsto_persist with "rpcCl") as "#?".
   iModIntro.
   iExists _; iFrame "#".
 Qed.

@@ -575,7 +575,7 @@ Definition own_Server (s:loc) : iProp Σ :=
 
 Definition is_Server (s:loc) : iProp Σ :=
   ∃ mu,
-  "#Hmu" ∷ readonly (s ↦[Server :: "mu"] mu) ∗
+  "#Hmu" ∷ s ↦[Server :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_lock nroot mu (own_Server s)
 .
 
@@ -779,7 +779,7 @@ Proof.
   iIntros (lastReplies_loc) "HlastRepliesM".
   wp_storeField.
   iApply "HΦ".
-  iMod (readonly_alloc_1 with "mu") as "#Hmu".
+  iMod (struct_field_pointsto_persist with "mu") as "#Hmu".
   iExists _; iFrame "#".
   iMod (alloc_lock with "HmuInv [-]") as "$"; last done.
   iNext.
@@ -992,7 +992,7 @@ Section client_proof.
 Context `{!heapGS Σ, !urpcregG Σ}.
 Definition is_Client (cl:loc) : iProp Σ :=
   ∃ (urpcCl:loc) host,
-  "#Hcl" ∷ readonly (cl ↦[Client :: "cl"] #urpcCl) ∗
+  "#Hcl" ∷ cl ↦[Client :: "cl"]□ #urpcCl ∗
   "#HurpcCl" ∷ is_uRPCClient urpcCl host ∗
   "#Hhost" ∷ is_kvserver_host host
 .
@@ -1017,7 +1017,7 @@ Proof.
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
-  iMod (readonly_alloc_1 with "cl") as "#?".
+  iMod (struct_field_pointsto_persist with "cl") as "#?".
   iModIntro.
   iApply "HΦ".
   repeat iExists _.
@@ -1279,7 +1279,7 @@ Context `{!urpcregG Σ}.
 
 Definition is_Clerk (ck:loc) : iProp Σ :=
   ∃ (cl:loc),
-  "#Hcl" ∷ readonly (ck ↦[Clerk :: "rpcCl"] #cl) ∗
+  "#Hcl" ∷ ck ↦[Clerk :: "rpcCl"]□ #cl ∗
   "#HisCl" ∷ is_Client cl
 .
 
@@ -1541,7 +1541,7 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
   iApply "HΦ".
-  iMod (readonly_alloc_1 with "rpcCl") as "#?".
+  iMod (struct_field_pointsto_persist with "rpcCl") as "#?".
   iModIntro.
   iExists _; iFrame "#".
 Qed.

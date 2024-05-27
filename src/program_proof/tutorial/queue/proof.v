@@ -23,7 +23,7 @@ Definition queue_size_inv (count : u64) (first : u64) (queue_size : Z): iProp Σ
   (⌜word.unsigned count <= queue_size⌝ ∗ ⌜word.unsigned first < queue_size⌝ ∗ ⌜queue_size > 0⌝ ∗ ⌜queue_size + 1 < 2 ^ 63⌝)%I.
 
 Definition queue_inv_inner (q : loc) (queue : list u64) (first : u64) (count : u64) (queueSlice: Slice.t) : iProp Σ :=
-  "#Hqueue" ∷ readonly (q ↦[Queue :: "queue"] (slice_val queueSlice)) ∗
+  "#Hqueue" ∷ q ↦[Queue :: "queue"]□ (slice_val queueSlice) ∗
   "Hfirst" ∷ (q ↦[Queue :: "first"] #first) ∗
   "Hcount" ∷ (q ↦[Queue :: "count"] #count) ∗
   "isSlice" ∷ own_slice_small queueSlice uint64T (DfracOwn 1) queue ∗
@@ -36,9 +36,9 @@ Definition queue_inv (q : loc) (queueSlice: Slice.t) (P : u64 -> iProp Σ): iPro
 
 Definition is_queue (q : loc) (P : u64 -> iProp Σ) : iProp Σ :=
   ∃ (lk : loc) (cond : loc) (queueSlice: Slice.t),  
-    "#Hlock" ∷ readonly (q ↦[Queue :: "lock"] #lk) ∗
+    "#Hlock" ∷ q ↦[Queue :: "lock"]□ #lk ∗
     "#HlockC" ∷ is_lock nroot #lk (queue_inv q queueSlice P) ∗
-    "#Hrcond" ∷ readonly (q ↦[Queue :: "cond"] #cond) ∗
+    "#Hrcond" ∷ q ↦[Queue :: "cond"]□ #cond ∗
     "#HrcondC" ∷ is_cond cond #lk.
 
 Theorem init : forall slice, valid_elems slice 0 0 = nil.
@@ -396,19 +396,6 @@ Proof.
     done.
 Qed.
 
-Lemma readonly_struct_field_pointsto_agree E l d f v1 v2 :
-  readonly (l ↦[d :: f] v1) -∗
-    readonly (l ↦[d :: f] v2) -∗
-      |={E}=> ⌜v1 = v2⌝.
-Proof.
-  iIntros "#H1 #H2".
-  iMod (readonly_load with "H1") as (q1) "Hv1".
-  iMod (readonly_load with "H2") as (q2) "Hv2".
-  iDestruct (struct_field_pointsto_agree with "Hv1 Hv2") as "%Hv".
-  done.
-Qed.
-(* src/program_proof/wal/installer_proof.v *)
-
 Lemma enqueue_valid (q : loc) (a : u64) (gamma : namespace) (lk : val) (P : u64 -> iProp Σ):
   {{{ is_queue q P ∗ P a}}} Queue__Enqueue #q #a {{{ RET #(); True }}}.
 Proof.
@@ -423,7 +410,7 @@ Proof.
   iNamed "H1".
   iNamed "Hinner".
   wp_pures.
-  wp_apply (wp_loadField_ro with "Hqueue").
+  wp_loadField.
   wp_apply wp_slice_len.
   wp_apply wp_ref_to. {val_ty. }
   iIntros (queue_size) "H2".
