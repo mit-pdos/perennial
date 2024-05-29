@@ -4,12 +4,21 @@ Section goose_lang.
 Context {ext: ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
-(* FIXME: seal these *)
-Definition do_break : val := λ: "v", (#(str "break"), Var "v").
-Definition do_continue : val := λ: "v", (#(str "continue"), Var "v").
+Definition break_val_def : val := (#(str "break"), #()).
+Program Definition break_val := unseal (_:seal (@break_val_def)). Obligation 1. by eexists. Qed.
+Definition break_val_unseal : break_val = _ := seal_eq _.
 
-Definition break_val : val := (#(str "break"), #()).
-Definition continue_val : val := (#(str "continue"), #()).
+Definition continue_val_def : val := (#(str "continue"), #()).
+Program Definition continue_val := unseal (_:seal (@continue_val_def)). Obligation 1. by eexists. Qed.
+Definition continue_val_unseal : continue_val = _ := seal_eq _.
+
+Definition do_break_def : val := λ: "v", (#(str "break"), Var "v").
+Program Definition do_break := unseal (_:seal (@do_break_def)). Obligation 1. by eexists. Qed.
+Definition do_break_unseal : do_break = _ := seal_eq _.
+
+Definition do_continue_def : val := λ: "v", (#(str "continue"), Var "v").
+Program Definition do_continue := unseal (_:seal (@do_continue_def)). Obligation 1. by eexists. Qed.
+Definition do_continue_unseal : do_continue = _ := seal_eq _.
 
 Local Definition do_for_def : val :=
   rec: "loop" "cond" "body" "post" :=

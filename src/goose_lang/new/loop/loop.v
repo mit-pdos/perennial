@@ -2,8 +2,25 @@ From Perennial.goose_lang Require Import notation typing exception proofmode.
 From Perennial.goose_lang.new Require Export loop.impl.
 From iris_named_props Require Export named_props.
 
-
 Set Default Proof Using "Type".
+
+Section pure_execs.
+Context `{ffi_sem: ffi_semantics}.
+Axiom some_n : nat.
+
+Global Instance pure_continue_val (e : expr) : PureExec True some_n (exception_seq e (continue_val)) (continue_val).
+Admitted.
+
+Global Instance pure_break_val (e : expr) : PureExec True some_n (exception_seq e (break_val)) (break_val).
+Admitted.
+
+Global Instance pure_do_continue_val : PureExec True some_n (continue: #()) (continue_val).
+Admitted.
+
+Global Instance pure_do_break_val : PureExec True some_n (break: #()) (break_val).
+Admitted.
+
+End pure_execs.
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
