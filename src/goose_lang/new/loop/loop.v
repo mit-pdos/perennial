@@ -12,7 +12,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Definition for_postcondition stk E (post : val) P Φ bv : iProp Σ :=
             ⌜ bv = continue_val ⌝ ∗ WP post #() @ stk; E {{ _, P }} ∨
             (∃ v, ⌜ bv = execute_val v ⌝ ∗ WP post #() @ stk; E {{ _, P }}) ∨
-            ⌜ bv = break_val ⌝ ∗ WP do: #() @ stk ; E {{ Φ }} ∨
+            ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
             (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv)
 .
 
@@ -21,7 +21,7 @@ Theorem wp_for P stk E (cond body post : val) Φ :
   □ (P -∗
      WP cond #() @ stk ; E {{ v, ⌜ v = #true ⌝ ∗
                                  WP body #() @ stk ; E {{ for_postcondition stk E post P Φ }} ∨
-                                 ⌜ v = #false ⌝ ∗ WP (do: #()) @ stk ; E {{ Φ }} }})  -∗
+                                 ⌜ v = #false ⌝ ∗ Φ (execute_val #()) }})  -∗
   WP (for: cond; post := body) @ stk ; E {{ Φ }}.
 Proof.
   iIntros "HP #Hloop".
@@ -50,7 +50,7 @@ Proof.
     }
     iDestruct "Hb" as "[[% [% HP]]|Hb]".
     { (* body terminates with "execute" *)
-      subst. wp_pures. (* FIXME: don't unfold [do:] here *)
+      subst. rewrite execute_val_unseal. wp_pures. (* FIXME: don't unfold [do:] here *)
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -62,29 +62,21 @@ Proof.
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "break" *)
       subst. wp_pures.
-      wp_apply (wp_wand with "HP").
-      iIntros (?) "HΦ".
-      wp_pures.
-      done.
+      by iFrame.
     }
     iDestruct "Hb" as (?) "[% HΦ]".
     { (* body terminates with other error code *)
-      wp_pures.
-      subst.
-      wp_pures.
-      done.
+      subst. rewrite return_val_unseal. wp_pures. done.
     }
-  - wp_pures. wp_apply (wp_wand with "HΦ"). iIntros (?) "HΦ". wp_pures.
-    done.
+  - wp_pures. by iFrame.
 Qed.
 
 Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
-  WP (do: v) @ stk ; E {{ for_postcondition stk E post P Φ }}.
+  for_postcondition stk E post P Φ (execute_val v)
+.
 Proof.
-  iIntros "H".
-  rewrite /for_postcondition. rewrite do_execute_unseal /exception.do_execute_def.
-  wp_pures. iRight. iLeft. iFrame "H". iPureIntro. by eexists.
+  iIntros "H". rewrite /for_postcondition. iRight. iLeft. iFrame "H". iPureIntro. by eexists.
 Qed.
 
 End goose_lang.

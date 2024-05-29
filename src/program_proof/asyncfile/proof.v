@@ -23,11 +23,12 @@ Class asyncfileG Σ :=
     tok_inG :> ghost_varG Σ ();
     idx_ing :> ghost_varG Σ u64;
     stagedG :> stagedG Σ ; (* for crash borrows? *)
+    syncG :> syncG Σ ;
   }.
 
 Definition asyncfileΣ :=
   #[mapΣ u64 () ; ghost_varΣ (list u8); ghost_varΣ (); ghost_varΣ u64 ;
-    stagedΣ].
+    stagedΣ ; syncΣ].
 Global Instance subG_asyncfileΣ {Σ} : subG (asyncfileΣ) Σ → (asyncfileG Σ).
 Proof. solve_inG. Qed.
 
@@ -231,7 +232,7 @@ Proof.
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
-    wp_apply wp_for_post_do.
+    iApply wp_for_post_do. iModIntro.
     wp_pures.
     by iFrame.
   }
@@ -239,17 +240,17 @@ Proof.
     iModIntro.
     rewrite bool_decide_eq_false in Heqb.
     iRight. iSplitR; first done.
-    (* FIXME: what's the right lemma for this? *)
-    wp_apply wp_do_execute_binded.
+    wp_pures.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
-    wp_apply (release_spec with "[-Htok HΦ]").
+    wp_load. wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-Htok HΦ Hlocal1 Hlocal2]").
     {
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
     }
     iMod (wait_step with "[$] [$] [$]") as "HQ".
-    wp_pures.
+    wp_pure1. wp_pure1. wp_pures. (* FIXME: manually doing wp_pure1 for eliminating ▷ *)
     iModIntro. iApply "HΦ". iFrame.
   }
 Qed.
