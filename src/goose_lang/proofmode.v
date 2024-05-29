@@ -3,7 +3,7 @@ From iris.proofmode Require Export environments.
 From Perennial.Helpers Require Export ipm.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lang lifting.
-From Perennial.goose_lang Require Export typing.
+From Perennial.goose_lang Require Export typing new.exception.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -198,6 +198,10 @@ Ltac wp_pure_filter e' :=
   (* For Beta-redices, we do *syntactic* matching only, to avoid unfolding
      definitions. This matches the treatment for [pure_beta] via [AsRecV]. *)
   first [ lazymatch e' with (App (Val (RecV _ _ _)) (Val _)) => idtac end
+        | eunify e' (do: (Val _) ;;; _)%E
+        | eunify e' (return: (Val _) ;;; _)%E
+        | eunify e' (App exception_do (return: (Val _)))%E
+        | eunify e' (App exception_do (do: (Val _)))%E
         | eunify e' (rec: _ _ := _)%E
         | eunify e' (InjL (Val _))
         | eunify e' (InjR (Val _))

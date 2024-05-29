@@ -11,6 +11,8 @@ From Perennial.goose_lang Require Export into_val.
 From Perennial.goose_lang.lib Require Export
      persistent_readonly slice slice.typed_slice struct loop lock control map.typed_map time proph rand string.
 
+From Perennial.goose_lang.new Require Export exception.
+
 Export uPred.
 
 Global Set Default Proof Using "Type".

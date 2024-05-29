@@ -56,3 +56,19 @@ Global Notation "do: e" := (do_execute e%E)
 
 Global Notation "return: e" := (do_return e%E)
   (at level 90, e at level 85, format "return:  '[' e ']'") : expr_scope.
+
+Section pure_execs.
+Context `{ffi_sem: ffi_semantics}.
+Axiom some_n : nat.
+Global Instance pure_do_execute_v (e : expr) (v : val) : PureExec True some_n (do: v ;;; e) (e).
+Admitted.
+
+Global Instance pure_do_return_v (e : expr) (v : val) : PureExec True some_n (return: v ;;; e) (return: v).
+Admitted.
+
+Global Instance pure_exception_do_return_v (v : val) : PureExec True some_n (exception_do (return: v)%E) (v).
+Admitted.
+
+Global Instance pure_exception_do_execute_v (v : val) : PureExec True some_n (exception_do (do: v)%E) (v).
+Admitted.
+End pure_execs.
