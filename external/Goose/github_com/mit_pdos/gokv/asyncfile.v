@@ -39,7 +39,7 @@ Definition AsyncFile__Write: val :=
     do:  struct.storeF AsyncFile "data" (![ptrT] "s") "$a0";;;
     let: "$a0" := std.SumAssumeNoOverflow (struct.loadF AsyncFile "index" (![ptrT] "s")) #1 in
     do:  struct.storeF AsyncFile "index" (![ptrT] "s") "$a0";;;
-    let: "index" := ref_zero uint64T in
+    let: "index" := ref_zero uint64T #() in
     let: "$a0" := struct.loadF AsyncFile "index" (![ptrT] "s") in
     do:  "index" <-[uint64T] "$a0";;;
     do:  sync.Cond__Signal (struct.loadF AsyncFile "indexCond" (![ptrT] "s"));;;
@@ -74,10 +74,10 @@ Definition AsyncFile__flushThread: val :=
         continue: #();;;
         do:  #()
       else #());;;
-      let: "index" := ref_zero uint64T in
+      let: "index" := ref_zero uint64T #() in
       let: "$a0" := struct.loadF AsyncFile "index" (![ptrT] "s") in
       do:  "index" <-[uint64T] "$a0";;;
-      let: "data" := ref_zero (slice.T byteT) in
+      let: "data" := ref_zero (slice.T byteT) #() in
       let: "$a0" := struct.loadF AsyncFile "data" (![ptrT] "s") in
       do:  "data" <-[slice.T byteT] "$a0";;;
       do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
@@ -106,7 +106,7 @@ Definition AsyncFile__Close: val :=
 Definition MakeAsyncFile: val :=
   rec: "MakeAsyncFile" "filename" :=
     exception_do (let: "filename" := ref_to stringT "filename" in
-    let: "s" := ref_zero ptrT in
+    let: "s" := ref_zero ptrT #() in
     let: "$a0" := struct.alloc AsyncFile (zero_val (struct.t AsyncFile)) in
     do:  "s" <-[ptrT] "$a0";;;
     let: "$a0" := struct.alloc sync.Mutex (zero_val (struct.t sync.Mutex)) in
@@ -129,7 +129,7 @@ Definition MakeAsyncFile: val :=
     do:  struct.storeF AsyncFile "closed" (![ptrT] "s") "$a0";;;
     let: "$a0" := #false in
     do:  struct.storeF AsyncFile "closeRequested" (![ptrT] "s") "$a0";;;
-    let: "data" := ref_zero (slice.T byteT) in
+    let: "data" := ref_zero (slice.T byteT) #() in
     let: "$a0" := struct.loadF AsyncFile "data" (![ptrT] "s") in
     do:  "data" <-[slice.T byteT] "$a0";;;
     do:  Fork (do:  AsyncFile__flushThread (![ptrT] "s");;;

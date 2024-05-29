@@ -250,7 +250,7 @@ Proof.
       repeat iExists _; iFrame "∗#%".
     }
     iMod (wait_step with "[$] [$] [$]") as "HQ".
-    wp_pure1. wp_pure1. wp_pures. (* FIXME: manually doing wp_pure1 for eliminating ▷ *)
+    wp_pure1. wp_pure1. wp_pures. (* FIXME: manually doing [wp_pure1] to eliminate ▷ *)
     iModIntro. iApply "HΦ". iFrame.
   }
 Qed.
@@ -375,28 +375,34 @@ Proof.
   iNamed "Hf".
   iAssert (_) with "His" as "His2".
   iNamed "His2".
+  wp_apply wp_ref_to; [val_ty|]. iIntros (data_addr) "Hlocal1". wp_pures.
+  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal2". wp_pures.
+  wp_load.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
-  wp_storeField.
-  wp_loadField.
+  wp_load. wp_load. wp_storeField.
+  wp_load. wp_loadField.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hno_overflow).
-  wp_storeField.
-  wp_loadField.
+  wp_load. wp_storeField.
   wp_pures.
-  wp_loadField.
+  wp_apply wp_ref_zero; [done|].
+  iIntros (index_ptr) "Hlocal3".
+  wp_load. wp_loadField.
+  wp_pures. wp_store.
+  wp_load. wp_loadField.
   iMod (write_step with "[$] [$] [$] Hupd") as "H".
   { word. }
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
   iMod (readonly_alloc_1 with "Hdata_in") as "#Hdata_in".
-  wp_apply wp_condSignal.
+  wp_apply wp_Cond__Signal.
   { iFrame "#". }
   wp_pures.
-  wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hnoclose Hdat Hesc]").
+  wp_load. wp_loadField.
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc Hlocal1 Hlocal2 Hlocal3]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -408,6 +414,8 @@ Proof.
   iApply "HΦ".
   iFrame "∗#".
   wp_pures.
+  wp_load.
+  wp_load.
   wp_apply (wp_AsyncFile__wait N _ _ P with "[-]").
   { iFrame "∗#". }
   iIntros "HQ".
