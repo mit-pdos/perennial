@@ -249,9 +249,7 @@ def main():
         run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
-        pkgs_new = [
-        ]
-        pkgs_old = [
+        pkgs = [
             "urpc",
             "memkv",
             "kv",
