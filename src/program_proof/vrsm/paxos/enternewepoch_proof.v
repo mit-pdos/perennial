@@ -103,9 +103,8 @@ Proof.
     }
     wp_pures.
 
-    iDestruct (own_slice_small_nil byteT (DfracOwn 1) Slice.nil) as "Hsl".
+    iDestruct (own_slice_small_nil byteT (DfracDiscarded) Slice.nil) as "#Hsl".
     { done. }
-    iMod (readonly_alloc_1 with "Hsl") as "#Hsl2".
 
     wp_apply (wp_allocStruct).
     { repeat econstructor. eauto. }

@@ -22,7 +22,7 @@ Definition own_releaseFn_internal (f:val) γ sl_ptr oldstate : iProp Σ :=
   ∀ sl Φ newstate Q,
   ( (* precondition: *)
   "Hsl_ptr" ∷ sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-  "#Hsl" ∷ readonly (own_slice_small sl byteT (DfracOwn 1) newstate) ∗
+  "#Hsl" ∷ own_slice_small sl byteT DfracDiscarded newstate ∗
   "#HP" ∷ (□ Pwf newstate) ∗
   "Hupd" ∷ (|={⊤∖↑ghostN,∅}=> ∃ σ, own_log γ.(s_mp) σ ∗
               (⌜ get_state σ = oldstate ⌝ -∗ own_log γ.(s_mp) (σ ++ [(newstate, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
@@ -43,7 +43,7 @@ Definition own_releaseFn (f:val) γ sl_ptr oldstate : iProp Σ :=
   ∀ sl Φ newstate,
   ( (* precondition: *)
   "Hsl_ptr" ∷ sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-  "Hsl" ∷ readonly (own_slice_small sl byteT (DfracOwn 1) newstate) ∗
+  "#Hsl" ∷ own_slice_small sl byteT DfracDiscarded newstate ∗
   "Hwf" ∷ (□ Pwf newstate) ∗
   "Hupd" ∷ (|={⊤∖↑N,∅}=> ∃ oldstate', own_state γ oldstate' ∗
               (⌜ oldstate' = oldstate ⌝ -∗ own_state γ newstate ={∅,⊤∖↑N}=∗ Φ #0))
@@ -63,7 +63,7 @@ Lemma wp_Server__TryAcquire_internal s γ γsrv  :
         if (decide (err = 0%Z)) then
           ∃ sl oldstate,
             sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-            readonly (own_slice_small sl byteT (DfracOwn 1) oldstate) ∗
+            own_slice_small sl byteT DfracDiscarded oldstate ∗
             Pwf oldstate ∗
             own_releaseFn_internal rel γ sl_ptr oldstate
         else
@@ -238,7 +238,7 @@ Proof.
   {
     iNamed "Hargs".
     iExists _.
-    iMod (readonly_alloc_1 with "epoch") as "$".
+    iMod (struct_field_pointsto_persist with "epoch") as "$".
     simpl.
     rewrite HlogLen.
 
@@ -247,8 +247,8 @@ Proof.
     unfold W64.
     rewrite word.of_Z_unsigned.
 
-    iMod (readonly_alloc_1 with "nextIndex") as "$".
-    iMod (readonly_alloc_1 with "state") as "$".
+    iMod (struct_field_pointsto_persist with "nextIndex") as "$".
+    iMod (struct_field_pointsto_persist with "state") as "$".
     iModIntro. iFrame "#".
   }
   iMod "Hargs" as "#Hargs".
@@ -847,7 +847,7 @@ Lemma wp_Server__TryAcquire s γ γsrv  :
         if (decide (err = 0%Z)) then
           ∃ sl oldstate,
             sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
-            readonly (own_slice_small sl byteT (DfracOwn 1) oldstate) ∗
+            own_slice_small sl byteT DfracDiscarded oldstate ∗
             Pwf oldstate ∗
             own_releaseFn rel γ sl_ptr oldstate
         else

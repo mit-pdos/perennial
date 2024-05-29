@@ -6,6 +6,9 @@ set -e
 GOOSE_REPO=https://github.com/tchajed/goose/
 GOOSE_COMMIT=master
 
+NEW_GOOSE_REPO=https://github.com/upamanyus/goose/
+NEW_GOOSE_COMMIT=master
+
 STD_REPO=https://github.com/goose-lang/std
 STD_COMMIT=master
 
@@ -50,6 +53,9 @@ function checkout {
 GOOSE_DIR=/tmp/goose
 checkout GOOSE
 
+NEW_GOOSE_DIR=/tmp/new_goose
+checkout NEW_GOOSE
+
 STD_DIR=/tmp/std
 checkout STD
 
@@ -86,6 +92,9 @@ etc/update-goose.py --goose $GOOSE_DIR --compile \
   --mvcc $MVCC_DIR \
 # --rsm $RSM_DIR
 # Missing: --distributed-examples (not currently used)
+
+echo && echo "Goose check: re-run goose-new"
+etc/update-goose-new.py --goose $NEW_GOOSE_DIR --compile --gokv $GOKV_DIR
 
 echo && echo "Goose check: check if anything changed"
 if [ -n "$(git status --porcelain)" ]; then
