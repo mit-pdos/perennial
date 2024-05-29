@@ -117,9 +117,8 @@ Proof.
   wp_storeField.
   wp_load.
   wp_apply wp_slice_len.
-  iMod (readonly_load with "Hsl") as (?) "Hsl2".
   rename Hsz into HhostSz.
-  iDestruct (own_slice_small_sz with "[$Hsl2]") as %Hsz.
+  iDestruct (own_slice_small_sz with "[$Hsl]") as %Hsz.
   iMod (readonly_alloc_1 with "mu") as "#mu".
   iMod (readonly_alloc_1 with "Hcls") as "#Hclerks".
   iDestruct (own_slice_to_small with "Hcls_sl") as "Hcls_sl".
@@ -162,7 +161,7 @@ Proof.
       simpl in *. apply Heqb. repeat f_equal. word.
     }
     subst.
-    wp_apply (paxosState.wp_decode with "[$Hsl2]").
+    wp_apply (paxosState.wp_decode with "[$Hsl]").
     iIntros (?) "Hvol".
     wp_storeField.
     iApply "HΦ".

@@ -20,10 +20,10 @@ Context `{!heapGS Σ}.
 
 Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
-  "#Hargs_epoch" ∷ readonly (args_ptr ↦[applyAsFollowerArgs :: "epoch"] #args.(epoch)) ∗
-  "#Hargs_index" ∷ readonly (args_ptr ↦[applyAsFollowerArgs :: "nextIndex"] #args.(nextIndex)) ∗
-  "#Hargs_state" ∷ readonly (args_ptr ↦[applyAsFollowerArgs :: "state"] (slice_val state_sl)) ∗
-  "#Hargs_state_sl" ∷ readonly (own_slice_small state_sl byteT (DfracOwn 1) args.(state))
+  "#Hargs_epoch" ∷ args_ptr ↦[applyAsFollowerArgs :: "epoch"]□ #args.(epoch) ∗
+  "#Hargs_index" ∷ args_ptr ↦[applyAsFollowerArgs :: "nextIndex"]□ #args.(nextIndex) ∗
+  "#Hargs_state" ∷ args_ptr ↦[applyAsFollowerArgs :: "state"]□ (slice_val state_sl) ∗
+  "#Hargs_state_sl" ∷ own_slice_small state_sl byteT DfracDiscarded args.(state)
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -42,7 +42,6 @@ Proof.
   wp_lam.
   wp_pures.
   wp_loadField. wp_apply (wp_slice_len).
-  iMod (readonly_load with "Hargs_state_sl") as (?) "Hstate_sl".
   iDestruct (own_slice_small_sz with "[$]") as %Hsz.
   wp_pures.
   wp_apply wp_NewSliceWithCap.
@@ -56,15 +55,15 @@ Proof.
   iIntros (?) "Hsl". wp_store. wp_loadField.
   wp_load. wp_apply (wp_WriteInt with "[$]").
   iIntros (?) "Hsl". wp_store. wp_loadField.
-  wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
+  wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hargs_state_sl]").
   iIntros (?) "[Hsl _]". wp_store.
   wp_load. iApply "HΦ". iFrame. iPureIntro. done.
 Qed.
 
-Lemma wp_Decode enc enc_sl (args:C) :
+Lemma wp_Decode enc enc_sl (args:C) dq :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        own_slice_small enc_sl byteT (DfracOwn 1) enc
+        own_slice_small enc_sl byteT dq enc
   }}}
     decodeApplyAsFollowerArgs (slice_val enc_sl)
   {{{
@@ -83,10 +82,10 @@ Proof.
   wp_store. wp_load. wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "Hstate_sl". wp_pures. wp_storeField. wp_store.
   wp_load. wp_storeField.
-  iMod (readonly_alloc_1 with "Hstate_sl") as "#Hstate_sl".
-  iMod (readonly_alloc_1 with "state") as "#?".
-  iMod (readonly_alloc_1 with "epoch") as "#?".
-  iMod (readonly_alloc_1 with "nextIndex") as "#?".
+  iMod (own_slice_small_persist with "Hstate_sl") as "#Hstate_sl".
+  iMod (struct_field_pointsto_persist with "state") as "#?".
+  iMod (struct_field_pointsto_persist with "epoch") as "#?".
+  iMod (struct_field_pointsto_persist with "nextIndex") as "#?".
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.
 
@@ -434,7 +433,7 @@ Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
   "HaccEpoch" ∷ s ↦[paxosState :: "acceptedEpoch"] #st.(acceptedEpoch) ∗
   "HnextIndex" ∷ s ↦[paxosState :: "nextIndex"] #st.(nextIndex) ∗
   "Hstate" ∷ s ↦[paxosState :: "state"] (slice_val state_sl) ∗
-  "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT (DfracOwn 1) st.(state)) ∗
+  "#Hstate_sl" ∷ own_slice_small state_sl byteT DfracDiscarded st.(state) ∗
   "HisLeader" ∷ s ↦[paxosState :: "isLeader"] #st.(isLeader)
 .
 Lemma wp_boolToU64 (b:bool) :
@@ -468,8 +467,7 @@ Proof.
   wp_loadField. wp_load. wp_apply (wp_WriteInt with "[$]"). iIntros (?) "Hsl". wp_store.
   wp_loadField. wp_apply wp_boolToU64. wp_load.
   wp_apply (wp_WriteInt with "[$]"). iIntros (?) "Hsl". wp_store.
-  iMod (readonly_load with "Hstate_sl") as (?) "Hstate_sl2".
-  wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl2]").
+  wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
   iIntros (?) "[Hsl _]". wp_store. wp_load.
   iApply "HΦ".
   by iFrame.
@@ -497,8 +495,7 @@ Proof.
   wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "?".
   wp_pures. wp_storeField. wp_store.
   wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "Hsl".
-  iMod (readonly_alloc (own_slice_small s'2 byteT (DfracOwn 1) st.(state)) with "[Hsl]") as "#Hsl".
-  { done. }
+  iMod (own_slice_small_persist with "Hsl") as "#Hsl".
   wp_pures. wp_store. wp_storeField. wp_load. wp_pures. wp_storeField.
   iApply "HΦ".
   iModIntro. repeat iExists _; iFrame "∗#".

@@ -9,7 +9,7 @@ From Perennial.program_logic Require Export ncinv.
 From Perennial.goose_lang Require Export proofmode wpc_proofmode array.
 From Perennial.goose_lang Require Export into_val.
 From Perennial.goose_lang.lib Require Export
-     persistent_readonly slice slice.typed_slice struct control map.typed_map time proph rand string.
+     slice slice.typed_slice struct control map.typed_map time proph rand string.
 From Perennial.goose_lang.new Require Export loop exception exception_wps.
 
 Export uPred.
