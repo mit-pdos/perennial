@@ -33,6 +33,34 @@ Definition gids_all := seq 0 2.
 Definition key_to_group (key : dbkey) : groupid.
 Admitted.
 
+Definition wrs_group gid (wrs : dbmap) :=
+  filter (λ x, key_to_group x.1 = gid) wrs.
+
+Definition tpls_group gid (tpls : gmap dbkey dbtpl) :=
+  filter (λ x, key_to_group x.1 = gid) tpls.
+
+Lemma tpls_group_dom {gid tpls0 tpls1} :
+  dom tpls0 = dom tpls1 ->
+  dom (tpls_group gid tpls0) = dom (tpls_group gid tpls1).
+Proof.
+Admitted.
+
+Definition keys_group gid (keys : gset dbkey) :=
+  filter (λ x, key_to_group x = gid) keys.
+
+Definition keys_except_group gid (keys : gset dbkey) :=
+  filter (λ x, key_to_group x ≠ gid) keys.
+
+Lemma keys_group_tpls_group_dom {gid keys tpls} :
+  dom tpls = keys ->
+  dom (tpls_group gid tpls) = keys_group gid keys.
+Proof.
+Admitted.
+
+(* Participant groups. *)
+Definition ptgroups (keys : gset dbkey) :=
+  set_fold (λ k s, {[key_to_group k]} ∪ s) (∅ : gset groupid) keys.
+
 Inductive command :=
 | CmdPrep (tid : nat) (wrs : dbmap)
 | CmdCmt (tid : nat)
@@ -80,13 +108,18 @@ Inductive acquiring :=
 
 Definition validate_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
   match wr, tpl with
-  (* TODO: check if [<] is the right thing to do. *)
-  | Some _, Some (vs, tsprep) => Some (bool_decide (tsprep = O ∧ length vs < tid)%nat)
+  | Some _, Some (vs, tsprep) => Some (bool_decide (tsprep = O ∧ length vs ≤ tid)%nat)
   | _, _ => None
   end.
 
 Definition validate (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   map_fold (λ _, andb) true (merge (validate_key tid) wrs tpls).
+
+Lemma validate_true {tid wrs tpls key} :
+  is_Some (wrs !! key) ->
+  validate tid wrs tpls = true ->
+  ∃ l, tpls !! key = Some (l, O) ∧ (length l ≤ tid)%nat.
+Admitted.
 
 Definition acquire_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
   match wr, tpl with
@@ -98,17 +131,32 @@ Definition acquire_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
 Definition acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   merge (acquire_key tid) wrs tpls.
 
+Lemma acquire_dom {tid wrs tpls} :
+  dom (acquire tid wrs tpls) = dom tpls.
+Admitted.
+
+Lemma acquire_tuple_unmodified {tid wrs tpls key} :
+  wrs !! key = None ->
+  (acquire tid wrs tpls) !! key = tpls !! key.
+Admitted.
+
+Lemma acquire_tuple_modified {tid wrs tpls key tpl} :
+  is_Some (wrs !! key) ->
+  tpls !! key = Some tpl ->
+  (acquire tid wrs tpls) !! key = Some (tpl.1, tid).
+Admitted.
+
 Definition try_acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   if validate tid wrs tpls then Acquired (acquire tid wrs tpls) else NotAcquired.
 
 Definition apply_prepare st (tid : nat) (wrs : dbmap) :=
   match st with
-  | State txns tpls =>
-      match txns !! tid with
+  | State stm tpls =>
+      match stm !! tid with
       | Some _ => st
       | None =>  match try_acquire tid wrs tpls with
-                | Acquired tpls' => State (<[ tid := StPrepared wrs ]> txns) tpls'
-                | NotAcquired => State (<[ tid := StAborted ]> txns) tpls
+                | Acquired tpls' => State (<[ tid := StPrepared wrs ]> stm) tpls'
+                | NotAcquired => State (<[ tid := StAborted ]> stm) tpls
                 end
       end
   | Stuck => Stuck
@@ -133,10 +181,10 @@ Definition multiwrite (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
 
 Definition apply_commit st (tid : nat) :=
   match st with
-  | State txns tpls =>
-      match txns !! tid with
+  | State stm tpls =>
+      match stm !! tid with
       | Some StCommitted => st
-      | Some (StPrepared wrs) => State (<[ tid := StCommitted ]> txns) (multiwrite tid wrs tpls)
+      | Some (StPrepared wrs) => State (<[ tid := StCommitted ]> stm) (multiwrite tid wrs tpls)
       | _ => Stuck
       end
   | Stuck => Stuck
@@ -154,11 +202,11 @@ Definition release (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
 
 Definition apply_abort st (tid : nat) :=
   match st with
-  | State txns tpls =>
-      match txns !! tid with
+  | State stm tpls =>
+      match stm !! tid with
       | Some StAborted => st
-      | Some (StPrepared wrs) => State (<[ tid := StAborted ]> txns) (release tid wrs tpls)
-      | None => State (<[ tid := StAborted ]> txns) tpls
+      | Some (StPrepared wrs) => State (<[ tid := StAborted ]> stm) (release tid wrs tpls)
+      | None => State (<[ tid := StAborted ]> stm) tpls
       | _ => Stuck
       end
   | Stuck => Stuck
@@ -171,9 +219,9 @@ Definition read (tid : nat) (vs : list dbval) (tsprep : nat) :=
 
 Definition apply_read st (tid : nat) (key : dbkey) :=
   match st with
-  | State txns tpls =>
+  | State stm tpls =>
       match tpls !! key with
-      | Some (vs, tsprep) => State txns (<[ key := (read tid vs tsprep) ]> tpls)
+      | Some (vs, tsprep) => State stm (<[ key := (read tid vs tsprep) ]> tpls)
       | None => st
       end
   | Stuck => Stuck
@@ -187,10 +235,91 @@ Definition apply_cmd st (cmd : command) :=
   | CmdRead tid key => apply_read st tid key
   end.
 
+Definition init_rpst :=
+  State ∅ (gset_to_gmap ([None], O) keys_all).
+
 (* TODO: should initial tuple state be ∅? *)
 Definition apply_cmds (cmds : list command) :=
-  foldl apply_cmd (State ∅ ∅) cmds.
+  foldl apply_cmd init_rpst cmds.
 
+Definition apply_cmds_stm (cmds : list command) :=
+  match apply_cmds cmds with
+  | State stm _ => Some stm
+  | _ => None
+  end.
+
+Lemma apply_cmds_dom cmds :
+  match apply_cmds cmds with
+  | State _ tpls => dom tpls = keys_all
+  | _ => False
+  end.
+Admitted.
+
+Lemma apply_cmd_stuck log :
+  foldl apply_cmd Stuck log = Stuck.
+Admitted.
+
+Lemma txnst_committed_mono_apply_cmd log ts :
+  ∀ stm stm' tpls tpls',
+  stm !! ts = Some StCommitted ->
+  foldl apply_cmd (State stm tpls) log = State stm' tpls' ->
+  stm' !! ts = Some StCommitted.
+Proof.
+  induction log as [| c log' IH].
+  { intros stm stm' tpls tpls' Hcmt Happly. inversion Happly. by subst stm'. }
+  intros stm stm' tpls tpls' Hcmt Happly.
+  destruct c as [tid wrs | tid | tid |tid key]; simpl in Happly.
+  { (* Case: [CmdPrep] *)
+    destruct (decide (tid = ts)) as [-> | Hneq].
+    { rewrite Hcmt in Happly. by eapply IH. }
+    destruct (stm !! tid).
+    { by eapply IH. }
+    destruct (try_acquire _ _ _).
+    { eapply IH; last apply Happly. by rewrite lookup_insert_ne. }
+    eapply IH; last apply Happly. by rewrite lookup_insert_ne.
+  }
+  { (* Case: [CmdCmt] *)
+    destruct (decide (tid = ts)) as [-> | Hneq].
+    { rewrite Hcmt in Happly. by eapply IH. }
+    destruct (stm !! tid).
+    { destruct t.
+      { eapply IH; last apply Happly. by rewrite lookup_insert_ne. }
+      { by eapply IH. }
+      by rewrite apply_cmd_stuck in Happly.
+    }
+    by rewrite apply_cmd_stuck in Happly.
+  }
+  { (* Case: [CmdAbt] *)
+    destruct (decide (tid = ts)) as [-> | Hneq].
+    { rewrite Hcmt in Happly. by rewrite apply_cmd_stuck in Happly. }
+    destruct (stm !! tid).
+    { destruct t.
+      { eapply IH; last apply Happly. by rewrite lookup_insert_ne. }
+      { by rewrite apply_cmd_stuck in Happly. }
+      by eapply IH.
+    }
+    eapply IH; last apply Happly. by rewrite lookup_insert_ne.
+  }
+  { (* Case: [CmdRead] *)
+    destruct (tpls !! key) as [[vs tsprep] |]; by eapply IH.
+  }
+Qed.
+
+Lemma apply_cmds_txnst_mono {cmds ts} :
+  ∀ cmdsp stm stmp,
+  prefix cmdsp cmds ->
+  apply_cmds_stm cmds = Some stm ->
+  apply_cmds_stm cmdsp = Some stmp ->
+  stm !! ts = None ->
+  stmp !! ts = None.
+Proof.
+  induction cmds as [| c l IH].
+  { admit. }
+  intros cmdsp stm stmp Hprefix Hcmds Hcmdsp Hstm.
+  rewrite /apply_cmds_stm /apply_cmds in Hcmds.
+  simpl in Hcmds.
+Admitted.
+  
 Inductive action :=
 | ActCmt (tid : nat) (wrs : dbmap)
 | ActRead (tid : nat) (key : dbkey).
@@ -199,14 +328,9 @@ Definition diff_by_cmtd
   (repl cmtd : list dbval) (tmods : dbkmods) (ts : nat) :=
   match tmods !! ts with
   | Some v => cmtd = last_extend ts repl ++ [v]
-  | None => ∃ ts', repl = last_extend ts' cmtd
+  | None => (∃ ts', repl = last_extend ts' cmtd) ∧
+           (ts ≠ O -> length repl ≤ ts)%nat
 end.
-
-Definition exclusive (ongoing : option (nat * dbval)) (tsprep : nat) (wr : option dbval) :=
-  match ongoing with
-  | Some (ts, v) => tsprep = ts ∧ wr = Some v
-  | None => True
-  end.
 
 Definition diff_by_lnrz (cmtd lnrz : list dbval) (txns : dbkmods) : Prop.
 Admitted.
@@ -231,16 +355,6 @@ Definition has_aborted ts log :=
   | State stm _ => stm !! ts = Some StAborted
   | _ => False
   end.
-
-Definition wrs_group gid (wrs : dbmap) :=
-  filter (λ x, key_to_group x.1 = gid) wrs.
-
-Definition keys_group gid (keys : gset string) :=
-  filter (λ x, key_to_group x = gid) keys.
-
-(* Participant groups. *)
-Definition ptgroups (keys : gset dbkey) :=
-  set_fold (λ k s, {[key_to_group k]} ∪ s) (∅ : gset groupid) keys.
 
 Definition all_prepared ts wrs (logs : gmap groupid dblog) :=
   map_Forall (λ gid log, has_prepared ts (wrs_group gid wrs) log) logs ∧
@@ -296,6 +410,22 @@ Definition res_to_tmod (res : txnres) :=
 Definition resm_to_tmods (resm : gmap nat txnres) :=
   omap res_to_tmod resm.
 
+(* TODO: move to distx_inv_proof.v once stable. *)
+Lemma diff_by_cmtd_inv_learn_prepare repl cmtd tmods ts' :
+  tmods !! O = None ->
+  (length repl ≤ ts')%nat ->
+  tmods !! ts' = None ->
+  diff_by_cmtd repl cmtd tmods O ->
+  diff_by_cmtd repl cmtd tmods ts'.
+Proof.
+  intros Hz Hlen Hts' Hdiff.
+  rewrite /diff_by_cmtd Hz in Hdiff.
+  destruct Hdiff as [[tsrd Hextend] _].
+  rewrite /diff_by_cmtd Hts'.
+  by split; first eauto.
+Qed.
+(* TODO: move to distx_inv_proof.v once stable. *)
+
 (* TODO: move to distx_own.v once stable. *)
 Class distx_ghostG (Σ : gFunctors).
 
@@ -330,6 +460,33 @@ Section ghost.
 
   Definition tuple_repl_half γ (k : dbkey) (t : dbtpl) : iProp Σ :=
     hist_repl_half γ k t.1 ∗ ts_repl_half γ k t.2.
+
+  Lemma tuple_repl_agree {γ k t0 t1} :
+    tuple_repl_half γ k t0 -∗
+    tuple_repl_half γ k t1 -∗
+    ⌜t1 = t0⌝.
+  Admitted.
+
+  Lemma tuple_repl_big_agree {γ tpls0 tpls1} :
+    dom tpls0 = dom tpls1 ->
+    ([∗ map] k ↦ tpl ∈ tpls0, tuple_repl_half γ k tpl) -∗
+    ([∗ map] k ↦ tpl ∈ tpls1, tuple_repl_half γ k tpl) -∗
+    ⌜tpls1 = tpls0⌝.
+  Admitted.
+  
+  Lemma tuple_repl_update {γ k t0 t1} t' :
+    tuple_repl_half γ k t0 -∗
+    tuple_repl_half γ k t1 ==∗
+    tuple_repl_half γ k t' ∗ tuple_repl_half γ k t'.
+  Admitted.
+
+  Lemma tuple_repl_big_update {γ tpls} tpls' :
+    dom tpls = dom tpls' ->
+    ([∗ map] k ↦ tpl ∈ tpls, tuple_repl_half γ k tpl) -∗
+    ([∗ map] k ↦ tpl ∈ tpls, tuple_repl_half γ k tpl) ==∗
+    ([∗ map] k ↦ tpl ∈ tpls', tuple_repl_half γ k tpl) ∗
+    ([∗ map] k ↦ tpl ∈ tpls', tuple_repl_half γ k tpl).
+  Admitted.
 
   Definition txnres_auth γ (resm : gmap nat txnres) : iProp Σ.
   Admitted.
@@ -381,6 +538,11 @@ Section ghost.
   Definition ts_lb γ (ts : nat) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance ts_lb_persistent γ ts :
+    Persistent (ts_lb γ ts).
+  Admitted.
+
   Definition txn_proph γ (acts : list action) : iProp Σ.
   Admitted.
 
@@ -393,7 +555,31 @@ Section spec.
     ∃ log, clog_lb γ gid log ∧ ⌜log_txnst ts st log⌝.
 
 End spec.
-  
+
+Lemma big_sepM_impl_dom_eq {PROP : bi} `{Countable K} {A B}
+    (Φ : K → A → PROP) (Ψ : K → B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
+  dom m2 = dom m1 →
+  ([∗ map] k↦x ∈ m1, Φ k x) -∗
+  □ (∀ (k : K) (x : A) (y : B),
+      ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ →
+      Φ k x -∗ Ψ k y) -∗
+  ([∗ map] k↦y ∈ m2, Ψ k y).
+Proof.
+  iIntros (Hdom) "Hm1".
+  assert (Hsubseteq : dom m2 ⊆ dom m1) by set_solver.
+  iDestruct (big_sepM_impl_dom_subseteq with "Hm1") as "Hm2"; first done.
+  iIntros "Himpl".
+  iDestruct ("Hm2" with "Himpl") as "[H2 H1]".
+  replace (filter _ _) with (∅ : gmap K A); first done.
+  apply map_eq. intros k.
+  rewrite lookup_empty. symmetry.
+  rewrite map_lookup_filter_None. right.
+  intros x Hm1 Hm2.
+  apply elem_of_dom_2 in Hm1.
+  apply not_elem_of_dom_2 in Hm2.
+  set_solver.
+Qed.
+
 Section inv.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
@@ -432,9 +618,24 @@ Section inv.
       (tslb tsprep : nat)
       (tmods_lnrz tmods_cmtd : dbkmods),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
-      "Hlnrz"     ∷ hist_repl_half γ key lnrz ∗
+      "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
       "Hrepl"     ∷ hist_repl_half γ key repl ∗
       "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
+      "Htmlnrz"   ∷ kmods_lnrz_frag γ key tmods_lnrz ∗
+      "Htmcmtd"   ∷ kmods_cmtd_frag γ key tmods_cmtd ∗
+      "#Htslb"    ∷ ts_lb γ tslb ∗
+      "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
+      "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
+      "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
+      "%Hdiffl"   ∷ ⌜diff_by_lnrz cmtd lnrz tmods_lnrz⌝ ∗
+      "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd tmods_cmtd tsprep⌝.
+
+  Definition key_inv_no_repl_tsprep γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
+    ∃ (dbv : dbval) (lnrz cmtd : dbhist)
+      (tslb : nat)
+      (tmods_lnrz tmods_cmtd : dbkmods),
+      "Hdbv"      ∷ db_ptsto γ key dbv ∗
+      "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
       "Htmlnrz"   ∷ kmods_lnrz_frag γ key tmods_lnrz ∗
       "Htmcmtd"   ∷ kmods_cmtd_frag γ key tmods_cmtd ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
@@ -461,9 +662,15 @@ Section inv.
       (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
       "Hlog"    ∷ clog_half γ gid log ∗
       "Hcpool"  ∷ cpool_half γ gid cpool ∗
-      "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls, tuple_repl_half γ key tpl) ∗
+      "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
       "#Hvc"    ∷ ([∗ set] c ∈ cpool, valid_cmd γ c) ∗
-      "%Hshard" ∷ ⌜dom tpls = keys_group gid keys_all⌝ ∗
+      "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝.
+
+  Definition group_inv_no_log γ (gid : groupid) (log : dblog) : iProp Σ :=
+    ∃ (cpool : gset command) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
+      "Hcpool"  ∷ cpool_half γ gid cpool ∗
+      "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
+      "#Hvc"    ∷ ([∗ set] c ∈ cpool, valid_cmd γ c) ∗
       "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝.
 
   Definition distxN := nroot .@ "distx".
@@ -486,3 +693,150 @@ Section inv.
 
 End inv.
 (* TODO: move to distx_own.v once stable. *)
+  
+(* TODO: move to distx_group_inv.v once stable. *)
+Section group_inv.
+  Context `{!distx_ghostG Σ}.
+
+  Lemma group_inv_extract_log γ gid :
+    group_inv γ gid -∗
+    ∃ log, clog_half γ gid log ∗ group_inv_no_log γ gid log.
+  Proof.
+  Admitted.
+
+  Lemma keys_inv_group {γ keys} gid :
+    ([∗ set] key ∈ keys, key_inv γ key) -∗
+    ([∗ set] key ∈ (keys_group gid keys), key_inv γ key) ∗
+    ([∗ set] key ∈ (keys_except_group gid keys), key_inv γ key).
+  Proof.
+  Admitted.
+
+  Lemma keys_inv_ungroup {γ keys} gid :
+    ([∗ set] key ∈ (keys_group gid keys), key_inv γ key) -∗
+    ([∗ set] key ∈ (keys_except_group gid keys), key_inv γ key) -∗
+    ([∗ set] key ∈ keys, key_inv γ key).
+  Proof.
+  Admitted.
+    
+  Lemma keys_inv_extract_repl_tsprep γ keys :
+    ([∗ set] key ∈ keys, key_inv γ key) -∗
+    ∃ tpls, ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) ∗
+            ([∗ map] key ↦ tpl ∈ tpls, tuple_repl_half γ key tpl) ∧
+            ⌜dom tpls = keys⌝.
+  Proof.
+  Admitted.
+
+  Lemma key_inv_learn_prepare {γ gid ts wrs tpls} k x y :
+    validate ts wrs tpls = true ->
+    tpls_group gid tpls !! k = Some x ->
+    tpls_group gid (acquire ts wrs tpls) !! k = Some y ->
+    key_inv_no_repl_tsprep γ k x.1 x.2 -∗
+    key_inv_no_repl_tsprep γ k y.1 y.2.
+  Proof.
+    iIntros (Hvd Hx Hy) "Hkeys".
+    iNamed "Hkeys".
+    iFrame "% # ∗".
+    iPureIntro.
+    apply map_lookup_filter_Some_1_1 in Hx, Hy.
+    destruct (wrs !! k) as [t | ] eqn:Hwrsk; last first.
+    { (* Case: tuple not modified. *)
+      rewrite acquire_tuple_unmodified in Hy; last done.
+      rewrite Hy in Hx.
+      by inversion Hx.
+    }
+    (* Case: tuple modified. *)
+    assert (Hsome : is_Some (wrs !! k)) by done.
+    destruct (validate_true Hsome Hvd) as (l & Htpl & Hlen).
+    rewrite Hx in Htpl. inversion Htpl. subst x. clear Htpl.
+    rewrite (acquire_tuple_modified Hsome Hx) /= in Hy.
+    inversion Hy. subst y. clear Hy.
+    simpl. simpl in Hdiffc.
+    apply diff_by_cmtd_inv_learn_prepare; [| done |  | done].
+  Admitted.
+
+  Lemma keys_inv_learn_preapre {γ gid ts wrs tpls} :
+    validate ts wrs tpls = true ->
+    ([∗ map] key ↦ tpl ∈ tpls_group gid tpls,
+       key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
+    ([∗ map] key ↦ tpl ∈ tpls_group gid (acquire ts wrs tpls),
+       key_inv_no_repl_tsprep γ key tpl.1 tpl.2).
+  Proof.
+    iIntros (Hvd) "Hkeys".
+    set tpls' := acquire _ _ _.
+    assert (Hdom : dom (tpls_group gid tpls') = dom (tpls_group gid tpls)).
+    { apply tpls_group_dom. by rewrite acquire_dom. }
+    iDestruct (big_sepM_impl_dom_eq _ _ with "Hkeys") as "HH".
+    { apply Hdom. }
+    iApply "HH".
+    iIntros "!>" (k x y Hx Hy) "Hkey".
+    by iApply (key_inv_learn_prepare with "Hkey").
+  Qed.
+  
+  Lemma group_inv_learn_prepare γ gid log ts wrs :
+    ([∗ set] key ∈ keys_all, key_inv γ key) -∗
+    group_inv_no_log γ gid log ==∗
+    ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    group_inv_no_log γ gid (log ++ [CmdPrep ts wrs]).
+  Proof.
+    iIntros "Hkeys Hgroup".
+    iNamed "Hgroup".
+    rewrite /apply_cmds in Hrsm.
+    rewrite /group_inv_no_log.
+    (* Frame away unused resources. *)
+    iFrame "Hcpool Hvc".
+    destruct (stm !! ts) eqn:Hdup.
+    { (* Case: Txn [ts] has already prepared, aborted, or committed; no-op. *)
+      iFrame "Hrepls Hkeys".
+      rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+      by iExists _.
+    }
+    (* Case: Txn [ts] has not prepared, aborted, or committed. *)
+    destruct (try_acquire ts wrs tpls) eqn:Hacq; last first.
+    { (* Case: Validation fails; abort the transaction. *)
+      iFrame "Hrepls Hkeys".
+      rewrite /apply_cmds foldl_snoc Hrsm /= Hdup Hacq.
+      by iExists _.
+    }
+    (* Case: Validation succeeds; lock the tuples and mark the transaction prepared. *)
+    rewrite /apply_cmds foldl_snoc Hrsm /= Hdup Hacq.
+    rewrite /try_acquire in Hacq.
+    destruct (validate ts wrs tpls) eqn:Hvd; last done.
+    inversion_clear Hacq.
+    set tpls' := acquire _ _ _.
+    (* Extract keys invariant in this group. *)
+    iDestruct (keys_inv_group gid with "Hkeys") as "[Hkeys Hkeyso]".
+    (* Extract the replicated history and prepared timestamp from keys invariant. *)
+    iDestruct (keys_inv_extract_repl_tsprep with "Hkeys") as (tplsK) "(Hkeys & Htpls & %Hdom)".
+    (* Agree on tuples from the group and keys invariants. *)
+    iDestruct (tuple_repl_big_agree with "Hrepls Htpls") as %->.
+    { pose proof (apply_cmds_dom log) as Hdom'.
+      rewrite /apply_cmds Hrsm in Hdom'.
+      rewrite Hdom.
+      by apply keys_group_tpls_group_dom.
+    }
+    (* Update the replicated history and prepared timestamp. *)
+    iMod (tuple_repl_big_update (tpls_group gid tpls') with "Hrepls Htpls") as "[Hrepls Htpls]".
+    { apply tpls_group_dom. by rewrite acquire_dom. }
+    (* Re-establish keys invariant. *)
+  Admitted.
+
+  Lemma group_inv_learn γ gid cmds :
+    ∀ log,
+    ([∗ set] key ∈ keys_all, key_inv γ key) -∗
+    group_inv_no_log γ gid log ==∗
+    ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    group_inv_no_log γ gid (log ++ cmds).
+  Proof.
+    iInduction cmds as [| c l] "IH".
+    { iIntros (log) "Hkeys Hgroup". rewrite app_nil_r. by iFrame. }
+    iIntros (log) "Hkeys Hgroup".
+    rewrite cons_middle. rewrite app_assoc.
+    destruct c.
+    { (* Case [CmdPrep tid wrs] *)
+      iMod (group_inv_learn_prepare with "Hkeys Hgroup") as "[Hkeys Hgroup]".
+      by iApply ("IH" with "Hkeys").
+    }
+  Admitted.
+
+End group_inv.
+(* TODO: move to distx_group_inv.v once stable. *)
