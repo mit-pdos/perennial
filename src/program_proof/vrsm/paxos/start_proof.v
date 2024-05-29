@@ -136,7 +136,7 @@ Proof.
     wp_storeField.
     simpl.
     iApply "HΦ".
-    iMod (readonly_alloc_1 with "Hinitstate") as "#Hinit_sl".
+    iMod (own_slice_small_persist with "Hinitstate") as "#Hinit_sl".
     repeat iExists _.
     iFrame "#".
     iMod (alloc_lock with "HmuInv [-]") as "$".
@@ -285,9 +285,8 @@ Proof.
       wp_pures.
 
 
-      iDestruct (own_slice_small_nil byteT (DfracOwn 1) Slice.nil) as "Hsl".
+      iDestruct (own_slice_small_nil byteT DfracDiscarded Slice.nil) as "#Hsl".
       { done. }
-      iMod (readonly_alloc_1 with "Hsl") as "#Hsl2".
       wp_apply (wp_Server__enterNewEpoch with "His_srv Hargs [Hreply] [Hrep HΦ] Hspec").
       {
         iDestruct (struct_fields_split with "Hreply") as "HH".

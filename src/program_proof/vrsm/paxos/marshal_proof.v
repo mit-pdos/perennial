@@ -320,7 +320,7 @@ Definition own args_ptr args q : iProp Σ :=
   "Hreply_nextIndex" ∷ args_ptr ↦[enterNewEpochReply :: "nextIndex"]{q} #args.(nextIndex) ∗
   "Hreply_acceptedEpoch" ∷ args_ptr ↦[enterNewEpochReply :: "acceptedEpoch"]{q} #args.(acceptedEpoch) ∗
   "Hreply_ret" ∷ args_ptr ↦[enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
-  "Hreply_ret_sl" ∷ readonly (own_slice_small state_sl byteT (DfracOwn 1) args.(state))
+  "#Hreply_ret_sl" ∷ own_slice_small state_sl byteT DfracDiscarded args.(state)
 .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) q :
@@ -339,7 +339,6 @@ Proof.
   wp_lam.
   wp_pures.
   wp_loadField. wp_apply (wp_slice_len).
-  iMod (readonly_load with "Hreply_ret_sl") as (?) "Hstate_sl".
   iDestruct (own_slice_small_sz with "[$]") as %Hsz.
   wp_pures.
   wp_apply wp_NewSliceWithCap.
@@ -355,7 +354,7 @@ Proof.
   iIntros (?) "Hsl". wp_store. wp_loadField.
   wp_load. wp_apply (wp_WriteInt with "[$]").
   iIntros (?) "Hsl". wp_store. wp_loadField.
-  wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
+  wp_load. wp_apply (wp_WriteBytes with "[$]").
   iIntros (?) "[Hsl _]". wp_store.
   wp_load. iApply "HΦ". iFrame. iPureIntro. done.
 Qed.
@@ -385,7 +384,7 @@ Proof.
   wp_load. wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "Hstate_sl". wp_pures. wp_storeField. wp_store.
   wp_load. wp_storeField.
-  iMod (readonly_alloc_1 with "Hstate_sl") as "#Hstate_sl".
+  iMod (own_slice_small_persist with "Hstate_sl") as "#?".
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.
 
@@ -473,9 +472,9 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma wp_decode sl st q :
+Lemma wp_decode sl st dq :
   {{{
-        own_slice_small sl byteT (DfracOwn q) (encode st)
+        own_slice_small sl byteT dq (encode st)
   }}}
     decodePaxosState (slice_val sl)
   {{{
