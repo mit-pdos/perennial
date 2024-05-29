@@ -56,7 +56,7 @@ Proof.
     iIntros (bc) "Hb". (* "[[% HP] | [[% HP] | [[% HΦ] | HΦ]]]". *)
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "continue" *)
-      subst. wp_pures.
+      subst. wp_pures. rewrite continue_val_unseal.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -78,7 +78,7 @@ Proof.
     }
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "break" *)
-      subst. wp_pures.
+      subst. rewrite break_val_unseal. wp_pures.
       by iFrame.
     }
     iDestruct "Hb" as (?) "[% HΦ]".
@@ -90,10 +90,16 @@ Qed.
 
 Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
-  for_postcondition stk E post P Φ (execute_val v)
-.
+  for_postcondition stk E post P Φ (execute_val v).
 Proof.
   iIntros "H". rewrite /for_postcondition. iRight. iLeft. iFrame "H". iPureIntro. by eexists.
+Qed.
+
+Lemma wp_for_post_continue stk E (post : val) P Φ :
+  WP (post #()) @ stk; E {{ _, P }} -∗
+  for_postcondition stk E post P Φ continue_val.
+Proof.
+  iIntros "H". rewrite /for_postcondition. iLeft. iFrame "H". iPureIntro. by eexists.
 Qed.
 
 End goose_lang.

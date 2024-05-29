@@ -528,25 +528,29 @@ Proof.
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
-    iLeft.
-    iSplitR; first done.
-    iModIntro. iFrame.
+    iApply wp_for_post_continue.
+    iModIntro. wp_pures. by iFrame.
   }
   (* case: have something to write *)
-  wp_loadField. wp_loadField.
-  wp_loadField.
+  wp_pures.
+  wp_apply wp_ref_zero; [done|]. iIntros (index_ptr) "Hlocal2".
+  wp_pures.
+  wp_load. wp_loadField. wp_pures. wp_store. wp_pures.
+  wp_apply wp_ref_zero; [done|]. iIntros (data_ptr) "Hlocal3".
+  wp_load. wp_loadField. wp_store. wp_pures.
+  wp_load. wp_loadField.
 
   iNamed "HH".
   iMod (get_upd with "[$] [$] [$] [$]") as "H".
   iDestruct "H" as "(HpreData & HpreIdx & HdurIdx & Hupd & Hghost)".
-  wp_apply (release_spec with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile Hlocal1 Hlocal2 Hlocal3]").
   {
     iFrame "HmuInv Hlocked".
     repeat iExists _; iFrame "∗#%".
     done.
   }
   wp_pures.
-  wp_loadField.
+  wp_load. wp_load. wp_loadField.
 
   iMod (readonly_load with "Hfilename_in") as (?) "H1".
   iMod (readonly_load with "Hfilename") as (?) "H2".
@@ -588,28 +592,24 @@ Proof.
   iSplit; first done.
 
   wp_pures.
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_load. wp_loadField.
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iClear "Hfilename Hdata HindexCond_is HdurableIndexCond_is".
   iNamed "Hown".
   wp_pures.
-  wp_storeField.
-  wp_loadField.
-  wp_apply wp_condBroadcast.
+  wp_load. wp_load. wp_storeField.
+  wp_load. wp_loadField.
+  wp_apply wp_Cond__Broadcast.
   { iFrame "#". }
   wp_pures.
   iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".
   iModIntro.
-  iLeft.
-  iSplitR; first done.
+  iApply wp_for_post_do.
+  wp_pures.
   iFrame "HΦ Hlocked".
-  iSplitR "HpreData HpreIdx HdurIdx Hfile".
-  {
-    repeat iExists _.
-    iFrame "∗#%".
-  }
-  repeat iExists _; iFrame.
+  iModIntro.
+  iFrame "∗#%".
 Qed.
 
 Lemma alloc_ghost N P data fname :
