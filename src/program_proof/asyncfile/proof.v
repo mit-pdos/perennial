@@ -206,8 +206,8 @@ Proof.
   wp_pures.
   iNamed "H".
   iNamed "His".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (index_addr) "?". wp_pures.
-  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "?". wp_pures.
+  wp_apply wp_ref_to; [val_ty|]. iIntros (index_addr) "Hlocal1". wp_pures.
+  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal2". wp_pures.
   wp_load. wp_loadField.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
@@ -224,23 +224,23 @@ Proof.
   { (* case: wait *)
     iModIntro; iLeft; iSplitR; first done.
     wp_pures. wp_load. wp_loadField.
-    wp_apply (wp_Cond__Wait with "[-Htok HΦ]").
+    wp_apply (wp_Cond__Wait with "[-Htok HΦ Hlocal1 Hlocal2]").
     {
       iFrame "HdurableIndexCond_is HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
-    (* FIXME: lemmas for ending a for loop iteration *)
-    iLeft.
-    iSplitR; first done.
-    iModIntro. iFrame.
+    wp_apply wp_for_post_do.
+    wp_pures.
+    by iFrame.
   }
   { (* case: i is durable *)
     iModIntro.
+    rewrite bool_decide_eq_false in Heqb.
     iRight. iSplitR; first done.
-    wp_pures.
-    wp_loadField.
+    (* FIXME: what's the right lemma for this? *)
+    wp_apply wp_do_execute_binded.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
     wp_apply (release_spec with "[-Htok HΦ]").

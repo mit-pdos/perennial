@@ -1,25 +1,19 @@
-From Perennial.goose_lang Require Import notation typing exception.
-From Perennial.goose_lang Require Import proofmode wpc_proofmode crash_borrow.
-From Perennial.goose_lang.lib Require Export typed_mem.
+From Perennial.goose_lang Require Import notation typing exception proofmode.
 From Perennial.goose_lang.new Require Export loop.impl.
+From iris_named_props Require Export named_props.
+
 
 Set Default Proof Using "Type".
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Definition is_return_val bv : Prop :=
-  match bv with
-  | PairV #(str "return") _ => True
-  | _ => False
-  end
-.
-
+(* FIXME: seal this *)
 Definition for_postcondition stk E (post : val) P Φ bv : iProp Σ :=
             ⌜ bv = continue_val ⌝ ∗ WP post #() @ stk; E {{ _, P }} ∨
-            ⌜ bv = execute_val ⌝ ∗ WP post #() @ stk; E {{ _, P }} ∨
+            (∃ v, ⌜ bv = execute_val v ⌝ ∗ WP post #() @ stk; E {{ _, P }}) ∨
             ⌜ bv = break_val ⌝ ∗ WP do: #() @ stk ; E {{ Φ }} ∨
-            ∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv
+            (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv)
 .
 
 Theorem wp_for P stk E (cond body post : val) Φ :
@@ -54,7 +48,7 @@ Proof.
       wp_pures.
       done.
     }
-    iDestruct "Hb" as "[[% HP]|Hb]".
+    iDestruct "Hb" as "[[% [% HP]]|Hb]".
     { (* body terminates with "execute" *)
       subst. wp_pures. (* FIXME: don't unfold [do:] here *)
       wp_apply (wp_wand with "HP").
@@ -84,12 +78,18 @@ Proof.
     done.
 Qed.
 
-Local Opaque load_ty store_ty.
+Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :
+  WP (post #()) @ stk; E {{ _, P }} -∗
+  WP (do: v) @ stk ; E {{ for_postcondition stk E post P Φ }}.
+Proof.
+  iIntros "H".
+  rewrite /for_postcondition. rewrite do_execute_unseal /exception.do_execute_def.
+  wp_pures. iRight. iLeft. iFrame "H". iPureIntro. by eexists.
+Qed.
 
 End goose_lang.
 
-(** Tactics for convenient loop reasoning *)
-
+(** Tactic for convenient loop reasoning *)
 Ltac wp_for :=
   wp_bind (do_for _ _ _); iApply (wp_for with "[-]");
   [ by iNamedAccu

@@ -26,7 +26,9 @@ Definition AsyncFile__wait: val :=
     do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
     (for: (λ: <>, (struct.loadF AsyncFile "durableIndex" (![ptrT] "s")) < (![uint64T] "index")); (λ: <>, Skip) := λ: <>,
       do:  sync.Cond__Wait (struct.loadF AsyncFile "durableIndexCond" (![ptrT] "s"));;;
-      do:  #())).
+      do:  #());;;
+    do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+    do:  #()).
 
 Definition AsyncFile__Write: val :=
   rec: "AsyncFile__Write" "s" "data" :=
@@ -84,7 +86,8 @@ Definition AsyncFile__flushThread: val :=
       let: "$a0" := ![uint64T] "index" in
       do:  struct.storeF AsyncFile "durableIndex" (![ptrT] "s") "$a0";;;
       do:  sync.Cond__Broadcast (struct.loadF AsyncFile "durableIndexCond" (![ptrT] "s"));;;
-      do:  #())).
+      do:  #());;;
+    do:  #()).
 
 Definition AsyncFile__Close: val :=
   rec: "AsyncFile__Close" "s" :=
@@ -95,7 +98,9 @@ Definition AsyncFile__Close: val :=
     do:  sync.Cond__Signal (struct.loadF AsyncFile "indexCond" (![ptrT] "s"));;;
     (for: (λ: <>, (~ (struct.loadF AsyncFile "closed" (![ptrT] "s")))); (λ: <>, Skip) := λ: <>,
       do:  sync.Cond__Wait (struct.loadF AsyncFile "closedCond" (![ptrT] "s"));;;
-      do:  #())).
+      do:  #());;;
+    do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+    do:  #()).
 
 (* returns the state, then the File object *)
 Definition MakeAsyncFile: val :=
