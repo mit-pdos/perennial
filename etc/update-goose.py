@@ -249,7 +249,9 @@ def main():
         run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
-        pkgs = [
+        pkgs_new = [
+        ]
+        pkgs_old = [
             "urpc",
             "memkv",
             "kv",
@@ -269,11 +271,12 @@ def main():
             "erpc",
             "paxi/reconf",
             "map_string_marshal",
+            "vrsm/replica",
             "vrsm/reconfig",
             "vrsm/configservice",
-            "vrsm/replica",
             "vrsm/apps/exactlyonce",
             "vrsm/apps/vkv",
+            "vrsm/paxos",
             "aof",
             "reconnectclient",
             "vrsm/e",
@@ -288,8 +291,6 @@ def main():
             "tutorial/kvservice",
             "tutorial/basics",
             "tutorial/queue",
-            "asyncfile",
-            "vrsm/paxos",
             "map_marshal",
             "minlease",
             "dmvcc/txn",
