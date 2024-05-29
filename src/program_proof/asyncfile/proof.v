@@ -493,8 +493,10 @@ Proof.
   iNamed "H".
   wp_lam.
   iNamed "His".
+  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal1". wp_pures.
+  wp_load.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iAssert (∃ curdata curidx,
@@ -504,20 +506,21 @@ Proof.
               "Hfile" ∷ crash_borrow (P curdata ∗ fname f↦ curdata) (∃ d : list u8, P d ∗ fname f↦d)
           )%I with "[HpreData HpreIdx HdurIdx Hfile]" as "HH".
   { repeat iExists _; iFrame. }
-  wp_forBreak.
+  wp_for.
   wp_pures.
-
+  iModIntro. iLeft; iSplitR; first done.
   clear data.
   iNamed "Hown".
   subst.
-  wp_loadField.
   wp_pures.
-  wp_loadField.
-  wp_loadField.
+  wp_load. wp_loadField.
+  wp_pures.
+  wp_load. wp_loadField.
+  wp_load. wp_loadField.
   wp_if_destruct.
   {
-    wp_loadField.
-    wp_apply (wp_condWait with "[-HΦ HH]").
+    wp_load. wp_loadField.
+    wp_apply (wp_Cond__Wait with "[-HΦ HH Hlocal1]").
     {
       iFrame "HindexCond_is HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".

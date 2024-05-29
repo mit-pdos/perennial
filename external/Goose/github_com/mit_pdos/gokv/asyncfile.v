@@ -67,13 +67,13 @@ Definition AsyncFile__flushThread: val :=
         do:  sync.Cond__Signal (struct.loadF AsyncFile "closedCond" (![ptrT] "s"));;;
         break: #();;;
         do:  #()
-      else #());;;
+      else do:  #());;;
       (if: (struct.loadF AsyncFile "durableIndex" (![ptrT] "s")) ≥ (struct.loadF AsyncFile "index" (![ptrT] "s"))
       then
         do:  sync.Cond__Wait (struct.loadF AsyncFile "indexCond" (![ptrT] "s"));;;
         continue: #();;;
         do:  #()
-      else #());;;
+      else do:  #());;;
       let: "index" := ref_zero uint64T #() in
       let: "$a0" := struct.loadF AsyncFile "index" (![ptrT] "s") in
       do:  "index" <-[uint64T] "$a0";;;
