@@ -1,8 +1,9 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import new_grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang Require Import crash_borrow.
+From Perennial.program_proof Require Import sync.
 
 Record af_names := mk_af_names {
   index_gn : gname ;
@@ -129,8 +130,8 @@ Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
   "Hclosed" ∷ f ↦[AsyncFile :: "closed"] #closed ∗
   "HclosedCond" ∷ f ↦[AsyncFile :: "closedCond"] #closedCond ∗
 
-  "#HindexCond_is" ∷ is_cond indexCond mu ∗
-  "#HdurableIndexCond_is" ∷ is_cond durableIndexCond mu ∗
+  "#HindexCond_is" ∷ is_Cond indexCond mu ∗
+  "#HdurableIndexCond_is" ∷ is_Cond durableIndexCond mu ∗
 
   "Hghost" ∷ own_AsyncFile_ghost N γ P fname data idx durableIndex closeRequested closed ∗
   "%HnoClose" ∷  ⌜ closeRequested = false ⌝ (* TODO: don't want to prove close()
@@ -139,9 +140,9 @@ Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
 
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
-  ∃ mu,
-  "#Hmu" ∷ readonly (f ↦[AsyncFile :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock N mu (own_AsyncFile_internal f N γ P mu)
+  ∃ (mu : loc),
+  "#Hmu" ∷ f ↦[AsyncFile :: "mu"]□ #mu ∗
+  "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P mu)
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=
@@ -205,25 +206,32 @@ Proof.
   wp_pures.
   iNamed "H".
   iNamed "His".
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply wp_ref_to; [val_ty|]. iIntros (index_addr) "?". wp_pures.
+  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "?". wp_pures.
+  wp_load. wp_loadField.
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
 
-  wp_forBreak_cond.
+  wp_for.
   iNamed "Hown".
-  wp_loadField.
   wp_pures.
-  wp_if_destruct.
+  wp_load.
+  wp_loadField.
+  wp_load.
+  wp_pures.
+  destruct bool_decide eqn:?.
   { (* case: wait *)
-    wp_pures. wp_loadField.
-    wp_apply (wp_condWait with "[-Htok HΦ]").
+    iModIntro; iLeft; iSplitR; first done.
+    wp_pures. wp_load. wp_loadField.
+    wp_apply (wp_Cond__Wait with "[-Htok HΦ]").
     {
       iFrame "HdurableIndexCond_is HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
+    (* FIXME: lemmas for ending a for loop iteration *)
     iLeft.
     iSplitR; first done.
     iModIntro. iFrame.
