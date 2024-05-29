@@ -21,16 +21,16 @@ Definition AsyncFile := struct.decl [
 
 Definition AsyncFile__wait: val :=
   rec: "AsyncFile__wait" "s" "index" :=
-    let: "index" := ref_to uint64T "index" in
+    exception_do (let: "index" := ref_to uint64T "index" in
     let: "s" := ref_to ptrT "s" in
     do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
     (for: (λ: <>, (struct.loadF AsyncFile "durableIndex" (![ptrT] "s")) < (![uint64T] "index")); (λ: <>, Skip) := λ: <>,
       do:  sync.Cond__Wait (struct.loadF AsyncFile "durableIndexCond" (![ptrT] "s"));;;
-      do:  #()).
+      do:  #())).
 
 Definition AsyncFile__Write: val :=
   rec: "AsyncFile__Write" "s" "data" :=
-    let: "data" := ref_to (slice.T byteT) "data" in
+    exception_do (let: "data" := ref_to (slice.T byteT) "data" in
     let: "s" := ref_to ptrT "s" in
     do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
     let: "$a0" := ![slice.T byteT] "data" in
@@ -46,11 +46,11 @@ Definition AsyncFile__Write: val :=
        do:  AsyncFile__wait (![ptrT] "s") (![uint64T] "index");;;
        do:  #()
        ));;;
-    do:  #().
+    do:  #()).
 
 Definition AsyncFile__flushThread: val :=
   rec: "AsyncFile__flushThread" "s" :=
-    let: "s" := ref_to ptrT "s" in
+    exception_do (let: "s" := ref_to ptrT "s" in
     do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: struct.loadF AsyncFile "closeRequested" (![ptrT] "s")
@@ -84,23 +84,23 @@ Definition AsyncFile__flushThread: val :=
       let: "$a0" := ![uint64T] "index" in
       do:  struct.storeF AsyncFile "durableIndex" (![ptrT] "s") "$a0";;;
       do:  sync.Cond__Broadcast (struct.loadF AsyncFile "durableIndexCond" (![ptrT] "s"));;;
-      do:  #()).
+      do:  #())).
 
 Definition AsyncFile__Close: val :=
   rec: "AsyncFile__Close" "s" :=
-    let: "s" := ref_to ptrT "s" in
+    exception_do (let: "s" := ref_to ptrT "s" in
     do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
     let: "$a0" := #true in
     do:  struct.storeF AsyncFile "closeRequested" (![ptrT] "s") "$a0";;;
     do:  sync.Cond__Signal (struct.loadF AsyncFile "indexCond" (![ptrT] "s"));;;
     (for: (λ: <>, (~ (struct.loadF AsyncFile "closed" (![ptrT] "s")))); (λ: <>, Skip) := λ: <>,
       do:  sync.Cond__Wait (struct.loadF AsyncFile "closedCond" (![ptrT] "s"));;;
-      do:  #()).
+      do:  #())).
 
 (* returns the state, then the File object *)
 Definition MakeAsyncFile: val :=
   rec: "MakeAsyncFile" "filename" :=
-    let: "filename" := ref_to stringT "filename" in
+    exception_do (let: "filename" := ref_to stringT "filename" in
     let: "s" := ref_zero ptrT in
     let: "$a0" := struct.alloc AsyncFile (zero_val (struct.t AsyncFile)) in
     do:  "s" <-[ptrT] "$a0";;;
@@ -130,4 +130,4 @@ Definition MakeAsyncFile: val :=
     do:  Fork (do:  AsyncFile__flushThread (![ptrT] "s");;;
           do:  #());;;
     return: (![slice.T byteT] "data", ![ptrT] "s");;;
-    do:  #().
+    do:  #()).
