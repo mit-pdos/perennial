@@ -38,18 +38,9 @@ Section goose_lang.
   Definition struct_pointsto := struct_pointsto_aux.(unseal).
   Definition struct_pointsto_eq : @struct_pointsto = @struct_pointsto_def := struct_pointsto_aux.(seal_eq).
 
-  Notation "l ↦[ t ]{# q } v" := (struct_pointsto l (DfracOwn q) t v%V)
-                                   (at level 20, q at level 50, t at level 50,
-                                    format "l  ↦[ t ]{# q }  v") : bi_scope.
-  Notation "l ↦[ t ]□ v" := (struct_pointsto l DfracDiscarded t v%V)
-                                   (at level 20, t at level 50,
-                                    format "l  ↦[ t ]□  v") : bi_scope.
-  Notation "l ↦[ t ]{ dq } v" := (struct_pointsto l dq t v%V)
-                                   (at level 20, dq at level 50, t at level 50,
-                                    format "l  ↦[ t ]{ dq }  v") : bi_scope.
-  Notation "l ↦[ t ] v" := (struct_pointsto l (DfracOwn 1) t v%V)
-                              (at level 20, t at level 50,
-                               format "l  ↦[ t ]  v") : bi_scope.
+  Notation "l ↦[ t ] dq v" := (struct_pointsto l dq t v%V)
+                                   (at level 20, dq custom dfrac at level 1, t at level 50,
+                                    format "l  ↦[ t ] dq  v") : bi_scope.
 
   Ltac unseal := rewrite ?struct_pointsto_eq /struct_pointsto_def.
 
@@ -479,18 +470,9 @@ Section goose_lang.
 
 End goose_lang.
 
-Notation "l ↦[ t ]{# q } v" := (struct_pointsto l (DfracOwn q) t v%V)
-                                 (at level 20, q at level 50, t at level 50,
-                                  format "l  ↦[ t ]{# q }  v") : bi_scope.
-Notation "l ↦[ t ]□ v" := (struct_pointsto l DfracDiscarded t v%V)
-                                 (at level 20, t at level 50,
-                                  format "l  ↦[ t ]□  v") : bi_scope.
-Notation "l ↦[ t ]{ dq } v" := (struct_pointsto l dq t v%V)
-                                 (at level 20, dq at level 50, t at level 50,
-                                  format "l  ↦[ t ]{ dq }  v") : bi_scope.
-Notation "l ↦[ t ] v" := (struct_pointsto l (DfracOwn 1) t v%V)
-                            (at level 20, t at level 50,
-                             format "l  ↦[ t ]  v") : bi_scope.
+Notation "l ↦[ t ] dq v" := (struct_pointsto l dq t v%V)
+                              (at level 20, dq custom dfrac at level 50, t at level 50,
+                               format "l  ↦[ t ] dq  v") : bi_scope.
 
 Tactic Notation "wp_load" :=
   let solve_pointsto _ :=

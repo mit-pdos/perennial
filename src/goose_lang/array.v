@@ -10,18 +10,10 @@ Set Default Proof Using "Type".
 with lists of values. It also contains array versions of the basic heap
 operations of GooseLang. *)
 
-Reserved Notation "l ↦∗[ t ] vs" (at level 20,
-                                  t at level 50,
-                                  format "l  ↦∗[ t ]  vs").
-Reserved Notation "l ↦∗[ t ]{# q } vs" (at level 20,
-                                       t at level 50, q at level 50,
-                                       format "l  ↦∗[ t ]{# q }  vs").
-Reserved Notation "l ↦∗[ t ]□ vs" (at level 20,
-                                       t at level 50,
-                                       format "l  ↦∗[ t ]□  vs").
-Reserved Notation "l ↦∗[ t ]{ dq } vs" (at level 20,
-                                       t at level 50, dq at level 50,
-                                       format "l  ↦∗[ t ]{ dq }  vs").
+Reserved Notation "l ↦∗[ t ] dq vs" (at level 20,
+                                     dq custom dfrac at level 1,
+                                     t at level 50,
+                                     format "l  ↦∗[ t ] dq  vs").
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
@@ -32,10 +24,7 @@ Context `{!ffi_interp ffi}.
 the ffiGS type; fixing this would require unbundling ffi_interp *)
 Definition array `{!heapGS Σ} (l : loc) (dq:dfrac) (t:ty) (vs : list val) : iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (l +ₗ[t] i) ↦[t]{dq} v)%I.
-Notation "l ↦∗[ t ]{# q } vs" := (array l (DfracOwn q) t vs) : bi_scope.
-Notation "l ↦∗[ t ]□ vs" := (array l DfracDiscarded t vs) : bi_scope.
-Notation "l ↦∗[ t ]{ dq } vs" := (array l dq t vs) : bi_scope.
-Notation "l ↦∗[ t ] vs" := (array l (DfracOwn 1) t vs) : bi_scope.
+Notation "l ↦∗[ t ] dq  vs" := (array l dq t vs) : bi_scope.
 
 (** We have no [FromSep] or [IntoSep] instances to remain forwards compatible
 with a fractional array assertion, that will split the fraction, not the
@@ -288,10 +277,7 @@ Qed.
 End lifting.
 End goose_lang.
 
-Notation "l ↦∗[ t ]{# q } vs" := (array l (DfracOwn q) t vs) : bi_scope.
-Notation "l ↦∗[ t ]□ vs" := (array l DfracDiscarded t vs) : bi_scope.
-Notation "l ↦∗[ t ]{ dq } vs" := (array l dq t vs) : bi_scope.
-Notation "l ↦∗[ t ] vs" := (array l (DfracOwn 1) t vs) : bi_scope.
+Notation "l ↦∗[ t ] dq vs" := (array l dq t vs) : bi_scope.
 Typeclasses Opaque array.
 
 Ltac iFramePtsTo_core tac :=

@@ -9,18 +9,9 @@ Local Close Scope struct_scope.
 
 Set Default Proof Using "Type".
 
-Reserved Notation "l ↦[ d :: f ]{# q } v"
-    (at level 20, q at level 50, d at level 50, f at level 50,
-    format "l  ↦[ d  ::  f ]{# q }  v").
-Reserved Notation "l ↦[ d :: f ]□ v"
-    (at level 20, d at level 50, f at level 50,
-    format "l  ↦[ d  ::  f ]□  v").
-Reserved Notation "l ↦[ d :: f ]{ dq } v"
-    (at level 20, dq at level 50, d at level 50, f at level 50,
-    format "l  ↦[ d  ::  f ]{ dq }  v").
-Reserved Notation "l ↦[ d :: f ] v"
-    (at level 20, d at level 50, f at level 50,
-    format "l  ↦[ d  ::  f ]  v").
+Reserved Notation "l ↦[ d :: f ] dq v"
+    (at level 20, dq custom dfrac at level 1, d at level 50, f at level 50,
+       format "l  ↦[ d :: f ] dq  v").
 
 Lemma bient_pure_wlog (p: Prop) {Σ} (P Q: iProp Σ) :
   (P -∗ ⌜p⌝) ->
@@ -428,14 +419,7 @@ Proof.
   rewrite setField_getField_f_id //.
 Qed.
 
-Notation "l ↦[ d :: f ]{# q } v" :=
-  (struct_field_pointsto l (DfracOwn q) d f%string v%V).
-Notation "l ↦[ d :: f ]□ v" :=
-  (struct_field_pointsto l DfracDiscarded d f%string v%V).
-Notation "l ↦[ d :: f ]{ dq } v" :=
-  (struct_field_pointsto l dq d f%string v%V).
-Notation "l ↦[ d :: f ] v" :=
-  (struct_field_pointsto l (DfracOwn 1) d f%string v%V).
+Notation "l ↦[ d :: f ] dq v" := (struct_field_pointsto l dq d f%string v%V).
 
 Theorem getField_f_none d f0 v :
   field_offset d f0 = None ->
@@ -752,14 +736,8 @@ End goose_lang.
 Typeclasses Opaque struct_pointsto.
 Typeclasses Opaque struct_field_pointsto.
 
-Notation "l ↦[ d :: f ]{# q } v" :=
-  (struct_field_pointsto l (DfracOwn q) d f%string v%V).
-Notation "l ↦[ d :: f ]□ v" :=
-  (struct_field_pointsto l DfracDiscarded d f%string v%V).
-Notation "l ↦[ d :: f ]{ dq } v" :=
+Notation "l ↦[ d :: f ] dq v" :=
   (struct_field_pointsto l dq d f%string v%V).
-Notation "l ↦[ d :: f ] v" :=
-  (struct_field_pointsto l (DfracOwn 1) d f%string v%V).
 
 (* Enable solving of val_ty goals where the type is looked up from a struct declaration.
 ([simple apply] unification is too weak to do this automatically.)
@@ -776,7 +754,7 @@ Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
 
 Tactic Notation "wp_loadField" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
+    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _] _ _)%I) => l end in
     iAssumptionCore || fail "wp_loadField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
   wp_bind (struct.loadF _ _ (Val _));
@@ -805,7 +783,7 @@ Tactic Notation "wp_loadField" :=
 
 Tactic Notation "wp_storeField" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
+    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _] _ _)%I) => l end in
     iAssumptionCore || fail "wp_storeField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
   wp_bind (struct.storeF _ _ (Val _) (Val _));

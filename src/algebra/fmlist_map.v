@@ -31,14 +31,8 @@ Definition fmlist_ptsto_lb_eq : @fmlist_ptsto_lb = @fmlist_ptsto_lb_def := fmlis
 End definitions.
 
 (** * Notation *)
-Notation "k ⤳l[ γ ]{ dq } v " := (fmlist_ptsto γ k dq v)
-(at level 20, format "k  ⤳l[ γ ]{ dq }  v") : bi_scope.
-Notation "k ⤳l[ γ ]{# q } v " := (k ⤳l[γ]{DfracOwn q} v)%I
-(at level 20, format "k  ⤳l[ γ ]{# q }  v") : bi_scope.
-Notation "k ⤳l[ γ ]□ v" := (k ⤳l[γ]{DfracDiscarded} v)%I
-(at level 20, format "k  ⤳l[ γ ]□  v") : bi_scope.
-Notation "k ⤳l[ γ ] v " := (k ⤳l[ γ ]{# 1 } v)%I
-(at level 20, format "k  ⤳l[ γ ] v") : bi_scope.
+Notation "k ⤳l[ γ ] dq v " := (fmlist_ptsto γ k dq v)
+(at level 20, dq custom dfrac at level 1, format "k  ⤳l[ γ ] dq   v") : bi_scope.
 Notation "k ⤳l[ γ ]⪰ v " := (fmlist_ptsto_lb γ k v)
 (at level 20, format "k  ⤳l[ γ ]⪰  v") : bi_scope.
 
