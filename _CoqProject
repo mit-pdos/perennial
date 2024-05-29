@@ -20,6 +20,7 @@
 -Q external/iris/iris_heap_lang iris.heap_lang
 -Q external/coqutil/src/coqutil coqutil
 -Q external/Goose Goose
+-Q trusted Goose
 -Q external/record-update/src RecordUpdate
 -Q external/coq-tactical/src Tactical
 -Q external/iris-named-props/src iris_named_props
