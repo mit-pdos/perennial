@@ -546,12 +546,6 @@ Class erpcG Σ := {
 
 Context `{!erpcG Σ}.
 
-(* Why does this notation not get imported properly from iris ghost_map? *)
-Notation "k ↪[ γ ]□ v" := (ghost_map_elem γ k DfracDiscarded v)
-  (at level 20).
-Notation "k ↪[ γ ] v" := (ghost_map_elem γ k (DfracOwn 1) v)
-  (at level 20).
-
 Definition own_unexecuted_token γ (opId:u64) : iProp Σ :=
   opId ↪[γ.(req_gn)] ().
 
