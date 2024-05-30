@@ -151,21 +151,11 @@ Typeclasses Opaque na_heap_pointsto.
 #[global]
 Instance: Params (@na_heap_pointsto) 8 := {}.
 
-Notation "l ↦{# q } v" := (na_heap_pointsto l (DfracOwn q) v)
-  (at level 20, q at level 50, format "l  ↦{# q }  v") : bi_scope.
-Notation "l ↦□ v" := (na_heap_pointsto l DfracDiscarded v)
-  (at level 20, format "l  ↦□  v") : bi_scope.
-Notation "l ↦{ dq } v" := (na_heap_pointsto l dq v)
-  (at level 20, dq at level 50, format "l  ↦{ dq }  v") : bi_scope.
-Notation "l ↦ v" := (na_heap_pointsto l (DfracOwn 1) v) (at level 20) : bi_scope.
+Notation "l ↦ dq v" := (na_heap_pointsto l dq v)
+  (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  v") : bi_scope.
 
-Local Notation "l ↦{# q } -" := (∃ v, l ↦{#q} v)%I
-  (at level 20, q at level 50, format "l  ↦{# q }  -") : bi_scope.
-Local Notation "l ↦□ -" := (∃ v, l ↦□ v)%I
-  (at level 20, format "l  ↦□  -") : bi_scope.
-Local Notation "l ↦{ dq } -" := (∃ v, l ↦{dq} v)%I
-  (at level 20, dq at level 50, format "l  ↦{ dq }  -") : bi_scope.
-Local Notation "l ↦ -" := (l ↦{#1} -)%I (at level 20) : bi_scope.
+Local Notation "l ↦ dq -" := (∃ v, l ↦{dq} v)%I
+  (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  -") : bi_scope.
 
 Section to_na_heap.
   Context (L V LK : Type) `{Countable L}.

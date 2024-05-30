@@ -12,7 +12,7 @@ Class gmapG Σ (K V : Type) `{Countable K} :=
    { gmap_inG :> inG Σ (gmapR K V) }.
 Definition gmapΣ (K V : Type) `{Countable K} := #[GFunctor (gmapR K V)].
 
-Global Instance subG_gmapΣ {Σ} (K V : Type) `{Countable K} :
+Global Instance subG_gmapΣ {Σ} (K V  : Type) `{Countable K} :
   subG (gmapΣ K V) Σ → gmapG Σ K V.
 Proof. solve_inG. Qed.
 
@@ -20,14 +20,8 @@ Definition gmap_own {K V : Type} `{Countable K, !gmapG Σ K V}
     γ (k:K) (dq:dfrac) (v:V) :=
   own (A:=gmapR K V) γ {[ k := (dq, to_agree v) ]}.
 
-Notation "k gm[[ γ ]]↦{ dq } v " := (gmap_own γ k dq v)
-  (at level 20, format "k  gm[[ γ ]]↦{ dq }  v") : bi_scope.
-Notation "k gm[[ γ ]]↦{# q } v " := (k gm[[γ]]↦{DfracOwn q} v)%I
-  (at level 20, format "k  gm[[ γ ]]↦{# q }  v") : bi_scope.
-Notation "k gm[[ γ ]]↦ v " := (k gm[[γ]]↦{#1} v)%I
-  (at level 20, format "k  gm[[ γ ]]↦  v") : bi_scope.
-Notation "k gm[[ γ ]]↦□ v " := (gmap_own γ k DfracDiscarded v)
-  (at level 20, format "k  gm[[ γ ]]↦□  v") : bi_scope.
+Notation "k gm[[ γ ]]↦ dq v " := (gmap_own γ k dq v)
+  (at level 20, dq custom dfrac at level 1, format "k  gm[[ γ ]]↦ dq  v") : bi_scope.
 
 Section gmap_own_props.
   Context {K V : Type} `{Countable K, !gmapG Σ K V}.

@@ -70,16 +70,8 @@ Section definitions.
   Definition ghost_async_map_elem_eq : @ghost_async_map_elem = @ghost_async_map_elem_def := ghost_async_map_elem_aux.(seal_eq).
 End definitions.
 
-(** FIXME: Refactor these notations using custom entries once Coq bug #13654
-has been fixed. *)
-Notation "k ↪[ γ ]{ dq }[ a ] v" := (ghost_async_map_elem γ k dq a v)
-  (at level 20, γ at level 50, dq at level 50, format "k  ↪[ γ ]{ dq }[ a ]  v") : bi_scope.
-Notation "k ↪[ γ ]{# q }[ a ] v" := (k ↪[γ]{DfracOwn q}[a] v)%I
-  (at level 20, γ at level 50, q at level 50, format "k  ↪[ γ ]{# q }[ a ]  v") : bi_scope.
-Notation "k ↪[ γ ][ a ] v" := (k ↪[γ]{#1}[a] v)%I
-  (at level 20, γ at level 50, format "k  ↪[ γ ][ a ]  v") : bi_scope.
-Notation "k ↪[ γ ]□[ a ] v" := (k ↪[γ]{DfracDiscarded}[ a ] v)%I
-  (at level 20, γ at level 50) : bi_scope.
+Notation "k ↪[ γ ] dq [ a ] v" := (ghost_async_map_elem γ k dq a v)
+  (at level 20, γ at level 50, dq custom dfrac at level 1, format "k  ↪[ γ ] dq [ a ]  v") : bi_scope.
 
 Local Ltac unseal := rewrite
   ?ghost_async_map_auth_eq /ghost_async_map_auth_def

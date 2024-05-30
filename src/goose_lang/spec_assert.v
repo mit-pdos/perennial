@@ -95,22 +95,11 @@ Global Instance spec_crash_ctx_persistent P : Persistent (spec_crash_ctx P).
 Proof. apply _. Qed.
 
 (** Override the notations so that scopes and coercions work out *)
-Notation "l s↦{# q } v" := (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn q) v%V)
-  (at level 20, q at level 50, format "l  s↦{# q }  v") : bi_scope.
-Notation "l s↦□ v" := (heap_pointsto (hG := refinement_na_heapG) l DfracDiscarded v%V)
-  (at level 20, format "l  s↦□  v") : bi_scope.
-Notation "l s↦{ dq } v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
-  (at level 20, dq at level 50, format "l  s↦{ dq }  v") : bi_scope.
-Notation "l s↦ v" :=
-  (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn 1) v%V) (at level 20) : bi_scope.
+Notation "l s↦ dq v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
+  (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  v") : bi_scope.
 
-Notation "l s↦{# q } -" := (∃ v, l ↦{#q} v)%I
-  (at level 20, q at level 50, format "l  s↦{# q }  -") : bi_scope.
-Notation "l s↦□ -" := (∃ v, l ↦□ v)%I
-  (at level 20, format "l  s↦□  -") : bi_scope.
-Notation "l s↦{ dq } -" := (∃ v, l ↦{dq} v)%I
-  (at level 20, dq at level 50, format "l  s↦{ dq }  -") : bi_scope.
-Notation "l ↦ -" := (l ↦{#1} -)%I (at level 20) : bi_scope.
+Notation "l s↦ dq -" := (∃ v, l ↦{dq} v)%I
+  (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  -") : bi_scope.
 
 Section go_ghost_step.
 
@@ -931,22 +920,11 @@ End go_spec_definitions.
 
 End go_refinement.
 
-Notation "l s↦{# q } v" := (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn q) v%V)
-  (at level 20, q at level 50, format "l  s↦{# q }  v") : bi_scope.
-Notation "l s↦□ v" := (heap_pointsto (hG := refinement_na_heapG) l DfracDiscarded v%V)
-  (at level 20, format "l  s↦□  v") : bi_scope.
-Notation "l s↦{ dq } v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
-  (at level 20, dq at level 50, format "l  s↦{ dq }  v") : bi_scope.
-Notation "l s↦ v" :=
-  (heap_pointsto (hG := refinement_na_heapG) l (DfracOwn 1) v%V) (at level 20) : bi_scope.
+Notation "l s↦ dq v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
+  (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  v") : bi_scope.
 
-Notation "l s↦{# q } -" := (∃ v, l ↦{#q} v)%I
-  (at level 20, q at level 50, format "l  s↦{# q }  -") : bi_scope.
-Notation "l s↦□ -" := (∃ v, l ↦□ v)%I
-  (at level 20, format "l  s↦□  -") : bi_scope.
-Notation "l s↦{ dq } -" := (∃ v, l ↦{dq} v)%I
-  (at level 20, dq at level 50, format "l  s↦{ dq }  -") : bi_scope.
-Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+Notation "l s↦ dq -" := (∃ v, l ↦{dq} v)%I
+  (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  -") : bi_scope.
 
 Section trace_inv.
 Context {ext: ffi_syntax}.
