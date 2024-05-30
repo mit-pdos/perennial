@@ -21,7 +21,7 @@ Definition ghost_map_points_to_eq : @ghost_map_points_to = @ghost_map_points_to_
 
 End definitions.
 
-Notation "k ⤳[ γ ] dq  v" := (ghost_map_points_to γ k dq v)
+Notation "k ⤳[ γ ] dq v" := (ghost_map_points_to γ k dq v)
   (at level 20, γ at level 50, dq custom dfrac at level 1, format "k ⤳[ γ ] dq   v") : bi_scope.
 
 Local Ltac unseal := rewrite

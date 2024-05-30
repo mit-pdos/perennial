@@ -584,31 +584,24 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
-Lemma tac_wp_loadField Δ Δ' s E i l q d f v Φ :
+Lemma tac_wp_loadField Δ Δ' s E i l dq d f v Φ is_pers:
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, struct_field_pointsto l q d f v)%I →
+  envs_lookup i Δ' = Some (is_pers, struct_field_pointsto l dq d f v)%I →
   envs_entails Δ' (Φ v) →
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
-  rewrite envs_entails_unseal=> ???.
+  rewrite envs_entails_unseal=> ?? HΦ.
   eapply bi.wand_apply; first by apply bi.wand_entails, wp_loadField.
   rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
+  destruct is_pers.
+  {
+    apply bi.later_mono. simpl.
+    rewrite -> bi.intuitionistically_sep_dup at 1. rewrite -bi.sep_assoc.
+    eapply bi.entails_po; first by apply bi.sep_mono_l, bi.intuitionistically_elim.
+    eapply bi.sep_mono_r, bi.entails_po, bi.wand_intro_l; first by apply bi.wand_elim_r.
+    rewrite HΦ. apply bi.sep_elim_r, _.
+  }
   by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
-Qed.
-
-Lemma tac_wp_loadField_persistent Δ s E i l d f v Φ :
-  envs_lookup i Δ = Some (true, struct_field_pointsto l DfracDiscarded d f v)%I →
-  envs_entails Δ (Φ v) →
-  envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
-Proof.
-  rewrite envs_entails_unseal=> ? HΦ.
-  eapply bi.wand_apply; first by apply bi.wand_entails, wp_loadField.
-  rewrite envs_lookup_split //; simpl.
-  iIntros "[#Hp Henvs]".
-  iSplitR; auto.
-  iIntros "!> _".
-  iApply HΦ.
-  iApply ("Henvs" with "Hp").
 Qed.
 
 Theorem wp_load_ro l t v :
@@ -719,18 +712,6 @@ Proof.
   iApply ("Hupd" with "[$]").
 Qed.
 
-Theorem wp_loadField_inv N l d f v stk E :
-  ↑N ⊆ E →
-  {{{ inv N (∃ q, l ↦[d :: f]{#q} v) }}}
-    struct.loadF d f #l @ stk; E
-  {{{ RET v; True }}}.
-Proof.
-  iIntros (HN Φ) "#Hinv HΦ".
-  iMod (inv_readonly_acc with "Hinv") as (q) "Hv"; auto.
-  wp_apply (wp_loadField with "Hv"); iIntros "_".
-  iApply "HΦ"; done.
-Qed.
-
 End goose_lang.
 
 Typeclasses Opaque struct_pointsto.
@@ -754,7 +735,7 @@ Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
 
 Tactic Notation "wp_loadField" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _] _ _)%I) => l end in
+    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _] { _ } _)%I) => l end in
     iAssumptionCore || fail "wp_loadField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
   wp_bind (struct.loadF _ _ (Val _));
@@ -772,18 +753,12 @@ Tactic Notation "wp_loadField" :=
     [tc_solve
     |solve_pointsto ()
     |]
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [eapply tac_wp_loadField_persistent
-      |fail 2 "wp_loadField: cannot find 'struct.loadF' in" e];
-    [solve_pointsto ()
-    |]
   | _ => fail 1 "wp_loadField: not a 'wp'"
   end.
 
 Tactic Notation "wp_storeField" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _] _ _)%I) => l end in
+    let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
     iAssumptionCore || fail "wp_storeField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
   wp_bind (struct.storeF _ _ (Val _) (Val _));
