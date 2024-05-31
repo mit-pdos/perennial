@@ -504,9 +504,6 @@ Local Hint Extern 0 (base_step_atomic (NewProph) _ _ _ _ _ _ _) => apply new_pro
 Local Hint Extern 0 (base_step_atomic (ArbitraryInt) _ _ _ _ _ _ _) => apply arbitrary_int_step : core.
 Local Hint Resolve to_of_val : core.
 
-Global Instance as_val_val v : AsVal (Val v).
-Proof. by eexists. Qed.
-
 Theorem heap_base_atomic e :
   (forall σ κ e' σ' efs,
       relation.denote (base_trans e) σ σ' (κ, e', efs) -> is_Some (to_val e')) ->

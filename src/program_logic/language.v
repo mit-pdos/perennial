@@ -273,19 +273,6 @@ Section language.
     PureExec φ n (K e1) (K e2).
   Proof. rewrite /PureExec; eauto using pure_step_nsteps_ctx. Qed.
 
-  Class AsVal (e : expr Λ) := as_val : ∃ v, of_val v = e.
-  (* There is no instance [IntoVal → AsVal] as often one can solve [AsVal] more
-  efficiently since no witness has to be computed. *)
-  Global Instance as_vals_of_val vs : TCForall AsVal (of_val <$> vs).
-  Proof.
-    apply TCForall_Forall, Forall_fmap, Forall_true=> v.
-    rewrite /AsVal /=; eauto.
-  Qed.
-
-  Lemma as_val_is_Some e :
-    (∃ v, of_val v = e) → is_Some (to_val e).
-  Proof. intros [v <-]. rewrite to_of_val. eauto. Qed.
-
   Lemma prim_step_not_stuck e σ g κ e' σ' g' efs :
     prim_step e σ g κ e' σ' g' efs → not_stuck e σ g.
   Proof. rewrite /not_stuck /reducible. eauto 10. Qed.
