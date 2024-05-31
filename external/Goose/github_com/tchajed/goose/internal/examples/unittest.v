@@ -1084,6 +1084,41 @@ Definition mkNothing: val :=
     mkInt #();;
     #().
 
+(* ty_method.go *)
+
+Definition TyMethodSl: ty := slice.T byteT.
+
+Definition TyMethodSl__func1: val :=
+  rec: "TyMethodSl__func1" "o" :=
+    #().
+
+Definition TyMethodSl__func2: val :=
+  rec: "TyMethodSl__func2" "o" :=
+    #().
+
+Definition TyMethodInt: ty := uint64T.
+
+Definition TyMethodInt__func1: val :=
+  rec: "TyMethodInt__func1" "o" :=
+    #().
+
+Definition TyMethodInt__func2: val :=
+  rec: "TyMethodInt__func2" "o" :=
+    #().
+
+(* Test both ptr and direct receiver methods since there's a tricky corner case there. *)
+Definition TyMethodDriver: val :=
+  rec: "TyMethodDriver" <> :=
+    let: "oSl" := NewSlice byteT #0 in
+    let: "oSlPtr" := "oSl" in
+    TyMethodSl__func1 "oSl";;
+    TyMethodSl__func2 "oSlPtr";;
+    let: "oInt" := #1 in
+    let: "oIntPtr" := "oInt" in
+    TyMethodInt__func1 "oInt";;
+    TyMethodInt__func2 "oIntPtr";;
+    #().
+
 (* type_alias.go *)
 
 Definition my_u64: ty := uint64T.
