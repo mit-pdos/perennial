@@ -504,8 +504,6 @@ Local Hint Extern 0 (base_step_atomic (NewProph) _ _ _ _ _ _ _) => apply new_pro
 Local Hint Extern 0 (base_step_atomic (ArbitraryInt) _ _ _ _ _ _ _) => apply arbitrary_int_step : core.
 Local Hint Resolve to_of_val : core.
 
-Global Instance into_val_val v : IntoVal (Val v) v.
-Proof. done. Qed.
 Global Instance as_val_val v : AsVal (Val v).
 Proof. by eexists. Qed.
 

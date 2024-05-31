@@ -222,7 +222,7 @@ Proof.
   iIntros "Hclose". iNext.
   iIntros (e2 ???) "%Hstep Hlater". iMod "Hclose". iMod ("H" with "[//]") as "($ & $ & H & ?)".
   destruct (to_val e2) eqn:?; last by iExFalso.
-  iFrame. iModIntro. iApply wp_value; last done. by apply of_to_val.
+  iFrame. iModIntro. apply of_to_val in Heqo as <-. by iApply wp_value.
 Qed.
 
 Lemma wp_lift_atomic_step {s E Φ} e1 :
@@ -245,7 +245,7 @@ Proof.
   iIntros "Hclose". iNext.
   iIntros (e2 ???) "%Hstep Hlater". iMod "Hclose". iMod ("H" with "[//] [$]") as "($ & $ & H & ?)".
   destruct (to_val e2) eqn:?; last by iExFalso.
-  iFrame. iModIntro. iApply wp_value; last done. by apply of_to_val.
+  iFrame. iModIntro. apply of_to_val in Heqo as <-. by iApply wp_value.
 Qed.
 
 Lemma wp_lift_pure_det_step_no_fork `{!Inhabited (state Λ), !Inhabited (global_state Λ)} {s E E' Φ} e1 e2 :

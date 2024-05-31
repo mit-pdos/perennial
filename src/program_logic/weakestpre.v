@@ -205,17 +205,17 @@ Proof. by intros Φ Φ' ?; apply wp_mono. Qed.
 Lemma wp_value_fupd s E Φ e v : IntoVal e v → WP e @ s; E {{ Φ }} ⊣⊢ |NC={E}=> Φ v.
 Proof. intros <-. by apply wp_value_fupd'. Qed.
 *)
-Lemma wp_value_fupd s E Φ e v : IntoVal e v → (|NC={E}=> Φ v) ⊢ WP e @ s; E {{ Φ }}.
+Lemma wp_value_fupd s E Φ v : (|NC={E}=> Φ v) ⊢ WP of_val v @ s; E {{ Φ }}.
 Proof.
-  intros <-. iIntros "HΦ".
+  iIntros "HΦ".
   rewrite wp_eq /wp_def.
   iApply ncfupd_wpc. iSplit; first done.
   iMod "HΦ". iApply wpc_value'. eauto.
 Qed.
 Lemma wp_value' s E Φ v : Φ v ⊢ WP (of_val v) @ s; E {{ Φ }}.
-Proof. iIntros "H". iApply wp_value_fupd; auto. done. Qed.
-Lemma wp_value s E Φ e v : IntoVal e v → Φ v ⊢ WP e @ s; E {{ Φ }}.
-Proof. intros <-. apply wp_value'. Qed.
+Proof. iIntros "H". iApply wp_value_fupd; auto. Qed.
+Lemma wp_value s E Φ v : Φ v ⊢ WP (of_val v) @ s; E {{ Φ }}.
+Proof. apply wp_value'. Qed.
 
 Lemma wp_frame_l s E e Φ R : R ∗ WP e @ s; E {{ Φ }} ⊢ WP e @ s; E {{ v, R ∗ Φ v }}.
 Proof.

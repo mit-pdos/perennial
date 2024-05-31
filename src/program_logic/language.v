@@ -273,10 +273,6 @@ Section language.
     PureExec φ n (K e1) (K e2).
   Proof. rewrite /PureExec; eauto using pure_step_nsteps_ctx. Qed.
 
-  (* This is a family of frequent assumptions for PureExec *)
-  Class IntoVal (e : expr Λ) (v : val Λ) :=
-    into_val : of_val v = e.
-
   Class AsVal (e : expr Λ) := as_val : ∃ v, of_val v = e.
   (* There is no instance [IntoVal → AsVal] as often one can solve [AsVal] more
   efficiently since no witness has to be computed. *)
