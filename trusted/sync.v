@@ -1,4 +1,4 @@
-From Perennial.goose_lang.new Require Import prelude.
+From Perennial.new_goose_lang Require Import prelude.
 
 Section code.
 Context `{ext_ty: ext_types}.

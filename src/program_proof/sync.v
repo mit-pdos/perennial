@@ -10,7 +10,7 @@ From Perennial.goose_lang Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Goose Require Export sync.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.goose_lang Require Import exception.
+From Perennial.new_goose_lang Require Import exception.
 From Perennial.algebra Require Import map.
 
 Set Default Proof Using "Type".

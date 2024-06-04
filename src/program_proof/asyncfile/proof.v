@@ -689,10 +689,13 @@ Lemma wp_MakeAsyncFile fname N P data :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
+  Opaque Mutex.
   wp_lam.
   wp_apply wp_ref_to; [val_ty|]. iIntros (filename_addr) "Hlocal". wp_pures.
   iMod (struct_pointsto_persist with "Hlocal") as "#?".
 
+  (* FIXME: clean up structs to make this work *)
+  wp_apply wp_new_Mutex.
   wp_apply wp_ref_zero; [done|].
   iIntros (s_ptr) "Hlocal".
   wp_apply wp_allocStruct; [val_ty|].

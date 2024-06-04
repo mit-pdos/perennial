@@ -1,5 +1,5 @@
-From Perennial.goose_lang Require Import notation typing exception proofmode.
-From Perennial.goose_lang.new Require Export loop.impl.
+From Perennial.goose_lang Require Import notation typing proofmode.
+From Perennial.new_goose_lang Require Import exception loop.impl.
 From iris_named_props Require Export named_props.
 
 Set Default Proof Using "Type".

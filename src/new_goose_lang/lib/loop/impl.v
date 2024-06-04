@@ -1,4 +1,5 @@
-From Perennial.goose_lang Require Import lang notation new.exception.
+From Perennial.goose_lang Require Import lang notation.
+From Perennial.new_goose_lang Require Import exception.
 
 Section goose_lang.
 Context {ext: ffi_syntax}.

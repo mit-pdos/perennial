@@ -2,8 +2,8 @@ From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export environments.
 From Perennial.Helpers Require Export ipm.
 From Perennial.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Export lang lifting.
-From Perennial.goose_lang Require Export typing new.exception new.loop.impl.
+From Perennial.goose_lang Require Export lang lifting typing.
+From Perennial.new_goose_lang Require Export exception loop.impl.
 Set Default Proof Using "Type".
 Import uPred.
 
