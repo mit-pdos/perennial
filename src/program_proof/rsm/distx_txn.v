@@ -73,16 +73,12 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Definition logs_txnst (ts : nat) (st : txnst) (logs : gmap groupid dblog) :=
-    match st with
-    | StPrepared wrs => all_prepared ts wrs logs
-    | StCommitted => True
-    | StAborted => some_aborted ts logs
-    end.
-
   Definition groups_txnst γ (ts : nat) (st : txnst) : iProp Σ :=
-    ∃ logs,
-      clog_lbs γ logs ∧ ⌜logs_txnst ts st logs⌝.
+    match st with
+    | StPrepared wrs => all_prepared γ ts wrs
+    | StCommitted => True
+    | StAborted => some_aborted γ ts
+    end.
 
   Theorem wp_Txn__prepare (txn : loc) (tid : nat) (γ : distx_names) (τ : gname) :
     {{{ own_txn txn tid γ τ }}}

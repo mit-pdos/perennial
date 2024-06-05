@@ -235,6 +235,8 @@ Section program.
     iDestruct (big_sepL_lookup_acc with "Hgroups") as "[Hgroup Hgroups]"; first apply Hgids.
     iRename "Hlog" into "Hlog'".
     iNamed "Hgroup".
+    iFrame.
+    iIntros (log') "Hlog".
 
     (*@         if !ok {                                                        @*)
     (*@             // Sleep for 1 ms.                                          @*)
