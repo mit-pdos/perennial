@@ -1,9 +1,6 @@
 From Perennial.goose_lang Require Import lang notation.
-Class val_types :=
-  { ext_tys : Type; }.
 
 Section val_types.
-  Context {val_tys : val_types}.
   Inductive go_type :=
   (* Boolean *)
   | boolT
@@ -81,9 +78,9 @@ Section val_types.
 
   Opaque to_val.
   Opaque zero_val.
-  Hint Rewrite (@IntoValTyped_def_zero) : stdpp.
+  (*
   Eval simpl in (zero_val uint64T).
   Eval simpl in (# (IntoValTyped_def u64 uint64T)).
-  Eval simpl in (to_val (IntoValTyped_def u64 uint64T)).
+  Eval simpl in (to_val (IntoValTyped_def u64 uint64T)). *)
 
 End val_types.
