@@ -8,7 +8,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition AsyncFile := struct.decl [
   "mu" :: ptrT;
-  "data" :: slice.T byteT;
+  "data" :: sliceT byteT;
   "filename" :: stringT;
   "index" :: uint64T;
   "indexCond" :: ptrT;
@@ -23,27 +23,27 @@ Definition AsyncFile__wait: val :=
   rec: "AsyncFile__wait" "s" "index" :=
     exception_do (let: "index" := ref_to uint64T "index" in
     let: "s" := ref_to ptrT "s" in
-    do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
-    (for: (λ: <>, (struct.loadF AsyncFile "durableIndex" (![ptrT] "s")) < (![uint64T] "index")); (λ: <>, Skip) := λ: <>,
-      do:  sync.Cond__Wait (struct.loadF AsyncFile "durableIndexCond" (![ptrT] "s"));;;
+    do:  sync.Mutex__Lock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
+    (for: (λ: <>, (![struct.fieldTy AsyncFile "durableIndex"] (struct.fieldRef AsyncFile "durableIndex" (![ptrT] "s"))) < (![uint64T] "index")); (λ: <>, Skip) := λ: <>,
+      do:  sync.Cond__Wait (![struct.fieldTy AsyncFile "durableIndexCond"] (struct.fieldRef AsyncFile "durableIndexCond" (![ptrT] "s")));;;
       do:  #());;;
-    do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+    do:  sync.Mutex__Unlock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
     do:  #()).
 
 Definition AsyncFile__Write: val :=
   rec: "AsyncFile__Write" "s" "data" :=
-    exception_do (let: "data" := ref_to (slice.T byteT) "data" in
+    exception_do (let: "data" := ref_to (sliceT byteT) "data" in
     let: "s" := ref_to ptrT "s" in
-    do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
-    let: "$a0" := ![slice.T byteT] "data" in
-    do:  struct.storeF AsyncFile "data" (![ptrT] "s") "$a0";;;
-    let: "$a0" := std.SumAssumeNoOverflow (struct.loadF AsyncFile "index" (![ptrT] "s")) #1 in
-    do:  struct.storeF AsyncFile "index" (![ptrT] "s") "$a0";;;
+    do:  sync.Mutex__Lock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
+    let: "$a0" := ![sliceT byteT] "data" in
+    do:  (struct.fieldRef AsyncFile "data" (![ptrT] "s") "$a0") <-[struct.fieldTy AsyncFile "data"] "$a0";;;
+    let: "$a0" := std.SumAssumeNoOverflow (![struct.fieldTy AsyncFile "index"] (struct.fieldRef AsyncFile "index" (![ptrT] "s"))) #1 in
+    do:  (struct.fieldRef AsyncFile "index" (![ptrT] "s") "$a0") <-[struct.fieldTy AsyncFile "index"] "$a0";;;
     let: "index" := ref_zero uint64T #() in
-    let: "$a0" := struct.loadF AsyncFile "index" (![ptrT] "s") in
+    let: "$a0" := ![struct.fieldTy AsyncFile "index"] (struct.fieldRef AsyncFile "index" (![ptrT] "s")) in
     do:  "index" <-[uint64T] "$a0";;;
-    do:  sync.Cond__Signal (struct.loadF AsyncFile "indexCond" (![ptrT] "s"));;;
-    do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+    do:  sync.Cond__Signal (![struct.fieldTy AsyncFile "indexCond"] (struct.fieldRef AsyncFile "indexCond" (![ptrT] "s")));;;
+    do:  sync.Mutex__Unlock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
     return: ((λ: <>,
        do:  AsyncFile__wait (![ptrT] "s") (![uint64T] "index");;;
        do:  #()
@@ -53,62 +53,62 @@ Definition AsyncFile__Write: val :=
 Definition AsyncFile__flushThread: val :=
   rec: "AsyncFile__flushThread" "s" :=
     exception_do (let: "s" := ref_to ptrT "s" in
-    do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+    do:  sync.Mutex__Lock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: struct.loadF AsyncFile "closeRequested" (![ptrT] "s")
+      (if: ![struct.fieldTy AsyncFile "closeRequested"] (struct.fieldRef AsyncFile "closeRequested" (![ptrT] "s"))
       then
-        do:  grove_ffi.FileWrite (struct.loadF AsyncFile "filename" (![ptrT] "s")) (struct.loadF AsyncFile "data" (![ptrT] "s"));;;
-        let: "$a0" := struct.loadF AsyncFile "index" (![ptrT] "s") in
-        do:  struct.storeF AsyncFile "durableIndex" (![ptrT] "s") "$a0";;;
-        do:  sync.Cond__Broadcast (struct.loadF AsyncFile "durableIndexCond" (![ptrT] "s"));;;
+        do:  grove_ffi.FileWrite (![struct.fieldTy AsyncFile "filename"] (struct.fieldRef AsyncFile "filename" (![ptrT] "s"))) (![struct.fieldTy AsyncFile "data"] (struct.fieldRef AsyncFile "data" (![ptrT] "s")));;;
+        let: "$a0" := ![struct.fieldTy AsyncFile "index"] (struct.fieldRef AsyncFile "index" (![ptrT] "s")) in
+        do:  (struct.fieldRef AsyncFile "durableIndex" (![ptrT] "s") "$a0") <-[struct.fieldTy AsyncFile "durableIndex"] "$a0";;;
+        do:  sync.Cond__Broadcast (![struct.fieldTy AsyncFile "durableIndexCond"] (struct.fieldRef AsyncFile "durableIndexCond" (![ptrT] "s")));;;
         let: "$a0" := #true in
-        do:  struct.storeF AsyncFile "closed" (![ptrT] "s") "$a0";;;
-        do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
-        do:  sync.Cond__Signal (struct.loadF AsyncFile "closedCond" (![ptrT] "s"));;;
+        do:  (struct.fieldRef AsyncFile "closed" (![ptrT] "s") "$a0") <-[struct.fieldTy AsyncFile "closed"] "$a0";;;
+        do:  sync.Mutex__Unlock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
+        do:  sync.Cond__Signal (![struct.fieldTy AsyncFile "closedCond"] (struct.fieldRef AsyncFile "closedCond" (![ptrT] "s")));;;
         return: (#());;;
         do:  #()
       else do:  #());;;
-      (if: (struct.loadF AsyncFile "durableIndex" (![ptrT] "s")) ≥ (struct.loadF AsyncFile "index" (![ptrT] "s"))
+      (if: (![struct.fieldTy AsyncFile "durableIndex"] (struct.fieldRef AsyncFile "durableIndex" (![ptrT] "s"))) ≥ (![struct.fieldTy AsyncFile "index"] (struct.fieldRef AsyncFile "index" (![ptrT] "s")))
       then
-        do:  sync.Cond__Wait (struct.loadF AsyncFile "indexCond" (![ptrT] "s"));;;
+        do:  sync.Cond__Wait (![struct.fieldTy AsyncFile "indexCond"] (struct.fieldRef AsyncFile "indexCond" (![ptrT] "s")));;;
         continue: #();;;
         do:  #()
       else do:  #());;;
       let: "index" := ref_zero uint64T #() in
-      let: "$a0" := struct.loadF AsyncFile "index" (![ptrT] "s") in
+      let: "$a0" := ![struct.fieldTy AsyncFile "index"] (struct.fieldRef AsyncFile "index" (![ptrT] "s")) in
       do:  "index" <-[uint64T] "$a0";;;
-      let: "data" := ref_zero (slice.T byteT) #() in
-      let: "$a0" := struct.loadF AsyncFile "data" (![ptrT] "s") in
-      do:  "data" <-[slice.T byteT] "$a0";;;
-      do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
-      do:  grove_ffi.FileWrite (struct.loadF AsyncFile "filename" (![ptrT] "s")) (![slice.T byteT] "data");;;
-      do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+      let: "data" := ref_zero (sliceT byteT) #() in
+      let: "$a0" := ![struct.fieldTy AsyncFile "data"] (struct.fieldRef AsyncFile "data" (![ptrT] "s")) in
+      do:  "data" <-[sliceT byteT] "$a0";;;
+      do:  sync.Mutex__Unlock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
+      do:  grove_ffi.FileWrite (![struct.fieldTy AsyncFile "filename"] (struct.fieldRef AsyncFile "filename" (![ptrT] "s"))) (![sliceT byteT] "data");;;
+      do:  sync.Mutex__Lock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
       let: "$a0" := ![uint64T] "index" in
-      do:  struct.storeF AsyncFile "durableIndex" (![ptrT] "s") "$a0";;;
-      do:  sync.Cond__Broadcast (struct.loadF AsyncFile "durableIndexCond" (![ptrT] "s"));;;
+      do:  (struct.fieldRef AsyncFile "durableIndex" (![ptrT] "s") "$a0") <-[struct.fieldTy AsyncFile "durableIndex"] "$a0";;;
+      do:  sync.Cond__Broadcast (![struct.fieldTy AsyncFile "durableIndexCond"] (struct.fieldRef AsyncFile "durableIndexCond" (![ptrT] "s")));;;
       do:  #());;;
     do:  #()).
 
 Definition AsyncFile__Close: val :=
   rec: "AsyncFile__Close" "s" :=
     exception_do (let: "s" := ref_to ptrT "s" in
-    do:  sync.Mutex__Lock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+    do:  sync.Mutex__Lock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
     let: "$a0" := #true in
-    do:  struct.storeF AsyncFile "closeRequested" (![ptrT] "s") "$a0";;;
-    do:  sync.Cond__Signal (struct.loadF AsyncFile "indexCond" (![ptrT] "s"));;;
-    (for: (λ: <>, (~ (struct.loadF AsyncFile "closed" (![ptrT] "s")))); (λ: <>, Skip) := λ: <>,
-      do:  sync.Cond__Wait (struct.loadF AsyncFile "closedCond" (![ptrT] "s"));;;
+    do:  (struct.fieldRef AsyncFile "closeRequested" (![ptrT] "s") "$a0") <-[struct.fieldTy AsyncFile "closeRequested"] "$a0";;;
+    do:  sync.Cond__Signal (![struct.fieldTy AsyncFile "indexCond"] (struct.fieldRef AsyncFile "indexCond" (![ptrT] "s")));;;
+    (for: (λ: <>, (~ (![struct.fieldTy AsyncFile "closed"] (struct.fieldRef AsyncFile "closed" (![ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
+      do:  sync.Cond__Wait (![struct.fieldTy AsyncFile "closedCond"] (struct.fieldRef AsyncFile "closedCond" (![ptrT] "s")));;;
       do:  #());;;
-    do:  sync.Mutex__Unlock (struct.loadF AsyncFile "mu" (![ptrT] "s"));;;
+    do:  sync.Mutex__Unlock (![struct.fieldTy AsyncFile "mu"] (struct.fieldRef AsyncFile "mu" (![ptrT] "s")));;;
     do:  #()).
 
 (* returns the state, then the File object *)
 Definition MakeAsyncFile: val :=
   rec: "MakeAsyncFile" "filename" :=
     exception_do (let: "filename" := ref_to stringT "filename" in
-    let: "mu" := ref (zero_val (struct.t sync.Mutex)) in
+    let: "mu" := ref (zero_val (structT sync.Mutex)) in
     let: "s" := ref_zero ptrT #() in
-    let: "$a0" := struct.new AsyncFile [
+    let: "$a0" := ref_to (structT AsyncFile) (struct.mk AsyncFile [
       "mu" ::= "mu";
       "indexCond" ::= sync.NewCond "mu";
       "closedCond" ::= sync.NewCond "mu";
@@ -118,12 +118,12 @@ Definition MakeAsyncFile: val :=
       "durableIndex" ::= #0;
       "closed" ::= #false;
       "closeRequested" ::= #false
-    ] in
+    ]) in
     do:  "s" <-[ptrT] "$a0";;;
-    let: "data" := ref_zero (slice.T byteT) #() in
-    let: "$a0" := struct.loadF AsyncFile "data" (![ptrT] "s") in
-    do:  "data" <-[slice.T byteT] "$a0";;;
+    let: "data" := ref_zero (sliceT byteT) #() in
+    let: "$a0" := ![struct.fieldTy AsyncFile "data"] (struct.fieldRef AsyncFile "data" (![ptrT] "s")) in
+    do:  "data" <-[sliceT byteT] "$a0";;;
     do:  Fork (do:  AsyncFile__flushThread (![ptrT] "s");;;
           do:  #());;;
-    return: (![slice.T byteT] "data", ![ptrT] "s");;;
+    return: (![sliceT byteT] "data", ![ptrT] "s");;;
     do:  #()).

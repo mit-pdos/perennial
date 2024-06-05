@@ -25,6 +25,7 @@ Section val_types.
   | mapT (key : go_type) (elem : go_type)
   | chanT (elem : go_type)
   .
+  Definition byteT := uint8T.
 
   Context `{ffi_syntax}.
   Definition nil : val := #().

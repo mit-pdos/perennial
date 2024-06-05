@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import notation.
-From Perennial.goose_lang Require Import typing.
-From Perennial.goose_lang.lib Require Import typed_mem.impl.
+From Perennial.new_goose_lang Require Import typing.
+From Perennial.new_goose_lang.lib Require Import typed_mem.impl.
 
 (** * Struct library
 
@@ -11,10 +11,9 @@ Set Implicit Arguments.
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
-Context {ext_ty: ext_types ext}.
 
-Definition descriptor := list (string*ty).
-Definition mkStruct (fs: list (string*ty)): descriptor := fs.
+Definition descriptor := list (string * go_type).
+Definition mkStruct (fs: list (string * go_type)): descriptor := fs.
 
 Class descriptor_wf (d:descriptor) : Set :=
   { descriptor_NoDup: NoDup d.*1; }.
@@ -110,22 +109,16 @@ Definition buildStruct_f d (fvs: list (string*val)) : val :=
   | None => LitV LitUnit
   end.
 
-Fixpoint structTy d : ty :=
+Fixpoint field_offset d f0 : (Z * go_type) :=
   match d with
-  | [] => unitT
-  | (_,t)::fs => prodT t (structTy fs)
-  end.
-
-Fixpoint field_offset d f0 : (Z * ty) :=
-  match d with
-  | [] => (-1, unitT)
+  | [] => (-1, ptrT)
   | (f,t)::fs => if f =? f0 then (0, t)
                else match field_offset fs f0 with
-                    | (off, t') => (ty_size t + off, t')
+                    | (off, t') => ((go_abstract_type_size $ go_type_interp t) + off, t')
                     end
   end.
 
-Definition fieldType (d:descriptor) (f:string): ty :=
+Definition fieldType (d:descriptor) (f:string): go_type :=
   match field_offset d f with
   | (_, t) => t
   end.
@@ -140,14 +133,9 @@ Definition structFieldRef_f d f0 l: loc :=
   l +ₗ (field_offset d f0).1
 .
 
-Local Open Scope heap_types.
-
-Theorem load_struct_ref_hasTy Γ l t ts :
-  Γ ⊢ l : structRefT (t::ts) ->
-  Γ ⊢ !l : t.
-Proof.
-  apply load_hasTy.
-Qed.
+Definition structFieldTy_f d f0 : go_type :=
+  (field_offset d f0).2
+.
 
 End goose_lang.
 
@@ -158,21 +146,24 @@ Module struct.
   Notation decl := mkStruct.
   Notation wf := descriptor_wf.
 
-  Notation t := structTy.
-
   Notation mk := buildStruct.
   Notation mk_f := buildStruct_f.
   Notation get := getField.
   Notation fieldRef := structFieldRef.
   Notation fieldRef_f := structFieldRef_f.
+
+  Notation fieldTy := structFieldTy_f.
 End struct.
 
 Declare Scope struct_scope.
-Notation "f :: t" := (@pair string ty f%string t%ht) : struct_scope.
+Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
 Notation "f ::= v" := (@pair string val f%string v%V) (at level 60) : val_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
-Arguments mkStruct {ext ext_ty} _%struct_scope.
+Arguments mkStruct _%struct_scope.
+
+Notation "l <-s[ s :: t ] v" := (struct.fieldRef s t l <-[struct.fieldTy s t] v)%E (at level 60) : expr_scope
+.
 
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)

@@ -1,7 +1,7 @@
 From Perennial.new_goose_lang Require Import prelude.
 
 Section code.
-Context `{ext_ty: ext_types}.
+Context `{ffi_syntax}.
 Local Coercion Var' s: expr := Var s.
 
 (* FIXME: make everything in here opaque. *)
