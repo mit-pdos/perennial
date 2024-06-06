@@ -263,12 +263,50 @@ Section goose_lang.
     wp_apply (wp_AllocAt t); auto.
   Qed.
 
+  Lemma forall_to_Forall {A} P (l : list A) : (∀ x, P x) → Forall P l .
+  Proof. intros Hin. induction l as [|x l IH]; constructor; auto. Defined.
+
+  Program Definition go_type_ind_stronger (P : go_type → Prop) f f0 f1 f2 f3 f4 f5 f6 f7 f8
+             f9 (f10 : ∀ decls, Forall P (fmap snd decls) → P (structT decls)) f11 f12 f13 f14 f15 :=
+    fix F (g : go_type) : P g :=
+      match g as g0 return (P g0) with
+      | boolT => f
+      | uint8T => f0
+      | uint16T => f1
+      | uint32T => f2
+      | uint64T => f3
+      | int8T => f4
+      | int16T => f5
+      | int32T => f6
+      | int64T => f7
+      | stringT => f8
+      | sliceT elem => f9 elem (F elem)
+      | structT decls => f10 decls (* (forall_to_Forall P (fmap snd decls) F) *) _
+      | ptrT => f11
+      | funcT => f12
+      | interfaceT => f13
+      | mapT key elem => f14 key (F key) elem (F elem)
+      | chanT elem => f15 elem (F elem)
+      end.
+  Obligation 1.
+  (* intros.
+     refine (forall_to_Forall _ _ F). *)
+  (* Print Fix. *)
+  Abort.
+
+  Definition R :
+    FIXME: relation for zero_val
+
   Lemma zero_val_has_go_type t :
     has_go_type (zero_val t) t.
   Proof.
     unfold has_go_type.
-    destruct t; simpl; try apply _.
-    FIXME:
+    apply well_founded_induction.
+    induction t; simpl; try apply _.
+    induction decls.
+    { apply _. }
+    { simpl. apply has_go_abstract_type_prod.
+      { apply
   Qed.
 
   Lemma wp_ref_of_zero stk E t :
