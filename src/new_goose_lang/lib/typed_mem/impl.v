@@ -33,6 +33,8 @@ Section go_lang.
     | _ => cellT
     end.
 
+  Definition go_type_size (t : go_type) : Z := go_abstract_type_size $ go_type_interp t.
+
   (* TODO: seal *)
   Definition load_ty (t : go_type) : val :=
     (fix load_ty_aux t : val :=
@@ -68,3 +70,7 @@ Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
    trick. *)
 Notation "e1 <-[ t ] e2" := (store_ty t (Pair e1%E e2%E)) : expr_scope.
 Notation "v1 <-[ t ] v2" := (store_ty t (PairV v1%V v2%V)) : val_scope.
+
+Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +ₗ[ t ]  z").
+Notation "l +ₗ[ t ] z" := (l +ₗ go_abstract_type_size (go_type_interp t) * z) : stdpp_scope .
+Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (go_abstract_type_size $ go_type_interp t)) e1%E e2%E) : expr_scope .

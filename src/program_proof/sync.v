@@ -4,12 +4,9 @@ From iris.algebra Require Import excl.
 From Perennial.base_logic.lib Require Import invariants.
 From Perennial.program_logic Require Import weakestpre.
 
-From Perennial.goose_lang Require Import lang typing.
-From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.goose_lang Require Import persistent_readonly.
-From Perennial.goose_lang.lib Require Import typed_mem.
 From Goose Require Export sync.
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import new_proof_prelude.
 From Perennial.new_goose_lang Require Import exception.
 From Perennial.algebra Require Import map.
 
@@ -35,8 +32,9 @@ Context `{!heapGS Σ} `{!syncG Σ}.
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
   inv nroot (
-        ∃ b : bool, m ↦[Mutex :: "state"]{# 1/4} #b ∗
-                  if b then True else m ↦[Mutex :: "state"]{# 3/4} #b ∗ R
+        ∃ b : bool, (struct.fieldRef_f Mutex "state" m) ↦[struct.fieldTy Mutex "state"]{# 1/4} #b ∗
+                  if b then True else
+                    (struct.fieldRef_f Mutex "state" m) ↦[struct.fieldTy Mutex "state"]{# 3/4} #b ∗ R
         ).
 
 (** This resource denotes ownership of the fact that the Mutex is currently

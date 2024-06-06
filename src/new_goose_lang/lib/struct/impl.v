@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From Perennial.new_goose_lang Require Import typing.
+From Perennial.new_goose_lang Require Export typing.
 From Perennial.new_goose_lang.lib Require Import typed_mem.impl.
 
 (** * Struct library
@@ -91,22 +91,14 @@ Definition buildStruct d (fvs: list (string*expr)) : expr :=
   | None => LitV LitUnit
   end.
 
-Fixpoint build_struct_f d (field_vals: list (string*val)): option val :=
+Fixpoint buildStruct_f d (field_vals: list (string*val)): val :=
   let lookup_f := assocl_lookup field_vals in
   match d with
-  | [] => Some (#())
+  | [] => (#())
   | (f,ft)::fs =>
     let e := default (zero_val ft) (lookup_f f) in
-    match build_struct_f fs field_vals with
-    | Some e' => Some (e, e')%V
-    | None => None
-    end
-  end.
-
-Definition buildStruct_f d (fvs: list (string*val)) : val :=
-  match build_struct_f d fvs with
-  | Some v => v
-  | None => LitV LitUnit
+    let e' := buildStruct_f fs field_vals in
+    (e, e')%V
   end.
 
 Fixpoint field_offset d f0 : (Z * go_type) :=
@@ -161,9 +153,6 @@ Notation "f ::= v" := (@pair string val f%string v%V) (at level 60) : val_scope.
 Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
 Arguments mkStruct _%struct_scope.
-
-Notation "l <-s[ s :: t ] v" := (struct.fieldRef s t l <-[struct.fieldTy s t] v)%E (at level 60) : expr_scope
-.
 
 (* TODO: we'll again need to unfold these to prove theorems about them, but
 for typechecking they should be opaque *)

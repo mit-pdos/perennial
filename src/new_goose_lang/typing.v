@@ -22,13 +22,13 @@ Section val_types.
   | ptrT (* Untyped pointer; convenient to support recursion in structs *)
   | funcT
   | interfaceT
-  | mapT (key : go_type) (elem : go_type)
+  | mapT (key elem : go_type)
   | chanT (elem : go_type)
   .
   Definition byteT := uint8T.
 
   Context `{ffi_syntax}.
-  Definition nil : val := #().
+  Definition nil : val := #null.
   Fixpoint zero_val (t : go_type) : val :=
     match t with
     | boolT => #false
