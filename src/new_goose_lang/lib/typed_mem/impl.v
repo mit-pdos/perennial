@@ -18,7 +18,7 @@ Section go_lang.
   | unitT
   | prodT (t1 t2 : go_abstract_type)
   .
-  Fixpoint go_abstract_type_size (t : go_abstract_type) : Z :=
+  Fixpoint go_abstract_type_size (t : go_abstract_type) : nat :=
     match t with
     | prodT t1 t2 => go_abstract_type_size t1 + go_abstract_type_size t2
     | cellT => 1
@@ -33,7 +33,7 @@ Section go_lang.
     | _ => cellT
     end.
 
-  Definition go_type_size (t : go_type) : Z := go_abstract_type_size $ go_type_interp t.
+  Definition go_type_size (t : go_type) : nat := go_abstract_type_size $ go_type_interp t.
 
   (* TODO: seal *)
   Definition load_ty (t : go_type) : val :=

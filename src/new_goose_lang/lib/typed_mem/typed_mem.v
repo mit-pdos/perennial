@@ -11,71 +11,29 @@ Section goose_lang.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
   Context {ext_ty: ext_types ext}.
 
-  Inductive has_go_type: val → go_type → Prop :=
-  | has_go_type_bool (b : bool) : has_go_type #b boolT
-
-  | has_go_type_uint64 (x : w64) : has_go_type #x uint64T
-  | has_go_type_uint32 (x : w32) : has_go_type #x uint32T
-  (* | has_go_type_uint16 (x : w16) : has_go_type #x uint16T *)
-  | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
-  | has_go_type_int64 (x : w64) : has_go_type #x int64T
-  | has_go_type_int32 (x : w32) : has_go_type #x int32T
-  (* | has_go_type_int16 (x : w16) : has_go_type #x int16T *)
-  | has_go_type_int8 (x : w8) : has_go_type #x int8T
-
-  | has_go_type_string (x : string) : has_go_type #(str x) stringT
-  | has_go_type_slice (elem : go_type) (s : slice.t) : has_go_type (slice_val s) (sliceT elem)
-
-  (* FIXME: this does not require the vals to be well typed, which causes problems. *)
-  | has_go_type_struct (d : descriptor) (fs : list (string * val)) (H : Forall (λ x, True) fs)
-    : has_go_type (struct.mk_f d fs) (structT d)
-
-  | has_go_type_ptr (x : loc) : has_go_type #x ptrT
-  | has_go_type_ptr_nil : has_go_type nil ptrT
-
-  | has_go_type_func f x e : has_go_type (RecV f x e) funcT
-  | has_go_type_func_nil : has_go_type nil funcT
-
-  (* FIXME: interface typing *)
-
-  | has_go_type_map (key elem : go_type) (l : loc) : has_go_type #l (mapT key elem)
-  | has_go_type_map_nil key elem : has_go_type nil (mapT key elem)
-
-  | has_go_type_chan elem (l : loc) : has_go_type #l (chanT elem)
-  | has_go_type_chan_nil elem : has_go_type nil (chanT elem)
-  .
-
-  (*
   Inductive has_go_abstract_type : val → go_abstract_type → Prop :=
   | has_go_abstract_type_bool (b : bool) : has_go_abstract_type #b cellT
-
   | has_go_abstract_type_uint64 (x : w64) : has_go_abstract_type #x cellT
   | has_go_abstract_type_uint32 (x : w32) : has_go_abstract_type #x cellT
-  (* | has_go_abstract_type_uint16 (x : w16) : has_go_abstract_type #x uint16T *)
+  (* | has_go_abstract_type_uint16 (x : w16) : has_go_abstract_type #x cellT *)
   | has_go_abstract_type_uint8 (x : w8) : has_go_abstract_type #x cellT
   | has_go_abstract_type_int64 (x : w64) : has_go_abstract_type #x cellT
   | has_go_abstract_type_int32 (x : w32) : has_go_abstract_type #x cellT
-  (* | has_go_abstract_type_int16 (x : w16) : has_go_abstract_type #x int16T *)
+  (* | has_go_abstract_type_int16 (x : w16) : has_go_abstract_type #x cellT *)
   | has_go_abstract_type_int8 (x : w8) : has_go_abstract_type #x cellT
-
   | has_go_abstract_type_string (x : string) : has_go_abstract_type #(str x) cellT
-  | has_go_abstract_type_slice (elem : go_type) (s : slice.t) : has_go_abstract_type (slice_val s) prodT cellT $ prodT cellT $ prodT cellT unitT
-  | has_go_abstract_type_struct (d : descriptor) (fs : list (string * val)) : has_go_abstract_type (struct.mk_f d fs) (structT d)
+  | has_go_abstract_type_ptr (x : loc) : has_go_abstract_type #x cellT
+  | has_go_abstract_type_func f x e : has_go_abstract_type (RecV f x e) cellT
+  | has_go_abstract_type_nil : has_go_abstract_type nil cellT
+  | has_go_abstract_type_unit : has_go_abstract_type #() unitT
+  | has_go_abstract_type_prod
+      (v1 v2 : val) (t1 t2 : go_abstract_type)
+      (Ht1 : has_go_abstract_type v1 t1)
+      (Ht2 : has_go_abstract_type v2 t2)
+    : has_go_abstract_type (v1, v2) (prodT t1 t2)
+  .
 
-  | has_go_abstract_type_ptr (x : loc) : has_go_abstract_type #x ptrT
-  | has_go_abstract_type_ptr_nil : has_go_abstract_type nil ptrT
-
-  | has_go_abstract_type_func f x e : has_go_abstract_type (RecV f x e) funcT
-  | has_go_abstract_type_func_nil : has_go_abstract_type nil funcT
-
-  (* FIXME: interface typing *)
-
-  | has_go_abstract_type_map (key elem : go_type) (l : loc) : has_go_abstract_type #l (mapT key elem)
-  | has_go_abstract_type_map_nil key elem : has_go_abstract_type nil (mapT key elem)
-
-  | has_go_abstract_type_chan elem (l : loc) : has_go_abstract_type #l (chanT elem)
-  | has_go_abstract_type_chan_nil elem : has_go_abstract_type nil (chanT elem)
-  . *)
+  Definition has_go_type (v : val) (t : go_type) := has_go_abstract_type v (go_type_interp t).
 
   Ltac invc H := inversion H; subst; clear H.
 
@@ -134,10 +92,7 @@ Section goose_lang.
   Proof.
     unfold go_type_size.
     induction 1; simpl; auto.
-    induction d.
-    + done.
-    + simpl. destruct a. simpl. admit.
-      (* FIXME: don't know that the fields of the struct have a typed *)
+    rewrite app_length. lia.
   Qed.
 
   Theorem typed_pointsto_frac_valid l q t v :
