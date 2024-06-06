@@ -33,7 +33,26 @@ Section goose_lang.
     : has_go_abstract_type (v1, v2) (prodT t1 t2)
   .
 
+  Existing Class has_go_abstract_type.
+  Existing Instance has_go_abstract_type_uint8.
+  Existing Instance has_go_abstract_type_bool.
+  Existing Instance has_go_abstract_type_uint64.
+  Existing Instance has_go_abstract_type_uint32.
+  (* Existing Instance  | has_go_abstract_type_uint16 (x : w16) : has_go_abstract_type #x cellT *)
+  Existing Instance has_go_abstract_type_uint8.
+  Existing Instance has_go_abstract_type_int64.
+  Existing Instance has_go_abstract_type_int32.
+  (* Existing Instance  | has_go_abstract_type_int16 (x : w16) : has_go_abstract_type #x cellT *)
+  Existing Instance has_go_abstract_type_int8.
+  Existing Instance has_go_abstract_type_string.
+  Existing Instance has_go_abstract_type_ptr.
+  Existing Instance has_go_abstract_type_func.
+  Existing Instance has_go_abstract_type_nil.
+  Existing Instance has_go_abstract_type_unit.
+  Existing Instance has_go_abstract_type_prod.
+
   Definition has_go_type (v : val) (t : go_type) := has_go_abstract_type v (go_type_interp t).
+
 
   Ltac invc H := inversion H; subst; clear H.
 
@@ -172,21 +191,7 @@ Section goose_lang.
     has_go_abstract_type v2 t ->
     flatten_struct v1 = flatten_struct v2 ->
     v1 = v2.
-  Proof.
-    intros.
-    eapply flatten_struct_inj_helper.
-    generalize v2, t2. clear.
-    induction 1; last shelve; induction 1; simpl in *; try congruence.
-    { intros ?. by injection 1 as ->. }
-    { intros ?. by injection 1 as <-. }
-    Unshelve.
-    induction 1; simpl in *; try congruence.
-    {
-      injection 1 as -> ->.
-      intros.
-      apply IH
-    }
-  Qed.
+  Proof. intros. by eapply flatten_struct_inj_helper. Qed.
 
   Lemma typed_pointsto_agree l t q1 v1 q2 v2 :
     l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
@@ -225,8 +230,8 @@ Section goose_lang.
     rewrite loc_add_0 right_id.
     iSplit.
     - iDestruct 1 as "[$ _]".
-    - iDestruct 1 as "$".
-      auto.
+    - iDestruct 1 as "$". iPureIntro.
+      unfold has_go_type. apply _.
   Qed.
 
   Lemma base_pointsto_untype {l bt q v} :
