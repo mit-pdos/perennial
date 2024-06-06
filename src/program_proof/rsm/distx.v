@@ -52,14 +52,23 @@ Definition keys_except_group gid (keys : gset dbkey) :=
   filter (λ x, key_to_group x ≠ gid) keys.
 
 Lemma keys_group_tpls_group_dom {gid keys tpls} :
-  dom tpls = keys ->
+  dom tpls = keys ↔
   dom (tpls_group gid tpls) = keys_group gid keys.
-Proof.
+Admitted.
+
+Lemma key_to_group_tpls_group key gid tpls :
+  key ∈ dom (tpls_group gid tpls) ->
+  key_to_group key = gid.
 Admitted.
 
 (* Participant groups. *)
-Definition ptgroups (keys : gset dbkey) :=
-  set_fold (λ k s, {[key_to_group k]} ∪ s) (∅ : gset groupid) keys.
+Definition ptgroups (keys : gset dbkey) : gset groupid :=
+  set_map key_to_group keys.
+
+Lemma elem_of_ptgroups key keys :
+  key ∈ keys ->
+  key_to_group key ∈ ptgroups keys.
+Proof. apply elem_of_map_2. Qed.
 
 Inductive command :=
 | CmdPrep (tid : nat) (wrs : dbmap)
@@ -374,8 +383,8 @@ Definition lookup_twice
   | None => None
   end.
 
-Definition tmods_kmods_consistent (m1 : gmap nat dbmap) (m2 : gmap dbkey dbkmod) :=
-  ∀ t k, lookup_twice m1 t k = lookup_twice m2 k t.
+Definition tmods_kmods_consistent (tmods : gmap nat dbmap) (kmods : gmap dbkey dbkmod) :=
+  ∀ t k, lookup_twice tmods t k = lookup_twice kmods k t.
 
 Definition res_to_tmod (res : txnres) :=
   match res with
@@ -385,6 +394,69 @@ Definition res_to_tmod (res : txnres) :=
 
 Definition resm_to_tmods (resm : gmap nat txnres) :=
   omap res_to_tmod resm.
+
+Lemma tmods_present_kmod_absent tmods kmods kmod ts wrs key :
+  tmods !! ts = Some wrs ->
+  kmods !! key = Some kmod ->
+  wrs !! key = None ->
+  tmods_kmods_consistent tmods kmods ->
+  kmod !! ts = None.
+Proof.
+  intros Htmods Hkmods Hwrs Hc.
+  specialize (Hc ts key).
+  by rewrite /lookup_twice Htmods Hkmods Hwrs in Hc.
+Qed.
+
+Lemma tmods_absent_kmod_absent tmods kmods kmod ts key :
+  tmods !! ts = None ->
+  kmods !! key = Some kmod ->
+  tmods_kmods_consistent tmods kmods ->
+  kmod !! ts = None.
+Proof.
+  intros Htmods Hkmods Hc.
+  specialize (Hc ts key).
+  by rewrite /lookup_twice Htmods Hkmods in Hc.
+Qed.
+
+Lemma resm_cmted_kmod_absent resm kmods kmod ts wrs key :
+  resm !! ts = Some (ResCommitted wrs) ->
+  kmods !! key = Some kmod ->
+  wrs !! key = None ->
+  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
+  kmod !! ts = None.
+Proof.
+  intros Hresm Hkmods Hwrs Hc.
+  set tmods := (resm_to_tmods _) in Hc.
+  assert (Htmods : tmods !! ts = Some wrs).
+  { rewrite lookup_omap_Some. by exists (ResCommitted wrs). }
+  by eapply tmods_present_kmod_absent.
+Qed.
+
+Lemma resm_abted_kmod_absent resm kmods kmod ts key :
+  resm !! ts = Some ResAborted ->
+  kmods !! key = Some kmod ->
+  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
+  kmod !! ts = None.
+Proof.
+  intros Hresm Hkmods Hc.
+  set tmods := (resm_to_tmods _) in Hc.
+  assert (Htmods : tmods !! ts = None).
+  { by rewrite lookup_omap Hresm /=. }
+  by eapply tmods_absent_kmod_absent.
+Qed.
+
+Lemma resm_absent_kmod_absent resm kmods kmod ts key :
+  resm !! ts = None ->
+  kmods !! key = Some kmod ->
+  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
+  kmod !! ts = None.
+Proof.
+  intros Hresm Hkmods Hc.
+  set tmods := (resm_to_tmods _) in Hc.
+  assert (Htmods : tmods !! ts = None).
+  { by rewrite lookup_omap Hresm /=. }
+  by eapply tmods_absent_kmod_absent.
+Qed.
 
 (* TODO: move to distx_inv_proof.v once stable. *)
 Lemma diff_by_cmtd_inv_learn_prepare repl cmtd tmods ts' :
@@ -493,7 +565,7 @@ Section ghost.
     Persistent (txnst_lb γ gid ts st).
   Admitted.
 
-  Lemma txnst_prepare γ gid stm ts wrs :
+  Lemma txnst_prepare {γ gid stm} ts wrs :
     stm !! ts = None ->
     txnst_auth γ gid stm ==∗
     txnst_auth γ gid (<[ts := StPrepared wrs]> stm).
@@ -523,6 +595,13 @@ Section ghost.
     txnst_lb γ gid ts st.
   Admitted.
 
+  Lemma txnst_none_false γ gid stm ts st :
+    stm !! ts = None ->
+    txnst_auth γ gid stm -∗
+    txnst_lb γ gid ts st -∗
+    False.
+  Admitted.
+
   Definition kmods_lnrz γ (kmods : gmap dbkey dbkmod) : iProp Σ.
   Admitted.
 
@@ -533,6 +612,12 @@ Section ghost.
   Admitted.
 
   Definition kmod_cmtd γ (k : dbkey) (kmod : dbkmod) : iProp Σ.
+  Admitted.
+
+  Lemma kmods_cmtd_lookup {γ kmods k kmod} :
+    kmods_cmtd γ kmods -∗
+    kmod_cmtd γ k kmod -∗
+    ⌜kmods !! k = Some kmod⌝.
   Admitted.
 
   Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.
@@ -647,7 +732,7 @@ Section inv.
     ∃ (ts : nat) (future past : list action)
       (txns_cmt txns_abt : gmap nat dbmap)
       (resm : gmap nat txnres)
-      (kmodsl kmodsc : gmap dbkey dbkmod),
+      (kmodls kmodcs : gmap dbkey dbkmod),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
       (* prophecy variable *)
@@ -655,8 +740,8 @@ Section inv.
       (* transaction result map *)
       "Hresm" ∷ txnres_auth γ resm ∗
       (* key modifications *)
-      "Hkmodl" ∷ kmods_lnrz γ kmodsl ∗
-      "Hkmodc" ∷ kmods_cmtd γ kmodsc ∗
+      "Hkmodls" ∷ kmods_lnrz γ kmodls ∗
+      "Hkmodcs" ∷ kmods_cmtd γ kmodcs ∗
       (* safe commit/abort invariant *)
       "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       (* TODO: for coordinator recovery, add a monotonically growing set of
@@ -664,8 +749,18 @@ Section inv.
       the result map [resm]. *)
       "%Hcf"   ∷ ⌜conflict_free future txns_cmt⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past future past txns_abt⌝ ∗
-      "%Htkcl" ∷ ⌜tmods_kmods_consistent txns_cmt kmodsl⌝ ∗
-      "%Htkcc" ∷ ⌜tmods_kmods_consistent (resm_to_tmods resm) kmodsc⌝.
+      "%Htkcl" ∷ ⌜tmods_kmods_consistent txns_cmt kmodls⌝ ∗
+      "%Htkcc" ∷ ⌜tmods_kmods_consistent (resm_to_tmods resm) kmodcs⌝.
+
+  Definition key_inv_prop
+    (key : dbkey) (dbv : dbval) (lnrz cmtd repl : dbhist)
+    (tslb tsprep : nat) (kmodl kmodc : dbkmod) : iProp Σ :=
+    "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
+    "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
+    "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
+    "%Hdiffl"   ∷ ⌜diff_by_lnrz cmtd lnrz kmodl⌝ ∗
+    "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd kmodc tsprep⌝ ∗
+    "%Hzrsv"    ∷ ⌜kmodc !! O = None⌝.
 
   Definition key_inv γ (key : dbkey) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
@@ -675,14 +770,10 @@ Section inv.
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
       "Hrepl"     ∷ hist_repl_half γ key repl ∗
       "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
-      "Htmlnrz"   ∷ kmod_lnrz γ key kmodl ∗
-      "Htmcmtd"   ∷ kmod_cmtd γ key kmodc ∗
+      "Hkmodl"    ∷ kmod_lnrz γ key kmodl ∗
+      "Hkmodc"    ∷ kmod_cmtd γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
-      "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
-      "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
-      "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
-      "%Hdiffl"   ∷ ⌜diff_by_lnrz cmtd lnrz kmodl⌝ ∗
-      "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd kmodc tsprep⌝.
+      "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
   Definition key_inv_no_repl_tsprep
     γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
@@ -691,14 +782,10 @@ Section inv.
       (kmodl kmodc : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
-      "Htmlnrz"   ∷ kmod_lnrz γ key kmodl ∗
-      "Htmcmtd"   ∷ kmod_cmtd γ key kmodc ∗
+      "Hkmodl"   ∷ kmod_lnrz γ key kmodl ∗
+      "Hkmodc"   ∷ kmod_cmtd γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
-      "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
-      "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
-      "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
-      "%Hdiffl"   ∷ ⌜diff_by_lnrz cmtd lnrz kmodl⌝ ∗
-      "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd kmodc tsprep⌝.
+      "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
   Definition key_inv_with_kmodc_no_repl_tsprep
     γ (key : dbkey) (kmodc : dbkmod) (repl : dbhist) (tsprep : nat) : iProp Σ :=
@@ -707,27 +794,18 @@ Section inv.
       (kmodl : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
-      "Htmlnrz"   ∷ kmod_lnrz γ key kmodl ∗
-      "Htmcmtd"   ∷ kmod_cmtd γ key kmodc ∗
+      "Hkmodl"   ∷ kmod_lnrz γ key kmodl ∗
+      "Hkmodc"   ∷ kmod_cmtd γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
-      "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
-      "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
-      "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
-      "%Hdiffl"   ∷ ⌜diff_by_lnrz cmtd lnrz kmodl⌝ ∗
-      "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd kmodc tsprep⌝.
+      "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
-  Lemma key_inv_no_repl_tsprep_unseal_kmodc γ key repl tsprep :
-    key_inv_no_repl_tsprep γ key repl tsprep -∗
-    ∃ kmodc, key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep.
-  Proof. iIntros "Hkey".  iNamed "Hkey". iFrame "% # ∗". Qed.
-
-  Definition key_inv_ncmted_no_repl_tsprep
+  Definition key_inv_xcmted_no_repl_tsprep
     γ (key : dbkey) (repl : dbhist) (tsprep : nat) (ts : nat) : iProp Σ :=
     ∃ kmodc,
-      "Hkey" ∷ key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep ∧
-      "Hnc"  ∷ ⌜kmodc !! ts = None⌝.
+      "Hkey" ∷ key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep ∗
+      "%Hnc"  ∷ ⌜kmodc !! ts = None⌝.
 
-  Definition valid_cmd γ (c : command) : iProp Σ :=
+  Definition safe_submit_finalize γ (c : command) : iProp Σ :=
     match c with
     | CmdCmt ts => (∃ wrs, txnres_cmt γ ts wrs)
     | CmdAbt ts => txnres_abt γ ts
@@ -735,10 +813,19 @@ Section inv.
     end.
 
   #[global]
-  Instance valid_cmd_persistent γ c :
-    Persistent (valid_cmd γ c).
+  Instance safe_submit_finalize_persistent γ c :
+    Persistent (safe_submit_finalize γ c).
   Proof. destruct c; apply _. Qed.
 
+  (* TODO: check if we actually need this when proving the functional
+  correctness of applying a prepare command. *)
+  Definition correct_group gid (c : command) :=
+    match c with
+    | CmdPrep ts wrs => set_Forall (λ k, key_to_group k = gid) (dom wrs)
+    | CmdRead ts key => key_to_group key = gid
+    | _ => True
+    end.
+  
   Definition group_inv γ (gid : groupid) : iProp Σ :=
     ∃ (log : dblog) (cpool : gset command)
       (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
@@ -746,16 +833,18 @@ Section inv.
       "Hcpool"  ∷ cpool_half γ gid cpool ∗
       "Hstm"    ∷ txnst_auth γ gid stm ∗
       "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
-      "#Hvc"    ∷ ([∗ set] c ∈ cpool, valid_cmd γ c) ∗
-      "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝.
+      "#Hvc"    ∷ ([∗ set] c ∈ cpool, safe_submit_finalize γ c) ∗
+      "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝ ∗
+      "%Hcg"    ∷ ⌜set_Forall (correct_group gid) cpool⌝.
 
   Definition group_inv_no_log γ (gid : groupid) (log : dblog) : iProp Σ :=
     ∃ (cpool : gset command) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
       "Hcpool"  ∷ cpool_half γ gid cpool ∗
       "Hstm"    ∷ txnst_auth γ gid stm ∗
       "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
-      "#Hvc"    ∷ ([∗ set] c ∈ cpool, valid_cmd γ c) ∗
-      "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝.
+      "#Hvc"    ∷ ([∗ set] c ∈ cpool, safe_submit_finalize γ c) ∗
+      "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝ ∗
+      "%Hcg"    ∷ ⌜set_Forall (correct_group gid) cpool⌝.
 
   Definition distxN := nroot .@ "distx".
 
@@ -810,14 +899,28 @@ Section group_inv.
   Proof.
   Admitted.
 
+  Lemma keys_inv_merge_repl_tsprep {γ tpls} keys :
+    dom tpls = keys ->
+    ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
+    ([∗ map] key ↦ tpl ∈ tpls, tuple_repl_half γ key tpl) -∗
+    ([∗ set] key ∈ keys, key_inv γ key).
+  Proof.
+  Admitted.
+
+  Lemma key_inv_no_repl_tsprep_unseal_kmodc γ key repl tsprep :
+    key_inv_no_repl_tsprep γ key repl tsprep -∗
+    ∃ kmodc, key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep.
+  Proof. iIntros "Hkey".  iNamed "Hkey". iFrame "% # ∗". Qed.
+
   Lemma key_inv_not_committed γ gid ts stm key kmodc tpl :
+    gid = key_to_group key ->
     stm !! ts = None ->
     txnst_auth γ gid stm -∗
     txn_inv γ -∗
     key_inv_with_kmodc_no_repl_tsprep γ key kmodc tpl.1 tpl.2 -∗
     ⌜kmodc !! ts = None⌝.
   Proof.
-    iIntros (Hnone) "Hstm Htxn Hkey".
+    iIntros (Hgid Hnone) "Hstm Htxn Hkey".
     iNamed "Htxn".
     destruct (resm !! ts) as [res |] eqn:Hlookup.
     { (* Case: Committed or aborted. *)
@@ -825,39 +928,52 @@ Section group_inv.
       destruct res.
       { (* Case: Committed. *)
         simpl.
-        destruct (wrs !! key) as [v |] eqn:Hv.
+        destruct (wrs !! key) as [v |] eqn:Hkey.
         { (* Case: [key] in the write set of [ts]; contradiction. *)
-          admit.
+          rewrite /all_prepared.
+          iDestruct (big_sepS_elem_of _ _ gid with "Hres") as "Hst".
+          { rewrite Hgid. by eapply elem_of_ptgroups, elem_of_dom_2. }
+          by iDestruct (txnst_none_false with "Hstm Hst") as "[]".
         }
         (* Case: [key] not in the write set of [ts]. *)
-        admit.
+        iNamed "Hkey".
+        iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkm.
+        iPureIntro.
+        by eapply resm_cmted_kmod_absent.
       }
       { (* Case: Aborted. *)
-        (* Prove [kmodc !! ts = None] using [Htkcc] and [Hlookup]. *)
-        admit.
+        iNamed "Hkey".
+        iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkm.
+        iPureIntro.
+        by eapply resm_abted_kmod_absent.
       }
     }
     (* Case: Not committed or aborted. *)
+    iNamed "Hkey".
+    iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkm.
     iPureIntro.
-    (* TODO: prove this with [Htkcc] and [Hres]. *)
-  Admitted.
+    by eapply resm_absent_kmod_absent.
+  Qed.
 
   Lemma keys_inv_not_committed γ gid ts stm tpls :
+    set_Forall (λ k, key_to_group k = gid) (dom tpls) ->
     stm !! ts = None ->
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
     txnst_auth γ gid stm -∗
     txn_inv γ -∗
-    ([∗ map] key ↦ tpl ∈ tpls, key_inv_ncmted_no_repl_tsprep γ key tpl.1 tpl.2 ts) ∗
+    ([∗ map] key ↦ tpl ∈ tpls, key_inv_xcmted_no_repl_tsprep γ key tpl.1 tpl.2 ts) ∗
     txnst_auth γ gid stm ∗
     txn_inv γ.
   Proof.
-    iIntros (Hnone) "Hkeys Hst Htxn".
+    iIntros (Hgid Hnone) "Hkeys Hst Htxn".
     iApply (big_sepM_impl_res with "Hkeys [Hst Htxn]").
     { iFrame. } (* why can't $ do the work? *)
     iIntros "!>" (k t Hkt) "Hkey [Hst Htxn]".
-    rewrite /key_inv_ncmted_no_repl_tsprep.
+    apply elem_of_dom_2 in Hkt.
+    specialize (Hgid _ Hkt). simpl in Hgid.
+    rewrite /key_inv_xcmted_no_repl_tsprep.
     iDestruct (key_inv_no_repl_tsprep_unseal_kmodc with "Hkey") as (kmodc) "Hkey".
-    iDestruct (key_inv_not_committed with "Hst Htxn Hkey") as %Hprep.
+    iDestruct (key_inv_not_committed with "Hst Htxn Hkey") as %Hprep; first done.
     { apply Hnone. }
     iFrame "∗ %".
   Qed.
@@ -866,12 +982,12 @@ Section group_inv.
     validate ts wrs tpls = true ->
     tpls_group gid tpls !! k = Some x ->
     tpls_group gid (acquire ts wrs tpls) !! k = Some y ->
-    key_inv_no_repl_tsprep γ k x.1 x.2 -∗
-    key_inv_no_repl_tsprep γ k y.1 y.2.
+    key_inv_xcmted_no_repl_tsprep γ k x.1 x.2 ts -∗
+    key_inv_xcmted_no_repl_tsprep γ k y.1 y.2 ts.
   Proof.
     iIntros (Hvd Hx Hy) "Hkeys".
-    iNamed "Hkeys".
-    iFrame "% # ∗".
+    iNamed "Hkeys". iNamed "Hkey". iNamed "Hprop".
+    iFrame "∗ # %".
     iPureIntro.
     apply map_lookup_filter_Some_1_1 in Hx, Hy.
     destruct (wrs !! k) as [t | ] eqn:Hwrsk; last first.
@@ -887,15 +1003,15 @@ Section group_inv.
     rewrite (acquire_tuple_modified Hsome Hx) /= in Hy.
     inversion Hy. subst y. clear Hy.
     simpl. simpl in Hdiffc.
-    apply diff_by_cmtd_inv_learn_prepare; [| done |  | done].
-  Admitted.
+    by apply diff_by_cmtd_inv_learn_prepare.
+  Qed.
 
   Lemma keys_inv_learn_preapre {γ gid ts wrs tpls} :
     validate ts wrs tpls = true ->
     ([∗ map] key ↦ tpl ∈ tpls_group gid tpls,
-       key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
+       key_inv_xcmted_no_repl_tsprep γ key tpl.1 tpl.2 ts) -∗
     ([∗ map] key ↦ tpl ∈ tpls_group gid (acquire ts wrs tpls),
-       key_inv_no_repl_tsprep γ key tpl.1 tpl.2).
+       key_inv_xcmted_no_repl_tsprep γ key tpl.1 tpl.2 ts).
   Proof.
     iIntros (Hvd) "Hkeys".
     set tpls' := acquire _ _ _.
@@ -907,14 +1023,16 @@ Section group_inv.
     iIntros "!>" (k x y Hx Hy) "Hkey".
     by iApply (key_inv_learn_prepare with "Hkey").
   Qed.
-  
+
   Lemma group_inv_learn_prepare γ gid log ts wrs :
+    txn_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log γ gid log ==∗
+    txn_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log γ gid (log ++ [CmdPrep ts wrs]).
   Proof.
-    iIntros "Hkeys Hgroup".
+    iIntros "Htxn Hkeys Hgroup".
     iNamed "Hgroup".
     rewrite /apply_cmds in Hrsm.
     rewrite /group_inv_no_log.
@@ -922,7 +1040,7 @@ Section group_inv.
     iFrame "Hcpool Hvc".
     destruct (stm !! ts) eqn:Hdup.
     { (* Case: Txn [ts] has already prepared, aborted, or committed; no-op. *)
-      iFrame "Hrepls Hkeys Hstm".
+      iFrame.
       by rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
     }
     (* Case: Txn [ts] has not prepared, aborted, or committed. *)
@@ -948,29 +1066,50 @@ Section group_inv.
     { pose proof (apply_cmds_dom log) as Hdom'.
       rewrite /apply_cmds Hrsm in Hdom'.
       rewrite Hdom.
-      by apply keys_group_tpls_group_dom.
+      by rewrite -keys_group_tpls_group_dom.
     }
     (* Update the replicated history and prepared timestamp. *)
     iMod (tuple_repl_big_update (tpls_group gid tpls') with "Hrepls Htpls") as "[Hrepls Htpls]".
     { apply tpls_group_dom. by rewrite acquire_dom. }
-    (* Re-establish keys invariant. *)
-  Admitted.
+    (* Prove txn [ts] has not committed on [tpls]. *)
+    iDestruct (keys_inv_not_committed with "Hkeys Hstm Htxn") as "(Hkeys & Hstm & Htxn)".
+    { intros k Hk. by eapply key_to_group_tpls_group. }
+    { apply Hdup. }
+    (* Re-establish keys invariant w.r.t. updated tuples. *)
+    iDestruct (keys_inv_learn_preapre with "Hkeys") as "Hkeys"; first done.
+    (* Put ownership of tuples back to keys invariant. *)
+    iDestruct (keys_inv_merge_repl_tsprep (keys_group gid keys_all) with "[Hkeys] Htpls") as "Hkeys".
+    { rewrite -keys_group_tpls_group_dom in Hdom.
+      by rewrite -keys_group_tpls_group_dom acquire_dom.
+    }
+    { iApply (big_sepM_mono with "Hkeys").
+      iIntros (k t Hkt) "Hkey".
+      iNamed "Hkey". iNamed "Hkey". iFrame "∗ #".
+    }
+    (* Merge the keys invariants of this group and other groups. *)
+    iDestruct (keys_inv_ungroup with "Hkeys Hkeyso") as "Hkeys".
+    (* Mark [ts] as prepared in the status map. *)
+    iMod (txnst_prepare ts wrs with "Hstm") as "Hstm"; first apply Hdup.
+    by iFrame "∗ # %".
+  Qed.
 
   Lemma group_inv_learn γ gid cmds :
     ∀ log,
+    txn_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log γ gid log ==∗
+    txn_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log γ gid (log ++ cmds).
   Proof.
     iInduction cmds as [| c l] "IH".
-    { iIntros (log) "Hkeys Hgroup". rewrite app_nil_r. by iFrame. }
-    iIntros (log) "Hkeys Hgroup".
+    { iIntros (log) "Htxn Hkeys Hgroup". rewrite app_nil_r. by iFrame. }
+    iIntros (log) "Htxn Hkeys Hgroup".
     rewrite cons_middle. rewrite app_assoc.
     destruct c.
     { (* Case: [CmdPrep tid wrs] *)
-      iMod (group_inv_learn_prepare with "Hkeys Hgroup") as "[Hkeys Hgroup]".
-      by iApply ("IH" with "Hkeys").
+      iMod (group_inv_learn_prepare with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
+      by iApply ("IH" with "Htxn Hkeys Hgroup").
     }
   Admitted.
 
