@@ -29,6 +29,8 @@ Section val_types.
 
   Context `{ffi_syntax}.
   Definition nil : val := #null.
+  Definition slice_nil : val := (nil, nil, nil, #()).
+  Definition interface_nil : val := (nil, nil, nil, #()).
   Fixpoint zero_val (t : go_type) : val :=
     match t with
     | boolT => #false
@@ -45,11 +47,11 @@ Section val_types.
 
     | stringT => #(str "")
     (* | arrayT (len : nat) (elem : go_type) *)
-    | sliceT _ => nil
+    | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val ∘ snd) decls)
     | ptrT => nil
     | funcT => nil
-    | interfaceT => nil
+    | interfaceT => interface_nil
     | mapT _ _ => nil
     | chanT _ => nil
     end

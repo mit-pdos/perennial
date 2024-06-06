@@ -234,48 +234,6 @@ Section goose_lang.
       unfold has_go_type. apply _.
   Qed.
 
-  Lemma base_pointsto_untype {l bt q v} :
-    match bt with
-    | unitBT => false
-    | _ => true
-    end = true ->
-    l ↦[baseT bt]{q} v ⊣⊢ l ↦{q} v ∗ ⌜has_go_type v (baseT bt)⌝.
-  Proof.
-    intros Hnotunit.
-    iSplit.
-    - iIntros "Hl".
-      iDestruct (typed_pointsto_ty with "Hl") as %Hty.
-      rewrite typed_pointsto_singleton; eauto.
-      inv_ty; simpl; auto.
-      congruence.
-    - iIntros "[Hl %]".
-      unseal.
-      iSplitL; auto.
-      inv_ty; simpl; try rewrite loc_add_0 right_id; auto.
-  Qed.
-
-  Lemma base_load_ty {bt} :
-    match bt with
-    | unitBT => false
-    | _ => true
-    end = true ->
-    load_ty (baseT bt) = (λ: "l", !(Var "l"))%V.
-  Proof.
-    destruct bt; simpl; intros; auto.
-    congruence.
-  Qed.
-
-  Lemma nat_scaled_offset_to_Z {v t} {i: nat} :
-    has_go_type v t ->
-    Z.of_nat (length (flatten_struct v)) * i =
-    ty_size t * Z.of_nat i.
-  Proof.
-    intros Hty.
-    rewrite (has_go_type_len Hty).
-    pose proof (ty_size_ge_0 t).
-    rewrite Z2Nat.id; auto.
-  Qed.
-
   (* this is the core reasoning, not intended for external use *)
   Local Lemma wp_AllocAt t stk E v :
     has_go_type v t ->
@@ -305,26 +263,21 @@ Section goose_lang.
     wp_apply (wp_AllocAt t); auto.
   Qed.
 
-  (* TODO: this is only because Goose doesn't use ref_zero *)
+  Lemma zero_val_has_go_type t :
+    has_go_type (zero_val t) t.
+  Proof.
+    unfold has_go_type.
+    destruct t; simpl; try apply _.
+    FIXME:
+  Qed.
+
   Lemma wp_ref_of_zero stk E t :
-    has_zero t ->
     {{{ True }}}
       ref (zero_val t) @ stk; E
     {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
   Proof.
-    iIntros (Hzero Φ) "_ HΦ".
+    iIntros (Φ) "_ HΦ".
     wp_apply (wp_AllocAt t); eauto.
-  Qed.
-
-  Lemma wp_ref_zero stk E t :
-    has_zero t ->
-    {{{ True }}}
-      ref_zero t #() @ stk; E
-    {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
-  Proof.
-    iIntros (Hzero Φ) "_ HΦ".
-    wp_call.
-    wp_apply wp_ref_of_zero; eauto.
   Qed.
 
   Lemma wp_LoadAt stk E q l t v :

@@ -11,7 +11,6 @@ Section go_lang.
 
   (** allocation with a type annotation *)
   Definition ref_to (t:go_type): val := λ: "v", ref (Var "v").
-  Definition ref_zero (t:go_type): val := λ: <>, ref (zero_val t).
 
   Inductive go_abstract_type :=
   | cellT
@@ -27,9 +26,9 @@ Section go_lang.
 
   Fixpoint go_type_interp (t : go_type) : go_abstract_type :=
     match t with
-    | sliceT _ => prodT cellT $ prodT cellT $ prodT cellT unitT
+    | sliceT _ => prodT (prodT (prodT cellT cellT) cellT) unitT
     | structT decls => fold_right prodT unitT (fmap (go_type_interp ∘ snd) decls)
-    | interfaceT => prodT cellT $ prodT cellT$ prodT cellT unitT (* type id, val, methods *)
+    | interfaceT => prodT (prodT (prodT cellT cellT) cellT) unitT (* type id, val, methods *)
     | _ => cellT
     end.
 
