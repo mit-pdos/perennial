@@ -142,54 +142,50 @@ Section goose_lang.
     iDestruct ("IH" $! (l +ₗ 1) l2 with "[] Hl1 Hl2") as %->; auto.
   Qed.
 
+  Local Lemma flatten_struct_inj_helper v1 t1 :
+    has_go_abstract_type v1 t1 ->
+    (∀ t2 v2,
+       has_go_abstract_type v2 t2 ->
+       t1 = t2 →
+       flatten_struct v1 = flatten_struct v2 ->
+       v1 = v2).
+  Proof.
+    induction 1; last shelve; induction 1; simpl in *; try congruence.
+    { intros ?. by injection 1 as ->. }
+    { intros ?. by injection 1 as <-. }
+    Unshelve.
+    intros ??.
+    destruct 1; try congruence.
+    injection 1 as -> ->.
+    specialize (IHhas_go_abstract_type1 _ _ H1_ eq_refl).
+    specialize (IHhas_go_abstract_type2 _ _ H1_0 eq_refl).
+    simpl. intros Hflat.
+    apply app_inj_2 in Hflat as [].
+    2:{ apply has_go_abstract_type_len in H0, H1_0. lia. }
+    f_equal.
+    + by apply IHhas_go_abstract_type1.
+    + by apply IHhas_go_abstract_type2.
+  Qed.
+
   Local Lemma flatten_struct_inj v1 v2 t :
     has_go_abstract_type v1 t ->
     has_go_abstract_type v2 t ->
     flatten_struct v1 = flatten_struct v2 ->
     v1 = v2.
   Proof.
-    induction 1; simpl.
+    intros.
+    eapply flatten_struct_inj_helper.
+    generalize v2, t2. clear.
+    induction 1; last shelve; induction 1; simpl in *; try congruence.
+    { intros ?. by injection 1 as ->. }
+    { intros ?. by injection 1 as <-. }
+    Unshelve.
+    induction 1; simpl in *; try congruence.
     {
-      (* destruct 1; simpl; try congruence. *)
-      Search "has_go_abstract_type".
-      intros H.
-      epose proof (has_go_abstract_type_ind (λ v _, (_ → #b = v)) _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ H).
-      simpl in H0.
-      exact H0.
-      Unshelve.
-      all: intros; simpl in *; try congruence.
-      (* FIXME: induction principle too weak *)
-      pose proof (has_go_abstract_type_len H).
-      intros Hb.
-      rewrite Hb in IHhas_go_abstract_type1, IHhas_go_abstract_type2.
-      Print flatten_struct.
-      (* what if t = cellT *)
+      injection 1 as -> ->.
+      intros.
+      apply IH
     }
-    }
-    intros H.
-    revert v2.
-    induction H; simpl; intros.
-    - inversion H0; subst; simpl in H1;
-        try solve [ inversion H ];
-        try (destruct l, l0; inversion H1; subst);
-        auto.
-    - invc H1; simpl in *; inv_lit_ty.
-      pose proof (val_ty_len H6).
-      pose proof (val_ty_len H).
-      unshelve epose proof (app_inj_1 _ _ _ _ _ H2); first by congruence.
-      intuition eauto.
-      eapply IHval_ty1 in H5; eauto; subst.
-      eapply IHval_ty2 in H8; eauto; subst.
-      congruence.
-    - invc H; simpl in *; inv_lit_ty; try congruence.
-    - invc H0; simpl in *; inv_lit_ty; try congruence.
-    - invc H0; simpl in *; inv_lit_ty; try congruence.
-    - invc H0; simpl in *; inv_lit_ty; try congruence.
-    - invc H; simpl in *; inv_lit_ty; try congruence.
-      * invc H3. invc H2; simpl in *; inv_lit_ty; try congruence.
-      * invc H3. invc H2; simpl in *; inv_lit_ty; try congruence.
-    - invc H; simpl in *; inv_lit_ty; try congruence.
-    - invc H; simpl in *; inv_lit_ty; try congruence.
   Qed.
 
   Lemma typed_pointsto_agree l t q1 v1 q2 v2 :
