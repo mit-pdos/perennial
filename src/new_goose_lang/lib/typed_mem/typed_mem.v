@@ -43,7 +43,7 @@ Section goose_lang.
              first [ is_var t; fail 1 | invc H ]
            end.
 
-  Theorem ty_size_offset t l j :
+  Lemma ty_size_offset t l j :
     l +ₗ (length (flatten_ty t) + j)%nat = l +ₗ ty_size t +ₗ j.
   Proof.
     rewrite loc_add_assoc.
@@ -72,7 +72,7 @@ Section goose_lang.
   Proof. unseal. apply _. Qed.
 
   (*
-  Theorem typed_pointsto_singleton l q t v v0 :
+  Lemma typed_pointsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
     l ↦[t]{q} v ⊢@{_} l ↦{q} v0.
   Proof.
@@ -82,11 +82,20 @@ Section goose_lang.
     by rewrite loc_add_0 right_id.
   Qed. *)
 
-  Theorem typed_pointsto_ty q l v t :
+  Lemma typed_pointsto_ty q l v t :
     l ↦[t]{q} v ⊢@{_} ⌜has_go_type v t⌝.
   Proof. unseal. iIntros "[_ %] !%//". Qed.
 
-  Theorem has_go_type_len v t :
+  Local Lemma has_go_abstract_type_len {v t} :
+    has_go_abstract_type v t ->
+    length (flatten_struct v) = Z.to_nat (go_abstract_type_size t).
+  Proof.
+    unfold go_type_size.
+    induction 1; simpl; auto.
+    rewrite app_length. lia.
+  Qed.
+
+  Local Lemma has_go_type_len {v t} :
     has_go_type v t ->
     length (flatten_struct v) = Z.to_nat (go_type_size t).
   Proof.
@@ -95,7 +104,7 @@ Section goose_lang.
     rewrite app_length. lia.
   Qed.
 
-  Theorem typed_pointsto_frac_valid l q t v :
+  Lemma typed_pointsto_frac_valid l q t v :
     0 < go_type_size t →
     l ↦[t]{#q} v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.
@@ -133,7 +142,57 @@ Section goose_lang.
     iDestruct ("IH" $! (l +ₗ 1) l2 with "[] Hl1 Hl2") as %->; auto.
   Qed.
 
-  Theorem typed_pointsto_agree l t q1 v1 q2 v2 :
+  Local Lemma flatten_struct_inj v1 v2 t :
+    has_go_abstract_type v1 t ->
+    has_go_abstract_type v2 t ->
+    flatten_struct v1 = flatten_struct v2 ->
+    v1 = v2.
+  Proof.
+    induction 1; simpl.
+    {
+      (* destruct 1; simpl; try congruence. *)
+      Search "has_go_abstract_type".
+      intros H.
+      epose proof (has_go_abstract_type_ind (λ v _, (_ → #b = v)) _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ H).
+      simpl in H0.
+      exact H0.
+      Unshelve.
+      all: intros; simpl in *; try congruence.
+      (* FIXME: induction principle too weak *)
+      pose proof (has_go_abstract_type_len H).
+      intros Hb.
+      rewrite Hb in IHhas_go_abstract_type1, IHhas_go_abstract_type2.
+      Print flatten_struct.
+      (* what if t = cellT *)
+    }
+    }
+    intros H.
+    revert v2.
+    induction H; simpl; intros.
+    - inversion H0; subst; simpl in H1;
+        try solve [ inversion H ];
+        try (destruct l, l0; inversion H1; subst);
+        auto.
+    - invc H1; simpl in *; inv_lit_ty.
+      pose proof (val_ty_len H6).
+      pose proof (val_ty_len H).
+      unshelve epose proof (app_inj_1 _ _ _ _ _ H2); first by congruence.
+      intuition eauto.
+      eapply IHval_ty1 in H5; eauto; subst.
+      eapply IHval_ty2 in H8; eauto; subst.
+      congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
+    - invc H0; simpl in *; inv_lit_ty; try congruence.
+    - invc H0; simpl in *; inv_lit_ty; try congruence.
+    - invc H0; simpl in *; inv_lit_ty; try congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
+      * invc H3. invc H2; simpl in *; inv_lit_ty; try congruence.
+      * invc H3. invc H2; simpl in *; inv_lit_ty; try congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
+  Qed.
+
+  Lemma typed_pointsto_agree l t q1 v1 q2 v2 :
     l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
     ⌜v1 = v2⌝.
   Proof.
@@ -174,7 +233,7 @@ Section goose_lang.
       auto.
   Qed.
 
-  Theorem base_pointsto_untype {l bt q v} :
+  Lemma base_pointsto_untype {l bt q v} :
     match bt with
     | unitBT => false
     | _ => true
@@ -194,7 +253,7 @@ Section goose_lang.
       inv_ty; simpl; try rewrite loc_add_0 right_id; auto.
   Qed.
 
-  Theorem base_load_ty {bt} :
+  Lemma base_load_ty {bt} :
     match bt with
     | unitBT => false
     | _ => true
@@ -205,7 +264,7 @@ Section goose_lang.
     congruence.
   Qed.
 
-  Theorem nat_scaled_offset_to_Z {v t} {i: nat} :
+  Lemma nat_scaled_offset_to_Z {v t} {i: nat} :
     has_go_type v t ->
     Z.of_nat (length (flatten_struct v)) * i =
     ty_size t * Z.of_nat i.
@@ -217,7 +276,7 @@ Section goose_lang.
   Qed.
 
   (* this is the core reasoning, not intended for external use *)
-  Local Theorem wp_AllocAt t stk E v :
+  Local Lemma wp_AllocAt t stk E v :
     has_go_type v t ->
     {{{ True }}}
       ref v @ stk; E
@@ -234,7 +293,7 @@ Section goose_lang.
     iFrame.
   Qed.
 
-  Theorem wp_ref_to t stk E v :
+  Lemma wp_ref_to t stk E v :
     has_go_type v t ->
     {{{ True }}}
       ref_to t v @ stk; E
@@ -246,7 +305,7 @@ Section goose_lang.
   Qed.
 
   (* TODO: this is only because Goose doesn't use ref_zero *)
-  Theorem wp_ref_of_zero stk E t :
+  Lemma wp_ref_of_zero stk E t :
     has_zero t ->
     {{{ True }}}
       ref (zero_val t) @ stk; E
@@ -256,7 +315,7 @@ Section goose_lang.
     wp_apply (wp_AllocAt t); eauto.
   Qed.
 
-  Theorem wp_ref_zero stk E t :
+  Lemma wp_ref_zero stk E t :
     has_zero t ->
     {{{ True }}}
       ref_zero t #() @ stk; E
@@ -267,7 +326,7 @@ Section goose_lang.
     wp_apply wp_ref_of_zero; eauto.
   Qed.
 
-  Theorem wp_LoadAt stk E q l t v :
+  Lemma wp_LoadAt stk E q l t v :
     {{{ ▷ l ↦[t]{q} v }}}
       load_ty t #l @ stk; E
     {{{ RET v; l ↦[t]{q} v }}}.
@@ -342,7 +401,7 @@ Section goose_lang.
     iApply ("Henvs" with "Hp").
   Qed.
 
-  Theorem wp_store stk E l v v' :
+  Lemma wp_store stk E l v v' :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
     {{{ RET LitV LitUnit; l ↦ v }}}.
   Proof.
@@ -351,7 +410,7 @@ Section goose_lang.
     by wp_apply (wp_finish_store with "[$Hl $Hl']").
   Qed.
 
-  Theorem wp_StoreAt stk E l t v0 v :
+  Lemma wp_StoreAt stk E l t v0 v :
     has_go_type v t ->
     {{{ ▷ l ↦[t] v0 }}}
       (#l <-[t] v)%V @ stk; E
