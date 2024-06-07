@@ -81,6 +81,12 @@ Section goose_lang.
   Global Instance typed_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{#q} v)%I.
   Proof. unseal. apply _. Qed.
 
+  Global Instance typed_pointsto_as_fractional l t v q: fractional.AsFractional
+                                                     (l ↦[t]{#q} v)
+                                                     (λ q, l ↦[t]{#q} v)%I q.
+  Proof. constructor; auto. apply _. Qed.
+
+
   (*
   Lemma typed_pointsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
@@ -415,6 +421,7 @@ Section goose_lang.
   Qed.
 
 End goose_lang.
+
 
 Notation "l ↦[ t ] dq v" := (typed_pointsto l dq t v%V)
                               (at level 20, dq custom dfrac at level 50, t at level 50,

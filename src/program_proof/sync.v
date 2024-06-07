@@ -24,22 +24,31 @@ Proof. solve_inG. Qed.
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
-Context {ext_tys: ext_types ext}.
 
 Section proof.
 Context `{!heapGS Σ} `{!syncG Σ}.
+(* TODO: fix all the notation *)
+Declare Custom Entry struct_field_type.
+Notation "d ⋅ f" := (d, f) (in custom struct_field_type at level 80 ,
+                                  d constr at level 49,
+                                  f constr at level 49
+                               ).
+Notation "l ↦s[ df ] dq v" := (let '(d, f) := df in (struct.fieldRef_f d f l ↦[ struct.fieldTy d f ]{dq} v))%I
+  (at level 50, dq custom dfrac at level 70,
+                   df custom struct_field_type at level 80).
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
   inv nroot (
-        ∃ b : bool, (struct.fieldRef_f Mutex "state" m) ↦[struct.fieldTy Mutex "state"]{# 1/4} #b ∗
+        ∃ b : bool,
+          (m ↦s[ Mutex ⋅ "state" ]{# 1/4} #b) ∗
                   if b then True else
-                    (struct.fieldRef_f Mutex "state" m) ↦[struct.fieldTy Mutex "state"]{# 3/4} #b ∗ R
+                    m ↦s[Mutex ⋅ "state"]{# 3/4} #b ∗ R
         ).
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := m ↦[Mutex :: "state"]{# 3/4} #true.
+Definition own_Mutex (m: loc) : iProp Σ := m ↦s[Mutex ⋅ "state"]{# 3/4} #true.
 
 Lemma own_Mutex_exclusive (m : loc) : own_Mutex m -∗ own_Mutex m -∗ False.
 Proof.
@@ -61,7 +70,7 @@ Proof. apply _. Qed.
 
 (** Denotes ownership of a mutex for which the lock invariant is not yet
     decided *)
-Definition own_uninit_Mutex (m: loc): iProp Σ := m ↦[Mutex :: "state"] #false.
+Definition own_uninit_Mutex (m: loc): iProp Σ := m ↦s[Mutex ⋅ "state"] #false.
 
 Theorem init_Mutex R E m : own_uninit_Mutex m -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
@@ -71,19 +80,19 @@ Proof.
   { iIntros "!>". iExists false. iFrame.
     rewrite /own_uninit_Mutex.
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-    iDestruct "Hl" as "[Hl1 Hl2]".
-    iFrame.
+    (* FIXME: *)
+    iDestruct "Hl" as "[$$]".
   }
 Qed.
 
 Lemma wp_new_Mutex E:
   {{{ True }}}
-    struct.alloc Mutex (zero_val (struct.t Mutex)) @ E
+    ref_to (structT Mutex) (zero_val (structT Mutex)) @ E
  {{{ m, RET #m; own_uninit_Mutex m }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_apply wp_allocStruct.
-  { val_ty. }
+  wp_apply wp_ref_to.
+  { apply zero_val_has_go_type. }
   iIntros (?) "Hl".
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hl") as "Hl".
