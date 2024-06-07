@@ -85,6 +85,39 @@ Proof.
   }
 Qed.
 
+(* FIXME: move this *)
+Local Fixpoint struct_big_fields_rec l dq (d: descriptor) (fs:descriptor) (v:val): iProp Σ :=
+  match fs with
+  | [] => "_" ∷ ⌜v = #()⌝
+  | (f,t)::fs =>
+    match v with
+    | PairV v1 v2 => ("H" ++ f) ∷ l ↦s[d ⋅ f]{dq} v1 ∗
+                    struct_big_fields_rec l dq d fs v2
+    | _ => False
+    end
+  end.
+
+Definition struct_fields l dq d v : iProp Σ := struct_big_fields_rec l dq d d v.
+
+Theorem struct_fields_split l q d {dwf: struct.wf d} v :
+  typed_pointsto l q (structT d) v ⊣⊢ struct_fields l q d v.
+Proof.
+Admitted.
+
+Lemma wp_struct_fieldRef d f (l : loc) :
+  {{{ True }}}
+    struct.fieldRef d f #l
+  {{{ RET #(struct.fieldRef_f d f l); True }}}
+.
+Proof.
+  iIntros (?) "_ HΦ".
+  Transparent struct.fieldRef. wp_lam. Opaque struct.fieldRef.
+  wp_pures.
+  unfold struct.fieldRef_f.
+  rewrite Z.mul_1_r.
+  by iApply "HΦ".
+Qed.
+
 Lemma wp_new_Mutex E:
   {{{ True }}}
     ref_to (structT Mutex) (zero_val (structT Mutex)) @ E
@@ -96,20 +129,8 @@ Proof.
   iIntros (?) "Hl".
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hl") as "Hl".
-  iNamed "Hl". iFrame.
+  iNamed "Hl". simpl. iFrame.
 Qed.
-
-(*
-Lemma newlock_spec E (R : iProp Σ):
-  {{{ ▷ R }}} lock.new #() @ E {{{ (lk:loc), RET #lk; own_lock #lk R }}}.
-Proof.
-  iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
-  wp_lam. wp_apply wp_alloc_untyped; first by auto.
-  iIntros (l) "Hl".
-  iMod (alloc_lock with "[$] HR") as "Hlock".
-  iModIntro.
-  iApply "HΦ". iFrame.
-Qed. *)
 
 Lemma wp_Mutex__Lock m R :
   {{{ is_Mutex m R }}}
@@ -118,13 +139,12 @@ Lemma wp_Mutex__Lock m R :
 Proof.
   iIntros (Φ) "#Hinv HΦ".
   wp_rec.
-  wp_apply wp_struct_fieldRef; first done.
+  wp_apply wp_struct_fieldRef.
   wp_bind (CmpXchg _ _ _).
   wp_pures.
   iInv nroot as ([]) "[Hl HR]".
   -
-    (* FIXME: struct fieldRef_f should match up with struct field points-tos. *)
-    (*
+    (* FIXME: typed CmpXchg *)
     wp_cmpxchg_fail. iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
     wp_pures. iApply ("HΦ" $! false). done.
   - iDestruct "HR" as "[Hl2 HR]".
