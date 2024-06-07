@@ -57,7 +57,8 @@ Section go_lang.
                          let: "p" := Fst (Var "pv") in
                          let: "v" := Snd (Var "pv") in
                          store_ty_aux t1 (Var "p", Fst (Var "v"));;
-                         store_ty_aux t2 (Var "p" +ₗ #(go_abstract_type_size t1), Snd (Var "v")))%V
+                         store_ty_aux t2 (BinOp (OffsetOp (go_abstract_type_size t1))
+                                                          (Var "p") #1, Snd (Var "v")))%V
        | cellT => (λ: "pv", Fst (Var "pv") <- Snd (Var "pv"))%V
        | unitT => (λ: <>, #())%V
        end) (go_type_interp t).

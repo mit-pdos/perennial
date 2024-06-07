@@ -245,34 +245,6 @@ Section goose_lang.
   Lemma forall_to_Forall {A} P (l : list A) : (∀ x, P x) → Forall P l .
   Proof. intros Hin. induction l as [|x l IH]; constructor; auto. Defined.
 
-  Program Definition go_type_ind_stronger (P : go_type → Prop) f f0 f1 f2 f3 f4 f5 f6 f7 f8
-             f9 (f10 : ∀ decls, Forall P (fmap snd decls) → P (structT decls)) f11 f12 f13 f14 f15 :=
-    fix F (g : go_type) : P g :=
-      match g as g0 return (P g0) with
-      | boolT => f
-      | uint8T => f0
-      | uint16T => f1
-      | uint32T => f2
-      | uint64T => f3
-      | int8T => f4
-      | int16T => f5
-      | int32T => f6
-      | int64T => f7
-      | stringT => f8
-      | sliceT elem => f9 elem (F elem)
-      | structT decls => f10 decls (* (forall_to_Forall P (fmap snd decls) F) *) _
-      | ptrT => f11
-      | funcT => f12
-      | interfaceT => f13
-      | mapT key elem => f14 key (F key) elem (F elem)
-      | chanT elem => f15 elem (F elem)
-      end.
-  Obligation 1.
-  (* intros.
-     refine (forall_to_Forall _ _ F). *)
-  (* Print Fix. *)
-  Abort.
-
   Inductive type_order_direct : relation go_type :=
   | type_order_struct d a (H : a ∈ d.*2) : type_order_direct a (structT d).
   Definition type_order := tc type_order_direct.
@@ -315,7 +287,7 @@ Section goose_lang.
     apply zero_val_has_go_type.
   Qed.
 
-  Lemma wp_LoadAt stk E q l t v :
+  Lemma wp_typed_load stk E q l t v :
     {{{ ▷ l ↦[t]{q} v }}}
       load_ty t #l @ stk; E
     {{{ RET v; l ↦[t]{q} v }}}.
@@ -328,12 +300,9 @@ Section goose_lang.
     { iIntros "!> HPost".
       iApply "HΦ".
       iSplit; eauto. }
-    (* TODO: we have to rename this so it doesn't conflict with a name generated
-  by induction; seems like a bug *)
-    rename l into l'.
     unfold load_ty.
     generalize dependent (go_type_interp t). intros.
-    iInduction H as [ | | | | | | | | | | | | ] "IH" forall (l' Φ);
+    iInduction H as [ | | | | | | | | | | | | ] "IH" forall (l Φ);
       subst; simpl; wp_pures; rewrite ?loc_add_0 ?right_id.
     1-11: wp_apply (wp_load with "[$]"); auto.
     + by iApply "HΦ".
@@ -362,7 +331,7 @@ Section goose_lang.
     envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal=> ? ? Hwp.
-    rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_LoadAt.
+    rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_typed_load.
     iIntros "H".
     rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
     iNext.
@@ -382,84 +351,52 @@ Section goose_lang.
     by wp_apply (wp_finish_store with "[$Hl $Hl']").
   Qed.
 
-  Lemma wp_StoreAt stk E l t v0 v :
+  Lemma wp_typed_store stk E l t v0 v :
     has_go_type v t ->
     {{{ ▷ l ↦[t] v0 }}}
       (#l <-[t] v)%V @ stk; E
     {{{ RET #(); l ↦[t] v }}}.
   Proof.
     intros Hty.
+    iIntros (Φ) ">Hl HΦ".
     unseal.
-    iIntros (Φ) ">[Hl %] HΦ".
+    iDestruct "Hl" as "[Hl %Hty_old]".
+    hnf in Hty_old.
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ".
       iSplit; eauto. }
+    unfold store_ty.
+    unfold has_go_type in *.
+    generalize dependent (go_type_interp t). intros.
     rename v into v'.
     rename l into l'.
-    (iInduction H as [ | | | | | | | | ] "IH" forall (v' Hty l' Φ));
+    (iInduction Hty_old as [ | | | | | | | | | | | | ] "IH" forall (v' Hty l' Φ));
       simpl;
       rewrite ?loc_add_0 ?right_id;
       wp_pures.
-    - invc Hty; invc H;
-        try match goal with
-            | [ H: lit_ty _ _ |- _ ] => invc H
-            end;
-        simpl;
-        rewrite ?loc_add_0 ?right_id;
-        try (wp_apply (wp_store with "[$]"); auto).
-      wp_pures.
-      iApply ("HΦ" with "[//]").
+    1-11: wp_apply (wp_store with "[$]"); auto;
+      iIntros "H"; iApply "HΦ";
+      inversion Hty; subst; clear Hty; simpl; rewrite ?loc_add_0 ?right_id; iFrame.
+    - iApply "HΦ". inversion Hty; subst; clear Hty. simpl. by iFrame.
     - rewrite big_opL_app.
-      erewrite has_go_type_flatten_length by eauto.
-      setoid_rewrite ty_size_offset.
-      invc Hty.
-      { by invc H1. (* can't be a pair and a base literal *) }
+      inversion Hty; subst; clear Hty.
+      wp_pures.
       iDestruct "Hl" as "[Hv1 Hv2]".
+      wp_apply ("IH" with "[//] Hv1"); iIntros "Hv1".
+      wp_apply ("IH1" with "[//] [Hv2]"); [ | iIntros "Hv2" ].
+      { rewrite has_go_abstract_type_len; auto.
+        setoid_rewrite Z.mul_1_r.
+        setoid_rewrite Nat2Z.inj_add.
+        setoid_rewrite loc_add_assoc.
+        iFrame. }
       wp_pures.
-      wp_apply ("IH" with "[//] Hv1").
-      iIntros "Hv1".
-      wp_pures.
-      rewrite Z.mul_1_r.
-      wp_apply ("IH1" with "[//] Hv2").
-      iIntros "Hv2".
-      iApply "HΦ".
-      simpl.
-      rewrite big_opL_app.
-      iFrame.
-      erewrite has_go_type_flatten_length by eauto.
-      setoid_rewrite ty_size_offset.
-      iFrame.
-    - inv_ty;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
-    - inv_ty;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
-    - invc Hty;
-        try match goal with
-            | [ H: lit_ty _ _ |- _ ] => invc H
-            end;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
-    - invc Hty;
-        try match goal with
-            | [ H: lit_ty _ _ |- _ ] => invc H
-            end;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
-    - invc Hty;
-        try match goal with
-            | [ H: lit_ty _ _ |- _ ] => invc H
-            end;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
-    - inv_ty;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
-    - inv_ty;
-        rewrite /= ?loc_add_0 ?right_id;
-        wp_apply (wp_store with "[$]"); auto.
+      iApply "HΦ"; iFrame.
+      rewrite has_go_abstract_type_len; auto.
+      setoid_rewrite Z.mul_1_r.
+      setoid_rewrite Nat2Z.inj_add.
+      setoid_rewrite loc_add_assoc.
+      by iFrame.
   Qed.
 
   Lemma tac_wp_store_ty Δ Δ' Δ'' stk E i K l t v v' Φ :
@@ -472,7 +409,7 @@ Section goose_lang.
   Proof.
     intros Hty.
     rewrite envs_entails_unseal=> ????.
-    rewrite -wp_bind. eapply bi.wand_apply; first by eapply bi.wand_entails, wp_StoreAt.
+    rewrite -wp_bind. eapply bi.wand_apply; first by eapply bi.wand_entails, wp_typed_store.
     rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
@@ -495,11 +432,6 @@ Tactic Notation "wp_load" :=
         |fail 1 "wp_load: cannot find 'load_ty' in" e];
       [tc_solve
       |solve_pointsto ()
-      |wp_finish] ) ||
-    ( first
-        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty_persistent _ _ _ _ K))
-        |fail 1 "wp_load: cannot find 'load_ty' in" e];
-      [solve_pointsto ()
       |wp_finish] )
   | _ => fail "wp_load: not a 'wp'"
   end.
@@ -514,7 +446,7 @@ Tactic Notation "wp_store" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store_ty _ _ _ _ _ _ K))
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
-    [has_go_type
+    [(tc_solve || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
     |tc_solve
     |solve_pointsto ()
     |pm_reflexivity
