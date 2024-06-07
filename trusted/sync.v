@@ -14,10 +14,10 @@ Axiom WaitGroup: descriptor.
 
 Definition Mutex__Lock : val :=
   rec: "f" "m" :=
-    if: CmpXchg (struct.fieldRef Mutex "state" "m") #false #true then
+    if: Snd (CmpXchg (struct.fieldRef Mutex "state" "m") #false #true) then
       #()
     else
-      "f" #()
+      "f" "m"
 .
 Definition Mutex__Unlock : val :=
   λ: "f" "m", CmpXchg (struct.fieldRef Mutex "state" "m") #true #false

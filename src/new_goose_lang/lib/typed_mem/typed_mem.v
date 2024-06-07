@@ -420,6 +420,26 @@ Section goose_lang.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
 
+Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 t :
+  (go_type_interp t) = cellT →
+  has_go_type v1 t →
+  vals_compare_safe v' v1 →
+  v' ≠ v1 →
+  {{{ ▷ l ↦[t]{dq} v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
+  {{{ RET PairV v' (LitV $ LitBool false); l ↦[t]{dq} v' }}}.
+Proof.
+  unseal.
+  unfold has_go_type in *.
+  generalize dependent (go_type_interp t).
+  intros. subst.
+  iIntros "[Hpre >%Hv'] HΦ".
+  inversion Hv'.
+  all: subst; simpl;
+    rewrite loc_add_0 right_id;
+    wp_apply (wp_cmpxchg_fail with "[$]");
+    [done| inversion H0; subst; done | iIntros "?"; iApply "HΦ"; iFrame; done].
+Qed.
+
 End goose_lang.
 
 

@@ -7,7 +7,7 @@ From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import persistent_readonly.
 From Goose Require Export sync.
 From Perennial.program_proof Require Import new_proof_prelude.
-From Perennial.new_goose_lang Require Import exception.
+From Perennial.new_goose_lang Require Import exception typed_mem.
 From Perennial.algebra Require Import map.
 
 Set Default Proof Using "Type".
@@ -138,15 +138,21 @@ Lemma wp_Mutex__Lock m R :
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   iIntros (Φ) "#Hinv HΦ".
+  iLöb as "IH".
   wp_rec.
   wp_apply wp_struct_fieldRef.
   wp_bind (CmpXchg _ _ _).
   wp_pures.
   iInv nroot as ([]) "[Hl HR]".
-  -
-    (* FIXME: typed CmpXchg *)
-    wp_cmpxchg_fail. iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
-    wp_pures. iApply ("HΦ" $! false). done.
+  - wp_apply (wp_typed_cmpxchg_fail with "[$]").
+    { done. }
+    { repeat econstructor. } (* apply _. FIXME: tc search? *)
+    { naive_solver. }
+    { done. }
+    iIntros "Hl".
+    iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
+    wp_pures.
+    by iApply "IH".
   - iDestruct "HR" as "[Hl2 HR]".
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
