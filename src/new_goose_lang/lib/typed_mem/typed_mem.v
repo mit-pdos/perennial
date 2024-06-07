@@ -4,6 +4,7 @@ From iris.proofmode Require Import environments.
 From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.new_goose_lang Require Export typed_mem.impl struct.impl slice.
+Require Import Coq.Program.Equality.
 
 Set Default Proof Using "Type".
 
@@ -62,16 +63,6 @@ Section goose_lang.
              first [ is_var t; fail 1 | invc H ]
            end.
 
-  Lemma ty_size_offset t l j :
-    l +ₗ (length (flatten_ty t) + j)%nat = l +ₗ ty_size t +ₗ j.
-  Proof.
-    rewrite loc_add_assoc.
-    f_equal.
-    rewrite <- ty_size_length.
-    pose proof (ty_size_ge_0 t).
-    lia.
-  Qed.
-
   Definition typed_pointsto_def l (dq : dfrac) (t : go_type) (v : val): iProp Σ :=
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜ has_go_type v t ⌝)%I.
   Definition typed_pointsto_aux : seal (@typed_pointsto_def). Proof. by eexists. Qed.
@@ -107,7 +98,7 @@ Section goose_lang.
 
   Local Lemma has_go_abstract_type_len {v t} :
     has_go_abstract_type v t ->
-    length (flatten_struct v) = Z.to_nat (go_abstract_type_size t).
+    length (flatten_struct v) = (go_abstract_type_size t).
   Proof.
     unfold go_type_size.
     induction 1; simpl; auto.
@@ -116,7 +107,7 @@ Section goose_lang.
 
   Local Lemma has_go_type_len {v t} :
     has_go_type v t ->
-    length (flatten_struct v) = Z.to_nat (go_type_size t).
+    length (flatten_struct v) = (go_type_size t).
   Proof.
     unfold go_type_size.
     induction 1; simpl; auto.
@@ -161,37 +152,25 @@ Section goose_lang.
     iDestruct ("IH" $! (l +ₗ 1) l2 with "[] Hl1 Hl2") as %->; auto.
   Qed.
 
-  Local Lemma flatten_struct_inj_helper v1 t1 :
-    has_go_abstract_type v1 t1 ->
-    (∀ t2 v2,
-       has_go_abstract_type v2 t2 ->
-       t1 = t2 →
-       flatten_struct v1 = flatten_struct v2 ->
-       v1 = v2).
-  Proof.
-    induction 1; last shelve; induction 1; simpl in *; try congruence.
-    { intros ?. by injection 1 as ->. }
-    { intros ?. by injection 1 as <-. }
-    Unshelve.
-    intros ??.
-    destruct 1; try congruence.
-    injection 1 as -> ->.
-    specialize (IHhas_go_abstract_type1 _ _ H1_ eq_refl).
-    specialize (IHhas_go_abstract_type2 _ _ H1_0 eq_refl).
-    simpl. intros Hflat.
-    apply app_inj_2 in Hflat as [].
-    2:{ apply has_go_abstract_type_len in H0, H1_0. lia. }
-    f_equal.
-    + by apply IHhas_go_abstract_type1.
-    + by apply IHhas_go_abstract_type2.
-  Qed.
-
   Local Lemma flatten_struct_inj v1 v2 t :
     has_go_abstract_type v1 t ->
     has_go_abstract_type v2 t ->
     flatten_struct v1 = flatten_struct v2 ->
     v1 = v2.
-  Proof. intros. by eapply flatten_struct_inj_helper. Qed.
+  Proof.
+    intros H.
+    generalize dependent v2.
+    induction H; inversion 1; simpl in *; try congruence.
+    { by injection 1 as ->. }
+    { by injection 1 as <-. }
+    intros Hflat.
+    subst.
+    apply app_inj_2 in Hflat as [].
+    2:{ repeat rewrite has_go_abstract_type_len. done. }
+    f_equal.
+    + by apply IHhas_go_abstract_type1.
+    + by apply IHhas_go_abstract_type2.
+  Qed.
 
   Lemma typed_pointsto_agree l t q1 v1 q2 v2 :
     l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
@@ -294,20 +273,37 @@ Section goose_lang.
   (* Print Fix. *)
   Abort.
 
-  Definition R :
-    FIXME: relation for zero_val
+  Inductive type_order_direct : relation go_type :=
+  | type_order_struct d a (H : a ∈ d.*2) : type_order_direct a (structT d).
+  Definition type_order := tc type_order_direct.
+
+  Lemma type_order_well_founded :
+    well_founded type_order.
+  Proof.
+    clear.
+    intros ?. induction a;
+      try (constructor; intros ??; dependent induction H; subst;
+             [dependent induction H; subst | apply IHtc; auto; constructor; auto]).
+    {
+      constructor.
+      intros.
+      constructor; intros ??; dependent induction H; subst.
+  Admitted.
 
   Lemma zero_val_has_go_type t :
     has_go_type (zero_val t) t.
   Proof.
     unfold has_go_type.
-    apply well_founded_induction.
+    revert t.
+    apply (well_founded_induction type_order_well_founded).
+    intros. rename x into t.
     induction t; simpl; try apply _.
     induction decls.
     { apply _. }
     { simpl. apply has_go_abstract_type_prod.
-      { apply
-  Qed.
+      + apply H. do 3 constructor.
+      +
+  Admitted.
 
   Lemma wp_ref_of_zero stk E t :
     {{{ True }}}
@@ -316,6 +312,7 @@ Section goose_lang.
   Proof.
     iIntros (Φ) "_ HΦ".
     wp_apply (wp_AllocAt t); eauto.
+    apply zero_val_has_go_type.
   Qed.
 
   Lemma wp_LoadAt stk E q l t v :
@@ -334,63 +331,46 @@ Section goose_lang.
     (* TODO: we have to rename this so it doesn't conflict with a name generated
   by induction; seems like a bug *)
     rename l into l'.
-    (iInduction H as [ | | | | | | | | ] "IH" forall (l' Φ));
-      simpl;
-      wp_pures;
-      rewrite ?loc_add_0 ?right_id.
-    - inversion H; subst; simpl;
-        rewrite ?loc_add_0 ?right_id;
-        try wp_apply (wp_load with "[$]"); auto.
-      wp_pures.
-      iApply ("HΦ" with "[//]").
-    - rewrite big_opL_app.
+    unfold load_ty.
+    generalize dependent (go_type_interp t). intros.
+    iInduction H as [ | | | | | | | | | | | | ] "IH" forall (l' Φ);
+      subst; simpl; wp_pures; rewrite ?loc_add_0 ?right_id.
+    1-11: wp_apply (wp_load with "[$]"); auto.
+    + by iApply "HΦ".
+    + rewrite big_opL_app.
       iDestruct "Hl" as "[Hv1 Hv2]".
       wp_apply ("IH" with "Hv1"); iIntros "Hv1".
       wp_apply ("IH1" with "[Hv2]"); [ | iIntros "Hv2" ].
-      { erewrite has_go_type_flatten_length; eauto.
-        setoid_rewrite ty_size_offset.
-        rewrite Z.mul_1_r.
+      { rewrite has_go_abstract_type_len; auto.
+        setoid_rewrite Z.mul_1_r.
+        setoid_rewrite Nat2Z.inj_add.
+        setoid_rewrite loc_add_assoc.
         iFrame. }
       wp_pures.
       iApply "HΦ"; iFrame.
-      erewrite has_go_type_flatten_length by eauto.
-      setoid_rewrite ty_size_offset.
-      rewrite Z.mul_1_r.
+      rewrite has_go_abstract_type_len; auto.
+      setoid_rewrite Z.mul_1_r.
+      setoid_rewrite Nat2Z.inj_add.
+      setoid_rewrite loc_add_assoc.
       by iFrame.
-    - wp_apply (wp_load with "[$]"); auto.
-    - wp_apply (wp_load with "[$]"); auto.
-    - wp_apply (wp_load with "[$]"); auto.
-    - wp_apply (wp_load with "[$]"); auto.
-    - wp_apply (wp_load with "[$]"); auto.
-    - wp_apply (wp_load with "[$]"); auto.
-    - wp_apply (wp_load with "[$]"); auto.
   Qed.
 
-  Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ :
+  Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ is_pers :
     MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (false, typed_pointsto l q t v)%I →
+    envs_lookup i Δ' = Some (is_pers, typed_pointsto l q t v)%I →
     envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
     envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
   Proof.
-    rewrite envs_entails_unseal=> ???.
+    rewrite envs_entails_unseal=> ? ? Hwp.
     rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_LoadAt.
+    iIntros "H".
     rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
-    by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
-  Qed.
-
-  Lemma tac_wp_load_ty_persistent Δ s E i K l t v Φ :
-    envs_lookup i Δ = Some (true, typed_pointsto l DfracDiscarded t v)%I →
-    envs_entails Δ (WP fill K (Val v) @ s; E {{ Φ }}) →
-    envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
-  Proof.
-    rewrite envs_entails_unseal=> ? HΦ.
-    rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_LoadAt.
-    rewrite envs_lookup_split //; simpl.
-    iIntros "[#Hp Henvs]".
-    iSplitR; auto.
-    iIntros "!> _".
-    iApply HΦ.
-    iApply ("Henvs" with "Hp").
+    iNext.
+    destruct is_pers; simpl.
+    + iDestruct "H" as "[#? H]". iFrame "#". iIntros.
+      iSpecialize ("H" with "[$]"). by wp_apply Hwp.
+    + iDestruct "H" as "[? H]". iFrame. iIntros.
+      iSpecialize ("H" with "[$]"). by wp_apply Hwp.
   Qed.
 
   Lemma wp_store stk E l v v' :
