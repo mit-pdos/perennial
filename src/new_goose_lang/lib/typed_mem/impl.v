@@ -20,9 +20,9 @@ Fixpoint go_abstract_type_size (t : go_abstract_type) : nat :=
 
 Fixpoint go_type_interp (t : go_type) : go_abstract_type :=
   match t with
-  | sliceT _ => prodT (prodT (prodT cellT cellT) cellT) unitT
+  | sliceT _ => (prodT (prodT cellT cellT) cellT)
   | structT decls => fold_right prodT unitT (fmap (go_type_interp ∘ snd) decls)
-  | interfaceT => prodT (prodT (prodT cellT cellT) cellT) unitT (* type id, val, methods *)
+  | interfaceT => prodT (prodT cellT cellT) cellT (* type id, val, methods *)
   | _ => cellT
   end.
 
