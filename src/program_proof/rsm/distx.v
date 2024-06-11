@@ -785,6 +785,46 @@ End spec.
 Section sep.
   Context {PROP : bi}.
 
+  Lemma big_sepM_impl_dom_eq_res `{Countable K} {A B}
+    (Φ : K → A → PROP) (Ψ : K → B → PROP) (R : PROP)
+    (m1 : gmap K A) (m2 : gmap K B) :
+    dom m2 = dom m1 →
+    ([∗ map] k↦x ∈ m1, Φ k x) -∗
+    R -∗
+    □ (∀ (k : K) (x : A) (y : B),
+         ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ →
+         Φ k x -∗ R -∗ Ψ k y ∗ R) -∗
+    ([∗ map] k↦y ∈ m2, Ψ k y) ∗ R.
+  Proof.
+    iInduction m2 as [| k x m2 Hm2k] "IH" using map_ind forall (m1).
+    { iIntros (Hdom) "Hm HR #Himpl".
+      iFrame.
+      iApply big_sepM_empty.
+      rewrite dom_empty_L in Hdom. symmetry in Hdom.
+      apply dom_empty_inv_L in Hdom.
+      by rewrite Hdom big_sepM_empty.
+    }
+    iIntros (Hdom) "Hm1 HR #Himpl".
+    rewrite dom_insert_L in Hdom.
+    assert (Hm1k : k ∈ dom m1) by set_solver.
+    rewrite elem_of_dom in Hm1k. destruct Hm1k as [y Hy].
+    apply insert_delete in Hy. rewrite -Hy.
+    set m0 := delete _ _.
+    iDestruct (big_sepM_insert with "Hm1") as "[HΦ Hm1]".
+    { by rewrite lookup_delete.}
+    rewrite big_sepM_insert; last done.
+    iDestruct ("Himpl" with "[] [] HΦ HR") as "[HΨ HR]".
+    { by rewrite lookup_insert. }
+    { by rewrite lookup_insert. }
+    iDestruct ("IH" with "[] Hm1 HR []") as "[Hm2 HR]"; last by iFrame.
+    { iPureIntro. subst m0. apply not_elem_of_dom_2 in Hm2k. set_solver. }
+    iIntros "!>" (i p q Hp Hq) "HΦ HR".
+    iDestruct ("Himpl" with "[] [] HΦ HR") as "HH".
+    { rewrite lookup_insert_ne; [done | set_solver]. }
+    { rewrite lookup_insert_ne; [done | set_solver]. }
+    iFrame.
+  Qed.
+
   Lemma big_sepM_impl_dom_eq `{Countable K} {A B}
     (Φ : K → A → PROP) (Ψ : K → B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
     dom m2 = dom m1 →
@@ -795,38 +835,56 @@ Section sep.
     ([∗ map] k↦y ∈ m2, Ψ k y).
   Proof.
     iIntros (Hdom) "Hm1 #Himpl".
-    assert (Hsubseteq : dom m2 ⊆ dom m1) by set_solver.
-    iDestruct (big_sepM_impl_dom_subseteq with "Hm1") as "Hm2"; first done.
-    iDestruct ("Hm2" with "Himpl") as "[H2 H1]".
-    replace (filter _ _) with (∅ : gmap K A); first done.
-    apply map_eq. intros k.
-    rewrite lookup_empty. symmetry.
-    rewrite map_lookup_filter_None. right.
-    intros x Hm1 Hm2.
-    apply elem_of_dom_2 in Hm1.
-    apply not_elem_of_dom_2 in Hm2.
-    set_solver.
+    iDestruct (big_sepM_impl_dom_eq_res _ Ψ emp _ m2 with "Hm1 [] []")
+      as "[Hm2 _ ]"; [done | done | | iFrame].
+    iIntros "!>" (k x y Hx Hy) "HΦ".
+    iDestruct ("Himpl" with "[] [] HΦ") as "HΨ"; [done | done | by auto].
   Qed.
 
-  Lemma big_sepM_sepM2_impl `{Countable K} {A B}
-    (Φ : K → A → PROP) (Ψ : K → A -> B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
+  Lemma big_sepM_sepM2_impl_res `{Countable K} {A B}
+    (Φ : K → A → PROP) (Ψ : K → A -> B → PROP) (R : PROP)
+    (m1 : gmap K A) (m2 : gmap K B) :
     dom m2 = dom m1 →
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
+    R -∗
     □ (∀ (k : K) (x : A) (y : B),
          ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ →
-         Φ k x -∗ Ψ k x y) -∗
-    ([∗ map] k↦x;y ∈ m1;m2, Ψ k x y).
+         Φ k x -∗ R -∗ Ψ k x y ∗ R) -∗
+    ([∗ map] k↦x;y ∈ m1;m2, Ψ k x y) ∗ R.
   Proof.
-    iIntros (Hdom) "Hm1 #Himpl".
+    iIntros (Hdom) "Hm1 HR #Himpl".
     rewrite big_sepM2_alt.
-    iSplit; first done.
-    iApply (big_sepM_impl_dom_eq with "Hm1").
+    iDestruct (big_sepM_impl_dom_eq_res _ (λ k xy, Ψ k xy.1 xy.2) R _ (map_zip m1 m2)
+                with "Hm1 HR []") as "[HΨ Hm2]"; last by iFrame.
     { rewrite dom_map_zip_with_L. set_solver. }
-    iIntros "!>" (k x p Hm1 Hm1m2) "HΦ".
+    iIntros "!>" (k x p Hm1 Hm1m2) "HΦ HR".
     rewrite map_lookup_zip_Some in Hm1m2.
     destruct Hm1m2 as [Hm1' Hm2].
     rewrite Hm1' in Hm1. inversion_clear Hm1.
-    by iApply "Himpl".
+    by iDestruct ("Himpl" with "[] [] HΦ HR") as "[HΨ HR]"; last iFrame.
+  Qed.
+
+  Lemma big_sepM2_sepM_impl_res `{Countable K} {A B C}
+    (Φ : K → A -> B → PROP) (Ψ : K → C → PROP) (R : PROP)
+    (m1 : gmap K A) (m2 : gmap K B) (m3 : gmap K C) :
+    dom m3 = dom m1 ->
+    ([∗ map] k↦x;y ∈ m1;m2, Φ k x y) -∗
+    R -∗
+    □ (∀ (k : K) (x : A) (y : B) (z : C),
+         ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ → ⌜m3 !! k = Some z⌝ →
+         Φ k x y -∗ R -∗ Ψ k z ∗ R) -∗
+    ([∗ map] k↦z ∈ m3, Ψ k z) ∗ R.
+  Proof.
+    iIntros (Hdom) "Hm1m2 HR #Himpl".
+    rewrite big_sepM2_alt.
+    iDestruct "Hm1m2" as "[%Hdom' Hm1m2]".
+    iDestruct (big_sepM_impl_dom_eq_res (λ k xy, Φ k xy.1 xy.2) Ψ R (map_zip m1 m2) m3
+                with "[Hm1m2] HR []") as "[HΨ Hm3]"; [| iFrame | | iFrame].
+    { rewrite dom_map_zip_with_L. set_solver. }
+    iIntros "!>" (k p z Hm1m2 Hm3) "HΦ HR".
+    rewrite map_lookup_zip_Some in Hm1m2.
+    destruct Hm1m2 as [Hm1 Hm2].
+    by iDestruct ("Himpl" with "[] [] [] HΦ HR") as "[HΨ HR]"; last iFrame.
   Qed.
 
   Lemma big_sepM2_sepM_impl `{Countable K} {A B C}
@@ -840,14 +898,10 @@ Section sep.
     ([∗ map] k↦z ∈ m3, Ψ k z).
   Proof.
     iIntros (Hdom) "Hm1m2 #Himpl".
-    rewrite big_sepM2_alt.
-    iDestruct "Hm1m2" as "[%Hdom' Hm1m2]".
-    iApply (big_sepM_impl_dom_eq with "Hm1m2").
-    { rewrite dom_map_zip_with_L. set_solver. }
-    iIntros "!>" (k p z Hm1m2 Hm3) "HΦ".
-    rewrite map_lookup_zip_Some in Hm1m2.
-    destruct Hm1m2 as [Hm1 Hm2].
-    by iApply "Himpl".
+    iDestruct (big_sepM2_sepM_impl_res Φ Ψ emp _ _ m3 with "Hm1m2 [] []")
+      as "[HΨ _]"; [done | done | | by iFrame].
+    iIntros "!>" (k x y z Hx Hy Hz) "HΦ _".
+    by iDestruct ("Himpl" with "[] [] [] HΦ") as "HΨ"; last iFrame.
   Qed.
 
   Lemma big_sepM_impl_res `{Countable K} {A}
@@ -860,16 +914,11 @@ Section sep.
     ([∗ map] k↦y ∈ m, Ψ k y) ∗ R.
   Proof.
     iIntros "Hm HR #Himpl".
-    iInduction m as [| k x m] "IH" using map_ind.
-    { iFrame. by iApply big_sepM_empty. }
-    iDestruct (big_sepM_insert with "Hm") as "[HΦ Hm]"; first done.
-    rewrite big_sepM_insert; last done.
-    iDestruct ("Himpl" with "[] HΦ HR") as "[HΨ HR]"; first by rewrite lookup_insert.
-    iDestruct ("IH" with "[] Hm HR") as "[Hm HR]"; last by iFrame.
-    iIntros "!>" (q y Hmqy) "HΦ HR".
-    iApply ("Himpl" with "[] HΦ HR").
-    iPureIntro.
-    rewrite lookup_insert_ne; [done | set_solver].
+    iDestruct (big_sepM_impl_dom_eq_res _ Ψ _ m m with "Hm HR []")
+      as "[HΨ Hm]"; [done | | iFrame].
+    iIntros "!>" (k x y Hx Hy) "HΦ HR".
+    rewrite Hx in Hy. inversion Hy. subst y.
+    by iApply ("Himpl" with "[] HΦ HR").
   Qed.
 
   Lemma big_sepM_dom_subseteq_split `{Countable K} {A}
@@ -1383,6 +1432,7 @@ Section group_inv.
     ([∗ map] key ↦ tpl; v ∈ tpls; wrs, key_inv_cmted_no_repl_tsprep γ key tpl.1 ts v) ∗
     txnst_auth γ gid stm ∗
     txn_inv γ.
+  Proof.
   Admitted.
 
   Lemma txn_inv_has_prepared γ gid ts wrs :
@@ -1486,14 +1536,14 @@ Section group_inv.
     iDestruct ("HkeysC" with "Hkeys") as "Hkeys".
     (* Merge ownership of tuples back to group invariant. *)
     iDestruct (tuple_repl_half_multiwrite_disjoint ts wrs with "HreplsO") as "HreplsO".
-    { (* TODO: Prove disjointness. *) admit. }
+    { set_solver. }
     rewrite multiwrite_difference_distr.
     iDestruct (big_sepM_difference_combine with "Hrepls HreplsO") as "Hrepls".
     { by apply multiwrite_mono. }
     rewrite multiwrite_tpls_group_commute.
     (* Mark [ts] as committed in the status map. *)
     iMod (txnst_commit ts wrs with "Hstm") as "Hstm"; first apply Hdup.
-    eauto with iFrame.
+    by eauto with iFrame.
   Admitted.
 
   Lemma group_inv_learn γ gid cpool cmds :
