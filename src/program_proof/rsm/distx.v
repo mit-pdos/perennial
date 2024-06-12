@@ -966,7 +966,7 @@ Section sep.
     apply insert_delete in Hy. rewrite -Hy.
     set m0 := delete _ _.
     iDestruct (big_sepM_insert with "Hm1") as "[HΦ Hm1]".
-    { by rewrite lookup_delete.}
+    { by rewrite lookup_delete. }
     rewrite big_sepM_insert; last done.
     iDestruct ("Himpl" with "[] [] HΦ HR") as "[HΨ HR]".
     { by rewrite lookup_insert. }
