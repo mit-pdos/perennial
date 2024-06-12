@@ -12,6 +12,54 @@ Section goose_lang.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
   Context {ext_ty: ext_types ext}.
 
+  Inductive has_go_type_aux (F : val → go_type → Prop) : val → go_type → Prop :=
+  | has_go_type_aux_bool (b : bool) : has_go_type_aux F #b boolT
+  | has_go_type_aux_uint64 (x : w64) : has_go_type_aux F #x uint64T
+  | has_go_type_aux_uint32 (x : w32) : has_go_type_aux F #x uint32T
+  | has_go_type_aux_uint16 : has_go_type_aux F nil uint16T
+  | has_go_type_aux_uint8 (x : w8) : has_go_type_aux F #x uint8T
+
+  | has_go_type_aux_int64 (x : w64) : has_go_type_aux F #x int64T
+  | has_go_type_aux_int32 (x : w32) : has_go_type_aux F #x int32T
+  | has_go_type_aux_int16 : has_go_type_aux F nil int16T
+  | has_go_type_aux_int8 (x : w8) : has_go_type_aux F #x int8T
+
+  | has_go_type_aux_string (s : string) : has_go_type_aux F #(str s) stringT
+  | has_go_type_aux_slice elem (s : slice.t) : has_go_type_aux F (slice_val s) (sliceT elem)
+  | has_go_type_aux_slice_nil elem : has_go_type_aux F slice_nil (sliceT elem)
+
+  (* This avoids requiring (NoDup d) so we can avoid having to require that for zero_val.
+     So, the Hfields statement is a Forall over decls, to deal with the fact
+     that decls might include the same field name multiple times.
+   *)
+  | has_go_type_aux_struct
+      (d : descriptor) fvs
+      (Hfields : Forall (λ '(f, t),
+                     match (assocl_lookup fvs f) with
+                     | None => True
+                     | Some v => F v t
+                     end
+                  ) d)
+    : has_go_type_aux F (struct.mk_f d fvs) (structT d)
+  | has_go_type_aux_ptr (l : loc) : has_go_type_aux F #l ptrT
+  | has_go_type_aux_func f e v : has_go_type_aux F (RecV f e v) funcT
+  | has_go_type_aux_func_nil : has_go_type_aux F nil funcT
+
+  (* FIXME: interface_val *)
+  | has_go_type_aux_interface (s : slice.t) : has_go_type_aux F (slice_val s) interfaceT
+  | has_go_type_aux_interface_nil : has_go_type_aux F interface_nil interfaceT
+
+  | has_go_type_aux_mapT kt vt (l : loc) : has_go_type_aux F #l (mapT kt vt)
+  | has_go_type_aux_chanT t (l : loc) : has_go_type_aux F #l (chanT t)
+  .
+
+  Definition has_go_type_step_indexed (n : nat) : val → go_type → Prop :=
+    fold_right (λ _ f, has_go_type_aux f) (λ _ _, False) (replicate n unit).
+
+  Definition has_go_type (v : val) (t : go_type) : Prop :=
+    ∃ n, has_go_type_step_indexed n v t
+  .
+
   Inductive has_go_abstract_type : val → go_abstract_type → Prop :=
   | has_go_abstract_type_bool (b : bool) : has_go_abstract_type #b cellT
   | has_go_abstract_type_uint64 (x : w64) : has_go_abstract_type #x cellT
@@ -34,34 +82,64 @@ Section goose_lang.
     : has_go_abstract_type (v1, v2) (prodT t1 t2)
   .
 
-  Existing Class has_go_abstract_type.
-  Existing Instance has_go_abstract_type_uint8.
-  Existing Instance has_go_abstract_type_bool.
-  Existing Instance has_go_abstract_type_uint64.
-  Existing Instance has_go_abstract_type_uint32.
-  (* Existing Instance  | has_go_abstract_type_uint16 (x : w16) : has_go_abstract_type #x cellT *)
-  Existing Instance has_go_abstract_type_uint8.
-  Existing Instance has_go_abstract_type_int64.
-  Existing Instance has_go_abstract_type_int32.
-  (* Existing Instance  | has_go_abstract_type_int16 (x : w16) : has_go_abstract_type #x cellT *)
-  Existing Instance has_go_abstract_type_int8.
-  Existing Instance has_go_abstract_type_string.
-  Existing Instance has_go_abstract_type_ptr.
-  Existing Instance has_go_abstract_type_func.
-  Existing Instance has_go_abstract_type_nil.
-  Existing Instance has_go_abstract_type_unit.
-  Existing Instance has_go_abstract_type_prod.
+  Lemma zero_val_has_go_type t :
+    has_go_type (zero_val t) t.
+  Proof.
+    dependent induction t; simpl.
+    all: try (exists 1%nat; econstructor).
+    replace (foldr PairV _ _) with (struct.mk_f decls []).
+    { exists 1%nat. econstructor. simpl in *. apply Forall_true. intros. destruct x. done. }
+    induction decls.
+    { done. }
+    {
+      destruct a.
+      simpl.
+      rewrite IHdecls.
+      simpl. done.
+    }
+  Qed.
 
-  Definition has_go_type (v : val) (t : go_type) := has_go_abstract_type v (go_type_interp t).
+  Fixpoint type_depth (t : go_type) : nat :=
+    match t with
+    | structT decls => S (fold_right max O (type_depth ∘ snd <$> decls))
+    | _ => O
+    end
+  .
 
+  Local Lemma has_go_type_to_abstract_inductive :
+    ∀ (n : nat), ∀ t, (type_depth t <= n)%nat → ∀ v, has_go_type v t → has_go_abstract_type v (go_type_interp t).
+  Proof.
+    intros n. induction n as [| n IH]; intros ? Hdepth ? Hty.
+    + (* type depth 0 case *)
+      inversion Hty as [n Hty_si].
+      destruct n; first by exfalso.
+      destruct t; simpl in *; try (inversion Hty_si; subst; repeat constructor).
+      lia.
+    + (* type depth (n+1) case *)
+      inversion Hty as [m Hty_si].
+      destruct m; first by exfalso.
+      destruct t; cbn in *; try (inversion Hty_si; subst; repeat constructor).
 
-  Ltac invc H := inversion H; subst; clear H.
-
-  Ltac inv_ty :=
-    repeat match goal with
-           | [ H: has_go_type _ ?t |- _ ] =>
-             first [ is_var t; fail 1 | invc H ]
-           end.
+      (* structT case *)
+      clear Hty_si.
+      induction decls; first constructor.
+      destruct a. simpl.
+      apply Forall_cons in Hfields as [Hfield Hfields].
+      constructor.
+      ++ clear IHdecls.
+         destruct assocl_lookup; cbn in *.
+         - apply IH; [lia| eexists _; apply Hfield ] .
+         - apply IH; [ lia | apply zero_val_has_go_type ].
+      ++ apply IHdecls.
+         +++ cbn in *. etransitivity; [|exact Hdepth].
+             apply le_n_S. lia.
+         +++ exists (S m)%nat. econstructor.
+             apply Hfields.
+         +++ done.
+  Qed.
+  Lemma has_go_type_to_abstract v t :
+    has_go_type v t → has_go_abstract_type v (go_type_interp t).
+  Proof. eapply has_go_type_to_abstract_inductive. done. Qed.
 
   Definition typed_pointsto_def l (dq : dfrac) (t : go_type) (v : val): iProp Σ :=
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜ has_go_type v t ⌝)%I.
@@ -86,22 +164,6 @@ Section goose_lang.
                                                      (λ q, l ↦[t]{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
-
-  (*
-  Lemma typed_pointsto_singleton l q t v v0 :
-    flatten_struct v = [v0] ->
-    l ↦[t]{q} v ⊢@{_} l ↦{q} v0.
-  Proof.
-    intros Hv.
-    unseal.
-    rewrite Hv /=.
-    by rewrite loc_add_0 right_id.
-  Qed. *)
-
-  Lemma typed_pointsto_ty q l v t :
-    l ↦[t]{q} v ⊢@{_} ⌜has_go_type v t⌝.
-  Proof. unseal. iIntros "[_ %] !%//". Qed.
-
   Local Lemma has_go_abstract_type_len {v t} :
     has_go_abstract_type v t ->
     length (flatten_struct v) = (go_abstract_type_size t).
@@ -111,115 +173,6 @@ Section goose_lang.
     rewrite app_length. lia.
   Qed.
 
-  Local Lemma has_go_type_len {v t} :
-    has_go_type v t ->
-    length (flatten_struct v) = (go_type_size t).
-  Proof.
-    unfold go_type_size.
-    induction 1; simpl; auto.
-    rewrite app_length. lia.
-  Qed.
-
-  Lemma typed_pointsto_frac_valid l q t v :
-    0 < go_type_size t →
-    l ↦[t]{#q} v -∗ ⌜(q ≤ 1)%Qp⌝.
-  Proof.
-    unseal.
-    iIntros (?) "[Hvals %Hhas_go_type]".
-    apply has_go_type_len in Hhas_go_type.
-    destruct (flatten_struct v); simpl in *.
-    - lia.
-    - iDestruct "Hvals" as "[Hl _]".
-      iDestruct (heap_pointsto_frac_valid with "Hl") as %Hq.
-      auto.
-  Qed.
-
-  Local Lemma typed_pointsto_agree_flatten l t q1 v1 q2 v2 :
-    length (flatten_struct v1) = length (flatten_struct v2) ->
-    l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
-    ⌜flatten_struct v1 = flatten_struct v2⌝.
-  Proof.
-    unseal.
-    iIntros (Hlen) "[Hl1 _] [Hl2 _]".
-    generalize dependent (flatten_struct v1); intros l1.
-    generalize dependent (flatten_struct v2); intros l2.
-    clear.
-    iIntros (Hlen).
-    (iInduction l1 as [|v1 l1] "IH" forall (l l2 Hlen)).
-    { simpl in Hlen.
-      destruct l2; simpl in Hlen; try congruence.
-      auto. }
-    destruct l2; simpl in Hlen; try congruence.
-    simpl.
-    iDestruct "Hl1" as "[Hx1 Hl1]".
-    iDestruct "Hl2" as "[Hx2 Hl2]".
-    iDestruct (heap_pointsto_agree with "[$Hx1 $Hx2]") as "->".
-    setoid_rewrite loc_add_Sn.
-    iDestruct ("IH" $! (l +ₗ 1) l2 with "[] Hl1 Hl2") as %->; auto.
-  Qed.
-
-  Local Lemma flatten_struct_inj v1 v2 t :
-    has_go_abstract_type v1 t ->
-    has_go_abstract_type v2 t ->
-    flatten_struct v1 = flatten_struct v2 ->
-    v1 = v2.
-  Proof.
-    intros H.
-    generalize dependent v2.
-    induction H; inversion 1; simpl in *; try congruence.
-    { by injection 1 as ->. }
-    { by injection 1 as <-. }
-    intros Hflat.
-    subst.
-    apply app_inj_2 in Hflat as [].
-    2:{ repeat rewrite has_go_abstract_type_len. done. }
-    f_equal.
-    + by apply IHhas_go_abstract_type1.
-    + by apply IHhas_go_abstract_type2.
-  Qed.
-
-  Lemma typed_pointsto_agree l t q1 v1 q2 v2 :
-    l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
-    ⌜v1 = v2⌝.
-  Proof.
-    iIntros "Hl1 Hl2".
-    iDestruct (typed_pointsto_ty with "Hl1") as %Hty1.
-    iDestruct (typed_pointsto_ty with "Hl2") as %Hty2.
-    pose proof (has_go_type_len Hty1).
-    pose proof (has_go_type_len Hty2).
-    iDestruct (typed_pointsto_agree_flatten with "Hl1 Hl2") as %Heq.
-    { congruence. }
-    iPureIntro.
-    eapply flatten_struct_inj; eauto.
-  Qed.
-
-  Global Instance typed_pointsto_persistent l t v : Persistent (l ↦[t]□ v).
-  Proof. rewrite typed_pointsto_eq. apply _. Qed.
-
-  Lemma typed_pointsto_persist l dq t v:
-    l ↦[t]{dq} v ==∗ l ↦[t]□ v.
-  Proof.
-    rewrite typed_pointsto_eq /typed_pointsto_def.
-    iIntros "[Ha %Ht]".
-    iDestruct (big_sepL_mono with "Ha") as "Ha".
-    2: iMod (big_sepL_bupd with "Ha") as "Ha".
-    { iIntros (???) "H".
-      iMod (heap_pointsto_persist with "H") as "H". iModIntro. iExact "H". }
-    iModIntro. iFrame "Ha". done.
-  Qed.
-
-  Lemma byte_pointsto_untype l q (x: u8) :
-    l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
-  Proof.
-    rewrite typed_pointsto_eq /typed_pointsto_def /=.
-    rewrite loc_add_0 right_id.
-    iSplit.
-    - iDestruct 1 as "[$ _]".
-    - iDestruct 1 as "$". iPureIntro.
-      unfold has_go_type. apply _.
-  Qed.
-
-  (* this is the core reasoning, not intended for external use *)
   Local Lemma wp_AllocAt t stk E v :
     has_go_type v t ->
     {{{ True }}}
@@ -248,40 +201,6 @@ Section goose_lang.
     wp_apply (wp_AllocAt t); auto.
   Qed.
 
-  Lemma forall_to_Forall {A} P (l : list A) : (∀ x, P x) → Forall P l .
-  Proof. intros Hin. induction l as [|x l IH]; constructor; auto. Defined.
-
-  Inductive type_order_direct : relation go_type :=
-  | type_order_struct d a (H : a ∈ d.*2) : type_order_direct a (structT d).
-  Definition type_order := tc type_order_direct.
-
-  Lemma type_order_well_founded :
-    well_founded type_order.
-  Proof.
-    clear.
-    intros ?. induction a;
-      try (constructor; intros ??; dependent induction H; subst;
-             [dependent induction H; subst | apply IHtc; auto; constructor; auto]).
-    {
-      constructor.
-      intros.
-      constructor; intros ??; dependent induction H; subst.
-  Admitted.
-
-  Lemma zero_val_has_go_type t :
-    has_go_type (zero_val t) t.
-  Proof.
-    unfold has_go_type.
-    revert t.
-    apply (well_founded_induction type_order_well_founded).
-    intros. rename x into t.
-    induction t; simpl; try apply _.
-    induction decls.
-    { apply _. }
-    { simpl. apply has_go_abstract_type_prod.
-      + apply H. do 3 constructor.
-      +
-  Admitted.
 
   Lemma wp_ref_of_zero stk E t :
     {{{ True }}}
@@ -301,13 +220,13 @@ Section goose_lang.
     iIntros (Φ) ">Hl HΦ".
     unseal.
     iDestruct "Hl" as "[Hl %]".
-    hnf in H.
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ".
       iSplit; eauto. }
     unfold load_ty.
-    generalize dependent (go_type_interp t). intros.
+    apply has_go_type_to_abstract in H.
+    hnf in H.
     iInduction H as [ | | | | | | | | | | | | ] "IH" forall (l Φ);
       subst; simpl; wp_pures; rewrite ?loc_add_0 ?right_id.
     1-11: wp_apply (wp_load with "[$]"); auto.
@@ -316,14 +235,14 @@ Section goose_lang.
       iDestruct "Hl" as "[Hv1 Hv2]".
       wp_apply ("IH" with "Hv1"); iIntros "Hv1".
       wp_apply ("IH1" with "[Hv2]"); [ | iIntros "Hv2" ].
-      { rewrite has_go_abstract_type_len; auto.
+      { erewrite has_go_abstract_type_len; [|done].
         setoid_rewrite Z.mul_1_r.
         setoid_rewrite Nat2Z.inj_add.
         setoid_rewrite loc_add_assoc.
         iFrame. }
       wp_pures.
       iApply "HΦ"; iFrame.
-      rewrite has_go_abstract_type_len; auto.
+      erewrite has_go_abstract_type_len; [|done].
       setoid_rewrite Z.mul_1_r.
       setoid_rewrite Nat2Z.inj_add.
       setoid_rewrite loc_add_assoc.
@@ -367,38 +286,43 @@ Section goose_lang.
     iIntros (Φ) ">Hl HΦ".
     unseal.
     iDestruct "Hl" as "[Hl %Hty_old]".
-    hnf in Hty_old.
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ".
       iSplit; eauto. }
     unfold store_ty.
-    unfold has_go_type in *.
+    apply has_go_type_to_abstract in Hty_old as Hty_abs_old.
     generalize dependent (go_type_interp t). intros.
     rename v into v'.
     rename l into l'.
-    (iInduction Hty_old as [ | | | | | | | | | | | | ] "IH" forall (v' Hty l' Φ));
+    (iInduction Hty_abs_old as [ | | | | | | | | | | | | ] "IH" forall (v' Hty (* Hty_abs*) l' Φ));
       simpl;
       rewrite ?loc_add_0 ?right_id;
-      wp_pures.
+      wp_pures; apply has_go_type_to_abstract in Hty as Hty_abs.
+    - wp_apply (wp_store with "[$]"); auto;
+      iIntros "H"; iApply "HΦ".
+      inversion Hty_abs; subst; clear Hty_abs; simpl; rewrite ?loc_add_0 ?right_id; iFrame.
+
     1-11: wp_apply (wp_store with "[$]"); auto;
       iIntros "H"; iApply "HΦ";
-      inversion Hty; subst; clear Hty; simpl; rewrite ?loc_add_0 ?right_id; iFrame.
-    - iApply "HΦ". inversion Hty; subst; clear Hty. simpl. by iFrame.
+      inversion Hty_abs; subst; clear Hty_abs; simpl; rewrite ?loc_add_0 ?right_id; iFrame.
+    1: done.
+    - done.
+    - iApply "HΦ". inversion Hty_abs; subst; clear Hty_abs. simpl. by iFrame.
     - rewrite big_opL_app.
       inversion Hty; subst; clear Hty.
       wp_pures.
       iDestruct "Hl" as "[Hv1 Hv2]".
-      wp_apply ("IH" with "[//] Hv1"); iIntros "Hv1".
+      wp_apply ("IH1" with "[] [] [] Hv1"). iIntros "Hv1".
       wp_apply ("IH1" with "[//] [Hv2]"); [ | iIntros "Hv2" ].
-      { rewrite has_go_abstract_type_len; auto.
+      { erewrite has_go_abstract_type_len; [|done].
         setoid_rewrite Z.mul_1_r.
         setoid_rewrite Nat2Z.inj_add.
         setoid_rewrite loc_add_assoc.
         iFrame. }
       wp_pures.
-      iApply "HΦ"; iFrame.
-      rewrite has_go_abstract_type_len; auto.
+      iApply "HΦ". iFrame.
+      rewrite has_go_abstract_type_len; [|done].
       setoid_rewrite Z.mul_1_r.
       setoid_rewrite Nat2Z.inj_add.
       setoid_rewrite loc_add_assoc.
