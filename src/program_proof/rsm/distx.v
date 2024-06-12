@@ -200,6 +200,15 @@ Lemma multiwrite_dom {tid wrs tpls} :
   dom (multiwrite tid wrs tpls) = dom tpls.
 Admitted.
 
+Lemma multiwrite_unmodified {tid wrs tpls key} :
+  wrs !! key = None ->
+  (multiwrite tid wrs tpls) !! key = tpls !! key.
+Proof.
+  intros Hlookup.
+  rewrite lookup_merge Hlookup /=.
+  by destruct (tpls !! key) as [t |] eqn:Ht.
+Qed.
+
 Lemma multiwrite_tuples_empty tid wrs :
   multiwrite tid wrs ∅ = ∅.
 Proof.
@@ -353,6 +362,20 @@ Lemma apply_cmds_dom cmds :
   end.
 Admitted.
 
+(** Note: RSM invariants are better defined as properties about [apply_cmds],
+rather than explicit invariants materialized in [group_inv]. *)
+
+Definition pts_disjoint log :=
+  ∀ stm tpls ts1 ts2 wrs1 wrs2,
+  apply_cmds log = State stm tpls ->
+  stm !! ts1 = Some (StPrepared wrs1) ->
+  stm !! ts2 = Some (StPrepared wrs2) ->
+  dom wrs1 ## dom wrs2.
+
+Lemma pts_disjointness log :
+  pts_disjoint log.
+Admitted.
+
 Definition pts_consistent log :=
   ∀ stm tpls ts wrs key tpl,
   apply_cmds log = State stm tpls ->
@@ -419,9 +442,31 @@ Proof.
     rewrite (acquire_tuple_modified _ Ht) in Htpls; last by rewrite -elem_of_dom.
     by inversion Htpls.
   }
-  { (* Case: [CmdCmt] *) admit.
+  { (* Case: [CmdCmt] *)
+    rewrite /apply_commit in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (stm !! tid) as [st |] eqn:Htid; last congruence.
+    destruct st as [wrs | |]; last congruence.
+    { (* Case: Prepared. *)
+      inversion Happly. subst stmc tplsc.
+      destruct (decide (ts = tid)) as [-> | Hne].
+      { by rewrite lookup_insert in Hstm. }
+      rewrite lookup_insert_ne in Hstm; last done.
+      pose proof (pts_disjointness l1) as Hdisj.
+      specialize (Hdisj _ _ _ _ _ _ Heq Htid Hstm).
+      (* Solved with [Hkey] and [Hdisj]. *)
+      assert (Hnotin : key ∉ dom wrs) by set_solver.
+      rewrite multiwrite_unmodified in Htpls; last by rewrite not_elem_of_dom in Hnotin.
+      by eapply Hl1.
+    }
+    { (* Case: Already committed; no-op. *)
+      inversion Happly. subst stmc tplsc.
+      by eapply Hl1.
+    }
   }
-  { (* Case: [CmdAbt] *) admit.
+  { (* Case: [CmdAbt] *)
+    rewrite /apply_commit in Happly.
+    admit.
   }
   { (* Case: [CmdRead] *) admit.
   }
