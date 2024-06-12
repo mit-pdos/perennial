@@ -341,6 +341,7 @@ def main():
             "./spaxos",
             "./mpaxos",
             "./distx",
+            "./tpl",
         )
 
     if marshal_dir is not None:
