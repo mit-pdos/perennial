@@ -53,12 +53,111 @@ Section goose_lang.
   | has_go_type_aux_chanT t (l : loc) : has_go_type_aux F #l (chanT t)
   .
 
-  Definition has_go_type_step_indexed (n : nat) : val → go_type → Prop :=
-    fold_right (λ _ f, has_go_type_aux f) (λ _ _, False) (replicate n unit).
+  (* Definition has_go_type_step_indexed (n : nat) : val → go_type → Prop :=
+    fold_right (λ _ f, has_go_type_aux f) (λ _ _, False) (replicate n unit). *)
+
+  Fixpoint has_go_type_step_indexed (n : nat) : val → go_type → Prop :=
+    match n with
+    | O => (λ _ _, False)
+    | S n => has_go_type_aux (has_go_type_step_indexed n)
+    end.
 
   Definition has_go_type (v : val) (t : go_type) : Prop :=
     ∃ n, has_go_type_step_indexed n v t
   .
+
+  Local Fixpoint type_depth (t : go_type) : nat :=
+    match t with
+    | structT decls => S (fold_right max O (type_depth ∘ snd <$> decls))
+    | _ => O
+    end
+  .
+
+  Lemma has_go_type_aux_mono {F F' v t} :
+    (∀ v' t', F v' t' → F' v' t') →
+    has_go_type_aux F v t → has_go_type_aux F' v t.
+  Proof.
+    intros ? Hty.
+    inversion Hty; subst; econstructor.
+    eapply Forall_impl; first exact Hfields.
+    intros. cbn in *. destruct x.
+    destruct assocl_lookup; last done.
+    by apply H.
+  Qed.
+
+  Lemma has_go_type_step_indexed_mono (n n' : nat) v t :
+    n <= n' → has_go_type_step_indexed n v t → has_go_type_step_indexed n' v t.
+  Proof.
+    revert n. dependent induction n'.
+    { intros. replace O with n by lia. done. }
+    intros. cbn in *.
+    induction n; first done.
+    eapply (has_go_type_aux_mono _ H0).
+    Unshelve. intros. eapply IHn'; last done. lia.
+  Qed.
+
+  Lemma has_go_type_bool (b : bool) : has_go_type #b boolT.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_uint64 (b : w64) : has_go_type #b uint64T.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_uint32 (b : w32) : has_go_type #b uint32T.
+  Proof. exists 1%nat. econstructor. Qed.
+  (* Lemma has_go_type_uint16 (b : w16 ) : has_go_type #b uint16T.
+  Proof. exists 1%nat. econstructor. Qed. *)
+  Lemma has_go_type_uint8 (b : w8) : has_go_type #b uint8T.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_int64 (b : w64) : has_go_type #b int64T.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_int32 (b : w32) : has_go_type #b int32T.
+  Proof. exists 1%nat. econstructor. Qed.
+  (* Lemma has_go_type_int16 (b : w16 ) : has_go_type #b int16T.
+  Proof. exists 1%nat. econstructor. Qed. *)
+  Lemma has_go_type_int8 (b : w8) : has_go_type #b int8T.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_string (s : string) : has_go_type #(str s) stringT.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_slice elem (s : slice.t) : has_go_type (slice_val s) (sliceT elem).
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_slice_nil elem : has_go_type slice_nil (sliceT elem).
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_struct d fvs :
+    Forall (λ '(f, t), match (assocl_lookup fvs f) with
+                       | None => True
+                       | Some v => has_go_type v t
+                       end
+                      ) d →
+    has_go_type (struct.mk_f d fvs) (structT d).
+  Proof.
+    intros Hfields.
+    assert (∃ n, Forall (λ '(f, t), match assocl_lookup fvs f with
+                                    | Some v => has_go_type_step_indexed n v t
+                                    | None => True
+                                    end) d) as [n Hfields_si].
+    {
+      induction d.
+      { exists 37%nat. done. }
+      apply Forall_cons in Hfields as [Hfield Hfields].
+      apply IHd in Hfields as [n Hfields].
+      destruct a. destruct assocl_lookup eqn:Hlookup.
+      {
+        destruct Hfield as [n' Hfield].
+        exists (n `max` n')%nat.
+        apply Forall_cons.
+        split.
+        { rewrite Hlookup. eapply has_go_type_step_indexed_mono; last done. lia. }
+        eapply Forall_impl; first exact Hfields.
+        intros. cbn in *. destruct x. destruct (assocl_lookup fvs s0); last done.
+        eapply has_go_type_step_indexed_mono; [|done]; lia.
+      }
+      {
+        exists n. apply Forall_cons. split.
+        { rewrite Hlookup. done. }
+        done.
+      }
+    }
+    eexists (S n).
+    econstructor. done.
+  Qed.
 
   Inductive has_go_abstract_type : val → go_abstract_type → Prop :=
   | has_go_abstract_type_bool (b : bool) : has_go_abstract_type #b cellT
@@ -98,13 +197,6 @@ Section goose_lang.
       simpl. done.
     }
   Qed.
-
-  Fixpoint type_depth (t : go_type) : nat :=
-    match t with
-    | structT decls => S (fold_right max O (type_depth ∘ snd <$> decls))
-    | _ => O
-    end
-  .
 
   Local Lemma has_go_type_to_abstract_inductive :
     ∀ (n : nat), ∀ t, (type_depth t <= n)%nat → ∀ v, has_go_type v t → has_go_abstract_type v (go_type_interp t).
@@ -292,28 +384,27 @@ Section goose_lang.
       iSplit; eauto. }
     unfold store_ty.
     apply has_go_type_to_abstract in Hty_old as Hty_abs_old.
-    generalize dependent (go_type_interp t). intros.
-    rename v into v'.
+    assert (∃ g, g = go_type_interp t) as [g Hty_eq].
+    { by eexists _. }
+    rewrite -Hty_eq in Hty_abs_old |- *.
+    rename v into v'. rename v0 into v.
     rename l into l'.
-    (iInduction Hty_abs_old as [ | | | | | | | | | | | | ] "IH" forall (v' Hty (* Hty_abs*) l' Φ));
+    (iInduction Hty_abs_old as [ | | | | | | | | | | | | ] "IH" forall (v' t Hty_eq Hty Hty_old l' Φ));
       simpl;
       rewrite ?loc_add_0 ?right_id;
-      wp_pures; apply has_go_type_to_abstract in Hty as Hty_abs.
-    - wp_apply (wp_store with "[$]"); auto;
-      iIntros "H"; iApply "HΦ".
-      inversion Hty_abs; subst; clear Hty_abs; simpl; rewrite ?loc_add_0 ?right_id; iFrame.
-
+      wp_pures;
+      apply has_go_type_to_abstract in Hty as Hty_abs; rewrite -Hty_eq in Hty_abs.
     1-11: wp_apply (wp_store with "[$]"); auto;
       iIntros "H"; iApply "HΦ";
       inversion Hty_abs; subst; clear Hty_abs; simpl; rewrite ?loc_add_0 ?right_id; iFrame.
-    1: done.
-    - done.
     - iApply "HΦ". inversion Hty_abs; subst; clear Hty_abs. simpl. by iFrame.
     - rewrite big_opL_app.
-      inversion Hty; subst; clear Hty.
+      inversion Hty_abs; subst; clear Hty_abs.
       wp_pures.
       iDestruct "Hl" as "[Hv1 Hv2]".
-      wp_apply ("IH1" with "[] [] [] Hv1"). iIntros "Hv1".
+      wp_apply ("IH" with "[] [] [] Hv1").
+      2:{ done. }
+      iIntros "Hv1".
       wp_apply ("IH1" with "[//] [Hv2]"); [ | iIntros "Hv2" ].
       { erewrite has_go_abstract_type_len; [|done].
         setoid_rewrite Z.mul_1_r.
