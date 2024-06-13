@@ -53,9 +53,6 @@ Section goose_lang.
   | has_go_type_aux_chanT t (l : loc) : has_go_type_aux F #l (chanT t)
   .
 
-  (* Definition has_go_type_step_indexed (n : nat) : val → go_type → Prop :=
-    fold_right (λ _ f, has_go_type_aux f) (λ _ _, False) (replicate n unit). *)
-
   Fixpoint has_go_type_step_indexed (n : nat) : val → go_type → Prop :=
     match n with
     | O => (λ _ _, False)
@@ -157,6 +154,63 @@ Section goose_lang.
     }
     eexists (S n).
     econstructor. done.
+  Qed.
+
+  Lemma has_go_type_ptr (l : loc) : has_go_type #l ptrT.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_func f e v : has_go_type (RecV f e v) funcT.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_func_nil : has_go_type nil funcT.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_interface (s : slice.t) : has_go_type (slice_val s) interfaceT.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_interface_nil : has_go_type interface_nil interfaceT.
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_mapT kt vt (l : loc) : has_go_type #l (mapT kt vt).
+  Proof. exists 1%nat. econstructor. Qed.
+  Lemma has_go_type_chanT t (l : loc) : has_go_type #l (chanT t).
+  Proof. exists 1%nat. econstructor. Qed.
+
+  Lemma has_go_type_ind :
+    ∀ P : val → go_type → Prop,
+    (∀ (b : bool), P #b boolT) →
+    (∀ (x : w64), P #x uint64T) →
+    (∀ (x : w32), P #x uint32T) →
+    (* (∀ (x : w16), P #x uint16T) → *)
+    (P nil uint16T) →
+    (∀ (x : w8), P #x uint8T) →
+    (∀ (x : w64), P #x int64T) →
+    (∀ (x : w32), P #x int32T) →
+    (* (∀ (x : w16), P #x int16T) → *)
+    (P nil int16T) →
+    (∀ (x : w8), P #x int8T) →
+    (∀ (s : string), P #(str s) stringT) →
+    (∀ (s : slice.t) elem, P (slice_val s) $ sliceT elem) →
+    (∀ elem, P slice_nil $ sliceT elem) →
+    (∀ d fvs (Hfields : Forall (λ '(f, t),
+                                match assocl_lookup fvs f with
+                                | Some v => has_go_type v t
+                                | None => True
+                                end) d),
+       P (struct.mk_f d fvs) $ structT d) →
+    (∀ l, P #l ptrT) →
+    (∀ f e v, P (RecV f e v) funcT) →
+    (P nil funcT) →
+    (∀ s, P (slice_val s) interfaceT) →
+    (P interface_nil interfaceT) →
+    (∀ kt vt l, P #l $ mapT kt vt) →
+    (∀ t l, P #l $ chanT t) →
+    (∀ v t, has_go_type v t → P v t).
+  Proof.
+    intros ??????????????????????? Hty.
+    destruct Hty as [[|n] Hty]; first done.
+    inversion Hty; subst;
+      (repeat match goal with
+              | [ H : _ |- _ ] => apply H
+              end
+      ).
+    eapply Forall_impl; first exact Hfields.
+    intros. cbn in *. destruct x. destruct assocl_lookup; [by eexists _ | done].
   Qed.
 
   Inductive has_go_abstract_type : val → go_abstract_type → Prop :=
