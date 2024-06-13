@@ -60,8 +60,8 @@ Definition MemCpy_rec t: val :=
     if: "n" = #0
     then #()
     else "dst" <-[t] (![t] "src");;
-         "memcpy" (BinOp (OffsetOp (go_abstract_type_size $ go_type_interp t)) "dst" #1)
-                  (BinOp (OffsetOp (go_abstract_type_size $ go_type_interp t)) "src" #1)
+         "memcpy" (BinOp (OffsetOp (go_type_size t)) "dst" #1)
+                  (BinOp (OffsetOp (go_type_size t)) "src" #1)
                   ("n" - #1).
 
 Definition SliceCopy t : val :=

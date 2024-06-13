@@ -106,7 +106,7 @@ Fixpoint field_offset d f0 : (Z * go_type) :=
   | [] => (-1, ptrT)
   | (f,t)::fs => if f =? f0 then (0, t)
                else match field_offset fs f0 with
-                    | (off, t') => ((go_abstract_type_size $ go_type_interp t) + off, t')
+                    | (off, t') => ((go_type_size t) + off, t')
                     end
   end.
 
