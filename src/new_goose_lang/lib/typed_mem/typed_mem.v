@@ -112,7 +112,7 @@ Section goose_lang.
     simpl. right. done.
   Qed.
 
-  Definition typed_pointsto_def l (dq : dfrac) (t : go_type) (v : val): iProp Σ :=
+  Definition typed_pointsto_def l (dq : dfrac) (t : go_type) (v : val) : iProp Σ :=
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜ has_go_type v t ⌝)%I.
   Definition typed_pointsto_aux : seal (@typed_pointsto_def). Proof. by eexists. Qed.
   Definition typed_pointsto := typed_pointsto_aux.(unseal).
@@ -342,17 +342,54 @@ Section goose_lang.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
 
-(*
+Definition is_primitive_type (t : go_type) : Prop :=
+  match t with
+  | structT d => False
+  | funcT => False
+  | sliceT e => False
+  | interfaceT => False
+  | _ => True
+  end
+.
+
 Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 t :
+  is_primitive_type t →
   has_go_type v1 t →
   v' ≠ v1 →
   {{{ ▷ l ↦[t]{dq} v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
   {{{ RET PairV v' (LitV $ LitBool false); l ↦[t]{dq} v' }}}.
 Proof.
-Admitted. *)
+  intros Hprim Hty Hne.
+  iIntros (?) "Hl HΦ". unseal.
+  iDestruct "Hl" as "[H >%Hty_old]".
+  destruct t; try by exfalso.
+  1-13: inversion Hty_old; subst;
+    inversion Hty; subst;
+    simpl; rewrite loc_add_0 right_id;
+    wp_apply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
+    iIntros; iApply "HΦ";
+    iFrame; done.
+Qed.
+
+Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 t :
+  is_primitive_type t →
+  has_go_type v2 t →
+  v' = v1 →
+  {{{ ▷ l ↦[t] v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
+  {{{ RET PairV v' (LitV $ LitBool true); l ↦[t] v2 }}}.
+Proof.
+  intros Hprim Hty Heq.
+  iIntros (?) "Hl HΦ". unseal.
+  iDestruct "Hl" as "[H >%Hty_old]".
+  destruct t; try by exfalso.
+  1-13: inversion Hty_old; subst;
+    inversion Hty; subst;
+    simpl; rewrite loc_add_0 right_id;
+    wp_apply (wp_cmpxchg_suc with "[$H]"); first done; first (by econstructor);
+    iIntros; iApply "HΦ"; iFrame; done.
+Qed.
 
 End goose_lang.
-
 
 Notation "l ↦[ t ] dq v" := (typed_pointsto l dq t v%V)
                               (at level 20, dq custom dfrac at level 50, t at level 50,

@@ -20,7 +20,7 @@ Definition Mutex__Lock : val :=
       "f" "m"
 .
 Definition Mutex__Unlock : val :=
-  λ: "f" "m", CmpXchg (struct.fieldRef Mutex "state" "m") #true #false
+  λ: "m", CmpXchg (struct.fieldRef Mutex "state" "m") #true #false
 .
 
 Definition NewCond : val := λ: "m", ref "m".

@@ -31,7 +31,8 @@ Context `{!heapGS Σ} `{!syncG Σ}.
 Declare Custom Entry struct_field_type.
 Notation "d ⋅ f" := (d, f) (in custom struct_field_type at level 80 ,
                                   d constr at level 49,
-                                  f constr at level 49
+                                  f constr at level 49,
+                                  format "d ⋅ f"
                                ).
 Notation "l ↦s[ df ] dq v" := (let '(d, f) := df in (struct.fieldRef_f d f l ↦[ struct.fieldTy d f ]{dq} v))%I
   (at level 50, dq custom dfrac at level 70,
@@ -148,7 +149,6 @@ Proof.
     { done. }
     { repeat econstructor. } (* apply _. FIXME: tc search? *)
     { naive_solver. }
-    { done. }
     iIntros "Hl".
     iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
     wp_pures.
@@ -156,28 +156,35 @@ Proof.
   - iDestruct "HR" as "[Hl2 HR]".
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
-    wp_cmpxchg_suc.
+    wp_apply (wp_typed_cmpxchg_suc with "[$]").
+    { done. }
+    { econstructor. }
+    { done. }
+    iIntros "Hl".
     iModIntro.
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct "Hl" as "[Hl1 Hl2]".
     iSplitL "Hl1"; first (iNext; iExists true; eauto).
     rewrite /locked. wp_pures.
     iApply "HΦ".
-    eauto with iFrame. *)
-Admitted.
+    eauto with iFrame.
+Qed.
 
 Lemma wp_Mutex__Unlock m R :
   {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} Mutex__Unlock #m {{{ RET #(); True }}}.
 Proof.
-  (*
-  iIntros (? Φ) "(Hlock & Hlocked & HR) HΦ".
-  iDestruct "Hlock" as (l ->) "#Hinv".
-  rewrite /lock.release /=. wp_lam.
+  iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
+  wp_lam.
+  wp_pures.
+  wp_pures.
+  wp_apply wp_struct_fieldRef.
   wp_bind (CmpXchg _ _ _).
-  iInv N as (b) "[>Hl _]".
+  iInv nroot as (b) "[>Hl _]".
 
-  iDestruct (locked_loc with "Hlocked") as "Hl2".
-  iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
+  unfold own_Mutex.
+  iCombine "Hl Hlocked" as "Hl".
+  iDestruct (heap_pointsto_agree with "[$Hlocked $Hl]") as %->.
+  iCombine "Hl Hlocked" as "Hl".
   iCombine "Hl Hl2" as "Hl".
   rewrite Qp.quarter_three_quarter.
   wp_cmpxchg_suc.
