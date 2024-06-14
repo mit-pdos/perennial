@@ -142,8 +142,7 @@ Section goose_lang.
     | sliceT e => False
     | interfaceT => False
     | _ => True
-    end
-  .
+    end.
 
   Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
     is_primitive_type t →
@@ -472,3 +471,5 @@ Tactic Notation "wp_store" :=
     |first [wp_seq|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
   end.
+
+Hint Extern 1 (is_primitive_type _) => refine I: typeclass_instances.

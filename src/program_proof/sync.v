@@ -146,8 +146,7 @@ Proof.
   wp_pures.
   iInv nroot as ([]) "[Hl HR]".
   - wp_apply (wp_typed_cmpxchg_fail with "[$]").
-    { done. }
-    { repeat econstructor. } (* apply _. FIXME: tc search? *)
+    { repeat econstructor. }
     { naive_solver. }
     iIntros "Hl".
     iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
@@ -157,7 +156,6 @@ Proof.
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
     wp_apply (wp_typed_cmpxchg_suc with "[$]").
-    { done. }
     { econstructor. }
     { done. }
     iIntros "Hl".
@@ -182,18 +180,19 @@ Proof.
   iInv nroot as (b) "[>Hl _]".
 
   unfold own_Mutex.
+  iCombine "Hl Hlocked" gives %[_ [=]]. subst.
   iCombine "Hl Hlocked" as "Hl".
-  iDestruct (heap_pointsto_agree with "[$Hlocked $Hl]") as %->.
-  iCombine "Hl Hlocked" as "Hl".
-  iCombine "Hl Hl2" as "Hl".
   rewrite Qp.quarter_three_quarter.
-  wp_cmpxchg_suc.
+  wp_apply (wp_typed_cmpxchg_suc with "[$]").
+  { econstructor. }
+  { done. }
+  iIntros "Hl".
   iModIntro.
-  iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
+  iSplitR "HΦ"; last by wp_pures; iApply "HΦ".
   iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
   iDestruct "Hl" as "[Hl1 Hl2]".
-  iNext. iExists false. iFrame. *)
-Admitted.
+  iNext. iExists false. iFrame.
+Qed.
 
 (** This means [c] is a condvar with underyling Mutex at address [m]. *)
 Definition is_Cond (c : loc) (m : loc) : iProp Σ :=
