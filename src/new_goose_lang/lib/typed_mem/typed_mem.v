@@ -135,6 +135,29 @@ Section goose_lang.
                                                      (λ q, l ↦[t]{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
+  Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
+    CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+  Proof.
+    unfold CombineSepGives.
+    unseal.
+    iIntros "[[H1 %Hty1] [H2 %Hty2]]".
+    inversion Hty1; subst.
+    1-10,14-16,19-20: inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
+      iDestruct (heap_pointsto_agree with "[$]") as "%H";
+      inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; done.
+    1-2,4-5:
+      inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
+      iDestruct "H1" as "(Ha1 & Ha2 & Ha3)";
+      iDestruct "H2" as "(Hb1 & Hb2 & Hb3)";
+      try destruct s; try destruct s0;
+      iCombine "Ha1 Hb1" gives %[? [=]];
+      iCombine "Ha2 Hb2" gives %[? [=]];
+      iCombine "Ha3 Hb3" gives %[? [=]];
+      subst; iModIntro; iPureIntro; split; done.
+    - (* strucT case *)
+    FIXME: proof incomplete
+  Qed.
+
   Local Lemma has_go_type_len {v t} :
     has_go_type v t ->
     length (flatten_struct v) = (go_type_size t).

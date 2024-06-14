@@ -39,13 +39,13 @@ Section definitions.
          econstructor; eauto.
          apply _.
   Qed.
+  Global Instance heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
+    CombineSepGives (heap_pointsto l dq1 v1)%I (heap_pointsto l dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+  Proof. rewrite heap_pointsto_eq /CombineSepGives. iIntros "[[?H1] [?H2]]".
+         iCombine "H1 H2" gives %?. iModIntro. iPureIntro. done. Qed.
 
   Lemma heap_pointsto_agree l q1 q2 v1 v2 : heap_pointsto l q1 v1 ∗ heap_pointsto l q2 v2 -∗ ⌜v1 = v2⌝.
-  Proof.
-    rewrite heap_pointsto_eq /heap_pointsto_def.
-    iIntros "[[% Hv1] [% Hv2]]".
-    iApply (na_heap_pointsto_agree with "[$Hv1 $Hv2]").
-  Qed.
+  Proof. iIntros "[H1 H2]". iCombine "H1 H2" gives %[? ?]. done. Qed.
 
   Global Instance heap_pointsto_persistent l v : Persistent (heap_pointsto l DfracDiscarded v).
   Proof. rewrite heap_pointsto_eq. apply _. Qed.

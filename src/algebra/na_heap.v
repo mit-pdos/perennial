@@ -255,6 +255,15 @@ Section na_heap.
   Global Instance na_heap_pointsto_persistent l v : Persistent (l ↦□ v).
   Proof. rewrite na_heap_pointsto_eq. apply _. Qed.
 
+  Global Instance na_heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
+    CombineSepGives (l ↦{dq1} v1)%I (l ↦{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+  Proof. unfold CombineSepGives. iIntros "[H1 H2]".
+         rewrite na_heap_pointsto_eq.
+         iDestruct (own_valid_2 with "H1 H2") as %Hvalid.
+         iModIntro. iPureIntro. apply gmap_view_frag_op_valid in Hvalid as [? [? ?]].
+         split; first done. simpl in *. pose proof (to_agree_op_inv_L _ _ H3). done.
+  Qed.
+
   Lemma na_heap_pointsto_persist l dq v:
     l ↦{dq} v ==∗ l ↦□ v.
   Proof.
