@@ -71,13 +71,8 @@ Section goose_lang.
   | has_go_type_slice elem (s : slice.t) : has_go_type (slice_val s) (sliceT elem)
   | has_go_type_slice_nil elem : has_go_type slice_nil (sliceT elem)
 
-  (* This avoids requiring (NoDup d) so we can avoid having to require that for zero_val.
-     So, the Hfields statement is a Forall over decls, to deal with the fact
-     that decls might include the same field name multiple times.
-   *)
   | has_go_type_struct
       (d : descriptor) fvs
-      (* (Hfields : Forall (λ '(f, t), has_go_type (default (zero_val t) (assocl_lookup fvs f)) t) d) *)
       (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup fvs f)) t)
     : has_go_type (struct.mk_f d fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
@@ -158,35 +153,6 @@ Section goose_lang.
       inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; done.
     all: by exfalso.
   Qed.
-
-  (*
-  Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
-    CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
-  Proof.
-    unfold CombineSepGives.
-    unseal.
-    iIntros "[[H1 %Hty1] [H2 %Hty2]]".
-    inversion Hty1; subst.
-    1-10,14-16,19-20: inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
-      iDestruct (heap_pointsto_agree with "[$]") as "%H";
-      inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; done.
-    1-2,4-5:
-      inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
-      iDestruct "H1" as "(Ha1 & Ha2 & Ha3)";
-      iDestruct "H2" as "(Hb1 & Hb2 & Hb3)";
-      try destruct s; try destruct s0;
-      iCombine "Ha1 Hb1" gives %[? [=]];
-      iCombine "Ha2 Hb2" gives %[? [=]];
-      iCombine "Ha3 Hb3" gives %[? [=]];
-      subst; iModIntro; iPureIntro; split; done.
-    - (* structT case *)
-      inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
-      induction d.
-      {
-        simpl.
-        FIXME: statement is incorrect because of potentially empty struct
-      }
-  Qed. *)
 
   Local Lemma has_go_type_len {v t} :
     has_go_type v t ->
