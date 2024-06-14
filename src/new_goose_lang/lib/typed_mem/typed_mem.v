@@ -135,6 +135,32 @@ Section goose_lang.
                                                      (λ q, l ↦[t]{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
+  Definition is_primitive_type (t : go_type) : Prop :=
+    match t with
+    | structT d => False
+    | funcT => False
+    | sliceT e => False
+    | interfaceT => False
+    | _ => True
+    end
+  .
+
+  Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
+    is_primitive_type t →
+    CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+  Proof.
+    intros Hprim.
+    unfold CombineSepGives.
+    unseal.
+    iIntros "[[H1 %Hty1] [H2 %Hty2]]".
+    inversion Hty1; subst.
+    1-10,14-16,19-20: inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
+      iDestruct (heap_pointsto_agree with "[$]") as "%H";
+      inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; done.
+    all: by exfalso.
+  Qed.
+
+  (*
   Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
     CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
   Proof.
@@ -154,9 +180,14 @@ Section goose_lang.
       iCombine "Ha2 Hb2" gives %[? [=]];
       iCombine "Ha3 Hb3" gives %[? [=]];
       subst; iModIntro; iPureIntro; split; done.
-    - (* strucT case *)
-    FIXME: proof incomplete
-  Qed.
+    - (* structT case *)
+      inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
+      induction d.
+      {
+        simpl.
+        FIXME: statement is incorrect because of potentially empty struct
+      }
+  Qed. *)
 
   Local Lemma has_go_type_len {v t} :
     has_go_type v t ->
@@ -364,16 +395,6 @@ Section goose_lang.
     rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
-
-Definition is_primitive_type (t : go_type) : Prop :=
-  match t with
-  | structT d => False
-  | funcT => False
-  | sliceT e => False
-  | interfaceT => False
-  | _ => True
-  end
-.
 
 Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 t :
   is_primitive_type t →
