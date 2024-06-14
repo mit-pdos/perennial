@@ -371,11 +371,10 @@ Definition init_rpst :=
 Definition apply_cmds (cmds : list command) :=
   foldl apply_cmd init_rpst cmds.
 
-Lemma apply_cmds_dom cmds :
-  match apply_cmds cmds with
-  | State _ tpls => dom tpls = keys_all
-  | _ => False
-  end.
+Lemma apply_cmds_dom log :
+  ∀ stm tpls,
+  apply_cmds log = State stm tpls ->
+  dom tpls = keys_all.
 Admitted.
 
 (** Note: RSM invariants can either be defined as properties about [apply_cmds],
@@ -408,9 +407,21 @@ Definition pts_nonzero log :=
   stm !! ts = Some (StPrepared wrs) ->
   ts ≠ O.
 
+Definition pwrs_valid gid log :=
+  ∀ stm tpls ts wrs,
+  apply_cmds log = State stm tpls ->
+  stm !! ts = Some (StPrepared wrs) ->
+  valid_wrs wrs ∧ wrs_in_group gid wrs.
+
 Definition valid_pts c :=
   match c with
   | CmdPrep tid wrs => valid_ts tid
+  | _ => True
+  end.
+
+Definition valid_pwrs gid c :=
+  match c with
+  | CmdPrep tid wrs => valid_wrs wrs ∧ wrs_in_group gid wrs
   | _ => True
   end.
 
@@ -690,7 +701,8 @@ Proof.
     }
     by eapply Hdisj.
   }
-  { rewrite /apply_read in Happly.
+  { (* Case: [CmdRead] *)
+    rewrite /apply_read in Happly.
     destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
     by destruct (tpls !! key) as [[vs tsprep] |];
       inversion Happly; subst stmc tplsc; eapply Hdisj.
@@ -751,6 +763,18 @@ Proof.
   { apply pts_disjoint_empty. }
   { apply pts_consistent_empty. }
 Qed.
+
+Lemma pwrs_validity gid l :
+  Forall (λ c, valid_pwrs gid c) l ->
+  pwrs_valid gid l.
+Proof.
+Admitted.
+
+Lemma set_Forall_Forall_subsume `{Countable A} (l : list A) (s : gset A) P :
+  set_Forall P s ->
+  Forall (λ x, x ∈ s) l ->
+  Forall P l.
+Proof. do 2 rewrite Forall_forall. intros HP Hl x Hin. by auto. Qed.
 
 (* TODO: probably don't need these. *)
 Definition apply_cmds_stm (cmds : list command) :=
@@ -1820,8 +1844,7 @@ Section group_inv.
     iDestruct (keys_inv_expose_repl_tsprep with "Hkeys") as (tplsK) "(Hkeys & Htpls & %Hdom)".
     (* Agree on tuples from the group and keys invariants. *)
     iDestruct (tuple_repl_big_agree with "Hrepls Htpls") as %->.
-    { pose proof (apply_cmds_dom log) as Hdom'.
-      rewrite /apply_cmds Hrsm in Hdom'.
+    { pose proof (apply_cmds_dom log _ _ Hrsm) as Hdom'.
       rewrite Hdom.
       by rewrite -keys_group_tpls_group_dom.
     }
@@ -1933,13 +1956,14 @@ Section group_inv.
     rewrite /cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
     destruct Hsubsume as [Hsubsume Hc].
     iNamed "Hgroup".
+    (* Obtain proof that [ts] has committed. *)
+    iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
+    iDestruct "Hc" as (wrsc) "[Hcmt %Hgid]".
     rewrite /apply_cmds in Hrsm.
     rewrite /group_inv_with_cpool_no_log.
     destruct (stm !! ts) eqn:Hdup; last first.
-    { (* Case: Empty state; contradiction---no prepare before commit. *)
-      iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
-      iDestruct "Hc" as (wrs) "[Hcmt %Hptg]".
-      iDestruct (txn_inv_has_prepared with "Hcmt Htxn") as "#Hst"; first apply Hptg.
+    { (* Case: Empty state; contradiction---no prepare before commit. *) 
+      iDestruct (txn_inv_has_prepared with "Hcmt Htxn") as "#Hst"; first apply Hgid.
       by iDestruct (txnst_absent_false with "Hstm Hst") as "[]".
     }
     (* Case: Transaction prepared, aborted, or committed. *)
@@ -1952,12 +1976,37 @@ Section group_inv.
     (* Take the required keys invariants. *)
     iDestruct (big_sepS_subseteq_acc _ _ (dom wrs) with "Hkeys") as "[Hkeys HkeysC]".
     { (* Prove [dom wrs ⊆ keys_all] *)
-      admit.
+      unshelve epose proof (pwrs_validity gid log _) as Hpwrs.
+      { eapply set_Forall_Forall_subsume; last apply Hsubsume.
+        eapply set_Forall_impl; first apply Hcg.
+        intros c Hvcg. rewrite /valid_cmd_in_group in Hvcg.
+        destruct c; [| done | done | done].
+        by destruct Hvcg as (_ & Hvw & Hwg).
+      }
+      specialize (Hpwrs _ _ _ _ Hrsm Hdup).
+      by destruct Hpwrs as [Hvw _].
     }
     (* Take the required tuple ownerships from the group invariant. *)
     iDestruct (big_sepM_dom_subseteq_split _ _ (dom wrs) with "Hrepls")
       as (tplsg [Hdom Hsubseteq]) "[Hrepls HreplsO]".
-    { (* TODO: prove [dom wrs ⊆ dom (tpls_group gid tpls)] *) admit. }
+    { (* Prove [dom wrs ⊆ dom (tpls_group gid tpls)] *)
+      unshelve epose proof (pwrs_validity gid log _) as Hpwrs.
+      { eapply set_Forall_Forall_subsume; last apply Hsubsume.
+        eapply set_Forall_impl; first apply Hcg.
+        intros c Hvcg. rewrite /valid_cmd_in_group in Hvcg.
+        destruct c; [| done | done | done].
+        by destruct Hvcg as (_ & Hvw & Hwg).
+      }
+      specialize (Hpwrs _ _ _ _ Hrsm Hdup).
+      destruct Hpwrs as [Hvw Hwg].
+      rewrite /wrs_in_group in Hwg.
+      intros k Hin.
+      specialize (Hwg _ Hin). simpl in Hwg.
+      pose proof (apply_cmds_dom log _ _ Hrsm) as Hdom.
+      rewrite (@keys_group_tpls_group_dom gid) in Hdom.
+      rewrite Hdom elem_of_filter.
+      by auto.
+    }
     (* Expose the replicated history and prepared timestamp from keys invariant. *)
     iDestruct (keys_inv_expose_repl_tsprep with "Hkeys") as (tplsk) "(Hkeys & Htpls & %Hdom')".
     (* Agree on tuples from the group and keys invariants. *)
@@ -1966,9 +2015,6 @@ Section group_inv.
     (* Update the tuples (resetting the prepared timestamp and extending the history). *)
     iMod (tuple_repl_big_update (multiwrite ts wrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
     { by rewrite multiwrite_dom. }
-    (* Obtain proof that [ts] has committed. *)
-    iDestruct (big_sepS_elem_of with "Hvc") as "Hcmt"; first apply Hc. simpl.
-    iDestruct "Hcmt" as (wrsc) "[Hcmt %Hgid]".
     (* Prove [wrs ⊆ wrsc] (i.e., the prepare writes is a subset of the global writes). *)
     iAssert (⌜wrs ⊆ wrsc⌝)%I as %Hwrsc.
     { iNamed "Htxn".
