@@ -92,28 +92,6 @@ Section goose_lang.
   | has_go_type_chanT t (l : loc) : has_go_type #l (chanT t)
   .
 
-  Inductive has_go_abstract_type : val → go_abstract_type → Prop :=
-  | has_go_abstract_type_bool (b : bool) : has_go_abstract_type #b cellT
-  | has_go_abstract_type_uint64 (x : w64) : has_go_abstract_type #x cellT
-  | has_go_abstract_type_uint32 (x : w32) : has_go_abstract_type #x cellT
-  (* | has_go_abstract_type_uint16 (x : w16) : has_go_abstract_type #x cellT *)
-  | has_go_abstract_type_uint8 (x : w8) : has_go_abstract_type #x cellT
-  | has_go_abstract_type_int64 (x : w64) : has_go_abstract_type #x cellT
-  | has_go_abstract_type_int32 (x : w32) : has_go_abstract_type #x cellT
-  (* | has_go_abstract_type_int16 (x : w16) : has_go_abstract_type #x cellT *)
-  | has_go_abstract_type_int8 (x : w8) : has_go_abstract_type #x cellT
-  | has_go_abstract_type_string (x : string) : has_go_abstract_type #(str x) cellT
-  | has_go_abstract_type_ptr (x : loc) : has_go_abstract_type #x cellT
-  | has_go_abstract_type_func f x e : has_go_abstract_type (RecV f x e) cellT
-  | has_go_abstract_type_nil : has_go_abstract_type nil cellT
-  | has_go_abstract_type_unit : has_go_abstract_type #() unitT
-  | has_go_abstract_type_prod
-      (v1 v2 : val) (t1 t2 : go_abstract_type)
-      (Ht1 : has_go_abstract_type v1 t1)
-      (Ht2 : has_go_abstract_type v2 t2)
-    : has_go_abstract_type (v1, v2) (prodT t1 t2)
-  .
-
   Lemma zero_val_has_go_type t :
     has_go_type (zero_val t) t.
   Proof.
@@ -212,6 +190,59 @@ Section goose_lang.
     apply zero_val_has_go_type.
   Qed.
 
+  Lemma wp_typed_load stk E q l t v :
+    {{{ ▷ l ↦[t]{q} v }}}
+      load_ty t #l @ stk; E
+    {{{ RET v; l ↦[t]{q} v }}}.
+  Proof.
+    iIntros (Φ) ">Hl HΦ".
+    unseal.
+    iDestruct "Hl" as "[Hl %Hty]".
+    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
+    { iIntros "!> HPost".
+      iApply "HΦ".
+      iSplit; eauto. }
+    unfold load_ty.
+    rename l into l'.
+    iInduction Hty as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (l' Φ) "HΦ".
+    1-10,14-16,19-20: rewrite /= ?loc_add_0 ?right_id; wp_pures;
+      wp_apply (wp_load with "[$]"); done.
+    1-2,4-5: rewrite /= ?right_id; wp_pures; rewrite Z.mul_0_r;
+      iDestruct "Hl" as "(H1 & H2 & H3)";
+      wp_apply (wp_load with "[$H1]"); iIntros;
+      wp_apply (wp_load with "[$H2]"); iIntros;
+      wp_apply (wp_load with "[$H3]"); iIntros;
+      wp_pures; iApply "HΦ"; by iFrame.
+    - (* case structT *)
+      iInduction d as [|] "IH2" forall (l' Φ).
+      { wp_pures. iApply "HΦ". by iFrame. }
+      destruct a.
+      wp_pures.
+      iDestruct "Hl" as "[Hf Hl]".
+      wp_apply ("IH" with "[] Hf").
+      { iPureIntro. by left. }
+      iIntros "Hf".
+      wp_pures.
+      wp_apply ("IH2" with "[] [] [Hl]").
+      { iPureIntro. intros. apply Hfields. by right. }
+      { iModIntro. iIntros. wp_apply ("IH" with "[] [$] [$]").
+        iPureIntro. by right. }
+      {
+        erewrite has_go_type_len.
+        2:{ eapply Hfields. by left. }
+        rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
+        iFrame.
+      }
+      iIntros "Hl".
+      wp_pures.
+      iApply "HΦ".
+      iFrame.
+      erewrite has_go_type_len.
+      2:{ eapply Hfields. by left. }
+      rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
+      by iFrame.
+  Qed.
+
   Lemma wp_store stk E l v v' :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
     {{{ RET LitV LitUnit; l ↦ v }}}.
@@ -251,7 +282,6 @@ Section goose_lang.
         wp_apply (wp_store with "[$H3]"); iIntros;
         iApply "HΦ"; rewrite /= ?loc_add_0 ?right_id; iFrame.
     - (* struct *)
-      simpl.
       iInduction d as [|] "IH2" forall (l' v' Hty).
       { simpl. wp_pures. iApply "HΦ". inversion Hty; subst. done. }
       destruct a. inversion Hty; subst.
@@ -277,43 +307,6 @@ Section goose_lang.
       2:{ eapply Hfields0. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       rewrite ?right_id. iFrame.
-  Qed.
-
-  Lemma wp_typed_load stk E q l t v :
-    {{{ ▷ l ↦[t]{q} v }}}
-      load_ty t #l @ stk; E
-    {{{ RET v; l ↦[t]{q} v }}}.
-  Proof.
-    iIntros (Φ) ">Hl HΦ".
-    unseal.
-    iDestruct "Hl" as "[Hl %]".
-    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
-    { iIntros "!> HPost".
-      iApply "HΦ".
-      iSplit; eauto. }
-    unfold load_ty.
-    apply has_go_type_to_abstract in H.
-    hnf in H.
-    iInduction H as [ | | | | | | | | | | | | ] "IH" forall (l Φ);
-      subst; simpl; wp_pures; rewrite ?loc_add_0 ?right_id.
-    1-11: wp_apply (wp_load with "[$]"); auto.
-    + by iApply "HΦ".
-    + rewrite big_opL_app.
-      iDestruct "Hl" as "[Hv1 Hv2]".
-      wp_apply ("IH" with "Hv1"); iIntros "Hv1".
-      wp_apply ("IH1" with "[Hv2]"); [ | iIntros "Hv2" ].
-      { erewrite has_go_abstract_type_len; [|done].
-        setoid_rewrite Z.mul_1_r.
-        setoid_rewrite Nat2Z.inj_add.
-        setoid_rewrite loc_add_assoc.
-        iFrame. }
-      wp_pures.
-      iApply "HΦ"; iFrame.
-      erewrite has_go_abstract_type_len; [|done].
-      setoid_rewrite Z.mul_1_r.
-      setoid_rewrite Nat2Z.inj_add.
-      setoid_rewrite loc_add_assoc.
-      by iFrame.
   Qed.
 
   Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ is_pers :
@@ -349,25 +342,14 @@ Section goose_lang.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
 
+(*
 Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 t :
-  (go_type_interp t) = cellT →
   has_go_type v1 t →
-  vals_compare_safe v' v1 →
   v' ≠ v1 →
   {{{ ▷ l ↦[t]{dq} v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
   {{{ RET PairV v' (LitV $ LitBool false); l ↦[t]{dq} v' }}}.
 Proof.
-  unseal.
-  unfold has_go_type in *.
-  generalize dependent (go_type_interp t).
-  intros. subst.
-  iIntros "[Hpre >%Hv'] HΦ".
-  inversion Hv'.
-  all: subst; simpl;
-    rewrite loc_add_0 right_id;
-    wp_apply (wp_cmpxchg_fail with "[$]");
-    [done| inversion H0; subst; done | iIntros "?"; iApply "HΦ"; iFrame; done].
-Qed.
+Admitted. *)
 
 End goose_lang.
 

@@ -33,46 +33,19 @@ Section go_lang.
   Definition ref_to (t:go_type): val := λ: "v", ref (Var "v").
 
   (* TODO: seal *)
-  Definition load_ty (t : go_type) : val :=
+  Fixpoint load_ty (t : go_type) : val :=
     match t with
     | structT d =>
-        (fix store_struct d : val :=
+        (fix load_ty_struct d : val :=
           match d with
           | [] => (λ: <>, #())%V
-          | (f,t) :: d => (λ: "pv", let: "p" := Fst "pv" in
-                                  let: "v" := Snd "pv" in
-                                  store_ty_aux t ("p", Fst "v");;
-                                  store_struct d (BinOp (OffsetOp (go_type_size t))
-                                                        "p" #1, Snd "v"))%V
+          | (_,t) :: d => (λ: "l", (load_ty t "l", load_ty_struct d ("l" +ₗ[t] #1)))%V
           end) d
-    | sliceT e =>
-        (λ: "pv", let: "p" := Fst "pv" in
-                  let: "v" := Snd "pv" in
-                  let: (("a", "b"), "c") := "v" in
-                  "p" +ₗ #0 <- "a" ;;
-                  "p" +ₗ #1 <- "b" ;;
-                  "p" +ₗ #2 <- "c"
-        )%V
 
-    | interfaceT =>
-        (λ: "pv", let: "p" := Fst "pv" in
-                  let: "v" := Snd "pv" in
-                  let: (("a", "b"), "c") := "v" in
-                  "p" +ₗ #0 <- "a" ;;
-                  "p" +ₗ #1 <- "b" ;;
-                  "p" +ₗ #2 <- "c"
-        )%V
-
-    | cellT => (λ: "l", !(Var "l"))%V
+    | sliceT e => (λ: "l", (!("l" +ₗ #0), !("l" +ₗ #1), !("l" +ₗ #2)))%V
+    | interfaceT => (λ: "l", (!("l" +ₗ #0), !("l" +ₗ #1), !("l" +ₗ #2)))%V
+    | _ => (λ: "l", !(Var "l"))%V
     end.
-
-    match t with
-    | prodT t1 t2 => (λ: "l", (load_ty_aux t1 (Var "l"),
-                               load_ty_aux t2 (BinOp (OffsetOp (go_abstract_type_size t1))
-                                                     (Var "l") #1)))%V
-    | cellT => (λ: "l", !(Var "l"))%V
-    | unitT => (λ: <>, #())%V
-    end) (go_type_interp t).
 
   Fixpoint store_ty (t : go_type): val :=
     match t with
@@ -82,35 +55,29 @@ Section go_lang.
           | [] => (λ: <>, #())%V
           | (f,t) :: d => (λ: "pv", let: "p" := Fst "pv" in
                                   let: "v" := Snd "pv" in
-                                  store_ty_aux t ("p", Fst "v");;
+                                  store_ty t ("p", Fst "v");;
                                   store_struct d (BinOp (OffsetOp (go_type_size t))
                                                         "p" #1, Snd "v"))%V
           end) d
-    | sliceT e =>
-        (λ: "pv", let: "p" := Fst "pv" in
-                  let: "v" := Snd "pv" in
-                  let: (("a", "b"), "c") := "v" in
-                  "p" +ₗ #0 <- "a" ;;
-                  "p" +ₗ #1 <- "b" ;;
-                  "p" +ₗ #2 <- "c"
-        )%V
-
-    | interfaceT =>
-        (λ: "pv", let: "p" := Fst "pv" in
-                  let: "v" := Snd "pv" in
-                  let: (("a", "b"), "c") := "v" in
-                  "p" +ₗ #0 <- "a" ;;
-                  "p" +ₗ #1 <- "b" ;;
-                  "p" +ₗ #2 <- "c"
-        )%V
-
+    | sliceT e => (λ: "pv", let: "p" := Fst "pv" in
+                           let: "v" := Snd "pv" in
+                           let: (("a", "b"), "c") := "v" in
+                           "p" +ₗ #0 <- "a" ;;
+                           "p" +ₗ #1 <- "b" ;;
+                           "p" +ₗ #2 <- "c")%V
+    | interfaceT => (λ: "pv", let: "p" := Fst "pv" in
+                             let: "v" := Snd "pv" in
+                             let: (("a", "b"), "c") := "v" in
+                             "p" +ₗ #0 <- "a" ;;
+                             "p" +ₗ #1 <- "b" ;;
+                             "p" +ₗ #2 <- "c")%V
     | _ => (λ: "pv", Fst "pv" <- Snd "pv")%V
     end.
 
   Definition ref_ty (t : go_type) : val := λ: "v", ref (Var "v").
 End go_lang.
 
-(* otation "![ t ] e" := (load_ty t e%E) : expr_scope. *)
+Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
 (* NOTE: in code we want to supply arbitrary expressions, so we have the usual
    notation, but the specs should be in terms of value pairs, so we have a
    similar notation in the value-scope (even though this is an expression and
