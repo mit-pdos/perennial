@@ -158,7 +158,7 @@ Section goose_lang.
     has_go_type v t ->
     length (flatten_struct v) = (go_type_size t).
   Proof.
-    unfold go_type_size.
+    rewrite go_type_size_unseal.
     induction 1; simpl; auto.
     induction d.
     { done. }
@@ -187,13 +187,14 @@ Section goose_lang.
     iFrame.
   Qed.
 
-  Lemma wp_ref_to t stk E v :
+  Lemma wp_ref_ty t stk E v :
     has_go_type v t ->
     {{{ True }}}
-      ref_to t v @ stk; E
+      ref_ty t v @ stk; E
     {{{ l, RET #l; l ↦[t] v }}}.
   Proof.
     iIntros (Hty Φ) "_ HΦ".
+    rewrite ref_ty_unseal.
     wp_call.
     wp_apply (wp_AllocAt t); auto.
   Qed.
@@ -221,7 +222,7 @@ Section goose_lang.
     { iIntros "!> HPost".
       iApply "HΦ".
       iSplit; eauto. }
-    unfold load_ty.
+    rewrite load_ty_unseal.
     rename l into l'.
     iInduction Hty as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (l' Φ) "HΦ".
     1-10,14-16,19-20: rewrite /= ?loc_add_0 ?right_id; wp_pures;
@@ -286,6 +287,7 @@ Section goose_lang.
       iApply "HΦ".
       iSplit; eauto. }
     rename l into l'.
+    rewrite store_ty_unseal.
     iInduction Hty_old as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (v' Hty l' Φ) "HΦ".
     1-10,14-16,19-20:
       simpl; rewrite ?loc_add_0 ?right_id; wp_pures; wp_apply (wp_store with "[$]");

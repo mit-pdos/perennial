@@ -119,17 +119,17 @@ Definition own_AsyncFile_ghost N γ P fname data idx durableIndex (closeRequeste
 Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
   ∃ data_sl fname (data:list u8) (idx durableIndex : u64) (indexCond durableIndexCond closedCond : loc)
     (closed closeRequested : bool) ,
-  "#Hfilename" ∷ f ↦[AsyncFile :: "filename"]□ #(str fname) ∗
-  "Hdata_sl" ∷ f ↦[AsyncFile :: "data"] (slice_val data_sl) ∗
+  "#Hfilename" ∷ f ↦s[AsyncFile :: "filename"]□ #(str fname) ∗
+  "Hdata_sl" ∷ f ↦s[AsyncFile :: "data"] (slice_val data_sl) ∗
   "#Hdata" ∷ own_slice_small data_sl byteT (DfracDiscarded) data ∗
-  "Hindex" ∷ f ↦[AsyncFile :: "index"] #idx ∗
-  "HdurableIndex" ∷ f ↦[AsyncFile :: "durableIndex"] #durableIndex ∗
-  "HindexCond" ∷ f ↦[AsyncFile :: "indexCond"] #indexCond ∗
-  "HdurableIndexCond" ∷ f ↦[AsyncFile :: "durableIndexCond"] #durableIndexCond ∗
+  "Hindex" ∷ f ↦s[AsyncFile :: "index"] #idx ∗
+  "HdurableIndex" ∷ f ↦s[AsyncFile :: "durableIndex"] #durableIndex ∗
+  "HindexCond" ∷ f ↦s[AsyncFile :: "indexCond"] #indexCond ∗
+  "HdurableIndexCond" ∷ f ↦s[AsyncFile :: "durableIndexCond"] #durableIndexCond ∗
 
-  "HcloseRequested" ∷ f ↦[AsyncFile :: "closeRequested"] #closeRequested ∗
-  "Hclosed" ∷ f ↦[AsyncFile :: "closed"] #closed ∗
-  "HclosedCond" ∷ f ↦[AsyncFile :: "closedCond"] #closedCond ∗
+  "HcloseRequested" ∷ f ↦s[AsyncFile :: "closeRequested"] #closeRequested ∗
+  "Hclosed" ∷ f ↦s[AsyncFile :: "closed"] #closed ∗
+  "HclosedCond" ∷ f ↦s[AsyncFile :: "closedCond"] #closedCond ∗
 
   "#HindexCond_is" ∷ is_Cond indexCond mu ∗
   "#HdurableIndexCond_is" ∷ is_Cond durableIndexCond mu ∗

@@ -27,29 +27,19 @@ Context `{!ffi_interp ffi}.
 
 Section proof.
 Context `{!heapGS Σ} `{!syncG Σ}.
-(* TODO: fix all the notation *)
-Declare Custom Entry struct_field_type.
-Notation "d ⋅ f" := (d, f) (in custom struct_field_type at level 80 ,
-                                  d constr at level 49,
-                                  f constr at level 49,
-                                  format "d ⋅ f"
-                               ).
-Notation "l ↦s[ df ] dq v" := (let '(d, f) := df in (struct.fieldRef_f d f l ↦[ struct.fieldTy d f ]{dq} v))%I
-  (at level 50, dq custom dfrac at level 70,
-                   df custom struct_field_type at level 80).
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
   inv nroot (
         ∃ b : bool,
-          (m ↦s[ Mutex ⋅ "state" ]{# 1/4} #b) ∗
+          (m ↦s[ Mutex :: "state" ]{# 1/4} #b) ∗
                   if b then True else
-                    m ↦s[Mutex ⋅ "state"]{# 3/4} #b ∗ R
+                    m ↦s[Mutex :: "state"]{# 3/4} #b ∗ R
         ).
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := m ↦s[Mutex ⋅ "state"]{# 3/4} #true.
+Definition own_Mutex (m: loc) : iProp Σ := m ↦s[Mutex :: "state"]{# 3/4} #true.
 
 Lemma own_Mutex_exclusive (m : loc) : own_Mutex m -∗ own_Mutex m -∗ False.
 Proof.
@@ -71,7 +61,7 @@ Proof. apply _. Qed.
 
 (** Denotes ownership of a mutex for which the lock invariant is not yet
     decided *)
-Definition own_uninit_Mutex (m: loc): iProp Σ := m ↦s[Mutex ⋅ "state"] #false.
+Definition own_uninit_Mutex (m: loc): iProp Σ := m ↦s[Mutex :: "state"] #false.
 
 Theorem init_Mutex R E m : own_uninit_Mutex m -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
@@ -85,25 +75,6 @@ Proof.
     iDestruct "Hl" as "[$$]".
   }
 Qed.
-
-(* FIXME: move this *)
-Local Fixpoint struct_big_fields_rec l dq (d: descriptor) (fs:descriptor) (v:val): iProp Σ :=
-  match fs with
-  | [] => "_" ∷ ⌜v = #()⌝
-  | (f,t)::fs =>
-    match v with
-    | PairV v1 v2 => ("H" ++ f) ∷ l ↦s[d ⋅ f]{dq} v1 ∗
-                    struct_big_fields_rec l dq d fs v2
-    | _ => False
-    end
-  end.
-
-Definition struct_fields l dq d v : iProp Σ := struct_big_fields_rec l dq d d v.
-
-Theorem struct_fields_split l q d {dwf: struct.wf d} v :
-  typed_pointsto l q (structT d) v ⊣⊢ struct_fields l q d v.
-Proof.
-Admitted.
 
 Lemma wp_struct_fieldRef d f (l : loc) :
   {{{ True }}}
@@ -119,16 +90,11 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_new_Mutex E:
-  {{{ True }}}
-    ref_to (structT Mutex) (zero_val (structT Mutex)) @ E
- {{{ m, RET #m; own_uninit_Mutex m }}}.
+Lemma new_Mutex p :
+  p ↦[structT Mutex] (zero_val (structT Mutex)) -∗
+  own_uninit_Mutex p.
 Proof.
-  iIntros (Φ) "_ HΦ".
-  wp_apply wp_ref_to.
-  { apply zero_val_has_go_type. }
-  iIntros (?) "Hl".
-  iApply "HΦ".
+  iIntros "Hl".
   iDestruct (struct_fields_split with "Hl") as "Hl".
   iNamed "Hl". simpl. iFrame.
 Qed.
