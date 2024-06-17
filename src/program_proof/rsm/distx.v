@@ -80,6 +80,22 @@ Lemma elem_of_ptgroups key keys :
   key_to_group key ∈ ptgroups keys.
 Proof. apply elem_of_map_2. Qed.
 
+Lemma wrs_group_elem_of_ptgroups gid pwrs wrs :
+  pwrs ≠ ∅ ->
+  pwrs = wrs_group gid wrs ->
+  gid ∈ ptgroups (dom wrs).
+Proof.
+  intros Hnz Hpwrs.
+  apply map_choose in Hnz.
+  destruct Hnz as (k & v & Hkv).
+  rewrite /ptgroups elem_of_map.
+  exists k.
+  rewrite Hpwrs map_lookup_filter_Some /= in Hkv.
+  destruct Hkv as [Hkv Hgid].
+  split; first done.
+  by eapply elem_of_dom_2.
+Qed.
+
 Inductive command :=
 | CmdPrep (tid : nat) (wrs : dbmap)
 | CmdCmt (tid : nat)
@@ -859,7 +875,7 @@ Definition diff_by_cmtd
   | Some v => cmtd = last_extend ts repl ++ [v]
   | None => (∃ ts', repl = last_extend ts' cmtd) ∧
            (ts ≠ O -> length repl ≤ ts)%nat
-end.
+  end.
 
 Definition diff_by_lnrz (cmtd lnrz : list dbval) (txns : dbkmod) : Prop.
 Admitted.
@@ -872,6 +888,12 @@ Admitted.
 
 Definition repl_impl_cmtd (acts : list action) (cmds : list command) :=
   ∀ ts, CmdCmt ts ∈ cmds → ∃ wrs, ActCmt ts wrs ∈ acts.
+
+Definition cmtd_impl_prep (resm : gmap nat txnres) (wrsm : gmap nat dbmap) :=
+  ∀ ts, match resm !! ts with
+        | Some (ResCommitted wrs) => wrsm !! ts = Some wrs
+        | _ => True
+        end.
 
 Definition past_commit (acts : list action) (resm : gmap nat txnres) :=
   ∀ ts wrs, ActCmt ts wrs ∈ acts → resm !! ts = Some (ResCommitted wrs).
@@ -1096,6 +1118,7 @@ Section ghost.
     ([∗ map] k ↦ tpl ∈ tpls', tuple_repl_half γ k tpl).
   Admitted.
 
+  (* Transaction result map RA. *)
   Definition txnres_auth γ (resm : gmap nat txnres) : iProp Σ.
   Admitted.
 
@@ -1113,10 +1136,34 @@ Section ghost.
   Definition txnres_abt γ ts :=
     txnres_receipt γ ts ResAborted.
 
+  Lemma txnres_insert {γ resm} ts res :
+    resm !! ts = None ->
+    txnres_auth γ resm ==∗
+    txnres_auth γ (<[ts := res]> resm).
+  Admitted.
+
+  Lemma txnres_witness γ resm ts res :
+    resm !! ts = Some res ->
+    txnres_auth γ resm -∗
+    txnres_receipt γ ts res.
+  Admitted.
+
   Lemma txnres_lookup γ resm ts res :
     txnres_auth γ resm -∗
     txnres_receipt γ ts res -∗
     ⌜resm !! ts = Some res⌝.
+  Admitted.
+
+  (* Transaction write-set map RA. *)
+  Definition txnwrs_auth γ (wrsm : gmap nat dbmap) : iProp Σ.
+  Admitted.
+
+  Definition txnwrs_receipt γ (ts : nat) (wrs : dbmap) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance txnwrs_receipt_persistent γ ts wrs  :
+    Persistent (txnwrs_receipt γ ts wrs).
   Admitted.
 
   (* Custom transaction status RA. *)
@@ -1500,7 +1547,7 @@ Section inv.
   Definition txn_inv γ : iProp Σ :=
     ∃ (ts : nat) (future past : list action)
       (txns_cmt txns_abt : gmap nat dbmap)
-      (resm : gmap nat txnres)
+      (resm : gmap nat txnres) (wrsm : gmap nat dbmap)
       (kmodls kmodcs : gmap dbkey dbkmod),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
@@ -1508,6 +1555,8 @@ Section inv.
       "Hproph" ∷ txn_proph γ future ∗
       (* transaction result map *)
       "Hresm" ∷ txnres_auth γ resm ∗
+      (* transaction write set map *)
+      "Hwrsm" ∷ txnwrs_auth γ wrsm ∗
       (* key modifications *)
       "Hkmodls" ∷ kmods_lnrz γ kmodls ∗
       "Hkmodcs" ∷ kmods_cmtd γ kmodcs ∗
@@ -1518,6 +1567,7 @@ Section inv.
       the result map [resm]. *)
       "%Hcf"   ∷ ⌜conflict_free future txns_cmt⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past future past txns_abt⌝ ∗
+      "%Hcip"  ∷ ⌜cmtd_impl_prep resm wrsm⌝ ∗
       "%Htkcl" ∷ ⌜tmods_kmods_consistent txns_cmt kmodls⌝ ∗
       "%Htkcc" ∷ ⌜tmods_kmods_consistent (resm_to_tmods resm) kmodcs⌝.
 
@@ -1580,10 +1630,30 @@ Section inv.
       "Hkey" ∷ key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep ∗
       "%Hv"  ∷ ⌜kmodc !! tsprep = Some v⌝.
 
+  (** The predicate [consistent_abort] says that a transaction is aborted
+  globally if it is aborted locally on some replica (the other direction is
+  encoded in [safe_submit]). This gives contradiction when learning a commit
+  command under an aborted state. *)
+  Definition consistent_abort γ tid st : iProp Σ :=
+    match st with
+    | StAborted => txnres_abt γ tid
+    | _ => True
+    end.
+
+  #[global]
+  Instance consistent_abort_persistent γ gid c :
+    Persistent (consistent_abort γ gid c).
+  Proof. destruct c; apply _. Qed.
+
   Definition safe_submit_finalize γ gid (c : command) : iProp Σ :=
     match c with
+    (* Enforces [CmdCmt] is submitted to only participant groups. *)
     | CmdCmt ts => (∃ wrs, txnres_cmt γ ts wrs ∧ ⌜gid ∈ ptgroups (dom wrs)⌝)
     | CmdAbt ts => txnres_abt γ ts
+    (* Enforces [CmdPrep] is submitted to only participant groups, and partial
+    writes is part of the global commit, which we would likely need with
+    coordinator recovery. *)
+    | CmdPrep ts pwrs => (∃ wrs, txnwrs_receipt γ ts wrs ∧ ⌜pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs⌝)
     | _ => True
     end.
 
@@ -1606,6 +1676,7 @@ Section inv.
       "Hcpool"  ∷ cpool_half γ gid cpool ∗
       "Hstm"    ∷ txnst_auth γ gid stm ∗
       "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
+      "#Hca"    ∷ ([∗ map] tid ↦ st ∈ stm, consistent_abort γ tid st) ∗
       "#Hvc"    ∷ ([∗ set] c ∈ cpool, safe_submit_finalize γ gid c) ∗
       "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝ ∗
       "%Hcg"    ∷ ⌜set_Forall (valid_cmd_in_group gid) cpool⌝.
@@ -1616,6 +1687,7 @@ Section inv.
       "Hcpool"  ∷ cpool_half γ gid cpool ∗
       "Hstm"    ∷ txnst_auth γ gid stm ∗
       "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
+      "#Hca"    ∷ ([∗ map] tid ↦ st ∈ stm, consistent_abort γ tid st) ∗
       "#Hvc"    ∷ ([∗ set] c ∈ cpool, safe_submit_finalize γ gid c) ∗
       "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝ ∗
       "%Hcg"    ∷ ⌜set_Forall (valid_cmd_in_group gid) cpool⌝.
@@ -1805,37 +1877,74 @@ Section group_inv.
     by iApply (key_inv_learn_prepare with "Hkey").
   Qed.
 
-  Lemma group_inv_learn_prepare γ gid log cpool ts wrs :
+  Lemma txn_inv_abort γ gid ts wrs :
+    gid ∈ ptgroups (dom wrs) ->
+    txnwrs_receipt γ ts wrs -∗
+    txnst_lb γ gid ts StAborted -∗
+    txn_inv γ ==∗
+    txn_inv γ ∗
+    txnres_abt γ ts.
+  Proof.
+    iIntros (Hgid) "Hwrs Hrpabt Htxn".
+    iNamed "Htxn".
+    destruct (resm !! ts) as [res |] eqn:Hres; last first.
+    { (* Case: [ts] not aborted or committed yet. *)
+      iMod (txnres_insert ts ResAborted with "Hresm") as "Hresm"; first done.
+      iDestruct (txnres_witness with "Hresm") as "#Habt".
+      { apply lookup_insert. }
+      admit.
+    }
+    destruct res as [wrs' |]; last first.
+    { (* Case: [ts] aborted; get a witness without any update. *)
+      iDestruct (txnres_witness with "Hresm") as "#Habt".
+      { apply Hres. }
+      auto 10 with iFrame.
+    }
+    (* Case: [ts] committed; contradiction. *)
+    iDestruct (big_sepM_lookup with "Hvr") as "#Hresc"; first apply Hres.
+    rewrite /= /all_prepared.
+  Admitted.
+
+  Lemma group_inv_learn_prepare γ gid log cpool ts pwrs :
+    CmdPrep ts pwrs ∈ cpool ->
     txn_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_with_cpool_no_log γ gid log cpool ==∗
     txn_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    group_inv_with_cpool_no_log γ gid (log ++ [CmdPrep ts wrs]) cpool.
+    group_inv_with_cpool_no_log γ gid (log ++ [CmdPrep ts pwrs]) cpool.
   Proof.
-    iIntros "Htxn Hkeys Hgroup".
+    iIntros (Hc) "Htxn Hkeys Hgroup".
     iNamed "Hgroup".
     rewrite /apply_cmds in Hrsm.
     rewrite /group_inv_with_cpool_no_log.
     (* Frame away unused resources. *)
-    iFrame "Hcpool Hvc".
+    iFrame "Hcpool".
     destruct (stm !! ts) eqn:Hdup.
     { (* Case: Txn [ts] has already prepared, aborted, or committed; no-op. *)
-      iFrame.
+      iFrame "∗ #".
       by rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
     }
     (* Case: Txn [ts] has not prepared, aborted, or committed. *)
-    destruct (try_acquire ts wrs tpls) eqn:Hacq; last first.
+    destruct (try_acquire ts pwrs tpls) eqn:Hacq; last first.
     { (* Case: Validation fails; abort the transaction. *)
       iFrame "Hrepls Hkeys".
       iMod (txnst_direct_abort with "Hstm") as "Hstm"; first apply Hdup.
+      iDestruct (txnst_witness with "Hstm") as "#Hrpabt".
+      { apply lookup_insert. }
+      iDestruct (big_sepS_elem_of with "Hvc") as "Hprep".
+      { apply Hc. }
+      iDestruct "Hprep" as (wrs) "(Hwrs & %Hne & %Hpwrs)".
+      iMod (txn_inv_abort with "Hwrs Hrpabt Htxn") as "[Htxn #Habt]".
+      { by eapply wrs_group_elem_of_ptgroups. }
       rewrite /apply_cmds foldl_snoc Hrsm /= Hdup Hacq.
-      by iFrame.
+      iDestruct (big_sepM_insert_2 _ _ ts StAborted with "[] Hca") as "Hca'"; first done.
+      by iFrame "∗ # %".
     }
     (* Case: Validation succeeds; lock the tuples and mark the transaction prepared. *)
     rewrite /apply_cmds foldl_snoc Hrsm /= Hdup Hacq.
     rewrite /try_acquire in Hacq.
-    destruct (validate ts wrs tpls) eqn:Hvd; last done.
+    destruct (validate ts pwrs tpls) eqn:Hvd; last done.
     inversion_clear Hacq.
     set tpls' := acquire _ _ _.
     (* Extract keys invariant in this group. *)
@@ -1869,7 +1978,8 @@ Section group_inv.
     (* Merge the keys invariants of this group and other groups. *)
     iDestruct (keys_inv_ungroup with "Hkeys Hkeyso") as "Hkeys".
     (* Mark [ts] as prepared in the status map. *)
-    iMod (txnst_prepare ts wrs with "Hstm") as "Hstm"; first apply Hdup.
+    iMod (txnst_prepare ts pwrs with "Hstm") as "Hstm"; first apply Hdup.
+    iDestruct (big_sepM_insert_2 _ _ ts (StPrepared pwrs) with "[] Hca") as "Hca'"; first done.
     by iFrame "∗ # %".
   Qed.
 
@@ -1968,8 +2078,19 @@ Section group_inv.
     }
     (* Case: Transaction prepared, aborted, or committed. *)
     destruct t as [wrs | |] eqn:Ht; last first.
-    { (* Case: [StAborted]; contradiction. *) admit. }
-    { (* Case: [StCommitted]; no-op. *) admit. }
+    { (* Case: [StAborted]; contradiction. *)
+      iDestruct (big_sepM_lookup with "Hca") as "#Habt".
+      { apply Hdup. }
+      simpl.
+      iNamed "Htxn".
+      iDestruct (txnres_lookup with "Hresm Hcmt") as "%Hcmt".
+      iDestruct (txnres_lookup with "Hresm Habt") as "%Habt".
+      congruence.
+    }
+    { (* Case: [StCommitted]; no-op. *)
+      rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+      by auto with iFrame.
+    }
     (* Case: [StPrepared wrs] *)
     rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
     set tpls' := multiwrite _ _ _.
@@ -2067,8 +2188,9 @@ Section group_inv.
     rewrite multiwrite_tpls_group_commute.
     (* Mark [ts] as committed in the status map. *)
     iMod (txnst_commit ts wrs with "Hstm") as "Hstm"; first apply Hdup.
-    by eauto with iFrame.
-  Admitted.
+    iDestruct (big_sepM_insert_2 _ _ ts (StCommitted) with "[] Hca") as "Hca'"; first done.
+    by auto with iFrame.
+  Qed.
 
   Lemma group_inv_learn γ gid cpool cmds :
     ∀ log,
@@ -2090,6 +2212,9 @@ Section group_inv.
     destruct c.
     { (* Case: [CmdPrep tid wrs] *)
       iMod (group_inv_learn_prepare with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
+      { rewrite /cpool_subsume_log 2!Forall_app Forall_singleton in Hsubsume.
+        by destruct Hsubsume as [[_ Hc] _].
+      }
       by iApply ("IH" with "[] Htxn Hkeys Hgroup").
     }
     { (* Case: [CmdCmt tid] *)
