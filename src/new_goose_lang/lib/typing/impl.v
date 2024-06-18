@@ -29,7 +29,7 @@ Section val_types.
 
   Context `{ffi_syntax}.
   Definition nil : val := #null.
-  Definition slice_nil : val := (nil, nil, nil).
+  Definition slice_nil : val := (nil, #0, #0).
   Definition interface_nil : val := (nil, nil, nil).
   Fixpoint zero_val (t : go_type) : val :=
     match t with

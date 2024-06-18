@@ -2,12 +2,13 @@ From Perennial.new_goose_lang Require Export lib.typing.impl.
 
 (** * Typed data representations for struct and slice *)
 Module slice.
-Record t := mk { ptr: loc; sz: u64; cap: u64; }.
+Record t := mk { ptr_f: loc; len_f: u64; cap_f: u64; }.
 Notation nil := slice_nil.
+Definition nil_f : slice.t := mk null 0 0.
 
 Section goose_lang.
   Context `{ffi_semantics}.
-  Definition val (s: slice.t) : val := (#s.(slice.ptr), #s.(slice.sz), #s.(slice.cap)).
+  Definition val (s: slice.t) : val := (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f)).
 End goose_lang.
 End slice.
 

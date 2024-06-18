@@ -13,7 +13,6 @@ Definition cap : val := λ: "s", Snd "s".
 Definition make3 t : val :=
   λ: "sz" "cap",
   if: "cap" < "sz" then Panic "NewSlice with cap smaller than len"
-  else if: "cap" = #0 then nil
   else let: "p" := AllocN "cap" (zero_val t) in
        (Var "p", Var "sz", Var "cap").
 
