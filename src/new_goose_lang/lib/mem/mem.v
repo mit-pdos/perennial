@@ -96,6 +96,43 @@ Section goose_lang.
     iApply (heap_pointsto_persist with "[$]").
   Qed.
 
+  Lemma typed_pointsto_not_null l t dq v :
+    go_type_size t > 0 →
+    l ↦[t]{dq} v -∗ ⌜ l ≠ null ⌝.
+  Proof.
+    unseal. intros Hlen. iIntros "[? %Hty]".
+    iInduction Hty as [] "IH"; subst;
+    simpl; rewrite ?right_id ?loc_add_0;
+      try (iApply heap_pointsto_non_null; by iFrame).
+    all: try (iDestruct select (_) as "(? & ? & ?)";
+              iApply heap_pointsto_non_null; by iFrame).
+    rewrite go_type_size_unseal /= in Hlen.
+    iInduction d as [|[]] "IH2"; simpl in *.
+    { exfalso. lia. }
+    destruct (decide (go_type_size_def g = O)).
+    {
+      rewrite (nil_length_inv (flatten_struct (default _ _))).
+      2:{
+        erewrite has_go_type_len.
+        { rewrite go_type_size_unseal. done. }
+        apply Hfields. by left.
+      }
+      rewrite app_nil_l.
+      iApply ("IH2" with "[] [] [] [$]").
+      - iPureIntro. intros. apply Hfields. by right.
+      - iPureIntro. lia.
+      - iModIntro. iIntros. iApply ("IH" with "[] [] [$]").
+        + iPureIntro. by right.
+        + iPureIntro. lia.
+    }
+    {
+      iDestruct select ([∗ list] _ ↦ _ ∈ _, _)%I as "[? _]".
+      iApply ("IH" with "[] [] [$]").
+      - iPureIntro. by left.
+      - iPureIntro. rewrite go_type_size_unseal. lia.
+    }
+  Qed.
+
   Local Lemma wp_AllocAt t stk E v :
     has_go_type v t ->
     {{{ True }}}

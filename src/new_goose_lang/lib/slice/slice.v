@@ -13,6 +13,7 @@ Program Definition own_slice := unseal (_:seal (@own_slice_def)). Obligation 1. 
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
 
 Definition own_slice_cap_def (s : slice.t) (t : go_type): iProp Σ :=
+  ⌜ uint.Z s.(slice.sz) ≤ uint.Z s.(slice.cap) ⌝ ∗
   [∗ list] i ↦ v ∈ (seq (uint.nat s.(slice.sz)) (uint.nat s.(slice.cap) - uint.nat s.(slice.sz))),
     (s.(slice.ptr) +ₗ[t] i) ↦[t] (zero_val t).
 Program Definition own_slice_cap := unseal (_:seal (@own_slice_cap_def)). Obligation 1. by eexists. Qed.
@@ -26,6 +27,7 @@ Lemma own_slice_cap_none s t :
   ⊢ own_slice_cap s t.
 Proof.
   destruct s; simpl; intros ->. rewrite own_slice_cap_unseal /own_slice_cap_def Nat.sub_diag //.
+  simpl. iPureIntro. lia.
 Qed.
 
 Lemma own_slice_small_sz s t q vs :
@@ -98,91 +100,35 @@ Qed.
 Global Instance own_slice_timeless s t q vs : Timeless (own_slice s t q vs).
 Proof. unseal; apply _. Qed.
 
-Theorem own_slice_small_not_null s bt q vs :
-  bt ≠ unitBT ->
+Theorem own_slice_not_null s t q vs :
+  go_type_size t > 0 →
   length vs > 0 ->
-  own_slice_small s (baseT bt) q vs -∗
-  ⌜ s.(Slice.ptr) ≠ null ⌝.
+  own_slice s t q vs -∗
+  ⌜ s.(slice.ptr) ≠ null ⌝.
 Proof.
+  unseal.
   iIntros (Hbt Hvs) "[Hs %]".
   destruct s; destruct vs; simpl in *; try lia.
-  rewrite array_cons.
-  iDestruct "Hs" as "[Hptr _]".
-  rewrite base_pointsto_untype.
-  2: { destruct bt; eauto. }
-  iApply heap_pointsto_non_null.
-  iDestruct "Hptr" as "[Hptr %]".
-  iFrame.
-Qed.
-
-Theorem own_slice_not_null s bt q vs :
-  bt ≠ unitBT ->
-  length vs > 0 ->
-  own_slice s (baseT bt) q vs -∗
-  ⌜ s.(Slice.ptr) ≠ null ⌝.
-Proof.
-  iIntros (Hbt Hvs) "[Hs _]".
-  iApply own_slice_small_not_null; last by iFrame.
-  all: eauto.
+  iDestruct "Hs" as "[[Hptr _] _]".
+  rewrite Z.mul_0_r loc_add_0.
+  by iApply typed_pointsto_not_null.
 Qed.
 
 Theorem own_slice_cap_wf s t :
-  own_slice_cap s t -∗ ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
+  own_slice_cap s t -∗ ⌜uint.Z s.(slice.sz) ≤ uint.Z s.(slice.cap)⌝.
 Proof.
-  iIntros "Hcap".
-  iDestruct "Hcap" as (extra) "[% Hcap]".
-  iPureIntro.
-  word.
+  unseal. by iIntros "[% Hcap]".
 Qed.
 
 Theorem own_slice_wf s t q vs :
-  own_slice s t q vs -∗ ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
+  own_slice s t q vs -∗ ⌜uint.Z s.(slice.sz) ≤ uint.Z s.(slice.cap)⌝.
 Proof.
-  rewrite own_slice_split.
-  iIntros "[Hs Hcap]".
-  iDestruct (own_slice_cap_wf with "Hcap") as "$".
+  unseal.
+  iIntros "[? %]". naive_solver.
 Qed.
 
-Theorem own_slice_small_wf s t q vs :
-  own_slice_small s t q vs -∗ ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
-Proof.
-  iIntros "[_ [%%]]". done.
-Qed.
-
-(* TODO: order commands so primitives are opaque only after proofs *)
-Transparent raw_slice.
-
-Lemma wp_make_cap stk E (sz: u64) :
-  {{{ True }}}
-    make_cap #sz @ stk; E
-  {{{ (cap:u64), RET #cap; ⌜uint.Z cap >= uint.Z sz⌝ }}}.
-Proof.
-  iIntros (Φ) "_ HΦ".
-  wp_call.
-  wp_apply wp_ArbitraryInt.
-  iIntros (extra) "_".
-  wp_pures.
-  wp_if_destruct; try wp_pures; iApply "HΦ"; iPureIntro.
-  - rewrite word.unsigned_add /word.wrap in Heqb.
-    rewrite word.unsigned_add /word.wrap.
-    word.
-  - word.
-Qed.
-
-Lemma wp_raw_slice stk E l vs (sz: u64) t :
-  {{{ l ↦∗[t] vs ∗ ⌜length vs = uint.nat sz⌝ }}}
-    raw_slice t #l #sz @ stk; E
-  {{{ sl, RET slice_val sl; own_slice sl t (DfracOwn 1) vs }}}.
-Proof.
-  iIntros (Φ) "(Hslice&%) HΦ".
-  wp_call.
-  rewrite slice_val_fold. iApply "HΦ".
-  iApply (own_slice_intro with "Hslice").
-  iPureIntro; auto.
-Qed.
-
-Lemma wp_slice_len stk E (s: Slice.t) (Φ: val -> iProp Σ) :
-    Φ #(s.(Slice.sz)) -∗ WP slice.len (slice_val s) @ stk; E {{ v, Φ v }}.
+Lemma wp_slice_len stk E (s: slice.t) (Φ: val -> iProp Σ) :
+    Φ #(s.(slice.sz)) -∗ WP slice.len (slice.val s) @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "HΦ".
   wp_call.
