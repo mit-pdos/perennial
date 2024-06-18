@@ -1,4 +1,4 @@
-From Perennial.new_goose_lang Require Import lib.typing.impl.
+From Perennial.new_goose_lang Require Export lib.typing.impl.
 
 (** * Typed data representations for struct and slice *)
 Module slice.
