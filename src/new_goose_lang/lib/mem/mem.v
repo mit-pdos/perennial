@@ -45,56 +45,14 @@ Section goose_lang.
   Proof. constructor; auto. apply _. Qed.
 
   Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
-    (go_type_size t > 0) →
-    CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+    CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I
+                    ⌜ (go_type_size t > O → ✓(dq1 ⋅ dq2)) ∧ v1 = v2 ⌝%I.
   Proof.
-    intros Hlen.
     unfold CombineSepGives.
     unseal.
+    rewrite go_type_size_unseal.
     iIntros "[[H1 %Hty1] [H2 %Hty2]]".
-    iSplit.
-    {
       rename l into l'.
-      iInduction Hty1 as [] "IH" forall (l' v2 Hty2); subst.
-      1-10,14-16,19-20: inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
-                 iDestruct (heap_pointsto_agree with "[$]") as "%H";
-                 inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; naive_solver.
-      1-2,4-5:
-        inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
-          iDestruct "H1" as "(Ha1 & Ha2 & Ha3)";
-          iDestruct "H2" as "(Hb1 & Hb2 & Hb3)";
-          try destruct s; try destruct s0;
-          iCombine "Ha1 Hb1" gives %[? [=]];
-          iCombine "Ha2 Hb2" gives %[? [=]];
-          iCombine "Ha3 Hb3" gives %[? [=]];
-          iModIntro; iPureIntro; naive_solver.
-      - iInduction d as [|[] d] "IH2" forall (l' v2 Hty2).
-        { exfalso. rewrite go_type_size_unseal in Hlen. cbn in *. lia. }
-        inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
-        iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
-        rewrite go_type_size_unseal /= in Hlen |- *.
-        destruct (decide (go_type_size_def g = O)).
-        2:{
-          iApply ("IH" with "[] [] [] Ha1 Hb1").
-          - iPureIntro. by left.
-          - iPureIntro. lia.
-          - iPureIntro. apply Hfields0. by left.
-        }
-        iApply ("IH2" with "[] [] [] [] [Ha2] [Hb2]").
-        + iPureIntro. lia.
-        + iPureIntro. intros. apply Hfields. by right.
-        + iPureIntro. econstructor. intros. apply Hfields0. by right.
-        + iModIntro. iIntros.
-          iApply ("IH" with "[] [//] [//] [$] [$]").
-          iPureIntro. by right.
-        + setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame.
-        + erewrite has_go_type_len; last (apply Hfields0; by left).
-          erewrite has_go_type_len; last (apply Hfields; by left).
-          setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame.
-    }
-    {
-      rename l into l'.
-      clear Hlen.
       iInduction Hty1 as [] "IH" forall (l' v2 Hty2); subst.
       1-10,14-16,19-20: inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
                  iDestruct (heap_pointsto_agree with "[$]") as "%H";
@@ -110,13 +68,14 @@ Section goose_lang.
           iModIntro; iPureIntro; naive_solver.
       - inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
         iInduction d as [|[] d] "IH2" forall (l' Hty2).
-        { iModIntro. iPureIntro. done. }
+        { iModIntro. iPureIntro. split; first (intros; lia); done. }
         iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
         fold flatten_struct struct.val.
-        iDestruct ("IH" with "[] [] Ha1 Hb1") as "#%".
+        iDestruct ("IH" with "[] [] Ha1 Hb1") as %[Hfrac1 Heq1].
         { iPureIntro. by left. }
         { iPureIntro. apply Hfields0. by left. }
-        iDestruct ("IH2" with "[] [] [] [] [Ha2] [Hb2]") as "#%".
+
+        iDestruct ("IH2" with "[] [] [] [] [Ha2] [Hb2]") as %[Hfrac2 Heq2].
         { iPureIntro. intros. apply Hfields. by right. }
         { iPureIntro. intros. apply Hfields0. by right. }
         { iPureIntro. constructor. intros. apply Hfields0. by right. }
@@ -125,8 +84,13 @@ Section goose_lang.
         { erewrite has_go_type_len; last (apply Hfields0; by left).
           erewrite has_go_type_len; last (apply Hfields; by left).
           setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
-        iModIntro. iPureIntro. simpl. by rewrite H0 H.
-    }
+        iModIntro. iPureIntro. simpl.
+        split.
+        2:{ by rewrite Heq1 Heq2. }
+        intros.
+        destruct (decide (go_type_size_def g = O)).
+        { eapply Hfrac2. lia. }
+        { eapply Hfrac1. lia. }
   Qed.
 
   Local Lemma wp_AllocAt t stk E v :
