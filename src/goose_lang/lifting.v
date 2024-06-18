@@ -936,7 +936,6 @@ Qed.
 
 Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
   (0 < length (flatten_struct v))%nat →
-  (0 < uint.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
                               na_block_size l (uint.nat n * length (flatten_struct v))%nat ∗
@@ -945,8 +944,8 @@ Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
                                                 (flatten_struct v))
                               }}}.
 Proof.
-  iIntros (Hlen Hn Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; auto.
-  iIntros (σ1 g1 ns mj D κ κs k) "[Hσ ?] Hg !>"; iSplit; first by auto with lia.
+  iIntros (Hlen Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs k) "[Hσ ?] Hg !>"; iSplit; first by auto.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
   iMod (na_heap_alloc_list tls (heap σ1) l
                            (concat_replicate (uint.nat n) (flatten_struct v))

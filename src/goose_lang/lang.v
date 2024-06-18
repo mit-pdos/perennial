@@ -1123,8 +1123,7 @@ Definition base_trans (e: expr) :
       ret $ LitV $ LitInt x)
   | AllocN (Val (LitV (LitInt n))) (Val v) =>
     atomically
-      (check (0 < uint.Z n)%Z;;
-       l ← allocateN;
+      (l ← allocateN;
        modifyσ (state_init_heap l (uint.Z n) v);;
        ret $ LitV $ LitLoc l)
    | StartRead (Val (LitV (LitLoc l))) => (* non-atomic load part 1 (used for map accesses) *)
@@ -1322,7 +1321,6 @@ Qed.
 
 Lemma alloc_fresh v (n: u64) σ g :
   let l := fresh_locs (dom σ.(heap)) in
-  (0 < uint.Z n)%Z →
   base_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ g []
             (Val $ LitV $ LitLoc l) (state_init_heap l (uint.Z n) v σ) g [].
 Proof.

@@ -184,9 +184,6 @@ Proof.
   wp_if_destruct.
   - exfalso. lia.
   - wp_pures.
-    wp_apply wp_make_cap.
-    iIntros (cap Hcapge).
-    wp_pures.
     wp_apply (wp_allocN t); eauto.
     { apply u64_val_ne in Heqb.
       change (uint.Z 0) with 0 in Heqb.

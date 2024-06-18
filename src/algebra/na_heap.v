@@ -451,14 +451,13 @@ Section na_heap.
   Qed.
 
   Lemma na_heap_alloc_base tls σ l v lk (z: Z) :
-    (0 < z)%Z →
     (∀ z', (z <= z')%Z ∨ (z' < 0)%Z → σ !! addr_plus_off l z' = None) →
     σ !! l = None →
     addr_offset l = 0%Z →
     tls lk = RSt 0 →
     na_heap_ctx tls σ ==∗ na_heap_ctx tls (<[l:=(lk, v)]>σ) ∗ l ↦ v ∗ meta_token l ⊤ ∗ na_block_size l z.
   Proof.
-    iIntros (Hz0 Hσl_all Hσl Hoff Hread). rewrite /na_heap_ctx.
+    iIntros (Hσl_all Hσl Hoff Hread). rewrite /na_heap_ctx.
     iDestruct 1 as (m sz Hσm) "[Hσ [Hm [Hsz Hwf]]]".
     iMod (own_update with "Hσ") as "[Hσ Hl]".
     { eapply (gmap_view_alloc _ l (DfracOwn 1%Qp) (Cinr 0%nat, to_agree (v:leibnizO _)))=> //.
@@ -486,6 +485,7 @@ Section na_heap.
     { iExists (<[l:=(to_agree γm)]> m), (<[addr_id l:=z]> sz).
       rewrite to_na_heap_insert to_na_size_insert /block_sizes_wf
               !dom_insert_L Hread //=.
+      Print na_block_size_def.
       iFrame; iPureIntro; split_and!.
       * set_solver.
       * set_unfold => l' z'. intros [->|Hin].
@@ -597,7 +597,6 @@ Section na_heap.
   Qed.
 
   Lemma na_heap_alloc_list tls σ l (vs: list V) (lk: LK)  :
-    (0 < length vs) →
     (addr_offset l = 0)%Z →
     (∀ z, σ !! addr_plus_off l z = None) →
     σ !! l = None →
@@ -607,7 +606,8 @@ Section na_heap.
                  [∗ list] i↦v ∈ vs, (addr_plus_off l i) ↦ v ∗ meta_token (addr_plus_off l i) ⊤.
   Proof.
     destruct vs.
-    - rewrite /= left_id. lia.
+    - rewrite /= left_id.
+
     - iIntros (Hlen Hoff Hrange ??) "Hctx".
       simpl. rewrite -assoc -insert_union_singleton_l.
       iMod (na_heap_alloc_list_aux tls σ l vs 1 lk with "Hctx") as "(Hctx&?)"; eauto.
