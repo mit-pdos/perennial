@@ -389,28 +389,24 @@ Proof.
   wp_load. wp_load.
   wp_pures.
   wp_store.
-  wp_apply (wp_typed_store with "[Hdata_sl]").
-  { econstructor. }
-  { iFrame. }
-  iIntros "Hdata_sl".
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hno_overflow).
-  wp_load. wp_storeField.
+  wp_load. wp_store.
   wp_pures.
-  wp_apply wp_ref_zero; [done|].
+  wp_apply wp_ref_ty; [econstructor|].
   iIntros (index_ptr) "Hlocal3".
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_pures. wp_store.
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   iMod (write_step with "[$] [$] [$] Hupd") as "H".
   { word. }
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
-  iMod (own_slice_small_persist with "Hdata_in") as "#Hdata_in".
+  iMod (own_slice_persist with "Hdata_in") as "#Hdata_in".
   wp_apply wp_Cond__Signal.
   { iFrame "#". }
   wp_pures.
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc Hlocal1 Hlocal2 Hlocal3]").
   {
     iFrame "HmuInv Hlocked".
@@ -489,7 +485,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data :
         "HpreData" ∷ own_predurable_data γ data ∗
         "HpreIdx" ∷ own_predurable_index γ 0 ∗
         "HdurIdx" ∷ own_durable_index γ 0 ∗
-        "#Hfilename_in" ∷ f ↦[AsyncFile :: "filename"]□ #(str fname) ∗
+        "#Hfilename_in" ∷ f ↦s[AsyncFile :: "filename"]□ #(str fname) ∗
         "Hfile" ∷ crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d)
   }}}
     asyncfile.AsyncFile__flushThread #f
@@ -502,9 +498,9 @@ Proof.
   iNamed "H".
   wp_lam.
   iNamed "His".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal1". wp_pures.
+  wp_apply wp_ref_ty; [econstructor|]. iIntros (s_addr) "Hlocal1". wp_pures.
   wp_load.
-  wp_loadField.
+  wp_load.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
@@ -522,13 +518,13 @@ Proof.
   iNamed "Hown".
   subst.
   wp_pures.
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_pures.
-  wp_load. wp_loadField.
-  wp_load. wp_loadField.
+  wp_load. wp_load.
+  wp_load. wp_load.
   wp_if_destruct.
   {
-    wp_load. wp_loadField.
+    wp_load. wp_load.
     wp_apply (wp_Cond__Wait with "[-HΦ HH Hlocal1]").
     {
       iFrame "HindexCond_is HmuInv Hlocked".
@@ -542,12 +538,12 @@ Proof.
   }
   (* case: have something to write *)
   wp_pures.
-  wp_apply wp_ref_zero; [done|]. iIntros (index_ptr) "Hlocal2".
+  wp_apply wp_ref_ty; [econstructor|]. iIntros (index_ptr) "Hlocal2".
   wp_pures.
-  wp_load. wp_loadField. wp_pures. wp_store. wp_pures.
-  wp_apply wp_ref_zero; [done|]. iIntros (data_ptr) "Hlocal3".
-  wp_load. wp_loadField. wp_store. wp_pures.
-  wp_load. wp_loadField.
+  wp_load. wp_load. wp_pures. wp_store. wp_pures.
+  wp_apply wp_ref_ty; [econstructor|]. iIntros (data_ptr) "Hlocal3".
+  wp_load. wp_load. wp_store. wp_pures.
+  wp_load. wp_load.
 
   iNamed "HH".
   iMod (get_upd with "[$] [$] [$] [$]") as "H".
@@ -559,9 +555,9 @@ Proof.
     done.
   }
   wp_pures.
-  wp_load. wp_load. wp_loadField.
+  wp_load. wp_load. wp_load.
 
-  iDestruct (struct_field_pointsto_agree with "Hfilename_in Hfilename") as %?.
+  iCombine "Hfilename_in Hfilename" gives %[_ H].
   injection H as <-.
   wp_bind (FileWrite _ _).
   iApply (wpc_wp _ _ _ _ True).

@@ -198,7 +198,7 @@ Ltac wp_pure_filter e' :=
   (* For Beta-redices, we do *syntactic* matching only, to avoid unfolding
      definitions. This matches the treatment for [pure_beta] via [AsRecV]. *)
   first [ lazymatch e' with (App (Val (RecV _ _ _)) (Val _)) => idtac end
-        | pose proof (ltac:(tc_solve) : WpPureExecCandidate e')
+        | let _ := constr:(_:WpPureExecCandidate e') in idtac
         | eunify e' (rec: _ _ := _)%E
         | eunify e' (InjL (Val _))
         | eunify e' (InjR (Val _))
