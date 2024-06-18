@@ -246,7 +246,7 @@ Proof.
     wp_pures.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
-    wp_load. wp_loadField.
+    wp_load. wp_load.
     wp_apply (wp_Mutex__Unlock with "[-Htok HΦ Hlocal1 Hlocal2]").
     {
       iFrame "HmuInv Hlocked".
@@ -360,10 +360,10 @@ Qed.
 Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
   {{{
         "Hf" ∷ own_AsyncFile N f γ P olddata ∗
-        "Hdata_in" ∷ own_slice_small data_sl byteT (DfracOwn 1) data ∗
+        "Hdata_in" ∷ own_slice data_sl byteT (DfracOwn 1) ((λ (x:w8), #x) <$> data) ∗
         "Hupd" ∷ (P olddata ={⊤}=∗ P data ∗ Q)
   }}}
-    asyncfile.AsyncFile__Write #f (slice_val data_sl)
+    asyncfile.AsyncFile__Write #f (slice.val data_sl)
   {{{
         (w:val), RET w;
         own_AsyncFile N f γ P data ∗
@@ -378,15 +378,21 @@ Proof.
   iNamed "Hf".
   iAssert (_) with "His" as "His2".
   iNamed "His2".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (data_addr) "Hlocal1". wp_pures.
-  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal2". wp_pures.
+  wp_apply wp_ref_ty; [econstructor|]. iIntros (data_addr) "Hlocal1". wp_pures.
+  wp_apply wp_ref_ty; [econstructor|]. iIntros (s_addr) "Hlocal2". wp_pures.
   wp_load.
-  wp_loadField.
+  wp_load.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
-  wp_load. wp_load. wp_storeField.
+  wp_load. wp_load.
+  wp_pures.
+  wp_store.
+  wp_apply (wp_typed_store with "[Hdata_sl]").
+  { econstructor. }
+  { iFrame. }
+  iIntros "Hdata_sl".
   wp_load. wp_loadField.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hno_overflow).

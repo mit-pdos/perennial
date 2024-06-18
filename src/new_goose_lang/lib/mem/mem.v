@@ -408,7 +408,7 @@ Tactic Notation "wp_store" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store_ty _ _ _ _ _ _ K))
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
-    [(tc_solve || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
+    [(repeat econstructor || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
     |tc_solve
     |solve_pointsto ()
     |pm_reflexivity
