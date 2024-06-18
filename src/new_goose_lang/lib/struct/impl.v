@@ -7,6 +7,7 @@ Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scop
 Delimit Scope struct_scope with struct.
 
 Module struct.
+(* FIXME: seal these functions *)
 Section goose_lang.
 Infix "=?" := (String.eqb).
 
@@ -19,7 +20,6 @@ Fixpoint field_offset (d : struct.descriptor) f0 : (Z * go_type) :=
                     | (off, t') => ((go_type_size t) + off, t')
                     end
   end.
-
 
 Definition field_ref (d : struct.descriptor) f0: val :=
   λ: "p", BinOp (OffsetOp (field_offset d f0).1) (Var "p") #1.

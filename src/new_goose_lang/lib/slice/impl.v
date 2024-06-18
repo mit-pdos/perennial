@@ -3,6 +3,7 @@ From Perennial.new_goose_lang.lib Require Import mem.impl.
 From Perennial.goose_lang.lib Require Import control.impl.
 
 Module slice.
+(* FIXME: seal these functions *)
 Section goose_lang.
 Context `{ffi_syntax}.
 

@@ -202,6 +202,7 @@ Ltac wp_pure_filter e' :=
         | eunify e' (return: (Val _))%E
         | eunify e' (continue: (Val _))%E
         | eunify e' (break: (Val _))%E
+        | eunify e' (struct.field_ref _ _ (Val _))%E
         | eunify e' (exception_seq _ (Val _))%E
         | eunify e' (App exception_do (Val _))%E
         | eunify e' (rec: _ _ := _)%E

@@ -121,7 +121,7 @@ Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
     (closed closeRequested : bool) ,
   "#Hfilename" ∷ f ↦s[AsyncFile :: "filename"]□ #(str fname) ∗
   "Hdata_sl" ∷ f ↦s[AsyncFile :: "data"] (slice.val data_sl) ∗
-  "#Hdata" ∷ own_slice_small data_sl byteT (DfracDiscarded) data ∗
+  "#Hdata" ∷ own_slice data_sl byteT (DfracDiscarded) ((λ (x:w8), #x) <$> data) ∗
   "Hindex" ∷ f ↦s[AsyncFile :: "index"] #idx ∗
   "HdurableIndex" ∷ f ↦s[AsyncFile :: "durableIndex"] #durableIndex ∗
   "HindexCond" ∷ f ↦s[AsyncFile :: "indexCond"] #indexCond ∗
@@ -142,7 +142,7 @@ Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
-  "#Hmu" ∷ f ↦[AsyncFile :: "mu"]□ #mu ∗
+  "#Hmu" ∷ f ↦s[AsyncFile :: "mu"]□ #mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P mu)
 .
 
@@ -207,8 +207,18 @@ Proof.
   wp_pures.
   iNamed "H".
   iNamed "His".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (index_addr) "Hlocal1". wp_pures.
-  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal2". wp_pures.
+  wp_apply wp_ref_ty. { repeat econstructor. }
+  iIntros (index_addr) "Hlocal1". wp_pures.
+  wp_apply wp_ref_ty. { repeat econstructor. }
+  iIntros (s_addr) "Hlocal2". wp_pures.
+  wp_load. wp_pures.
+  wp_pures.
+  wp_bind (struct.field_ref _ _ _).
+  wp_apply lifting.wp_pure_step_later.
+  { done. }
+
+  Search "wp_pure".
+  apply tac_wp_pure.
   wp_load. wp_loadField.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".

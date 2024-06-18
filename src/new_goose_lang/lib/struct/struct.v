@@ -1,6 +1,6 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.base_logic.lib Require Import invariants.
-From Perennial.goose_lang Require Import proofmode.
+From Perennial.goose_lang Require Import proofmode lifting.
 From Perennial.new_goose_lang.lib Require Import mem typing.
 From Perennial.new_goose_lang.lib Require Export struct.impl.
 From Perennial.Helpers Require Import NamedProps.
@@ -91,18 +91,36 @@ End lemmas.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Lemma wp_struct_fieldRef d f (l : loc) :
-  {{{ True }}}
-    (struct.field_ref d f) #l
-  {{{ RET #(struct.field_ref_f d f l); True }}}
-.
+Lemma pure_exec_trans φ1 φ2 n1 n2 (e1 e2 e3 : goose_lang.expr) :
+  PureExec φ1 n1 e1 e2 → PureExec φ2 n2 e2 e3
+  → PureExec (φ1 ∧ φ2) (n1 + n2) e1 e3.
 Proof.
-  iIntros (?) "_ HΦ".
-  Transparent struct.field_ref. wp_lam. Opaque struct.field_ref.
-  wp_pures.
+  intros.
+  intros [? ?].
+  eapply nsteps_trans.
+  { by apply H. }
+  { by apply H0. }
+Qed.
+
+Lemma pure_exec_impl φ1 φ2 n (e1 e2 : goose_lang.expr) :
+  (φ2 → φ1) →
+  PureExec φ1 n e1 e2 → PureExec (φ2) n e1 e2.
+Proof. intros ? H ?. apply H. by apply H0. Qed.
+
+Global Instance pure_struct_field_ref d f (l : loc) :
+  PureExec True 2 (struct.field_ref d f #l) #(struct.field_ref_f d f l).
+Proof.
+  eapply (pure_exec_impl _ _).
+  { shelve. }
+  replace (2%nat) with (1 + 1)%nat by done.
+  eapply pure_exec_trans.
+  { solve_pure_exec. }
+  { solve_pure_exec. }
+  Unshelve.
+  intros.
+  split_and!; try done.
   unfold struct.field_ref_f.
-  rewrite Z.mul_1_r.
-  by iApply "HΦ".
+  by rewrite Z.mul_1_r.
 Qed.
 
 End wps.

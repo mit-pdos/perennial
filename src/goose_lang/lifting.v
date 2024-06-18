@@ -13,6 +13,13 @@ Set Default Proof Using "Type".
 
 Notation nonAtomic T := (naMode * T)%type.
 
+Ltac solve_exec_safe := intros; subst; do 4 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
+Ltac solve_exec_puredet :=
+  inversion 1; subst; unfold base_step in *; intros; repeat (monad_inv; simpl in * ); eauto.
+Ltac solve_pure_exec :=
+  subst; intros ?; apply nsteps_once, pure_base_step_pure_step;
+    constructor; [solve_exec_safe | solve_exec_puredet].
+
 Section definitions.
   Context `{ext:ffi_syntax}.
   Context `{hG: na_heapGS loc val Σ}.
@@ -576,13 +583,6 @@ Global Instance output_atomic s v : Atomic s (Output (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance resolve_atomic s p w : Atomic s (ResolveProph (Val (LitV (LitProphecy p))) (Val w)).
 Proof. solve_atomic. monad_inv. eauto. Qed.
-
-Local Ltac solve_exec_safe := intros; subst; do 4 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
-Local Ltac solve_exec_puredet :=
-  inversion 1; subst; unfold base_step in *; intros; repeat (monad_inv; simpl in * ); eauto.
-Local Ltac solve_pure_exec :=
-  subst; intros ?; apply nsteps_once, pure_base_step_pure_step;
-    constructor; [solve_exec_safe | solve_exec_puredet].
 
 (** The behavior of the various [wp_] tactics with regard to lambda differs in
 the following way:
