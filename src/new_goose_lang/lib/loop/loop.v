@@ -8,16 +8,16 @@ Section pure_execs.
 Context `{ffi_sem: ffi_semantics}.
 Axiom some_n : nat.
 
-Global Instance pure_continue_val (e : expr) : PureExec True some_n (exception_seq e (continue_val)) (continue_val).
+Global Instance pure_continue_val (e : expr) : WpPureExec True some_n (exception_seq e (continue_val)) (continue_val).
 Admitted.
 
-Global Instance pure_break_val (e : expr) : PureExec True some_n (exception_seq e (break_val)) (break_val).
+Global Instance pure_break_val (e : expr) : WpPureExec True some_n (exception_seq e (break_val)) (break_val).
 Admitted.
 
-Global Instance pure_do_continue_val : PureExec True some_n (continue: #()) (continue_val).
+Global Instance pure_do_continue_val : WpPureExec True some_n (continue: #()) (continue_val).
 Admitted.
 
-Global Instance pure_do_break_val : PureExec True some_n (break: #()) (break_val).
+Global Instance pure_do_break_val : WpPureExec True some_n (break: #()) (break_val).
 Admitted.
 
 End pure_execs.
@@ -57,6 +57,8 @@ Proof.
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "continue" *)
       subst. wp_pures. rewrite continue_val_unseal.
+      wp_pures.
+      wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").

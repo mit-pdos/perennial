@@ -108,8 +108,10 @@ Lemma pure_exec_impl φ1 φ2 n (e1 e2 : goose_lang.expr) :
 Proof. intros ? H ?. apply H. by apply H0. Qed.
 
 Global Instance pure_struct_field_ref d f (l : loc) :
-  PureExec True 2 (struct.field_ref d f #l) #(struct.field_ref_f d f l).
+  WpPureExec True 2 (struct.field_ref d f #l) #(struct.field_ref_f d f l).
 Proof.
+  split.
+  { done. }
   eapply (pure_exec_impl _ _).
   { shelve. }
   replace (2%nat) with (1 + 1)%nat by done.

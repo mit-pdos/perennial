@@ -246,6 +246,16 @@ Section language.
   Class PureExec (φ : Prop) (n : nat) (e1 e2 : expr Λ) :=
     pure_exec : φ → relations.nsteps pure_step n e1 e2.
 
+  (* This controls the stuff that wp_pures may try stepping. *)
+  Class WpPureExecCandidate (e1 : expr Λ).
+  (* This is the class one should to define to add more instances for wp_pures
+     to deal with. *)
+  Class WpPureExec (φ : Prop) (n : nat) (e1 e2 : expr Λ) :=
+  {
+    pure_exec'_cand :> WpPureExecCandidate e1 ;
+    pure_exec' :> PureExec φ n e1 e2 ;
+  }.
+
   Lemma pure_step_ctx K `{!@LanguageCtx Λ K} e1 e2 :
     pure_step e1 e2 →
     pure_step (K e1) (K e2).

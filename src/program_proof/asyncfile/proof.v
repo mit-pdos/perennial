@@ -212,14 +212,7 @@ Proof.
   wp_apply wp_ref_ty. { repeat econstructor. }
   iIntros (s_addr) "Hlocal2". wp_pures.
   wp_load. wp_pures.
-  wp_pures.
-  wp_bind (struct.field_ref _ _ _).
-  wp_apply lifting.wp_pure_step_later.
-  { done. }
-
-  Search "wp_pure".
-  apply tac_wp_pure.
-  wp_load. wp_loadField.
+  wp_pures. wp_load. wp_pures.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
@@ -228,13 +221,13 @@ Proof.
   iNamed "Hown".
   wp_pures.
   wp_load.
-  wp_loadField.
+  wp_load.
   wp_load.
   wp_pures.
   destruct bool_decide eqn:?.
   { (* case: wait *)
     iModIntro; iLeft; iSplitR; first done.
-    wp_pures. wp_load. wp_loadField.
+    wp_pures. wp_load. wp_load.
     wp_apply (wp_Cond__Wait with "[-Htok HΦ Hlocal1 Hlocal2]").
     {
       iFrame "HdurableIndexCond_is HmuInv Hlocked".

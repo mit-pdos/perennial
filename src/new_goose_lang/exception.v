@@ -68,21 +68,21 @@ Global Notation "return: e" := (do_return e%E)
 Section pure_execs.
 Context `{ffi_sem: ffi_semantics}.
 Axiom some_n : nat.
-Global Instance pure_execute_val (v1 : expr) (v : val) : PureExec True some_n (exception_seq v1 (execute_val v)) (v1 #()).
+Global Instance pure_execute_val (v1 : expr) (v : val) : WpPureExec True some_n (exception_seq v1 (execute_val v)) (v1 #()).
 Admitted.
 
-Global Instance pure_do_execute_val (v : val) : PureExec True some_n (do: v) (execute_val v).
+Global Instance pure_do_execute_val (v : val) : WpPureExec True some_n (do: v) (execute_val v).
 Admitted.
 
-Global Instance pure_return_val (v1 : expr) (v : val) : PureExec True some_n (exception_seq v1 (return_val v)) (return_val v).
+Global Instance pure_return_val (v1 : expr) (v : val) : WpPureExec True some_n (exception_seq v1 (return_val v)) (return_val v).
 Admitted.
 
-Global Instance pure_do_return_val (v : val) : PureExec True some_n (return: v) (return_val v).
+Global Instance pure_do_return_val (v : val) : WpPureExec True some_n (return: v) (return_val v).
 Admitted.
 
-Global Instance pure_exception_do_return_v (v : val) : PureExec True some_n (exception_do (return_val v)%E) (v).
+Global Instance pure_exception_do_return_v (v : val) : WpPureExec True some_n (exception_do (return_val v)%E) (v).
 Admitted.
 
-Global Instance pure_exception_do_execute_v (v : val) : PureExec True some_n (exception_do (execute_val v)%E) (v).
+Global Instance pure_exception_do_execute_v (v : val) : WpPureExec True some_n (exception_do (execute_val v)%E) (v).
 Admitted.
 End pure_execs.
