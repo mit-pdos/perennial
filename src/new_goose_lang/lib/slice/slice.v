@@ -13,8 +13,8 @@ Definition own_slice_unseal : own_slice = _ := seal_eq _.
 
 Definition own_slice_cap_def (s : slice.t) (t : go_type): iProp Σ :=
   ⌜ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ⌝ ∗
-  [∗ list] i ↦ v ∈ (seq (uint.nat s.(slice.len_f)) (uint.nat s.(slice.cap_f) - uint.nat s.(slice.len_f))),
-    (s.(slice.ptr_f) +ₗ[t] i) ↦[t] (zero_val t).
+  [∗ list] i ∈ (seq (uint.nat s.(slice.len_f)) (uint.nat s.(slice.cap_f) - uint.nat s.(slice.len_f))),
+    (s.(slice.ptr_f) +ₗ[t] Z.of_nat i) ↦[t] (zero_val t).
 Program Definition own_slice_cap := unseal (_:seal (@own_slice_cap_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 
@@ -169,8 +169,19 @@ Proof.
   iApply "HΦ".
 Qed.
 
+Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
+  (#ptr, #sz, #cap)%V = slice.val (slice.mk ptr sz cap) := eq_refl.
+
+Lemma seq_replicate_fmap {A} y n (a : A) :
+  (λ _, a) <$> seq y n = replicate n a.
+Proof.
+  revert y. induction n.
+  { done. }
+  { simpl. intros. f_equal. by erewrite IHn. }
+Qed.
+
 Lemma wp_slice_make3 stk E t (len cap : u64) :
-  uint.nat len < uint.nat cap →
+  uint.nat len ≤ uint.nat cap →
   {{{ True }}}
     slice.make3 t #len #cap @ stk; E
   {{{ sl, RET slice.val sl;
@@ -182,108 +193,95 @@ Proof.
   iIntros (? Φ) "_ HΦ".
   wp_call.
   wp_if_destruct.
-  - exfalso. lia.
-  - wp_pures.
-    wp_apply wp_make_cap.
-    iIntros (cap Hcapge).
-    wp_pures.
-    wp_apply (wp_allocN t); eauto.
-    { apply u64_val_ne in Heqb.
-      change (uint.Z 0) with 0 in Heqb.
-      word. }
-  iIntros (l) "Hl".
+  { exfalso. word. }
   wp_pures.
-  rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
-  iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
-    first by word.
-  rewrite replicate_length.
-  iFrame.
-  iSplitR.
-  { iPureIntro. split; word. }
-  iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
-  iSplitR.
-  { iPureIntro.
-    rewrite replicate_length.
-    simpl.
-    word. }
-  simpl. iModIntro.
-  iExactEq "Hextra"; word_eq.
-Qed.
-
-Lemma wp_new_slice_cap s E t (sz cap: u64) :
-  has_zero t →
-  uint.Z sz ≤ uint.Z cap →
-  {{{ True }}}
-    NewSliceWithCap t #sz #cap @ s; E
-  {{{ ptr, RET slice_val (Slice.mk ptr sz cap) ; own_slice (Slice.mk ptr sz cap) t (DfracOwn 1) (replicate (uint.nat sz) (zero_val t)) }}}.
-Proof.
-  iIntros (Hzero Hsz Φ) "_ HΦ".
-  wp_call.
-  rewrite ->bool_decide_false by lia.
   wp_if_destruct.
-  - rewrite /slice.nil slice_val_fold.
-    (* FIXME: why can [word] not prove [sz = 0] without this help? *)
-    rewrite unsigned_U64_0 in Hsz.
-    assert (sz = 0) as -> by word.
+  {
+    wp_apply wp_ArbitraryInt.
+    iIntros (?) "_".
+    wp_pures.
+    rewrite slice_val_fold.
     iApply "HΦ".
-    rewrite replicate_0.
-    iApply own_slice_zero.
-  - wp_apply (wp_allocN t); eauto.
-    { apply u64_val_ne in Heqb.
-      change (uint.Z 0) with 0 in Heqb.
-      word. }
-  iIntros (l) "Hl".
+    iModIntro.
+    rewrite own_slice_unseal own_slice_cap_unseal.
+    assert (len = W64 0); subst.
+    {
+      assert (uint.Z (W64 0) = uint.Z len ∨ uint.Z (W64 0) < uint.Z len) as [|] by word; try word.
+      apply word.unsigned_inj. done.
+    }
+    unfold own_slice_def. unfold own_slice_cap_def. simpl.
+    assert (uint.nat (W64 0) = 0)%nat as -> by word.
+    simpl. done.
+  }
   wp_pures.
-  rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
-  iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
-    first by word.
-  rewrite replicate_length.
-  iFrame.
-  iSplitR.
-  { iPureIntro. split; word. }
-  iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
-  iSplitR.
-  { iPureIntro.
-    rewrite replicate_length.
-    simpl.
-    word. }
-  simpl. iModIntro.
-  iExactEq "Hextra"; word_eq.
-Qed.
-
-Theorem wp_SliceSingleton Φ stk E t x :
-  val_ty x t ->
-  (∀ s, own_slice s t (DfracOwn 1) [x] -∗ Φ (slice_val s)) -∗
-  WP SliceSingleton x @ stk; E {{ Φ }}.
-Proof.
-  iIntros (Hty) "HΦ".
-  wp_call.
-  wp_apply (wp_allocN t); eauto.
-  { word. }
-  change (replicate (uint.nat 1) x) with [x].
-  iIntros (l) "Hl".
-  wp_steps.
+  wp_apply wp_allocN_seq.
+  { (* FIXME(word): tedious *)
+    destruct (decide (uint.Z cap = 0)).
+    - subst. exfalso. assert (cap = W64 0) by word. congruence.
+    - word.
+  }
+  iIntros (?) "Hp".
+  wp_pures.
   rewrite slice_val_fold. iApply "HΦ".
-  iApply own_slice_of_small; first by auto.
-  rewrite /own_slice_small /=.
-  iFrame.
-  auto.
+  rewrite own_slice_unseal own_slice_cap_unseal.
+  assert (uint.nat cap = uint.nat len + (uint.nat cap - uint.nat len))%nat as Hsplit by word.
+  rewrite Hsplit seq_app.
+  iDestruct "Hp" as "[Hsl Hcap]".
+  iSplitL "Hsl".
+  {
+    iModIntro. iSplitL.
+    2:{ iPureIntro. simpl. rewrite replicate_length. word. }
+    erewrite <- (seq_replicate_fmap O).
+    iApply (big_sepL_fmap with "[Hsl]").
+    iApply (big_sepL_impl with "[$]").
+    iModIntro. iIntros. iSplit.
+    2:{ iPureIntro. apply zero_val_has_go_type. }
+    rewrite /pointsto_vals typed_pointsto_eq /typed_pointsto_def /=.
+    erewrite has_go_type_len.
+    2:{ apply zero_val_has_go_type. }
+    iSplitL.
+    2:{ iPureIntro. apply zero_val_has_go_type. }
+    iApply (big_sepL_impl with "[$]").
+    iModIntro. iIntros. iFrame.
+    apply lookup_seq in H0 as [? ?].
+    subst. iFrame.
+  }
+  {
+    iModIntro. iSplitL.
+    2:{ iPureIntro. done. }
+    rewrite /own_slice_cap_def /=.
+    iSplitR; first iPureIntro.
+    { word. }
+    erewrite has_go_type_len.
+    2:{ apply zero_val_has_go_type. }
+    iApply (big_sepL_impl with "[$]").
+    iModIntro. iIntros.
+    rewrite /pointsto_vals typed_pointsto_eq /typed_pointsto_def /=.
+    iSplitL.
+    2:{ iPureIntro. apply zero_val_has_go_type. }
+    iApply (big_sepL_impl with "[$]").
+    iModIntro. iIntros. iFrame.
+  }
 Qed.
 
-Definition slice_take (sl: Slice.t) (n: u64) : Slice.t :=
-  {| Slice.ptr := sl.(Slice.ptr);
-     Slice.sz := n;
-     Slice.cap := sl.(Slice.cap);
-  |}.
+Lemma wp_slice_make2 stk E t (len : u64) :
+  {{{ True }}}
+    slice.make2 t #len @ stk; E
+  {{{ sl, RET slice.val sl;
+      own_slice sl t (DfracOwn 1) (replicate (uint.nat len) (zero_val t)) ∗
+      own_slice_cap sl t
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  wp_apply wp_slice_make3.
+  { done. }
+  iIntros (?) "(? & ? & ?)".
+  iApply "HΦ". iFrame.
+Qed.
 
-Definition slice_skip (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
-  {| Slice.ptr := sl.(Slice.ptr) +ₗ[t] uint.Z n;
-     Slice.sz := word.sub sl.(Slice.sz) n;
-     Slice.cap := word.sub sl.(Slice.cap) n;
-  |}.
-
-Definition slice_subslice (sl: Slice.t) (t:ty) (n1 n2: u64) : Slice.t :=
-  Slice.mk (sl.(Slice.ptr) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub sl.(Slice.cap) n1).
+Definition slice_subslice (sl : slice.t) (t : go_type) (n1 n2 : u64) : slice.t :=
+  slice.mk (sl.(slice.ptr_f) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub sl.(slice.cap_f) n1).
 
 (* TODO: this theorem isn't true as-is for a correct model of splitting (the
 above gets the capacities wrong) *)

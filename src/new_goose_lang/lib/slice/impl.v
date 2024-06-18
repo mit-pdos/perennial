@@ -10,9 +10,12 @@ Local Coercion Var' s: expr := Var s.
 Definition len : val := λ: "s", Snd (Fst "s").
 Definition cap : val := λ: "s", Snd "s".
 
+(* XXX: this computes a nondeterministic unallocated address by using
+   "(Loc 1 0) +ₗ ArbiraryInt"*)
 Definition make3 t : val :=
   λ: "sz" "cap",
   if: "cap" < "sz" then Panic "NewSlice with cap smaller than len"
+  else if: "cap" = #0 then (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
   else let: "p" := AllocN "cap" (zero_val t) in
        (Var "p", Var "sz", Var "cap").
 
