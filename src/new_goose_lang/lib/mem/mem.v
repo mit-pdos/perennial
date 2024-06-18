@@ -8,16 +8,6 @@ From Perennial.new_goose_lang Require Export mem.impl typing.
 
 Set Default Proof Using "Type".
 
-Definition is_primitive_type (t : go_type) : Prop :=
-  match t with
-  | structT d => False
-  | funcT => False
-  | sliceT e => False
-  | interfaceT => False
-  | _ => True
-  end.
-Hint Extern 1 (is_primitive_type _) => refine I: typeclass_instances.
-
 Section goose_lang.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
@@ -34,6 +24,9 @@ Section goose_lang.
   Ltac unseal := rewrite ?typed_pointsto_eq /typed_pointsto_def.
 
   Global Instance typed_pointsto_timeless l t q v: Timeless (l ↦[t]{q} v).
+  Proof. unseal. apply _. Qed.
+
+  Global Instance typed_pointsto_persistent l t v: Persistent (l ↦[t]□ v).
   Proof. unseal. apply _. Qed.
 
   Global Instance typed_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{#q} v)%I.
@@ -91,6 +84,16 @@ Section goose_lang.
         destruct (decide (go_type_size_def g = O)).
         { eapply Hfrac2. lia. }
         { eapply Hfrac1. lia. }
+  Qed.
+
+  Lemma typed_pointsto_persist l t dq v :
+    l ↦[t]{dq} v ==∗ l ↦[t]□ v.
+  Proof.
+    unseal. iIntros "[? $]".
+    iApply big_sepL_bupd.
+    iApply (big_sepL_impl with "[$]").
+    iModIntro. iIntros.
+    iApply (heap_pointsto_persist with "[$]").
   Qed.
 
   Local Lemma wp_AllocAt t stk E v :
@@ -289,6 +292,15 @@ Section goose_lang.
     rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
+
+Definition is_primitive_type (t : go_type) : Prop :=
+  match t with
+  | structT d => False
+  | funcT => False
+  | sliceT e => False
+  | interfaceT => False
+  | _ => True
+  end.
 
 Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 t :
   is_primitive_type t →

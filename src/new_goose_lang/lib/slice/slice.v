@@ -18,6 +18,9 @@ Definition own_slice_cap_def (s : slice.t) (t : go_type): iProp Σ :=
 Program Definition own_slice_cap := unseal (_:seal (@own_slice_cap_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 
+Ltac unseal := rewrite ?own_slice_unseal /own_slice_def
+                 ?own_slice_cap_unseal /own_slice_cap_def.
+
 Lemma own_slice_cap_none s t :
   s.(slice.sz) = s.(slice.cap) →
   ⊢ own_slice_cap s t.
@@ -28,7 +31,7 @@ Qed.
 Lemma own_slice_small_sz s t q vs :
   own_slice s t q vs -∗ ⌜length vs = uint.nat s.(slice.sz)⌝.
 Proof.
-  rewrite own_slice_unseal. iIntros "(_&[%%]) !% //".
+  unseal. iIntros "(_&[%%]) !% //".
 Qed.
 
 Lemma replicate_0 A (x:A) : replicate 0 x = [].
@@ -36,18 +39,29 @@ Proof. reflexivity. Qed.
 
 Theorem own_slice_fractional s t vs :
   fractional.Fractional (λ q, own_slice s t (DfracOwn q) vs).
-Proof. rewrite own_slice_unseal; apply _. Qed.
+Proof. unseal; apply _. Qed.
 
 Theorem own_slice_as_fractional s q t vs :
   fractional.AsFractional (own_slice s t (DfracOwn q) vs) (λ q, own_slice s t (DfracOwn q) vs) q.
-Proof. rewrite own_slice_unseal; split; auto; apply _. Qed.
+Proof. unseal; split; auto; apply _. Qed.
+
+Lemma loc_add_stride_Sn l t n :
+  l +ₗ[t] S n = (l +ₗ go_type_size t) +ₗ[t] n.
+Proof.
+  replace (Z.mul (go_type_size t) (S n)) with (go_type_size t + Z.mul (go_type_size t) n).
+  { rewrite loc_add_assoc //. }
+  replace (Z.of_nat (S n)) with (1 + Z.of_nat n) by lia.
+  rewrite Z.mul_add_distr_l.
+  f_equal.
+  rewrite Z.mul_1_r //.
+Qed.
 
 Theorem own_slice_small_agree s t q1 q2 vs1 vs2 :
   own_slice s t q1 vs1 -∗
   own_slice s t q2 vs2 -∗
   ⌜vs1 = vs2⌝.
 Proof.
-  rewrite own_slice_unseal.
+  unseal.
   iIntros "[Hs1 [%%]] [Hs2 [%%]]".
   assert (length vs1 = length vs2) by congruence.
   generalize (slice.ptr s). intros l.
@@ -61,36 +75,28 @@ Proof.
   simpl.
   iDestruct "Hs1" as "[[Hx1 _] Ha1]".
   iDestruct "Hs2" as "[[Hx2 _] Ha2]".
-  iDestruct (combine_sep_gives with "[Hx1 Hx2]") as "H".
-  2:{ iSplitL "Hx1"; iAccu. }
-  {
-    Set Typeclasses Debug.
-    apply _.
-  }
-  iCombine "Hx1 Hx2" gives "%H".
-  iDestruct (typed_pointsto_agree with "Hx1 Hx2") as "->".
+  iCombine "Hx1 Hx2" gives %[_ ->].
   setoid_rewrite loc_add_stride_Sn.
   iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
 Qed.
 
-Global Instance own_slice_small_persistent s t vs : Persistent (own_slice_small s t DfracDiscarded vs).
-Proof. apply _. Qed.
+Global Instance own_slice_persistent s t vs : Persistent (own_slice s t DfracDiscarded vs).
+Proof. unseal; apply _. Qed.
 
-Lemma own_slice_small_persist s t dq vs:
-  own_slice_small s t dq vs ==∗ own_slice_small s t DfracDiscarded vs.
+Lemma own_slice_persist s t dq vs:
+  own_slice s t dq vs ==∗ own_slice s t DfracDiscarded vs.
 Proof.
-  rewrite /own_slice_small.
+  unseal.
   iIntros "[Hs %Hl]".
-  iMod (array_persist with "Hs") as "Hs".
-  iModIntro.
-  iFrame. done.
+  iSplitL; last done.
+  iApply big_sepL_bupd.
+  iApply (big_sepL_impl with "Hs").
+  iModIntro. iIntros "* % [? $]".
+  iApply (typed_pointsto_persist with "[$]").
 Qed.
 
-Global Instance own_slice_small_timeless s t q vs :
-  Timeless (own_slice_small s t q vs) := _.
-
-Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
-  (#ptr, #sz, #cap)%V = slice_val (Slice.mk ptr sz cap) := eq_refl.
+Global Instance own_slice_timeless s t q vs : Timeless (own_slice s t q vs).
+Proof. unseal; apply _. Qed.
 
 Theorem own_slice_small_not_null s bt q vs :
   bt ≠ unitBT ->
