@@ -7,7 +7,7 @@ From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import persistent_readonly.
 From Goose Require Export sync.
 From Perennial.program_proof Require Import new_proof_prelude.
-From Perennial.new_goose_lang Require Import exception typed_mem.
+From Perennial.new_goose_lang Require Import exception mem.
 From Perennial.algebra Require Import map.
 
 Set Default Proof Using "Type".
@@ -74,20 +74,6 @@ Proof.
     (* FIXME: *)
     iDestruct "Hl" as "[$$]".
   }
-Qed.
-
-Lemma wp_struct_fieldRef d f (l : loc) :
-  {{{ True }}}
-    struct.fieldRef d f #l
-  {{{ RET #(struct.fieldRef_f d f l); True }}}
-.
-Proof.
-  iIntros (?) "_ HΦ".
-  Transparent struct.fieldRef. wp_lam. Opaque struct.fieldRef.
-  wp_pures.
-  unfold struct.fieldRef_f.
-  rewrite Z.mul_1_r.
-  by iApply "HΦ".
 Qed.
 
 Lemma new_Mutex p :

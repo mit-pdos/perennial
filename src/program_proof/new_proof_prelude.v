@@ -8,13 +8,12 @@ From Perennial.base_logic Require Export ghost_var.
 From Perennial.program_logic Require Export ncinv.
 From Perennial.goose_lang Require Export proofmode wpc_proofmode array.
 From Perennial.goose_lang Require Export into_val.
+From Perennial.new_goose_lang Require Export typing mem loop exception struct.
+(*
 From Perennial.goose_lang.lib Require Export
-     slice slice.typed_slice control map.typed_map time proph rand string.
-From Perennial.new_goose_lang Require Export loop exception struct.
+     slice slice.typed_slice control map.typed_map time proph rand string. *)
 
 Export uPred.
 
 Global Set Default Proof Using "Type".
 Global Set Printing Projections.
-
-Global Opaque load_ty store_ty.

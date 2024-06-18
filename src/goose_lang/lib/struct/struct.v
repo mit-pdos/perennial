@@ -1,6 +1,6 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From Perennial.base_logic.lib Require Import invariants.
-From Perennial.goose_lang Require Import proofmode.
+From Perennial.goose_lang Require Import proofmode typing.
 From Perennial.goose_lang.lib Require Export
      typed_mem persistent_readonly struct.impl.
 From Perennial.Helpers Require Import NamedProps.
@@ -641,19 +641,19 @@ Proof.
   iApply ("Henvs" with "Hro").
 Qed.
 
-Definition field_ty d f: ty :=
+Definition field_ty_old d f: ty :=
   match field_offset d f with
   | Some (_, t) => t
   | None => unitT
   end.
 
 Theorem wp_storeField stk E l d f fv fv' :
-  val_ty fv' (field_ty d f) ->
+  val_ty fv' (field_ty_old d f) ->
   {{{ ▷ struct_field_pointsto l (DfracOwn 1) d f fv }}}
     struct.storeF d f #l fv' @ stk; E
   {{{ RET #(); struct_field_pointsto l (DfracOwn 1) d f fv' }}}.
 Proof.
-  rewrite /storeField /field_ty.
+  rewrite /storeField /field_ty_old.
   intros Hty.
   destruct (field_offset d f) as [[z t]|] eqn:Hf.
   - iIntros (Φ) "Hl HΦ".
@@ -672,7 +672,7 @@ Qed.
 Opaque loadField storeField.
 
 Lemma tac_wp_storeField Δ Δ' Δ'' stk E i l d f v v' Φ :
-  val_ty v' (field_ty d f) →
+  val_ty v' (field_ty_old d f) →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_lookup i Δ' = Some (false, l ↦[d :: f] v)%I →
   envs_simple_replace i false (Esnoc Enil i (l ↦[d :: f] v')) Δ' = Some Δ'' →
@@ -699,7 +699,7 @@ Proof.
 Qed.
 
 Theorem wp_storeField_struct stk E l d f v fv' :
-  val_ty fv' (field_ty d f) ->
+  val_ty fv' (field_ty_old d f) ->
   {{{ struct_pointsto l (DfracOwn 1) (struct.t d) v }}}
     struct.storeF d f #l fv' @ stk; E
   {{{ RET #(); struct_pointsto l (DfracOwn 1) (struct.t d) (setField_f d f fv' v) }}}.
@@ -725,10 +725,10 @@ Notation "l ↦[ d :: f ] dq v" :=
 Priority is lower than the [constructor] hint to avoid that one unfolding in
 uncontrolled ways. *)
 #[global]
-Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
-  let field_t_expr := constr:(field_ty t f) in
+Hint Extern 5 (val_ty ?v (field_ty_old ?t ?f)) =>
+  let field_t_expr := constr:(field_ty_old t f) in
   (* Try to unfold as little as possible. *)
-  let field_t := eval cbv [field_ty field_offset] in field_t_expr in
+  let field_t := eval cbv [field_ty_old field_offset] in field_t_expr in
   let field_t2 := eval simpl in field_t in
   change (val_ty v field_t2)
   : core.

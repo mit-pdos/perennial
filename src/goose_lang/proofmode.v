@@ -2,7 +2,7 @@ From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Export environments.
 From Perennial.Helpers Require Export ipm.
 From Perennial.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Export lang lifting typing.
+From Perennial.goose_lang Require Export lang lifting.
 From Perennial.new_goose_lang Require Export exception loop.impl.
 Set Default Proof Using "Type".
 Import uPred.
@@ -383,7 +383,6 @@ Tactic Notation "wp_if_destruct" :=
 (** Heap tactics *)
 Section heap.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
-Context {ext_tys: ext_types ext}.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types Δ : envs (uPredI (iResUR Σ)).

@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From Perennial.new_goose_lang.lib Require Import typed_mem.impl.
+From Perennial.new_goose_lang.lib Require Import mem.impl.
 From Perennial.goose_lang.lib Require Import control.impl.
 
 (** * Slice library *)

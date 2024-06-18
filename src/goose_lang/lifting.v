@@ -9,7 +9,6 @@ From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Export tactics notation.
-From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 
 Notation nonAtomic T := (naMode * T)%type.
@@ -145,7 +144,6 @@ Arguments ffi_restart {ffi FfiInterp Σ} : rename.
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
-Context {ext_tys: ext_types ext}.
 Context `{!ffi_interp ffi}.
 
 Definition traceO := leibnizO (list event).

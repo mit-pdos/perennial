@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import notation proofmode slice typed_slice.
+From Perennial.goose_lang Require Import notation proofmode typing slice typed_slice.
 From Perennial.goose_lang.lib Require Import string.impl.
 From Perennial.goose_lang.lib Require Import control.
 Import uPred.

@@ -7,20 +7,20 @@ Local Coercion Var' s: expr := Var s.
 (* FIXME: make everything in here opaque. *)
 
 (* FIXME: want to expose a type, not descriptor *)
-Definition Mutex : descriptor :=
+Definition Mutex : struct.descriptor :=
   ["state" :: boolT]%struct
 .
-Axiom WaitGroup: descriptor.
+Axiom WaitGroup: struct.descriptor.
 
 Definition Mutex__Lock : val :=
   rec: "f" "m" :=
-    if: Snd (CmpXchg (struct.fieldRef Mutex "state" "m") #false #true) then
+    if: Snd (CmpXchg (struct.field_ref Mutex "state" "m") #false #true) then
       #()
     else
       "f" "m"
 .
 Definition Mutex__Unlock : val :=
-  λ: "m", exception_do (do: CmpXchg (struct.fieldRef Mutex "state" "m") #true #false ;;; return: #())
+  λ: "m", exception_do (do: CmpXchg (struct.field_ref Mutex "state" "m") #true #false ;;; return: #())
 .
 
 Definition NewCond : val := λ: "m", ref "m".

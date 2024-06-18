@@ -3,109 +3,23 @@ From iris.proofmode Require Import tactics.
 From iris.proofmode Require Import environments.
 From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
-From Perennial.new_goose_lang Require Export typed_mem.impl struct.impl slice.
-Require Import Coq.Program.Equality.
+Search "ext_tys".
+From Perennial.new_goose_lang Require Export mem.impl typing.
 
 Set Default Proof Using "Type".
 
+Definition is_primitive_type (t : go_type) : Prop :=
+  match t with
+  | structT d => False
+  | funcT => False
+  | sliceT e => False
+  | interfaceT => False
+  | _ => True
+  end.
+Hint Extern 1 (is_primitive_type _) => refine I: typeclass_instances.
+
 Section goose_lang.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-  Context {ext_ty: ext_types ext}.
-
-  Program Definition go_type_ind :=
-    λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
-      (f3 : P uint64T) (f4 : P int8T) (f5 : P int16T) (f6 : P int32T) (f7 : P int64T)
-      (f8 : P stringT) (f9 : ∀ elem : go_type, P elem → P (sliceT elem))
-      (f10 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
-      (f11 : P ptrT) (f12 : P funcT) (f13 : P interfaceT)
-      (f14 : ∀ key : go_type, P key → ∀ elem : go_type, P elem → P (mapT key elem))
-      (f15 : ∀ elem : go_type, P elem → P (chanT elem)),
-    fix F (g : go_type) : P g :=
-      match g as g0 return (P g0) with
-      | boolT => f
-      | uint8T => f0
-      | uint16T => f1
-      | uint32T => f2
-      | uint64T => f3
-      | int8T => f4
-      | int16T => f5
-      | int32T => f6
-      | int64T => f7
-      | stringT => f8
-      | sliceT elem => f9 elem (F elem)
-      | structT decls => f10 decls _
-      | ptrT => f11
-      | funcT => f12
-      | interfaceT => f13
-      | mapT key elem => f14 key (F key) elem (F elem)
-      | chanT elem => f15 elem (F elem)
-      end.
-  Obligation 1.
-  intros.
-  revert H.
-  enough (Forall P decls.*2).
-  1:{
-    intros.
-    rewrite List.Forall_forall in H.
-    apply H. done.
-  }
-  induction decls; first done.
-  destruct a. apply Forall_cons. split.
-  { apply F. }
-  { apply IHdecls. }
-  Defined.
-
-  Inductive has_go_type : val → go_type → Prop :=
-  | has_go_type_bool (b : bool) : has_go_type #b boolT
-  | has_go_type_uint64 (x : w64) : has_go_type #x uint64T
-  | has_go_type_uint32 (x : w32) : has_go_type #x uint32T
-  | has_go_type_uint16 : has_go_type nil uint16T
-  | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
-
-  | has_go_type_int64 (x : w64) : has_go_type #x int64T
-  | has_go_type_int32 (x : w32) : has_go_type #x int32T
-  | has_go_type_int16 : has_go_type nil int16T
-  | has_go_type_int8 (x : w8) : has_go_type #x int8T
-
-  | has_go_type_string (s : string) : has_go_type #(str s) stringT
-  | has_go_type_slice elem (s : slice.t) : has_go_type (slice_val s) (sliceT elem)
-  | has_go_type_slice_nil elem : has_go_type slice_nil (sliceT elem)
-
-  | has_go_type_struct
-      (d : descriptor) fvs
-      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup fvs f)) t)
-    : has_go_type (struct.mk_f d fvs) (structT d)
-  | has_go_type_ptr (l : loc) : has_go_type #l ptrT
-  | has_go_type_func f e v : has_go_type (RecV f e v) funcT
-  | has_go_type_func_nil : has_go_type nil funcT
-
-  (* FIXME: interface_val *)
-  | has_go_type_interface (s : slice.t) : has_go_type (slice_val s) interfaceT
-  | has_go_type_interface_nil : has_go_type interface_nil interfaceT
-
-  | has_go_type_mapT kt vt (l : loc) : has_go_type #l (mapT kt vt)
-  | has_go_type_chanT t (l : loc) : has_go_type #l (chanT t)
-  .
-
-  Lemma zero_val_has_go_type t :
-    has_go_type (zero_val t) t.
-  Proof.
-    induction t using go_type_ind; try econstructor.
-    replace (zero_val (structT decls)) with (struct.mk_f decls []).
-    {
-      econstructor. intros. simpl. apply Hfields.
-      apply in_map_iff. eexists _.
-      split; last done. done.
-    }
-    induction decls.
-    { simpl. replace (#()) with (struct.mk_f [] []) by done. econstructor. }
-    destruct a. simpl.
-    f_equal.
-    apply IHdecls.
-    intros.
-    apply Hfields.
-    simpl. right. done.
-  Qed.
 
   Definition typed_pointsto_def l (dq : dfrac) (t : go_type) (v : val) : iProp Σ :=
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜ has_go_type v t ⌝)%I.
@@ -130,15 +44,6 @@ Section goose_lang.
                                                      (λ q, l ↦[t]{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
-  Definition is_primitive_type (t : go_type) : Prop :=
-    match t with
-    | structT d => False
-    | funcT => False
-    | sliceT e => False
-    | interfaceT => False
-    | _ => True
-    end.
-
   Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
     is_primitive_type t →
     CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
@@ -152,22 +57,6 @@ Section goose_lang.
       iDestruct (heap_pointsto_agree with "[$]") as "%H";
       inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; done.
     all: by exfalso.
-  Qed.
-
-  Local Lemma has_go_type_len {v t} :
-    has_go_type v t ->
-    length (flatten_struct v) = (go_type_size t).
-  Proof.
-    rewrite go_type_size_unseal.
-    induction 1; simpl; auto.
-    induction d.
-    { done. }
-    destruct a. cbn.
-    rewrite app_length.
-    rewrite IHd.
-    { f_equal. apply H. by left. }
-    { clear H IHd. intros. apply Hfields. by right. }
-    { intros. apply H. simpl. by right. }
   Qed.
 
   Local Lemma wp_AllocAt t stk E v :
@@ -239,6 +128,7 @@ Section goose_lang.
       destruct a.
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
+      fold flatten_struct.
       wp_apply ("IH" with "[] Hf").
       { iPureIntro. by left. }
       iIntros "Hf".
@@ -257,6 +147,7 @@ Section goose_lang.
       wp_pures.
       iApply "HΦ".
       iFrame.
+      fold flatten_struct.
       erewrite has_go_type_len.
       2:{ eapply Hfields. by left. }
       rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
@@ -308,6 +199,7 @@ Section goose_lang.
       destruct a. inversion Hty; subst.
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
+      fold flatten_struct.
       erewrite has_go_type_len.
       2:{ eapply Hfields. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
@@ -324,6 +216,7 @@ Section goose_lang.
       iIntros "Hl".
       iApply "HΦ".
       iFrame.
+      fold flatten_struct.
       erewrite has_go_type_len.
       2:{ eapply Hfields0. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
@@ -439,5 +332,3 @@ Tactic Notation "wp_store" :=
     |first [wp_seq|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
   end.
-
-Hint Extern 1 (is_primitive_type _) => refine I: typeclass_instances.
