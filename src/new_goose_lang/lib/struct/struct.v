@@ -45,7 +45,7 @@ End struct.
 
 Notation "l ↦s[ d :: f ] dq v" := (struct.field_ref_f d f l ↦[struct.field_ty d f]{dq} v)%I
   (at level 50, dq custom dfrac at level 70, d at level 59, f at level 59,
-     format "l  ↦s[ d :: f ] dq  v").
+     format "l  ↦s[ d  ::  f ] dq  v").
 
 Definition option_descriptor_wf (d : struct.descriptor) : option (struct.Wf d).
   destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
@@ -90,22 +90,6 @@ End lemmas.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-
-Lemma pure_exec_trans φ1 φ2 n1 n2 (e1 e2 e3 : goose_lang.expr) :
-  PureExec φ1 n1 e1 e2 → PureExec φ2 n2 e2 e3
-  → PureExec (φ1 ∧ φ2) (n1 + n2) e1 e3.
-Proof.
-  intros.
-  intros [? ?].
-  eapply nsteps_trans.
-  { by apply H. }
-  { by apply H0. }
-Qed.
-
-Lemma pure_exec_impl φ1 φ2 n (e1 e2 : goose_lang.expr) :
-  (φ2 → φ1) →
-  PureExec φ1 n e1 e2 → PureExec (φ2) n e1 e2.
-Proof. intros ? H ?. apply H. by apply H0. Qed.
 
 Global Instance pure_struct_field_ref d f (l : loc) :
   WpPureExec True 2 (struct.field_ref d f #l) #(struct.field_ref_f d f l).
