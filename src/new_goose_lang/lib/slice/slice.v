@@ -285,4 +285,39 @@ Proof.
   iApply "HΦ". iFrame.
 Qed.
 
+(* PureExecs *)
+
+Global Instance pure_slice_ptr (s : slice.t) :
+  WpPureExec True 3 (slice.ptr (slice.val s)) #(slice.ptr_f s).
+Proof.
+  split; first done.
+  rewrite /slice.ptr /slice.val. cbn.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  simpl. intros _. constructor.
+  Unshelve. all: done.
+Qed.
+
+Global Instance pure_slice_len (s : slice.t) :
+  WpPureExec True 3 (slice.len (slice.val s)) #(slice.len_f s).
+Proof.
+  split; first done.
+  rewrite /slice.len /slice.val. cbn.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  simpl. intros _. constructor.
+  Unshelve. all: done.
+Qed.
+
+Global Instance pure_slice_cap (s : slice.t) :
+  WpPureExec True 2 (slice.cap (slice.val s)) #(slice.cap_f s).
+Proof.
+  split; first done.
+  rewrite /slice.cap /slice.val. cbn.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  simpl. intros _. constructor.
+  Unshelve. all: done.
+Qed.
+
 End wps.
