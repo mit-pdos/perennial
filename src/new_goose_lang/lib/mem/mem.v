@@ -15,13 +15,13 @@ Section goose_lang.
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜ has_go_type v t ⌝)%I.
   Definition typed_pointsto_aux : seal (@typed_pointsto_def). Proof. by eexists. Qed.
   Definition typed_pointsto := typed_pointsto_aux.(unseal).
-  Definition typed_pointsto_eq : @typed_pointsto = @typed_pointsto_def := typed_pointsto_aux.(seal_eq).
+  Definition typed_pointsto_unseal : @typed_pointsto = @typed_pointsto_def := typed_pointsto_aux.(seal_eq).
 
   Notation "l ↦[ t ] dq v" := (typed_pointsto l dq t v%V)
                                    (at level 20, dq custom dfrac at level 1, t at level 50,
                                     format "l  ↦[ t ] dq  v") : bi_scope.
 
-  Ltac unseal := rewrite ?typed_pointsto_eq /typed_pointsto_def.
+  Ltac unseal := rewrite ?typed_pointsto_unseal /typed_pointsto_def.
 
   Global Instance typed_pointsto_timeless l t q v: Timeless (l ↦[t]{q} v).
   Proof. unseal. apply _. Qed.

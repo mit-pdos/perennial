@@ -11,7 +11,7 @@ End slice.
 Section defns_and_lemmas.
 Context `{heapGS Σ}.
 Definition own_slice_def (s : slice.t) (t : go_type) (dq : dfrac) (vs : list val): iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦[t]{dq} v ∗ ⌜ has_go_type v t ⌝ ) ∗
+  ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦[t]{dq} v ) ∗
   ⌜length vs = uint.nat s.(slice.len_f) ∧ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
 Program Definition own_slice := unseal (_:seal (@own_slice_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
@@ -34,7 +34,7 @@ Proof.
   simpl. iPureIntro. lia.
 Qed.
 
-Lemma own_slice_small_sz s t q vs :
+Lemma own_slice_sz s t q vs :
   own_slice s t q vs -∗ ⌜length vs = uint.nat s.(slice.len_f)⌝.
 Proof.
   unseal. iIntros "(_&[%%]) !% //".
@@ -62,7 +62,7 @@ Proof.
   rewrite Z.mul_1_r //.
 Qed.
 
-Lemma own_slice_small_agree s t q1 q2 vs1 vs2 :
+Lemma own_slice_agree s t q1 q2 vs1 vs2 :
   own_slice s t q1 vs1 -∗
   own_slice s t q2 vs2 -∗
   ⌜vs1 = vs2⌝.
@@ -79,8 +79,8 @@ Proof.
     auto. }
   destruct vs2; simpl in Hlen; first by congruence.
   simpl.
-  iDestruct "Hs1" as "[[Hx1 _] Ha1]".
-  iDestruct "Hs2" as "[[Hx2 _] Ha2]".
+  iDestruct "Hs1" as "[Hx1 Ha1]".
+  iDestruct "Hs2" as "[Hx2 Ha2]".
   iCombine "Hx1 Hx2" gives %[_ ->].
   setoid_rewrite loc_add_stride_Sn.
   iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
@@ -97,7 +97,7 @@ Proof.
   iSplitL; last done.
   iApply big_sepL_bupd.
   iApply (big_sepL_impl with "Hs").
-  iModIntro. iIntros "* % [? $]".
+  iModIntro. iIntros "* % ?".
   iApply (typed_pointsto_persist with "[$]").
 Qed.
 
@@ -113,7 +113,7 @@ Proof.
   unseal.
   iIntros (Hbt Hvs) "[Hs %]".
   destruct s; destruct vs; simpl in *; try lia.
-  iDestruct "Hs" as "[[Hptr _] _]".
+  iDestruct "Hs" as "[Hptr _]".
   rewrite Z.mul_0_r loc_add_0.
   by iApply typed_pointsto_not_null.
 Qed.
@@ -239,9 +239,8 @@ Proof.
     erewrite <- (seq_replicate_fmap O).
     iApply (big_sepL_fmap with "[Hsl]").
     iApply (big_sepL_impl with "[$]").
-    iModIntro. iIntros. iSplit.
-    2:{ iPureIntro. apply zero_val_has_go_type. }
-    rewrite /pointsto_vals typed_pointsto_eq /typed_pointsto_def /=.
+    iModIntro. iIntros.
+    rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
     erewrite has_go_type_len.
     2:{ apply zero_val_has_go_type. }
     iSplitL.
@@ -261,7 +260,7 @@ Proof.
     2:{ apply zero_val_has_go_type. }
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros.
-    rewrite /pointsto_vals typed_pointsto_eq /typed_pointsto_def /=.
+    rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
     iSplitL.
     2:{ iPureIntro. apply zero_val_has_go_type. }
     iApply (big_sepL_impl with "[$]").
