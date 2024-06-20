@@ -8,6 +8,7 @@ Section goose_lang.
 Context `{ffi_syntax}.
 
 Local Coercion Var' s: expr := Var s.
+Definition ptr : val := λ: "s", Fst (Fst "s").
 Definition len : val := λ: "s", Snd (Fst "s").
 Definition cap : val := λ: "s", Snd "s".
 
