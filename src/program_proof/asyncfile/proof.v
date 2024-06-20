@@ -559,7 +559,7 @@ Proof.
 
   iCombine "Hfilename_in Hfilename" gives %[_ H].
   injection H as <-.
-  wp_bind (FileWrite _ _).
+  wp_bind (grove_ffi.FileWrite _ _).
   iApply (wpc_wp _ _ _ _ True).
   wpc_apply (wpc_crash_borrow_open_modify with "Hfile").
   { done. }
@@ -593,14 +593,14 @@ Proof.
   iSplit; first done.
 
   wp_pures.
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iClear "Hfilename Hdata HindexCond_is HdurableIndexCond_is".
   iNamed "Hown".
   wp_pures.
-  wp_load. wp_load. wp_storeField.
-  wp_load. wp_loadField.
+  wp_load. wp_load. wp_store.
+  wp_load. wp_load.
   wp_apply wp_Cond__Broadcast.
   { iFrame "#". }
   wp_pures.
@@ -687,7 +687,7 @@ Lemma wp_MakeAsyncFile fname N P data :
   }}}
     asyncfile.MakeAsyncFile #(str fname)
   {{{
-        γ sl f, RET (slice_val sl, #f); (own_slice_small sl byteT DfracDiscarded data) ∗
+        γ sl f, RET (slice.val sl, #f); (own_slice sl byteT DfracDiscarded ((λ (x:w8), #x) <$> data)) ∗
                                         own_AsyncFile N f γ P data
   }}}
 .
@@ -696,14 +696,21 @@ Proof.
   iNamed "H".
   Opaque Mutex.
   wp_lam.
-  wp_apply wp_ref_to; [val_ty|]. iIntros (filename_addr) "Hlocal". wp_pures.
-  iMod (struct_pointsto_persist with "Hlocal") as "#?".
+  (* FIXME: want (zero_val $ structT d) to reduce to (struct.val d []) *)
+  wp_apply wp_ref_ty; [econstructor|]. iIntros (filename_addr) "Hlocal". wp_pures.
+  iMod (typed_pointsto_persist with "Hlocal") as "#?".
 
-  (* FIXME: clean up structs to make this work *)
-  wp_apply wp_new_Mutex.
-  wp_apply wp_ref_zero; [done|].
+  wp_apply wp_ref_ty; [econstructor|].
   iIntros (s_ptr) "Hlocal".
-  wp_apply wp_allocStruct; [val_ty|].
+
+  wp_apply wp_ref_ty.
+  {
+    unfold AsyncFile.
+    simpl.
+    apply has_go_type_struct.
+    econstructor.
+  }
+  [econstructor|].
   iIntros (f) "Hf".
   iDestruct (struct_fields_split with "Hf") as "HH".
   iNamed "HH".
