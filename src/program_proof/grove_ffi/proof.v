@@ -1,18 +1,8 @@
-(** Iris reasoning principles for Grove FFI *)
-From stdpp Require Import gmap vector fin_maps.
-From RecordUpdate Require Import RecordSet.
-From iris.algebra Require Import numbers.
-From Perennial.algebra Require Import gen_heap_names.
-From iris.proofmode Require Import tactics.
-From Perennial.base_logic Require Import ghost_map mono_nat.
-From Perennial.program_logic Require Import ectx_lifting atomic.
-
-From Perennial.Helpers Require Import CountableTactics Transitions Integers.
-From Perennial.goose_lang Require Import lang lifting proofmode.
-From Perennial.new_goose_lang Require Import prelude slice.impl slice mem struct.
-From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
-From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
-From Perennial.new_goose_lang.ffi.grove_ffi Require Export typed_impl.
+(** Iris specs for Grove FFI *)
+From iris.base_logic.lib Require Import mono_nat.
+From Perennial.program_proof Require Import new_grove_prelude.
+From Perennial.goose_lang.ffi.grove_ffi Require Import grove_ffi.
+From Goose.github_com.mit_pdos.gokv Require Import grove_ffi.
 
 Set Default Proof Using "Type".
 
@@ -95,10 +85,10 @@ Section grove.
     simpl. rewrite right_id. rewrite loc_add_0. iFrame.
   Qed.
 
-  Local Lemma pointsto_vals_to_own_slice p cap q d :
+  Local Lemma pointsto_vals_to_own_slice (p : loc) (cap : w64) (q : dfrac) (d : list w8) :
     (length d) = uint.nat (length d) →
     (length d) ≤ uint.Z cap →
-    pointsto_vals p q (data_vals d)-∗
+    pointsto_vals p q (data_vals d) -∗
     own_slice (slice.mk p (length d) cap) byteT q (data_vals d).
   Proof.
     intros Hoverflow Hcap.

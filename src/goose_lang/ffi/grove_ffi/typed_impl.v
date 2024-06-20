@@ -7,7 +7,7 @@ Inductive GroveTys : Set := GroveListenTy | GroveConnectionTy.
 (* TODO: Why is this an instance but the ones above are not? *)
 Instance grove_val_ty: val_types :=
   {| ext_tys := GroveTys; |}.
-Definition grove_ty: ext_types grove_op :=
+Instance grove_ty: ext_types grove_op :=
   {| val_tys := grove_val_ty;
      get_ext_tys _ _ := False |}. (* currently we just don't give types for the GroveOps *)
 
