@@ -9,7 +9,7 @@ From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions Integers.
 From Perennial.goose_lang Require Import lang lifting proofmode prelude
-     slice.impl slice typed_slice typed_mem.
+     slice.impl slice typed_slice typed_mem control.
 From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi typed_impl.
 
@@ -174,6 +174,103 @@ Local Ltac solve_atomic2 :=
     - iApply pointsto_vals_own_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
+  Qed.
+Lemma wpc_FileRead f dq c E :
+    ⊢ {{{ f f↦{dq} c }}}
+        FileRead #(str f) @ E
+      {{{ (s : Slice.t), RET slice_val s; f f↦{dq} c ∗ own_slice s byteT (DfracOwn 1) c }}}
+      {{{ f f↦{dq} c }}}.
+  Proof.
+    iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done.
+    iCache with "HΦ Hf". { iApply "HΦ". done. }
+    wpc_bind (ExternalOp _ _).
+    iApply wpc_atomic.
+    { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". done. }
+    wp_apply (wp_FileReadOp with "Hf").
+    iIntros (err l len) "(Hf & Hl)".
+    iSplit; last first.
+    { iApply "HΦ". done. }
+    iModIntro.
+    destruct err.
+    { wpc_pures.
+      wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    iDestruct "Hl" as "[%Hl Hl]".
+    wpc_pures.
+    iDestruct "HΦ" as "[_ HΦ]".
+    iApply ("HΦ" $! (Slice.mk _ _ _)). iFrame. iModIntro.
+    rewrite /own_slice.
+    iSplitL.
+    - iApply pointsto_vals_own_slice_small_byte; done.
+    - iExists []. simpl. iSplit; first by eauto with lia.
+      iApply array.array_nil. done.
+  Qed.
+
+  Lemma wpc_FileWrite f s q old data E :
+    ⊢ {{{ f f↦ old ∗ own_slice_small s byteT q data }}}
+        FileWrite #(str f) (slice_val s) @ E
+      {{{ RET #(); f f↦ data ∗ own_slice_small s byteT q data }}}
+      {{{ f f↦ old ∨ f f↦ data }}}.
+  Proof.
+    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
+    wpc_call. { by iLeft. } { by iLeft. }
+    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
+    (* Urgh so much manual work just calling a WP lemma... *)
+    wpc_pures. wpc_bind (slice.ptr _). wpc_frame. wp_apply wp_slice_ptr. iNamed 1.
+    wpc_pures. wpc_bind (slice.len _). wpc_frame. wp_apply wp_slice_len. iNamed 1.
+    wpc_pures.
+    iDestruct (own_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (own_slice_small_wf with "Hs") as "%Hwf".
+    wpc_bind (ExternalOp _ _).
+    iApply wpc_atomic.
+    { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". by iLeft. }
+    wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
+    { iApply own_slice_small_byte_pointsto_vals. done. }
+    iIntros (err) "[Hf Hs]".
+    iSplit; last first.
+    { iApply "HΦ". destruct err; by eauto. }
+    iModIntro. destruct err.
+    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    wpc_pures.
+    { iApply "HΦ". eauto. }
+    iApply "HΦ". iFrame.
+    iApply pointsto_vals_own_slice_small_byte; done.
+  Qed.
+
+  Lemma wpc_FileAppend f s q old data E :
+    ⊢ {{{ f f↦ old ∗ own_slice_small s byteT q data }}}
+        FileAppend #(str f) (slice_val s) @ E
+      {{{ RET #(); f f↦ (old ++ data) ∗ own_slice_small s byteT q data }}}
+      {{{ f f↦ old ∨ f f↦ (old ++ data) }}}.
+  Proof.
+    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
+    wpc_call. { by iLeft. } { by iLeft. }
+    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
+    (* Urgh so much manual work just calling a WP lemma... *)
+    wpc_pures. wpc_bind (slice.ptr _). wpc_frame. wp_apply wp_slice_ptr. iNamed 1.
+    wpc_pures. wpc_bind (slice.len _). wpc_frame. wp_apply wp_slice_len. iNamed 1.
+    wpc_pures.
+    iDestruct (own_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (own_slice_small_wf with "Hs") as "%Hwf".
+    wpc_bind (ExternalOp _ _).
+    iApply wpc_atomic.
+    { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". by iLeft. }
+    wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
+    { iApply own_slice_small_byte_pointsto_vals. done. }
+    iIntros (err) "[Hf Hs]".
+    iSplit; last first.
+    { iApply "HΦ". destruct err; eauto. }
+    iModIntro. destruct err.
+    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    wpc_pures.
+    { iApply "HΦ". eauto. }
+    iApply "HΦ". iFrame.
+    iApply pointsto_vals_own_slice_small_byte; done.
   Qed.
 
   Lemma wp_GetTSC :
