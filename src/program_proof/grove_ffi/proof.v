@@ -1,8 +1,11 @@
 (** Iris specs for Grove FFI *)
 From iris.base_logic.lib Require Import mono_nat.
-From Perennial.program_proof Require Import new_grove_prelude.
+From Perennial.program_logic Require Export atomic_fupd.
+From Perennial.program_proof Require Export new_proof_prelude.
+From Perennial.goose_lang Require Export ffi.grove_prelude.
 From Perennial.goose_lang.ffi.grove_ffi Require Import grove_ffi.
 From Goose.github_com.mit_pdos.gokv Require Import grove_ffi.
+From Perennial.goose_lang Require Import control.
 
 Set Default Proof Using "Type".
 
@@ -177,6 +180,111 @@ Section grove.
     2:{ iExactEq "H". repeat f_equal. word. }
     word.
   Qed.
+
+  Lemma wpc_FileRead f dq c E :
+    ⊢ {{{ f f↦{dq} c }}}
+        FileRead #(str f) @ E
+      {{{ (s : slice.t), RET slice.val s; f f↦{dq} c ∗ own_slice s byteT (DfracOwn 1) (data_vals c) }}}
+      {{{ f f↦{dq} c }}}.
+  Proof.
+    iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done.
+    iCache with "HΦ Hf". { iApply "HΦ". done. }
+    wpc_bind (ExternalOp _ _).
+    iApply wpc_atomic.
+    { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". done. }
+    wp_apply (wp_FileReadOp with "Hf").
+    iIntros (err l len) "(Hf & Hl)".
+    iSplit; last first.
+    { iApply "HΦ". done. }
+    iModIntro.
+    destruct err.
+    { wpc_pures.
+      wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    iDestruct "Hl" as "[%Hl Hl]".
+    wpc_pures.
+    iDestruct "HΦ" as "[_ HΦ]".
+    iApply ("HΦ" $! (slice.mk _ _ _)). iFrame. iModIntro.
+    iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
+    { word. }
+    2:{ iExactEq "H". repeat f_equal. word. }
+    word.
+  Qed.
+
+  Lemma wpc_FileWrite f s q old data E :
+    ⊢ {{{ f f↦ old ∗ own_slice s byteT q (data_vals data) }}}
+        FileWrite #(str f) (slice.val s) @ E
+      {{{ RET #(); f f↦ data ∗ own_slice s byteT q (data_vals data) }}}
+      {{{ f f↦ old ∨ f f↦ data }}}.
+  Proof.
+    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
+    wpc_call. { by iLeft. } { by iLeft. }
+    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
+    (* Urgh so much manual work just calling a WP lemma... *)
+    wpc_pures.
+    iDestruct (own_slice_sz with "Hs") as "%Hlen".
+    iDestruct (own_slice_wf with "Hs") as "%Hwf".
+    wpc_bind (ExternalOp _ _).
+    iApply wpc_atomic.
+    { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". by iLeft. }
+    rewrite /data_vals fmap_length in Hlen.
+    wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
+    { iApply own_slice_to_pointsto_vals. done. }
+    iIntros (err) "[Hf Hs]".
+    iSplit; last first.
+    { iApply "HΦ". destruct err; by eauto. }
+    iModIntro. destruct err.
+    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    wpc_pures.
+    { iApply "HΦ". eauto. }
+    iApply "HΦ". iFrame.
+    iModIntro.
+    destruct s. simpl in *.
+    iDestruct (pointsto_vals_to_own_slice with "Hs") as "H".
+    { word. }
+    2:{ iExactEq "H". repeat f_equal. word. }
+    word.
+  Qed.
+
+  Lemma wpc_FileAppend f s q old data E :
+    ⊢ {{{ f f↦ old ∗ own_slice s byteT q (data_vals data) }}}
+        FileAppend #(str f) (slice.val s) @ E
+      {{{ RET #(); f f↦ (old ++ data) ∗ own_slice s byteT q (data_vals data) }}}
+      {{{ f f↦ old ∨ f f↦ (old ++ data) }}}.
+  Proof.
+    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
+    wpc_call. { by iLeft. } { by iLeft. }
+    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
+    (* Urgh so much manual work just calling a WP lemma... *)
+    wpc_pures.
+    iDestruct (own_slice_sz with "Hs") as "%Hlen".
+    iDestruct (own_slice_wf with "Hs") as "%Hwf".
+    wpc_bind (ExternalOp _ _).
+    iApply wpc_atomic.
+    { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". by iLeft. }
+    rewrite /data_vals fmap_length in Hlen.
+    wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
+    { iApply own_slice_to_pointsto_vals. done. }
+    iIntros (err) "[Hf Hs]".
+    iSplit; last first.
+    { iApply "HΦ". destruct err; eauto. }
+    iModIntro. destruct err.
+    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    wpc_pures.
+    { iApply "HΦ". eauto. }
+    iApply "HΦ". iFrame. iModIntro.
+    destruct s. simpl in *.
+    iDestruct (pointsto_vals_to_own_slice with "Hs") as "H".
+    { word. }
+    2:{ iExactEq "H". repeat f_equal. word. }
+    word.
+  Qed.
+
 
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
