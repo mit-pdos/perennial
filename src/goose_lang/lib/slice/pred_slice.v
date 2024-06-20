@@ -1,5 +1,5 @@
 From Perennial.Helpers Require Import List.
-From Perennial.goose_lang Require Import proofmode array.
+From Perennial.goose_lang Require Import proofmode array typing.
 From Perennial.goose_lang.lib Require Import slice into_val.
 
 Set Default Proof Using "Type".

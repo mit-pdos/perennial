@@ -1,11 +1,5 @@
 From Perennial.goose_lang Require Export notation.
 
-(* Q: Can we get by while keeping `do_return` etc. as sealed? *)
-(* Q: what about using modules for sealing? A: might make it impossible to
-   unfold, which might actually be useful.
-  Q: what about using modules for hiding everything except for a few exported
-     defns? So the default is to not export, and anything exported has to
-     explicitly marked. *)
 Section defn.
 
 Context `{ext_ty: ext_types}.
@@ -66,6 +60,16 @@ Global Notation "return: e" := (do_return e%E)
   (at level 90, e at level 85, format "return:  '[' e ']'") : expr_scope.
 
 From Perennial.goose_lang Require Export lifting.
+
+Ltac tc_search_pure_exec_ctx :=
+    match goal with
+    | [ |- PureExec _ _ ?e _] => (reshape_expr e ltac:(fun K e' =>
+                                                       simpl;
+                                                       apply (pure_exec_fill K);
+                                                       apply _
+                               ))
+    end.
+
 Section pure_execs.
 Context `{ffi_sem: ffi_semantics}.
 
@@ -99,51 +103,57 @@ Lemma pure_exec_impl φ1 φ2 n (e1 e2 : goose_lang.expr) (H:(φ2 → φ1)) :
   PureExec φ1 n e1 e2 → PureExec (φ2) n e1 e2.
 Proof. intros. intros ?. apply H0. by apply H. Qed.
 
-Lemma pure_exec_fill K φ n (e1 e2 : goose_lang.expr) :
-  PureExec φ n e1 e2 → PureExec φ n (ectx_language.fill K e1) (ectx_language.fill K e2).
-Proof. apply (pure_exec_fill K). Qed.
-
-Ltac solve_pure_exec_ctx :=
-    match goal with
-    | [ |- PureExec _ _ ?e _] => (reshape_expr e ltac:(fun K e' =>
-                                                       simpl;
-                                                       apply (pure_exec_fill K);
-                                                       apply _
-                               ))
-    end.
-
 Global Instance pure_execute_val (v1 : val) (v : val) : WpPureExec True 6 (exception_seq v1 (execute_val v)) (v1 #()).
 Proof.
-  rewrite exception_seq_unseal execute_val_unseal /=.
-  rewrite /exception_seq_def /execute_val_def.
+  rewrite exception_seq_unseal execute_val_unseal. cbv.
   split; first done.
   eapply pure_exec_impl; first shelve.
-  eapply pure_exec_S.
-  { solve_pure_exec_ctx. }
-  eapply pure_exec_S.
-  { simpl. solve_pure_exec_ctx. }
-  eapply pure_exec_S.
-  { simpl. solve_pure_exec_ctx. }
-  eapply pure_exec_S.
-  { simpl. solve_pure_exec_ctx. }
-  eapply pure_exec_S.
-  { simpl. solve_pure_exec_ctx. }
-  { simpl. solve_pure_exec_ctx. }
-  Unshelve. done.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  intros _. constructor. Unshelve. all: done.
 Qed.
 
-Global Instance pure_do_execute_val (v : val) : WpPureExec True some_n (do: v) (execute_val v).
-Admitted.
+Global Instance pure_do_execute_val (v : val) : WpPureExec True 2 (do: v) (execute_val v).
+Proof.
+  rewrite do_execute_unseal execute_val_unseal. cbv.
+  split; first done.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  intros _. constructor. Unshelve. all: done.
+Qed.
 
-Global Instance pure_return_val (v1 : expr) (v : val) : WpPureExec True some_n (exception_seq v1 (return_val v)) (return_val v).
-Admitted.
+Global Instance pure_return_val (v1 : val) (v : val) : WpPureExec True 6 (exception_seq v1 (return_val v)) (return_val v).
+Proof.
+  rewrite exception_seq_unseal return_val_unseal. cbv.
+  split; first done.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  intros _. constructor. Unshelve. all: done.
+Qed.
 
-Global Instance pure_do_return_val (v : val) : WpPureExec True some_n (return: v) (return_val v).
-Admitted.
+Global Instance pure_do_return_val (v : val) : WpPureExec True 2 (return: v) (return_val v).
+Proof.
+  rewrite do_return_unseal return_val_unseal. cbv.
+  split; first done.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  intros _. constructor. Unshelve. all: done.
+Qed.
 
-Global Instance pure_exception_do_return_v (v : val) : WpPureExec True some_n (exception_do (return_val v)%E) (v).
-Admitted.
+Global Instance pure_exception_do_return_v (v : val) : WpPureExec True 2 (exception_do (return_val v)%E) (v).
+Proof.
+  rewrite exception_do_unseal return_val_unseal. cbv.
+  split; first done.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  intros _. constructor. Unshelve. all: done.
+Qed.
 
-Global Instance pure_exception_do_execute_v (v : val) : WpPureExec True some_n (exception_do (execute_val v)%E) (v).
-Admitted.
+Global Instance pure_exception_do_execute_v (v : val) : WpPureExec True 2 (exception_do (execute_val v)%E) (v).
+Proof.
+  rewrite exception_do_unseal execute_val_unseal. cbv.
+  split; first done.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  intros _. constructor. Unshelve. all: done.
+Qed.
 End pure_execs.

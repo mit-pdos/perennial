@@ -94,19 +94,21 @@ Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Global Instance pure_struct_field_ref d f (l : loc) :
   WpPureExec True 2 (struct.field_ref d f #l) #(struct.field_ref_f d f l).
 Proof.
-  split.
-  { done. }
-  eapply (pure_exec_impl _ _).
-  { shelve. }
-  replace (2%nat) with (1 + 1)%nat by done.
-  eapply pure_exec_trans.
-  { solve_pure_exec. }
-  { solve_pure_exec. }
+  split; first done.
+  unfold struct.field_ref. cbn.
+  eapply pure_exec_impl; first shelve.
+  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
+  intros _.
+  constructor.
   Unshelve.
-  intros.
-  split_and!; try done.
-  unfold struct.field_ref_f.
-  by rewrite Z.mul_1_r.
+  2:{ refine True. }
+  intros; split; first done.
+  split; last done.
+  unfold bin_op_eval.
+  simpl.
+  rewrite /loc_add /addr_id /=.
+  repeat f_equal.
+  word.
 Qed.
 
 End wps.

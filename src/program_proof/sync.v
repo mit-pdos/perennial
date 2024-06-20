@@ -93,11 +93,12 @@ Proof.
   iIntros (Φ) "#Hinv HΦ".
   iLöb as "IH".
   wp_rec.
-  wp_apply wp_struct_fieldRef.
+  wp_pures.
   wp_bind (CmpXchg _ _ _).
   wp_pures.
   iInv nroot as ([]) "[Hl HR]".
   - wp_apply (wp_typed_cmpxchg_fail with "[$]").
+    { repeat econstructor. }
     { repeat econstructor. }
     { naive_solver. }
     iIntros "Hl".
@@ -108,6 +109,7 @@ Proof.
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
     wp_apply (wp_typed_cmpxchg_suc with "[$]").
+    { econstructor. }
     { econstructor. }
     { done. }
     iIntros "Hl".
@@ -126,8 +128,6 @@ Proof.
   iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
   wp_lam.
   wp_pures.
-  wp_pures.
-  wp_apply wp_struct_fieldRef.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as (b) "[>Hl _]".
 
@@ -136,6 +136,7 @@ Proof.
   iCombine "Hl Hlocked" as "Hl".
   rewrite Qp.quarter_three_quarter.
   wp_apply (wp_typed_cmpxchg_suc with "[$]").
+  { econstructor. }
   { econstructor. }
   { done. }
   iIntros "Hl".
