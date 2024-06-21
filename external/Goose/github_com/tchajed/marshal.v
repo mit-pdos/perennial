@@ -148,6 +148,11 @@ Definition ReadInt: val :=
     let: "i" := UInt64Get "b" in
     ("i", SliceSkip byteT "b" #8).
 
+Definition ReadInt32: val :=
+  rec: "ReadInt32" "b" :=
+    let: "i" := UInt32Get "b" in
+    ("i", SliceSkip byteT "b" #4).
+
 (* ReadBytes reads `l` bytes from b and returns (bs, rest) *)
 Definition ReadBytes: val :=
   rec: "ReadBytes" "b" "l" :=
@@ -172,13 +177,22 @@ Definition ReadLenPrefixedBytes: val :=
     let: ("bs", "b3") := ReadBytes "b2" "l" in
     ("bs", "b3").
 
-(* Encode i in little endian format and append it to b, returning the new slice. *)
+(* WriteInt appends i in little-endian format to b, returning the new slice. *)
 Definition WriteInt: val :=
   rec: "WriteInt" "b" "i" :=
     let: "b2" := reserve "b" #8 in
     let: "off" := slice.len "b2" in
     let: "b3" := SliceTake "b2" ("off" + #8) in
     UInt64Put (SliceSkip byteT "b3" "off") "i";;
+    "b3".
+
+(* WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice. *)
+Definition WriteInt32: val :=
+  rec: "WriteInt32" "b" "i" :=
+    let: "b2" := reserve "b" #4 in
+    let: "off" := slice.len "b2" in
+    let: "b3" := SliceTake "b2" ("off" + #4) in
+    UInt32Put (SliceSkip byteT "b3" "off") "i";;
     "b3".
 
 (* Append data to b, returning the new slice. *)
