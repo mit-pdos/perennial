@@ -12,6 +12,7 @@ From Perennial.goose_lang Require Import lang lifting proofmode prelude
      slice.impl slice typed_slice typed_mem control.
 From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi typed_impl.
+Import typed_impl.grove_ffi.
 
 Set Default Proof Using "Type".
 

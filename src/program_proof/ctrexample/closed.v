@@ -10,7 +10,7 @@ From Perennial.program_proof.ctrexample Require Import wpc_proofmode.
 From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 
 From Perennial.goose_lang Require adequacy dist_adequacy.
-From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
+From Perennial.goose_lang.ffi.grove_ffi Require adequacy.
 
 Section ctr_ghost_init.
 Context `{!gooseGlobalGS Σ, !inG Σ mono_natUR, !urpcregG Σ}.

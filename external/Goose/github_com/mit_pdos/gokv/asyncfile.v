@@ -4,7 +4,7 @@ From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.grove_ffi.
 From Goose Require sync.
 
-From Perennial.goose_lang Require Import ffi.grove_prelude.
+From Perennial.new_goose_lang Require Import ffi.grove_prelude.
 
 Definition AsyncFile := [
   "mu" :: ptrT;

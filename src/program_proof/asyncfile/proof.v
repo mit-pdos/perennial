@@ -774,10 +774,10 @@ Proof.
     iNext. wp_load.
     wp_apply (wp_AsyncFile__flushThread with "[-]").
     {
-      (* iFrame performance slow: iFrame "His".*)
-      iSplitR.
-      { iExact "His". }
+      (* FIXME: without this, [iFrame "His".] is extremely slow. *)
+      Typeclasses Opaque is_AsyncFile.
       iFrame "∗#".
+      Typeclasses Transparent is_AsyncFile.
     }
     wp_pures.
     done.

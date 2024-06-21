@@ -12,9 +12,8 @@ Instance grove_ty: ext_types grove_op :=
      get_ext_tys _ _ := False |}. (* currently we just don't give types for the GroveOps *)
 
 (** * Grove user-facing operations. *)
+Module grove_ffi.
 Section grove.
-  (* these are local instances on purpose, so that importing this files doesn't
-  suddenly cause all FFI parameters to be inferred as the grove model *)
   (* FIXME: figure out which of these clients need to set *)
   Existing Instances grove_op grove_model grove_ty grove_semantics.
   Local Coercion Var' (s:string) : expr := Var s.
@@ -108,3 +107,4 @@ Section grove.
     λ: <>, ExternalOp GetTimeRangeOp #().
 
 End grove.
+End grove_ffi.

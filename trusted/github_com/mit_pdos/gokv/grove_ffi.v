@@ -1,6 +1,9 @@
-From Perennial.goose_lang Require Export ffi.grove_prelude notation.
+From Perennial.goose_lang Require Export ffi.grove_ffi.impl notation.
 From Perennial.new_goose_lang Require Import prelude typing.impl.
 
+#[global]
+Existing Instances grove_op grove_model.
+Coercion Var' (s: string) := Var s.
 (** * Grove user-facing operations. *)
 Section grove.
 

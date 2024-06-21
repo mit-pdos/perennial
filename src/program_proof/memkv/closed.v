@@ -15,7 +15,7 @@ From Perennial.program_proof.memkv Require Export
 From Perennial.program_proof.memkv Require Export memkv_clerk_proof bank_proof.
 
 From Perennial.goose_lang Require adequacy dist_adequacy.
-From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
+From Perennial.goose_lang.ffi Require grove_ffi.adequacy.
 
 Module closed1.
 
