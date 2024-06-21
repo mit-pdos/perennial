@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.secure_chat Require Import merkle.
+From Goose.github_com.mit_pdos.pav Require Import merkle.
 
-From Perennial.program_proof.chat.merkle Require Import shim.
+From Perennial.program_proof.pav.merkle Require Import shim.
 From Perennial.program_proof Require Import std_proof.
 
 Section defs.
