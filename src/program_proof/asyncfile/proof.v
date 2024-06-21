@@ -394,7 +394,7 @@ Proof.
   iIntros (Hno_overflow).
   wp_load. wp_store.
   wp_pures.
-  wp_apply wp_ref_ty; [econstructor|].
+  wp_apply wp_ref_ty; [rewrite zero_val_eq; econstructor|].
   iIntros (index_ptr) "Hlocal3".
   wp_load. wp_load.
   wp_pures. wp_store.
@@ -538,10 +538,10 @@ Proof.
   }
   (* case: have something to write *)
   wp_pures.
-  wp_apply wp_ref_ty; [econstructor|]. iIntros (index_ptr) "Hlocal2".
+  wp_apply wp_ref_ty; [rewrite zero_val_eq; econstructor|]. iIntros (index_ptr) "Hlocal2".
   wp_pures.
   wp_load. wp_load. wp_pures. wp_store. wp_pures.
-  wp_apply wp_ref_ty; [econstructor|]. iIntros (data_ptr) "Hlocal3".
+  wp_apply wp_ref_ty; [rewrite zero_val_eq; econstructor|]. iIntros (data_ptr) "Hlocal3".
   wp_load. wp_load. wp_store. wp_pures.
   wp_load. wp_load.
 
@@ -696,49 +696,41 @@ Proof.
   iNamed "H".
   Opaque Mutex.
   wp_lam.
-  (* FIXME: want (zero_val $ structT d) to reduce to (struct.val d []) *)
   wp_apply wp_ref_ty; [econstructor|]. iIntros (filename_addr) "Hlocal". wp_pures.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
 
-  wp_apply wp_ref_ty; [econstructor|].
+  wp_apply wp_ref_ty; [rewrite zero_val_eq; econstructor|].
   iIntros (s_ptr) "Hlocal".
 
-  wp_apply wp_ref_ty.
-  {
-    unfold AsyncFile.
-    simpl.
-    apply has_go_type_struct.
-    econstructor.
-  }
-  [econstructor|].
+  wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
   iIntros (f) "Hf".
   iDestruct (struct_fields_split with "Hf") as "HH".
-  iNamed "HH".
+  iEval (repeat rewrite zero_val_eq /=) in "HH". iNamed "HH".
   wp_pures. wp_store. wp_pures.
-  iMod (struct_pointsto_persist with "Hlocal") as "#?".
+  iMod (typed_pointsto_persist with "Hlocal") as "#?".
 
-  wp_apply wp_new_Mutex.
+  wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
   iIntros (?) "HmuInv".
-  wp_load. wp_storeField.
+  wp_load. wp_store.
 
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  wp_load. wp_storeField.
+  wp_load. wp_store.
 
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  wp_load. wp_storeField.
+  wp_load. wp_store.
 
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  wp_load. wp_storeField.
-  wp_load. wp_load. wp_storeField.
+  wp_load. wp_store.
+  wp_load. wp_load. wp_store.
 
   wp_pures. wp_load.
-  wp_bind (FileRead _).
+  wp_bind (grove_ffi.FileRead _).
   iApply (wpc_wp _ _ _ _ True).
   wpc_apply (wpc_crash_borrow_open with "Hfile").
   { done. }
@@ -750,26 +742,25 @@ Proof.
     iIntros "Hf". iSplitR; first done. iExists _; iFrame.
   }
   iNext.
-  iIntros (?) "[Hf Hdata]".
+  iIntros (?) "[Hf Hdata_new]".
   iFrame.
   iIntros "Hfile".
   iSplitR; first done.
 
-  repeat (wp_load; wp_storeField).
+  repeat (wp_load; wp_store).
 
   wp_pures.
-  wp_apply wp_ref_zero; [done|].
+  wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
   iIntros (data_ptr) "Hlocal".
   wp_pures.
-  wp_load. wp_loadField.
+  wp_load. wp_load.
   wp_pures. wp_store.
-  iMod (struct_pointsto_persist with "Hlocal") as "#?".
+  iMod (typed_pointsto_persist with "Hlocal") as "#?".
   wp_pures.
 
-  iMod (struct_field_pointsto_persist with "mu") as "#Hmu".
-  iMod (struct_field_pointsto_persist with "filename") as "#Hfilename".
-  iDestruct (own_slice_to_small with "Hdata") as "Hdata".
-  iMod (own_slice_small_persist with "Hdata") as "#Hdata".
+  iMod (typed_pointsto_persist with "Hmu") as "#Hmu".
+  iMod (typed_pointsto_persist with "Hfilename") as "#Hfilename".
+  iMod (own_slice_persist with "Hdata_new") as "#Hdata_new".
   iMod (alloc_ghost N P data fname) as (γ) "H".
   iNamed "H".
   iAssert (|={⊤}=> is_AsyncFile N f γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed]" as ">#His".

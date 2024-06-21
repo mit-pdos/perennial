@@ -59,30 +59,17 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-(** Denotes ownership of a mutex for which the lock invariant is not yet
-    decided *)
-Definition own_uninit_Mutex (m: loc): iProp Σ := m ↦s[Mutex :: "state"] #false.
-
-Theorem init_Mutex R E m : own_uninit_Mutex m -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦[structT Mutex] (zero_val $ structT Mutex) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "Hl HR".
-  iMod (inv_alloc nroot _ (_) with "[Hl HR]") as "#?".
+  iDestruct (struct_fields_split with "Hl") as "Hl".
+  iEval (repeat rewrite zero_val_eq /=) in "Hl". iNamed "Hl".
+  iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
   { iIntros "!>". iExists false. iFrame.
-    rewrite /own_uninit_Mutex.
-    iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-    (* FIXME: *)
-    iDestruct "Hl" as "[$$]".
+    iEval (rewrite -Qp.quarter_three_quarter) in "Hstate".
+    iDestruct "Hstate" as "[$$]".
   }
-Qed.
-
-Lemma new_Mutex p :
-  p ↦[structT Mutex] (zero_val (structT Mutex)) -∗
-  own_uninit_Mutex p.
-Proof.
-  iIntros "Hl".
-  iDestruct (struct_fields_split with "Hl") as "Hl".
-  iNamed "Hl". simpl. iFrame.
 Qed.
 
 Lemma wp_Mutex__Lock m R :
@@ -248,7 +235,7 @@ Definition own_WaitGroup (wg:val) γ (n:u64) (P:u64 → iProp Σ) : iProp Σ :=
 Definition own_free_WaitGroup (wg:val) : iProp Σ :=
   ∃ (mu:loc) (vptr:loc),
     ⌜wg = (#mu, #vptr)%V⌝ ∗
-    own_uninit_Mutex mu ∗
+    mu ↦[structT Mutex] (zero_val $ structT Mutex) ∗
     vptr ↦[uint64T] #0
 .
 

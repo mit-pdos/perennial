@@ -1,4 +1,5 @@
 From Perennial.new_goose_lang Require Export lib.typing.impl.
+Require Import Coq.Logic.FunctionalExtensionality.
 
 (** * Typed data representations for struct and slice *)
 Module slice.
@@ -114,10 +115,11 @@ Section typing.
   Lemma zero_val_has_go_type t :
     has_go_type (zero_val t) t.
   Proof.
-    induction t using go_type_ind; try econstructor.
-    replace (zero_val (structT decls)) with (struct.val decls []).
+    induction t using go_type_ind; rewrite zero_val_unseal; try econstructor;
+    replace (zero_val_def (structT decls)) with (struct.val decls []).
     {
-      econstructor. intros. simpl. apply Hfields.
+      econstructor. intros. simpl.
+      apply Hfields.
       apply in_map_iff. eexists _.
       split; last done. done.
     }
@@ -125,6 +127,7 @@ Section typing.
     { simpl. replace (#()) with (struct.val [] []) by done. econstructor. }
     destruct a. simpl.
     f_equal.
+    { by rewrite zero_val_unseal. }
     apply IHdecls.
     intros.
     apply Hfields.
@@ -145,6 +148,48 @@ Section typing.
     { f_equal. apply H. by left. }
     { clear H IHd. intros. apply Hfields. by right. }
     { intros. apply H. simpl. by right. }
+  Qed.
+
+  Definition zero_val' (t : go_type) : val :=
+    match t with
+    | boolT => #false
+
+    (* Numeric, except float and impl-specific sized objects *)
+    | uint8T => #(W8 0)
+    | uint16T => nil
+    | uint32T => #(W32 0)
+    | uint64T => #(W64 0)
+    | int8T => #(W8 0)
+    | int16T => nil
+    | int32T => #(W32 0)
+    | int64T => #(W64 0)
+
+    | stringT => #(str "")
+    (* | arrayT (len : nat) (elem : go_type) *)
+    | sliceT _ => slice.nil
+    | structT decls => struct.val decls []
+    | ptrT => nil
+    | funcT => nil
+    | interfaceT => interface_nil
+    | mapT _ _ => nil
+    | chanT _ => nil
+    end.
+
+  Lemma zero_val'_eq_zero_val_1 t :
+    zero_val t = zero_val' t.
+  Proof.
+    rewrite zero_val_unseal.
+    induction t; try done. simpl.
+    induction decls; first done.
+    destruct a. simpl.
+    by rewrite zero_val_unseal IHdecls.
+  Qed.
+
+  Lemma zero_val_eq :
+    zero_val = zero_val'.
+  Proof.
+    apply functional_extensionality.
+    intros. apply zero_val'_eq_zero_val_1.
   Qed.
 
 End typing.

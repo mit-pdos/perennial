@@ -31,7 +31,7 @@ Section val_types.
   Definition nil : val := #null.
   Definition slice_nil : val := (nil, #0, #0).
   Definition interface_nil : val := (nil, nil, nil).
-  Fixpoint zero_val (t : go_type) : val :=
+  Fixpoint zero_val_def (t : go_type) : val :=
     match t with
     | boolT => #false
 
@@ -48,13 +48,15 @@ Section val_types.
     | stringT => #(str "")
     (* | arrayT (len : nat) (elem : go_type) *)
     | sliceT _ => slice_nil
-    | structT decls => fold_right PairV #() (fmap (zero_val ∘ snd) decls)
+    | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => nil
     | funcT => nil
     | interfaceT => interface_nil
     | mapT _ _ => nil
     | chanT _ => nil
     end.
+Program Definition zero_val := unseal (_:seal (@zero_val_def)). Obligation 1. by eexists. Qed.
+Definition zero_val_unseal : zero_val = _ := seal_eq _.
 
 Fixpoint go_type_size_def (t : go_type) : nat :=
   match t with
