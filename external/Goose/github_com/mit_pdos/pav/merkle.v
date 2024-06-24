@@ -95,9 +95,9 @@ Definition Digest: ty := slice.T byteT.
    Binds an id down the tree to a particular node hash. *)
 Definition pathProof := struct.decl [
   "id" :: Id;
-  "NodeHash" :: slice.T byteT;
-  "Digest" :: Digest;
-  "ChildHashes" :: slice.T (slice.T (slice.T byteT))
+  "nodeHash" :: slice.T byteT;
+  "digest" :: Digest;
+  "childHashes" :: slice.T (slice.T (slice.T byteT))
 ].
 
 Definition Proof: ty := slice.T (slice.T (slice.T byteT)).
@@ -114,13 +114,13 @@ Definition isValidHashSl: val :=
 Definition pathProof__check: val :=
   rec: "pathProof__check" "p" :=
     let: "err" := ref_to boolT errNone in
-    let: "currHash" := ref_to (slice.T byteT) (struct.loadF pathProof "NodeHash" "p") in
-    let: "proofLen" := slice.len (struct.loadF pathProof "ChildHashes" "p") in
+    let: "currHash" := ref_to (slice.T byteT) (struct.loadF pathProof "nodeHash" "p") in
+    let: "proofLen" := slice.len (struct.loadF pathProof "childHashes" "p") in
     let: "loopIdx" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, (![uint64T] "loopIdx") < "proofLen"); (λ: <>, "loopIdx" <-[uint64T] ((![uint64T] "loopIdx") + #1)) := λ: <>,
       let: "pathIdx" := ("proofLen" - #1) - (![uint64T] "loopIdx") in
-      let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF pathProof "ChildHashes" "p") "pathIdx" in
+      let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF pathProof "childHashes" "p") "pathIdx" in
       (if: (slice.len "children") ≠ (numChildren - #1)
       then
         "err" <-[boolT] errSome;;
@@ -144,7 +144,7 @@ Definition pathProof__check: val :=
     (if: ![boolT] "err"
     then errSome
     else
-      (if: (~ (std.BytesEqual (![slice.T byteT] "currHash") (struct.loadF pathProof "Digest" "p")))
+      (if: (~ (std.BytesEqual (![slice.T byteT] "currHash") (struct.loadF pathProof "digest" "p")))
       then errSome
       else errNone)).
 
@@ -174,9 +174,9 @@ Definition CheckProof: val :=
         else "nodeHash" <-[slice.T byteT] (getEmptyNodeHash #()));;
         let: "pathProof" := struct.new pathProof [
           "id" ::= "idPref";
-          "NodeHash" ::= ![slice.T byteT] "nodeHash";
-          "Digest" ::= "digest";
-          "ChildHashes" ::= "proof"
+          "nodeHash" ::= ![slice.T byteT] "nodeHash";
+          "digest" ::= "digest";
+          "childHashes" ::= "proof"
         ] in
         pathProof__check "pathProof")).
 

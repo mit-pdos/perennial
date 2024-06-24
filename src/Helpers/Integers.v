@@ -277,6 +277,8 @@ Instance w8_countable : Countable byte.
 Proof. apply _. Qed.
 
 (* uint and the u64_through* theorems are for backwards compatibility *)
+(* Note[SB]: it's a bit long to write `Z.to_nat (word.unsigned x)`,
+so maybe still keep some notation for this? *)
 
 Module uint.
   Notation Z := word.unsigned.

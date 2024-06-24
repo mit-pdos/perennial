@@ -6,7 +6,7 @@ From Perennial.program_proof Require Import std_proof.
 Section defs.
 Context `{!heapGS Σ}.
 
-Lemma wp_testAgreement (servAddr adtrAddr : u64) :
+Lemma wp_testAgreement (servAddr adtrAddr : w64) :
   {{{ True }}}
   testAgreement #servAddr #adtrAddr
   {{{ RET #(); True }}}.
