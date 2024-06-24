@@ -9,13 +9,172 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-(* ktmerkle.go *)
+(* evidence.go *)
+
+(* epochTy from ktmerkle.go *)
 
 Definition epochTy: ty := uint64T.
 
 Definition linkTy: ty := slice.T byteT.
 
+(* evidServLink is evidence that the server signed two conflicting links,
+   either zero or one epochs away. *)
+Definition evidServLink := struct.decl [
+  "epoch0" :: uint64T;
+  "prevLink0" :: slice.T byteT;
+  "dig0" :: slice.T byteT;
+  "sig0" :: slice.T byteT;
+  "epoch1" :: uint64T;
+  "prevLink1" :: slice.T byteT;
+  "dig1" :: slice.T byteT;
+  "sig1" :: slice.T byteT
+].
+
 Definition errorTy: ty := boolT.
+
+(* chainSepSome from rpc.go *)
+
+(* rpc: no decode needed. *)
+Definition chainSepSome := struct.decl [
+  "tag" :: byteT;
+  "epoch" :: epochTy;
+  "prevLink" :: linkTy;
+  "data" :: slice.T byteT
+].
+
+(* chainSepSome__encode from rpc.out.go *)
+
+Definition chainSepSome__encode: val :=
+  rec: "chainSepSome__encode" "o" :=
+    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
+    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 1));;
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF chainSepSome "epoch" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF chainSepSome "prevLink" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF chainSepSome "data" "o"));;
+    ![slice.T byteT] "b".
+
+(* servSepLink from rpc.go *)
+
+(* rpc: no decode needed. *)
+Definition servSepLink := struct.decl [
+  "tag" :: byteT;
+  "link" :: linkTy
+].
+
+(* servSepLink__encode from rpc.out.go *)
+
+Definition servSepLink__encode: val :=
+  rec: "servSepLink__encode" "o" :=
+    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
+    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 0));;
+    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servSepLink "link" "o"));;
+    ![slice.T byteT] "b".
+
+(* check returns an error if the evidence does not check out.
+   otherwise, it proves that the server was dishonest. *)
+Definition evidServLink__check: val :=
+  rec: "evidServLink__check" "e" "servPk" :=
+    let: "linkSep0" := chainSepSome__encode (struct.new chainSepSome [
+      "epoch" ::= struct.loadF evidServLink "epoch0" "e";
+      "prevLink" ::= struct.loadF evidServLink "prevLink0" "e";
+      "data" ::= struct.loadF evidServLink "dig0" "e"
+    ]) in
+    let: "link0" := cryptoffi.Hash "linkSep0" in
+    let: "enc0" := servSepLink__encode (struct.new servSepLink [
+      "link" ::= "link0"
+    ]) in
+    let: "ok0" := cryptoffi.PublicKey__Verify "servPk" "enc0" (struct.loadF evidServLink "sig0" "e") in
+    (if: (~ "ok0")
+    then "errSome"
+    else
+      let: "linkSep1" := chainSepSome__encode (struct.new chainSepSome [
+        "epoch" ::= struct.loadF evidServLink "epoch1" "e";
+        "prevLink" ::= struct.loadF evidServLink "prevLink1" "e";
+        "data" ::= struct.loadF evidServLink "dig1" "e"
+      ]) in
+      let: "link1" := cryptoffi.Hash "linkSep1" in
+      let: "enc1" := servSepLink__encode (struct.new servSepLink [
+        "link" ::= "link1"
+      ]) in
+      let: "ok1" := cryptoffi.PublicKey__Verify "servPk" "enc1" (struct.loadF evidServLink "sig1" "e") in
+      (if: (~ "ok1")
+      then "errSome"
+      else
+        (if: (struct.loadF evidServLink "epoch0" "e") = (struct.loadF evidServLink "epoch1" "e")
+        then std.BytesEqual "link0" "link1"
+        else
+          (if: ((struct.loadF evidServLink "epoch0" "e") + #1) = (struct.loadF evidServLink "epoch1" "e")
+          then std.BytesEqual "link0" (struct.loadF evidServLink "prevLink1" "e")
+          else "errSome")))).
+
+(* evidServPut is evidence when a server promises to put a value at a certain
+   epoch but actually there's a different value (as evidenced by a merkle proof). *)
+Definition evidServPut := struct.decl [
+  "epoch" :: uint64T;
+  "prevLink" :: slice.T byteT;
+  "dig" :: slice.T byteT;
+  "linkSig" :: slice.T byteT;
+  "id" :: slice.T byteT;
+  "val0" :: slice.T byteT;
+  "putSig" :: slice.T byteT;
+  "val1" :: slice.T byteT;
+  "proof" :: slice.T (slice.T (slice.T byteT))
+].
+
+(* servSepPut from rpc.go *)
+
+(* rpc: no decode needed. *)
+Definition servSepPut := struct.decl [
+  "tag" :: byteT;
+  "epoch" :: epochTy;
+  "id" :: slice.T byteT;
+  "val" :: slice.T byteT
+].
+
+(* servSepPut__encode from rpc.out.go *)
+
+Definition servSepPut__encode: val :=
+  rec: "servSepPut__encode" "o" :=
+    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
+    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 1));;
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF servSepPut "epoch" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servSepPut "id" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servSepPut "val" "o"));;
+    ![slice.T byteT] "b".
+
+Definition evidServPut__check: val :=
+  rec: "evidServPut__check" "e" "servPk" :=
+    let: "preLink" := chainSepSome__encode (struct.new chainSepSome [
+      "epoch" ::= struct.loadF evidServPut "epoch" "e";
+      "prevLink" ::= struct.loadF evidServPut "prevLink" "e";
+      "data" ::= struct.loadF evidServPut "dig" "e"
+    ]) in
+    let: "link" := cryptoffi.Hash "preLink" in
+    let: "preLinkSig" := servSepLink__encode (struct.new servSepLink [
+      "link" ::= "link"
+    ]) in
+    let: "linkOk" := cryptoffi.PublicKey__Verify "servPk" "preLinkSig" (struct.loadF evidServPut "linkSig" "e") in
+    (if: (~ "linkOk")
+    then "errSome"
+    else
+      let: "prePut" := servSepPut__encode (struct.new servSepPut [
+        "epoch" ::= struct.loadF evidServPut "epoch" "e";
+        "id" ::= struct.loadF evidServPut "id" "e";
+        "val" ::= struct.loadF evidServPut "val0" "e"
+      ]) in
+      let: "putOk" := cryptoffi.PublicKey__Verify "servPk" "prePut" (struct.loadF evidServPut "putSig" "e") in
+      (if: (~ "putOk")
+      then "errSome"
+      else
+        let: "err0" := merkle.CheckProof merkle.MembProofTy (struct.loadF evidServPut "proof" "e") (struct.loadF evidServPut "id" "e") (struct.loadF evidServPut "val1" "e") (struct.loadF evidServPut "dig" "e") in
+        (if: "err0"
+        then "errSome"
+        else
+          (if: std.BytesEqual (struct.loadF evidServPut "val0" "e") (struct.loadF evidServPut "val1" "e")
+          then "errSome"
+          else "errNone")))).
+
+(* ktmerkle.go *)
 
 Definition errNone : expr := #false.
 
@@ -48,25 +207,6 @@ Definition newHashChain: val :=
     let: "c" := ref (zero_val hashChain) in
     "c" <-[hashChain] (SliceAppend (slice.T byteT) (![hashChain] "c") "h");;
     ![hashChain] "c".
-
-(* rpc: no decode needed. *)
-Definition chainSepSome := struct.decl [
-  "tag" :: byteT;
-  "epoch" :: epochTy;
-  "prevLink" :: linkTy;
-  "data" :: slice.T byteT
-].
-
-(* chainSepSome__encode from rpc.out.go *)
-
-Definition chainSepSome__encode: val :=
-  rec: "chainSepSome__encode" "o" :=
-    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 1));;
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF chainSepSome "epoch" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF chainSepSome "prevLink" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF chainSepSome "data" "o"));;
-    ![slice.T byteT] "b".
 
 Definition hashChain__put: val :=
   rec: "hashChain__put" "c" "data" :=
@@ -149,23 +289,6 @@ Definition server := struct.decl [
   "changed" :: mapT boolT
 ].
 
-(* servSepLink from rpc.go *)
-
-(* rpc: no decode needed. *)
-Definition servSepLink := struct.decl [
-  "tag" :: byteT;
-  "link" :: linkTy
-].
-
-(* servSepLink__encode from rpc.out.go *)
-
-Definition servSepLink__encode: val :=
-  rec: "servSepLink__encode" "o" :=
-    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 0));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servSepLink "link" "o"));;
-    ![slice.T byteT] "b".
-
 Definition newServer: val :=
   rec: "newServer" <> :=
     let: ("pk", "sk") := cryptoffi.GenerateKey #() in
@@ -214,8 +337,6 @@ Definition server__updateEpoch: val :=
     lock.release (struct.loadF server "mu" "s");;
     #().
 
-(* servPutReply from rpc.go *)
-
 Definition servPutReply := struct.decl [
   "putEpoch" :: epochTy;
   "prev2Link" :: linkTy;
@@ -224,25 +345,6 @@ Definition servPutReply := struct.decl [
   "putSig" :: slice.T byteT;
   "error" :: errorTy
 ].
-
-(* rpc: no decode needed. *)
-Definition servSepPut := struct.decl [
-  "tag" :: byteT;
-  "epoch" :: epochTy;
-  "id" :: slice.T byteT;
-  "val" :: slice.T byteT
-].
-
-(* servSepPut__encode from rpc.out.go *)
-
-Definition servSepPut__encode: val :=
-  rec: "servSepPut__encode" "o" :=
-    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 1));;
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF servSepPut "epoch" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servSepPut "id" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servSepPut "val" "o"));;
-    ![slice.T byteT] "b".
 
 (* put schedules a put to be committed at the next epoch update. *)
 Definition server__put: val :=
@@ -284,8 +386,6 @@ Definition server__put: val :=
           "putSig" ::= "putSig";
           "error" ::= errNone
         ])).
-
-(* servGetIdAtReply from rpc.go *)
 
 Definition servGetIdAtReply := struct.decl [
   "prevLink" :: linkTy;
@@ -351,14 +451,6 @@ Definition server__getLink: val :=
         "error" ::= errNone
       ]).
 
-Definition adtrLinkSigs := struct.decl [
-  "prevLink" :: linkTy;
-  "dig" :: slice.T byteT;
-  "link" :: linkTy;
-  "servSig" :: slice.T byteT;
-  "adtrSig" :: slice.T byteT
-].
-
 (* auditor is an append-only log of server signed links.
    e.g., the S3 auditor in WhatsApp's deployment. *)
 Definition auditor := struct.decl [
@@ -366,6 +458,14 @@ Definition auditor := struct.decl [
   "sk" :: cryptoffi.PrivateKey;
   "servPk" :: cryptoffi.PublicKey;
   "log" :: slice.T ptrT
+].
+
+Definition adtrLinkSigs := struct.decl [
+  "prevLink" :: linkTy;
+  "dig" :: slice.T byteT;
+  "link" :: linkTy;
+  "servSig" :: slice.T byteT;
+  "adtrSig" :: slice.T byteT
 ].
 
 Definition newAuditor: val :=
@@ -474,19 +574,19 @@ Definition auditor__get: val :=
         "error" ::= errNone
       ]).
 
-Definition cliSigLink := struct.decl [
-  "prevLink" :: linkTy;
-  "dig" :: slice.T byteT;
-  "sig" :: slice.T byteT;
-  "link" :: linkTy
-].
-
 Definition client := struct.decl [
   "id" :: slice.T byteT;
   "myVals" :: timeSeries;
   "links" :: mapT ptrT;
   "serv" :: ptrT;
   "servPk" :: cryptoffi.PublicKey
+].
+
+Definition cliSigLink := struct.decl [
+  "prevLink" :: linkTy;
+  "dig" :: slice.T byteT;
+  "sig" :: slice.T byteT;
+  "link" :: linkTy
 ].
 
 Definition newClient: val :=
@@ -500,56 +600,6 @@ Definition newClient: val :=
       "serv" ::= "serv";
       "servPk" ::= "servPk"
     ].
-
-(* evidServLink is evidence that the server signed two conflicting links,
-   either zero or one epochs away. *)
-Definition evidServLink := struct.decl [
-  "epoch0" :: epochTy;
-  "prevLink0" :: linkTy;
-  "dig0" :: slice.T byteT;
-  "sig0" :: slice.T byteT;
-  "epoch1" :: epochTy;
-  "prevLink1" :: linkTy;
-  "dig1" :: slice.T byteT;
-  "sig1" :: slice.T byteT
-].
-
-(* check returns an error if the evidence does not check out.
-   otherwise, it proves that the server was dishonest. *)
-Definition evidServLink__check: val :=
-  rec: "evidServLink__check" "e" "servPk" :=
-    let: "linkSep0" := chainSepSome__encode (struct.new chainSepSome [
-      "epoch" ::= struct.loadF evidServLink "epoch0" "e";
-      "prevLink" ::= struct.loadF evidServLink "prevLink0" "e";
-      "data" ::= struct.loadF evidServLink "dig0" "e"
-    ]) in
-    let: "link0" := cryptoffi.Hash "linkSep0" in
-    let: "enc0" := servSepLink__encode (struct.new servSepLink [
-      "link" ::= "link0"
-    ]) in
-    let: "ok0" := cryptoffi.PublicKey__Verify "servPk" "enc0" (struct.loadF evidServLink "sig0" "e") in
-    (if: (~ "ok0")
-    then errSome
-    else
-      let: "linkSep1" := chainSepSome__encode (struct.new chainSepSome [
-        "epoch" ::= struct.loadF evidServLink "epoch1" "e";
-        "prevLink" ::= struct.loadF evidServLink "prevLink1" "e";
-        "data" ::= struct.loadF evidServLink "dig1" "e"
-      ]) in
-      let: "link1" := cryptoffi.Hash "linkSep1" in
-      let: "enc1" := servSepLink__encode (struct.new servSepLink [
-        "link" ::= "link1"
-      ]) in
-      let: "ok1" := cryptoffi.PublicKey__Verify "servPk" "enc1" (struct.loadF evidServLink "sig1" "e") in
-      (if: (~ "ok1")
-      then errSome
-      else
-        (if: (struct.loadF evidServLink "epoch0" "e") = (struct.loadF evidServLink "epoch1" "e")
-        then std.BytesEqual "link0" "link1"
-        else
-          (if: ((struct.loadF evidServLink "epoch0" "e") + #1) = (struct.loadF evidServLink "epoch1" "e")
-          then std.BytesEqual "link0" (struct.loadF evidServLink "prevLink1" "e")
-          else errSome)))).
 
 Definition client__addLink: val :=
   rec: "client__addLink" "c" "epoch" "prevLink" "dig" "sig" :=
@@ -1033,52 +1083,6 @@ Definition client__audit: val :=
                 ] in
                 (#0, "evid", errSome)
               else (![uint64T] "epoch", slice.nil, errNone))))))).
-
-(* evidServPut is evidence when a server promises to put a value at a certain
-   epoch but actually there's a different value (as evidenced by a merkle proof). *)
-Definition evidServPut := struct.decl [
-  "epoch" :: epochTy;
-  "prevLink" :: linkTy;
-  "dig" :: slice.T byteT;
-  "linkSig" :: slice.T byteT;
-  "id" :: slice.T byteT;
-  "val0" :: slice.T byteT;
-  "putSig" :: slice.T byteT;
-  "val1" :: slice.T byteT;
-  "proof" :: slice.T (slice.T (slice.T byteT))
-].
-
-Definition evidServPut__check: val :=
-  rec: "evidServPut__check" "e" "servPk" :=
-    let: "preLink" := chainSepSome__encode (struct.new chainSepSome [
-      "epoch" ::= struct.loadF evidServPut "epoch" "e";
-      "prevLink" ::= struct.loadF evidServPut "prevLink" "e";
-      "data" ::= struct.loadF evidServPut "dig" "e"
-    ]) in
-    let: "link" := cryptoffi.Hash "preLink" in
-    let: "preLinkSig" := servSepLink__encode (struct.new servSepLink [
-      "link" ::= "link"
-    ]) in
-    let: "linkOk" := cryptoffi.PublicKey__Verify "servPk" "preLinkSig" (struct.loadF evidServPut "linkSig" "e") in
-    (if: (~ "linkOk")
-    then errSome
-    else
-      let: "prePut" := servSepPut__encode (struct.new servSepPut [
-        "epoch" ::= struct.loadF evidServPut "epoch" "e";
-        "id" ::= struct.loadF evidServPut "id" "e";
-        "val" ::= struct.loadF evidServPut "val0" "e"
-      ]) in
-      let: "putOk" := cryptoffi.PublicKey__Verify "servPk" "prePut" (struct.loadF evidServPut "putSig" "e") in
-      (if: (~ "putOk")
-      then errSome
-      else
-        let: "err0" := merkle.CheckProof merkle.MembProofTy (struct.loadF evidServPut "proof" "e") (struct.loadF evidServPut "id" "e") (struct.loadF evidServPut "val1" "e") (struct.loadF evidServPut "dig" "e") in
-        (if: "err0"
-        then errSome
-        else
-          (if: std.BytesEqual (struct.loadF evidServPut "val0" "e") (struct.loadF evidServPut "val1" "e")
-          then errSome
-          else errNone)))).
 
 Definition client__selfCheckAt: val :=
   rec: "client__selfCheckAt" "c" "epoch" :=
