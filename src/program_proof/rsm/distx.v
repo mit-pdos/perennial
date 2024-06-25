@@ -146,20 +146,58 @@ Inductive acquiring :=
 Definition validate_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
   match wr, tpl with
   | Some _, Some (vs, tsprep) => Some (bool_decide (tsprep = O ∧ length vs ≤ tid)%nat)
+  | Some _, None => Some false
   | _, _ => None
   end.
 
 Definition validate (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   map_fold (λ _, andb) true (merge (validate_key tid) wrs tpls).
 
+Lemma map_fold_andb_true `{Countable K} (m : gmap K bool) :
+  map_fold (λ _, andb) true m = true ->
+  map_Forall (λ _ b, b = true) m.
+Proof.
+  intros Hfold k b Hkb.
+  destruct b; first done.
+  exfalso.
+  induction m as [| x v m Hnone IHm] using map_ind; first done.
+  rewrite map_fold_insert_L in Hfold; last first.
+  { done. }
+  { intros _ _ b1 b2 b3 _ _ _. by rewrite andb_comm -andb_assoc (andb_comm b3). }
+  destruct (decide (x = k)) as [-> | Hne].
+  { rewrite lookup_insert in Hkb. inversion Hkb. subst v. done. }
+  rewrite lookup_insert_ne in Hkb; last done.
+  destruct v; last done.
+  rewrite andb_true_l in Hfold.
+  by apply IHm.
+Qed.
+  
 Lemma validate_true {tid wrs tpls key} :
   is_Some (wrs !! key) ->
   validate tid wrs tpls = true ->
   ∃ l, tpls !! key = Some (l, O) ∧ (length l ≤ tid)%nat.
 Proof.
   intros Hsome Hvd.
+  destruct Hsome as [v Hv].
+  destruct (tpls !! key) as [t |] eqn:Htpls.
+  { rewrite /validate in Hvd.
+    apply map_fold_andb_true in Hvd.
+    specialize (Hvd key).
+    rewrite lookup_merge Hv Htpls /= in Hvd.
+    destruct t as [vs tsprep].
+    case_bool_decide as Hcond; last first.
+    { specialize (Hvd false).
+      by unshelve epose proof (Hvd _); first reflexivity.
+    }
+    destruct Hcond as [-> Hlen].
+    by eauto.
+  }
   rewrite /validate in Hvd.
-Admitted.
+  apply map_fold_andb_true in Hvd.
+  specialize (Hvd key false).
+  rewrite lookup_merge Hv Htpls /= in Hvd.
+  by unshelve epose proof (Hvd _); first reflexivity.
+Qed.
 
 Definition acquire_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
   match wr, tpl with
@@ -171,20 +209,54 @@ Definition acquire_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
 Definition acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   merge (acquire_key tid) wrs tpls.
 
+Definition mergef_nonexpanding {A B C} (f : option A -> option B -> option C) :=
+  ∀ x y, is_Some (f x y) ↔ is_Some y.
+
+Lemma gmap_merge_nonexpanding_dom `{Countable K} {A B C : Type}
+  (ma : gmap K A) (mb : gmap K B) (f : option A -> option B -> option C) :
+  mergef_nonexpanding f ->
+  dom (merge f ma mb) = dom mb.
+Proof.
+  intros Hne.
+  apply set_eq. intros k. rewrite 2!elem_of_dom.
+  split; intros Hdom.
+  - destruct (ma !! k) as [u |] eqn:Hma, (mb !! k) as [v |] eqn:Hmb.
+    + done.
+    + by rewrite lookup_merge Hma Hmb /= Hne in Hdom.
+    + done.
+    + rewrite lookup_merge Hma Hmb /= in Hdom. by apply is_Some_None in Hdom.
+  - destruct (ma !! k) as [u |] eqn:Hma, (mb !! k) as [v |] eqn:Hmb.
+    + by rewrite lookup_merge Hma Hmb /= Hne.
+    + by apply is_Some_None in Hdom.
+    + by rewrite lookup_merge Hma Hmb /= Hne.
+    + by apply is_Some_None in Hdom.
+Qed.
+
 Lemma acquire_dom {tid wrs tpls} :
   dom (acquire tid wrs tpls) = dom tpls.
-Admitted.
+Proof.
+  apply gmap_merge_nonexpanding_dom.
+  intros x y.
+  destruct x, y as [[h t] |]; done.
+Qed.
 
 Lemma acquire_unmodified {tid wrs tpls key} :
   wrs !! key = None ->
   (acquire tid wrs tpls) !! key = tpls !! key.
-Admitted.
+Proof.
+  intros Hnone.
+  rewrite /acquire lookup_merge Hnone /=.
+  by destruct (tpls !! key) as [[h t] |].
+Qed.
 
 Lemma acquire_modified {tid wrs tpls key tpl} :
   is_Some (wrs !! key) ->
   tpls !! key = Some tpl ->
   (acquire tid wrs tpls) !! key = Some (tpl.1, tid).
-Admitted.
+Proof.
+  intros [v Hv] Htpl. destruct tpl as [h t].
+  by rewrite /acquire lookup_merge Hv Htpl /=.
+Qed.
 
 Definition try_acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   if validate tid wrs tpls then Acquired (acquire tid wrs tpls) else NotAcquired.
@@ -226,7 +298,11 @@ Definition multiwrite (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
 
 Lemma multiwrite_dom {tid wrs tpls} :
   dom (multiwrite tid wrs tpls) = dom tpls.
-Admitted.
+Proof.
+  apply gmap_merge_nonexpanding_dom.
+  intros x y.
+  destruct x, y as [[h t] |]; done.
+Qed.
 
 Lemma multiwrite_unmodified {tid wrs tpls key} :
   wrs !! key = None ->
@@ -351,6 +427,14 @@ Proof.
   by destruct (tpls !! key) as [t |] eqn:Ht.
 Qed.
 
+Lemma release_dom {tid wrs tpls} :
+  dom (release tid wrs tpls) = dom tpls.
+Proof.
+  apply gmap_merge_nonexpanding_dom.
+  intros x y.
+  destruct x, y as [[h t] |]; done.
+Qed.
+
 Definition apply_abort st (tid : nat) :=
   match st with
   | State stm tpls =>
@@ -392,11 +476,71 @@ Definition init_rpst :=
 Definition apply_cmds (cmds : list command) :=
   foldl apply_cmd init_rpst cmds.
 
+Lemma foldl_apply_cmd_from_stuck l :
+  foldl apply_cmd Stuck l = Stuck.
+Proof. induction l as [| c l IH]; [done | by destruct c]. Qed.
+
+Lemma apply_cmds_dom_nonexpanding l1 l2 :
+  ∀ stm1 stm2 tpls1 tpls2,
+  apply_cmds l1 = State stm1 tpls1 ->
+  apply_cmds (l1 ++ l2) = State stm2 tpls2 ->
+  dom tpls2 = dom tpls1.
+Proof.
+  generalize dependent l1.
+  induction l2 as [| x l2 IH]; intros l1 stm1 stm2 tpls1 tpls2 Hrsm1 Hrsm2.
+  { rewrite app_nil_r Hrsm1 in Hrsm2. by inversion Hrsm2. }
+  rewrite cons_middle app_assoc in Hrsm2.
+  destruct (apply_cmds (l1 ++ [x])) as [stm' tpls' |] eqn:Hrsm; last first.
+  { rewrite /apply_cmds in Hrsm.
+    by rewrite /apply_cmds foldl_app Hrsm foldl_apply_cmd_from_stuck in Hrsm2.
+  }
+  replace (dom tpls1) with (dom tpls'); first by eapply IH.
+  rewrite /apply_cmds in Hrsm1.
+  destruct x eqn:Hx; rewrite /apply_cmds foldl_snoc Hrsm1 /= in Hrsm.
+  { (* Case [CmdPrep]. *)
+    rewrite /apply_prepare in Hrsm.
+    destruct (stm1 !! tid); first by inversion Hrsm.
+    destruct (try_acquire _ _ _) eqn:Hacq; last by inversion Hrsm.
+    inversion Hrsm. subst tpls'.
+    rewrite /try_acquire in Hacq.
+    destruct (validate _ _ _); last done.
+    inversion Hacq.
+    apply acquire_dom.
+  }
+  { (* Case [CmdCmt]. *)
+    rewrite /apply_commit in Hrsm.
+    destruct (stm1 !! tid) as [st |]; last done.
+    destruct st; [| by inversion Hrsm | done].
+    inversion Hrsm. subst tpls'.
+    apply multiwrite_dom.
+  }
+  { (* Case [CmdAbt]. *)
+    rewrite /apply_abort in Hrsm.
+    destruct (stm1 !! tid) as [st |]; last by inversion Hrsm.
+    destruct st; [| done | by inversion Hrsm].
+    inversion Hrsm. subst tpls'.
+    apply release_dom.
+  }
+  { (* Case [CmdPrep]. *)
+    rewrite /apply_read in Hrsm.
+    destruct (tpls1 !! key) as [[vs tsprep] |] eqn:Htpls1; last by inversion Hrsm.
+    inversion Hrsm. subst tpls'.
+    rewrite dom_insert_L.
+    apply elem_of_dom_2 in Htpls1.
+    set_solver.
+  }
+Qed.
+
 Lemma apply_cmds_dom log :
   ∀ stm tpls,
   apply_cmds log = State stm tpls ->
   dom tpls = keys_all.
-Admitted.
+Proof.
+  intros stm tpls Hrsm.
+  replace keys_all with (dom (gset_to_gmap ([None : dbval], O) keys_all)); last first.
+  { apply dom_gset_to_gmap. }
+  by eapply (apply_cmds_dom_nonexpanding [] log).
+Qed.
 
 (** Note: RSM invariants can either be defined as properties about [apply_cmds],
 or explicit invariants materialized in [group_inv]. The first form gives a
