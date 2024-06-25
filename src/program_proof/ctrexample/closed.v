@@ -34,7 +34,7 @@ End ctr_ghost_init.
 
 Section closed_proof.
 
-Import adequacy dist_adequacy grove_ffi_adequacy.
+Import goose_lang.adequacy dist_adequacy grove_ffi.adequacy.
 
 Definition cfg σserver σclient :=
     [
