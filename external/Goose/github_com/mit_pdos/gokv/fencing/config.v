@@ -17,6 +17,12 @@ Definition Clerk := struct.decl [
   "cl" :: ptrT
 ].
 
+(* TIMEOUT_MS from server.go *)
+
+Definition TIMEOUT_MS : expr := #1000.
+
+Definition MILLION : expr := #1000000.
+
 Definition Clerk__HeartbeatThread: val :=
   rec: "Clerk__HeartbeatThread" "ck" "epoch" :=
     let: "enc" := marshal.NewEnc #8 in
@@ -65,10 +71,6 @@ Definition MakeClerk: val :=
     "ck".
 
 (* server.go *)
-
-Definition TIMEOUT_MS : expr := #1000.
-
-Definition MILLION : expr := #1000000.
 
 Definition Server := struct.decl [
   "mu" :: ptrT;

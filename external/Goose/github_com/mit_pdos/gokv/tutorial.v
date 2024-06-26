@@ -121,6 +121,8 @@ Definition MakeCoordinator: val :=
       "participants" ::= ![slice.T ptrT] "clerks"
     ].
 
+Definition GetDecisionId : expr := #1.
+
 Definition CoordinatorClerk__GetDecision: val :=
   rec: "CoordinatorClerk__GetDecision" "ck" :=
     let: "req" := NewSlice byteT #0 in
@@ -135,8 +137,6 @@ Definition CoordinatorServer__GetDecision: val :=
     let: "decision" := struct.loadF CoordinatorServer "decision" "s" in
     lock.release (struct.loadF CoordinatorServer "m" "s");;
     "decision".
-
-Definition GetDecisionId : expr := #1.
 
 Definition CoordinatorMain: val :=
   rec: "CoordinatorMain" "me" "participants" :=
