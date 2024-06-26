@@ -29,7 +29,7 @@ Proof.
   wp_call.
   wp_loadField.
 
-  Search impl.MapGet.
+  (* Search impl.MapGet. *)
 
   wp_apply (wp_MapGet with "Ht_m").
   iIntros (v ok) "[%Hok Ht_m]".
@@ -41,12 +41,12 @@ Proof.
   iPureIntro.
   destruct ok.
   {
-    Search map_get lookup.
+    (* Search map_get lookup. *)
     apply map_get_true.
     eauto.
   }
   {
-    Search map_get lookup.
+    (* Search map_get lookup. *)
     apply map_get_false in Hok.
     destruct Hok.
     eauto.
@@ -76,7 +76,7 @@ Proof.
     iNamed "Ht".
     wp_loadField.
 
-    Search impl.MapInsert.
+    (* Search impl.MapInsert. *)
 
     wp_apply (wp_MapInsert u64 u64 with "[Ht_m]").
     { eauto. }
@@ -100,7 +100,7 @@ Proof.
   wp_call.
   wp_loadField.
 
-  Search lock.acquire.
+  (* Search lock.acquire. *)
 
   wp_apply (acquire_spec with "[]").
   { iApply "Ht_lock". }
@@ -112,7 +112,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  Search lock.release.
+  (* Search lock.release. *)
 
   wp_apply (release_spec with "[Hlocked Ht_state]").
   { iFrame "Ht_lock". iFrame "Hlocked".
