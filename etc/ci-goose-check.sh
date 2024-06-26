@@ -97,7 +97,7 @@ echo && echo "Goose check: re-run goose-new"
 etc/update-goose-new.py --goose $NEW_GOOSE_DIR --compile --gokv $GOKV_DIR
 
 echo && echo "Goose check: check if anything changed"
-if [ -n "$(git status --porcelain)" ]; then
+if [ -n "$(git diff --exit-code)" ]; then
   echo 'ERROR: Goose files are not in sync with repositories pinned in `etc/ci-goose-check.sh`. `git diff` after re-goosing:'
   git diff
   exit 1
