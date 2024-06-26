@@ -370,7 +370,7 @@ Proof.
       }
       wp_pures. iModIntro. iApply "HΦ". iFrame.
       iDestruct (own_slice_zero byteT (DfracOwn 1)) as "Hnil".
-      rewrite own_slice_to_small. iFrame "Hnil".
+      iDestruct (own_slice_to_small with "Hnil") as "$".
     }
     rewrite big_sepM_empty. eauto.
   }
