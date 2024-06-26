@@ -45,6 +45,8 @@ function checkout {
 
   if [ ! -d ${!DIR_VAR} ] ; then
      git clone "${!REPO_VAR}" "${!DIR_VAR}"
+  else
+     (cd "${!DIR_VAR}" && git pull)
   fi
 
   (cd "${!DIR_VAR}" && git reset --hard "${!COMMIT_VAR}")
