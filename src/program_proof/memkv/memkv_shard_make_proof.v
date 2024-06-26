@@ -225,9 +225,6 @@ Proof.
       rewrite list_lookup_fmap fmap_is_Some.
       eexists. apply lookup_replicate_2. word. }
     iFrame.
-    iSplitL "Hkvss_sl".
-    { rewrite /named. iExactEq "Hkvss_sl". f_equal.
-      rewrite Heq_init_kvs_ptrs fmap_replicate. f_equal. }
     iApply big_sepS_intro.
     iIntros "!#" (x Hin). iLeft. iPureIntro. intros Hfalse.
     rewrite Heq_initShardMapping in Hfalse.
