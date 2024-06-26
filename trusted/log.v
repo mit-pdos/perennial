@@ -1,7 +1,7 @@
-From Perennial.goose_lang Require Import prelude.
+From Perennial.new_goose_lang Require Import prelude.
 
 Section code.
-Context `{ext_ty: ext_types}.
+Context `{ffi_syntax}.
 Local Coercion Var' s: expr := Var s.
 
 Definition Printf : val := variadic_noop.

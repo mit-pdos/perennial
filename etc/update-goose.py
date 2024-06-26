@@ -274,7 +274,6 @@ def main():
             "vrsm/configservice",
             "vrsm/apps/exactlyonce",
             "vrsm/apps/vkv",
-            "vrsm/paxos",
             "aof",
             "reconnectclient",
             "vrsm/e",

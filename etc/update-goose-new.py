@@ -94,8 +94,8 @@ def main():
     if gokv_dir is not None:
         pkgs = [
             "asyncfile",
+            "vrsm/paxos",
             # "vrsm/replica",
-            # "vrsm/paxos",
         ]
 
         for pkg in pkgs:
