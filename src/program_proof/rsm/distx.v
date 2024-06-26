@@ -212,7 +212,35 @@ Definition acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
 Definition mergef_nonexpanding {A B C} (f : option A -> option B -> option C) :=
   ∀ x y, is_Some (f x y) ↔ is_Some y.
 
-Lemma gmap_merge_nonexpanding_dom `{Countable K} {A B C : Type}
+Lemma mergef_nonexpanding_Some {A B C} {f : option A -> option B -> option C} x u :
+  mergef_nonexpanding f ->
+  ∃ v, f x (Some u) = Some v.
+Proof.
+  intros Hne. specialize (Hne x (Some u)).
+  by destruct Hne as [_ [v Hne]]; last eauto.
+Qed.
+
+Lemma mergef_nonexpanding_None {A B C} {f : option A -> option B -> option C} x :
+  mergef_nonexpanding f ->
+  f x None = None.
+Proof.
+  intros Hne.
+  destruct (f _ _) eqn:Hf; last done.
+  by apply mk_is_Some, Hne, is_Some_None in Hf.
+Qed.
+
+Lemma gmap_nonexpanding_merge_empty `{Countable K} {A B C : Type}
+  (m : gmap K A) (f : option A -> option B -> option C) :
+  mergef_nonexpanding f ->
+  merge f m ∅ = ∅.
+Proof.
+  intros Hne.
+  apply map_eq. intros k.
+  rewrite lookup_merge 2!lookup_empty.
+  by destruct (m !! k); simpl; first rewrite mergef_nonexpanding_None.
+Qed.
+
+Lemma gmap_nonexpanding_merge_dom `{Countable K} {A B C : Type}
   (ma : gmap K A) (mb : gmap K B) (f : option A -> option B -> option C) :
   mergef_nonexpanding f ->
   dom (merge f ma mb) = dom mb.
@@ -232,10 +260,76 @@ Proof.
     + by apply is_Some_None in Hdom.
 Qed.
 
+Lemma gmap_nonexpanding_merge_difference_distr `{Countable K} {A B C : Type}
+  (ma : gmap K A) (mb1 mb2 : gmap K B) (f : option A -> option B -> option C) :
+  mergef_nonexpanding f ->
+  merge f ma (mb1 ∖ mb2) = merge f ma mb1 ∖ merge f ma mb2.
+Proof.
+  intros Hne.
+  apply map_eq. intros k.
+  rewrite lookup_merge 2!lookup_difference 2!lookup_merge.
+  destruct (ma !! k); simpl.
+  - destruct (mb2 !! k); simpl.
+    + rewrite mergef_nonexpanding_None; last done.
+      apply (mergef_nonexpanding_Some (Some a) b) in Hne as [c Hc].
+      by rewrite Hc.
+    + by rewrite mergef_nonexpanding_None; last done.
+  - destruct (mb2 !! k); simpl.
+    + apply (mergef_nonexpanding_Some None b) in Hne as [c Hc].
+      by rewrite Hc.
+    + done.
+Qed.
+
+Lemma gmap_nonexpanding_merge_mono `{Countable K} {A B C : Type}
+  (ma : gmap K A) (mb1 mb2 : gmap K B) (f : option A -> option B -> option C) :
+  mergef_nonexpanding f ->
+  mb1 ⊆ mb2 ->
+  merge f ma mb1 ⊆ merge f ma mb2.
+Proof.
+  rewrite 2!map_subseteq_spec.
+  intros Hne Hsubseteq.
+  intros k c. rewrite 2!lookup_merge.
+  destruct (ma !! k); simpl; intros Hkc.
+  - destruct (mb1 !! k) eqn:Hmb1; simpl.
+    + by erewrite Hsubseteq.
+    + by rewrite mergef_nonexpanding_None in Hkc.
+  - destruct (mb1 !! k) eqn:Hmb1; simpl.
+    + by erewrite Hsubseteq.
+    + done.
+Qed.
+
+Lemma gmap_nonexpanding_merge_filter_commute `{Countable K} {A B C : Type}
+  (P : K -> Prop) {Hdec : ∀ x, Decision (P x)}
+  (ma : gmap K A) (mb : gmap K B) (f : option A -> option B -> option C) :
+  mergef_nonexpanding f ->
+  merge f ma (filter (λ kv, P kv.1) mb) = filter (λ kv, P kv.1) (merge f ma mb).
+Proof.
+  intros Hne.
+  induction mb as [| k t m Hlookup IH] using map_ind.
+  { rewrite map_filter_empty. by rewrite gmap_nonexpanding_merge_empty. }
+  destruct (decide (P k)) as [Hp | Hn].
+  - rewrite map_filter_insert_True; last done.
+    apply (mergef_nonexpanding_Some (ma !! k) t) in Hne.
+    destruct Hne as [c Hc].
+    erewrite <- insert_merge_r; last done.
+    erewrite <- insert_merge_r; last done.
+    rewrite map_filter_insert_True; last done.
+    by rewrite IH.
+  - rewrite map_filter_insert_False; last done.
+    rewrite delete_notin; last done.
+    apply (mergef_nonexpanding_Some (ma !! k) t) in Hne as Hc.
+    destruct Hc as [c Hc].
+    erewrite <- insert_merge_r; last done.
+    rewrite map_filter_insert_False; last done.
+    rewrite delete_notin; first apply IH.
+    rewrite lookup_merge Hlookup.
+    by destruct (ma !! k); simpl; [apply mergef_nonexpanding_None |].
+Qed.
+
 Lemma acquire_dom {tid wrs tpls} :
   dom (acquire tid wrs tpls) = dom tpls.
 Proof.
-  apply gmap_merge_nonexpanding_dom.
+  apply gmap_nonexpanding_merge_dom.
   intros x y.
   destruct x, y as [[h t] |]; done.
 Qed.
@@ -293,16 +387,16 @@ Definition multiwrite_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :
   | None => None
   end.
 
+Lemma multiwrite_key_nonexpanding ts :
+  mergef_nonexpanding (multiwrite_key ts).
+Proof. intros x y. by destruct x, y as [[h t] |]. Qed.
+
 Definition multiwrite (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   merge (multiwrite_key tid) wrs tpls.
 
 Lemma multiwrite_dom {tid wrs tpls} :
   dom (multiwrite tid wrs tpls) = dom tpls.
-Proof.
-  apply gmap_merge_nonexpanding_dom.
-  intros x y.
-  destruct x, y as [[h t] |]; done.
-Qed.
+Proof. apply gmap_nonexpanding_merge_dom, multiwrite_key_nonexpanding. Qed.
 
 Lemma multiwrite_unmodified {tid wrs tpls key} :
   wrs !! key = None ->
@@ -313,88 +407,22 @@ Proof.
   by destruct (tpls !! key) as [t |] eqn:Ht.
 Qed.
 
-Lemma multiwrite_tuples_empty tid wrs :
-  multiwrite tid wrs ∅ = ∅.
-Proof.
-  apply map_eq. intros k.
-  rewrite lookup_merge lookup_empty.
-  by destruct (wrs !! k) as [v |] eqn:Hv; rewrite Hv.
-Qed.
-
-Lemma multiwrite_lookup_Some tid wrs tpls k t :
-  tpls !! k = Some t ->
-  multiwrite tid wrs tpls !! k = Some (multiwrite_key_tpl tid (wrs !! k) t).
-Proof.
-  intros Hlookup.
-  rewrite lookup_merge Hlookup.
-  by destruct (wrs !! k) as [y |] eqn:Hy; rewrite Hy /=.
-Qed.
-
-Lemma multiwrite_lookup_None tid wrs tpls k :
-  tpls !! k = None ->
-  multiwrite tid wrs tpls !! k = None.
-Proof.
-  intros Hlookup.
-  rewrite lookup_merge Hlookup.
-  by destruct (wrs !! k) as [y |] eqn:Hy; rewrite Hy /=.
-Qed.
-
 Lemma multiwrite_difference_distr {tid wrs tpls tplsd} :
   multiwrite tid wrs (tpls ∖ tplsd) =
   multiwrite tid wrs tpls ∖ multiwrite tid wrs tplsd.
-Proof.
-  apply map_eq. intros k.
-  destruct (tpls !! k) as [v |] eqn:Hv.
-  - destruct (tplsd !! k) as [vd |] eqn:Hvd.
-    + rewrite multiwrite_lookup_None; last by rewrite lookup_difference Hvd.
-      rewrite lookup_difference.
-      by erewrite multiwrite_lookup_Some.
-    + rewrite lookup_merge lookup_difference Hvd Hv.
-      rewrite lookup_difference multiwrite_lookup_None; last done.
-      by rewrite lookup_merge Hv.
-  - destruct (tplsd !! k) as [vd |] eqn:Hvd.
-    + rewrite multiwrite_lookup_None; last by rewrite lookup_difference Hvd.
-      rewrite lookup_difference.
-      by erewrite multiwrite_lookup_Some.
-    + rewrite multiwrite_lookup_None; last by rewrite lookup_difference Hvd Hv.
-      apply (multiwrite_lookup_None tid wrs) in Hvd.
-      by rewrite lookup_difference Hvd multiwrite_lookup_None.
-Qed.
-
-Lemma multiwrite_mono tid wrs tpls0 tpls1 :
-  tpls0 ⊆ tpls1 ->
-  multiwrite tid wrs tpls0 ⊆ multiwrite tid wrs tpls1.
-Proof.
-  intros Hsubseteq.
-  rewrite map_subseteq_spec.
-  intros k t Htpls0.
-  destruct (tpls0 !! k) as [v |] eqn:Hv; last first.
-  { apply (multiwrite_lookup_None tid wrs) in Hv. congruence. }
-  rewrite map_subseteq_spec in Hsubseteq.
-  specialize (Hsubseteq _ _ Hv).
-  rewrite lookup_merge Hv in Htpls0.
-  by rewrite lookup_merge Hsubseteq.
-Qed.
-
+Proof. apply gmap_nonexpanding_merge_difference_distr, multiwrite_key_nonexpanding. Qed.
+  
+Lemma multiwrite_mono tid wrs tpls1 tpls2 :
+  tpls1 ⊆ tpls2 ->
+  multiwrite tid wrs tpls1 ⊆ multiwrite tid wrs tpls2.
+Proof. apply gmap_nonexpanding_merge_mono, multiwrite_key_nonexpanding. Qed.
+  
 Lemma multiwrite_tpls_group_commute tid wrs tpls gid :
   multiwrite tid wrs (tpls_group gid tpls) = tpls_group gid (multiwrite tid wrs tpls).
 Proof.
-  induction tpls as [| k t m Hlookup IH] using map_ind.
-  { by rewrite /tpls_group map_filter_empty multiwrite_tuples_empty map_filter_empty. }
-  rewrite /multiwrite /tpls_group.
-  rewrite /multiwrite /tpls_group in IH.
-  destruct (decide (key_to_group k = gid)) as [Heq | Hne].
-  - rewrite map_filter_insert_True; last done.
-    erewrite <- insert_merge_r; last done.
-    erewrite <- insert_merge_r; last done.
-    rewrite map_filter_insert_True; last done.
-    by rewrite IH.
-  - rewrite map_filter_insert_False; last done.
-    rewrite delete_notin; last done.
-    erewrite <- insert_merge_r; last done.
-    rewrite map_filter_insert_False; last done.
-    rewrite delete_notin; last by eapply multiwrite_lookup_None in Hlookup.
-    by rewrite IH.
+  set P := (λ x, key_to_group x = gid).
+  pose proof (multiwrite_key_nonexpanding tid) as Hne.
+  by apply (gmap_nonexpanding_merge_filter_commute P wrs tpls) in Hne.
 Qed.
 
 Definition apply_commit st (tid : nat) :=
@@ -415,6 +443,10 @@ Definition release_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
   | _, _ => None
   end.
 
+Lemma release_key_nonexpanding ts :
+  mergef_nonexpanding (release_key ts).
+Proof. intros x y. by destruct x, y as [[h t] |]. Qed.
+
 Definition release (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   merge (release_key tid) wrs tpls.
 
@@ -429,10 +461,24 @@ Qed.
 
 Lemma release_dom {tid wrs tpls} :
   dom (release tid wrs tpls) = dom tpls.
+Proof. apply gmap_nonexpanding_merge_dom, release_key_nonexpanding. Qed.
+
+Lemma release_difference_distr {tid wrs tpls tplsd} :
+  release tid wrs (tpls ∖ tplsd) =
+  release tid wrs tpls ∖ release tid wrs tplsd.
+Proof. apply gmap_nonexpanding_merge_difference_distr, release_key_nonexpanding. Qed.
+
+Lemma release_mono tid wrs tpls1 tpls2 :
+  tpls1 ⊆ tpls2 ->
+  release tid wrs tpls1 ⊆ release tid wrs tpls2.
+Proof. apply gmap_nonexpanding_merge_mono, release_key_nonexpanding. Qed.
+
+Lemma release_tpls_group_commute tid wrs tpls gid :
+  release tid wrs (tpls_group gid tpls) = tpls_group gid (release tid wrs tpls).
 Proof.
-  apply gmap_merge_nonexpanding_dom.
-  intros x y.
-  destruct x, y as [[h t] |]; done.
+  set P := (λ x, key_to_group x = gid).
+  pose proof (release_key_nonexpanding tid) as Hne.
+  by apply (gmap_nonexpanding_merge_filter_commute P wrs tpls) in Hne.
 Qed.
 
 Definition apply_abort st (tid : nat) :=
@@ -1110,16 +1156,27 @@ Qed.
 
 Lemma diff_by_cmtd_inv_learn_commit repl cmtd kmod ts v :
   kmod !! O = None ->
-  (* (length repl ≤ ts)%nat -> *)
   kmod !! ts = Some v ->
   diff_by_cmtd repl cmtd kmod ts ->
   diff_by_cmtd (last_extend ts repl ++ [v]) cmtd kmod O.
 Proof.
-  intros Hz Hv Hdiff.
-  rewrite /diff_by_cmtd Hv in Hdiff.
+  intros Hz Hts Hdiff.
+  rewrite /diff_by_cmtd Hts in Hdiff.
   rewrite /diff_by_cmtd Hz.
   split; last done.
   by exists ts.
+Qed.
+
+Lemma diff_by_cmtd_inv_learn_abort {repl cmtd kmod} ts :
+  kmod !! O = None ->
+  kmod !! ts = None ->
+  diff_by_cmtd repl cmtd kmod ts ->
+  diff_by_cmtd repl cmtd kmod O.
+Proof.
+  intros Hz Hts Hdiff.
+  rewrite /diff_by_cmtd Hts in Hdiff.
+  rewrite /diff_by_cmtd Hz.
+  by destruct Hdiff as [Hdiff _].
 Qed.
 
 Lemma cmtd_impl_prep_inv_abort {resm wrsm} ts :
@@ -1718,6 +1775,8 @@ Section inv.
       "#Htslb"    ∷ ts_lb γ tslb ∗
       "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
+  (* TODO: better naming. *)
+  
   Definition key_inv_xcmted_no_repl_tsprep
     γ (key : dbkey) (repl : dbhist) (tsprep : nat) (ts : nat) : iProp Σ :=
     ∃ kmodc,
@@ -1729,6 +1788,12 @@ Section inv.
     ∃ kmodc,
       "Hkey" ∷ key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep ∗
       "%Hv"  ∷ ⌜kmodc !! tsprep = Some v⌝.
+
+  Definition key_inv_prepared_no_repl_tsprep
+    γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
+    ∃ kmodc,
+      "Hkey" ∷ key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep ∗
+      "%Hnc" ∷ ⌜kmodc !! tsprep = None⌝.
   
   Lemma key_inv_expose_repl_tsprep γ key :
     key_inv γ key -∗
@@ -1946,6 +2011,30 @@ Section group_inv.
       by iApply "Htks".
     }
     inversion Hrsmp. subst stmp.
+    by iApply "Htks".
+  Qed.
+
+  Lemma txn_tokens_inv_learn_abort γ gid log ts :
+    txnres_abt γ ts -∗
+    txn_tokens γ gid log -∗
+    txn_tokens γ gid (log ++ [CmdAbt ts]).
+  Proof.
+    iIntros "Habt Htks".
+    iIntros (logp stmp tplsp Hprefix Hrsmp).
+    destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
+    { by iApply "Htks". }
+    rewrite /apply_cmds foldl_snoc /= in Hrsmp.
+    destruct (foldl _ _ _) eqn:Hrsm; last done.
+    simpl in Hrsmp.
+    destruct (txns !! ts) as [st |]; last first.
+    { inversion_clear Hrsmp.
+      iApply (big_sepM_insert_2 with "[Habt] [Htks]"); first by iFrame.
+      by iApply "Htks".
+    }
+    destruct st as [pwrs | |] eqn:Hst; inversion Hrsmp; subst stmp.
+    { iApply (big_sepM_insert_2 with "[Habt] [Htks]"); first by iFrame.
+      by iApply "Htks".
+    }
     by iApply "Htks".
   Qed.
 
@@ -2421,10 +2510,7 @@ Section group_inv.
     { destruct Hpwrs as (_ & _ & Hpwrs). rewrite Hpwrs. apply map_filter_subseteq. }
     { (* Prove prepared timestamp of [tplsg] is [ts]. *)
       intros k tpl Hlookup.
-      eapply (pts_consistency log).
-      { apply Hpts. }
-      { apply Hrsm. }
-      { apply Hdup. }
+      eapply (pts_consistency log); [apply Hpts | apply Hrsm | apply Hdup | |].
       { eapply lookup_weaken; first apply Hlookup.
         transitivity (tpls_group gid tpls); first done.
         rewrite /tpls_group.
@@ -2450,6 +2536,198 @@ Section group_inv.
     { by eauto. }
     (* Re-establish [valid_prepared]. *)
     iDestruct (big_sepM_insert_2 _ _ ts (StCommitted) with "[] Hvp") as "Hvp'".
+    { by iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc. }
+    iFrame "∗ # %".
+    by auto with set_solver.
+  Qed.
+
+  (* Invariance proof for [learn_abort]. *)
+
+  Lemma keys_inv_prepared γ ts tpls :
+    map_Forall (λ _ t, t.2 = ts) tpls ->
+    txnres_abt γ ts -∗
+    ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
+    txn_inv γ -∗
+    ([∗ map] key ↦ tpl ∈ tpls, key_inv_prepared_no_repl_tsprep γ key tpl.1 ts) ∗
+    txn_inv γ.
+  Proof.
+    iIntros (Hts) "#Habt Htpls Htxn".
+    iApply (big_sepM_impl_res with "Htpls Htxn").
+    iIntros "!>" (k [l t] Htpl) "Hkey Htxn". simpl.
+    iNamed "Htxn".
+    iDestruct (txnres_lookup with "Hresm Habt") as %Hresm.
+    iNamed "Hkey".
+    iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkmodc.
+    assert (Hnc : kmodc !! ts = None); first by eapply resm_abted_kmod_absent.
+    specialize (Hts _ _ Htpl). simpl in Hts. subst t.
+    by iFrame "∗ # %".
+  Qed.
+
+  Lemma key_inv_learn_abort {γ ts wrs tpls} k x y :
+    tpls !! k = Some x ->
+    release ts wrs tpls !! k = Some y ->
+    is_Some (wrs !! k) ->
+    key_inv_prepared_no_repl_tsprep γ k x.1 ts -∗
+    key_inv_no_repl_tsprep γ k y.1 y.2.
+  Proof.
+    iIntros (Hx Hy Hv) "Hkeys".
+    iNamed "Hkeys". iNamed "Hkey". iNamed "Hprop".
+    iFrame "∗ # %".
+    iPureIntro.
+    destruct Hv as [v Hv].
+    rewrite lookup_merge Hx Hv /= in Hy.
+    destruct x as [h t].
+    inversion_clear Hy.
+    by apply (diff_by_cmtd_inv_learn_abort ts).
+  Qed.
+
+  Lemma keys_inv_learn_abort {γ ts wrs tpls} :
+    dom tpls = dom wrs ->
+    ([∗ map] key ↦ tpl ∈ tpls,
+       key_inv_prepared_no_repl_tsprep γ key tpl.1 ts) -∗
+    ([∗ map] key ↦ tpl ∈ release ts wrs tpls,
+       key_inv_no_repl_tsprep γ key tpl.1 tpl.2).
+  Proof.
+    iIntros (Hdom) "Hkeys".
+    iApply (big_sepM_impl_dom_eq with "Hkeys").
+    { apply release_dom. }
+    iIntros "!>" (k x y Hx Hy) "Hkey".
+    assert (is_Some (wrs !! k)) as Hwrs.
+    { apply elem_of_dom_2 in Hx.
+      rewrite set_eq in Hdom.
+      by rewrite Hdom elem_of_dom in Hx.
+    }
+    by iApply (key_inv_learn_abort with "Hkey").
+  Qed.
+
+  Lemma tuple_repl_half_release_disjoint {γ} ts wrs tpls :
+    dom tpls ## dom wrs ->
+    ([∗ map] k↦tpl ∈ tpls, tuple_repl_half γ k tpl) -∗
+    ([∗ map] k↦tpl ∈ release ts wrs tpls, tuple_repl_half γ k tpl).
+  Proof.
+    iIntros (Hdom) "Htpls".
+    iApply (big_sepM_impl_dom_eq with "Htpls"); first apply release_dom.
+    iIntros "!>" (k t1 t2 Ht1 Ht2) "Htpl".
+    destruct (wrs !! k) as [v |] eqn:Hwrs.
+    { apply elem_of_dom_2 in Ht1. apply elem_of_dom_2 in Hwrs. set_solver. }
+    rewrite /release lookup_merge Hwrs Ht1 /= in Ht2.
+    by inversion_clear Ht2.
+  Qed.
+
+  Lemma group_inv_learn_abort γ gid log cpool ts :
+    cpool_subsume_log cpool (log ++ [CmdAbt ts]) ->
+    txn_inv γ -∗
+    ([∗ set] key ∈ keys_all, key_inv γ key) -∗
+    group_inv_with_cpool_no_log γ gid log cpool ==∗
+    txn_inv γ ∗
+    ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    group_inv_with_cpool_no_log γ gid (log ++ [CmdAbt ts]) cpool.
+  Proof.
+    iIntros (Hsubsume) "Htxn Hkeys Hgroup".
+    rewrite /cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
+    destruct Hsubsume as [Hsubsume Hc].
+    iNamed "Hgroup".
+    (* Obtain proof that [ts] has aborted. TODO: check if we actually need this. *)
+    iDestruct (big_sepS_elem_of with "Hvc") as "Habt"; first apply Hc. simpl.
+    rewrite /apply_cmds in Hrsm.
+    rewrite /group_inv_with_cpool_no_log.
+    destruct (stm !! ts) as [st |] eqn:Hdup; last first.
+    { (* Case: Directly abort without prepare. *)
+      rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+      (* Create txn tokens for the new state. *)
+      iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
+      (* Re-establish [valid_prepared]. *)
+      iDestruct (big_sepM_insert_2 _ _ ts StAborted with "[] Hvp") as "Hvp'".
+      { done. }
+      iFrame "∗ # %".
+      by auto with set_solver.
+    }
+    (* Case: Txn [ts] has prepared, aborted, or committed. *)
+    rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+    destruct st as [pwrs | |] eqn:Ht; first 1 last.
+    { (* Case: Committed; contradiction by obtaining a commit token. *)
+      iDestruct ("Htks" $! log stm tpls with "[] []") as "Htk"; [done | done |].
+      iDestruct (big_sepM_lookup with "Htk") as "Hcmt"; first apply Hdup. simpl.
+      iDestruct "Hcmt" as (wrs) "Hcmt".
+      iNamed "Htxn".
+      iDestruct (txnres_lookup with "Hresm Habt") as %Habt.
+      iDestruct (txnres_lookup with "Hresm Hcmt") as %Hcmt.
+      congruence.
+    }
+    { (* Case: Aborted; no-op. *)
+      (* Create txn tokens for the new state. *)
+      iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
+      by iFrame "∗ # %".
+    }
+    (* Case: Prepared; release the locks on tuples. *)
+    set tpls' := release _ _ _.
+    (* Obtain proof of valid prepared input. *)
+    iDestruct (big_sepM_lookup with "Hvp") as "Hc"; first apply Hdup. simpl.
+    iDestruct "Hc" as (wrs) "(Hwrs & %Hts & %Hpwrs)".
+    rewrite /valid_pwrs in Hpwrs.
+    (* Take the required keys invariants. *)
+    iDestruct (big_sepS_subseteq_acc _ _ (dom pwrs) with "Hkeys") as "[Hkeys HkeysC]".
+    { (* Prove [dom pwrs ⊆ keys_all] *)
+      destruct Hpwrs as (Hvalid & _ & Hpwrs).
+      transitivity (dom wrs); last done.
+      rewrite Hpwrs.
+      apply dom_filter_subseteq.
+    }
+    (* Take the required tuple ownerships from the group invariant. *)
+    iDestruct (big_sepM_dom_subseteq_split _ _ (dom pwrs) with "Hrepls")
+      as (tplsg [Hdom Hsubseteq]) "[Hrepls HreplsO]".
+    { (* Prove [dom pwrs ⊆ dom (tpls_group gid tpls)]. *)
+      destruct Hpwrs as (Hvalid & _ & Hpwrs).
+      pose proof (apply_cmds_dom log _ _ Hrsm) as Hdom.
+      rewrite Hpwrs wrs_group_keys_group_dom tpls_group_keys_group_dom Hdom.
+      set_solver.
+    }
+    (* Expose the replicated history and prepared timestamp from keys invariant. *)
+    iDestruct (keys_inv_expose_repl_tsprep with "Hkeys") as (tplsk) "(Hkeys & Htpls & %Hdom')".
+    (* Agree on tuples from the group and keys invariants. *)
+    iDestruct (tuple_repl_big_agree with "Hrepls Htpls") as %->; first by rewrite -Hdom in Hdom'.
+    clear Hdom'.
+    (* Update the tuples (resetting the prepared timestamp). *)
+    iMod (tuple_repl_big_update (release ts pwrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
+    { by rewrite release_dom. }
+    (* Prove txn [ts] has prepared but not committed on [tpls]. *)
+    iAssert (⌜Forall (λ c, valid_command_pts c) log⌝)%I as %Hpts.
+    { rewrite Forall_forall.
+      iIntros (x Hx).
+      rewrite Forall_forall in Hsubsume.
+      specialize (Hsubsume _ Hx).
+      iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hsubsume.
+      destruct x; [| done | done | done]. simpl.
+      by iDestruct "Hc" as (?) "(_ & %Hvts & _)".
+    }
+    iDestruct (keys_inv_prepared with "Habt Hkeys Htxn") as "[Hkeys Htxn]".
+    { (* Prove prepared timestamp of [tplsg] is [ts]. *)
+      intros k tpl Hlookup.
+      eapply (pts_consistency log); [apply Hpts | apply Hrsm | apply Hdup | |].
+      { eapply lookup_weaken; first apply Hlookup.
+        transitivity (tpls_group gid tpls); first done.
+        rewrite /tpls_group.
+        apply map_filter_subseteq.
+      }
+      { rewrite -Hdom. by eapply elem_of_dom_2. }
+    }
+    (* Re-establish keys invariant w.r.t. updated tuples. *)
+    iDestruct (keys_inv_learn_abort with "Hkeys") as "Hkeys"; first apply Hdom.
+    (* Put ownership of tuples back to keys invariant. *)
+    iDestruct (keys_inv_merge_repl_tsprep (dom pwrs) with "Hkeys Htpls") as "Hkeys".
+    { by rewrite release_dom. }
+    iDestruct ("HkeysC" with "Hkeys") as "Hkeys".
+    (* Merge ownership of tuples back to group invariant. *)
+    iDestruct (tuple_repl_half_release_disjoint ts pwrs with "HreplsO") as "HreplsO".
+    { set_solver. }
+    rewrite release_difference_distr.
+    iDestruct (big_sepM_difference_combine with "Hrepls HreplsO") as "Hrepls".
+    { by apply release_mono. }
+    rewrite release_tpls_group_commute.
+    (* Create txn tokens for the new state. *)
+    iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
+    (* Re-establish [valid_prepared]. *)
+    iDestruct (big_sepM_insert_2 _ _ ts StAborted with "[] Hvp") as "Hvp'".
     { by iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc. }
     iFrame "∗ # %".
     by auto with set_solver.
@@ -2482,6 +2760,13 @@ Section group_inv.
     }
     { (* Case: [CmdCmt tid] *)
       iMod (group_inv_learn_commit with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
+      { rewrite /cpool_subsume_log Forall_app in Hsubsume.
+        by destruct Hsubsume as [Hsubsume _].
+      }
+      by iApply ("IH" with "[] Htxn Hkeys Hgroup").
+    }
+    { (* Case: [CmdAbt tid] *)
+      iMod (group_inv_learn_abort with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
       { rewrite /cpool_subsume_log Forall_app in Hsubsume.
         by destruct Hsubsume as [Hsubsume _].
       }
