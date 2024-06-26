@@ -35,7 +35,7 @@ Definition RPC_TRY_ACQUIRE : expr := #1.
 
 Definition RPC_RELEASE : expr := #2.
 
-Definition Error: ty := uint64T.
+Notation Error := uint64T.
 
 Definition Client := struct.decl [
   "cl" :: ptrT

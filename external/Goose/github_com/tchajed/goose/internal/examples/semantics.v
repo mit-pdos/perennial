@@ -83,9 +83,9 @@ Definition testAppendSlice: val :=
 
 (* closures.go *)
 
-Definition AdderType: ty := (uint64T -> uint64T)%ht.
+Notation AdderType := (uint64T -> uint64T)%ht.
 
-Definition MultipleArgsType: ty := (uint64T -> boolT -> uint64T)%ht.
+Notation MultipleArgsType := (uint64T -> boolT -> uint64T)%ht.
 
 Definition adder: val :=
   rec: "adder" <> :=

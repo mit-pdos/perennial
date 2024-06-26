@@ -1121,7 +1121,9 @@ Definition TyMethodDriver: val :=
 
 (* type_alias.go *)
 
-Definition my_u64: ty := uint64T.
+Notation my_u64 := uint64T.
+
+Notation my_slice := (slice.T byteT).
 
 Definition Timestamp: ty := uint64T.
 

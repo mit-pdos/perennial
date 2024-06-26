@@ -8,9 +8,9 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
-Definition errorTy: ty := boolT.
+Notation errorTy := boolT.
 
-Definition ProofTy: ty := boolT.
+Notation ProofTy := boolT.
 
 Definition errNone : expr := #false.
 
@@ -28,9 +28,9 @@ Definition NonmembProofTy : expr := #false.
 
 Definition MembProofTy : expr := #true.
 
-Definition Id: ty := slice.T byteT.
+Notation Id := (slice.T byteT).
 
-Definition Val: ty := slice.T byteT.
+Notation Val := (slice.T byteT).
 
 Definition node := struct.decl [
   "val" :: Val;
@@ -89,7 +89,7 @@ Definition newGenericNode: val :=
       "children" ::= "c"
     ].
 
-Definition Digest: ty := slice.T byteT.
+Notation Digest := (slice.T byteT).
 
 (* General proof object.
    Binds an id down the tree to a particular node hash. *)
@@ -100,7 +100,7 @@ Definition pathProof := struct.decl [
   "childHashes" :: slice.T (slice.T (slice.T byteT))
 ].
 
-Definition Proof: ty := slice.T (slice.T (slice.T byteT)).
+Notation Proof := (slice.T (slice.T (slice.T byteT))).
 
 Definition isValidHashSl: val :=
   rec: "isValidHashSl" "data" :=

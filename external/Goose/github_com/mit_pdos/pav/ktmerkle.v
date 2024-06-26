@@ -13,9 +13,9 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* epochTy from ktmerkle.go *)
 
-Definition epochTy: ty := uint64T.
+Notation epochTy := uint64T.
 
-Definition linkTy: ty := slice.T byteT.
+Notation linkTy := (slice.T byteT).
 
 (* evidServLink is evidence that the server signed two conflicting links,
    either zero or one epochs away. *)
@@ -30,7 +30,7 @@ Definition evidServLink := struct.decl [
   "sig1" :: slice.T byteT
 ].
 
-Definition errorTy: ty := boolT.
+Notation errorTy := boolT.
 
 (* chainSepSome from rpc.go *)
 
