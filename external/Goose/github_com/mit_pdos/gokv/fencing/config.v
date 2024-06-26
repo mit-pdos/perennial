@@ -17,6 +17,12 @@ Definition Clerk := struct.decl [
   "cl" :: ptrT
 ].
 
+(* TIMEOUT_MS from server.go *)
+
+Definition TIMEOUT_MS : expr := #1000.
+
+Definition MILLION : expr := #1000000.
+
 Definition Clerk__HeartbeatThread: val :=
   rec: "Clerk__HeartbeatThread" "ck" "epoch" :=
     let: "enc" := marshal.NewEnc #8 in
@@ -25,7 +31,7 @@ Definition Clerk__HeartbeatThread: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-      time.Sleep (("TIMEOUT_MS" * "MILLION") `quot` #3);;
+      time.Sleep ((TIMEOUT_MS * MILLION) `quot` #3);;
       let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_HB "args" "reply_ptr" #100 in
       (if: ("err" ≠ #0) || ((slice.len (![slice.T byteT] "reply_ptr")) ≠ #0)
       then Break
@@ -65,10 +71,6 @@ Definition MakeClerk: val :=
     "ck".
 
 (* server.go *)
-
-Definition TIMEOUT_MS : expr := #1000.
-
-Definition MILLION : expr := #1000000.
 
 Definition Server := struct.decl [
   "mu" :: ptrT;

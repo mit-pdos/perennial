@@ -20,12 +20,12 @@ Notation linkTy := (slice.T byteT).
 (* evidServLink is evidence that the server signed two conflicting links,
    either zero or one epochs away. *)
 Definition evidServLink := struct.decl [
-  "epoch0" :: uint64T;
-  "prevLink0" :: slice.T byteT;
+  "epoch0" :: epochTy;
+  "prevLink0" :: linkTy;
   "dig0" :: slice.T byteT;
   "sig0" :: slice.T byteT;
-  "epoch1" :: uint64T;
-  "prevLink1" :: slice.T byteT;
+  "epoch1" :: epochTy;
+  "prevLink1" :: linkTy;
   "dig1" :: slice.T byteT;
   "sig1" :: slice.T byteT
 ].
@@ -70,6 +70,14 @@ Definition servSepLink__encode: val :=
     "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servSepLink "link" "o"));;
     ![slice.T byteT] "b".
 
+(* errSome from ktmerkle.go *)
+
+Definition errNone : expr := #false.
+
+Definition errSome : expr := #true.
+
+Definition maxUint64 : expr := (#1 ≪ #64) - #1.
+
 (* check returns an error if the evidence does not check out.
    otherwise, it proves that the server was dishonest. *)
 Definition evidServLink__check: val :=
@@ -85,7 +93,7 @@ Definition evidServLink__check: val :=
     ]) in
     let: "ok0" := cryptoffi.PublicKey__Verify "servPk" "enc0" (struct.loadF evidServLink "sig0" "e") in
     (if: (~ "ok0")
-    then "errSome"
+    then errSome
     else
       let: "linkSep1" := chainSepSome__encode (struct.new chainSepSome [
         "epoch" ::= struct.loadF evidServLink "epoch1" "e";
@@ -98,20 +106,20 @@ Definition evidServLink__check: val :=
       ]) in
       let: "ok1" := cryptoffi.PublicKey__Verify "servPk" "enc1" (struct.loadF evidServLink "sig1" "e") in
       (if: (~ "ok1")
-      then "errSome"
+      then errSome
       else
         (if: (struct.loadF evidServLink "epoch0" "e") = (struct.loadF evidServLink "epoch1" "e")
         then std.BytesEqual "link0" "link1"
         else
           (if: ((struct.loadF evidServLink "epoch0" "e") + #1) = (struct.loadF evidServLink "epoch1" "e")
           then std.BytesEqual "link0" (struct.loadF evidServLink "prevLink1" "e")
-          else "errSome")))).
+          else errSome)))).
 
 (* evidServPut is evidence when a server promises to put a value at a certain
    epoch but actually there's a different value (as evidenced by a merkle proof). *)
 Definition evidServPut := struct.decl [
-  "epoch" :: uint64T;
-  "prevLink" :: slice.T byteT;
+  "epoch" :: epochTy;
+  "prevLink" :: linkTy;
   "dig" :: slice.T byteT;
   "linkSig" :: slice.T byteT;
   "id" :: slice.T byteT;
@@ -155,7 +163,7 @@ Definition evidServPut__check: val :=
     ]) in
     let: "linkOk" := cryptoffi.PublicKey__Verify "servPk" "preLinkSig" (struct.loadF evidServPut "linkSig" "e") in
     (if: (~ "linkOk")
-    then "errSome"
+    then errSome
     else
       let: "prePut" := servSepPut__encode (struct.new servSepPut [
         "epoch" ::= struct.loadF evidServPut "epoch" "e";
@@ -164,23 +172,17 @@ Definition evidServPut__check: val :=
       ]) in
       let: "putOk" := cryptoffi.PublicKey__Verify "servPk" "prePut" (struct.loadF evidServPut "putSig" "e") in
       (if: (~ "putOk")
-      then "errSome"
+      then errSome
       else
         let: "err0" := merkle.CheckProof merkle.MembProofTy (struct.loadF evidServPut "proof" "e") (struct.loadF evidServPut "id" "e") (struct.loadF evidServPut "val1" "e") (struct.loadF evidServPut "dig" "e") in
         (if: "err0"
-        then "errSome"
+        then errSome
         else
           (if: std.BytesEqual (struct.loadF evidServPut "val0" "e") (struct.loadF evidServPut "val1" "e")
-          then "errSome"
-          else "errNone")))).
+          then errSome
+          else errNone)))).
 
 (* ktmerkle.go *)
-
-Definition errNone : expr := #false.
-
-Definition errSome : expr := #true.
-
-Definition maxUint64 : expr := (#1 ≪ #64) - #1.
 
 Definition hashChain: ty := slice.T linkTy.
 
