@@ -83,12 +83,6 @@ Definition decodeHdr1: val :=
     let: "addrs" := marshal.Dec__GetInts "dec1" HDRADDRS in
     ("end", "addrs").
 
-Definition hdr2: val :=
-  rec: "hdr2" "start" :=
-    let: "enc" := marshal.NewEnc disk.BlockSize in
-    marshal.Enc__PutInt "enc" "start";;
-    marshal.Enc__Finish "enc".
-
 (* decodeHdr2 reads start from hdr2 *)
 Definition decodeHdr2: val :=
   rec: "decodeHdr2" "hdr2" :=
@@ -121,6 +115,12 @@ Definition circularAppender__hdr1: val :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
     marshal.Enc__PutInt "enc" "end";;
     marshal.Enc__PutInts "enc" (struct.loadF circularAppender "diskAddrs" "c");;
+    marshal.Enc__Finish "enc".
+
+Definition hdr2: val :=
+  rec: "hdr2" "start" :=
+    let: "enc" := marshal.NewEnc disk.BlockSize in
+    marshal.Enc__PutInt "enc" "start";;
     marshal.Enc__Finish "enc".
 
 Definition circularAppender__logBlocks: val :=

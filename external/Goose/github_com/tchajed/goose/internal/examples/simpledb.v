@@ -94,19 +94,6 @@ Definition lazyFileBuf := struct.decl [
   "next" :: slice.T byteT
 ].
 
-Definition bufFile := struct.decl [
-  "file" :: fileT;
-  "buf" :: ptrT
-].
-
-Definition newBuf: val :=
-  rec: "newBuf" "f" :=
-    let: "buf" := ref (zero_val (slice.T byteT)) in
-    struct.mk bufFile [
-      "file" ::= "f";
-      "buf" ::= "buf"
-    ].
-
 (* readTableIndex parses a complete table on disk into a key->offset index *)
 Definition readTableIndex: val :=
   rec: "readTableIndex" "f" "index" :=
@@ -175,6 +162,19 @@ Definition tableRead: val :=
     else
       let: "p" := readValue (struct.get Table "File" "t") "off" in
       ("p", #true)).
+
+Definition bufFile := struct.decl [
+  "file" :: fileT;
+  "buf" :: ptrT
+].
+
+Definition newBuf: val :=
+  rec: "newBuf" "f" :=
+    let: "buf" := ref (zero_val (slice.T byteT)) in
+    struct.mk bufFile [
+      "file" ::= "f";
+      "buf" ::= "buf"
+    ].
 
 Definition bufFlush: val :=
   rec: "bufFlush" "f" :=
