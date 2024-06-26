@@ -81,6 +81,30 @@ Definition testAppendSlice: val :=
     "ok" <-[boolT] (((![boolT] "ok") && ((SliceGet uint64T (![slice.T uint64T] "a") #0) = #1)) && ((SliceGet uint64T (![slice.T uint64T] "a") #1) = #2));;
     ![boolT] "ok".
 
+(* assign_ops.go *)
+
+Definition testAssignAddSub: val :=
+  rec: "testAssignAddSub" <> :=
+    let: "ok" := ref_to boolT #true in
+    let: "x" := ref_to uint64T #1 in
+    "x" <-[uint64T] ((![uint64T] "x") + #5);;
+    "ok" <-[boolT] ((![boolT] "ok") && ((![uint64T] "x") = #6));;
+    "x" <-[uint64T] ((![uint64T] "x") - #3);;
+    "ok" <-[boolT] ((![boolT] "ok") && ((![uint64T] "x") = #3));;
+    ![boolT] "ok".
+
+Definition testAssignBitwise: val :=
+  rec: "testAssignBitwise" <> :=
+    let: "ok" := ref_to boolT #true in
+    let: "x" := ref_to uint64T #123 in
+    "x" <-[uint64T] ((![uint64T] "x") `or` #31);;
+    "ok" <-[boolT] ((![boolT] "ok") && ((![uint64T] "x") = (#123 `or` #31)));;
+    "x" <-[uint64T] ((![uint64T] "x") `and` #15);;
+    "ok" <-[boolT] ((![boolT] "ok") && ((![uint64T] "x") = ((#123 `or` #31) `and` #15)));;
+    "x" <-[uint64T] ((![uint64T] "x") `xor` #170);;
+    "ok" <-[boolT] ((![boolT] "ok") && ((![uint64T] "x") = (((#123 `or` #31) `and` #15) `xor` #170)));;
+    ![boolT] "ok".
+
 (* closures.go *)
 
 Notation AdderType := (uint64T -> uint64T)%ht.
