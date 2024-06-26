@@ -89,10 +89,10 @@ Lemma wp_Verify pk P hon sl_sig (sig : list w8) sl_msg (msg : list w8) :
   }}}
   PublicKey__Verify (slice_val pk) (slice_val sl_msg) (slice_val sl_sig)
   {{{
-    (err : bool), RET #err;
+    (ok : bool), RET #ok;
     "Hsig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig ∗
     "Hmsg" ∷ own_slice_small sl_msg byteT (DfracOwn 1) msg ∗
-    if negb err && hon then
+    if ok && hon then
       "HP" ∷ P msg
     else True%I
   }}}.
