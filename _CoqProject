@@ -7,7 +7,8 @@
 -arg -w -arg +deprecated-tactic-notation
 -arg -w -arg -deprecated-since-8.19
 -arg -w -arg -deprecated-since-8.20
--arg -w -arg -notation-incompatible-prefix # seems to have false positives
+# seems to have false positives
+-arg -w -arg -notation-incompatible-prefix
 # we haven't updated our code to fix this one
 -arg -w -arg -deprecated-typeclasses-transparency-without-locality
 # Iris-disabled warnings
