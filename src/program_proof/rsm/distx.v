@@ -34,26 +34,19 @@ Definition key_to_group (key : dbkey) : groupid.
 Admitted.
 
 Definition wrs_group gid (wrs : dbmap) :=
-  filter (λ x, key_to_group x.1 = gid) wrs.
+  filter (λ t, key_to_group t.1 = gid) wrs.
 
 Definition valid_ts (ts : nat) := ts ≠ O.
 
 Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
-(* Definition key_in_group (gid : groupid) (key : dbkey) := *)
-(*   key_to_group key = gid. *)
-
-(* Definition wrs_in_group (gid : groupid) (wrs : dbmap) := *)
-(*   set_Forall (λ k, key_in_group gid k) (dom wrs). *)
+Definition valid_key (key : dbkey) := key ∈ keys_all.
 
 Definition tpls_group gid (tpls : gmap dbkey dbtpl) :=
-  filter (λ x, key_to_group x.1 = gid) tpls.
+  filter (λ t, key_to_group t.1 = gid) tpls.
 
 Definition keys_group gid (keys : gset dbkey) :=
-  filter (λ x, key_to_group x = gid) keys.
-
-Definition keys_except_group gid (keys : gset dbkey) :=
-  filter (λ x, key_to_group x ≠ gid) keys.
+  filter (λ k, key_to_group k = gid) keys.
 
 Lemma tpls_group_keys_group_dom gid tpls :
   dom (tpls_group gid tpls) = keys_group gid (dom tpls).
@@ -368,12 +361,78 @@ Definition apply_prepare st (tid : nat) (wrs : dbmap) :=
   | Stuck => Stuck
   end.
 
-(* TODO: reorder [x] and [n]. *)
-Definition extend {X} (x : X) (n : nat) (l : list X) :=
+Definition extend {A} (n : nat) (x : A) (l : list A) :=
   l ++ replicate (n - length l) x.
 
-(* TODO *)
-Definition last_extend {A} (n : nat) (l : list A) := l.
+(* Lemmas about [extend]. *)
+Lemma extend_id {A} (n : nat) (x : A) (l : list A) :
+  (n ≤ length l)%nat ->
+  extend n x l = l.
+Proof.
+  intros Hlen. rewrite /extend. replace (n - _)%nat with O by lia.
+  by rewrite /= app_nil_r.
+Qed.
+
+Lemma extend_length {A} (n : nat) (x : A) (l : list A) :
+  length (extend n x l) = (n - length l + length l)%nat.
+Proof. rewrite app_length replicate_length. lia. Qed.
+
+Lemma extend_length_ge_n {A} (n : nat) (x : A) (l : list A) :
+  (n ≤ length (extend n x l))%nat.
+Proof. rewrite extend_length. lia. Qed.
+
+Definition last_extend {A} (n : nat) (l : list A) :=
+  match last l with
+  | None => []
+  | Some x => extend n x l
+  end.
+
+(* Lemmas about [last_extend]. *)
+Lemma last_extend_id {A} (n : nat) (l : list A) :
+  (n ≤ length l)%nat ->
+  last_extend n l = l.
+Proof.
+  intros Hlen. rewrite /last_extend.
+  destruct (last l) eqn:Hl; first by apply extend_id.
+  symmetry.
+  by apply last_None.
+Qed.
+
+Lemma last_extend_length {X : Type} (n : nat) (l : list X) :
+  l ≠ [] ->
+  length (last_extend n l) = (n - length l + length l)%nat.
+Proof.
+  intros Hl. rewrite -last_is_Some in Hl. destruct Hl as [x Hl].
+  rewrite /last_extend Hl extend_length.
+  lia.
+Qed.
+
+Lemma last_extend_length_ge_n {A} (n : nat) (l : list A) :
+  l ≠ [] ->
+  (n ≤ length (last_extend n l))%nat.
+Proof. intros Hl. rewrite last_extend_length; [lia | done]. Qed.
+
+Lemma last_last_extend {A} (n : nat) (l : list A) :
+  last (last_extend n l) = last l.
+Proof.
+  destruct (last l) as [x |] eqn:Hlast; last by rewrite /last_extend Hlast.
+  rewrite /last_extend Hlast /extend last_app.
+  destruct (last (replicate _ _)) eqn:Hl; last done.
+  apply last_Some_elem_of, elem_of_replicate_inv in Hl.
+  by rewrite Hl.
+Qed.
+
+Lemma last_extend_twice {A} (n1 n2 : nat) (l : list A) :
+  last_extend n1 (last_extend n2 l) = last_extend (n1 `max` n2) l.
+Proof.
+  destruct (decide (l = [])) as [-> | Hne]; first done.
+  destruct (last l) as [x |] eqn:Hlast; last by rewrite last_None in Hlast.
+  pose proof (last_last_extend n2 l) as Hn2.
+  rewrite {1}/last_extend Hn2 Hlast /last_extend Hlast /extend -app_assoc.
+  rewrite -replicate_add app_length replicate_length.
+  (* wow how does lia solve this *)
+  by replace (n2 - _ + _)%nat with (n1 `max` n2 - length l)%nat by lia.
+Qed.
 
 Definition multiwrite_key_tpl (tid : nat) (wr : option dbval) (tpl : dbtpl) :=
   match wr with
@@ -503,10 +562,25 @@ Definition apply_read st (tid : nat) (key : dbkey) :=
   | State stm tpls =>
       match tpls !! key with
       | Some (vs, tsprep) => State stm (<[ key := (read tid vs tsprep) ]> tpls)
-      | None => st
+      | None => Stuck
       end
   | Stuck => Stuck
   end.
+
+Lemma insert_tpls_group_commute key tpl tpls gid :
+  key_to_group key = gid ->
+  <[key := tpl]> (tpls_group gid tpls) = tpls_group gid (<[key := tpl]> tpls).
+Proof.
+  intros Hgid.
+  apply map_eq. intros k.
+  destruct (decide (key = k)) as [-> | Hne].
+  { rewrite lookup_insert /tpls_group.
+    by rewrite (map_lookup_filter_Some_2 _ _ k tpl); [| rewrite lookup_insert |].
+  }
+  rewrite lookup_insert_ne; last done.
+  rewrite /tpls_group map_filter_insert.
+  by case_decide as H; first rewrite lookup_insert_ne.
+Qed.
 
 Definition apply_cmd st (cmd : command) :=
   match cmd with
@@ -793,8 +867,8 @@ Proof.
   { (* Case: [CmdRead] *)
     rewrite /apply_read in Happly.
     destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
-    destruct (tpls !! key) as [[vs tsprep] |] eqn:Htpl;
-      inversion Happly; subst stmc tplsc; last by eapply Hcst.
+    destruct (tpls !! key) as [[vs tsprep] |] eqn:Htpl; last done.
+    inversion Happly; subst stmc tplsc.
     destruct (decide (keyx = key)) as [-> | Hne]; last first.
     { rewrite lookup_insert_ne in Htpls; last done. by eapply Hcst. }
     rewrite lookup_insert /read in Htpls.
@@ -983,8 +1057,8 @@ Inductive action :=
 | ActRead (tid : nat) (key : dbkey).
 
 Definition diff_by_cmtd
-  (repl cmtd : list dbval) (tmods : dbkmod) (ts : nat) :=
-  match tmods !! ts with
+  (repl cmtd : list dbval) (kmod : dbkmod) (ts : nat) :=
+  match kmod !! ts with
   | Some v => cmtd = last_extend ts repl ++ [v]
   | None => (∃ ts', repl = last_extend ts' cmtd) ∧
            (ts ≠ O -> length repl ≤ ts)%nat
@@ -1164,7 +1238,9 @@ Proof.
   rewrite /diff_by_cmtd Hts in Hdiff.
   rewrite /diff_by_cmtd Hz.
   split; last done.
-  by exists ts.
+  (* by the time repl catches up cmtd, they are equal, hence using 0 here *)
+  exists O.
+  by rewrite Hdiff {2}/last_extend last_snoc /extend /= app_nil_r.
 Qed.
 
 Lemma diff_by_cmtd_inv_learn_abort {repl cmtd kmod} ts :
@@ -1177,6 +1253,39 @@ Proof.
   rewrite /diff_by_cmtd Hts in Hdiff.
   rewrite /diff_by_cmtd Hz.
   by destruct Hdiff as [Hdiff _].
+Qed.
+
+Lemma diff_by_cmtd_inv_learn_read_free {repl cmtd kmod} ts :
+  kmod !! O = None ->
+  diff_by_cmtd repl cmtd kmod O ->
+  diff_by_cmtd (last_extend ts repl) cmtd kmod O.
+Proof.
+  intros Hz. rewrite /diff_by_cmtd Hz.
+  intros [[ts' Hrepl] _].
+  split; last done.
+  rewrite Hrepl.
+  exists (ts `max` ts')%nat.
+  apply last_extend_twice.
+Qed.
+
+Lemma diff_by_cmtd_inv_learn_read_acquired {repl cmtd kmod} ts tslock :
+  (ts < tslock)%nat ->
+  diff_by_cmtd repl cmtd kmod tslock ->
+  diff_by_cmtd (last_extend ts repl) cmtd kmod tslock.
+Proof.
+  rewrite /diff_by_cmtd. intros Hlt Hdiff.
+  destruct (kmod !! tslock) as [v |] eqn:Hv.
+  { (* Case: Tuple committed by [tslock]. *)
+    rewrite last_extend_twice.
+    by replace (_ `max` _)%nat with tslock by lia.
+  }
+  destruct Hdiff as [[ts' Hrepl] Hlen].
+  (* Case: Tuple prepared but not committed by [tslock] yet. *)
+  split.
+  { rewrite Hrepl last_extend_twice. by eauto. }
+  intros Hnz. specialize (Hlen Hnz).
+  destruct (decide (repl = [])) as [-> | Hne]; first done.
+  rewrite last_extend_length; [lia | done].
 Qed.
 
 Lemma cmtd_impl_prep_inv_abort {resm wrsm} ts :
@@ -1794,17 +1903,6 @@ Section inv.
     ∃ kmodc,
       "Hkey" ∷ key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep ∗
       "%Hnc" ∷ ⌜kmodc !! tsprep = None⌝.
-  
-  Lemma key_inv_expose_repl_tsprep γ key :
-    key_inv γ key -∗
-    ∃ tpl, key_inv_no_repl_tsprep γ key tpl.1 tpl.2 ∗ tuple_repl_half γ key tpl.
-  Proof.
-    iIntros "Hkey".
-    iNamed "Hkey". iNamed "Hprop".
-    rewrite /tuple_repl_half.
-    iExists (repl, tsprep).
-    iFrame "∗ # %".
-  Qed.
 
   (** The [StAborted] branch says that a transaction is aborted globally if it
   is aborted locally on some replica (the other direction is encoded in
@@ -1838,7 +1936,7 @@ Section inv.
     coordinator recovery. *)
     | CmdPrep ts pwrs =>
         (∃ wrs, txnwrs_receipt γ ts wrs ∧ ⌜valid_ts ts ∧ valid_pwrs gid wrs pwrs⌝)
-    | CmdRead ts key => ⌜valid_ts ts ∧ key_to_group key = gid⌝
+    | CmdRead ts key => ⌜valid_ts ts ∧ valid_key key ∧ key_to_group key = gid⌝
     end.
 
   #[global]
@@ -1920,6 +2018,9 @@ Section group_inv.
 
   (* TODO: might not need these anymore once update the learn_prepare proof to
   be more consistent with that of learn_commit. *)
+  Definition keys_except_group gid (keys : gset dbkey) :=
+    filter (λ x, key_to_group x ≠ gid) keys.
+
   Lemma keys_inv_group {γ keys} gid :
     ([∗ set] key ∈ keys, key_inv γ key) -∗
     ([∗ set] key ∈ (keys_group gid keys), key_inv γ key) ∗
@@ -2038,7 +2139,34 @@ Section group_inv.
     by iApply "Htks".
   Qed.
 
-  Lemma keys_inv_expose_repl_tsprep {γ} keys :
+  Lemma txn_tokens_inv_learn_read {γ gid log} ts key :
+    txn_tokens γ gid log -∗
+    txn_tokens γ gid (log ++ [CmdRead ts key]).
+  Proof.
+    iIntros "Htks".
+    iIntros (logp stmp tplsp Hprefix Hrsmp).
+    destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
+    { by iApply "Htks". }
+    rewrite /apply_cmds foldl_snoc /= in Hrsmp.
+    destruct (foldl _ _ _) eqn:Hrsm; last done.
+    simpl in Hrsmp.
+    destruct (tpls !! key) as [[h t] |]; last done.
+    inversion Hrsmp. subst stmp.
+    by iApply "Htks".
+  Qed.
+
+  Lemma key_inv_extract_repl_tsprep {γ} key :
+    key_inv γ key -∗
+    ∃ tpl, key_inv_no_repl_tsprep γ key tpl.1 tpl.2 ∗ tuple_repl_half γ key tpl.
+  Proof.
+    iIntros "Hkey".
+    iNamed "Hkey". iNamed "Hprop".
+    rewrite /tuple_repl_half.
+    iExists (repl, tsprep).
+    iFrame "∗ # %".
+  Qed.
+
+  Lemma keys_inv_extract_repl_tsprep {γ} keys :
     ([∗ set] key ∈ keys, key_inv γ key) -∗
     ∃ tpls, ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) ∗
             ([∗ map] key ↦ tpl ∈ tpls, tuple_repl_half γ key tpl) ∧
@@ -2046,10 +2174,20 @@ Section group_inv.
   Proof.
     iIntros "Hkeys".
     iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
-    { iIntros (k Hk) "Hkey". iApply (key_inv_expose_repl_tsprep with "Hkey"). }
+    { iIntros (k Hk) "Hkey". iApply (key_inv_extract_repl_tsprep with "Hkey"). }
     iDestruct (big_sepS_exists_sepM with "Hkeys") as (tpls Hdom) "Htpls".
     iDestruct (big_sepM_sep with "Htpls") as "[Hkeys Htpls]".
     by iFrame.
+  Qed.
+
+  Lemma key_inv_merge_repl_tsprep {γ} key tpl :
+    key_inv_no_repl_tsprep γ key tpl.1 tpl.2 -∗
+    tuple_repl_half γ key tpl -∗
+    key_inv γ key.
+  Proof.
+    iIntros "Hkey Htpl".
+    iNamed "Hkey". iDestruct "Htpl" as "[Hhist Hts]".
+    iFrame "∗ #".
   Qed.
 
   Lemma keys_inv_merge_repl_tsprep {γ tpls} keys :
@@ -2063,9 +2201,7 @@ Section group_inv.
     rewrite -Hdom -big_sepM_dom.
     iApply (big_sepM_mono with "Htpls").
     iIntros (k t Ht) "[Hkey Htpl]".
-    iNamed "Hkey".
-    iDestruct "Htpl" as "[Hhist Hts]".
-    iFrame "∗ #".
+    iApply (key_inv_merge_repl_tsprep with "Hkey Htpl").
   Qed.
 
   Lemma key_inv_no_repl_tsprep_unseal_kmodc γ key repl tsprep :
@@ -2286,7 +2422,7 @@ Section group_inv.
     (* Extract keys invariant in this group. *)
     iDestruct (keys_inv_group gid with "Hkeys") as "[Hkeys Hkeyso]".
     (* Expose the replicated history and prepared timestamp from keys invariant. *)
-    iDestruct (keys_inv_expose_repl_tsprep with "Hkeys") as (tplsK) "(Hkeys & Htpls & %Hdom)".
+    iDestruct (keys_inv_extract_repl_tsprep with "Hkeys") as (tplsK) "(Hkeys & Htpls & %Hdom)".
     (* Agree on tuples from the group and keys invariants. *)
     iDestruct (tuple_repl_big_agree with "Hrepls Htpls") as %->.
     { pose proof (apply_cmds_dom log _ _ Hrsm) as Hdom'.
@@ -2488,7 +2624,7 @@ Section group_inv.
       set_solver.
     }
     (* Expose the replicated history and prepared timestamp from keys invariant. *)
-    iDestruct (keys_inv_expose_repl_tsprep with "Hkeys") as (tplsk) "(Hkeys & Htpls & %Hdom')".
+    iDestruct (keys_inv_extract_repl_tsprep with "Hkeys") as (tplsk) "(Hkeys & Htpls & %Hdom')".
     (* Agree on tuples from the group and keys invariants. *)
     iDestruct (tuple_repl_big_agree with "Hrepls Htpls") as %->; first by rewrite -Hdom in Hdom'.
     clear Hdom'.
@@ -2683,7 +2819,7 @@ Section group_inv.
       set_solver.
     }
     (* Expose the replicated history and prepared timestamp from keys invariant. *)
-    iDestruct (keys_inv_expose_repl_tsprep with "Hkeys") as (tplsk) "(Hkeys & Htpls & %Hdom')".
+    iDestruct (keys_inv_extract_repl_tsprep with "Hkeys") as (tplsk) "(Hkeys & Htpls & %Hdom')".
     (* Agree on tuples from the group and keys invariants. *)
     iDestruct (tuple_repl_big_agree with "Hrepls Htpls") as %->; first by rewrite -Hdom in Hdom'.
     clear Hdom'.
@@ -2733,6 +2869,75 @@ Section group_inv.
     by auto with set_solver.
   Qed.
 
+  (* Invariance proof for [learn_read]. *)
+
+  Lemma key_inv_learn_read {γ} ts k h t :
+    let tpl := read ts h t in
+    key_inv_no_repl_tsprep γ k h t -∗
+    key_inv_no_repl_tsprep γ k tpl.1 tpl.2.
+  Proof.
+    iIntros (tpl) "Hkey".
+    subst tpl. rewrite /read.
+    case_decide as Ht; last done.
+    iNamed "Hkey". iNamed "Hprop". simpl.
+    destruct Ht as [-> | Hlt].
+    { (* Case: Tuple not acquired by any txn. *)
+      apply (diff_by_cmtd_inv_learn_read_free ts) in Hdiffc; last done.
+      iFrame "∗ # %".
+    }
+    (* Case: Tuple prepared at [t] where [ts < t]. *)
+    pose proof (diff_by_cmtd_inv_learn_read_acquired _ _ Hlt Hdiffc) as Hdiffc'.
+    iFrame "∗ # %".
+  Qed.
+
+  Lemma group_inv_learn_read γ gid log cpool ts key :
+    CmdRead ts key ∈ cpool ->
+    ([∗ set] key ∈ keys_all, key_inv γ key) -∗
+    group_inv_with_cpool_no_log γ gid log cpool ==∗
+    ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    group_inv_with_cpool_no_log γ gid (log ++ [CmdRead ts key]) cpool.
+  Proof.
+    iIntros (Hc) "Hkeys Hgroup".
+    iNamed "Hgroup".
+    rewrite /apply_cmds in Hrsm.
+    rewrite /group_inv_with_cpool_no_log.
+    rewrite /apply_cmds foldl_snoc Hrsm /=.
+    (* Obtain validity of the read input. *)
+    iDestruct (big_sepS_elem_of with "Hvc") as "Hread"; first apply Hc.
+    iDestruct "Hread" as %(_ & Hkey & Hgid).
+    destruct (tpls !! key) as [[h t] |] eqn:Hht; last first.
+    { (* Case: Out-of-range key; contradiction. *)
+      pose proof (apply_cmds_dom log _ _ Hrsm) as Hdom.
+      rewrite /valid_key in Hkey.
+      by rewrite -not_elem_of_dom Hdom in Hht.
+    }
+    (* Case: Valid read. *)
+    set tpl' := read _ _ _.
+    (* Create txn tokens for the new state. *)
+    iDestruct (txn_tokens_inv_learn_read ts key with "Htks") as "Htks'".
+    (* Take the required key invariant. *)
+    iDestruct (big_sepS_elem_of_acc with "Hkeys") as "[Hkey HkeysC]"; first apply Hkey.
+    (* Take the half-ownership of the tuple out from the key invariant. *)
+    iDestruct (key_inv_extract_repl_tsprep with "Hkey") as (tpl) "[Hkey Htpl]".
+    (* And the other half from the group invariant. *)
+    iDestruct (big_sepM_delete with "Hrepls") as "[Hrepl Hrepls]".
+    { by apply map_lookup_filter_Some_2. }
+    (* Agree on their value. *)
+    iDestruct (tuple_repl_agree with "Hrepl Htpl") as %->. simpl.
+    (* Update the tuple. *)
+    iMod (tuple_repl_update tpl' with "Hrepl Htpl") as "[Hrepl Htpl]".
+    (* Re-establish key invariant w.r.t. the updated tuple. *)
+    iDestruct (key_inv_learn_read ts with "Hkey") as "Hkey".
+    (* Put back tuple ownership back to key invariant. *)
+    iDestruct (key_inv_merge_repl_tsprep with "Hkey Htpl") as "Hkey".
+    (* Put the key invariant back. *)
+    iDestruct ("HkeysC" with "Hkey") as "Hkeys".
+    (* Put back tuple ownership back to group invariant. *)
+    iDestruct (big_sepM_insert_2 with "Hrepl Hrepls") as "Hrepls".
+    rewrite insert_delete_insert insert_tpls_group_commute; last done.
+    by iFrame "∗ # %".
+  Qed.
+
   Lemma group_inv_learn γ gid cpool cmds :
     ∀ log,
     cpool_subsume_log cpool (log ++ cmds) ->
@@ -2772,7 +2977,14 @@ Section group_inv.
       }
       by iApply ("IH" with "[] Htxn Hkeys Hgroup").
     }
-  Admitted.
+    { (* Case: [CmdRead tid key] *)
+      iMod (group_inv_learn_read with "Hkeys Hgroup") as "[Hkeys Hgroup]".
+      { rewrite /cpool_subsume_log 2!Forall_app Forall_singleton in Hsubsume.
+        by destruct Hsubsume as [[_ Hc] _].
+      }
+      by iApply ("IH" with "[] Htxn Hkeys Hgroup").
+    }
+  Qed.
 
 End group_inv.
 (* TODO: move to distx_group_inv.v once stable. *)
