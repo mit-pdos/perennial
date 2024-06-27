@@ -413,9 +413,7 @@ Definition Server__TryAcquire: val :=
         let: "numReplies_cond" := lock.newCond "mu" in
         let: "n" := slice.len "clerks" in
         ForSlice ptrT "i" "ck" "clerks"
-          (let: "ck" := "ck" in
-          let: "i" := "i" in
-          Fork (let: "reply" := singleClerk__applyAsFollower "ck" "args" in
+          (Fork (let: "reply" := singleClerk__applyAsFollower "ck" "args" in
                 lock.acquire "mu";;
                 "numReplies" <-[uint64T] ((![uint64T] "numReplies") + #1);;
                 SliceSet ptrT "replies" "i" "reply";;
