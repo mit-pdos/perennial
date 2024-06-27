@@ -26,6 +26,7 @@ Section val_types.
   | chanT (elem : go_type).
 
   Definition byteT := uint8T.
+  Definition intT := int64T.
 
   Context `{ffi_syntax}.
   Definition nil : val := #null.
