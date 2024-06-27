@@ -718,9 +718,9 @@ Definition StartServer: val :=
     let: "s" := ref_ty ptrT (zero_val ptrT) in
     let: "$a0" := makeServer (![stringT] "fname") (![sliceT byteT] "initstate") (![sliceT uint64T] "config") in
     do:  "s" <-[ptrT] "$a0";;;
-    let: "handlers" := ref_ty (mapT funcT) (zero_val (mapT funcT)) in
-    let: "$a0" := NewMap uint64T funcT #() in
-    do:  "handlers" <-[mapT funcT] "$a0";;;
+    let: "handlers" := ref_ty (mapT uint64T funcT) (zero_val (mapT uint64T funcT)) in
+    let: "$a0" := map.make uint64T funcT #() in
+    do:  "handlers" <-[mapT uint64T funcT] "$a0";;;
     let: "$a0" := (λ: "raw_args" "raw_reply",
       let: "reply" := ref_ty ptrT (zero_val ptrT) in
       let: "$a0" := ref_ty (structT applyAsFollowerReply) (zero_val (structT applyAsFollowerReply)) in
@@ -733,7 +733,7 @@ Definition StartServer: val :=
       do:  (![ptrT] "raw_reply") <-[sliceT byteT] "$a0";;;
       do:  #()
       ) in
-    do:  map.insert (![mapT funcT] "handlers") RPC_APPLY_AS_FOLLOWER "$a0";;;
+    do:  map.insert (![mapT uint64T funcT] "handlers") RPC_APPLY_AS_FOLLOWER "$a0";;;
     let: "$a0" := (λ: "raw_args" "raw_reply",
       let: "reply" := ref_ty ptrT (zero_val ptrT) in
       let: "$a0" := ref_ty (structT enterNewEpochReply) (zero_val (structT enterNewEpochReply)) in
@@ -746,14 +746,14 @@ Definition StartServer: val :=
       do:  (![ptrT] "raw_reply") <-[sliceT byteT] "$a0";;;
       do:  #()
       ) in
-    do:  map.insert (![mapT funcT] "handlers") RPC_ENTER_NEW_EPOCH "$a0";;;
+    do:  map.insert (![mapT uint64T funcT] "handlers") RPC_ENTER_NEW_EPOCH "$a0";;;
     let: "$a0" := (λ: "raw_args" "raw_reply",
       do:  Server__TryBecomeLeader (![ptrT] "s");;;
       do:  #()
       ) in
-    do:  map.insert (![mapT funcT] "handlers") RPC_BECOME_LEADER "$a0";;;
+    do:  map.insert (![mapT uint64T funcT] "handlers") RPC_BECOME_LEADER "$a0";;;
     let: "r" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := urpc.MakeServer (![mapT funcT] "handlers") in
+    let: "$a0" := urpc.MakeServer (![mapT uint64T funcT] "handlers") in
     do:  "r" <-[ptrT] "$a0";;;
     do:  urpc.Server__Serve (![ptrT] "r") (![uint64T] "me");;;
     return: (![ptrT] "s");;;
