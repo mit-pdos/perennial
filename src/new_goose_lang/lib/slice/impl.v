@@ -25,18 +25,6 @@ Definition make3 t : val :=
 Definition make2 t : val :=
   λ: "sz", make3 t "sz" "sz".
 
-Definition copy t : val :=
-  λ: "dst" "src",
-  (* take the minimum *)
-  let: "n" := (if: len "dst" < len "src" then len "dst" else len "src") in
-  (rec: "copy_aux" "dst" "src" "n" :=
-    if: "n" = #0
-    then #()
-    else "dst" <-[t] (![t] "src");;
-         "copy_aux" (BinOp (OffsetOp (go_type_size t)) "dst" #1)
-                  (BinOp (OffsetOp (go_type_size t)) "src" #1)
-                  ("n" - #1)) "n".
-
 (* computes `&s[i]` *)
 Definition elem_ref t : val :=
   λ: "s" "i", if: "i" < len "s"
@@ -47,7 +35,7 @@ Definition elem_ref t : val :=
 
 Definition slice t : val :=
   λ: "a" "low" "high",
-  if: (#0 ≤ "low") && ("low" < "high") && ("high" < len "a") then
+  if: (#0 ≤ "low") && ("low" < "high") && ("high" < cap "a") then
     ((Fst $ Fst "s") +ₗ[t] "low", "high" - "low", cap "s" - "low")
   else Panic "slice indices out of order"
 .
@@ -60,18 +48,25 @@ Definition for_range t : val :=
 .
 
 Definition copy t : val :=
-  λ: "s" "x",
-  let: "s" := ref_to (slice.T t) "s1" in
-  for_range t <> "x" "s2"
-    ("s" <-[slice.T t] (SliceAppend t (![slice.T t] "s") "x"));;
-  ![slice.T t] "s".
+  λ: "dst" "src",
+  let: "i" := ref_ty uint64T (zero_val uint64T) in
+  (for: (![uint64T] "i" < (len "dst")) && (![uint64T] "i" < (len "src")) ; Skip :=
+   elem_ref t "dst" <-[t] ! (elem_ref t "src")) ;;
+  ![uint64T] "i"
+.
 
 Definition append t : val :=
   λ: "s" "x",
-  let: "s" := ref_to (slice.T t) "s1" in
-  for_range t <> "x" "s2"
-    ("s" <-[slice.T t] (SliceAppend t (![slice.T t] "s") "x"));;
-  ![slice.T t] "s".
+  let: "s_new" := (if: (cap "s") > (len "s" + len "x") then
+                     (slice t "s" #0 (len "s" + len "x"))
+                   else
+                     let: "extra" := ArbitraryInt in
+                     let: "s_new" := make2 t (len "s" + len "x" + "extra") in
+                     copy t "s_new" "s" ;;
+                     "s_new"
+                  ) in
+  copy t (slice t "s_new" (len "s") (len "s_new")) "x" ;;
+  "s_new".
 
 End goose_lang.
 End slice.
