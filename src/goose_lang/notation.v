@@ -66,6 +66,9 @@ Notation "# l" := (LitV l%Z%V%stdpp) (at level 8, format "# l").
 Notation "( e1 , e2 , .. , en )" := (Pair .. (Pair e1 e2) .. en) : expr_scope.
 Notation "( e1 , e2 , .. , en )" := (PairV .. (PairV e1 e2) .. en) : val_scope.
 
+Notation "[ x ; y ; .. ; z ]" := (Pair x (Pair y .. (Pair z #()) ..)) : expr_scope.
+Notation "[ x ; y ; .. ; z ]" := (PairV x (PairV y .. (PairV z #()) ..)) : val_scope.
+
 (*
 Using the '[hv' ']' printing box, we make sure that when the notation for match
 does not fit on a single line, line breaks will be inserted for *each* breaking

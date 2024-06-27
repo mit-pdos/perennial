@@ -68,5 +68,18 @@ Definition append t : val :=
   copy t (slice t "s_new" (len "s") (len "s_new")) "x" ;;
   "s_new".
 
+(* Takes in a list of the specified length as input, and turns it into a
+   heap-allocated slice. *)
+Definition literal t : val :=
+  λ: "len" "elems",
+  let: "s" := make2 t "len" in
+  let: "l" := ref "elems" in
+  let: "i" := ref_ty uint64T (zero_val uint64T) in
+  for: ![uint64T] "i" < "len" ; "i" <-[t] ![uint64T] "i" + #1 :=
+    let: ("elem", "l_tail") := !"l"  in
+    "l" <- "l_tail" ;;
+    (elem_ref t "s" "i") <-[t] "elem"
+.
+
 End goose_lang.
 End slice.
