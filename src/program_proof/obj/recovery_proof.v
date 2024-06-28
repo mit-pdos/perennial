@@ -283,16 +283,7 @@ Proof.
   rewrite fmap_replicate.
   f_equal.
   rewrite /inode_bytes block_bytes_eq.
-  rewrite Nat.min_l; try word.
-  change (Z.to_nat 128 * 8)%nat with 1024%nat.
-  change (Z.to_nat 4096) with 4096%nat.
-  change (Z.to_nat 128) with 128%nat.
-  assert (uint.nat off < 8 * 4096)%nat by lia.
-  cut (uint.nat off `div` 1024 < 32)%nat; try lia.
-  change (8*4096)%nat with (Z.to_nat 32768) in H1.
-  apply Nat2Z.inj_lt.
-  rewrite Nat2Z.inj_div.
-  lia.
+  word.
 Qed.
 
 Lemma bufDataT_in_block0_bit off o (n: u64) :
@@ -320,16 +311,7 @@ Proof.
       | |- context[replicate ?n _] => replace n with 1%nat; [ reflexivity | ]
       end.
       rewrite block_bytes_eq in H1 |- *.
-      rewrite !Nat.mul_1_r.
-      rewrite Nat.min_l; [ lia | ].
-      replace (uint.nat i) with i by word.
-      apply Z.div_lt_upper_bound in H1; [ | lia ].
-      rewrite -> Z2Nat.id in H1 by lia.
-      replace (Nat.div i 8) with (Z.to_nat $ Z.div (Z.of_nat i) 8); try lia.
-      rewrite Z2Nat.inj_div; try lia.
-      change (Z.to_nat 8) with 8%nat.
-      rewrite Nat2Z.id.
-      lia.
+      word.
     * rewrite /get_bit.
       rewrite decide_False //.
       intros Heq%(f_equal uint.Z); move: Heq.
@@ -340,10 +322,7 @@ Proof.
       rewrite word.unsigned_of_Z word.unsigned_modu_nowrap //.
       change (uint.Z 8) with 8.
       rewrite block_bytes_eq in H1.
-      replace (uint.Z i) with (Z.of_nat i) by word.
-      rewrite /word.wrap.
-      assert (0 ≤ i `mod` 8 < 8) by (apply Z.mod_bound_pos; lia).
-      rewrite Z.mod_small; lia.
+      word.
   + rewrite /valid_addr /addr2flat_z /=.
     rewrite -> block_bytes_eq in *.
     split_and!; try word.
