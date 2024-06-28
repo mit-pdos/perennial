@@ -16,6 +16,36 @@ Definition dbval_to_val (v : dbval) : val :=
   | None => (#false, (zero_val stringT, #()))
   end.
 
+Definition dbval_from_val (v : val) : option dbval :=
+  match v with
+  | (#(LitBool b), (#(LitString s), #()))%V => if b then Some (Some s) else Some None
+  | _ => None
+  end.
+
+Definition dbmod_to_val (x : dbmod) : val :=
+  (#(LitString x.1), (dbval_to_val x.2, #())).
+
+Definition dbmod_from_val (v : val) : option dbmod :=
+  match v with
+  | (#(LitString k), (dbv, #()))%V => match dbval_from_val dbv with
+                                     | Some x => Some (k, x)
+                                     | _ => None
+                                     end
+  | _ => None
+  end.
+
+#[global]
+Instance dbmod_into_val : IntoVal dbmod.
+Proof.
+  refine {|
+      to_val := dbmod_to_val;
+      from_val := dbmod_from_val;
+      IntoVal_def := ("", None);
+    |}.
+  intros [k v].
+  by destruct v.
+Defined.
+
 Definition fstring := {k : string | (String.length k < 2 ^ 64)%nat}.
 
 #[local]
@@ -28,7 +58,7 @@ Definition keys_all : gset string.
 Admitted.
 
 Definition groupid := nat.
-Definition gids_all := seq 0 2.
+Definition gids_all : gset groupid := list_to_set (seq 0 2).
 
 Definition key_to_group (key : dbkey) : groupid.
 Admitted.
@@ -92,10 +122,10 @@ Proof.
 Qed.
 
 Inductive command :=
+| CmdRead (tid : nat) (key : dbkey)
 | CmdPrep (tid : nat) (wrs : dbmap)
 | CmdCmt (tid : nat)
-| CmdAbt (tid : nat)
-| CmdRead (tid : nat) (key : dbkey).
+| CmdAbt (tid : nat).
 
 #[local]
 Instance command_eq_decision :
@@ -617,6 +647,14 @@ Proof.
   replace (dom tpls1) with (dom tpls'); first by eapply IH.
   rewrite /apply_cmds in Hrsm1.
   destruct x eqn:Hx; rewrite /apply_cmds foldl_snoc Hrsm1 /= in Hrsm.
+  { (* Case [CmdRead]. *)
+    rewrite /apply_read in Hrsm.
+    destruct (tpls1 !! key) as [[vs tsprep] |] eqn:Htpls1; last by inversion Hrsm.
+    inversion Hrsm. subst tpls'.
+    rewrite dom_insert_L.
+    apply elem_of_dom_2 in Htpls1.
+    set_solver.
+  }
   { (* Case [CmdPrep]. *)
     rewrite /apply_prepare in Hrsm.
     destruct (stm1 !! tid); first by inversion Hrsm.
@@ -640,14 +678,6 @@ Proof.
     destruct st; [| done | by inversion Hrsm].
     inversion Hrsm. subst tpls'.
     apply release_dom.
-  }
-  { (* Case [CmdPrep]. *)
-    rewrite /apply_read in Hrsm.
-    destruct (tpls1 !! key) as [[vs tsprep] |] eqn:Htpls1; last by inversion Hrsm.
-    inversion Hrsm. subst tpls'.
-    rewrite dom_insert_L.
-    apply elem_of_dom_2 in Htpls1.
-    set_solver.
   }
 Qed.
 
@@ -713,6 +743,11 @@ Proof.
   rewrite /pts_nonzero in Hnz.
   intros stmc tplsc ts wrsx Happly Hstm.
   destruct c; rewrite /apply_cmds foldl_snoc /= in Happly.
+  { rewrite /apply_read in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    by destruct (tpls !! key) as [[vs tsprep] |];
+    inversion Happly; subst stmc tplsc; eapply Hnz.
+  }
   { simpl in Hpts.
     rewrite /apply_prepare in Happly.
     destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
@@ -760,11 +795,6 @@ Proof.
     }
     by eapply Hnz.
   }
-  { rewrite /apply_read in Happly.
-    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
-    by destruct (tpls !! key) as [[vs tsprep] |];
-    inversion Happly; subst stmc tplsc; eapply Hnz.
-  }
 Qed.
 
 Lemma pts_consistent_snoc l c :
@@ -777,6 +807,18 @@ Proof.
   rewrite /pts_consistent in Hcst.
   intros stmc tplsc ts wrsx keyx tpl Happly Hstm Htpls Hkey.
   destruct c; rewrite /apply_cmds foldl_snoc /= in Happly.
+  { (* Case: [CmdRead] *)
+    rewrite /apply_read in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (tpls !! key) as [[vs tsprep] |] eqn:Htpl; last done.
+    inversion Happly; subst stmc tplsc.
+    destruct (decide (keyx = key)) as [-> | Hne]; last first.
+    { rewrite lookup_insert_ne in Htpls; last done. by eapply Hcst. }
+    rewrite lookup_insert /read in Htpls.
+    specialize (Hcst _ _ _ _ _ _ Heq Hstm Htpl Hkey).
+    simpl in Hcst.
+    case_decide; by inversion Htpls.
+  }
   { (* Case: [CmdPrep] *)
     rewrite /apply_prepare in Happly.
     destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
@@ -864,18 +906,6 @@ Proof.
     rewrite release_unmodified in Htpls; last by rewrite not_elem_of_dom in Hnotin.
     by eapply Hcst.
   }
-  { (* Case: [CmdRead] *)
-    rewrite /apply_read in Happly.
-    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
-    destruct (tpls !! key) as [[vs tsprep] |] eqn:Htpl; last done.
-    inversion Happly; subst stmc tplsc.
-    destruct (decide (keyx = key)) as [-> | Hne]; last first.
-    { rewrite lookup_insert_ne in Htpls; last done. by eapply Hcst. }
-    rewrite lookup_insert /read in Htpls.
-    specialize (Hcst _ _ _ _ _ _ Heq Hstm Htpl Hkey).
-    simpl in Hcst.
-    case_decide; by inversion Htpls.
-  }
 Qed.
 
 Lemma pts_disjoint_snoc l c :
@@ -888,6 +918,12 @@ Proof.
   rewrite /pts_disjoint in Hdisj.
   intros stmc tplsc ts1 ts2 wrs1 wrs2 Happly Hne Hstm1 Hstm2.
   destruct c; rewrite /apply_cmds foldl_snoc /= in Happly.
+  { (* Case: [CmdRead] *)
+    rewrite /apply_read in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    by destruct (tpls !! key) as [[vs tsprep] |];
+      inversion Happly; subst stmc tplsc; eapply Hdisj.
+  }
   { (* Case: [CmdPrep] *)
     rewrite /apply_prepare in Happly.
     destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
@@ -979,12 +1015,6 @@ Proof.
       by eapply Hdisj.
     }
     by eapply Hdisj.
-  }
-  { (* Case: [CmdRead] *)
-    rewrite /apply_read in Happly.
-    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
-    by destruct (tpls !! key) as [[vs tsprep] |];
-      inversion Happly; subst stmc tplsc; eapply Hdisj.
   }
 Qed.
 
@@ -1097,12 +1127,6 @@ Definition has_extended ts key log :=
 
 Definition past_read (acts : list action) (log : list command) :=
   ∀ ts key, ActRead ts key ∈ acts → has_extended ts key log.
-
-Definition log_txnst (ts : nat) (st : txnst) (log : dblog) :=
-  match apply_cmds log with
-  | State stm _ => stm !! ts = Some st
-  | _ => False
-  end.
 
 Definition lookup_twice
   {V} `{Countable K1} `{Countable K2}
@@ -1504,21 +1528,48 @@ Section ghost.
     ⌜kmods !! k = Some kmod⌝.
   Admitted.
 
+  (* Paxos log and command pool. TODO: rename clog to just log. *)
   Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.
   Admitted.
 
   Definition clog_lb γ (gid : groupid) (log : dblog) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance clog_lb_persistent γ gid log :
+    Persistent (clog_lb γ gid log).
+  Admitted.
+
   Definition clog_lbs γ (logs : gmap groupid dblog) : iProp Σ :=
     [∗ map] gid ↦ log ∈ logs, clog_lb γ gid log.
 
-  Definition cpool_half γ (gid : groupid) (pool : gset command) : iProp Σ.
+  Definition cpool_half γ (gid : groupid) (cpool : gset command) : iProp Σ.
   Admitted.
 
   Definition cmd_receipt γ (gid : groupid) (lsn : nat) (term : nat) (c : command) : iProp Σ.
   Admitted.
-  
+
+  Lemma log_witness γ gid log :
+    clog_half γ gid log -∗
+    clog_lb γ gid log.
+  Admitted.
+
+  Lemma log_prefix γ gid log logp :
+    clog_half γ gid log -∗
+    clog_lb γ gid logp -∗
+    ⌜prefix logp log⌝.
+  Admitted.
+
+  Definition cpool_subsume_log (cpool : gset command) (log : list command) :=
+    Forall (λ c, c ∈ cpool) log.
+
+  Lemma log_cpool_incl γ gid log cpool :
+    clog_half γ gid log -∗
+    cpool_half γ gid cpool -∗
+    ⌜cpool_subsume_log cpool log⌝.
+  Admitted.
+
+  (* Global timestamp. *)
   Definition ts_auth γ (ts : nat) : iProp Σ.
   Admitted.
 
@@ -1534,14 +1585,6 @@ Section ghost.
   Admitted.
 
 End ghost.
-
-Section spec.
-  Context `{!distx_ghostG Σ}.
-
-  Definition group_txnst γ gid ts st : iProp Σ :=
-    ∃ log, clog_lb γ gid log ∧ ⌜log_txnst ts st log⌝.
-
-End spec.
 
 Section sep.
   Context {PROP : bi}.
@@ -1989,7 +2032,7 @@ Section inv.
     (* keys invariants *)
     "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)
-    "Hgroups" ∷ ([∗ list] gid ∈ gids_all, group_inv γ gid).
+    "Hgroups" ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid).
 
   #[global]
   Instance distx_inv_timeless γ :
@@ -2006,15 +2049,18 @@ End inv.
 Section group_inv.
   Context `{!distx_ghostG Σ}.
 
-  Definition cpool_subsume_log (cpool : gset command) (log : list command) :=
-    Forall (λ c, c ∈ cpool) log.
-
   Lemma group_inv_expose_cpool_extract_log {γ} gid :
     group_inv γ gid -∗
     ∃ cpool log,
       clog_half γ gid log ∗
       group_inv_with_cpool_no_log γ gid log cpool.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
+
+  Lemma group_inv_hide_cpool_merge_log {γ gid} log cpool :
+    clog_half γ gid log -∗
+    group_inv_with_cpool_no_log γ gid log cpool -∗
+    group_inv γ gid.
+  Proof. iIntros "Hlog Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   (* TODO: might not need these anymore once update the learn_prepare proof to
   be more consistent with that of learn_commit. *)
@@ -2638,7 +2684,7 @@ Section group_inv.
       rewrite Forall_forall in Hsubsume.
       specialize (Hsubsume _ Hx).
       iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hsubsume.
-      destruct x; [| done | done | done]. simpl.
+      destruct x; [done | | done | done]. simpl.
       by iDestruct "Hc" as (?) "(_ & %Hvts & _)".
     }
     iDestruct (keys_inv_committed with "Hcmt Hkeys Htxn") as "[Hkeys Htxn]".
@@ -2833,7 +2879,7 @@ Section group_inv.
       rewrite Forall_forall in Hsubsume.
       specialize (Hsubsume _ Hx).
       iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hsubsume.
-      destruct x; [| done | done | done]. simpl.
+      destruct x; [done | | done | done]. simpl.
       by iDestruct "Hc" as (?) "(_ & %Hvts & _)".
     }
     iDestruct (keys_inv_prepared with "Habt Hkeys Htxn") as "[Hkeys Htxn]".
@@ -2956,6 +3002,13 @@ Section group_inv.
     rewrite cons_middle app_assoc in Hsubsume.
     rewrite cons_middle app_assoc.
     destruct c.
+    { (* Case: [CmdRead tid key] *)
+      iMod (group_inv_learn_read with "Hkeys Hgroup") as "[Hkeys Hgroup]".
+      { rewrite /cpool_subsume_log 2!Forall_app Forall_singleton in Hsubsume.
+        by destruct Hsubsume as [[_ Hc] _].
+      }
+      by iApply ("IH" with "[] Htxn Hkeys Hgroup").
+    }
     { (* Case: [CmdPrep tid wrs] *)
       iMod (group_inv_learn_prepare with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
       { rewrite /cpool_subsume_log 2!Forall_app Forall_singleton in Hsubsume.
@@ -2974,13 +3027,6 @@ Section group_inv.
       iMod (group_inv_learn_abort with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
       { rewrite /cpool_subsume_log Forall_app in Hsubsume.
         by destruct Hsubsume as [Hsubsume _].
-      }
-      by iApply ("IH" with "[] Htxn Hkeys Hgroup").
-    }
-    { (* Case: [CmdRead tid key] *)
-      iMod (group_inv_learn_read with "Hkeys Hgroup") as "[Hkeys Hgroup]".
-      { rewrite /cpool_subsume_log 2!Forall_app Forall_singleton in Hsubsume.
-        by destruct Hsubsume as [[_ Hc] _].
       }
       by iApply ("IH" with "[] Htxn Hkeys Hgroup").
     }

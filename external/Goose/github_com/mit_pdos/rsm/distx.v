@@ -442,15 +442,16 @@ Definition Replica__apply: val :=
 
 Definition Replica__Start: val :=
   rec: "Replica__Start" "rp" :=
+    lock.acquire (struct.loadF Replica "mu" "rp");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      lock.acquire (struct.loadF Replica "mu" "rp");;
       let: "lsn" := (struct.loadF Replica "lsna" "rp") + #1 in
       let: ("cmd", "ok") := TxnLog__Lookup (struct.loadF Replica "log" "rp") "lsn" in
       (if: (~ "ok")
       then
         lock.release (struct.loadF Replica "mu" "rp");;
         time.Sleep (#1 * #1000000);;
+        lock.acquire (struct.loadF Replica "mu" "rp");;
         Continue
       else
         Replica__apply "rp" "cmd";;

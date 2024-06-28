@@ -51,7 +51,7 @@ Section program.
     is_rg rg gid γ -∗
     {{{ True }}}
       ReplicaGroup__Prepare #rg #ts
-    {{{ (status : txnst), RET #(txnst_to_u64 status); group_txnst γ gid (uint.nat ts) status }}}.
+    {{{ (st : txnst), RET #(txnst_to_u64 st); txn_token γ gid (uint.nat ts) st }}}.
   Proof.
     (*@ func (rg *ReplicaGroup) Prepare(ts uint64) uint64 {                     @*)
     (*@     var status uint64                                                   @*)

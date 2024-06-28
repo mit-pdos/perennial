@@ -6,8 +6,21 @@ Section program.
 
   Definition txnlogN := nroot .@ "txnlog".
 
-  Definition command_to_val (c : command) : val.
-  Admitted.
+  Definition command_to_val (pwrsS : Slice.t) (c : command) : val :=
+    match c with
+    | CmdRead ts key => (#(U64 0), (#(U64 ts), (Slice.nil, (#(LitString key), #()))))
+    | CmdPrep ts _ => (#(U64 1), (#(U64 ts), (to_val pwrsS, (zero_val stringT, #()))))
+    | CmdCmt ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
+    | CmdAbt ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
+    end.
+
+  Definition own_pwrs (pwrsS : Slice.t) (c : command) : iProp Σ :=
+    match c with
+    (* TODO: relate [pwrs] with [pwrsL]. *)
+    | CmdPrep _ pwrs => (∃ pwrsL : list dbmod,
+                           own_slice pwrsS (struct.t WriteEntry) (DfracOwn 1) pwrsL)
+    | _ => True
+    end.
   
   Definition own_txnlog (log : loc) (gid : groupid) (γ : distx_names) : iProp Σ.
   Admitted.
@@ -18,8 +31,9 @@ Section program.
     <<< ∀∀ l, clog_half γ gid l >>>
       TxnLog__Lookup #log #lsn @ ↑txnlogN
     <<< ∃∃ l', clog_half γ gid l' >>>
-    {{{ (c : command) (ok : bool), RET (command_to_val c, #ok);
+    {{{ (c : command) (ok : bool) (pwrsS : Slice.t), RET (command_to_val pwrsS c, #ok);
         own_txnlog log gid γ ∗
+        own_pwrs pwrsS c ∗
         ⌜if ok then l' !! (uint.nat lsn) = Some c else True⌝
     }}}.
   Proof.

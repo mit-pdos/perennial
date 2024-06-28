@@ -114,11 +114,12 @@ Section program.
   Admitted.
 
   Theorem wp_Replica__Prepare (rp : loc) (ts : u64) (wrs : Slice.t) (gid : groupid) γ :
+    group_inv γ gid -∗
     is_replica rp gid γ -∗
     {{{ True }}}
       Replica__Prepare #rp #ts (to_val wrs)
     {{{ (status : txnst) (ok : bool), RET (#(txnst_to_u64 status), #ok);
-        if ok then group_txnst γ gid (uint.nat ts) status else True
+        if ok then txnprep_prep γ gid (uint.nat ts) else txnprep_unprep γ gid (uint.nat ts)
     }}}.
   Proof.
     (*@ func (rp *Replica) Prepare(ts uint64, wrs []WriteEntry) (uint64, bool) { @*)
@@ -189,6 +190,103 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
+  Theorem wp_Replica__validate
+    (rp : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) :
+    {{{ own_slice pwrsS (struct.t WriteEntry) (DfracOwn 1) pwrsL }}}
+      Replica__validate #rp #ts (to_val pwrsS)
+    {{{ (ok : bool), RET #ok; True }}}.
+  Proof.
+    iIntros (Φ) "HpwrsS HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) validate(ts uint64, wrs []WriteEntry) bool {         @*)
+    (*@     // Start acquiring locks for each key.                              @*)
+    (*@     var pos uint64 = 0                                                  @*)
+    (*@                                                                         @*)
+    wp_apply (wp_ref_to); first by auto.
+    iIntros (pos) "Hpos".
+    wp_pures.
+
+    (*@     for pos < uint64(len(wrs)) {                                        @*)
+    (*@         ent := wrs[pos]                                                 @*)
+    (*@         tpl := rp.idx.GetTuple(ent.k)                                   @*)
+    (*@         ret := tpl.Own(ts)                                              @*)
+    (*@         if !ret {                                                       @*)
+    (*@             break                                                       @*)
+    (*@         }                                                               @*)
+    (*@         pos++                                                           @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    iDestruct (own_slice_sz with "HpwrsS") as %Hlen.
+    iDestruct (own_slice_small_acc with "HpwrsS") as "[HpwrsS HpwrsC]".
+    set P := (λ (b : bool), ∃ (n : u64),
+      "HpwrsS" ∷ own_slice_small pwrsS (struct.t WriteEntry) (DfracOwn 1) pwrsL ∗
+      "HposR"  ∷ pos ↦[uint64T] #n)%I.
+    wp_apply (wp_forBreak_cond P with "[] [HpwrsS]").
+    { (* loop body *)
+      clear Φ. iIntros (Φ) "!> HP HΦ". iNamed "HP".
+      wp_load.
+      wp_apply (wp_slice_len).
+      wp_if_destruct; last first.
+      { (* exit from the loop condition *) iApply "HΦ". by iFrame. }
+      wp_load.
+      destruct (lookup_lt_is_Some_2 pwrsL (uint.nat n)) as [wr Hwr]; first word.
+      wp_apply (wp_SliceGet with "[$HpwrsS]"); first done.
+      iIntros "HpwrsL".
+      wp_pures.
+      admit.
+    }
+
+    (*@     // Release partially acquired locks.                                @*)
+    (*@     if pos < uint64(len(wrs)) {                                         @*)
+    (*@         ent := wrs[pos]                                                 @*)
+    (*@         var i uint64 = 0                                                @*)
+    (*@         for i < pos {                                                   @*)
+    (*@             tpl := rp.idx.GetTuple(ent.k)                               @*)
+    (*@             tpl.Free()                                                  @*)
+    (*@             i++                                                         @*)
+    (*@         }                                                               @*)
+    (*@         return false                                                    @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    (*@     return true                                                         @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) :
+    {{{ own_pwrs pwrsS cmd }}}
+      Replica__apply #rp (command_to_val pwrsS cmd)
+    {{{ RET #(); True }}}.
+  Proof.
+    (*@ func (rp *Replica) apply(cmd Cmd) {                                     @*)
+    (*@     if cmd.kind == 0 {                                                  @*)
+    (*@         rp.applyRead(cmd.ts, cmd.key)                                   @*)
+    (*@     } else if cmd.kind == 1 {                                           @*)
+    (*@         rp.applyPrepare(cmd.ts, cmd.wrs)                                @*)
+    (*@     } else if cmd.kind == 2 {                                           @*)
+    (*@         rp.applyCommit(cmd.ts)                                          @*)
+    (*@     } else {                                                            @*)
+    (*@         rp.applyAbort(cmd.ts)                                           @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    iIntros (Φ) "HpwrsS HΦ".
+    wp_call.
+    destruct cmd eqn:Hcmd; simpl; wp_pures.
+    { (* Case: Read. *)
+      admit.
+    }
+    { (* Case: Prepare. *)
+      iDestruct "HpwrsS" as (pwrsL) "HpwrsS".
+      admit.
+    }
+    { (* Case: Commit. *)
+      admit.
+    }
+    { (* Case: Abort. *)
+      admit.
+    }
+  Admitted.
+
   Theorem wp_Replica__Start (rp : loc) (gid : groupid) γ :
     know_distx_inv γ -∗ 
     is_replica rp gid γ -∗
@@ -199,27 +297,26 @@ Section program.
     iIntros "#Hinv #Hrp" (Φ) "!> _ HΦ".
     wp_call.
 
-    wp_apply (wp_forBreak (λ _, True)%I); last first.
-    { wp_pures. by iApply "HΦ". }
     (*@ func (rp *Replica) Start() {                                            @*)
-    (*@     for {                                                               @*)
-    (*@         rp.mu.Lock()                                                    @*)
+    (*@     rp.mu.Lock()                                                        @*)
     (*@                                                                         @*)
-    clear Φ.
-    iIntros (Φ) "!> _ HΦ".
-    wp_call.
     iNamed "Hrp".
     wp_loadField.
     wp_apply (acquire_spec with "Hlock").
     iIntros "[Hlocked Hrp]".
     wp_pures.
-    iNamed "Hrp".
 
+    (*@     for {                                                               @*)
     (*@         lsn := rp.lsna + 1                                              @*)
     (*@         // TODO: a more efficient interface would return multiple safe commands @*)
     (*@         // at once (so as to reduce the frequency of acquiring Paxos mutex). @*)
     (*@                                                                         @*)
-    wp_loadField. wp_pures.
+    set P := (λ b : bool, own_replica rp gid γ ∗ locked #mu)%I.
+    wp_apply (wp_forBreak P with "[] [$Hrp $Hlocked]"); last first.
+    { (* Get out of an infinite loop. *) iIntros "Hrp". wp_pures. by iApply "HΦ". }
+    clear Φ. iIntros "!>" (Φ) "[Hrp Hlocked] HΦ".
+    iNamed "Hrp".
+    wp_call. wp_loadField. wp_pures.
 
     (*@         // Ghost action: Learn a list of new commands.                  @*)
     (*@         cmd, ok := rp.log.Lookup(lsn)                                   @*)
@@ -230,26 +327,65 @@ Section program.
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
     iNamed "HinvO".
-    (* take the group invariant out *)
-    assert (Hgids : gids_all !! gid = Some gid) by admit.
-    iDestruct (big_sepL_lookup_acc with "Hgroups") as "[Hgroup Hgroups]"; first apply Hgids.
-    iRename "Hlog" into "Hlog'".
-    iNamed "Hgroup".
-    iFrame.
-    iIntros (log') "Hlog".
+    (* Take the required group invariant. *)
+    iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
+    (* Separate out the ownership of the Paxos log from others. *)
+    iDestruct (group_inv_expose_cpool_extract_log with "Hgroup") as (cpool paxos) "[Hpaxos Hgroup]".
+    (* Obtain a lower bound before passing it to Paxos. *)
+    iDestruct (log_witness with "Hpaxos") as "#Hlb".
+    iExists paxos. iFrame.
+    iIntros (paxos') "Hpaxos".
+    (* Obtain prefix between the old and new logs. *)
+    iDestruct (log_prefix with "Hpaxos Hlb") as %Hpaxos.
+    destruct Hpaxos as [cmds Hpaxos].
+    (* Obtain inclusion between the command pool and the log. *)
+    iAssert (⌜cpool_subsume_log cpool paxos'⌝)%I as %Hincl.
+    { iNamed "Hgroup".
+      by iDestruct (log_cpool_incl with "Hpaxos Hcpool") as %Hincl.
+    }
+    subst paxos'.
+    (* Re-establish the group invariant w.r.t. the new log. *)
+    iMod (group_inv_learn with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
+    { apply Hincl. }
+    iDestruct (group_inv_hide_cpool_merge_log with "Hpaxos Hgroup") as "Hgroup".
+    (* Put back the group invariant. *)
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+    (* Close the entire invariant. *)
+    iMod "Hmask" as "_".
+    iMod ("HinvC" with "[Htxn Hkeys Hgroups]") as "_"; first by iFrame.
+    iIntros "!>" (cmd ok pwrsS) "(Htxnlog & HpwrsS & %Hcmd)".
+    wp_pures.
 
     (*@         if !ok {                                                        @*)
     (*@             // Sleep for 1 ms.                                          @*)
     (*@             rp.mu.Unlock()                                              @*)
     (*@             machine.Sleep(1 * 1000000)                                  @*)
+    (*@             rp.mu.Lock()                                                @*)
     (*@             continue                                                    @*)
     (*@         }                                                               @*)
     (*@                                                                         @*)
+    wp_if_destruct.
+    { wp_loadField.
+      wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame.
+      wp_apply wp_Sleep.
+      wp_loadField.
+      wp_apply (acquire_spec with "Hlock").
+      iIntros "[Hlocked Hrp]".
+      wp_pures.
+      iApply "HΦ".
+      by iFrame.
+    }
+
     (*@         rp.apply(cmd)                                                   @*)
     (*@                                                                         @*)
+    wp_apply (wp_Replica__apply with "HpwrsS").
+
     (*@         rp.lsna = lsn                                                   @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
+    wp_storeField.
+    iApply "HΦ".
+    iFrame.
   Admitted.
 
 End program.
