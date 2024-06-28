@@ -49,7 +49,7 @@ Definition chainSepSome__encode: val :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 1));;
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF chainSepSome "epoch" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF chainSepSome "prevLink" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF chainSepSome "prevLink" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF chainSepSome "data" "o"));;
     ![slice.T byteT] "b".
 
@@ -67,7 +67,7 @@ Definition servSepLink__encode: val :=
   rec: "servSepLink__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 0));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servSepLink "link" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servSepLink "link" "o"));;
     ![slice.T byteT] "b".
 
 (* errSome from ktmerkle.go *)
@@ -111,7 +111,7 @@ Definition evidServLink__check: val :=
         (if: (struct.loadF evidServLink "epoch0" "e") = (struct.loadF evidServLink "epoch1" "e")
         then std.BytesEqual "link0" "link1"
         else
-          (if: ((struct.loadF evidServLink "epoch0" "e") + #1) = (struct.loadF evidServLink "epoch1" "e")
+          (if: (struct.loadF evidServLink "epoch0" "e") = ((struct.loadF evidServLink "epoch1" "e") - #1)
           then std.BytesEqual "link0" (struct.loadF evidServLink "prevLink1" "e")
           else errSome)))).
 
@@ -146,7 +146,7 @@ Definition servSepPut__encode: val :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 1));;
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF servSepPut "epoch" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servSepPut "id" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servSepPut "id" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servSepPut "val" "o"));;
     ![slice.T byteT] "b".
 
@@ -177,10 +177,7 @@ Definition evidServPut__check: val :=
         let: "err0" := merkle.CheckProof merkle.MembProofTy (struct.loadF evidServPut "proof" "e") (struct.loadF evidServPut "id" "e") (struct.loadF evidServPut "val1" "e") (struct.loadF evidServPut "dig" "e") in
         (if: "err0"
         then errSome
-        else
-          (if: std.BytesEqual (struct.loadF evidServPut "val0" "e") (struct.loadF evidServPut "val1" "e")
-          then errSome
-          else errNone)))).
+        else std.BytesEqual (struct.loadF evidServPut "val0" "e") (struct.loadF evidServPut "val1" "e")))).
 
 (* ktmerkle.go *)
 
@@ -492,7 +489,7 @@ Definition adtrSepLink__encode: val :=
   rec: "adtrSepLink__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 0));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrSepLink "link" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrSepLink "link" "o"));;
     ![slice.T byteT] "b".
 
 (* put adds a link to the log. it's unspecified how this gets called.
@@ -684,7 +681,7 @@ Definition servPutArg := struct.decl [
 Definition servPutArg__encode: val :=
   rec: "servPutArg__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servPutArg "id" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servPutArg "id" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servPutArg "val" "o"));;
     ![slice.T byteT] "b".
 
@@ -713,19 +710,19 @@ Definition servPutReply__decode: val :=
     (if: "err"
     then (slice.nil, "err")
     else
-      let: (("prev2Link", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+      let: (("prev2Link", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
       (if: "err"
       then (slice.nil, "err")
       else
-        let: (("prevDig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+        let: (("prevDig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
         (if: "err"
         then (slice.nil, "err")
         else
-          let: (("linkSig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #64 in
+          let: (("linkSig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
           (if: "err"
           then (slice.nil, "err")
           else
-            let: (("putSig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #64 in
+            let: (("putSig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
             (if: "err"
             then (slice.nil, "err")
             else
@@ -797,22 +794,22 @@ Definition servGetIdAtArg := struct.decl [
 Definition servGetIdAtArg__encode: val :=
   rec: "servGetIdAtArg__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servGetIdAtArg "id" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetIdAtArg "id" "o"));;
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF servGetIdAtArg "epoch" "o"));;
     ![slice.T byteT] "b".
 
 Definition servGetIdAtReply__decode: val :=
   rec: "servGetIdAtReply__decode" "o" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
-    let: (("prevLink", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+    let: (("prevLink", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
     (if: "err"
     then (slice.nil, "err")
     else
-      let: (("dig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+      let: (("dig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
       (if: "err"
       then (slice.nil, "err")
       else
-        let: (("sig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #64 in
+        let: (("sig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
         (if: "err"
         then (slice.nil, "err")
         else
@@ -896,15 +893,15 @@ Definition servGetLinkArg__encode: val :=
 Definition servGetLinkReply__decode: val :=
   rec: "servGetLinkReply__decode" "o" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
-    let: (("prevLink", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+    let: (("prevLink", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
     (if: "err"
     then (slice.nil, "err")
     else
-      let: (("dig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+      let: (("dig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
       (if: "err"
       then (slice.nil, "err")
       else
-        let: (("sig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #64 in
+        let: (("sig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
         (if: "err"
         then (slice.nil, "err")
         else
@@ -971,19 +968,19 @@ Definition adtrGetArg__encode: val :=
 Definition adtrGetReply__decode: val :=
   rec: "adtrGetReply__decode" "o" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
-    let: (("prevLink", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+    let: (("prevLink", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
     (if: "err"
     then (slice.nil, "err")
     else
-      let: (("dig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+      let: (("dig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
       (if: "err"
       then (slice.nil, "err")
       else
-        let: (("servSig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #64 in
+        let: (("servSig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
         (if: "err"
         then (slice.nil, "err")
         else
-          let: (("adtrSig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #64 in
+          let: (("adtrSig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
           (if: "err"
           then (slice.nil, "err")
           else
@@ -1161,7 +1158,7 @@ Definition helpersTy := struct.decl [
 Definition servPutArg__decode: val :=
   rec: "servPutArg__decode" "o" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
-    let: (("id", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+    let: (("id", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
     (if: "err"
     then (slice.nil, "err")
     else
@@ -1177,17 +1174,17 @@ Definition servPutReply__encode: val :=
   rec: "servPutReply__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF servPutReply "putEpoch" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servPutReply "prev2Link" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servPutReply "prevDig" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servPutReply "linkSig" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servPutReply "putSig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servPutReply "prev2Link" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servPutReply "prevDig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servPutReply "linkSig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servPutReply "putSig" "o"));;
     "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF servPutReply "error" "o"));;
     ![slice.T byteT] "b".
 
 Definition servGetIdAtArg__decode: val :=
   rec: "servGetIdAtArg__decode" "o" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
-    let: (("id", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+    let: (("id", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
     (if: "err"
     then (slice.nil, "err")
     else
@@ -1202,9 +1199,9 @@ Definition servGetIdAtArg__decode: val :=
 Definition servGetIdAtReply__encode: val :=
   rec: "servGetIdAtReply__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "prevLink" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "dig" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "sig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "prevLink" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "dig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "sig" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "val" "o"));;
     "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "proofTy" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF servGetIdAtReply "proof" "o"));;
@@ -1224,9 +1221,9 @@ Definition servGetLinkArg__decode: val :=
 Definition servGetLinkReply__encode: val :=
   rec: "servGetLinkReply__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servGetLinkReply "prevLink" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servGetLinkReply "dig" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF servGetLinkReply "sig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetLinkReply "prevLink" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetLinkReply "dig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF servGetLinkReply "sig" "o"));;
     "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF servGetLinkReply "error" "o"));;
     ![slice.T byteT] "b".
 
@@ -1300,15 +1297,15 @@ Definition adtrPutArg := struct.decl [
 Definition adtrPutArg__decode: val :=
   rec: "adtrPutArg__decode" "o" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
-    let: (("prevLink", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+    let: (("prevLink", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
     (if: "err"
     then (slice.nil, "err")
     else
-      let: (("dig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #32 in
+      let: (("dig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
       (if: "err"
       then (slice.nil, "err")
       else
-        let: (("servSig", "b"), "err") := marshalutil.ReadBytes (![slice.T byteT] "b") #64 in
+        let: (("servSig", "b"), "err") := marshalutil.ReadSlice1D (![slice.T byteT] "b") in
         (if: "err"
         then (slice.nil, "err")
         else
@@ -1344,10 +1341,10 @@ Definition adtrGetArg__decode: val :=
 Definition adtrGetReply__encode: val :=
   rec: "adtrGetReply__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrGetReply "prevLink" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrGetReply "dig" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrGetReply "servSig" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrGetReply "adtrSig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrGetReply "prevLink" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrGetReply "dig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrGetReply "servSig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrGetReply "adtrSig" "o"));;
     "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF adtrGetReply "error" "o"));;
     ![slice.T byteT] "b".
 
@@ -1419,9 +1416,9 @@ Definition callServUpdateEpoch: val :=
 Definition adtrPutArg__encode: val :=
   rec: "adtrPutArg__encode" "o" :=
     let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrPutArg "prevLink" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrPutArg "dig" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") (struct.loadF adtrPutArg "servSig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrPutArg "prevLink" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrPutArg "dig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrPutArg "servSig" "o"));;
     ![slice.T byteT] "b".
 
 Definition adtrPutReply__decode: val :=

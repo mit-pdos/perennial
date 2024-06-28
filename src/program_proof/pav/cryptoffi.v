@@ -66,35 +66,33 @@ Lemma wp_GenerateKey P hon :
   }}}.
 Proof. Admitted.
 
-Lemma wp_Sign sk P hon sl_msg msg :
+Lemma wp_Sign sk P hon sl_msg msg d0 :
   {{{
     "Hsk" ∷ own_sk sk P hon ∗
     "HP" ∷ P msg ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT (DfracOwn 1) msg
+    "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg
   }}}
   PrivateKey__Sign (slice_val sk) (slice_val sl_msg)
   {{{
     sl_sig (sig : list w8), RET (slice_val sl_sig);
     "Hsk" ∷ own_sk sk P hon ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT (DfracOwn 1) msg ∗
+    "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg ∗
     "Hsig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig
   }}}.
 Proof. Admitted.
 
-Lemma wp_Verify pk P hon sl_sig (sig : list w8) sl_msg (msg : list w8) :
+Lemma wp_Verify pk P hon sl_sig (sig : list w8) sl_msg (msg : list w8) d0 d1 :
   {{{
     "#Hpk" ∷ is_pk pk P hon ∗
-    "Hsig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT (DfracOwn 1) msg
+    "Hsig" ∷ own_slice_small sl_sig byteT d0 sig ∗
+    "Hmsg" ∷ own_slice_small sl_msg byteT d1 msg
   }}}
   PublicKey__Verify (slice_val pk) (slice_val sl_msg) (slice_val sl_sig)
   {{{
     (ok : bool), RET #ok;
-    "Hsig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT (DfracOwn 1) msg ∗
-    if ok && hon then
-      "HP" ∷ P msg
-    else True%I
+    "Hsig" ∷ own_slice_small sl_sig byteT d0 sig ∗
+    "Hmsg" ∷ own_slice_small sl_msg byteT d1 msg ∗
+    "HP" ∷ if ok && hon then P msg else True%I
   }}}.
 Proof. Admitted.
 
