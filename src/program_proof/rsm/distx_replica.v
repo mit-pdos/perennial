@@ -1,5 +1,15 @@
 From Perennial.program_proof.rsm Require Import distx distx_txnlog.
 From Goose.github_com.mit_pdos.rsm Require Import distx.
+From Perennial.program_proof Require Import std_proof.
+
+Section list.
+
+  Lemma take_length_prefix {A} (l1 l2 : list A) :
+    prefix l1 l2 ->
+    take (length l1) l2 = l1.
+  Proof. intros [l Happ]. by rewrite Happ take_app_length. Qed.
+
+End list.
 
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
@@ -26,22 +36,42 @@ Section program.
   (*@     // Key-value map.                                                   @*)
   (*@     kvmap  map[string]*Tuple                                            @*)
   (*@ }                                                                       @*)
-  Definition own_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
-    ∃ (rid : u64) (log : loc) (lsna : u64) (prepm : loc) (txntbl : loc)
-      (idx : loc) (kvmap : loc)
+  (* TODO: should also mention prepare map and tuples. *)
+  Definition absrel_replica (txntbl : gmap u64 bool) (st : rpst) : Prop.
+  Admitted.
+
+  Definition own_replica_state (rp : loc) (st : rpst) : iProp Σ :=
+    ∃ (rid : u64) (prepm : loc) (txntbl : loc) (idx : loc) (kvmap : loc)
       (prepmM : gmap u64 Slice.t) (txntblM : gmap u64 bool)
       (kvmapM : gmap string loc),
+      (* TODO: check if we really need rid *)
       "Hrid"     ∷ rp ↦[Replica :: "rid"] #rid ∗
-      "Hlog"     ∷ rp ↦[Replica :: "log"] #log ∗
-      "Htxnlog"  ∷ own_txnlog log gid γ ∗
-      "Hlsna"    ∷ rp ↦[Replica :: "lsna"] #lsna ∗
       "Hprepm"   ∷ rp ↦[Replica :: "prepm"] #prepm ∗
       "HprepmM"  ∷ own_map prepm (DfracOwn 1) prepmM ∗
       "Htxntbl"  ∷ rp ↦[Replica :: "txntbl"] #txntbl ∗
       "HtxntblM" ∷ own_map txntbl (DfracOwn 1) txntblM ∗
       "Hidx"     ∷ rp ↦[Replica :: "idx"] #idx ∗
       "Hkvmap"   ∷ rp ↦[Replica :: "kvmap"] #kvmap ∗
-      "HkvmapM"  ∷ own_map kvmap (DfracOwn 1) kvmapM.
+      "HkvmapM"  ∷ own_map kvmap (DfracOwn 1) kvmapM ∗
+      "%Habs"    ∷ ⌜absrel_replica txntblM st⌝.
+
+  (* Need this wrapper to prevent [wp_if_destruct] from eating the eq. *)
+  Definition rsm_consistency log st := apply_cmds log = st.
+
+  Definition own_replica_paxos
+    (rp : loc) (st : rpst) (gid : groupid) (γ : distx_names) : iProp Σ :=
+    ∃ (log : loc) (lsna : u64) (loga : dblog),
+      "Hlog"    ∷ rp ↦[Replica :: "log"] #log ∗
+      "Htxnlog" ∷ own_txnlog log gid γ ∗
+      "Hlsna"   ∷ rp ↦[Replica :: "lsna"] #lsna ∗
+      "#Hloga"  ∷ clog_lb γ gid loga ∗
+      "%Hlen"   ∷ ⌜length loga = S (uint.nat lsna)⌝ ∗
+      "%Hrsm"   ∷ ⌜rsm_consistency loga st⌝.
+
+  Definition own_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
+    ∃ (st : rpst),
+      "Hst"  ∷ own_replica_state rp st ∗
+      "Hlog" ∷ own_replica_paxos rp st gid γ.
 
   Definition is_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
     ∃ (mu : loc),
@@ -253,10 +283,10 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) :
-    {{{ own_pwrs pwrsS cmd }}}
+  Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) (st : rpst) :
+    {{{ own_replica_state rp st ∗ own_pwrs pwrsS cmd }}}
       Replica__apply #rp (command_to_val pwrsS cmd)
-    {{{ RET #(); True }}}.
+    {{{ RET #(); own_replica_state rp (apply_cmd st cmd) }}}.
   Proof.
     (*@ func (rp *Replica) apply(cmd Cmd) {                                     @*)
     (*@     if cmd.kind == 0 {                                                  @*)
@@ -269,7 +299,7 @@ Section program.
     (*@         rp.applyAbort(cmd.ts)                                           @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iIntros (Φ) "HpwrsS HΦ".
+    iIntros (Φ) "[HpwrsS Hrp] HΦ".
     wp_call.
     destruct cmd eqn:Hcmd; simpl; wp_pures.
     { (* Case: Read. *)
@@ -307,7 +337,7 @@ Section program.
     wp_pures.
 
     (*@     for {                                                               @*)
-    (*@         lsn := rp.lsna + 1                                              @*)
+    (*@         lsn := std.SumAssumeNoOverflow(rp.lsna, 1)                      @*)
     (*@         // TODO: a more efficient interface would return multiple safe commands @*)
     (*@         // at once (so as to reduce the frequency of acquiring Paxos mutex). @*)
     (*@                                                                         @*)
@@ -315,8 +345,10 @@ Section program.
     wp_apply (wp_forBreak P with "[] [$Hrp $Hlocked]"); last first.
     { (* Get out of an infinite loop. *) iIntros "Hrp". wp_pures. by iApply "HΦ". }
     clear Φ. iIntros "!>" (Φ) "[Hrp Hlocked] HΦ".
-    iNamed "Hrp".
-    wp_call. wp_loadField. wp_pures.
+    iNamed "Hrp". iNamed "Hlog".
+    wp_call. wp_loadField.
+    wp_apply wp_SumAssumeNoOverflow.
+    iIntros (Hnoof).
 
     (*@         // Ghost action: Learn a list of new commands.                  @*)
     (*@         cmd, ok := rp.log.Lookup(lsn)                                   @*)
@@ -343,6 +375,10 @@ Section program.
     { iNamed "Hgroup".
       by iDestruct (log_cpool_incl with "Hpaxos Hcpool") as %Hincl.
     }
+    (* Obtain prefix between the applied log and the new log; needed later. *)
+    iDestruct (log_prefix with "Hpaxos Hloga") as %Hloga.
+    (* Obtain a witness of the new log; need later. *)
+    iDestruct (log_witness with "Hpaxos") as "#Hlbnew".
     subst paxos'.
     (* Re-establish the group invariant w.r.t. the new log. *)
     iMod (group_inv_learn with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
@@ -365,8 +401,10 @@ Section program.
     (*@         }                                                               @*)
     (*@                                                                         @*)
     wp_if_destruct.
-    { wp_loadField.
-      wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame.
+    { (* Have applied all the commands known to be committed. *)
+      wp_loadField.
+      iClear "Hlb Hlbnew".
+      wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
       wp_apply wp_Sleep.
       wp_loadField.
       wp_apply (acquire_spec with "Hlock").
@@ -378,14 +416,37 @@ Section program.
 
     (*@         rp.apply(cmd)                                                   @*)
     (*@                                                                         @*)
-    wp_apply (wp_Replica__apply with "HpwrsS").
+    wp_apply (wp_Replica__apply with "[$Hst $HpwrsS]").
+    iIntros "Hst".
 
     (*@         rp.lsna = lsn                                                   @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
     wp_storeField.
     iApply "HΦ".
-    iFrame.
-  Admitted.
+    set lsna' := word.add _ _ in Hcmd *.
+    (* Obtain a witness for the newly applied log. *)
+    iClear "Hlb".
+    iDestruct (log_lb_weaken (loga ++ [cmd]) with "Hlbnew") as "#Hlb".
+    { (* Prove the newly applied log is a prefix of the new log. *)
+      rewrite Hnoof in Hcmd.
+      replace (Z.to_nat _) with (S (uint.nat lsna)) in Hcmd by word.
+      apply take_S_r in Hcmd.
+      rewrite -Hlen take_length_prefix in Hcmd; last apply Hloga.
+      rewrite -Hcmd.
+      apply prefix_take.
+    }
+    subst P.
+    iFrame "Hlb". iFrame "∗ # %".
+    iPureIntro.
+    split.
+    { (* Prove [Hlen]. *)
+      rewrite app_length singleton_length Hlen Hnoof.
+      word.
+    }
+    { (* Prove [Hrsm]. *)
+      by rewrite /rsm_consistency /apply_cmds foldl_snoc apply_cmds_unfold Hrsm.
+    }
+  Qed.
 
 End program.

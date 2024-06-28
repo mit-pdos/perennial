@@ -626,6 +626,10 @@ Definition init_rpst :=
 Definition apply_cmds (cmds : list command) :=
   foldl apply_cmd init_rpst cmds.
 
+Lemma apply_cmds_unfold cmds :
+  foldl apply_cmd init_rpst cmds = apply_cmds cmds.
+Proof. done. Qed.
+
 Lemma foldl_apply_cmd_from_stuck l :
   foldl apply_cmd Stuck l = Stuck.
 Proof. induction l as [| c l IH]; [done | by destruct c]. Qed.
@@ -645,8 +649,7 @@ Proof.
     by rewrite /apply_cmds foldl_app Hrsm foldl_apply_cmd_from_stuck in Hrsm2.
   }
   replace (dom tpls1) with (dom tpls'); first by eapply IH.
-  rewrite /apply_cmds in Hrsm1.
-  destruct x eqn:Hx; rewrite /apply_cmds foldl_snoc Hrsm1 /= in Hrsm.
+  destruct x eqn:Hx; rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm1 /= in Hrsm.
   { (* Case [CmdRead]. *)
     rewrite /apply_read in Hrsm.
     destruct (tpls1 !! key) as [[vs tsprep] |] eqn:Htpls1; last by inversion Hrsm.
@@ -1560,6 +1563,12 @@ Section ghost.
     ⌜prefix logp log⌝.
   Admitted.
 
+  Lemma log_lb_weaken {γ gid} logp1 logp2 :
+    prefix logp1 logp2 ->
+    clog_lb γ gid logp2 -∗
+    clog_lb γ gid logp1.
+  Admitted.
+
   Definition cpool_subsume_log (cpool : gset command) (log : list command) :=
     Forall (λ c, c ∈ cpool) log.
 
@@ -2093,8 +2102,7 @@ Section group_inv.
     destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
     { by iApply "Htks". }
     destruct Hstm as [st Hstm].
-    rewrite /apply_cmds in Hrsm.
-    rewrite /apply_cmds foldl_snoc Hrsm /= Hstm in Hrsmp.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hstm in Hrsmp.
     inversion Hrsmp. subst stmp.
     by iApply "Htks".
   Qed.
@@ -2112,8 +2120,7 @@ Section group_inv.
     iIntros (logp stmp tplsp Hprefix Hrsmp).
     destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
     { by iApply "Htks". }
-    rewrite /apply_cmds in Hrsm.
-    rewrite /apply_cmds foldl_snoc Hrsm /= Hstm /try_acquire Hvd in Hrsmp.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hstm /try_acquire Hvd in Hrsmp.
     inversion Hrsmp. subst stmp.
     iApply (big_sepM_insert_2 with "[Hprep] [Htks]"); first done.
     by iApply "Htks".
@@ -2132,8 +2139,7 @@ Section group_inv.
     iIntros (logp stmp tplsp Hprefix Hrsmp).
     destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
     { by iApply "Htks". }
-    rewrite /apply_cmds in Hrsm.
-    rewrite /apply_cmds foldl_snoc Hrsm /= Hstm /try_acquire Hvd in Hrsmp.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hstm /try_acquire Hvd in Hrsmp.
     inversion Hrsmp. subst stmp.
     iApply (big_sepM_insert_2 with "[Habt] [Htks]"); first done.
     by iApply "Htks".
@@ -2424,7 +2430,6 @@ Section group_inv.
   Proof.
     iIntros (Hc) "Htxn Hkeys Hgroup".
     iNamed "Hgroup".
-    rewrite /apply_cmds in Hrsm.
     rewrite /group_inv_with_cpool_no_log.
     (* Frame away unused resources. *)
     iFrame "Hcpool".
@@ -2432,14 +2437,14 @@ Section group_inv.
     { (* Case: Txn [ts] has already prepared, aborted, or committed; no-op. *)
       iDestruct (txn_tokens_inv_learn_prepare_noop pwrs with "Htks") as "Htks'"; [done | done |].
       iFrame "∗ # %".
-      by rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+      by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
     }
     assert (Hpm : pm !! ts = None).
     { rewrite -not_elem_of_dom. rewrite -not_elem_of_dom in Hdup. set_solver. }
     (* Case: Txn [ts] has not prepared, aborted, or committed. *)
     destruct (try_acquire ts pwrs tpls) eqn:Hacq; last first.
     { (* Case: Validation fails; abort the transaction. *)
-      rewrite /apply_cmds foldl_snoc Hrsm /= Hdup Hacq.
+      rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hacq.
       iFrame "Hrepls Hkeys".
       (* Mark [ts] unprepared in the prepare map. *)
       iMod (txnprep_insert ts false with "Hpm") as "Hpm"; first done.
@@ -2460,7 +2465,7 @@ Section group_inv.
       by auto with set_solver.
     }
     (* Case: Validation succeeds; lock the tuples and mark the transaction prepared. *)
-    rewrite /apply_cmds foldl_snoc Hrsm /= Hdup Hacq.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hacq.
     rewrite /try_acquire in Hacq.
     destruct (validate ts pwrs tpls) eqn:Hvd; last done.
     inversion_clear Hacq.
@@ -2607,7 +2612,6 @@ Section group_inv.
     (* Obtain proof that [ts] has committed. *)
     iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
     iDestruct "Hc" as (wrsc) "[Hcmt %Hgid]".
-    rewrite /apply_cmds in Hrsm.
     rewrite /group_inv_with_cpool_no_log.
     destruct (stm !! ts) eqn:Hdup; last first.
     { (* Case: Empty state; contradiction---no prepare before commit. *) 
@@ -2630,14 +2634,14 @@ Section group_inv.
       congruence.
     }
     { (* Case: [StCommitted]; no-op. *)
-      rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+      rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
       (* Create txn tokens for the new state. *)
       iDestruct (txn_tokens_inv_learn_commit with "[Hcmt] Htks") as "Htks'".
       { by eauto. }
       by iFrame "∗ #".
     }
     (* Case: [StPrepared wrs] *)
-    rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
     set tpls' := multiwrite _ _ _.
     (* Obtain proof of valid prepared input. *)
     iDestruct (big_sepM_lookup with "Hvp") as "Hc"; first apply Hdup. simpl.
@@ -2811,11 +2815,10 @@ Section group_inv.
     iNamed "Hgroup".
     (* Obtain proof that [ts] has aborted. TODO: check if we actually need this. *)
     iDestruct (big_sepS_elem_of with "Hvc") as "Habt"; first apply Hc. simpl.
-    rewrite /apply_cmds in Hrsm.
     rewrite /group_inv_with_cpool_no_log.
     destruct (stm !! ts) as [st |] eqn:Hdup; last first.
     { (* Case: Directly abort without prepare. *)
-      rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+      rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
       (* Create txn tokens for the new state. *)
       iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
       (* Re-establish [valid_prepared]. *)
@@ -2825,7 +2828,7 @@ Section group_inv.
       by auto with set_solver.
     }
     (* Case: Txn [ts] has prepared, aborted, or committed. *)
-    rewrite /apply_cmds foldl_snoc Hrsm /= Hdup.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
     destruct st as [pwrs | |] eqn:Ht; first 1 last.
     { (* Case: Committed; contradiction by obtaining a commit token. *)
       iDestruct ("Htks" $! log stm tpls with "[] []") as "Htk"; [done | done |].
@@ -2945,9 +2948,8 @@ Section group_inv.
   Proof.
     iIntros (Hc) "Hkeys Hgroup".
     iNamed "Hgroup".
-    rewrite /apply_cmds in Hrsm.
     rewrite /group_inv_with_cpool_no_log.
-    rewrite /apply_cmds foldl_snoc Hrsm /=.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /=.
     (* Obtain validity of the read input. *)
     iDestruct (big_sepS_elem_of with "Hvc") as "Hread"; first apply Hc.
     iDestruct "Hread" as %(_ & Hkey & Hgid).
