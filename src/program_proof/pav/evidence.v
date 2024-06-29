@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi.
+From Perennial.program_proof.pav Require Import common cryptoffi merkle.
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 
@@ -151,13 +151,21 @@ Proof.
 Qed.
 
 Definition serv_sigpred_link γ (data : servSepLink.t) : iProp Σ :=
-  ∃ (epoch : w64) (prevLink : list w8) (currDig : list w8),
-  "#Hlink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink currDig)) data.(servSepLink.link) ∗
+  ∃ (epoch : w64) (prevLink dig : list w8),
+  "#Hlink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
   "#HidxPrev" ∷ mono_list_idx_own γ (uint.nat (word.sub epoch (W64 1))) prevLink ∗
   "#HidxCurr" ∷ mono_list_idx_own γ (uint.nat epoch) data.(servSepLink.link).
 
+Definition serv_sigpred_put γ (data : servSepPut.t) : iProp Σ :=
+  ∃ (prevLink dig link : list w8),
+  "#Hlink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk data.(servSepPut.epoch) prevLink dig)) link ∗
+  "#Hidx" ∷ mono_list_idx_own γ (uint.nat data.(servSepPut.epoch)) link ∗
+  "#Hmerkle" ∷ is_path_val data.(servSepPut.id) (Some data.(servSepPut.val)) dig.
+
 (* Note: False for now so we don't have to consider put promises. *)
+(*
 Definition serv_sigpred_put (γ : gname) (data : servSepPut.t) : iProp Σ := False.
+ *)
 
 Definition serv_sigpred γ : (list w8 → iProp Σ) :=
   λ data,
@@ -309,11 +317,11 @@ Proof.
       apply servSepLink.inj in Henc_enc0 as ->.
     rewrite ->Henc_link1' in Henc_enc1;
       apply servSepLink.inj in Henc_enc1 as ->.
-    iDestruct "Hsigpred0" as (epoch0 prevLink0 currDig0) "H"; iNamed "H";
+    iDestruct "Hsigpred0" as (epoch0 prevLink0 dig0) "H"; iNamed "H";
       iRename "Hlink" into "Hlink0";
       iClear "HidxPrev";
       iRename "HidxCurr" into "HidxCurr0".
-    iDestruct "Hsigpred1" as (epoch1 prevLink1 currDig1) "H"; iNamed "H";
+    iDestruct "Hsigpred1" as (epoch1 prevLink1 dig1) "H"; iNamed "H";
       iRename "Hlink" into "Hlink1";
       iClear "HidxPrev";
       iRename "HidxCurr" into "HidxCurr1".
@@ -347,11 +355,11 @@ Proof.
       apply servSepLink.inj in Henc_enc0 as ->.
     rewrite ->Henc_link1' in Henc_enc1;
       apply servSepLink.inj in Henc_enc1 as ->.
-    iDestruct "Hsigpred0" as (epoch0 prevLink0 currDig0) "H"; iNamed "H";
+    iDestruct "Hsigpred0" as (epoch0 prevLink0 dig0) "H"; iNamed "H";
       iRename "Hlink" into "Hlink0";
       iClear "HidxPrev";
       iRename "HidxCurr" into "HidxCurr0".
-    iDestruct "Hsigpred1" as (epoc10 prevLink1 currDig1) "H"; iNamed "H";
+    iDestruct "Hsigpred1" as (epoc10 prevLink1 dig1) "H"; iNamed "H";
       iRename "Hlink" into "Hlink1";
       iRename "HidxPrev" into "HidxPrev1";
       iClear "HidxCurr".
