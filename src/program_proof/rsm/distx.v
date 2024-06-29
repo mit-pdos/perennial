@@ -162,6 +162,8 @@ Inductive rpst :=
 | State (txns : gmap nat txnst) (tpls : gmap dbkey dbtpl)
 | Stuck.
 
+Definition not_stuck st := st ≠ Stuck.
+
 Inductive acquiring :=
 | Acquired (tpls : gmap dbkey dbtpl)
 | NotAcquired.
@@ -632,7 +634,17 @@ Proof. done. Qed.
 
 Lemma foldl_apply_cmd_from_stuck l :
   foldl apply_cmd Stuck l = Stuck.
-Proof. induction l as [| c l IH]; [done | by destruct c]. Qed.
+Proof. by induction l as [| c l IH]; last destruct c. Qed.
+
+Lemma apply_cmds_not_stuck l1 l2 :
+  prefix l1 l2 ->
+  not_stuck (apply_cmds l2) ->
+  not_stuck (apply_cmds l1).
+Proof.
+  intros [l Happ] Hns.
+  destruct (apply_cmds l1) eqn:Hl1; first done.
+  by rewrite Happ /apply_cmds foldl_app apply_cmds_unfold Hl1 foldl_apply_cmd_from_stuck in Hns.
+Qed.
 
 Lemma apply_cmds_dom_nonexpanding l1 l2 :
   ∀ stm1 stm2 tpls1 tpls2,

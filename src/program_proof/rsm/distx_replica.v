@@ -11,6 +11,13 @@ Section list.
 
 End list.
 
+Section word.
+
+  Lemma uint_nat_W64 (n : nat) :
+    n < 2 ^ 64 ->
+    uint.nat (W64 n) = n.
+  Proof. intros H. word. Qed.
+
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
 
@@ -36,24 +43,117 @@ Section program.
   (*@     // Key-value map.                                                   @*)
   (*@     kvmap  map[string]*Tuple                                            @*)
   (*@ }                                                                       @*)
-  (* TODO: should also mention prepare map and tuples. *)
-  Definition absrel_replica (txntbl : gmap u64 bool) (st : rpst) : Prop.
-  Admitted.
+  Definition mergef_stm (pwrs : option dbmap) (coa : option bool) :=
+    match pwrs, coa with
+    | _, Some true => Some StCommitted
+    | _, Some false => Some StAborted
+    | Some m, None => Some (StPrepared m)
+    | _, _ => None
+    end.
+
+  Definition merge_stm (prepm : gmap u64 dbmap) (txntbl : gmap u64 bool) :=
+    merge mergef_stm prepm txntbl.
+
+  (* Ideally one [kmap] would do the work, but we lost injectivity from u64 to
+  nat when converting through Z. *)
+  Definition absrel_stm
+    (prepm : gmap u64 dbmap) (txntbl : gmap u64 bool) (stm : gmap nat txnst) :=
+    (kmap Z.of_nat stm : gmap Z txnst) = kmap uint.Z (merge_stm prepm txntbl).
+
+  (* TODO: should also mention tuples. *)
+  Definition absrel_replica
+    (prepm : gmap u64 dbmap) (txntbl : gmap u64 bool) (st : rpst) :=
+    match st with
+    | State stm tpls => absrel_stm prepm txntbl stm
+    | Stuck => False
+    end.
+
+  Lemma absrel_stm_txntbl_present prepm txntbl stm ts b :
+    txntbl !! ts = Some b ->
+    absrel_stm prepm txntbl stm ->
+    stm !! (uint.nat ts) = Some (if b : bool then StCommitted else StAborted).
+  Proof.
+    intros Htbl Habs.
+    rewrite /absrel_stm map_eq_iff in Habs.
+    specialize (Habs (uint.Z ts)).
+    rewrite lookup_kmap lookup_merge Htbl in Habs.
+    set st := if b then _ else _.
+    replace (diag_None _ _ _) with (Some st) in Habs; last first.
+    { by destruct (prepm !! ts), b. }
+    rewrite lookup_kmap_Some in Habs.
+    destruct Habs as (tsN & -> & Hcmt).
+    by rewrite Nat2Z.id.
+  Qed.
+
+  Lemma absrel_stm_txntbl_absent_prepm_present prepm txntbl stm ts pwrs :
+    txntbl !! ts = None ->
+    prepm !! ts = Some pwrs ->
+    absrel_stm prepm txntbl stm ->
+    stm !! (uint.nat ts) = Some (StPrepared pwrs).
+  Proof.
+    intros Htbl Hpm Habs.
+    rewrite /absrel_stm map_eq_iff in Habs.
+    specialize (Habs (uint.Z ts)).
+    rewrite lookup_kmap lookup_merge Htbl Hpm /= lookup_kmap_Some in Habs.
+    destruct Habs as (tsN & -> & Hcmt).
+    by rewrite Nat2Z.id.
+  Qed.
+
+  Lemma absrel_stm_both_absent prepm txntbl stm ts :
+    txntbl !! ts = None ->
+    prepm !! ts = None ->
+    absrel_stm prepm txntbl stm ->
+    stm !! (uint.nat ts) = None.
+  Proof.
+    intros Htbl Hpm Habs.
+    rewrite /absrel_stm map_eq_iff in Habs.
+    specialize (Habs (uint.Z ts)).
+    rewrite lookup_kmap lookup_merge Htbl Hpm /= lookup_kmap_None in Habs.
+    apply Habs.
+    word.
+  Qed.
+
+  Lemma merge_stm_insert_txntbl prepm txntbl ts b :
+    merge_stm prepm (<[ts := b]> txntbl) =
+    <[ts := if b : bool then StCommitted else StAborted]> (merge_stm prepm txntbl).
+  Proof.
+    apply map_eq.
+    intros tsx.
+    rewrite lookup_merge.
+    destruct (decide (tsx = ts)) as [-> | Hne]; last first.
+    { do 2 (rewrite lookup_insert_ne; last done).
+      by rewrite lookup_merge.
+    }
+    rewrite 2!lookup_insert.
+    by destruct (prepm !! ts), b.
+  Qed.
+
+  Lemma absrel_stm_inv_apply_commit prepm txntbl stm ts :
+    absrel_stm prepm txntbl stm ->
+    absrel_stm prepm (<[ts := true]> txntbl) (<[uint.nat ts := StCommitted]> stm).
+  Proof.
+    rewrite /absrel_stm.
+    intros Habs.
+    rewrite merge_stm_insert_txntbl 2!kmap_insert Habs.
+    f_equal.
+    word.
+  Qed.
 
   Definition own_replica_state (rp : loc) (st : rpst) : iProp Σ :=
     ∃ (rid : u64) (prepm : loc) (txntbl : loc) (idx : loc) (kvmap : loc)
-      (prepmM : gmap u64 Slice.t) (txntblM : gmap u64 bool)
+      (prepmS : gmap u64 Slice.t) (prepmM : gmap u64 dbmap) (txntblM : gmap u64 bool)
       (kvmapM : gmap string loc),
       (* TODO: check if we really need rid *)
       "Hrid"     ∷ rp ↦[Replica :: "rid"] #rid ∗
       "Hprepm"   ∷ rp ↦[Replica :: "prepm"] #prepm ∗
-      "HprepmM"  ∷ own_map prepm (DfracOwn 1) prepmM ∗
+      "HprepmS"  ∷ own_map prepm (DfracOwn 1) prepmS ∗
+      "HprepmM"  ∷ ([∗ map] s; m ∈ prepmS; prepmM, ∃ l, own_dbmap_in_slice s l m) ∗
       "Htxntbl"  ∷ rp ↦[Replica :: "txntbl"] #txntbl ∗
       "HtxntblM" ∷ own_map txntbl (DfracOwn 1) txntblM ∗
       "Hidx"     ∷ rp ↦[Replica :: "idx"] #idx ∗
       "Hkvmap"   ∷ rp ↦[Replica :: "kvmap"] #kvmap ∗
       "HkvmapM"  ∷ own_map kvmap (DfracOwn 1) kvmapM ∗
-      "%Habs"    ∷ ⌜absrel_replica txntblM st⌝.
+      "%Habs"    ∷ ⌜absrel_replica prepmM txntblM st⌝.
 
   (* Need this wrapper to prevent [wp_if_destruct] from eating the eq. *)
   Definition rsm_consistency log st := apply_cmds log = st.
@@ -221,12 +321,12 @@ Section program.
   Admitted.
 
   Theorem wp_Replica__validate
-    (rp : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) :
-    {{{ own_slice pwrsS (struct.t WriteEntry) (DfracOwn 1) pwrsL }}}
+    (rp : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) (pwrs : dbmap) :
+    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
       Replica__validate #rp #ts (to_val pwrsS)
     {{{ (ok : bool), RET #ok; True }}}.
   Proof.
-    iIntros (Φ) "HpwrsS HΦ".
+    iIntros (Φ) "[HpwrsS %Hpwrs] HΦ".
     wp_call.
 
     (*@ func (rp *Replica) validate(ts uint64, wrs []WriteEntry) bool {         @*)
@@ -283,10 +383,149 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
+  Theorem wp_Replica__applyPrepare
+    (rp : loc) (ts : u64) (pwrsS : Slice.t)
+    (pwrsL : list dbmod) (pwrs : dbmap) (st : rpst) :
+    {{{ own_replica_state rp st ∗ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
+      Replica__applyPrepare #rp #ts (to_val pwrsS)
+    {{{ RET #(); own_replica_state rp (apply_cmd st (CmdPrep (uint.nat ts) pwrs)) }}}.
+  Proof.
+    (*@ func (rp *Replica) applyPrepare(ts uint64, wrs []WriteEntry) {          @*)
+    (*@     // The transaction has already prepared, aborted, or committed. This must be @*)
+    (*@     // an outdated PREPARE.                                             @*)
+    (*@     status := rp.queryTxnStatus(ts)                                     @*)
+    (*@     if status != TXN_RUNNING {                                          @*)
+    (*@         return                                                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    (*@     // Validate timestamps.                                             @*)
+    (*@     ok := rp.validate(ts, wrs)                                          @*)
+    (*@     if !ok {                                                            @*)
+    (*@         // If validation fails, we immediately abort the transaction for this @*)
+    (*@         // shard (and other participant shards will do so as well when the @*)
+    (*@         // coordinator explicitly request them to do so).               @*)
+    (*@         //                                                              @*)
+    (*@         // Right now we're not allowing retry. See design doc on "handling @*)
+    (*@         // failed preparation".                                         @*)
+    (*@         rp.txntbl[ts] = false                                           @*)
+    (*@         return                                                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    (*@     rp.prepm[ts] = wrs                                                  @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_Replica__commit (rp : loc) (ts : u64) (pwrsS : Slice.t) :
+    {{{ True }}}
+      Replica__commit #rp #ts (to_val pwrsS)
+    {{{ RET #(); True }}}.
+  Proof.
+    (*@ func (rp *Replica) commit(ts uint64, wrs []WriteEntry) {                @*)
+    (*@     for _, ent := range wrs {                                           @*)
+    (*@         key := ent.k                                                    @*)
+    (*@         value := ent.v                                                  @*)
+    (*@         tpl := rp.idx.GetTuple(key)                                     @*)
+    (*@         if value.b {                                                    @*)
+    (*@             tpl.AppendVersion(ts, value.s)                              @*)
+    (*@         } else {                                                        @*)
+    (*@             tpl.KillVersion(ts)                                         @*)
+    (*@         }                                                               @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_Replica__applyCommit (rp : loc) (ts : u64) (st : rpst) :
+    let st' := apply_cmd st (CmdCmt (uint.nat ts)) in
+    not_stuck st' ->
+    {{{ own_replica_state rp st }}}
+      Replica__applyCommit #rp #ts
+    {{{ RET #(); own_replica_state rp st' }}}.
+  Proof.
+    iIntros (st' Hns Φ) "Hst HΦ". subst st'.
+    wp_call.
+
+    (*@ func (rp *Replica) applyCommit(ts uint64) {                             @*)
+    (*@     // Query the transaction table. Note that if there's an entry for @ts in @*)
+    (*@     // @txntbl, then transaction @ts can only be committed. That's why we're not @*)
+    (*@     // even reading the value of entry.                                 @*)
+    (*@     _, committed := rp.txntbl[ts]                                       @*)
+    (*@                                                                         @*)
+    iNamed "Hst".
+    wp_loadField.
+    wp_apply (wp_MapGet with "HtxntblM").
+    iIntros (b ok) "[%Htxntbl HtxntblM]".
+    wp_pures.
+    (* Obtain the status map and tuples from the replica state. *)
+    destruct st as [stm tpls |]; last done. simpl in Habs.
+
+    (*@     if committed {                                                      @*)
+    (*@         return                                                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_if_destruct.
+    { (* Txn [ts] has committed or aborted. *)
+      apply map_get_true in Htxntbl.
+      (* Prove that [ts] must have committed. *)
+      assert (stm !! (uint.nat ts) = Some StCommitted) as Hcmt.
+      { pose proof (absrel_stm_txntbl_present _ _ _ _ _ Htxntbl Habs) as Hstm.
+        by destruct b; [| rewrite /= Hstm in Hns].
+      }
+      iApply "HΦ".
+      iFrame. iPureIntro.
+      by rewrite /= Hcmt.
+    }
+    clear Heqb0 ok.
+
+    (*@     // We'll need an invariant to establish that if a transaction has prepared @*)
+    (*@     // but not terminated, then @prepm[ts] has something.               @*)
+    (*@     wrs := rp.prepm[ts]                                                 @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_apply (wp_MapGet with "HprepmS").
+    iIntros (s ok) "[%Hprepm HprepmS]".
+    wp_pures.
+    (* Obtain [dom prepmS = dom prepmM] needed later. *)
+    iDestruct (big_sepM2_dom with "HprepmM") as %Hdom.
+    (* Prove that [ts] must have prepared. *)
+    apply map_get_false in Htxntbl as [Htxntbl _].
+    assert (∃ pwrs, stm !! (uint.nat ts) = Some (StPrepared pwrs)) as [pwrs Hstm].
+    { destruct ok; last first.
+      { apply map_get_false in Hprepm as [Hprepm _].
+        rewrite -not_elem_of_dom Hdom not_elem_of_dom in Hprepm.
+        pose proof (absrel_stm_both_absent _ _ _ _ Htxntbl Hprepm Habs) as Hstm.
+        by rewrite /= Hstm in Hns.
+      }
+      apply map_get_true, elem_of_dom_2 in Hprepm.
+      rewrite Hdom elem_of_dom in Hprepm.
+      destruct Hprepm as [pwrs Hpwrs].
+      pose proof (absrel_stm_txntbl_absent_prepm_present _ _ _ _ _ Htxntbl Hpwrs Habs) as Hstm.
+      by exists pwrs.
+    }
+
+    (*@     rp.commit(ts, wrs)                                                  @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__commit).
+    wp_pures.
+
+    (*@     rp.txntbl[ts] = true                                                @*)
+    (*@ }                                                                       @*)
+    wp_loadField.
+    wp_apply (wp_MapInsert with "HtxntblM"); first done.
+    iIntros "HtxntblM".
+    wp_pures.
+    iApply "HΦ".
+    iFrame "∗ # %".
+    iPureIntro.
+    rewrite /= Hstm.
+    by apply absrel_stm_inv_apply_commit.
+  Qed.
+
   Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) (st : rpst) :
-    {{{ own_replica_state rp st ∗ own_pwrs pwrsS cmd }}}
+    let st' := apply_cmd st cmd in
+    not_stuck st' ->
+    {{{ own_replica_state rp st ∗ own_pwrs_slice pwrsS cmd }}}
       Replica__apply #rp (command_to_val pwrsS cmd)
-    {{{ RET #(); own_replica_state rp (apply_cmd st cmd) }}}.
+    {{{ RET #(); own_replica_state rp st' }}}.
   Proof.
     (*@ func (rp *Replica) apply(cmd Cmd) {                                     @*)
     (*@     if cmd.kind == 0 {                                                  @*)
@@ -299,7 +538,7 @@ Section program.
     (*@         rp.applyAbort(cmd.ts)                                           @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iIntros (Φ) "[HpwrsS Hrp] HΦ".
+    iIntros (st' Hns Φ) "[Hst HpwrsS] HΦ".
     wp_call.
     destruct cmd eqn:Hcmd; simpl; wp_pures.
     { (* Case: Read. *)
@@ -310,7 +549,13 @@ Section program.
       admit.
     }
     { (* Case: Commit. *)
-      admit.
+      wp_apply (wp_Replica__applyCommit with "Hst").
+      { by rewrite uint_nat_W64; last admit. }
+      rewrite uint_nat_W64; last admit.
+      iIntros "Hst".
+      wp_pures.
+      iApply "HΦ".
+      by iFrame.
     }
     { (* Case: Abort. *)
       admit.
@@ -383,6 +628,9 @@ Section program.
     (* Re-establish the group invariant w.r.t. the new log. *)
     iMod (group_inv_learn with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
     { apply Hincl. }
+    (* Obtain state machine safety for the new log. *)
+    iAssert (⌜not_stuck (apply_cmds (paxos ++ cmds))⌝)%I as %Hns.
+    { clear Hrsm. iNamed "Hgroup". iPureIntro. by rewrite Hrsm. }
     iDestruct (group_inv_hide_cpool_merge_log with "Hpaxos Hgroup") as "Hgroup".
     (* Put back the group invariant. *)
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
@@ -416,7 +664,23 @@ Section program.
 
     (*@         rp.apply(cmd)                                                   @*)
     (*@                                                                         @*)
+    (* Obtain a witness for the newly applied log. *)
+    iClear "Hlb".
+    (* Prove the newly applied log is a prefix of the new log. *)
+    assert (Hprefix : prefix (loga ++ [cmd]) (paxos ++ cmds)).
+    { rewrite Hnoof in Hcmd.
+      replace (Z.to_nat _) with (S (uint.nat lsna)) in Hcmd by word.
+      apply take_S_r in Hcmd.
+      rewrite -Hlen take_length_prefix in Hcmd; last apply Hloga.
+      rewrite -Hcmd.
+      apply prefix_take.
+    }
+    iDestruct (log_lb_weaken (loga ++ [cmd]) with "Hlbnew") as "#Hlb"; first apply Hprefix.
     wp_apply (wp_Replica__apply with "[$Hst $HpwrsS]").
+    { (* Prove state machine safety for the newly applied log. *)
+      pose proof (apply_cmds_not_stuck _ _ Hprefix Hns) as Hsafe.
+      by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm in Hsafe.
+    }
     iIntros "Hst".
 
     (*@         rp.lsna = lsn                                                   @*)
@@ -425,17 +689,7 @@ Section program.
     wp_storeField.
     iApply "HΦ".
     set lsna' := word.add _ _ in Hcmd *.
-    (* Obtain a witness for the newly applied log. *)
-    iClear "Hlb".
-    iDestruct (log_lb_weaken (loga ++ [cmd]) with "Hlbnew") as "#Hlb".
-    { (* Prove the newly applied log is a prefix of the new log. *)
-      rewrite Hnoof in Hcmd.
-      replace (Z.to_nat _) with (S (uint.nat lsna)) in Hcmd by word.
-      apply take_S_r in Hcmd.
-      rewrite -Hlen take_length_prefix in Hcmd; last apply Hloga.
-      rewrite -Hcmd.
-      apply prefix_take.
-    }
+
     subst P.
     iFrame "Hlb". iFrame "∗ # %".
     iPureIntro.

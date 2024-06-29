@@ -14,11 +14,12 @@ Section program.
     | CmdAbt ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
     end.
 
-  Definition own_pwrs (pwrsS : Slice.t) (c : command) : iProp Σ :=
+  Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=
+    own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m = l⌝.
+
+  Definition own_pwrs_slice (pwrsS : Slice.t) (c : command) : iProp Σ :=
     match c with
-    (* TODO: relate [pwrs] with [pwrsL]. *)
-    | CmdPrep _ pwrs => (∃ pwrsL : list dbmod,
-                           own_slice pwrsS (struct.t WriteEntry) (DfracOwn 1) pwrsL)
+    | CmdPrep _ pwrs => (∃ pwrsL : list dbmod, own_dbmap_in_slice pwrsS pwrsL pwrs)
     | _ => True
     end.
   
@@ -33,7 +34,7 @@ Section program.
     <<< ∃∃ l', clog_half γ gid l' >>>
     {{{ (c : command) (ok : bool) (pwrsS : Slice.t), RET (command_to_val pwrsS c, #ok);
         own_txnlog log gid γ ∗
-        own_pwrs pwrsS c ∗
+        own_pwrs_slice pwrsS c ∗
         ⌜if ok then l' !! (uint.nat lsn) = Some c else True⌝
     }}}.
   Proof.
