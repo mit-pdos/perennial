@@ -151,11 +151,10 @@ Proof.
 Qed.
 
 Definition serv_sigpred_link γ (data : servSepLink.t) : iProp Σ :=
-  ∃ (links : list (list w8)) (epoch : w64) (prevLink : list w8) (currDig : list w8),
-  "#Hlinks" ∷ mono_list_lb_own γ links ∗
+  ∃ (epoch : w64) (prevLink : list w8) (currDig : list w8),
   "#Hlink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink currDig)) data.(servSepLink.link) ∗
-  "%HlookPrev" ∷ ⌜links !! (uint.nat (word.sub epoch (W64 1))) = Some prevLink⌝ ∗
-  "%HlookCurr" ∷ ⌜links !! uint.nat epoch = Some data.(servSepLink.link)⌝.
+  "#HidxPrev" ∷ mono_list_idx_own γ (uint.nat (word.sub epoch (W64 1))) prevLink ∗
+  "#HidxCurr" ∷ mono_list_idx_own γ (uint.nat epoch) data.(servSepLink.link).
 
 (* Note: False for now so we don't have to consider put promises. *)
 Definition serv_sigpred_put (γ : gname) (data : servSepPut.t) : iProp Σ := False.
@@ -310,22 +309,20 @@ Proof.
       apply servSepLink.inj in Henc_enc0 as ->.
     rewrite ->Henc_link1' in Henc_enc1;
       apply servSepLink.inj in Henc_enc1 as ->.
-    iDestruct "Hsigpred0" as (links0 epoch0 prevLink0 currDig0) "H";
-      iNamed "H"; iRename "Hlinks" into "Hlinks0";
+    iDestruct "Hsigpred0" as (epoch0 prevLink0 currDig0) "H"; iNamed "H";
       iRename "Hlink" into "Hlink0";
-      move: {HlookPrev} HlookCurr => HlookCurr0.
-    iDestruct "Hsigpred1" as (links1 epoch1 prevLink1 currDig1) "H";
-      iNamed "H"; iRename "Hlinks" into "Hlinks1";
+      iClear "HidxPrev";
+      iRename "HidxCurr" into "HidxCurr0".
+    iDestruct "Hsigpred1" as (epoch1 prevLink1 currDig1) "H"; iNamed "H";
       iRename "Hlink" into "Hlink1";
-      move: {HlookPrev} HlookCurr => HlookCurr1.
+      iClear "HidxPrev";
+      iRename "HidxCurr" into "HidxCurr1".
     iDestruct (hash_inj with "[$His_hash_link0] [$Hlink0]") as %->.
     iDestruct (hash_inj with "[$His_hash_link1] [$Hlink1]") as %->.
     apply chainSepSome.inj in Henc_link0 as [=]; subst.
     apply chainSepSome.inj in Henc_link1 as [=]; subst.
-    rewrite Hepoch_eq in HlookCurr0.
-    iDestruct (mono_list_idx_own_get with "[$Hlinks0]") as "Hidx0"; [done|].
-    iDestruct (mono_list_idx_own_get with "[$Hlinks1]") as "Hidx1"; [done|].
-    iDestruct (mono_list_idx_agree with "[$Hidx0] [$Hidx1]") as %[=].
+    iEval (rewrite Hepoch_eq) in "HidxCurr0".
+    iDestruct (mono_list_idx_agree with "[$HidxCurr0] [$HidxCurr1]") as %[=].
     done.
   }
 
@@ -350,22 +347,20 @@ Proof.
       apply servSepLink.inj in Henc_enc0 as ->.
     rewrite ->Henc_link1' in Henc_enc1;
       apply servSepLink.inj in Henc_enc1 as ->.
-    iDestruct "Hsigpred0" as (links0 epoch0 prevLink0 currDig0) "H";
-      iNamed "H"; iRename "Hlinks" into "Hlinks0";
+    iDestruct "Hsigpred0" as (epoch0 prevLink0 currDig0) "H"; iNamed "H";
       iRename "Hlink" into "Hlink0";
-      move: {HlookPrev} HlookCurr => HlookCurr0.
-    iDestruct "Hsigpred1" as (links1 epoch1 prevLink1 currDig1) "H";
-      iNamed "H"; iRename "Hlinks" into "Hlinks1";
+      iClear "HidxPrev";
+      iRename "HidxCurr" into "HidxCurr0".
+    iDestruct "Hsigpred1" as (epoc10 prevLink1 currDig1) "H"; iNamed "H";
       iRename "Hlink" into "Hlink1";
-      move: HlookPrev {HlookCurr} => HlookPrev1.
+      iRename "HidxPrev" into "HidxPrev1";
+      iClear "HidxCurr".
     iDestruct (hash_inj with "[$His_hash_link0] [$Hlink0]") as %->.
     iDestruct (hash_inj with "[$His_hash_link1] [$Hlink1]") as %->.
     apply chainSepSome.inj in Henc_link0 as [=]; subst.
     apply chainSepSome.inj in Henc_link1 as [=]; subst.
-    rewrite <- Hepoch_off_eq in HlookPrev1.
-    iDestruct (mono_list_idx_own_get with "[$Hlinks0]") as "Hidx0"; [done|].
-    iDestruct (mono_list_idx_own_get with "[$Hlinks1]") as "Hidx1"; [done|].
-    iDestruct (mono_list_idx_agree with "[$Hidx0] [$Hidx1]") as %[=].
+    iEval (rewrite Hepoch_off_eq) in "HidxCurr0".
+    iDestruct (mono_list_idx_agree with "[$HidxCurr0] [$HidxPrev1]") as %[=].
     done.
   }
   by iApply "HΦ".
