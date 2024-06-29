@@ -66,7 +66,8 @@ Admitted.
 Definition wrs_group gid (wrs : dbmap) :=
   filter (λ t, key_to_group t.1 = gid) wrs.
 
-Definition valid_ts (ts : nat) := ts ≠ O.
+(* Note the coercion here. [word] seems to work better with this. *)
+Definition valid_ts (ts : nat) := 0 < ts < 2 ^64.
 
 Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
@@ -136,6 +137,14 @@ Proof. solve_decision. Qed.
 Instance command_countable :
   Countable command.
 Admitted.
+
+Definition valid_ts_of_command (c : command) :=
+  match c with
+  | CmdCmt ts => valid_ts ts
+  | CmdAbt ts => valid_ts ts
+  | CmdPrep ts _ => valid_ts ts
+  | CmdRead ts _ => valid_ts ts
+  end.
 
 Definition dblog := list command.
 
@@ -777,7 +786,8 @@ Proof.
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hnz.
     }
-    destruct (decide (ts = tid)) as [-> | Hne]; first done.
+    rewrite /valid_ts in Hpts.
+    destruct (decide (ts = tid)) as [-> | Hne]; first lia.
     rewrite lookup_insert_ne in Hstm; last done.
     by eapply Hnz.
   }
@@ -1992,15 +2002,15 @@ Section inv.
 
   Definition safe_submit γ gid (c : command) : iProp Σ :=
     match c with
-    (* Enforces [CmdCmt] is submitted to only participant groups. *)
-    | CmdCmt ts => (∃ wrs, txnres_cmt γ ts wrs ∧ ⌜gid ∈ ptgroups (dom wrs)⌝)
-    | CmdAbt ts => txnres_abt γ ts
+    | CmdRead ts key => ⌜valid_ts ts ∧ valid_key key ∧ key_to_group key = gid⌝
     (* Enforces [CmdPrep] is submitted to only participant groups, and partial
     writes is part of the global commit, which we would likely need with
     coordinator recovery. *)
     | CmdPrep ts pwrs =>
         (∃ wrs, txnwrs_receipt γ ts wrs ∧ ⌜valid_ts ts ∧ valid_pwrs gid wrs pwrs⌝)
-    | CmdRead ts key => ⌜valid_ts ts ∧ valid_key key ∧ key_to_group key = gid⌝
+    (* Enforces [CmdCmt] is submitted to only participant groups. *)
+    | CmdCmt ts => (∃ wrs, txnres_cmt γ ts wrs ∧ ⌜valid_ts ts ∧ gid ∈ ptgroups (dom wrs)⌝)
+    | CmdAbt ts => txnres_abt γ ts ∧ ⌜valid_ts ts⌝
     end.
 
   #[global]
@@ -2016,7 +2026,7 @@ Section inv.
     end.
 
   #[global]
-  Instance valid_preapred_persistent γ gid ts st :
+  Instance valid_prepared_persistent γ gid ts st :
     Persistent (valid_prepared γ gid ts st).
   Proof. destruct st; apply _. Qed.
 
@@ -2825,8 +2835,8 @@ Section group_inv.
     rewrite /cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
     destruct Hsubsume as [Hsubsume Hc].
     iNamed "Hgroup".
-    (* Obtain proof that [ts] has aborted. TODO: check if we actually need this. *)
-    iDestruct (big_sepS_elem_of with "Hvc") as "Habt"; first apply Hc. simpl.
+    (* Obtain proof that [ts] has aborted. *)
+    iDestruct (big_sepS_elem_of _ _ _ Hc with "Hvc") as "[Habt _]".
     rewrite /group_inv_with_cpool_no_log.
     destruct (stm !! ts) as [st |] eqn:Hdup; last first.
     { (* Case: Directly abort without prepare. *)

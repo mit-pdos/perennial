@@ -18,6 +18,8 @@ Section word.
     uint.nat (W64 n) = n.
   Proof. intros H. word. Qed.
 
+End word.
+
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
 
@@ -405,8 +407,8 @@ Section program.
     (*@         // shard (and other participant shards will do so as well when the @*)
     (*@         // coordinator explicitly request them to do so).               @*)
     (*@         //                                                              @*)
-    (*@         // Right now we're not allowing retry. See design doc on "handling @*)
-    (*@         // failed preparation".                                         @*)
+    (*@         // Right now we're not allowing retry. See design doc on ``handling @*)
+    (*@         // failed preparation''.                                        @*)
     (*@         rp.txntbl[ts] = false                                           @*)
     (*@         return                                                          @*)
     (*@     }                                                                   @*)
@@ -522,6 +524,7 @@ Section program.
 
   Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) (st : rpst) :
     let st' := apply_cmd st cmd in
+    valid_ts_of_command cmd ->
     not_stuck st' ->
     {{{ own_replica_state rp st ∗ own_pwrs_slice pwrsS cmd }}}
       Replica__apply #rp (command_to_val pwrsS cmd)
@@ -538,7 +541,7 @@ Section program.
     (*@         rp.applyAbort(cmd.ts)                                           @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iIntros (st' Hns Φ) "[Hst HpwrsS] HΦ".
+    iIntros (st' Hts Hns Φ) "[Hst HpwrsS] HΦ".
     wp_call.
     destruct cmd eqn:Hcmd; simpl; wp_pures.
     { (* Case: Read. *)
@@ -549,9 +552,10 @@ Section program.
       admit.
     }
     { (* Case: Commit. *)
+      rewrite /valid_ts_of_command /valid_ts in Hts.
       wp_apply (wp_Replica__applyCommit with "Hst").
-      { by rewrite uint_nat_W64; last admit. }
-      rewrite uint_nat_W64; last admit.
+      { by rewrite uint_nat_W64; last word. }
+      rewrite uint_nat_W64; last word.
       iIntros "Hst".
       wp_pures.
       iApply "HΦ".
@@ -620,6 +624,20 @@ Section program.
     { iNamed "Hgroup".
       by iDestruct (log_cpool_incl with "Hpaxos Hcpool") as %Hincl.
     }
+    (* Obtain validity of command timestamps; used when executing @apply. *)
+    iAssert (⌜Forall valid_ts_of_command paxos'⌝)%I as %Hts.
+    { iNamed "Hgroup".
+      iAssert (⌜set_Forall valid_ts_of_command cpool⌝)%I as %Hcpoolts.
+      { iIntros (c Hc).
+        iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
+        destruct c; simpl.
+        { by iDestruct "Hc" as %[Hvts _]. }
+        { by iDestruct "Hc" as (?) "[_ [%Hvts _]]". }
+        { by iDestruct "Hc" as (?) "[_ [%Hvts _]]". }
+        { by iDestruct "Hc" as "[_ %Hvts]". }
+      }
+      by pose proof (set_Forall_Forall_subsume _ _ _ Hcpoolts Hincl) as Hts.
+    }
     (* Obtain prefix between the applied log and the new log; needed later. *)
     iDestruct (log_prefix with "Hpaxos Hloga") as %Hloga.
     (* Obtain a witness of the new log; need later. *)
@@ -677,6 +695,12 @@ Section program.
     }
     iDestruct (log_lb_weaken (loga ++ [cmd]) with "Hlbnew") as "#Hlb"; first apply Hprefix.
     wp_apply (wp_Replica__apply with "[$Hst $HpwrsS]").
+    { (* Prove validity of command timestamps. *)
+      rewrite Forall_forall in Hts.
+      apply Hts.
+      eapply elem_of_prefix; last apply Hprefix.
+      set_solver.
+    }
     { (* Prove state machine safety for the newly applied log. *)
       pose proof (apply_cmds_not_stuck _ _ Hprefix Hns) as Hsafe.
       by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm in Hsafe.
@@ -689,7 +713,6 @@ Section program.
     wp_storeField.
     iApply "HΦ".
     set lsna' := word.add _ _ in Hcmd *.
-
     subst P.
     iFrame "Hlb". iFrame "∗ # %".
     iPureIntro.
