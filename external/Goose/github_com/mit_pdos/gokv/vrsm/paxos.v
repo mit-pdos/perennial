@@ -705,7 +705,7 @@ Definition makeServer : val :=
     do:  let: "$range" := ![sliceT uint64T] "config" in
     slice.for_range uint64T "$range" (λ: <> "host",
       let: "host" := ref_ty uint64T "host" in
-      let: "$a0" := slice.append ptrT (![sliceT ptrT] (struct.field_ref Server "clerks" (![ptrT] "s"))) (slice.literal ptrT [MakeSingleClerk (![uint64T] "host")]) in
+      let: "$a0" := slice.append ptrT (![sliceT ptrT] (struct.field_ref Server "clerks" (![ptrT] "s"))) (slice.literal ptrT [ MakeSingleClerk (![uint64T] "host") ]) in
       do:  (struct.field_ref Server "clerks" (![ptrT] "s")) <-[sliceT ptrT] "$a0";;;
       do:  #());;;
     let: "encstate" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in

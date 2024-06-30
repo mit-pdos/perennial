@@ -39,7 +39,8 @@ Definition Enc__PutInt : val :=
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
     do:  "off" <-[uint64T] "$a0";;;
-    do:  machine.UInt64Put (SliceSkip byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) (![uint64T] "x");;;
+    do:  machine.UInt64Put (let: "$s" := ![sliceT byteT] (struct.field_ref Enc "b" "enc") in
+    slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s")) (![uint64T] "x");;;
     do:  (![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #8);;;
     do:  #()).
 
@@ -50,7 +51,8 @@ Definition Enc__PutInt32 : val :=
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
     do:  "off" <-[uint64T] "$a0";;;
-    do:  machine.UInt32Put (SliceSkip byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) (![uint32T] "x");;;
+    do:  machine.UInt32Put (let: "$s" := ![sliceT byteT] (struct.field_ref Enc "b" "enc") in
+    slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s")) (![uint32T] "x");;;
     do:  (![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #4);;;
     do:  #()).
 
@@ -73,7 +75,8 @@ Definition Enc__PutBytes : val :=
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
     do:  "off" <-[uint64T] "$a0";;;
     let: "n" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := SliceCopy byteT (SliceSkip byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) (![sliceT byteT] "b") in
+    let: "$a0" := slice.copy byteT (let: "$s" := ![sliceT byteT] (struct.field_ref Enc "b" "enc") in
+    slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s")) (![sliceT byteT] "b") in
     do:  "n" <-[uint64T] "$a0";;;
     do:  (![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + (![uint64T] "n"));;;
     do:  #()).
@@ -129,7 +132,8 @@ Definition Dec__GetInt : val :=
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
     do:  (![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #8);;;
-    return: (machine.UInt64Get (SliceSkip byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off")));;;
+    return: (machine.UInt64Get (let: "$s" := ![sliceT byteT] (struct.field_ref Dec "b" "dec") in
+     slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s")));;;
     do:  #()).
 
 Definition Dec__GetInt32 : val :=
@@ -139,7 +143,8 @@ Definition Dec__GetInt32 : val :=
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
     do:  (![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #4);;;
-    return: (machine.UInt32Get (SliceSkip byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off")));;;
+    return: (machine.UInt32Get (let: "$s" := ![sliceT byteT] (struct.field_ref Dec "b" "dec") in
+     slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s")));;;
     do:  #()).
 
 Definition Dec__GetInts : val :=
@@ -152,7 +157,7 @@ Definition Dec__GetInts : val :=
     do:  "i" <-[uint64T] "$a0";;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  "i" <-[uint64T] ((![uint64T] "i") + #1);;;
     #()) := λ: <>,
-      let: "$a0" := slice.append uint64T (![sliceT uint64T] "xs") (slice.literal uint64T [(Dec__GetInt (![structT Dec] "dec")) #()]) in
+      let: "$a0" := slice.append uint64T (![sliceT uint64T] "xs") (slice.literal uint64T [ (Dec__GetInt (![structT Dec] "dec")) #() ]) in
       do:  "xs" <-[sliceT uint64T] "$a0";;;
       do:  #()));;;
     return: (![sliceT uint64T] "xs");;;
@@ -166,7 +171,8 @@ Definition Dec__GetBytes : val :=
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
     let: "b" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
-    let: "$a0" := SliceSubslice byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off") ((![uint64T] "off") + (![uint64T] "num")) in
+    let: "$a0" := let: "$s" := ![sliceT byteT] (struct.field_ref Dec "b" "dec") in
+    slice.slice byteT "$s" (![uint64T] "off") ((![uint64T] "off") + (![uint64T] "num")) in
     do:  "b" <-[sliceT byteT] "$a0";;;
     do:  (![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + (![uint64T] "num"));;;
     return: (![sliceT byteT] "b");;;
@@ -221,7 +227,7 @@ Definition reserve : val :=
       let: "dest" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
       let: "$a0" := slice.make3 byteT (slice.len (![sliceT byteT] "b")) (![uint64T] "new_cap") in
       do:  "dest" <-[sliceT byteT] "$a0";;;
-      do:  SliceCopy byteT (![sliceT byteT] "dest") (![sliceT byteT] "b");;;
+      do:  slice.copy byteT (![sliceT byteT] "dest") (![sliceT byteT] "b");;;
       return: (![sliceT byteT] "dest");;;
       do:  #()
     else
@@ -235,7 +241,8 @@ Definition ReadInt : val :=
     let: "i" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := machine.UInt64Get (![sliceT byteT] "b") in
     do:  "i" <-[uint64T] "$a0";;;
-    return: (![uint64T] "i", SliceSkip byteT (![sliceT byteT] "b") #8);;;
+    return: (![uint64T] "i", let: "$s" := ![sliceT byteT] "b" in
+     slice.slice byteT "$s" #8 (slice.len "$s"));;;
     do:  #()).
 
 Definition ReadInt32 : val :=
@@ -244,7 +251,8 @@ Definition ReadInt32 : val :=
     let: "i" := ref_ty uint32T (zero_val uint32T) in
     let: "$a0" := machine.UInt32Get (![sliceT byteT] "b") in
     do:  "i" <-[uint32T] "$a0";;;
-    return: (![uint32T] "i", SliceSkip byteT (![sliceT byteT] "b") #4);;;
+    return: (![uint32T] "i", let: "$s" := ![sliceT byteT] "b" in
+     slice.slice byteT "$s" #4 (slice.len "$s"));;;
     do:  #()).
 
 (* ReadBytes reads `l` bytes from b and returns (bs, rest) *)
@@ -253,9 +261,11 @@ Definition ReadBytes : val :=
     exception_do (let: "l" := ref_ty uint64T "l" in
     let: "b" := ref_ty (sliceT byteT) "b" in
     let: "s" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
-    let: "$a0" := SliceTake (![sliceT byteT] "b") (![uint64T] "l") in
+    let: "$a0" := let: "$s" := ![sliceT byteT] "b" in
+    slice.slice byteT "$s" #0 (![uint64T] "l") in
     do:  "s" <-[sliceT byteT] "$a0";;;
-    return: (![sliceT byteT] "s", SliceSkip byteT (![sliceT byteT] "b") (![uint64T] "l"));;;
+    return: (![sliceT byteT] "s", let: "$s" := ![sliceT byteT] "b" in
+     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"));;;
     do:  #()).
 
 (* Like ReadBytes, but avoids keeping the source slice [b] alive. *)
@@ -266,8 +276,10 @@ Definition ReadBytesCopy : val :=
     let: "s" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
     let: "$a0" := slice.make2 byteT (![uint64T] "l") in
     do:  "s" <-[sliceT byteT] "$a0";;;
-    do:  SliceCopy byteT (![sliceT byteT] "s") (SliceTake (![sliceT byteT] "b") (![uint64T] "l"));;;
-    return: (![sliceT byteT] "s", SliceSkip byteT (![sliceT byteT] "b") (![uint64T] "l"));;;
+    do:  slice.copy byteT (![sliceT byteT] "s") (let: "$s" := ![sliceT byteT] "b" in
+    slice.slice byteT "$s" #0 (![uint64T] "l"));;;
+    return: (![sliceT byteT] "s", let: "$s" := ![sliceT byteT] "b" in
+     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"));;;
     do:  #()).
 
 Definition ReadBool : val :=
@@ -276,7 +288,8 @@ Definition ReadBool : val :=
     let: "x" := ref_ty boolT (zero_val boolT) in
     let: "$a0" := (![byteT] (slice.elem_ref byteT (![sliceT byteT] "b") #0)) ≠ #(U8 0) in
     do:  "x" <-[boolT] "$a0";;;
-    return: (![boolT] "x", SliceSkip byteT (![sliceT byteT] "b") #1);;;
+    return: (![boolT] "x", let: "$s" := ![sliceT byteT] "b" in
+     slice.slice byteT "$s" #1 (slice.len "$s"));;;
     do:  #()).
 
 Definition ReadLenPrefixedBytes : val :=
@@ -307,9 +320,11 @@ Definition WriteInt : val :=
     let: "$a0" := slice.len (![sliceT byteT] "b2") in
     do:  "off" <-[intT] "$a0";;;
     let: "b3" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
-    let: "$a0" := SliceTake (![sliceT byteT] "b2") ((![intT] "off") + #8) in
+    let: "$a0" := let: "$s" := ![sliceT byteT] "b2" in
+    slice.slice byteT "$s" #0 ((![intT] "off") + #8) in
     do:  "b3" <-[sliceT byteT] "$a0";;;
-    do:  machine.UInt64Put (SliceSkip byteT (![sliceT byteT] "b3") (![intT] "off")) (![uint64T] "i");;;
+    do:  machine.UInt64Put (let: "$s" := ![sliceT byteT] "b3" in
+    slice.slice byteT "$s" (![intT] "off") (slice.len "$s")) (![uint64T] "i");;;
     return: (![sliceT byteT] "b3");;;
     do:  #()).
 
@@ -325,9 +340,11 @@ Definition WriteInt32 : val :=
     let: "$a0" := slice.len (![sliceT byteT] "b2") in
     do:  "off" <-[intT] "$a0";;;
     let: "b3" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
-    let: "$a0" := SliceTake (![sliceT byteT] "b2") ((![intT] "off") + #4) in
+    let: "$a0" := let: "$s" := ![sliceT byteT] "b2" in
+    slice.slice byteT "$s" #0 ((![intT] "off") + #4) in
     do:  "b3" <-[sliceT byteT] "$a0";;;
-    do:  machine.UInt32Put (SliceSkip byteT (![sliceT byteT] "b3") (![intT] "off")) (![uint32T] "i");;;
+    do:  machine.UInt32Put (let: "$s" := ![sliceT byteT] "b3" in
+    slice.slice byteT "$s" (![intT] "off") (slice.len "$s")) (![uint32T] "i");;;
     return: (![sliceT byteT] "b3");;;
     do:  #()).
 
@@ -345,10 +362,10 @@ Definition WriteBool : val :=
     let: "b" := ref_ty (sliceT byteT) "b" in
     (if: ![boolT] "x"
     then
-      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [#(U8 1)]));;;
+      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 1) ]));;;
       do:  #()
     else
-      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [#(U8 0)]));;;
+      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 0) ]));;;
       do:  #());;;
     do:  #()).
 
