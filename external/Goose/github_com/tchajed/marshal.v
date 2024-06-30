@@ -14,7 +14,7 @@ Definition Enc := [
   "off" :: ptrT
 ].
 
-Definition NewEncFromSlice: val :=
+Definition NewEncFromSlice : val :=
   rec: "NewEncFromSlice" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     return: (struct.make Enc [
@@ -23,7 +23,7 @@ Definition NewEncFromSlice: val :=
      ]);;;
     do:  #()).
 
-Definition NewEnc: val :=
+Definition NewEnc : val :=
   rec: "NewEnc" "sz" :=
     exception_do (let: "sz" := ref_ty uint64T "sz" in
     let: "b" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
@@ -32,29 +32,29 @@ Definition NewEnc: val :=
     return: (NewEncFromSlice (![sliceT byteT] "b"));;;
     do:  #()).
 
-Definition Enc__PutInt: val :=
+Definition Enc__PutInt : val :=
   rec: "Enc__PutInt" "enc" "x" :=
     exception_do (let: "x" := ref_ty uint64T "x" in
     let: "enc" := ref_ty (structT Enc) "enc" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
     do:  "off" <-[uint64T] "$a0";;;
-    do:  machine.UInt64Put (SliceSkip byteT (![struct.field_ty Enc "b"] (struct.get Enc "b" (![structT Enc] "enc"))) (![uint64T] "off")) (![uint64T] "x");;;
-    do:  (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) <-[uint64T] ((![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc")))) + #8);;;
+    do:  machine.UInt64Put (SliceSkip byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) (![uint64T] "x");;;
+    do:  (![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #8);;;
     do:  #()).
 
-Definition Enc__PutInt32: val :=
+Definition Enc__PutInt32 : val :=
   rec: "Enc__PutInt32" "enc" "x" :=
     exception_do (let: "x" := ref_ty uint32T "x" in
     let: "enc" := ref_ty (structT Enc) "enc" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
     do:  "off" <-[uint64T] "$a0";;;
-    do:  machine.UInt32Put (SliceSkip byteT (![struct.field_ty Enc "b"] (struct.get Enc "b" (![structT Enc] "enc"))) (![uint64T] "off")) (![uint32T] "x");;;
-    do:  (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) <-[uint64T] ((![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc")))) + #4);;;
+    do:  machine.UInt32Put (SliceSkip byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) (![uint32T] "x");;;
+    do:  (![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #4);;;
     do:  #()).
 
-Definition Enc__PutInts: val :=
+Definition Enc__PutInts : val :=
   rec: "Enc__PutInts" "enc" "xs" :=
     exception_do (let: "xs" := ref_ty (sliceT uint64T) "xs" in
     let: "enc" := ref_ty (structT Enc) "enc" in
@@ -65,20 +65,20 @@ Definition Enc__PutInts: val :=
       do:  #());;;
     do:  #()).
 
-Definition Enc__PutBytes: val :=
+Definition Enc__PutBytes : val :=
   rec: "Enc__PutBytes" "enc" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     let: "enc" := ref_ty (structT Enc) "enc" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
     do:  "off" <-[uint64T] "$a0";;;
     let: "n" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := SliceCopy byteT (SliceSkip byteT (![struct.field_ty Enc "b"] (struct.get Enc "b" (![structT Enc] "enc"))) (![uint64T] "off")) (![sliceT byteT] "b") in
+    let: "$a0" := SliceCopy byteT (SliceSkip byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) (![sliceT byteT] "b") in
     do:  "n" <-[uint64T] "$a0";;;
-    do:  (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) <-[uint64T] ((![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc")))) + (![uint64T] "n"));;;
+    do:  (![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + (![uint64T] "n"));;;
     do:  #()).
 
-Definition bool2byte: val :=
+Definition bool2byte : val :=
   rec: "bool2byte" "b" :=
     exception_do (let: "b" := ref_ty boolT "b" in
     (if: ![boolT] "b"
@@ -90,22 +90,22 @@ Definition bool2byte: val :=
       do:  #());;;
     do:  #()).
 
-Definition Enc__PutBool: val :=
+Definition Enc__PutBool : val :=
   rec: "Enc__PutBool" "enc" "b" :=
     exception_do (let: "b" := ref_ty boolT "b" in
     let: "enc" := ref_ty (structT Enc) "enc" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
     do:  "off" <-[uint64T] "$a0";;;
     let: "$a0" := bool2byte (![boolT] "b") in
-    do:  (slice.elem_ref byteT (![struct.field_ty Enc "b"] (struct.get Enc "b" (![structT Enc] "enc"))) (![uint64T] "off")) <-[byteT] "$a0";;;
-    do:  (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc"))) <-[uint64T] ((![uint64T] (![struct.field_ty Enc "off"] (struct.get Enc "off" (![structT Enc] "enc")))) + #1);;;
+    do:  (slice.elem_ref byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) <-[byteT] "$a0";;;
+    do:  (![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #1);;;
     do:  #()).
 
-Definition Enc__Finish: val :=
+Definition Enc__Finish : val :=
   rec: "Enc__Finish" "enc" :=
     exception_do (let: "enc" := ref_ty (structT Enc) "enc" in
-    return: (![struct.field_ty Enc "b"] (struct.get Enc "b" (![structT Enc] "enc")));;;
+    return: (![sliceT byteT] (struct.field_ref Enc "b" "enc"));;;
     do:  #()).
 
 Definition Dec := [
@@ -113,7 +113,7 @@ Definition Dec := [
   "off" :: ptrT
 ].
 
-Definition NewDec: val :=
+Definition NewDec : val :=
   rec: "NewDec" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     return: (struct.make Dec [
@@ -122,27 +122,27 @@ Definition NewDec: val :=
      ]);;;
     do:  #()).
 
-Definition Dec__GetInt: val :=
+Definition Dec__GetInt : val :=
   rec: "Dec__GetInt" "dec" :=
     exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
-    do:  (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) <-[uint64T] ((![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec")))) + #8);;;
-    return: (machine.UInt64Get (SliceSkip byteT (![struct.field_ty Dec "b"] (struct.get Dec "b" (![structT Dec] "dec"))) (![uint64T] "off")));;;
+    do:  (![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #8);;;
+    return: (machine.UInt64Get (SliceSkip byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off")));;;
     do:  #()).
 
-Definition Dec__GetInt32: val :=
+Definition Dec__GetInt32 : val :=
   rec: "Dec__GetInt32" "dec" :=
     exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
-    do:  (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) <-[uint64T] ((![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec")))) + #4);;;
-    return: (machine.UInt32Get (SliceSkip byteT (![struct.field_ty Dec "b"] (struct.get Dec "b" (![structT Dec] "dec"))) (![uint64T] "off")));;;
+    do:  (![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #4);;;
+    return: (machine.UInt32Get (SliceSkip byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off")));;;
     do:  #()).
 
-Definition Dec__GetInts: val :=
+Definition Dec__GetInts : val :=
   rec: "Dec__GetInts" "dec" "num" :=
     exception_do (let: "num" := ref_ty uint64T "num" in
     let: "dec" := ref_ty (structT Dec) "dec" in
@@ -158,28 +158,28 @@ Definition Dec__GetInts: val :=
     return: (![sliceT uint64T] "xs");;;
     do:  #()).
 
-Definition Dec__GetBytes: val :=
+Definition Dec__GetBytes : val :=
   rec: "Dec__GetBytes" "dec" "num" :=
     exception_do (let: "num" := ref_ty uint64T "num" in
     let: "dec" := ref_ty (structT Dec) "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
     let: "b" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
-    let: "$a0" := SliceSubslice byteT (![struct.field_ty Dec "b"] (struct.get Dec "b" (![structT Dec] "dec"))) (![uint64T] "off") ((![uint64T] "off") + (![uint64T] "num")) in
+    let: "$a0" := SliceSubslice byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off") ((![uint64T] "off") + (![uint64T] "num")) in
     do:  "b" <-[sliceT byteT] "$a0";;;
-    do:  (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) <-[uint64T] ((![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec")))) + (![uint64T] "num"));;;
+    do:  (![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + (![uint64T] "num"));;;
     return: (![sliceT byteT] "b");;;
     do:  #()).
 
-Definition Dec__GetBool: val :=
+Definition Dec__GetBool : val :=
   rec: "Dec__GetBool" "dec" :=
     exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := ![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) in
+    let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
-    do:  (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec"))) <-[uint64T] ((![uint64T] (![struct.field_ty Dec "off"] (struct.get Dec "off" (![structT Dec] "dec")))) + #1);;;
-    (if: (![byteT] (slice.elem_ref byteT (![struct.field_ty Dec "b"] (struct.get Dec "b" (![structT Dec] "dec"))) (![uint64T] "off"))) = #(U8 0)
+    do:  (![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #1);;;
+    (if: (![byteT] (slice.elem_ref byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off"))) = #(U8 0)
     then
       return: (#false);;;
       do:  #()
@@ -190,7 +190,7 @@ Definition Dec__GetBool: val :=
 
 (* stateless.go *)
 
-Definition compute_new_cap: val :=
+Definition compute_new_cap : val :=
   rec: "compute_new_cap" "old_cap" "min_cap" :=
     exception_do (let: "min_cap" := ref_ty uint64T "min_cap" in
     let: "old_cap" := ref_ty uint64T "old_cap" in
@@ -206,7 +206,7 @@ Definition compute_new_cap: val :=
 
 (* Grow a slice to have at least `additional` unused bytes in the capacity.
    Runtime-check against overflow. *)
-Definition reserve: val :=
+Definition reserve : val :=
   rec: "reserve" "b" "additional" :=
     exception_do (let: "additional" := ref_ty uint64T "additional" in
     let: "b" := ref_ty (sliceT byteT) "b" in
@@ -229,7 +229,7 @@ Definition reserve: val :=
       do:  #());;;
     do:  #()).
 
-Definition ReadInt: val :=
+Definition ReadInt : val :=
   rec: "ReadInt" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     let: "i" := ref_ty uint64T (zero_val uint64T) in
@@ -238,7 +238,7 @@ Definition ReadInt: val :=
     return: (![uint64T] "i", SliceSkip byteT (![sliceT byteT] "b") #8);;;
     do:  #()).
 
-Definition ReadInt32: val :=
+Definition ReadInt32 : val :=
   rec: "ReadInt32" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     let: "i" := ref_ty uint32T (zero_val uint32T) in
@@ -248,7 +248,7 @@ Definition ReadInt32: val :=
     do:  #()).
 
 (* ReadBytes reads `l` bytes from b and returns (bs, rest) *)
-Definition ReadBytes: val :=
+Definition ReadBytes : val :=
   rec: "ReadBytes" "b" "l" :=
     exception_do (let: "l" := ref_ty uint64T "l" in
     let: "b" := ref_ty (sliceT byteT) "b" in
@@ -259,7 +259,7 @@ Definition ReadBytes: val :=
     do:  #()).
 
 (* Like ReadBytes, but avoids keeping the source slice [b] alive. *)
-Definition ReadBytesCopy: val :=
+Definition ReadBytesCopy : val :=
   rec: "ReadBytesCopy" "b" "l" :=
     exception_do (let: "l" := ref_ty uint64T "l" in
     let: "b" := ref_ty (sliceT byteT) "b" in
@@ -270,7 +270,7 @@ Definition ReadBytesCopy: val :=
     return: (![sliceT byteT] "s", SliceSkip byteT (![sliceT byteT] "b") (![uint64T] "l"));;;
     do:  #()).
 
-Definition ReadBool: val :=
+Definition ReadBool : val :=
   rec: "ReadBool" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     let: "x" := ref_ty boolT (zero_val boolT) in
@@ -279,7 +279,7 @@ Definition ReadBool: val :=
     return: (![boolT] "x", SliceSkip byteT (![sliceT byteT] "b") #1);;;
     do:  #()).
 
-Definition ReadLenPrefixedBytes: val :=
+Definition ReadLenPrefixedBytes : val :=
   rec: "ReadLenPrefixedBytes" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     let: "b2" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
@@ -296,7 +296,7 @@ Definition ReadLenPrefixedBytes: val :=
     do:  #()).
 
 (* WriteInt appends i in little-endian format to b, returning the new slice. *)
-Definition WriteInt: val :=
+Definition WriteInt : val :=
   rec: "WriteInt" "b" "i" :=
     exception_do (let: "i" := ref_ty uint64T "i" in
     let: "b" := ref_ty (sliceT byteT) "b" in
@@ -314,7 +314,7 @@ Definition WriteInt: val :=
     do:  #()).
 
 (* WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice. *)
-Definition WriteInt32: val :=
+Definition WriteInt32 : val :=
   rec: "WriteInt32" "b" "i" :=
     exception_do (let: "i" := ref_ty uint32T "i" in
     let: "b" := ref_ty (sliceT byteT) "b" in
@@ -332,14 +332,14 @@ Definition WriteInt32: val :=
     do:  #()).
 
 (* Append data to b, returning the new slice. *)
-Definition WriteBytes: val :=
+Definition WriteBytes : val :=
   rec: "WriteBytes" "b" "data" :=
     exception_do (let: "data" := ref_ty (sliceT byteT) "data" in
     let: "b" := ref_ty (sliceT byteT) "b" in
     return: (slice.append byteT (![sliceT byteT] "b") (![sliceT byteT] "data"));;;
     do:  #()).
 
-Definition WriteBool: val :=
+Definition WriteBool : val :=
   rec: "WriteBool" "b" "x" :=
     exception_do (let: "x" := ref_ty boolT "x" in
     let: "b" := ref_ty (sliceT byteT) "b" in
@@ -352,7 +352,7 @@ Definition WriteBool: val :=
       do:  #());;;
     do:  #()).
 
-Definition WriteLenPrefixedBytes: val :=
+Definition WriteLenPrefixedBytes : val :=
   rec: "WriteLenPrefixedBytes" "b" "bs" :=
     exception_do (let: "bs" := ref_ty (sliceT byteT) "bs" in
     let: "b" := ref_ty (sliceT byteT) "b" in
