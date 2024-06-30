@@ -40,6 +40,12 @@ def main():
         metavar="GOOSE_PATH",
     )
     parser.add_argument(
+        "--marshal",
+        help="path to marshal repo (skip translation if not provided)",
+        metavar="MARSHAL_PATH",
+        default=None,
+    )
+    parser.add_argument(
         "--gokv",
         help="path to gokv repo (skip translation if not provided)",
         metavar="GOKV_PATH",
@@ -50,10 +56,13 @@ def main():
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     goose_dir = args.goose
+    marshal_dir = args.marshal
     gokv_dir = args.gokv
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
+    if marshal_dir is not None and not os.path.isdir(marshal_dir):
+        parser.error("marshal directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
 
@@ -90,6 +99,9 @@ def main():
 
     if args.compile:
         compile_goose()
+
+    if marshal_dir is not None:
+        run_goose(marshal_dir, ".")
 
     if gokv_dir is not None:
         pkgs = [

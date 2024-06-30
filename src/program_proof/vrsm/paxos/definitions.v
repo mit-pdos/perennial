@@ -227,7 +227,7 @@ Definition fileN := N .@ "file".
 (* The P is a validity predicate for any proposed state *)
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (f:loc) (ps:loc) pst γf data,
-  "Hps" ∷ s ↦[Server :: "ps"] #ps ∗
+  "Hps" ∷ s ↦s[Server :: "ps"] #ps ∗
   "Hstorage" ∷ s ↦[Server :: "storage"] #f ∗
   "Hfile" ∷ own_AsyncFile fileN f γf (own_file_inv γ γsrv) data ∗
   "Hvol" ∷ paxosState.own_vol ps pst ∗

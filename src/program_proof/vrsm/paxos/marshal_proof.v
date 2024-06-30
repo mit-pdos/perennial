@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import new_grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Export paxos.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
@@ -18,12 +18,14 @@ Definition has_encoding (encoded:list u8) (args:C) : Prop :=
 
 Context `{!heapGS Σ}.
 
+Local Notation list_val := (fmap (λ (x:w8), #x)).
+
 Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
-  "#Hargs_epoch" ∷ args_ptr ↦[applyAsFollowerArgs :: "epoch"]□ #args.(epoch) ∗
-  "#Hargs_index" ∷ args_ptr ↦[applyAsFollowerArgs :: "nextIndex"]□ #args.(nextIndex) ∗
-  "#Hargs_state" ∷ args_ptr ↦[applyAsFollowerArgs :: "state"]□ (slice_val state_sl) ∗
-  "#Hargs_state_sl" ∷ own_slice_small state_sl byteT DfracDiscarded args.(state)
+  "#Hargs_epoch" ∷ args_ptr ↦s[applyAsFollowerArgs :: "epoch"]□ #args.(epoch) ∗
+  "#Hargs_index" ∷ args_ptr ↦s[applyAsFollowerArgs :: "nextIndex"]□ #args.(nextIndex) ∗
+  "#Hargs_state" ∷ args_ptr ↦s[applyAsFollowerArgs :: "state"]□ (slice.val state_sl) ∗
+  "#Hargs_state_sl" ∷ own_slice state_sl byteT DfracDiscarded (list_val args.(state))
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -32,16 +34,19 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   }}}
     encodeApplyAsFollowerArgs #args_ptr
   {{{
-        enc enc_sl, RET (slice_val enc_sl);
+        enc enc_sl, RET (slice.val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        own_slice enc_sl byteT (DfracOwn 1) enc
+        own_slice enc_sl byteT (DfracOwn 1) (list_val enc) ∗
+        own_slice_cap enc_sl byteT
   }}}.
 Proof.
   iIntros (?) "H HΦ".
   iNamed "H".
   wp_lam.
   wp_pures.
-  wp_loadField. wp_apply (wp_slice_len).
+  wp_apply wp_ref_ty; [econstructor|].
+  iIntros (?)
+  wp_load. wp_apply (wp_slice_len).
   iDestruct (own_slice_small_sz with "[$]") as %Hsz.
   wp_pures.
   wp_apply wp_NewSliceWithCap.
