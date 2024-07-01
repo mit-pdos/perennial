@@ -575,18 +575,18 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_digest (id val digest : list w8) :
+Lemma wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_digest (id val digest : list w8) d0 d1 d2 :
   {{{
     "#Hproof" ∷ is_Slice3D sl_proof proof ∗
-    "Hid" ∷ own_slice_small sl_id byteT (DfracOwn 1) id ∗
-    "Hval" ∷ own_slice_small sl_val byteT (DfracOwn 1) val ∗
-    "Hdigest" ∷ own_slice_small sl_digest byteT (DfracOwn 1) digest
+    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+    "Hval" ∷ own_slice_small sl_val byteT d1 val ∗
+    "Hdigest" ∷ own_slice_small sl_digest byteT d2 digest
   }}}
   CheckProof #proofTy (slice_val sl_proof) (slice_val sl_id) (slice_val sl_val) (slice_val sl_digest)
   {{{
     (err : bool), RET #err;
     if negb err then
-      "H#Hpath" ∷ is_path_val id (if proofTy then Some val else None) digest
+      "#Hpath" ∷ is_path_val id (if proofTy then Some val else None) digest
     else True%I
   }}}.
 Proof. Admitted.

@@ -96,6 +96,34 @@ Definition encodesF (obj : t) : list w8 :=
   [(W8 1)] ++ u64_le obj.(epoch) ++ u64_le (length obj.(id)) ++ obj.(id) ++ u64_le (length obj.(val)) ++ obj.(val).
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
+
+Lemma inj obj0 obj1 :
+  encodesF obj0 = encodesF obj1 → obj0 = obj1.
+Proof. Admitted.
+
+Section local_defs.
+Context `{!heapGS Σ}.
+Definition own ptr obj : iProp Σ :=
+  ∃ sl_id sl_val d0 d1,
+  "Hepoch" ∷ ptr ↦[servSepPut :: "epoch"] #obj.(epoch) ∗
+  "Hid" ∷ ptr ↦[servSepPut :: "id"] (slice_val sl_id) ∗
+  "Hsl_id" ∷ own_slice_small sl_id byteT d0 obj.(id) ∗
+  "Hval" ∷ ptr ↦[servSepPut :: "val"] (slice_val sl_val) ∗
+  "Hsl_val" ∷ own_slice_small sl_val byteT d1 obj.(val).
+
+Lemma wp_encode ptr obj :
+  {{{
+    "Hobj" ∷ own ptr obj
+  }}}
+    servSepPut__encode #ptr
+  {{{
+    sl_enc enc, RET (slice_val sl_enc);
+    "Hobj" ∷ own ptr obj ∗
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) enc ∗
+    "%Henc" ∷ ⌜encodes enc obj⌝
+  }}}.
+Proof. Admitted.
+End local_defs.
 End servSepPut.
 
 Module evidServLink.
@@ -134,6 +162,50 @@ Definition own ptr obj : iProp Σ :=
 End local_defs.
 End evidServLink.
 
+Module evidServPut.
+Record t :=
+  mk {
+    epoch: w64;
+    (* For signed link. *)
+    prevLink: list w8;
+    dig: list w8;
+    linkSig: list w8;
+    (* For signed put. *)
+    id: list w8;
+    val0: list w8;
+    putSig: list w8;
+    (* For merkle inclusion. *)
+    val1: list w8;
+    proof: list (list (list w8));
+  }.
+
+Section local_defs.
+Context `{!heapGS Σ}.
+Definition own ptr obj : iProp Σ :=
+  ∃ sl_prevLink sl_dig sl_linkSig sl_id sl_val0 sl_putSig sl_val1 sl_proof d0 d1 d2 d3 d4 d5 d6,
+  "Hepoch" ∷ ptr ↦[evidServPut :: "epoch"] #obj.(epoch) ∗
+
+  "HprevLink" ∷ ptr ↦[evidServPut :: "prevLink"] (slice_val sl_prevLink) ∗
+  "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
+  "Hdig" ∷ ptr ↦[evidServPut :: "dig"] (slice_val sl_dig) ∗
+  "Hsl_dig" ∷ own_slice_small sl_dig byteT d1 obj.(dig) ∗
+  "HlinkSig" ∷ ptr ↦[evidServPut :: "linkSig"] (slice_val sl_linkSig) ∗
+  "Hsl_linkSig" ∷ own_slice_small sl_linkSig byteT d2 obj.(linkSig) ∗
+
+  "Hid" ∷ ptr ↦[evidServPut :: "id"] (slice_val sl_id) ∗
+  "Hsl_id" ∷ own_slice_small sl_id byteT d3 obj.(id) ∗
+  "Hval0" ∷ ptr ↦[evidServPut :: "val0"] (slice_val sl_val0) ∗
+  "Hsl_val0" ∷ own_slice_small sl_val0 byteT d4 obj.(val0) ∗
+  "HputSig" ∷ ptr ↦[evidServPut :: "putSig"] (slice_val sl_putSig) ∗
+  "Hsl_putSig" ∷ own_slice_small sl_putSig byteT d5 obj.(putSig) ∗
+
+  "Hval1" ∷ ptr ↦[evidServPut :: "val1"] (slice_val sl_val1) ∗
+  "Hsl_val1" ∷ own_slice_small sl_val1 byteT d6 obj.(val1) ∗
+  "Hproof" ∷ ptr ↦[evidServPut :: "proof"] (slice_val sl_proof) ∗
+  "#Hsl_proof" ∷ is_Slice3D sl_proof obj.(proof).
+End local_defs.
+End evidServPut.
+
 Section evidence.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
 
@@ -152,20 +224,17 @@ Qed.
 
 Definition serv_sigpred_link γ (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8),
-  "#Hlink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
+  "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
   "#HidxPrev" ∷ mono_list_idx_own γ (uint.nat (word.sub epoch (W64 1))) prevLink ∗
   "#HidxCurr" ∷ mono_list_idx_own γ (uint.nat epoch) data.(servSepLink.link).
 
 Definition serv_sigpred_put γ (data : servSepPut.t) : iProp Σ :=
-  ∃ (prevLink dig link : list w8),
-  "#Hlink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk data.(servSepPut.epoch) prevLink dig)) link ∗
-  "#Hidx" ∷ mono_list_idx_own γ (uint.nat data.(servSepPut.epoch)) link ∗
-  "#Hmerkle" ∷ is_path_val data.(servSepPut.id) (Some data.(servSepPut.val)) dig.
-
-(* Note: False for now so we don't have to consider put promises. *)
-(*
-Definition serv_sigpred_put (γ : gname) (data : servSepPut.t) : iProp Σ := False.
- *)
+  (* Note: `∀` bc server doesn't yet know the link. *)
+  ∀ (link : list w8),
+  □ ("#Hidx" ∷ mono_list_idx_own γ (uint.nat data.(servSepPut.epoch)) link -∗
+    ∃ (prevLink dig : list w8),
+    ("#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk data.(servSepPut.epoch) prevLink dig)) link ∗
+    "#Hmerkle" ∷ is_path_val data.(servSepPut.id) (Some data.(servSepPut.val)) dig)).
 
 Definition serv_sigpred γ : (list w8 → iProp Σ) :=
   λ data,
@@ -195,8 +264,7 @@ Lemma wp_evidServLink_check ptr_evid evid pk γ hon :
   }}}.
 Proof.
   rewrite /evidServLink__check.
-  iIntros (Φ) "H HΦ"; iNamed "H".
-  iDestruct "Hevid" as (??????) "H"; iNamed "H".
+  iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hevid".
 
   (* first link sig. *)
   wp_loadField.
@@ -318,15 +386,15 @@ Proof.
     rewrite ->Henc_link1' in Henc_enc1;
       apply servSepLink.inj in Henc_enc1 as ->.
     iDestruct "Hsigpred0" as (epoch0 prevLink0 dig0) "H"; iNamed "H";
-      iRename "Hlink" into "Hlink0";
+      iRename "Hbind" into "Hbind0";
       iClear "HidxPrev";
       iRename "HidxCurr" into "HidxCurr0".
     iDestruct "Hsigpred1" as (epoch1 prevLink1 dig1) "H"; iNamed "H";
-      iRename "Hlink" into "Hlink1";
+      iRename "Hbind" into "Hbind1";
       iClear "HidxPrev";
       iRename "HidxCurr" into "HidxCurr1".
-    iDestruct (hash_inj with "[$His_hash_link0] [$Hlink0]") as %->.
-    iDestruct (hash_inj with "[$His_hash_link1] [$Hlink1]") as %->.
+    iDestruct (hash_inj with "[$His_hash_link0] [$Hbind0]") as %->.
+    iDestruct (hash_inj with "[$His_hash_link1] [$Hbind1]") as %->.
     apply chainSepSome.inj in Henc_link0 as [=]; subst.
     apply chainSepSome.inj in Henc_link1 as [=]; subst.
     iEval (rewrite Hepoch_eq) in "HidxCurr0".
@@ -356,15 +424,15 @@ Proof.
     rewrite ->Henc_link1' in Henc_enc1;
       apply servSepLink.inj in Henc_enc1 as ->.
     iDestruct "Hsigpred0" as (epoch0 prevLink0 dig0) "H"; iNamed "H";
-      iRename "Hlink" into "Hlink0";
+      iRename "Hbind" into "Hbind0";
       iClear "HidxPrev";
       iRename "HidxCurr" into "HidxCurr0".
     iDestruct "Hsigpred1" as (epoc10 prevLink1 dig1) "H"; iNamed "H";
-      iRename "Hlink" into "Hlink1";
+      iRename "Hbind" into "Hbind1";
       iRename "HidxPrev" into "HidxPrev1";
       iClear "HidxCurr".
-    iDestruct (hash_inj with "[$His_hash_link0] [$Hlink0]") as %->.
-    iDestruct (hash_inj with "[$His_hash_link1] [$Hlink1]") as %->.
+    iDestruct (hash_inj with "[$His_hash_link0] [$Hbind0]") as %->.
+    iDestruct (hash_inj with "[$His_hash_link1] [$Hbind1]") as %->.
     apply chainSepSome.inj in Henc_link0 as [=]; subst.
     apply chainSepSome.inj in Henc_link1 as [=]; subst.
     iEval (rewrite Hepoch_off_eq) in "HidxCurr0".
@@ -372,5 +440,143 @@ Proof.
     done.
   }
   by iApply "HΦ".
+Qed.
+
+Lemma wp_evidServPut_check ptr_evid evid pk γ hon :
+  {{{
+    "Hevid" ∷ evidServPut.own ptr_evid evid ∗
+    "#Hpk" ∷ is_pk pk (serv_sigpred γ) hon
+  }}}
+  evidServPut__check #ptr_evid (slice_val pk)
+  {{{
+    (err : bool), RET #err;
+    if negb err then
+      "%Hhon" ∷ ⌜hon = false⌝
+    else True%I
+  }}}.
+Proof.
+  rewrite /evidServPut__check.
+  iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hevid".
+
+  (* verify link sig. *)
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|];
+    iIntros (ptr_linkSep) "Hptr_linkSep".
+  iMod (own_slice_small_persist with "Hsl_prevLink") as "#Hsl_prevLink".
+  iMod (own_slice_small_persist with "Hsl_dig") as "#Hsl_dig".
+  wp_apply (chainSepSome.wp_encode with "[Hptr_linkSep]").
+  {
+    instantiate (1:=chainSepSome.mk _ _ _).
+    iDestruct (struct_fields_split with "Hptr_linkSep") as "H"; iNamed "H".
+    rewrite /chainSepSome.own /=.
+    iExists sl_prevLink, sl_dig; iFrame "#∗".
+  }
+  iIntros (sl_linkEnc linkEnc) "H"; iNamed "H";
+    iRename "Hobj" into "Hptr_linkSep";
+    iRename "Hsl_enc" into "Hsl_linkEnc";
+    rename Henc into Henc_link.
+  wp_apply (wp_Hash with "Hsl_linkEnc");
+    iIntros (sl_link link) "H"; iNamed "H";
+    iRename "Hdata" into "Hsl_linkEnc";
+    iRename "Hhash" into "Hsl_link";
+    iRename "His_hash" into "His_hash_link".
+  iMod (own_slice_small_persist with "Hsl_link") as "#Hsl_link".
+  wp_apply wp_allocStruct; [val_ty|];
+    iIntros (ptr_preLinkSig) "Hptr_preLinkSig".
+  iDestruct (struct_fields_split with "Hptr_preLinkSig") as "H";
+    iNamed "H"; iClear "tag".
+  wp_apply (servSepLink.wp_encode with "[link]").
+  {
+    instantiate (1:=servSepLink.mk _).
+    rewrite /servSepLink.own /=.
+    iFrame "#∗".
+  }
+  iIntros (sl_preLinkSig preLinkSig) "H"; iNamed "H";
+    iRename "Hobj" into "Hptr_preLinkSig";
+    iRename "Hsl_enc" into "Hsl_preLinkSig";
+    rename Henc into Henc_preLinkSig.
+  wp_loadField.
+  wp_apply (wp_Verify with "[Hsl_preLinkSig Hsl_linkSig]"); [iFrame "#∗"|];
+    iIntros (?) "H"; iNamed "H";
+    iRename "Hsig" into "Hsl_linkSig";
+    iRename "Hmsg" into "Hsl_preLinkSig";
+    iRename "HP" into "HlinkSigPred".
+  destruct ok.
+  2: { wp_pures. by iApply "HΦ". }
+
+  (* verify put promise sig. *)
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|];
+    iIntros (ptr_strPrePut) "Hptr_strPrePut".
+  iMod (own_slice_small_persist with "Hsl_id") as "#Hsl_id".
+  iMod (own_slice_small_persist with "Hsl_val0") as "#Hsl_val0".
+  wp_apply (servSepPut.wp_encode with "[Hptr_strPrePut]").
+  {
+    instantiate (1:=servSepPut.mk _ _ _).
+    iDestruct (struct_fields_split with "Hptr_strPrePut") as "H"; iNamed "H".
+    rewrite /servSepPut.own /=.
+    iExists sl_id, sl_val0.
+    iFrame "#∗".
+  }
+  iIntros (sl_prePut prePut) "H"; iNamed "H";
+    iRename "Hobj" into "Hptr_prePut";
+    iRename "Hsl_enc" into "Hsl_prePut";
+    rename Henc into Henc_prePut.
+  wp_loadField.
+  wp_apply (wp_Verify with "[Hsl_prePut Hsl_putSig]"); [iFrame "#∗"|];
+    iIntros (?) "H"; iNamed "H";
+    iRename "Hsig" into "Hsl_putSig";
+    iRename "Hmsg" into "Hsl_prePut";
+    iRename "HP" into "HputSigPred".
+  destruct ok.
+  2: { wp_pures. by iApply "HΦ". }
+
+  (* check merkle proof. *)
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  iMod (own_slice_small_persist with "Hsl_val1") as "#Hsl_val1".
+  wp_apply (wp_CheckProof with "[Hid]"); [iFrame "#∗"|].
+  iIntros (err0) "Herr0".
+  destruct err0; [wp_pures; by iApply "HΦ"|].
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_BytesEqual; [iFrame "#"|]; iIntros "_".
+
+  (* final stretch. *)
+  case_bool_decide; [by iApply "HΦ"|]; move: H => Hval_eq.
+  destruct hon; [|by iApply "HΦ"].
+  iExFalso.
+
+  (* process link sig. *)
+  iDestruct "HlinkSigPred" as "[[%sepLink [%Henc_link' #HlinkSigPred]] | [% [% _]]]".
+  2: { exfalso. eauto using servSep. }
+  rewrite ->Henc_link' in Henc_preLinkSig;
+    apply servSepLink.inj in Henc_preLinkSig as ->.
+  iDestruct "HlinkSigPred" as (epoch prevLink dig) "H"; iNamed "H";
+    iClear "HidxPrev";
+    iRename "HidxCurr" into "HidxCurr".
+  iDestruct (hash_inj with "[$His_hash_link] [$Hbind]") as %->; iClear "Hbind".
+  apply chainSepSome.inj in Henc_link as [=]; subst.
+
+  (* process put sig. *)
+  iDestruct "HputSigPred" as "[[% [% _]] | [%sepPut [%Henc_put' #HputSigPred]]]".
+  { exfalso. eauto using servSep. }
+  rewrite ->Henc_put' in Henc_prePut;
+    apply servSepPut.inj in Henc_prePut as ->.
+  iDestruct ("HputSigPred" $! link with "[$HidxCurr]") as "{HputSigPred} [%prevLink' [%dig' H]]";
+    iNamed "H".
+  simpl.
+  iDestruct (hash_inj with "[$His_hash_link] [$Hbind]") as %Heq; iClear "Hbind".
+  apply chainSepSome.inj in Heq as [=]; subst.
+
+  (* derive contra from conflicting is_path_val's. *)
+  iDestruct (is_path_val_inj with "[$Hmerkle] [$Herr0]") as %[=].
+  done.
 Qed.
 End evidence.
