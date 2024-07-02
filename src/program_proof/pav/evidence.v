@@ -206,9 +206,7 @@ Definition own ptr obj : iProp Σ :=
 End local_defs.
 End evidServPut.
 
-Section evidence.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
-
+Section other.
 (* Note: the more general version of this lemma has a set of encodings
    that are within the same domain.
    if any two of these hold, we can prove false.
@@ -221,6 +219,10 @@ Proof.
   rewrite /servSepPut.encodes /servSepPut.encodesF in HencPut.
   naive_solver.
 Qed.
+End other.
+
+Section servpreds.
+Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
 
 Definition serv_sigpred_link γ (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8),
@@ -249,6 +251,10 @@ Definition serv_sigpred γ : (list w8 → iProp Σ) :=
         ⌜servSepPut.encodes data dataSepPut⌝ ∗
         serv_sigpred_put γ dataSepPut
     )%I)%I.
+End servpreds.
+
+Section evidence.
+Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
 
 Lemma wp_evidServLink_check ptr_evid evid pk γ hon :
   {{{
