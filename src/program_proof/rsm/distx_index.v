@@ -8,6 +8,11 @@ Section program.
   Definition is_index (idx : loc) (α : gname) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance is_index_persistent idx α :
+    Persistent (is_index idx α).
+  Admitted.
+
   Theorem wp_Index__GetTuple (idx : loc) (key : string) α :
     is_index idx α -∗
     {{{ True }}}

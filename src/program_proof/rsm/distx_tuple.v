@@ -17,6 +17,11 @@ Section program.
   Definition is_tuple (tuple : loc) (key : string) (α : gname) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance is_tuple_persistent tuple key α :
+    Persistent (is_tuple tuple key α).
+  Admitted.
+
   Theorem wp_Tuple__AppendVersion
     (tuple : loc) (tid : u64) (val : string) key hist tsprep α :
     is_tuple tuple key α -∗
@@ -87,7 +92,7 @@ Section program.
       Tuple__ReadVersion #tuple #tid
     {{{ (v : dbval) (ok : bool), RET (dbval_to_val v, #ok);
         tuple_phys_half α key hist tsprep ∗
-        ⌜if ok then hist !! (uint.nat tid) = Some v else True⌝
+        ⌜if ok then hist !! pred (uint.nat tid) = Some v else True⌝
     }}}.
   Proof.
     (*@ func (tuple *Tuple) ReadVersion(tid uint64) (Value, bool) {             @*)
