@@ -34,11 +34,16 @@ Definition BytesClone: val :=
     then slice.nil
     else SliceAppendSlice byteT (NewSlice byteT #0) "b").
 
+(* Returns true if x + y does not overflow *)
+Definition SumNoOverflow: val :=
+  rec: "SumNoOverflow" "x" "y" :=
+    ("x" + "y") ≥ "x".
+
 (* Compute the sum of two numbers, `Assume`ing that this does not overflow.
    *Use with care*, assumptions are trusted and should be justified! *)
 Definition SumAssumeNoOverflow: val :=
   rec: "SumAssumeNoOverflow" "x" "y" :=
-    control.impl.Assume (("x" + "y") ≥ "x");;
+    control.impl.Assume (SumNoOverflow "x" "y");;
     "x" + "y".
 
 Definition Multipar: val :=
