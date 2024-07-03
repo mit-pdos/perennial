@@ -353,29 +353,29 @@ Definition server__put: val :=
     ] in
     struct.storeF servPutReply "error" "errReply" errSome;;
     let: "idS" := StringFromBytes "id" in
-    let: ("changed", "ok") := MapGet (struct.loadF server "changed" "s") "idS" in
-    (if: "ok" && "changed"
+    let: (<>, "ok") := MapGet (struct.loadF server "changed" "s") "idS" in
+    (if: "ok"
     then
       lock.release (struct.loadF server "mu" "s");;
       "errReply"
     else
-      MapInsert (struct.loadF server "changed" "s") "idS" #true;;
       let: ((<>, <>), "err") := merkle.Tree__Put (struct.loadF server "nextTr" "s") "id" "val" in
       (if: "err"
       then
         lock.release (struct.loadF server "mu" "s");;
         "errReply"
       else
+        MapInsert (struct.loadF server "changed" "s") "idS" #true;;
         let: "currEpoch" := (slice.len (struct.loadF server "trees" "s")) - #1 in
-        let: "prev2Link" := hashChain__getCommit (struct.loadF server "chain" "s") "currEpoch" in
-        let: "prevDig" := merkle.Tree__Digest (SliceGet ptrT (struct.loadF server "trees" "s") "currEpoch") in
-        let: "linkSig" := SliceGet (slice.T byteT) (struct.loadF server "linkSigs" "s") "currEpoch" in
         let: "putPre" := servSepPut__encode (struct.new servSepPut [
           "epoch" ::= "currEpoch" + #1;
           "id" ::= "id";
           "val" ::= "val"
         ]) in
         let: "putSig" := cryptoffi.PrivateKey__Sign (struct.loadF server "sk" "s") "putPre" in
+        let: "prev2Link" := hashChain__getCommit (struct.loadF server "chain" "s") "currEpoch" in
+        let: "prevDig" := merkle.Tree__Digest (SliceGet ptrT (struct.loadF server "trees" "s") "currEpoch") in
+        let: "linkSig" := SliceGet (slice.T byteT) (struct.loadF server "linkSigs" "s") "currEpoch" in
         lock.release (struct.loadF server "mu" "s");;
         struct.new servPutReply [
           "putEpoch" ::= "currEpoch" + #1;

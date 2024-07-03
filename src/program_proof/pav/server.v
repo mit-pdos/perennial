@@ -5,6 +5,7 @@ From Perennial.program_proof.pav Require Import common cryptoffi merkle evidence
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.
+From Perennial.base_logic Require Import ghost_map.
 
 Module server.
 Record t :=
@@ -37,8 +38,7 @@ Definition own ptr obj : iProp Σ :=
   "Hchanged" ∷ ptr ↦[server :: "changed"] #ptr_changed.
 
 Definition valid ptr obj : iProp Σ :=
-  (* TODO: why does notation not work for this? *)
-  "#Hmu" ∷ struct_field_pointsto ptr (DfracDiscarded) server "mu" #obj.(mu) ∗
+  "#Hmu" ∷ ptr ↦[server :: "mu"]□ #obj.(mu) ∗
   "#HmuR" ∷ is_lock nroot #obj.(mu) (own ptr obj).
 
 End local_defs.
@@ -69,7 +69,7 @@ Definition own ptr obj : iProp Σ :=
   "Hsl_linkSig" ∷ own_slice_small sl_linkSig byteT d2 obj.(linkSig) ∗
   "HputSig" ∷ ptr ↦[servPutReply :: "putSig"] (slice_val sl_putSig) ∗
   "Hsl_putSig" ∷ own_slice_small sl_putSig byteT d3 obj.(putSig) ∗
-  "Herror" ∷ ptr ↦[servPutReply :: "error"] #obj.(putEpoch).
+  "Herror" ∷ ptr ↦[servPutReply :: "error"] #obj.(error).
 
 End local_defs.
 End servPutReply.
@@ -91,6 +91,39 @@ Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
 Proof.
   rewrite /server__put.
   iIntros (Φ) "H HΦ"; iNamed "H".
+  rewrite /server.valid; iNamed "Hvalid_serv".
+
+  wp_loadField.
+  wp_apply (acquire_spec with "[$HmuR]"); iIntros "[Hlocked Hown_serv]".
+  iEval (rewrite /server.own) in "Hown_serv"; iNamed "Hown_serv".
+
+  wp_apply wp_allocStruct; [val_ty|];
+    iIntros (ptr_errReply) "Hptr_errReply".
+  iDestruct (struct_fields_split with "Hptr_errReply") as "H"; iNamed "H".
+  wp_storeField.
+  iAssert (servPutReply.own ptr_errReply _) with "[putEpoch prev2Link prevDig linkSig putSig error]" as "HerrReply".
+  {
+    instantiate (1:=servPutReply.mk _ _ _ _ _ _).
+    rewrite /servPutReply.own /=.
+    iExists Slice.nil, Slice.nil, Slice.nil, Slice.nil.
+    iDestruct (own_slice_zero byteT (DfracOwn 1)) as "H0".
+    iDestruct (own_slice_to_small with "H0") as "H1".
+    iFrame "#∗".
+  }
+
+  (* see if id was already changed in this epoch. *)
+  wp_apply (wp_StringFromBytes with "[$Hid]"); iIntros "Hid".
+  wp_loadField.
+  Search impl.MapGet.
+  wp_apply (wp_MapGet with "[$Hown_changed]");
+    iIntros (? ok) "[%HmapGet Hown_changed]".
+  destruct ok.
+  {
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ HerrReply]"); [iFrame "#∗"|].
+    wp_pures; by iApply "HΦ".
+  }
+  wp_loadField.
 Admitted.
 
 Lemma wp_server_updateEpoch ptr_serv obj_serv :
