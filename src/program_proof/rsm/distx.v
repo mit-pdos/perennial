@@ -67,7 +67,7 @@ Definition wrs_group gid (wrs : dbmap) :=
   filter (λ t, key_to_group t.1 = gid) wrs.
 
 (* Note the coercion here. [word] seems to work better with this. *)
-Definition valid_ts (ts : nat) := 0 < ts < 2 ^64.
+Definition valid_ts (ts : nat) := 0 < ts < 2 ^ 64.
 
 Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
@@ -205,8 +205,8 @@ Proof.
   rewrite andb_true_l in Hfold.
   by apply IHm.
 Qed.
-  
-Lemma validate_true {tid wrs tpls key} :
+
+Lemma validate_true {tid wrs tpls} key :
   is_Some (wrs !! key) ->
   validate tid wrs tpls = true ->
   ∃ l, tpls !! key = Some (l, O) ∧ (length l ≤ tid)%nat.
@@ -243,6 +243,8 @@ Definition acquire_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
 Definition acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   merge (acquire_key tid) wrs tpls.
 
+(* NB: nonexpanding is not the most precise name, since it also says the domain
+is nonshrinking. Something like domain preserving but more concise. *)
 Definition mergef_nonexpanding {A B C} (f : option A -> option B -> option C) :=
   ∀ x y, is_Some (f x y) ↔ is_Some y.
 
@@ -453,6 +455,14 @@ Lemma last_extend_length_ge_n {A} (n : nat) (l : list A) :
   (n ≤ length (last_extend n l))%nat.
 Proof. intros Hl. rewrite last_extend_length; [lia | done]. Qed.
 
+Lemma last_extend_length_eq_n_or_same {A} (n : nat) (l : list A) :
+  length (last_extend n l) = n ∨ length (last_extend n l) = length l.
+Proof.
+  destruct (decide (l = [])) as [-> | Hne]; first by right.
+  rewrite last_extend_length; last done.
+  lia.
+Qed.
+
 Lemma last_last_extend {A} (n : nat) (l : list A) :
   last (last_extend n l) = last l.
 Proof.
@@ -525,12 +535,20 @@ Proof.
   by apply (gmap_nonexpanding_merge_filter_commute P wrs tpls) in Hne.
 Qed.
 
+Lemma multiwrite_empty tid tpls :
+  multiwrite tid ∅ tpls = tpls.
+Proof.
+  apply map_eq. intros k.
+  rewrite lookup_merge lookup_empty /=.
+  by destruct (tpls !! k) eqn:Hk.
+Qed.
+
 Definition apply_commit st (tid : nat) :=
   match st with
   | State stm tpls =>
       match stm !! tid with
       | Some StCommitted => st
-      | Some (StPrepared wrs) => State (<[ tid := StCommitted ]> stm) (multiwrite tid wrs tpls)
+      | Some (StPrepared wrs) => State (<[tid := StCommitted]> stm) (multiwrite tid wrs tpls)
       | _ => Stuck
       end
   | Stuck => Stuck
@@ -594,7 +612,7 @@ Definition apply_abort st (tid : nat) :=
   end.
 
 Definition read (tid : nat) (vs : list dbval) (tsprep : nat) :=
-  if decide (tsprep = 0 ∨ tid < tsprep)%nat
+  if decide (tsprep = 0 ∨ tid ≤ tsprep)%nat
   then (last_extend tid vs, tsprep)
   else (vs, tsprep).
 
@@ -716,50 +734,287 @@ Proof.
   by eapply (apply_cmds_dom_nonexpanding [] log).
 Qed.
 
-(** Note: RSM invariants can either be defined as properties about [apply_cmds],
+(* Note: RSM invariants can either be defined as properties about [apply_cmds],
 or explicit invariants materialized in [group_inv]. The first form gives a
-minimal set of invariants and allow replicas to deduce those properties (not
-sure if the second matters), but the proofs can be a bit repetitive and hard to
-comprehend. The second form is more verbose (and weaker since it does not
-directly allows replica to deduce the invariants), but might yield more
-informative lemmas and proofs. *)
+minimal set of invariants and allow replicas to deduce those properties, but the
+proofs can be a bit repetitive and hard to comprehend. The second form is more
+verbose (and weaker since it does not directly allows replica to deduce the
+invariants), but might yield more informative lemmas and proofs. *)
+
+(* Some of these lemmas about [apply_cmds] are indeed used in the replica proof,
+so it seems like the first approach is preferred. *)
 
 Definition pts_consistent log :=
-  ∀ stm tpls ts wrs key tpl,
+  ∀ stm tpls ts pwrs key tpl,
   apply_cmds log = State stm tpls ->
-  stm !! ts = Some (StPrepared wrs) ->
+  stm !! ts = Some (StPrepared pwrs) ->
   tpls !! key = Some tpl ->
-  key ∈ dom wrs ->
+  key ∈ dom pwrs ->
   tpl.2 = ts.
 
-Definition pts_disjoint log :=
-  ∀ stm tpls ts1 ts2 wrs1 wrs2,
+Definition pwrs_disjoint log :=
+  ∀ stm tpls ts1 ts2 pwrs1 pwrs2,
   apply_cmds log = State stm tpls ->
   ts1 ≠ ts2 ->
-  stm !! ts1 = Some (StPrepared wrs1) ->
-  stm !! ts2 = Some (StPrepared wrs2) ->
-  dom wrs1 ## dom wrs2.
+  stm !! ts1 = Some (StPrepared pwrs1) ->
+  stm !! ts2 = Some (StPrepared pwrs2) ->
+  dom pwrs1 ## dom pwrs2.
 
 Definition pts_nonzero log :=
-  ∀ stm tpls ts wrs,
+  ∀ stm tpls ts pwrs,
   apply_cmds log = State stm tpls ->
-  stm !! ts = Some (StPrepared wrs) ->
+  stm !! ts = Some (StPrepared pwrs) ->
   ts ≠ O.
 
-(* Definition pwrs_valid gid log := *)
-(*   ∀ stm tpls ts wrs, *)
-(*   apply_cmds log = State stm tpls -> *)
-(*   stm !! ts = Some (StPrepared wrs) -> *)
-(*   valid_wrs wrs ∧ wrs_in_group gid wrs. *)
+(* TODO: Clean up the naming about wrs/pwrs validity. *)
+Definition pwrs_valid log :=
+  ∀ stm tpls ts pwrs,
+  apply_cmds log = State stm tpls ->
+  stm !! ts = Some (StPrepared pwrs) ->
+  valid_wrs pwrs.
 
-Definition valid_command_pts c :=
+Definition tpls_well_formed log :=
+  ∀ stm tpls key tpl,
+  apply_cmds log = State stm tpls ->
+  tpls !! key = Some tpl ->
+  tpl.2 ≠ O ->
+  (length tpl.1 ≤ tpl.2)%nat.
+
+Definition valid_pts_of_command c :=
   match c with
-  | CmdPrep tid wrs => valid_ts tid
+  | CmdPrep tid _ => valid_ts tid
   | _ => True
   end.
 
+Definition valid_pwrs_of_command c :=
+  match c with
+  | CmdPrep _ pwrs => valid_wrs pwrs
+  | _ => True
+  end.
+
+Lemma tpls_well_formed_snoc l c :
+  tpls_well_formed l ->
+  tpls_well_formed (l ++ [c]).
+Proof.
+  intros Hwf.
+  intros stmc tplsc keyx tplx Happly Htpl Hnz.
+  destruct c; rewrite /apply_cmds foldl_snoc /= in Happly.
+  { (* Case: [CmdRead] *)
+    rewrite /apply_read in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (tpls !! key) as [[vs tsprep] |] eqn:Ht; inversion Happly.
+    subst stmc tplsc.
+    rewrite /read in Htpl.
+    case_decide as Htsprep; last first.
+    { (* Case: Fail to extend the tuple. *)
+      rewrite insert_id in Htpl; last done.
+      by eapply Hwf.
+    }
+    (* Case: Successfully extend the tuple. *)
+    destruct (decide (keyx = key)) as [-> | Hne]; last first.
+    { rewrite lookup_insert_ne in Htpl; last done.
+      by eapply Hwf.
+    }
+    rewrite lookup_insert in Htpl.
+    inversion Htpl. subst tplx. simpl. simpl in Hnz.
+    destruct Htsprep as [? | Htsprep]; first done.
+    destruct (last_extend_length_eq_n_or_same tid vs) as [-> | ->]; first lia.
+    by eapply (Hwf _ _ _ (vs, tsprep)).
+  }
+  { (* Case: [CmdPrep] *)
+    rewrite /apply_prepare in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (stm !! tid).
+    { (* Case: Status in table; no-op. *) inversion Happly. subst tplsc. by eapply Hwf. }
+    destruct (try_acquire _ _ _) as [tpls' |] eqn:Hacq;
+      inversion Happly; subst stmc tplsc; last first.
+    { (* Case: Fail to acquire lock. *) by eapply Hwf. }
+    (* Case: Successfully acquire lock. *)
+    rewrite /try_acquire in Hacq.
+    destruct (validate _ _ _) eqn:Hvd; last done.
+    inversion Hacq. subst tpls'.
+    destruct (wrs !! keyx) as [v |] eqn:Hwrs; last first.
+    { rewrite acquire_unmodified in Htpl; last done.
+      by eapply Hwf.
+    }
+    unshelve epose proof (validate_true keyx _ Hvd) as (h & Hh & Hlen); first done.
+    rewrite /acquire lookup_merge Hwrs Hh /= in Htpl.
+    by inversion Htpl.
+  }
+  { (* Case: [CmdCmt] *)
+    rewrite /apply_commit in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (stm !! tid) as [st |] eqn:Htid; last congruence.
+    destruct st as [wrs | |]; inversion Happly; subst tplsc; last by eapply Hwf.
+    (* Case: Prepared. *)
+    destruct (wrs !! keyx) as [v |] eqn:Hwrs; last first.
+    { rewrite multiwrite_unmodified in Htpl; last done.
+      by eapply Hwf.
+    }
+    rewrite /multiwrite lookup_merge Hwrs /= in Htpl.
+    destruct (tpls !! keyx) as [[h t] |]; inversion Htpl.
+    by subst tplx.
+  }
+  { (* Case: [CmdAbt] *)
+    rewrite /apply_abort in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (stm !! tid) as [st |] eqn:Htid; last first.
+    { (* Case: Direct abort (i.e., not prepared yet). *)
+      inversion Happly. subst tplsc.
+      by eapply Hwf.
+    }
+    destruct st; inversion Happly; subst stmc tplsc; last by eapply Hwf.
+    (* Case: Prepared then abort. *)
+    destruct (wrs !! keyx) as [v |] eqn:Hwrs; last first.
+    { rewrite release_unmodified in Htpl; last done.
+      by eapply Hwf.
+    }
+    rewrite /release lookup_merge Hwrs /= in Htpl.
+    destruct (tpls !! keyx) as [[h t] |]; inversion Htpl.
+    by subst tplx.
+  }
+Qed.
+
+Lemma tpls_well_formed_nil :
+  tpls_well_formed [].
+Proof.
+  intros stm tpls key tpl Happly Htpl Hnz.
+  rewrite /apply_cmds /= /init_rpst in Happly.
+  inversion Happly. subst tpls.
+  rewrite lookup_gset_to_gmap_Some in Htpl.
+  destruct Htpl as [_ Htpl].
+  by subst tpl.
+Qed.
+
+Lemma tpls_well_formedness_step l1 l2 :
+  tpls_well_formed l1 ->
+  tpls_well_formed (l1 ++ l2).
+Proof.
+  generalize dependent l1.
+  induction l2 as [| c l2 IH].
+  { intros l1. by rewrite app_nil_r. }
+  intros l1 Hwf.
+  rewrite cons_middle app_assoc.
+  by apply IH, tpls_well_formed_snoc.
+Qed.
+
+Lemma tpls_well_formedness l :
+  tpls_well_formed l.
+Proof. apply (tpls_well_formedness_step [] l), tpls_well_formed_nil. Qed.
+
+Lemma pwrs_valid_snoc l c :
+  valid_pwrs_of_command c ->
+  pwrs_valid l ->
+  pwrs_valid (l ++ [c]).
+Proof.
+  intros Hc Hpwrs.
+  intros stmc tplsc ts pwrs Happly Hstm.
+  destruct c; rewrite /apply_cmds foldl_snoc /= in Happly.
+  { (* Case: [CmdRead] *)
+    rewrite /apply_read in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (tpls !! key) as [[vs tsprep] |]; inversion Happly.
+    subst stmc tplsc.
+    by eapply Hpwrs.
+  }
+  { (* Case: [CmdPrep] *)
+    rewrite /apply_prepare in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (stm !! tid).
+    { (* Case: Status in table; no-op. *)
+      inversion Happly. subst stmc tplsc.
+      by eapply Hpwrs.
+    }
+    destruct (try_acquire _ _ _) as [tpls' |] eqn:Hacq;
+      inversion Happly; subst stmc tplsc; last first.
+    { (* Case: Fail to acquire lock. *)
+      destruct (decide (ts = tid)) as [-> | Hne].
+      { by rewrite lookup_insert in Hstm. }
+      rewrite lookup_insert_ne in Hstm; last done.
+      by eapply Hpwrs.
+    }
+    (* Case: Successfully acquire lock. *)
+    rewrite /try_acquire in Hacq.
+    destruct (validate _ _ _) eqn:Hvd; last done.
+    inversion Hacq. subst tpls'.
+    destruct (decide (ts = tid)) as [-> | Hne]; last first.
+    { rewrite lookup_insert_ne in Hstm; last done.
+      by eapply Hpwrs.
+    }
+    rewrite lookup_insert in Hstm.
+    inversion Hstm.
+    by subst wrs.
+  }
+  { (* Case: [CmdCmt] *)
+    rewrite /apply_commit in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (stm !! tid) as [st |] eqn:Htid; last congruence.
+    destruct st as [wrs | |]; last congruence.
+    { (* Case: Prepared. *)
+      inversion Happly. subst stmc tplsc.
+      destruct (decide (ts = tid)) as [-> | Hne].
+      { by rewrite lookup_insert in Hstm. }
+      rewrite lookup_insert_ne in Hstm; last done.
+      by eapply Hpwrs.
+    }
+    { (* Case: Already committed; no-op. *)
+      inversion Happly. subst stmc tplsc.
+      by eapply Hpwrs.
+    }
+  }
+  { (* Case: [CmdAbt] *)
+    rewrite /apply_abort in Happly.
+    destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
+    destruct (stm !! tid) as [st |] eqn:Htid; last first.
+    { (* Case: Direct abort (i.e., not prepared yet). *)
+      inversion Happly. subst stmc tplsc.
+      destruct (decide (ts = tid)) as [-> | Hne].
+      { by rewrite lookup_insert in Hstm. }
+      rewrite lookup_insert_ne in Hstm; last done.
+      by eapply Hpwrs.
+    }
+    destruct st; inversion Happly; subst stmc tplsc; last by eapply Hpwrs.
+    (* Case: Prepared then abort. *)
+    destruct (decide (ts = tid)) as [-> | Hne].
+    { by rewrite lookup_insert in Hstm. }
+    rewrite lookup_insert_ne in Hstm; last done.
+    by eapply Hpwrs.
+  }
+Qed.
+
+Lemma pwrs_valid_nil :
+  pwrs_valid [].
+Proof.
+  intros stm tpls ts pwrs Happly Hpwrs.
+  rewrite /apply_cmds /= /init_rpst in Happly.
+  set_solver.
+Qed.
+
+Lemma pwrs_validity_step l1 l2 :
+  Forall (λ c, valid_pwrs_of_command c) l2 ->
+  pwrs_valid l1 ->
+  pwrs_valid (l1 ++ l2).
+Proof.
+  intros Hpwrs.
+  generalize dependent l1.
+  induction l2 as [| c l2 IH].
+  { intros l1. by rewrite app_nil_r. }
+  rewrite Forall_cons in Hpwrs. destruct Hpwrs as [Hc Hl2].
+  intros l1 Hvd.
+  rewrite cons_middle app_assoc.
+  by apply IH, pwrs_valid_snoc.
+Qed.
+
+Lemma pwrs_validity l :
+  Forall (λ c, valid_pwrs_of_command c) l ->
+  pwrs_valid l.
+Proof.
+  intros Hpwrs.
+  apply (pwrs_validity_step [] l); [done | apply pwrs_valid_nil].
+Qed.
+
 Lemma pts_nonzero_snoc l c :
-  valid_command_pts c ->
+  valid_pts_of_command c ->
   pts_nonzero l ->
   pts_nonzero (l ++ [c]).
 Proof.
@@ -824,7 +1079,8 @@ Qed.
 
 Lemma pts_consistent_snoc l c :
   pts_nonzero l ->
-  pts_disjoint l ->
+  (* TODO: check if we really need [pwrs_disjoint]. *)
+  pwrs_disjoint l ->
   pts_consistent l ->
   pts_consistent (l ++ [c]).
 Proof.
@@ -933,14 +1189,14 @@ Proof.
   }
 Qed.
 
-Lemma pts_disjoint_snoc l c :
+Lemma pwrs_disjoint_snoc l c :
   pts_nonzero l ->
   pts_consistent l ->
-  pts_disjoint l ->
-  pts_disjoint (l ++ [c]).
+  pwrs_disjoint l ->
+  pwrs_disjoint (l ++ [c]).
 Proof.
   intros Hnz Hcst Hdisj.
-  rewrite /pts_disjoint in Hdisj.
+  rewrite /pwrs_disjoint in Hdisj.
   intros stmc tplsc ts1 ts2 wrs1 wrs2 Happly Hne Hstm1 Hstm2.
   destruct c; rewrite /apply_cmds foldl_snoc /= in Happly.
   { (* Case: [CmdRead] *)
@@ -980,7 +1236,7 @@ Proof.
       rewrite lookup_insert_ne in Hstm2; last done.
       intros k Hwrs1 Hwrs2.
       rewrite elem_of_dom in Hwrs1.
-      destruct (validate_true Hwrs1 Hvd) as (h & Htpls & _).
+      destruct (validate_true _ Hwrs1 Hvd) as (h & Htpls & _).
       specialize (Hcst _ _ _ _ _ _ Heq Hstm2 Htpls Hwrs2).
       by specialize (Hnz _ _ _ _ Heq Hstm2).
     }
@@ -991,7 +1247,7 @@ Proof.
       rewrite lookup_insert_ne in Hstm1; last done.
       intros k Hwrs1 Hwrs2.
       rewrite elem_of_dom in Hwrs2.
-      destruct (validate_true Hwrs2 Hvd) as (h & Htpls & _).
+      destruct (validate_true _ Hwrs2 Hvd) as (h & Htpls & _).
       specialize (Hcst _ _ _ _ _ _ Heq Hstm1 Htpls Hwrs1).
       by specialize (Hnz _ _ _ _ Heq Hstm1).
     }
@@ -1043,7 +1299,7 @@ Proof.
   }
 Qed.
 
-Lemma pts_nonzero_empty :
+Lemma pts_nonzero_nil :
   pts_nonzero [].
 Proof.
   intros stm tpls ts wrs Happly Hstm.
@@ -1051,7 +1307,7 @@ Proof.
   set_solver.
 Qed.
 
-Lemma pts_consistent_empty :
+Lemma pts_consistent_nil :
   pts_consistent [].
 Proof.
   intros stm tpls ts wrs key tpl Happly Hstm Htpls Hkey.
@@ -1059,8 +1315,8 @@ Proof.
   set_solver.
 Qed.
 
-Lemma pts_disjoint_empty :
-  pts_disjoint [].
+Lemma pwrs_disjoint_nil :
+  pwrs_disjoint [].
 Proof.
   intros stmc tplsc ts1 ts2 wrs1 wrs2 Happly Hne Hts1 Hts2.
   rewrite /apply_cmds /= /init_rpst in Happly.
@@ -1068,9 +1324,9 @@ Proof.
 Qed.
 
 Lemma pts_consistency_step l1 l2 :
-  Forall (λ c, valid_command_pts c) l2 ->
+  Forall (λ c, valid_pts_of_command c) l2 ->
   pts_nonzero l1 ->
-  pts_disjoint l1 ->
+  pwrs_disjoint l1 ->
   pts_consistent l1 ->
   pts_consistent (l1 ++ l2).
 Proof.
@@ -1083,19 +1339,19 @@ Proof.
   rewrite cons_middle app_assoc.
   apply IH; first done.
   { by apply pts_nonzero_snoc. }
-  { by apply pts_disjoint_snoc. }
+  { by apply pwrs_disjoint_snoc. }
   { by apply pts_consistent_snoc. }
 Qed.
 
 Lemma pts_consistency l :
-  Forall (λ c, valid_command_pts c) l ->
+  Forall (λ c, valid_pts_of_command c) l ->
   pts_consistent l.
 Proof.
   intros Hpts.
   apply (pts_consistency_step [] l); first done.
-  { apply pts_nonzero_empty. }
-  { apply pts_disjoint_empty. }
-  { apply pts_consistent_empty. }
+  { apply pts_nonzero_nil. }
+  { apply pwrs_disjoint_nil. }
+  { apply pts_consistent_nil. }
 Qed.
 
 Definition valid_pwrs gid wrs pwrs :=
@@ -1318,7 +1574,7 @@ Proof.
 Qed.
 
 Lemma diff_by_cmtd_inv_learn_read_acquired {repl cmtd kmod} ts tslock :
-  (ts < tslock)%nat ->
+  (ts ≤ tslock)%nat ->
   diff_by_cmtd repl cmtd kmod tslock ->
   diff_by_cmtd (last_extend ts repl) cmtd kmod tslock.
 Proof.
@@ -2370,7 +2626,7 @@ Section group_inv.
     }
     (* Case: tuple modified. *)
     assert (Hsome : is_Some (wrs !! k)) by done.
-    destruct (validate_true Hsome Hvd) as (l & Htpl & Hlen).
+    destruct (validate_true _ Hsome Hvd) as (l & Htpl & Hlen).
     rewrite Hx in Htpl. inversion Htpl. subst x. clear Htpl.
     rewrite (acquire_modified Hsome Hx) /= in Hy.
     inversion Hy. subst y. clear Hy.
@@ -2704,7 +2960,7 @@ Section group_inv.
     iMod (tuple_repl_big_update (multiwrite ts pwrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
     { by rewrite multiwrite_dom. }
     (* Prove txn [ts] has committed on [tpls]. *)
-    iAssert (⌜Forall (λ c, valid_command_pts c) log⌝)%I as %Hpts.
+    iAssert (⌜Forall (λ c, valid_pts_of_command c) log⌝)%I as %Hpts.
     { rewrite Forall_forall.
       iIntros (x Hx).
       rewrite Forall_forall in Hsubsume.
@@ -2898,7 +3154,7 @@ Section group_inv.
     iMod (tuple_repl_big_update (release ts pwrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
     { by rewrite release_dom. }
     (* Prove txn [ts] has prepared but not committed on [tpls]. *)
-    iAssert (⌜Forall (λ c, valid_command_pts c) log⌝)%I as %Hpts.
+    iAssert (⌜Forall (λ c, valid_pts_of_command c) log⌝)%I as %Hpts.
     { rewrite Forall_forall.
       iIntros (x Hx).
       rewrite Forall_forall in Hsubsume.

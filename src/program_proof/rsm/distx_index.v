@@ -14,6 +14,7 @@ Section program.
   Admitted.
 
   Theorem wp_Index__GetTuple (idx : loc) (key : string) α :
+    key ∈ keys_all ->
     is_index idx α -∗
     {{{ True }}}
       Index__GetTuple #idx #(LitString key)

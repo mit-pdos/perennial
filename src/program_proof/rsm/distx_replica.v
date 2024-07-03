@@ -171,6 +171,24 @@ Section program.
     word.
   Qed.
 
+  Definition safe_tpls_pts
+    (ts : nat) (pwrs : dbmap) (tpls : gmap dbkey dbtpl) :=
+    ∀ key tpl,
+    tpls !! key = Some tpl ->
+    key ∈ dom pwrs ->
+    (length tpl.1 ≤ ts)%nat.
+
+  Definition safe_rpst (st : rpst) (ts : nat) :=
+    match st with
+    | State stm tpls => match stm !! ts with
+                       | Some (StPrepared pwrs) => valid_wrs pwrs ∧
+                                                  dom tpls = keys_all ∧
+                                                  safe_tpls_pts ts pwrs tpls
+                       | _ => True
+                       end
+    | _ => False
+    end.
+
   Definition own_replica_tpls (rp : loc) (tpls : gmap dbkey dbtpl) : iProp Σ :=
     ∃ (idx : loc) (α : gname),
       "Hidx"   ∷ rp ↦[Replica :: "idx"] #idx ∗
@@ -454,11 +472,14 @@ Section program.
   Theorem wp_Replica__multiwrite
     (rp : loc) (ts : u64) (pwrsS : Slice.t)
     (pwrsL : list dbmod) (pwrs : dbmap) (tpls : gmap dbkey dbtpl) :
+    valid_wrs pwrs ->
+    dom tpls = keys_all ->
+    safe_tpls_pts (uint.nat ts) pwrs tpls ->
     {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_tpls rp tpls }}}
       Replica__multiwrite #rp #ts (to_val pwrsS)
     {{{ RET #(); own_replica_tpls rp (multiwrite (uint.nat ts) pwrs tpls) }}}.
   Proof.
-    iIntros (Φ) "[[HpwrsS %Hpwrs] Htpls] HΦ".
+    iIntros (Hvw Hdom Hlen Φ) "[[HpwrsS %Hpwrs] Htpls] HΦ".
     wp_call.
 
     (*@ func (rp *Replica) multiwrite(ts uint64, pwrs []WriteEntry) {           @*)
@@ -484,7 +505,7 @@ Section program.
       subst P. simpl.
       replace (uint.nat (W64 _)) with O by word.
       rewrite take_0 list_to_map_nil.
-      admit.
+      by rewrite multiwrite_empty.
     }
     { (* Loop body. *)
       clear Φ.
@@ -493,8 +514,12 @@ Section program.
       subst P. simpl. iNamed "HP".
       wp_pures.
       wp_loadField.
-      (* TODO: should have in-bound precondition. *)
-      wp_apply (wp_Index__GetTuple with "HidxR").
+      (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
+      apply elem_of_list_lookup_2 in Hi as Hdompwrs.
+      rewrite -Hpwrs elem_of_map_to_list in Hdompwrs.
+      apply elem_of_dom_2 in Hdompwrs.
+      assert (Hdomall : k ∈ keys_all) by set_solver.
+      wp_apply (wp_Index__GetTuple with "HidxR"); first done.
       iIntros (tpl) "#HtplR".
       wp_pures.
       (* Obtain proof that the current key [k] has not been written. *)
@@ -510,14 +535,15 @@ Section program.
       rewrite (take_S_r _ _ _ Hi) list_to_map_snoc; last done.
       set pwrs' := (list_to_map _) in Hnone *.
       (* Take the physical tuple out. *)
-      assert (∃ t, tpls !! k = Some t) as [t Ht] by admit.
+      rewrite -Hdom elem_of_dom in Hdomall.
+      destruct Hdomall as [t Ht].
+      (* Prove tuple length ≤ prepared timestamp. *)
+      specialize (Hlen _ _ Ht Hdompwrs).
       rewrite big_sepM_delete; last by rewrite multiwrite_unmodified.
       iDestruct "Htpls" as "[Htpl Htpls]".
       destruct v as [s |]; wp_pures.
       { (* Case: [@AppendVersion]. *)
-        (* Take the physical tuple out. *)
-        (* TODO: should have length check. *)
-        wp_apply (wp_Tuple__AppendVersion with "HtplR Htpl").
+        wp_apply (wp_Tuple__AppendVersion with "HtplR Htpl"); first done.
         iIntros "Htpl".
         wp_pures.
         wp_apply (wp_Tuple__Free with "HtplR Htpl").
@@ -532,9 +558,8 @@ Section program.
         by iFrame "∗ #".
       }
       { (* Case: [@AKillVersion]. *)
-        (* Take the physical tuple out. *)
         (* TODO: should have length check. *)
-        wp_apply (wp_Tuple__KillVersion with "HtplR Htpl").
+        wp_apply (wp_Tuple__KillVersion with "HtplR Htpl"); first done.
         iIntros "Htpl".
         wp_pures.
         wp_apply (wp_Tuple__Free with "HtplR Htpl").
@@ -553,16 +578,17 @@ Section program.
     wp_pures.
     rewrite -HpwrsLen firstn_all -Hpwrs list_to_map_to_list.
     by iApply "HΦ".
-  Admitted.
+  Qed.
 
   Theorem wp_Replica__applyCommit (rp : loc) (ts : u64) (st : rpst) :
+    safe_rpst st (uint.nat ts) ->
     let st' := apply_cmd st (CmdCmt (uint.nat ts)) in
     not_stuck st' ->
     {{{ own_replica_state rp st }}}
       Replica__applyCommit #rp #ts
     {{{ RET #(); own_replica_state rp st' }}}.
   Proof.
-    iIntros (st' Hns Φ) "Hst HΦ". subst st'.
+    iIntros (Hsafe st' Hns Φ) "Hst HΦ". subst st'.
     wp_call.
 
     (*@ func (rp *Replica) applyCommit(ts uint64) {                             @*)
@@ -627,7 +653,9 @@ Section program.
     (*@                                                                         @*)
     (* Take ownership of the prepare-map slice out. *)
     iDestruct (big_sepM2_delete with "HprepmM") as "[[%pwsL HpwrsS] HprepmM]"; [done | done |].
-    wp_apply (wp_Replica__multiwrite with "[$HpwrsS $Htpls]").
+    rewrite /safe_rpst Hstm in Hsafe.
+    destruct Hsafe as (Hvw & Hdomall & Hpts).
+    wp_apply (wp_Replica__multiwrite with "[$HpwrsS $Htpls]"); [done | done | done |].
     iIntros "Htpls".
     wp_pures.
 
@@ -651,9 +679,13 @@ Section program.
     by iFrame "∗ # %".
   Qed.
 
+  (* We can actually merge the first two preconditions into the [not_stuck] one
+  by changing the operational semantics of the applier functions to check for
+  those conditions (and moves into the [Stuck] state if the check fails). *)
   Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) (st : rpst) :
-    let st' := apply_cmd st cmd in
     valid_ts_of_command cmd ->
+    (∀ ts, ts ≠ O -> safe_rpst st ts) ->
+    let st' := apply_cmd st cmd in
     not_stuck st' ->
     {{{ own_replica_state rp st ∗ own_pwrs_slice pwrsS cmd }}}
       Replica__apply #rp (command_to_val pwrsS cmd)
@@ -670,7 +702,7 @@ Section program.
     (*@         rp.applyAbort(cmd.ts)                                           @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iIntros (st' Hts Hns Φ) "[Hst HpwrsS] HΦ".
+    iIntros (Hts Hsafe st' Hns Φ) "[Hst HpwrsS] HΦ".
     wp_call.
     destruct cmd eqn:Hcmd; simpl; wp_pures.
     { (* Case: Read. *)
@@ -683,6 +715,7 @@ Section program.
     { (* Case: Commit. *)
       rewrite /valid_ts_of_command /valid_ts in Hts.
       wp_apply (wp_Replica__applyCommit with "Hst").
+      { apply Hsafe. word. }
       { by rewrite uint_nat_W64; last word. }
       rewrite uint_nat_W64; last word.
       iIntros "Hst".
@@ -751,7 +784,7 @@ Section program.
     (* Obtain inclusion between the command pool and the log. *)
     iAssert (⌜cpool_subsume_log cpool paxos'⌝)%I as %Hincl.
     { iNamed "Hgroup".
-      by iDestruct (log_cpool_incl with "Hpaxos Hcpool") as %Hincl.
+      by iDestruct (log_cpool_incl with "Hpaxos Hcpool") as %?.
     }
     (* Obtain validity of command timestamps; used when executing @apply. *)
     iAssert (⌜Forall valid_ts_of_command paxos'⌝)%I as %Hts.
@@ -765,7 +798,29 @@ Section program.
         { by iDestruct "Hc" as (?) "[_ [%Hvts _]]". }
         { by iDestruct "Hc" as "[_ %Hvts]". }
       }
-      by pose proof (set_Forall_Forall_subsume _ _ _ Hcpoolts Hincl) as Hts.
+      by pose proof (set_Forall_Forall_subsume _ _ _ Hcpoolts Hincl) as ?.
+    }
+    (* Obtain validity of command partial writes; used when executing @apply. *)
+    iAssert (⌜Forall valid_pwrs_of_command paxos'⌝)%I as %Hpwrs.
+    { iNamed "Hgroup".
+      iAssert (⌜set_Forall valid_pwrs_of_command cpool⌝)%I as %Hcpoolts.
+      { iIntros (c Hc).
+        destruct c as [| ts pwrs | |]; [done | simpl | done | done].
+        iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
+        simpl.
+        iDestruct "Hc" as (wrs) "(_ & _ & %Hpwrs)".
+        iPureIntro.
+        destruct Hpwrs as (Hvw & _ & Hpwrs).
+        rewrite Hpwrs.
+        rewrite /valid_wrs in Hvw *.
+        transitivity (dom wrs); [apply dom_filter_subseteq | done].
+      }
+      (* Note that unlike [valid_ts_of_command] needs to hold on the new log
+      [paxos'] (since it should also hold on the command we're applying here,
+      not just the applied log [loga]), [valid_pwrs_of_command] needs only to
+      hold on the old log [paxos]. We're proving a stronger statement here just
+      for convenience. *)
+      by pose proof (set_Forall_Forall_subsume _ _ _ Hcpoolts Hincl) as ?.
     }
     (* Obtain prefix between the applied log and the new log; needed later. *)
     iDestruct (log_prefix with "Hpaxos Hloga") as %Hloga.
@@ -829,6 +884,48 @@ Section program.
       apply Hts.
       eapply elem_of_prefix; last apply Hprefix.
       set_solver.
+    }
+    { (* Prove [safe_rpst]. *)
+      intros ts Hnz.
+      rewrite /safe_rpst.
+      destruct st as [stm tpls |]; last first.
+      { pose proof (apply_cmds_not_stuck _ _ Hloga Hns) as Hsafe.
+        by rewrite Hrsm in Hsafe.
+      }
+      destruct (stm !! ts) as [st |] eqn:Hst; last done.
+      destruct st; [| done | done].
+      split.
+      { (* Prove [valid_wrs wrs]. *)
+        assert (Forall (λ c : command, valid_pwrs_of_command c) loga) as Hc.
+        { (* Weaken [Hpwrs]. *)
+          destruct Hloga as [l Hloga].
+          rewrite Hloga Forall_app in Hpwrs.
+          destruct Hpwrs as [Hpwrs _].
+          apply (Forall_impl _ _ _ Hpwrs).
+          intros c Hc.
+          by destruct c.
+        }
+        pose proof (pwrs_validity _ Hc) as Hvw.
+        by specialize (Hvw _ _ _ _ Hrsm Hst).
+      }
+      split.
+      { by eapply apply_cmds_dom. }
+      { (* Prove [safe_tpls_pts ts wrs tpls]. *)
+        intros key tpl Htpl Hkey.
+        assert (Forall (λ c : command, valid_pts_of_command c) loga) as Hc.
+        { (* Weaken [Hts]. *)
+          destruct Hloga as [l Hloga].
+          rewrite Hloga Forall_app in Hts.
+          destruct Hts as [Hts _].
+          apply (Forall_impl _ _ _ Hts).
+          intros c Hc.
+          by destruct c.
+        }
+        pose proof (pts_consistency _ Hc) as Hcst.
+        specialize (Hcst _ _ _ _ _ _ Hrsm Hst Htpl Hkey). subst ts.
+        pose proof (tpls_well_formedness loga) as Hwf.
+        by eapply Hwf.
+      }
     }
     { (* Prove state machine safety for the newly applied log. *)
       pose proof (apply_cmds_not_stuck _ _ Hprefix Hns) as Hsafe.
