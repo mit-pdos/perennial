@@ -250,75 +250,69 @@ def main():
 
     if gokv_dir is not None:
         pkgs = [
-            "urpc",
-            "memkv",
-            "kv",
-            "memkv/bank",
-            "memkv/lockservice",
-            "connman",
-            "paxi/single",
-            "bank",
-            "lockservice",
-            "ctrexample/client",
-            "ctrexample/server",
-            "fencing/ctr",
-            "fencing/config",
-            "fencing/frontend",
-            "fencing/client",
-            "fencing/loopclient",
-            "erpc",
-            "paxi/reconf",
-            "map_string_marshal",
-            "vrsm/replica",
-            "vrsm/reconfig",
-            "vrsm/configservice",
-            "vrsm/apps/exactlyonce",
-            "vrsm/apps/vkv",
-            "vrsm/paxos",
-            "aof",
-            "reconnectclient",
-            "vrsm/e",
-            "vrsm/clerk",
-            "vrsm/storage",
-            "vrsm/apps/closed",
-            "tutorial",  # atomic commit
-            "tutorial/objectstore/dir",
-            "tutorial/objectstore/chunk",
-            "tutorial/objectstore/client",
-            "tutorial/lockservice",
-            "tutorial/kvservice",
-            "tutorial/basics",
-            "tutorial/queue",
-            "map_marshal",
-            "minlease",
-            "dmvcc/txn",
-            "dmvcc/index",
-            "dmvcc/prophname",
-            "dmvcc/txncoordinator",
-            "dmvcc/txnmgr",
-            "dmvcc/example",
-            "cachekv",
-            "etcd/election",
+            "./asyncfile",
+            "./urpc",
+            "./memkv",
+            "./kv",
+            "./memkv/...",
+            "./connman",
+            "./paxi/single",
+            "./bank",
+            "./lockservice",
+            "./ctrexample/client",
+            "./ctrexample/server",
+            "./fencing/ctr",
+            "./fencing/config",
+            "./fencing/frontend",
+            "./fencing/client",
+            "./fencing/loopclient",
+            "./erpc",
+            "./paxi/reconf",
+            "./map_string_marshal",
+            "./vrsm/replica",
+            "./vrsm/reconfig",
+            "./vrsm/configservice",
+            "./vrsm/apps/exactlyonce",
+            "./vrsm/apps/vkv",
+            "./vrsm/paxos",
+            "./aof",
+            "./reconnectclient",
+            "./vrsm/e",
+            "./vrsm/clerk",
+            "./vrsm/storage",
+            "./vrsm/apps/closed",
+            "./tutorial",  # atomic commit
+            "./tutorial/objectstore/dir",
+            "./tutorial/objectstore/chunk",
+            "./tutorial/objectstore/client",
+            "./tutorial/lockservice",
+            "./tutorial/kvservice",
+            "./tutorial/basics",
+            "./tutorial/queue",
+            "./map_marshal",
+            "./minlease",
+            "./dmvcc/...",
+            "./cachekv",
+            "./etcd/election",
         ]
 
-        for pkg in pkgs:
-            run_goose(
-                path.join(gokv_dir, pkg),
-                # XXX: need to change the Coq import statement for lockservice/ from
-                # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
-                # "From Goose Require github_com.mit_pdos.lockservice."
-            )
+        run_goose(
+            gokv_dir,
+            *pkgs,
+            # XXX: need to change the Coq import statement for lockservice/ from
+            # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
+            # "From Goose Require github_com.mit_pdos.lockservice."
+        )
 
     if pav_dir is not None:
         pkgs = [
-            "cryptoutil",
-            "marshalutil",
-            "merkle",
-            "ktmerkle",
+            "./cryptoutil",
+            "./marshalutil",
+            "./merkle",
+            "./ktmerkle",
         ]
 
-        for pkg in pkgs:
-            run_goose(path.join(pav_dir, pkg))
+        run_goose(pav_dir, pkg)
 
     if mvcc_dir is not None:
         run_goose(
