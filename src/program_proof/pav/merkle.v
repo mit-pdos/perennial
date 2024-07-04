@@ -14,7 +14,7 @@ Inductive tree : Type :=
   | Leaf : list w8 → tree
   | Interior : list tree → tree.
 
-Fixpoint containsNodeAtEnd (tr : tree) (id : list w8) (node : tree) : Prop :=
+Fixpoint containsLeafNode (tr : tree) (id : list w8) (node : tree) : Prop :=
   match tr with
   | Cut _ => False
   | Empty => id = [] ∧ tr = node
@@ -23,25 +23,26 @@ Fixpoint containsNodeAtEnd (tr : tree) (id : list w8) (node : tree) : Prop :=
     match id with
     | [] => False
     | pos :: rest =>
-      ∃ child, children !! Z.to_nat (word.unsigned pos) = Some child ∧ containsNodeAtEnd child rest node
+      ∃ child, children !! Z.to_nat (word.unsigned pos) = Some child ∧ containsLeafNode child rest node
     end
   end.
 
-Fixpoint is_tree_hash (tr : tree) (hash : list w8) : iProp Σ :=
+(* The core invariant that defines the recursive hashing structure of merkle trees. *)
+Fixpoint isNodeHash (tr : tree) (hash : list w8) : iProp Σ :=
   match tr with
   | Cut hash' => ⌜hash = hash' ∧ length hash' = 32%nat⌝
   | Empty => is_hash [W8 0] hash
   | Leaf val => is_hash (val ++ [W8 1]) hash
   | Interior children =>
     ∃ (child_hashes : list (list w8)),
-    let map_fn := (λ c h, is_tree_hash c h) in
+    let map_fn := (λ c h, isNodeHash c h) in
     ([∗ list] child_fn;hash' ∈ (map_fn <$> children);child_hashes,
       child_fn hash') ∗
     is_hash (concat child_hashes ++ [W8 2]) hash
   end%I.
 
-Lemma tree_hash_len tr hash :
-  is_tree_hash tr hash -∗ ⌜length hash = 32%nat⌝.
+Lemma fixedHashLen tr hash :
+  isNodeHash tr hash -∗ ⌜length hash = 32%nat⌝.
 Proof.
   iIntros "Htree".
   destruct tr.
@@ -53,17 +54,17 @@ Proof.
   }
 Qed.
 
-(* At a specific path down a tree rooted at digest, we will find this val. *)
-Definition is_path_val id val digest : iProp Σ :=
+(* Exists a tree (matching digest) that contains this (id, val). *)
+Definition commitsToEntry id val digest : iProp Σ :=
   ∃ tr,
-  is_tree_hash tr digest ∧
-  ⌜containsNodeAtEnd tr id
+  isNodeHash tr digest ∧
+  ⌜containsLeafNode tr id
     match val with
     | None => Empty
     | Some val' => Leaf val'
     end⌝.
 
-Lemma concat_eq_dim1_eq {A : Type} sz (l1 l2 : list (list A)) :
+Lemma concatEqImplListsEq {A : Type} sz (l1 l2 : list (list A)) :
   concat l1 = concat l2 →
   (Forall (λ l, length l = sz) l1) →
   (Forall (λ l, length l = sz) l2) →
@@ -88,50 +89,50 @@ Proof.
   apply IHl1; eauto with lia.
 Qed.
 
-Lemma sep_tree_hash_impl_forall_len ct ch :
-  ([∗ list] t;h ∈ ct;ch, is_tree_hash t h) -∗
+Lemma childHashesLen ct ch :
+  ([∗ list] t;h ∈ ct;ch, isNodeHash t h) -∗
   ⌜Forall (λ l, length l = 32%nat) ch⌝.
 Proof.
   iIntros "Htree".
   iDestruct (big_sepL2_impl _ (λ _ _ h, ⌜length h = 32%nat⌝%I) with "Htree []") as "Hlen_sepL2".
   {
     iIntros "!>" (???) "_ _ Hhash".
-    by iDestruct (tree_hash_len with "Hhash") as "Hlen".
+    by iDestruct (fixedHashLen with "Hhash") as "Hlen".
   }
   iDestruct (big_sepL2_const_sepL_r with "Hlen_sepL2") as "[_ %Hlen_sepL1]".
   iPureIntro.
   by apply Forall_lookup.
 Qed.
 
-Lemma is_path_val_inj' pos rest val1 val2 digest :
-  is_path_val (pos :: rest) val1 digest -∗
-  is_path_val (pos :: rest) val2 digest -∗
+Lemma commitsToEntry_inj' pos rest val1 val2 digest :
+  commitsToEntry (pos :: rest) val1 digest -∗
+  commitsToEntry (pos :: rest) val2 digest -∗
   ∃ digest',
-  is_path_val rest val1 digest' ∗
-  is_path_val rest val2 digest'.
+  commitsToEntry rest val1 digest' ∗
+  commitsToEntry rest val2 digest'.
 Proof.
   iIntros "Hval1 Hval2".
-  rewrite /is_path_val.
+  rewrite /commitsToEntry.
   iDestruct "Hval1" as (tr1) "[Htree1 %Hcont1]".
   iDestruct "Hval2" as (tr2) "[Htree2 %Hcont2]".
   destruct tr1 as [| | |ct1], tr2 as [| | |ct2]; try naive_solver.
 
-  (* Get contains pred and is_tree_hash for children. *)
+  (* Get contains pred and isNodeHash for children. *)
   destruct Hcont1 as [child1 [Hlist1 Hcont1]].
   destruct Hcont2 as [child2 [Hlist2 Hcont2]].
   iDestruct "Htree1" as (ch1) "[Htree1 Hdig1]".
   iDestruct "Htree2" as (ch2) "[Htree2 Hdig2]".
-  iDestruct (big_sepL2_fmap_l (λ c h, is_tree_hash c h) with "Htree1") as "Htree1".
-  iDestruct (big_sepL2_fmap_l (λ c h, is_tree_hash c h) with "Htree2") as "Htree2".
+  iDestruct (big_sepL2_fmap_l (λ c h, isNodeHash c h) with "Htree1") as "Htree1".
+  iDestruct (big_sepL2_fmap_l (λ c h, isNodeHash c h) with "Htree2") as "Htree2".
 
   (* Use is_hash ch1/ch2 digest to prove that child hashes are same. *)
-  iDestruct (sep_tree_hash_impl_forall_len with "Htree1") as "%Hlen_ch1".
-  iDestruct (sep_tree_hash_impl_forall_len with "Htree2") as "%Hlen_ch2".
+  iDestruct (childHashesLen with "Htree1") as "%Hlen_ch1".
+  iDestruct (childHashesLen with "Htree2") as "%Hlen_ch2".
 
   iDestruct (hash_inj with "Hdig1 Hdig2") as "%Heq".
   apply app_inv_tail in Heq.
   assert (ch1 = ch2) as Hch.
-  { apply (concat_eq_dim1_eq 32); eauto with lia. }
+  { apply (concatEqImplListsEq 32); eauto with lia. }
   subst ch1.
 
   (* Finish up. *)
@@ -144,9 +145,9 @@ Proof.
   iFrame "%∗".
 Qed.
 
-Lemma empty_leaf_hash_disjoint digest v :
-  is_tree_hash Empty digest -∗
-  is_tree_hash (Leaf v) digest -∗
+Lemma disjEmptyLeaf digest v :
+  isNodeHash Empty digest -∗
+  isNodeHash (Leaf v) digest -∗
   False.
 Proof.
   iIntros "Hempty Hleaf".
@@ -160,20 +161,20 @@ Proof.
   lia.
 Qed.
 
-Lemma is_path_val_inj id val1 val2 digest :
-  is_path_val id val1 digest -∗
-  is_path_val id val2 digest -∗
+Lemma commitsToEntry_inj id val1 val2 digest :
+  commitsToEntry id val1 digest -∗
+  commitsToEntry id val2 digest -∗
   ⌜val1 = val2⌝.
 Proof.
   iInduction (id) as [|a] "IH" forall (digest);
     iIntros "Hpath1 Hpath2".
   {
-    rewrite /is_path_val.
+    rewrite /commitsToEntry.
     iDestruct "Hpath1" as (tr1) "[Htree1 %Hcont1]".
     iDestruct "Hpath2" as (tr2) "[Htree2 %Hcont2]".
     destruct tr1 as [| | |ct1], tr2 as [| | |ct2], val1, val2; try naive_solver.
-    { iExFalso. iApply (empty_leaf_hash_disjoint with "[$] [$]"). }
-    { iExFalso. iApply (empty_leaf_hash_disjoint with "[$] [$]"). }
+    { iExFalso. iApply (disjEmptyLeaf with "[$] [$]"). }
+    { iExFalso. iApply (disjEmptyLeaf with "[$] [$]"). }
     destruct Hcont1 as [_ Hleaf1].
     destruct Hcont2 as [_ Hleaf2].
     inversion Hleaf1; subst l; clear Hleaf1.
@@ -182,11 +183,12 @@ Proof.
     by list_simplifier.
   }
   {
-    iDestruct (is_path_val_inj' with "[$Hpath1] [$Hpath2]") as (digest') "[Hval1 Hval2]".
+    iDestruct (commitsToEntry_inj' with "[$Hpath1] [$Hpath2]") as (digest') "[Hval1 Hval2]".
     by iSpecialize ("IH" $! digest' with "[$Hval1] [$Hval2]").
   }
 Qed.
 
+(* Ownership of a logical merkle tree. *)
 Definition own_node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPropO Σ :=
   (λ ptr_tr tr,
     match tr with
@@ -194,18 +196,18 @@ Definition own_node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPr
     | Cut _ => False
     | Empty =>
       ∃ hash,
-      "#His_hash" ∷ is_tree_hash tr hash ∗
+      "#His_hash" ∷ isNodeHash tr hash ∗
       "%Hnil" ∷ ⌜ptr_tr = null⌝
     | Leaf val =>
       ∃ sl_val hash sl_hash,
       "Hval" ∷ own_slice_small sl_val byteT (DfracOwn 1) val ∗
       "Hptr_val" ∷ ptr_tr ↦[node :: "Val"] (slice_val sl_val) ∗
-      "#His_hash" ∷ is_tree_hash tr hash ∗
+      "#His_hash" ∷ isNodeHash tr hash ∗
       "Hhash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
       "Hsl_hash" ∷ ptr_tr ↦[node :: "hash"] (slice_val sl_hash)
     | Interior children =>
       ∃ hash sl_hash sl_children ptr_children,
-      "#His_hash" ∷ is_tree_hash tr hash ∗
+      "#His_hash" ∷ isNodeHash tr hash ∗
       "Hhash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
       "Hsl_children" ∷ own_slice_small sl_children ptrT (DfracOwn 1) ptr_children ∗
       "Hptr_children" ∷ ptr_tr ↦[node :: "Children"] (slice_val sl_children) ∗
@@ -242,11 +244,19 @@ Definition tree_to_map (tr : tree) : gmap (list w8) (list w8) :=
     end
   in traverse tr ∅ [].
 
-Definition own_Tree ptr_tr entry_map : iProp Σ :=
+(* The core external resource. Ownership of a logical merkle tree,
+   represented by its entries. *)
+Definition own_Tree ptr_tr entries : iProp Σ :=
   ∃ tr root,
+  "%Htree" ∷ ⌜tree_to_map tr = entries⌝ ∗
   "Hnode" ∷ own_node root tr ∗
-  "%Htree_map" ∷ ⌜tree_to_map tr = entry_map⌝ ∗
-  "Hptr_root" ∷ ptr_tr ↦[Tree :: "Root"] #root.
+  "Hroot" ∷ ptr_tr ↦[Tree :: "Root"] #root.
+
+(* External facing commitment resource. *)
+Definition isTreeDig entries dig : iProp Σ :=
+  ∃ tr,
+  "%Htree" ∷ ⌜tree_to_map tr = entries⌝ ∗
+  "#Hdig" ∷ isNodeHash tr dig.
 
 End defs.
 
@@ -276,22 +286,93 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
 End local_defs.
 End pathProof.
 
+Module GetReply.
+Record t :=
+  mk {
+    Val: list w8;
+    Digest: list w8;
+    ProofTy: bool;
+    Proof: list (list (list w8));
+    Error: bool;
+  }.
+
+Section local_defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_Val sl_Dig sl_Proof,
+  "HVal" ∷ ptr ↦[GetReply :: "Val"] (slice_val sl_Val) ∗
+  "Hptr_Val" ∷ own_slice_small sl_Val byteT (DfracOwn 1) obj.(Val) ∗
+  "HDig" ∷ ptr ↦[GetReply :: "Digest"] (slice_val sl_Dig) ∗
+  "Hptr_Dig" ∷ own_slice_small sl_Dig byteT (DfracOwn 1) obj.(Digest) ∗
+  "HProofTy" ∷ ptr ↦[GetReply :: "ProofTy"] #obj.(ProofTy) ∗
+  "HProof" ∷ ptr ↦[GetReply :: "Proof"] (slice_val sl_Proof) ∗
+  "Hsl_Proof" ∷ is_Slice3D sl_Proof obj.(Proof) ∗
+  "HErr" ∷ ptr ↦[GetReply :: "Error"] #obj.(Error).
+End local_defs.
+End GetReply.
+
 Section proofs.
 Context `{!heapGS Σ}.
 
-Lemma wp_Tree_Put ptr_tr entry_map sl_id id sl_val val :
+Lemma wp_Tree_Digest ptr_tr entries :
   {{{
-    "Htree" ∷ own_Tree ptr_tr entry_map ∗
+    "Htree" ∷ own_Tree ptr_tr entries
+  }}}
+  Tree__Digest #ptr_tr
+  {{{
+    sl_dig dig, RET (slice_val sl_dig);
+    "Htree" ∷ own_Tree ptr_tr entries ∗
+    "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
+    "#HisDig" ∷ isTreeDig entries dig
+  }}}.
+Proof. Admitted.
+
+Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val :
+  {{{
+    "Htree" ∷ own_Tree ptr_tr entries ∗
     "Hid" ∷ own_slice_small sl_id byteT (DfracOwn 1) id ∗
     "Hval" ∷ own_slice_small sl_val byteT (DfracOwn 1) val
   }}}
   Tree__Put #ptr_tr (slice_val sl_id) (slice_val sl_val)
   {{{
-    sl_digest ptr_proof (err : bool),
-    RET ((slice_val sl_digest), #ptr_proof, #err);
+    sl_dig dig sl_proof proof (err : bool),
+    RET ((slice_val sl_dig), (slice_val sl_proof), #err);
     if negb err then
-      "Htree" ∷ own_Tree ptr_tr (<[id:=val]>entry_map)
-    else True%I
+      "Htree" ∷ own_Tree ptr_tr (<[id:=val]>entries) ∗
+      "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
+      "#HisDig" ∷ isTreeDig (<[id:=val]>entries) dig ∗
+      "Hproof" ∷ is_Slice3D sl_proof proof
+    else
+      "Htree" ∷ own_Tree ptr_tr entries
+  }}}.
+Proof. Admitted.
+
+Lemma wp_Tree_Get ptr_tr entries sl_id id :
+  {{{
+    "Htree" ∷ own_Tree ptr_tr entries ∗
+    "Hid" ∷ own_slice_small sl_id byteT (DfracOwn 1) id
+  }}}
+  Tree__Put #ptr_tr (slice_val sl_id)
+  {{{
+    ptr_reply reply, RET #ptr_reply;
+    "Hreply" ∷ GetReply.own ptr_reply reply ∗
+    if negb reply.(GetReply.Error) then
+      "Htree" ∷ own_Tree ptr_tr (<[id:=reply.(GetReply.Val)]>entries) ∗
+      "#HisDig" ∷ isTreeDig (<[id:=reply.(GetReply.Val)]>entries) reply.(GetReply.Digest)
+    else
+      "Htree" ∷ own_Tree ptr_tr entries
+  }}}.
+Proof. Admitted.
+
+Lemma wp_Tree_DeepCopy ptr_tr entries :
+  {{{
+    "Htree" ∷ own_Tree ptr_tr entries
+  }}}
+  Tree__DeepCopy #ptr_tr
+  {{{
+    ptr_new, RET #ptr_new;
+    "Htree" ∷ own_Tree ptr_tr entries ∗
+    "HnewTree" ∷ own_Tree ptr_new entries
   }}}.
 Proof. Admitted.
 
@@ -301,7 +382,7 @@ Lemma wp_node_getHash_null :
   {{{
     sl_hash hash, RET (slice_val sl_hash);
     "Hhash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
-    "#His_hash" ∷ is_tree_hash Empty hash
+    "#His_hash" ∷ isNodeHash Empty hash
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -340,13 +421,13 @@ Lemma wp_pathProof_check ptr_proof proof val :
     | None => Empty
     | Some val' => Leaf val'
     end in
-    "Hhash" ∷ is_tree_hash node proof.(pathProof.nodeHash)
+    "Hhash" ∷ isNodeHash node proof.(pathProof.nodeHash)
   }}}
   pathProof__check #ptr_proof
   {{{
     (err : bool), RET #err;
     if negb err then
-      "Hpath" ∷ is_path_val proof.(pathProof.id) val proof.(pathProof.digest)
+      "Hpath" ∷ commitsToEntry proof.(pathProof.id) val proof.(pathProof.digest)
     else True%I
   }}}.
 Proof.
@@ -374,7 +455,7 @@ Proof.
       "Hptr_currHash" ∷ ptr_currHash ↦[slice.T byteT] sl_currHash ∗
       "Hptr_err" ∷ ptr_err ↦[boolT] #err ∗
       "Herr_pred" ∷ if negb err then
-        "Hpath_val" ∷ is_path_val
+        "Hpath_val" ∷ commitsToEntry
           (drop (length proof.(pathProof.id) - (Z.to_nat (word.unsigned loopIdx)))
           proof.(pathProof.id)) val currHash
       else True)%I : w64 → iProp Σ.
@@ -493,7 +574,7 @@ Proof.
     (* Done with code, now re-establish loop inv. *)
 
     destruct err; iNamed "Herr_pred"; iApply "HΦ2"; iFrame "#∗"; [done|].
-    rewrite /is_path_val.
+    rewrite /commitsToEntry.
     iDestruct "Herr_pred" as "[Htr_hash %Htr_contains]".
     iExists (Interior (
       ((λ h, Cut h) <$> (take (uint.nat pos) obj_dim1')) ++
@@ -586,7 +667,7 @@ Lemma wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_digest (id v
   {{{
     (err : bool), RET #err;
     if negb err then
-      "#Hpath" ∷ is_path_val id (if proofTy then Some val else None) digest
+      "#Hpath" ∷ commitsToEntry id (if proofTy then Some val else None) digest
     else True%I
   }}}.
 Proof. Admitted.
