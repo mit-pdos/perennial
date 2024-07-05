@@ -1,26 +1,31 @@
 From Perennial.program_proof.rsm Require Import distx.
 From Goose.github_com.mit_pdos.rsm Require Import distx.
 
-
-Section program.
-  Context `{!heapGS Σ, !distx_ghostG Σ}.
+Section resource.
+  Context `{!distx_ghostG Σ}.
+  Implicit Type (α : replica_names).
 
   (* NB: One half of the phsyical tuple is kept in the replica invariant, one
   half in the tuple invariant. GC-related methods does not require the one in
   the replica invariant, essentially forcing GC to not change the abstract
   view. *)
   
-  Definition tuple_phys_half
-    (α : gname) (key : string) (hist : dbhist) (tsprep : nat) : iProp Σ.
+  Definition tuple_phys_half α (key : string) (hist : dbhist) (tsprep : nat) : iProp Σ.
   Admitted.
 
-  Definition is_tuple (tuple : loc) (key : string) (α : gname) : iProp Σ.
+End resource.
+
+Section program.
+  Context `{!heapGS Σ, !distx_ghostG Σ}.
+
+  Definition is_tuple (tuple : loc) (key : string) (α : replica_names) : iProp Σ.
   Admitted.
 
   #[global]
   Instance is_tuple_persistent tuple key α :
     Persistent (is_tuple tuple key α).
   Admitted.
+
 
   (* NB: If we were simply to use Paxos rather than PCR, a better way would be
   requiring the [tid = tsprep], and moving the the length precondition into the

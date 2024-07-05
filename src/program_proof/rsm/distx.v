@@ -673,6 +673,68 @@ Proof.
   by rewrite Happ /apply_cmds foldl_app apply_cmds_unfold Hl1 foldl_apply_cmd_from_stuck in Hns.
 Qed.
 
+Lemma foldl_apply_cmd_from_stm_present l :
+  ∀ stm1 stm2 tpls1 tpls2 ts,
+  foldl apply_cmd (State stm1 tpls1) l = State stm2 tpls2 ->
+  is_Some (stm1 !! ts) ->
+  is_Some (stm2 !! ts).
+Proof.
+  induction l as [| c l IH]; intros stm1 stm2 tpls1 tpls2 ts Hl Hstm1; simpl in Hl.
+  { inversion Hl. by subst stm2. }
+  destruct (apply_cmd _ _) as [stm tpls |] eqn:Heq; last first.
+  { by rewrite foldl_apply_cmd_from_stuck in Hl. }
+  eapply IH; first apply Hl.
+  destruct c; simpl in Heq.
+  { destruct (tpls1 !! key) as [[vs tsprep] |]; inversion Heq.
+    by subst stm.
+  }
+  { destruct (stm1 !! tid).
+    { inversion Heq. by subst stm. }
+    by destruct (try_acquire _ _ _); inversion Heq;
+      rewrite lookup_insert_is_Some; destruct (decide (tid = ts)); auto.
+  }
+  { destruct (stm1 !! tid); last done.
+    destruct t; inversion Heq.
+    { by rewrite lookup_insert_is_Some; destruct (decide (tid = ts)); auto. }
+    { by subst stm. }
+  }
+  { destruct (stm1 !! tid); last first.
+    { inversion Heq.
+      by rewrite lookup_insert_is_Some; destruct (decide (tid = ts)); auto.
+    }
+    destruct t; inversion Heq.
+    { by rewrite lookup_insert_is_Some; destruct (decide (tid = ts)); auto. }
+    { by subst stm. }
+  }
+Qed.
+
+Lemma apply_cmds_elem_of_prepare l :
+  ∀ stm tpls ts pwrs,
+  apply_cmds l = State stm tpls ->
+  CmdPrep ts pwrs ∈ l ->
+  is_Some (stm !! ts).
+Proof.
+  intros stm tpls ts pwrs Hrsm Hprep.
+  rewrite elem_of_list_lookup in Hprep.
+  destruct Hprep as [i Hprep].
+  apply take_drop_middle in Hprep.
+  rewrite -Hprep /apply_cmds foldl_app in Hrsm.
+  destruct (foldl _ init_rpst) as [stm' tpls' |]; last first.
+  { by rewrite foldl_apply_cmd_from_stuck in Hrsm. }
+  simpl in Hrsm.
+  destruct (stm' !! ts) eqn:Hstm.
+  { eapply foldl_apply_cmd_from_stm_present; first apply Hrsm.
+    by rewrite Hstm.
+  }
+  destruct (try_acquire _ _ _).
+  { eapply foldl_apply_cmd_from_stm_present; first apply Hrsm.
+    by rewrite lookup_insert.
+  }
+  { eapply foldl_apply_cmd_from_stm_present; first apply Hrsm.
+    by rewrite lookup_insert.
+  }
+Qed.
+
 Lemma apply_cmds_dom_nonexpanding l1 l2 :
   ∀ stm1 stm2 tpls1 tpls2,
   apply_cmds l1 = State stm1 tpls1 ->
@@ -1640,6 +1702,8 @@ Class distx_ghostG (Σ : gFunctors).
 
 Record distx_names := {}.
 
+Record replica_names := {}.
+
 (* TODO: consider decomposing them into smaller pieces. *)
 Section ghost.
   Context `{!distx_ghostG Σ}.
@@ -1830,6 +1894,11 @@ Section ghost.
   Definition cmd_receipt γ (gid : groupid) (lsn : nat) (term : nat) (c : command) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance cmd_receipt_persistent γ gid lsn term c :
+    Persistent (cmd_receipt γ gid lsn term c).
+  Admitted.
+
   Lemma log_witness γ gid log :
     clog_half γ gid log -∗
     clog_lb γ gid log.
@@ -1839,6 +1908,12 @@ Section ghost.
     clog_half γ gid log -∗
     clog_lb γ gid logp -∗
     ⌜prefix logp log⌝.
+  Admitted.
+
+  Lemma log_lb_prefix γ gid logp1 logp2 :
+    clog_lb γ gid logp1 -∗
+    clog_lb γ gid logp2 -∗
+    ⌜prefix logp1 logp2 ∨ prefix logp2 logp1⌝.
   Admitted.
 
   Lemma log_lb_weaken {γ gid} logp1 logp2 :
@@ -2256,17 +2331,28 @@ Section inv.
     ⌜apply_cmds logp = State stm tpls⌝ -∗
     ([∗ map] ts ↦ st ∈ stm, txn_token γ gid ts st)%I.
 
+  Definition safe_read gid ts key :=
+    valid_ts ts ∧ valid_key key ∧ key_to_group key = gid.
+
+  Definition safe_prepare γ gid ts pwrs : iProp Σ :=
+    ∃ wrs, txnwrs_receipt γ ts wrs ∧ ⌜valid_ts ts ∧ valid_pwrs gid wrs pwrs⌝.
+
+  Definition safe_commit γ gid ts : iProp Σ :=
+    ∃ wrs, txnres_cmt γ ts wrs ∧ ⌜valid_ts ts ∧ gid ∈ ptgroups (dom wrs)⌝.
+
+  Definition safe_abort γ ts : iProp Σ :=
+    txnres_abt γ ts ∧ ⌜valid_ts ts⌝.
+
   Definition safe_submit γ gid (c : command) : iProp Σ :=
     match c with
-    | CmdRead ts key => ⌜valid_ts ts ∧ valid_key key ∧ key_to_group key = gid⌝
+    | CmdRead ts key => ⌜safe_read gid ts key⌝
     (* Enforces [CmdPrep] is submitted to only participant groups, and partial
     writes is part of the global commit, which we would likely need with
     coordinator recovery. *)
-    | CmdPrep ts pwrs =>
-        (∃ wrs, txnwrs_receipt γ ts wrs ∧ ⌜valid_ts ts ∧ valid_pwrs gid wrs pwrs⌝)
+    | CmdPrep ts pwrs => safe_prepare γ gid ts pwrs
     (* Enforces [CmdCmt] is submitted to only participant groups. *)
-    | CmdCmt ts => (∃ wrs, txnres_cmt γ ts wrs ∧ ⌜valid_ts ts ∧ gid ∈ ptgroups (dom wrs)⌝)
-    | CmdAbt ts => txnres_abt γ ts ∧ ⌜valid_ts ts⌝
+    | CmdCmt ts => safe_commit γ gid ts
+    | CmdAbt ts => safe_abort γ ts
     end.
 
   #[global]
@@ -2276,8 +2362,7 @@ Section inv.
 
   Definition valid_prepared γ gid ts st : iProp Σ :=
     match st with
-    | StPrepared pwrs =>
-        (∃ wrs, txnwrs_receipt γ ts wrs ∧ ⌜valid_ts ts ∧ valid_pwrs gid wrs pwrs⌝)
+    | StPrepared pwrs => safe_prepare γ gid ts pwrs
     | _ => True
     end.
 
@@ -2286,11 +2371,9 @@ Section inv.
     Persistent (valid_prepared γ gid ts st).
   Proof. destruct st; apply _. Qed.
 
-  Definition group_inv γ (gid : groupid) : iProp Σ :=
-    ∃ (log : dblog) (cpool : gset command) (pm : gmap nat bool)
-      (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
-      "Hlog"    ∷ clog_half γ gid log ∗
-      "Hcpool"  ∷ cpool_half γ gid cpool ∗
+  Definition group_inv_no_log_no_cpool
+    γ (gid : groupid) (log : dblog) (cpool : gset command) : iProp Σ :=
+    ∃ (pm : gmap nat bool) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
       "Hpm"     ∷ txnprep_auth γ gid pm ∗
       "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
       "#Htks"   ∷ txn_tokens γ gid log ∗
@@ -2299,17 +2382,26 @@ Section inv.
       "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝ ∗
       "%Hdompm" ∷ ⌜dom pm ⊆ dom stm⌝.
 
-  Definition group_inv_with_cpool_no_log
+  Definition group_inv_no_log_with_cpool
     γ (gid : groupid) (log : dblog) (cpool : gset command) : iProp Σ :=
-    ∃ (pm : gmap nat bool) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
-      "Hcpool"  ∷ cpool_half γ gid cpool ∗
-      "Hpm"     ∷ txnprep_auth γ gid pm ∗
-      "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
-      "#Htks"   ∷ txn_tokens γ gid log ∗
-      "#Hvp"    ∷ ([∗ map] ts ↦ st ∈ stm, valid_prepared γ gid ts st) ∗
-      "#Hvc"    ∷ ([∗ set] c ∈ cpool, safe_submit γ gid c) ∗
-      "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝ ∗
-      "%Hdompm" ∷ ⌜dom pm ⊆ dom stm⌝.
+    "Hcpool" ∷ cpool_half γ gid cpool ∗
+    "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
+
+  Definition group_inv_no_log γ (gid : groupid) (log : dblog) : iProp Σ :=
+    ∃ (cpool : gset command),
+      "Hcpool" ∷ cpool_half γ gid cpool ∗
+      "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
+
+  Definition group_inv_no_cpool γ (gid : groupid) (cpool : gset command) : iProp Σ :=
+    ∃ (log : dblog),
+      "Hlog"   ∷ clog_half γ gid log ∗
+      "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
+
+  Definition group_inv γ (gid : groupid) : iProp Σ :=
+    ∃ (log : dblog) (cpool : gset command),
+      "Hlog"   ∷ clog_half γ gid log ∗
+      "Hcpool" ∷ cpool_half γ gid cpool ∗
+      "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition distxN := nroot .@ "distx".
 
@@ -2336,18 +2428,44 @@ End inv.
 Section group_inv.
   Context `{!distx_ghostG Σ}.
 
-  Lemma group_inv_expose_cpool_extract_log {γ} gid :
+  Lemma group_inv_extract_log_expose_cpool {γ} gid :
     group_inv γ gid -∗
-    ∃ cpool log,
+    ∃ log cpool,
       clog_half γ gid log ∗
-      group_inv_with_cpool_no_log γ gid log cpool.
+      group_inv_no_log_with_cpool γ gid log cpool.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
-  Lemma group_inv_hide_cpool_merge_log {γ gid} log cpool :
+  Lemma group_inv_merge_log_hide_cpool {γ gid} log cpool :
     clog_half γ gid log -∗
-    group_inv_with_cpool_no_log γ gid log cpool -∗
+    group_inv_no_log_with_cpool γ gid log cpool -∗
     group_inv γ gid.
   Proof. iIntros "Hlog Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
+
+  Lemma group_inv_extract_log {γ} gid :
+    group_inv γ gid -∗
+    ∃ log,
+      clog_half γ gid log ∗
+      group_inv_no_log γ gid log.
+  Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
+
+  Lemma group_inv_merge_log {γ gid} log :
+    clog_half γ gid log -∗
+    group_inv_no_log γ gid log -∗
+    group_inv γ gid.
+  Proof. iIntros "Hlog Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
+
+  Lemma group_inv_extract_cpool {γ} gid :
+    group_inv γ gid -∗
+    ∃ cpool,
+      cpool_half γ gid cpool ∗
+      group_inv_no_cpool γ gid cpool.
+  Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
+
+  Lemma group_inv_merge_cpool {γ gid} cpool :
+    cpool_half γ gid cpool -∗
+    group_inv_no_cpool γ gid cpool -∗
+    group_inv γ gid.
+  Proof. iIntros "Hcpool Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   (* TODO: might not need these anymore once update the learn_prepare proof to
   be more consistent with that of learn_commit. *)
@@ -2483,6 +2601,21 @@ Section group_inv.
     destruct (tpls !! key) as [[h t] |]; last done.
     inversion Hrsmp. subst stmp.
     by iApply "Htks".
+  Qed.
+
+  Lemma group_inv_no_log_witness_txn_token {γ gid log} loga stm tpls ts st :
+    prefix loga log ->
+    apply_cmds loga = State stm tpls ->
+    stm !! ts = Some st ->
+    group_inv_no_log γ gid log -∗
+    txn_token γ gid ts st.
+  Proof.
+    iIntros (Hprefix Hrsm Hstm) "Hgroup".
+    do 2 iNamed "Hgroup".
+    iDestruct ("Htks" with "[] []") as "Htksm".
+    { iPureIntro. apply Hprefix. }
+    { iPureIntro. apply Hrsm. }
+    by iDestruct (big_sepM_lookup with "Htksm") as "Htk"; first apply Hstm.
   Qed.
 
   Lemma key_inv_extract_repl_tsprep {γ} key :
@@ -2701,14 +2834,14 @@ Section group_inv.
     CmdPrep ts pwrs ∈ cpool ->
     txn_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
-    group_inv_with_cpool_no_log γ gid log cpool ==∗
+    group_inv_no_log_with_cpool γ gid log cpool ==∗
     txn_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    group_inv_with_cpool_no_log γ gid (log ++ [CmdPrep ts pwrs]) cpool.
+    group_inv_no_log_with_cpool γ gid (log ++ [CmdPrep ts pwrs]) cpool.
   Proof.
     iIntros (Hc) "Htxn Hkeys Hgroup".
-    iNamed "Hgroup".
-    rewrite /group_inv_with_cpool_no_log.
+    do 2 iNamed "Hgroup".
+    rewrite /group_inv_no_log_with_cpool.
     (* Frame away unused resources. *)
     iFrame "Hcpool".
     destruct (stm !! ts) eqn:Hdup.
@@ -2722,6 +2855,7 @@ Section group_inv.
     (* Case: Txn [ts] has not prepared, aborted, or committed. *)
     destruct (try_acquire ts pwrs tpls) eqn:Hacq; last first.
     { (* Case: Validation fails; abort the transaction. *)
+      rewrite /group_inv_no_log_no_cpool.
       rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hacq.
       iFrame "Hrepls Hkeys".
       (* Mark [ts] unprepared in the prepare map. *)
@@ -2743,6 +2877,7 @@ Section group_inv.
       by auto with set_solver.
     }
     (* Case: Validation succeeds; lock the tuples and mark the transaction prepared. *)
+    rewrite /group_inv_no_log_no_cpool.
     rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hacq.
     rewrite /try_acquire in Hacq.
     destruct (validate ts pwrs tpls) eqn:Hvd; last done.
@@ -2878,19 +3013,19 @@ Section group_inv.
     cpool_subsume_log cpool (log ++ [CmdCmt ts]) ->
     txn_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
-    group_inv_with_cpool_no_log γ gid log cpool ==∗
+    group_inv_no_log_with_cpool γ gid log cpool ==∗
     txn_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    group_inv_with_cpool_no_log γ gid (log ++ [CmdCmt ts]) cpool.
+    group_inv_no_log_with_cpool γ gid (log ++ [CmdCmt ts]) cpool.
   Proof.
     iIntros (Hsubsume) "Htxn Hkeys Hgroup".
     rewrite /cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
     destruct Hsubsume as [Hsubsume Hc].
-    iNamed "Hgroup".
+    do 2 iNamed "Hgroup".
     (* Obtain proof that [ts] has committed. *)
     iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
     iDestruct "Hc" as (wrsc) "[Hcmt %Hgid]".
-    rewrite /group_inv_with_cpool_no_log.
+    rewrite /group_inv_no_log_with_cpool.
     destruct (stm !! ts) eqn:Hdup; last first.
     { (* Case: Empty state; contradiction---no prepare before commit. *) 
       iDestruct (txn_inv_has_prepared with "Hcmt Htxn") as "#Hst"; first apply Hgid.
@@ -2912,6 +3047,7 @@ Section group_inv.
       congruence.
     }
     { (* Case: [StCommitted]; no-op. *)
+      rewrite /group_inv_no_log_no_cpool.
       rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
       (* Create txn tokens for the new state. *)
       iDestruct (txn_tokens_inv_learn_commit with "[Hcmt] Htks") as "Htks'".
@@ -2919,6 +3055,7 @@ Section group_inv.
       by iFrame "∗ #".
     }
     (* Case: [StPrepared wrs] *)
+    rewrite /group_inv_no_log_no_cpool.
     rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
     set tpls' := multiwrite _ _ _.
     (* Obtain proof of valid prepared input. *)
@@ -3082,20 +3219,21 @@ Section group_inv.
     cpool_subsume_log cpool (log ++ [CmdAbt ts]) ->
     txn_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
-    group_inv_with_cpool_no_log γ gid log cpool ==∗
+    group_inv_no_log_with_cpool γ gid log cpool ==∗
     txn_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    group_inv_with_cpool_no_log γ gid (log ++ [CmdAbt ts]) cpool.
+    group_inv_no_log_with_cpool γ gid (log ++ [CmdAbt ts]) cpool.
   Proof.
     iIntros (Hsubsume) "Htxn Hkeys Hgroup".
     rewrite /cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
     destruct Hsubsume as [Hsubsume Hc].
-    iNamed "Hgroup".
+    do 2 iNamed "Hgroup".
     (* Obtain proof that [ts] has aborted. *)
     iDestruct (big_sepS_elem_of _ _ _ Hc with "Hvc") as "[Habt _]".
-    rewrite /group_inv_with_cpool_no_log.
+    rewrite /group_inv_no_log_with_cpool.
     destruct (stm !! ts) as [st |] eqn:Hdup; last first.
     { (* Case: Directly abort without prepare. *)
+      rewrite /group_inv_no_log_no_cpool.
       rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
       (* Create txn tokens for the new state. *)
       iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
@@ -3106,6 +3244,7 @@ Section group_inv.
       by auto with set_solver.
     }
     (* Case: Txn [ts] has prepared, aborted, or committed. *)
+    rewrite /group_inv_no_log_no_cpool.
     rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
     destruct st as [pwrs | |] eqn:Ht; first 1 last.
     { (* Case: Committed; contradiction by obtaining a commit token. *)
@@ -3220,13 +3359,13 @@ Section group_inv.
   Lemma group_inv_learn_read γ gid log cpool ts key :
     CmdRead ts key ∈ cpool ->
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
-    group_inv_with_cpool_no_log γ gid log cpool ==∗
+    group_inv_no_log_with_cpool γ gid log cpool ==∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    group_inv_with_cpool_no_log γ gid (log ++ [CmdRead ts key]) cpool.
+    group_inv_no_log_with_cpool γ gid (log ++ [CmdRead ts key]) cpool.
   Proof.
     iIntros (Hc) "Hkeys Hgroup".
-    iNamed "Hgroup".
-    rewrite /group_inv_with_cpool_no_log.
+    do 2 iNamed "Hgroup".
+    rewrite /group_inv_no_log_with_cpool /group_inv_no_log_no_cpool.
     rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /=.
     (* Obtain validity of the read input. *)
     iDestruct (big_sepS_elem_of with "Hvc") as "Hread"; first apply Hc.
@@ -3269,10 +3408,10 @@ Section group_inv.
     cpool_subsume_log cpool (log ++ cmds) ->
     txn_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
-    group_inv_with_cpool_no_log γ gid log cpool ==∗
+    group_inv_no_log_with_cpool γ gid log cpool ==∗
     txn_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    group_inv_with_cpool_no_log γ gid (log ++ cmds) cpool.
+    group_inv_no_log_with_cpool γ gid (log ++ cmds) cpool.
   Proof.
     iInduction cmds as [| c l] "IH".
     { iIntros (log Hsubsume) "Htxn Hkeys Hgroup". rewrite app_nil_r. by iFrame. }
@@ -3359,3 +3498,21 @@ Section inv_commit.
 
 End inv_commit.
 (* TODO: move to inv_commit.v once stable. *)
+
+(* TODO: move to group_inv_submit.v once stable. *)
+Section inv_submit.
+  Context `{!distx_ghostG Σ}.
+
+  Lemma group_inv_submit γ gid cpool c :
+    safe_submit γ gid c -∗
+    group_inv_no_cpool γ gid cpool -∗
+    group_inv_no_cpool γ gid ({[c]} ∪ cpool).
+  Proof.
+    iIntros "Hsafe Hgroup".
+    do 2 iNamed "Hgroup".
+    iDestruct (big_sepS_insert_2 with "Hsafe Hvc") as "Hvc'".
+    iFrame "∗ # %".
+  Qed.
+
+End inv_submit.
+(* TODO: move to group_inv_submit.v once stable. *)

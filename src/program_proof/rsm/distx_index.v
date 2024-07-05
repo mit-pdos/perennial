@@ -5,7 +5,7 @@ From Goose.github_com.mit_pdos.rsm Require Import distx.
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
 
-  Definition is_index (idx : loc) (α : gname) : iProp Σ.
+  Definition is_index (idx : loc) (α : replica_names) : iProp Σ.
   Admitted.
 
   #[global]

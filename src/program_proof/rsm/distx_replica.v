@@ -42,6 +42,46 @@ Section list.
 
 End list.
 
+Section resource.
+  Context `{!distx_ghostG Σ}.
+  Implicit Type (α : replica_names).
+
+  Definition lsn_applied_auth α (n : nat) : iProp Σ.
+  Admitted.
+
+  Definition lsn_applied_lb α (n : nat) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance lsn_applied_lb_persistent α n :
+    Persistent (lsn_applied_lb α n).
+  Admitted.
+
+  Lemma lsn_applied_update {α n} ns :
+    (n ≤ ns)%nat ->
+    lsn_applied_auth α n ==∗
+    lsn_applied_auth α ns.
+  Admitted.
+
+  Lemma lsn_applied_witness {α n} :
+    lsn_applied_auth α n -∗
+    lsn_applied_lb α n.
+  Admitted.
+
+  Lemma lsn_applied_lb_weaken {α n} np :
+    (np ≤ n)%nat ->
+    lsn_applied_lb α n -∗
+    lsn_applied_lb α np.
+  Admitted.
+
+  Lemma lsn_applied_le {α n np} :
+    lsn_applied_auth α n -∗
+    lsn_applied_lb α np -∗
+    ⌜(np ≤ n)%nat⌝.
+  Admitted.
+
+End resource.
+
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
 
@@ -189,53 +229,61 @@ Section program.
     | _ => False
     end.
 
-  Definition own_replica_tpls (rp : loc) (tpls : gmap dbkey dbtpl) : iProp Σ :=
-    ∃ (idx : loc) (α : gname),
-      "Hidx"   ∷ rp ↦[Replica :: "idx"] #idx ∗
-      "Htpls"  ∷ ([∗ map] k ↦ t ∈ tpls, tuple_phys_half α k t.1 t.2) ∗
-      "#HidxR" ∷ is_index idx α.
+  Definition own_replica_txntbl (rp : loc) (txntbl : gmap u64 bool) : iProp Σ :=
+    ∃ (txntblP : loc),
+      "HtxntblP" ∷ rp ↦[Replica :: "txntbl"] #txntblP ∗
+      "Htxntbl"  ∷ own_map txntblP (DfracOwn 1) txntbl.
 
-  Definition own_replica_state (rp : loc) (st : rpst) : iProp Σ :=
-    ∃ (rid : u64) (prepm : loc) (txntbl : loc)
-      (prepmS : gmap u64 Slice.t) (prepmM : gmap u64 dbmap) (txntblM : gmap u64 bool)
-      (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
-      "Hrid"     ∷ rp ↦[Replica :: "rid"] #rid ∗
-      "Hprepm"   ∷ rp ↦[Replica :: "prepm"] #prepm ∗
-      "HprepmS"  ∷ own_map prepm (DfracOwn 1) prepmS ∗
-      "HprepmM"  ∷ ([∗ map] s; m ∈ prepmS; prepmM, ∃ l, own_dbmap_in_slice s l m) ∗
-      "Htxntbl"  ∷ rp ↦[Replica :: "txntbl"] #txntbl ∗
-      "HtxntblM" ∷ own_map txntbl (DfracOwn 1) txntblM ∗
-      "Htpls"    ∷ own_replica_tpls rp tpls ∗
-      "%Hstmabs" ∷ ⌜absrel_stm prepmM txntblM stm⌝ ∗
-      "%Habs"    ∷ ⌜st = State stm tpls⌝.
+  Definition own_replica_stm (rp : loc) (stm : gmap nat txnst) : iProp Σ :=
+    ∃ (prepmP : loc) (prepmS : gmap u64 Slice.t)
+      (prepm : gmap u64 dbmap) (txntbl : gmap u64 bool),
+      "HprepmP"  ∷ rp ↦[Replica :: "prepm"] #prepmP ∗
+      "HprepmS"  ∷ own_map prepmP (DfracOwn 1) prepmS ∗
+      "Hprepm"   ∷ ([∗ map] s; m ∈ prepmS; prepm, ∃ l, own_dbmap_in_slice s l m) ∗
+      "Htxntbl"  ∷ own_replica_txntbl rp txntbl ∗
+      "%Hstmabs" ∷ ⌜absrel_stm prepm txntbl stm⌝.
+
+  Definition own_replica_tpls (rp : loc) (tpls : gmap dbkey dbtpl) α : iProp Σ :=
+    ∃ (idx : loc),
+      "HidxP" ∷ rp ↦[Replica :: "idx"] #idx ∗
+      "Htpls" ∷ ([∗ map] k ↦ t ∈ tpls, tuple_phys_half α k t.1 t.2) ∗
+      "#Hidx" ∷ is_index idx α.
+
+  Definition own_replica_state (rp : loc) (st : rpst) α : iProp Σ :=
+    ∃ (rid : u64) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
+      "HridP" ∷ rp ↦[Replica :: "rid"] #rid ∗
+      "Hstm"  ∷ own_replica_stm rp stm ∗
+      "Htpls" ∷ own_replica_tpls rp tpls α ∗
+      "%Habs" ∷ ⌜st = State stm tpls⌝.
 
   (* Need this wrapper to prevent [wp_if_destruct] from eating the eq. *)
   Definition rsm_consistency log st := apply_cmds log = st.
 
   Definition own_replica_paxos
-    (rp : loc) (st : rpst) (gid : groupid) (γ : distx_names) : iProp Σ :=
-    ∃ (log : loc) (lsna : u64) (loga : dblog),
-      "Hlog"    ∷ rp ↦[Replica :: "log"] #log ∗
-      "Htxnlog" ∷ own_txnlog log gid γ ∗
-      "Hlsna"   ∷ rp ↦[Replica :: "lsna"] #lsna ∗
-      "#Hloga"  ∷ clog_lb γ gid loga ∗
-      "%Hlen"   ∷ ⌜length loga = S (uint.nat lsna)⌝ ∗
-      "%Hrsm"   ∷ ⌜rsm_consistency loga st⌝.
+    (rp : loc) (st : rpst) (gid : groupid) γ α : iProp Σ :=
+    ∃ (lsna : u64) (loga : dblog),
+      "HlsnaP" ∷ rp ↦[Replica :: "lsna"] #lsna ∗
+      "Hlsna"  ∷ lsn_applied_auth α (uint.nat lsna) ∗
+      "#Hloga" ∷ clog_lb γ gid loga ∗
+      "%Hlen"  ∷ ⌜length loga = S (uint.nat lsna)⌝ ∗
+      "%Hrsm"  ∷ ⌜rsm_consistency loga st⌝.
 
-  Definition own_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
+  Definition own_replica (rp : loc) (gid : groupid) γ α : iProp Σ :=
     ∃ (st : rpst),
-      "Hst"  ∷ own_replica_state rp st ∗
-      "Hlog" ∷ own_replica_paxos rp st gid γ.
+      "Hst"  ∷ own_replica_state rp st α ∗
+      "Hlog" ∷ own_replica_paxos rp st gid γ α.
 
-  Definition is_replica (rp : loc) (gid : groupid) (γ : distx_names) : iProp Σ :=
-    ∃ (mu : loc),
-      "#Hmu"   ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
-      "#Hlock" ∷ is_lock distxN #mu (own_replica rp gid γ) ∗
-      "%Hgid"  ∷ ⌜gid ∈ gids_all⌝.
+  Definition is_replica (rp : loc) (gid : groupid) γ α : iProp Σ :=
+    ∃ (mu : loc) (txnlog : loc),
+      "#HmuP"     ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
+      "#Hlock"    ∷ is_lock distxN #mu (own_replica rp gid γ α) ∗
+      "#HtxnlogP" ∷ readonly (rp ↦[Replica :: "txnlog"] #txnlog) ∗
+      "#Htxnlog"  ∷ is_txnlog txnlog gid γ ∗
+      "%Hgid"     ∷ ⌜gid ∈ gids_all⌝.
 
-  Theorem wp_Replica__Abort (rp : loc) (ts : u64) (gid : groupid) γ :
+  Theorem wp_Replica__Abort (rp : loc) (ts : u64) (gid : groupid) γ α :
     txnres_abt γ (uint.nat ts) -∗
-    is_replica rp gid γ -∗
+    is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Abort #rp #ts
     {{{ (ok : bool), RET #ok; True }}}.
@@ -265,9 +313,9 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Replica__Commit (rp : loc) (ts : u64) (wrs : dbmap) (gid : groupid) γ :
+  Theorem wp_Replica__Commit (rp : loc) (ts : u64) (wrs : dbmap) (gid : groupid) γ α :
     txnres_cmt γ (uint.nat ts) wrs -∗
-    is_replica rp gid γ -∗
+    is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Commit #rp #ts
     {{{ (ok : bool), RET #ok; True }}}.
@@ -297,46 +345,384 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Replica__Prepare (rp : loc) (ts : u64) (wrs : Slice.t) (gid : groupid) γ :
-    group_inv γ gid -∗
-    is_replica rp gid γ -∗
+  Definition option_txnst_to_u64 (sto : option txnst) :=
+    match sto with
+    | Some st => txnst_to_u64 st
+    | None => (W64 0)
+    end.
+
+  Definition option_to_bool {A : Type} (x : option A) :=
+    match x with
+    | Some _ => true
+    | _ => false
+    end.
+
+  Theorem wp_Replica__queryTxnStatus (rp : loc) (ts : u64) (stm : gmap nat txnst) :
+    {{{ own_replica_stm rp stm }}}
+      Replica__queryTxnStatus #rp #ts
+    {{{ RET #(option_txnst_to_u64 (stm !! uint.nat ts)); own_replica_stm rp stm }}}.
+  Proof.
+    iIntros (Φ) "Hstm HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) queryTxnStatus(ts uint64) uint64 {                   @*)
+    (*@     // First we check if the transaction has committed or aborted.      @*)
+    (*@     cmted, terminated := rp.txntbl[ts]                                  @*)
+    (*@     if terminated {                                                     @*)
+    (*@         if cmted {                                                      @*)
+    (*@             return TXN_COMMITTED                                        @*)
+    (*@         } else {                                                        @*)
+    (*@             return TXN_ABORTED                                          @*)
+    (*@         }                                                               @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    iNamed "Hstm". iNamed "Htxntbl".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Htxntbl").
+    iIntros (cmted terminated) "[%Htxntbl Htxntbl]".
+    wp_pures.
+    wp_if_destruct.
+    { apply map_get_true in Htxntbl.
+      erewrite absrel_stm_txntbl_present; [| done | done].
+      by destruct cmted; wp_pures; iApply "HΦ"; iFrame "∗ %".
+    }
+    apply map_get_false in Htxntbl as [Htxntbl _].
+
+    (*@     // Then check if prepared.                                          @*)
+    (*@     _, preped := rp.prepm[ts]                                           @*)
+    (*@     if preped {                                                         @*)
+    (*@         return TXN_PREPARED                                             @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_apply (wp_MapGet with "HprepmS").
+    iIntros (s preped) "[%Hprepm HprepmS]".
+    wp_pures.
+    iDestruct (big_sepM2_dom with "Hprepm") as %Hdom.
+    wp_if_destruct.
+    { apply map_get_true, elem_of_dom_2 in Hprepm.
+      rewrite Hdom elem_of_dom in Hprepm.
+      destruct Hprepm as [pwrs Hprepm].
+      erewrite absrel_stm_txntbl_absent_prepm_present; [| done | done | done].
+      iApply "HΦ".
+      by iFrame "∗ %".
+    }
+
+    (*@     return TXN_RUNNING                                                  @*)
+    (*@ }                                                                       @*)
+    apply map_get_false in Hprepm as [Hprepm _].
+    rewrite -not_elem_of_dom Hdom not_elem_of_dom in Hprepm.
+    erewrite absrel_stm_both_absent; [| done | done | done].
+    iApply "HΦ".
+    by iFrame "∗ %".
+  Qed.
+
+  Theorem wp_Replica__QueryTxnStatus (rp : loc) (ts : u64) (gid : groupid) γ α :
+    know_distx_inv γ -∗
+    is_replica rp gid γ α -∗
     {{{ True }}}
-      Replica__Prepare #rp #ts (to_val wrs)
-    {{{ (status : txnst) (ok : bool), RET (#(txnst_to_u64 status), #ok);
-        if ok then txnprep_prep γ gid (uint.nat ts) else txnprep_unprep γ gid (uint.nat ts)
+      Replica__QueryTxnStatus #rp #ts
+    {{{ (sto : option txnst), RET #(option_txnst_to_u64 sto);
+        match sto with
+        | Some st => txn_token γ gid (uint.nat ts) st
+        | _ => True
+        end
     }}}.
   Proof.
-    (*@ func (rp *Replica) Prepare(ts uint64, wrs []WriteEntry) (uint64, bool) { @*)
+    iIntros "#Hinv #Hrp" (Φ) "!> _ HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) QueryTxnStatus(ts uint64) uint64 {                   @*)
+    (*@     rp.mu.Lock()                                                        @*)
+    (*@     status := rp.queryTxnStatus(ts)                                     @*)
+    (*@     rp.mu.Unlock()                                                      @*)
+    (*@                                                                         @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (acquire_spec with "Hlock").
+    iIntros "[Hlocked Hrp]".
+    wp_pures.
+    iNamed "Hrp". iNamed "Hst".
+    wp_apply (wp_Replica__queryTxnStatus with "Hstm").
+    iIntros "Hstm".
+    wp_pures.
+    iNamed "Hlog".
+    subst st.
+
+    (*@     return status                                                       @*)
+    (*@ }                                                                       @*)
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+    wp_pures.
+    (* Obtain the txn token from the group invariant. *)
+    iApply "HΦ".
+    destruct (stm !! uint.nat ts) as [st |] eqn:Hst; last done.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iNamed "HinvO".
+    iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first done.
+    iDestruct (group_inv_extract_log with "Hgroup") as (paxos) "[Hpaxos Hgroup]".
+    iDestruct (log_prefix with "Hpaxos Hloga") as %Hprefix.
+    iDestruct (group_inv_no_log_witness_txn_token with "Hgroup") as "#Htk".
+    { apply Hprefix. }
+    { apply Hrsm. }
+    { apply Hst. }
+    iDestruct (group_inv_merge_log with "Hpaxos Hgroup") as "Hgroup".
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+    by iMod ("HinvC" with "[-]"); first iFrame.
+  Qed.
+
+  Theorem wp_Replica__QueryTxnStatus_xrunning
+    (rp : loc) (ts : u64) (gid : groupid) logp lsnp γ α :
+    (∃ pwrs, logp !! lsnp = Some (CmdPrep (uint.nat ts) pwrs)) ->
+    clog_lb γ gid logp -∗
+    lsn_applied_lb α lsnp -∗
+    know_distx_inv γ -∗
+    is_replica rp gid γ α -∗
+    {{{ True }}}
+      Replica__QueryTxnStatus #rp #ts
+    {{{ (st : txnst), RET #(txnst_to_u64 st); txn_token γ gid (uint.nat ts) st }}}.
+  Proof.
+    iIntros "%Hprep #Hlogp #Hlsnap #Hinv #Hrp" (Φ) "!> _ HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) QueryTxnStatus(ts uint64) uint64 {                   @*)
+    (*@     rp.mu.Lock()                                                        @*)
+    (*@     status := rp.queryTxnStatus(ts)                                     @*)
+    (*@     rp.mu.Unlock()                                                      @*)
+    (*@                                                                         @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (acquire_spec with "Hlock").
+    iIntros "[Hlocked Hrp]".
+    wp_pures.
+    iNamed "Hrp". iNamed "Hst".
+    wp_apply (wp_Replica__queryTxnStatus with "Hstm").
+    iIntros "Hstm".
+    wp_pures.
+    iNamed "Hlog".
+    subst st.
+
+    (*@     return status                                                       @*)
+    (*@ }                                                                       @*)
+    wp_loadField.
+    (* Main difference from the general lemma. Prove [ts] must have prepared,
+    aborted, or committed. *)
+    iAssert (⌜is_Some (stm !! uint.nat ts)⌝)%I as %Hsome.
+    { destruct Hprep as [pwrs Hprep].
+      (* Obtain proof that the replica has applied at least [lsnp]. *)
+      iDestruct (lsn_applied_le with "Hlsna Hlsnap") as %Hlsna.
+      (* Obtain proof that one of [loga] and [logp] is a prefix of the other. *)
+      iDestruct (log_lb_prefix with "Hloga Hlogp") as %Hprefix.
+      iPureIntro.
+      assert (Hloga : loga !! lsnp = Some (CmdPrep (uint.nat ts) pwrs)).
+      { destruct Hprefix as [Hprefix | Hprefix].
+        { rewrite (prefix_lookup_lt _ _ _ _ Hprefix); [done | lia]. }
+        { by eapply prefix_lookup_Some. }
+      }
+      apply elem_of_list_lookup_2 in Hloga.
+      by eapply apply_cmds_elem_of_prepare.
+    }
+    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+    wp_pures.
+    destruct Hsome as [st Hst].
+    rewrite Hst.
+    (* Obtain the txn token from the group invariant. *)
+    iApply "HΦ".
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iNamed "HinvO".
+    iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first done.
+    iDestruct (group_inv_extract_log with "Hgroup") as (paxos) "[Hpaxos Hgroup]".
+    iDestruct (log_prefix with "Hpaxos Hloga") as %Hprefix.
+    iDestruct (group_inv_no_log_witness_txn_token with "Hgroup") as "#Htk".
+    { apply Hprefix. }
+    { apply Hrsm. }
+    { apply Hst. }
+    iDestruct (group_inv_merge_log with "Hpaxos Hgroup") as "Hgroup".
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+    by iMod ("HinvC" with "[-]"); first iFrame.
+  Qed.
+
+  Theorem wp_Replica__queryTxnTermination (rp : loc) (ts : u64) (txntbl : gmap u64 bool) :
+    {{{ own_replica_txntbl rp txntbl }}}
+      Replica__queryTxnTermination #rp #ts
+    {{{ (terminated : bool), RET #terminated;
+        own_replica_txntbl rp txntbl ∗
+        ⌜if terminated then ts ∈ dom txntbl else txntbl !! ts = None⌝
+    }}}.
+  Proof.
+    iIntros (Φ) "Htxntbl HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) queryTxnTermination(ts uint64) bool {                @*)
+    (*@     _, terminated := rp.txntbl[ts]                                      @*)
+    (*@     return terminated                                                   @*)
+    (*@ }                                                                       @*)
+    iNamed "Htxntbl".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Htxntbl").
+    iIntros (v b) "[%Hget Htxntbl]".
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    destruct b.
+    { by apply map_get_true, elem_of_dom_2 in Hget. }
+    { by apply map_get_false in Hget as [Hget _]. }
+  Qed.
+
+  Theorem wp_Replica__WaitUntilApplied (rp : loc) (lsn : u64) gid γ α :
+    is_replica rp gid γ α -∗
+    {{{ True }}}
+      Replica__WaitUntilApplied #rp #lsn
+    {{{ RET #(); lsn_applied_lb α (uint.nat lsn) }}}.
+  Proof.
+    iIntros "#Hrp" (Φ) "!> _ HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) WaitUntilApplied(lsn uint64) {                       @*)
+    (*@     for {                                                               @*)
+    (*@         rp.mu.Lock()                                                    @*)
+    (*@         lsna := rp.lsna                                                 @*)
+    (*@         rp.mu.Unlock()                                                  @*)
+    (*@         if lsn <= lsna {                                                @*)
+    (*@             break                                                       @*)
+    (*@         }                                                               @*)
+    (*@         machine.Sleep(1 * 1000000)                                      @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    set P := (λ b : bool, if b then True else lsn_applied_lb α (uint.nat lsn))%I.
+    wp_apply (wp_forBreak P with "[] []"); last first; first 1 last.
+    { (* Loop entry. *) done. }
+    { (* Loop body. *)
+      clear Φ.
+      iIntros (Φ) "!> _ HΦ".
+      wp_pures.
+      iNamed "Hrp".
+      wp_loadField.
+      wp_apply (acquire_spec with "Hlock").
+      iIntros "[Hlocked Hrp]".
+      iNamed "Hrp". iNamed "Hlog".
+      do 2 wp_loadField.
+      (* Obtain a lower bound of [lsna]. *)
+      iDestruct (lsn_applied_witness with "Hlsna") as "#Hlsnap".
+      wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+      wp_if_destruct.
+      { (* Weaken the lower bound. *)
+        iDestruct (lsn_applied_lb_weaken (uint.nat lsn) with "Hlsnap") as "#Hlsn".
+        { word. }
+        by iApply "HΦ".
+      }
+      wp_apply wp_Sleep.
+      wp_pures.
+      by iApply "HΦ".
+    }
+    iIntros "HP". simpl.
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+  Theorem wp_Replica__Prepare
+    (rp : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) (pwrs : dbmap)
+    (gid : groupid) γ α :
+    safe_prepare γ gid (uint.nat ts) pwrs -∗
+    know_distx_inv γ -∗
+    is_replica rp gid γ α -∗
+    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
+      Replica__Prepare #rp #ts (to_val pwrsS)
+    {{{ (sto : option txnst), RET (#(option_txnst_to_u64 sto), #(option_to_bool sto));
+        match sto with
+        | Some st => txn_token γ gid (uint.nat ts) st
+        | _ => True
+        end
+    }}}.
+  Proof.
+    iIntros "#Hsafe #Hinv #Hrp" (Φ) "!> Hpwrs HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) Prepare(ts uint64, pwrs []WriteEntry) (uint64, bool) { @*)
     (*@     // Return immediately if the transaction has already prepared, aborted, or @*)
     (*@     // committed. Note that this is more of an optimization to eliminate @*)
     (*@     // submitting unnecessary log entries than a correctness requirement. We'll @*)
     (*@     // check this in @applyPrepare anyway.                              @*)
-    (*@     status := rp.queryTxnStatus(ts)                                     @*)
+    (*@     status := rp.QueryTxnStatus(ts)                                     @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__QueryTxnStatus with "Hinv Hrp").
+    iIntros (sto) "#Hsto".
+
     (*@     if status != TXN_RUNNING {                                          @*)
     (*@         return status, true                                             @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    (*@     lsn, term := rp.log.SubmitPrepare(ts, wrs)                          @*)
+    wp_if_destruct.
+    { destruct sto as [st |]; last done. simpl.
+      wp_pures.
+      by iApply ("HΦ" $! (Some st)).
+    }
+
+    (*@     lsn, term := rp.log.SubmitPrepare(ts, pwrs)                         @*)
+    (*@                                                                         @*)
+    iPoseProof "Hrp" as "Hrp'".
+    iNamed "Hrp'".
+    wp_loadField.
+    wp_apply (wp_TxnLog__SubmitPrepare with "Htxnlog Hpwrs").
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iApply ncfupd_mask_intro; first set_solver.
+    iIntros "Hmask".
+    iNamed "HinvO".
+    iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first done.
+    iDestruct (group_inv_extract_cpool with "Hgroup") as (cpool) "[Hcpool Hgroup]".
+    iFrame "Hcpool".
+    iIntros "Hcpool".
+    iDestruct (group_inv_submit _ _ _ (CmdPrep (uint.nat ts) pwrs) with "Hsafe Hgroup") as "Hgroup".
+    iDestruct (group_inv_merge_cpool with "Hcpool Hgroup") as "Hgroup".
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+    iMod "Hmask" as "_".
+    iMod ("HinvC" with "[Htxn Hkeys Hgroups]") as "_"; first by iFrame.
+    iIntros "!>" (lsn term) "#Hcmd".
+    wp_pures.
+
     (*@     if lsn == 0 {                                                       @*)
     (*@         return 0, false                                                 @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    wp_if_destruct; wp_pures.
+    { by iApply ("HΦ" $! None). }
+
     (*@     safe := rp.log.WaitUntilSafe(lsn, term)                             @*)
     (*@     if !safe {                                                          @*)
     (*@         return 0, false                                                 @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    (*@     rp.waitUntilExec(lsn)                                               @*)
+    wp_loadField.
+    wp_apply (wp_TxnLog__WaitUntilSafe with "Htxnlog Hcmd").
+    iIntros (safe) "Hlogr".
+    wp_pures.
+    wp_if_destruct.
+    { wp_pures. by iApply ("HΦ" $! None). }
+    iDestruct "Hlogr" as (logp) "[#Hlogp %Hlogp]".
+
+    (*@     rp.WaitUntilApplied(lsn)                                            @*)
     (*@                                                                         @*)
+    wp_apply (wp_Replica__WaitUntilApplied with "Hrp").
+    iIntros "#Hlsnp".
+    wp_pures.
+
     (*@     // The command has been executed, get the prepared result. Note that here we @*)
     (*@     // can assume the transaction could not be running; we should indeed prove @*)
     (*@     // that to save some work from the users.                           @*)
-    (*@     return rp.queryTxnStatus(ts), true                                  @*)
-    (*@ }                                                                       @*)
-  Admitted.
+    (*@     ret := rp.QueryTxnStatus(ts)                                        @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__QueryTxnStatus_xrunning with "Hlogp Hlsnp Hinv Hrp").
+    { by eauto. }
+    iIntros (ret) "#Htk".
+    wp_pures.
 
-  Theorem wp_Replica__Read (rp : loc) (ts : u64) (key : string) (gid : groupid) γ :
-    is_replica rp gid γ -∗
+    (*@     return ret, true                                                    @*)
+    (*@ }                                                                       @*)
+    by iApply ("HΦ" $! (Some ret)).
+  Qed.
+
+  Theorem wp_Replica__Read (rp : loc) (ts : u64) (key : string) (gid : groupid) γ α :
+    is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Read #rp #ts #(LitString key)
     {{{ (v : dbval) (ok : bool), RET (dbval_to_val v, #ok);
@@ -439,10 +825,10 @@ Section program.
 
   Theorem wp_Replica__applyPrepare
     (rp : loc) (ts : u64) (pwrsS : Slice.t)
-    (pwrsL : list dbmod) (pwrs : dbmap) (st : rpst) :
-    {{{ own_replica_state rp st ∗ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
+    (pwrsL : list dbmod) (pwrs : dbmap) (st : rpst) α :
+    {{{ own_replica_state rp st α ∗ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
       Replica__applyPrepare #rp #ts (to_val pwrsS)
-    {{{ RET #(); own_replica_state rp (apply_cmd st (CmdPrep (uint.nat ts) pwrs)) }}}.
+    {{{ RET #(); own_replica_state rp (apply_cmd st (CmdPrep (uint.nat ts) pwrs)) α }}}.
   Proof.
     (*@ func (rp *Replica) applyPrepare(ts uint64, wrs []WriteEntry) {          @*)
     (*@     // The transaction has already prepared, aborted, or committed. This must be @*)
@@ -471,13 +857,13 @@ Section program.
 
   Theorem wp_Replica__multiwrite
     (rp : loc) (ts : u64) (pwrsS : Slice.t)
-    (pwrsL : list dbmod) (pwrs : dbmap) (tpls : gmap dbkey dbtpl) :
+    (pwrsL : list dbmod) (pwrs : dbmap) (tpls : gmap dbkey dbtpl) α :
     valid_wrs pwrs ->
     dom tpls = keys_all ->
     safe_tpls_pts (uint.nat ts) pwrs tpls ->
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_tpls rp tpls }}}
+    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_tpls rp tpls α }}}
       Replica__multiwrite #rp #ts (to_val pwrsS)
-    {{{ RET #(); own_replica_tpls rp (multiwrite (uint.nat ts) pwrs tpls) }}}.
+    {{{ RET #(); own_replica_tpls rp (multiwrite (uint.nat ts) pwrs tpls) α }}}.
   Proof.
     iIntros (Hvw Hdom Hlen Φ) "[[HpwrsS %Hpwrs] Htpls] HΦ".
     wp_call.
@@ -499,7 +885,7 @@ Section program.
     iDestruct (own_slice_to_small with "HpwrsS") as "HpwrsS".
     set P := (λ (i : u64),
                 let pwrs' := list_to_map (take (uint.nat i) pwrsL) in
-                own_replica_tpls rp (multiwrite (uint.nat ts) pwrs' tpls))%I.
+                own_replica_tpls rp (multiwrite (uint.nat ts) pwrs' tpls) α)%I.
     wp_apply (wp_forSlice P with "[] [$HpwrsS Htpls]"); last first; first 1 last.
     { (* Loop entry. *)
       subst P. simpl.
@@ -519,7 +905,7 @@ Section program.
       rewrite -Hpwrs elem_of_map_to_list in Hdompwrs.
       apply elem_of_dom_2 in Hdompwrs.
       assert (Hdomall : k ∈ keys_all) by set_solver.
-      wp_apply (wp_Index__GetTuple with "HidxR"); first done.
+      wp_apply (wp_Index__GetTuple with "Hidx"); first done.
       iIntros (tpl) "#HtplR".
       wp_pures.
       (* Obtain proof that the current key [k] has not been written. *)
@@ -580,13 +966,13 @@ Section program.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_Replica__applyCommit (rp : loc) (ts : u64) (st : rpst) :
+  Theorem wp_Replica__applyCommit (rp : loc) (ts : u64) (st : rpst) α :
     safe_rpst st (uint.nat ts) ->
     let st' := apply_cmd st (CmdCmt (uint.nat ts)) in
     not_stuck st' ->
-    {{{ own_replica_state rp st }}}
+    {{{ own_replica_state rp st α }}}
       Replica__applyCommit #rp #ts
-    {{{ RET #(); own_replica_state rp st' }}}.
+    {{{ RET #(); own_replica_state rp st' α }}}.
   Proof.
     iIntros (Hsafe st' Hns Φ) "Hst HΦ". subst st'.
     wp_call.
@@ -595,12 +981,11 @@ Section program.
     (*@     // Query the transaction table. Note that if there's an entry for @ts in @*)
     (*@     // @txntbl, then transaction @ts can only be committed. That's why we're not @*)
     (*@     // even reading the value of entry.                                 @*)
-    (*@     _, committed := rp.txntbl[ts]                                       @*)
+    (*@     committed := rp.queryTxnTermination(ts)                             @*)
     (*@                                                                         @*)
-    iNamed "Hst".
-    wp_loadField.
-    wp_apply (wp_MapGet with "HtxntblM").
-    iIntros (b ok) "[%Htxntbl HtxntblM]".
+    iNamed "Hst". iNamed "Hstm".
+    wp_apply (wp_Replica__queryTxnTermination with "Htxntbl").
+    iIntros (committed) "[Htxntbl %Htxntbl]".
     wp_pures. subst st.
 
     (*@     if committed {                                                      @*)
@@ -609,7 +994,8 @@ Section program.
     (*@                                                                         @*)
     wp_if_destruct.
     { (* Txn [ts] has committed or aborted. *)
-      apply map_get_true in Htxntbl.
+      rewrite elem_of_dom in Htxntbl.
+      destruct Htxntbl as [b Htxntbl].
       (* Prove that [ts] must have committed. *)
       assert (stm !! (uint.nat ts) = Some StCommitted) as Hcmt.
       { pose proof (absrel_stm_txntbl_present _ _ _ _ _ Htxntbl Hstmabs) as Hstm.
@@ -620,7 +1006,6 @@ Section program.
       iPureIntro.
       by rewrite /= Hcmt.
     }
-    clear Heqb0 ok.
 
     (*@     // We'll need an invariant to establish that if a transaction has prepared @*)
     (*@     // but not terminated, then @prepm[ts] has something.               @*)
@@ -631,8 +1016,7 @@ Section program.
     iIntros (pwrsS ok) "[%Hprepm HprepmS]".
     wp_pures.
     (* Obtain [dom prepmS = dom prepmM] needed later. *)
-    iDestruct (big_sepM2_dom with "HprepmM") as %Hdom.
-    apply map_get_false in Htxntbl as [Htxntbl _].
+    iDestruct (big_sepM2_dom with "Hprepm") as %Hdom.
     (* Prove that [ts] must have prepared. *)
     destruct ok; last first.
     { apply map_get_false in Hprepm as [Hprepm _].
@@ -641,7 +1025,7 @@ Section program.
       by rewrite /= Hstm in Hns.
     }
     apply map_get_true in Hprepm.
-    assert (∃ pwrs, prepmM !! ts = Some pwrs) as [pwrs Hpwrs].
+    assert (∃ pwrs, prepm !! ts = Some pwrs) as [pwrs Hpwrs].
     { apply elem_of_dom_2 in Hprepm.
       rewrite Hdom elem_of_dom in Hprepm.
       destruct Hprepm as [pwrs Hpwrs].
@@ -652,7 +1036,7 @@ Section program.
     (*@     rp.multiwrite(ts, pwrs)                                             @*)
     (*@                                                                         @*)
     (* Take ownership of the prepare-map slice out. *)
-    iDestruct (big_sepM2_delete with "HprepmM") as "[[%pwsL HpwrsS] HprepmM]"; [done | done |].
+    iDestruct (big_sepM2_delete with "Hprepm") as "[[%pwsL HpwrsS] Hprepm]"; [done | done |].
     rewrite /safe_rpst Hstm in Hsafe.
     destruct Hsafe as (Hvw & Hdomall & Hpts).
     wp_apply (wp_Replica__multiwrite with "[$HpwrsS $Htpls]"); [done | done | done |].
@@ -668,9 +1052,10 @@ Section program.
 
     (*@     rp.txntbl[ts] = true                                                @*)
     (*@ }                                                                       @*)
+    iNamed "Htxntbl".
     wp_loadField.
-    wp_apply (wp_MapInsert with "HtxntblM"); first done.
-    iIntros "HtxntblM".
+    wp_apply (wp_MapInsert with "Htxntbl"); first done.
+    iIntros "Htxntbl".
     wp_pures.
     (* Re-establish replica abstraction relation [Habs]. *)
     pose proof (absrel_stm_inv_apply_commit ts Hstmabs) as Hstmabs'.
@@ -682,14 +1067,14 @@ Section program.
   (* We can actually merge the first two preconditions into the [not_stuck] one
   by changing the operational semantics of the applier functions to check for
   those conditions (and moves into the [Stuck] state if the check fails). *)
-  Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) (st : rpst) :
+  Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) (st : rpst) α :
     valid_ts_of_command cmd ->
     (∀ ts, ts ≠ O -> safe_rpst st ts) ->
     let st' := apply_cmd st cmd in
     not_stuck st' ->
-    {{{ own_replica_state rp st ∗ own_pwrs_slice pwrsS cmd }}}
+    {{{ own_replica_state rp st α ∗ own_pwrs_slice pwrsS cmd }}}
       Replica__apply #rp (command_to_val pwrsS cmd)
-    {{{ RET #(); own_replica_state rp st' }}}.
+    {{{ RET #(); own_replica_state rp st' α }}}.
   Proof.
     (*@ func (rp *Replica) apply(cmd Cmd) {                                     @*)
     (*@     if cmd.kind == 0 {                                                  @*)
@@ -728,9 +1113,9 @@ Section program.
     }
   Admitted.
 
-  Theorem wp_Replica__Start (rp : loc) (gid : groupid) γ :
-    know_distx_inv γ -∗ 
-    is_replica rp gid γ -∗
+  Theorem wp_Replica__Start (rp : loc) (gid : groupid) γ α :
+    know_distx_inv γ -∗
+    is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Start #rp
     {{{ RET #(); True }}}.
@@ -752,7 +1137,7 @@ Section program.
     (*@         // TODO: a more efficient interface would return multiple safe commands @*)
     (*@         // at once (so as to reduce the frequency of acquiring Paxos mutex). @*)
     (*@                                                                         @*)
-    set P := (λ b : bool, own_replica rp gid γ ∗ locked #mu)%I.
+    set P := (λ b : bool, own_replica rp gid γ α ∗ locked #mu)%I.
     wp_apply (wp_forBreak P with "[] [$Hrp $Hlocked]"); last first.
     { (* Get out of an infinite loop. *) iIntros "Hrp". wp_pures. by iApply "HΦ". }
     clear Φ. iIntros "!>" (Φ) "[Hrp Hlocked] HΦ".
@@ -773,7 +1158,7 @@ Section program.
     (* Take the required group invariant. *)
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
     (* Separate out the ownership of the Paxos log from others. *)
-    iDestruct (group_inv_expose_cpool_extract_log with "Hgroup") as (cpool paxos) "[Hpaxos Hgroup]".
+    iDestruct (group_inv_extract_log_expose_cpool with "Hgroup") as (paxos cpool) "[Hpaxos Hgroup]".
     (* Obtain a lower bound before passing it to Paxos. *)
     iDestruct (log_witness with "Hpaxos") as "#Hlb".
     iExists paxos. iFrame.
@@ -788,7 +1173,7 @@ Section program.
     }
     (* Obtain validity of command timestamps; used when executing @apply. *)
     iAssert (⌜Forall valid_ts_of_command paxos'⌝)%I as %Hts.
-    { iNamed "Hgroup".
+    { do 2 iNamed "Hgroup".
       iAssert (⌜set_Forall valid_ts_of_command cpool⌝)%I as %Hcpoolts.
       { iIntros (c Hc).
         iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
@@ -802,7 +1187,7 @@ Section program.
     }
     (* Obtain validity of command partial writes; used when executing @apply. *)
     iAssert (⌜Forall valid_pwrs_of_command paxos'⌝)%I as %Hpwrs.
-    { iNamed "Hgroup".
+    { do 2 iNamed "Hgroup".
       iAssert (⌜set_Forall valid_pwrs_of_command cpool⌝)%I as %Hcpoolts.
       { iIntros (c Hc).
         destruct c as [| ts pwrs | |]; [done | simpl | done | done].
@@ -832,14 +1217,14 @@ Section program.
     { apply Hincl. }
     (* Obtain state machine safety for the new log. *)
     iAssert (⌜not_stuck (apply_cmds (paxos ++ cmds))⌝)%I as %Hns.
-    { clear Hrsm. iNamed "Hgroup". iPureIntro. by rewrite Hrsm. }
-    iDestruct (group_inv_hide_cpool_merge_log with "Hpaxos Hgroup") as "Hgroup".
+    { clear Hrsm. do 2 iNamed "Hgroup". iPureIntro. by rewrite Hrsm. }
+    iDestruct (group_inv_merge_log_hide_cpool with "Hpaxos Hgroup") as "Hgroup".
     (* Put back the group invariant. *)
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     (* Close the entire invariant. *)
     iMod "Hmask" as "_".
     iMod ("HinvC" with "[Htxn Hkeys Hgroups]") as "_"; first by iFrame.
-    iIntros "!>" (cmd ok pwrsS) "(Htxnlog & HpwrsS & %Hcmd)".
+    iIntros "!>" (cmd ok pwrsS) "[HpwrsS  %Hcmd]".
     wp_pures.
 
     (*@         if !ok {                                                        @*)
@@ -939,6 +1324,9 @@ Section program.
     wp_storeField.
     iApply "HΦ".
     set lsna' := word.add _ _ in Hcmd *.
+    (* Update [lsn_applied_auth]. *)
+    iMod (lsn_applied_update (uint.nat lsna') with "Hlsna") as "Hlsna".
+    { rewrite Hnoof. word. }
     subst P.
     iFrame "Hlb". iFrame "∗ # %".
     iPureIntro.

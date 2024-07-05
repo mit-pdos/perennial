@@ -159,29 +159,37 @@ Definition TxnLog__Lookup: val :=
 Definition Replica := struct.decl [
   "mu" :: ptrT;
   "rid" :: uint64T;
-  "log" :: ptrT;
+  "txnlog" :: ptrT;
   "lsna" :: uint64T;
   "prepm" :: mapT (slice.T (struct.t WriteEntry));
   "txntbl" :: mapT boolT;
   "idx" :: ptrT
 ].
 
-Definition Replica__waitUntilExec: val :=
-  rec: "Replica__waitUntilExec" "rp" "lsn" :=
+Definition Replica__WaitUntilApplied: val :=
+  rec: "Replica__WaitUntilApplied" "rp" "lsn" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      lock.acquire (struct.loadF Replica "mu" "rp");;
+      let: "lsna" := struct.loadF Replica "lsna" "rp" in
+      lock.release (struct.loadF Replica "mu" "rp");;
+      (if: "lsn" ≤ "lsna"
+      then Break
+      else
+        time.Sleep (#1 * #1000000);;
+        Continue));;
     #().
 
 Definition TXN_RUNNING : expr := #0.
 
 Definition TXN_PREPARED : expr := #1.
 
-Definition TXN_ABORTED : expr := #2.
+Definition TXN_COMMITTED : expr := #2.
 
-Definition TXN_COMMITTED : expr := #3.
+Definition TXN_ABORTED : expr := #3.
 
 (* Arguments:
    @ts: Transaction timestamp.
-
-   @wrs: Transaction write set.
 
    Return values:
    @status: Transaction status. *)
@@ -199,6 +207,30 @@ Definition Replica__queryTxnStatus: val :=
       then TXN_PREPARED
       else TXN_RUNNING)).
 
+Definition Replica__QueryTxnStatus: val :=
+  rec: "Replica__QueryTxnStatus" "rp" "ts" :=
+    lock.acquire (struct.loadF Replica "mu" "rp");;
+    let: "status" := Replica__queryTxnStatus "rp" "ts" in
+    lock.release (struct.loadF Replica "mu" "rp");;
+    "status".
+
+(* Arguments:
+   @ts: Transaction timestamp.
+
+   Return values:
+   @terminated: Whether txn @ts has terminated (committed or aborted). *)
+Definition Replica__queryTxnTermination: val :=
+  rec: "Replica__queryTxnTermination" "rp" "ts" :=
+    let: (<>, "terminated") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    "terminated".
+
+Definition Replica__QueryTxnTermination: val :=
+  rec: "Replica__QueryTxnTermination" "rp" "ts" :=
+    lock.acquire (struct.loadF Replica "mu" "rp");;
+    let: "terminated" := Replica__queryTxnTermination "rp" "ts" in
+    lock.release (struct.loadF Replica "mu" "rp");;
+    "terminated".
+
 (* Arguments:
    @ts: Transaction timestamp.
 
@@ -210,28 +242,21 @@ Definition Replica__queryTxnStatus: val :=
    @ok: If @true, @status is meaningful; otherwise, ignore @status. *)
 Definition Replica__Prepare: val :=
   rec: "Replica__Prepare" "rp" "ts" "pwrs" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
-    let: "status" := Replica__queryTxnStatus "rp" "ts" in
+    let: "status" := Replica__QueryTxnStatus "rp" "ts" in
     (if: "status" ≠ TXN_RUNNING
-    then
-      lock.release (struct.loadF Replica "mu" "rp");;
-      ("status", #true)
+    then ("status", #true)
     else
-      let: ("lsn", "term") := TxnLog__SubmitPrepare (struct.loadF Replica "log" "rp") "ts" "pwrs" in
+      let: ("lsn", "term") := TxnLog__SubmitPrepare (struct.loadF Replica "txnlog" "rp") "ts" "pwrs" in
       (if: "lsn" = #0
-      then
-        lock.release (struct.loadF Replica "mu" "rp");;
-        (#0, #false)
+      then (#0, #false)
       else
-        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
+        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "txnlog" "rp") "lsn" "term" in
         (if: (~ "safe")
-        then
-          lock.release (struct.loadF Replica "mu" "rp");;
-          (#0, #false)
+        then (#0, #false)
         else
-          Replica__waitUntilExec "rp" "lsn";;
-          lock.release (struct.loadF Replica "mu" "rp");;
-          (Replica__queryTxnStatus "rp" "ts", #true)))).
+          Replica__WaitUntilApplied "rp" "lsn";;
+          let: "ret" := Replica__QueryTxnStatus "rp" "ts" in
+          ("ret", #true)))).
 
 (* Arguments:
    @ts: Transaction timestamp.
@@ -240,27 +265,18 @@ Definition Replica__Prepare: val :=
    @ok: If @true, this transaction is committed. *)
 Definition Replica__Commit: val :=
   rec: "Replica__Commit" "rp" "ts" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
-    let: (<>, "committed") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    let: "committed" := Replica__QueryTxnTermination "rp" "ts" in
     (if: "committed"
-    then
-      lock.release (struct.loadF Replica "mu" "rp");;
-      #true
+    then #true
     else
-      let: ("lsn", "term") := TxnLog__SubmitCommit (struct.loadF Replica "log" "rp") "ts" in
+      let: ("lsn", "term") := TxnLog__SubmitCommit (struct.loadF Replica "txnlog" "rp") "ts" in
       (if: "lsn" = #0
-      then
-        lock.release (struct.loadF Replica "mu" "rp");;
-        #false
+      then #false
       else
-        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
+        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "txnlog" "rp") "lsn" "term" in
         (if: (~ "safe")
-        then
-          lock.release (struct.loadF Replica "mu" "rp");;
-          #false
-        else
-          lock.release (struct.loadF Replica "mu" "rp");;
-          #true))).
+        then #false
+        else #true))).
 
 (* Arguments:
    @ts: Transaction timestamp.
@@ -269,27 +285,18 @@ Definition Replica__Commit: val :=
    @ok: If @true, this transaction is aborted. *)
 Definition Replica__Abort: val :=
   rec: "Replica__Abort" "rp" "ts" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
-    let: (<>, "aborted") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    let: "aborted" := Replica__QueryTxnTermination "rp" "ts" in
     (if: "aborted"
-    then
-      lock.release (struct.loadF Replica "mu" "rp");;
-      #true
+    then #true
     else
-      let: ("lsn", "term") := TxnLog__SubmitAbort (struct.loadF Replica "log" "rp") "ts" in
+      let: ("lsn", "term") := TxnLog__SubmitAbort (struct.loadF Replica "txnlog" "rp") "ts" in
       (if: "lsn" = #0
-      then
-        lock.release (struct.loadF Replica "mu" "rp");;
-        #false
+      then #false
       else
-        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
+        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "txnlog" "rp") "lsn" "term" in
         (if: (~ "safe")
-        then
-          lock.release (struct.loadF Replica "mu" "rp");;
-          #false
-        else
-          lock.release (struct.loadF Replica "mu" "rp");;
-          #true))).
+        then #false
+        else #true))).
 
 (* Arguments:
    @ts: Transaction timestamp.
@@ -302,32 +309,27 @@ Definition Replica__Abort: val :=
    @ok: @value is meaningful iff @ok is true. *)
 Definition Replica__Read: val :=
   rec: "Replica__Read" "rp" "ts" "key" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
-    let: (<>, "terminated") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    let: "terminated" := Replica__QueryTxnTermination "rp" "ts" in
     (if: "terminated"
     then
-      lock.release (struct.loadF Replica "mu" "rp");;
       (struct.mk Value [
        ], #false)
     else
-      let: ("lsn", "term") := TxnLog__SubmitRead (struct.loadF Replica "log" "rp") "ts" "key" in
+      let: ("lsn", "term") := TxnLog__SubmitRead (struct.loadF Replica "txnlog" "rp") "ts" "key" in
       (if: "lsn" = #0
       then
-        lock.release (struct.loadF Replica "mu" "rp");;
         (struct.mk Value [
          ], #false)
       else
-        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "log" "rp") "lsn" "term" in
+        let: "safe" := TxnLog__WaitUntilSafe (struct.loadF Replica "txnlog" "rp") "lsn" "term" in
         (if: (~ "safe")
         then
-          lock.release (struct.loadF Replica "mu" "rp");;
           (struct.mk Value [
            ], #false)
         else
-          Replica__waitUntilExec "rp" "lsn";;
+          Replica__WaitUntilApplied "rp" "lsn";;
           let: "tpl" := Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
           let: ("v", "ok") := Tuple__ReadVersion "tpl" "ts" in
-          lock.release (struct.loadF Replica "mu" "rp");;
           ("v", "ok")))).
 
 Definition Replica__applyRead: val :=
@@ -391,7 +393,7 @@ Definition Replica__multiwrite: val :=
 
 Definition Replica__applyCommit: val :=
   rec: "Replica__applyCommit" "rp" "ts" :=
-    let: (<>, "committed") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    let: "committed" := Replica__queryTxnTermination "rp" "ts" in
     (if: "committed"
     then #()
     else
@@ -411,7 +413,7 @@ Definition Replica__abort: val :=
 
 Definition Replica__applyAbort: val :=
   rec: "Replica__applyAbort" "rp" "ts" :=
-    let: (<>, "aborted") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    let: "aborted" := Replica__queryTxnTermination "rp" "ts" in
     (if: "aborted"
     then #()
     else
@@ -448,7 +450,7 @@ Definition Replica__Start: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "lsn" := std.SumAssumeNoOverflow (struct.loadF Replica "lsna" "rp") #1 in
-      let: ("cmd", "ok") := TxnLog__Lookup (struct.loadF Replica "log" "rp") "lsn" in
+      let: ("cmd", "ok") := TxnLog__Lookup (struct.loadF Replica "txnlog" "rp") "lsn" in
       (if: (~ "ok")
       then
         lock.release (struct.loadF Replica "mu" "rp");;
