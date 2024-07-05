@@ -388,17 +388,14 @@ Proof.
   by rewrite /acquire lookup_merge Hv Htpl /=.
 Qed.
 
-Definition try_acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
-  if validate tid wrs tpls then Acquired (acquire tid wrs tpls) else NotAcquired.
-
 Definition apply_prepare st (tid : nat) (wrs : dbmap) :=
   match st with
   | State stm tpls =>
       match stm !! tid with
       | Some _ => st
-      | None =>  match try_acquire tid wrs tpls with
-                | Acquired tpls' => State (<[ tid := StPrepared wrs ]> stm) tpls'
-                | NotAcquired => State (<[ tid := StAborted ]> stm) tpls
+      | None =>  match validate tid wrs tpls with
+                | true => State (<[tid := StPrepared wrs]> stm) (acquire tid wrs tpls)
+                | false => State (<[tid := StAborted]> stm) tpls
                 end
       end
   | Stuck => Stuck
@@ -690,7 +687,7 @@ Proof.
   }
   { destruct (stm1 !! tid).
     { inversion Heq. by subst stm. }
-    by destruct (try_acquire _ _ _); inversion Heq;
+    by destruct (validate _ _ _); inversion Heq;
       rewrite lookup_insert_is_Some; destruct (decide (tid = ts)); auto.
   }
   { destruct (stm1 !! tid); last done.
@@ -726,7 +723,7 @@ Proof.
   { eapply foldl_apply_cmd_from_stm_present; first apply Hrsm.
     by rewrite Hstm.
   }
-  destruct (try_acquire _ _ _).
+  destruct (validate _ _ _).
   { eapply foldl_apply_cmd_from_stm_present; first apply Hrsm.
     by rewrite lookup_insert.
   }
@@ -762,11 +759,8 @@ Proof.
   { (* Case [CmdPrep]. *)
     rewrite /apply_prepare in Hrsm.
     destruct (stm1 !! tid); first by inversion Hrsm.
-    destruct (try_acquire _ _ _) eqn:Hacq; last by inversion Hrsm.
-    inversion Hrsm. subst tpls'.
-    rewrite /try_acquire in Hacq.
-    destruct (validate _ _ _); last done.
-    inversion Hacq.
+    destruct (validate _ _ _); last by inversion Hrsm.
+    inversion Hrsm.
     apply acquire_dom.
   }
   { (* Case [CmdCmt]. *)
@@ -888,13 +882,9 @@ Proof.
     destruct (foldl _ _ _) as [stm tpls |] eqn:Heq; last congruence.
     destruct (stm !! tid).
     { (* Case: Status in table; no-op. *) inversion Happly. subst tplsc. by eapply Hwf. }
-    destruct (try_acquire _ _ _) as [tpls' |] eqn:Hacq;
-      inversion Happly; subst stmc tplsc; last first.
+    destruct (validate _ _ _) eqn:Hvd; inversion Happly; subst stmc tplsc; last first.
     { (* Case: Fail to acquire lock. *) by eapply Hwf. }
     (* Case: Successfully acquire lock. *)
-    rewrite /try_acquire in Hacq.
-    destruct (validate _ _ _) eqn:Hvd; last done.
-    inversion Hacq. subst tpls'.
     destruct (wrs !! keyx) as [v |] eqn:Hwrs; last first.
     { rewrite acquire_unmodified in Htpl; last done.
       by eapply Hwf.
@@ -987,8 +977,7 @@ Proof.
       inversion Happly. subst stmc tplsc.
       by eapply Hpwrs.
     }
-    destruct (try_acquire _ _ _) as [tpls' |] eqn:Hacq;
-      inversion Happly; subst stmc tplsc; last first.
+    destruct (validate _ _ _); inversion Happly; subst stmc tplsc; last first.
     { (* Case: Fail to acquire lock. *)
       destruct (decide (ts = tid)) as [-> | Hne].
       { by rewrite lookup_insert in Hstm. }
@@ -996,9 +985,6 @@ Proof.
       by eapply Hpwrs.
     }
     (* Case: Successfully acquire lock. *)
-    rewrite /try_acquire in Hacq.
-    destruct (validate _ _ _) eqn:Hvd; last done.
-    inversion Hacq. subst tpls'.
     destruct (decide (ts = tid)) as [-> | Hne]; last first.
     { rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hpwrs.
@@ -1096,8 +1082,7 @@ Proof.
     { inversion Happly. subst stmc tplsc.
       by eapply Hnz.
     }
-    destruct (try_acquire _ _ _) as [tpls' |] eqn:Hacq;
-      inversion Happly; subst stmc tplsc; last first.
+    destruct (validate _ _ _); inversion Happly; subst stmc tplsc; last first.
     { destruct (decide (ts = tid)) as [-> | Hne].
       { by rewrite lookup_insert in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
@@ -1170,8 +1155,7 @@ Proof.
       inversion Happly. subst stmc tplsc.
       by eapply Hcst.
     }
-    destruct (try_acquire _ _ _) as [tpls' |] eqn:Hacq;
-      inversion Happly; subst stmc tplsc; last first.
+    destruct (validate _ _ _) eqn:Hvd; inversion Happly; subst stmc tplsc; last first.
     { (* Case: Fail to acquire lock. *)
       destruct (decide (ts = tid)) as [-> | Hne].
       { by rewrite lookup_insert in Hstm. }
@@ -1179,9 +1163,6 @@ Proof.
       by eapply Hcst.
     }
     (* Case: Successfully acquire lock. *)
-    rewrite /try_acquire in Hacq.
-    destruct (validate _ _ _) eqn:Hvd; last done.
-    inversion Hacq. subst tpls'.
     destruct (decide (ts = tid)) as [-> | Hne]; last first.
     { (* Case: Not modify [key]. *)
       rewrite lookup_insert_ne in Hstm; last done.
@@ -1275,8 +1256,7 @@ Proof.
       inversion Happly. subst stmc tplsc.
       by eapply Hdisj.
     }
-    destruct (try_acquire _ _ _) as [tpls' |] eqn:Hacq;
-      inversion Happly; subst stmc tplsc; last first.
+    destruct (validate _ _ _) eqn:Hvd; inversion Happly; subst stmc tplsc; last first.
     { (* Case: Fail to acquire lock. *)
       destruct (decide (tid = ts1)) as [-> | Hne1].
       { by rewrite lookup_insert in Hstm1. }
@@ -1289,9 +1269,6 @@ Proof.
       by eapply Hdisj.
     }
     (* Case: Successfully acquire lock. *)
-    rewrite /try_acquire in Hacq.
-    destruct (validate _ _ _) eqn:Hvd; last done.
-    inversion Hacq. subst tpls'.
     destruct (decide (tid = ts1)) as [-> | Hne1].
     { rewrite lookup_insert in Hstm1.
       inversion Hstm1. subst wrs.
@@ -1716,11 +1693,24 @@ Section ghost.
   Definition db_ptstos γ (m : dbmap) : iProp Σ :=
     [∗ map] k ↦ v ∈ m, db_ptsto γ k v.
 
-  Definition hist_repl_half γ (k : dbkey) (l : dbhist) : iProp Σ.
+  Definition hist_repl_half γ (k : dbkey) (h : dbhist) : iProp Σ.
   Admitted.
 
-  Definition hist_repl_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ.
+  Definition hist_repl_lb γ (k : dbkey) (h : dbhist) : iProp Σ.
   Admitted.
+
+  #[global]
+  Instance is_hist_repl_lb_persistent α key hist :
+    Persistent (hist_repl_lb α key hist).
+  Admitted.
+
+  Lemma hist_repl_witness {γ k h} :
+    hist_repl_half γ k h -∗
+    hist_repl_lb γ k h.
+  Admitted.
+
+  Definition hist_repl_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
+    ∃ hist, ⌜hist !! ts = Some v⌝ ∗ hist_repl_lb γ k hist.
 
   Definition hist_lnrz_half γ (k : dbkey) (l : dbhist) : iProp Σ.
   Admitted.
@@ -1734,31 +1724,31 @@ Section ghost.
   Definition tuple_repl_half γ (k : dbkey) (t : dbtpl) : iProp Σ :=
     hist_repl_half γ k t.1 ∗ ts_repl_half γ k t.2.
 
-  Lemma tuple_repl_agree {γ k t0 t1} :
-    tuple_repl_half γ k t0 -∗
+  Lemma tuple_repl_agree {γ k t1 t2} :
     tuple_repl_half γ k t1 -∗
-    ⌜t1 = t0⌝.
+    tuple_repl_half γ k t2 -∗
+    ⌜t2 = t1⌝.
   Admitted.
 
-  Lemma tuple_repl_big_agree {γ tpls0 tpls1} :
-    dom tpls0 = dom tpls1 ->
-    ([∗ map] k ↦ tpl ∈ tpls0, tuple_repl_half γ k tpl) -∗
-    ([∗ map] k ↦ tpl ∈ tpls1, tuple_repl_half γ k tpl) -∗
-    ⌜tpls1 = tpls0⌝.
+  Lemma tuple_repl_big_agree {γ tpls1 tpls2} :
+    dom tpls1 = dom tpls2 ->
+    ([∗ map] k ↦ t ∈ tpls1, tuple_repl_half γ k t) -∗
+    ([∗ map] k ↦ t ∈ tpls2, tuple_repl_half γ k t) -∗
+    ⌜tpls2 = tpls1⌝.
   Admitted.
   
-  Lemma tuple_repl_update {γ k t0 t1} t' :
-    tuple_repl_half γ k t0 -∗
-    tuple_repl_half γ k t1 ==∗
+  Lemma tuple_repl_update {γ k t1 t2} t' :
+    tuple_repl_half γ k t1 -∗
+    tuple_repl_half γ k t2 ==∗
     tuple_repl_half γ k t' ∗ tuple_repl_half γ k t'.
   Admitted.
 
   Lemma tuple_repl_big_update {γ tpls} tpls' :
     dom tpls = dom tpls' ->
-    ([∗ map] k ↦ tpl ∈ tpls, tuple_repl_half γ k tpl) -∗
-    ([∗ map] k ↦ tpl ∈ tpls, tuple_repl_half γ k tpl) ==∗
-    ([∗ map] k ↦ tpl ∈ tpls', tuple_repl_half γ k tpl) ∗
-    ([∗ map] k ↦ tpl ∈ tpls', tuple_repl_half γ k tpl).
+    ([∗ map] k ↦ t ∈ tpls, tuple_repl_half γ k t) -∗
+    ([∗ map] k ↦ t ∈ tpls, tuple_repl_half γ k t) ==∗
+    ([∗ map] k ↦ t ∈ tpls', tuple_repl_half γ k t) ∗
+    ([∗ map] k ↦ t ∈ tpls', tuple_repl_half γ k t).
   Admitted.
 
   (* Transaction result map RA. *)
@@ -2331,6 +2321,12 @@ Section inv.
     ⌜apply_cmds logp = State stm tpls⌝ -∗
     ([∗ map] ts ↦ st ∈ stm, txn_token γ gid ts st)%I.
 
+  Definition hist_repl_witnesses γ gid log : iProp Σ :=
+    ∀ logp stm tpls,
+    ⌜prefix logp log⌝ -∗
+    ⌜apply_cmds logp = State stm tpls⌝ -∗
+    ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, hist_repl_lb γ key tpl.1)%I.
+
   Definition safe_read gid ts key :=
     valid_ts ts ∧ valid_key key ∧ key_to_group key = gid.
 
@@ -2377,6 +2373,7 @@ Section inv.
       "Hpm"     ∷ txnprep_auth γ gid pm ∗
       "Hrepls"  ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, tuple_repl_half γ key tpl) ∗
       "#Htks"   ∷ txn_tokens γ gid log ∗
+      "#Hhists" ∷ hist_repl_witnesses γ gid log ∗
       "#Hvp"    ∷ ([∗ map] ts ↦ st ∈ stm, valid_prepared γ gid ts st) ∗
       "#Hvc"    ∷ ([∗ set] c ∈ cpool, safe_submit γ gid c) ∗
       "%Hrsm"   ∷ ⌜apply_cmds log = State stm tpls⌝ ∗
@@ -2487,6 +2484,22 @@ Section group_inv.
   Admitted.
   (* TODO: might not need these anymore. *)
 
+  Lemma hist_repl_witnesses_inv_learn {γ gid log stm tpls} c :
+    apply_cmds (log ++ [c]) = State stm tpls ->
+    ([∗ map] k ↦ t ∈ tpls_group gid tpls, tuple_repl_half γ k t) -∗
+    hist_repl_witnesses γ gid log -∗
+    hist_repl_witnesses γ gid (log ++ [c]).
+  Proof.
+    iIntros (Hrsm) "Hrepls Hwns".
+    iIntros (logp stmp tplsp Hprefix Hrsmp).
+    destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
+    { by iApply "Hwns". }
+    rewrite Hrsmp in Hrsm. inversion Hrsm. subst tplsp.
+    iApply (big_sepM_mono with "Hrepls").
+    iIntros (k x _) "[Hhist Hts]".
+    iApply (hist_repl_witness with "Hhist").
+  Qed.
+
   Lemma txn_tokens_inv_learn_prepare_noop {γ gid log stm tpls ts} pwrs :
     apply_cmds log = State stm tpls ->
     is_Some (stm !! ts) ->
@@ -2516,7 +2529,7 @@ Section group_inv.
     iIntros (logp stmp tplsp Hprefix Hrsmp).
     destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
     { by iApply "Htks". }
-    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hstm /try_acquire Hvd in Hrsmp.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hstm Hvd in Hrsmp.
     inversion Hrsmp. subst stmp.
     iApply (big_sepM_insert_2 with "[Hprep] [Htks]"); first done.
     by iApply "Htks".
@@ -2535,7 +2548,7 @@ Section group_inv.
     iIntros (logp stmp tplsp Hprefix Hrsmp).
     destruct (prefix_snoc _ _ _ Hprefix) as [Hlogp | ->].
     { by iApply "Htks". }
-    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hstm /try_acquire Hvd in Hrsmp.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hstm Hvd in Hrsmp.
     inversion Hrsmp. subst stmp.
     iApply (big_sepM_insert_2 with "[Habt] [Htks]"); first done.
     by iApply "Htks".
@@ -2846,18 +2859,19 @@ Section group_inv.
     iFrame "Hcpool".
     destruct (stm !! ts) eqn:Hdup.
     { (* Case: Txn [ts] has already prepared, aborted, or committed; no-op. *)
-      iDestruct (txn_tokens_inv_learn_prepare_noop pwrs with "Htks") as "Htks'"; [done | done |].
+      iDestruct (txn_tokens_inv_learn_prepare_noop pwrs with "Htks") as "#Htks'"; [done | done |].
+      iDestruct (hist_repl_witnesses_inv_learn (CmdPrep ts pwrs) with "Hrepls Hhists") as "#Hhists'".
+      { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup. }
       iFrame "∗ # %".
       by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
     }
     assert (Hpm : pm !! ts = None).
     { rewrite -not_elem_of_dom. rewrite -not_elem_of_dom in Hdup. set_solver. }
     (* Case: Txn [ts] has not prepared, aborted, or committed. *)
-    destruct (try_acquire ts pwrs tpls) eqn:Hacq; last first.
+    destruct (validate ts pwrs tpls) eqn:Hvd; last first.
     { (* Case: Validation fails; abort the transaction. *)
       rewrite /group_inv_no_log_no_cpool.
-      rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hacq.
-      iFrame "Hrepls Hkeys".
+      rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hvd.
       (* Mark [ts] unprepared in the prepare map. *)
       iMod (txnprep_insert ts false with "Hpm") as "Hpm"; first done.
       iDestruct (txnprep_witness with "Hpm") as "#Hunp".
@@ -2869,8 +2883,10 @@ Section group_inv.
       iMod (txn_inv_abort with "Hwrs Hunp Hpm Htxn") as "(Hpm & Htxn & #Habt)".
       { destruct Hpwrs as (_ & Hne & Hpwrs). by eapply wrs_group_elem_of_ptgroups. }
       (* Create txn tokens for the new state. *)
-      rewrite /try_acquire in Hacq. destruct (validate _ _ _) eqn:Hvd; first done.
-      iDestruct (txn_tokens_inv_learn_prepare_aborted with "Habt Htks") as "Htks'"; [done | done |].
+      iDestruct (txn_tokens_inv_learn_prepare_aborted with "Habt Htks") as "#Htks'"; [done | done |].
+      (* Create witnesses for the replicated history. *)
+      iDestruct (hist_repl_witnesses_inv_learn (CmdPrep ts pwrs) with "Hrepls Hhists") as "#Hhists'".
+      { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hvd. }
       (* Re-establish [valid_prepared]. *)
       iDestruct (big_sepM_insert_2 _ _ ts StAborted with "[] Hvp") as "Hvp'"; first done.
       iFrame "∗ # %".
@@ -2878,11 +2894,7 @@ Section group_inv.
     }
     (* Case: Validation succeeds; lock the tuples and mark the transaction prepared. *)
     rewrite /group_inv_no_log_no_cpool.
-    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hacq.
-    rewrite /try_acquire in Hacq.
-    destruct (validate ts pwrs tpls) eqn:Hvd; last done.
-    inversion_clear Hacq.
-    set tpls' := acquire _ _ _.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hvd.
     (* Extract keys invariant in this group. *)
     iDestruct (keys_inv_group gid with "Hkeys") as "[Hkeys Hkeyso]".
     (* Expose the replicated history and prepared timestamp from keys invariant. *)
@@ -2893,8 +2905,10 @@ Section group_inv.
       by rewrite Hdom tpls_group_keys_group_dom Hdom'.
     }
     (* Update the tuples (setting the prepared timestamp to [ts]). *)
+    set tpls' := acquire _ _ _.
     iMod (tuple_repl_big_update (tpls_group gid tpls') with "Hrepls Htpls") as "[Hrepls Htpls]".
     { apply tpls_group_dom. by rewrite acquire_dom. }
+    subst tpls'.
     (* Prove txn [ts] has not committed on [tpls]. *)
     iDestruct (keys_inv_not_committed with "Hkeys Hpm Htxn") as "(Hkeys & Hpm & Htxn)".
     { intros k Hk. by eapply key_to_group_tpls_group. }
@@ -2918,7 +2932,10 @@ Section group_inv.
     iDestruct (txnprep_witness with "Hpm") as "#Hprep".
     { apply lookup_insert. }
     (* Create txn tokens for the new state. *)
-    iDestruct (txn_tokens_inv_learn_prepare_prepared with "Hprep Htks") as "Htks'"; [done | done |].
+    iDestruct (txn_tokens_inv_learn_prepare_prepared with "Hprep Htks") as "#Htks'"; [done | done |].
+    (* Create witnesses for the replicated history. *)
+    iDestruct (hist_repl_witnesses_inv_learn (CmdPrep ts pwrs) with "Hrepls Hhists") as "#Hhists'".
+    { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup Hvd. }
     (* Re-establish [valid_prepared]. *)
     iDestruct (big_sepM_insert_2 _ _ ts (StPrepared pwrs) with "[] Hvp") as "Hvp'".
     { by iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc. }
@@ -3050,8 +3067,11 @@ Section group_inv.
       rewrite /group_inv_no_log_no_cpool.
       rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
       (* Create txn tokens for the new state. *)
-      iDestruct (txn_tokens_inv_learn_commit with "[Hcmt] Htks") as "Htks'".
+      iDestruct (txn_tokens_inv_learn_commit with "[Hcmt] Htks") as "#Htks'".
       { by eauto. }
+      (* Create witnesses for the replicated history. *)
+      iDestruct (hist_repl_witnesses_inv_learn (CmdCmt ts) with "Hrepls Hhists") as "#Hhists'".
+      { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup. }
       by iFrame "∗ #".
     }
     (* Case: [StPrepared wrs] *)
@@ -3135,6 +3155,9 @@ Section group_inv.
     (* Create txn tokens for the new state. *)
     iDestruct (txn_tokens_inv_learn_commit with "[Hcmt] Htks") as "Htks'".
     { by eauto. }
+    (* Create witnesses for the replicated history. *)
+    iDestruct (hist_repl_witnesses_inv_learn (CmdCmt ts) with "Hrepls Hhists") as "#Hhists'".
+    { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup. }
     (* Re-establish [valid_prepared]. *)
     iDestruct (big_sepM_insert_2 _ _ ts (StCommitted) with "[] Hvp") as "Hvp'".
     { by iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc. }
@@ -3237,6 +3260,9 @@ Section group_inv.
       rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup.
       (* Create txn tokens for the new state. *)
       iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
+      (* Create witnesses for the replicated history. *)
+      iDestruct (hist_repl_witnesses_inv_learn (CmdAbt ts) with "Hrepls Hhists") as "#Hhists'".
+      { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup. }
       (* Re-establish [valid_prepared]. *)
       iDestruct (big_sepM_insert_2 _ _ ts StAborted with "[] Hvp") as "Hvp'".
       { done. }
@@ -3259,6 +3285,9 @@ Section group_inv.
     { (* Case: Aborted; no-op. *)
       (* Create txn tokens for the new state. *)
       iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
+      (* Create witnesses for the replicated history. *)
+      iDestruct (hist_repl_witnesses_inv_learn (CmdAbt ts) with "Hrepls Hhists") as "#Hhists'".
+      { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup. }
       by iFrame "∗ # %".
     }
     (* Case: Prepared; release the locks on tuples. *)
@@ -3328,6 +3357,9 @@ Section group_inv.
     rewrite release_tpls_group_commute.
     (* Create txn tokens for the new state. *)
     iDestruct (txn_tokens_inv_learn_abort with "Habt Htks") as "Htks'".
+    (* Create witnesses for the replicated history. *)
+    iDestruct (hist_repl_witnesses_inv_learn (CmdAbt ts) with "Hrepls Hhists") as "#Hhists'".
+    { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hdup. }
     (* Re-establish [valid_prepared]. *)
     iDestruct (big_sepM_insert_2 _ _ ts StAborted with "[] Hvp") as "Hvp'".
     { by iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc. }
@@ -3378,8 +3410,6 @@ Section group_inv.
     }
     (* Case: Valid read. *)
     set tpl' := read _ _ _.
-    (* Create txn tokens for the new state. *)
-    iDestruct (txn_tokens_inv_learn_read ts key with "Htks") as "Htks'".
     (* Take the required key invariant. *)
     iDestruct (big_sepS_elem_of_acc with "Hkeys") as "[Hkey HkeysC]"; first apply Hkey.
     (* Take the half-ownership of the tuple out from the key invariant. *)
@@ -3400,6 +3430,11 @@ Section group_inv.
     (* Put back tuple ownership back to group invariant. *)
     iDestruct (big_sepM_insert_2 with "Hrepl Hrepls") as "Hrepls".
     rewrite insert_delete_insert insert_tpls_group_commute; last done.
+    (* Create txn tokens for the new state. *)
+    iDestruct (txn_tokens_inv_learn_read ts key with "Htks") as "Htks'".
+    (* Create witnesses for the replicated history. *)
+    iDestruct (hist_repl_witnesses_inv_learn (CmdRead ts key) with "Hrepls Hhists") as "#Hhists'".
+    { by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm /= Hht. }
     by iFrame "∗ # %".
   Qed.
 

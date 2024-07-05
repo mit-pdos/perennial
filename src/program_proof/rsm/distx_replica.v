@@ -1104,7 +1104,6 @@ Section program.
         by iFrame "∗ #".
       }
       { (* Case: [@AKillVersion]. *)
-        (* TODO: should have length check. *)
         wp_apply (wp_Tuple__KillVersion with "HtplR Htpl"); first done.
         iIntros "Htpl".
         wp_pures.
