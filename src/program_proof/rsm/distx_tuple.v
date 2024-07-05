@@ -9,9 +9,26 @@ Section resource.
   half in the tuple invariant. GC-related methods does not require the one in
   the replica invariant, essentially forcing GC to not change the abstract
   view. *)
-  
-  Definition tuple_phys_half α (key : string) (hist : dbhist) (tsprep : nat) : iProp Σ.
+
+  Definition hist_phys_half α (key : string) (hist : dbhist) : iProp Σ.
   Admitted.
+
+  Definition hist_phys_lb α (key : string) (hist : dbhist) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance is_hist_phys_lb_persistent α key hist :
+    Persistent (hist_phys_lb α key hist).
+  Admitted.
+
+  Definition hist_phys_at α (key : string) (ts : nat) (v : dbval) : iProp Σ :=
+    ∃ hist, ⌜hist !! ts = Some v⌝ ∗ hist_phys_lb α key hist.
+
+  Definition ts_phys_half α (key : string) (tsprep : nat) : iProp Σ.
+  Admitted.
+
+  Definition tuple_phys_half α (key : string) (hist : dbhist) (tsprep : nat) : iProp Σ :=
+    hist_phys_half α key hist ∗ ts_phys_half α key tsprep.
 
 End resource.
 
@@ -25,7 +42,6 @@ Section program.
   Instance is_tuple_persistent tuple key α :
     Persistent (is_tuple tuple key α).
   Admitted.
-
 
   (* NB: If we were simply to use Paxos rather than PCR, a better way would be
   requiring the [tid = tsprep], and moving the the length precondition into the
@@ -99,13 +115,12 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Tuple__ReadVersion (tuple : loc) (tid : u64) key hist tsprep α :
+  Theorem wp_Tuple__ReadVersion (tuple : loc) (tid : u64) key α :
     is_tuple tuple key α -∗
-    {{{ tuple_phys_half α key hist tsprep }}}
+    {{{ True }}}
       Tuple__ReadVersion #tuple #tid
     {{{ (v : dbval) (ok : bool), RET (dbval_to_val v, #ok);
-        tuple_phys_half α key hist tsprep ∗
-        ⌜if ok then hist !! pred (uint.nat tid) = Some v else True⌝
+        if ok then hist_phys_at α key (pred (uint.nat tid)) v else True
     }}}.
   Proof.
     (*@ func (tuple *Tuple) ReadVersion(tid uint64) (Value, bool) {             @*)
