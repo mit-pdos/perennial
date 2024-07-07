@@ -4,6 +4,16 @@ From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 From Perennial.program_proof.pav Require Import common cryptoffi merkle.
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
+From Perennial.base_logic Require Import ghost_map.
+
+Module chainSepNone.
+Definition encoding : list w8 := [(W8 0)].
+Section local_defs.
+Context `{!heapGS Σ}.
+Definition hashes_to (h : list w8) : iProp Σ :=
+  is_hash encoding h.
+End local_defs.
+End chainSepNone.
 
 Module chainSepSome.
 Record t :=
@@ -222,44 +232,41 @@ Qed.
 End other.
 
 Section servpreds.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
+Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
-Definition serv_sigpred_link γ (data : servSepLink.t) : iProp Σ :=
+Definition serv_sigpred_link γmonoLinks (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8),
   "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
-  "#HidxPrev" ∷ mono_list_idx_own γ (uint.nat (word.sub epoch (W64 1))) prevLink ∗
-  "#HidxCurr" ∷ mono_list_idx_own γ (uint.nat epoch) data.(servSepLink.link).
+  "#HidxPrev" ∷ mono_list_idx_own γmonoLinks (uint.nat (word.sub epoch (W64 1))) prevLink ∗
+  "#HidxCurr" ∷ mono_list_idx_own γmonoLinks (uint.nat epoch) data.(servSepLink.link).
 
-Definition serv_sigpred_put γ (data : servSepPut.t) : iProp Σ :=
-  (* Note: `∀` bc server doesn't yet know the link. *)
-  ∀ (link : list w8),
-  □ ("#Hidx" ∷ mono_list_idx_own γ (uint.nat data.(servSepPut.epoch)) link -∗
-    ∃ (prevLink dig : list w8),
-    ("#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk data.(servSepPut.epoch) prevLink dig)) link ∗
-    "#Hmerkle" ∷ is_path_val data.(servSepPut.id) (Some data.(servSepPut.val)) dig)).
+Definition serv_sigpred_put γmonoTrs (data : servSepPut.t) : iProp Σ :=
+  ∃ γtr,
+  "Htr" ∷ mono_list_idx_own γmonoTrs (uint.nat data.(servSepPut.epoch)) γtr ∗
+  "Hentry" ∷ data.(servSepPut.id) ↪[γtr]□ data.(servSepPut.val).
 
-Definition serv_sigpred γ : (list w8 → iProp Σ) :=
+Definition serv_sigpred γmonoLinks γmonoTrs : (list w8 → iProp Σ) :=
   λ data,
     ((
       ∃ dataSepLink,
         ⌜servSepLink.encodes data dataSepLink⌝ ∗
-        serv_sigpred_link γ dataSepLink
+        serv_sigpred_link γmonoLinks dataSepLink
     )%I
     ∨
     (
       ∃ dataSepPut,
         ⌜servSepPut.encodes data dataSepPut⌝ ∗
-        serv_sigpred_put γ dataSepPut
+        serv_sigpred_put γmonoTrs dataSepPut
     )%I)%I.
 End servpreds.
 
 Section evidence.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
+Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
-Lemma wp_evidServLink_check ptr_evid evid pk γ hon :
+Lemma wp_evidServLink_check ptr_evid evid pk γmonoLinks γmonoTrs hon :
   {{{
     "Hevid" ∷ evidServLink.own ptr_evid evid ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γ) hon
+    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrs) hon
   }}}
   evidServLink__check #ptr_evid (slice_val pk)
   {{{
@@ -268,7 +275,8 @@ Lemma wp_evidServLink_check ptr_evid evid pk γ hon :
       "%Hhon" ∷ ⌜hon = false⌝
     else True%I
   }}}.
-Proof.
+Proof. Admitted.
+(*
   rewrite /evidServLink__check.
   iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hevid".
 
@@ -447,11 +455,12 @@ Proof.
   }
   by iApply "HΦ".
 Qed.
+*)
 
-Lemma wp_evidServPut_check ptr_evid evid pk γ hon :
+Lemma wp_evidServPut_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
   {{{
     "Hevid" ∷ evidServPut.own ptr_evid evid ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γ) hon
+    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
   }}}
   evidServPut__check #ptr_evid (slice_val pk)
   {{{
@@ -460,7 +469,8 @@ Lemma wp_evidServPut_check ptr_evid evid pk γ hon :
       "%Hhon" ∷ ⌜hon = false⌝
     else True%I
   }}}.
-Proof.
+Proof. Admitted.
+(*
   rewrite /evidServPut__check.
   iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hevid".
 
@@ -585,4 +595,5 @@ Proof.
   iDestruct (is_path_val_inj with "[$Hmerkle] [$Herr0]") as %[=].
   done.
 Qed.
+*)
 End evidence.

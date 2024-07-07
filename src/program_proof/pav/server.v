@@ -7,35 +7,69 @@ From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.
 From Perennial.base_logic Require Import ghost_map.
 
+Module hashChain.
+Record t :=
+  mk {
+    links: list (list w8);
+  }.
+
+Section local_defs.
+Context `{!heapGS Σ}.
+Definition own ptr obj : iProp Σ :=
+  ∃ h,
+  chainSepNone.hashes_to h ∗
+  own_Slice2D ptr (DfracOwn 1) (h :: obj.(links)).
+End local_defs.
+End hashChain.
+
 Module server.
 Record t :=
   mk {
     mu: loc;
-    trees: list loc;
-    nextTr: loc;
-    chain: list (list w8);
+    trees: list (gmap (list w8) (list w8));
+    updates: gmap (list w8) (list w8);
+    chain: hashChain.t;
     linkSigs: list (list w8);
-    changed: gmap string bool;
-    γ: gname;
     hon: bool;
+    γmonoLinks: gname;
+    γmonoTrs: gname;
   }.
 
 Section local_defs.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
+Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
+
+Definition my_inv γmonoLinks γmonoTrs : iProp Σ :=
+  ∃ links γtrs trs nextTr prevLinks digs,
+  "#Hbinds" ∷ ([∗ list] epoch ↦ xy; link ∈ (zip prevLinks digs); links,
+    is_hash (chainSepSome.encodesF (chainSepSome.mk epoch xy.1 xy.2)) link) ∗
+  "Hlinks" ∷ mono_list_auth_own γmonoLinks (1/2) links ∗
+  "Hmaps" ∷ ([∗ list] γtr; tr ∈ γtrs; (trs ++ [nextTr]), ghost_map_auth γtr (1/2) tr) ∗
+  "HmonoTrs" ∷ mono_list_auth_own γmonoTrs (1/2) γtrs ∗
+  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trs; digs, isTreeDig tr dig).
 
 Definition own ptr obj : iProp Σ :=
-  ∃ sk sl_trees sl_chain sl_linkSigs ptr_changed,
+  ∃ sk sl_trees sl_treePtrs ptr_updates map_sl_updates sl_chain sl_linkSigs γtrs lastγTr,
   "Hsk" ∷ ptr ↦[server :: "sk"] (slice_val sk) ∗
-  "Hown_sk" ∷ own_sk sk (serv_sigpred obj.(γ)) obj.(hon) ∗
-  "Htrees" ∷ ptr ↦[server :: "trees"] (slice_val sl_trees) ∗
-  "Hsl_trees" ∷ own_slice_small sl_trees ptrT (DfracOwn 1) obj.(trees) ∗
-  "HnextTr" ∷ ptr ↦[server :: "nextTr"] #obj.(nextTr) ∗
+  "Hown_sk" ∷ own_sk sk (serv_sigpred obj.(γmonoLinks) obj.(γmonoTrs)) obj.(hon) ∗
   "Hchain" ∷ ptr ↦[server :: "chain"] (slice_val sl_chain) ∗
-  "Hown_chain" ∷ own_Slice2D sl_chain (DfracOwn 1) obj.(chain) ∗
+  "Hown_chain" ∷ hashChain.own sl_chain obj.(chain) ∗
+  "HmonoLinks" ∷ mono_list_auth_own obj.(γmonoLinks) (1/2) obj.(chain).(hashChain.links) ∗
   "HlinkSigs" ∷ ptr ↦[server :: "linkSigs"] (slice_val sl_linkSigs) ∗
   "Hown_linkSigs" ∷ own_Slice2D sl_linkSigs (DfracOwn 1) obj.(linkSigs) ∗
-  "Hown_changed" ∷ own_map ptr_changed (DfracOwn 1) obj.(changed) ∗
-  "Hchanged" ∷ ptr ↦[server :: "changed"] #ptr_changed.
+  (* Exists map from string IDs to slices s.t. the slices own the vals. *)
+  "Hmap_sl_updates" ∷ ([∗ map] sl_bytes; bytes ∈ map_sl_updates; (kmap bytes_to_string obj.(updates)),
+    own_slice_small sl_bytes byteT (DfracOwn 1) bytes) ∗
+  "Hown_updates" ∷ own_map ptr_updates (DfracOwn 1) map_sl_updates ∗
+  "Hupdates" ∷ ptr ↦[server :: "updates"] #ptr_updates ∗
+
+  (* Tree-specific stuff. *)
+  "Htrees" ∷ ptr ↦[server :: "trees"] (slice_val sl_trees) ∗
+  "Hsl_trees" ∷ own_slice_small sl_trees ptrT (DfracOwn 1) sl_treePtrs ∗
+  "Hown_trees" ∷ ([∗ list] ptr_tr; tr ∈ sl_treePtrs; obj.(trees),
+    own_Tree ptr_tr tr) ∗
+  "HmonoTrs" ∷ mono_list_auth_own obj.(γmonoTrs) (1/2) γtrs ∗
+  "HlastγTr" ∷ ⌜Some lastγTr = last γtrs⌝ ∗
+  "Hview_nextTr" ∷ ghost_map_auth lastγTr (1/2) obj.(updates).
 
 Definition valid ptr obj : iProp Σ :=
   "#Hmu" ∷ ptr ↦[server :: "mu"]□ #obj.(mu) ∗
@@ -75,7 +109,7 @@ End local_defs.
 End servPutReply.
 
 Section proofs.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ}.
+Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
 Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
   {{{
@@ -88,7 +122,8 @@ Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
     ptr_reply reply, RET #ptr_reply;
     "Hreply" ∷ servPutReply.own ptr_reply reply
   }}}.
-Proof.
+Proof. Admitted.
+(*
   rewrite /server__put.
   iIntros (Φ) "H HΦ"; iNamed "H".
   rewrite /server.valid; iNamed "Hvalid_serv".
@@ -125,6 +160,7 @@ Proof.
   }
   wp_loadField.
 Admitted.
+*)
 
 Lemma wp_server_updateEpoch ptr_serv obj_serv :
   {{{
