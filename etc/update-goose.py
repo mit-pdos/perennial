@@ -312,7 +312,7 @@ def main():
             "./ktmerkle",
         ]
 
-        run_goose(pav_dir, pkg)
+        run_goose(pav_dir, *pkgs)
 
     if mvcc_dir is not None:
         run_goose(
