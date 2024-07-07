@@ -221,8 +221,9 @@ Definition hashChain__put: val :=
     "c" <-[hashChain] (SliceAppend (slice.T byteT) "chain" "link");;
     #().
 
-Definition hashChain__getCommit: val :=
-  rec: "hashChain__getCommit" "c" "length" :=
+(* getLink fetches a link (commitment) over the first `length` data entries. *)
+Definition hashChain__getLink: val :=
+  rec: "hashChain__getLink" "c" "length" :=
     SliceGet (slice.T byteT) "c" "length".
 
 Definition timeEntry := struct.decl [
@@ -282,25 +283,22 @@ Definition server := struct.decl [
   "sk" :: cryptoffi.PrivateKey;
   "mu" :: ptrT;
   "trees" :: slice.T ptrT;
-  "nextTr" :: ptrT;
+  "updates" :: mapT (slice.T byteT);
   "chain" :: hashChain;
-  "linkSigs" :: slice.T (slice.T byteT);
-  "changed" :: mapT boolT
+  "linkSigs" :: slice.T (slice.T byteT)
 ].
 
 Definition newServer: val :=
   rec: "newServer" <> :=
     let: ("pk", "sk") := cryptoffi.GenerateKey #() in
     let: "mu" := lock.new #() in
-    let: "nextTr" := struct.new merkle.Tree [
-    ] in
-    let: "changed" := NewMap stringT boolT #() in
+    let: "updates" := NewMap stringT (slice.T byteT) #() in
     let: "emptyTr" := struct.new merkle.Tree [
     ] in
     let: "trees" := SliceSingleton "emptyTr" in
     let: "chain" := newHashChain #() in
     hashChain__put "chain" (merkle.Tree__Digest "emptyTr");;
-    let: "link" := hashChain__getCommit "chain" #1 in
+    let: "link" := hashChain__getLink "chain" #1 in
     let: "enc" := servSepLink__encode (struct.new servSepLink [
       "link" ::= "link"
     ]) in
@@ -311,23 +309,32 @@ Definition newServer: val :=
        "sk" ::= "sk";
        "mu" ::= "mu";
        "trees" ::= "trees";
-       "nextTr" ::= "nextTr";
        "chain" ::= "chain";
        "linkSigs" ::= ![slice.T (slice.T byteT)] "sigs";
-       "changed" ::= "changed"
+       "updates" ::= "updates"
      ], "pk").
+
+(* applyUpdates returns a new merkle tree with the updates applied to the current tree. *)
+Definition applyUpdates: val :=
+  rec: "applyUpdates" "currTr" "updates" :=
+    let: "nextTr" := merkle.Tree__DeepCopy "currTr" in
+    MapIter "updates" (λ: "id" "val",
+      let: "idB" := StringToBytes "id" in
+      let: ((<>, <>), "err") := merkle.Tree__Put "nextTr" "idB" "val" in
+      control.impl.Assume (~ "err"));;
+    "nextTr".
 
 Definition server__updateEpoch: val :=
   rec: "server__updateEpoch" "s" :=
     lock.acquire (struct.loadF server "mu" "s");;
-    let: "commitTr" := struct.loadF server "nextTr" "s" in
-    struct.storeF server "nextTr" "s" (merkle.Tree__DeepCopy "commitTr");;
-    struct.storeF server "trees" "s" (SliceAppend ptrT (struct.loadF server "trees" "s") "commitTr");;
+    let: "currTr" := SliceGet ptrT (struct.loadF server "trees" "s") ((slice.len (struct.loadF server "trees" "s")) - #1) in
+    let: "nextTr" := applyUpdates "currTr" (struct.loadF server "updates" "s") in
+    let: "dig" := merkle.Tree__Digest "nextTr" in
+    struct.storeF server "trees" "s" (SliceAppend ptrT (struct.loadF server "trees" "s") "nextTr");;
     let: "numTrees" := slice.len (struct.loadF server "trees" "s") in
-    struct.storeF server "changed" "s" (NewMap stringT boolT #());;
-    let: "dig" := merkle.Tree__Digest "commitTr" in
+    struct.storeF server "updates" "s" (NewMap stringT (slice.T byteT) #());;
     hashChain__put (struct.loadF server "chain" "s") "dig";;
-    let: "link" := hashChain__getCommit (struct.loadF server "chain" "s") "numTrees" in
+    let: "link" := hashChain__getLink (struct.loadF server "chain" "s") "numTrees" in
     let: "enc" := servSepLink__encode (struct.new servSepLink [
       "link" ::= "link"
     ]) in
@@ -352,20 +359,19 @@ Definition server__put: val :=
     let: "errReply" := struct.new servPutReply [
     ] in
     struct.storeF servPutReply "error" "errReply" errSome;;
-    let: "idS" := StringFromBytes "id" in
-    let: (<>, "ok") := MapGet (struct.loadF server "changed" "s") "idS" in
-    (if: "ok"
+    (if: (slice.len "id") ≠ cryptoffi.HashLen
     then
       lock.release (struct.loadF server "mu" "s");;
       "errReply"
     else
-      let: ((<>, <>), "err") := merkle.Tree__Put (struct.loadF server "nextTr" "s") "id" "val" in
-      (if: "err"
+      let: "idS" := StringFromBytes "id" in
+      let: (<>, "ok") := MapGet (struct.loadF server "updates" "s") "idS" in
+      (if: "ok"
       then
         lock.release (struct.loadF server "mu" "s");;
         "errReply"
       else
-        MapInsert (struct.loadF server "changed" "s") "idS" #true;;
+        MapInsert (struct.loadF server "updates" "s") "idS" "val";;
         let: "currEpoch" := (slice.len (struct.loadF server "trees" "s")) - #1 in
         let: "putPre" := servSepPut__encode (struct.new servSepPut [
           "epoch" ::= "currEpoch" + #1;
@@ -373,7 +379,7 @@ Definition server__put: val :=
           "val" ::= "val"
         ]) in
         let: "putSig" := cryptoffi.PrivateKey__Sign (struct.loadF server "sk" "s") "putPre" in
-        let: "prev2Link" := hashChain__getCommit (struct.loadF server "chain" "s") "currEpoch" in
+        let: "prev2Link" := hashChain__getLink (struct.loadF server "chain" "s") "currEpoch" in
         let: "prevDig" := merkle.Tree__Digest (SliceGet ptrT (struct.loadF server "trees" "s") "currEpoch") in
         let: "linkSig" := SliceGet (slice.T byteT) (struct.loadF server "linkSigs" "s") "currEpoch" in
         lock.release (struct.loadF server "mu" "s");;
@@ -407,7 +413,7 @@ Definition server__getIdAt: val :=
       lock.release (struct.loadF server "mu" "s");;
       "errReply"
     else
-      let: "prevLink" := hashChain__getCommit (struct.loadF server "chain" "s") "epoch" in
+      let: "prevLink" := hashChain__getLink (struct.loadF server "chain" "s") "epoch" in
       let: "sig" := SliceGet (slice.T byteT) (struct.loadF server "linkSigs" "s") "epoch" in
       let: "reply" := merkle.Tree__Get (SliceGet ptrT (struct.loadF server "trees" "s") "epoch") "id" in
       lock.release (struct.loadF server "mu" "s");;
@@ -439,7 +445,7 @@ Definition server__getLink: val :=
       lock.release (struct.loadF server "mu" "s");;
       "errReply"
     else
-      let: "prevLink" := hashChain__getCommit (struct.loadF server "chain" "s") "epoch" in
+      let: "prevLink" := hashChain__getLink (struct.loadF server "chain" "s") "epoch" in
       let: "dig" := merkle.Tree__Digest (SliceGet ptrT (struct.loadF server "trees" "s") "epoch") in
       let: "sig" := SliceGet (slice.T byteT) (struct.loadF server "linkSigs" "s") "epoch" in
       lock.release (struct.loadF server "mu" "s");;
