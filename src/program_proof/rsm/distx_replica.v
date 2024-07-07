@@ -218,16 +218,18 @@ Section program.
     key ∈ dom pwrs ->
     (length tpl.1 ≤ ts)%nat.
 
-  Definition safe_rpst (st : rpst) (ts : nat) :=
+  Definition safe_rpst (gid : groupid) (st : rpst) (ts : nat) :=
     match st with
     | State stm tpls => match stm !! ts with
-                       | Some (StPrepared pwrs) => valid_wrs pwrs ∧
+                       | Some (StPrepared pwrs) => valid_pwrs gid pwrs ∧
                                                   dom tpls = keys_all ∧
                                                   safe_tpls_pts ts pwrs tpls
                        | _ => True
                        end
     | _ => False
     end.
+
+  Definition replicaN := nroot .@ "replica".
 
   Definition own_replica_txntbl (rp : loc) (txntbl : gmap u64 bool) : iProp Σ :=
     ∃ (txntblP : loc),
@@ -244,7 +246,7 @@ Section program.
       "%Hstmabs" ∷ ⌜absrel_stm prepm txntbl stm⌝.
 
   Definition own_replica_tpls (rp : loc) (tpls : gmap dbkey dbtpl) α : iProp Σ :=
-    ([∗ map] k ↦ t ∈ tpls, tuple_phys_half α k t.1 t.2).
+    ([∗ map] k ↦ t ∈ tpls, hist_phys_quarter α k t.1 ∗ ts_phys_half α k t.2).
 
   Definition own_replica_state (rp : loc) (st : rpst) α : iProp Σ :=
     ∃ (rid : u64) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
@@ -270,18 +272,51 @@ Section program.
       "Hst"  ∷ own_replica_state rp st α ∗
       "Hlog" ∷ own_replica_paxos rp st gid γ α.
 
-  Definition is_replica_index (rp : loc) α : iProp Σ :=
-    ∃ (idx : loc),
-      "#HidxP" ∷ readonly (rp ↦[Replica :: "idx"] #idx) ∗
-      "#Hidx"  ∷ is_index idx α.
+  Definition own_hists γ α gid : iProp Σ :=
+    ∃ hists,
+      "Hphyss"  ∷ ([∗ map] k ↦ h ∈ hists, hist_phys_quarter α k h) ∗
+      "#Hrepls" ∷ ([∗ map] k ↦ h ∈ hists, hist_repl_lb γ k h) ∗
+      "%Hdomh"  ∷ ⌜dom hists = keys_group gid keys_all⌝.
 
+  #[global]
+  Instance own_hists_timeless γ α gid :
+    Timeless (own_hists γ α gid).
+  Admitted.
+
+  (* Notes on ownership setup for physical histories. Its ownership is separated
+  into three places: one in the tuple lock invariant [own_tuple], one in the
+  replica lock invariant [own_replica], and the last one in an atomic invariant
+  [own_hists] in [is_replica]. The reason for having the atomic invariant is to
+  "allow reading a tuple in the middle of a commit updating the same tuple".
+
+  In more detail, when proving [Read], we obtain [hist_phys_lb] with
+  [tuple.ReadVersion] and our goal is to give [hist_repl_lb], which can be
+  obtained with the lemma [group_inv_no_log_witness_hist_repl_lbs]. The lemma,
+  however, requires exhibiting a replica state produced by applying some prefix
+  of the replicated log. This means that to convert a [hist_phys_lb] into a
+  [hist_repl_lb], we would have to acquire the replica lock to open the replica
+  invariant to get the current RSM state. However, tuples already have their own
+  locks (to allow concurrent GC and to lock in a more fine-grained manner), and
+  thus acquiring the replica lock is unnecessary.
+
+  Thus, we add an atomic invariant that intuitively says the physical history is
+  always a prefix of the replicated history. This allows [Read] to immediately
+  convert a [hist_phys_lb] into a [hist_repl_lb], but at the same time imposes
+  an obligation to re-establish the invariant when extending the physical
+  history when, for instance, committing a txn. Another way of looking at this
+  is that the atomic invariant allows us to ``circumvent'' the RSM consistency
+  enforced by replica invariant; i.e., reading a state that is partially
+  modified by a commit. Not sure if this the best encoding to enable the
+  optimization, but I can't really think of an alternative. *)
   Definition is_replica (rp : loc) (gid : groupid) γ α : iProp Σ :=
-    ∃ (mu : loc) (txnlog : loc),
+    ∃ (mu : loc) (txnlog : loc) (idx : loc),
       "#HmuP"     ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
       "#Hlock"    ∷ is_lock distxN #mu (own_replica rp gid γ α) ∗
       "#HtxnlogP" ∷ readonly (rp ↦[Replica :: "txnlog"] #txnlog) ∗
       "#Htxnlog"  ∷ is_txnlog txnlog gid γ ∗
-      "#Hidx"     ∷ is_replica_index rp α ∗
+      "#HidxP"    ∷ readonly (rp ↦[Replica :: "idx"] #idx) ∗
+      "#Hidx"     ∷ is_index idx α ∗
+      "#Hinvh"    ∷ inv distxN (own_hists γ α gid) ∗
       "%Hgid"     ∷ ⌜gid ∈ gids_all⌝.
 
   Definition option_txnst_to_u64 (sto : option txnst) :=
@@ -393,9 +428,9 @@ Section program.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
     wp_pures.
-    (* Obtain the txn token from the group invariant. *)
     iApply "HΦ".
     destruct (stm !! uint.nat ts) as [st |] eqn:Hst; last done.
+    (* Obtain the txn token from the group invariant. *)
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first done.
@@ -908,14 +943,31 @@ Section program.
     (*@     v, ok := tpl.ReadVersion(ts)                                        @*)
     (*@                                                                         @*)
     wp_apply (wp_Tuple__ReadVersion with "Htpl").
-    iIntros (v ok) "Hv".
+    iIntros (v ok) "Hphyslb".
     wp_pures.
 
     (*@     return v, ok                                                        @*)
     (*@ }                                                                       @*)
     destruct ok; last by iApply "HΦ".
+    iDestruct "Hphyslb" as (hp) "[%Hphys #Hphyslb]".
     iApply "HΦ".
-  Admitted.
+    (* Obtain a lower bound of the replicated history [hist_repl_lb]. *)
+    (* Open the invariant governing the physical and replicated histories. *)
+    iInv "Hinvh" as "> HinvhO" "HinvhC".
+    iNamed "HinvhO".
+    (* Take the quarter ownership of physical history out from the replica invariant. *)
+    destruct Hsafe as (_ & Hkey & Hgroup).
+    assert (is_Some (hists !! key)) as [h Hh].
+    { rewrite -elem_of_dom Hdomh. set_solver. }
+    iDestruct (big_sepM_lookup_acc with "Hphyss") as "[Hphys HphyssC]"; first apply Hh.
+    (* Obtain proof that [h !! pred (uint.nat ts) = Some v]. *)
+    iDestruct (hist_phys_prefix with "Hphys Hphyslb") as %Hprefix.
+    pose proof (prefix_lookup_Some _ _ _ _ Hphys Hprefix) as Hv.
+    iDestruct (big_sepM_lookup with "Hrepls") as "Hrepl"; first apply Hh.
+    iDestruct ("HphyssC" with "Hphys") as "Hphyss".
+    iMod ("HinvhC" with "[Hphyss]") as "_"; first by iFrame "∗ # %".
+    by iFrame "# %".
+  Qed.
 
   Theorem wp_Replica__validate
     (rp : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) (pwrs : dbmap) :
@@ -1012,19 +1064,24 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
+  Definition hist_repl_lbs_of_tpls γ gid tpls : iProp Σ :=
+    ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, hist_repl_lb γ key tpl.1).
+
   Theorem wp_Replica__multiwrite
     (rp : loc) (ts : u64) (pwrsS : Slice.t)
-    (pwrsL : list dbmod) (pwrs : dbmap) (tpls : gmap dbkey dbtpl) α :
-    valid_wrs pwrs ->
+    (pwrsL : list dbmod) (pwrs : dbmap) (tpls : gmap dbkey dbtpl) gid γ α :
+    valid_pwrs gid pwrs ->
     dom tpls = keys_all ->
     safe_tpls_pts (uint.nat ts) pwrs tpls ->
-    is_replica_index rp α -∗
+    let tpls' := multiwrite (uint.nat ts) pwrs tpls in
+    hist_repl_lbs_of_tpls γ gid tpls' -∗
+    is_replica rp gid γ α -∗
     {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_tpls rp tpls α }}}
       Replica__multiwrite #rp #ts (to_val pwrsS)
-    {{{ RET #(); own_replica_tpls rp (multiwrite (uint.nat ts) pwrs tpls) α }}}.
+    {{{ RET #(); own_replica_tpls rp tpls' α }}}.
   Proof.
-    iIntros (Hvw Hdom Hlen) "#Hidx".
-    iIntros (Φ) "!> [[HpwrsS %Hpwrs] Htpls] HΦ".
+    iIntros (Hvw Hdom Hlen tpls') "#Hlbs #Hidx".
+    iIntros (Φ) "!> [[HpwrsS %Hpwrs] Hphyss] HΦ".
     wp_call.
 
     (*@ func (rp *Replica) multiwrite(ts uint64, pwrs []WriteEntry) {           @*)
@@ -1045,7 +1102,7 @@ Section program.
     set P := (λ (i : u64),
                 let pwrs' := list_to_map (take (uint.nat i) pwrsL) in
                 own_replica_tpls rp (multiwrite (uint.nat ts) pwrs' tpls) α)%I.
-    wp_apply (wp_forSlice P with "[] [$HpwrsS Htpls]"); last first; first 1 last.
+    wp_apply (wp_forSlice P with "[] [$HpwrsS Hphyss]"); last first; first 1 last.
     { (* Loop entry. *)
       subst P. simpl.
       replace (uint.nat (W64 _)) with O by word.
@@ -1055,18 +1112,18 @@ Section program.
     { (* Loop body. *)
       clear Φ.
       iIntros (i [k v]) "!>".
-      iIntros (Φ) "(Htpls & %Hbound & %Hi) HΦ".
+      iIntros (Φ) "(Hphyss & %Hbound & %Hi) HΦ".
       subst P. simpl.
       wp_pures.
       iNamed "Hidx".
       wp_loadField.
       (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
-      apply elem_of_list_lookup_2 in Hi as Hdompwrs.
-      rewrite -Hpwrs elem_of_map_to_list in Hdompwrs.
-      apply elem_of_dom_2 in Hdompwrs.
+      apply elem_of_list_lookup_2 in Hi as Hpwrsv.
+      rewrite -Hpwrs elem_of_map_to_list in Hpwrsv.
+      apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
       assert (Hdomall : k ∈ keys_all) by set_solver.
       wp_apply (wp_Index__GetTuple with "Hidx"); first done.
-      iIntros (tpl) "#HtplR".
+      iIntros (tpl) "#Htpl".
       wp_pures.
       (* Obtain proof that the current key [k] has not been written. *)
       pose proof (NoDup_fst_map_to_list pwrs) as Hnd.
@@ -1086,57 +1143,123 @@ Section program.
       (* Prove tuple length ≤ prepared timestamp. *)
       specialize (Hlen _ _ Ht Hdompwrs).
       rewrite /own_replica_tpls big_sepM_delete; last by rewrite multiwrite_unmodified.
-      iDestruct "Htpls" as "[Htpl Htpls]".
+      (* Take 1/4 of physical history and 1/2 of pts from the lock invariant. *)
+      iDestruct "Hphyss" as "[[Hphyslk Hts] Hphysslk]".
       destruct v as [s |]; wp_pures.
       { (* Case: [@AppendVersion]. *)
-        wp_apply (wp_Tuple__AppendVersion with "HtplR Htpl"); first done.
-        iIntros "Htpl".
-        wp_pures.
-        wp_apply (wp_Tuple__Free with "HtplR Htpl").
-        iIntros "Htpl".
-        (* Put the physical tuple back. *)
+        wp_apply (wp_Tuple__AppendVersion with "Htpl").
+        (* Open the replica invariant. *)
+        iInv "Hinvh" as "> HinvhO" "HinvhC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvhO".
+        assert (is_Some (hists !! k)) as [h Hh].
+        { rewrite -elem_of_dom Hdomh. set_solver. }
+        (* Take the other 1/4 ownership of the physical history. *)
+        iDestruct (big_sepM_delete with "Hphyss") as "[Hphys Hphyss]"; first apply Hh.
+        (* Combine the two quarter pieces and pass it to the library. *)
+        iDestruct (hist_phys_combine with "Hphys Hphyslk") as "[Hphys %Heq]". subst h.
+        iFrame "Hphys %".
+        iIntros "Hphys".
+        iDestruct (hist_phys_split with "Hphys") as "[Hphys Hphyslk]".
+        iMod "Hmask" as "_".
+        iDestruct (big_sepM_insert_2 with "Hphys Hphyss") as "Hphyss".
+        rewrite insert_delete_insert.
+        iMod ("HinvhC" with "[Hphyss]") as "_".
+        { rewrite /hist_repl_lbs_of_tpls.
+          iDestruct (big_sepM_lookup _ _ k with "Hlbs") as "Hlb".
+          { rewrite map_lookup_filter_Some.
+            split; last set_solver.
+            by rewrite lookup_merge Ht Hpwrsv /=.
+          }
+          iDestruct (big_sepM_insert_2 with "Hlb Hrepls") as "Hrepls'".
+          iFrame "∗ #".
+          iPureIntro.
+          by rewrite dom_insert_lookup_L.
+        }
+        iIntros "!> _".
+        wp_apply (wp_Tuple__Free with "Htpl").
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iFrame "Hts".
+        iIntros "Hts".
+        iMod "Hmask" as "_".
+        iIntros "!> _".
         set h := last_extend _ _ ++ _.
-        iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Htpl] Htpls") as "Htpls".
-        { iFrame. }
+        iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Hphyslk Hts] Hphysslk") as "Hphyss".
+        { by iFrame. }
         rewrite insert_delete_insert /multiwrite.
         erewrite insert_merge_l; last by rewrite Ht /=.
         iApply "HΦ".
         by iFrame "∗ #".
       }
       { (* Case: [@AKillVersion]. *)
-        wp_apply (wp_Tuple__KillVersion with "HtplR Htpl"); first done.
-        iIntros "Htpl".
-        wp_pures.
-        wp_apply (wp_Tuple__Free with "HtplR Htpl").
-        iIntros "Htpl".
-        (* Put the physical tuple back. *)
+        wp_apply (wp_Tuple__KillVersion with "Htpl").
+        (* Open the replica invariant. *)
+        iInv "Hinvh" as "> HinvhO" "HinvhC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvhO".
+        assert (is_Some (hists !! k)) as [h Hh].
+        { rewrite -elem_of_dom Hdomh. set_solver. }
+        (* Take the other 1/4 ownership of the physical history. *)
+        iDestruct (big_sepM_delete with "Hphyss") as "[Hphys Hphyss]"; first apply Hh.
+        (* Combine the two quarter pieces and pass it to the library. *)
+        iDestruct (hist_phys_combine with "Hphys Hphyslk") as "[Hphys %Heq]". subst h.
+        iFrame "Hphys %".
+        iIntros "Hphys".
+        iDestruct (hist_phys_split with "Hphys") as "[Hphys Hphyslk]".
+        iMod "Hmask" as "_".
+        iDestruct (big_sepM_insert_2 with "Hphys Hphyss") as "Hphyss".
+        rewrite insert_delete_insert.
+        iMod ("HinvhC" with "[Hphyss]") as "_".
+        { rewrite /hist_repl_lbs_of_tpls.
+          iDestruct (big_sepM_lookup _ _ k with "Hlbs") as "Hlb".
+          { rewrite map_lookup_filter_Some.
+            split; last set_solver.
+            by rewrite lookup_merge Ht Hpwrsv /=.
+          }
+          iDestruct (big_sepM_insert_2 with "Hlb Hrepls") as "Hrepls'".
+          iFrame "∗ #".
+          iPureIntro.
+          by rewrite dom_insert_lookup_L.
+        }
+        iIntros "!> _".
+        wp_apply (wp_Tuple__Free with "Htpl").
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iFrame "Hts".
+        iIntros "Hts".
+        iMod "Hmask" as "_".
+        iIntros "!> _".
         set h := last_extend _ _ ++ _.
-        change h with (h, O).1. change t.2 with (h, O).2.
-        iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Htpl] Htpls") as "Htpls".
-        { iFrame. }
+        iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Hphyslk Hts] Hphysslk") as "Hphyss".
+        { by iFrame. }
         rewrite insert_delete_insert /multiwrite.
         erewrite insert_merge_l; last by rewrite Ht /=.
         iApply "HΦ".
         by iFrame "∗ #".
       }
     }
-    iIntros "[Htpls _]". subst P. simpl.
+    iIntros "[Hphyss _]". subst P. simpl.
     wp_pures.
     rewrite -HpwrsLen firstn_all -Hpwrs list_to_map_to_list.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_Replica__applyCommit (rp : loc) (ts : u64) (st : rpst) α :
-    safe_rpst st (uint.nat ts) ->
-    let st' := apply_cmd st (CmdCmt (uint.nat ts)) in
-    not_stuck st' ->
-    is_replica_index rp α -∗
+  Theorem wp_Replica__applyCommit
+    (rp : loc) (ts : u64)
+    (st : rpst) (stm' : gmap nat txnst) (tpls' : gmap dbkey dbtpl) gid γ α :
+    safe_rpst gid st (uint.nat ts) ->
+    apply_cmd st (CmdCmt (uint.nat ts)) = State stm' tpls' ->
+    hist_repl_lbs_of_tpls γ gid tpls' -∗
+    is_replica rp gid γ α -∗
     {{{ own_replica_state rp st α }}}
       Replica__applyCommit #rp #ts
-    {{{ RET #(); own_replica_state rp st' α }}}.
+    {{{ RET #(); own_replica_state rp (State stm' tpls') α }}}.
   Proof.
-    iIntros (Hsafe st' Hns) "#Hidx".
-    iIntros (Φ) "!> Hst HΦ". subst st'.
+    iIntros (Hsafe Happly) "#Hlbs #Hrp".
+    iIntros (Φ) "!> Hst HΦ".
     wp_call.
 
     (*@ func (rp *Replica) applyCommit(ts uint64) {                             @*)
@@ -1161,12 +1284,12 @@ Section program.
       (* Prove that [ts] must have committed. *)
       assert (stm !! (uint.nat ts) = Some StCommitted) as Hcmt.
       { pose proof (absrel_stm_txntbl_present _ _ _ _ _ Htxntbl Hstmabs) as Hstm.
-        by destruct b; [| rewrite /= Hstm in Hns].
+        by destruct b; [| rewrite /= Hstm in Happly].
       }
       iApply "HΦ".
       iFrame "∗ %".
       iPureIntro.
-      by rewrite /= Hcmt.
+      by rewrite /= Hcmt in Happly.
     }
 
     (*@     // We'll need an invariant to establish that if a transaction has prepared @*)
@@ -1184,7 +1307,7 @@ Section program.
     { apply map_get_false in Hprepm as [Hprepm _].
       rewrite -not_elem_of_dom Hdom not_elem_of_dom in Hprepm.
       pose proof (absrel_stm_both_absent _ _ _ _ Htxntbl Hprepm Hstmabs) as Hstm.
-      by rewrite /= Hstm in Hns.
+      by rewrite /= Hstm in Happly.
     }
     apply map_get_true in Hprepm.
     assert (∃ pwrs, prepm !! ts = Some pwrs) as [pwrs Hpwrs].
@@ -1201,7 +1324,9 @@ Section program.
     iDestruct (big_sepM2_delete with "Hprepm") as "[[%pwsL HpwrsS] Hprepm]"; [done | done |].
     rewrite /safe_rpst Hstm in Hsafe.
     destruct Hsafe as (Hvw & Hdomall & Hpts).
-    wp_apply (wp_Replica__multiwrite with "Hidx [$HpwrsS $Htpls]"); [done | done | done |].
+    rewrite /= Hstm in Happly.
+    inversion Happly. subst stm' tpls'.
+    wp_apply (wp_Replica__multiwrite with "Hlbs Hrp [$HpwrsS $Htpls]"); [done | done | done |].
     iIntros "Htpls".
     wp_pures.
 
@@ -1222,22 +1347,23 @@ Section program.
     (* Re-establish replica abstraction relation [Habs]. *)
     pose proof (absrel_stm_inv_apply_commit ts Hstmabs) as Hstmabs'.
     iApply "HΦ".
-    rewrite /= Hstm.
     by iFrame "∗ # %".
   Qed.
 
   (* We can actually merge the first two preconditions into the [not_stuck] one
   by changing the operational semantics of the applier functions to check for
   those conditions (and moves into the [Stuck] state if the check fails). *)
-  Theorem wp_Replica__apply (rp : loc) (cmd : command) (pwrsS : Slice.t) (st : rpst) α :
+  Theorem wp_Replica__apply
+    (rp : loc) (cmd : command) (pwrsS : Slice.t)
+    (st : rpst) (stm' : gmap nat txnst) (tpls' : gmap dbkey dbtpl) gid γ α :
     valid_ts_of_command cmd ->
-    (∀ ts, ts ≠ O -> safe_rpst st ts) ->
-    let st' := apply_cmd st cmd in
-    not_stuck st' ->
-    is_replica_index rp α -∗
+    (∀ ts, ts ≠ O -> safe_rpst gid st ts) ->
+    apply_cmd st cmd = State stm' tpls' ->
+    hist_repl_lbs_of_tpls γ gid tpls' -∗
+    is_replica rp gid γ α -∗
     {{{ own_replica_state rp st α ∗ own_pwrs_slice pwrsS cmd }}}
       Replica__apply #rp (command_to_val pwrsS cmd)
-    {{{ RET #(); own_replica_state rp st' α }}}.
+    {{{ RET #(); own_replica_state rp (State stm' tpls') α }}}.
   Proof.
     (*@ func (rp *Replica) apply(cmd Cmd) {                                     @*)
     (*@     if cmd.kind == 0 {                                                  @*)
@@ -1250,7 +1376,7 @@ Section program.
     (*@         rp.applyAbort(cmd.ts)                                           @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iIntros (Hts Hsafe st' Hns) "#Hidx".
+    iIntros (Hts Hsafe Happly) "#Hlbs #Hrp".
     iIntros (Φ) "!> [Hst HpwrsS] HΦ".
     wp_call.
     destruct cmd eqn:Hcmd; simpl; wp_pures.
@@ -1263,10 +1389,9 @@ Section program.
     }
     { (* Case: Commit. *)
       rewrite /valid_ts_of_command /valid_ts in Hts.
-      wp_apply (wp_Replica__applyCommit with "Hidx Hst").
+      wp_apply (wp_Replica__applyCommit with "Hlbs Hrp Hst").
       { apply Hsafe. word. }
       { by rewrite uint_nat_W64; last word. }
-      rewrite uint_nat_W64; last word.
       iIntros "Hst".
       wp_pures.
       iApply "HΦ".
@@ -1290,10 +1415,10 @@ Section program.
     (*@ func (rp *Replica) Start() {                                            @*)
     (*@     rp.mu.Lock()                                                        @*)
     (*@                                                                         @*)
-    iNamed "Hrp".
+    iPoseProof "Hrp" as "Hrp'". iNamed "Hrp'".
     wp_loadField.
     wp_apply (acquire_spec with "Hlock").
-    iIntros "[Hlocked Hrp]".
+    iIntros "[Hlocked HrpO]".
     wp_pures.
 
     (*@     for {                                                               @*)
@@ -1302,10 +1427,10 @@ Section program.
     (*@         // at once (so as to reduce the frequency of acquiring Paxos mutex). @*)
     (*@                                                                         @*)
     set P := (λ b : bool, own_replica rp gid γ α ∗ locked #mu)%I.
-    wp_apply (wp_forBreak P with "[] [$Hrp $Hlocked]"); last first.
-    { (* Get out of an infinite loop. *) iIntros "Hrp". wp_pures. by iApply "HΦ". }
-    clear Φ. iIntros "!>" (Φ) "[Hrp Hlocked] HΦ".
-    iNamed "Hrp". iNamed "Hlog".
+    wp_apply (wp_forBreak P with "[] [$HrpO $Hlocked]"); last first.
+    { (* Get out of an infinite loop. *) iIntros "HrpO". wp_pures. by iApply "HΦ". }
+    clear Φ. iIntros "!>" (Φ) "[HrpO Hlocked] HΦ".
+    iNamed "HrpO". iNamed "Hlog".
     wp_call. wp_loadField.
     wp_apply wp_SumAssumeNoOverflow.
     iIntros (Hnoof).
@@ -1350,9 +1475,9 @@ Section program.
       by pose proof (set_Forall_Forall_subsume _ _ _ Hcpoolts Hincl) as ?.
     }
     (* Obtain validity of command partial writes; used when executing @apply. *)
-    iAssert (⌜Forall valid_pwrs_of_command paxos'⌝)%I as %Hpwrs.
+    iAssert (⌜Forall (valid_pwrs_of_command gid) paxos'⌝)%I as %Hpwrs.
     { do 2 iNamed "Hgroup".
-      iAssert (⌜set_Forall valid_pwrs_of_command cpool⌝)%I as %Hcpoolts.
+      iAssert (⌜set_Forall (valid_pwrs_of_command gid) cpool⌝)%I as %Hcpoolts.
       { iIntros (c Hc).
         destruct c as [| ts pwrs | |]; [done | simpl | done | done].
         iDestruct (big_sepS_elem_of with "Hvc") as "Hc"; first apply Hc.
@@ -1361,8 +1486,9 @@ Section program.
         iPureIntro.
         destruct Hpwrs as (Hvw & _ & Hpwrs).
         rewrite Hpwrs.
-        rewrite /valid_wrs in Hvw *.
-        transitivity (dom wrs); [apply dom_filter_subseteq | done].
+        rewrite /valid_pwrs.
+        rewrite wrs_group_keys_group_dom.
+        set_solver.
       }
       (* Note that unlike [valid_ts_of_command] needs to hold on the new log
       [paxos'] (since it should also hold on the command we're applying here,
@@ -1379,7 +1505,7 @@ Section program.
     (* Re-establish the group invariant w.r.t. the new log. *)
     iMod (group_inv_learn with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
     { apply Hincl. }
-    (* Obtain state machine safety for the new log. *)
+    (* (* Obtain state machine safety for the new log. *) *)
     iAssert (⌜not_stuck (apply_cmds (paxos ++ cmds))⌝)%I as %Hns.
     { clear Hrsm. do 2 iNamed "Hgroup". iPureIntro. by rewrite Hrsm. }
     iDestruct (group_inv_merge_log_hide_cpool with "Hpaxos Hgroup") as "Hgroup".
@@ -1407,7 +1533,7 @@ Section program.
       wp_apply wp_Sleep.
       wp_loadField.
       wp_apply (acquire_spec with "Hlock").
-      iIntros "[Hlocked Hrp]".
+      iIntros "[Hlocked HrpO]".
       wp_pures.
       iApply "HΦ".
       by iFrame.
@@ -1427,7 +1553,28 @@ Section program.
       apply prefix_take.
     }
     iDestruct (log_lb_weaken (loga ++ [cmd]) with "Hlbnew") as "#Hlb"; first apply Hprefix.
-    wp_apply (wp_Replica__apply with "Hidx [$Hst $HpwrsS]").
+    (* Obtain the new states. *)
+    destruct (apply_cmd st cmd) as [stm' tpls'|] eqn:Happly; last first.
+    { pose proof (apply_cmds_not_stuck _ _ Hprefix Hns) as Hsafe.
+      by rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm in Hsafe.
+    }
+    (* Obtain lower bound of replicated histories. *)
+    iAssert (|={⊤}=> hist_repl_lbs_of_tpls γ gid tpls')%I as "Hlbs".
+    { iInv "Hinv" as "> HinvO" "HinvC".
+      iNamed "HinvO".
+      iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
+      iDestruct (group_inv_extract_log  with "Hgroup") as (log) "[Hlog Hgroup]".
+      iDestruct (log_prefix with "Hlog Hlb") as %Hlogp.
+      iDestruct (group_inv_no_log_witness_hist_repl_lbs with "Hgroup") as "#Hlbs".
+      { apply Hlogp. }
+      { by rewrite /apply_cmds foldl_app /= apply_cmds_unfold Hrsm Happly. }
+      iDestruct (group_inv_merge_log with "Hlog Hgroup") as "Hgroup".
+      iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+      iMod ("HinvC" with "[$Htxn $Hkeys $Hgroups]") as "_".
+      by iFrame "#".
+    }
+    iMod "Hlbs" as "#Hlbs".
+    wp_apply (wp_Replica__apply with "Hlbs Hrp [$Hst $HpwrsS]").
     { (* Prove validity of command timestamps. *)
       rewrite Forall_forall in Hts.
       apply Hts.
@@ -1445,7 +1592,7 @@ Section program.
       destruct st; [| done | done].
       split.
       { (* Prove [valid_wrs wrs]. *)
-        assert (Forall (λ c : command, valid_pwrs_of_command c) loga) as Hc.
+        assert (Forall (λ c : command, valid_pwrs_of_command gid c) loga) as Hc.
         { (* Weaken [Hpwrs]. *)
           destruct Hloga as [l Hloga].
           rewrite Hloga Forall_app in Hpwrs.
@@ -1454,7 +1601,7 @@ Section program.
           intros c Hc.
           by destruct c.
         }
-        pose proof (pwrs_validity _ Hc) as Hvw.
+        pose proof (pwrs_validity _ _ Hc) as Hvw.
         by specialize (Hvw _ _ _ _ Hrsm Hst).
       }
       split.

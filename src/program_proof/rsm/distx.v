@@ -79,6 +79,9 @@ Definition tpls_group gid (tpls : gmap dbkey dbtpl) :=
 Definition keys_group gid (keys : gset dbkey) :=
   filter (λ k, key_to_group k = gid) keys.
 
+Definition valid_pwrs (gid : groupid) (pwrs : dbmap) :=
+  dom pwrs ⊆ keys_group gid keys_all.
+
 Lemma tpls_group_keys_group_dom gid tpls :
   dom (tpls_group gid tpls) = keys_group gid (dom tpls).
 Proof. by rewrite /tpls_group /keys_group filter_dom_L. Qed.
@@ -822,12 +825,11 @@ Definition pts_nonzero log :=
   stm !! ts = Some (StPrepared pwrs) ->
   ts ≠ O.
 
-(* TODO: Clean up the naming about wrs/pwrs validity. *)
-Definition pwrs_valid log :=
+Definition pwrs_valid gid log :=
   ∀ stm tpls ts pwrs,
   apply_cmds log = State stm tpls ->
   stm !! ts = Some (StPrepared pwrs) ->
-  valid_wrs pwrs.
+  valid_pwrs gid pwrs.
 
 Definition tpls_well_formed log :=
   ∀ stm tpls key tpl,
@@ -842,9 +844,9 @@ Definition valid_pts_of_command c :=
   | _ => True
   end.
 
-Definition valid_pwrs_of_command c :=
+Definition valid_pwrs_of_command gid c :=
   match c with
-  | CmdPrep _ pwrs => valid_wrs pwrs
+  | CmdPrep _ pwrs => valid_pwrs gid pwrs
   | _ => True
   end.
 
@@ -954,10 +956,10 @@ Lemma tpls_well_formedness l :
   tpls_well_formed l.
 Proof. apply (tpls_well_formedness_step [] l), tpls_well_formed_nil. Qed.
 
-Lemma pwrs_valid_snoc l c :
-  valid_pwrs_of_command c ->
-  pwrs_valid l ->
-  pwrs_valid (l ++ [c]).
+Lemma pwrs_valid_snoc gid l c :
+  valid_pwrs_of_command gid c ->
+  pwrs_valid gid l ->
+  pwrs_valid gid (l ++ [c]).
 Proof.
   intros Hc Hpwrs.
   intros stmc tplsc ts pwrs Happly Hstm.
@@ -1030,18 +1032,18 @@ Proof.
   }
 Qed.
 
-Lemma pwrs_valid_nil :
-  pwrs_valid [].
+Lemma pwrs_valid_nil gid :
+  pwrs_valid gid [].
 Proof.
   intros stm tpls ts pwrs Happly Hpwrs.
   rewrite /apply_cmds /= /init_rpst in Happly.
   set_solver.
 Qed.
 
-Lemma pwrs_validity_step l1 l2 :
-  Forall (λ c, valid_pwrs_of_command c) l2 ->
-  pwrs_valid l1 ->
-  pwrs_valid (l1 ++ l2).
+Lemma pwrs_validity_step gid l1 l2 :
+  Forall (λ c, valid_pwrs_of_command gid c) l2 ->
+  pwrs_valid gid l1 ->
+  pwrs_valid gid (l1 ++ l2).
 Proof.
   intros Hpwrs.
   generalize dependent l1.
@@ -1053,12 +1055,12 @@ Proof.
   by apply IH, pwrs_valid_snoc.
 Qed.
 
-Lemma pwrs_validity l :
-  Forall (λ c, valid_pwrs_of_command c) l ->
-  pwrs_valid l.
+Lemma pwrs_validity gid l :
+  Forall (λ c, valid_pwrs_of_command gid c) l ->
+  pwrs_valid gid l.
 Proof.
   intros Hpwrs.
-  apply (pwrs_validity_step [] l); [done | apply pwrs_valid_nil].
+  apply (pwrs_validity_step gid [] l); [done | apply pwrs_valid_nil].
 Qed.
 
 Lemma pts_nonzero_snoc l c :
@@ -1392,9 +1394,6 @@ Proof.
   { apply pwrs_disjoint_nil. }
   { apply pts_consistent_nil. }
 Qed.
-
-Definition valid_pwrs gid wrs pwrs :=
-  valid_wrs wrs ∧ pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs.
 
 Lemma set_Forall_Forall_subsume `{Countable A} (l : list A) (s : gset A) P :
   set_Forall P s ->
@@ -2331,7 +2330,8 @@ Section inv.
     valid_ts ts ∧ valid_key key ∧ key_to_group key = gid.
 
   Definition safe_prepare γ gid ts pwrs : iProp Σ :=
-    ∃ wrs, txnwrs_receipt γ ts wrs ∧ ⌜valid_ts ts ∧ valid_pwrs gid wrs pwrs⌝.
+    ∃ wrs, txnwrs_receipt γ ts wrs ∧
+           ⌜valid_ts ts ∧ valid_wrs wrs ∧ pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs⌝.
 
   Definition safe_commit γ gid ts : iProp Σ :=
     ∃ wrs, txnres_cmt γ ts wrs ∧ ⌜valid_ts ts ∧ gid ∈ ptgroups (dom wrs)⌝.
@@ -2625,10 +2625,41 @@ Section group_inv.
   Proof.
     iIntros (Hprefix Hrsm Hstm) "Hgroup".
     do 2 iNamed "Hgroup".
-    iDestruct ("Htks" with "[] []") as "Htksm".
+    iDestruct ("Htks" with "[] []") as "Htkm".
     { iPureIntro. apply Hprefix. }
     { iPureIntro. apply Hrsm. }
-    by iDestruct (big_sepM_lookup with "Htksm") as "Htk"; first apply Hstm.
+    by iDestruct (big_sepM_lookup with "Htkm") as "Htk"; first apply Hstm.
+  Qed.
+
+  Lemma group_inv_no_log_witness_hist_repl_lb {γ gid log} loga stm tpls key tpl :
+    prefix loga log ->
+    apply_cmds loga = State stm tpls ->
+    tpls !! key = Some tpl ->
+    key_to_group key = gid ->
+    group_inv_no_log γ gid log -∗
+    hist_repl_lb γ key tpl.1.
+  Proof.
+    iIntros (Hprefix Hrsm Htpls Hgid) "Hgroup".
+    do 2 iNamed "Hgroup".
+    iDestruct ("Hhists" with "[] []") as "Hhistm".
+    { iPureIntro. apply Hprefix. }
+    { iPureIntro. apply Hrsm. }
+    iDestruct (big_sepM_lookup with "Hhistm") as "Hhist"; last done.
+    by rewrite /tpls_group map_lookup_filter_Some.
+  Qed.
+
+  Lemma group_inv_no_log_witness_hist_repl_lbs {γ gid log} loga stm tpls :
+    prefix loga log ->
+    apply_cmds loga = State stm tpls ->
+    group_inv_no_log γ gid log -∗
+    [∗ map] key ↦ tpl ∈ tpls_group gid tpls, hist_repl_lb γ key tpl.1.
+  Proof.
+    iIntros (Hprefix Hrsm) "Hgroup".
+    iApply big_sepM_forall.
+    iIntros (k t Hkt).
+    rewrite map_lookup_filter_Some in Hkt.
+    destruct Hkt as [Hkt Hgid].
+    by iApply group_inv_no_log_witness_hist_repl_lb.
   Qed.
 
   Lemma key_inv_extract_repl_tsprep {γ} key :
@@ -3081,7 +3112,6 @@ Section group_inv.
     (* Obtain proof of valid prepared input. *)
     iDestruct (big_sepM_lookup with "Hvp") as "Hc"; first apply Hdup. simpl.
     iDestruct "Hc" as (wrs) "(Hwrs & %Hts & %Hpwrs)".
-    rewrite /valid_pwrs in Hpwrs.
     (* Prove the previously prepare [wrs] is equal to the commit [wrsc]. *)
     iAssert (⌜wrsc = wrs⌝)%I as %->.
     { iNamed "Htxn".
@@ -3295,7 +3325,6 @@ Section group_inv.
     (* Obtain proof of valid prepared input. *)
     iDestruct (big_sepM_lookup with "Hvp") as "Hc"; first apply Hdup. simpl.
     iDestruct "Hc" as (wrs) "(Hwrs & %Hts & %Hpwrs)".
-    rewrite /valid_pwrs in Hpwrs.
     (* Take the required keys invariants. *)
     iDestruct (big_sepS_subseteq_acc _ _ (dom pwrs) with "Hkeys") as "[Hkeys HkeysC]".
     { (* Prove [dom pwrs ⊆ keys_all] *)

@@ -5,10 +5,15 @@ Section resource.
   Context `{!distx_ghostG Σ}.
   Implicit Type (α : replica_names).
 
+  Definition tupleN := nroot .@ "tuple".
+
   (* NB: One half of the phsyical tuple is kept in the replica invariant, one
   half in the tuple invariant. GC-related methods does not require the one in
   the replica invariant, essentially forcing GC to not change the abstract
   view. *)
+
+  Definition hist_phys_quarter α (key : string) (hist : dbhist) : iProp Σ.
+  Admitted.
 
   Definition hist_phys_half α (key : string) (hist : dbhist) : iProp Σ.
   Admitted.
@@ -19,6 +24,23 @@ Section resource.
   #[global]
   Instance is_hist_phys_lb_persistent α key hist :
     Persistent (hist_phys_lb α key hist).
+  Admitted.
+
+  Lemma hist_phys_combine α key hist1 hist2 :
+    hist_phys_quarter α key hist1 -∗
+    hist_phys_quarter α key hist2 -∗
+    hist_phys_half α key hist1 ∗ ⌜hist2 = hist1⌝.
+  Admitted.
+
+  Lemma hist_phys_split α key hist :
+    hist_phys_half α key hist -∗
+    hist_phys_quarter α key hist ∗ hist_phys_quarter α key hist.
+  Admitted.
+
+  Lemma hist_phys_prefix α key hist histp :
+    hist_phys_quarter α key hist -∗
+    hist_phys_lb α key histp -∗
+    ⌜prefix histp hist⌝.
   Admitted.
 
   Definition hist_phys_at α (key : string) (ts : nat) (v : dbval) : iProp Σ :=
@@ -49,27 +71,29 @@ Section program.
   timestamp different from the prepared timestamp. A more fundamental reason to
   this difference is that while Paxos allows deducing commit safety at the
   *replica* level, PCR can only deduce such at the *replica group* level. *)
-  Theorem wp_Tuple__AppendVersion
-    (tuple : loc) (tid : u64) (val : string) key hist tsprep α :
-    (length hist ≤ uint.nat tid)%nat ->
+  Theorem wp_Tuple__AppendVersion (tuple : loc) (tid : u64) (val : string) key α :
     is_tuple tuple key α -∗
-    {{{ tuple_phys_half α key hist tsprep }}}
-      Tuple__AppendVersion #tuple #tid #(LitString val)
-    {{{ RET #(); tuple_phys_half α key (last_extend (uint.nat tid) hist ++ [Some val]) tsprep }}}.
+    {{{ True }}}
+    <<< ∀∀ hist, hist_phys_half α key hist ∗ ⌜(length hist ≤ uint.nat tid)%nat⌝ >>>
+      Tuple__AppendVersion #tuple #tid #(LitString val) @ ↑tupleN
+    <<< hist_phys_half α key (last_extend (uint.nat tid) hist ++ [Some val]) >>>
+    {{{ RET #(); True }}}.
   Proof.
     (*@ func (tuple *Tuple) AppendVersion(tid uint64, val string) {             @*)
     (*@     // TODO                                                             @*)
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Tuple__Extend (tuple : loc) (tid : u64) key hist tsprep α :
+  Theorem wp_Tuple__Extend (tuple : loc) (tid : u64) key α :
     is_tuple tuple key α -∗
-    {{{ tuple_phys_half α key hist tsprep }}}
-      Tuple__Extend #tuple #tid
-    {{{ (ok : bool), RET #ok; if ok
-                           then tuple_phys_half α key (last_extend (uint.nat tid) hist) tsprep
-                           else tuple_phys_half α key hist tsprep
-    }}}.
+    {{{ True }}}
+    <<< ∀∀ hist, hist_phys_half α key hist >>>
+      Tuple__Extend #tuple #tid @ ↑tupleN
+    <<< ∃∃ (ok : bool), if ok
+                     then hist_phys_half α key (last_extend (uint.nat tid) hist)
+                     else hist_phys_half α key hist
+    >>>
+    {{{ RET #ok; True }}}.
   Proof.
     (*@ func (tuple *Tuple) Extend(tid uint64) bool {                           @*)
     (*@     // TODO                                                             @*)
@@ -77,37 +101,43 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Tuple__Free (tuple : loc) key hist tsprep α :
+  Theorem wp_Tuple__Free (tuple : loc) key α :
     is_tuple tuple key α -∗
-    {{{ tuple_phys_half α key hist tsprep }}}
-      Tuple__Free #tuple
-    {{{ RET #(); tuple_phys_half α key hist O }}}.
+    {{{ True }}}
+    <<< ∀∀ tsprep, ts_phys_half α key tsprep >>>
+      Tuple__Free #tuple @ ↑tupleN
+    <<< ts_phys_half α key O >>>
+    {{{ RET #(); True }}}.
   Proof.
     (*@ func (tuple *Tuple) Free() {                                            @*)
     (*@     // TODO                                                             @*)
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Tuple__KillVersion (tuple : loc) (tid : u64) key hist tsprep α :
-    (length hist ≤ uint.nat tid)%nat ->
+  Theorem wp_Tuple__KillVersion (tuple : loc) (tid : u64) key α :
     is_tuple tuple key α -∗
-    {{{ tuple_phys_half α key hist tsprep }}}
-      Tuple__KillVersion #tuple #tid
-    {{{ RET #(); tuple_phys_half α key (last_extend (uint.nat tid) hist ++ [None]) tsprep }}}.
+    {{{ True }}}
+    <<< ∀∀ hist, hist_phys_half α key hist ∗ ⌜(length hist ≤ uint.nat tid)%nat⌝ >>>
+      Tuple__KillVersion #tuple #tid @ ↑tupleN
+    <<< hist_phys_half α key (last_extend (uint.nat tid) hist ++ [None]) >>>
+    {{{ RET #(); True }}}.
   Proof.
     (*@ func (tuple *Tuple) KillVersion(tid uint64) {                           @*)
     (*@     // TODO                                                             @*)
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Tuple__Own (tuple : loc) (tid : u64) key hist tsprep α :
+  (* TODO: should check [tid], [tsprep], and [length hist]. *)
+  Theorem wp_Tuple__Own (tuple : loc) (tid : u64) key α :
     is_tuple tuple key α -∗
-    {{{ tuple_phys_half α key hist tsprep }}}
-      Tuple__Own #tuple #tid
-    {{{ (ok : bool), RET #ok; if ok
-                           then tuple_phys_half α key hist (uint.nat tid)
-                           else tuple_phys_half α key hist tsprep
-    }}}.
+    {{{ True }}}
+    <<< ∀∀ hist tsprep, tuple_phys_half α key hist tsprep >>>
+      Tuple__Own #tuple #tid @ ↑tupleN
+    <<< ∃∃ (ok : bool), if ok
+                     then tuple_phys_half α key hist (uint.nat tid)
+                     else tuple_phys_half α key hist tsprep
+    >>>
+    {{{ RET #ok; True }}}.
   Proof.
     (*@ func (tuple *Tuple) Own(tid uint64) bool {                              @*)
     (*@     // TODO                                                             @*)
