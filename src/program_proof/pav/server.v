@@ -6,6 +6,8 @@ From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.
 From Perennial.base_logic Require Import ghost_map.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Module hashChain.
 Record t :=
@@ -34,16 +36,18 @@ Record t :=
     γmonoLinks: gname;
     γmonoTrs: gname;
   }.
+#[global] Instance etaServer : Settable _ :=
+  settable! mk <mu; trees; updates; chain; linkSigs; hon; γmonoLinks; γmonoTrs>.
 
 Section local_defs.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
 Definition my_inv γmonoLinks γmonoTrs : iProp Σ :=
-  ∃ links γtrs trs nextTr prevLinks digs,
+  ∃ links γtrs trs updates prevLinks digs,
   "#Hbinds" ∷ ([∗ list] epoch ↦ xy; link ∈ (zip prevLinks digs); links,
     is_hash (chainSepSome.encodesF (chainSepSome.mk epoch xy.1 xy.2)) link) ∗
   "Hlinks" ∷ mono_list_auth_own γmonoLinks (1/2) links ∗
-  "Hmaps" ∷ ([∗ list] γtr; tr ∈ γtrs; (trs ++ [nextTr]), ghost_map_auth γtr (1/2) tr) ∗
+  "Hmaps" ∷ ([∗ list] γtr; tr ∈ γtrs; (trs ++ [updates]), ghost_map_auth γtr (1/2) tr) ∗
   "HmonoTrs" ∷ mono_list_auth_own γmonoTrs (1/2) γtrs ∗
   "#Hdigs" ∷ ([∗ list] tr; dig ∈ trs; digs, isTreeDig tr dig).
 
@@ -68,12 +72,13 @@ Definition own ptr obj : iProp Σ :=
   "Hown_trees" ∷ ([∗ list] ptr_tr; tr ∈ sl_treePtrs; obj.(trees),
     own_Tree ptr_tr tr) ∗
   "HmonoTrs" ∷ mono_list_auth_own obj.(γmonoTrs) (1/2) γtrs ∗
-  "HlastγTr" ∷ ⌜Some lastγTr = last γtrs⌝ ∗
-  "Hview_nextTr" ∷ ghost_map_auth lastγTr (1/2) obj.(updates).
+  "%HlastγTr" ∷ ⌜Some lastγTr = last γtrs⌝ ∗
+  "Hview_updates" ∷ ghost_map_auth lastγTr (1/2) obj.(updates).
 
 Definition valid ptr obj : iProp Σ :=
   "#Hmu" ∷ ptr ↦[server :: "mu"]□ #obj.(mu) ∗
-  "#HmuR" ∷ is_lock nroot #obj.(mu) (own ptr obj).
+  "#HmuR" ∷ is_lock nroot #obj.(mu) (own ptr obj) ∗
+  "#Hinv" ∷ inv nroot (my_inv obj.(γmonoLinks) obj.(γmonoTrs)).
 
 End local_defs.
 End server.
@@ -113,24 +118,25 @@ Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_map
 
 Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
   {{{
-    "Hvalid_serv" ∷ server.valid ptr_serv obj_serv ∗
+    "Hserv" ∷ server.valid ptr_serv obj_serv ∗
     "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
     "Hval" ∷ own_slice_small sl_val byteT d1 val
   }}}
   server__put #ptr_serv (slice_val sl_id) (slice_val sl_val)
   {{{
     ptr_reply reply, RET #ptr_reply;
-    "Hreply" ∷ servPutReply.own ptr_reply reply
+    "Hreply" ∷ servPutReply.own ptr_reply reply ∗
+    if negb reply.(servPutReply.error) then
+      "Hserv" ∷ server.valid ptr_serv (obj_serv <|server.updates := (<[id:=val]>obj_serv.(server.updates))|>)
+    else
+      "Hserv" ∷ server.valid ptr_serv obj_serv
   }}}.
-Proof. Admitted.
-(*
+Proof.
   rewrite /server__put.
-  iIntros (Φ) "H HΦ"; iNamed "H".
-  rewrite /server.valid; iNamed "Hvalid_serv".
+  iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hserv".
 
   wp_loadField.
-  wp_apply (acquire_spec with "[$HmuR]"); iIntros "[Hlocked Hown_serv]".
-  iEval (rewrite /server.own) in "Hown_serv"; iNamed "Hown_serv".
+  wp_apply (acquire_spec with "[$HmuR]"); iIntros "[Hlocked Hown_serv]"; iNamed "Hown_serv".
 
   wp_apply wp_allocStruct; [val_ty|];
     iIntros (ptr_errReply) "Hptr_errReply".
@@ -146,19 +152,66 @@ Proof. Admitted.
     iFrame "#∗".
   }
 
-  (* see if id was already changed in this epoch. *)
+  (* check id len *)
+  wp_apply wp_slice_len.
+  wp_if_destruct.
+  {
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ HerrReply]"); [iFrame "#∗%"|].
+    wp_pures; iApply "HΦ"; by iFrame "∗#".
+  }
+
+  (* check if id was already updated. if not, update. *)
   wp_apply (wp_StringFromBytes with "[$Hid]"); iIntros "Hid".
   wp_loadField.
-  Search impl.MapGet.
-  wp_apply (wp_MapGet with "[$Hown_changed]");
-    iIntros (? ok) "[%HmapGet Hown_changed]".
+  wp_apply (wp_MapGet with "[$Hown_updates]");
+    iIntros (? ok) "[%Hmap_get Hown_updates]".
   destruct ok.
   {
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HerrReply]"); [iFrame "#∗"|].
-    wp_pures; by iApply "HΦ".
+    wp_apply (release_spec with "[-HΦ HerrReply]"); [iFrame "#∗%"|].
+    wp_pures; iApply "HΦ"; by iFrame "∗#".
   }
   wp_loadField.
+  wp_apply (wp_MapInsert_to_val with "[$Hown_updates]"); iIntros "Hown_updates".
+
+  (* prepare put promise. *)
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_apply wp_allocStruct; [val_ty|];
+    iIntros (ptr_putPre_obj) "Hptr_putPre_obj".
+  wp_apply (servSepPut.wp_encode with "[Hptr_putPre_obj Hid Hval]").
+  {
+    iDestruct (struct_fields_split with "Hptr_putPre_obj") as "H"; iNamed "H".
+    instantiate (1:=servSepPut.mk _ _ _).
+    rewrite /servSepPut.own /=.
+    iExists sl_id, sl_val; iFrame.
+  }
+  iIntros (sl_putPre putPre) "H"; iNamed "H";
+    iRename "Hobj" into "Hptr_putPre";
+    iRename "Hsl_enc" into "Hsl_putPre";
+    move: Henc => Henc_putPre.
+
+  (* sign put promise. *)
+  (* use iInv to open invariant to get other half of ghost_map. *)
+  About ghost_map_insert.
+  iMod (ghost_map_insert with "[$Hview_updates]").
+  Print map_get.
+  Search map_get.
+  apply map_get_false in Hmap_get as [Hmap_get _].
+  wp_loadField.
+  wp_apply (wp_Sign with "[$Hown_sk $Hsl_putPre]").
+  {
+
+    rewrite /serv_sigpred.
+    Print serv_sigpred_put.
+    (* for serv_sigpred_put:
+       need to give idx_own Trs for epoch. and persis ghost_map ptsto.
+       should already have idx_own. at prev updateEpoch, we expanded mono_list.
+       need to iMod ghost_map to give persis thing.
+    *)
+    iEval 
+    }
 Admitted.
 *)
 

@@ -104,6 +104,7 @@ Proof.
   by apply Forall_lookup.
 Qed.
 
+(* TODO: mv to commits_entry. *)
 Lemma commitsToEntry_inj' pos rest val1 val2 digest :
   commitsToEntry (pos :: rest) val1 digest -∗
   commitsToEntry (pos :: rest) val2 digest -∗
