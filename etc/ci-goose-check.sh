@@ -94,7 +94,7 @@ etc/update-goose.py --goose $GOOSE_DIR --compile \
 # Missing: --distributed-examples (not currently used)
 
 echo && echo "Goose check: re-run goose-new"
-etc/update-goose-new.py --goose $NEW_GOOSE_DIR --compile --gokv $GOKV_DIR
+new/etc/update-goose-new.py --goose $NEW_GOOSE_DIR --compile --gokv $GOKV_DIR
 
 echo && echo "Goose check: check if anything changed"
 if [ -n "$(git status --porcelain)" ]; then

@@ -3,7 +3,6 @@ From iris.proofmode Require Export environments.
 From Perennial.Helpers Require Export ipm.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lang lifting.
-From Perennial.new_goose_lang Require Export exception loop.impl.
 Set Default Proof Using "Type".
 Import uPred.
 
