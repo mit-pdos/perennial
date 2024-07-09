@@ -27,8 +27,8 @@
   (let* (;; 2 spaces at front, 1 ┏, 2 spaces around `header'
 		 (width (- fill-column 2 1 2))
 		 (lenheader  (length header))
-		 (lenprefix  (/ (- width lenheader) 2))
-		 (lenpostfix (- width lenprefix lenheader))
+		 (lenprefix  (max 0 (/ (- width lenheader) 2)))
+		 (lenpostfix (max 0 (- width lenprefix lenheader)))
 		 (prefix  (mixcode-fontify-boundary (concat "┏" (make-string lenprefix ?━))))
 		 (postfix (mixcode-fontify-boundary (make-string lenpostfix ?━))))
 	(format "%s %s %s"
@@ -40,8 +40,8 @@
   (let* (;; 4 spaces at front, 1 ┏,1 , 2 spaces around `res'
 		 (width (- fill-column 4 1 1 2))
 		 (lenres     (length res))
-		 (lenprefix  (/ (- width lenres) 2))
-		 (lenpostfix (- width lenprefix lenres))
+		 (lenprefix  (max 0 (/ (- width lenres) 2)))
+		 (lenpostfix (max 0 (- width lenprefix lenres)))
 		 (prefix  (mixcode-fontify-boundary (concat "─" (make-string lenprefix ?─))))
 		 (postfix (mixcode-fontify-boundary (concat (make-string lenpostfix ?─) "─"))))
 	(format "%s %s %s"
