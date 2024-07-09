@@ -129,7 +129,7 @@ Definition MakeClient: val :=
     control.impl.Assume ("err" = #0);;
     "cl".
 
-Definition Error: ty := uint64T.
+Notation Error := uint64T.
 
 Definition ErrNone : expr := #0.
 

@@ -1,8 +1,6 @@
-From iris.proofmode Require Import coq_tactics reduction.
-From Perennial.base_logic.lib Require Import invariants.
 From Perennial.goose_lang Require Import proofmode lifting.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import mem typing exception.
+From New.golang.theory Require Import mem typing exception list.
 From Perennial.Helpers Require Import NamedProps.
 
 Module struct.
@@ -110,5 +108,12 @@ Proof.
   repeat f_equal.
   word.
 Qed.
+
+(*
+Lemma wp_struct_make l d fvs :
+  {{{ True }}}
+    struct.make d (list.val fvs)
+  {{{ RET (struct.val d fvs); True }}}
+. *)
 
 End wps.

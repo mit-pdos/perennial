@@ -269,6 +269,8 @@ def main():
             "erpc",
             "paxi/reconf",
             "map_string_marshal",
+            "asyncfile",
+            "vrsm/paxos",
             "vrsm/replica",
             "vrsm/reconfig",
             "vrsm/configservice",

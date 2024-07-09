@@ -4,7 +4,7 @@ From Goose Require github_com.mit_pdos.gokv.urpc.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Definition Decision: ty := byteT.
+Notation Decision := byteT.
 
 Definition Unknown : expr := #(U8 0).
 
@@ -121,11 +121,13 @@ Definition MakeCoordinator: val :=
       "participants" ::= ![slice.T ptrT] "clerks"
     ].
 
+Definition GetDecisionId : expr := #1.
+
 Definition CoordinatorClerk__GetDecision: val :=
   rec: "CoordinatorClerk__GetDecision" "ck" :=
     let: "req" := NewSlice byteT #0 in
     let: "reply" := ref_to (slice.T byteT) (NewSlice byteT #1) in
-    let: "err" := urpc.Client__Call (struct.loadF CoordinatorClerk "client" "ck") "GetDecisionId" "req" "reply" #1000 in
+    let: "err" := urpc.Client__Call (struct.loadF CoordinatorClerk "client" "ck") GetDecisionId "req" "reply" #1000 in
     control.impl.Assume ("err" = #0);;
     SliceGet byteT (![slice.T byteT] "reply") #0.
 
@@ -135,8 +137,6 @@ Definition CoordinatorServer__GetDecision: val :=
     let: "decision" := struct.loadF CoordinatorServer "decision" "s" in
     lock.release (struct.loadF CoordinatorServer "m" "s");;
     "decision".
-
-Definition GetDecisionId : expr := #1.
 
 Definition CoordinatorMain: val :=
   rec: "CoordinatorMain" "me" "participants" :=

@@ -10,11 +10,11 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* 0_common.go *)
 
-Definition HostName: ty := uint64T.
+Notation HostName := uint64T.
 
-Definition ValueType: ty := uint64T.
+Notation ValueType := uint64T.
 
-Definition ErrorType: ty := uint64T.
+Notation ErrorType := uint64T.
 
 Definition ENone : expr := #0.
 
@@ -357,7 +357,7 @@ Definition ShardClerkSet__GetClerk: val :=
 
 (* 2_memkv_shard.go *)
 
-Definition KvMap: ty := mapT (slice.T byteT).
+Notation KvMap := (mapT (slice.T byteT)).
 
 Definition KVShardServer := struct.decl [
   "me" :: stringT;

@@ -22,7 +22,7 @@ Definition Clerk__Prepare: val :=
 
 (* ValType from common.go *)
 
-Definition ValType: ty := uint64T.
+Notation ValType := uint64T.
 
 Definition Clerk__Propose: val :=
   rec: "Clerk__Propose" "ck" "Pn" "Val" :=
