@@ -47,7 +47,7 @@ Definition BytesClone : val :=
       return: (slice.nil);;;
       do:  #()
     else do:  #());;;
-    return: (slice.append byteT (nil #()) (![sliceT byteT] "b"));;;
+    return: (slice.append byteT (slice.literal byteT []) (![sliceT byteT] "b"));;;
     do:  #()).
 
 (* Returns true if x + y does not overflow *)

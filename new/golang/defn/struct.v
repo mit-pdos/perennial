@@ -1,9 +1,9 @@
-From New.golang.defn Require Import mem.
+From New.golang.defn Require Import mem list.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
-Notation "f ::= v" := (@pair string val f%string v%V) (at level 60) : val_scope.
-Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
+Notation "f ::= v" := (PairV #(str f%string) v%V) (at level 60) : val_scope.
+Notation "f ::= v" := (Pair #(str f%string) v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
 
 Module struct.
@@ -11,6 +11,8 @@ Section goose_lang.
 Infix "=?" := (String.eqb).
 
 Context `{ffi_syntax}.
+Local Coercion Var' (s:string) : expr := Var s.
+
 Fixpoint field_offset (d : struct.descriptor) f0 : (Z * go_type) :=
   match d with
   | [] => (-1, ptrT)
@@ -25,25 +27,20 @@ Definition field_ref (d : struct.descriptor) f0: val :=
 
 Definition field_ty d f0 : go_type := (field_offset d f0).2.
 
-Fixpoint make_def (d : struct.descriptor) (field_vals: list (string*expr)) : expr :=
-  match d with
-  | [] => Val #()
-  | (f,ft)::fs => (default (Val (zero_val ft)) (assocl_lookup field_vals f), make_def fs field_vals)
-  end.
-Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
-Definition make_unseal : make = _ := seal_eq _.
-
 Local Definition assocl_lookup_goose : val :=
-  λ: "fvs" "f",
+  rec: "assocl_lookup" "fvs" "f" :=
+    list.Match "fvs"
+              (λ: <>, InjLV #())
+              (λ: "fv" "fvs",
+                 let: ("f'", "v") := "fv" in
+                 if: "f" = "f'" then InjR "v" else "assocl_lookup" "fvs" "f").
 
-Fixpoint make2_def (d : struct.descriptor) : expr :=
-  λ: "fvs",
-    match d with
-    | [] => Val #()
-    | (f,ft)::fs =>
-        if:
-        (default (Val (zero_val ft)) (assocl_lookup field_vals f), make2_def fs field_vals)
-    end.
+Fixpoint make_def (d : struct.descriptor) : val :=
+  match d with
+  | [] => λ: "fvs", Val #()
+  | (f,ft)::fs => λ: "fvs", Val #() (Match (assocl_lookup_goose "fvs" f) <> (Val (zero_val ft)) "x" "x",
+                                     (make_def fs) "fvs")
+  end.
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 
