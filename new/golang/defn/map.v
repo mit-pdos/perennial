@@ -1,6 +1,5 @@
 From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Import loop typing.
-From Perennial.goose_lang.lib Require Import control.impl. (* FIXME: remove this import *)
 
 Module map.
 (* FIXME: seal these functions *)
@@ -64,8 +63,8 @@ Definition len : val :=
   λ: "mref",
     let: "len" := Alloc #0 in
     for_range "mref" (λ: <> <>,
-                       "len" <- !"len" + #1;;
-                       Assume (!"len" < #(2^64-1)));;
+                       "len" <- !"len" + #1 ;;
+                       (for: (!"len" < #(2^64-1)) ; Skip := #())) ;;
     !"len".
 
 Definition make (kt vt : go_type) : val :=

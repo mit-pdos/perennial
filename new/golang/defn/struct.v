@@ -7,7 +7,6 @@ Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scop
 Delimit Scope struct_scope with struct.
 
 Module struct.
-(* FIXME: seal these functions *)
 Section goose_lang.
 Infix "=?" := (String.eqb).
 
@@ -26,11 +25,27 @@ Definition field_ref (d : struct.descriptor) f0: val :=
 
 Definition field_ty d f0 : go_type := (field_offset d f0).2.
 
-Fixpoint make (d : struct.descriptor) (field_vals: list (string*expr)) : expr :=
+Fixpoint make_def (d : struct.descriptor) (field_vals: list (string*expr)) : expr :=
   match d with
   | [] => Val #()
-  | (f,ft)::fs => (default (Val (zero_val ft)) (assocl_lookup field_vals f), make fs field_vals)
+  | (f,ft)::fs => (default (Val (zero_val ft)) (assocl_lookup field_vals f), make_def fs field_vals)
   end.
+Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
+Definition make_unseal : make = _ := seal_eq _.
+
+Local Definition assocl_lookup_goose : val :=
+  λ: "fvs" "f",
+
+Fixpoint make2_def (d : struct.descriptor) : expr :=
+  λ: "fvs",
+    match d with
+    | [] => Val #()
+    | (f,ft)::fs =>
+        if:
+        (default (Val (zero_val ft)) (assocl_lookup field_vals f), make2_def fs field_vals)
+    end.
+Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
+Definition make_unseal : make = _ := seal_eq _.
 
 End goose_lang.
 End struct.
