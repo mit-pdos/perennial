@@ -50,6 +50,15 @@ Definition BytesClone : val :=
     return: (slice.append byteT (slice.literal byteT []) (![sliceT byteT] "b"));;;
     do:  #()).
 
+Definition SliceSplit : val :=
+  rec: "SliceSplit" "xs" "n" :=
+    exception_do (let: "n" := ref_ty uint64T "n" in
+    let: "xs" := ref_ty (sliceT T) "xs" in
+    return: (let: "$s" := ![sliceT T] "xs" in
+     slice.slice T "$s" #0 (![uint64T] "n"), let: "$s" := ![sliceT T] "xs" in
+     slice.slice T "$s" (![uint64T] "n") (slice.len "$s"));;;
+    do:  #()).
+
 (* Returns true if x + y does not overflow *)
 Definition SumNoOverflow : val :=
   rec: "SumNoOverflow" "x" "y" :=
@@ -87,12 +96,15 @@ Definition Multipar : val :=
       let: "i" := ref_ty uint64T (zero_val uint64T) in
       let: "$a0" := ![uint64T] "i" in
       do:  "i" <-[uint64T] "$a0";;;
-      do:  Fork (do:  (![funcT] "op") (![uint64T] "i");;;
-            do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
-            do:  "num_left" <-[uint64T] ((![uint64T] "num_left") - #1);;;
-            do:  (sync.Cond__Signal (![ptrT] "num_left_cond")) #();;;
-            do:  (sync.Mutex__Unlock (![ptrT] "num_left_mu")) #();;;
-            do:  #());;;
+      do:  let: "$go" := (λ: <>,
+        do:  (![funcT] "op") (![uint64T] "i");;;
+        do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
+        do:  "num_left" <-[uint64T] ((![uint64T] "num_left") - #1);;;
+        do:  (sync.Cond__Signal (![ptrT] "num_left_cond")) #();;;
+        do:  (sync.Mutex__Unlock (![ptrT] "num_left_mu")) #();;;
+        do:  #()
+        ) in
+      Fork ("$go" #());;;
       do:  #()));;;
     do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
     (for: (λ: <>, (![uint64T] "num_left") > #0); (λ: <>, Skip) := λ: <>,
