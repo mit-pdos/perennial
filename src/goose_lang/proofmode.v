@@ -3,7 +3,6 @@ From iris.proofmode Require Export environments.
 From Perennial.Helpers Require Export ipm.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lang lifting.
-From Perennial.goose_lang Require Export typing new.exception new.loop.impl.
 Set Default Proof Using "Type".
 Import uPred.
 
@@ -198,12 +197,7 @@ Ltac wp_pure_filter e' :=
   (* For Beta-redices, we do *syntactic* matching only, to avoid unfolding
      definitions. This matches the treatment for [pure_beta] via [AsRecV]. *)
   first [ lazymatch e' with (App (Val (RecV _ _ _)) (Val _)) => idtac end
-        | eunify e' (do: (Val _))%E
-        | eunify e' (return: (Val _))%E
-        | eunify e' (continue: (Val _))%E
-        | eunify e' (break: (Val _))%E
-        | eunify e' (exception_seq _ (Val _))%E
-        | eunify e' (App exception_do (Val _))%E
+        | let _ := constr:(_:WpPureExecCandidate e') in idtac
         | eunify e' (rec: _ _ := _)%E
         | eunify e' (InjL (Val _))
         | eunify e' (InjR (Val _))
@@ -383,7 +377,6 @@ Tactic Notation "wp_if_destruct" :=
 (** Heap tactics *)
 Section heap.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
-Context {ext_tys: ext_types ext}.
 Implicit Types P Q : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
 Implicit Types Δ : envs (uPredI (iResUR Σ)).

@@ -3,7 +3,7 @@ From Perennial.program_proof.mvcc Require Import
      db_repr db_mk db_new_txn db_activate_gc
      txn_repr txn_read txn_write txn_delete txn_run.
 From Goose.github_com.mit_pdos.vmvcc Require Import examples.
-From Perennial.goose_lang Require Import grove_ffi_adequacy.
+From Perennial.goose_lang Require Import grove_ffi.adequacy.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

@@ -9,10 +9,16 @@ From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Export tactics notation.
-From Perennial.goose_lang Require Import typing.
 Set Default Proof Using "Type".
 
 Notation nonAtomic T := (naMode * T)%type.
+
+Ltac solve_exec_safe := intros; subst; do 4 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
+Ltac solve_exec_puredet :=
+  inversion 1; subst; unfold base_step in *; intros; repeat (monad_inv; simpl in * ); eauto.
+Ltac solve_pure_exec :=
+  subst; intros ?; apply nsteps_once, pure_base_step_pure_step;
+    constructor; [solve_exec_safe | solve_exec_puredet].
 
 Section definitions.
   Context `{ext:ffi_syntax}.
@@ -39,13 +45,13 @@ Section definitions.
          econstructor; eauto.
          apply _.
   Qed.
+  Global Instance heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
+    CombineSepGives (heap_pointsto l dq1 v1)%I (heap_pointsto l dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+  Proof. rewrite heap_pointsto_eq /CombineSepGives. iIntros "[[?H1] [?H2]]".
+         iCombine "H1 H2" gives %?. iModIntro. iPureIntro. done. Qed.
 
   Lemma heap_pointsto_agree l q1 q2 v1 v2 : heap_pointsto l q1 v1 ∗ heap_pointsto l q2 v2 -∗ ⌜v1 = v2⌝.
-  Proof.
-    rewrite heap_pointsto_eq /heap_pointsto_def.
-    iIntros "[[% Hv1] [% Hv2]]".
-    iApply (na_heap_pointsto_agree with "[$Hv1 $Hv2]").
-  Qed.
+  Proof. iIntros "[H1 H2]". iCombine "H1 H2" gives %[? ?]. done. Qed.
 
   Global Instance heap_pointsto_persistent l v : Persistent (heap_pointsto l DfracDiscarded v).
   Proof. rewrite heap_pointsto_eq. apply _. Qed.
@@ -146,7 +152,6 @@ Arguments ffi_restart {ffi FfiInterp Σ} : rename.
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
-Context {ext_tys: ext_types ext}.
 Context `{!ffi_interp ffi}.
 
 Definition traceO := leibnizO (list event).
@@ -579,13 +584,6 @@ Global Instance output_atomic s v : Atomic s (Output (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance resolve_atomic s p w : Atomic s (ResolveProph (Val (LitV (LitProphecy p))) (Val w)).
 Proof. solve_atomic. monad_inv. eauto. Qed.
-
-Local Ltac solve_exec_safe := intros; subst; do 4 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
-Local Ltac solve_exec_puredet :=
-  inversion 1; subst; unfold base_step in *; intros; repeat (monad_inv; simpl in * ); eauto.
-Local Ltac solve_pure_exec :=
-  subst; intros ?; apply nsteps_once, pure_base_step_pure_step;
-    constructor; [solve_exec_safe | solve_exec_puredet].
 
 (** The behavior of the various [wp_] tactics with regard to lambda differs in
 the following way:

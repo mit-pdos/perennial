@@ -20,7 +20,7 @@ Lemma wp_FileAppend f s q old data R R' Qc' S:
                   ((f f↦ old ∨ f f↦ (old ++ data)) -∗ |C={⊤}=> Qc') ∧ (f f↦ (old ++ data) ={⊤}=∗ R' ∗ S)) ∗
         "#HcrashOk" ∷ □(R' -∗ |C={⊤}=> Qc')
   }}}
-    FileAppend #(str f) (slice_val s)
+    grove_ffi.FileAppend #(str f) (slice_val s)
   {{{
         r, RET r; crash_borrow R' (|C={⊤}=> Qc') ∗ own_slice_small s byteT q data ∗ S
   }}}.
@@ -761,7 +761,7 @@ Proof.
     iDestruct (typed_slice.own_slice_sz with "Hmembuf_sl") as %Hsz.
     iDestruct (own_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
 
-    wp_bind (FileAppend _ _).
+    wp_bind (grove_ffi.FileAppend _ _).
     iApply (wpc_wp _ _ _ _ True).
     wpc_apply (wpc_crash_borrow_open_modify with "Hfile_ctx").
     { done. }

@@ -1,9 +1,8 @@
-From Perennial.program_proof Require Import new_grove_prelude.
+From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang Require Import crash_borrow.
-From Perennial.program_proof Require Import sync.
 
 Record af_names := mk_af_names {
   index_gn : gname ;
@@ -23,12 +22,11 @@ Class asyncfileG Σ :=
     tok_inG :> ghost_varG Σ ();
     idx_ing :> ghost_varG Σ u64;
     stagedG :> stagedG Σ ; (* for crash borrows? *)
-    syncG :> syncG Σ ;
   }.
 
 Definition asyncfileΣ :=
   #[mapΣ u64 () ; ghost_varΣ (list u8); ghost_varΣ (); ghost_varΣ u64 ;
-    stagedΣ ; syncΣ].
+    stagedΣ].
 Global Instance subG_asyncfileΣ {Σ} : subG (asyncfileΣ) Σ → (asyncfileG Σ).
 Proof. solve_inG. Qed.
 
@@ -119,9 +117,9 @@ Definition own_AsyncFile_ghost N γ P fname data idx durableIndex (closeRequeste
 Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
   ∃ data_sl fname (data:list u8) (idx durableIndex : u64) (indexCond durableIndexCond closedCond : loc)
     (closed closeRequested : bool) ,
-  "#Hfilename" ∷ f ↦[AsyncFile :: "filename"]□ #(str fname) ∗
+  "#Hfilename" ∷ readonly (f ↦[AsyncFile :: "filename"] #(str fname)) ∗
   "Hdata_sl" ∷ f ↦[AsyncFile :: "data"] (slice_val data_sl) ∗
-  "#Hdata" ∷ own_slice_small data_sl byteT (DfracDiscarded) data ∗
+  "#Hdata" ∷ readonly (own_slice_small data_sl byteT (DfracOwn 1) data) ∗
   "Hindex" ∷ f ↦[AsyncFile :: "index"] #idx ∗
   "HdurableIndex" ∷ f ↦[AsyncFile :: "durableIndex"] #durableIndex ∗
   "HindexCond" ∷ f ↦[AsyncFile :: "indexCond"] #indexCond ∗
@@ -131,8 +129,8 @@ Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
   "Hclosed" ∷ f ↦[AsyncFile :: "closed"] #closed ∗
   "HclosedCond" ∷ f ↦[AsyncFile :: "closedCond"] #closedCond ∗
 
-  "#HindexCond_is" ∷ is_Cond indexCond mu ∗
-  "#HdurableIndexCond_is" ∷ is_Cond durableIndexCond mu ∗
+  "#HindexCond_is" ∷ is_cond indexCond mu ∗
+  "#HdurableIndexCond_is" ∷ is_cond durableIndexCond mu ∗
 
   "Hghost" ∷ own_AsyncFile_ghost N γ P fname data idx durableIndex closeRequested closed ∗
   "%HnoClose" ∷  ⌜ closeRequested = false ⌝ (* TODO: don't want to prove close()
@@ -141,9 +139,9 @@ Definition own_AsyncFile_internal f N γ P mu : iProp Σ :=
 
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
-  ∃ (mu : loc),
-  "#Hmu" ∷ f ↦[AsyncFile :: "mu"]□ #mu ∗
-  "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P mu)
+  ∃ mu,
+  "#Hmu" ∷ readonly (f ↦[AsyncFile :: "mu"] mu) ∗
+  "#HmuInv" ∷ is_lock N mu (own_AsyncFile_internal f N γ P mu)
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=
@@ -207,50 +205,43 @@ Proof.
   wp_pures.
   iNamed "H".
   iNamed "His".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (index_addr) "Hlocal1". wp_pures.
-  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal2". wp_pures.
-  wp_load. wp_loadField.
-  wp_apply (wp_Mutex__Lock with "[$]").
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
 
-  wp_for.
+  wp_forBreak_cond.
   iNamed "Hown".
-  wp_pures.
-  wp_load.
   wp_loadField.
-  wp_load.
   wp_pures.
-  destruct bool_decide eqn:?.
+  wp_if_destruct.
   { (* case: wait *)
-    iModIntro; iLeft; iSplitR; first done.
-    wp_pures. wp_load. wp_loadField.
-    wp_apply (wp_Cond__Wait with "[-Htok HΦ Hlocal1 Hlocal2]").
+    wp_pures. wp_loadField.
+    wp_apply (wp_condWait with "[-Htok HΦ]").
     {
       iFrame "HdurableIndexCond_is HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
-    iApply wp_for_post_do. iModIntro.
-    wp_pures.
-    by iFrame.
+    iLeft.
+    iSplitR; first done.
+    iModIntro. iFrame.
   }
   { (* case: i is durable *)
     iModIntro.
-    rewrite bool_decide_eq_false in Heqb.
     iRight. iSplitR; first done.
     wp_pures.
+    wp_loadField.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
-    wp_load. wp_loadField.
-    wp_apply (wp_Mutex__Unlock with "[-Htok HΦ Hlocal1 Hlocal2]").
+    wp_apply (release_spec with "[-Htok HΦ]").
     {
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
     }
     iMod (wait_step with "[$] [$] [$]") as "HQ".
-    wp_pure1. wp_pure1. wp_pures. (* FIXME: manually doing [wp_pure1] to eliminate ▷ *)
+    wp_pures.
     iModIntro. iApply "HΦ". iFrame.
   }
 Qed.
@@ -375,34 +366,28 @@ Proof.
   iNamed "Hf".
   iAssert (_) with "His" as "His2".
   iNamed "His2".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (data_addr) "Hlocal1". wp_pures.
-  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal2". wp_pures.
-  wp_load.
   wp_loadField.
-  wp_apply (wp_Mutex__Lock with "[$]").
+  wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
-  wp_load. wp_load. wp_storeField.
-  wp_load. wp_loadField.
+  wp_storeField.
+  wp_loadField.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hno_overflow).
-  wp_load. wp_storeField.
+  wp_storeField.
+  wp_loadField.
   wp_pures.
-  wp_apply wp_ref_zero; [done|].
-  iIntros (index_ptr) "Hlocal3".
-  wp_load. wp_loadField.
-  wp_pures. wp_store.
-  wp_load. wp_loadField.
+  wp_loadField.
   iMod (write_step with "[$] [$] [$] Hupd") as "H".
   { word. }
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
-  iMod (own_slice_small_persist with "Hdata_in") as "#Hdata_in".
-  wp_apply wp_Cond__Signal.
+  iMod (readonly_alloc_1 with "Hdata_in") as "#Hdata_in".
+  wp_apply wp_condSignal.
   { iFrame "#". }
   wp_pures.
-  wp_load. wp_loadField.
-  wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc Hlocal1 Hlocal2 Hlocal3]").
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ Hnoclose Hdat Hesc]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -414,8 +399,6 @@ Proof.
   iApply "HΦ".
   iFrame "∗#".
   wp_pures.
-  wp_load.
-  wp_load.
   wp_apply (wp_AsyncFile__wait N _ _ P with "[-]").
   { iFrame "∗#". }
   iIntros "HQ".
@@ -480,7 +463,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data :
         "HpreData" ∷ own_predurable_data γ data ∗
         "HpreIdx" ∷ own_predurable_index γ 0 ∗
         "HdurIdx" ∷ own_durable_index γ 0 ∗
-        "#Hfilename_in" ∷ f ↦[AsyncFile :: "filename"]□ #(str fname) ∗
+        "#Hfilename_in" ∷ readonly (f ↦[AsyncFile :: "filename"] #(str fname)) ∗
         "Hfile" ∷ crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d)
   }}}
     asyncfile.AsyncFile__flushThread #f
@@ -493,10 +476,8 @@ Proof.
   iNamed "H".
   wp_lam.
   iNamed "His".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (s_addr) "Hlocal1". wp_pures.
-  wp_load.
   wp_loadField.
-  wp_apply (wp_Mutex__Lock with "[$]").
+  wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iAssert (∃ curdata curidx,
@@ -506,21 +487,20 @@ Proof.
               "Hfile" ∷ crash_borrow (P curdata ∗ fname f↦ curdata) (∃ d : list u8, P d ∗ fname f↦d)
           )%I with "[HpreData HpreIdx HdurIdx Hfile]" as "HH".
   { repeat iExists _; iFrame. }
-  wp_for.
+  wp_forBreak.
   wp_pures.
-  iModIntro. iLeft; iSplitR; first done.
+
   clear data.
   iNamed "Hown".
   subst.
+  wp_loadField.
   wp_pures.
-  wp_load. wp_loadField.
-  wp_pures.
-  wp_load. wp_loadField.
-  wp_load. wp_loadField.
+  wp_loadField.
+  wp_loadField.
   wp_if_destruct.
   {
-    wp_load. wp_loadField.
-    wp_apply (wp_Cond__Wait with "[-HΦ HH Hlocal1]").
+    wp_loadField.
+    wp_apply (wp_condWait with "[-HΦ HH]").
     {
       iFrame "HindexCond_is HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
@@ -528,42 +508,42 @@ Proof.
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
-    iApply wp_for_post_continue.
-    iModIntro. wp_pures. by iFrame.
+    iLeft.
+    iSplitR; first done.
+    iModIntro. iFrame.
   }
   (* case: have something to write *)
-  wp_pures.
-  wp_apply wp_ref_zero; [done|]. iIntros (index_ptr) "Hlocal2".
-  wp_pures.
-  wp_load. wp_loadField. wp_pures. wp_store. wp_pures.
-  wp_apply wp_ref_zero; [done|]. iIntros (data_ptr) "Hlocal3".
-  wp_load. wp_loadField. wp_store. wp_pures.
-  wp_load. wp_loadField.
+  wp_loadField. wp_loadField.
+  wp_loadField.
 
   iNamed "HH".
   iMod (get_upd with "[$] [$] [$] [$]") as "H".
   iDestruct "H" as "(HpreData & HpreIdx & HdurIdx & Hupd & Hghost)".
-  wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile Hlocal1 Hlocal2 Hlocal3]").
+  wp_apply (release_spec with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile]").
   {
     iFrame "HmuInv Hlocked".
     repeat iExists _; iFrame "∗#%".
     done.
   }
   wp_pures.
-  wp_load. wp_load. wp_loadField.
+  wp_loadField.
 
-  iDestruct (struct_field_pointsto_agree with "Hfilename_in Hfilename") as %?.
+  iMod (readonly_load with "Hfilename_in") as (?) "H1".
+  iMod (readonly_load with "Hfilename") as (?) "H2".
+  iDestruct (struct_field_pointsto_agree with "H1 H2") as %?.
+  iClear "H1 H2".
   injection H as <-.
-  wp_bind (FileWrite _ _).
+  wp_bind (grove_ffi.FileWrite _ _).
   iApply (wpc_wp _ _ _ _ True).
   wpc_apply (wpc_crash_borrow_open_modify with "Hfile").
   { done. }
   iSplit; first done.
   iIntros "[HP Hf]".
+  iMod (readonly_load with "Hdata") as (?) "Hdata2".
   iApply wpc_cfupd.
   iApply wpc_ncfupd.
-  wpc_apply (wpc_FileWrite with "[Hf Hdata]").
-  { iFrame "∗#". }
+  wpc_apply (wpc_FileWrite with "[Hf Hdata2]").
+  { iFrame. }
   iSplit.
   { (* case: crash in the middle *)
     iIntros "[Hold|Hnew]".
@@ -588,24 +568,28 @@ Proof.
   iSplit; first done.
 
   wp_pures.
-  wp_load. wp_loadField.
-  wp_apply (wp_Mutex__Lock with "[$]").
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hown]".
   iClear "Hfilename Hdata HindexCond_is HdurableIndexCond_is".
   iNamed "Hown".
   wp_pures.
-  wp_load. wp_load. wp_storeField.
-  wp_load. wp_loadField.
-  wp_apply wp_Cond__Broadcast.
+  wp_storeField.
+  wp_loadField.
+  wp_apply wp_condBroadcast.
   { iFrame "#". }
   wp_pures.
   iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".
   iModIntro.
-  iApply wp_for_post_do.
-  wp_pures.
+  iLeft.
+  iSplitR; first done.
   iFrame "HΦ Hlocked".
-  iModIntro.
-  iFrame "∗#%".
+  iSplitR "HpreData HpreIdx HdurIdx Hfile".
+  {
+    repeat iExists _.
+    iFrame "∗#%".
+  }
+  repeat iExists _; iFrame.
 Qed.
 
 Lemma alloc_ghost N P data fname :
@@ -682,7 +666,7 @@ Lemma wp_MakeAsyncFile fname N P data :
   }}}
     asyncfile.MakeAsyncFile #(str fname)
   {{{
-        γ sl f, RET (slice_val sl, #f); (own_slice_small sl byteT DfracDiscarded data) ∗
+        γ sl f, RET (slice_val sl, #f); readonly (own_slice_small sl byteT (DfracOwn 1) data) ∗
                                         own_AsyncFile N f γ P data
   }}}
 .
@@ -690,40 +674,34 @@ Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
   wp_lam.
-  wp_apply wp_ref_to; [val_ty|]. iIntros (filename_addr) "Hlocal". wp_pures.
-  iMod (struct_pointsto_persist with "Hlocal") as "#?".
-
-  wp_apply wp_ref_zero; [done|].
-  iIntros (s_ptr) "Hlocal".
-  wp_apply wp_allocStruct; [val_ty|].
+  wp_apply wp_allocStruct.
+  { Transparent slice.T. repeat econstructor. Opaque slice.T. }
   iIntros (f) "Hf".
   iDestruct (struct_fields_split with "Hf") as "HH".
   iNamed "HH".
-  wp_pures. wp_store. wp_pures.
-  iMod (struct_pointsto_persist with "Hlocal") as "#?".
-
-  wp_apply wp_new_Mutex.
+  wp_pures.
+  wp_apply wp_new_free_lock.
   iIntros (?) "HmuInv".
-  wp_load. wp_storeField.
+  wp_storeField.
 
-  wp_load. wp_loadField.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_load. wp_storeField.
+  wp_loadField.
+  wp_apply (wp_newCond' with "[$]").
+  iIntros (?) "[HmuInv #?]".
+  wp_storeField.
 
-  wp_load. wp_loadField.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_load. wp_storeField.
 
-  wp_load. wp_loadField.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_load. wp_storeField.
-  wp_load. wp_load. wp_storeField.
+  wp_loadField.
+  wp_apply (wp_newCond' with "[$]").
+  iIntros (?) "[HmuInv #?]".
+  wp_storeField.
 
-  wp_pures. wp_load.
-  wp_bind (FileRead _).
+  wp_loadField.
+  wp_apply (wp_newCond' with "[$]").
+  iIntros (?) "[HmuInv #?]".
+  wp_storeField.
+  wp_storeField.
+
+  wp_bind (grove_ffi.FileRead _).
   iApply (wpc_wp _ _ _ _ True).
   wpc_apply (wpc_crash_borrow_open with "Hfile").
   { done. }
@@ -740,32 +718,27 @@ Proof.
   iIntros "Hfile".
   iSplitR; first done.
 
-  repeat (wp_load; wp_storeField).
+  repeat wp_storeField.
 
+  wp_loadField.
   wp_pures.
-  wp_apply wp_ref_zero; [done|].
-  iIntros (data_ptr) "Hlocal".
-  wp_pures.
-  wp_load. wp_loadField.
-  wp_pures. wp_store.
-  iMod (struct_pointsto_persist with "Hlocal") as "#?".
-  wp_pures.
-
-  iMod (struct_field_pointsto_persist with "mu") as "#Hmu".
-  iMod (struct_field_pointsto_persist with "filename") as "#Hfilename".
+  iMod (readonly_alloc_1 with "mu") as "#Hmu".
+  iMod (readonly_alloc_1 with "filename") as "#Hfilename".
   iDestruct (own_slice_to_small with "Hdata") as "Hdata".
-  iMod (own_slice_small_persist with "Hdata") as "#Hdata".
+  iMod (readonly_alloc_1 with "Hdata") as "#Hdata".
   iMod (alloc_ghost N P data fname) as (γ) "H".
   iNamed "H".
   iAssert (|={⊤}=> is_AsyncFile N f γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed]" as ">#His".
   {
-    iMod (init_Mutex with "[$] [-]") as "$"; last done.
-    iNext. by iFrame "∗#".
+    repeat iExists _; iFrame "#".
+    iMod (alloc_lock with "[$] [-]") as "$"; last done.
+    iNext. repeat iExists _; iFrame "Hghost ∗ #".
+    done.
   }
 
   wp_apply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile]").
   {
-    iNext. wp_load.
+    iNext.
     wp_apply (wp_AsyncFile__flushThread with "[-]").
     {
       (* iFrame performance slow: iFrame "His".*)
@@ -773,10 +746,8 @@ Proof.
       { iExact "His". }
       iFrame "∗#".
     }
-    wp_pures.
     done.
   }
-  wp_pures. wp_load. wp_load.
   wp_pures.
   iApply "HΦ". iModIntro.
   iFrame "∗#".

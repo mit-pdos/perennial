@@ -571,7 +571,7 @@ Proof.
   wp_load.
   wp_loadField.
 
-  wp_bind (FileWrite _ _).
+  wp_bind (grove_ffi.FileWrite _ _).
   iApply (wpc_wp _ _ _ _ True).
 
   wpc_apply (wpc_crash_borrow_open_modify with "Hfile").
@@ -932,7 +932,7 @@ Proof.
 
   wp_loadField.
 
-  wp_bind (FileRead _).
+  wp_bind (grove_ffi.FileRead _).
   iApply wpc_wp.
   instantiate (1:=True%I).
   wpc_apply (wpc_crash_borrow_open_modify with "Hfile_ctx").
@@ -1043,7 +1043,7 @@ Proof.
     wp_loadField.
 
     iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
-    wp_bind (FileWrite _ _).
+    wp_bind (grove_ffi.FileWrite _ _).
     iApply (wpc_wp).
     instantiate (1:=True%I).
     wpc_apply (wpc_crash_borrow_open_modify with "Hfile_ctx").

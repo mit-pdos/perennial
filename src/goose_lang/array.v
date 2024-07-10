@@ -2,7 +2,7 @@ From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics coq_tactics.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lifting.
-From Perennial.goose_lang Require Import proofmode tactics.
+From Perennial.goose_lang Require Import proofmode typing tactics.
 From Perennial.goose_lang.lib Require Import typed_mem.typed_mem.
 Set Default Proof Using "Type".
 

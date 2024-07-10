@@ -3,6 +3,7 @@ From iris.proofmode Require Import tactics.
 From iris.proofmode Require Import environments.
 From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
+From Perennial.goose_lang Require Export typing.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Export typed_mem.impl.
 

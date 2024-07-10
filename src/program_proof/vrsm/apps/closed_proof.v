@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.vrsm.apps Require Import closed.
 
 From Perennial.goose_lang Require adequacy dist_adequacy.
-From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
+From Perennial.goose_lang.ffi Require grove_ffi.adequacy.
 From Perennial.program_logic Require dist_lang.
 
 From Perennial.program_proof.vrsm Require Import config_proof replica.definitions
@@ -14,7 +14,7 @@ From Perennial.goose_lang Require Import typed_slice.
 
 Module closed.
 
-Import adequacy dist_adequacy grove_ffi_adequacy dist_lang.
+Import goose_lang.adequacy dist_adequacy grove_ffi.adequacy dist_lang.
 
 Definition grove_dist_adequate
            (enonidempσs: list (node_init_cfg (Λ:=goose_lang)))

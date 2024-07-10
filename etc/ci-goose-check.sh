@@ -27,6 +27,9 @@ NFSD_COMMIT=master
 GOKV_REPO=https://github.com/mit-pdos/gokv
 GOKV_COMMIT=main
 
+NEW_GOKV_REPO=https://github.com/mit-pdos/gokv
+NEW_GOKV_COMMIT=new
+
 MVCC_REPO=https://github.com/mit-pdos/vmvcc
 MVCC_COMMIT=main
 
@@ -49,7 +52,7 @@ function checkout {
      (cd "${!DIR_VAR}" && git pull)
   fi
 
-  (cd "${!DIR_VAR}" && git reset --hard "${!COMMIT_VAR}")
+  (cd "${!DIR_VAR}" && git checkout "${!COMMIT_VAR}")
 }
 
 GOOSE_DIR=/tmp/goose
@@ -76,6 +79,9 @@ checkout NFSD
 GOKV_DIR=/tmp/gokv
 checkout GOKV
 
+NEW_GOKV_DIR=/tmp/new_gokv
+checkout NEW_GOKV
+
 MVCC_DIR=/tmp/mvcc
 checkout MVCC
 
@@ -96,7 +102,8 @@ etc/update-goose.py --goose $GOOSE_DIR --compile \
 # Missing: --distributed-examples (not currently used)
 
 echo && echo "Goose check: re-run goose-new"
-etc/update-goose-new.py --goose $NEW_GOOSE_DIR --compile --gokv $GOKV_DIR
+new/etc/update-goose-new.py --goose $NEW_GOOSE_DIR --compile --gokv $NEW_GOKV_DIR --marshal $MARSHAL_DIR \
+  --std $STD_DIR
 
 echo && echo "Goose check: check if anything changed"
 if [ -n "$(git diff --exit-code)" ]; then

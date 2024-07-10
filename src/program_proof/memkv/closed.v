@@ -15,7 +15,7 @@ From Perennial.program_proof.memkv Require Export
 From Perennial.program_proof.memkv Require Export memkv_clerk_proof bank_proof.
 
 From Perennial.goose_lang Require adequacy dist_adequacy.
-From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
+From Perennial.goose_lang.ffi Require grove_ffi.adequacy.
 
 Module closed1.
 
@@ -31,7 +31,7 @@ Definition client_boot (coord : u64) : expr :=
   let: "cm" := MakeConnMan #() in
   MakeKVClerk #coord "cm".
 
-Import adequacy dist_adequacy grove_ffi_adequacy.
+Import goose_lang.adequacy dist_adequacy grove_ffi.adequacy.
 
 Definition shardΣ := #[heapΣ; kvMapΣ; erpcΣ; urpcregΣ].
 
@@ -144,7 +144,7 @@ Definition auditor_boot (lockcoord kvcoord : u64) (init acc1 acc2 : u64)  : expr
   let: "ck" := MakeBankClerk #lockcoord #kvcoord "cm" #init #acc1 #acc2 #0 in
   BankClerk__SimpleAudit "ck".
 
-Import adequacy dist_adequacy grove_ffi_adequacy.
+Import goose_lang.adequacy dist_adequacy grove_ffi.adequacy.
 
 Definition shardΣ := #[heapΣ; kvMapΣ; erpcΣ; urpcregΣ; mapΣ u64 u64].
 
