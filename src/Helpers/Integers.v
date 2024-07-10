@@ -24,22 +24,10 @@ Definition shift_overflow_special_case_handlers := {|
 
 Notation word64 := (Naive.gen_word 64%Z shift_overflow_special_case_handlers).
 #[global] Instance word64_ok : word.ok word64 := Naive.gen_ok 64 _ eq_refl.
-Add Ring wring64 : (Properties.word.ring_theory (word := word64))
-      (preprocess [autorewrite with rew_word_morphism],
-       morphism (Properties.word.ring_morph (word := word64)),
-       constants [Properties.word_cst]).
 Notation word32 := (Naive.gen_word 32%Z shift_overflow_special_case_handlers).
 #[global] Instance word32_ok : word.ok word32 := Naive.gen_ok 32 _ eq_refl.
-Add Ring wring32 : (Properties.word.ring_theory (word := word32))
-      (preprocess [autorewrite with rew_word_morphism],
-       morphism (Properties.word.ring_morph (word := word32)),
-       constants [Properties.word_cst]).
 Notation word8 := (Naive.gen_word 8%Z shift_overflow_special_case_handlers).
 #[global] Instance word8_ok : word.ok word8 := Naive.gen_ok 8 _ eq_refl.
-Add Ring wring8 : (Properties.word.ring_theory (word := word8))
-      (preprocess [autorewrite with rew_word_morphism],
-       morphism (Properties.word.ring_morph (word := word8)),
-       constants [Properties.word_cst]).
 
 Record w64_rep := Word64 { w64_car : word64 }.
 Record w32_rep := Word32 { w32_car : word32 }.
@@ -204,6 +192,27 @@ magic to me) *)
 Global SubClass w64 := @word.rep _ w64_instance.w64.
 Global SubClass w32 := @word.rep _ w32_instance.w32.
 Global SubClass w8 := @word.rep _ w8_instance.w8.
+
+(* "Add Ring" special options are black magic from coqutil.
+  Sometimes, it'll fail with "Cannot find a declared ring structure over "w64""
+  or "Goal is not an equation (of expected equality) eq".
+  To fix this, do "unfold w64 in *; ring; fold w64 in *".
+  TODO: for some reason, unfolding doesn't work as a preprocess step.
+*)
+Add Ring w64_ring : (word.ring_theory (word := w64_instance.w64))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w64_instance.w64)),
+   constants [Properties.word_cst]).
+
+Add Ring w32_ring : (word.ring_theory (word := w32_instance.w32))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w32_instance.w32)),
+   constants [Properties.word_cst]).
+
+Add Ring w8_ring : (word.ring_theory (word := w8_instance.w8))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w8_instance.w8)),
+   constants [Properties.word_cst]).
 
 (* TODO: ideally this is rarely or never used, but it's useful for backwards
 compatibility while we're still experimenting *)

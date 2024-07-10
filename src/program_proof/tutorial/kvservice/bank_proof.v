@@ -128,8 +128,6 @@ Proof.
   }
 Qed.
 
-Add Ring u64ring : (word.ring_theory (word := w64_instance.w64)).
-
 Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
 {{{
      inv bankN (bank_inv acc1 acc2 γ) ∗

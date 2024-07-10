@@ -314,12 +314,6 @@ Proof using IntoValComparable0.
       done.
 Qed.
 
-(* Want this for u64 addition commutativity in wp_MapLen' *)
-Add Ring u64ring : (word.ring_theory (word := w64_instance.w64))
-                    (preprocess [autorewrite with rew_word_morphism],
-                      morphism (word.ring_morph (word := w64_instance.w64)),
-                      constants [word_cst]).
-
 (* The postcondition guarantees that the size of the map actually fits in a u64 *)
 Theorem wp_MapLen' stk E(mv:val) (m:gmap K val * val) :
   {{{

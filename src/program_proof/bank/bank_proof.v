@@ -12,8 +12,6 @@ Definition bankΣ :=
 Global Instance subG_pbΣ {Σ} : subG (bankΣ) Σ → (bankG Σ).
 Proof. solve_inG. Qed.
 
-Add Ring u64ring : (word.ring_theory (word := w64_instance.w64)).
-
 Section bank_defs.
 
 Context `{!invGS Σ, !bankG Σ}.
