@@ -533,7 +533,7 @@ Proof.
   iDestruct (struct_field_pointsto_agree with "H1 H2") as %?.
   iClear "H1 H2".
   injection H as <-.
-  wp_bind (FileWrite _ _).
+  wp_bind (grove_ffi.FileWrite _ _).
   iApply (wpc_wp _ _ _ _ True).
   wpc_apply (wpc_crash_borrow_open_modify with "Hfile").
   { done. }
@@ -701,7 +701,7 @@ Proof.
   wp_storeField.
   wp_storeField.
 
-  wp_bind (FileRead _).
+  wp_bind (grove_ffi.FileRead _).
   iApply (wpc_wp _ _ _ _ True).
   wpc_apply (wpc_crash_borrow_open with "Hfile").
   { done. }

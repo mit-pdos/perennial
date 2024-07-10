@@ -1,7 +1,7 @@
-From New.program_proof Require Export proof_prelude.
+From New.proof Require Export proof_prelude.
 From Perennial.program_logic Require Export atomic_fupd.
 From New Require Export grove_prelude.
-From New.program_proof Require Export grove_ffi.
+From New.proof Require Export grove_ffi.
 From Perennial.goose_lang.ffi.grove_ffi Require Import grove_ffi.
 
 #[global]

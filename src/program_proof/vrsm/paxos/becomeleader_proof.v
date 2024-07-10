@@ -805,7 +805,7 @@ Proof.
                 { exfalso. done. }
                 iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
 
-                iFrame "Hreply_ret_sl #%".
+                iFrame "#%".
                 (* XXX: copy/paste votes *)
                 iSplitR "Hvotes Hvote"; last first.
                 { (* accumulate votes *)
@@ -933,11 +933,12 @@ Proof.
 
             destruct (decide (size W + 1 = 0)).
             { done. }
-            iFrame "∗#%".
+            iExists _, _; iFrame "#%".
 
             destruct (decide (_)); last first.
             { exfalso. done. }
             iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
+            rewrite sep_exist_r. iExists _; iFrame.
             (* XXX: copy/paste votes *)
             iSplitR "Hvotes Hvote"; last first.
             { (* accumulate votes *)

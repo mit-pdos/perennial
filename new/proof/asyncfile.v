@@ -1,9 +1,9 @@
-From New.program_proof Require Import grove_prelude.
+From New.proof Require Import grove_prelude.
 From New.code.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
-From New.program_proof Require Import std.
+From New.proof Require Import std.
 From Perennial.goose_lang Require Import crash_borrow.
-From New.program_proof Require Import sync.
+From New.proof Require Import sync.
 
 Record af_names := mk_af_names {
   index_gn : gname ;

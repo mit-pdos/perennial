@@ -16,7 +16,7 @@ Lemma wp_Server__WeakRead s γ γsrv :
     Server__WeakRead #s
   {{{
         (state:list u8) sl, RET (slice_val sl);
-        own_slice_small sl byteT DfracDiscarded state ∗
+        readonly (own_slice_small sl byteT (DfracOwn 1) state) ∗
         Pwf state
   }}}.
 Proof.

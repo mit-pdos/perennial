@@ -109,11 +109,10 @@ Proof.
   word.
 Qed.
 
-(*
 Lemma wp_struct_make l d fvs :
   {{{ True }}}
-    struct.make d (list.val fvs)
+    struct.make d (list.val () fvs)
   {{{ RET (struct.val d fvs); True }}}
-. *)
+.
 
 End wps.

@@ -1,4 +1,4 @@
-From New.program_proof Require Import proof_prelude.
+From New.proof Require Import proof_prelude.
 From New.code Require github_com.tchajed.goose.machine.
 
 Section wps.

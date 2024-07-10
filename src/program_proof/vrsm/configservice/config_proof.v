@@ -486,9 +486,10 @@ Proof.
   2:{ done. }
   iDestruct "Hpost" as (??) "(Hsl_ptr & #Hsl & HP & Hwp)".
   wp_load.
+  iMod (readonly_load with "Hsl") as (?) "Hsl2".
   iDestruct "HP" as (?) "[%Henc #HP]".
   subst.
-  wp_apply (state.wp_decode with "[$]").
+  wp_apply (state.wp_decode with "[$Hsl2]").
   iIntros (?) "Hst".
   wp_pures.
   iModIntro.
@@ -503,7 +504,7 @@ Proof.
   iIntros (?) "[Hsl _]".
   wp_pure1_credit "Hlc".
   wp_store.
-  iMod (own_slice_small_persist with "Hsl") as "#Hsl".
+  iMod (readonly_alloc_1 with "Hsl") as "Hsl".
   wp_apply ("Hwp" with "[-HΦ]").
   {
     iFrame "∗#".
@@ -707,6 +708,7 @@ Proof.
   cbn.
   iDestruct "HP" as (?) "[%H HP]".
   subst.
+  iMod (readonly_load with "Hsl") as (?) "Hsl2".
   wp_apply (state.wp_decode with "[$]").
   iIntros (?) "Hvol".
   wp_pures.

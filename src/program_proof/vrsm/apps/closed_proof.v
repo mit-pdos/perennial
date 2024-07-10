@@ -14,7 +14,7 @@ From Perennial.goose_lang Require Import typed_slice.
 
 Module closed.
 
-Import adequacy dist_adequacy grove_ffi_adequacy dist_lang.
+Import goose_lang.adequacy dist_adequacy grove_ffi.adequacy dist_lang.
 
 Definition grove_dist_adequate
            (enonidempσs: list (node_init_cfg (Λ:=goose_lang)))

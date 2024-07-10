@@ -1,7 +1,7 @@
 (** Iris specs for Grove FFI *)
 From iris.base_logic.lib Require Import mono_nat.
 From Perennial.program_logic Require Export atomic_fupd.
-From New.program_proof Require Export proof_prelude.
+From New.proof Require Export proof_prelude.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
 From New.code.github_com.mit_pdos.gokv Require Import grove_ffi.
 From Perennial.goose_lang Require Import control.

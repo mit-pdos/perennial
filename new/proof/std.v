@@ -1,6 +1,6 @@
-From New.program_proof Require Import proof_prelude.
+From New.proof Require Import proof_prelude.
 From New.code.github_com.goose_lang Require Import std.
-From New.program_proof Require Import machine.
+From New.proof Require Import machine.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
