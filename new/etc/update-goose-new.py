@@ -117,6 +117,8 @@ def main():
 
     if gokv_dir is not None:
         pkgs = [
+            "urpc",
+            "reconnectclient",
             "asyncfile",
             "vrsm/paxos",
             # "vrsm/replica",

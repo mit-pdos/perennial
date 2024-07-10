@@ -3,8 +3,7 @@ From Perennial.Helpers Require Import List.
 From Goose.github_com.tchajed Require Import marshal.
 From Perennial.goose_lang.lib Require Import encoding.
 
-From Perennial.program_proof Require Import new_proof_prelude std_proof.
-From Perennial.goose_lang.lib Require Import slice.typed_slice.
+From New.proof Require Import proof_prelude std.
 
 Section goose_lang.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.

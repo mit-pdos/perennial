@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import new_grove_prelude.
+From New.proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Export paxos.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
