@@ -65,7 +65,7 @@ Definition AsyncFile__flushThread : val :=
         do:  (struct.field_ref AsyncFile "closed" (![ptrT] "s")) <-[boolT] "$a0";;;
         do:  (sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #();;;
         do:  (sync.Cond__Signal (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #();;;
-        break: #();;;
+        return: (#());;;
         do:  #()
       else do:  #());;;
       (if: (![uint64T] (struct.field_ref AsyncFile "durableIndex" (![ptrT] "s"))) ≥ (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s")))
@@ -106,33 +106,24 @@ Definition AsyncFile__Close : val :=
 Definition MakeAsyncFile : val :=
   rec: "MakeAsyncFile" "filename" :=
     exception_do (let: "filename" := ref_ty stringT "filename" in
+    let: "mu" := ref_ty (structT sync.Mutex) (zero_val (structT sync.Mutex)) in
     let: "s" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty (structT AsyncFile) (zero_val (structT AsyncFile)) in
+    let: "$a0" := ref_ty (structT AsyncFile) (struct.make AsyncFile [
+      "mu" ::= "mu";
+      "indexCond" ::= sync.NewCond "mu";
+      "closedCond" ::= sync.NewCond "mu";
+      "filename" ::= ![stringT] "filename";
+      "data" ::= grove_ffi.FileRead (![stringT] "filename");
+      "index" ::= #0;
+      "durableIndex" ::= #0;
+      "closed" ::= #false;
+      "closeRequested" ::= #false
+    ]) in
     do:  "s" <-[ptrT] "$a0";;;
-    let: "$a0" := ref_ty (structT sync.Mutex) (zero_val (structT sync.Mutex)) in
-    do:  (struct.field_ref AsyncFile "mu" (![ptrT] "s")) <-[ptrT] "$a0";;;
-    let: "$a0" := sync.NewCond (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s"))) in
-    do:  (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")) <-[ptrT] "$a0";;;
-    let: "$a0" := sync.NewCond (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s"))) in
-    do:  (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")) <-[ptrT] "$a0";;;
-    let: "$a0" := sync.NewCond (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s"))) in
-    do:  (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")) <-[ptrT] "$a0";;;
-    let: "$a0" := ![stringT] "filename" in
-    do:  (struct.field_ref AsyncFile "filename" (![ptrT] "s")) <-[stringT] "$a0";;;
-    let: "$a0" := grove_ffi.FileRead (![stringT] "filename") in
-    do:  (struct.field_ref AsyncFile "data" (![ptrT] "s")) <-[sliceT byteT] "$a0";;;
-    let: "$a0" := #0 in
-    do:  (struct.field_ref AsyncFile "index" (![ptrT] "s")) <-[uint64T] "$a0";;;
-    let: "$a0" := #0 in
-    do:  (struct.field_ref AsyncFile "durableIndex" (![ptrT] "s")) <-[uint64T] "$a0";;;
-    let: "$a0" := #false in
-    do:  (struct.field_ref AsyncFile "closed" (![ptrT] "s")) <-[boolT] "$a0";;;
-    let: "$a0" := #false in
-    do:  (struct.field_ref AsyncFile "closeRequested" (![ptrT] "s")) <-[boolT] "$a0";;;
     let: "data" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
     let: "$a0" := ![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s")) in
     do:  "data" <-[sliceT byteT] "$a0";;;
-    do:  Fork (do:  (AsyncFile__flushThread (![ptrT] "s")) #();;;
-          do:  #());;;
+    do:  let: "$go" := AsyncFile__flushThread (![ptrT] "s") in
+    Fork ("$go" #());;;
     return: (![sliceT byteT] "data", ![ptrT] "s");;;
     do:  #()).

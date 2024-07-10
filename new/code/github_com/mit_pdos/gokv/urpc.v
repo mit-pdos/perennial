@@ -74,8 +74,11 @@ Definition Server__readThread : val :=
       let: "req" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
       let: "$a0" := ![sliceT byteT] "data" in
       do:  "req" <-[sliceT byteT] "$a0";;;
-      do:  Fork (do:  (Server__rpcHandle (![ptrT] "srv")) (![grove_ffi.Connection] "conn") (![uint64T] "rpcid") (![uint64T] "seqno") (![sliceT byteT] "req");;;
-            do:  #());;;
+      do:  let: "$go" := (λ: <>,
+        do:  (Server__rpcHandle (![ptrT] "srv")) (![grove_ffi.Connection] "conn") (![uint64T] "rpcid") (![uint64T] "seqno") (![sliceT byteT] "req");;;
+        do:  #()
+        ) in
+      Fork ("$go" #());;;
       continue: #();;;
       do:  #());;;
     do:  #()).
@@ -87,14 +90,20 @@ Definition Server__Serve : val :=
     let: "listener" := ref_ty grove_ffi.Listener (zero_val grove_ffi.Listener) in
     let: "$a0" := grove_ffi.Listen (![uint64T] "host") in
     do:  "listener" <-[grove_ffi.Listener] "$a0";;;
-    do:  Fork ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            let: "conn" := ref_ty grove_ffi.Connection (zero_val grove_ffi.Connection) in
-            let: "$a0" := grove_ffi.Accept (![grove_ffi.Listener] "listener") in
-            do:  "conn" <-[grove_ffi.Connection] "$a0";;;
-            do:  Fork (do:  (Server__readThread (![ptrT] "srv")) (![grove_ffi.Connection] "conn");;;
-                  do:  #());;;
-            do:  #());;;
-          do:  #());;;
+    do:  let: "$go" := (λ: <>,
+      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+        let: "conn" := ref_ty grove_ffi.Connection (zero_val grove_ffi.Connection) in
+        let: "$a0" := grove_ffi.Accept (![grove_ffi.Listener] "listener") in
+        do:  "conn" <-[grove_ffi.Connection] "$a0";;;
+        do:  let: "$go" := (λ: <>,
+          do:  (Server__readThread (![ptrT] "srv")) (![grove_ffi.Connection] "conn");;;
+          do:  #()
+          ) in
+        Fork ("$go" #());;;
+        do:  #());;;
+      do:  #()
+      ) in
+    Fork ("$go" #());;;
     do:  #()).
 
 Definition callbackStateWaiting : expr := #0.
@@ -189,8 +198,11 @@ Definition TryMakeClient : val :=
       "pending" ::= map.make uint64T ptrT #()
     ]) in
     do:  "cl" <-[ptrT] "$a0";;;
-    do:  Fork (do:  (Client__replyThread (![ptrT] "cl")) #();;;
-          do:  #());;;
+    do:  let: "$go" := (λ: <>,
+      do:  (Client__replyThread (![ptrT] "cl")) #();;;
+      do:  #()
+      ) in
+    Fork ("$go" #());;;
     return: (#0, ![ptrT] "cl");;;
     do:  #()).
 
