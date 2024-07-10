@@ -133,11 +133,10 @@ Section program.
     {{{ True }}}
     <<< ∀∀ hist tsprep, tuple_phys_half α key hist tsprep >>>
       Tuple__Own #tuple #tid @ ↑tupleN
-    <<< ∃∃ (ok : bool), if ok
-                     then tuple_phys_half α key hist (uint.nat tid)
-                     else tuple_phys_half α key hist tsprep
+    <<< ∃∃ (ok : bool),
+      tuple_phys_half α key hist (if ok then (uint.nat tid) else tsprep)
     >>>
-    {{{ RET #ok; True }}}.
+    {{{ RET #ok; ⌜bool_decide (lockable (uint.nat tid) hist tsprep) = ok⌝ }}}.
   Proof.
     (*@ func (tuple *Tuple) Own(tid uint64) bool {                              @*)
     (*@     // TODO                                                             @*)

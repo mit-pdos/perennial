@@ -176,13 +176,12 @@ Inductive rpst :=
 
 Definition not_stuck st := st ≠ Stuck.
 
-Inductive acquiring :=
-| Acquired (tpls : gmap dbkey dbtpl)
-| NotAcquired.
+Definition lockable (tid : nat) (hist : dbhist) (tsprep : nat) :=
+  tsprep = O ∧ (length hist ≤ tid)%nat.
 
 Definition validate_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
   match wr, tpl with
-  | Some _, Some (vs, tsprep) => Some (bool_decide (tsprep = O ∧ length vs ≤ tid)%nat)
+  | Some _, Some (vs, tsprep) => Some (bool_decide (lockable tid vs tsprep))
   | Some _, None => Some false
   | _, _ => None
   end.
@@ -191,49 +190,101 @@ Definition validate (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
   map_fold (λ _, andb) true (merge (validate_key tid) wrs tpls).
 
 Lemma map_fold_andb_true `{Countable K} (m : gmap K bool) :
-  map_fold (λ _, andb) true m = true ->
+  map_fold (λ _, andb) true m = true <->
   map_Forall (λ _ b, b = true) m.
 Proof.
-  intros Hfold k b Hkb.
-  destruct b; first done.
-  exfalso.
-  induction m as [| x v m Hnone IHm] using map_ind; first done.
-  rewrite map_fold_insert_L in Hfold; last first.
-  { done. }
-  { intros _ _ b1 b2 b3 _ _ _. by rewrite andb_comm -andb_assoc (andb_comm b3). }
-  destruct (decide (x = k)) as [-> | Hne].
-  { rewrite lookup_insert in Hkb. inversion Hkb. subst v. done. }
-  rewrite lookup_insert_ne in Hkb; last done.
-  destruct v; last done.
-  rewrite andb_true_l in Hfold.
-  by apply IHm.
+  split.
+  - intros Hfold k b Hkb.
+    destruct b; first done.
+    exfalso.
+    induction m as [| x v m Hnone IHm] using map_ind; first done.
+    rewrite map_fold_insert_L in Hfold; last first.
+    { done. }
+    { intros _ _ b1 b2 b3 _ _ _. by rewrite andb_comm -andb_assoc (andb_comm b3). }
+    destruct (decide (x = k)) as [-> | Hne].
+    { rewrite lookup_insert in Hkb. inversion Hkb. subst v. done. }
+    rewrite lookup_insert_ne in Hkb; last done.
+    destruct v; last done.
+    rewrite andb_true_l in Hfold.
+    by apply IHm.
+  - intros Hall.
+    induction m as [| x v m Hnone IHm] using map_ind; first done.
+    rewrite map_fold_insert_L; last first.
+    { done. }
+    { intros _ _ b1 b2 b3 _ _ _. by rewrite andb_comm -andb_assoc (andb_comm b3). }
+    rewrite map_Forall_insert in Hall; last done.
+    destruct Hall as [-> Hall].
+    by apply IHm.
 Qed.
 
-Lemma validate_true {tid wrs tpls} key :
+Lemma validate_true_lockable {tid wrs tpls} key tpl :
+  is_Some (wrs !! key) ->
+  tpls !! key = Some tpl ->
+  validate tid wrs tpls = true ->
+  lockable tid tpl.1 tpl.2.
+Proof.
+  intros [v Hv] Htpl Hvd.
+  destruct tpl as [h t].
+  rewrite /validate map_fold_andb_true in Hvd.
+  specialize (Hvd key false).
+  rewrite lookup_merge Hv Htpl /= in Hvd.
+  case_bool_decide; [done | naive_solver].
+Qed.
+
+Lemma validate_true_subseteq_dom tid wrs tpls :
+  validate tid wrs tpls = true ->
+  dom wrs ⊆ dom tpls.
+Proof.
+  intros Hvd.
+  intros key Hkey.
+  rewrite /validate map_fold_andb_true in Hvd.
+  specialize (Hvd key false).
+  rewrite elem_of_dom in Hkey. destruct Hkey as [v Hv].
+  destruct (decide (key ∈ dom tpls)) as [? | Hnotin]; first done.
+  rewrite not_elem_of_dom in Hnotin.
+  rewrite lookup_merge Hv Hnotin /= in Hvd.
+  naive_solver.
+Qed.
+
+Lemma validate_true_exists {tid wrs tpls} key :
   is_Some (wrs !! key) ->
   validate tid wrs tpls = true ->
-  ∃ l, tpls !! key = Some (l, O) ∧ (length l ≤ tid)%nat.
+  ∃ tpl, tpls !! key = Some tpl ∧ lockable tid tpl.1 tpl.2.
 Proof.
-  intros Hsome Hvd.
-  destruct Hsome as [v Hv].
-  destruct (tpls !! key) as [t |] eqn:Htpls.
-  { rewrite /validate in Hvd.
-    apply map_fold_andb_true in Hvd.
-    specialize (Hvd key).
-    rewrite lookup_merge Hv Htpls /= in Hvd.
-    destruct t as [vs tsprep].
-    case_bool_decide as Hcond; last first.
-    { specialize (Hvd false).
-      by unshelve epose proof (Hvd _); first reflexivity.
-    }
-    destruct Hcond as [-> Hlen].
-    by eauto.
-  }
-  rewrite /validate in Hvd.
-  apply map_fold_andb_true in Hvd.
-  specialize (Hvd key false).
-  rewrite lookup_merge Hv Htpls /= in Hvd.
-  by unshelve epose proof (Hvd _); first reflexivity.
+  intros [v Hv] Hvd.
+  pose proof (validate_true_subseteq_dom _ _ _ Hvd) as Hdom.
+  apply elem_of_dom_2 in Hv as Hkey.
+  specialize (Hdom _ Hkey).
+  rewrite elem_of_dom in Hdom.
+  destruct Hdom as [tpl Htpl].
+  exists tpl.
+  split; first done.
+  by eapply validate_true_lockable.
+Qed.
+
+Lemma validate_false {tid wrs tpls} key tpl :
+  is_Some (wrs !! key) ->
+  tpls !! key = Some tpl ->
+  ¬ lockable tid tpl.1 tpl.2 ->
+  validate tid wrs tpls = false.
+Proof.
+  intros [v Hv] Htpl Hfail.
+  rewrite -not_true_iff_false.
+  intros Hvd.
+  rewrite map_fold_andb_true in Hvd.
+  specialize (Hvd key false). simpl in Hvd.
+  destruct tpl as [hist tsprep].
+  rewrite lookup_merge Hv Htpl /= in Hvd.
+  case_bool_decide; [done | naive_solver].
+Qed.
+
+Lemma validate_empty tid tpls :
+  validate tid ∅ tpls = true.
+Proof.
+  rewrite map_fold_andb_true.
+  intros k b Hkb.
+  rewrite lookup_merge lookup_empty /= in Hkb.
+  by destruct (tpls !! k).
 Qed.
 
 Definition acquire_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
@@ -389,6 +440,14 @@ Lemma acquire_modified {tid wrs tpls key tpl} :
 Proof.
   intros [v Hv] Htpl. destruct tpl as [h t].
   by rewrite /acquire lookup_merge Hv Htpl /=.
+Qed.
+
+Lemma acquire_empty tid tpls :
+  acquire tid ∅ tpls = tpls.
+Proof.
+  apply map_eq. intros k.
+  rewrite lookup_merge lookup_empty /=.
+  by destruct (tpls !! k) as [[h t] |] eqn:Hk.
 Qed.
 
 Definition apply_prepare st (tid : nat) (wrs : dbmap) :=
@@ -597,6 +656,32 @@ Proof.
   set P := (λ x, key_to_group x = gid).
   pose proof (release_key_nonexpanding tid) as Hne.
   by apply (gmap_nonexpanding_merge_filter_commute P wrs tpls) in Hne.
+Qed.
+
+Lemma release_acquire_inverse tid wrs tpls :
+  validate tid wrs tpls = true ->
+  release tid wrs (acquire tid wrs tpls) = tpls.
+Proof.
+  intros Hvd.
+  apply map_eq. intros k.
+  rewrite /release lookup_merge /acquire lookup_merge.
+  destruct (wrs !! k) as [v |] eqn:Hv,
+           (tpls !! k) as [[h t] |] eqn:Htpl; rewrite Hv; [| done | done | done].
+  (* not sure why [rewrite Hv] is required. *)
+  rewrite /validate map_fold_andb_true in Hvd.
+  specialize (Hvd k false).
+  rewrite lookup_merge Hv Htpl /= in Hvd.
+  case_bool_decide as Hlock; last naive_solver.
+  destruct Hlock as [Ht _].
+  by subst t.
+Qed.
+
+Lemma release_empty tid tpls :
+  release tid ∅ tpls = tpls.
+Proof.
+  apply map_eq. intros k.
+  rewrite lookup_merge lookup_empty /=.
+  by destruct (tpls !! k) eqn:Hk.
 Qed.
 
 Definition apply_abort st (tid : nat) :=
@@ -891,8 +976,8 @@ Proof.
     { rewrite acquire_unmodified in Htpl; last done.
       by eapply Hwf.
     }
-    unshelve epose proof (validate_true keyx _ Hvd) as (h & Hh & Hlen); first done.
-    rewrite /acquire lookup_merge Hwrs Hh /= in Htpl.
+    unshelve epose proof (validate_true_exists keyx _ Hvd) as ([h t] & Hht & [_ Hlen]); first done.
+    rewrite /acquire lookup_merge Hwrs Hht /= in Htpl.
     by inversion Htpl.
   }
   { (* Case: [CmdCmt] *)
@@ -1171,9 +1256,9 @@ Proof.
       erewrite acquire_unmodified in Htpls; last first.
       { (* Prove [wrs] does not modify [key]. *)
         destruct (wrs !! keyx) as [v |] eqn:Hv; last done.
-        unshelve epose proof (@validate_true tid wrs tpls keyx _ Hvd) as [h [Ht _]].
+        unshelve epose proof (@validate_true_exists tid wrs tpls keyx _ Hvd) as ([h t] & Hht & [Hz _]).
         { done. }
-        specialize (Hcst _ _ _ _ _ _ Heq Hstm Ht Hkey).
+        specialize (Hcst _ _ _ _ _ _ Heq Hstm Hht Hkey). subst ts.
         by specialize (Hnz _ _ _ _ Heq Hstm).
       }
       by eapply Hcst.
@@ -1277,8 +1362,8 @@ Proof.
       rewrite lookup_insert_ne in Hstm2; last done.
       intros k Hwrs1 Hwrs2.
       rewrite elem_of_dom in Hwrs1.
-      destruct (validate_true _ Hwrs1 Hvd) as (h & Htpls & _).
-      specialize (Hcst _ _ _ _ _ _ Heq Hstm2 Htpls Hwrs2).
+      destruct (validate_true_exists _ Hwrs1 Hvd) as ([h t] & Hht & [Hz _]).
+      specialize (Hcst _ _ _ _ _ _ Heq Hstm2 Hht Hwrs2). subst ts2.
       by specialize (Hnz _ _ _ _ Heq Hstm2).
     }
     destruct (decide (tid = ts2)) as [-> | Hne2].
@@ -1288,8 +1373,8 @@ Proof.
       rewrite lookup_insert_ne in Hstm1; last done.
       intros k Hwrs1 Hwrs2.
       rewrite elem_of_dom in Hwrs2.
-      destruct (validate_true _ Hwrs2 Hvd) as (h & Htpls & _).
-      specialize (Hcst _ _ _ _ _ _ Heq Hstm1 Htpls Hwrs1).
+      destruct (validate_true_exists _ Hwrs2 Hvd) as ([h t] & Hht & [Hz _]).
+      specialize (Hcst _ _ _ _ _ _ Heq Hstm1 Hht Hwrs1). subst ts1.
       by specialize (Hnz _ _ _ _ Heq Hstm1).
     }
     rewrite lookup_insert_ne in Hstm1; last done.
@@ -2803,8 +2888,9 @@ Section group_inv.
     }
     (* Case: tuple modified. *)
     assert (Hsome : is_Some (wrs !! k)) by done.
-    destruct (validate_true _ Hsome Hvd) as (l & Htpl & Hlen).
-    rewrite Hx in Htpl. inversion Htpl. subst x. clear Htpl.
+    destruct (validate_true_exists _ Hsome Hvd) as ([hist tsprep] & Hht & [Hz Hlen]).
+    simpl in Hz. subst tsprep.
+    rewrite Hx in Hht. inversion Hht. subst x. clear Hht.
     rewrite (acquire_modified Hsome Hx) /= in Hy.
     inversion Hy. subst y. clear Hy.
     simpl. simpl in Hdiffc.

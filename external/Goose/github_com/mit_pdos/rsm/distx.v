@@ -239,7 +239,9 @@ Definition Replica__QueryTxnTermination: val :=
    Return values:
    @status: Transaction status.
 
-   @ok: If @true, @status is meaningful; otherwise, ignore @status. *)
+   @ok: If @true, @status is meaningful; otherwise, ignore @status. A @false
+   indicates this replica might not be the leader, so the upper layer is
+   suggested to retry with a different replica. *)
 Definition Replica__Prepare: val :=
   rec: "Replica__Prepare" "rp" "ts" "pwrs" :=
     let: "status" := Replica__QueryTxnStatus "rp" "ts" in
@@ -353,10 +355,10 @@ Definition Replica__validate: val :=
         Continue));;
     (if: (![uint64T] "pos") < (slice.len "pwrs")
     then
-      let: "ent" := SliceGet (struct.t WriteEntry) "pwrs" (![uint64T] "pos") in
       let: "i" := ref_to uint64T #0 in
       Skip;;
       (for: (λ: <>, (![uint64T] "i") < (![uint64T] "pos")); (λ: <>, Skip) := λ: <>,
+        let: "ent" := SliceGet (struct.t WriteEntry) "pwrs" (![uint64T] "i") in
         let: "tpl" := Index__GetTuple (struct.loadF Replica "idx" "rp") (struct.get WriteEntry "k" "ent") in
         Tuple__Free "tpl";;
         "i" <-[uint64T] ((![uint64T] "i") + #1);;
