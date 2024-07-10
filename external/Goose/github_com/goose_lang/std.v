@@ -34,6 +34,10 @@ Definition BytesClone: val :=
     then slice.nil
     else SliceAppendSlice byteT (NewSlice byteT #0) "b").
 
+(* SliceSplit splits xs at n into two slices.
+
+   The capacity of the first slice overlaps with the second, so afterward it is
+   no longer safe to append to the first slice. *)
 Definition SliceSplit (T:ty): val :=
   rec: "SliceSplit" "xs" "n" :=
     (SliceTake "xs" "n", SliceSkip T "xs" "n").
