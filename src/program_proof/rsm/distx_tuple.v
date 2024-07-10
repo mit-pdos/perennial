@@ -87,11 +87,12 @@ Section program.
   Theorem wp_Tuple__Extend (tuple : loc) (tid : u64) key α :
     is_tuple tuple key α -∗
     {{{ True }}}
-    <<< ∀∀ hist, hist_phys_half α key hist >>>
+    <<< ∀∀ hist tsprep, tuple_phys_half α key hist tsprep >>>
       Tuple__Extend #tuple #tid @ ↑tupleN
-    <<< ∃∃ (ok : bool), if ok
-                     then hist_phys_half α key (last_extend (uint.nat tid) hist)
-                     else hist_phys_half α key hist
+    <<< ∃∃ (ok : bool),
+        ⌜bool_decide (readable (uint.nat tid) hist tsprep) = ok⌝ ∗
+        let hist' := if ok then last_extend (uint.nat tid) hist else hist in
+        tuple_phys_half α key hist' tsprep
     >>>
     {{{ RET #ok; True }}}.
   Proof.
@@ -134,7 +135,7 @@ Section program.
     <<< ∀∀ hist tsprep, tuple_phys_half α key hist tsprep >>>
       Tuple__Own #tuple #tid @ ↑tupleN
     <<< ∃∃ (ok : bool),
-      tuple_phys_half α key hist (if ok then (uint.nat tid) else tsprep)
+        tuple_phys_half α key hist (if ok then (uint.nat tid) else tsprep)
     >>>
     {{{ RET #ok; ⌜bool_decide (lockable (uint.nat tid) hist tsprep) = ok⌝ }}}.
   Proof.

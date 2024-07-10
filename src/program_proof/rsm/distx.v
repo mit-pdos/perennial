@@ -696,10 +696,14 @@ Definition apply_abort st (tid : nat) :=
   | Stuck => Stuck
   end.
 
-Definition read (tid : nat) (vs : list dbval) (tsprep : nat) :=
-  if decide (tsprep = 0 ∨ tid ≤ tsprep)%nat
-  then (last_extend tid vs, tsprep)
-  else (vs, tsprep).
+Definition readable (tid : nat) (hist : dbhist) (tsprep : nat) :=
+  tsprep = O ∨ (tid ≤ tsprep)%nat.
+
+Definition read (tid : nat) (hist : dbhist) (tsprep : nat) :=
+  let hist' := if decide (readable tid hist tsprep)
+               then last_extend tid hist
+               else hist in
+  (hist', tsprep).
 
 Definition apply_read st (tid : nat) (key : dbkey) :=
   match st with
@@ -934,6 +938,15 @@ Definition valid_pwrs_of_command gid c :=
   | CmdPrep _ pwrs => valid_pwrs gid pwrs
   | _ => True
   end.
+
+Definition valid_key_of_command gid c :=
+  match c with
+  | CmdRead _ key => valid_key key ∧ key_to_group key = gid
+  | _ => True
+  end.
+
+Definition valid_command gid c :=
+  valid_ts_of_command c ∧ valid_pwrs_of_command gid c ∧ valid_key_of_command gid c.
 
 Lemma tpls_well_formed_snoc l c :
   tpls_well_formed l ->
