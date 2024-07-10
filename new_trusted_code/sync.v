@@ -6,9 +6,9 @@ Local Coercion Var' s: expr := Var s.
 
 (* FIXME: make everything in here opaque. *)
 
-(* FIXME: want to expose a type, not descriptor *)
-Definition Mutex : struct.descriptor :=
-  ["state" :: boolT]%struct
+Definition Mutex : go_type := structT [
+    "state" :: boolT
+  ]
 .
 Axiom WaitGroup: struct.descriptor.
 

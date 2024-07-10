@@ -6,7 +6,7 @@ From New.code Require sync.
 
 From New Require Import grove_prelude.
 
-Definition AsyncFile := [
+Definition AsyncFile : go_type := structT [
   "mu" :: ptrT;
   "data" :: sliceT byteT;
   "filename" :: stringT;
@@ -106,9 +106,9 @@ Definition AsyncFile__Close : val :=
 Definition MakeAsyncFile : val :=
   rec: "MakeAsyncFile" "filename" :=
     exception_do (let: "filename" := ref_ty stringT "filename" in
-    let: "mu" := ref_ty (structT sync.Mutex) (zero_val (structT sync.Mutex)) in
+    let: "mu" := ref_ty sync.Mutex (zero_val sync.Mutex) in
     let: "s" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty (structT AsyncFile) (struct.make AsyncFile [
+    let: "$a0" := ref_ty AsyncFile (struct.make AsyncFile [
       "mu" ::= "mu";
       "indexCond" ::= sync.NewCond "mu";
       "closedCond" ::= sync.NewCond "mu";

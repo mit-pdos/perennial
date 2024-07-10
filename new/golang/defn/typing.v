@@ -23,7 +23,15 @@ Section val_types.
   | funcT
   | interfaceT
   | mapT (key elem : go_type)
-  | chanT (elem : go_type).
+  | chanT (elem : go_type)
+  .
+
+  (* This type is never supposed to be used in real code; if you're ever forced
+     to deal with it in a proof, then something in Goose must have gone
+     wrong. *)
+  Definition badT_def := ptrT.
+  Program Definition badT := unseal (_:seal (@badT_def)). Obligation 1. by eexists. Qed.
+  Definition badT_unseal : badT = _ := seal_eq _.
 
   Definition byteT := uint8T.
   Definition intT := int64T.
@@ -56,24 +64,24 @@ Section val_types.
     | mapT _ _ => nil
     | chanT _ => nil
     end.
-Program Definition zero_val := unseal (_:seal (@zero_val_def)). Obligation 1. by eexists. Qed.
-Definition zero_val_unseal : zero_val = _ := seal_eq _.
+  Program Definition zero_val := unseal (_:seal (@zero_val_def)). Obligation 1. by eexists. Qed.
+  Definition zero_val_unseal : zero_val = _ := seal_eq _.
 
-Fixpoint go_type_size_def (t : go_type) : nat :=
-  match t with
-  | structT d =>
-      (fix go_type_size_struct d : nat :=
-        match d with
-        | [] => O
-        | (_,t) :: d => (go_type_size_def t + go_type_size_struct d)%nat
-        end
-      ) d
-  | sliceT e => 3
-  | interfaceT => 3
-  | _ => 1
-  end.
-Program Definition go_type_size := unseal (_:seal (@go_type_size_def)). Obligation 1. by eexists. Qed.
-Definition go_type_size_unseal : go_type_size = _ := seal_eq _.
+  Fixpoint go_type_size_def (t : go_type) : nat :=
+    match t with
+    | structT d =>
+        (fix go_type_size_struct d : nat :=
+           match d with
+           | [] => O
+           | (_,t) :: d => (go_type_size_def t + go_type_size_struct d)%nat
+           end
+        ) d
+    | sliceT e => 3
+    | interfaceT => 3
+    | _ => 1
+    end.
+  Program Definition go_type_size := unseal (_:seal (@go_type_size_def)). Obligation 1. by eexists. Qed.
+  Definition go_type_size_unseal : go_type_size = _ := seal_eq _.
 End val_types.
 
 Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +ₗ[ t ]  z").

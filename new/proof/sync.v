@@ -58,10 +58,12 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Theorem init_Mutex R E m : m ↦[structT Mutex] (zero_val $ structT Mutex) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦[Mutex] (zero_val $ Mutex) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "Hl HR".
   iDestruct (struct_fields_split with "Hl") as "Hl".
+  { done. }
+  { apply _. }
   iEval (repeat rewrite zero_val_eq /=) in "Hl". iNamed "Hl".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
@@ -234,7 +236,7 @@ Definition own_WaitGroup (wg:val) γ (n:u64) (P:u64 → iProp Σ) : iProp Σ :=
 Definition own_free_WaitGroup (wg:val) : iProp Σ :=
   ∃ (mu:loc) (vptr:loc),
     ⌜wg = (#mu, #vptr)%V⌝ ∗
-    mu ↦[structT Mutex] (zero_val $ structT Mutex) ∗
+    mu ↦[Mutex] (zero_val $ Mutex) ∗
     vptr ↦[uint64T] #0
 .
 

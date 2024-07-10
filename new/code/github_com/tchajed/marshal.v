@@ -9,7 +9,7 @@ Local Coercion Var' s: expr := Var s.
 
 (* marshal.go *)
 
-Definition Enc := [
+Definition Enc : go_type := structT [
   "b" :: sliceT byteT;
   "off" :: ptrT
 ].
@@ -34,7 +34,7 @@ Definition NewEnc : val :=
 
 Definition Enc__PutInt : val :=
   rec: "Enc__PutInt" "enc" "x" :=
-    exception_do (let: "enc" := ref_ty (structT Enc) "enc" in
+    exception_do (let: "enc" := ref_ty Enc "enc" in
     let: "x" := ref_ty uint64T "x" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
@@ -46,7 +46,7 @@ Definition Enc__PutInt : val :=
 
 Definition Enc__PutInt32 : val :=
   rec: "Enc__PutInt32" "enc" "x" :=
-    exception_do (let: "enc" := ref_ty (structT Enc) "enc" in
+    exception_do (let: "enc" := ref_ty Enc "enc" in
     let: "x" := ref_ty uint32T "x" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
@@ -58,18 +58,18 @@ Definition Enc__PutInt32 : val :=
 
 Definition Enc__PutInts : val :=
   rec: "Enc__PutInts" "enc" "xs" :=
-    exception_do (let: "enc" := ref_ty (structT Enc) "enc" in
+    exception_do (let: "enc" := ref_ty Enc "enc" in
     let: "xs" := ref_ty (sliceT uint64T) "xs" in
     do:  let: "$range" := ![sliceT uint64T] "xs" in
     slice.for_range uint64T "$range" (λ: <> "x",
       let: "x" := ref_ty uint64T "x" in
-      do:  (Enc__PutInt (![structT Enc] "enc")) (![uint64T] "x");;;
+      do:  (Enc__PutInt (![Enc] "enc")) (![uint64T] "x");;;
       do:  #());;;
     do:  #()).
 
 Definition Enc__PutBytes : val :=
   rec: "Enc__PutBytes" "enc" "b" :=
-    exception_do (let: "enc" := ref_ty (structT Enc) "enc" in
+    exception_do (let: "enc" := ref_ty Enc "enc" in
     let: "b" := ref_ty (sliceT byteT) "b" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
@@ -95,7 +95,7 @@ Definition bool2byte : val :=
 
 Definition Enc__PutBool : val :=
   rec: "Enc__PutBool" "enc" "b" :=
-    exception_do (let: "enc" := ref_ty (structT Enc) "enc" in
+    exception_do (let: "enc" := ref_ty Enc "enc" in
     let: "b" := ref_ty boolT "b" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc")) in
@@ -107,11 +107,11 @@ Definition Enc__PutBool : val :=
 
 Definition Enc__Finish : val :=
   rec: "Enc__Finish" "enc" :=
-    exception_do (let: "enc" := ref_ty (structT Enc) "enc" in
+    exception_do (let: "enc" := ref_ty Enc "enc" in
     return: (![sliceT byteT] (struct.field_ref Enc "b" "enc"));;;
     do:  #()).
 
-Definition Dec := [
+Definition Dec : go_type := structT [
   "b" :: sliceT byteT;
   "off" :: ptrT
 ].
@@ -127,7 +127,7 @@ Definition NewDec : val :=
 
 Definition Dec__GetInt : val :=
   rec: "Dec__GetInt" "dec" :=
-    exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
+    exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
@@ -138,7 +138,7 @@ Definition Dec__GetInt : val :=
 
 Definition Dec__GetInt32 : val :=
   rec: "Dec__GetInt32" "dec" :=
-    exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
+    exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;
@@ -149,7 +149,7 @@ Definition Dec__GetInt32 : val :=
 
 Definition Dec__GetInts : val :=
   rec: "Dec__GetInts" "dec" "num" :=
-    exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
+    exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "num" := ref_ty uint64T "num" in
     let: "xs" := ref_ty (sliceT uint64T) (zero_val (sliceT uint64T)) in
     (let: "i" := ref_ty uint64T (zero_val uint64T) in
@@ -157,7 +157,7 @@ Definition Dec__GetInts : val :=
     do:  "i" <-[uint64T] "$a0";;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  "i" <-[uint64T] ((![uint64T] "i") + #1);;;
     #()) := λ: <>,
-      let: "$a0" := slice.append uint64T (![sliceT uint64T] "xs") (slice.literal uint64T [(Dec__GetInt (![structT Dec] "dec")) #()]) in
+      let: "$a0" := slice.append uint64T (![sliceT uint64T] "xs") (slice.literal uint64T [(Dec__GetInt (![Dec] "dec")) #()]) in
       do:  "xs" <-[sliceT uint64T] "$a0";;;
       do:  #()));;;
     return: (![sliceT uint64T] "xs");;;
@@ -165,7 +165,7 @@ Definition Dec__GetInts : val :=
 
 Definition Dec__GetBytes : val :=
   rec: "Dec__GetBytes" "dec" "num" :=
-    exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
+    exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "num" := ref_ty uint64T "num" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
@@ -180,7 +180,7 @@ Definition Dec__GetBytes : val :=
 
 Definition Dec__GetBool : val :=
   rec: "Dec__GetBool" "dec" :=
-    exception_do (let: "dec" := ref_ty (structT Dec) "dec" in
+    exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
     do:  "off" <-[uint64T] "$a0";;;

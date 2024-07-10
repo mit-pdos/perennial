@@ -13,17 +13,23 @@ Infix "=?" := (String.eqb).
 Context `{ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
-Fixpoint field_offset (d : struct.descriptor) f0 : (Z * go_type) :=
-  match d with
-  | [] => (-1, ptrT)
-  | (f,t)::fs => if f =? f0 then (0, t)
-               else match field_offset fs f0 with
-                    | (off, t') => ((go_type_size t) + off, t')
-                    end
-  end.
+Definition field_offset (t : go_type) f0 : (Z * go_type) :=
+  match t with
+  | structT d =>
+      (fix field_offset_struct (d : struct.descriptor) : (Z * go_type) :=
+         match d with
+         | [] => (-1, badT)
+         | (f,t)::fs => if f =? f0 then (0, t)
+                      else match field_offset_struct fs with
+                           | (off, t') => ((go_type_size t) + off, t')
+                           end
+         end) d
+  | _ => (-1, badT)
+  end
+.
 
-Definition field_ref (d : struct.descriptor) f0: val :=
-  λ: "p", BinOp (OffsetOp (field_offset d f0).1) (Var "p") #1.
+Definition field_ref (t : go_type) f0: val :=
+  λ: "p", BinOp (OffsetOp (field_offset t f0).1) (Var "p") #1.
 
 Definition field_ty d f0 : go_type := (field_offset d f0).2.
 
@@ -35,11 +41,16 @@ Local Definition assocl_lookup_goose : val :=
                  let: ("f'", "v") := "fv" in
                  if: "f" = "f'" then InjR "v" else "assocl_lookup" "fvs" "f").
 
-Fixpoint make_def (d : struct.descriptor) : val :=
-  match d with
-  | [] => λ: "fvs", Val #()
-  | (f,ft)::fs => λ: "fvs", Val #() (Match (assocl_lookup_goose "fvs" f) <> (Val (zero_val ft)) "x" "x",
-                                     (make_def fs) "fvs")
+Definition make_def (t : go_type) : val :=
+  match t with
+  | structT d =>
+      (fix make_def_struct (fs : struct.descriptor) : val :=
+         match fs with
+         | [] => (λ: "fvs", Val #())%V
+         | (f,ft)::fs => (λ: "fvs", Val #() (Match (assocl_lookup_goose "fvs" f) <> (Val (zero_val ft)) "x" "x",
+                                            (make_def_struct fs) "fvs"))%V
+         end) d
+  | _ => LitV $ LitPoison
   end.
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.

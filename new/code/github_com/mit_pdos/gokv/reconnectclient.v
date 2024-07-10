@@ -7,7 +7,7 @@ From New.code Require sync.
 
 From New Require Import grove_prelude.
 
-Definition ReconnectingClient := [
+Definition ReconnectingClient : go_type := structT [
   "mu" :: ptrT;
   "valid" :: boolT;
   "urpcCl" :: ptrT;
@@ -18,9 +18,9 @@ Definition MakeReconnectingClient : val :=
   rec: "MakeReconnectingClient" "addr" :=
     exception_do (let: "addr" := ref_ty uint64T "addr" in
     let: "r" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty (structT ReconnectingClient) (zero_val (structT ReconnectingClient)) in
+    let: "$a0" := ref_ty ReconnectingClient (zero_val ReconnectingClient) in
     do:  "r" <-[ptrT] "$a0";;;
-    let: "$a0" := ref_ty (structT sync.Mutex) (zero_val (structT sync.Mutex)) in
+    let: "$a0" := ref_ty sync.Mutex (zero_val sync.Mutex) in
     do:  (struct.field_ref ReconnectingClient "mu" (![ptrT] "r")) <-[ptrT] "$a0";;;
     let: "$a0" := #false in
     do:  (struct.field_ref ReconnectingClient "valid" (![ptrT] "r")) <-[boolT] "$a0";;;

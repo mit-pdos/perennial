@@ -9,7 +9,7 @@ From New.code Require sync.
 
 From New Require Import grove_prelude.
 
-Definition Server := [
+Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
 
@@ -42,7 +42,7 @@ Definition Server__rpcHandle : val :=
 Definition MakeServer : val :=
   rec: "MakeServer" "handlers" :=
     exception_do (let: "handlers" := ref_ty (mapT uint64T funcT) "handlers" in
-    return: (ref_ty (structT Server) (struct.make Server [
+    return: (ref_ty Server (struct.make Server [
        "handlers" ::= ![mapT uint64T funcT] "handlers"
      ]));;;
     do:  #()).
@@ -52,9 +52,9 @@ Definition Server__readThread : val :=
     exception_do (let: "srv" := ref_ty ptrT "srv" in
     let: "conn" := ref_ty grove_ffi.Connection "conn" in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := ref_ty (structT grove_ffi.ReceiveRet) (zero_val (structT grove_ffi.ReceiveRet)) in
+      let: "r" := ref_ty grove_ffi.ReceiveRet (zero_val grove_ffi.ReceiveRet) in
       let: "$a0" := grove_ffi.Receive (![grove_ffi.Connection] "conn") in
-      do:  "r" <-[structT grove_ffi.ReceiveRet] "$a0";;;
+      do:  "r" <-[grove_ffi.ReceiveRet] "$a0";;;
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then
         break: #();;;
@@ -112,13 +112,13 @@ Definition callbackStateDone : expr := #1.
 
 Definition callbackStateAborted : expr := #2.
 
-Definition Callback := [
+Definition Callback : go_type := structT [
   "reply" :: ptrT;
   "state" :: ptrT;
   "cond" :: ptrT
 ].
 
-Definition Client := [
+Definition Client : go_type := structT [
   "mu" :: ptrT;
   "conn" :: grove_ffi.Connection;
   "seq" :: uint64T;
@@ -129,9 +129,9 @@ Definition Client__replyThread : val :=
   rec: "Client__replyThread" "cl" :=
     exception_do (let: "cl" := ref_ty ptrT "cl" in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "r" := ref_ty (structT grove_ffi.ReceiveRet) (zero_val (structT grove_ffi.ReceiveRet)) in
+      let: "r" := ref_ty grove_ffi.ReceiveRet (zero_val grove_ffi.ReceiveRet) in
       let: "$a0" := grove_ffi.Receive (![grove_ffi.Connection] (struct.field_ref Client "conn" (![ptrT] "cl"))) in
-      do:  "r" <-[structT grove_ffi.ReceiveRet] "$a0";;;
+      do:  "r" <-[grove_ffi.ReceiveRet] "$a0";;;
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then
         do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #();;;
@@ -181,9 +181,9 @@ Definition TryMakeClient : val :=
     let: "host" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] "host_name" in
     do:  "host" <-[uint64T] "$a0";;;
-    let: "a" := ref_ty (structT grove_ffi.ConnectRet) (zero_val (structT grove_ffi.ConnectRet)) in
+    let: "a" := ref_ty grove_ffi.ConnectRet (zero_val grove_ffi.ConnectRet) in
     let: "$a0" := grove_ffi.Connect (![uint64T] "host") in
-    do:  "a" <-[structT grove_ffi.ConnectRet] "$a0";;;
+    do:  "a" <-[grove_ffi.ConnectRet] "$a0";;;
     let: "nilClient" := ref_ty ptrT (zero_val ptrT) in
     (if: ![boolT] (struct.field_ref grove_ffi.ConnectRet "Err" "a")
     then
@@ -191,9 +191,9 @@ Definition TryMakeClient : val :=
       do:  #()
     else do:  #());;;
     let: "cl" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty (structT Client) (struct.make Client [
+    let: "$a0" := ref_ty Client (struct.make Client [
       "conn" ::= ![grove_ffi.Connection] (struct.field_ref grove_ffi.ConnectRet "Connection" "a");
-      "mu" ::= ref_ty (structT sync.Mutex) (zero_val (structT sync.Mutex));
+      "mu" ::= ref_ty sync.Mutex (zero_val sync.Mutex);
       "seq" ::= #1;
       "pending" ::= map.make uint64T ptrT #()
     ]) in
@@ -240,7 +240,7 @@ Definition Client__CallStart : val :=
     let: "$a0" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
     do:  "reply_buf" <-[ptrT] "$a0";;;
     let: "cb" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty (structT Callback) (struct.make Callback [
+    let: "$a0" := ref_ty Callback (struct.make Callback [
       "reply" ::= ![ptrT] "reply_buf";
       "state" ::= ref_ty uint64T (zero_val uint64T);
       "cond" ::= sync.NewCond (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))
@@ -271,7 +271,7 @@ Definition Client__CallStart : val :=
     do:  "reqData" <-[sliceT byteT] "$a0";;;
     (if: grove_ffi.Send (![grove_ffi.Connection] (struct.field_ref Client "conn" (![ptrT] "cl"))) (![sliceT byteT] "reqData")
     then
-      return: (ref_ty (structT Callback) (struct.make Callback [
+      return: (ref_ty Callback (struct.make Callback [
        ]), ErrDisconnect);;;
       do:  #()
     else do:  #());;;

@@ -33,7 +33,7 @@ Fixpoint set_field_f d f0 fv: val -> val :=
          end
        end.
 
-Definition field_ref_f d f0 l: loc := l +ₗ (struct.field_offset d f0).1.
+Definition field_ref_f t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
 
 Class Wf (d : struct.descriptor) : Set :=
   { descriptor_NoDup: NoDup d.*1; }.
@@ -41,9 +41,9 @@ Class Wf (d : struct.descriptor) : Set :=
 End goose_lang.
 End struct.
 
-Notation "l ↦s[ d :: f ] dq v" := (struct.field_ref_f d f l ↦[struct.field_ty d f]{dq} v)%I
-  (at level 50, dq custom dfrac at level 70, d at level 59, f at level 59,
-     format "l  ↦s[ d  ::  f ] dq  v").
+Notation "l ↦s[ t :: f ] dq v" := (struct.field_ref_f t f l ↦[struct.field_ty t f]{dq} v)%I
+  (at level 50, dq custom dfrac at level 70, t at level 59, f at level 59,
+     format "l  ↦s[ t  ::  f ] dq  v").
 
 Definition option_descriptor_wf (d : struct.descriptor) : option (struct.Wf d).
   destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
@@ -65,23 +65,24 @@ Section lemmas.
 
 Context `{heapGS Σ}.
 
-Local Fixpoint struct_big_fields_rec l dq (d : struct.descriptor) (fs : struct.descriptor)
+Fixpoint struct_fields l dq (t : go_type) (fs : struct.descriptor)
       (v : val): iProp Σ :=
   match fs with
   | [] => "_" ∷ ⌜v = #()⌝
-  | (f,t)::fs =>
+  | (f,t')::fs =>
     match v with
-    | PairV v1 v2 => ("H" ++ f) ∷ l ↦s[d :: f]{dq} v1 ∗
-                    struct_big_fields_rec l dq d fs v2
+    | PairV v1 v2 => ("H" ++ f) ∷ l ↦s[t :: f]{dq} v1 ∗
+                    struct_fields l dq t' fs v2
     | _ => False
     end
   end.
 
-Definition struct_fields l dq d v : iProp Σ := struct_big_fields_rec l dq d d v.
-
-Theorem struct_fields_split l q d {dwf: struct.Wf d} v :
-  typed_pointsto l q (structT d) v ⊣⊢ struct_fields l q d v.
+(* FIXME: could try stating this with (structT d) substituted in. The main
+   concern is that it will result in t getting unfolded. *)
+Theorem struct_fields_split l q t d {Ht : t = structT d} {dwf : struct.Wf d} v :
+  typed_pointsto l q t v ⊣⊢ struct_fields l q t d v.
 Proof.
+  intros. subst.
 Admitted.
 
 End lemmas.
@@ -89,8 +90,8 @@ End lemmas.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance pure_struct_field_ref d f (l : loc) :
-  WpPureExec True 2 (struct.field_ref d f #l) #(struct.field_ref_f d f l).
+Global Instance pure_struct_field_ref t f (l : loc) :
+  WpPureExec True 2 (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
   split; first done.
   unfold struct.field_ref. cbn.
@@ -108,11 +109,5 @@ Proof.
   repeat f_equal.
   word.
 Qed.
-
-Lemma wp_struct_make l d fvs :
-  {{{ True }}}
-    struct.make d (list.val () fvs)
-  {{{ RET (struct.val d fvs); True }}}
-.
 
 End wps.

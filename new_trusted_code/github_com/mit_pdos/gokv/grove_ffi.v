@@ -12,15 +12,15 @@ Section grove.
   Definition Connection : go_type := ptrT.
   Definition Address : go_type := uint64T.
 
-  Definition ConnectRet := ([
-                              "Err" :: boolT;
-                              "Connection" :: Connection
-                            ])%struct.
+  Definition ConnectRet := structT [
+                               "Err" :: boolT;
+                               "Connection" :: Connection
+                             ].
 
-  Definition ReceiveRet := ([
-                              "Err" :: boolT;
-                              "Data" :: sliceT byteT
-                            ])%struct.
+  Definition ReceiveRet := structT [
+                               "Err" :: boolT;
+                               "Data" :: sliceT byteT
+                             ].
 
   (** Type: func(uint64) Listener *)
   Definition Listen : val :=
