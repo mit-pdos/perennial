@@ -4,6 +4,7 @@ From Goose.github_com.goose_lang Require Import std.
 
 From iris.algebra Require Import excl gset.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.goose_lang.lib Require Import typed_slice.
 
 Class multiparG Σ : Set :=
    { multiparG_auth :> inG Σ (gset_disjR nat);
@@ -166,6 +167,27 @@ Proof.
     iDestruct (own_slice_to_small with "Hs'") as "Hs'".
     by iApply "HΦ".
   }
+Qed.
+
+Lemma wp_SliceSplit t V `{!IntoVal V} s dq (xs: list V) (n: w64) :
+  {{{ own_slice_small s t dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
+    SliceSplit t (to_val s) #n
+  {{{ RET (to_val (slice_take s n), to_val (slice_skip s t n));
+      own_slice_small (slice_take s n) t dq (take (uint.nat n) xs) ∗
+      own_slice_small (slice_skip s t n) t dq (drop (uint.nat n) xs)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hs %Hn] HΦ".
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_wf with "Hs") as %Hcap.
+  wp_call.
+  wp_apply wp_SliceTake.
+  { word. }
+  wp_apply wp_SliceSkip.
+  { word. }
+  wp_pures. iModIntro. iApply "HΦ".
+  iDestruct (slice_small_split with "Hs") as "[$ $]".
+  word.
 Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :

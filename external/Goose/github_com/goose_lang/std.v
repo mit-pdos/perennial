@@ -34,6 +34,10 @@ Definition BytesClone: val :=
     then slice.nil
     else SliceAppendSlice byteT (NewSlice byteT #0) "b").
 
+Definition SliceSplit (T:ty): val :=
+  rec: "SliceSplit" "xs" "n" :=
+    (SliceTake "xs" "n", SliceSkip T "xs" "n").
+
 (* Returns true if x + y does not overflow *)
 Definition SumNoOverflow: val :=
   rec: "SumNoOverflow" "x" "y" :=
