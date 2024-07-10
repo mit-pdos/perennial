@@ -110,7 +110,8 @@ Notation "l ↦□ v" := (heap_pointsto l DfracDiscarded v%V)
   (at level 20, format "l  ↦□  v") : bi_scope.
 Notation "l ↦{ q } v" := (heap_pointsto l q v%V)
   (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
-Notation "l ↦ v" := (heap_pointsto l (DfracOwn 1) v%V) (at level 20) : bi_scope.
+Notation "l ↦ v" := (heap_pointsto l (DfracOwn 1) v%V)
+  (at level 20, v at next level) : bi_scope.
 
 Notation "l ↦{# q } -" := (∃ v, l ↦{#q} v)%I
   (at level 20, q at level 50, format "l  ↦{# q }  -") : bi_scope.

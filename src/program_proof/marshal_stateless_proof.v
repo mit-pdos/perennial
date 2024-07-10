@@ -25,6 +25,20 @@ Proof.
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
 Qed.
 
+Theorem wp_ReadInt32 s q (x: u32) tail :
+  {{{ own_slice_small s byteT q (u32_le x ++ tail) }}}
+    ReadInt32 (slice_val s)
+  {{{ s', RET (#x, slice_val s'); own_slice_small s' byteT q tail }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ". wp_lam.
+  wp_apply (wp_UInt32Get_unchanged with "Hs").
+  { rewrite /list.untype fmap_app take_app_length' //. }
+  iIntros "Hs".
+  wp_apply (wp_SliceSkip_small with "Hs").
+  { rewrite /list.untype fmap_length app_length /=. word. }
+  iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
+Qed.
+
 Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
   length head = uint.nat len →
   {{{ own_slice_small s byteT q (head ++ tail) }}}
@@ -170,6 +184,34 @@ Proof.
   iDestruct (slice.own_slice_split_acc s.(Slice.sz) with "Hsl") as "[Hsl Hclose]".
   { len. }
   wp_apply (wp_UInt64Put with "Hsl").
+  { len. rewrite Hex. word. }
+  iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
+  wp_pures. iApply "HΦ". iModIntro.
+  rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
+  rewrite /list.untype fmap_app. f_equal.
+  { rewrite take_app_length' //. len. }
+  rewrite drop_ge //. len. rewrite Hex. word.
+Qed.
+
+Theorem wp_WriteInt32 s x (vs : list u8) :
+  {{{ own_slice s byteT (DfracOwn 1) vs }}}
+    WriteInt32 (slice_val s) #x
+  {{{ s', RET slice_val s'; own_slice s' byteT (DfracOwn 1) (vs ++ u32_le x) }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ". wp_lam. wp_pures.
+  wp_apply (wp_reserve with "Hs"). clear s. iIntros (s) "[% Hs]". wp_pures.
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
+  iDestruct (own_slice_sz with "Hs") as %Hsz.
+  wp_apply wp_slice_len. wp_pures.
+  wp_apply (wp_SliceTake_full_cap with "Hs").
+  { word. }
+  iIntros (ex) "[%Hex Hsl]".
+  set (s' := slice_take _ _).
+  wp_apply wp_SliceSkip.
+  { rewrite /slice_take /=. word. }
+  iDestruct (slice.own_slice_split_acc s.(Slice.sz) with "Hsl") as "[Hsl Hclose]".
+  { len. }
+  wp_apply (wp_UInt32Put with "Hsl").
   { len. rewrite Hex. word. }
   iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
   wp_pures. iApply "HΦ". iModIntro.

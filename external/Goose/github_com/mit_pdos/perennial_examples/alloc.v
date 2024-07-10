@@ -8,7 +8,7 @@ Local Coercion Var' s: expr := Var s.
 Definition unit := struct.decl [
 ].
 
-Definition AddrSet: ty := mapT (struct.t unit).
+Notation AddrSet := (mapT (struct.t unit)).
 
 (* Allocator manages free disk blocks. It does not store its state durably, so
    the caller is responsible for returning its set of free disk blocks on

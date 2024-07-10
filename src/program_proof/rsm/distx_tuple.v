@@ -17,8 +17,20 @@ Section program.
   Definition is_tuple (tuple : loc) (key : string) (α : gname) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance is_tuple_persistent tuple key α :
+    Persistent (is_tuple tuple key α).
+  Admitted.
+
+  (* NB: If we were simply to use Paxos rather than PCR, a better way would be
+  requiring the [tid = tsprep], and moving the the length precondition into the
+  tuple invariant. With PCR, however, a tuple could be modified by a txn with a
+  timestamp different from the prepared timestamp. A more fundamental reason to
+  this difference is that while Paxos allows deducing commit safety at the
+  *replica* level, PCR can only deduce such at the *replica group* level. *)
   Theorem wp_Tuple__AppendVersion
     (tuple : loc) (tid : u64) (val : string) key hist tsprep α :
+    (length hist ≤ uint.nat tid)%nat ->
     is_tuple tuple key α -∗
     {{{ tuple_phys_half α key hist tsprep }}}
       Tuple__AppendVersion #tuple #tid #(LitString val)
@@ -56,6 +68,7 @@ Section program.
   Admitted.
 
   Theorem wp_Tuple__KillVersion (tuple : loc) (tid : u64) key hist tsprep α :
+    (length hist ≤ uint.nat tid)%nat ->
     is_tuple tuple key α -∗
     {{{ tuple_phys_half α key hist tsprep }}}
       Tuple__KillVersion #tuple #tid
@@ -87,7 +100,7 @@ Section program.
       Tuple__ReadVersion #tuple #tid
     {{{ (v : dbval) (ok : bool), RET (dbval_to_val v, #ok);
         tuple_phys_half α key hist tsprep ∗
-        ⌜if ok then hist !! (uint.nat tid) = Some v else True⌝
+        ⌜if ok then hist !! pred (uint.nat tid) = Some v else True⌝
     }}}.
   Proof.
     (*@ func (tuple *Tuple) ReadVersion(tid uint64) (Value, bool) {             @*)

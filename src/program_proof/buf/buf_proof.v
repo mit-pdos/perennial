@@ -9,8 +9,10 @@ From Goose.github_com.mit_pdos.go_journal Require Import buf.
 From Perennial.program_proof Require Import util_proof disk_lib.
 From Perennial.program_proof Require Export buf.defs.
 From Perennial.program_proof Require Import addr.addr_proof wal.abstraction.
-From Perennial.Helpers Require Import NamedProps PropRestore.
+From Perennial.Helpers Require Import NamedProps PropRestore NatDivMod.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
+
+#[local] Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 (* an object is the data for a sub-block object, a dynamic bundle of a kind and
 data of the appropriate size *)
@@ -410,13 +412,9 @@ Opaque PeanoNat.Nat.div.
     replace (S (uint.nat a.(addrOff) `div` 8) * 1)%nat with (S (uint.nat a.(addrOff) `div` 8))%nat by lia.
     iExactEq "Hs". f_equal.
     f_equal.
-    { rewrite Z2Nat.inj_div; try word.
-      eauto. }
+    { word. }
     f_equal.
-    { rewrite Z2Nat.inj_add; try word.
-      rewrite Z2Nat.inj_div; try word.
-      change (Z.to_nat 8) with 8%nat.
-      word. }
+    word.
 
   - iExactEq "Hs"; f_equal.
 
@@ -432,62 +430,13 @@ Opaque PeanoNat.Nat.div.
 
     rewrite -Hatoff /extract_nth.
     f_equal.
-    { rewrite Z2Nat.inj_div; try word.
-      simpl bufSz in *.
-      change (Z.to_nat 8) with 8%nat.
-      change (Z.to_nat 128) with 128%nat.
-      change (128 * 8)%nat with (8 * 128)%nat.
-      rewrite -Nat.Div0.div_div; try word.
-      assert ((uint.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
-      {
-        replace (uint.Z (addrOff a)) with (Z.of_nat (uint.nat (addrOff a))) in Hoff by word.
-        rewrite -Nat2Z.inj_mod in Hoff; try word.
-        assert (uint.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
-        replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.Div0.mod_mul_r in Hy; try word.
-      }
-      apply Nat.Div0.div_exact in Hx; try word.
+    { simpl bufSz in *.
+      word.
     }
     f_equal.
     {
       simpl bufSz in *.
-      rewrite Z2Nat.inj_add; try word.
-      rewrite Z2Nat.inj_div; try word.
-      change (Z.to_nat 1) with 1%nat.
-      change (Z.to_nat 8) with 8%nat.
-      change (Z.to_nat 128) with 128%nat.
-      rewrite Z2Nat.inj_add; try word.
-      change (Z.to_nat (128*8-1)) with (128*8-1)%nat.
-
-      replace (128 * 8)%nat with (8 * 128)%nat by reflexivity.
-      rewrite -Nat.Div0.div_div; try word.
-      assert ((uint.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
-      {
-        replace (uint.Z (addrOff a)) with (Z.of_nat (uint.nat (addrOff a))) in Hoff by word.
-        rewrite -Nat2Z.inj_mod in Hoff; try word.
-        assert (uint.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
-        replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.Div0.mod_mul_r in Hy; try word.
-      }
-      apply Nat.Div0.div_exact in Hx; try word.
-      rewrite Nat.mul_comm in Hx.
-      replace (S ((uint.nat (addrOff a) `div` 8) `div` 128) * 128)%nat
-         with (((uint.nat (addrOff a) `div` 8) `div` 128) * 128 + 128)%nat by lia.
-      rewrite -Hx.
-
-      edestruct (Nat.Div0.div_exact (uint.nat (addrOff a)) 8) as [_ Hz].
-      rewrite -> Hz at 1.
-      2: {
-        replace (uint.Z (addrOff a)) with (Z.of_nat (uint.nat (addrOff a))) in Hoff by word.
-        rewrite -Nat2Z.inj_mod in Hoff; try word.
-        assert (uint.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
-        replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.Div0.mod_mul_r in Hy; try word.
-      }
-
-      rewrite Nat.mul_comm. rewrite -> Nat.div_add_l by lia.
-      change ((8 * 128 - 1) `div` 8)%nat with (127)%nat.
-      lia.
+      word.
     }
 
   - intuition subst.
@@ -626,9 +575,7 @@ Proof.
     inversion Hnth_byte; subst; clear Hnth_byte.
     f_equal.
     rewrite /get_buf_data_bit /get_byte.
-    word_cleanup.
-    rewrite Z2Nat.inj_div //.
-    word.
+    repeat (f_equal; try word).
   - intros [Hbound Hbeq].
     inversion Hbeq; subst; clear Hbeq.
     split; [done|].
@@ -637,9 +584,7 @@ Proof.
     eexists; split; [eauto|].
     rewrite -> get_bit_ok by word.
     rewrite /get_buf_data_bit /get_byte.
-    word_cleanup.
-    rewrite Z2Nat.inj_div //.
-    word.
+    repeat (f_equal; try word).
 Qed.
 
 (* TODO(tej): I should have used !!! (lookup_total), which is [default inhabitant
@@ -656,9 +601,7 @@ Lemma Nat_div_inode_bits (off:nat) :
    off `div` 8)%nat.
 Proof.
   intros.
-  word_cleanup.
-  apply (inj Z.of_nat).
-  repeat rewrite !Nat2Z.inj_div !Nat2Z.inj_mul !Z2Nat.id //; try word.
+  word.
 Qed.
 
 Global Instance Nat_mul_comm : Comm eq Nat.mul.
@@ -723,13 +666,7 @@ Proof.
     rewrite PeanoNat.Nat.mul_succ_l.
     rewrite -> !Nat_div_inode_bits by word.
     rewrite list_to_inode_buf_to_list; last first.
-    { rewrite /subslice /inode_bytes; len.
-      change (Z.to_nat 128) with 128%nat.
-      change (Z.of_nat 1024) with 1024 in Hvalid.
-      pose proof (Z_mod_1024_to_div_8 (uint.Z off) Hvalid) as Hdiv8.
-      assert (uint.nat off `div` 8 = 128 * uint.nat off `div` 1024)%nat.
-      { apply Nat2Z.inj. word. }
-      word. }
+    { rewrite /subslice /inode_bytes; len. }
     auto.
 Qed.
 
@@ -1131,11 +1068,7 @@ Lemma Nat_mod_1024_to_div_8 (n:nat) :
   (n `div` 8 = 128 * (n `div` 1024))%nat.
 Proof.
   intros Hn_mod.
-  pose proof (Z_mod_1024_to_div_8 (Z.of_nat n) Hn_mod).
-  apply (f_equal Z.to_nat) in H.
-  rewrite Z2Nat.inj_div in H; try lia.
-  apply (inj Z.of_nat).
-  move: H; word.
+  word.
 Qed.
 
 Lemma is_installed_block_inode (a : addr) (i : inode_buf) (bufDirty : bool) (blk : Block) :
@@ -1167,15 +1100,6 @@ Proof.
     change (Z.to_nat 8) with 8%nat.
     rewrite subslice_list_inserts_eq; len.
     { rewrite inode_buf_to_list_to_inode_buf //. }
-    cut (uint.Z off `div` 8 + 128 ≤ 4096).
-    { intros.
-      rewrite /inode_bytes /block_bytes.
-      move: H; word_cleanup.
-      rewrite -> Z2Nat.inj_le by word.
-      rewrite -> Z2Nat.inj_add by word.
-      rewrite -> Z2Nat.inj_div by word.
-      auto. }
-    word.
   - split; first done.
     split; first done.
     f_equal.
@@ -1196,15 +1120,10 @@ Proof.
       rewrite vec_to_list_length.
     + revert Hoff'_bound. rewrite /block_bytes.
       change 1024%nat with (8 * 128)%nat.
-      rewrite -Nat.Div0.div_div.
-      generalize (uint.nat off' `div` 8)%nat; intros x Hx.
-      assert (x `div` 128 < 32)%nat; try lia.
-      eapply Nat.div_lt_upper_bound; lia.
+      word.
     + destruct (decide (uint.nat off' < uint.nat off)); [ left | right ].
-      * assert ((uint.nat off' `div` 1024)%nat < (uint.nat off `div` 1024)%nat); last by lia.
-        rewrite !Nat2Z.inj_div; lia.
-      * assert ((uint.nat off' `div` 1024)%nat > (uint.nat off `div` 1024)%nat); last by lia.
-        rewrite !Nat2Z.inj_div; lia.
+      * word.
+      * word.
 Qed.
 
 Lemma is_installed_block_block (b : Block) (bufDirty : bool) (blk : Block) :

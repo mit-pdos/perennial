@@ -286,13 +286,13 @@ Section translate.
     - rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
       * inversion Hstep; monad_inv.
-        inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H1.
+        inv H1. inv H2. monad_inv.
         destruct x0. destruct n; monad_inv.
         destruct n; monad_inv.
-        inversion H3; monad_inv; subst; clear H3.
+        select (relation.denote (r_mbind  _ _) _ _ _) (fun H => inv H).
         destruct (heap σ1 !! l) eqn:Heq; subst.
-        ** inversion H7; monad_inv; subst.
+        ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H); monad_inv.
            inversion H.
            intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
@@ -307,14 +307,14 @@ Section translate.
                f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /RecordSet.set //=.
                congruence.
-        ** inversion H7; intuition.
+        ** inv H4; intuition.
       * inversion Hstep; monad_inv.
-        inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H1.
+        inv H1. inv H2. monad_inv.
         destruct x0. destruct n; monad_inv.
-        inversion H3; monad_inv; subst; clear H3.
+        inv H3.
         destruct (heap σ1 !! l) eqn:Heq; subst.
-        ** inversion H7; monad_inv; subst.
+        ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H); monad_inv.
            inversion H.
            intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
@@ -329,15 +329,15 @@ Section translate.
                f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /RecordSet.set //=.
                congruence.
-        ** inversion H7; intuition.
+        ** inversion H4; intuition.
       * inversion Hstep; monad_inv.
-        inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H1.
+        inv H1. inv H2. monad_inv.
         destruct x0. destruct n; monad_inv.
         destruct n; monad_inv.
-        inversion H3; monad_inv; subst; clear H3.
+        inv H3; monad_inv.
         destruct (heap σ1 !! l) eqn:Heq; subst.
-        ** inversion H7; monad_inv; subst.
+        ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H); monad_inv.
            inversion H.
            intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
@@ -352,21 +352,21 @@ Section translate.
                f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /RecordSet.set //=.
                congruence.
-        ** inversion H7; intuition.
+        ** inversion H4; intuition.
       * inversion Hstep; monad_inv.
-        inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H1.
+        inv H1. inv H2. monad_inv.
         destruct x0. destruct n; monad_inv.
         destruct (heap σ1 !! l) eqn:Heq; subst.
-        ** inversion H7; monad_inv; subst.
+        ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H); monad_inv.
            inversion H.
            intuition.
            do 2 eexists. split_and!; eauto.
            repeat econstructor; rewrite -?H1 ?Heq; eauto; repeat econstructor.
-        ** inversion H7; intuition.
+        ** inversion H4; intuition.
       * inversion Hstep; monad_inv.
-        inversion H1; monad_inv; clear H1.
-        inversion H3; monad_inv; subst; clear H3.
+        simpl in H1.
+        inv H1. inv H3. monad_inv.
         inversion H; intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
                       world := world pσ2 |}).
@@ -379,7 +379,8 @@ Section translate.
                simpl in * => //=. rewrite /RecordSet.set //=.
                congruence.
       * inversion Hstep; monad_inv.
-        inversion H1; monad_inv; clear H1.
+        simpl in H1.
+        inv H1. monad_inv.
         inversion H; intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
                       world := world pσ2 |}).
@@ -437,8 +438,8 @@ Section translate.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       inversion Hstep; monad_inv.
-      inversion H1; monad_inv; clear H1. subst.
-      inversion H2; monad_inv; subst; clear H2.
+      simpl in H1.
+      inv H1. inv H2. monad_inv.
       destruct_head.
       rewrite //= in H3.
       destruct (heap σ1 !! l) eqn:Heq; monad_inv; try inv_monad_false.

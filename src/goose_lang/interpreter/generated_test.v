@@ -15,6 +15,10 @@ Example testSingleAppend_ok : testSingleAppend #() ~~> #true := t.
 Example testAppendToCapacity_ok : testAppendToCapacity #() ~~> #true := t.
 Example testAppendSlice_ok : testAppendSlice #() ~~> #true := t.
 
+(* assign_ops.go *)
+Example testAssignAddSub_ok : testAssignAddSub #() ~~> #true := t.
+Example testAssignBitwise_ok : testAssignBitwise #() ~~> #true := t.
+
 (* closures.go *)
 Example testClosureBasic_ok : testClosureBasic #() ~~> #true := t.
 

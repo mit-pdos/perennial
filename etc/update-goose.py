@@ -99,9 +99,9 @@ def main():
         default=None,
     )
     parser.add_argument(
-        "--chat",
-        help="path to chat repo (skip translation if not provided)",
-        metavar="CHAT_PATH",
+        "--pav",
+        help="path to pav repo (skip translation if not provided)",
+        metavar="PAV_PATH",
         default=None,
     )
 
@@ -118,7 +118,7 @@ def main():
     rsm_dir = args.rsm
     marshal_dir = args.marshal
     std_dir = args.std
-    chat_dir = args.chat
+    pav_dir = args.pav
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -142,8 +142,8 @@ def main():
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
-    if chat_dir is not None and not os.path.isdir(chat_dir):
-        parser.error("chat directory does not exist")
+    if pav_dir is not None and not os.path.isdir(pav_dir):
+        parser.error("pav directory does not exist")
 
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
@@ -250,76 +250,69 @@ def main():
 
     if gokv_dir is not None:
         pkgs = [
-            "urpc",
-            "memkv",
-            "kv",
-            "memkv/bank",
-            "memkv/lockservice",
-            "connman",
-            "paxi/single",
-            "bank",
-            "lockservice",
-            "ctrexample/client",
-            "ctrexample/server",
-            "fencing/ctr",
-            "fencing/config",
-            "fencing/frontend",
-            "fencing/client",
-            "fencing/loopclient",
-            "erpc",
-            "paxi/reconf",
-            "map_string_marshal",
-            "asyncfile",
-            "vrsm/paxos",
-            "vrsm/replica",
-            "vrsm/reconfig",
-            "vrsm/configservice",
-            "vrsm/apps/exactlyonce",
-            "vrsm/apps/vkv",
-            "aof",
-            "reconnectclient",
-            "vrsm/e",
-            "vrsm/clerk",
-            "vrsm/storage",
-            "vrsm/apps/closed",
-            "tutorial",  # atomic commit
-            "tutorial/objectstore/dir",
-            "tutorial/objectstore/chunk",
-            "tutorial/objectstore/client",
-            "tutorial/lockservice",
-            "tutorial/kvservice",
-            "tutorial/basics",
-            "tutorial/queue",
-            "map_marshal",
-            "minlease",
-            "dmvcc/txn",
-            "dmvcc/index",
-            "dmvcc/prophname",
-            "dmvcc/txncoordinator",
-            "dmvcc/txnmgr",
-            "dmvcc/example",
-            "cachekv",
-            "etcd/election",
+            "./asyncfile",
+            "./urpc",
+            "./memkv",
+            "./kv",
+            "./memkv/...",
+            "./connman",
+            "./paxi/single",
+            "./bank",
+            "./lockservice",
+            "./ctrexample/client",
+            "./ctrexample/server",
+            "./fencing/ctr",
+            "./fencing/config",
+            "./fencing/frontend",
+            "./fencing/client",
+            "./fencing/loopclient",
+            "./erpc",
+            "./paxi/reconf",
+            "./map_string_marshal",
+            "./vrsm/replica",
+            "./vrsm/reconfig",
+            "./vrsm/configservice",
+            "./vrsm/apps/exactlyonce",
+            "./vrsm/apps/vkv",
+            "./vrsm/paxos",
+            "./aof",
+            "./reconnectclient",
+            "./vrsm/e",
+            "./vrsm/clerk",
+            "./vrsm/storage",
+            "./vrsm/apps/closed",
+            "./tutorial",  # atomic commit
+            "./tutorial/objectstore/dir",
+            "./tutorial/objectstore/chunk",
+            "./tutorial/objectstore/client",
+            "./tutorial/lockservice",
+            "./tutorial/kvservice",
+            "./tutorial/basics",
+            "./tutorial/queue",
+            "./map_marshal",
+            "./minlease",
+            "./dmvcc/...",
+            "./cachekv",
+            "./etcd/election",
         ]
 
-        for pkg in pkgs:
-            run_goose(
-                path.join(gokv_dir, pkg),
-                # XXX: need to change the Coq import statement for lockservice/ from
-                # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
-                # "From Goose Require github_com.mit_pdos.lockservice."
-            )
+        run_goose(
+            gokv_dir,
+            *pkgs,
+            # XXX: need to change the Coq import statement for lockservice/ from
+            # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
+            # "From Goose Require github_com.mit_pdos.lockservice."
+        )
 
-    if chat_dir is not None:
+    if pav_dir is not None:
         pkgs = [
-            "cryptoutil",
-            "marshalutil",
-            "merkle",
-            "ktmerkle",
+            "./cryptoutil",
+            "./marshalutil",
+            "./merkle",
+            "./ktmerkle",
         ]
 
-        for pkg in pkgs:
-            run_goose(path.join(chat_dir, pkg))
+        run_goose(pav_dir, *pkgs)
 
     if mvcc_dir is not None:
         run_goose(
@@ -342,6 +335,7 @@ def main():
             "./spaxos",
             "./mpaxos",
             "./distx",
+            "./tpl",
         )
 
     if marshal_dir is not None:
