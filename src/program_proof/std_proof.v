@@ -30,6 +30,13 @@ Proof.
     done.
 Qed.
 
+Lemma inv_litint (i1 i2: w64) :
+  #i1 = #i2 ↔ i1 = i2.
+Proof.
+  split; [ | congruence ].
+  inversion 1; auto.
+Qed.
+
 Lemma wp_BytesEqual (x y : Slice.t) (xs ys : list byte) qx qy :
   {{{ own_slice_small x byteT qx xs ∗
       own_slice_small y byteT qy ys }}}
@@ -43,26 +50,18 @@ Proof.
   wp_pures.
   iDestruct (own_slice_small_sz with "Hx") as %Hxlen.
   iDestruct (own_slice_small_sz with "Hy") as %Hylen.
-  assert (#x.(Slice.sz) = #(length xs))%V as ->.
-  { rewrite Hxlen. do 2 f_equal. word. }
-  assert (#y.(Slice.sz) = #(length ys))%V as ->.
-  { rewrite Hylen. do 2 f_equal. word. }
-  destruct_decide (bool_decide_reflect (#(length xs) = #(length ys))) as Hlen; last first.
+  rewrite -bool_decide_not.
+  destruct_decide (bool_decide_reflect (#x.(Slice.sz) ≠ #y.(Slice.sz))) as Hlen; wp_pures.
   { (* Different lengths. *)
-    wp_pures.
-    case_bool_decide as Hsl.
-    - subst ys. exfalso. apply Hlen. done.
-    - iApply "HΦ". eauto with iFrame. }
+    rewrite bool_decide_false.
+    { iModIntro. iApply ("HΦ" with "[$]"). }
+    intros <-.
+    contradiction Hlen.
+    do 2 f_equal.
+    word. }
   wp_pures.
-  assert (length xs = length ys) as Hlens.
-  { cut (Z.of_nat (length xs) = length ys).
-    { intros ?%Nat2Z.inj. done. }
-    (* Coq "injection" is silly and applies injection recursively without control... *)
-    assert (∀ x y: u64, #(LitInt x) = #(LitInt y) → x = y) as Hinj.
-    { clear. intros ?? [= ->]. done. }
-    apply Hinj in Hlen. clear Hinj.
-    apply word.of_Z_inj_small in Hlen; word. }
-  clear Hlen.
+  apply inv_litint in Hlen.
+  assert (length xs = length ys) as Hlens by congruence.
 
   wp_apply wp_ref_to; first by val_ty.
   iIntros (l) "Hi". wp_pures.
@@ -72,39 +71,38 @@ Proof.
   iApply (wp_frame_wand with "HΦ").
 
   (* Weaken for loop invariant *)
-  iAssert (∃ i : nat, ⌜i < 2^64⌝ ∗ l ↦[uint64T] #i ∗ ret ↦[boolT] #(bool_decide (take i xs = take i ys)))%I with "[Hi Hret]" as "Hinv".
-  { iExists 0%nat. by iFrame. }
+  iAssert (∃ i : w64, l ↦[uint64T] #i ∗
+                      ret ↦[boolT] #(bool_decide (take (uint.nat i) xs = take (uint.nat i) ys)))%I
+    with "[Hi Hret]" as "Hinv".
+  { iExists _. by iFrame. }
 
   wp_apply (wp_forBreak_cond' with "[-]"); first by iNamedAccu.
   iIntros "!# HP". iNamed "HP".
-  iDestruct "Hinv" as (i ?) "[Hi Hret]".
+  iDestruct "Hinv" as (i) "[Hi Hret]".
   wp_pures.
   wp_load.
   wp_if_destruct; last first.
   { (* i >= length *)
-    assert (uint.Z (length xs) ≤ uint.Z i) as Hle by lia. clear Heqb.
-    (* FIXME: can't some automation do this? *)
-    replace (uint.Z i) with (Z.of_nat i) in Hle by word.
-    replace (uint.Z (length xs)) with (Z.of_nat (length xs)) in Hle by word.
-    apply Nat2Z.inj_le in Hle.
-    iRight. iModIntro. iSplit; first done. wp_load.
-    rewrite firstn_all2 //.
-    rewrite firstn_all2; last by rewrite -Hlens.
-    iIntros "!> HΦ". iApply "HΦ". eauto with iFrame. }
+    iModIntro.
+    iRight. iSplit; first done. wp_load.
+    iIntros "!> HΦ". iDestruct ("HΦ" with "[$Hx $Hy]") as "HΦ".
+    iExactEq "HΦ".
+    repeat f_equal.
+    apply bool_decide_ext.
+    rewrite take_ge; [ | len ].
+    rewrite take_ge; [ | len ].
+    auto. }
   wp_pures.
-  replace (uint.Z i) with (Z.of_nat i) in Heqb by word.
-  replace (uint.Z (length xs)) with (Z.of_nat (length xs)) in Heqb by word.
-  apply Nat2Z.inj_lt in Heqb.
-  destruct (lookup_lt_is_Some_2 xs i) as [xi Hxi]; first done.
-  destruct (lookup_lt_is_Some_2 ys i) as [yi Hyi]; first by rewrite -Hlens.
+  destruct (lookup_lt_is_Some_2 xs (uint.nat i)) as [xi Hxi]; first word.
+  destruct (lookup_lt_is_Some_2 ys (uint.nat i)) as [yi Hyi]; first word.
   wp_load.
   (* FIXME: some typeclass is set up wrong so TC inference picks the wrong type here *)
   wp_apply (wp_SliceGet (V:=u8) with "[$Hx]").
-  { replace (uint.nat i) with i by word. done. }
+  { eauto. }
   iIntros "Hx".
   wp_load.
   wp_apply (wp_SliceGet (V:=u8) with "[$Hy]").
-  { replace (uint.nat i) with i by word. done. }
+  { eauto. }
   iIntros "Hy".
   wp_pures.
   wp_if_destruct.
@@ -118,28 +116,18 @@ Proof.
   - (* this index is equal *)
     wp_load. wp_store.
     iModIntro. iLeft. iSplit; first done.
-    iFrame "Hx Hy". iExists (S i).
-    iSplit.
-    { iPureIntro. word. }
-    replace (word.add i 1) with (W64 (S i)) by word.
-    iFrame.
-    case_bool_decide as Heq.
-    + rewrite bool_decide_true; first done.
-      apply list_eq. intros j.
-      destruct (decide (j = i)) as [->|Hne].
-      * rewrite !lookup_take; [|lia..].
-        rewrite Hxi Hyi. done.
-      * rewrite !take_S_lookup_ne //. by rewrite Heq.
-    + rewrite bool_decide_false; first done.
-      rename Heq into Hne. intros Heq. apply Hne.
-      apply list_eq. intros j.
-      destruct (decide (j = i)) as [->|Hne'].
-      * rewrite lookup_take_ge. 2:lia.
-        rewrite lookup_take_ge. 2:lia.
-        done.
-      * rewrite -take_S_lookup_ne //.
-        rewrite -[take i ys !! _]take_S_lookup_ne //.
-        rewrite Heq //.
+    iFrame "Hx Hy". iExists (word.add i (W64 1)).
+    iFrame "Hi".
+    iExactEq "Hret".
+    repeat f_equal.
+    apply bool_decide_ext.
+    word_cleanup.
+    replace (Z.to_nat (uint.Z i + 1)) with (S (uint.nat i)) by word.
+    erewrite take_S_r by eauto.
+    erewrite take_S_r by eauto.
+    split; [ congruence | ].
+    intros Heq.
+    apply app_inv_tail in Heq; auto.
 Qed.
 
 Lemma wp_BytesClone sl_b q (b : list u8) :
