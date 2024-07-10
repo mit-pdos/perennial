@@ -421,7 +421,9 @@ Definition Replica__applyAbort: val :=
     else
       let: ("pwrs", "prepared") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
       (if: "prepared"
-      then Replica__abort "rp" "pwrs"
+      then
+        Replica__abort "rp" "pwrs";;
+        MapDelete (struct.loadF Replica "prepm" "rp") "ts"
       else #());;
       MapInsert (struct.loadF Replica "txntbl" "rp") "ts" #false;;
       #()).

@@ -11,7 +11,7 @@ Section program.
     | CmdRead ts key => (#(U64 0), (#(U64 ts), (Slice.nil, (#(LitString key), #()))))
     | CmdPrep ts _ => (#(U64 1), (#(U64 ts), (to_val pwrsS, (zero_val stringT, #()))))
     | CmdCmt ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
-    | CmdAbt ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
+    | CmdAbt ts => (#(U64 3), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
     end.
 
   Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=

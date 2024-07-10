@@ -237,7 +237,20 @@ Section program.
     word.
   Qed.
 
-  Lemma absrel_stm_inv_apply_prepare_failed {prepm txntbl stm} ts :
+  Lemma absrel_stm_inv_apply_prepare {prepm txntbl stm} ts pwrs :
+    txntbl !! ts = None ->
+    absrel_stm prepm txntbl stm ->
+    absrel_stm (<[ts := pwrs]> prepm) txntbl (<[uint.nat ts := StPrepared pwrs]> stm).
+  Proof.
+    rewrite /absrel_stm.
+    intros Htxntbl Habs.
+    rewrite merge_stm_insert_prepm; last done.
+    rewrite 2!kmap_insert Habs.
+    f_equal.
+    word.
+  Qed.
+
+  Lemma absrel_stm_inv_apply_abort {prepm txntbl stm} ts :
     absrel_stm prepm txntbl stm ->
     absrel_stm prepm (<[ts := false]> txntbl) (<[uint.nat ts := StAborted]> stm).
   Proof.
@@ -248,15 +261,14 @@ Section program.
     word.
   Qed.
 
-  Lemma absrel_stm_inv_apply_prepare_successful {prepm txntbl stm} ts pwrs :
-    txntbl !! ts = None ->
+  Lemma absrel_stm_inv_apply_abort_prepared {prepm txntbl stm} ts :
     absrel_stm prepm txntbl stm ->
-    absrel_stm (<[ts := pwrs]> prepm) txntbl (<[uint.nat ts := StPrepared pwrs]> stm).
+    absrel_stm (delete ts prepm) (<[ts := false]> txntbl) (<[uint.nat ts := StAborted]> stm).
   Proof.
     rewrite /absrel_stm.
-    intros Htxntbl Habs.
-    rewrite merge_stm_insert_prepm; last done.
-    rewrite 2!kmap_insert Habs.
+    intros Habs.
+    rewrite merge_stm_delete_prepm; last by rewrite lookup_insert.
+    rewrite merge_stm_insert_txntbl 2!kmap_insert Habs.
     f_equal.
     word.
   Qed.
@@ -1303,7 +1315,7 @@ Section program.
         "HposP"   ∷ posP ↦[uint64T] #pos ∗
         "HiP"     ∷ iP ↦[uint64T] #i ∗
         "Hphyss"  ∷ own_replica_tpls rp
-          (release (uint.nat ts) pwrsRel (acquire (uint.nat ts) pwrsAcq tpls)) α ∗
+          (release pwrsRel (acquire (uint.nat ts) pwrsAcq tpls)) α ∗
         "%Hle"    ∷ ⌜(uint.nat i ≤ uint.nat pos)%nat⌝ ∗
         "%Hbound" ∷ ⌜cont || bound = true⌝)%I.
       wp_apply (wp_forBreak_cond P with "[] [HpwrsS HposP HiP Hphyss]"); last first; first 1 last.
@@ -1485,7 +1497,7 @@ Section program.
       rewrite Heqb.
       rewrite /= Hstm Heqb in Happly.
       inversion Happly. subst stm' tpls'.
-      pose proof (absrel_stm_inv_apply_prepare_failed ts Hstmabs) as Hstmabs'.
+      pose proof (absrel_stm_inv_apply_abort ts Hstmabs) as Hstmabs'.
       by iFrame "∗ # %".
     }
 
@@ -1503,7 +1515,7 @@ Section program.
     { pose proof (absrel_stm_txntbl_present _ _ _ _ _ Htxntbl Hstmabs).
       congruence.
     }
-    pose proof (absrel_stm_inv_apply_prepare_successful ts pwrs Htxntbl Hstmabs) as Hstmabs'.
+    pose proof (absrel_stm_inv_apply_prepare ts pwrs Htxntbl Hstmabs) as Hstmabs'.
     iDestruct (big_sepM2_insert_2 _ _ _ ts with "[Hpwrs] Hprepm") as "Hprepm"; first by iFrame.
     by iFrame "∗ # %".
   Qed.
@@ -1521,7 +1533,7 @@ Section program.
       Replica__multiwrite #rp #ts (to_val pwrsS)
     {{{ RET #(); own_replica_tpls rp tpls' α }}}.
   Proof.
-    iIntros (Hvw Hdom Hlen tpls') "#Hlbs #Hidx".
+    iIntros (Hvw Hdom Hlen tpls') "#Hlbs #Hrp".
     iIntros (Φ) "!> [[HpwrsS %Hpwrs] Hphyss] HΦ".
     wp_call.
 
@@ -1556,7 +1568,7 @@ Section program.
       iIntros (Φ) "(Hphyss & %Hbound & %Hi) HΦ".
       subst P. simpl.
       wp_pures.
-      iNamed "Hidx".
+      iNamed "Hrp".
       wp_loadField.
       (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
       apply elem_of_list_lookup_2 in Hi as Hpwrsv.
@@ -1762,9 +1774,9 @@ Section program.
     (*@     rp.multiwrite(ts, pwrs)                                             @*)
     (*@                                                                         @*)
     (* Take ownership of the prepare-map slice out. *)
-    iDestruct (big_sepM2_delete with "Hprepm") as "[[%pwsL HpwrsS] Hprepm]"; [done | done |].
+    iDestruct (big_sepM2_delete with "Hprepm") as "[[%pwrsL HpwrsS] Hprepm]"; [done | done |].
     rewrite /safe_stm_tpls Hstm in Hsafe.
-    destruct Hsafe as (Hvw & Hdomall & Hpts).
+    destruct Hsafe as (Hdomall & Hvw & Hpts).
     rewrite /= Hstm in Happly.
     inversion Happly. subst stm' tpls'.
     wp_apply (wp_Replica__multiwrite with "Hlbs Hrp [$HpwrsS $Htpls]"); [done | done | done |].
@@ -1789,6 +1801,203 @@ Section program.
     pose proof (absrel_stm_inv_apply_commit ts Hstmabs) as Hstmabs'.
     iApply "HΦ".
     by iFrame "∗ # %".
+  Qed.
+
+  Theorem wp_Replica__abort
+    (rp : loc) (pwrsS : Slice.t) (pwrsL : list dbmod) (pwrs : dbmap)
+    (tpls : gmap dbkey dbtpl) gid γ α :
+    valid_pwrs gid pwrs ->
+    dom tpls = keys_all ->
+    let tpls' := release pwrs tpls in
+    is_replica rp gid γ α -∗
+    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_tpls rp tpls α }}}
+      Replica__abort #rp (to_val pwrsS)
+    {{{ RET #(); own_replica_tpls rp tpls' α }}}.
+  Proof.
+    iIntros (Hvw Hdom tpls') "#Hrp".
+    iIntros (Φ) "!> [[HpwrsS %Hpwrs] Hphyss] HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) abort(pwrs []WriteEntry) {                           @*)
+    (*@     for _, ent := range pwrs {                                          @*)
+    (*@         key := ent.k                                                    @*)
+    (*@         tpl := rp.idx.GetTuple(key)                                     @*)
+    (*@         tpl.Free()                                                      @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    iDestruct (own_slice_sz with "HpwrsS") as %HpwrsLen.
+    iDestruct (own_slice_to_small with "HpwrsS") as "HpwrsS".
+    set P := (λ (i : u64),
+      let pwrs' := list_to_map (take (uint.nat i) pwrsL) in
+      own_replica_tpls rp (release pwrs' tpls) α)%I.
+    wp_apply (wp_forSlice P with "[] [$HpwrsS Hphyss]"); last first; first 1 last.
+    { (* Loop entry. *)
+      subst P. simpl.
+      replace (uint.nat (W64 _)) with O by word.
+      rewrite take_0 list_to_map_nil.
+      by rewrite release_empty.
+    }
+    { (* Loop body. *)
+      clear Φ.
+      iIntros (i [k v]) "!>".
+      iIntros (Φ) "(Hphyss & %Hbound & %Hi) HΦ".
+      subst P. simpl.
+      wp_pures.
+      iNamed "Hrp".
+      wp_loadField.
+      (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
+      apply elem_of_list_lookup_2 in Hi as Hpwrsv.
+      rewrite -Hpwrs elem_of_map_to_list in Hpwrsv.
+      apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
+      assert (Hdomall : k ∈ keys_all) by set_solver.
+      wp_apply (wp_Index__GetTuple with "Hidx"); first done.
+      iIntros (tpl) "#Htpl".
+      wp_pures.
+      (* Obtain proof that the current key [k] has not been written. *)
+      pose proof (NoDup_fst_map_to_list pwrs) as Hnd.
+      rewrite Hpwrs in Hnd.
+      pose proof (list_lookup_fmap fst pwrsL (uint.nat i)) as Hk.
+      rewrite Hi /= in Hk.
+      pose proof (not_elem_of_take _ _ _ Hnd Hk) as Htake.
+      rewrite -fmap_take in Htake.
+      apply not_elem_of_list_to_map_1 in Htake as Hnone.
+      (* Adjust the goal. *)
+      rewrite uint_nat_word_add_S; last by word.
+      rewrite (take_S_r _ _ _ Hi) list_to_map_snoc; last done.
+      set pwrs' := (list_to_map _) in Hnone *.
+      (* Take the physical tuple out. *)
+      rewrite -Hdom elem_of_dom in Hdomall.
+      destruct Hdomall as [t Ht].
+      rewrite /own_replica_tpls big_sepM_delete; last by rewrite release_unmodified.
+      (* Take 1/4 of physical history and 1/2 of pts from the lock invariant. *)
+      iDestruct "Hphyss" as "[[Hphyslk Hts] Hphysslk]".
+      wp_apply (wp_Tuple__Free with "Htpl").
+      iApply ncfupd_mask_intro; first set_solver.
+      iIntros "Hmask".
+      iFrame "Hts".
+      iIntros "Hts".
+      (* Put the updated pts and physical history back to the lock invariant. *)
+      destruct t as [h ts].
+      iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Hphyslk Hts] Hphysslk") as "Hphyss".
+      { by iFrame. }
+      rewrite insert_delete_insert.
+      iMod "Hmask" as "_".
+      iIntros "!> _".
+      iApply "HΦ".
+      rewrite /release.
+      erewrite insert_merge_l; last by rewrite Ht /=.
+      iFrame.
+    }
+    iIntros "[HP HpwrsS]". subst P. iNamed "HP".
+    wp_pures.
+    iApply "HΦ".
+    rewrite -HpwrsLen firstn_all -Hpwrs list_to_map_to_list.
+    by iFrame.
+  Qed.
+
+  Theorem wp_Replica__applyAbort
+    (rp : loc) (ts : u64) (stm stm' : gmap nat txnst)
+    (tpls tpls' : gmap dbkey dbtpl) gid γ α :
+    safe_stm_tpls gid stm tpls (uint.nat ts) ->
+    apply_abort (State stm tpls) (uint.nat ts) = State stm' tpls' ->
+    is_replica rp gid γ α -∗
+    {{{ own_replica_state rp stm tpls α }}}
+      Replica__applyAbort #rp #ts
+    {{{ RET #(); own_replica_state rp stm' tpls' α }}}.
+  Proof.
+    iIntros "%Hsafe %Happly #Hrp" (Φ) "!> Hst HΦ".
+    wp_call.
+
+    (*@ func (rp *Replica) applyAbort(ts uint64) {                              @*)
+    (*@     // Query the transaction table. Note that if there's an entry for @ts in @*)
+    (*@     // @txntbl, then transaction @ts can only be aborted. That's why we're not @*)
+    (*@     // even reading the value of entry.                                 @*)
+    (*@     aborted := rp.queryTxnTermination(ts)                               @*)
+    (*@                                                                         @*)
+    iNamed "Hst". iNamed "Hstm".
+    wp_apply (wp_Replica__queryTxnTermination with "Htxntbl").
+    iIntros (committed) "[Htxntbl %Htxntbl]".
+    wp_pures.
+
+    (*@     if aborted {                                                        @*)
+    (*@         return                                                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_if_destruct.
+    { (* Txn [ts] has committed or aborted. *)
+      rewrite elem_of_dom in Htxntbl.
+      destruct Htxntbl as [b Htxntbl].
+      (* Prove that [ts] must have committed. *)
+      assert (stm !! (uint.nat ts) = Some StAborted) as Habt.
+      { pose proof (absrel_stm_txntbl_present _ _ _ _ _ Htxntbl Hstmabs) as Hstm.
+        by destruct b; [rewrite /= Hstm in Happly |].
+      }
+      iApply "HΦ".
+      rewrite /= Habt in Happly.
+      inversion Happly. subst stm' tpls'.
+      by iFrame "∗ %".
+    }
+
+    (*@     // Unlike commit, the transaction might not have prepared the shard. Need an @*)
+    (*@     // invariant to say that tuples lock are held iff @prepm[ts] contains @*)
+    (*@     // something (and so we should release them by calling @abort).     @*)
+    (*@     pwrs, prepared := rp.prepm[ts]                                      @*)
+    (*@     if prepared {                                                       @*)
+    (*@         rp.abort(pwrs)                                                  @*)
+    (*@         delete(rp.prepm, ts)                                            @*)
+    (*@     }                                                                   @*)
+    (*@     rp.txntbl[ts] = false                                               @*)
+    (*@ }                                                                       @*)
+    wp_loadField.
+    wp_apply (wp_MapGet with "HprepmS").
+    iIntros (pwrsS ok) "[%Hprepm HprepmS]".
+    wp_pures.
+    iNamed "Htxntbl".
+    iDestruct (big_sepM2_dom with "Hprepm") as %Hdom.
+    wp_if_destruct.
+    { (* Case: Txn [ts] prepared, need to release locks. *)
+      apply map_get_true in Hprepm.
+      assert (∃ pwrs, prepm !! ts = Some pwrs) as [pwrs Hpwrs].
+      { apply elem_of_dom_2 in Hprepm.
+        rewrite Hdom elem_of_dom in Hprepm.
+        destruct Hprepm as [pwrs Hpwrs].
+        by exists pwrs.
+      }
+      pose proof (absrel_stm_txntbl_absent_prepm_present _ _ _ _ _ Htxntbl Hpwrs Hstmabs) as Hstm.
+      iDestruct (big_sepM2_delete with "Hprepm") as "[[%pwrsL HpwrsS] Hprepm]"; [done | done |].
+      rewrite /safe_stm_tpls Hstm in Hsafe.
+      destruct Hsafe as (Hdomall & Hvw & _).
+      wp_apply (wp_Replica__abort with "Hrp [$HpwrsS $Htpls]").
+      { apply Hvw. }
+      { apply Hdomall. }
+      iIntros "Htpls".
+      wp_loadField.
+      wp_apply (wp_MapDelete with "HprepmS").
+      iIntros "HprepmS".
+      wp_loadField.
+      wp_apply (wp_MapInsert with "Htxntbl"); first done.
+      iIntros "Htxntbl".
+      wp_pures.
+      iApply "HΦ".
+      rewrite /= Hstm in Happly.
+      inversion Happly. subst stm' tpls'. clear Happly.
+      pose proof (absrel_stm_inv_apply_abort_prepared ts Hstmabs) as Hstmabs'.
+      by iFrame "∗ # %".
+    }
+    { (* Case: Txn [ts] has not prepared, simply set the txn table to false. *)
+      wp_loadField.
+      wp_apply (wp_MapInsert with "Htxntbl"); first done.
+      iIntros "Htxntbl".
+      wp_pures.
+      iApply "HΦ".
+      apply map_get_false in Hprepm as [Hprepm _].
+      rewrite -not_elem_of_dom Hdom not_elem_of_dom in Hprepm.
+      pose proof (absrel_stm_both_absent _ _ _ _ Htxntbl Hprepm Hstmabs) as Hstm.
+      rewrite /= Hstm in Happly.
+      inversion Happly. subst stm' tpls'. clear Happly.
+      pose proof (absrel_stm_inv_apply_abort ts Hstmabs) as Hstmabs'.
+      by iFrame "∗ # %".
+    }
   Qed.
 
   (* We can actually merge [valid_pwrs_of_command] and [valid_ts_of_command]
@@ -1861,9 +2070,15 @@ Section program.
       by iFrame.
     }
     { (* Case: Abort. *)
-      admit.
+      wp_apply (wp_Replica__applyAbort with "Hrp Hst").
+      { apply Hsafe. word. }
+      { by rewrite uint_nat_W64; last word. }
+      iIntros "Hst".
+      wp_pures.
+      iApply "HΦ".
+      by iFrame.
     }
-  Admitted.
+  Qed.
 
   Theorem wp_Replica__Start (rp : loc) (gid : groupid) γ α :
     know_distx_inv γ -∗

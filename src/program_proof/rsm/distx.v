@@ -613,54 +613,54 @@ Definition apply_commit st (tid : nat) :=
   | Stuck => Stuck
   end.
 
-Definition release_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
+Definition release_key (wr : option dbval) (tpl : option dbtpl) :=
   match wr, tpl with
   | None, Some _ => tpl
   | Some _, Some (vs, _) => Some (vs, O)
   | _, _ => None
   end.
 
-Lemma release_key_nonexpanding ts :
-  mergef_nonexpanding (release_key ts).
+Lemma release_key_nonexpanding :
+  mergef_nonexpanding release_key.
 Proof. intros x y. by destruct x, y as [[h t] |]. Qed.
 
-Definition release (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
-  merge (release_key tid) wrs tpls.
+Definition release (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
+  merge release_key wrs tpls.
 
-Lemma release_unmodified {tid wrs tpls key} :
+Lemma release_unmodified {wrs tpls key} :
   wrs !! key = None ->
-  (release tid wrs tpls) !! key = tpls !! key.
+  (release wrs tpls) !! key = tpls !! key.
 Proof.
   intros Hlookup.
   rewrite lookup_merge Hlookup /=.
   by destruct (tpls !! key) as [t |] eqn:Ht.
 Qed.
 
-Lemma release_dom {tid wrs tpls} :
-  dom (release tid wrs tpls) = dom tpls.
+Lemma release_dom {wrs tpls} :
+  dom (release wrs tpls) = dom tpls.
 Proof. apply gmap_nonexpanding_merge_dom, release_key_nonexpanding. Qed.
 
-Lemma release_difference_distr {tid wrs tpls tplsd} :
-  release tid wrs (tpls ∖ tplsd) =
-  release tid wrs tpls ∖ release tid wrs tplsd.
+Lemma release_difference_distr {wrs tpls tplsd} :
+  release wrs (tpls ∖ tplsd) =
+  release wrs tpls ∖ release wrs tplsd.
 Proof. apply gmap_nonexpanding_merge_difference_distr, release_key_nonexpanding. Qed.
 
-Lemma release_mono tid wrs tpls1 tpls2 :
+Lemma release_mono wrs tpls1 tpls2 :
   tpls1 ⊆ tpls2 ->
-  release tid wrs tpls1 ⊆ release tid wrs tpls2.
+  release wrs tpls1 ⊆ release wrs tpls2.
 Proof. apply gmap_nonexpanding_merge_mono, release_key_nonexpanding. Qed.
 
-Lemma release_tpls_group_commute tid wrs tpls gid :
-  release tid wrs (tpls_group gid tpls) = tpls_group gid (release tid wrs tpls).
+Lemma release_tpls_group_commute wrs tpls gid :
+  release wrs (tpls_group gid tpls) = tpls_group gid (release wrs tpls).
 Proof.
   set P := (λ x, key_to_group x = gid).
-  pose proof (release_key_nonexpanding tid) as Hne.
+  pose proof release_key_nonexpanding as Hne.
   by apply (gmap_nonexpanding_merge_filter_commute P wrs tpls) in Hne.
 Qed.
 
 Lemma release_acquire_inverse tid wrs tpls :
   validate tid wrs tpls = true ->
-  release tid wrs (acquire tid wrs tpls) = tpls.
+  release wrs (acquire tid wrs tpls) = tpls.
 Proof.
   intros Hvd.
   apply map_eq. intros k.
@@ -676,8 +676,8 @@ Proof.
   by subst t.
 Qed.
 
-Lemma release_empty tid tpls :
-  release tid ∅ tpls = tpls.
+Lemma release_empty tpls :
+  release ∅ tpls = tpls.
 Proof.
   apply map_eq. intros k.
   rewrite lookup_merge lookup_empty /=.
@@ -689,7 +689,7 @@ Definition apply_abort st (tid : nat) :=
   | State stm tpls =>
       match stm !! tid with
       | Some StAborted => st
-      | Some (StPrepared wrs) => State (<[ tid := StAborted ]> stm) (release tid wrs tpls)
+      | Some (StPrepared wrs) => State (<[ tid := StAborted ]> stm) (release wrs tpls)
       | None => State (<[ tid := StAborted ]> stm) tpls
       | _ => Stuck
       end
@@ -3318,7 +3318,7 @@ Section group_inv.
 
   Lemma key_inv_learn_abort {γ ts wrs tpls} k x y :
     tpls !! k = Some x ->
-    release ts wrs tpls !! k = Some y ->
+    release wrs tpls !! k = Some y ->
     is_Some (wrs !! k) ->
     key_inv_prepared_no_repl_tsprep γ k x.1 ts -∗
     key_inv_no_repl_tsprep γ k y.1 y.2.
@@ -3338,7 +3338,7 @@ Section group_inv.
     dom tpls = dom wrs ->
     ([∗ map] key ↦ tpl ∈ tpls,
        key_inv_prepared_no_repl_tsprep γ key tpl.1 ts) -∗
-    ([∗ map] key ↦ tpl ∈ release ts wrs tpls,
+    ([∗ map] key ↦ tpl ∈ release wrs tpls,
        key_inv_no_repl_tsprep γ key tpl.1 tpl.2).
   Proof.
     iIntros (Hdom) "Hkeys".
@@ -3353,10 +3353,10 @@ Section group_inv.
     by iApply (key_inv_learn_abort with "Hkey").
   Qed.
 
-  Lemma tuple_repl_half_release_disjoint {γ} ts wrs tpls :
+  Lemma tuple_repl_half_release_disjoint {γ} wrs tpls :
     dom tpls ## dom wrs ->
     ([∗ map] k↦tpl ∈ tpls, tuple_repl_half γ k tpl) -∗
-    ([∗ map] k↦tpl ∈ release ts wrs tpls, tuple_repl_half γ k tpl).
+    ([∗ map] k↦tpl ∈ release wrs tpls, tuple_repl_half γ k tpl).
   Proof.
     iIntros (Hdom) "Htpls".
     iApply (big_sepM_impl_dom_eq with "Htpls"); first apply release_dom.
@@ -3420,7 +3420,7 @@ Section group_inv.
       by iFrame "∗ # %".
     }
     (* Case: Prepared; release the locks on tuples. *)
-    set tpls' := release _ _ _.
+    set tpls' := release _ _.
     (* Obtain proof of valid prepared input. *)
     iDestruct (big_sepM_lookup with "Hvp") as "Hc"; first apply Hdup. simpl.
     iDestruct "Hc" as (wrs) "(Hwrs & %Hts & %Hpwrs)".
@@ -3447,7 +3447,7 @@ Section group_inv.
     iDestruct (tuple_repl_big_agree with "Hrepls Htpls") as %->; first by rewrite -Hdom in Hdom'.
     clear Hdom'.
     (* Update the tuples (resetting the prepared timestamp). *)
-    iMod (tuple_repl_big_update (release ts pwrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
+    iMod (tuple_repl_big_update (release pwrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
     { by rewrite release_dom. }
     (* Prove txn [ts] has prepared but not committed on [tpls]. *)
     iAssert (⌜Forall (λ c, valid_pts_of_command c) log⌝)%I as %Hpts.
@@ -3477,7 +3477,7 @@ Section group_inv.
     { by rewrite release_dom. }
     iDestruct ("HkeysC" with "Hkeys") as "Hkeys".
     (* Merge ownership of tuples back to group invariant. *)
-    iDestruct (tuple_repl_half_release_disjoint ts pwrs with "HreplsO") as "HreplsO".
+    iDestruct (tuple_repl_half_release_disjoint pwrs with "HreplsO") as "HreplsO".
     { set_solver. }
     rewrite release_difference_distr.
     iDestruct (big_sepM_difference_combine with "Hrepls HreplsO") as "Hrepls".
