@@ -34,7 +34,6 @@ Ltac simpl_decide :=
       rewrite -> decide_True by lia
     ].
 
-(* just for illustration *)
 Lemma lookupZ_to_lookup l n :
   0 ≤ n < length l →
   l !! (Z.to_nat n) = Some (l !!! n).
@@ -56,6 +55,17 @@ Proof.
   rewrite lookupZ_to_lookup in Hget; [ lia | ].
   congruence.
 Qed.
+
+Lemma lookup_oob l i :
+  ¬(0 ≤ i < length l) →
+  l !!! i = inhabitant.
+Proof.
+  intros H.
+  rewrite /lookup_total /list_lookup.
+  destruct (decide _); auto.
+  rewrite nth_overflow //; lia.
+Qed.
+
 #[global] Instance list_insert : Insert Z A (list A) :=
   λ n x l, if decide (0 ≤ n) then <[ Z.to_nat n := x ]> l else l.
 
@@ -89,6 +99,43 @@ Proof.
   lia.
 Qed.
 
+Definition drop n l := skipn (Z.to_nat n) l.
+Definition take n l := firstn (Z.to_nat n) l.
+
+Lemma drop_length' l n :
+  0 ≤ n →
+  length (drop n l) = (length l - n) `max` 0.
+Proof.
+  rewrite /length /drop => H.
+  rewrite skipn_length.
+  lia.
+Qed.
+
+Lemma drop_length l n :
+  0 ≤ n < length l →
+  length (drop n l) = length l - n.
+Proof.
+  intros H.
+  rewrite drop_length'; [ lia | ].
+  lia.
+Qed.
+
+Lemma lookup_drop l n i :
+  (* TODO: generalize to an out-of-bounds case *)
+  0 ≤ n < length l →
+  0 ≤ i < length l - n →
+  drop n l !!! i = l !!! (n + i).
+Proof.
+  intros H1 H2.
+  apply lookupZ_eq; [ lia | ].
+  rewrite list.lookup_drop.
+  rewrite list.list_lookup_lookup_total_lt; [ lia | ].
+  f_equal.
+  symmetry; apply lookupZ_eq; [ lia | ].
+  rewrite list.list_lookup_lookup_total_lt; [ lia | ].
+  do 2 f_equal; lia.
+Qed.
+
 End list.
 
 Lemma fmap_length {A B} `{!Inhabited A, !Inhabited B}
@@ -107,7 +154,13 @@ Proof.
   intros Hbound.
   apply lookupZ_eq; [ lia | ].
   rewrite list.list_lookup_fmap.
-Admitted.
+  assert (exists x, l !! Z.to_nat i = Some x) as [x Hget].
+  { apply list.lookup_lt_is_Some. rewrite /length in Hbound; lia. }
+  rewrite Hget /=.
+  apply lookupZ_eq in Hget.
+  - congruence.
+  - lia.
+Qed.
 
 
 End listZ.
