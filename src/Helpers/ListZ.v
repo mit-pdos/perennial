@@ -329,6 +329,49 @@ Proof.
   rewrite firstn_skipn //.
 Qed.
 
+Definition replicate n x :=
+  list.replicate (Z.to_nat n) x.
+
+Lemma replicate_length' n x :
+  length (replicate n x) = n `max` 0.
+Proof.
+  rewrite /replicate /length.
+  rewrite list.replicate_length.
+  lia.
+Qed.
+
+Lemma replicate_length n x :
+  0 ≤ n →
+  length (replicate n x) = n.
+Proof.
+  intros H.
+  rewrite replicate_length'; lia.
+Qed.
+
+Lemma lookup_replicate i n x :
+  0 ≤ i < n →
+  replicate n x !!! i = x.
+Proof.
+  intros.
+  pose proof (replicate_length' n x).
+  list_simpl.
+  rewrite /replicate.
+  apply list.lookup_replicate_1 in Hget.
+  intuition congruence.
+Qed.
+
+(* (perhaps common) special case of replicating the inhabitant or "zero value"
+of a type *)
+Lemma lookup_replicate_0 i n x :
+  x = inhabitant →
+  replicate n x !!! i = x.
+Proof.
+  intros.
+  pose proof (replicate_length' n x).
+  destruct (decide (0 ≤ i < n)); list_solve.
+  rewrite lookup_replicate //; lia.
+Qed.
+
 End list.
 
 Lemma fmap_length {A B} `{!Inhabited A, !Inhabited B}
