@@ -50,6 +50,22 @@ Definition BytesClone : val :=
     return: (slice.append byteT (slice.literal byteT []) (![sliceT byteT] "b"));;;
     do:  #()).
 
+(* SliceSplit splits xs at n into two slices.
+
+   The capacity of the first slice overlaps with the second, so afterward it is
+   no longer safe to append to the first slice.
+
+   TODO: once goose supports it, make this function generic in the slice element
+   type *)
+Definition SliceSplit : val :=
+  rec: "SliceSplit" "xs" "n" :=
+    exception_do (let: "n" := ref_ty uint64T "n" in
+    let: "xs" := ref_ty (sliceT byteT) "xs" in
+    return: (let: "$s" := ![sliceT byteT] "xs" in
+     slice.slice byteT "$s" #0 (![uint64T] "n"), let: "$s" := ![sliceT byteT] "xs" in
+     slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s"));;;
+    do:  #()).
+
 (* Returns true if x + y does not overflow *)
 Definition SumNoOverflow : val :=
   rec: "SumNoOverflow" "x" "y" :=
