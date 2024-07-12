@@ -78,24 +78,12 @@ Proof.
   congruence.
 Qed.
 
-Lemma list_eq l1 l2 :
-  length l1 = length l2 →
-  (∀ i, 0 ≤ i < length l1 → l1 !!! i = l2 !!! i) →
-  l1 = l2.
+Lemma lookupZ_eq_nat l (n: nat) x :
+  l !! n = Some x →
+  l !!! Z.of_nat n = x.
 Proof.
-  intros Hlen Heq.
-  apply list.list_eq => i.
-  destruct (decide (Z.of_nat i < length l1)).
-  { rewrite /lookup_total /list_lookup in Heq.
-    pose proof (Heq (Z.of_nat i) ltac:(lia)).
-    rewrite -> !decide_True in H by lia.
-    rewrite Nat2Z.id in H.
-    destruct (list.nth_lookup_or_length l1 i inhabitant),
-      (list.nth_lookup_or_length l2 i inhabitant);
-      try lia.
-    congruence. }
-  rewrite list.lookup_ge_None_2; [ lia | ].
-  rewrite list.lookup_ge_None_2; [ lia | ].
+  pose proof (lookupZ_eq l (Z.of_nat n) x ltac:(lia)).
+  rewrite Nat2Z.id in H.
   auto.
 Qed.
 
@@ -109,6 +97,63 @@ Proof.
   rewrite nth_overflow //; lia.
 Qed.
 
+Tactic Notation "handle_index" constr(l) constr(n) :=
+  let n_nat := match type of n with
+               | nat => constr:(n)
+               | Z => match n with
+                      | Z.of_nat ?n => n
+                      | _ => constr:(Z.to_nat n)
+                      end
+               end in
+  lazymatch goal with
+    (* already have the right fact *)
+  | H: l !! n_nat = _ |- _ => fail
+  | _ =>
+      let x := fresh "x" in
+      let Hget := fresh "Hget" in
+      destruct (list.lookup_lt_is_Some_2 l n_nat ltac:(lia)) as [x Hget];
+      let Heq := fresh "Heq_" x in
+      match type of n with
+      | nat => pose proof (lookupZ_eq_nat _ _ _ Hget) as Heq
+      | Z => pose proof (lookupZ_eq l n x ltac:(lia) Hget) as Heq
+      end;
+      try rewrite !Hget
+  end.
+
+Ltac list_simpl :=
+  repeat
+    multimatch goal with
+    | H: context[?l !!! ?n] |- _ => handle_index l n
+    | |- context[?l !!! ?n] => handle_index l n
+    | H: context[?l !! ?n] |- _ => handle_index l n
+    | |- context[?l !! ?n] => handle_index l n
+    | |- Some _ = Some _ => f_equal
+    | _ => first [
+               rewrite -> lookup_oob in * by lia
+             | rewrite -> list.lookup_ge_None_2 in * by lia
+             | progress rewrite -> Z2Nat.id in *
+             | progress rewrite -> Nat2Z.id in *
+             | progress subst
+             ]
+    end.
+
+(* simplify and attempt to solve (does not always succeed) *)
+Ltac list_solve :=
+      list_simpl;
+       try (auto || congruence).
+
+Lemma list_eq l1 l2 :
+  length l1 = length l2 →
+  (∀ i, 0 ≤ i < length l1 → l1 !!! i = l2 !!! i) →
+  l1 = l2.
+Proof.
+  intros Hlen Heq.
+  apply list.list_eq => i.
+  destruct (decide (Z.of_nat i < length l1)); list_solve.
+  rewrite Heq; [ lia | ].
+  done.
+Qed.
+
 Lemma lookup_lookup_eq l1 l2 i1 i2 :
   (0 ≤ i1 < length l1 ↔ 0 ≤ i2 < length l2) →
   (∀ x y, l1 !! (Z.to_nat i1) = Some x →
@@ -117,23 +162,7 @@ Lemma lookup_lookup_eq l1 l2 i1 i2 :
   l1 !!! i1 = l2 !!! i2.
 Proof.
   intros H12 Heq.
-  destruct (decide (0 ≤ i1 < length l1)) as [H1 | H1].
-  {
-    pose proof H1 as H2. apply H12 in H2.
-    assert (is_Some (l1 !! Z.to_nat i1)) as [x Hget1].
-    { eapply list.lookup_lt_is_Some_2.
-      lia. }
-    assert (is_Some (l2 !! Z.to_nat i2)) as [y Hget2].
-    { eapply list.lookup_lt_is_Some_2.
-      lia. }
-    pose proof (Heq x y ltac:(auto) ltac:(auto)); subst.
-    erewrite lookupZ_eq; eauto; try lia.
-    erewrite lookupZ_eq; eauto; try lia.
-  }
-  assert (¬(0 ≤ i2 < length l2)) by intuition.
-  rewrite lookup_oob; [ lia | ].
-  rewrite lookup_oob; [ lia | ].
-  auto.
+  destruct (decide (0 ≤ i1 < length l1)) as [H1 | H1]; list_solve.
 Qed.
 
 Lemma lookup_app_l l1 l2 i :
@@ -141,12 +170,9 @@ Lemma lookup_app_l l1 l2 i :
   (l1 ++ l2) !!! i = l1 !!! i.
 Proof.
   intros H.
-  destruct (decide (0 ≤ i)).
-  2: { rewrite !lookup_oob; auto; try lia. }
-  apply lookup_lookup_eq.
-  { rewrite app_length. lia. }
-  intros ??.
-  rewrite list.lookup_app_l; [ lia | ].
+  pose proof (app_length l1 l2).
+  destruct (decide (0 ≤ i)); list_solve.
+  rewrite -> list.lookup_app_l in * by lia.
   congruence.
 Qed.
 
@@ -176,11 +202,11 @@ Lemma insert_lookup_eq n x l i :
   <[ n := x ]> l !!! n = x.
 Proof.
   intros Hbound ->; subst; simpl_decide.
-  pose proof (lookupZ_to_lookup l n ltac:(auto)).
-  rewrite list_insert_nat; [ lia | ].
-  apply lookupZ_eq; [ lia | ].
-  rewrite list.list_lookup_insert //.
-  lia.
+  pose proof (list_insert_length n x l).
+  rewrite -> list_insert_nat in * by lia.
+  list_simpl.
+  rewrite -> list.list_lookup_insert in * by lia.
+  list_solve.
 Qed.
 
 Definition drop n l := skipn (Z.to_nat n) l.
@@ -240,10 +266,7 @@ Lemma lookup_take l n i :
   take n l !!! i = l !!! i.
 Proof.
   intros H.
-  destruct (decide (0 ≤ i)).
-  2: {
-    rewrite !lookup_oob; auto; lia.
-  }
+  destruct (decide (0 ≤ i)); list_solve.
   apply lookup_lookup_eq.
   { rewrite take_length'; lia. }
   intros ??.
