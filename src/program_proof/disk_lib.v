@@ -318,6 +318,18 @@ Proof.
   iIntros "!> * Hs". iApply ("HΦ" with "[$]").
 Qed.
 
+Lemma wp_Read_eq (a: u64) (a': Z) q b :
+  {{{ a' d↦{q} b ∗ ⌜uint.Z a = a'⌝ }}}
+    Read #a
+  {{{ s, RET slice_val s;
+      a' d↦{q} b ∗ is_block_full s b }}}.
+Proof.
+  iIntros (Φ) "Hb HΦ".
+  iDestruct "Hb" as "[Hb %]". subst.
+  wp_apply (wp_Read with "Hb").
+  iApply "HΦ".
+Qed.
+
 Lemma wp_Barrier stk E  :
   {{{ True }}}
     Barrier #() @ stk; E

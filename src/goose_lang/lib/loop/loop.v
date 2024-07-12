@@ -147,6 +147,24 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
+Theorem wp_forUpto' (I: u64 → iProp Σ) stk E (start max:u64) (l:loc) (body: val) :
+  ∀ Φ,
+  l ↦[uint64T] #start ∗ ⌜uint.Z start ≤ uint.Z max⌝ ∗ I start -∗
+  □(∀ (i: w64) Φ', I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z i < uint.Z max⌝ -∗
+      ▷ (I (word.add i (W64 1)) ∗ l ↦[uint64T] #i -∗ Φ' #true) -∗
+      WP body #() @ stk; E {{ Φ' }}) -∗
+  ▷ (I max ∗ l ↦[uint64T] #max -∗ Φ #())%V -∗
+  WP (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
+      body)%V @ stk; E {{ Φ }}.
+Proof.
+  iIntros (Φ) "(l & %Hstart & Istart) #IH HΦ".
+  wp_apply (wp_forUpto I with "[] [$l $Istart] [$HΦ]").
+  - auto.
+  - clear Φ.
+    iIntros (i Φ) "!> Hpre HΦ".
+    iApply ("IH" with "[$Hpre] [$HΦ]").
+Qed.
+
 (* Example specification for the usual for i := 0; i < max; i++ loop in Go.
 
 In practice it is easier to use wp_forUpto, which is just after the loop

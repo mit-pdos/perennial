@@ -676,3 +676,10 @@ Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (ty_size t)) e1%E e2%E) : expr_sc
 Lemma byte_offset_untype `{ext_ty: ext_types} l z :
   l +ₗ[byteT] z = l +ₗ z.
 Proof. rewrite Z.mul_1_l. done. Qed.
+
+Lemma loc_add_typed_assoc `{ext_ty: ext_types} {t} l z1 z2 :
+  l +ₗ[t] z1 +ₗ[t] z2 = l +ₗ[t] (z1 + z2).
+Proof.
+  rewrite loc_add_assoc.
+  rewrite Z.mul_add_distr_l //.
+Qed.

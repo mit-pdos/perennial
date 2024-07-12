@@ -251,6 +251,13 @@ Proof.
     wp_apply ("IH" with "[$]").
 Qed.
 
+Theorem wp_Assume_false stk E Φ :
+  ⊢ WP (Assume #false) @ stk; E {{ Φ }}.
+Proof.
+  iApply wp_Assume; auto.
+  iIntros (?); congruence.
+Qed.
+
 Theorem wp_Assert stk E (cond: bool) :
   cond = true ->
   {{{ True }}}
@@ -260,6 +267,13 @@ Proof.
   iIntros (-> Φ) "_ HΦ".
   wp_call.
   iApply ("HΦ" with "[//]").
+Qed.
+
+Theorem wp_Assert_true stk E Φ :
+  ▷Φ #() -∗ WP (Assert #true) @ stk; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_Assert; auto.
 Qed.
 
 Theorem wp_Exit stk E (v : val) :

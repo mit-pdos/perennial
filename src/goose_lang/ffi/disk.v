@@ -509,10 +509,24 @@ lemmas. *)
     bs !! Z.to_nat z = Some b →
     disk_array l q bs -∗ ((l + z) d↦{q} b ∗
                           ∀ b', (l + z) d↦{q} b' -∗
-                                                disk_array l q (<[Z.to_nat z:=b']>bs))%I.
+                                disk_array l q (<[Z.to_nat z:=b']>bs))%I.
   Proof.
     iIntros (Hpos Hlookup) "Hl".
     iDestruct (disk_array_acc_disc with "[$]") as "($&?)"; eauto.  rewrite own_discrete_elim; eauto.
+  Qed.
+
+  Lemma disk_array_acc_read (l: Z) bs (z: Z) b q :
+    0 <= z ->
+    bs !! Z.to_nat z = Some b →
+    disk_array l q bs -∗ ((l + z) d↦{q} b ∗
+                          ((l + z) d↦{q} b -∗
+                                disk_array l q bs))%I.
+  Proof.
+    iIntros (??) "Hl".
+    iDestruct (disk_array_acc with "Hl") as "[$ Hrest]"; eauto.
+    iIntros "Hlz".
+    iDestruct ("Hrest" with "Hlz") as "Hl".
+    rewrite list_insert_id //.
   Qed.
 
   Lemma init_disk_sz_lookup_ge sz z:

@@ -3,6 +3,8 @@ From Perennial.goose_lang.lib Require Import string.impl.
 From Perennial.goose_lang.lib Require Import control.
 Import uPred.
 
+Set Default Proof Using "Type".
+
 Section heap.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
@@ -88,6 +90,13 @@ Proof.
   induction s as [|? ? IHs].
   { done. }
   { cbn. apply f_equal. done. }
+Qed.
+
+Lemma length_bytes_to_string bs :
+  String.length (bytes_to_string bs) = length bs.
+Proof.
+  rewrite string_bytes_length.
+  rewrite bytes_to_string_inj //.
 Qed.
 
 (*
@@ -222,3 +231,5 @@ Proof.
 Qed.
 
 End heap.
+
+Hint Rewrite length_bytes_to_string : len.

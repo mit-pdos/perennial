@@ -79,6 +79,15 @@ Proof.
   auto.
 Qed.
 
+Lemma array_combine l t q vs1 z vs2 :
+  z = Z.of_nat (length vs1) →
+  l ↦∗[t]{q} vs1 -∗ (l +ₗ[t] z) ↦∗[t]{q} vs2 -∗
+  l ↦∗[t]{q} (vs1 ++ vs2).
+Proof.
+  rewrite array_app.
+  iIntros (->) "$ $".
+Qed.
+
 Lemma array_split_nm (n m: nat) {l t q vs} :
   (n + m)%nat = length vs ->
   l ↦∗[t]{q} vs -∗

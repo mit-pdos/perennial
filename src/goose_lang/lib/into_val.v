@@ -112,6 +112,26 @@ Section instances.
     by injection H.
   Qed.
 
+  Definition u32val (x:u32) : val := #x.
+  Global Instance u32_IntoVal : IntoVal u32.
+  Proof.
+    refine {| to_val := λ (x: u32), #x;
+              from_val := λ v, match v with #(LitInt32 x) => Some x | _ => None end;
+              IntoVal_def := W32 0; |}; done.
+  Defined.
+  Global Instance u32_IntoVal_uint32T : IntoValForType u32 uint32T.
+  Proof.
+    constructor; auto.
+  Qed.
+  Global Instance u32_IntoValComparable : IntoValComparable u32.
+  Proof.
+    constructor; try done.
+    intros. simpl in *.
+    destruct vval; try done; destruct l; try done.
+    repeat f_equal.
+    by injection H.
+  Qed.
+
   Global Instance u8_IntoVal : IntoVal u8.
   Proof.
     refine {| to_val := λ (x: u8), #x;
