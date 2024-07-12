@@ -22,196 +22,64 @@ Definition shift_overflow_special_case_handlers := {|
   Naive.adjust_too_big_shift_amount n := n;
 |}.
 
-Notation word64 := (Naive.gen_word 64%Z shift_overflow_special_case_handlers).
-#[global] Instance word64_ok : word.ok word64 := Naive.gen_ok 64 _ eq_refl.
-Notation word32 := (Naive.gen_word 32%Z shift_overflow_special_case_handlers).
-#[global] Instance word32_ok : word.ok word32 := Naive.gen_ok 32 _ eq_refl.
-Notation word8 := (Naive.gen_word 8%Z shift_overflow_special_case_handlers).
-#[global] Instance word8_ok : word.ok word8 := Naive.gen_ok 8 _ eq_refl.
+#[global] Instance w64_word_instance : word 64 := (Naive.gen_word 64%Z shift_overflow_special_case_handlers).
+#[global] Instance w64_word_instance_ok : word.ok w64_word_instance := Naive.gen_ok 64 _ eq_refl.
+#[global] Instance w32_word_instance : word 32 := (Naive.gen_word 32%Z shift_overflow_special_case_handlers).
+#[global] Instance w32_word_instance_ok : word.ok w32_word_instance := Naive.gen_ok 32 _ eq_refl.
+#[global] Instance w8_word_instance : word 8 := (Naive.gen_word 8%Z shift_overflow_special_case_handlers).
+#[global] Instance w8_word_instance_ok : word.ok w8_word_instance := Naive.gen_ok 8 _ eq_refl.
 
-Record w64_rep := Word64 { w64_car : word64 }.
-Record w32_rep := Word32 { w32_car : word32 }.
-Record w8_rep := Word8 { w8_car : word8 }.
+(* w64 needs to be a hard boundary (not a notation) to make coercions work. *)
+Global SubClass w64 := @word.rep _ w64_word_instance.
+Global SubClass w32 := @word.rep _ w32_word_instance.
+Global SubClass w8 := @word.rep _ w8_word_instance.
 
-Definition width64_ok : 0 < 64 := eq_refl.
-Definition width32_ok : 0 < 32 := eq_refl.
-Definition width8_ok : 0 < 8 := eq_refl.
+Global Opaque w64_word_instance w32_word_instance w8_word_instance.
 
-#[global]
-Hint Resolve width64_ok width32_ok width8_ok : typeclass_instances.
+(* Ring does syntactic type matching (read: very simple matching) to see
+if there's a matching ring structure.
+As such, a "w64" looks different to it than a "word.rep _ w64_word_instance".
+That's why we need two separate ring structures for each width.
 
-Opaque Naive.word.
-
-
-Module w64_instance.
-  Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word64 (f w.(w64_car))) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word64 (f w1.(w64_car) w2.(w64_car))) (at level 10, only parsing).
-  #[global]
-  Instance w64 : word 64 :=
-    {|
-      rep := w64_rep;
-      unsigned w := unsigned w.(w64_car);
-      signed w := signed (w.(w64_car));
-      of_Z z := Word64 (of_Z z);
-      add := lift2 add;
-      sub := lift2 sub;
-      opp := lift1 opp;
-      or := lift2 or;
-      and := lift2 and;
-      xor := lift2 xor;
-      not := lift1 not;
-      ndn := lift2 ndn;
-      mul := lift2 mul;
-      mulhss := lift2 mulhss;
-      mulhsu := lift2 mulhsu;
-      mulhuu := lift2 mulhuu;
-      divu := lift2 divu;
-      divs := lift2 divs;
-      modu := lift2 modu;
-      mods := lift2 mods;
-      slu := lift2 slu;
-      sru := lift2 sru;
-      srs := lift2 srs;
-      eqb w1 w2 := eqb w1.(w64_car) w2.(w64_car);
-      ltu w1 w2 := ltu w1.(w64_car) w2.(w64_car);
-      lts w1 w2 := lts w1.(w64_car) w2.(w64_car);
-      sextend width' := lift1 (sextend width');
-    |}.
-
-  Global Instance w64_word_ok : word.ok w64.
-  Proof.
-    destruct word64_ok.
-    constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
-    simpl.
-    destruct x as [x]; f_equal; simpl.
-    rewrite <- of_Z_unsigned0; auto.
-  Qed.
-
-End w64_instance.
-
-Module w32_instance.
-  Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word32 (f w.(w32_car))) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word32 (f w1.(w32_car) w2.(w32_car))) (at level 10, only parsing).
-  #[global]
-  Instance w32 : word 32 :=
-    {|
-      rep := w32_rep;
-      unsigned w := unsigned w.(w32_car);
-      signed w := signed (w.(w32_car));
-      of_Z z := Word32 (of_Z z);
-      add := lift2 add;
-      sub := lift2 sub;
-      opp := lift1 opp;
-      or := lift2 or;
-      and := lift2 and;
-      xor := lift2 xor;
-      not := lift1 not;
-      ndn := lift2 ndn;
-      mul := lift2 mul;
-      mulhss := lift2 mulhss;
-      mulhsu := lift2 mulhsu;
-      mulhuu := lift2 mulhuu;
-      divu := lift2 divu;
-      divs := lift2 divs;
-      modu := lift2 modu;
-      mods := lift2 mods;
-      slu := lift2 slu;
-      sru := lift2 sru;
-      srs := lift2 srs;
-      eqb w1 w2 := eqb w1.(w32_car) w2.(w32_car);
-      ltu w1 w2 := ltu w1.(w32_car) w2.(w32_car);
-      lts w1 w2 := lts w1.(w32_car) w2.(w32_car);
-      sextend width' := lift1 (sextend width');
-    |}.
-
-  Global Instance w32_word_ok : word.ok w32.
-  Proof.
-    destruct word32_ok.
-    constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
-    simpl.
-    destruct x as [x]; f_equal; simpl.
-    rewrite <- of_Z_unsigned0; auto.
-  Qed.
-
-End w32_instance.
-
-Module w8_instance.
-  Import Interface.word.
-  Notation "'lift1' f" := (fun w => Word8 (f w.(w8_car))) (at level 10, only parsing).
-  Notation "'lift2' f" := (fun w1 w2 => Word8 (f w1.(w8_car) w2.(w8_car))) (at level 10, only parsing).
-  #[global]
-  Instance w8 : word 8 :=
-    {|
-      rep := w8_rep;
-      unsigned w := unsigned w.(w8_car);
-      signed w := signed (w.(w8_car));
-      of_Z z := Word8 (of_Z z);
-      add := lift2 add;
-      sub := lift2 sub;
-      opp := lift1 opp;
-      or := lift2 or;
-      and := lift2 and;
-      xor := lift2 xor;
-      not := lift1 not;
-      ndn := lift2 ndn;
-      mul := lift2 mul;
-      mulhss := lift2 mulhss;
-      mulhsu := lift2 mulhsu;
-      mulhuu := lift2 mulhuu;
-      divu := lift2 divu;
-      divs := lift2 divs;
-      modu := lift2 modu;
-      mods := lift2 mods;
-      slu := lift2 slu;
-      sru := lift2 sru;
-      srs := lift2 srs;
-      eqb w1 w2 := eqb w1.(w8_car) w2.(w8_car);
-      ltu w1 w2 := ltu w1.(w8_car) w2.(w8_car);
-      lts w1 w2 := lts w1.(w8_car) w2.(w8_car);
-      sextend width' := lift1 (sextend width');
-    |}.
-
-  Global Instance w8_word_ok : word.ok w8.
-  Proof.
-    destruct word8_ok.
-    constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
-    simpl.
-    destruct x as [x]; f_equal; simpl.
-    rewrite <- of_Z_unsigned0; auto.
-  Qed.
-
-End w8_instance.
-
-Global Opaque w64_instance.w64 w32_instance.w32 w8_instance.w8.
-
-(* these are identity coercions to make notation.v work out (this is still black
-magic to me) *)
-
-Global SubClass w64 := @word.rep _ w64_instance.w64.
-Global SubClass w32 := @word.rep _ w32_instance.w32.
-Global SubClass w8 := @word.rep _ w8_instance.w8.
-
-(* "Add Ring" special options are black magic from coqutil.
-  Sometimes, it'll fail with "Cannot find a declared ring structure over "w64""
-  or "Goal is not an equation (of expected equality) eq".
-  To fix this, do "unfold w64 in *; ring; fold w64 in *".
-  TODO: for some reason, unfolding doesn't work as a preprocess step.
-*)
-Add Ring w64_ring : (word.ring_theory (word := w64_instance.w64))
+This strategy will fail if we have an equality that mixes the two types.
+E.g., "x = y.(z)", where "x : word.rep _ w64_word_instance" and "y" is an object
+with field "hello : w64".
+Syntactic type equality doesn't hold, and "unfold w64" doesn't work because
+there isn't any w64 in sight. *)
+Add Ring w64_rep_ring :
+  (word.ring_theory (word := w64_word_instance))
   (preprocess [autorewrite with rew_word_morphism],
-   morphism (word.ring_morph (word := w64_instance.w64)),
+   morphism (word.ring_morph (word := w64_word_instance)),
    constants [Properties.word_cst]).
 
-Add Ring w32_ring : (word.ring_theory (word := w32_instance.w32))
+Add Ring w32_rep_ring :
+  (word.ring_theory (word := w32_word_instance))
   (preprocess [autorewrite with rew_word_morphism],
-   morphism (word.ring_morph (word := w32_instance.w32)),
+   morphism (word.ring_morph (word := w32_word_instance)),
    constants [Properties.word_cst]).
 
-Add Ring w8_ring : (word.ring_theory (word := w8_instance.w8))
+Add Ring w8_rep_ring :
+  (word.ring_theory (word := w8_word_instance))
   (preprocess [autorewrite with rew_word_morphism],
-   morphism (word.ring_morph (word := w8_instance.w8)),
+   morphism (word.ring_morph (word := w8_word_instance)),
+   constants [Properties.word_cst]).
+
+Add Ring w64_ring :
+  (word.ring_theory (word := w64_word_instance) : (@ring_theory w64 _ _ _ _ _ _ (@eq w64)))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w64_word_instance)),
+   constants [Properties.word_cst]).
+
+Add Ring w32_ring :
+  (word.ring_theory (word := w32_word_instance) : (@ring_theory w32 _ _ _ _ _ _ (@eq w32)))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w32_word_instance)),
+   constants [Properties.word_cst]).
+
+Add Ring w8_ring :
+  (word.ring_theory (word := w8_word_instance) : (@ring_theory w8 _ _ _ _ _ _ (@eq w8)))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w8_word_instance)),
    constants [Properties.word_cst]).
 
 (* TODO: ideally this is rarely or never used, but it's useful for backwards
@@ -391,7 +259,7 @@ Notation w32_bytes := 4%nat (only parsing).
 (** 64-bit encoding *)
 Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x in
-  let t := split (byte:=w8_instance.w8) w64_bytes n in
+  let t := split (byte:=w8_word_instance) w64_bytes n in
   tuple.to_list t.
 Global Arguments u64_le : simpl never.
 
@@ -399,7 +267,7 @@ Definition le_to_u64 (l: list byte) : u64.
 Proof.
   refine (word.of_Z _).
   set (t := tuple.of_list l).
-  exact (combine (byte:=w8_instance.w8) _ t).
+  exact (combine (byte:=w8_word_instance) _ t).
 Defined.
 
 Lemma u64_le_0 : u64_le (W64 0) = replicate w64_bytes (W8 0).
@@ -438,7 +306,7 @@ Qed.
 (** 32-bit encoding *)
 Definition u32_le (x: u32) : list byte :=
   let n := word.unsigned x in
-  let t := split (byte:=w8_instance.w8) w32_bytes n in
+  let t := split (byte:=w8_word_instance) w32_bytes n in
   tuple.to_list t.
 Global Arguments u32_le : simpl never.
 
@@ -446,7 +314,7 @@ Definition le_to_u32 (l: list byte) : u32.
 Proof.
   refine (word.of_Z _).
   set (t := tuple.of_list l).
-  exact (combine (byte:=w8_instance.w8) _ t).
+  exact (combine (byte:=w8_word_instance) _ t).
 Defined.
 
 Lemma u32_le_0 : u32_le (W32 0) = replicate w32_bytes (W8 0).
@@ -563,12 +431,12 @@ Proof.
   exact H.
 Qed.
 
-Lemma unsigned_U64 z : uint.Z (W64 z) = word.wrap (word:=w64_instance.w64) z.
+Lemma unsigned_U64 z : uint.Z (W64 z) = word.wrap (word:=w64_word_instance) z.
 Proof.
   unfold W64; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U32 z : uint.Z (W32 z) = word.wrap (word:=w32_instance.w32) z.
+Lemma unsigned_U32 z : uint.Z (W32 z) = word.wrap (word:=w32_word_instance) z.
 Proof.
   unfold W32; rewrite word.unsigned_of_Z; auto.
 Qed.
@@ -583,12 +451,12 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma signed_U64 z : sint.Z (W64 z) = word.swrap (word:=w64_instance.w64) z.
+Lemma signed_U64 z : sint.Z (W64 z) = word.swrap (word:=w64_word_instance) z.
 Proof.
   unfold W64; rewrite word.signed_of_Z; auto.
 Qed.
 
-Lemma signed_U32 z : sint.Z (W32 z) = word.swrap (word:=w32_instance.w32) z.
+Lemma signed_U32 z : sint.Z (W32 z) = word.swrap (word:=w32_word_instance) z.
 Proof.
   unfold W32; rewrite word.signed_of_Z; auto.
 Qed.

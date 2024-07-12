@@ -19,14 +19,15 @@ This file is slow so we limit it just to these two large theorems and put the
 rest of the interesting stuff in bytes.v. I have to use vim with Coqtail to work
 on this file, Proof General seems to fall over. *)
 
-Transparent w8_instance.w8.
-Local Lemma byte_destruct (P: u8 → Prop) :
-  (∀ (z:Z) (Hunsigned_in_range: z `mod` 2^8 = z) (Hrange: 0 ≤ z < 2^8), P (Word8 ((Naive.mk z Hunsigned_in_range)))) →
+Transparent w8_word_instance.
+Local Lemma byte_destruct (P: w8 → Prop) :
+  (∀ (z:Z) (Hunsigned_in_range: z `mod` 2^8 = z) (Hrange: 0 ≤ z < 2^8),
+    P (Naive.mk z Hunsigned_in_range)) →
   (∀ x, P x).
 Proof.
   intros.
   pose proof (word.unsigned_range x).
-  destruct x as [ [z ?] ].
+  destruct x as [ z ? ].
   simpl in H0.
   apply H; auto.
 Qed.
@@ -325,4 +326,4 @@ Proof.
   exfalso; word.
 Qed.
 
-Opaque w8_instance.w8.
+Opaque w8_word_instance.

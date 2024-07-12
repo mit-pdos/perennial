@@ -8,7 +8,7 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition N_IDX_BUCKET : Z := 8192.
+Notation N_IDX_BUCKET := 8192.
 Definition hash_modu (key : u64) : nat :=
   uint.nat (word.modu (word.add (word.sru key 52) key) N_IDX_BUCKET).
 
@@ -69,7 +69,7 @@ Proof.
   wp_loadField.
   iMod (readonly_load with "HbktsL") as (q) "HbktsL'".
   list_elem bktsL (hash_modu key) as bkt.
-  { revert HbktsLen. rewrite /hash_modu /N_IDX_BUCKET. word. }
+  { revert HbktsLen. rewrite /hash_modu. word. }
   wp_apply (wp_SliceGet with "[$HbktsL']").
   { iPureIntro.
     rewrite list_lookup_fmap.
@@ -410,7 +410,6 @@ Proof.
 
     wp_load.
     wp_loadField.
-    unfold N_IDX_BUCKET in *.
     wp_apply (wp_SliceSet with "[$HbktsS]").
     { iPureIntro.
       split; last auto.
@@ -474,7 +473,6 @@ Proof.
   }
   iIntros "[(HbktsInv & Hidx & _) HiRef]".
   iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".
-  unfold N_IDX_BUCKET in Hlength.
   wp_pures.
 
   (***********************************************************)
@@ -489,7 +487,7 @@ Proof.
   iSplitL ""; first done.
   iSplit; last iFrame "#".
   replace (uint.nat N_IDX_BUCKET) with (length bktsL); last first.
-  { unfold N_IDX_BUCKET. word. }
+  { word. }
   by rewrite firstn_all.
 Qed.
 

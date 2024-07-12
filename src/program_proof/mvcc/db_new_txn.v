@@ -98,7 +98,6 @@ Proof.
     iSplit; last done.
     iPureIntro.
     case_bool_decide; first done.
-    unfold N_TXN_SITES in *.
     apply Znot_le_gt in H.
     by apply Z.gt_lt.
   }

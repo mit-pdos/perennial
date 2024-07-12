@@ -345,7 +345,7 @@ Proof.
   destruct Hszcomp; wp_pures.
   - wp_apply wp_panic.
     destruct (decide_rel Z.lt (uint.Z sz) _); try discriminate. lia.
-  - change (w64_instance.w64.(@word.add 64) (w64_instance.w64.(@word.divu 64) (w64_instance.w64.(@word.sub 64) 4096 8) 8) 2)
+  - change (w64_word_instance.(@word.add 64) (w64_word_instance.(@word.divu 64) (w64_word_instance.(@word.sub 64) 4096 8) 8) 2)
       with (W64 LogSz).
     remember(bool_decide (uint.Z _ < uint.Z LogSz)) as Hlgszcomp.
     destruct Hlgszcomp; wp_pures.
@@ -356,7 +356,7 @@ Proof.
       iIntros (buftx γt) "Hbtxn".
       wp_let.
       wp_call.
-      change (w64_instance.w64.(@word.mul 64) 4096 8) with (W64 32768).
+      change (w64_word_instance.(@word.mul 64) 4096 8) with (W64 32768).
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 

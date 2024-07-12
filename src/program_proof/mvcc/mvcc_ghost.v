@@ -574,7 +574,7 @@ Proof.
   iDestruct (big_sepS_subseteq _ _ sids with "Hown") as "Hown"; first set_solver.
   subst sids.
   rewrite big_sepS_list_to_set; last first.
-  { unfold sids_all. unfold N_TXN_SITES. apply seq_U64_NoDup; word. }
+  { unfold sids_all. apply seq_U64_NoDup; word. }
   rewrite -big_sepL_sep.
   iApply (big_sepL_mono with "Hown").
   iIntros (sid sidN Helem) "[H1 H2]".
@@ -609,7 +609,7 @@ Proof.
   iDestruct (big_sepS_subseteq _ _ sids with "Hown") as "Hown"; first set_solver.
   subst sids.
   rewrite big_sepS_list_to_set; last first.
-  { unfold sids_all. unfold N_TXN_SITES. apply seq_U64_NoDup; word. }
+  { unfold sids_all. apply seq_U64_NoDup; word. }
   done.
 Qed.
 
@@ -680,7 +680,6 @@ Proof.
     2:{ unfold sids_all. apply NoDup_fmap_2_strong, NoDup_seqZ.
         Set Printing Coercions.
         clear. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
-        unfold N_TXN_SITES in *.
         rewrite -(Z_u64 x); last lia.
         rewrite -(Z_u64 y); last lia.
         rewrite Heq. done.

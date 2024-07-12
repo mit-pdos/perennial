@@ -664,7 +664,7 @@ Ltac mod_bound :=
   end.
 
 Theorem wrap_small_log_addr (x:u64) :
-  word.wrap (word:=w64_instance.w64) (2 + uint.Z x `mod` word.wrap (word:=w64_instance.w64) LogSz) =
+  word.wrap (word:=w64_word_instance) (2 + uint.Z x `mod` word.wrap (word:=w64_word_instance) LogSz) =
   2 + uint.Z x `mod` LogSz.
 Proof.
   unfold LogSz.

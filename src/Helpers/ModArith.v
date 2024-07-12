@@ -60,7 +60,7 @@ Qed.
 Lemma word_add_comm (x y : u64) :
   word.add x y = word.add y x.
 Proof.
-  specialize (@word.ring_theory _ w64_instance.w64 _). intros W.
+  specialize (@word.ring_theory _ w64_word_instance _). intros W.
   rewrite W.(Radd_comm). done.
 Qed.
 

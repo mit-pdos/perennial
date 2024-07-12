@@ -44,7 +44,6 @@ Proof.
 
     iNamed "Hdb".
     list_elem sitesL (uint.nat i) as site.
-    { revert HsitesLen. unfold N_TXN_SITES in *. word. }
     wp_loadField.
     iMod (readonly_load with "HsitesS") as (q) "HsitesS'".
     wp_apply (wp_SliceGet with "[$HsitesS']").

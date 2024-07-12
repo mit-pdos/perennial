@@ -20,7 +20,7 @@ Section word.
 
   Lemma uint_nat_word_add_S (x : u64) :
     uint.Z x < 2 ^ 64 - 1 ->
-    (uint.nat (w64_instance.w64.(word.add) x (W64 1))) = S (uint.nat x).
+    (uint.nat (w64_word_instance.(word.add) x (W64 1))) = S (uint.nat x).
   Proof. intros H. word. Qed.
 
 End word.
