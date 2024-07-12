@@ -6,6 +6,45 @@ Open Scope Z.
 
 Open Scope general_if_scope.
 
+Local Open Scope nat.
+Lemma nat_off_explode (P: nat → Prop)
+  (Bit0: P 0) (Bit1: P 1) (Bit2: P 2) (Bit3: P 3) (Bit4: P 4) (Bit5: P 5) (Bit6: P 6) (Bit7: P 7) :
+  ∀ (off: nat),
+    off < 8 →
+    P off.
+Proof.
+  intros.
+  destruct off; [ assumption |].
+  destruct off; [ assumption |].
+  destruct off; [ assumption |].
+  destruct off; [ assumption |].
+  destruct off; [ assumption |].
+  destruct off; [ assumption |].
+  destruct off; [ assumption |].
+  destruct off; [ assumption |].
+  lia.
+Qed.
+Close Scope nat.
+
+Lemma Z_off_explode (P: Z → Prop)
+  (Bit0: P 0) (Bit1: P 1) (Bit2: P 2) (Bit3: P 3) (Bit4: P 4) (Bit5: P 5) (Bit6: P 6) (Bit7: P 7) :
+  ∀ (off: Z),
+    0 ≤ off < 8 →
+    P off.
+Proof.
+  intros.
+  replace off with (Z.of_nat (Z.to_nat off)) by lia.
+  apply (nat_off_explode (λ x, P (Z.of_nat x))); auto.
+  lia.
+Qed.
+
+Tactic Notation "bit_off_cases" constr(off) :=
+  let t := type of off in
+  lazymatch t with
+  | nat => pattern off; apply nat_off_explode; [..| try word]
+  | Z => pattern off; apply Z_off_explode; [..| try word]
+  end.
+
 Tactic Notation "bit_cases" constr(bit) :=
   pattern bit; apply bit_off_explode; [..| done ].
 

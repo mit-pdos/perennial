@@ -402,6 +402,9 @@ Proof.
   exact (combine (byte:=w8_instance.w8) _ t).
 Defined.
 
+Lemma u64_le_0 : u64_le (W64 0) = replicate w64_bytes (W8 0).
+Proof. reflexivity. Qed.
+
 Theorem u64_le_length x : length (u64_le x) = w64_bytes.
 Proof.
   reflexivity.
@@ -446,6 +449,9 @@ Proof.
   exact (combine (byte:=w8_instance.w8) _ t).
 Defined.
 
+Lemma u32_le_0 : u32_le (W32 0) = replicate w32_bytes (W8 0).
+Proof. reflexivity. Qed.
+
 Theorem u32_le_length x : length (u32_le x) = w32_bytes.
 Proof.
   reflexivity.
@@ -474,6 +480,18 @@ Proof.
   by rewrite word.of_Z_unsigned.
 Qed.
 (* end 32-bit code *)
+
+Global Instance u64_le_inj : Inj (=) (=) u64_le.
+Proof.
+  intros x y H%(f_equal le_to_u64).
+  rewrite !u64_le_to_word in H. auto.
+Qed.
+
+Global Instance u32_le_inj : Inj (=) (=) u32_le.
+Proof.
+  intros x y H%(f_equal le_to_u32).
+  rewrite !u32_le_to_word in H. auto.
+Qed.
 
 Lemma combine_unfold n b (t: HList.tuple byte n) :
   combine (S n) {| PrimitivePair.pair._1 := b; PrimitivePair.pair._2 := t |} =
