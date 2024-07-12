@@ -11,6 +11,8 @@ Proof. reflexivity. Qed.
 Lemma nil_length {A} : length (@nil A) = 0%nat.
 Proof. reflexivity. Qed.
 
+Create HintDb len.
+
 #[global]
 Hint Rewrite @singleton_length @cons_length @nil_length : len.
 #[global]

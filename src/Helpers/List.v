@@ -171,12 +171,20 @@ Qed.
 Definition subslice {A} (n m: nat) (l: list A): list A :=
   drop n (take m l).
 
+Theorem subslice_length' {A} n m (l: list A) :
+  length (subslice n m l) = (m `min` length l - n)%nat.
+Proof.
+  rewrite /subslice.
+  rewrite drop_length take_length.
+  auto.
+Qed.
+
 Theorem subslice_length {A} n m (l: list A) :
   (m <= length l)%nat ->
   length (subslice n m l) = (m - n)%nat.
 Proof.
-  rewrite /subslice; intros.
-  rewrite drop_length take_length.
+  intros.
+  rewrite subslice_length'.
   lia.
 Qed.
 
@@ -362,6 +370,57 @@ Proof.
   - rewrite -> subslice_none by lia.
     rewrite -> subslice_none by lia.
     auto.
+Qed.
+
+Local Lemma subslice_subslice_trivial {A} (l: list A) n m n' m' :
+  n > m →
+  subslice n' m' (subslice n m l) =
+    subslice (n + n') (n + m' `min` (m-n)) l.
+Proof.
+  intros Hgt.
+  rewrite (subslice_none n m); [ lia | ].
+  rewrite subslice_nil.
+  rewrite subslice_none //.
+  lia.
+Qed.
+
+Lemma subslice_subslice {A} (l: list A) n m n' m' :
+  subslice n' m' (subslice n m l) = subslice (n + n') (n + m' `min` (m-n)) l.
+Proof.
+  destruct (decide (n ≤ m)).
+  - rewrite (subslice_drop_take n m) //.
+    rewrite subslice_take.
+    rewrite subslice_drop.
+    auto.
+  - rewrite subslice_subslice_trivial //.
+    lia.
+Qed.
+
+Lemma subslice_subslice' {A} (l: list A) n m n' m' :
+  m' ≤ m - n →
+  subslice n' m' (subslice n m l) = subslice (n + n') (n + m') l.
+Proof.
+  intros Hle.
+  rewrite subslice_subslice.
+  f_equal; lia.
+Qed.
+
+Lemma drop_subslice {A} (l: list A) n m k :
+  drop k (subslice n m l) = subslice (n + k) m l.
+Proof.
+  destruct (decide (n ≤ m)).
+  - destruct (decide (m ≤ length l)).
+    + rewrite subslice_from_drop.
+      rewrite subslice_length' //.
+      rewrite subslice_subslice.
+      rewrite -> Nat.min_l by lia.
+      rewrite -> Nat.min_l by lia.
+      f_equal; lia.
+    + repeat rewrite -> subslice_to_end by lia.
+      rewrite drop_drop //.
+  - rewrite -> subslice_none by lia.
+    rewrite -> subslice_none by lia.
+    rewrite drop_nil //.
 Qed.
 
 Theorem subslice_split_r {A} n m m' (l: list A) :

@@ -24,11 +24,11 @@ Hint Resolve list_lookup_eq : list.
 Ltac find_nil :=
   repeat match goal with
          | H: length ?l = 0 |- _ =>
-             apply nil_length_inv in H; subst
+             apply nil_length_inv in H; subst l
          | H: 0 = length ?l |- _ =>
-             apply eq_sym, nil_length_inv in H; subst
+             apply eq_sym, nil_length_inv in H; subst l
          | H: ?l `prefix_of` [] |- _ =>
-             apply prefix_nil_inv in H; subst
+             apply prefix_nil_inv in H; subst l
          end.
 
 Ltac list_simpl :=
