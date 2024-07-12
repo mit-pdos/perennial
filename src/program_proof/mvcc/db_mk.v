@@ -55,9 +55,7 @@ Proof.
    * Call `GenTID` once to get [ts_auth γ 1] and [ts_lb γ 1].
    * Note that we own [ts_auth] exclusively, not from some invariant.
    *)
-  iEval (simpl) in "Hsid0".
-  replace (0%nat + 0) with (0) by lia.
-  wp_apply (wp_GenTID with "Hgentid Hsid0"); [word|].
+  wp_apply (wp_GenTID with "Hgentid Hsid0"); [done|].
   iApply ncfupd_mask_intro; first solve_ndisj.
   iIntros "Hclose".
   iExists _. iFrame "Hts".

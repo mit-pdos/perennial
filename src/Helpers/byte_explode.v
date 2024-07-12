@@ -27,7 +27,7 @@ Local Lemma byte_destruct (P: w8 → Prop) :
 Proof.
   intros.
   pose proof (word.unsigned_range x).
-  destruct x as [ z ? ].
+  destruct x as [z ?].
   simpl in H0.
   apply H; auto.
 Qed.
