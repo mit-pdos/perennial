@@ -486,7 +486,7 @@ Section translate.
         destruct_head. inversion Hstep; monad_inv.
         destruct_head.
         inversion H1; monad_inv; clear H1. subst.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
         destruct_head.
         destruct (world σ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
@@ -525,7 +525,7 @@ Section translate.
         destruct_head. inversion Hstep; monad_inv.
         destruct_head.
         inversion H1; monad_inv; clear H1. subst.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
         inversion H1; monad_inv; clear H1. subst.
         inversion H2; monad_inv; subst; clear H2.
@@ -607,7 +607,7 @@ Section translate.
            *** rewrite H16. repeat econstructor => //=.
                f_equal. destruct pσ2, pg2; subst.
                simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
-               do 2 f_equal; eauto. rewrite -H7 H6. done.
+               do 2 f_equal; eauto. congruence.
     - (* ResolveProph *)
       rewrite /base_step//= in Hstep. destruct_head.
       do 2 eexists. intuition; eauto.
@@ -777,7 +777,7 @@ Section translate.
       destruct op; monad_inv; destruct_head.
       * inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         destruct x0. destruct n; monad_inv.
         destruct n; monad_inv.
         inversion H3; monad_inv; subst; clear H3.
@@ -798,7 +798,7 @@ Section translate.
         ** inversion H7; intuition.
       * inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         destruct x0. destruct n; monad_inv.
         inversion H3; monad_inv; subst; clear H3.
         destruct (heap pσ1 !! l) eqn:Heq; subst.
@@ -818,7 +818,7 @@ Section translate.
         ** inversion H7; intuition.
       * inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         destruct x0. destruct n; monad_inv.
         destruct n; monad_inv.
         inversion H3; monad_inv; subst; clear H3.
@@ -839,7 +839,7 @@ Section translate.
         ** inversion H7; intuition.
       * inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         destruct x0. destruct n; monad_inv.
         destruct (heap pσ1 !! l) eqn:Heq; subst.
         ** inversion H7; monad_inv; subst.
@@ -908,7 +908,7 @@ Section translate.
       destruct_head.
       inversion Hstep; monad_inv.
       inversion H1; monad_inv; clear H1. subst.
-      inversion H2; monad_inv; subst; clear H2.
+      simpl in H2; inversion H2; monad_inv; subst; clear H2.
       destruct_head.
       rewrite //= in H3.
       destruct (heap pσ1 !! l) eqn:Heq; monad_inv; try inv_monad_false.
@@ -951,7 +951,7 @@ Section translate.
         destruct_head. inversion Hstep; monad_inv.
         destruct_head.
         inversion H1; monad_inv; clear H1. subst.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
         destruct_head.
         destruct (world pσ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
@@ -990,7 +990,7 @@ Section translate.
         destruct_head. inversion Hstep; monad_inv.
         destruct_head.
         inversion H1; monad_inv; clear H1. subst.
-        inversion H2; monad_inv; subst; clear H2.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
         inversion H1; monad_inv; clear H1. subst.
         inversion H2; monad_inv; subst; clear H2.
@@ -1066,14 +1066,14 @@ Section translate.
       rewrite /base_step//= in Hstep.
       inversion Hstep; monad_inv.
       inversion H; monad_inv; clear H.
-      inversion H0; monad_inv; clear H0.
-      inversion H3; monad_inv; clear H3.
+      simpl in H0; inversion H0; monad_inv.
+      simpl in H3; inversion H3; monad_inv; clear H3.
       eexists σ1.
       eexists ({| used_proph_id := _ |}).
       eexists. inversion H4. inversion H5. intuition.
       { simpl in *. repeat (econstructor; eauto). rewrite H6. done. }
       right. split_and!; eauto.
-      { rewrite H16. done. }
+      { congruence. }
       split_and!; eauto. rewrite /RecordSet.set//=. congruence.
     - (* ResolveProph *)
       rewrite /base_step//= in Hstep. destruct_head.
@@ -1439,7 +1439,7 @@ Section translate.
       destruct op; monad_inv; destruct_head.
       * inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H.
-        inversion H0; monad_inv; subst; clear H0.
+        simpl in H0; inversion H0; monad_inv; subst; clear H0.
         destruct x0. destruct n; monad_inv.
         destruct n; monad_inv.
         inversion H1; monad_inv; subst; clear H1.
@@ -1458,7 +1458,7 @@ Section translate.
         ** inversion H5; intuition.
       * inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H.
-        inversion H0; monad_inv; subst; clear H0.
+        simpl in H0; inversion H0; monad_inv; subst; clear H0.
         destruct x0. destruct n; monad_inv.
         inversion H1; monad_inv; subst; clear H1.
         destruct (heap pσ1 !! l) eqn:Heq; subst.
@@ -1478,7 +1478,7 @@ Section translate.
         ** inversion H5; intuition.
       * inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H.
-        inversion H0; monad_inv; subst; clear H0.
+        simpl in H0; inversion H0; monad_inv; subst; clear H0.
         destruct x0. destruct n; monad_inv.
         destruct n; monad_inv.
         inversion H1; monad_inv; subst; clear H1.
@@ -1498,7 +1498,7 @@ Section translate.
         ** inversion H5; intuition.
       * inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H.
-        inversion H0; monad_inv; subst; clear H0.
+        simpl in H0; inversion H0; monad_inv; subst; clear H0.
         destruct x0. destruct n; monad_inv.
         destruct (heap pσ1 !! l) eqn:Heq; subst.
         ** inversion H5; monad_inv; subst.
@@ -1575,7 +1575,7 @@ Section translate.
       destruct_head.
       inversion Hstep; monad_inv.
       inversion H; monad_inv; clear H. subst.
-      inversion H0; monad_inv; subst; clear H0.
+      simpl in H0; inversion H0; monad_inv; subst; clear H0.
       destruct_head.
       rewrite //= in H1.
       destruct (heap pσ1 !! l) eqn:Heq; monad_inv; try inv_monad_false.
@@ -1617,7 +1617,7 @@ Section translate.
         destruct_head. inversion Hstep; monad_inv.
         destruct_head.
         inversion H; monad_inv; clear H. subst.
-        inversion H0; monad_inv; subst; clear H0.
+        simpl in H0; inversion H0; monad_inv; subst; clear H0.
         inversion H1; monad_inv; subst; clear H1.
         destruct_head.
         destruct (world pσ1 !! uint.Z n) eqn:Heq; rewrite Heq in H2; subst; last first.
@@ -1664,7 +1664,7 @@ Section translate.
         inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
         inversion H; monad_inv; subst; clear H.
-        inversion H0.
+        simpl in H0; inversion H0.
         subst. monad_inv.
         destruct (world pσ1 !! uint.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
         { inv_monad_false. }
@@ -1677,7 +1677,6 @@ Section translate.
           eapply (elem_of_dom_2 (D := gset _) (world pσ1)); eauto.
         }
         inversion H4; monad_inv; subst; clear H4.
-        inversion H0; monad_inv; subst. clear H0.
         subst.
         destruct H5.
         do 4 eexists; split_and!.
@@ -1740,7 +1739,7 @@ Section translate.
       monad_inv; destruct_head.
       inversion H; monad_inv; clear H.
       inversion H0; monad_inv; clear H0.
-      inversion H2; monad_inv; clear H2.
+      simpl in H2; inversion H2; monad_inv; clear H2.
       eexists _, _, {| used_proph_id := _ |}, _.
       inversion Hmatch_curr. intuition.
         ** repeat (econstructor; eauto). rewrite H4.
