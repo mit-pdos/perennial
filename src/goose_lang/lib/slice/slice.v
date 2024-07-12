@@ -50,8 +50,14 @@ Definition own_slice_cap (s: Slice.t) (t:ty): iProp Σ :=
   (∃ extra, ⌜Z.of_nat (length extra) = Slice.extra s⌝ ∗
             (s.(Slice.ptr) +ₗ[t] uint.Z s.(Slice.sz)) ↦∗[t] extra).
 
+#[global] Instance own_slice_cap_timeless : `(Timeless (own_slice_cap s t)).
+Proof. apply _. Qed.
+
 Definition own_slice (s: Slice.t) (t:ty) (dq:dfrac) (vs: list val): iProp Σ :=
   own_slice_small s t dq vs ∗ own_slice_cap s t.
+
+#[global] Instance own_slice_timeless : `(Timeless (own_slice s t dq vs)).
+Proof. apply _. Qed.
 
 Lemma own_slice_to_small s t q vs :
   own_slice s t q vs -∗ own_slice_small s t q vs.
@@ -1170,6 +1176,84 @@ Proof.
   rewrite -> take_ge by word.
   iFrame.
   iPureIntro; word.
+Qed.
+
+Lemma wp_SliceCopy_subslice stk E sl (n1 n2: u64) t q vs dst vs' :
+  {{{ own_slice_small sl t q vs ∗
+      ⌜uint.Z n1 ≤ uint.Z n2 ≤ Z.of_nat (length vs')⌝ ∗
+      own_slice_small dst t (DfracOwn 1) vs' ∗
+        (* requires source to exactly fit (mostly to simplify the spec) *)
+      ⌜Z.of_nat (length vs) = (uint.Z n2 - uint.Z n1)⌝ }}}
+    SliceCopy t (SliceSubslice t (slice_val dst) #n1 #n2)
+                (slice_val sl) @ stk; E
+  {{{ (n: w64), RET #n;
+      ⌜uint.Z n = uint.Z n2 - uint.Z n1⌝ ∗
+      own_slice_small dst t (DfracOwn 1)
+        (take (uint.nat n1) vs' ++
+         vs ++
+         drop (uint.nat n2)%nat vs') ∗
+      own_slice_small sl t q vs }}}.
+Proof.
+  iIntros (Φ) "(Hsrc & %Hn1n2 & Hdst & %Hsrc_len) HΦ".
+  iDestruct "Hsrc" as "[Hsrc %]".
+  iDestruct "Hdst" as "[Hdst %]".
+  wp_call. rewrite bool_decide_eq_false_2; [ wp_pures | word ].
+  wp_apply wp_slice_cap. wp_pures.
+  rewrite bool_decide_eq_false_2; [ wp_pures | word ].
+  rewrite /SliceCopy.
+  rewrite /impl.Var'.
+  wp_pures.
+  wp_apply wp_slice_ptr.
+  wp_apply wp_slice_cap.
+  wp_pures.
+  rewrite /slice.len. wp_pures.
+  rewrite bool_decide_eq_false_2; [ wp_pures | word ].
+  rewrite /slice.ptr; wp_pures.
+  replace vs' with (take (uint.nat n1) vs' ++ drop (uint.nat n1) vs') at 1.
+  2: { rewrite take_drop //. }
+  iDestruct (array_app with "Hdst") as "[Hdst1 Hdst2]".
+  rewrite take_length. rewrite -> Nat.min_l by lia.
+
+  rewrite -(take_drop (uint.nat n2 - uint.nat n1)%nat (drop (uint.nat n1) vs')).
+  rewrite array_app.
+  rewrite take_length_le.
+  2: { rewrite drop_length. lia. }
+  rewrite loc_add_typed_assoc.
+  replace (uint.nat n1 + (uint.nat n2 - uint.nat n1)%nat) with (uint.Z n2) by word.
+  iDestruct "Hdst2" as "[Hdst2 Hdst3]".
+
+  wp_apply (wp_MemCpy_rec with "[Hdst2 $Hsrc]").
+  { iSplit.
+    - iExactEq "Hdst2". f_equal. repeat f_equal; word.
+    - iPureIntro.
+      rewrite take_length drop_length.
+      word. }
+
+  iIntros "[Hdst2 Hsrc]".
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  iSplit.
+  { iPureIntro. word. }
+  iSplitR "Hsrc".
+  - iDestruct (array_combine with "Hdst1 Hdst2") as "Hdst".
+    { rewrite take_length; word. }
+    iDestruct (array_combine with "Hdst Hdst3") as "Hdst".
+    { rewrite app_length !take_length. word. }
+    iSplit.
+    { iExactEq "Hdst".
+      f_equal.
+      rewrite drop_drop -!app_assoc.
+      f_equal.
+      rewrite take_ge; [ | word ].
+      f_equal.
+      f_equal.
+      word. }
+    iPureIntro.
+    rewrite !app_length take_length drop_length.
+    word.
+  - iFrame.
+    iPureIntro. word.
 Qed.
 
 Global Opaque SliceCopy.

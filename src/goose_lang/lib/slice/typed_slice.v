@@ -24,6 +24,18 @@ Proof.
   rewrite /list.untype fmap_app //.
 Qed.
 
+Lemma list_untype_take `{IntoVal V} (l: list V) n :
+  list.untype (take n l) = take n (list.untype l).
+Proof.
+  rewrite /list.untype fmap_take //.
+Qed.
+
+Lemma list_untype_drop `{IntoVal V} (l: list V) n :
+  list.untype (drop n l) = drop n (list.untype l).
+Proof.
+  rewrite /list.untype fmap_drop //.
+Qed.
+
 #[global]
 Hint Rewrite @list_untype_length : len.
 
@@ -46,6 +58,11 @@ Lemma own_slice_split s t q vs :
   own_slice s t q vs ⊣⊢
   own_slice_small s t q vs ∗ own_slice_cap s t.
 Proof. by rewrite /own_slice /own_slice_small. Qed.
+
+Lemma own_slice_split_1 s t q vs :
+  own_slice s t q vs -∗
+  own_slice_small s t q vs ∗ own_slice_cap s t.
+Proof. rewrite own_slice_split. iIntros "$". Qed.
 
 Lemma own_slice_small_acc s t q vs :
   own_slice s t q vs -∗ own_slice_small s t q vs ∗ (∀ vs', own_slice_small s t q vs' -∗ own_slice s t q vs').
@@ -185,6 +202,17 @@ Proof.
   iApply "Hs".
 Qed.
 
+Lemma wp_NewSlice_0 stk E t `{!IntoValForType V t} :
+  {{{ True }}}
+    NewSlice t #(W64 0) @ stk; E
+  {{{ s, RET slice_val s; own_slice s t (DfracOwn 1) [] }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "_".
+  wp_apply wp_NewSlice. iIntros (s) "Hs".
+  iApply "HΦ".
+  iExact "Hs".
+Qed.
+
 Lemma wp_NewSliceWithCap stk E t `{!IntoValForType V t} (sz cap : u64) :
   uint.Z sz ≤ uint.Z cap →
   {{{ True }}}
@@ -203,6 +231,23 @@ Proof.
   rewrite untype_replicate.
   rewrite def_is_zero.
   iApply "Hs".
+Qed.
+
+Lemma wp_NewSliceWithCap_0 stk E t `{!IntoValForType V t} (cap : u64) :
+  {{{ True }}}
+    NewSliceWithCap t #(W64 0) #cap @ stk; E
+  {{{ s, RET slice_val s;
+    own_slice s t (DfracOwn 1) [] ∗ ⌜Slice.cap s = cap⌝
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_apply wp_NewSliceWithCap.
+  { word. }
+  iIntros (ptr) "Hs".
+  rewrite replicate_0.
+  iApply "HΦ".
+  iFrame.
+  rewrite //=.
 Qed.
 
 Lemma wp_SliceGet stk E s t q vs (i: u64) v0 :
@@ -456,6 +501,35 @@ Proof.
   iApply "HΦ".
   iFrame.
 Qed.
+
+Lemma wp_SliceCopy_subslice stk E sl (n1 n2: u64) t q vs dst vs' :
+  {{{ own_slice_small sl t q vs ∗
+      ⌜uint.Z n1 ≤ uint.Z n2 ≤ Z.of_nat (length vs')⌝ ∗
+      own_slice_small dst t (DfracOwn 1) vs' ∗
+        (* requires source to exactly fit (mostly to simplify the spec) *)
+      ⌜Z.of_nat (length vs) = (uint.Z n2 - uint.Z n1)⌝ }}}
+    SliceCopy t (SliceSubslice t (slice_val dst) #n1 #n2)
+                (slice_val sl) @ stk; E
+  {{{ (n: w64), RET #n;
+      ⌜uint.Z n = uint.Z n2 - uint.Z n1⌝ ∗
+      own_slice_small dst t (DfracOwn 1)
+        (take (uint.nat n1) vs' ++
+         vs ++
+         drop (uint.nat n2)%nat vs') ∗
+      own_slice_small sl t q vs }}}.
+Proof.
+  iIntros (Φ) "(Hsrc & % & Hdst & %) HΦ".
+  wp_apply (slice.wp_SliceCopy_subslice with "[$Hsrc $Hdst]").
+  { rewrite !list_untype_length. iPureIntro. auto. }
+  iIntros (n) "(% & Hdst & Hsrc)".
+  iApply "HΦ".
+  iSplit; [ auto | ].
+  iFrame "Hsrc".
+  iExactEq "Hdst".
+  rewrite /own_slice_small.
+  rewrite !list_untype_app !list_untype_take !list_untype_drop //.
+Qed.
+
 Opaque SliceCopy.
 
 Lemma wp_SliceAppend_to_zero stk E t `{!IntoValForType V t} v (x: val) :
