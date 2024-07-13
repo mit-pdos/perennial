@@ -1,16 +1,13 @@
 name: CI
 
-# Controls when the action will run:
-# https://help.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#filtering-for-specific-branches-tags-and-paths
 on:
   push:
-    branches:
-      - master
+    branches: [ 'master' ]
   pull_request:
+    branches: [ 'master' ]
   schedule:
     # every day at 9am UTC (4am EST)
     - cron: "0 9 * * *"
-  workflow_dispatch:
 
 jobs:
   build:
@@ -21,12 +18,9 @@ jobs:
           - dev
           - "8.19"
       max-parallel: 4
-      # don't cancel all in-progress jobs if one matrix job fails:
       fail-fast: false
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -40,11 +34,12 @@ jobs:
               sudo apt-get install -y python3 python3-pip python3-pandas sqlite3
               pip3 install -r etc/requirements.txt
             endGroup
+          # for permissions issue, see: https://github.com/coq-community/docker-coq-action#permissions.
           before_script: |
-            sudo chown -R coq:coq . # workaround a permission issue
+            sudo chown -R coq:coq .
           script: |
             startGroup Build
-              make -j2 -k ci
+              make -j4 -k ci
             endGroup
           after_script: |
             startGroup Create timing report
@@ -53,7 +48,6 @@ jobs:
           uninstall: |
             make clean
       - name: Revert permissions
-        # to avoid a warning at cleanup time
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
 
@@ -64,7 +58,6 @@ jobs:
         coq_version:
           - dev
       max-parallel: 4
-      # don't cancel all in-progress jobs if one matrix job fails:
       fail-fast: false
 
     steps:
@@ -82,10 +75,10 @@ jobs:
               pip3 install -r etc/requirements.txt
             endGroup
           before_script: |
-            sudo chown -R coq:coq . # workaround a permission issue
+            sudo chown -R coq:coq .
           script: |
             startGroup Build
-              make -j2 -k vos
+              make -j4 -k vos
             endGroup
           after_script: |
             startGroup Create timing report
@@ -94,7 +87,6 @@ jobs:
           uninstall: |
             make clean
       - name: Revert permissions
-        # to avoid a warning at cleanup time
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
 
@@ -108,7 +100,6 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: "stable"
-          cache: false
+          go-version: "1.22"
       - name: check that Goosed files are clean
         run: etc/ci-goose-check.sh

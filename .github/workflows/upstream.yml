@@ -4,16 +4,13 @@ on:
   schedule:
     # every day at 8am UTC (3am EST)
     - cron: "0 8 * * *"
-  workflow_dispatch:
 
 jobs:
   build:
     name: "update dependencies (dev)"
     runs-on: ubuntu-22.04
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -32,7 +29,7 @@ jobs:
               pip3 install -r etc/requirements.txt
             endGroup
           before_script: |
-            sudo chown -R coq:coq . # workaround a permission issue
+            sudo chown -R coq:coq .
           script: |
             startGroup Build
               make -j2 -k ci
@@ -40,6 +37,5 @@ jobs:
           uninstall: |
             make clean
       - name: Revert permissions
-        # to avoid a warning at cleanup time
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
