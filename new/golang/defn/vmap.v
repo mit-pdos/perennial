@@ -9,6 +9,42 @@ Section goose_lang.
 Context {ext:ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
+Inductive val1 :=
+| MapV1 {V:Type} {Hdec:EqDecision V} {Hcount:Countable V}
+    (* {H : V = val1} *) (to_val : V → val1) : gmap V val1 → val1
+.
+
+Inductive val2 (valρ : Type) `{Countable valρ} : Type :=
+| LitV2 (l : base_lit)
+| MapV2 (g : valρ → option valρ)
+| PairV2 (v1 v2 : valρ)
+| InjLV2 (v : valρ)
+| InjRV2 (v : valρ)
+.
+
+Instance EqDecision_val2 (valρ : Type) {Hdec : EqDecision valρ} {Hcount : Countable valρ} :
+  EqDecision (val2 valρ).
+Proof. Admitted.
+
+Instance Countable_val2 (valρ : Type) {Hdec : EqDecision valρ} {Hcount : Countable valρ} :
+  Countable (val2 valρ).
+Proof. Admitted.
+
+Instance EqDecision_False : EqDecision False.
+Proof. by intros ?. Qed.
+Instance Countable_False : Countable False.
+Proof. refine (Build_Countable _ _ (False_rect positive) (λ _, None) _). by intros. Qed.
+
+Fixpoint val3 (n : nat) : { V : Type & { H : EqDecision V & Countable V} } :=
+  match n with
+  | O => existT (((λ x, x) : Prop → Type) False) (existT EqDecision_False Countable_False)
+  | S n =>
+      match (val3 n) with
+      | existT V (existT Heqdec Hcount) => existT (@val2 V Heqdec Hcount)
+                                            (existT (@EqDecision_val2 V Heqdec Hcount) (@Countable_val2 _ _ _))
+      end
+  end.
+
 Definition Insert : val := λ: "k" "v" "m", [(Pair "k" "v") ; "m"].
 
 Definition Get : val :=
