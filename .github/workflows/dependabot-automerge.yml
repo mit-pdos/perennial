@@ -1,0 +1,16 @@
+name: Dependabot auto-merge
+on: pull_request
+
+permissions:
+  contents: write
+
+jobs:
+  dependabot-automerge:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    env:
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: merge
+        run: gh pr merge --auto --merge --delete-branch "$PR_URL"
