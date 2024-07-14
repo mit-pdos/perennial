@@ -32,10 +32,10 @@ Section grove.
     {{{ True }}}
       Connect #(LitInt c_r) @ s; E
     {{{ (err : bool) (c_l : chan),
-        RET struct.val ConnectRet [
-              "Err" ::= #err;
-              "Connection" ::= if err then bad_socket else connection_socket c_l c_r
-            ];
+        RET struct.val ConnectRet {[
+              "Err" := #err;
+              "Connection" := if err then bad_socket else connection_socket c_l c_r
+            ]};
       if err then True else c_l c↦ ∅
     }}}.
   Proof.

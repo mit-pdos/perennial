@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem list.
+From New.golang.defn Require Import mem list vmap.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
@@ -28,18 +28,28 @@ Definition field_offset (t : go_type) f0 : (Z * go_type) :=
   end
 .
 
-Definition field_ref (t : go_type) f0: val :=
+Definition field_ref (t : go_type) f0 : val :=
   λ: "p", BinOp (OffsetOp (field_offset t f0).1) (Var "p") #1.
 
 Definition field_ty d f0 : go_type := (field_offset d f0).2.
 
-Local Definition assocl_lookup_goose : val :=
-  rec: "assocl_lookup" "fvs" "f" :=
-    list.Match "fvs"
-              (λ: <>, InjLV #())
-              (λ: "fv" "fvs",
-                 let: ("f'", "v") := "fv" in
-                 if: "f" = "f'" then InjR "v" else "assocl_lookup" "fvs" "f").
+Definition field_get_def (t : go_type) f : val :=
+  match t with
+  | structT d =>
+      (fix field_get_struct fs :=
+         match fs with
+         | (f',_)::fs =>
+             if f' =? f then
+               (λ: "s", Fst "s")%V
+             else
+               (λ: "s", field_get_struct fs f (Snd "s"))%V
+         | [] => LitV LitPoison
+         end
+      ) d
+  | _ => LitV LitPoison
+  end.
+Program Definition field_get := unseal (_:seal (@field_get_def)). Obligation 1. by eexists. Qed.
+Definition field_get_unseal : field_get = _ := seal_eq _.
 
 Definition make_def (t : go_type) : val :=
   match t with
@@ -47,7 +57,7 @@ Definition make_def (t : go_type) : val :=
       (fix make_def_struct (fs : struct.descriptor) : val :=
          match fs with
          | [] => (λ: "fvs", Val #())%V
-         | (f,ft)::fs => (λ: "fvs", Val #() (Match (assocl_lookup_goose "fvs" f) <> (Val (zero_val ft)) "x" "x",
+         | (f,ft)::fs => (λ: "fvs", Val #() (Match (vmap.Get "fvs" #(str f)) <> (Val (zero_val ft)) "x" "x",
                                             (make_def_struct fs) "fvs"))%V
          end) d
   | _ => LitV $ LitPoison

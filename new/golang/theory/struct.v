@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import proofmode lifting.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import mem typing exception list.
+From New.golang.theory Require Import mem typing exception list vmap.
 From Perennial.Helpers Require Import NamedProps.
 
 Module struct.
@@ -109,5 +109,11 @@ Proof.
   repeat f_equal.
   word.
 Qed.
+
+Lemma wp_struct_make (t : go_type) (m : gmap string val) :
+  {{{ True }}}
+    struct.make (vmap.val m)
+  {{{ RET (struct.val t m) ; True }}}
+.
 
 End wps.
