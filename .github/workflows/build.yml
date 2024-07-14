@@ -8,6 +8,7 @@ on:
   schedule:
     # every day at 9am UTC (4am EST)
     - cron: "0 9 * * *"
+  workflow_dispatch:
 
 jobs:
   build:
