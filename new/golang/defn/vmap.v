@@ -137,52 +137,35 @@ Proof.
   2:{ intros. (* find the maximum step index over the gmap, then convert everything to that level. *)
       admit. }
   eexists _. Unshelve.
-  2:{ intros. (* induction principle*)
-      destruct v.
-      induction x.
-      { simpl in *. by exfalso. }
-      simpl in *.
-      (*
-      enough (∃ y p', JMeq y p' _ p ∧
-                      P (existT (S x) p')).
-      assert (JMeq _ p _ p).
-      { done. }
-      simpl in H1.
-      set y := (val3 x) in H1.
-      destruct y.
-      Set Printing All.
-      destruct (val3 x). in p *.
-      simpl in p.
-      fold y in p.
-      inversion y in p.
-      inversion y.
-      set y := projT1 (val3 (S x)).
-      inversion y.
-      change (projT1 (val3 (S x)))
-      simpl in *.
-      set z := ((λ x, x) : projT1 (let (V, s) := val3 x in
-                                   let (Heqdec, Hcount) := s in
-                                   existT (val2 V) (existT (EqDecision_val2 V) (Countable_val2 V))) →
-                            projT1 (val3 (S x))
-               ).
-      change (p) with (z p).
-      set w:=(projT1 (val3 (S x))).
-      fold w in z.
-      destruct (val3 x).
-      set y:=(val3 x).
-      fold y in p.
-      destruct y.
-      destruct (val3 x).
-      unfold val3 in p.
-      assert (∃ t, t = val3 x) as [t Heq] by eauto.
-      destruct t.
-      assert (∃ p', p' = p) as [p' Hpeq] by eauto.
-      rewrite Heq in p'.
-      refine (match t with
-              | existT V s => _
-              end
-             ).
-      destruct (val3 x) eqn:X. *)
+  2:{
+    intros. (* induction principle*)
+    destruct v.
+    induction x.
+    { simpl in *. by exfalso. }
+    simpl in *.
+
+    assert (∃ t, val3 x = t) as [t Heq] by eauto.
+    destruct t.
+    assert ((λ (v : { V : Type & {H : EqDecision V & Countable V}}),
+               ∃ (p' : (projT1 (let (V, s) := v in
+                                let (Heqdec, Hcount) := s in
+                                existT (val2 V) (existT (EqDecision_val2 V) (Countable_val2 V))))),
+                 JMeq (projT1
+                         (let (V, s) := v in
+                          let (Heqdec, Hcount) := s in
+                          existT (val2 V) (existT (EqDecision_val2 V) (Countable_val2 V))))
+                   p' _ p) (val3 x)) as Hpeq by eauto.
+    eapply eq_rect in Hpeq; last exact Heq.
+    simpl in Hpeq.
+    destruct s.
+    simpl in *.
+    destruct Hpeq as [p' Hpeq].
+    destruct p'.
+    {
+      admit.
+    }
+    admit.
+  }
 Admitted.
 
 Inductive val4 :=
@@ -192,33 +175,6 @@ Inductive val4 :=
 
 Instance EqDecision_val4 : EqDecision val4.
 Proof. solve_decision. Qed.
-
-Local Ltac count t_rec :=
-  let rec go num f :=
-      (let t := type of f in
-       let t := eval cbv beta in t in
-           lazymatch t with
-           | nat -> _ => go constr:(S num) constr:(f num)
-           | _ => f
-           end) in
-  go constr:(0%nat) constr:(t_rec (fun _ => nat)).
-
-Local Ltac match_n num :=
-  lazymatch num with
-  | 0%nat => uconstr:(fun (n:nat) => _)
-  | _ => let num' := (eval cbv in (Nat.pred num)) in
-        let match_n' := match_n num' in
-        uconstr:(fun (n:nat) => match n with
-                       | O => _
-                       | S n' => match_n' n'
-                       end)
-  end.
-
-Ltac solve_countable rec num :=
-  let inj := count rec in
-  let dec := match_n num in
-  unshelve (refine (inj_countable' inj dec _); intros []; reflexivity);
-  constructor.
 
 Instance Countable_val4 : Countable val4.
 Proof.
@@ -235,10 +191,25 @@ Proof.
   by intros [].
 Qed.
 
-Definition val5 := val4.
+Fixpoint is_valid4 (v : val4) : Prop :=
+  match v with
+  | MapV4 m => map_Forall (λ k v, match (decode (A:=val4) k) with
+                                 | None => False
+                                 | Some v => is_valid4 v
+                                 end
+                ) m
+  | _ => True
+  end
+.
 
-Definition MapV5 (m : gmap val5 val5) : val5 :=
-  MapV4 (map_fold (λ k v m, <[encode k := encode v]> m) ∅ m).
+Record val5 := { x : val4 ;  H : is_valid4 x }.
+
+Instance EqDecision_val5 : EqDecision val5.
+Proof.
+  intros x y. destruct x, y.
+  destruct (decide x = y).
+Program Definition MapV5 (m : gmap val5 val5) : val5 :=
+  {| x := MapV4 (map_fold (λ k v m, <[encode k := encode v]> m) ∅ m) |}.
 
 Definition NatV5 (n : nat) : val5 := NatV4 n.
 
