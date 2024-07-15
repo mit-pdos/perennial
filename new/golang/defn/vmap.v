@@ -1,13 +1,114 @@
 From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Import list.
+From Coq.Logic Require Import ClassicalEpsilon FunctionalExtensionality PropExtensionality.
 
 (* This defines a "value map" for use in other GooseLang libraries. It does not
    provide a semantics for Go maps; for that, see map.v *)
+
+Section qmap.
+
+Context {K V : Type}.
+
+Fixpoint assocl_lookup (l : list (K * V)) (k : K) (r : option V) : Prop :=
+  match l with
+  | [] => r = None
+  | (k', v)::l => ((k = k') → r = Some v) ∧
+                ((k ≠ k') → assocl_lookup l k r)
+  end.
+
+Definition list_map_eq (l1 l2 : list (K * V)) : Prop :=
+  ∀ k r1 r2,
+  assocl_lookup l1 k r1 → assocl_lookup l2 k r2 → r1 = r2.
+
+Lemma assocl_lookup_inh l k :
+  ∃ r, assocl_lookup l k r.
+Proof.
+  induction l.
+  - exists None. done.
+  - destruct a. simpl.
+    pose proof (classic (k = k0)) as [].
+    + subst. exists (Some v). naive_solver.
+    + subst. destruct IHl as [r]. eexists r. naive_solver.
+Qed.
+
+Instance equiv_list_map_eq : Equivalence list_map_eq.
+Proof.
+  econstructor.
+  - intros??. intros. induction x.
+    + simpl in *. subst. done.
+    + destruct a. simpl in *. pose proof (classic (k = k0)); naive_solver.
+  - intros????. intros. symmetry. eapply H; done.
+  - intros??????. intros ?? Hx Hz.
+    pose proof (assocl_lookup_inh y k) as [? Hy].
+    eapply H in Hx.
+    specialize (Hx Hy). subst.
+    eapply H0 in Hy.
+    specialize (Hy Hz). subst.
+    done.
+Qed.
+
+Program Definition canonical_representation (l : list (K * V)) : list (K * V) :=
+  epsilon _ (list_map_eq l).
+Obligation 1. intros. econstructor. done. Qed.
+Program Definition qmap : Type := { x : list (K * V) | x = canonical_representation x }.
+
+Local Lemma repr_repr x :
+  canonical_representation x = canonical_representation (canonical_representation x).
+Proof.
+  unfold canonical_representation.
+  replace (list_map_eq (epsilon (canonical_representation_obligation_1 x) (list_map_eq x))) with
+          (list_map_eq x).
+  {
+    apply epsilon_inh_irrelevance. exists x. intros ??? Hl1 Hl2.
+    induction x.
+    { simpl in *. subst. done. }
+    destruct a. simpl in *.
+    pose proof (classic (k = k0)); naive_solver.
+  }
+  apply functional_extensionality.
+  intros.
+  apply propositional_extensionality.
+  unshelve (epose proof (epsilon_spec (canonical_representation_obligation_1 x) (list_map_eq x) _)).
+  { eexists _; done. }
+  split.
+  - intros. by transitivity x.
+  - intros. by setoid_rewrite H.
+Qed.
+
+Program Definition proj (l : list (K * V)) : qmap :=
+  exist _ (canonical_representation l) _
+.
+Obligation 1. intros. simpl. apply repr_repr. Qed.
+
+Definition qmap_insert : Insert K V (qmap) :=
+  λ k v m, proj ((k,v) :: proj1_sig m).
+
+Definition qmap_lookup `{EqDecision K} : Lookup K V (qmap) :=
+  λ k m,
+    match m with
+    | exist _ x Hx =>
+        (fix go l :=
+           match l with
+           | [] => None
+           | (k',v) :: l =>
+               match (decide (k = k')) with
+               | left _ => Some v
+               | right _ => (go l)
+               end
+           end) x
+    end.
+End qmap.
+Arguments qmap _ _ : clear implicits.
 
 Module vmap.
 Section goose_lang.
 Context {ext:ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
+
+Inductive val :=
+| NatV (n : nat) : val
+| MapV (m : qmap val val) : val
+.
 
 Fixpoint ind_n (f : Type → Type) (n : nat) : Type :=
   match n with
