@@ -105,6 +105,8 @@ Proof.
   by repeat rewrite decode_encode.
 Qed.
 
+Require Import Coq.Logic.JMeq.
+Arguments JMeq _ _ _ _ : clear implicits.
 Lemma val_exists :
   ∃ (T : Type) (Int : nat → T) (Heqdec : EqDecision T) (Hcount : Countable T) (Map : gmap T T → T)
     (val_rect : ∀ (P : T → Prop),
@@ -139,10 +141,120 @@ Proof.
       destruct v.
       induction x.
       { simpl in *. by exfalso. }
-      clear IHx.
       simpl in *.
+      (*
+      enough (∃ y p', JMeq y p' _ p ∧
+                      P (existT (S x) p')).
+      assert (JMeq _ p _ p).
+      { done. }
+      simpl in H1.
+      set y := (val3 x) in H1.
+      destruct y.
+      Set Printing All.
+      destruct (val3 x). in p *.
+      simpl in p.
+      fold y in p.
+      inversion y in p.
+      inversion y.
+      set y := projT1 (val3 (S x)).
+      inversion y.
+      change (projT1 (val3 (S x)))
+      simpl in *.
+      set z := ((λ x, x) : projT1 (let (V, s) := val3 x in
+                                   let (Heqdec, Hcount) := s in
+                                   existT (val2 V) (existT (EqDecision_val2 V) (Countable_val2 V))) →
+                            projT1 (val3 (S x))
+               ).
+      change (p) with (z p).
+      set w:=(projT1 (val3 (S x))).
+      fold w in z.
       destruct (val3 x).
-Qed
+      set y:=(val3 x).
+      fold y in p.
+      destruct y.
+      destruct (val3 x).
+      unfold val3 in p.
+      assert (∃ t, t = val3 x) as [t Heq] by eauto.
+      destruct t.
+      assert (∃ p', p' = p) as [p' Hpeq] by eauto.
+      rewrite Heq in p'.
+      refine (match t with
+              | existT V s => _
+              end
+             ).
+      destruct (val3 x) eqn:X. *)
+Admitted.
+
+Inductive val4 :=
+| NatV4 : nat → val4
+| MapV4 : gmap positive positive → val4
+.
+
+Instance EqDecision_val4 : EqDecision val4.
+Proof. solve_decision. Qed.
+
+Local Ltac count t_rec :=
+  let rec go num f :=
+      (let t := type of f in
+       let t := eval cbv beta in t in
+           lazymatch t with
+           | nat -> _ => go constr:(S num) constr:(f num)
+           | _ => f
+           end) in
+  go constr:(0%nat) constr:(t_rec (fun _ => nat)).
+
+Local Ltac match_n num :=
+  lazymatch num with
+  | 0%nat => uconstr:(fun (n:nat) => _)
+  | _ => let num' := (eval cbv in (Nat.pred num)) in
+        let match_n' := match_n num' in
+        uconstr:(fun (n:nat) => match n with
+                       | O => _
+                       | S n' => match_n' n'
+                       end)
+  end.
+
+Ltac solve_countable rec num :=
+  let inj := count rec in
+  let dec := match_n num in
+  unshelve (refine (inj_countable' inj dec _); intros []; reflexivity);
+  constructor.
+
+Instance Countable_val4 : Countable val4.
+Proof.
+  refine (inj_countable'
+            (λ (v:val4), match v with
+                         | NatV4 n => inl n
+                         | MapV4 m => inr m
+                         end)
+            (λ e, match e with
+                  | inl n => NatV4 n
+                  | inr m => MapV4 m
+                  end)
+            _).
+  by intros [].
+Qed.
+
+Definition val5 := val4.
+
+Definition MapV5 (m : gmap val5 val5) : val5 :=
+  MapV4 (map_fold (λ k v m, <[encode k := encode v]> m) ∅ m).
+
+Definition NatV5 (n : nat) : val5 := NatV4 n.
+
+Definition val5_ind :
+  ∀ (P : val5 → Prop),
+  (∀ n : nat, P (NatV5 n)) →
+  (∀ g : gmap val5 val5, P (MapV5 g)) →
+  ∀ v, P v.
+Proof.
+  intros.
+  induction v.
+  { done. }
+  (* XXX: stuck here because g is an arbitrary [gmap positive positive], whereas
+     H0 only works for maps found by encoding a [gmap val5 val5]*)
+Abort.
+
 
 Definition Insert : val := λ: "k" "v" "m", [(Pair "k" "v") ; "m"].
 
