@@ -189,7 +189,7 @@ Proof.
     wp_load.
     wp_apply (wp_StringFromBytes with "[$Hksl]").
     iIntros "_".
-    repeat rewrite string_to_bytes_inj.
+    repeat rewrite string_to_bytes_to_string.
     wp_apply (wp_MapInsert with "[$]").
     { done. }
     iIntros "Hm". wp_pures. iApply "HΦ". iModIntro.

@@ -203,7 +203,7 @@ Proof.
   { word. }
   wp_apply (wp_StringFromBytes with "[$Hv]").
   iIntros "Hv".
-  do 2 rewrite string_to_bytes_inj.
+  do 2 rewrite string_to_bytes_to_string.
   wp_storeField.
   iModIntro. iApply "HΦ".
   iFrame.
@@ -268,7 +268,7 @@ Proof.
   wp_apply (wp_StringFromBytes with "[$]").
   iIntros "_".
   wp_pures.
-  rewrite string_to_bytes_inj.
+  rewrite string_to_bytes_to_string.
   by iApply "HΦ".
 Qed.
 
@@ -385,7 +385,7 @@ Proof.
   wp_pures.
   wp_apply (wp_StringFromBytes with "[$Hkey_sl]").
   iIntros "_".
-  rewrite string_to_bytes_inj.
+  rewrite string_to_bytes_to_string.
   wp_storeField.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "Hsl".
@@ -418,7 +418,7 @@ Proof.
   wp_apply (wp_StringFromBytes with "[$Hv]").
   iIntros "Hv".
   wp_storeField.
-  do 2 rewrite string_to_bytes_inj.
+  do 2 rewrite string_to_bytes_to_string.
   iModIntro. iApply "HΦ".
   iFrame.
 Qed.

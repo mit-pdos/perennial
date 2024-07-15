@@ -12,7 +12,7 @@ Context {ext_ty: ext_types ext}.
 Definition bytes_to_string (l:list u8) : string :=
   string_of_list_ascii (u8_to_ascii <$> l).
 
-Lemma bytes_to_string_inj l :
+Lemma bytes_to_string_to_bytes l :
   string_to_bytes $ bytes_to_string l = l.
 Proof.
   rewrite /string_to_bytes /bytes_to_string /=.
@@ -33,6 +33,14 @@ Proof.
     rewrite word.unsigned_of_Z.
     by rewrite (@wrap_small _ _ _ _).
   }
+  done.
+Qed.
+
+Global Instance bytes_to_string_inj : Inj (=) (=) bytes_to_string.
+Proof.
+  intros b1 b2 Heq.
+  apply (f_equal string_to_bytes) in Heq.
+  rewrite !bytes_to_string_to_bytes in Heq.
   done.
 Qed.
 
@@ -60,7 +68,7 @@ Proof.
   done.
 Qed.
 
-Lemma string_to_bytes_inj s :
+Lemma string_to_bytes_to_string s :
    bytes_to_string $ string_to_bytes s = s.
 Proof.
   rewrite /string_to_bytes /bytes_to_string /=.
@@ -83,6 +91,14 @@ Proof.
   }
 Qed.
 
+Global Instance string_to_bytes_inj : Inj (=) (=) string_to_bytes.
+Proof.
+  intros s1 s2 Heq.
+  apply (f_equal bytes_to_string) in Heq.
+  rewrite !string_to_bytes_to_string in Heq.
+  done.
+Qed.
+
 Lemma string_bytes_length s :
   String.length s = length $ string_to_bytes s.
 Proof.
@@ -96,14 +112,8 @@ Lemma length_bytes_to_string bs :
   String.length (bytes_to_string bs) = length bs.
 Proof.
   rewrite string_bytes_length.
-  rewrite bytes_to_string_inj //.
+  rewrite bytes_to_string_to_bytes //.
 Qed.
-
-(*
-Global Instance pure_StringGet s i c :
-  PureExec (bin_op_eval op v1 v2 = Some c) 1 (BinOp StringGetOp (Val $ LitString $ s)
-                                                     (Val $ LitInt $ i)) (c) | 10.
-Proof. solve_pure_exec. Qed. *)
 
 Lemma wp_stringToBytes (i:u64) (s:string) :
   {{{

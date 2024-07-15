@@ -280,7 +280,7 @@ Proof.
   iIntros (?) "Hck Hsl".
   wp_apply (wp_StringFromBytes with "[$]").
   iIntros "_".
-  simpl. rewrite string_to_bytes_inj /=.
+  simpl. rewrite string_to_bytes_to_string /=.
   rewrite lookup_union in Hlook.
   destruct (compute_state ops !! key) as [x|]; simpl.
   - simpl in Hlook. rewrite union_Some_l in Hlook.

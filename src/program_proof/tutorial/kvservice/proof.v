@@ -147,7 +147,7 @@ Proof.
   wp_storeField.
   iModIntro.
   iApply "HΦ".
-  do 2 rewrite string_to_bytes_inj.
+  do 2 rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 
@@ -323,7 +323,7 @@ Proof.
   iIntros "_".
   wp_storeField.
   iModIntro. iApply "HΦ".
-  repeat rewrite string_to_bytes_inj.
+  repeat rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 
@@ -430,7 +430,7 @@ Proof.
   wp_storeField.
   iModIntro.
   iApply "HΦ".
-  repeat rewrite string_to_bytes_inj.
+  repeat rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 
@@ -1191,7 +1191,7 @@ Proof.
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".
-    repeat rewrite string_to_bytes_inj.
+    repeat rewrite string_to_bytes_to_string.
     iFrame.
   }
   {
@@ -1255,7 +1255,7 @@ Proof.
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".
-    repeat rewrite string_to_bytes_inj.
+    repeat rewrite string_to_bytes_to_string.
     iFrame.
   }
   {
