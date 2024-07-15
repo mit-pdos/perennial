@@ -9,17 +9,30 @@ Section goose_lang.
 Context {ext:ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
-Inductive val1 :=
-| MapV1 {V:Type} {Hdec:EqDecision V} {Hcount:Countable V}
-    (* {H : V = val1} *) (to_val : V → val1) : gmap V val1 → val1
+Fixpoint ind_n (f : Type → Type) (n : nat) : Type :=
+  match n with
+  | O => False
+  | S n => f (ind_n f n)
+  end.
+
+Definition ind (f : Type → Type) : Type :=
+  { n : nat & ind_n f n }.
+
+
+Lemma val_exists :
+  ∃ (T : Type) (Int : nat → T) (Heqdec : EqDecision T) (Hcount : Countable T) (Map : gmap T T → T)
+    (val_rect : ∀ (P : T → Prop),
+       (∀ (n : nat), P (Int n)) →
+       (∀ (m : gmap T T) (Helems : map_Forall (λ k v, P k ∧ P v) m), P (Map m)) →
+       (∀ v, P v)), True
 .
+Proof.
+  exists (ind (λ T, (nat + T)%type)).
+Abort.
 
 Inductive val2 (valρ : Type) `{Countable valρ} : Type :=
-| LitV2 (l : base_lit)
-| MapV2 (g : valρ → option valρ)
-| PairV2 (v1 v2 : valρ)
-| InjLV2 (v : valρ)
-| InjRV2 (v : valρ)
+| NatV (n : nat)
+| MapV (g : valρ → option valρ)
 .
 
 Instance EqDecision_val2 (valρ : Type) {Hdec : EqDecision valρ} {Hcount : Countable valρ} :
@@ -44,6 +57,92 @@ Fixpoint val3 (n : nat) : { V : Type & { H : EqDecision V & Countable V} } :=
                                             (existT (@EqDecision_val2 V Heqdec Hcount) (@Countable_val2 _ _ _))
       end
   end.
+
+
+Instance EqDecision_sigT A P (HT : EqDecision A) (HP : ∀ a, EqDecision (P a)) :
+  EqDecision {x : A & P x}.
+Proof.
+  unfold EqDecision.
+  intros. destruct x, y.
+  destruct (decide (x = x0)).
+  {
+    subst.
+    enough (Decision (p = p0)).
+    { destruct H; subst.
+      * by left.
+      * right. intros H. by apply Eqdep.EqdepTheory.inj_pair2 in H. }
+    solve_decision.
+  }
+  right. intros H. by apply eq_sigT_fst in H.
+Qed.
+
+Instance Countable_sigT A P (HTeq : EqDecision A) (HT : Countable A)
+  (HPeq : ∀ a, EqDecision (P a)) (HP : ∀ a, Countable (P a)) :
+  Countable { x : A & P x }.
+Proof.
+  (* use prod_countable's encode and decode. *)
+  set sigT_encode:=(λ s : {x : A & P x},
+                 match s with
+                 | existT x y => encode (encode x, encode y)
+                 end
+              ).
+  set sigT_decode:=((λ (e : positive),
+                      match (decode e) : option (positive * positive) with
+                      | None => None
+                      | Some (a, b) =>
+                          match decode a with
+                          | Some a =>
+                              match decode b with
+                              | Some b => Some (existT a b)
+                              | _ => None
+                              end
+                          | _ => None
+                          end
+                      end)
+              : _ → option {x : A & P x}).
+  refine (Build_Countable _ _ sigT_encode sigT_decode _). intros.
+  destruct x. unfold sigT_decode. simpl.
+  by repeat rewrite decode_encode.
+Qed.
+
+Lemma val_exists :
+  ∃ (T : Type) (Int : nat → T) (Heqdec : EqDecision T) (Hcount : Countable T) (Map : gmap T T → T)
+    (val_rect : ∀ (P : T → Prop),
+       (∀ (n : nat), P (Int n)) →
+       (∀ (m : gmap T T) (Helems : map_Forall (λ k v, P k ∧ P v) m), P (Map m)) →
+       (∀ v, P v)), True
+.
+Proof.
+  exists {n : nat & projT1 (val3 n)}.
+  eexists (λ n, (existT 1%nat (NatV _ n))).
+  eexists _. Unshelve.
+  2:{ (* EqDecision *)
+    apply EqDecision_sigT; first apply _.
+    intros [|a] x y.
+    { simpl in *. done. }
+    { simpl in *. destruct (val3 a), s. solve_decision. }
+  }
+  eexists _. Unshelve.
+  2:{
+    apply Countable_sigT; first apply _.
+    intros [|a].
+    { simpl. refine (Build_Countable _ _ (False_rect positive) (λ _, None) _). by intros. }
+    simpl.
+    destruct (val3 a), s. simpl.
+    apply _.
+  }
+  eexists _. Unshelve.
+  2:{ intros. (* find the maximum step index over the gmap, then convert everything to that level. *)
+      admit. }
+  eexists _. Unshelve.
+  2:{ intros. (* induction principle*)
+      destruct v.
+      induction x.
+      { simpl in *. by exfalso. }
+      clear IHx.
+      simpl in *.
+      destruct (val3 x).
+Qed
 
 Definition Insert : val := λ: "k" "v" "m", [(Pair "k" "v") ; "m"].
 
