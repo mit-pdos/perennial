@@ -5,7 +5,7 @@ From iris.algebra Require Import ofe.
 
 From Perennial.Helpers Require Import Tactics Integers.
 From Perennial.program_proof Require Import disk_lib.
-From Perennial.goose_lang Require Import ffi.disk.
+From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 Module update.
   Record t :=

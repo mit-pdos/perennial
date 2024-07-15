@@ -13,7 +13,7 @@ From Perennial.goose_lang Require Import adequacy.
 
 #[global]
 Program Instance disk_interp_adequacy:
-  @ffi_interp_adequacy disk_model disk_interp disk_op disk_semantics :=
+  @ffi_interp_adequacy disk.disk_model disk_interp disk.disk_op disk.disk_semantics :=
   {| ffiGpreS := disk_preG;
      ffiΣ := diskΣ;
      subG_ffiPreG := subG_diskG;
@@ -35,8 +35,8 @@ Next Obligation.
 Qed.
 
 Section crash.
-  Existing Instances disk_op disk_model disk_ty.
-  Existing Instances disk_semantics disk_interp.
+  Existing Instances disk.disk_op disk.disk_model disk.disk_ty.
+  Existing Instances disk.disk_semantics disk_interp.
   Existing Instance goose_diskGS.
 
   Lemma disk_pointsto_post_crash `{!heapGS Σ} l q v:

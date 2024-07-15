@@ -5,6 +5,7 @@ From Perennial.goose_lang.interpreter Require Import disk_interpreter.
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.goose_lang.ffi Require Import disk.
+Import disk.
 
 (* there is a right way to do this, and this is definitely not it *)
 Definition ffi_is_disk : ffi_state -> disk_state.

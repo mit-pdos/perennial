@@ -40,11 +40,11 @@ Proof.
     rewrite /addr2flat_z /=.
     apply elem_of_dom_2 in Hlookup.
     apply Hdom in Hlookup.
-    change disk.block_bytes with (Z.to_nat 4096) in *.
+    change block_bytes with (Z.to_nat 4096) in *.
     assert (uint.Z off < Z.to_nat 4096 * 8).
     { destruct k.
       - apply recovery_proof.lookup_bit0_map in Ho as [? ->]; simpl.
-        unfold disk.block_bytes in *.
+        unfold block_bytes in *.
         word.
       - apply recovery_proof.lookup_inode0_map in Ho as [i (?&?&?)]; subst.
         word.

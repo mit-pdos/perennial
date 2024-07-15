@@ -9,6 +9,8 @@ From Perennial.goose_lang.lib Require Import slice.
 Set Default Proof Using "Type".
 Set Printing Projections.
 
+Module disk.
+
 Inductive DiskOp : Set := ReadOp | WriteOp | SizeOp.
 #[global]
 Instance eq_DiskOp : EqDecision DiskOp.
@@ -158,5 +160,7 @@ Section disk.
   Instance disk_semantics : ffi_semantics disk_op disk_model :=
     { ffi_step := ffi_step;
       ffi_crash_step := eq; }.
+
+End disk.
 
 End disk.

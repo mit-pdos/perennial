@@ -11,6 +11,7 @@ From Perennial.goose_lang Require Import lang lifting slice typing.
 From Perennial.goose_lang Require Import crash_modality.
 
 From Perennial.goose_lang.ffi.disk_ffi Require Import impl.
+Import disk_ffi.impl.disk.
 
 Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is
