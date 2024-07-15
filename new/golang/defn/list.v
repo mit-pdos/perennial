@@ -10,7 +10,7 @@ Section defn.
   Definition Cons_unseal : Cons = _ := seal_eq _.
 
   Definition Match : val :=
-    λ: "nilCase" "consCase" "l",
+    λ: "l" "nilCase" "consCase",
       Match "l"
         <> ("nilCase" #())
         "x" (let: ("hd", "tl") := "x" in "consCase" "hd" "tl").

@@ -80,6 +80,7 @@ Inductive bin_op : Set :=
   | LeOp | LtOp | EqOp (* Relations *)
   | OffsetOp (k:Z) (* Pointer offset *)
   | StringGetOp
+  | TotalLeOp (* for ordering vals to implement [vmap] *)
 .
 
 Inductive prim_op0 : Set :=
@@ -493,6 +494,7 @@ Proof.
                                 | LtOp => inl 11
                                 | EqOp => inl 12
                                 | StringGetOp => inl 13
+                                | TotalLeOp => inl 14
                                 | OffsetOp k => inr k
                                 end)
                          (λ x, match x with
@@ -510,6 +512,7 @@ Proof.
                                | inl 11 => _
                                | inl 12 => _
                                | inl 13 => _
+                               | inl 14 => _
                                | inl _ => PlusOp
                                | inr k => OffsetOp k
                                end) _); by intros [].
@@ -904,8 +907,13 @@ Definition bin_op_eval_eq (v1 v2 : val) : option base_lit :=
     Some $ LitBool $ bool_decide (v1 = v2)
   else None.
 
+Definition val_le (v1 v2 : val) : bool :=
+  (Pos.leb (encode v1) (encode v2))
+.
+
 Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
-  if decide (op = EqOp) then LitV <$> bin_op_eval_eq v1 v2
+  if decide (op = TotalLeOp) then Some (LitV $ LitBool $ val_le v1 v2)
+  else if decide (op = EqOp) then LitV <$> bin_op_eval_eq v1 v2
   else
     match v1, v2 with
     | LitV (LitInt n1), LitV (LitInt n2) =>
