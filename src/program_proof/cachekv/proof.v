@@ -51,7 +51,7 @@ Proof.
   destruct H as [H1 H2].
   split.
   {
-    apply (f_equal bytes_to_string_to_bytes) in H2. repeat rewrite string_to_bytes_to_string in H2. done.
+    apply (f_equal bytes_to_string) in H2. repeat rewrite string_to_bytes_to_string in H2. done.
   }
   apply (f_equal le_to_u64) in H1.
   repeat rewrite u64_le_to_word in H1.
@@ -124,7 +124,7 @@ Proof.
   iIntros (?) "Hptr".
   wp_pures.
   wp_load.
-  rewrite /encode_cacheValue string_to_bytes_app bytes_to_string_to_string.
+  rewrite /encode_cacheValue string_to_bytes_app bytes_to_string_to_bytes.
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ReadInt with "[$Hsl]").
   iIntros (?) "Hsl".
