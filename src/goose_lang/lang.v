@@ -1711,3 +1711,14 @@ Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
 Notation nonAtomic T := (naMode * T)%type.
+
+(* TODO: use this now that coercions are more powerful:
+https://github.com/coq/coq/pull/15789
+
+(the tricky part for us is that the translator has to stop emitting [Var'] or we
+get ambiguous coercions)
+*)
+(*
+#[warning="-uniform-inheritance"]
+Coercion Var : string >-> expr.
+*)
