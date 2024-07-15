@@ -41,6 +41,14 @@ Fixpoint isNodeHash (tr : tree) (hash : list w8) : iProp Σ :=
     is_hash (concat child_hashes ++ [W8 2]) hash
   end%I.
 
+#[global]
+Instance isNodeHash_timeless tr hash : Timeless (isNodeHash tr hash).
+Proof. Admitted.
+
+#[global]
+Instance isNodeHash_persistent tr hash : Persistent (isNodeHash tr hash).
+Proof. Admitted.
+
 Lemma fixedHashLen tr hash :
   isNodeHash tr hash -∗ ⌜length hash = 32%nat⌝.
 Proof.

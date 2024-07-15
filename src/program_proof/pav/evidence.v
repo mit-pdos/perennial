@@ -240,12 +240,12 @@ Definition serv_sigpred_link γmonoLinks (data : servSepLink.t) : iProp Σ :=
   "#HidxPrev" ∷ mono_list_idx_own γmonoLinks (uint.nat (word.sub epoch (W64 1))) prevLink ∗
   "#HidxCurr" ∷ mono_list_idx_own γmonoLinks (uint.nat epoch) data.(servSepLink.link).
 
-Definition serv_sigpred_put γmonoTrs (data : servSepPut.t) : iProp Σ :=
+Definition serv_sigpred_put γmonoTrees (data : servSepPut.t) : iProp Σ :=
   ∃ γtr,
-  "Htr" ∷ mono_list_idx_own γmonoTrs (uint.nat data.(servSepPut.epoch)) γtr ∗
+  "Htr" ∷ mono_list_idx_own γmonoTrees (uint.nat data.(servSepPut.epoch)) γtr ∗
   "Hentry" ∷ data.(servSepPut.id) ↪[γtr]□ data.(servSepPut.val).
 
-Definition serv_sigpred γmonoLinks γmonoTrs : (list w8 → iProp Σ) :=
+Definition serv_sigpred γmonoLinks γmonoTrees : (list w8 → iProp Σ) :=
   λ data,
     ((
       ∃ dataSepLink,
@@ -256,17 +256,17 @@ Definition serv_sigpred γmonoLinks γmonoTrs : (list w8 → iProp Σ) :=
     (
       ∃ dataSepPut,
         ⌜servSepPut.encodes data dataSepPut⌝ ∗
-        serv_sigpred_put γmonoTrs dataSepPut
+        serv_sigpred_put γmonoTrees dataSepPut
     )%I)%I.
 End servpreds.
 
 Section evidence.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
-Lemma wp_evidServLink_check ptr_evid evid pk γmonoLinks γmonoTrs hon :
+Lemma wp_evidServLink_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
   {{{
     "Hevid" ∷ evidServLink.own ptr_evid evid ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrs) hon
+    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
   }}}
   evidServLink__check #ptr_evid (slice_val pk)
   {{{
