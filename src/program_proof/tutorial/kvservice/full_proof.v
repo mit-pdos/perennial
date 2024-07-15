@@ -147,7 +147,7 @@ Proof.
   wp_storeField.
   iModIntro.
   iApply "HΦ".
-  repeat rewrite string_to_bytes_inj.
+  repeat rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 

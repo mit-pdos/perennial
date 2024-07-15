@@ -45,13 +45,13 @@ Proof.
   intros H.
   rewrite /encode_cacheValue in H.
   apply (f_equal string_to_bytes) in H.
-  repeat rewrite string_to_bytes_app bytes_to_string_inj in H.
+  repeat rewrite string_to_bytes_app bytes_to_string_to_bytes in H.
   apply app_inj_1 in H.
   2:{ done. }
   destruct H as [H1 H2].
   split.
   {
-    apply (f_equal bytes_to_string) in H2. repeat rewrite string_to_bytes_inj in H2. done.
+    apply (f_equal bytes_to_string_to_bytes) in H2. repeat rewrite string_to_bytes_to_string in H2. done.
   }
   apply (f_equal le_to_u64) in H1.
   repeat rewrite u64_le_to_word in H1.
@@ -124,13 +124,13 @@ Proof.
   iIntros (?) "Hptr".
   wp_pures.
   wp_load.
-  rewrite /encode_cacheValue string_to_bytes_app bytes_to_string_inj.
+  rewrite /encode_cacheValue string_to_bytes_app bytes_to_string_to_string.
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ReadInt with "[$Hsl]").
   iIntros (?) "Hsl".
   wp_pures.
   wp_apply (wp_StringFromBytes with "[$]").
-  iIntros "_". rewrite string_to_bytes_inj.
+  iIntros "_". rewrite string_to_bytes_to_string.
   wp_pures. iModIntro.
   by iApply "HΦ".
 Qed.
@@ -166,7 +166,7 @@ Proof.
   iIntros "_".
   Opaque u64_le.
   simpl. rewrite replicate_0 /=.
-  rewrite bytes_to_string_app string_to_bytes_inj.
+  rewrite bytes_to_string_app string_to_bytes_to_string.
   by iApply "HΦ".
 Qed.
 

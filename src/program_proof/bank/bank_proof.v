@@ -217,7 +217,7 @@ Proof.
   wp_apply wp_StringToBytes.
   iIntros (?) "Hsl".
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-  rewrite bytes_to_string_inj.
+  rewrite bytes_to_string_to_bytes.
   wp_apply (wp_ReadInt with "[$]").
   iIntros. wp_pures. iModIntro. by iApply "HΦ".
 Qed.
