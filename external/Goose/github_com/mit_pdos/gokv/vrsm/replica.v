@@ -11,7 +11,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* 0_marshal.go *)
 
-Notation Op := (slice.T byteT).
+Notation Op := (slice.T byteT) (only parsing).
 
 Definition ApplyAsBackupArgs := struct.decl [
   "epoch" :: uint64T;
@@ -176,7 +176,7 @@ Definition DecodeApplyReply: val :=
     struct.storeF ApplyReply "Reply" "reply" (![slice.T byteT] "enc");;
     "reply".
 
-Notation IncreaseCommitArgs := uint64T.
+Notation IncreaseCommitArgs := uint64T (only parsing).
 
 Definition EncodeIncreaseCommitArgs: val :=
   rec: "EncodeIncreaseCommitArgs" "args" :=

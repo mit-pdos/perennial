@@ -4,7 +4,7 @@ From Goose Require github_com.mit_pdos.gokv.urpc.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Notation Decision := byteT.
+Notation Decision := byteT (only parsing).
 
 Definition Unknown : expr := #(U8 0).
 

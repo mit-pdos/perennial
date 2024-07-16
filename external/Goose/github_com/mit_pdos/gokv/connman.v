@@ -4,7 +4,7 @@ From Goose Require github_com.mit_pdos.gokv.urpc.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Notation HostName := uint64T.
+Notation HostName := uint64T (only parsing).
 
 Definition ConnMan := struct.decl [
   "mu" :: ptrT;

@@ -52,7 +52,7 @@ Definition Clerk__Put: val :=
     exactlyonce.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (encodePutArgs "args");;
     #().
 
-Notation getArgs := stringT.
+Notation getArgs := stringT (only parsing).
 
 Definition encodeGetArgs: val :=
   rec: "encodeGetArgs" "args" :=

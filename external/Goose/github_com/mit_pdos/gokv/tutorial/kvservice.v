@@ -35,7 +35,7 @@ Definition MakeClerk: val :=
       "rpcCl" ::= makeClient "host"
     ].
 
-Notation Error := uint64T.
+Notation Error := uint64T (only parsing).
 
 Definition rpcIdGetFreshNum : expr := #0.
 

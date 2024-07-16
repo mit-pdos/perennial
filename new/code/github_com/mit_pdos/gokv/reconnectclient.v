@@ -30,7 +30,7 @@ Definition MakeReconnectingClient : val :=
     do:  #()).
 
 Definition ReconnectingClient__getClient : val :=
-  rec: "ReconnectingClient__getClient" "cl" <> :=
+  rec: "ReconnectingClient__getClient" "cl" :=
     exception_do (let: "cl" := ref_ty ptrT "cl" in
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
     (if: ![boolT] (struct.field_ref ReconnectingClient "valid" (![ptrT] "cl"))

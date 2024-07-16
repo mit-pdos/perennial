@@ -11,7 +11,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* WriteID from client.go *)
 
-Notation WriteID := uint64T.
+Notation WriteID := uint64T (only parsing).
 
 Definition WriteChunkArgs := struct.decl [
   "WriteId" :: WriteID;
