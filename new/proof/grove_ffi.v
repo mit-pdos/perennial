@@ -32,17 +32,18 @@ Section grove.
     {{{ True }}}
       Connect #(LitInt c_r) @ s; E
     {{{ (err : bool) (c_l : chan),
-        RET struct.val ConnectRet [
-              "Err" ::= #err;
-              "Connection" ::= if err then bad_socket else connection_socket c_l c_r
-            ];
+        RET struct.val ConnectRet {[
+              "Err" := #err;
+              "Connection" := if err then bad_socket else connection_socket c_l c_r
+            ]};
       if err then True else c_l c↦ ∅
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_lam.
     wp_apply wp_ConnectOp.
     iIntros (err recv) "Hr". wp_pures.
-    by iApply ("HΦ" $! err). (* Wow, Coq is doing magic here *)
+    wp_struct_make.
+    iApply "HΦ". iFrame.
   Qed.
 
   Lemma wp_Accept c_l s E :
@@ -144,6 +145,7 @@ Section grove.
       word.
   Qed.
 
+
   Lemma wp_Receive c_l c_r :
     ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
         Receive (connection_socket c_l c_r) @ ∅
@@ -151,10 +153,10 @@ Section grove.
         c_l c↦ ms ∗ if err then True else ⌜Message c_r data ∈ ms⌝
       >>>
       {{{ (s : slice.t),
-        RET struct.val ReceiveRet [
-              "Err" ::= #err;
-              "Data" ::= slice.val s
-            ];
+        RET struct.val ReceiveRet {[
+              "Err" := #err;
+              "Data" := slice.val s
+            ]};
           own_slice s byteT (DfracOwn 1) (data_vals data)
       }}}.
   Proof.
@@ -167,7 +169,7 @@ Section grove.
     iIntros (err l len data) "(%Hm & Hc & Hl)".
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
-    iModIntro. wp_pures. iModIntro.
+    iModIntro. wp_pures. wp_struct_make.
     destruct err.
     { iApply ("HΦ" $! (slice.mk _ _ _)). simpl. destruct Hm as (-> & -> & ->).
       simpl.

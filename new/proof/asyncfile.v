@@ -681,6 +681,10 @@ Proof.
   done.
 Qed.
 
+
+Eval simpl in (({[ "x" := 10%Z ; "y" := 13%Z ]} : gmap string Z) !! "x").
+Eval simpl in (assocl_lookup [("x", 10) ; ("y", 13)] "y").
+
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
         "Hfile" ∷ crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d)
@@ -706,7 +710,10 @@ Proof.
   iIntros (s) "Hlocal".
   wp_pures.
 
-  wp_pures. wp_load.
+  rewrite struct_fields_val_empty.
+  repeat wp_apply wp_struct_make_field.
+  rewrite insert_empty.
+  wp_load.
   wp_bind (grove_ffi.FileRead _).
   iApply (wpc_wp _ _ _ _ True).
   wpc_apply (wpc_crash_borrow_open with "Hfile").
@@ -724,40 +731,60 @@ Proof.
   iIntros "Hfile".
   iSplitR; first done.
 
+  repeat wp_apply wp_struct_make_field.
   wp_load.
+  repeat wp_apply wp_struct_make_field.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
+  repeat wp_apply wp_struct_make_field.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  wp_pures.
-
+  repeat wp_apply wp_struct_make_field.
+  wp_apply wp_struct_make. (* FIXME(slow): 0.769s *)
+  { constructor. }
   wp_apply wp_ref_ty.
-  {
-    econstructor.
+  { econstructor. intros. (* FIXME: complicated proof. *)
+    repeat (destruct H;
+      [injection H as <- <-;
+       repeat (rewrite lookup_insert_ne; last done); rewrite ?lookup_insert ?lookup_empty /=;
+                apply zero_val_has_go_type || constructor|]).
+    destruct H.
   }
-  iIntros (?) "HmuInv".
-  wp_load. wp_store.
-
-
-  wp_load. wp_load.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_load. wp_store.
-
-  wp_load. wp_load.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_load. wp_store.
-  wp_load. wp_load. wp_store.
-
-
-  repeat (wp_load; wp_store).
-
+  iIntros (?) "Hl".
+  wp_store.
+  iMod (typed_pointsto_persist with "Hlocal") as "#?".
   wp_pures.
   wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
   iIntros (data_ptr) "Hlocal".
   wp_pures.
-  wp_load. wp_load.
+  wp_load. wp_pures.
+
+  iDestruct (struct_fields_split with "Hl") as "Hl".
+  { done. }
+  { apply _. }
+  iEval (((rewrite zero_val_eq || rewrite struct.val_unseal || rewrite lookup_empty) ; simpl)) in "Hl".
+  unfold insert, map_insert, lookup.
+  iExFalso.
+  iRevert "Hl". iClear "∗". iIntros "Hl".
+  iNamed "Hl".
+  iRevert "HclosedCond".
+  iClear "∗".
+  iIntros "HclosedCond".
+  simpl.
+  Print gmap_lookup.
+  Disable Notation "{[" (all).
+  unfold empty.
+  unfold singletonM, map_singleton.
+  simpl.
+  unfold insert, map_insert.
+  unfold partial_alter, gmap_partial_alter.
+  simpl.
+  cbn.
+  cbv.
+  simpl.
+  Transparent gmap_key_encode. unfold gmap_key_encode.
+
+  wp_load.
   wp_pures. wp_store.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
   wp_pures.

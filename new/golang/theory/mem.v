@@ -60,6 +60,7 @@ Section goose_lang.
           iCombine "Ha3 Hb3" gives %[? [=]];
           iModIntro; iPureIntro; naive_solver.
       - inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
+        rewrite struct.val_unseal.
         iInduction d as [|[] d] "IH2" forall (l' Hty2).
         { iModIntro. iPureIntro. split; first (intros; lia); done. }
         iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
@@ -79,7 +80,7 @@ Section goose_lang.
           setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
         iModIntro. iPureIntro. simpl.
         split.
-        2:{ by rewrite Heq1 Heq2. }
+        2:{ simpl in *. by rewrite Heq1 Heq2. }
         intros.
         destruct (decide (go_type_size_def g = O)).
         { eapply Hfrac2. lia. }
@@ -109,6 +110,7 @@ Section goose_lang.
     rewrite go_type_size_unseal /= in Hlen.
     iInduction d as [|[]] "IH2"; simpl in *.
     { exfalso. lia. }
+    rewrite struct.val_unseal /=.
     destruct (decide (go_type_size_def g = O)).
     {
       rewrite (nil_length_inv (flatten_struct (default _ _))).
@@ -197,6 +199,7 @@ Section goose_lang.
       wp_apply (wp_load with "[$H3]"); iIntros;
       wp_pures; iApply "HΦ"; by iFrame.
     - (* case structT *)
+      rewrite struct.val_unseal.
       iInduction d as [|] "IH2" forall (l' Φ).
       { wp_pures. iApply "HΦ". by iFrame. }
       destruct a.
@@ -268,8 +271,10 @@ Section goose_lang.
         wp_apply (wp_store with "[$H3]"); iIntros;
         iApply "HΦ"; rewrite /= ?loc_add_0 ?right_id; iFrame.
     - (* struct *)
+      rewrite struct.val_unseal.
       iInduction d as [|] "IH2" forall (l' v' Hty).
-      { simpl. wp_pures. iApply "HΦ". inversion Hty; subst. done. }
+      { simpl. wp_pures. iApply "HΦ". inversion Hty; subst.
+        rewrite struct.val_unseal. done. }
       destruct a. inversion Hty; subst.
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
@@ -277,6 +282,7 @@ Section goose_lang.
       erewrite has_go_type_len.
       2:{ eapply Hfields. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
+      erewrite -> struct.val_unseal.
       wp_apply ("IH" with "[] [] [$Hf]").
       { iPureIntro. simpl. by left. }
       { iPureIntro. apply Hfields0. by left. }
@@ -284,7 +290,14 @@ Section goose_lang.
       wp_pures.
       wp_apply ("IH2" with "[] [] [] [Hl]").
       { iPureIntro. intros. apply Hfields. by right. }
-      { iPureIntro. econstructor. intros. apply Hfields0. by right. }
+      { iPureIntro.
+        change ((fix val_struct (fs : list (string * go_type)) : val :=
+        match fs with
+        | [] => #()
+        | (f, ft) :: fs0 => (default (zero_val ft) (fvs0 !! f), val_struct fs0)%V
+        end) d) with (struct.val_def (structT d) fvs0).
+        rewrite <- struct.val_unseal.
+        econstructor. intros. apply Hfields0. by right. }
       { iModIntro. iIntros. wp_apply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
       { rewrite ?right_id.  iFrame. }
       iIntros "Hl".

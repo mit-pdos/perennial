@@ -20,14 +20,14 @@ End pure_execs.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Lemma wp_list_Match (l : list val) (handleNil handleCons : val) :
+Lemma wp_list_Match {s E} (l : list val) (handleNil handleCons : val) :
   ∀ Φ,
   WP (match l with
       | nil => (handleNil #())%V
       | cons a l => (handleCons a (list.val l))%V
       end
-    ) {{ Φ }} -∗
-  WP list.Match (list.val l) handleNil handleCons {{ Φ }}
+    ) @ s ; E {{ Φ }} -∗
+  WP list.Match (list.val l) handleNil handleCons @ s ; E {{ Φ }}
 .
 Proof.
   iIntros (?) "Hwp".

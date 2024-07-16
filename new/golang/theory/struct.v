@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import proofmode lifting.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import mem typing exception list.
+From New.golang.theory Require Import mem typing exception list vmap.
 From Perennial.Helpers Require Import NamedProps.
 
 Module struct.
@@ -110,4 +110,60 @@ Proof.
   word.
 Qed.
 
+Lemma struct_fields_val_empty :
+  {[]}%E = struct.fields_val ∅.
+Proof. by rewrite struct.fields_val_unseal. Qed.
+
+Lemma wp_struct_make_field {s E} (fvs : gmap string val) k (v : val) Φ :
+  Φ (struct.fields_val $ (<[k := v]> fvs))%stdpp -∗
+  WP (<[#(str k) := v]> (struct.fields_val fvs))%E @ s ; E {{ Φ }}
+.
+Proof.
+  rewrite struct.fields_val_unseal /struct.fields_val_def.
+  iIntros "Hwp". wp_apply wp_vmap_Insert.
+  erewrite -> kmap_insert.
+  2:{ intros??. by inversion 1. }
+  simpl. iFrame.
+Qed.
+
+Definition is_structT (t : go_type) : Prop :=
+  match t with
+  | structT d => True
+  | _ => False
+  end.
+
+Lemma wp_struct_make {s E} (t : go_type) (m : gmap string val) Φ :
+  is_structT t →
+  Φ (struct.val t m) -∗
+  WP struct.make t (struct.fields_val m) @ s ; E {{ Φ }}.
+Proof.
+  rewrite struct.make_unseal struct.val_unseal.
+  intros Ht. destruct t; try by exfalso.
+  iIntros "HΦ".
+  unfold struct.make_def.
+  iInduction decls as [] "IH" forall (Φ).
+  - wp_pures. simpl. done.
+  - destruct a. wp_pures.
+    rewrite struct.fields_val_unseal /struct.fields_val_def.
+    wp_apply wp_vmap_Get.
+    change (#(str s0)) with (LitV ∘ LitString $ s0).
+    erewrite lookup_kmap.
+    2:{ intros??. by inversion 1. }
+    unfold struct.val_def.
+    destruct (m !! s0) eqn:Hlookup.
+    + wp_pures. wp_apply "IH"; first done.
+      wp_pures. done.
+    + wp_pures. wp_apply "IH"; first done.
+      wp_pures. done.
+Qed.
 End wps.
+
+Ltac wp_struct_make :=
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E (App (Val (struct.make ?t)) ?fvs) ?Q) =>
+      rewrite struct_fields_val_empty; (* FIXME: this might rewrite too much *)
+      repeat wp_apply wp_struct_make_field;
+      rewrite insert_empty;
+      wp_apply wp_struct_make; [constructor|]
+  | _ => fail "wp_struct_make: next step is not [struct.make]"
+  end.
