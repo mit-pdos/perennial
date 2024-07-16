@@ -207,7 +207,9 @@ Ltac wp_pure_filter e' :=
         | eunify e' (if: (Val _) then _ else _)%E
         | eunify e' (Case (Val _) _ _)
         | eunify e' (UnOp _ (Val _))
-        | eunify e' (BinOp _ (Val _) (Val _))].
+        | eunify e' (BinOp _ (Val _) (Val _))
+        | eunify e' (TotalLe (Val _) (Val _))
+    ].
 
 Tactic Notation "wp_pure_later_credit" tactic3(filter) "as" constr(credName) :=
   lazymatch goal with

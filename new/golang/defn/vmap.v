@@ -12,8 +12,8 @@ Definition Insert : val :=
       (λ: <>, [(Pair "k" "v")])
       (λ: "kv" "m2",
          let: ("k2", "v2") := "kv" in
-         if: (BinOp TotalLeOp "k" "k2") then
-           if: (BinOp TotalLeOp "k2" "k") then (* k2 = k *)
+         if: (TotalLe "k" "k2") then
+           if: (TotalLe "k2" "k") then (* k2 = k *)
              list.Cons (Pair "k" "v") "m2"
            else (* k < k2 *)
              list.Cons (Pair "k" "v") "m"
