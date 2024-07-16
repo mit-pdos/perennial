@@ -1,5 +1,6 @@
 From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Import list.
+From stdpp Require Import sorting.
 
 Module vmap.
 Section goose_lang.
@@ -53,21 +54,14 @@ Definition Match : val :=
       )
 .
 
-Fixpoint insert_replace_sorted {A} (le : A → A → bool) (a : A) (l : list A) :=
-  match l with
-  | [] => [a]
-  | h :: t => if (le a h) then
-        if (le h a) then a :: t
-        else a :: h :: t
-      else h :: insert_replace_sorted le a t
-  end.
+Local Definition cmp (v1 v2 : val*val) : Prop :=
+  let '(a1, b1) := v1 in let '(a2, b2) := v2 in
+                       (val_le a1 b1 || val_le a2 b2).
+Instance cmp_dec x y : Decision (cmp x y).
+Proof. solve_decision. Qed.
+Definition val_list_def (m : gmap val val) :=
+  (fmap (λ x, match x with (a, b) => PairV a b end) (merge_sort cmp (map_to_list m))).
 
-Local Definition val_list_def (m : gmap val val) :=
-  (fmap (λ '(a, b), PairV a b)
-     (map_fold (λ k v kvs, insert_replace_sorted (λ '(a, _) '(b, _), val_le a b)
-                             (k, v) kvs)
-        ([] : list (val * val)) m))
-.
 Definition val_def (m : gmap val val) :=
   list.val (val_list_def m).
 
