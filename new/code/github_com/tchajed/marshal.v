@@ -17,10 +17,10 @@ Definition Enc : go_type := structT [
 Definition NewEncFromSlice : val :=
   rec: "NewEncFromSlice" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (struct.make Enc [
-       "b" ::= ![sliceT byteT] "b";
-       "off" ::= ref_ty uint64T (zero_val uint64T)
-     ]);;;
+    return: (struct.make Enc {[
+       #(str "b") := ![sliceT byteT] "b";
+       #(str "off") := ref_ty uint64T (zero_val uint64T)
+     ]});;;
     do:  #()).
 
 Definition NewEnc : val :=
@@ -119,10 +119,10 @@ Definition Dec : go_type := structT [
 Definition NewDec : val :=
   rec: "NewDec" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (struct.make Dec [
-       "b" ::= ![sliceT byteT] "b";
-       "off" ::= ref_ty uint64T (zero_val uint64T)
-     ]);;;
+    return: (struct.make Dec {[
+       #(str "b") := ![sliceT byteT] "b";
+       #(str "off") := ref_ty uint64T (zero_val uint64T)
+     ]});;;
     do:  #()).
 
 Definition Dec__GetInt : val :=
@@ -362,10 +362,10 @@ Definition WriteBool : val :=
     let: "b" := ref_ty (sliceT byteT) "b" in
     (if: ![boolT] "x"
     then
-      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [#(U8 1)]));;;
+      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 1) ]));;;
       do:  #()
     else
-      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [#(U8 0)]));;;
+      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 0) ]));;;
       do:  #());;;
     do:  #()).
 

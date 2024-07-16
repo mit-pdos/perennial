@@ -72,7 +72,7 @@ Fixpoint struct_fields l dq (t : go_type) (fs : struct.descriptor)
   | (f,t')::fs =>
     match v with
     | PairV v1 v2 => ("H" ++ f) ∷ l ↦s[t :: f]{dq} v1 ∗
-                    struct_fields l dq t' fs v2
+                    struct_fields l dq t fs v2
     | _ => False
     end
   end.

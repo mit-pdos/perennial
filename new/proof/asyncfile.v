@@ -682,8 +682,28 @@ Proof.
 Qed.
 
 
-Eval simpl in (({[ "x" := 10%Z ; "y" := 13%Z ]} : gmap string Z) !! "x").
+(*
+Lemma x :
+({[ "x" := 10%Z ; "y" := 13%Z ]} : gmap string Z) !! "x" = Some 10.
+Proof. vm_compute. refine eq_refl. Qed.
+  unfold insert, map_insert, partial_alter.
+  unfold gmap_key_encode.
+  gmap_insert.
+Qed.
+
+Lemma x :
+(gmap_lookup "x" $
+               (gmap_partial_alter (λ _, Some 10%Z) "x") $
+               (gmap_partial_alter (λ _, Some 10%Z) "x") {| gmap_car := GEmpty |} ) = Some 10%Z.
+Proof.
+  simpl.
+  done.
+  Qed.
+Eval (unfold gmap_key_encode) in (gmap_lookup "x" $
+               (gmap_partial_alter (λ _, Some 10%Z) "x") $
+               (gmap_partial_alter (λ _, Some 10%Z) "x") {| gmap_car := GEmpty |} ).
 Eval simpl in (assocl_lookup [("x", 10) ; ("y", 13)] "y").
+*)
 
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
@@ -762,27 +782,10 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   { done. }
   { apply _. }
-  iEval (((rewrite zero_val_eq || rewrite struct.val_unseal || rewrite lookup_empty) ; simpl)) in "Hl".
-  unfold insert, map_insert, lookup.
-  iExFalso.
-  iRevert "Hl". iClear "∗". iIntros "Hl".
+  iEval (repeat (rewrite zero_val_eq || rewrite struct.val_unseal)) in "Hl".
+  iRename "Hmu" into "Hmu_uninit".
   iNamed "Hl".
-  iRevert "HclosedCond".
-  iClear "∗".
-  iIntros "HclosedCond".
-  simpl.
-  Print gmap_lookup.
-  Disable Notation "{[" (all).
-  unfold empty.
-  unfold singletonM, map_singleton.
-  simpl.
-  unfold insert, map_insert.
-  unfold partial_alter, gmap_partial_alter.
-  simpl.
-  cbn.
-  cbv.
-  simpl.
-  Transparent gmap_key_encode. unfold gmap_key_encode.
+  vm_compute lookup.
 
   wp_load.
   wp_pures. wp_store.
