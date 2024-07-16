@@ -248,7 +248,7 @@ Definition my_inv γmonoLinks γmonoTrees : iProp Σ :=
 Definition serv_sigpred_link γmonoLinks (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8),
   "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
-  "#HidxPrev" ∷ mono_list_idx_own γmonoLinks (uint.nat (word.sub epoch (W64 1))) prevLink ∗
+  "#HidxPrev" ∷ ⌜ uint.nat epoch > 0 ⌝ -∗ mono_list_idx_own γmonoLinks (uint.nat (word.sub epoch (W64 1))) prevLink ∗
   "#HidxCurr" ∷ mono_list_idx_own γmonoLinks (uint.nat epoch) data.(servSepLink.link).
 
 Definition serv_sigpred_put γmonoTrees (data : servSepPut.t) : iProp Σ :=
