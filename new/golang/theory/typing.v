@@ -19,15 +19,17 @@ Section goose_lang.
 
   Infix "=?" := (String.eqb).
 
-  Definition val (t : go_type) (field_vals: list (string*val)): val :=
+  Definition val_def (t : go_type) (field_vals: gmap string val): val :=
     match t with
     | structT d => (fix val_struct (fs : list (string*go_type)) :=
                      match fs with
                      | [] => (#())
-                     | (f,ft)::fs => (default (zero_val ft) (assocl_lookup field_vals f), val_struct fs)%V
+                     | (f,ft)::fs => (default (zero_val ft) (field_vals !! f), val_struct fs)%V
                      end) d
     | _ => LitV LitPoison
     end.
+  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
+  Definition val_unseal : val = _ := seal_eq _.
 End goose_lang.
 End struct.
 
@@ -102,7 +104,7 @@ Section typing.
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
-      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup fvs f)) t)
+      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (fvs !! f)) t)
     : has_go_type (struct.val (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func f e v : has_go_type (RecV f e v) funcT
@@ -120,15 +122,16 @@ Section typing.
     has_go_type (zero_val t) t.
   Proof.
     induction t using go_type_ind; rewrite zero_val_unseal; try econstructor.
-    replace (zero_val_def (structT decls)) with (struct.val (structT decls) []).
+    replace (zero_val_def (structT decls)) with (struct.val (structT decls) ∅).
     {
       econstructor. intros. simpl.
       apply Hfields.
       apply in_map_iff. eexists _.
       split; last done. done.
     }
+    rewrite struct.val_unseal.
     induction decls.
-    { simpl. replace (#()) with (struct.val (structT []) []) by done. econstructor. }
+    { done. }
     destruct a. simpl.
     f_equal.
     { by rewrite zero_val_unseal. }
@@ -144,6 +147,7 @@ Section typing.
   Proof.
     rewrite go_type_size_unseal.
     induction 1; simpl; auto.
+    rewrite struct.val_unseal.
     induction d.
     { done. }
     destruct a. cbn.
@@ -171,7 +175,7 @@ Section typing.
     | stringT => #(str "")
     (* | arrayT (len : nat) (elem : go_type) *)
     | sliceT _ => slice.nil
-    | structT decls => struct.val t []
+    | structT decls => struct.val t ∅
     | ptrT => nil
     | funcT => nil
     | interfaceT => interface_nil
@@ -184,9 +188,10 @@ Section typing.
   Proof.
     rewrite zero_val_unseal.
     induction t; try done. simpl.
+    rewrite struct.val_unseal.
     induction decls; first done.
     destruct a. simpl.
-    by rewrite IHdecls zero_val_unseal.
+    by rewrite IHdecls /= !zero_val_unseal.
   Qed.
 
   Lemma zero_val_eq :

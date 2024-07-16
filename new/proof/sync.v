@@ -61,10 +61,12 @@ Proof. apply _. Qed.
 Theorem init_Mutex R E m : m ↦[Mutex] (zero_val $ Mutex) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "Hl HR".
+  simpl.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   { done. }
   { apply _. }
-  iEval (repeat rewrite zero_val_eq /=) in "Hl". iNamed "Hl".
+  iEval (repeat rewrite ?zero_val_eq ?struct.val_unseal ?lookup_empty /=) in "Hl".
+  iNamed "Hl".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
   { iIntros "!>". iExists false. iFrame.

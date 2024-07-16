@@ -32,10 +32,10 @@ Section grove.
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
       let: "socket" := Snd "c" in
-      struct.make ConnectRet [
-        "Err" ::= "err";
-        "Connection" ::= "socket"
-      ].
+      struct.make ConnectRet {[
+        #(str "Err") := "err";
+        #(str "Connection") := "socket"
+      ]}.
 
   (** Type: func(Listener) Connection *)
   Definition Accept : val :=
@@ -53,10 +53,10 @@ Section grove.
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      struct.make ReceiveRet [
-        "Err" ::= "err";
-        "Data" ::= ("ptr", "len", "len")
-      ].
+      struct.make ReceiveRet {[
+        #(str "Err") := "err";
+        #(str "Data") := ("ptr", "len", "len")
+      ]}.
 
 
   (** FileRead pretends that the operation can never fail.

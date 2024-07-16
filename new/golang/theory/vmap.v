@@ -9,7 +9,8 @@ Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Local Instance cmp_trans : Transitive vmap.vmap.cmp.
 Proof.
   intros [][][]??. simpl in *.
-  unfold is_true in *. rewrite !Pos.leb_le in H H0 *. lia.
+  unfold is_true, val_le in *.
+  rewrite !Pos.leb_le in H H0 *. lia.
 Qed.
 
 Local Instance cmp_total : Total vmap.vmap.cmp.
@@ -17,8 +18,6 @@ Proof.
   intros [][]. simpl in *.
   unfold is_true in *. rewrite !Pos.leb_le. lia.
 Qed.
-
-Search map_to_list.
 
 Local Lemma Sorted_unique l1 l2 :
   NoDup l1.*1 →
@@ -31,9 +30,9 @@ Proof.
 Admitted.
 
 (* XXX: this is a "pure" step. *)
-Lemma wp_vmap_Insert (k v : val) (m : gmap val val) :
+Lemma wp_vmap_Insert {s E} (k v : val) (m : gmap val val) :
   {{{ True }}}
-    vmap.Insert k v (vmap.val m)
+    vmap.Insert k v (vmap.val m) @ s ; E
   {{{ RET (vmap.val (<[k := v]> m)); True }}}.
 Proof.
   assert (∃ l, vmap.val_list_def m = l) as [l Hl].
@@ -110,6 +109,17 @@ Proof.
       - admit.
     }
     admit.
+Admitted.
+
+Lemma wp_vmap_Get {s E} (k : val) (m : gmap val val) :
+  {{{ True }}}
+    vmap.Get k (vmap.val m) @ s ; E
+  {{{ RET (match m !! k with
+           | Some v =>  InjRV v
+           | None => InjLV #()
+           end
+        ); True }}}.
+Proof.
 Admitted.
 
 End wps.

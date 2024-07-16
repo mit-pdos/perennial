@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem list.
+From New.golang.defn Require Import mem list vmap.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
@@ -47,13 +47,20 @@ Definition make_def (t : go_type) : val :=
       (fix make_def_struct (fs : struct.descriptor) : val :=
          match fs with
          | [] => (λ: "fvs", Val #())%V
-         | (f,ft)::fs => (λ: "fvs", Val #() (Match (assocl_lookup_goose "fvs" f) <> (Val (zero_val ft)) "x" "x",
+         | (f,ft)::fs => (λ: "fvs", ((match: (vmap.Get #(str f) "fvs") with
+                                     InjL <> => (Val (zero_val ft))
+                                     | InjR "x" => "x" end),
                                             (make_def_struct fs) "fvs"))%V
          end) d
   | _ => LitV $ LitPoison
   end.
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
+
+Definition fields_val_def (m : gmap string val) : val :=
+  vmap.val (kmap (LitV ∘ LitString) m).
+Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
+Definition fields_val_unseal : fields_val = _ := seal_eq _.
 
 End goose_lang.
 End struct.
