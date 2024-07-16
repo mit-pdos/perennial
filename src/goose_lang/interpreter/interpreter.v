@@ -354,7 +354,12 @@ Section interpreter.
           | PairV v1 v2 => mret v2
           | _ => mfail_bt ("Snd applied to non-PairV of type:" ++ (pretty v))
           end
-            
+
+      | TotalLe e1 e2 =>
+        v1 <- interpret n e1;
+        v2 <- interpret n e2;
+        mret (LitV $ LitBool $ val_le v1 v2)
+
       | InjL e =>
         v <- interpret n e;
           mret (InjLV v)
@@ -882,6 +887,17 @@ Ltac runStateT_inv :=
         case_bool_decide; try by inversion H0;
         repeat (Transitions.monad_simpl; simpl)
         ).
+    }
+
+    (* TotalLe *)
+    {
+      run_next_interpret IHn.
+      run_next_interpret IHn.
+      runStateT_inv.
+      do 2 eexists.
+      eapply nsteps_transitive; [ctx_step (fill [(TotalLeLCtx e2)])|].
+      eapply nsteps_transitive; [ctx_step (fill [(TotalLeRCtx v2)])|].
+      single_step.
     }
 
     (* ExternalOp *)

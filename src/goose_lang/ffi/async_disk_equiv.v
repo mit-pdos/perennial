@@ -480,6 +480,12 @@ Section translate.
              unfold check. rewrite ifThenElse_if; eauto. rewrite /=. repeat econstructor; eauto.
              rewrite /when. rewrite ifThenElse_else; eauto. repeat econstructor.
          *** repeat econstructor => //=.
+    - rewrite /base_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 2 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
     - destruct op.
       (* Read *)
       * rewrite /base_step//= in Hstep.
@@ -945,6 +951,12 @@ Section translate.
              rewrite /when. rewrite ifThenElse_else; eauto. repeat econstructor.
          *** repeat econstructor => //=.
       ** right. split_and!; eauto.
+    - rewrite /base_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 3 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
     - destruct op.
       (* Read *)
       * rewrite /base_step//= in Hstep.
@@ -1611,6 +1623,12 @@ Section translate.
            *** repeat econstructor => //=.
         ** rewrite //=.
         ** rewrite //=.
+    - rewrite /base_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
     - destruct op.
       (* Read *)
       * rewrite /base_step//= in Hstep.

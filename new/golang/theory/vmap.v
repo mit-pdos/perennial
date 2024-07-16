@@ -28,6 +28,7 @@ Proof.
     { exfalso. subst l.
       rewrite /vmap.vmap.val_list_def /= in Hl.
       apply fmap_nil_inv in Hl.
+      rewrite /map_fold /gmap_fold /= in Hl.
       rewrite map_fold_insert_L in Hl; last done.
       {
         apply (f_equal length) in Hl.
