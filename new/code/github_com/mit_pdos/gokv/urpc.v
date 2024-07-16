@@ -126,7 +126,7 @@ Definition Client : go_type := structT [
 ].
 
 Definition Client__replyThread : val :=
-  rec: "Client__replyThread" "cl" :=
+  rec: "Client__replyThread" "cl" <> :=
     exception_do (let: "cl" := ref_ty ptrT "cl" in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := ref_ty grove_ffi.ReceiveRet (zero_val grove_ffi.ReceiveRet) in

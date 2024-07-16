@@ -51,7 +51,7 @@ Definition AsyncFile__Write : val :=
     do:  #()).
 
 Definition AsyncFile__flushThread : val :=
-  rec: "AsyncFile__flushThread" "s" :=
+  rec: "AsyncFile__flushThread" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #();;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -90,7 +90,7 @@ Definition AsyncFile__flushThread : val :=
     do:  #()).
 
 Definition AsyncFile__Close : val :=
-  rec: "AsyncFile__Close" "s" :=
+  rec: "AsyncFile__Close" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #();;;
     let: "$a0" := #true in
@@ -112,6 +112,7 @@ Definition MakeAsyncFile : val :=
       #(str "mu") := "mu";
       #(str "indexCond") := sync.NewCond "mu";
       #(str "closedCond") := sync.NewCond "mu";
+      #(str "durableIndexCond") := sync.NewCond "mu";
       #(str "filename") := ![stringT] "filename";
       #(str "data") := grove_ffi.FileRead (![stringT] "filename");
       #(str "index") := #0;
