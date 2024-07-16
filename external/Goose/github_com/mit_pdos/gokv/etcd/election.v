@@ -13,7 +13,7 @@ Definition Election := struct.decl [
   "leaderRev" :: uint64T
 ].
 
-Notation Error := uint64T.
+Notation Error := uint64T (only parsing).
 
 Definition ErrNone : expr := #0.
 
@@ -74,7 +74,7 @@ Definition RangeResponse := struct.decl [
   "Kvs" :: slice.T ptrT
 ].
 
-Notation ResponseOp := (struct.t RangeResponse).
+Notation ResponseOp := (struct.t RangeResponse) (only parsing).
 
 Definition TxnResponse := struct.decl [
   "Succeeded" :: boolT;

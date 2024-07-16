@@ -6,7 +6,7 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
-Notation Error := uint64T.
+Notation Error := uint64T (only parsing).
 
 Definition None : expr := #0.
 

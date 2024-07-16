@@ -20,9 +20,9 @@ Definition HDRADDRS : expr := (disk.BlockSize - HDRMETA) `quot` #8.
 (* 2 for log header *)
 Definition LOGSIZE : expr := HDRADDRS + #2.
 
-Notation Inum := uint64T.
+Notation Inum := uint64T (only parsing).
 
-Notation Bnum := uint64T.
+Notation Bnum := uint64T (only parsing).
 
 Definition NULLINUM : expr := #0.
 
