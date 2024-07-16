@@ -509,7 +509,7 @@ Definition Server__TryBecomeLeader : val :=
         do:  (sync.Mutex__Unlock (![ptrT] "mu")) #();;;
         do:  #()
         ) in
-      Fork ("$go" #());;;
+      do: Fork ("$go" #());;;
       do:  #());;;
     do:  (sync.Mutex__Lock (![ptrT] "mu")) #();;;
     (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ (![uint64T] "n")); (λ: <>, Skip) := λ: <>,
@@ -649,7 +649,7 @@ Definition Server__TryAcquire : val :=
           do:  (sync.Mutex__Unlock (![ptrT] "mu")) #();;;
           do:  #()
           ) in
-        Fork ("$go" #());;;
+        do: Fork ("$go" #());;;
         do:  #());;;
       do:  (sync.Mutex__Lock (![ptrT] "mu")) #();;;
       (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ (![uint64T] "n")); (λ: <>, Skip) := λ: <>,

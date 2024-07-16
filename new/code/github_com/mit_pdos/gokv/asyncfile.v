@@ -125,6 +125,6 @@ Definition MakeAsyncFile : val :=
     let: "$a0" := ![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s")) in
     do:  "data" <-[sliceT byteT] "$a0";;;
     do:  let: "$go" := AsyncFile__flushThread (![ptrT] "s") in
-    Fork ("$go" #());;;
+    do: Fork ("$go" #());;;
     return: (![sliceT byteT] "data", ![ptrT] "s");;;
     do:  #()).

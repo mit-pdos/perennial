@@ -171,10 +171,11 @@ Section grove.
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
     iModIntro. wp_pures. wp_struct_make.
     destruct err.
-    { iApply ("HΦ" $! (slice.mk _ _ _)). simpl. destruct Hm as (-> & -> & ->).
+    { rewrite slice_val_fold. iApply ("HΦ" $! (slice.mk _ _ _)). simpl. destruct Hm as (-> & -> & ->).
       simpl.
       iApply own_slice_empty. done. }
     destruct Hm as [Hin Hlen].
+    rewrite slice_val_fold.
     iApply ("HΦ" $! (slice.mk _ _ _)).
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
@@ -206,6 +207,7 @@ Section grove.
     iDestruct "Hl" as "[%Hl Hl]".
     wpc_pures.
     iDestruct "HΦ" as "[_ HΦ]".
+    rewrite slice_val_fold.
     iApply ("HΦ" $! (slice.mk _ _ _)). iFrame. iModIntro.
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
@@ -223,6 +225,7 @@ Section grove.
     wpc_call. { by iLeft. } { by iLeft. }
     iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
     (* Urgh so much manual work just calling a WP lemma... *)
+    rewrite slice.val_unseal.
     wpc_pures.
     iDestruct (own_slice_sz with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
@@ -260,6 +263,7 @@ Section grove.
     wpc_call. { by iLeft. } { by iLeft. }
     iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
     (* Urgh so much manual work just calling a WP lemma... *)
+    rewrite slice.val_unseal.
     wpc_pures.
     iDestruct (own_slice_sz with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".

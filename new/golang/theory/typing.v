@@ -9,7 +9,9 @@ Definition nil_f : slice.t := mk null 0 0.
 
 Section goose_lang.
   Context `{ffi_semantics}.
-  Definition val (s: slice.t) : val := (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f)).
+  Definition val_def (s: slice.t) : val := (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f)).
+  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
+  Definition val_unseal : val = _ := seal_eq _.
 End goose_lang.
 End slice.
 
@@ -146,7 +148,7 @@ Section typing.
     length (flatten_struct v) = (go_type_size t).
   Proof.
     rewrite go_type_size_unseal.
-    induction 1; simpl; auto.
+    induction 1; simpl; rewrite ?slice.val_unseal; auto.
     rewrite struct.val_unseal.
     induction d.
     { done. }

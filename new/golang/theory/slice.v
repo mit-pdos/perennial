@@ -162,7 +162,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Lemma wp_slice_len stk E (s : slice.t) (Φ : val -> iProp Σ) :
     Φ #(s.(slice.len_f)) -∗ WP slice.len (slice.val s) @ stk; E {{ v, Φ v }}.
 Proof.
-  iIntros "HΦ".
+  rewrite slice.val_unseal. iIntros "HΦ".
   wp_call.
   iApply "HΦ".
 Qed.
@@ -170,13 +170,14 @@ Qed.
 Lemma wp_slice_cap stk E (s : slice.t) (Φ : val -> iProp Σ) :
     Φ #(s.(slice.cap_f)) -∗ WP slice.cap (slice.val s) @ stk; E {{ v, Φ v }}.
 Proof.
-  iIntros "HΦ".
+  rewrite slice.val_unseal. iIntros "HΦ".
   wp_call.
   iApply "HΦ".
 Qed.
 
-Definition slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
-  (#ptr, #sz, #cap)%V = slice.val (slice.mk ptr sz cap) := eq_refl.
+Lemma slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
+  (#ptr, #sz, #cap)%V = slice.val (slice.mk ptr sz cap).
+Proof. rewrite slice.val_unseal. done. Qed.
 
 Lemma seq_replicate_fmap {A} y n (a : A) :
   (λ _, a) <$> seq y n = replicate n a.
@@ -290,6 +291,7 @@ Qed.
 Global Instance pure_slice_ptr (s : slice.t) :
   WpPureExec True 3 (slice.ptr (slice.val s)) #(slice.ptr_f s).
 Proof.
+  rewrite slice.val_unseal.
   split; first done.
   rewrite /slice.ptr /slice.val. cbn.
   eapply pure_exec_impl; first shelve.
@@ -301,6 +303,7 @@ Qed.
 Global Instance pure_slice_len (s : slice.t) :
   WpPureExec True 3 (slice.len (slice.val s)) #(slice.len_f s).
 Proof.
+  rewrite slice.val_unseal.
   split; first done.
   rewrite /slice.len /slice.val. cbn.
   eapply pure_exec_impl; first shelve.
@@ -312,6 +315,7 @@ Qed.
 Global Instance pure_slice_cap (s : slice.t) :
   WpPureExec True 2 (slice.cap (slice.val s)) #(slice.cap_f s).
 Proof.
+  rewrite slice.val_unseal.
   split; first done.
   rewrite /slice.cap /slice.val. cbn.
   eapply pure_exec_impl; first shelve.

@@ -51,7 +51,7 @@ Section goose_lang.
                  iDestruct (heap_pointsto_agree with "[$]") as "%H";
                  inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; naive_solver.
       1-2,4-5:
-        inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
+        inversion Hty2; subst; rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id;
           iDestruct "H1" as "(Ha1 & Ha2 & Ha3)";
           iDestruct "H2" as "(Hb1 & Hb2 & Hb3)";
           try destruct s; try destruct s0;
@@ -103,7 +103,7 @@ Section goose_lang.
   Proof.
     unseal. intros Hlen. iIntros "[? %Hty]".
     iInduction Hty as [] "IH"; subst;
-    simpl; rewrite ?right_id ?loc_add_0;
+    simpl; rewrite ?slice.val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
     all: try (iDestruct select (_) as "(? & ? & ?)";
               iApply heap_pointsto_non_null; by iFrame).
@@ -190,9 +190,9 @@ Section goose_lang.
     rewrite load_ty_unseal.
     rename l into l'.
     iInduction Hty as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (l' Φ) "HΦ".
-    1-10,14-16,19-20: rewrite /= ?loc_add_0 ?right_id; wp_pures;
+    1-10,14-16,19-20: rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id; wp_pures;
       wp_apply (wp_load with "[$]"); done.
-    1-2,4-5: rewrite /= ?right_id; wp_pures; rewrite Z.mul_0_r;
+    1-2,4-5: rewrite ?slice.val_unseal /= ?right_id; wp_pures; rewrite Z.mul_0_r;
       iDestruct "Hl" as "(H1 & H2 & H3)";
       wp_apply (wp_load with "[$H1]"); iIntros;
       wp_apply (wp_load with "[$H2]"); iIntros;
@@ -258,13 +258,14 @@ Section goose_lang.
     rewrite store_ty_unseal.
     iInduction Hty_old as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (v' Hty l' Φ) "HΦ".
     1-10,14-16,19-20:
-      simpl; rewrite ?loc_add_0 ?right_id; wp_pures; wp_apply (wp_store with "[$]");
+      simpl; rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id; wp_pures; wp_apply (wp_store with "[$]");
       iIntros "H"; iApply "HΦ"; inversion Hty; subst;
       simpl; rewrite ?loc_add_0 ?right_id; wp_pures; iFrame.
     1-2,4-5: (* non-nil slice, nil slice, non-nil interface, nil interface *)
-      simpl; wp_pures; iDestruct "Hl" as "(H1 & H2 & H3)";
+      rewrite ?slice.val_unseal /=; wp_pures; iDestruct "Hl" as "(H1 & H2 & H3)";
       inversion Hty; subst;
-        wp_pures; rewrite ?loc_add_0 ?right_id;
+        rewrite ?slice.val_unseal;
+        wp_pures; rewrite /slice.val_def ?loc_add_0 ?right_id /=;
         (* FIXME: unnamed H1-H3 don't work with ["[$]"] *)
         wp_apply (wp_store with "[$H1]"); iIntros;
         wp_apply (wp_store with "[$H2]"); iIntros;

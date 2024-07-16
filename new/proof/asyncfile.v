@@ -479,7 +479,8 @@ Proof.
   iFrame "∗#".
 Qed.
 
-Lemma wp_AsyncFile__flushThread fname N f γ P data :
+Lemma wp_AsyncFile__flushThread fname N f γ P data Φ :
+  (∀ (v : val),
   {{{
         "His" ∷ is_AsyncFile N f γ P ∗
         "HpreData" ∷ own_predurable_data γ data ∗
@@ -488,13 +489,19 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data :
         "#Hfilename_in" ∷ f ↦s[AsyncFile :: "filename"]□ #(str fname) ∗
         "Hfile" ∷ crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d)
   }}}
-    asyncfile.AsyncFile__flushThread #f
+    (v #())
   {{{
         RET #(); True
-  }}}
-.
+  }}} -∗ Φ v) -∗
+  WP asyncfile.AsyncFile__flushThread #f {{ Φ }}.
 Proof.
-  iIntros (Φ) "H HΦ".
+  iIntros "Hwp".
+  wp_lam.
+  wp_pures.
+  iModIntro.
+  iApply "Hwp".
+  clear Φ.
+  iIntros (Φ) "!# H HΦ".
   iNamed "H".
   wp_lam.
   iNamed "His".
@@ -760,6 +767,9 @@ Proof.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
   repeat wp_apply wp_struct_make_field.
+  wp_apply (wp_NewCond with "[$]").
+  iIntros (?) "#?".
+  repeat wp_apply wp_struct_make_field.
   wp_apply wp_struct_make. (* FIXME(slow): 0.769s *)
   { constructor. }
   wp_apply wp_ref_ty.
@@ -797,16 +807,22 @@ Proof.
   iMod (own_slice_persist with "Hdata_new") as "#Hdata_new".
   iMod (alloc_ghost N P data fname) as (γ) "H".
   iNamed "H".
-  iAssert (|={⊤}=> is_AsyncFile N f γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed]" as ">#His".
+  iAssert (|={⊤}=> is_AsyncFile N l γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed]" as ">#His".
   {
     iMod (init_Mutex with "[$] [-]") as "$"; last done.
     iNext. by iFrame "∗#".
   }
 
-  wp_apply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile]").
+  wp_pures.
+  wp_load.
+  wp_apply wp_AsyncFile__flushThread.
+  iIntros (flush) "Hwp_flush".
+  wp_pures.
+  wp_bind (Fork (flush #()))%E.
+  wp_apply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile Hwp_flush]").
   {
-    iNext. wp_load.
-    wp_apply (wp_AsyncFile__flushThread with "[-]").
+    iNext.
+    wp_apply ("Hwp_flush" with "[-]").
     {
       (* FIXME: without this, [iFrame "His".] is extremely slow. *)
       Typeclasses Opaque is_AsyncFile.

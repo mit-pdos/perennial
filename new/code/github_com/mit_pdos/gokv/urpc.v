@@ -78,7 +78,7 @@ Definition Server__readThread : val :=
         do:  (Server__rpcHandle (![ptrT] "srv")) (![grove_ffi.Connection] "conn") (![uint64T] "rpcid") (![uint64T] "seqno") (![sliceT byteT] "req");;;
         do:  #()
         ) in
-      Fork ("$go" #());;;
+      do: Fork ("$go" #());;;
       continue: #();;;
       do:  #());;;
     do:  #()).
@@ -99,11 +99,11 @@ Definition Server__Serve : val :=
           do:  (Server__readThread (![ptrT] "srv")) (![grove_ffi.Connection] "conn");;;
           do:  #()
           ) in
-        Fork ("$go" #());;;
+        do: Fork ("$go" #());;;
         do:  #());;;
       do:  #()
       ) in
-    Fork ("$go" #());;;
+    do: Fork ("$go" #());;;
     do:  #()).
 
 Definition callbackStateWaiting : expr := #0.
@@ -202,7 +202,7 @@ Definition TryMakeClient : val :=
       do:  (Client__replyThread (![ptrT] "cl")) #();;;
       do:  #()
       ) in
-    Fork ("$go" #());;;
+    do: Fork ("$go" #());;;
     return: (#0, ![ptrT] "cl");;;
     do:  #()).
 
