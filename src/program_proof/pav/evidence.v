@@ -234,6 +234,17 @@ End other.
 Section servpreds.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
+Definition my_inv γmonoLinks γmonoTrees : iProp Σ :=
+  ∃ h links γtrees trees updates digs,
+  "#Hstart" ∷ chainSepNone.hashes_to h ∗
+  "#Hbinds" ∷ ([∗ list] epoch ↦ d; l ∈ digs; links,
+    is_hash (chainSepSome.encodesF (chainSepSome.mk epoch ((h :: links) !!! epoch) d)) l) ∗
+  "Hlinks" ∷ mono_list_auth_own γmonoLinks (1/2) links ∗
+  "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
+    ghost_map_auth γtr (1/2) tr) ∗
+  "HmonoTrees" ∷ mono_list_auth_own γmonoTrees (1/2) γtrees ∗
+  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, isTreeDig tr dig).
+
 Definition serv_sigpred_link γmonoLinks (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8),
   "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
@@ -461,6 +472,8 @@ Lemma wp_evidServPut_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
   {{{
     "Hevid" ∷ evidServPut.own ptr_evid evid ∗
     "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
+    (* TODO: fix deps so we can reference global inv.
+       "#Hinv" ∷ inv nroot (my_inv γmonoLinks γmonoTrees) *)
   }}}
   evidServPut__check #ptr_evid (slice_val pk)
   {{{

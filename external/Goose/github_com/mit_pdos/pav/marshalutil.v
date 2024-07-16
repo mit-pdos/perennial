@@ -6,7 +6,7 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
-Notation errorTy := boolT.
+Notation errorTy := boolT (only parsing).
 
 Definition errNone : expr := #false.
 

@@ -13,9 +13,9 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* epochTy from ktmerkle.go *)
 
-Notation epochTy := uint64T.
+Notation epochTy := uint64T (only parsing).
 
-Notation linkTy := (slice.T byteT).
+Notation linkTy := (slice.T byteT) (only parsing).
 
 (* evidServLink is evidence that the server signed two conflicting links,
    either zero or one epochs away. *)
@@ -30,7 +30,7 @@ Definition evidServLink := struct.decl [
   "sig1" :: slice.T byteT
 ].
 
-Notation errorTy := boolT.
+Notation errorTy := boolT (only parsing).
 
 (* chainSepSome from rpc.go *)
 
@@ -181,7 +181,10 @@ Definition evidServPut__check: val :=
 
 (* ktmerkle.go *)
 
-Definition hashChain: ty := slice.T linkTy.
+(* hashChain supports fast commitments to prefixes of a list. *)
+Definition hashChain := struct.decl [
+  "links" :: slice.T linkTy
+].
 
 (* chainSepNone__encode from rpc.out.go *)
 
@@ -203,28 +206,30 @@ Definition newHashChain: val :=
     let: "enc" := chainSepNone__encode (struct.new chainSepNone [
     ]) in
     let: "h" := cryptoffi.Hash "enc" in
-    let: "c" := ref (zero_val hashChain) in
-    "c" <-[hashChain] (SliceAppend (slice.T byteT) (![hashChain] "c") "h");;
-    ![hashChain] "c".
+    let: "links" := ref (zero_val (slice.T (slice.T byteT))) in
+    "links" <-[slice.T (slice.T byteT)] (SliceAppend (slice.T byteT) (![slice.T (slice.T byteT)] "links") "h");;
+    struct.new hashChain [
+      "links" ::= ![slice.T (slice.T byteT)] "links"
+    ].
 
 Definition hashChain__put: val :=
   rec: "hashChain__put" "c" "data" :=
-    let: "chain" := ![hashChain] "c" in
-    let: "chainLen" := slice.len "chain" in
-    let: "prevLink" := SliceGet (slice.T byteT) "chain" ("chainLen" - #1) in
+    let: "links" := struct.loadF hashChain "links" "c" in
+    let: "chainLen" := slice.len "links" in
+    let: "prevLink" := SliceGet (slice.T byteT) "links" ("chainLen" - #1) in
     let: "linkSep" := chainSepSome__encode (struct.new chainSepSome [
       "epoch" ::= "chainLen" - #1;
       "prevLink" ::= "prevLink";
       "data" ::= "data"
     ]) in
     let: "link" := cryptoffi.Hash "linkSep" in
-    "c" <-[hashChain] (SliceAppend (slice.T byteT) "chain" "link");;
+    struct.storeF hashChain "links" "c" (SliceAppend (slice.T byteT) "links" "link");;
     #().
 
 (* getLink fetches a link (commitment) over the first `length` data entries. *)
 Definition hashChain__getLink: val :=
   rec: "hashChain__getLink" "c" "length" :=
-    SliceGet (slice.T byteT) "c" "length".
+    SliceGet (slice.T byteT) (struct.loadF hashChain "links" "c") "length".
 
 Definition timeEntry := struct.decl [
   "time" :: epochTy;
@@ -284,7 +289,7 @@ Definition server := struct.decl [
   "mu" :: ptrT;
   "trees" :: slice.T ptrT;
   "updates" :: mapT (slice.T byteT);
-  "chain" :: hashChain;
+  "chain" :: struct.t hashChain;
   "linkSigs" :: slice.T (slice.T byteT)
 ].
 
@@ -309,7 +314,7 @@ Definition newServer: val :=
        "sk" ::= "sk";
        "mu" ::= "mu";
        "trees" ::= "trees";
-       "chain" ::= "chain";
+       "chain" ::= struct.load hashChain "chain";
        "linkSigs" ::= ![slice.T (slice.T byteT)] "sigs";
        "updates" ::= "updates"
      ], "pk").
