@@ -156,6 +156,8 @@ def main():
         os.chdir(old_dir)
 
     def run_goose(src_path, *pkgs):
+        if src_path is None:
+            return
         if not pkgs:
             pkgs = ["."]
 
@@ -171,21 +173,18 @@ def main():
         args.extend(pkgs)
         do_run(args)
 
-    def run_goose_test_gen(src_path, output):
-        gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
-        args = ["go", "run", gen_bin, "-coq", "-out", output, src_path]
-        do_run(args)
-
     if args.compile:
         compile_goose()
 
     if args.goose_examples:
-        run_goose_test_gen(
-            path.join(goose_dir, "internal/examples/semantics"),
-            path.join(
-                perennial_dir, "src/goose_lang/interpreter/generated_test.v"
-            ),
+        # generate semantics tests
+        src_path = path.join(goose_dir, "internal/examples/semantics")
+        output = path.join(
+            perennial_dir, "src/goose_lang/interpreter/generated_test.v"
         )
+        gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
+        do_run(["go", "run", gen_bin, "-coq", "-out", output, src_path])
+
         run_goose(
             path.join(goose_dir, "internal/examples"),
             "./unittest",
@@ -199,54 +198,50 @@ def main():
             "./trust_import",
         )
 
-    if journal_dir is not None:
-        run_goose(
-            journal_dir,
-            "./addr",
-            "./alloc",
-            "./buf",
-            "./jrnl",
-            "./common",
-            "./lockmap",
-            "./obj",
-            "./util",
-            "./wal",
-            "./jrnl_replication",
-            "./txn",
-        )
+    run_goose(
+        journal_dir,
+        "./addr",
+        "./alloc",
+        "./buf",
+        "./jrnl",
+        "./common",
+        "./lockmap",
+        "./obj",
+        "./util",
+        "./wal",
+        "./jrnl_replication",
+        "./txn",
+    )
 
-    if go_nfsd_dir is not None:
-        run_goose(
-            go_nfsd_dir,
-            "./kvs",
-            "./super",
-            "./fh",
-            "./simple",
-            "./nfstypes",
-        )
+    run_goose(
+        go_nfsd_dir,
+        "./kvs",
+        "./super",
+        "./fh",
+        "./simple",
+        "./nfstypes",
+    )
 
-    if examples_dir is not None:
-        run_goose(
-            examples_dir,
-            "./replicated_block",
-            "./alloc",
-            "./inode",
-            "./indirect_inode",
-            "./async_inode",
-            "./dir",
-            "./dynamic_dir",
-            "./single_inode",
-            "./single_async_inode",
-            "./toy",
-            "./async_toy",
-            "./async_durable_alloc_inode",
-            "./async_mem_alloc_inode",
-            "./async_mem_alloc_dir",
-            "./async_durable_alloc",
-        )
+    run_goose(
+        examples_dir,
+        "./replicated_block",
+        "./alloc",
+        "./inode",
+        "./indirect_inode",
+        "./async_inode",
+        "./dir",
+        "./dynamic_dir",
+        "./single_inode",
+        "./single_async_inode",
+        "./toy",
+        "./async_toy",
+        "./async_durable_alloc_inode",
+        "./async_mem_alloc_inode",
+        "./async_mem_alloc_dir",
+        "./async_durable_alloc",
+    )
 
-    if distributed_dir is not None:
-        run_goose(distributed_dir, ".", "./grove_common")
+    run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
         pkgs = [
@@ -304,45 +299,39 @@ def main():
             # "From Goose Require github_com.mit_pdos.lockservice."
         )
 
-    if pav_dir is not None:
-        pkgs = [
-            "./cryptoutil",
-            "./marshalutil",
-            "./merkle",
-            "./ktmerkle",
-        ]
+    run_goose(
+        pav_dir,
+        "./cryptoutil",
+        "./marshalutil",
+        "./merkle",
+        "./ktmerkle",
+    )
 
-        run_goose(pav_dir, *pkgs)
+    run_goose(
+        mvcc_dir,
+        "./vmvcc",
+        "./txnsite",
+        "./index",
+        "./tuple",
+        "./wrbuf",
+        "./tid",
+        "./config",
+        "./common",
+        "./examples",
+        "./examples/strnum",
+    )
 
-    if mvcc_dir is not None:
-        run_goose(
-            mvcc_dir,
-            "./vmvcc",
-            "./txnsite",
-            "./index",
-            "./tuple",
-            "./wrbuf",
-            "./tid",
-            "./config",
-            "./common",
-            "./examples",
-            "./examples/strnum",
-        )
+    run_goose(
+        rsm_dir,
+        "./spaxos",
+        "./mpaxos",
+        "./distx",
+        "./tpl",
+    )
 
-    if rsm_dir is not None:
-        run_goose(
-            rsm_dir,
-            "./spaxos",
-            "./mpaxos",
-            "./distx",
-            "./tpl",
-        )
+    run_goose(marshal_dir, ".")
 
-    if marshal_dir is not None:
-        run_goose(marshal_dir, ".")
-
-    if std_dir is not None:
-        run_goose(std_dir, ".")
+    run_goose(std_dir, ".")
 
 
 if __name__ == "__main__":
