@@ -231,15 +231,92 @@ Proof.
 Qed.
 End other.
 
+Module hashChain.
+Section local_defs.
+Context `{!heapGS Σ}.
+
+Definition binds (data links : list (list w8)) : iProp Σ :=
+  (* init is the chainSepNone hash, the empty list commitment. *)
+  ∃ init,
+  "%Hinit" ∷ ⌜ links !! 0 = Some init ⌝ ∗
+  "#Hinit_hash" ∷ chainSepNone.hashes_to init ∗
+  (* every link except init was formed by the previous link. *)
+  "#Hbinds" ∷ ([∗ list] epoch ↦ d; l ∈ data; (drop 1 links),
+    ∃ prevLink,
+    ⌜ links !! epoch = Some prevLink ⌝ ∗
+    is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink d)) l).
+
+Lemma binds_inj data links0 links1 :
+  binds data links0 -∗
+  binds data links1 -∗
+  ⌜ links0 = links1 ⌝.
+Proof. Admitted.
+
+Definition is_link data link : iProp Σ :=
+  ∃ links,
+  "%Hlast_link" ∷ ⌜ last links = Some link ⌝ ∗
+  binds data links.
+
+Lemma is_link_inj data link0 link1 :
+  is_link data link0 -∗
+  is_link data link1 -∗
+  ⌜ link0 = link1 ⌝.
+Proof. Admitted.
+
+(* TODO: might need lemma that allows clients to track a put call, like:
+   is_link data link -∗ ∃ next_link, is_link (data ++ [b]) next_link. *)
+
+Definition own ptr data : iProp Σ :=
+  ∃ sl_links links,
+  "Hlinks" ∷ ptr ↦[hashChain :: "links"] (slice_val sl_links) ∗
+  "Hown" ∷ own_Slice2D sl_links (DfracOwn 1) links ∗
+  binds data links.
+
+Definition wp_new :
+  {{{ True }}}
+  newHashChain #()
+  {{{
+    ptr, RET #ptr;
+    "Hchain" ∷ own ptr []
+  }}}.
+Proof. Admitted.
+
+Definition wp_put ptr data sl_b b d0 :
+  {{{
+    "Hchain" ∷ own ptr data ∗
+    "Hb" ∷ own_slice_small sl_b byteT d0 b
+  }}}
+  hashChain__put #ptr (slice_val sl_b)
+  {{{
+    RET #();
+    "Hchain" ∷ own ptr (data ++ [b])
+  }}}.
+Proof. Admitted.
+
+Definition wp_getLink ptr data (len : w64) :
+  uint.nat len ≤ length data →
+  {{{
+    "Hchain" ∷ own ptr data
+  }}}
+  hashChain__getLink #ptr #len
+  {{{
+    sl_link link, RET (slice_val sl_link);
+    "Hchain" ∷ own ptr data ∗
+    "#His_link" ∷ is_link (take (uint.nat len) data) link ∗
+    "#Hlink" ∷ own_slice_small sl_link byteT DfracDiscarded link
+  }}}.
+Proof. Admitted.
+
+End local_defs.
+End hashChain.
+
 Section servpreds.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
 Definition my_inv γmonoLinks γmonoTrees : iProp Σ :=
-  ∃ h links γtrees trees updates digs,
-  "#Hstart" ∷ chainSepNone.hashes_to h ∗
-  "#Hbinds" ∷ ([∗ list] epoch ↦ d; l ∈ digs; links,
-    is_hash (chainSepSome.encodesF (chainSepSome.mk epoch ((h :: links) !!! epoch) d)) l) ∗
-  "Hlinks" ∷ mono_list_auth_own γmonoLinks (1/2) links ∗
+  ∃ links γtrees trees updates digs,
+  hashChain.binds digs links ∗
+  "Hlinks" ∷ mono_list_auth_own γmonoLinks (1/2) (drop 1 links) ∗
   "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
     ghost_map_auth γtr (1/2) tr) ∗
   "HmonoTrees" ∷ mono_list_auth_own γmonoTrees (1/2) γtrees ∗
