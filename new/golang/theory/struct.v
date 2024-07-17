@@ -7,6 +7,11 @@ Module struct.
 Section goose_lang.
 Context `{ffi_syntax}.
 
+Definition fields_val_def (m : list (string* val)) : val :=
+  list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
+Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
+Definition fields_val_unseal : fields_val = _ := seal_eq _.
+
 Implicit Types (d : struct.descriptor).
 Infix "=?" := (String.eqb).
 (* FIXME: what does _f mean? Want better name. *)

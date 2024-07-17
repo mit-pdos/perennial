@@ -51,7 +51,7 @@ Definition AsyncFile__Write : val :=
     do:  #()).
 
 Definition AsyncFile__flushThread : val :=
-  rec: "AsyncFile__flushThread" "s" :=
+  rec: "AsyncFile__flushThread" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #();;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -90,7 +90,7 @@ Definition AsyncFile__flushThread : val :=
     do:  #()).
 
 Definition AsyncFile__Close : val :=
-  rec: "AsyncFile__Close" "s" :=
+  rec: "AsyncFile__Close" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #();;;
     let: "$a0" := #true in
@@ -125,6 +125,6 @@ Definition MakeAsyncFile : val :=
     let: "$a0" := ![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s")) in
     do:  "data" <-[sliceT byteT] "$a0";;;
     do:  let: "$go" := AsyncFile__flushThread (![ptrT] "s") in
-    Fork ("$go" #());;;
+    do: Fork ("$go" #());;;
     return: (![sliceT byteT] "data", ![ptrT] "s");;;
     do:  #()).

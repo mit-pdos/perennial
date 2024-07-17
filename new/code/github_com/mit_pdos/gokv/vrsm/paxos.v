@@ -185,7 +185,7 @@ Definition singleClerk__applyAsFollower : val :=
     do:  #()).
 
 Definition singleClerk__TryBecomeLeader : val :=
-  rec: "singleClerk__TryBecomeLeader" "s" :=
+  rec: "singleClerk__TryBecomeLeader" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     let: "reply" := ref_ty ptrT (zero_val ptrT) in
     let: "$a0" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
@@ -456,7 +456,7 @@ Definition Server__enterNewEpoch : val :=
     do:  #()).
 
 Definition Server__TryBecomeLeader : val :=
-  rec: "Server__TryBecomeLeader" "s" :=
+  rec: "Server__TryBecomeLeader" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     do:  log.Println #(str "started trybecomeleader");;;
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #();;;
@@ -509,7 +509,7 @@ Definition Server__TryBecomeLeader : val :=
         do:  (sync.Mutex__Unlock (![ptrT] "mu")) #();;;
         do:  #()
         ) in
-      Fork ("$go" #());;;
+      do: Fork ("$go" #());;;
       do:  #());;;
     do:  (sync.Mutex__Lock (![ptrT] "mu")) #();;;
     (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ (![uint64T] "n")); (λ: <>, Skip) := λ: <>,
@@ -580,7 +580,7 @@ Definition Server__TryBecomeLeader : val :=
     do:  #()).
 
 Definition Server__TryAcquire : val :=
-  rec: "Server__TryAcquire" "s" :=
+  rec: "Server__TryAcquire" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     let: "retErr" := ref_ty Error (zero_val Error) in
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #();;;
@@ -649,7 +649,7 @@ Definition Server__TryAcquire : val :=
           do:  (sync.Mutex__Unlock (![ptrT] "mu")) #();;;
           do:  #()
           ) in
-        Fork ("$go" #());;;
+        do: Fork ("$go" #());;;
         do:  #());;;
       do:  (sync.Mutex__Lock (![ptrT] "mu")) #();;;
       (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ (![uint64T] "n")); (λ: <>, Skip) := λ: <>,
@@ -686,7 +686,7 @@ Definition Server__TryAcquire : val :=
     do:  #()).
 
 Definition Server__WeakRead : val :=
-  rec: "Server__WeakRead" "s" :=
+  rec: "Server__WeakRead" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #();;;
     let: "ret" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
