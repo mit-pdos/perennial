@@ -1,6 +1,8 @@
 From New.golang.defn Require Export typing.
 Require Import Coq.Logic.FunctionalExtensionality.
 
+Set Default Proof Using "Type".
+
 (** * Typed data representations for struct and slice *)
 Module slice.
 Record t := mk { ptr_f: loc; len_f: u64; cap_f: u64; }.
@@ -202,5 +204,58 @@ Section typing.
     apply functional_extensionality.
     intros. apply zero_val'_eq_zero_val_1.
   Qed.
+
+  #[local] Hint Constructors has_go_type : core.
+
+  Tactic Notation "try_if_one_goal" tactic1(t) :=
+    first [ t; let n := numgoals in guard n <= 1
+          | idtac ].
+
+  Definition is_slice_val v : {s:slice.t | v = slice.val s} + {∀ (s: slice.t), v ≠ slice.val s}.
+  Proof.
+    let solve_right :=
+      try (solve [ right;
+                  intros [???];
+                  rewrite slice.val_unseal /slice.val_def /=;
+                    inversion 1;
+                  subst ]) in
+    repeat match goal with
+           | l: base_lit |- _ =>
+               destruct l; solve_right
+           | v: val |- _ =>
+               destruct v; solve_right
+           end.
+    left.
+    eexists (slice.mk _ _ _);
+      rewrite slice.val_unseal /slice.val_def //=.
+  Defined.
+
+  (* TODO: I think this is possible, but some unfortunate changes are needed: we
+  need a recursion principle for go_type (which is basically the same as
+  go_type_ind but with `In` replaced with something isomorphic to elem_of_list
+  but in Type), and then we can finish this up. *)
+  Definition has_go_type_dec v t : {has_go_type v t} + {¬has_go_type v t}.
+  Proof.
+    induction t;
+      try_if_one_goal (
+          destruct v; eauto; try solve [ right; inversion 1; eauto ];
+          try lazymatch goal with
+            | l: base_lit |- _ =>
+                try_if_one_goal (
+                    destruct l; eauto;
+                    try solve [ right; inversion 1; eauto ];
+                    try lazymatch goal with
+                      | l': loc |- _ =>
+                          destruct (decide (l' = null)); subst;
+                          eauto; try solve [ right; inversion 1; eauto ]
+                      end
+                  )
+          end
+        ).
+    - destruct (decide (v = slice.nil)); subst; [ by eauto | ].
+      destruct (is_slice_val v) as [[s ->] | ]; [ by eauto | right ].
+      inversion 1; subst; intuition eauto.
+    - admit.
+  Abort.
 
 End typing.

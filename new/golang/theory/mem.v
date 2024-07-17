@@ -396,6 +396,23 @@ Notation "l ↦[ t ] dq v" := (typed_pointsto l dq t v%V)
                               (at level 20, dq custom dfrac at level 50, t at level 50,
                                format "l  ↦[ t ] dq  v") : bi_scope.
 
+Ltac solve_has_go_type :=
+  eauto using has_go_type, zero_val_has_go_type;
+  try solve [
+      apply has_go_type_struct;
+      intros ??;
+        rewrite -elem_of_list_In ?elem_of_cons ?elem_of_nil ?pair_eq
+                   zero_val_eq;
+      (intuition subst);
+      vm_compute; eauto using has_go_type
+    ].
+
+Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
+  wp_apply wp_ref_ty;
+  [ solve_has_go_type
+  | iIntros (l) H ]
+.
+
 Tactic Notation "wp_load" :=
   let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_]{_} _)%I) => l end in
