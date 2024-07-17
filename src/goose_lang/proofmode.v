@@ -79,15 +79,15 @@ Proof.
   iIntros "$".
 Qed.
 
-Class PureWpSteps `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+Class PureWp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
   φ (e: expr) (v': val) :=
-  pure_wp_steps_wp : ∀ stk E Φ, ⌜φ⌝ -∗ ▷ Φ v' -∗ WP e @ stk; E {{ Φ }}.
+  pure_wp_wp : ∀ stk E Φ (H:φ), ▷ Φ v' -∗ WP e @ stk; E {{ Φ }}.
 
-Global Hint Mode PureWpSteps - - - - - - - - ! - : typeclass_instances.
+Global Hint Mode PureWp - - - - - - - - ! - : typeclass_instances.
 
-Lemma tac_wp_pure_steps `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+Lemma tac_wp_pure_wp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
       Δ Δ' s E K (e1: expr) (v2: val) φ Φ :
-  PureWpSteps φ e1 v2 →
+  PureWp φ e1 v2 →
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_entails Δ' (WP (fill K (Val v2)) @ s; E {{ Φ }}) →
@@ -282,7 +282,7 @@ Ltac wp_pure_steps1 :=
   lazymatch goal with
   | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
       reshape_expr e ltac:(fun K e' =>
-        eapply (tac_wp_pure_steps _ _ _ _ K e');
+        eapply (tac_wp_pure_wp _ _ _ _ K e');
           [tc_solve (* PureWpSteps *)
           |try solve_vals_compare_safe (* pure side condition *)
           |tc_solve (* MaybeIntoLaterNEnvs *)
