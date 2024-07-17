@@ -1,5 +1,6 @@
 From New.golang.defn Require Import mem list.
 
+(* FIXME: these notations don't work properly. *)
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
 Notation "f ::= v" := (PairV #(str f%string) v%V) (at level 60) : val_scope.
@@ -57,5 +58,14 @@ Definition make_def (t : go_type) : val :=
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 
+Definition fields_val_def (m : list (string* val)) : val :=
+  list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
+Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
+Definition fields_val_unseal : fields_val = _ := seal_eq _.
+
 End goose_lang.
 End struct.
+
+Notation "[{ }]" := (struct.fields_val []) (only parsing) : expr_scope.
+Notation "[{ x }]" := (list.Cons x [{ }]%E) : expr_scope.
+Notation "[{ x ; y ; .. ; z }]" := (list.Cons x (list.Cons y .. (list.Cons z [{ }]%E) ..)) : expr_scope.

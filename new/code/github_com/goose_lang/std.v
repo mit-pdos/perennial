@@ -103,7 +103,7 @@ Definition Multipar : val :=
       let: "i" := ref_ty uint64T (zero_val uint64T) in
       let: "$a0" := ![uint64T] "i" in
       do:  "i" <-[uint64T] "$a0";;;
-      do:  let: "$go" := (λ: <>,
+      let: "$go" := (λ: <>,
         do:  (![funcT] "op") (![uint64T] "i");;;
         do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
         do:  "num_left" <-[uint64T] ((![uint64T] "num_left") - #1);;;
@@ -111,7 +111,7 @@ Definition Multipar : val :=
         do:  (sync.Mutex__Unlock (![ptrT] "num_left_mu")) #();;;
         do:  #()
         ) in
-      do: Fork ("$go" #());;;
+      do:  Fork ("$go" #());;;
       do:  #()));;;
     do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
     (for: (λ: <>, (![uint64T] "num_left") > #0); (λ: <>, Skip) := λ: <>,

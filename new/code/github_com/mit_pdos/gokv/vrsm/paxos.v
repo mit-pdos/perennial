@@ -27,9 +27,9 @@ Definition MakeSingleClerk : val :=
   rec: "MakeSingleClerk" "addr" :=
     exception_do (let: "addr" := ref_ty uint64T "addr" in
     let: "ck" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty singleClerk (struct.make singleClerk [
+    let: "$a0" := ref_ty singleClerk (struct.make singleClerk [{
       "cl" ::= reconnectclient.MakeReconnectingClient (![uint64T] "addr")
-    ]) in
+    }]) in
     do:  "ck" <-[ptrT] "$a0";;;
     return: (![ptrT] "ck");;;
     do:  #()).
@@ -59,8 +59,8 @@ Definition decodeEnterNewEpochReply : val :=
   rec: "decodeEnterNewEpochReply" "enc" :=
     exception_do (let: "enc" := ref_ty (sliceT byteT) "enc" in
     let: "o" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty enterNewEpochReply (struct.make enterNewEpochReply [
-    ]) in
+    let: "$a0" := ref_ty enterNewEpochReply (struct.make enterNewEpochReply [{
+    }]) in
     do:  "o" <-[ptrT] "$a0";;;
     let: "err" := ref_ty uint64T (zero_val uint64T) in
     let: ("$a0", "$a1") := marshal.ReadInt (![sliceT byteT] "enc") in
@@ -112,9 +112,9 @@ Definition singleClerk__enterNewEpoch : val :=
       return: (decodeEnterNewEpochReply (![sliceT byteT] (![ptrT] "raw_reply")));;;
       do:  #()
     else
-      return: (ref_ty enterNewEpochReply (struct.make enterNewEpochReply [
+      return: (ref_ty enterNewEpochReply (struct.make enterNewEpochReply [{
          "err" ::= ETimeout
-       ]));;;
+       }]));;;
       do:  #());;;
     do:  #()).
 
@@ -126,8 +126,8 @@ Definition decodeApplyAsFollowerReply : val :=
   rec: "decodeApplyAsFollowerReply" "s" :=
     exception_do (let: "s" := ref_ty (sliceT byteT) "s" in
     let: "o" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty applyAsFollowerReply (struct.make applyAsFollowerReply [
-    ]) in
+    let: "$a0" := ref_ty applyAsFollowerReply (struct.make applyAsFollowerReply [{
+    }]) in
     do:  "o" <-[ptrT] "$a0";;;
     let: <> := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
     let: "err" := ref_ty uint64T (zero_val uint64T) in
@@ -178,9 +178,9 @@ Definition singleClerk__applyAsFollower : val :=
       return: (decodeApplyAsFollowerReply (![sliceT byteT] (![ptrT] "raw_reply")));;;
       do:  #()
     else
-      return: (ref_ty applyAsFollowerReply (struct.make applyAsFollowerReply [
+      return: (ref_ty applyAsFollowerReply (struct.make applyAsFollowerReply [{
          "err" ::= ETimeout
-       ]));;;
+       }]));;;
       do:  #());;;
     do:  #()).
 
@@ -274,8 +274,8 @@ Definition decodeApplyReply : val :=
   rec: "decodeApplyReply" "enc" :=
     exception_do (let: "enc" := ref_ty (sliceT byteT) "enc" in
     let: "o" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty applyReply (struct.make applyReply [
-    ]) in
+    let: "$a0" := ref_ty applyReply (struct.make applyReply [{
+    }]) in
     do:  "o" <-[ptrT] "$a0";;;
     let: "err" := ref_ty uint64T (zero_val uint64T) in
     let: ("$a0", "$a1") := marshal.ReadInt (![sliceT byteT] "enc") in
@@ -471,9 +471,9 @@ Definition Server__TryBecomeLeader : val :=
     let: "$a0" := ![sliceT ptrT] (struct.field_ref Server "clerks" (![ptrT] "s")) in
     do:  "clerks" <-[sliceT ptrT] "$a0";;;
     let: "args" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty enterNewEpochArgs (struct.make enterNewEpochArgs [
+    let: "$a0" := ref_ty enterNewEpochArgs (struct.make enterNewEpochArgs [{
       "epoch" ::= (![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) + #1
-    ]) in
+    }]) in
     do:  "args" <-[ptrT] "$a0";;;
     do:  (sync.Mutex__Unlock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #();;;
     let: "numReplies" := ref_ty uint64T #0 in
@@ -493,7 +493,7 @@ Definition Server__TryBecomeLeader : val :=
     slice.for_range ptrT "$range" (λ: "i" "ck",
       let: "i" := ref_ty uint64T "i" in
       let: "ck" := ref_ty ptrT "ck" in
-      do:  let: "$go" := (λ: <>,
+      let: "$go" := (λ: <>,
         let: "reply" := ref_ty ptrT (zero_val ptrT) in
         let: "$a0" := (singleClerk__enterNewEpoch (![ptrT] "ck")) (![ptrT] "args") in
         do:  "reply" <-[ptrT] "$a0";;;
@@ -509,7 +509,7 @@ Definition Server__TryBecomeLeader : val :=
         do:  (sync.Mutex__Unlock (![ptrT] "mu")) #();;;
         do:  #()
         ) in
-      do: Fork ("$go" #());;;
+      do:  Fork ("$go" #());;;
       do:  #());;;
     do:  (sync.Mutex__Lock (![ptrT] "mu")) #();;;
     (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ (![uint64T] "n")); (λ: <>, Skip) := λ: <>,
@@ -596,11 +596,11 @@ Definition Server__TryAcquire : val :=
       let: "$a0" := std.SumAssumeNoOverflow (![uint64T] (struct.field_ref paxosState "nextIndex" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) #1 in
       do:  (struct.field_ref paxosState "nextIndex" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s")))) <-[uint64T] "$a0";;;
       let: "args" := ref_ty ptrT (zero_val ptrT) in
-      let: "$a0" := ref_ty applyAsFollowerArgs (struct.make applyAsFollowerArgs [
+      let: "$a0" := ref_ty applyAsFollowerArgs (struct.make applyAsFollowerArgs [{
         "epoch" ::= ![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))));
         "nextIndex" ::= ![uint64T] (struct.field_ref paxosState "nextIndex" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))));
         "state" ::= ![sliceT byteT] (struct.field_ref paxosState "state" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))
-      ]) in
+      }]) in
       do:  "args" <-[ptrT] "$a0";;;
       let: "waitFn" := ref_ty funcT (zero_val funcT) in
       let: "$a0" := (asyncfile.AsyncFile__Write (![ptrT] (struct.field_ref Server "storage" (![ptrT] "s")))) (encodePaxosState (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s")))) in
@@ -633,7 +633,7 @@ Definition Server__TryAcquire : val :=
         let: "i" := ref_ty intT (zero_val intT) in
         let: "$a0" := ![intT] "i" in
         do:  "i" <-[intT] "$a0";;;
-        do:  let: "$go" := (λ: <>,
+        let: "$go" := (λ: <>,
           let: "reply" := ref_ty ptrT (zero_val ptrT) in
           let: "$a0" := (singleClerk__applyAsFollower (![ptrT] "ck")) (![ptrT] "args") in
           do:  "reply" <-[ptrT] "$a0";;;
@@ -649,7 +649,7 @@ Definition Server__TryAcquire : val :=
           do:  (sync.Mutex__Unlock (![ptrT] "mu")) #();;;
           do:  #()
           ) in
-        do: Fork ("$go" #());;;
+        do:  Fork ("$go" #());;;
         do:  #());;;
       do:  (sync.Mutex__Lock (![ptrT] "mu")) #();;;
       (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ (![uint64T] "n")); (λ: <>, Skip) := λ: <>,

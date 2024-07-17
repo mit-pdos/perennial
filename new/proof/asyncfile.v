@@ -688,30 +688,6 @@ Proof.
   done.
 Qed.
 
-
-(*
-Lemma x :
-({[ "x" := 10%Z ; "y" := 13%Z ]} : gmap string Z) !! "x" = Some 10.
-Proof. vm_compute. refine eq_refl. Qed.
-  unfold insert, map_insert, partial_alter.
-  unfold gmap_key_encode.
-  gmap_insert.
-Qed.
-
-Lemma x :
-(gmap_lookup "x" $
-               (gmap_partial_alter (λ _, Some 10%Z) "x") $
-               (gmap_partial_alter (λ _, Some 10%Z) "x") {| gmap_car := GEmpty |} ) = Some 10%Z.
-Proof.
-  simpl.
-  done.
-  Qed.
-Eval (unfold gmap_key_encode) in (gmap_lookup "x" $
-               (gmap_partial_alter (λ _, Some 10%Z) "x") $
-               (gmap_partial_alter (λ _, Some 10%Z) "x") {| gmap_car := GEmpty |} ).
-Eval simpl in (assocl_lookup [("x", 10) ; ("y", 13)] "y").
-*)
-
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
         "Hfile" ∷ crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d)
@@ -737,9 +713,7 @@ Proof.
   iIntros (s) "Hlocal".
   wp_pures.
 
-  rewrite struct_fields_val_empty.
-  repeat wp_apply wp_struct_make_field.
-  rewrite insert_empty.
+  repeat wp_apply wp_struct_fields_cons.
   wp_load.
   wp_bind (grove_ffi.FileRead _).
   iApply (wpc_wp _ _ _ _ True).
@@ -758,26 +732,24 @@ Proof.
   iIntros "Hfile".
   iSplitR; first done.
 
-  repeat wp_apply wp_struct_make_field.
+  repeat wp_apply wp_struct_fields_cons.
   wp_load.
-  repeat wp_apply wp_struct_make_field.
+  repeat wp_apply wp_struct_fields_cons.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  repeat wp_apply wp_struct_make_field.
+  repeat wp_apply wp_struct_fields_cons.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  repeat wp_apply wp_struct_make_field.
+  repeat wp_apply wp_struct_fields_cons.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  repeat wp_apply wp_struct_make_field.
-  wp_apply wp_struct_make. (* FIXME(slow): 0.769s *)
+  repeat wp_apply wp_struct_fields_cons.
+  wp_apply wp_struct_make.
   { constructor. }
   wp_apply wp_ref_ty.
-  { econstructor. intros. (* FIXME: complicated proof. *)
-    repeat (destruct H;
-      [injection H as <- <-;
-       repeat (rewrite lookup_insert_ne; last done); rewrite ?lookup_insert ?lookup_empty /=;
-                apply zero_val_has_go_type || constructor|]).
+  { econstructor. intros.
+    (* FIXME: nontrivial proof. *)
+    repeat (destruct H; [injection H as <- <-; repeat apply zero_val_has_go_type || constructor|]).
     destruct H.
   }
   iIntros (?) "Hl".
@@ -795,7 +767,6 @@ Proof.
   iEval (repeat (rewrite zero_val_eq || rewrite struct.val_unseal)) in "Hl".
   iRename "Hmu" into "Hmu_uninit".
   iNamed "Hl".
-  vm_compute lookup.
 
   wp_load.
   wp_pures. wp_store.

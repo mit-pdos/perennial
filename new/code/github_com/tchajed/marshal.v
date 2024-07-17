@@ -17,10 +17,10 @@ Definition Enc : go_type := structT [
 Definition NewEncFromSlice : val :=
   rec: "NewEncFromSlice" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (struct.make Enc [
+    return: (struct.make Enc [{
        "b" ::= ![sliceT byteT] "b";
        "off" ::= ref_ty uint64T (zero_val uint64T)
-     ]);;;
+     }]);;;
     do:  #()).
 
 Definition NewEnc : val :=
@@ -119,10 +119,10 @@ Definition Dec : go_type := structT [
 Definition NewDec : val :=
   rec: "NewDec" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (struct.make Dec [
+    return: (struct.make Dec [{
        "b" ::= ![sliceT byteT] "b";
        "off" ::= ref_ty uint64T (zero_val uint64T)
-     ]);;;
+     }]);;;
     do:  #()).
 
 Definition Dec__GetInt : val :=

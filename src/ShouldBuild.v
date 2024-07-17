@@ -99,3 +99,5 @@ From Perennial.program_proof.tutorial Require
      (* kvservice.full_proof *).
 
 From Perennial.program_proof.cachekv Require proof.
+
+From New.proof Require asyncfile

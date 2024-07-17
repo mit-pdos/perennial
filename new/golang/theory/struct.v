@@ -7,11 +7,6 @@ Module struct.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition fields_val_def (m : list (string* val)) : val :=
-  list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
-Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
-Definition fields_val_unseal : fields_val = _ := seal_eq _.
-
 Implicit Types (d : struct.descriptor).
 Infix "=?" := (String.eqb).
 (* FIXME: what does _f mean? Want better name. *)
@@ -121,6 +116,17 @@ Definition is_structT (t : go_type) : Prop :=
   | _ => False
   end.
 
+Lemma wp_struct_fields_cons {s E} (k : string) (l : list (string * val)) (v : val) :
+  {{{ True }}}
+    list.Cons (PairV #(str k) v) (struct.fields_val l) @ s ; E
+  {{{ RET (struct.fields_val ((pair k v) :: l)); True }}}
+.
+Proof.
+  iIntros (?) "_ HΦ".
+  rewrite struct.fields_val_unseal /=.
+  wp_pures. by iApply "HΦ".
+Qed.
+
 Lemma wp_struct_assocl_lookup {s E} (k : string) (l : list (string * val)) :
   {{{ True }}}
     struct.assocl_lookup #(str k) (struct.fields_val l) @ s ; E
@@ -179,25 +185,3 @@ Proof.
       wp_pures. done.
 Qed.
 End wps.
-
-(*
-Ltac2 struct_field_empty :=
-  lazy_match! goal with
-  | |- envs_entails _ (wp ?s ?E (App (Val (struct.make ?t)) ?fvs) ?Q) =>
-      match fvs with
-      | context Ctx [ (list.val nil) ] =>
-          replace fvs with (Ctx [???]) by apply ?.
-      end
-  end
-.
-
-Ltac wp_struct_make :=
-  lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E (App (Val (struct.make ?t)) ?fvs) ?Q) =>
-      rewrite struct_fields_val_empty; (* FIXME: this might rewrite too much *)
-      repeat wp_apply wp_struct_make_field;
-      rewrite insert_empty;
-      wp_apply wp_struct_make; [constructor|]
-  | _ => fail "wp_struct_make: next step is not [struct.make]"
-  end.
-*)

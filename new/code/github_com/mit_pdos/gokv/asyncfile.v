@@ -108,7 +108,7 @@ Definition MakeAsyncFile : val :=
     exception_do (let: "filename" := ref_ty stringT "filename" in
     let: "mu" := ref_ty sync.Mutex (zero_val sync.Mutex) in
     let: "s" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty AsyncFile (struct.make AsyncFile [
+    let: "$a0" := ref_ty AsyncFile (struct.make AsyncFile [{
       "mu" ::= "mu";
       "indexCond" ::= sync.NewCond "mu";
       "closedCond" ::= sync.NewCond "mu";
@@ -119,12 +119,12 @@ Definition MakeAsyncFile : val :=
       "durableIndex" ::= #0;
       "closed" ::= #false;
       "closeRequested" ::= #false
-    ]) in
+    }]) in
     do:  "s" <-[ptrT] "$a0";;;
     let: "data" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
     let: "$a0" := ![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s")) in
     do:  "data" <-[sliceT byteT] "$a0";;;
-    do:  let: "$go" := AsyncFile__flushThread (![ptrT] "s") in
-    do: Fork ("$go" #());;;
+    let: "$go" := AsyncFile__flushThread (![ptrT] "s") in
+    do:  Fork ("$go" #());;;
     return: (![sliceT byteT] "data", ![ptrT] "s");;;
     do:  #()).
