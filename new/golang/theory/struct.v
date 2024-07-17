@@ -90,24 +90,15 @@ End lemmas.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance pure_struct_field_ref t f (l : loc) :
-  WpPureExec True 2 (struct.field_ref t f #l) #(struct.field_ref_f t f l).
+Global Instance pure_struct_field_ref_wp t f (l : loc) :
+  PureWpSteps True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
-  split; first done.
-  unfold struct.field_ref. cbn.
-  eapply pure_exec_impl; first shelve.
-  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
-  intros _.
-  constructor.
-  Unshelve.
-  2:{ refine True. }
-  intros; split; first done.
-  split; last done.
-  unfold bin_op_eval.
-  simpl.
-  rewrite /loc_add /addr_id /=.
-  repeat f_equal.
-  word.
+  iIntros (?? Φ ?) "HΦ".
+  rewrite /struct.field_ref; cbn; wp_pures.
+  iModIntro.
+  iExactEq "HΦ".
+  rewrite /loc_add /= /addr_id /=.
+  repeat (f_equal; try word).
 Qed.
 
 Definition is_structT (t : go_type) : Prop :=
@@ -116,25 +107,24 @@ Definition is_structT (t : go_type) : Prop :=
   | _ => False
   end.
 
-Lemma wp_struct_fields_cons {s E} (k : string) (l : list (string * val)) (v : val) :
-  {{{ True }}}
-    list.Cons (PairV #(str k) v) (struct.fields_val l) @ s ; E
-  {{{ RET (struct.fields_val ((pair k v) :: l)); True }}}
+Lemma wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
+  PureWpSteps True
+    (list.Cons (PairV #(str k) v) (struct.fields_val l))
+    (struct.fields_val ((pair k v) :: l))
 .
 Proof.
-  iIntros (?) "_ HΦ".
+  iIntros (???) "_ HΦ".
   rewrite struct.fields_val_unseal /=.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_struct_assocl_lookup {s E} (k : string) (l : list (string * val)) :
-  {{{ True }}}
-    struct.assocl_lookup #(str k) (struct.fields_val l) @ s ; E
-  {{{ RET (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end
-  ); True }}}
+Lemma wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
+  PureWpSteps True
+    (struct.assocl_lookup #(str k) (struct.fields_val l))
+    (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
 .
 Proof.
-  iIntros (?) "_ HΦ".
+  iIntros (?? Φ) "_ HΦ".
   rewrite struct.fields_val_unseal.
   iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
   [base]: {
@@ -157,7 +147,7 @@ Proof.
     {
       rewrite bool_decide_eq_false in Heqb.
       wp_apply "IH".
-      destruct (s0 =? _)%string eqn:Hx.
+      destruct (s =? _)%string eqn:Hx.
       { exfalso. apply Heqb. repeat f_equal. symmetry. by apply String.eqb_eq. }
       by iApply "HΦ".
     }
@@ -175,8 +165,9 @@ Proof.
   unfold struct.make_def.
   iInduction decls as [] "IH" forall (Φ).
   - wp_pures. simpl. done.
-  - destruct a. wp_pures.
-    wp_apply wp_struct_assocl_lookup.
+  - destruct a.
+    pose proof wp_struct_assocl_lookup. (* to use the instance locally *)
+    wp_pures.
     unfold struct.val_def.
     destruct (assocl_lookup _ _).
     + wp_pures. wp_apply "IH"; first done.

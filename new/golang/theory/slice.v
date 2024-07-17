@@ -4,6 +4,9 @@ From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export mem typing exception.
 
+Set Default Proof Using "Type".
+Set Default Goal Selector "!".
+
 Module slice.
 Definition slice_f (sl : slice.t) (t : go_type) (n1 n2 : u64) : slice.t :=
   slice.mk (sl.(slice.ptr_f) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub sl.(slice.cap_f) n1).

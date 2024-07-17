@@ -85,7 +85,6 @@ Proof.
   wp_rec.
   wp_pures.
   wp_bind (CmpXchg _ _ _).
-  wp_pures.
   iInv nroot as ([]) "[Hl HR]".
   - wp_apply (wp_typed_cmpxchg_fail with "[$]").
     { repeat econstructor. }

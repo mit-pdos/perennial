@@ -6,7 +6,8 @@ Module slice.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Local Coercion Var' s: expr := Var s.
+#[warning="-uniform-inheritance"]
+Local Coercion Var : string >-> expr.
 Definition nil : val := slice_nil.
 Definition ptr : val := λ: "s", Fst (Fst "s").
 Definition len : val := λ: "s", Snd (Fst "s").

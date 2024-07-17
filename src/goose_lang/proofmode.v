@@ -79,6 +79,26 @@ Proof.
   iIntros "$".
 Qed.
 
+Class PureWpSteps `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+  φ (e: expr) (v': val) :=
+  pure_wp_steps_wp : ∀ stk E Φ, ⌜φ⌝ -∗ ▷ Φ v' -∗ WP e @ stk; E {{ Φ }}.
+
+Global Hint Mode PureWpSteps - - - - - - - - ! - : typeclass_instances.
+
+Lemma tac_wp_pure_steps `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+      Δ Δ' s E K (e1: expr) (v2: val) φ Φ :
+  PureWpSteps φ e1 v2 →
+  φ →
+  MaybeIntoLaterNEnvs 1 Δ Δ' →
+  envs_entails Δ' (WP (fill K (Val v2)) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_unseal=> Hstep ?? HΔ'. rewrite into_laterN_env_sound /=.
+  rewrite HΔ'.
+  iIntros "H". iApply wp_bind. iApply Hstep; [ done | ].
+  iApply "H".
+Qed.
+
 Lemma tac_wp_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} Δ s E Φ v :
   envs_entails Δ (Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
 Proof. rewrite envs_entails_unseal=> ->. by apply wp_value. Qed.
@@ -258,6 +278,20 @@ Tactic Notation "wp_pure_smart_credit" tactic3(filter) "as" constr(credName) :=
 Tactic Notation "wp_pure1_credit" constr(credName) :=
   iStartProof; wp_pure_smart_credit wp_pure_filter as credName.
 
+Ltac wp_pure_steps1 :=
+  lazymatch goal with
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
+      reshape_expr e ltac:(fun K e' =>
+        eapply (tac_wp_pure_steps _ _ _ _ K e');
+          [tc_solve (* PureWpSteps *)
+          |try solve_vals_compare_safe (* pure side condition *)
+          |tc_solve (* MaybeIntoLaterNEnvs *)
+          |wp_finish (* new goal *)
+          ]
+      ) || fail "wp_pure_steps: cannot find redex pattern"
+  | _ => fail "wp_pure_steps1: not a 'wp'"
+  end.
+
 Ltac wp_pure1 :=
   iStartProof; wp_pure_smart wp_pure_filter.
 Ltac wp_pures :=
@@ -268,7 +302,10 @@ Ltac wp_pures :=
       (* The `;[]` makes sure that no side-condition
                              magically spawns. *)
       (* TODO: do this in one go, without [repeat]. *)
-      try ((wp_pure1; []); repeat (wp_pure_no_later wp_pure_filter; []))
+      try ((first [ wp_pure1 | wp_pure_steps1 ]; []);
+      repeat (
+          first [ wp_pure_no_later wp_pure_filter | wp_pure_steps1 ];
+          []))
   end.
 
 (** Unlike [wp_pures], the tactics [wp_rec] and [wp_lam] should also reduce
