@@ -243,7 +243,7 @@ Definition my_inv γmonoLinks γmonoTrees : iProp Σ :=
   "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
     ghost_map_auth γtr (1/2) tr) ∗
   "HmonoTrees" ∷ mono_list_auth_own γmonoTrees (1/2) γtrees ∗
-  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, isTreeDig tr dig).
+  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, is_tree_dig tr dig).
 
 Definition serv_sigpred_link γmonoLinks (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8),

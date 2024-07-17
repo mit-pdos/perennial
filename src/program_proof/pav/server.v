@@ -8,96 +8,81 @@ From stdpp Require Import gmap.
 From Perennial.base_logic Require Import ghost_map.
 
 Module hashChain.
-  (*
-     what happens if we start thinking of this DS as giving out commitments?
-     the current view is giving out list elems.
-     now when we do a get call, we give an existential link that commits to a data prefix.
-     we wanna know that this link is contained in the mono_idx.
-     this seems awfully similar to converting from a merkle proof to a ghost ptsto.
-     there, we store the underlying elements into ghost state.
-
-     in the hash chain, are the "underlying elements" the data or the commits?
-     transform this into a merkle tree.
-     put a bunch of digs as leaf nodes.
-     the merkle tree structure hashes up the digs in its own way, generating a commit.
-
-     remember my discussion with nickolai about the differences bw these two structs.
-     hashchain supports really efficient add-on commits.
-     i.e., if you have isHashChain data link and some new data x,
-     can easily compute link' s.t. isHashChain (data ++ [x]) link'.
-   *)
-(* TODO: consider removing links from API altogether.
-   as an analogy, the merkle api doesn't talk about the digest at all.
-   it just mentions the entries.
-   in addition to big injectivity, needs to say how the big link constructed.
-   i think just convert this to injectivity thing and see if we need binding later.
-   *)
-Record t :=
-  mk {
-    data: list (list w8);
-    links: list (list w8);
-  }.
-
 Section local_defs.
 Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_links first,
-  "Hlinks" ∷ ptr ↦[hashChain :: "links"] (slice_val sl_links) ∗
-  "%Hfirst" ∷ ⌜ obj.(links) !! 0 = Some first ⌝ ∗
-  "#Hfirst_hash" ∷ chainSepNone.hashes_to first ∗
-  "Hown" ∷ own_Slice2D sl_links (DfracOwn 1) obj.(links) ∗
-  "#Hbinds" ∷ ([∗ list] epoch ↦ d; l ∈ obj.(data); (drop 1 obj.(links)),
+
+Definition binds (data links : list (list w8)) : iProp Σ :=
+  (* init is the chainSepNone hash, the empty list commitment. *)
+  ∃ init,
+  "%Hinit" ∷ ⌜ links !! 0 = Some init ⌝ ∗
+  "#Hinit_hash" ∷ chainSepNone.hashes_to init ∗
+  (* every link except init was formed by the previous link. *)
+  "#Hbinds" ∷ ([∗ list] epoch ↦ d; l ∈ data; (drop 1 links),
     ∃ prevLink,
-    ⌜ obj.(links) !! epoch = Some prevLink ⌝ ∗
+    ⌜ links !! epoch = Some prevLink ⌝ ∗
     is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink d)) l).
+
+Lemma binds_inj data links0 links1 :
+  binds data links0 -∗
+  binds data links1 -∗
+  ⌜ links0 = links1 ⌝.
+Proof. Admitted.
+
+Definition is_link data link : iProp Σ :=
+  ∃ links,
+  "%Hlast_link" ∷ ⌜ last links = Some link ⌝ ∗
+  binds data links.
+
+Lemma is_link_inj data link0 link1 :
+  is_link data link0 -∗
+  is_link data link1 -∗
+  ⌜ link0 = link1 ⌝.
+Proof. Admitted.
+
+(* TODO: might need lemma that allows clients to track a put call, like:
+   is_link data link -∗ ∃ next_link, is_link (data ++ [b]) next_link. *)
+
+Definition own ptr data : iProp Σ :=
+  ∃ sl_links links,
+  "Hlinks" ∷ ptr ↦[hashChain :: "links"] (slice_val sl_links) ∗
+  "Hown" ∷ own_Slice2D sl_links (DfracOwn 1) links ∗
+  binds data links.
 
 Definition wp_new :
   {{{ True }}}
   newHashChain #()
   {{{
-    ptr first, RET #ptr;
-    "Hchain" ∷ own ptr (mk [] [first])
+    ptr, RET #ptr;
+    "Hchain" ∷ own ptr []
   }}}.
 Proof. Admitted.
 
-Definition wp_put ptr obj sl_data b d0 :
+Definition wp_put ptr data sl_b b d0 :
   {{{
-    "Hchain" ∷ own ptr obj ∗
-    "Hdata" ∷ own_slice_small sl_data byteT d0 b
+    "Hchain" ∷ own ptr data ∗
+    "Hb" ∷ own_slice_small sl_b byteT d0 b
   }}}
-  hashChain__put #ptr (slice_val sl_data)
+  hashChain__put #ptr (slice_val sl_b)
   {{{
-    (* don't write out new links since that's implied from the bindings. *)
-    new_links, RET #();
-    "Hchain" ∷ own ptr (mk (obj.(data) ++ [b]) new_links)
+    RET #();
+    "Hchain" ∷ own ptr (data ++ [b])
   }}}.
 Proof. Admitted.
 
-(*
-TODO:
-it seems more intuitive to give back a resource that logically commits
-to all the data before it.
-a binding is a more low-level resource.
-it only talks about the prev data.
-something like is_tree_dig, which ties together the data entries along with the commitment.
-but here there's a bit of peeling the black box, as we should be able
-to reconstruct a valid link from its composing vals.
-the resource itself could just be the Hbind big sep,
-with convenient lemmas around it for doing the most common ops.
-*)
-Definition wp_getLink ptr obj (len : w64) :
-  uint.nat len ≤ length obj.(data) →
+Definition wp_getLink ptr data (len : w64) :
+  uint.nat len ≤ length data →
   {{{
-    "Hchain" ∷ own ptr obj
+    "Hchain" ∷ own ptr data
   }}}
   hashChain__getLink #ptr #len
   {{{
     sl_link link, RET (slice_val sl_link);
-    "Hchain" ∷ own ptr obj ∗
-    "%Hlink_some" ∷ ⌜ obj.(links) !! uint.nat len = Some link ⌝ ∗
+    "Hchain" ∷ own ptr data ∗
+    "#His_link" ∷ is_link (take (uint.nat len) data) link ∗
     "#Hlink" ∷ own_slice_small sl_link byteT DfracDiscarded link
   }}}.
 Proof. Admitted.
+
 End local_defs.
 End hashChain.
 
