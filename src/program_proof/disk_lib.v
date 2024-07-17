@@ -1,5 +1,8 @@
 From Perennial.program_proof Require Import disk_prelude.
 
+(* TODO: this file probably shouldn't be in program_proof, it's actually core to
+the disk ffi specs *)
+
 Section goose.
 Context `{!heapGS Σ}.
 Implicit Types v : val.

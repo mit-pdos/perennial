@@ -1,5 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import List Fractional.
+From iris.algebra Require Import dfrac.
 From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export mem typing exception.

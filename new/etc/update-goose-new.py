@@ -15,9 +15,7 @@ def run_command(args, dry_run=False, verbose=False):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Update goose output from goose tests and go-nfsd"
-    )
+    parser = argparse.ArgumentParser(description="Update goose output")
     parser.add_argument(
         "--compile", help="also compile and install goose", action="store_true"
     )
@@ -38,6 +36,11 @@ def main():
         help="path to goose repo",
         required=True,
         metavar="GOOSE_PATH",
+    )
+    parser.add_argument(
+        "--goose-examples",
+        help="also translate tests in Goose",
+        action="store_true",
     )
     parser.add_argument(
         "--marshal",
@@ -86,6 +89,8 @@ def main():
         os.chdir(old_dir)
 
     def run_goose(src_path, *pkgs):
+        if src_path is None:
+            return
         if not pkgs:
             pkgs = ["."]
 
@@ -109,23 +114,25 @@ def main():
     if args.compile:
         compile_goose()
 
-    if marshal_dir is not None:
-        run_goose(marshal_dir, ".")
+    if args.goose_examples:
+        run_goose(
+            path.join(goose_dir, "testdata/examples"),
+            "./append_log",
+        )
 
-    if std_dir is not None:
-        run_goose(std_dir, ".")
+    run_goose(marshal_dir, ".")
 
-    if gokv_dir is not None:
-        pkgs = [
-            "urpc",
-            "reconnectclient",
-            "asyncfile",
-            "vrsm/paxos",
-            # "vrsm/replica",
-        ]
+    run_goose(std_dir, ".")
 
-        for pkg in pkgs:
-            run_goose(path.join(gokv_dir, pkg))
+    run_goose(
+        gokv_dir,
+        "./urpc",
+        "./reconnectclient",
+        "./asyncfile",
+        "./vrsm/paxos",
+        # "./vrsm/replica",
+    )
+
 
 if __name__ == "__main__":
     main()
