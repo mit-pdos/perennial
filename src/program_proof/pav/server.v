@@ -8,6 +8,30 @@ From stdpp Require Import gmap.
 From Perennial.base_logic Require Import ghost_map.
 
 Module hashChain.
+  (*
+     what happens if we start thinking of this DS as giving out commitments?
+     the current view is giving out list elems.
+     now when we do a get call, we give an existential link that commits to a data prefix.
+     we wanna know that this link is contained in the mono_idx.
+     this seems awfully similar to converting from a merkle proof to a ghost ptsto.
+     there, we store the underlying elements into ghost state.
+
+     in the hash chain, are the "underlying elements" the data or the commits?
+     transform this into a merkle tree.
+     put a bunch of digs as leaf nodes.
+     the merkle tree structure hashes up the digs in its own way, generating a commit.
+
+     remember my discussion with nickolai about the differences bw these two structs.
+     hashchain supports really efficient add-on commits.
+     i.e., if you have isHashChain data link and some new data x,
+     can easily compute link' s.t. isHashChain (data ++ [x]) link'.
+   *)
+(* TODO: consider removing links from API altogether.
+   as an analogy, the merkle api doesn't talk about the digest at all.
+   it just mentions the entries.
+   in addition to big injectivity, needs to say how the big link constructed.
+   i think just convert this to injectivity thing and see if we need binding later.
+   *)
 Record t :=
   mk {
     data: list (list w8);
