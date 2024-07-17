@@ -88,10 +88,10 @@ Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +
 Notation "l +ₗ[ t ] z" := (l +ₗ go_type_size t * z) : stdpp_scope .
 Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (go_type_size t)) e1%E e2%E) : expr_scope .
 
-Fixpoint assocl_lookup {A} (field_vals: list (string * A)) (f0: string) : option A :=
+Fixpoint assocl_lookup {A} (f : string) (field_vals: list (string * A)) : option A :=
   match field_vals with
   | [] => None
-  | (f, v)::fs => if String.eqb f f0 then Some v else assocl_lookup fs f0
+  | (f', v)::fs => if String.eqb f' f then Some v else assocl_lookup f fs
   end.
 
 Module struct.

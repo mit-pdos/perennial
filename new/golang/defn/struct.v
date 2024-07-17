@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem list vmap.
+From New.golang.defn Require Import mem list.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
@@ -33,13 +33,13 @@ Definition field_ref (t : go_type) f0: val :=
 
 Definition field_ty d f0 : go_type := (field_offset d f0).2.
 
-Local Definition assocl_lookup_goose : val :=
-  rec: "assocl_lookup" "fvs" "f" :=
+Definition assocl_lookup : val :=
+  rec: "assocl_lookup" "f" "fvs" :=
     list.Match "fvs"
               (λ: <>, InjLV #())
               (λ: "fv" "fvs",
                  let: ("f'", "v") := "fv" in
-                 if: "f" = "f'" then InjR "v" else "assocl_lookup" "fvs" "f").
+                 if: "f" = "f'" then InjR "v" else "assocl_lookup" "f" "fvs").
 
 Definition make_def (t : go_type) : val :=
   match t with
@@ -47,7 +47,7 @@ Definition make_def (t : go_type) : val :=
       (fix make_def_struct (fs : struct.descriptor) : val :=
          match fs with
          | [] => (λ: "fvs", Val #())%V
-         | (f,ft)::fs => (λ: "fvs", ((match: (vmap.Get #(str f) "fvs") with
+         | (f,ft)::fs => (λ: "fvs", ((match: (assocl_lookup #(str f) "fvs") with
                                      InjL <> => (Val (zero_val ft))
                                      | InjR "x" => "x" end),
                                             (make_def_struct fs) "fvs"))%V
@@ -57,8 +57,8 @@ Definition make_def (t : go_type) : val :=
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 
-Definition fields_val_def (m : gmap string val) : val :=
-  vmap.val (kmap (LitV ∘ LitString) m).
+Definition fields_val_def (m : list (string* val)) : val :=
+  list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
 Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
 Definition fields_val_unseal : fields_val = _ := seal_eq _.
 

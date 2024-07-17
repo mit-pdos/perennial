@@ -108,18 +108,18 @@ Definition MakeAsyncFile : val :=
     exception_do (let: "filename" := ref_ty stringT "filename" in
     let: "mu" := ref_ty sync.Mutex (zero_val sync.Mutex) in
     let: "s" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty AsyncFile (struct.make AsyncFile {[
-      #(str "mu") := "mu";
-      #(str "indexCond") := sync.NewCond "mu";
-      #(str "closedCond") := sync.NewCond "mu";
-      #(str "durableIndexCond") := sync.NewCond "mu";
-      #(str "filename") := ![stringT] "filename";
-      #(str "data") := grove_ffi.FileRead (![stringT] "filename");
-      #(str "index") := #0;
-      #(str "durableIndex") := #0;
-      #(str "closed") := #false;
-      #(str "closeRequested") := #false
-    ]}) in
+    let: "$a0" := ref_ty AsyncFile (struct.make AsyncFile [
+      "mu" ::= "mu";
+      "indexCond" ::= sync.NewCond "mu";
+      "closedCond" ::= sync.NewCond "mu";
+      "durableIndexCond" ::= sync.NewCond "mu";
+      "filename" ::= ![stringT] "filename";
+      "data" ::= grove_ffi.FileRead (![stringT] "filename");
+      "index" ::= #0;
+      "durableIndex" ::= #0;
+      "closed" ::= #false;
+      "closeRequested" ::= #false
+    ]) in
     do:  "s" <-[ptrT] "$a0";;;
     let: "data" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
     let: "$a0" := ![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s")) in

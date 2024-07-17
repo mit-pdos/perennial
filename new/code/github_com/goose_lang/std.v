@@ -111,7 +111,7 @@ Definition Multipar : val :=
         do:  (sync.Mutex__Unlock (![ptrT] "num_left_mu")) #();;;
         do:  #()
         ) in
-      Fork ("$go" #());;;
+      do: Fork ("$go" #());;;
       do:  #()));;;
     do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
     (for: (λ: <>, (![uint64T] "num_left") > #0); (λ: <>, Skip) := λ: <>,

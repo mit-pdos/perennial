@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import proofmode lifting.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import mem typing exception list vmap.
+From New.golang.theory Require Import mem typing exception list.
 From Perennial.Helpers Require Import NamedProps.
 
 Module struct.
@@ -110,32 +110,53 @@ Proof.
   word.
 Qed.
 
-Lemma struct_fields_val_empty :
-  {[]}%E = struct.fields_val ∅.
-Proof. by rewrite struct.fields_val_unseal. Qed.
-
-Lemma wp_struct_make_field {s E} (fvs : gmap string val) k (v : val) Φ :
-  Φ (struct.fields_val $ (<[k := v]> fvs))%stdpp -∗
-  WP (<[#(str k) := v]> (struct.fields_val fvs))%E @ s ; E {{ Φ }}
-.
-Proof.
-  rewrite struct.fields_val_unseal /struct.fields_val_def.
-  iIntros "Hwp". wp_apply wp_vmap_Insert.
-  erewrite -> kmap_insert.
-  2:{ intros??. by inversion 1. }
-  simpl. iFrame.
-Qed.
-
 Definition is_structT (t : go_type) : Prop :=
   match t with
   | structT d => True
   | _ => False
   end.
 
-Lemma wp_struct_make {s E} (t : go_type) (m : gmap string val) Φ :
+Lemma wp_struct_assocl_lookup {s E} (k : string) (l : list (string * val)) :
+  {{{ True }}}
+    struct.assocl_lookup #(str k) (struct.fields_val l) @ s ; E
+  {{{ RET (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end
+  ); True }}}
+.
+Proof.
+  iIntros (?) "_ HΦ".
+  rewrite struct.fields_val_unseal.
+  iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
+  [base]: {
+    wp_lam.
+    rewrite /struct.fields_val_def /=.
+    wp_pures. wp_apply wp_list_Match. wp_pures.
+    by iApply "HΦ".
+  }
+  [cons]: {
+    wp_lam.
+    rewrite /struct.fields_val_def /=.
+    wp_pures. wp_apply wp_list_Match. wp_pures.
+    destruct bool_decide eqn:Heqb; wp_if.
+    {
+      rewrite bool_decide_eq_true in Heqb. inversion Heqb; subst. clear Heqb.
+      wp_pures.
+      rewrite (String.eqb_refl).
+      by iApply "HΦ".
+    }
+    {
+      rewrite bool_decide_eq_false in Heqb.
+      wp_apply "IH".
+      destruct (s0 =? _)%string eqn:Hx.
+      { exfalso. apply Heqb. repeat f_equal. symmetry. by apply String.eqb_eq. }
+      by iApply "HΦ".
+    }
+  }
+Qed.
+
+Lemma wp_struct_make {s E} (t : go_type) (l : list (string*val)) Φ :
   is_structT t →
-  Φ (struct.val t m) -∗
-  WP struct.make t (struct.fields_val m) @ s ; E {{ Φ }}.
+  Φ (struct.val t l) -∗
+  WP struct.make t (struct.fields_val l) @ s ; E {{ Φ }}.
 Proof.
   rewrite struct.make_unseal struct.val_unseal.
   intros Ht. destruct t; try by exfalso.
@@ -144,19 +165,26 @@ Proof.
   iInduction decls as [] "IH" forall (Φ).
   - wp_pures. simpl. done.
   - destruct a. wp_pures.
-    rewrite struct.fields_val_unseal /struct.fields_val_def.
-    wp_apply wp_vmap_Get.
-    change (#(str s0)) with (LitV ∘ LitString $ s0).
-    erewrite lookup_kmap.
-    2:{ intros??. by inversion 1. }
+    wp_apply wp_struct_assocl_lookup.
     unfold struct.val_def.
-    destruct (m !! s0) eqn:Hlookup.
+    destruct (assocl_lookup _ _).
     + wp_pures. wp_apply "IH"; first done.
       wp_pures. done.
     + wp_pures. wp_apply "IH"; first done.
       wp_pures. done.
 Qed.
 End wps.
+
+(*
+Ltac2 struct_field_empty :=
+  lazy_match! goal with
+  | |- envs_entails _ (wp ?s ?E (App (Val (struct.make ?t)) ?fvs) ?Q) =>
+      match fvs with
+      | context Ctx [ (list.val nil) ] =>
+          replace fvs with (Ctx [???]) by apply ?.
+      end
+  end
+.
 
 Ltac wp_struct_make :=
   lazymatch goal with
@@ -167,3 +195,4 @@ Ltac wp_struct_make :=
       wp_apply wp_struct_make; [constructor|]
   | _ => fail "wp_struct_make: next step is not [struct.make]"
   end.
+*)

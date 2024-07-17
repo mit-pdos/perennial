@@ -17,10 +17,10 @@ Definition Enc : go_type := structT [
 Definition NewEncFromSlice : val :=
   rec: "NewEncFromSlice" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (struct.make Enc {[
-       #(str "b") := ![sliceT byteT] "b";
-       #(str "off") := ref_ty uint64T (zero_val uint64T)
-     ]});;;
+    return: (struct.make Enc [
+       "b" ::= ![sliceT byteT] "b";
+       "off" ::= ref_ty uint64T (zero_val uint64T)
+     ]);;;
     do:  #()).
 
 Definition NewEnc : val :=
@@ -106,7 +106,7 @@ Definition Enc__PutBool : val :=
     do:  #()).
 
 Definition Enc__Finish : val :=
-  rec: "Enc__Finish" "enc" :=
+  rec: "Enc__Finish" "enc" <> :=
     exception_do (let: "enc" := ref_ty Enc "enc" in
     return: (![sliceT byteT] (struct.field_ref Enc "b" "enc"));;;
     do:  #()).
@@ -119,14 +119,14 @@ Definition Dec : go_type := structT [
 Definition NewDec : val :=
   rec: "NewDec" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (struct.make Dec {[
-       #(str "b") := ![sliceT byteT] "b";
-       #(str "off") := ref_ty uint64T (zero_val uint64T)
-     ]});;;
+    return: (struct.make Dec [
+       "b" ::= ![sliceT byteT] "b";
+       "off" ::= ref_ty uint64T (zero_val uint64T)
+     ]);;;
     do:  #()).
 
 Definition Dec__GetInt : val :=
-  rec: "Dec__GetInt" "dec" :=
+  rec: "Dec__GetInt" "dec" <> :=
     exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
@@ -137,7 +137,7 @@ Definition Dec__GetInt : val :=
     do:  #()).
 
 Definition Dec__GetInt32 : val :=
-  rec: "Dec__GetInt32" "dec" :=
+  rec: "Dec__GetInt32" "dec" <> :=
     exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in
@@ -179,7 +179,7 @@ Definition Dec__GetBytes : val :=
     do:  #()).
 
 Definition Dec__GetBool : val :=
-  rec: "Dec__GetBool" "dec" :=
+  rec: "Dec__GetBool" "dec" <> :=
     exception_do (let: "dec" := ref_ty Dec "dec" in
     let: "off" := ref_ty uint64T (zero_val uint64T) in
     let: "$a0" := ![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec")) in

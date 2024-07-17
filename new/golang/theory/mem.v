@@ -295,7 +295,7 @@ Section goose_lang.
         change ((fix val_struct (fs : list (string * go_type)) : val :=
         match fs with
         | [] => #()
-        | (f, ft) :: fs0 => (default (zero_val ft) (fvs0 !! f), val_struct fs0)%V
+        | (f, ft) :: fs0 => (default (zero_val ft) (assocl_lookup f fvs0), val_struct fs0)%V
         end) d) with (struct.val_def (structT d) fvs0).
         rewrite <- struct.val_unseal.
         econstructor. intros. apply Hfields0. by right. }
