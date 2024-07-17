@@ -712,8 +712,6 @@ Proof.
   wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
   iIntros (s) "Hlocal".
   wp_pures.
-
-  repeat wp_apply wp_struct_fields_cons.
   wp_load.
   wp_bind (grove_ffi.FileRead _).
   iApply (wpc_wp _ _ _ _ True).
@@ -732,20 +730,18 @@ Proof.
   iIntros "Hfile".
   iSplitR; first done.
 
-  repeat wp_apply wp_struct_fields_cons.
+  wp_pures.
   wp_load.
-  repeat wp_apply wp_struct_fields_cons.
+  wp_pures.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  repeat wp_apply wp_struct_fields_cons.
+  wp_pures.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  repeat wp_apply wp_struct_fields_cons.
+  wp_pures.
   wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
-  repeat wp_apply wp_struct_fields_cons.
-  wp_apply wp_struct_make.
-  { constructor. }
+  wp_pures.
   wp_apply wp_ref_ty.
   { econstructor. intros.
     (* FIXME: nontrivial proof. *)

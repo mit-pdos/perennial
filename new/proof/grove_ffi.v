@@ -42,9 +42,7 @@ Section grove.
     iIntros (Φ) "_ HΦ". wp_lam.
     wp_apply wp_ConnectOp.
     iIntros (err recv) "Hr". wp_pures.
-    repeat wp_apply wp_struct_fields_cons.
-    wp_apply wp_struct_make; [constructor|].
-    iApply "HΦ". iFrame.
+    by iApply "HΦ".
   Qed.
 
   Lemma wp_Accept c_l s E :
@@ -170,8 +168,7 @@ Section grove.
     iIntros (err l len data) "(%Hm & Hc & Hl)".
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
-    iModIntro. wp_pures. repeat wp_apply wp_struct_fields_cons.
-    wp_apply wp_struct_make; [constructor|].
+    iModIntro. wp_pures.
     destruct err.
     { rewrite slice_val_fold. iApply ("HΦ" $! (slice.mk _ _ _)). simpl. destruct Hm as (-> & -> & ->).
       simpl.
@@ -179,6 +176,7 @@ Section grove.
     destruct Hm as [Hin Hlen].
     rewrite slice_val_fold.
     iApply ("HΦ" $! (slice.mk _ _ _)).
+    iModIntro.
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
     2:{ iExactEq "H". repeat f_equal. word. }

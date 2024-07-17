@@ -91,7 +91,7 @@ Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Global Instance pure_struct_field_ref_wp t f (l : loc) :
-  PureWpSteps True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
+  PureWp True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
   iIntros (?? Φ ?) "HΦ".
   rewrite /struct.field_ref; cbn; wp_pures.
@@ -107,8 +107,8 @@ Definition is_structT (t : go_type) : Prop :=
   | _ => False
   end.
 
-Lemma wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
-  PureWpSteps True
+Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
+  PureWp True
     (list.Cons (PairV #(str k) v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
 .
@@ -118,8 +118,8 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
-  PureWpSteps True
+Global Instance wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
+  PureWp True
     (struct.assocl_lookup #(str k) (struct.fields_val l))
     (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
 .
@@ -154,19 +154,19 @@ Proof.
   }
 Qed.
 
-Lemma wp_struct_make {s E} (t : go_type) (l : list (string*val)) Φ :
-  is_structT t →
-  Φ (struct.val t l) -∗
-  WP struct.make t (struct.fields_val l) @ s ; E {{ Φ }}.
+Global Instance wp_struct_make (t : go_type) (l : list (string*val)) :
+  PureWp (is_structT t)
+  (struct.make t (struct.fields_val l))
+  (struct.val t l).
 Proof.
+  intros ????Ht.
   rewrite struct.make_unseal struct.val_unseal.
-  intros Ht. destruct t; try by exfalso.
-  iIntros "HΦ".
+  destruct t; try by exfalso.
   unfold struct.make_def.
+  iIntros "HΦ".
   iInduction decls as [] "IH" forall (Φ).
   - wp_pures. simpl. done.
   - destruct a.
-    pose proof wp_struct_assocl_lookup. (* to use the instance locally *)
     wp_pures.
     unfold struct.val_def.
     destruct (assocl_lookup _ _).
