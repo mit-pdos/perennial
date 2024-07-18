@@ -26,7 +26,7 @@ Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
 Proof.
   wp_pures. iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
 
   destruct Henc as [Henc Hlen].
   wp_apply (wp_new_dec with "[$Hsl]").
@@ -50,7 +50,7 @@ Lemma wp_KVCoordClerk__AddShardServer (ck:loc) γkv γ (dst : u64) :
 .
 Proof.
   iIntros (Φ) "(Hclerk&#His_shard&%) HΦ". subst.
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { naive_solver. }
   iIntros (rawRep) "HrawRep".
@@ -95,7 +95,7 @@ Lemma wp_KVCoordClerk__GetShardMap (ck:loc) γkv :
 .
 Proof.
   iIntros (Φ) "Hclerk HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { naive_solver. }
   iIntros (rawRep) "HrawRep".
@@ -154,7 +154,7 @@ Lemma wp_ShardClerkSet__GetClerk (γ:memkv_shard_names) (γkv:gname) (s:loc) (ho
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iDestruct "Hpre" as "(Hown & #His_shard & %Hγeq)".
   iNamed "Hown".

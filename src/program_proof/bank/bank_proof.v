@@ -167,7 +167,7 @@ Lemma acquire_two_spec (lck :loc) (ln1 ln2:string) γ:
 }}}.
 Proof.
   iIntros (Φ) "(#Hlck & #Hln1_islock & #Hln2_islock) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_LockClerk__Lock with "[$Hlck $Hln1_islock]").
   iIntros "HP1".
@@ -192,7 +192,7 @@ Lemma release_two_spec (lck :loc) (ln1 ln2:string) γ:
 }}}.
 Proof.
   iIntros (Φ) "(#Hlck & #Hln1_islock & #Hln2_islock & HP1 & HP2) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln1_islock $HP1]").
   wp_pures.
@@ -212,7 +212,7 @@ Lemma wp_decodeInt (x:u64) :
 .
 Proof.
   iIntros (?) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply wp_StringToBytes.
   iIntros (?) "Hsl".
@@ -233,7 +233,7 @@ Lemma wp_encodeInt (x:u64) :
 .
 Proof.
   iIntros (?) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   change (slice.nil) with (slice_val Slice.nil).
   wp_apply (wp_WriteInt with "[]").
@@ -260,7 +260,7 @@ Lemma Bank__transfer_internal_spec (bck:loc) (src dst:string) (amount:u64) accts
 Proof.
   iIntros (Φ) "(Hpre & %Hsrc & %Hdst & %Hneq) Hpost".
   iNamed "Hpre".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_loadField.
 
   rewrite -elem_of_elements H in Hsrc.
@@ -368,7 +368,7 @@ Lemma Bank__SimpleTransfer_spec (bck:loc) accts :
 }}}.
 Proof.
   iIntros (Φ) "Hpre Hpost".
-  wp_call.
+  wp_rec. wp_pures.
   wp_forBreak_cond.
   wp_pures.
   wp_apply wp_RandomUint64. iIntros (src) "_".
@@ -447,7 +447,7 @@ Lemma Bank__get_total_spec (bck:loc) accts :
 }}}.
 Proof.
   iIntros (Φ) "Hpre Hpost".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; first by done.
   iIntros (sum) "Hsum".
 
@@ -625,7 +625,7 @@ Lemma Bank__SimpleAudit_spec (bck:loc) accts :
 }}}.
 Proof.
   iIntros (Φ) "Hpre Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iCombine "Hpre Hpost" as "H".
   wp_apply (wp_forBreak' with "[-]").
@@ -655,7 +655,7 @@ Lemma wp_MakeBankClerkSlice (lck kck : loc) γlk kvptsto E accts (accts_s : Slic
 Proof.
   iIntros (Φ) "(#Hlck_is & #Hkck_is & #Hinit_lock & Haccts_slice & %Hperm) HΦ".
   rewrite /MakeBankClerk.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_allocStruct; first val_ty.
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
@@ -882,7 +882,7 @@ Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : string ) E :
 .
 Proof.
   iIntros (Φ) "(Ha & Hb & Hc & %Hd) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; first by eauto.
   iIntros (accts) "Haccts".
   wp_load.

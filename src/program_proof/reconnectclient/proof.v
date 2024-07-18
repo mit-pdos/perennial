@@ -35,7 +35,7 @@ Lemma wp_getClient ck host :
 Proof.
   iIntros (Φ) "#His HΦ".
   iNamed "His".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
@@ -146,7 +146,7 @@ Lemma wp_ReconnectingClient__Call2 γsmap q (cl_ptr:loc) (rpcid:u64) (host:u64) 
 Proof.
   iIntros "#Hre #? Hsl Hrep #? HΦerr".
   iIntros.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_getClient with "[$]").
   iIntros (??) "Hcl".
   wp_pures.
@@ -224,7 +224,7 @@ Lemma wp_MakeReconnectingClient (srv:u64):
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
   iIntros (?) "Hl".

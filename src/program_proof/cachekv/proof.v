@@ -116,7 +116,7 @@ Lemma wp_DecodeValue v l :
   {{{ RET (to_val (cacheValueC.mk v l)); True }}}.
 Proof.
   iIntros (?) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_StringToBytes.
   iIntros (?) "Hsl".
   wp_apply wp_ref_to.
@@ -141,7 +141,7 @@ Lemma wp_EncodeValue (v:string) (l:u64) :
   {{{ RET #(str encode_cacheValue v l); True }}}.
 Proof.
   iIntros (?) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_NewSlice).
   iIntros (?) "Hsl".
   wp_apply wp_ref_to.
@@ -179,7 +179,7 @@ Lemma wp_CacheKv__Get (k:loc) key γ :
 Proof.
   Opaque struct.get.
   iIntros (?) "!# #Hkv Hau".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hkv".
   wp_loadField.
@@ -253,7 +253,7 @@ Proof.
       unfold map_del.
       apply delete_subseteq.
     }
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
     wp_loadField.
     iNamed "Hkv_is".
     wp_loadField.
@@ -298,7 +298,7 @@ Lemma wp_max (a b : u64) :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_if_destruct; iApply "HΦ"; iPureIntro; word.
 Qed.
@@ -312,11 +312,11 @@ Lemma wp_CacheKv__GetAndCache (k:loc) key (cachetime:u64) γ :
 Proof.
   iIntros (?) "!# Hkv Hau".
   Opaque struct.get.
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hkv".
   wp_forBreak.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_loadField.
   iNamed "Hkv_is".
   wp_loadField.
@@ -367,7 +367,7 @@ Proof.
   wp_pures.
   wp_apply wp_max.
   iIntros (newLeaseExpiration) "[_ %Hineq]".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_apply wp_EncodeValue.
   wp_loadField.
   wp_loadField.
@@ -489,11 +489,11 @@ Lemma wp_CacheKv__Put (k:loc) key value γ :
 Proof.
   iIntros (?) "!# Hkv Hau".
   Opaque struct.get.
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hkv".
   wp_forBreak.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_loadField.
   iNamed "Hkv_is".
   wp_loadField.
@@ -544,7 +544,7 @@ Proof.
   iFrame "Htime".
   iModIntro.
   Transparent struct.get.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_if_destruct.
   { (* case: lease is not expired, so loop *)
     iLeft.

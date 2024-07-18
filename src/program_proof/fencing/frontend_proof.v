@@ -88,7 +88,7 @@ Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
 Proof.
   intros Hkey.
   iIntros "#Hsrv #Hinv !#" (Φ) "Hkvfupd HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
@@ -779,7 +779,7 @@ Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
 Proof using Type*.
   iIntros "#His_cfg #His_host1 #His_host2 #His_host #Hinv !#" (Φ) "Hpre HΦ".
   Opaque frontend.Server. (* FIXME: why do I need this? *)
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct).
   { apply zero_val_ty'. Transparent Server. unfold Server. done. }
@@ -908,7 +908,7 @@ Lemma wp_MakeClerk γ (host:u64) :
 .
 Proof.
   iIntros "#Hhost !#" (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
   iIntros (ck) "Hck".
@@ -938,7 +938,7 @@ key = 0 ∨ key = 1 →
 Proof.
   intros Hkey.
   iIntros "#Hck_is Hret_ptr #HΦ1 #HΦ2".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (reply_ptr) "Hreply_ptr".

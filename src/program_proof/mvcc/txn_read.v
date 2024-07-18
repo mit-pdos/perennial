@@ -43,7 +43,7 @@ Proof.
   iDestruct (own_txn_txnmap_ptsto_dom with "Htxn Hptsto") as "%Hindom".
   iNamed "Htxn".
   iNamed "Himpl".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (txn *Txn) Read(key uint64) (string, bool) {                       @*)
   (*@     // First try to find @key in the local write set.                   @*)

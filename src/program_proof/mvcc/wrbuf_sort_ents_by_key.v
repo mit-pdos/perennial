@@ -27,7 +27,7 @@ Proof.
   destruct Hy as [y Hy].
   iDestruct (own_slice_small_sz with "HentsS") as "%HentsLen".
   rewrite fmap_length in HentsLen.
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* tmp := ents[i]                                          *)
@@ -69,7 +69,7 @@ Theorem wp_wrbuf__sortEntsByKey wrbuf mods :
   {{{ RET #(); own_wrbuf_xtpls wrbuf mods }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* ents := wrbuf.ents                                      *)

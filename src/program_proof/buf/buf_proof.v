@@ -313,7 +313,7 @@ Theorem wp_MkBuf K a data (bufdata : bufDataT K) stk E :
   }}}.
 Proof using.
   iIntros (Φ) "[Hbufdata %] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_allocStruct; first val_ty.
 
   iIntros (b) "Hb".
@@ -341,7 +341,7 @@ Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) stk E :
   }}}.
 Proof using.
   iIntros (Φ) "(Hs & % & %) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   iDestruct (slice.own_slice_small_sz with "Hs") as "%".
   destruct H as [Hoff Hatoff].
@@ -768,7 +768,7 @@ Theorem wp_installOneBit (src dst: u8) (bit: u64) stk E :
 Proof.
   iIntros (Hbit_bounded Φ) "_ HΦ".
   iSpecialize ("HΦ" with "[//]").
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (new_l) "new_l".
   wp_pures.
@@ -834,7 +834,7 @@ Theorem wp_installBit
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ".
   iDestruct "Hpre" as "[Hsrc Hdst]".
-  wp_call.
+  wp_rec. wp_pures.
   destruct (lookup_lt_is_Some_2 dst_bs (Z.to_nat (uint.Z dstoff `div` 8)))
     as [dst_b Hlookup]; first word.
   wp_apply (wp_SliceGet (V:=u8) with "[$Hdst]").
@@ -883,7 +883,7 @@ Theorem wp_installBytes
 Proof.
   intros Hnbound Hdst_has_space.
   iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[Hsrc Hdst]".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct (own_slice_small_sz with "Hsrc") as %Hsrc_sz.
   iDestruct (own_slice_small_wf with "Hsrc") as %Hsrc_wf.
   iDestruct (own_slice_small_sz with "Hdst") as %Hdst_sz.
@@ -1174,7 +1174,7 @@ Proof.
   iIntros (Φ) "[Hisbuf Hblk] HΦ".
   iNamed "Hisbuf".
   iNamed "Hisbuf_without_data".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
   destruct b; simpl in *.
@@ -1211,7 +1211,7 @@ Proof.
       change (Z.of_nat 1024) with (8*128) in H1.
       rewrite Z.rem_mul_r // in H1.
       word. }
-    wp_if.
+    wp_pures.
     wp_loadField. wp_loadField. wp_loadField.
     simpl.
     wp_apply (wp_installBytes with "[$Hbufdata $Hblk]").
@@ -1247,7 +1247,7 @@ Proof.
       rewrite /valid_off in Hvalidoff.
       rewrite bufSz_block_eq in Hvalidoff.
       word. }
-    wp_if.
+    wp_pures.
     wp_loadField. wp_loadField. wp_loadField.
     rewrite (valid_block_off_addr a) //.
     wp_apply (wp_installBytes with "[$Hbufdata $Hblk]").
@@ -1280,7 +1280,7 @@ Proof.
   iIntros (Φ) "Hisbuf HΦ".
   iNamed "Hisbuf".
   iNamed "Hisbuf_without_data".
-  wp_call.
+  wp_rec. wp_pures.
   wp_storeField.
   iApply "HΦ".
   iExists _; iFrame. done.

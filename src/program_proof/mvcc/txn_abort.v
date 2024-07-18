@@ -17,7 +17,7 @@ Theorem wp_txn__abort_false txn tid view γ τ :
   {{{ RET #(); False }}}.
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (txn *Txn) abort() {                                               @*)
   (*@     trusted_proph.ResolveAbort(txn.proph, txn.tid)                      @*)
@@ -83,7 +83,7 @@ Theorem wp_txn__abort txn tid view γ τ :
   {{{ RET #(); own_txn_uninit txn γ }}}.
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (txn *Txn) abort() {                                               @*)
   (*@     trusted_proph.ResolveAbort(txn.proph, txn.tid)                      @*)

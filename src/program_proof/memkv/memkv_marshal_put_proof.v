@@ -50,7 +50,7 @@ Lemma wp_EncodePutRequest args_ptr val_sl args :
 Proof.
   iIntros (Φ) "Hrep HΦ".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrep".
 
@@ -105,7 +105,7 @@ Lemma wp_DecodePutRequest req_sl reqData args :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Hsl] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
@@ -148,7 +148,7 @@ Lemma wp_EncodePutReply rep_ptr rep :
 Proof.
   iIntros (Φ) "Hrep HΦ".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrep".
 
@@ -184,7 +184,7 @@ Lemma wp_DecodePutReply rep rep_sl repData :
   }}}.
 Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   {
     naive_solver.

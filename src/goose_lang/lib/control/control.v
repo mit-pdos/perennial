@@ -242,7 +242,7 @@ Theorem wp_Assume stk E (cond: bool) :
   {{{ RET #(); ⌜cond = true⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec.
   wp_if_destruct.
   - iApply ("HΦ" with "[//]").
   - wp_pures.
@@ -265,7 +265,7 @@ Theorem wp_Assert stk E (cond: bool) :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (-> Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply ("HΦ" with "[//]").
 Qed.
 
@@ -279,7 +279,7 @@ Qed.
 Theorem wp_Exit stk E (v : val) :
   {{{ True }}} Exit v @ stk; E {{{ RET #(); False }}}.
 Proof.
-  iIntros "%Φ _ HΦ". wp_call.
+  iIntros "%Φ _ HΦ". wp_rec. wp_pures.
   iLöb as "IH". wp_pures. wp_apply ("IH" with "[$]").
 Qed.
 

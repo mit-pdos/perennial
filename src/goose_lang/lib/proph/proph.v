@@ -15,7 +15,7 @@ Theorem wp_NewProph_list :
     NewProph #()
   {{{ (p : proph_id) pvs, RET #p; proph p pvs }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_lam.
+  iIntros (Φ) "_ HΦ". wp_rec.
   wp_apply wp_new_proph. iIntros (pvs v). by iApply "HΦ".
 Qed.
 
@@ -24,7 +24,7 @@ Theorem wp_ResolveProph_list E (p : proph_id) pvs v :
     ResolveProph (#p) (Val v) @ E
   {{{ pvs', RET (LitV LitUnit); ⌜pvs = v::pvs'⌝ ∗ proph p pvs' }}}.
 Proof.
-  iIntros (Φ) "Hp HΦ". wp_lam.
+  iIntros (Φ) "Hp HΦ". wp_rec.
   wp_apply (wp_resolve_proph with "Hp"). auto.
 Qed.
 

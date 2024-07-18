@@ -1084,7 +1084,7 @@ Qed.
 
 Ltac destruct_is_wal :=
   iMod (is_wal_read_mem with "Hwal") as "#Hmem";
-  wp_call;
+  wp_rec; wp_pures;
   iNamed "Hmem"; iNamed "Hstfields".
 
 #[global]

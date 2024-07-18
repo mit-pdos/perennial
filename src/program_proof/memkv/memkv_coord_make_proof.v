@@ -20,7 +20,7 @@ Lemma wp_MakeKVCoordServer (initserver : u64) (γ : memkv_coord_names) γinit :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (s) "srv".
   wp_pures.
@@ -142,7 +142,7 @@ Proof.
   iIntros (c) "Hc_own".
   (* TODO: Pull this out to separate wp? it is called at least twice *)
   wp_bind (MakeShardClerkSet _).
-  wp_lam.
+  wp_rec.
   wp_apply (wp_NewMap u64).
   iIntros (mref_set) "Hmap_set".
   wp_apply (wp_allocStruct); first val_ty.

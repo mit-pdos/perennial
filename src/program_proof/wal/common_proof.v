@@ -176,7 +176,7 @@ Proof.
   iNamed "His_memLog".
   iNamed "Hinv".
   iNamed "needFlush".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_storeField.
 

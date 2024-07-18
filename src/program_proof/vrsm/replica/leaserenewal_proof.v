@@ -55,7 +55,7 @@ Proof.
   iIntros (?) "H _".
   iNamed "H".
   iNamed "Hsrv".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_of_zero.
   { done. }
   iIntros (latestEpoch_ptr) "HlatestEpoch".

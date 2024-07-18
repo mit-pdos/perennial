@@ -71,11 +71,11 @@ Lemma wp_Server__TryAcquire_internal s γ γsrv  :
   }}}.
 Proof.
   iIntros (Φ) "#Hsrv HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; first done.
   iIntros (err_ptr) "Herr".
-  wp_pure1_credit "Hlc1".
-  wp_pure1_credit "Hlc2".
+  wp_pure_credit "Hlc1".
+  wp_pure_credit "Hlc2".
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
@@ -83,10 +83,10 @@ Proof.
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   iNamed "Hvol".
-  wp_pure1_credit "Hlc3".
+  wp_pure_credit "Hlc3".
   wp_loadField.
   wp_loadField.
-  wp_pure1_credit "Hlc4".
+  wp_pure_credit "Hlc4".
   wp_if_destruct.
   { (* case: not leader *)
     wp_loadField.
@@ -148,7 +148,7 @@ Proof.
   { repeat econstructor. done. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "Hargs".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_loadField.
   wp_apply (paxosState.wp_encode with "[Hepoch HaccEpoch HnextIndex HisLeader Hsl_ptr]").
   {
@@ -313,7 +313,7 @@ Proof.
   { (* loop iteration *)
     clear Φ.
     iIntros (?? Φ) "!# (_ & %Hi_le & %Hi_lookup) HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply (wp_fork with "[]").
     { (* make applyAsFollower RPC and put reply in the replies list *)
       iNext.
@@ -595,8 +595,8 @@ Proof.
   iIntros "[Hi Hreplies_sl]".
   iDestruct (own_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
   iNamed "Hi".
-  wp_pure1_credit "Hcred1".
-  wp_pure1_credit "Hcred2".
+  wp_pure_credit "Hcred1".
+  wp_pure_credit "Hcred2".
   wp_load.
   wp_pures.
   wp_if_destruct.

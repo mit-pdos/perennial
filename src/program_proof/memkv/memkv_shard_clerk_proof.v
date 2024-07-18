@@ -18,7 +18,7 @@ Lemma wp_MakeFreshKVShardClerk (host:u64) (c:loc) γ :
 .
 Proof.
   iIntros "#His_shard #Hc !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (ck) "Hck".
   iDestruct (struct_fields_split with "Hck") as "HH".
@@ -98,7 +98,7 @@ Proof.
   iDestruct "Hpre" as "(Hclerk & #Hserver & %Hid_lt & %Heq_kv_gn)".
   subst.
   iNamed "Hclerk".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
@@ -160,7 +160,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hclerk & Hphys & Hghost & %HsidLe)".
   iNamed "Hclerk". subst γkv.
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   wp_apply (wp_allocStruct); first val_ty.
@@ -239,7 +239,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & #Hval_sl & Hck)".
   iNamed "Hck". subst γkv.
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
@@ -324,7 +324,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & Hck & Hval)".
   iNamed "Hck". subst γkv.
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
@@ -414,7 +414,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & #Hexpv_sl & #Hnewv_sl & Hck & Hsucc)".
   iNamed "Hck". subst γkv.
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".

@@ -41,7 +41,7 @@ Lemma wp_MakeLockClerk (coord:u64) cm γ :
 Proof.
   iIntros (Φ) "#[Hcoord Hcm] HΦ".
   rewrite /MakeLockClerk.
-  wp_lam.
+  wp_rec.
   wp_apply (wp_MakeKVClerk with "[$] [$]").
   iIntros (kvCk) "H".
   wp_apply wp_allocStruct; first val_ty.
@@ -63,7 +63,7 @@ Lemma wp_LockClerk__Lock ck γkv key R :
 .
 Proof.
   iIntros (Φ) "(Hck&#Hlock) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iCombine "Hck HΦ" as "H".
   wp_apply (wp_forBreak_cond' with "H").
@@ -119,7 +119,7 @@ Lemma wp_LockClerk__Unlock ck γkv key R :
 .
 Proof.
   iIntros (Φ) "(Hck&#Hlock&HR) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hck".
   wp_apply (typed_slice.wp_NewSlice (V:=u8)).

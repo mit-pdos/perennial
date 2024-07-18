@@ -189,7 +189,7 @@ Proof.
   iIntros (r) "Hr".
   iDestruct (own_slice_to_small with "Hr") as "Hr".
   wp_loadField.
-  wp_apply (wp_call with "[$His_cli $Henc $Hr]").
+  wp_apply (wp_rec. wp_pures with "[$His_cli $Henc $Hr]").
   iIntros (??) "H".
   iNamed "H".
   wp_apply wp_Assume.
@@ -262,7 +262,7 @@ Proof.
   iIntros (i) "Hi".
   iDestruct (own_slice_to_small with "Hi") as "Hi".
   wp_loadField.
-  wp_apply (wp_call with "[$His_cli $Hi $Hr]").
+  wp_apply (wp_rec. wp_pures with "[$His_cli $Hi $Hr]").
   iIntros (??) "H".
   iNamed "H".
   wp_if_destruct.

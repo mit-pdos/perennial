@@ -31,7 +31,7 @@ Theorem wp_exampleWorker (nfs : loc) (inum : u64) γ dinit :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "#Hfs HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (s) "Hs".
 

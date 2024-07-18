@@ -172,8 +172,8 @@ Section proof.
     iPoseProof (partial_try_acquire_spec E with "H1 H2") as "H"; first done.
     wp_apply "H"; auto.
     iIntros ([]).
-    - iIntros "Hlked". wp_if. iApply "HΦ"; by iFrame.
-    - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
+    - iIntros "Hlked". wp_pures. iApply "HΦ"; by iFrame.
+    - iIntros "_". wp_pures. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
   Lemma use_crash_locked E1 e lk R Rcrash Φ Φc :
@@ -221,7 +221,7 @@ Section proof.
     iDestruct "Hcrash_locked" as (??) "(#Hw1&#Hw2&Hc1&Hc2&His_lock&Hlocked)".
     rewrite /is_lock.
     iDestruct "His_lock" as (l ->) "#Hinv".
-    rewrite /lock.release /=. wp_lam.
+    rewrite /lock.release /=. wp_rec.
     wp_bind (CmpXchg _ _ _).
     iInv Nlock as (b) "[>Hl _]".
 
@@ -238,7 +238,7 @@ Section proof.
     iModIntro.
     iIntros "Hb". iSplit; first done.
     iModIntro.
-    iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
+    iSplitR "HΦ"; last by wp_pures; iApply "HΦ".
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct "Hl" as "[Hl1 Hl2]".
     iNext. iExists false. iFrame.

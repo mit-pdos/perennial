@@ -236,15 +236,15 @@ Proof.
   iIntros "Hclerk Hop Hupd".
   iNamed "Hclerk".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSliceWithCap).
   { word. }
   iIntros (?) "Henc_sl".
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".
-  wp_pure1_credit "Hlc".
-  wp_pure1_credit "Hlc2".
+  wp_pure_credit "Hlc".
+  wp_pure_credit "Hlc2".
   wp_load.
   replace (#(W8 0)) with (_.(to_val) (W8 0)).
   2: { done. }
@@ -506,15 +506,15 @@ Proof.
   iIntros "Hclerk Hop Hupd".
   iNamed "Hclerk".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSliceWithCap).
   { word. }
   iIntros (?) "Henc_sl".
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".
-  wp_pure1_credit "Hlc".
-  wp_pure1_credit "Hlc2".
+  wp_pure_credit "Hlc".
+  wp_pure_credit "Hlc2".
   wp_load.
   replace (#(W8 2)) with (_.(to_val) (W8 2)).
   2: { done. }
@@ -834,7 +834,7 @@ Lemma wp_eStateMachine__apply s :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iModIntro.
   iApply "HΦ".
@@ -1306,7 +1306,7 @@ Lemma wp_eStateMachine__setState s :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iModIntro.
   iApply "HΦ".
   clear Φ.
@@ -1397,7 +1397,7 @@ Proof.
   iIntros (? Φ) "!# Hpre HΦ".
   iDestruct "Hpre" as "Hown".
   wp_pures.
-  wp_call.
+  wp_rec. wp_pures.
   unfold own_StateMachine.
   set (st:=compute_state ops).
   destruct st eqn:X.
@@ -1587,7 +1587,7 @@ Lemma wp_eStateMachine__applyReadonly s :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iModIntro.
   iApply "HΦ".
   clear Φ.
@@ -1719,7 +1719,7 @@ Lemma wp_MakeExactlyOnceStateMachine own_low lowSm :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
   iIntros (?) "Hl".
@@ -1783,7 +1783,7 @@ Lemma wp_MakeClerk configHosts_sl configHosts γ γoplog γerpc :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocStruct).
   { repeat constructor. }
   iIntros (?) "Hl".

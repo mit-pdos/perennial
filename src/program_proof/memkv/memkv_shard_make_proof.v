@@ -20,7 +20,7 @@ Lemma wp_MakeKVShardServer (b : bool) γ :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (srv) "srv".
   wp_pures.

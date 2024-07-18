@@ -32,7 +32,7 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (applyAsFollowerArgs.wp_Encode with "Hargs").
   iIntros (enc enc_sl) "[%Hargs_enc Hsl]".
   wp_pures.
@@ -140,7 +140,7 @@ Lemma wp_Server__applyAsFollower (s:loc) (args_ptr reply_ptr:loc) γ γsrv args 
 Proof.
   iIntros "#HisSrv Hpre Hreply HΦ HΨ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Server__withLock with "[$]").
   iIntros (??) "HH".
   iNamed "HH".

@@ -92,7 +92,7 @@ Lemma wp_urpc_make srv :
   }}}.
 Proof. Admitted.
 
-Lemma wp_call cli_p arg_in q1 (larg_in:list u8) arg_out q2 (larg_out:list u8) id time :
+Lemma wp_rec. wp_pures cli_p arg_in q1 (larg_in:list u8) arg_out q2 (larg_out:list u8) id time :
   {{{
     "Hurpc" ∷ is_uRPCClient cli_p ∗
     "Hin" ∷ own_slice_small arg_in byteT q1 larg_in ∗

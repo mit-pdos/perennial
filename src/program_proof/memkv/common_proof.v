@@ -26,7 +26,7 @@ Lemma wp_shardOf key :
   }}}.
 Proof.
   iIntros (?) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   by iApply "HΦ".
 Qed.

@@ -675,7 +675,7 @@ Proof.
       rewrite decide_True //.
     }
     (* need to solve is_comparable side condition *)
-    wp_pure1; [ done | ].
+    wp_pure; [ done | ].
     iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.
@@ -1365,7 +1365,7 @@ Proof.
     simpl.
     iDestruct "Hv1" as (ls li max -> -> Hgt0) "(His_alloc&Hjrnl_alloc)".
     iApply wp_wpc.
-    wp_pure1.
+    wp_pure.
     wp_bind (Skip)%E.
     iDestruct (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
     { set_solver. }
@@ -1404,7 +1404,7 @@ Proof.
     simpl.
     iDestruct "Hv1" as (ls li max -> -> Hgt0) "(His_alloc&Hjrnl_alloc)".
     iApply wp_wpc.
-    wp_pure1.
+    wp_pure.
     wp_bind (Skip)%E.
     iDestruct (twophase_started_ub_det_with_alloc' with "[$] [$]") as "H".
     { set_solver. }

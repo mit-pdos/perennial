@@ -17,7 +17,7 @@ Theorem wp_wrbuf__UpdateTuples wrbuf (tid : u64) sid mods tpls γ :
   {{{ RET #(); own_wrbuf_xtpls wrbuf mods ∗ active_tid γ tid sid }}}.
 Proof.
   iIntros (Φ) "(Hwrbuf & Htpls & Hactive) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hwrbuf".
 
   (***********************************************************)

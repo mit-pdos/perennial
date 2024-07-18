@@ -41,11 +41,11 @@ Lemma wp_test :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   rewrite /NewSlice.
   rewrite /slice.nil.
   wp_pures.
-  wp_pure1.
+  wp_pure.
   { done. }
   wp_apply wp_Assert.
   2:{ wp_pures; by iApply "HΦ". }

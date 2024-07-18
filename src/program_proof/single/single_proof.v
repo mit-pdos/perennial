@@ -71,7 +71,7 @@ Lemma wp_PrepareRPC (r:loc) γ pid (reply_ptr:loc) (pn:u64) dummy_rep :
 .
 Proof.
   iIntros "#His !#" (Φ) "Hpre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His".
 
@@ -132,7 +132,7 @@ Lemma wp_ProposeRPC (r:loc) γ pid (args_ptr reply_ptr:loc) (pn:u64) (val:u64) (
 .
 Proof.
   iIntros "#His !#" (Φ) "#Hpre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His".
   wp_loadField.

@@ -121,7 +121,7 @@ Lemma wp_Start fname configHosts_sl configHosts (host:chan) γ γsrv data :
 Proof using Type*.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_makeVersionedStateMachine).
   iIntros (??) "[#His1 Hown]".
@@ -161,7 +161,7 @@ Lemma wp_MakeClerk γkv configHosts configHosts_sl :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hhost".
   wp_apply (wp_MakeClerk with "[]").
   { iFrame "#%". }
@@ -184,7 +184,7 @@ Lemma wp_Clerk__Put ck γkv key value :
   {{{ RET #(); own_Clerk ck γkv }}}.
 Proof.
   iIntros "%Φ !# Hck Hupd".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor. Opaque slice.T. }
@@ -246,7 +246,7 @@ Lemma wp_Clerk__Get ck γkv key :
   {{{ RET #(str value); own_Clerk ck γkv }}}.
 Proof.
   iIntros "%Φ !# Hck Hupd".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hck".
   wp_apply (wp_encodeGetArgs with "[//]").
@@ -310,7 +310,7 @@ Lemma wp_Clerk__CondPut ck γkv key expect val :
   {{{ RET #(str (if bool_decide (expect = old_value) then "ok" else "")); own_Clerk ck γkv }}}.
 Proof.
   iIntros "%Φ !# Hck Hupd".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor. Opaque slice.T. }

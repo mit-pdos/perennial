@@ -46,7 +46,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
 Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -96,7 +96,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Henc_sl] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".
@@ -172,7 +172,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
 Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -228,7 +228,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Henc_sl] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".
@@ -304,7 +304,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
 Proof.
   iIntros (?) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSliceWithCap).
   { done. }
   iIntros (?) "Henc_sl".
@@ -334,7 +334,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Henc_sl] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocStruct).
   { naive_solver. }
   iIntros (args_ptr) "Hargs".
@@ -391,7 +391,7 @@ Lemma wp_Encode (reply_ptr:loc) (reply:C) :
 Proof.
   iIntros (?) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -447,7 +447,7 @@ Lemma wp_Decode enc enc_sl (reply:C) :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Henc_sl] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".
@@ -526,7 +526,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
 Proof.
   iIntros (?) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -570,7 +570,7 @@ Proof.
     clear Φ.
     iIntros (?) "!# (Hpre & %Hneq & %Hlookup) HΦ".
     iNamed "Hpre".
-    wp_call.
+    wp_rec. wp_pures.
     wp_load.
     wp_apply (wp_WriteInt with "Henc_sl").
     iIntros (?) "Henc_sl".
@@ -650,7 +650,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Henc_sl] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".
@@ -726,7 +726,7 @@ Proof.
     clear Φ.
     iIntros (???) "!# (Hpre & %Hineq & %Hlookup) HΦ".
     iNamed "Hpre".
-    wp_call.
+    wp_rec. wp_pures.
     wp_load.
     rewrite replicate_length in Hreplicas_sz.
     assert (uint.nat i < length args.(replicas)).
@@ -905,7 +905,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
 Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -950,7 +950,7 @@ Lemma wp_Decode enc enc_sl (reply:C) :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Henc_sl] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".

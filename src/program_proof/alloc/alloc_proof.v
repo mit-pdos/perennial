@@ -52,7 +52,7 @@ Proof.
   set (max := W64 (8 * length data)).
   intros Hlen_lb Hlen_ub.
   iIntros (Φ) "Hs HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_free_lock.
   iIntros (mu_l) "Hl".
   wp_pures.
@@ -101,7 +101,7 @@ Lemma wp_MarkUsed max l (bn: u64) :
 Proof.
   intros Hbound.
   iIntros (Φ) "H HΦ". iNamed "H".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hlinv]".
@@ -135,7 +135,7 @@ Lemma wp_MkMaxAlloc (max: u64) :
   {{{ l, RET #l; is_alloc max l }}}.
 Proof.
   iIntros (Hbound Hmod Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   rewrite -> bool_decide_eq_true_2 by word.
   wp_pures.
   rewrite bool_decide_eq_true_2; last first.
@@ -176,7 +176,7 @@ Lemma wp_incNext (max: u64) (l: loc) :
 Proof.
   iIntros (Hbound Φ) "Hl HΦ".
   iNamed "Hl".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_storeField.
   wp_loadField.
@@ -215,7 +215,7 @@ Lemma wp_allocBit (max: u64) (l: loc) :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (typed_mem.wp_AllocAt uint64T); first by auto.
   iIntros (num_l) "num".
   wp_pures.
@@ -286,7 +286,7 @@ Lemma wp_freeBit max l (bn: u64) :
 Proof.
   intros Hbound.
   iIntros (Φ) "H HΦ". iNamed "H".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hlinv]".
@@ -316,7 +316,7 @@ Lemma wp_AllocNum max l :
   {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
   iIntros (Φ) "H HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocBit with "H").
   iIntros (n Hlt).
   wp_pures. iModIntro.
@@ -332,7 +332,7 @@ Lemma wp_FreeNum max l (num: u64) :
 Proof.
   intros Hnum Hnonzero.
   iIntros (Φ) "H HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   { contradiction Hnonzero. word. }
   wp_apply (wp_freeBit with "H"); eauto.
@@ -345,7 +345,7 @@ Lemma wp_popCnt (b: u8) :
   {{{ (n: u64), RET #n; ⌜uint.Z n ≤ 8⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (typed_mem.wp_AllocAt uint64T); auto.
   iIntros (count_l) "Hcount".
   wp_pures.
@@ -391,7 +391,7 @@ Lemma wp_NumFree max l :
   {{{ (n:u64), RET #n; ⌜0 ≤ uint.Z n ≤ uint.Z max⌝}}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hlinv]".

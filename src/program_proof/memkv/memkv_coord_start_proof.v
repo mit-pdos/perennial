@@ -26,7 +26,7 @@ Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
 Proof.
   wp_pures. iIntros (Hshards Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
 
   wp_pures.
   wp_apply (wp_new_enc).
@@ -56,7 +56,7 @@ Lemma wp_KVCoord__AddServerRPC s x γ γsh :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His_memkv".
   wp_loadField.
@@ -89,9 +89,7 @@ Proof.
   wp_pures.
   wp_apply (wp_slice_len).
   (* wp_pures would reduce too far *)
-  wp_pure (goose_lang.Rec _ _ _).
-  wp_pure (goose_lang.App _ _).
-  wp_pure (goose_lang.Rec _ _ _).
+  do 3 wp_pure.
 
   (* We want to generalize over the loop argument, which is 0, but there are many occurrences of 0.
      This is a hack to only eplace that one occurence. *)
@@ -127,10 +125,9 @@ Proof.
   iIntros (v' ok) "(%Hget&Hmap)".
   wp_pures.
   wp_if_destruct; last first.
-  { wp_pure (goose_lang.Rec _ _ _).
-    wp_pure (goose_lang.App _ _).
+  { do 2 wp_pure.
     iThaw "IH".
-    wp_pure (_ + _)%E.
+    wp_pure.
     iApply ("IH" $! _ with "[//] [//] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
   }
   wp_pures.
@@ -173,10 +170,8 @@ Proof.
       wp_apply (typed_slice.wp_SliceSet (V:=u64) with "[$HshardMap_sl]").
       { eauto. }
       iIntros "HshardMap_sl".
-      wp_pure (goose_lang.Rec _ _ _).
-      wp_pure (goose_lang.App _ _).
+      do 3 wp_pure.
       iThaw "IH".
-      wp_pure (_ + _)%E.
       iDestruct ("Hclerk_clo" with "[$]") as "Hclerk".
       iApply ("IH" $! _ (typed_map.map_insert
                   (typed_map.map_insert hostShards' v (word.sub (word.add (word.divu 65536 _) 1) 1))
@@ -203,9 +198,7 @@ Proof.
       rewrite list_lookup_insert_ne in Hlookup'; last by word.
       iApply "HshardServers"; eauto.
     }
-    wp_pure (goose_lang.Rec _ _ _).
-    wp_pure (goose_lang.App _ _).
-    wp_pure (_ + _)%E.
+    do 3 wp_pure.
     iThaw "IH".
     iApply ("IH" $! _ _ with "[//] [//] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
   }
@@ -238,10 +231,8 @@ Proof.
       wp_apply (typed_slice.wp_SliceSet (V:=u64) with "[$HshardMap_sl]").
       { eauto. }
       iIntros "HshardMap_sl".
-      wp_pure (goose_lang.Rec _ _ _).
-      wp_pure (goose_lang.App _ _).
+      do 3 wp_pure.
       iThaw "IH".
-      wp_pure (_ + _)%E.
       iDestruct ("Hclerk_clo" with "[$]") as "Hclerk".
       iApply ("IH" $! _ _ with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
       { iPureIntro. rewrite insert_length. eauto. }
@@ -281,7 +272,7 @@ is_KVCoordServer s γ -∗
   }}}.
 Proof.
   iIntros "#Hdom #His_coord #His_memkv !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (map.wp_NewMap u64).
   iIntros (handlers_ptr) "Hmap".

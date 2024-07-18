@@ -224,7 +224,7 @@ Lemma wp_MakeServer (handlers : gmap u64 val) (mref:loc) (def : val) :
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
-  wp_lam.
+  wp_rec.
   iApply wp_fupd.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (s) "Hs".
@@ -286,7 +286,7 @@ Lemma wp_Server__readThread γ s host client handlers mref def :
 Proof.
   iIntros (Hdom).
   iNamed 1.
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_forBreak_cond'); [ iNamedAccu |].
   iIntros "!> _".
   wp_pures.
@@ -331,7 +331,7 @@ Proof.
   }
   iNext.
 
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero); first done.
   iIntros (sl') "Hsl'".
   wp_pures.
@@ -424,7 +424,7 @@ Lemma wp_StartServer_pred γ (host : u64) (handlers : gmap u64 val) (s : loc) :
   }}}.
 Proof.
   iIntros (? Φ) "(#Hcomplete&Hserver&#His_rpc_map) HΦ".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_Listen). wp_pures.
   iNamed "Hserver".
   wp_apply (wp_fork).
@@ -444,7 +444,7 @@ Lemma wp_Client__replyThread cl :
   WP Client__replyThread #cl {{ _, True }}.
 Proof.
   iIntros "H". iNamed "H". iNamed "Hstfields".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_forBreak' True%I with "[-]").
   { eauto. }
   iIntros "!> _". wp_pures.
@@ -614,7 +614,7 @@ Lemma wp_TryMakeClient (srv:u64):
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_Connect).
   iIntros (err client) "Hr".
   wp_pures.
@@ -684,7 +684,7 @@ Lemma wp_MakeClient (srv:u64):
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_TryMakeClient).
   iIntros (err client) "Hr".
   wp_pures.
@@ -752,7 +752,7 @@ Lemma wp_Client__CallStart_pred γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req
   }}}.
 Proof.
   iIntros "#Hhandler !#" (Φ) "H HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iDestruct "H" as "(Hslice&Hclient&#HSpec)".
   iNamed "Hclient". iNamed "Hstfields".
@@ -910,7 +910,7 @@ Lemma wp_Client__CallComplete_pred (cl_ptr cb_ptr:loc) rep_out_ptr
 Proof.
   iIntros (Φ) "[Hrep_out_ptr Hcb] HΦ".
   iNamed "Hcb".
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
@@ -1041,7 +1041,7 @@ Lemma wp_Client__Call_pred γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ou
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Client__CallStart_pred with "Hhandler [$Hslice $Hclient $HSpec]").
   iIntros (err cb_ptr) "[Hslice Hcb]".
   destruct err as [err|]; wp_pures.

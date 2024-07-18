@@ -270,9 +270,9 @@ Theorem wp_UInt64Put stk E s x vs :
   {{{ RET #(); own_slice_small s byteT (DfracOwn 1) (u64_le_bytes x ++ (drop w64_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
-  wp_lam.
-  wp_let.
-  wp_lam.
+  wp_rec.
+  wp_pures.
+  wp_rec.
   wp_pures.
   rewrite /own_slice_small. iDestruct "Hsl" as "(Hptr&%)".
   iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
@@ -304,9 +304,9 @@ Theorem wp_UInt32Put stk E s (x: u32) vs :
   {{{ RET #(); own_slice_small s byteT (DfracOwn 1) (u32_le_bytes x ++ (drop w32_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
-  wp_lam.
-  wp_let.
-  wp_lam.
+  wp_rec.
+  wp_pures.
+  wp_rec.
   wp_pures.
   rewrite /own_slice_small.
   iDestruct "Hsl" as "(Hptr&%)".
@@ -661,7 +661,7 @@ Proof.
   { rewrite -{1}(take_drop 8 vs).
     congruence. }
   rewrite [vs in own_slice_small _ _ _ vs](H0).
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_slice_ptr.
   rewrite /own_slice_small.
   iDestruct "Hs" as "(Hptr&%)".
@@ -712,8 +712,8 @@ Theorem wp_UInt64Get' stk E s q (x: u64) :
   {{{ RET #x; s.(Slice.ptr) ↦∗[byteT]{q} u64_le_bytes x }}}.
 Proof.
   iIntros (Φ) "[Ha %] HΦ".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_DecodeUInt64 with "Ha").
   iApply "HΦ".
 Qed.
@@ -724,8 +724,8 @@ Theorem wp_UInt32Get' stk E s q (x: u32) :
   {{{ RET #x; s.(Slice.ptr) ↦∗[byteT]{q} u32_le_bytes x }}}.
 Proof.
   iIntros (Φ) "[Ha %] HΦ".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_DecodeUInt32 with "Ha").
   iApply "HΦ".
 Qed.

@@ -91,9 +91,9 @@ Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Global Instance pure_struct_field_ref_wp t f (l : loc) :
-  PureWp True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
+  PureWpVal True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
-  iIntros (?? Φ ?) "HΦ".
+  iIntros (?? Φ?) "HΦ".
   rewrite /struct.field_ref; cbn; wp_pures.
   iModIntro.
   iExactEq "HΦ".
@@ -108,7 +108,7 @@ Definition is_structT (t : go_type) : Prop :=
   end.
 
 Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
-  PureWp True
+  PureWpVal True
     (list.Cons (PairV #(str k) v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
 .
@@ -119,7 +119,7 @@ Proof.
 Qed.
 
 Global Instance wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
-  PureWp True
+  PureWpVal True
     (struct.assocl_lookup #(str k) (struct.fields_val l))
     (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
 .
@@ -128,16 +128,15 @@ Proof.
   rewrite struct.fields_val_unseal.
   iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
   [base]: {
-    wp_lam.
+    wp_rec.
     rewrite /struct.fields_val_def /=.
-    wp_pures. wp_apply wp_list_Match. wp_pures.
-    by iApply "HΦ".
+    wp_pures. by iApply "HΦ".
   }
   [cons]: {
-    wp_lam.
+    wp_rec.
     rewrite /struct.fields_val_def /=.
-    wp_pures. wp_apply wp_list_Match. wp_pures.
-    destruct bool_decide eqn:Heqb; wp_if.
+    wp_pures.
+    destruct bool_decide eqn:Heqb; wp_pures.
     {
       rewrite bool_decide_eq_true in Heqb. inversion Heqb; subst. clear Heqb.
       wp_pures.
@@ -155,7 +154,7 @@ Proof.
 Qed.
 
 Global Instance wp_struct_make (t : go_type) (l : list (string*val)) :
-  PureWp (is_structT t)
+  PureWpVal (is_structT t)
   (struct.make t (struct.fields_val l))
   (struct.val t l).
 Proof.

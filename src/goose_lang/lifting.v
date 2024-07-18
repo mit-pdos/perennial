@@ -589,7 +589,7 @@ Proof. solve_atomic. monad_inv. eauto. Qed.
 the following way:
 
 - [wp_pures] does *not* reduce lambdas/recs that are hidden behind a definition.
-- [wp_rec] and [wp_lam] reduce lambdas/recs that are hidden behind a definition.
+- [wp_rec] reduces lambdas/recs that are hidden behind a definition.
 
 To realize this behavior, we define the class [AsRecV v f x erec], which takes a
 value [v] as its input, and turns it into a [RecV f x erec] via the instance
@@ -597,7 +597,7 @@ value [v] as its input, and turns it into a [RecV f x erec] via the instance
 [Hint Extern] so that it is only used if [v] is syntactically a lambda/rec, and
 not if [v] contains a lambda/rec that is hidden behind a definition.
 
-To make sure that [wp_rec] and [wp_lam] do reduce lambdas/recs that are hidden
+To make sure that [wp_rec] does reduce lambdas/recs that are hidden
 behind a definition, we activate [AsRecV_recv] by hand in these tactics. *)
 Class AsRecV (v : val) (f x : binder) (erec : expr) : Set :=
   as_recv : v = RecV f x erec.

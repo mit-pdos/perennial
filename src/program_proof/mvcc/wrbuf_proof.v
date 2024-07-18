@@ -12,7 +12,7 @@ Theorem wp_MkWrBuf :
   {{{ (wrbuf : loc), RET #wrbuf; own_wrbuf_xtpls wrbuf ∅ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* wrbuf := new(WrBuf)                                     *)
@@ -63,7 +63,7 @@ Local Lemma wp_search (key : u64) (entsS : Slice.t) (ents : list wrent) :
   }}}.
 Proof.
   iIntros (Φ) "HentsS HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* var pos uint64 = 0                                      *)
@@ -107,7 +107,7 @@ Proof.
      *)
     wp_if_destruct; last first.
     { (* Exit the loop due to the first condition. *)
-      wp_if_false.
+      wp_pures.
       iApply "HΦ".
       iExists _.
       iFrame "∗ %".
@@ -211,7 +211,7 @@ Theorem wp_wrbuf__Lookup wrbuf (key : u64) m :
   }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hwrbuf".
   
   (***********************************************************)
@@ -277,7 +277,7 @@ Theorem wp_wrbuf__Put wrbuf (key : u64) (val : string) m :
   {{{ RET #(); own_wrbuf_xtpls wrbuf (<[ key := Value val ]> m) }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hwrbuf".
 
   (***********************************************************)
@@ -301,7 +301,7 @@ Proof.
   { (* cache hit *)
     wp_loadField.
     (* Handling [SliceRef]; a spec would help. *)
-    wp_lam.
+    wp_rec.
     wp_pures.
     unfold spec_search in Hsearch.
     destruct Hsearch as (ent & Hlookup & Hkey).
@@ -435,7 +435,7 @@ Theorem wp_wrbuf__Delete wrbuf (key : u64) m :
   {{{ RET #(); own_wrbuf_xtpls wrbuf (<[ key := Nil ]> m) }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hwrbuf".
 
   (***********************************************************)
@@ -458,7 +458,7 @@ Proof.
   { (* cache hit *)
     wp_loadField.
     (* Handling [SliceRef]; a spec would help. *)
-    wp_lam.
+    wp_rec.
     wp_pures.
     unfold spec_search in Hsearch.
     destruct Hsearch as (ent & Hlookup & Hkey).
@@ -583,7 +583,7 @@ Theorem wp_wrbuf__Clear wrbuf m :
   {{{ RET #(); own_wrbuf_xtpls wrbuf ∅ }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hwrbuf".
 
   (***********************************************************)

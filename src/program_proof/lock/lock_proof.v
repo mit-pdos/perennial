@@ -55,7 +55,7 @@ Lemma wp_MakeLockClerk kvCk γ E :
 Proof.
   iIntros (Φ) "#Hkv_is HΦ".
   rewrite /MakeLockClerk.
-  wp_lam.
+  wp_rec.
   iApply wp_fupd.
   wp_pures.
   wp_apply wp_allocStruct; first val_ty.
@@ -78,11 +78,11 @@ Lemma wp_LockClerk__Lock ck key γ R :
 .
 Proof.
   iIntros (Φ) "(#Hck&#Hlock) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_forBreak_cond' with "HΦ").
   iModIntro. iIntros "HΦ".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_pures.
   iNamed "Hck".
   wp_loadField.
@@ -125,8 +125,8 @@ Lemma wp_LockClerk__Unlock ck key γ R :
 .
 Proof.
   iIntros (Φ) "(#Hck&#Hlock&HR) HΦ".
-  wp_lam.
-  wp_pure1_credit "Hlc".
+  wp_rec.
+  wp_pure_credit "Hlc".
   iNamed "Hck".
   wp_loadField.
   iNamed "Hkv_is".

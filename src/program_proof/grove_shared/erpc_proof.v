@@ -124,10 +124,10 @@ Lemma wp_erpc_Server_HandleRequest spec γ s f :
       □ (is_erpc_handler f spec -∗
       is_urpc_handler f' $ eRPCSpec_uRPC γ spec) }}}.
 Proof.
-  iIntros (Φ) "#Hs HΦ". wp_call. iModIntro.
+  iIntros (Φ) "#Hs HΦ". wp_rec. wp_pures. iModIntro.
   iApply "HΦ". iModIntro. clear Φ.
   iIntros "#Hf".
-  iIntros ([[[γreq rid] payload] x] reqData req repptr Φ) "!# Hpre HΦ". wp_lam.
+  iIntros ([[[γreq rid] payload] x] reqData req repptr Φ) "!# Hpre HΦ". wp_rec.
   iDestruct "Hpre" as "(Hreq & Hrepptr & Hpre)". simpl.
   iDestruct "Hpre" as "[[-> %Hseqpos] #HreqInv]".
 
@@ -304,7 +304,7 @@ Lemma wp_erpc_MakeServer γ :
   {{{ s, RET #s; is_erpc_server γ s }}}.
 Proof.
   iIntros (Φ) "(#Hserv & ? & Hcids) HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (srv) "srv".
   iDestruct (struct_fields_split with "srv") as "srv". iNamed "srv". simpl.
@@ -341,7 +341,7 @@ Lemma wp_erpc_GetFreshCID s γ :
     Server__GetFreshCID #s
   {{{ (cid : u64), RET #cid; erpc_make_client_pre γ cid }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ". wp_lam.
+  iIntros (Φ) "Hs HΦ". wp_rec.
   iNamed "Hs".
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
@@ -404,7 +404,7 @@ Lemma wp_erpc_NewRequest (spec : eRPCSpec) (x : spec.(espec_ty)) c payload paylo
       own_erpc_client γ c ∗ ▷ spec.(espec_Post) x payload rep)
   }}}.
 Proof.
-  iIntros (Φ) "(Hc & Hpayload & Hpre) HΦ". wp_lam.
+  iIntros (Φ) "(Hc & Hpayload & Hpre) HΦ". wp_rec.
   iNamed "Hc".
 
   wp_loadField.
@@ -458,7 +458,7 @@ Lemma wp_erpc_MakeClient γ cid :
     MakeClient #cid
   {{{ c, RET #c; own_erpc_client γ c }}}.
 Proof.
-  iIntros (Φ) "[#Hserv Hcid] HΦ". wp_lam.
+  iIntros (Φ) "[#Hserv Hcid] HΦ". wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (c) "c".
   iDestruct (struct_fields_split with "c") as "c". iNamed "c". simpl.

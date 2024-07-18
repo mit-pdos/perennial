@@ -14,7 +14,7 @@ Theorem wp_Min_l stk E (n m: u64) Φ :
   Φ #n -∗ WP (Min #n #m) @ stk; E {{ Φ }}.
 Proof.
   iIntros (Hlt) "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   - by iFrame.
   - assert (uint.Z n = uint.Z m) by word.
@@ -27,7 +27,7 @@ Theorem wp_Min_r stk E (n m: u64) Φ :
   Φ #m -∗ WP (Min #n #m) @ stk; E {{ Φ }}.
 Proof.
   iIntros (Hlt) "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   - assert (uint.Z n = uint.Z m) by word.
     apply word.unsigned_inj in H; subst.
@@ -42,7 +42,7 @@ Theorem wp_DPrintf stk E (level: u64) (msg arg: val) :
 Proof.
   iIntros (Φ) "_ HΦ".
   iSpecialize ("HΦ" with "[//]").
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct; auto.
 Qed.
 
@@ -52,7 +52,7 @@ Theorem wp_SumOverflows stk E (x y: u64) :
   {{{ (ok: bool), RET #ok; ⌜ok = bool_decide (uint.Z x + uint.Z y >= 2^64)⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
   iPureIntro.
   apply bool_decide_ext, sum_overflow_check.
@@ -64,7 +64,7 @@ Theorem wp_CloneByteSlice stk E s q vs :
   {{{ (s':Slice.t), RET (slice_val s'); slice.own_slice_small s u8T q vs ∗ slice.own_slice s' u8T (DfracOwn 1) vs }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_slice_len.
   iDestruct (slice.own_slice_small_sz with "Hs") as %Hlen.
   wp_apply wp_new_slice; first by auto.

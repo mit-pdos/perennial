@@ -19,7 +19,7 @@ Theorem wp_MkTxnSite (sid : u64) γ :
   {{{ (site : loc), RET #site; is_txnsite site sid γ  }}}.
 Proof.
   iIntros (Φ) "H HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   
   (*@ func MkTxnSite(sid uint64) *TxnSite {                                   @*)
   (*@     site := new(TxnSite)                                                @*)

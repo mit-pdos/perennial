@@ -70,7 +70,7 @@ Theorem wp_NewChan E t (cap : Z) P:
     ⌜c = InjRV (#chanref, lk)⌝}}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_alloc_untyped.
   { eauto. }
   iIntros (chanref) "Hc".
@@ -99,7 +99,7 @@ Theorem wp_IncCap chanref cap (eff_cap: Z) closed ty l:
     {{{ RET #(); own_chan chanref cap (uint.Z (word.add 1 eff_cap)) closed ty l}}}.
 Proof.
     iIntros (Φ) "HPre HΦ".
-    wp_lam.
+    wp_rec.
     destruct closed.
     - iNamed "HPre". 
       wp_untyped_load.
@@ -125,7 +125,7 @@ Theorem wp_DecCap chanref cap (eff_cap: Z) closed ty l:
     {{{ RET #(); own_chan chanref cap (uint.Z (word.sub eff_cap 1)) closed ty l}}}.
 Proof.
     iIntros (Φ) "HPre HΦ".
-    wp_lam.
+    wp_rec.
     destruct closed.
     - iNamed "HPre".
       wp_untyped_load.
@@ -150,7 +150,7 @@ Theorem wp_InnerReceive chanref cap eff_cap closed ty l:
     {{{RET ((peek (zero_val ty) l, #(negb closed), #(valid_return closed l))); own_chan chanref cap eff_cap closed ty (tail l)}}}.
 Proof.
     iIntros (Φ) "HPre HΦ".
-    wp_lam.
+    wp_rec.
     destruct closed.
     - iNamed "HPre".
       wp_untyped_load.
@@ -194,7 +194,7 @@ Theorem wp_TryReceive (chanref : loc) lk closed ty P:
         RET ((a, #(open), #(valid))); if (andb valid open) then P a else ⌜a = zero_val ty⌝}}}.
 Proof.
   iIntros (Φ) "HPre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iDestruct "HPre" as "#Hlock".
   wp_apply acquire_spec.
@@ -282,7 +282,7 @@ Theorem wp_ChannelReceive (chanref : loc) lk closed ty P:
       RET ((a, #(open))); if (open) then P a else ⌜a = zero_val ty⌝}}}.
 Proof.
   iIntros (Φ) "#HPre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iLöb as "IH" forall (Φ).
   wp_apply (wp_TryReceive with "[HPre]").
@@ -305,7 +305,7 @@ Lemma wp_ChanLen' ty (l : list val):
     {{{(len : Z), RET (#(len)); ⌜len = length l⌝}}}.
 Proof.
   iIntros (Φ) "HPre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iInduction l as [|] "IH" forall (Φ).
   - wp_pures.
@@ -332,7 +332,7 @@ Lemma wp_ChanLen (chanref : loc) closed lk ty P:
 Proof.
   iIntros (Φ) "HPre HΦ".
   wp_pures.
-  wp_lam.
+  wp_rec.
   wp_pures.
   iDestruct "HPre" as "#Hlock".
   wp_apply acquire_spec.
@@ -384,7 +384,7 @@ Lemma wp_ChanAppend ty (l : list val) v:
     {{{RET (chan_contents (zero_val ty) (l ++ [v])); True}}}.
 Proof.
   iIntros (Φ) "HPre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iInduction l as [|] "IH" forall (Φ).
   - wp_pures.
@@ -407,7 +407,7 @@ Theorem wp_TrySend (chanref : loc) (v : val) lk ty P:
 Proof.
   iIntros (Φ) "[HPre Hv] HΦ".
   wp_pures.
-  wp_lam.
+  wp_rec.
   wp_pures.
   iDestruct "HPre" as "#Hlock".
   wp_apply acquire_spec.
@@ -459,7 +459,7 @@ Theorem wp_ChannelSend (chanref : loc) (v : val) lk ty P:
     {{{(success : bool), RET (#(success)); True}}}.
 Proof.
   iIntros (Φ) "[#HPre Hv] HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iLöb as "IH" forall (Φ).
   wp_apply (wp_TrySend with "[HPre Hv]").

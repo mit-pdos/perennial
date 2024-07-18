@@ -61,7 +61,7 @@ Theorem wp_allocStruct d stk E v :
   {{{ l, RET #l; l ↦[struct.t d] v }}}.
 Proof.
   iIntros (Hty Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_to; auto.
 Qed.
 
@@ -556,10 +556,10 @@ Proof.
   iIntros (Hty Φ) "_ HΦ".
   iSpecialize ("HΦ" with "[//]").
   iInduction d as [|[f t] fs] "IH" forall (v Hty); simpl.
-  - wp_call; auto.
+  - wp_rec. wp_pures; auto.
   - inv_ty Hty.
     destruct (f =? f0)%string.
-    + wp_call; auto.
+    + wp_rec. wp_pures; auto.
     + wp_apply "IH"; auto.
 Qed.
 
@@ -771,6 +771,6 @@ Tactic Notation "wp_storeField" :=
     |tc_solve
     |solve_pointsto ()
     |pm_reflexivity
-    |try wp_seq ]
+    |try (wp_pure_filter (Rec BAnon BAnon _); wp_rec)]
   | _ => fail "wp_storeField: not a 'wp'"
   end.

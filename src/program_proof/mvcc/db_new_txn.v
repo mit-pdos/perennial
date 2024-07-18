@@ -14,7 +14,7 @@ Proof.
   iIntros "#Hdb" (Φ) "!> _ HΦ".
   iPoseProof "Hdb" as "Hdb'".
   iNamed "Hdb".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (db *DB) NewTxn() *Txn {                                           @*)
   (*@     db.latch.Lock()                                                     @*)
@@ -69,13 +69,13 @@ Proof.
   wp_apply (wp_If_join_evar with "[Hsidcur]").
   { iIntros (b') "%Eb'".
     case_bool_decide.
-    { wp_if_true.
+    { wp_pures.
       wp_storeField.
       iSplit; first done.
       replace (W64 0) with (if b' then (W64 0) else (word.add sidcur (W64 1))) by by rewrite Eb'.
       iNamedAccu.
     }
-    { wp_if_false.
+    { wp_pures.
       iModIntro.
       subst.
       by iFrame "∗".

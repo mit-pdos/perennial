@@ -11,7 +11,7 @@ Lemma nondet_spec:
     nondet #()
   {{{ v, RET v; ⌜v = #true⌝ ∨ ⌜v = #false⌝}}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_lam. iApply "HΦ". eauto.
+  iIntros (Φ) "_ HΦ". wp_rec. iApply "HΦ". eauto.
 Qed.
 
 Lemma overflow_guard_incr_spec stk E (v:u64) : 
@@ -22,7 +22,7 @@ Lemma overflow_guard_incr_spec stk E (v:u64) :
 }}}.
 Proof.
   iIntros (Φ) "_ Hpost".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_forBreak_cond.
   wp_pures.
   destruct bool_decide eqn:Hineq.

@@ -64,7 +64,7 @@ Proof.
   clear γm1 γm2.
   iDestruct "HH" as (γm) "Hinv".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (client.wp_MakeClerk with "Hcfg").
   iIntros (ck) "Hck".
   wp_pures.

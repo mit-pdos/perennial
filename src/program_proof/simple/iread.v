@@ -33,7 +33,7 @@ Proof.
   iIntros (Φ) "(Hjrnl & Henc & %Hcovered) HΦ".
   iNamed "Henc".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_inum2Addr); auto.
   {
     iPureIntro.
@@ -46,7 +46,7 @@ Proof.
   wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hinode_enc_pointsto]"); eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
-  wp_pures. wp_call.
+  wp_pures. wp_rec. wp_pures.
   wp_apply wp_allocStruct; first val_ty.
   iIntros (iptr) "Hi".
   iDestruct (struct_fields_split with "Hi") as "Hi". iNamed "Hi".
@@ -91,7 +91,7 @@ Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (byt
   }}}.
 Proof.
   iIntros (Φ) "(Hjrnl & Hmem & Hdata) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hmem".
   iNamed "Hdata".
   wp_loadField.

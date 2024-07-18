@@ -22,7 +22,7 @@ Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hargs & %HsidLe & #Hother_shard & %Heq_kv_gn)".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His_shard".
   wp_loadField.

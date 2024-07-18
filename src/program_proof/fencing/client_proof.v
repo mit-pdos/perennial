@@ -51,7 +51,7 @@ Lemma wp_MakeClerk γ configHost :
 .
 Proof.
   iIntros "#Hcfg !#" (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
   iIntros (ck) "Hck".
@@ -89,7 +89,7 @@ Lemma wp_Clerk__FetchAndIncrement γ ck (key:u64) Φ :
 Proof.
   intros Hkey.
   iIntros "Hck #Hupd".
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_ref_of_zero).
   { done. }

@@ -31,13 +31,13 @@ Lemma wp_Clerk__IncreaseCommit γ γsrv ck (epoch:u64) (newCommitIndex:u64) σ :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep) "Hrep".
   wp_pures.
   iNamed "Hck".
-  wp_call.
+  wp_rec. wp_pures.
   replace (slice.nil) with (slice_val Slice.nil) by done.
   wp_apply (wp_WriteInt with "[]").
   { iApply own_slice_zero. }
@@ -141,13 +141,13 @@ Lemma wp_Server__IncreaseCommit γ γsrv s newCommitIndex Φ Ψ :
   .
 Proof.
   iIntros "His_srv HΦ HΨ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "His_srv".
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   iNamed "Hvol".
   wp_loadField.
   iDestruct "HΨ" as (??) "(% & #? & #? & #? & #? & HΨ)".

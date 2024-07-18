@@ -40,7 +40,7 @@ Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr args σ backupγ:
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep) "Hrep".
@@ -72,7 +72,7 @@ Proof.
     iIntros.
     wp_pures.
     wp_load.
-    wp_call.
+    wp_rec. wp_pures.
     rewrite H.
     wp_apply (wp_ReadInt with "[$]").
     iIntros.
@@ -139,7 +139,7 @@ Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ Ψ :
 Proof.
   iIntros "#His_srv Hargs HΦ HΨ".
   iNamed "His_srv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$HmuInv]").
   iIntros "[Hlocked Hown]".
@@ -537,7 +537,7 @@ Proof.
     iModIntro.
     iSplitR; first done.
 
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
 
     apply Decidable.not_or in Heqb.
     destruct Heqb as [HepochEq Hcan].

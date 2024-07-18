@@ -32,7 +32,7 @@ Lemma wp_doWithClerk c γkv (f:val) Φ :
 Proof.
   iIntros "#Hck HΦ".
   iNamed "Hck".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
@@ -144,7 +144,7 @@ Lemma wp_MakeClerkPool γkv confHosts confHost_sl :
 Proof.
   iIntros (?) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_new_free_lock).
   iIntros (?) "HmuInv".
@@ -180,14 +180,14 @@ Lemma wp_MakeKv γkv confHost_sl confHosts :
 Proof.
   iIntros (?) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_MakeClerkPool with "[]").
   { iFrame "#%". }
   iIntros (?) "#Hck".
   wp_pures.
-  wp_lam. wp_pures.
-  wp_lam. wp_pures.
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   iApply wp_fupd.
   wp_apply (wp_allocStruct).
   { val_ty. }

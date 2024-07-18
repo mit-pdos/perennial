@@ -42,6 +42,7 @@ Ltac reshape_expr e tac :=
     | CmpXchg ?e0 ?e1 ?e2             => add_item (CmpXchgLCtx e1 e2) K e0
     | ResolveProph (Val ?v) ?e        => add_item (@ResolveProphRCtx _ v) K e
     | ResolveProph ?e1 ?e2            => add_item (@ResolveProphLCtx _ e2) K e1
+    | fill ?K' ?e                     => match K with [] => go K' e end
     end
   with add_item Ki K e :=
     go (Ki :: K) e

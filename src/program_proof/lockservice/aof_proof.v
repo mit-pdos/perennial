@@ -83,7 +83,7 @@ Lemma wp_CreateAppendOnlyFile (fname:string) data aof_ctx :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  wp_lam.
+  wp_rec.
 
   wp_apply (wp_allocStruct).
   { admit. (* TODO: typechecking *) }
@@ -258,7 +258,7 @@ Proof.
   intros HnewDataLen HnewDataSafe.
   iIntros "#Haof" (Φ) "!# Hpre HΦ".
   iNamed "Haof".
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   wp_loadField.
@@ -639,7 +639,7 @@ is_aof aof_ptr γ aof_ctx -∗
   }}}.
 Proof.
   iIntros "#Haof" (Φ) "!# _ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Haof".
   wp_loadField.

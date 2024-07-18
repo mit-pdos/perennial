@@ -160,8 +160,8 @@ Theorem wp_Write_atomic (a: u64) s q b :
   {{{ RET #(); own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   iDestruct (own_slice_small_wf with "Hs") as %Hwf.
   iApply (wp_ncatomic _ _ ∅).
@@ -235,7 +235,7 @@ Lemma wp_Read_atomic (a: u64) q :
     {{{ s, RET slice_val s; is_block_full s b }}}.
 Proof.
   iIntros "!#" (Φ) "Hupd".
-  wp_call.
+  wp_rec. wp_pures.
   wp_bind (ExternalOp _ _).
   rewrite difference_empty_L.
   iMod "Hupd" as (? b) "[Hda Hupd]".
@@ -260,7 +260,7 @@ Lemma wp_ReadTo_atomic (a: u64) b0 s q :
     {{{ RET #(); is_block_full s b }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct (own_slice_sz with "Hs") as %Hsz.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
   wp_bind (ExternalOp _ _).

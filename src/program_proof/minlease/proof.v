@@ -160,7 +160,7 @@ is_Server s γ -∗
 Proof.
   iIntros "Hsrv Hupd".
   iNamed "Hsrv".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
@@ -195,7 +195,7 @@ is_Server s γ -∗
 Proof.
   iIntros "Hsrv Hupd".
   iNamed "Hsrv".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
@@ -233,7 +233,7 @@ Lemma wp_StartServer γ :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   { repeat constructor. }
   iIntros (?) "Hl".
@@ -260,8 +260,8 @@ Proof.
   wp_apply (wp_fork with "[-HΦ]").
   {
     iNext.
-    wp_pure1_credit "Hlc1".
-    wp_pure1_credit "Hlc2".
+    wp_pure_credit "Hlc1".
+    wp_pure_credit "Hlc2".
     wp_pures.
     iAssert  ( ∃ v,
       "Hlease" ∷ underLease minleaseN LEASE_EXP (ghost_var γ (1 / 2) v%Z)
@@ -270,7 +270,7 @@ Proof.
     { iExists _. iFrame. }
     wp_forBreak_cond.
     wp_pures.
-    wp_lam.
+    wp_rec.
     iClear "Hmu HleaseExpiration".
     iNamed "Hsrv".
     wp_loadField.
@@ -301,8 +301,8 @@ Proof.
       iMod "Hmask".
       iModIntro.
       iFrame "Htime".
-      wp_pure1_credit "Hlc1".
-      wp_pure1_credit "Hlc2".
+      wp_pure_credit "Hlc1".
+      wp_pure_credit "Hlc2".
       wp_loadField.
       wp_pures.
       wp_bind (If (#(bool_decide _)) _ _).
@@ -365,7 +365,7 @@ Lemma wp_client s γ :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_forBreak.
   wp_pures.
   wp_apply (wp_GetTimeRange).
@@ -460,7 +460,7 @@ Lemma wp_main :
 .
 Proof using Type*.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   iMod (ghost_var_alloc (W64 0)) as (γ) "[Hvar Hvar2]".
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑minleaseN)) as "Hmask".

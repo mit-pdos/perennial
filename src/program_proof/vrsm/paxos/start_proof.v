@@ -33,7 +33,7 @@ Lemma wp_makeServer γ γsrv (fname:string) data conf_sl (hosts:list u64) init_s
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor. Opaque slice.T. }
   iIntros (s) "Hs".
@@ -198,7 +198,7 @@ Lemma wp_StartServer γ γsrv (me:u64) (fname:string) data init_sl conf_sl (host
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre". iNamed "Hhost".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_makeServer with "[$Hconf_sl $Hfile $Hinitstate]").
   { iFrame "#". }
   iIntros (s) "#His_srv".

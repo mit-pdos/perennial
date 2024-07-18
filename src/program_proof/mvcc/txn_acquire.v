@@ -16,7 +16,7 @@ Theorem wp_txn__acquire txn tid view γ τ :
   }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* ok := txn.wrbuf.OpenTuples(txn.tid, txn.idx)            *)

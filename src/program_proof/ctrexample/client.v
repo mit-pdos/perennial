@@ -23,7 +23,7 @@ Lemma wpc_ClientMain γurpc_gn γ :
   }}.
 Proof.
   iIntros "#Hsrv #Hlb".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_MakeClient).
   iIntros (cl_ptr) "#Hcl".

@@ -253,7 +253,7 @@ Lemma wp_make_cap stk E (sz: u64) :
   {{{ (cap:u64), RET #cap; ⌜uint.Z cap >= uint.Z sz⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ArbitraryInt.
   iIntros (extra) "_".
   wp_pures.
@@ -270,7 +270,7 @@ Lemma wp_raw_slice stk E l vs (sz: u64) t :
   {{{ sl, RET slice_val sl; own_slice sl t (DfracOwn 1) vs }}}.
 Proof.
   iIntros (Φ) "(Hslice&%) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   rewrite slice_val_fold. iApply "HΦ".
   iApply (own_slice_intro with "Hslice").
   iPureIntro; auto.
@@ -280,7 +280,7 @@ Lemma wp_slice_len stk E (s: Slice.t) (Φ: val -> iProp Σ) :
     Φ #(s.(Slice.sz)) -∗ WP slice.len (slice_val s) @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
 Qed.
 
@@ -288,7 +288,7 @@ Lemma wp_slice_cap stk E (s: Slice.t) (Φ: val -> iProp Σ) :
     Φ #(s.(Slice.cap)) -∗ WP slice.cap (slice_val s) @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
 Qed.
 
@@ -296,7 +296,7 @@ Lemma wp_slice_ptr stk E (s: Slice.t) (Φ: val -> iProp Σ) :
     Φ #(s.(Slice.ptr)) -∗ WP slice.ptr (slice_val s) @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
 Qed.
 
@@ -385,7 +385,7 @@ Lemma wp_new_slice s E t (sz: u64) :
   {{{ sl, RET slice_val sl; own_slice sl t (DfracOwn 1) (replicate (uint.nat sz) (zero_val t)) }}}.
 Proof.
   iIntros (Hzero Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   - rewrite /slice.nil slice_val_fold.
     iApply "HΦ".
@@ -425,7 +425,7 @@ Lemma wp_new_slice_cap s E t (sz cap: u64) :
   {{{ ptr, RET slice_val (Slice.mk ptr sz cap) ; own_slice (Slice.mk ptr sz cap) t (DfracOwn 1) (replicate (uint.nat sz) (zero_val t)) }}}.
 Proof.
   iIntros (Hzero Hsz Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   rewrite ->bool_decide_false by lia.
   wp_if_destruct.
   - rewrite /slice.nil slice_val_fold.
@@ -464,12 +464,12 @@ Theorem wp_SliceSingleton Φ stk E t x :
   WP SliceSingleton x @ stk; E {{ Φ }}.
 Proof.
   iIntros (Hty) "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocN t); eauto.
   { word. }
   change (replicate (uint.nat 1) x) with [x].
   iIntros (l) "Hl".
-  wp_steps.
+  wp_pures.
   rewrite slice_val_fold. iApply "HΦ".
   iApply own_slice_of_small; first by auto.
   rewrite /own_slice_small /=.
@@ -693,10 +693,10 @@ Lemma wp_SliceSkip Φ stk E s t (n: u64):
   WP (SliceSkip t (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
   iIntros "% HΦ".
-  wp_call.
-  wp_call.
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   iApply "HΦ".
 Qed.
 
@@ -721,13 +721,13 @@ Lemma wp_SliceTake {Φ stk E s} (n: u64):
   WP (SliceTake (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
   iIntros (?) "HΦ".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   wp_if_destruct.
   - wp_apply wp_panic.
     word.
-  - wp_call.
-    wp_call.
+  - wp_rec. wp_pures.
+    wp_rec. wp_pures.
     iApply "HΦ".
 Qed.
 
@@ -790,14 +790,14 @@ Lemma wp_SliceSubslice Φ stk E s t (n1 n2: u64):
   WP (SliceSubslice t (slice_val s) #n1 #n2) @ stk; E {{ Φ }}.
 Proof.
   iIntros "% HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   - word.
-  - wp_call.
+  - wp_rec. wp_pures.
     wp_if_destruct.
     + exfalso.
       word.
-    + wp_call. wp_call.
+    + wp_rec. wp_pures. wp_rec. wp_pures.
       iApply "HΦ".
 Qed.
 
@@ -888,11 +888,10 @@ Lemma wp_SliceGet_body stk E sl t q vs (i: u64) v0 :
   {{{ RET v0; own_slice_small sl t q vs ∗ ⌜val_ty v0 t⌝ }}}.
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
-  destruct sl as [ptr sz].
-  repeat wp_step.
+  destruct sl as [ptr sz]. wp_pures.
   rewrite /own_slice_small /=.
   iDestruct "Hsl" as "(Hsl&%)"; simpl.
-  repeat wp_call.
+  repeat wp_rec. wp_pures.
   iDestruct (array_elem_acc H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   word_cleanup.
@@ -911,8 +910,7 @@ Lemma wp_SliceGet stk E sl t q vs (i: u64) v0 :
 Proof.
   iIntros (Φ) "[Hsl %] HΦ".
   destruct sl as [ptr sz].
-  rewrite /SliceGet.
-  repeat wp_step.
+  rewrite /SliceGet. wp_pures.
   wp_apply (wp_SliceGet_body with "[Hsl]"); last done.
   { iFrame. eauto. }
 Qed.
@@ -943,9 +941,9 @@ Theorem wp_forSlice_mut (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
 Proof.
   iIntros "#Hslice_acc #Hind".
   iIntros (Φ) "!> Hi0 HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_slice_len.
-  wp_steps.
+  wp_pures.
   remember 0 as z.
   assert (0 <= z <= uint.Z s.(Slice.sz)) by word.
   iDestruct ("Hslice_acc" with "[$]") as (vs' Hlen' Hlookup') "(Hs&Hclo)".
@@ -966,13 +964,13 @@ Proof.
     { rewrite Hlookup'. replace (uint.Z z); eauto. }
     iIntros "[Hs Hty]".
     iDestruct "Hty" as %Hty.
-    wp_steps.
+    wp_pures.
     iDestruct ("Hclo" with "[$]") as "Hiz".
     wp_apply ("Hind" with "[$Hiz]").
     { iPureIntro; split; eauto.
       replace (uint.Z z); eauto. }
     iIntros (v) "Hiz1".
-    wp_steps.
+    wp_pures.
     assert (uint.Z (z + 1) = uint.Z z + 1).
     { rewrite word.unsigned_of_Z.
       rewrite wrap_small; try lia. }
@@ -1116,7 +1114,7 @@ Proof.
   iIntros (Φ) "(Hdst&Hsrc&Hbounds) HΦ".
   iDestruct "Hbounds" as %(Hvs1&Hvs2).
   (iLöb as "IH" forall (vs1 vs2 n dst src Hvs1 Hvs2) "Hdst Hsrc HΦ").
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   - change (uint.nat 0) with 0%nat.
     iEval (rewrite firstn_O array_nil) in "HΦ" .
@@ -1154,7 +1152,7 @@ Lemma wp_SliceCopy_full stk E sl t q vs dst vs' :
   {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) vs }}}.
 Proof.
   iIntros (Φ) "(Hsrc&Hdst&%) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hsrc" as "[Hsrc %]".
   iDestruct "Hdst" as "[Hdst %]".
   assert (sl.(Slice.sz) = dst.(Slice.sz)) by word.
@@ -1197,7 +1195,7 @@ Proof.
   iIntros (Φ) "(Hsrc & %Hn1n2 & Hdst & %Hsrc_len) HΦ".
   iDestruct "Hsrc" as "[Hsrc %]".
   iDestruct "Hdst" as "[Hdst %]".
-  wp_call. rewrite bool_decide_eq_false_2; [ wp_pures | word ].
+  wp_rec. wp_pures. rewrite bool_decide_eq_false_2; [ wp_pures | word ].
   wp_apply wp_slice_cap. wp_pures.
   rewrite bool_decide_eq_false_2; [ wp_pures | word ].
   rewrite /SliceCopy.
@@ -1293,7 +1291,7 @@ Lemma wp_SliceAppend'' stk E s t vs1 vs2 x (q : Qp) (n : u64) :
        uint.Z (Slice.sz s') = (uint.Z (Slice.sz s) + 1)%Z ⌝}}}.
 Proof.
   iIntros (Hzero Hty Hn Hq Φ) "[Hprefix Hs] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_slice_len.
   wp_apply wp_Assume.
   iIntros (Hbound).
@@ -1302,14 +1300,14 @@ Proof.
   wp_pures.
   wp_apply wp_slice_len.
   wp_pures.
-  wp_lam; wp_pures.
+  wp_rec; wp_pures.
   wp_apply wp_slice_len; wp_pures.
   iDestruct "Hs" as "((Hptr&[%Hlen %Hcap])&Hfree)".
   iDestruct "Hprefix" as "(Hprefix&[%Hlen' %Hcap'])".
   iDestruct (own_slice_cap_wf with "Hfree") as "%Hfreelen".
   iDestruct "Hfree" as (extra Hextralen) "Hfree".
   wp_if_destruct.
-  - wp_call.
+  - wp_rec. wp_pures.
     rewrite word.unsigned_sub in Heqb.
     unfold slice_skip, slice_take in *; simpl in *.
     rewrite -> wrap_small in Heqb.
@@ -1317,7 +1315,7 @@ Proof.
     iDestruct (array_split_1n with "Hfree") as (x0 extra') "(Hnew&Hfree&->)".
     { revert Hextralen. word. }
     simpl in Hextralen.
-    wp_call.
+    wp_rec. wp_pures.
     wp_pures.
     rewrite loc_add_assoc.
     rewrite -Z.mul_add_distr_l.
@@ -1325,7 +1323,7 @@ Proof.
       with (uint.Z (Slice.sz s)) by word.
     wp_apply (wp_StoreAt with "Hnew"); [ auto | iIntros "Hnew" ].
     wp_pures.
-    wp_call.
+    wp_rec. wp_pures.
     rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /=.
     iDestruct (array_app _ _ _ vs2 [x] with "[$Hptr Hnew]") as "Hptr".
     { rewrite array_singleton.
@@ -1370,8 +1368,8 @@ Proof.
       first by word.
     rewrite array_singleton.
     wp_pures.
-    wp_call.
-    wp_call.
+    wp_rec. wp_pures.
+    wp_rec. wp_pures.
 
     iDestruct (as_fractional_weaken q with "Hptr") as "Hptr".
     { apply Qp.lt_le_incl. eauto. }
@@ -1398,7 +1396,7 @@ Proof.
     }
 
     wp_pures.
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply (wp_StoreAt with "[Halloc1]"); [ val_ty | | iIntros "Hlast" ].
     { iModIntro. iExactEq "Halloc1"; word_eq. }
     wp_pures.
@@ -1531,7 +1529,7 @@ Lemma wp_SliceAppendSlice stk E s1 s2 t vs1 vs2 q2 :
   }}}.
 Proof.
   iIntros (Hzero Φ) "[Hs1 Hs2] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_to; [apply slice_val_ty|].
   iIntros (s_ptr) "Hs_ptr".
   iDestruct (own_slice_val_ty with "Hs2") as "%Hty".
@@ -1582,8 +1580,8 @@ Proof.
   iIntros (Φ) "[Hs %] HΦ".
   destruct H as [Hlookup Hty].
   destruct s as [ptr sz].
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   iDestruct "Hs" as "(Hptr&%)".
   simpl in H |- *.
   replace (uint.Z i) with (Z.of_nat (uint.nat i)) by word.

@@ -45,7 +45,7 @@ Lemma wp_Server__increaseCommitThread (s:loc) γ γsrv :
 Proof.
   iIntros (?) "Hsrv HΦ".
   iNamed "Hsrv". iNamed "Hsrv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_forBreak.
   wp_pures.
 

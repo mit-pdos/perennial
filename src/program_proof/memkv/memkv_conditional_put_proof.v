@@ -26,7 +26,7 @@ Proof.
   iDestruct "Hpre" as "(Hargs & Hrep & Hpre)".
   iNamed "Hargs". iNamed "Hrep".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   iNamed "His_shard".
@@ -37,7 +37,7 @@ Proof.
   iNamed "Hown".
 
   wp_pures.
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   wp_pures.

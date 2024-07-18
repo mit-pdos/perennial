@@ -445,7 +445,7 @@ Lemma wp_SliceCopy stk E sl t q vs dst vs' :
   {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) (vs ++ drop (length vs) vs') }}}.
 Proof.
   iIntros (Hbound Φ) "(Hsrc&Hdst) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hsrc" as "[Hsrc %Hsrclen]".
   iDestruct "Hdst" as "[Hdst %Hdstlen]".
   autorewrite with len in Hsrclen, Hdstlen.

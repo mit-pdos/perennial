@@ -161,7 +161,7 @@ Theorem wp_NewMap stk E kt vt :
   {{{ mref, RET #mref;
       own_map mref (DfracOwn 1) (∅, zero_val vt) }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_lam.
+  iIntros (Φ) "_ HΦ". wp_rec.
   wp_apply wp_alloc_untyped.
   { rewrite map_zero_val; auto. }
   iIntros (mref) "Hm".
@@ -202,16 +202,13 @@ Theorem wp_MapGet stk E mref q (m: gmap K val * val) k :
 Proof using IntoValComparable0.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv H) "Hmref".
-  wp_call.
-  wp_untyped_load.
-  wp_closure.
+  wp_rec. wp_untyped_load. wp_pures.
   iAssert (∀ v ok, ⌜map_get m k = (v, ok)⌝ -∗ Φ (v, #ok)%V)%I with "[Hmref HΦ]" as "HΦ".
   { iIntros (v ok) "%".
     iApply ("HΦ" with "[Hmref]").
     iSplitR; auto.
     iExists mv; by iFrame. }
   iLöb as "IH" forall (m mv H).
-  wp_call.
   destruct (map_val_split _ _ H).
   - (* nil *)
     destruct e as [def ?]; intuition subst.
@@ -221,7 +218,7 @@ Proof using IntoValComparable0.
   - destruct e as [k' [v [mv' [m' ?]]]]; intuition subst.
     wp_pures.
 
-    wp_pure1.
+    wp_pure.
     { split; apply IntoValComparable_comparable. }
     wp_if_destruct.
     + wp_pures.
@@ -230,7 +227,7 @@ Proof using IntoValComparable0.
       2: apply _.
       subst.
       rewrite map_get_insert //.
-    + iApply "IH".
+    + wp_pures. iApply "IH".
       * eauto.
       * iIntros (v' ok) "%".
         iApply "HΦ".
@@ -245,7 +242,7 @@ Theorem wp_MapInsert stk E mref (m: gmap K val * val) k v' :
 Proof.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".
-  wp_call.
+  wp_rec. wp_pures.
   wp_untyped_load.
   wp_apply (wp_store with "Hmref"); iIntros "Hmref".
   iApply ("HΦ" with "[Hmref]").
@@ -271,8 +268,7 @@ Proof using IntoValComparable0.
   destruct m.
   iIntros (Φ H) "HΦ".
   rewrite /MapDelete'.
-  wp_lam. wp_let.
-  wp_pure (Rec _ _ _).
+  wp_rec. wp_pures.
   iLöb as "IH" forall (g v mv H Φ).
   apply map_val_split in H; intuition; repeat match goal with
     | H : ∃ _, _ |- _ => destruct H
@@ -284,10 +280,10 @@ Proof using IntoValComparable0.
     rewrite delete_empty. done.
   - destruct x2.
     wp_pures.
-    wp_pure1.
+    wp_pure.
     { split; apply IntoValComparable_comparable. }
     rewrite bool_decide_decide.
-    destruct (decide (to_val k = to_val x)); wp_if.
+    destruct (decide (to_val k = to_val x)); wp_pures.
     + inversion e; clear e; subst.
       iApply "IH".
       { eauto. }
@@ -299,8 +295,8 @@ Proof using IntoValComparable0.
       rewrite delete_insert_delete.
       auto.
     + iSpecialize ("IH" $! _ _ _ H).
-      wp_bind (App _ _).
-      iApply "IH".
+      wp_pures.
+      wp_apply "IH".
       iIntros (mv' Hmv').
       wp_pures.
       iApply "HΦ"; iPureIntro.
@@ -325,28 +321,25 @@ Theorem wp_MapLen' stk E(mv:val) (m:gmap K val * val) :
   }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "%Hmapval HΦ".
-  wp_lam.
-  wp_pure (Rec _ _ _).
+  wp_rec. wp_pures.
   iLöb as "IH" forall (m mv Hmapval Φ).
   wp_pures.
   destruct (map_val_split mv m).
   { done. }
   - destruct e as [def [Hmv Hmuntype]].
     rewrite Hmv.
-    wp_match.
+    wp_pures.
     replace (size m.1) with 0%nat; last first.
     { rewrite Hmuntype. simpl. done. }
     iApply "HΦ".
     done.
   - destruct e as [k [v [mv' [m' [Hmcons [Hmv Hmuntype]]]]]].
     rewrite Hmcons.
-    wp_match.
     wp_pures.
     wp_apply (wp_MapDelete' with "[]").
     { eauto. }
     iIntros (mv'' Hmv'').
 
-    wp_bind (_ mv'')%E.
     wp_apply "IH"; first done.
     iIntros (HsizeConversion).
 
@@ -411,7 +404,7 @@ Theorem wp_MapLen stk E mref q m :
   }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "Hmap HΦ".
-  wp_lam.
+  wp_rec.
   iDestruct "Hmap" as (mv Hmapval) "Hmref".
   wp_apply (wp_load with "Hmref").
   iIntros "Hmref".
@@ -429,7 +422,7 @@ Theorem wp_MapDelete stk E mref (m: gmap K val * val) k :
 Proof using IntoValComparable0.
   iIntros (Φ) "Hmref HΦ".
   iDestruct "Hmref" as (mv ?) "Hmref".
-  wp_call.
+  wp_rec. wp_pures.
   wp_untyped_load.
   wp_apply wp_MapDelete'; eauto.
   iIntros (mv' Hmv').
@@ -451,12 +444,12 @@ Theorem wp_MapIter stk E mref q (m: gmap K val * val) (I: iProp Σ) (P Q: K -> v
 Proof using IntoValComparable0.
   iIntros "Hm Hi Hp #Hind HΦ".
   iDestruct "Hm" as (mv) "[% Hm]".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_start_read with "Hm").
   iIntros "[Hm0 Hm1]".
-  wp_let.
+  wp_pures.
   destruct m; simpl in *.
-  wp_closure.
+  wp_pures.
   match goal with
   | |- context[RecV (BNamed "mapIter") _ ?body] => set (loop:=body)
   end.
@@ -466,7 +459,6 @@ Proof using IntoValComparable0.
   generalize g at 1 2 3 5; intro gI.
   intro HI.
   iLöb as "IH" forall (mvI gI HI).
-  wp_pures.
   destruct HI as [[d HI]|[k [v0 [mv' [m' HI]]]]]; subst.
   - intuition subst.
     inversion H1; clear H1; subst.
@@ -483,8 +475,7 @@ Proof using IntoValComparable0.
     iDestruct (big_sepM_insert_delete with "Hp") as "[Hpk Hp]".
     wp_apply ("Hind" with "[$Hi $Hpk]").
     iIntros "[Hi Hq]".
-    wp_pure (Rec _ _ _).
-    wp_lam.
+    wp_pures.
     wp_apply (wp_MapDelete'); eauto.
     iIntros (mv'') "%".
     iSpecialize ("IH" $! mv'' _ _ with "Hi Hp [Hq HΦ] Hm0 Hm1").
@@ -492,7 +483,7 @@ Proof using IntoValComparable0.
       iApply "HΦ"; iFrame.
       iApply big_sepM_insert_delete; iFrame.
     }
-    iApply "IH".
+    wp_pures. wp_apply "IH".
 Unshelve.
   apply map_val_split in H0; destruct m'; intuition idtac.
 Qed.
@@ -588,12 +579,12 @@ Theorem wp_MapIter_fold {stk E} {mref: loc} {q} {body: val}
 Proof using IntoValComparable0.
   iIntros "Hm HP #Hbody HΦ".
   iDestruct "Hm" as (mv) "[% Hm]".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_start_read with "Hm").
   iIntros "[Hm0 Hm1]".
-  wp_let.
+  wp_pures.
   destruct m; simpl in *.
-  wp_pure (Rec _ _ _).
+  wp_pures.
   match goal with
   | |- context[RecV (BNamed "mapIter") _ ?body] => set (loop:=body)
   end.
@@ -606,7 +597,6 @@ Proof using IntoValComparable0.
   generalize (∅ : gmap K val) at 2 3 4; intro m0I.
   intros HI Hunion Hdisjoint.
   iLöb as "IH" forall (mvI gI m0I HI Hunion Hdisjoint).
-  wp_pures.
   destruct HI as [[d HI]|[k [v0 [mv' [m' HI]]]]]; subst.
   - intuition subst.
     inversion H1; clear H1; subst.
@@ -627,13 +617,12 @@ Proof using IntoValComparable0.
       rewrite lookup_insert; eauto.
     }
     iIntros "HP".
-    wp_pure (Rec _ _ _).
-    wp_lam.
+    wp_pures.
     wp_apply (wp_MapDelete'); eauto.
     iIntros (mv'') "%".
     apply map_val_split in H0. destruct m'.
     iSpecialize ("IH" $! mv'' _ _ H0 _ _ with "HP HΦ Hm0 Hm1").
-    iApply "IH".
+    wp_apply "IH".
 Unshelve.
   { simpl. apply union_delete_insert. }
   { apply delete_insert_disjoint; eauto. }

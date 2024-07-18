@@ -41,7 +41,7 @@ Proof.
   iIntros (Φ) "[#Hwal Hfupd] HΦ".
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hinv" as (σ) "(Hinner&HP)".
   iNamed "Hinner".
   iNamed "Hdisk".
@@ -432,12 +432,12 @@ Proof.
   }
 
   iIntros "(Hlkinv&Hlocked&#HdiskEnd_lb)".
-  wp_seq.
+  do 2 wp_pure.
   wp_bind Skip.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as "Hinv".
   iApply wp_ncfupd.
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hinv" as (σ) "[Hinner HP]".
   iNamed "Hlkinv".
   iNamed "HmemLog_linv".

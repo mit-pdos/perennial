@@ -39,7 +39,7 @@ Lemma wp_encodeMoveShardRequest args_ptr args :
 Proof.
   iIntros (Φ) "Hrep HΦ".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrep".
 
@@ -81,7 +81,7 @@ Lemma wp_decodeMoveShardRequest args args_sl argsData :
   }}}.
 Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   {
     naive_solver.

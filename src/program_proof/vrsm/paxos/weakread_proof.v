@@ -21,7 +21,7 @@ Lemma wp_Server__WeakRead s γ γsrv :
   }}}.
 Proof.
   iIntros (Φ) "#Hsrv HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hsrv".
   wp_loadField.
   wp_apply (acquire_spec with "[$]").

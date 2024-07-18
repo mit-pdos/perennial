@@ -15,7 +15,7 @@ Theorem wp_ReadInt s q x tail :
     ReadInt (slice_val s)
   {{{ s', RET (#x, slice_val s'); own_slice_small s' byteT q tail }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ". wp_lam.
+  iIntros (Φ) "Hs HΦ". wp_rec.
   wp_apply (wp_UInt64Get_unchanged with "Hs").
   { rewrite /list.untype fmap_app take_app_length' //. }
   iIntros "Hs".
@@ -32,7 +32,7 @@ Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
 Proof.
   iIntros (Hlen Φ) "Hs HΦ".
   iMod (own_slice_small_persist with "Hs") as "#Hs".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_SliceTake_small with "Hs").
   { rewrite /list.untype fmap_app app_length !fmap_length. word. }
   iIntros "Hs1".
@@ -49,7 +49,7 @@ Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
     ReadBytesCopy (slice_val s) #len
   {{{ b s', RET (slice_val b, slice_val s'); own_slice b byteT (DfracOwn 1) head ∗ own_slice_small s' byteT q tail }}}.
 Proof.
-  iIntros (Hlen Φ) "Hs HΦ". wp_call.
+  iIntros (Hlen Φ) "Hs HΦ". wp_rec. wp_pures.
   wp_apply wp_NewSlice. iIntros (b) "Hb".
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   iDestruct (own_slice_small_wf with "Hs") as %Hwf.
@@ -80,7 +80,7 @@ Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
       ⌜b = bool_decide (uint.Z bit ≠ 0)⌝ ∗
       own_slice_small s' byteT q tail }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ". wp_call.
+  iIntros (Φ) "Hs HΦ". wp_rec. wp_pures.
   wp_apply (wp_SliceGet with "[$Hs]"); [ auto | ].
   iIntros "Hs".
   wp_pures.
@@ -111,7 +111,7 @@ Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
     compute_new_cap #old_cap #min_cap
   {{{ (new_cap : u64), RET #new_cap; ⌜uint.Z min_cap ≤ uint.Z new_cap⌝ }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_call.
+  iIntros (Φ) "_ HΦ". wp_rec. wp_pures.
   wp_apply wp_ref_to. { val_ty. }
   iIntros (l) "Hl". wp_pures.
   wp_load.
@@ -125,7 +125,7 @@ Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
     reserve (slice_val s) #extra
   {{{ s', RET slice_val s'; ⌜uint.Z extra ≤ Slice.extra s'⌝ ∗ own_slice s' byteT (DfracOwn 1) vs }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ". wp_lam.
+  iIntros (Φ) "Hs HΦ". wp_rec.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
   iDestruct (own_slice_sz with "Hs") as %Hsz.
   wp_apply wp_slice_len.
@@ -155,7 +155,7 @@ Theorem wp_WriteInt s x (vs : list u8) :
     WriteInt (slice_val s) #x
   {{{ s', RET slice_val s'; own_slice s' byteT (DfracOwn 1) (vs ++ u64_le x) }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ". wp_lam. wp_pures.
+  iIntros (Φ) "Hs HΦ". wp_rec. wp_pures.
   wp_apply (wp_reserve with "Hs"). clear s. iIntros (s) "[% Hs]". wp_pures.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
   iDestruct (own_slice_sz with "Hs") as %Hsz.
@@ -186,7 +186,7 @@ Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
     own_slice_small data_sl byteT q data
   }}}.
 Proof.
-  iIntros (Φ) "[Hs Hdata] HΦ". wp_lam. wp_pures.
+  iIntros (Φ) "[Hs Hdata] HΦ". wp_rec. wp_pures.
   wp_apply (wp_SliceAppendSlice with "[$Hs $Hdata]"); first done.
   iIntros (s') "[Hs' Hdata]".
   iApply ("HΦ" with "[$]").
@@ -198,7 +198,7 @@ Theorem wp_WriteBool s (vs: list u8) (b: bool) :
   {{{ s', RET (slice_val s');
       own_slice s' byteT (DfracOwn 1) (vs ++ [if b then W8 1 else W8 0]) }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ". wp_call.
+  iIntros (Φ) "Hs HΦ". wp_rec. wp_pures.
   destruct b; wp_pures.
   (* TODO: this also breaks through the typed slice library *)
   - wp_apply (wp_SliceAppend' with "Hs"); auto.

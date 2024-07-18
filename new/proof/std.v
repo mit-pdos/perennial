@@ -31,7 +31,7 @@ Lemma wp_SumAssumeNoOverflow (x y : u64) :
     (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
     WP std.SumAssumeNoOverflow #x #y {{ Φ }}.
 Proof.
-  iIntros "%Φ HΦ". wp_lam; wp_pures.
+  iIntros "%Φ HΦ". wp_rec; wp_pures.
   wp_apply wp_ref_ty; [econstructor|].
   iIntros (y_ptr) "Hy".
   wp_apply wp_ref_ty; [econstructor|].

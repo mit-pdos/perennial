@@ -34,7 +34,7 @@ Proof.
   intros Henc Hro.
   iIntros "#Hck Hop_sl".
   iIntros "#HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep) "Hrep".
@@ -411,15 +411,15 @@ Proof.
   iDestruct "HΦ" as "(%Hop_enc & %Hro & #Hupd & #Hfail_Φ)".
   iNamed "Hsrv".
   rewrite /Server__ApplyRoWaitForCommit.
-  wp_pure1_credit "Hlc1".
-  wp_pure1_credit "Hlc2".
-  wp_pure1_credit "Hlc3".
+  wp_pure_credit "Hlc1".
+  wp_pure_credit "Hlc2".
+  wp_pure_credit "Hlc3".
   wp_apply (wp_allocStruct).
   { eauto. }
   iIntros (reply_ptr) "Hreply".
   iDestruct (struct_fields_split with "Hreply") as "HH".
   iNamed "HH".
-  wp_pure1_credit "Hlc4".
+  wp_pure_credit "Hlc4".
   wp_pures.
   simpl.
   replace (slice.nil) with (slice_val (Slice.nil)) by done.
@@ -532,7 +532,7 @@ Proof.
     iNamed "Hown".
     iNamed "Hvol".
     wp_loadField.
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
     wp_if_destruct.
     {
       wp_storeField.
@@ -558,7 +558,7 @@ Proof.
     }
     wp_load.
     wp_loadField.
-    wp_pure1_credit "Hlc2".
+    wp_pure_credit "Hlc2".
     wp_pures.
     wp_if_destruct.
     { (* the read is finished! *)

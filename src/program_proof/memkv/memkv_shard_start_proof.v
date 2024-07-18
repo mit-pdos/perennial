@@ -20,7 +20,7 @@ is_KVShardServer s γ -∗
   }}}.
 Proof.
   iIntros "#Hdom #His_shard #His_memkv !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (map.wp_NewMap u64).
   iIntros (handlers_ptr) "Hmap".

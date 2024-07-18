@@ -30,7 +30,7 @@ Lemma wp_lookupLocked (t : loc) γ (m : gmap u64 u64) (k : u64) :
 Proof.
   iIntros (Φ) "Ht HΦ".
   iNamed "Ht".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   Search impl.MapGet.
@@ -65,7 +65,7 @@ Lemma wp_lookupLocked_success (t : loc) γ (m : gmap u64 u64) (k v : u64) :
 Proof.
   iIntros (Φ) "[Ht Hptsto] HΦ".
   iNamed "Ht".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   Search impl.MapGet.
@@ -96,7 +96,7 @@ Lemma wp_registerLocked (t : loc) γ (m : gmap u64 u64) (k : u64) (v : u64) :
         tracker_state t γ m }}}.
 Proof.
   iIntros (Φ) "Ht HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_lookupLocked with "[Ht]").
   { iApply "Ht". }
   iIntros (? b) "[Ht %Hok]".
@@ -131,7 +131,7 @@ Lemma wp_Lookup (t : loc) γ (k : u64) :
 Proof.
   iIntros (Φ) "Ht HΦ".
   iNamed "Ht".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   Search lock.acquire.
@@ -164,7 +164,7 @@ Lemma wp_Lookup_success (t : loc) γ (k v : u64) :
 Proof.
   iIntros (Φ) "[Ht Hptsto] HΦ".
   iNamed "Ht".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   Search lock.acquire.
@@ -198,7 +198,7 @@ Lemma wp_Register (t : loc) γ (k : u64) (v : u64) :
 Proof.
   iIntros (Φ) "Ht HΦ".
   iNamed "Ht".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "Ht_lock").
   iIntros "[Hlocked Ht]".

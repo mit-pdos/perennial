@@ -67,7 +67,7 @@ Lemma acquire_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
 }}}.
 Proof.
   iIntros (Φ) "(#Hls & #Hln1_islock & #Hln2_islock & Hlck) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   destruct bool_decide; wp_pures.
   {
@@ -105,7 +105,7 @@ Lemma release_two_spec (lck lsrv :loc) (ln1 ln2:u64) γ:
 }}}.
 Proof.
   iIntros (Φ) "(#Hls & #Hln1_islock & #Hln2_islock & HP1 & HP2 & Hlck) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   destruct bool_decide; wp_pures.
   {
@@ -144,10 +144,10 @@ Proof.
   (* FIXME: iNamed not working correctly? *)
   iDestruct "Hpre" as "(Hacc1 & Hacc2 & #Hacc_is_lock)".
   iNamed "Hacc_is_lock".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_loadField.
-  wp_lam. (* We just use the helper function in-line *)
+  wp_rec. (* We just use the helper function in-line *)
   wp_pures.
   wp_loadField.
   wp_apply (acquire_two_spec with "[$Hlck_own $Hls]"); first iFrame "#".
@@ -215,7 +215,7 @@ Proof.
   iNamed "Hpre".
   iDestruct "Hpre" as "(Hacc1 & Hacc2 & #Hacc_is_lock)".
   iNamed "Hacc_is_lock".
-  wp_lam.
+  wp_rec.
   repeat wp_loadField.
 
   wp_apply (acquire_two_spec with "[$Hlck_own $Hls]"); first iFrame "#".

@@ -9,11 +9,13 @@ Section defn.
   Program Definition Cons := unseal (_:seal (@Cons_def)). Obligation 1. by eexists. Qed.
   Definition Cons_unseal : Cons = _ := seal_eq _.
 
-  Definition Match : val :=
+  Definition Match_def : val :=
     λ: "l" "nilCase" "consCase",
       Match "l"
         <> ("nilCase" #())
         "x" (let: ("hd", "tl") := "x" in "consCase" "hd" "tl").
+  Program Definition Match := unseal (_:seal (@Match_def)). Obligation 1. by eexists. Qed.
+  Definition Match_unseal : Match = _ := seal_eq _.
 
   Fixpoint val_def (x : list val) : val :=
     match x with

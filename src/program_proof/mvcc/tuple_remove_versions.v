@@ -78,7 +78,7 @@ Theorem wp_tuple__removeVersions tuple (tid : u64) vers :
 Proof.
   iIntros (Φ) "[HtuplePhys %Hnotnil] HΦ".
   iNamed "HtuplePhys".
-  wp_call.
+  wp_rec. wp_pures.
 
   iDestruct (own_slice_sz with "HversS") as "%HversLen".
   rewrite fmap_length in HversLen.
@@ -288,7 +288,7 @@ Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) γ :
 Proof.
   iIntros "#Htuple" (Φ) "!> #Hgclb' HΦ".
   iNamed "Htuple".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* tuple.latch.Lock()                                      *)

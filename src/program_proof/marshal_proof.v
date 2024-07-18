@@ -160,7 +160,7 @@ Theorem wp_new_enc_from_slice stk E s (data: list u8) :
 Proof.
   iIntros (Φ) "Hs HΦ".
   iDestruct (own_slice_split with "Hs") as "[Hs Hcap]".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (typed_mem.wp_AllocAt uint64T); eauto.
   iIntros (off_l) "Hoff".
   wp_pures.
@@ -178,7 +178,7 @@ Theorem wp_new_enc stk E (sz: u64) :
   {{{ (enc_v:val), RET enc_v; is_enc enc_v (uint.Z sz) [] (uint.Z sz) }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (s) "Hs".
   wp_apply (wp_new_enc_from_slice with "Hs").
@@ -209,7 +209,7 @@ Theorem wp_Enc__PutInt stk E enc_v sz r (x:u64) remaining :
 Proof.
   iIntros (Hspace Φ) "Hpre HΦ"; iNamed "Hpre".
   set (off:=encoded_length r) in *.
-  wp_call.
+  wp_rec. wp_pures.
   wp_load.
   wp_pures.
   iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
@@ -254,7 +254,7 @@ Theorem wp_Enc__PutInt32 stk E enc_v sz r (x:u32) remaining :
 Proof.
   iIntros (Hspace Φ) "Hpre HΦ"; iNamed "Hpre".
   set (off:=encoded_length r) in *.
-  wp_call.
+  wp_rec. wp_pures.
   wp_load.
   wp_pures.
   iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
@@ -296,7 +296,7 @@ Local Lemma wp_bool2byte stk E (x:bool) :
     bool2byte #x @ stk; E
   {{{ RET #(W8 (if x then 1 else 0))%Z; True }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_lam.
+  iIntros (Φ) "_ HΦ". wp_rec.
   destruct x; wp_pures; by iApply "HΦ".
 Qed.
 
@@ -308,7 +308,7 @@ Theorem wp_Enc__PutBool stk E enc_v sz r (x:bool) remaining :
 Proof.
   iIntros (Hspace Φ) "Hpre HΦ"; iNamed "Hpre".
   set (off:=encoded_length r) in *.
-  wp_call.
+  wp_rec. wp_pures.
   wp_load.
   wp_pures.
   iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
@@ -386,7 +386,7 @@ Theorem wp_Enc__PutBytes stk E enc_v r sz remaining b_s q bs :
                own_slice_small b_s byteT q bs }}}.
 Proof.
   iIntros (Hbound Φ) "[Henc Hbs] HΦ"; iNamed "Henc".
-  wp_call.
+  wp_rec. wp_pures.
   wp_load; wp_pures.
   iDestruct (own_slice_small_sz with "Hs") as %Hs_sz.
   wp_apply wp_SliceSkip.
@@ -433,7 +433,7 @@ Theorem wp_Enc__Finish stk E enc_v r sz remaining :
                                own_slice s byteT (DfracOwn 1) data }}}.
 Proof.
   iIntros (Φ) "Henc HΦ"; iNamed "Henc"; subst.
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ"; by iFrame "∗ %".
 Qed.
 
@@ -459,7 +459,7 @@ Theorem wp_new_dec stk E s q data r :
   {{{ dec_v, RET dec_v; is_dec dec_v r s q data }}}.
 Proof.
   iIntros (Henc Φ) "Hs HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (typed_mem.wp_AllocAt uint64T); eauto.
   iIntros (off_l) "Hoff".
   wp_pures.
@@ -481,7 +481,7 @@ Theorem wp_Dec__GetInt stk E dec_v (x: u64) r s q data :
   {{{ RET #x; is_dec dec_v r s q data }}}.
 Proof.
   iIntros (Φ) "Hdec HΦ"; iNamed "Hdec".
-  wp_call.
+  wp_rec. wp_pures.
   wp_load; wp_pures.
   wp_load; wp_store.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
@@ -522,7 +522,7 @@ Theorem wp_Dec__GetInt32 stk E dec_v (x: u32) r s q data :
   {{{ RET #x; is_dec dec_v r s q data }}}.
 Proof.
   iIntros (Φ) "Hdec HΦ"; iNamed "Hdec".
-  wp_call.
+  wp_rec. wp_pures.
   wp_load; wp_pures.
   wp_load; wp_store.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
@@ -563,7 +563,7 @@ Theorem wp_Dec__GetBool stk E dec_v (x: bool) r s q data :
   {{{ RET #x; is_dec dec_v r s q data }}}.
 Proof.
   iIntros (Φ) "Hdec HΦ"; iNamed "Hdec".
-  wp_call.
+  wp_rec. wp_pures.
   wp_load; wp_pures.
   wp_load; wp_store.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
@@ -608,7 +608,7 @@ Proof.
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons /= in H.
-  wp_call.
+  wp_rec. wp_pures.
   wp_load.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   wp_pures.
@@ -638,7 +638,7 @@ Proof.
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons /= in H.
-  wp_call.
+  wp_rec. wp_pures.
   wp_load.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   iMod (own_slice_small_persist with "Hs") as "#Hs".

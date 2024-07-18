@@ -62,10 +62,10 @@ Proof using txnG0 Σ.
   iNamed "Htxn".
   iNamed "Hstable".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_Walog__ReadMem _ (λ mb,
     "Hmapsto_log" ∷ a ↪[_] v ∗

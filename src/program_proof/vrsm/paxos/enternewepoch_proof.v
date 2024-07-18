@@ -32,7 +32,7 @@ Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (enterNewEpochArgs.wp_Encode with "Hargs").
   iIntros (enc enc_sl) "[%Hargs_enc Hsl]".
   wp_pures.
@@ -139,7 +139,7 @@ Lemma wp_Server__enterNewEpoch (s:loc) (args_ptr reply_ptr:loc) γ γsrv args in
 Proof.
   iIntros "#HisSrv Hpre Hreply HΦ HΨ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Server__withLock with "[$]").
   iIntros (??) "HH".
   iNamed "HH".

@@ -107,7 +107,7 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ dinit a :
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
   rewrite /Walog__ReadInstalled.
-  wp_pure1_credit "Hcred".
+  wp_pure_credit "Hcred".
   wp_apply wp_Read_atomic.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
@@ -241,7 +241,7 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
   }}}.
 Proof.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
 
   iMod (txns_are_in_bounds with "Hsubtxns [$]") as %Htxns_addrs; first auto.
   assert (Forall (λ u : update.t, ∃ (b: Block), dinit !! uint.Z u.(update.addr) = Some b) bufs) as Hbufs_addrs.
@@ -788,7 +788,7 @@ Proof.
   iNamed "Hstart_circ".
 
   iMod (is_wal_read_mem with "Hwal") as "#Hmem".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hmem".
   iClear "Hmem".
   iDestruct "Hstfields" as "(memLock'&d'&circ'&st'&Hstfields)".
@@ -1190,7 +1190,7 @@ Proof.
   iNamed "Hfield_ptsto".
 
   wp_loadField.
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   iDestruct "HmemLog_linv" as (installed_txn_id_mem' nextDiskEnd_txn_id' txns' logger_pos' logger_txn_id' installer_pos_mem' installer_txn_id_mem') "Hlinv".
@@ -1336,7 +1336,7 @@ Theorem wp_Walog__installer γ l dinit :
 Proof.
   wp_start.
   iMod (is_wal_read_mem with "Hwal") as "#Hmem".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hmem".
   iNamed "Hstfields".
   wp_loadField.

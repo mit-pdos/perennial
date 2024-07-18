@@ -22,7 +22,7 @@ Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hargs & %HsidLe & Hpre)".
   iNamed "Hargs".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His_shard".
   wp_loadField.
@@ -30,7 +30,7 @@ Proof.
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   (* update shardMap to have sid ↦ true *)

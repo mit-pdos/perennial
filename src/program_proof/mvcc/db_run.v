@@ -33,7 +33,7 @@ Theorem wp_DB__Run
 Proof.
   iIntros (Hdec) "#Hdb !>".
   iIntros (Φ) "Hbody HAU".
-  wp_call.
+  wp_rec. wp_pures.
   
   (*@ func (db *DB) Run(body func(txn *Txn) bool) bool {                      @*)
   (*@     txn := db.NewTxn()                                                  @*)

@@ -160,7 +160,7 @@ Section goose_lang.
   Proof.
     iIntros (Hty Φ) "_ HΦ".
     rewrite ref_ty_unseal.
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply (wp_AllocAt t); auto.
   Qed.
 
@@ -447,6 +447,6 @@ Tactic Notation "wp_store" :=
     |tc_solve
     |solve_pointsto ()
     |pm_reflexivity
-    |first [wp_seq|wp_finish]]
+    |first [wp_pure_filter (Rec BAnon BAnon _)|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
   end.

@@ -30,7 +30,7 @@ Lemma wp_NewProphBytes :
     NewProph #()
   {{{ (p : proph_id) b, RET #p; proph_once_bytes p b }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_call.
+  iIntros (Φ) "_ HΦ". wp_rec. wp_pures.
   wp_apply wp_new_proph. iIntros (pvs p) "Hp".
   destruct pvs.
   { iApply ("HΦ" $! p).
@@ -48,7 +48,7 @@ Local Lemma wp_BytesToVal sl b q :
     BytesToVal (slice_val sl)
   {{{ v, RET v; ⌜decode_bytes v = b⌝ ∗ own_slice_small sl byteT q b }}}.
 Proof.
-  iIntros (?) "Hsl HΦ". wp_call.
+  iIntros (?) "Hsl HΦ". wp_rec. wp_pures.
   wp_apply wp_alloc_untyped. { done. }
   iIntros (l) "Hl". wp_apply (wp_store with "Hl"). iIntros "Hl". wp_pures.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
@@ -82,7 +82,7 @@ Lemma wp_ResolveBytes sl p b b' q :
   {{{ RET #(); ⌜b' = b⌝ ∗ own_slice_small sl byteT q b }}}.
 Proof.
   iIntros (?) "[Hproph ?] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_BytesToVal with "[$]").
   iIntros (?) "[% ?]".
   wp_pures.

@@ -193,7 +193,7 @@ Theorem wp_NextAligned (current : u64) (interval : u64) (low : u64) :
   }}}.
 Proof.
   iIntros (Hitv Horder Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func NextAligned(current, interval, low uint64) uint64 {                @*)
   (*@     var delta uint64                                                    @*)
@@ -247,7 +247,7 @@ Theorem wp_Paxos__outcome (px : loc) nid sc γ :
   {{{ RET (#(LitString v), #ok); True }}}.
 Proof.
   iIntros "#Hnode" (Φ) "!> _ HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) outcome() (string, bool) {                             @*)
   (*@     px.mu.Lock()                                                        @*)
@@ -311,7 +311,7 @@ Theorem wp_Paxos__Outcome (px : loc) nid sc γ :
   {{{ RET (#(LitString v), #ok); True }}}.
 Proof.
   iIntros "#Hpaxos" (Φ) "!> _ HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) Outcome() (string, bool) {                             @*)
   (*@     decree, ok := px.outcome()                                          @*)
@@ -344,7 +344,7 @@ Theorem wp_Paxos__prepare (px : loc) (term : u64) nid sc γ :
   }}}.
 Proof.
   iIntros "#Hnode" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) prepare(term uint64) (uint64, string, bool) {          @*)
   (*@     px.mu.Lock()                                                        @*)
@@ -439,7 +439,7 @@ Theorem wp_Paxos__advance (px : loc) nid sc γ :
   }}}.
 Proof.
   iIntros "#Hnode" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) advance() (uint64, uint64, string) {                   @*)
   (*@     px.mu.Lock()                                                        @*)
@@ -532,7 +532,7 @@ Theorem wp_Paxos__accept (px : loc) (term : u64) (decree : string) nid sc γ :
   {{{ (ok : bool), RET #ok; if ok then node_accepted term decree nid γ else True }}}.
 Proof.
   iIntros "#Hproposal #Hnode" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) accept(term uint64, decree string) bool {              @*)
   (*@     px.mu.Lock()                                                        @*)
@@ -676,7 +676,7 @@ Theorem wp_Paxos__accept__proposer
   }}}.
 Proof.
   iIntros "%Hofnode %Hdecree #Hprepares #Hnode" (Φ) "!> _ HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) accept(term uint64, decree string) bool {              @*)
   (*@     px.mu.Lock()                                                        @*)
@@ -924,7 +924,7 @@ Theorem wp_Paxos__major (px : loc) (n : u64) (sc : nat) (scu64 : u64) :
   {{{ (ok : bool), RET #ok; ⌜if ok then reached_quorum sc (uint.nat n) else True⌝ }}}.
 Proof.
   iIntros "%Hscu64 #Hsc" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) major(n uint64) bool {                                 @*)
   (*@     return n > px.sc / 2                                                @*)
@@ -950,7 +950,7 @@ Theorem wp_Paxos__prepareAll (px : loc) (term terma : u64) (decreea : string) ni
   }}}.
 Proof.
   iIntros "#Hprep #Hcomm" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) prepareAll(term uint64) (uint64, string, bool) {       @*)
   (*@     var termLargest uint64                                              @*)
@@ -1023,14 +1023,14 @@ Proof.
       wp_apply (wp_If_join_evar with "[HtermlRef HdecreelRef]").
       { iIntros (b Eqb).
         case_bool_decide.
-        - wp_if_true. do 2 wp_store.
+        - wp_pures. do 2 wp_store.
           iModIntro.
           iSplit; first done.
           replace #termpeer with #(if b then termpeer else terml) by by rewrite Eqb.
           replace #(LitString decreepeer) with
             #(if b then (LitString decreepeer) else (LitString decreel)) by by rewrite Eqb.
           iNamedAccu.
-        - wp_if_false.
+        - wp_pures.
           iModIntro.
           iSplit; first done.
           rewrite Eqb. iFrame.
@@ -1129,7 +1129,7 @@ Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid sc γ 
   {{{ (ok : bool), RET #ok; if ok then quorum_accepted term sc γ else True }}}.
 Proof.
   iIntros "#Hacpt #Hpsl #Hcomm" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) acceptAll(term uint64, decree string) bool {           @*)
   (*@     var nAccepted uint64 = 1                                            @*)
@@ -1240,7 +1240,7 @@ Theorem wp_Paxos__learn (px : loc) (term : u64) (decree : string) nid sc γ :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hproposal #Hchosen #Hnode" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) learn(term uint64, decree string) {                    @*)
   (*@     px.mu.Lock()                                                        @*)
@@ -1338,7 +1338,7 @@ Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) nid sc γ :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hproposal #Hchosen #Hcomm" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) learnAll(term uint64, decree string) {                 @*)
   (*@     for _, peer := range(px.peers) {                                    @*)
@@ -1376,7 +1376,7 @@ Theorem wp_Paxos__Propose (px : loc) (v : string) nid sc γ :
   {{{ (ok : bool), RET #ok; True }}}.
 Proof.
   iIntros "#Hpaxos !>" (Φ) "_ HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (px *Paxos) Propose(v string) bool {                               @*)
   (*@     // Proceed to a new term exclusively owned by this paxos node.      @*)
@@ -1442,7 +1442,7 @@ Proof.
   wp_apply (wp_If_join_evar with "[HdecreeRef HhelpingRef]").
   { iIntros (b Eqb).
     case_bool_decide.
-    - wp_if_true.
+    - wp_pures.
       do 2 wp_store.
       iModIntro.
       iSplit; first done.
@@ -1450,7 +1450,7 @@ Proof.
         (if b then (LitString v) else (LitString decreel)) by by rewrite Eqb.
       replace #false with #(if b then false else true) by by rewrite Eqb.
       iNamedAccu.
-    - wp_if_false.
+    - wp_pures.
       do 2 wp_store.
       iModIntro.
       iSplit; first done.

@@ -81,14 +81,14 @@ Lemma put_core_spec γ (srv:loc) :
 }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "HΦ".
   iIntros (??).
   clear Φ.
 
   iIntros (Φ) "!# [Hksown Hpre] Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hksown".
   wp_pures.
@@ -96,7 +96,7 @@ Proof.
   wp_apply (wp_MapInsert with "HkvsMap"); eauto; iIntros "HkvsMap".
   iDestruct "Hpre" as (v') "Hpre".
   iMod (map_update with "Hkvctx Hpre") as "[Hkvctx Hptsto]".
-  wp_seq.
+  wp_pures.
   iApply "Hpost".
   iFrame. iExists _; iFrame.
 Qed.
@@ -120,14 +120,14 @@ Lemma get_core_spec (srv:loc) γ :
 }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "HΦ".
   iIntros (???).
   clear Φ.
 
   iIntros (Φ) "!# [Hksown Hpre] Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hksown".
   wp_pures.
@@ -163,7 +163,7 @@ is_kvserver γ srv -∗
 Proof.
   iIntros "#Hls".
   iIntros (Φ) "!# _ Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "Hpost".
   iIntros (?).
@@ -233,7 +233,7 @@ is_kvserver γ srv -∗
 Proof.
   iIntros "#Hls".
   iIntros (Φ) "!# _ Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "Hpost".
   iIntros (args req).
@@ -268,7 +268,7 @@ is_kvserver_host γ srv -∗
 }}}.
 Proof.
   iIntros "#Hserver" (Φ) "!# (Hclerk & Hpre) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures. 
   iNamed "Hclerk".
   repeat wp_loadField.
@@ -301,7 +301,7 @@ is_kvserver_host γ srv -∗
 }}}.
 Proof.
   iIntros "#Hserver" (Φ) "!# (Hclerk & Hpre) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures. 
   iNamed "Hclerk".
   repeat wp_loadField.
@@ -314,7 +314,7 @@ Proof.
   }
   iIntros (v) "Hretv".
   iDestruct "Hretv" as "[Hrpcclient HcorePost]".
-  wp_seq.
+  wp_pures.
   iApply "Hpost".
   iFrame.
   iExists _; iFrame.
@@ -330,7 +330,7 @@ Lemma MakeKVServer_spec :
     is_kvserver γ srv ∗ [∗ set] cid ∈ fin_to_set u64, kvserver_cid_token γ cid
   }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_lam.
+  iIntros (Φ) "_ HΦ". wp_rec.
   iMod make_rpc_server as (γrpc) "(#is_server & server_own & cli_tokens)"; first done.
   iMod (map_init (∅ : gmap u64 u64)) as (γkv) "Hγkv".
   set (γ := KVserviceGN γrpc γkv) in *.
@@ -368,11 +368,11 @@ is_kvserver γ srv -∗
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hsrv !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply map.wp_NewMap.
   iIntros (mref) "Hm".
   wp_pures.
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ConjugateRpcFunc with "[]").
   {
     admit.
@@ -430,7 +430,7 @@ Lemma MakeKVClerk_spec γ (srv : u64) (cid : u64) :
     MakeKVClerk #srv #cid
   {{{ ck, RET #ck; KVClerk_own γ ck srv }}}.
 Proof.
-  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_lam.
+  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_rec.
   rewrite /kvserver_cid_token /KVClerk_own.
   iApply wp_fupd.
 

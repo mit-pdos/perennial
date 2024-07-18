@@ -806,7 +806,7 @@ Proof.
   iIntros (v') "Hv".
   iDestruct "Hv" as (vs') "(Hstarted&Hinterp)".
   rewrite /op_wrappers.Txn__ConditionalCommit'.
-  wp_pure1.
+  wp_pure.
   wp_bind (Rec _ _ _).
   iDestruct "Hinterp" as "[Hnone|Hsome]".
   {

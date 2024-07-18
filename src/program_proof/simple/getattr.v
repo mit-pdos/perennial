@@ -39,7 +39,7 @@ Theorem wp_Inode__MkFattr ip inum len blk :
   }}}.
 Proof.
   iIntros (Φ) "Hmem HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hmem".
   wp_loadField.
   wp_loadField.
@@ -62,7 +62,7 @@ Theorem wp_rootFattr :
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ". eauto 50.
 Qed.
 
@@ -105,7 +105,7 @@ Proof using Ptimeless.
   iIntros (Φ) "(Hfs & #Hfh & Hfupd) HΦ".
   iNamed "Hfs".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; first by auto.
   iIntros (reply) "Hreply".
   wp_apply util_proof.wp_DPrintf.
@@ -240,7 +240,7 @@ Proof using Ptimeless.
   wpc_call.
   wpc_bind (NFSPROC3_GETATTR_wp _ _ _ _).
   wpc_frame.
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_ReadInode with "[$Hjrnl_mem $Hinode_enc]"); first by intuition eauto.
   iIntros (ip) "(Hjrnl_mem & Hinode_enc & Hinode_mem)".

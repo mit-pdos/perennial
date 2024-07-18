@@ -338,7 +338,7 @@ Proof.
   iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
   pose Hkey as Hkey'.
   destruct Hkey' as [HbuildAddr [Hkaddr [Hklgsz Hsz]]].
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_pures.
   remember(bool_decide (uint.Z sz < uint.Z _)) as Hszcomp.
@@ -354,8 +354,8 @@ Proof.
     * wp_loadField.
       wp_apply (wp_jrnl_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx γt) "Hbtxn".
-      wp_let.
-      wp_call.
+      wp_pures.
+      wp_rec. wp_pures.
       change (w64_word_instance.(@word.mul 64) 4096 8) with (W64 32768).
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
@@ -383,7 +383,7 @@ Proof.
          wp_apply (util_proof.wp_CloneByteSlice with "HisBufData").
          iIntros (data') "[HisBlkData HisBlkData']".
 
-         wp_let.
+         wp_pures.
          iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "[Hmapsto HisBuf]"; unfold specs.is_buf.
          { iSplit; eauto. iExists data, sz0; iFrame; auto. }
          wp_apply (wp_Op__CommitWait buftx γt γDisk {[key := existT defs.KindBlock (defs.bufBlock blk)]} with "[Hmapsto HisBuf]").
@@ -394,7 +394,7 @@ Proof.
          iIntros (ok) "Hmapsto".
          rewrite big_sepM_singleton.
          iPoseProof ("HrestMt" with "Hmapsto") as "Hmapsto".
-         wp_let.
+         wp_pures.
          wp_pures.
          wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
          wp_pures. iApply ("Hϕ" $! lptr).

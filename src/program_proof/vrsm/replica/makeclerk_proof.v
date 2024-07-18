@@ -25,7 +25,7 @@ Lemma wp_MakeClerk γ γsrv host :
 }}}.
 Proof.
   iIntros (Φ) "#Hpb HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_MakeReconnectingClient).
   iIntros (?) "#His_cl".
   iApply wp_fupd.

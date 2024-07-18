@@ -82,7 +82,7 @@ Section goose_lang.
   Proof.
     iIntros (Hdisj1 Hdisj2 Φ) "Hpre HΦ"; iNamed "Hpre".
     iNamed "Hrb".
-    wp_call.
+    wp_rec. wp_pures.
     wp_loadField.
     wp_apply (lock.acquire_spec with "His_lock").
     iIntros "[Hlocked Hinv]".

@@ -57,7 +57,7 @@ Lemma wp_EncodeConditionalPutRequest args_ptr expv_sl newv_sl args :
 Proof.
   iIntros (Φ) "Hrep HΦ".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrep".
 
@@ -132,7 +132,7 @@ Lemma wp_DecodeConditionalPutRequest req_sl reqData args :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Hsl] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   { val_ty. }
   iIntros (rep_ptr) "Hrep".
@@ -184,7 +184,7 @@ Lemma wp_EncodeConditionalPutReply rep_ptr rep :
 Proof.
   iIntros (Φ) "Hrep HΦ".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrep".
 
@@ -226,7 +226,7 @@ Lemma wp_DecodeConditionalPutReply rep rep_sl repData :
   }}}.
 Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   {
     naive_solver.

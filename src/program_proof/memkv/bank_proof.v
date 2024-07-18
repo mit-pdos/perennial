@@ -156,7 +156,7 @@ Lemma acquire_two_spec (lck :loc) (ln1 ln2:u64) γ:
 }}}.
 Proof.
   iIntros (Φ) "(Hlck & #Hln1_islock & #Hln2_islock) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   destruct bool_decide; wp_pures.
   {
@@ -193,7 +193,7 @@ Lemma release_two_spec (lck :loc) (ln1 ln2:u64) γ:
 }}}.
 Proof.
   iIntros (Φ) "(Hlck & #Hln1_islock & #Hln2_islock & HP1 & HP2) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln1_islock $HP1]").
   iIntros "Hlck".
@@ -220,7 +220,7 @@ Lemma Bank__transfer_internal_spec (bck:loc) src dst (amount:u64) γ accts :
 Proof.
   iIntros (Φ) "(#Hbinv & Hpre & #Hsrc & #Hdst & %) Hpost".
   iNamed "Hpre".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_two_spec with "[$Hlck_own]"); first iFrame "#".
   iIntros "(Hlck_own & Hacc1_unlocked & Hacc2_unlocked)".
@@ -313,7 +313,7 @@ Lemma Bank__SimpleTransfer_spec (bck:loc) γ accts :
 }}}.
 Proof.
   iIntros (Φ) "[#Hbinv Hpre] Hpost".
-  wp_call.
+  wp_rec. wp_pures.
   wp_forBreak_cond.
   wp_pures.
   wp_apply wp_RandomUint64. iIntros (src) "_".
@@ -389,7 +389,7 @@ Lemma Bank__get_total_spec (bck:loc) γ accts :
 }}}.
 Proof.
   iIntros (Φ) "[#Hbinv Hpre] Hpost".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; first by done.
   iIntros (sum) "Hsum".
 
@@ -569,7 +569,7 @@ Lemma Bank__SimpleAudit_spec (bck:loc) γ accts :
 }}}.
 Proof.
   iIntros (Φ) "[#Hbinv Hpre] Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iCombine "Hpre Hpost" as "H".
   wp_apply (wp_forBreak' with "[-]").
@@ -600,7 +600,7 @@ Lemma wp_MakeBankClerkSlice (lockhost kvhost : u64) cm γ1 γ2 cid accts (accts_
 Proof.
   iIntros (Φ) "(#Hcoord_lock&#Hcoord_kv&#Hcm&#Hinit_lock&Haccts_slice&%Hperm) HΦ".
   rewrite /MakeBankClerk.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_allocStruct; first val_ty.
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
@@ -839,7 +839,7 @@ Lemma wp_MakeBankClerk (lockhost kvhost : u64) cm γ1 γ2 cid (acc0 acc1 : u64) 
 .
 Proof.
   iIntros (Φ) "(Ha & Hb & Hc & Hd & %He) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; first by eauto.
   iIntros (accts) "Haccts".
   wp_load.

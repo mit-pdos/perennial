@@ -35,7 +35,7 @@ Proof.
   intros Henc.
   iIntros "#Hck Hop_sl".
   iIntros "#HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep) "Hrep".
@@ -392,14 +392,14 @@ Proof.
   iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
   iNamed "His".
   rewrite /Server__Apply.
-  wp_pure1_credit "Hcred3".
+  wp_pure_credit "Hcred3".
   wp_apply (wp_allocStruct).
   { eauto. }
   iIntros (reply_ptr) "Hreply".
   iDestruct (struct_fields_split with "Hreply") as "HH".
   iNamed "HH".
-  wp_pure1_credit "Hlc1".
-  wp_pure1_credit "Hlc2".
+  wp_pure_credit "Hlc1".
+  wp_pure_credit "Hlc2".
   simpl.
   replace (slice.nil) with (slice_val (Slice.nil)) by done.
   wp_storeField.
@@ -409,11 +409,11 @@ Proof.
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   iNamed "Hvol".
-  wp_pure1_credit "Hcred1".
-  wp_pure1_credit "Hcred2".
+  wp_pure_credit "Hcred1".
+  wp_pure_credit "Hcred2".
   iSpecialize ("Hupd" with "Hlc1 Hlc2").
   wp_loadField.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_if_destruct.
   { (* return error "not primary" *)
     wp_loadField.
@@ -790,7 +790,7 @@ Proof.
     wp_pures.
     wp_load.
     unfold SliceGet.
-    wp_call.
+    wp_rec. wp_pures.
     iDestruct (big_sepS_elem_of_acc _ _ j with "Hwg_post") as "[HH _]".
     { set_solver. }
     iDestruct "HH" as "[%Hbad|HH]".
@@ -804,7 +804,7 @@ Proof.
     }
     iDestruct "HH" as (??) "(%HbackupLookup & Herr2 & Hpost)".
     wp_apply (wp_slice_ptr).
-    wp_pure1.
+    wp_pure.
     iEval (simpl) in "Herr2".
     iMod (readonly_load with "Herr2") as (?) "Herr3".
     wp_load.
@@ -868,7 +868,7 @@ Proof.
   iRight.
   iModIntro.
   iSplitL ""; first done.
-  wp_pure1_credit "Hlc3".
+  wp_pure_credit "Hlc3".
   wp_load.
   wp_pures.
 

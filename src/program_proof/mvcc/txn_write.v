@@ -20,7 +20,7 @@ Proof.
   (*@     wrbuf := txn.wrbuf                                                  @*)
   (*@     wrbuf.Put(key, val)                                                 @*)
   (*@ }                                                                       @*)
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup".
   wp_loadField.
   wp_pures.

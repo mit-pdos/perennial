@@ -397,7 +397,7 @@ Section program.
     {{{ RET #(option_txnst_to_u64 (stm !! uint.nat ts)); own_replica_stm rp stm }}}.
   Proof.
     iIntros (Φ) "Hstm HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) queryTxnStatus(ts uint64) uint64 {                   @*)
     (*@     // First we check if the transaction has committed or aborted.      @*)
@@ -464,7 +464,7 @@ Section program.
     }}}.
   Proof.
     iIntros "#Hinv #Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) QueryTxnStatus(ts uint64) uint64 {                   @*)
     (*@     rp.mu.Lock()                                                        @*)
@@ -516,7 +516,7 @@ Section program.
     {{{ (st : txnst), RET #(txnst_to_u64 st); txn_token γ gid (uint.nat ts) st }}}.
   Proof.
     iIntros "%Hprep #Hlogp #Hlsnap #Hinv #Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) QueryTxnStatus(ts uint64) uint64 {                   @*)
     (*@     rp.mu.Lock()                                                        @*)
@@ -583,7 +583,7 @@ Section program.
     }}}.
   Proof.
     iIntros (Φ) "Htxntbl HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) queryTxnTermination(ts uint64) bool {                @*)
     (*@     _, terminated := rp.txntbl[ts]                                      @*)
@@ -608,7 +608,7 @@ Section program.
     {{{ (terminated : bool), RET #terminated; True }}}.
   Proof.
     iIntros "#Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) QueryTxnTermination(ts uint64) bool {                @*)
     (*@     rp.mu.Lock()                                                        @*)
@@ -638,7 +638,7 @@ Section program.
     {{{ RET #(); lsn_applied_lb α (uint.nat lsn) }}}.
   Proof.
     iIntros "#Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) WaitUntilApplied(lsn uint64) {                       @*)
     (*@     for {                                                               @*)
@@ -698,7 +698,7 @@ Section program.
     }}}.
   Proof.
     iIntros "#Hsafe #Hinv #Hrp" (Φ) "!> Hpwrs HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) Prepare(ts uint64, pwrs []WriteEntry) (uint64, bool) { @*)
     (*@     // Return immediately if the transaction has already prepared, aborted, or @*)
@@ -792,7 +792,7 @@ Section program.
     {{{ (ok : bool), RET #ok; True }}}.
   Proof.
     iIntros "#Hsafe #Hinv #Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) Abort(ts uint64) bool {                              @*)
     (*@     // Query the transaction table. Note that if there's an entry for @ts in @*)
@@ -859,7 +859,7 @@ Section program.
     {{{ (ok : bool), RET #ok; True }}}.
   Proof.
     iIntros "#Hsafe #Hinv #Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) Commit(ts uint64) bool {                             @*)
     (*@     // Query the transaction table. Note that if there's an entry for @ts in @*)
@@ -928,7 +928,7 @@ Section program.
     }}}.
   Proof.
     iIntros "%Hsafe #Hinv #Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) Read(ts uint64, key string) (Value, bool) {          @*)
     (*@     // If the transaction has already terminated, this can only be an outdated @*)
@@ -1044,7 +1044,7 @@ Section program.
     {{{ RET #(); own_replica_tpls rp tpls' α }}}.
   Proof.
     iIntros "%Hdom %Hvk %Hvg %Happly #Hlbs #Hrp" (Φ) "!> Hphyss HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) applyRead(ts uint64, key string) {                   @*)
     (*@     // All we care about here is extension of the tuple; we'll read the value @*)
@@ -1139,7 +1139,7 @@ Section program.
   Proof.
     iIntros (Hdom Hvw ok tpls') "#Hrp".
     iIntros (Φ) "!> [[HpwrsS %HpwrsL] Hphyss] HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) validate(ts uint64, pwrs []WriteEntry) bool {        @*)
     (*@     // Start acquiring locks for each key.                              @*)
@@ -1447,7 +1447,7 @@ Section program.
     {{{ RET #(); own_replica_state rp stm' tpls' α }}}.
   Proof.
     iIntros "%Hdom %Hvw %Happly #Hrp" (Φ) "!> [Hst Hpwrs] HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) applyPrepare(ts uint64, pwrs []WriteEntry) {         @*)
     (*@     // The transaction has already prepared, aborted, or committed. This must be @*)
@@ -1535,7 +1535,7 @@ Section program.
   Proof.
     iIntros (Hvw Hdom Hlen tpls') "#Hlbs #Hrp".
     iIntros (Φ) "!> [[HpwrsS %Hpwrs] Hphyss] HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) multiwrite(ts uint64, pwrs []WriteEntry) {           @*)
     (*@     for _, ent := range pwrs {                                          @*)
@@ -1713,7 +1713,7 @@ Section program.
   Proof.
     iIntros (Hsafe Happly) "#Hlbs #Hrp".
     iIntros (Φ) "!> Hst HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) applyCommit(ts uint64) {                             @*)
     (*@     // Query the transaction table. Note that if there's an entry for @ts in @*)
@@ -1816,7 +1816,7 @@ Section program.
   Proof.
     iIntros (Hvw Hdom tpls') "#Hrp".
     iIntros (Φ) "!> [[HpwrsS %Hpwrs] Hphyss] HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) abort(pwrs []WriteEntry) {                           @*)
     (*@     for _, ent := range pwrs {                                          @*)
@@ -1906,7 +1906,7 @@ Section program.
     {{{ RET #(); own_replica_state rp stm' tpls' α }}}.
   Proof.
     iIntros "%Hsafe %Happly #Hrp" (Φ) "!> Hst HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) applyAbort(ts uint64) {                              @*)
     (*@     // Query the transaction table. Note that if there's an entry for @ts in @*)
@@ -2030,7 +2030,7 @@ Section program.
     (*@ }                                                                       @*)
     iIntros (Hdom Hvc Hsafe Happly) "#Hlbs #Hrp".
     iIntros (Φ) "!> [Hst HpwrsS] HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     destruct Hvc as (Hts & Hvw & Hvk).
     rewrite /valid_ts_of_command /valid_ts in Hts.
     destruct cmd eqn:Hcmd; simpl; wp_pures.
@@ -2088,7 +2088,7 @@ Section program.
     {{{ RET #(); True }}}.
   Proof.
     iIntros "#Hinv #Hrp" (Φ) "!> _ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func (rp *Replica) Start() {                                            @*)
     (*@     rp.mu.Lock()                                                        @*)
@@ -2109,7 +2109,7 @@ Section program.
     { (* Get out of an infinite loop. *) iIntros "HrpO". wp_pures. by iApply "HΦ". }
     clear Φ. iIntros "!>" (Φ) "[HrpO Hlocked] HΦ".
     iNamed "HrpO". iNamed "Hlog".
-    wp_call. wp_loadField.
+    wp_rec. wp_pures. wp_loadField.
     wp_apply wp_SumAssumeNoOverflow.
     iIntros (Hnoof).
 

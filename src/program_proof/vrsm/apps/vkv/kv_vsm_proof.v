@@ -100,7 +100,7 @@ Lemma wp_encodePutArgs (args_ptr:loc) (key val:string) :
 Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSliceWithCap (V:=u8)).
   { done. }
   iIntros (ptr) "Hbuf".
@@ -149,7 +149,7 @@ Lemma wp_decodePutArgs enc_sl enc q (key val:string) :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
 
   (* IDEA: maybe get rid of redundancy in slice length by having the slice object be
      (own_slice_small byteT slptr cap l)
@@ -222,7 +222,7 @@ Lemma wp_encodeGetArgs (key:string) :
 Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSliceWithCap (V:=u8)).
   { done. }
   iIntros (ptr) "Hbuf".
@@ -257,7 +257,7 @@ Lemma wp_decodeGetArgs enc_sl enc q (key:string) :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   cbn in Henc. subst.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsl_sz.
   wp_apply wp_SliceSkip.
@@ -287,7 +287,7 @@ Lemma wp_encodeCondPutArgs (args_ptr:loc) (key expect val:string) :
 Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSliceWithCap (V:=u8)).
   { done. }
   iIntros (ptr) "Hbuf".
@@ -350,7 +350,7 @@ Lemma wp_decodeCondPutArgs enc_sl enc q (key expect val:string) :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsl_sz.
   cbn in Henc.
   subst.
@@ -457,7 +457,7 @@ Lemma wp_KVState__apply s :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iModIntro.
   iApply "HΦ".
@@ -488,7 +488,7 @@ Proof.
     iIntros "Hvnums_map".
 
     wp_pures.
-    wp_call.
+    wp_rec. wp_pures.
     wp_loadField.
     wp_loadField.
     wp_loadField.
@@ -579,7 +579,7 @@ Proof.
     wp_pures.
 
     (* TODO: separate lemma *)
-    wp_call.
+    wp_rec. wp_pures.
     wp_loadField.
     wp_apply (wp_MapGet with "[$Hkvs_map]").
     iIntros (??) "[%Hlookup Hkvs_map]".
@@ -818,7 +818,7 @@ Lemma wp_KVState__applyReadonly s :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iModIntro.
   iApply "HΦ".
   clear Φ.
@@ -842,7 +842,7 @@ Proof.
   wp_apply (wp_decodeGetArgs with "[$Hsl2 //]").
   iNamed "Hown".
   wp_pures.
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "Hkvs_map").
   iIntros (??) "[%Hkv_lookup Hkvs_map]".
@@ -906,7 +906,7 @@ Lemma wp_KVState__setState s :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iModIntro.
   iApply "HΦ".
   clear Φ.
@@ -956,7 +956,7 @@ Proof.
   iIntros (??? Φ) "!# Hpre HΦ".
   iDestruct "Hpre" as "Hown".
   wp_pures.
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hown".
   wp_loadField.
   iApply wp_fupd.
@@ -985,7 +985,7 @@ Lemma wp_makeVersionedStateMachine :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor. Opaque slice.T. }

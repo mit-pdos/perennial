@@ -49,7 +49,7 @@ Theorem wp_newAllocator mref (start sz: u64) used P E :
   {{{ l, RET #l; is_allocator l P }}}.
 Proof.
   iIntros (Hoverflow Φ) "(#Hsplit&#Hjoin&Hused&HP) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_freeRange; first by auto.
   iIntros (mref') "Hfree".
   wp_pures.
@@ -93,7 +93,7 @@ Theorem wp_Reserve l P :
 Proof.
   clear.
   iIntros (Φ) "Hinv HΦ"; iNamed "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "His_lock").
   iIntros "(His_locked & Hinner)"; iNamed "Hinner".
@@ -149,7 +149,7 @@ Theorem wp_Free P l (a: u64) :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(Halloc&Ha) HΦ"; iNamed "Halloc".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "His_lock").
   iIntros "(Hlocked&Hinv)"; iNamed "Hinv".

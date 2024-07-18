@@ -105,7 +105,7 @@ Section proof.
     {{{ True }}} lock.new #() @ E {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply wp_alloc_untyped; auto.
   Qed.
 
@@ -113,7 +113,7 @@ Section proof.
     {{{ ▷ R }}} lock.new #() @ E {{{ (lk:loc), RET #lk; is_lock #lk R }}}.
   Proof.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
-    wp_lam. wp_apply wp_alloc_untyped; first by auto.
+    wp_rec. wp_apply wp_alloc_untyped; first by auto.
     iIntros (l) "Hl".
     iMod (alloc_lock with "[$] HR") as "Hlock".
     iModIntro.
@@ -148,8 +148,8 @@ Section proof.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_acquire_spec with "Hl"); auto. iIntros ([]).
-    - iIntros "[Hlked HR]". wp_if. iApply "HΦ"; by iFrame.
-    - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
+    - iIntros "[Hlked HR]". wp_pures. iApply "HΦ"; by iFrame.
+    - iIntros "_". wp_pures. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
   Lemma acquire_spec lk R :
@@ -162,7 +162,7 @@ Section proof.
   Proof.
     iIntros (? Φ) "(Hlock & Hlocked & HR) HΦ".
     iDestruct "Hlock" as (l ->) "#Hinv".
-    rewrite /lock.release /=. wp_lam.
+    rewrite /lock.release /=. wp_rec.
     wp_bind (CmpXchg _ _ _).
     iInv N as (b) "[>Hl _]".
 
@@ -172,7 +172,7 @@ Section proof.
     rewrite Qp.quarter_three_quarter.
     wp_cmpxchg_suc.
     iModIntro.
-    iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
+    iSplitR "HΦ"; last by wp_pures; iApply "HΦ".
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct "Hl" as "[Hl1 Hl2]".
     iNext. iExists false. iFrame.
@@ -203,7 +203,7 @@ Section proof.
   Proof.
     rewrite /is_cond.
     iIntros (Φ) "Hl HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply wp_alloc_untyped; [ auto | ].
     iIntros (c) "Hc".
     (* FIXME: need a let binding in the implementation to do an iMod after the
@@ -220,7 +220,7 @@ Section proof.
   Proof.
     rewrite /is_cond.
     iIntros (Φ) "Hl HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     iDestruct (is_lock_flat with "Hl") as %[l ->].
     wp_apply wp_alloc_untyped; [ auto | ].
     iIntros (c) "Hc".
@@ -237,7 +237,7 @@ Section proof.
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     iApply ("HΦ" with "[//]").
   Qed.
 
@@ -247,7 +247,7 @@ Section proof.
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     iApply ("HΦ" with "[//]").
   Qed.
 
@@ -257,7 +257,7 @@ Section proof.
     {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (Φ) "(#Hcond&#Hlock&Hlocked&HR) HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     rewrite /is_cond.
     wp_untyped_load.
     wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
@@ -275,7 +275,7 @@ Section proof.
     {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
-    wp_lam. wp_pures.
+    wp_rec. wp_pures.
     wp_apply (wp_condWait with "Hpre").
     done.
   Qed.

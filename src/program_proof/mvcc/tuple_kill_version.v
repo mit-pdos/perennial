@@ -13,7 +13,7 @@ Theorem wp_tuple__killVersion tuple (tid : u64) owned tidlast vers :
 Proof.
   iIntros (Φ) "HtuplePhys HΦ".
   iNamed "HtuplePhys".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* verNew := Version{                                      *)
@@ -57,7 +57,7 @@ Theorem wp_tuple__KillVersion
   {{{ (ret : u64), RET #ret; active_tid γ tid sid }}}.
 Proof.
   iIntros (Φ) "[Hactive H] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* ok := tuple.killVersion(tid)                            *)
@@ -86,13 +86,13 @@ Proof.
   wp_apply (wp_If_join_evar with "[HretR]").
   { iIntros (b') "%Eb'".
     case_bool_decide.
-    - wp_if_true.
+    - wp_pures.
       wp_store.
       iModIntro.
       iSplit; first done.
       replace #0 with #(if b' then 0 else 1) by by rewrite Eb'.
       iNamedAccu.
-    - wp_if_false.
+    - wp_pures.
       wp_store.
       iModIntro.
       iSplit; first done.

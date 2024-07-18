@@ -170,7 +170,7 @@ Section goose.
     {{{ (a: u64), RET #a; ⌜a = addr ∨ a = word.add addr 1⌝ }}}.
   Proof.
     iIntros (Φ) "#addr HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_if_destruct.
     - wp_loadField.
       iApply "HΦ"; auto.

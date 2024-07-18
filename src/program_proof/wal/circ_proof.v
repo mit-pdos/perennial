@@ -470,7 +470,7 @@ Theorem wp_hdr2 (newStart: u64) :
                             ⌜block_encodes b [EncUInt64 newStart]⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc.
   iIntros (enc) "Henc".
   wp_pures.
@@ -495,7 +495,7 @@ Theorem wp_hdr1 (circ: loc) (newStart: u64) s (addrs: list u64) :
       ⌜block_encodes b ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
 Proof.
   iIntros (Haddrlen Φ) "[HdiskAddrs Hs] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc.
   iIntros (enc) "Henc".
   wp_pures.
@@ -594,9 +594,9 @@ Theorem wp_circular__Advance (Q: iProp Σ) γ (d: val) (start0: u64) (newStart :
 Proof.
   iIntros (Φ) "(#Hcirc&Hstart&#Hend&%&Hfupd) HΦ".
   rename H into Hpre.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_hdr2; iIntros (s hdr2) "[Hb %Henchdr2]".
-  wp_pure1_credit "Hcred".
+  wp_pure_credit "Hcred".
   wp_apply (wp_Write_atomic with "Hb").
   rewrite /is_circular.
   iInv "Hcirc" as "Hcirc_inv" "Hclose".
@@ -836,7 +836,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
   }}}.
 Proof.
   iIntros (Haddrs_len Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hγblocks & #Hstart & Hend & Hdiskaddrs & Hslice & Hupdslice) HΦ".
-  wp_lam. wp_let. wp_let. wp_let.
+  wp_rec. wp_pures.
   iDestruct (updates_slice_frag_len with "Hupdslice") as %Hupdlen.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
 
@@ -1114,7 +1114,7 @@ Theorem wp_circular__Append (Q: iProp Σ) γ (d: val) q (startpos endpos : u64) 
   }}}.
 Proof.
   iIntros (Hendpos_overflow Hhasspace Φ) "(#Hcirc & Hslice & Hend & #Hstart & Hca & Hfupd) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hca" as (bk_s addrs blocks' Hlow_wf) "(Hγaddrs&Hγblocks&HdiskAddrs&Haddrs)".
 
   wp_apply (wp_circularAppender__logBlocks with "[$Hcirc $Hγblocks $HdiskAddrs $Hstart $Hend $Haddrs $Hslice]"); try word.
@@ -1126,7 +1126,7 @@ Proof.
   wp_pures.
   wp_apply (wp_hdr1 with "[$HdiskAddrs $Hs]"); first by len.
   iIntros (b_s b) "(HdiskAddrs&Hs&Hb&%)".
-  wp_pure1_credit "Hcred".
+  wp_pure_credit "Hcred".
   wp_pures.
 
   iDestruct (slice.own_slice_small_sz with "Hb") as %Hslen.
@@ -1204,7 +1204,7 @@ Theorem wp_decodeHdr1 stk E s (hdr1: Block) (endpos: u64) (addrs: list u64) :
       own_slice a_s uint64T (DfracOwn 1) addrs }}}.
 Proof.
   iIntros (Hhdr1 Haddrlen Φ) "Hb HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_new_dec with "Hb"); first by eauto.
   iIntros (dec0) "Hdec0".
@@ -1228,7 +1228,7 @@ Theorem wp_decodeHdr2 stk E s (hdr2: Block) (startpos: u64) :
 Proof.
   iIntros (Hhdr2 Φ) "Hb HΦ".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_new_dec with "Hb"); first eauto.
   iIntros (dec1) "Hdec1".
   wp_pures.
@@ -1270,7 +1270,7 @@ Proof.
   iMod (ghost_var_alloc logblocks) as (blocks_name') "[Hblocks' Hγblocks]".
   iMod (mono_nat_own_alloc 0%nat) as (start_name') "[[Hstart1 Hstart2] #HstartLb]".
   iMod (mono_nat_own_alloc 0%nat) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_slice; first by auto.
   iIntros (zero_s) "Hzero".
   iDestruct (slice.own_slice_to_small with "Hzero") as "Hzero".

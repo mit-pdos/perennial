@@ -49,13 +49,13 @@ Theorem wp_mkHdr stk E lptr (sz disk_sz: u64) :
                                                       log_fields lptr sz disk_sz }}}.
 Proof.
   iIntros (Φ) "[Hsz Hdisk_sz] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc.
   iIntros (enc) "Henc".
-  wp_steps.
+  wp_pures.
   wp_loadField.
   wp_apply (wp_Enc__PutInt with "Henc"); [ word | iIntros "Henc" ].
-  wp_steps.
+  wp_pures.
   wp_loadField.
   wp_apply (wp_Enc__PutInt with "Henc"); [ word | iIntros "Henc" ].
   wp_apply (wp_Enc__Finish with "[$Henc]").
@@ -139,7 +139,7 @@ Theorem wp_write_hdr lptr (sz0 disk_sz0 sz disk_sz:u64) :
   {{{ RET #(); is_hdr sz disk_sz ∗ log_fields lptr sz disk_sz }}}.
 Proof.
   iIntros (Φ) "[Hhdr Hfields] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_mkHdr with "Hfields").
   iIntros (l cap b) "(Hb&%&Hfields)".
   iDestruct "Hhdr" as (b0) "(Hd0&%)".
@@ -237,7 +237,7 @@ Theorem wp_Log__get (lptr: loc) bs (i: u64) :
 Proof.
   iIntros (Φ) "[Hlog %] HΦ".
   iDestruct "Hlog" as (sz disk_sz) "[[Hsz Hdisk_sz] Hlog]".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_pures.
   wp_if_destruct.
@@ -246,7 +246,7 @@ Proof.
     { word_cleanup.
       iFrame. }
     iIntros (s) "[Hdi Hs]".
-    wp_steps.
+    wp_pures.
     iApply "HΦ". iModIntro.
     iApply slice.own_slice_to_small in "Hs".
     iSplitR "Hsz Hdisk_sz Hupd Hdi"; eauto.
@@ -831,7 +831,7 @@ Proof.
   iDestruct "Hhdr" as %Hhdr.
   wpc_frame "Hd0 HΦ Hlog_rest".
   { iIntros. iLeft in "HΦ". iIntros "!>". iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame. eauto. }
-  wp_steps.
+  wp_pures.
   iDestruct (slice.own_slice_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals in Hsz.
   assert (uint.Z s.(Slice.sz) = 4096) as Hlen.
@@ -846,7 +846,7 @@ Proof.
   iIntros "Hdec".
   wp_apply (wp_Dec__GetInt with "Hdec").
   iIntros "_".
-  wp_steps.
+  wp_pures.
   wp_apply wp_new_free_lock; iIntros (ml) "Hlock".
   wp_apply wp_allocStruct; [ rewrite struct_ty_unfold; val_ty | iIntros (lptr) "Hs" ].
   iDestruct (log_struct_to_fields' with "Hs") as "(Hfields&Hm)".

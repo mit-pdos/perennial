@@ -138,7 +138,7 @@ Lemma wp_EncodeMapU64ToBytes mptr m :
         ⌜has_byte_map_encoding enc m⌝
   }}}.
 Proof.
-  iIntros "%Φ H HΦ". iNamed "H". iNamed "Hmap". wp_call.
+  iIntros "%Φ H HΦ". iNamed "H". iNamed "Hmap". wp_rec. wp_pures.
   wp_apply wp_NewSlice. iIntros (s) "Hs".
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_apply (wp_MapLen with "Hkvs_map"). iIntros "[%Hmsize Hkvs_map]".
@@ -217,7 +217,7 @@ Lemma wp_DecodeMapU64ToBytes m enc_sl enc enc_rest q :
         own_slice_small rest_enc_sl byteT (DfracOwn q') enc_rest
   }}}.
 Proof.
-  iIntros "%Φ H HΦ". iNamed "H". wp_call.
+  iIntros "%Φ H HΦ". iNamed "H". wp_rec. wp_pures.
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_apply wp_byteMapNew. iIntros (mptr) "Hm".
   wp_load.
@@ -232,7 +232,7 @@ Proof.
   )%I with "[] [$Hli Hm Hl Hs]"); first word.
   2:{ iExists _. iFrame. }
   { (* core loop *)
-    clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
+    clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_rec.
     replace (uint.nat (word.add i 1)) with (1 + uint.nat i)%nat by word.
     assert (is_Some (ls !! (uint.nat i))) as [[k data] Hk].
     { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.
@@ -299,7 +299,7 @@ Lemma wp_EncodeMapU64ToU64 mptr m :
         ⌜has_u64_map_encoding enc m⌝
   }}}.
 Proof.
-  iIntros "%Φ H HΦ". iNamed "H". wp_call.
+  iIntros "%Φ H HΦ". iNamed "H". wp_rec. wp_pures.
   wp_apply wp_NewSlice. iIntros (s) "Hs".
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_apply (wp_MapLen with "Hmap"). iIntros "[%Hmsize Hmap]".
@@ -365,7 +365,7 @@ Lemma wp_DecodeMapU64ToU64 m enc_sl enc enc_rest q :
         own_slice_small rest_enc_sl byteT (DfracOwn q') enc_rest
   }}}.
 Proof.
-  iIntros "%Φ H HΦ". iNamed "H". wp_call.
+  iIntros "%Φ H HΦ". iNamed "H". wp_rec. wp_pures.
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_apply wp_NewMap. iIntros (mptr) "Hm".
   wp_load.
@@ -380,7 +380,7 @@ Proof.
   )%I with "[] [$Hli Hm Hl Hs]"); first word.
   2:{ iExists _. iFrame. }
   { (* core loop *)
-    clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
+    clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_rec.
     replace (uint.nat (word.add i 1)) with (1 + uint.nat i)%nat by word.
     assert (is_Some (ls !! (uint.nat i))) as [[k data] Hk].
     { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.
