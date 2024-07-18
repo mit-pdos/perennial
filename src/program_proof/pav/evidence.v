@@ -235,6 +235,10 @@ Module hashChain.
 Section local_defs.
 Context `{!heapGS Σ}.
 
+(*
+   intuitive to want injectivity the other way.
+   fifth link eq -> data eq.
+ *)
 Definition binds (data links : list (list w8)) : iProp Σ :=
   (* init is the chainSepNone hash, the empty list commitment. *)
   ∃ init,
@@ -252,10 +256,12 @@ Lemma binds_inj data links0 links1 :
   ⌜ links0 = links1 ⌝.
 Proof. Admitted.
 
+(* Currently don't have a use-case for this, it might be sub-sumed
+   by accessing binds and just querying some element. *)
 Definition is_link data link : iProp Σ :=
   ∃ links,
   "%Hlast_link" ∷ ⌜ last links = Some link ⌝ ∗
-  binds data links.
+  "#Hbinds" ∷ binds data links.
 
 Lemma is_link_inj data link0 link1 :
   is_link data link0 -∗
@@ -266,43 +272,43 @@ Proof. Admitted.
 (* TODO: might need lemma that allows clients to track a put call, like:
    is_link data link -∗ ∃ next_link, is_link (data ++ [b]) next_link. *)
 
-Definition own ptr data : iProp Σ :=
-  ∃ sl_links links,
+Definition own ptr data links : iProp Σ :=
+  ∃ sl_links,
   "Hlinks" ∷ ptr ↦[hashChain :: "links"] (slice_val sl_links) ∗
   "Hown" ∷ own_Slice2D sl_links (DfracOwn 1) links ∗
-  binds data links.
+  "#Hbinds" ∷ binds data links.
 
 Definition wp_new :
   {{{ True }}}
   newHashChain #()
   {{{
-    ptr, RET #ptr;
-    "Hchain" ∷ own ptr []
+    ptr links, RET #ptr;
+    "Hchain" ∷ own ptr [] links
   }}}.
 Proof. Admitted.
 
-Definition wp_put ptr data sl_b b d0 :
+Definition wp_put ptr data links sl_b b d0 :
   {{{
-    "Hchain" ∷ own ptr data ∗
+    "Hchain" ∷ own ptr data links ∗
     "Hb" ∷ own_slice_small sl_b byteT d0 b
   }}}
   hashChain__put #ptr (slice_val sl_b)
   {{{
-    RET #();
-    "Hchain" ∷ own ptr (data ++ [b])
+    new_links, RET #();
+    "Hchain" ∷ own ptr (data ++ [b]) new_links
   }}}.
 Proof. Admitted.
 
-Definition wp_getLink ptr data (len : w64) :
+Definition wp_getLink ptr data links (len : w64) :
   uint.nat len ≤ length data →
   {{{
-    "Hchain" ∷ own ptr data
+    "Hchain" ∷ own ptr data links
   }}}
   hashChain__getLink #ptr #len
   {{{
     sl_link link, RET (slice_val sl_link);
-    "Hchain" ∷ own ptr data ∗
-    "#His_link" ∷ is_link (take (uint.nat len) data) link ∗
+    "Hchain" ∷ own ptr data links ∗
+    "%Hlink" ∷ ⌜ links !! uint.nat len = Some link ⌝ ∗
     "#Hlink" ∷ own_slice_small sl_link byteT DfracDiscarded link
   }}}.
 Proof. Admitted.
@@ -313,9 +319,9 @@ End hashChain.
 Section servpreds.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
-Definition my_inv γmonoLinks γmonoTrees : iProp Σ :=
+Definition global_inv γmonoLinks γmonoTrees : iProp Σ :=
   ∃ links γtrees trees updates digs,
-  hashChain.binds digs links ∗
+  "#Hbinds" ∷ hashChain.binds digs links ∗
   "Hlinks" ∷ mono_list_auth_own γmonoLinks (1/2) (drop 1 links) ∗
   "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
     ghost_map_auth γtr (1/2) tr) ∗
@@ -550,7 +556,7 @@ Lemma wp_evidServPut_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
     "Hevid" ∷ evidServPut.own ptr_evid evid ∗
     "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
     (* TODO: fix deps so we can reference global inv.
-       "#Hinv" ∷ inv nroot (my_inv γmonoLinks γmonoTrees) *)
+       "#Hinv" ∷ inv nroot (global_inv γmonoLinks γmonoTrees) *)
   }}}
   evidServPut__check #ptr_evid (slice_val pk)
   {{{
