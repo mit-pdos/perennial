@@ -144,6 +144,9 @@ Ltac solve_vals_compare_safe :=
   fast_done || (left; fast_done) || (right; fast_done).
 
 
+(* FIXME(performance): to improve performance of [wp_pures], add back the
+   [_no_later] variants of this tactic. That avoids the search for a
+   MaybeIntoLaterNEnvs instance on ever single pure step. *)
 Tactic Notation "wp_pure1_maybe_lc" constr(maybeCredName) tactic3(filter) :=
   lazymatch goal with
   | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
