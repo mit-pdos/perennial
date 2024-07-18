@@ -358,7 +358,7 @@ Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 t :
   has_go_type v1 t →
   v' ≠ v1 →
   {{{ ▷ l ↦[t]{dq} v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  {{{ RET PairV v' (LitV $ LitBool false); l ↦[t]{dq} v' }}}.
+  {{{ RET (v', #false); l ↦[t]{dq} v' }}}.
 Proof.
   intros Hprim Hty Hne.
   iIntros (?) "Hl HΦ". unseal.
@@ -377,7 +377,7 @@ Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 t :
   has_go_type v2 t →
   v' = v1 →
   {{{ ▷ l ↦[t] v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  {{{ RET PairV v' (LitV $ LitBool true); l ↦[t] v2 }}}.
+  {{{ RET (v', #true); l ↦[t] v2 }}}.
 Proof.
   intros Hprim Hty Heq.
   iIntros (?) "Hl HΦ". unseal.
@@ -396,15 +396,19 @@ Notation "l ↦[ t ] dq v" := (typed_pointsto l dq t v%V)
                               (at level 20, dq custom dfrac at level 50, t at level 50,
                                format "l  ↦[ t ] dq  v") : bi_scope.
 
+Create HintDb has_go_type.
+Hint Constructors has_go_type : has_go_type.
+Hint Resolve zero_val_has_go_type : has_go_type.
+
 Ltac solve_has_go_type :=
-  eauto using has_go_type, zero_val_has_go_type;
+  eauto with has_go_type;
   try solve [
       apply has_go_type_struct;
       intros ??;
         rewrite -elem_of_list_In ?elem_of_cons ?elem_of_nil ?pair_eq
                    zero_val_eq;
       (intuition subst);
-      vm_compute; eauto using has_go_type
+      vm_compute; eauto with has_go_type
     ].
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
