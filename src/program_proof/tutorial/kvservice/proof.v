@@ -109,7 +109,7 @@ Definition own (a:loc) (args:t) : iProp Σ :=
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
           own_slice sl byteT (DfracOwn 1) enc_args
-  }}}
+  }}
 .
 Proof.
   rewrite /encodes.
@@ -120,9 +120,7 @@ Proof.
       iRename select (own_slice x _ _ _) into "H"; iExactEq "H"
   end.
   f_equal.
-  (* TODO: list solver? *)
-  rewrite -!assoc.
-  repeat f_equal; word.
+  list_simplifier. repeat (f_equal; try word).
 Qed.
 
 #[global] Instance wp_decode  sl :
@@ -171,7 +169,7 @@ Definition own `{!heapGS Σ} (a:loc) (args:t) : iProp Σ :=
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
           own_slice sl byteT (DfracOwn 1) enc_args
-  }}}
+  }}
 .
 Proof.
   iSteps.
@@ -210,7 +208,7 @@ Definition bool_bytes (b:bool) : list u8 := [W8 (if b then 1 else 0)].
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
     EncodeBool #b
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (bool_bytes b) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (bool_bytes b) }}}
 .
 Proof.
   iSteps.
@@ -235,7 +233,7 @@ Qed.
 Lemma wp_EncodeUint64 x:
   {{{ True }}}
     EncodeUint64 #x
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (u64_le x) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (u64_le x) }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".

@@ -3,7 +3,6 @@ From iris.proofmode Require Import tactics notation reduction.
 From Perennial.program_logic Require Import weakestpre crash_weakestpre lifting.
 From diaframe Require Import util_classes tele_utils solve_defs.
 From diaframe.symb_exec Require Import defs.
-Import bi.
 
 Set Default Proof Using "Type".
 
@@ -625,11 +624,14 @@ Section abducts.
     iApply ("HΦ" with "HQ").
   Qed.
 
+  Class ExprToVal e v :=
+    expr_is_val : e = Λ.(of_val) v.
+
   Global Instance collect_modal_wp_value s e v Φ E :
-    IntoVal e v →
+    ExprToVal e v →
     HINT1 ε₀ ✱ [fupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 10.
   Proof.
-    rewrite /IntoVal /Abduct /= empty_hyp_first_eq left_id => <-.
+    rewrite /Abduct /= empty_hyp_first_eq left_id => ->.
     iMod 1 as "H".
     iApply wp_value'; auto.
   Qed.
@@ -641,16 +643,6 @@ Section abducts.
     apply (anti_symm _).
     - by rewrite -{2}fupd_wp.
     - apply fupd_intro.
-  Qed.
-
-  (* not exporting these instances, they don't seem to help *)
-  #[local] Instance collect_nc_modal_wp_value s e v Φ E :
-    IntoVal e v →
-    HINT1 ε₀ ✱ [ncfupd E E $ Φ v] ⊫ [id]; WP e @ s ; E {{ Φ }} | 15.
-  Proof.
-    rewrite /IntoVal /Abduct /= empty_hyp_first_eq left_id => <-.
-    iMod 1 as "H".
-    iApply wp_value; done.
   Qed.
 
   #[local] Instance prepend_nc_modal_wp_expr e Φ E s :

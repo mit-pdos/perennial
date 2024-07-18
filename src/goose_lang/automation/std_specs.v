@@ -54,7 +54,7 @@ Section proofs.
     SPEC ⟨E⟩
         {{ emp }}
         NewSlice t #(W64 0)
-        {{ s, RET (slice_val s); own_slice s t 1 ([]: list V) }} | 10.
+        {{ s, RET (slice_val s); own_slice s t (DfracOwn 1) ([]: list V) }} | 10.
   Proof.
     iSteps.
     wp_apply wp_NewSlice.
@@ -65,7 +65,7 @@ Section proofs.
     SPEC ⟨E⟩
         {{ emp }}
         NewSlice t #sz
-        {{ s, RET (slice_val s); own_slice s t 1 (replicate (uint.nat sz) (IntoVal_def V)) }} | 15.
+        {{ s, RET (slice_val s); own_slice s t (DfracOwn 1) (replicate (uint.nat sz) (IntoVal_def V)) }} | 15.
   Proof.
     iSteps.
     wp_apply wp_NewSlice.
@@ -107,15 +107,15 @@ Section proofs.
       {{ RET (to_val v); own_slice_small s t q vs }}.
   Proof using.
     iSteps.
-    wp_apply (wp_SliceGet with "[-]"); [ | iSteps ].
+    wp_apply (wp_SliceGet with "[-]"); [ iSteps | ].
     eauto with iFrame.
   Qed.
 
   #[global] Instance SliceAppend_spec `{!IntoValForType V t} s vs xx :
     SPEC (x: V),
-      {{ own_slice s t 1 vs ∗ ⌜xx = to_val x⌝ }}
+      {{ own_slice s t (DfracOwn 1) vs ∗ ⌜xx = to_val x⌝ }}
       SliceAppend t s xx
-    {{ s', RET s'; own_slice s' t 1 (vs ++ [x]) }}.
+    {{ s', RET s'; own_slice s' t (DfracOwn 1) (vs ++ [x]) }}.
   Proof.
     iSteps.
     wp_apply (wp_SliceAppend with "[$]").
@@ -123,9 +123,9 @@ Section proofs.
   Qed.
 
   #[global] Instance SliceAppendSlice_spec `{!IntoValForType V t} s vs s' q vs' :
-    SPEC {{ ⌜has_zero t⌝ ∗ own_slice s t 1 vs ∗ own_slice_small s' t q vs' }}
+    SPEC {{ ⌜has_zero t⌝ ∗ own_slice s t (DfracOwn 1) vs ∗ own_slice_small s' t q vs' }}
       SliceAppendSlice t s s'
-    {{ s'', RET s''; own_slice s'' t 1 (vs ++ vs') ∗ own_slice_small s' t q vs' }}.
+    {{ s'', RET s''; own_slice s'' t (DfracOwn 1) (vs ++ vs') ∗ own_slice_small s' t q vs' }}.
   Proof.
     iSteps.
     wp_apply (wp_SliceAppendSlice with "[$]"); [ done.. | ].
@@ -138,7 +138,7 @@ Section proofs.
    SPEC
      {{ emp }}
       impl.StringToBytes #(str s)
-    {{ sl, RET (slice_val sl); own_slice sl byteT 1 (string_to_bytes s) }}.
+    {{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (string_to_bytes s) }}.
   Proof.
     iStep. wp_apply wp_StringToBytes. iSteps.
   Qed.
@@ -197,15 +197,15 @@ Section proofs.
     {{ emp }}
       NewMap kt vt #()
     {{ mref, RET #mref;
-        own_map mref 1 (∅: gmap K V) }}.
+        own_map mref (DfracOwn 1) (∅: gmap K V) }}.
   Proof. iSteps. wp_apply wp_NewMap. iSteps. Qed.
 
   #[global] Instance MapInsert_spec E mref kk vv :
     SPEC ⟨E⟩ `(!IntoVal K) `(Countable K) `(!IntoVal V)
       k v' (m: gmap K V),
-    {{ own_map mref 1 m ∗ ⌜kk = to_val k⌝ ∗ ⌜vv = to_val v'⌝ }}
+    {{ own_map mref (DfracOwn 1) m ∗ ⌜kk = to_val k⌝ ∗ ⌜vv = to_val v'⌝ }}
       impl.MapInsert #mref kk vv
-    {{ RET #(); own_map mref 1 (map_insert m k v') }}.
+    {{ RET #(); own_map mref (DfracOwn 1) (map_insert m k v') }}.
   Proof.
     iSteps. wp_apply (wp_MapInsert with "[$]"); auto.
   Qed.
@@ -227,9 +227,9 @@ Section proofs.
       SPEC ⟨E⟩ `(!IntoVal K) `(Countable K)
         `(!IntoVal V)
       (m: gmap K V) k,
-    {{ own_map mref 1 m ∗ ⌜kk = to_val k⌝ ∗ ⌜IntoValComparable K⌝ }}
+    {{ own_map mref (DfracOwn 1) m ∗ ⌜kk = to_val k⌝ ∗ ⌜IntoValComparable K⌝ }}
       impl.MapDelete #mref kk
-    {{ RET #(); own_map mref 1 (map_del m k) }}.
+    {{ RET #(); own_map mref (DfracOwn 1) (map_del m k) }}.
   Proof.
     iSteps. wp_apply (wp_MapDelete with "[$]"). iSteps.
   Qed.

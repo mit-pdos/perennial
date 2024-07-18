@@ -24,6 +24,9 @@ Section goose_lang_instances.
   Proof. iSteps as "HWP". wp_bind e1. iApply (wp_mono with "HWP"). iSteps. by wp_pure1. Qed.
   *)
 
+  Global Instance val_expr_to_val v : ExprToVal (Val v) v.
+  Proof. reflexivity. Qed.
+
   Global Instance ref_zero_spec t E :
     SPEC ⟨E⟩
         {{ ⌜has_zero t⌝ }}
@@ -45,7 +48,7 @@ Section goose_lang_instances.
   Qed.
 
   Global Instance load_primitive_spec E (l: loc) :
-    SPEC ⟨E⟩ (v: val) (q: Qp), {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
+    SPEC ⟨E⟩ (v: val) (q: dfrac), {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
   Proof.
     iSteps as (v q) "Hl".
     wp_apply (wp_load with "Hl").
@@ -60,12 +63,11 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
-  Global Instance alloc_spec E e v t:
-    IntoVal e v →
+  Global Instance alloc_spec E v t:
     val_ty v t →
-    SPEC ⟨E⟩ {{ emp }} ref_to t e {{ l, RET #l; l ↦[t] v }} | 20.
+    SPEC ⟨E⟩ {{ emp }} ref_to t v {{ l, RET #l; l ↦[t] v }} | 20.
   Proof.
-    move => <- Hty.
+    intros Hty.
     iStep.
     wp_apply wp_ref_to => //.
     iSteps.

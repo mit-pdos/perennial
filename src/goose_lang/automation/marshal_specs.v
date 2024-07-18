@@ -14,9 +14,9 @@ Section proofs.
 
   #[global] Instance WriteInt_spec s vs (x: w64) :
     SPEC
-      {{ own_slice s byteT 1 vs }}
+      {{ own_slice s byteT (DfracOwn 1) vs }}
       marshal.WriteInt s #x
-      {{ s', RET slice_val s'; own_slice s' byteT 1 (vs ++ u64_le x) }}.
+      {{ s', RET slice_val s'; own_slice s' byteT (DfracOwn 1) (vs ++ u64_le x) }}.
   Proof.
     iSteps.
     wp_apply (wp_WriteInt with "[$]").
@@ -25,10 +25,10 @@ Section proofs.
 
   #[global] Instance WriteBytes_spec s (vs : list u8) data_sl (data : list u8) :
     SPEC q,
-    {{ own_slice s byteT 1 vs ∗ own_slice_small data_sl byteT q data }}
+    {{ own_slice s byteT (DfracOwn 1) vs ∗ own_slice_small data_sl byteT q data }}
       marshal.WriteBytes s data_sl
     {{ s', RET slice_val s';
-      own_slice s' byteT 1 (vs ++ data) ∗
+      own_slice s' byteT (DfracOwn 1) (vs ++ data) ∗
       own_slice_small data_sl byteT q data
     }}.
   Proof. iSteps. wp_apply (wp_WriteBytes with "[$]"). iSteps. Qed.
