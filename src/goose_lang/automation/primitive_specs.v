@@ -285,6 +285,22 @@ Section goose_lang_instances.
     iSteps.
   Qed.
 
+  #[global] Instance discarded_struct_pointsto_alloc_hint l t v E :
+    HINT (ε₁) ✱ [q; l ↦[t]{q} v] ⊫ [fupd E E]; l ↦[t]□ v ✱ [emp] | 20.
+  Proof.
+    iSteps as (q) "H".
+    iMod (struct_pointsto_persist with "H") as "H".
+    iSteps.
+  Qed.
+
+  #[global] Instance discarded_struct_field_pointsto_alloc_hint l t f v E :
+    HINT (ε₁) ✱ [q; l ↦[t :: f]{q} v] ⊫ [fupd E E]; l ↦[t :: f]□ v ✱ [emp] | 20.
+  Proof.
+    iSteps as (q) "H".
+    iMod (struct_field_pointsto_persist with "H") as "H".
+    iSteps.
+  Qed.
+
 End goose_lang_instances.
 
 #[global] Typeclasses Opaque ref_to.

@@ -534,7 +534,7 @@ Proof.
       rewrite /named.
       unseal_diaframe => /=. iExists _; iFrame.
       iSteps.
-      iDestruct (own_slice_small_nil _ 1 Slice.nil) as "H".
+      iDestruct (own_slice_small_nil _ (DfracOwn 1) Slice.nil) as "H".
       { done. }
       iSteps.
     }
