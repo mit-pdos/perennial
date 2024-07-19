@@ -35,7 +35,7 @@ Local Example spec_iprop :=
   |}.
 
 (* XXX: using this because [list] is not universe polymorphic. *)
-Inductive plist (A : Type) :=
+Polymorphic Inductive plist (A : Type) :=
 | pnil : plist A
 | pcons : A -> plist A -> plist A.
 Arguments pnil {A}.
@@ -46,8 +46,8 @@ Arguments pcons {A} a l.
 Polymorphic Inductive pprod (A : Type) (B:Type) :=
 | ppair : A → B → pprod A B.
 Arguments ppair {A} {B} a b.
-Definition pfst {A B} (p:pprod A B) := let (a, _) := p in a.
-Definition psnd {A B} (p:pprod A B) := let (_, b) := p in b.
+Polymorphic Definition pfst {A B} (p:pprod A B) := let (a, _) := p in a.
+Polymorphic Definition psnd {A B} (p:pprod A B) := let (_, b) := p in b.
 
 Set Universe Polymorphism.
 Fixpoint dom_RpcSpec_list (l: plist (pprod u64 RpcSpec)) : gset u64 :=
