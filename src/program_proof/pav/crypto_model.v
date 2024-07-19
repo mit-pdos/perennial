@@ -31,28 +31,29 @@ Inductive opTy : Type :=
   | Verify : pkTy → msgTy → sigTy → opTy
   | Hash : msgTy → opTy.
 
+Inductive retTy : Type :=
+  | ret : forall {T : Type}, T → retTy.
+
 Definition ArbBool : bool.
 Admitted.
 
 Definition ArbBytes : list w8.
 Admitted.
 
-Definition step (op : opTy) (state : stateTy) : stateTy :=
+Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
   match op with
   | GenKey =>
     let sk := ArbBytes in
     let pk := ArbBytes in
-    (* return (sk, pk). *)
-    state <|signed ::= (λ x, (<[sk:=[]]>x))|> <|pks ::= (λ x, (<[pk:=sk]>)x)|>
+    (ret (sk, pk), state <|signed ::= (λ x, (<[sk:=[]]>x))|> <|pks ::= (λ x, (<[pk:=sk]>)x)|>)
   | Sign sk msg =>
     match state.(signed) !! sk with
     | Some my_signed =>
       (* Sign is probabilistic. might return diff sigs for same data. *)
       let sig := ArbBytes in
-      (* return sig. *)
-      state <|signed ::= (λ x, (<[sk:=(msg,sig)::my_signed]>x))|>
+      (ret sig, state <|signed ::= (λ x, (<[sk:=(msg,sig)::my_signed]>x))|>)
     (* this will never happen. assume sk from GenKey distr. *)
-    | None => state
+    | None => (ret 0, state)
     end
   | Verify pk msg sig =>
     match state.(pks) !! pk with
@@ -63,48 +64,41 @@ Definition step (op : opTy) (state : stateTy) : stateTy :=
         | Some _ =>
           match list_find (λ x, x = (msg,sig)) my_signed with
           | Some _ =>
-            (* return true. *)
-            state
+            (ret true, state)
           | None =>
             (* for already signed msgs, might be able to forge sig. *)
             let ok := ArbBool in
-            (* return ok. *)
             match ok with
-            | true => state <|signed ::= (λ x, (<[sk:=(msg,sig)::my_signed]>x))|>
-            | false => state
+            | true => (ret true, state <|signed ::= (λ x, (<[sk:=(msg,sig)::my_signed]>x))|>)
+            | false => (ret false, state)
             end
           end
         | None =>
           (* if never signed msg before, should be impossible to verify. *)
-          (* return false. *)
-          state
+          (ret false, state)
         end
       | None =>
         (* this will never happen bc state.(pks) only has in-distr keys. *)
-        (* return false. *)
-        state
+        (ret false, state)
       end
     | None =>
       (* Verify can return anything for OOD pk. *)
       (* TODO: it's deterministic, so memoize the output. *)
       let ok := ArbBool in
-      (* return ok. *)
-      state
+      (ret ok, state)
     end
   | Hash msg =>
     match list_find (λ x, x.1 = msg) state.(hashes) with
     | Some x =>
-      (* return x.2. *)
-      state
+      (ret x.2, state)
     | None =>
       let hash := ArbBytes in
       match list_find (λ x, x.2 = hash) state.(hashes) with
       | Some _ =>
         (* hash collision. infinite loop the machine. *)
-        state
+        (ret 0, state)
       | None =>
-        (* return hash. *)
-        state <|hashes ::= (λ x, (msg,hash)::x)|>
+        (ret hash, state <|hashes ::= (λ x, (msg,hash)::x)|>)
       end
     end
   end.
