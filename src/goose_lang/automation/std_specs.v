@@ -76,7 +76,7 @@ Section proofs.
   not directly expose slice properties? *)
   #[global] Instance slice_len_spec s E :
     SPEC ⟨E⟩ {{ emp }} slice.len s {{ RET #s.(Slice.sz); emp }}.
-  Proof. iStep. wp_apply wp_slice_len. iSteps. Qed.
+  Proof. iStep. iApply wp_slice_len. iSteps. Qed.
 
   #[global] Instance slice_len_hint s t q vs :
    MergablePersist (own_slice_small s t q vs)
@@ -140,7 +140,7 @@ Section proofs.
       impl.StringToBytes #(str s)
     {{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (string_to_bytes s) }}.
   Proof.
-    iStep. wp_apply wp_StringToBytes. iSteps.
+    iStep. iApply wp_StringToBytes; auto.
   Qed.
 
   #[global] Instance StringFromBytes_spec sl :
@@ -149,7 +149,7 @@ Section proofs.
       impl.StringFromBytes sl
     {{ RET #(str bytes_to_string bs); own_slice_small sl byteT q bs }}.
   Proof.
-    iStep as (q). iStep. iStep. wp_apply (wp_StringFromBytes with "[$]"). iSteps.
+    iStep as (q). iStep. iStep. iApply (wp_StringFromBytes with "[$]"). iSteps.
   Qed.
 
   #[global] Instance SumAssumeNoOverflow_spec (x y : u64) :
@@ -159,7 +159,7 @@ Section proofs.
       {{ RET #(LitInt $ word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}.
   Proof.
     iStep. (* Careful not to call [iSteps], as this would unfold the function *)
-    wp_apply wp_SumAssumeNoOverflow. iIntros (Hoverflow) "!% //".
+    iApply wp_SumAssumeNoOverflow. iIntros (Hoverflow) "!% //".
   Qed.
 
   #[global] Instance Assume_spec E (cond: bool) :
@@ -167,21 +167,21 @@ Section proofs.
       {{ emp }}
       Assume #cond
       {{ RET #(); ⌜cond = true⌝ }}.
-  Proof. iSteps. wp_apply wp_Assume; auto. Qed.
+  Proof. iSteps. iApply wp_Assume; auto. Qed.
 
   #[global] Instance Assert_spec E (cond: bool) :
     SPEC ⟨E⟩
       {{ ⌜cond = true⌝ }}
       Assert #cond
       {{ RET #(); emp }}.
-  Proof. iSteps. wp_apply wp_Assert; auto. Qed.
+  Proof. iSteps. iApply wp_Assert; auto. Qed.
 
   #[global] Instance Exit_spec E (v: val) :
     SPEC ⟨E⟩
         {{ emp }}
         Exit v
         {{ RET #(); False }}.
-  Proof. iSteps. wp_apply wp_Exit; auto. Qed.
+  Proof. iSteps. iApply wp_Exit; auto. Qed.
 
 
   Section map_specs.

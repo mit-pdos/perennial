@@ -19,7 +19,7 @@ Section wp.
     {{{ (l:loc), RET #l; l ↦[t] (zero_val t) }}}.
   Proof.
     iIntros (Hzero Φ) "_ HΦ".
-    wp_call.
+    wp_rec.
     wp_apply wp_ref_of_zero; first auto.
     iIntros (l) "Hl".
     iApply "HΦ".

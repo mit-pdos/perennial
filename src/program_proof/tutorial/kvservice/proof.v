@@ -452,9 +452,18 @@ Section start_server_proof.
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
 
+Typeclasses Opaque MakeServer.
 #[local] Opaque MakeServer.
+Typeclasses Opaque urpc.MakeServer.
+#[local] Opaque urpc.MakeServer.
 #[local] Opaque Server__conditionalPut.
 #[local] Opaque is_Server.
+
+Typeclasses Opaque decodePutArgs.
+#[local] Opaque decodePutArgs.
+
+Typeclasses Opaque Server__getFreshNum.
+#[local] Opaque Server__getFreshNum.
 
 Lemma wp_Server__Start (s:loc) (host:u64) :
   {{{
@@ -476,14 +485,14 @@ Proof.
   wp_apply (map.wp_MapInsert u64 with "Hhandlers") as "Hhandlers".
   wp_apply (map.wp_MapInsert with "Hhandlers") as "Hhandlers".
   wp_apply (map.wp_MapInsert with "Hhandlers") as "Hhandlers".
-  wp_apply (map.wp_MapInsert with "Hhandlers") as "Hhandlers".
 
+  wp_apply (map.wp_MapInsert with "Hhandlers") as "Hhandlers".
   wp_apply (urpc_proof.wp_MakeServer with "Hhandlers").
   iIntros (r) "Hr".
-  wp_pures.
 
   iNamed "Hhost".
-  wp_apply (wp_StartServer_pred with "[$Hr]").
+  wp_bind (urpc.Server__Serve _ _).
+  iApply (wp_StartServer_pred with "[$Hr]"); [..|iNext].
   { set_solver. }
   { (* Here, we show that the functions being passed in Go inside `handlers`
        satisfy the spec they should. *)
@@ -552,7 +561,7 @@ Proof.
     by iApply big_sepM_empty.
   }
   wp_pures.
-  by iApply "HΦ".
+  iSteps.
 Qed.
 
 End start_server_proof.
@@ -682,6 +691,10 @@ Proof.
   }
 Qed.
 
+Typeclasses Opaque
+  encodeConditionalPutArgs encodeGetArgs
+.
+
 Lemma wp_Client__conditionalPutRpc Post cl args args_ptr :
   {{{
         "Hargs" ∷ conditionalPutArgs.own args_ptr args ∗
@@ -798,6 +811,8 @@ Definition is_Clerk (ck:loc) : iProp Σ :=
   "#HisCl" ∷ is_Client cl
 .
 
+Typeclasses Opaque Client__putRpc.
+
 Lemma wp_Clerk__Put (ck:loc) k v :
   {{{ is_Clerk ck }}}
     Clerk__Put #ck #(str k) #(str v)
@@ -874,6 +889,8 @@ Proof.
   wp_pures.
   iModIntro. iApply "HΦ". done.
 Qed.
+
+Typeclasses Opaque Client__conditionalPutRpc.
 
 Lemma wp_Clerk__ConditionalPut (ck:loc) k expectV newV :
   {{{ is_Clerk ck }}}
@@ -956,6 +973,8 @@ Proof.
   wp_load.
   iModIntro. iApply "HΦ". done.
 Qed.
+
+Typeclasses Opaque Client__getRpc.
 
 Lemma wp_Clerk__Get (ck:loc) k :
   {{{ is_Clerk ck }}}

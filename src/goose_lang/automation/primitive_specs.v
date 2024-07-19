@@ -37,6 +37,7 @@ Section goose_lang_instances.
     wp_apply wp_ref_of_zero; auto.
   Qed.
 
+  Opaque ref_to.
   Global Instance ref_to_spec t v E :
     SPEC ⟨E⟩
         {{ ⌜val_ty v t⌝ }}
@@ -69,8 +70,7 @@ Section goose_lang_instances.
   Proof.
     intros Hty.
     iStep.
-    wp_apply wp_ref_to => //.
-    iSteps.
+    wp_apply wp_ref_to; auto.
   Qed.
 
   (* [struct_fields] with f excluded *)
