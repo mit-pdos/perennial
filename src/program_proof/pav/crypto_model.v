@@ -90,6 +90,9 @@ at operational level? by somehow making sk's their own thing and tying together 
 it can do a lot. like calling crypto ops and modifying crypto state.
 but it shouldn't be able to do certain things, like receiving sk's.
 what exactly should it be able to do?
+- key gen func is a bit tricky as well, but we can figure it out without a flag.
+what do we do when calling keygen and giving the key to an unchecked program?
+what prevents checked programs from getting the corresponding is_pk?
  *)
 
 Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
