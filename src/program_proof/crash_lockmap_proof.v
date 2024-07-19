@@ -171,7 +171,7 @@ Proof.
   iIntros (Φ) "[Hls %] HΦ".
   iNamed "Hls".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
@@ -197,7 +197,7 @@ Proof.
     iDestruct "Hstate" as "[[Hstate _] _]". rewrite /=.
     rewrite loc_add_0.
 
-    destruct ok; wp_if.
+    destruct ok; wp_pures.
     - wp_pures.
       wp_apply (wp_store with "Hstate"); iIntros "Hstate".
 
@@ -419,7 +419,7 @@ Theorem wp_lockShard__release ls (addr : u64) (P Pc : u64 -> iProp Σ) covered g
 Proof.
   iIntros (Φ) "(Hls & Hp & Haddrlocked) HΦ".
   iNamed "Hls".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hinner]".
@@ -755,7 +755,7 @@ Theorem wp_MkLockMap :
   {{{ l, RET #l; is_free_lockMap l }}}.
 Proof.
   iIntros (Φ) "Hcovered HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; eauto.
   iIntros (shards) "Hvar".
   rewrite zero_slice_val.
@@ -951,7 +951,7 @@ Proof.
   iIntros (Φ) "[Hlm %] HΦ".
   iNamed "Hlm".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
@@ -991,7 +991,7 @@ Proof.
   iIntros (Φ) "Hcrash_locked HΦ".
   iDestruct "Hcrash_locked" as (covered) "(HP&#His_lock&Hlocked)".
   iNamed "His_lock".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".

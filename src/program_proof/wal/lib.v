@@ -559,7 +559,7 @@ Theorem wp_copyUpdateBlock stk E (u: u64 * Slice.t) q b :
 Proof.
   iIntros (Φ) "Hb HΦ".
   destruct u as [a s]; simpl.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (util_proof.wp_CloneByteSlice with "Hb").
   iIntros (s') "(Hb&Hb')".
   iDestruct (own_slice_to_small with "Hb'") as "Hb'".

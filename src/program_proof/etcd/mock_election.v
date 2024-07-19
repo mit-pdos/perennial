@@ -247,7 +247,7 @@ Lemma wp_Campaign e (v:string) :
 Proof.
   iIntros (?) "H HΦ". iNamed "H".
   iNamed "Hown".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   wp_pures.

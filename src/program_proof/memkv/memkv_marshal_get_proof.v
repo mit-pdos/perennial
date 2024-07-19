@@ -51,7 +51,7 @@ Lemma wp_EncodeGetRequest args_ptr args :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_new_enc).
   iIntros (?) "Henc".
   wp_pures.
@@ -80,7 +80,7 @@ Lemma wp_DecodeGetRequest req_sl reqData args :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Hsl] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
@@ -109,7 +109,7 @@ Lemma wp_DecodeGetReply rep rep_sl repData :
   }}}.
 Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
@@ -152,7 +152,7 @@ Lemma wp_EncodeGetReply rep_ptr rep :
 Proof.
   iIntros (Φ) "Hrep HΦ".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrep".
   wp_loadField.

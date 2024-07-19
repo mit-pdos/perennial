@@ -93,7 +93,7 @@ Lemma wp_NewWaitGroup_free :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_new_free_lock).
   iIntros (lk) "His_lock".
   wp_apply (wp_ref_to).
@@ -212,7 +212,7 @@ uint.nat (word.add n 1) > uint.nat n →
 Proof.
   intros Hoverflow.
   iIntros (Φ) "Hwg HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hwg" as "(Htotal1 & #His)".
   iDestruct "His" as (??) "(%HwgPair & Hlk)".
   rewrite HwgPair.
@@ -325,7 +325,7 @@ Lemma wp_WaitGroup__Done wg γ P n :
   }}}.
 Proof.
   iIntros (Φ) "(#Hwg & Htok & #HPn) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hwg" as (??) "(%HwgPair & Hlk)".
   rewrite HwgPair.
   wp_pures.
@@ -405,7 +405,7 @@ Lemma wp_WaitGroup__Wait wg γ P n :
 Proof.
   iIntros (Φ) "(Htotal'&#Hwg) HΦ".
   iLöb as "IH".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hwg" as (??) "(%HwgPair & Hlk)".
   rewrite HwgPair.
   wp_pures.

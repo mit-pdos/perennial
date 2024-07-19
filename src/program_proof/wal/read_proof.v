@@ -96,7 +96,7 @@ Proof.
   iIntros (Φ) "(Hfields&HmemLog_inv) HΦ".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_sliding__posForAddr with "His_memLog").
   iIntros (pos ok) "(His_memLog&%Hlookup)".
@@ -395,11 +395,11 @@ Proof.
   wp_apply (wp_WalogState__readMem with "[$Hfields $HmemLog_linv]").
   iIntros (b_s ok) "(Hb&?&?)"; iNamed.
   (* really meant to do wp_pure until wp_bind Skip succeeds *)
-  do 8 wp_pure1; wp_bind Skip.
+  do 8 wp_pure; wp_bind Skip.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σs) "[Hinner HP]".
   iApply wp_ncfupd.
-  wp_call.
+  wp_rec. wp_pures.
   iModIntro.
 
   wp_pures.

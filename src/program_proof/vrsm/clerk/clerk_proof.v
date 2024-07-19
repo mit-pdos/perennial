@@ -126,10 +126,10 @@ own_slice_small op_sl byteT (DfracOwn 1) op_bytes -∗
 WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   iIntros (??) "Hck Hsl Hupd".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewProphBytes).
   iIntros (??) "Hproph".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   iAssert (|={⊤}=> ∃ γreq, result_unclaimed γreq ∗ prophetic_read_inv b γ γreq _
   (λ reply, ∀ reply_sl : Slice.t,
              own_slice_small reply_sl byteT (DfracOwn 1) reply -∗
@@ -171,7 +171,7 @@ Proof.
     wp_apply (wp_ResolveBytes with "[$Hproph $Hrep_sl]").
     iIntros "[% ?]".
     subst.
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
     wp_pures.
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
@@ -213,7 +213,7 @@ Proof.
       wp_pures.
       wp_apply (wp_ResolveBytes with "[$Hrep_sl $Hproph]").
       iIntros "[% ?]".
-      wp_pure1_credit "Hlc".
+      wp_pure_credit "Hlc".
       wp_pures.
       iInv "Hinv" as "Hi" "Hclose".
       iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".

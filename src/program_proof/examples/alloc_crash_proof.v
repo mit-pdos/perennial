@@ -343,7 +343,7 @@ Theorem wp_newAllocator {mref} {start sz: u64} σ (used: gset u64) :
 Proof using allocG0.
   iIntros (Hoverflow Hdom Hused Hfree Φ) "Hused HΦ".
   iApply wp_crash_borrow_generate_pre; auto.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_freeRange; first by auto.
   iIntros (mref') "Hfree".
   wp_pures.
@@ -753,7 +753,7 @@ Proof.
     set_solver. }
 
 
-  wp_seq.
+  do 2 wp_pure.
   (* Linearization point here. *)
   wp_bind (Skip).
   destruct ok.
@@ -1054,7 +1054,7 @@ Proof.
   assert (↑Nlock ⊆ E) as Hsub2 by solve_ndisj.
   iMod (readonly_load with "m") as (?) "m'".
   iMod (readonly_load with "free") as (?) "free'".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec' with "His_lock").
   { auto. }
@@ -1063,11 +1063,11 @@ Proof.
   iDestruct "Hfreemap" as (m) "[Hfreemap %Hdom]".
   wp_apply (wp_MapInsert _ _ () with "Hfreemap"); first by auto.
   iIntros "Hfreemap".
-  do 2 wp_pure1.
+  do 2 wp_pure.
   wp_bind (Skip).
 
   iInv "Halloc_inv" as "H" "Hclo".
-  wp_pure1.
+  wp_pure.
   iNamed "H".
   (* TODO: iNamed doesn't work because reserved_block re-uses the name
   Halloc_inv from is_allocator *)

@@ -100,7 +100,7 @@ is_RPCServer γrpc -∗
 Proof.
   iIntros (?) "#Hisrpc". iIntros (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   repeat wp_loadField.
   wp_apply (wp_MapGet with "HlastSeqMap").
@@ -151,7 +151,7 @@ Proof.
     apply not_and_r in Hmiss.
     wp_apply (wp_MapInsert _ _ lastSeqM _ req.(Req_Seq) (#req.(Req_Seq)) with "HlastSeqMap"); eauto.
     iIntros "HlastSeqMap".
-    wp_seq.
+    wp_pures.
     iApply ("HΦ" $! _ (Build_RPCReply _ _)).
     iFrame "HReplyOwnStale HReplyOwnRet HlastReplyMap".
     iLeft.
@@ -209,7 +209,7 @@ Proof.
   iIntros "#HfCoreSpec !#" (Φ) "Hpre HΦ".
   iNamed "Hpre".
   iDestruct "Hreply" as (dummyReply) "Hreply".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrpc_vol".
   iNamed "Hread_req".
@@ -300,7 +300,7 @@ Theorem wp_rpcReqEncode (req_ptr:loc) (req:RPCRequestID) (args:RPCValsC) :
 Proof.
   iIntros (Φ) "#Hreq HΦ".
   iNamed "Hreq".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc.
   iIntros (e) "He".
   wp_loadField.
@@ -343,7 +343,7 @@ Theorem wp_rpcReqDecode (s:Slice.t) (reqptr:loc) (bs:list u8) (req:RPCRequestID)
 Proof.
   iIntros (Φ) "(Hs & %Henc & Hreq) HΦ".
   iDestruct (struct_fields_split with "Hreq") as "Hreq". iNamed "Hreq".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_new_dec with "Hs").
   { eapply Henc. }
   iIntros (d) "Hd".
@@ -391,7 +391,7 @@ Theorem wp_rpcReplyEncode (reply_ptr:loc) (reply:RPCReply) :
 Proof.
   iIntros (Φ) "Hreply HΦ".
   iNamed "Hreply".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc.
   iIntros (e) "He".
   wp_loadField.
@@ -425,7 +425,7 @@ Theorem wp_rpcReplyDecode (s:Slice.t) (reply_ptr:loc) (bs:list u8) (reply:RPCRep
 Proof.
   iIntros (Φ) "(Hs & %Henc & Hreply) HΦ".
   iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_new_dec with "Hs").
   { eapply Henc. }
   iIntros (d) "Hd".
@@ -480,7 +480,7 @@ handler_is2 X host rpcid PreCond PostCond -∗
 Proof.
   iIntros "#Hspec" (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_rpcReqEncode with "Hargs").
   iIntros (reqSlice reqBs) "[HreqSlice %Hreqenc]".
@@ -564,12 +564,12 @@ Proof using Type*.
   iIntros (Φ) "!# [Hprecond [Hclerk #Hlinv]] Hpost".
   iDestruct "Hclerk" as (??) "[Hclerk_vol Hclerk_ghost]".
   iNamed "Hclerk_vol".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   wp_apply (overflow_guard_incr_spec).
   iIntros (Hincr_safe).
-  wp_seq.
+  wp_pures.
   wp_loadField.
   wp_loadField.
   wp_apply (wp_allocStruct); first eauto.
@@ -637,7 +637,7 @@ Proof using Type*.
   wp_pures.
   iNamed "Hreply".
   iRight. iSplitR; first done.
-  wp_seq.
+  wp_pures.
   wp_loadField.
   iApply "Hpost".
   iFrame; iFrame "#".
@@ -653,7 +653,7 @@ Lemma MakeRPCClient_spec γrpc (host : string) (cid : u64) :
     MakeRPCClient #(str host) #cid
   {{{ cl, RET #cl; RPCClient_own cl host γrpc }}}.
 Proof.
-  iIntros (Φ) "Hclient_own HΦ". wp_lam.
+  iIntros (Φ) "Hclient_own HΦ". wp_rec.
   wp_pures.
   wp_apply (wp_MakeRPCClient).
   iIntros (cl_ptr) "HrawClOwn".
@@ -673,7 +673,7 @@ Lemma MakeRPCServer_spec γrpc :
 .
 Proof.
   iIntros (Φ) "#Hrpcinv Hpost".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first eauto.
   iIntros (l) "Hl".
   wp_pures.
@@ -714,7 +714,7 @@ is_rpcHandlerEncoded (X:=X) g PreCond PostCond -∗
 .
 Proof.
   iIntros "#Hgspec" (Φ) "!# Hpre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "HΦ".
   clear Φ.

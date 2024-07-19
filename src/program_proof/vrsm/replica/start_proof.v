@@ -45,7 +45,7 @@ Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHosts:list u64) ops
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   Opaque zero_val.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. Transparent zero_val. repeat econstructor. Opaque slice.T. Opaque zero_val. }
@@ -53,7 +53,7 @@ Proof.
   iDestruct (struct_fields_split with "Hs") as "HH".
   iNamed "HH".
   simpl.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
   repeat wp_storeField.
@@ -191,7 +191,7 @@ Lemma wp_Server__Serve s host γ γsrv :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre". iNamed "Hhost".
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (map.wp_NewMap u64).
   iIntros (handlers) "Hhandlers".
@@ -261,7 +261,7 @@ Proof.
       iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iDestruct "Hspec" as (?) "[% Hspec]".
-      subst. wp_call.
+      subst. wp_rec. wp_pures.
       wp_apply (wp_ReadInt with "[$]").
       iIntros (?) "_". wp_pures.
       wp_apply (wp_Server__IncreaseCommit with "Hsrv [-Hspec] Hspec").
@@ -323,7 +323,7 @@ Proof.
 
       wp_apply (wp_Server__BecomePrimary with "Hsrv Hargs [-Hspec] Hspec").
       iIntros (?) "HΨ".
-      wp_call.
+      wp_rec. wp_pures.
       wp_apply (wp_NewSliceWithCap).
       { done. }
       iIntros (?) "Hrep_sl".
@@ -373,7 +373,7 @@ Proof.
       wp_apply (wp_Server__SetState with "Hsrv Hargs [-Hspec] Hspec").
       iIntros (?) "HΨ".
 
-      wp_call.
+      wp_rec. wp_pures.
       wp_apply (wp_NewSliceWithCap).
       { done. }
       iIntros (?) "Hrep_sl".
@@ -401,7 +401,7 @@ Proof.
       wp_apply (wp_Server__ApplyAsBackup with "Hsrv Hargs [-Hspec] Hspec").
       iIntros (?) "HΨ".
 
-      wp_call.
+      wp_rec. wp_pures.
       wp_apply (wp_NewSliceWithCap).
       { done. }
       iIntros (?) "Hrep_sl".

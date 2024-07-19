@@ -202,7 +202,7 @@ Proof using Type*.
   intros Hrem.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
     iDestruct (own_slicemap_rep_dom with "[$]") as %Hdom_init.
 
   wp_apply (map.wp_MapLen with "HKvsMap").
@@ -377,7 +377,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H".
   wp_pures.
   rewrite /SizeOfMarshalledMap.
-  wp_pure _.
+  wp_pure.
   wp_apply (wp_ref_of_zero _ _ (uint64T)); first done.
   iIntros (s) "Hs".
   wp_pures.
@@ -557,7 +557,7 @@ Lemma wp_encodeInstallShardRequest args_ptr args :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   iDestruct (shard_own_dup with "Hvals") as "(Hvals&Hex)".
   iDestruct (shard_to_own_slicemap_rep with "Hex") as "Hslicemap".
   { eauto. }
@@ -634,7 +634,7 @@ Lemma wp_DecSliceMap d l m args_sl argsData :
 Proof.
   iIntros (Hnodup Hsize Hlist).
   iIntros (Φ) "Hdec HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_Dec__GetInt with "Hdec").
   iIntros "Hdec".
   wp_pures.
@@ -835,7 +835,7 @@ Lemma wp_decodeInstallShardRequest args args_sl argsData :
   }}}.
 Proof.
   iIntros (Φ) "(Hslice&%Henc) HΦ".
-  wp_lam.
+  wp_rec.
   destruct Henc as (r&(l&Hsize&Hnodup&HlistMap&Hmapencoded)&Hdata).
   rewrite Hmapencoded in Hdata.
   wp_apply (wp_new_dec with "Hslice"); eauto.

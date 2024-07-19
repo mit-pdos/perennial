@@ -69,7 +69,7 @@ Lemma wp_MakeClerk γ host epoch_tok host_inv :
   }}}.
 Proof.
   iIntros "#Hhost !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   { naive_solver. }
   iIntros (ck) "Hck".
@@ -97,7 +97,7 @@ Lemma wp_Clerk__AcquireEpoch γ ck (newHost:u64) epoch_tok host_inv :
   }}}.
 Proof.
   iIntros "#Hck !#" (Φ) "#Hhost HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
@@ -168,7 +168,7 @@ Lemma wp_Clerk__Get γ ck epoch_tok host_inv :
   }}}.
 Proof.
   iIntros "#Hck !#" (Φ) "#Hhost HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }

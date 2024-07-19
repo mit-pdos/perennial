@@ -21,7 +21,7 @@ Lemma wp_GetCIDRPC (s:loc) γ :
 .
 Proof.
   iIntros "#Hmemkv !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   iNamed "Hmemkv".
   wp_loadField.
   wp_apply wp_erpc_GetFreshCID; first done.

@@ -17,7 +17,7 @@ Proof.
   (*@                                                                         @*)
   iIntros "#Hsite !>" (Φ) "_ HAU".
   iNamed "Hsite".
-  wp_call.
+  wp_rec. wp_pures.
   
   wp_loadField.
   wp_apply (acquire_spec with "[$Hlock]").

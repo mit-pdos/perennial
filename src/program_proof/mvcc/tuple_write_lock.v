@@ -13,7 +13,7 @@ Theorem wp_tuple__WriteOpen tuple (tid : nat) (key : u64) γ :
   {{{ (phys : list dbval), RET #(); own_tuple_locked tuple key tid phys phys γ }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Htoken HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* tuple.latch.Lock()                                      *)

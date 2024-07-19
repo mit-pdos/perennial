@@ -86,7 +86,7 @@ Proof. solve_proper. Qed.
 Lemma newbarrier_spec (P Pc : iProp Σ) :
   {{{ □ (P -∗ Pc) }}} barrier.newbarrier #() {{{ l, RET #l; recv l P Pc ∗ send l P Pc }}}.
 Proof.
-  iIntros (Φ) "#Hwand HΦ". wp_lam.
+  iIntros (Φ) "#Hwand HΦ". wp_rec.
   iApply wp_fupd.
   iApply (wpc_wp _ _ _ _ True%I).
   iApply (wpc_crash_borrow_init_ctx _ _ _ _ True%I True%I id); auto.
@@ -145,7 +145,7 @@ Proof.
   iCache with "HK".
   { by iLeft in "HK". }
   wpc_frame.
-  iDestruct "Hs" as (γ) "(_&#Hinv)". wp_lam.
+  iDestruct "Hs" as (γ) "(_&#Hinv)". wp_rec.
   wp_bind (CmpXchg _ _ _).
   iInv N as ([] gmm fprop fcprop) "(>Hl & H● & Hfprop & Hfcprop & HRs)".
   { wp_cmpxchg_fail. iModIntro. iSplitR "".

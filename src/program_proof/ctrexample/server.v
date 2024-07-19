@@ -148,7 +148,7 @@ Lemma wp_CtrServer__FetchAndIncrement γ (s:loc) Post :
 .
 Proof.
   iIntros (Φ) "[#Hsrv Hpre] HΦ".
-  wp_lam.
+  wp_rec.
   iNamed "Hsrv".
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").

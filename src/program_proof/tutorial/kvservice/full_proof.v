@@ -45,7 +45,7 @@ Lemma wp_encode args_ptr args :
 Proof.
   iIntros (Φ) "Hargs HΦ".
   iNamed "Hargs".
-  wp_lam.
+  wp_rec.
   wp_apply wp_NewSlice.
   iIntros (sl) "Hsl".
   wp_apply wp_ref_to.
@@ -111,7 +111,7 @@ Lemma wp_decode  sl enc_args args q :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_to.
   { done. }
   iIntros (e) "He".
@@ -191,7 +191,7 @@ Lemma wp_encode args_ptr args :
 Proof.
   iIntros (Φ) "Hargs HΦ".
   iNamed "Hargs".
-  wp_lam.
+  wp_rec.
   wp_apply wp_NewSlice.
   iIntros (sl) "Hsl".
   wp_apply wp_ref_to.
@@ -273,7 +273,7 @@ Lemma wp_decode  sl enc_args args q :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_to.
   { done. }
   iIntros (?) "He".
@@ -361,7 +361,7 @@ Lemma wp_encode args_ptr args :
 Proof.
   iIntros (Φ) "Hargs HΦ".
   iNamed "Hargs".
-  wp_lam.
+  wp_rec.
   wp_apply wp_NewSlice.
   iIntros (?) "Hsl".
   wp_apply (wp_ref_to).
@@ -400,7 +400,7 @@ Lemma wp_decode  sl enc_args args q :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_to).
   { done. }
   iIntros (?) "He".
@@ -452,7 +452,7 @@ Lemma wp_EncodeBool (b:bool) :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam. wp_if_destruct.
+  wp_rec. wp_if_destruct.
   {
     wp_apply wp_NewSlice. iIntros (?) "?".
     wp_apply (wp_SliceAppend with "[$]").
@@ -474,7 +474,7 @@ Lemma wp_DecodeBool sl b q :
 .
 Proof.
   iIntros (?) "Hsl HΦ".
-  wp_lam.
+  wp_rec.
   unfold bool_le.
   destruct b.
   {
@@ -500,7 +500,7 @@ Lemma wp_EncodeUint64 x:
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_NewSlice.
   iIntros (?) "Hsl".
   wp_apply (wp_WriteInt with "Hsl").
@@ -515,7 +515,7 @@ Lemma wp_DecodeUint64 sl x q :
 .
 Proof.
   iIntros (Φ) "Hsl HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ReadInt with "Hsl").
   iIntros (?) "Hsl".
   wp_pures.
@@ -910,7 +910,7 @@ Lemma wp_Server__getFreshNum (s:loc) γ Ψ :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
@@ -1001,7 +1001,7 @@ Lemma wp_Server__put (s:loc) γ args_ptr (args:putArgs.t) Ψ :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
@@ -1043,7 +1043,7 @@ Proof.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
   iIntros "HlastRepliesM".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_loadField.
   iMod (ghost_put with "Hlc Hspec Hghost") as "[Hghost Hspec]".
   { apply map_get_false in HlastReply as [? _]. done. }
@@ -1180,7 +1180,7 @@ Lemma wp_Server__conditionalPut γ (s:loc) args_ptr (args:conditionalPutArgs.t) 
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
@@ -1239,7 +1239,7 @@ Proof.
     wp_apply (wp_MapInsert with "HlastRepliesM").
     { done. }
     iIntros "HlastRepliesM".
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
     wp_loadField.
 
     iMod (ghost_conditionalPut_ok with "Hlc Hspec Hghost") as "[Hghost Hspec]".
@@ -1272,7 +1272,7 @@ Proof.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
   iIntros "HlastRepliesM".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_loadField.
 
   iMod (ghost_conditionalPut_not_ok with "Hlc Hspec Hghost") as "[Hghost Hspec]".
@@ -1362,7 +1362,7 @@ Lemma wp_Server__get (s:loc) γ args_ptr (args:getArgs.t) Ψ :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
@@ -1401,7 +1401,7 @@ Proof.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
   iIntros "HlastRepliesM".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_loadField.
   iMod (ghost_get with "Hlc Hspec Hghost") as "[Hghost Hspec]".
   { apply map_get_false in HlastReply as [? _]. done. }
@@ -1450,7 +1450,7 @@ Lemma wp_MakeServer γkv kvs :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply wp_allocStruct.
   { repeat econstructor. }
   iIntros (s) "Hs".
@@ -1558,7 +1558,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* begin symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (map.wp_NewMap).
   iIntros (handlers) "Hhandlers".
@@ -1717,7 +1717,7 @@ Lemma wp_makeClient (host:u64) γ:
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply wp_MakeClient.
   iIntros (?) "#?".
   iApply wp_fupd.
@@ -1747,7 +1747,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -1806,7 +1806,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -1864,7 +1864,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -1926,7 +1926,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -1994,7 +1994,7 @@ Lemma wp_Clerk__Put (ck:loc) γ k v :
   {{{ RET #(); True }}}
 .
 Proof.
-  iIntros "!#" (Φ) "#Hck Hatomic". wp_lam.
+  iIntros "!#" (Φ) "#Hck Hatomic". wp_rec.
   (* symbolic execution *)
   wp_apply wp_ref_of_zero.
   { done. }
@@ -2072,7 +2072,7 @@ Proof.
   iRight.
   iModIntro.
   iSplitR; first done.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_pures.
   erewrite decide_True; last done.
   iDestruct "Hpost" as (?) "#[??]".
@@ -2088,7 +2088,7 @@ Lemma wp_Clerk__ConditionalPut (ck:loc) k expectV newV γ :
   {{{ RET #(bool_decide (oldv = expectV)); True }}}
 .
 Proof.
-  iIntros "!#" (Φ) "#Hck Hatomic". wp_lam.
+  iIntros "!#" (Φ) "#Hck Hatomic". wp_rec.
   (* symbolic execution *)
   wp_apply wp_ref_of_zero.
   { done. }
@@ -2174,7 +2174,7 @@ Proof.
   iRight.
   iModIntro.
   iSplitR; first done.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_load.
   erewrite decide_True; last done.
   iDestruct "Hpost" as "#[? ?]".
@@ -2193,7 +2193,7 @@ Lemma wp_Clerk__Get (ck:loc) γ k :
   {{{ RET #(str oldv); True }}}
 .
 Proof.
-  iIntros "!#" (Φ) "#Hck Hatomic". wp_lam.
+  iIntros "!#" (Φ) "#Hck Hatomic". wp_rec.
   (* symbolic execution *)
   wp_pures.
   wp_apply wp_ref_of_zero.
@@ -2274,7 +2274,7 @@ Proof.
   iRight.
   iModIntro.
   iSplitR; first done.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_load.
   erewrite decide_True; last done.
   iDestruct "Hpost" as "#[? ?]".
@@ -2289,7 +2289,7 @@ Lemma wp_MakeClerk (host:u64) γ :
 .
 Proof.
   iIntros (Φ) "#Hhost HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_makeClient with "Hhost").
   iIntros (?) "#?".
   iApply wp_fupd.

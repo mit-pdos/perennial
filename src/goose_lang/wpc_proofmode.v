@@ -217,9 +217,26 @@ Ltac crash_case :=
         end
       end.
 
+Ltac wpc_pure_filter e' :=
+  (* For Beta-redices, we do *syntactic* matching only, to avoid unfolding
+     definitions. This matches the treatment for [pure_beta] via [AsRecV]. *)
+  first [ lazymatch e' with (App (Val (RecV _ _ _)) (Val _)) => idtac end
+        | eunify e' (rec: _ _ := _)%E
+        | eunify e' (InjL (Val _))
+        | eunify e' (InjR (Val _))
+        | eunify e' (Val _, Val _)%E
+        | eunify e' (Fst (Val _))
+        | eunify e' (Snd (Val _))
+        | eunify e' (if: (Val _) then _ else _)%E
+        | eunify e' (Case (Val _) _ _)
+        | eunify e' (UnOp _ (Val _))
+        | eunify e' (BinOp _ (Val _) (Val _))
+        | eunify e' (TotalLe (Val _) (Val _))
+    ].
+
 Tactic Notation "wpc_pure1" simple_intropattern(H) :=
   iStartProof;
-  wpc_pure_smart wp_pure_filter as H.
+  wpc_pure_smart wpc_pure_filter as H.
 Ltac wpc_pures :=
   iStartProof;
   let Hcrash := fresh "Hcrash" in
@@ -227,7 +244,7 @@ Ltac wpc_pures :=
     | |- envs_entails ?envs (wpc ?s ?E1 (Val _) ?Q ?Qc) => wpc_finish Hcrash
     | |- _ =>
       try (wpc_pure1 Hcrash;
-        [try iFromCache .. | repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash]
+        [try iFromCache .. | repeat (wpc_pure_no_later wpc_pure_filter as Hcrash; []); clear Hcrash]
       )
   end.
 
@@ -355,7 +372,7 @@ Ltac wpc_call :=
   [ try iFromCache; crash_case .. |
     try wpc_pure1 Hcrash;
       [try iFromCache; crash_case .. |
-       repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash] ].
+       repeat (wpc_pure_no_later wpc_pure_filter as Hcrash; []); clear Hcrash] ].
 
 Ltac wpc_bind_core K :=
   lazymatch eval hnf in K with

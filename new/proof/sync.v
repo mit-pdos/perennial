@@ -115,7 +115,7 @@ Lemma wp_Mutex__Unlock m R :
   {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} Mutex__Unlock #m #() {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as (b) "[>Hl _]".
@@ -148,7 +148,7 @@ Theorem wp_NewCond (m : loc) :
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
   iIntros (Φ) "Hl HΦ".
-  wp_call. wp_apply wp_fupd.
+  wp_rec. wp_pures. wp_apply wp_fupd.
   wp_apply wp_alloc_untyped; [ auto | ].
   iIntros (c) "Hc".
   iMod (readonly_alloc_1 with "Hc") as "Hcond".
@@ -162,7 +162,7 @@ Theorem wp_Cond__Signal c m :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "Hc HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply ("HΦ" with "[//]").
 Qed.
 
@@ -172,7 +172,7 @@ Theorem wp_Cond__Broadcast c lk :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "Hc HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply ("HΦ" with "[//]").
 Qed.
 

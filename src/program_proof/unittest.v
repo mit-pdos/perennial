@@ -6,7 +6,7 @@ Context `{!heapGS Σ}.
 
 Lemma proph_test : ⊢ WP unittest.Oracle #() {{ _, True }}.
 Proof.
-  wp_lam.
+  iStartProof. wp_rec.
   wp_apply wp_NewProph_list.
   iIntros (p pvs1) "Hp".
   wp_apply (wp_ResolveProph_list with "Hp").

@@ -154,7 +154,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* begin symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (map.wp_NewMap).
   iIntros (handlers) "Hhandlers".
@@ -271,7 +271,7 @@ Lemma wp_Client__getFreshNum cl Φ :
 Proof.
   iIntros "Hcl #Hspec Herr".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -322,7 +322,7 @@ Lemma wp_Clerk__Acquire (ck:loc) :
 .
 Proof.
   iIntros (Φ) "#Hck HΦ".
-  wp_lam.
+  wp_rec.
   (* symbolic execution *)
   wp_apply wp_ref_of_zero.
   { done. }

@@ -197,14 +197,14 @@ Theorem wp_GenTID (sid : u64) γ :
     {{{ (tid : u64), RET #tid; ⌜uint.nat tid = ts'⌝ ∗ sid_own γ sid }}}.
 Proof.
   iIntros "%Hsid #Hinv !>" (Φ) "Hsid HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var tid uint64                                          *)
   (***********************************************************)
   wp_apply wp_ref_of_zero; first done.
   iIntros (tidRef) "Htid".
-  wp_pure1_credit "LC".
+  wp_pure_credit "LC".
   wp_pures.
 
   (***********************************************************)
@@ -291,7 +291,7 @@ Proof.
   { unfold P. iFrame. }
   iIntros "HP". unfold P. clear P. iDestruct "HP" as "[Htid Htsc]".
 
-  wp_pure1_credit "LC1". wp_pure1_credit "LC2".
+  wp_pure_credit "LC1". wp_pure_credit "LC2".
   iApply ncfupd_wp.
   iInv "Hinv" as "Hgentid" "Hclose".
   iMod (lc_fupd_elim_later with "LC1 Hgentid") as (clock3) "Hgentid".

@@ -195,7 +195,7 @@ Proof.
     apply not_and_r in Hmiss.
     wp_apply (wp_MapInsert _ _ lastSeqM _ req.(Req_Seq) (#req.(Req_Seq)) with "HlastSeqMap"); eauto.
     iIntros "HlastSeqMap".
-    wp_seq.
+    wp_pures.
     iNamed 1.
     iDestruct "Hpost" as "[_ Hpost]".
     iApply ("Hpost" $! _ ({| Rep_Stale:=false; Rep_Ret:=reply.(Rep_Ret) |}) ).
@@ -267,7 +267,7 @@ Proof.
 
   iIntros (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "HΦ".
   clear Φ.

@@ -23,7 +23,7 @@ Theorem wp_hello txn tid r γ τ :
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %HP & Hpt) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   unfold txnmap_ptstos.
   destruct HP as [v HP].
   rewrite HP.
@@ -69,7 +69,7 @@ Theorem wp_Hello (txn : loc) γ :
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func Hello(txno *vmvcc.Txn) {                                           @*)
   (*@     body := func(txni *vmvcc.Txn) bool {                                @*)
@@ -125,7 +125,7 @@ Theorem wp_CallHello :
   {{{ RET #(); True }}}.
 Proof using heapGS0 mvcc_ghostG0 Σ.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func CallHello() {                                                      @*)
   (*@     db := vmvcc.MkDB()                                                  @*)

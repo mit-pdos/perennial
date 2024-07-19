@@ -23,7 +23,7 @@ Lemma wp_EncodeUint64 cid :
 Proof.
   iIntros (Φ) "Hrep HΦ".
 
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hrep".
 
@@ -58,7 +58,7 @@ Lemma wp_DecodeUint64' sl data cid q :
 .
 Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   wp_apply (wp_new_dec with "[$Hsl]").

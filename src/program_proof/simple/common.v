@@ -26,8 +26,8 @@ Theorem wp_inum2Addr (inum : u64) :
   {{{ RET (addr2val (inum2addr inum)); True }}}.
 Proof.
   iIntros (Φ) "% HΦ".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   rewrite /addr2val /inum2addr /=.
   rewrite /LogSz /InodeSz.
 
@@ -51,8 +51,8 @@ Theorem wp_block2addr bn :
   {{{ RET (addr2val (blk2addr bn)); True }}}.
 Proof.
   iIntros (Φ) "% HΦ".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   iApply "HΦ". done.
 Qed.
 
@@ -66,8 +66,8 @@ Proof.
   iIntros (Φ) "Hfh HΦ".
   iNamed "Hfh".
   iMod (readonly_load with "Hfh_slice") as (q) "Hslice".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_new_dec with "Hslice"); first by eauto.
   iIntros (dec) "Hdec".
   wp_apply (wp_Dec__GetInt with "Hdec").
@@ -84,7 +84,7 @@ Theorem wp_Fh__MakeFh3 inum :
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_pures.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc.
   iIntros (enc) "Henc".
   wp_apply (wp_Enc__PutInt with "Henc"); first by word.
@@ -111,7 +111,7 @@ Theorem wp_validInum (i : u64) :
   {{{ (valid : bool), RET #valid; ⌜ valid = true <-> i ∈ covered_inodes ⌝ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   { iApply "HΦ". rewrite elem_of_covered_inodes.
     iPureIntro.
@@ -122,7 +122,7 @@ Proof.
     iPureIntro.
     split; [ inversion 1 | intros ].
     move: H; word. }
-  wp_call.
+  wp_rec. wp_pures.
   change (uint.Z (word.divu _ _)) with 32%Z.
   wp_if_destruct.
   { iApply "HΦ". rewrite elem_of_covered_inodes.

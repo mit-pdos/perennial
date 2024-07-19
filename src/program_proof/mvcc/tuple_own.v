@@ -26,7 +26,7 @@ Proof.
   iAssert (⌜uint.Z tid > 0⌝)%I with "[Hactive]" as "%Htid".
   { iDestruct "Hactive" as "[_ %Htid]". iPureIntro. word. }
   iNamed "Htuple".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* tuple.latch.Lock()                                      *)

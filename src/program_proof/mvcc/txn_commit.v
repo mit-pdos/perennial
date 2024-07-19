@@ -29,7 +29,7 @@ Theorem wp_txn__commit_false txn tid r γ τ :
   {{{ (ok : bool), RET #ok; False }}}.
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (txn *Txn) commit() {                                              @*)
   (*@     trusted_proph.ResolveCommit(txn.proph, txn.tid, txn.wrbuf)          @*)
@@ -227,7 +227,7 @@ Theorem wp_txn__commit txn tid r w mods γ τ :
 Proof.
   iIntros (Φ) "[Htxn H] HΦ".
   iDestruct "H" as "(Hfrag & Htxnps & %Hdom)".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (txn *Txn) commit() {                                              @*)
   (*@     trusted_proph.ResolveCommit(txn.proph, txn.tid, txn.wrbuf)          @*)

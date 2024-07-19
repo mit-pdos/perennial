@@ -118,7 +118,7 @@ inv lockserviceInvN (Lockserver_inv γ) -∗
 }}}.
 Proof.
   iIntros "#Hinv" (Φ) "!# [Hlsown #Hpre] Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hlsown".
   wp_loadField.
@@ -199,8 +199,8 @@ Lemma unlock_core_spec γ (srv:loc) args :
 }}}.
 Proof.
   iIntros (Φ) "[Hlsown Hpre] Hpost".
-  wp_lam.
-  wp_let.
+  wp_rec.
+  wp_pures.
   iNamed "Hlsown".
   wp_loadField.
   wp_apply (wp_MapGet with "Hmap"); eauto.
@@ -244,7 +244,7 @@ is_lockserver γ srv -∗
 Proof.
   iIntros "#Hls".
   iIntros (Φ) "!# _ Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "Hpost".
   iIntros (args req).
@@ -268,7 +268,7 @@ Lemma Clerk__TryLock_spec γ ck (srv:loc) (ln:u64) :
   {{{ b, RET #b; own_lockclerk γ ck srv ∗ (⌜b = false⌝ ∨ ⌜b = true⌝ ∗ Ps ln) }}}.
 Proof using Type*.
   iIntros (Φ) "(#Htok & Hclerk & #Hserver) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures. 
   iNamed "Hclerk".
   repeat wp_loadField.
@@ -307,7 +307,7 @@ is_lockserver γ srv -∗
 Proof.
   iIntros "#Hls".
   iIntros (Φ) "!# _ Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "Hpost".
   iIntros (args req).
@@ -332,7 +332,7 @@ Lemma Clerk__Unlock_spec γ ck (srv:loc) (ln:u64) :
   {{{ (b:bool), RET #b; own_lockclerk γ ck srv ∗ True }}}.
 Proof using Type*.
   iIntros (Φ) "(#Htok & HP & Hclerk & #Hserver) Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures. 
   iNamed "Hclerk".
   repeat wp_loadField.
@@ -367,7 +367,7 @@ Lemma Clerk__Lock_spec γ ck (srv:loc) (ln:u64) :
   {{{ RET #true; own_lockclerk γ ck srv ∗ Ps ln }}}.
 Proof using Type*.
   iIntros (Φ) "[#Htok [Hclerk_own #Hinv]] Hpost".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_forBreak
               (fun c =>
@@ -397,7 +397,7 @@ Proof using Type*.
     }
   }
   iIntros "(Hpost & Hown_clerk & [% | (_ & HP)])"; first discriminate.
-  wp_seq.
+  wp_pures.
   iApply "Hpost".
   iFrame.
 Qed.
@@ -409,7 +409,7 @@ Lemma MakeLockServer_spec :
     is_lockserver γ srv ∗ [∗ set] cid ∈ fin_to_set u64, lockserver_cid_token γ cid
   }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_lam.
+  iIntros (Φ) "_ HΦ". wp_rec.
   iMod make_rpc_server as (γrpc) "(#is_server & server_own & cli_tokens)"; first done.
   iMod (ghost_var_alloc (∅ : gset u64)) as (γdom) "[Hdom1 Hdom2]".
   iMod (map_init (∅ : gmap u64 unit)) as (γlocks) "Hloglocks".
@@ -443,7 +443,7 @@ Lemma MakeLockClerk_spec γ (srv : loc) (cid : u64) :
     MakeClerk #srv #cid
   {{{ ck, RET #ck; own_lockclerk γ ck srv }}}.
 Proof.
-  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_lam.
+  iIntros (Φ) "[#Hserver Hcid] HΦ". wp_rec.
   rewrite /lockserver_cid_token /own_lockclerk.
   iApply wp_fupd.
 

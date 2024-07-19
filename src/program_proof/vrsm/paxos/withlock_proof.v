@@ -43,7 +43,7 @@ Lemma wp_Server__withLock (s:loc) γ γsrv (f:val) Φ :
 .
 Proof.
   iIntros "#Hsrv Hwp".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.

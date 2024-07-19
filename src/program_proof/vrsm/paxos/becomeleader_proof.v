@@ -24,7 +24,7 @@ Lemma wp_Server__TryBecomeLeader s γ γsrv Ψ Φ :
 .
 Proof.
   iIntros "#Hsrv HΦ HΨ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hsrv".
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
@@ -142,7 +142,7 @@ Proof.
   { (* loop iteration *)
     clear Φ.
     iIntros (?? Φ) "!# (_ & %Hi_le & %Hi_lookup) HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply (wp_fork with "[]").
     { (* make applyAsFollower RPC and put reply in the replies list *)
       iNext.

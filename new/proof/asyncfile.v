@@ -203,7 +203,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
 .
 Proof.
   iIntros (Φ) "H HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "H".
   iNamed "His".
@@ -253,8 +253,7 @@ Proof.
       repeat iExists _; iFrame "∗#%".
     }
     iMod (wait_step with "[$] [$] [$]") as "HQ".
-    wp_pure1. wp_pure1. wp_pures. (* FIXME: manually doing [wp_pure1] to eliminate ▷ *)
-    iModIntro. iApply "HΦ". iFrame.
+    wp_pures. iModIntro. iApply "HΦ". iFrame.
   }
 Qed.
 
@@ -373,7 +372,7 @@ Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hf".
   iAssert (_) with "His" as "His2".
@@ -496,14 +495,14 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data Φ :
   WP asyncfile.AsyncFile__flushThread #f {{ Φ }}.
 Proof.
   iIntros "Hwp".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iModIntro.
   iApply "Hwp".
   clear Φ.
   iIntros (Φ) "!# H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   iNamed "His".
   wp_apply wp_ref_ty; [econstructor|]. iIntros (s_addr) "Hlocal1". wp_pures.
   wp_load.
@@ -702,7 +701,7 @@ Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
   Opaque Mutex.
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_ty; [econstructor|]. iIntros (filename_addr) "Hlocal". wp_pures.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
 

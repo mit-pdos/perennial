@@ -62,7 +62,7 @@ Lemma wp_NewProphActions γ :
     NewProph #()
   {{{ (p : proph_id) acs, RET #p; mvcc_proph γ p acs }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_call.
+  iIntros (Φ) "_ HΦ". wp_rec. wp_pures.
   wp_apply wp_new_proph. iIntros (pvs p) "Hp".
   iApply ("HΦ" $! p (decode_actions pvs)).
   iExists _. by iFrame.
@@ -75,7 +75,7 @@ Lemma wp_ResolveRead γ p (tid key : u64) (ts : nat) :
     <<< ∃ acs', ⌜acs = ActRead ts key :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
 Proof.
-  iIntros "!> %Φ %Hts AU". wp_lam. wp_pures.
+  iIntros "!> %Φ %Hts AU". wp_rec. wp_pures.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
   iMod "AU" as (acs) "[(%pvs & %Hpvs & Hp) Hclose]".
   wp_apply (wp_resolve_proph with "Hp").
@@ -96,7 +96,7 @@ Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
     <<< ∃ acs', ⌜acs = ActAbort ts :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
 Proof.
-  iIntros "!> %Φ %Hts AU". wp_lam. wp_pures.
+  iIntros "!> %Φ %Hts AU". wp_rec. wp_pures.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
   iMod "AU" as (acs) "[(%pvs & %Hpvs & Hp) Hclose]".
   wp_apply (wp_resolve_proph with "Hp").
@@ -129,7 +129,7 @@ Local Lemma wp_WrbufToVal (wrbuf : loc) (m : dbmap) (tpls : gmap u64 loc) :
     WrbufToVal #wrbuf
   {{{ v, RET v; ⌜decode_dbmap v = m⌝ ∗ own_wrbuf wrbuf m tpls }}}.
 Proof.
-  iIntros "%Φ Hwrbuf HΦ". wp_call.
+  iIntros "%Φ Hwrbuf HΦ". wp_rec. wp_pures.
   wp_apply wp_alloc_untyped. { done. }
   iIntros (l) "Hl". wp_apply (wp_store with "Hl"). iIntros "Hl". wp_pures.
   iNamed "Hwrbuf". wp_loadField. wp_pures.
@@ -184,7 +184,7 @@ Lemma wp_ResolveCommit
     <<< ∃ acs', ⌜acs = ActCommit ts m :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); own_wrbuf wrbuf m tpls }}}.
 Proof.
-  iIntros "!> %Φ [%Hts Hm] AU". wp_lam. wp_pures.
+  iIntros "!> %Φ [%Hts Hm] AU". wp_rec. wp_pures.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
   wp_apply (wp_WrbufToVal with "Hm").
   iIntros (mval) "[%Hmval Hm]".

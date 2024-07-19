@@ -37,7 +37,7 @@ Theorem wp_freeRange (start sz: u64) E :
       is_addrset mref (rangeSet (uint.Z start) (uint.Z sz)) }}}.
 Proof.
   iIntros (Hbound Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewMap).
   iIntros (mref) "Hmap".
   wp_apply wp_ref_to; first by val_ty.
@@ -101,7 +101,7 @@ Theorem wp_findKey' mref m E :
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (found_l) "found".
   wp_apply wp_ref_to; first by val_ty.
@@ -150,7 +150,7 @@ Theorem wp_findKey mref free E :
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_to; first by val_ty.
   iIntros (found_l) "found".
   wp_apply wp_ref_to; first by val_ty.
@@ -213,7 +213,7 @@ Proof.
   - clear Hdom m Φ.
     iIntros (k [] mtodo mdone) "!>".
     iIntros (Φ) "[His_free %Hin] HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     iDestruct "His_free" as (m) "[His_free %Hdom]".
     wp_apply (wp_MapDelete with "His_free").
     iIntros "Hm".

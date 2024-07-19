@@ -40,7 +40,7 @@ Theorem wp_MkBufMap stk E :
 Proof.
   iIntros (Φ) "Hemp HΦ".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewMap u64).
   iIntros (mref) "Hmref".
   wp_apply wp_allocStruct; first val_ty.
@@ -74,7 +74,7 @@ Proof using.
   iNamed "Hbuf".
   iNamed "Hisbuf_without_data".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply wp_Addr__Flatid; intuition eauto. iIntros (?) "->".
   wp_loadField.
@@ -111,7 +111,7 @@ Proof using.
   iIntros (Φ) "[Hbufmap %] HΦ".
   iDestruct "Hbufmap" as (mptr mm am) "(Hmptr & Hmap & % & Ham)".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_Addr__Flatid; eauto. iIntros (?) "->".
   wp_loadField.
   wp_apply (wp_MapDelete with "Hmap"); iIntros "Hmap".
@@ -150,7 +150,7 @@ Proof using.
   iIntros (Φ) "[Hbufmap %] HΦ".
   iDestruct "Hbufmap" as (mptr mm am) "(Hmptr & Hmap & % & Ham)".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_Addr__Flatid; eauto. iIntros (?) "->".
   wp_loadField.
   wp_apply (wp_MapGet with "Hmap"). iIntros (v ok) "[% Hmap]".
@@ -192,7 +192,7 @@ Theorem wp_BufMap__Ndirty l m stk E1 :
 Proof using.
   iIntros (Φ) "Hisbufmap HΦ".
   iDestruct "Hisbufmap" as (addrs bm am) "(Haddrs & Hismap & % & Hmap)".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_MapLen with "Hismap").
   iIntros "[%Hmap_size Hismap]".
@@ -393,7 +393,7 @@ Theorem wp_BufMap__DirtyBufs l m stk E1 :
 Proof using.
   iIntros (Φ) "Hisbufmap HΦ".
   iDestruct "Hisbufmap" as (addrs bm am) "(Haddrs & Hismap & % & Hmap)".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; eauto.
   iIntros (bufs) "Hbufs".
   wp_loadField.

@@ -601,7 +601,7 @@ Lemma wp_Participant__PrepareIncrease (ps:loc) tid γ (key amnt:u64) :
 Proof.
   iIntros (Φ) "[#Hps #Htxn] HΦ".
   iNamed "Hps".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "Hmu_inv").
@@ -843,7 +843,7 @@ Lemma wp_Participant__Commit (ps:loc) tid γ :
   }}}.
 Proof.
   iIntros (Φ) "(#His_part & #Hcom) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His_part".
   wp_loadField.
@@ -956,7 +956,7 @@ Lemma wp_Participant__Abort (ps:loc) tid γ :
   }}}.
 Proof.
   iIntros (Φ) "(#His_part & #Habort) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His_part".
   wp_loadField.
@@ -1155,7 +1155,7 @@ Proof.
   iMod (txn_single_alloc  with "Hunprep1") as "#Htxn1".
   iDestruct "Hfresh2" as "(Hunprep2 & Hdodec2 & Hunstart2)".
   iMod (txn_single_alloc  with "Hunprep2") as "#Htxn2".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   wp_apply (wp_Participant__PrepareIncrease with "[]").

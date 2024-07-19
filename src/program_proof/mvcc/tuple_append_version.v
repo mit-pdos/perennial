@@ -13,7 +13,7 @@ Theorem wp_tuple__appendVersion tuple (tid : u64) (val : string) owned tidlast v
 Proof.
   iIntros (Φ) "Hphys HΦ".
   iNamed "Hphys".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* verNew := Version{                                      *)
@@ -58,7 +58,7 @@ Theorem wp_tuple__AppendVersion
   {{{ RET #(); active_tid γ tid sid }}}.
 Proof.
   iIntros (Φ) "[Hactive H] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* tuple.appendVersion(tid, val)                           *)

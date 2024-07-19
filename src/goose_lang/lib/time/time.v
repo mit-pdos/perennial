@@ -12,7 +12,7 @@ Theorem wp_Sleep (duration : u64) :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   by iApply "HΦ".
 Qed.
 
@@ -22,7 +22,7 @@ Theorem wp_TimeNow :
   {{{ (t : u64), RET #t; True }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   by iApply "HΦ".
 Qed.
 

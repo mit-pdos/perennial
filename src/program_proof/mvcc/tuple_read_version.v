@@ -24,7 +24,7 @@ Proof.
   iDestruct (slice.own_slice_small_acc with "HversS") as "[HversS HversC]".
   iDestruct (own_slice_small_sz with "HversS") as "%HversLen".
   rewrite fmap_length in HversLen.
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* var ver Version                                         *)
@@ -186,7 +186,7 @@ Theorem wp_tuple__ReadWait tuple (tid : u64) (key : u64) γ :
 Proof.
   iIntros "#Htuple" (Φ) "!> _ HΦ".
   iNamed "Htuple".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* tuple.latch.Lock()                                      *)
@@ -223,7 +223,7 @@ Proof.
     wp_bind (If #(bool_decide _) _ _).
     wp_if_destruct; last first.
     { (* Exit the loop due to the first condition. *)
-      wp_if_false.
+      wp_pures.
       iApply "HΦ".
       do 5 iExists _.
       iFrame "Hlocked Habst".
@@ -312,7 +312,7 @@ Theorem wp_tuple__ReadVersion
   }}}.
 Proof.
   iIntros (Φ) "(Hactive & Htuple & HtupleOwn & Hptuple & %Hwait) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* ver := findVersion(tid, tuple.vers)                     *)
@@ -349,7 +349,7 @@ Proof.
   { iIntros (b') "%Eb'".
     case_bool_decide.
     { (* Case [tuple.tidlast < tid]. *)
-      wp_if_true.
+      wp_pures.
       wp_storeField.
       iSplit; first done.
       (* Update "Htidrd" to use `b'` for merging states. See comments of wp_If_join_evar in control.v. *)
@@ -357,7 +357,7 @@ Proof.
       iNamedAccu.
     }
     { (* Case [tuple.tidlast ≥ tid]. *)
-      wp_if_false.
+      wp_pures.
       iModIntro.
       rewrite Eb'.
       by iFrame.

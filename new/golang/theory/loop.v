@@ -5,26 +5,37 @@ From iris_named_props Require Export named_props.
 
 Set Default Proof Using "Type".
 
-Section pure_execs.
-Context `{ffi_sem: ffi_semantics}.
-Axiom some_n : nat.
-
-Global Instance pure_continue_val (e : expr) : WpPureExec True some_n (exception_seq e (continue_val)) (continue_val).
-Admitted.
-
-Global Instance pure_break_val (e : expr) : WpPureExec True some_n (exception_seq e (break_val)) (break_val).
-Admitted.
-
-Global Instance pure_do_continue_val : WpPureExec True some_n (continue: #()) (continue_val).
-Admitted.
-
-Global Instance pure_do_break_val : WpPureExec True some_n (break: #()) (break_val).
-Admitted.
-
-End pure_execs.
-
-Section goose_lang.
+Section wps.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+
+Global Instance pure_continue_val (v1 : val) :
+  PureWp True (exception_seq v1 (continue_val)) (continue_val).
+Proof.
+  rewrite exception_seq_unseal continue_val_unseal.
+  intros ?????. iIntros "Hwp".
+  wp_rec. wp_pures. iFrame.
+Qed.
+
+Global Instance pure_break_val (v1 : val) : PureWp True (exception_seq v1 (break_val)) (break_val).
+Proof.
+  rewrite exception_seq_unseal break_val_unseal.
+  intros ?????. iIntros "Hwp".
+  wp_rec. wp_pures. iFrame.
+Qed.
+
+Global Instance pure_do_continue_val : PureWp True (continue: #()) (continue_val).
+Proof.
+  rewrite do_continue_unseal continue_val_unseal.
+  intros ?????. iIntros "Hwp".
+  wp_rec. wp_pures. iFrame.
+Qed.
+
+Global Instance pure_do_break_val : PureWp True (break: #()) (break_val).
+Proof.
+  rewrite do_break_unseal break_val_unseal.
+  intros ?????. iIntros "Hwp".
+  wp_rec. wp_pures. iFrame.
+Qed.
 
 (* FIXME: seal this *)
 Definition for_postcondition stk E (post : val) P Φ bv : iProp Σ :=
@@ -59,10 +70,10 @@ Proof.
     { (* body terminates with "continue" *)
       subst. wp_pures. rewrite continue_val_unseal.
       wp_pures.
-      wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
+      wp_pures.
       wp_apply (wp_wand with "IH").
       iIntros (?) "HΦ".
       wp_pures.
@@ -105,7 +116,7 @@ Proof.
   iIntros "H". rewrite /for_postcondition. iLeft. iFrame "H". iPureIntro. by eexists.
 Qed.
 
-End goose_lang.
+End wps.
 
 (** Tactic for convenient loop reasoning *)
 Ltac wp_for :=

@@ -33,9 +33,9 @@ Theorem wp_Inode__WriteInode γ γtxn (inum : u64) len len' blk (l : loc) (btxn 
       is_inode_mem l inum len' blk }}}.
 Proof.
   iIntros (Φ) "(Hjrnl & Henc & Hmem & %Hcovered) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hmem".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc. iIntros (enc) "He".
   wp_loadField.
   wp_apply (wp_Enc__PutInt with "He"); first by word. iIntros "He".
@@ -103,7 +103,7 @@ Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (co
   }}}.
 Proof.
   iIntros (Φ) "(Hjrnl & Hmem & Hienc & Hdata & Hdatabuf & %Hcount & %Hcovered) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_apply wp_slice_len.
   wp_if_destruct.

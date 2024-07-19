@@ -14,7 +14,7 @@ Theorem wp_MkTuple (key : u64) γ p :
   {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
 Proof.
   iIntros "#Hinvgc #Hinv" (Φ) "!> Hvchain HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* tuple := new(Tuple)                                     *)

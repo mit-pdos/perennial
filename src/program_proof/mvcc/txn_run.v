@@ -33,7 +33,7 @@ Theorem wp_txn__Run
 Proof.
   iIntros (Hdec) "!>".
   iIntros (Φ) "[Htxn Hbody] HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (txn *Txn) Run(body func(txn *Txn) bool) bool {                    @*)
   (*@     txn.begin()                                                         @*)

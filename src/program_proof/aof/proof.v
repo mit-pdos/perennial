@@ -332,7 +332,7 @@ Lemma wp_CreateAppendOnlyFile (fname:string) data P Pcrash :
   }}}.
 Proof.
   iIntros "#Hcrash_wand !#" (Φ) "Hpre HΦ".
-  wp_lam.
+  wp_rec.
 
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor. Opaque slice.T. }
@@ -507,13 +507,13 @@ Proof.
             )%I with "[Hpre Hdur Hpredur HdurLen Hlen]" as "Hfile_ctx".
     { iExists []; iFrame. rewrite app_nil_r. iFrame. }
     wp_forBreak.
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
 
     iClear "Hdurlen_lb".
     iNamed "Haof_own".
     wp_loadField.
     wp_apply (wp_slice_len).
-    wp_pure1_credit "Hlc2".
+    wp_pure_credit "Hlc2".
 
     iNamed "Hclose".
     wp_apply (wp_and with "[HcloseRequested]").
@@ -755,7 +755,7 @@ Proof.
       iIntros "$ _ !> $ !> //".
     }
 
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
     wp_pures.
 
     iDestruct (typed_slice.own_slice_sz with "Hmembuf_sl") as %Hsz.
@@ -900,7 +900,7 @@ Proof.
   intros HnewDataLen HnewDataSafe.
   iIntros "#Haof" (Φ) "!# Hpre HΦ".
   iNamed "Haof".
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   wp_loadField.
@@ -1246,7 +1246,7 @@ is_aof aof_ptr γ fname P Pcrash -∗
   }}}.
 Proof.
   iIntros "#Haof" (Φ) "!# _ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Haof".
   wp_loadField.
@@ -1353,7 +1353,7 @@ is_aof aof_ptr γ fname P Pcrash -∗
   }}}.
 Proof.
   iIntros "#Haof" (Φ) "!# Haof_log HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Haof".
   wp_loadField.
@@ -1408,7 +1408,7 @@ Proof.
   iDestruct "Hclose" as "[HcloseRest [Hreq #H]]".
   iNamed "H".
 
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   iApply fupd_wp.
   iInv "HfileEscrow" as "Hi" "Hiclose".
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".

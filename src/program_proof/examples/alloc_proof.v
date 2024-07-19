@@ -89,7 +89,7 @@ Theorem wp_newAllocator mref (start sz: u64) used :
   {{{ l γ, RET #l; is_allocator l γ }}}.
 Proof using allocG0.
   iIntros (Hoverflow Φ) "(Hused&%Hwf&Hblocks&HP) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_freeRange; first by auto.
   iIntros (mref') "Hfree".
   wp_pures.
@@ -155,7 +155,7 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l γ :
 Proof.
   clear.
   iIntros (Φ) "(Hinv&Hfupd) HΦ"; iNamed "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "His_lock").
   iIntros "(His_locked & Hinner)"; iNamed "Hinner".
@@ -256,7 +256,7 @@ Theorem wp_Free (Q: iProp Σ) l γ (a: u64) :
 Proof.
   clear Hitemcrash.
   iIntros (Φ) "(Halloc&Hb&Hused&Hfupd) HΦ"; iNamed "Halloc".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "His_lock").
   iIntros "(Hlocked&Hinv)"; iNamed "Hinv".

@@ -777,7 +777,7 @@ Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :
 .
 Proof.
   iIntros (Φ) "HcurrEpoch HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_pures.
   iModIntro.

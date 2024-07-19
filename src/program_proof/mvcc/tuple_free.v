@@ -14,7 +14,7 @@ Theorem wp_tuple__Free tuple (tid : u64) (key : u64) γ :
 Proof.
   iIntros "#Htuple" (Φ) "!> Htoken HΦ".
   iNamed "Htuple".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* tuple.latch.Lock()                                      *)

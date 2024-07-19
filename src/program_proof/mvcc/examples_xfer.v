@@ -43,7 +43,7 @@ Theorem wp_xfer (txn : loc) (tid : nat) (src : u64) (dst : u64) (amt : u64) r γ
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hpts & %HP) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   unfold txnmap_ptstos.
   destruct HP as (Hneq & sbal & dbal & Hr).
   (* Break [txnmap_ptstos τ r] into two pieces: one for [src] and one for [dst]. *)
@@ -182,7 +182,7 @@ Theorem wp_AtomicXfer (txno : loc) (src dst : u64) (amt : u64) γ :
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func AtomicXfer(txno *vmvcc.Txn, src, dst, amt uint64) bool {           @*)
   (*@     body := func(txni *vmvcc.Txn) bool {                                @*)

@@ -41,7 +41,7 @@ Theorem wp_Walog__waitForSpace l γ σₛ :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hlkinv".
   wp_apply (wp_forBreak_cond
               (λ b, "Hlocked" ∷ locked #σₛ.(memLock) ∗
@@ -198,7 +198,7 @@ Theorem wp_Walog__flushIfNeeded l γ dinit σₛ σ :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hlkinv". iNamed "Hfields". iNamed "Hfield_ptsto".
   iNamed "His_memLog". iNamed "Hinv". iNamed "needFlush".
   wp_loadField. wp_loadField. wp_loadField.
@@ -252,7 +252,7 @@ Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Walog__waitForSpace with "[$Hlkinv $Hlocked]").
   { iFrameNamed. iFrame "#". }
   iIntros (σ) "Hpost"; iNamed "Hpost".
@@ -596,11 +596,11 @@ Proof.
       slidingM.logIndex σ.(memLog) σ.(diskEnd))%nat)
     with (uint.Z σ.(memLog).(slidingM.mutable))
     by (rewrite logIndex_diff; word).
-  wp_seq.
+  do 2 wp_pure.
   wp_bind Skip.
   iInv "Hwal" as (σs) "[Hinner HP]".
   iApply wp_ncfupd.
-  wp_call.
+  wp_rec. wp_pures.
 
   iDestruct (mono_nat_auth_own_agree with
     "HownDiskEndMem_logger HownDiskEndMem_linv"
@@ -793,7 +793,7 @@ Theorem wp_Walog__logger l circ_l γ dinit :
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
   iMod (is_wal_read_mem with "Hwal") as "#Hmem".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hmem".
   iNamed "Hstfields".
   wp_loadField.

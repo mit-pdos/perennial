@@ -2475,7 +2475,7 @@ Theorem wp_Walog__Read l (blkno : u64) γ lwh b wn dinit :
   }}}.
 Proof using walheapG0.
   iIntros (Φ) "(#Hwal & Htxnsfrag & %Hb) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   unfold locked_wh_disk in *.
   destruct lwh as [σd σtxns].
   unfold is_locked_walheap in *. simpl in *.

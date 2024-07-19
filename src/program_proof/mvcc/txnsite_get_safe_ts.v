@@ -12,7 +12,7 @@ Theorem wp_TxnSite__GetSafeTS site (sid : u64) γ :
 Proof.
   iIntros "#Hsite" (Φ) "!> _ HΦ".
   iNamed "Hsite".
-  wp_call.
+  wp_rec. wp_pures.
   
   (*@ func (site *TxnSite) GetSafeTS() uint64 {                               @*)
   (*@     site.latch.Lock()                                                   @*)

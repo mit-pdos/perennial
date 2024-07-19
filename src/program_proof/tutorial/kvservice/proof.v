@@ -237,7 +237,7 @@ Lemma wp_EncodeUint64 x:
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_NewSlice.
   iIntros (?) "Hsl".
   wp_apply (wp_WriteInt with "Hsl").
@@ -470,7 +470,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* begin symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (map.wp_NewMap) as (handlers) "Hhandlers".
   wp_apply (map.wp_MapInsert u64 with "Hhandlers") as "Hhandlers".
@@ -648,7 +648,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -697,7 +697,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -748,7 +748,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   (* symbolic execution *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep_ptr) "Hrep".
@@ -805,7 +805,7 @@ Lemma wp_Clerk__Put (ck:loc) k v :
 .
 Proof.
   iIntros (Φ) "#Hck HΦ".
-  wp_lam.
+  wp_rec.
   (* symbolic execution *)
   wp_pures.
   wp_apply wp_ref_of_zero.
@@ -882,7 +882,7 @@ Lemma wp_Clerk__ConditionalPut (ck:loc) k expectV newV :
 .
 Proof.
   iIntros (Φ) "#Hck HΦ".
-  wp_lam.
+  wp_rec.
   (* symbolic execution *)
   wp_apply wp_ref_of_zero.
   { done. }
@@ -964,7 +964,7 @@ Lemma wp_Clerk__Get (ck:loc) k :
 .
 Proof.
   iIntros (Φ) "#Hck HΦ".
-  wp_lam.
+  wp_rec.
   (* symbolic execution *)
   wp_pures.
   wp_apply wp_ref_of_zero.

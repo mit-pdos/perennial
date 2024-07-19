@@ -35,7 +35,7 @@ Proof.
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
   (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz. *)
-  wp_call.
+  wp_rec. wp_pures.
   rewrite /WalogState__memEnd.
   wp_loadField. wp_apply (wp_sliding__end with "His_memLog"); iIntros "His_memLog".
   wp_apply util_proof.wp_SumOverflows.
@@ -60,7 +60,7 @@ Proof.
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
   (* iDestruct (updates_slice_len with "His_memLog") as %HmemLog_sz. *)
-  wp_call.
+  wp_rec. wp_pures.
   rewrite /WalogState__memEnd.
   wp_loadField. wp_apply (wp_sliding__end with "His_memLog"); iIntros "His_memLog".
   wp_loadField.
@@ -88,7 +88,7 @@ Theorem wp_WalogState__doMemAppend l q_b memLog bufs upds :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_sliding__memWrite with "[$His_memLog $Hupds]"); eauto.
   iIntros "His_memLog".
   wp_apply (wp_sliding__end with "[$His_memLog]").
@@ -704,7 +704,7 @@ Theorem wp_Walog__MemAppend (PreQ : iProp Σ) (Q: u64 -> iProp Σ) l γ dinit bu
   {{{ pos (ok : bool), RET (#pos, #ok); if ok then Q pos ∗ ∃ txn_id, txn_pos γ txn_id pos else PreQ }}}.
 Proof.
   iIntros (Φ) "(#Hwal & Hbufs & Hfupd) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct (updates_slice_to_frag with "Hbufs") as "Hbufs".
   iDestruct (updates_slice_frag_len with "Hbufs") as %Hbufs_sz.
   wp_apply wp_slice_len.
@@ -788,7 +788,7 @@ Proof.
         wp_store.
         wp_bind Skip.
         iInv "Hwal" as (σs) "[Hinner HP]".
-        wp_call.
+        wp_rec. wp_pures.
         iDestruct (is_wal_wf with "Hinner") as %Hwal_wf.
         iDestruct "Hsim" as "[Hsim _]".
         iNamed "HmemLog_linv".

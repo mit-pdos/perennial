@@ -36,7 +36,7 @@ Theorem wp_WriteReservedKeySeq txn (v : u64) tid r γ τ :
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %Hdom & Hpts) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn.Put(0, v)                                           *) 
@@ -70,7 +70,7 @@ Theorem wp_WriteReservedKey (txn : loc) (v : u64) γ :
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* body := func(txn *txn.Txn) bool {                       *) 
@@ -101,7 +101,7 @@ Theorem wp_WriteFreeKeySeq txn (v : u64) tid r γ τ :
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %Hdom & Hpts) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn.Put(1, v)                                           *) 
@@ -135,7 +135,7 @@ Theorem wp_WriteFreeKey (txn : loc) (v : u64) γ :
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* body := func(txn *txn.Txn) bool {                       *)
@@ -163,7 +163,7 @@ Theorem wp_InitializeData (txnmgr : loc) γ :
   {{{ (v : dbval), RET #(); dbmap_ptsto γ (W64 0) (1 / 2)%Qp v ∗ mvcc_inv_app γ }}}.
 Proof.
   iIntros "#Htxn" (Φ) "!> Hdbpts HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
   unfold dbmap_ptstos.
   iDestruct (big_sepM_delete _ _ (W64 0) with "Hdbpts") as "[Hdbpt Hdbpts]".
@@ -192,7 +192,7 @@ Theorem wp_InitExample :
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* mgr := txn.MkTxnMgr()                                   *)
@@ -220,7 +220,7 @@ Theorem wp_WriteReservedKeyExample (mgr : loc) (u : u64) (v : dbval) γ :
   }}}.
 Proof.
   iIntros "#Hinv #Hmgr" (Φ) "!> Hdbpt HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)
@@ -292,7 +292,7 @@ Theorem wp_WriteReservedKeyNonexample (mgr : loc) (u : u64) γ :
   {{{ (ok : bool), RET #ok; True }}}.
 Proof.
   iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)
@@ -331,7 +331,7 @@ Theorem wp_WriteFreeKeyExample (mgr : loc) (u : u64) γ :
   {{{ (ok : bool), RET #ok; True }}}.
 Proof using heapGS0 mvcc_ghostG0 Σ.
   iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)

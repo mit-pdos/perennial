@@ -110,7 +110,7 @@ Proof.
   iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
   pose Hkey as Hkey'.
   destruct Hkey' as [HbuildAddr [Hkaddr [Hklgsz Hsz]]].
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_pures.
   remember(bool_decide (uint.Z sz < uint.Z _)) as Hszcomp.
@@ -126,8 +126,8 @@ Proof.
     * wp_loadField.
       wp_apply (wp_jrnl_Begin l γDisk _ with "[Htxn]"); auto.
       iIntros (buftx) "Hbtxn".
-      wp_let.
-      wp_call.
+      wp_pures.
+      wp_rec. wp_pures.
       change (w64_word_instance.(@word.mul 64) 4096 8) with (W64 32768).
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
@@ -159,7 +159,7 @@ Proof.
          wp_apply (util_proof.wp_CloneByteSlice with "Hbufdata").
          iIntros (data') "[HisBlkData HisBlkData']".
 
-         wp_let.
+         wp_pures.
          iMod ("HPostRead" with "[-Hϕ Htxnl Hsz HrestMt HisBlkData']") as "HisBuf"; unfold specs.is_buf.
          { iSplit; eauto. iExists data. iFrame; auto. iExists sz0; simpl. iSplitL "Hbsz"; auto. }
          (* {[key := existT defs.KindBlock (defs.bufBlock blk)]} *)
@@ -188,12 +188,12 @@ Theorem wpc_KVS__MultiPut kvsl kvsblks sz γDisk kvp_ls_before kvp_ls_new kvp_sl
 Proof.
   iIntros (ϕ) "[Hkvs [HkvpBefore HkvpArgs]] Hϕ".
   iDestruct "Hkvs" as (l) "[Htxnl [Hsz [#Htxn [%HinKvs HkvsMt]]]]".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_pures.
   wp_apply (wp_jrnl_Begin l γDisk _ with "[Htxn]"); auto.
   iIntros (buftx) "Hbtxn".
-  wp_let.
+  wp_pures.
   wp_apply (wp_forSlicePrefix
         (fun done todo =>
            ∃ kvp_ls_done kvp_ls_todo kvsblks_todo kvsblks_done,

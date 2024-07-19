@@ -44,7 +44,7 @@ Lemma wp_main :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_NewMap u64).
   iIntros (?) "Hmap".
   wp_pures.

@@ -538,10 +538,10 @@ Section proof.
     iLöb as "IH" forall (from).
     iIntros (Hbound Hwf Φ) "Hpre HΦ".
     iNamed "Hpre".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply wp_slice_len.
     iDestruct (own_slice_sz with "Hslice") as "%Hsz".
-    wp_let.
+    wp_pures.
     wp_if_destruct.
     2: {
       assert (from = length data)%nat as -> by (revert Heqb; word).
@@ -586,7 +586,7 @@ Section proof.
   Proof.
     iIntros (Hwf Φ) "Hpre HΦ".
     iNamed "Hpre".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply (wp_SliceToListFrom with "Hslice");
       [lia|assumption|].
     iApply "HΦ".
@@ -608,7 +608,7 @@ Section proof.
     iLöb as "IH" forall (data1_s data1 data2).
     iIntros (Ht Hwf Hty Φ) "Hpre HΦ".
     iNamed "Hpre".
-    wp_call.
+    wp_rec. wp_pures.
     destruct data2 as [|x data2].
     {
       rewrite app_nil_r /ListMatch.
@@ -651,7 +651,7 @@ Section proof.
     }}}.
   Proof.
     iIntros (Ht Hwf Hty Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply wp_new_slice; first by assumption.
     iIntros (s) "Hslice".
     wp_apply (wp_ListToSliceApp with "Hslice");
@@ -1119,9 +1119,7 @@ Section proof.
     iDestruct (twophase_started_ub_det' with "[$]") as "Htwophase".
     { auto. }
     rewrite /Txn__ReadBufBit'.
-    wp_pure1.
-    wp_pure1.
-    wp_pure1.
+    do 3 wp_pure.
     wp_bind (Skip)%E.
     iApply (wpc_nval_elim_wp with "Htwophase"); auto.
     wp_pures. iModIntro. iNamed 1.

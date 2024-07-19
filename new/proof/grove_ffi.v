@@ -24,7 +24,7 @@ Section grove.
       Listen #(LitInt c_l) @ s; E
     {{{ RET listen_socket c_l; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_lam.
+    iIntros (Φ) "_ HΦ". wp_rec.
     wp_apply wp_ListenOp. by iApply "HΦ".
   Qed.
 
@@ -39,7 +39,7 @@ Section grove.
       if err then True else c_l c↦ ∅
     }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_lam.
+    iIntros (Φ) "_ HΦ". wp_rec.
     wp_apply wp_ConnectOp.
     iIntros (err recv) "Hr". wp_pures.
     by iApply "HΦ".
@@ -50,7 +50,7 @@ Section grove.
       Accept (listen_socket c_l)  @ s; E
     {{{ (c_r : chan), RET connection_socket c_l c_r; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_lam.
+    iIntros (Φ) "_ HΦ". wp_rec.
     wp_apply wp_AcceptOp. by iApply "HΦ".
   Qed.
 
@@ -120,9 +120,8 @@ Section grove.
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
                                 own_slice s byteT q (data_vals data) }}}.
   Proof.
-    iIntros "!#" (Φ) "Hs HΦ". wp_lam. wp_let.
-    destruct s.
-    wp_pures.
+    iIntros "!#" (Φ) "Hs HΦ". wp_rec. 
+    destruct s. wp_pures.
     iDestruct (own_slice_sz with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
     rewrite difference_empty_L.
@@ -159,7 +158,7 @@ Section grove.
           own_slice s byteT (DfracOwn 1) (data_vals data)
       }}}.
   Proof.
-    iIntros "!#" (Φ) "HΦ". wp_call. wp_pures.
+    iIntros "!#" (Φ) "HΦ". wp_rec. wp_pures. wp_pures.
     wp_bind (ExternalOp _ _).
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
@@ -297,7 +296,7 @@ Section grove.
     <<< ∃∃ (new_time: u64), ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time) >>>
     {{{ RET #new_time; True }}}.
   Proof.
-    iIntros "!>" (Φ) "HAU". wp_lam.
+    iIntros "!>" (Φ) "HAU". wp_rec.
     rewrite difference_empty_L.
     iMod "HAU" as (prev_time) "[Hlb HΦ]".
     { solve_atomic2. }
@@ -315,7 +314,7 @@ Section grove.
   WP GetTimeRange #() {{ Φ }}.
   Proof.
     iIntros (?) "HΦ".
-    wp_call. wp_apply (wp_GetTimeRangeOp with "HΦ").
+    wp_rec. wp_pures. wp_apply (wp_GetTimeRangeOp with "HΦ").
   Qed.
 
   Lemma tsc_lb_0 :

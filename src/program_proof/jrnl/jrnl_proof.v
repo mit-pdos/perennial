@@ -134,7 +134,7 @@ Theorem wp_jrnl_Begin l γUnified dinit:
 Proof.
   iIntros (Φ) "#Htxn HΦ".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_MkBufMap with "[$]").
   iIntros (bufmap) "Hbufmap".
   wp_apply wp_allocStruct; first val_ty.
@@ -170,7 +170,7 @@ Proof.
   iIntros (Φ) "(Htxn & %Ha & ->) HΦ".
   iNamed "Htxn".
   iDestruct (big_sepM_lookup with "Hctxvalid") as "%"; eauto.
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_BufMap__Lookup with "[$Hbufmap]"); first intuition.
   iIntros (bufptr) "Hbufptr".
@@ -410,7 +410,7 @@ Theorem wp_Op__OverWrite buftx mt γUnified dinit a v0 (v : {K & (bufDataT K * b
 Proof using.
   iIntros (Φ) "(Htxn & %Ha & Hvslice & -> & %) HΦ".
 Opaque struct.t.
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Htxn".
   iDestruct (big_sepM_lookup with "Hctxvalid") as "%"; eauto.
 
@@ -553,7 +553,7 @@ Theorem wp_Op__NDirty buftx mt γUnified dinit anydirty :
 Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_BufMap__Ndirty with "Hbufmap").
   iIntros (n) "[%Hnval Hbufmap]".
@@ -742,7 +742,7 @@ Proof.
   iIntros (Φ) "(Htxn & Hfupd) HΦ".
   iNamed "Htxn".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
   wp_apply (wp_BufMap__DirtyBufs with "Hbufmap").

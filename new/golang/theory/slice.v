@@ -167,7 +167,7 @@ Lemma wp_slice_len stk E (s : slice.t) (Φ : val -> iProp Σ) :
     Φ #(s.(slice.len_f)) -∗ WP slice.len (slice.val s) @ stk; E {{ v, Φ v }}.
 Proof.
   rewrite slice.val_unseal. iIntros "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
 Qed.
 
@@ -175,7 +175,7 @@ Lemma wp_slice_cap stk E (s : slice.t) (Φ : val -> iProp Σ) :
     Φ #(s.(slice.cap_f)) -∗ WP slice.cap (slice.val s) @ stk; E {{ v, Φ v }}.
 Proof.
   rewrite slice.val_unseal. iIntros "HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
 Qed.
 
@@ -202,7 +202,7 @@ Lemma wp_slice_make3 stk E t (len cap : u64) :
   }}}.
 Proof.
   iIntros (? Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   { exfalso. word. }
   wp_pures.
@@ -283,7 +283,7 @@ Lemma wp_slice_make2 stk E t (len : u64) :
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_slice_make3.
   { done. }
   iIntros (?) "(? & ? & ?)".
@@ -293,39 +293,27 @@ Qed.
 (* PureExecs *)
 
 Global Instance pure_slice_ptr (s : slice.t) :
-  WpPureExec True 3 (slice.ptr (slice.val s)) #(slice.ptr_f s).
+  PureWpVal True (slice.ptr (slice.val s)) #(slice.ptr_f s).
 Proof.
   rewrite slice.val_unseal.
-  split; first done.
-  rewrite /slice.ptr /slice.val. cbn.
-  eapply pure_exec_impl; first shelve.
-  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
-  simpl. intros _. constructor.
-  Unshelve. all: done.
+  iIntros (???) "_ HΦ".
+  wp_rec. wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_len (s : slice.t) :
-  WpPureExec True 3 (slice.len (slice.val s)) #(slice.len_f s).
+  PureWpVal True (slice.len (slice.val s)) #(slice.len_f s).
 Proof.
   rewrite slice.val_unseal.
-  split; first done.
-  rewrite /slice.len /slice.val. cbn.
-  eapply pure_exec_impl; first shelve.
-  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
-  simpl. intros _. constructor.
-  Unshelve. all: done.
+  iIntros (???) "_ HΦ".
+  wp_rec. wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_cap (s : slice.t) :
-  WpPureExec True 2 (slice.cap (slice.val s)) #(slice.cap_f s).
+  PureWpVal True (slice.cap (slice.val s)) #(slice.cap_f s).
 Proof.
   rewrite slice.val_unseal.
-  split; first done.
-  rewrite /slice.cap /slice.val. cbn.
-  eapply pure_exec_impl; first shelve.
-  repeat (eapply pure_exec_S; first (simpl; tc_search_pure_exec_ctx)).
-  simpl. intros _. constructor.
-  Unshelve. all: done.
+  iIntros (???) "_ HΦ".
+  wp_rec. wp_pures. by iApply "HΦ".
 Qed.
 
 End wps.

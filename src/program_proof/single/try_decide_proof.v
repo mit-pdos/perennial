@@ -103,7 +103,7 @@ Lemma wp_TryDecide s pid γ (v:u64) (dummy_v:u64) (outv_ptr:loc) :
   }}}.
 Proof.
   iIntros "#His !#" (Φ) "Houtv HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His".
   wp_loadField.

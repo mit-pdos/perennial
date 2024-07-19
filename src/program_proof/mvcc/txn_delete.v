@@ -18,7 +18,7 @@ Proof.
   iIntros (Φ) "[Htxn Hptsto] HΦ".
   iNamed "Htxn".
   iNamed "Himpl".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup".
   
   (***********************************************************)

@@ -12,7 +12,7 @@ Theorem wp_DB__getSafeTS db γ :
   {{{ (tid : u64), RET #tid; min_tid_lb γ (uint.nat tid) }}}.
 Proof.
   iIntros "#Hdb" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (db *DB) getSafeTS() uint64 {                                      @*)
   (*@     var min uint64 = config.TID_SENTINEL                                @*)

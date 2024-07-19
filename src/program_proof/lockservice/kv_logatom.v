@@ -153,7 +153,7 @@ is_kvserver γ srv -∗
 }}}.
 Proof.
   iIntros "#His_kv !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "HΦ".
   iIntros (args req) "!#". iIntros (Q) "#HQtmless #HQdisc #HwandQ".
@@ -216,7 +216,7 @@ is_kvserver γ srv -∗
 }}}.
 Proof.
   iIntros "#His_kv !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "HΦ".
   iIntros (args req) "!#". iIntros (Q) "#HQtmless #HQdisc #HwandQ".

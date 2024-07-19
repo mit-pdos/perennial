@@ -30,7 +30,7 @@ Theorem wp_readCustomer txn tplid cid cwid clast tid view γ τ :
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hpt] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var k = make([]byte, 0, 8)                              *)
@@ -98,7 +98,7 @@ Theorem wp_findCusomterByCID txn cid cwid tid tplid view γ τ :
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hpt] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var k = make([]byte, 0, 16)                             *)
@@ -153,7 +153,7 @@ Theorem wp_findCusomterByCID_nil txn cid cwid tid view γ τ :
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hpt] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var k = make([]byte, 0, 16)                             *)
@@ -205,7 +205,7 @@ Theorem wp_SelectCusomterByCID txn cid cwid (cref : loc) clast tid tplid view γ
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hidxpt & Htblpt & Hc) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* tplid, found := findCustomerByCID(txn, cid, cwid)       *)
@@ -244,7 +244,7 @@ Theorem wp_SelectCusomterByCID_nil txn cid cwid (cref : loc) tid view γ τ :
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hidxpt] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* tplid, found := findCustomerByCID(txn, cid, cwid)       *)
@@ -281,7 +281,7 @@ Theorem wp_TxnSelectCusomterByCID txn cid cwid γ :
     }}}.
 Proof.
   iIntros (Φ) "!> Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var c Customer                                          *)
@@ -418,7 +418,7 @@ Theorem wp_TxnSelectCusomterByCID_nil txn cid cwid γ :
     {{{ RET (zero_val (struct.t Customer)); own_txn_uninit txn γ }}}.
 Proof.
   iIntros (Φ) "!> Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var c Customer                                          *)

@@ -20,10 +20,8 @@ Proof.
   iIntros "#Hbody".
   iIntros (Φ) "!> I HΦ".
   rewrite /For.
-  wp_lam.
-  wp_let.
-  wp_let.
-  wp_pure (Rec _ _ _).
+  wp_rec.
+  wp_pures.
   match goal with
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
   end.
@@ -34,12 +32,7 @@ Proof.
   iIntros (r) "Hr".
   destruct r.
   - iDestruct ("IH" with "Hr HΦ") as "IH1".
-    wp_let.
-    wp_if.
-    wp_lam.
-    wp_lam.
-    wp_pure (Rec _ _ _).
-    wp_lam.
+    wp_pures.
     iApply "IH1".
   - wp_pures.
     iApply "HΦ".
@@ -114,10 +107,8 @@ Proof.
   iIntros (Hstart_max) "#Hbody".
   iIntros (Φ) "!> (H0 & Hl) HΦ".
   rewrite /For /Continue.
-  wp_lam.
-  wp_let.
-  wp_let.
-  wp_pure (Rec _ _ _).
+  wp_rec.
+  wp_pures.
   match goal with
   | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
   end.
@@ -137,7 +128,7 @@ Proof.
     wp_pures.
     wp_load.
     wp_pures.
-    wp_store.
+    wp_store. wp_pures.
     iApply ("IH" with "[] HIx Hl").
     { iPureIntro; word. }
     iFrame.

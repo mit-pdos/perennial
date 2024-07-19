@@ -201,7 +201,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
 .
 Proof.
   iIntros (Φ) "H HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "H".
   iNamed "His".
@@ -361,7 +361,7 @@ Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hf".
   iAssert (_) with "His" as "His2".
@@ -474,7 +474,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   iNamed "His".
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
@@ -673,7 +673,7 @@ Lemma wp_MakeAsyncFile fname N P data :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_apply wp_allocStruct.
   { Transparent slice.T. repeat econstructor. Opaque slice.T. }
   iIntros (f) "Hf".

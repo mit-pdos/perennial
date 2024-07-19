@@ -259,7 +259,7 @@ Proof.
   iDestruct (big_sepL2_length with "HdataDirect") as %Hblocklen.
   destruct Hlen as [HdirLen [HindirLen HszMax]].
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Read with "Hhdr").
   iIntros (s) "(Hhdr&Hs)".
   wp_pures.
@@ -280,7 +280,7 @@ Proof.
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
   wp_pures.
 
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "Hdiraddrs" as "[[HdirPtsto %Hdirs_len'] Hdirs_cap]".
   iDestruct "Hindaddrs" as "[[HindPtsto %Hinds_len'] Hinds_cap]".
   assert (length ds.(impl_s.dirAddrs) = uint.nat diraddr_s.(Slice.sz) ∧
@@ -472,7 +472,7 @@ Theorem wp_indNum {off: u64} :
   }}}.
 Proof.
   iIntros (ϕ) "%H Hϕ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "Hϕ".
   iPureIntro.
   unfold indirectNumBlocks. unfold maxDirect in *.
@@ -490,7 +490,7 @@ Theorem wp_indOff {off: u64} :
   }}}.
 Proof.
   iIntros (ϕ) "%H Hϕ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "Hϕ".
   iPureIntro.
   unfold indirectNumBlocks. unfold maxDirect in *.
@@ -521,11 +521,11 @@ Theorem wp_readIndirect {l σ}
 Proof.
   iIntros (ϕ) "H Hϕ". iNamed "H". iNamed "HindBlkAddrs".
   destruct Hlen as [HindAddrsMax HnumIndBound].
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply ((wp_Read a 1 indBlk) with "[diskAddr]"); auto.
   iIntros (s) "[diskAddr Hs]".
-  wp_let.
+  wp_pures.
   unfold is_block_full.
   iDestruct (slice.own_slice_to_small with "Hs") as "Hs".
 
@@ -561,18 +561,18 @@ Theorem wp_Inode__UsedBlocks {l γ P addr σ} :
                                pre_inode l P σ addr) }}}.
 Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hlockinv".
   iNamed "Hvolatile"; iNamed "Hdurable"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   destruct Hlen as [HdirLen [HindirLen HszMax]].
   wp_apply wp_ref_of_zero; auto.
   iIntros (l0) "Hl0".
-  wp_let.
+  wp_pures.
   wp_apply (wp_NewSlice _ _ (uint64T)).
   iIntros (s) "Hs".
   wp_store.
-  wp_loadField; wp_let.
-  wp_loadField; wp_let.
+  wp_loadField; wp_pures.
+  wp_loadField; wp_pures.
 
   iDestruct (own_slice_sz with "Hdirect") as %HDirlen.
   iDestruct (own_slice_sz with "Hindirect") as %HIndlen.
@@ -923,7 +923,7 @@ Theorem wp_Inode__Read {l P k addr} {off: u64} Q :
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
   iIntros "His_locked".
@@ -1044,7 +1044,7 @@ Proof.
       }
       iIntros (indBlkAddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
 
-      wp_let.
+      wp_pures.
       wp_apply wp_indOff.
       { iPureIntro; auto. }
       iIntros (offset) "%Hoffset".
@@ -1110,7 +1110,7 @@ Proof.
       iDestruct (big_sepL2_lookup_acc _ _ _ _ _ with "Hdata") as "[Hb' Hdata]"; eauto.
 
       wp_apply (wp_Read with "Hb'"); iIntros (s) "[Hb' Hs]".
-      wp_let.
+      wp_pures.
 
       iSpecialize ("Hdata" with "Hb'").
       iAssert (∃ indBlkAddrs,
@@ -1148,7 +1148,7 @@ Theorem wp_Inode__Size {l k' P addr} (Q: u64 -> iProp Σ) :
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
   iNamed "Hinode"; iNamed "Hro_state".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
   iIntros "His_locked".
@@ -1158,7 +1158,7 @@ Proof.
   iNamed "Hlockinv".
   iNamed "Hvolatile"; iNamed "Hdurable"; iNamed "Hfacts"; iNamed "Hhdr"; iNamed "Hdata".
   wp_loadField.
-  wp_let.
+  wp_pures.
   wp_loadField.
   iMod ("Hfupd" $! σ σ (length σ.(inode.blocks)) with "[$HP]") as "[HP HQ]".
   { iPureIntro.
@@ -1182,11 +1182,11 @@ Theorem wp_padInts {Stk E} enc (n: u64) (encoded : list encodable) (off: Z):
   }}}.
 Proof.
   iIntros (ϕ) "[%Hi Henc] Hϕ".
-  wp_call.
-  wp_call.
+  wp_rec. wp_pures.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero _ _ (baseT uint64BT)); first by auto.
   iIntros (i) "Hi".
-  wp_let.
+  wp_pures.
 
   wp_apply (wp_forUpto (λ i, "%Hiupper_bound" ∷ ⌜uint.Z i <= uint.Z n⌝ ∗
                        "Henc" ∷ is_enc enc 4096 (encoded ++ (EncUInt64 <$> (replicate (uint.nat i) (W64 0))))
@@ -1261,7 +1261,7 @@ Theorem wp_Inode__mkHdr {Stk E} l (sz numInd : Z) allocedDirAddrs allocedIndAddr
   }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc; iIntros (enc) "Henc".
   wp_pures.
   wp_loadField.

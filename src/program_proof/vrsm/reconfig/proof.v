@@ -37,7 +37,7 @@ Lemma wp_Reconfig γ configHosts_sl (configHosts:list u64) (servers:list u64) (s
 Proof using waitgroupG0.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_slice_len).
   wp_pures.
@@ -624,7 +624,7 @@ Proof using waitgroupG0.
     wp_pures.
     wp_load.
     unfold SliceGet.
-    wp_call.
+    wp_rec. wp_pures.
     iDestruct (big_sepS_elem_of_acc _ _ i0 with "Hwg_post") as "[HH _]".
     { set_solver. }
 
@@ -637,7 +637,7 @@ Proof using waitgroupG0.
     }
     iDestruct "HH" as (??) "(%HbackupLookup & Herr2 & Hpost)".
     wp_apply (wp_slice_ptr).
-    wp_pure1.
+    wp_pures.
     iEval (simpl) in "Herr2".
     iMod (readonly_load with "Herr2") as (?) "Herr3".
     wp_load.

@@ -60,7 +60,7 @@ Proof using Type*.
   intros Hrem.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
 
   wp_apply (wp_MapLen with "Hmap").
   iIntros "[%Hsize Hmap]".
@@ -209,7 +209,7 @@ Proof.
   Opaque NewMap.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   destruct Hmapencoded as [l [Hsize [Hnodup [HlistMap Hmapencoded]]]].
   rewrite Hmapencoded.
   wp_apply (wp_Dec__GetInt with "Hdec").
@@ -642,7 +642,7 @@ is_kvserver γ srv -∗
 Proof.
   iNamed 1.
   iIntros (Φ) "!# Hpre HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iApply "HΦ".
   iIntros (args req).

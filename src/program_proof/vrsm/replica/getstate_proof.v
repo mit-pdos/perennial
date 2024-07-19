@@ -46,7 +46,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep) "Hrep".
@@ -202,7 +202,7 @@ Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ Ψ :
   .
 Proof.
   iIntros "His_srv Hargs HΦ HΨ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "His_srv".
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").

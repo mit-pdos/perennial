@@ -303,7 +303,7 @@ Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops 
 .
 Proof.
   iIntros (Φ) "(%HopEnc & #Hop_sl & Hupd & Hown) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   iNamed "Hown".
@@ -461,7 +461,7 @@ Proof.
     word.
   }
   iIntros (Ψ) "HΨ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_AppendOnlyFile__WaitAppend with "[$His_aof]").
   iIntros "Haof_len".
   iMod ("HupdQ" with "Haof_len") as "[HQ _]".
@@ -491,7 +491,7 @@ Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (
 Proof.
   iIntros (Φ) "(%HsnapLen & %HsnapEnc & %HnextIndex & #Hsnap_sl & Hupd & Hown) HΦ".
   assert (nextIndex = W64 (length ops)) by word; subst.
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hown".
 
@@ -511,7 +511,7 @@ Proof.
   wp_pures.
 
   (* XXX: this could be a separate lemma *)
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   (* create contents of brand new file *)
@@ -732,7 +732,7 @@ Lemma wp_getStateAndSeal s P epoch ops sealed Q :
   }}}.
 Proof.
   iIntros (Φ) "(Hown & Hupd) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   iNamed "Hown".
@@ -829,7 +829,7 @@ Proof.
     wp_loadField.
     wp_apply ("HgetState_spec" with "[$Hmemstate]").
     iIntros (??) "(Hmemstate & %HencSnap & #Hsnap_sl)".
-    wp_pure1_credit "Hlc".
+    wp_pure_credit "Hlc".
     wp_pures.
     iApply "HΦ".
     iSplitR; first done.
@@ -888,7 +888,7 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
 .
 Proof.
   iIntros (Φ) "(% & % & #? & Hstate) HΦ".
-  wp_lam.
+  wp_rec.
   iNamed "Hstate".
   wp_pures.
   iAssert (_) with "HisMemSm" as "#HisMemSm2".
@@ -919,7 +919,7 @@ Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine Q :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_pures.
 
   wp_apply (wp_allocStruct).
@@ -1773,7 +1773,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
 
-  wp_lam.
+  wp_rec.
   wp_apply (wp_recoverStateMachine with "[-HΦ]").
   { iFrame "∗#".
     iIntros (???) "HP".
@@ -1827,7 +1827,7 @@ Proof.
       clear Φ.
       iIntros (?????? Φ) "!#".
       iIntros "(%HopEncoding & #Hop_sl & Hupd & Hsm) HΦ".
-      wp_lam.
+      wp_rec.
       wp_apply (wp_StateMachine__apply with "[$Hsm $Hop_sl Hupd]").
       {
         iFrame "%".
@@ -1843,7 +1843,7 @@ Proof.
       clear Φ.
       iIntros (???????? Φ) "!#".
       iIntros "(%HsnapLen & %HopEncoding & #Hop_sl & Hupd & Hsm) HΦ".
-      wp_lam.
+      wp_rec.
       wp_pures.
       wp_apply (wp_setStateAndUnseal with "[$Hsm $Hop_sl Hupd]").
       {
@@ -1867,7 +1867,7 @@ Proof.
       clear Φ.
       iIntros (???? Φ) "!#".
       iIntros "(Hsm & Hupd) HΦ".
-      wp_lam.
+      wp_rec.
       wp_pures.
       wp_apply (wp_getStateAndSeal with "[$Hsm Hupd]").
       {
@@ -1886,7 +1886,7 @@ Proof.
       clear Φ.
       iIntros (?????? Φ) "!#".
       iIntros "(%Hop_enc & #Hop_sl & Hsm)  HΦ".
-      wp_lam.
+      wp_rec.
       wp_pures.
       wp_apply (wp_StateMachine__applyReadonly with "[$Hsm]").
       { iFrame "#%". }

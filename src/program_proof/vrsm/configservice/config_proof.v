@@ -84,7 +84,7 @@ Lemma wp_decode (x:t) sl q :
 .
 Proof.
   iIntros (?) "Hsl HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct); first by val_ty.
   iIntros (?) "Hl". iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
@@ -134,7 +134,7 @@ Lemma wp_encode l (x:t) :
 Proof.
   iIntros (?) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_ref_of_zero); first done.
   iIntros (?) "Hl".
   wp_pures.
@@ -465,7 +465,7 @@ Lemma wp_Server__tryAcquire s γ :
 .
 Proof.
   iIntros (Φ) "Hsrv HΦ".
-  wp_lam.
+  wp_rec.
   iNamed "Hsrv".
   wp_loadField.
   wp_apply (wp_Server__TryAcquire with "[$]").
@@ -502,7 +502,7 @@ Proof.
   wp_apply (state.wp_encode with "[$]").
   iClear "Hsl".
   iIntros (?) "[Hsl _]".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_store.
   iMod (readonly_alloc_1 with "Hsl") as "Hsl".
   wp_apply ("Hwp" with "[-HΦ]").
@@ -551,13 +551,13 @@ Lemma wp_Server__ReserveEpochAndGetConfig (server:loc) γ :
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
   iModIntro.
   unfold is_urpc_handler_pred.
   clear Φ.
   iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   replace (slice.nil) with (slice_val Slice.nil) by done.
   wp_apply (wp_WriteInt with "[]").
@@ -566,7 +566,7 @@ Proof.
   wp_store.
   wp_apply (wp_Server__tryAcquire with "[$]").
   iIntros (???) "Hpost".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_if_destruct.
   { (* if not ok from tryAcquire *)
     iApply "HΦ".
@@ -693,13 +693,13 @@ Lemma wp_Server__GetConfig (server:loc) γ :
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
   iModIntro.
   unfold is_urpc_handler_pred.
   clear Φ.
   iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   iNamed "His_srv".
   wp_loadField.
@@ -733,13 +733,13 @@ Lemma wp_Server__TryWriteConfig (server:loc) γ :
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
   iModIntro.
   unfold is_urpc_handler_pred.
   clear Φ.
   iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "HΨ" as (new_epoch new_conf enc_new_conf) "(%Henc & %Henc_conf & HΨ)".
   rewrite Henc.
   change (slice.nil) with (slice_val Slice.nil).
@@ -749,7 +749,7 @@ Proof.
   wp_store.
   wp_apply (wp_ReadInt with "Harg_sl").
   iIntros (args_sl) "Hargs_sl".
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_pures.
   wp_apply (Config.wp_Decode with "[$Hargs_sl]").
   { done. }
@@ -1023,13 +1023,13 @@ Lemma wp_Server__GetLease (server:loc) γ :
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
   iModIntro.
   unfold is_urpc_handler_pred.
   clear Φ.
   iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct "HΨ" as (?) "[% HΨ]".
   subst.
   change (slice.nil) with (slice_val Slice.nil).
@@ -1237,7 +1237,7 @@ Lemma wp_MakeClerk hosts hosts_sl γ:
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H". iNamed "Hhosts".
-  wp_lam.
+  wp_rec.
   wp_apply wp_NewSlice.
   iIntros (?) "Hcls_sl".
   wp_apply wp_ref_to.
@@ -1323,7 +1323,7 @@ Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :
 .
 Proof.
   iIntros "#Hck #HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_of_zero.
   { eauto. }
   iIntros (reply_ptr) "Hreply".
@@ -1516,7 +1516,7 @@ Lemma wp_Clerk__GetConfig (ck:loc) γ Φ :
 .
 Proof.
   iIntros "#Hck #HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_of_zero.
   { eauto. }
   iIntros (reply_ptr) "Hreply".
@@ -1610,7 +1610,7 @@ Lemma wp_Clerk__TryWriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
 .
 Proof.
   iIntros "#Hck #Hconf_sl #Hlb #HP_new #HΦ Hfail".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_of_zero.
   { eauto. }
   iIntros (reply_ptr) "Hreply".
@@ -1811,7 +1811,7 @@ Lemma wp_Clerk__GetLease (ck:loc) γ epoch Φ :
 .
 Proof.
   iIntros "#Hck #HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_of_zero.
   { eauto. }
   iIntros (reply_ptr) "Hreply".
@@ -2005,7 +2005,7 @@ Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
   iNamed "Hpeers".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocStruct); first by val_ty.
   iIntros (s) "Hs".
   iDestruct (struct_fields_split with "Hs") as "HH".
@@ -2055,7 +2055,7 @@ Lemma wp_StartServer γ γsrv fname me (paxosMe:u64) (data:list u8) hosts_sl ini
 Proof.
   iIntros (?) "H HΦ".
   iNamed "H".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_makeServer with "[-HΦ]").
   { iNamed "Hhost". iFrame "∗#". }
   iIntros (?) "#Hsrv".

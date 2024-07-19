@@ -94,7 +94,7 @@ Proof.
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_if_destruct.
   (* Fits within maxDirect *)
@@ -130,7 +130,7 @@ Proof.
       with (W64 (Z.of_nat (length σ.(inode.blocks)) + 1)); auto; word.
     }
     iIntros (s b') "(Hb & %Hencoded' &?&?&?&?&?)"; iNamed.
-    wp_let.
+    wp_pures.
     wp_loadField.
     wp_apply (wp_Write with "[Hhdr Hb]").
     { iExists ds.(impl_s.hdr); iFrame. }
@@ -462,12 +462,12 @@ Proof.
     repeat rewrite app_length /indirectNumBlocks. rewrite replicate_length. simpl. word.
   }
 
-  wp_call.
+  wp_rec. wp_pures.
   (*PrepIndirect*)
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc.
   iIntros (enc) "Henc".
-  wp_let.
+  wp_pures.
   iDestruct (own_slice_split with "Haddr_s") as "[Haddr_s_small Haddr_s]".
   wp_apply (wp_Enc__PutInts with "[$Henc $Haddr_s_small]").
     { len. }
@@ -509,7 +509,7 @@ Proof.
     }
 
     iIntros (hdr_slice hdr) "[Hs' H]"; iNamed "H".
-    wp_let.
+    wp_pures.
     wp_loadField.
     wp_apply (wp_Write with "[Hs' Hhdr]").
     { iExists ds.(impl_s.hdr); iFrame. }
@@ -671,7 +671,7 @@ Proof.
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_loadField.
@@ -769,7 +769,7 @@ Proof.
     }
     iIntros (indblkaddrs_s) "H". iNamed "H". iNamed "HindBlkIndirect".
     destruct HindBlockLen as [HindBlockLen [HindBlkAddrsLen HindBlkAddrsLB]].
-    wp_let.
+    wp_pures.
     wp_loadField.
     wp_apply wp_indOff.
     { iPureIntro; unfold maxDirect; auto. word. }

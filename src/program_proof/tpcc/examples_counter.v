@@ -31,7 +31,7 @@ Theorem wp_fetch txn (p : loc) tid r γ τ :
   }}}.
 Proof.
   iIntros (Φ) "(Hp & Htxn & %HP & Hpt) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* v, _ := txn.Get(0)                                      *)
@@ -82,7 +82,7 @@ Theorem wp_Fetch (txn : loc) γ :
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var n uint64                                            *)
@@ -177,7 +177,7 @@ Theorem wp_increment txn (p : loc) tid r γ τ :
   }}}.
 Proof.
   iIntros (Φ) "(Hp & Htxn & %HP & Hpt) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* v, _ := txn.Get(0)                                      *)
@@ -256,7 +256,7 @@ Theorem wp_Increment (txn : loc) γ :
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var n uint64                                            *)
@@ -354,7 +354,7 @@ Theorem wp_decrement txn (p : loc) tid r γ τ :
   }}}.
 Proof.
   iIntros (Φ) "(Hp & Htxn & %HP & Hpt) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* v, _ := txn.Get(0)                                      *)
@@ -434,7 +434,7 @@ Theorem wp_Decrement (txn : loc) γ :
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var n uint64                                            *)
@@ -533,7 +533,7 @@ Theorem wp_InitializeCounterData (db : loc) γ :
   {{{ α, RET #(); mvcc_inv_app γ α }}}.
 Proof.
   iIntros "#Hdb" (Φ) "!> Hdbpts HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* body := func(txn *txn.Txn) bool {                       *)
@@ -644,7 +644,7 @@ Theorem wp_InitCounter :
   {{{ γ α (db : loc), RET #db; is_db db γ ∗ mvcc_inv_app γ α }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* mgr := txn.MkTxnMgr()                                   *)
@@ -674,7 +674,7 @@ Theorem wp_CallIncrement (db : loc) γ α :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hinv #Hdb" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)
@@ -731,7 +731,7 @@ Theorem wp_CallDecrement (db : loc) γ α :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hinv #Hdb" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)
@@ -776,7 +776,7 @@ Theorem wp_CallIncrementFetch (db : loc) γ α :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hinv #Hdb" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)

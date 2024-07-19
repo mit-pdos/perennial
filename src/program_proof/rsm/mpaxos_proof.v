@@ -194,7 +194,7 @@ Section prog.
     {{{ RET #(); True }}}.
   Proof using heapGS0 mpaxos_ghostG0 Σ.
     iIntros (Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func example1() {                                                       @*)
     (*@     px := MkPaxos()                                                     @*)
@@ -418,7 +418,7 @@ Section prog.
   {{{ RET #(); True }}}.
   Proof using heapGS0 mpaxos_ghostG0 Σ.
     iIntros (Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
 
     (*@ func example2() {                                                       @*)
     (*@     px := MkPaxos()                                                     @*)

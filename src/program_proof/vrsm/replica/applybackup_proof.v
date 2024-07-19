@@ -56,7 +56,7 @@ Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op 
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep) "Hrep".
@@ -94,7 +94,7 @@ Proof.
       wp_load.
 
       (* FIXME: separate lemma *)
-      wp_call.
+      wp_rec. wp_pures.
       rewrite Henc_rep.
       wp_apply (wp_ReadInt with "Hrep_sl").
       iIntros (?) "_".
@@ -110,7 +110,7 @@ Proof.
       iIntros.
       wp_pures.
       wp_load.
-      wp_call.
+      wp_rec. wp_pures.
       rewrite H.
       wp_apply (wp_ReadInt with "[$]").
       iIntros.
@@ -288,7 +288,7 @@ Proof.
   iIntros "#HisSrv Hpre HΦ HΨ".
   iNamed "Hpre".
   iNamed "HisSrv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
@@ -447,7 +447,7 @@ Proof.
   replace (args.(ApplyAsBackupArgs.epoch)) with st.(server.epoch) by word.
   wp_loadField.
   wp_loadField.
-  wp_pure1_credit "Hlc".
+  wp_pure_credit "Hlc".
   wp_if_destruct.
   { (* return error: out-of-order; TODO: we never actually need to return this
        error, if something is out of order that means we already applied it *)

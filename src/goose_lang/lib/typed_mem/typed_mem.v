@@ -194,7 +194,7 @@ Section goose_lang.
     intros Hnotunit.
     iIntros "Hle".
     rewrite -> base_load_ty by auto.
-    wp_lam.
+    wp_rec.
     iApply "Hle".
     { iPureIntro.
       apply _. }
@@ -264,7 +264,7 @@ Section goose_lang.
     {{{ l, RET #l; l ↦[t] v }}}.
   Proof.
     iIntros (Hty Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply (wp_AllocAt t); auto.
   Qed.
 
@@ -286,7 +286,7 @@ Section goose_lang.
     {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
   Proof.
     iIntros (Hzero Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     wp_apply wp_ref_of_zero; eauto.
   Qed.
 
@@ -510,6 +510,6 @@ Tactic Notation "wp_store" :=
     |tc_solve
     |solve_pointsto ()
     |pm_reflexivity
-    |first [wp_seq|wp_finish]]
+    |first [wp_pure_filter (Rec BAnon BAnon _); wp_rec |wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
   end.

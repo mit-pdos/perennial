@@ -110,7 +110,7 @@ Lemma wp_mk_dconfig_hosts :
   {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T (DfracOwn 1) [ dconfigHost ]) }}}
 .
   iIntros (?) "_ HΦ".
-  wp_lam. wp_apply (wp_NewSlice).
+  wp_rec. wp_apply (wp_NewSlice).
   iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
   iIntros (?) "Hptr". wp_pures. wp_load.
   iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
@@ -125,7 +125,7 @@ Lemma wp_mk_lconfig_hosts :
   {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T (DfracOwn 1) [ lconfigHost ]) }}}
 .
   iIntros (?) "_ HΦ".
-  wp_lam. wp_apply (wp_NewSlice).
+  wp_rec. wp_apply (wp_NewSlice).
   iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
   iIntros (?) "Hptr". wp_pures. wp_load.
   iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
@@ -140,7 +140,7 @@ Lemma wp_mk_dconfig_paxosHosts :
   {{{ sl, RET (slice_val sl); own_slice_small sl uint64T (DfracOwn 1) [ dconfigHostPaxos ] }}}
 .
   iIntros (?) "_ HΦ".
-  wp_lam. wp_apply (wp_NewSlice).
+  wp_rec. wp_apply (wp_NewSlice).
   iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
   iIntros (?) "Hptr". wp_pures. wp_load.
   iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
@@ -154,7 +154,7 @@ Lemma wp_mk_lconfig_paxosHosts :
   {{{ sl, RET (slice_val sl); own_slice_small sl uint64T (DfracOwn 1) [ lconfigHostPaxos ] }}}
 .
   iIntros (?) "_ HΦ".
-  wp_lam. wp_apply (wp_NewSlice).
+  wp_rec. wp_apply (wp_NewSlice).
   iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
   iIntros (?) "Hptr". wp_pures. wp_load.
   iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
@@ -332,7 +332,7 @@ Proof.
   clear kvParams.
   iIntros (?) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply wp_mk_dconfig_hosts.
   iIntros (?) "#Hdsl".
 
@@ -379,7 +379,7 @@ Lemma wp_bank_transferer_main :
 Proof.
   iIntros (?) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_makeBankClerk with "[]").
   { (* FIXME: there are two parameter typeclass instances in context *)
     clear kvParams.
@@ -410,7 +410,7 @@ Lemma wp_bank_auditor_main :
 Proof.
   iIntros (?) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_makeBankClerk with "[]").
   { (* FIXME: there are two parameter typeclass instances in context *)
     clear kvParams.

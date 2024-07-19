@@ -34,7 +34,7 @@ Lemma wp_Clerk__maybeRefreshPreference ck γ :
 .
 Proof.
   iIntros (?) "H HΦ". iNamed "H".
-  wp_lam. wp_pures.
+  wp_rec. wp_pures.
   wp_apply wp_GetTimeRange.
   iIntros "* _ _ $ !>".
   wp_pures. wp_loadField. wp_pures.
@@ -71,7 +71,7 @@ Lemma wp_makeClerks γ config_sl servers γsrvs q :
 Proof.
   iIntros (Φ).
   iNamed 1. iIntros "HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_slice_len).
   wp_apply (wp_NewSlice).
   iIntros (clerks_sl) "Hclerks_sl".
@@ -238,7 +238,7 @@ Lemma wp_MakeClerk_int γ configHosts configHosts_sl :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat constructor. Opaque slice.T. }
   iIntros (?) "Hl".
@@ -321,7 +321,7 @@ own_slice_small op_sl byteT (DfracOwn 1) op_bytes -∗
 WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   iIntros (?) "Hck Hop_sl #Hupd".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (ret) "Hret".
@@ -471,7 +471,7 @@ own_slice_small op_sl byteT (DfracOwn 1) op_bytes -∗
 WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   iIntros (??) "Hck Hop_sl #Hupd".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (ret) "Hret".

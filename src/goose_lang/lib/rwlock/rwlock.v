@@ -207,7 +207,7 @@ Section proof.
     {{{ True }}} rwlock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     iApply wp_crash_borrow_generate_pre; first auto.
     wp_apply wp_alloc_untyped; auto.
     iIntros (?) "Hl Htoks".
@@ -305,8 +305,8 @@ Section proof.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_read_acquire_spec with "Hl"); auto. iIntros ([]).
-    - iIntros "H". wp_if. iApply "HΦ"; by iFrame.
-    - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
+    - iIntros "H". wp_pures. iApply "HΦ"; by iFrame.
+    - iIntros "_". wp_pures. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
   Lemma try_read_release_spec lk R Rc :
@@ -387,8 +387,8 @@ Section proof.
   Proof.
     iIntros (Φ) "(#Hl&Hcb) HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_read_release_spec with "[$Hl $Hcb]"); auto. iIntros ([]).
-    - iIntros "H". wp_if. iApply "HΦ"; by iFrame.
-    - iIntros "H". wp_if. iApply ("IH" with "[$] [HΦ]"). auto.
+    - iIntros "H". wp_pures. iApply "HΦ"; by iFrame.
+    - iIntros "H". wp_pures. iApply ("IH" with "[$] [HΦ]"). auto.
   Qed.
 
   Lemma try_write_acquire_spec lk R Rc :
@@ -429,8 +429,8 @@ Section proof.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_write_acquire_spec with "Hl"); auto. iIntros ([]).
-    - iIntros "[Hlked HR]". wp_if. iApply "HΦ"; by iFrame.
-    - iIntros "_". wp_if. iApply ("IH" with "[HΦ]"). auto.
+    - iIntros "[Hlked HR]". wp_pures. iApply "HΦ"; by iFrame.
+    - iIntros "_". wp_pures. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
   Lemma release_spec lk R Rc :
@@ -449,7 +449,7 @@ Section proof.
     rewrite Qp.quarter_three_quarter.
     wp_cmpxchg_suc.
     iModIntro.
-    iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
+    iSplitR "HΦ"; last by wp_pures; iApply "HΦ".
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct "Hl" as "[Hl1 Hl2]".
     iNext. iExists (W64 1). iFrame.

@@ -42,7 +42,7 @@ Lemma wp_EncodeStringMap mptr m :
         ⌜has_string_map_encoding enc m⌝
   }}}.
 Proof.
-  iIntros "%Φ H HΦ". iNamed "H". iNamed "Hmap". wp_call.
+  iIntros "%Φ H HΦ". iNamed "H". iNamed "Hmap". wp_rec. wp_pures.
   wp_apply wp_NewSlice. iIntros (s) "Hs".
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_pures.
@@ -128,7 +128,7 @@ Lemma wp_DecodeStringMap enc_sl enc enc_rest q m :
         mptr, RET #mptr; own_map mptr (DfracOwn 1) m
   }}}.
 Proof.
-  iIntros "%Φ H HΦ". iNamed "H". wp_call.
+  iIntros "%Φ H HΦ". iNamed "H". wp_rec. wp_pures.
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_pures. wp_apply wp_ref_of_zero; first done.
   iIntros (?) "Hnum".
@@ -147,7 +147,7 @@ Proof.
   )%I with "[] [$Hli Hm Hl Hs]"); first word.
   2:{ repeat iExists _. iFrame. }
   { (* core loop *)
-    clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
+    clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_rec.
     replace (uint.nat (word.add i 1)) with (1 + uint.nat i)%nat by word.
     assert (is_Some (ls !! (uint.nat i))) as [[k data] Hk].
     { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.

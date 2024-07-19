@@ -12,7 +12,7 @@ Theorem wp_DB__gc db γ :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hdb" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (db *DB) gc() {                                                    @*)
   (*@     tidMin := db.getSafeTS()                                            @*)
@@ -44,7 +44,7 @@ Theorem wp_DB__ActivateGC db γ :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hdb" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (db *DB) ActivateGC() {                                            @*)
   (*@     go func() {                                                         @*)

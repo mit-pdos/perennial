@@ -1173,7 +1173,7 @@ Theorem wp_Walog__Read l (blkno : u64) γd γe Q :
   }}}.
 Proof using walheapG0.
   iIntros (Φ) "H HΦ". iNamed "H".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Walog__ReadMem _
     (λ mb,
       match mb with

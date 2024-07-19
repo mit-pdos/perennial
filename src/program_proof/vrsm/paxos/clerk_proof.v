@@ -20,7 +20,7 @@ Lemma wp_makeSingleClerk (host:u64) γ γsrv :
 .
 Proof.
   iIntros (?) "#Hhost HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_MakeReconnectingClient.
   iIntros (?) "#Hcl".
   wp_apply (wp_allocStruct); first by val_ty.

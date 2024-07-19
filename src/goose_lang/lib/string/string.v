@@ -146,7 +146,7 @@ Proof.
   pose proof Hlookup as Hineq2.
   rewrite string_bytes_length in Hlookup.
   apply List.list_lookup_lt in Hlookup as [? Hlookup].
-  wp_pure1.
+  wp_pure.
   { by rewrite /bin_op_eval /= Hlookup. }
   wp_pures.
   wp_apply ("Hwp" with "[]").
@@ -176,7 +176,7 @@ Lemma wp_StringToBytes (s:string) :
 .
 Proof.
   iIntros (Φ) "Hsl HΦ".
-  wp_lam. wp_pure1. wp_pures.
+  wp_rec. wp_pures.
   wp_apply wp_Assume. iIntros (Hover).
   rewrite bool_decide_eq_true in Hover.
   wp_apply wp_stringToBytes.
@@ -201,9 +201,7 @@ Lemma wp_StringFromBytes sl q (l:list u8) :
 Proof.
   iLöb as "Hwp" forall (sl q l).
   iIntros (Φ) "Hsl HΦ".
-  wp_rec.
-  wp_lam.
-  wp_pures.
+  wp_rec. wp_rec. wp_pures.
   destruct sl; simpl in *.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
   iDestruct (own_slice_small_wf with "Hsl") as %Hwf.

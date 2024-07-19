@@ -71,7 +71,7 @@ Proof using Ptimeless.
   iIntros (Φ) "(Hfs & #Hfh & Hdata & %Hdatalenbound & Hfupd) HΦ".
   iNamed "Hfs".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_of_zero; first by auto.
   iIntros (reply) "Hreply".
   wp_apply util_proof.wp_DPrintf.
@@ -158,7 +158,7 @@ Proof using Ptimeless.
   wpc_call.
   wpc_bind (NFSPROC3_WRITE_wp _ _ _ _).
   wpc_frame.
-  wp_call.
+  wp_rec. wp_pures.
 
   wp_apply (wp_ReadInode with "[$Hjrnl_mem $Hinode_enc]"); first by intuition eauto.
   iIntros (ip) "(Hjrnl_mem & Hinode_enc & Hinode_mem)".

@@ -39,7 +39,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
 Proof.
   iIntros (?) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField. wp_apply (wp_slice_len).
   iMod (readonly_load with "Hargs_state_sl") as (?) "Hstate_sl".
@@ -72,7 +72,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
-  wp_lam. wp_apply wp_ref_to; first done.
+  wp_rec. wp_apply wp_ref_to; first done.
   iIntros (?) "Hptr". wp_pures.
   wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures. wp_load.
@@ -123,7 +123,7 @@ Lemma wp_Encode (reply_ptr:loc) (reply:C) q :
   }}}.
 Proof.
   iIntros (?) "H HΦ".
-  wp_lam. wp_apply (wp_NewSliceWithCap).
+  wp_rec. wp_apply (wp_NewSliceWithCap).
   { apply encoding.unsigned_64_nonneg. }
   iIntros (?) "Hsl". wp_apply (wp_ref_to); first by val_ty.
   iIntros (?) "Hptr". wp_pures. wp_loadField. wp_load.
@@ -143,7 +143,7 @@ Lemma wp_Decode enc enc_sl (reply:C) :
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
-  wp_lam. wp_apply wp_allocStruct; first by val_ty.
+  wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
   iDestruct (struct_fields_split with "Hs") as "HH".
   iNamed "HH". rewrite Henc.
@@ -190,7 +190,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
 Proof.
   iIntros (?) "H HΦ".
   iNamed "H".
-  wp_lam. wp_pures. wp_loadField. wp_apply (wp_slice_len).
+  wp_rec. wp_pures. wp_loadField. wp_apply (wp_slice_len).
   iDestruct (own_slice_small_sz with "[$]") as %Hsz.
   wp_pures.
   wp_apply wp_NewSliceWithCap.
@@ -218,7 +218,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
-  wp_lam. wp_apply wp_ref_to; first done.
+  wp_rec. wp_apply wp_ref_to; first done.
   iIntros (?) "Hptr". wp_pures.
   wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
@@ -266,7 +266,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   }}}.
 Proof.
   iIntros (?) "H HΦ".
-  wp_lam. wp_apply (wp_NewSliceWithCap).
+  wp_rec. wp_apply (wp_NewSliceWithCap).
   { apply encoding.unsigned_64_nonneg. }
   iIntros (?) "Hsl". wp_apply (wp_ref_to); first by val_ty.
   iIntros (?) "Hptr". wp_pures. wp_loadField. wp_load.
@@ -286,7 +286,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
-  wp_lam. wp_apply wp_allocStruct; first by val_ty.
+  wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
   iDestruct (struct_fields_split with "Hs") as "HH".
   iNamed "HH". rewrite Henc.
@@ -337,7 +337,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
 Proof.
   iIntros (?) "H HΦ".
   iNamed "H".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField. wp_apply (wp_slice_len).
   iMod (readonly_load with "Hreply_ret_sl") as (?) "Hstate_sl".
@@ -372,7 +372,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}.
 Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
-  wp_lam. wp_apply wp_allocStruct; first by val_ty.
+  wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures. wp_apply wp_ref_to; first done.
   iIntros (?) "Hptr". wp_pures. wp_apply wp_ref_of_zero; first done.
   iIntros (?) "Herr". wp_pures. wp_load.
@@ -443,7 +443,7 @@ Lemma wp_boolToU64 (b:bool) :
   {{{ RET #((if b then W64 1 else W64 0) : u64); True }}}.
 Proof.
   iIntros (?) "_ HΦ".
-  wp_lam. wp_if_destruct; by iApply "HΦ".
+  wp_rec. wp_if_destruct; by iApply "HΦ".
 Qed.
 
 Lemma wp_encode s st :
@@ -460,7 +460,7 @@ Lemma wp_encode s st :
 Proof.
   iIntros (?) "H HΦ".
   iNamed "H".
-  wp_lam. wp_apply (wp_NewSlice).
+  wp_rec. wp_apply (wp_NewSlice).
   iIntros (?) "Hsl". wp_apply (wp_ref_to); first done.
   iIntros (?) "Hptr". wp_pures.
   wp_loadField. wp_load. wp_apply (wp_WriteInt with "[$]"). iIntros (?) "Hsl". wp_store.
@@ -486,7 +486,7 @@ Lemma wp_decode sl st q :
 .
 Proof.
   iIntros (?) "Hsl HΦ".
-  wp_lam. wp_apply wp_ref_to; first done.
+  wp_rec. wp_apply wp_ref_to; first done.
   iIntros (?) "He". wp_pures. wp_apply wp_ref_of_zero; first done.
   iIntros (?) "HleaderInt". wp_pures. wp_apply (wp_allocStruct); first by val_ty.
   iIntros (?) "Hs". iDestruct (struct_fields_split with "Hs") as "HH". iNamed "HH".

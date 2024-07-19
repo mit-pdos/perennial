@@ -331,7 +331,7 @@ Proof.
   iIntros (Φ) "Hsliding HΦ".
   iNamed "Hsliding"; iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hlog_sz.
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_loadField.
   wp_apply wp_slice_len.
@@ -356,7 +356,7 @@ Theorem wp_sliding__get l σ (pos: u64) (u: update.t) :
 Proof.
   iIntros (Hbound Hlookup Φ) "Hsliding HΦ".
   iNamed "Hsliding"; iNamed "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField. wp_loadField.
   iMod (memLog_combine with "log_readonly log_mutable") as (q') "[Hlog Hlog_mutable]"; auto.
   wp_apply (wp_SliceGet_updates with "[$Hlog]").
@@ -401,7 +401,7 @@ Proof.
   iIntros (Φ) "Hs HΦ".
   iNamed "Hs".
   iNamed "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "is_addrPos").
   iIntros (pos ok) "(%Hmapget&is_addrPos)".
@@ -517,7 +517,7 @@ Proof.
   fmap_Some in Hlookup.
   iNamed "Hsliding"; iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField. wp_loadField. wp_loadField. wp_loadField.
   iNamed "log_mutable".
   wp_apply wp_SliceSkip.
@@ -623,7 +623,7 @@ Proof.
   iIntros (Φ) "(Hsliding & Hu & %Hoverflow) HΦ".
   iDestruct (is_update_addr with "Hu") as %Haddr.
   iNamed "Hsliding"; iNamed "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_loadField.
   wp_apply wp_slice_len.
@@ -681,7 +681,7 @@ Theorem wp_sliding__memWrite l q q_b memLog bufs upds :
   {{{ RET #(); is_sliding l q_b (memWrite memLog upds) }}}.
 Proof.
   iIntros (Φ) "(Hs&Hupds&%Hoverflow) HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_sliding__end with "Hs"); iIntros "Hs".
   wp_apply wp_ref_to; [ val_ty | iIntros (pos_l) "pos" ].
   rewrite /LogPosition.
@@ -784,7 +784,7 @@ Proof.
   iIntros (HnumMutable Φ) "Hs HΦ".
   iNamed "Hs". iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hs.
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_loadField.
   wp_loadField.
@@ -807,7 +807,7 @@ Theorem wp_absorbBufs b_s q q_b (bufs: list update.t) :
       "%Hnodup" ∷ ⌜NoDup (update.addr <$> bufs')⌝  }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   change slice.nil with (slice_val Slice.nil).
   wp_apply (wp_mkSliding _ q_b []).
   { simpl; word. }
@@ -850,7 +850,7 @@ Theorem wp_sliding__takeFrom l q_b σ (start: u64) :
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iNamed "Hs"; iNamed "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_loadField.
   wp_loadField.
@@ -929,7 +929,7 @@ Theorem wp_sliding__takeTill l q_b σ (endPos: u64) :
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iNamed "Hs"; iNamed "Hinv".
-  wp_call.
+  wp_rec. wp_pures.
   repeat wp_loadField.
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
   iDestruct (memLog_wf with "log_mutable") as %?.
@@ -1055,7 +1055,7 @@ Proof.
   iNamed "Hsliding".
   iNamed "Hinv".
   iNamed "log_mutable".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
@@ -1279,7 +1279,7 @@ Theorem wp_sliding__clearMutable l σ :
   {{{ RET #(); is_sliding l (DfracOwn 1) (set slidingM.mutable (λ _, slidingM.endPos σ) σ) }}}.
 Proof.
   iIntros (Φ) "Hsliding HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_sliding__end with "Hsliding"); iIntros "Hsliding".
   iNamed "Hsliding"; iNamed "Hinv".
   rewrite -wp_fupd.

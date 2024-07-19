@@ -290,7 +290,7 @@ Theorem wp_Inode__UsedBlocks {l σ addrs} :
       (own_slice s uint64T (DfracOwn 1) addrs -∗ used_blocks_pre l σ addrs) }}}.
 Proof.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   iApply "HΦ".
   iFrame "∗ %".
@@ -603,7 +603,7 @@ Theorem wp_Inode__mkHdr {stk} l addr_s addrs :
   }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_new_enc; iIntros (enc) "Henc".
   wp_pures.
   wp_loadField.

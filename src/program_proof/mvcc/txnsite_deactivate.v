@@ -16,7 +16,7 @@ Theorem wp_swapWithEnd (xsS : Slice.t) (xs : list u64) (i : u64) (x : u64) :
   }}}.
 Proof.
   iIntros (Φ) "[HtidsS %Hlookup] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iDestruct (own_slice_sz with "HtidsS") as "%HtidsSz".
   iDestruct (typed_slice.own_slice_small_acc with "HtidsS") as "[HtidsS HtidsC]".
   rewrite fmap_length in HtidsSz.
@@ -124,7 +124,7 @@ Theorem wp_findTID (tid : u64) (tidsS : Slice.t) (tids : list u64) :
   }}}.
 Proof.
   iIntros (Φ) "[HtidsS %Helem] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var idx uint64 = 0                                      *)
@@ -237,7 +237,7 @@ Theorem wp_TxnSite__Deactivate site (sid tid : u64) γ :
 Proof.
   iIntros "#Hsite" (Φ) "!> Hactive HΦ".
   iNamed "Hsite".
-  wp_call.
+  wp_rec. wp_pures.
   
   (*@ func (site *TxnSite) Deactivate(tid uint64) {                           @*)
   (*@     // Require @site.tids contains @tid.                                @*)

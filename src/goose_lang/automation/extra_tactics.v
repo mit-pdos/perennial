@@ -21,7 +21,7 @@ Ltac wp_start :=
   | Some (_, named _ _)%I => iNamed "Hpre"
   | _ => idtac
   end;
-  wp_call.
+  wp_rec; wp_pures.
 
 Ltac wp_auto :=
   repeat first [

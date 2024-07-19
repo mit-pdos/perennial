@@ -264,7 +264,7 @@ Section proof.
     iMod ("Hclo" with "[]").
     { iRight. iNext. iFrame "#Hopen". }
     iModIntro.
-    rewrite /Init. wp_pure _.
+    rewrite /Init. wp_pure.
     rewrite /twophase_na_crash_inv.
     iClear "Htwophase_inv".
 

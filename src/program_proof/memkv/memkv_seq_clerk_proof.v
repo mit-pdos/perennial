@@ -29,7 +29,7 @@ Lemma wp_MakeSeqKVClerk (coord:u64) cm γ :
 .
 Proof.
   iIntros (Φ) "[#Hcoord #Hcm] HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply wp_allocStruct; first val_ty.
   iIntros (cck) "Hcck".
   wp_pures.
@@ -46,7 +46,7 @@ Proof.
   wp_loadField.
   wp_storeField.
   wp_bind (MakeShardClerkSet _).
-  wp_lam.
+  wp_rec.
   wp_apply (wp_NewMap).
   iIntros (mref_set) "Hmap_set".
   wp_apply wp_allocStruct; first val_ty.
@@ -79,7 +79,7 @@ Lemma wp_SeqKVClerk__Get (ck:loc) (γ:gname) (key:u64) :
   }}}.
 Proof using Type*.
   iIntros "!#" (Φ) "Hown Hatomic".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply wp_ref_of_zero.
   { done. }
@@ -193,7 +193,7 @@ Lemma wp_SeqKVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list 
   {{{ RET #(); own_SeqKVClerk ck γ }}}.
 Proof using Type*.
   iIntros "!#" (Φ) "[Hown #Hval_sl] Hatomic".
-  wp_lam.
+  wp_rec.
   wp_pures.
 
   wp_forBreak.
@@ -277,7 +277,7 @@ Lemma wp_SeqKVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_
       own_SeqKVClerk ck γ }}}.
 Proof using Type*.
   iIntros "!#" (Φ) "(Hown & #Hexpv_sl & #Hnewv_sl) Hatomic".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_ref_of_zero _ _ boolT).
   { done. }
@@ -369,7 +369,7 @@ Lemma wp_SeqKVClerk__Add (ck:loc) γkv γ (dst : u64) :
 .
 Proof.
   iIntros (Φ) "(Hown&#His_shard&%) HΦ".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hown".
   wp_loadField.

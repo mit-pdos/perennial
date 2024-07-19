@@ -306,7 +306,7 @@ Theorem wp_Txn__Begin_raw (prel txnl locksl: loc) γ γ' dinit ex_pointsto ghs o
 Proof.
   intros Htracked_addrs_wf.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   iMod (readonly_load with "Hpre.txn_ro") as "Hpre.txn".
   iMod (readonly_load with "Hpre.locks_ro") as "Hpre.locks".
   iDestruct "Hpre.txn" as (qtxn) "Hpre.txn".
@@ -418,7 +418,7 @@ Proof.
   intros Ha_valid Hin_spec Haddr_not_locked.
   iIntros (Φ).
   iIntros "Hlocks HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hlocks". iNamed "Hlocks".
   wp_apply wp_Addr__Flatid; first by (iPureIntro; assumption).
   iIntros (flat_addr) "->".
@@ -534,7 +534,7 @@ Proof.
   intros Ha_valid Haddr_wf.
   wp_start.
   rewrite /post.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_Addr__Flatid; first by (iPureIntro; assumption).
   iIntros (flat_addr) "->".
   iNamed "Hlocks".
@@ -603,7 +603,7 @@ Theorem wp_Txn__Acquire' l γ γ' ex_pointsto objs_dom_flat locks_held (a: addr)
   WP Txn__Acquire #l (addr2val a) {{ v, Φ v }}.
 Proof.
   iIntros (?? Φ) "Hlocks HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Txn__isAlreadyAcquired with "Hlocks");
     [assumption|assumption|].
   iNamed 1.
@@ -937,7 +937,7 @@ Theorem wp_Txn__ReleaseAll l γ γ' ex_pointsto objs_dom_flat locks_held :
   }}}.
 Proof.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Hlocks".
   wp_loadField.
   wp_apply (
@@ -1130,7 +1130,7 @@ Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Dis
   }}}.
 Proof.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply util_proof.wp_DPrintf.
   wp_pures.
   iNamed "Htwophase".
@@ -1312,7 +1312,7 @@ Theorem wp_Txn__readBufNoAcquire l γ γ' dinit ex_pointsto objs_dom mt_changed 
 Proof.
   iIntros (Hlifted Hsz).
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   iNamed "Htwophase".
   iNamed "Hjrnl".
   wp_loadField.
@@ -1378,7 +1378,7 @@ Theorem wp_Txn__ReadBuf_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (e
 Proof.
   iIntros (Ha_in_dom Hsz).
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   apply fmap_Some in Hsz.
   destruct Hsz as [kind [Hkind Hsz]].
   wp_apply (wp_Txn__Acquire_lift with "Htwophase"); first by assumption.
@@ -1475,7 +1475,7 @@ Theorem wp_Txn__ReadBufBit l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (ex
 Proof.
   intros Ha_in_dom Hkind.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Txn__ReadBuf_raw with "Htwophase").
   1: eassumption.
   1: rewrite Hkind //.
@@ -1552,7 +1552,7 @@ Theorem wp_Txn__OverWrite_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless 
 Proof.
   intros Ha_in_dom Hobj' Hsz Hdata.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_Txn__Acquire_lift with "Htwophase");
     first by assumption.
   iIntros (?) "?".
@@ -1701,7 +1701,7 @@ Theorem wp_bitToByte (off: u64) (b: bool) :
 Proof.
   intros Hoff.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   wp_if_destruct.
   2: {
     iApply "HΦ".
@@ -1756,7 +1756,7 @@ Theorem wp_Txn__OverWriteBit l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (
 Proof.
   intros Ha_in_dom Hkind.
   wp_start.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (sl) "Hslice".
   rewrite unsigned_U64 /word.wrap Z.mod_small //=.

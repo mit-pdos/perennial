@@ -21,7 +21,7 @@ Theorem wp_wrbuf__OpenTuples wrbuf (tid : u64) (idx : loc) sid mods γ :
   }}}.
 Proof.
   iIntros "#Hidx !>" (Φ) "[Hwrbuf Hactive] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   
   (***********************************************************)
   (* wrbuf.sortEntsByKey()                                   *)

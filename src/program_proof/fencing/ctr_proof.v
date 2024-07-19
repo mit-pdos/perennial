@@ -531,7 +531,7 @@ Lemma wp_Clerk__Get γ ck (e:u64) :
    WP Clerk__Get #ck #e {{ Φ }}.
 Proof.
   iIntros (Φ) "Hck Hupd".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
@@ -658,7 +658,7 @@ Proof.
   iDestruct "Hpost" as (v err) "(%Hrep_enc & Hpost)".
 
   (* TODO: move this to a different lemma *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_new_dec with "Hrep_sl").
   { done. }
   iIntros (dec) "Hdec".
@@ -756,7 +756,7 @@ Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) (prophV:u6
 Proof.
   iIntros "#His_srv !#" (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "His_srv".
   wp_loadField.
@@ -1214,7 +1214,7 @@ Lemma wp_Clerk__Put γ ck (e v:u64) :
     WP Clerk__Put #ck #v #e {{ Φ }}.
 Proof.
   iIntros (Φ) "Hck Hupd".
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
@@ -1224,7 +1224,7 @@ Proof.
   wp_pures.
 
   (* TODO: put this in its own lemma *)
-  wp_lam.
+  wp_rec.
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
   wp_pures.
@@ -1358,7 +1358,7 @@ Lemma wp_StartServer host γ :
 Proof.
   iIntros "#Hhost #Hunused !#" (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
   iIntros (s) "Hs".
@@ -1473,7 +1473,7 @@ Proof.
       iDestruct "Hpre" as (??) "[%HreqEnc Hpre]".
 
       (* TODO: put this in another lemma *)
-      wp_lam.
+      wp_rec.
       wp_apply (wp_new_dec with "[$Hreq_small]").
       { done. }
       iIntros (dec) "Hdec".
@@ -1551,7 +1551,7 @@ Proof.
       wp_pures.
 
       (* TODO: move this to a different lemma *)
-      wp_lam.
+      wp_rec.
       wp_apply (wp_new_enc).
       iIntros (enc) "Henc".
       wp_pures.
@@ -1593,7 +1593,7 @@ Lemma wp_MakeClerk host γ :
   }}}.
 Proof.
   iIntros "#Hhost !#" (Φ) "_ HΦ".
-  wp_lam.
+  wp_rec.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
 

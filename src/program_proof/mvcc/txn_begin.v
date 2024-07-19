@@ -21,7 +21,7 @@ Theorem wp_txn__begin txn γ :
 Proof.
   iIntros "!>" (Φ) "Htxn HAU".
   iNamed "Htxn".
-  wp_call.
+  wp_rec. wp_pures.
 
   (*@ func (txn *Txn) begin() {                                               @*)
   (*@     tid := txn.site.Activate()                                          @*)

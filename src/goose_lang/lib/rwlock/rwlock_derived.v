@@ -74,7 +74,7 @@ Section proof.
     {{{ True }}} rwlock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
-    wp_call.
+    wp_rec. wp_pures.
     iApply wp_crash_borrow_generate_pre; first auto.
     wp_apply wp_alloc_untyped; auto.
     iIntros (?) "Hl Htoks".

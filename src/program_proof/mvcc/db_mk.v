@@ -14,7 +14,7 @@ Theorem wp_MkDB :
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (* Allocate ghost states. *)
   iMod mvcc_ghost_alloc as (γ) "H".

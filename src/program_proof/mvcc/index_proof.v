@@ -58,13 +58,13 @@ Theorem wp_index__GetTuple idx (key : u64) γ :
 Proof.
   iIntros "#Hindex !>" (Φ) "_ HΦ".
   iNamed "Hindex".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* b := getBucket(key)                                     *)
   (* bucket := idx.buckets[b]                                *)
   (***********************************************************)
-  wp_lam.
+  wp_rec.
   wp_pures.
   wp_loadField.
   iMod (readonly_load with "HbktsL") as (q) "HbktsL'".
@@ -178,7 +178,7 @@ Theorem wp_index__getKeys idx γ :
   }}}.
 Proof.
   iIntros "#Hidx" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* var keys []uint64                                       *)
@@ -283,7 +283,7 @@ Theorem wp_index__DoGC idx (tidmin : u64) γ :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hidx #Hminlb" (Φ) "!> _ HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* keys := idx.getKeys()                                   *)
@@ -347,7 +347,7 @@ Theorem wp_MkIndex γ p :
   {{{ (idx : loc), RET #idx; is_index idx γ }}}.
 Proof.
   iIntros "#Hinv #Hinvgc" (Φ) "!> Hvchains HΦ".
-  wp_call.
+  wp_rec. wp_pures.
 
   (***********************************************************)
   (* idx := new(Index)                                       *)

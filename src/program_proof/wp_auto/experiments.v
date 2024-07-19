@@ -37,7 +37,7 @@ Proof.
   rewrite (rename_iprop "Htracker" Htracker).
   iNamed "Hpre".
   iNamed "Htracker".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   (*
@@ -88,7 +88,7 @@ Lemma wp_registerLocked (t : loc) (m : gmap u64 u64) (k : u64) (v : u64) :
         tracker_state t m }}}.
 Proof.
   iIntros (Φ) "Ht HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_lookupLocked with "[Ht]").
   { iNamedAccu. }
   iIntros (? b) "[Ht %Hok]".
@@ -125,7 +125,7 @@ Lemma wp_Lookup (t : loc) (k : u64) :
 Proof.
   iIntros (Φ) "Ht HΦ".
   iNamed "Ht".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
 
   wp_apply (acquire_spec with "[$]").

@@ -119,7 +119,7 @@ Proof using Type*.
   iIntros "#Hs_inv" (Φ) "!# Hown_ck Hpost".
   iNamed "Hown_ck".
   iNamed "Hown".
-  wp_lam.
+  wp_rec.
   wp_apply wp_ref_to; first eauto.
   iIntros (errb_ptr) "Herrb_ptr".
   wp_pures.
@@ -195,7 +195,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
 
-  wp_lam.
+  wp_rec.
 
   wp_apply (wp_new_enc).
   iIntros (enc_v) "Henc".
@@ -241,7 +241,7 @@ Proof.
   iIntros (Φ) "(Hslice & %Henc) HΦ".
   Opaque struct.t. (* TODO: put this here to avoid unfolding the struct defns all the way *)
   Opaque struct.get.
-  wp_lam.
+  wp_rec.
   wp_pures.
   iDestruct "Hslice" as "[Hsmall _]".
   wp_apply (wp_new_dec with "Hsmall"); first done.
@@ -355,7 +355,7 @@ Lemma wp_PrepareRequest (ck isrv:loc) (args:RPCValsC) cid:
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iApply wp_fupd.
-  wp_lam.
+  wp_rec.
   wp_pures.
   iNamed "Hpre".
   iNamed "req".

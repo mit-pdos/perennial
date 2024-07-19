@@ -29,7 +29,7 @@ Lemma wp_Encode conf_sl (conf:C) :
   }}}.
 Proof.
   iIntros (Φ) "Hconf HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iMod (readonly_load with "[$]") as (?) "Hconf".
   iDestruct (own_slice_small_sz with "Hconf") as %Hsz.
   wp_apply (wp_slice_len).
@@ -195,7 +195,7 @@ Lemma wp_Decode enc enc_sl (conf:C) q :
   }}}.
 Proof.
   iIntros (Φ) "[%Henc Henc_sl] HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_to).
   { done. }
   iIntros (enc_ptr) "Henc".

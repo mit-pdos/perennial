@@ -808,7 +808,7 @@ Theorem wp_Addr__Flatid a stk E :
   }}}.
 Proof.
   iIntros (Φ) "% HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   iApply "HΦ".
   iPureIntro.
 

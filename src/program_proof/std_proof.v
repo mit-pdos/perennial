@@ -46,7 +46,7 @@ Lemma wp_BytesEqual (x y : Slice.t) (xs ys : list byte) qx qy :
       own_slice_small x byteT qx xs ∗
       own_slice_small y byteT qy ys }}}.
 Proof.
-  iIntros (Φ) "[Hx Hy] HΦ". wp_lam. wp_pures.
+  iIntros (Φ) "[Hx Hy] HΦ". wp_rec. wp_pures.
   do 2 wp_apply wp_slice_len.
   wp_pures.
   iDestruct (own_slice_small_sz with "Hx") as %Hxlen.
@@ -144,7 +144,7 @@ Proof.
   iIntros (Φ) "Hsl_b HΦ".
   rewrite /BytesClone.
   wp_pures.
-  wp_pure1; [done|].
+  wp_pure; [done|].
   wp_if_destruct.
   {
     iIntros "!>".
@@ -180,7 +180,7 @@ Proof.
   iIntros (Φ) "[Hs %Hn] HΦ".
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   iDestruct (own_slice_small_wf with "Hs") as %Hcap.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_SliceTake.
   { word. }
   wp_apply wp_SliceSkip.
@@ -211,7 +211,7 @@ Lemma wp_SumAssumeNoOverflow (x y : u64) :
     (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
     WP SumAssumeNoOverflow #x #y {{ Φ }}.
 Proof.
-  iIntros "%Φ HΦ". wp_lam; wp_pures.
+  iIntros "%Φ HΦ". wp_rec; wp_pures.
   wp_apply wp_SumNoOverflow.
   wp_apply wp_Assume.
   rewrite bool_decide_eq_true.
@@ -228,7 +228,7 @@ Lemma wp_Multipar `{!multiparG Σ} {X:Type} (P Q : nat → X → iProp Σ) (num:
     Multipar #num op
   {{{ RET #(); [∗ list] i ↦ x ∈ elems, Q i x }}}.
 Proof.
-  iIntros "%Hlen #Hop !> %Φ HPs HΦ". wp_lam.
+  iIntros "%Hlen #Hop !> %Φ HPs HΦ". wp_rec.
   wp_apply wp_ref_to. { val_ty. }
   iIntros (nleft_l) "Hnleft". wp_pures.
   iMod (own_alloc (GSet (set_seq 0 (length elems)))) as (γpending) "Hpending".

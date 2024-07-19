@@ -122,7 +122,7 @@ Proof using txnG0 txnG0 Σ.
   iIntros (Φ) "(#Hinv & #Hiswal & #log & Hlockedheap & Hbufs & Hbufpre) HΦ".
 
 Opaque struct.t.
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_NewMap.
   iIntros (blks) "Hblks".
 
@@ -395,7 +395,7 @@ Theorem wp_MkBlockData blkno dataslice :
   }}}.
 Proof.
   iIntros (Φ) "Hisblock HΦ".
-  wp_call.
+  wp_rec. wp_pures.
   rewrite /update_val.
   iApply "HΦ".
   done.
@@ -423,7 +423,7 @@ Theorem wp_txn__installBufs l q walptr γ dinit lwh bufs buflist (bufamap : gmap
 Proof.
   iIntros (Φ) "(#Hinv & #Hiswal & #Hlog & Hlockedheap & Hbufs & Hbufpre) HΦ".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_txn__installBufsMap with "[$Hinv $Hiswal $Hlog $Hlockedheap $Hbufs $Hbufpre]").
   iIntros (blkmapref blkmap) "(Hlockedheap & Hblkmapref & Hbufamap_pointsto & Hblkmap)".
 
@@ -637,7 +637,7 @@ Proof using txnG0 Σ.
   iPoseProof "Htxn" as "Htxn0".
   iNamed "Htxn".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply acquire_spec; eauto.
   iIntros "[Hlocked Htxnlocked]".
@@ -1235,7 +1235,7 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist (bufamap : gmap addr _) (wai
 Proof.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
 
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply wp_ref_to; [val_ty|].
   iIntros (commit) "Hcommit".
   wp_pures.

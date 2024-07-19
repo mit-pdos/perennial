@@ -1246,7 +1246,7 @@ Proof using spec_trans.
       rewrite decide_True //.
     }
     (* need to solve is_comparable side condition *)
-    wp_pure1; [ done | ].
+    wp_pure; [ done | ].
     iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.
@@ -1937,7 +1937,7 @@ Proof using spec_trans.
         {
           iDestruct "H0readers" as "(>Hfc&>Hspts&>Hpts&#Hval)".
           rewrite ?loc_add_0.
-          wp_step.
+          wp_pures.
           iApply wp_ncfupd.
           iApply (wp_load with "[$]"). iIntros "!> Hpts".
           iMod (ghost_load with "[$] Hspts Hj") as "(Hspts&Hj)".
@@ -1950,7 +1950,7 @@ Proof using spec_trans.
         {
           iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
           rewrite ?loc_add_0.
-          wp_step.
+          wp_pures.
           iApply wp_ncfupd.
           iApply (wp_load with "[$]"). iIntros "!> Hpts".
           iMod (ghost_load_rd with "[$] Hspts Hj") as "(Hspts&Hj)".

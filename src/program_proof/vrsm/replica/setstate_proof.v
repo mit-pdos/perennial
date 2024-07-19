@@ -39,7 +39,7 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (prevEpoch epoch committedNextInde
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
-  wp_call.
+  wp_rec. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rep) "Hrep".
@@ -79,7 +79,7 @@ Proof.
       wp_load.
 
       (* FIXME: separate lemma *)
-      wp_call.
+      wp_rec. wp_pures.
       rewrite Henc_rep.
       wp_apply (wp_ReadInt with "Hrep_sl").
       iIntros (?) "_".
@@ -94,7 +94,7 @@ Proof.
       iIntros.
       wp_pures.
       wp_load.
-      wp_call.
+      wp_rec. wp_pures.
       rewrite H.
       wp_apply (wp_ReadInt with "[$]").
       iIntros.
@@ -246,7 +246,7 @@ Lemma wp_Server__SetState γ γsrv s args_ptr args opsfull Φ Ψ :
 Proof.
   iIntros "#His_srv Hargs HΦ HΨ".
   iNamed "His_srv".
-  wp_call.
+  wp_rec. wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$HmuInv]").
   iIntros "[Hlocked Hown]".
