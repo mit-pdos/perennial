@@ -101,3 +101,5 @@ From Perennial.program_proof.tutorial Require
 From Perennial.program_proof.cachekv Require proof.
 
 From New.proof Require asyncfile append_log marshal.
+
+From Perennial.program_proof.pav Require should_build.
