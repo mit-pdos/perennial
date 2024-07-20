@@ -3,7 +3,7 @@ set -e
 
 ## Repository pinning
 
-GOOSE_REPO=https://github.com/tchajed/goose/
+GOOSE_REPO=https://github.com/goose-lang/goose/
 GOOSE_COMMIT=master
 
 NEW_GOOSE_REPO=https://github.com/upamanyus/goose/

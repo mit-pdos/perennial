@@ -2,7 +2,7 @@
 package test
 
 import (
-    "github.com/tchajed/goose/machine"
+   "github.com/goose-lang/goose/machine"
 )
 
 func test() {

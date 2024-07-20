@@ -7,7 +7,7 @@ concurrency and crash-safety requirements, including recovery procedures. For
 example, think of file systems, concurrent write-ahead logging like Linux's jbd2
 layer, and persistent key-value stores like RocksDB.
 
-Perennial uses [Goose](https://github.com/tchajed/goose) to enable verification
+Perennial uses [Goose](https://github.com/goose-lang/goose) to enable verification
 of programs written in (a subset of) Go.
 
 This repository also includes a proof of correctness for GoJournal, the verified journaling system used in
