@@ -6,8 +6,9 @@ on:
   pull_request:
     branches: [ 'master' ]
   schedule:
-    # every day at 9am UTC (4am EST)
+    # every day at 9am UTC (4am EST).
     - cron: "0 9 * * *"
+  # allow running action manually.
   workflow_dispatch:
 
 jobs:
@@ -102,6 +103,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          # repo doesn't have go.sum file. nothing to cache.
           cache: false
       - name: check that Goosed files are clean
         run: etc/ci-goose-check.sh
