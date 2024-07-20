@@ -73,7 +73,7 @@ From Perennial.goose_lang.lib Require
 From Perennial.Helpers Require ListZ.
 
 (* goose output *)
-From Goose.github_com.tchajed.goose.internal.examples Require
+From Goose.github_com.goose_lang.goose.internal.examples Require
      comments simpledb logging2 rfc1813 trust_import.
 
 (* examples goose output *)

@@ -187,15 +187,16 @@ def main():
 
         run_goose(
             path.join(goose_dir, "internal/examples"),
-            "./unittest",
-            "./unittest/generic",
-            "./semantics",
             "./append_log",
+            "./async",
+            "./comments",
             "./logging2",
             "./rfc1813",
+            "./semantics",
             "./simpledb",
+            "./trust_import/...",
+            "./unittest/...",
             "./wal",
-            "./trust_import",
         )
 
     run_goose(

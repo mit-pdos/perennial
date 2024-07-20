@@ -2,7 +2,7 @@
 From New.golang Require Import defn.
 From New.code Require github_com.mit_pdos.gokv.grove_ffi.
 From New.code Require github_com.mit_pdos.gokv.urpc.
-From New.code Require github_com.tchajed.goose.machine.
+From New.code Require github_com.goose_lang.goose.machine.
 From New.code Require sync.
 
 From New Require Import grove_prelude.
