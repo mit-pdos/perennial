@@ -21,8 +21,7 @@ Record stateTy :=
   mkState {
     signed: gmap skTy (list (msgTy * sigTy));
     pks: gmap pkTy skTy;
-    (* TODO: change to gmap. *)
-    hashes: list (msgTy * hashTy);
+    hashes: gmap msgTy hashTy;
   }.
 #[export] Instance etaState : Settable _ := settable! mkState <signed; pks; hashes>.
 
@@ -100,15 +99,14 @@ Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
   | KeyGen =>
     let sk := ArbBytes in
     let pk := ArbBytes in
-    (* TODO: just use the update func directly. *)
     (* TODO: require sk's don't collide. *)
-    (ret (sk, pk), state <|signed ::= (λ x, (<[sk:=[]]>x))|> <|pks ::= (λ x, (<[pk:=sk]>)x)|>)
+    (ret (sk, pk), state <| signed ::= <[sk:=[]]> |> <| pks ::= <[pk:=sk]> |>)
   | Sign sk msg =>
     match state.(signed) !! sk with
     | Some my_signed =>
       (* Sign is probabilistic. might return diff sigs for same data. *)
       let sig := ArbBytes in
-      (ret sig, state <|signed ::= (λ x, (<[sk:=(msg,sig)::my_signed]>x))|>)
+      (ret sig, state <| signed ::= <[sk:=(msg,sig)::my_signed]> |>)
     (* this will never happen. assume sk from KeyGen distr. *)
     | None => (ret 0, state)
     end
@@ -126,7 +124,7 @@ Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
             (* for already signed msgs, might be able to forge sig. *)
             let ok := ArbBool in
             match ok with
-            | true => (ret true, state <|signed ::= (λ x, (<[sk:=(msg,sig)::my_signed]>x))|>)
+            | true => (ret true, state <| signed ::= <[sk:=(msg,sig)::my_signed]> |>)
             | false => (ret false, state)
             end
           end
@@ -145,17 +143,17 @@ Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
       (ret ok, state)
     end
   | Hash msg =>
-    match list_find (λ x, x.1 = msg) state.(hashes) with
-    | Some x =>
-      (ret x.2, state)
+    match state.(hashes) !! msg with
+    | Some hash =>
+      (ret hash, state)
     | None =>
       let hash := ArbBytes in
-      match list_find (λ x, x.2 = hash) state.(hashes) with
-      | Some _ =>
+      match bool_decide (map_Exists (λ _ h, h = hash) state.(hashes)) with
+      | true =>
         (* hash collision. infinite loop the machine. *)
         (ret 0, state)
-      | None =>
-        (ret hash, state <|hashes ::= (λ x, (msg,hash)::x)|>)
+      | false =>
+        (ret hash, state <| hashes ::= <[msg:=hash]> |>)
       end
     end
   end.
