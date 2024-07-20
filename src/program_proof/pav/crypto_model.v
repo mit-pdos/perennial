@@ -11,33 +11,36 @@ From stdpp Require Import prelude gmap.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-Notation skTy := (list w8) (only parsing).
-Notation pkTy := (list w8) (only parsing).
-Notation msgTy := (list w8) (only parsing).
-Notation sigTy := (list w8) (only parsing).
-Notation hashTy := (list w8) (only parsing).
+Notation sk_ty := (list w8) (only parsing).
+Notation pk_ty := (list w8) (only parsing).
+Notation msg_ty := (list w8) (only parsing).
+Notation sig_ty := (list w8) (only parsing).
+Notation hash_ty := (list w8) (only parsing).
 
-Record stateTy :=
-  mkState {
-    signed: gmap skTy (list (msgTy * sigTy));
-    pks: gmap pkTy skTy;
-    hashes: gmap msgTy hashTy;
+Record state_ty :=
+  mk_state {
+    signed: gmap sk_ty (list (msg_ty * sig_ty));
+    pks: gmap pk_ty sk_ty;
+    hashes: gmap msg_ty hash_ty;
   }.
-#[export] Instance etaState : Settable _ := settable! mkState <signed; pks; hashes>.
+#[export] Instance eta_state : Settable _ := settable! mk_state <signed; pks; hashes>.
 
-Inductive opTy : Type :=
-  | KeyGen : opTy
-  | Sign : skTy → msgTy → opTy
-  | Verify : pkTy → msgTy → sigTy → opTy
-  | Hash : msgTy → opTy.
+Inductive op_ty : Type :=
+  | key_gen : op_ty
+  | sign : sk_ty → msg_ty → op_ty
+  | verify : pk_ty → msg_ty → sig_ty → op_ty
+  | hash : msg_ty → op_ty.
 
-Inductive retTy : Type :=
-  | ret : forall {T : Type}, T → retTy.
+Inductive ret_ty : Type :=
+  | ret : forall {T : Type}, T → ret_ty.
 
-Definition ArbBool : bool.
+Definition arb_bool : bool.
 Admitted.
 
-Definition ArbBytes : list w8.
+Definition arb_bytes : list w8.
+Admitted.
+
+Definition arb_bytes_len (len : nat) : list w8.
 Admitted.
 
 (*
@@ -76,7 +79,7 @@ evidence checking func new spec. one with is_pk pre and one without.
 
 the core remaining issues:
 - ideally want to know that sk wasn't given to unknown progs.
-this will be necessary in proving the Verify iprop.
+this will be necessary in proving the verify iprop.
 how to guarantee that?
 care about guaranteeing for checked progs.
 in RW, checked progs don't use golang unsafe, so if sk was hidden in nice struct private field,
@@ -94,23 +97,28 @@ what do we do when calling keygen and giving the key to an unchecked program?
 what prevents checked programs from getting the corresponding is_pk?
  *)
 
-Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
+Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
   match op with
-  | KeyGen =>
-    let sk := ArbBytes in
-    let pk := ArbBytes in
-    (* TODO: require sk's don't collide. *)
-    (ret (sk, pk), state <| signed ::= <[sk:=[]]> |> <| pks ::= <[pk:=sk]> |>)
-  | Sign sk msg =>
+  | key_gen =>
+    let sk := arb_bytes in
+    let pk := arb_bytes in
+    match (state.(pks) !! pk, state.(signed) !! sk) with
+    | (None, None) =>
+      (ret (sk, pk), state <| signed ::= <[sk:=[]]> |> <| pks ::= <[pk:=sk]> |>)
+    | _ =>
+      (* collision. infinite loop the machine. *)
+      (ret 0, state)
+    end
+  | sign sk msg =>
     match state.(signed) !! sk with
     | Some my_signed =>
-      (* Sign is probabilistic. might return diff sigs for same data. *)
-      let sig := ArbBytes in
+      (* sign is probabilistic. might return diff sigs for same data. *)
+      let sig := arb_bytes in
       (ret sig, state <| signed ::= <[sk:=(msg,sig)::my_signed]> |>)
-    (* this will never happen. assume sk from KeyGen distr. *)
+    (* this will never happen. assume sk from key_gen distr. *)
     | None => (ret 0, state)
     end
-  | Verify pk msg sig =>
+  | verify pk msg sig =>
     match state.(pks) !! pk with
     | Some sk =>
       match state.(signed) !! sk with
@@ -122,7 +130,7 @@ Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
             (ret true, state)
           | None =>
             (* for already signed msgs, might be able to forge sig. *)
-            let ok := ArbBool in
+            let ok := arb_bool in
             match ok with
             | true => (ret true, state <| signed ::= <[sk:=(msg,sig)::my_signed]> |>)
             | false => (ret false, state)
@@ -137,23 +145,23 @@ Definition step (op : opTy) (state : stateTy) : (retTy * stateTy) :=
         (ret false, state)
       end
     | None =>
-      (* Verify can return anything for OOD pk. *)
+      (* verify can return anything for OOD pk. *)
       (* TODO: it's deterministic, so memoize the output. *)
-      let ok := ArbBool in
+      let ok := arb_bool in
       (ret ok, state)
     end
-  | Hash msg =>
+  | hash msg =>
     match state.(hashes) !! msg with
-    | Some hash =>
-      (ret hash, state)
+    | Some h =>
+      (ret h, state)
     | None =>
-      let hash := ArbBytes in
-      match bool_decide (map_Exists (λ _ h, h = hash) state.(hashes)) with
+      let new_hash := arb_bytes in
+      match bool_decide (map_Exists (λ _ h, h = new_hash) state.(hashes)) with
       | true =>
         (* hash collision. infinite loop the machine. *)
         (ret 0, state)
       | false =>
-        (ret hash, state <| hashes ::= <[msg:=hash]> |>)
+        (ret new_hash, state <| hashes ::= <[msg:=new_hash]> |>)
       end
     end
   end.
