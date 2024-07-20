@@ -5,7 +5,7 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
-(* Test if the two byte slices are equal. *)
+(* BytesEqual returns if the two byte slices are equal. *)
 Definition BytesEqual: val :=
   rec: "BytesEqual" "x" "y" :=
     let: "xlen" := slice.len "x" in
@@ -50,13 +50,19 @@ Definition SumNoOverflow: val :=
   rec: "SumNoOverflow" "x" "y" :=
     ("x" + "y") ≥ "x".
 
-(* Compute the sum of two numbers, `Assume`ing that this does not overflow.
-   *Use with care*, assumptions are trusted and should be justified! *)
+(* SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
+
+   *Use with care* - if the assumption is violated this function will panic. *)
 Definition SumAssumeNoOverflow: val :=
   rec: "SumAssumeNoOverflow" "x" "y" :=
     control.impl.Assume (SumNoOverflow "x" "y");;
     "x" + "y".
 
+(* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
+
+   Implementation note: does not use a done channel (which is the standard
+   pattern in Go) because this is not supported by Goose. Instead uses mutexes
+   and condition variables since these are modeled in Goose *)
 Definition Multipar: val :=
   rec: "Multipar" "num" "op" :=
     let: "num_left" := ref_to uint64T "num" in
@@ -77,6 +83,17 @@ Definition Multipar: val :=
       lock.condWait "num_left_cond";;
       Continue);;
     lock.release "num_left_mu";;
+    #().
+
+(* Skip is a no-op that can be useful in proofs.
+
+   Occasionally a proof may need to open an invariant and perform a ghost update
+   across a step in the operational semantics. The GooseLang model may not have
+   a convenient step, but it is always sound to insert more. Calling std.Skip()
+   is a simple way to do so - the model always requires one step to reduce this
+   application to a value. *)
+Definition Skip: val :=
+  rec: "Skip" <> :=
     #().
 
 End code.
