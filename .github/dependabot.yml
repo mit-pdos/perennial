@@ -1,13 +1,14 @@
 version: 2
 
 updates:
-  - package-ecosystem: 'gitsubmodule'
-    directory: '/'
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
     schedule:
-      interval: 'daily'
-      time: "08:00"
+      interval: "daily"
+      time: "04:00"
+      timezone: "America/New_York"
 
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'daily'
+      interval: "monthly"
