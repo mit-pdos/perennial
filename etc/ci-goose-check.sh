@@ -6,8 +6,8 @@ set -e
 GOOSE_REPO=https://github.com/goose-lang/goose/
 GOOSE_COMMIT=master
 
-NEW_GOOSE_REPO=https://github.com/upamanyus/goose/
-NEW_GOOSE_COMMIT=master
+NEW_GOOSE_REPO=https://github.com/goose-lang/goose/
+NEW_GOOSE_COMMIT=new
 
 STD_REPO=https://github.com/goose-lang/std
 STD_COMMIT=master
