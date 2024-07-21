@@ -289,7 +289,6 @@ def main():
             "./minlease",
             "./dmvcc/...",
             "./cachekv",
-            "./etcd/election",
         ]
 
         run_goose(
