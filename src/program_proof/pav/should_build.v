@@ -1,3 +1,4 @@
+(*
 From Perennial.program_proof.pav Require Export
   common
   crypto_model
@@ -6,4 +7,6 @@ From Perennial.program_proof.pav Require Export
   evidence
   merkle
   merkle_internal
-  server.
+  server
+  rpc.
+*)
