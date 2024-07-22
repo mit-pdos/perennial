@@ -4,10 +4,14 @@
 
 Hopefully, we can prove the admitted iProps in cryptoffi.v from it. *)
 
+(* TODO: double check model with Derek and prior work. *)
+
 From Perennial.Helpers Require Import Integers.
 From stdpp Require Import prelude gmap.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
+
+Section crypto_model.
 
 Notation sk_ty := (list w8) (only parsing).
 Notation pk_ty := (list w8) (only parsing).
@@ -17,7 +21,7 @@ Notation hash_ty := (list w8) (only parsing).
 
 Record state_ty :=
   mk_state {
-    signed: gmap sk_ty (list (msg_ty * sig_ty));
+    signed: gmap sk_ty (list msg_ty);
     pk_to_sk: gmap pk_ty sk_ty;
     (* this could be implemented with preimg pk_to_sk,
     but that gets very complicated. *)
@@ -38,6 +42,7 @@ Inductive op_ty : Type :=
 Inductive ret_ty : Type :=
   | ret : forall {T : Type}, T → ret_ty.
 
+(* arb_T returns a random concrete T. *)
 Definition arb_bool : bool.
 Admitted.
 Definition arb_bytes : list w8.
@@ -75,10 +80,11 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
       let sig := arb_bytes in
       match state.(verify_memo) !! (pk, msg, sig) with
       | None
-      (* even if we've already verified this, still add it to the signed set.
-      it has effects on future verify calls on the same msg. *)
       | Some true =>
-        (ret sig, state <| signed ::= <[sk:=(msg,sig)::my_signed]> |>)
+        (ret sig,
+          state <| signed ::= <[sk:=msg::my_signed]> |>
+                (* immediately memoize so verify returns the right thing. *)
+                <| verify_memo ::= <[(pk,msg,sig):=true]> |>)
       | Some false =>
         (* bad sig collision (see above case). infinite loop the machine. *)
         (ret 0, state)
@@ -106,22 +112,19 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
           infinite loop the machine. *)
           (false, state)
         | Some my_signed =>
-          match list_find (λ x, x.1 = msg) my_signed with
+          match list_find (λ x, x = msg) my_signed with
           | None =>
             (* if never signed msg before, should be impossible to verify. *)
             (false, state)
           | Some _ =>
-            match list_find (λ x, x = (msg,sig)) my_signed with
-            | Some _ =>
-              (true, state)
-            | None =>
-              (* for already signed msgs, might be able to forge sig. *)
-              let ok := arb_bool in
-              match ok with
-              | true => (true, state <| signed ::= <[sk:=(msg,sig)::my_signed]> |>)
-              | false => (false, state)
-              end
-            end
+            (* for already signed msgs, either:
+            1) we signed this exact sig.
+            in this case, memoization would run, not this code.
+            2) we signed this msg, but not this sig.
+            could have forged a valid sig. *)
+            let ok := arb_bool in
+            (* only update signed state via the sign op, not this. *)
+            (ok, state)
           end
         end
       end
@@ -143,3 +146,5 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
       end
     end
   end.
+
+End crypto_model.
