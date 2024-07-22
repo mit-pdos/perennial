@@ -59,42 +59,6 @@ Definition valid ptr obj : iProp Σ :=
 End local_defs.
 End server.
 
-Module servPutReply.
-Record t :=
-  mk {
-    putEpoch: w64;
-    prev2Link: list w8;
-    prevDig: list w8;
-    linkSig: list w8;
-    putSig: list w8;
-    error: bool;
-  }.
-
-Section local_defs.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
-
-Definition own ptr obj γmonoLinks γmonoTrees id val : iProp Σ :=
-  ∃ prevLink sl_prev2Link sl_prevDig sl_linkSig sl_putSig d0 d1 d2 d3,
-  "Herror" ∷ ptr ↦[servPutReply :: "error"] #obj.(error) ∗
-  if negb obj.(error) then
-    "HputEpoch" ∷ ptr ↦[servPutReply :: "putEpoch"] #obj.(putEpoch) ∗
-    "Hprev2Link" ∷ ptr ↦[servPutReply :: "prev2Link"] (slice_val sl_prev2Link) ∗
-    "Hsl_prev2Link" ∷ own_slice_small sl_prev2Link byteT d0 obj.(prev2Link) ∗
-    "HprevDig" ∷ ptr ↦[servPutReply :: "prevDig"] (slice_val sl_prevDig) ∗
-    "Hsl_prevDig" ∷ own_slice_small sl_prevDig byteT d1 obj.(prevDig) ∗
-    "HlinkSig" ∷ ptr ↦[servPutReply :: "linkSig"] (slice_val sl_linkSig) ∗
-    "Hsl_linkSig" ∷ own_slice_small sl_linkSig byteT d2 obj.(linkSig) ∗
-    "HputSig" ∷ ptr ↦[servPutReply :: "putSig"] (slice_val sl_putSig) ∗
-    "Hsl_putSig" ∷ own_slice_small sl_putSig byteT d3 obj.(putSig) ∗
-    (* Valid sigpreds, proving that the server completed the op. *)
-    "#HprevLink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk (word.sub obj.(putEpoch) (W64 1)) obj.(prev2Link) obj.(prevDig))) prevLink ∗
-    "Hlink_sigpred" ∷ serv_sigpred_link γmonoLinks (servSepLink.mk prevLink) ∗
-    "Hput_sigpred" ∷ serv_sigpred_put γmonoTrees (servSepPut.mk obj.(putEpoch) id val)
-  else True.
-
-End local_defs.
-End servPutReply.
-
 Section proofs.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
