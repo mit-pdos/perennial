@@ -6,7 +6,7 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
-Notation Hasher := (slice.T byteT).
+Notation Hasher := (slice.T byteT) (only parsing).
 
 Definition HasherWrite: val :=
   rec: "HasherWrite" "h" "data" :=

@@ -17,7 +17,7 @@ Proof. Admitted.
 Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
-Lemma hash_is_func d h1 h2 :
+Lemma hash_deterministic d h1 h2 :
   is_hash d h1 -∗ is_hash d h2 -∗ ⌜h1 = h2⌝.
 Proof. Admitted.
 
@@ -44,55 +44,72 @@ Proof. Admitted.
 
 (* Signatures. *)
 
-Definition own_sk (sk : Slice.t) (P : list w8 → iProp Σ) (hon : bool) : iProp Σ.
+(* TODO: "own" here should imply that it's impossible for known code to leak sk.
+I don't yet know the mechanism for guaranteeing this. *)
+(* Need pk here to tie down Sign is_sig. *)
+Definition own_sk (sk pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
-Definition is_pk (pk : Slice.t) (P : list w8 → iProp Σ) (hon : bool) : iProp Σ.
+Definition is_pk (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
 #[global]
-Instance is_pk_persistent pk P hon : Persistent (is_pk pk P hon).
+Instance is_pk_persistent pk P : Persistent (is_pk pk P).
 Proof. Admitted.
 
-Lemma wp_GenerateKey P hon :
+Definition is_sig (pk msg sig : list w8) : iProp Σ.
+Admitted.
+
+#[global]
+Instance is_sig_persistent pk msg sig : Persistent (is_sig pk msg sig).
+Proof. Admitted.
+
+Lemma wp_GenerateKey P :
   {{{
     "%Hpersis" ∷ ⌜∀ l, Persistent (P l)⌝
   }}}
   GenerateKey #()
   {{{
-    pk sk, RET ((slice_val pk), (slice_val sk));
-    "#Hpk" ∷ is_pk pk P hon ∗
-    "Hsk" ∷ own_sk sk P hon
-  }}}.
+    sl_pk pk sl_sk sk, RET ((slice_val sl_pk), (slice_val sl_sk));
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
+    "#Hpk" ∷ is_pk pk P ∗
+    "Hsl_sk" ∷ own_slice_small sl_sk byteT (DfracOwn 1) sk ∗
+    "Hsk" ∷ own_sk sk pk P
+ }}}.
 Proof. Admitted.
 
-Lemma wp_Sign sk P hon sl_msg msg d0 :
+Lemma wp_Sign sl_sk sk pk P sl_msg msg d0 d1 :
   {{{
-    "Hsk" ∷ own_sk sk P hon ∗
+    "Hsl_sk" ∷ own_slice_small sl_sk byteT d0 sk ∗
+    "Hsk" ∷ own_sk sk pk P ∗
     "HP" ∷ P msg ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg
-  }}}
-  PrivateKey__Sign (slice_val sk) (slice_val sl_msg)
-  {{{
-    sl_sig (sig : list w8), RET (slice_val sl_sig);
-    "Hsk" ∷ own_sk sk P hon ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg ∗
-    "Hsig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig
-  }}}.
-Proof. Admitted.
-
-Lemma wp_Verify pk P hon sl_sig (sig : list w8) sl_msg (msg : list w8) d0 d1 :
-  {{{
-    "#Hpk" ∷ is_pk pk P hon ∗
-    "Hsig" ∷ own_slice_small sl_sig byteT d0 sig ∗
     "Hmsg" ∷ own_slice_small sl_msg byteT d1 msg
   }}}
-  PublicKey__Verify (slice_val pk) (slice_val sl_msg) (slice_val sl_sig)
+  PrivateKey__Sign (slice_val sl_sk) (slice_val sl_msg)
+  {{{
+    sl_sig (sig : list w8), RET (slice_val sl_sig);
+    "Hsl_sk" ∷ own_slice_small sl_sk byteT d0 sk ∗
+    "Hsk" ∷ own_sk sk pk P ∗
+    "Hmsg" ∷ own_slice_small sl_msg byteT d1 msg ∗
+    "Hsl_sig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig ∗
+    "#Hsig" ∷ is_sig pk msg sig
+  }}}.
+Proof. Admitted.
+
+Lemma wp_Verify P sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
+  {{{
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
+    "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg
+  }}}
+  PublicKey__Verify (slice_val sl_pk) (slice_val sl_msg) (slice_val sl_sig)
   {{{
     (ok : bool), RET #ok;
-    "Hsig" ∷ own_slice_small sl_sig byteT d0 sig ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT d1 msg ∗
-    "HP" ∷ if ok && hon then P msg else True%I
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
+    "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg ∗
+    "His_sig" ∷ (is_sig pk msg sig -∗ ⌜ ok = true ⌝) ∗
+    "Hok" ∷ (is_pk pk P -∗ if ok then P msg else True)
   }}}.
 Proof. Admitted.
 

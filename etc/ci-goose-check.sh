@@ -33,6 +33,9 @@ NEW_GOKV_COMMIT=new
 MVCC_REPO=https://github.com/mit-pdos/vmvcc
 MVCC_COMMIT=main
 
+PAV_REPO=https://github.com/mit-pdos/pav
+PAV_COMMIT=main
+
 # FIXME: need public repo
 # RSM_REPO=https://github.com/mit-pdos/rsm
 # RSM_COMMIT=main
@@ -85,6 +88,9 @@ checkout NEW_GOKV
 MVCC_DIR=/tmp/mvcc
 checkout MVCC
 
+PAV_DIR=/tmp/pav
+checkout PAV
+
 # RSM_DIR=/tmp/rsm
 # checkout RSM
 
@@ -98,6 +104,7 @@ etc/update-goose.py --goose $GOOSE_DIR --compile \
   --nfsd $NFSD_DIR \
   --gokv $GOKV_DIR \
   --mvcc $MVCC_DIR \
+  --pav $PAV_DIR \
 # --rsm $RSM_DIR
 # Missing: --distributed-examples (not currently used)
 

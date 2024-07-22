@@ -1,251 +1,50 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi merkle.
+From Perennial.program_proof.pav Require Import common cryptoffi merkle rpc.
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From Perennial.base_logic Require Import ghost_map.
 
-Module chainSepNone.
-Definition encoding : list w8 := [(W8 0)].
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition hashes_to (h : list w8) : iProp Σ :=
-  is_hash encoding h.
-End local_defs.
-End chainSepNone.
-
-Module chainSepSome.
-Record t :=
-  mk {
-    epoch: w64;
-    prevLink: list w8;
-    data: list w8;
-  }.
-
-Definition encodesF (obj : t) : list w8 :=
-  [(W8 1)] ++ u64_le obj.(epoch) ++ u64_le (length obj.(prevLink)) ++ obj.(prevLink) ++ u64_le (length obj.(data)) ++ obj.(data).
-Definition encodes (enc : list w8) (obj : t) : Prop :=
-  enc = encodesF obj.
-
-Lemma inj obj0 obj1 :
-  encodesF obj0 = encodesF obj1 → obj0 = obj1.
-Proof. Admitted.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_prevLink sl_data d0 d1,
-  "Hepoch" ∷ ptr ↦[chainSepSome :: "epoch"] #obj.(epoch) ∗
-  "HprevLink" ∷ ptr ↦[chainSepSome :: "prevLink"] (slice_val sl_prevLink) ∗
-  "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
-  "Hdata" ∷ ptr ↦[chainSepSome :: "data"] (slice_val sl_data) ∗
-  "Hsl_data" ∷ own_slice_small sl_data byteT d1 obj.(data).
-
-Lemma wp_encode ptr obj :
-  {{{
-    "Hobj" ∷ own ptr obj
-  }}}
-    chainSepSome__encode #ptr
-  {{{
-    sl_enc enc, RET (slice_val sl_enc);
-    "Hobj" ∷ own ptr obj ∗
-    "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) enc ∗
-    "%Henc" ∷ ⌜encodes enc obj⌝
-  }}}.
-Proof. Admitted.
-End local_defs.
-End chainSepSome.
-
-Module servSepLink.
-Record t :=
-  mk {
-    link: list w8;
-  }.
-
-Definition encodesF (obj : t) : list w8 :=
-  [(W8 0)] ++ u64_le (length obj.(link)) ++ obj.(link).
-Definition encodes (enc : list w8) (obj : t) : Prop :=
-  enc = encodesF obj.
-
-Lemma inj obj0 obj1 :
-  encodesF obj0 = encodesF obj1 → obj0 = obj1.
-Proof. Admitted.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_link d0,
-  "Hlink" ∷ ptr ↦[servSepLink :: "link"] (slice_val sl_link) ∗
-  "Hsl_link" ∷ own_slice_small sl_link byteT d0 obj.(link).
-
-Lemma wp_encode ptr obj :
-  {{{
-    "Hobj" ∷ own ptr obj
-  }}}
-    servSepLink__encode #ptr
-  {{{
-    sl_enc enc, RET (slice_val sl_enc);
-    "Hobj" ∷ own ptr obj ∗
-    "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) enc ∗
-    "%Henc" ∷ ⌜encodes enc obj⌝
-  }}}.
-Proof. Admitted.
-End local_defs.
-End servSepLink.
-
-Module servSepPut.
-Record t :=
-  mk {
-    epoch: w64;
-    id: list w8;
-    val: list w8;
-  }.
-
-Definition encodesF (obj : t) : list w8 :=
-  [(W8 1)] ++ u64_le obj.(epoch) ++ u64_le (length obj.(id)) ++ obj.(id) ++ u64_le (length obj.(val)) ++ obj.(val).
-Definition encodes (enc : list w8) (obj : t) : Prop :=
-  enc = encodesF obj.
-
-Lemma inj obj0 obj1 :
-  encodesF obj0 = encodesF obj1 → obj0 = obj1.
-Proof. Admitted.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_id sl_val d0 d1,
-  "Hepoch" ∷ ptr ↦[servSepPut :: "epoch"] #obj.(epoch) ∗
-  "Hid" ∷ ptr ↦[servSepPut :: "id"] (slice_val sl_id) ∗
-  "Hsl_id" ∷ own_slice_small sl_id byteT d0 obj.(id) ∗
-  "Hval" ∷ ptr ↦[servSepPut :: "val"] (slice_val sl_val) ∗
-  "Hsl_val" ∷ own_slice_small sl_val byteT d1 obj.(val).
-
-Lemma wp_encode ptr obj :
-  {{{
-    "Hobj" ∷ own ptr obj
-  }}}
-    servSepPut__encode #ptr
-  {{{
-    sl_enc enc, RET (slice_val sl_enc);
-    "Hobj" ∷ own ptr obj ∗
-    "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) enc ∗
-    "%Henc" ∷ ⌜encodes enc obj⌝
-  }}}.
-Proof. Admitted.
-End local_defs.
-End servSepPut.
-
-Module evidServLink.
-Record t :=
-  mk {
-    epoch0: w64;
-    prevLink0: list w8;
-    dig0: list w8;
-    sig0: list w8;
-
-    epoch1: w64;
-    prevLink1: list w8;
-    dig1: list w8;
-    sig1: list w8;
-  }.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_prevLink0 sl_dig0 sl_sig0 sl_prevLink1 sl_dig1 sl_sig1 d0 d1 d2 d3 d4 d5,
-  "Hepoch0" ∷ ptr ↦[evidServLink :: "epoch0"] #obj.(epoch0) ∗
-  "HprevLink0" ∷ ptr ↦[evidServLink :: "prevLink0"] (slice_val sl_prevLink0) ∗
-  "Hsl_prevLink0" ∷ own_slice_small sl_prevLink0 byteT d0 obj.(prevLink0) ∗
-  "Hdig0" ∷ ptr ↦[evidServLink :: "dig0"] (slice_val sl_dig0) ∗
-  "Hsl_dig0" ∷ own_slice_small sl_dig0 byteT d1 obj.(dig0) ∗
-  "Hsig0" ∷ ptr ↦[evidServLink :: "sig0"] (slice_val sl_sig0) ∗
-  "Hsl_sig0" ∷ own_slice_small sl_sig0 byteT d2 obj.(sig0) ∗
-
-  "Hepoch1" ∷ ptr ↦[evidServLink :: "epoch1"] #obj.(epoch1) ∗
-  "HprevLink1" ∷ ptr ↦[evidServLink :: "prevLink1"] (slice_val sl_prevLink1) ∗
-  "Hsl_prevLink1" ∷ own_slice_small sl_prevLink1 byteT d3 obj.(prevLink1) ∗
-  "Hdig1" ∷ ptr ↦[evidServLink :: "dig1"] (slice_val sl_dig1) ∗
-  "Hsl_dig1" ∷ own_slice_small sl_dig1 byteT d4 obj.(dig1) ∗
-  "Hsig1" ∷ ptr ↦[evidServLink :: "sig1"] (slice_val sl_sig1) ∗
-  "Hsl_sig1" ∷ own_slice_small sl_sig1 byteT d5 obj.(sig1).
-End local_defs.
-End evidServLink.
-
-Module evidServPut.
-Record t :=
-  mk {
-    epoch: w64;
-    (* For signed link. *)
-    prevLink: list w8;
-    dig: list w8;
-    linkSig: list w8;
-    (* For signed put. *)
-    id: list w8;
-    val0: list w8;
-    putSig: list w8;
-    (* For merkle inclusion. *)
-    val1: list w8;
-    proof: list (list (list w8));
-  }.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_prevLink sl_dig sl_linkSig sl_id sl_val0 sl_putSig sl_val1 sl_proof d0 d1 d2 d3 d4 d5 d6,
-  "Hepoch" ∷ ptr ↦[evidServPut :: "epoch"] #obj.(epoch) ∗
-
-  "HprevLink" ∷ ptr ↦[evidServPut :: "prevLink"] (slice_val sl_prevLink) ∗
-  "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
-  "Hdig" ∷ ptr ↦[evidServPut :: "dig"] (slice_val sl_dig) ∗
-  "Hsl_dig" ∷ own_slice_small sl_dig byteT d1 obj.(dig) ∗
-  "HlinkSig" ∷ ptr ↦[evidServPut :: "linkSig"] (slice_val sl_linkSig) ∗
-  "Hsl_linkSig" ∷ own_slice_small sl_linkSig byteT d2 obj.(linkSig) ∗
-
-  "Hid" ∷ ptr ↦[evidServPut :: "id"] (slice_val sl_id) ∗
-  "Hsl_id" ∷ own_slice_small sl_id byteT d3 obj.(id) ∗
-  "Hval0" ∷ ptr ↦[evidServPut :: "val0"] (slice_val sl_val0) ∗
-  "Hsl_val0" ∷ own_slice_small sl_val0 byteT d4 obj.(val0) ∗
-  "HputSig" ∷ ptr ↦[evidServPut :: "putSig"] (slice_val sl_putSig) ∗
-  "Hsl_putSig" ∷ own_slice_small sl_putSig byteT d5 obj.(putSig) ∗
-
-  "Hval1" ∷ ptr ↦[evidServPut :: "val1"] (slice_val sl_val1) ∗
-  "Hsl_val1" ∷ own_slice_small sl_val1 byteT d6 obj.(val1) ∗
-  "Hproof" ∷ ptr ↦[evidServPut :: "proof"] (slice_val sl_proof) ∗
-  "#Hsl_proof" ∷ is_Slice3D sl_proof obj.(proof).
-End local_defs.
-End evidServPut.
-
-Section other.
-(* Note: the more general version of this lemma has a set of encodings
-   that are within the same domain.
-   if any two of these hold, we can prove false.
-   there'd need to be a side req that each encoding has a diff tag. *)
-Lemma servSep enc obj0 obj1 :
-  servSepLink.encodes enc obj0 ∧ servSepPut.encodes enc obj1 → False.
-Proof.
-  intros [HencLink HencPut].
-  rewrite /servSepLink.encodes /servSepLink.encodesF in HencLink.
-  rewrite /servSepPut.encodes /servSepPut.encodesF in HencPut.
-  naive_solver.
-Qed.
-End other.
-
 Section servpreds.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
+
+Definition binds (data links : list (list w8)) : iProp Σ :=
+  (* init is the chainSepNone hash, the empty list commitment. *)
+  ∃ init,
+  "%Hinit" ∷ ⌜ links !! 0 = Some init ⌝ ∗
+  "#Hinit_hash" ∷ chainSepNone.hashes_to init ∗
+  (* every link except init was formed by the previous link. *)
+  "#Hbinds" ∷ ([∗ list] epoch ↦ d; l ∈ data; (drop 1 links),
+    ∃ prevLink,
+    ⌜ links !! epoch = Some prevLink ⌝ ∗
+    is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink d)) l).
+
+Lemma binds_inj data links0 links1 :
+  binds data links0 -∗
+  binds data links1 -∗
+  ⌜ links0 = links1 ⌝.
+Proof. Admitted.
+
+Definition global_inv γ : iProp Σ :=
+  "HmonoTrees" ∷ mono_list_auth_own γmonoTrees (1/2) γtrees ∗
+  "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
+    ghost_map_auth γtr (1/2) tr) ∗
+  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, is_tree_dig tr dig) ∗
+  "#Hdigs_links" ∷ binds digs links.
 
 Definition serv_sigpred_link γmonoLinks (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8),
   "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
-  "#HidxPrev" ∷ mono_list_idx_own γmonoLinks (uint.nat (word.sub epoch (W64 1))) prevLink ∗
+  "#HidxPrev" ∷ ⌜ uint.nat epoch > 0 ⌝ -∗ mono_list_idx_own γmonoLinks (uint.nat (word.sub epoch (W64 1))) prevLink ∗
   "#HidxCurr" ∷ mono_list_idx_own γmonoLinks (uint.nat epoch) data.(servSepLink.link).
 
-Definition serv_sigpred_put γmonoTrs (data : servSepPut.t) : iProp Σ :=
+Definition serv_sigpred_put γmonoTrees (data : servSepPut.t) : iProp Σ :=
   ∃ γtr,
-  "Htr" ∷ mono_list_idx_own γmonoTrs (uint.nat data.(servSepPut.epoch)) γtr ∗
+  "Htr" ∷ mono_list_idx_own γmonoTrees (uint.nat data.(servSepPut.epoch)) γtr ∗
   "Hentry" ∷ data.(servSepPut.id) ↪[γtr]□ data.(servSepPut.val).
 
-Definition serv_sigpred γmonoLinks γmonoTrs : (list w8 → iProp Σ) :=
+Definition serv_sigpred γmonoLinks γmonoTrees : (list w8 → iProp Σ) :=
   λ data,
     ((
       ∃ dataSepLink,
@@ -256,17 +55,17 @@ Definition serv_sigpred γmonoLinks γmonoTrs : (list w8 → iProp Σ) :=
     (
       ∃ dataSepPut,
         ⌜servSepPut.encodes data dataSepPut⌝ ∗
-        serv_sigpred_put γmonoTrs dataSepPut
+        serv_sigpred_put γmonoTrees dataSepPut
     )%I)%I.
 End servpreds.
 
 Section evidence.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
-Lemma wp_evidServLink_check ptr_evid evid pk γmonoLinks γmonoTrs hon :
+Lemma wp_evidServLink_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
   {{{
     "Hevid" ∷ evidServLink.own ptr_evid evid ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrs) hon
+    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
   }}}
   evidServLink__check #ptr_evid (slice_val pk)
   {{{
@@ -461,6 +260,8 @@ Lemma wp_evidServPut_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
   {{{
     "Hevid" ∷ evidServPut.own ptr_evid evid ∗
     "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
+    (* TODO: fix deps so we can reference global inv.
+       "#Hinv" ∷ inv nroot (global_inv γmonoLinks γmonoTrees) *)
   }}}
   evidServPut__check #ptr_evid (slice_val pk)
   {{{
