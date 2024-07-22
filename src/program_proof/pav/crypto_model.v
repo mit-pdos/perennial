@@ -11,33 +11,7 @@ From stdpp Require Import prelude gmap.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-Section crypto_model.
-
-Notation sk_ty := (list w8) (only parsing).
-Notation pk_ty := (list w8) (only parsing).
-Notation msg_ty := (list w8) (only parsing).
-Notation sig_ty := (list w8) (only parsing).
-Notation hash_ty := (list w8) (only parsing).
-
-Record state_ty :=
-  mk_state {
-    signed: gmap sk_ty (list msg_ty);
-    pk_to_sk: gmap pk_ty sk_ty;
-    (* this could be implemented with preimg pk_to_sk,
-    but that gets very complicated. *)
-    sk_to_pk: gmap sk_ty pk_ty;
-    (* make verify deterministic by memoizing outputs. *)
-    verify_memo: gmap (pk_ty * msg_ty * sig_ty) bool;
-    hashes: gmap msg_ty hash_ty;
-  }.
-#[export] Instance eta_state : Settable _ :=
-  settable! mk_state <signed; pk_to_sk; sk_to_pk; verify_memo; hashes>.
-
-Inductive op_ty : Type :=
-  | key_gen : op_ty
-  | sign : sk_ty → msg_ty → op_ty
-  | verify : pk_ty → msg_ty → sig_ty → op_ty
-  | hash : msg_ty → op_ty.
+Section shared.
 
 Inductive ret_ty : Type :=
   | ret : forall {T : Type}, T → ret_ty.
@@ -49,11 +23,37 @@ Definition arb_bytes : list w8.
 Admitted.
 Definition arb_bytes_len (len : nat) : list w8.
 Admitted.
-Notation hash_len := (32) (only parsing).
+
+End shared.
+
+Section signatures.
+
+Notation sk_ty := (list w8) (only parsing).
+Notation pk_ty := (list w8) (only parsing).
+Notation sig_ty := (list w8) (only parsing).
+Notation msg_ty := (list w8) (only parsing).
+
+Record sig_state_ty :=
+  mk_sig_state {
+    signed: gmap sk_ty (list msg_ty);
+    pk_to_sk: gmap pk_ty sk_ty;
+    (* this could be implemented with preimg pk_to_sk,
+    but that gets very complicated. *)
+    sk_to_pk: gmap sk_ty pk_ty;
+    (* make verify deterministic by memoizing outputs. *)
+    verify_memo: gmap (pk_ty * msg_ty * sig_ty) bool;
+  }.
+#[export] Instance eta_sig_state : Settable _ :=
+  settable! mk_sig_state <signed; pk_to_sk; sk_to_pk; verify_memo>.
+
+Inductive sig_op_ty : Type :=
+  | key_gen : sig_op_ty
+  | sign : sk_ty → msg_ty → sig_op_ty
+  | verify : pk_ty → msg_ty → sig_ty → sig_op_ty.
 
 (** We use "in-distribution" to mean a key already gen'd by key_gen.
 We use "out-of-distribution" to mean a key not yet gen'd by key_gen. *)
-Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
+Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_state_ty) :=
   match op with
   | key_gen =>
     let sk := arb_bytes in
@@ -130,7 +130,28 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
         end
       end
     end
+  end.
 
+End signatures.
+
+Section hashes.
+
+Notation msg_ty := (list w8) (only parsing).
+Notation hash_ty := (list w8) (only parsing).
+Notation hash_len := (32) (only parsing).
+
+Record hash_state_ty :=
+  mk_hash_state {
+    hashes: gmap msg_ty hash_ty;
+  }.
+#[export] Instance eta_hash_state : Settable _ :=
+  settable! mk_hash_state <hashes>.
+
+Inductive hash_op_ty : Type :=
+  | hash : msg_ty → hash_op_ty.
+
+Definition hash_step (op : hash_op_ty) (state : hash_state_ty) : (ret_ty * hash_state_ty) :=
+  match op with
   | hash msg =>
     match state.(hashes) !! msg with
     | Some h =>
@@ -148,4 +169,4 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
     end
   end.
 
-End crypto_model.
+End hashes.
