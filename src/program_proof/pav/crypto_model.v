@@ -123,7 +123,8 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
             2) we signed this msg, but not this sig.
             could have forged a valid sig. *)
             let ok := arb_bool in
-            (* only update signed state via the sign op, not this. *)
+            (* even tho verify might ret true, only update signed state via
+            the sign op, not here. *)
             (ok, state)
           end
         end
