@@ -51,8 +51,23 @@ Inductive sig_op_ty : Type :=
   | sign : sk_ty → msg_ty → sig_op_ty
   | verify : pk_ty → msg_ty → sig_ty → sig_op_ty.
 
-(** We use "in-distribution" to mean a key already gen'd by key_gen.
-We use "out-of-distribution" to mean a key not yet gen'd by key_gen. *)
+(** the main goal is to follow the guarantees of EUF-CMA as closely as possible.
+e.g., EUF-CMA says sign / verify are undefined for OOD sk's / pk's,
+so we return random values.
+e.g., EUF-CMA has a stateful notion of the adversary not being able to forge
+signatures if it never signed the msg before.
+our model tracks signed state to guarantee this.
+
+the main divergence is in the notion of distributions.
+for us, "in-distribution" means a key already gen'd by key_gen.
+"out-of-distribution" means a key not yet gen'd by key_gen.
+in EUF-CMA, a distribution is fixed ahead of time.
+
+the other divergence is how we capture the constraint of a poly time adversary.
+the main capability of super-poly adversaries is their ability to run crypto ops
+a huge number of times to exhibit collisions.
+we block this, by having the underlying machine infinite loop exactly when
+it detects a collision. *)
 Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_state_ty) :=
   match op with
   | key_gen =>
@@ -62,6 +77,8 @@ Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_stat
     match (state.(signed) !! sk, state.(pk_to_sk) !! pk,
       bool_decide (map_Exists (λ k _, k.1.1 = pk) state.(verify_memo))) with
     | (None, None, false) =>
+      (* TODO: make key_gen not directly return the sk, so it's impossible
+      for programs to leak it. *)
       (ret (sk, pk),
         state <| signed ::= <[sk:=[]]> |>
               <| pk_to_sk ::= <[pk:=sk]> |>
@@ -89,8 +106,10 @@ Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_stat
         (* bad sig collision (see above case). infinite loop the machine. *)
         (ret 0, state)
       end
-    (* assume sk in distr. infinite loop the machine. *)
-    | _ => (ret 0, state)
+    (* sign is only defined over in-distribution sk's. return random values. *)
+    | _ =>
+      let sig := arb_bytes in
+      (ret sig, state)
     end
 
   | verify pk msg sig =>
@@ -102,15 +121,15 @@ Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_stat
         (ret new_ok, new_state <| verify_memo ::= <[(pk,msg,sig):=new_ok]> |>))
       match state.(pk_to_sk) !! pk with
       | None =>
-        (* return anything for OOD keys. *)
+        (* verify is only defined over in-distribution pk's. return random values. *)
         let ok := arb_bool in
         (ok, state)
       | Some sk =>
         match state.(signed) !! sk with
         | None =>
-          (* will never happen. pk_to_sk and signed match.
-          infinite loop the machine. *)
-          (false, state)
+          (* will never happen for in-distribution pk's. return random values. *)
+          let ok := arb_bool in
+          (ok, state)
         | Some my_signed =>
           match list_find (λ x, x = msg) my_signed with
           | None =>
