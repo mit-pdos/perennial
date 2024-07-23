@@ -44,10 +44,10 @@ Proof. Admitted.
 
 (* Signatures. *)
 
-(* TODO: "own" here should imply that it's impossible for known code to leak sk.
-I don't yet know the mechanism for guaranteeing this. *)
-(* Need pk here to tie down Sign is_sig. *)
-Definition own_sk (sk pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
+(* own_sk only stores the sk ptr. the actual sk never leaves the ffi.
+this prevents code from accidentally leaking it.
+need to connect sk with pk for is_sig. *)
+Definition own_sk (sk : Slice.t) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
 Definition is_pk (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
@@ -57,6 +57,7 @@ Admitted.
 Instance is_pk_persistent pk P : Persistent (is_pk pk P).
 Proof. Admitted.
 
+(* witness that we ran the sign op and got back sig. *)
 Definition is_sig (pk msg sig : list w8) : iProp Σ.
 Admitted.
 
@@ -70,27 +71,24 @@ Lemma wp_GenerateKey P :
   }}}
   GenerateKey #()
   {{{
-    sl_pk pk sl_sk sk, RET ((slice_val sl_pk), (slice_val sl_sk));
+    sl_pk pk sl_sk, RET ((slice_val sl_pk), (slice_val sl_sk));
     "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
     "#Hpk" ∷ is_pk pk P ∗
-    "Hsl_sk" ∷ own_slice_small sl_sk byteT (DfracOwn 1) sk ∗
-    "Hsk" ∷ own_sk sk pk P
+    "Hsk" ∷ own_sk sl_sk pk P
  }}}.
 Proof. Admitted.
 
-Lemma wp_Sign sl_sk sk pk P sl_msg msg d0 d1 :
+Lemma wp_Sign sl_sk pk P sl_msg msg d0 :
   {{{
-    "Hsl_sk" ∷ own_slice_small sl_sk byteT d0 sk ∗
-    "Hsk" ∷ own_sk sk pk P ∗
+    "Hsk" ∷ own_sk sl_sk pk P ∗
     "HP" ∷ P msg ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT d1 msg
+    "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg
   }}}
   PrivateKey__Sign (slice_val sl_sk) (slice_val sl_msg)
   {{{
     sl_sig (sig : list w8), RET (slice_val sl_sig);
-    "Hsl_sk" ∷ own_slice_small sl_sk byteT d0 sk ∗
-    "Hsk" ∷ own_sk sk pk P ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT d1 msg ∗
+    "Hsk" ∷ own_sk sl_sk pk P ∗
+    "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig ∗
     "#Hsig" ∷ is_sig pk msg sig
   }}}.
