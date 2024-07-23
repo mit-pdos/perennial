@@ -496,6 +496,9 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Definition valid_merkle_proof (proof : list (list (list w8))) (id val dig : list w8) : iProp Σ.
+Proof. Admitted.
+
 Lemma wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_digest (id val digest : list w8) d0 d1 d2 :
   {{{
     "#Hproof" ∷ is_Slice3D sl_proof proof ∗
@@ -506,6 +509,7 @@ Lemma wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_digest (id v
   CheckProof #proofTy (slice_val sl_proof) (slice_val sl_id) (slice_val sl_val) (slice_val sl_digest)
   {{{
     (err : bool), RET #err;
+    "Hvalid_proof" ∷ (valid_merkle_proof proof id val digest -∗ ⌜ err = false ⌝) ∗
     if negb err then
       "#Hpath" ∷ commits_entry id (if proofTy then Some val else None) digest
     else True%I

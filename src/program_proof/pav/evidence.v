@@ -1,81 +1,47 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi merkle rpc.
+From Perennial.program_proof.pav Require Import common cryptoffi merkle rpc invs.
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From Perennial.base_logic Require Import ghost_map.
 
-Section servpreds.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
-
-Definition binds (data links : list (list w8)) : iProp Σ :=
-  (* init is the chainSepNone hash, the empty list commitment. *)
-  ∃ init,
-  "%Hinit" ∷ ⌜ links !! 0 = Some init ⌝ ∗
-  "#Hinit_hash" ∷ chainSepNone.hashes_to init ∗
-  (* every link except init was formed by the previous link. *)
-  "#Hbinds" ∷ ([∗ list] epoch ↦ d; l ∈ data; (drop 1 links),
-    ∃ prevLink,
-    ⌜ links !! epoch = Some prevLink ⌝ ∗
-    is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink d)) l).
-
-Lemma binds_inj data links0 links1 :
-  binds data links0 -∗
-  binds data links1 -∗
-  ⌜ links0 = links1 ⌝.
-Proof. Admitted.
-
-Definition global_inv γ : iProp Σ :=
-  "HmonoTrees" ∷ mono_list_auth_own γmonoTrees (1/2) γtrees ∗
-  "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
-    ghost_map_auth γtr (1/2) tr) ∗
-  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, is_tree_dig tr dig) ∗
-  "#Hdigs_links" ∷ binds digs links.
-
-Definition serv_sigpred_link γmonoLinks (data : servSepLink.t) : iProp Σ :=
-  ∃ (epoch : w64) (prevLink dig : list w8),
-  "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
-  "#HidxPrev" ∷ ⌜ uint.nat epoch > 0 ⌝ -∗ mono_list_idx_own γmonoLinks (uint.nat (word.sub epoch (W64 1))) prevLink ∗
-  "#HidxCurr" ∷ mono_list_idx_own γmonoLinks (uint.nat epoch) data.(servSepLink.link).
-
-Definition serv_sigpred_put γmonoTrees (data : servSepPut.t) : iProp Σ :=
-  ∃ γtr,
-  "Htr" ∷ mono_list_idx_own γmonoTrees (uint.nat data.(servSepPut.epoch)) γtr ∗
-  "Hentry" ∷ data.(servSepPut.id) ↪[γtr]□ data.(servSepPut.val).
-
-Definition serv_sigpred γmonoLinks γmonoTrees : (list w8 → iProp Σ) :=
-  λ data,
-    ((
-      ∃ dataSepLink,
-        ⌜servSepLink.encodes data dataSepLink⌝ ∗
-        serv_sigpred_link γmonoLinks dataSepLink
-    )%I
-    ∨
-    (
-      ∃ dataSepPut,
-        ⌜servSepPut.encodes data dataSepPut⌝ ∗
-        serv_sigpred_put γmonoTrees dataSepPut
-    )%I)%I.
-End servpreds.
-
 Section evidence.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
+Context `{!heapGS Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
-Lemma wp_evidServLink_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
+Definition evidServLink_valid pk evid : iProp Σ :=
+  ∃ link0 link1,
+  is_hash
+    (chainSepSome.encodesF (chainSepSome.mk
+      evid.(evidServLink.epoch0)
+      evid.(evidServLink.prevLink0)
+      evid.(evidServLink.dig0)))
+    link0 ∗
+  is_hash
+    (chainSepSome.encodesF (chainSepSome.mk
+      evid.(evidServLink.epoch1)
+      evid.(evidServLink.prevLink1)
+      evid.(evidServLink.dig1)))
+    link1 ∗
+  is_sig pk (servSepLink.encodesF (servSepLink.mk link0)) evid.(evidServLink.sig0) ∗
+  is_sig pk (servSepLink.encodesF (servSepLink.mk link1)) evid.(evidServLink.sig1).
+
+Lemma wp_evidServLink_check ptr_evid evid sl_pk pk γ d0 :
   {{{
     "Hevid" ∷ evidServLink.own ptr_evid evid ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "#Hpk" ∷ is_pk pk (serv_sigpred γ)
   }}}
-  evidServLink__check #ptr_evid (slice_val pk)
+  evidServLink__check #ptr_evid (slice_val sl_pk)
   {{{
     (err : bool), RET #err;
-    if negb err then
-      "%Hhon" ∷ ⌜hon = false⌝
-    else True%I
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "#Hvalid_sig" ∷ (evidServLink_valid pk evid -∗ ⌜ err = false ⌝) ∗
+    if negb err then False else True
   }}}.
 Proof. Admitted.
 (*
+  "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
   rewrite /evidServLink__check.
   iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hevid".
 
@@ -256,19 +222,38 @@ Proof. Admitted.
 Qed.
 *)
 
-Lemma wp_evidServPut_check ptr_evid evid pk γmonoLinks γmonoTrees hon :
+Definition evidServPut_valid pk evid : iProp Σ :=
+  ∃ link,
+  is_hash
+    (chainSepSome.encodesF (chainSepSome.mk
+      evid.(evidServPut.epoch)
+      evid.(evidServPut.prevLink)
+      evid.(evidServPut.dig)))
+    link ∗
+  is_sig pk (servSepLink.encodesF (servSepLink.mk link)) evid.(evidServPut.linkSig) ∗
+  is_sig pk
+    (servSepPut.encodesF (servSepPut.mk
+      evid.(evidServPut.epoch)
+      evid.(evidServPut.id)
+      evid.(evidServPut.val0)))
+    evid.(evidServPut.putSig) ∗
+  valid_merkle_proof
+    evid.(evidServPut.proof)
+    evid.(evidServPut.id)
+    evid.(evidServPut.val1)
+    evid.(evidServPut.dig).
+
+Lemma wp_evidServPut_check ptr_evid evid sl_pk pk γ d0 :
   {{{
     "Hevid" ∷ evidServPut.own ptr_evid evid ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γmonoLinks γmonoTrees) hon
-    (* TODO: fix deps so we can reference global inv.
-       "#Hinv" ∷ inv nroot (global_inv γmonoLinks γmonoTrees) *)
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "#Hpk" ∷ is_pk pk (serv_sigpred γ)
   }}}
-  evidServPut__check #ptr_evid (slice_val pk)
+  evidServPut__check #ptr_evid (slice_val sl_pk)
   {{{
     (err : bool), RET #err;
-    if negb err then
-      "%Hhon" ∷ ⌜hon = false⌝
-    else True%I
+    "Hvalid_evid" ∷ (evidServPut_valid pk evid -∗ ⌜ err = false ⌝) ∗
+    if negb err then False else True
   }}}.
 Proof. Admitted.
 (*

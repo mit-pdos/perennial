@@ -3,15 +3,6 @@ From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 
 From Perennial.program_proof.pav Require Import common.
 
-Module chainSepNone.
-Definition encoding : list w8 := [(W8 0)].
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition hashes_to (h : list w8) : iProp Σ :=
-  is_hash encoding h.
-End local_defs.
-End chainSepNone.
-
 Module chainSepSome.
 Record t :=
   mk {
@@ -242,8 +233,8 @@ Record t :=
 Section local_defs.
 Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
-Definition own ptr obj γmonoLinks γmonoTrees id val : iProp Σ :=
-  ∃ prevLink sl_prev2Link sl_prevDig sl_linkSig sl_putSig d0 d1 d2 d3,
+Definition own ptr obj : iProp Σ :=
+  ∃ sl_prev2Link sl_prevDig sl_linkSig sl_putSig d0 d1 d2 d3,
   "Herror" ∷ ptr ↦[servPutReply :: "error"] #obj.(error) ∗
   if negb obj.(error) then
     "HputEpoch" ∷ ptr ↦[servPutReply :: "putEpoch"] #obj.(putEpoch) ∗
@@ -254,11 +245,13 @@ Definition own ptr obj γmonoLinks γmonoTrees id val : iProp Σ :=
     "HlinkSig" ∷ ptr ↦[servPutReply :: "linkSig"] (slice_val sl_linkSig) ∗
     "Hsl_linkSig" ∷ own_slice_small sl_linkSig byteT d2 obj.(linkSig) ∗
     "HputSig" ∷ ptr ↦[servPutReply :: "putSig"] (slice_val sl_putSig) ∗
-    "Hsl_putSig" ∷ own_slice_small sl_putSig byteT d3 obj.(putSig) ∗
+    "Hsl_putSig" ∷ own_slice_small sl_putSig byteT d3 obj.(putSig)
     (* Valid sigpreds, proving that the server completed the op. *)
+    (*
     "#HprevLink" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk (word.sub obj.(putEpoch) (W64 1)) obj.(prev2Link) obj.(prevDig))) prevLink ∗
     "Hlink_sigpred" ∷ serv_sigpred_link γmonoLinks (servSepLink.mk prevLink) ∗
     "Hput_sigpred" ∷ serv_sigpred_put γmonoTrees (servSepPut.mk obj.(putEpoch) id val)
+    *)
   else True.
 
 End local_defs.
