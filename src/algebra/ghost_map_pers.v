@@ -3,6 +3,7 @@ From iris.algebra Require Import gmap_view.
 From iris.proofmode Require Import proofmode.
 
 Local Existing Instance ghost_map_inG.
+
 Section definitions.
   Context `{ghost_mapG Σ K V}.
 
@@ -47,8 +48,8 @@ Section lemmas.
     apply to_agree_included_L in Hincl. by rewrite Hincl.
   Qed.
 
-  Lemma ghost_map_auth_pers_agree γ q2 m1 m2 :
-    ghost_map_auth_pers γ m1 -∗ ghost_map_auth γ q2 m2 -∗ ⌜m1 = m2⌝.
+  Lemma ghost_map_auth_pers_agree γ q1 m1 m2 :
+    ghost_map_auth_pers γ m1 -∗ ghost_map_auth γ q1 m2 -∗ ⌜m1 = m2⌝.
   Proof.
     unseal. iIntros "H1 H2".
     iCombine "H1 H2" gives %[? ?%(inj _)]%gmap_view_auth_dfrac_op_valid.
