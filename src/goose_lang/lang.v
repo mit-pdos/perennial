@@ -178,6 +178,8 @@ Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
 
+(* XXX: to avoid splitting things into heap cells, can wrap it in e.g. an InjLV.
+   This is how lists can avoid getting split into different heap cells when [ref]'d. *)
 Fixpoint flatten_struct (v: val) : list val :=
   match v with
   | PairV v1 v2 => flatten_struct v1 ++ flatten_struct v2

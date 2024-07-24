@@ -5,6 +5,7 @@ From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export mem.
 From New.golang.theory Require Import typing.
+Require Import Coq.Program.Equality.
 
 Set Default Proof Using "Type".
 
@@ -37,6 +38,32 @@ Section goose_lang.
                                                      (λ q, l ↦[t]{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
+  Global Instance list_val_inj:
+    Inj (=) (=) list.val.
+  Proof.
+    rewrite list.val_unseal.
+    intros ?? Heq.
+    dependent induction x.
+    - destruct y; done.
+    - destruct y.
+      + done.
+      + inversion Heq. subst. f_equal. apply IHx. done.
+  Qed.
+
+  Global Instance struct_fields_val_inj :
+    Inj (=) (=) struct.fields_val.
+  Proof.
+    rewrite struct.fields_val_unseal /struct.fields_val_def.
+    intros ?? Heq.
+    eapply inj in Heq; last apply _.
+    eapply inj in Heq; first done.
+    apply list_fmap_eq_inj.
+    clear Heq x y.
+    intros [][] Heq. simpl in *.
+    inversion Heq; subst.
+    done.
+  Qed.
+
   Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
     CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I
                     ⌜ (go_type_size t > O → ✓(dq1 ⋅ dq2)) ∧ v1 = v2 ⌝%I.
@@ -51,13 +78,14 @@ Section goose_lang.
                  iDestruct (heap_pointsto_agree with "[$]") as "%H";
                  inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; naive_solver.
       1-2,4-5:
-        inversion Hty2; subst; rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id;
+        inversion Hty2; subst; rewrite ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id;
           iDestruct "H1" as "(Ha1 & Ha2 & Ha3)";
           iDestruct "H2" as "(Hb1 & Hb2 & Hb3)";
           try destruct s; try destruct s0;
           iCombine "Ha1 Hb1" gives %[? [=]];
           iCombine "Ha2 Hb2" gives %[? [=]];
-          iCombine "Ha3 Hb3" gives %[? [=]];
+          try iCombine "Ha3 Hb3" gives %[? [=Heq]];
+          try (eapply inj in Heq; last apply _);
           iModIntro; iPureIntro; naive_solver.
       - inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
         rewrite struct.val_unseal.
@@ -103,7 +131,7 @@ Section goose_lang.
   Proof.
     unseal. intros Hlen. iIntros "[? %Hty]".
     iInduction Hty as [] "IH"; subst;
-    simpl; rewrite ?slice.val_unseal /= ?right_id ?loc_add_0;
+    simpl; rewrite ?slice.val_unseal ?interface.val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
     all: try (iDestruct select (_) as "(? & ? & ?)";
               iApply heap_pointsto_non_null; by iFrame).
@@ -192,7 +220,7 @@ Section goose_lang.
     iInduction Hty as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (l' Φ) "HΦ".
     1-10,14-16,19-20: rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id; wp_pures;
       wp_apply (wp_load with "[$]"); done.
-    1-2,4-5: rewrite ?slice.val_unseal /= ?right_id; wp_pures; rewrite Z.mul_0_r;
+    1-2,4-5: rewrite ?slice.val_unseal ?interface.val_unseal /= ?right_id; wp_pures; rewrite Z.mul_0_r;
       iDestruct "Hl" as "(H1 & H2 & H3)";
       wp_apply (wp_load with "[$H1]"); iIntros;
       wp_apply (wp_load with "[$H2]"); iIntros;
@@ -262,10 +290,10 @@ Section goose_lang.
       iIntros "H"; iApply "HΦ"; inversion Hty; subst;
       simpl; rewrite ?loc_add_0 ?right_id; wp_pures; iFrame.
     1-2,4-5: (* non-nil slice, nil slice, non-nil interface, nil interface *)
-      rewrite ?slice.val_unseal /=; wp_pures; iDestruct "Hl" as "(H1 & H2 & H3)";
+      rewrite ?slice.val_unseal ?interface.val_unseal /=; wp_pures; iDestruct "Hl" as "(H1 & H2 & H3)";
       inversion Hty; subst;
-        rewrite ?slice.val_unseal;
-        wp_pures; rewrite /slice.val_def ?loc_add_0 ?right_id /=;
+        rewrite ?slice.val_unseal ?interface.val_unseal;
+        wp_pures; rewrite /slice.val_def /interface.val_def ?loc_add_0 ?right_id /=;
         (* FIXME: unnamed H1-H3 don't work with ["[$]"] *)
         wp_apply (wp_store with "[$H1]"); iIntros;
         wp_apply (wp_store with "[$H2]"); iIntros;
@@ -400,6 +428,7 @@ Create HintDb has_go_type.
 Hint Constructors has_go_type : has_go_type.
 Hint Resolve zero_val_has_go_type : has_go_type.
 
+(* FIXME: this doesn't work for asyncfile's struct allocation. *)
 Ltac solve_has_go_type :=
   eauto with has_go_type;
   try solve [

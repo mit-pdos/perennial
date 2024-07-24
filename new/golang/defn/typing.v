@@ -1,4 +1,5 @@
 From Perennial.goose_lang Require Export lang notation.
+From New.golang.defn Require Import list.
 
 Section val_types.
   Inductive go_type :=
@@ -37,20 +38,20 @@ Section val_types.
   Definition intT := int64T.
 
   Context `{ffi_syntax}.
-  Definition nil : val := #null.
-  Definition slice_nil : val := (nil, #0, #0).
-  Definition interface_nil : val := (nil, nil, nil).
+  Definition go_nil : val := #null.
+  Definition slice_nil : val := (go_nil, #0, #0).
+  Definition interface_nil : val := (go_nil, go_nil, go_nil).
   Fixpoint zero_val_def (t : go_type) : val :=
     match t with
     | boolT => #false
 
     (* Numeric, except float and impl-specific sized objects *)
     | uint8T => #(W8 0)
-    | uint16T => nil
+    | uint16T => go_nil
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
     | int8T => #(W8 0)
-    | int16T => nil
+    | int16T => go_nil
     | int32T => #(W32 0)
     | int64T => #(W64 0)
 
@@ -58,11 +59,11 @@ Section val_types.
     (* | arrayT (len : nat) (elem : go_type) *)
     | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
-    | ptrT => nil
-    | funcT => nil
+    | ptrT => go_nil
+    | funcT => go_nil
     | interfaceT => interface_nil
-    | mapT _ _ => nil
-    | chanT _ => nil
+    | mapT _ _ => go_nil
+    | chanT _ => go_nil
     end.
   Program Definition zero_val := unseal (_:seal (@zero_val_def)). Obligation 1. by eexists. Qed.
   Definition zero_val_unseal : zero_val = _ := seal_eq _.
@@ -96,4 +97,13 @@ Fixpoint assocl_lookup {A} (f : string) (field_vals: list (string * A)) : option
 
 Module struct.
   Definition descriptor := list (string * go_type).
+
+Section goose_lang.
+  Context `{ffi_syntax}.
+
+  Definition fields_val_def (m : list (string* val)) : val :=
+    list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
+  Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
+  Definition fields_val_unseal : fields_val = _ := seal_eq _.
+End goose_lang.
 End struct.

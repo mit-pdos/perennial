@@ -58,11 +58,6 @@ Definition make_def (t : go_type) : val :=
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 
-Definition fields_val_def (m : list (string* val)) : val :=
-  list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
-Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
-Definition fields_val_unseal : fields_val = _ := seal_eq _.
-
 End goose_lang.
 End struct.
 

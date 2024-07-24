@@ -23,8 +23,18 @@ Definition Mutex__Unlock : val :=
   λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref Mutex "state" "m") #true #false ;;; return: #())
 .
 
-Definition NewCond : val := λ: "m", ref "m".
-Definition Cond__Wait : val := λ: "c" <>, exception_do (do: Mutex__Unlock !"c" #();;; do: Mutex__Lock !"c" #()).
+Definition Mutex__mset : list (string * val) := [].
+
+Definition Mutex__mset_ptr : list (string * val) := [
+    ("Lock", Mutex__Lock) ;
+    ("Unlock", Mutex__Unlock)
+  ].
+
+Definition NewCond : val := λ: "m", ref_ty interfaceT "m".
+Definition Cond__Wait : val := λ: "c" <>, exception_do (
+                                 do: interface.get "Unlock" (![interfaceT] "c") #() ;;;
+                                 do: interface.get "Lock" (![interfaceT] "c") #()
+                               ).
 Definition Cond__Broadcast : val := λ: "c" <>, #().
 Definition Cond__Signal: val := λ: "c" <>, #().
 Axiom WaitGroup__Add : val.

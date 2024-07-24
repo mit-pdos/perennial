@@ -14,58 +14,52 @@ Definition ReconnectingClient : go_type := structT [
   "addr" :: uint64T
 ].
 
-Definition MakeReconnectingClient : val :=
-  rec: "MakeReconnectingClient" "addr" :=
-    exception_do (let: "addr" := ref_ty uint64T "addr" in
-    let: "r" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty ReconnectingClient (zero_val ReconnectingClient) in
-    do:  "r" <-[ptrT] "$a0";;;
-    let: "$a0" := ref_ty sync.Mutex (zero_val sync.Mutex) in
-    do:  (struct.field_ref ReconnectingClient "mu" (![ptrT] "r")) <-[ptrT] "$a0";;;
-    let: "$a0" := #false in
-    do:  (struct.field_ref ReconnectingClient "valid" (![ptrT] "r")) <-[boolT] "$a0";;;
-    let: "$a0" := ![uint64T] "addr" in
-    do:  (struct.field_ref ReconnectingClient "addr" (![ptrT] "r")) <-[uint64T] "$a0";;;
-    return: (![ptrT] "r");;;
-    do:  #()).
+Definition ReconnectingClient__mset : list (string * val) := [
+].
 
+(* go: client.go:30:31 *)
 Definition ReconnectingClient__getClient : val :=
   rec: "ReconnectingClient__getClient" "cl" <> :=
     exception_do (let: "cl" := ref_ty ptrT "cl" in
-    do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
+    do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     (if: ![boolT] (struct.field_ref ReconnectingClient "valid" (![ptrT] "cl"))
     then
       let: "ret" := ref_ty ptrT (zero_val ptrT) in
-      let: "$a0" := ![ptrT] (struct.field_ref ReconnectingClient "urpcCl" (![ptrT] "cl")) in
-      do:  "ret" <-[ptrT] "$a0";;;
-      do:  (sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
+      let: "$r0" := ![ptrT] (struct.field_ref ReconnectingClient "urpcCl" (![ptrT] "cl")) in
+      do:  ("ret" <-[ptrT] "$r0");;;
+      do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
       return: (#0, ![ptrT] "ret");;;
       do:  #()
     else do:  #());;;
-    do:  (sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     let: "newRpcCl" := ref_ty ptrT (zero_val ptrT) in
     let: "err" := ref_ty uint64T (zero_val uint64T) in
-    let: ("$a0", "$a1") := urpc.TryMakeClient (![uint64T] (struct.field_ref ReconnectingClient "addr" (![ptrT] "cl"))) in
-    do:  "newRpcCl" <-[ptrT] "$a1";;;
-    do:  "err" <-[uint64T] "$a0";;;
+    let: ("$ret0", "$ret1") := let: "$a0" := ![uint64T] (struct.field_ref ReconnectingClient "addr" (![ptrT] "cl")) in
+    urpc.TryMakeClient "$a0" in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("err" <-[uint64T] "$r0");;;
+    do:  ("newRpcCl" <-[ptrT] "$r1");;;
     (if: (![uint64T] "err") ≠ #0
     then
-      do:  machine.Sleep #10000000;;;
+      do:  (let: "$a0" := #10000000 in
+      machine.Sleep "$a0");;;
       do:  #()
     else do:  #());;;
-    do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
+    do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     (if: (![uint64T] "err") = #0
     then
-      let: "$a0" := ![ptrT] "newRpcCl" in
-      do:  (struct.field_ref ReconnectingClient "urpcCl" (![ptrT] "cl")) <-[ptrT] "$a0";;;
-      let: "$a0" := #true in
-      do:  (struct.field_ref ReconnectingClient "valid" (![ptrT] "cl")) <-[boolT] "$a0";;;
+      let: "$r0" := ![ptrT] "newRpcCl" in
+      do:  ((struct.field_ref ReconnectingClient "urpcCl" (![ptrT] "cl")) <-[ptrT] "$r0");;;
+      let: "$r0" := #true in
+      do:  ((struct.field_ref ReconnectingClient "valid" (![ptrT] "cl")) <-[boolT] "$r0");;;
       do:  #()
     else do:  #());;;
-    do:  (sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     return: (![uint64T] "err", ![ptrT] "newRpcCl");;;
     do:  #()).
 
+(* go: client.go:63:31 *)
 Definition ReconnectingClient__Call : val :=
   rec: "ReconnectingClient__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
     exception_do (let: "cl" := ref_ty ptrT "cl" in
@@ -75,24 +69,51 @@ Definition ReconnectingClient__Call : val :=
     let: "rpcid" := ref_ty uint64T "rpcid" in
     let: "urpcCl" := ref_ty ptrT (zero_val ptrT) in
     let: "err1" := ref_ty uint64T (zero_val uint64T) in
-    let: ("$a0", "$a1") := (ReconnectingClient__getClient (![ptrT] "cl")) #() in
-    do:  "urpcCl" <-[ptrT] "$a1";;;
-    do:  "err1" <-[uint64T] "$a0";;;
+    let: ("$ret0", "$ret1") := (ReconnectingClient__getClient (![ptrT] "cl")) #() in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("err1" <-[uint64T] "$r0");;;
+    do:  ("urpcCl" <-[ptrT] "$r1");;;
     (if: (![uint64T] "err1") ≠ #0
     then
       return: (![uint64T] "err1");;;
       do:  #()
     else do:  #());;;
     let: "err" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := (urpc.Client__Call (![ptrT] "urpcCl")) (![uint64T] "rpcid") (![sliceT byteT] "args") (![ptrT] "reply") (![uint64T] "timeout_ms") in
-    do:  "err" <-[uint64T] "$a0";;;
+    let: "$r0" := let: "$a0" := ![uint64T] "rpcid" in
+    let: "$a1" := ![sliceT byteT] "args" in
+    let: "$a2" := ![ptrT] "reply" in
+    let: "$a3" := ![uint64T] "timeout_ms" in
+    (urpc.Client__Call (![ptrT] "urpcCl")) "$a0" "$a1" "$a2" "$a3" in
+    do:  ("err" <-[uint64T] "$r0");;;
     (if: (![uint64T] "err") = urpc.ErrDisconnect
     then
-      do:  (sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
-      let: "$a0" := #false in
-      do:  (struct.field_ref ReconnectingClient "valid" (![ptrT] "cl")) <-[boolT] "$a0";;;
-      do:  (sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #();;;
+      do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
+      let: "$r0" := #false in
+      do:  ((struct.field_ref ReconnectingClient "valid" (![ptrT] "cl")) <-[boolT] "$r0");;;
+      do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
       do:  #()
     else do:  #());;;
     return: (![uint64T] "err");;;
+    do:  #()).
+
+Definition ReconnectingClient__mset_ptr : list (string * val) := [
+  ("Call", ReconnectingClient__Call);
+  ("getClient", ReconnectingClient__getClient)
+].
+
+(* go: client.go:20:6 *)
+Definition MakeReconnectingClient : val :=
+  rec: "MakeReconnectingClient" "addr" :=
+    exception_do (let: "addr" := ref_ty uint64T "addr" in
+    let: "r" := ref_ty ptrT (zero_val ptrT) in
+    let: "$r0" := ref_ty ReconnectingClient (zero_val ReconnectingClient) in
+    do:  ("r" <-[ptrT] "$r0");;;
+    let: "$r0" := ref_ty sync.Mutex (zero_val sync.Mutex) in
+    do:  ((struct.field_ref ReconnectingClient "mu" (![ptrT] "r")) <-[ptrT] "$r0");;;
+    let: "$r0" := #false in
+    do:  ((struct.field_ref ReconnectingClient "valid" (![ptrT] "r")) <-[boolT] "$r0");;;
+    let: "$r0" := ![uint64T] "addr" in
+    do:  ((struct.field_ref ReconnectingClient "addr" (![ptrT] "r")) <-[uint64T] "$r0");;;
+    return: (![ptrT] "r");;;
     do:  #()).

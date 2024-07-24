@@ -1,4 +1,5 @@
 From New.golang.defn Require Export typing.
+From New.golang.theory Require Export list.
 Require Import Coq.Logic.FunctionalExtensionality.
 
 Set Default Proof Using "Type".
@@ -36,6 +37,21 @@ Section goose_lang.
   Definition val_unseal : val = _ := seal_eq _.
 End goose_lang.
 End struct.
+
+Module interface.
+Section goose_lang.
+  Context `{ffi_syntax}.
+
+  (* XXX: the InjLV is subtle: it's there to block `flatten_struct` from
+     splitting this up into multiple heap cells. *)
+  Definition val_def (mset : list (string * val)) (v : val) : val :=
+    (#(str "NO TYPE IDS YET"), InjLV v, InjLV (struct.fields_val mset)).
+  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
+  Definition val_unseal : val = _ := seal_eq _.
+
+End goose_lang.
+End interface.
+
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
@@ -94,12 +110,12 @@ Section typing.
   | has_go_type_bool (b : bool) : has_go_type #b boolT
   | has_go_type_uint64 (x : w64) : has_go_type #x uint64T
   | has_go_type_uint32 (x : w32) : has_go_type #x uint32T
-  | has_go_type_uint16 : has_go_type nil uint16T
+  | has_go_type_uint16 : has_go_type go_nil uint16T
   | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
 
   | has_go_type_int64 (x : w64) : has_go_type #x int64T
   | has_go_type_int32 (x : w32) : has_go_type #x int32T
-  | has_go_type_int16 : has_go_type nil int16T
+  | has_go_type_int16 : has_go_type go_nil int16T
   | has_go_type_int8 (x : w8) : has_go_type #x int8T
 
   | has_go_type_string (s : string) : has_go_type #(str s) stringT
@@ -112,10 +128,11 @@ Section typing.
     : has_go_type (struct.val (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func f e v : has_go_type (RecV f e v) funcT
-  | has_go_type_func_nil : has_go_type nil funcT
+  | has_go_type_func_nil : has_go_type go_nil funcT
 
   (* FIXME: interface_val *)
-  | has_go_type_interface (s : slice.t) : has_go_type (slice.val s) interfaceT
+  | has_go_type_interface (mset : list (string * val)) (v : val) :
+    has_go_type (interface.val mset v) interfaceT
   | has_go_type_interface_nil : has_go_type interface_nil interfaceT
 
   | has_go_type_mapT kt vt (l : loc) : has_go_type #l (mapT kt vt)
@@ -150,16 +167,16 @@ Section typing.
     length (flatten_struct v) = (go_type_size t).
   Proof.
     rewrite go_type_size_unseal.
-    induction 1; simpl; rewrite ?slice.val_unseal; auto.
-    rewrite struct.val_unseal.
-    induction d.
-    { done. }
-    destruct a. cbn.
-    rewrite app_length.
-    rewrite IHd.
-    { f_equal. apply H. by left. }
-    { clear H IHd. intros. apply Hfields. by right. }
-    { intros. apply H. simpl. by right. }
+    induction 1; simpl; rewrite ?slice.val_unseal ?interface.val_unseal; auto.
+    - rewrite struct.val_unseal.
+      induction d.
+      { done. }
+      destruct a. cbn.
+      rewrite app_length.
+      rewrite IHd.
+      { f_equal. apply H. by left. }
+      { clear H IHd. intros. apply Hfields. by right. }
+      { intros. apply H. simpl. by right. }
   Qed.
 
   Definition zero_val' (t : go_type) : val :=
@@ -168,11 +185,11 @@ Section typing.
 
     (* Numeric, except float and impl-specific sized objects *)
     | uint8T => #(W8 0)
-    | uint16T => nil
+    | uint16T => go_nil
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
     | int8T => #(W8 0)
-    | int16T => nil
+    | int16T => go_nil
     | int32T => #(W32 0)
     | int64T => #(W64 0)
 
@@ -180,11 +197,11 @@ Section typing.
     (* | arrayT (len : nat) (elem : go_type) *)
     | sliceT _ => slice.nil
     | structT decls => struct.val t []
-    | ptrT => nil
-    | funcT => nil
+    | ptrT => go_nil
+    | funcT => go_nil
     | interfaceT => interface_nil
-    | mapT _ _ => nil
-    | chanT _ => nil
+    | mapT _ _ => go_nil
+    | chanT _ => go_nil
     end.
 
   Lemma zero_val'_eq_zero_val_1 t :
@@ -255,6 +272,7 @@ Section typing.
     - destruct (decide (v = slice.nil)); subst; [ by eauto | ].
       destruct (is_slice_val v) as [[s ->] | ]; [ by eauto | right ].
       inversion 1; subst; intuition eauto.
+    - admit.
     - admit.
   Abort.
 

@@ -107,6 +107,17 @@ Definition is_structT (t : go_type) : Prop :=
   | _ => False
   end.
 
+Global Instance wp_struct_fields_cons_nil (k : string) (l : list (string * val)) (v : val) :
+  PureWpVal True
+    (list.Cons (PairV #(str k) v) (struct.fields_val l))
+    (struct.fields_val ((pair k v) :: l))
+.
+Proof.
+  iIntros (???) "_ HΦ".
+  rewrite struct.fields_val_unseal /=.
+  wp_pures. by iApply "HΦ".
+Qed.
+
 Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
   PureWpVal True
     (list.Cons (PairV #(str k) v) (struct.fields_val l))

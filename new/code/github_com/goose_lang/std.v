@@ -7,14 +7,16 @@ Section code.
 Context `{ffi_syntax}.
 Local Coercion Var' s: expr := Var s.
 
-(* BytesEqual returns if the two byte slices are equal. *)
+(* BytesEqual returns if the two byte slices are equal.
+
+   go: goose_std.go:10:6 *)
 Definition BytesEqual : val :=
   rec: "BytesEqual" "x" "y" :=
     exception_do (let: "y" := ref_ty (sliceT byteT) "y" in
     let: "x" := ref_ty (sliceT byteT) "x" in
     let: "xlen" := ref_ty intT (zero_val intT) in
-    let: "$a0" := slice.len (![sliceT byteT] "x") in
-    do:  "xlen" <-[intT] "$a0";;;
+    let: "$r0" := slice.len (![sliceT byteT] "x") in
+    do:  ("xlen" <-[intT] "$r0");;;
     (if: (![intT] "xlen") ≠ (slice.len (![sliceT byteT] "y"))
     then
       return: (#false);;;
@@ -25,12 +27,12 @@ Definition BytesEqual : val :=
     (for: (λ: <>, (![uint64T] "i") < (![intT] "xlen")); (λ: <>, Skip) := λ: <>,
       (if: (![byteT] (slice.elem_ref byteT (![sliceT byteT] "x") (![uint64T] "i"))) ≠ (![byteT] (slice.elem_ref byteT (![sliceT byteT] "y") (![uint64T] "i")))
       then
-        let: "$a0" := #false in
-        do:  "retval" <-[boolT] "$a0";;;
+        let: "$r0" := #false in
+        do:  ("retval" <-[boolT] "$r0");;;
         break: #();;;
         do:  #()
       else do:  #());;;
-      do:  "i" <-[uint64T] ((![uint64T] "i") + #1);;;
+      do:  ("i" <-[uint64T] ((![uint64T] "i") + #1));;;
       continue: #();;;
       do:  #());;;
     return: (![boolT] "retval");;;
@@ -38,7 +40,9 @@ Definition BytesEqual : val :=
 
 (* See the [reference].
 
-   [reference]: https://pkg.go.dev/bytes#Clone *)
+   [reference]: https://pkg.go.dev/bytes#Clone
+
+   go: goose_std.go:31:6 *)
 Definition BytesClone : val :=
   rec: "BytesClone" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
@@ -47,7 +51,7 @@ Definition BytesClone : val :=
       return: (slice.nil);;;
       do:  #()
     else do:  #());;;
-    return: (slice.append byteT (slice.literal byteT []) (![sliceT byteT] "b"));;;
+    return: (slice.append byteT slice.nil (![sliceT byteT] "b"));;;
     do:  #()).
 
 (* SliceSplit splits xs at n into two slices.
@@ -56,7 +60,9 @@ Definition BytesClone : val :=
    no longer safe to append to the first slice.
 
    TODO: once goose supports it, make this function generic in the slice element
-   type *)
+   type
+
+   go: goose_std.go:45:6 *)
 Definition SliceSplit : val :=
   rec: "SliceSplit" "xs" "n" :=
     exception_do (let: "n" := ref_ty uint64T "n" in
@@ -66,7 +72,9 @@ Definition SliceSplit : val :=
      slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s"));;;
     do:  #()).
 
-(* Returns true if x + y does not overflow *)
+(* Returns true if x + y does not overflow
+
+   go: goose_std.go:53:6 *)
 Definition SumNoOverflow : val :=
   rec: "SumNoOverflow" "x" "y" :=
     exception_do (let: "y" := ref_ty uint64T "y" in
@@ -76,12 +84,17 @@ Definition SumNoOverflow : val :=
 
 (* SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
 
-   *Use with care* - if the assumption is violated this function will panic. *)
+   *Use with care* - if the assumption is violated this function will panic.
+
+   go: goose_std.go:60:6 *)
 Definition SumAssumeNoOverflow : val :=
   rec: "SumAssumeNoOverflow" "x" "y" :=
     exception_do (let: "y" := ref_ty uint64T "y" in
     let: "x" := ref_ty uint64T "x" in
-    do:  primitive.Assume (SumNoOverflow (![uint64T] "x") (![uint64T] "y"));;;
+    do:  (let: "$a0" := let: "$a0" := ![uint64T] "x" in
+    let: "$a1" := ![uint64T] "y" in
+    SumNoOverflow "$a0" "$a1" in
+    primitive.Assume "$a0");;;
     return: ((![uint64T] "x") + (![uint64T] "y"));;;
     do:  #()).
 
@@ -89,41 +102,45 @@ Definition SumAssumeNoOverflow : val :=
 
    Implementation note: does not use a done channel (which is the standard
    pattern in Go) because this is not supported by Goose. Instead uses mutexes
-   and condition variables since these are modeled in Goose *)
+   and condition variables since these are modeled in Goose
+
+   go: goose_std.go:70:6 *)
 Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
     exception_do (let: "op" := ref_ty funcT "op" in
     let: "num" := ref_ty uint64T "num" in
     let: "num_left" := ref_ty uint64T (![uint64T] "num") in
     let: "num_left_mu" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := ref_ty sync.Mutex (zero_val sync.Mutex) in
-    do:  "num_left_mu" <-[ptrT] "$a0";;;
+    let: "$r0" := ref_ty sync.Mutex (zero_val sync.Mutex) in
+    do:  ("num_left_mu" <-[ptrT] "$r0");;;
     let: "num_left_cond" := ref_ty ptrT (zero_val ptrT) in
-    let: "$a0" := sync.NewCond (![ptrT] "num_left_mu") in
-    do:  "num_left_cond" <-[ptrT] "$a0";;;
+    let: "$r0" := let: "$a0" := interface.make sync.Mutex__mset_ptr (![ptrT] "num_left_mu") in
+    sync.NewCond "$a0" in
+    do:  ("num_left_cond" <-[ptrT] "$r0");;;
     (let: "i" := ref_ty uint64T (zero_val uint64T) in
-    let: "$a0" := #0 in
-    do:  "i" <-[uint64T] "$a0";;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  "i" <-[uint64T] ((![uint64T] "i") + #1);;;
+    let: "$r0" := #0 in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1));;;
     #()) := λ: <>,
       let: "i" := ref_ty uint64T (zero_val uint64T) in
-      let: "$a0" := ![uint64T] "i" in
-      do:  "i" <-[uint64T] "$a0";;;
+      let: "$r0" := ![uint64T] "i" in
+      do:  ("i" <-[uint64T] "$r0");;;
       let: "$go" := (λ: <>,
-        do:  (![funcT] "op") (![uint64T] "i");;;
-        do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
-        do:  "num_left" <-[uint64T] ((![uint64T] "num_left") - #1);;;
-        do:  (sync.Cond__Signal (![ptrT] "num_left_cond")) #();;;
-        do:  (sync.Mutex__Unlock (![ptrT] "num_left_mu")) #();;;
+        do:  (let: "$a0" := ![uint64T] "i" in
+        (![funcT] "op") "$a0");;;
+        do:  ((sync.Mutex__Lock (![ptrT] "num_left_mu")) #());;;
+        do:  ("num_left" <-[uint64T] ((![uint64T] "num_left") - #1));;;
+        do:  ((sync.Cond__Signal (![ptrT] "num_left_cond")) #());;;
+        do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #());;;
         do:  #()
         ) in
-      do:  Fork ("$go" #());;;
+      do:  (Fork ("$go" #()));;;
       do:  #()));;;
-    do:  (sync.Mutex__Lock (![ptrT] "num_left_mu")) #();;;
+    do:  ((sync.Mutex__Lock (![ptrT] "num_left_mu")) #());;;
     (for: (λ: <>, (![uint64T] "num_left") > #0); (λ: <>, Skip) := λ: <>,
-      do:  (sync.Cond__Wait (![ptrT] "num_left_cond")) #();;;
+      do:  ((sync.Cond__Wait (![ptrT] "num_left_cond")) #());;;
       do:  #());;;
-    do:  (sync.Mutex__Unlock (![ptrT] "num_left_mu")) #();;;
+    do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #());;;
     do:  #()).
 
 (* Skip is a no-op that can be useful in proofs.
@@ -132,7 +149,9 @@ Definition Multipar : val :=
    across a step in the operational semantics. The GooseLang model may not have
    a convenient step, but it is always sound to insert more. Calling std.Skip()
    is a simple way to do so - the model always requires one step to reduce this
-   application to a value. *)
+   application to a value.
+
+   go: goose_std.go:101:6 *)
 Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
