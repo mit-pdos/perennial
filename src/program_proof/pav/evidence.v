@@ -7,7 +7,7 @@ From iris.unstable.base_logic Require Import mono_list.
 From Perennial.base_logic Require Import ghost_map.
 
 Section evidence.
-Context `{!heapGS Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
+Context `{!heapGS Σ, !pavG Σ}.
 
 Definition evidServLink_valid pk evid : iProp Σ :=
   ∃ link0 link1,

@@ -6,6 +6,7 @@ From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.
 From Perennial.base_logic Require Import ghost_map.
+From Perennial.algebra Require Import ghost_map_pers.
 
 Module epochInfo.
 Record t :=
@@ -18,7 +19,7 @@ Record t :=
   }.
 
 Section defs.
-Context `{!heapGS Σ}.
+Context `{!heapGS Σ, !pavG Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ ptr_tr sl_prevLink sl_dig sl_link sl_linkSig d0 d1 d2 d3,
   "Htr" ∷ own_Tree ptr_tr obj.(tree) ∗
@@ -33,7 +34,8 @@ Definition own ptr obj : iProp Σ :=
   "Hptr_link" ∷ ptr ↦[epochInfo :: "link"] (slice_val sl_link) ∗
   "Hptr_linkSig" ∷ ptr ↦[epochInfo :: "linkSig"] (slice_val sl_linkSig).
 
-Definition valid pk epoch obj : iProp Σ :=
+Definition valid pk epoch γtree obj : iProp Σ :=
+  "#Hghost_view" ∷ ghost_map_auth_pers γtree obj.(tree) ∗
   "#Htree_dig" ∷ is_tree_dig obj.(tree) obj.(dig) ∗
   "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch obj.(prevLink) obj.(dig))) obj.(link) ∗
   "#Hvalid_sig" ∷ is_sig pk (servSepLink.encodesF (servSepLink.mk obj.(link))) obj.(linkSig).
@@ -47,7 +49,7 @@ Record t :=
   }.
 
 Section defs.
-Context `{!heapGS Σ}.
+Context `{!heapGS Σ, !pavG Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ sl_epochs ptr_epochs,
   "Hsl_epochs" ∷ own_slice_small sl_epochs ptrT (DfracOwn 1) ptr_epochs ∗
@@ -55,9 +57,9 @@ Definition own ptr obj : iProp Σ :=
   "Hsep_epochs" ∷ ([∗ list] ptr_epoch; epoch ∈ ptr_epochs; obj.(epochs),
     epochInfo.own ptr_epoch epoch).
 
-Definition valid pk obj : iProp Σ :=
-  "#Hsep_valid" ∷ ([∗ list] k ↦ info ∈ obj.(epochs),
-    epochInfo.valid pk k info) ∗
+Definition valid pk γtrees obj : iProp Σ :=
+  "#Hsep_valid" ∷ ([∗ list] k ↦ γtree; info ∈ γtrees; obj.(epochs),
+    epochInfo.valid pk k γtree info) ∗
   "#Hbinds" ∷ binds (epochInfo.dig <$> obj.(epochs)) (epochInfo.link <$> obj.(epochs)).
 End defs.
 End epochChain.
@@ -70,50 +72,36 @@ Record t :=
   }.
 
 Section local_defs.
-Context `{!heapGS Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
+Context `{!heapGS Σ, !pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
-  ∃ sk sl_ptr_trees ptr_trees trees ptr_updates (updates : gmap (list w8) (list w8)) map_sl_updates ptr_chain digs (links : list (list w8)) sl_linkSigs linkSigs γtrees,
-  "Hsk" ∷ ptr ↦[server :: "sk"] (slice_val sk) ∗
-  "Hown_sk" ∷ own_sk sk (serv_sigpred obj.(γmonoLinks) obj.(γmonoTrees)) obj.(hon) ∗
-  "HlinkSigs" ∷ ptr ↦[server :: "linkSigs"] (slice_val sl_linkSigs) ∗
-  "Hown_linkSigs" ∷ own_Slice2D sl_linkSigs (DfracOwn 1) linkSigs ∗
+  ∃ ptr_updates (updates : gmap (list w8) (list w8)) map_sl_updates ptr_chain γtrees γupdates sl_sk pk chain,
+  (* ghost state, the other half owned by global_inv. *)
+  "HmonoTrees" ∷ mono_list_auth_own obj.(γ) (1/2) (γtrees ++ [γupdates]) ∗
+  "Hupdates_view" ∷ ghost_map_auth γupdates (1/2) updates ∗
 
-  (* hash chain. *)
-  "Hown_chain" ∷ hashChain.own ptr_chain digs links ∗
-  "Hchain" ∷ ptr ↦[server :: "chain"] #ptr_chain ∗
-  "HmonoLinks" ∷ mono_list_auth_own obj.(γmonoLinks) (1/2) (drop 1 links) ∗
+  "Hsk" ∷ ptr ↦[server :: "sk"] (slice_val sl_sk) ∗
+  "Hown_sk" ∷ own_sk sl_sk pk (serv_sigpred obj.(γ)) ∗
 
-  (* latest updates. *)
-  (* Exists map of slices that own the respective vals. *)
+  "Hown_chain" ∷ epochChain.own ptr_chain chain ∗
+  "#Hvalid_chain" ∷ epochChain.valid pk γtrees chain ∗
+  "Hptr_chain" ∷ ptr ↦[server :: "chain"] #ptr_chain ∗
+
+  (* exists map of slices that own the respective vals. *)
   "Hmap_sl_updates" ∷ ([∗ map] sl_bytes; bytes ∈ map_sl_updates; (kmap bytes_to_string updates),
     own_slice_small sl_bytes byteT (DfracOwn 1) bytes) ∗
   "Hown_updates" ∷ own_map ptr_updates (DfracOwn 1) map_sl_updates ∗
-  "Hupdates" ∷ ptr ↦[server :: "updates"] #ptr_updates ∗
-
-  (* merkle trees. *)
-  "Htrees" ∷ ptr ↦[server :: "trees"] (slice_val sl_ptr_trees) ∗
-  "Hsl_ptr_trees" ∷ own_slice_small sl_ptr_trees ptrT (DfracOwn 1) ptr_trees ∗
-  "Hown_trees" ∷ ([∗ list] ptr_tr; tr ∈ ptr_trees; trees,
-    own_Tree ptr_tr tr) ∗
-  "HmonoTrees" ∷ mono_list_auth_own obj.(γmonoTrees) (1/2) γtrees ∗
-  (* Need view for latest tr to give put promises.
-     For other trees, views let us match up state with global inv. *)
-  "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
-    ghost_map_auth γtr (1/2) tr) ∗
-  (* We could derive this from global_inv, but putting here reduces complexity. *)
-  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, is_tree_dig tr dig).
+  "Hupdates" ∷ ptr ↦[server :: "updates"] #ptr_updates.
 
 Definition valid ptr obj : iProp Σ :=
   "#Hmu" ∷ ptr ↦[server :: "mu"]□ #obj.(mu) ∗
   "#HmuR" ∷ is_lock nroot #obj.(mu) (own ptr obj) ∗
-  "#Hinv" ∷ inv nroot (global_inv obj.(γmonoLinks) obj.(γmonoTrees)).
-
+  "#Hinv" ∷ inv nroot (global_inv obj.(γ)).
 End local_defs.
 End server.
 
 Section proofs.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
+Context `{!heapGS Σ, !pavG Σ}.
 
 Lemma sep_auth_agree γtrees trees0 trees1 :
   ([∗ list] γtr;tr ∈ γtrees;trees0, ghost_map_auth γtr (1/2) tr) -∗
