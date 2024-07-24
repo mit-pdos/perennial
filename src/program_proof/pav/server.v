@@ -1,26 +1,79 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi merkle evidence.
+From Perennial.program_proof.pav Require Import common cryptoffi merkle evidence invs rpc.
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.
 From Perennial.base_logic Require Import ghost_map.
 
+Module epochInfo.
+Record t :=
+  mk {
+    tree: gmap (list w8) (list w8);
+    prevLink: list w8;
+    dig: list w8;
+    link: list w8;
+    linkSig: list w8;
+  }.
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own ptr obj : iProp Σ :=
+  ∃ ptr_tr sl_prevLink sl_dig sl_link sl_linkSig d0 d1 d2 d3,
+  "Htr" ∷ own_Tree ptr_tr obj.(tree) ∗
+  "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
+  "Hsl_dig" ∷ own_slice_small sl_dig byteT d1 obj.(dig) ∗
+  "Hsl_link" ∷ own_slice_small sl_link byteT d2 obj.(link) ∗
+  "Hsl_linkSig" ∷ own_slice_small sl_linkSig byteT d3 obj.(linkSig) ∗
+
+  "Hptr_tr" ∷ ptr ↦[epochInfo :: "tree"] #ptr_tr ∗
+  "Hptr_prevLink" ∷ ptr ↦[epochInfo :: "prevLink"] (slice_val sl_prevLink) ∗
+  "Hptr_dig" ∷ ptr ↦[epochInfo :: "dig"] (slice_val sl_dig) ∗
+  "Hptr_link" ∷ ptr ↦[epochInfo :: "link"] (slice_val sl_link) ∗
+  "Hptr_linkSig" ∷ ptr ↦[epochInfo :: "linkSig"] (slice_val sl_linkSig).
+
+Definition valid pk epoch obj : iProp Σ :=
+  "#Htree_dig" ∷ is_tree_dig obj.(tree) obj.(dig) ∗
+  "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch obj.(prevLink) obj.(dig))) obj.(link) ∗
+  "#Hvalid_sig" ∷ is_sig pk (servSepLink.encodesF (servSepLink.mk obj.(link))) obj.(linkSig).
+End defs.
+End epochInfo.
+
+Module epochChain.
+Record t :=
+  mk {
+    epochs: list epochInfo.t;
+  }.
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own ptr obj : iProp Σ :=
+  ∃ sl_epochs ptr_epochs,
+  "Hsl_epochs" ∷ own_slice_small sl_epochs ptrT (DfracOwn 1) ptr_epochs ∗
+  "Hptr_epochs" ∷ ptr ↦[epochChain :: "epochs"] (slice_val sl_epochs) ∗
+  "Hsep_epochs" ∷ ([∗ list] ptr_epoch; epoch ∈ ptr_epochs; obj.(epochs),
+    epochInfo.own ptr_epoch epoch).
+
+Definition valid pk obj : iProp Σ :=
+  "#Hsep_valid" ∷ ([∗ list] k ↦ info ∈ obj.(epochs),
+    epochInfo.valid pk k info) ∗
+  "#Hbinds" ∷ binds (epochInfo.dig <$> obj.(epochs)) (epochInfo.link <$> obj.(epochs)).
+End defs.
+End epochChain.
+
 Module server.
 Record t :=
   mk {
     mu: loc;
-    hon: bool;
-    γmonoLinks: gname;
-    γmonoTrees: gname;
+    γ: gname;
   }.
 
 Section local_defs.
-Context `{!heapGS Σ, !mono_listG (list w8) Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
+Context `{!heapGS Σ, !mono_listG gname Σ, !ghost_mapG Σ (list w8) (list w8)}.
 
 Definition own ptr obj : iProp Σ :=
-∃ sk sl_ptr_trees ptr_trees trees ptr_updates (updates : gmap (list w8) (list w8)) map_sl_updates ptr_chain digs (links : list (list w8)) sl_linkSigs linkSigs γtrees,
+  ∃ sk sl_ptr_trees ptr_trees trees ptr_updates (updates : gmap (list w8) (list w8)) map_sl_updates ptr_chain digs (links : list (list w8)) sl_linkSigs linkSigs γtrees,
   "Hsk" ∷ ptr ↦[server :: "sk"] (slice_val sk) ∗
   "Hown_sk" ∷ own_sk sk (serv_sigpred obj.(γmonoLinks) obj.(γmonoTrees)) obj.(hon) ∗
   "HlinkSigs" ∷ ptr ↦[server :: "linkSigs"] (slice_val sl_linkSigs) ∗
