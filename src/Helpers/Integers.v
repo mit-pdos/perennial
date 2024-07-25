@@ -549,6 +549,10 @@ Proof.
   unfold W64. apply word.of_Z_unsigned.
 Qed.
 
+Lemma w64_to_nat_id (x : w64) :
+  W64 (Z.of_nat (uint.nat x)) = x.
+Proof. word. Qed.
+
 Lemma seq_U64_NoDup (m len : Z) :
   (0 ≤ m)%Z →
   (m+len < 2^64)%Z →
