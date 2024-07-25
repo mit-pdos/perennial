@@ -175,9 +175,9 @@ class CoqcFilter:
             self.db.add_qed(self.vfile, self.curr_def, time)
             return
 
-    def line(self, l):
+    def line(self, ln):
         """Process a line of output from coqc."""
-        line = l.decode("utf-8")
+        line = ln.decode("utf-8")
         timing_info = Classify.get_time(line)
         if timing_info:
             return self.update_timing(timing_info)

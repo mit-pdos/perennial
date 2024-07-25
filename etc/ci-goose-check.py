@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 import subprocess as sp
 import shutil
-import sys
 
 
 @dataclass

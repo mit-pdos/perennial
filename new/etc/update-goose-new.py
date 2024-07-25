@@ -78,9 +78,8 @@ def main():
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
 
-    do_run = lambda cmd_args: run_command(
-        cmd_args, dry_run=args.dry_run, verbose=args.verbose
-    )
+    def do_run(cmd_args):
+        run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
 
     def compile_goose():
         old_dir = os.getcwd()
