@@ -129,9 +129,7 @@ def main():
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
     if distributed_dir is not None and not os.path.isdir(distributed_dir):
-        parser.error(
-            "lockservice (distributed examples) directory does not exist"
-        )
+        parser.error("lockservice (distributed examples) directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
     if mvcc_dir is not None and not os.path.isdir(mvcc_dir):
@@ -178,9 +176,7 @@ def main():
     if args.goose_examples:
         # generate semantics tests
         src_path = path.join(goose_dir, "internal/examples/semantics")
-        output = path.join(
-            perennial_dir, "src/goose_lang/interpreter/generated_test.v"
-        )
+        output = path.join(perennial_dir, "src/goose_lang/interpreter/generated_test.v")
         gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
         do_run(["go", "run", gen_bin, "-coq", "-out", output, src_path])
 

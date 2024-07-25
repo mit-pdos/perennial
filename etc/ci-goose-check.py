@@ -42,7 +42,7 @@ def checkout(proj: Proj):
             ["git", "remote", "get-url", "origin"],
             text=True,
             capture_output=True,
-            **shared_args
+            **shared_args,
         )
         assert p.stdout.strip() == proj.repo
         sp.run(["git", "reset", "--hard"], **shared_args)

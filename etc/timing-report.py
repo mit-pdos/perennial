@@ -4,11 +4,13 @@ from __future__ import print_function
 
 import sqlite3
 import pandas as pd
+
 try:
-    pd.set_option('future.no_silent_downcasting', True)
+    pd.set_option("future.no_silent_downcasting", True)
 except pd.errors.OptionError:
     # ignore if not supported
     pass
+
 
 def read_db(fname):
     conn = sqlite3.connect(fname)
@@ -24,13 +26,9 @@ def read_db(fname):
 
     qed_df = pd.DataFrame(qed_timings, columns=["fname", "ident", "time"])
     qed_sum = qed_df.groupby("fname").sum(numeric_only=True)
-    raw_file_df = pd.DataFrame(
-        file_timings, columns=["fname", "is_vos", "time"]
-    )
+    raw_file_df = pd.DataFrame(file_timings, columns=["fname", "is_vos", "time"])
     file_df = raw_file_df.join(qed_sum, rsuffix="_qed", on="fname")
-    file_df.rename(
-        mapper={"time_qed": "qed_time"}, axis="columns", inplace=True
-    )
+    file_df.rename(mapper={"time_qed": "qed_time"}, axis="columns", inplace=True)
     file_df.fillna(value={"qed_time": 0.0}, inplace=True)
     file_df["is_vos"] = file_df["is_vos"].replace({1: True, 0: False})
     return qed_df, file_df
@@ -97,16 +95,12 @@ if __name__ == "__main__":
     print(
         "{:12s} {:>6.1f}".format(
             "  stdpp",
-            filter_df(file_df, col="fname", pat="^external/stdpp")[
-                "time"
-            ].sum(),
+            filter_df(file_df, col="fname", pat="^external/stdpp")["time"].sum(),
         )
     )
     qed_s = file_df["qed_time"].sum()
     print(
-        "{:12s} {:>6.1f} ({:0.0f}%)".format(
-            "Qed total", qed_s, qed_s / total_s * 100
-        )
+        "{:12s} {:>6.1f} ({:0.0f}%)".format("Qed total", qed_s, qed_s / total_s * 100)
     )
 
     if args.max_files > 0 or args.max_qeds > 0:
