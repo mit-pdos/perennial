@@ -106,4 +106,4 @@ jobs:
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
       - name: check that Goosed files are clean
-        run: etc/ci-goose-check.sh
+        run: etc/ci-goose-check.py
