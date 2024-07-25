@@ -49,6 +49,7 @@ function checkout {
   local COMMIT_VAR=$1_COMMIT
   local DIR_VAR=$1_DIR
 
+  echo "Fetching ${!REPO_VAR}"
   if [ ! -d ${!DIR_VAR} ] ; then
      git clone "${!REPO_VAR}" "${!DIR_VAR}"
   else
@@ -114,7 +115,8 @@ new/etc/update-goose-new.py --goose $NEW_GOOSE_DIR --compile --gokv $NEW_GOKV_DI
 
 echo && echo "Goose check: check if anything changed"
 if [ -n "$(git diff --exit-code)" ]; then
-  echo 'ERROR: Goose files are not in sync with repositories pinned in `etc/ci-goose-check.sh`. `git diff` after re-goosing:'
+  echo 'ERROR: Goose files are not in sync with repositories pinned in `etc/ci-goose-check.sh`.'
+  echo '`git diff` after re-goosing:'
   git diff
   exit 1
 fi
