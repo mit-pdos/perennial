@@ -107,3 +107,18 @@ jobs:
           cache: false
       - name: check that Goosed files are clean
         run: etc/ci-goose-check.py
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Ruff
+        run: pip install ruff
+      - name: Format
+        run: ruff format --diff --exclude src/goose_lang/examples/nfs_spec,external ./
+      - name: Lint
+        run: ruff check --exclude src/goose_lang/examples/nfs_spec,external ./
