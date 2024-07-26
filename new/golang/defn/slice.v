@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import mem loop.
+From New.golang.defn Require Export mem loop.
 
 Module slice.
 (* FIXME: seal these functions *)

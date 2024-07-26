@@ -129,6 +129,10 @@ def main():
         "./reconnectclient",
         "./asyncfile",
         "./vrsm/paxos",
+        "./kv",
+        "./cachekv",
+        "./lockservice",
+        "./bank",
         # "./vrsm/replica",
     )
 
