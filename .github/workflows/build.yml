@@ -116,9 +116,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install Ruff
-        run: pip install ruff
+          cache: "pip"
       - name: Format
-        run: ruff format --diff --exclude src/goose_lang/examples/nfs_spec,external ./
+        run: ruff format --diff ./
       - name: Lint
-        run: ruff check --exclude src/goose_lang/examples/nfs_spec,external ./
+        run: ruff check ./
