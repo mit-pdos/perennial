@@ -58,6 +58,61 @@ Definition SumAssumeNoOverflow: val :=
     control.impl.Assume (SumNoOverflow "x" "y");;
     "x" + "y".
 
+(* JoinHandle is a mechanism to wait for a goroutine to finish. Calling `Join()`
+   on the handle returned by `Spawn(f)` will wait for f to finish. *)
+Definition JoinHandle := struct.decl [
+  "mu" :: ptrT;
+  "done" :: boolT;
+  "cond" :: ptrT
+].
+
+Definition newJoinHandle: val :=
+  rec: "newJoinHandle" <> :=
+    let: "mu" := lock.new #() in
+    let: "cond" := lock.newCond "mu" in
+    struct.new JoinHandle [
+      "mu" ::= "mu";
+      "done" ::= #false;
+      "cond" ::= "cond"
+    ].
+
+Definition JoinHandle__finish: val :=
+  rec: "JoinHandle__finish" "h" :=
+    lock.acquire (struct.loadF JoinHandle "mu" "h");;
+    struct.storeF JoinHandle "done" "h" #true;;
+    lock.condSignal (struct.loadF JoinHandle "cond" "h");;
+    lock.release (struct.loadF JoinHandle "mu" "h");;
+    #().
+
+(* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
+   it to finish.
+
+   Due to Goose limitations we do not return anything from the function, but it
+   could return an `interface{}` value or be generic in the return value with
+   essentially the same implementation, replacing `done` with a pointer to the
+   result value. *)
+Definition Spawn: val :=
+  rec: "Spawn" "f" :=
+    let: "h" := newJoinHandle #() in
+    Fork ("f" #();;
+          JoinHandle__finish "h");;
+    "h".
+
+Definition JoinHandle__Join: val :=
+  rec: "JoinHandle__Join" "h" :=
+    lock.acquire (struct.loadF JoinHandle "mu" "h");;
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: struct.loadF JoinHandle "done" "h"
+      then
+        struct.storeF JoinHandle "done" "h" #false;;
+        Break
+      else
+        lock.condWait (struct.loadF JoinHandle "cond" "h");;
+        Continue));;
+    lock.release (struct.loadF JoinHandle "mu" "h");;
+    #().
+
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
 
    Implementation note: does not use a done channel (which is the standard

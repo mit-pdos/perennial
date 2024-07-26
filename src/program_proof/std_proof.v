@@ -219,6 +219,132 @@ Proof.
   iApply "HΦ"; done.
 Qed.
 
+Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
+  ∃ (mu_l cond_l: loc),
+  "#mu" ∷ l ↦[JoinHandle :: "mu"]□ #mu_l ∗
+  "#cond" ∷ l ↦[JoinHandle :: "cond"]□ #cond_l ∗
+  "#Hcond" ∷ is_cond cond_l (#mu_l) ∗
+  "#Hlock" ∷ is_lock (nroot .@ "JoinHandle") (#mu_l)
+     (∃ (done_b: bool),
+         "done_b" ∷ l ↦[JoinHandle :: "done"] #done_b ∗
+         "HP" ∷ if done_b then P else True)
+.
+
+Lemma wp_newJoinHandle (P: iProp Σ) :
+  {{{ True }}}
+    newJoinHandle #()
+  {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_rec.
+  rewrite -wp_fupd.
+  wp_apply (wp_new_free_lock). iIntros (mu_l) "Hlock".
+  wp_apply (wp_newCond' with "Hlock"). iIntros (cond_l) "[Hlock Hcond]".
+  wp_pures.
+  wp_apply wp_allocStruct; [ val_ty | ].
+  iIntros (l) "Hhandle".
+  iApply struct_fields_split in "Hhandle". iNamed "Hhandle".
+  iMod (struct_field_pointsto_persist with "mu") as "mu".
+  iMod (struct_field_pointsto_persist with "cond") as "cond".
+  iMod (alloc_lock (nroot .@ "JoinHandle") _ _
+          (∃ (done_b: bool),
+         "done_b" ∷ l ↦[JoinHandle :: "done"] #done_b ∗
+         "HP" ∷ if done_b then P else True)
+          with "Hlock [$done]"
+       ) as "Hlock".
+  iModIntro. iApply "HΦ".
+  iFrame.
+Qed.
+
+Lemma wp_JoinHandle__finish l (P: iProp Σ) :
+  {{{ is_JoinHandle l P ∗ P }}}
+    JoinHandle__finish #l
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[#Hhandle P]".
+  wp_rec. iNamed "Hhandle".
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[locked Hinv]". iNamed "Hinv".
+  wp_storeField. wp_loadField.
+  wp_apply (wp_condSignal with "[$Hcond]").
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlock $locked done_b P]").
+  { iModIntro. iFrame "done_b P". }
+  wp_pures.
+  iModIntro. iApply "HΦ".
+  done.
+Qed.
+
+Lemma wp_Spawn (P: iProp Σ) (f: val) :
+  {{{ (∀ Φ, ▷(P -∗ Φ #()) -∗ WP f #() {{ Φ }}) }}}
+  Spawn f
+  {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
+Proof.
+  iIntros (Φ) "Hwp HΦ".
+  wp_rec.
+  wp_apply (wp_newJoinHandle P). iIntros (l) "#Hhandle".
+  wp_apply (wp_fork with "[Hwp]").
+  - iModIntro. wp_apply "Hwp".
+    iIntros "HP".
+    wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
+    done.
+  - wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    iFrame "#".
+Qed.
+
+Lemma wp_JoinHandle__Join l P :
+  {{{ is_JoinHandle l P }}}
+    JoinHandle__Join #l
+  {{{ RET #(); P }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_rec. wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
+  wp_pures.
+  wp_apply (wp_forBreak (λ continue,
+                (* the lock invariant has to be part of the invariant so we can
+                call Cond__Wait *)
+                ∃ (done_b: bool),
+                "locked" ∷ locked #mu_l ∗
+                "done" ∷ l ↦[JoinHandle::"done"] #done_b ∗
+                "HP" ∷ (if done_b then P else True) ∗
+                (* if the loop terminates, we will have P
+                 (this is possible while preserving the lock invariant because
+                 the code sets [done_b = false]) *)
+                "Hbreak" ∷ (⌜continue = false⌝ -∗ P))%I
+           with "[] [$Hlocked $done_b $HP]").
+  - clear Φ.
+    iIntros "!>" (Φ) "IH HΦ". iNamed "IH".
+    wp_loadField.
+    wp_if_destruct; subst.
+    + wp_storeField.
+      iModIntro.
+      iApply "HΦ".
+      iFrame.
+      auto.
+    + wp_loadField.
+      wp_apply (wp_condWait with "[$Hcond $Hlock $locked done HP]").
+      { iFrame. }
+      iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
+      wp_pures.
+      iModIntro.
+      iApply "HΦ".
+      iFrame.
+  - iIntros (Hcontra).
+    exfalso; congruence.
+  - iIntros "IH". iNamed "IH".
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlock $locked $done $HP]").
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    iApply "Hbreak"; auto.
+Qed.
+
 (* We pass some "ghost data" from [elems] to each invocation; [length elems] determines
    how many threads there are. *)
 Lemma wp_Multipar `{!multiparG Σ} {X:Type} (P Q : nat → X → iProp Σ) (num:u64) (elems : list X) (op : val) :

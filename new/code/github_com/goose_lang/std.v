@@ -98,13 +98,97 @@ Definition SumAssumeNoOverflow : val :=
     return: ((![uint64T] "x") + (![uint64T] "y"));;;
     do:  #()).
 
+Definition JoinHandle : go_type := structT [
+  "mu" :: ptrT;
+  "done" :: boolT;
+  "cond" :: ptrT
+].
+
+Definition JoinHandle__mset : list (string * val) := [
+].
+
+(* go: goose_std.go:106:22 *)
+Definition JoinHandle__Join : val :=
+  rec: "JoinHandle__Join" "h" <> :=
+    exception_do (let: "h" := ref_ty ptrT "h" in
+    do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: ![boolT] (struct.field_ref JoinHandle "done" (![ptrT] "h"))
+      then
+        let: "$r0" := #false in
+        do:  ((struct.field_ref JoinHandle "done" (![ptrT] "h")) <-[boolT] "$r0");;;
+        break: #();;;
+        do:  #()
+      else do:  #());;;
+      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #());;;
+      do:  #());;;
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
+    do:  #()).
+
+(* go: goose_std.go:83:22 *)
+Definition JoinHandle__finish : val :=
+  rec: "JoinHandle__finish" "h" <> :=
+    exception_do (let: "h" := ref_ty ptrT "h" in
+    do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
+    let: "$r0" := #true in
+    do:  ((struct.field_ref JoinHandle "done" (![ptrT] "h")) <-[boolT] "$r0");;;
+    do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #());;;
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
+    do:  #()).
+
+Definition JoinHandle__mset_ptr : list (string * val) := [
+  ("Join", JoinHandle__Join);
+  ("finish", JoinHandle__finish)
+].
+
+(* go: goose_std.go:73:6 *)
+Definition newJoinHandle : val :=
+  rec: "newJoinHandle" <> :=
+    exception_do (let: "mu" := ref_ty ptrT (zero_val ptrT) in
+    let: "$r0" := ref_ty sync.Mutex (zero_val sync.Mutex) in
+    do:  ("mu" <-[ptrT] "$r0");;;
+    let: "cond" := ref_ty ptrT (zero_val ptrT) in
+    let: "$r0" := let: "$a0" := interface.make sync.Mutex__mset_ptr (![ptrT] "mu") in
+    sync.NewCond "$a0" in
+    do:  ("cond" <-[ptrT] "$r0");;;
+    return: (ref_ty JoinHandle (struct.make JoinHandle [{
+       "mu" ::= ![ptrT] "mu";
+       "done" ::= #false;
+       "cond" ::= ![ptrT] "cond"
+     }]));;;
+    do:  #()).
+
+(* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
+   it to finish.
+
+   Due to Goose limitations we do not return anything from the function, but it
+   could return an `interface{}` value or be generic in the return value with
+   essentially the same implementation, replacing `done` with a pointer to the
+   result value.
+
+   go: goose_std.go:97:6 *)
+Definition Spawn : val :=
+  rec: "Spawn" "f" :=
+    exception_do (let: "f" := ref_ty funcT "f" in
+    let: "h" := ref_ty ptrT (zero_val ptrT) in
+    let: "$r0" := newJoinHandle #() in
+    do:  ("h" <-[ptrT] "$r0");;;
+    let: "$go" := (λ: <>,
+      do:  ((![funcT] "f") #());;;
+      do:  ((JoinHandle__finish (![ptrT] "h")) #());;;
+      do:  #()
+      ) in
+    do:  (Fork ("$go" #()));;;
+    return: (![ptrT] "h");;;
+    do:  #()).
+
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
 
    Implementation note: does not use a done channel (which is the standard
    pattern in Go) because this is not supported by Goose. Instead uses mutexes
    and condition variables since these are modeled in Goose
 
-   go: goose_std.go:70:6 *)
+   go: goose_std.go:125:6 *)
 Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
     exception_do (let: "op" := ref_ty funcT "op" in
@@ -151,7 +235,7 @@ Definition Multipar : val :=
    is a simple way to do so - the model always requires one step to reduce this
    application to a value.
 
-   go: goose_std.go:101:6 *)
+   go: goose_std.go:156:6 *)
 Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
