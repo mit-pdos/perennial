@@ -156,6 +156,7 @@ Proof.
   }
 Qed.
 
+(*
 Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
   {{{
     "Hserv" ∷ server.valid ptr_serv obj_serv ∗
@@ -308,6 +309,42 @@ Proof.
   rewrite /servSepPut.encodes in Henc_putPre; subst.
   iFrame "#".
 Qed.
+*)
+
+Lemma wp_applyUpdates ptr_currTr currTr (updates : gmap _ (list w8)) ptr_updates sl_updates d0 :
+  {{{
+    "Hown_currTr" ∷ own_Tree ptr_currTr currTr ∗
+    "%Hlen_update_ids" ∷ ([∗ map] id ↦ _ ∈ updates, ⌜ length id = hash_len ⌝) ∗
+    "#Hsl_updates" ∷ ([∗ map] sl_v; v ∈ sl_updates; (kmap bytes_to_string updates),
+      own_slice_small sl_v byteT DfracDiscarded v) ∗
+    "Hown_updates" ∷ own_map ptr_updates d0 sl_updates
+  }}}
+  applyUpdates #ptr_currTr #ptr_updates
+  {{{
+    ptr_nextTr, RET #ptr_nextTr;
+    "Hown_currTr" ∷ own_Tree ptr_currTr currTr ∗
+    "Hown_updates" ∷ own_map ptr_updates d0 sl_updates ∗
+    "Hown_nextTr" ∷ own_Tree ptr_nextTr (updates ∪ currTr)
+  }}}.
+Proof.
+  rewrite /applyUpdates.
+  iIntros (Φ) "H HΦ"; iNamed "H".
+  wp_pures.
+  wp_apply (wp_Tree_DeepCopy with "Hown_currTr");
+    rewrite /named; iIntros (ptr_nextTr) "[Hown_currTr Hown_nextTr]".
+  About big_sepM2_union_inv_l.
+  set (loopInv := λ (_ sl_mdone : gmap string Slice.t),
+    (let mdone := (filter (λ '(k,_), is_Some (sl_mdone !! (bytes_to_string k))) updates) in
+    own_Tree ptr_nextTr (mdone ∪ currTr))%I).
+  wp_apply (wp_MapIter_3 _ _ _ _ _ loopInv with "[$Hown_updates] [Hown_nextTr]").
+  1: {
+    unfold loopInv.
+    admit.
+    (* TODO: not working for some reason:
+    rewrite lookup_empty.
+    *)
+  }
+Admitted.
 
 Lemma wp_server_updateEpoch ptr_serv obj_serv :
   {{{
@@ -317,6 +354,29 @@ Lemma wp_server_updateEpoch ptr_serv obj_serv :
   {{{
     RET #(); True
   }}}.
-Proof. Admitted.
+Proof.
+  rewrite /server__updateEpoch.
+  iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hvalid_serv".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$HmuR]"); iIntros "[Hlocked Hown_serv]"; iNamed "Hown_serv".
+
+  wp_loadField.
+  iNamed "Hown_chain".
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_loadField.
+  wp_loadField.
+  iDestruct (own_slice_small_sz with "Hsl_epochs") as %Hlen_sl_ptr_epochs.
+  iDestruct (big_sepL2_length with "Hsep_epochs") as %Hlen_ptr_epochs_chain.
+  pose proof (lookup_lt_is_Some ptr_epochs (uint.nat (word.sub sl_epochs.(Slice.sz) (W64 1)))) as [_ H];
+    unshelve (epose proof (H _) as [ptr_epoch Hidx_ptr_epoch]);
+    [word|]; clear H.
+  wp_apply (wp_SliceGet with "[$Hsl_epochs //]"); iIntros "Hsl_epochs".
+  iDestruct (big_sepL2_lookup_1_some with "Hsep_epochs") as %[epoch_chain Hidx_epoch_chain]; [done|].
+  iDestruct (big_sepL2_lookup_acc with "Hsep_epochs") as "[Hown_epoch Hsep_epochs]";
+    [done..|]; iNamed "Hown_epoch".
+  wp_loadField.
+  wp_loadField.
+Admitted.
 
 End proofs.

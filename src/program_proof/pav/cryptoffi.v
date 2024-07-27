@@ -1,6 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import cryptoffi.
 
+Notation hash_len := (32%nat) (only parsing).
+
 Section proof.
 Context `{!heapGS Σ}.
 
@@ -17,16 +19,16 @@ Proof. Admitted.
 Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
-Lemma hash_deterministic d h1 h2 :
+Lemma is_hash_deterministic d h1 h2 :
   is_hash d h1 -∗ is_hash d h2 -∗ ⌜h1 = h2⌝.
 Proof. Admitted.
 
-Lemma hash_inj d1 d2 h :
+Lemma is_hash_inj d1 d2 h :
   is_hash d1 h -∗ is_hash d2 h -∗ ⌜d1 = d2⌝.
 Proof. Admitted.
 
-Lemma hash_len d h :
-  is_hash d h -∗ ⌜length h = 32%nat⌝.
+Lemma is_hash_len d h :
+  is_hash d h -∗ ⌜length h = hash_len⌝.
 Proof. Admitted.
 
 Lemma wp_Hash sl_data data :
