@@ -272,7 +272,7 @@ Definition applyUpdates: val :=
     MapIter "updates" (λ: "id" "val",
       let: "idB" := StringToBytes "id" in
       let: ((<>, <>), "err") := merkle.Tree__Put "nextTr" "idB" "val" in
-      control.impl.Assume (~ "err"));;
+      control.impl.Assert (~ "err"));;
     "nextTr".
 
 Definition server__updateEpoch: val :=
