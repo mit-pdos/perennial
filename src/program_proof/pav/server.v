@@ -314,9 +314,9 @@ Qed.
 Lemma wp_applyUpdates ptr_currTr currTr (updates : gmap _ (list w8)) ptr_updates sl_updates d0 :
   {{{
     "Hown_currTr" ∷ own_Tree ptr_currTr currTr ∗
-    "%Hlen_update_ids" ∷ ([∗ map] id ↦ _ ∈ updates, ⌜ length id = hash_len ⌝) ∗
-    "#Hsl_updates" ∷ ([∗ map] sl_v; v ∈ sl_updates; (kmap bytes_to_string updates),
-      own_slice_small sl_v byteT DfracDiscarded v) ∗
+    "#Hsl_updates" ∷ ([∗ map] id ↦ sl_v; v ∈ (kmap string_to_bytes sl_updates); updates,
+      "#Hsl_v" ∷ own_slice_small sl_v byteT DfracDiscarded v ∗
+      "%Hlen_id" ∷ ⌜ length id = hash_len ⌝) ∗
     "Hown_updates" ∷ own_map ptr_updates d0 sl_updates
   }}}
   applyUpdates #ptr_currTr #ptr_updates
@@ -331,18 +331,48 @@ Proof.
   iIntros (Φ) "H HΦ"; iNamed "H".
   wp_pures.
   wp_apply (wp_Tree_DeepCopy with "Hown_currTr");
-    rewrite /named; iIntros (ptr_nextTr) "[Hown_currTr Hown_nextTr]".
+    iEval (rewrite /named); iIntros (ptr_nextTr) "[Hown_currTr Hown_nextTr]".
   About big_sepM2_union_inv_l.
+  (*
+  set (loopInv := λ (_ sl_mdone : gmap string Slice.t),
+  (let mdone := (filter (λ '(k,_), bytes_to_string k ∈ dom sl_mdone) updates) in
+    own_Tree ptr_nextTr (mdone ∪ currTr))%I).
+    *)
   set (loopInv := λ (_ sl_mdone : gmap string Slice.t),
     (let mdone := (filter (λ '(k,_), is_Some (sl_mdone !! (bytes_to_string k))) updates) in
     own_Tree ptr_nextTr (mdone ∪ currTr))%I).
-  wp_apply (wp_MapIter_3 _ _ _ _ _ loopInv with "[$Hown_updates] [Hown_nextTr]").
-  1: {
-    unfold loopInv.
-    admit.
-    (* TODO: not working for some reason:
-    rewrite lookup_empty.
-    *)
+  wp_apply (wp_MapIter_3 _ _ _ _ _ loopInv with "[$Hown_updates] [Hown_nextTr]");
+    rewrite /loopInv.
+  {
+    epose proof (map_filter_empty_iff _ updates) as [_ ->]; last first.
+    { intros ? _ _. by rewrite lookup_empty. }
+    rewrite map_empty_union.
+    iFrame.
+  }
+  {
+    Search map_img in fin_maps.
+    iIntros (idS sl_v sl_mtodo sl_mdone Φ0) "!> [HnextTr %H] HΦ0";
+      destruct H as (Hunion & Hdom & Hlook0).
+    wp_apply wp_StringToBytes; iIntros (sl_idS) "H";
+      iDestruct (own_slice_to_small with "H") as "Hsl_idS".
+    apply (lookup_union_Some_l _ sl_mdone) in Hlook0; rewrite -Hunion in Hlook0.
+    rewrite -(lookup_kmap string_to_bytes) in Hlook0.
+    iDestruct (big_sepM2_lookup_l with "Hsl_updates") as (v) "[%Hlook1 H]";
+      [done|]; iNamed "H".
+    wp_apply (wp_Tree_Put with "[$HnextTr $Hsl_idS $Hsl_v]");
+      iIntros "*"; iNamed 1.
+    pose proof (Hvalid_id Hlen_id) as ->; simpl; iNamed "Herr".
+    wp_apply wp_Assert_true.
+    iApply "HΦ0".
+    Search "subset" "im" in fin_maps.
+    Search filter "impl" in fin_maps.
+    pose proof (map_filter_ext
+      (λ '(k, _), is_Some (<[idS:=sl_v]>sl_mdone !! bytes_to_string k))
+      (λ '(k, _), is_Some (sl_mdone !! bytes_to_string k) ∨ idS = bytes_to_string k)
+      updates) as [-> _].
+    2: admit.
+    Search filter "or" in fin_maps.
+    pose proof (map_filter_or _ _ updates) as ->.
   }
 Admitted.
 
