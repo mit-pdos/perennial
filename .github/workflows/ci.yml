@@ -33,7 +33,9 @@ jobs:
           install: |
             startGroup Install dependencies
               sudo apt-get update
-              sudo apt-get install -y python3 python3-pip sqlite3
+              sudo apt-get install -y python3 sqlite3
+              python3 -m venv ~/.py-venv
+              source ~/.py-venv/bin/activate
               pip3 install .
             endGroup
           # for permissions issue, see: https://github.com/coq-community/docker-coq-action#permissions.
@@ -73,7 +75,9 @@ jobs:
           install: |
             startGroup Install dependencies
               sudo apt-get update
-              sudo apt-get install -y python3 python3-pip sqlite3
+              sudo apt-get install -y python3 sqlite3
+              python3 -m venv ~/.py-venv
+              source ~/.py-venv/bin/activate
               pip3 install .
             endGroup
           before_script: |
