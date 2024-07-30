@@ -33,7 +33,7 @@ jobs:
           install: |
             startGroup Install dependencies
               sudo apt-get update
-              sudo apt-get install -y python3 sqlite3
+              sudo apt-get install -y python3 python3-venv sqlite3
               python3 -m venv ~/.py-venv
               source ~/.py-venv/bin/activate
               pip3 install .
@@ -75,7 +75,7 @@ jobs:
           install: |
             startGroup Install dependencies
               sudo apt-get update
-              sudo apt-get install -y python3 sqlite3
+              sudo apt-get install -y python3 python3-venv sqlite3
               python3 -m venv ~/.py-venv
               source ~/.py-venv/bin/activate
               pip3 install .
