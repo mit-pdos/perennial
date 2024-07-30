@@ -4,7 +4,7 @@
 
 Hopefully, we can prove the admitted iProps in cryptoffi.v from it. *)
 
-(* TODO: double check model with Derek and prior work. *)
+(* TODO: double check model with Derek. *)
 
 From Perennial.Helpers Require Import Integers.
 From stdpp Require Import prelude gmap.
@@ -17,12 +17,9 @@ Inductive ret_ty : Type :=
   | ret : forall {T : Type}, T → ret_ty.
 
 (* arb_T returns a random concrete T. *)
-Definition arb_bool : bool.
-Admitted.
-Definition arb_bytes : list w8.
-Admitted.
-Definition arb_bytes_len (len : nat) : list w8.
-Admitted.
+Definition arb_bool : bool. Admitted.
+Definition arb_bytes : list w8. Admitted.
+Definition arb_bytes_len (len : nat) : list w8. Admitted.
 
 End shared.
 
