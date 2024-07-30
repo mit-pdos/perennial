@@ -333,8 +333,13 @@ Proof.
   wp_apply (wp_Tree_DeepCopy with "Hown_currTr");
     iEval (rewrite /named); iIntros (ptr_nextTr) "[Hown_currTr Hown_nextTr]".
   set (loopInv := λ (_ sl_mdone : gmap string Slice.t),
-    (∃ (mdone : gmap (list w8) (list w8)),
+    (∃ mdone,
     let sl_mdone' := (kmap string_to_bytes sl_mdone) : gmap (list w8) Slice.t in
+    (* these first two properties 'characterize' the following:
+    [Definition map_filter_keyset m S :
+      filter (λ '(k,_), k ∈ S) m.]
+    using the characterization instead of the implementation makes it easier
+    to work with. no rewriting under filter preds. *)
     "%Hdom" ∷ ⌜ dom mdone = dom sl_mdone' ⌝ ∗
     "%Hsubset" ∷ ⌜ mdone ⊆ updates ⌝ ∗
     "Hown_nextTr" ∷ own_Tree ptr_nextTr (mdone ∪ currTr))%I).
