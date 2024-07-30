@@ -55,7 +55,7 @@ Proof.
   iDestruct (sep_node_hash_len with "Htree1") as "%Hlen_ch1".
   iDestruct (sep_node_hash_len with "Htree2") as "%Hlen_ch2".
 
-  iDestruct (hash_inj with "Hdig1 Hdig2") as "%Heq".
+  iDestruct (is_hash_inj with "Hdig1 Hdig2") as "%Heq".
   apply app_inv_tail in Heq.
   assert (ch1 = ch2) as Hch.
   { apply (concat_len_eq 32); eauto with lia. }
@@ -89,7 +89,7 @@ Proof.
     destruct Hcont2 as [_ Hleaf2].
     inversion Hleaf1; subst l; clear Hleaf1.
     inversion Hleaf2; subst l0; clear Hleaf2.
-    iDestruct (hash_inj with "[$Htree1] [$Htree2]") as "%Heq".
+    iDestruct (is_hash_inj with "[$Htree1] [$Htree2]") as "%Heq".
     by list_simplifier.
   }
   {
@@ -167,40 +167,46 @@ Lemma wp_Tree_Digest ptr_tr entries :
   }}}.
 Proof. Admitted.
 
-Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val :
+Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
   {{{
     "Htree" ∷ own_Tree ptr_tr entries ∗
-    "Hid" ∷ own_slice_small sl_id byteT (DfracOwn 1) id ∗
-    "Hval" ∷ own_slice_small sl_val byteT (DfracOwn 1) val
+    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+    "Hval" ∷ own_slice_small sl_val byteT d1 val
   }}}
   Tree__Put #ptr_tr (slice_val sl_id) (slice_val sl_val)
   {{{
     sl_dig dig sl_proof proof (err : bool),
     RET ((slice_val sl_dig), (slice_val sl_proof), #err);
-    if negb err then
-      "Htree" ∷ own_Tree ptr_tr (<[id:=val]>entries) ∗
-      "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
-      "#HisDig" ∷ is_tree_dig (<[id:=val]>entries) dig ∗
-      "Hproof" ∷ is_Slice3D sl_proof proof
-    else
-      "Htree" ∷ own_Tree ptr_tr entries
+    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+    "%Hvalid_id" ∷ ⌜ length id = hash_len → err = false ⌝ ∗
+    "Herr" ∷
+      if negb err then
+        "Htree" ∷ own_Tree ptr_tr (<[id:=val]>entries) ∗
+        "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
+        "#HisDig" ∷ is_tree_dig (<[id:=val]>entries) dig ∗
+        "Hproof" ∷ is_Slice3D sl_proof proof
+      else
+        "Htree" ∷ own_Tree ptr_tr entries
   }}}.
 Proof. Admitted.
 
-Lemma wp_Tree_Get ptr_tr entries sl_id id :
+Lemma wp_Tree_Get ptr_tr entries sl_id id d0 :
   {{{
     "Htree" ∷ own_Tree ptr_tr entries ∗
-    "Hid" ∷ own_slice_small sl_id byteT (DfracOwn 1) id
+    "Hid" ∷ own_slice_small sl_id byteT d0 id
   }}}
-  Tree__Put #ptr_tr (slice_val sl_id)
+  Tree__Get #ptr_tr (slice_val sl_id)
   {{{
     ptr_reply reply, RET #ptr_reply;
     "Hreply" ∷ GetReply.own ptr_reply reply ∗
-    if negb reply.(GetReply.Error) then
-      "Htree" ∷ own_Tree ptr_tr (<[id:=reply.(GetReply.Val)]>entries) ∗
-      "#HisDig" ∷ is_tree_dig (<[id:=reply.(GetReply.Val)]>entries) reply.(GetReply.Digest)
-    else
-      "Htree" ∷ own_Tree ptr_tr entries
+    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+    "%Hvalid_id" ∷ ⌜ length id = hash_len → reply.(GetReply.Error) = false ⌝ ∗
+    "Herr" ∷
+      if negb reply.(GetReply.Error) then
+        "Htree" ∷ own_Tree ptr_tr (<[id:=reply.(GetReply.Val)]>entries) ∗
+        "#HisDig" ∷ is_tree_dig (<[id:=reply.(GetReply.Val)]>entries) reply.(GetReply.Digest)
+      else
+        "Htree" ∷ own_Tree ptr_tr entries
   }}}.
 Proof. Admitted.
 
