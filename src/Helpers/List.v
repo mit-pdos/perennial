@@ -5,9 +5,39 @@ Set Default Proof Using "Type".
 Set Default Goal Selector "!".
 
 Section list.
-  Context (A:Type).
+  Context {A : Type}.
   Notation list := (list A).
-  Implicit Types (l:list).
+  Implicit Types l : list.
+
+  Lemma list_singleton_exists l :
+    length l = 1 →
+    ∃ x, l = [x].
+  Proof.
+    intros Hlen.
+    destruct l as [|x0 l0].
+    - list_simplifier.
+    - destruct l0.
+      + eauto.
+      + list_simplifier.
+  Qed.
+
+  Lemma list_snoc_exists l :
+    length l > 0 →
+    ∃ l' x, l = l' ++ [x].
+  Proof.
+    intros Hlen.
+    assert (∃ x0, drop (pred (length l)) l = [x0]) as [x0 Hlast].
+    {
+      pose proof (drop_length l (pred (length l))) as Hlen_drop.
+      replace (length _ - pred (length _)) with (1) in Hlen_drop by lia.
+      apply list_singleton_exists in Hlen_drop as [x0' ->].
+      eauto.
+    }
+    exists (take (pred (length l)) l), x0.
+    rewrite -Hlast.
+    rewrite take_drop.
+    eauto.
+  Qed.
 
   Lemma map_neq_nil {B: Type} (f: A → B) (l: list): l ≠ [] → map f l ≠ [].
   Proof. induction l => //=. Qed.
@@ -47,7 +77,6 @@ Section list.
       + rewrite IHlen.
         f_equal; lia.
   Qed.
-
 
   Theorem Forall_idx_drop (P: nat -> A -> Prop) l (start n: nat) :
     Forall_idx P start l ->
