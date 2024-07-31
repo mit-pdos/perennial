@@ -8,10 +8,20 @@ Set Default Goal Selector "!".
 
 Section map.
 
-  Context (K V:Type).
-  Context `{Countable K}.
-  Notation gmap := (gmap K V).
-  Implicit Types (m:gmap).
+Context (K V:Type).
+Context `{Countable K}.
+Notation gmap := (gmap K V).
+Implicit Types (m:gmap).
+
+Lemma map_difference_union' m1 m2 :
+  m1 ∖ m2 ∪ m2 = m2 ∪ m1.
+Proof.
+  apply map_eq. intros i.
+  apply option_eq. intros v.
+  unfold difference, map_difference, difference_with, map_difference_with.
+  rewrite !lookup_union_Some_raw !lookup_merge.
+  destruct (m1 !! i) as [x'|], (m2 !! i); compute; intuition congruence.
+Qed.
 
 Lemma size_list_to_map (l : list (K * V)) :
   NoDup l.*1 →
