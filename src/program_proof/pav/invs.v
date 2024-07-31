@@ -3,7 +3,6 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.pav Require Import common cryptoffi merkle rpc.
 From iris.unstable.base_logic Require Import mono_list.
 From Perennial.base_logic.lib Require Import ghost_map.
-From Perennial.algebra Require Import ghost_map_pers.
 
 Section shared.
 Class pavG Σ :=
@@ -47,12 +46,20 @@ trees →[is_tree_dig]
 digs →[binds]
 links. *)
 Definition global_inv γ : iProp Σ :=
+  ∃ γtrees trees,
+  (* γ commits to all the tree γs, including the next tr. *)
+  "HmonoTrees" ∷ mono_list_auth_own γ (1/2) γtrees ∗
+  "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; trees,
+    ghost_map_auth γtr (1/2) tr).
+(*
+Definition global_inv γ : iProp Σ :=
   ∃ γtrees trees updates digs links,
   "HmonoTrees" ∷ mono_list_auth_own γ (1/2) γtrees ∗
   "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; (trees ++ [updates]),
     ghost_map_auth γtr (1/2) tr) ∗
   "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, is_tree_dig tr dig) ∗
   "#Hdigs_links" ∷ binds digs links.
+*)
 End global_inv.
 
 Section serv_sigpreds.
