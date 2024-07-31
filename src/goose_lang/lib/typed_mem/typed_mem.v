@@ -82,6 +82,21 @@ Section goose_lang.
       auto.
   Qed.
 
+  Theorem struct_pointsto_not_null l q t v :
+    0 < ty_size t →
+    l ↦[t]{#q} v -∗ ⌜l ≠ null⌝.
+  Proof.
+    unseal.
+    iIntros (?) "[Hvals %Hval_ty]".
+    apply val_ty_len in Hval_ty.
+    destruct (flatten_struct v); simpl in *.
+    - lia.
+    - iDestruct "Hvals" as "[Hl _]".
+      iDestruct (heap_pointsto_non_null with "Hl") as %Hnull.
+      rewrite loc_add_0 in Hnull.
+      auto.
+  Qed.
+
   Local Lemma struct_pointsto_agree_flatten l t q1 v1 q2 v2 :
     length (flatten_struct v1) = length (flatten_struct v2) ->
     l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
