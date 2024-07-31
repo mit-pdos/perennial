@@ -47,6 +47,17 @@ Section lemmas.
     iMod (ghost_map_update_big with "Hauth Hm0") as "[$ Hm]"; auto.
   Qed.
 
+  Lemma ghost_map_apply_on {γ updates} base :
+    ghost_map_auth γ 1 updates ==∗
+    ghost_map_auth γ 1 (updates ∪ base) ∗
+    [∗ map] k↦v ∈ base ∖ updates, k ↪[γ] v.
+  Proof.
+    iIntros "Hauth".
+    iMod (ghost_map_insert_big (base ∖ updates) with "Hauth") as "[Hauth Hfrag]".
+    { by apply map_disjoint_difference_l. }
+    iEval (rewrite map_difference_union') in "Hauth".
+    by iFrame.
+  Qed.
 
   Global Instance ghost_map_auth_discrete γ q m : Discretizable (ghost_map_auth γ q m).
   Proof. rewrite ghost_map.ghost_map_auth_unseal. apply _. Qed.
