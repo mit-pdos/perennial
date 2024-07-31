@@ -217,7 +217,7 @@ Proof.
     iIntros "Hm".
     iApply "HΦ".
     replace (uint.nat (word.add i 1)) with (1 + uint.nat i)%nat by word.
-    destruct (list_lookup_lt _ log (uint.nat i)) as [u Hlookup']; first by word.
+    destruct (list_lookup_lt log (uint.nat i)) as [u Hlookup']; first by word.
     iDestruct (big_sepL2_lookup_acc with "Hblocks") as "[[%Huaddr Hb] Hblocks]"; eauto.
     iSpecialize ("Hblocks" with "[$Hb //]").
     iFrame "Hblocks".
@@ -1098,7 +1098,7 @@ Proof.
     assert ((uint.nat i) <
       length (take (uint.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log))
     )%nat as Hlt' by (rewrite take_length; word).
-    destruct (list_lookup_lt _ _ _ Hlt') as (upd & Hupd).
+    destruct (list_lookup_lt _ _ Hlt') as (upd & Hupd).
     clear Hlt'.
     iDestruct (big_sepL2_lookup_acc with "Hbks") as "[[%Huaddr Hb] Hbks]"; eauto.
     iAssert (is_update uv (DfracOwn q) upd) with "[Hb]" as "Hbk"; first by (iFrame; eauto).

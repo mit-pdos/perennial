@@ -956,7 +956,7 @@ Proof.
     (* Is direct block *)
     {
       wp_loadField.
-      destruct (list_lookup_lt _ ds.(impl_s.dirAddrs) (uint.nat off)) as [a Hlookup].
+      destruct (list_lookup_lt ds.(impl_s.dirAddrs) (uint.nat off)) as [a Hlookup].
       { rewrite /maxDirect. word. }
       iDestruct (own_slice_split with "Hdirect") as "[Hdirect_small Hdirect]".
       wp_apply (wp_SliceGet _ _ _ _ _ (take (length (σ.(inode.blocks))) ds.(impl_s.dirAddrs)) _ a with "[Hdirect_small]").
@@ -1010,7 +1010,7 @@ Proof.
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. lia.
       }
-      destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (uint.nat index)) as [a Hlookup].
+      destruct (list_lookup_lt (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (uint.nat index)) as [a Hlookup].
       {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         rewrite firstn_length Hindex.
@@ -1081,9 +1081,9 @@ Proof.
           word.
         }
       }
-      destruct (list_lookup_lt _ (ind_blocks_at_index σ (uint.nat index)) (uint.nat offset)) as [inodeblkaddr HlookupInodeBlk].
+      destruct (list_lookup_lt (ind_blocks_at_index σ (uint.nat index)) (uint.nat offset)) as [inodeblkaddr HlookupInodeBlk].
       { rewrite -Hlen. word. }
-      destruct (list_lookup_lt _ (indBlkAddrs) (uint.nat offset)) as [blkaddr HlookupBlkInd]; try word.
+      destruct (list_lookup_lt (indBlkAddrs) (uint.nat offset)) as [blkaddr HlookupBlkInd]; try word.
       assert ((σ.(inode.blocks)) !! (uint.nat off) = Some inodeblkaddr) as HlookupInodeBlk'.
       {
         rewrite /ind_blocks_at_index Hoffset in HlookupInodeBlk.

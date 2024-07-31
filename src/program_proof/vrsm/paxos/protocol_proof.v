@@ -712,7 +712,7 @@ Proof.
     (* get a vote out of Hvotes1 and Hvotes2, then contradiction *)
     assert (s < length config).
     { apply HW. done. }
-    pose proof (list_lookup_lt _ _ _ H) as [γsrv' Hlookup].
+    pose proof (list_lookup_lt _ _ H) as [γsrv' Hlookup].
     exists s, γsrv'.
     done.
   }

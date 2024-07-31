@@ -704,7 +704,7 @@ Proof.
     assert (uint.Z index < ds.(impl_s.numInd)) as HindexMax. {
       rewrite take_length Nat.min_l in HlenInd; word.
     }
-    destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (uint.nat index)) as [indA Hlookup].
+    destruct (list_lookup_lt (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (uint.nat index)) as [indA Hlookup].
     {
       unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. rewrite firstn_length.
       rewrite Nat.min_l; word.

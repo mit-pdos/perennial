@@ -381,7 +381,7 @@ Theorem wpc_WriteArray stk k E1 l bs q (s: Slice.t) b (off: u64) :
   {{{ ∃ bs', l d↦∗ bs' ∗ ⌜length bs' = length bs⌝ }}}.
 Proof.
   iIntros (Φ Φc) "(Hda&Hs&%&%) HΦ".
-  destruct (list_lookup_lt _ bs (Z.to_nat (uint.Z off - l))) as [b0 Hlookup].
+  destruct (list_lookup_lt bs (Z.to_nat (uint.Z off - l))) as [b0 Hlookup].
   { word. }
   iDestruct (disk_array_acc_disc _ _ (uint.Z off - l) with "[$Hda]") as "[Hoff Hda_rest]"; eauto.
   replace (l + (uint.Z off - l)) with (uint.Z off) by lia.

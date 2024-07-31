@@ -339,7 +339,7 @@ Proof.
   pose proof Hbndrys as (Hbndrys_len&_).
   pose proof (lookup_lt_Some _ _ _ Hrbnd) as HSilen.
   assert (i < length mwrbs)%nat as Hilen by lia.
-  destruct (list_lookup_lt _ _ _ Hilen) as [lbnd Hlbnd].
+  destruct (list_lookup_lt _ _ Hilen) as [lbnd Hlbnd].
   split.
   {
     intros bndry Hbndry.
@@ -410,7 +410,7 @@ Proof.
   {
     assert (i < length (take u_us upds))%nat as Hi;
       first by (rewrite take_length; lia).
-    destruct (list_lookup_lt _ _ _ Hi) as [upd Hupd].
+    destruct (list_lookup_lt _ _ Hi) as [upd Hupd].
     rewrite (lookup_app_l_Some _ _ _ upd); last by assumption.
     rewrite /memWrite_one_generic.
     apply lookup_take_Some in Hupd.

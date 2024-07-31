@@ -345,8 +345,8 @@ Proof.
 
   iDestruct (own_slice_small_sz with "Haccts_slice") as %Hslicelen.
 
-  destruct (list_lookup_lt _ accts_l (uint.nat src)) as (asrc & Hasrc); first by word.
-  destruct (list_lookup_lt _ accts_l (uint.nat dst)) as (adst & Hadst); first by word.
+  destruct (list_lookup_lt accts_l (uint.nat src)) as (asrc & Hasrc); first by word.
+  destruct (list_lookup_lt accts_l (uint.nat dst)) as (adst & Hadst); first by word.
 
   wp_loadField.
   wp_apply (wp_SliceGet with "[$Haccts_slice]"); first by eauto.

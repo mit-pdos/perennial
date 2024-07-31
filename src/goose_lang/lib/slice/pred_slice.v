@@ -11,7 +11,7 @@ Theorem big_sepL2_lookup_2 {PROP:bi} {A B:Type} {Φ: nat → A → B → PROP} {
 Proof.
   iIntros (Hlookup) "HL2".
   iDestruct (big_sepL2_length with "HL2") as %Hlen.
-  destruct (list_lookup_lt _ l1 i) as [v1 Hlookup1]; eauto.
+  destruct (list_lookup_lt l1 i) as [v1 Hlookup1]; eauto.
   rewrite Hlen.
   apply lookup_lt_is_Some_1; eauto.
 Qed.
@@ -23,7 +23,7 @@ Theorem big_sepL2_lookup_1 {PROP:bi} {A B:Type} {Φ: nat → A → B → PROP} {
 Proof.
   iIntros (Hlookup) "HL2".
   iDestruct (big_sepL2_length with "HL2") as %Hlen.
-  destruct (list_lookup_lt _ l2 i) as [v2 Hlookup2]; eauto.
+  destruct (list_lookup_lt l2 i) as [v2 Hlookup2]; eauto.
   rewrite -Hlen.
   apply lookup_lt_is_Some_1; eauto.
 Qed.

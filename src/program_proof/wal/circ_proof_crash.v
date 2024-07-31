@@ -298,7 +298,7 @@ Proof.
 
     wpc_pures.
     change (word.divu _ _) with (W64 LogSz).
-    destruct (list_lookup_lt _ blocks0 (Z.to_nat (uint.Z i `mod` LogSz))) as [b Hblookup].
+    destruct (list_lookup_lt blocks0 (Z.to_nat (uint.Z i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }
     iDestruct (disk_array_acc _ blocks0 (uint.Z i `mod` LogSz) with "[Hd2]") as "[Hdi Hd2']"; eauto.

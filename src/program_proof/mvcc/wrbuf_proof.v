@@ -118,7 +118,7 @@ Proof.
     iDestruct (slice.own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
     iDestruct (slice.own_slice_small_sz with "[$HentsS]") as "%HentsSz".
     wp_load.
-    destruct (list_lookup_lt _ (wrent_to_val <$> ents) (uint.nat pos)) as [ent Hlookup]; first word.
+    destruct (list_lookup_lt (wrent_to_val <$> ents) (uint.nat pos)) as [ent Hlookup]; first word.
     wp_apply (slice.wp_SliceGet with "[$HentsS]"); first done.
     iIntros "[HentsS %HentsT]".
     iDestruct ("HentsC" with "HentsS") as "HentsS".

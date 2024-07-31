@@ -133,7 +133,7 @@ Proof.
     }
     wp_load.
     wp_loadField.
-    destruct (list_lookup_lt _ (ver_to_val <$> vers) (uint.nat idx)) as [ver HSome].
+    destruct (list_lookup_lt (ver_to_val <$> vers) (uint.nat idx)) as [ver HSome].
     { rewrite fmap_length. word. }
     wp_apply (wp_SliceGet with "[HversX]").
     { iFrame. done. }

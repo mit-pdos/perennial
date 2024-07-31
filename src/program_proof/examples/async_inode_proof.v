@@ -466,7 +466,7 @@ Proof.
     wpc_if_destruct.
     * wpc_pures.
       wpc_frame_seq.
-      destruct (list_lookup_lt _ addrs (uint.nat off)) as [addr' Hlookup].
+      destruct (list_lookup_lt addrs (uint.nat off)) as [addr' Hlookup].
       { word. }
       wp_loadField.
       wp_apply (wp_SliceGet _ _ _ _ _ addrs with "[$Haddrs_small //]").
@@ -535,7 +535,7 @@ Proof.
       iEval (setoid_rewrite is_block_fractional) in "His_blocks".
       iEval (rewrite big_sepL2_sep) in "His_blocks".
       iDestruct "His_blocks" as "(His_blocks1&His_blocks2)".
-      destruct (list_lookup_lt _ bks (uint.nat (word.sub off addr_s.(Slice.sz)))) as [blk Hlookup].
+      destruct (list_lookup_lt bks (uint.nat (word.sub off addr_s.(Slice.sz)))) as [blk Hlookup].
       {
         assert (word.sub off (addr_s.(Slice.sz)) =
                 uint.Z off - uint.Z addr_s.(Slice.sz)) as ->.

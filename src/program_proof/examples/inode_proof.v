@@ -413,7 +413,7 @@ Proof.
     iRight in "HQ".
     change slice.nil with (slice_val Slice.nil).
     iApply "HQ"; by iFrame.
-  - destruct (list_lookup_lt _ addrs (uint.nat off)) as [addr' Hlookup].
+  - destruct (list_lookup_lt addrs (uint.nat off)) as [addr' Hlookup].
     { word. }
     iDestruct (own_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
     wpc_pures.

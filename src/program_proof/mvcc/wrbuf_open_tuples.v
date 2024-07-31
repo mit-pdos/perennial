@@ -85,7 +85,7 @@ Proof.
       eauto 10 with iFrame.
     }
     wp_load.
-    destruct (list_lookup_lt _ (wrent_to_val <$> ents') (uint.nat n)) as [ent Hlookup].
+    destruct (list_lookup_lt (wrent_to_val <$> ents') (uint.nat n)) as [ent Hlookup].
     { rewrite fmap_length. word. }
     wp_apply (wp_SliceGet with "[$HentsS]"); first done.
     iIntros "[HentsS %Hty]".
@@ -223,7 +223,7 @@ Proof.
         eauto 10 with iFrame.
       }
       wp_load.
-      destruct (list_lookup_lt _ (wrent_to_val <$> ents') (uint.nat m)) as [ent Hlookup].
+      destruct (list_lookup_lt (wrent_to_val <$> ents') (uint.nat m)) as [ent Hlookup].
       { rewrite fmap_length. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".

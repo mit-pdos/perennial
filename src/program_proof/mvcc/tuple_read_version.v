@@ -86,7 +86,7 @@ Proof.
     wp_pures.
     
     (* apply Znot_le_gt in Heqb. *)
-    destruct (list_lookup_lt _ vers (length vers - S (uint.nat idx))%nat) as [ver' Hver']; first word.
+    destruct (list_lookup_lt vers (length vers - S (uint.nat idx))%nat) as [ver' Hver']; first word.
     wp_apply (wp_SliceGet with "[HversS]").
     { iFrame.
       iPureIntro.

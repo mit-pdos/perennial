@@ -600,7 +600,7 @@ Local Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x
            | Z => constr:(Z.to_nat i)
            | u64 => constr:(uint.nat i)
            end in
-  destruct (list_lookup_lt _ l i) as [x H];
+  destruct (list_lookup_lt l i) as [x H];
   [ try solve [ len ]
   | ].
 

@@ -82,7 +82,7 @@ Proof.
   intros Hmax Hnum.
   assert (uint.Z num / 8 < length bits).
   { apply Zdiv_lt_upper_bound; lia. }
-  destruct (list_lookup_lt _ bits (Z.to_nat (uint.Z num / 8)%Z)) as [b Hlookup].
+  destruct (list_lookup_lt bits (Z.to_nat (uint.Z num / 8)%Z)) as [b Hlookup].
   { apply Nat2Z.inj_lt.
     word. }
   exists b.
