@@ -67,6 +67,7 @@ Context `{!heapGS Σ, !pavG Σ}.
 
 Definition serv_sigpred_link γ (data : servSepLink.t) : iProp Σ :=
   ∃ (epoch : w64) (prevLink dig : list w8) γtrees trees digs links,
+  (* TODO: maybe not need prevLink and dig. doesn't show up anywhere. *)
   "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
   "#HmonoIdx" ∷ mono_list_lb_own γ γtrees ∗
   "#Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; trees,

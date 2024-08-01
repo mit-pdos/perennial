@@ -184,7 +184,6 @@ Proof.
   }
 Qed.
 
-(*
 Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
   {{{
     "Hserv" ∷ server.valid ptr_serv obj_serv ∗
@@ -220,7 +219,7 @@ Proof.
   {
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hown_errReply]").
-    1: iFrame "HmuR Hlocked"; iFrame "∗#%".
+    { iFrame "HmuR Hlocked ∗#%". }
     wp_pures; iApply "HΦ"; by iFrame.
   }
 
@@ -233,7 +232,7 @@ Proof.
   {
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hown_errReply]").
-    1: iFrame "HmuR Hlocked"; iFrame "∗#%".
+    { iFrame "HmuR Hlocked ∗#%". }
     wp_pures; iApply "HΦ"; by iFrame.
   }
   wp_loadField.
@@ -247,6 +246,7 @@ Proof.
   wp_apply wp_allocStruct; [val_ty|];
     iIntros (ptr_putPre_obj) "Hptr_putPre_obj".
   iMod (own_slice_small_persist with "Hval") as "#Hval".
+  iDestruct (own_slice_small_sz with "Hid") as %Hlen_sz_id.
   wp_apply (servSepPut.wp_encode with "[Hptr_putPre_obj Hid]").
   {
     iDestruct (struct_fields_split with "Hptr_putPre_obj") as "H"; iNamed "H".
@@ -268,30 +268,40 @@ Proof.
 
   (* get resources for put sigpred. *)
   (* get γtree mono_list_idx_own. *)
-  iDestruct (mono_list_idx_own_get (uint.nat sl_epochs.(Slice.sz)) γupdates with "[HmonoTrees]") as "#Hidx_γupdates".
+  iDestruct (mono_list_idx_own_get (uint.nat sl_epochs.(Slice.sz)) γupdates with
+    "[HmonoTrees]") as "#Hidx_γupdates".
   2: iApply (mono_list_lb_own_get with "HmonoTrees").
-  1: { apply lookup_snoc_Some; eauto with lia. }
+  { apply lookup_snoc_Some; eauto with lia. }
   (* open global_inv. *)
   wp_apply ncfupd_wp.
   iRename "HmonoTrees" into "HmonoTrees0".
   iInv "Hinv" as "> H" "Hclose"; iNamed "H".
   (* get ghost_map_auth updates in full, so we can update and make put witness. *)
   iDestruct (mono_list_auth_own_agree with "HmonoTrees HmonoTrees0") as %[_ ->].
+  iDestruct (big_sepL2_length with "Htree_views") as %Hlen0.
+  rewrite app_length in Hlen0.
+  list_simplifier.
+  unshelve (epose proof (list_snoc_exists trees _) as (old_trees & updates0 & ->)); [lia|].
   iDestruct (big_sepL2_snoc with "Htree_views") as "[Htree_views Hupdates_view0]".
   iDestruct (ghost_map_auth_agree with "Hupdates_view0 Hupdates_view") as %->.
   iCombine "Hupdates_view Hupdates_view0" as "Hupdates_view".
   apply map_get_false in Hmap_get as [Hmap_get _].
+  rewrite -(lookup_kmap string_to_bytes) in Hmap_get.
   iDestruct (big_sepM2_lookup_l_none with "Hsl_updates") as "%Hmap_get1"; [done|].
-  rewrite lookup_kmap in Hmap_get1.
-  iMod (ghost_map_insert_persist _ val with "Hupdates_view") as "[[Hupdates_view0 Hupdates_view1] #Hwitness]"; [done|].
+  iMod (ghost_map_insert_persist _ val with "Hupdates_view") as
+    "[[Hupdates_view0 Hupdates_view1] #Hwitness]"; [done|].
+  (* rewrite after ghost map insert so it has expanded form.
+    this helps when we later want to do a big sep insert with the expanded form.
+    TODO: this all arises bc we can't rewrite under a big sep map insert. *)
+  rewrite bytes_to_string_to_bytes in Hmap_get, Hmap_get1.
   iDestruct (big_sepL2_snoc with "[$Htree_views $Hupdates_view0]") as "Htree_views".
-  iMod ("Hclose" with "[$HmonoTrees0 $Htree_views]") as "_"; [iFrame "#"|].
-  iClear "Hdigs Hdigs_links".
+  iMod ("Hclose" with "[$HmonoTrees0 $Htree_views]") as "_".
 
   (* sign put promise. *)
-  iModIntro.
+  iIntros "!>".
   wp_apply (wp_Sign with "[$Hown_sk $Hsl_putPre]").
-  1: iFrame "Hinv"; iRight; iFrame "%#".
+  { iFrame "Hinv". iRight.
+    iEval (rewrite (bytes_to_string_to_bytes id)) in "Hwitness". iFrame "%#". }
   iIntros (sl_putSig putSig) "H"; iNamed "H";
     iRename "Hmsg" into "Hsl_putPre";
     iRename "Hsig" into "Hvalid_putSig";
@@ -316,12 +326,16 @@ Proof.
   iDestruct ("Hsep_epochs" with "[$Htr $Hsl_link $Hptr_tr $Hptr_prevLink
     $Hptr_dig $Hptr_link $Hptr_linkSig]") as "Hsep_epochs"; [iFrame "#"|].
   iRename "Hsl_updates" into "H";
-    iDestruct (big_sepM2_insert_2 _ _ _ (bytes_to_string id) with "[] H")
-    as "Hsl_updates"; [iFrame "Hval"|]; iClear "H".
+    (* write id in expanded form so that we can move it inside the kmap. *)
+    iDestruct (big_sepM2_insert_2 _ _ _ (string_to_bytes (bytes_to_string id)) with "[] H") as "Hsl_updates";
+    iClear "H".
+  { iFrame "Hval". rewrite Heqb in Hlen_sz_id. iPureIntro.
+    rewrite bytes_to_string_to_bytes. word. }
   iEval (rewrite -kmap_insert) in "Hsl_updates".
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hptr_putPre Hsl_putPre Hsl_putSig]").
-  1: iFrame "Hlocked HmuR"; iFrame "∗#%".
+  { (* TODO: some props above would be cleaner if we could rewrite under the insert here. *)
+    iFrame "Hlocked HmuR ∗#%". }
   wp_apply wp_allocStruct; [val_ty|];
     iIntros (ptr_putReply) "Hptr_putReply".
   iDestruct (struct_fields_split with "Hptr_putReply") as "H"; iNamed "H".
@@ -337,7 +351,6 @@ Proof.
   rewrite /servSepPut.encodes in Henc_putPre; subst.
   iFrame "#".
 Qed.
-*)
 
 Lemma wp_applyUpdates ptr_currTr currTr (updates : gmap _ (list w8)) ptr_updates sl_updates d0 :
   {{{
