@@ -1,3 +1,4 @@
+(*
 From Perennial.program_proof.pav Require
   common
   crypto_model
@@ -9,3 +10,4 @@ From Perennial.program_proof.pav Require
   merkle_internal
   rpc
   server.
+*)
