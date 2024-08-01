@@ -55,10 +55,10 @@ Proof.
   iIntros "Htree".
   destruct tr.
   { iDestruct "Htree" as "[%Heq %Hlen]". naive_solver. }
-  1-2: iDestruct (hash_len with "Htree") as "%Hlen"; naive_solver.
+  1-2: iDestruct (is_hash_len with "Htree") as "%Hlen"; naive_solver.
   {
     iDestruct "Htree" as (ch) "[_ Htree]".
-    by iDestruct (hash_len with "Htree") as "%Hlen".
+    by iDestruct (is_hash_len with "Htree") as "%Hlen".
   }
 Qed.
 
@@ -109,7 +109,7 @@ Lemma disj_empty_leaf digest v :
   False.
 Proof.
   iIntros "Hempty Hleaf".
-  iDestruct (hash_inj with "Hempty Hleaf") as "%Heq".
+  iDestruct (is_hash_inj with "Hempty Hleaf") as "%Heq".
   iPureIntro.
   destruct v as [|a]; [naive_solver|].
   (* TODO: why doesn't list_simplifier or solve_length take care of this? *)
