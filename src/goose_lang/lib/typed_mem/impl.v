@@ -11,7 +11,6 @@ Section goose_lang.
 
   (** allocation with a type annotation *)
   Definition ref_to (t:ty): val := λ: "v", ref (Var "v").
-  Definition ref_zero (t:ty): val := λ: <>, ref (zero_val t).
 
   Fixpoint load_ty t: val :=
     match t with

@@ -122,19 +122,19 @@ Proof.
   }
   wp_pures.
 
-  wp_apply (typed_mem.wp_AllocAt uint64T).
+  wp_apply (typed_mem.wp_ref_of_zero).
   { naive_solver. }
   iIntros (numPrepared_ptr) "HnumPrepared".
   wp_pures.
   wp_store.
 
-  wp_apply (typed_mem.wp_AllocAt uint64T).
+  wp_apply (typed_mem.wp_ref_of_zero).
   { naive_solver. }
   iIntros (highestPN_ptr) "HhighestPN".
   wp_pures.
   wp_store.
 
-  wp_apply (typed_mem.wp_AllocAt uint64T).
+  wp_apply (typed_mem.wp_ref_of_zero).
   { naive_solver. }
   iIntros (highestVal_ptr) "HhighestVal".
   wp_pures.
@@ -477,7 +477,7 @@ Proof.
     wp_apply (wp_new_free_lock).
     iIntros (l2) "Hl2".
     wp_pures.
-    wp_apply (typed_mem.wp_AllocAt).
+    wp_apply (typed_mem.wp_ref_of_zero).
     { naive_solver. }
     iIntros (numAccepted_ptr) "HnumAccepted".
     wp_pures.

@@ -180,7 +180,7 @@ Proof using Ptimeless.
   wp_apply (wp_ReadInode with "[$Hjrnl_mem $Hinode_enc]"); first by intuition eauto.
   iIntros (ip) "(Hjrnl_mem & Hinode_enc & Hinode_mem)".
 
-  wp_apply (typed_mem.wp_AllocAt); eauto.
+  wp_apply (typed_mem.wp_ref_of_zero); eauto.
   iIntros (wpok) "Hwpok".
 
   wp_pures.

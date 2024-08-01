@@ -216,7 +216,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_rec. wp_pures.
-  wp_apply (typed_mem.wp_AllocAt uint64T); first by auto.
+  wp_apply (wp_ref_of_zero); first by auto.
   iIntros (num_l) "num".
   wp_pures.
   wp_loadField.
@@ -346,7 +346,7 @@ Lemma wp_popCnt (b: u8) :
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_rec. wp_pures.
-  wp_apply (typed_mem.wp_AllocAt uint64T); auto.
+  wp_apply (wp_ref_of_zero); auto.
   iIntros (count_l) "Hcount".
   wp_pures.
   wp_apply wp_ref_to; auto.
@@ -399,7 +399,7 @@ Proof.
   iNamed "Hlinv".
   wp_loadField.
   wp_apply wp_slice_len.
-  wp_apply (typed_mem.wp_AllocAt uint64T); first by val_ty.
+  wp_apply (wp_ref_of_zero); first done.
   iIntros (count_l) "Hcount".
   wp_pures.
   wp_loadField.
