@@ -13,9 +13,6 @@ Import RecordSetNotations.
 
 Section shared.
 
-Inductive ret_ty : Type :=
-  | ret : forall {T : Type}, T → ret_ty.
-
 (* arb_T returns a random concrete T. *)
 Definition arb_bool : bool. Admitted.
 Definition arb_bytes : list w8. Admitted.
@@ -48,6 +45,11 @@ Inductive sig_op_ty : Type :=
   | sign : sk_ty → msg_ty → sig_op_ty
   | verify : pk_ty → msg_ty → sig_ty → sig_op_ty.
 
+Inductive sig_ret_ty : Type :=
+  | ret_key_gen : sk_ty → pk_ty → sig_ret_ty
+  | ret_sign : sig_ty → sig_ret_ty
+  | ret_verify : bool → sig_ret_ty.
+
 (** the main goal is to follow the guarantees of EUF-CMA as closely as possible.
 e.g., EUF-CMA says sign / verify are undefined for OOD sk's / pk's,
 so we return random values.
@@ -65,7 +67,7 @@ the main capability of super-poly adversaries is their ability to run crypto ops
 a huge number of times to exhibit collisions.
 we block this, by having the underlying machine infinite loop exactly when
 it detects a collision. *)
-Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_state_ty) :=
+Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (sig_ret_ty * sig_state_ty) :=
   match op with
   | key_gen =>
     let sk := arb_bytes in
@@ -76,13 +78,13 @@ Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_stat
     | (None, None, false) =>
       (* TODO: make key_gen not directly return the sk, so it's impossible
       for programs to leak it. *)
-      (ret (sk, pk),
+      (ret_key_gen sk pk,
         state <| signed ::= <[sk:=[]]> |>
               <| pk_to_sk ::= <[pk:=sk]> |>
               <| sk_to_pk ::= <[sk:=pk]> |>)
     | _ =>
       (* collision. infinite loop the machine. *)
-      (ret 0, state)
+      (ret_key_gen [] [], state)
     end
 
   | sign sk msg =>
@@ -95,27 +97,27 @@ Definition sig_step (op : sig_op_ty) (state : sig_state_ty) : (ret_ty * sig_stat
       match state.(verify_memo) !! (pk, msg, sig) with
       | None
       | Some true =>
-        (ret sig,
+        (ret_sign sig,
           state <| signed ::= <[sk:=msg::my_signed]> |>
                 (* immediately memoize so verify returns the right thing. *)
                 <| verify_memo ::= <[(pk,msg,sig):=true]> |>)
       | Some false =>
         (* bad sig collision (see above case). infinite loop the machine. *)
-        (ret 0, state)
+        (ret_sign [], state)
       end
     (* sign is only defined over in-distribution sk's. return random values. *)
     | _ =>
       let sig := arb_bytes in
-      (ret sig, state)
+      (ret_sign [], state)
     end
 
   | verify pk msg sig =>
     match state.(verify_memo) !! (pk, msg, sig) with
-    | Some ok => (ret ok, state)
+    | Some ok => (ret_verify ok, state)
     | None =>
       (* memoize new verify output. *)
       (λ '(new_ok, new_state),
-        (ret new_ok, new_state <| verify_memo ::= <[(pk,msg,sig):=new_ok]> |>))
+        (ret_verify new_ok, new_state <| verify_memo ::= <[(pk,msg,sig):=new_ok]> |>))
       match state.(pk_to_sk) !! pk with
       | None =>
         (* verify is only defined over in-distribution pk's. return random values. *)
@@ -166,21 +168,24 @@ Record hash_state_ty :=
 Inductive hash_op_ty : Type :=
   | hash : msg_ty → hash_op_ty.
 
-Definition hash_step (op : hash_op_ty) (state : hash_state_ty) : (ret_ty * hash_state_ty) :=
+Inductive hash_ret_ty : Type :=
+  | ret_hash : hash_ty → hash_ret_ty.
+
+Definition hash_step (op : hash_op_ty) (state : hash_state_ty) : (hash_ret_ty * hash_state_ty) :=
   match op with
   | hash msg =>
     match state.(hashes) !! msg with
     | Some h =>
-      (ret h, state)
+      (ret_hash h, state)
     | None =>
       (* maintains inv that all hashes have same len. *)
       let new_hash := arb_bytes_len hash_len in
       match bool_decide (map_Exists (λ _ h, h = new_hash) state.(hashes)) with
       | true =>
         (* hash collision. infinite loop the machine. *)
-        (ret 0, state)
+        (ret_hash [], state)
       | false =>
-        (ret new_hash, state <| hashes ::= <[msg:=new_hash]> |>)
+        (ret_hash new_hash, state <| hashes ::= <[msg:=new_hash]> |>)
       end
     end
   end.
