@@ -137,9 +137,11 @@ Proof.
 Qed.
 
 Definition is_Locker (v : val) (P : iProp Σ) : iProp Σ :=
-  "H_Lock" ∷ ({{{ True }}} (interface.get "Lock" v) #() {{{ RET #(); P }}}) ∗
-  "H_Unlock" ∷ ({{{ P }}} (interface.get "Unlock" v) #() {{{ RET #(); True }}})
+  "#H_Lock" ∷ ({{{ True }}} (interface.get "Lock" v) #() {{{ RET #(); P }}}) ∗
+  "#H_Unlock" ∷ ({{{ P }}} (interface.get "Unlock" v) #() {{{ RET #(); True }}})
 .
+
+Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
 Lemma Mutex_is_Locker (m : loc) R :
   is_Mutex m R -∗
@@ -335,5 +337,5 @@ End proof.
 End goose_lang.
 
 Typeclasses Opaque is_Mutex own_Mutex
-            is_Cond
+            is_Locker is_Cond
             is_WaitGroup own_WaitGroup own_WaitGroup_token own_free_WaitGroup.

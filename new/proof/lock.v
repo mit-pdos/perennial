@@ -40,6 +40,10 @@ Definition is_LockClerk (ck:loc) γ : iProp Σ :=
     "%Hdisj" ∷ ⌜ E ## ↑N ⌝
 .
 
+Global Instance is_LockClerk_pers ck γ : Persistent (is_LockClerk ck γ) := _.
+
+Global Instance is_lock_pers N γ key R : Persistent (is_lock N γ key R) := _.
+
 Lemma wp_MakeLockClerk (kv : val) kvptsto E :
 has_go_type kv interfaceT →
   {{{
@@ -175,3 +179,5 @@ Proof.
 Qed.
 
 End proof.
+
+Typeclasses Opaque is_lock is_LockClerk.
