@@ -3,7 +3,6 @@ From Perennial.goose_lang.ffi.grove_ffi Require Export impl.
 
 #[global]
 Existing Instances grove_op grove_model.
-Coercion Var' (s: string) := Var s.
 (** * Grove user-facing operations. *)
 Section grove.
 

@@ -7,7 +7,6 @@ From New.code Require github_com.tchajed.marshal.
 
 Section code.
 Context `{ffi_syntax}.
-Local Coercion Var' s: expr := Var s.
 
 Definition BAL_TOTAL : expr := #1000.
 

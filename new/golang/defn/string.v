@@ -1,10 +1,9 @@
-From Perennial.goose_lang Require Export lang notation.
+From New.golang.defn Require Export notation.
 From New.golang.defn Require Import slice.
 
 Module string.
 Section defn.
   Context `{ffi_syntax}.
-  Local Coercion Var' (s:string) : expr := Var s.
 
   Local Definition to_bytes_aux: val :=
     (rec: "to_bytes" "i" "s" :=

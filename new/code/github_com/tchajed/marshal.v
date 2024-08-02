@@ -5,7 +5,6 @@ From New.code Require github_com.goose_lang.std.
 
 Section code.
 Context `{ffi_syntax}.
-Local Coercion Var' s: expr := Var s.
 
 Definition Enc : go_type := structT [
   "b" :: sliceT byteT;

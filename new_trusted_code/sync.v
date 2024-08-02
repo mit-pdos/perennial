@@ -2,7 +2,6 @@ From New.golang Require Import defn.
 
 Section code.
 Context `{ffi_syntax}.
-Local Coercion Var' s: expr := Var s.
 
 (* FIXME: make everything in here opaque. *)
 

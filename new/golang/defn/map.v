@@ -1,11 +1,9 @@
-From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Import loop typing.
 
 Module map.
 (* FIXME: seal these functions *)
 Section goose_lang.
 Context {ext:ffi_syntax}.
-Local Coercion Var' (s:string) : expr := Var s.
 
 (* This model stores the values of the map into single memory cells, even if they
 are entire structs that would usually be laid out with one memory cell per

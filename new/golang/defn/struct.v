@@ -12,7 +12,6 @@ Section goose_lang.
 Infix "=?" := (String.eqb).
 
 Context `{ffi_syntax}.
-Local Coercion Var' (s:string) : expr := Var s.
 
 Definition field_offset (t : go_type) f0 : (Z * go_type) :=
   match t with

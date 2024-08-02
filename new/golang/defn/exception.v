@@ -1,10 +1,9 @@
-From Perennial.goose_lang Require Export notation.
+From New Require Export notation.
 
 Section defn.
 
 Context `{ext_ty: ext_types}.
 Context `{!ffi_syntax}.
-Local Coercion Var' s: expr := Var s.
 
 Definition execute_val_def (v : val) : val := (#(str "execute"), v).
 Program Definition execute_val := unseal (_:seal (@execute_val_def)). Obligation 1. by eexists. Qed.

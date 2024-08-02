@@ -20,9 +20,8 @@ Ltac2 simpl_flags := {
   Std.rConst := []
 }.
 
-Ltac2 subst_step_with_simpl (x : constr) v e : constr :=
-  let e' := constr:(subst' $x $v $e) in
-  Control.time (Some "simpl took: ") (fun () => Std.eval_simpl simpl_flags None e').
+Ltac2 full_simpl (x : constr) : constr :=
+  Std.eval_simpl simpl_flags None x.
 
 Ltac2 subst_step x v e : constr :=
   lazy_match! x with
@@ -81,6 +80,13 @@ Ltac2 rec expr_steps e : constr :=
     (fun ex => dbg (of_string "no more steps due to: "); print (of_exn ex); e)
 .
 
+Ltac2 Notation "wp_pures_fast" :=
+  match! goal with
+  | [ |- envs_entails ?Δ (wp ?s ?et ?e ?Φ)] =>
+      let e' := (expr_steps e) in
+      enough (envs_entails $Δ (wp $s $et $e' $Φ)) by admit
+  end.
+
 Section proof.
 Context `{!heapGS Σ}.
 Lemma wp_LockClerk__Lock (ck : loc) key R :
@@ -94,20 +100,15 @@ Lemma wp_LockClerk__Lock (ck : loc) key R :
 .
 Proof.
   iIntros (?) "? HΦ".
-  wp_rec.
-
-  (* time (wp_pures). (* ~50-70ms *) *)
+  (* Time (wp_rec; wp_pures). *) (* 80-100ms *)
   Proof Mode "Ltac2".
   Ltac2 Set dbg := (fun _ => ()).
   Ltac2 Set dbg_constr := (fun _ => ()).
-  Time match! goal with
-  | [ |- envs_entails ?Δ (wp ?s ?et ?e ?Φ)] =>
-      let e' := (expr_steps e) in
-      enough (envs_entails $Δ (wp $s $et $e' $Φ)) by admit
-  end.
-  (* 1ms *)
+  Time unfold LockClerk__Lock; wp_pures_fast. (* 2ms *)
   Proof Mode "Classic".
   wp_alloc ck_ptr as "?".
   wp_alloc k as "?".
   wp_pures.
 Admitted.
+
+End proof.

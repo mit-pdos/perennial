@@ -1,8 +1,7 @@
-From Perennial.goose_lang Require Import prelude.
+From New.golang Require Export defn.
 
 Section code.
-Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
+Context `{ffi_syntax}.
 
 Definition Printf : val := variadic_noop.
 

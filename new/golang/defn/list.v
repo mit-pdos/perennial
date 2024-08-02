@@ -1,9 +1,8 @@
-From Perennial.goose_lang Require Export lang notation.
+From New Require Export notation.
 
 Module list.
 Section defn.
   Context `{ffi_syntax}.
-  Local Coercion Var' (s:string) : expr := Var s.
 
   Definition Cons_def : val := λ: "h" "tl", InjR ("h", "tl").
   Program Definition Cons := unseal (_:seal (@Cons_def)). Obligation 1. by eexists. Qed.

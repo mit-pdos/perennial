@@ -5,7 +5,6 @@ From New.code Require sync.
 
 Section code.
 Context `{ffi_syntax}.
-Local Coercion Var' s: expr := Var s.
 
 (* BytesEqual returns if the two byte slices are equal.
 

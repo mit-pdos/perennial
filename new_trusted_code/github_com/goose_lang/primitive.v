@@ -4,7 +4,6 @@ From New.golang Require Import defn.
 
 Section code.
   Context `{ffi_syntax}.
-  Local Coercion Var' s: expr := Var s.
 
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)

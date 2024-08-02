@@ -1,4 +1,3 @@
-From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Export mem loop.
 
 Module slice.
@@ -6,8 +5,6 @@ Module slice.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-#[warning="-uniform-inheritance"]
-Local Coercion Var : string >-> expr.
 Definition nil : val := slice_nil.
 Definition ptr : val := λ: "s", Fst (Fst "s").
 Definition len : val := λ: "s", Snd (Fst "s").

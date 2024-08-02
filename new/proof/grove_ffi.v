@@ -15,7 +15,6 @@ Section grove.
   (* FIXME: figure out which of these clients need to set *)
   Set Printing Projections.
   Existing Instances grove_op grove_model grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
-  Local Coercion Var' (s:string) : expr := Var s.
 
   Context `{!heapGS Σ}.
 

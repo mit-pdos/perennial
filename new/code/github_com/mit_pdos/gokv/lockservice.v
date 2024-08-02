@@ -4,7 +4,6 @@ From New.code Require github_com.mit_pdos.gokv.kv.
 
 Section code.
 Context `{ffi_syntax}.
-Local Coercion Var' s: expr := Var s.
 
 Definition LockClerk : go_type := structT [
   "kv" :: kv.KvCput

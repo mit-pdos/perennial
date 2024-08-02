@@ -216,6 +216,7 @@ if __name__ == "__main__":
 
     args = ["coqc"]
     args.append("-time")
+    args += ["-set", "Printing Width=1000000"]
     args.extend(coq_args)
 
     filter = CoqcFilter.from_coqargs(coq_args, db)

@@ -1,9 +1,8 @@
-From Perennial.goose_lang Require Import lang notation.
+From New Require Export notation.
 From New.golang.defn Require Import exception.
 
 Section goose_lang.
 Context {ext: ffi_syntax}.
-Local Coercion Var' (s:string) : expr := Var s.
 
 Definition break_val_def : val := (#(str "break"), #()).
 Program Definition break_val := unseal (_:seal (@break_val_def)). Obligation 1. by eexists. Qed.

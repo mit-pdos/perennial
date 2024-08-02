@@ -3,7 +3,6 @@ From New.golang Require Import defn.
 
 Section code.
 Context `{ffi_syntax}.
-Local Coercion Var' s: expr := Var s.
 
 Definition Kv : go_type := interfaceT.
 
