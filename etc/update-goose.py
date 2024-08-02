@@ -322,6 +322,7 @@ def main():
         "./mpaxos",
         "./distx",
         "./tpl",
+        "./pcr",
     )
 
     run_goose(marshal_dir, ".")
