@@ -54,6 +54,18 @@ Implicit Types (stk : stuckness).
 
 Transparent struct.alloc.
 
+Theorem wp_allocStruct_meta d stk E v :
+  val_ty v (struct.t d) ->
+  0 < ty_size (struct.t d) →
+  {{{ True }}}
+    struct.alloc d v @ stk; E
+  {{{ l, RET #l; l ↦[struct.t d] v ∗ meta_token l ⊤ }}}.
+Proof.
+  iIntros (Hty Hsize_gt0 Φ) "_ HΦ".
+  wp_rec. wp_pures.
+  wp_apply wp_ref_to_meta; auto.
+Qed.
+
 Theorem wp_allocStruct d stk E v :
   val_ty v (struct.t d) ->
   {{{ True }}}
