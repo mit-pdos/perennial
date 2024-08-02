@@ -20,6 +20,38 @@ Ltac2 simpl_flags := {
   Std.rConst := []
 }.
 
+Ltac2 subst_step_with_simpl (x : constr) v e : constr :=
+  let e' := constr:(subst' $x $v $e) in
+  Control.time (Some "simpl took: ") (fun () => Std.eval_simpl simpl_flags None e').
+
+Ltac2 subst_step x v e : constr :=
+  lazy_match! x with
+  | BAnon => e
+  | BNamed ?x' =>
+      let rec go_subst e : constr :=
+        lazy_match! e with
+        | @Val grove_op _ => e
+        | Var ?x'' => if (Constr.equal x'' x') then '(Val $v) else e
+        | Rec ?f ?x'' ?e' =>
+            if Bool.or (Constr.equal x'' x) (Constr.equal f x) then e
+            else let e' := go_subst e' in '(Rec $f $x'' $e')
+        | App ?e1 ?e2 => let e1 := go_subst e1 in
+                        let e2 := go_subst e2 in
+                        '(App $e1 $e2)
+        | UnOp ?op ?e =>
+            let e := go_subst e in
+            '(UnOp $op $e)
+        | BinOp ?op ?e1 ?e2 =>
+            let e1 := go_subst e1 in
+            let e2 := go_subst e2 in
+            '(BinOp $op $e1 $e2)
+        | _ => constr:(subst' $x $v $e)
+                       (* | _ => Control.throw (Tactic_failure None) *)
+        end in
+      go_subst e
+  end
+.
+
 Ltac2 rec expr_step e : constr :=
   lazy_match! e with
   | Rec ?f ?x ?e =>
@@ -29,10 +61,8 @@ Ltac2 rec expr_step e : constr :=
       dbg (of_string "reached App (RecV ...) v");
       dbg_constr e;
       (* FIXME: try to keep identifier for function name *)
-      let e' := constr:(subst' $x $v2 (subst' $f #() $e)) in
-      Control.time (Some "simpl took: ") (fun () => Std.eval_simpl simpl_flags None e')
-      (* XXX: simplifying [subst']; should try implementing this directly in
-         Ltac2, as it takes up nearly all the time. *)
+      subst_step x v2 (subst_step f '(@LitV grove_op LitUnit) e)
+      (* subst_step x v2 e (subst_step f '#() e) *)
   | App (?e1) (Val ?v)  =>
       dbg (of_string "reached App e v");
       let e1 := expr_step '$e1 in
@@ -48,9 +78,10 @@ Ltac2 rec expr_step e : constr :=
 Ltac2 rec expr_steps e : constr :=
   Control.plus
     (fun () => expr_steps (expr_step e))
-    (fun ex => print (of_string "no more steps due to: "); print (of_exn ex); e)
+    (fun ex => dbg (of_string "no more steps due to: "); print (of_exn ex); e)
 .
 
+Section proof.
 Context `{!heapGS Σ}.
 Lemma wp_LockClerk__Lock (ck : loc) key R :
   {{{
@@ -64,7 +95,8 @@ Lemma wp_LockClerk__Lock (ck : loc) key R :
 Proof.
   iIntros (?) "? HΦ".
   wp_rec.
-  (* time wp_pures. (* ~50-70ms *) *)
+
+  (* time (wp_pures). (* ~50-70ms *) *)
   Proof Mode "Ltac2".
   Ltac2 Set dbg := (fun _ => ()).
   Ltac2 Set dbg_constr := (fun _ => ()).
@@ -73,7 +105,7 @@ Proof.
       let e' := (expr_steps e) in
       enough (envs_entails $Δ (wp $s $et $e' $Φ)) by admit
   end.
-  (* 5ms for simpl (which can likely be reduced), 6ms total. *)
+  (* 1ms *)
   Proof Mode "Classic".
   wp_alloc ck_ptr as "?".
   wp_alloc k as "?".
