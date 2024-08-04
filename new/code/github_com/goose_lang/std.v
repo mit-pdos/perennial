@@ -17,9 +17,7 @@ Definition BytesEqual : val :=
     let: "$r0" := slice.len (![sliceT byteT] "x") in
     do:  ("xlen" <-[intT] "$r0");;;
     (if: (![intT] "xlen") ≠ (slice.len (![sliceT byteT] "y"))
-    then
-      return: (#false);;;
-      do:  #()
+    then return: (#false)
     else do:  #());;;
     let: "i" := ref_ty uint64T #0 in
     let: "retval" := ref_ty boolT #true in
@@ -28,14 +26,11 @@ Definition BytesEqual : val :=
       then
         let: "$r0" := #false in
         do:  ("retval" <-[boolT] "$r0");;;
-        break: #();;;
-        do:  #()
+        break: #()
       else do:  #());;;
       do:  ("i" <-[uint64T] ((![uint64T] "i") + #1));;;
-      continue: #();;;
-      do:  #());;;
-    return: (![boolT] "retval");;;
-    do:  #()).
+      continue: #());;;
+    return: (![boolT] "retval")).
 
 (* See the [reference].
 
@@ -46,12 +41,9 @@ Definition BytesClone : val :=
   rec: "BytesClone" "b" :=
     exception_do (let: "b" := ref_ty (sliceT byteT) "b" in
     (if: (![sliceT byteT] "b") = slice.nil
-    then
-      return: (slice.nil);;;
-      do:  #()
+    then return: (slice.nil)
     else do:  #());;;
-    return: (slice.append byteT slice.nil (![sliceT byteT] "b"));;;
-    do:  #()).
+    return: (slice.append byteT slice.nil (![sliceT byteT] "b"))).
 
 (* SliceSplit splits xs at n into two slices.
 
@@ -68,8 +60,7 @@ Definition SliceSplit : val :=
     let: "xs" := ref_ty (sliceT byteT) "xs" in
     return: (let: "$s" := ![sliceT byteT] "xs" in
      slice.slice byteT "$s" #0 (![uint64T] "n"), let: "$s" := ![sliceT byteT] "xs" in
-     slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s"));;;
-    do:  #()).
+     slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s"))).
 
 (* Returns true if x + y does not overflow
 
@@ -78,8 +69,7 @@ Definition SumNoOverflow : val :=
   rec: "SumNoOverflow" "x" "y" :=
     exception_do (let: "y" := ref_ty uint64T "y" in
     let: "x" := ref_ty uint64T "x" in
-    return: (((![uint64T] "x") + (![uint64T] "y")) ≥ (![uint64T] "x"));;;
-    do:  #()).
+    return: (((![uint64T] "x") + (![uint64T] "y")) ≥ (![uint64T] "x"))).
 
 (* SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
 
@@ -94,8 +84,7 @@ Definition SumAssumeNoOverflow : val :=
     let: "$a1" := ![uint64T] "y" in
     SumNoOverflow "$a0" "$a1" in
     primitive.Assume "$a0");;;
-    return: ((![uint64T] "x") + (![uint64T] "y"));;;
-    do:  #()).
+    return: ((![uint64T] "x") + (![uint64T] "y"))).
 
 Definition JoinHandle : go_type := structT [
   "mu" :: ptrT;
@@ -116,13 +105,10 @@ Definition JoinHandle__Join : val :=
       then
         let: "$r0" := #false in
         do:  ((struct.field_ref JoinHandle "done" (![ptrT] "h")) <-[boolT] "$r0");;;
-        break: #();;;
-        do:  #()
+        break: #()
       else do:  #());;;
-      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #());;;
-      do:  #());;;
-    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
-    do:  #()).
+      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #()));;;
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
 
 (* go: goose_std.go:83:22 *)
 Definition JoinHandle__finish : val :=
@@ -132,8 +118,7 @@ Definition JoinHandle__finish : val :=
     let: "$r0" := #true in
     do:  ((struct.field_ref JoinHandle "done" (![ptrT] "h")) <-[boolT] "$r0");;;
     do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #());;;
-    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
-    do:  #()).
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
 
 Definition JoinHandle__mset_ptr : list (string * val) := [
   ("Join", JoinHandle__Join);
@@ -154,8 +139,7 @@ Definition newJoinHandle : val :=
        "mu" ::= ![ptrT] "mu";
        "done" ::= #false;
        "cond" ::= ![ptrT] "cond"
-     }]));;;
-    do:  #()).
+     }]))).
 
 (* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
    it to finish.
@@ -174,12 +158,10 @@ Definition Spawn : val :=
     do:  ("h" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       do:  ((![funcT] "f") #());;;
-      do:  ((JoinHandle__finish (![ptrT] "h")) #());;;
-      do:  #()
+      do:  ((JoinHandle__finish (![ptrT] "h")) #())
       ) in
     do:  (Fork ("$go" #()));;;
-    return: (![ptrT] "h");;;
-    do:  #()).
+    return: (![ptrT] "h")).
 
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
 
@@ -203,8 +185,7 @@ Definition Multipar : val :=
     (let: "i" := ref_ty uint64T (zero_val uint64T) in
     let: "$r0" := #0 in
     do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1));;;
-    #()) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1))) := λ: <>,
       let: "i" := ref_ty uint64T (zero_val uint64T) in
       let: "$r0" := ![uint64T] "i" in
       do:  ("i" <-[uint64T] "$r0");;;
@@ -214,17 +195,13 @@ Definition Multipar : val :=
         do:  ((sync.Mutex__Lock (![ptrT] "num_left_mu")) #());;;
         do:  ("num_left" <-[uint64T] ((![uint64T] "num_left") - #1));;;
         do:  ((sync.Cond__Signal (![ptrT] "num_left_cond")) #());;;
-        do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #());;;
-        do:  #()
+        do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #())
         ) in
-      do:  (Fork ("$go" #()));;;
-      do:  #()));;;
+      do:  (Fork ("$go" #()))));;;
     do:  ((sync.Mutex__Lock (![ptrT] "num_left_mu")) #());;;
     (for: (λ: <>, (![uint64T] "num_left") > #0); (λ: <>, Skip) := λ: <>,
-      do:  ((sync.Cond__Wait (![ptrT] "num_left_cond")) #());;;
-      do:  #());;;
-    do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #());;;
-    do:  #()).
+      do:  ((sync.Cond__Wait (![ptrT] "num_left_cond")) #()));;;
+    do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #())).
 
 (* Skip is a no-op that can be useful in proofs.
 

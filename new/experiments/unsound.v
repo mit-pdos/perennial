@@ -80,12 +80,25 @@ Ltac2 rec expr_steps e : constr :=
     (fun ex => dbg (of_string "no more steps due to: "); print (of_exn ex); e)
 .
 
-Ltac2 Notation "wp_pures_fast" :=
+(*
+  let "c" := (f a)
+  (App () (App f a))
+
+  Could come up with the "head" expression and the
+ *)
+
+(*
+  Given the expression and , come up with a new expression as well as
+ *)
+
+Ltac2 wp_pures_fast () :=
   match! goal with
   | [ |- envs_entails ?Δ (wp ?s ?et ?e ?Φ)] =>
       let e' := (expr_steps e) in
       enough (envs_entails $Δ (wp $s $et $e' $Φ)) by admit
   end.
+
+Ltac2 Notation "wp_pures_fast" := wp_pures_fast ().
 
 Section proof.
 Context `{!heapGS Σ}.

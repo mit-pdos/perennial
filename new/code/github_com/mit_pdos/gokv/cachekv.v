@@ -43,8 +43,7 @@ Definition DecodeValue : val :=
     return: (struct.make cacheValue [{
        "l" ::= ![uint64T] "l";
        "v" ::= string.from_bytes (![sliceT byteT] "vBytes")
-     }]);;;
-    do:  #()).
+     }])).
 
 (* go: clerk.go:55:19 *)
 Definition CacheKv__Get : val :=
@@ -69,15 +68,13 @@ Definition CacheKv__Get : val :=
     (if: (![boolT] "ok") && ((![uint64T] "high") < (![uint64T] (struct.field_ref cacheValue "l" "cv")))
     then
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
-      return: (![stringT] (struct.field_ref cacheValue "v" "cv"));;;
-      do:  #()
+      return: (![stringT] (struct.field_ref cacheValue "v" "cv"))
     else do:  #());;;
     do:  (MapDelete (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key"));;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
     return: (struct.get cacheValue "v" (let: "$a0" := let: "$a0" := ![stringT] "key" in
      (interface.get "Get" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" in
-     DecodeValue "$a0"));;;
-    do:  #()).
+     DecodeValue "$a0"))).
 
 (* go: clerk.go:33:6 *)
 Definition EncodeValue : val :=
@@ -92,8 +89,7 @@ Definition EncodeValue : val :=
     let: "$a1" := string.to_bytes (![stringT] (struct.field_ref cacheValue "v" "c")) in
     marshal.WriteBytes "$a0" "$a1" in
     do:  ("e" <-[sliceT byteT] "$r0");;;
-    return: (string.from_bytes (![sliceT byteT] "e"));;;
-    do:  #()).
+    return: (string.from_bytes (![sliceT byteT] "e"))).
 
 (* go: clerk.go:40:6 *)
 Definition max : val :=
@@ -101,12 +97,9 @@ Definition max : val :=
     exception_do (let: "b" := ref_ty uint64T "b" in
     let: "a" := ref_ty uint64T "a" in
     (if: (![uint64T] "a") > (![uint64T] "b")
-    then
-      return: (![uint64T] "a");;;
-      do:  #()
+    then return: (![uint64T] "a")
     else do:  #());;;
-    return: (![uint64T] "b");;;
-    do:  #()).
+    return: (![uint64T] "b")).
 
 (* go: clerk.go:69:19 *)
 Definition CacheKv__GetAndCache : val :=
@@ -153,16 +146,13 @@ Definition CacheKv__GetAndCache : val :=
           "l" ::= ![uint64T] "newLeaseExpiration"
         }] in
         do:  (map.insert (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key") "$r0");;;
-        break: #();;;
-        do:  #()
-      else do:  #());;;
-      do:  #());;;
+        break: #()
+      else do:  #()));;;
     let: "ret" := ref_ty stringT (zero_val stringT) in
     let: "$r0" := struct.get cacheValue "v" (Fst (map.get (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key"))) in
     do:  ("ret" <-[stringT] "$r0");;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
-    return: (![stringT] "ret");;;
-    do:  #()).
+    return: (![stringT] "ret")).
 
 (* go: clerk.go:90:19 *)
 Definition CacheKv__Put : val :=
@@ -187,9 +177,7 @@ Definition CacheKv__Put : val :=
       do:  ("earliest" <-[uint64T] "$r0");;;
       do:  "$r1";;;
       (if: (![uint64T] "leaseExpiration") > (![uint64T] "earliest")
-      then
-        continue: #();;;
-        do:  #()
+      then continue: #()
       else do:  #());;;
       let: "resp" := ref_ty stringT (zero_val stringT) in
       let: "$r0" := let: "$a0" := ![stringT] "key" in
@@ -202,12 +190,8 @@ Definition CacheKv__Put : val :=
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2" in
       do:  ("resp" <-[stringT] "$r0");;;
       (if: (![stringT] "resp") = #(str "ok")
-      then
-        break: #();;;
-        do:  #()
-      else do:  #());;;
-      do:  #());;;
-    do:  #()).
+      then break: #()
+      else do:  #()))).
 
 Definition CacheKv__mset_ptr : list (string * val) := [
   ("Get", CacheKv__Get);
@@ -223,5 +207,4 @@ Definition Make : val :=
        "kv" ::= ![kv.KvCput] "kv";
        "mu" ::= ref_ty sync.Mutex (zero_val sync.Mutex);
        "cache" ::= map.make stringT cacheValue #()
-     }]));;;
-    do:  #()).
+     }]))).

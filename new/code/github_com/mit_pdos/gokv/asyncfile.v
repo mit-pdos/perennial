@@ -31,10 +31,8 @@ Definition AsyncFile__Close : val :=
     do:  ((struct.field_ref AsyncFile "closeRequested" (![ptrT] "s")) <-[boolT] "$r0");;;
     do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")))) #());;;
     (for: (λ: <>, (~ (![boolT] (struct.field_ref AsyncFile "closed" (![ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
-      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #());;;
-      do:  #());;;
-    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-    do:  #()).
+      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #()));;;
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #())).
 
 (* go: storage.go:35:21 *)
 Definition AsyncFile__wait : val :=
@@ -43,10 +41,8 @@ Definition AsyncFile__wait : val :=
     let: "index" := ref_ty uint64T "index" in
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
     (for: (λ: <>, (![uint64T] (struct.field_ref AsyncFile "durableIndex" (![ptrT] "s"))) < (![uint64T] "index")); (λ: <>, Skip) := λ: <>,
-      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #());;;
-      do:  #());;;
-    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-    do:  #()).
+      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #()));;;
+    do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #())).
 
 (* go: storage.go:24:21 *)
 Definition AsyncFile__Write : val :=
@@ -67,10 +63,8 @@ Definition AsyncFile__Write : val :=
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
     return: ((λ: <>,
        do:  (let: "$a0" := ![uint64T] "index" in
-       (AsyncFile__wait (![ptrT] "s")) "$a0");;;
-       do:  #()
-       ));;;
-    do:  #()).
+       (AsyncFile__wait (![ptrT] "s")) "$a0")
+       ))).
 
 (* go: storage.go:43:21 *)
 Definition AsyncFile__flushThread : val :=
@@ -90,14 +84,12 @@ Definition AsyncFile__flushThread : val :=
         do:  ((struct.field_ref AsyncFile "closed" (![ptrT] "s")) <-[boolT] "$r0");;;
         do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
         do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #());;;
-        return: (#());;;
-        do:  #()
+        return: (#())
       else do:  #());;;
       (if: (![uint64T] (struct.field_ref AsyncFile "durableIndex" (![ptrT] "s"))) ≥ (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s")))
       then
         do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")))) #());;;
-        continue: #();;;
-        do:  #()
+        continue: #()
       else do:  #());;;
       let: "index" := ref_ty uint64T (zero_val uint64T) in
       let: "$r0" := ![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s")) in
@@ -112,9 +104,7 @@ Definition AsyncFile__flushThread : val :=
       do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
       let: "$r0" := ![uint64T] "index" in
       do:  ((struct.field_ref AsyncFile "durableIndex" (![ptrT] "s")) <-[uint64T] "$r0");;;
-      do:  ((sync.Cond__Broadcast (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #());;;
-      do:  #());;;
-    do:  #()).
+      do:  ((sync.Cond__Broadcast (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #()))).
 
 Definition AsyncFile__mset_ptr : list (string * val) := [
   ("Close", AsyncFile__Close);
@@ -153,5 +143,4 @@ Definition MakeAsyncFile : val :=
     do:  ("data" <-[sliceT byteT] "$r0");;;
     let: "$go" := AsyncFile__flushThread (![ptrT] "s") in
     do:  (Fork ("$go" #()));;;
-    return: (![sliceT byteT] "data", ![ptrT] "s");;;
-    do:  #()).
+    return: (![sliceT byteT] "data", ![ptrT] "s")).

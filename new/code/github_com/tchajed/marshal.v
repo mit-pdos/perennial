@@ -15,21 +15,15 @@ Definition Enc : go_type := structT [
 Definition Enc__Finish : val :=
   rec: "Enc__Finish" "enc" <> :=
     exception_do (let: "enc" := ref_ty Enc "enc" in
-    return: (![sliceT byteT] (struct.field_ref Enc "b" "enc"));;;
-    do:  #()).
+    return: (![sliceT byteT] (struct.field_ref Enc "b" "enc"))).
 
 (* go: marshal.go:49:6 *)
 Definition bool2byte : val :=
   rec: "bool2byte" "b" :=
     exception_do (let: "b" := ref_ty boolT "b" in
     (if: ![boolT] "b"
-    then
-      return: (#(U8 1));;;
-      do:  #()
-    else
-      return: (#(U8 0));;;
-      do:  #());;;
-    do:  #()).
+    then return: (#(U8 1))
+    else return: (#(U8 0)))).
 
 (* go: marshal.go:57:16 *)
 Definition Enc__PutBool : val :=
@@ -42,8 +36,7 @@ Definition Enc__PutBool : val :=
     let: "$r0" := let: "$a0" := ![boolT] "b" in
     bool2byte "$a0" in
     do:  ((slice.elem_ref byteT (![sliceT byteT] (struct.field_ref Enc "b" "enc")) (![uint64T] "off")) <-[byteT] "$r0");;;
-    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #1));;;
-    do:  #()).
+    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #1))).
 
 (* go: marshal.go:43:16 *)
 Definition Enc__PutBytes : val :=
@@ -57,8 +50,7 @@ Definition Enc__PutBytes : val :=
     let: "$r0" := slice.copy byteT (let: "$s" := ![sliceT byteT] (struct.field_ref Enc "b" "enc") in
     slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s")) (![sliceT byteT] "b") in
     do:  ("n" <-[uint64T] "$r0");;;
-    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + (![uint64T] "n")));;;
-    do:  #()).
+    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + (![uint64T] "n")))).
 
 (* go: marshal.go:25:16 *)
 Definition Enc__PutInt : val :=
@@ -72,8 +64,7 @@ Definition Enc__PutInt : val :=
     slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s") in
     let: "$a1" := ![uint64T] "x" in
     primitive.UInt64Put "$a0" "$a1");;;
-    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #8));;;
-    do:  #()).
+    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #8))).
 
 (* go: marshal.go:31:16 *)
 Definition Enc__PutInt32 : val :=
@@ -87,8 +78,7 @@ Definition Enc__PutInt32 : val :=
     slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s") in
     let: "$a1" := ![uint32T] "x" in
     primitive.UInt32Put "$a0" "$a1");;;
-    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #4));;;
-    do:  #()).
+    do:  ((![ptrT] (struct.field_ref Enc "off" "enc")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Enc "off" "enc"))) + #4))).
 
 (* go: marshal.go:37:16 *)
 Definition Enc__PutInts : val :=
@@ -99,9 +89,7 @@ Definition Enc__PutInts : val :=
     slice.for_range uint64T "$range" (λ: <> "x",
       let: "x" := ref_ty uint64T "x" in
       do:  (let: "$a0" := ![uint64T] "x" in
-      (Enc__PutInt (![ptrT] "enc")) "$a0");;;
-      do:  #()));;;
-    do:  #()).
+      (Enc__PutInt (![ptrT] "enc")) "$a0")))).
 
 Definition Enc__mset : list (string * val) := [
   ("Finish", Enc__Finish);
@@ -128,8 +116,7 @@ Definition NewEncFromSlice : val :=
     return: (struct.make Enc [{
        "b" ::= ![sliceT byteT] "b";
        "off" ::= ref_ty uint64T (zero_val uint64T)
-     }]);;;
-    do:  #()).
+     }])).
 
 (* go: marshal.go:20:6 *)
 Definition NewEnc : val :=
@@ -139,8 +126,7 @@ Definition NewEnc : val :=
     let: "$r0" := slice.make2 byteT (![uint64T] "sz") in
     do:  ("b" <-[sliceT byteT] "$r0");;;
     return: (let: "$a0" := ![sliceT byteT] "b" in
-     NewEncFromSlice "$a0");;;
-    do:  #()).
+     NewEncFromSlice "$a0")).
 
 Definition Dec : go_type := structT [
   "b" :: sliceT byteT;
@@ -156,13 +142,8 @@ Definition Dec__GetBool : val :=
     do:  ("off" <-[uint64T] "$r0");;;
     do:  ((![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #1));;;
     (if: (![byteT] (slice.elem_ref byteT (![sliceT byteT] (struct.field_ref Dec "b" "dec")) (![uint64T] "off"))) = #(U8 0)
-    then
-      return: (#false);;;
-      do:  #()
-    else
-      return: (#true);;;
-      do:  #());;;
-    do:  #()).
+    then return: (#false)
+    else return: (#true))).
 
 (* go: marshal.go:98:16 *)
 Definition Dec__GetBytes : val :=
@@ -177,8 +158,7 @@ Definition Dec__GetBytes : val :=
     slice.slice byteT "$s" (![uint64T] "off") ((![uint64T] "off") + (![uint64T] "num")) in
     do:  ("b" <-[sliceT byteT] "$r0");;;
     do:  ((![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + (![uint64T] "num")));;;
-    return: (![sliceT byteT] "b");;;
-    do:  #()).
+    return: (![sliceT byteT] "b")).
 
 (* go: marshal.go:78:16 *)
 Definition Dec__GetInt : val :=
@@ -190,8 +170,7 @@ Definition Dec__GetInt : val :=
     do:  ((![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #8));;;
     return: (let: "$a0" := let: "$s" := ![sliceT byteT] (struct.field_ref Dec "b" "dec") in
      slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s") in
-     primitive.UInt64Get "$a0");;;
-    do:  #()).
+     primitive.UInt64Get "$a0")).
 
 (* go: marshal.go:84:16 *)
 Definition Dec__GetInt32 : val :=
@@ -203,8 +182,7 @@ Definition Dec__GetInt32 : val :=
     do:  ((![ptrT] (struct.field_ref Dec "off" "dec")) <-[uint64T] ((![uint64T] (![ptrT] (struct.field_ref Dec "off" "dec"))) + #4));;;
     return: (let: "$a0" := let: "$s" := ![sliceT byteT] (struct.field_ref Dec "b" "dec") in
      slice.slice byteT "$s" (![uint64T] "off") (slice.len "$s") in
-     primitive.UInt32Get "$a0");;;
-    do:  #()).
+     primitive.UInt32Get "$a0")).
 
 (* go: marshal.go:90:16 *)
 Definition Dec__GetInts : val :=
@@ -215,13 +193,10 @@ Definition Dec__GetInts : val :=
     (let: "i" := ref_ty uint64T (zero_val uint64T) in
     let: "$r0" := #0 in
     do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1));;;
-    #()) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1))) := λ: <>,
       let: "$r0" := slice.append uint64T (![sliceT uint64T] "xs") (slice.literal uint64T [(Dec__GetInt (![ptrT] "dec")) #()]) in
-      do:  ("xs" <-[sliceT uint64T] "$r0");;;
-      do:  #()));;;
-    return: (![sliceT uint64T] "xs");;;
-    do:  #()).
+      do:  ("xs" <-[sliceT uint64T] "$r0")));;;
+    return: (![sliceT uint64T] "xs")).
 
 Definition Dec__mset : list (string * val) := [
   ("GetBool", Dec__GetBool);
@@ -246,8 +221,7 @@ Definition NewDec : val :=
     return: (struct.make Dec [{
        "b" ::= ![sliceT byteT] "b";
        "off" ::= ref_ty uint64T (zero_val uint64T)
-     }]);;;
-    do:  #()).
+     }])).
 
 (* go: stateless.go:8:6 *)
 Definition compute_new_cap : val :=
@@ -258,11 +232,9 @@ Definition compute_new_cap : val :=
     (if: (![uint64T] "new_cap") < (![uint64T] "min_cap")
     then
       let: "$r0" := ![uint64T] "min_cap" in
-      do:  ("new_cap" <-[uint64T] "$r0");;;
-      do:  #()
+      do:  ("new_cap" <-[uint64T] "$r0")
     else do:  #());;;
-    return: (![uint64T] "new_cap");;;
-    do:  #()).
+    return: (![uint64T] "new_cap")).
 
 (* Grow a slice to have at least `additional` unused bytes in the capacity.
    Runtime-check against overflow.
@@ -288,12 +260,8 @@ Definition reserve : val :=
       let: "$r0" := slice.make3 byteT (slice.len (![sliceT byteT] "b")) (![uint64T] "new_cap") in
       do:  ("dest" <-[sliceT byteT] "$r0");;;
       do:  (slice.copy byteT (![sliceT byteT] "dest") (![sliceT byteT] "b"));;;
-      return: (![sliceT byteT] "dest");;;
-      do:  #()
-    else
-      return: (![sliceT byteT] "b");;;
-      do:  #());;;
-    do:  #()).
+      return: (![sliceT byteT] "dest")
+    else return: (![sliceT byteT] "b"))).
 
 (* go: stateless.go:40:6 *)
 Definition ReadInt : val :=
@@ -304,8 +272,7 @@ Definition ReadInt : val :=
     primitive.UInt64Get "$a0" in
     do:  ("i" <-[uint64T] "$r0");;;
     return: (![uint64T] "i", let: "$s" := ![sliceT byteT] "b" in
-     slice.slice byteT "$s" #8 (slice.len "$s"));;;
-    do:  #()).
+     slice.slice byteT "$s" #8 (slice.len "$s"))).
 
 (* go: stateless.go:45:6 *)
 Definition ReadInt32 : val :=
@@ -316,8 +283,7 @@ Definition ReadInt32 : val :=
     primitive.UInt32Get "$a0" in
     do:  ("i" <-[uint32T] "$r0");;;
     return: (![uint32T] "i", let: "$s" := ![sliceT byteT] "b" in
-     slice.slice byteT "$s" #4 (slice.len "$s"));;;
-    do:  #()).
+     slice.slice byteT "$s" #4 (slice.len "$s"))).
 
 (* ReadBytes reads `l` bytes from b and returns (bs, rest)
 
@@ -331,8 +297,7 @@ Definition ReadBytes : val :=
     slice.slice byteT "$s" #0 (![uint64T] "l") in
     do:  ("s" <-[sliceT byteT] "$r0");;;
     return: (![sliceT byteT] "s", let: "$s" := ![sliceT byteT] "b" in
-     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"));;;
-    do:  #()).
+     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"))).
 
 (* Like ReadBytes, but avoids keeping the source slice [b] alive.
 
@@ -347,8 +312,7 @@ Definition ReadBytesCopy : val :=
     do:  (slice.copy byteT (![sliceT byteT] "s") (let: "$s" := ![sliceT byteT] "b" in
     slice.slice byteT "$s" #0 (![uint64T] "l")));;;
     return: (![sliceT byteT] "s", let: "$s" := ![sliceT byteT] "b" in
-     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"));;;
-    do:  #()).
+     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"))).
 
 (* go: stateless.go:63:6 *)
 Definition ReadBool : val :=
@@ -358,8 +322,7 @@ Definition ReadBool : val :=
     let: "$r0" := (![byteT] (slice.elem_ref byteT (![sliceT byteT] "b") #0)) ≠ #(U8 0) in
     do:  ("x" <-[boolT] "$r0");;;
     return: (![boolT] "x", let: "$s" := ![sliceT byteT] "b" in
-     slice.slice byteT "$s" #1 (slice.len "$s"));;;
-    do:  #()).
+     slice.slice byteT "$s" #1 (slice.len "$s"))).
 
 (* go: stateless.go:68:6 *)
 Definition ReadLenPrefixedBytes : val :=
@@ -382,8 +345,7 @@ Definition ReadLenPrefixedBytes : val :=
     let: "$r1" := "$ret1" in
     do:  ("bs" <-[sliceT byteT] "$r0");;;
     do:  ("b3" <-[sliceT byteT] "$r1");;;
-    return: (![sliceT byteT] "bs", ![sliceT byteT] "b3");;;
-    do:  #()).
+    return: (![sliceT byteT] "bs", ![sliceT byteT] "b3")).
 
 (* WriteInt appends i in little-endian format to b, returning the new slice.
 
@@ -408,8 +370,7 @@ Definition WriteInt : val :=
     slice.slice byteT "$s" (![intT] "off") (slice.len "$s") in
     let: "$a1" := ![uint64T] "i" in
     primitive.UInt64Put "$a0" "$a1");;;
-    return: (![sliceT byteT] "b3");;;
-    do:  #()).
+    return: (![sliceT byteT] "b3")).
 
 (* WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice.
 
@@ -434,8 +395,7 @@ Definition WriteInt32 : val :=
     slice.slice byteT "$s" (![intT] "off") (slice.len "$s") in
     let: "$a1" := ![uint32T] "i" in
     primitive.UInt32Put "$a0" "$a1");;;
-    return: (![sliceT byteT] "b3");;;
-    do:  #()).
+    return: (![sliceT byteT] "b3")).
 
 (* Append data to b, returning the new slice.
 
@@ -444,8 +404,7 @@ Definition WriteBytes : val :=
   rec: "WriteBytes" "b" "data" :=
     exception_do (let: "data" := ref_ty (sliceT byteT) "data" in
     let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (slice.append byteT (![sliceT byteT] "b") (![sliceT byteT] "data"));;;
-    do:  #()).
+    return: (slice.append byteT (![sliceT byteT] "b") (![sliceT byteT] "data"))).
 
 (* go: stateless.go:100:6 *)
 Definition WriteBool : val :=
@@ -453,13 +412,8 @@ Definition WriteBool : val :=
     exception_do (let: "x" := ref_ty boolT "x" in
     let: "b" := ref_ty (sliceT byteT) "b" in
     (if: ![boolT] "x"
-    then
-      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 1) ]));;;
-      do:  #()
-    else
-      return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 0) ]));;;
-      do:  #());;;
-    do:  #()).
+    then return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 1) ]))
+    else return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 0) ])))).
 
 (* go: stateless.go:108:6 *)
 Definition WriteLenPrefixedBytes : val :=
@@ -473,7 +427,6 @@ Definition WriteLenPrefixedBytes : val :=
     do:  ("b2" <-[sliceT byteT] "$r0");;;
     return: (let: "$a0" := ![sliceT byteT] "b2" in
      let: "$a1" := ![sliceT byteT] "bs" in
-     WriteBytes "$a0" "$a1");;;
-    do:  #()).
+     WriteBytes "$a0" "$a1")).
 
 End code.

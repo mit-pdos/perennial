@@ -21,8 +21,7 @@ Definition LockClerk__Lock : val :=
     let: "$a1" := #(str "") in
     let: "$a2" := #(str "1") in
     (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref LockClerk "kv" (![ptrT] "ck")))) "$a0" "$a1" "$a2") ≠ #(str "ok")); (λ: <>, Skip) := λ: <>,
-      do:  #());;;
-    do:  #()).
+      do:  #())).
 
 (* go: lock_clerk.go:16:22 *)
 Definition LockClerk__Unlock : val :=
@@ -31,8 +30,7 @@ Definition LockClerk__Unlock : val :=
     let: "key" := ref_ty stringT "key" in
     do:  (let: "$a0" := ![stringT] "key" in
     let: "$a1" := #(str "") in
-    (interface.get "Put" (![kv.KvCput] (struct.field_ref LockClerk "kv" (![ptrT] "ck")))) "$a0" "$a1");;;
-    do:  #()).
+    (interface.get "Put" (![kv.KvCput] (struct.field_ref LockClerk "kv" (![ptrT] "ck")))) "$a0" "$a1")).
 
 Definition LockClerk__mset_ptr : list (string * val) := [
   ("Lock", LockClerk__Lock);
@@ -45,7 +43,6 @@ Definition MakeLockClerk : val :=
     exception_do (let: "kv" := ref_ty kv.KvCput "kv" in
     return: (ref_ty LockClerk (struct.make LockClerk [{
        "kv" ::= ![kv.KvCput] "kv"
-     }]));;;
-    do:  #()).
+     }]))).
 
 End code.
