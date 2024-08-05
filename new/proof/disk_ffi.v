@@ -1,23 +1,27 @@
 From New.proof Require Import proof_prelude.
 From Perennial.goose_lang.ffi.disk_ffi Require Import impl specs.
-From Perennial.program_proof Require Import disk_lib.
 
 #[global]
-Existing Instances disk.disk_op disk.disk_model disk.disk_ty.
+Existing Instances disk_op disk_model.
 #[global]
-Existing Instances disk.disk_semantics disk_interp.
+Existing Instances disk_semantics disk_interp.
 
 Section proof.
 Context `{!heapGS Σ}.
 
-Definition own_block (s:slice.t) (q: dfrac) (b:disk.Block) :=
-  own_slice s byteT q (disk.Block_to_vals b).
+Definition own_block (s : slice.t) (q : dfrac) (b : impl.Block) :=
+  own_slice s byteT q (impl.Block_to_vals b).
 
 (* NOTE: disk_lib in the old proofs first proved more general specs that showed
 this step is atomic, then derived this weaker statement. The more general specs
 are needed when the disk points-to is itself in an invariant or crash borrow. *)
 
-Lemma wp_Disk__Read (dv: val) (a: w64) dq (b: disk.Block) :
+(* XXX: in order to build the Goose semantics example, the disk library is not
+   split up into a primitive ffi (impl.v) and typed implementation (typed_impl.v
+   for the old version). This breaks the code below, but the strategy of using
+   the old typed specs to prove new typed specs may be discarded. *)
+(*
+Lemma wp_Disk__Read (dv: val) (a: w64) dq (b: impl.Block) :
   {{{ uint.Z a d↦{dq} b }}}
     disk.Read #a
   {{{ (s: slice.t), RET (slice.val s);
@@ -44,6 +48,6 @@ Lemma wp_Disk__Write (dv: val) (a: w64) dq (b: disk.Block) s :
       uint.Z a d↦{dq} b ∗ own_block s dq b
   }}}.
 Proof.
-Admitted.
+Admitted. *)
 
 End proof.

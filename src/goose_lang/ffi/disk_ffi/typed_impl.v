@@ -21,6 +21,9 @@ Definition disk_ty : ext_types disk_op :=
   {| val_tys := disk_val_ty;
     get_ext_tys := disk_ext_tys |}.
 
+
+Definition disk_val (d : ()) : @val disk_op := @ExtV disk_op d.
+
 Module disk.
   Definition Disk: ty := extT DiskInterfaceTy.
 
@@ -28,8 +31,6 @@ Module disk.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the disk model *)
   Existing Instances disk_op disk_model disk_ty.
-
-  Definition disk_val (d : ()) : val := ExtV d.
 
   Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 

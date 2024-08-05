@@ -6,7 +6,7 @@ From Goose.github_com.mit_pdos.go_journal Require Import obj txn alloc.
 From Perennial.program_proof Require Import txn.op_wrappers.
 From Perennial.program_proof Require jrnl.sep_jrnl_proof buf.defs.
 
-Export ffi.disk_ffi.impl.disk.
+Export ffi.disk_ffi.typed_impl ffi.disk_ffi.typed_impl.disk.
 
 Section translate.
 

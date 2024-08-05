@@ -13,7 +13,7 @@ Definition update_val (up:u64*Slice.t): val :=
 Theorem update_val_t u : val_ty (update_val u) (struct.t Update).
 Proof.
   repeat constructor.
-  destruct u; rewrite /blockT; val_ty.
+  destruct u; rewrite /disk.blockT; val_ty.
 Qed.
 
 Hint Resolve update_val_t : core.
@@ -173,7 +173,7 @@ Proof.
   destruct v as [a []]; done.
 Defined.
 
-Global Instance update_into_val_for_type : IntoValForType (u64 * Slice.t) (uint64T * (blockT * unitT)%ht).
+Global Instance update_into_val_for_type : IntoValForType (u64 * Slice.t) (uint64T * (disk.blockT * unitT)%ht).
 Proof. constructor; simpl; done. Qed.
 
 Instance update_val_inj : Inj eq eq update_val.
