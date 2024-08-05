@@ -865,7 +865,7 @@ Proof.
   iDestruct (big_sepL2_length with "Hblocks") as %Hbks_len.
   autorewrite with len in Hbks_len.
   fold (slidingM.numMutable σ).
-  change (uint64T * (blockT * unitT))%ht with (struct.t Update).
+  change (uint64T * (disk.blockT * unitT))%ht with (struct.t Update).
   set (s':=slice_take logSlice (slidingM.numMutable σ)).
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   autorewrite with len in Hsz.
@@ -1203,7 +1203,7 @@ Proof.
                          log)) -∗
     (updates_slice_frag
        (slice_take
-          (slice_skip logSlice (uint64T * (blockT * unitT)%ht)
+          (slice_skip logSlice (uint64T * (disk.blockT * unitT)%ht)
              (word.sub newStart start))
           (word.sub mutable newStart)) (DfracOwn q)
        (take (uint.nat (word.sub mutable newStart))

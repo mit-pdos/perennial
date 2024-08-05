@@ -820,7 +820,7 @@ Proof.
       iApply (prepare_reserved_block with "Hreserved"); auto; try lia.
       iSplit; first iFromCache.
       iIntros "Hda Hreserved".
-      wpc_bind (Write _ _).
+      wpc_bind (disk.Write _ _).
       (* hide this horrible postcondition for now *)
       match goal with
       | |- envs_entails _ (wpc _ _ _ ?Φ0 _) => set (Φ':=Φ0)

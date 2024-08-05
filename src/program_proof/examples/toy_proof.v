@@ -54,7 +54,7 @@ Section goose.
     { eauto. }
     iIntros "Hslice"; iNamed 1.
     wpc_pures.
-    wpc_bind (Write _ _).
+    wpc_bind (disk.Write _ _).
     iApply (wpc_Write_fupd E1 with "[ Hslice]").
     { rewrite /is_block. iExactEq "Hslice". f_equal.
       erewrite <-written_slice_to_written_block. eauto.
@@ -70,7 +70,7 @@ Section goose.
     iIntros "Hblock".
     wpc_pures.
 
-    wpc_bind (Read _).
+    wpc_bind (disk.Read _).
     iApply (wpc_Read with "Hwritten").
     iSplit.
     { iLeft in "HΦ". iIntros "Hwritten". iApply "HΦ".
