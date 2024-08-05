@@ -6,6 +6,7 @@ From Perennial.program_proof Require Import
      buf.defs
      addr.addr_proof
      txn.typed_translate.
+From Perennial.goose_lang.ffi Require Import disk_ffi.impl.
 
 (* TODO: this file reduces the assumptions required in twophase_initP. Using
 these theorems, it should be straightforward to delete the last two assumptions
