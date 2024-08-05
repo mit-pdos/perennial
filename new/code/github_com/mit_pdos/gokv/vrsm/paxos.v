@@ -19,7 +19,7 @@ Definition RPC_BECOME_LEADER : expr := #2.
 
 Definition singleClerk : go_type := structT [
   "cl" :: ptrT
-].
+]%struct.
 
 Definition singleClerk__mset : list (string * val) := [
 ].
@@ -41,7 +41,7 @@ Definition Error : go_type := uint64T.
 
 Definition applyAsFollowerReply : go_type := structT [
   "err" :: Error
-].
+]%struct.
 
 Definition ETimeout : expr := #3.
 
@@ -69,7 +69,7 @@ Definition applyAsFollowerArgs : go_type := structT [
   "epoch" :: uint64T;
   "nextIndex" :: uint64T;
   "state" :: sliceT byteT
-].
+]%struct.
 
 (* go: marshal.go:21:6 *)
 Definition encodeApplyAsFollowerArgs : val :=
@@ -125,7 +125,7 @@ Definition enterNewEpochReply : go_type := structT [
   "acceptedEpoch" :: uint64T;
   "nextIndex" :: uint64T;
   "state" :: sliceT byteT
-].
+]%struct.
 
 (* go: marshal.go:77:6 *)
 Definition decodeEnterNewEpochReply : val :=
@@ -162,7 +162,7 @@ Definition decodeEnterNewEpochReply : val :=
 
 Definition enterNewEpochArgs : go_type := structT [
   "epoch" :: uint64T
-].
+]%struct.
 
 (* go: marshal.go:58:6 *)
 Definition encodeEnterNewEpochArgs : val :=
@@ -340,7 +340,7 @@ Definition encodeEnterNewEpochReply : val :=
 Definition applyReply : go_type := structT [
   "err" :: Error;
   "ret" :: sliceT byteT
-].
+]%struct.
 
 Definition applyReply__mset : list (string * val) := [
 ].
@@ -400,7 +400,7 @@ Definition paxosState : go_type := structT [
   "nextIndex" :: uint64T;
   "state" :: sliceT byteT;
   "isLeader" :: boolT
-].
+]%struct.
 
 (* go: marshal.go:128:6 *)
 Definition encodePaxosState : val :=
@@ -478,7 +478,7 @@ Definition Server : go_type := structT [
   "ps" :: ptrT;
   "storage" :: ptrT;
   "clerks" :: sliceT ptrT
-].
+]%struct.
 
 Definition Server__mset : list (string * val) := [
 ].
@@ -603,13 +603,13 @@ Definition Server__TryBecomeLeader : val :=
   rec: "Server__TryBecomeLeader" "s" <> :=
     exception_do (let: "s" := ref_ty ptrT "s" in
     do:  (let: "$a0" := (let: "$sl0" := interface.make string__mset #(str "started trybecomeleader") in
-    slice.literal ["$sl0"]) in
+    slice.literal interfaceT ["$sl0"]) in
     log.Println "$a0");;;
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
     (if: ![boolT] (struct.field_ref paxosState "isLeader" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))
     then
       do:  (let: "$a0" := (let: "$sl0" := interface.make string__mset #(str "already leader") in
-      slice.literal ["$sl0"]) in
+      slice.literal interfaceT ["$sl0"]) in
       log.Println "$a0");;;
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
       return: (#())
@@ -694,7 +694,7 @@ Definition Server__TryBecomeLeader : val :=
           do:  (let: "$a0" := #(str "succeeded becomeleader in epoch %d
           ") in
           let: "$a1" := (let: "$sl0" := interface.make uint64__mset (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args"))) in
-          slice.literal ["$sl0"]) in
+          slice.literal interfaceT ["$sl0"]) in
           log.Printf "$a0" "$a1");;;
           let: "$r0" := ![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args")) in
           do:  ((struct.field_ref paxosState "epoch" (![ptrT] "ps")) <-[uint64T] "$r0");;;
@@ -713,7 +713,7 @@ Definition Server__TryBecomeLeader : val :=
     else
       do:  ((sync.Mutex__Unlock (![ptrT] "mu")) #());;;
       do:  (let: "$a0" := (let: "$sl0" := interface.make string__mset #(str "failed becomeleader") in
-      slice.literal ["$sl0"]) in
+      slice.literal interfaceT ["$sl0"]) in
       log.Println "$a0"))).
 
 (* go: server.go:235:18 *)
@@ -827,8 +827,11 @@ Definition makeServer : val :=
     do:  (let: "$range" := ![sliceT uint64T] "config" in
     slice.for_range uint64T "$range" (λ: <> "host",
       let: "host" := ref_ty uint64T "host" in
-      let: "$r0" := slice.append ptrT (![sliceT ptrT] (struct.field_ref Server "clerks" (![ptrT] "s"))) (slice.literal ptrT [let: "$a0" := ![uint64T] "host" in
-       MakeSingleClerk "$a0"]) in
+      let: "$r0" := let: "$a0" := ![sliceT ptrT] (struct.field_ref Server "clerks" (![ptrT] "s")) in
+      let: "$a1" := (let: "$sl0" := let: "$a0" := ![uint64T] "host" in
+      MakeSingleClerk "$a0" in
+      slice.literal ptrT ["$sl0"]) in
+      (slice.append (sliceT ptrT)) "$a0" "$a1" in
       do:  ((struct.field_ref Server "clerks" (![ptrT] "s")) <-[sliceT ptrT] "$r0")));;;
     let: "encstate" := ref_ty (sliceT byteT) (zero_val (sliceT byteT)) in
     let: ("$ret0", "$ret1") := let: "$a0" := ![stringT] "fname" in

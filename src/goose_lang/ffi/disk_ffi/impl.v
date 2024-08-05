@@ -3,13 +3,10 @@ From stdpp Require Import vector fin_maps.
 From RecordUpdate Require Import RecordUpdate.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
-From Perennial.goose_lang Require Import lang typing notation.
-From Perennial.goose_lang.lib Require Import slice.
+From Perennial.goose_lang Require Import lang notation.
 
 Set Default Proof Using "Type".
 Set Printing Projections.
-
-Module disk.
 
 Inductive DiskOp : Set := ReadOp | WriteOp | SizeOp.
 #[global]
@@ -29,34 +26,14 @@ Proof.
   refine (mkExtOp DiskOp _ _ () _ _).
 Defined.
 
-Inductive Disk_ty := | DiskInterfaceTy.
-
-#[global]
-Instance disk_val_ty: val_types :=
-  {| ext_tys := Disk_ty; |}.
-
 Section disk.
-  Existing Instances disk_op disk_val_ty.
+  Existing Instances disk_op.
 
-  Inductive disk_ext_tys : @val disk_op -> (ty * ty) -> Prop :=
-  | DiskOpType op :
-      disk_ext_tys (λ: "v", ExternalOp op (Var "v"))%V
-                   (match op with
-                   | ReadOp => (uint64T, arrayT byteT)
-                   | WriteOp => (prodT uint64T (arrayT byteT), unitT)
-                   | SizeOp => (unitT, uint64T)
-                   end).
-
-  Definition disk_ty: ext_types disk_op :=
-    {| val_tys := disk_val_ty;
-       get_ext_tys := disk_ext_tys |}.
-  Definition Disk: ty := extT DiskInterfaceTy.
 End disk.
 
 Definition block_bytes: nat := Z.to_nat 4096.
 Definition BlockSize {ext: ffi_syntax}: val := #4096.
 Definition Block := vec byte block_bytes.
-Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 (* TODO: could use vreplicate; not sure how much easier it is to work with *)
 Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (W8 0)).
 
@@ -89,42 +66,9 @@ Proof.
   rewrite /Block_to_vals fmap_length vec_to_list_length //.
 Qed.
 
-Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
-  replicate (uint.nat 4096) (zero_val byteT) =
-  Block_to_vals block0.
-Proof. reflexivity. Qed.
-
 Section disk.
-  (* these are local instances on purpose, so that importing this files doesn't
-  suddenly cause all FFI parameters to be inferred as the disk model *)
-  Existing Instances disk_op disk_model disk_ty.
 
-  Definition disk_val (d : ()) : val := ExtV d.
-
-  Definition Get: val :=
-    λ: <>, disk_val ().
-
-  Definition Read: val :=
-    λ: "a",
-    let: "p" := ExternalOp ReadOp (Var "a") in
-    raw_slice byteT (Var "p") #4096.
-
-  Definition ReadTo: val :=
-    λ: "a" "buf",
-    let: "p" := ExternalOp ReadOp (Var "a") in
-    MemCpy_rec byteT (slice.ptr (Var "buf")) (Var "p") #4096.
-
-  Definition Write: val :=
-    λ: "a" "b",
-    ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
-
-  Definition Barrier: val :=
-    λ: <>, #().
-
-  Definition Size: val :=
-    λ: "v",
-       ExternalOp SizeOp (Var "v").
-
+  Existing Instances disk_op disk_model.
   Existing Instances r_mbind r_fmap.
 
   Definition highest_addr (addrs: gset Z): Z :=
@@ -160,7 +104,5 @@ Section disk.
   Instance disk_semantics : ffi_semantics disk_op disk_model :=
     { ffi_step := ffi_step;
       ffi_crash_step := eq; }.
-
-End disk.
 
 End disk.

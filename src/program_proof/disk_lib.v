@@ -10,6 +10,11 @@ Implicit Types z : Z.
 Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
+Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
+  replicate (uint.nat 4096) (zero_val byteT) =
+  Block_to_vals block0.
+Proof. reflexivity. Qed.
+
 Definition is_block (s:Slice.t) (q: dfrac) (b:Block) :=
   own_slice_small s byteT q (Block_to_vals b).
 
@@ -155,7 +160,7 @@ Local Ltac solve_atomic :=
 Theorem wp_Write_atomic (a: u64) s q b :
   ⊢ {{{ own_slice_small s byteT q (Block_to_vals b) }}}
   <<< ∀∀ b0, uint.Z a d↦ b0 >>>
-    Write #a (slice_val s) @ ∅
+    disk.Write #a (slice_val s) @ ∅
   <<< uint.Z a d↦ b >>>
   {{{ RET #(); own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
@@ -187,7 +192,7 @@ Qed.
 Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
   {{{ own_slice_small s byteT q (Block_to_vals b) ∗
       (|NC={⊤,E'}=> ∃ b0, uint.Z a d↦ b0 ∗ (uint.Z a d↦ b -∗ |NC={E',⊤}=> Q)) }}}
-    Write #a (slice_val s)
+    disk.Write #a (slice_val s)
   {{{ RET #(); own_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_atomic with "Hs").
@@ -201,7 +206,7 @@ Qed.
 
 Theorem wp_Write (a: u64) s q b :
   {{{ ∃ b0, uint.Z a d↦ b0 ∗ own_slice_small s byteT q (Block_to_vals b) }}}
-    Write #a (slice_val s)
+    disk.Write #a (slice_val s)
   {{{ RET #(); uint.Z a d↦ b ∗ own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -215,7 +220,7 @@ Qed.
 
 Theorem wp_Write' (z: Z) (a: u64) s q b :
   {{{ ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ own_slice_small s byteT q (Block_to_vals b) }}}
-    Write #a (slice_val s)
+    disk.Write #a (slice_val s)
   {{{ RET #(); z d↦ b ∗ own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "[<- >Hpre] HΦ".
@@ -225,7 +230,7 @@ Qed.
 
 Lemma wp_Read_atomic (a: u64) q :
   ⊢ <<< ∀∀ b, uint.Z a d↦{q} b >>>
-      Read #a @ ∅
+      disk.Read #a @ ∅
     <<< uint.Z a d↦{q} b >>>
     {{{ s, RET slice_val s; is_block_full s b }}}.
 Proof.
@@ -249,7 +254,7 @@ Qed.
 Lemma wp_ReadTo_atomic (a: u64) b0 s q :
   ⊢ {{{ is_block_full s b0 }}}
   <<< ∀∀ b, uint.Z a d↦{q} b >>>
-      ReadTo #a (slice_val s) @ ∅
+      disk.ReadTo #a (slice_val s) @ ∅
     <<< uint.Z a d↦{q} b >>>
     {{{ RET #(); is_block_full s b }}}.
 Proof.
@@ -294,7 +299,7 @@ Qed.
 
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
   {{{ |NC={⊤,E'}=> ∃ b, uint.Z a d↦{q} b ∗ (uint.Z a d↦{q} b -∗ |NC={E',⊤}=> Q b) }}}
-    Read #a
+    disk.Read #a
   {{{ s b, RET slice_val s;
       Q b ∗ is_block_full s b }}}.
 Proof.
@@ -309,7 +314,7 @@ Qed.
 
 Lemma wp_Read (a: u64) q b :
   {{{ uint.Z a d↦{q} b }}}
-    Read #a
+    disk.Read #a
   {{{ s, RET slice_val s;
       uint.Z a d↦{q} b ∗ is_block_full s b }}}.
 Proof.
@@ -323,7 +328,7 @@ Qed.
 
 Lemma wp_Read_eq (a: u64) (a': Z) q b :
   {{{ a' d↦{q} b ∗ ⌜uint.Z a = a'⌝ }}}
-    Read #a
+    disk.Read #a
   {{{ s, RET slice_val s;
       a' d↦{q} b ∗ is_block_full s b }}}.
 Proof.
@@ -335,7 +340,7 @@ Qed.
 
 Lemma wp_Barrier stk E  :
   {{{ True }}}
-    Barrier #() @ stk; E
+    disk.Barrier #() @ stk; E
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -345,12 +350,12 @@ Qed.
 
 Lemma wpc_Barrier stk E1 :
   {{{ True }}}
-    Barrier #() @ stk; E1
+    disk.Barrier #() @ stk; E1
   {{{ RET #(); True }}}
   {{{ True }}}.
 Proof.
   iIntros (Φ Φc) "_ HΦ".
-  rewrite /Barrier.
+  rewrite /disk.Barrier.
   wpc_pures; auto.
   - by crash_case.
   - iRight in "HΦ".
@@ -360,14 +365,14 @@ Qed.
 
 Lemma wpc_Read stk E1 (a: u64) q b :
   {{{ uint.Z a d↦{q} b }}}
-    Read #a @ stk; E1
+    disk.Read #a @ stk; E1
   {{{ s, RET slice_val s;
       uint.Z a d↦{q} b ∗
       own_slice s byteT (DfracOwn 1) (Block_to_vals b) }}}
   {{{ uint.Z a d↦{q} b }}}.
 Proof.
   iIntros (Φ Φc) "Hda HΦ".
-  rewrite /Read.
+  rewrite /disk.Read.
   wpc_pures.
   { by crash_case. }
   wpc_bind (ExternalOp _ _).
@@ -398,10 +403,10 @@ Theorem wpc_Write_ncfupd {stk E1} E1' (a: u64) s q b :
     is_block s q b -∗
     (Φc ∧ |NC={E1,E1'}=> ∃ b0, uint.Z a d↦ b0 ∗ ▷ (uint.Z a d↦ b -∗ |NC={E1',E1}=>
           Φc ∧ (is_block s q b -∗ Φ #()))) -∗
-    WPC Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
+    WPC disk.Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Φ Φc) "Hs Hfupd".
-  rewrite /Write /slice.ptr.
+  rewrite /disk.Write /slice.ptr.
   wpc_pures.
   { iLeft in "Hfupd". iFrame. }
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
@@ -441,7 +446,7 @@ Theorem wpc_Write_fupd {stk E1} E1' (a: u64) s q b :
     is_block s q b -∗
     (Φc ∧ |={E1,E1'}=> ∃ b0, uint.Z a d↦ b0 ∗ ▷ (uint.Z a d↦ b ={E1',E1}=∗
           Φc ∧ (is_block s q b -∗ Φ #()))) -∗
-    WPC Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
+    WPC disk.Write #a (slice_val s) @ stk; E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (??) "Hblock HΦc".
   wpc_apply (wpc_Write_ncfupd with "[$]").
@@ -455,7 +460,7 @@ Qed.
 Theorem wpc_Write_fupd_triple {stk E1} E1' (Q Qc: iProp Σ) (a: u64) s q b :
   {{{ is_block s q b ∗
       (Qc ∧ |={E1,E1'}=> ∃ b0, uint.Z a d↦ b0 ∗ ▷ (uint.Z a d↦ b ={E1',E1}=∗ Qc ∧ Q)) }}}
-    Write #a (slice_val s) @ stk; E1
+    disk.Write #a (slice_val s) @ stk; E1
   {{{ RET #(); is_block s q b ∗ Qc ∧ Q }}}
   {{{ Qc }}}.
 Proof.
@@ -472,7 +477,7 @@ Qed.
 
 Theorem wpc_Write' stk E1 (a: u64) s q b0 b :
   {{{ uint.Z a d↦ b0 ∗ is_block s q b }}}
-    Write #a (slice_val s) @ stk; E1
+    disk.Write #a (slice_val s) @ stk; E1
   {{{ RET #(); uint.Z a d↦ b ∗ is_block s q b }}}
   {{{ (uint.Z a d↦ b0 ∨ uint.Z a d↦ b) }}}.
 Proof.
@@ -494,7 +499,7 @@ Qed.
 
 Theorem wpc_Write stk E1 (a: u64) s q b :
   {{{ ∃ b0, uint.Z a d↦ b0 ∗ is_block s q b }}}
-    Write #a (slice_val s) @ stk; E1
+    disk.Write #a (slice_val s) @ stk; E1
   {{{ RET #(); uint.Z a d↦ b ∗ is_block s q b }}}
   {{{ ∃ b', uint.Z a d↦ b' }}}.
 Proof.

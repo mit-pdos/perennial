@@ -7,11 +7,10 @@ From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Import ectx_lifting.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
-From Perennial.goose_lang Require Import lang lifting slice typing.
+From Perennial.goose_lang Require Import lang lifting.
 From Perennial.goose_lang Require Import crash_modality.
 
 From Perennial.goose_lang.ffi.disk_ffi Require Import impl.
-Import disk_ffi.impl.disk.
 
 Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is
@@ -36,7 +35,7 @@ Definition disk_update_pre {Σ} (dG: disk_preG Σ) (n: gen_heap_names) :=
   {| diskG_gen_heapG := gen_heapG_update_pre (@disk_preG_gen_heapG _ dG) n |}.
 
 Section disk.
-  #[local] Existing Instances disk_op disk_model disk_ty disk_semantics.
+  #[local] Existing Instances disk_op disk_model disk_semantics.
 
   Program Instance disk_interp: ffi_interp disk_model :=
     {| ffiLocalGS := diskGS;
@@ -376,8 +375,6 @@ lemmas. *)
   Qed.
 
 End disk.
-
-Global Opaque Write Read Size.
 
 Notation "l d↦{ q } v" := (pointsto (L:=Z) (V:=Block) l q%Qp v%V)
                             (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.

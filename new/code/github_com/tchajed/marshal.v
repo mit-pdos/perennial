@@ -9,7 +9,7 @@ Context `{ffi_syntax}.
 Definition Enc : go_type := structT [
   "b" :: sliceT byteT;
   "off" :: ptrT
-].
+]%struct.
 
 (* go: marshal.go:63:16 *)
 Definition Enc__Finish : val :=
@@ -131,7 +131,7 @@ Definition NewEnc : val :=
 Definition Dec : go_type := structT [
   "b" :: sliceT byteT;
   "off" :: ptrT
-].
+]%struct.
 
 (* go: marshal.go:105:16 *)
 Definition Dec__GetBool : val :=
@@ -194,7 +194,10 @@ Definition Dec__GetInts : val :=
     let: "$r0" := #0 in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1))) := λ: <>,
-      let: "$r0" := slice.append uint64T (![sliceT uint64T] "xs") (slice.literal uint64T [(Dec__GetInt (![ptrT] "dec")) #()]) in
+      let: "$r0" := let: "$a0" := ![sliceT uint64T] "xs" in
+      let: "$a1" := (let: "$sl0" := (Dec__GetInt (![ptrT] "dec")) #() in
+      slice.literal uint64T ["$sl0"]) in
+      (slice.append (sliceT uint64T)) "$a0" "$a1" in
       do:  ("xs" <-[sliceT uint64T] "$r0")));;;
     return: (![sliceT uint64T] "xs")).
 
@@ -404,7 +407,9 @@ Definition WriteBytes : val :=
   rec: "WriteBytes" "b" "data" :=
     exception_do (let: "data" := ref_ty (sliceT byteT) "data" in
     let: "b" := ref_ty (sliceT byteT) "b" in
-    return: (slice.append byteT (![sliceT byteT] "b") (![sliceT byteT] "data"))).
+    return: (let: "$a0" := ![sliceT byteT] "b" in
+     let: "$a1" := ![sliceT byteT] "data" in
+     (slice.append (sliceT byteT)) "$a0" "$a1")).
 
 (* go: stateless.go:100:6 *)
 Definition WriteBool : val :=
@@ -412,8 +417,16 @@ Definition WriteBool : val :=
     exception_do (let: "x" := ref_ty boolT "x" in
     let: "b" := ref_ty (sliceT byteT) "b" in
     (if: ![boolT] "x"
-    then return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 1) ]))
-    else return: (slice.append byteT (![sliceT byteT] "b") (slice.literal byteT [ #(U8 0) ])))).
+    then
+      return: (let: "$a0" := ![sliceT byteT] "b" in
+       let: "$a1" := (let: "$sl0" := #(U8 1) in
+       slice.literal byteT ["$sl0"]) in
+       (slice.append (sliceT byteT)) "$a0" "$a1")
+    else
+      return: (let: "$a0" := ![sliceT byteT] "b" in
+       let: "$a1" := (let: "$sl0" := #(U8 0) in
+       slice.literal byteT ["$sl0"]) in
+       (slice.append (sliceT byteT)) "$a0" "$a1"))).
 
 (* go: stateless.go:108:6 *)
 Definition WriteLenPrefixedBytes : val :=

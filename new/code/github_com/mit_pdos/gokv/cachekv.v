@@ -10,7 +10,7 @@ From New Require Import grove_prelude.
 Definition cacheValue : go_type := structT [
   "v" :: stringT;
   "l" :: uint64T
-].
+]%struct.
 
 Definition cacheValue__mset : list (string * val) := [
 ].
@@ -22,7 +22,7 @@ Definition CacheKv : go_type := structT [
   "kv" :: kv.KvCput;
   "mu" :: ptrT;
   "cache" :: mapT stringT cacheValue
-].
+]%struct.
 
 Definition CacheKv__mset : list (string * val) := [
 ].
@@ -70,9 +70,9 @@ Definition CacheKv__Get : val :=
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
       return: (![stringT] (struct.field_ref cacheValue "v" "cv"))
     else do:  #());;;
-    do:  (MapDelete (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key"));;;
+    do:  (map.delete (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key"));;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
-    return: (struct.get cacheValue "v" (let: "$a0" := let: "$a0" := ![stringT] "key" in
+    return: (struct.field_get cacheValue "v" (let: "$a0" := let: "$a0" := ![stringT] "key" in
      (interface.get "Get" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" in
      DecodeValue "$a0"))).
 
@@ -149,7 +149,7 @@ Definition CacheKv__GetAndCache : val :=
         break: #()
       else do:  #()));;;
     let: "ret" := ref_ty stringT (zero_val stringT) in
-    let: "$r0" := struct.get cacheValue "v" (Fst (map.get (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key"))) in
+    let: "$r0" := struct.field_get cacheValue "v" (Fst (map.get (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key"))) in
     do:  ("ret" <-[stringT] "$r0");;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
     return: (![stringT] "ret")).
@@ -166,7 +166,7 @@ Definition CacheKv__Put : val :=
       (interface.get "Get" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" in
       do:  ("enc" <-[stringT] "$r0");;;
       let: "leaseExpiration" := ref_ty uint64T (zero_val uint64T) in
-      let: "$r0" := struct.get cacheValue "l" (let: "$a0" := ![stringT] "enc" in
+      let: "$r0" := struct.field_get cacheValue "l" (let: "$a0" := ![stringT] "enc" in
       DecodeValue "$a0") in
       do:  ("leaseExpiration" <-[uint64T] "$r0");;;
       let: <> := ref_ty uint64T (zero_val uint64T) in

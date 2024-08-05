@@ -6,6 +6,7 @@ Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
 Notation "f ::= v" := (PairV #(str f%string) v%V) (at level 60) : val_scope.
 Notation "f ::= v" := (Pair #(str f%string) v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
+Arguments structT _%struct.
 
 Module struct.
 Section goose_lang.
@@ -13,13 +14,13 @@ Infix "=?" := (String.eqb).
 
 Context `{ffi_syntax}.
 
-Definition field_offset (t : go_type) f0 : (Z * go_type) :=
+Definition field_offset (t : go_type) f : (Z * go_type) :=
   match t with
   | structT d =>
       (fix field_offset_struct (d : struct.descriptor) : (Z * go_type) :=
          match d with
          | [] => (-1, badT)
-         | (f,t)::fs => if f =? f0 then (0, t)
+         | (f',t)::fs => if f' =? f then (0, t)
                       else match field_offset_struct fs with
                            | (off, t') => ((go_type_size t) + off, t')
                            end
@@ -28,10 +29,24 @@ Definition field_offset (t : go_type) f0 : (Z * go_type) :=
   end
 .
 
-Definition field_ref (t : go_type) f0: val :=
-  λ: "p", BinOp (OffsetOp (field_offset t f0).1) (Var "p") #1.
+Definition field_ref (t : go_type) f: val :=
+  λ: "p", BinOp (OffsetOp (field_offset t f).1) (Var "p") #1.
 
-Definition field_ty d f0 : go_type := (field_offset d f0).2.
+Definition field_ty d f : go_type := (field_offset d f).2.
+
+Definition field_get (t : go_type) f : val :=
+  match t with
+  | structT d =>
+      (fix field_get_struct (d : struct.descriptor) : val :=
+         match d with
+         | [] => (λ: <>, #())%V
+         | (f',_)::fs => if f' =? f
+                       then (λ: "v", Fst (Var "v"))%V
+                       else (λ: "v", field_get_struct fs (Snd (Var "v")))%V
+         end
+      ) d
+      | _ => (#())
+  end.
 
 Definition assocl_lookup : val :=
   rec: "assocl_lookup" "f" "fvs" :=

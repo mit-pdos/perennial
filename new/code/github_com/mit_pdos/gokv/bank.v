@@ -14,7 +14,7 @@ Definition BankClerk : go_type := structT [
   "lck" :: ptrT;
   "kvck" :: kv.Kv;
   "accts" :: sliceT stringT
-].
+]%struct.
 
 Definition BankClerk__mset : list (string * val) := [
 ].
@@ -230,9 +230,15 @@ Definition MakeBankClerk : val :=
     let: "kv" := ref_ty kv.Kv "kv" in
     let: "lck" := ref_ty ptrT "lck" in
     let: "accts" := ref_ty (sliceT stringT) (zero_val (sliceT stringT)) in
-    let: "$r0" := slice.append stringT (![sliceT stringT] "accts") (slice.literal stringT [![stringT] "acc1"]) in
+    let: "$r0" := let: "$a0" := ![sliceT stringT] "accts" in
+    let: "$a1" := (let: "$sl0" := ![stringT] "acc1" in
+    slice.literal stringT ["$sl0"]) in
+    (slice.append (sliceT stringT)) "$a0" "$a1" in
     do:  ("accts" <-[sliceT stringT] "$r0");;;
-    let: "$r0" := slice.append stringT (![sliceT stringT] "accts") (slice.literal stringT [![stringT] "acc2"]) in
+    let: "$r0" := let: "$a0" := ![sliceT stringT] "accts" in
+    let: "$a1" := (let: "$sl0" := ![stringT] "acc2" in
+    slice.literal stringT ["$sl0"]) in
+    (slice.append (sliceT stringT)) "$a0" "$a1" in
     do:  ("accts" <-[sliceT stringT] "$r0");;;
     return: (let: "$a0" := ![ptrT] "lck" in
      let: "$a1" := ![kv.Kv] "kv" in

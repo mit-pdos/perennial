@@ -11,7 +11,7 @@ From New Require Import grove_prelude.
 
 Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
-].
+]%struct.
 
 Definition Server__mset : list (string * val) := [
 ].
@@ -140,7 +140,7 @@ Definition Callback : go_type := structT [
   "reply" :: ptrT;
   "state" :: ptrT;
   "cond" :: ptrT
-].
+]%struct.
 
 Definition Callback__mset : list (string * val) := [
 ].
@@ -153,7 +153,7 @@ Definition Client : go_type := structT [
   "conn" :: grove_ffi.Connection;
   "seq" :: uint64T;
   "pending" :: mapT uint64T ptrT
-].
+]%struct.
 
 Definition Client__mset : list (string * val) := [
 ].
@@ -287,7 +287,7 @@ Definition Client__replyThread : val :=
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then
         do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
-        do:  (MapIter (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (λ: <> "cb",
+        do:  (map.for_range (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (λ: <> "cb",
           let: "$r0" := callbackStateAborted in
           do:  ((![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb"))) <-[uint64T] "$r0");;;
           do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb")))) #())));;;
@@ -317,7 +317,7 @@ Definition Client__replyThread : val :=
       do:  ("ok" <-[boolT] "$r1");;;
       (if: ![boolT] "ok"
       then
-        do:  (MapDelete (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (![uint64T] "seqno"));;;
+        do:  (map.delete (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (![uint64T] "seqno"));;;
         let: "$r0" := ![sliceT byteT] "reply" in
         do:  ((![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb"))) <-[sliceT byteT] "$r0");;;
         let: "$r0" := callbackStateDone in
@@ -380,7 +380,7 @@ Definition MakeClient : val :=
       do:  (let: "$a0" := #(str "Unable to connect to %s") in
       let: "$a1" := (let: "$sl0" := interface.make string__mset (let: "$a0" := ![uint64T] "host_name" in
       grove_ffi.AddressToStr "$a0") in
-      slice.literal ["$sl0"]) in
+      slice.literal interfaceT ["$sl0"]) in
       log.Printf "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![uint64T] "err") = #0 in

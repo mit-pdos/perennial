@@ -43,7 +43,9 @@ Definition BytesClone : val :=
     (if: (![sliceT byteT] "b") = slice.nil
     then return: (slice.nil)
     else do:  #());;;
-    return: (slice.append byteT slice.nil (![sliceT byteT] "b"))).
+    return: (let: "$a0" := slice.nil in
+     let: "$a1" := ![sliceT byteT] "b" in
+     (slice.append (sliceT byteT)) "$a0" "$a1")).
 
 (* SliceSplit splits xs at n into two slices.
 
@@ -90,7 +92,7 @@ Definition JoinHandle : go_type := structT [
   "mu" :: ptrT;
   "done" :: boolT;
   "cond" :: ptrT
-].
+]%struct.
 
 Definition JoinHandle__mset : list (string * val) := [
 ].
