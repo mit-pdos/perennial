@@ -26,11 +26,6 @@ Proof.
   refine (mkExtOp DiskOp _ _ () _ _).
 Defined.
 
-Section disk.
-  Existing Instances disk_op.
-
-End disk.
-
 Definition block_bytes: nat := Z.to_nat 4096.
 Definition BlockSize {ext: ffi_syntax}: val := #4096.
 Definition Block := vec byte block_bytes.

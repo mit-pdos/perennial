@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import lang.
+From Perennial.goose_lang Require Import lang typing.
 From Perennial.goose_lang Require Export ffi.disk_ffi.typed_impl.
 From Perennial.goose_lang Require Export ffi.disk.
 #[global]

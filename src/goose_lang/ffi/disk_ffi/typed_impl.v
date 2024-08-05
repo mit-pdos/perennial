@@ -1,6 +1,6 @@
-From Perennial.goose_lang Require Export ffi.disk_ffi.impl.
-From Perennial.goose_lang Require Export lang notation typing.
-From Perennial.goose_lang.lib Require Export slice.
+From Perennial.goose_lang Require Import ffi.disk_ffi.impl.
+From Perennial.goose_lang Require Import lang notation typing.
+From Perennial.goose_lang.lib Require Import slice.
 
 Inductive Disk_ty := | DiskInterfaceTy.
 
