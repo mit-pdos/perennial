@@ -204,12 +204,11 @@ Section proof.
     rewrite /is_cond.
     iIntros (Φ) "Hl HΦ".
     wp_rec. wp_pures.
+    rewrite -wp_fupd.
     wp_apply wp_alloc_untyped; [ auto | ].
     iIntros (c) "Hc".
-    (* FIXME: need a let binding in the implementation to do an iMod after the
-    Alloc (so the goal needs to still be a WP) *)
     iMod (heap_pointsto_persist with "Hc") as "Hcond".
-    wp_pures.
+    iModIntro.
     iApply "HΦ". by iFrame.
   Qed.
 
@@ -221,13 +220,12 @@ Section proof.
     rewrite /is_cond.
     iIntros (Φ) "Hl HΦ".
     wp_rec. wp_pures.
+    rewrite -wp_fupd.
     iDestruct (is_lock_flat with "Hl") as %[l ->].
     wp_apply wp_alloc_untyped; [ auto | ].
     iIntros (c) "Hc".
-    (* FIXME: need a let binding in the implementation to do an iMod after the
-    Alloc (so the goal needs to still be a WP) *)
     iMod (heap_pointsto_persist with "Hc") as "Hcond".
-    wp_pures.
+    iModIntro.
     by iApply "HΦ".
   Qed.
 
@@ -283,4 +281,4 @@ Section proof.
 End proof.
 End goose_lang.
 
-Typeclasses Opaque is_lock is_cond locked.
+#[global] Typeclasses Opaque is_lock is_cond locked.

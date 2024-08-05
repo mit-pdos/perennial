@@ -12,8 +12,7 @@ Module lock.
       rec: "acquire" "l" := if: try_acquire "l" then #() else "acquire" "l".
     Definition release : val := λ: "l", CmpXchg "l" #true #false;; #().
 
-    (* XXX: let binding so we can do an iMod after the allocation *)
-    Definition newCond: val := λ: "l", let: "cond" := ref "l" in "cond".
+    Definition newCond: val := λ: "l", ref "l".
     (* no-op in the model, only affects scheduling *)
     Definition condSignal: val := λ: "l", #().
     Definition condBroadcast: val := λ: "l", #().
