@@ -227,11 +227,11 @@ Inductive ret_ty : Type :=
   | ret_hash : hash_ty → ret_ty.
 
 Record trace_elem_ty :=
-  (* on prev ret and state, apply this op. *)
+  (* on state, run op and get this ret val. *)
   mk_trace_elem {
-    ret: ret_ty;
     state: state_ty;
     op: op_ty;
+    ret: ret_ty;
   }.
 
 Definition step (prev next : trace_elem_ty) : Prop :=
@@ -239,18 +239,87 @@ Definition step (prev next : trace_elem_ty) : Prop :=
   | hash msg =>
     match prev.(state).(hashes) !! msg with
     | Some h =>
-      next.(ret) = (ret_hash h) ∧ next.(state) = prev.(state)
+      prev.(ret) = (ret_hash h) ∧ next.(state) = prev.(state)
     | None =>
       (* maintains inv that all hashes have same len. *)
       let new_hash := arb_bytes_len hash_len in
-      match bool_decide (map_Exists (λ _ h, h = new_hash) prev.(state).(hashes)) with
-      | true =>
-        (* hash collision. infinite loop the machine. *)
-        False
-      | false =>
-        next.(ret) = (ret_hash new_hash) ∧ next.(state) = prev.(state) <| hashes ::= <[msg:=new_hash]> |>
-      end
+      if bool_decide (map_Exists (λ _ h, h = new_hash) (hashes (state prev)))
+      (* hash collision. infinite loop the machine. *)
+      then False
+      else
+        prev.(ret) = (ret_hash new_hash) ∧ next.(state) = prev.(state) <| hashes ::= <[msg:=new_hash]> |>
     end
   end.
+
+Definition valid_trace (l : list trace_elem_ty) :=
+  ∀ i a b, l !! i = Some a → l !! S i = Some b → step a b.
+
+Lemma hash_state_mono l i k a b :
+  valid_trace l →
+  l !! i = Some a →
+  l !! (i + k) = Some b →
+  hashes (state a) ⊆ hashes (state b).
+Proof.
+  intros **.
+  generalize dependent b.
+  induction k; intros **.
+  - replace (i + 0) with (i) in * by lia. naive_solver.
+  - assert (∃ c, l !! (i + k) = Some c) as [c Hlook0].
+    { apply lookup_lt_is_Some. apply lookup_lt_Some in H1. lia. }
+    specialize (IHk c Hlook0).
+    replace (i + S k) with (S (i + k)) in * by lia.
+    rewrite /valid_trace /step in H.
+    specialize (H _ _ _ Hlook0 H1).
+    (* begin new proof. reasoning that after one step, hash state monotonic.
+    follows directly after unfolding code. *)
+    do 2 case_match.
+    + destruct_and?. by rewrite H5.
+    + case_match; [done|].
+      destruct_and?. rewrite H6. simplify_eq/=.
+      epose proof (insert_subseteq _ _ (arb_bytes_len 32) H3) as H10.
+      by etrans.
+Qed.
+
+Lemma collision_resistance l i k a b h msg0 msg1 :
+  valid_trace l →
+  l !! i = Some a →
+  l !! (i + k) = Some b →
+  ret a = ret_hash h →
+  ret b = ret_hash h →
+  op a = hash msg0 →
+  op b = hash msg1 →
+  msg0 = msg1.
+Proof.
+  intros **.
+  destruct (decide (k = 0)).
+  { simplify_eq. replace (i + 0) with (i) in H1 by lia. list_simplifier.
+    rewrite H4 in H5. naive_solver. }
+  assert (∃ c, l !! S i = Some c) as [c Hlook0].
+  { apply lookup_lt_is_Some. apply lookup_lt_Some in H1. lia. }
+  assert (hashes (state c) !! msg0 = Some h) as Hlook1.
+  {
+    specialize (H _ _ _ H0 Hlook0). rewrite /step in H.
+    do 2 case_match.
+    - destruct_and?. rewrite H8 in H2. inv H2. by rewrite H9.
+    - case_match; [done|].
+      destruct_and?. rewrite H10. rewrite H2 in H9. simplify_eq/=.
+      by simplify_map_eq.
+  }
+  pose proof H1 as Hlook2.
+  replace (i + k) with (S i + pred k) in Hlook2 by lia.
+  epose proof (hash_state_mono _ _ _ _ _ H Hlook0 Hlook2).
+  epose proof (lookup_weaken _ _ _ _ Hlook1 H6) as Hlook3.
+  (* TODO: this is not actually provable.
+  with both my ways of writing the trace elem state and step fn, there's issues.
+  for first op, to consider step, only poss if op comes in prev trace elem.
+  for last op, to consider step, only poss if op comes in next trace elem.
+  not sure how to fix this.
+  i'll skip for now since perennial setup must've solved it. *)
+  assert (∃ d, l !! S (i + k) = Some d) as [d Hlook4] by admit.
+  specialize (H _ _ _ H1 Hlook4). rewrite /step in H.
+  do 2 case_match; inv H5.
+  - destruct_and?. rewrite H5 in H3. inv H3.
+    (* need to know that the first time we added msg1, it had collision resistance. *)
+Admitted.
 
 End hashes.
