@@ -1,6 +1,11 @@
 From New.golang.defn Require Export notation.
 From New.golang.defn Require Import slice.
 
+Section defn.
+  Context `{ffi_syntax}.
+  Definition string__mset : list (string * val) := [].
+End defn.
+
 Module string.
 Section defn.
   Context `{ffi_syntax}.

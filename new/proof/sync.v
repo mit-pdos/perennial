@@ -111,10 +111,19 @@ Proof.
     eauto with iFrame.
 Qed.
 
-Lemma wp_Mutex__Unlock m R :
-  {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} Mutex__Unlock #m #() {{{ RET #(); True }}}.
+(* this form is useful for defer statements *)
+Lemma wp_Mutex__Unlock' m :
+  {{{ True }}}
+    Mutex__Unlock #m
+  {{{ (f : val), RET f;
+      ∀ R,
+    {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} f #() {{{ RET #(); True }}}
+  }}}.
 Proof.
-  iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
+  iIntros (Ψ) "_ HΨ".
+  wp_rec. wp_pures.
+  iApply "HΨ". iModIntro. iIntros (R).
+  iIntros (Φ) "!# (#Hinv & Hlocked & HR) HΦ".
   wp_rec.
   wp_pures.
   wp_bind (CmpXchg _ _ _).
@@ -134,6 +143,15 @@ Proof.
   iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
   iDestruct "Hl" as "[Hl1 Hl2]".
   iNext. iExists false. iFrame.
+Qed.
+
+Lemma wp_Mutex__Unlock m R :
+  {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} Mutex__Unlock #m #() {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
+  wp_apply wp_Mutex__Unlock'. iIntros (?) "Hspec".
+  wp_apply ("Hspec" with "[$Hinv $Hlocked $HR]").
+  by iApply "HΦ".
 Qed.
 
 Definition is_Locker (v : val) (P : iProp Σ) : iProp Σ :=

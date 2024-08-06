@@ -209,13 +209,24 @@ Proof.
   iNamed "His".
   iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
   wp_apply wp_ref_ty. { repeat econstructor. }
-  iIntros (index_addr) "Hlocal1". wp_pures.
+  iIntros (defer) "Hdefer". wp_pures.
+
   wp_apply wp_ref_ty. { repeat econstructor. }
   iIntros (s_addr) "Hlocal2". wp_pures.
+  wp_apply wp_ref_ty. { repeat econstructor. }
+  iIntros (index_addr) "Hlocal1". wp_pures.
   wp_load. wp_pures.
   wp_pures. wp_load. wp_pures.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
+  wp_pures.
+  wp_load.
+  wp_load.
+  wp_apply wp_Mutex__Unlock'.
+  iIntros (m_unlock) "#Hunlock".
+  wp_pures.
+  wp_load. wp_store.
+  iMod (typed_pointsto_persist with "Hdefer") as "#?".
   wp_pures.
 
   wp_for.
@@ -247,8 +258,8 @@ Proof.
     wp_pures.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
-    wp_load. wp_load.
-    wp_apply (wp_Mutex__Unlock with "[-Htok HΦ Hlocal1 Hlocal2]").
+    wp_load. wp_pures.
+    wp_apply ("Hunlock" with "[-Htok HΦ Hlocal1 Hlocal2]").
     {
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
@@ -378,6 +389,9 @@ Proof.
   iNamed "Hf".
   iAssert (_) with "His" as "His2".
   iNamed "His2".
+
+  wp_apply wp_ref_ty; [econstructor|]. iIntros (defer) "Hdefer". wp_pures.
+
   wp_apply wp_ref_ty; [econstructor|]. iIntros (data_addr) "Hlocal1". wp_pures.
   wp_apply wp_ref_ty; [econstructor|]. iIntros (s_addr) "Hlocal2". wp_pures.
   wp_load.
@@ -388,8 +402,12 @@ Proof.
   wp_pures.
   wp_load. wp_load.
   wp_pures.
-  wp_store.
-  wp_load. wp_load.
+  wp_apply wp_Mutex__Unlock'.
+  iIntros (m_unlock) "Hunlock".
+  wp_load. wp_store.
+  wp_pures.
+  wp_load. wp_load. wp_store. wp_load.
+  wp_load. wp_pures.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hno_overflow).
   wp_load. wp_store.
@@ -406,8 +424,9 @@ Proof.
   wp_apply wp_Cond__Signal.
   { iFrame "#". }
   wp_pures.
-  wp_load. wp_load.
-  wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc Hlocal1 Hlocal2 Hlocal3]").
+  wp_load.
+  wp_pures.
+  wp_apply ("Hunlock" with "[-HΦ Hnoclose Hdat Hesc Hlocal1 Hlocal2 Hlocal3]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
