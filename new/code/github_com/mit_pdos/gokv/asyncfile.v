@@ -25,10 +25,7 @@ Definition AsyncFile__mset : list (string * val) := [
 (* go: storage.go:73:21 *)
 Definition AsyncFile__Close : val :=
   rec: "AsyncFile__Close" "s" <> :=
-    let: "$defer" := (ref_ty funcT (λ: <>,
-      #()
-      )) in
-    let: "$func_ret" := (exception_do (let: "s" := (ref_ty ptrT "s") in
+    with_defer: (let: "s" := (ref_ty ptrT "s") in
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
     do:  (let: "$f" := (sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
@@ -40,17 +37,12 @@ Definition AsyncFile__Close : val :=
     do:  ((struct.field_ref AsyncFile "closeRequested" (![ptrT] "s")) <-[boolT] "$r0");;;
     do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")))) #());;;
     (for: (λ: <>, (~ (![boolT] (struct.field_ref AsyncFile "closed" (![ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
-      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #())))) in
-    (![funcT] "$defer") #();;
-    "$func_ret".
+      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #()))).
 
 (* go: storage.go:36:21 *)
 Definition AsyncFile__wait : val :=
   rec: "AsyncFile__wait" "s" "index" :=
-    let: "$defer" := (ref_ty funcT (λ: <>,
-      #()
-      )) in
-    let: "$func_ret" := (exception_do (let: "s" := (ref_ty ptrT "s") in
+    with_defer: (let: "s" := (ref_ty ptrT "s") in
     let: "index" := (ref_ty uint64T "index") in
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
     do:  (let: "$f" := (sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) in
@@ -60,17 +52,12 @@ Definition AsyncFile__wait : val :=
       "$oldf" #()
       )));;;
     (for: (λ: <>, (![uint64T] (struct.field_ref AsyncFile "durableIndex" (![ptrT] "s"))) < (![uint64T] "index")); (λ: <>, Skip) := λ: <>,
-      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #())))) in
-    (![funcT] "$defer") #();;
-    "$func_ret".
+      do:  ((sync.Cond__Wait (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #()))).
 
 (* go: storage.go:24:21 *)
 Definition AsyncFile__Write : val :=
   rec: "AsyncFile__Write" "s" "data" :=
-    let: "$defer" := (ref_ty funcT (λ: <>,
-      #()
-      )) in
-    let: "$func_ret" := (exception_do (let: "s" := (ref_ty ptrT "s") in
+    with_defer: (let: "s" := (ref_ty ptrT "s") in
     let: "data" := (ref_ty (sliceT byteT) "data") in
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
     do:  (let: "$f" := (sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) in
@@ -92,9 +79,7 @@ Definition AsyncFile__Write : val :=
     return: ((λ: <>,
        exception_do (do:  (let: "$a0" := (![uint64T] "index") in
        (AsyncFile__wait (![ptrT] "s")) "$a0"))
-       )))) in
-    (![funcT] "$defer") #();;
-    "$func_ret".
+       ))).
 
 (* go: storage.go:45:21 *)
 Definition AsyncFile__flushThread : val :=

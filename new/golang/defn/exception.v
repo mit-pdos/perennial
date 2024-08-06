@@ -2,7 +2,6 @@ From New Require Export notation.
 
 Section defn.
 
-Context `{ext_ty: ext_types}.
 Context `{!ffi_syntax}.
 
 Definition execute_val_def (v : val) : val := (#(str "execute"), v).

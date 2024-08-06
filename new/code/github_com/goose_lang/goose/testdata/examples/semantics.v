@@ -349,10 +349,7 @@ Definition testCopyShorterSrc : val :=
 (* go: defer.go:3:6 *)
 Definition deferSimple : val :=
   rec: "deferSimple" <> :=
-    let: "$defer" := (ref_ty funcT (λ: <>,
-      #()
-      )) in
-    let: "$func_ret" := (exception_do (let: "x" := (ref_ty ptrT (zero_val ptrT)) in
+    with_defer: (let: "x" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("x" <-[ptrT] "$r0");;;
     (let: "i" := (ref_ty intT (zero_val intT)) in
@@ -367,9 +364,7 @@ Definition deferSimple : val :=
         "$f" #();;
         "$oldf" #()
         )))));;;
-    return: (![ptrT] "x"))) in
-    (![funcT] "$defer") #();;
-    "$func_ret".
+    return: (![ptrT] "x")).
 
 (* go: defer.go:13:6 *)
 Definition testDefer : val :=
@@ -384,19 +379,14 @@ Definition testDeferFuncLit : val :=
     do:  ("x" <-[intT] "$r0");;;
     let: "f" := (ref_ty funcT (zero_val funcT)) in
     let: "$r0" := (λ: <>,
-      let: "$defer" := (ref_ty funcT (λ: <>,
-        #()
-        )) in
-      let: "$func_ret" := (exception_do (do:  (let: "$f" := (λ: <>,
+      with_defer: (do:  (let: "$f" := (λ: <>,
         exception_do (do:  ("x" <-[intT] ((![intT] "x") + #1)))
         ) in
       "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
       (λ: <>,
         "$f" #();;
         "$oldf" #()
-        ))))) in
-      (![funcT] "$defer") #();;
-      "$func_ret"
+        ))))
       ) in
     do:  ("f" <-[funcT] "$r0");;;
     do:  ((![funcT] "f") #());;;

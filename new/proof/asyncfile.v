@@ -208,9 +208,10 @@ Proof.
   iNamed "H".
   iNamed "His".
   iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
-  wp_apply wp_ref_ty. { repeat econstructor. }
-  iIntros (defer) "Hdefer". wp_pures.
+  wp_apply wp_with_defer.
+  iIntros (defer) "Hdefer". simpl subst. wp_pures.
 
+  wp_bind (ref_ty _ _).
   wp_apply wp_ref_ty. { repeat econstructor. }
   iIntros (s_addr) "Hlocal2". wp_pures.
   wp_apply wp_ref_ty. { repeat econstructor. }
@@ -390,7 +391,8 @@ Proof.
   iAssert (_) with "His" as "His2".
   iNamed "His2".
 
-  wp_apply wp_ref_ty; [econstructor|]. iIntros (defer) "Hdefer". wp_pures.
+  wp_apply wp_with_defer.
+  iIntros (defer) "Hdefer". simpl subst. wp_pures.
 
   wp_apply wp_ref_ty; [econstructor|]. iIntros (data_addr) "Hlocal1". wp_pures.
   wp_apply wp_ref_ty; [econstructor|]. iIntros (s_addr) "Hlocal2". wp_pures.
