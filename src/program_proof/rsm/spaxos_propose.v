@@ -1,4 +1,5 @@
-From Perennial.program_proof.rsm Require Import spaxos_prelude rsm_misc.
+From Perennial.program_proof.rsm Require Import spaxos_prelude.
+From Perennial.program_proof.rsm.pure Require Import fin_maps.
 From Perennial.program_proof Require Import std_proof.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.

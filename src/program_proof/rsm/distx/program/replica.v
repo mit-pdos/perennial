@@ -1,59 +1,15 @@
-From Perennial.program_proof.rsm Require Import distx distx_txnlog distx_index distx_tuple.
-From Goose.github_com.mit_pdos.rsm Require Import distx.
+From Perennial.program_proof.rsm.distx Require Import prelude.
+From Perennial.program_proof.rsm.distx.program Require Import
+  txnlog index tuple.
+From Perennial.program_proof.rsm.distx.invariance Require Import
+  submit learn.
 From Perennial.program_proof Require Import std_proof.
-
-Section list.
-
-  Lemma take_length_prefix {A} (l1 l2 : list A) :
-    prefix l1 l2 ->
-    take (length l1) l2 = l1.
-  Proof. intros [l Happ]. by rewrite Happ take_app_length. Qed.
-
-End list.
+From Goose.github_com.mit_pdos.rsm Require Import distx.
 
 Section word.
 
-  Lemma uint_nat_W64 (n : nat) :
-    n < 2 ^ 64 ->
-    uint.nat (W64 n) = n.
-  Proof. intros H. word. Qed.
-
-  Lemma uint_nat_word_add_S (x : u64) :
-    uint.Z x < 2 ^ 64 - 1 ->
-    (uint.nat (w64_word_instance.(word.add) x (W64 1))) = S (uint.nat x).
-  Proof. intros H. word. Qed.
 
 End word.
-
-Section pure.
-
-  Lemma NoDup_prefix {A} (l1 l2 : list A) :
-    prefix l1 l2 ->
-    NoDup l2 ->
-    NoDup l1.
-  Proof.
-    intros [l Happ] Hl2. rewrite Happ in Hl2.
-    by apply NoDup_app in Hl2 as [? _].
-  Qed.
-
-End pure.
-
-Section list.
-
-  Lemma not_elem_of_take {A} (l : list A) n x :
-    NoDup l ->
-    l !! n = Some x ->
-    x ∉ take n l.
-  Proof.
-    intros Hnd Hx Htake.
-    apply take_drop_middle in Hx.
-    rewrite -Hx cons_middle NoDup_app in Hnd.
-    destruct Hnd as (_ & Hnd & _).
-    specialize (Hnd _ Htake).
-    set_solver.
-  Qed.
-
-End list.
 
 Section resource.
   Context `{!distx_ghostG Σ}.

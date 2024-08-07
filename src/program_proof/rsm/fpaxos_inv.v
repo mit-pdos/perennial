@@ -1,7 +1,8 @@
 (**
  * Pure invariants and their invariance theorems.
  *)
-From Perennial.program_proof.rsm Require Import fpaxos_top rsm_misc.
+From Perennial.program_proof.rsm Require Import fpaxos_top.
+From Perennial.program_proof.rsm.pure Require Import fin_maps.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 

@@ -1,4 +1,5 @@
-From Perennial.program_proof.rsm Require Import distx distx_replica.
+From Perennial.program_proof.rsm.distx Require Import prelude.
+From Perennial.program_proof.rsm.distx.program Require Import replica.
 From Goose.github_com.mit_pdos.rsm Require Import distx.
 
 Section program.
