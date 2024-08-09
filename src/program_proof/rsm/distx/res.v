@@ -242,6 +242,13 @@ Section res.
     ⌜cpool_subsume_log cpool log⌝.
   Admitted.
 
+  Lemma log_update γ gid log cpool v :
+    v ∈ cpool ->
+    clog_half γ gid log -∗
+    cpool_half γ gid cpool ==∗
+    clog_half γ gid (log ++ [v]).
+  Admitted.
+
   (* Global timestamp. *)
   Definition ts_auth γ (ts : nat) : iProp Σ.
   Admitted.

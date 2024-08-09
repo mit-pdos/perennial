@@ -1,4 +1,3 @@
-From stdpp Require Import gmap.
 From iris.proofmode Require Import proofmode.
 
 Definition dual_lookup `{Countable K1} `{Countable K2} {V}

@@ -3,6 +3,7 @@ From iris.proofmode Require Import proofmode.
 Set Default Proof Using "Type".
 
 (** Definitions. *)
+
 Definition extend {A} (n : nat) (x : A) (l : list A) :=
   l ++ replicate (n - length l) x.
 
@@ -14,9 +15,12 @@ Definition last_extend {A} (n : nat) (l : list A) :=
 
 Section lemmas.
   Context {A : Type}.
+  Implicit Types x : A.
+  Implicit Types l : list A.
 
   (** Lemmas about [extend]. *)
-  Lemma extend_id (n : nat) (x : A) (l : list A) :
+
+  Lemma extend_id n x l :
     (n ≤ length l)%nat ->
     extend n x l = l.
   Proof.
@@ -24,16 +28,21 @@ Section lemmas.
     by rewrite /= app_nil_r.
   Qed.
 
-  Lemma extend_length (n : nat) (x : A) (l : list A) :
+  Lemma extend_length n x l :
     length (extend n x l) = (n - length l + length l)%nat.
   Proof. rewrite app_length replicate_length. lia. Qed.
 
-  Lemma extend_length_ge_n (n : nat) (x : A) (l : list A) :
+  Lemma extend_length_ge_n n x l :
     (n ≤ length (extend n x l))%nat.
   Proof. rewrite extend_length. lia. Qed.
 
+  Lemma extend_prefix n x l :
+    prefix l (extend n x l).
+  Proof. by apply prefix_app_r. Qed.
+
   (** Lemmas about [last_extend]. *)
-  Lemma last_extend_id (n : nat) (l : list A) :
+
+  Lemma last_extend_id n l :
     (n ≤ length l)%nat ->
     last_extend n l = l.
   Proof.
@@ -43,7 +52,7 @@ Section lemmas.
     by apply last_None.
   Qed.
 
-  Lemma last_extend_length (n : nat) (l : list A) :
+  Lemma last_extend_length n l :
     l ≠ [] ->
     length (last_extend n l) = (n - length l + length l)%nat.
   Proof.
@@ -52,12 +61,26 @@ Section lemmas.
     lia.
   Qed.
 
-  Lemma last_extend_length_ge_n (n : nat) (l : list A) :
+  Lemma last_extend_length_ge n l :
+    (length l ≤ length (last_extend n l))%nat.
+  Proof.
+    destruct (decide (l = [])) as [Hnil | Hnnil].
+    { by rewrite /last_extend Hnil /=. }
+    rewrite last_extend_length; [lia | done].
+  Qed.
+
+  Lemma last_extend_length_eq_n n l :
+    l ≠ [] ->
+    (length l ≤ n)%nat ->
+    length (last_extend n l) = n.
+  Proof. intros Hl Hlen. rewrite last_extend_length; [lia | done]. Qed.
+
+  Lemma last_extend_length_ge_n n l :
     l ≠ [] ->
     (n ≤ length (last_extend n l))%nat.
   Proof. intros Hl. rewrite last_extend_length; [lia | done]. Qed.
 
-  Lemma last_extend_length_eq_n_or_same (n : nat) (l : list A) :
+  Lemma last_extend_length_eq_n_or_same n l :
     length (last_extend n l) = n ∨ length (last_extend n l) = length l.
   Proof.
     destruct (decide (l = [])) as [-> | Hne]; first by right.
@@ -65,7 +88,7 @@ Section lemmas.
     lia.
   Qed.
 
-  Lemma last_last_extend (n : nat) (l : list A) :
+  Lemma last_last_extend n l :
     last (last_extend n l) = last l.
   Proof.
     destruct (last l) as [x |] eqn:Hlast; last by rewrite /last_extend Hlast.
@@ -75,7 +98,20 @@ Section lemmas.
     by rewrite Hl.
   Qed.
 
-  Lemma last_extend_twice (n1 n2 : nat) (l : list A) :
+  Lemma lookup_last_extend_r n i l :
+    (length l ≤ i)%nat ->
+    (i < n)%nat ->
+    last_extend n l !! i = last l.
+  Proof.
+    intros Hlen Hni.
+    rewrite /last_extend.
+    destruct (last l) as [x |]; last done.
+    rewrite /extend lookup_app_r; last done.
+    rewrite lookup_replicate.
+    split; [done | lia].
+  Qed.
+
+  Lemma last_extend_twice n1 n2 l :
     last_extend n1 (last_extend n2 l) = last_extend (n1 `max` n2) l.
   Proof.
     destruct (decide (l = [])) as [-> | Hne]; first done.
@@ -85,6 +121,16 @@ Section lemmas.
     rewrite -replicate_add app_length replicate_length.
     (* wow how does lia solve this *)
     by replace (n2 - _ + _)%nat with (n1 `max` n2 - length l)%nat by lia.
+  Qed.
+
+  Lemma last_extend_prefix n l :
+    prefix l (last_extend n l).
+  Proof.
+    rewrite /last_extend.
+    destruct (last l) as [x |] eqn:Hlast.
+    { apply extend_prefix. }
+    rewrite last_None in Hlast.
+    by rewrite Hlast.
   Qed.
 
 End lemmas.

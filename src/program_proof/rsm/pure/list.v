@@ -5,8 +5,9 @@ Set Default Proof Using "Type".
 
 Section lemma.
   Context {A : Type}.
+  Implicit Type l : list A.
 
-  Lemma prefix_snoc (l1 l2 : list A) x :
+  Lemma prefix_snoc l1 l2 x :
     prefix l1 (l2 ++ [x]) ->
     prefix l1 l2 ∨ l1 = l2 ++ [x].
   Proof.
@@ -24,12 +25,12 @@ Section lemma.
     by apply app_cons_not_nil in Hcontra.
   Qed.
 
-  Lemma take_length_prefix (l1 l2 : list A) :
+  Lemma take_length_prefix l1 l2 :
     prefix l1 l2 ->
     take (length l1) l2 = l1.
   Proof. intros [l Happ]. by rewrite Happ take_app_length. Qed.
 
-  Lemma NoDup_prefix (l1 l2 : list A) :
+  Lemma NoDup_prefix l1 l2 :
     prefix l1 l2 ->
     NoDup l2 ->
     NoDup l1.
@@ -38,7 +39,7 @@ Section lemma.
     by apply NoDup_app in Hl2 as [? _].
   Qed.
 
-  Lemma not_elem_of_take (l : list A) n x :
+  Lemma not_elem_of_take l n x :
     NoDup l ->
     l !! n = Some x ->
     x ∉ take n l.
@@ -50,5 +51,10 @@ Section lemma.
     specialize (Hnd _ Htake).
     set_solver.
   Qed.
+
+  Lemma length_not_nil l :
+    l ≠ [] ->
+    length l ≠ O.
+  Proof. intros Hnnil Hlen. by apply nil_length_inv in Hlen. Qed.
 
 End lemma.

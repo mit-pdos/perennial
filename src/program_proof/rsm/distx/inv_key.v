@@ -1,18 +1,366 @@
+From stdpp Require Import list.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.distx Require Import base res.
-From Perennial.program_proof.rsm.pure Require Import extend.
+From Perennial.program_proof.rsm.pure Require Import
+  list extend largest_before.
 
 (** Global per-key/tuple invariant. *)
 
 Definition diff_by_cmtd
-  (repl cmtd : list dbval) (kmod : dbkmod) (ts : nat) :=
+  (repl cmtd : dbhist) (kmod : dbkmod) (ts : nat) :=
   match kmod !! ts with
   | Some v => cmtd = last_extend ts repl ++ [v]
   | None => (∃ ts', repl = last_extend ts' cmtd) ∧
            (ts ≠ O -> length repl ≤ ts)%nat
   end.
 
-Definition diff_by_lnrz (cmtd lnrz : list dbval) (txns : dbkmod) : Prop.
+Definition prev_dbval (ts : nat) (d : dbval) (kmod : dbkmod) :=
+  match largest_before ts (dom kmod) with
+  | Some t => match kmod !! t with
+             | Some v => v
+             | None => d (* impossible case *)
+             end
+  | None => d
+  end.
+
+Lemma prev_dbval_lt_all ts d kmod :
+  lt_all ts (dom kmod) ->
+  prev_dbval ts d kmod = d.
+Proof.
+  intros Hlts.
+  rewrite /prev_dbval.
+  destruct (largest_before _ _) as [t |] eqn:Hlargest; last done.
+  exfalso.
+  apply largest_before_Some in Hlargest as (Hin & Ht & _).
+  specialize (Hlts _ Hin). simpl in Hlts.
+  lia.
+Qed.
+
+Lemma prev_dbval_lookup ts v d kmod :
+  kmod !! ts = Some v ->
+  prev_dbval ts d kmod = v.
+Proof.
+  intros Hv.
+  rewrite /prev_dbval largest_before_elem_of; last first.
+  { by rewrite elem_of_dom. }
+  by rewrite Hv.
+Qed.
+
+Lemma prev_dbval_delete ts tsx v d kmod :
+  (ts ≤ tsx)%nat ->
+  le_all ts (dom kmod) ->
+  kmod !! ts = Some v ->
+  prev_dbval tsx v (delete ts kmod) = prev_dbval tsx d kmod.
+Proof.
+  intros Htsx Hles Hv.
+  rewrite /prev_dbval dom_delete_L.
+  destruct (largest_before tsx (dom kmod ∖ {[ ts ]})) as [p |] eqn:Hdiff.
+  { (* Case: ∃ p ∈ dom kmod ∖ {[ts]}, p ≤ tsx. *)
+    rewrite Hdiff.
+    replace (largest_before tsx (dom kmod)) with (Some p); last first.
+    { by rewrite -Hdiff largest_before_difference_min. }
+    apply largest_before_Some in Hdiff as [Hpin _].
+    rewrite -dom_delete_L elem_of_dom lookup_delete_is_Some in Hpin.
+    destruct Hpin as [Hne [u Hu]].
+    rewrite lookup_delete_ne; last done.
+    by rewrite Hu.
+  }
+  (* Case: ∀ n ∈ dom kmod ∖ {[ts]}, tsx < n. *)
+  destruct (largest_before tsx (dom kmod)) as [p |] eqn:Hp; last first.
+  { (* Case: ∀ n ∈ dom kmod, tsx < n. *)
+    (* Above ∧ ts ∈ dom kmod -> tsx < ts, contradicted to ts ≤ tsx. *)
+    exfalso.
+    apply largest_before_None in Hp.
+    apply elem_of_dom_2 in Hv.
+    specialize (Hp _ Hv). simpl in Hp.
+    lia.
+  }
+  (* Case: ∃ p ∈ dom kmod, p ≤ tsx. In this case p = ts. *)
+  rewrite Hdiff.
+  replace p with ts; last first.
+  { apply largest_before_None in Hdiff.
+    apply largest_before_Some in Hp as (Hin & Hle & Hout).
+    apply dec_stable. intros Hne.
+    assert (Hindiff : p ∈ dom kmod ∖ {[ ts ]}).
+    { by rewrite elem_of_difference not_elem_of_singleton. }
+    specialize (Hdiff _ Hindiff). simpl in Hdiff.
+    lia.
+  }
+  by rewrite Hv.
+Qed.
+
+Lemma prev_dbval_ge ts tsx d kmod :
+  (ts ≤ tsx)%nat ->
+  ge_all ts (dom kmod) ->
+  prev_dbval tsx d kmod = prev_dbval ts d kmod.
+Proof.
+  intros Hle Hge.
+  rewrite /prev_dbval.
+  destruct (largest_before ts (dom kmod)) as [p |] eqn:Hts; last first.
+  { apply largest_before_None in Hts.
+    destruct (largest_before tsx (dom kmod)) as [q |] eqn:Htsx; last done.
+    exfalso.
+    apply largest_before_Some in Htsx as [Hq _].
+    specialize (Hge _ Hq). simpl in Hge.
+    specialize (Hts _ Hq). simpl in Hts.
+    lia.
+  }
+  apply largest_before_Some in Hts as Hp.
+  destruct Hp as (Hpin & Hple & Hpout).
+  rewrite (largest_before_ge_max _ p); [done | lia | done |].
+  intros x Hx.
+  specialize (Hpout _ Hx). simpl in Hpout.
+  specialize (Hge _ Hx). simpl in Hge.
+  lia.
+Qed.
+
+Lemma prefix_pointwise {A} (l1 l2 : list A) :
+  (∀ i, (i < length l1)%nat -> l1 !! i = l2 !! i) ->
+  prefix l1 l2.
+Proof.
+  intros Hpoint.
+  rewrite -(take_drop (length l1) l2).
+  exists (drop (length l1) l2).
+  rewrite app_inv_tail_iff.
+  apply list_eq.
+  intros i.
+  destruct (decide (i < length l1)%nat) as [Hlt | Hge]; last first.
+  { apply not_lt in Hge.
+    rewrite lookup_take_ge; last done.
+    by rewrite lookup_ge_None_2.
+  }
+  specialize (Hpoint _ Hlt).
+  by rewrite lookup_take.
+Qed.
+
+(** Invariant: The linearized history is extended by linearized but not yet
+committed txns. *)
+
+Definition ext_by_lnrz (cmtd lnrz : dbhist) (kmodl : dbkmod) :=
+  ∃ (vlast : dbval),
+    prefix cmtd lnrz ∧
+    last cmtd = Some vlast ∧
+    set_Forall (λ t, length cmtd ≤ t < length lnrz)%nat (dom kmodl) ∧
+    ∀ (t : nat) (u : dbval), (length cmtd ≤ t)%nat ->
+                           lnrz !! t = Some u ->
+                           prev_dbval t vlast kmodl = u.
+
+Lemma ext_by_lnrz_inv_read ts cmtd lnrz kmodl :
+  (ts ≤ length lnrz)%nat ->
+  le_all ts (dom kmodl) ->
+  ext_by_lnrz cmtd lnrz kmodl ->
+  ext_by_lnrz (last_extend ts cmtd) lnrz kmodl.
+Proof.
+  intros Hlenl Hles Hext.
+  destruct (decide (ts ≤ length cmtd)%nat) as [Hlenc | Hlenc].
+  { (* Trivial if [cmtd] is not actually extended. *)
+    by rewrite last_extend_id.
+  }
+  apply not_le in Hlenc.
+  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
+  exists vlast.
+  split.
+  { (* Re-establish prefix. *)
+    apply prefix_pointwise.
+    intros i Hi.
+    rewrite /last_extend Hlast /extend.
+    destruct (decide (i < length cmtd)%nat) as [Hilt | Hige].
+    { (* Case: before-extension [i < length cmtd]. *)
+      rewrite lookup_app_l; last done.
+      by apply prefix_lookup_lt.
+    }
+    (* Case: read-extension [length cmtd ≤ i]. *)
+    rewrite Nat.nlt_ge in Hige.
+    (* Obtain [i < ts]. *)
+    rewrite last_extend_length_eq_n in Hi; [| set_solver | lia].
+    assert (is_Some (lnrz !! i)) as [u Hu].
+    { rewrite lookup_lt_is_Some. lia. }
+    specialize (Hext _ _ Hige Hu).
+    rewrite lookup_app_r; last done.
+    rewrite Hu lookup_replicate.
+    split; last lia.
+    rewrite -Hext.
+    apply prev_dbval_lt_all.
+    intros n Hn.
+    (* Obtain [ts ≤ n]. *)
+    specialize (Hles _ Hn). simpl in Hles.
+    (* Prove [i < n] by [i < ts] and [ts ≤ n]. *)
+    lia.
+  }
+  split.
+  { (* Re-establish last. *)
+    by rewrite last_last_extend.
+  }
+  split.
+  { (* Re-establish len. *)
+    intros n Hn.
+    specialize (Hlen _ Hn). simpl in Hlen.
+    specialize (Hles _ Hn). simpl in Hles.
+    rewrite last_extend_length_eq_n; [| set_solver | lia].
+    lia.
+  }
+  (* Re-establish ext. *)
+  intros t u Ht Hu.
+  rewrite last_extend_length_eq_n in Ht; [| set_solver | lia].
+  apply Hext; [lia | done].
+Qed.
+
+Lemma ext_by_lnrz_inv_commit ts v cmtd lnrz kmodl :
+  kmodl !! ts = Some v ->
+  le_all ts (dom kmodl) ->
+  ext_by_lnrz cmtd lnrz kmodl ->
+  ext_by_lnrz (last_extend ts cmtd ++ [v]) lnrz (delete ts kmodl).
+Proof.
+  intros Hv Hles Hext.
+  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
+  (* Obtain [length cmtd ≤ ts < length lnrz]. *)
+  apply elem_of_dom_2 in Hv as Hts.
+  apply Hlen in Hts.
+  exists v.
+  split.
+  { (* Re-establish prefix. *)
+    apply prefix_pointwise.
+    intros i Hi.
+    (* Obtain [i < S ts]. *)
+    rewrite last_length last_extend_length_eq_n in Hi; [| set_solver | lia].
+    destruct (decide (i < length cmtd)%nat) as [Hilt | Hige].
+    { (* Case: before extension [i < length cmtd]. *)
+      rewrite /last_extend Hlast /extend.
+      rewrite -app_assoc lookup_app_l; last done.
+      by apply prefix_lookup_lt.
+    }
+    rewrite Nat.nlt_ge in Hige.
+    assert (is_Some (lnrz !! i)) as [u Hu].
+    { rewrite lookup_lt_is_Some. lia. }
+    rewrite Hu.
+    destruct (decide (i < ts)%nat) as [Hits | Hits].
+    { (* Case: read-extension [i < ts]. *)
+      specialize (Hext _ _ Hige Hu).
+      rewrite lookup_app_l; last first.
+      { by rewrite last_extend_length_eq_n; [| set_solver | lia]. }
+      rewrite /last_extend Hlast /extend.
+      rewrite lookup_app_r; last done.
+      rewrite lookup_replicate.
+      split; last lia.
+      rewrite -Hext.
+      apply prev_dbval_lt_all.
+      intros n Hn.
+      (* Obtain [ts ≤ n]. *)
+      specialize (Hles _ Hn). simpl in Hles.
+      (* Prove [i < n] by [i < ts] and [ts ≤ n]. *)
+      lia.
+    }
+    (* Case: write-extension [i = ts]. *)
+    assert (i = ts) by lia. clear Hits Hi. subst i.
+    rewrite lookup_snoc_Some. right.
+    split.
+    { by rewrite last_extend_length_eq_n; [| set_solver | lia]. }
+    specialize (Hext _ _ Hige Hu).
+    by rewrite (prev_dbval_lookup _ _ _ _ Hv) in Hext.
+  }
+  split.
+  { (* Re-establish last. *)
+    by rewrite last_snoc.
+  }
+  split.
+  { (* Re-establish len. *)
+    intros n Hn.
+    rewrite last_length last_extend_length_eq_n; [| set_solver | lia].
+    rewrite dom_delete_L elem_of_difference not_elem_of_singleton in Hn.
+    destruct Hn as [Hin Hne].
+    specialize (Hlen _ Hin). simpl in Hlen.
+    specialize (Hles _ Hin). simpl in Hles.
+    lia.
+  }
+  (* Re-establish ext. *)
+  intros t u Ht Hu.
+  rewrite last_length last_extend_length_eq_n in Ht; [| set_solver | lia].
+  erewrite prev_dbval_delete; [| lia | done | done].
+  apply Hext; [lia | done].
+Qed.
+
+Lemma ext_by_lnrz_inv_linearize_abort ts cmtd lnrz kmodl :
+  ext_by_lnrz cmtd lnrz kmodl ->
+  ext_by_lnrz cmtd (last_extend ts lnrz) kmodl.
+Proof.
+  intros Hext.
+  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
+  exists vlast.
+  split.
+  { (* Re-establish prefix. *)
+    trans lnrz; [apply Hprefix | apply last_extend_prefix].
+  }
+  split.
+  { (* Re-establish last. *)
+    done.
+  }
+  split.
+  { (* Re-establish len. *)
+    intros n Hn.
+    specialize (Hlen _ Hn). simpl in Hlen.
+    pose proof (last_extend_length_ge ts lnrz) as Hextlen.
+    lia.
+  }
+  (* Re-establish ext. *)
+  intros t u Ht Hu.
+  destruct (decide (t < length lnrz)%nat) as [Hlt | Hge].
+  { rewrite /last_extend /extend in Hu.
+    destruct (last lnrz) as [x |]; last done.
+    rewrite lookup_app_l in Hu; last done.
+    by apply Hext.
+  }
+  rewrite Nat.nlt_ge in Hge.
+  apply lookup_lt_Some in Hu as Htlen.
+  rewrite lookup_last_extend_r in Hu; last first.
+  { pose proof (last_extend_length_eq_n_or_same ts lnrz). lia. }
+  { done. }
+  destruct Hprefix as [diff Hdiff].
+  destruct (decide (diff = [])) as [Hnil | Hnnil].
+  { subst diff.
+    rewrite app_nil_r in Hdiff.
+    subst cmtd.
+    rewrite Hlast in Hu.
+    inversion Hu as [Heq].
+    assert (Hempty : dom kmodl = ∅).
+    { apply dec_stable.
+      intros Hin.
+      apply set_choose_L in Hin as [x Hx].
+      specialize (Hlen _ Hx). simpl in Hlen.
+      lia.
+    }
+    by rewrite /prev_dbval Hempty largest_before_empty.
+  }
+  rewrite (prev_dbval_ge (pred (length lnrz)) t); last first.
+  { intros x Hx. specialize (Hlen _ Hx). simpl in Hlen. lia. }
+  { lia. }
+  apply Hext; last by rewrite -last_lookup.
+  apply Nat.lt_le_pred.
+  apply length_not_nil in Hnnil.
+  rewrite Hdiff app_length.
+  lia.
+Qed.
+
+Lemma ext_by_lnrz_inv_linearize_commit ts v cmtd lnrz kmodl :
+  (length lnrz ≤ ts)%nat ->
+  ext_by_lnrz cmtd lnrz kmodl ->
+  ext_by_lnrz cmtd (last_extend ts lnrz ++ [v]) (<[ts := v]> kmodl).
+Proof.
+  intros Hts Hext.
+  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
+  exists vlast.
+  split.
+  { (* Re-establish prefix. *)
+    admit.
+  }
+  split.
+  { (* Re-establish last. *)
+    admit.
+  }
+  split.
+  { (* Re-establish len. *)
+    admit.
+  }
+  (* Re-establish ext. *)
 Admitted.
 
 Section def.
@@ -26,7 +374,7 @@ Section def.
     "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
     "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
     "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
-    "%Hdiffl"   ∷ ⌜diff_by_lnrz cmtd lnrz kmodl⌝ ∗
+    "%Hdiffl"   ∷ ⌜ext_by_lnrz cmtd lnrz kmodl⌝ ∗
     "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd kmodc tsprep⌝ ∗
     "%Hzrsv"    ∷ ⌜kmodc !! O = None⌝.
 
