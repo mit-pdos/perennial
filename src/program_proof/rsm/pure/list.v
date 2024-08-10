@@ -57,4 +57,10 @@ Section lemma.
     length l ≠ O.
   Proof. intros Hnnil Hlen. by apply nil_length_inv in Hlen. Qed.
 
+  Lemma prefix_not_nil l1 l2 :
+    prefix l1 l2 ->
+    l1 ≠ [] ->
+    l2 ≠ [].
+  Proof. intros Hprefix Hl1 Hl2. subst l2. by apply prefix_nil_inv in Hprefix. Qed.
+
 End lemma.

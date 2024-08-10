@@ -89,6 +89,21 @@ Proof.
   by rewrite Hv.
 Qed.
 
+Lemma prev_dbval_insert ts tsx v d kmod :
+  (tsx < ts)%nat ->
+  gt_all ts (dom kmod) ->
+  prev_dbval tsx d (<[ts := v]> kmod) = prev_dbval tsx d kmod.
+Proof.
+  intros Htsx Hgt.
+  rewrite /prev_dbval dom_insert_L largest_before_union_max; [| apply Htsx | apply Hgt].
+  destruct (largest_before _ _) as [p |] eqn:Hp; last done.
+  rewrite lookup_insert_ne; first done.
+  intros Htsp. subst p.
+  apply largest_before_Some in Hp as [Hin _].
+  specialize (Hgt _ Hin). simpl in Hgt.
+  lia.
+Qed.
+
 Lemma prev_dbval_ge ts tsx d kmod :
   (ts ≤ tsx)%nat ->
   ge_all ts (dom kmod) ->
@@ -141,9 +156,14 @@ Definition ext_by_lnrz (cmtd lnrz : dbhist) (kmodl : dbkmod) :=
     prefix cmtd lnrz ∧
     last cmtd = Some vlast ∧
     set_Forall (λ t, length cmtd ≤ t < length lnrz)%nat (dom kmodl) ∧
-    ∀ (t : nat) (u : dbval), (length cmtd ≤ t)%nat ->
+    ∀ (t : nat) (u : dbval), (pred (length cmtd) ≤ t)%nat ->
                            lnrz !! t = Some u ->
                            prev_dbval t vlast kmodl = u.
+
+(* Note the [pred] in the last condition, which poses constraints on not just
+the additional entries of [lnrz], but also the last overlapping entry between
+[cmtd] and [lnrz]. This allows proving invariance of [ext_by_lnrz]
+w.r.t. linearize actions without considering [cmtd = lnrz] as a special case. *)
 
 Lemma ext_by_lnrz_inv_read ts cmtd lnrz kmodl :
   (ts ≤ length lnrz)%nat ->
@@ -175,7 +195,8 @@ Proof.
     rewrite last_extend_length_eq_n in Hi; [| set_solver | lia].
     assert (is_Some (lnrz !! i)) as [u Hu].
     { rewrite lookup_lt_is_Some. lia. }
-    specialize (Hext _ _ Hige Hu).
+    assert (Higeweak : (pred (length cmtd) ≤ i)%nat) by lia.
+    specialize (Hext _ _ Higeweak Hu).
     rewrite lookup_app_r; last done.
     rewrite Hu lookup_replicate.
     split; last lia.
@@ -232,10 +253,11 @@ Proof.
     rewrite Nat.nlt_ge in Hige.
     assert (is_Some (lnrz !! i)) as [u Hu].
     { rewrite lookup_lt_is_Some. lia. }
+    assert (Higeweak : (pred (length cmtd) ≤ i)%nat) by lia.
     rewrite Hu.
     destruct (decide (i < ts)%nat) as [Hits | Hits].
     { (* Case: read-extension [i < ts]. *)
-      specialize (Hext _ _ Hige Hu).
+      specialize (Hext _ _ Higeweak Hu).
       rewrite lookup_app_l; last first.
       { by rewrite last_extend_length_eq_n; [| set_solver | lia]. }
       rewrite /last_extend Hlast /extend.
@@ -255,7 +277,7 @@ Proof.
     rewrite lookup_snoc_Some. right.
     split.
     { by rewrite last_extend_length_eq_n; [| set_solver | lia]. }
-    specialize (Hext _ _ Hige Hu).
+    specialize (Hext _ _ Higeweak Hu).
     by rewrite (prev_dbval_lookup _ _ _ _ Hv) in Hext.
   }
   split.
@@ -298,45 +320,31 @@ Proof.
   { (* Re-establish len. *)
     intros n Hn.
     specialize (Hlen _ Hn). simpl in Hlen.
-    pose proof (last_extend_length_ge ts lnrz) as Hextlen.
+    pose proof (last_extend_length_ge ts lnrz) as Hlenext.
     lia.
   }
   (* Re-establish ext. *)
   intros t u Ht Hu.
   destruct (decide (t < length lnrz)%nat) as [Hlt | Hge].
-  { rewrite /last_extend /extend in Hu.
+  { (* Case: before extension [t < length lnrz]. *)
+    rewrite /last_extend /extend in Hu.
     destruct (last lnrz) as [x |]; last done.
     rewrite lookup_app_l in Hu; last done.
     by apply Hext.
   }
+  (* Case: read-extension [length lnrz ≤ t]. *)
   rewrite Nat.nlt_ge in Hge.
   apply lookup_lt_Some in Hu as Htlen.
   rewrite lookup_last_extend_r in Hu; last first.
   { pose proof (last_extend_length_eq_n_or_same ts lnrz). lia. }
   { done. }
-  destruct Hprefix as [diff Hdiff].
-  destruct (decide (diff = [])) as [Hnil | Hnnil].
-  { subst diff.
-    rewrite app_nil_r in Hdiff.
-    subst cmtd.
-    rewrite Hlast in Hu.
-    inversion Hu as [Heq].
-    assert (Hempty : dom kmodl = ∅).
-    { apply dec_stable.
-      intros Hin.
-      apply set_choose_L in Hin as [x Hx].
-      specialize (Hlen _ Hx). simpl in Hlen.
-      lia.
-    }
-    by rewrite /prev_dbval Hempty largest_before_empty.
-  }
   rewrite (prev_dbval_ge (pred (length lnrz)) t); last first.
   { intros x Hx. specialize (Hlen _ Hx). simpl in Hlen. lia. }
   { lia. }
   apply Hext; last by rewrite -last_lookup.
   apply Nat.lt_le_pred.
-  apply length_not_nil in Hnnil.
-  rewrite Hdiff app_length.
+  assert (Hlenc : length cmtd ≠ O); first by destruct cmtd.
+  apply prefix_length in Hprefix.
   lia.
 Qed.
 
@@ -350,18 +358,72 @@ Proof.
   exists vlast.
   split.
   { (* Re-establish prefix. *)
-    admit.
+    trans lnrz; [apply Hprefix | apply prefix_app_r, last_extend_prefix].
   }
   split.
   { (* Re-establish last. *)
-    admit.
+    done.
   }
   split.
   { (* Re-establish len. *)
-    admit.
+    intros n Hn.
+    rewrite app_length /=.
+    rewrite dom_insert_L elem_of_union in Hn.
+    rewrite last_extend_length; last first.
+    { apply (prefix_not_nil _ _ Hprefix). set_solver. }
+    destruct Hn as [Hn | Hn]; last first.
+    { specialize (Hlen _ Hn). simpl in Hlen. lia. }
+    rewrite elem_of_singleton in Hn. subst n.
+    apply prefix_length in Hprefix.
+    lia.
   }
   (* Re-establish ext. *)
-Admitted.
+  intros t u Ht Hu.
+  (* Obtain [length (last_extend ts lnrz) = ts]. *)
+  unshelve epose proof (last_extend_length_eq_n ts lnrz _ _) as Hlenext; [| apply Hts |].
+  { apply (prefix_not_nil _ _ Hprefix).
+    set_solver.
+  }
+  destruct (decide (t < ts)%nat) as [Hlt | Hge].
+  { (* Case: before write-extension [t < ts]. *)
+    rewrite prev_dbval_insert; last first.
+    { intros n Hn.
+      specialize (Hlen _ Hn). simpl in Hlen.
+      (* solved by [Hlen] and [Hts] *)
+      lia.
+    }
+    { (* solved by [Hlt] and [Hts] *) lia. }
+    destruct (decide (t < length lnrz)%nat) as [Hltstrong | Hge].
+    { (* Case: before extension [t < length lnrz]. *)
+      rewrite /last_extend /extend in Hu.
+      destruct (last lnrz) as [x |] eqn:Hx; last first.
+      { rewrite last_None in Hx. subst lnrz. apply prefix_nil_inv in Hprefix. set_solver. }
+      rewrite -app_assoc lookup_app_l in Hu; last done.
+      by apply Hext.
+    }
+    (* Case: read-extension [length lnrz ≤ t < ts]. *)
+    rewrite Nat.nlt_ge in Hge.
+    (* Obtain [last lnrz = Some u]. *)
+    rewrite lookup_app_l in Hu; last lia.
+    rewrite lookup_last_extend_r in Hu; [| done | done].
+    (* Extend [prev_dbval] to hold on [t] using [last lnrz] as the anchor. *)
+    rewrite (prev_dbval_ge (pred (length lnrz)) t); last first.
+    { intros x Hx. specialize (Hlen _ Hx). simpl in Hlen. lia. }
+    { lia. }
+    apply Hext; last by rewrite -last_lookup.
+    apply Nat.lt_le_pred.
+    assert (Hlenc : length cmtd ≠ O); first by destruct cmtd.
+    apply prefix_length in Hprefix.
+    lia.
+  }
+  (* Case: write-extension [t = ts]. *)
+  rewrite Nat.nlt_ge in Hge.
+  rewrite lookup_snoc_Some in Hu.
+  destruct Hu as [? | [Htts Hvu]]; first lia.
+  rewrite Hlenext in Htts.
+  erewrite prev_dbval_lookup; first apply Hvu.
+  by rewrite Htts lookup_insert.
+Qed.
 
 Section def.
   Context `{!distx_ghostG Σ}.
