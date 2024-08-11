@@ -1,14 +1,14 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 
-Lemma diff_by_cmtd_inv_learn_commit repl cmtd kmod ts v :
+Lemma ext_by_cmtd_inv_learn_commit repl cmtd kmod ts v :
   kmod !! O = None ->
   kmod !! ts = Some v ->
-  diff_by_cmtd repl cmtd kmod ts ->
-  diff_by_cmtd (last_extend ts repl ++ [v]) cmtd kmod O.
+  ext_by_cmtd repl cmtd kmod ts ->
+  ext_by_cmtd (last_extend ts repl ++ [v]) cmtd kmod O.
 Proof.
   intros Hz Hts Hdiff.
-  rewrite /diff_by_cmtd Hts in Hdiff.
-  rewrite /diff_by_cmtd Hz.
+  rewrite /ext_by_cmtd Hts in Hdiff.
+  rewrite /ext_by_cmtd Hz.
   split; last done.
   (* by the time repl catches up cmtd, they are equal, hence using 0 here *)
   exists O.
@@ -93,7 +93,7 @@ Section inv.
     rewrite lookup_merge Hv Hx /= in Hy.
     destruct x as [x ts'].
     inversion_clear Hy.
-    by apply diff_by_cmtd_inv_learn_commit.
+    by apply ext_by_cmtd_inv_learn_commit.
   Qed.
 
   Lemma keys_inv_learn_commit {γ ts wrs tpls} :

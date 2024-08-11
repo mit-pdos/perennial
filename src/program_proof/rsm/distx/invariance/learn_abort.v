@@ -1,14 +1,14 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 
-Lemma diff_by_cmtd_inv_learn_abort {repl cmtd kmod} ts :
+Lemma ext_by_cmtd_inv_learn_abort {repl cmtd kmod} ts :
   kmod !! O = None ->
   kmod !! ts = None ->
-  diff_by_cmtd repl cmtd kmod ts ->
-  diff_by_cmtd repl cmtd kmod O.
+  ext_by_cmtd repl cmtd kmod ts ->
+  ext_by_cmtd repl cmtd kmod O.
 Proof.
   intros Hz Hts Hdiff.
-  rewrite /diff_by_cmtd Hts in Hdiff.
-  rewrite /diff_by_cmtd Hz.
+  rewrite /ext_by_cmtd Hts in Hdiff.
+  rewrite /ext_by_cmtd Hz.
   by destruct Hdiff as [Hdiff _].
 Qed.
 
@@ -74,7 +74,7 @@ Section inv.
     rewrite lookup_merge Hx Hv /= in Hy.
     destruct x as [h t].
     inversion_clear Hy.
-    by apply (diff_by_cmtd_inv_learn_abort ts).
+    by apply (ext_by_cmtd_inv_learn_abort ts).
   Qed.
 
   Lemma keys_inv_learn_abort {γ ts wrs tpls} :

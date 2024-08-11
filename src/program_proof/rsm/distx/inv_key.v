@@ -6,13 +6,32 @@ From Perennial.program_proof.rsm.pure Require Import
 
 (** Global per-key/tuple invariant. *)
 
-Definition diff_by_cmtd
+Definition ext_by_cmtd
   (repl cmtd : dbhist) (kmod : dbkmod) (ts : nat) :=
   match kmod !! ts with
   | Some v => cmtd = last_extend ts repl ++ [v]
   | None => (∃ ts', repl = last_extend ts' cmtd) ∧
            (ts ≠ O -> length repl ≤ ts)%nat
   end.
+
+Lemma ext_by_cmtd_inv_commit repl cmtd kmodc ts v :
+  ts ≠ O ->
+  kmodc !! ts = None ->
+  ext_by_cmtd repl cmtd kmodc ts ->
+  ext_by_cmtd repl (last_extend ts cmtd ++ [v]) (<[ts := v]> kmodc) ts.
+Proof.
+  intros Hnz Hts Hext.
+  rewrite /ext_by_cmtd Hts in Hext.
+  destruct Hext as [[tsr Hext] Hlen].
+  rewrite /ext_by_cmtd lookup_insert Hext last_extend_twice.
+  destruct (decide (cmtd = [])) as [-> | Hnnil]; first done.
+  do 2 f_equal.
+  assert (tsr ≤ ts)%nat; last lia.
+  specialize (Hlen Hnz).
+  rewrite Hext in Hlen.
+  etrans; last apply Hlen.
+  by apply last_extend_length_ge_n.
+Qed.
 
 Definition prev_dbval (ts : nat) (d : dbval) (kmod : dbkmod) :=
   match largest_before ts (dom kmod) with
@@ -434,10 +453,9 @@ Section def.
     (key : dbkey) (dbv : dbval) (lnrz cmtd repl : dbhist)
     (tslb tsprep : nat) (kmodl kmodc : dbkmod) : iProp Σ :=
     "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
-    "%Hprefix"  ∷ ⌜prefix cmtd lnrz⌝ ∗
     "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
     "%Hdiffl"   ∷ ⌜ext_by_lnrz cmtd lnrz kmodl⌝ ∗
-    "%Hdiffc"   ∷ ⌜diff_by_cmtd repl cmtd kmodc tsprep⌝ ∗
+    "%Hdiffc"   ∷ ⌜ext_by_cmtd repl cmtd kmodc tsprep⌝ ∗
     "%Hzrsv"    ∷ ⌜kmodc !! O = None⌝.
 
   Definition key_inv γ (key : dbkey) : iProp Σ :=

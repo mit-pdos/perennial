@@ -1,11 +1,11 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 
-Lemma diff_by_cmtd_inv_learn_read_free {repl cmtd kmod} ts :
+Lemma ext_by_cmtd_inv_learn_read_free {repl cmtd kmod} ts :
   kmod !! O = None ->
-  diff_by_cmtd repl cmtd kmod O ->
-  diff_by_cmtd (last_extend ts repl) cmtd kmod O.
+  ext_by_cmtd repl cmtd kmod O ->
+  ext_by_cmtd (last_extend ts repl) cmtd kmod O.
 Proof.
-  intros Hz. rewrite /diff_by_cmtd Hz.
+  intros Hz. rewrite /ext_by_cmtd Hz.
   intros [[ts' Hrepl] _].
   split; last done.
   rewrite Hrepl.
@@ -13,12 +13,12 @@ Proof.
   apply last_extend_twice.
 Qed.
 
-Lemma diff_by_cmtd_inv_learn_read_acquired {repl cmtd kmod} ts tslock :
+Lemma ext_by_cmtd_inv_learn_read_acquired {repl cmtd kmod} ts tslock :
   (ts ≤ tslock)%nat ->
-  diff_by_cmtd repl cmtd kmod tslock ->
-  diff_by_cmtd (last_extend ts repl) cmtd kmod tslock.
+  ext_by_cmtd repl cmtd kmod tslock ->
+  ext_by_cmtd (last_extend ts repl) cmtd kmod tslock.
 Proof.
-  rewrite /diff_by_cmtd. intros Hlt Hdiff.
+  rewrite /ext_by_cmtd. intros Hlt Hdiff.
   destruct (kmod !! tslock) as [v |] eqn:Hv.
   { (* Case: Tuple committed by [tslock]. *)
     rewrite last_extend_twice.
@@ -63,11 +63,11 @@ Section inv.
     iNamed "Hkey". iNamed "Hprop". simpl.
     destruct Ht as [-> | Hlt].
     { (* Case: Tuple not acquired by any txn. *)
-      apply (diff_by_cmtd_inv_learn_read_free ts) in Hdiffc; last done.
+      apply (ext_by_cmtd_inv_learn_read_free ts) in Hdiffc; last done.
       iFrame "∗ # %".
     }
     (* Case: Tuple prepared at [t] where [ts < t]. *)
-    pose proof (diff_by_cmtd_inv_learn_read_acquired _ _ Hlt Hdiffc) as Hdiffc'.
+    pose proof (ext_by_cmtd_inv_learn_read_acquired _ _ Hlt Hdiffc) as Hdiffc'.
     iFrame "∗ # %".
   Qed.
 

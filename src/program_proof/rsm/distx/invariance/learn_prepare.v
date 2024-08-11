@@ -1,17 +1,17 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 From Perennial.program_proof.rsm.distx.invariance Require Import abort.
 
-Lemma diff_by_cmtd_inv_learn_prepare repl cmtd kmod ts :
+Lemma ext_by_cmtd_inv_learn_prepare repl cmtd kmod ts :
   kmod !! O = None ->
   (length repl ≤ ts)%nat ->
   kmod !! ts = None ->
-  diff_by_cmtd repl cmtd kmod O ->
-  diff_by_cmtd repl cmtd kmod ts.
+  ext_by_cmtd repl cmtd kmod O ->
+  ext_by_cmtd repl cmtd kmod ts.
 Proof.
   intros Hz Hlen Hts Hdiff.
-  rewrite /diff_by_cmtd Hz in Hdiff.
+  rewrite /ext_by_cmtd Hz in Hdiff.
   destruct Hdiff as [[tsrd Hextend] _].
-  rewrite /diff_by_cmtd Hts.
+  rewrite /ext_by_cmtd Hts.
   by split; first eauto.
 Qed.
 
@@ -165,7 +165,7 @@ Section inv.
     rewrite (acquire_modified Hsome Hx) /= in Hy.
     inversion Hy. subst y. clear Hy.
     simpl. simpl in Hdiffc.
-    by apply diff_by_cmtd_inv_learn_prepare.
+    by apply ext_by_cmtd_inv_learn_prepare.
   Qed.
 
   Lemma keys_inv_learn_prepare {γ gid ts wrs tpls} :
