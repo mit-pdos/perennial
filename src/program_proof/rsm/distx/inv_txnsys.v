@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.distx Require Import base res.
-From Perennial.program_proof.rsm.pure Require Import dual_lookup.
+From Perennial.program_proof.rsm.pure Require Import dual_lookup vslice.
 
 (** Global transaction-system invariant. *)
 
@@ -16,9 +16,6 @@ Definition cmtd_impl_prep (resm : gmap nat txnres) (wrsm : gmap nat dbmap) :=
         | _ => True
         end.
 
-Definition tmods_kmods_consistent (tmods : gmap nat dbmap) (kmods : gmap dbkey dbkmod) :=
-  dual_lookup_consistent tmods kmods.
-
 Definition res_to_tmod (res : txnres) :=
   match res with
   | ResCommitted wrs => Some wrs
@@ -28,62 +25,50 @@ Definition res_to_tmod (res : txnres) :=
 Definition resm_to_tmods (resm : gmap nat txnres) :=
   omap res_to_tmod resm.
 
-Lemma resm_cmted_kmod_absent resm kmods kmod ts wrs key :
+Lemma vslice_resm_to_tmods_committed_absent resm ts wrs key :
   resm !! ts = Some (ResCommitted wrs) ->
   wrs !! key = None ->
-  kmods !! key = Some kmod ->
-  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
-  kmod !! ts = None.
+  vslice (resm_to_tmods resm) key !! ts = None.
 Proof.
-  intros Hresm Hwrs Hkmods Hc.
-  set tmods := (resm_to_tmods _) in Hc.
+  intros Hresm Hwrs.
+  set tmods := (resm_to_tmods _).
   assert (Htmods : tmods !! ts = Some wrs).
   { rewrite lookup_omap_Some. by exists (ResCommitted wrs). }
-  specialize (Hc ts key).
-  by rewrite /dual_lookup Htmods Hkmods Hwrs in Hc.
+  by rewrite lookup_vslice /dual_lookup Htmods.
 Qed.
 
-Lemma resm_cmted_kmod_present resm kmods kmod ts wrs key value :
+Lemma vslice_resm_to_tmods_committed_present resm ts wrs key value :
   resm !! ts = Some (ResCommitted wrs) ->
   wrs !! key = Some value ->
-  kmods !! key = Some kmod ->
-  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
-  kmod !! ts = Some value.
+  vslice (resm_to_tmods resm) key !! ts = Some value.
 Proof.
-  intros Hresm Hwrs Hkmods Hc.
-  set tmods := (resm_to_tmods _) in Hc.
+  intros Hresm Hwrs.
+  set tmods := (resm_to_tmods _).
   assert (Htmods : tmods !! ts = Some wrs).
   { rewrite lookup_omap_Some. by exists (ResCommitted wrs). }
-  specialize (Hc ts key).
-  by rewrite /dual_lookup Htmods Hkmods Hwrs in Hc.
+  by rewrite lookup_vslice /dual_lookup Htmods.
 Qed.
 
-Lemma resm_abted_kmod_absent resm kmods kmod ts key :
+Lemma vslice_resm_to_tmods_aborted resm ts key :
   resm !! ts = Some ResAborted ->
-  kmods !! key = Some kmod ->
-  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
-  kmod !! ts = None.
+  vslice (resm_to_tmods resm) key !! ts = None.
 Proof.
-  intros Hresm Hkmods Hc.
-  set tmods := (resm_to_tmods _) in Hc.
+  intros Hresm.
+  set tmods := (resm_to_tmods _).
   assert (Htmods : tmods !! ts = None).
   { by rewrite lookup_omap Hresm /=. }
-  specialize (Hc ts key).
-  by rewrite /dual_lookup Htmods Hkmods in Hc.
+  by rewrite lookup_vslice /dual_lookup Htmods.
 Qed.
 
-Lemma resm_absent_kmod_absent resm kmods kmod ts key :
+Lemma vslice_resm_to_tmods_not_terminated resm ts key :
   resm !! ts = None ->
-  kmods !! key = Some kmod ->
-  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
-  kmod !! ts = None.
+  vslice (resm_to_tmods resm) key !! ts = None.
 Proof.
-  intros Hresm Hkmods Hc.
-  set tmods := (resm_to_tmods _) in Hc.
+  intros Hresm.
+  set tmods := (resm_to_tmods _).
   assert (Htmods : tmods !! ts = None).
   { by rewrite lookup_omap Hresm /=. }
-  specialize (Hc ts key).
-  by rewrite /dual_lookup Htmods Hkmods in Hc.
+  by rewrite lookup_vslice /dual_lookup Htmods.
 Qed.
 
 Section inv.
@@ -110,9 +95,8 @@ Section inv.
 
   Definition txn_inv γ : iProp Σ :=
     ∃ (ts : nat) (future past : list action)
-      (txns_cmt txns_abt : gmap nat dbmap)
-      (resm : gmap nat txnres) (wrsm : gmap nat dbmap)
-      (kmodls kmodcs : gmap dbkey dbkmod),
+      (tmodcs tmodas : gmap nat dbmap)
+      (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
       (* prophecy variable *)
@@ -122,17 +106,15 @@ Section inv.
       (* transaction write set map *)
       "Hwrsm" ∷ txnwrs_auth γ wrsm ∗
       (* key modifications *)
-      "Hkmodls" ∷ kmods_lnrz γ kmodls ∗
-      "Hkmodcs" ∷ kmods_cmtd γ kmodcs ∗
+      "Hkmodls" ∷ ([∗ set] key ∈ keys_all, kmod_lnrz_half γ key (vslice tmodcs key)) ∗
+      "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
       (* safe commit/abort invariant *)
       "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       (* TODO: for coordinator recovery, add a monotonically growing set of
       active txns; each active txn either appears in [txns_cmt]/[txns_abt] or in
       the result map [resm]. *)
-      "%Hcf"   ∷ ⌜conflict_free future txns_cmt⌝ ∗
-      "%Hcp"   ∷ ⌜conflict_past future past txns_abt⌝ ∗
-      "%Hcip"  ∷ ⌜cmtd_impl_prep resm wrsm⌝ ∗
-      "%Htkcl" ∷ ⌜tmods_kmods_consistent txns_cmt kmodls⌝ ∗
-      "%Htkcc" ∷ ⌜tmods_kmods_consistent (resm_to_tmods resm) kmodcs⌝.
+      "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
+      "%Hcp"   ∷ ⌜conflict_past future past tmodas⌝ ∗
+      "%Hcip"  ∷ ⌜cmtd_impl_prep resm wrsm⌝.
 
 End inv.

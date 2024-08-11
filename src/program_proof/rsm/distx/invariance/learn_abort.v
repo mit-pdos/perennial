@@ -52,9 +52,11 @@ Section inv.
     iIntros "!>" (k [l t] Htpl) "Hkey Htxn". simpl.
     iNamed "Htxn".
     iDestruct (txnres_lookup with "Hresm Habt") as %Hresm.
-    iNamed "Hkey".
-    iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkmodc.
-    assert (Hnc : kmodc !! ts = None); first by eapply resm_abted_kmod_absent.
+    iNamed "Hkey". iNamed "Hprop".
+    iDestruct (kmod_cmtd_vslice_agree with "Hkmodcs Hkmodc") as %Hkmodc.
+    { apply Hall. }
+    assert (Hnc : kmodc !! ts = None).
+    { subst kmodc. by eapply vslice_resm_to_tmods_aborted. }
     specialize (Hts _ _ Htpl). simpl in Hts. subst t.
     by iFrame "∗ # %".
   Qed.

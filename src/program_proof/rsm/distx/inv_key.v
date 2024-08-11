@@ -452,6 +452,7 @@ Section def.
   Definition key_inv_prop
     (key : dbkey) (dbv : dbval) (lnrz cmtd repl : dbhist)
     (tslb tsprep : nat) (kmodl kmodc : dbkmod) : iProp Σ :=
+    "%Hall"     ∷ ⌜key ∈ keys_all⌝ ∗
     "%Hlast"    ∷ ⌜last lnrz = Some dbv⌝ ∗
     "%Hext"     ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
     "%Hdiffl"   ∷ ⌜ext_by_lnrz cmtd lnrz kmodl⌝ ∗
@@ -465,8 +466,8 @@ Section def.
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
       "Hrepl"     ∷ hist_repl_half γ key repl ∗
       "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
-      "Hkmodl"    ∷ kmod_lnrz γ key kmodl ∗
-      "Hkmodc"    ∷ kmod_cmtd γ key kmodc ∗
+      "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
+      "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
       "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
@@ -475,8 +476,8 @@ Section def.
     ∃ (dbv : dbval) (lnrz cmtd : dbhist) (tslb : nat) (kmodl kmodc : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
-      "Hkmodl"    ∷ kmod_lnrz γ key kmodl ∗
-      "Hkmodc"    ∷ kmod_cmtd γ key kmodc ∗
+      "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
+      "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
       "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
@@ -485,8 +486,8 @@ Section def.
     ∃ (dbv : dbval) (lnrz cmtd : dbhist) (tslb : nat) (kmodl : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
-      "Hkmodl"    ∷ kmod_lnrz γ key kmodl ∗
-      "Hkmodc"    ∷ kmod_cmtd γ key kmodc ∗
+      "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
+      "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
       "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 

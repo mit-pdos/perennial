@@ -10,12 +10,11 @@ Proof.
   by apply Hcip.
 Qed.
 
-Lemma tmods_kmods_consistent_inv_abort {resm kmods} ts :
+Lemma resm_to_tmods_insert_aborted resm ts :
   resm !! ts = None ->
-  tmods_kmods_consistent (resm_to_tmods resm) kmods ->
-  tmods_kmods_consistent (resm_to_tmods (<[ts:=ResAborted]> resm)) kmods.
+  resm_to_tmods (<[ts := ResAborted]> resm) = resm_to_tmods resm.
 Proof.
-  intros Hnotin Htkc.
+  intros Hnotin.
   rewrite /resm_to_tmods omap_insert_None; last done.
   rewrite delete_notin; first done.
   by rewrite lookup_omap Hnotin.
@@ -42,8 +41,8 @@ Section inv.
       iDestruct (txnres_witness with "Hresm") as "#Habt".
       { apply lookup_insert. }
       pose proof (cmtd_impl_prep_inv_abort ts Hcip) as Hcip'.
-      pose proof (tmods_kmods_consistent_inv_abort ts Hres Htkcc) as Htkcc'.
       iFrame "∗ # %".
+      rewrite resm_to_tmods_insert_aborted; last done.
       rewrite big_sepM_insert; last done.
       by iFrame "∗ #".
     }

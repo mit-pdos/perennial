@@ -97,23 +97,29 @@ Section inv.
           congruence.
         }
         (* Case: [key] not in the write set of [ts]. *)
-        iNamed "Hkey".
-        iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkm.
+        iNamed "Hkey". iNamed "Hprop".
+        iDestruct (kmod_cmtd_vslice_agree with "Hkmodcs Hkmodc") as %Hkmodc.
+        { apply Hall. }
         iPureIntro.
-        by eapply resm_cmted_kmod_absent.
+        subst kmodc.
+        by eapply vslice_resm_to_tmods_committed_absent.
       }
       { (* Case: Aborted. *)
-        iNamed "Hkey".
-        iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkm.
+        iNamed "Hkey". iNamed "Hprop".
+        iDestruct (kmod_cmtd_vslice_agree with "Hkmodcs Hkmodc") as %Hkmodc.
+        { apply Hall. }
         iPureIntro.
-        by eapply resm_abted_kmod_absent.
+        subst kmodc.
+        by eapply vslice_resm_to_tmods_aborted.
       }
     }
     (* Case: Not committed or aborted. *)
-    iNamed "Hkey".
-    iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkm.
+    iNamed "Hkey". iNamed "Hprop".
+    iDestruct (kmod_cmtd_vslice_agree with "Hkmodcs Hkmodc") as %Hkmodc.
+    { apply Hall. }
     iPureIntro.
-    by eapply resm_absent_kmod_absent.
+    subst kmodc.
+    by eapply vslice_resm_to_tmods_not_terminated.
   Qed.
 
   Lemma keys_inv_not_committed γ gid ts pm tpls :

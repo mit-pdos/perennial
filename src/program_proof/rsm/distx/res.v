@@ -1,6 +1,7 @@
 (** Global resources. *)
 (* From Perennial.program_proof.rsm.distx Require Import top. *)
 From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.rsm.pure Require Import vslice.
 From Perennial.program_proof.rsm.distx Require Import base.
 
 Section res.
@@ -166,23 +167,45 @@ Section res.
     ⌜pm !! ts = Some p⌝.
   Admitted.
 
-  Definition kmods_lnrz γ (kmods : gmap dbkey dbkmod) : iProp Σ.
+  Definition kmod_lnrz_half γ (k : dbkey) (kmod : dbkmod) : iProp Σ.
   Admitted.
 
-  Definition kmod_lnrz γ (k : dbkey) (kmod : dbkmod) : iProp Σ.
+  Lemma kmod_lnrz_agree {γ k m1 m2} :
+    kmod_lnrz_half γ k m1 -∗
+    kmod_lnrz_half γ k m2 -∗
+    ⌜m2 = m1⌝.
   Admitted.
 
-  Definition kmods_cmtd γ (kmods : gmap dbkey dbkmod) : iProp Σ.
+  Lemma kmod_lnrz_vslice_agree {γ k m im} :
+    k ∈ keys_all ->
+    ([∗ set] key ∈ keys_all, kmod_lnrz_half γ key (vslice m key)) -∗
+    kmod_lnrz_half γ k im -∗
+    ⌜im = vslice m k⌝.
+  Proof.
+    iIntros (Hin) "Hkeys Hk".
+    iDestruct (big_sepS_elem_of with "Hkeys") as "Hkey"; first apply Hin.
+    by iDestruct (kmod_lnrz_agree with "Hkey Hk") as %?.
+  Qed.
+
+  Definition kmod_cmtd_half γ (k : dbkey) (kmod : dbkmod) : iProp Σ.
   Admitted.
 
-  Definition kmod_cmtd γ (k : dbkey) (kmod : dbkmod) : iProp Σ.
+  Lemma kmod_cmtd_agree {γ k m1 m2} :
+    kmod_cmtd_half γ k m1 -∗
+    kmod_cmtd_half γ k m2 -∗
+    ⌜m2 = m1⌝.
   Admitted.
 
-  Lemma kmods_cmtd_lookup {γ kmods k kmod} :
-    kmods_cmtd γ kmods -∗
-    kmod_cmtd γ k kmod -∗
-    ⌜kmods !! k = Some kmod⌝.
-  Admitted.
+  Lemma kmod_cmtd_vslice_agree {γ k m im} :
+    k ∈ keys_all ->
+    ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice m key)) -∗
+    kmod_cmtd_half γ k im -∗
+    ⌜im = vslice m k⌝.
+  Proof.
+    iIntros (Hin) "Hkeys Hk".
+    iDestruct (big_sepS_elem_of with "Hkeys") as "Hkey"; first apply Hin.
+    by iDestruct (kmod_cmtd_agree with "Hkey Hk") as %?.
+  Qed.
 
   (* Paxos log and command pool. TODO: rename clog to just log. *)
   Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.

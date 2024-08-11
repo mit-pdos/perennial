@@ -56,10 +56,12 @@ Section inv.
     simpl.
     iNamed "Htxn".
     iDestruct (txnres_lookup with "Hresm Hcmt") as %Hresm.
-    iNamed "Hkey".
-    iDestruct (kmods_cmtd_lookup with "Hkmodcs Hkmodc") as %Hkmodc.
+    iNamed "Hkey". iNamed "Hprop".
+    iDestruct (kmod_cmtd_vslice_agree with "Hkmodcs Hkmodc") as %Hkmodc.
+    { apply Hall. }
     assert (Hwrsv : wrs !! k = Some v); first by eapply lookup_weaken.
-    assert (Hkmodcv : kmodc !! ts = Some v); first by eapply resm_cmted_kmod_present.
+    assert (Hkmodcv : kmodc !! ts = Some v).
+    { subst kmodc. by eapply vslice_resm_to_tmods_committed_present. }
     specialize (Hts _ _ Htpl). simpl in Hts. subst t.
     by iFrame "∗ # %".
   Qed.
