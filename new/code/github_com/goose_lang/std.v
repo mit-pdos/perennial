@@ -125,8 +125,8 @@ Definition JoinHandle__finish : val :=
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
 
 Definition JoinHandle__mset_ptr : list (string * val) := [
-  ("Join", JoinHandle__Join);
-  ("finish", JoinHandle__finish)
+  ("Join", JoinHandle__Join%V);
+  ("finish", JoinHandle__finish%V)
 ].
 
 (* go: goose_std.go:73:6 *)

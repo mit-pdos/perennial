@@ -207,9 +207,9 @@ Definition singleClerk__enterNewEpoch : val :=
        }])))).
 
 Definition singleClerk__mset_ptr : list (string * val) := [
-  ("TryBecomeLeader", singleClerk__TryBecomeLeader);
-  ("applyAsFollower", singleClerk__applyAsFollower);
-  ("enterNewEpoch", singleClerk__enterNewEpoch)
+  ("TryBecomeLeader", singleClerk__TryBecomeLeader%V);
+  ("applyAsFollower", singleClerk__applyAsFollower%V);
+  ("enterNewEpoch", singleClerk__enterNewEpoch%V)
 ].
 
 (* go: internalclerk.go:19:6 *)
@@ -813,12 +813,12 @@ Definition Server__enterNewEpoch : val :=
     (Server__withLock (![ptrT] "s")) "$a0")).
 
 Definition Server__mset_ptr : list (string * val) := [
-  ("TryAcquire", Server__TryAcquire);
-  ("TryBecomeLeader", Server__TryBecomeLeader);
-  ("WeakRead", Server__WeakRead);
-  ("applyAsFollower", Server__applyAsFollower);
-  ("enterNewEpoch", Server__enterNewEpoch);
-  ("withLock", Server__withLock)
+  ("TryAcquire", Server__TryAcquire%V);
+  ("TryBecomeLeader", Server__TryBecomeLeader%V);
+  ("WeakRead", Server__WeakRead%V);
+  ("applyAsFollower", Server__applyAsFollower%V);
+  ("enterNewEpoch", Server__enterNewEpoch%V);
+  ("withLock", Server__withLock%V)
 ].
 
 (* go: server.go:242:6 *)

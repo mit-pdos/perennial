@@ -118,9 +118,9 @@ Definition Server__Serve : val :=
     do:  (Fork ("$go" #()))).
 
 Definition Server__mset_ptr : list (string * val) := [
-  ("Serve", Server__Serve);
-  ("readThread", Server__readThread);
-  ("rpcHandle", Server__rpcHandle)
+  ("Serve", Server__Serve%V);
+  ("readThread", Server__readThread%V);
+  ("rpcHandle", Server__rpcHandle%V)
 ].
 
 (* go: urpc.go:32:6 *)
@@ -332,10 +332,10 @@ Definition Client__replyThread : val :=
       continue: #())).
 
 Definition Client__mset_ptr : list (string * val) := [
-  ("Call", Client__Call);
-  ("CallComplete", Client__CallComplete);
-  ("CallStart", Client__CallStart);
-  ("replyThread", Client__replyThread)
+  ("Call", Client__Call%V);
+  ("CallComplete", Client__CallComplete%V);
+  ("CallStart", Client__CallStart%V);
+  ("replyThread", Client__replyThread%V)
 ].
 
 (* go: urpc.go:120:6 *)

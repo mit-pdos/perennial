@@ -33,8 +33,8 @@ Definition LockClerk__Unlock : val :=
     (interface.get "Put" (![kv.KvCput] (struct.field_ref LockClerk "kv" (![ptrT] "ck")))) "$a0" "$a1")).
 
 Definition LockClerk__mset_ptr : list (string * val) := [
-  ("Lock", LockClerk__Lock);
-  ("Unlock", LockClerk__Unlock)
+  ("Lock", LockClerk__Lock%V);
+  ("Unlock", LockClerk__Unlock%V)
 ].
 
 (* go: lock_clerk.go:20:6 *)

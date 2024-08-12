@@ -24,10 +24,10 @@ Definition Log__mkHdr : val :=
     marshal.NewEnc "$a0") in
     do:  ("enc" <-[marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![uint64T] (struct.field_ref Log "sz" (![ptrT] "log"))) in
-    (marshal.Enc__PutInt (![ptrT] "enc")) "$a0");;;
+    (marshal.Enc__PutInt (![marshal.Enc] "enc")) "$a0");;;
     do:  (let: "$a0" := (![uint64T] (struct.field_ref Log "diskSz" (![ptrT] "log"))) in
-    (marshal.Enc__PutInt (![ptrT] "enc")) "$a0");;;
-    return: ((marshal.Enc__Finish (![ptrT] "enc")) #())).
+    (marshal.Enc__PutInt (![marshal.Enc] "enc")) "$a0");;;
+    return: ((marshal.Enc__Finish (![marshal.Enc] "enc")) #())).
 
 (* go: append_log.go:29:17 *)
 Definition Log__writeHdr : val :=
@@ -132,14 +132,14 @@ Definition Log__Reset : val :=
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Log "m" (![ptrT] "log")))) #())).
 
 Definition Log__mset_ptr : list (string * val) := [
-  ("Append", Log__Append);
-  ("Get", Log__Get);
-  ("Reset", Log__Reset);
-  ("append", Log__append);
-  ("get", Log__get);
-  ("mkHdr", Log__mkHdr);
-  ("reset", Log__reset);
-  ("writeHdr", Log__writeHdr)
+  ("Append", Log__Append%V);
+  ("Get", Log__Get%V);
+  ("Reset", Log__Reset%V);
+  ("append", Log__append%V);
+  ("get", Log__get%V);
+  ("mkHdr", Log__mkHdr%V);
+  ("reset", Log__reset%V);
+  ("writeHdr", Log__writeHdr%V)
 ].
 
 (* go: append_log.go:33:6 *)
@@ -176,10 +176,10 @@ Definition Open : val :=
     marshal.NewDec "$a0") in
     do:  ("dec" <-[marshal.Dec] "$r0");;;
     let: "sz" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((marshal.Dec__GetInt (![ptrT] "dec")) #()) in
+    let: "$r0" := ((marshal.Dec__GetInt (![marshal.Dec] "dec")) #()) in
     do:  ("sz" <-[uint64T] "$r0");;;
     let: "diskSz" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((marshal.Dec__GetInt (![ptrT] "dec")) #()) in
+    let: "$r0" := ((marshal.Dec__GetInt (![marshal.Dec] "dec")) #()) in
     do:  ("diskSz" <-[uint64T] "$r0");;;
     return: (ref_ty Log (struct.make Log [{
        "m" ::= ref_ty sync.Mutex (zero_val sync.Mutex);

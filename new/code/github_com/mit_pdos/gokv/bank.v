@@ -159,10 +159,10 @@ Definition BankClerk__SimpleTransfer : val :=
       else do:  #()))).
 
 Definition BankClerk__mset_ptr : list (string * val) := [
-  ("SimpleAudit", BankClerk__SimpleAudit);
-  ("SimpleTransfer", BankClerk__SimpleTransfer);
-  ("get_total", BankClerk__get_total);
-  ("transfer_internal", BankClerk__transfer_internal)
+  ("SimpleAudit", BankClerk__SimpleAudit%V);
+  ("SimpleTransfer", BankClerk__SimpleTransfer%V);
+  ("get_total", BankClerk__get_total%V);
+  ("transfer_internal", BankClerk__transfer_internal%V)
 ].
 
 (* go: bank.go:19:6 *)

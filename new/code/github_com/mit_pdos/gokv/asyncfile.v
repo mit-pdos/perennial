@@ -122,10 +122,10 @@ Definition AsyncFile__flushThread : val :=
       do:  ((sync.Cond__Broadcast (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #()))).
 
 Definition AsyncFile__mset_ptr : list (string * val) := [
-  ("Close", AsyncFile__Close);
-  ("Write", AsyncFile__Write);
-  ("flushThread", AsyncFile__flushThread);
-  ("wait", AsyncFile__wait)
+  ("Close", AsyncFile__Close%V);
+  ("Write", AsyncFile__Write%V);
+  ("flushThread", AsyncFile__flushThread%V);
+  ("wait", AsyncFile__wait%V)
 ].
 
 (* returns the state, then the File object

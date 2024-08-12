@@ -22,3 +22,10 @@ Definition make_unseal : make = _ := seal_eq _.
 
 End goose_lang.
 End interface.
+
+(* method sets for primitive types are empty *)
+Section mset.
+Context `{ffi_syntax}.
+Definition uint64__mset : list (string * val) := [].
+Definition string__mset : list (string * val) := [].
+End mset.

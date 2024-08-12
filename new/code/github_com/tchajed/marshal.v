@@ -91,24 +91,36 @@ Definition Enc__PutInts : val :=
     slice.for_range uint64T "$range" (λ: <> "x",
       let: "x" := ref_ty uint64T "x" in
       do:  (let: "$a0" := (![uint64T] "x") in
-      (Enc__PutInt (![ptrT] "enc")) "$a0")))).
+      (Enc__PutInt (![Enc] "enc")) "$a0")))).
 
 Definition Enc__mset : list (string * val) := [
-  ("Finish", Enc__Finish);
-  ("PutBool", Enc__PutBool);
-  ("PutBytes", Enc__PutBytes);
-  ("PutInt", Enc__PutInt);
-  ("PutInt32", Enc__PutInt32);
-  ("PutInts", Enc__PutInts)
+  ("Finish", Enc__Finish%V);
+  ("PutBool", Enc__PutBool%V);
+  ("PutBytes", Enc__PutBytes%V);
+  ("PutInt", Enc__PutInt%V);
+  ("PutInt32", Enc__PutInt32%V);
+  ("PutInts", Enc__PutInts%V)
 ].
 
 Definition Enc__mset_ptr : list (string * val) := [
-  ("Finish", (λ: "r", Enc__Finish (![Enc] "r"))%V);
-  ("PutBool", (λ: "r", Enc__PutBool (![Enc] "r"))%V);
-  ("PutBytes", (λ: "r", Enc__PutBytes (![Enc] "r"))%V);
-  ("PutInt", (λ: "r", Enc__PutInt (![Enc] "r"))%V);
-  ("PutInt32", (λ: "r", Enc__PutInt32 (![Enc] "r"))%V);
-  ("PutInts", (λ: "r", Enc__PutInts (![Enc] "r"))%V)
+  ("Finish", (λ: "$recvAddr",
+    Enc__Finish (![Enc] "$recvAddr")
+    )%V);
+  ("PutBool", (λ: "$recvAddr",
+    Enc__PutBool (![Enc] "$recvAddr")
+    )%V);
+  ("PutBytes", (λ: "$recvAddr",
+    Enc__PutBytes (![Enc] "$recvAddr")
+    )%V);
+  ("PutInt", (λ: "$recvAddr",
+    Enc__PutInt (![Enc] "$recvAddr")
+    )%V);
+  ("PutInt32", (λ: "$recvAddr",
+    Enc__PutInt32 (![Enc] "$recvAddr")
+    )%V);
+  ("PutInts", (λ: "$recvAddr",
+    Enc__PutInts (![Enc] "$recvAddr")
+    )%V)
 ].
 
 (* go: marshal.go:13:6 *)
@@ -197,26 +209,36 @@ Definition Dec__GetInts : val :=
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1))) := λ: <>,
       let: "$r0" := (let: "$a0" := (![sliceT uint64T] "xs") in
-      let: "$a1" := ((let: "$sl0" := ((Dec__GetInt (![ptrT] "dec")) #()) in
+      let: "$a1" := ((let: "$sl0" := ((Dec__GetInt (![Dec] "dec")) #()) in
       slice.literal uint64T ["$sl0"])) in
       (slice.append (sliceT uint64T)) "$a0" "$a1") in
       do:  ("xs" <-[sliceT uint64T] "$r0")));;;
     return: (![sliceT uint64T] "xs")).
 
 Definition Dec__mset : list (string * val) := [
-  ("GetBool", Dec__GetBool);
-  ("GetBytes", Dec__GetBytes);
-  ("GetInt", Dec__GetInt);
-  ("GetInt32", Dec__GetInt32);
-  ("GetInts", Dec__GetInts)
+  ("GetBool", Dec__GetBool%V);
+  ("GetBytes", Dec__GetBytes%V);
+  ("GetInt", Dec__GetInt%V);
+  ("GetInt32", Dec__GetInt32%V);
+  ("GetInts", Dec__GetInts%V)
 ].
 
 Definition Dec__mset_ptr : list (string * val) := [
-  ("GetBool", (λ: "r", Dec__GetBool (![Dec] "r"))%V);
-  ("GetBytes", (λ: "r", Dec__GetBytes (![Dec] "r"))%V);
-  ("GetInt", (λ: "r", Dec__GetInt (![Dec] "r"))%V);
-  ("GetInt32", (λ: "r", Dec__GetInt32 (![Dec] "r"))%V);
-  ("GetInts", (λ: "r", Dec__GetInts (![Dec] "r"))%V)
+  ("GetBool", (λ: "$recvAddr",
+    Dec__GetBool (![Dec] "$recvAddr")
+    )%V);
+  ("GetBytes", (λ: "$recvAddr",
+    Dec__GetBytes (![Dec] "$recvAddr")
+    )%V);
+  ("GetInt", (λ: "$recvAddr",
+    Dec__GetInt (![Dec] "$recvAddr")
+    )%V);
+  ("GetInt32", (λ: "$recvAddr",
+    Dec__GetInt32 (![Dec] "$recvAddr")
+    )%V);
+  ("GetInts", (λ: "$recvAddr",
+    Dec__GetInts (![Dec] "$recvAddr")
+    )%V)
 ].
 
 (* go: marshal.go:74:6 *)

@@ -90,8 +90,8 @@ Definition ReconnectingClient__Call : val :=
     return: (![uint64T] "err")).
 
 Definition ReconnectingClient__mset_ptr : list (string * val) := [
-  ("Call", ReconnectingClient__Call);
-  ("getClient", ReconnectingClient__getClient)
+  ("Call", ReconnectingClient__Call%V);
+  ("getClient", ReconnectingClient__getClient%V)
 ].
 
 (* go: client.go:20:6 *)

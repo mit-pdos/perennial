@@ -196,9 +196,9 @@ Definition CacheKv__Put : val :=
       else do:  #()))).
 
 Definition CacheKv__mset_ptr : list (string * val) := [
-  ("Get", CacheKv__Get);
-  ("GetAndCache", CacheKv__GetAndCache);
-  ("Put", CacheKv__Put)
+  ("Get", CacheKv__Get%V);
+  ("GetAndCache", CacheKv__GetAndCache%V);
+  ("Put", CacheKv__Put%V)
 ].
 
 (* go: clerk.go:47:6 *)
