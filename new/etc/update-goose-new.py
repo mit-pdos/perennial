@@ -118,6 +118,7 @@ def main():
             path.join(goose_dir, "testdata/examples"),
             "./append_log",
             "./semantics",
+            "./unittest",
         )
 
     run_goose(marshal_dir, ".")

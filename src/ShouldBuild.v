@@ -102,4 +102,6 @@ From Perennial.program_proof.cachekv Require proof.
 
 From New.proof Require asyncfile append_log marshal.
 
+From New.code.github_com.goose_lang.goose.testdata.examples Require unittest semantics.
+
 From Perennial.program_proof.pav Require should_build.
