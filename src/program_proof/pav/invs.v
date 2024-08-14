@@ -81,22 +81,21 @@ Lemma is_link_agree_l data link0 link1 :
   is_link data link0 -∗ is_link data link1 -∗ ⌜ link0 = link1 ⌝.
 Proof. Admitted.
 
-Fixpoint suffixer {A : Type} (l : list A) : list (list A) :=
+Fixpoint suffixes {A : Type} (l : list A) : list (list A) :=
   match l with
   | [] => [[]]
-  | x :: l' => suffixer l' ++ [l]
+  | x :: l' => suffixes l' ++ [l]
   end.
 
-Definition prefixer {A : Type} (l : list A) := reverse <$> suffixer (reverse l).
-Compute (prefixer [0; 1; 2]).
+Definition prefixes {A : Type} (l : list A) := reverse <$> suffixes (reverse l).
 
-Lemma prefix_of_prefixer {A : Type} (l1 l2 : list A) :
+Lemma prefix_of_prefixes {A : Type} (l1 l2 : list A) :
   l1 `prefix_of` l2 →
-  prefixer l1 `prefix_of` prefixer l2.
+  prefixes l1 `prefix_of` prefixes l2.
 Proof. Admitted.
 
 Definition binds (data links : list (list w8)) : iProp Σ :=
-  ([∗ list] pref;link ∈ (prefixer data);links,
+  ([∗ list] pref;link ∈ (prefixes data);links,
     is_link pref link).
 
 End chain.
@@ -114,30 +113,32 @@ End global_inv.
 Section serv_sigpreds.
 Context `{!heapGS Σ, !pavG Σ}.
 
-(* state is tied together as follows, all from one γ:
-γ →[mono_list]
-γtrees →[ghost_map_auth]
-trees →[is_tree_dig]
-digs →[binds]
-links. *)
-Definition serv_sigpred_link_def γ (data : servSepLink.t) (epoch : w64)
-    (prevLink dig : list w8) γtrees trees digs links : iProp Σ :=
-  "#Hbind" ∷ is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) data.(servSepLink.link) ∗
-  "#HmonoIdx" ∷ mono_list_lb_own γ γtrees ∗
-  "#Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; trees,
-    ghost_map_auth_pers γtr tr) ∗
-  "#Hdigs" ∷ ([∗ list] tr; dig ∈ trees; digs, is_tree_dig tr dig) ∗
-  "#Hdigs_links" ∷ binds digs links ∗
-  "%Hlink_look" ∷ ⌜ links !! (uint.nat epoch) = Some data.(servSepLink.link) ⌝.
+Record committed_state_ty :=
+  mk_committed_state {
+    γkey_maps: list gname;
+    key_maps: list (gmap (list w8) (list w8));
+    digs : list (list w8);
+    links : list (list w8);
+  }.
 
-Definition serv_sigpred_link γ data : iProp Σ :=
-  ∃ epoch prevLink dig γtrees trees digs links,
-  serv_sigpred_link_def γ data epoch prevLink dig γtrees trees digs links.
+Definition is_committed_state γ s : iProp Σ :=
+  mono_list_lb_own γ s.(γkey_maps) ∗
+  ([∗ list] γ;m ∈ s.(γkey_maps);s.(key_maps), ghost_map_auth_pers γ m) ∗
+  ([∗ list] m;d ∈ s.(key_maps);s.(digs), is_tree_dig m d) ∗
+  binds s.(digs) s.(links).
 
-Definition serv_sigpred_put γ (data : servSepPut.t) : iProp Σ :=
+(* link exists at a particular epoch of committed state. *)
+Definition serv_sigpred_link γ link : iProp Σ :=
+  ∃ epoch prevLink dig comm_st,
+  is_committed_state γ comm_st ∗
+  is_link_conn epoch prevLink dig link.(servSepLink.link) ∗
+  ⌜ comm_st.(links) !! (uint.nat epoch) = Some link.(servSepLink.link) ⌝.
+
+(* entry exists at a specific (potentially uncommitted) epoch. *)
+Definition serv_sigpred_put γ (put_sep : servSepPut.t) : iProp Σ :=
   ∃ γtr,
-  "#Htr_idx" ∷ mono_list_idx_own γ (uint.nat data.(servSepPut.epoch)) γtr ∗
-  "#Hentry" ∷ data.(servSepPut.id) ↪[γtr]□ data.(servSepPut.val).
+  "#Htr_idx" ∷ mono_list_idx_own γ (uint.nat put_sep.(servSepPut.epoch)) γtr ∗
+  "#Hentry" ∷ put_sep.(servSepPut.id) ↪[γtr]□ put_sep.(servSepPut.val).
 
 Definition serv_sigpred γ : (list w8 → iProp Σ) :=
   λ data,
@@ -254,36 +255,32 @@ so l2 prefix_of l4.
   { iIntros "**". by iApply ghost_map_auth_pers_pers_agree. }
 *)
 
-(* extending the prefix_of property of γtrees all the way down to links. *)
-Lemma serv_sigpred_link_def_prefix γ
-    data0 epoch0 prevLink0 dig0 γtrees0 trees0 digs0 links0
-    data1 epoch1 prevLink1 dig1 γtrees1 trees1 digs1 links1 :
-  serv_sigpred_link_def γ data0 epoch0 prevLink0 dig0 γtrees0 trees0 digs0 links0 -∗
-  serv_sigpred_link_def γ data1 epoch1 prevLink1 dig1 γtrees1 trees1 digs1 links1 -∗
-  ⌜ links0 `prefix_of` links1 ∨ links1 `prefix_of` links0 ⌝.
+(* extending the prefix_of property of γkey_maps all the way down to links. *)
+Lemma serv_sigpred_link_def_prefix γ comm_st0 comm_st1 :
+  is_committed_state γ comm_st0 -∗
+  is_committed_state γ comm_st1 -∗
+  ⌜ comm_st0.(links) `prefix_of` comm_st1.(links) ∨
+    comm_st1.(links) `prefix_of` comm_st0.(links) ⌝.
 Proof.
   iIntros "#HP0 #HP1".
-  iEval (rewrite /serv_sigpred_link_def /named) in "HP0".
-  iDestruct "HP0" as "(_ & Hlb0 & Hmap_auth0 & Hdigs0 & Hbinds0 & _)".
-  iEval (rewrite /serv_sigpred_link_def /named) in "HP1".
-  iDestruct "HP1" as "(_ & Hlb1 & Hmap_auth1 & Hdigs1 & Hbinds1 & _)".
-  iDestruct (mono_list_lb_valid with "Hlb0 Hlb1") as %Hpref0.
-  iClear "Hlb0 Hlb1".
+  iDestruct "HP0" as "(Hmono_map0 & Hmap_views0 & Hmap_digs0 & Hdig_links0)".
+  iDestruct "HP1" as "(Hmono_map1 & Hmap_views1 & Hmap_digs1 & Hdig_links1)".
+  iDestruct (mono_list_lb_valid with "Hmono_map0 Hmono_map1") as %Hpref0.
+  iClear "Hmono_map0 Hmono_map1".
 
-  iDestruct (big_sepL2_prefix_carry with "[] Hmap_auth0 Hmap_auth1") as %Hpref1.
+  iDestruct (big_sepL2_prefix_carry with "[] Hmap_views0 Hmap_views1") as %Hpref1.
   { done. }
   { iIntros "**". by iApply ghost_map_auth_pers_pers_agree. }
-  iClear "Hmap_auth0 Hmap_auth1".
-  iDestruct (big_sepL2_prefix_carry with "[] Hdigs0 Hdigs1") as %Hpref2.
+  iClear "Hmap_views0 Hmap_views1".
+  iDestruct (big_sepL2_prefix_carry with "[] Hmap_digs0 Hmap_digs1") as %Hpref2.
   { done. }
   { iIntros "**". by iApply is_tree_dig_agree. }
-  iClear "Hdigs0 Hdigs1".
-  iEval (rewrite /binds) in "Hbinds0 Hbinds1".
+  iClear "Hmap_digs0 Hmap_digs1".
 
-  assert (prefixer digs0 `prefix_of` prefixer digs1 ∨
-    prefixer digs1 `prefix_of` prefixer digs0) as Hpref3.
-  { intuition (eauto using prefix_of_prefixer). }
-  iDestruct (big_sepL2_prefix_carry with "[] Hbinds0 Hbinds1") as %Hpref4.
+  assert (prefixes comm_st0.(digs) `prefix_of` prefixes comm_st1.(digs) ∨
+    prefixes comm_st1.(digs) `prefix_of` prefixes comm_st0.(digs)) as Hpref3.
+  { intuition (eauto using prefix_of_prefixes). }
+  iDestruct (big_sepL2_prefix_carry with "[] Hdig_links0 Hdig_links1") as %Hpref4.
   { done. }
   { iIntros "**". by iApply is_link_agree_l. }
   done.
