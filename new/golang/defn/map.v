@@ -5,6 +5,8 @@ Module map.
 Section goose_lang.
 Context {ext:ffi_syntax}.
 
+Definition nil : val := #null.
+
 (* This model stores the values of the map into single memory cells, even if they
 are entire structs that would usually be laid out with one memory cell per
 field.  This is fine because it is not observable by clients: all APIs are
