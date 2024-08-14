@@ -154,36 +154,6 @@ End misc.
 Section proofs.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma sep_auth_agree γtrees trees0 trees1 :
-  ([∗ list] γtr;tr ∈ γtrees;trees0, ghost_map_auth γtr (1/2) tr) -∗
-  ([∗ list] γtr;tr ∈ γtrees;trees1, ghost_map_auth γtr (1/2) tr) -∗
-  ⌜trees0 = trees1⌝.
-Proof.
-  iIntros "Hsep0 Hsep1".
-  unfold_leibniz; setoid_rewrite list_equiv_lookup; fold_leibniz.
-  iDestruct (big_sepL2_length with "Hsep0") as %Hlen0.
-  iDestruct (big_sepL2_length with "Hsep1") as %Hlen1.
-  iIntros (i).
-  destruct (decide (i < length γtrees)) as [Hbound | Hbound].
-  {
-    apply lookup_lt_is_Some in Hbound as [x0 Hlook0].
-    iDestruct (big_sepL2_lookup_1_some with "Hsep0") as %[x1 Hlook1]; [done|].
-    iDestruct (big_sepL2_lookup_1_some with "Hsep1") as %[x2 Hlook2]; [done|].
-    iDestruct (big_sepL2_lookup with "Hsep0") as "Hauth0"; [done..|].
-    iDestruct (big_sepL2_lookup with "Hsep1") as "Hauth1"; [done..|].
-    iDestruct (ghost_map_auth_agree with "Hauth0 Hauth1") as %->.
-    rewrite Hlook1 Hlook2.
-    done.
-  }
-  {
-    assert (trees0 !! i = None) as ->.
-    { apply lookup_ge_None; lia. }
-    assert (trees1 !! i = None) as ->.
-    { apply lookup_ge_None; lia. }
-    done.
-  }
-Qed.
-
 Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
   {{{
     "Hserv" ∷ server.valid ptr_serv obj_serv ∗

@@ -6,31 +6,6 @@ From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From Perennial.base_logic Require Import ghost_map.
 
-Section other.
-Context `{!heapGS Σ, !pavG Σ}.
-Definition is_link epoch prevLink dig link : iProp Σ :=
-  is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) link.
-
-Lemma is_link_determ epoch prevLink dig link0 link1 :
-  is_link epoch prevLink dig link0 -∗
-  is_link epoch prevLink dig link1 -∗
-  ⌜ link0 = link1 ⌝.
-Proof.
-  iIntros "Hlink0 Hlink1".
-  by iDestruct (is_hash_deterministic with "Hlink0 Hlink1") as %->.
-Qed.
-
-Lemma is_link_inj epoch0 prevLink0 dig0 epoch1 prevLink1 dig1 link :
-  is_link epoch0 prevLink0 dig0 link -∗
-  is_link epoch1 prevLink1 dig1 link -∗
-  ⌜ epoch0 = epoch1 ∧ prevLink0 = prevLink1 ∧ dig0 = dig1 ⌝.
-Proof.
-  iIntros "Hlink0 Hlink1".
-  iDestruct (is_hash_inj with "Hlink0 Hlink1") as %Heq.
-  by pose proof (chainSepSome.inj _ _ Heq) as [=->].
-Qed.
-End other.
-
 Section evidence.
 Context `{!heapGS Σ, !pavG Σ}.
 
@@ -253,8 +228,12 @@ Proof.
       rewrite -Heq_epoch in Hlink_look1.
       pose proof (prefix_lookup_Some _ _ _ _ Hlink_look0 Hpref) as ?.
       naive_solver.
-      (* TODO: if have two things, turn into prefix of other. *)
-
+      (* why'd we need prefix lemma here?
+      have two links that have lookups at the same epoch for conflicting vals.
+      need to directly relate these links to get a contra.
+      the gammaTrees are prefixes of another, so let's derive that
+      the links are prefixes of another.
+      then (as i've shown above), it's good enough to prove a contra. *)
 
 (*
   rewrite /evidServLink__check.
