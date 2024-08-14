@@ -46,7 +46,7 @@ Axiom wpc_Read : ∀ filename (q:Qp) content,
   }}}
     grove_ffi.Read #(str filename) @ ⊤
   {{{
-       s, RET slice_val s; typed_slice.own_slice s byteT 1 content ∗
+       s, RET slice_val s; typed_slice.own_slice s byteT (DfracOwn 1) content ∗
                            filename f↦{q} content
   }}}
   {{{
@@ -90,7 +90,7 @@ Axiom wp_U64ToString : ∀ (u:u64),
   {{{
        True
   }}}
-    grove_ffi.U64ToString #u
+    grove_ffi.W64ToString #u
   {{{
        RET #(str u64_to_string u); True
   }}}.
@@ -151,7 +151,7 @@ handler_is host rpcid spec -∗
 
 Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post,
   {{{
-      own_slice req byteT 1 reqData ∗
+      own_slice req byteT (DfracOwn 1) reqData ∗
       rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
       handler_is X host rpcid Pre Post ∗
       RPCClient_own cl_ptr host ∗
@@ -162,28 +162,28 @@ Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64
        (b:bool) rep_sl (repData:list u8), RET #b;
        rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
        RPCClient_own cl_ptr host ∗
-       own_slice req byteT 1 reqData ∗
-       own_slice rep_sl byteT 1 repData ∗
+       own_slice req byteT (DfracOwn 1) reqData ∗
+       own_slice rep_sl byteT (DfracOwn 1) repData ∗
        (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post x reqData repData))
   }}}.
 
 Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
   ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
   {{{
-      own_slice req byteT 1 reqData ∗
+      own_slice req byteT (DfracOwn 1) reqData ∗
       rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
       ▷ Pre x reqData
   }}}
     f (slice_val req) #rep
   {{{
        rep_sl (repData:list u8), RET #(); rep ↦[slice.T byteT] (slice_val rep_sl) ∗
-         own_slice rep_sl byteT 1 repData ∗
+         own_slice rep_sl byteT (DfracOwn 1) repData ∗
          ▷ Post x reqData repData
   }}}.
 
-Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (mref : loc) (def : val) k,
+Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (mref : loc) (def : val),
   {{{
-      map.own_map mref (handlers, def) ∗
+      map.own_map mref (DfracOwn 1) (handlers, def) ∗
       [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
   }}}
     grove_ffi.StartRPCServer #mref @ ⊤

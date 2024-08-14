@@ -190,10 +190,10 @@ Proof.
   word.
 Qed.
 
-Lemma wp_SumNoOverflow (x y : u64) :
+Lemma wp_SumNoOverflow (x y : u64) stk E :
   ∀ Φ : val → iProp Σ,
     Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
-    WP SumNoOverflow #x #y {{ Φ }}.
+    WP SumNoOverflow #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros (Φ) "HΦ".
   rewrite /SumNoOverflow. wp_pures.
@@ -206,10 +206,10 @@ Proof.
   - word.
 Qed.
 
-Lemma wp_SumAssumeNoOverflow (x y : u64) :
+Lemma wp_SumAssumeNoOverflow (x y : u64) stk E :
   ∀ Φ : val → iProp Σ,
     (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
-    WP SumAssumeNoOverflow #x #y {{ Φ }}.
+    WP SumAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros "%Φ HΦ". wp_rec; wp_pures.
   wp_apply wp_SumNoOverflow.
