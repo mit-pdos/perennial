@@ -229,22 +229,86 @@ Proof.
     rewrite app_nil_r. iFrame.
 Qed.
 
+(**
+ * Write-restricted storage in Verus:
+ *
+ *   precondition of serialize_and_write:
+ *   https://github.com/microsoft/verified-storage/blob/main/storage_node/src/pmem/wrpm_t.rs
+ *
+ *   example of a Permission object (check_permission):
+ *   https://github.com/microsoft/verified-storage/blob/main/storage_node/src/log/logimpl_t.rs
+ *)
+
+Definition disk_state := gmap Z Block.
+Definition own_disk (d : disk_state) : iProp Σ :=
+  [∗ map] a↦v ∈ d, a d↦ v.
+
+(* P is the equivalent of the opaque check_permission from write-restricted storage *)
+Axiom P : disk_state -> iProp Σ.
+
+(* Simplified version of write().can_crash_as() *)
+Fixpoint write_blocks (d : disk_state) (a : Z) (blocks : list Block) : disk_state :=
+  match blocks with
+  | nil => d
+  | b :: blocks' => write_blocks (<[a:=b]> d) (a+1) blocks'
+  end.
+
+Definition write_can_crash_as (d : disk_state) (a : Z) (blocks : list Block) (d' : disk_state) : Prop :=
+  ∃ blocks',
+    prefix blocks' blocks ∧
+    write_blocks d a blocks' = d'.
 
 (*
-
-Definition own_disk (d : gmap u64 Block) :=
-  [∗ map] a↦v ∈ d, 
-
-Theorem wp_Write_wrs a s q b :
-  {{{ own_slice_small s byteT q (Block_to_vals b) ∗
-      
-  }}}
-    Write #a (slice_val s)
-  {{{ RET #();
-      own_slice_small s byteT q (Block_to_vals b) }}}.
-Proof.
-  
-
+Lemma disk_extract (d : disk_state) (a : Z) (n : Z) :
+  own_disk ds -∗
+  ( ([∗ map] a↦v ∈ filter (λ kv, a ≤ fst kv < a+n) ds) ∗
+    ([∗ map] a↦v ∈ filter (λ kv, ...
 *)
+
+Theorem wpc_WriteMulti_wrs d (a : u64) s q (bslices : list Slice.t) (bs : list Block) ds stk E1 :
+  {{{ own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
+      ([∗ list] i ↦ bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b) ∗ ⌜uint.Z i ∈ dom ds⌝) ∗
+      own_disk ds ∗ P ds ∗
+      (∀ ds',
+        P ds -∗
+        ⌜write_can_crash_as ds (uint.Z a) bs ds'⌝ -∗
+        P ds')
+  }}}
+    WriteMulti #d #a (slice_val s) @ stk; E1
+  {{{ RET #();
+      own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
+      ([∗ list] i ↦ bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b) ∗ ⌜uint.Z i ∈ dom ds⌝) ∗
+      own_disk (write_blocks ds (uint.Z a) bs) ∗ P (write_blocks ds (uint.Z a) bs)
+  }}}
+  {{{ ∃ crash_disk, own_disk crash_disk ∗ P crash_disk }}}.
+Proof.
+  iIntros (Φ Φc) "(Hss & Hs & Hdisk & HP & Hwrs) HΦ".
+  iDestruct (big_sepL2_sep with "Hs") as "[Hs #Hdom]".
+  rewrite /own_disk.
+
+(*
+Check big_sepM_union.
+Check map_disjoint_filter_complement.
+  iRewrite (big_sepM_union with "[Hdisk]") as "Hx".
+Search map_disjoint filter.
+Check big_sepM_union.
+
+  Search map_disjoint difference.
+  rewrite big_sepM_union.
+*)
+
+  iApply (wpc_WriteMulti with "[$Hss $Hs]").
+  { (* need part of Hdisk *) admit. }
+  iSplit.
+  - iIntros "Hc". iDestruct "Hc" as (crashidx) "Hc".
+    iLeft in "HΦ". iApply "HΦ".
+    (* ... *)
+    admit.
+  - iModIntro. iIntros "(Hss & Hs & Hd)".
+    iRight in "HΦ". iApply "HΦ". iFrame.
+    iDestruct (big_sepL2_sep with "[$Hs $Hdom]") as "Hs". iFrame.
+    (* ... *)
+    admit.
+Admitted.
 
 End proof.
