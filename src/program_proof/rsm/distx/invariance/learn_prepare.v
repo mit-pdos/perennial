@@ -91,9 +91,10 @@ Section inv.
         destruct (wrs !! key) as [v |] eqn:Hkey.
         { (* Case: [key] in the write set of [ts]; contradiction. *)
           rewrite /all_prepared.
-          iDestruct (big_sepS_elem_of _ _ gid with "Hres") as "Hst".
+          iDestruct "Hres" as "[_ Hpreps]".
+          iDestruct (big_sepS_elem_of _ _ gid with "Hpreps") as "Hprep".
           { rewrite Hgid. by eapply elem_of_ptgroups, elem_of_dom_2. }
-          iDestruct (txnprep_lookup with "Hpm Hst") as %Hprep.
+          iDestruct (txnprep_lookup with "Hpm Hprep") as %Hprep.
           congruence.
         }
         (* Case: [key] not in the write set of [ts]. *)
@@ -231,8 +232,11 @@ Section inv.
       { apply Hc. }
       iDestruct "Hprep" as (wrs) "(Hwrs & %Hnz & %Hpwrs)".
       (* Obtain evidence that [ts] has aborted. *)
-      iMod (txn_inv_abort with "Hwrs Hunp Hpm Htxn") as "(Hpm & Htxn & #Habt)".
-      { destruct Hpwrs as (_ & Hne & Hpwrs). by eapply wrs_group_elem_of_ptgroups. }
+      iMod (txn_inv_abort with "[Hwrs Hunp] Htxn") as "[Htxn #Habt]".
+      { iFrame "#". iPureIntro.
+        destruct Hpwrs as (_ & Hne & Hgid).
+        by eapply wrs_group_elem_of_ptgroups.
+      }
       (* Create txn tokens for the new state. *)
       iDestruct (txn_tokens_inv_learn_prepare_aborted with "Habt Htks") as "#Htks'"; [done | done |].
       (* Create witnesses for the replicated history. *)

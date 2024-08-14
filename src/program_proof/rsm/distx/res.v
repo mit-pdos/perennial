@@ -125,6 +125,12 @@ Section res.
     Persistent (txnwrs_receipt γ ts wrs).
   Admitted.
 
+  Lemma txnwrs_receipt_agree γ ts wrs1 wrs2 :
+    txnwrs_receipt γ ts wrs1 -∗
+    txnwrs_receipt γ ts wrs2 -∗
+    ⌜wrs2 = wrs1⌝.
+  Admitted.
+
   Lemma txnwrs_lookup γ wrsm ts wrs :
     txnwrs_auth γ wrsm -∗
     txnwrs_receipt γ ts wrs -∗
@@ -139,7 +145,7 @@ Section res.
   Admitted.
 
   #[global]
-  Instance txnprep_lb_persistent γ gid ts p :
+  Instance txnprep_receipt_persistent γ gid ts p :
     Persistent (txnprep_receipt γ gid ts p).
   Admitted.
 
@@ -148,6 +154,12 @@ Section res.
 
   Definition txnprep_unprep γ gid ts :=
     txnprep_receipt γ gid ts false.
+
+  Lemma txnprep_receipt_agree γ gid ts p1 p2 :
+    txnprep_receipt γ gid ts p1 -∗
+    txnprep_receipt γ gid ts p2 -∗
+    ⌜p2 = p1⌝.
+  Admitted.
 
   Lemma txnprep_insert {γ gid pm} ts p :
     pm !! ts = None ->
@@ -206,6 +218,36 @@ Section res.
     iDestruct (big_sepS_elem_of with "Hkeys") as "Hkey"; first apply Hin.
     by iDestruct (kmod_cmtd_agree with "Hkey Hk") as %?.
   Qed.
+
+  (* Linearized transactions. *)
+  Definition txns_lnrz_auth γ (tids : gset nat) : iProp Σ.
+  Admitted.
+
+  Definition txns_lnrz_receipt γ (tid : nat) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance txns_lnrz_receipt_persistent γ tid :
+    Persistent (txns_lnrz_receipt γ tid).
+  Admitted.
+
+  Lemma txns_lnrz_union γ tids tid :
+    tid ∉ tids ->
+    txns_lnrz_auth γ tids ==∗
+    txns_lnrz_auth γ ({[ tid ]} ∪ tids) ∗ txns_lnrz_receipt γ tid.
+  Admitted.
+
+  Lemma txns_lnrz_witness γ tids tid :
+    tid ∈ tids ->
+    txns_lnrz_auth γ tids -∗
+    txns_lnrz_receipt γ tid.
+  Admitted.
+
+  Lemma txns_lnrz_elem_of γ tids tid :
+    txns_lnrz_auth γ tids -∗
+    txns_lnrz_receipt γ tid -∗
+    ⌜tid ∈ tids⌝.
+  Admitted.
 
   (* Paxos log and command pool. TODO: rename clog to just log. *)
   Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.

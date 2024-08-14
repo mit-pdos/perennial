@@ -76,7 +76,7 @@ Section program.
 
   Definition groups_txnst γ (ts : nat) (st : txnst) : iProp Σ :=
     match st with
-    | StPrepared wrs => all_prepared γ ts (dom wrs)
+    | StPrepared wrs => all_prepared γ ts wrs
     | StCommitted => True
     | StAborted => some_aborted γ ts
     end.

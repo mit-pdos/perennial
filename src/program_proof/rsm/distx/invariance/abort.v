@@ -1,13 +1,12 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 
-Lemma cmtd_impl_prep_inv_abort {resm wrsm} ts :
-  cmtd_impl_prep resm wrsm ->
-  cmtd_impl_prep (<[ts:=ResAborted]> resm) wrsm.
+Lemma lnrz_txns_destined_inv_abort {tids tmodcs tmodas resm} ts :
+  resm !! ts = None ->
+  lnrz_txns_destined tids tmodcs tmodas resm ->
+  lnrz_txns_destined tids tmodcs tmodas (<[ts := ResAborted]> resm).
 Proof.
-  intros Hcip ts'.
-  destruct (decide (ts' = ts)) as [-> | Hne]; first by rewrite lookup_insert.
-  rewrite lookup_insert_ne; last done.
-  by apply Hcip.
+  intros Hnone.
+  by rewrite /lnrz_txns_destined resm_to_tmods_insert_aborted.
 Qed.
 
 Lemma resm_to_tmods_insert_aborted resm ts :
@@ -23,24 +22,20 @@ Qed.
 Section inv.
   Context `{!distx_ghostG Σ}.
 
-  Lemma txn_inv_abort γ gid pm ts wrs :
-    gid ∈ ptgroups (dom wrs) ->
-    txnwrs_receipt γ ts wrs -∗
-    txnprep_unprep γ gid ts -∗
-    txnprep_auth γ gid pm -∗
+  Lemma txn_inv_abort γ ts :
+    some_aborted γ ts -∗
     txn_inv γ ==∗
-    txnprep_auth γ gid pm ∗
     txn_inv γ ∗
     txnres_abt γ ts.
   Proof.
-    iIntros (Hgid) "#Hwrs #Hnp Hpm Htxn".
+    iIntros "#Habt Htxn".
     iNamed "Htxn".
     destruct (resm !! ts) as [res |] eqn:Hres; last first.
-    { (* Case: [ts] not aborted or committed yet. *)
+    { (* Case: [ts] has neither aborted nor committed yet. *)
       iMod (txnres_insert ts ResAborted with "Hresm") as "Hresm"; first done.
-      iDestruct (txnres_witness with "Hresm") as "#Habt".
+      iDestruct (txnres_witness with "Hresm") as "#Hreceipt".
       { apply lookup_insert. }
-      pose proof (cmtd_impl_prep_inv_abort ts Hcip) as Hcip'.
+      pose proof (lnrz_txns_destined_inv_abort ts Hres Hdest) as Hdest'.
       iFrame "∗ # %".
       rewrite resm_to_tmods_insert_aborted; last done.
       rewrite big_sepM_insert; last done.
@@ -48,22 +43,13 @@ Section inv.
     }
     destruct res as [wrsc |]; last first.
     { (* Case: [ts] aborted; get a witness without any update. *)
-      iDestruct (txnres_witness with "Hresm") as "#Habt".
-      { apply Hres. }
+      iDestruct (txnres_witness with "Hresm") as "#Hreceipt"; first apply Hres.
       by auto 10 with iFrame.
     }
     (* Case: [ts] committed; contradiction. *)
-    iDestruct (big_sepM_lookup with "Hvr") as "#Hresc"; first apply Hres.
-    (* Prove [wrsc = wrs]. *)
-    iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hwrs.
-    specialize (Hcip ts).
-    rewrite Hres Hwrs in Hcip.
-    inversion Hcip. subst wrsc.
-    rewrite /= /all_prepared.
-    iDestruct (big_sepS_elem_of with "Hresc") as "Hp"; first apply Hgid.
-    iDestruct (txnprep_lookup with "Hpm Hp") as %Hp.
-    iDestruct (txnprep_lookup with "Hpm Hnp") as %Hnp.
-    congruence.
+    iDestruct (big_sepM_lookup with "Hvr") as "#Hprep"; first apply Hres.
+    simpl.
+    iDestruct (all_prepared_some_aborted_false with "Hprep Habt") as %[].
   Qed.
 
 End inv.

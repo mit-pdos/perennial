@@ -76,8 +76,8 @@ Section inv.
     iNamed "Htxn".
     iDestruct (txnres_lookup with "Hresm Hres") as %Hr.
     iDestruct (big_sepM_lookup with "Hvr") as "Hr"; first by apply Hr.
-    rewrite /= /all_prepared.
-    iDestruct (big_sepS_elem_of with "Hr") as "Hp"; first apply Hptg.
+    iDestruct "Hr" as "[_ Hpreps]".
+    iDestruct (big_sepS_elem_of with "Hpreps") as "Hprep"; first apply Hptg.
     iFrame "#".
   Qed.
 
@@ -184,10 +184,9 @@ Section inv.
     iAssert (⌜wrsc = wrs⌝)%I as %->.
     { iNamed "Htxn".
       iDestruct (txnres_lookup with "Hresm Hcmt") as %Hresm.
-      iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hwrsm.
-      specialize (Hcip ts).
-      rewrite /cmtd_impl_prep Hresm Hwrsm in Hcip.
-      by inversion Hcip.
+      iDestruct (big_sepM_lookup with "Hvr") as "Hwrsc"; first apply Hresm.
+      iDestruct "Hwrsc" as "[Hwrsc _]".
+      by iDestruct (txnwrs_receipt_agree with "Hwrs Hwrsc") as %?.
     }
     (* Take the required keys invariants. *)
     iDestruct (big_sepS_subseteq_acc _ _ (dom pwrs) with "Hkeys") as "[Hkeys HkeysC]".
