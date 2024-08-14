@@ -67,6 +67,10 @@ Admitted.
 Instance is_sig_persistent pk msg sig : Persistent (is_sig pk msg sig).
 Proof. Admitted.
 
+Lemma is_sig_to_pred {pk P msg sig} :
+  is_pk pk P -∗ is_sig pk msg sig -∗ P msg.
+Proof. Admitted.
+
 Lemma wp_GenerateKey P :
   {{{
     "%Hpersis" ∷ ⌜∀ l, Persistent (P l)⌝

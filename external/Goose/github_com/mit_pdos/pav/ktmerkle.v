@@ -119,8 +119,8 @@ Definition signedPut__check: val :=
 (* evidServLink is evidence that the server signed two conflicting links,
    either zero or one epochs away. *)
 Definition evidServLink := struct.decl [
-  "sln0" :: ptrT;
-  "sln1" :: ptrT
+  "sigLn0" :: ptrT;
+  "sigLn1" :: ptrT
 ].
 
 (* errSome from ktmerkle.go *)
@@ -135,47 +135,47 @@ Definition maxUint64 : expr := (#1 ≪ #64) - #1.
    otherwise, it proves that the server was dishonest. *)
 Definition evidServLink__check: val :=
   rec: "evidServLink__check" "e" "servPk" :=
-    let: ("link0", "err0") := signedLink__check (struct.loadF evidServLink "sln0" "e") "servPk" in
+    let: ("link0", "err0") := signedLink__check (struct.loadF evidServLink "sigLn0" "e") "servPk" in
     (if: "err0"
     then errSome
     else
-      let: ("link1", "err1") := signedLink__check (struct.loadF evidServLink "sln1" "e") "servPk" in
+      let: ("link1", "err1") := signedLink__check (struct.loadF evidServLink "sigLn1" "e") "servPk" in
       (if: "err1"
       then errSome
       else
-        (if: (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sln0" "e")) = (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sln1" "e"))
+        (if: (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn0" "e")) = (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn1" "e"))
         then std.BytesEqual "link0" "link1"
         else
-          (if: (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sln0" "e")) = ((struct.loadF signedLink "epoch" (struct.loadF evidServLink "sln1" "e")) - #1)
-          then std.BytesEqual "link0" (struct.loadF signedLink "prevLink" (struct.loadF evidServLink "sln1" "e"))
+          (if: (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn0" "e")) = ((struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn1" "e")) - #1)
+          then std.BytesEqual "link0" (struct.loadF signedLink "prevLink" (struct.loadF evidServLink "sigLn1" "e"))
           else errSome)))).
 
 (* evidServPut is evidence when a server promises to put a value at a certain
    epoch but actually there's a different value (as evidenced by a merkle proof). *)
 Definition evidServPut := struct.decl [
-  "sln" :: ptrT;
-  "sp" :: ptrT;
+  "sigLn" :: ptrT;
+  "sigPut" :: ptrT;
   "val" :: slice.T byteT;
   "proof" :: slice.T (slice.T (slice.T byteT))
 ].
 
 Definition evidServPut__check: val :=
   rec: "evidServPut__check" "e" "servPk" :=
-    let: (<>, "err0") := signedLink__check (struct.loadF evidServPut "sln" "e") "servPk" in
+    let: (<>, "err0") := signedLink__check (struct.loadF evidServPut "sigLn" "e") "servPk" in
     (if: "err0"
     then errSome
     else
-      let: "err1" := signedPut__check (struct.loadF evidServPut "sp" "e") "servPk" in
+      let: "err1" := signedPut__check (struct.loadF evidServPut "sigPut" "e") "servPk" in
       (if: "err1"
       then errSome
       else
-        let: "err2" := merkle.CheckProof merkle.MembProofTy (struct.loadF evidServPut "proof" "e") (struct.loadF signedPut "id" (struct.loadF evidServPut "sp" "e")) (struct.loadF evidServPut "val" "e") (struct.loadF signedLink "dig" (struct.loadF evidServPut "sln" "e")) in
+        let: "err2" := merkle.CheckProof merkle.MembProofTy (struct.loadF evidServPut "proof" "e") (struct.loadF signedPut "id" (struct.loadF evidServPut "sigPut" "e")) (struct.loadF evidServPut "val" "e") (struct.loadF signedLink "dig" (struct.loadF evidServPut "sigLn" "e")) in
         (if: "err2"
         then errSome
         else
-          (if: (struct.loadF signedLink "epoch" (struct.loadF evidServPut "sln" "e")) ≠ (struct.loadF signedPut "epoch" (struct.loadF evidServPut "sp" "e"))
+          (if: (struct.loadF signedLink "epoch" (struct.loadF evidServPut "sigLn" "e")) ≠ (struct.loadF signedPut "epoch" (struct.loadF evidServPut "sigPut" "e"))
           then errSome
-          else std.BytesEqual (struct.loadF signedPut "val" (struct.loadF evidServPut "sp" "e")) (struct.loadF evidServPut "val" "e"))))).
+          else std.BytesEqual (struct.loadF signedPut "val" (struct.loadF evidServPut "sigPut" "e")) (struct.loadF evidServPut "val" "e"))))).
 
 (* ktmerkle.go *)
 
@@ -585,8 +585,8 @@ Definition client__addLink: val :=
           "sig" ::= struct.loadF cliSigLink "sig" "cachedLink"
         ] in
         let: "evid" := struct.new evidServLink [
-          "sln0" ::= "newSigLn";
-          "sln1" ::= "cachedSigLn"
+          "sigLn0" ::= "newSigLn";
+          "sigLn1" ::= "cachedSigLn"
         ] in
         ("evid", errSome)
       else
@@ -600,8 +600,8 @@ Definition client__addLink: val :=
             "sig" ::= struct.loadF cliSigLink "sig" "cachedLink"
           ] in
           let: "evid" := struct.new evidServLink [
-            "sln0" ::= "cachedSigLn";
-            "sln1" ::= "newSigLn"
+            "sigLn0" ::= "cachedSigLn";
+            "sigLn1" ::= "newSigLn"
           ] in
           ("evid", errSome)
         else
@@ -615,8 +615,8 @@ Definition client__addLink: val :=
               "sig" ::= struct.loadF cliSigLink "sig" "cachedLink"
             ] in
             let: "evid" := struct.new evidServLink [
-              "sln0" ::= "newSigLn";
-              "sln1" ::= "cachedSigLn"
+              "sigLn0" ::= "newSigLn";
+              "sigLn1" ::= "cachedSigLn"
             ] in
             ("evid", errSome)
           else
@@ -1074,8 +1074,8 @@ Definition client__audit: val :=
                   "sig" ::= struct.loadF cliSigLink "sig" "lastLink"
                 ] in
                 let: "evid" := struct.new evidServLink [
-                  "sln0" ::= "adtrSigLn";
-                  "sln1" ::= "mySigLn"
+                  "sigLn0" ::= "adtrSigLn";
+                  "sigLn1" ::= "mySigLn"
                 ] in
                 (#0, "evid", errSome)
               else (![uint64T] "epoch", slice.nil, errNone))))))).
@@ -1136,13 +1136,13 @@ Definition client__selfCheckAt: val :=
                   "val" ::= "expVal";
                   "sig" ::= "putSig"
                 ] in
-                let: "ev" := struct.new evidServPut [
-                  "sln" ::= "sigLn";
-                  "sp" ::= "sigPut";
+                let: "evid" := struct.new evidServPut [
+                  "sigLn" ::= "sigLn";
+                  "sigPut" ::= "sigPut";
                   "val" ::= struct.loadF servGetIdAtReply "val" "reply";
                   "proof" ::= struct.loadF servGetIdAtReply "proof" "reply"
                 ] in
-                (slice.nil, "ev", errSome)
+                (slice.nil, "evid", errSome)
               else (slice.nil, slice.nil, errSome))
             else (slice.nil, slice.nil, errNone)))))).
 

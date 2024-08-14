@@ -20,6 +20,10 @@ Definition is_tree_dig entries dig : iProp Σ :=
   "%Htree" ∷ ⌜tree_to_map tr = entries⌝ ∗
   "#Hdig" ∷ is_node_hash tr dig.
 
+Lemma is_tree_dig_agree entries dig0 dig1 :
+  is_tree_dig entries dig0 -∗ is_tree_dig entries dig1 -∗ ⌜ dig0 = dig1 ⌝.
+Proof. Admitted.
+
 (* Commits entry to a tree with some digest. *)
 Definition commits_entry id val digest : iProp Σ :=
   ∃ tr,
