@@ -357,32 +357,25 @@ Lemma disk_extract_acc (ds : disk_state) (a : Z) (bs : list Block) :
   own_disk ds -∗
   ( [∗ list] i ↦ _ ∈ bs, ⌜(a+i)%Z ∈ dom ds⌝ ) -∗
   ( [∗ list] i ↦ _ ∈ bs, ∃ b0, (a+i)%Z d↦b0 ∗ ⌜ds !! (a+i)%Z = Some b0⌝ ) ∗
-  ( ∀ bs', ( [∗ list] i ↦ b ∈ bs', (a+i) d↦b ) -∗
+  ( ∀ bs', ⌜length bs' = length bs⌝ -∗ ( [∗ list] i ↦ b ∈ bs', (a+i) d↦b ) -∗
     own_disk (write_blocks ds a bs') ).
 Proof.
   iIntros "Hdisk #Hbs_dom".
   rewrite /own_disk /disk_state.
   iDestruct (big_sep_block_list_to_gmap a bs (λ a b, ⌜a ∈ dom ds⌝)%I with "Hbs_dom") as "#Hbs_dom_2".
-(*
-iDestruct (heap_array_to_list with "Hbs_dom") as "H".
-Check (heap_array a bs).
-
-Search big_opM list.
-  iDestruct (big_sep
-
-  iDestruct (big_sepM_union with "Hdisk") as "Hx".
-
-Check big_sepM_union.
-Check map_disjoint_filter_complement.
-  iRewrite (big_sepM_union with "[Hdisk]") as "Hx".
-Search map_disjoint filter.
-Check big_sepM_union.
-
-  Search map_disjoint difference.
-  rewrite big_sepM_union.
-*)
-
+  replace ds with (filter (λ kv, a ≤ fst kv < a + length bs) ds ∪ filter (λ kv, ¬ (a ≤ fst kv < a + length bs)) ds) at 1.
+  2: { rewrite map_filter_union_complement //. }
+  iDestruct (big_sepM_union with "Hdisk") as "[Hbs Hdisk]".
+  { apply map_disjoint_filter_complement. }
+  iSplitL "Hbs".
+  { admit. }
+  iIntros (bs' Hbslen) "Hbs'".
+  admit.
 Admitted.
+
+(* TODO: port to async disk *)
+(* TODO: DSL that captures many operations, not just a single WriteMulti *)
+(* TODO: instantiate P with a state machine to capture refinement *)
 
 Theorem wpc_WriteMulti_wrs d (a : u64) s q (bslices : list Slice.t) (bs : list Block) ds stk E1 :
   {{{ own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
@@ -390,7 +383,7 @@ Theorem wpc_WriteMulti_wrs d (a : u64) s q (bslices : list Slice.t) (bs : list B
       own_disk ds ∗ P ds ∗
       (∀ ds',
         ⌜write_can_crash_as ds (uint.Z a) bs ds'⌝ -∗
-        P ds -∗ P ds')
+        P ds ==∗ P ds')
   }}}
     WriteMulti #d #a (slice_val s) @ stk; E1
   {{{ RET #();
