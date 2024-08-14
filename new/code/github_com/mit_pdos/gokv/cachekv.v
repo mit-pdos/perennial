@@ -31,7 +31,9 @@ Definition CacheKv__mset : list (string * val) := [
 Definition DecodeValue : val :=
   rec: "DecodeValue" "v" :=
     exception_do (let: "v" := (ref_ty stringT "v") in
-    let: "e" := (ref_ty (sliceT byteT) (string.to_bytes (![stringT] "v"))) in
+    let: "e" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
+    let: "$r0" := (string.to_bytes (![stringT] "v")) in
+    do:  ("e" <-[sliceT byteT] "$r0");;;
     let: "vBytes" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
     let: "l" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT byteT] "e") in
@@ -82,7 +84,9 @@ Definition CacheKv__Get : val :=
 Definition EncodeValue : val :=
   rec: "EncodeValue" "c" :=
     exception_do (let: "c" := (ref_ty cacheValue "c") in
-    let: "e" := (ref_ty (sliceT byteT) (slice.make2 byteT #0)) in
+    let: "e" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
+    let: "$r0" := (slice.make2 byteT #0) in
+    do:  ("e" <-[sliceT byteT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![sliceT byteT] "e") in
     let: "$a1" := (![uint64T] (struct.field_ref cacheValue "l" "c")) in
     marshal.WriteInt "$a0" "$a1") in

@@ -255,7 +255,9 @@ Definition compute_new_cap : val :=
   rec: "compute_new_cap" "old_cap" "min_cap" :=
     exception_do (let: "min_cap" := (ref_ty uint64T "min_cap") in
     let: "old_cap" := (ref_ty uint64T "old_cap") in
-    let: "new_cap" := (ref_ty uint64T ((![uint64T] "old_cap") * #2)) in
+    let: "new_cap" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "old_cap") * #2) in
+    do:  ("new_cap" <-[uint64T] "$r0");;;
     (if: (![uint64T] "new_cap") < (![uint64T] "min_cap")
     then
       let: "$r0" := (![uint64T] "min_cap") in

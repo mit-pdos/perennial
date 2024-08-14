@@ -21,8 +21,12 @@ Definition BytesEqual : val :=
     slice.len "$a0")
     then return: (#false)
     else do:  #());;;
-    let: "i" := (ref_ty uint64T #0) in
-    let: "retval" := (ref_ty boolT #true) in
+    let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("i" <-[uint64T] "$r0");;;
+    let: "retval" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("retval" <-[boolT] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < (![intT] "xlen")); (λ: <>, Skip) := λ: <>,
       (if: (![byteT] (slice.elem_ref byteT (![sliceT byteT] "x") (![uint64T] "i"))) ≠ (![byteT] (slice.elem_ref byteT (![sliceT byteT] "y") (![uint64T] "i")))
       then
@@ -178,7 +182,9 @@ Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
     exception_do (let: "op" := (ref_ty funcT "op") in
     let: "num" := (ref_ty uint64T "num") in
-    let: "num_left" := (ref_ty uint64T (![uint64T] "num")) in
+    let: "num_left" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := (![uint64T] "num") in
+    do:  ("num_left" <-[uint64T] "$r0");;;
     let: "num_left_mu" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
     do:  ("num_left_mu" <-[ptrT] "$r0");;;

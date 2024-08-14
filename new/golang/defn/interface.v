@@ -27,5 +27,6 @@ End interface.
 Section mset.
 Context `{ffi_syntax}.
 Definition uint64__mset : list (string * val) := [].
+Definition int__mset : list (string * val) := [].
 Definition string__mset : list (string * val) := [].
 End mset.

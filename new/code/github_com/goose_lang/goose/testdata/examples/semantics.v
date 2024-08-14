@@ -19,8 +19,12 @@ Definition unit__mset_ptr : list (string * val) := [
 Definition findKey : val :=
   rec: "findKey" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T unit) "m") in
-    let: "found" := (ref_ty uint64T #0) in
-    let: "ok" := (ref_ty boolT #false) in
+    let: "found" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("found" <-[uint64T] "$r0");;;
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("ok" <-[boolT] "$r0");;;
     do:  (map.for_range (![mapT uint64T unit] "m") (λ: "k" <>,
       (if: (~ (![boolT] "ok"))
       then
@@ -134,6 +138,26 @@ Definition testExplicitBlockStmt : val :=
     do:  ("x" <-[intT] ((![intT] "x") + #1));;;
     return: ((![intT] "x") = #10)).
 
+(* go: builtin.go:3:6 *)
+Definition testMinUint64 : val :=
+  rec: "testMinUint64" <> :=
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #10 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    return: ((let: "$a0" := (![uint64T] "x") in
+     let: "$a1" := #1 in
+     (minUint64 2) "$a0" "$a1") = #1)).
+
+(* go: builtin.go:8:6 *)
+Definition testMaxUint64 : val :=
+  rec: "testMaxUint64" <> :=
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #10 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    return: ((let: "$a0" := (![uint64T] "x") in
+     let: "$a1" := #1 in
+     (maxUint64 2) "$a0" "$a1") = #10)).
+
 Definition AdderType : go_type := funcT.
 
 Definition MultipleArgsType : go_type := funcT.
@@ -141,7 +165,9 @@ Definition MultipleArgsType : go_type := funcT.
 (* go: closures.go:6:6 *)
 Definition adder : val :=
   rec: "adder" <> :=
-    exception_do (let: "sum" := (ref_ty uint64T #0) in
+    exception_do (let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("sum" <-[uint64T] "$r0");;;
     return: ((λ: "x",
        exception_do (let: "x" := (ref_ty uint64T "x") in
        do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (![uint64T] "x")));;;
@@ -175,8 +201,12 @@ Definition testClosureBasic : val :=
 (* go: comparisons.go:3:6 *)
 Definition testCompareAll : val :=
   rec: "testCompareAll" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
-    let: "nok" := (ref_ty boolT #false) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
+    let: "nok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("nok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (#1 < #2)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (#2 < #1)) in
@@ -195,9 +225,15 @@ Definition testCompareAll : val :=
 (* go: comparisons.go:20:6 *)
 Definition testCompareGT : val :=
   rec: "testCompareGT" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #4) in
-    let: "y" := (ref_ty uint64T #5) in
-    let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #4 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #5 in
+    do:  ("y" <-[uint64T] "$r0");;;
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") > #4)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") > (![uint64T] "x"))) in
@@ -207,9 +243,15 @@ Definition testCompareGT : val :=
 (* go: comparisons.go:31:6 *)
 Definition testCompareGE : val :=
   rec: "testCompareGE" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #4) in
-    let: "y" := (ref_ty uint64T #5) in
-    let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #4 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #5 in
+    do:  ("y" <-[uint64T] "$r0");;;
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≥ #4)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≥ #5)) in
@@ -224,9 +266,15 @@ Definition testCompareGE : val :=
 (* go: comparisons.go:47:6 *)
 Definition testCompareLT : val :=
   rec: "testCompareLT" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #4) in
-    let: "y" := (ref_ty uint64T #5) in
-    let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #4 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #5 in
+    do:  ("y" <-[uint64T] "$r0");;;
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") < #6)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "x") < (![uint64T] "y"))) in
@@ -236,9 +284,15 @@ Definition testCompareLT : val :=
 (* go: comparisons.go:58:6 *)
 Definition testCompareLE : val :=
   rec: "testCompareLE" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #4) in
-    let: "y" := (ref_ty uint64T #5) in
-    let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #4 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #5 in
+    do:  ("y" <-[uint64T] "$r0");;;
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≤ #6)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≤ #5)) in
@@ -497,7 +551,9 @@ Definition roundtripEncDec64 : val :=
    go: encoding.go:43:6 *)
 Definition testEncDec32Simple : val :=
   rec: "testEncDec32Simple" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(U32 0) in
     roundtripEncDec32 "$a0") = #(U32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -512,7 +568,9 @@ Definition testEncDec32Simple : val :=
 (* go: encoding.go:51:6 *)
 Definition failing_testEncDec32 : val :=
   rec: "failing_testEncDec32" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(U32 3434807466) in
     roundtripEncDec32 "$a0") = #(U32 3434807466))) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -536,7 +594,9 @@ Definition failing_testEncDec32 : val :=
 (* go: encoding.go:62:6 *)
 Definition testEncDec64Simple : val :=
   rec: "testEncDec64Simple" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #0 in
     roundtripEncDec64 "$a0") = #0)) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -551,7 +611,9 @@ Definition testEncDec64Simple : val :=
 (* go: encoding.go:70:6 *)
 Definition testEncDec64 : val :=
   rec: "testEncDec64" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #62206846038638762 in
     roundtripEncDec64 "$a0") = #62206846038638762)) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -615,7 +677,9 @@ Definition Editor__AdvanceReturn : val :=
   rec: "Editor__AdvanceReturn" "e" "next" :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "next" := (ref_ty uint64T "next") in
-    let: "tmp" := (ref_ty uint64T (![uint64T] (struct.field_ref Editor "next_val" (![ptrT] "e")))) in
+    let: "tmp" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := (![uint64T] (struct.field_ref Editor "next_val" (![ptrT] "e"))) in
+    do:  ("tmp" <-[uint64T] "$r0");;;
     let: "$r0" := (![uint64T] "tmp") in
     do:  ((slice.elem_ref uint64T (![sliceT uint64T] (struct.field_ref Editor "s" (![ptrT] "e"))) #0) <-[uint64T] "$r0");;;
     let: "$r0" := (![uint64T] "next") in
@@ -657,7 +721,9 @@ Definition Pair__mset_ptr : list (string * val) := [
    go: function_ordering.go:31:6 *)
 Definition failing_testFunctionOrdering : val :=
   rec: "failing_testFunctionOrdering" <> :=
-    exception_do (let: "arr" := (ref_ty (sliceT uint64T) (slice.make2 uint64T #5)) in
+    exception_do (let: "arr" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
+    let: "$r0" := (slice.make2 uint64T #5) in
+    do:  ("arr" <-[sliceT uint64T] "$r0");;;
     let: "e1" := (ref_ty Editor (zero_val Editor)) in
     let: "$r0" := (struct.make Editor [{
       "s" ::= let: "$s" := (![sliceT uint64T] "arr") in
@@ -736,7 +802,9 @@ Definition storeAndReturn : val :=
    go: function_ordering.go:81:6 *)
 Definition failing_testArgumentOrder : val :=
   rec: "failing_testArgumentOrder" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #0) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("x" <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := "x" in
     let: "$a1" := #1 in
     storeAndReturn "$a0" "$a1") in
@@ -758,7 +826,9 @@ Definition failing_testArgumentOrder : val :=
 (* go: int_conversions.go:3:6 *)
 Definition testU64ToU32 : val :=
   rec: "testU64ToU32" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #1230 in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -1010,7 +1080,9 @@ Definition LoopStruct__mset_ptr : list (string * val) := [
    go: loops.go:40:6 *)
 Definition testStandardForLoop : val :=
   rec: "testStandardForLoop" <> :=
-    exception_do (let: "arr" := (ref_ty (sliceT uint64T) (slice.make2 uint64T #4)) in
+    exception_do (let: "arr" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
+    let: "$r0" := (slice.make2 uint64T #4) in
+    do:  ("arr" <-[sliceT uint64T] "$r0");;;
     do:  ((slice.elem_ref uint64T (![sliceT uint64T] "arr") #0) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "arr") #0)) + #1));;;
     do:  ((slice.elem_ref uint64T (![sliceT uint64T] "arr") #1) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "arr") #1)) + #3));;;
     do:  ((slice.elem_ref uint64T (![sliceT uint64T] "arr") #2) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "arr") #2)) + #5));;;
@@ -1033,7 +1105,9 @@ Definition testForLoopWait : val :=
 (* go: loops.go:59:6 *)
 Definition testBreakFromLoopWithContinue : val :=
   rec: "testBreakFromLoopWithContinue" <> :=
-    exception_do (let: "i" := (ref_ty uint64T #0) in
+    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: #true
       then
@@ -1047,7 +1121,9 @@ Definition testBreakFromLoopWithContinue : val :=
 (* go: loops.go:71:6 *)
 Definition testBreakFromLoopNoContinue : val :=
   rec: "testBreakFromLoopNoContinue" <> :=
-    exception_do (let: "i" := (ref_ty uint64T #0) in
+    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < #3); (λ: <>, Skip) := λ: <>,
       (if: #true
       then
@@ -1062,7 +1138,9 @@ Definition testBreakFromLoopNoContinue : val :=
 (* go: loops.go:83:6 *)
 Definition testBreakFromLoopNoContinueDouble : val :=
   rec: "testBreakFromLoopNoContinueDouble" <> :=
-    exception_do (let: "i" := (ref_ty uint64T #0) in
+    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < #3); (λ: <>, Skip) := λ: <>,
       (if: (![uint64T] "i") = #1
       then
@@ -1079,7 +1157,9 @@ Definition testBreakFromLoopNoContinueDouble : val :=
 (* go: loops.go:96:6 *)
 Definition testBreakFromLoopForOnly : val :=
   rec: "testBreakFromLoopForOnly" <> :=
-    exception_do (let: "i" := (ref_ty uint64T #0) in
+    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < #3); (λ: <>, Skip) := λ: <>,
       let: "$r0" := ((![uint64T] "i") + #2) in
       do:  ("i" <-[uint64T] "$r0"));;;
@@ -1088,7 +1168,9 @@ Definition testBreakFromLoopForOnly : val :=
 (* go: loops.go:104:6 *)
 Definition testBreakFromLoopAssignAndContinue : val :=
   rec: "testBreakFromLoopAssignAndContinue" <> :=
-    exception_do (let: "i" := (ref_ty uint64T #0) in
+    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #0 in
+    do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < #3); (λ: <>, Skip) := λ: <>,
       (if: #true
       then
@@ -1104,8 +1186,12 @@ Definition testBreakFromLoopAssignAndContinue : val :=
 (* go: loops.go:117:6 *)
 Definition testNestedLoops : val :=
   rec: "testNestedLoops" <> :=
-    exception_do (let: "ok1" := (ref_ty boolT #false) in
-    let: "ok2" := (ref_ty boolT #false) in
+    exception_do (let: "ok1" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("ok1" <-[boolT] "$r0");;;
+    let: "ok2" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("ok2" <-[boolT] "$r0");;;
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #0 in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1132,7 +1218,9 @@ Definition testNestedLoops : val :=
 (* go: loops.go:136:6 *)
 Definition testNestedGoStyleLoops : val :=
   rec: "testNestedGoStyleLoops" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #false) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("ok" <-[boolT] "$r0");;;
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #0 in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1152,7 +1240,9 @@ Definition testNestedGoStyleLoops : val :=
 (* go: loops.go:150:6 *)
 Definition testNestedGoStyleLoopsNoComparison : val :=
   rec: "testNestedGoStyleLoopsNoComparison" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #false) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("ok" <-[boolT] "$r0");;;
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #0 in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1192,7 +1282,9 @@ Definition IterateMapValues : val :=
 (* go: maps.go:19:6 *)
 Definition testIterateMap : val :=
   rec: "testIterateMap" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
     let: "$r0" := (map.make uint64T uint64T #()) in
     do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
@@ -1213,7 +1305,9 @@ Definition testIterateMap : val :=
 (* go: maps.go:37:6 *)
 Definition testMapSize : val :=
   rec: "testMapSize" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
     let: "$r0" := (map.make uint64T uint64T #()) in
     do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
@@ -1239,8 +1333,12 @@ Definition multReturnTwo : val :=
 (* go: multiple_assign.go:7:6 *)
 Definition testAssignTwo : val :=
   rec: "testAssignTwo" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #10) in
-    let: "y" := (ref_ty uint64T #15) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #10 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #15 in
+    do:  ("y" <-[uint64T] "$r0");;;
     let: ("$ret0", "$ret1") := (multReturnTwo #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1256,9 +1354,15 @@ Definition multReturnThree : val :=
 (* go: multiple_assign.go:18:6 *)
 Definition testAssignThree : val :=
   rec: "testAssignThree" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #10) in
-    let: "y" := (ref_ty boolT #false) in
-    let: "z" := (ref_ty uint32T #(U32 15)) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #10 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    let: "y" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("y" <-[boolT] "$r0");;;
+    let: "z" := (ref_ty uint32T (zero_val uint32T)) in
+    let: "$r0" := #(U32 15) in
+    do:  ("z" <-[uint32T] "$r0");;;
     let: (("$ret0", "$ret1"), "$ret2") := (multReturnThree #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1271,8 +1375,12 @@ Definition testAssignThree : val :=
 (* go: multiple_assign.go:26:6 *)
 Definition testMultipleAssignToMap : val :=
   rec: "testMultipleAssignToMap" <> :=
-    exception_do (let: "x" := (ref_ty uint64T #10) in
-    let: "m" := (ref_ty (mapT uint64T uint64T) (map.make uint64T uint64T #())) in
+    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #10 in
+    do:  ("x" <-[uint64T] "$r0");;;
+    let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
+    let: "$r0" := (map.make uint64T uint64T #()) in
+    do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
     let: ("$ret0", "$ret1") := (multReturnTwo #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1435,7 +1543,9 @@ Definition sub64Equals : val :=
    go: operations.go:31:6 *)
 Definition testReverseAssignOps64 : val :=
   rec: "testReverseAssignOps64" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #0 in
     reverseAssignOps64 "$a0") = #0)) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1474,7 +1584,9 @@ Definition testReverseAssignOps64 : val :=
 (* go: operations.go:47:6 *)
 Definition failing_testReverseAssignOps32 : val :=
   rec: "failing_testReverseAssignOps32" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(U32 0) in
     reverseAssignOps32 "$a0") = #(U32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1507,7 +1619,9 @@ Definition failing_testReverseAssignOps32 : val :=
 (* go: operations.go:61:6 *)
 Definition testAdd64Equals : val :=
   rec: "testAdd64Equals" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #2 in
     let: "$a1" := #3 in
     let: "$a2" := #5 in
@@ -1523,7 +1637,9 @@ Definition testAdd64Equals : val :=
 (* go: operations.go:68:6 *)
 Definition testSub64Equals : val :=
   rec: "testSub64Equals" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #2 in
     let: "$a1" := #1 in
     let: "$a2" := #1 in
@@ -1569,7 +1685,9 @@ Definition testModPrecedence : val :=
 (* go: operations.go:89:6 *)
 Definition testBitwiseOpsPrecedence : val :=
   rec: "testBitwiseOpsPrecedence" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((#222 `or` #327) = #479)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((#468 `and` #1191) = #132)) in
@@ -1587,7 +1705,9 @@ Definition testBitwiseOpsPrecedence : val :=
 (* go: operations.go:102:6 *)
 Definition testArithmeticShifts : val :=
   rec: "testArithmeticShifts" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((#672 ≪ #3) = #5376)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((#672 ≪ #51) = #1513209474796486656)) in
@@ -1632,7 +1752,9 @@ Definition testOrCompareSimple : val :=
 (* go: precedence.go:10:6 *)
 Definition testOrCompare : val :=
   rec: "testOrCompare" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     (if: (~ ((#3 > #4) || (#4 > #3)))
     then
       let: "$r0" := #false in
@@ -1648,7 +1770,9 @@ Definition testOrCompare : val :=
 (* go: precedence.go:22:6 *)
 Definition testAndCompare : val :=
   rec: "testAndCompare" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     (if: (#3 > #4) && (#4 > #3)
     then
       let: "$r0" := #false in
@@ -1835,7 +1959,9 @@ Definition testSliceOps : val :=
     let: "v4" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (slice.elem_ref uint64T (![sliceT uint64T] "x") #2) in
     do:  ("v4" <-[ptrT] "$r0");;;
-    let: "ok" := (ref_ty boolT #true) in
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] "v1") = #10)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "v2") #0)) = #10)) in
@@ -1872,7 +1998,9 @@ Definition testSliceCapacityOps : val :=
     do:  ("sub2" <-[sliceT uint64T] "$r0");;;
     let: "$r0" := #2 in
     do:  ((slice.elem_ref uint64T (![sliceT uint64T] "sub2") #0) <-[uint64T] "$r0");;;
-    let: "ok" := (ref_ty boolT #true) in
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT uint64T] "sub1") in
     slice.len "$a0") = #6)) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1896,7 +2024,9 @@ Definition testSliceCapacityOps : val :=
 (* go: slices.go:59:6 *)
 Definition testOverwriteArray : val :=
   rec: "testOverwriteArray" <> :=
-    exception_do (let: "arr" := (ref_ty (sliceT uint64T) (slice.make2 uint64T #4)) in
+    exception_do (let: "arr" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
+    let: "$r0" := (slice.make2 uint64T #4) in
+    do:  ("arr" <-[sliceT uint64T] "$r0");;;
     let: "ae1" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty ArrayEditor (struct.make ArrayEditor [{
       "s" ::= let: "$s" := (![sliceT uint64T] "arr") in
@@ -1945,7 +2075,9 @@ Definition testSliceLiteral : val :=
     let: "$sl1" := #(U8 2) in
     slice.literal byteT ["$sl0"; "$sl1"])) in
     do:  ("bytes" <-[sliceT byteT] "$r0");;;
-    let: "ok" := (ref_ty boolT #true) in
+    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![byteT] (slice.elem_ref byteT (![sliceT byteT] "bytes") #0)) = #(U8 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "ints" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
@@ -2089,13 +2221,17 @@ Definition NewS : val :=
 (* go: structs.go:42:6 *)
 Definition testStructUpdates : val :=
   rec: "testStructUpdates" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "ns" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (NewS #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (((S__readA (![ptrT] "ns")) #()) = #2)) in
     do:  ("ok" <-[boolT] "$r0");;;
-    let: "b1" := (ref_ty TwoInts ((S__readB (![ptrT] "ns")) #())) in
+    let: "b1" := (ref_ty TwoInts (zero_val TwoInts)) in
+    let: "$r0" := ((S__readB (![ptrT] "ns")) #()) in
+    do:  ("b1" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b1")) = #1)) in
     do:  ("ok" <-[boolT] "$r0");;;
     do:  ((S__negateC (![ptrT] "ns")) #());;;
@@ -2103,10 +2239,14 @@ Definition testStructUpdates : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := #3 in
     do:  ((struct.field_ref TwoInts "x" "b1") <-[uint64T] "$r0");;;
-    let: "b2" := (ref_ty TwoInts ((S__readB (![ptrT] "ns")) #())) in
+    let: "b2" := (ref_ty TwoInts (zero_val TwoInts)) in
+    let: "$r0" := ((S__readB (![ptrT] "ns")) #()) in
+    do:  ("b2" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b2")) = #1)) in
     do:  ("ok" <-[boolT] "$r0");;;
-    let: "b3" := (ref_ty ptrT (struct.field_ref S "b" (![ptrT] "ns"))) in
+    let: "b3" := (ref_ty ptrT (zero_val ptrT)) in
+    let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
+    do:  ("b3" <-[ptrT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (![ptrT] "b3"))) = #1)) in
     do:  ("ok" <-[boolT] "$r0");;;
     do:  (let: "$a0" := #4 in
@@ -2118,15 +2258,21 @@ Definition testStructUpdates : val :=
 (* go: structs.go:65:6 *)
 Definition testNestedStructUpdates : val :=
   rec: "testNestedStructUpdates" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
-    let: "ns" := (ref_ty ptrT (NewS #())) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
+    let: "ns" := (ref_ty ptrT (zero_val ptrT)) in
+    let: "$r0" := (NewS #()) in
+    do:  ("ns" <-[ptrT] "$r0");;;
     let: "$r0" := #5 in
     do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns"))) <-[uint64T] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns")))) = #5)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := (NewS #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
-    let: "p" := (ref_ty ptrT (struct.field_ref S "b" (![ptrT] "ns"))) in
+    let: "p" := (ref_ty ptrT (zero_val ptrT)) in
+    let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
+    do:  ("p" <-[ptrT] "$r0");;;
     let: "$r0" := #5 in
     do:  ((struct.field_ref TwoInts "x" (![ptrT] "p")) <-[uint64T] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns")))) = #5)) in
@@ -2152,7 +2298,9 @@ Definition testNestedStructUpdates : val :=
 (* go: structs.go:90:6 *)
 Definition testStructConstructions : val :=
   rec: "testStructConstructions" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "p1" := (ref_ty ptrT (zero_val ptrT)) in
     let: "p2" := (ref_ty TwoInts (zero_val TwoInts)) in
     let: "p3" := (ref_ty TwoInts (zero_val TwoInts)) in
@@ -2184,7 +2332,9 @@ Definition testStructConstructions : val :=
 (* go: structs.go:109:6 *)
 Definition testIncompleteStruct : val :=
   rec: "testIncompleteStruct" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "p1" := (ref_ty TwoInts (zero_val TwoInts)) in
     let: "$r0" := (struct.make TwoInts [{
       "x" ::= #0
@@ -2216,9 +2366,11 @@ Definition StructWrap__mset_ptr : list (string * val) := [
 (* go: structs.go:126:6 *)
 Definition testStoreInStructVar : val :=
   rec: "testStoreInStructVar" <> :=
-    exception_do (let: "p" := (ref_ty StructWrap (struct.make StructWrap [{
+    exception_do (let: "p" := (ref_ty StructWrap (zero_val StructWrap)) in
+    let: "$r0" := (struct.make StructWrap [{
       "i" ::= #0
-    }])) in
+    }]) in
+    do:  ("p" <-[StructWrap] "$r0");;;
     let: "$r0" := #5 in
     do:  ((struct.field_ref StructWrap "i" "p") <-[uint64T] "$r0");;;
     return: ((![uint64T] (struct.field_ref StructWrap "i" "p")) = #5)).
@@ -2226,7 +2378,9 @@ Definition testStoreInStructVar : val :=
 (* go: structs.go:132:6 *)
 Definition testStoreInStructPointerVar : val :=
   rec: "testStoreInStructPointerVar" <> :=
-    exception_do (let: "p" := (ref_ty ptrT (ref_ty StructWrap (zero_val StructWrap))) in
+    exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
+    let: "$r0" := (ref_ty StructWrap (zero_val StructWrap)) in
+    do:  ("p" <-[ptrT] "$r0");;;
     let: "$r0" := #5 in
     do:  ((struct.field_ref StructWrap "i" (![ptrT] "p")) <-[uint64T] "$r0");;;
     return: ((![uint64T] (struct.field_ref StructWrap "i" (![ptrT] "p"))) = #5)).
@@ -2350,7 +2504,9 @@ Definition testSwitchConversion : val :=
     let: "$r0" := (ref_ty switchConcrete (struct.make switchConcrete [{
     }])) in
     do:  ("v" <-[ptrT] "$r0");;;
-    let: "x" := (ref_ty switchInterface (interface.make switchConcrete__mset_ptr (![ptrT] "v"))) in
+    let: "x" := (ref_ty switchInterface (zero_val switchInterface)) in
+    let: "$r0" := (interface.make switchConcrete__mset_ptr (![ptrT] "v")) in
+    do:  ("x" <-[switchInterface] "$r0");;;
     let: "$sw" := (![switchInterface] "x") in
     (if: "$sw" = (interface.make switchConcrete__mset_ptr (![ptrT] "v"))
     then do:  #()
@@ -2372,7 +2528,9 @@ Definition testPointerAssignment : val :=
 (* go: vars.go:9:6 *)
 Definition testAddressOfLocal : val :=
   rec: "testAddressOfLocal" <> :=
-    exception_do (let: "x" := (ref_ty boolT #false) in
+    exception_do (let: "x" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #false in
+    do:  ("x" <-[boolT] "$r0");;;
     let: "xptr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := "x" in
     do:  ("xptr" <-[ptrT] "$r0");;;
@@ -2755,7 +2913,9 @@ Definition Open : val :=
    go: wal.go:178:6 *)
 Definition disabled_testWal : val :=
   rec: "disabled_testWal" <> :=
-    exception_do (let: "ok" := (ref_ty boolT #true) in
+    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[boolT] "$r0");;;
     let: "lg" := (ref_ty Log (zero_val Log)) in
     let: "$r0" := (New #()) in
     do:  ("lg" <-[Log] "$r0");;;
