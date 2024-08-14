@@ -250,43 +250,128 @@ Axiom P : disk_state -> iProp Σ.
 Fixpoint write_blocks (d : disk_state) (a : Z) (blocks : list Block) : disk_state :=
   match blocks with
   | nil => d
-  | b :: blocks' => write_blocks (<[a:=b]> d) (a+1) blocks'
+  | b :: blocks' => <[a:=b]> (write_blocks d (a+1) blocks')
   end.
+
+Lemma write_blocks_app : ∀ (bs0 bs1 : list Block) (d : disk_state) (a : Z),
+  write_blocks d a (bs0 ++ bs1) = write_blocks (write_blocks d (a + length bs0) bs1) a bs0.
+Proof.
+  induction bs0; intros.
+  - simpl. replace (a+0%nat) with a by lia. done.
+  - simpl. f_equal.
+    rewrite IHbs0. f_equal.
+    f_equal. lia.
+Qed.
+
+Lemma write_blocks_le : ∀ (bs : list Block) (d : disk_state) (a a' : Z),
+  a' < a ->
+  write_blocks d a bs !! a' = d !! a'.
+Proof.
+  induction bs; simpl; intros; eauto.
+  rewrite lookup_insert_ne; last by lia.
+  apply IHbs. lia.
+Qed.
+
+Lemma write_blocks_idem : ∀ (bs : list Block) (d : disk_state) (a : Z),
+  (∀ (i : nat) b, bs !! i = Some b -> d !! (a + i) = Some b) ->
+  write_blocks d a bs = d.
+Proof.
+  induction bs; intros.
+  - simpl; done.
+  - simpl. rewrite insert_id.
+    + rewrite IHbs; eauto. intros.
+      replace (a0 + 1 + i) with (a0 + (S i)) by lia. erewrite H; eauto.
+    + rewrite write_blocks_le; last by lia.
+      replace (a0) with (a0 + 0%nat) by lia. apply H. done.
+Qed.
 
 Definition write_can_crash_as (d : disk_state) (a : Z) (blocks : list Block) (d' : disk_state) : Prop :=
   ∃ blocks',
     prefix blocks' blocks ∧
     write_blocks d a blocks' = d'.
 
-(*
-Lemma disk_extract (d : disk_state) (a : Z) (n : Z) :
-  own_disk ds -∗
-  ( ([∗ map] a↦v ∈ filter (λ kv, a ≤ fst kv < a+n) ds) ∗
-    ([∗ map] a↦v ∈ filter (λ kv, ...
-*)
+Fixpoint block_list_to_gmap (a : Z) (vs : list Block) : gmap Z Block :=
+  match vs with
+  | [] => ∅
+  | v :: vs' => {[a := v]} ∪ block_list_to_gmap (a + 1)%Z vs'
+  end.
 
-Theorem wpc_WriteMulti_wrs d (a : u64) s q (bslices : list Slice.t) (bs : list Block) ds stk E1 :
-  {{{ own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
-      ([∗ list] i ↦ bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b) ∗ ⌜uint.Z i ∈ dom ds⌝) ∗
-      own_disk ds ∗ P ds ∗
-      (∀ ds',
-        P ds -∗
-        ⌜write_can_crash_as ds (uint.Z a) bs ds'⌝ -∗
-        P ds')
-  }}}
-    WriteMulti #d #a (slice_val s) @ stk; E1
-  {{{ RET #();
-      own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
-      ([∗ list] i ↦ bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b) ∗ ⌜uint.Z i ∈ dom ds⌝) ∗
-      own_disk (write_blocks ds (uint.Z a) bs) ∗ P (write_blocks ds (uint.Z a) bs)
-  }}}
-  {{{ ∃ crash_disk, own_disk crash_disk ∗ P crash_disk }}}.
+Lemma block_list_to_gmap_lookup l (vs: list Block) w k :
+  block_list_to_gmap l vs !! k = Some w ↔
+                              ∃ j, 0 ≤ j ∧ k = l + j ∧ vs !! (Z.to_nat j) = Some w.
 Proof.
-  iIntros (Φ Φc) "(Hss & Hs & Hdisk & HP & Hwrs) HΦ".
-  iDestruct (big_sepL2_sep with "Hs") as "[Hs #Hdom]".
-  rewrite /own_disk.
+  revert k l; induction vs as [|v' vs IH]=> l' l /=.
+  { rewrite lookup_empty. naive_solver lia. }
+  rewrite -insert_union_singleton_l lookup_insert_Some IH. split.
+  - intros [[-> Heq] | (Hl & j & ? & -> & ?)].
+    { inversion Heq; subst. exists 0. naive_solver lia. }
+    exists (1 + j)%Z. split; first by lia. split; first by lia.
+    rewrite Z.add_1_l Z2Nat.inj_succ; auto.
+  - intros (j & ? & -> & Hil). destruct (decide (j = 0)); simplify_eq/=.
+    { left; split; eauto; lia. }
+    right. split.
+    { lia. }
+    assert (Z.to_nat j = S (Z.to_nat (j - 1))) as Hj.
+    { rewrite -Z2Nat.inj_succ; last lia. f_equal; lia. }
+    rewrite Hj /= in Hil.
+    exists (j - 1)%Z. intuition lia.
+Qed.
 
+Lemma block_list_to_gmap_disjoint (h : gmap Z Block) (a : Z) (vs : list Block) :
+  (∀ i, (0 ≤ i) → (i < length vs) → h !! (a + i) = None) →
+  (block_list_to_gmap a vs) ##ₘ h.
+Proof.
+  intros Hdisj. apply map_disjoint_spec=> l' v1 v2.
+  intros (j&?&->&Hj%lookup_lt_Some%inj_lt)%block_list_to_gmap_lookup.
+  move: Hj. rewrite Z2Nat.id // => ?. by rewrite Hdisj.
+Qed.
+
+Lemma big_sep_block_list_to_gmap (a : Z) (vs: list Block) (P: Z -> Block -> iProp Σ) :
+  ([∗ map] l↦v ∈ block_list_to_gmap a vs, P l v) ⊣⊢
+  ([∗ list] i↦v ∈ vs, P (a + i)%Z v).
+Proof.
+  (iInduction (vs) as [| v vs] "IH" forall (a)).
+  - simpl.
+    rewrite big_sepM_empty.
+    auto.
+  - simpl.
+    rewrite big_sepM_union.
+    { rewrite big_sepM_singleton.
+      replace (a + 0%nat) with a by lia.
+      iSpecialize ("IH" $! (a + 1)).
+      iSplit.
+      + iIntros "($&Hm)".
+        iDestruct ("IH" with "Hm") as "Hm".
+        iApply (big_sepL_mono with "Hm"). intros. iIntros "H". replace (a + 1 + k) with (a + S k) by lia. done.
+      + iIntros "($&Hl)".
+        iApply "IH".
+        iApply (big_sepL_mono with "Hl"). intros. iIntros "H". replace (a + 1 + k) with (a + S k) by lia. done.
+    }
+    symmetry.
+    apply block_list_to_gmap_disjoint; intros.
+    apply (not_elem_of_dom (D := gset Z)).
+    rewrite dom_singleton elem_of_singleton. lia.
+Qed.
+
+Lemma disk_extract_acc (ds : disk_state) (a : Z) (bs : list Block) :
+  own_disk ds -∗
+  ( [∗ list] i ↦ _ ∈ bs, ⌜(a+i)%Z ∈ dom ds⌝ ) -∗
+  ( [∗ list] i ↦ _ ∈ bs, ∃ b0, (a+i)%Z d↦b0 ∗ ⌜ds !! (a+i)%Z = Some b0⌝ ) ∗
+  ( ∀ bs', ( [∗ list] i ↦ b ∈ bs', (a+i) d↦b ) -∗
+    own_disk (write_blocks ds a bs') ).
+Proof.
+  iIntros "Hdisk #Hbs_dom".
+  rewrite /own_disk /disk_state.
+  iDestruct (big_sep_block_list_to_gmap a bs (λ a b, ⌜a ∈ dom ds⌝)%I with "Hbs_dom") as "#Hbs_dom_2".
 (*
+iDestruct (heap_array_to_list with "Hbs_dom") as "H".
+Check (heap_array a bs).
+
+Search big_opM list.
+  iDestruct (big_sep
+
+  iDestruct (big_sepM_union with "Hdisk") as "Hx".
+
 Check big_sepM_union.
 Check map_disjoint_filter_complement.
   iRewrite (big_sepM_union with "[Hdisk]") as "Hx".
@@ -297,18 +382,55 @@ Check big_sepM_union.
   rewrite big_sepM_union.
 *)
 
-  iApply (wpc_WriteMulti with "[$Hss $Hs]").
-  { (* need part of Hdisk *) admit. }
+Admitted.
+
+Theorem wpc_WriteMulti_wrs d (a : u64) s q (bslices : list Slice.t) (bs : list Block) ds stk E1 :
+  {{{ own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
+      ([∗ list] i ↦ bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b) ∗ ⌜(uint.Z a + uint.Z i)%Z ∈ dom ds⌝) ∗
+      own_disk ds ∗ P ds ∗
+      (∀ ds',
+        ⌜write_can_crash_as ds (uint.Z a) bs ds'⌝ -∗
+        P ds -∗ P ds')
+  }}}
+    WriteMulti #d #a (slice_val s) @ stk; E1
+  {{{ RET #();
+      own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
+      ([∗ list] i ↦ bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b) ∗ ⌜(uint.Z a + uint.Z i)%Z ∈ dom ds⌝) ∗
+      own_disk (write_blocks ds (uint.Z a) bs) ∗ P (write_blocks ds (uint.Z a) bs)
+  }}}
+  {{{ ∃ crash_disk, own_disk crash_disk ∗ P crash_disk }}}.
+Proof.
+  iIntros (Φ Φc) "(Hss & Hs & Hdisk & HP & Hwrs) HΦ".
+  iDestruct (big_sepL2_sep with "Hs") as "[Hs #Hdom]".
+  iDestruct (big_sepL2_const_sepL_r with "Hdom") as "[%Hlen Hdom_bs]".
+  iDestruct (disk_extract_acc with "Hdisk Hdom_bs") as "[Hbs0 Hdisk]".
+  iDestruct (big_sepL_exists_to_sepL2 with "Hbs0") as (bs0) "Hbs0".
+  iDestruct (big_sepL2_const_sepL_r with "Hbs0") as "[%Hlen0 Hbs0]".
+  iDestruct (big_sepL_sep with "Hbs0") as "[Hbs0 #Hbs_ds]".
+  iApply (wpc_WriteMulti with "[$Hss $Hs $Hbs0]").
+  { done. }
   iSplit.
   - iIntros "Hc". iDestruct "Hc" as (crashidx) "Hc".
     iLeft in "HΦ". iApply "HΦ".
-    (* ... *)
-    admit.
+    iDestruct ("Hdisk" with "Hc") as "Hdisk".
+    iExists _; iFrame. iApply "Hwrs". 2: iFrame.
+    iDestruct "Hbs_ds" as "%Hbs_ds".
+    iPureIntro. eexists (take crashidx bs). split.
+    + apply prefix_take.
+    + rewrite write_blocks_app. f_equal.
+      rewrite write_blocks_idem; eauto.
+      intros.
+      rewrite lookup_drop in H.
+      assert (crashidx < length bs).
+      { apply lookup_lt_Some in H. lia. }
+      rewrite take_length_le; last by lia.
+      specialize (Hbs_ds (crashidx + i)%nat b H). rewrite -Hbs_ds. f_equal. lia.
   - iModIntro. iIntros "(Hss & Hs & Hd)".
     iRight in "HΦ". iApply "HΦ". iFrame.
     iDestruct (big_sepL2_sep with "[$Hs $Hdom]") as "Hs". iFrame.
-    (* ... *)
-    admit.
-Admitted.
+    iDestruct ("Hdisk" with "Hd") as "Hdisk". iFrame.
+    iApply "Hwrs". 2: iFrame.
+    iPureIntro. eexists _; eauto.
+Qed.
 
 End proof.
