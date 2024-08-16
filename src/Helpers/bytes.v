@@ -58,7 +58,7 @@ Definition byte_to_bits (x: byte): list bool :=
 
 Theorem length_byte_to_bits x : length (byte_to_bits x) = 8%nat.
 Proof.
-  rewrite /byte_to_bits fmap_length seqZ_length //.
+  rewrite /byte_to_bits length_fmap length_seqZ //.
 Qed.
 
 #[global]

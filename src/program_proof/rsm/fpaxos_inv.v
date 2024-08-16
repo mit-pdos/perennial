@@ -13,11 +13,11 @@ Section extend.
 
   Lemma extend_length_ge {X : Type} (x : X) (n : nat) (l : list X) :
     (length l ≤ length (extend x n l))%nat.
-  Proof. rewrite app_length. lia. Qed.
+  Proof. rewrite length_app. lia. Qed.
 
   Lemma extend_length {X : Type} (x : X) (n : nat) (l : list X) :
     length (extend x n l) = (n - length l + length l)%nat.
-  Proof. rewrite app_length replicate_length. lia. Qed.
+  Proof. rewrite length_app length_replicate. lia. Qed.
 
   Lemma extend_prefix {X : Type} (x : X) (n : nat) (l : list X) :
     prefix l (extend x n l).

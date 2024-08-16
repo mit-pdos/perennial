@@ -291,7 +291,7 @@ Section goose.
 
         iExists (s_inodes ++ [(inode.mk ∅ [])]).
         iSplitR.
-        ++ iPureIntro. rewrite app_length; simpl. lia.
+        ++ iPureIntro. rewrite length_app; simpl. lia.
         ++ rewrite big_sepL_app. iFrame "Hinodes".
            repeat rewrite big_sepL_singleton.
            replace (Z.of_nat n) with (uint.Z (W64 n)) by word.

@@ -212,11 +212,11 @@ Proof using Ptimeless.
       word_cleanup.
       destruct (decide (uint.Z offset + length databuf ≤ length state)%Z).
       { rewrite Z.max_l; last by lia.
-        rewrite !app_length. rewrite drop_length.
-        rewrite take_length_le; lia. }
+        rewrite !length_app. rewrite length_drop.
+        rewrite length_take_le; lia. }
       { rewrite Z.max_r; last by lia.
-        rewrite !app_length. rewrite drop_length.
-        rewrite take_length_le; try lia.
+        rewrite !length_app. rewrite length_drop.
+        rewrite length_take_le; try lia.
         revert H3. word. }
     }
     word_cleanup.
@@ -261,8 +261,8 @@ Proof using Ptimeless.
         iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
         iApply (big_sepM_insert_delete with "[$H1]").
         iPureIntro.
-        rewrite !app_length drop_length.
-        rewrite take_length_le.
+        rewrite !length_app length_drop.
+        rewrite length_take_le.
         2: { revert H3. word. }
         lia.
       }
@@ -304,8 +304,8 @@ Proof using Ptimeless.
         iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
         iApply (big_sepM_insert_delete with "[$H1]").
         iPureIntro.
-        rewrite !app_length drop_length.
-        rewrite take_length_le.
+        rewrite !length_app length_drop.
+        rewrite length_take_le.
         2: { revert H3. word. }
         lia.
       }

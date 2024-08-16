@@ -82,8 +82,8 @@ Proof.
     2:{
       apply prefix_length in H, Hdone.
       apply (f_equal length) in Hre.
-      rewrite fmap_length in H, Hre.
-      rewrite fmap_length in H, Hre.
+      rewrite length_fmap in H, Hre.
+      rewrite length_fmap in H, Hre.
       word.
     }
     subst.

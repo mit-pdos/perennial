@@ -375,7 +375,7 @@ Proof.
     by rewrite -H2.
     Unshelve.
     { eexists _. by setoid_rewrite take_drop. }
-    { rewrite take_length. word. }
+    { rewrite length_take. word. }
   }
   (* again, the rest of these follow from the previous Q's. *)
   destruct (ros !! uint.nat lastModifiedIndex) as [] eqn:Hlookup.
@@ -472,12 +472,12 @@ Proof.
     iNext.
     iApply (big_sepM_impl with "HcompletedRead").
     iModIntro. iIntros (???) "H %".
-    rewrite app_length /= in H1.
+    rewrite length_app /= in H1.
     destruct (decide (k = length σ0 + 1)).
     {
       subst.
       replace (length σ0 + 1) with (length (σ0 ++ [op])).
-      2: by rewrite app_length.
+      2: by rewrite length_app.
       rewrite firstn_all.
       rewrite Hlookup in H0.
       injection H0 as ->.
@@ -493,7 +493,7 @@ Proof.
     iNext.
     iApply (big_sepM_impl with "HcompletedRead").
     iModIntro. iIntros (???) "H %".
-    rewrite app_length /= in H1.
+    rewrite length_app /= in H1.
     destruct (decide (k = length σ0 + 1)).
     { exfalso. subst. by rewrite Hlookup in H0. }
     rewrite take_app_le; last word.

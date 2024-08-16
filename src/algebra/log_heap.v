@@ -52,7 +52,7 @@ Proof. rewrite /async_put /possible //. Qed.
 
 Lemma length_possible_async_put {T} (v:T) a :
   length (possible (async_put v a)) = S (length (possible a)).
-Proof. rewrite possible_async_put !app_length /=. lia. Qed.
+Proof. rewrite possible_async_put !length_app /=. lia. Qed.
 
 Definition list_to_async {A} `{!Inhabited A} (l: list A) : async A :=
   {| latest := match last l with
@@ -82,7 +82,7 @@ Proof.
   induction l using rev_ind.
   - simpl in H; lia.
   - rewrite last_snoc.
-    rewrite app_length /=.
+    rewrite length_app /=.
     replace (length l + 1 - 1)%nat with (length l) by lia.
     rewrite take_app_length //.
 Qed.
@@ -91,7 +91,7 @@ Lemma length_possible {A} (x: async A) :
   length (possible x) = 1 + length x.(pending).
 Proof.
   rewrite /possible /=.
-  rewrite app_length /=.
+  rewrite length_app /=.
   lia.
 Qed.
 
@@ -112,13 +112,13 @@ Proof.
   rewrite /async_take//=/possible.
   destruct l as [latest0 pending0] => //=.
   remember (length _ - 1) as k.
-  pose proof (take_length (pending0 ++ [latest0]) n) as Hlen.
+  pose proof (length_take (pending0 ++ [latest0]) n) as Hlen.
   rewrite take_take.
   rewrite min_l; last first.
   { rewrite Heqk.
     lia.
   }
-  rewrite app_length /= in Hlen.
+  rewrite length_app /= in Hlen.
   rewrite take_app_le; last by lia.
   rewrite -{2}(firstn_skipn k pending0).
   eexists; eauto.
@@ -159,8 +159,8 @@ Proof.
   rewrite /async_take//=/possible.
   destruct l as [latest0 pending0] => //=.
   remember (length _ - 1) as k.
-  pose proof (take_length (pending0 ++ [latest0]) n) as Hlen.
-  rewrite app_length /= in Hlen.
+  pose proof (length_take (pending0 ++ [latest0]) n) as Hlen.
+  rewrite length_app /= in Hlen.
   rewrite ?take_take.
   rewrite min_l; last first.
   { rewrite Heqk.
@@ -176,7 +176,7 @@ Proof.
   replace (drop (n - 1) pending0 ++ [latest0]) with
       (drop (n- 1) (pending0 ++ [latest0])); last first.
   { rewrite drop_app_le; last first.
-    { rewrite app_length/= in Hle. lia. }
+    { rewrite length_app/= in Hle. lia. }
     auto.
   }
   eapply last_take_drop_prefix; eauto.

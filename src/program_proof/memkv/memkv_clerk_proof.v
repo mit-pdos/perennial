@@ -65,7 +65,7 @@ Proof.
     iDestruct (own_slice_wf with "HfreeClerks_sl") as %Hwf.
     destruct freeClerks as [|freeClerks Hck _] using rev_ind.
     { exfalso. apply Hnzero. done. }
-    rewrite app_length in Hlen. simpl in Hlen.
+    rewrite length_app in Hlen. simpl in Hlen.
     rewrite big_sepL_snoc.
     iDestruct (own_slice_small_read with "HfreeClerks_sl") as "[HfreeClerks_sl HfreeClerks_close]".
     wp_apply (wp_SliceGet (V:=loc) with "[$HfreeClerks_sl]").
@@ -90,9 +90,9 @@ Proof.
       iClear "#".
       rewrite /own_slice.
       iDestruct (own_slice_take_cap _ _ _ (length Hck) with "HfreeClerks_sl") as "HfreeClerks_sl".
-      { rewrite /list.untype fmap_length app_length /=. word. }
+      { rewrite /list.untype length_fmap length_app /=. word. }
       rewrite /list.untype fmap_app take_app_length'; last first.
-      { rewrite fmap_length. word. }
+      { rewrite length_fmap. word. }
       replace (word.sub freeClerks_sl.(Slice.sz) 1%Z) with (length Hck : u64) by word.
       iFrame. }
     wp_pures. iApply "HΦ".
@@ -286,9 +286,9 @@ Proof using Type*.
   wp_apply wp_slice_len.
 
   iDestruct (own_slice_small_sz with "Hkeys_sl") as %Hlen.
-  rewrite fmap_length in Hlen.
+  rewrite length_fmap in Hlen.
   iDestruct (own_slice_to_small with "Hvals_sl") as "Hvals_sl".
-  iEval (rewrite /own_slice_small /slice.own_slice_small ?untype_replicate ?replicate_length)
+  iEval (rewrite /own_slice_small /slice.own_slice_small ?untype_replicate ?length_replicate)
     in "Hkeys_sl Hvals_sl".
   iDestruct "Hkeys_sl" as "[Hkeys_sl %Hkeys_sl_len]".
   iDestruct "Hvals_sl" as "[Hvals_sl %Hvals_sl_len]".
@@ -330,7 +330,7 @@ Proof using Type*.
     eauto with iFrame. }
   { rewrite /array /list.untype !big_sepL_fmap.
     iDestruct (big_sepL2_sepL_2 with "Hkeys_sl Hvals_sl") as "Hsl".
-    { rewrite Hlen replicate_length //. }
+    { rewrite Hlen length_replicate //. }
     rewrite big_sepL2_replicate_r //.
     iCombine "Hkeys Hsl" as "H". rewrite -big_sepL_sep.
     iApply (big_sepL_impl with "H").
@@ -343,7 +343,7 @@ Proof using Type*.
   iDestruct (big_sepL2_length with "H") as %Hlenxs.
   iApply ("HΦ" $! vals_sl xs). iModIntro.
   iEval (rewrite {1 2}/own_slice_small /slice.own_slice_small).
-  rewrite /array /list.untype !big_sepL_fmap !fmap_length.
+  rewrite /array /list.untype !big_sepL_fmap !length_fmap.
   iEval (rewrite [(_ ∗ ⌜length keys_vals = _ ∧ _⌝)%I]comm -!assoc).
   iSplit; first naive_solver.
   iEval (rewrite !assoc [(_ ∗ ⌜length xs = _ ∧ _⌝)%I]comm -!assoc).

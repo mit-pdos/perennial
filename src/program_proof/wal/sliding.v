@@ -110,7 +110,7 @@ Proof.
     rewrite /memWrite_one.
     destruct (find_highest_index (update.addr <$> memLog.(slidingM.log)) a.(update.addr)).
     1: destruct (decide (uint.Z memLog.(slidingM.mutable) - uint.Z memLog.(slidingM.start) ≤ n)).
-    all: rewrite /slidingM.memEnd ?app_length ?insert_length /=.
+    all: rewrite /slidingM.memEnd ?length_app ?length_insert /=.
     all: try lia.
 Qed.
 

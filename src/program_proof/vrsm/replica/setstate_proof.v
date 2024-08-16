@@ -397,7 +397,7 @@ Proof.
       repeat iExists _; iFrame "Hcommit_fact #".
       iDestruct (mono_nat_lb_own_le with "Hepoch_lb") as "$".
       { word. }
-      iPureIntro. rewrite fmap_length in HcommitLen.
+      iPureIntro. rewrite length_fmap in HcommitLen.
       word.
     }
     iIntros "_".

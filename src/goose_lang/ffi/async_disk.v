@@ -30,7 +30,7 @@ Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
 Lemma length_Block_to_vals {ext: ffi_syntax} b :
     length (Block_to_vals b) = block_bytes.
 Proof.
-  rewrite /Block_to_vals fmap_length vec_to_list_length //.
+  rewrite /Block_to_vals length_fmap length_vec_to_list //.
 Qed.
 
 Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
@@ -466,7 +466,7 @@ lemmas. *)
   Proof.
     intros.
     rewrite -[vs in (disk_array _ _ vs)](take_drop (Z.to_nat z)).
-    rewrite disk_array_app take_length.
+    rewrite disk_array_app length_take.
     rewrite Nat2Z.inj_min.
     rewrite Z.min_l; last lia.
     rewrite Z2Nat.id; last lia.
@@ -484,14 +484,14 @@ lemmas. *)
     iDestruct (disk_array_app with "Hl") as "[Hl1 Hl]".
     iDestruct (disk_array_cons with "Hl") as "[Hl2 Hl3]".
     assert (Z.to_nat z < length bs)%nat as H by (apply lookup_lt_is_Some; by eexists).
-    rewrite take_length min_l; last by lia.
+    rewrite length_take min_l; last by lia.
     rewrite Z2Nat.id; auto. iFrame "Hl2".
     iIntros (w) "Hl2".
     clear Hlookup. assert (<[Z.to_nat z:=w]> bs !! Z.to_nat z = Some w) as Hlookup.
     { apply list_lookup_insert. lia. }
     rewrite -[in (disk_array l q (<[Z.to_nat z:=w]> bs))](take_drop_middle (<[Z.to_nat z:=w]> bs) (Z.to_nat z) w Hlookup).
     iApply disk_array_app. rewrite take_insert; last by lia. iFrame.
-    iApply disk_array_cons. rewrite take_length min_l; last by lia. iFrame.
+    iApply disk_array_cons. rewrite length_take min_l; last by lia. iFrame.
     rewrite drop_insert_gt; last by lia.
     rewrite Z2Nat.id; auto. iFrame.
   Qed.
@@ -513,7 +513,7 @@ lemmas. *)
     - rewrite big_sepM_empty big_sepL_nil //=. auto.
     - rewrite replicate_S_end.
       rewrite big_sepL_app.
-      rewrite replicate_length big_sepL_cons big_sepL_nil.
+      rewrite length_replicate big_sepL_cons big_sepL_nil.
       rewrite big_sepM_insert.
       * iIntros "(H1&H2)".
         iSplitL "H2".

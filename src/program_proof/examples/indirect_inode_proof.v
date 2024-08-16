@@ -286,7 +286,7 @@ Proof.
   assert (length ds.(impl_s.dirAddrs) = uint.nat diraddr_s.(Slice.sz) ∧
          length ds.(impl_s.indAddrs) = uint.nat indaddr_s.(Slice.sz)) as [Hdirs_len Hinds_len].
   {
-    split; [rewrite -Hdirs_len' | rewrite -Hinds_len']; rewrite fmap_length; len.
+    split; [rewrite -Hdirs_len' | rewrite -Hinds_len']; rewrite length_fmap; len.
   }
   iAssert (own_slice diraddr_s uint64T 1 ds.(impl_s.dirAddrs)) with "[HdirPtsto Hdirs_cap]" as "Hdiraddrs".
   {
@@ -408,10 +408,10 @@ Proof.
           change (to_val <$> ds.(impl_s.dirAddrs)) with (u64val<$> ds.(impl_s.dirAddrs)).
           unfold maxDirect in HdirLen, HszBound.
           rewrite take_ge; last by len.
-          iEval (rewrite -(firstn_all (u64val <$> ds.(impl_s.dirAddrs))) fmap_length /maxDirect).
+          iEval (rewrite -(firstn_all (u64val <$> ds.(impl_s.dirAddrs))) length_fmap /maxDirect).
           replace (length ds.(impl_s.dirAddrs)) with 500%nat by word.
           iApply (own_slice_take_cap with "Hdiraddrs").
-          rewrite fmap_length; word.
+          rewrite length_fmap; word.
         }
         {
           iPoseProof (own_slice_take_cap indaddr_s uint64T (u64val <$> ds.(impl_s.indAddrs)) (ds.(impl_s.numInd)) with "Hindaddrs")
@@ -441,13 +441,13 @@ Proof.
   iDestruct "HdataIndirect" as (indBlocks) "[HindBlocksLen HdataIndirect]".
   iDestruct (big_sepL2_length with "HdataIndirect") as "%H2".
   destruct (bool_decide (maxDirect < length (σ.(inode.blocks)))) eqn:Hdir;
-    rewrite app_length;
+    rewrite length_app;
     unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
   + apply bool_decide_eq_true in Hdir.
-    repeat rewrite take_length in H1.
+    repeat rewrite length_take in H1.
     admit.
   + apply bool_decide_eq_false in Hdir.
-    repeat rewrite take_length in H1.
+    repeat rewrite length_take in H1.
 Admitted.
 
 Definition slice_subslice A n m s := slice_skip (slice_take s m) A n.
@@ -535,7 +535,7 @@ Proof.
 
   wp_apply (wp_Dec__GetInts_complete with "Hdec").
   {
-    (* rewrite app_length replicate_length /indirectNumBlocks. *)
+    (* rewrite length_app length_replicate /indirectNumBlocks. *)
     unfold ind_blocks_at_index, MaxBlocks, maxIndirect, maxDirect, indirectNumBlocks in *.
     destruct HindBlockLen as [HindBlockLen [HindBlkAddrsLenUB HLB]].
     rewrite Zmod_small; try word.
@@ -665,7 +665,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
   assert ((uint.nat direct_s.(Slice.sz) + uint.nat indirect_s.(Slice.sz)) < Z.to_nat MaxBlocks)%nat as HslicesLen.
   {
     rewrite -HDirlen -HIndlen.
-    repeat rewrite take_length.
+    repeat rewrite length_take.
     word.
   }
 
@@ -699,7 +699,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
       by (rewrite take_drop; auto).
     iApply (big_sepL2_app_inv _ done (a :: todo) (take (length done) indBlocks) (drop (length done) indBlocks)) in "HindBlks"; auto.
     {
-      rewrite take_length HindBlocksLen -H3. len.
+      rewrite length_take HindBlocksLen -H3. len.
     }
     iDestruct "HindBlks" as "[HindBlksDone HindBlksTodo]".
     assert (∃ indblk, indblk :: (drop (length done + 1)) indBlocks = (drop (length done)) indBlocks)
@@ -720,7 +720,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
       iFrame.
       repeat (iSplitR; [iPureIntro; eauto|]).
       { assert (length (done ++ a :: todo) = length (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))) as tmp by (rewrite H3; auto).
-        rewrite app_length take_length cons_length min_l in tmp; lia.
+        rewrite length_app length_take length_cons min_l in tmp; lia.
       }
       iSplitR; iFrame; eauto.
       + by rewrite -H3 list_lookup_middle.
@@ -737,7 +737,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
     iNamed "HindBlkIndirect".
     iFrame.
     iSplitR; [iPureIntro; rewrite -app_assoc; simpl; eauto|].
-    rewrite app_length.
+    rewrite length_app.
     iAssert (∀ i, ⌜(i <= length done)%nat⌝ -∗
                    ⌜(length (concat (take i ds.(impl_s.indBlkAddrsList))) `mod` indirectNumBlocks) = 0⌝)%I
       with "[HindBlksDone]" as "%Hfull".
@@ -755,7 +755,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
           apply (roundUpDiv_mul_le (length σ.(inode.blocks) - maxDirect) indirectNumBlocks i0); try word.
           rewrite max_r in HnumInd.
           - rewrite -HnumInd.
-            rewrite HindBlocksLen take_length in HdoneLen.
+            rewrite HindBlocksLen length_take in HdoneLen.
             rewrite min_l in HdoneLen; word.
           - destruct (bool_decide (Z.to_nat maxDirect > length σ.(inode.blocks))) eqn:Hgt; word.
         }
@@ -771,7 +771,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
             with (take (i0) (take ds.(impl_s.numInd) ds.(impl_s.indAddrs))).
           - rewrite -H3. rewrite take_app_le; auto.
           - rewrite take_take min_l; auto.
-            rewrite HindBlocksLen take_length in HdoneLen.
+            rewrite HindBlocksLen length_take in HdoneLen.
             len.
       }
       {
@@ -854,7 +854,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
     iApply (slice_small_split s2 (uint.Z (uint.nat direct_s.(Slice.sz) + uint.nat indirect_s.(Slice.sz))) uint64T 1) in "Hsmall".
     {
       rewrite -H0 -H2 -HDirlen -HIndlen.
-      repeat rewrite app_length take_length.
+      repeat rewrite length_app length_take.
       word.
     }
     iDestruct "Hsmall" as "[HsmallTake HsmallSkip]".
@@ -863,12 +863,12 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
     assert ((uint.nat direct_s.(Slice.sz) + uint.nat indirect_s.(Slice.sz)) = length (usedBlksList ++ usedIndBlks))
       as HrewriteMe.
     {
-      rewrite app_length -H0 -H2 HDirlen HIndlen.
+      rewrite length_app -H0 -H2 HDirlen HIndlen.
       word.
     }
     rewrite HrewriteMe.
     replace (uint.nat (uint.Z (length (usedBlksList ++ usedIndBlks)))) with (length (usedBlksList ++ usedIndBlks)) by word.
-    rewrite drop_app_length take_length min_l; try word.
+    rewrite drop_app_length length_take min_l; try word.
     rewrite -HindBlkAddrsListLen.
     rewrite firstn_all.
     iApply own_slice_split.

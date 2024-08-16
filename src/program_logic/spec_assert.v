@@ -196,7 +196,7 @@ Section ghost_step.
         apply tpool_to_res_lookup. rewrite lookup_app_l //=.
       * opose proof (lookup_ge_None_2 tp i _) as Hnone; first lia.
         rewrite (proj2 (tpool_to_res_lookup_none tp i)) //=.
-        apply tpool_to_res_lookup_none. rewrite lookup_ge_None_2 //= app_length //=; lia.
+        apply tpool_to_res_lookup_none. rewrite lookup_ge_None_2 //= length_app //=; lia.
   Qed.
 
   Lemma tpool_to_res_length tp j e :

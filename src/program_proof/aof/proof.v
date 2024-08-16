@@ -1001,7 +1001,7 @@ Proof.
       iRight. iPureIntro.
       replace (membufC') with (membufC ++ newData) by done.
       rewrite app_assoc.
-      rewrite app_length.
+      rewrite length_app.
       word.
     }
   }
@@ -1012,7 +1012,7 @@ Proof.
   {
     replace (membufC') with (membufC ++ newData) by done.
     rewrite app_assoc.
-    rewrite app_length.
+    rewrite length_app.
     word_cleanup.
     rewrite -Hlengthsafe.
     repeat (rewrite Nat2Z.inj_add).
@@ -1077,9 +1077,9 @@ Proof.
     {
       exfalso.
       rewrite Hsafesize' in Hbad.
-      rewrite app_length in Hbad.
-      rewrite app_length in Hbad.
-      rewrite app_length in Hbad.
+      rewrite length_app in Hbad.
+      rewrite length_app in Hbad.
+      rewrite length_app in Hbad.
       word.
     }
     iMod (inv_alloc aofN1 _ (own γtok (Excl ()) ∗ aof_length_lb γ (W64 (length (predurableC ++ membufC'))) ∨ (W64 (length (predurableC ++ membufC')) ⤳[γ.(len_toks)] ()) ∨ (Q ∗ aof_durable_lb γ (γ.(initdata) ++ predurableC ++ membufC')) ∗ own γq (Excl ())) with "[Hlen_tok]") as "#HQinv".
@@ -1138,8 +1138,8 @@ Proof.
       exfalso.
       apply mono_nat_both_dfrac_valid in Hbad as [_ Hbad].
       rewrite Hsafesize' in Hbad.
-      rewrite app_length in Hbad.
-      rewrite app_length in Hbad.
+      rewrite length_app in Hbad.
+      rewrite length_app in Hbad.
       lia.
     }
     iDestruct "Hq" as "[>Hlen_tok|[_ >HQexcl2]]"; last first.
@@ -1160,7 +1160,7 @@ Proof.
     iMod (own_update _ _ (mono_nat_auth _ (length (predurableC ++ membufC'))) with "Hlen") as "Hlen".
     {
       apply mono_nat_update.
-      repeat rewrite app_length.
+      repeat rewrite length_app.
       lia.
     }
     iDestruct "Hlen" as "[Hlen Hlen2]".
@@ -1206,7 +1206,7 @@ Proof.
     replace (word.add (length (predurableC ++ membufC)) (length newData)) with
         (W64 (length (predurableC ++ membufC'))); last first.
     {
-      repeat rewrite app_length.
+      repeat rewrite length_app.
       rewrite -word.ring_morph_add.
       word_cleanup.
       repeat (rewrite Nat2Z.inj_add).
@@ -1227,7 +1227,7 @@ Proof.
       (word.add (length (predurableC ++ membufC)) (length newData)).
   { iFrame "#". }
 
-  repeat rewrite app_length.
+  repeat rewrite length_app.
   repeat (rewrite Nat2Z.inj_add).
   rewrite Z.add_assoc.
   rewrite -word.ring_morph_add.

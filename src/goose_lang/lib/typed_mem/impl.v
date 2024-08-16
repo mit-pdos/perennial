@@ -89,7 +89,7 @@ Section goose_lang.
     val_ty v t ->
     length (flatten_struct v) = Z.to_nat (ty_size t).
   Proof.
-    induction 1; simpl; rewrite -> ?app_length in *; auto.
+    induction 1; simpl; rewrite -> ?length_app in *; auto.
     - invc H; eauto.
     - pose proof (ty_size_ge_0 t1).
       pose proof (ty_size_ge_0 t2).
@@ -102,7 +102,7 @@ Section goose_lang.
   Proof.
     induction 1; simpl; auto.
     - invc H; eauto.
-    - rewrite ?app_length.
+    - rewrite ?length_app.
       lia.
   Qed.
 

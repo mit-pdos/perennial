@@ -426,7 +426,7 @@ Proof.
     iMod ("Hfupd" $! σ None with "[$HP]") as "[HP HQ]".
     { iPureIntro.
       rewrite lookup_ge_None_2 //.
-      rewrite app_length.
+      rewrite length_app.
       (* XXX show that this sum doesn't overflow *)
       assert (uint.Z (word.add addr_s.(Slice.sz) buffered_s.(Slice.sz)) =
               uint.Z (addr_s.(Slice.sz)) + uint.Z (buffered_s.(Slice.sz))) as Heq.
@@ -779,7 +779,7 @@ Proof.
   rewrite /is_inode_durable //=. iIntros (Hwf).
   f_equiv => ?. f_equiv. rewrite /inode.wf.
   iSplit; iIntros (Hle); try eauto.
-  iPureIntro. rewrite /= app_length in Hle. lia.
+  iPureIntro. rewrite /= length_app in Hle. lia.
 Qed.
 
 Let Ψ (a: u64) := (∃ b, uint.Z a d↦ b)%I.

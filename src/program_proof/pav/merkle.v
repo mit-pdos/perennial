@@ -388,7 +388,7 @@ Proof.
       4: iFrame "#".
       1: apply prefix_take.
       1: apply (prefix_take _ (uint.nat pos)).
-      { do 2 rewrite take_length. lia. }
+      { do 2 rewrite length_take. lia. }
     }
     iIntros (sl_hr) "H"; iNamed "H".
     wp_load.
@@ -400,7 +400,7 @@ Proof.
       4: iFrame "#".
       1: apply suffix_drop.
       1: apply (suffix_drop _ (uint.nat pos)) .
-      { do 2 rewrite drop_length. lia. }
+      { do 2 rewrite length_drop. lia. }
     }
     clear sl_hr; iIntros (sl_hr) "H"; iNamed "H".
     wp_apply wp_SliceSingleton; [val_ty|];
@@ -471,13 +471,13 @@ Proof.
     split; [|done].
     rewrite (lookup_app_r _ _ _ _).
     2: {
-      rewrite fmap_length.
-      rewrite (take_length_le _ _ _); [done|].
+      rewrite length_fmap.
+      rewrite (length_take_le _ _ _); [done|].
       pose proof (word.unsigned_range pos) as Hpos_bound.
       lia.
     }
-    rewrite fmap_length.
-    rewrite (take_length_le _ _ _).
+    rewrite length_fmap.
+    rewrite (length_take_le _ _ _).
     2: { pose proof (word.unsigned_range pos) as Hpos_bound. lia. }
     replace ((uint.nat pos - uint.nat pos)%nat) with (0%nat) by lia.
     naive_solver.

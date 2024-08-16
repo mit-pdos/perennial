@@ -183,7 +183,7 @@ Proof.
     { (* Prove [ptuple_past_rel]. *)
       apply ptuple_past_rel_commit_lt_len.
       { subst phys'.
-        rewrite app_length.
+        rewrite length_app.
         rewrite extend_length; last by eapply tuple_mods_rel_last_phys.
         simpl. lia.
       }

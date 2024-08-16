@@ -149,17 +149,17 @@ Proof.
     rewrite Heq.
     rewrite list_lookup_insert; last first.
     {
-      rewrite app_length.
-      rewrite replicate_length.
+      rewrite length_app.
+      rewrite length_replicate.
       apply lookup_lt_Some in Hlookup.
-      rewrite take_length_le.
+      rewrite length_take_le.
       { lia. }
       lia.
     }
     {
       rewrite lookup_app_l; last first.
       {
-        rewrite take_length_le.
+        rewrite length_take_le.
         { word. }
         apply lookup_lt_Some in Hlookup.
         word.
@@ -173,11 +173,11 @@ Proof.
     rewrite list_lookup_insert_ne; last done.
     destruct (decide (j < i)).
     {
-      rewrite ?lookup_app_l ?take_length //; try lia; [].
+      rewrite ?lookup_app_l ?length_take //; try lia; [].
       rewrite ?lookup_take; auto; lia.
     }
     assert (i < j) by lia.
-    rewrite ?lookup_app_r ?take_length //; try lia; [].
+    rewrite ?lookup_app_r ?length_take //; try lia; [].
     destruct (decide (j - i `min` length l < length l - i)).
     { rewrite ?lookup_replicate_2 //; lia. }
     { transitivity (@None A); [ | symmetry]; apply lookup_replicate_None; lia. }
@@ -224,7 +224,7 @@ Proof.
     {
       rewrite (length_concat_same_length 8).
       {
-        rewrite fmap_length.
+        rewrite length_fmap.
         word.
       }
       rewrite Forall_fmap.
@@ -273,9 +273,9 @@ Proof.
   iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
 
   (* Show that uint.nat conf_sl.(Slice.sz) == uint.nat (length conf) *)
-  rewrite app_length in Hconf_sz.
-  rewrite replicate_length in Hconf_sz.
-  rewrite take_length_le in Hconf_sz; last first.
+  rewrite length_app in Hconf_sz.
+  rewrite length_replicate in Hconf_sz.
+  rewrite length_take_le in Hconf_sz; last first.
   { word. }
   assert (uint.nat conf_sl.(Slice.sz) = length conf) as Hconf_sz_eq.
   { word. }
@@ -299,7 +299,7 @@ Proof.
       exfalso.
       apply (f_equal length) in Hdrop.
       simpl in Hdrop.
-      rewrite drop_length in Hdrop.
+      rewrite length_drop in Hdrop.
       word.
     }
     rewrite fmap_cons.
@@ -312,9 +312,9 @@ Proof.
     {
       iPureIntro.
       apply lookup_lt_is_Some_2.
-      rewrite app_length.
-      rewrite take_length_le; last word.
-      rewrite replicate_length.
+      rewrite length_app.
+      rewrite length_take_le; last word.
+      rewrite length_replicate.
       word.
     }
     iIntros "Hconf_sl".

@@ -155,7 +155,7 @@ Proof.
     rewrite right_id.
     replace (length l + (length xs + 0)) with (length (l ++ xs)).
     { iFrame. }
-    rewrite app_length; lia.
+    rewrite length_app; lia.
 Qed.
 
 Theorem alist_subseq_lookup {γ} l start xs :

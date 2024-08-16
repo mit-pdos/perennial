@@ -47,7 +47,7 @@ Proof.
   intros ->.
   apply vec_to_list_inj2.
   rewrite list_to_inode_buf_to_list //.
-  rewrite vec_to_list_length //.
+  rewrite length_vec_to_list //.
 Qed.
 
 Theorem inode_buf_to_list_to_inode_buf i :

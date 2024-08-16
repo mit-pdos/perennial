@@ -30,7 +30,7 @@ Proof.
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iNamed 1.
   repeat iExists _; iFrame "Hcommit_lb #".
-  iPureIntro. rewrite fmap_length in HcommitLen. word.
+  iPureIntro. rewrite length_fmap in HcommitLen. word.
 Qed.
 
 Lemma wp_Server__increaseCommitThread (s:loc) γ γsrv :

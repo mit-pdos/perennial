@@ -133,7 +133,7 @@ Proof.
   simpl.
   intros Htrans; monad_inv.
   rewrite /wal_post_crash //=.
-  rewrite take_length. lia.
+  rewrite length_take. lia.
 Qed.
 
 Lemma is_txn_implies_non_empty_txns γ cs txns installed_txn_id:
@@ -845,13 +845,13 @@ Lemma is_durable_txn_crash γ γ' cs txns diskEnd_txn_id durable_lb :
     cs (take (S new_durable_lb) txns) diskEnd_txn_id new_durable_lb.
 Proof.
   iNamed 1. iIntros "#Hend_txn_stable' #Hdurable_lb_stable'".
-  rewrite /is_durable_txn take_length.
+  rewrite /is_durable_txn length_take.
   rewrite (Nat.max_l (_ `max` _) _); last by lia.
   iExists diskEnd, diskEnd_txn_id; iFrame "%#".
   iPureIntro.
   pose proof (is_txn_bound _ _ _ Hend_txn).
   split; first by lia.
-  rewrite subslice_to_end; last by (rewrite take_length; lia).
+  rewrite subslice_to_end; last by (rewrite length_take; lia).
   rewrite -subslice_take_drop.
   split; first by lia.
   split.
@@ -1013,7 +1013,7 @@ Proof.
   fmap_Some in Htxn' as txn'.
   assert (Htxn'_lt:=Htxn').
   apply mk_is_Some, lookup_lt_is_Some_1 in Htxn'_lt.
-  rewrite take_length in Htxn'_lt.
+  rewrite length_take in Htxn'_lt.
   assert (txn_id = diskEnd_txn_id ∨ txn_id = installed_txn_id ∨ txn_id = (durable_lb `max` diskEnd_txn_id)%nat) as [-> | [-> | ->]] by set_solver.
   { (* we're talking about diskEnd_txn_id *)
     unshelve (epose proof (iffLR (Forall_forall _ _) Hnils _ _) as Hnil).
@@ -1285,7 +1285,7 @@ Proof.
           { iPureIntro; word. }
           iFrame "Hinstalled_pos'".
           iFrame "HdiskEnd_stable".
-          rewrite take_length.
+          rewrite length_take.
           replace (S (_ `max` _) `min` _)%nat with
             (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))%nat;
             last by lia.
@@ -1319,7 +1319,7 @@ Proof.
             iPureIntro.
             apply circ_matches_txns_combine in Hcirc_matches.
             rewrite /memLog_linv_txns /slidingM.logIndex /mwrb.logend /=
-              take_length Nat.sub_diag.
+              length_take Nat.sub_diag.
             replace (uint.nat diskEnd - _)%nat with (length cs0.(circΣ.upds)).
             2: {
               rewrite /slidingM.logIndex /=.
@@ -1327,7 +1327,7 @@ Proof.
               word.
             }
             rewrite Nat.min_l; last by lia.
-            rewrite /is_memLog_boundaries take_length Nat.min_l; last by lia.
+            rewrite /is_memLog_boundaries length_take Nat.min_l; last by lia.
             split.
             {
               intros bndry Hbndry.
@@ -1389,7 +1389,7 @@ Proof.
           split; last by word.
           apply txns_mono_lt_last; eauto using log_crash_to_wf.
           rewrite /σ' /=.
-          rewrite take_length.
+          rewrite length_take.
           rewrite Nat.min_l; last by lia.
           rewrite /= Nat.sub_0_r.
           apply is_txn_take.

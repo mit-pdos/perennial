@@ -120,7 +120,7 @@ Proof.
   wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
   { rewrite -list_fmap_insert.
     iExists _, _, _; iFrame "∗%".
-    rewrite insert_length.
+    rewrite length_insert.
     iFrame "%". }
   wp_pures. by iApply "HΦ".
 Qed.
@@ -150,12 +150,12 @@ Proof.
     last first.
   { rewrite fmap_replicate //. }
   wp_apply (wp_MkAlloc with "[$Hs]").
-  { rewrite replicate_length.
+  { rewrite length_replicate.
     word. }
-  { rewrite replicate_length.
+  { rewrite length_replicate.
     word. }
   iIntros (a_l) "#Ha".
-  rewrite replicate_length.
+  rewrite length_replicate.
   wp_pures.
   wp_apply (wp_MarkUsed with "Ha").
   { word. }
@@ -195,7 +195,7 @@ Proof.
   - wp_loadField.
     iApply "HΦ".
     iDestruct (own_slice_small_sz with "Hbits") as %Hsz_len.
-    rewrite fmap_length in Hsz_len.
+    rewrite length_fmap in Hsz_len.
     rewrite word.unsigned_mul in Heqb.
     rewrite -> wrap_small in Heqb by word.
     change (uint.Z 8) with 8 in Heqb.
@@ -257,7 +257,7 @@ Proof.
       iApply "HΦ".
       rewrite -list_fmap_insert.
       iExists _; iFrame "∗%".
-      by rewrite insert_length.
+      by rewrite length_insert.
     + wp_apply (wp_incNext max with "[next bitmap Hbits]"); first done.
       { iExists _, _, _; iFrame "∗%". }
       iIntros (next'') "[%Hnext'' Hlinv]".
@@ -305,7 +305,7 @@ Proof.
   wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
   { rewrite -list_fmap_insert.
     iExists _, _, _; iFrame "∗%".
-    rewrite insert_length.
+    rewrite length_insert.
     iFrame "%". }
   wp_pures. by iApply "HΦ".
 Qed.
@@ -405,7 +405,7 @@ Proof.
   wp_loadField.
 
   iDestruct (own_slice_small_sz with "Hbits") as %Hsz.
-  rewrite fmap_length in Hsz.
+  rewrite length_fmap in Hsz.
 
   wp_apply (wp_forSlice (λ i, ∃ (count: u64),
                             "Hcount" ∷ count_l ↦[uint64T] #count ∗

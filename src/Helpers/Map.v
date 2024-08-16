@@ -28,7 +28,7 @@ Lemma size_list_to_map (l : list (K * V)) :
   size (list_to_map l : gmap) = length l.
 Proof.
   intros Hnodup. rewrite <-size_dom, dom_list_to_map.
-  rewrite size_list_to_set //. rewrite fmap_length. done.
+  rewrite size_list_to_set //. rewrite length_fmap. done.
 Qed.
 
 Lemma map_subset_dom_eq m m' :

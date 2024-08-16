@@ -279,7 +279,7 @@ Proof.
   (* get ghost_map_auth updates in full, so we can update and make put witness. *)
   iDestruct (mono_list_auth_own_agree with "HmonoTrees HmonoTrees0") as %[_ ->].
   iDestruct (big_sepL2_length with "Htree_views") as %Hlen0.
-  rewrite app_length in Hlen0.
+  rewrite length_app in Hlen0.
   list_simplifier.
   unshelve (epose proof (list_snoc_exists trees _) as (old_trees & updates0 & ->)); [lia|].
   iDestruct (big_sepL2_snoc with "Htree_views") as "[Htree_views Hupdates_view0]".
@@ -466,7 +466,7 @@ Proof.
   iInv "Hinv" as "> H" "Hclose"; iNamed "H".
   iDestruct (mono_list_auth_own_agree with "HmonoTrees HmonoTrees0") as %[_ ->].
   iDestruct (big_sepL2_length with "Htree_views") as %Hlen0.
-  rewrite app_length in Hlen0.
+  rewrite length_app in Hlen0.
   list_simplifier.
   unshelve (epose proof (list_snoc_exists trees _) as (old_trees & updates0 & ->)); [lia|].
   (* we could do this with insert / delete, but snoc makes it easier to
@@ -497,7 +497,7 @@ Proof.
   {
     iFrame "HmuR Hlocked ∗#%".
     iSplit.
-    - iPureIntro. rewrite app_length. lia.
+    - iPureIntro. rewrite length_app. lia.
     - eauto.
   }
   wp_pures. by iApply "HΦ".

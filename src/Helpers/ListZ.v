@@ -38,10 +38,10 @@ Proof. reflexivity. Qed.
 Lemma length_singleton x : length [x] = 1.
 Proof. reflexivity. Qed.
 
-Lemma app_length l1 l2 : length (l1 ++ l2) = length l1 + length l2.
-Proof. rewrite /length. rewrite List.app_length. lia. Qed.
+Lemma length_app l1 l2 : length (l1 ++ l2) = length l1 + length l2.
+Proof. rewrite /length list.length_app. lia.  Qed.
 
-Lemma cons_length x l : length (x :: l) = 1 + length l.
+Lemma length_cons x l : length (x :: l) = 1 + length l.
 Proof. rewrite /length /=. lia. Qed.
 
 #[global] Instance list_lookup : LookupTotal Z A (list A) :=
@@ -170,7 +170,7 @@ Lemma lookup_app_l l1 l2 i :
   (l1 ++ l2) !!! i = l1 !!! i.
 Proof.
   intros H.
-  pose proof (app_length l1 l2).
+  pose proof (length_app l1 l2).
   destruct (decide (0 ≤ i)); list_solve.
   rewrite -> list.lookup_app_l in * by lia.
   congruence.
@@ -193,7 +193,7 @@ Lemma list_insert_length n x l :
 Proof.
   rewrite /insert /list_insert.
   destruct (decide _); auto.
-  rewrite /length list.insert_length //.
+  rewrite /length list.length_insert //.
 Qed.
 
 Lemma insert_lookup_eq n x l i :
@@ -212,7 +212,7 @@ Qed.
 Definition drop n l := skipn (Z.to_nat n) l.
 Definition take n l := firstn (Z.to_nat n) l.
 
-Lemma drop_length' l n :
+Lemma length_drop' l n :
   (* the length has to be clamped to [0, length l] *)
   length (drop n l) = (length l - n) `max` 0 `min` length l.
 Proof.
@@ -221,12 +221,12 @@ Proof.
   lia.
 Qed.
 
-Lemma drop_length l n :
+Lemma length_drop l n :
   0 ≤ n < length l →
   length (drop n l) = length l - n.
 Proof.
   intros H.
-  rewrite drop_length'.
+  rewrite length_drop'.
   lia.
 Qed.
 
@@ -238,14 +238,14 @@ Lemma lookup_drop l n i :
 Proof.
   intros H1 H2.
   apply lookup_lookup_eq.
-  { rewrite drop_length'; lia. }
+  { rewrite length_drop'; lia. }
   intros ??.
   rewrite list.lookup_drop.
   assert ((Z.to_nat n + Z.to_nat i)%nat = Z.to_nat (n + i)) by lia.
   congruence.
 Qed.
 
-Lemma take_length' l n :
+Lemma length_take' l n :
   length (take n l) = n `max` 0 `min` length l.
 Proof.
   rewrite /length /take.
@@ -253,12 +253,12 @@ Proof.
   lia.
 Qed.
 
-Lemma take_length l n :
+Lemma length_take l n :
   0 ≤ n ≤ length l →
   length (take n l) = n.
 Proof.
   intros H.
-  rewrite take_length'; lia.
+  rewrite length_take'; lia.
 Qed.
 
 Lemma lookup_take l n i :
@@ -268,7 +268,7 @@ Proof.
   intros H.
   destruct (decide (0 ≤ i)); list_solve.
   apply lookup_lookup_eq.
-  { rewrite take_length'; lia. }
+  { rewrite length_take'; lia. }
   intros ??.
   rewrite list.lookup_take_Some.
   intuition. congruence.
@@ -332,20 +332,20 @@ Qed.
 Definition replicate n x :=
   list.replicate (Z.to_nat n) x.
 
-Lemma replicate_length' n x :
+Lemma length_replicate' n x :
   length (replicate n x) = n `max` 0.
 Proof.
   rewrite /replicate /length.
-  rewrite list.replicate_length.
+  rewrite list.length_replicate.
   lia.
 Qed.
 
-Lemma replicate_length n x :
+Lemma length_replicate n x :
   0 ≤ n →
   length (replicate n x) = n.
 Proof.
   intros H.
-  rewrite replicate_length'; lia.
+  rewrite length_replicate'; lia.
 Qed.
 
 Lemma lookup_replicate i n x :
@@ -353,7 +353,7 @@ Lemma lookup_replicate i n x :
   replicate n x !!! i = x.
 Proof.
   intros.
-  pose proof (replicate_length' n x).
+  pose proof (length_replicate' n x).
   list_simpl.
   rewrite /replicate.
   apply list.lookup_replicate_1 in Hget.
@@ -367,19 +367,19 @@ Lemma lookup_replicate_0 i n x :
   replicate n x !!! i = x.
 Proof.
   intros.
-  pose proof (replicate_length' n x).
+  pose proof (length_replicate' n x).
   destruct (decide (0 ≤ i < n)); list_solve.
   rewrite lookup_replicate //; lia.
 Qed.
 
 End list.
 
-Lemma fmap_length {A B} `{!Inhabited A, !Inhabited B}
+Lemma length_fmap {A B} `{!Inhabited A, !Inhabited B}
   (f: A → B) (l: list A) :
   length (f <$> l) = length l.
 Proof.
   rewrite /length.
-  rewrite list.fmap_length //.
+  rewrite list.length_fmap //.
 Qed.
 
 Lemma list_lookup_fmap {A B} `{!Inhabited A, !Inhabited B}

@@ -106,7 +106,7 @@ Proof.
       rewrite <- app_assoc.
       f_equal.
       rewrite <- IHtxn_id; auto.
-      rewrite cons_length in H.
+      rewrite length_cons in H.
       lia.
 Qed.
 

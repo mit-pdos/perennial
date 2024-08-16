@@ -48,10 +48,10 @@ Ltac list_simpl :=
                      rewrite -> lookup_app_r by lia ]
          end;
   repeat first [
-      progress rewrite -> ?app_length, ?drop_length, ?insert_length in * |
-      rewrite -> @take_length_le in * by lia |
-      rewrite -> @take_length_ge in * by lia |
-      rewrite -> @take_length in *
+      progress rewrite -> ?length_app, ?length_drop, ?length_insert in * |
+      rewrite -> @length_take_le in * by lia |
+      rewrite -> @length_take_ge in * by lia |
+      rewrite -> @length_take in *
     ];
   repeat first [
       progress rewrite -> @lookup_drop in * |

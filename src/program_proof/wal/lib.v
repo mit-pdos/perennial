@@ -98,7 +98,7 @@ Proof.
   iDestruct "Hupds" as (bks) "[Hbs Hbks]".
   iDestruct (own_slice_small_sz with "Hbs") as %Hbs_sz.
   iDestruct (big_sepL2_length with "Hbks") as %Hbks_len.
-  rewrite fmap_length in Hbs_sz.
+  rewrite length_fmap in Hbs_sz.
   iPureIntro.
   rewrite -Hbks_len.
   rewrite Hbs_sz.
@@ -362,12 +362,12 @@ Proof.
     iFrame "Hbks1".
     rewrite take_app_le; first by iFrame.
     revert Hfraglen.
-    rewrite /slice_take /= take_length. word. }
+    rewrite /slice_take /= length_take. word. }
   iSplitL; last by eauto.
   iExists (bks2 ++ [uv]).
   iFrame "Hbks2".
   rewrite drop_app_le.
-  2: { revert Hfraglen. rewrite /slice_take /= take_length. word. }
+  2: { revert Hfraglen. rewrite /slice_take /= length_take. word. }
   iApply (big_sepL2_app with "Hupds").
   simpl. auto.
 Qed.

@@ -26,7 +26,7 @@ Proof.
   apply list_lookup_lt in Hj as Hy.
   destruct Hy as [y Hy].
   iDestruct (own_slice_small_sz with "HentsS") as "%HentsLen".
-  rewrite fmap_length in HentsLen.
+  rewrite length_fmap in HentsLen.
   wp_rec. wp_pures.
   
   (***********************************************************)
@@ -47,7 +47,7 @@ Proof.
   { iPureIntro. split; last done.
     rewrite -list_fmap_insert list_lookup_fmap fmap_is_Some.
     apply lookup_lt_is_Some_2.
-    rewrite insert_length.
+    rewrite length_insert.
     word.
   }
   iIntros "HentsS".
@@ -83,7 +83,7 @@ Proof.
   wp_pures.
   iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
   iDestruct (own_slice_small_sz with "HentsS") as "%HentsLen".
-  rewrite fmap_length in HentsLen.
+  rewrite length_fmap in HentsLen.
 
   (***********************************************************)
   (* for i < uint64(len(ents)) {                             *)
@@ -148,7 +148,7 @@ Proof.
       (* Read key of entry at [j - 1]. *)
       wp_load.
       destruct (list_lookup_lt (wrent_to_val <$> ents'') (uint.nat (word.sub j (W64 1)))) as [entx Hlookupx].
-      { rewrite fmap_length. word. }
+      { rewrite length_fmap. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".
       wp_pures.
@@ -159,7 +159,7 @@ Proof.
       (* Read key of entry at [j]. *)
       wp_load.
       destruct (list_lookup_lt (wrent_to_val <$> ents'') (uint.nat j)) as [enty Hlookupy].
-      { rewrite fmap_length. word. }
+      { rewrite length_fmap. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".
       wp_pures.

@@ -187,7 +187,7 @@ Proof.
       { revert Hcountval1. revert Hbound. word. }
       assert (length bbuf ≥ length contents).
       2: { lia. }
-      rewrite -Hdiskdata. rewrite take_length. lia.
+      rewrite -Hdiskdata. rewrite length_take. lia.
     }
     wp_apply (wp_SliceGet (V:=u8) with "[$Hbufdata]"); eauto.
     iIntros "Hbufdata".
@@ -211,7 +211,7 @@ Proof.
       lia.
     }
     iSplit.
-    { iPureIntro. rewrite app_length /=. word. }
+    { iPureIntro. rewrite length_app /=. word. }
     iApply is_buf_return_data. iFrame.
   }
   {

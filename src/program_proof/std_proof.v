@@ -370,7 +370,7 @@ Proof.
   wp_apply (newlock_spec nroot _ lock_inv with "[Hnleft]").
   { iModIntro. rewrite /lock_inv. iRight.
     iExists num, (set_seq 0 (uint.nat num)). iFrame. iSplit.
-    - iPureIntro. rewrite -list_to_set_seq size_list_to_set ?seq_length //.
+    - iPureIntro. rewrite -list_to_set_seq size_list_to_set ?length_seq //.
       apply NoDup_seq.
     - iApply big_sepL_intro. iIntros "!> %k %i %Hlk". iLeft. iPureIntro.
       apply elem_of_set_seq. split; first lia.
@@ -442,7 +442,7 @@ Proof.
     { done. }
     rewrite big_sepL_app big_sepL_singleton.
     rewrite big_sepL_app big_sepL_singleton.
-    rewrite app_length /= Nat.add_0_r set_seq_add_L.
+    rewrite length_app /= Nat.add_0_r set_seq_add_L.
     change (uint.nat 0) with 0%nat. simpl.
     iDestruct "HPs" as "[HPs $]".
     rewrite [_ ∪ ∅]right_id_L -gset_disj_union; last first.

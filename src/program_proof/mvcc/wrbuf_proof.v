@@ -182,7 +182,7 @@ Proof.
   wp_pures.
   wp_load.
   iDestruct (own_slice_sz with "HentsS") as "%Hsz".
-  rewrite fmap_length in Hsz.
+  rewrite length_fmap in Hsz.
   case_bool_decide; (wp_pures; iModIntro; iApply "HΦ"; iFrame; iPureIntro; unfold spec_search).
   { (* Write entry found. *)
     destruct Hexit; [done | word].
@@ -190,7 +190,7 @@ Proof.
   { (* Write entry not found. *)
     apply Z.nlt_ge in H.
     rewrite take_ge in Hnotin; first done.
-    do 3 rewrite fmap_length.
+    do 3 rewrite length_fmap.
     rewrite Hsz.
     word.
   }
@@ -307,7 +307,7 @@ Proof.
     destruct Hsearch as (ent & Hlookup & Hkey).
     wp_apply (wp_slice_len).
     iDestruct (own_slice_small_sz with "HentsS") as "%HentsSz".
-    rewrite fmap_length in HentsSz.
+    rewrite length_fmap in HentsSz.
     wp_if_destruct; first last.
     { destruct Heqb0.
       apply lookup_lt_Some in Hlookup.
@@ -348,7 +348,7 @@ Proof.
     iDestruct ("HentsC" with "[HentsA]") as "HentsS".
     { iFrame.
       iPureIntro.
-      by rewrite -HentsLen insert_length.
+      by rewrite -HentsLen length_insert.
     }
     wp_pures.
     iApply "HΦ".
@@ -464,7 +464,7 @@ Proof.
     destruct Hsearch as (ent & Hlookup & Hkey).
     wp_apply (wp_slice_len).
     iDestruct (own_slice_small_sz with "HentsS") as "%HentsSz".
-    rewrite fmap_length in HentsSz.
+    rewrite length_fmap in HentsSz.
     wp_if_destruct; first last.
     { destruct Heqb0.
       apply lookup_lt_Some in Hlookup.
@@ -496,7 +496,7 @@ Proof.
     iDestruct ("HentsC" with "[HentsA]") as "HentsS".
     { iFrame.
       iPureIntro.
-      by rewrite -HentsLen insert_length.
+      by rewrite -HentsLen length_insert.
     }
     wp_pures.
     iApply "HΦ".

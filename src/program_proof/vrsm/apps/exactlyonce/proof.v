@@ -633,9 +633,9 @@ Proof.
   {
     iApply "HfutureVersions".
     { iModIntro. iIntros (???) "H %".
-      iApply "H". iPureIntro. rewrite app_length in H1. word. }
+      iApply "H". iPureIntro. rewrite length_app in H1. word. }
     { iModIntro. iIntros. exfalso.
-      rewrite app_length /= in H.
+      rewrite length_app /= in H.
       word. }
   }
 
@@ -650,7 +650,7 @@ Proof.
     iApply "Hversions".
     {
       iModIntro. iIntros (???) "H %".
-      rewrite app_length /= in H1.
+      rewrite length_app /= in H1.
       assert (uint.nat y <= length ops).
       { apply u64_plus_1_le_no_overflow; auto. }
       iDestruct ("H" with "[%]") as "[$|H]".
@@ -664,12 +664,12 @@ Proof.
     iIntros.
     iRight.
     rewrite firstn_all2.
-    2:{ rewrite app_length /=. word. }
+    2:{ rewrite length_app /=. word. }
     rewrite Heq2.
     iExactEq "HH".
     unfold is_state.
     repeat f_equal.
-    rewrite app_length /= in H.
+    rewrite length_app /= in H.
     replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
       lia.
     rewrite HnoOverflow.
@@ -681,7 +681,7 @@ Proof.
     iModIntro. iIntros (??) "#H".
     iModIntro.
     iIntros.
-    rewrite app_length /= in H0.
+    rewrite length_app /= in H0.
     destruct (decide (x = (word.add (length ops) 1))).
     { subst x. rewrite Heq1 Heq2.
       iFrame "HH". }
@@ -733,9 +733,9 @@ Proof.
     {
       iApply "HfutureVersions".
       { iModIntro. iIntros (???) "H %".
-        iApply "H". iPureIntro. rewrite app_length in H4. word. }
+        iApply "H". iPureIntro. rewrite length_app in H4. word. }
       { iIntros. exfalso.
-        rewrite app_length /= in H2.
+        rewrite length_app /= in H2.
         word. }
     }
     iSplitL "Hversions".
@@ -745,7 +745,7 @@ Proof.
       iApply "Hversions".
       {
         iModIntro. iIntros (???) "H %".
-        rewrite app_length /= in H4.
+        rewrite length_app /= in H4.
         assert (uint.nat y <= length ops).
         { apply u64_plus_1_le_no_overflow; auto. }
         iDestruct ("H" with "[%]") as "[$|H]".
@@ -759,12 +759,12 @@ Proof.
         iIntros.
         iRight.
         rewrite firstn_all2.
-        2:{ rewrite app_length /=. word. }
+        2:{ rewrite length_app /=. word. }
         rewrite H1.
         iExactEq "HH".
         unfold is_state.
         repeat f_equal.
-        1:{ rewrite app_length /= in H2.
+        1:{ rewrite length_app /= in H2.
             replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
               lia.
             rewrite HnoOverflow.
@@ -777,9 +777,9 @@ Proof.
       iModIntro. iIntros (??) "#H".
       iModIntro.
       iIntros.
-      rewrite app_length /= in H4.
+      rewrite length_app /= in H4.
       assert (x = (word.add (length ops) 1)).
-      { rewrite app_length /= in H3.
+      { rewrite length_app /= in H3.
         apply int_nat_u64_inj.
         rewrite HnoOverflow in H4.
         rewrite u64_Z_through_nat in H4.
@@ -792,7 +792,7 @@ Proof.
   }
   iSplitL.
   2:{
-    rewrite app_length /=.
+    rewrite length_app /=.
     iExactEq "HH".
     unfold is_state.
     repeat f_equal. rewrite HnoOverflow.
@@ -804,7 +804,7 @@ Proof.
     iDestruct (big_sepS_elem_of_acc _ _ vnum' with "HlatestVersion") as "[#H _]".
     { set_solver. }
     rewrite H0.
-    rewrite app_length /= in H3.
+    rewrite length_app /= in H3.
     replace (uint.nat (length ops + 1)) with (length ops + 1) in H3.
     2:{
       rewrite word.unsigned_add in HnoOverflow.
@@ -906,7 +906,7 @@ Proof.
     }
     repeat iExists _.
     iFrame "Hlowstate ∗".
-    rewrite app_length /=.
+    rewrite length_app /=.
     iSplitL "HesmNextIndex".
     { iApply to_named. iExactEq "HesmNextIndex".
       repeat f_equal. word.
@@ -933,16 +933,16 @@ Proof.
     wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
     { rewrite -Hsl_sz.
       split; last done.
-      rewrite app_length.
+      rewrite length_app.
       simpl.
       word.
     }
     iIntros (eeop_sl) "Hop_sl".
     rewrite -Hsl_sz -Henc.
     rewrite -> subslice_drop_take; last first.
-    { rewrite Henc. rewrite app_length. simpl. word. }
+    { rewrite Henc. rewrite length_app. simpl. word. }
     rewrite Henc.
-    rewrite app_length.
+    rewrite length_app.
     rewrite singleton_length.
     replace (1 + length (u64_le w ++ u64_le w0 ++ x) - uint.nat 1%Z)
       with (length (u64_le w ++ u64_le w0 ++ x)) by word.
@@ -1016,10 +1016,10 @@ Proof.
       iModIntro.
       iSplitL "HesmNextIndex".
       { iApply to_named. iExactEq "HesmNextIndex".
-        repeat f_equal. rewrite app_length /=. word.
+        repeat f_equal. rewrite length_app /=. word.
       }
       iFrame "Hislow".
-      iPureIntro. rewrite app_length /=. word.
+      iPureIntro. rewrite length_app /=. word.
     }
     {
       wp_loadField.
@@ -1055,7 +1055,7 @@ Proof.
         iSplitR; first iPureIntro.
         { word. }
         simpl.
-        rewrite app_length /=.
+        rewrite length_app /=.
         iSplitL "HprevVers".
         {
           iIntros.
@@ -1127,7 +1127,7 @@ Proof.
       simpl.
       repeat iExists _.
       iFrame "∗".
-      rewrite app_length /=.
+      rewrite length_app /=.
       iSplitL "HesmNextIndex".
       { iApply to_named. iExactEq "HesmNextIndex".
         repeat f_equal. word.
@@ -1163,7 +1163,7 @@ Proof.
     wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
     { rewrite -Hsl_sz.
       split; last done.
-      rewrite app_length.
+      rewrite length_app.
       simpl.
       word.
     }
@@ -1171,9 +1171,9 @@ Proof.
     iIntros (eeop_sl) "Hop_sl".
     rewrite -Hsl_sz -Henc.
     rewrite -> subslice_drop_take; last first.
-    { rewrite Henc. rewrite app_length. simpl. word. }
+    { rewrite Henc. rewrite length_app. simpl. word. }
     rewrite Henc.
-    rewrite app_length.
+    rewrite length_app.
     rewrite singleton_length.
     replace (1 + length x - uint.nat 1%Z)
       with (length (x)) by word.
@@ -1217,11 +1217,11 @@ Proof.
       }
       iSplitL "HesmNextIndex".
       { iModIntro. iApply to_named. iExactEq "HesmNextIndex".
-        repeat f_equal. rewrite app_length /=. word.
+        repeat f_equal. rewrite length_app /=. word.
       }
       simpl.
       iFrame "Hislow".
-      iPureIntro. rewrite app_length /=. word.
+      iPureIntro. rewrite length_app /=. word.
     }
     {
       unfold compute_reply.
@@ -1626,15 +1626,15 @@ Proof.
   wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
   { rewrite -Hsl_sz.
     split; last done.
-    rewrite app_length.
+    rewrite length_app.
     simpl.
     word.
   }
   iIntros (eeop_sl) "Hop_sl".
   rewrite -Hsl_sz.
   rewrite -> subslice_drop_take; last first.
-  { rewrite app_length. simpl. word. }
-  rewrite app_length.
+  { rewrite length_app. simpl. word. }
+  rewrite length_app.
   rewrite singleton_length.
   replace (1 + length lowop_bytes - uint.nat 1%Z)
     with (length lowop_bytes) by word.

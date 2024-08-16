@@ -248,7 +248,7 @@ Section goose_lang.
     - destruct t; simpl; auto.
     - pose proof (ty_size_ge_0 t1).
       pose proof (ty_size_ge_0 t2).
-      rewrite app_length; auto.
+      rewrite length_app; auto.
       rewrite Z2Nat.inj_add; lia.
   Qed.
 

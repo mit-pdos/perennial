@@ -19,7 +19,7 @@ Proof.
   wp_rec. wp_pures.
   iDestruct (own_slice_sz with "HtidsS") as "%HtidsSz".
   iDestruct (typed_slice.own_slice_small_acc with "HtidsS") as "[HtidsS HtidsC]".
-  rewrite fmap_length in HtidsSz.
+  rewrite length_fmap in HtidsSz.
   assert (Hgz : uint.Z xsS.(Slice.sz) > 0).
   { apply lookup_lt_Some in Hlookup. word. }
 
@@ -68,7 +68,7 @@ Proof.
   { iFrame.
     iPureIntro.
     apply lookup_lt_is_Some_2.
-    rewrite insert_length.
+    rewrite length_insert.
     by eapply lookup_lt_Some.
   }
   iIntros "HtidsS".
@@ -103,7 +103,7 @@ Proof.
     replace (uint.nat (word.sub _ _)) with (pred (length xs)); last word.
     rewrite list_insert_at_end; last set_solver.
     rewrite insert_app_l; last first.
-    { rewrite removelast_firstn_len. rewrite take_length_le; word. }
+    { rewrite removelast_firstn_len. rewrite length_take_le; word. }
     iFrame.
     iPureIntro.
     apply list_swap_with_end with x; [done | | done].
@@ -170,7 +170,7 @@ Proof.
     iModIntro.
     iExists _.
     iDestruct (own_slice_sz with "HtidsS") as "%HtidsSz".
-    rewrite fmap_length in HtidsSz.
+    rewrite length_fmap in HtidsSz.
     iFrame "∗%".
     iPureIntro.
     split.
@@ -248,7 +248,7 @@ Proof.
   iIntros "[Hlocked HsiteOwn]".
   iNamed "HsiteOwn".
   iDestruct (own_slice_sz with "HactiveL") as "%HactiveSz".
-  rewrite fmap_length in HactiveSz.
+  rewrite length_fmap in HactiveSz.
   wp_pures.
 
   (*@     // Remove @tid from the set of active transactions.                 @*)
@@ -325,7 +325,7 @@ Proof.
       unfold typed_slice.own_slice.
       unfold list.untype.
       iDestruct (own_slice_take_cap _ _ _ idxlast with "HactiveL") as "H".
-      { rewrite fmap_length. rewrite last_length. word. }
+      { rewrite length_fmap. rewrite last_length. word. }
       unfold named.
       iExactEq "H".
       rewrite -fmap_take.

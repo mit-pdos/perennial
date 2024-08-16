@@ -169,12 +169,12 @@ Proof.
     iNext. iExists _, _, _. iFrame.
     iPureIntro. subst mt.
 
-    unfold possible in *. rewrite -> app_length in *. simpl in *.
+    unfold possible in *. rewrite -> length_app in *. simpl in *.
     rewrite -> drop_app_le in Hstate by lia.
     apply Forall_app in Hstate as Hstate'; destruct Hstate' as [Hpending Hlatest].
 
     rewrite /async_put /possible /=.
-    rewrite app_length. simpl. split; last by lia.
+    rewrite length_app. simpl. split; last by lia.
 
     rewrite -> drop_app_le by len.
     rewrite -> drop_app_le by len.

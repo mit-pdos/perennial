@@ -17,20 +17,20 @@ Proof.
   rewrite insert_take_drop; last done.
   rewrite delete_take_drop.
   replace i with (length (take i l)) at 1; last first.
-  { apply take_length_le. lia. }
+  { apply length_take_le. lia. }
   rewrite take_app_length.
   rewrite cons_middle.
   replace (S i) with (length (take i l ++ [v])); last first.
-  { rewrite app_length.
+  { rewrite length_app.
     simpl.
-    rewrite take_length_le; last lia.
+    rewrite length_take_le; last lia.
     lia.
   }
   rewrite app_assoc.
   rewrite drop_app_length.
-  rewrite app_length.
+  rewrite length_app.
   simpl.
-  rewrite take_length_le; last lia.
+  rewrite length_take_le; last lia.
   replace (i + 1)%nat with (S i)%nat by lia.
   by rewrite -delete_take_drop.
 Qed.
@@ -109,21 +109,21 @@ Proof.
   destruct (decide (i < j)%nat).
   { (* Case [i < j]. *)
     (* Rewrite LHS. *)
-    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite insert_take_drop; last by rewrite length_insert.
     rewrite drop_insert_gt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
-    { rewrite take_length_le; [done | lia]. }
+    { rewrite length_take_le; [done | lia]. }
     rewrite take_take.
     replace (i `min` j)%nat with i%nat; last lia.
     (* Rerwite RHS. *)
     rewrite -{4}(list_insert_id _ _ _ Hj).
     rewrite -{4}(list_insert_id _ _ _ Hi).
-    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite insert_take_drop; last by rewrite length_insert.
     rewrite drop_insert_gt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
-    { rewrite take_length_le; [done | lia]. }
+    { rewrite length_take_le; [done | lia]. }
     rewrite take_take.
     replace (i `min` j)%nat with i%nat; last lia.
     do 2 rewrite -app_assoc -Permutation_middle2.
@@ -142,21 +142,21 @@ Proof.
     clear n n0.
     rewrite list_insert_commute; last lia.
     (* Rewrite LHS. *)
-    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite insert_take_drop; last by rewrite length_insert.
     rewrite drop_insert_gt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
-    { rewrite take_length_le; [done | lia]. }
+    { rewrite length_take_le; [done | lia]. }
     rewrite take_take.
     replace (i `min` j)%nat with j%nat; last lia.
     (* Rewrite RHS. *)
     rewrite -{4}(list_insert_id _ _ _ Hi).
     rewrite -{4}(list_insert_id _ _ _ Hj).
-    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite insert_take_drop; last by rewrite length_insert.
     rewrite drop_insert_gt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
-    { rewrite take_length_le; [done | lia]. }
+    { rewrite length_take_le; [done | lia]. }
     rewrite take_take.
     replace (i `min` j)%nat with j%nat; last lia.
     do 2 rewrite -app_assoc -Permutation_middle2.
@@ -285,7 +285,7 @@ Lemma extend_length {X : Type} (n : nat) (l : list X) :
 Proof.
   intros [x Hlast].
   unfold extend.
-  rewrite Hlast app_length replicate_length.
+  rewrite Hlast length_app length_replicate.
   lia.
 Qed.
 
@@ -294,7 +294,7 @@ Lemma extend_length_ge {X : Type} (n : nat) (l : list X) :
 Proof.
   unfold extend.
   destruct (last l) eqn:E.
-  - rewrite app_length. lia.
+  - rewrite length_app. lia.
   - apply last_None in E. by rewrite E.
 Qed.
 
@@ -305,8 +305,8 @@ Proof.
   intros [x Hlast].
   unfold extend.
   rewrite Hlast.
-  rewrite app_length.
-  rewrite replicate_length.
+  rewrite length_app.
+  rewrite length_replicate.
   lia.
 Qed.
 

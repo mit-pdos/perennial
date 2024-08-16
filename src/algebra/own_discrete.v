@@ -457,12 +457,12 @@ Section instances_iProp.
   Proof.
     intros ? Hli. assert (i ≤ length l) by eauto using lookup_lt_Some, Nat.lt_le_incl.
     rewrite -(take_drop_middle l i x) // big_sepL_app /=.
-    rewrite Nat.add_0_r take_length_le //.
+    rewrite Nat.add_0_r length_take_le //.
     rewrite assoc -!(comm _ (Φ _ _)) -assoc.
     iIntros "($&H1&H2)". iModIntro. iIntros (y).
-    rewrite insert_app_r_alt ?take_length_le //.
+    rewrite insert_app_r_alt ?length_take_le //.
     rewrite Nat.sub_diag /=. iIntros "H".
-    rewrite big_sepL_app /=. iFrame. rewrite Nat.add_0_r take_length_le; auto. iFrame.
+    rewrite big_sepL_app /=. iFrame. rewrite Nat.add_0_r length_take_le; auto. iFrame.
   Qed.
 
   Lemma big_sepL_lookup_acc_disc {A} (Φ: nat → A → iProp Σ) (l: list A) i x :
@@ -482,7 +482,7 @@ Section instances_iProp.
   Proof.
     intros Hdisc Hl1 Hl2. rewrite big_sepL2_alt. iIntros "(%&H)".
     rewrite {1}big_sepL_insert_acc_disc; last by rewrite lookup_zip_with; simplify_option_eq.
-    iDestruct "H" as "($&H)". iModIntro. iIntros. rewrite big_sepL2_alt !insert_length.
+    iDestruct "H" as "($&H)". iModIntro. iIntros. rewrite big_sepL2_alt !length_insert.
     iSplit; first done. rewrite -insert_zip_with. by iApply "H".
   Qed.
 

@@ -63,7 +63,7 @@ Proof.
     remember uNSHARD as uNSHARD' eqn:Heq_uNSHARD.
     { iFrame.
       iSplit.
-      { iPureIntro. rewrite insert_length //. }
+      { iPureIntro. rewrite length_insert //. }
       iSplit.
       { iPureIntro. intros.
         destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
@@ -113,7 +113,7 @@ Proof.
   {
     iExists _. iFrame.
     iSplit.
-    { iPureIntro. rewrite Heq_initShardMapping replicate_length /uNSHARD. word. }
+    { iPureIntro. rewrite Heq_initShardMapping length_replicate /uNSHARD. word. }
     iSplit.
     { iPureIntro. rewrite /uNSHARD. intros i Hlt. rewrite Heq_initShardMapping.
       eexists. apply lookup_replicate_2. word. }

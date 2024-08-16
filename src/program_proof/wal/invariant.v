@@ -357,7 +357,7 @@ Proof.
   replace (uint.nat (uint.nat u_us)) with (uint.nat u_us) by word.
   replace (uint.nat u_us - uint.nat u_ms)%nat with (length upds) in * by lia.
   rewrite Nat.sub_diag /is_memLog_boundaries
-    take_length Nat.min_l; last by lia.
+    length_take Nat.min_l; last by lia.
   rewrite firstn_all in Hhas.
   split.
   {

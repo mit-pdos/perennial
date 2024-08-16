@@ -226,7 +226,7 @@ Proof.
       }
       {
         left.
-        rewrite app_length in H.
+        rewrite length_app in H.
         simpl in H.
         apply list_prefix_bounded.
         { word. }
@@ -253,7 +253,7 @@ Proof.
         rewrite mono_list_both_dfrac_valid_L in Hvalid.
         destruct Hvalid as [_ Hvalid].
         apply prefix_length in Hvalid.
-        rewrite app_length in Hvalid.
+        rewrite length_app in Hvalid.
         simpl in Hvalid.
         word.
       }

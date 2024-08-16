@@ -104,7 +104,7 @@ Proof.
   intros Hbnd Hhas Hbndrys.
   split.
   {
-    rewrite app_length.
+    rewrite length_app.
     intros bndry Hbndry.
     apply elem_of_list_lookup in Hbndry.
     destruct Hbndry as [i Hbndry].
@@ -146,7 +146,7 @@ Proof.
   unshelve (epose proof (Hreg mwrb_de _ _ _ _) as Hreg').
   3-4: reflexivity.
   simpl in Hreg'.
-  rewrite -subslice_from_drop app_length.
+  rewrite -subslice_from_drop length_app.
   split; first by lia.
   split; first by lia.
   rewrite drop_app_le; last by lia.
@@ -463,7 +463,7 @@ Proof.
       iFrame.
       rewrite /circΣ.diskEnd in HdiskEnd_eq.
       rewrite /circΣ.diskEnd /slidingM.logIndex /=
-        app_length subslice_length;
+        length_app subslice_length;
         last by word.
       replace (uint.nat (uint.Z _ + ( _ + _ )%nat)) with
         (uint.nat σ.(memLog).(slidingM.mutable)) by word.

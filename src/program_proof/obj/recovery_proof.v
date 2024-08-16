@@ -103,7 +103,7 @@ Proof.
       destruct H as (i' & b' & [=] & ? & ?); subst.
       move: n; word.
   - rewrite fst_imap.
-    rewrite replicate_length.
+    rewrite length_replicate.
     eapply NoDup_fmap_2_strong; last by eapply NoDup_seq.
     intros x y Hx Hy Heq.
     eapply elem_of_seq in Hx.
@@ -592,7 +592,7 @@ Proof.
   iApply (big_sepL2_prefix with "Hl"); auto.
   - apply async_take_possible_prefix; auto.
   - apply async_take_possible_prefix; auto. lia.
-  - rewrite ?possible_list_to_async ?take_length; lia.
+  - rewrite ?possible_list_to_async ?length_take; lia.
 Qed.
 
 Lemma crash_heaps_match_transfer_gname γ1 γ2 logm crash_heaps :
@@ -669,7 +669,7 @@ Proof.
   rewrite log_crash_unfold. intros (?&?&?).
   subst. rewrite /=.
   rewrite -{2}(take_drop (S x) (ls1.(log_state.txns))).
-  rewrite app_length. lia.
+  rewrite length_app. lia.
 Qed.
 
 Lemma wal_heap_inv_wf names ls:
@@ -790,14 +790,14 @@ Proof.
     iSplitL "".
     { iPureIntro. rewrite /async_take.
       rewrite possible_list_to_async; last first.
-      { rewrite take_length. lia. }
-      { rewrite take_length. lia. }
+      { rewrite length_take. lia. }
+      { rewrite length_take. lia. }
     }
     iSplitL "".
     { iPureIntro. rewrite /async_take.
       rewrite possible_list_to_async; last first.
-      { rewrite take_length. lia. }
-      { rewrite take_length. lia. }
+      { rewrite length_take. lia. }
+      { rewrite length_take. lia. }
     }
     iCombine "Hpts Hlatest" as "Hpts".
     rewrite -big_sepM_sep.

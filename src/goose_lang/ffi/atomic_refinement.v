@@ -644,7 +644,7 @@ Section go_refinement.
   Proof.
     induction 1; eauto.
     { destruct l; auto. }
-    { simpl. rewrite ?app_length; congruence. }
+    { simpl. rewrite ?length_app; congruence. }
   Qed.
 
   Lemma val_relation_flatten_relation sv iv :
@@ -720,7 +720,7 @@ Section go_refinement.
     destruct Hheap as (Hdom&Hlookup).
     split.
     { rewrite /state_init_heap//= ?dom_union_L // Hdom //. f_equal.
-      apply dom_heap_array_length. rewrite ?fmap_length.
+      apply dom_heap_array_length. rewrite ?length_fmap.
       rewrite ?lifting.concat_replicate_length.
       eapply val_relation_flatten_length in Hval.
       congruence.

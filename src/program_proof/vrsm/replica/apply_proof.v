@@ -224,7 +224,7 @@ Proof.
   iSpecialize ("IH" $! (ptr +ₗ[typ] 1) with "[] [Hsl] []").
   {
     iPureIntro.
-    rewrite cons_length in H1.
+    rewrite length_cons in H1.
     instantiate (1:=(word.sub sz 1)).
     word.
   }
@@ -240,7 +240,7 @@ Proof.
   repeat f_equal.
   replace (uint.Z (S k)) with (1 + uint.Z k)%Z.
   { word. }
-  { rewrite cons_length fmap_length in H1.
+  { rewrite length_cons length_fmap in H1.
     apply lookup_lt_Some in H2. word.
   }
 Qed.
@@ -500,7 +500,7 @@ Proof.
     iIntros "_ Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
     { by rewrite last_snoc. }
-    { unfold get_rwops. rewrite fmap_app. rewrite app_length. done. }
+    { unfold get_rwops. rewrite fmap_app. rewrite length_app. done. }
     iModIntro.
     rewrite /get_rwops fmap_app /=.
     iExact "Hghost".
@@ -536,7 +536,7 @@ Proof.
       unfold get_rwops. rewrite fmap_app. done.
     }
     iFrame "∗#".
-    rewrite app_length /=.
+    rewrite length_app /=.
     iSplitL.
     {
       iApply to_named.
@@ -641,7 +641,7 @@ Proof.
   2: {
     iDestruct (slice_elements_split with "Herrs_sl") as "Herrs".
     iDestruct (big_sepL2_const_sepL_r _ clerks with "[$Herrs]") as "Herrs".
-    { iPureIntro. by rewrite replicate_length. }
+    { iPureIntro. by rewrite length_replicate. }
     rewrite big_sepL2_replicate_r; last done.
     iDestruct (big_sepL2_to_sepL_1 with "Hclerks_rpc") as "H2".
     iDestruct (big_sepL_sep with "[$Herrs]") as "$".
@@ -677,7 +677,7 @@ Proof.
         split; eauto.
         rewrite /no_overflow in Hno_overflow HnextIndexNoOverflow.
         split.
-        { rewrite /get_rwops fmap_app app_length. simpl.
+        { rewrite /get_rwops fmap_app length_app. simpl.
           rewrite HnextIndexNoOverflow /get_rwops.
           word.
         }
@@ -932,7 +932,7 @@ Proof.
     epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
     replace (k) with (uint.nat k) in *; last first.
     {
-      rewrite cons_length /= in HH.
+      rewrite length_cons /= in HH.
       rewrite -Hclerks_conf in HH.
       (* FIXME: why manually rewrite? *)
       word.
@@ -940,7 +940,7 @@ Proof.
     iApply ("Hrest" $! k _).
     { iPureIntro.
       unfold conf in HH.
-      rewrite cons_length in HH.
+      rewrite length_cons in HH.
       rewrite Hclerks_conf.
       clear -HH.
       lia. }
@@ -969,9 +969,9 @@ Proof.
   iExists _, _.
   iFrame "#".
   iSplitL.
-  { iPureIntro. rewrite fmap_length app_length /=.
+  { iPureIntro. rewrite length_fmap length_app /=.
     unfold no_overflow in *.
-    rewrite fmap_length in Hno_overflow HnextIndexNoOverflow.
+    rewrite length_fmap in Hno_overflow HnextIndexNoOverflow.
     word.
   }
   {
@@ -1122,17 +1122,17 @@ Proof using Type*.
       destruct Hvalid as (σtail&Hvalid').
       subst.
       iDestruct (big_sepL2_length with "Hsaved'") as %Hlen.
-      rewrite ?fmap_length in Hlen.
+      rewrite ?length_fmap in Hlen.
       assert (∃ σ0a op' Q' σ0b,
                  opsfullQ = σ0a ++ [(op', Q')] ++ σ0b ∧
                  length σ0a = length opsfull ∧
                  length σ0b = length σtail) as (σ0a&op'&Q'&σ0b&Heq0&Hlena&Hlenb).
       {
         destruct (nth_error opsfullQ (length opsfull)) as [(op', Q')|] eqn:Hnth; last first.
-        { apply nth_error_None in Hnth. rewrite ?app_length /= in Hlen. lia. }
+        { apply nth_error_None in Hnth. rewrite ?length_app /= in Hlen. lia. }
         edestruct (nth_error_split opsfullQ (length opsfull)) as (l1&l2&Heq&Hlen'); eauto.
         eexists l1, _, _, l2. rewrite Heq /=; split_and!; eauto.
-        rewrite Heq ?app_length /= in Hlen. rewrite Hlen' in Hlen. clear -Hlen.
+        rewrite Heq ?length_app /= in Hlen. rewrite Hlen' in Hlen. clear -Hlen.
         (* weird, lia fails directly but if you replace lengths with a nat then it works... *)
         remember (length l2) as k.
         remember (length σtail) as k'. rewrite Heqk in Hlen. lia.
@@ -1146,7 +1146,7 @@ Proof using Type*.
       { by iFrame "∗#". }
 
       rewrite Heq0. rewrite ?fmap_app -app_assoc. iDestruct (big_sepL2_app_inv with "Hsaved'") as "(H1&H2)".
-      { left. rewrite ?fmap_length //. }
+      { left. rewrite ?length_fmap //. }
 
       iEval (simpl) in "H2". iDestruct "H2" as "(HsavedQ'&?)".
       iDestruct (saved_pred_agree _ _ _ _  _ (get_rwops σ0a) with "Hsaved [$]") as "HQequiv".
@@ -1171,7 +1171,7 @@ Proof using Type*.
       iExactEq "Hrepy_ret_sl".
       { repeat f_equal.
         rewrite Heq0 in Hfst_eq. rewrite ?fmap_app -app_assoc in Hfst_eq.
-        apply app_inj_1 in Hfst_eq; last (rewrite ?fmap_length //).
+        apply app_inj_1 in Hfst_eq; last (rewrite ?length_fmap //).
         destruct Hfst_eq as (Hfst_eq&_).
         done.
       }

@@ -182,7 +182,7 @@ Proof.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (s) "Hs".
   wp_apply (wp_new_enc_from_slice with "Hs").
-  rewrite replicate_length. word_cleanup.
+  rewrite length_replicate. word_cleanup.
   iIntros (enc_v) "Henc".
   iApply ("HΦ" with "Henc").
 Qed.
@@ -324,7 +324,7 @@ Proof.
   iApply "HΦ". iModIntro.
   iExists _, _, _. iFrame.
   iSplit; eauto.
-  rewrite insert_length.
+  rewrite length_insert.
   iSplit; eauto.
   rewrite encoded_length_app1. simpl.
   iSplit.

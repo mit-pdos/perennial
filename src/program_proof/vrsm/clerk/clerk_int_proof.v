@@ -79,7 +79,7 @@ Proof.
   iDestruct (own_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
   iDestruct (own_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
   iDestruct (own_slice_small_sz with "Hservers_sl") as %Hservers_sz.
-  rewrite replicate_length in Hclerks_sz.
+  rewrite length_replicate in Hclerks_sz.
   simpl.
   wp_apply (wp_ref_to).
   { eauto. }
@@ -104,7 +104,7 @@ Proof.
     iFrame "∗#".
     iPureIntro.
     split; first word.
-    rewrite replicate_length.
+    rewrite length_replicate.
     word.
   }
   wp_forBreak_cond.
@@ -150,15 +150,15 @@ Proof.
     iFrame "∗".
     iExists (clerksComplete ++ [pbCk]), (tail clerksLeft).
     iSplitR.
-    { iPureIntro. rewrite app_length /=. word. }
+    { iPureIntro. rewrite length_app /=. word. }
     destruct clerksLeft.
     { exfalso. rewrite app_nil_r in Hlen. word. }
 
     iSplitR.
     {
       iPureIntro.
-      do 2 rewrite app_length /=.
-      rewrite -Hlen app_length /=.
+      do 2 rewrite length_app /=.
+      rewrite -Hlen length_app /=.
       word.
     }
     iSplitL.
@@ -173,7 +173,7 @@ Proof.
         by rewrite insert_app_r /= -app_assoc.
       }
     }
-    rewrite app_length.
+    rewrite length_app.
     simpl.
     iDestruct (big_sepL2_length with "Hhosts") as %Hserver_len_eq.
     rewrite take_more; last first.
@@ -186,8 +186,8 @@ Proof.
       apply ListSolver.list_eq_bounded.
       {
         simpl.
-        rewrite take_length.
-        rewrite drop_length.
+        rewrite length_take.
+        rewrite length_drop.
         word.
       }
       intros.
@@ -217,7 +217,7 @@ Proof.
   iMod (readonly_alloc_1 with "Hclerks_sl") as "$".
   iFrame.
   destruct clerksLeft.
-  2:{ exfalso. rewrite app_length /= in Hlen. word. }
+  2:{ exfalso. rewrite length_app /= in Hlen. word. }
   rewrite app_nil_r in Hlen |- *.
   iDestruct (big_sepL2_length with "Hhosts") as %?.
   rewrite Hlen -H.

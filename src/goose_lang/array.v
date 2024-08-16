@@ -73,7 +73,7 @@ Proof.
   intros Hn Hlength.
   rewrite <- (take_drop (Z.to_nat i) vs) at 1.
   rewrite array_app.
-  rewrite take_length.
+  rewrite length_take.
   rewrite Nat.min_l; last lia.
   rewrite Z2Nat.id; last lia.
   auto.
@@ -99,12 +99,12 @@ Proof.
   iExists (take n vs), (drop n vs).
   iSplitR.
   { iPureIntro.
-    rewrite -> take_length_le by lia.
-    rewrite drop_length.
+    rewrite -> length_take_le by lia.
+    rewrite length_drop.
     intuition lia.
   }
   rewrite array_app.
-  rewrite -> take_length_le by lia.
+  rewrite -> length_take_le by lia.
   iFrame.
 Qed.
 
@@ -183,13 +183,13 @@ Proof.
   iDestruct (array_app with "Hl") as "[Hl1 Hl]".
   iDestruct (array_cons with "Hl") as "[Hl2 Hl3]".
   assert (off < length vs)%nat as H by (apply lookup_lt_is_Some; by eexists).
-  rewrite take_length min_l; last by lia. iFrame "Hl2".
+  rewrite length_take min_l; last by lia. iFrame "Hl2".
   iIntros (w) "Hl2".
   clear Hlookup. assert (<[off:=w]> vs !! off = Some w) as Hlookup.
   { apply list_lookup_insert. lia. }
   rewrite -[in (l ↦∗[_]{_} <[off:=w]> vs)%I](take_drop_middle (<[off:=w]> vs) off w Hlookup).
   iApply array_app. rewrite take_insert; last by lia. iFrame.
-  iApply array_cons. rewrite take_length min_l; last by lia. iFrame.
+  iApply array_cons. rewrite length_take min_l; last by lia. iFrame.
   rewrite drop_insert_gt; last by lia. done.
 Qed.
 

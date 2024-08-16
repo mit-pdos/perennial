@@ -15,7 +15,7 @@ End list.
 Lemma list_untype_length `{IntoVal V} (l: list V) :
   length (list.untype l) = length l.
 Proof.
-  rewrite /list.untype fmap_length //.
+  rewrite /list.untype length_fmap //.
 Qed.
 
 Lemma list_untype_app `{IntoVal V} (l1 l2: list V) :
@@ -92,7 +92,7 @@ Lemma own_slice_small_sz s t q vs :
   own_slice_small s t q vs ⊢@{_} ⌜length vs = uint.nat s.(Slice.sz)⌝.
 Proof.
   iIntros "(_&[%%]) !%".
-  rewrite fmap_length // in H.
+  rewrite length_fmap // in H.
 Qed.
 
 Lemma own_slice_to_small s t q vs :
@@ -134,7 +134,7 @@ Proof.
   iIntros (Hbounds) "Hs".
   rewrite /own_slice_small.
   iDestruct (slice.slice_small_split with "Hs") as "[Hs1 Hs2]".
-  { rewrite fmap_length //. }
+  { rewrite length_fmap //. }
   rewrite -fmap_take -fmap_drop.
   iFrame.
 Qed.
@@ -371,18 +371,18 @@ Proof.
   set (vs':=take (uint.nat m) vs).
   rewrite -{1}(take_drop (uint.nat n) vs') fmap_app.
   iDestruct (array.array_app with "Ha1") as "[_ Ha2]". (* the part before the subslice we can dtop *)
-  rewrite fmap_length take_length.
+  rewrite length_fmap length_take.
   iSplitL "Ha2".
   { iSplit.
     - iExactEq "Ha2".
       repeat f_equal.
-      subst vs'; rewrite fmap_length. rewrite !take_length.
+      subst vs'; rewrite length_fmap. rewrite !length_take.
       rewrite //=.
       rewrite min_l; last word.
       rewrite u64_Z_through_nat. eauto.
-    - iPureIntro. rewrite fmap_length /=.
+    - iPureIntro. rewrite length_fmap /=.
       split; last word.
-      subst vs'. rewrite drop_length take_length. word.
+      subst vs'. rewrite length_drop length_take. word.
   }
   rewrite /own_slice_cap. simpl.
   iDestruct "Hcap" as (old_extra) "[% Htail2]".
@@ -395,7 +395,7 @@ Proof.
       (ty_size t * uint.nat m) by word.
     iFrame "Htail".
     iExactEq "Htail2". f_equal.
-    rewrite fmap_length drop_length.
+    rewrite length_fmap length_drop.
     rewrite loc_add_assoc.
     rewrite Hsz.
     rewrite -Z.mul_add_distr_l.
@@ -403,7 +403,7 @@ Proof.
     rewrite Zplus_minus.
     replace (uint.Z (Slice.sz s)) with (Z.of_nat $ uint.nat (Slice.sz s)) at 1 by word.
     done.
-  - iPureIntro. rewrite app_length fmap_length drop_length. word.
+  - iPureIntro. rewrite length_app length_fmap length_drop. word.
 Qed.
 
 Lemma wp_SliceSubslice_small {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
@@ -421,7 +421,7 @@ Proof.
   rewrite /own_slice_small /slice.own_slice_small /=.
   iDestruct "Hs" as "[Ha _]".
   rewrite /list.untype.
-  rewrite fmap_length.
+  rewrite length_fmap.
   rewrite -> subslice_length by lia.
   iSplit; last by iPureIntro; word.
   rewrite -{1}(take_drop (uint.nat m) vs) fmap_app.
@@ -430,10 +430,10 @@ Proof.
   set (vs':=take (uint.nat m) vs).
   rewrite -{1}(take_drop (uint.nat n) vs') fmap_app.
   iDestruct (array.array_app with "Ha1") as "[_ Ha2]".
-  rewrite fmap_length take_length.
+  rewrite length_fmap length_take.
   iExactEq "Ha2".
   repeat f_equal.
-  subst vs'; rewrite take_length.
+  subst vs'; rewrite length_take.
   word.
 Qed.
 
@@ -461,12 +461,12 @@ Proof.
   iDestruct (array.array_app with "Hdst") as "[Hdst1 Hdst2]".
   wp_apply (wp_MemCpy_rec with "[$Hsrc $Hdst1]").
   { iPureIntro.
-    rewrite take_length !fmap_length.
+    rewrite length_take !length_fmap.
     word. }
   iIntros "[Hdst1 Hsrc]".
   iDestruct (array.array_app with "[$Hdst1 Hdst2]") as "Hdst".
   { iExactEq "Hdst2".
-    rewrite !take_length !fmap_length.
+    rewrite !length_take !length_fmap.
     repeat (f_equal; try lia). }
   wp_pures.
   replace (Slice.sz sl) with (W64 (length vs)) by word.
@@ -474,16 +474,16 @@ Proof.
   iFrame. iModIntro.
   iSplit.
   { iPureIntro.
-    rewrite fmap_length; word. }
+    rewrite length_fmap; word. }
   rewrite /own_slice_small.
   rewrite /list.untype fmap_app fmap_drop.
   iSplitL.
   { iExactEq "Hdst".
     f_equal.
     rewrite take_ge //.
-    rewrite fmap_length; word. }
+    rewrite length_fmap; word. }
   iPureIntro.
-  rewrite !app_length !drop_length !fmap_length.
+  rewrite !length_app !length_drop !length_fmap.
   word.
 Qed.
 

@@ -141,7 +141,7 @@ Proof.
   wp_apply (wp_SliceCopy_full_typed with "[$Hlog_own $Hlog_own']").
   {
     iPureIntro.
-    rewrite replicate_length.
+    rewrite length_replicate.
     word.
   }
   iIntros "(Hlog_own & Hlog_own')".

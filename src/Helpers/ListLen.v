@@ -5,25 +5,25 @@ From Perennial.Helpers Require Import List Integers.
 Lemma singleton_length {A} (x:A) : length [x] = 1%nat.
 Proof. reflexivity. Qed.
 
-Lemma cons_length {A} (x:A) xs : length (x::xs) = S (length xs).
+Lemma length_cons {A} (x:A) xs : length (x::xs) = S (length xs).
 Proof. reflexivity. Qed.
 
-Lemma nil_length {A} : length (@nil A) = 0%nat.
+Lemma length_nil {A} : length (@nil A) = 0%nat.
 Proof. reflexivity. Qed.
 
 Create HintDb len.
 
 #[global]
-Hint Rewrite @singleton_length @cons_length @nil_length : len.
+Hint Rewrite @singleton_length @length_cons @length_nil : len.
 #[global]
-Hint Rewrite app_length @drop_length @take_length @fmap_length
-     @replicate_length @repeat_length : len.
+Hint Rewrite @length_app @length_drop @length_take @length_fmap
+     @length_replicate @repeat_length : len.
 #[global]
-Hint Rewrite @vec_to_list_length : len.
+Hint Rewrite @length_vec_to_list : len.
 #[global]
-Hint Rewrite @insert_length : len.
+Hint Rewrite @length_insert : len.
 #[global]
-Hint Rewrite @alter_length : len.
+Hint Rewrite @length_alter : len.
 #[global]
 Hint Rewrite u64_le_length : len.
 #[global]

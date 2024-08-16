@@ -233,8 +233,8 @@ Proof using Ptimeless.
       {
         eapply relation.suchThat_runs with (x:=length vs).
         destruct (decide (length vs = 0)) eqn:He; eauto. right.
-        rewrite -Hvs. rewrite take_length.
-        rewrite drop_length.
+        rewrite -Hvs. rewrite length_take.
+        rewrite length_drop.
         destruct (decide (uint.nat offset ≤ length state)); first by lia.
         exfalso.
         rewrite -> drop_ge in Hvs by lia. rewrite take_nil in Hvs.

@@ -94,7 +94,7 @@ Proof.
   rewrite H0 in H.
   apply prefix_nil_inv in H.
   apply (f_equal length) in H.
-  rewrite app_length /= in H.
+  rewrite length_app /= in H.
   lia.
 Qed.
 
@@ -113,7 +113,7 @@ Proof.
   iIntros (?) "#Hpre".
   iMod alloc_primary_protocol as (γprim) "[Hprim #HprimWit]".
   iMod (pb_system_init (r_pb <$> γsrvs) with "[]") as (γpb) "Hpb".
-  { by rewrite fmap_length. }
+  { by rewrite length_fmap. }
   { iIntros.
     apply elem_of_list_fmap_2 in H0 as (? & ? & ?); subst.
     by iApply "Hpre". }

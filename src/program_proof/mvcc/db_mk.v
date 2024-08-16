@@ -167,7 +167,7 @@ Proof.
     { iPureIntro.
       split; last auto.
       apply lookup_lt_is_Some.
-      rewrite fmap_length.
+      rewrite length_fmap.
       word.
     }
     iIntros "HsitesS".
@@ -179,7 +179,7 @@ Proof.
     rewrite -list_fmap_insert.
     iExists _.
     iFrame.
-    rewrite insert_length.
+    rewrite length_insert.
     iSplit; first done.
     replace (uint.nat (word.add i 1)) with (S (uint.nat i)); last word.
     iFrame.
@@ -190,8 +190,8 @@ Proof.
     { by rewrite take_insert; last auto. }
     iApply (big_sepL_singleton).
     unfold is_txnsite.
-    rewrite take_length_le; last first.
-    { rewrite insert_length. word. }
+    rewrite length_take_le; last first.
+    { rewrite length_insert. word. }
     (* Set Printing Coercions. *)
     replace (W64 _) with i by word.
     eauto 10 with iFrame.

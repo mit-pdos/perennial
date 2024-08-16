@@ -311,7 +311,7 @@ Proof.
   rewrite last_Some in Hlast.
   destruct Hlast as [σ' Hlast].
   subst.
-  rewrite app_length /= in Hlen.
+  rewrite length_app /= in Hlen.
   assert (length σ' = length σ_old) by lia.
   iDestruct (fmlist_ptsto_lb_mono with "Hprop_lb") as "#Hprop'_lb".
   { by exists [newOp]. }
@@ -389,7 +389,7 @@ Proof.
       rewrite mono_list_both_dfrac_valid_L in Hvalid.
       destruct Hvalid as [_ Hvalid].
       apply prefix_length in Hvalid.
-      rewrite app_length in Hvalid.
+      rewrite length_app in Hvalid.
       simpl in Hvalid.
       word.
     }

@@ -611,7 +611,7 @@ Proof.
   iDestruct (typed_slice.own_slice_small_sz with "Hs") as %Hlen.
   iPureIntro.
   assert (length (drop (uint.nat off) l) <= length l).
-  { rewrite drop_length. lia. }
+  { rewrite length_drop. lia. }
   word.
 Qed.
 

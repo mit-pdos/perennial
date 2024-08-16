@@ -300,7 +300,7 @@ Proof.
         apply list_prefix_eq in H3.
         2:{
           apply prefix_length in H1.
-          by do 2 rewrite fmap_length in H1.
+          by do 2 rewrite length_fmap in H1.
         }
         by subst.
       }
@@ -383,7 +383,7 @@ Proof.
     { by iApply is_pb_log_lb_mono. }
     apply list_prefix_eq in H.
     2:{
-      rewrite fmap_length in HcommitLen.
+      rewrite length_fmap in HcommitLen.
       word.
     }
     by subst.
@@ -496,7 +496,7 @@ Proof.
     { intros.
       epose proof (HlastModified _ _) as ->.
       1: done.
-      by rewrite fmap_length.
+      by rewrite length_fmap.
     }
     { iModIntro. iApply generate_read_fupd.
       { iFrame "#". }
@@ -566,14 +566,14 @@ Proof.
       iRight.
       iMod (roapply_finish_step _ _ _ _ (take (uint.nat lastModifiedIndex) st.(server.ops_full_eph))
              with "Hlc Hlc2 [] [Hprop_read] [] HghostEph") as "H".
-      { rewrite fmap_length /no_overflow in Heqb2 HnextIndexNoOverflow.
-        rewrite take_length. word. }
+      { rewrite length_fmap /no_overflow in Heqb2 HnextIndexNoOverflow.
+        rewrite length_take. word. }
       { rewrite -Heqb1. iDestruct (fmlist_ptsto_lb_mono with "Hprop_lb") as "$".
         eexists (drop _ _). by setoid_rewrite take_drop.
       }
       {
-        rewrite take_length_le; first iFrame "#".
-        rewrite fmap_length in HlastModifiedLen.
+        rewrite length_take_le; first iFrame "#".
+        rewrite length_fmap in HlastModifiedLen.
         word.
       }
       { iFrame "#". }
@@ -599,10 +599,10 @@ Proof.
       f_equal.
       epose proof (HlastModified _ _) as ->.
       { done. }
-      { rewrite fmap_length.
-        rewrite take_length_le.
+      { rewrite length_fmap.
+        rewrite length_take_le.
         1: done.
-        { rewrite fmap_length in HlastModifiedLen. word. }
+        { rewrite length_fmap in HlastModifiedLen. word. }
       }
       Unshelve.
       { destruct H1 as [? ?].

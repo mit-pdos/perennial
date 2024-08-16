@@ -794,7 +794,7 @@ Theorem concat_replicate_length A n (vs: list A) :
   length (concat_replicate n vs) = (n * length vs)%nat.
 Proof.
   induction n; simpl; auto.
-  rewrite concat_replicate_S app_length IHn //.
+  rewrite concat_replicate_S length_app IHn //.
 Qed.
 
 Lemma heap_array_to_seq_pointsto l vs (P: loc → val → iProp Σ) :

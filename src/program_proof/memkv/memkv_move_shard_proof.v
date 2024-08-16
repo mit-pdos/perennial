@@ -181,9 +181,9 @@ Proof.
       iFrame.
     }
     iSplitL "".
-    { by rewrite insert_length. }
+    { by rewrite length_insert. }
     iSplitL "".
-    { by rewrite insert_length. }
+    { by rewrite length_insert. }
     iApply (big_sepS_delete _ _ (args.(MR_Sid)) with "[HownShards]").
     { set_solver. }
     iSplitL "".

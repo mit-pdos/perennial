@@ -1280,7 +1280,7 @@ Proof.
     iApply "HΦ".
     iModIntro. repeat iExists _; iFrame.
     iSplitL.
-    2:{ iPureIntro. rewrite app_length. simpl. word. }
+    2:{ iPureIntro. rewrite length_app. simpl. word. }
     iApply (big_sepL_app with "[]").
     iFrame "Hrpc".
     iApply big_sepL_singleton.
@@ -2188,7 +2188,7 @@ Proof.
   iIntros "Hchans #HP".
   iDestruct (big_sepL_sep with "Hchans") as "[Hc Hp]".
   iMod (alloc_paxos_system pParams (hostPairs.*2) with "[Hp] []") as "H".
-  { rewrite fmap_length. lia. }
+  { rewrite length_fmap. lia. }
   { by rewrite big_sepL_fmap. }
   { simpl. iExists _.
 
@@ -2209,7 +2209,7 @@ Proof.
   {
     rewrite /is_config_hosts.
     iSplitL.
-    2:{ iPureIntro. by rewrite fmap_length. }
+    2:{ iPureIntro. by rewrite length_fmap. }
     iApply big_sepL_fupd.
     rewrite big_sepL_fmap.
     iApply (big_sepL_impl with "Hc").

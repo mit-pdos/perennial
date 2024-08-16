@@ -812,7 +812,7 @@ Proof using txnG0 Σ.
     {
       iApply big_sepL2_alt.
       iSplitR.
-      { repeat rewrite fmap_length. eauto. }
+      { repeat rewrite length_fmap. eauto. }
       rewrite zip_fst_snd. iFrame.
     }
 
@@ -1004,7 +1004,7 @@ Proof using txnG0 Σ.
           eapply Hlwh in H3; eauto.
           rewrite lookup_fmap Hoff'k /= in H3.
           rewrite latest_update_app; eauto. }
-        rewrite take_app_le. 2: { rewrite app_length /= in n. lia. }
+        rewrite take_app_le. 2: { rewrite length_app /= in n. lia. }
         eauto.
       }
     }
@@ -1105,7 +1105,7 @@ Proof using txnG0 Σ.
           simpl.
           iDestruct ("Hlatest_crash_heap") as "[%Hlatest_crash_heap' _]".
           rewrite Hlatest_crash_heap' in Hsome.
-          rewrite /possible app_length /= in Hcrashes_complete.
+          rewrite /possible length_app /= in Hcrashes_complete.
           rewrite take_ge in Hsome; last by lia.
           erewrite Hlwh_any in Hsome; last by eauto. iPureIntro. congruence.
         }
@@ -1306,7 +1306,7 @@ Proof.
     iDestruct (own_slice_sz with "Hbufs") as %Hbuflistlen.
     assert (uint.Z bufs.(Slice.sz) = 0) by (revert n; word).
     assert (length (list.untype buflist) = 0%nat) by len.
-    rewrite fmap_length in H0.
+    rewrite length_fmap in H0.
     apply length_zero_iff_nil in H0; subst.
 
     iModIntro.

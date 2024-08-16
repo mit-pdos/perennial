@@ -173,7 +173,7 @@ Proof.
     wp_load. wp_load.
     iDestruct (own_slice_small_sz with "Hs") as %Hsl_sz.
     wp_apply (wp_ReadBytes with "[$]").
-    { rewrite string_bytes_length. rewrite app_length in Hsl_sz. word. }
+    { rewrite string_bytes_length. rewrite length_app in Hsl_sz. word. }
     iIntros "* [Hksl Hs]".
     wp_pures. wp_store. wp_store. wp_load.
     wp_apply (wp_ReadInt with "Hs"). iIntros (?) "Hs".
@@ -181,7 +181,7 @@ Proof.
     wp_load. wp_load. clear Hsl_sz.
     iDestruct (own_slice_small_sz with "Hs") as %Hsl_sz.
     wp_apply (wp_ReadBytes with "[$]").
-    { rewrite string_bytes_length. rewrite app_length in Hsl_sz. word. }
+    { rewrite string_bytes_length. rewrite length_app in Hsl_sz. word. }
     iIntros "* [Hvsl Hs]".
     wp_pures. wp_store. wp_store. wp_load.
     wp_apply (wp_StringFromBytes with "[$Hvsl]").

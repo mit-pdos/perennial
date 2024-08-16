@@ -157,7 +157,7 @@ Proof.
     wp_apply (wp_buf_loadField_data with "Hbuf").
     iIntros (bufslice) "[Hbufdata Hbufnodata]".
     assert (is_Some (vec_to_list bbuf' !! uint.nat (word.add offset count'))).
-    { eapply lookup_lt_is_Some_2. rewrite vec_to_list_length /block_bytes.
+    { eapply lookup_lt_is_Some_2. rewrite length_vec_to_list /block_bytes.
       revert Heqb0. word. }
     wp_apply (wp_SliceSet (V:=u8) with "[$Hbufdata]"); eauto.
     iIntros "Hbufdata".
@@ -169,7 +169,7 @@ Proof.
       rewrite /is_Some in H.
       destruct H.
       apply lookup_lt_Some in H.
-      rewrite vec_to_list_length /block_bytes in H.
+      rewrite length_vec_to_list /block_bytes in H.
       rewrite /block_bytes; lia.
     }
     iExists (vinsert (nat_to_fin fin) w bbuf'). iFrame.
@@ -187,8 +187,8 @@ Proof.
     2: { word. }
     assert ((uint.nat offset) = (length (take (uint.nat offset) bbuf))) as Hoff.
     1: {
-      rewrite take_length.
-      rewrite vec_to_list_length.
+      rewrite length_take.
+      rewrite length_vec_to_list.
       revert fin. word_cleanup.
     }
     rewrite -> Hoff at 1.
@@ -196,7 +196,7 @@ Proof.
     f_equal.
     replace (uint.nat count') with (length (take (uint.nat count') databuf) + 0) at 1.
     2: {
-      rewrite take_length_le; first by lia. word.
+      rewrite length_take_le; first by lia. word.
     }
     rewrite insert_app_r.
     replace (uint.nat (word.add count' 1%Z)) with (S (uint.nat count')) at 1 by word.
@@ -207,9 +207,9 @@ Proof.
     1: f_equal.
     3: word.
     2: {
-      rewrite drop_length.
+      rewrite length_drop.
       rewrite firstn_length_le.
-      2: { rewrite vec_to_list_length. revert fin. word. }
+      2: { rewrite length_vec_to_list. revert fin. word. }
       revert fin. word.
     }
     replace (uint.nat (word.add count' 1%Z)) with (uint.nat count' + 1) by word.
@@ -219,8 +219,8 @@ Proof.
     edestruct (length_1_singleton (T:=u8) (take 1 (drop (uint.nat offset + uint.nat count') bbuf))) as [x Hx].
     2: { rewrite Hx. done. }
     rewrite firstn_length_le; eauto.
-    rewrite drop_length.
-    rewrite vec_to_list_length.
+    rewrite length_drop.
+    rewrite length_vec_to_list.
     revert fin. word.
   }
   {
@@ -260,7 +260,7 @@ Proof.
 
   assert (length contents ≤ length bbuf) as Hlencontents.
   { eapply (f_equal length) in Hdiskdata.
-    rewrite take_length in Hdiskdata. lia. }
+    rewrite length_take in Hdiskdata. lia. }
 
   wp_if_destruct.
   { wp_storeField.
@@ -280,29 +280,29 @@ Proof.
     }
     iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1.
-    rewrite !app_length.
-    rewrite drop_length.
-    rewrite take_length_le; last by ( rewrite vec_to_list_length /block_bytes; word ).
-    rewrite take_length_le; last by ( rewrite Hcount; lia ).
-    rewrite take_length_le; last by ( rewrite vec_to_list_length /block_bytes; word ).
+    rewrite !length_app.
+    rewrite length_drop.
+    rewrite length_take_le; last by ( rewrite length_vec_to_list /block_bytes; word ).
+    rewrite length_take_le; last by ( rewrite Hcount; lia ).
+    rewrite length_take_le; last by ( rewrite length_vec_to_list /block_bytes; word ).
     replace (length contents) with (uint.nat len) by word.
     split. 2: { revert Heqb2. word. }
     rewrite app_assoc. rewrite take_app_le.
     2: {
-      rewrite !app_length.
-      rewrite take_length_le. 2: rewrite vec_to_list_length /block_bytes; word.
-      rewrite take_length_le. 2: rewrite Hcount; lia.
+      rewrite !length_app.
+      rewrite length_take_le. 2: rewrite length_vec_to_list /block_bytes; word.
+      rewrite length_take_le. 2: rewrite Hcount; lia.
       revert Heqb2. word.
     }
     rewrite firstn_all2.
     2: {
-      rewrite !app_length.
-      rewrite take_length_le. 2: rewrite vec_to_list_length /block_bytes; word.
-      rewrite take_length_le. 2: rewrite Hcount; lia.
+      rewrite !length_app.
+      rewrite length_take_le. 2: rewrite length_vec_to_list /block_bytes; word.
+      rewrite length_take_le. 2: rewrite Hcount; lia.
       revert Heqb2. word.
     }
     f_equal. rewrite drop_ge. 1: rewrite app_nil_r; eauto.
-    rewrite take_length_le. 2: rewrite vec_to_list_length /block_bytes; word.
+    rewrite length_take_le. 2: rewrite length_vec_to_list /block_bytes; word.
     rewrite Hcount. revert Heqb2. word.
   }
   { wp_pures.
@@ -319,35 +319,35 @@ Proof.
     }
     iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1 Hbuf.
-    rewrite !app_length.
-    rewrite drop_length.
-    rewrite take_length_le. 2: { rewrite vec_to_list_length /block_bytes. revert Heqb0; word. }
-    rewrite take_length_le. 2: { rewrite Hcount; lia. }
-    rewrite take_length_le. 2: { lia. }
+    rewrite !length_app.
+    rewrite length_drop.
+    rewrite length_take_le. 2: { rewrite length_vec_to_list /block_bytes. revert Heqb0; word. }
+    rewrite length_take_le. 2: { rewrite Hcount; lia. }
+    rewrite length_take_le. 2: { lia. }
     replace (length contents) with (uint.nat len) by word.
     split. 2: { revert Heqb2. word. }
     rewrite drop_app_le.
     2: {
-      rewrite take_length_le. 2: lia.
+      rewrite length_take_le. 2: lia.
       revert Heqb2. word.
     }
     rewrite app_assoc. rewrite app_assoc. rewrite take_app_le.
     2: {
-      rewrite !app_length.
-      rewrite drop_length.
-      rewrite take_length_le. 2: lia.
-      rewrite take_length_le. 2: rewrite Hcount; lia.
-      rewrite take_length_le. 2: lia.
+      rewrite !length_app.
+      rewrite length_drop.
+      rewrite length_take_le. 2: lia.
+      rewrite length_take_le. 2: rewrite Hcount; lia.
+      rewrite length_take_le. 2: lia.
       revert Heqb2. word.
     }
     rewrite firstn_all2.
     1: { rewrite app_assoc; eauto. }
 
-    rewrite !app_length.
-    rewrite drop_length.
-    rewrite take_length_le. 2: lia.
-    rewrite take_length_le. 2: rewrite Hcount; lia.
-    rewrite take_length_le. 2: lia.
+    rewrite !length_app.
+    rewrite length_drop.
+    rewrite length_take_le. 2: lia.
+    rewrite length_take_le. 2: rewrite Hcount; lia.
+    rewrite length_take_le. 2: lia.
     revert Heqb2. word.
   }
 Qed.

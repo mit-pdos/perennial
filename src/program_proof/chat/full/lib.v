@@ -159,7 +159,7 @@ Proof.
   wp_apply (wp_SliceCopy_full_typed with "[$Hsl $Hret]").
   {
     iPureIntro.
-    rewrite replicate_length.
+    rewrite length_replicate.
     word.
   }
   iIntros "(Hsl & Hret)".

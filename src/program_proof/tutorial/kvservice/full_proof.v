@@ -136,7 +136,7 @@ Proof.
   wp_pures.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
   wp_apply (wp_ReadBytes with "[$]").
-  { rewrite app_length in Hsz. word. }
+  { rewrite length_app in Hsz. word. }
   iIntros (???) "[Hkey Hval]".
   wp_pures.
   wp_apply (wp_StringFromBytes with "[$Hkey]").
@@ -300,7 +300,7 @@ Proof.
 
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
   wp_apply (wp_ReadBytes with "[$Hsl]").
-  { rewrite app_length in Hsz. word. }
+  { rewrite length_app in Hsz. word. }
   iIntros (???) "[Hkey Hsl]".
   wp_pures.
   wp_apply (wp_StringFromBytes with "[$Hkey]").
@@ -312,7 +312,7 @@ Proof.
   wp_pures.
 
   wp_apply (wp_ReadBytes with "[$Hsl]").
-  { repeat rewrite app_length in Hsz. word. }
+  { repeat rewrite length_app in Hsz. word. }
   iIntros (???) "[Hexpect Hval]".
   wp_pures.
 

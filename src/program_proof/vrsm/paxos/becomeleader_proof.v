@@ -101,7 +101,7 @@ Proof.
     iSplitR.
     {
       iPureIntro.
-      rewrite replicate_length.
+      rewrite length_replicate.
       word.
     }
     iRight.
@@ -115,7 +115,7 @@ Proof.
       {
         iPureIntro.
         rewrite Hlen.
-        by rewrite replicate_length.
+        by rewrite length_replicate.
       }
       done.
     }
@@ -200,7 +200,7 @@ Proof.
         iSplitR.
         {
           iPureIntro.
-          rewrite insert_length.
+          rewrite length_insert.
           word.
         }
         iDestruct "Hreplies" as "[$|Hreplies]".

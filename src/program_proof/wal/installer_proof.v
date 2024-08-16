@@ -261,7 +261,7 @@ Proof.
   rename bufs into upds.
 
   iDestruct (slice.own_slice_small_sz with "Hbks_s") as %Hslen.
-  rewrite fmap_length in Hslen.
+  rewrite length_fmap in Hslen.
   iDestruct (big_sepL2_length with "Hupds") as %Hslen2.
 
   wp_apply (slice.wp_forSlice (fun i =>
@@ -812,7 +812,7 @@ Proof.
   }
 
   iDestruct (updates_slice_frag_len with "Htxn_slice") as %Hs_len.
-  rewrite take_length_le in Hs_len.
+  rewrite length_take_le in Hs_len.
   2: {
     rewrite /locked_wf /slidingM.wf in Hlocked_wf.
     rewrite /slidingM.logIndex.
@@ -1101,7 +1101,7 @@ Proof.
 
     iSplitL.
     {
-      rewrite /circΣ.diskEnd /= drop_length.
+      rewrite /circΣ.diskEnd /= length_drop.
       replace (Z.to_nat (uint.Z σ.(diskEnd) - uint.Z (start σc)))
         with (uint.nat σ.(diskEnd) - uint.nat (start σc))%nat by word.
       replace (uint.Z σ.(diskEnd) + _)
@@ -1138,7 +1138,7 @@ Proof.
         }
         lia.
       }
-      rewrite drop_length.
+      rewrite length_drop.
       assumption.
     }
     iSplitL.
@@ -1151,7 +1151,7 @@ Proof.
         Hdurable_lb_pos Hend_txn
       ) "#".
       iPureIntro.
-      rewrite /circΣ.diskEnd /= drop_length.
+      rewrite /circΣ.diskEnd /= length_drop.
       replace (Z.to_nat (uint.Z σ.(diskEnd) - uint.Z (start σc)))
         with (uint.nat σ.(diskEnd) - uint.nat (start σc))%nat by word.
       rewrite /circΣ.diskEnd /= in HdiskEnd_val.
@@ -1253,7 +1253,7 @@ Proof.
     iPureIntro.
     rewrite /locked_wf /=.
     split; first by lia.
-    rewrite /slidingM.wf /= drop_length.
+    rewrite /slidingM.wf /= length_drop.
     destruct Hlocked_wf as (Hlocked_wf_bound&Hsliding_wf).
     rewrite /slidingM.wf in Hsliding_wf.
     rewrite /slidingM.logIndex.
@@ -1285,7 +1285,7 @@ Proof.
 
   iSplit.
   {
-    rewrite drop_length.
+    rewrite length_drop.
     replace (word.add σ.(invariant.diskEnd)
       (length log - (uint.nat σ.(invariant.diskEnd) - uint.nat start))%nat)
       with (word.add start (length log)).
@@ -1296,7 +1296,7 @@ Proof.
   iSplit.
   2: {
     iPureIntro.
-    rewrite drop_length.
+    rewrite length_drop.
     replace (uint.Z σ.(invariant.diskEnd) +
         (length log - (uint.nat σ.(invariant.diskEnd) - uint.nat start))%nat)
       with (uint.Z start + length log) by word.
@@ -1324,7 +1324,7 @@ Proof.
     (uint.nat σ.(invariant.diskEnd) - uint.nat start))%nat
     with (uint.nat mutable - uint.nat σ.(invariant.diskEnd))%nat
     in Htxns' by lia.
-  rewrite drop_length Nat.sub_diag.
+  rewrite length_drop Nat.sub_diag.
   by apply Htxns'.
 Qed.
 

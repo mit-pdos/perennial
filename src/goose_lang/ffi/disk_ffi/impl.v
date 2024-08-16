@@ -58,7 +58,7 @@ Definition Block_to_vals {ext: ffi_syntax} (bl:Block) : list val :=
 Lemma length_Block_to_vals {ext: ffi_syntax} b :
     length (Block_to_vals b) = block_bytes.
 Proof.
-  rewrite /Block_to_vals fmap_length vec_to_list_length //.
+  rewrite /Block_to_vals length_fmap length_vec_to_list //.
 Qed.
 
 Section disk.

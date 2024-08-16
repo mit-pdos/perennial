@@ -65,7 +65,7 @@ Proof.
     + rewrite subslice_take_drop.
       rewrite subslice_take_drop.
       rewrite take_app_le.
-      2: { rewrite insert_length. word. }
+      2: { rewrite length_insert. word. }
       rewrite take_app_le.
       2: { word. }
       (* Check take_insert. *)
@@ -81,11 +81,11 @@ Proof.
     + epose proof (subslice_split_r (uint.nat first0) (length slice) _ (_ ++ _)).
       rewrite H4.
       2: word.
-      2: { rewrite app_length. rewrite insert_length. word. }
+      2: { rewrite length_app. rewrite length_insert. word. }
       epose proof (subslice_split_r (uint.nat first0) (length slice) _ (slice ++ slice)).
       rewrite H5.
       2: word.
-      2: { rewrite app_length. word. }
+      2: { rewrite length_app. word. }
       assert (subslice (uint.nat first0) (length slice)
       (<[uint.nat
            (uint.nat first0 + uint.nat count0 -
@@ -96,12 +96,12 @@ Proof.
             (slice ++ slice)).
         {
           rewrite <- subslice_before_app_eq.
-          2: { rewrite insert_length. word. }
+          2: { rewrite length_insert. word. }
           rewrite <- subslice_before_app_eq.
           2: word.
           rewrite subslice_take_drop.
           rewrite subslice_take_drop.
-          epose proof (insert_length slice (uint.nat (uint.nat first0 + uint.nat count0 - length slice)) e).
+          epose proof (length_insert slice (uint.nat (uint.nat first0 + uint.nat count0 - length slice)) e).
           rewrite firstn_all.
           replace ((take (length slice)
           (<[uint.nat
@@ -123,7 +123,7 @@ Proof.
       rewrite subslice_comm.
       rewrite subslice_comm.
       rewrite drop_app_length.
-      epose proof (insert_length slice (uint.nat (uint.nat first0 + uint.nat count0 - length slice)) e).
+      epose proof (length_insert slice (uint.nat (uint.nat first0 + uint.nat count0 - length slice)) e).
       replace ((drop (length slice)
                 (<[uint.nat (uint.nat first0 + uint.nat count0 - length slice):=e]> slice ++
                 <[uint.nat (uint.nat first0 + uint.nat count0 - length slice):=e]> slice))) with (drop (length (<[uint.nat
@@ -173,7 +173,7 @@ Proof.
   - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0)).
     + rewrite subslice_comm.
       rewrite drop_app_le.
-      2: { rewrite insert_length. word. }
+      2: { rewrite length_insert. word. }
       rewrite drop_insert_le.
       2: { word. }
       assert ((uint.nat (uint.nat first0 + uint.nat count0)%Z -
@@ -190,7 +190,7 @@ Proof.
           rewrite take_0.
           done.
         }
-        rewrite drop_length.
+        rewrite length_drop.
         word.
       }
       word_cleanup.
@@ -201,8 +201,8 @@ Proof.
   - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
     + rewrite subslice_comm.
       rewrite drop_app_ge.
-      2: { rewrite insert_length. word. }
-      rewrite insert_length.
+      2: { rewrite length_insert. word. }
+      rewrite length_insert.
       rewrite drop_insert_le.
       2: { word. }
       assert ((uint.nat (uint.nat first0 + uint.nat count0 - length slice)%Z -
@@ -219,7 +219,7 @@ Proof.
           rewrite take_0.
           done.
         }
-        rewrite drop_length.
+        rewrite length_drop.
         word.
       }
       word.
@@ -248,8 +248,8 @@ Proof.
     rewrite app_inv_head_iff.
     apply add_one_lemma_2; eauto.
   - word.
-  - rewrite app_length.
-    rewrite insert_length.
+  - rewrite length_app.
+    rewrite length_insert.
     word.
 Qed.
 
@@ -271,7 +271,7 @@ Proof.
   rewrite <- (take_drop_middle (slice) (uint.nat first0) e).
   2: eauto.
   rewrite drop_app_length'.
-  2: { rewrite take_length. word. }
+  2: { rewrite length_take. word. }
   rewrite firstn_cons.
   rewrite take_0.
   done.
@@ -347,7 +347,7 @@ Proof.
     rewrite app_inv_head_iff.
     apply remove_one_lemma_2; eauto.
   - word.
-  - rewrite app_length. word.
+  - rewrite length_app. word.
 Qed.
 
 Lemma queue_peek_valid (q : loc) (gamma : namespace) (P : u64 -> iProp Σ):
@@ -533,7 +533,7 @@ Proof.
       { 
         iPureIntro.
         (* Search length insert list. *)
-        rewrite insert_length.
+        rewrite length_insert.
         intuition eauto.
         word.
       }

@@ -386,7 +386,7 @@ Proof.
   split.
   { (* Re-establish len. *)
     intros n Hn.
-    rewrite app_length /=.
+    rewrite length_app /=.
     rewrite dom_insert_L elem_of_union in Hn.
     rewrite last_extend_length; last first.
     { apply (prefix_not_nil _ _ Hprefix). set_solver. }

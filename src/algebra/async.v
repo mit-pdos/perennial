@@ -167,7 +167,7 @@ Proof.
   - rewrite lookup_app_l //. rewrite lookup_app_l //.
   - rewrite !list_lookup_middle //=.
     rewrite lookup_insert_ne //.
-  - rewrite !lookup_ge_None_2 // app_length /=; lia.
+  - rewrite !lookup_ge_None_2 // length_app /=; lia.
 Qed.
 
 (* Just shift the "last" transaction i without changing the value. *)
@@ -219,7 +219,7 @@ Proof.
     + rewrite list_lookup_middle //.
       rewrite -lookup_possible_latest'.
       assert (length (possible σs) > 0).
-      { rewrite /possible app_length /=. lia. }
+      { rewrite /possible length_app /=. lia. }
       eapply Htail; lia.
     + rewrite length_possible_async_put in Hlen.
       rewrite lookup_app_l; last lia.
@@ -254,7 +254,7 @@ Proof.
     + rewrite lookup_async_insert_ne //.
     + intros j' Hle Hlen . rewrite lookup_async_insert_ne //.
       apply Htail; first lia.
-      move:Hlen. rewrite /possible /= !app_length /=. lia.
+      move:Hlen. rewrite /possible /= !length_app /=. lia.
 Qed.
 
 Theorem ephemeral_txn_val_range_acc γ lo hi k v i :
@@ -331,7 +331,7 @@ Proof.
   {
     destruct Hprefix as (?&->).
     rewrite lookup_app_l; first apply lookup_possible_latest'.
-    rewrite /possible app_length /=. lia.
+    rewrite /possible length_app /=. lia.
   }
   eauto.
 Qed.
@@ -507,7 +507,7 @@ Proof.
     rewrite big_sepM_fmap.
     rewrite big_sepM_fmap.
     iApply (big_sepM_impl with "Hfrag"). iIntros "!#" (k v Hk) "Hfrag".
-    rewrite app_length /=.
+    rewrite length_app /=.
     replace (length (pending σs) + 1 - 1) with (length (pending σs)); last by lia.
     iSplitR.
     + iExists (latest σs). iSplit; first done.
@@ -551,7 +551,7 @@ Proof.
   destruct Hprefix as [l' Hl']. rewrite Hl'.
   rewrite lookup_app_l; last first.
   { assert (length (possible σs') > 0); last by lia.
-    rewrite /possible app_length /=. lia. }
+    rewrite /possible length_app /=. lia. }
   rewrite lookup_possible_latest' /=. done.
 Qed.
 

@@ -81,7 +81,7 @@ Proof.
   wp_rec. wp_pures.
 
   iDestruct (own_slice_sz with "HversS") as "%HversLen".
-  rewrite fmap_length in HversLen.
+  rewrite length_fmap in HversLen.
   iDestruct (own_slice_small_acc with "HversS") as "[HversX HversS]".
 
   (***********************************************************)
@@ -134,7 +134,7 @@ Proof.
     wp_load.
     wp_loadField.
     destruct (list_lookup_lt (ver_to_val <$> vers) (uint.nat idx)) as [ver HSome].
-    { rewrite fmap_length. word. }
+    { rewrite length_fmap. word. }
     wp_apply (wp_SliceGet with "[HversX]").
     { iFrame. done. }
     iIntros "[HversX %Hval_ty]".
@@ -229,7 +229,7 @@ Proof.
     { exists (take (uint.nat idx) vers).
       split.
       { apply length_nonzero_neq_nil.
-        rewrite take_length_le; first word.
+        rewrite length_take_le; first word.
         word.
       }
       { symmetry. apply take_drop. }

@@ -391,7 +391,7 @@ Proof.
     iExists _.
     iFrame "%".
     iPureIntro.
-    rewrite app_length subslice_app_1; last by lia.
+    rewrite length_app subslice_app_1; last by lia.
     split; first by lia.
     split; first by assumption.
     split.
@@ -429,16 +429,16 @@ Proof.
   rewrite /memWrite_one.
   destruct (find_highest_index (update.addr <$> σ.(slidingM.log)) u.(update.addr)) eqn:He.
   - destruct (decide (uint.Z σ.(slidingM.mutable) - uint.Z σ.(slidingM.start) ≤ n)).
-    + rewrite /slidingM.endPos /set insert_length /=.
+    + rewrite /slidingM.endPos /set length_insert /=.
       assert (uint.Z σ.(slidingM.mutable) ≤ uint.Z σ.(slidingM.start) + length σ.(slidingM.log)) by word.
       assert (uint.Z σ.(slidingM.mutable) ≤ uint.Z σ.(slidingM.start) + n) by word.
       assert (n < length σ.(slidingM.log)).
       2: { word. }
       eapply find_highest_index_ok' in He. intuition idtac.
       eapply lookup_lt_Some in H.
-      rewrite fmap_length in H. lia.
-    + rewrite /slidingM.endPos /set app_length /=. word.
-  - rewrite /slidingM.endPos /set app_length /=. word.
+      rewrite length_fmap in H. lia.
+    + rewrite /slidingM.endPos /set length_app /=. word.
+  - rewrite /slidingM.endPos /set length_app /=. word.
 Qed.
 
 Lemma memWrite_endPos :
@@ -516,7 +516,7 @@ Proof.
     rewrite /is_txn in H2.
     rewrite lookup_ge_None_2 in H2.
     { simpl in *; congruence. }
-    rewrite app_length /=. lia.
+    rewrite length_app /=. lia.
   }
 
   rewrite lookup_app_r; last by lia.
@@ -569,7 +569,7 @@ Proof.
       eapply fmap_cons_inv in Hx2.
       destruct Hx2 as [x [x3 Hx3]].
       destruct Hx3 as [Haddr [Hl2 Hx2]]. subst.
-      rewrite -> fmap_length in *. replace (length x1) with (length x1 + 0)%nat by lia.
+      rewrite -> length_fmap in *. replace (length x1) with (length x1 + 0)%nat by lia.
       rewrite insert_app_r.
       simpl.
       rewrite drop_app_le.
@@ -622,7 +622,7 @@ Proof.
       eapply fmap_cons_inv in Hx2.
       destruct Hx2 as [x [x3 Hx3]].
       destruct Hx3 as [Haddr [Hl2 Hx2]]. subst.
-      rewrite -> fmap_length in *. replace (length x1) with (length x1 + 0)%nat by lia.
+      rewrite -> length_fmap in *. replace (length x1) with (length x1 + 0)%nat by lia.
       rewrite insert_app_r. destruct x.
       simpl.
       rewrite !drop_app_le.

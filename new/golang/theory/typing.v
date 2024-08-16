@@ -172,7 +172,7 @@ Section typing.
       induction d.
       { done. }
       destruct a. cbn.
-      rewrite app_length.
+      rewrite length_app.
       rewrite IHd.
       { f_equal. apply H. by left. }
       { clear H IHd. intros. apply Hfields. by right. }

@@ -63,7 +63,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iExists _, _, _; rewrite /named; iFrame.
-  rewrite nil_length.
+  rewrite length_nil.
   iSplit; first by eauto.
   iSplit.
   { iPureIntro.
@@ -93,7 +93,7 @@ Proof.
   wp_load.
   wp_apply (wp_new_enc_from_slice with "[$Hs $Hcap]").
   iIntros (v) "Henc"; wp_pures.
-  rewrite replicate_length.
+  rewrite length_replicate.
   iModIntro.
   iApply "HΦ".
   iExactEq "Henc".
@@ -248,7 +248,7 @@ Proof.
   iApply "HΦ". iModIntro.
   iExists _, _, _. iFrame.
   iSplit; eauto.
-  rewrite insert_length.
+  rewrite length_insert.
   iSplit; eauto.
   rewrite encoded_length_app1. simpl.
   iSplit.

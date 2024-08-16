@@ -2261,7 +2261,7 @@ Section program.
     iPureIntro.
     split.
     { (* Prove [Hlen]. *)
-      rewrite app_length singleton_length Hlen Hnoof.
+      rewrite length_app singleton_length Hlen Hnoof.
       word.
     }
     { (* Prove [Hrsm]. *)

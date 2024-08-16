@@ -611,7 +611,7 @@ Proof.
     iExists _, _, _.
     iFrame "Hvar Hslice".
     iSplitR.
-    { rewrite app_length Hlen /=. word. }
+    { rewrite length_app Hlen /=. word. }
     iSplitL "Hpp".
     { replace (uint.Z (word.add i 1))%Z with (uint.Z i + 1)%Z by word.
       replace (NSHARD - (uint.Z i + 1))%Z with (NSHARD - uint.Z i - 1)%Z by word.

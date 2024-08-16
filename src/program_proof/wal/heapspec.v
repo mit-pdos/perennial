@@ -413,7 +413,7 @@ Lemma drop_drop_end {A} n m (l: list A) :
 Proof.
   rewrite /drop_end.
   rewrite take_drop_commute.
-  rewrite drop_length.
+  rewrite length_drop.
   destruct (decide (n + m ≤ length l)).
   - auto with f_equal lia.
   - rewrite !drop_ge //; len.
@@ -835,7 +835,7 @@ Proof.
           list_to_async (take (S crash_txn) (possible crash_heaps))) as Hasync_take.
   { subst crash_heap'.
     simpl.
-    rewrite -> take_length_le by lia.
+    rewrite -> length_take_le by lia.
     auto. }
   simpl.
   iNamed 1.
@@ -1094,7 +1094,7 @@ Proof.
       rewrite <- app_assoc.
       f_equal.
       rewrite <- IHtxn_id; auto.
-      rewrite cons_length in H.
+      rewrite length_cons in H.
       lia.
 Qed.
 
@@ -2294,17 +2294,17 @@ Proof using walheapG0.
     intros. apply H1 in H0. lia.
   }
   2: {
-    rewrite /possible app_length /= in Hcrashes_complete.
+    rewrite /possible length_app /= in Hcrashes_complete.
     rewrite -> firstn_all2 in Hcrashheap_contents by lia.
 
     iSplitR.
-    { iPureIntro. rewrite /= /async_put /possible app_length /= ?app_length /=. lia. }
+    { iPureIntro. rewrite /= /async_put /possible length_app /= ?length_app /=. lia. }
     rewrite /async_put /possible /=.
     iApply big_sepL_app.
     iSplit.
     2: { iSplitL; last by done.
       rewrite firstn_all2.
-      2: { rewrite app_length -Hcrashes_complete /possible app_length /=. lia. }
+      2: { rewrite length_app -Hcrashes_complete /possible length_app /=. lia. }
       iPureIntro. intros a0. simpl.
       rewrite txn_upds_app apply_upds_app /=.
       unfold txn_upds at 1; simpl. rewrite app_nil_r.

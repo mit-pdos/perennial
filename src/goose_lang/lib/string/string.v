@@ -102,7 +102,7 @@ Qed.
 Lemma string_bytes_length s :
   String.length s = length $ string_to_bytes s.
 Proof.
-  rewrite /string_to_bytes fmap_length.
+  rewrite /string_to_bytes length_fmap.
   induction s as [|? ? IHs].
   { done. }
   { cbn. apply f_equal. done. }

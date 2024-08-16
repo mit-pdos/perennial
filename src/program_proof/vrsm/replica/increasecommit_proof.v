@@ -129,7 +129,7 @@ Proof.
     by iDestruct (fmlist_ptsto_lb_mono with "Hs_prop_lb") as "$".
   }
   iPureIntro.
-  rewrite /get_rwops fmap_length /=.
+  rewrite /get_rwops length_fmap /=.
   by unfold no_overflow in H.
 Qed.
 
@@ -166,7 +166,7 @@ Proof.
     iDestruct (increase_commitIndex_step with "[$] [$] [$] HghostEph") as "HghostEph".
     { word. }
     { unfold no_overflow in *.
-      rewrite fmap_length in HnextIndexNoOverflow Heqb.
+      rewrite length_fmap in HnextIndexNoOverflow Heqb.
       word. }
     { unfold no_overflow. word. }
     { unfold no_overflow. word. }

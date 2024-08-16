@@ -1009,7 +1009,7 @@ Proof.
       word.
 Qed.
 
-Hint Rewrite @inserts_length : len.
+Hint Rewrite @length_inserts : len.
 
 Lemma subslice_lookup_ge_iff {A} n m i (l: list A) :
   (m ≤ length l)%nat →
@@ -1043,7 +1043,7 @@ Proof.
     rewrite list_lookup_inserts; auto with f_equal lia.
   - rewrite subslice_lookup_ge; auto with lia.
     + rewrite lookup_ge_None_2 //; lia.
-    + rewrite inserts_length; lia.
+    + rewrite length_inserts; lia.
 Qed.
 
 Lemma subslice_list_inserts_ne {A} (k l: list A) n m i :
@@ -1060,7 +1060,7 @@ Proof.
     + rewrite list_lookup_inserts_lt; last by lia. done.
     + rewrite list_lookup_inserts_ge; last by lia. done.
   - repeat rewrite -> subslice_lookup_ge; auto with lia.
-    rewrite inserts_length; lia.
+    rewrite length_inserts; lia.
 Qed.
 
 Lemma Nat_mod_1024_to_div_8 (n:nat) :
@@ -1117,7 +1117,7 @@ Proof.
     rewrite -> !Z_mod_1024_to_div_8 in H by lia.
     rewrite /inode_bytes.
     rewrite subslice_list_inserts_ne; eauto;
-      rewrite vec_to_list_length.
+      rewrite length_vec_to_list.
     + revert Hoff'_bound. rewrite /block_bytes.
       change 1024%nat with (8 * 128)%nat.
       word.
@@ -1184,7 +1184,7 @@ Proof.
     wp_loadField.
     iDestruct "Hbufdata" as (src_b) "[Hsrc %Hsrc_data]".
     wp_apply (wp_installBit with "[$Hsrc $Hblk]").
-    { rewrite vec_to_list_length.
+    { rewrite length_vec_to_list.
       word. }
     iIntros "[Hsrc Hdst]".
     wp_apply wp_DPrintf.

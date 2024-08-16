@@ -365,7 +365,7 @@ Proof.
   iIntros (<-) "Ha".
   iDestruct (array_split n1 with "Ha") as "[Ha1 Ha2]".
   { word. }
-  { rewrite replicate_length.
+  { rewrite length_replicate.
     word. }
   rewrite take_replicate drop_replicate.
   rewrite -> Nat.min_l by word.
@@ -403,14 +403,14 @@ Proof.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
   iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
     first by word.
-  rewrite replicate_length.
+  rewrite length_replicate.
   iFrame.
   iSplitR.
   { iPureIntro. split; word. }
   iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
   iSplitR.
   { iPureIntro.
-    rewrite replicate_length.
+    rewrite length_replicate.
     simpl.
     word. }
   simpl. iModIntro.
@@ -444,14 +444,14 @@ Proof.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
   iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
     first by word.
-  rewrite replicate_length.
+  rewrite length_replicate.
   iFrame.
   iSplitR.
   { iPureIntro. split; word. }
   iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
   iSplitR.
   { iPureIntro.
-    rewrite replicate_length.
+    rewrite length_replicate.
     simpl.
     word. }
   simpl. iModIntro.
@@ -520,11 +520,11 @@ Proof.
     2: {
       iApply array_app. iFrame "Hsmall1".
       replace (uint.Z (Slice.sz s)) with (uint.Z n + length (drop (uint.nat n) vs)).
-      2: { rewrite drop_length. lia. }
+      2: { rewrite length_drop. lia. }
       rewrite Z.mul_add_distr_l -loc_add_assoc //.
     }
     iPureIntro.
-    rewrite app_length drop_length. lia.
+    rewrite length_app length_drop. lia.
 Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
@@ -540,13 +540,13 @@ Proof.
     + iExactEq "Ha1".
       repeat (f_equal; try word).
     + iPureIntro.
-      rewrite take_length.
+      rewrite length_take.
       word.
   - iSplit; simpl.
     + iExactEq "Ha2".
       repeat (f_equal; try word).
     + iPureIntro.
-      rewrite drop_length.
+      rewrite length_drop.
       word.
 Qed.
 
@@ -561,8 +561,8 @@ Proof.
   - iIntros "(Hs1 & Hs2)".
     iDestruct "Hs1" as "[Ha1 %Hlen1]".
     iDestruct "Hs2" as "[Ha2 %Hlen2]".
-    rewrite drop_length /= in Hlen1.
-    rewrite take_length /= in Hlen2.
+    rewrite length_drop /= in Hlen1.
+    rewrite length_take /= in Hlen2.
     iDestruct (array_split with "[$Ha1 $Ha2]") as "Ha"; try word.
     iFrame.
     iPureIntro.
@@ -573,7 +573,7 @@ Proof.
     rewrite Z2Nat.id; try word.
     iFrame.
     iPureIntro; simpl.
-    rewrite drop_length take_length; word.
+    rewrite length_drop length_take; word.
 Qed.
 
 Theorem own_slice_small_take_drop_1 s t q n vs :
@@ -767,21 +767,21 @@ Proof.
   set elen := (uint.nat n - uint.nat (s.(Slice.sz)))%nat.
   iApply ("HΦ" $! (take elen extra)).
   iSplit.
-  { iPureIntro. rewrite take_length. word. }
+  { iPureIntro. rewrite length_take. word. }
   rewrite -{1}(take_drop elen extra) array_app.
   iDestruct "Hextra" as "[He1 He2]".
   iSplitL "Hs He1".
   - rewrite /own_slice_small /= array_app. iDestruct "Hs" as "[$ _]".
     iSplit. { iExactEq "He1". word_eq. }
     iPureIntro. split; last word.
-    rewrite app_length take_length. word.
+    rewrite length_app length_take. word.
   - iExists _. iSplit; last first.
     + iExactEq "He2". f_equal.
       rewrite loc_add_assoc. f_equal.
-      rewrite take_length /slice_take /=.
+      rewrite length_take /slice_take /=.
       rewrite ->Nat.min_l by word.
       rewrite -Z.mul_add_distr_l. f_equal. word.
-    + iPureIntro. rewrite drop_length /slice_take /=. word.
+    + iPureIntro. rewrite length_drop /slice_take /=. word.
 Qed.
 
 Lemma wp_SliceSubslice Φ stk E s t (n1 n2: u64):
@@ -1061,7 +1061,7 @@ Proof.
     apply take_drop_middle in H0.
     replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
     assert (length (take (uint.nat i) vs) = uint.nat i) as Hivs.
-    { rewrite take_length. lia. }
+    { rewrite length_take. lia. }
     replace (drop (uint.nat i) vs) with (x :: drop (S (uint.nat i)) vs).
     2: {
       rewrite <- H0 at 2.
@@ -1210,12 +1210,12 @@ Proof.
   replace vs' with (take (uint.nat n1) vs' ++ drop (uint.nat n1) vs') at 1.
   2: { rewrite take_drop //. }
   iDestruct (array_app with "Hdst") as "[Hdst1 Hdst2]".
-  rewrite take_length. rewrite -> Nat.min_l by lia.
+  rewrite length_take. rewrite -> Nat.min_l by lia.
 
   rewrite -(take_drop (uint.nat n2 - uint.nat n1)%nat (drop (uint.nat n1) vs')).
   rewrite array_app.
-  rewrite take_length_le.
-  2: { rewrite drop_length. lia. }
+  rewrite length_take_le.
+  2: { rewrite length_drop. lia. }
   rewrite loc_add_typed_assoc.
   replace (uint.nat n1 + (uint.nat n2 - uint.nat n1)%nat) with (uint.Z n2) by word.
   iDestruct "Hdst2" as "[Hdst2 Hdst3]".
@@ -1224,7 +1224,7 @@ Proof.
   { iSplit.
     - iExactEq "Hdst2". f_equal. repeat f_equal; word.
     - iPureIntro.
-      rewrite take_length drop_length.
+      rewrite length_take length_drop.
       word. }
 
   iIntros "[Hdst2 Hsrc]".
@@ -1235,9 +1235,9 @@ Proof.
   { iPureIntro. word. }
   iSplitR "Hsrc".
   - iDestruct (array_combine with "Hdst1 Hdst2") as "Hdst".
-    { rewrite take_length; word. }
+    { rewrite length_take; word. }
     iDestruct (array_combine with "Hdst Hdst3") as "Hdst".
-    { rewrite app_length !take_length. word. }
+    { rewrite length_app !length_take. word. }
     iSplit.
     { iExactEq "Hdst".
       f_equal.
@@ -1248,7 +1248,7 @@ Proof.
       f_equal.
       word. }
     iPureIntro.
-    rewrite !app_length take_length drop_length.
+    rewrite !length_app length_take length_drop.
     word.
   - iFrame.
     iPureIntro. word.
@@ -1340,7 +1340,7 @@ Proof.
     iSplitL.
     2: { iPureIntro. word. }
     iSplitR.
-    { rewrite app_length Hlen /=.
+    { rewrite length_app Hlen /=.
       iPureIntro.
       (* XXX why twice? *)
       repeat word_cleanup.
@@ -1383,15 +1383,15 @@ Proof.
 
     wp_apply (wp_MemCpy_rec with "[$Halloc_sz $Hptr]").
     { iPureIntro.
-      rewrite replicate_length.
+      rewrite length_replicate.
       intuition try word.
-      rewrite app_length Hlen Hlen'.
+      rewrite length_app Hlen Hlen'.
       rewrite /slice_take /slice_skip /=. word.
     }
     iIntros "[Hvs Hsrc]".
     rewrite firstn_all2.
     2: {
-      rewrite app_length Hlen Hlen'.
+      rewrite length_app Hlen Hlen'.
       rewrite /slice_take /slice_skip /=. word.
     }
 
@@ -1427,14 +1427,14 @@ Proof.
         rewrite Hlen Hlen'.
         rewrite /slice_take /slice_skip /=. word.
       * iPureIntro.
-        rewrite app_length /=.
+        rewrite length_app /=.
         rewrite Hlen /slice_skip /=.
         word_cleanup. word_cleanup.
     }
 
     iExists (replicate (uint.nat cap - uint.nat s.(Slice.sz) - 1) (zero_val t)).
     iSplitR.
-    { rewrite replicate_length.
+    { rewrite length_replicate.
       iPureIntro.
       simpl.
       word_cleanup. word_cleanup. }
@@ -1590,7 +1590,7 @@ Proof.
   iSplitL.
   { iExactEq "Hptr"; word_eq. }
   iPureIntro.
-  rewrite insert_length; auto.
+  rewrite length_insert; auto.
 Qed.
 
 (* using full ownership of the slice *)

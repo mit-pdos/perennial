@@ -718,8 +718,8 @@ Proof.
     rewrite app_inv_tail_iff.
     symmetry. apply replicate_as_Forall.
     split.
-    { rewrite take_length_le; first done.
-      rewrite Hprefix app_length in Hub. lia.
+    { rewrite length_take_le; first done.
+      rewrite Hprefix length_app in Hub. lia.
     }
     rewrite Forall_forall.
     intros u Helem.
@@ -782,7 +782,7 @@ Proof.
     { (* value at [tid + 1] *)
       assert (Hgoal : ∃ v', diff !! (S tid - length phys)%nat = Some v').
       { apply list_lookup_lt.
-        rewrite Hprefix app_length in Hub. lia.
+        rewrite Hprefix length_app in Hub. lia.
       }
       destruct Hgoal as [v' Hgoal].
       apply Hdiff in Hgoal as Hv'.
@@ -793,8 +793,8 @@ Proof.
     rewrite app_inv_tail_iff.
     symmetry. apply replicate_as_Forall.
     split.
-    { rewrite take_length_le; first done.
-      rewrite Hprefix app_length in Hub. lia.
+    { rewrite length_take_le; first done.
+      rewrite Hprefix length_app in Hub. lia.
     }
     rewrite Forall_forall.
     intros u Helem.
@@ -816,7 +816,7 @@ Proof.
   split.
   { (* len *)
     unfold le_tids_mods in Hle_all.
-    rewrite app_length.
+    rewrite length_app.
     rewrite extend_length; last eauto.
     intros x Helem.
     assert (Helem' : x ∈ mods) by set_solver.
@@ -844,7 +844,7 @@ Proof.
     rewrite lookup_drop in Hlookup.
     apply Hdiff in Hlookup.
     rewrite Hlookup.
-    rewrite app_length.
+    rewrite length_app.
     rewrite extend_length; last eauto.
     rewrite (Nat.add_comm _ i).
     rewrite -(Nat.add_assoc i).
@@ -905,7 +905,7 @@ Proof.
       { unfold gt_tids_mods.
         apply (set_Forall_impl _ _ _ Hlen).
         intros x [_ H].
-        rewrite Hprefix app_length in H. lia.
+        rewrite Hprefix length_app in H. lia.
       }
       apply Hdiff.
       rewrite -Hlast'.
@@ -950,15 +950,15 @@ Proof.
     { rewrite set_Forall_singleton. simpl.
       split.
       - trans (length logi); last lia.
-        rewrite Hprefix app_length. lia.
-      - rewrite app_length. simpl.
+        rewrite Hprefix length_app. lia.
+      - rewrite length_app. simpl.
         apply Nat.le_lt_trans with (length (extend (S tid) logi)); last lia.
         apply extend_length_ge_n. eauto.
     }
     apply (set_Forall_impl _ _ _ Hlen).
     intros x [H1 H2].
     split; first lia.
-    rewrite app_length. simpl.
+    rewrite length_app. simpl.
     apply Nat.lt_le_trans with (length logi); first lia.
     apply Nat.le_trans with (length (extend (S tid) logi)); [apply extend_length_ge | lia].
   }
@@ -971,16 +971,16 @@ Proof.
       lia.
     }
     pose proof Hlb as Hlb'.
-    rewrite Hprefix app_length in Hlb'.
+    rewrite Hprefix length_app in Hlb'.
     destruct (decide (i < S tid - length phys)%nat); last first.
     { apply Nat.nle_gt in n.
       rewrite lookup_app_r in Hlookup; last lia.
       rewrite lookup_app_r in Hlookup; last first.
-      { rewrite replicate_length Hprefix app_length. lia. }
+      { rewrite length_replicate Hprefix length_app. lia. }
       rewrite list_lookup_singleton_Some in Hlookup.
       destruct Hlookup as [Hi Heq].
-      rewrite replicate_length in Hi.
-      rewrite Hprefix app_length in Hi.
+      rewrite length_replicate in Hi.
+      rewrite Hprefix length_app in Hi.
       assert (Hi' : (i + length phys = S tid)%nat) by lia.
       rewrite Hi'.
       rewrite (diff_val_at_S _ v); [done | | set_solver].
@@ -993,7 +993,7 @@ Proof.
     rewrite diff_val_at_add_max_le_max; [| done | done | lia].
     rewrite app_assoc in Hlookup.
     rewrite lookup_app_l in Hlookup; last first.
-    { rewrite app_length replicate_length Hprefix app_length. lia. }
+    { rewrite length_app length_replicate Hprefix length_app. lia. }
     destruct (decide (i < length diff)%nat).
     - apply Hdiff. by rewrite lookup_app_l in Hlookup; last auto.
     - apply not_lt in n.
@@ -1015,7 +1015,7 @@ Proof.
       { unfold gt_tids_mods.
         apply (set_Forall_impl _ _ _ Hlen).
         intros x [_ H].
-        rewrite Hprefix app_length in H. lia.
+        rewrite Hprefix length_app in H. lia.
       }
       apply Hdiff.
       rewrite -Hlast'.

@@ -266,8 +266,8 @@ Proof.
         iFrame "∗#".
         iPureIntro.
         split; first word.
-        rewrite replicate_length.
-        rewrite cons_length /= in Hreplicas_backup_len.
+        rewrite length_replicate.
+        rewrite length_cons /= in Hreplicas_backup_len.
         rewrite Hreplicas_sz in Hreplicas_backup_len.
         word.
       }
@@ -283,10 +283,10 @@ Proof.
       { (* continue with loop *)
         assert (uint.nat i < length backupγ) as Hi.
         { (* XXX: annoying proof *)
-          rewrite cons_length /= Hreplicas_sz in Hreplicas_backup_len.
-          rewrite replicate_length in Hnew_clerks_sz.
+          rewrite length_cons /= Hreplicas_sz in Hreplicas_backup_len.
+          rewrite length_replicate in Hnew_clerks_sz.
 
-          rewrite app_length in Hlen.
+          rewrite length_app in Hlen.
           rewrite HcompleteLen in Hlen.
           replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1) by word.
           rewrite Hreplicas_sz.
@@ -364,23 +364,23 @@ Proof.
         iFrame "∗".
         iSplitL; first iPureIntro.
         {
-          rewrite app_length /=.
+          rewrite length_app /=.
           word.
         }
         iSplitL; first iPureIntro.
         {
-          rewrite app_length.
-          rewrite app_length.
+          rewrite length_app.
+          rewrite length_app.
           simpl.
-          rewrite app_length in Hlen.
-          rewrite cons_length in Hlen.
+          rewrite length_app in Hlen.
+          rewrite length_cons in Hlen.
           word.
         }
         replace (take (length (clerksComplete ++ [ck])) backupγ)
           with
           ((take (length clerksComplete) backupγ) ++ [γsrv']); last first.
         {
-          rewrite app_length.
+          rewrite length_app.
           simpl.
           rewrite take_more; last first.
           { word. }
@@ -416,19 +416,19 @@ Proof.
       (* done with loop *)
       replace (clerksLeft) with ([]:list loc) in *; last first.
       {
-        rewrite app_length in Hlen.
+        rewrite length_app in Hlen.
         symmetry.
         apply nil_length_inv.
         rewrite HcompleteLen in Hlen.
         enough (uint.nat i ≥ length backupγ) by word.
-        rewrite cons_length in Hreplicas_backup_len.
+        rewrite length_cons in Hreplicas_backup_len.
         replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1); last first.
         { (* FIXME: why doesn't word work on is own? *)
           rewrite Hreplicas_backup_len.
           word.
         }
         rewrite Hreplicas_sz.
-        rewrite replicate_length in Hnew_clerks_sz.
+        rewrite length_replicate in Hnew_clerks_sz.
         assert (uint.nat i ≥ uint.nat new_clerks_sl.(Slice.sz)) by word.
         rewrite -Hnew_clerks_sz in H.
         replace (uint.nat replicas_sl.(Slice.sz) - 1) with (uint.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
@@ -487,18 +487,18 @@ Proof.
       iSplitR.
       {
         iPureIntro.
-        rewrite app_length.
+        rewrite length_app.
         simpl.
         word.
       }
       iSplitR.
       {
         iPureIntro.
-        rewrite app_length.
-        rewrite app_length.
+        rewrite length_app.
+        rewrite length_app.
         simpl.
-        rewrite app_length in Hlens.
-        rewrite cons_length in Hlens.
+        rewrite length_app in Hlens.
+        rewrite length_cons in Hlens.
         word.
       }
       iDestruct (big_sepL_app with "[Hclerkss_is]") as "$".
@@ -522,7 +522,7 @@ Proof.
 
     replace (clerkssLeft) with ([]:list (Slice.t)) in *; last first.
     {
-      rewrite app_length in Hlens.
+      rewrite length_app in Hlens.
       symmetry.
       apply nil_length_inv.
       rewrite HcompleteLens in Hlens.

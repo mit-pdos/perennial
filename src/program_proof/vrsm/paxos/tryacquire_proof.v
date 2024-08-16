@@ -208,7 +208,7 @@ Proof.
   iMod (ghost_replica_accept_same_epoch with "Hghost Hprop") as "[_ Hghost]".
   { word. }
   { simpl. done. }
-  { rewrite app_length. word. }
+  { rewrite length_app. word. }
   iMod "Hmask" as "_".
 
   iModIntro.
@@ -219,7 +219,7 @@ Proof.
     simpl.
     iFrame "∗#".
     iPureIntro.
-    rewrite app_length /=.
+    rewrite length_app /=.
     split_and!; try done; try word.
     { rewrite fmap_app last_app /= //. }
   }
@@ -293,7 +293,7 @@ Proof.
     iApply big_sepL2_forall.
     rewrite Hlen.
     iSplit.
-    { rewrite replicate_length. done. }
+    { rewrite length_replicate. done. }
     iIntros.
     iLeft.
     iPureIntro.
@@ -332,7 +332,7 @@ Proof.
         iFrame "Hargs Hprop HP".
         iPureIntro.
         split.
-        { rewrite app_length. simpl. word. }
+        { rewrite length_app. simpl. word. }
         { simpl. rewrite fmap_app last_app /= //. }
       }
       iIntros (reply_ptr reply) "Hreply".
@@ -781,7 +781,7 @@ Proof.
     destruct Hvalid as (_&σtail&Hvalid').
     subst.
     iDestruct (big_sepL2_length with "Hsaved'") as %Hlen.
-    rewrite ?fmap_length app_length in Hlen.
+    rewrite ?length_fmap length_app in Hlen.
 
     iAssert (_) with "Hsaved'" as "-#Hs".
     iFreeze "Hsaved'".
@@ -795,13 +795,13 @@ Proof.
 
     destruct (log !! (length σ)) eqn:HlookupFull.
     2:{ exfalso.
-        rewrite list_lookup_fmap fmap_length in Hlookup.
+        rewrite list_lookup_fmap length_fmap in Hlookup.
         rewrite Nat.add_0_r HlookupFull /= in Hlookup.
         done.
     }
     destruct p.
     assert (y1 = u); last subst.
-    { rewrite list_lookup_fmap fmap_length in Hlookup.
+    { rewrite list_lookup_fmap length_fmap in Hlookup.
       rewrite Nat.add_0_r HlookupFull /= in Hlookup. naive_solver. }
     iAssert (_) with "HQs" as "HQ".
     iSpecialize ("HQ" $! (take (S (length σ)) log) (take (length σ) log) _ with "[] []").

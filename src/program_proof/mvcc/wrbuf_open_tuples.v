@@ -52,7 +52,7 @@ Proof.
   iNamed "Hwrbuf".
   (* Obtain [own_slice_small] and eq about length of [ents]. *)
   iDestruct (own_slice_sz with "HentsS") as "%HentsLen".
-  rewrite fmap_length in HentsLen.
+  rewrite length_fmap in HentsLen.
   iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
   wp_loadField.
   wp_pures.
@@ -86,7 +86,7 @@ Proof.
     }
     wp_load.
     destruct (list_lookup_lt (wrent_to_val <$> ents') (uint.nat n)) as [ent Hlookup].
-    { rewrite fmap_length. word. }
+    { rewrite length_fmap. word. }
     wp_apply (wp_SliceGet with "[$HentsS]"); first done.
     iIntros "[HentsS %Hty]".
     wp_pures.
@@ -157,7 +157,7 @@ Proof.
       done.
     }
     split.
-    { rewrite Hlen. by rewrite insert_length. }
+    { rewrite Hlen. by rewrite length_insert. }
     { rewrite -Eqents.
       rewrite -insert_take_drop; last first.
       { rewrite -Hlen. word. }
@@ -224,7 +224,7 @@ Proof.
       }
       wp_load.
       destruct (list_lookup_lt (wrent_to_val <$> ents') (uint.nat m)) as [ent Hlookup].
-      { rewrite fmap_length. word. }
+      { rewrite length_fmap. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".
       apply val_to_wrent_with_val_ty in Hty as (k & v & w & t & Hent).
@@ -264,7 +264,7 @@ Proof.
         apply NoDup_cons in HNoDup as [Hnotin _]. simpl in Hnotin.
         rewrite -(take_drop (uint.nat n) ents') in Hnotin.
         rewrite drop_app_le in Hnotin; last first.
-        { rewrite take_length_le; first word. rewrite -Hlen. word. }
+        { rewrite length_take_le; first word. rewrite -Hlen. word. }
         clear -Hnotin. set_solver.
       }
       iDestruct "Htokens" as "[Htoken Htokens]".

@@ -340,7 +340,7 @@ Proof.
   wpc_pures.
   iDestruct (own_slice_small_sz with "Hss") as "%Hslicesz".
   iDestruct (big_sepL2_length with "Hs") as "%Hlen2".
-  rewrite fmap_length in Hslicesz.
+  rewrite length_fmap in Hslicesz.
   wpc_if_destruct.
   - wpc_pures.
     rewrite Z_u64 in Heqb; last by lia.
@@ -356,7 +356,7 @@ Proof.
 
     edestruct (list_lookup_lt bs (Z.to_nat idx)); first by lia.
     edestruct (list_lookup_lt (take (Z.to_nat idx) bs ++ drop (Z.to_nat idx) bs0) (Z.to_nat idx)).
-    { rewrite app_length drop_length -Hlen -drop_length -app_length take_drop. lia. }
+    { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
     iDestruct (big_sepL2_lookup_acc with "Hs") as "[Hblk Hs]"; eauto.
     iDestruct (big_sepL_insert_acc with "[Hdisk]") as "[Hdiskblk Hdisk]"; eauto.
 
@@ -375,13 +375,13 @@ Proof.
         iExists (Z.to_nat idx + 1)%nat.
         iExactEq "Hdisk". f_equal.
         rewrite insert_take_drop.
-        2: { rewrite app_length drop_length -Hlen -drop_length -app_length take_drop. lia. }
+        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
         rewrite take_app_le.
-        2: { rewrite take_length. lia. }
+        2: { rewrite length_take. lia. }
         rewrite take_idemp.
         rewrite drop_app_ge.
-        2: { rewrite take_length. lia. }
-        rewrite take_length_le.
+        2: { rewrite length_take. lia. }
+        rewrite length_take_le.
         2: { lia. }
         rewrite drop_drop.
         rewrite cons_middle.
@@ -400,13 +400,13 @@ Proof.
         iExists (Z.to_nat idx + 1)%nat.
         iExactEq "Hdisk". f_equal.
         rewrite insert_take_drop.
-        2: { rewrite app_length drop_length -Hlen -drop_length -app_length take_drop. lia. }
+        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
         rewrite take_app_le.
-        2: { rewrite take_length. lia. }
+        2: { rewrite length_take. lia. }
         rewrite take_idemp.
         rewrite drop_app_ge.
-        2: { rewrite take_length. lia. }
-        rewrite take_length_le.
+        2: { rewrite length_take. lia. }
+        rewrite length_take_le.
         2: { lia. }
         rewrite drop_drop.
         rewrite cons_middle.
@@ -428,13 +428,13 @@ Proof.
 
         iExactEq "Hdisk". f_equal.
         rewrite insert_take_drop.
-        2: { rewrite app_length drop_length -Hlen -drop_length -app_length take_drop. lia. }
+        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
         rewrite take_app_le.
-        2: { rewrite take_length. lia. }
+        2: { rewrite length_take. lia. }
         rewrite take_idemp.
         rewrite drop_app_ge.
-        2: { rewrite take_length. lia. }
-        rewrite take_length_le.
+        2: { rewrite length_take. lia. }
+        rewrite length_take_le.
         2: { lia. }
         rewrite drop_drop.
         rewrite cons_middle.
@@ -630,7 +630,7 @@ Proof.
       rewrite lookup_drop in H.
       assert (crashidx < length bs).
       { apply lookup_lt_Some in H. lia. }
-      rewrite take_length_le; last by lia.
+      rewrite length_take_le; last by lia.
       specialize (Hbs_ds (crashidx + i)%nat b H). rewrite -Hbs_ds. f_equal. lia.
   - iModIntro. iIntros "(Hss & Hs & Hd)".
     iRight in "HΦ". iApply "HΦ". iFrame.

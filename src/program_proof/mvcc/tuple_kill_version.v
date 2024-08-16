@@ -149,7 +149,7 @@ Proof.
         destruct (decide (uint.Z tidx ≤ uint.Z tid)).
         + (* Reading the old value. *)
           rewrite lookup_app_l; last first.
-          { rewrite HlenN replicate_length. word. }
+          { rewrite HlenN length_replicate. word. }
           rewrite lookup_replicate_2; last word.
           f_equal.
           rewrite (spec_lookup_snoc_l _ _ _ tid); [| auto | word].
@@ -157,11 +157,11 @@ Proof.
         + (* Reading the new value. *)
           apply Znot_le_gt in n0.
           rewrite lookup_app_r; last first.
-          { rewrite HlenN replicate_length. word. }
+          { rewrite HlenN length_replicate. word. }
           replace (uint.Z (W64 _)) with (uint.Z tid + 1) in Htidx by word.
           assert (Etidx : uint.Z tidx = uint.Z tid + 1) by word.
           replace (uint.nat tidx - _ - _)%nat with 0%nat; last first.
-          { rewrite replicate_length. word. }
+          { rewrite length_replicate. word. }
           simpl. f_equal.
           rewrite (spec_lookup_snoc_r _ _ _ tid); [done | auto | word].
     }
@@ -178,8 +178,8 @@ Proof.
     { (* Prove [HvchainLen]. *)
       iPureIntro.
       subst phys'.
-      do 2 rewrite app_length.
-      rewrite HlenN replicate_length singleton_length. word.
+      do 2 rewrite length_app.
+      rewrite HlenN length_replicate singleton_length. word.
     }
     iSplit; first done.
     { (* Prove [Hwellformed]. *)

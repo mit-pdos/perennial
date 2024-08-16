@@ -329,7 +329,7 @@ Proof.
       rewrite <- app_assoc.
       f_equal.
       rewrite <- IHtxn_id; auto.
-      rewrite cons_length in H.
+      rewrite length_cons in H.
       lia.
 Qed.
 
@@ -1121,7 +1121,7 @@ Proof using walheapG0.
   iSplitR "Hpossible_heaps"; last first.
   { rewrite /wal_heap_inv_crashes /=.
     iEval (rewrite /possible).
-    rewrite /possible/= in Hcrashes_complete. rewrite app_length Hcrashes_complete /= app_length.
+    rewrite /possible/= in Hcrashes_complete. rewrite length_app Hcrashes_complete /= length_app.
     iSplitL ""; first by eauto.
     rewrite big_sepL_app big_sepL_cons /=.
     iEval (rewrite /possible/=) in "Hpossible_heaps". iFrame.
@@ -1137,7 +1137,7 @@ Proof using walheapG0.
     intros a.
     symmetry.
     simpl. rewrite firstn_all2; last first.
-    { rewrite app_length /=. lia. }
+    { rewrite length_app /=. lia. }
     rewrite txn_upds_app. rewrite apply_upds_app /=.
     rewrite /txn_upds/= app_nil_r.
     eapply apply_upds_apply_upds_u64.
@@ -1298,7 +1298,7 @@ Proof using walheapG0.
         {
           etransitivity; last eapply Heqo.
           edestruct (lookup_lt_is_Some_2 ((disks1 ++ [curr]) ++ disks2) txn_id) as (σ&Hget_σ).
-          { rewrite app_length. lia. }
+          { rewrite length_app. lia. }
           symmetry. etransitivity; last eapply (Hnoupd σ txn_id); try lia.
           { eapply Hdisk_at; eassumption. }
           { rewrite lookup_app_l in Hget_σ; eauto. }
@@ -1355,7 +1355,7 @@ Proof using walheapG0.
   { apply take_prefix_le. lia. }
   iMod ("Hfupd" $! (possible crash_heaps) (take new_durable (possible crash_heaps))
           with "[$Hcrash_all_auth $Hcrash_durable_auth]") as "(?&?&$)".
-  { iPureIntro. rewrite take_length_le; lia. }
+  { iPureIntro. rewrite length_take_le; lia. }
   iModIntro.
   iExists _. iFrame.
   iPureIntro.

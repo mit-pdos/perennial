@@ -70,12 +70,12 @@ Proof.
   - iExists e2', (t2' ++ efs). iModIntro. iSplitR; first by eauto.
     iMod (wpc_step with "Hσ Hg He HNC Hlc") as "H"; first done. iModIntro.
     iApply (step_fupd2N_wand with "H"). iIntros ">(Hσ & Hg & He2 & Hefs) !>".
-    rewrite Nat.add_comm app_length. by iFrame.
+    rewrite Nat.add_comm length_app. by iFrame.
   - iExists e, (t1' ++ e2' :: t2' ++ efs); iSplitR; first eauto.
     iDestruct "Ht" as "(Ht1 & He1 & Ht2)".
     iModIntro. iMod (wpc_step with "Hσ Hg He1 HNC Hlc") as "H"; first done. iModIntro.
     iApply (step_fupd2N_wand with "H"). iIntros ">(Hσ & Hg & He2 & Hefs) !>".
-    rewrite !app_length /= !app_length.
+    rewrite !length_app /= !length_app.
     replace (length t1' + S (length t2' + length efs))
       with (length efs + (length t1' + S (length t2'))) by lia. by iFrame.
 Qed.

@@ -108,8 +108,8 @@ Section proof.
     rewrite /bufObj_to_obj.
     destruct (objData o).
     - reflexivity.
-    - rewrite /objSz vec_to_list_length //.
-    - rewrite /objSz vec_to_list_length //.
+    - rewrite /objSz length_vec_to_list //.
+    - rewrite /objSz length_vec_to_list //.
   Qed.
 
   Lemma data_has_obj_wf data a o :
@@ -123,10 +123,10 @@ Section proof.
       rewrite /= /block_bytes.
       lia.
     - rewrite /data_has_obj /= in Hdata.
-      rewrite -Hdata vec_to_list_length /inode_bytes /block_bytes.
+      rewrite -Hdata length_vec_to_list /inode_bytes /block_bytes.
       lia.
     - rewrite /data_has_obj /= in Hdata.
-      rewrite -Hdata vec_to_list_length.
+      rewrite -Hdata length_vec_to_list.
       lia.
   Qed.
 
@@ -629,7 +629,7 @@ Section proof.
     wp_pures.
     wp_apply ("IH" with "[] [] [] Hslice").
     1: iPureIntro; assumption.
-    1: iPureIntro; rewrite app_length /=; lia.
+    1: iPureIntro; rewrite length_app /=; lia.
     1: iPureIntro; apply Forall_cons_1 in Hty as [_ Hty]; assumption.
     iIntros (?) "?".
     iNamed.
@@ -655,7 +655,7 @@ Section proof.
     wp_apply wp_new_slice; first by assumption.
     iIntros (s) "Hslice".
     wp_apply (wp_ListToSliceApp with "Hslice");
-      [assumption|rewrite replicate_length; word|assumption|].
+      [assumption|rewrite length_replicate; word|assumption|].
     iIntros (?) "?".
     iNamed.
     iApply "HΦ".

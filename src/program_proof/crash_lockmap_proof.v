@@ -788,7 +788,7 @@ Proof.
     iExists _, _.
     iFrame "Hvar Hslice".
     iSplitR.
-    { rewrite app_length Hlen /=. word. }
+    { rewrite length_app Hlen /=. word. }
     iModIntro.
     iApply big_sepL_app.
     iFrame. eauto.
@@ -834,7 +834,7 @@ Proof.
   rewrite seqZ_S. rewrite ?big_sepL_app.
   iSplit.
   - iDestruct 1 as "(H1&H2)".
-    rewrite app_length in Hlen.
+    rewrite length_app in Hlen.
     iSplitL "H1".
     { iApply "IH".
       { iPureIntro. simpl in Hlen; lia. }
@@ -842,7 +842,7 @@ Proof.
     rewrite ?big_sepL_singleton.
     iExactEq "H2". f_equal. simpl in Hlen. lia.
   - iDestruct 1 as "(H1&H2)".
-    rewrite app_length in Hlen.
+    rewrite length_app in Hlen.
     iSplitL "H1".
     { iApply "IH"; iFrame.
       { iPureIntro. simpl in Hlen; lia. }

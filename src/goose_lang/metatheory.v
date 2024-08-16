@@ -174,7 +174,7 @@ Proof.
     apply map_Forall_insert_2; auto.
     apply lookup_union_Some in Hix; last first.
     { eapply heap_array_map_disjoint. rewrite fmap_replicate.
-        rewrite replicate_length Z2Nat.id; auto with lia. }
+        rewrite length_replicate Z2Nat.id; auto with lia. }
     destruct Hix as [Hlook|[j Hj]%elem_of_map_to_list%elem_of_list_lookup_1].
     + eapply heap_array_lookup in Hlook as (?&?&?&Hlook).
       rewrite list_lookup_fmap in Hlook.

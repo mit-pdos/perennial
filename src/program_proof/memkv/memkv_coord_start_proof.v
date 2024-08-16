@@ -176,7 +176,7 @@ Proof.
       iApply ("IH" $! _ (typed_map.map_insert
                   (typed_map.map_insert hostShards' v (word.sub (word.add (word.divu 65536 _) 1) 1))
                   x (word.add v' 1)) with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
-      { iPureIntro. rewrite insert_length. eauto. }
+      { iPureIntro. rewrite length_insert. eauto. }
       { iPureIntro. intros i Hlt.
         destruct (decide (i = k)).
         { subst. rewrite list_lookup_insert; eauto.
@@ -235,7 +235,7 @@ Proof.
       iThaw "IH".
       iDestruct ("Hclerk_clo" with "[$]") as "Hclerk".
       iApply ("IH" $! _ _ with "[] [] [$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
-      { iPureIntro. rewrite insert_length. eauto. }
+      { iPureIntro. rewrite length_insert. eauto. }
       { iPureIntro. intros i Hlt.
         destruct (decide (i = k)).
         { subst. rewrite list_lookup_insert; eauto.

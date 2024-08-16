@@ -58,7 +58,7 @@ Section cmra_mlist.
     intros l1 l2 Hpre1 Hpre2.
     destruct Hpre1 as (D1'&Hpre1). destruct Hpre2 as (D2'&Hpre2).
     rewrite Hpre2 in Hpre1.
-    apply (f_equal (length)) in Hpre1. rewrite ?app_length in Hpre1.
+    apply (f_equal (length)) in Hpre1. rewrite ?length_app in Hpre1.
     destruct D2', D1'; simpl in Hpre1; try lia.
     by rewrite Hpre2 right_id.
   Qed.

@@ -114,7 +114,7 @@ Proof.
   destruct v as [|a]; [naive_solver|].
   (* TODO: why doesn't list_simplifier or solve_length take care of this? *)
   apply (f_equal length) in Heq.
-  rewrite app_length in Heq.
+  rewrite length_app in Heq.
   simpl in *.
   lia.
 Qed.

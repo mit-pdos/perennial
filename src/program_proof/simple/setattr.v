@@ -200,7 +200,7 @@ Proof using Ptimeless.
       wp_apply (wp_Inode__Write with "[$Hjrnl_mem $Hinum $Hisize $Hidata $Hinode_data $Hinode_enc Hzeros]").
       { iDestruct (own_slice_to_small with "Hzeros") as "$".
         iPureIntro. intuition eauto.
-        rewrite replicate_length. done.
+        rewrite length_replicate. done.
       }
 
       iIntros (wcount ok) "[Hjrnl_mem [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
@@ -221,7 +221,7 @@ Proof using Ptimeless.
           iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
           exfalso.
           revert Heqb. word_cleanup. intros.
-          revert H0. rewrite replicate_length. word_cleanup. intros.
+          revert H0. rewrite length_replicate. word_cleanup. intros.
           apply Heqb0. rewrite Z.max_r; last by lia. word_cleanup.
           f_equal. f_equal. word.
         }
@@ -269,9 +269,9 @@ Proof using Ptimeless.
               iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
               iApply (big_sepM_insert_delete with "[$H1]").
               iPureIntro.
-              rewrite app_length replicate_length.
-              rewrite replicate_length in H0.
-              rewrite take_length_ge.
+              rewrite length_app length_replicate.
+              rewrite length_replicate in H0.
+              rewrite length_take_ge.
               2: { revert Heqb. word. }
               revert H0.
               word.
@@ -284,7 +284,7 @@ Proof using Ptimeless.
             rewrite -> Z.max_r in Heqb0 by word.
             rewrite -Heqb0. word_cleanup.
             rewrite -> Z.max_r by word.
-            rewrite !app_length !replicate_length take_length_ge.
+            rewrite !length_app !length_replicate length_take_ge.
             2: word.
             replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
             replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
@@ -293,7 +293,7 @@ Proof using Ptimeless.
             replace (Z.to_nat (length state)) with (length state) by lia.
             rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
             rewrite drop_ge; last by lia. rewrite app_nil_r.
-            rewrite firstn_all2. 2: rewrite replicate_length; lia.
+            rewrite firstn_all2. 2: rewrite length_replicate; lia.
             replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
             iFrame.
           }
@@ -330,9 +330,9 @@ Proof using Ptimeless.
               iDestruct (big_sepM_delete with "Hnooverflow") as "[H0 H1]"; eauto.
               iApply (big_sepM_insert_delete with "[$H1]").
               iPureIntro.
-              rewrite app_length replicate_length.
-              rewrite replicate_length in H0.
-              rewrite take_length_ge.
+              rewrite length_app length_replicate.
+              rewrite length_replicate in H0.
+              rewrite length_take_ge.
               2: { revert Heqb. word. }
               revert H0.
               word.
@@ -350,7 +350,7 @@ Proof using Ptimeless.
               rewrite -> Z.max_r in Heqb0 by word.
               rewrite -Heqb0. word_cleanup.
               rewrite -> Z.max_r by word.
-              rewrite !app_length !replicate_length take_length_ge.
+              rewrite !length_app !length_replicate length_take_ge.
               2: word.
               replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
               replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
@@ -359,7 +359,7 @@ Proof using Ptimeless.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
-              rewrite firstn_all2. 2: rewrite replicate_length; lia.
+              rewrite firstn_all2. 2: rewrite length_replicate; lia.
               replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
               iFrame. }
 
@@ -378,7 +378,7 @@ Proof using Ptimeless.
               rewrite -> Z.max_r in Heqb0 by word.
               rewrite -Heqb0. word_cleanup.
               rewrite -> Z.max_r by word.
-              rewrite !app_length !replicate_length take_length_ge.
+              rewrite !length_app !length_replicate length_take_ge.
               2: word.
               replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
               replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
@@ -387,7 +387,7 @@ Proof using Ptimeless.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
-              rewrite firstn_all2. 2: rewrite replicate_length; lia.
+              rewrite firstn_all2. 2: rewrite length_replicate; lia.
               replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
               iFrame. }
 

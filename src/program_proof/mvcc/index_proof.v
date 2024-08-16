@@ -204,7 +204,7 @@ Proof.
   wp_loadField.
   iMod (readonly_load with "HbktsL") as (q) "HbktsS".
   iDestruct (own_slice_small_sz with "HbktsS") as "%HbktsSz".
-  rewrite fmap_length in HbktsSz.
+  rewrite length_fmap in HbktsSz.
   set P := (λ (_ : u64), ∃ keysS (keys : list u64),
                "HkeysR" ∷ keysR ↦[slice.T uint64T] (to_val keysS) ∗
                "HkeysS" ∷ own_slice keysS uint64T (DfracOwn 1) (to_val <$> keys))%I.
@@ -414,7 +414,7 @@ Proof.
     { iPureIntro.
       split; last auto.
       apply lookup_lt_is_Some.
-      rewrite fmap_length. word.
+      rewrite length_fmap. word.
     }
     iIntros "HbktsS".
     wp_pures.
@@ -446,7 +446,7 @@ Proof.
     }
     iExists _.
     iFrame.
-    rewrite insert_length.
+    rewrite length_insert.
     iSplit; first done.
     replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
     rewrite (take_S_r _ _ bkt); last first.
@@ -455,8 +455,8 @@ Proof.
     iSplitL "HbktsRP".
     { by rewrite take_insert; last auto. }
     iApply (big_sepL_singleton).
-    rewrite take_length_le; last first.
-    { rewrite insert_length. word. }
+    rewrite length_take_le; last first.
+    { rewrite length_insert. word. }
     replace (uint.nat i + 0)%nat with (uint.nat i); last word.
     rewrite /is_index_bucket.
     eauto 10 with iFrame.

@@ -117,7 +117,7 @@ Proof.
   iApply "HΦ".
   iFrame.
   iPureIntro.
-  rewrite replicate_length.
+  rewrite length_replicate.
   word.
 Qed.
 

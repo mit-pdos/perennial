@@ -103,7 +103,7 @@ Local Ltac solve_atomic2 :=
     own_slice_small s byteT q data.
   Proof.
     iIntros (? Hlen) "Hl". rewrite /own_slice_small /slice.own_slice_small. iSplit; last first.
-    { iPureIntro. rewrite /list.untype fmap_length. auto. }
+    { iPureIntro. rewrite /list.untype length_fmap. auto. }
     rewrite /array.array /pointsto_vals.
     change (list.untype data) with (data_vals data).
     iApply (big_sepL_impl with "Hl"). iIntros "!#" (i v Hv) "Hl".

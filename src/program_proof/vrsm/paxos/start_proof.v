@@ -98,7 +98,7 @@ Proof.
     iApply "HΦ".
     repeat iExists _; iFrame.
     iSplitL.
-    2:{ iPureIntro. rewrite app_length. simpl. word. }
+    2:{ iPureIntro. rewrite length_app. simpl. word. }
     replace (uint.nat (word.add i 1%Z)) with (S (uint.nat i)) by word.
     erewrite take_S_r; last done.
     iApply (big_sepL2_app with "[$]").

@@ -96,7 +96,7 @@ Section grove.
     rewrite own_slice_unseal /own_slice_def /pointsto_vals.
     iIntros "Hl". simpl.
     iSplitL.
-    2:{ iPureIntro. rewrite /data_vals fmap_length /=. word. }
+    2:{ iPureIntro. rewrite /data_vals length_fmap /=. word. }
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros "* % Hp". rewrite go_type_size_unseal /= left_id.
     rewrite typed_pointsto_unseal /typed_pointsto_def.
@@ -127,7 +127,7 @@ Section grove.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     { solve_atomic2. }
     cbn in *.
-    rewrite /data_vals fmap_length in Hlen.
+    rewrite /data_vals length_fmap in Hlen.
     wp_apply (wp_SendOp with "[$Hc Hs]").
     { done. }
     { iApply (own_slice_to_pointsto_vals with "[$]"). }
@@ -232,7 +232,7 @@ Section grove.
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
-    rewrite /data_vals fmap_length in Hlen.
+    rewrite /data_vals length_fmap in Hlen.
     wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
     { iApply own_slice_to_pointsto_vals. done. }
     iIntros (err) "[Hf Hs]".
@@ -270,7 +270,7 @@ Section grove.
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
-    rewrite /data_vals fmap_length in Hlen.
+    rewrite /data_vals length_fmap in Hlen.
     wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
     { iApply own_slice_to_pointsto_vals. done. }
     iIntros (err) "[Hf Hs]".

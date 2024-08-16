@@ -76,7 +76,7 @@ Proof using waitgroupG0.
     iDestruct "His_conf" as "(_ & _ & %Hconfγ_nz)".
     iDestruct (big_sepL2_length with "His_hosts") as %Heq.
     iPureIntro.
-    rewrite fmap_length in Hconfγ_nz.
+    rewrite length_fmap in Hconfγ_nz.
     word.
   }
   iMod (readonly_load with "Hconf_sl") as (?) "Hconf_sl2".
@@ -188,7 +188,7 @@ Proof using waitgroupG0.
   rewrite -Hservers_sz.
   iDestruct (own_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
   iDestruct (own_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
-  rewrite replicate_length in Hclerks_sz.
+  rewrite length_replicate in Hclerks_sz.
   simpl.
   wp_apply (wp_ref_to).
   { eauto. }
@@ -213,7 +213,7 @@ Proof using waitgroupG0.
     iFrame "∗#".
     iPureIntro.
     split; first word.
-    apply replicate_length.
+    apply length_replicate.
   }
   wp_forBreak_cond.
 
@@ -264,7 +264,7 @@ Proof using waitgroupG0.
     iSplitR.
     {
       iPureIntro.
-      rewrite app_length.
+      rewrite length_app.
       simpl.
       word.
     }
@@ -278,11 +278,11 @@ Proof using waitgroupG0.
     iSplitR.
     {
       iPureIntro.
-      rewrite app_length.
-      rewrite app_length.
+      rewrite length_app.
+      rewrite length_app.
       simpl.
       rewrite -Hlen.
-      rewrite app_length.
+      rewrite length_app.
       simpl.
       word.
     }
@@ -301,7 +301,7 @@ Proof using waitgroupG0.
         f_equal.
       }
     }
-    rewrite app_length.
+    rewrite length_app.
     simpl.
     iDestruct (big_sepL2_length with "Hhost") as %Hserver_len_eq.
     rewrite take_more; last first.
@@ -314,8 +314,8 @@ Proof using waitgroupG0.
       apply ListSolver.list_eq_bounded.
       {
         simpl.
-        rewrite take_length.
-        rewrite drop_length.
+        rewrite length_take.
+        rewrite length_drop.
         word.
       }
       intros.
@@ -343,7 +343,7 @@ Proof using waitgroupG0.
   assert (uint.nat i = length servers) as Hi_done.
   {
     rewrite Hclerks_sz.
-    rewrite app_length in Hlen.
+    rewrite length_app in Hlen.
     word.
   }
 
@@ -357,7 +357,7 @@ Proof using waitgroupG0.
       apply nil_length_inv.
       done.
     }
-    rewrite app_length in Hlen.
+    rewrite length_app in Hlen.
     word.
   }
   wp_apply (wp_NewWaitGroup_free).
@@ -507,7 +507,7 @@ Proof using waitgroupG0.
         iSplitR.
         {
           iPureIntro; split.
-          { rewrite fmap_length //. destruct server_γs.
+          { rewrite length_fmap //. destruct server_γs.
             { exfalso. rewrite take_nil /= // in Hlookup2. }
             simpl. lia.
           }
@@ -614,7 +614,7 @@ Proof using waitgroupG0.
   wp_load.
   wp_apply (wp_slice_len).
 
-  rewrite replicate_length in Herrs_sz.
+  rewrite length_replicate in Herrs_sz.
   rewrite -Hclerks_sz in Herrs_sz.
   rewrite app_nil_r in Hlen.
 
@@ -740,7 +740,7 @@ Proof using waitgroupG0.
   wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hres Hhost").
   {
     iPureIntro.
-    rewrite fmap_length.
+    rewrite length_fmap.
     (* FIXME: why manually rewrite instead of `word`? *)
     rewrite Hserver_len_eq.
     word.
@@ -753,7 +753,7 @@ Proof using waitgroupG0.
 
     assert (i < length server_γs).
     {
-      erewrite <- fmap_length.
+      erewrite <- length_fmap.
       apply lookup_lt_is_Some_1.
       eexists. done.
     }

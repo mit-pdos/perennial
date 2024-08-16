@@ -625,7 +625,7 @@ Section na_heap.
           rewrite addr_plus_plus in Hplus.
           apply (inj (addr_plus_off l)) in Hplus.
           apply lookup_lt_Some in Hlookup.
-          rewrite fmap_length in Hlookup.
+          rewrite length_fmap in Hlookup.
           simpl in *. lia.
         * eauto.
       }

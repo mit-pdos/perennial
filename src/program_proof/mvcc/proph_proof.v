@@ -164,7 +164,7 @@ Proof.
   iDestruct (own_slice_small_sz with "HentsS") as %HentsLen.
   rewrite -HentsLen in Hm'. clear HentsLen.
   rewrite take_ge in Hm'.
-  2:{ rewrite fmap_length. done. }
+  2:{ rewrite length_fmap. done. }
   rewrite -Hmods in Hm'. subst m'.
   wp_apply (wp_load with "Hl"). iIntros "Hl".
   iApply "HΦ".

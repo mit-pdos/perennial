@@ -70,7 +70,7 @@ Proof.
     iPureIntro.
     rewrite /is_hdr_block /block_encodes.
     rewrite list_to_block_to_list; eauto.
-    rewrite vec_to_list_length //.
+    rewrite length_vec_to_list //.
   }
   simpl in Hsz.
   apply (inj uint.Z); word.
@@ -441,7 +441,7 @@ Proof.
     wpc_pures.
     { crash_case. iExists _; iFrame.
       iPureIntro.
-      rewrite app_length take_length drop_length; lia. }
+      rewrite length_app length_take length_drop; lia. }
     destruct (list_lookup_Z_lt bs0 (uint.Z i)) as [b0_z Hlookup_b0]; first word.
     destruct (list_lookup_Z_lt bs (uint.Z i)) as [b_z Hlookup_b]; first word.
     iDestruct (big_sepL2_lookup_acc _ _ _ (uint.nat i) with "Hbks")
@@ -450,7 +450,7 @@ Proof.
     wpc_pures.
     { crash_case. iExists _; iFrame.
       iPureIntro.
-      rewrite app_length take_length drop_length; lia. }
+      rewrite length_app length_take length_drop; lia. }
 
     wpc_apply (wpc_WriteArray with "[$Hd $Hbsz] [Hbs_rest HΦ']").
     + iPureIntro.
@@ -507,7 +507,7 @@ Proof.
   rewrite H.
   iExists _; iFrame.
   iPureIntro.
-  rewrite app_length; lia.
+  rewrite length_app; lia.
 Qed.
 
 Lemma is_log'_append (sz new_elems disk_sz: u64) bs0 bs free :

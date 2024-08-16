@@ -250,7 +250,7 @@ Proof.
     wp_apply (wp_ReadInt with "Hs"). iIntros (s'') "Hs".
     iDestruct (own_slice_small_sz with "Hs") as %Hdatasz.
     wp_apply (wp_ReadBytesCopy with "Hs").
-    { rewrite !app_length in Hdatasz. word. }
+    { rewrite !length_app in Hdatasz. word. }
     iIntros (sl s''') "[Hval Hs]". wp_store. clear s s' s'' Hdatasz.
     wp_apply (wp_byteMapPut with "[$Hm Hval]").
     { iDestruct (own_slice_to_small with "Hval") as "$". }

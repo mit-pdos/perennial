@@ -366,7 +366,7 @@ Proof.
   { iDestruct "Hsch_equiv" as %Heq. iPureIntro. move:Heq => //=. congruence. }
   iDestruct (list_equivI_length with "Hequiv") as %Hlen.
   iSplit.
-  { iPureIntro. move: Hlen. rewrite ?fmap_length vec_to_list_to_vec //=. }
+  { iPureIntro. move: Hlen. rewrite ?length_fmap vec_to_list_to_vec //=. }
   rewrite list_equivI_1. iIntros (j).
   iSpecialize ("Hequiv" $! j).
   rewrite ?list_lookup_fmap vec_to_list_to_vec.
@@ -437,9 +437,9 @@ Proof.
   iDestruct (list_equivI_length with "Hequiv") as %Hlen.
   iDestruct (list_equivI_length with "Hequiv_mut") as %Hlen_mut.
   iSplit.
-  { iPureIntro. move: Hlen. rewrite ?fmap_length vec_to_list_to_vec //=. }
+  { iPureIntro. move: Hlen. rewrite ?length_fmap vec_to_list_to_vec //=. }
   iSplit.
-  { iPureIntro. move: Hlen_mut. rewrite ?fmap_length vec_to_list_to_vec //=. }
+  { iPureIntro. move: Hlen_mut. rewrite ?length_fmap vec_to_list_to_vec //=. }
   rewrite ?list_equivI_1.
   iSplitL "Hequiv HI".
   - iIntros (j).
@@ -486,9 +486,9 @@ Proof.
     rewrite ?HeqQ ?HeqP //=.
     * rewrite later_equivI. iNext. by iRewrite "HPQ".
     * exfalso. apply lookup_ge_None_1 in HeqP. apply lookup_lt_Some in HeqQ.
-      rewrite ?vec_to_list_length in HeqQ HeqP. lia.
+      rewrite ?length_vec_to_list in HeqQ HeqP. lia.
     * exfalso. apply lookup_ge_None_1 in HeqQ. apply lookup_lt_Some in HeqP.
-      rewrite ?vec_to_list_length in HeqQ HeqP. lia. }
+      rewrite ?length_vec_to_list in HeqQ HeqP. lia. }
   iRewrite "Heq".
   iExact "Hown".
 Qed.
@@ -600,7 +600,7 @@ Proof.
     iSplitL "HP".
     { by iApply (bi_schema_interp_ctx_later with "HPQ HPQ_mut"). }
     iApply (ownI_mut_later _ _ _ Ps_mut (list_to_vec Qs_mut)).
-    { rewrite -(vec_to_list_length Ps_mut). auto. }
+    { rewrite -(length_vec_to_list Ps_mut). auto. }
     { iIntros (j). rewrite vec_to_list_to_vec. iNext. by iRewrite ("HPQ_mut" $! j). }
     iExists _, _. iFrame "Hidx2"; eauto.
 Qed.
@@ -689,7 +689,7 @@ Proof.
   (* XXX: this pattern is repeated a few times in other proofs. prove a lemma *)
   iDestruct (list_equivI_length with "Hagree") as %Hlen.
   iSplitL "".
-  { iPureIntro. rewrite ?fmap_length ?vec_to_list_length //= in Hlen. }
+  { iPureIntro. rewrite ?length_fmap ?length_vec_to_list //= in Hlen. }
   rewrite ?list_equivI_1. iIntros (j). iSpecialize ("Hagree" $! j).
   rewrite ?list_lookup_fmap ?vec_to_list_to_vec.
   rewrite option_equivI.
@@ -881,7 +881,7 @@ Proof.
   - iModIntro; iExists []. rewrite ?right_id. by iFrame.
   - iMod ("IH" with "[$] [$]") as (l' Hlen) "(Hw&Hlist)".
     iMod (wsat_alloc_new_level with "[$] [$]") as (γ) "(Hlist&Hw)".
-    iExists (l' ++ [γ]). rewrite ?app_length //=.
+    iExists (l' ++ [γ]). rewrite ?length_app //=.
     rewrite app_assoc. iFrame.
     replace (length l + (length l' + 1)) with (S (length l + length l')) by lia; iFrame.
     iPureIntro. lia.
@@ -895,7 +895,7 @@ Proof.
   iDestruct 1 as (l) "(Hw&Hlist)".
   iMod (wsat_alloc_new_levels l (n - length l) with "[$] [$]") as (l' Hlen) "(Hlist&Hw)".
   iDestruct (wsat_le_acc n with "[$]") as "($&Hclo)"; first auto.
-  { rewrite app_length. lia. }
+  { rewrite length_app. lia. }
   iIntros "!> Hw". iExists _. iFrame. by iApply "Hclo".
 Qed.
 

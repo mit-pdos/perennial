@@ -324,7 +324,7 @@ Proof.
   - destruct t; iDestruct "Hval" as %Hval;
     repeat destruct Hval as (?&Hval); subst; eauto.
   - iDestruct "Hval" as (???? (?&?)) "(H1&H2)". subst.
-    rewrite /= ?app_length.
+    rewrite /= ?length_app.
     destruct Hstore as (?&?).
     iDestruct ("IH" with "[//] [$]") as %[Heq1 Heq2].
     iDestruct ("IH1" with "[//] [$]") as %[Heq1' Heq2'].
@@ -1909,7 +1909,7 @@ Proof using spec_trans.
     {
       iRight.
       iDestruct "Hoob" as %Hoob. iPureIntro.
-      rewrite ?addr_offset_of_plus drop_length. lia.
+      rewrite ?addr_offset_of_plus length_drop. lia.
     }
   - subst.
     iIntros (j K Hctx) "Hj". simpl.

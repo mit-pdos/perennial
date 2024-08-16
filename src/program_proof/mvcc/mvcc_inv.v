@@ -445,7 +445,7 @@ Proof.
     by rewrite last_snoc.
   }
   { (* Prove an upper bound of the length of logical tuple. *)
-    rewrite app_length. simpl.
+    rewrite length_app. simpl.
     rewrite extend_length; first lia.
     by eapply tuple_mods_rel_last_logi.
   }

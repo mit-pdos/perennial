@@ -30,7 +30,7 @@ Section lemmas.
 
   Lemma extend_length n x l :
     length (extend n x l) = (n - length l + length l)%nat.
-  Proof. rewrite app_length replicate_length. lia. Qed.
+  Proof. rewrite length_app length_replicate. lia. Qed.
 
   Lemma extend_length_ge_n n x l :
     (n ≤ length (extend n x l))%nat.
@@ -118,7 +118,7 @@ Section lemmas.
     destruct (last l) as [x |] eqn:Hlast; last by rewrite last_None in Hlast.
     pose proof (last_last_extend n2 l) as Hn2.
     rewrite {1}/last_extend Hn2 Hlast /last_extend Hlast /extend -app_assoc.
-    rewrite -replicate_add app_length replicate_length.
+    rewrite -replicate_add length_app length_replicate.
     (* wow how does lia solve this *)
     by replace (n2 - _ + _)%nat with (n1 `max` n2 - length l)%nat by lia.
   Qed.

@@ -23,7 +23,7 @@ Proof.
   { rewrite H in Hin. by destruct (not_elem_of_nil ver''). }
   iDestruct (slice.own_slice_small_acc with "HversS") as "[HversS HversC]".
   iDestruct (own_slice_small_sz with "HversS") as "%HversLen".
-  rewrite fmap_length in HversLen.
+  rewrite length_fmap in HversLen.
   wp_rec. wp_pures.
   
   (***********************************************************)
@@ -73,7 +73,7 @@ Proof.
       unfold P.
       replace (take (uint.nat idx) _) with (reverse vers) in Hspec; last first.
       { symmetry.
-        pose proof (reverse_length vers) as HversRevLen.
+        pose proof (length_reverse vers) as HversRevLen.
         rewrite take_ge; first done.
         rewrite HversRevLen HversLen.
         word.

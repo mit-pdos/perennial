@@ -184,14 +184,14 @@ Proof.
   wp_pures. wp_store. wp_store. wp_load. wp_load.
   iDestruct (own_slice_small_wf with "Hkv_sl") as %Hkv_wf.
   iDestruct (own_slice_small_sz with "Hkv_sl") as %Hkv_sz.
-  simpl in Hsl_sz. rewrite app_length in Hkv_sz.
+  simpl in Hsl_sz. rewrite length_app in Hkv_sz.
   wp_apply wp_SliceTake.
   { word. }
   iDestruct (slice_small_split with "Hkv_sl") as "[Hk Hv]".
   { shelve. }
   replace (uint.nat (length (string_to_bytes key))) with (length (string_to_bytes key)) by word.
   Unshelve.
-  2:{ rewrite app_length. word. }
+  2:{ rewrite length_app. word. }
   wp_apply (wp_StringFromBytes with "[$Hk]").
   iIntros "Hk".
   rewrite take_app_length.
@@ -378,7 +378,7 @@ Proof.
   wp_pures. wp_store. wp_store. wp_load. wp_load.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
   Opaque u64_le.
-  simpl in Hsz. rewrite app_length in Hsz.
+  simpl in Hsz. rewrite length_app in Hsz.
   wp_apply (wp_ReadBytes with "[$]").
   { word. }
   iIntros "* [Hkey_sl Hsl]".
@@ -397,7 +397,7 @@ Proof.
 
   clear Hsz.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  simpl in Hsl_sz. rewrite app_length in Hsz.
+  simpl in Hsl_sz. rewrite length_app in Hsz.
   iDestruct (own_slice_small_wf with "Hsl") as %Hwf.
   wp_apply wp_SliceTake.
   { word. }
@@ -405,7 +405,7 @@ Proof.
   { shelve. }
   replace (uint.nat (length (string_to_bytes expect))) with (length (string_to_bytes expect)) by word.
   Unshelve.
-  2:{ rewrite app_length. word. }
+  2:{ rewrite length_app. word. }
   wp_apply (wp_StringFromBytes with "[$He]").
   iIntros "He".
   rewrite take_app_length.

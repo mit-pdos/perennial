@@ -166,14 +166,14 @@ Proof.
     iDestruct (ghost_propose_lb_valid with "Hprim Hprop_lb") as %Hbad.
     exfalso.
     apply prefix_length in Hbad.
-    do 2 rewrite fmap_length in Hineq.
+    do 2 rewrite length_fmap in Hineq.
     lia.
   }
 
   iDestruct (fmlist_ptsto_lb_comparable with "Hprop_lb Hs_prop_lb") as %[Hbad|?].
   {
     exfalso.
-    do 2 rewrite fmap_length in Hineq.
+    do 2 rewrite length_fmap in Hineq.
     apply prefix_length in Hbad.
     lia.
   }
@@ -216,7 +216,7 @@ Proof.
   intros Hlen.
   exfalso.
   apply prefix_length in Hbad.
-  do 2 rewrite fmap_length in Hlen.
+  do 2 rewrite length_fmap in Hlen.
   lia.
 Qed.
 
@@ -231,8 +231,8 @@ Proof.
   rewrite /get_rwops fmap_app.
   assert (length x = 1).
   {
-    rewrite fmap_length app_length in H0.
-    rewrite fmap_length in H0.
+    rewrite length_fmap length_app in H0.
+    rewrite length_fmap in H0.
     lia.
   }
   destruct x.

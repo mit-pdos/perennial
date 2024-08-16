@@ -249,7 +249,7 @@ lemmas. *)
   Proof.
     iIntros "Hh Hv". iDestruct (pointsto_vals_valid with "Hh Hv") as %Hl.
     iPureIntro. intros i Hlb Hub.
-    rewrite fmap_length in Hl. specialize (Hl _ Hlb Hub).
+    rewrite length_fmap in Hl. specialize (Hl _ Hlb Hub).
     destruct (σ !! (l +ₗ i)) as [[[] v]|]; [done| |done].
     move: Hl. rewrite list_lookup_fmap /=.
     intros [b [? ->]]%fmap_Some_1. done.
@@ -373,7 +373,7 @@ lemmas. *)
                                (data_vals m'.(msg_data))
                                (Reading O) with "Hσ")
         as "(Hσ & Hblock & Hl)".
-      { rewrite fmap_length. apply Nat2Z.inj_lt. lia. }
+      { rewrite length_fmap. apply Nat2Z.inj_lt. lia. }
       { destruct Hfresh as (?&?); eauto. }
       { destruct Hfresh as (H'&?); eauto. eapply H'. }
       { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
@@ -435,7 +435,7 @@ lemmas. *)
                                (data_vals c)
                                (Reading O) with "Hσ")
         as "(Hσ & Hblock & Hl)".
-      { rewrite fmap_length. apply Nat2Z.inj_lt. lia. }
+      { rewrite length_fmap. apply Nat2Z.inj_lt. lia. }
       { destruct Hfresh as (?&?); eauto. }
       { destruct Hfresh as (H'&?); eauto. eapply H'. }
       { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).

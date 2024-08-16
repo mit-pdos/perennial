@@ -58,7 +58,7 @@ Lemma file_encodes_state_nonempty data epoch ops sealed :
   file_encodes_state data epoch ops sealed → length data > 0.
 Proof.
   destruct 1 as (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq&Henc&Hsealed&Hlen&Henc'&?&Hdata).
-  rewrite Hdata. rewrite ?app_length.
+  rewrite Hdata. rewrite ?length_app.
   rewrite u64_le_length; lia.
 Qed.
 
@@ -79,9 +79,9 @@ Proof.
   { rewrite Heq_ops. rewrite -app_assoc. f_equal. }
   { eauto. }
   { auto. }
-  { rewrite ?app_length /=; lia. }
+  { rewrite ?length_app /=; lia. }
   { intros i Hlt.
-    rewrite ?app_length /= in Hlt.
+    rewrite ?length_app /= in Hlt.
     destruct (decide (i = length rest_ops)); last first.
     { edestruct (Hrest i) as (op'&op_len_bytes'&op_bytes'&Hlookup1&Hlookup2&Henc'&Hlenenc'); eauto.
       { lia. }
@@ -96,7 +96,7 @@ Proof.
         rewrite Hlen. rewrite Nat.sub_diag //. }
     }
   }
-  { rewrite ?app_length /=. lia. }
+  { rewrite ?length_app /=. lia. }
   { rewrite Heq_data. rewrite -?app_assoc.
     rewrite Hsealed.
     rewrite ?concat_app -?app_assoc. do 4 f_equal.
@@ -385,11 +385,11 @@ Proof.
   iDestruct (fmlist_lb_to_idx _ _ (length newdata) with "Hallstates_lb") as "#Hcurstate".
   {
     unfold newdata.
-    rewrite app_length.
+    rewrite length_app.
     assert (1 <= length newsuffix).
     {
       unfold newsuffix.
-      rewrite app_length.
+      rewrite length_app.
       rewrite u64_le_length.
       word.
     }
@@ -405,7 +405,7 @@ Proof.
 
   iDestruct (own_slice_small_sz with "HopWithLen_sl") as %HopWithLen_sz.
   wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Haof $HopWithLen_sl Hupd]").
-  { rewrite app_length. rewrite u64_le_length. word. }
+  { rewrite length_app. rewrite u64_le_length. word. }
   {
     unfold list_safe_size.
     word.
@@ -422,8 +422,8 @@ Proof.
     iModIntro.
     iExists (ops ++ [op]), _.
     iFrame "HP".
-    rewrite app_length.
-    rewrite app_length.
+    rewrite length_app.
+    rewrite length_app.
     rewrite u64_le_length.
     iFrame "#".
     iPureIntro.
@@ -443,14 +443,14 @@ Proof.
     iExists fname, _, γ, _, _, _, _, _.
     iExists _.
     iFrame "HisMemSm ∗#".
-    repeat rewrite app_length. rewrite u64_le_length.
+    repeat rewrite length_app. rewrite u64_le_length.
     iFrame "∗#".
     iSplitL; last first.
     { iPureIntro.
       split.
       { apply file_encodes_state_append; auto. word. }
       { rewrite Hallstates_len.
-        rewrite replicate_length.
+        rewrite length_replicate.
         simpl.
         word. }
     }
@@ -649,7 +649,7 @@ Proof.
   iDestruct (fmlist_lb_to_idx _ _ (length newdata) with "Hallstates_lb") as "#Hcurstate".
   {
     unfold newdata.
-    rewrite app_length.
+    rewrite length_app.
     apply lookup_replicate.
     split; last lia.
     done.
@@ -710,7 +710,7 @@ Proof.
   }
   iPureIntro.
   unfold newdata.
-  rewrite replicate_length.
+  rewrite length_replicate.
   split.
   { word. }
   word.
@@ -756,7 +756,7 @@ Proof.
 
     iDestruct (fmlist_lb_to_idx _ _ (length (data ++ [W8 0])) with "Hallstates_lb") as "#Hcurstate".
     {
-      rewrite app_length.
+      rewrite length_app.
       simpl.
       rewrite lookup_app_r; last first.
       { word. }
@@ -815,9 +815,9 @@ Proof.
       by apply file_encodes_state_seal.
     }
     iPureIntro.
-    rewrite app_length.
-    rewrite app_length.
-    rewrite replicate_length.
+    rewrite length_app.
+    rewrite length_app.
+    rewrite length_replicate.
     simpl.
     word.
   }
@@ -1164,7 +1164,7 @@ Proof.
     }
     iSplitL; first done.
     iPureIntro.
-    rewrite replicate_length.
+    rewrite length_replicate.
     unfold n.
     done.
   }
@@ -1278,10 +1278,10 @@ Proof.
   iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
 
   assert (uint.nat (length snap) = length snap) as HsnapNoOverflow.
-  { rewrite HdataEnc in Hdata_sz. rewrite ?app_length in Hdata_sz. word. }
+  { rewrite HdataEnc in Hdata_sz. rewrite ?length_app in Hdata_sz. word. }
   wp_apply (wp_SliceSubslice_small with "Hdata_sl").
   {
-    rewrite app_length.
+    rewrite length_app.
     split.
     { word. }
     { word. }
@@ -1306,7 +1306,7 @@ Proof.
     rewrite -Hdata_sl2_sz.
     split.
     {
-      rewrite app_length.
+      rewrite length_app.
       word.
     }
     { word. }
@@ -1316,11 +1316,11 @@ Proof.
   rewrite -Hdata_sl2_sz.
   rewrite -> subslice_drop_take; last first.
   {
-    rewrite app_length; word.
+    rewrite length_app; word.
   }
   replace (uint.nat (length snap)) with (length snap).
   rewrite drop_app_length.
-  iEval (rewrite app_length) in "Hdata_sl".
+  iEval (rewrite length_app) in "Hdata_sl".
   replace (length snap +
                      length
                        (u64_le epoch ++
@@ -1364,7 +1364,7 @@ Proof.
   wp_loadField.
   wp_apply ("HsetState_spec" with "[$Hmemstate $Hsnap_sl]").
   { iPureIntro; split; try done.
-    subst. rewrite app_length in Hops_len. word.
+    subst. rewrite length_app in Hops_len. word.
   }
   iIntros "Hmemstate".
   wp_pures.
@@ -1452,12 +1452,12 @@ Proof.
     assert (uint.nat (length op_bytes) = length op_bytes).
     { apply (take_drop_middle) in Hrest_ops_bytes_lookup.
       rewrite -Hrest_ops_bytes_lookup ?concat_app in HdataEnc.
-      rewrite HdataEnc in Hdata_sz. clear -Hdata_sz. rewrite ?app_length in Hdata_sz.
+      rewrite HdataEnc in Hdata_sz. clear -Hdata_sz. rewrite ?length_app in Hdata_sz.
       word.
     }
     wp_apply (wp_SliceSubslice_small with "Hdata_sl").
     {
-      rewrite app_length.
+      rewrite length_app.
       split.
       { word. }
       { word. }
@@ -1483,7 +1483,7 @@ Proof.
       rewrite -Hdata_sl2_sz.
       split.
       {
-        rewrite app_length.
+        rewrite length_app.
         word.
       }
       { word. }
@@ -1496,11 +1496,11 @@ Proof.
     rewrite -Hdata_sl2_sz.
     rewrite -> subslice_drop_take; last first.
     {
-      rewrite app_length; word.
+      rewrite length_app; word.
     }
     replace (uint.nat (length op_bytes)) with (length op_bytes).
     rewrite drop_app_length.
-    iEval (rewrite app_length) in "Hdata_sl".
+    iEval (rewrite length_app) in "Hdata_sl".
     replace ((length op_bytes + length (concat new_rest_ops_bytes ++ sealed_bytes) -
                      length op_bytes))%nat with
       (length (concat new_rest_ops_bytes ++ sealed_bytes)) by word.
@@ -1595,11 +1595,11 @@ Proof.
   2:{
     exfalso.
     assert (length (drop numOpsApplied rest_ops_bytes) > 0).
-    { rewrite drop_length. lia. }
+    { rewrite length_drop. lia. }
     edestruct (Hop_bytes (numOpsApplied)) as (op&op_len_bytes&op_bytes&Hlookup1&Hlookup2&Henc&Hlen_bytes).
     { lia. }
     erewrite drop_S in Hrest_data_sz; eauto.
-    rewrite /= ?app_length in Hrest_data_sz.
+    rewrite /= ?length_app in Hrest_data_sz.
     rewrite Hlen_bytes u64_le_length in Hrest_data_sz.
     assert (uint.nat (rest_ops_sl.(Slice.sz)) <= 1).
     { word. }
@@ -1636,7 +1636,7 @@ Proof.
       iEval (rewrite H) in "HnextIndex".
       rewrite -Hrest_ops_len.
       iSplitL "HnextIndex".
-      { repeat rewrite app_length. iFrame. }
+      { repeat rewrite length_app. iFrame. }
       iSplitR.
       {
         iPureIntro.
@@ -1652,7 +1652,7 @@ Proof.
       }
       rewrite -Hops.
       iFrame "∗#".
-      rewrite replicate_length.
+      rewrite length_replicate.
       iPureIntro.
       done.
     }
@@ -1674,7 +1674,7 @@ Proof.
       rewrite Heq_Z0 in Heqb1. word.
     }
     rewrite -Hdata_sl_sz in H0.
-    rewrite app_length in H0.
+    rewrite length_app in H0.
     rewrite Hsealedbytes /= in H0.
     word.
   }
@@ -1690,7 +1690,7 @@ Proof.
     iEval (rewrite H) in "HnextIndex".
     rewrite -Hrest_ops_len.
     iSplitL "HnextIndex".
-    { repeat rewrite app_length. iFrame. }
+    { repeat rewrite length_app. iFrame. }
     iSplitR; first done.
     iSplitR.
     {
@@ -1707,7 +1707,7 @@ Proof.
     }
     rewrite -Hops.
     iFrame "∗#".
-    rewrite replicate_length.
+    rewrite length_replicate.
     iPureIntro.
     done.
   }

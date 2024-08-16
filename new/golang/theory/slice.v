@@ -155,7 +155,7 @@ Lemma own_slice_cap_nil t :
 Proof.
   unseal. simpl. rewrite right_id.
   rewrite (nil_length_inv (seq _ _)).
-  2:{ rewrite seq_length. word. }
+  2:{ rewrite length_seq. word. }
   simpl. iPureIntro. word.
 Qed.
 
@@ -241,7 +241,7 @@ Proof.
   iSplitL "Hsl".
   {
     iModIntro. iSplitL.
-    2:{ iPureIntro. simpl. rewrite replicate_length. word. }
+    2:{ iPureIntro. simpl. rewrite length_replicate. word. }
     erewrite <- (seq_replicate_fmap O).
     iApply (big_sepL_fmap with "[Hsl]").
     iApply (big_sepL_impl with "[$]").

@@ -101,7 +101,7 @@ Proof.
         Search lookup fmap. eapply lookup_fmap_Some; eauto. } *)
       wp_pures. iModIntro. iApply "HΦ".
       { iFrame. iExists (<[uint.nat i := mv]>kvs_ptrs).
-        rewrite ?insert_length.
+        rewrite ?length_insert.
         do 2 (iSplit; first done).
         iSplit.
         { iPureIntro. intros.
@@ -110,7 +110,7 @@ Proof.
           rewrite list_lookup_insert_ne; auto.
         }
         assert ((uint.nat i < length kvs_ptrs)%nat).
-        { erewrite <-fmap_length. eapply lookup_lt_is_Some_1; eauto. }
+        { erewrite <-length_fmap. eapply lookup_lt_is_Some_1; eauto. }
         iSplit.
         { iPureIntro. intros.
           rewrite list_lookup_fmap.
@@ -171,7 +171,7 @@ Proof.
       wp_pures. iModIntro. iApply "HΦ".
       { iFrame.
         iSplit.
-        { iPureIntro. rewrite insert_length //. }
+        { iPureIntro. rewrite length_insert //. }
         iSplit.
         { eauto. }
         iSplit.
@@ -181,7 +181,7 @@ Proof.
           rewrite list_lookup_insert_ne; auto.
         }
         assert ((uint.nat i < length kvs_ptrs)%nat).
-        { erewrite <-fmap_length. eapply lookup_lt_is_Some_1; eauto. }
+        { erewrite <-length_fmap. eapply lookup_lt_is_Some_1; eauto. }
         iSplit.
         { iPureIntro. eauto. }
         assert (i ∈ (fin_to_set u64 : gset u64)).
@@ -214,9 +214,9 @@ Proof.
     iExists initShardMapping.
     iExists (replicate (uint.nat 65536) null).
     iSplit.
-    { iPureIntro. rewrite Heq_initShardMapping replicate_length /uNSHARD. word. }
+    { iPureIntro. rewrite Heq_initShardMapping length_replicate /uNSHARD. word. }
     iSplit.
-    { iPureIntro. rewrite replicate_length /uNSHARD. word. }
+    { iPureIntro. rewrite length_replicate /uNSHARD. word. }
     iSplit.
     { iPureIntro. rewrite /uNSHARD. intros i Hlt. rewrite Heq_initShardMapping.
       eexists. apply lookup_replicate_2. word. }

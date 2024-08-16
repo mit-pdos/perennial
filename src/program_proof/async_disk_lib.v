@@ -28,8 +28,8 @@ Proof.
   iIntros "Hb".
   rewrite /is_block.
   iDestruct (own_slice_small_not_null with "Hb") as "%Hnull"; eauto.
-  { rewrite /Block_to_vals fmap_length.
-    rewrite vec_to_list_length.
+  { rewrite /Block_to_vals length_fmap.
+    rewrite length_vec_to_list.
     rewrite /block_bytes. lia. }
   iPureIntro.
   destruct s. rewrite /Slice.nil. simpl in *. congruence.
@@ -74,7 +74,7 @@ Proof.
   intros ->.
   apply vec_to_list_inj2.
   rewrite list_to_block_to_list //.
-  rewrite vec_to_list_length //.
+  rewrite length_vec_to_list //.
 Qed.
 
 Theorem block_to_list_to_block i :
@@ -590,7 +590,7 @@ Proof.
   iIntros (Hsz) "Hs".
   rewrite /own_slice_small.
   iDestruct "Hs" as "[Hl %]".
-  rewrite fmap_length in H.
+  rewrite length_fmap in H.
   iApply (array_to_block with "Hl").
   assert (uint.Z (Slice.sz s) = 4096).
   { rewrite Hsz. reflexivity. }

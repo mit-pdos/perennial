@@ -60,7 +60,7 @@ Proof.
   rewrite H0 in H.
   apply prefix_nil_inv in H.
   apply (f_equal length) in H.
-  rewrite app_length /= in H.
+  rewrite length_app /= in H.
   lia.
 Qed.
 

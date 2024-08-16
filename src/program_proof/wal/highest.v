@@ -566,7 +566,7 @@ Proof.
   destruct (decide (i2 = j)) as [->|Hi2].
   {
     pose proof (lookup_lt_Some _ _ _ Hacc2) as Hjbnd.
-    rewrite insert_length in Hjbnd.
+    rewrite length_insert in Hjbnd.
     rewrite list_lookup_insert in Hacc2; last by assumption.
     inversion Hacc2.
     contradiction.

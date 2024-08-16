@@ -24,7 +24,7 @@ Proof.
   destruct (decide (i = j)%nat) as [<-|Hj].
   {
     pose proof (lookup_lt_Some _ _ _ Hacc) as Hlt.
-    rewrite insert_length in Hlt.
+    rewrite length_insert in Hlt.
     rewrite list_lookup_insert in Hacc; last by assumption.
     inversion Hacc; subst y; clear Hacc.
     left.
@@ -226,7 +226,7 @@ Proof.
   split.
   {
     intros bndry Hbndry.
-    rewrite take_length.
+    rewrite length_take.
     apply elem_of_list_lookup in Hbndry.
     destruct Hbndry as [i Hbndry].
     unshelve (
@@ -276,7 +276,7 @@ Proof.
   destruct Hhead as [bhead [Hhead ->]].
   split.
   {
-    rewrite drop_length.
+    rewrite length_drop.
     intros bndry Hbndry.
     apply elem_of_list_fmap_2 in Hbndry.
     destruct Hbndry as [bndry' [-> Hbndry'in]].
@@ -316,7 +316,7 @@ Proof.
   {
     intros bndry Hbndry.
     apply Hbnds in Hbndry.
-    rewrite app_length.
+    rewrite length_app.
     lia.
   }
   intros i bndry1 bndry2 Hbndry1 Hbndry2.
@@ -409,7 +409,7 @@ Proof.
   destruct (decide (i < u_us)%nat) as [Hlt|Hgeq].
   {
     assert (i < length (take u_us upds))%nat as Hi;
-      first by (rewrite take_length; lia).
+      first by (rewrite length_take; lia).
     destruct (list_lookup_lt _ _ Hi) as [upd Hupd].
     rewrite (lookup_app_l_Some _ _ _ upd); last by assumption.
     rewrite /memWrite_one_generic.
@@ -429,8 +429,8 @@ Proof.
     intuition.
   }
   apply not_lt in Hgeq.
-  rewrite lookup_app_r; last by (rewrite take_length; lia).
-  rewrite take_length Nat.min_l; last by lia.
+  rewrite lookup_app_r; last by (rewrite length_take; lia).
+  rewrite length_take Nat.min_l; last by lia.
   rewrite /memWrite_one_generic.
   rewrite <- (take_drop u_us upds) at 1.
   rewrite /memWrite_one_generic fmap_app find_highest_index_app /=.
@@ -440,13 +440,13 @@ Proof.
   2: {
     replace (i - u_us)%nat with (i - length (take u_us upds))%nat.
     2: {
-      rewrite take_length.
+      rewrite length_take.
       f_equal.
       lia.
     }
     rewrite -lookup_app_r.
     2: {
-      rewrite take_length.
+      rewrite length_take.
       lia.
     }
     rewrite app_assoc take_drop.
@@ -460,17 +460,17 @@ Proof.
     apply list_lookup_fmap_inv in Hin.
     destruct Hin as [upd'' [_ Hin'']].
     apply lookup_lt_Some in Hin''.
-    rewrite take_length in Hin''.
+    rewrite length_take in Hin''.
     lia.
   }
-  rewrite fmap_length take_length decide_True; last by lia.
+  rewrite length_fmap length_take decide_True; last by lia.
   rewrite Nat.min_l; last by lia.
   rewrite <- (take_drop u_us upds) at 1.
-  rewrite insert_app_r_alt take_length; last by lia.
+  rewrite insert_app_r_alt length_take; last by lia.
   rewrite Nat.min_l; last by lia.
   rewrite Nat.add_sub'.
-  rewrite lookup_app_r; last by (rewrite take_length; lia).
-  rewrite take_length.
+  rewrite lookup_app_r; last by (rewrite length_take; lia).
+  rewrite length_take.
   f_equal.
   lia.
 Qed.
@@ -589,7 +589,7 @@ Proof.
 
   pose proof Hhighest as [Hi_bnd _].
   apply lookup_lt_Some in Hi_bnd.
-  rewrite fmap_length in Hi_bnd.
+  rewrite length_fmap in Hi_bnd.
   pose proof Hhighest as [Hi _].
   rewrite list_lookup_fmap in Hi.
   apply fmap_Some_1 in Hi.
@@ -726,13 +726,13 @@ Proof.
   rewrite IHl.
   rewrite memWrite_one_generic_split.
   2: {
-    rewrite app_length take_length.
+    rewrite length_app length_take.
     lia.
   }
   rewrite take_app_le.
-  2: rewrite take_length; lia.
+  2: rewrite length_take; lia.
   rewrite take_take Nat.min_id.
-  rewrite drop_app_length'; last by (rewrite take_length; lia).
+  rewrite drop_app_length'; last by (rewrite length_take; lia).
   reflexivity.
 Qed.
 
@@ -809,7 +809,7 @@ Proof.
       2: {
         apply list_elem_of_insert.
         apply lookup_lt_Some in Hacc.
-        rewrite fmap_length in Hacc.
+        rewrite length_fmap in Hacc.
         assumption.
       }
       contradiction.
@@ -885,7 +885,7 @@ Proof.
   }
   pose proof (lookup_lt_Some _ _ _ Hacc) as Hubnd.
   rewrite -(take_drop (S u) upds) insert_app_l in Hlast.
-  2: rewrite take_length; lia.
+  2: rewrite length_take; lia.
   rewrite filter_app in Hlast.
   rewrite (iffRL (list_filter_nil_Forall _ (drop _ _))) in Hlast.
   2: {
@@ -901,8 +901,8 @@ Proof.
   rewrite app_nil_r in Hlast.
   erewrite take_S_r in Hlast; last by eassumption.
   rewrite insert_app_r_alt in Hlast.
-  2: rewrite take_length; lia.
-  rewrite take_length Nat.min_l in Hlast; last by lia.
+  2: rewrite length_take; lia.
+  rewrite length_take Nat.min_l in Hlast; last by lia.
   rewrite Nat.sub_diag /= filter_app filter_cons_True in Hlast;
     last by reflexivity.
   rewrite filter_nil last_snoc in Hlast.
@@ -1036,7 +1036,7 @@ Proof.
       2: {
         destruct Hhighest as [Hacc _].
         apply lookup_lt_Some in Hacc.
-        rewrite fmap_length in Hacc.
+        rewrite length_fmap in Hacc.
         assumption.
       }
       inversion Hin; subst aupd; clear Hin.
@@ -1083,7 +1083,7 @@ Proof.
   rewrite fmap_app.
   simpl.
   replace (length upds) with (length (update.addr <$> upds)).
-  2: rewrite fmap_length //.
+  2: rewrite length_fmap //.
   apply highest_index_is_app_r_id.
 Qed.
 
@@ -1141,7 +1141,7 @@ Proof.
     }
     rewrite fmap_app /=.
     replace (length aupdst) with (length (update.addr <$> rev aupdst)).
-    2: rewrite fmap_length rev_length //.
+    2: rewrite length_fmap rev_length //.
     apply highest_index_is_app_r_id.
   }
   apply Hind in Hacc.
@@ -1259,7 +1259,7 @@ Proof.
       rewrite list_lookup_insert in Hbndry; last by lia.
       inversion Hbndry; subst bndry; clear Hbndry.
       simpl.
-      rewrite !app_length !take_length.
+      rewrite !length_app !length_take.
       lia.
     }
     rewrite list_lookup_insert_ne in Hbndry; last by lia.
@@ -1269,12 +1269,12 @@ Proof.
     ) as Hupto); first by lia.
     apply elem_of_list_lookup_2 in Hbndry.
     apply Hbnds in Hbndry.
-    rewrite !app_length !take_length.
+    rewrite !length_app !length_take.
     lia.
   }
   intros i bndry1 bndry2 Hbndry1 Hbndry2.
   pose proof (lookup_lt_Some _ _ _ Hbndry2) as Hibnd.
-  rewrite insert_length in Hibnd.
+  rewrite length_insert in Hibnd.
   rewrite list_lookup_insert_ne in Hbndry1; last by lia.
   destruct (decide (S i = length mwrbs - 1)%nat) as [Hi|Hi].
   2: {
@@ -1286,15 +1286,15 @@ Proof.
       is_memLog_boundaries_region _ _ _ _ _ _ _ _ Hbndrys Hbndry2 Hb
     ) as Hupto); first by lia.
     rewrite subslice_app_1.
-    2: rewrite take_length; lia.
+    2: rewrite length_take; lia.
     rewrite subslice_app_1.
-    2: rewrite take_length; lia.
+    2: rewrite length_take; lia.
     rewrite -(take_drop b.(mwrb.txn) txns) in Hreg'.
     rewrite -(take_drop b.(mwrb.upd) upds) in Hreg'.
     rewrite subslice_app_1 in Hreg'.
-    2: rewrite take_length; lia.
+    2: rewrite length_take; lia.
     rewrite subslice_app_1 in Hreg'.
-    2: rewrite take_length; lia.
+    2: rewrite length_take; lia.
     intuition.
   }
   rewrite Hi list_lookup_insert in Hbndry2; last by lia.
@@ -1309,14 +1309,14 @@ Proof.
   rewrite -Hi /= Nat.sub_0_r Hbndry1 in Hb.
   inversion Hb; subst b; clear Hb.
   rewrite subslice_take_drop take_app_add'.
-  2: rewrite take_length; lia.
+  2: rewrite length_take; lia.
   rewrite firstn_all.
-  rewrite <- (take_length_le txns bndry1.(mwrb.txn)) at 1; last by lia.
+  rewrite <- (length_take_le txns bndry1.(mwrb.txn)) at 1; last by lia.
   rewrite drop_app_length.
   rewrite subslice_take_drop take_app_add'.
-  2: rewrite take_length; lia.
+  2: rewrite length_take; lia.
   rewrite firstn_all.
-  rewrite <- (take_length_le upds bndry1.(mwrb.upd)) at 1; last by lia.
+  rewrite <- (length_take_le upds bndry1.(mwrb.upd)) at 1; last by lia.
   rewrite drop_app_length.
   assumption.
 Qed.
@@ -1340,12 +1340,12 @@ Proof.
   simpl in Hreg.
   rewrite -!subslice_from_drop in Hreg.
   rewrite memWrite_generic_split; last by lia.
-  rewrite /= /mwrb.logend !app_length take_length Nat.min_l; last by lia.
+  rewrite /= /mwrb.logend !length_app length_take Nat.min_l; last by lia.
   simpl.
   split.
   {
     intros bndry Hbndry.
-    rewrite !app_length take_length /=.
+    rewrite !length_app length_take /=.
     apply elem_of_list_lookup_1 in Hbndry.
     destruct Hbndry as [bndryi Hbndry].
     destruct (decide (bndryi = length mwrbs - 1)%nat) as [Hbndryi|Hbndryi].
@@ -1366,7 +1366,7 @@ Proof.
   }
   intros bndryi bndry1' bndry2' Hbndry1' Hbndry2'.
   pose proof (lookup_lt_Some _ _ _ Hbndry2') as Hbndryi_lt.
-  rewrite insert_length in Hbndryi_lt.
+  rewrite length_insert in Hbndryi_lt.
   rewrite list_lookup_insert_ne in Hbndry1'; last by lia.
   destruct (decide (S bndryi = length mwrbs - 1)%nat) as [Hbndryi|Hbndryi].
   2: {
@@ -1380,7 +1380,7 @@ Proof.
       is_memLog_boundaries_region _ _ _ _ _ _ _ _ Hbndrys Hbndry2' Hbndry1
     ) as (Hreg_upd''&Hreg_txn''&_)); first by lia.
     rewrite subslice_app_1; last by lia.
-    rewrite subslice_app_1; last by (rewrite take_length; lia).
+    rewrite subslice_app_1; last by (rewrite length_take; lia).
     rewrite subslice_take_all; last by lia.
     assumption.
   }
@@ -1394,9 +1394,9 @@ Proof.
   simpl.
   split; first by lia.
   split; first by lia.
-  rewrite subslice_to_end; last by rewrite app_length //=.
+  rewrite subslice_to_end; last by rewrite length_app //=.
   rewrite subslice_drop_take; last by lia.
-  rewrite (drop_app_length' (take _ _)); last by (rewrite take_length; lia).
+  rewrite (drop_app_length' (take _ _)); last by (rewrite length_take; lia).
   rewrite Nat.add_sub'.
   rewrite firstn_all.
   rewrite drop_app_le; last by lia.

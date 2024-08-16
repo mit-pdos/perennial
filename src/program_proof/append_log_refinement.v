@@ -121,7 +121,7 @@ Proof.
   iExists _.
   iSplitL "Hdisk".
   - by iApply disk_array_init_disk.
-  - rewrite replicate_length //=.
+  - rewrite length_replicate //=.
 Qed.
 
 Lemma append_init_obligation2: sty_init_obligation2 append_initP.

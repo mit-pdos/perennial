@@ -602,7 +602,7 @@ Proof.
       by inversion Hlookup.
     }
     {
-      rewrite app_length //=.
+      rewrite length_app //=.
       word.
     }
   }
@@ -635,7 +635,7 @@ Lemma flat_map_len_non_nil {A B : Type} (f: A -> list B) (l: list A):
 Proof.
   intros Hnil.
   induction l as [| a l] => //=.
-  rewrite app_length. specialize (Hnil a). destruct (f a); first congruence.
+  rewrite length_app. specialize (Hnil a). destruct (f a); first congruence.
   simpl; lia.
 Qed.
 
@@ -710,15 +710,15 @@ Proof.
     { iPureIntro.
       rewrite Hreplicas_prefix.
       rewrite word.unsigned_of_Z_nowrap; last first.
-      { word_cleanup. rewrite app_length. rewrite app_length replicate_length in Hreplicas_sz'.
+      { word_cleanup. rewrite length_app. rewrite length_app length_replicate in Hreplicas_sz'.
         lia. }
       rewrite Nat2Z.id.
-      rewrite app_length replicate_add.
+      rewrite length_app replicate_add.
       rewrite lookup_app_r; last first.
-      { rewrite Hreplicas_len. rewrite replicate_length. reflexivity. }
+      { rewrite Hreplicas_len. rewrite length_replicate. reflexivity. }
       rewrite lookup_app_r; last first.
       { rewrite Hreplicas_len. reflexivity. }
-      simpl. rewrite ?replicate_length //.
+      simpl. rewrite ?length_replicate //.
     }
     iIntros. iExists _. iFrame. eauto.
   }
@@ -728,11 +728,11 @@ Proof.
     iNamed "Hpre".
     wp_rec. wp_pures.
     wp_load.
-    rewrite replicate_length in Hreplicas_sz.
+    rewrite length_replicate in Hreplicas_sz.
     assert (uint.nat i < length args.(replicas)).
     {
       apply lookup_lt_Some in Hlookup.
-      rewrite replicate_length in Hlookup.
+      rewrite length_replicate in Hlookup.
 
       (* We case split on whether replicas_left is nil or not (and
          hence has non-zero length).  If replicas_left is nil, this
@@ -745,7 +745,7 @@ Proof.
         word_cleanup.
         rewrite Z_u64 in Hlookup; lia.
       }
-      rewrite Hreplicas_prefix app_length. lia.
+      rewrite Hreplicas_prefix length_app. lia.
     }
     destruct replicas_left as [|next_replica replicas_left'].
     { exfalso.
@@ -765,8 +765,8 @@ Proof.
       iPureIntro.
       apply lookup_lt_is_Some_2.
       simpl.
-      rewrite app_length.
-      rewrite cons_length.
+      rewrite length_app.
+      rewrite length_cons.
       word.
     }
     iIntros "Hreplicas_sl".
@@ -786,7 +786,7 @@ Proof.
     iSplitL "".
     {
       iPureIntro.
-      rewrite app_length.
+      rewrite length_app.
       simpl.
       word.
     }
@@ -800,15 +800,15 @@ Proof.
       rewrite e.
       rewrite list_lookup_insert; last first.
       {
-        rewrite app_length.
-        rewrite app_length.
+        rewrite length_app.
+        rewrite length_app.
         simpl.
-        rewrite replicate_length.
+        rewrite length_replicate.
         word.
       }
       {
         rewrite lookup_app_l; last first.
-        { rewrite -Hreplicas_len. rewrite app_length. simpl.
+        { rewrite -Hreplicas_len. rewrite length_app. simpl.
           unfold chan.
           word. }
         rewrite lookup_app_r; last first.
@@ -823,11 +823,11 @@ Proof.
     }
     {
       rewrite list_lookup_insert_ne; last auto.
-      rewrite app_length.
+      rewrite length_app.
       rewrite replicate_add -app_assoc.
       assert (j < length replicas_done ∨ j > length replicas_done) as [Hlt|Hgt] by lia.
       { rewrite ?lookup_app_l //; lia. }
-      { rewrite ?app_assoc ?lookup_app_r ?app_length //=; lia. }
+      { rewrite ?app_assoc ?lookup_app_r ?length_app //=; lia. }
     }
   }
   {
@@ -854,9 +854,9 @@ Proof.
   destruct (replicas_left).
   { simpl. rewrite Hreplicas_prefix //.  }
   { exfalso.
-    rewrite replicate_length /= ?app_length /= in Hreplicas_sz Hsz.
+    rewrite length_replicate /= ?length_app /= in Hreplicas_sz Hsz.
     rewrite -Hreplicas_len in Hreplicas_sz.
-    rewrite replicate_length in Hsz.
+    rewrite length_replicate in Hsz.
     word.
   }
 Qed.

@@ -34,7 +34,7 @@ Section list.
   Lemma big_sepL_drop {A} `{!BiAffine PROP} (Φ: nat → A → PROP) (m: list A) (n: nat):
     ([∗ list] k ↦ x ∈ m, Φ k x) ⊢ ([∗ list] k ↦ x ∈ drop n m, Φ (n + k) x).
   Proof.
-    rewrite -{1}(take_drop n m) big_sepL_app take_length.
+    rewrite -{1}(take_drop n m) big_sepL_app length_take.
     iIntros "(_&H)".
     destruct (decide (length m ≤ n)).
     - rewrite drop_ge //=.
@@ -398,7 +398,7 @@ Section list2.
     destruct Hsuff2 as (l2_rest & ->).
     iDestruct (big_sepL2_length with "H") as "%Hlen_app".
     iDestruct (big_sepL2_app_equiv with "H") as "(_&$)".
-    rewrite !app_length in Hlen_app.
+    rewrite !length_app in Hlen_app.
     lia.
   Qed.
 

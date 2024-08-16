@@ -28,7 +28,7 @@ Section list.
     intros Hlen.
     assert (∃ x0, drop (pred (length l)) l = [x0]) as [x0 Hlast].
     {
-      pose proof (drop_length l (pred (length l))) as Hlen_drop.
+      pose proof (length_drop l (pred (length l))) as Hlen_drop.
       replace (length _ - pred (length _)) with (1) in Hlen_drop by lia.
       apply list_singleton_exists in Hlen_drop as [x0' ->].
       eauto.
@@ -46,7 +46,7 @@ Section list.
   Proof. induction l => //=. inversion 1. Qed.
 
   Lemma drop_lt (l : list) (n : nat): (n < length l)%nat → drop n l ≠ [].
-  Proof.  intros. eapply length_nonzero_neq_nil. rewrite drop_length. lia. Qed.
+  Proof.  intros. eapply length_nonzero_neq_nil. rewrite length_drop. lia. Qed.
 
   Lemma list_lookup_lt (l: list) (i: nat) :
     (i < length l)%nat ->
@@ -84,7 +84,7 @@ Section list.
   Proof.
     rewrite /Forall_idx.
     intros.
-    rewrite drop_length -drop_seq.
+    rewrite length_drop -drop_seq.
     apply Forall2_drop; auto.
   Qed.
 
@@ -204,7 +204,7 @@ Theorem subslice_length' {A} n m (l: list A) :
   length (subslice n m l) = (m `min` length l - n)%nat.
 Proof.
   rewrite /subslice.
-  rewrite drop_length take_length.
+  rewrite length_drop length_take.
   auto.
 Qed.
 
@@ -293,7 +293,7 @@ Theorem subslice_zero_length {A} n (l: list A) :
 Proof.
   rewrite /subslice.
   rewrite drop_ge //.
-  rewrite take_length; lia.
+  rewrite length_take; lia.
 Qed.
 
 Lemma subslice_none {A} n m (l: list A) :
@@ -303,7 +303,7 @@ Proof.
   intros.
   rewrite /subslice.
   rewrite -length_zero_iff_nil.
-  rewrite drop_length take_length.
+  rewrite length_drop length_take.
   lia.
 Qed.
 
@@ -353,8 +353,8 @@ Proof.
   rewrite -> take_app_ge.
   - f_equal.
     f_equal.
-    rewrite take_length_le; lia.
-  - rewrite take_length_le; lia.
+    rewrite length_take_le; lia.
+  - rewrite length_take_le; lia.
 Qed.
 
 Lemma subslice_def {A} (n m: nat) (l: list A) :
@@ -462,12 +462,12 @@ Proof.
   replace m' with (m + (m' - m))%nat by lia.
   rewrite -> take_more by lia.
   rewrite -> drop_app_le.
-  2: { rewrite take_length_le; lia. }
+  2: { rewrite length_take_le; lia. }
   f_equal.
   rewrite -> drop_app_le.
-  2: { rewrite take_length_le; lia. }
+  2: { rewrite length_take_le; lia. }
   rewrite -> (drop_ge (take m l)).
-  2: { rewrite take_length_le; lia. }
+  2: { rewrite length_take_le; lia. }
   auto.
 Qed.
 
@@ -488,7 +488,7 @@ Proof.
   unfold subslice.
   intros.
   apply lookup_lt_is_Some_1 in H.
-  rewrite drop_length in H.
+  rewrite length_drop in H.
   pose proof (firstn_le_length m l).
   lia.
 Qed.

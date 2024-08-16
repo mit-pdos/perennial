@@ -841,7 +841,7 @@ Proof.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
 
   iDestruct (slice.own_slice_small_sz with "Hupdslice") as %Hslen.
-  rewrite fmap_length in Hslen.
+  rewrite length_fmap in Hslen.
   iDestruct (big_sepL2_length with "Hbks") as %Hslen2.
 
   wp_apply (slice.wp_forSlice (fun i =>
@@ -1131,7 +1131,7 @@ Proof.
 
   iDestruct (slice.own_slice_small_sz with "Hb") as %Hslen.
   wp_apply (wp_Write_atomic with "Hb").  (*   *)
-  rewrite fmap_length in Hslen.
+  rewrite length_fmap in Hslen.
 
   iInv N as "Hcircopen" "Hclose".
   iDestruct "Hcircopen" as (σ) "[>[%Hwf Hcs] HP]".

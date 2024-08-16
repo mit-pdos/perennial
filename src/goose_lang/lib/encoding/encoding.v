@@ -183,7 +183,7 @@ Definition u64_le_bytes (x: u64) : list val :=
 
 Lemma u64_le_bytes_length x : length (u64_le_bytes x) = w64_bytes.
 Proof.
-  rewrite fmap_length //.
+  rewrite length_fmap //.
 Qed.
 
 Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
@@ -278,13 +278,13 @@ Proof.
   iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt64 with "[$Henc]").
   { iPureIntro.
-    rewrite take_length; lia. }
+    rewrite length_take; lia. }
   iIntros "Henc".
   change (Z.to_nat 8) with 8%nat.
   iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
   iApply "HΦ".
   iFrame.
-  rewrite app_length drop_length u64_le_bytes_length.
+  rewrite length_app length_drop u64_le_bytes_length.
   iPureIntro.
   lia.
 Qed.
@@ -294,7 +294,7 @@ Definition u32_le_bytes (x: u32) : list val :=
 
 Lemma u32_le_bytes_length x : length (u32_le_bytes x) = w32_bytes.
 Proof.
-  rewrite fmap_length //.
+  rewrite length_fmap //.
 Qed.
 
 Theorem wp_UInt32Put stk E s (x: u32) vs :
@@ -313,13 +313,13 @@ Proof.
   iDestruct (array_split 4 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt32 with "[$Henc]").
   { iPureIntro.
-    rewrite take_length; lia. }
+    rewrite length_take; lia. }
   iIntros "Henc".
   change (Z.to_nat 4) with 4%nat.
   iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
   iApply "HΦ".
   iFrame.
-  rewrite app_length drop_length u32_le_bytes_length.
+  rewrite length_app length_drop u32_le_bytes_length.
   iPureIntro.
   lia.
 Qed.
@@ -670,12 +670,12 @@ Proof.
   wp_apply (wp_DecodeUInt64 with "[$Htake]").
   iIntros "Htake".
   iDestruct (array_app with "[$Htake Hrest]") as "Hptr".
-  { rewrite fmap_length u64_le_length.
+  { rewrite length_fmap u64_le_length.
     iFrame. }
   iApply "HΦ".
   iFrame.
   iPureIntro.
-  rewrite app_length u64_le_bytes_length drop_length in H1 |- *.
+  rewrite length_app u64_le_bytes_length length_drop in H1 |- *.
   lia.
 Qed.
 

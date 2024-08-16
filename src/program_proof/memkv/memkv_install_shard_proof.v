@@ -86,9 +86,9 @@ Proof.
       iFrame.
     }
     iSplitL "".
-    { iPureIntro. by rewrite insert_length. }
+    { iPureIntro. by rewrite length_insert. }
     iSplitL "".
-    { iPureIntro. by rewrite insert_length. }
+    { iPureIntro. by rewrite length_insert. }
 
     iApply (big_sepS_wand with "HownShards").
     iApply (big_sepS_delete _ _ (args.(IR_Sid))).

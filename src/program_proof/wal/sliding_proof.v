@@ -582,14 +582,14 @@ Proof.
     destruct u. rewrite H /=. iFrame. done. }
   iSplitL "Hs".
   { iSplitR.
-    { iPureIntro. rewrite app_length /=. intuition word. }
+    { iPureIntro. rewrite length_app /=. intuition word. }
     rewrite numMutable_set_log.
     simpl slidingM.log.
     destruct u. rewrite H /=. iFrame.
   }
   iPureIntro.
   revert Hwf.
-  rewrite /slidingM.wf /set app_length /=.
+  rewrite /slidingM.wf /set length_app /=.
   intuition try word.
   revert Hoverflow.
   rewrite /slidingM.memEnd.
@@ -1097,7 +1097,7 @@ Proof.
 
     assert ((uint.nat i) <
       length (take (uint.nat (word.sub newStart σ.(slidingM.start))) σ.(slidingM.log))
-    )%nat as Hlt' by (rewrite take_length; word).
+    )%nat as Hlt' by (rewrite length_take; word).
     destruct (list_lookup_lt _ _ Hlt') as (upd & Hupd).
     clear Hlt'.
     iDestruct (big_sepL2_lookup_acc with "Hbks") as "[[%Huaddr Hb] Hbks]"; eauto.
@@ -1123,7 +1123,7 @@ Proof.
     rewrite Huaddr in Hindex.
     pose proof (find_highest_index_ok' _ _ _ Hindex) as [Hlookup_oldPos _].
     apply lookup_lt_Some in Hlookup_oldPos.
-    rewrite fmap_length drop_length in Hlookup_oldPos.
+    rewrite length_fmap length_drop in Hlookup_oldPos.
 
     remember (set slidingM.start (word.add i)
       (set slidingM.log (drop (uint.nat i)) σ))
@@ -1157,7 +1157,7 @@ Proof.
       iFrame.
       erewrite memLogMap_drop1_not_highest.
       - iFrame.
-      - rewrite Heqσtrunc /slidingM.wf drop_length /=.
+      - rewrite Heqσtrunc /slidingM.wf length_drop /=.
         word.
       - rewrite Heqσtrunc /= lookup_drop Nat.add_0_r Hupd //.
       - rewrite Heqσtrunc /= Hindex //.
@@ -1177,7 +1177,7 @@ Proof.
     subst oldPos.
     erewrite memLogMap_drop1_highest.
     - iFrame.
-    - rewrite Heqσtrunc /slidingM.wf drop_length /=.
+    - rewrite Heqσtrunc /slidingM.wf length_drop /=.
       word.
     - rewrite Heqσtrunc /= lookup_drop Nat.add_0_r Hupd //.
     - rewrite Heqσtrunc /= Hindex //.
@@ -1233,12 +1233,12 @@ Proof.
   iSplit.
   {
     iPureIntro.
-    rewrite /slidingM.wf drop_length /=.
+    rewrite /slidingM.wf length_drop /=.
     word.
   }
   iSplitL "log_mutable".
   {
-    rewrite /mutable_log /set drop_length /=.
+    rewrite /mutable_log /set length_drop /=.
     iSplit; first by (iPureIntro; word).
     rewrite /slice_skip /slidingM.numMutable drop_drop loc_add_assoc -Z.mul_add_distr_l /=.
     iExactEq "log_mutable".

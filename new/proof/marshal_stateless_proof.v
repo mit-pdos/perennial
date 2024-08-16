@@ -20,7 +20,7 @@ Proof.
   { rewrite /list.untype fmap_app take_app_length' //. }
   iIntros "Hs".
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite /list.untype fmap_length app_length /=. word. }
+  { rewrite /list.untype length_fmap length_app /=. word. }
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
 Qed.
 
@@ -34,10 +34,10 @@ Proof.
   iMod (own_slice_small_persist with "Hs") as "#Hs".
   wp_rec. wp_pures.
   wp_apply (wp_SliceTake_small with "Hs").
-  { rewrite /list.untype fmap_app app_length !fmap_length. word. }
+  { rewrite /list.untype fmap_app length_app !length_fmap. word. }
   iIntros "Hs1".
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite /list.untype fmap_length app_length /=. word. }
+  { rewrite /list.untype length_fmap length_app /=. word. }
   iIntros (s') "Hs2". wp_pures. iApply "HΦ".
   { rewrite /list.untype -fmap_take -fmap_drop.
     rewrite take_app_length' // drop_app_length' //. iFrame. done. }
@@ -53,20 +53,20 @@ Proof.
   wp_apply wp_NewSlice. iIntros (b) "Hb".
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   iDestruct (own_slice_small_wf with "Hs") as %Hwf.
-  rewrite app_length in Hsz.
+  rewrite length_app in Hsz.
   wp_apply wp_SliceTake.
   { word. }
   iDestruct (slice_small_split _ len with "Hs") as "[Hs Hsclose]".
-  { rewrite app_length. word. }
+  { rewrite length_app. word. }
   iDestruct (own_slice_small_acc with "Hb") as "[Hb Hbclose]".
   wp_apply (wp_SliceCopy_full with "[$Hs $Hb]").
-  { iPureIntro. rewrite !list_untype_length replicate_length take_length app_length. word. }
+  { iPureIntro. rewrite !list_untype_length length_replicate length_take length_app. word. }
   iIntros "[Hs Hb]".
   iDestruct (own_slice_combine with "Hs Hsclose") as "Hs".
   { word. }
   rewrite take_drop.
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite list_untype_length app_length. word. }
+  { rewrite list_untype_length length_app. word. }
   iIntros (s') "Hs'".
   wp_pures. iApply "HΦ". iModIntro. iSplitR "Hs'".
   - iApply "Hbclose". rewrite take_app_length' //.
@@ -143,7 +143,7 @@ Proof.
     iDestruct (slice.own_slice_to_small with "Hs") as "Hs".
     iDestruct (slice.own_slice_small_acc with "Hnew") as "[Hnew Hcl]".
     wp_apply (wp_SliceCopy_full with "[Hnew Hs]").
-    { iFrame. iPureIntro. rewrite list_untype_length Hsz replicate_length //. }
+    { iFrame. iPureIntro. rewrite list_untype_length Hsz length_replicate //. }
     iIntros "[_ Hnew]". iDestruct ("Hcl" with "Hnew") as "Hnew".
     wp_pures. iApply "HΦ". iModIntro. iFrame. iPureIntro. simpl. word.
   - (* already big enough *)
