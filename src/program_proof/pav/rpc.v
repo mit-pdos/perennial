@@ -152,13 +152,13 @@ Section local_defs.
 Context `{!heapGS Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ sl_prevLink sl_dig sl_sig d0 d1 d2,
-  "Hepoch" ∷ ptr ↦[signedLink :: "epoch"] #obj.(epoch) ∗
-  "HprevLink" ∷ ptr ↦[signedLink :: "prevLink"] (slice_val sl_prevLink) ∗
-  "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
-  "Hdig" ∷ ptr ↦[signedLink :: "dig"] (slice_val sl_dig) ∗
-  "Hsl_dig" ∷ own_slice_small sl_dig byteT d1 obj.(dig) ∗
-  "Hsig" ∷ ptr ↦[signedLink :: "sig"] (slice_val sl_sig) ∗
-  "Hsl_sig" ∷ own_slice_small sl_sig byteT d2 obj.(sig).
+  ptr ↦[signedLink :: "epoch"] #obj.(epoch) ∗
+  ptr ↦[signedLink :: "prevLink"] (slice_val sl_prevLink) ∗
+  own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
+  ptr ↦[signedLink :: "dig"] (slice_val sl_dig) ∗
+  own_slice_small sl_dig byteT d1 obj.(dig) ∗
+  ptr ↦[signedLink :: "sig"] (slice_val sl_sig) ∗
+  own_slice_small sl_sig byteT d2 obj.(sig).
 End local_defs.
 End signedLink.
 
@@ -175,13 +175,13 @@ Section local_defs.
 Context `{!heapGS Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ sl_id sl_val sl_sig d0 d1 d2,
-  "Hepoch" ∷ ptr ↦[signedPut :: "epoch"] #obj.(epoch) ∗
-  "Hid" ∷ ptr ↦[signedPut :: "id"] (slice_val sl_id) ∗
-  "Hsl_id" ∷ own_slice_small sl_id byteT d0 obj.(id) ∗
-  "Hval" ∷ ptr ↦[signedPut :: "val"] (slice_val sl_val) ∗
-  "Hsl_val" ∷ own_slice_small sl_val byteT d1 obj.(val) ∗
-  "Hsig" ∷ ptr ↦[signedPut :: "sig"] (slice_val sl_sig) ∗
-  "Hsl_sig" ∷ own_slice_small sl_sig byteT d2 obj.(sig).
+  ptr ↦[signedPut :: "epoch"] #obj.(epoch) ∗
+  ptr ↦[signedPut :: "id"] (slice_val sl_id) ∗
+  own_slice_small sl_id byteT d0 obj.(id) ∗
+  ptr ↦[signedPut :: "val"] (slice_val sl_val) ∗
+  own_slice_small sl_val byteT d1 obj.(val) ∗
+  ptr ↦[signedPut :: "sig"] (slice_val sl_sig) ∗
+  own_slice_small sl_sig byteT d2 obj.(sig).
 End local_defs.
 End signedPut.
 
@@ -196,10 +196,10 @@ Section local_defs.
 Context `{!heapGS Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ ptr_sigLn0 ptr_sigLn1,
-  "HsigLn0" ∷ signedLink.own ptr_sigLn0 obj.(sigLn0) ∗
-  "Hptr_sigLn0" ∷ ptr ↦[evidServLink :: "sigLn0"] #ptr_sigLn0 ∗
-  "HsigLn1" ∷ signedLink.own ptr_sigLn1 obj.(sigLn1) ∗
-  "Hptr_sigLn1" ∷ ptr ↦[evidServLink :: "sigLn1"] #ptr_sigLn1.
+  signedLink.own ptr_sigLn0 obj.(sigLn0) ∗
+  ptr ↦[evidServLink :: "sigLn0"] #ptr_sigLn0 ∗
+  signedLink.own ptr_sigLn1 obj.(sigLn1) ∗
+  ptr ↦[evidServLink :: "sigLn1"] #ptr_sigLn1.
 End local_defs.
 End evidServLink.
 
@@ -217,14 +217,14 @@ Section local_defs.
 Context `{!heapGS Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ ptr_sigLn ptr_sigPut sl_val sl_proof d0,
-  "HsigLn" ∷ signedLink.own ptr_sigLn obj.(sigLn) ∗
-  "Hptr_sigLn" ∷ ptr ↦[evidServPut :: "sigLn"] #ptr_sigLn ∗
-  "HsigPut" ∷ signedPut.own ptr_sigPut obj.(sigPut) ∗
-  "Hptr_sigPut" ∷ ptr ↦[evidServPut :: "sigPut"] #ptr_sigPut ∗
-  "Hval" ∷ ptr ↦[evidServPut :: "val"] (slice_val sl_val) ∗
-  "Hsl_val" ∷ own_slice_small sl_val byteT d0 obj.(val) ∗
-  "Hproof" ∷ ptr ↦[evidServPut :: "proof"] (slice_val sl_proof) ∗
-  "#Hsl_proof" ∷ is_Slice3D sl_proof obj.(proof).
+  signedLink.own ptr_sigLn obj.(sigLn) ∗
+  ptr ↦[evidServPut :: "sigLn"] #ptr_sigLn ∗
+  signedPut.own ptr_sigPut obj.(sigPut) ∗
+  ptr ↦[evidServPut :: "sigPut"] #ptr_sigPut ∗
+  ptr ↦[evidServPut :: "val"] (slice_val sl_val) ∗
+  own_slice_small sl_val byteT d0 obj.(val) ∗
+  ptr ↦[evidServPut :: "proof"] (slice_val sl_proof) ∗
+  is_Slice3D sl_proof obj.(proof).
 End local_defs.
 End evidServPut.
 

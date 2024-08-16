@@ -10,12 +10,12 @@ Section evidence.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition valid_signedLink pk (obj : signedLink.t) link : iProp Σ :=
-  "#His_link" ∷ is_link obj.(signedLink.epoch) obj.(signedLink.prevLink)
+  is_link_conn obj.(signedLink.epoch) obj.(signedLink.prevLink)
     obj.(signedLink.dig) link ∗
-  "#Hvalid_lnSig" ∷ is_sig pk (servSepLink.encodesF (servSepLink.mk link)) obj.(signedLink.sig).
+  is_sig pk (servSepLink.encodesF (servSepLink.mk link)) obj.(signedLink.sig).
 
 Definition valid_signedPut pk (obj : signedPut.t) : iProp Σ :=
-  "#Hvalid_putSig" ∷ is_sig
+  is_sig
     pk
     (servSepPut.encodesF (servSepPut.mk
       obj.(signedPut.epoch) obj.(signedPut.id) obj.(signedPut.val)))
@@ -23,47 +23,46 @@ Definition valid_signedPut pk (obj : signedPut.t) : iProp Σ :=
 
 Definition valid_evidServLink pk (obj : evidServLink.t) : iProp Σ :=
   ∃ link0 link1,
-  "#Hvalid_sigLn0" ∷ valid_signedLink pk (obj.(evidServLink.sigLn0)) link0 ∗
-  "#Hvalid_sigLn1" ∷ valid_signedLink pk (obj.(evidServLink.sigLn1)) link1 ∗
+  valid_signedLink pk (obj.(evidServLink.sigLn0)) link0 ∗
+  valid_signedLink pk (obj.(evidServLink.sigLn1)) link1 ∗
   let epoch0 := obj.(evidServLink.sigLn0).(signedLink.epoch) in
   let epoch1 := obj.(evidServLink.sigLn1).(signedLink.epoch) in
   let prevLink1 := obj.(evidServLink.sigLn1).(signedLink.prevLink) in
-  "%Hvalid_epoch_links" ∷
-    ⌜ (epoch0 = epoch1 ∧ link0 ≠ link1)
-      ∨
-      (epoch0 = word.sub epoch1 (W64 1) ∧ link0 ≠ prevLink1) ⌝.
+  ⌜ (epoch0 = epoch1 ∧ link0 ≠ link1)
+    ∨
+    (epoch0 = word.sub epoch1 (W64 1) ∧ link0 ≠ prevLink1) ⌝.
 
 Definition valid_evidServPut pk (obj : evidServPut.t) : iProp Σ :=
   ∃ link,
-  "#Hvalid_sigLn" ∷ valid_signedLink pk (obj.(evidServPut.sigLn)) link ∗
-  "#Hvalid_sigPut" ∷ valid_signedPut pk (obj.(evidServPut.sigPut)) ∗
-  "#Hvalid_merkle" ∷ valid_merkle_proof
+  valid_signedLink pk (obj.(evidServPut.sigLn)) link ∗
+  valid_signedPut pk (obj.(evidServPut.sigPut)) ∗
+  valid_merkle_proof
     obj.(evidServPut.proof)
     obj.(evidServPut.sigPut).(signedPut.id)
     obj.(evidServPut.val)
     obj.(evidServPut.sigLn).(signedLink.dig) ∗
   let epochLn := obj.(evidServPut.sigLn).(signedLink.epoch) in
   let epochPut := obj.(evidServPut.sigPut).(signedPut.epoch) in
-  "%valid_epochs" ∷ ⌜ epochLn = epochPut ⌝.
+  ⌜ epochLn = epochPut ⌝.
 
 Lemma wp_signedLink_check ptr_sigLn sigLn sl_pk pk γ d0 :
   {{{
-    "HsigLn" ∷ signedLink.own ptr_sigLn sigLn ∗
-    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γ)
+    signedLink.own ptr_sigLn sigLn ∗
+    own_slice_small sl_pk byteT d0 pk ∗
+    is_pk pk (serv_sigpred γ)
   }}}
   signedLink__check #ptr_sigLn (slice_val sl_pk)
   {{{
     sl_link (link : list w8) (err : bool), RET (slice_val sl_link, #err);
-    "HsigLen" ∷ signedLink.own ptr_sigLn sigLn ∗
-    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "Hsl_link" ∷ own_slice_small sl_link byteT (DfracOwn 1) link ∗
+    signedLink.own ptr_sigLn sigLn ∗
+    own_slice_small sl_pk byteT d0 pk ∗
+    own_slice_small sl_link byteT (DfracOwn 1) link ∗
     (* in no err case, this lets us learn enough about the link
     to tie down Hvalid_err. *)
-    "#His_link" ∷ is_link sigLn.(signedLink.epoch) sigLn.(signedLink.prevLink)
+    is_link_conn sigLn.(signedLink.epoch) sigLn.(signedLink.prevLink)
       sigLn.(signedLink.dig) link ∗
-    "Hvalid_err" ∷ (valid_signedLink pk sigLn link -∗ ⌜ err = false ⌝) ∗
-    "Hvalid" ∷ if negb err then valid_signedLink pk sigLn link else True
+    (valid_signedLink pk sigLn link -∗ ⌜ err = false ⌝) ∗
+    if negb err then valid_signedLink pk sigLn link else True
   }}}.
 Proof. Admitted.
 (*
@@ -121,16 +120,16 @@ Proof. Admitted.
 
 Lemma wp_evidServLink_check ptr_evid evid sl_pk pk γ d0 :
   {{{
-    "Hevid" ∷ evidServLink.own ptr_evid evid ∗
-    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "#Hpk" ∷ is_pk pk (serv_sigpred γ)
+    evidServLink.own ptr_evid evid ∗
+    own_slice_small sl_pk byteT d0 pk ∗
+    is_pk pk (serv_sigpred γ)
   }}}
   evidServLink__check #ptr_evid (slice_val sl_pk)
   {{{
     (err : bool), RET #err;
-    "Hevid" ∷ evidServLink.own ptr_evid evid ∗
-    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "Hvalid_evid" ∷ (valid_evidServLink pk evid -∗ ⌜ err = false ⌝) ∗
+    evidServLink.own ptr_evid evid ∗
+    own_slice_small sl_pk byteT d0 pk ∗
+    (valid_evidServLink pk evid -∗ ⌜ err = false ⌝) ∗
     if negb err then
       False ∗
       valid_evidServLink pk evid
@@ -138,102 +137,166 @@ Lemma wp_evidServLink_check ptr_evid evid sl_pk pk γ d0 :
   }}}.
 Proof.
   rewrite /evidServLink__check.
-  iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hevid".
+  iIntros (Φ) "((%&%& HsigLn0 & Hptr_sigLn0 & HsigLn1 & Hptr_sigLn1)
+    & Hsl_pk & #His_pk) HΦ".
 
-  (* check links. *)
+  (* check signed links. *)
   wp_loadField.
-  wp_apply (wp_signedLink_check with "[$HsigLn0 $Hsl_pk $Hpk]"). iEval (rewrite /named).
+  wp_apply (wp_signedLink_check with "[$HsigLn0 $Hsl_pk $His_pk]").
   iIntros (sl_link0 link0 err0)
-    "(HsigLn0 & Hsl_pk & Hsl_link0 & #His_link0 & Hvalid_err0 & Hvalid0)".
+    "(HsigLn0 & Hsl_pk & Hsl_link0 & #His_conn0 & Hgenie0 & Herr0)".
   wp_if_destruct.
-  { iApply "HΦ". iFrame. iIntros "!>". iNamed 1. iNamed "Hvalid_sigLn0".
-    iDestruct (is_link_determ with "His_link His_link0") as %->.
-    iDestruct ("Hvalid_err0" with "[]") as %[=]. iFrame "#". }
-  iDestruct "Hvalid0" as "#Hvalid0".
+  (* error. first signed link didn't validate. *)
+  { iApply "HΦ". iFrame "HsigLn0 HsigLn1 ∗".
+    iIntros "!> (%&%& #(His_conn0' & His_sig0') &_&_)".
+    iDestruct (is_link_conn_agree_l with "His_conn0 His_conn0'") as %<-.
+    iDestruct ("Hgenie0" with "[$His_conn0' $His_sig0']") as %[=]. }
+  iDestruct "Herr0" as "#Hvalid_sigLn0".
   wp_loadField.
-  wp_apply (wp_signedLink_check with "[$HsigLn1 $Hsl_pk $Hpk]"). iEval (rewrite /named).
+  wp_apply (wp_signedLink_check with "[$HsigLn1 $Hsl_pk $His_pk]").
   iIntros (sl_link1 link1 err1)
-    "(HsigLn1 & Hsl_pk & Hsl_link1 & #His_link1 & Hvalid_err1 & Hvalid1)".
+    "(HsigLn1 & Hsl_pk & Hsl_link1 & #His_conn1 & Hgenie1 & Herr1)".
   wp_if_destruct.
-  { (* not sure why i need to frame this here, but not above. *)
-    iApply "HΦ". iFrame "HsigLn0 ∗". iIntros "!>". iNamed 1. iNamed "Hvalid_sigLn1".
-    iDestruct (is_link_determ with "His_link His_link1") as %->.
-    iDestruct ("Hvalid_err1" with "[]") as %[=]. iFrame "#". }
-  iDestruct "Hvalid1" as "#Hvalid1".
+  (* error. second signed link didn't validate. *)
+  { iApply "HΦ". iFrame "HsigLn0 HsigLn1 ∗".
+    iIntros "!> (%&%&_& #(His_conn1' & His_sig1') &_)".
+    iDestruct (is_link_conn_agree_l with "His_conn1 His_conn1'") as %<-.
+    iDestruct ("Hgenie1" with "[$His_conn1' $His_sig1']") as %[=]. }
+  iDestruct "Herr1" as "#Hvalid_sigLn1".
 
-  (* check epochs. *)
-  iEval (rewrite /signedLink.own /named) in "HsigLn0".
-  iDestruct "HsigLn0" as (??????) "(Hepoch0 & HprevLink0 & Hsl_prevLink0
-    & Hdig0 & Hsl_dig0 & Hsig0 & Hsl_sig0)".
-  iEval (rewrite /signedLink.own /named) in "HsigLn1".
-  iDestruct "HsigLn1" as (??????) "(Hepoch1 & HprevLink1 & Hsl_prevLink1
-    & Hdig1 & Hsl_dig1 & Hsig1 & Hsl_sig1)".
+  (* check that links actually differ. *)
+  iDestruct "HsigLn0" as "(%&%&%&%&%&%& Hptr_epoch0 & Hptr_prevLink0 &
+    Hsl_prevLink0 & Hptr_dig0 & Hsl_dig0 & Hptr_sig0 & Hsl_sig0)".
+  iDestruct "HsigLn1" as "(%&%&%&%&%&%& Hptr_epoch1 & Hptr_prevLink1 &
+    Hsl_prevLink1 & Hptr_dig1 & Hsl_dig1 & Hptr_sig1 & Hsl_sig1)".
   wp_loadField.
   wp_loadField.
   wp_loadField.
   wp_loadField.
-  wp_if_destruct; move: Heqb1 => Heq_epoch.
+  wp_if_destruct; move: Heqb1 => Heq_epoch0.
   {
     wp_apply (wp_BytesEqual with "[$Hsl_link0 $Hsl_link1]").
     iIntros "[Hsl_link0 Hsl_link1]".
-    case_bool_decide as Heq_ln; iApply "HΦ".
+    case_bool_decide as Heq_links; iApply "HΦ".
     -
+      (* error. links shouldn't be equal. *)
       iFrame "Hptr_sigLn0 ∗".
       (* TODO: not sure why iFrame doesn't handle the True here,
       even tho it does above. *)
       iSplit; [|done].
-      iNamed 1. iNamed "Hvalid_sigLn0".
-      iDestruct (is_link_determ with "His_link His_link0") as %->.
-      iClear "His_link".
-      (* TODO: bug. this changes goal to False.
-      iNamed "Hvalid_sigLn1". *)
-      iEval (rewrite /valid_signedLink /named) in "Hvalid_sigLn1".
-      iDestruct "Hvalid_sigLn1" as "[His_link _]".
-      iDestruct (is_link_determ with "His_link His_link1") as %->.
 
-      (* main thing: links are equal. *)
+      iIntros "(%&%& #(His_conn0' &_) & #(His_conn1' &_) & %Heq_links')".
+      iDestruct (is_link_conn_agree_l with "His_conn0 His_conn0'") as %<-.
+      iDestruct (is_link_conn_agree_l with "His_conn1 His_conn1'") as %<-.
+
       iPureIntro.
-      destruct Hvalid_epoch_links as [[_ ?] | [Heq _]]; [done|].
-      rewrite Heq_epoch in Heq.
+      destruct Heq_links' as [[_ ?] | [Heq _]]; [done|].
+      rewrite Heq_epoch0 in Heq.
       assert (∀ (x : w64), x ≠ word.sub x (W64 1)) as ?.
       { intros ? H%(f_equal (word.sub x)). by ring_simplify in H. }
       naive_solver.
     -
-      (* main challenge: ret errNone, derive contra. *)
-      iAssert (valid_evidServLink pk evid) as "Hvalid2".
+      (* no error. derive contra from two diff signed links at same epoch. *)
+      iAssert (valid_evidServLink pk evid) as "Hvalid_evid".
       { iFrame "#". naive_solver. }
       iFrame "Hptr_sigLn0 ∗#".
       iSplit; [naive_solver|].
-      iClear "Hvalid2 ∗".
-      iEval (rewrite /valid_signedLink /named) in "Hvalid0 Hvalid1".
-      iDestruct "Hvalid0" as "[_ His_sig0]".
-      iDestruct "Hvalid1" as "[_ His_sig1]".
-      iDestruct (is_sig_to_pred with "Hpk His_sig0") as "{His_sig0} HP0".
-      iDestruct (is_sig_to_pred with "Hpk His_sig1") as "{Hpk His_sig1} HP1".
+      iClear "Hvalid_evid ∗".
+
+      (* extract lookups from sigs. *)
+      iDestruct "Hvalid_sigLn0" as "(_ & His_sig0)".
+      iDestruct "Hvalid_sigLn1" as "(_ & His_sig1)".
+      iDestruct (is_sig_to_pred with "His_pk His_sig0") as "{His_sig0} HP0".
+      iDestruct (is_sig_to_pred with "His_pk His_sig1") as "{His_pk His_sig1} HP1".
       iDestruct (get_serv_sigpred_link with "HP0") as "{HP0} HP0".
       iDestruct (get_serv_sigpred_link with "HP1") as "{HP1} HP1".
-      iEval (rewrite /serv_sigpred_link /named) in "HP0".
-      iDestruct "HP0" as (??? γtrees0 trees0 digs0 links0)
-        "(Hbind & HmonoIdx0 & Htree_views0 & Hdigs0 & Hdigs_links0 & %Hlink_look0)".
-      iDestruct (is_link_inj with "Hbind His_link0") as %(->&->&->).
-      iClear "Hbind His_link0".
-      iEval (rewrite /serv_sigpred_link /named) in "HP1".
-      iDestruct "HP1" as (??? γtrees1 trees1 digs1 links1)
-        "(Hbind & HmonoIdx1 & Htree_views1 & Hdigs1 & Hdigs_links1 & %Hlink_look1)".
-      iDestruct (is_link_inj with "Hbind His_link1") as %(->&->&->).
-      iClear "Hbind His_link1".
+      iDestruct "HP0" as "(%&%&%&%& His_comm_st0 & His_conn0' & %Hlook0)".
+      iDestruct "HP1" as "(%&%&%&%& His_comm_st1 & His_conn1' & %Hlook1)".
+      iDestruct (is_link_conn_agree_r with "His_conn0 His_conn0'") as %(<-&<-&<-).
+      iDestruct (is_link_conn_agree_r with "His_conn1 His_conn1'") as %(<-&<-&<-).
+      iDestruct (is_committed_state_links_prefix with "His_comm_st0 His_comm_st1")
+        as %Hpref.
 
-      assert (links0 `prefix_of` links1) as Hpref by admit.
       iPureIntro.
-      rewrite -Heq_epoch in Hlink_look1.
-      pose proof (prefix_lookup_Some _ _ _ _ Hlink_look0 Hpref) as ?.
+      rewrite -Heq_epoch0 in Hlook1.
+      destruct Hpref as [Hpref | Hpref].
+      { pose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as ?. naive_solver. }
+      { pose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpref) as ?. naive_solver. }
+  }
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_if_destruct; move: Heqb1 => Heq_epoch1.
+  {
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_BytesEqual with "[$Hsl_link0 $Hsl_prevLink1]").
+    iIntros "[Hsl_link0 Hsl_prevLink1]".
+    case_bool_decide as Heq_links; iApply "HΦ".
+    -
+      (* error. links shouldn't be equal. *)
+      iFrame "Hptr_sigLn0 ∗".
+      (* TODO: not sure why iFrame doesn't handle the True here,
+      even tho it does above. *)
+      iSplit; [|done].
+
+      iIntros "(%&%& #(His_conn0' &_) & #(His_conn1' &_) & %Heq_links')".
+      iDestruct (is_link_conn_agree_l with "His_conn0 His_conn0'") as %<-.
+      iDestruct (is_link_conn_agree_l with "His_conn1 His_conn1'") as %<-.
+
+      iPureIntro.
+      destruct Heq_links' as [[Heq _] | [_ ?]]; [|done].
+      rewrite Heq_epoch1 in Heq.
+      assert (∀ (x : w64), x ≠ word.sub x (W64 1)) as ?.
+      { intros ? H%(f_equal (word.sub x)). by ring_simplify in H. }
       naive_solver.
-      (* why'd we need prefix lemma here?
-      have two links that have lookups at the same epoch for conflicting vals.
-      need to directly relate these links to get a contra.
-      the gammaTrees are prefixes of another, so let's derive that
-      the links are prefixes of another.
-      then (as i've shown above), it's good enough to prove a contra. *)
+    -
+      (* no error. derive contra from prev.link differing from curr.prevLink. *)
+      iAssert (valid_evidServLink pk evid) as "Hvalid_evid".
+      { iFrame "#". naive_solver. }
+      iFrame "Hptr_sigLn0 ∗#".
+      iSplit; [naive_solver|].
+      iClear "Hvalid_evid ∗".
+
+      (* extract lookups from sigs. *)
+      iDestruct "Hvalid_sigLn0" as "(_ & His_sig0)".
+      iDestruct "Hvalid_sigLn1" as "(_ & His_sig1)".
+      iDestruct (is_sig_to_pred with "His_pk His_sig0") as "{His_sig0} HP0".
+      iDestruct (is_sig_to_pred with "His_pk His_sig1") as "{His_pk His_sig1} HP1".
+      iDestruct (get_serv_sigpred_link with "HP0") as "{HP0} HP0".
+      iDestruct (get_serv_sigpred_link with "HP1") as "{HP1} HP1".
+      iDestruct "HP0" as "(%&%&%&%& His_comm_st0 & His_conn0' & %Hlook0)".
+      iDestruct "HP1" as "(%&%&%&%& His_comm_st1 & His_conn1' & %Hlook1)".
+      iDestruct (is_link_conn_agree_r with "His_conn0 His_conn0'") as %(<-&<-&<-).
+      iDestruct (is_link_conn_agree_r with "His_conn1 His_conn1'") as %(<-&<-&<-).
+      iDestruct (is_committed_state_links_prefix with "His_comm_st0 His_comm_st1")
+        as %Hpref.
+
+      iPureIntro.
+      simpl in *.
+      rewrite Heq_epoch1 in Hlook0.
+      (*
+      Hlook0: links0 !! (epoch1 - 1) = Some link0.
+      Hlook1: links1 !! epoch1 = Some link1.
+      from Hlook1, should derive that:
+      links1 !! (epoch1 - 1) = Some prevLink1.
+
+      how?
+      from link sigpred, know that a specific link is smth.
+      also have prevLink tied into there with is_conn.
+      from committed state (binds), should be able to derive that
+      adjacent lookups tied together by conn.
+
+      binds says that prefixes of digs match up to links.
+      should be not too bad to prove:
+      is_link digs prevLink -∗
+      is_link (digs ++ [new_dig]) link -∗
+      is_link_conn prevLink new_dig link.
+      *)
+      destruct Hpref as [Hpref | Hpref].
+      { pose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as ?. naive_solver. }
+      { pose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpref) as ?. naive_solver. }
 
 (*
   rewrite /evidServLink__check.
