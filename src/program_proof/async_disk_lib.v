@@ -597,9 +597,9 @@ Proof.
   lia.
 Qed.
 
-Lemma wpc_Barrier E1 m  :
+Lemma wpc_Barrier stk E1 m  :
   {{{ ▷ [∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs) }}}
-    Barrier #() @ E1
+    Barrier #() @ stk; E1
     {{{ RET #();
         ⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝ ∗
           ([∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs))
@@ -665,7 +665,7 @@ Lemma wpc_Barrier0 :
   {{{ True }}}.
 Proof.
   iIntros (Φ Φc) "_ HΦ".
-  wpc_apply (wpc_Barrier _ ∅); eauto.
+  wpc_apply (wpc_Barrier _ _ ∅); eauto.
   iSplit.
   - iIntros. iLeft in "HΦ". by iApply "HΦ".
   - iNext. iIntros. iRight in "HΦ". by iApply "HΦ".
@@ -678,7 +678,7 @@ Lemma wpc_Barrier1 E1 a b0 b :
   {{{ a d↦[b0] b }}}.
 Proof.
   iIntros (Φ Φc) ">Hd HΦ".
-  wpc_apply (wpc_Barrier _ ({[ a := (b0, b)]}) with "[Hd]").
+  wpc_apply (wpc_Barrier _ _ ({[ a := (b0, b)]}) with "[Hd]").
   { iNext.  rewrite big_sepM_singleton. iFrame. }
   iSplit.
   - rewrite ?big_sepM_singleton. iLeft in "HΦ". eauto.

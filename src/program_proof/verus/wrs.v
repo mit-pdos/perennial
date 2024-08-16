@@ -1,5 +1,5 @@
-From Perennial.program_proof Require Import disk_prelude.
-From Perennial.program_proof Require Import disk_lib std_proof.
+From Perennial.program_proof Require Import async_disk_prelude.
+From Perennial.program_proof Require Import async_disk_lib std_proof.
 From Goose Require github_com.goose_lang.std.
 
 (**
@@ -15,29 +15,55 @@ From Goose Require github_com.goose_lang.std.
 package wrs
 
 import (
+	"github.com/goose-lang/goose/machine"
 	"github.com/goose-lang/goose/machine/disk"
-	"github.com/goose-lang/std"
 )
 
-func WriteMulti(d disk.Disk, a uint64, vs [][]byte) {
-	var off uint64
+func Simulate(d disk.Disk, rd func() uint64, wr func() (uint64, []byte)) {
+	for {
+		r := machine.RandomUint64()
 
-	for off < uint64(len(vs)) {
-		d.Write(std.SumAssumeNoOverflow(a, off), vs[off])
-		off = std.SumAssumeNoOverflow(off, 1)
+		if r == 0 {
+			break
+		} else if r == 1 {
+			a := rd()
+			d.Read(a)
+		} else if r == 2 {
+			a, b := wr()
+			d.Write(a, b)
+		} else if r == 3 {
+			d.Barrier()
+		}
 	}
 }
 
 *)
 
-Definition WriteMulti: val :=
-  rec: "WriteMulti" "d" "a" "vs" :=
-    let: "off" := ref (zero_val uint64T) in
+Definition Simulate: val :=
+  rec: "Simulate" "d" "rd" "wr" :=
     Skip;;
-    (for: (λ: <>, (![uint64T] "off") < (slice.len "vs")); (λ: <>, Skip) := λ: <>,
-      disk.Write (std.SumAssumeNoOverflow "a" (![uint64T] "off")) (SliceGet (slice.T byteT) "vs" (![uint64T] "off"));;
-      "off" <-[uint64T] (std.SumAssumeNoOverflow (![uint64T] "off") #1);;
-      Continue);;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "r" := rand.RandomUint64 #() in
+      (if: "r" = #0
+      then Break
+      else
+        (if: "r" = #1
+        then
+          let: "a" := "rd" #() in
+          disk.Read "a";;
+          Continue
+        else
+          (if: "r" = #2
+          then
+            let: ("a", "b") := "wr" #() in
+            disk.Write "a" "b";;
+            Continue
+          else
+            (if: "r" = #3
+            then
+              disk.Barrier #();;
+              Continue
+            else Continue)))));;
     #().
 
 Section proof.
@@ -45,26 +71,228 @@ Section proof.
 Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 
-Theorem wpc_Write stk E1 (a: u64) s q b b0 :
-  {{{ uint.Z a d↦ b0 ∗ is_block s q b }}}
+Theorem wpc_Write stk E1 (a: u64) s q bp0 b0 b :
+  {{{ uint.Z a d↦[bp0] b0 ∗ is_block s q b }}}
     disk.Write #a (slice_val s) @ stk; E1
-  {{{ RET #(); uint.Z a d↦ b ∗ is_block s q b }}}
-  {{{ uint.Z a d↦ b0 ∨ uint.Z a d↦ b }}}.
+  {{{ RET #(); ∃ bp, uint.Z a d↦[bp] b ∗ is_block s q b ∗ ⌜bp=b ∨ bp=bp0⌝}}}
+  {{{ uint.Z a d↦[bp0] b0 ∨
+      uint.Z a d↦[bp0] b ∨
+      uint.Z a d↦[b] b }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "[Hda Hs]".
   wpc_apply (wpc_Write' with "[$Hda $Hs]").
   iSplit.
-  { iLeft in "HΦ". iIntros "[Hda|Hda]"; iApply "HΦ"; eauto. }
-  iIntros "!> [Hda Hb]".
+  { iLeft in "HΦ". iIntros "[Hda|Hda]"; iApply "HΦ"; eauto.
+    iDestruct "Hda" as (bp) "[%Hbp Hda]".
+    destruct Hbp; subst; iFrame. }
   iRight in "HΦ".
-  iApply "HΦ"; iFrame.
+  iIntros "!> (%bp & %Hbp & Hda & Hb)".
+  iApply "HΦ".
+  destruct Hbp; subst; iFrame; eauto.
 Qed.
 
-Theorem wpc_WriteMulti d (a : u64) s q (bslices : list Slice.t) bs bs0 stk E1 :
+(**
+ * Write-restricted storage in Verus:
+ *
+ *   precondition of serialize_and_write:
+ *   https://github.com/microsoft/verified-storage/blob/main/storage_node/src/pmem/wrpm_t.rs
+ *
+ *   example of a Permission object (check_permission):
+ *   https://github.com/microsoft/verified-storage/blob/main/storage_node/src/log/logimpl_t.rs
+ *)
+
+Definition disk_state := gmap Z Block.
+Definition own_disk (dcrash d : disk_state) : iProp Σ :=
+  [∗ map] a↦vcrash;v ∈ dcrash;d, a d↦[vcrash] v.
+
+Lemma disk_insert_acc (dcrash d : disk_state) (a : Z) :
+  ⌜a ∈ dom d⌝ -∗
+  own_disk dcrash d -∗
+  ∃ vcrash v,
+    a d↦[vcrash] v ∗ ⌜dcrash !! a = Some vcrash⌝ ∗ ⌜d !! a = Some v⌝ ∗
+    (∀ vcrash' v',
+      a d↦[vcrash'] v' -∗
+        own_disk (<[a:=vcrash']> dcrash) (<[a:=v']> d)).
+Proof.
+  iIntros "%Hdom Hdiskmap".
+  iDestruct (big_sepM2_dom with "Hdiskmap") as "%Hdomeq".
+  destruct (elem_of_dom d a) as [Hd _]. destruct (Hd Hdom).
+  rewrite -Hdomeq in Hdom.
+  destruct (elem_of_dom dcrash a) as [Hdcrash _]. destruct (Hdcrash Hdom).
+  iDestruct (big_sepM2_insert_acc with "Hdiskmap") as "[Ha Hacc]"; eauto.
+  iExists _, _. iFrame. done.
+Qed.
+
+Lemma disk_lookup_acc (dcrash d : disk_state) (a : Z) :
+  ⌜a ∈ dom d⌝ -∗
+  own_disk dcrash d -∗
+  ∃ vcrash v,
+    a d↦[vcrash] v ∗ ⌜dcrash !! a = Some vcrash⌝ ∗ ⌜d !! a = Some v⌝ ∗
+    (a d↦[vcrash] v -∗
+      own_disk dcrash d).
+Proof.
+  iIntros "%Hdom Hdiskmap".
+  iDestruct (disk_insert_acc with "[] Hdiskmap") as (vcrash v) "(Ha & %Hclookup & %Hlookup & Hacc)".
+  { done. }
+  iFrame. iSplit; first done. iSplit; first done.
+  iIntros "Ha". iSpecialize ("Hacc" with "Ha").
+  rewrite insert_id; eauto.
+  rewrite insert_id; eauto.
+Qed.
+
+(* P is the equivalent of the opaque check_permission from write-restricted storage *)
+Axiom P : disk_state -> iProp Σ.
+
+Theorem wpc_Simulate ds d rd wr stk E1 :
+  {{{ "Hd" ∷ own_disk ds ds ∗
+      "HP" ∷ P ds ∗
+      "#Hrd" ∷ {{{ True }}} #rd #() @ stk; E1 {{{ (a:u64), RET #a; ⌜uint.Z a ∈ dom ds⌝ }}} ∗
+      "#Hwr" ∷ {{{ True }}} #wr #() @ stk; E1 {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s); ⌜uint.Z a ∈ dom ds⌝ ∗ is_block s q b }}}
+  }}}
+    Simulate #d #rd #wr @ stk; E1
+  {{{ RET #(); ∃ cds' ds',
+      own_disk cds' ds' ∗
+      P ds'
+  }}}
+  {{{ ∃ cds' ds',
+      own_disk cds' ds' ∗
+      P cds'
+  }}}.
+Proof.
+  iIntros (Φ Φc) "H HΦ". iNamed "H".
+  wpc_call.
+  { iExists ds, ds. iFrame. }
+  { iExists ds, ds. iFrame. }
+  iCache with "HΦ Hd HP".
+  { crash_case.
+    iExists ds, ds. iFrame. }
+  wpc_pures.
+
+  iAssert (∃ cds' ds',
+    "Hd" ∷ own_disk cds' ds' ∗
+    "HP" ∷ P ds' ∗
+    "Hupd" ∷ (P ds' -∗ P cds') ∗
+    "%Hdom'" ∷ ⌜dom ds = dom ds'⌝)%I with "[Hd HP]" as "Hloop".
+  { iFrame. eauto. }
+
+  wpc_apply (wpc_forBreak_cond_2 with "[-]").
+  { iNamedAccu. }
+  { iNamed 1. crash_case. iNamed "Hloop".
+    iExists cds', ds'. iFrame.
+    iApply "Hupd". iFrame.
+  }
+
+  iModIntro. iNamed 1.
+  iCache with "HΦ Hloop".
+  { crash_case. iNamed "Hloop".
+    iExists cds', ds'. iFrame.
+    iApply "Hupd". iFrame.
+  }
+
+  wpc_pures.
+  wpc_frame_seq.
+  wp_apply (wp_RandomUint64).
+  iIntros (r) "_". iNamed 1.
+  wpc_pures.
+  wpc_if_destruct.
+  {
+    wpc_pures.
+    iModIntro. iRight. iSplitR; first by done.
+    iSplit; last by iFromCache.
+    wpc_pures.
+    iModIntro. iRight in "HΦ". iApply "HΦ".
+    iNamed "Hloop". iFrame.
+  }
+
+  wpc_pures.
+  wpc_if_destruct.
+  {
+    wpc_pures.
+    wpc_frame_seq.
+    wp_apply "Hrd".
+    iIntros (a) "%Ha". iNamed 1. iNamed "Hloop".
+    iDestruct (disk_lookup_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
+    { rewrite -Hdom'. done. }
+    wpc_pures.
+    { crash_case.
+      iSpecialize ("Hacc" with "Ha"). iFrame "Hacc". iApply "Hupd". iFrame. }
+    wpc_apply (wpc_Read with "Ha").
+    iSplit.
+    { iIntros "Ha". crash_case.
+      iSpecialize ("Hacc" with "Ha"). iFrame "Hacc". iApply "Hupd". iFrame. }
+    iIntros (s) "!> [Ha Hs]".
+    iSpecialize ("Hacc" with "Ha").
+    wpc_pures.
+    { crash_case. iFrame "Hacc". iApply "Hupd". iFrame. }
+    iModIntro. iLeft. iSplit; first done.
+    iFrame. done.
+  }
+
+  wpc_pures.
+  wpc_if_destruct.
+  {
+    wpc_pures.
+    wpc_frame_seq.
+    wp_apply "Hwr".
+    iIntros (a s q b) "(%Ha & Hb)". iNamed 1. iNamed "Hloop".
+    iDestruct (disk_insert_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
+    { rewrite -Hdom'. done. }
+    wpc_pures.
+    { crash_case.
+      iSpecialize ("Hacc" with "Ha"). rewrite insert_id; eauto. rewrite insert_id; eauto.
+      iFrame "Hacc". iApply "Hupd". iFrame. }
+    wpc_apply (wpc_Write with "[$Ha $Hb]").
+    iSplit.
+    { iIntros "Ha". crash_case.
+      (* XXX the one interesting part of the proof! *)
+      admit. }
+    iModIntro. iIntros "H". iDestruct "H" as (bp) "(Ha & Hb & %Hcrash)".
+    iSpecialize ("Hacc" with "Ha").
+    wpc_pures.
+    { crash_case.
+      (* XXX the one interesting part of the proof! *)
+      admit. }
+    iModIntro. iLeft. iSplit; first done.
+    iFrame.
+    rewrite dom_insert_L.
+    admit.
+  }
+
+  wpc_pures.
+  wpc_if_destruct.
+  {
+    wpc_pures.
+    iNamed "Hloop".
+    iDestruct (big_sepM2_alt with "Hd") as "[%Hddom Hdzip]".
+    wpc_apply (wpc_Barrier _ _ (map_zip cds' ds') with "Hdzip").
+    iSplit.
+    { iIntros "Hdzip". crash_case.
+      iExists cds', ds'. iSplitL "Hdzip".
+      { iApply big_sepM2_alt. iFrame. done. }
+      iApply "Hupd". iFrame.
+    }
+    iIntros "!> [%Hbarrier Hdzip]".
+    (* Hbarrier says cds'=ds', need to find extensional equality lemma *)
+    replace cds' with ds' by admit.
+    iDestruct (big_sepM2_alt (λ a b c, a d↦[b] c)%I ds' ds' with "[$Hdzip]") as "Hd".
+    { eauto. }
+    wpc_pures.
+    { crash_case. iExists _, _. iFrame "Hd". iFrame. }
+    iModIntro. iLeft. iSplit; first done.
+    iFrame. done.
+  }
+
+  wpc_pures.
+  iModIntro. iLeft. iSplit; first done.
+  iFrame.
+Admitted.
+
+(*
+Theorem wpc_WriteMulti d (a : u64) s q (bslices : list Slice.t) bs (bs0 : list (Block*Block)) stk E1 :
   {{{ own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
       ([∗ list] bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b)) ∗
-      ([∗ list] i ↦ b0 ∈ bs0, (uint.Z a + i) d↦ b0) ∗
+      ([∗ list] i ↦ bp0b0 ∈ bs0, (uint.Z a + i) d↦[fst bp0b0] (snd bp0b0)) ∗
       ⌜ length bs = length bs0 ⌝
   }}}
     WriteMulti #d #a (slice_val s) @ stk; E1
@@ -228,23 +456,9 @@ Proof.
     2: { rewrite -Hlen -Hlen2 Hslicesz. rewrite Z_u64 in Heqb; lia. }
     rewrite app_nil_r. iFrame.
 Qed.
+*)
 
-(**
- * Write-restricted storage in Verus:
- *
- *   precondition of serialize_and_write:
- *   https://github.com/microsoft/verified-storage/blob/main/storage_node/src/pmem/wrpm_t.rs
- *
- *   example of a Permission object (check_permission):
- *   https://github.com/microsoft/verified-storage/blob/main/storage_node/src/log/logimpl_t.rs
- *)
-
-Definition disk_state := gmap Z Block.
-Definition own_disk (d : disk_state) : iProp Σ :=
-  [∗ map] a↦v ∈ d, a d↦ v.
-
-(* P is the equivalent of the opaque check_permission from write-restricted storage *)
-Axiom P : disk_state -> iProp Σ.
+(*
 
 (* Simplified version of write().can_crash_as() *)
 Fixpoint write_blocks (d : disk_state) (a : Z) (blocks : list Block) : disk_state :=
@@ -425,5 +639,6 @@ Proof.
     iApply "Hwrs". 2: iFrame.
     iPureIntro. eexists _; eauto.
 Qed.
+*)
 
 End proof.

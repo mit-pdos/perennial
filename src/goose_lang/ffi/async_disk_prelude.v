@@ -16,12 +16,13 @@ Module disk.
   Notation Read := async_disk_proph.Read.
   Notation ReadTo := async_disk_proph.ReadTo.
   Notation Barrier := async_disk_proph.Barrier.
+  Notation Size := async_disk_proph.Size.
 End disk.
 
 Module async_disk.
-  Notation BlockSize := async_disk_syntax.BlockSize.
   Notation Write := async_disk_proph.Write.
   Notation Read := async_disk_proph.Read.
   Notation ReadTo := async_disk_proph.ReadTo.
   Notation Barrier := async_disk_proph.Barrier.
+  Notation Size := async_disk_proph.Size.
 End async_disk.
