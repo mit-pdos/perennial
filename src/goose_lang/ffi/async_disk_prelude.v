@@ -20,6 +20,7 @@ Module disk.
 End disk.
 
 Module async_disk.
+  Notation BlockSize := async_disk_syntax.BlockSize.
   Notation Write := async_disk_proph.Write.
   Notation Read := async_disk_proph.Read.
   Notation ReadTo := async_disk_proph.ReadTo.
