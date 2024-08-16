@@ -141,54 +141,68 @@ Proof.
   rewrite insert_id; eauto.
 Qed.
 
-(* P is the equivalent of the opaque check_permission from write-restricted storage *)
-Axiom P : disk_state -> iProp Σ.
+Section WRS.
 
-Theorem wpc_Simulate ds d rd wr stk E1 :
-  {{{ "Hd" ∷ own_disk ds ds ∗
-      "HP" ∷ P ds ∗
-      "#Hrd" ∷ {{{ True }}} #rd #() @ stk; E1 {{{ (a:u64), RET #a; ⌜uint.Z a ∈ dom ds⌝ }}} ∗
-      "#Hwr" ∷ {{{ True }}} #wr #() @ stk; E1 {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s); ⌜uint.Z a ∈ dom ds⌝ ∗ is_block s q b }}}
+(* Roughly equivalent to the opaque check_permission from write-restricted storage *)
+Parameter P : disk_state -> disk_state -> iProp Σ.
+Parameter Pcrash : disk_state -> iProp Σ.
+Parameter Pcfupd : ∀ cds ds, P cds ds -∗ |C={⊤}=> Pcrash cds.
+
+Theorem wpc_Simulate cds ds d rd wr stk :
+  {{{ "Hd" ∷ own_disk cds ds ∗
+      "HP" ∷ P cds ds ∗
+      "#Hrd" ∷ {{{ True }}}
+                  #rd #() @ stk; ⊤
+               {{{ (a:u64), RET #a;
+                   "%Ha" ∷ ⌜uint.Z a ∈ dom ds⌝ }}} ∗
+      "#Hwr" ∷ {{{ True }}}
+                  #wr #() @ stk; ⊤
+               {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s);
+                   "%Ha" ∷ ⌜uint.Z a ∈ dom ds⌝ ∗
+                   "Hb" ∷ is_block s q b ∗
+                   "Hwr_fupd" ∷ (∀ cds ds, P cds ds ==∗ P cds (<[uint.Z a := b]> ds) ∧
+                                                        P (<[uint.Z a := b]> cds) (<[uint.Z a := b]> ds))
+               }}}
   }}}
-    Simulate #d #rd #wr @ stk; E1
+    Simulate #d #rd #wr @ stk; ⊤
   {{{ RET #(); ∃ cds' ds',
       own_disk cds' ds' ∗
-      P ds'
+      P cds' ds'
   }}}
   {{{ ∃ cds' ds',
       own_disk cds' ds' ∗
-      P cds'
+      Pcrash cds'
   }}}.
 Proof.
   iIntros (Φ Φc) "H HΦ". iNamed "H".
+  iApply wpc_cfupd.
   wpc_call.
-  { iExists ds, ds. iFrame. }
-  { iExists ds, ds. iFrame. }
+  { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+    iModIntro. crash_case. iFrame. }
+  { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+    iModIntro. crash_case. iFrame. }
   iCache with "HΦ Hd HP".
-  { crash_case.
-    iExists ds, ds. iFrame. }
+  { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+    iModIntro. crash_case. iFrame. }
   wpc_pures.
 
   iAssert (∃ cds' ds',
     "Hd" ∷ own_disk cds' ds' ∗
-    "HP" ∷ P ds' ∗
-    "Hupd" ∷ (P ds' -∗ P cds') ∗
+    "HP" ∷ P cds' ds' ∗
     "%Hdom'" ∷ ⌜dom ds = dom ds'⌝)%I with "[Hd HP]" as "Hloop".
-  { iFrame. eauto. }
+  { iFrame. done. }
 
   wpc_apply (wpc_forBreak_cond_2 with "[-]").
   { iNamedAccu. }
-  { iNamed 1. crash_case. iNamed "Hloop".
-    iExists cds', ds'. iFrame.
-    iApply "Hupd". iFrame.
-  }
+  { iNamed 1. iNamed "Hloop".
+    iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+    iModIntro. crash_case. iFrame. }
 
   iModIntro. iNamed 1.
   iCache with "HΦ Hloop".
-  { crash_case. iNamed "Hloop".
-    iExists cds', ds'. iFrame.
-    iApply "Hupd". iFrame.
-  }
+  { iNamed "Hloop".
+    iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+    iModIntro. crash_case. iFrame. }
 
   wpc_pures.
   wpc_frame_seq.
@@ -211,20 +225,25 @@ Proof.
     wpc_pures.
     wpc_frame_seq.
     wp_apply "Hrd".
-    iIntros (a) "%Ha". iNamed 1. iNamed "Hloop".
+    iIntros (a). iNamed 1. iNamed 1. iNamed "Hloop".
     iDestruct (disk_lookup_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
     { rewrite -Hdom'. done. }
     wpc_pures.
     { crash_case.
-      iSpecialize ("Hacc" with "Ha"). iFrame "Hacc". iApply "Hupd". iFrame. }
+      iSpecialize ("Hacc" with "Ha").
+      iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+      iModIntro. crash_case. iFrame. }
     wpc_apply (wpc_Read with "Ha").
     iSplit.
-    { iIntros "Ha". crash_case.
-      iSpecialize ("Hacc" with "Ha"). iFrame "Hacc". iApply "Hupd". iFrame. }
+    { iIntros "Ha".
+      iSpecialize ("Hacc" with "Ha").
+      iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+      iModIntro. crash_case. iFrame. }
     iIntros (s) "!> [Ha Hs]".
     iSpecialize ("Hacc" with "Ha").
     wpc_pures.
-    { crash_case. iFrame "Hacc". iApply "Hupd". iFrame. }
+    { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+      iModIntro. crash_case. iFrame. }
     iModIntro. iLeft. iSplit; first done.
     iFrame. done.
   }
@@ -235,28 +254,52 @@ Proof.
     wpc_pures.
     wpc_frame_seq.
     wp_apply "Hwr".
-    iIntros (a s q b) "(%Ha & Hb)". iNamed 1. iNamed "Hloop".
+    iIntros (a s q b). iNamed 1. iNamed 1. iNamed "Hloop".
     iDestruct (disk_insert_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
     { rewrite -Hdom'. done. }
     wpc_pures.
-    { crash_case.
-      iSpecialize ("Hacc" with "Ha"). rewrite insert_id; eauto. rewrite insert_id; eauto.
-      iFrame "Hacc". iApply "Hupd". iFrame. }
+    { iSpecialize ("Hacc" with "Ha"). rewrite ?insert_id //.
+      iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+      iModIntro. crash_case. iFrame. }
     wpc_apply (wpc_Write with "[$Ha $Hb]").
     iSplit.
-    { iIntros "Ha". crash_case.
-      (* XXX the one interesting part of the proof! *)
-      admit. }
+    { iIntros "Ha". iDestruct "Ha" as "[Ha | [Ha | Ha]]".
+      + iSpecialize ("Hacc" with "Ha"). rewrite ?insert_id //.
+        iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+        iModIntro. crash_case. iFrame.
+      + iSpecialize ("Hacc" with "Ha"). rewrite insert_id //.
+        iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+        iModIntro. crash_case. iFrame.
+      + iSpecialize ("Hacc" with "Ha").
+        iIntros "HC". iMod ("Hwr_fupd" with "HP") as "HP". iRight in "HP".
+        iMod (Pcfupd with "HP HC") as "HP".
+        iModIntro. crash_case. iFrame.
+    }
     iModIntro. iIntros "H". iDestruct "H" as (bp) "(Ha & Hb & %Hcrash)".
     iSpecialize ("Hacc" with "Ha").
+    iMod ("Hwr_fupd" with "HP") as "HP".
     wpc_pures.
-    { crash_case.
-      (* XXX the one interesting part of the proof! *)
-      admit. }
-    iModIntro. iLeft. iSplit; first done.
-    iFrame.
-    rewrite dom_insert_L.
-    admit.
+    { destruct Hcrash; subst.
+      + iRight in "HP".
+        iIntros "HC".
+        iMod (Pcfupd with "HP HC") as "HP".
+        iModIntro. crash_case. iFrame.
+      + rewrite insert_id //.
+        iLeft in "HP".
+        iIntros "HC".
+        iMod (Pcfupd with "HP HC") as "HP".
+        iModIntro. crash_case. iFrame.
+    }
+    iLeft.
+    destruct Hcrash; subst.
+    + iRight in "HP".
+      iModIntro. iSplit; first done. iFrame.
+      rewrite dom_insert_L.
+      iPureIntro. set_solver.
+    + iLeft in "HP". rewrite insert_id //.
+      iModIntro. iSplit; first done. iFrame.
+      rewrite dom_insert_L.
+      iPureIntro. set_solver.
   }
 
   wpc_pures.
@@ -267,18 +310,30 @@ Proof.
     iDestruct (big_sepM2_alt with "Hd") as "[%Hddom Hdzip]".
     wpc_apply (wpc_Barrier _ _ (map_zip cds' ds') with "Hdzip").
     iSplit.
-    { iIntros "Hdzip". crash_case.
-      iExists cds', ds'. iSplitL "Hdzip".
-      { iApply big_sepM2_alt. iFrame. done. }
-      iApply "Hupd". iFrame.
+    { iIntros "Hdzip".
+      iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+      iModIntro. crash_case.
+      iExists cds', ds'. iFrame.
+      iApply big_sepM2_alt. iFrame. done.
     }
     iIntros "!> [%Hbarrier Hdzip]".
-    (* Hbarrier says cds'=ds', need to find extensional equality lemma *)
-    replace cds' with ds' by admit.
+    assert (cds' = ds') as Hdseq.
+    { apply map_eq. intro i. specialize (Hbarrier i).
+      destruct (cds' !! i) eqn:Hi.
+      - assert (i ∈ dom ds') as Hin. { rewrite -Hddom. apply elem_of_dom. eauto. }
+        apply elem_of_dom in Hin. destruct Hin as [b' Hin].
+        epose proof (map_zip_lookup_some _ _ _ _ _ Hi Hin) as Hz.
+        specialize (Hbarrier _ Hz).
+        apply map_lookup_zip_Some in Hz. simpl in *; subst. intuition congruence.
+      - assert (i ∉ dom ds') as Hin. { rewrite -Hddom. apply not_elem_of_dom. eauto. }
+        apply not_elem_of_dom in Hin. rewrite Hi. rewrite Hin. congruence.
+    }
+    rewrite Hdseq.
     iDestruct (big_sepM2_alt (λ a b c, a d↦[b] c)%I ds' ds' with "[$Hdzip]") as "Hd".
     { eauto. }
     wpc_pures.
-    { crash_case. iExists _, _. iFrame "Hd". iFrame. }
+    { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+      iModIntro. crash_case. iFrame. }
     iModIntro. iLeft. iSplit; first done.
     iFrame. done.
   }
@@ -286,7 +341,39 @@ Proof.
   wpc_pures.
   iModIntro. iLeft. iSplit; first done.
   iFrame.
-Admitted.
+Qed.
+
+End WRS.
+
+Section WRS_StateMachine.
+
+Parameter State : Type.
+Parameter step : State -> State -> Prop.
+Parameter abs : disk_state -> State.
+
+(* ... *)
+
+(*
+Definition Psm γ :=
+
+*)
+
+
+(*
+      "#Hwr" ∷ {{{ True }}}
+                  #wr #() @ stk; ⊤
+               {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s);
+                   "%Ha" ∷ ⌜uint.Z a ∈ dom ds⌝ ∗
+                   "Hb" ∷ is_block s q b ∗
+                   "Hwr_fupd" ∷ (∀ cds ds, P cds ds ==∗ P cds (<[uint.Z a := b]> ds) ∧
+                                                        P (<[uint.Z a := b]> cds) (<[uint.Z a := b]> ds))
+               }}}
+
+  
+*)
+
+End WRS_StateMachine.
+
 
 (*
 Theorem wpc_WriteMulti d (a : u64) s q (bslices : list Slice.t) bs (bs0 : list (Block*Block)) stk E1 :
