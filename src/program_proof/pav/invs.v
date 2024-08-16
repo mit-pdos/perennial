@@ -7,10 +7,24 @@ From Perennial.base_logic.lib Require Import ghost_map.
 Section shared.
 Class pavG Σ :=
   {
-    mono_trees :> mono_listG gname Σ;
-    tree_maps :> ghost_mapG Σ (list w8) (list w8);
+    pavG_mono_key_maps :> mono_listG gname Σ;
+    pavG_key_map_views :> ghost_mapG Σ (list w8) (list w8);
   }.
 End shared.
+
+Section prefixes.
+Context {A : Type}.
+
+Fixpoint suffixes (l : list A) : list (list A) :=
+  match l with
+  | [] => [[]]
+  | x :: l' => suffixes l' ++ [l]
+  end.
+
+Definition prefixes (l : list A) := reverse <$> suffixes (reverse l).
+Global Instance prefixes_proper : Proper (prefix ==> prefix) prefixes.
+Proof. Admitted.
+End prefixes.
 
 Section chain.
 Context `{!heapGS Σ, !pavG Σ}.
@@ -39,6 +53,32 @@ Proof.
   by pose proof (chainSepSome.inj _ _ Heq) as [=->].
 Qed.
 
+(* this version just talks about the latest link.
+it takes more effort to talk about all links,
+but the resulting object might be easier to reason about
+since it's more "local".
+all digs are on one side and a link is on the other side. *)
+Fixpoint is_link_aux (data : list (list w8)) (link : list w8) : iProp Σ :=
+  match data with
+  | [] => is_hash [(W8 0)] link
+  | d :: data' =>
+    ∃ prevLink,
+    is_link_conn (length data') prevLink d link ∗
+    is_link_aux data' prevLink
+  end.
+
+Definition is_link data link := is_link_aux (reverse data) link.
+
+Global Instance is_link_pers data link : Persistent (is_link data link).
+Proof. Admitted.
+
+Lemma is_link_agree_l data link0 link1 :
+  is_link data link0 -∗ is_link data link1 -∗ ⌜ link0 = link1 ⌝.
+Proof. Admitted.
+
+Definition binds (data links : list (list w8)) : iProp Σ :=
+  ([∗ list] pref;link ∈ (prefixes data);links, is_link pref link).
+
 (* this version zips the data directly to the links,
 by currying the nextLink.
 not sure how hard it is to work with. *)
@@ -56,58 +96,15 @@ Definition alt_binds data links : iProp Σ :=
   | [] => False
   | l :: links' => alt_binds_aux l (reverse data) links'
   end.
-
-(* this version just talks about the latest link.
-it takes more effort to talk about all links,
-but the resulting object might be easier to reason about
-since it's more "local".
-all digs are on one side and a link is on the other side. *)
-Fixpoint is_link_aux (data : list (list w8)) (link : list w8) : iProp Σ :=
-  match data with
-  | [] => is_hash [(W8 0)] link
-  | d :: data' =>
-    ∃ prevLink,
-    is_link_conn (length data') prevLink d link ∗
-    is_link_aux data' prevLink
-  end.
-
-Definition is_link data link := is_link_aux (reverse data) link.
-
-#[global]
-Instance is_link_pers data link : Persistent (is_link data link).
-Proof. Admitted.
-
-Lemma is_link_agree_l data link0 link1 :
-  is_link data link0 -∗ is_link data link1 -∗ ⌜ link0 = link1 ⌝.
-Proof. Admitted.
-
-Fixpoint suffixes {A : Type} (l : list A) : list (list A) :=
-  match l with
-  | [] => [[]]
-  | x :: l' => suffixes l' ++ [l]
-  end.
-
-Definition prefixes {A : Type} (l : list A) := reverse <$> suffixes (reverse l).
-
-Lemma prefix_of_prefixes {A : Type} (l1 l2 : list A) :
-  l1 `prefix_of` l2 →
-  prefixes l1 `prefix_of` prefixes l2.
-Proof. Admitted.
-
-Definition binds (data links : list (list w8)) : iProp Σ :=
-  ([∗ list] pref;link ∈ (prefixes data);links,
-    is_link pref link).
-
 End chain.
 
 Section global_inv.
 Context `{!heapGS Σ, !pavG Σ}.
 Definition global_inv γ : iProp Σ :=
-  ∃ γtrees trees,
-  (* γ commits to all the tree γs, including the next tr. *)
-  "HmonoTrees" ∷ mono_list_auth_own γ (1/2) γtrees ∗
-  "Htree_views" ∷ ([∗ list] γtr; tr ∈ γtrees; trees,
-    ghost_map_auth γtr (1/2) tr).
+  ∃ γkey_maps key_maps,
+  (* γ commits to all the key_map γs, including the next key_map. *)
+  mono_list_auth_own γ (1/2) γkey_maps ∗
+  ([∗ list] γ;m ∈ γkey_maps;key_maps, ghost_map_auth γ (1/2) m).
 End global_inv.
 
 Section serv_sigpreds.
@@ -137,8 +134,8 @@ Definition serv_sigpred_link γ link : iProp Σ :=
 (* entry exists at a specific (potentially uncommitted) epoch. *)
 Definition serv_sigpred_put γ (put_sep : servSepPut.t) : iProp Σ :=
   ∃ γtr,
-  "#Htr_idx" ∷ mono_list_idx_own γ (uint.nat put_sep.(servSepPut.epoch)) γtr ∗
-  "#Hentry" ∷ put_sep.(servSepPut.id) ↪[γtr]□ put_sep.(servSepPut.val).
+  mono_list_idx_own γ (uint.nat put_sep.(servSepPut.epoch)) γtr ∗
+  put_sep.(servSepPut.id) ↪[γtr]□ put_sep.(servSepPut.val).
 
 Definition serv_sigpred γ : (list w8 → iProp Σ) :=
   λ data,
@@ -256,11 +253,11 @@ so l2 prefix_of l4.
 *)
 
 (* extending the prefix_of property of γkey_maps all the way down to links. *)
-Lemma serv_sigpred_link_def_prefix γ comm_st0 comm_st1 :
-  is_committed_state γ comm_st0 -∗
-  is_committed_state γ comm_st1 -∗
-  ⌜ comm_st0.(links) `prefix_of` comm_st1.(links) ∨
-    comm_st1.(links) `prefix_of` comm_st0.(links) ⌝.
+Lemma is_committed_state_links_prefix γ cs0 cs1 :
+  is_committed_state γ cs0 -∗
+  is_committed_state γ cs1 -∗
+  ⌜ cs0.(links) `prefix_of` cs1.(links) ∨
+    cs1.(links) `prefix_of` cs0.(links) ⌝.
 Proof.
   iIntros "#HP0 #HP1".
   iDestruct "HP0" as "(Hmono_map0 & Hmap_views0 & Hmap_digs0 & Hdig_links0)".
@@ -277,11 +274,8 @@ Proof.
   { iIntros "**". by iApply is_tree_dig_agree. }
   iClear "Hmap_digs0 Hmap_digs1".
 
-  assert (prefixes comm_st0.(digs) `prefix_of` prefixes comm_st1.(digs) ∨
-    prefixes comm_st1.(digs) `prefix_of` prefixes comm_st0.(digs)) as Hpref3.
-  { intuition (eauto using prefix_of_prefixes). }
   iDestruct (big_sepL2_prefix_carry with "[] Hdig_links0 Hdig_links1") as %Hpref4.
-  { done. }
+  { intuition solve_proper. }
   { iIntros "**". by iApply is_link_agree_l. }
   done.
 Qed.
