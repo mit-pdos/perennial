@@ -106,6 +106,23 @@ Section bi.
     by iDestruct ("Himpl" with "[] [] [] HΦ HR") as "[HΨ HR]"; last iFrame.
   Qed.
 
+  Lemma big_sepM_sepM2_impl `{Countable K} {A B}
+    (Φ : K → A → PROP) (Ψ : K → A -> B → PROP)
+    (m1 : gmap K A) (m2 : gmap K B) :
+    dom m2 = dom m1 →
+    ([∗ map] k↦x ∈ m1, Φ k x) -∗
+    □ (∀ (k : K) (x : A) (y : B),
+         ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ →
+         Φ k x -∗ Ψ k x y) -∗
+    ([∗ map] k↦x;y ∈ m1;m2, Ψ k x y).
+  Proof.
+    iIntros (Hdom) "Hm1 #Himpl".
+    iDestruct (big_sepM_sepM2_impl_res Φ Ψ emp with "Hm1 [] []")
+      as "[HΨ _]"; [done | done | | by iFrame].
+    iIntros "!>" (k x y Hx Hy) "HΦ _".
+    by iDestruct ("Himpl" with "[] [] HΦ") as "HΨ"; last iFrame.
+  Qed.
+
   Lemma big_sepM2_sepM_impl `{Countable K} {A B C}
     (Φ : K → A -> B → PROP) (Ψ : K → C → PROP)
     (m1 : gmap K A) (m2 : gmap K B) (m3 : gmap K C) :
@@ -140,7 +157,30 @@ Section bi.
     by iApply ("Himpl" with "[] HΦ HR").
   Qed.
 
-  Lemma big_sepM_dom_subseteq_split `{Countable K} {A}
+  Lemma big_sepM2_impl_res `{Countable K} {A B}
+    (Φ : K → A → B -> PROP) (Ψ : K → A -> B → PROP) (R : PROP)
+    (m1 : gmap K A) (m2 : gmap K B) :
+    ([∗ map] k↦x;y ∈ m1;m2, Φ k x y) -∗
+    R -∗
+    □ (∀ (k : K) (x : A) (y : B),
+         ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ →
+         Φ k x y -∗ R -∗ Ψ k x y ∗ R) -∗
+    ([∗ map] k↦x;y ∈ m1;m2, Ψ k x y) ∗ R.
+  Proof.
+    iIntros "HΦ HR #Himpl".
+    rewrite 2!big_sepM2_alt.
+    iDestruct "HΦ" as "[%Hdom HΦ]".
+    iDestruct (big_sepM_impl_res _ (λ k xy, Ψ k xy.1 xy.2) with "HΦ HR []") as "[HΨ Hm]".
+    { iIntros "!>" (k xy Hxy) "HΦ HR".
+      destruct xy as [x y].
+      rewrite map_lookup_zip_Some in Hxy.
+      destruct Hxy as [Hx Hy].
+      by iDestruct ("Himpl" with "[] [] HΦ HR") as "[HΨ HR]"; last iFrame.
+    }
+    iFrame "∗ %".
+  Qed.
+
+  Lemma big_sepM_dom_subseteq_difference `{Countable K} {A}
     (Φ : K -> A -> PROP) (m : gmap K A) (s : gset K) :
     s ⊆ dom m ->
     ([∗ map] k↦x ∈ m, Φ k x) -∗
@@ -183,7 +223,19 @@ Section bi.
     by inversion Hy.
   Qed.
 
-  Lemma big_sepM_difference_combine `{Countable K} {A}
+  Lemma big_sepM_subseteq_difference_1 `{Countable K} {A}
+    (Φ : K -> A -> PROP) (m1 m2 : gmap K A) :
+    m1 ⊆ m2 ->
+    ([∗ map] k↦x ∈ m2, Φ k x) -∗
+    ([∗ map] k↦x ∈ m1, Φ k x) ∗ ([∗ map] k↦x ∈ m2 ∖ m1, Φ k x).
+  Proof.
+    iIntros (Hsubseteq) "Hm2".
+    rewrite -{1}(map_difference_union _ _ Hsubseteq) big_sepM_union; last first.
+    { by apply map_disjoint_difference_r. }
+    iFrame.
+  Qed.
+
+  Lemma big_sepM_subseteq_difference_2 `{Countable K} {A}
     (Φ : K -> A -> PROP) (m1 m2 : gmap K A) :
     m1 ⊆ m2 ->
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
@@ -229,6 +281,51 @@ Section bi.
     iFrame.
   Qed.
 
+  Lemma big_sepS_big_sepM `{Countable K} {A} (Φ : K -> PROP) (m : gmap K A) :
+    ([∗ set] k ∈ dom m, Φ k) ⊣⊢ ([∗ map] k ↦ v ∈ m, Φ k).
+  Proof.
+    iInduction m as [| k x m Hnone] "IH" using map_ind.
+    { rewrite dom_empty_L. by iSplit; iIntros "_". }
+    rewrite dom_insert_L big_sepS_insert; last first.
+    { by apply not_elem_of_dom_2. }
+    rewrite big_sepM_insert; last apply Hnone.
+    by iSplit; iIntros "Hm"; iDestruct "Hm" as "[Hk Hm]";  iFrame; iApply "IH".
+  Qed.
+
+  Lemma big_sepM_big_sepM2_1 `{Countable K} {A B}
+    (Φ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    dom m2 = dom m1 ->
+    ([∗ map] k ↦ v ∈ m1, Φ k v) -∗
+    ([∗ map] k ↦ v;_ ∈ m1;m2, Φ k v).
+  Proof.
+    iIntros (Hdom) "Hm1".
+    iApply (big_sepM_sepM2_impl with "Hm1"); first apply Hdom.
+    by iIntros "!>" (k x y Hx Hy) "HΦ".
+  Qed.
+
+  Lemma big_sepS_subseteq_difference_1 `{Countable A} (Φ : A -> PROP) (X Y : gset A) :
+    Y ⊆ X ->
+    ([∗ set] x ∈ X, Φ x) -∗
+    ([∗ set] x ∈ Y, Φ x) ∗ ([∗ set] x ∈ X ∖ Y, Φ x).
+  Proof.
+    iIntros (Hsubseteq) "HX".
+    rewrite {1}(union_difference_L _ _ Hsubseteq).
+    iDestruct (big_sepS_union with "HX") as "[HY Hacc]"; first set_solver.
+    iFrame.
+  Qed.
+
+  Lemma big_sepS_subseteq_difference_2 `{Countable A} (Φ : A -> PROP) (X Y : gset A) :
+    Y ⊆ X ->
+    ([∗ set] x ∈ Y, Φ x) -∗
+    ([∗ set] x ∈ X ∖ Y, Φ x) -∗
+    ([∗ set] x ∈ X, Φ x).
+  Proof.
+    iIntros (Hsubseteq) "HY HXY".
+    rewrite {2}(union_difference_L _ _ Hsubseteq).
+    rewrite big_sepS_union; last set_solver.
+    iFrame.
+  Qed.
+
   Lemma big_sepS_subseteq_acc `{Countable A} (Φ : A -> PROP) (X Y : gset A) :
     Y ⊆ X ->
     ([∗ set] x ∈ X, Φ x) -∗
@@ -236,10 +333,9 @@ Section bi.
     (([∗ set] x ∈ Y, Φ x) -∗ ([∗ set] x ∈ X, Φ x)).
   Proof.
     iIntros (Hsubseteq) "HX".
-    rewrite (union_difference_L _ _ Hsubseteq).
-    iDestruct (big_sepS_union with "HX") as "[HY Hacc]"; first set_solver.
+    iDestruct (big_sepS_subseteq_difference_1 with "HX") as "[HY HXY]"; first apply Hsubseteq.
     iFrame. iIntros "HY".
-    rewrite big_sepS_union; [iFrame | set_solver].
+    by iDestruct (big_sepS_subseteq_difference_2 with "HY HXY") as "HX"; first apply Hsubseteq.
   Qed.
 
 End bi.

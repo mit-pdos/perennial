@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.distx Require Import base res.
-From Perennial.program_proof.rsm.pure Require Import dual_lookup vslice.
+From Perennial.program_proof.rsm.pure Require Import dual_lookup vslice nat.
 
 (** Global transaction-system invariant. *)
 
@@ -175,6 +175,7 @@ Section inv.
       (* safe commit/abort invariant *)
       "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       "%Hdest" ∷ ⌜lnrz_txns_destined tids tmodcs tmodas resm⌝ ∗
+      "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
 
@@ -196,6 +197,7 @@ Section inv.
       (* safe commit/abort invariant *)
       "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       "%Hdest" ∷ ⌜lnrz_txns_destined tids tmodcs tmodas resm⌝ ∗
+      "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
 

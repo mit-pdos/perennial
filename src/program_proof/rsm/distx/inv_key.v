@@ -14,25 +14,6 @@ Definition ext_by_cmtd
            (ts ≠ O -> length repl ≤ ts)%nat
   end.
 
-Lemma ext_by_cmtd_inv_commit repl cmtd kmodc ts v :
-  ts ≠ O ->
-  kmodc !! ts = None ->
-  ext_by_cmtd repl cmtd kmodc ts ->
-  ext_by_cmtd repl (last_extend ts cmtd ++ [v]) (<[ts := v]> kmodc) ts.
-Proof.
-  intros Hnz Hts Hext.
-  rewrite /ext_by_cmtd Hts in Hext.
-  destruct Hext as [[tsr Hext] Hlen].
-  rewrite /ext_by_cmtd lookup_insert Hext last_extend_twice.
-  destruct (decide (cmtd = [])) as [-> | Hnnil]; first done.
-  do 2 f_equal.
-  assert (tsr ≤ ts)%nat; last lia.
-  specialize (Hlen Hnz).
-  rewrite Hext in Hlen.
-  etrans; last apply Hlen.
-  by apply last_extend_length_ge_n.
-Qed.
-
 Definition prev_dbval (ts : nat) (d : dbval) (kmod : dbkmod) :=
   match largest_before ts (dom kmod) with
   | Some t => match kmod !! t with
@@ -245,81 +226,6 @@ Proof.
   apply Hext; [lia | done].
 Qed.
 
-Lemma ext_by_lnrz_inv_commit ts v cmtd lnrz kmodl :
-  kmodl !! ts = Some v ->
-  le_all ts (dom kmodl) ->
-  ext_by_lnrz cmtd lnrz kmodl ->
-  ext_by_lnrz (last_extend ts cmtd ++ [v]) lnrz (delete ts kmodl).
-Proof.
-  intros Hv Hles Hext.
-  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
-  (* Obtain [length cmtd ≤ ts < length lnrz]. *)
-  apply elem_of_dom_2 in Hv as Hts.
-  apply Hlen in Hts.
-  exists v.
-  split.
-  { (* Re-establish prefix. *)
-    apply prefix_pointwise.
-    intros i Hi.
-    (* Obtain [i < S ts]. *)
-    rewrite last_length last_extend_length_eq_n in Hi; [| set_solver | lia].
-    destruct (decide (i < length cmtd)%nat) as [Hilt | Hige].
-    { (* Case: before extension [i < length cmtd]. *)
-      rewrite /last_extend Hlast /extend.
-      rewrite -app_assoc lookup_app_l; last done.
-      by apply prefix_lookup_lt.
-    }
-    rewrite Nat.nlt_ge in Hige.
-    assert (is_Some (lnrz !! i)) as [u Hu].
-    { rewrite lookup_lt_is_Some. lia. }
-    assert (Higeweak : (pred (length cmtd) ≤ i)%nat) by lia.
-    rewrite Hu.
-    destruct (decide (i < ts)%nat) as [Hits | Hits].
-    { (* Case: read-extension [i < ts]. *)
-      specialize (Hext _ _ Higeweak Hu).
-      rewrite lookup_app_l; last first.
-      { by rewrite last_extend_length_eq_n; [| set_solver | lia]. }
-      rewrite /last_extend Hlast /extend.
-      rewrite lookup_app_r; last done.
-      rewrite lookup_replicate.
-      split; last lia.
-      rewrite -Hext.
-      apply prev_dbval_lt_all.
-      intros n Hn.
-      (* Obtain [ts ≤ n]. *)
-      specialize (Hles _ Hn). simpl in Hles.
-      (* Prove [i < n] by [i < ts] and [ts ≤ n]. *)
-      lia.
-    }
-    (* Case: write-extension [i = ts]. *)
-    assert (i = ts) by lia. clear Hits Hi. subst i.
-    rewrite lookup_snoc_Some. right.
-    split.
-    { by rewrite last_extend_length_eq_n; [| set_solver | lia]. }
-    specialize (Hext _ _ Higeweak Hu).
-    by rewrite (prev_dbval_lookup _ _ _ _ Hv) in Hext.
-  }
-  split.
-  { (* Re-establish last. *)
-    by rewrite last_snoc.
-  }
-  split.
-  { (* Re-establish len. *)
-    intros n Hn.
-    rewrite last_length last_extend_length_eq_n; [| set_solver | lia].
-    rewrite dom_delete_L elem_of_difference not_elem_of_singleton in Hn.
-    destruct Hn as [Hin Hne].
-    specialize (Hlen _ Hin). simpl in Hlen.
-    specialize (Hles _ Hin). simpl in Hles.
-    lia.
-  }
-  (* Re-establish ext. *)
-  intros t u Ht Hu.
-  rewrite last_length last_extend_length_eq_n in Ht; [| set_solver | lia].
-  erewrite prev_dbval_delete; [| lia | done | done].
-  apply Hext; [lia | done].
-Qed.
-
 Lemma ext_by_lnrz_inv_linearize_abort ts cmtd lnrz kmodl :
   ext_by_lnrz cmtd lnrz kmodl ->
   ext_by_lnrz cmtd (last_extend ts lnrz) kmodl.
@@ -491,6 +397,20 @@ Section def.
       "#Htslb"    ∷ ts_lb γ tslb ∗
       "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
+  Definition key_inv_with_tsprep_no_kmodl_kmodc
+    γ (key : dbkey) (tsprep : nat) (kmodl kmodc : dbkmod) : iProp Σ :=
+    ∃ (dbv : dbval) (lnrz cmtd repl : dbhist) (tslb : nat),
+      "Hdbv"      ∷ db_ptsto γ key dbv ∗
+      "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hrepl"     ∷ hist_repl_half γ key repl ∗
+      "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
+      "#Htslb"    ∷ ts_lb γ tslb ∗
+      "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
+
+  Definition key_inv_no_kmodl_kmodc
+    γ (key : dbkey) (kmodl kmodc : dbkmod) : iProp Σ :=
+    ∃ (tsprep : nat), key_inv_with_tsprep_no_kmodl_kmodc γ key tsprep kmodl kmodc.
+
   (* TODO: better naming. *)
 
   Definition key_inv_xcmted_no_repl_tsprep
@@ -591,5 +511,20 @@ Section lemma.
     key_inv_no_repl_tsprep γ key repl tsprep -∗
     ∃ kmodc, key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep.
   Proof. iIntros "Hkey". iNamed "Hkey". iFrame "% # ∗". Qed.
+
+  Lemma key_inv_no_kmodl_kmodc_unseal_tsprep γ key kmodl kmodc :
+    key_inv_no_kmodl_kmodc γ key kmodl kmodc -∗
+    ∃ tsprep, key_inv_with_tsprep_no_kmodl_kmodc γ key tsprep kmodl kmodc.
+  Proof. iIntros "Hkey". iNamed "Hkey". iFrame "% # ∗". Qed.
+
+  Lemma keys_inv_extract_kmodl_kmodc {γ} keys :
+    ([∗ set] key ∈ keys, key_inv γ key) -∗
+    ∃ kmodls kmodcs : gmap dbkey dbkmod,
+      ([∗ map] key ↦ kmodl; kmodc ∈ kmodls; kmodcs, key_inv_no_kmodl_kmodc γ key kmodl kmodc) ∗
+      ([∗ map] key ↦ kmodl ∈ kmodls, kmod_lnrz_half γ key kmodl) ∗
+      ([∗ map] key ↦ kmodc ∈ kmodcs, kmod_cmtd_half γ key kmodc) ∧
+      ⌜dom kmodls = keys⌝.
+  Proof.
+  Admitted.
 
 End lemma.

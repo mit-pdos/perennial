@@ -178,7 +178,7 @@ Section inv.
       apply dom_filter_subseteq.
     }
     (* Take the required tuple ownerships from the group invariant. *)
-    iDestruct (big_sepM_dom_subseteq_split _ _ (dom pwrs) with "Hrepls")
+    iDestruct (big_sepM_dom_subseteq_difference _ _ (dom pwrs) with "Hrepls")
       as (tplsg [Hdom Hsubseteq]) "[Hrepls HreplsO]".
     { (* Prove [dom pwrs ⊆ dom (tpls_group gid tpls)]. *)
       destruct Hpwrs as (Hvalid & _ & Hpwrs).
@@ -225,7 +225,7 @@ Section inv.
     iDestruct (tuple_repl_half_release_disjoint pwrs with "HreplsO") as "HreplsO".
     { set_solver. }
     rewrite release_difference_distr.
-    iDestruct (big_sepM_difference_combine with "Hrepls HreplsO") as "Hrepls".
+    iDestruct (big_sepM_subseteq_difference_2 with "Hrepls HreplsO") as "Hrepls".
     { by apply release_mono. }
     rewrite release_tpls_group_commute.
     (* Create txn tokens for the new state. *)

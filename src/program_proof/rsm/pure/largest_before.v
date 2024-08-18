@@ -1,4 +1,5 @@
 From iris.proofmode Require Import proofmode.
+From Perennial.program_proof.rsm.pure Require Export nat.
 
 Definition largest_step (n : nat) (r : option nat) :=
   match r with
@@ -8,21 +9,6 @@ Definition largest_step (n : nat) (r : option nat) :=
 
 Definition largest (ns : gset nat) :=
   set_fold largest_step None ns.
-
-Definition lt_all (n : nat) (ns : gset nat) :=
-  set_Forall (λ x, n < x)%nat ns.
-
-Definition le_all (n : nat) (ns : gset nat) :=
-  set_Forall (λ x, n ≤ x)%nat ns.
-
-Definition gt_all (n : nat) (ns : gset nat) :=
-  set_Forall (λ x, x < n)%nat ns.
-
-Definition ge_all (n : nat) (ns : gset nat) :=
-  set_Forall (λ x, x ≤ n)%nat ns.
-
-Definition outside_all (ub lb : nat) (ns : gset nat) :=
-  set_Forall (λ x, x ≤ ub ∨ lb < x)%nat ns.
 
 Lemma largest_spec ns :
   match largest ns with

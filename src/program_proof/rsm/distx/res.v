@@ -43,6 +43,12 @@ Section res.
   Definition ts_repl_half γ (k : dbkey) (ts : nat) : iProp Σ.
   Admitted.
 
+  Lemma ts_repl_agree {γ k ts1 ts2} :
+    ts_repl_half γ k ts1 -∗
+    ts_repl_half γ k ts2 -∗
+    ⌜ts2 = ts1⌝.
+  Admitted.
+
   Definition tuple_repl_half γ (k : dbkey) (t : dbtpl) : iProp Σ :=
     hist_repl_half γ k t.1 ∗ ts_repl_half γ k t.2.
 

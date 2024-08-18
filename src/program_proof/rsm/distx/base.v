@@ -121,6 +121,10 @@ Definition keys_group gid (keys : gset dbkey) :=
 Definition valid_pwrs (gid : groupid) (pwrs : dbmap) :=
   dom pwrs ⊆ keys_group gid keys_all.
 
+Lemma elem_of_key_to_group key :
+  key_to_group key ∈ gids_all.
+Admitted.
+
 Lemma elem_of_ptgroups key keys :
   key ∈ keys ->
   key_to_group key ∈ ptgroups keys.

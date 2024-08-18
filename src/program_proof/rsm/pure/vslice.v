@@ -83,4 +83,13 @@ Section lemma.
     by rewrite lookup_vslice /dual_lookup Hm.
   Qed.
 
+  Lemma dom_vslice_subseteq (m : gmap K1 (gmap K2 V)) k :
+    dom (vslice m k) ⊆ dom m.
+  Proof.
+    apply (map_fold_ind (λ r m, dom r ⊆ dom m)); first done.
+    intros x m2 m' m1 Hnone IH.
+    rewrite /vslice_step.
+    destruct (m2 !! k) as [v |]; set_solver.
+  Qed.
+
 End lemma.
