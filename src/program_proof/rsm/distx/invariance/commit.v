@@ -131,29 +131,6 @@ Proof.
   by apply last_extend_length_ge_n.
 Qed.
 
-Lemma lnrz_txns_destined_inv_commit tids tmodcs tmodas resm ts wrs :
-  ts ∈ dom tmodcs ->
-  ts ∉ dom (resm_to_tmods resm) ->
-  lnrz_txns_destined tids tmodcs tmodas resm ->
-  lnrz_txns_destined tids (delete ts tmodcs) tmodas (<[ts:=ResCommitted wrs]> resm).
-Proof.
-  rewrite /lnrz_txns_destined.
-  intros Htsin Htsnotin Hdst tsx Htsx.
-  clear Htsin Htsnotin.
-  specialize (Hdst _ Htsx). simpl in Hdst.
-  rewrite dom_delete_L resm_to_tmods_insert_committed dom_insert_L.
-  destruct Hdst as [[Hin Hnotin] | Hdst].
-  { left. set_solver. }
-  destruct Hdst as [[Hin Hnotin] | [Hin Hnotin]].
-  { right. left.
-    split; first done.
-    admit.
-  }
-  destruct (decide (tsx = ts)) as [-> | Hne].
-  { left. set_solver. }
-  right. right. set_solver.
-Admitted.
-
 Section inv.
   Context `{!distx_ghostG Σ}.
 
@@ -419,6 +396,17 @@ Section inv.
    * prepared-implies-linearized-or-finalized.
    *)
 
+  Lemma partitioned_tids_close {γ} tids tmodcs tmodas resm :
+    let wcmts := dom tmodcs in
+    let wabts := dom tmodas in
+    let cmts := dom (resm_to_tmods resm) in
+    set_Forall (λ tid : nat, tid ∈ cmts ∨ tid ∈ wabts ∨ tid ∈ wcmts) tids ->
+    ([∗ set] tid ∈ wcmts, tids_excl_frag γ tid) -∗
+    ([∗ set] tid ∈ wabts, tids_excl_frag γ tid) -∗
+    ([∗ set] tid ∈ cmts, tids_excl_frag γ tid) -∗
+    partitioned_tids γ tids tmodcs tmodas resm.
+  Proof. iIntros (wcmts wabts cmts Hfate) "Hwcmts Habts Hcmts". iFrame "∗ %". Qed.
+
   Lemma txn_inv_commit γ tid wrs future :
     head future = Some (ActCmt tid wrs) ->
     txns_lnrz_receipt γ tid -∗
@@ -434,11 +422,12 @@ Section inv.
     iIntros (Hhead) "#Htid #Hprep Htxnsys Hgroups Hkeys".
     iNamed "Htxnsys".
     iDestruct (txns_lnrz_elem_of with "Htxnsl Htid") as %Htid.
-    apply Hdest in Htid as Hcases.
-    destruct Hcases as [[Hresm Hnotin] | Hcases].
+    iNamed "Hpart".
+    apply Hfate in Htid as Hcases.
+    destruct Hcases as [Hresm | Hcases].
     { (* Case: Txn [tid] has already aborted or committed. *)
-      rewrite elem_of_dom in Hresm.
-      destruct Hresm as [wrsc Hwrs].
+      apply elem_of_dom in Hresm as Hwrs.
+      destruct Hwrs as [wrsc Hwrs].
       rewrite lookup_resm_to_tmods_Some in Hwrs.
       iDestruct (big_sepM_lookup with "Hvr") as "#Hres"; first apply Hwrs.
       iAssert (⌜wrsc = wrs⌝)%I as %->.
@@ -448,12 +437,18 @@ Section inv.
       }
       (* Case: Txn [tid] has already committed. Extract a witness without any update. *)
       iDestruct (txnres_witness with "Hresm") as "#Hcmt"; first apply Hwrs.
+      (* Obtain [tid ∉ dom tmodcs]. *)
+      iDestruct (big_sepS_elem_of_acc with "Hcmts") as "[Htidexcl HcmtsC]"; first apply Hresm.
+      iDestruct (tids_excl_not_elem_of with "Hwcmts Htidexcl") as %Hnotin.
+      iDestruct ("HcmtsC" with "Htidexcl") as "Hcmts".
       unshelve epose proof (conflict_free_inv_commit_committed _ _ _ _ _ Hhead Hcf) as Hcf'.
       { apply not_elem_of_dom_1, Hnotin. }
       unshelve epose proof (conflict_past_inv_commit _ _ _ _ _ Hhead Hcp) as Hcp'.
+      iDestruct (partitioned_tids_close with "Hwcmts Hwabts Hcmts") as "Hpart".
+      { apply Hfate. }
       by iFrame "∗ # %".
     }
-    destruct Hcases as [[Htmodas Hnotin] | [Htmodcs Hnotin]].
+    destruct Hcases as [Htmodas | Htmodcs].
     { (* Case: Txn [tid] predicted to abort. Contradiction. *)
       (* Case A: [tid] not showing at all in [future] -> contradicting [Hhead]. *)
       (* Case B: [(tid, wrs)] conflicting with prior action -> add txnsys invs
@@ -467,6 +462,8 @@ Section inv.
     }
     (* Case: Txn [tid] predicted to commit. Update states and extract commitment witness. *)
     (* Obtain [resm !! ts = None]. *)
+    iDestruct (big_sepS_delete with "Hwcmts") as "[Htidexcl Hwcmts]"; first apply Htmodcs.
+    iDestruct (tids_excl_not_elem_of with "Hcmts Htidexcl") as %Hnotin.
     rewrite not_elem_of_dom lookup_resm_to_tmods_None in Hnotin.
     destruct Hnotin as [Hnone | Habt]; last first.
     { iDestruct (big_sepM_lookup with "Hvr") as "Habt"; first apply Habt.
@@ -477,7 +474,12 @@ Section inv.
     destruct Htmodcs as [wrsx Hwrs].
     (* Obtain eq of write set between the predicted [wrs] and the [wrsx] in the result map. *)
     pose proof (conflict_free_head_commit _ _ _ _ _ Hhead Hwrs Hcf). subst wrsx.
-    assert (Hdom : dom wrs ⊆ keys_all) by admit.
+    iAssert (⌜dom wrs ⊆ keys_all⌝)%I as %Hdom.
+    { iDestruct "Hprep" as "[Hwrs _]".
+      iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hlookup.
+      specialize (Hwrsm _ _ Hlookup).
+      by destruct Hwrsm as [_ Hgoal].
+    }
     (* Take [dom wrs] of [kmod_lnrz_half] and [kmod_cmtd_half]. *)
     iDestruct (big_sepS_subseteq_difference_1 _ _ (dom wrs) with "Hkmodls") as "[Hkmodls HkmodlsO]".
     { apply Hdom. }
@@ -624,11 +626,30 @@ Section inv.
     (* Re-establish [conflict_free] and [conflict_past]. *)
     pose proof (conflict_free_inv_commit _ _ _ _ Hhead Hcf) as Hcf'.
     pose proof (conflict_past_inv_commit _ _ _ _ _ Hhead Hcp) as Hcp'.
+    (* Add [tids_excl_frag γ tid] (originally from [wcmts]) to [cmts]. *)
+    iDestruct (big_sepS_insert_2 with "Htidexcl Hcmts") as "Hcmts".
+    iDestruct (partitioned_tids_close tids tmodcs' tmodas resm'
+                with "[Hwcmts] Hwabts [Hcmts]") as "Hpart".
+    { intros tidx Htidx.
+      rewrite resm_to_tmods_insert_committed dom_insert_L.
+      specialize (Hfate _ Htidx). simpl in Hfate.
+      destruct Hfate as [Hcmt | Hfate].
+      { left. set_solver. }
+      destruct Hfate as [Hwabt | Hwcmt].
+      { right. left. done. }
+      destruct (decide (tidx = tid)) as [-> | Hne].
+      { left. set_solver. }
+      right. right. rewrite dom_delete_L. set_solver.
+    }
+    { by rewrite dom_delete_L. }
+    { by rewrite resm_to_tmods_insert_committed dom_insert_L. }
     iFrame "∗ # %".
     iModIntro.
     iSplit.
     { by iApply (big_sepM_insert_2 with "[Hprep] Hvr"). }
-    
+    iPureIntro.
+    rewrite dom_delete_L.
+    set_solver.
   Admitted.
 
 End inv.

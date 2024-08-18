@@ -29,11 +29,6 @@ Lemma conflict_past_inv_commit ts wrs past future tmodas :
   conflict_past past (tail future) tmodas.
 Admitted.
 
-Definition prophesied_or_committed (tid : nat) (wcmts wabts cmts : gset nat) :=
-  (tid ∈ cmts ∧ tid ∉ wcmts) ∨
-  (tid ∈ wabts ∧ tid ∉ cmts) ∨
-  (tid ∈ wcmts ∧ tid ∉ cmts).
-
 Definition res_to_tmod (res : txnres) :=
   match res with
   | ResCommitted wrs => Some wrs
@@ -42,12 +37,6 @@ Definition res_to_tmod (res : txnres) :=
 
 Definition resm_to_tmods (resm : gmap nat txnres) :=
   omap res_to_tmod resm.
-
-Definition lnrz_txns_destined
-  (tids : gset nat) (tmodcs tmodas : gmap nat dbmap) (resm : gmap nat txnres) :=
-  set_Forall
-    (λ tid, prophesied_or_committed tid (dom tmodcs) (dom tmodas) (dom (resm_to_tmods resm)))
-    tids.
 
 Lemma resm_to_tmods_insert_aborted resm ts :
   resm !! ts = None ->
@@ -123,6 +112,16 @@ Section inv.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : distx_names).
 
+  Definition partitioned_tids
+    γ (tids : gset nat) (tmodcs tmodas : gmap nat dbmap) (resm : gmap nat txnres) : iProp Σ :=
+    let wcmts := dom tmodcs in
+    let wabts := dom tmodas in
+    let cmts := dom (resm_to_tmods resm) in
+    "Hwcmts" ∷ ([∗ set] tid ∈ wcmts, tids_excl_frag γ tid) ∗
+    "Hwabts" ∷ ([∗ set] tid ∈ wabts, tids_excl_frag γ tid) ∗
+    "Hcmts"  ∷ ([∗ set] tid ∈ cmts, tids_excl_frag γ tid) ∗
+    "%Hfate" ∷ ⌜set_Forall (λ tid, tid ∈ cmts ∨ tid ∈ wabts ∨ tid ∈ wcmts) tids⌝.
+
   Definition all_prepared γ ts wrs : iProp Σ :=
     txnwrs_receipt γ ts wrs ∗
     [∗ set] gid ∈ ptgroups (dom wrs), txnprep_prep γ gid ts.
@@ -161,8 +160,11 @@ Section inv.
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
-      (* linearized txns *)
+      (* witnesses of txn linearization *)
       "Htxnsl" ∷ txns_lnrz_auth γ tids ∗
+      (* exclusive transaction IDs *)
+      "Hexcl" ∷ tids_excl_auth γ tids ∗
+      "Hpart" ∷ partitioned_tids γ tids tmodcs tmodas resm ∗
       (* prophecy variable *)
       "Hproph" ∷ txn_proph γ future ∗
       (* transaction result map *)
@@ -173,8 +175,8 @@ Section inv.
       "Hkmodls" ∷ ([∗ set] key ∈ keys_all, kmod_lnrz_half γ key (vslice tmodcs key)) ∗
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
       (* safe commit/abort invariant *)
-      "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
-      "%Hdest" ∷ ⌜lnrz_txns_destined tids tmodcs tmodas resm⌝ ∗
+      "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
+      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
@@ -185,8 +187,11 @@ Section inv.
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
-      (* linearized txns *)
+      (* witnesses of txn linearization *)
       "Htxnsl" ∷ txns_lnrz_auth γ tids ∗
+      (* exclusive transaction IDs *)
+      "Hexcl" ∷ tids_excl_auth γ tids ∗
+      "Hpart" ∷ partitioned_tids γ tids tmodcs tmodas resm ∗
       (* transaction result map *)
       "Hresm" ∷ txnres_auth γ resm ∗
       (* transaction write set map *)
@@ -195,8 +200,8 @@ Section inv.
       "Hkmodls" ∷ ([∗ set] key ∈ keys_all, kmod_lnrz_half γ key (vslice tmodcs key)) ∗
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
       (* safe commit/abort invariant *)
-      "#Hvr"  ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
-      "%Hdest" ∷ ⌜lnrz_txns_destined tids tmodcs tmodas resm⌝ ∗
+      "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
+      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.

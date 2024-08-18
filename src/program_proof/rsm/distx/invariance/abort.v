@@ -1,14 +1,5 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 
-Lemma lnrz_txns_destined_inv_abort {tids tmodcs tmodas resm} ts :
-  resm !! ts = None ->
-  lnrz_txns_destined tids tmodcs tmodas resm ->
-  lnrz_txns_destined tids tmodcs tmodas (<[ts := ResAborted]> resm).
-Proof.
-  intros Hnone.
-  by rewrite /lnrz_txns_destined resm_to_tmods_insert_aborted.
-Qed.
-
 Lemma resm_to_tmods_insert_aborted resm ts :
   resm !! ts = None ->
   resm_to_tmods (<[ts := ResAborted]> resm) = resm_to_tmods resm.
@@ -35,9 +26,8 @@ Section inv.
       iMod (txnres_insert ts ResAborted with "Hresm") as "Hresm"; first done.
       iDestruct (txnres_witness with "Hresm") as "#Hreceipt".
       { apply lookup_insert. }
-      pose proof (lnrz_txns_destined_inv_abort ts Hres Hdest) as Hdest'.
       iFrame "∗ # %".
-      rewrite resm_to_tmods_insert_aborted; last done.
+      rewrite /partitioned_tids resm_to_tmods_insert_aborted; last done.
       rewrite big_sepM_insert; last done.
       by iFrame "∗ #".
     }

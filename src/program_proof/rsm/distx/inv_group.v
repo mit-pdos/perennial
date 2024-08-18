@@ -73,6 +73,8 @@ Section inv.
   Definition safe_read gid ts key :=
     valid_ts ts ∧ valid_key key ∧ key_to_group key = gid.
 
+  (* TODO: [valid_ts ts ∧ valid_wrs wrs] should be redundant with the of
+  constraint [Hwrsm] in [txn_inv]. *)
   Definition safe_prepare γ gid ts pwrs : iProp Σ :=
     ∃ wrs, txnwrs_receipt γ ts wrs ∧
            ⌜valid_ts ts ∧ valid_wrs wrs ∧ pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs⌝.

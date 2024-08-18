@@ -237,7 +237,7 @@ Section res.
     Persistent (txns_lnrz_receipt γ tid).
   Admitted.
 
-  Lemma txns_lnrz_union γ tids tid :
+  Lemma txns_lnrz_insert γ tids tid :
     tid ∉ tids ->
     txns_lnrz_auth γ tids ==∗
     txns_lnrz_auth γ ({[ tid ]} ∪ tids) ∗ txns_lnrz_receipt γ tid.
@@ -254,6 +254,36 @@ Section res.
     txns_lnrz_receipt γ tid -∗
     ⌜tid ∈ tids⌝.
   Admitted.
+
+  (* Exclusive transaction IDs. *)
+  Definition tids_excl_auth γ (tids : gset nat) : iProp Σ.
+  Admitted.
+
+  Definition tids_excl_frag γ (tid : nat) : iProp Σ.
+  Admitted.
+
+  Lemma tids_excl_insert γ tids tid :
+    tid ∉ tids ->
+    tids_excl_auth γ tids ==∗
+    tids_excl_auth γ ({[ tid ]} ∪ tids) ∗ tids_excl_frag γ tid.
+  Admitted.
+
+  Lemma tids_excl_ne γ tid1 tid2 :
+    tids_excl_frag γ tid1 -∗
+    tids_excl_frag γ tid2 -∗
+    ⌜tid2 ≠ tid1⌝.
+  Admitted.
+
+  Lemma tids_excl_not_elem_of γ tids tid :
+    ([∗ set] t ∈ tids, tids_excl_frag γ t) -∗
+    tids_excl_frag γ tid -∗
+    ⌜tid ∉ tids⌝.
+  Proof.
+    iIntros "Htids Htid".
+    destruct (decide (tid ∈ tids)) as [Hin | ?]; last done.
+    iDestruct (big_sepS_elem_of with "Htids") as "Htid'"; first apply Hin.
+    by iDestruct (tids_excl_ne with "Htid Htid'") as %?.
+  Qed.
 
   (* Paxos log and command pool. TODO: rename clog to just log. *)
   Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.
