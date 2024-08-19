@@ -141,6 +141,40 @@ Proof.
   rewrite insert_id; eauto.
 Qed.
 
+Theorem wpc_Barrier_disk stk E1 cd d :
+  {{{ own_disk cd d }}}
+    disk.Barrier #() @ stk; E1
+  {{{ RET #(); own_disk cd d ∗ ⌜cd = d⌝ }}}
+  {{{ own_disk cd d }}}.
+Proof.
+  iIntros (Φ Φc) "Hd HΦ".
+  iDestruct (big_sepM2_alt with "Hd") as "[%Hddom Hdzip]".
+  wpc_apply (wpc_Barrier _ _ (map_zip cd d) with "Hdzip").
+  iSplit.
+  { iIntros "Hdzip".
+    crash_case.
+    iApply big_sepM2_alt. iFrame. done.
+  }
+  iIntros "!> [%Hbarrier Hdzip]".
+  assert (cd = d) as Hdseq.
+  { apply map_eq. intro i. specialize (Hbarrier i).
+    destruct (cd !! i) eqn:Hi.
+    - assert (i ∈ dom d) as Hin. { rewrite -Hddom. apply elem_of_dom. eauto. }
+      apply elem_of_dom in Hin. destruct Hin as [b' Hin].
+      epose proof (map_zip_lookup_some _ _ _ _ _ Hi Hin) as Hz.
+      specialize (Hbarrier _ Hz).
+      apply map_lookup_zip_Some in Hz. simpl in *; subst. intuition congruence.
+    - assert (i ∉ dom d) as Hin. { rewrite -Hddom. apply not_elem_of_dom. eauto. }
+      apply not_elem_of_dom in Hin. rewrite Hi. rewrite Hin. congruence.
+  }
+  rewrite Hdseq.
+  iDestruct (big_sepM2_alt (λ a b c, a d↦[b] c)%I d d with "[$Hdzip]") as "Hd".
+  { eauto. }
+  iRight in "HΦ".
+  iApply "HΦ".
+  iFrame. done.
+Qed.
+
 Section WRS.
 
 (* Roughly equivalent to the opaque check_permission from write-restricted storage *)
@@ -309,30 +343,14 @@ Proof.
   {
     wpc_pures.
     iNamed "Hloop".
-    iDestruct (big_sepM2_alt with "Hd") as "[%Hddom Hdzip]".
-    wpc_apply (wpc_Barrier _ _ (map_zip cds' ds') with "Hdzip").
+    wpc_apply (wpc_Barrier_disk with "Hd").
     iSplit.
-    { iIntros "Hdzip".
+    { iIntros "Hd".
       iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
       iModIntro. crash_case.
       iExists cds', ds'. iFrame.
-      iApply big_sepM2_alt. iFrame. done.
     }
-    iIntros "!> [%Hbarrier Hdzip]".
-    assert (cds' = ds') as Hdseq.
-    { apply map_eq. intro i. specialize (Hbarrier i).
-      destruct (cds' !! i) eqn:Hi.
-      - assert (i ∈ dom ds') as Hin. { rewrite -Hddom. apply elem_of_dom. eauto. }
-        apply elem_of_dom in Hin. destruct Hin as [b' Hin].
-        epose proof (map_zip_lookup_some _ _ _ _ _ Hi Hin) as Hz.
-        specialize (Hbarrier _ Hz).
-        apply map_lookup_zip_Some in Hz. simpl in *; subst. intuition congruence.
-      - assert (i ∉ dom ds') as Hin. { rewrite -Hddom. apply not_elem_of_dom. eauto. }
-        apply not_elem_of_dom in Hin. rewrite Hi. rewrite Hin. congruence.
-    }
-    rewrite Hdseq.
-    iDestruct (big_sepM2_alt (λ a b c, a d↦[b] c)%I ds' ds' with "[$Hdzip]") as "Hd".
-    { eauto. }
+    iIntros "!> [Hd %Hbarrier]". subst.
     wpc_pures.
     { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
       iModIntro. crash_case. iFrame. }
