@@ -635,7 +635,6 @@ Proof.
 
             (* Going to return the crash borrow to the user, so get it back into the
                form they want. *)
-            iNamed "Hclose".
             iDestruct "HexpectedData" as (?) "HexpectedData".
             iDestruct (fmlist_agree_1 with "HexpectedData Hlogdata") as %->.
             iDestruct (struct_field_pointsto_agree with "Hclosed closed2") as %Heq.
@@ -666,6 +665,7 @@ Proof.
 
       (* FIXME: find a nicer way to carry resources through in wp_FileAppend spec. *)
       iIntros (r) "(Hfile_ctx & Hslice & HS)".
+      iClear "HexpectedData".
       iNamed "HS".
       iDestruct "HisClosed" as "%HisClosed". subst.
       iDestruct "HexpectedData" as "#HexpectedData".
@@ -1368,6 +1368,7 @@ Proof.
   { iFrame "#". }
   wp_pures.
 
+  iClear "Hreq_tok".
   iDestruct "Haof_log" as "[Haof_log [Hreq_tok Htok]]".
   iMod (fmlist_freeze with "Haof_log") as "#Hexpected".
 
@@ -1375,8 +1376,7 @@ Proof.
   {
     iFrame "HdurableCond HoldDurableCond Hclosed HcloseRequested".
     iFrame "∗#".
-    destruct isClosed; iEval simpl;
-    iDestruct "Hclose" as "(_ & _ & Hclose)"; by iFrame.
+    destruct isClosed; iEval simpl; by iFrame.
   }
 
   wp_forBreak_cond.
