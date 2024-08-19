@@ -160,8 +160,8 @@ Theorem wpc_Simulate cds ds d rd wr stk :
                {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s);
                    "%Ha" ∷ ⌜uint.Z a ∈ dom ds⌝ ∗
                    "Hb" ∷ is_block s q b ∗
-                   "Hwr_fupd" ∷ (∀ cds ds, P cds ds ==∗ P cds (<[uint.Z a := b]> ds) ∧
-                                                        P (<[uint.Z a := b]> cds) (<[uint.Z a := b]> ds))
+                   "Hwr_fupd" ∷ ((∀ cds ds, P cds ds ==∗ P cds (<[uint.Z a := b]> ds)) ∧
+                                 (∀ cds ds, P cds ds ==∗ P (<[uint.Z a := b]> cds) (<[uint.Z a := b]> ds)))
                }}}
   }}}
     Simulate #d #rd #wr @ stk; ⊤
@@ -271,32 +271,34 @@ Proof.
         iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
         iModIntro. crash_case. iFrame.
       + iSpecialize ("Hacc" with "Ha").
-        iIntros "HC". iMod ("Hwr_fupd" with "HP") as "HP". iRight in "HP".
+        iIntros "HC". iRight in "Hwr_fupd". iMod ("Hwr_fupd" with "HP") as "HP".
         iMod (Pcfupd with "HP HC") as "HP".
         iModIntro. crash_case. iFrame.
     }
     iModIntro. iIntros "H". iDestruct "H" as (bp) "(Ha & Hb & %Hcrash)".
     iSpecialize ("Hacc" with "Ha").
-    iMod ("Hwr_fupd" with "HP") as "HP".
-    wpc_pures.
-    { destruct Hcrash; subst.
-      + iRight in "HP".
-        iIntros "HC".
-        iMod (Pcfupd with "HP HC") as "HP".
-        iModIntro. crash_case. iFrame.
-      + rewrite insert_id //.
-        iLeft in "HP".
-        iIntros "HC".
-        iMod (Pcfupd with "HP HC") as "HP".
-        iModIntro. crash_case. iFrame.
-    }
-    iLeft.
     destruct Hcrash; subst.
-    + iRight in "HP".
+    + iRight in "Hwr_fupd".
+      iMod ("Hwr_fupd" with "HP") as "HP".
+      wpc_pures.
+      { iIntros "HC".
+        iMod (Pcfupd with "HP HC") as "HP".
+        iModIntro. crash_case. iFrame.
+      }
+      iLeft.
       iModIntro. iSplit; first done. iFrame.
       rewrite dom_insert_L.
       iPureIntro. set_solver.
-    + iLeft in "HP". rewrite insert_id //.
+    + iLeft in "Hwr_fupd".
+      iMod ("Hwr_fupd" with "HP") as "HP".
+      wpc_pures.
+      { rewrite insert_id //.
+        iIntros "HC".
+        iMod (Pcfupd with "HP HC") as "HP".
+        iModIntro. crash_case. iFrame.
+      }
+      rewrite insert_id //.
+      iLeft.
       iModIntro. iSplit; first done. iFrame.
       rewrite dom_insert_L.
       iPureIntro. set_solver.
@@ -350,27 +352,59 @@ Section WRS_StateMachine.
 Parameter State : Type.
 Parameter step : State -> State -> Prop.
 Parameter abs : disk_state -> State.
+Parameter Pabs : State -> iProp Σ.
+Parameter Pabs_crash : State -> iProp Σ.
 
-(* ... *)
+Context `{!ghost_varG Σ State}.
 
-(*
-Definition Psm γ :=
+Definition Psm (crash curr : disk_state) : iProp Σ :=
+  "Hcrash" ∷ Pabs_crash (abs crash) ∗
+  "Hcurr" ∷ Pabs (abs curr).
 
-*)
+Definition Psm_crash (crash : disk_state) : iProp Σ :=
+  "Hcrash" ∷ Pabs_crash (abs crash).
 
+Theorem Psm_cfupd : ∀ cds ds, Psm cds ds -∗ |C={⊤}=> Psm_crash cds.
+Proof.
+  iIntros (cds ds) "HP". iNamed "HP".
+  iFrame. done.
+Qed.
 
-(*
-      "#Hwr" ∷ {{{ True }}}
-                  #wr #() @ stk; ⊤
-               {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s);
-                   "%Ha" ∷ ⌜uint.Z a ∈ dom ds⌝ ∗
-                   "Hb" ∷ is_block s q b ∗
-                   "Hwr_fupd" ∷ (∀ cds ds, P cds ds ==∗ P cds (<[uint.Z a := b]> ds) ∧
-                                                        P (<[uint.Z a := b]> cds) (<[uint.Z a := b]> ds))
-               }}}
-
-  
-*)
+Theorem wp_wr_sm wr (ds : disk_state) stk :
+  {{{ True }}}
+    #wr #() @ stk; ⊤
+  {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s);
+    "%Ha" ∷ ⌜uint.Z a ∈ dom ds⌝ ∗
+    "Hb" ∷ is_block s q b ∗
+    "Habs_fupd" ∷ (∀ ds, Pabs (abs ds) ==∗ Pabs (abs (<[uint.Z a := b]> ds))) ∗
+    "Habs_crash_fupd" ∷ (∀ cds, Pabs_crash (abs cds) ==∗ Pabs_crash (abs (<[uint.Z a := b]> cds)))
+  }}}
+    -∗
+  {{{ True }}}
+    #wr #() @ stk; ⊤
+  {{{ (a:u64) (s:Slice.t) q b, RET (#a, slice_val s);
+    "%Ha" ∷ ⌜uint.Z a ∈ dom ds⌝ ∗
+    "Hb" ∷ is_block s q b ∗
+    "Hwr_fupd" ∷ ((∀ cds ds, Psm cds ds ==∗ Psm cds (<[uint.Z a := b]> ds)) ∧
+                  (∀ cds ds, Psm cds ds ==∗ Psm (<[uint.Z a := b]> cds) (<[uint.Z a := b]> ds)))
+  }}}.
+Proof.
+  iIntros "#Hwp".
+  iIntros (Φ) "!> _ HΦ".
+  iApply "Hwp"; first by done.
+  iModIntro. iIntros (a s q b). iNamed 1. iApply "HΦ".
+  iSplit; first by done. iFrame "Hb".
+  iSplit.
+  - iIntros (cds' ds'). iNamed 1.
+    iMod ("Habs_fupd" with "Hcurr") as "Hcurr".
+    iModIntro.
+    iFrame.
+  - iIntros (cds' ds'). iNamed 1.
+    iMod ("Habs_fupd" with "Hcurr") as "Hcurr".
+    iMod ("Habs_crash_fupd" with "Hcrash") as "Hcrash".
+    iModIntro.
+    iFrame.
+Qed.
 
 End WRS_StateMachine.
 
