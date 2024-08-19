@@ -1,30 +1,17 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.rsm.distx Require Import base res.
+From Perennial.program_proof.rsm.distx Require Import action base res.
 From Perennial.program_proof.rsm.pure Require Import dual_lookup vslice nat.
 
 (** Global transaction-system invariant. *)
 
-Definition conflict_free (future : list action) (tmodcs : gmap nat dbmap) : Prop.
-Admitted.
+Definition conflict_free (future : list action) (tmodcs : gmap nat dbmap) :=
+  map_Forall (λ t m, first_commit_compatible future t m) tmodcs.
 
 Definition conflict_past (past future : list action) (tmodas : gmap nat dbmap) : Prop.
 Admitted.
 
-Lemma conflict_free_inv_commit_committed ts wrs future tmodcs :
-  tmodcs !! ts = None ->
-  head future = Some (ActCommit ts wrs) ->
-  conflict_free future tmodcs ->
-  conflict_free (tail future) tmodcs.
-Admitted.
-
-Lemma conflict_free_inv_commit ts wrs future tmodcs :
-  head future = Some (ActCommit ts wrs) ->
-  conflict_free future tmodcs ->
-  conflict_free (tail future) (delete ts tmodcs).
-Admitted.
-
 Lemma conflict_past_inv_commit ts wrs past future tmodas :
-  head future = Some (ActCommit ts wrs) ->
+  head_commit future ts wrs ->
   conflict_past past future tmodas ->
   conflict_past past (tail future) tmodas.
 Admitted.

@@ -24,18 +24,60 @@ Proof.
     by destruct Hresm as [Hresm | Hresm]; rewrite Hresm.
 Qed.
 
-Lemma conflict_free_head_commit future tmods ts wrs1 wrs2 :
-  head future = Some (ActCommit ts wrs1) ->
-  tmods !! ts = Some wrs2 ->
+Lemma conflict_free_head_commit_eq future tmods ts wrs wrshd :
   conflict_free future tmods ->
-  wrs2 = wrs1.
-Admitted.
+  head_commit future ts wrshd ->
+  tmods !! ts = Some wrs ->
+  wrshd = wrs.
+Proof.
+  intros Hcf Hhead Hwrs.
+  specialize (Hcf _ _ Hwrs). simpl in Hcf.
+  destruct Hcf as (lp & ls & Hfc & _).
+  by eapply first_commit_head_commit.
+Qed.
 
-Lemma conflict_free_le_all future tmods ts wrs :
-  head future = Some (ActCommit ts wrs) ->
-  conflict_free future tmods ->
-  le_all ts (dom tmods).
-Admitted.
+Lemma conflict_free_head_commit_le_all future tmodcs ts wrs :
+  conflict_free future tmodcs ->
+  head_commit future ts wrs ->
+  set_Forall (λ k, le_all ts (dom (vslice tmodcs k))) (dom wrs).
+Proof.
+  intros Hcf Hhead k Hk tsx Htsx.
+  rewrite elem_of_dom in Htsx.
+  destruct Htsx as [v Hv].
+  rewrite lookup_vslice /dual_lookup in Hv.
+  destruct (tmodcs !! tsx) as [wrsx |] eqn:Hwrsx; rewrite Hwrsx in Hv; last done.
+  specialize (Hcf _ _ Hwrsx). simpl in Hcf.
+  eapply first_commit_compatible_head_commit; [done | done |].
+  apply elem_of_dom_2 in Hv.
+  set_solver.
+Qed.
+
+Lemma conflict_free_inv_commit_committed ts wrs future tmodcs :
+  tmodcs !! ts = None ->
+  head_commit future ts wrs ->
+  conflict_free future tmodcs ->
+  conflict_free (tail future) tmodcs.
+Proof.
+  intros Hnone Hhead Hcf.
+  intros tsx wrsx Hlookup.
+  specialize (Hcf _ _ Hlookup). simpl in Hcf.
+  eapply first_commit_compatible_inv_commit; [| apply Hhead | apply Hcf].
+  intros Heq. subst tsx.
+  by rewrite Hnone in Hlookup.
+Qed.
+
+Lemma conflict_free_inv_commit ts wrs future tmodcs :
+  head_commit future ts wrs ->
+  conflict_free future tmodcs ->
+  conflict_free (tail future) (delete ts tmodcs).
+Proof.
+  intros Hhead Hcf.
+  intros tsx wrsx Hlookup.
+  rewrite lookup_delete_Some in Hlookup.
+  destruct Hlookup as [Hne Hlookup].
+  specialize (Hcf _ _ Hlookup). simpl in Hcf.
+  eapply first_commit_compatible_inv_commit; [done | apply Hhead | apply Hcf].
+Qed.
 
 Lemma ext_by_lnrz_inv_commit ts v cmtd lnrz kmodl :
   kmodl !! ts = Some v ->
@@ -473,7 +515,7 @@ Section inv.
     rewrite elem_of_dom in Htmodcs.
     destruct Htmodcs as [wrsx Hwrs].
     (* Obtain eq of write set between the predicted [wrs] and the [wrsx] in the result map. *)
-    pose proof (conflict_free_head_commit _ _ _ _ _ Hhead Hwrs Hcf). subst wrsx.
+    pose proof (conflict_free_head_commit_eq _ _ _ _ _ Hcf Hhead Hwrs). subst wrsx.
     iAssert (⌜dom wrs ⊆ keys_all⌝)%I as %Hdom.
     { iDestruct "Hprep" as "[Hwrs _]".
       iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hlookup.
@@ -545,11 +587,12 @@ Section inv.
     iDestruct (keys_inv_commit with "Hkeys") as "Hkeys".
     { by eapply Hnz, elem_of_dom_2. }
     { intros k kmodl Hkmodl.
-      pose proof (conflict_free_le_all _ _ _ _ Hhead Hcf) as Hle.
+      pose proof (conflict_free_head_commit_le_all _ _ _ _ Hcf Hhead) as Hle.
+      assert (Hk : k ∈ dom wrs).
+      { by rewrite -Hdomkmodls elem_of_dom. }
+      specialize (Hle _ Hk). simpl in Hle.
       specialize (Hkmodls _ _ Hkmodl). simpl in Hkmodls.
-      eapply set_Forall_subseteq; last apply Hle.
-      rewrite Hkmodls.
-      apply dom_vslice_subseteq.
+      by rewrite Hkmodls.
     }
     { apply Hkmodlstid. }
     { apply Hkmodcstid. }

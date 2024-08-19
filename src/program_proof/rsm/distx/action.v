@@ -183,22 +183,22 @@ Qed.
 (* TODO: move to invariance/read *)
 
 (* TODO: move to invariance/commit *)
-Lemma head_commit_no_commit future ts wrs :
-  head_commit future ts wrs ->
+Lemma no_commit_head_commit future ts wrs :
   no_commit future ts ->
+  head_commit future ts wrs ->
   False.
 Proof.
-  intros Hhc Hnc.
+  intros Hnc Hhc.
   specialize (Hnc wrs).
   by apply head_Some_elem_of in Hhc.
 Qed.
 
-Lemma head_commit_first_commit future lp ls ts wrs wrshd :
-  head_commit future ts wrshd ->
+Lemma first_commit_head_commit future lp ls ts wrs wrshd :
   first_commit future lp ls ts wrs ->
+  head_commit future ts wrshd ->
   wrshd = wrs.
 Proof.
-  intros Hhc (Happ & Hnc & Hhead).
+  intros (Happ & Hnc & Hhead) Hhc.
   destruct lp as [| x l]; last first.
   { rewrite Happ /head_commit /= in Hhc.
     inv Hhc.
@@ -209,13 +209,13 @@ Proof.
   by inv Hhc.
 Qed.
 
-Lemma head_commit_first_commit_compatible future ts tshd wrs wrshd :
-  head_commit future tshd wrshd ->
+Lemma first_commit_compatible_head_commit future ts tshd wrs wrshd :
   first_commit_compatible future ts wrs ->
+  head_commit future tshd wrshd ->
   dom wrs ∩ dom wrshd ≠ ∅ ->
   (tshd ≤ ts)%nat.
 Proof.
-  intros Hhc (lp & ls & (Happ & _ & Hhead) & Hcomp) Hnempty.
+  intros (lp & ls & (Happ & _ & Hhead) & Hcomp) Hhc Hnempty.
   destruct (decide (lp = [])) as [-> | Hnnil].
   { rewrite Happ /= /head_commit Hhead in Hhc. by inv Hhc. }
   assert (Hlp : ActCommit tshd wrshd ∈ lp).
