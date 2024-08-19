@@ -52,6 +52,11 @@ Section lemma.
     set_solver.
   Qed.
 
+  Lemma not_elem_of_tail l x :
+    x ∉ l ->
+    x ∉ tail l.
+  Proof. intros Hl. by destruct l as [| h t]; last set_solver. Qed.
+
   Lemma length_not_nil l :
     l ≠ [] ->
     length l ≠ O.
@@ -62,5 +67,16 @@ Section lemma.
     l1 ≠ [] ->
     l2 ≠ [].
   Proof. intros Hprefix Hl1 Hl2. subst l2. by apply prefix_nil_inv in Hprefix. Qed.
+
+  Lemma tail_app_l l1 l2 :
+    l1 ≠ [] ->
+    tail (l1 ++ l2) = tail l1 ++ l2.
+  Proof. intros Hl1. by destruct l1 as [| x t]. Qed.
+
+  Lemma head_prefix l1 l2 :
+    l1 ≠ [] ->
+    prefix l1 l2 ->
+    head l1 = head l2.
+  Proof. intros Hl1 [lp ->]. by destruct l1 as [| x t]. Qed.
 
 End lemma.

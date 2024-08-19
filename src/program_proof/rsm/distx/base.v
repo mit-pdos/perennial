@@ -78,7 +78,7 @@ Definition gids_all : gset groupid := list_to_set (seq 0 2).
 
 (** Transaction R/W action. *)
 Inductive action :=
-| ActCmt (tid : nat) (wrs : dbmap)
+| ActCommit (tid : nat) (wrs : dbmap)
 | ActRead (tid : nat) (key : dbkey).
 
 (** State-machine commands. *)

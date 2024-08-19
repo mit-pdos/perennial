@@ -25,14 +25,14 @@ Proof.
 Qed.
 
 Lemma conflict_free_head_commit future tmods ts wrs1 wrs2 :
-  head future = Some (ActCmt ts wrs1) ->
+  head future = Some (ActCommit ts wrs1) ->
   tmods !! ts = Some wrs2 ->
   conflict_free future tmods ->
   wrs2 = wrs1.
 Admitted.
 
 Lemma conflict_free_le_all future tmods ts wrs :
-  head future = Some (ActCmt ts wrs) ->
+  head future = Some (ActCommit ts wrs) ->
   conflict_free future tmods ->
   le_all ts (dom tmods).
 Admitted.
@@ -408,7 +408,7 @@ Section inv.
   Proof. iIntros (wcmts wabts cmts Hfate) "Hwcmts Habts Hcmts". iFrame "∗ %". Qed.
 
   Lemma txn_inv_commit γ tid wrs future :
-    head future = Some (ActCmt tid wrs) ->
+    head future = Some (ActCommit tid wrs) ->
     txns_lnrz_receipt γ tid -∗
     all_prepared γ tid wrs -∗
     txn_inv_no_future γ future -∗

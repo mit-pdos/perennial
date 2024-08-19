@@ -4,4 +4,4 @@ From Perennial.program_proof.rsm Require Export big_sep.
 From Perennial.program_proof.rsm.pure Require Export
   dual_lookup extend fin_maps largest_before list misc nat nonexpanding_merge sets vslice word.
 From Perennial.program_proof.rsm.distx Require Export
-  base cmd res inv.
+  action base cmd res inv.

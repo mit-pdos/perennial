@@ -12,19 +12,19 @@ Admitted.
 
 Lemma conflict_free_inv_commit_committed ts wrs future tmodcs :
   tmodcs !! ts = None ->
-  head future = Some (ActCmt ts wrs) ->
+  head future = Some (ActCommit ts wrs) ->
   conflict_free future tmodcs ->
   conflict_free (tail future) tmodcs.
 Admitted.
 
 Lemma conflict_free_inv_commit ts wrs future tmodcs :
-  head future = Some (ActCmt ts wrs) ->
+  head future = Some (ActCommit ts wrs) ->
   conflict_free future tmodcs ->
   conflict_free (tail future) (delete ts tmodcs).
 Admitted.
 
 Lemma conflict_past_inv_commit ts wrs past future tmodas :
-  head future = Some (ActCmt ts wrs) ->
+  head future = Some (ActCommit ts wrs) ->
   conflict_past past future tmodas ->
   conflict_past past (tail future) tmodas.
 Admitted.
