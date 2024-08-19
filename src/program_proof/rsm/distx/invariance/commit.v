@@ -79,6 +79,29 @@ Proof.
   eapply first_commit_compatible_inv_commit; [done | apply Hhead | apply Hcf].
 Qed.
 
+Lemma conflict_past_inv_commit ts wrs past future posts tmodas :
+  ts ∉ dom tmodas ->
+  head_commit future ts wrs ->
+  conflict_past past future posts tmodas ->
+  conflict_past (past ++ [ActCommit ts wrs]) (tail future) posts tmodas.
+Proof.
+  intros Hnotin Hhead Hcp.
+  intros tsx wrsx Hlookup.
+  specialize (Hcp _ _ Hlookup). simpl in Hcp.
+  destruct Hcp as [Hnc | Hcp].
+  { left. by apply no_commit_inv_commit. }
+  apply elem_of_dom_2 in Hlookup.
+  assert (Hne : ts ≠ tsx) by set_solver.
+  destruct Hcp as [Hfci | [Hfcc HQ]].
+  { right. left.
+    by apply first_commit_incompatible_inv_commit.
+  }
+  { right. right.
+    split; last apply HQ.
+    by eapply first_commit_compatible_inv_commit.
+  }
+Qed.
+
 Lemma ext_by_lnrz_inv_commit ts v cmtd lnrz kmodl :
   kmodl !! ts = Some v ->
   le_all ts (dom kmodl) ->
@@ -479,13 +502,14 @@ Section inv.
       }
       (* Case: Txn [tid] has already committed. Extract a witness without any update. *)
       iDestruct (txnres_witness with "Hresm") as "#Hcmt"; first apply Hwrs.
-      (* Obtain [tid ∉ dom tmodcs]. *)
+      (* Obtain [tid ∉ dom tmodcs] and [tid ∉ dom tmodas]. *)
       iDestruct (big_sepS_elem_of_acc with "Hcmts") as "[Htidexcl HcmtsC]"; first apply Hresm.
-      iDestruct (tids_excl_not_elem_of with "Hwcmts Htidexcl") as %Hnotin.
+      iDestruct (tids_excl_not_elem_of with "Hwcmts Htidexcl") as %Hnotinc.
+      iDestruct (tids_excl_not_elem_of with "Hwabts Htidexcl") as %Hnotina.
       iDestruct ("HcmtsC" with "Htidexcl") as "Hcmts".
       unshelve epose proof (conflict_free_inv_commit_committed _ _ _ _ _ Hhead Hcf) as Hcf'.
-      { apply not_elem_of_dom_1, Hnotin. }
-      unshelve epose proof (conflict_past_inv_commit _ _ _ _ _ Hhead Hcp) as Hcp'.
+      { apply not_elem_of_dom_1, Hnotinc. }
+      unshelve epose proof (conflict_past_inv_commit _ _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
       iDestruct (partitioned_tids_close with "Hwcmts Hwabts Hcmts") as "Hpart".
       { apply Hfate. }
       by iFrame "∗ # %".
@@ -503,11 +527,12 @@ Section inv.
       admit.
     }
     (* Case: Txn [tid] predicted to commit. Update states and extract commitment witness. *)
-    (* Obtain [resm !! ts = None]. *)
+    (* Obtain [resm !! ts = None] and [ts ∉ dom tmodas]. *)
     iDestruct (big_sepS_delete with "Hwcmts") as "[Htidexcl Hwcmts]"; first apply Htmodcs.
-    iDestruct (tids_excl_not_elem_of with "Hcmts Htidexcl") as %Hnotin.
-    rewrite not_elem_of_dom lookup_resm_to_tmods_None in Hnotin.
-    destruct Hnotin as [Hnone | Habt]; last first.
+    iDestruct (tids_excl_not_elem_of with "Hcmts Htidexcl") as %Hnotinr.
+    iDestruct (tids_excl_not_elem_of with "Hwabts Htidexcl") as %Hnotina.
+    rewrite not_elem_of_dom lookup_resm_to_tmods_None in Hnotinr.
+    destruct Hnotinr as [Hnone | Habt]; last first.
     { iDestruct (big_sepM_lookup with "Hvr") as "Habt"; first apply Habt.
       iDestruct (all_prepared_some_aborted_false with "Hprep Habt") as %[].
     }
@@ -668,7 +693,7 @@ Section inv.
     (* Re-establish [valid_res]. *)
     (* Re-establish [conflict_free] and [conflict_past]. *)
     pose proof (conflict_free_inv_commit _ _ _ _ Hhead Hcf) as Hcf'.
-    pose proof (conflict_past_inv_commit _ _ _ _ _ Hhead Hcp) as Hcp'.
+    pose proof (conflict_past_inv_commit _ _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
     (* Add [tids_excl_frag γ tid] (originally from [wcmts]) to [cmts]. *)
     iDestruct (big_sepS_insert_2 with "Htidexcl Hcmts") as "Hcmts".
     iDestruct (partitioned_tids_close tids tmodcs' tmodas resm'

@@ -7,14 +7,18 @@ From Perennial.program_proof.rsm.pure Require Import dual_lookup vslice nat.
 Definition conflict_free (future : list action) (tmodcs : gmap nat dbmap) :=
   map_Forall (λ t m, first_commit_compatible future t m) tmodcs.
 
-Definition conflict_past (past future : list action) (tmodas : gmap nat dbmap) : Prop.
-Admitted.
+Definition conflict_cases
+  (past future : list action) (posts : gmap nat (dbmap -> Prop)) (ts : nat) (wrs : dbmap) :=
+  no_commit future ts ∨
+  first_commit_incompatible past future ts wrs ∨
+  (first_commit_compatible future ts wrs ∧ ∃ Q, posts !! ts = Some Q ∧ not (Q wrs)).
 
-Lemma conflict_past_inv_commit ts wrs past future tmodas :
-  head_commit future ts wrs ->
-  conflict_past past future tmodas ->
-  conflict_past past (tail future) tmodas.
-Admitted.
+Definition conflict_past
+  (past future : list action) (posts : gmap nat (dbmap -> Prop)) (tmodas : gmap nat dbmap) :=
+  map_Forall (λ t m, conflict_cases past future posts t m) tmodas.
+
+Definition correct_wrsm (posts : gmap nat (dbmap -> Prop)) (wrsm : gmap nat dbmap) :=
+  map_Forall (λ t m, ∃ Q, posts !! t = Some Q ∧ Q m) wrsm.
 
 Definition res_to_tmod (res : txnres) :=
   match res with
@@ -143,7 +147,7 @@ Section inv.
 
   Definition txn_inv γ : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (future past : list action)
-      (tmodcs tmodas : gmap nat dbmap)
+      (tmodcs tmodas : gmap nat dbmap) (posts : gmap nat (dbmap -> Prop))
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
@@ -164,13 +168,14 @@ Section inv.
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
+      "%Hpost" ∷ ⌜correct_wrsm posts wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
-      "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
+      "%Hcp"   ∷ ⌜conflict_past past future posts tmodas⌝.
 
   Definition txn_inv_no_future γ future : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (past : list action)
-      (tmodcs tmodas : gmap nat dbmap)
+      (tmodcs tmodas : gmap nat dbmap) (posts : gmap nat (dbmap -> Prop))
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
@@ -189,9 +194,10 @@ Section inv.
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
+      "%Hpost" ∷ ⌜correct_wrsm posts wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
-      "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
+      "%Hcp"   ∷ ⌜conflict_past past future posts tmodas⌝.
 
   Lemma txn_inv_extract_future γ :
     txn_inv γ -∗
