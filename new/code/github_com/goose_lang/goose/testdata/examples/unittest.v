@@ -42,7 +42,7 @@ Definition chanBasic : val :=
 (* go: chan.go:19:6 *)
 Definition f : val :=
   rec: "f" <> :=
-    exception_do (return: (#0)).
+    exception_do (return: (#(W64 0))).
 
 (* modified version of example from https://go.dev/ref/spec#Select_statements
 
@@ -173,38 +173,64 @@ Definition condvarWrapping : val :=
 Definition GlobalConstant : expr := #(str "foo").
 
 (* an untyped string *)
-Definition UntypedStringConstant : expr := #(str "bar").
+Definition UntypedStringConstant : string := "bar".
 
-Definition TypedInt : expr := #32.
+Definition UntypedInt : Z := 13.
 
-Definition ConstWithArith : expr := #4 + (#3 * TypedInt).
+Definition OtherUntypedInt : Z := UntypedInt + UntypedInt.
 
-Definition TypedInt32 : expr := #(U32 3).
+Definition TypedInt : expr := #(W64 32).
 
-Definition DivisionInConst : expr := (#4096 - #8) `quot` #8.
+Definition ConstWithArith : expr := #(W64 4) + (#(W64 3) * TypedInt).
+
+Definition TypedInt32 : expr := #(W32 3).
+
+Definition DivisionInConst : expr := #(W64 ((4096 - 8) `quot` 8)).
 
 (* 517 *)
-Definition ModInConst : expr := #513 + (#12 `rem` #8).
+Definition ModInConst : expr := #(W64 (513 + (12 `rem` 8))).
 
 (* 5 *)
-Definition ModInConstParens : expr := (#513 + #12) `rem` #8.
+Definition ModInConstParens : expr := #(W64 ((513 + 12) `rem` 8)).
+
+Definition First : Z := 0.
+
+Definition Second : Z := 1.
+
+Definition Third : Z := 2.
+
+Definition ComplicatedFirst : expr := #(W64 ((2 * 0) + 3)).
+
+Definition ComplicatedSecond : expr := #(W64 5).
+
+Definition ComplicatedThird : expr := #(W64 7).
+
+(* go: const.go:35:6 *)
+Definition useUntypedInt : val :=
+  rec: "useUntypedInt" <> :=
+    exception_do (return: (#(W64 UntypedInt) + TypedInt)).
+
+(* go: const.go:39:6 *)
+Definition useUntypedString : val :=
+  rec: "useUntypedString" <> :=
+    exception_do (return: (#(str UntypedStringConstant))).
 
 (* go: control_flow.go:3:6 *)
 Definition conditionalReturn : val :=
   rec: "conditionalReturn" "x" :=
     exception_do (let: "x" := (ref_ty boolT "x") in
     (if: ![boolT] "x"
-    then return: (#0)
+    then return: (#(W64 0))
     else do:  #());;;
-    return: (#1)).
+    return: (#(W64 1))).
 
 (* go: control_flow.go:10:6 *)
 Definition alwaysReturn : val :=
   rec: "alwaysReturn" "x" :=
     exception_do (let: "x" := (ref_ty boolT "x") in
     (if: ![boolT] "x"
-    then return: (#0)
-    else return: (#1))).
+    then return: (#(W64 0))
+    else return: (#(W64 1)))).
 
 (* go: control_flow.go:18:6 *)
 Definition alwaysReturnInNestedBranches : val :=
@@ -213,11 +239,11 @@ Definition alwaysReturnInNestedBranches : val :=
     (if: (~ (![boolT] "x"))
     then
       (if: ![boolT] "x"
-      then return: (#0)
-      else return: (#1))
+      then return: (#(W64 0))
+      else return: (#(W64 1)))
     else do:  #());;;
     let: "y" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #14 in
+    let: "$r0" := #(W64 14) in
     do:  ("y" <-[uint64T] "$r0");;;
     return: (![uint64T] "y")).
 
@@ -236,12 +262,12 @@ Definition conditionalAssign : val :=
     let: "y" := (ref_ty uint64T (zero_val uint64T)) in
     (if: ![boolT] "x"
     then
-      let: "$r0" := #1 in
+      let: "$r0" := #(W64 1) in
       do:  ("y" <-[uint64T] "$r0")
     else
-      let: "$r0" := #2 in
+      let: "$r0" := #(W64 2) in
       do:  ("y" <-[uint64T] "$r0"));;;
-    do:  ("y" <-[uint64T] ((![uint64T] "y") + #1));;;
+    do:  ("y" <-[uint64T] ((![uint64T] "y") + #(W64 1)));;;
     return: (![uint64T] "y")).
 
 (* go: control_flow.go:49:6 *)
@@ -250,11 +276,11 @@ Definition elseIf : val :=
     exception_do (let: "y" := (ref_ty boolT "y") in
     let: "x" := (ref_ty boolT "x") in
     (if: ![boolT] "x"
-    then return: (#0)
+    then return: (#(W64 0))
     else
       (if: ![boolT] "y"
-      then return: (#1)
-      else return: (#2)))).
+      then return: (#(W64 1))
+      else return: (#(W64 2))))).
 
 (* go: control_flow.go:59:6 *)
 Definition ifStmtInitialization : val :=
@@ -266,32 +292,32 @@ Definition ifStmtInitialization : val :=
       ) in
     do:  ("f" <-[funcT] "$r0");;;
     (do:  ((![funcT] "f") #());;;
-    (if: (![uint64T] "x") = #2
+    (if: (![uint64T] "x") = #(W64 2)
     then do:  #()
     else
       (let: "z" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (![uint64T] "x") in
       do:  ("z" <-[uint64T] "$r0");;;
-      (if: (![uint64T] "z") = #1
+      (if: (![uint64T] "z") = #(W64 1)
       then do:  #()
       else
         (let: "y" := (ref_ty intT (zero_val intT)) in
-        let: "$r0" := #94 in
+        let: "$r0" := #(W64 94) in
         do:  ("y" <-[intT] "$r0");;;
-        (if: (![intT] "y") = #30
+        (if: (![intT] "y") = #(W64 30)
         then do:  #()
         else
-          (let: "$r0" := #10 in
+          (let: "$r0" := #(W64 10) in
           do:  ("z" <-[uint64T] "$r0");;;
-          (if: (![uint64T] "x") = #30
+          (if: (![uint64T] "x") = #(W64 30)
           then do:  #()
           else do:  #()))))))));;;
     (let: "y" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #10 in
+    let: "$r0" := #(W64 10) in
     do:  ("y" <-[uint64T] "$r0");;;
-    (if: (![uint64T] "x") = #0
+    (if: (![uint64T] "x") = #(W64 0)
     then return: (![uint64T] "y")
-    else return: ((![uint64T] "y") - #1)))).
+    else return: ((![uint64T] "y") - #(W64 1))))).
 
 Definition stringWrapper : go_type := stringT.
 
@@ -304,15 +330,15 @@ Definition stringWrapper__mset_ptr : list (string * val) := [
 (* go: conversions.go:5:6 *)
 Definition typedLiteral : val :=
   rec: "typedLiteral" <> :=
-    exception_do (return: (#3)).
+    exception_do (return: (#(W64 3))).
 
 (* go: conversions.go:9:6 *)
 Definition literalCast : val :=
   rec: "literalCast" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #2 in
+    let: "$r0" := #(W64 2) in
     do:  ("x" <-[uint64T] "$r0");;;
-    return: ((![uint64T] "x") + #2)).
+    return: ((![uint64T] "x") + #(W64 2))).
 
 (* go: conversions.go:15:6 *)
 Definition castInt : val :=
@@ -355,37 +381,37 @@ Definition stringWrapperToString : val :=
 Definition testCopySimple : val :=
   rec: "testCopySimple" <> :=
     exception_do (let: "x" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make2 byteT #10) in
+    let: "$r0" := (slice.make2 byteT #(W64 10)) in
     do:  ("x" <-[sliceT byteT] "$r0");;;
-    let: "$r0" := #(U8 1) in
-    do:  ((slice.elem_ref byteT (![sliceT byteT] "x") #3) <-[byteT] "$r0");;;
+    let: "$r0" := #(W8 1) in
+    do:  ((slice.elem_ref byteT (![sliceT byteT] "x") #(W64 3)) <-[byteT] "$r0");;;
     let: "y" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make2 byteT #10) in
+    let: "$r0" := (slice.make2 byteT #(W64 10)) in
     do:  ("y" <-[sliceT byteT] "$r0");;;
     do:  (let: "$a0" := (![sliceT byteT] "y") in
     let: "$a1" := (![sliceT byteT] "x") in
     (slice.copy byteT) "$a0" "$a1");;;
-    return: ((![byteT] (slice.elem_ref byteT (![sliceT byteT] "y") #3)) = #(U8 1))).
+    return: ((![byteT] (slice.elem_ref byteT (![sliceT byteT] "y") #(W64 3))) = #(W8 1))).
 
 (* go: copy.go:11:6 *)
 Definition testCopyDifferentLengths : val :=
   rec: "testCopyDifferentLengths" <> :=
     exception_do (let: "x" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make2 byteT #15) in
+    let: "$r0" := (slice.make2 byteT #(W64 15)) in
     do:  ("x" <-[sliceT byteT] "$r0");;;
-    let: "$r0" := #(U8 1) in
-    do:  ((slice.elem_ref byteT (![sliceT byteT] "x") #3) <-[byteT] "$r0");;;
-    let: "$r0" := #(U8 2) in
-    do:  ((slice.elem_ref byteT (![sliceT byteT] "x") #12) <-[byteT] "$r0");;;
+    let: "$r0" := #(W8 1) in
+    do:  ((slice.elem_ref byteT (![sliceT byteT] "x") #(W64 3)) <-[byteT] "$r0");;;
+    let: "$r0" := #(W8 2) in
+    do:  ((slice.elem_ref byteT (![sliceT byteT] "x") #(W64 12)) <-[byteT] "$r0");;;
     let: "y" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make2 byteT #10) in
+    let: "$r0" := (slice.make2 byteT #(W64 10)) in
     do:  ("y" <-[sliceT byteT] "$r0");;;
     let: "n" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![sliceT byteT] "y") in
     let: "$a1" := (![sliceT byteT] "x") in
     (slice.copy byteT) "$a0" "$a1") in
     do:  ("n" <-[uint64T] "$r0");;;
-    return: (((![uint64T] "n") = #10) && ((![byteT] (slice.elem_ref byteT (![sliceT byteT] "y") #3)) = #(U8 1)))).
+    return: (((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT byteT] "y") #(W64 3))) = #(W8 1)))).
 
 (* go: data_structures.go:7:6 *)
 Definition atomicCreateStub : val :=
@@ -399,7 +425,7 @@ Definition atomicCreateStub : val :=
 Definition useSlice : val :=
   rec: "useSlice" <> :=
     exception_do (let: "s" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make2 byteT #1) in
+    let: "$r0" := (slice.make2 byteT #(W64 1)) in
     do:  ("s" <-[sliceT byteT] "$r0");;;
     let: "s1" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
     let: "$r0" := (let: "$a0" := (![sliceT byteT] "s") in
@@ -415,12 +441,12 @@ Definition useSlice : val :=
 Definition useSliceIndexing : val :=
   rec: "useSliceIndexing" <> :=
     exception_do (let: "s" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
-    let: "$r0" := (slice.make2 uint64T #2) in
+    let: "$r0" := (slice.make2 uint64T #(W64 2)) in
     do:  ("s" <-[sliceT uint64T] "$r0");;;
-    let: "$r0" := #2 in
-    do:  ((slice.elem_ref uint64T (![sliceT uint64T] "s") #1) <-[uint64T] "$r0");;;
+    let: "$r0" := #(W64 2) in
+    do:  ((slice.elem_ref uint64T (![sliceT uint64T] "s") #(W64 1)) <-[uint64T] "$r0");;;
     let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "s") #0)) in
+    let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "s") #(W64 0))) in
     do:  ("x" <-[uint64T] "$r0");;;
     return: (![uint64T] "x")).
 
@@ -431,10 +457,10 @@ Definition useMap : val :=
     let: "$r0" := (map.make uint64T (sliceT byteT) #()) in
     do:  ("m" <-[mapT uint64T (sliceT byteT)] "$r0");;;
     let: "$r0" := slice.nil in
-    do:  (map.insert (![mapT uint64T (sliceT byteT)] "m") #1 "$r0");;;
+    do:  (map.insert (![mapT uint64T (sliceT byteT)] "m") #(W64 1) "$r0");;;
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "x" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: ("$ret0", "$ret1") := (map.get (![mapT uint64T (sliceT byteT)] "m") #2) in
+    let: ("$ret0", "$ret1") := (map.get (![mapT uint64T (sliceT byteT)] "m") #(W64 2)) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[sliceT byteT] "$r0");;;
@@ -443,7 +469,7 @@ Definition useMap : val :=
     then return: (#())
     else do:  #());;;
     let: "$r0" := (![sliceT byteT] "x") in
-    do:  (map.insert (![mapT uint64T (sliceT byteT)] "m") #3 "$r0")).
+    do:  (map.insert (![mapT uint64T (sliceT byteT)] "m") #(W64 3) "$r0")).
 
 (* go: data_structures.go:32:6 *)
 Definition usePtr : val :=
@@ -451,7 +477,7 @@ Definition usePtr : val :=
     exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("p" <-[ptrT] "$r0");;;
-    let: "$r0" := #1 in
+    let: "$r0" := #(W64 1) in
     do:  ((![ptrT] "p") <-[uint64T] "$r0");;;
     let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] "p")) in
@@ -482,7 +508,7 @@ Definition iterMapKeys : val :=
   rec: "iterMapKeys" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
     let: "keysSlice" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
-    let: "$r0" := (slice.make2 uint64T #0) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
     do:  ("keysSlice" <-[sliceT uint64T] "$r0");;;
     let: "keysRef" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
@@ -529,10 +555,10 @@ Definition diskArgument : val :=
   rec: "diskArgument" "d" :=
     exception_do (let: "d" := (ref_ty disk.Disk "d") in
     let: "b" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (let: "$a0" := #0 in
+    let: "$r0" := (let: "$a0" := #(W64 0) in
     (interface.get "Read" (![disk.Disk] "d")) "$a0") in
     do:  ("b" <-[sliceT byteT] "$r0");;;
-    do:  (let: "$a0" := #1 in
+    do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := (![sliceT byteT] "b") in
     (interface.get "Write" (![disk.Disk] "d")) "$a0" "$a1")).
 
@@ -544,7 +570,7 @@ Definition embedA : go_type := structT [
 Definition embedA__Foo : val :=
   rec: "embedA__Foo" "a" <> :=
     exception_do (let: "a" := (ref_ty embedA "a") in
-    return: (#0)).
+    return: (#(W64 0))).
 
 Definition embedA__mset : list (string * val) := [
   ("Foo", embedA__Foo%V)
@@ -554,7 +580,7 @@ Definition embedA__mset : list (string * val) := [
 Definition embedA__Bar : val :=
   rec: "embedA__Bar" "a" <> :=
     exception_do (let: "a" := (ref_ty ptrT "a") in
-    return: (#13)).
+    return: (#(W64 13))).
 
 Definition embedA__mset_ptr : list (string * val) := [
   ("Bar", embedA__Bar%V);
@@ -571,7 +597,7 @@ Definition embedB : go_type := structT [
 Definition embedB__Foo : val :=
   rec: "embedB__Foo" "a" <> :=
     exception_do (let: "a" := (ref_ty embedB "a") in
-    return: (#10)).
+    return: (#(W64 10))).
 
 Definition embedB__mset : list (string * val) := [
   ("Foo", embedB__Foo%V)
@@ -581,7 +607,7 @@ Definition embedB__mset : list (string * val) := [
 Definition embedB__Car : val :=
   rec: "embedB__Car" "a" <> :=
     exception_do (let: "a" := (ref_ty ptrT "a") in
-    return: (#14)).
+    return: (#(W64 14))).
 
 Definition embedB__mset_ptr : list (string * val) := [
   ("Bar", (λ: "$recvAddr",
@@ -670,13 +696,13 @@ Definition useEmbeddedField : val :=
     do:  ("x" <-[uint64T] "$r0");;;
     let: "$r0" := (![uint64T] (struct.field_ref embedA "a" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))))) in
     do:  ("x" <-[uint64T] "$r0");;;
-    let: "$r0" := #10 in
+    let: "$r0" := #(W64 10) in
     do:  ((struct.field_ref embedA "a" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) <-[uint64T] "$r0");;;
     let: "y" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty embedD (struct.make embedD [{
     }])) in
     do:  ("y" <-[ptrT] "$r0");;;
-    let: "$r0" := #11 in
+    let: "$r0" := #(W64 11) in
     do:  ((struct.field_ref embedA "a" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" (![ptrT] "y")))))) <-[uint64T] "$r0");;;
     return: (![uint64T] "x")).
 
@@ -727,7 +753,7 @@ Definition Enc__consume : val :=
     let: "n" := (ref_ty uint64T "n") in
     let: "b" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
     let: "$r0" := (let: "$s" := (![sliceT byteT] (struct.field_ref Enc "p" (![ptrT] "e"))) in
-    slice.slice byteT "$s" #0 (![uint64T] "n")) in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "n")) in
     do:  ("b" <-[sliceT byteT] "$r0");;;
     let: "$r0" := (let: "$s" := (![sliceT byteT] (struct.field_ref Enc "p" (![ptrT] "e"))) in
     slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s")) in
@@ -739,7 +765,7 @@ Definition Enc__UInt32 : val :=
   rec: "Enc__UInt32" "e" "x" :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "x" := (ref_ty uint32T "x") in
-    do:  (let: "$a0" := (let: "$a0" := #4 in
+    do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
     (Enc__consume (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint32T] "x") in
     primitive.UInt32Put "$a0" "$a1")).
@@ -749,7 +775,7 @@ Definition Enc__UInt64 : val :=
   rec: "Enc__UInt64" "e" "x" :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "x" := (ref_ty uint64T "x") in
-    do:  (let: "$a0" := (let: "$a0" := #8 in
+    do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
     (Enc__consume (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint64T] "x") in
     primitive.UInt64Put "$a0" "$a1")).
@@ -774,7 +800,7 @@ Definition Dec__consume : val :=
     let: "n" := (ref_ty uint64T "n") in
     let: "b" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
     let: "$r0" := (let: "$s" := (![sliceT byteT] (struct.field_ref Dec "p" (![ptrT] "d"))) in
-    slice.slice byteT "$s" #0 (![uint64T] "n")) in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "n")) in
     do:  ("b" <-[sliceT byteT] "$r0");;;
     let: "$r0" := (let: "$s" := (![sliceT byteT] (struct.field_ref Dec "p" (![ptrT] "d"))) in
     slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s")) in
@@ -785,7 +811,7 @@ Definition Dec__consume : val :=
 Definition Dec__UInt32 : val :=
   rec: "Dec__UInt32" "d" <> :=
     exception_do (let: "d" := (ref_ty ptrT "d") in
-    return: (let: "$a0" := (let: "$a0" := #4 in
+    return: (let: "$a0" := (let: "$a0" := #(W64 4) in
      (Dec__consume (![ptrT] "d")) "$a0") in
      primitive.UInt32Get "$a0")).
 
@@ -793,7 +819,7 @@ Definition Dec__UInt32 : val :=
 Definition Dec__UInt64 : val :=
   rec: "Dec__UInt64" "d" <> :=
     exception_do (let: "d" := (ref_ty ptrT "d") in
-    return: (let: "$a0" := (let: "$a0" := #8 in
+    return: (let: "$a0" := (let: "$a0" := #(W64 8) in
      (Dec__consume (![ptrT] "d")) "$a0") in
      primitive.UInt64Get "$a0")).
 
@@ -892,7 +918,7 @@ Definition testPassConcreteToInterfaceArgSpecial : val :=
     let: "$r0" := (map.make uint64T Fooer #()) in
     do:  ("m" <-[mapT uint64T Fooer] "$r0");;;
     let: "$r0" := (interface.make concreteFooer__mset_ptr (![ptrT] "c1")) in
-    do:  (map.insert (![mapT uint64T Fooer] "m") #10 "$r0");;;
+    do:  (map.insert (![mapT uint64T Fooer] "m") #(W64 10) "$r0");;;
     let: "f" := (ref_ty FooerUser (zero_val FooerUser)) in
     let: "$r0" := (struct.make FooerUser [{
       "f" ::= interface.make concreteFooer__mset_ptr (![ptrT] "c1")
@@ -904,7 +930,7 @@ Definition testPassConcreteToInterfaceArgSpecial : val :=
 Definition takesVarArgsInterface : val :=
   rec: "takesVarArgsInterface" "fs" :=
     exception_do (let: "fs" := (ref_ty (sliceT Fooer) "fs") in
-    do:  ((interface.get "Foo" (![Fooer] (slice.elem_ref Fooer (![sliceT Fooer] "fs") #0))) #())).
+    do:  ((interface.get "Foo" (![Fooer] (slice.elem_ref Fooer (![sliceT Fooer] "fs") #(W64 0)))) #())).
 
 (* go: interfaces.go:55:6 *)
 Definition test : val :=
@@ -920,7 +946,7 @@ Definition test : val :=
 Definition returnConcrete : val :=
   rec: "returnConcrete" <> :=
     exception_do (return: (ref_ty concreteFooer (struct.make concreteFooer [{
-     }]), #10)).
+     }]), #(W64 10))).
 
 (* converts an object into an interface in a multiple return destructuring statement.
 
@@ -967,7 +993,7 @@ Definition takeMultiple : val :=
 (* go: interfaces.go:85:6 *)
 Definition giveMultiple : val :=
   rec: "giveMultiple" <> :=
-    exception_do (return: (#0, interface.make concreteFooer__mset_ptr (ref_ty concreteFooer (struct.make concreteFooer [{
+    exception_do (return: (#(W64 0), interface.make concreteFooer__mset_ptr (ref_ty concreteFooer (struct.make concreteFooer [{
      }])), ref_ty concreteFooer (struct.make concreteFooer [{
      }]))).
 
@@ -1041,10 +1067,10 @@ Definition useInts : val :=
     let: "z" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (to_u64 (![uint32T] "y")) in
     do:  ("z" <-[uint64T] "$r0");;;
-    let: "$r0" := ((![uint64T] "z") + #1) in
+    let: "$r0" := ((![uint64T] "z") + #(W64 1)) in
     do:  ("z" <-[uint64T] "$r0");;;
     let: "y2" := (ref_ty uint32T (zero_val uint32T)) in
-    let: "$r0" := ((![uint32T] "y") + #(U32 3)) in
+    let: "$r0" := ((![uint32T] "y") + #(W32 3)) in
     do:  ("y2" <-[uint32T] "$r0");;;
     return: (![uint64T] "z", ![uint32T] "y2")).
 
@@ -1064,7 +1090,7 @@ Definition also_u32__mset : list (string * val) := [
 Definition also_u32__mset_ptr : list (string * val) := [
 ].
 
-Definition ConstWithAbbrevType : expr := #(U32 3).
+Definition ConstWithAbbrevType : expr := #(W32 3).
 
 Definition allTheLiterals : go_type := structT [
   "int" :: uint64T;
@@ -1082,7 +1108,7 @@ Definition allTheLiterals__mset_ptr : list (string * val) := [
 Definition normalLiterals : val :=
   rec: "normalLiterals" <> :=
     exception_do (return: (struct.make allTheLiterals [{
-       "int" ::= #0;
+       "int" ::= #(W64 0);
        "s" ::= #(str "foo");
        "b" ::= #true
      }])).
@@ -1091,7 +1117,7 @@ Definition normalLiterals : val :=
 Definition specialLiterals : val :=
   rec: "specialLiterals" <> :=
     exception_do (return: (struct.make allTheLiterals [{
-       "int" ::= #4096;
+       "int" ::= #(W64 4096);
        "s" ::= #(str "");
        "b" ::= #false
      }])).
@@ -1100,7 +1126,7 @@ Definition specialLiterals : val :=
 Definition oddLiterals : val :=
   rec: "oddLiterals" <> :=
     exception_do (return: (struct.make allTheLiterals [{
-       "int" ::= #5;
+       "int" ::= #(W64 5);
        "s" ::= #(str "backquote string");
        "b" ::= #false
      }])).
@@ -1109,7 +1135,7 @@ Definition oddLiterals : val :=
 Definition unKeyedLiteral : val :=
   rec: "unKeyedLiteral" <> :=
     exception_do (return: (struct.make allTheLiterals [{
-       "int" ::= #0;
+       "int" ::= #(W64 0);
        "s" ::= #(str "a");
        "b" ::= #false
      }])).
@@ -1187,7 +1213,7 @@ Definition standardForLoop : val :=
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("sumPtr" <-[ptrT] "$r0");;;
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: (![uint64T] "i") < (let: "$a0" := (![sliceT uint64T] "s") in
@@ -1201,7 +1227,7 @@ Definition standardForLoop : val :=
         do:  ("x" <-[uint64T] "$r0");;;
         let: "$r0" := ((![uint64T] "sum") + (![uint64T] "x")) in
         do:  ((![ptrT] "sumPtr") <-[uint64T] "$r0");;;
-        let: "$r0" := ((![uint64T] "i") + #1) in
+        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
         do:  ("i" <-[uint64T] "$r0");;;
         continue: #()
       else do:  #());;;
@@ -1215,18 +1241,18 @@ Definition standardForLoop : val :=
 Definition conditionalInLoop : val :=
   rec: "conditionalInLoop" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") < #3
+      (if: (![uint64T] "i") < #(W64 3)
       then
         do:  (let: "$a0" := #(str "i is small") in
         DoSomething "$a0")
       else do:  #());;;
-      (if: (![uint64T] "i") > #5
+      (if: (![uint64T] "i") > #(W64 5)
       then break: #()
       else do:  #());;;
-      let: "$r0" := ((![uint64T] "i") + #1) in
+      let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
       do:  ("i" <-[uint64T] "$r0");;;
       continue: #()))).
 
@@ -1234,13 +1260,13 @@ Definition conditionalInLoop : val :=
 Definition conditionalInLoopElse : val :=
   rec: "conditionalInLoopElse" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") > #5
+      (if: (![uint64T] "i") > #(W64 5)
       then break: #()
       else
-        let: "$r0" := ((![uint64T] "i") + #1) in
+        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
         do:  ("i" <-[uint64T] "$r0");;;
         continue: #())))).
 
@@ -1248,16 +1274,16 @@ Definition conditionalInLoopElse : val :=
 Definition nestedConditionalInLoopImplicitContinue : val :=
   rec: "nestedConditionalInLoopImplicitContinue" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") > #5
+      (if: (![uint64T] "i") > #(W64 5)
       then
-        (if: (![uint64T] "i") > #10
+        (if: (![uint64T] "i") > #(W64 10)
         then break: #()
         else do:  #())
       else
-        let: "$r0" := ((![uint64T] "i") + #1) in
+        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
         do:  ("i" <-[uint64T] "$r0");;;
         continue: #())))).
 
@@ -1265,12 +1291,12 @@ Definition nestedConditionalInLoopImplicitContinue : val :=
 Definition ImplicitLoopContinue : val :=
   rec: "ImplicitLoopContinue" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") < #4
+      (if: (![uint64T] "i") < #(W64 4)
       then
-        let: "$r0" := #0 in
+        let: "$r0" := #(W64 0) in
         do:  ("i" <-[uint64T] "$r0")
       else do:  #())))).
 
@@ -1278,12 +1304,12 @@ Definition ImplicitLoopContinue : val :=
 Definition ImplicitLoopContinue2 : val :=
   rec: "ImplicitLoopContinue2" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") < #4
+      (if: (![uint64T] "i") < #(W64 4)
       then
-        let: "$r0" := #0 in
+        let: "$r0" := #(W64 0) in
         do:  ("i" <-[uint64T] "$r0");;;
         continue: #()
       else do:  #())))).
@@ -1293,7 +1319,7 @@ Definition ImplicitLoopContinueAfterIfBreak : val :=
   rec: "ImplicitLoopContinueAfterIfBreak" "i" :=
     exception_do (let: "i" := (ref_ty uint64T "i") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") > #0
+      (if: (![uint64T] "i") > #(W64 0)
       then break: #()
       else do:  #()))).
 
@@ -1301,20 +1327,20 @@ Definition ImplicitLoopContinueAfterIfBreak : val :=
 Definition nestedLoops : val :=
   rec: "nestedLoops" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (let: "j" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := #0 in
+      let: "$r0" := #(W64 0) in
       do:  ("j" <-[uint64T] "$r0");;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         (if: #true
         then break: #()
         else do:  #());;;
-        let: "$r0" := ((![uint64T] "j") + #1) in
+        let: "$r0" := ((![uint64T] "j") + #(W64 1)) in
         do:  ("j" <-[uint64T] "$r0");;;
         continue: #()));;;
-      let: "$r0" := ((![uint64T] "i") + #1) in
+      let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
       do:  ("i" <-[uint64T] "$r0");;;
       continue: #()))).
 
@@ -1322,13 +1348,13 @@ Definition nestedLoops : val :=
 Definition nestedGoStyleLoops : val :=
   rec: "nestedGoStyleLoops" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #10); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1))) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
       (let: "j" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := #0 in
+      let: "$r0" := #(W64 0) in
       do:  ("j" <-[uint64T] "$r0");;;
-      (for: (λ: <>, (![uint64T] "j") < (![uint64T] "i")); (λ: <>, do:  ("j" <-[uint64T] ((![uint64T] "j") + #1))) := λ: <>,
+      (for: (λ: <>, (![uint64T] "j") < (![uint64T] "i")); (λ: <>, do:  ("j" <-[uint64T] ((![uint64T] "j") + #(W64 1)))) := λ: <>,
         (if: #true
         then break: #()
         else do:  #());;;
@@ -1400,8 +1426,8 @@ Definition MapTypeAliases : val :=
   rec: "MapTypeAliases" "m1" "m2" :=
     exception_do (let: "m2" := (ref_ty MapWrapper "m2") in
     let: "m1" := (ref_ty (mapT IntWrapper boolT) "m1") in
-    let: "$r0" := (Fst (map.get (![MapWrapper] "m2") #0)) in
-    do:  (map.insert (![mapT IntWrapper boolT] "m1") #4 "$r0")).
+    let: "$r0" := (Fst (map.get (![MapWrapper] "m2") #(W64 0))) in
+    do:  (map.insert (![mapT IntWrapper boolT] "m1") #(W64 4) "$r0")).
 
 (* go: maps.go:28:6 *)
 Definition StringMap : val :=
@@ -1426,14 +1452,14 @@ Definition mapUpdateField : val :=
     exception_do (let: "x" := (ref_ty (mapT uint64T ptrT) (zero_val (mapT uint64T ptrT))) in
     let: "$r0" := (map.make uint64T ptrT #()) in
     do:  ("x" <-[mapT uint64T ptrT] "$r0");;;
-    let: "$r0" := #10 in
-    do:  ((struct.field_ref mapElem "a" (Fst (map.get (![mapT uint64T ptrT] "x") #0))) <-[uint64T] "$r0")).
+    let: "$r0" := #(W64 10) in
+    do:  ((struct.field_ref mapElem "a" (Fst (map.get (![mapT uint64T ptrT] "x") #(W64 0)))) <-[uint64T] "$r0")).
 
 (* go: multiple.go:3:6 *)
 Definition returnTwo : val :=
   rec: "returnTwo" "p" :=
     exception_do (let: "p" := (ref_ty (sliceT byteT) "p") in
-    return: (#0, #0)).
+    return: (#(W64 0), #(W64 0))).
 
 (* go: multiple.go:7:6 *)
 Definition returnTwoWrapper : val :=
@@ -1476,25 +1502,25 @@ Definition multipleReturnPassThrough : val :=
 Definition AssignNilSlice : val :=
   rec: "AssignNilSlice" <> :=
     exception_do (let: "s" := (ref_ty (sliceT (sliceT byteT)) (zero_val (sliceT (sliceT byteT)))) in
-    let: "$r0" := (slice.make2 (sliceT byteT) #4) in
+    let: "$r0" := (slice.make2 (sliceT byteT) #(W64 4)) in
     do:  ("s" <-[sliceT (sliceT byteT)] "$r0");;;
     let: "$r0" := slice.nil in
-    do:  ((slice.elem_ref (sliceT byteT) (![sliceT (sliceT byteT)] "s") #2) <-[sliceT byteT] "$r0")).
+    do:  ((slice.elem_ref (sliceT byteT) (![sliceT (sliceT byteT)] "s") #(W64 2)) <-[sliceT byteT] "$r0")).
 
 (* go: nil.go:8:6 *)
 Definition AssignNilPointer : val :=
   rec: "AssignNilPointer" <> :=
     exception_do (let: "s" := (ref_ty (sliceT ptrT) (zero_val (sliceT ptrT))) in
-    let: "$r0" := (slice.make2 ptrT #4) in
+    let: "$r0" := (slice.make2 ptrT #(W64 4)) in
     do:  ("s" <-[sliceT ptrT] "$r0");;;
     let: "$r0" := #null in
-    do:  ((slice.elem_ref ptrT (![sliceT ptrT] "s") #2) <-[ptrT] "$r0")).
+    do:  ((slice.elem_ref ptrT (![sliceT ptrT] "s") #(W64 2)) <-[ptrT] "$r0")).
 
 (* go: nil.go:13:6 *)
 Definition CompareSliceToNil : val :=
   rec: "CompareSliceToNil" <> :=
     exception_do (let: "s" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make2 byteT #0) in
+    let: "$r0" := (slice.make2 byteT #(W64 0)) in
     do:  ("s" <-[sliceT byteT] "$r0");;;
     return: ((![sliceT byteT] "s") ≠ slice.nil)).
 
@@ -1518,23 +1544,23 @@ Definition LogicalAndEqualityOperators : val :=
   rec: "LogicalAndEqualityOperators" "b1" "x" :=
     exception_do (let: "x" := (ref_ty uint64T "x") in
     let: "b1" := (ref_ty boolT "b1") in
-    return: (((![uint64T] "x") = #3) && ((![boolT] "b1") = #true))).
+    return: (((![uint64T] "x") = #(W64 3)) && ((![boolT] "b1") = #true))).
 
 (* go: operators.go:11:6 *)
 Definition ArithmeticShifts : val :=
   rec: "ArithmeticShifts" "x" "y" :=
     exception_do (let: "y" := (ref_ty uint64T "y") in
     let: "x" := (ref_ty uint32T "x") in
-    return: (((to_u64 ((![uint32T] "x") ≪ #3)) + ((![uint64T] "y") ≪ (to_u64 (![uint32T] "x")))) + ((![uint64T] "y") ≪ #1))).
+    return: (#(W64 0))).
 
-(* go: operators.go:15:6 *)
+(* go: operators.go:16:6 *)
 Definition BitwiseOps : val :=
   rec: "BitwiseOps" "x" "y" :=
     exception_do (let: "y" := (ref_ty uint64T "y") in
     let: "x" := (ref_ty uint32T "x") in
-    return: ((to_u64 (![uint32T] "x")) `or` ((to_u64 (to_u32 (![uint64T] "y"))) `and` #43))).
+    return: ((to_u64 (![uint32T] "x")) `or` ((to_u64 (to_u32 (![uint64T] "y"))) `and` #(W64 43)))).
 
-(* go: operators.go:19:6 *)
+(* go: operators.go:20:6 *)
 Definition Comparison : val :=
   rec: "Comparison" "x" "y" :=
     exception_do (let: "y" := (ref_ty uint64T "y") in
@@ -1551,19 +1577,19 @@ Definition Comparison : val :=
     (if: (![uint64T] "x") > (![uint64T] "y")
     then return: (#true)
     else do:  #());;;
-    (if: ((![uint64T] "x") + #1) > ((![uint64T] "y") - #2)
+    (if: ((![uint64T] "x") + #(W64 1)) > ((![uint64T] "y") - #(W64 2))
     then return: (#true)
     else do:  #());;;
     return: (#false)).
 
-(* go: operators.go:38:6 *)
+(* go: operators.go:39:6 *)
 Definition AssignOps : val :=
   rec: "AssignOps" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  ("x" <-[uint64T] ((![uint64T] "x") + #3));;;
-    do:  ("x" <-[uint64T] ((![uint64T] "x") - #3));;;
-    do:  ("x" <-[uint64T] ((![uint64T] "x") + #1));;;
-    do:  ("x" <-[uint64T] ((![uint64T] "x") - #1))).
+    do:  ("x" <-[uint64T] ((![uint64T] "x") + #(W64 3)));;;
+    do:  ("x" <-[uint64T] ((![uint64T] "x") - #(W64 3)));;;
+    do:  ("x" <-[uint64T] ((![uint64T] "x") + #(W64 1)));;;
+    do:  ("x" <-[uint64T] ((![uint64T] "x") - #(W64 1)))).
 
 Definition wrapExternalStruct : go_type := structT [
   "e" :: marshal.Enc;
@@ -1628,9 +1654,9 @@ Definition ReassignVars : val :=
   rec: "ReassignVars" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "y" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("y" <-[uint64T] "$r0");;;
-    let: "$r0" := #3 in
+    let: "$r0" := #(W64 3) in
     do:  ("x" <-[uint64T] "$r0");;;
     let: "z" := (ref_ty composite (zero_val composite)) in
     let: "$r0" := (struct.make composite [{
@@ -1710,11 +1736,11 @@ Definition Block__mset : list (string * val) := [
 Definition Block__mset_ptr : list (string * val) := [
 ].
 
-Definition Disk1 : expr := #0.
+Definition Disk1 : expr := #(W64 0).
 
-Definition Disk2 : expr := #0.
+Definition Disk2 : expr := #(W64 0).
 
-Definition DiskSize : expr := #1000.
+Definition DiskSize : expr := #(W64 1000).
 
 (* TwoDiskWrite is a dummy function to represent the base layer's disk write
 
@@ -1734,7 +1760,7 @@ Definition TwoDiskRead : val :=
     exception_do (let: "a" := (ref_ty uint64T "a") in
     let: "diskId" := (ref_ty uint64T "diskId") in
     return: (struct.make Block [{
-       "Value" ::= #0
+       "Value" ::= #(W64 0)
      }], #true)).
 
 (* TwoDiskLock is a dummy function to represent locking an address in the
@@ -1811,7 +1837,7 @@ Definition ReplicatedDiskWrite : val :=
 Definition ReplicatedDiskRecover : val :=
   rec: "ReplicatedDiskRecover" <> :=
     exception_do ((let: "a" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("a" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: (![uint64T] "a") > DiskSize
@@ -1833,7 +1859,7 @@ Definition ReplicatedDiskRecover : val :=
         let: "$a2" := (![Block] "v") in
         TwoDiskWrite "$a0" "$a1" "$a2")
       else do:  #());;;
-      let: "$r0" := ((![uint64T] "a") + #1) in
+      let: "$r0" := ((![uint64T] "a") + #(W64 1)) in
       do:  ("a" <-[uint64T] "$r0");;;
       continue: #()))).
 
@@ -1849,23 +1875,23 @@ Definition SliceAlias__mset_ptr : list (string * val) := [
 Definition sliceOps : val :=
   rec: "sliceOps" <> :=
     exception_do (let: "x" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
-    let: "$r0" := (slice.make2 uint64T #10) in
+    let: "$r0" := (slice.make2 uint64T #(W64 10)) in
     do:  ("x" <-[sliceT uint64T] "$r0");;;
     let: "v1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "x") #2)) in
+    let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "x") #(W64 2))) in
     do:  ("v1" <-[uint64T] "$r0");;;
     let: "v2" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
     let: "$r0" := (let: "$s" := (![sliceT uint64T] "x") in
-    slice.slice uint64T "$s" #2 #3) in
+    slice.slice uint64T "$s" #(W64 2) #(W64 3)) in
     do:  ("v2" <-[sliceT uint64T] "$r0");;;
     let: "v3" := (ref_ty (sliceT uint64T) (zero_val (sliceT uint64T))) in
     let: "$r0" := (let: "$s" := (![sliceT uint64T] "x") in
-    slice.slice uint64T "$s" #0 #3) in
+    slice.slice uint64T "$s" #(W64 0) #(W64 3)) in
     do:  ("v3" <-[sliceT uint64T] "$r0");;;
     let: "v4" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (slice.elem_ref uint64T (![sliceT uint64T] "x") #2) in
+    let: "$r0" := (slice.elem_ref uint64T (![sliceT uint64T] "x") #(W64 2)) in
     do:  ("v4" <-[ptrT] "$r0");;;
-    return: ((((((![uint64T] "v1") + (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "v2") #0))) + (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "v3") #1))) + (![uint64T] (![ptrT] "v4"))) + (let: "$a0" := (![sliceT uint64T] "x") in
+    return: ((((((![uint64T] "v1") + (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "v2") #(W64 0)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "v3") #(W64 1)))) + (![uint64T] (![ptrT] "v4"))) + (let: "$a0" := (![sliceT uint64T] "x") in
      slice.len "$a0")) + (let: "$a0" := (![sliceT uint64T] "x") in
      slice.cap "$a0"))).
 
@@ -1910,7 +1936,7 @@ Definition sliceOfThings__mset_ptr : list (string * val) := [
 (* go: slices.go:30:6 *)
 Definition makeAlias : val :=
   rec: "makeAlias" <> :=
-    exception_do (return: (slice.make2 boolT #10)).
+    exception_do (return: (slice.make2 boolT #(W64 10))).
 
 (* Skip is a placeholder for some impure code
 
@@ -1933,14 +1959,14 @@ Definition simpleSpawn : val :=
       let: "x" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (![uint64T] (![ptrT] "v")) in
       do:  ("x" <-[uint64T] "$r0");;;
-      (if: (![uint64T] "x") > #0
+      (if: (![uint64T] "x") > #(W64 0)
       then do:  (Skip #())
       else do:  #());;;
       do:  ((sync.Mutex__Unlock (![ptrT] "l")) #()))
       ) in
     do:  (Fork ("$go" #()));;;
     do:  ((sync.Mutex__Lock (![ptrT] "l")) #());;;
-    let: "$r0" := #1 in
+    let: "$r0" := #(W64 1) in
     do:  ((![ptrT] "v") <-[uint64T] "$r0");;;
     do:  ((sync.Mutex__Unlock (![ptrT] "l")) #())).
 
@@ -1954,9 +1980,9 @@ Definition threadCode : val :=
 Definition loopSpawn : val :=
   rec: "loopSpawn" <> :=
     exception_do ((let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #10); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1))) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
       let: "i" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (![uint64T] "i") in
       do:  ("i" <-[uint64T] "$r0");;;
@@ -2029,12 +2055,12 @@ Definition UseAdd : val :=
   rec: "UseAdd" <> :=
     exception_do (let: "c" := (ref_ty Point (zero_val Point)) in
     let: "$r0" := (struct.make Point [{
-      "x" ::= #2;
-      "y" ::= #3
+      "x" ::= #(W64 2);
+      "y" ::= #(W64 3)
     }]) in
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := #4 in
+    let: "$r0" := (let: "$a0" := #(W64 4) in
     (Point__Add (![Point] "c")) "$a0") in
     do:  ("r" <-[uint64T] "$r0");;;
     return: (![uint64T] "r")).
@@ -2043,10 +2069,10 @@ Definition UseAdd : val :=
 Definition UseAddWithLiteral : val :=
   rec: "UseAddWithLiteral" <> :=
     exception_do (let: "r" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := #4 in
+    let: "$r0" := (let: "$a0" := #(W64 4) in
     (Point__Add (struct.make Point [{
-      "x" ::= #2;
-      "y" ::= #3
+      "x" ::= #(W64 2);
+      "y" ::= #(W64 3)
     }])) "$a0") in
     do:  ("r" <-[uint64T] "$r0");;;
     return: (![uint64T] "r")).
@@ -2126,10 +2152,10 @@ Definition S__mset_ptr : list (string * val) := [
 Definition NewS : val :=
   rec: "NewS" <> :=
     exception_do (return: (ref_ty S (struct.make S [{
-       "a" ::= #2;
+       "a" ::= #(W64 2);
        "b" ::= struct.make TwoInts [{
-         "x" ::= #1;
-         "y" ::= #2
+         "x" ::= #(W64 1);
+         "y" ::= #(W64 2)
        }];
        "c" ::= #true
      }]))).
@@ -2144,7 +2170,7 @@ Definition localSRef : val :=
 Definition setField : val :=
   rec: "setField" <> :=
     exception_do (let: "s" := (ref_ty S (zero_val S)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref S "a" "s") <-[uint64T] "$r0");;;
     let: "$r0" := #true in
     do:  ((struct.field_ref S "c" "s") <-[boolT] "$r0");;;
@@ -2171,7 +2197,7 @@ Definition makeLock : val :=
 (* go: time.go:5:6 *)
 Definition sleep : val :=
   rec: "sleep" <> :=
-    exception_do (do:  (let: "$a0" := #1000 in
+    exception_do (do:  (let: "$a0" := #(W64 1000) in
     primitive.Sleep "$a0")).
 
 Definition A : go_type := structT [
@@ -2196,7 +2222,7 @@ Definition A__mset_ptr : list (string * val) := [
 (* go: trailing_call.go:3:6 *)
 Definition mkInt : val :=
   rec: "mkInt" <> :=
-    exception_do (return: (#42)).
+    exception_do (return: (#(W64 42))).
 
 (* go: trailing_call.go:7:6 *)
 Definition mkNothing : val :=
@@ -2233,7 +2259,7 @@ Definition UseNamedType__mset_ptr : list (string * val) := [
 Definition convertToAlias : val :=
   rec: "convertToAlias" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #2 in
+    let: "$r0" := #(W64 2) in
     do:  ("x" <-[uint64T] "$r0");;;
     return: (![uint64T] "x")).
 
@@ -2248,20 +2274,20 @@ Definition variadicFunc : val :=
 (* go: varargs.go:6:6 *)
 Definition testVariadicCall : val :=
   rec: "testVariadicCall" <> :=
-    exception_do (do:  (let: "$a0" := #10 in
+    exception_do (do:  (let: "$a0" := #(W64 10) in
     let: "$a1" := #(str "abc") in
-    let: "$a2" := ((let: "$sl0" := #(U8 0) in
-    let: "$sl1" := #(U8 1) in
-    let: "$sl2" := #(U8 2) in
-    let: "$sl3" := #(U8 3) in
+    let: "$a2" := ((let: "$sl0" := #(W8 0) in
+    let: "$sl1" := #(W8 1) in
+    let: "$sl2" := #(W8 2) in
+    let: "$sl3" := #(W8 3) in
     slice.literal byteT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
     variadicFunc "$a0" "$a1" "$a2");;;
-    do:  (let: "$a0" := #10 in
+    do:  (let: "$a0" := #(W64 10) in
     let: "$a1" := #(str "abc") in
     let: "$a2" := slice.nil in
     variadicFunc "$a0" "$a1" "$a2");;;
     let: "c" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    do:  (let: "$a0" := #10 in
+    do:  (let: "$a0" := #(W64 10) in
     let: "$a1" := #(str "abc") in
     let: "$a2" := (![sliceT byteT] "c") in
     variadicFunc "$a0" "$a1" "$a2")).
@@ -2269,7 +2295,7 @@ Definition testVariadicCall : val :=
 (* go: varargs.go:13:6 *)
 Definition returnMultiple : val :=
   rec: "returnMultiple" <> :=
-    exception_do (return: (#0, #(str "xyz"), #(U8 0), #(U8 0))).
+    exception_do (return: (#(W64 0), #(str "xyz"), #(W8 0), #(W8 0))).
 
 (* go: varargs.go:17:6 *)
 Definition testVariadicPassThrough : val :=

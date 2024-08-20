@@ -69,7 +69,7 @@ Definition AsyncFile__Write : val :=
     let: "$r0" := (![sliceT byteT] "data") in
     do:  ((struct.field_ref AsyncFile "data" (![ptrT] "s")) <-[sliceT byteT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
-    let: "$a1" := #1 in
+    let: "$a1" := #(W64 1) in
     std.SumAssumeNoOverflow "$a0" "$a1") in
     do:  ((struct.field_ref AsyncFile "index" (![ptrT] "s")) <-[uint64T] "$r0");;;
     let: "index" := (ref_ty uint64T (zero_val uint64T)) in
@@ -147,8 +147,8 @@ Definition MakeAsyncFile : val :=
       "filename" ::= ![stringT] "filename";
       "data" ::= let: "$a0" := (![stringT] "filename") in
       grove_ffi.FileRead "$a0";
-      "index" ::= #0;
-      "durableIndex" ::= #0;
+      "index" ::= #(W64 0);
+      "durableIndex" ::= #(W64 0);
       "closed" ::= #false;
       "closeRequested" ::= #false
     }])) in

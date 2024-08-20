@@ -22,7 +22,7 @@ Definition BytesEqual : val :=
     then return: (#false)
     else do:  #());;;
     let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     let: "retval" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
@@ -34,7 +34,7 @@ Definition BytesEqual : val :=
         do:  ("retval" <-[boolT] "$r0");;;
         break: #()
       else do:  #());;;
-      do:  ("i" <-[uint64T] ((![uint64T] "i") + #1));;;
+      do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)));;;
       continue: #());;;
     return: (![boolT] "retval")).
 
@@ -67,7 +67,7 @@ Definition SliceSplit : val :=
     exception_do (let: "n" := (ref_ty uint64T "n") in
     let: "xs" := (ref_ty (sliceT byteT) "xs") in
     return: (let: "$s" := (![sliceT byteT] "xs") in
-     slice.slice byteT "$s" #0 (![uint64T] "n"), let: "$s" := (![sliceT byteT] "xs") in
+     slice.slice byteT "$s" #(W64 0) (![uint64T] "n"), let: "$s" := (![sliceT byteT] "xs") in
      slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s"))).
 
 (* Returns true if x + y does not overflow
@@ -193,9 +193,9 @@ Definition Multipar : val :=
     sync.NewCond "$a0") in
     do:  ("num_left_cond" <-[ptrT] "$r0");;;
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #1))) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
       let: "i" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (![uint64T] "i") in
       do:  ("i" <-[uint64T] "$r0");;;
@@ -203,13 +203,13 @@ Definition Multipar : val :=
         exception_do (do:  (let: "$a0" := (![uint64T] "i") in
         (![funcT] "op") "$a0");;;
         do:  ((sync.Mutex__Lock (![ptrT] "num_left_mu")) #());;;
-        do:  ("num_left" <-[uint64T] ((![uint64T] "num_left") - #1));;;
+        do:  ("num_left" <-[uint64T] ((![uint64T] "num_left") - #(W64 1)));;;
         do:  ((sync.Cond__Signal (![ptrT] "num_left_cond")) #());;;
         do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #()))
         ) in
       do:  (Fork ("$go" #()))));;;
     do:  ((sync.Mutex__Lock (![ptrT] "num_left_mu")) #());;;
-    (for: (λ: <>, (![uint64T] "num_left") > #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "num_left") > #(W64 0)); (λ: <>, Skip) := λ: <>,
       do:  ((sync.Cond__Wait (![ptrT] "num_left_cond")) #()));;;
     do:  ((sync.Mutex__Unlock (![ptrT] "num_left_mu")) #())).
 

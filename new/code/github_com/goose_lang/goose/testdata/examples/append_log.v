@@ -33,7 +33,7 @@ Definition Log__mkHdr : val :=
 Definition Log__writeHdr : val :=
   rec: "Log__writeHdr" "log" <> :=
     exception_do (let: "log" := (ref_ty ptrT "log") in
-    do:  (let: "$a0" := #0 in
+    do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := ((Log__mkHdr (![ptrT] "log")) #()) in
     disk.Write "$a0" "$a1")).
 
@@ -59,11 +59,11 @@ Definition Log__append : val :=
     let: "$r0" := (![uint64T] (struct.field_ref Log "sz" (![ptrT] "log"))) in
     do:  ("sz" <-[uint64T] "$r0");;;
     (if: (let: "$a0" := (![sliceT (sliceT byteT)] "bks") in
-    slice.len "$a0") ≥ (((![uint64T] (struct.field_ref Log "diskSz" (![ptrT] "log"))) - #1) - (![uint64T] "sz"))
+    slice.len "$a0") ≥ (((![uint64T] (struct.field_ref Log "diskSz" (![ptrT] "log"))) - #(W64 1)) - (![uint64T] "sz"))
     then return: (#false)
     else do:  #());;;
     do:  (let: "$a0" := (![sliceT (sliceT byteT)] "bks") in
-    let: "$a1" := (#1 + (![uint64T] "sz")) in
+    let: "$a1" := (#(W64 1) + (![uint64T] "sz")) in
     writeAll "$a0" "$a1");;;
     do:  ((struct.field_ref Log "sz" (![ptrT] "log")) <-[uint64T] ((![uint64T] (struct.field_ref Log "sz" (![ptrT] "log"))) + (let: "$a0" := (![sliceT (sliceT byteT)] "bks") in
     slice.len "$a0")));;;
@@ -93,7 +93,7 @@ Definition Log__get : val :=
     do:  ("sz" <-[uint64T] "$r0");;;
     (if: (![uint64T] "i") < (![uint64T] "sz")
     then
-      return: (let: "$a0" := (#1 + (![uint64T] "i")) in
+      return: (let: "$a0" := (#(W64 1) + (![uint64T] "i")) in
        disk.Read "$a0", #true)
     else do:  #());;;
     return: (slice.nil, #false)).
@@ -119,7 +119,7 @@ Definition Log__Get : val :=
 Definition Log__reset : val :=
   rec: "Log__reset" "log" <> :=
     exception_do (let: "log" := (ref_ty ptrT "log") in
-    let: "$r0" := #0 in
+    let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref Log "sz" (![ptrT] "log")) <-[uint64T] "$r0");;;
     do:  ((Log__writeHdr (![ptrT] "log")) #())).
 
@@ -146,18 +146,18 @@ Definition Log__mset_ptr : list (string * val) := [
 Definition Init : val :=
   rec: "Init" "diskSz" :=
     exception_do (let: "diskSz" := (ref_ty uint64T "diskSz") in
-    (if: (![uint64T] "diskSz") < #1
+    (if: (![uint64T] "diskSz") < #(W64 1)
     then
       return: (ref_ty Log (struct.make Log [{
          "m" ::= ref_ty sync.Mutex (zero_val sync.Mutex);
-         "sz" ::= #0;
-         "diskSz" ::= #0
+         "sz" ::= #(W64 0);
+         "diskSz" ::= #(W64 0)
        }]), #false)
     else do:  #());;;
     let: "log" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty Log (struct.make Log [{
       "m" ::= ref_ty sync.Mutex (zero_val sync.Mutex);
-      "sz" ::= #0;
+      "sz" ::= #(W64 0);
       "diskSz" ::= ![uint64T] "diskSz"
     }])) in
     do:  ("log" <-[ptrT] "$r0");;;
@@ -168,7 +168,7 @@ Definition Init : val :=
 Definition Open : val :=
   rec: "Open" <> :=
     exception_do (let: "hdr" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (let: "$a0" := #0 in
+    let: "$r0" := (let: "$a0" := #(W64 0) in
     disk.Read "$a0") in
     do:  ("hdr" <-[sliceT byteT] "$r0");;;
     let: "dec" := (ref_ty marshal.Dec (zero_val marshal.Dec)) in

@@ -8,7 +8,7 @@ From New.code Require github_com.tchajed.marshal.
 Section code.
 Context `{ffi_syntax}.
 
-Definition BAL_TOTAL : expr := #1000.
+Definition BAL_TOTAL : expr := #(W64 1000).
 
 Definition BankClerk : go_type := structT [
   "lck" :: ptrT;
@@ -205,16 +205,16 @@ Definition MakeBankClerkSlice : val :=
     (if: (let: "$a0" := (![stringT] "init_flag") in
     (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") = #(str "")
     then
-      do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT stringT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) #0)) in
+      do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT stringT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) #(W64 0))) in
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
       encodeInt "$a0") in
       (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1");;;
       do:  (let: "$range" := (let: "$s" := (![sliceT stringT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
-      slice.slice stringT "$s" #1 (slice.len "$s")) in
+      slice.slice stringT "$s" #(W64 1) (slice.len "$s")) in
       slice.for_range stringT "$range" (λ: <> "acct",
         let: "acct" := ref_ty stringT "acct" in
         do:  (let: "$a0" := (![stringT] "acct") in
-        let: "$a1" := (let: "$a0" := #0 in
+        let: "$a1" := (let: "$a0" := #(W64 0) in
         encodeInt "$a0") in
         (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")));;;
       do:  (let: "$a0" := (![stringT] "init_flag") in

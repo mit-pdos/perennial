@@ -34,7 +34,7 @@ Definition Server__rpcHandle : val :=
     let: "$a1" := (![ptrT] "replyData") in
     (![funcT] "f") "$a0" "$a1");;;
     let: "data1" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make3 byteT #0 (#8 + (let: "$a0" := (![sliceT byteT] (![ptrT] "replyData")) in
+    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![sliceT byteT] (![ptrT] "replyData")) in
     slice.len "$a0"))) in
     do:  ("data1" <-[sliceT byteT] "$r0");;;
     let: "data2" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
@@ -131,11 +131,11 @@ Definition MakeServer : val :=
        "handlers" ::= ![mapT uint64T funcT] "handlers"
      }]))).
 
-Definition callbackStateWaiting : expr := #0.
+Definition callbackStateWaiting : expr := #(W64 0).
 
-Definition callbackStateDone : expr := #1.
+Definition callbackStateDone : expr := #(W64 1).
 
-Definition callbackStateAborted : expr := #2.
+Definition callbackStateAborted : expr := #(W64 2).
 
 Definition Callback : go_type := structT [
   "reply" :: ptrT;
@@ -159,9 +159,9 @@ Definition Client : go_type := structT [
 Definition Client__mset : list (string * val) := [
 ].
 
-Definition ErrTimeout : expr := #1.
+Definition ErrTimeout : expr := #(W64 1).
 
-Definition ErrDisconnect : expr := #2.
+Definition ErrDisconnect : expr := #(W64 2).
 
 (* go: urpc.go:188:19 *)
 Definition Client__CallComplete : val :=
@@ -185,14 +185,14 @@ Definition Client__CallComplete : val :=
       let: "$r0" := (![sliceT byteT] (![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb")))) in
       do:  ((![ptrT] "reply") <-[sliceT byteT] "$r0");;;
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
-      return: (#0)
+      return: (#(W64 0))
     else
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       (if: (![uint64T] "state") = callbackStateAborted
       then return: (ErrDisconnect)
       else return: (ErrTimeout)))).
 
-Definition ErrNone : expr := #0.
+Definition ErrNone : expr := #(W64 0).
 
 (* go: urpc.go:155:19 *)
 Definition Client__CallStart : val :=
@@ -218,14 +218,14 @@ Definition Client__CallStart : val :=
     let: "$r0" := (![uint64T] (struct.field_ref Client "seq" (![ptrT] "cl"))) in
     do:  ("seqno" <-[uint64T] "$r0");;;
     let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref Client "seq" (![ptrT] "cl"))) in
-    let: "$a1" := #1 in
+    let: "$a1" := #(W64 1) in
     std.SumAssumeNoOverflow "$a0" "$a1") in
     do:  ((struct.field_ref Client "seq" (![ptrT] "cl")) <-[uint64T] "$r0");;;
     let: "$r0" := (![ptrT] "cb") in
     do:  (map.insert (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (![uint64T] "seqno") "$r0");;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
     let: "data1" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make3 byteT #0 ((#8 + #8) + (let: "$a0" := (![sliceT byteT] "args") in
+    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![sliceT byteT] "args") in
     slice.len "$a0"))) in
     do:  ("data1" <-[sliceT byteT] "$r0");;;
     let: "data2" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
@@ -269,7 +269,7 @@ Definition Client__Call : val :=
     let: "$r1" := "$ret1" in
     do:  ("cb" <-[ptrT] "$r0");;;
     do:  ("err" <-[uint64T] "$r1");;;
-    (if: (![uint64T] "err") ≠ #0
+    (if: (![uint64T] "err") ≠ #(W64 0)
     then return: (![uint64T] "err")
     else do:  #());;;
     return: (let: "$a0" := (![ptrT] "cb") in
@@ -351,13 +351,13 @@ Definition TryMakeClient : val :=
     do:  ("a" <-[grove_ffi.ConnectRet] "$r0");;;
     let: "nilClient" := (ref_ty ptrT (zero_val ptrT)) in
     (if: ![boolT] (struct.field_ref grove_ffi.ConnectRet "Err" "a")
-    then return: (#1, ![ptrT] "nilClient")
+    then return: (#(W64 1), ![ptrT] "nilClient")
     else do:  #());;;
     let: "cl" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty Client (struct.make Client [{
       "conn" ::= ![grove_ffi.Connection] (struct.field_ref grove_ffi.ConnectRet "Connection" "a");
       "mu" ::= ref_ty sync.Mutex (zero_val sync.Mutex);
-      "seq" ::= #1;
+      "seq" ::= #(W64 1);
       "pending" ::= map.make uint64T ptrT #()
     }])) in
     do:  ("cl" <-[ptrT] "$r0");;;
@@ -365,7 +365,7 @@ Definition TryMakeClient : val :=
       exception_do (do:  ((Client__replyThread (![ptrT] "cl")) #()))
       ) in
     do:  (Fork ("$go" #()));;;
-    return: (#0, ![ptrT] "cl")).
+    return: (#(W64 0), ![ptrT] "cl")).
 
 (* go: urpc.go:140:6 *)
 Definition MakeClient : val :=
@@ -379,7 +379,7 @@ Definition MakeClient : val :=
     let: "$r1" := "$ret1" in
     do:  ("err" <-[uint64T] "$r0");;;
     do:  ("cl" <-[ptrT] "$r1");;;
-    (if: (![uint64T] "err") ≠ #0
+    (if: (![uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #(str "Unable to connect to %s") in
       let: "$a1" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![uint64T] "host_name") in
@@ -387,7 +387,7 @@ Definition MakeClient : val :=
       slice.literal interfaceT ["$sl0"])) in
       log.Printf "$a0" "$a1")
     else do:  #());;;
-    do:  (let: "$a0" := ((![uint64T] "err") = #0) in
+    do:  (let: "$a0" := ((![uint64T] "err") = #(W64 0)) in
     primitive.Assume "$a0");;;
     return: (![ptrT] "cl")).
 

@@ -85,7 +85,7 @@ Definition EncodeValue : val :=
   rec: "EncodeValue" "c" :=
     exception_do (let: "c" := (ref_ty cacheValue "c") in
     let: "e" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make2 byteT #0) in
+    let: "$r0" := (slice.make2 byteT #(W64 0)) in
     do:  ("e" <-[sliceT byteT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![sliceT byteT] "e") in
     let: "$a1" := (![uint64T] (struct.field_ref cacheValue "l" "c")) in
@@ -190,7 +190,7 @@ Definition CacheKv__Put : val :=
       let: "$a1" := (![stringT] "enc") in
       let: "$a2" := (let: "$a0" := (struct.make cacheValue [{
         "v" ::= ![stringT] "val";
-        "l" ::= #0
+        "l" ::= #(W64 0)
       }]) in
       EncodeValue "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in

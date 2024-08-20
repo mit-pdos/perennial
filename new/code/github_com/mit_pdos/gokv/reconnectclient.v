@@ -28,7 +28,7 @@ Definition ReconnectingClient__getClient : val :=
       let: "$r0" := (![ptrT] (struct.field_ref ReconnectingClient "urpcCl" (![ptrT] "cl"))) in
       do:  ("ret" <-[ptrT] "$r0");;;
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
-      return: (#0, ![ptrT] "ret")
+      return: (#(W64 0), ![ptrT] "ret")
     else do:  #());;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     let: "newRpcCl" := (ref_ty ptrT (zero_val ptrT)) in
@@ -39,13 +39,13 @@ Definition ReconnectingClient__getClient : val :=
     let: "$r1" := "$ret1" in
     do:  ("err" <-[uint64T] "$r0");;;
     do:  ("newRpcCl" <-[ptrT] "$r1");;;
-    (if: (![uint64T] "err") ≠ #0
+    (if: (![uint64T] "err") ≠ #(W64 0)
     then
-      do:  (let: "$a0" := #10000000 in
+      do:  (let: "$a0" := #(W64 10000000) in
       primitive.Sleep "$a0")
     else do:  #());;;
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
-    (if: (![uint64T] "err") = #0
+    (if: (![uint64T] "err") = #(W64 0)
     then
       let: "$r0" := (![ptrT] "newRpcCl") in
       do:  ((struct.field_ref ReconnectingClient "urpcCl" (![ptrT] "cl")) <-[ptrT] "$r0");;;
@@ -70,7 +70,7 @@ Definition ReconnectingClient__Call : val :=
     let: "$r1" := "$ret1" in
     do:  ("err1" <-[uint64T] "$r0");;;
     do:  ("urpcCl" <-[ptrT] "$r1");;;
-    (if: (![uint64T] "err1") ≠ #0
+    (if: (![uint64T] "err1") ≠ #(W64 0)
     then return: (![uint64T] "err1")
     else do:  #());;;
     let: "err" := (ref_ty uint64T (zero_val uint64T)) in
