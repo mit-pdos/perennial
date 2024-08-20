@@ -29,6 +29,9 @@ Definition res_to_tmod (res : txnres) :=
 Definition resm_to_tmods (resm : gmap nat txnres) :=
   omap res_to_tmod resm.
 
+Definition cmtxn_in_past (resm : gmap nat txnres) (past : list action) :=
+  map_Forall (λ t m, ActCommit t m ∈ past) (resm_to_tmods resm).
+
 Lemma resm_to_tmods_insert_aborted resm ts :
   resm !! ts = None ->
   resm_to_tmods (<[ts := ResAborted]> resm) = resm_to_tmods resm.
@@ -113,6 +116,17 @@ Section inv.
     "Hcmts"  ∷ ([∗ set] tid ∈ cmts, tids_excl_frag γ tid) ∗
     "%Hfate" ∷ ⌜set_Forall (λ tid, tid ∈ cmts ∨ tid ∈ wabts ∨ tid ∈ wcmts) tids⌝.
 
+  Definition past_action_witness γ (a : action) : iProp Σ :=
+    match a with
+    | ActCommit ts wrs => [∗ set] key ∈ dom wrs, hist_cmtd_length_lb γ key (S ts)
+    | ActRead ts key => hist_cmtd_length_lb γ key ts
+    end.
+
+  #[global]
+  Instance past_action_witness_persistent γ a :
+    Persistent (past_action_witness γ a).
+  Proof. destruct a; apply _. Qed.
+
   Definition all_prepared γ ts wrs : iProp Σ :=
     txnwrs_receipt γ ts wrs ∗
     [∗ set] gid ∈ ptgroups (dom wrs), txnprep_prep γ gid ts.
@@ -167,11 +181,14 @@ Section inv.
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
-      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
-      "%Hpost" ∷ ⌜correct_wrsm posts wrsm⌝ ∗
-      "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
-      "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
-      "%Hcp"   ∷ ⌜conflict_past past future posts tmodas⌝.
+      (* past action witnesses *)
+      "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
+      "%Hwrsm"  ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
+      "%Hpost"  ∷ ⌜correct_wrsm posts wrsm⌝ ∗
+      "%Hnz"    ∷ ⌜nz_all (dom tmodcs)⌝ ∗
+      "%Hcf"    ∷ ⌜conflict_free future tmodcs⌝ ∗
+      "%Hcp"    ∷ ⌜conflict_past past future posts tmodas⌝.
 
   Definition txn_inv_no_future γ future : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (past : list action)
@@ -193,6 +210,9 @@ Section inv.
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
+      (* past action witnesses *)
+      "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
       "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
       "%Hpost" ∷ ⌜correct_wrsm posts wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗

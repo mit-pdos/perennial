@@ -29,12 +29,14 @@ Section inv.
       iFrame "∗ # %".
       rewrite /partitioned_tids resm_to_tmods_insert_aborted; last done.
       rewrite big_sepM_insert; last done.
-      by iFrame "∗ #".
+      iFrame "∗ #".
+      iPureIntro.
+      by rewrite /cmtxn_in_past resm_to_tmods_insert_aborted; last apply Hres.
     }
     destruct res as [wrsc |]; last first.
     { (* Case: [ts] aborted; get a witness without any update. *)
       iDestruct (txnres_witness with "Hresm") as "#Hreceipt"; first apply Hres.
-      by auto 10 with iFrame.
+      by iFrame "∗ # %".
     }
     (* Case: [ts] committed; contradiction. *)
     iDestruct (big_sepM_lookup with "Hvr") as "#Hprep"; first apply Hres.

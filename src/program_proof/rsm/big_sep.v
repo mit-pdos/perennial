@@ -180,6 +180,30 @@ Section bi.
     iFrame "∗ %".
   Qed.
 
+  Lemma big_sepS_impl_res `{Countable A}
+    (Φ : A → PROP) (Ψ : A → PROP) (R : PROP) (X : gset A) :
+    ([∗ set] x ∈ X, Φ x) -∗
+    R -∗
+    □ (∀ (x : A), ⌜x ∈ X⌝ → Φ x -∗ R -∗ Ψ x ∗ R) -∗
+    ([∗ set] x ∈ X, Ψ x) ∗ R.
+  Proof.
+    iInduction X as [| x X Hnotin] "IH" using set_ind_L.
+    { iIntros "HX HR #Himpl". by iFrame "HR". }
+    iIntros "HX HR #Himpl".
+    do 2 (rewrite big_sepS_union; last set_solver).
+    rewrite 2!big_sepS_singleton.
+    iDestruct "HX" as "[Hx HX]".
+    iDestruct ("IH" with "HX HR []") as "[HX HR]".
+    { iIntros "!>" (y Hy) "Hy HR".
+      iDestruct ("Himpl" with "[] Hy HR") as "[Hx HR]".
+      { iPureIntro. set_solver. }
+      iFrame.
+    }
+    iDestruct ("Himpl" with "[] Hx HR") as "[Hx HR]".
+    { iPureIntro. set_solver. }
+    iFrame.
+  Qed.
+
   Lemma big_sepM_dom_subseteq_difference `{Countable K} {A}
     (Φ : K -> A -> PROP) (m : gmap K A) (s : gset K) :
     s ⊆ dom m ->
@@ -339,3 +363,18 @@ Section bi.
   Qed.
 
 End bi.
+
+Section bupd.
+  Context {PROP : bi} `{!BiBUpd PROP}.
+
+  Lemma big_sepM2_bupd `{Countable K} {A B}
+    (Φ : K → A -> B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    ([∗ map] k↦x;y ∈ m1;m2, |==> Φ k x y) ⊢ |==> [∗ map] k↦x;y ∈ m1;m2, Φ k x y.
+  Proof.
+    rewrite 2!big_sepM2_alt.
+    iIntros "[%Hdom Hm1m2]".
+    iMod (big_sepM_bupd with "Hm1m2") as "Hm1m2".
+    by iFrame.
+  Qed.
+
+End bupd.

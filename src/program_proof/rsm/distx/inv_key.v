@@ -370,6 +370,7 @@ Section def.
       (tslb tsprep : nat) (kmodl kmodc : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hrepl"     ∷ hist_repl_half γ key repl ∗
       "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
       "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
@@ -382,6 +383,7 @@ Section def.
     ∃ (dbv : dbval) (lnrz cmtd : dbhist) (tslb : nat) (kmodl kmodc : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
       "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
@@ -392,6 +394,7 @@ Section def.
     ∃ (dbv : dbval) (lnrz cmtd : dbhist) (tslb : nat) (kmodl : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
       "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
@@ -402,6 +405,7 @@ Section def.
     ∃ (dbv : dbval) (lnrz cmtd repl : dbhist) (tslb : nat),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
       "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hrepl"     ∷ hist_repl_half γ key repl ∗
       "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
       "#Htslb"    ∷ ts_lb γ tslb ∗
@@ -410,6 +414,19 @@ Section def.
   Definition key_inv_no_kmodl_kmodc
     γ (key : dbkey) (kmodl kmodc : dbkmod) : iProp Σ :=
     ∃ (tsprep : nat), key_inv_with_tsprep_no_kmodl_kmodc γ key tsprep kmodl kmodc.
+
+  Definition key_inv_with_tsprep
+    γ (key : dbkey) (tsprep : nat) : iProp Σ :=
+    ∃ (repl : dbhist),
+      "Hkey"    ∷ key_inv_no_repl_tsprep γ key repl tsprep ∗
+      "Hrepl"   ∷ hist_repl_half γ key repl ∗
+      "Htsprep" ∷ ts_repl_half γ key tsprep.
+
+  Definition key_inv_with_repl_tsprep
+    γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
+    "Hkey"    ∷ key_inv_no_repl_tsprep γ key repl tsprep ∗
+    "Hrepl"   ∷ hist_repl_half γ key repl ∗
+    "Htsprep" ∷ ts_repl_half γ key tsprep.
 
   (* TODO: better naming. *)
 
@@ -512,15 +529,16 @@ Section lemma.
     ∃ kmodc, key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep.
   Proof. iIntros "Hkey". iNamed "Hkey". iFrame "% # ∗". Qed.
 
-  Lemma key_inv_no_kmodl_kmodc_unseal_tsprep γ key kmodl kmodc :
-    key_inv_no_kmodl_kmodc γ key kmodl kmodc -∗
-    ∃ tsprep, key_inv_with_tsprep_no_kmodl_kmodc γ key tsprep kmodl kmodc.
-  Proof. iIntros "Hkey". iNamed "Hkey". iFrame "% # ∗". Qed.
+  Lemma key_inv_unseal_tsprep γ key :
+    key_inv γ key -∗
+    ∃ tsprep, key_inv_with_tsprep γ key tsprep.
+  Proof. iIntros "Hkey". iNamed "Hkey". iFrame "∗ #". Qed.
 
-  Lemma keys_inv_extract_kmodl_kmodc {γ} keys :
-    ([∗ set] key ∈ keys, key_inv γ key) -∗
+  Lemma keys_inv_with_tsprep_extract_kmodl_kmodc {γ} keys tsprep :
+    ([∗ set] key ∈ keys, key_inv_with_tsprep γ key tsprep) -∗
     ∃ kmodls kmodcs : gmap dbkey dbkmod,
-      ([∗ map] key ↦ kmodl; kmodc ∈ kmodls; kmodcs, key_inv_no_kmodl_kmodc γ key kmodl kmodc) ∗
+      ([∗ map] key ↦ kmodl; kmodc ∈ kmodls; kmodcs,
+         key_inv_with_tsprep_no_kmodl_kmodc γ key tsprep kmodl kmodc) ∗
       ([∗ map] key ↦ kmodl ∈ kmodls, kmod_lnrz_half γ key kmodl) ∗
       ([∗ map] key ↦ kmodc ∈ kmodcs, kmod_cmtd_half γ key kmodc) ∧
       ⌜dom kmodls = keys⌝.

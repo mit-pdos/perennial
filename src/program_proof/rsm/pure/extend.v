@@ -123,6 +123,7 @@ Section lemmas.
     by replace (n2 - _ + _)%nat with (n1 `max` n2 - length l)%nat by lia.
   Qed.
 
+  (* TODO: rename this to [prefix_last_extend]. *)
   Lemma last_extend_prefix n l :
     prefix l (last_extend n l).
   Proof.

@@ -229,6 +229,24 @@ Proof.
   destruct Hcomp; [lia | contradiction].
 Qed.
 
+Lemma first_commit_incompatible_head_commit past future ts wrs wrshd :
+  first_commit_incompatible past future ts wrs ->
+  head_commit future ts wrshd ->
+  wrshd = wrs ∧ ∃ a, a ∈ past ∧ not (compatible ts wrs a).
+Proof.
+  intros (lp & ls & (Happ & Hnc & Hhead) & Hincomp) Hhc.
+  destruct lp as [| x l]; last first.
+  { rewrite Happ /head_commit /= in Hhc.
+    inv Hhc.
+    specialize (Hnc wrshd).
+    set_solver.
+  }
+  rewrite Happ /= /head_commit Hhead in Hhc.
+  inv Hhc.
+  split; first done.
+  by rewrite app_nil_r /incompatible_exists Exists_exists in Hincomp.
+Qed.
+
 Lemma no_commit_inv_commit l ts :
   no_commit l ts ->
   no_commit (tail l) ts.

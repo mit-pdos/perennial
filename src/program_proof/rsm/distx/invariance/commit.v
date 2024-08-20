@@ -52,6 +52,26 @@ Proof.
   set_solver.
 Qed.
 
+Lemma ext_by_lnrz_not_nil cmtd lnrz kmod :
+  ext_by_lnrz cmtd lnrz kmod ->
+  cmtd ≠ [].
+Proof. intros (v & _ & Hlast & _) Hcmtd. by rewrite Hcmtd in Hlast. Qed.
+
+Lemma ext_by_cmtd_length repl cmtd kmodc ts :
+  ts ≠ O ->
+  kmodc !! ts = None ->
+  ext_by_cmtd repl cmtd kmodc ts ->
+  (length cmtd ≤ ts)%nat.
+Proof.
+  intros Hnz Hnone Hext.
+  rewrite /ext_by_cmtd Hnone in Hext.
+  destruct Hext as [[tsr Hext] Hlen].
+  specialize (Hlen Hnz).
+  trans (length repl); last apply Hlen.
+  rewrite Hext.
+  apply last_extend_length_ge.
+Qed.
+
 Lemma conflict_free_inv_commit_committed ts wrs future tmodcs :
   tmodcs !! ts = None ->
   head_commit future ts wrs ->
@@ -100,6 +120,29 @@ Proof.
     split; last apply HQ.
     by eapply first_commit_compatible_inv_commit.
   }
+Qed.
+
+Lemma cmtxn_in_past_inv_commit resm past ts wrs :
+  cmtxn_in_past resm past ->
+  cmtxn_in_past (<[ts := ResCommitted wrs]> resm) (past ++ [ActCommit ts wrs]).
+Proof.
+  intros Hcmtxn t m Htm.
+  rewrite resm_to_tmods_insert_committed in Htm.
+  destruct (decide (ts = t)) as [-> | Hne].
+  { rewrite lookup_insert in Htm. inv Htm. set_solver. }
+  rewrite lookup_insert_ne in Htm; last done.
+  specialize (Hcmtxn _ _ Htm).
+  set_solver.
+Qed.
+
+Lemma cmtxn_in_past_inv_commit_committed resm past ts wrs :
+  resm !! ts = Some (ResCommitted wrs) ->
+  cmtxn_in_past resm past ->
+  cmtxn_in_past resm (past ++ [ActCommit ts wrs]).
+Proof.
+  intros Hsome Hcmtxn t m Htm.
+  specialize (Hcmtxn _ _ Htm).
+  set_solver.
 Qed.
 
 Lemma ext_by_lnrz_inv_commit ts v cmtd lnrz kmodl :
@@ -300,25 +343,20 @@ Section inv.
     by specialize (Heq _ _ Hkmod).
   Qed.
 
-  Lemma keys_inv_prepared_at_ts γ resm kmodls kmodcs wrs ts :
-    dom wrs = dom kmodls ->
+  Lemma keys_inv_prepared_at_ts γ resm wrs ts :
     resm !! ts = None ->
     all_prepared γ ts wrs -∗
-    ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
-       key_inv_no_kmodl_kmodc γ key kmodl kmodc) -∗
+    ([∗ set] key ∈ dom wrs, key_inv γ key) -∗
     txnres_auth γ resm -∗
     ([∗ set] gid ∈ gids_all, group_inv γ gid) -∗
-    ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
-       key_inv_with_tsprep_no_kmodl_kmodc γ key ts kmodl kmodc) ∗
+    ([∗ set] key ∈ dom wrs, key_inv_with_tsprep γ key ts) ∗
     txnres_auth γ resm ∗
     ([∗ set] gid ∈ gids_all, group_inv γ gid).
   Proof.
-    iIntros (Hdom Hnone) "#Hpreps Hkeys Hresm Hgroups".
-    iApply (big_sepM2_impl_res with "Hkeys [Hresm Hgroups]").
+    iIntros (Hnone) "#Hpreps Hkeys Hresm Hgroups".
+    iApply (big_sepS_impl_res with "Hkeys [Hresm Hgroups]").
     { iFrame. }
-    iIntros (k kmodl kmodc Hkmodl Hkmodc) "!> Hkey [Hresm Hgroups]".
-    assert (Hinwrs : k ∈ dom wrs).
-    { by rewrite Hdom elem_of_dom. }
+    iIntros (k Hk) "!> Hkey [Hresm Hgroups]".
     iDestruct "Hpreps" as "[Hwrs Hpreps]".
     set gid := key_to_group k.
     iDestruct (big_sepS_elem_of _ _ gid with "Hpreps") as "Hprep".
@@ -374,10 +412,10 @@ Section inv.
     (* Take [tuple_repl_half] from [Hrepls]. *)
     iDestruct (big_sepM_lookup_acc _ _ k tpl with "Hrepls") as "[[Hhist Hts] HreplsC]".
     { by rewrite /tpls_group map_lookup_filter_Some. }
-    iDestruct (key_inv_no_kmodl_kmodc_unseal_tsprep with "Hkey") as (tsprep) "Hkey".
+    iDestruct (key_inv_unseal_tsprep with "Hkey") as (tsprep) "Hkey".
     (* Finally, deduce [tsprep = ts]. *)
     iAssert (⌜tsprep = ts⌝)%I as %->.
-    { iNamed "Hkey".
+    { do 2 iNamed "Hkey".
       iDestruct (ts_repl_agree with "Htsprep Hts") as %Heq.
       by rewrite Hpts in Heq.
     }
@@ -399,17 +437,28 @@ Section inv.
     le_all ts (dom kmodl) ->
     kmodl !! ts = Some v ->
     kmodc !! ts = None ->
-    key_inv_with_tsprep_no_kmodl_kmodc γ k ts kmodl kmodc -∗
-    key_inv_with_tsprep_no_kmodl_kmodc γ k ts (delete ts kmodl) (<[ts:=v]> kmodc).
+    key_inv_with_tsprep_no_kmodl_kmodc γ k ts kmodl kmodc ==∗
+    key_inv_with_tsprep_no_kmodl_kmodc γ k ts (delete ts kmodl) (<[ts:=v]> kmodc) ∗
+    hist_cmtd_length_lb γ k (S ts).
+    (* (∃ lb, hist_cmtd_lb γ k lb ∗ ⌜(ts < length lb)%nat⌝). *)
   Proof.
     iIntros (Hnz Hles Hkmodl Hkmodc) "Hkey".
     iNamed "Hkey".
     iNamed "Hprop".
     pose proof (ext_by_lnrz_inv_commit _ _ _ _ _ Hkmodl Hles Hdiffl) as Hdiffl'.
     pose proof (ext_by_cmtd_inv_commit _ _ _ _ v Hnz Hkmodc Hdiffc) as Hdiffc'.
+    set cmtd' := last_extend _ _ ++ _ in Hdiffl'.
+    iMod (hist_cmtd_update cmtd' with "Hcmtd") as "Hcmtd".
+    { apply prefix_app_r, last_extend_prefix. }
+    iDestruct (hist_cmtd_witness with "Hcmtd") as "#Hlb".
     iFrame "∗ # %".
     iPureIntro.
-    by rewrite lookup_insert_ne.
+    split; first by rewrite lookup_insert_ne.
+    subst cmtd'.
+    pose proof (ext_by_lnrz_not_nil _ _ _ Hdiffl) as Hnnil.
+    apply (last_extend_length ts) in Hnnil.
+    rewrite length_app /=.
+    lia.
   Qed.
 
   Lemma keys_inv_commit γ kmodls kmodcs ts :
@@ -418,48 +467,24 @@ Section inv.
     map_Forall (λ _ kmodl, is_Some (kmodl !! ts)) kmodls ->
     map_Forall (λ _ kmodc, kmodc !! ts = None) kmodcs ->
     ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
-       key_inv_with_tsprep_no_kmodl_kmodc γ key ts kmodl kmodc) -∗
+       key_inv_with_tsprep_no_kmodl_kmodc γ key ts kmodl kmodc) ==∗
     ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
-       key_inv_after_commit γ key ts kmodl kmodc).
+       key_inv_after_commit γ key ts kmodl kmodc ∗ hist_cmtd_length_lb γ key (S ts)).
   Proof.
     iIntros (Hnz Hles Hkmodls Hkmodcs) "Hkeys".
+    iApply big_sepM2_bupd.
     iApply (big_sepM2_impl with "Hkeys").
     iIntros (k kmodl kmodc Hkmodl Hkmodc) "!> Hkey".
     specialize (Hkmodls _ _ Hkmodl). simpl in Hkmodls.
     specialize (Hles _ _ Hkmodl). simpl in Hles.
     specialize (Hkmodcs _ _ Hkmodc). simpl in Hkmodcs.
     destruct Hkmodls as [v Hv].
+    iMod (key_inv_commit with "Hkey") as "[Hkey #Hlb]"; try done.
+    iModIntro.
+    iSplit; last iFrame "Hlb".
     iExists v.
-    iSplit; last done.
-    by iApply key_inv_commit.
+    by iFrame "%".
   Qed.
-
-  (**
-   * The commit action modifies the following logical states in [txn_inv]:
-   * 1. Result map [resm].
-   * 2. Will-commit transaction map [tmodcs].
-   * 3. Key modification map by committed txns [kmodcs].
-   * 4. Key modification map by linearized txns [kmodls].
-   * Invariants to re-establish:
-   * 1. Committed implies prepared [Hcip].
-   * 2. Consistency between result map and committed kmod map [Htkcc].
-   * 3. Consistency between result map and linearized kmod map [Htkcl].
-   * 4. Conflict free [Hcf].
-   *
-   * And the following logical states in [key_inv]:
-   * 1. Committed history [cmtd].
-   * 2. Key modification by committed txns [kmodc].
-   * 3. Key modification by linearized txns [kmodl].
-   * Invariants to re-establish:
-   * 1. Committed history is a prefix of linearized history [Hprefix].
-   * 2. Difference between linearized and committed histories [Hdiffl].
-   * 3. Difference between committed and replicated histories [Hdiffc].
-   * 4. Not written at timestamp 0 [Hzrsv].
-   *
-   * It seems like we're missing an invariant that proves the committing
-   * transaction must have linearized. We might want to add something like
-   * prepared-implies-linearized-or-finalized.
-   *)
 
   Lemma partitioned_tids_close {γ} tids tmodcs tmodas resm :
     let wcmts := dom tmodcs in
@@ -473,7 +498,7 @@ Section inv.
   Proof. iIntros (wcmts wabts cmts Hfate) "Hwcmts Habts Hcmts". iFrame "∗ %". Qed.
 
   Lemma txn_inv_commit γ tid wrs future :
-    head future = Some (ActCommit tid wrs) ->
+    head_commit future tid wrs ->
     txns_lnrz_receipt γ tid -∗
     all_prepared γ tid wrs -∗
     txn_inv_no_future γ future -∗
@@ -491,9 +516,9 @@ Section inv.
     apply Hfate in Htid as Hcases.
     destruct Hcases as [Hresm | Hcases].
     { (* Case: Txn [tid] has already aborted or committed. *)
-      apply elem_of_dom in Hresm as Hwrs.
-      destruct Hwrs as [wrsc Hwrs].
-      rewrite lookup_resm_to_tmods_Some in Hwrs.
+      apply elem_of_dom in Hresm as Hlookup.
+      destruct Hlookup as [wrsc Hlookup].
+      apply lookup_resm_to_tmods_Some in Hlookup as Hwrs.
       iDestruct (big_sepM_lookup with "Hvr") as "#Hres"; first apply Hwrs.
       iAssert (⌜wrsc = wrs⌝)%I as %->.
       { iDestruct "Hres" as "[Hwrsc _]".
@@ -507,24 +532,125 @@ Section inv.
       iDestruct (tids_excl_not_elem_of with "Hwcmts Htidexcl") as %Hnotinc.
       iDestruct (tids_excl_not_elem_of with "Hwabts Htidexcl") as %Hnotina.
       iDestruct ("HcmtsC" with "Htidexcl") as "Hcmts".
+      pose proof (Hcmtxn _ _ Hlookup) as Hinpast. simpl in Hinpast.
+      iDestruct (big_sepL_elem_of with "Hpa") as "Hpawitness"; first apply Hinpast.
+      iCombine "Hpa Hpawitness" as "Hpa'".
+      rewrite -big_sepL_snoc.
       unshelve epose proof (conflict_free_inv_commit_committed _ _ _ _ _ Hhead Hcf) as Hcf'.
       { apply not_elem_of_dom_1, Hnotinc. }
       unshelve epose proof (conflict_past_inv_commit _ _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
       iDestruct (partitioned_tids_close with "Hwcmts Hwabts Hcmts") as "Hpart".
       { apply Hfate. }
+      pose proof (cmtxn_in_past_inv_commit_committed _ _ _ _ Hwrs Hcmtxn) as Hcmtxn'.
       by iFrame "∗ # %".
     }
     destruct Hcases as [Htmodas | Htmodcs].
     { (* Case: Txn [tid] predicted to abort. Contradiction. *)
-      (* Case A: [tid] not showing at all in [future] -> contradicting [Hhead]. *)
-      (* Case B: [(tid, wrs)] conflicting with prior action -> add txnsys invs
-      ReadLength and CommitLength and key inv constraining the length of
-      replicated history with prepare timestamp. To show that [tid] is not
-      committed nor aborted, we use [Hnotin] for the former, and
-      [all_prepared_some_aborted_false] for the later. *)
-      (* Case C: [(tid, wrs)] does not satisfy [P wrs]. Contradiction with
-      additional premise. *)
-      admit.
+      apply elem_of_dom in Htmodas as Hwrsa.
+      destruct Hwrsa as [wrsa Hwrsa].
+      specialize (Hcp _ _ Hwrsa). simpl in Hcp.
+      destruct Hcp as [Hnc | Hcp].
+      { (* Case A: [tid] not showing at all in [future] -> contradicting [Hhead]. *)
+        destruct (no_commit_head_commit _ _ _ Hnc Hhead) as [].
+      }
+      destruct Hcp as [Hfci | [Hfcc Hcontra]].
+      { (* Case B: [(tid, wrs)] conflicting with prior action. *)
+        (* Obtain [resm !! ts = None]. *)
+        iDestruct (big_sepS_delete with "Hwabts") as "[Htidexcl Hwabts]"; first apply Htmodas.
+        iDestruct (tids_excl_not_elem_of with "Hcmts Htidexcl") as %Hnotinr.
+        rewrite not_elem_of_dom lookup_resm_to_tmods_None in Hnotinr.
+        destruct Hnotinr as [Hnone | Habt]; last first.
+        { iDestruct (big_sepM_lookup with "Hvr") as "Habt"; first apply Habt.
+          iDestruct (all_prepared_some_aborted_false with "Hprep Habt") as %[].
+        }
+        (* Obtain [wrsa = wrs] and and incompatible action [a ∈ past]. *)
+        pose proof (first_commit_incompatible_head_commit _ _ _ _ _ Hfci Hhead) as [Heq Hic].
+        subst wrsa.
+        destruct Hic as (a & Hinpast & Hic).
+        (* Take [dom wrs] of [key_inv] and obtain [tid ≠ O]. *)
+        iAssert (⌜dom wrs ⊆ keys_all ∧ tid ≠ O⌝)%I as %[Hdom Htidnz].
+        { iDestruct "Hprep" as "[Hwrs _]".
+          iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hlookup.
+          specialize (Hwrsm _ _ Hlookup). simpl in Hwrsm.
+          destruct Hwrsm as [Hvt Hvw].
+          iPureIntro.
+          split; first done.
+          rewrite /valid_ts in Hvt.
+          lia.
+        }
+        iDestruct (big_sepS_subseteq _ _ (dom wrs) with "Hkeys") as "Hkeys".
+        { apply Hdom. }
+        (* Prove that for all [key ∈ dom wrsa], the lock must be currently granted to [tid]. *)
+        iDestruct (keys_inv_prepared_at_ts with "Hprep Hkeys Hresm Hgroups")
+          as "(Hkeys & Hresm & Hgroups)"; first done.
+        iDestruct (big_sepL_elem_of with "Hpa") as "Ha"; first apply Hinpast.
+        destruct a as [tsa wrsa | tsa keya].
+        { (* Case [a = ActCommit tsa wrsa]. *)
+          apply Decidable.not_or in Hic as [Hge Hne].
+          apply Nat.nlt_ge in Hge.
+          apply set_choose_L in Hne as [k Hk].
+          rewrite elem_of_intersection in Hk.
+          destruct Hk as [Hinwrs Hinwrsa].
+          (* Obtain [tsa < length hlb]. *)
+          simpl.
+          iDestruct (big_sepS_elem_of with "Ha") as (hlb) "[Hhlb %Hlengt]"; first apply Hinwrsa.
+          iDestruct (big_sepS_elem_of with "Hkeys") as "Hkey"; first apply Hinwrs.
+          do 2 iNamed "Hkey".
+          (* Obtain [length hlb ≤ length cmtd]. *)
+          iDestruct (hist_cmtd_prefix with "Hcmtd Hhlb") as %Hprefix.
+          apply prefix_length in Hprefix.
+          (* Obtain [length cmtd ≤ tid]. *)
+          iAssert (⌜(length cmtd ≤ tid)%nat⌝)%I as %Hlenle.
+          { iNamed "Hprop".
+            iDestruct (big_sepS_elem_of _ _ k with "Hkmodcs") as "Hkmodc'".
+            { set_solver. }
+            iDestruct (kmod_cmtd_agree with "Hkmodc Hkmodc'") as %Hkmodceq.
+            iPureIntro.
+            eapply ext_by_cmtd_length; [apply Htidnz | | apply Hdiffc].
+            by rewrite -Hkmodceq vslice_resm_to_tmods_not_terminated.
+          }
+          (* solved with [Hge, Hlengt, Hlenle, Hprefix]. *)
+          lia.
+        }
+        { (* Case [a = ActRead tsa keya]. *)
+          apply Decidable.not_or in Hic as [Hgt Hin].
+          apply Nat.nle_gt in Hgt.
+          apply dec_stable in Hin.
+          (* Obtain [tsa ≤ length hlb]. *)
+          iDestruct "Ha" as (hlb) "[Hhlb %Hlenge]".
+          (* Obtain [length h ≤ tid]. *)
+          iDestruct (big_sepS_elem_of with "Hkeys") as "Hkey"; first apply Hin.
+          do 2 iNamed "Hkey".
+          (* Obtain [length hlb ≤ length cmtd]. *)
+          iDestruct (hist_cmtd_prefix with "Hcmtd Hhlb") as %Hprefix.
+          apply prefix_length in Hprefix.
+          iAssert (⌜(length cmtd ≤ tid)%nat⌝)%I as %Hlenle.
+          { iNamed "Hprop".
+            iDestruct (big_sepS_elem_of _ _ keya with "Hkmodcs") as "Hkmodc'".
+            { set_solver. }
+            iDestruct (kmod_cmtd_agree with "Hkmodc Hkmodc'") as %Hkmodceq.
+            iPureIntro.
+            eapply ext_by_cmtd_length; [apply Htidnz | | apply Hdiffc].
+            by rewrite -Hkmodceq vslice_resm_to_tmods_not_terminated.
+          }
+          (* solved with [Hgt, Hlenge, Hlenle, Hprefix]. *)
+          lia.
+        }
+      }
+      { (* Case C: [(tid, wrs)] does not satisfy [P wrs]. *)
+        (* Obtain [wrsa = wrs]. *)
+        destruct Hfcc as (lp & ls & Hfc & _).
+        pose proof (first_commit_head_commit _ _ _ _ _ _ Hfc Hhead) as <-.
+        (* Obtain [¬ (Q wrs)]. *)
+        destruct Hcontra as (Q & Hlookup & Hcontra).
+        (* Obtain [Q wrs]. *)
+        iDestruct "Hprep" as "[Hwrs _]".
+        iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hwrs.
+        specialize (Hpost _ _ Hwrs). simpl in Hpost.
+        destruct Hpost as (Q' & Hlookup' & HQ).
+        rewrite Hlookup' in Hlookup. inv Hlookup.
+        contradiction.
+      }
     }
     (* Case: Txn [tid] predicted to commit. Update states and extract commitment witness. *)
     (* Obtain [resm !! ts = None] and [ts ∉ dom tmodas]. *)
@@ -555,8 +681,11 @@ Section inv.
     (* Take [dom wrs] of [key_inv]. *)
     iDestruct (big_sepS_subseteq_acc _ _ (dom wrs) with "Hkeys") as "[Hkeys HkeysC]".
     { apply Hdom. }
+    (* Prove that for all [key ∈ dom wrs], the lock must be currently granted to [tid]. *)
+    iDestruct (keys_inv_prepared_at_ts with "Hprep Hkeys Hresm Hgroups")
+      as "(Hkeys & Hresm & Hgroups)"; [done |].
     (* Extract [kmod_lnrz_half] and [kmod_cmtd_half] out of [key_inv]. *)
-    iDestruct (keys_inv_extract_kmodl_kmodc with "Hkeys") as "Hkeys".
+    iDestruct (keys_inv_with_tsprep_extract_kmodl_kmodc with "Hkeys") as "Hkeys".
     iDestruct "Hkeys" as (kmodls kmodcs) "(Hkeys & Hkmodls' & Hkmodcs' & %Hdomkmodls)".
     iDestruct (big_sepM2_dom with "Hkeys") as %Hdomkmodcs.
     rewrite Hdomkmodls in Hdomkmodcs. symmetry in Hdomkmodcs.
@@ -588,9 +717,6 @@ Section inv.
       subst resm'.
       by rewrite resm_to_tmods_insert_committed (vslice_insert_Some _ _ _ _ _ Hv) Heq.
     }
-    (* Prove that for all [key ∈ dom wrs], the lock must be currently granted to [tid]. *)
-    iDestruct (keys_inv_prepared_at_ts with "Hprep Hkeys Hresm Hgroups")
-      as "(Hkeys & Hresm & Hgroups)"; [done | done |].
     (* Prove for each [kmodl] and [kmodc], [is_Some (kmodl !! tid)] and [kmodc !! tid = None]. *)
     assert (Hkmodlstid : map_Forall (λ _ kmodl, is_Some (kmodl !! tid)) kmodls).
     { intros k kmodl Hkmodl.
@@ -609,7 +735,7 @@ Section inv.
       by rewrite Hresm.
     }
     (* Re-establish [key_inv] w.r.t. commit. *)
-    iDestruct (keys_inv_commit with "Hkeys") as "Hkeys".
+    iMod (keys_inv_commit with "Hkeys") as "Hkeys".
     { by eapply Hnz, elem_of_dom_2. }
     { intros k kmodl Hkmodl.
       pose proof (conflict_free_head_commit_le_all _ _ _ _ Hcf Hhead) as Hle.
@@ -621,6 +747,12 @@ Section inv.
     }
     { apply Hkmodlstid. }
     { apply Hkmodcstid. }
+    rewrite big_sepM2_sep.
+    iDestruct "Hkeys" as "[Hkeys #Hlbs]".
+    rewrite big_sepM2_alt.
+    iDestruct "Hlbs" as "[_ Hlbs]".
+    rewrite -big_sepS_big_sepM dom_map_zip_with_L Hdomkmodls Hdomkmodcs.
+    replace (dom wrs ∩ dom wrs) with (dom wrs); last set_solver.
     iAssert ([∗ map] k ↦ kmodl;kmodc ∈ kmodls; kmodcs,
                ∃ v, kmod_cmtd_half γ k (<[tid := v]> kmodc) ∗ ⌜kmodl !! tid = Some v⌝)%I
       with "[Hkmodcs']" as "Hkmodcs'".
@@ -647,7 +779,7 @@ Section inv.
       rewrite -big_sepM2_sep.
       iCombine "Hkeys Hkmods" as "Hkeys".
       rewrite -big_sepM2_sep.
-      rewrite big_sepS_big_sepM.
+      iApply big_sepS_big_sepM.
       iApply (big_sepM2_sepM_impl with "Hkeys"); first done.
       iIntros (k kmodl kmodc v Hkmodl Hkmodc Hv) "!> (Hkey & Hkmodl & Hkmodc)".
       clear Hv v.
@@ -691,9 +823,15 @@ Section inv.
     iDestruct (txnres_witness _ _ tid with "Hresm") as "#Hcmt".
     { by rewrite lookup_insert. }
     (* Re-establish [valid_res]. *)
-    (* Re-establish [conflict_free] and [conflict_past]. *)
+    iDestruct (big_sepM_insert_2 _ _ tid (ResCommitted wrs) with "[] Hvr") as "Hvr'"; first done.
+    (* Re-establish [past_action_witness]. *)
+    iAssert (past_action_witness γ (ActCommit tid wrs))%I as "#Hpawitness"; first iFrame "Hlbs".
+    iCombine "Hpa Hpawitness" as "Hpa'".
+    rewrite -big_sepL_snoc.
+    (* Re-establish [conflict_free], [conflict_past], and [cmtxn_in_past]. *)
     pose proof (conflict_free_inv_commit _ _ _ _ Hhead Hcf) as Hcf'.
     pose proof (conflict_past_inv_commit _ _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
+    pose proof (cmtxn_in_past_inv_commit _ _ tid wrs Hcmtxn) as Hcmtxn'.
     (* Add [tids_excl_frag γ tid] (originally from [wcmts]) to [cmts]. *)
     iDestruct (big_sepS_insert_2 with "Htidexcl Hcmts") as "Hcmts".
     iDestruct (partitioned_tids_close tids tmodcs' tmodas resm'
@@ -713,11 +851,9 @@ Section inv.
     { by rewrite resm_to_tmods_insert_committed dom_insert_L. }
     iFrame "∗ # %".
     iModIntro.
-    iSplit.
-    { by iApply (big_sepM_insert_2 with "[Hprep] Hvr"). }
     iPureIntro.
     rewrite dom_delete_L.
     set_solver.
-  Admitted.
+  Qed.
 
 End inv.

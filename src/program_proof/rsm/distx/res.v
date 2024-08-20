@@ -31,9 +31,47 @@ Section res.
     hist_repl_lb γ k h.
   Admitted.
 
-  Definition hist_repl_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
-    ∃ hist, ⌜hist !! ts = Some v⌝ ∗ hist_repl_lb γ k hist.
+  Lemma hist_repl_prefix {γ k h hlb} :
+    hist_repl_half γ k h -∗
+    hist_repl_lb γ k hlb -∗
+    ⌜prefix hlb h⌝.
+  Admitted.
 
+  Definition hist_repl_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
+    ∃ hist, hist_repl_lb γ k hist ∗ ⌜hist !! ts = Some v⌝.
+
+  Definition hist_cmtd_auth γ (k : dbkey) (h : dbhist) : iProp Σ.
+  Admitted.
+
+  Definition hist_cmtd_lb γ (k : dbkey) (h : dbhist) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance is_hist_cmtd_lb_persistent α key hist :
+    Persistent (hist_cmtd_lb α key hist).
+  Admitted.
+
+  Definition hist_cmtd_length_lb γ key n : iProp Σ :=
+    ∃ lb, hist_cmtd_lb γ key lb ∗ ⌜(n ≤ length lb)%nat⌝.
+
+  Lemma hist_cmtd_update {γ k h1} h2 :
+    prefix h1 h2 ->
+    hist_cmtd_auth γ k h1 ==∗
+    hist_cmtd_auth γ k h2.
+  Admitted.
+
+  Lemma hist_cmtd_witness {γ k h} :
+    hist_cmtd_auth γ k h -∗
+    hist_cmtd_lb γ k h.
+  Admitted.
+
+  Lemma hist_cmtd_prefix {γ k h hlb} :
+    hist_cmtd_auth γ k h -∗
+    hist_cmtd_lb γ k hlb -∗
+    ⌜prefix hlb h⌝.
+  Admitted.
+
+  (* XXX: this should be full ownership. *)
   Definition hist_lnrz_half γ (k : dbkey) (l : dbhist) : iProp Σ.
   Admitted.
 
@@ -66,6 +104,7 @@ Section res.
   Admitted.
   
   Lemma tuple_repl_update {γ k t1 t2} t' :
+    (* XXX: missing prefix check *)
     tuple_repl_half γ k t1 -∗
     tuple_repl_half γ k t2 ==∗
     tuple_repl_half γ k t' ∗ tuple_repl_half γ k t'.
