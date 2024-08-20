@@ -141,6 +141,63 @@ Proof.
   rewrite insert_id; eauto.
 Qed.
 
+Theorem wpc_Read_disk stk E1 (a: u64) cd d :
+  {{{ own_disk cd d ∗
+      ⌜uint.Z a ∈ dom d⌝ }}}
+    disk.Read #a @ stk; E1
+  {{{ s b, RET (slice_val s);
+      own_disk cd d ∗
+      is_block s (DfracOwn 1) b ∗
+      ⌜d !! uint.Z a = Some b⌝ }}}
+  {{{ own_disk cd d }}}.
+Proof.
+  iIntros (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hd & %Hdom)".
+  iDestruct (disk_lookup_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
+  { eauto. }
+  wpc_apply (wpc_Read with "Ha").
+  iSplit.
+  { iIntros "Ha". iSpecialize ("Hacc" with "Ha"). crash_case. iFrame. }
+  iModIntro.
+  iIntros (s) "[Ha Hs]".
+  iSpecialize ("Hacc" with "Ha").
+  iRight in "HΦ". iApply "HΦ". iFrame. iSplit.
+  { iDestruct (own_slice_to_small with "Hs") as "Hs". iFrame. }
+  done.
+Qed.
+
+Theorem wpc_Write_disk stk E1 (a: u64) cd d s q b :
+  {{{ own_disk cd d ∗
+      ⌜uint.Z a ∈ dom d⌝ ∗
+      is_block s q b }}}
+    disk.Write #a (slice_val s) @ stk; E1
+  {{{ RET #();
+      is_block s q b ∗
+      ( own_disk cd (<[uint.Z a := b]> d) ∨
+        own_disk (<[uint.Z a := b]> cd) (<[uint.Z a := b]> d) ) }}}
+  {{{ own_disk cd d ∨
+      own_disk cd (<[uint.Z a := b]> d) ∨
+      own_disk (<[uint.Z a := b]> cd) (<[uint.Z a := b]> d) }}}.
+Proof.
+  iIntros (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hd & %Hdom & Hb)".
+  iDestruct (disk_insert_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
+  { done. }
+  wpc_apply (wpc_Write with "[$Ha $Hb]").
+  iSplit.
+  { iLeft in "HΦ". iIntros "[Ha|[Ha|Ha]]"; iApply "HΦ".
+    - iSpecialize ("Hacc" with "Ha"). rewrite insert_id //. rewrite insert_id //. iFrame.
+    - iSpecialize ("Hacc" with "Ha"). rewrite insert_id //. iFrame.
+    - iSpecialize ("Hacc" with "Ha"). iFrame.
+  }
+  iRight in "HΦ".
+  iIntros "!> (%bp & Ha & Hb & %Hbp)".
+  iApply "HΦ". iFrame.
+  iSpecialize ("Hacc" with "Ha"). destruct Hbp; subst.
+  - iFrame.
+  - rewrite insert_id //. iFrame.
+Qed.
+
 Theorem wpc_Barrier_disk stk E1 cd d :
   {{{ own_disk cd d }}}
     disk.Barrier #() @ stk; E1
@@ -260,21 +317,17 @@ Proof.
     wpc_frame_seq.
     wp_apply "Hrd".
     iIntros (a). iNamed 1. iNamed 1. iNamed "Hloop".
-    iDestruct (disk_lookup_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
-    { rewrite -Hdom'. done. }
     wpc_pures.
     { crash_case.
-      iSpecialize ("Hacc" with "Ha").
       iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
       iModIntro. crash_case. iFrame. }
-    wpc_apply (wpc_Read with "Ha").
+    wpc_apply (wpc_Read_disk with "[$Hd]").
+    { rewrite -Hdom' //. }
     iSplit.
     { iIntros "Ha".
-      iSpecialize ("Hacc" with "Ha").
       iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
       iModIntro. crash_case. iFrame. }
-    iIntros (s) "!> [Ha Hs]".
-    iSpecialize ("Hacc" with "Ha").
+    iIntros (s b) "!> (Hd & Hb & %Hbv)".
     wpc_pures.
     { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
       iModIntro. crash_case. iFrame. }
@@ -289,30 +342,28 @@ Proof.
     wpc_frame_seq.
     wp_apply "Hwr".
     iIntros (a s q b). iNamed 1. iNamed 1. iNamed "Hloop".
-    iDestruct (disk_insert_acc with "[] Hd") as (vcrash v) "(Ha & %Hclookup & %Halookup & Hacc)".
-    { rewrite -Hdom'. done. }
     wpc_pures.
-    { iSpecialize ("Hacc" with "Ha"). rewrite ?insert_id //.
-      iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+    { iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
       iModIntro. crash_case. iFrame. }
-    wpc_apply (wpc_Write with "[$Ha $Hb]").
+    wpc_apply (wpc_Write_disk with "[$Hd $Hb]").
+    { rewrite -Hdom'. done. }
     iSplit.
-    { iIntros "Ha". iDestruct "Ha" as "[Ha | [Ha | Ha]]".
-      + iSpecialize ("Hacc" with "Ha"). rewrite ?insert_id //.
-        iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+    { iIntros "Hd". iDestruct "Hd" as "[Hd | [Hd | Hd]]".
+      + iIntros "HC".
+        iMod (Pcfupd with "HP HC") as "HP".
         iModIntro. crash_case. iFrame.
-      + iSpecialize ("Hacc" with "Ha"). rewrite insert_id //.
-        iIntros "HC". iMod (Pcfupd with "HP HC") as "HP".
+      + iIntros "HC".
+        iLeft in "Hwr_fupd". iMod ("Hwr_fupd" with "HP") as "HP".
+        iMod (Pcfupd with "HP HC") as "HP".
         iModIntro. crash_case. iFrame.
-      + iSpecialize ("Hacc" with "Ha").
-        iIntros "HC". iRight in "Hwr_fupd". iMod ("Hwr_fupd" with "HP") as "HP".
+      + iIntros "HC".
+        iRight in "Hwr_fupd". iMod ("Hwr_fupd" with "HP") as "HP".
         iMod (Pcfupd with "HP HC") as "HP".
         iModIntro. crash_case. iFrame.
     }
-    iModIntro. iIntros "H". iDestruct "H" as (bp) "(Ha & Hb & %Hcrash)".
-    iSpecialize ("Hacc" with "Ha").
-    destruct Hcrash; subst.
-    + iRight in "Hwr_fupd".
+    iModIntro. iIntros "[H Hd]".
+    iDestruct "Hd" as "[Hd | Hd]".
+    + iLeft in "Hwr_fupd".
       iMod ("Hwr_fupd" with "HP") as "HP".
       wpc_pures.
       { iIntros "HC".
@@ -323,15 +374,13 @@ Proof.
       iModIntro. iSplit; first done. iFrame.
       rewrite dom_insert_L.
       iPureIntro. set_solver.
-    + iLeft in "Hwr_fupd".
+    + iRight in "Hwr_fupd".
       iMod ("Hwr_fupd" with "HP") as "HP".
       wpc_pures.
-      { rewrite insert_id //.
-        iIntros "HC".
+      { iIntros "HC".
         iMod (Pcfupd with "HP HC") as "HP".
         iModIntro. crash_case. iFrame.
       }
-      rewrite insert_id //.
       iLeft.
       iModIntro. iSplit; first done. iFrame.
       rewrite dom_insert_L.
