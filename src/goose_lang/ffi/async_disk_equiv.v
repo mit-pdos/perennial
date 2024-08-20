@@ -192,6 +192,26 @@ Section translate.
     set_solver.
   Qed.
 
+   Ltac inv_pure_base_step :=
+     match goal with
+     | [ H: relation.denote _ _ _ _ |- _ ] =>
+         rewrite //= in H;
+         destruct_head; inversion H; subst;
+         monad_inv
+     end.
+
+  Ltac inv_unwrap_case :=
+    repeat match goal with
+    | H : ?e = ?y |- context[relation.denote (unwrap ?e) _ _ _] => rewrite ?H
+    | H: relation.denote (unwrap (Some _)) _ _ _ |- _ => inv_pure_base_step
+    | H: relation.denote (unwrap ?e) _ _ _ |- _ =>
+        destruct e eqn:?; last by (inv_monad_false); eauto; subst
+    end.
+
+  Ltac solve_step :=
+      do 2 eexists; split_and!; eauto;
+      econstructor; inv_unwrap_case; eauto; econstructor; eauto.
+
   Theorem base_step_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
     base_step e1 σ1 g1 κ e2 σ2 g2 efs →
     ∀ pg2 pσ2,
@@ -204,85 +224,20 @@ Section translate.
   Proof.
     rewrite /base_step.
     revert σ1 g1 κ e2 σ2 g2 efs.
-    destruct e1; intros σ1 g1 κ e2 σ2 g2 efs Hstep; subst; try inversion Hstep; intuition eauto; subst.
-    - monad_inv. do 2 eexists. split_and!; eauto.
-      repeat econstructor.
+    destruct e1; intros σ1 g1 κ e2 σ2 g2 efs Hstep; subst; try inversion Hstep; intuition eauto; subst;
+      try (inv_pure_base_step; inversion Hstep; subst; monad_inv; solve_step; done).
+    - inv_pure_base_step; inv_unwrap_case; solve_step.
+    - inv_pure_base_step; inv_unwrap_case; solve_step.
     - rewrite /base_step//= in Hstep.
-      destruct_head. inversion Hstep; subst.
-      monad_inv. do 2 eexists. split_and!; eauto.
-      repeat econstructor.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      destruct (un_op_eval op v) eqn:Heq; eauto; subst.
-      * rewrite /unwrap in Hstep.
-        inversion Hstep; monad_inv.
-        do 2 eexists. split_and!; eauto.
-        econstructor; rewrite ?Heq; eauto; econstructor; eauto.
-      * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      destruct (bin_op_eval op v) eqn:Heq; eauto; subst.
-      * rewrite /unwrap in Hstep.
-        inversion Hstep; monad_inv.
-        do 2 eexists. split_and!; eauto.
-        econstructor; rewrite ?Heq; eauto; econstructor; eauto.
-      * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
+      destruct_head. destruct v; monad_inv; inv_pure_base_step; inv_unwrap_case; solve_step.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       inversion Hstep; subst.
-      monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
+      monad_inv. solve_step.
     - rewrite /base_step//= in Hstep.
-      destruct e1_1; monad_inv.
-      destruct e1_2; monad_inv.
-      inversion Hstep; subst.
-      monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      destruct v; monad_inv.
-      * inversion Hstep; subst. monad_inv.
-        do 2 eexists. split_and!; eauto.
-        econstructor; eauto; econstructor; eauto.
-      * inversion Hstep; subst. monad_inv.
-        do 2 eexists. split_and!; eauto.
-        econstructor; eauto; econstructor; eauto.
-    - inversion Hstep; subst; monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv. inversion H1. subst. monad_inv.
-      inversion H2; subst.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; repeat econstructor; eauto.
+      destruct op; monad_inv; destruct_head.
+      inversion Hstep; monad_inv. inv_pure_base_step.
+      solve_step; repeat econstructor.
     - rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
       * inversion Hstep; monad_inv.
@@ -480,12 +435,6 @@ Section translate.
              unfold check. rewrite ifThenElse_if; eauto. rewrite /=. repeat econstructor; eauto.
              rewrite /when. rewrite ifThenElse_else; eauto. repeat econstructor.
          *** repeat econstructor => //=.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv.
-      do 2 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
     - destruct op.
       (* Read *)
       * rewrite /base_step//= in Hstep.
@@ -1277,7 +1226,7 @@ Section translate.
     - split.
       { rewrite dom_fmap_L //. }
       intros z cblk Hlook. eexists; split; last first.
-      { rewrite lookup_fmap Hlook //. } 
+      { rewrite lookup_fmap Hlook //. }
       rewrite /log_heap.possible//=. apply elem_of_app; right; econstructor.
   Qed.
 
@@ -1521,7 +1470,7 @@ Section translate.
                { rewrite //=. rewrite -H Heq. econstructor; eauto. }
                subst.
                rewrite //=.
-           *** split_and!; eauto. 
+           *** split_and!; eauto.
            *** eauto.
            *** econstructor; eauto; repeat econstructor; eauto.
         ** inversion H5; intuition.
@@ -1599,7 +1548,7 @@ Section translate.
         destruct (decide (n = O)); monad_inv; last first.
         { rewrite ifThenElse_else in H1; eauto. simpl in H1. inversion H1; monad_inv. exfalso; eauto. }
         rewrite ifThenElse_if in H1; eauto.
-        simpl in H1. monad_inv. 
+        simpl in H1. monad_inv.
         do 4 eexists. inversion Hmatch_curr. intuition.
         ** econstructor.
            *** econstructor; eauto; repeat (econstructor; eauto).
