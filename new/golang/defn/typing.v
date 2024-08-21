@@ -1,5 +1,19 @@
 From Perennial.goose_lang Require Export lang notation.
-From New.golang.defn Require Import list.
+From New.golang.defn Require Export list.
+
+Module array.
+Section defn.
+  Context `{ffi_syntax}.
+  Fixpoint val_def (x : list val) : val :=
+    match x with
+    | [] => #()
+    | h :: tl => (h, val_def tl)
+    end
+  .
+  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
+  Definition val_unseal : val = _ := seal_eq _.
+End defn.
+End array.
 
 Section val_types.
   Inductive go_type :=
@@ -17,7 +31,7 @@ Section val_types.
   | int64T
 
   | stringT
-  (* | arrayT (len : nat) (elem : go_type) *)
+  | arrayT (n : nat) (elem : go_type)
   | sliceT (elem : go_type)
   | structT (decls : list (string * go_type)) (* What if this were a gmap? *)
   | ptrT (* Untyped pointer; convenient to support recursion in structs *)
@@ -56,7 +70,7 @@ Section val_types.
     | int64T => #(W64 0)
 
     | stringT => #(str "")
-    (* | arrayT (len : nat) (elem : go_type) *)
+    | arrayT n elem => array.val (replicate n (zero_val_def elem))
     | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => go_nil
@@ -79,6 +93,7 @@ Section val_types.
         ) d
     | sliceT e => 3
     | interfaceT => 3
+    | arrayT n e => n * (go_type_size_def e)
     | _ => 1
     end.
   Program Definition go_type_size := unseal (_:seal (@go_type_size_def)). Obligation 1. by eexists. Qed.

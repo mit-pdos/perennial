@@ -9,6 +9,54 @@ From New.code Require sync.
 
 From New Require Import disk_prelude.
 
+Definition Foo : go_type := arrayT 10 uint64T.
+
+Definition Foo__mset : list (string * val) := [
+].
+
+Definition Foo__mset_ptr : list (string * val) := [
+].
+
+(* go: array.go:5:6 *)
+Definition takesArray : val :=
+  rec: "takesArray" "x" :=
+    exception_do (let: "x" := (ref_ty (arrayT 13 stringT) "x") in
+    return: (![stringT] (array.elem_ref stringT (![arrayT 13 stringT] "x") #(W64 3)))).
+
+(* go: array.go:9:6 *)
+Definition takesPtr : val :=
+  rec: "takesPtr" "x" :=
+    exception_do (let: "x" := (ref_ty ptrT "x") in
+    do:  ((![ptrT] "x") <-[stringT] ((![stringT] (![ptrT] "x")) + #(str "bar")))).
+
+(* go: array.go:13:6 *)
+Definition usesArrayElemRef : val :=
+  rec: "usesArrayElemRef" <> :=
+    exception_do (let: "x" := (ref_ty (arrayT 2 stringT) (zero_val (arrayT 2 stringT))) in
+    let: "$r0" := ((let: "$ar0" := #(str "a") in
+    let: "$ar1" := #(str "b") in
+    array.literal ["$ar0"; "$ar1"])) in
+    do:  ("x" <-[arrayT 2 stringT] "$r0");;;
+    let: "$r0" := #(str "c") in
+    do:  ((array.elem_ref stringT (![arrayT 2 stringT] "x") #(W64 1)) <-[stringT] "$r0");;;
+    do:  (let: "$a0" := (array.elem_ref stringT (![arrayT 2 stringT] "x") #(W64 1)) in
+    takesPtr "$a0")).
+
+(* go: array.go:22:6 *)
+Definition sum : val :=
+  rec: "sum" "x" :=
+    exception_do (let: "x" := (ref_ty (arrayT 100 uint64T) "x") in
+    let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("sum" <-[uint64T] "$r0");;;
+    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (array.len (arrayT 100 uint64T))); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+      do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (![uint64T] (array.elem_ref uint64T (![arrayT 100 uint64T] "x") (![uint64T] "i")))))));;;
+    do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (array.cap (arrayT 100 uint64T))));;;
+    return: (![uint64T] "sum")).
+
 (* go: chan.go:5:6 *)
 Definition chanBasic : val :=
   rec: "chanBasic" <> :=

@@ -1,6 +1,7 @@
 From New.golang.defn Require Export typing.
 From New.golang.theory Require Export list.
 Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Program.Equality.
 
 Set Default Proof Using "Type".
 
@@ -63,14 +64,18 @@ Delimit Scope struct_scope with struct.
 Section typing.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}.
 
+  Print go_type_ind.
+
   Program Definition go_type_ind :=
     λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
       (f3 : P uint64T) (f4 : P int8T) (f5 : P int16T) (f6 : P int32T) (f7 : P int64T)
-      (f8 : P stringT) (f9 : ∀ elem : go_type, P elem → P (sliceT elem))
-      (f10 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
-      (f11 : P ptrT) (f12 : P funcT) (f13 : P interfaceT)
-      (f14 : ∀ key : go_type, P key → ∀ elem : go_type, P elem → P (mapT key elem))
-      (f15 : ∀ elem : go_type, P elem → P (chanT elem)),
+      (f8 : P stringT) (f9 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
+      (f10 : ∀ elem : go_type, P elem → P (sliceT elem))
+      (f11 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
+      (f12 : P ptrT)
+      (f13 : P funcT) (f14 : P interfaceT) (f15 : ∀ key : go_type,
+                                              P key → ∀ elem : go_type, P elem → P (mapT key elem))
+      (f16 : ∀ elem : go_type, P elem → P (chanT elem)),
     fix F (g : go_type) : P g :=
       match g as g0 return (P g0) with
       | boolT => f
@@ -83,13 +88,14 @@ Section typing.
       | int32T => f6
       | int64T => f7
       | stringT => f8
-      | sliceT elem => f9 elem (F elem)
-      | structT decls => f10 decls _
-      | ptrT => f11
-      | funcT => f12
-      | interfaceT => f13
-      | mapT key elem => f14 key (F key) elem (F elem)
-      | chanT elem => f15 elem (F elem)
+      | arrayT n elem => f9 n elem (F elem)
+      | sliceT elem => f10 elem (F elem)
+      | structT decls => f11 decls _
+      | ptrT => f12
+      | funcT => f13
+      | interfaceT => f14
+      | mapT key elem => f15 key (F key) elem (F elem)
+      | chanT elem => f16 elem (F elem)
       end.
   Obligation 1.
   intros.
@@ -122,6 +128,11 @@ Section typing.
   | has_go_type_slice elem (s : slice.t) : has_go_type (slice.val s) (sliceT elem)
   | has_go_type_slice_nil elem : has_go_type slice.nil (sliceT elem)
 
+  | has_go_type_array n elem (a : list val)
+                      (Hlen : length a = n)
+                      (Helems : ∀ v, In v a → has_go_type v elem)
+    : has_go_type (array.val a) (arrayT n elem)
+
   | has_go_type_struct
       (d : struct.descriptor) fvs
       (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup f fvs)) t)
@@ -130,7 +141,6 @@ Section typing.
   | has_go_type_func f e v : has_go_type (RecV f e v) funcT
   | has_go_type_func_nil : has_go_type go_nil funcT
 
-  (* FIXME: interface_val *)
   | has_go_type_interface (mset : list (string * val)) (v : val) :
     has_go_type (interface.val mset v) interfaceT
   | has_go_type_interface_nil : has_go_type interface_nil interfaceT
@@ -143,6 +153,15 @@ Section typing.
     has_go_type (zero_val t) t.
   Proof.
     induction t using go_type_ind; rewrite zero_val_unseal; try econstructor.
+    (* arrayT *)
+    { rewrite array.val_unseal. apply length_replicate. }
+    { intros. fold zero_val_def in H.
+      rewrite -elem_of_list_In in H.
+      apply elem_of_replicate_inv in H. subst.
+      by rewrite -zero_val_unseal.
+    }
+
+    (* structT *)
     replace (zero_val_def (structT decls)) with (struct.val (structT decls) []).
     {
       econstructor. intros. simpl.
@@ -168,6 +187,20 @@ Section typing.
   Proof.
     rewrite go_type_size_unseal.
     induction 1; simpl; rewrite ?slice.val_unseal ?interface.val_unseal; auto.
+    - simpl.
+      rewrite array.val_unseal.
+      dependent induction a generalizing n.
+      + simpl in *. subst. done.
+      + simpl. simpl in Hlen.
+        destruct n; first by exfalso.
+        inversion_clear Hlen. clear n.
+        specialize (IHa _ ltac:(done)).
+        unshelve epose proof (IHa _ _) as IHa.
+        { intros. apply Helems. by right. }
+        { intros. apply H. by right. }
+        rewrite length_app.
+        rewrite IHa Nat.mul_succ_l Nat.add_comm.
+        f_equal. apply H. by left.
     - rewrite struct.val_unseal.
       induction d.
       { done. }
@@ -194,7 +227,7 @@ Section typing.
     | int64T => #(W64 0)
 
     | stringT => #(str "")
-    (* | arrayT (len : nat) (elem : go_type) *)
+    | arrayT n elem => array.val (replicate n (zero_val elem))
     | sliceT _ => slice.nil
     | structT decls => struct.val t []
     | ptrT => go_nil
@@ -208,8 +241,9 @@ Section typing.
     zero_val t = zero_val' t.
   Proof.
     rewrite zero_val_unseal.
-    induction t; try done. simpl.
-    rewrite struct.val_unseal.
+    induction t; try done.
+    { simpl. by rewrite zero_val_unseal. }
+    simpl. rewrite struct.val_unseal.
     induction decls; first done.
     destruct a. simpl.
     by rewrite IHdecls /= !zero_val_unseal.
@@ -269,6 +303,7 @@ Section typing.
                   )
           end
         ).
+    - admit.
     - destruct (decide (v = slice.nil)); subst; [ by eauto | ].
       destruct (is_slice_val v) as [[s ->] | ]; [ by eauto | right ].
       inversion 1; subst; intuition eauto.
