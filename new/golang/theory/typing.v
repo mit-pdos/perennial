@@ -64,8 +64,6 @@ Delimit Scope struct_scope with struct.
 Section typing.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}.
 
-  Print go_type_ind.
-
   Program Definition go_type_ind :=
     λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
       (f3 : P uint64T) (f4 : P int8T) (f5 : P int16T) (f6 : P int32T) (f7 : P int64T)

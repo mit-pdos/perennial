@@ -16,4 +16,6 @@ Definition maxUint64 (n : nat) : val :=
   | _ => LitV $ LitPoison
   end.
 
+Axiom int_lt : val.
+
 End goose_lang.

@@ -28,4 +28,6 @@ Context `{ffi_syntax}.
 Definition uint64__mset : list (string * val) := [].
 Definition int__mset : list (string * val) := [].
 Definition string__mset : list (string * val) := [].
+Definition slice__mset : list (string * val) := [].
+Definition slice__mset_ptr : list (string * val) := [].
 End mset.

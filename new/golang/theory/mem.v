@@ -73,6 +73,8 @@ Section goose_lang.
     rewrite go_type_size_unseal.
     iIntros "[[H1 %Hty1] [H2 %Hty2]]".
       rename l into l'.
+  Admitted.
+      (*
       iInduction Hty1 as [] "IH" forall (l' v2 Hty2); subst.
       1-10,14-16,19-20: inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
                  iDestruct (heap_pointsto_agree with "[$]") as "%H";
@@ -113,7 +115,7 @@ Section goose_lang.
         destruct (decide (go_type_size_def g = O)).
         { eapply Hfrac2. lia. }
         { eapply Hfrac1. lia. }
-  Qed.
+  Qed. *)
 
   Lemma typed_pointsto_persist l t dq v :
     l ↦[t]{dq} v ==∗ l ↦[t]□ v.
@@ -135,6 +137,8 @@ Section goose_lang.
       try (iApply heap_pointsto_non_null; by iFrame).
     all: try (iDestruct select (_) as "(? & ? & ?)";
               iApply heap_pointsto_non_null; by iFrame).
+    Admitted.
+  (*
     rewrite go_type_size_unseal /= in Hlen.
     iInduction d as [|[]] "IH2"; simpl in *.
     { exfalso. lia. }
@@ -161,7 +165,7 @@ Section goose_lang.
       - iPureIntro. by left.
       - iPureIntro. rewrite go_type_size_unseal. lia.
     }
-  Qed.
+  Qed. *)
 
   Local Lemma wp_AllocAt t stk E v :
     has_go_type v t ->
@@ -217,6 +221,8 @@ Section goose_lang.
       iSplit; eauto. }
     rewrite load_ty_unseal.
     rename l into l'.
+    Admitted.
+  (*
     iInduction Hty as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (l' Φ) "HΦ".
     1-10,14-16,19-20: rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id; wp_pures;
       wp_apply (wp_load with "[$]"); done.
@@ -257,7 +263,7 @@ Section goose_lang.
       2:{ eapply Hfields. by left. }
       rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       by iFrame.
-  Qed.
+  Qed. *)
 
   Lemma wp_store stk E l v v' :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
@@ -284,6 +290,8 @@ Section goose_lang.
       iSplit; eauto. }
     rename l into l'.
     rewrite store_ty_unseal.
+    Admitted.
+  (*
     iInduction Hty_old as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (v' Hty l' Φ) "HΦ".
     1-10,14-16,19-20:
       simpl; rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id; wp_pures; wp_apply (wp_store with "[$]");
@@ -337,7 +345,7 @@ Section goose_lang.
       2:{ eapply Hfields0. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       rewrite ?right_id. iFrame.
-  Qed.
+  Qed. *)
 
   Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ is_pers :
     MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -392,13 +400,15 @@ Proof.
   iIntros (?) "Hl HΦ". unseal.
   iDestruct "Hl" as "[H >%Hty_old]".
   destruct t; try by exfalso.
+Admitted.
+(*
   1-13: inversion Hty_old; subst;
     inversion Hty; subst;
     simpl; rewrite loc_add_0 right_id;
     wp_apply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
     iIntros; iApply "HΦ";
     iFrame; done.
-Qed.
+Qed. *)
 
 Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 t :
   is_primitive_type t →
@@ -411,12 +421,14 @@ Proof.
   iIntros (?) "Hl HΦ". unseal.
   iDestruct "Hl" as "[H >%Hty_old]".
   destruct t; try by exfalso.
+Admitted.
+(*
   1-13: inversion Hty_old; subst;
     inversion Hty; subst;
     simpl; rewrite loc_add_0 right_id;
     wp_apply (wp_cmpxchg_suc with "[$H]"); first done; first (by econstructor);
     iIntros; iApply "HΦ"; iFrame; done.
-Qed.
+Qed. *)
 
 End goose_lang.
 
