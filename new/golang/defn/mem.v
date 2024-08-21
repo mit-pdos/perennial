@@ -3,7 +3,6 @@ From New.golang.defn Require Export typing.
 (** * Memory load, store, and allocation with type annotations. *)
 Section go_lang.
   Context `{ffi_syntax}.
-  Local Coercion Var' (s:string): expr := Var s.
 
   Definition ref_ty_def (t : go_type) : val := λ: "v", ref (Var "v").
   Program Definition ref_ty := unseal (_:seal (@ref_ty_def)). Obligation 1. by eexists. Qed.

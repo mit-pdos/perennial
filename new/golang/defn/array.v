@@ -1,17 +1,25 @@
 From New Require Export notation.
+From New.golang.defn Require Import typing.
 
 Module array.
 Section defn.
   Context `{ffi_syntax}.
 
-  Fixpoint val_def (x : list val) : val :=
-    match x with
-    | [] => #()
-    | h :: tl => (h, val_def tl)
-    end
-  .
-  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
-  Definition val_unseal : val = _ := seal_eq _.
+  Definition elem_ref (t : go_type) : val.
+  Admitted.
 
+  Definition elem_get (t : go_type) : val.
+  Admitted.
+
+  Definition len (t : go_type) : val.
+  Admitted.
+
+  Definition cap (t : go_type) : val.
+  Admitted.
+
+  (* takes a list as input, and makes an array value *)
+  Definition literal : val :=
+    rec: "literal" "len" "elems" :=
+      list.Match (λ: <>, #()) (λ: "hd" "tl", ("hd", "literal" "tl")).
 End defn.
 End array.
