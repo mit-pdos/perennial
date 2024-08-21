@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Export lang notation.
-From New.golang.defn Require Import list.
+From New.golang.defn Require Export list array.
 
 Section val_types.
   Inductive go_type :=
@@ -56,7 +56,7 @@ Section val_types.
     | int64T => #(W64 0)
 
     | stringT => #(str "")
-    | arrayT n elem => list.val (replicate n (zero_val_def elem))
+    | arrayT n elem => array.val (replicate n (zero_val_def elem))
     | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => go_nil
@@ -79,7 +79,7 @@ Section val_types.
         ) d
     | sliceT e => 3
     | interfaceT => 3
-    | arrayT n e => 1 + n * (go_type_size_def e)
+    | arrayT n e => n * (go_type_size_def e)
     | _ => 1
     end.
   Program Definition go_type_size := unseal (_:seal (@go_type_size_def)). Obligation 1. by eexists. Qed.

@@ -1,6 +1,7 @@
 From New.golang.defn Require Export typing.
 From New.golang.theory Require Export list.
 Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Program.Equality.
 
 Set Default Proof Using "Type".
 
@@ -130,7 +131,7 @@ Section typing.
   | has_go_type_array n elem (a : list val)
                       (Hlen : length a = n)
                       (Helems : ∀ v, In v a → has_go_type v elem)
-    : has_go_type (list.val a) (arrayT n elem)
+    : has_go_type (array.val a) (arrayT n elem)
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
@@ -153,7 +154,7 @@ Section typing.
   Proof.
     induction t using go_type_ind; rewrite zero_val_unseal; try econstructor.
     (* arrayT *)
-    { apply length_replicate. }
+    { rewrite array.val_unseal. apply length_replicate. }
     { intros. fold zero_val_def in H.
       rewrite -elem_of_list_In in H.
       apply elem_of_replicate_inv in H. subst.
@@ -187,11 +188,19 @@ Section typing.
     rewrite go_type_size_unseal.
     induction 1; simpl; rewrite ?slice.val_unseal ?interface.val_unseal; auto.
     - simpl.
-      rewrite list.val_unseal.
-      induction a.
+      rewrite array.val_unseal.
+      dependent induction a generalizing n.
       + simpl in *. subst. done.
-      + FIXME: using (list.val a) results in a val that takes up a single heap location because of InjLV.
-
+      + simpl. simpl in Hlen.
+        destruct n; first by exfalso.
+        inversion_clear Hlen. clear n.
+        specialize (IHa _ ltac:(done)).
+        unshelve epose proof (IHa _ _) as IHa.
+        { intros. apply Helems. by right. }
+        { intros. apply H. by right. }
+        rewrite length_app.
+        rewrite IHa Nat.mul_succ_l Nat.add_comm.
+        f_equal. apply H. by left.
     - rewrite struct.val_unseal.
       induction d.
       { done. }
@@ -218,7 +227,7 @@ Section typing.
     | int64T => #(W64 0)
 
     | stringT => #(str "")
-    (* | arrayT (len : nat) (elem : go_type) *)
+    | arrayT n elem => array.val (replicate n (zero_val elem))
     | sliceT _ => slice.nil
     | structT decls => struct.val t []
     | ptrT => go_nil
@@ -232,8 +241,9 @@ Section typing.
     zero_val t = zero_val' t.
   Proof.
     rewrite zero_val_unseal.
-    induction t; try done. simpl.
-    rewrite struct.val_unseal.
+    induction t; try done.
+    { simpl. by rewrite zero_val_unseal. }
+    simpl. rewrite struct.val_unseal.
     induction decls; first done.
     destruct a. simpl.
     by rewrite IHdecls /= !zero_val_unseal.
@@ -293,6 +303,7 @@ Section typing.
                   )
           end
         ).
+    - admit.
     - destruct (decide (v = slice.nil)); subst; [ by eauto | ].
       destruct (is_slice_val v) as [[s ->] | ]; [ by eauto | right ].
       inversion 1; subst; intuition eauto.

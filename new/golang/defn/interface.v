@@ -4,7 +4,6 @@ From New.golang.defn Require Import struct typing.
 Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
-Local Coercion Var' (s:string) : expr := Var s.
 
 Definition get (f : string) : val :=
   λ: "v", let: (("typeid", "val"), "mset") := "v" in
