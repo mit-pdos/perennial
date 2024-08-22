@@ -59,22 +59,20 @@ Definition first_commit_compatible (l : list action) (ts : nat) (wrs : dbmap) :=
     first_commit l lp ls ts wrs ∧
     compatible_all lp ts wrs.
 
-(* TODO: rename to [find_max_prefix_before_commit]. *)
-Fixpoint find_max_prefix (ts : nat) (lp ls : list action) : (list action * list action) :=
+Fixpoint find_max_prefix_before_commit (ts : nat) (lp ls : list action) : (list action * list action) :=
   match ls with
   | [] => (lp, ls)
   | hd :: tl => match hd with
               | ActCommit tshd _ => if decide (tshd = ts)
                                    then (lp, ls)
-                                   else find_max_prefix ts (lp ++ [hd]) tl
-              | ActRead _ _ => find_max_prefix ts (lp ++ [hd]) tl
+                                   else find_max_prefix_before_commit ts (lp ++ [hd]) tl
+              | ActRead _ _ => find_max_prefix_before_commit ts (lp ++ [hd]) tl
               end
   end.
 
-(* TODO: rename to [find_max_prefix_before_commit_spec]. *)
-Lemma spec_find_max_prefix ts lp ls :
+Lemma find_max_prefix_before_commit_spec ts lp ls :
   ∃ ls1 ls2,
-    find_max_prefix ts lp ls = (lp ++ ls1, ls2) ∧
+    find_max_prefix_before_commit ts lp ls = (lp ++ ls1, ls2) ∧
     ls = ls1 ++ ls2 ∧
     no_commit ls1 ts ∧
     (ls2 = [] ∨ ∃ wrs, head ls2 = Some (ActCommit ts wrs)).
@@ -131,7 +129,7 @@ Inductive tcform :=
 | FCC (wrs : dbmap).
 
 Definition peek (l : list action) (ts : nat) : tcform :=
-  let (lp, ls) := find_max_prefix ts [] l in
+  let (lp, ls) := find_max_prefix_before_commit ts [] l in
   match head ls with
   | None => NC
   | Some a => match a with
@@ -142,8 +140,7 @@ Definition peek (l : list action) (ts : nat) : tcform :=
              end
   end.
 
-(* TODO: rename to [peek_spec]. *)
-Theorem spec_peek l ts :
+Theorem peek_spec l ts :
   match peek l ts with
   | NC => no_commit l ts
   | FCI wrs => first_commit_incompatible [] l ts wrs
@@ -151,7 +148,7 @@ Theorem spec_peek l ts :
   end.
 Proof.
   unfold peek.
-  destruct (spec_find_max_prefix ts [] l) as (lp & ls & -> & Hl & Hnc & Hls).
+  destruct (find_max_prefix_before_commit_spec ts [] l) as (lp & ls & -> & Hl & Hnc & Hls).
   destruct Hls as [Hls | [wrs Hls]].
   { subst ls. by rewrite /= Hl app_nil_r. }
   rewrite Hls.

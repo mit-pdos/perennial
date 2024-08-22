@@ -11,6 +11,25 @@ Section lemmas.
     by destruct Hm as [? _].
   Qed.
 
+  Lemma map_intersection_difference_union {A : Type} (m1 m2 : M A) :
+    m1 ∪ m2 ∖ (m2 ∩ m1) = m1 ∪ m2.
+  Proof.
+    apply map_eq. intros k.
+    destruct (m1 !! k) as [x |] eqn:Hm1.
+    { by rewrite 2!(lookup_union_Some_l _ _ _ _ Hm1). }
+    rewrite 2!(lookup_union_r _ _ _ Hm1).
+    by rewrite lookup_difference lookup_intersection Hm1 intersection_None_r.
+  Qed.
+
+  Lemma map_disjoint_difference_union {A : Type} (m1 m2 : M A) :
+    m1 ##ₘ m2 ∖ (m2 ∩ m1).
+  Proof.
+    rewrite map_disjoint_spec.
+    intros k x y Hm1 Hm2.
+    rewrite lookup_difference lookup_intersection Hm1 intersection_Some_r in Hm2.
+    by destruct (m2 !! k).
+  Qed.
+
   Lemma lookup_alter_Some {A : Type} (f : A -> A) (m : M A) (i : K) (x : A) :
     m !! i = Some x ->
     alter f i m = <[i := f x]> m.

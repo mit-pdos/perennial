@@ -99,27 +99,22 @@ Proof.
   eapply first_commit_compatible_inv_commit; [done | apply Hhead | apply Hcf].
 Qed.
 
-Lemma conflict_past_inv_commit ts wrs past future posts tmodas :
+Lemma conflict_past_inv_commit ts wrs past future tmodas :
   ts ∉ dom tmodas ->
   head_commit future ts wrs ->
-  conflict_past past future posts tmodas ->
-  conflict_past (past ++ [ActCommit ts wrs]) (tail future) posts tmodas.
+  conflict_past past future tmodas ->
+  conflict_past (past ++ [ActCommit ts wrs]) (tail future) tmodas.
 Proof.
-  intros Hnotin Hhead Hcp.
-  intros tsx wrsx Hlookup.
+  intros Hnoin Hhead Hcp.
+  intros tsx form Hlookup.
   specialize (Hcp _ _ Hlookup). simpl in Hcp.
-  destruct Hcp as [Hnc | Hcp].
-  { left. by apply no_commit_inv_commit. }
   apply elem_of_dom_2 in Hlookup.
   assert (Hne : ts ≠ tsx) by set_solver.
-  destruct Hcp as [Hfci | [Hfcc HQ]].
-  { right. left.
-    by apply first_commit_incompatible_inv_commit.
-  }
-  { right. right.
-    split; last apply HQ.
-    by eapply first_commit_compatible_inv_commit.
-  }
+  rewrite /conflict_cases in Hcp.
+  destruct form as [| wrsx | wrsx]; simpl.
+  - by apply no_commit_inv_commit.
+  - by apply first_commit_incompatible_inv_commit.
+  - by eapply first_commit_compatible_inv_commit.
 Qed.
 
 Lemma cmtxn_in_past_inv_commit resm past ts wrs :
@@ -242,107 +237,6 @@ Qed.
 Section inv.
   Context `{!distx_ghostG Σ}.
 
-  Lemma kmod_lnrz_update {γ k kmod1 kmod2} kmod :
-    kmod_lnrz_half γ k kmod1 -∗
-    kmod_lnrz_half γ k kmod2 ==∗
-    kmod_lnrz_half γ k kmod ∗ kmod_lnrz_half γ k kmod.
-  Admitted.
-
-  Lemma kmod_lnrz_big_agree {γ keys kmods f} :
-    dom kmods = keys ->
-    ([∗ set] k ∈ keys, kmod_lnrz_half γ k (f k)) -∗
-    ([∗ map] k ↦ kmod ∈ kmods, kmod_lnrz_half γ k kmod) -∗
-    ⌜map_Forall (λ k kmod, kmod = f k) kmods⌝.
-  Proof.
-    iIntros (Hdom) "Hkeys Hkmods".
-    rewrite -Hdom.
-    rewrite big_sepS_big_sepM.
-    iCombine "Hkmods Hkeys" as "Hkmods".
-    rewrite -big_sepM_sep.
-    iApply big_sepM_pure.
-    iApply (big_sepM_impl with "Hkmods").
-    iIntros "!>" (k kmod Hkmod) "[Hkmod Hf]".
-    iApply (kmod_lnrz_agree with "Hf Hkmod").
-  Qed.
-
-  Lemma kmod_lnrz_big_agree_update {γ keys kmods f} f' :
-    dom kmods = keys ->
-    ([∗ set] k ∈ keys, kmod_lnrz_half γ k (f k)) -∗
-    ([∗ map] k ↦ kmod ∈ kmods, kmod_lnrz_half γ k kmod) ==∗
-    ([∗ set] k ∈ keys, kmod_lnrz_half γ k (f' k)) ∗
-    ([∗ map] k ↦ kmod ∈ kmods, kmod_lnrz_half γ k (f' k) ∗ ⌜kmod = f k⌝).
-  Proof.
-    iIntros (Hdom) "Hkeys Hkmods".
-    rewrite -Hdom.
-    rewrite 2!big_sepS_big_sepM.
-    iCombine "Hkmods Hkeys" as "Hkmods".
-    rewrite -2!big_sepM_sep.
-    iAssert (⌜map_Forall (λ k kmod, kmod = f k) kmods⌝)%I as %Heq.
-    { iApply big_sepM_pure.
-      iApply (big_sepM_impl with "Hkmods").
-      iIntros "!>" (k kmod Hkmod) "[Hkmod Hf]".
-      iApply (kmod_lnrz_agree with "Hf Hkmod").
-    }
-    iApply big_sepM_bupd.
-    iApply (big_sepM_mono with "Hkmods").
-    iIntros (k kmod Hkmod) "[Hkmod Hf]".
-    iMod (kmod_lnrz_update (f' k) with "Hkmod Hf") as "[Hkmod Hf]".
-    iFrame.
-    iPureIntro.
-    by specialize (Heq _ _ Hkmod).
-  Qed.
-
-  Lemma kmod_cmtd_update {γ k kmod1 kmod2} kmod :
-    kmod_cmtd_half γ k kmod1 -∗
-    kmod_cmtd_half γ k kmod2 ==∗
-    kmod_cmtd_half γ k kmod ∗ kmod_cmtd_half γ k kmod.
-  Admitted.
-
-  Lemma kmod_cmtd_big_agree {γ keys kmods f} :
-    dom kmods = keys ->
-    ([∗ set] k ∈ keys, kmod_cmtd_half γ k (f k)) -∗
-    ([∗ map] k ↦ kmod ∈ kmods, kmod_cmtd_half γ k kmod) -∗
-    ⌜map_Forall (λ k kmod, kmod = f k) kmods⌝.
-  Proof.
-    iIntros (Hdom) "Hkeys Hkmods".
-    rewrite -Hdom.
-    rewrite big_sepS_big_sepM.
-    iCombine "Hkmods Hkeys" as "Hkmods".
-    rewrite -big_sepM_sep.
-    iApply big_sepM_pure.
-    iApply (big_sepM_impl with "Hkmods").
-    iIntros "!>" (k kmod Hkmod) "[Hkmod Hf]".
-    iApply (kmod_cmtd_agree with "Hf Hkmod").
-  Qed.
-
-  (* TODO: separate agree from update *)
-  Lemma kmod_cmtd_big_agree_update {γ keys kmods f} f' :
-    dom kmods = keys ->
-    ([∗ set] k ∈ keys, kmod_cmtd_half γ k (f k)) -∗
-    ([∗ map] k ↦ kmod ∈ kmods, kmod_cmtd_half γ k kmod) ==∗
-    ([∗ set] k ∈ keys, kmod_cmtd_half γ k (f' k)) ∗
-    ([∗ map] k ↦ kmod ∈ kmods, kmod_cmtd_half γ k (f' k) ∗ ⌜kmod = f k⌝).
-  Proof.
-    iIntros (Hdom) "Hkeys Hkmods".
-    rewrite -Hdom.
-    rewrite 2!big_sepS_big_sepM.
-    iCombine "Hkmods Hkeys" as "Hkmods".
-    rewrite -2!big_sepM_sep.
-    iAssert (⌜map_Forall (λ k kmod, kmod = f k) kmods⌝)%I as %Heq.
-    { iApply big_sepM_pure.
-      iApply (big_sepM_impl with "Hkmods").
-      iIntros "!>" (k kmod Hkmod) "[Hkmod Hf]".
-      iApply (kmod_cmtd_agree with "Hf Hkmod").
-    }
-    iApply big_sepM_bupd.
-    iApply (big_sepM_mono with "Hkmods").
-    iIntros (k kmod Hkmod) "[Hkmod Hf]".
-    iMod (kmod_cmtd_update (f' k) with "Hkmod Hf") as "[Hkmod Hf]".
-    iFrame.
-    iPureIntro.
-    by specialize (Heq _ _ Hkmod).
-  Qed.
-
   Lemma keys_inv_prepared_at_ts γ resm wrs ts :
     resm !! ts = None ->
     all_prepared γ ts wrs -∗
@@ -440,7 +334,6 @@ Section inv.
     key_inv_with_tsprep_no_kmodl_kmodc γ k ts kmodl kmodc ==∗
     key_inv_with_tsprep_no_kmodl_kmodc γ k ts (delete ts kmodl) (<[ts:=v]> kmodc) ∗
     hist_cmtd_length_lb γ k (S ts).
-    (* (∃ lb, hist_cmtd_lb γ k lb ∗ ⌜(ts < length lb)%nat⌝). *)
   Proof.
     iIntros (Hnz Hles Hkmodl Hkmodc) "Hkey".
     iNamed "Hkey".
@@ -538,7 +431,7 @@ Section inv.
       rewrite -big_sepL_snoc.
       unshelve epose proof (conflict_free_inv_commit_committed _ _ _ _ _ Hhead Hcf) as Hcf'.
       { apply not_elem_of_dom_1, Hnotinc. }
-      unshelve epose proof (conflict_past_inv_commit _ _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
+      unshelve epose proof (conflict_past_inv_commit _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
       iDestruct (partitioned_tids_close with "Hwcmts Hwabts Hcmts") as "Hpart".
       { apply Hfate. }
       pose proof (cmtxn_in_past_inv_commit_committed _ _ _ _ Hwrs Hcmtxn) as Hcmtxn'.
@@ -546,14 +439,14 @@ Section inv.
     }
     destruct Hcases as [Htmodas | Htmodcs].
     { (* Case: Txn [tid] predicted to abort. Contradiction. *)
-      apply elem_of_dom in Htmodas as Hwrsa.
-      destruct Hwrsa as [wrsa Hwrsa].
-      specialize (Hcp _ _ Hwrsa). simpl in Hcp.
-      destruct Hcp as [Hnc | Hcp].
+      apply elem_of_dom in Htmodas as Hform.
+      destruct Hform as [form Hform].
+      specialize (Hcp _ _ Hform). simpl in Hcp.
+      rewrite /conflict_cases in Hcp.
+      destruct form as [| wrsa | wrsa].
       { (* Case A: [tid] not showing at all in [future] -> contradicting [Hhead]. *)
-        destruct (no_commit_head_commit _ _ _ Hnc Hhead) as [].
+        destruct (no_commit_head_commit _ _ _ Hcp Hhead) as [].
       }
-      destruct Hcp as [Hfci | [Hfcc Hcontra]].
       { (* Case B: [(tid, wrs)] conflicting with prior action. *)
         (* Obtain [resm !! ts = None]. *)
         iDestruct (big_sepS_delete with "Hwabts") as "[Htidexcl Hwabts]"; first apply Htmodas.
@@ -564,7 +457,7 @@ Section inv.
           iDestruct (all_prepared_some_aborted_false with "Hprep Habt") as %[].
         }
         (* Obtain [wrsa = wrs] and and incompatible action [a ∈ past]. *)
-        pose proof (first_commit_incompatible_head_commit _ _ _ _ _ Hfci Hhead) as [Heq Hic].
+        pose proof (first_commit_incompatible_head_commit _ _ _ _ _ Hcp Hhead) as [Heq Hic].
         subst wrsa.
         destruct Hic as (a & Hinpast & Hic).
         (* Take [dom wrs] of [key_inv] and obtain [tid ≠ O]. *)
@@ -637,19 +530,18 @@ Section inv.
           lia.
         }
       }
-      { (* Case C: [(tid, wrs)] does not satisfy [P wrs]. *)
+      { (* Case C: [(tid, wrs)] does not satisfy [Q wrs]. *)
         (* Obtain [wrsa = wrs]. *)
-        destruct Hfcc as (lp & ls & Hfc & _).
+        destruct Hcp as (lp & ls & Hfc & _).
         pose proof (first_commit_head_commit _ _ _ _ _ _ Hfc Hhead) as <-.
-        (* Obtain [¬ (Q wrs)]. *)
-        destruct Hcontra as (Q & Hlookup & Hcontra).
-        (* Obtain [Q wrs]. *)
+        (* Obtain [incorrect_wrs γ tid wrs]. *)
+        iDestruct (big_sepM_lookup with "Hiwrs") as "Hneg"; first apply Hform.
+        simpl.
+        (* Obtain [correct_wrs γ tid wrs]. *)
         iDestruct "Hprep" as "[Hwrs _]".
         iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hwrs.
-        specialize (Hpost _ _ Hwrs). simpl in Hpost.
-        destruct Hpost as (Q' & Hlookup' & HQ).
-        rewrite Hlookup' in Hlookup. inv Hlookup.
-        contradiction.
+        iDestruct (big_sepM_lookup with "Hcwrs") as "Hpos"; first apply Hwrs.
+        iDestruct (correct_incorrect_wrs with "Hpos Hneg") as %[].
       }
     }
     (* Case: Txn [tid] predicted to commit. Update states and extract commitment witness. *)
@@ -696,26 +588,28 @@ Section inv.
     { apply Hdomkmodcs. }
     (* Agreement and update of [kmod_lnrz_half] and [kmod_cmtd_half]. *)
     set tmodcs' := delete tid tmodcs.
-    iMod (kmod_lnrz_big_agree_update (λ k, vslice tmodcs' k) with
+    iMod (kmod_lnrz_big_update (λ k, vslice tmodcs' k) with
            "Hkmodls Hkmodls'") as "[Hkmodls Hkmodls']".
     { apply Hdomkmodls. }
     iAssert ([∗ map] k ↦ kmod ∈ kmodls, kmod_lnrz_half γ k (delete tid kmod))%I
       with "[Hkmodls']" as "Hkmodls'".
     { iApply (big_sepM_impl with "Hkmodls'").
-      iIntros (k kmod Hkmod) "!> [Hkmods %Heq]".
+      iIntros (k kmod Hkmod) "!> Hkmods".
       subst tmodcs'.
-      by rewrite vslice_delete Heq.
+      specialize (Hkmodls _ _ Hkmod).
+      by rewrite vslice_delete Hkmodls.
     }
     set resm' := <[tid := ResCommitted wrs]> resm.
-    iMod (kmod_cmtd_big_agree_update (λ k, vslice (resm_to_tmods resm') k) with "Hkmodcs Hkmodcs'")
+    iMod (kmod_cmtd_big_update (λ k, vslice (resm_to_tmods resm') k) with "Hkmodcs Hkmodcs'")
       as "[Hkmodcs Hkmodcs']".
     { apply Hdomkmodcs. }
     iAssert ([∗ map] k ↦ kmod; v ∈ kmodcs; wrs, kmod_cmtd_half γ k (<[tid := v]> kmod))%I
       with "[Hkmodcs']" as "Hkmodcs'".
     { iApply (big_sepM_sepM2_impl with "Hkmodcs'"); first done.
-      iIntros (k kmod v Hkmod Hv) "!> [Hkmods %Heq]".
+      iIntros (k kmod v Hkmod Hv) "!> Hkmods".
+      specialize (Hkmodcs _ _ Hkmod).
       subst resm'.
-      by rewrite resm_to_tmods_insert_committed (vslice_insert_Some _ _ _ _ _ Hv) Heq.
+      by rewrite resm_to_tmods_insert_committed (vslice_insert_Some _ _ _ _ _ Hv) Hkmodcs.
     }
     (* Prove for each [kmodl] and [kmodc], [is_Some (kmodl !! tid)] and [kmodc !! tid = None]. *)
     assert (Hkmodlstid : map_Forall (λ _ kmodl, is_Some (kmodl !! tid)) kmodls).
@@ -830,7 +724,7 @@ Section inv.
     rewrite -big_sepL_snoc.
     (* Re-establish [conflict_free], [conflict_past], and [cmtxn_in_past]. *)
     pose proof (conflict_free_inv_commit _ _ _ _ Hhead Hcf) as Hcf'.
-    pose proof (conflict_past_inv_commit _ _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
+    pose proof (conflict_past_inv_commit _ _ _ _ _ Hnotina Hhead Hcp) as Hcp'.
     pose proof (cmtxn_in_past_inv_commit _ _ tid wrs Hcmtxn) as Hcmtxn'.
     (* Add [tids_excl_frag γ tid] (originally from [wcmts]) to [cmts]. *)
     iDestruct (big_sepS_insert_2 with "Htidexcl Hcmts") as "Hcmts".

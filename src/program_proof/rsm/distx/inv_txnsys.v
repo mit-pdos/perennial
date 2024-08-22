@@ -8,17 +8,15 @@ Definition conflict_free (future : list action) (tmodcs : gmap nat dbmap) :=
   map_Forall (λ t m, first_commit_compatible future t m) tmodcs.
 
 Definition conflict_cases
-  (past future : list action) (posts : gmap nat (dbmap -> Prop)) (ts : nat) (wrs : dbmap) :=
-  no_commit future ts ∨
-  first_commit_incompatible past future ts wrs ∨
-  (first_commit_compatible future ts wrs ∧ ∃ Q, posts !! ts = Some Q ∧ not (Q wrs)).
+  (past future : list action) (ts : nat) (form : tcform) :=
+  match form with
+  | NC => no_commit future ts
+  | FCI wrs => first_commit_incompatible past future ts wrs
+  | FCC wrs => first_commit_compatible future ts wrs
+  end.
 
-Definition conflict_past
-  (past future : list action) (posts : gmap nat (dbmap -> Prop)) (tmodas : gmap nat dbmap) :=
-  map_Forall (λ t m, conflict_cases past future posts t m) tmodas.
-
-Definition correct_wrsm (posts : gmap nat (dbmap -> Prop)) (wrsm : gmap nat dbmap) :=
-  map_Forall (λ t m, ∃ Q, posts !! t = Some Q ∧ Q m) wrsm.
+Definition conflict_past (past future : list action) (tmodas : gmap nat tcform) :=
+  map_Forall (λ t m, conflict_cases past future t m) tmodas.
 
 Definition res_to_tmod (res : txnres) :=
   match res with
@@ -107,7 +105,8 @@ Section inv.
   Implicit Type (γ : distx_names).
 
   Definition partitioned_tids
-    γ (tids : gset nat) (tmodcs tmodas : gmap nat dbmap) (resm : gmap nat txnres) : iProp Σ :=
+    γ (tids : gset nat) (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform)
+    (resm : gmap nat txnres) : iProp Σ :=
     let wcmts := dom tmodcs in
     let wabts := dom tmodas in
     let cmts := dom (resm_to_tmods resm) in
@@ -148,6 +147,33 @@ Section inv.
     by iDestruct (txnprep_receipt_agree with "Hp Hnp") as %Hcontra.
   Qed.
 
+  Definition correct_wrs γ ts wrs : iProp Σ :=
+    ∃ Q, txnpost_receipt γ ts Q ∗ ⌜Q wrs⌝.
+
+  Definition incorrect_wrs γ ts wrs : iProp Σ :=
+    ∃ Q, txnpost_receipt γ ts Q ∗ ⌜not (Q wrs)⌝.
+
+  Definition incorrect_fcc γ ts form : iProp Σ :=
+    match form with
+    | FCC wrs => incorrect_wrs γ ts wrs
+    |_ => True
+    end.
+
+  #[global]
+  Instance incorrect_fcc_persistent γ ts form :
+    Persistent (incorrect_fcc γ ts form).
+  Proof. destruct form; apply _. Qed.
+
+  Lemma correct_incorrect_wrs γ ts wrs :
+    correct_wrs γ ts wrs -∗
+    incorrect_wrs γ ts wrs -∗
+    False.
+  Proof.
+    iIntros "(%pos & Hpos & %Hpos) (%neg & Hneg & %Hneg)".
+    iDestruct (txnpost_receipt_agree with "Hpos Hneg") as %->.
+    done.
+  Qed.
+
   Definition valid_res γ ts res : iProp Σ :=
     match res with
     | ResCommitted wrs => all_prepared γ ts wrs
@@ -161,7 +187,7 @@ Section inv.
 
   Definition txn_inv γ : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (future past : list action)
-      (tmodcs tmodas : gmap nat dbmap) (posts : gmap nat (dbmap -> Prop))
+      (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
@@ -170,6 +196,8 @@ Section inv.
       (* exclusive transaction IDs *)
       "Hexcl" ∷ tids_excl_auth γ tids ∗
       "Hpart" ∷ partitioned_tids γ tids tmodcs tmodas resm ∗
+      (* transaction post-conditions; a better design seems to be moving this out of [txn_inv] *)
+      "Hpost" ∷ txnpost_auth γ posts ∗
       (* prophecy variable *)
       "Hproph" ∷ txn_proph γ future ∗
       (* transaction result map *)
@@ -181,18 +209,23 @@ Section inv.
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
+      (* post-conditions hold on the write-set map *)
+      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ wrsm, correct_wrs γ tid wrs) ∗
+      (* post-conditions not hold on the write set for the FCC case *)
+      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
+      "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
       "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
       "%Hwrsm"  ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
-      "%Hpost"  ∷ ⌜correct_wrsm posts wrsm⌝ ∗
       "%Hnz"    ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"    ∷ ⌜conflict_free future tmodcs⌝ ∗
-      "%Hcp"    ∷ ⌜conflict_past past future posts tmodas⌝.
+      "%Hcp"    ∷ ⌜conflict_past past future tmodas⌝.
 
   Definition txn_inv_no_future γ future : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (past : list action)
-      (tmodcs tmodas : gmap nat dbmap) (posts : gmap nat (dbmap -> Prop))
+      (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
@@ -201,6 +234,8 @@ Section inv.
       (* exclusive transaction IDs *)
       "Hexcl" ∷ tids_excl_auth γ tids ∗
       "Hpart" ∷ partitioned_tids γ tids tmodcs tmodas resm ∗
+      (* transaction post-conditions *)
+      "Hpost" ∷ txnpost_auth γ posts ∗
       (* transaction result map *)
       "Hresm" ∷ txnres_auth γ resm ∗
       (* transaction write set map *)
@@ -210,18 +245,62 @@ Section inv.
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
+      (* post-conditions hold on the write-set map *)
+      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ wrsm, correct_wrs γ tid wrs) ∗
+      (* post-conditions not hold on the write set for the FCC case *)
+      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
+      "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
       "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
       "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
-      "%Hpost" ∷ ⌜correct_wrsm posts wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
-      "%Hcp"   ∷ ⌜conflict_past past future posts tmodas⌝.
+      "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
 
   Lemma txn_inv_extract_future γ :
     txn_inv γ -∗
     ∃ future, txn_proph γ future ∗ txn_inv_no_future γ future.
+  Proof. iIntros "Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
+
+  Definition txn_inv_with_future_no_ts γ future ts : iProp Σ :=
+    ∃ (tids : gset nat) (past : list action)
+      (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
+      (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
+      (* witnesses of txn linearization *)
+      "Htxnsl" ∷ txns_lnrz_auth γ tids ∗
+      (* exclusive transaction IDs *)
+      "Hexcl" ∷ tids_excl_auth γ tids ∗
+      "Hpart" ∷ partitioned_tids γ tids tmodcs tmodas resm ∗
+      (* transaction post-conditions *)
+      "Hpost" ∷ txnpost_auth γ posts ∗
+      (* transaction result map *)
+      "Hresm" ∷ txnres_auth γ resm ∗
+      (* transaction write set map *)
+      "Hwrsm" ∷ txnwrs_auth γ wrsm ∗
+      (* key modifications *)
+      "Hkmodls" ∷ ([∗ set] key ∈ keys_all, kmod_lnrz_half γ key (vslice tmodcs key)) ∗
+      "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, kmod_cmtd_half γ key (vslice (resm_to_tmods resm) key)) ∗
+      (* safe commit/abort invariant *)
+      "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
+      (* post-conditions hold on the write-set map *)
+      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ wrsm, correct_wrs γ tid wrs) ∗
+      (* post-conditions not hold on the write set for the FCC case *)
+      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
+      (* past action witnesses *)
+      "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
+      "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
+      "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
+      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
+      "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
+      "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
+      "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
+
+  Lemma txn_inv_expose_future_extract_ts γ :
+    txn_inv γ -∗
+    ∃ future ts, txn_inv_with_future_no_ts γ future ts ∗ ts_auth γ ts.
   Proof. iIntros "Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
 
 End inv.

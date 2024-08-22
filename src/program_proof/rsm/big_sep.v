@@ -106,6 +106,35 @@ Section bi.
     by iDestruct ("Himpl" with "[] [] [] HΦ HR") as "[HΨ HR]"; last iFrame.
   Qed.
 
+  Lemma big_sepM2_impl_dom_eq_res `{Countable K} {A B C D}
+    (Φ : K → A -> B → PROP) (Ψ : K → C → D -> PROP) (R : PROP)
+    (m1 : gmap K A) (m2 : gmap K B) (m3 : gmap K C) (m4 : gmap K D) :
+    dom m3 = dom m1 ->
+    dom m4 = dom m1 ->
+    ([∗ map] k↦x;y ∈ m1;m2, Φ k x y) -∗
+    R -∗
+    □ (∀ (k : K) (x : A) (y : B) (z : C) (w : D),
+         ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ →
+         ⌜m3 !! k = Some z⌝ → ⌜m4 !! k = Some w⌝ →
+         Φ k x y -∗ R -∗ Ψ k z w ∗ R) -∗
+    ([∗ map] k↦z;w ∈ m3;m4, Ψ k z w) ∗ R.
+  Proof.
+    iIntros (Hdomm3 Hdomm4) "Hm1m2 HR #Himpl".
+    rewrite 2!big_sepM2_alt.
+    iDestruct "Hm1m2" as "[%Hdom' Hm1m2]".
+    iDestruct (big_sepM_impl_dom_eq_res (λ k xy, Φ k xy.1 xy.2) (λ k zw, Ψ k zw.1 zw.2)
+                 R (map_zip m1 m2) (map_zip m3 m4)
+                with "[Hm1m2] HR []") as "[HΨ Hm3]"; [| iFrame | | ]; last 1 first.
+    { iFrame. iSplit; last done. iPureIntro. by rewrite Hdomm3 Hdomm4. }
+    { rewrite 2!dom_map_zip_with_L. set_solver. }
+    iIntros "!>" (k [x y] [z w] Hm1m2 Hm3m4) "HΦ HR".
+    rewrite map_lookup_zip_Some in Hm1m2.
+    destruct Hm1m2 as [Hm1 Hm2].
+    rewrite map_lookup_zip_Some in Hm3m4.
+    destruct Hm3m4 as [Hm3 Hm4].
+    by iDestruct ("Himpl" with "[] [] [] [] HΦ HR") as "[HΨ HR]"; last iFrame.
+  Qed.
+
   Lemma big_sepM_sepM2_impl `{Countable K} {A B}
     (Φ : K → A → PROP) (Ψ : K → A -> B → PROP)
     (m1 : gmap K A) (m2 : gmap K B) :
@@ -138,6 +167,25 @@ Section bi.
       as "[HΨ _]"; [done | done | | by iFrame].
     iIntros "!>" (k x y z Hx Hy Hz) "HΦ _".
     by iDestruct ("Himpl" with "[] [] [] HΦ") as "HΨ"; last iFrame.
+  Qed.
+
+  Lemma big_sepM2_impl_dom_eq `{Countable K} {A B C D}
+    (Φ : K → A -> B → PROP) (Ψ : K → C → D -> PROP)
+    (m1 : gmap K A) (m2 : gmap K B) (m3 : gmap K C) (m4 : gmap K D) :
+    dom m3 = dom m1 ->
+    dom m4 = dom m1 ->
+    ([∗ map] k↦x;y ∈ m1;m2, Φ k x y) -∗
+    □ (∀ (k : K) (x : A) (y : B) (z : C) (w : D),
+         ⌜m1 !! k = Some x⌝ → ⌜m2 !! k = Some y⌝ →
+         ⌜m3 !! k = Some z⌝ → ⌜m4 !! k = Some w⌝ →
+         Φ k x y -∗ Ψ k z w) -∗
+    ([∗ map] k↦z;w ∈ m3;m4, Ψ k z w).
+  Proof.
+    iIntros (Hdomm3 Hdomm4) "Hm1m2 #Himpl".
+    iDestruct (big_sepM2_impl_dom_eq_res Φ Ψ emp _ _ m3 m4 with "Hm1m2 [] []")
+      as "[HΨ _]"; [done | done | done | | by iFrame].
+    iIntros "!>" (k x y z w Hx Hy Hz Hw) "HΦ _".
+    by iDestruct ("Himpl" with "[] [] [] [] HΦ") as "HΨ"; last iFrame.
   Qed.
 
   Lemma big_sepM_impl_res `{Countable K} {A}
@@ -325,6 +373,27 @@ Section bi.
     iIntros (Hdom) "Hm1".
     iApply (big_sepM_sepM2_impl with "Hm1"); first apply Hdom.
     by iIntros "!>" (k x y Hx Hy) "HΦ".
+  Qed.
+
+  Lemma big_sepM_big_sepM2_2 `{Countable K} {A B}
+    (Φ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    ([∗ map] k ↦ v;_ ∈ m1;m2, Φ k v) -∗
+    ([∗ map] k ↦ v ∈ m1, Φ k v).
+  Proof.
+    iIntros "Hm1m2".
+    iApply (big_sepM2_sepM_impl with "Hm1m2"); first done.
+    iIntros "!>" (k x y z Hx Hy Hz) "HΦ".
+    rewrite Hx in Hz.
+    by inv Hz.
+  Qed.
+
+  Lemma big_sepM_big_sepM2 `{Countable K} {A B}
+    (Φ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    dom m2 = dom m1 ->
+    ([∗ map] k ↦ v ∈ m1, Φ k v) ⊣⊢ ([∗ map] k ↦ v;_ ∈ m1;m2, Φ k v).
+  Proof.
+    iIntros (Hdom).
+    by iSplit; [iApply big_sepM_big_sepM2_1 | iApply big_sepM_big_sepM2_2].
   Qed.
 
   Lemma big_sepS_subseteq_difference_1 `{Countable A} (Φ : A -> PROP) (X Y : gset A) :

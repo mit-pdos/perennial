@@ -1,6 +1,6 @@
 (** Global resources. *)
-(* From Perennial.program_proof.rsm.distx Require Import top. *)
 From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice.
 From Perennial.program_proof.rsm.distx Require Import base.
 
@@ -14,6 +14,18 @@ Section res.
 
   Definition db_ptstos γ (m : dbmap) : iProp Σ :=
     [∗ map] k ↦ v ∈ m, db_ptsto γ k v.
+
+  Lemma db_ptsto_update {γ k v1 v2} v :
+    db_ptsto γ k v1 -∗
+    db_ptsto γ k v2 ==∗
+    db_ptsto γ k v ∗ db_ptsto γ k v.
+  Admitted.
+
+  Lemma db_ptsto_agree γ k v1 v2 :
+    db_ptsto γ k v1 -∗
+    db_ptsto γ k v2 -∗
+    ⌜v2 = v1⌝.
+  Admitted.
 
   Definition hist_repl_half γ (k : dbkey) (h : dbhist) : iProp Σ.
   Admitted.
@@ -47,7 +59,7 @@ Section res.
   Admitted.
 
   #[global]
-  Instance is_hist_cmtd_lb_persistent α key hist :
+  Instance hist_cmtd_lb_persistent α key hist :
     Persistent (hist_cmtd_lb α key hist).
   Admitted.
 
@@ -71,11 +83,29 @@ Section res.
     ⌜prefix hlb h⌝.
   Admitted.
 
-  (* XXX: this should be full ownership. *)
-  Definition hist_lnrz_half γ (k : dbkey) (l : dbhist) : iProp Σ.
+  Definition hist_lnrz_auth γ (k : dbkey) (l : dbhist) : iProp Σ.
   Admitted.
 
-  Definition hist_lnrz_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ.
+  Definition hist_lnrz_lb γ (k : dbkey) (l : dbhist) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance hist_lnrz_lb_persistent α key hist :
+    Persistent (hist_lnrz_lb α key hist).
+  Admitted.
+
+  Definition hist_lnrz_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
+    ∃ lb, hist_lnrz_lb γ k lb ∗ ⌜lb !! ts = Some v⌝.
+
+  Lemma hist_lnrz_update {γ k l} l' :
+    prefix l l' ->
+    hist_lnrz_auth γ k l ==∗
+    hist_lnrz_auth γ k l'.
+  Admitted.
+
+  Lemma hist_lnrz_witness γ k l :
+    hist_lnrz_auth γ k l -∗
+    hist_lnrz_lb γ k l.
   Admitted.
 
   Definition ts_repl_half γ (k : dbkey) (ts : nat) : iProp Σ.
@@ -244,6 +274,48 @@ Section res.
     by iDestruct (kmod_lnrz_agree with "Hkey Hk") as %?.
   Qed.
 
+  Lemma kmod_lnrz_update {γ k kmod1 kmod2} kmod :
+    kmod_lnrz_half γ k kmod1 -∗
+    kmod_lnrz_half γ k kmod2 ==∗
+    kmod_lnrz_half γ k kmod ∗ kmod_lnrz_half γ k kmod.
+  Admitted.
+
+  Lemma kmod_lnrz_big_agree {γ keys kmods f} :
+    dom kmods = keys ->
+    ([∗ set] k ∈ keys, kmod_lnrz_half γ k (f k)) -∗
+    ([∗ map] k ↦ kmod ∈ kmods, kmod_lnrz_half γ k kmod) -∗
+    ⌜map_Forall (λ k kmod, kmod = f k) kmods⌝.
+  Proof.
+    iIntros (Hdom) "Hkeys Hkmods".
+    rewrite -Hdom.
+    rewrite big_sepS_big_sepM.
+    iCombine "Hkmods Hkeys" as "Hkmods".
+    rewrite -big_sepM_sep.
+    iApply big_sepM_pure.
+    iApply (big_sepM_impl with "Hkmods").
+    iIntros "!>" (k kmod Hkmod) "[Hkmod Hf]".
+    iApply (kmod_lnrz_agree with "Hf Hkmod").
+  Qed.
+
+  Lemma kmod_lnrz_big_update {γ keys kmods f} f' :
+    dom kmods = keys ->
+    ([∗ set] k ∈ keys, kmod_lnrz_half γ k (f k)) -∗
+    ([∗ map] k ↦ kmod ∈ kmods, kmod_lnrz_half γ k kmod) ==∗
+    ([∗ set] k ∈ keys, kmod_lnrz_half γ k (f' k)) ∗
+    ([∗ map] k ↦ kmod ∈ kmods, kmod_lnrz_half γ k (f' k)).
+  Proof.
+    iIntros (Hdom) "Hkeys Hkmods".
+    rewrite -Hdom.
+    rewrite 2!big_sepS_big_sepM.
+    iCombine "Hkmods Hkeys" as "Hkmods".
+    rewrite -2!big_sepM_sep.
+    iApply big_sepM_bupd.
+    iApply (big_sepM_mono with "Hkmods").
+    iIntros (k kmod Hkmod) "[Hkmod Hf]".
+    iMod (kmod_lnrz_update (f' k) with "Hkmod Hf") as "[Hkmod Hf]".
+    by iFrame.
+  Qed.
+
   Definition kmod_cmtd_half γ (k : dbkey) (kmod : dbkmod) : iProp Σ.
   Admitted.
 
@@ -264,6 +336,48 @@ Section res.
     by iDestruct (kmod_cmtd_agree with "Hkey Hk") as %?.
   Qed.
 
+  Lemma kmod_cmtd_update {γ k kmod1 kmod2} kmod :
+    kmod_cmtd_half γ k kmod1 -∗
+    kmod_cmtd_half γ k kmod2 ==∗
+    kmod_cmtd_half γ k kmod ∗ kmod_cmtd_half γ k kmod.
+  Admitted.
+
+  Lemma kmod_cmtd_big_agree {γ keys kmods f} :
+    dom kmods = keys ->
+    ([∗ set] k ∈ keys, kmod_cmtd_half γ k (f k)) -∗
+    ([∗ map] k ↦ kmod ∈ kmods, kmod_cmtd_half γ k kmod) -∗
+    ⌜map_Forall (λ k kmod, kmod = f k) kmods⌝.
+  Proof.
+    iIntros (Hdom) "Hkeys Hkmods".
+    rewrite -Hdom.
+    rewrite big_sepS_big_sepM.
+    iCombine "Hkmods Hkeys" as "Hkmods".
+    rewrite -big_sepM_sep.
+    iApply big_sepM_pure.
+    iApply (big_sepM_impl with "Hkmods").
+    iIntros "!>" (k kmod Hkmod) "[Hkmod Hf]".
+    iApply (kmod_cmtd_agree with "Hf Hkmod").
+  Qed.
+
+  Lemma kmod_cmtd_big_update {γ keys kmods f} f' :
+    dom kmods = keys ->
+    ([∗ set] k ∈ keys, kmod_cmtd_half γ k (f k)) -∗
+    ([∗ map] k ↦ kmod ∈ kmods, kmod_cmtd_half γ k kmod) ==∗
+    ([∗ set] k ∈ keys, kmod_cmtd_half γ k (f' k)) ∗
+    ([∗ map] k ↦ kmod ∈ kmods, kmod_cmtd_half γ k (f' k)).
+  Proof.
+    iIntros (Hdom) "Hkeys Hkmods".
+    rewrite -Hdom.
+    rewrite 2!big_sepS_big_sepM.
+    iCombine "Hkmods Hkeys" as "Hkmods".
+    rewrite -2!big_sepM_sep.
+    iApply big_sepM_bupd.
+    iApply (big_sepM_mono with "Hkmods").
+    iIntros (k kmod Hkmod) "[Hkmod Hf]".
+    iMod (kmod_cmtd_update (f' k) with "Hkmod Hf") as "[Hkmod Hf]".
+    by iFrame.
+  Qed.
+
   (* Linearized transactions. *)
   Definition txns_lnrz_auth γ (tids : gset nat) : iProp Σ.
   Admitted.
@@ -280,12 +394,6 @@ Section res.
     tid ∉ tids ->
     txns_lnrz_auth γ tids ==∗
     txns_lnrz_auth γ ({[ tid ]} ∪ tids) ∗ txns_lnrz_receipt γ tid.
-  Admitted.
-
-  Lemma txns_lnrz_witness γ tids tid :
-    tid ∈ tids ->
-    txns_lnrz_auth γ tids -∗
-    txns_lnrz_receipt γ tid.
   Admitted.
 
   Lemma txns_lnrz_elem_of γ tids tid :
@@ -323,6 +431,36 @@ Section res.
     iDestruct (big_sepS_elem_of with "Htids") as "Htid'"; first apply Hin.
     by iDestruct (tids_excl_ne with "Htid Htid'") as %?.
   Qed.
+
+  (* Transaction post-condition. Might need a [ghost_map nat gname] and a [saved_prop]? *)
+  Definition txnpost_auth γ (posts : gmap nat (dbmap -> Prop)) : iProp Σ.
+  Admitted.
+
+  Definition txnpost_receipt γ (tid : nat) (post : dbmap -> Prop) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance txnpost_receipt_persistent γ tid post :
+    Persistent (txnpost_receipt γ tid post).
+  Admitted.
+
+  Lemma txnpost_insert γ posts tid post :
+    posts !! tid = None ->
+    txnpost_auth γ posts ==∗
+    txnpost_auth γ (<[tid := post]> posts) ∗ txnpost_receipt γ tid post.
+  Admitted.
+
+  Lemma txnpost_elem_of γ posts tid post :
+    txnpost_auth γ posts -∗
+    txnpost_receipt γ tid post -∗
+    ⌜posts !! tid = Some post⌝.
+  Admitted.
+
+  Lemma txnpost_receipt_agree γ tid post1 post2 :
+    txnpost_receipt γ tid post1 -∗
+    txnpost_receipt γ tid post2 -∗
+    ⌜post2 = post1⌝.
+  Admitted.
 
   (* Paxos log and command pool. TODO: rename clog to just log. *)
   Definition clog_half γ (gid : groupid) (log : dblog) : iProp Σ.
@@ -394,6 +532,18 @@ Section res.
   Admitted.
 
   Definition ts_lb γ (ts : nat) : iProp Σ.
+  Admitted.
+
+  Lemma ts_le γ tslb ts :
+    ts_lb γ tslb -∗
+    ts_auth γ ts -∗
+    ⌜(tslb ≤ ts)%nat⌝.
+  Admitted.
+
+  Lemma ts_lb_weaken {γ ts} ts' :
+    (ts' ≤ ts)%nat ->
+    ts_lb γ ts -∗
+    ts_lb γ ts'.
   Admitted.
 
   #[global]

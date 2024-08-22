@@ -262,7 +262,7 @@ Proof.
   apply lookup_lt_Some in Hu as Htlen.
   rewrite lookup_last_extend_r in Hu; last first.
   { pose proof (last_extend_length_eq_n_or_same ts lnrz). lia. }
-  { done. }
+  { lia. }
   rewrite (prev_dbval_ge (pred (length lnrz)) t); last first.
   { intros x Hx. specialize (Hlen _ Hx). simpl in Hlen. lia. }
   { lia. }
@@ -330,7 +330,7 @@ Proof.
     rewrite Nat.nlt_ge in Hge.
     (* Obtain [last lnrz = Some u]. *)
     rewrite lookup_app_l in Hu; last lia.
-    rewrite lookup_last_extend_r in Hu; [| done | done].
+    rewrite lookup_last_extend_r in Hu; [| lia | done].
     (* Extend [prev_dbval] to hold on [t] using [last lnrz] as the anchor. *)
     rewrite (prev_dbval_ge (pred (length lnrz)) t); last first.
     { intros x Hx. specialize (Hlen _ Hx). simpl in Hlen. lia. }
@@ -369,7 +369,7 @@ Section def.
     ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
       (tslb tsprep : nat) (kmodl kmodc : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
-      "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hlnrz"     ∷ hist_lnrz_auth γ key lnrz ∗
       "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hrepl"     ∷ hist_repl_half γ key repl ∗
       "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
@@ -378,11 +378,32 @@ Section def.
       "#Htslb"    ∷ ts_lb γ tslb ∗
       "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
+  Definition key_inv_with_tslb_no_kmodl
+    γ (key : dbkey) (tslb : nat) (kmodl : dbkmod) : iProp Σ :=
+    ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
+      (tsprep : nat) (kmodc : dbkmod),
+      "Hdbv"      ∷ db_ptsto γ key dbv ∗
+      "Hlnrz"     ∷ hist_lnrz_auth γ key lnrz ∗
+      "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
+      "Hrepl"     ∷ hist_repl_half γ key repl ∗
+      "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
+      "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
+      "#Htslb"    ∷ ts_lb γ tslb ∗
+      "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
+
+  Definition key_inv_with_tslb γ (key : dbkey) (tslb : nat) : iProp Σ :=
+    ∃ (kmodl : dbkmod),
+      "Hkey"   ∷ key_inv_with_tslb_no_kmodl γ key tslb kmodl ∗
+      "Hkmodl" ∷ kmod_lnrz_half γ key kmodl.
+
+  Definition key_inv_no_kmodl γ (key : dbkey) (kmodl : dbkmod) : iProp Σ :=
+    ∃ (tslb : nat), "Hkey" ∷ key_inv_with_tslb_no_kmodl γ key tslb kmodl.
+
   Definition key_inv_no_repl_tsprep
     γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd : dbhist) (tslb : nat) (kmodl kmodc : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
-      "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hlnrz"     ∷ hist_lnrz_auth γ key lnrz ∗
       "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
       "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
@@ -393,7 +414,7 @@ Section def.
     γ (key : dbkey) (kmodc : dbkmod) (repl : dbhist) (tsprep : nat) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd : dbhist) (tslb : nat) (kmodl : dbkmod),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
-      "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hlnrz"     ∷ hist_lnrz_auth γ key lnrz ∗
       "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
       "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
@@ -404,7 +425,7 @@ Section def.
     γ (key : dbkey) (tsprep : nat) (kmodl kmodc : dbkmod) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd repl : dbhist) (tslb : nat),
       "Hdbv"      ∷ db_ptsto γ key dbv ∗
-      "Hlnrz"     ∷ hist_lnrz_half γ key lnrz ∗
+      "Hlnrz"     ∷ hist_lnrz_auth γ key lnrz ∗
       "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
       "Hrepl"     ∷ hist_repl_half γ key repl ∗
       "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
@@ -426,7 +447,7 @@ Section def.
     γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
     "Hkey"    ∷ key_inv_no_repl_tsprep γ key repl tsprep ∗
     "Hrepl"   ∷ hist_repl_half γ key repl ∗
-    "Htsprep" ∷ ts_repl_half γ key tsprep.
+    "Htsprep" ∷ ts_repl_half γ key tsprep.    
 
   (* TODO: better naming. *)
 
@@ -542,6 +563,14 @@ Section lemma.
       ([∗ map] key ↦ kmodl ∈ kmodls, kmod_lnrz_half γ key kmodl) ∗
       ([∗ map] key ↦ kmodc ∈ kmodcs, kmod_cmtd_half γ key kmodc) ∧
       ⌜dom kmodls = keys⌝.
+  Proof.
+  Admitted.
+
+  Lemma keys_inv_with_tslb_extract_kmodl {γ} tslbm :
+    ([∗ map] key ↦ tslb ∈ tslbm, key_inv_with_tslb γ key tslb) -∗
+    ∃ kmodls : gmap dbkey dbkmod,
+      ([∗ map] key ↦ tslb;kmodl ∈ tslbm;kmodls, key_inv_with_tslb_no_kmodl γ key tslb kmodl) ∗
+      ([∗ map] key ↦ kmodl ∈ kmodls, kmod_lnrz_half γ key kmodl).
   Proof.
   Admitted.
 

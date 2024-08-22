@@ -99,13 +99,18 @@ Section lemmas.
   Qed.
 
   Lemma lookup_last_extend_r n i l :
-    (length l ≤ i)%nat ->
+    (length l ≤ S i)%nat ->
     (i < n)%nat ->
     last_extend n l !! i = last l.
   Proof.
     intros Hlen Hni.
     rewrite /last_extend.
-    destruct (last l) as [x |]; last done.
+    destruct (last l) as [x |] eqn:Hl; last done.
+    destruct (decide (length l = S i)) as [Heq | Hne].
+    { rewrite /extend lookup_app_l; last lia.
+      by rewrite last_lookup Heq /= in Hl.
+    }
+    assert (length l ≤ i) by lia.
     rewrite /extend lookup_app_r; last done.
     rewrite lookup_replicate.
     split; [done | lia].
