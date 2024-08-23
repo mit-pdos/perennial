@@ -60,6 +60,12 @@ def main():
         metavar="GOKV_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--etcd-raft",
+        help="path to upamanyus/etcd-raft repo (skip translation if not provided)",
+        metavar="ETCD_RAFT_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -68,6 +74,7 @@ def main():
     marshal_dir = args.marshal
     std_dir = args.std
     gokv_dir = args.gokv
+    etcd_raft_dir = args.etcd_raft
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -77,6 +84,8 @@ def main():
         parser.error("std directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
+    if etcd_raft_dir is not None and not os.path.isdir(etcd_raft_dir):
+        parser.error("etcd-raft directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -136,6 +145,12 @@ def main():
         "./lockservice",
         "./bank",
         # "./vrsm/replica",
+    )
+
+    run_goose(
+        etcd_raft_dir,
+        "-ignore-errors",
+        ".",
     )
 
 
