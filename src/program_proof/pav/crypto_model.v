@@ -190,6 +190,9 @@ Record trans_ty :=
     ret: ret_ty;
   }.
 
+Definition get_hash (d : list w8) : list w8.
+Admitted.
+
 Definition step (prev_st : state_ty) (trans : trans_ty) (next_st : state_ty) : Prop :=
   match trans.(op) with
   | hash msg =>

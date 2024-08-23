@@ -19,7 +19,7 @@ Proof. Admitted.
 Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
-Lemma is_hash_deterministic d h1 h2 :
+Lemma is_hash_func d h1 h2 :
   is_hash d h1 -∗ is_hash d h2 -∗ ⌜h1 = h2⌝.
 Proof. Admitted.
 

@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi merkle evidence invs rpc.
+From Perennial.program_proof.pav Require Import misc cryptoffi merkle evidence invs rpc.
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.

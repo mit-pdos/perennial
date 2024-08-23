@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi cryptoutil merkle_internal.
+From Perennial.program_proof.pav Require Import classes misc cryptoffi cryptoutil merkle_internal.
 From Perennial.program_proof Require Import std_proof.
 
 Section external.
@@ -20,8 +20,9 @@ Definition is_tree_dig entries dig : iProp Σ :=
   "%Htree" ∷ ⌜tree_to_map tr = entries⌝ ∗
   "#Hdig" ∷ is_node_hash tr dig.
 
-Lemma is_tree_dig_agree entries dig0 dig1 :
-  is_tree_dig entries dig0 -∗ is_tree_dig entries dig1 -∗ ⌜ dig0 = dig1 ⌝.
+Global Instance is_tree_dig_func : Func is_tree_dig.
+Proof. Admitted.
+Global Instance is_tree_dig_inj : InjRel is_tree_dig.
 Proof. Admitted.
 
 (* Commits entry to a tree with some digest. *)
