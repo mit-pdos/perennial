@@ -104,4 +104,6 @@ From New.proof Require asyncfile append_log marshal.
 
 From New.code.github_com.goose_lang.goose.testdata.examples Require unittest semantics.
 
+From New.code.go_etcd_io.raft.v3.
+
 From Perennial.program_proof.pav Require should_build.
