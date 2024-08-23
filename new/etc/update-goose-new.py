@@ -94,6 +94,7 @@ def main():
         old_dir = os.getcwd()
         os.chdir(goose_dir)
         do_run(["go", "install", "./cmd/goose"])
+        do_run(["go", "install", "./cmd/goose_axiom"])
         os.chdir(old_dir)
 
     def run_goose(src_path, *pkgs):
@@ -109,6 +110,24 @@ def main():
         args = [goose_bin]
 
         output = path.join(perennial_dir, "new/code/")
+        args.extend(["-out", output])
+        args.extend(["-dir", src_path])
+        args.extend(pkgs)
+        do_run(args)
+
+    def run_axiomgen(src_path, *pkgs):
+        if src_path is None:
+            return
+        if not pkgs:
+            pkgs = ["."]
+
+        gopath = os.getenv("GOPATH", default=None)
+        if gopath is None or gopath == "":
+            gopath = path.join(path.expanduser("~"), "go")
+        goose_bin = path.join(gopath, "bin", "goose_axiom")
+        args = [goose_bin]
+
+        output = path.join(perennial_dir, "new_code_axioms/")
         args.extend(["-out", output])
         args.extend(["-dir", src_path])
         args.extend(pkgs)
@@ -147,12 +166,29 @@ def main():
         # "./vrsm/replica",
     )
 
-    run_goose(
+    run_axiomgen(
         etcd_raft_dir,
-        "-ignore-errors",
-        ".",
+        "bytes",
+        "context",
+        "crypto/rand",
+        "errors",
+        "go.etcd.io/raft/v3/confchange",
+        "go.etcd.io/raft/v3/quorum",
+        "go.etcd.io/raft/v3/raftpb",
+        "go.etcd.io/raft/v3/tracker",
+        "io",
+        "math",
+        "math/big",
+        "os",
+        "sort",
+        "strings",
     )
 
+    # run_goose(
+    #     etcd_raft_dir,
+    #     "-ignore-errors",
+    #     ".",
+    # )
 
 if __name__ == "__main__":
     main()
