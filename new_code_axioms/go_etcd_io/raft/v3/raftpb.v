@@ -4,6 +4,9 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
+Axiom ConfChangeI : go_type.
+Axiom ConfChangeI__mset : list (string * val).
+Axiom ConfChangeI__mset_ptr : list (string * val).
 Axiom MarshalConfChange : val.
 Axiom ConfChange__AsV2 : val.
 Axiom ConfChange__AsV1 : val.
@@ -14,22 +17,71 @@ Axiom ConfChangeV2__LeaveJoint : val.
 Axiom ConfChangesFromString : val.
 Axiom ConfChangesToString : val.
 Axiom ConfState__Equivalent : val.
+Axiom EntryType : go_type.
+Axiom EntryType__mset : list (string * val).
+Axiom EntryType__mset_ptr : list (string * val).
+Axiom EntryNormal : val.
+Axiom EntryConfChange : val.
+Axiom EntryConfChangeV2 : val.
 Axiom EntryType__Enum : val.
 Axiom EntryType__String : val.
 Axiom EntryType__UnmarshalJSON : val.
 Axiom EntryType__EnumDescriptor : val.
+Axiom MessageType : go_type.
+Axiom MessageType__mset : list (string * val).
+Axiom MessageType__mset_ptr : list (string * val).
+Axiom MsgHup : val.
+Axiom MsgBeat : val.
+Axiom MsgProp : val.
+Axiom MsgApp : val.
+Axiom MsgAppResp : val.
+Axiom MsgVote : val.
+Axiom MsgVoteResp : val.
+Axiom MsgSnap : val.
+Axiom MsgHeartbeat : val.
+Axiom MsgHeartbeatResp : val.
+Axiom MsgUnreachable : val.
+Axiom MsgSnapStatus : val.
+Axiom MsgCheckQuorum : val.
+Axiom MsgTransferLeader : val.
+Axiom MsgTimeoutNow : val.
+Axiom MsgReadIndex : val.
+Axiom MsgReadIndexResp : val.
+Axiom MsgPreVote : val.
+Axiom MsgPreVoteResp : val.
+Axiom MsgStorageAppend : val.
+Axiom MsgStorageAppendResp : val.
+Axiom MsgStorageApply : val.
+Axiom MsgStorageApplyResp : val.
+Axiom MsgForgetLeader : val.
 Axiom MessageType__Enum : val.
 Axiom MessageType__String : val.
 Axiom MessageType__UnmarshalJSON : val.
 Axiom MessageType__EnumDescriptor : val.
+Axiom ConfChangeTransition : go_type.
+Axiom ConfChangeTransition__mset : list (string * val).
+Axiom ConfChangeTransition__mset_ptr : list (string * val).
+Axiom ConfChangeTransitionAuto : val.
+Axiom ConfChangeTransitionJointImplicit : val.
+Axiom ConfChangeTransitionJointExplicit : val.
 Axiom ConfChangeTransition__Enum : val.
 Axiom ConfChangeTransition__String : val.
 Axiom ConfChangeTransition__UnmarshalJSON : val.
 Axiom ConfChangeTransition__EnumDescriptor : val.
+Axiom ConfChangeType : go_type.
+Axiom ConfChangeType__mset : list (string * val).
+Axiom ConfChangeType__mset_ptr : list (string * val).
+Axiom ConfChangeAddNode : val.
+Axiom ConfChangeRemoveNode : val.
+Axiom ConfChangeUpdateNode : val.
+Axiom ConfChangeAddLearnerNode : val.
 Axiom ConfChangeType__Enum : val.
 Axiom ConfChangeType__String : val.
 Axiom ConfChangeType__UnmarshalJSON : val.
 Axiom ConfChangeType__EnumDescriptor : val.
+Axiom Entry : go_type.
+Axiom Entry__mset : list (string * val).
+Axiom Entry__mset_ptr : list (string * val).
 Axiom Entry__Reset : val.
 Axiom Entry__String : val.
 Axiom Entry__ProtoMessage : val.
@@ -39,6 +91,9 @@ Axiom Entry__XXX_Marshal : val.
 Axiom Entry__XXX_Merge : val.
 Axiom Entry__XXX_Size : val.
 Axiom Entry__XXX_DiscardUnknown : val.
+Axiom SnapshotMetadata : go_type.
+Axiom SnapshotMetadata__mset : list (string * val).
+Axiom SnapshotMetadata__mset_ptr : list (string * val).
 Axiom SnapshotMetadata__Reset : val.
 Axiom SnapshotMetadata__String : val.
 Axiom SnapshotMetadata__ProtoMessage : val.
@@ -48,6 +103,9 @@ Axiom SnapshotMetadata__XXX_Marshal : val.
 Axiom SnapshotMetadata__XXX_Merge : val.
 Axiom SnapshotMetadata__XXX_Size : val.
 Axiom SnapshotMetadata__XXX_DiscardUnknown : val.
+Axiom Snapshot : go_type.
+Axiom Snapshot__mset : list (string * val).
+Axiom Snapshot__mset_ptr : list (string * val).
 Axiom Snapshot__Reset : val.
 Axiom Snapshot__String : val.
 Axiom Snapshot__ProtoMessage : val.
@@ -57,6 +115,9 @@ Axiom Snapshot__XXX_Marshal : val.
 Axiom Snapshot__XXX_Merge : val.
 Axiom Snapshot__XXX_Size : val.
 Axiom Snapshot__XXX_DiscardUnknown : val.
+Axiom Message : go_type.
+Axiom Message__mset : list (string * val).
+Axiom Message__mset_ptr : list (string * val).
 Axiom Message__Reset : val.
 Axiom Message__String : val.
 Axiom Message__ProtoMessage : val.
@@ -66,6 +127,9 @@ Axiom Message__XXX_Marshal : val.
 Axiom Message__XXX_Merge : val.
 Axiom Message__XXX_Size : val.
 Axiom Message__XXX_DiscardUnknown : val.
+Axiom HardState : go_type.
+Axiom HardState__mset : list (string * val).
+Axiom HardState__mset_ptr : list (string * val).
 Axiom HardState__Reset : val.
 Axiom HardState__String : val.
 Axiom HardState__ProtoMessage : val.
@@ -75,6 +139,9 @@ Axiom HardState__XXX_Marshal : val.
 Axiom HardState__XXX_Merge : val.
 Axiom HardState__XXX_Size : val.
 Axiom HardState__XXX_DiscardUnknown : val.
+Axiom ConfState : go_type.
+Axiom ConfState__mset : list (string * val).
+Axiom ConfState__mset_ptr : list (string * val).
 Axiom ConfState__Reset : val.
 Axiom ConfState__String : val.
 Axiom ConfState__ProtoMessage : val.
@@ -84,6 +151,9 @@ Axiom ConfState__XXX_Marshal : val.
 Axiom ConfState__XXX_Merge : val.
 Axiom ConfState__XXX_Size : val.
 Axiom ConfState__XXX_DiscardUnknown : val.
+Axiom ConfChange : go_type.
+Axiom ConfChange__mset : list (string * val).
+Axiom ConfChange__mset_ptr : list (string * val).
 Axiom ConfChange__Reset : val.
 Axiom ConfChange__String : val.
 Axiom ConfChange__ProtoMessage : val.
@@ -93,6 +163,9 @@ Axiom ConfChange__XXX_Marshal : val.
 Axiom ConfChange__XXX_Merge : val.
 Axiom ConfChange__XXX_Size : val.
 Axiom ConfChange__XXX_DiscardUnknown : val.
+Axiom ConfChangeSingle : go_type.
+Axiom ConfChangeSingle__mset : list (string * val).
+Axiom ConfChangeSingle__mset_ptr : list (string * val).
 Axiom ConfChangeSingle__Reset : val.
 Axiom ConfChangeSingle__String : val.
 Axiom ConfChangeSingle__ProtoMessage : val.
@@ -102,6 +175,9 @@ Axiom ConfChangeSingle__XXX_Marshal : val.
 Axiom ConfChangeSingle__XXX_Merge : val.
 Axiom ConfChangeSingle__XXX_Size : val.
 Axiom ConfChangeSingle__XXX_DiscardUnknown : val.
+Axiom ConfChangeV2 : go_type.
+Axiom ConfChangeV2__mset : list (string * val).
+Axiom ConfChangeV2__mset_ptr : list (string * val).
 Axiom ConfChangeV2__Reset : val.
 Axiom ConfChangeV2__String : val.
 Axiom ConfChangeV2__ProtoMessage : val.

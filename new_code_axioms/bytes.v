@@ -4,6 +4,9 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
+Axiom Buffer : go_type.
+Axiom Buffer__mset : list (string * val).
+Axiom Buffer__mset_ptr : list (string * val).
 Axiom Buffer__Bytes : val.
 Axiom Buffer__AvailableBuffer : val.
 Axiom Buffer__String : val.
@@ -15,6 +18,7 @@ Axiom Buffer__Reset : val.
 Axiom Buffer__Grow : val.
 Axiom Buffer__Write : val.
 Axiom Buffer__WriteString : val.
+Axiom MinRead : val.
 Axiom Buffer__ReadFrom : val.
 Axiom Buffer__WriteTo : val.
 Axiom Buffer__WriteByte : val.
@@ -81,6 +85,9 @@ Axiom Cut : val.
 Axiom Clone : val.
 Axiom CutPrefix : val.
 Axiom CutSuffix : val.
+Axiom Reader : go_type.
+Axiom Reader__mset : list (string * val).
+Axiom Reader__mset_ptr : list (string * val).
 Axiom Reader__Len : val.
 Axiom Reader__Size : val.
 Axiom Reader__Read : val.

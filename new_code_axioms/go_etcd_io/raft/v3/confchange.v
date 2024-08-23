@@ -4,6 +4,9 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
+Axiom Changer : go_type.
+Axiom Changer__mset : list (string * val).
+Axiom Changer__mset_ptr : list (string * val).
 Axiom Changer__EnterJoint : val.
 Axiom Changer__LeaveJoint : val.
 Axiom Changer__Simple : val.

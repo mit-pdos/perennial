@@ -4,6 +4,9 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
+Axiom Context : go_type.
+Axiom Context__mset : list (string * val).
+Axiom Context__mset_ptr : list (string * val).
 Axiom deadlineExceededError__Error : val.
 Axiom deadlineExceededError__Timeout : val.
 Axiom deadlineExceededError__Temporary : val.
@@ -15,7 +18,13 @@ Axiom backgroundCtx__String : val.
 Axiom todoCtx__String : val.
 Axiom Background : val.
 Axiom TODO : val.
+Axiom CancelFunc : go_type.
+Axiom CancelFunc__mset : list (string * val).
+Axiom CancelFunc__mset_ptr : list (string * val).
 Axiom WithCancel : val.
+Axiom CancelCauseFunc : go_type.
+Axiom CancelCauseFunc__mset : list (string * val).
+Axiom CancelCauseFunc__mset_ptr : list (string * val).
 Axiom WithCancelCause : val.
 Axiom Cause : val.
 Axiom AfterFunc : val.

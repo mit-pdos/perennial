@@ -5,9 +5,36 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom Accuracy__String : val.
+Axiom Word : go_type.
+Axiom Word__mset : list (string * val).
+Axiom Word__mset_ptr : list (string * val).
 Axiom decimal__String : val.
+Axiom Float : go_type.
+Axiom Float__mset : list (string * val).
+Axiom Float__mset_ptr : list (string * val).
+Axiom ErrNaN : go_type.
+Axiom ErrNaN__mset : list (string * val).
+Axiom ErrNaN__mset_ptr : list (string * val).
 Axiom ErrNaN__Error : val.
 Axiom NewFloat : val.
+Axiom MaxExp : val.
+Axiom MinExp : val.
+Axiom MaxPrec : val.
+Axiom RoundingMode : go_type.
+Axiom RoundingMode__mset : list (string * val).
+Axiom RoundingMode__mset_ptr : list (string * val).
+Axiom ToNearestEven : val.
+Axiom ToNearestAway : val.
+Axiom ToZero : val.
+Axiom AwayFromZero : val.
+Axiom ToNegativeInf : val.
+Axiom ToPositiveInf : val.
+Axiom Accuracy : go_type.
+Axiom Accuracy__mset : list (string * val).
+Axiom Accuracy__mset_ptr : list (string * val).
+Axiom Below : val.
+Axiom Exact : val.
+Axiom Above : val.
 Axiom Float__SetPrec : val.
 Axiom Float__SetMode : val.
 Axiom Float__Prec : val.
@@ -53,6 +80,9 @@ Axiom Float__Text : val.
 Axiom Float__String : val.
 Axiom Float__Append : val.
 Axiom Float__Format : val.
+Axiom Int : go_type.
+Axiom Int__mset : list (string * val).
+Axiom Int__mset_ptr : list (string * val).
 Axiom Int__Sign : val.
 Axiom Int__SetInt64 : val.
 Axiom Int__SetUint64 : val.
@@ -116,7 +146,11 @@ Axiom Int__UnmarshalText : val.
 Axiom Int__MarshalJSON : val.
 Axiom Int__UnmarshalJSON : val.
 Axiom nat__String : val.
+Axiom MaxBase : val.
 Axiom Int__ProbablyPrime : val.
+Axiom Rat : go_type.
+Axiom Rat__mset : list (string * val).
+Axiom Rat__mset_ptr : list (string * val).
 Axiom NewRat : val.
 Axiom Rat__SetFloat64 : val.
 Axiom Rat__Float32 : val.
