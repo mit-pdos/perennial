@@ -13,7 +13,7 @@ Definition nil_f : slice.t := mk null 0 0.
 
 Section goose_lang.
   Context `{ffi_semantics}.
-  Definition val_def (s: slice.t) : val := (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f)).
+  Definition val_def (s: slice.t) : val := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f)).
   Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
   Definition val_unseal : val = _ := seal_eq _.
 End goose_lang.
@@ -46,7 +46,7 @@ Section goose_lang.
   (* XXX: the InjLV is subtle: it's there to block `flatten_struct` from
      splitting this up into multiple heap cells. *)
   Definition val_def (mset : list (string * val)) (v : val) : val :=
-    (#(str "NO TYPE IDS YET"), InjLV v, InjLV (struct.fields_val mset)).
+    InjLV (#(str "NO TYPE IDS YET"), v, (struct.fields_val mset)).
   Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
   Definition val_unseal : val = _ := seal_eq _.
 

@@ -6,18 +6,24 @@ Section goose_lang.
 Context `{ffi_syntax}.
 
 Definition nil : val := slice_nil.
-Definition ptr : val := λ: "s", Fst (Fst "s").
-Definition len : val := λ: "s", Snd (Fst "s").
-Definition cap : val := λ: "s", Snd "s".
+Definition ptr : val := λ: "s",
+                          let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
+                          Fst (Fst "s").
+Definition len : val := λ: "s",
+                          let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
+                          Snd (Fst "s").
+Definition cap : val := λ: "s",
+                          let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
+                          Snd "s".
 
 (* XXX: this computes a nondeterministic unallocated address by using
    "(Loc 1 0) +ₗ ArbiraryInt"*)
 Definition make3 t : val :=
   λ: "sz" "cap",
   if: "cap" < "sz" then Panic "NewSlice with cap smaller than len"
-  else if: "cap" = #0 then (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
+  else if: "cap" = #0 then InjL (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
   else let: "p" := AllocN "cap" (zero_val t) in
-       (Var "p", Var "sz", Var "cap").
+       InjL (Var "p", Var "sz", Var "cap").
 
 Definition make2 t : val :=
   λ: "sz", make3 t "sz" "sz".
@@ -25,15 +31,20 @@ Definition make2 t : val :=
 (* computes `&s[i]` *)
 Definition elem_ref t : val :=
   λ: "s" "i", if: "i" < len "s"
-              then (Fst (Fst "s") +ₗ[t] "i")
+              then (ptr "s" +ₗ[t] "i")
               else Panic "slice index out-of-bounds".
-
-(* TODO: function that takes an array/list as input to construct a slice with multiple elements *)
 
 Definition slice t : val :=
   λ: "a" "low" "high",
-  if: (#0 ≤ "low") && ("low" < "high") && ("high" < cap "a") then
-    ((Fst $ Fst "s") +ₗ[t] "low", "high" - "low", cap "s" - "low")
+  if: (#0 ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "a") then
+    (ptr "s" +ₗ[t] "low", "high" - "low", cap "s" - "low")
+  else Panic "slice indices out of order"
+.
+
+Definition slice_full t : val :=
+  λ: "a" "low" "high" "max",
+  if: (#0 ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "a") then
+    (ptr "s" +ₗ[t] "low", "high" - "low", "max" - "low")
   else Panic "slice indices out of order"
 .
 
@@ -65,6 +76,7 @@ Definition append t : val :=
   copy t (slice t "s_new" (len "s") (len "s_new")) "x" ;;
   "s_new".
 
+(* FIXME: this shouldn't take len as input *)
 (* Takes in a list of the specified length as input, and turns it into a
    heap-allocated slice. *)
 Definition literal t : val :=

@@ -17,6 +17,8 @@ Section defn.
   Definition cap (t : go_type) : val.
   Admitted.
 
+  Definition slice : val.
+
   (* takes a list as input, and makes an array value *)
   Definition literal : val :=
     rec: "literal" "len" "elems" :=

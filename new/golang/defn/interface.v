@@ -6,16 +6,17 @@ Section goose_lang.
 Context `{ffi_syntax}.
 
 Definition get (f : string) : val :=
-  λ: "v", let: (("typeid", "val"), "mset") := "v" in
-          let: "mset" := (match: "mset" with InjL "v" => "v" | InjR <> => Panic "interface" end) in
-          (match: (struct.assocl_lookup #(str f) "mset") with
-            InjL <> => #()
-            | InjR "m" => "m"
-          end) (match: "val" with InjL "v" => "v" | InjR <> => Panic "interface" end)
+  λ: "v",
+    let: "v" := (match: "v" with InjL "v" => "v" | InjR <> => #() end) in
+    let: (("typeid", "val"), "mset") := "v" in
+    (match: (struct.assocl_lookup #(str f) "mset") with
+       InjL <> => #()
+     | InjR "m" => "m"
+     end) "val"
 .
 
 Local Definition make_def (mset : list (string*val)) : val :=
-  λ: "v", (#(str "NO TYPE IDS YET"), InjL "v", InjL (struct.fields_val mset)).
+  λ: "v", InjL (#(str "NO TYPE IDS YET"), "v", (struct.fields_val mset)).
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 

@@ -54,7 +54,7 @@ Section grove.
       let: "len" := Snd "slice" in
       struct.make ReceiveRet [{
         "Err" ::= "err" ;
-        "Data" ::= ("ptr", "len", "len")
+        "Data" ::= InjL ("ptr", "len", "len")
       }].
 
 
@@ -68,13 +68,13 @@ Section grove.
       if: "err" then control.impl.Exit #() else
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      ("ptr", "len", "len").
+      InjL ("ptr", "len", "len").
 
   (** FileWrite pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileWrite : val :=
     λ: "f" "c",
-      let: "err" := ExternalOp FileWriteOp ("f", (Fst $ Fst "c", Snd $ Fst "c")) in
+      let: "err" := ExternalOp FileWriteOp ("f", (slice.ptr "c", slice.len "c")) in
       if: "err" then control.impl.Exit #() else
       #().
 
@@ -82,7 +82,7 @@ Section grove.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileAppend : val :=
     λ: "f" "c",
-      let: "err" := ExternalOp FileAppendOp ("f", (Fst $ Fst "c", Snd $ Fst "c")) in
+      let: "err" := ExternalOp FileAppendOp ("f", (slice.ptr "c", slice.len "c")) in
       if: "err" then control.impl.Exit #() else
       #().
 

@@ -53,8 +53,8 @@ Section val_types.
 
   Context `{ffi_syntax}.
   Definition go_nil : val := #null.
-  Definition slice_nil : val := (go_nil, #0, #0).
-  Definition interface_nil : val := (go_nil, go_nil, go_nil).
+  Definition slice_nil : val := InjLV (go_nil, #0, #0).
+  Definition interface_nil : val := InjLV (go_nil, go_nil, go_nil).
   Fixpoint zero_val_def (t : go_type) : val :=
     match t with
     | boolT => #false
@@ -91,8 +91,6 @@ Section val_types.
            | (_,t) :: d => (go_type_size_def t + go_type_size_struct d)%nat
            end
         ) d
-    | sliceT e => 3
-    | interfaceT => 3
     | arrayT n e => n * (go_type_size_def e)
     | _ => 1
     end.

@@ -72,50 +72,70 @@ Section goose_lang.
     unseal.
     rewrite go_type_size_unseal.
     iIntros "[[H1 %Hty1] [H2 %Hty2]]".
-      rename l into l'.
-  Admitted.
-      (*
-      iInduction Hty1 as [] "IH" forall (l' v2 Hty2); subst.
-      1-10,14-16,19-20: inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id;
-                 iDestruct (heap_pointsto_agree with "[$]") as "%H";
-                 inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; naive_solver.
-      1-2,4-5:
-        inversion Hty2; subst; rewrite ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id;
-          iDestruct "H1" as "(Ha1 & Ha2 & Ha3)";
-          iDestruct "H2" as "(Hb1 & Hb2 & Hb3)";
-          try destruct s; try destruct s0;
-          iCombine "Ha1 Hb1" gives %[? [=]];
-          iCombine "Ha2 Hb2" gives %[? [=]];
-          try iCombine "Ha3 Hb3" gives %[? [=Heq]];
-          try (eapply inj in Heq; last apply _);
-          iModIntro; iPureIntro; naive_solver.
-      - inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
-        rewrite struct.val_unseal.
-        iInduction d as [|[] d] "IH2" forall (l' Hty2).
-        { iModIntro. iPureIntro. split; first (intros; lia); done. }
-        iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
-        fold flatten_struct struct.val.
-        iDestruct ("IH" with "[] [] Ha1 Hb1") as %[Hfrac1 Heq1].
-        { iPureIntro. by left. }
-        { iPureIntro. apply Hfields0. by left. }
+    rename l into l'.
+    iInduction Hty1 as [] "IH" forall (l' v2 Hty2); subst.
+    Local Ltac solve_combines := inversion Hty2; subst; rewrite ?slice.val_unseal ?interface.val_unseal;
+                                 rewrite /= ?loc_add_0 ?right_id;
+                                 iDestruct (heap_pointsto_agree with "[$]") as "%H";
+                                 inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; split; naive_solver.
+    all: try solve_combines; shelve.
+    Unshelve.
+    - (* arrays *)
+      inversion_clear Hty2; subst.
+      rewrite array.val_unseal /=.
+      rename a0 into a'.
+      iInduction a as [|? a] "IH2" forall (l' a' Hlen Helems0); destruct a' as [|? ]; try by exfalso.
+      { iModIntro. iPureIntro. simpl. split; first (intros; lia); done. }
+      iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
+      fold flatten_struct.
+      iDestruct ("IH" with "[] [] Ha1 Hb1") as %[Hfrac1 Heq1].
+      { iPureIntro. by left. }
+      { iPureIntro. apply Helems0. by left. }
+      subst.
 
-        iDestruct ("IH2" with "[] [] [] [] [Ha2] [Hb2]") as %[Hfrac2 Heq2].
-        { iPureIntro. intros. apply Hfields. by right. }
-        { iPureIntro. intros. apply Hfields0. by right. }
-        { iPureIntro. constructor. intros. apply Hfields0. by right. }
-        { iModIntro. iIntros. iApply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
-        { setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
-        { erewrite has_go_type_len; last (apply Hfields0; by left).
-          erewrite has_go_type_len; last (apply Hfields; by left).
-          setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
-        iModIntro. iPureIntro. simpl.
-        split.
-        2:{ simpl in *. by rewrite Heq1 Heq2. }
-        intros.
-        destruct (decide (go_type_size_def g = O)).
-        { eapply Hfrac2. lia. }
-        { eapply Hfrac1. lia. }
-  Qed. *)
+      iDestruct ("IH2" with "[] [] [] [] [Ha2] [Hb2]") as %[Hfrac2 Heq2].
+      { iPureIntro. intros. apply Helems. by right. }
+      { iPureIntro. instantiate (1:=a'). by inversion Hlen. }
+      { iPureIntro. intros. apply Helems0. by right. }
+      { iModIntro. iIntros. iApply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
+      { setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
+      { erewrite has_go_type_len; last (apply Helems0; by left).
+        setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
+      iModIntro. iPureIntro. simpl.
+      split.
+      2:{ simpl in *. by rewrite Heq2. }
+      intros.
+      destruct (decide (go_type_size_def elem = O)).
+      { eapply Hfrac2. lia. }
+      { eapply Hfrac1. lia. }
+    - (* structs*)
+      inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
+      rewrite struct.val_unseal.
+      iInduction d as [|[] d] "IH2" forall (l' Hty2).
+      { iModIntro. iPureIntro. split; first (intros; lia); done. }
+      iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
+      fold flatten_struct struct.val.
+      iDestruct ("IH" with "[] [] Ha1 Hb1") as %[Hfrac1 Heq1].
+      { iPureIntro. by left. }
+      { iPureIntro. apply Hfields0. by left. }
+
+      iDestruct ("IH2" with "[] [] [] [] [Ha2] [Hb2]") as %[Hfrac2 Heq2].
+      { iPureIntro. intros. apply Hfields. by right. }
+      { iPureIntro. intros. apply Hfields0. by right. }
+      { iPureIntro. constructor. intros. apply Hfields0. by right. }
+      { iModIntro. iIntros. iApply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
+      { setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
+      { erewrite has_go_type_len; last (apply Hfields0; by left).
+        erewrite has_go_type_len; last (apply Hfields; by left).
+        setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
+      iModIntro. iPureIntro. simpl.
+      split.
+      2:{ simpl in *. by rewrite Heq1 Heq2. }
+      intros.
+      destruct (decide (go_type_size_def g = O)).
+      { eapply Hfrac2. lia. }
+      { eapply Hfrac1. lia. }
+  Qed.
 
   Lemma typed_pointsto_persist l t dq v :
     l ↦[t]{dq} v ==∗ l ↦[t]□ v.
@@ -135,12 +155,36 @@ Section goose_lang.
     iInduction Hty as [] "IH"; subst;
     simpl; rewrite ?slice.val_unseal ?interface.val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
-    all: try (iDestruct select (_) as "(? & ? & ?)";
-              iApply heap_pointsto_non_null; by iFrame).
-    Admitted.
-  (*
-    rewrite go_type_size_unseal /= in Hlen.
-    iInduction d as [|[]] "IH2"; simpl in *.
+    - (* array *)
+      rewrite go_type_size_unseal /= in Hlen.
+      iInduction a as [|] "IH2"; simpl in *.
+      { exfalso. lia. }
+      rewrite array.val_unseal /=.
+      destruct (decide (go_type_size_def elem = O)).
+      {
+        rewrite (nil_length_inv (flatten_struct a)).
+        2:{
+          erewrite has_go_type_len.
+          { rewrite go_type_size_unseal. done. }
+          apply Helems. by left.
+        }
+        rewrite app_nil_l.
+        iApply ("IH2" with "[] [] [] [$]").
+        - iPureIntro. intros. apply Helems. by right.
+        - iPureIntro. lia.
+        - iModIntro. iIntros. iApply ("IH" with "[] [] [$]").
+          + iPureIntro. by right.
+          + iPureIntro. lia.
+      }
+      {
+        iDestruct select ([∗ list] _ ↦ _ ∈ _, _)%I as "[? _]".
+        iApply ("IH" with "[] [] [$]").
+        - iPureIntro. by left.
+        - iPureIntro. rewrite go_type_size_unseal. lia.
+      }
+    - (* struct *)
+      rewrite go_type_size_unseal /= in Hlen.
+      iInduction d as [|[]] "IH2"; simpl in *.
     { exfalso. lia. }
     rewrite struct.val_unseal /=.
     destruct (decide (go_type_size_def g = O)).
@@ -165,7 +209,7 @@ Section goose_lang.
       - iPureIntro. by left.
       - iPureIntro. rewrite go_type_size_unseal. lia.
     }
-  Qed. *)
+  Qed.
 
   Local Lemma wp_AllocAt t stk E v :
     has_go_type v t ->
@@ -196,7 +240,6 @@ Section goose_lang.
     wp_apply (wp_AllocAt t); auto.
   Qed.
 
-
   Lemma wp_ref_of_zero stk E t :
     {{{ True }}}
       ref (zero_val t) @ stk; E
@@ -221,17 +264,40 @@ Section goose_lang.
       iSplit; eauto. }
     rewrite load_ty_unseal.
     rename l into l'.
-    Admitted.
-  (*
-    iInduction Hty as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (l' Φ) "HΦ".
-    1-10,14-16,19-20: rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id; wp_pures;
-      wp_apply (wp_load with "[$]"); done.
-    1-2,4-5: rewrite ?slice.val_unseal ?interface.val_unseal /= ?right_id; wp_pures; rewrite Z.mul_0_r;
-      iDestruct "Hl" as "(H1 & H2 & H3)";
-      wp_apply (wp_load with "[$H1]"); iIntros;
-      wp_apply (wp_load with "[$H2]"); iIntros;
-      wp_apply (wp_load with "[$H3]"); iIntros;
-      wp_pures; iApply "HΦ"; by iFrame.
+    iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
+    all: rewrite ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id; wp_pures.
+    all: try (wp_apply (wp_load with "[$]"); done).
+    - (* case arrayT *)
+      subst.
+      rewrite array.val_unseal.
+      iInduction a as [|] "IH2" forall (l' Φ).
+      { wp_pures. iApply "HΦ". by iFrame. }
+      wp_pures.
+      iDestruct "Hl" as "[Hf Hl]".
+      fold flatten_struct.
+      wp_apply ("IH" with "[] Hf").
+      { iPureIntro. by left. }
+      iIntros "Hf".
+      wp_pures.
+      wp_apply ("IH2" with "[] [] [Hl]").
+      { iPureIntro. intros. apply Helems. by right. }
+      { iModIntro. iIntros. wp_apply ("IH" with "[] [$] [$]").
+        iPureIntro. by right. }
+      {
+        erewrite has_go_type_len.
+        2:{ eapply Helems. by left. }
+        rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
+        iFrame.
+      }
+      iIntros "Hl".
+      wp_pures.
+      iApply "HΦ".
+      iFrame.
+      fold flatten_struct.
+      erewrite has_go_type_len.
+      2:{ eapply Helems. by left. }
+      rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
+      by iFrame.
     - (* case structT *)
       rewrite struct.val_unseal.
       iInduction d as [|] "IH2" forall (l' Φ).
@@ -263,7 +329,7 @@ Section goose_lang.
       2:{ eapply Hfields. by left. }
       rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       by iFrame.
-  Qed. *)
+  Qed.
 
   Lemma wp_store stk E l v v' :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
@@ -290,36 +356,55 @@ Section goose_lang.
       iSplit; eauto. }
     rename l into l'.
     rewrite store_ty_unseal.
-    Admitted.
-  (*
-    iInduction Hty_old as [ | | | | | | | | | | | | | | | | | | |] "IH" forall (v' Hty l' Φ) "HΦ".
-    1-10,14-16,19-20:
-      simpl; rewrite ?slice.val_unseal /= ?loc_add_0 ?right_id; wp_pures; wp_apply (wp_store with "[$]");
-      iIntros "H"; iApply "HΦ"; inversion Hty; subst;
-      simpl; rewrite ?loc_add_0 ?right_id; wp_pures; iFrame.
-    1-2,4-5: (* non-nil slice, nil slice, non-nil interface, nil interface *)
-      rewrite ?slice.val_unseal ?interface.val_unseal /=; wp_pures; iDestruct "Hl" as "(H1 & H2 & H3)";
-      inversion Hty; subst;
-        rewrite ?slice.val_unseal ?interface.val_unseal;
-        wp_pures; rewrite /slice.val_def /interface.val_def ?loc_add_0 ?right_id /=;
-        (* FIXME: unnamed H1-H3 don't work with ["[$]"] *)
-        wp_apply (wp_store with "[$H1]"); iIntros;
-        wp_apply (wp_store with "[$H2]"); iIntros;
-        wp_apply (wp_store with "[$H3]"); iIntros;
-        iApply "HΦ"; rewrite /= ?loc_add_0 ?right_id; iFrame.
+    iInduction Hty_old as [] "IH" forall (v' Hty l' Φ) "HΦ".
+    all: inversion_clear Hty; subst; rewrite ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id;
+      wp_pures.
+    all: try (wp_apply (wp_store with "[$]"); iIntros "H"; iApply "HΦ"; iFrame).
+    - (* array *)
+      rewrite array.val_unseal.
+      rename a0 into a'.
+      iInduction a as [|] "IH2" forall (l' a' Hlen0 Helems0).
+      { simpl. wp_pures. iApply "HΦ". apply nil_length_inv in Hlen0.
+        subst. done. }
+      wp_pures.
+      iDestruct "Hl" as "[Hf Hl]".
+      fold flatten_struct.
+      erewrite has_go_type_len.
+      2:{ eapply Helems. by left. }
+      setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
+      destruct a'; first by exfalso.
+      wp_pures.
+      wp_apply ("IH" with "[] [] [$Hf]").
+      { iPureIntro. simpl. by left. }
+      { iPureIntro. apply Helems0. by left. }
+      iIntros "Hf".
+      wp_pures.
+      wp_apply ("IH2" with "[] [] [] [] [Hl]").
+      { iPureIntro. intros. apply Helems. by right. }
+      { iPureIntro. by inversion Hlen0. }
+      { iPureIntro. intros. apply Helems0. by right. }
+      { iModIntro. iIntros. wp_apply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
+      { rewrite ?right_id. iFrame. }
+      iIntros "Hl".
+      iApply "HΦ".
+      iFrame.
+      fold flatten_struct.
+      erewrite has_go_type_len.
+      2:{ eapply Helems0. by left. }
+      setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
+      rewrite ?right_id. iFrame.
     - (* struct *)
       rewrite struct.val_unseal.
-      iInduction d as [|] "IH2" forall (l' v' Hty).
-      { simpl. wp_pures. iApply "HΦ". inversion Hty; subst.
-        rewrite struct.val_unseal. done. }
-      destruct a. inversion Hty; subst.
+      unfold struct.val_def.
+      iInduction d as [|] "IH2" forall (l').
+      { simpl. wp_pures. iApply "HΦ". done. }
+      destruct a.
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
       erewrite has_go_type_len.
       2:{ eapply Hfields. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
-      erewrite -> struct.val_unseal.
       wp_apply ("IH" with "[] [] [$Hf]").
       { iPureIntro. simpl. by left. }
       { iPureIntro. apply Hfields0. by left. }
@@ -327,16 +412,9 @@ Section goose_lang.
       wp_pures.
       wp_apply ("IH2" with "[] [] [] [Hl]").
       { iPureIntro. intros. apply Hfields. by right. }
-      { iPureIntro.
-        change ((fix val_struct (fs : list (string * go_type)) : val :=
-        match fs with
-        | [] => #()
-        | (f, ft) :: fs0 => (default (zero_val ft) (assocl_lookup f fvs0), val_struct fs0)%V
-        end) d) with (struct.val_def (structT d) fvs0).
-        rewrite <- struct.val_unseal.
-        econstructor. intros. apply Hfields0. by right. }
+      { iPureIntro. intros. apply Hfields0. by right. }
       { iModIntro. iIntros. wp_apply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
-      { rewrite ?right_id.  iFrame. }
+      { rewrite ?right_id. iFrame. }
       iIntros "Hl".
       iApply "HΦ".
       iFrame.
@@ -345,7 +423,7 @@ Section goose_lang.
       2:{ eapply Hfields0. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       rewrite ?right_id. iFrame.
-  Qed. *)
+  Qed.
 
   Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ is_pers :
     MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -383,6 +461,7 @@ Section goose_lang.
 Definition is_primitive_type (t : go_type) : Prop :=
   match t with
   | structT d => False
+  | arrayT n t => False
   | funcT => False
   | sliceT e => False
   | interfaceT => False
@@ -400,15 +479,11 @@ Proof.
   iIntros (?) "Hl HΦ". unseal.
   iDestruct "Hl" as "[H >%Hty_old]".
   destruct t; try by exfalso.
-Admitted.
-(*
-  1-13: inversion Hty_old; subst;
-    inversion Hty; subst;
+  all: inversion Hty_old; subst; inversion Hty; subst;
     simpl; rewrite loc_add_0 right_id;
     wp_apply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
-    iIntros; iApply "HΦ";
-    iFrame; done.
-Qed. *)
+    iIntros; iApply "HΦ"; iFrame; done.
+Qed.
 
 Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 t :
   is_primitive_type t →
@@ -421,14 +496,12 @@ Proof.
   iIntros (?) "Hl HΦ". unseal.
   iDestruct "Hl" as "[H >%Hty_old]".
   destruct t; try by exfalso.
-Admitted.
-(*
-  1-13: inversion Hty_old; subst;
+  all: inversion Hty_old; subst;
     inversion Hty; subst;
     simpl; rewrite loc_add_0 right_id;
     wp_apply (wp_cmpxchg_suc with "[$H]"); first done; first (by econstructor);
     iIntros; iApply "HΦ"; iFrame; done.
-Qed. *)
+Qed.
 
 End goose_lang.
 

@@ -180,7 +180,7 @@ Proof.
 Qed.
 
 Lemma slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
-  (#ptr, #sz, #cap)%V = slice.val (slice.mk ptr sz cap).
+  InjLV (#ptr, #sz, #cap)%V = slice.val (slice.mk ptr sz cap).
 Proof. rewrite slice.val_unseal. done. Qed.
 
 Lemma seq_replicate_fmap {A} y n (a : A) :

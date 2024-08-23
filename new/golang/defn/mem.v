@@ -16,8 +16,12 @@ Section go_lang.
           | [] => (λ: <>, #())%V
           | (_,t) :: d => (λ: "l", (load_ty_def t "l", load_ty_struct d ("l" +ₗ[t] #1)))%V
           end) d
-    | sliceT e => (λ: "l", (!("l" +ₗ #0), !("l" +ₗ #1), !("l" +ₗ #2)))%V
-    | interfaceT => (λ: "l", (!("l" +ₗ #0), !("l" +ₗ #1), !("l" +ₗ #2)))%V
+    | arrayT n t =>
+        (fix load_ty_array n : val :=
+          match n with
+          | O => (λ: <>, #())%V
+          | S n => (λ: "l", (load_ty_def t "l", load_ty_array n ("l" +ₗ[t] #1)))%V
+          end) n
     | _ => (λ: "l", !(Var "l"))%V
     end.
   Program Definition load_ty := unseal (_:seal (@load_ty_def)). Obligation 1. by eexists. Qed.
@@ -26,27 +30,24 @@ Section go_lang.
   Fixpoint store_ty_def (t : go_type): val :=
     match t with
     | structT d =>
-        (fix store_struct d : val :=
+        (fix store_ty_struct d : val :=
           match d with
           | [] => (λ: <>, #())%V
-          | (f,t) :: d => (λ: "pv", let: "p" := Fst "pv" in
+          | (f,t) :: d => (λ: "pv", let: ("p", "v") := "pv" in
                                   let: "v" := Snd "pv" in
                                   store_ty_def t ("p", Fst "v");;
-                                  store_struct d (BinOp (OffsetOp (go_type_size t))
+                                  store_ty_struct d (BinOp (OffsetOp (go_type_size t))
                                                         "p" #1, Snd "v"))%V
           end) d
-    | sliceT e => (λ: "pv", let: "p" := Fst "pv" in
-                           let: "v" := Snd "pv" in
-                           let: (("a", "b"), "c") := "v" in
-                           "p" +ₗ #0 <- "a" ;;
-                           "p" +ₗ #1 <- "b" ;;
-                           "p" +ₗ #2 <- "c")%V
-    | interfaceT => (λ: "pv", let: "p" := Fst "pv" in
-                             let: "v" := Snd "pv" in
-                             let: (("a", "b"), "c") := "v" in
-                             "p" +ₗ #0 <- "a" ;;
-                             "p" +ₗ #1 <- "b" ;;
-                             "p" +ₗ #2 <- "c")%V
+    | arrayT n t =>
+        (fix store_ty_array n : val :=
+          match n with
+          | O => (λ: <>, #())%V
+          | S n => (λ: "pv", let: ("p", "v") := "pv" in
+                            store_ty_def t ("p", Fst "v");;
+                            store_ty_array n (BinOp (OffsetOp (go_type_size t))
+                                              "p" #1, Snd "v"))%V
+          end) n
     | _ => (λ: "pv", Fst "pv" <- Snd "pv")%V
     end.
   Program Definition store_ty := unseal (_:seal (@store_ty_def)). Obligation 1. by eexists. Qed.

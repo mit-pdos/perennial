@@ -223,11 +223,13 @@ Section grove.
     wpc_call. { by iLeft. } { by iLeft. }
     iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
     (* Urgh so much manual work just calling a WP lemma... *)
-    rewrite slice.val_unseal.
     wpc_pures.
     iDestruct (own_slice_sz with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
     wpc_bind (ExternalOp _ _).
+    wpc_bind (slice.ptr _). wpc_frame. wp_pures. iModIntro. iNamed 1.
+    wpc_bind (slice.len _). wpc_frame. wp_pures. iModIntro. iNamed 1.
+    wpc_pures.
     iApply wpc_atomic.
     { solve_atomic2. }
     iSplit.
@@ -261,11 +263,13 @@ Section grove.
     wpc_call. { by iLeft. } { by iLeft. }
     iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
     (* Urgh so much manual work just calling a WP lemma... *)
-    rewrite slice.val_unseal.
     wpc_pures.
     iDestruct (own_slice_sz with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
+    wpc_bind (slice.ptr _). wpc_frame. wp_pures. iModIntro. iNamed 1.
+    wpc_bind (slice.len _). wpc_frame. wp_pures. iModIntro. iNamed 1.
     wpc_bind (ExternalOp _ _).
+    wpc_pures.
     iApply wpc_atomic.
     { solve_atomic2. }
     iSplit.
