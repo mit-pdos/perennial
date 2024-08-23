@@ -172,6 +172,7 @@ def main():
         "context",
         "crypto/rand",
         "errors",
+        "fmt",
         "go.etcd.io/raft/v3/confchange",
         "go.etcd.io/raft/v3/quorum",
         "go.etcd.io/raft/v3/raftpb",
@@ -184,11 +185,11 @@ def main():
         "strings",
     )
 
-    # run_goose(
-    #     etcd_raft_dir,
-    #     "-ignore-errors",
-    #     ".",
-    # )
+    run_goose(
+        etcd_raft_dir,
+        "-ignore-errors",
+        ".",
+    )
 
 if __name__ == "__main__":
     main()

@@ -244,9 +244,9 @@ Definition raftLog__firstIndex : val :=
     let: "$r1" := "$ret1" in
     do:  ("index" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     return: (![uint64T] "index")).
@@ -264,7 +264,7 @@ Definition raftLog__snapshot : val :=
   rec: "raftLog__snapshot" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     (if: (![ptrT] (struct.field_ref unstable "snapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l")))) ≠ #null
-    then return: (![raftpb.Snapshot] (![ptrT] (struct.field_ref unstable "snapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l")))), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (![raftpb.Snapshot] (![ptrT] (struct.field_ref unstable "snapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l")))), interface.nil)
     else do:  #());;;
     let: ("$ret0", "$ret1") := (((interface.get "Snapshot" (![Storage] (struct.field_ref raftLog "storage" (![ptrT] "l")))) #())) in
     return: ("$ret0", "$ret1")).
@@ -293,7 +293,7 @@ Definition raft__maybeSendSnapshot : val :=
     let: "$r1" := "$ret1" in
     do:  ("snapshot" <-[raftpb.Snapshot] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       (if: (![error] "err") = (![error] "ErrSnapshotTemporarilyUnavailable")
       then
@@ -304,7 +304,7 @@ Definition raft__maybeSendSnapshot : val :=
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
         return: (#false)
       else do:  #());;;
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     (if: let: "$a0" := (![raftpb.Snapshot] "snapshot") in
@@ -515,9 +515,9 @@ Definition raftLog__lastIndex : val :=
     let: "$r1" := "$ret1" in
     do:  ("i" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     return: (![uint64T] "i")).
@@ -557,7 +557,7 @@ Definition raftLog__mustCheckOutOfBounds : val :=
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* slice returns a slice of log entries from lo through hi-1, inclusive.
 
@@ -573,11 +573,11 @@ Definition raftLog__slice : val :=
     let: "$a1" := (![uint64T] "hi") in
     (raftLog__mustCheckOutOfBounds (![ptrT] "l")) "$a0" "$a1") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then return: (slice.nil, ![error] "err")
     else do:  #()));;;
     (if: (![uint64T] "lo") = (![uint64T] "hi")
-    then return: (slice.nil, interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (slice.nil, interface.nil)
     else do:  #());;;
     (if: (![uint64T] "lo") ≥ (![uint64T] (struct.field_ref unstable "offset" (struct.field_ref raftLog "unstable" (![ptrT] "l"))))
     then
@@ -591,7 +591,7 @@ Definition raftLog__slice : val :=
       return: (let: "$s" := (![sliceT raftpb.Entry] "ents") in
        slice.full_slice raftpb.Entry "$s" #(W64 0) (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
        slice.len "$a0") (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
-       slice.len "$a0"), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+       slice.len "$a0"), interface.nil)
     else do:  #());;;
     let: "cut" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "hi") in
@@ -619,24 +619,24 @@ Definition raftLog__slice : val :=
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
       else
-        (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        (if: (![error] "err") ≠ interface.nil
         then
-          do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+          do:  (let: "$a0" := (![error] "err") in
           Panic "$a0")
         else do:  #())));;;
     (if: (![uint64T] "hi") ≤ (![uint64T] (struct.field_ref unstable "offset" (struct.field_ref raftLog "unstable" (![ptrT] "l"))))
-    then return: (![sliceT raftpb.Entry] "ents", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
     else do:  #());;;
     (if: (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
     slice.len "$a0") < ((![uint64T] "cut") - (![uint64T] "lo"))
-    then return: (![sliceT raftpb.Entry] "ents", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
     else do:  #());;;
     let: "size" := (ref_ty entryEncodingSize (zero_val entryEncodingSize)) in
     let: "$r0" := (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
     entsSize "$a0") in
     do:  ("size" <-[entryEncodingSize] "$r0");;;
     (if: (![entryEncodingSize] "size") ≥ (![entryEncodingSize] "maxSize")
-    then return: (![sliceT raftpb.Entry] "ents", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
     else do:  #());;;
     let: "unstable" := (ref_ty (sliceT raftpb.Entry) (zero_val (sliceT raftpb.Entry))) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![uint64T] (struct.field_ref unstable "offset" (struct.field_ref raftLog "unstable" (![ptrT] "l")))) in
@@ -648,11 +648,11 @@ Definition raftLog__slice : val :=
     (if: ((let: "$a0" := (![sliceT raftpb.Entry] "unstable") in
     slice.len "$a0") = #(W64 1)) && (((![entryEncodingSize] "size") + (let: "$a0" := (![sliceT raftpb.Entry] "unstable") in
     entsSize "$a0")) > (![entryEncodingSize] "maxSize"))
-    then return: (![sliceT raftpb.Entry] "ents", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
     else do:  #());;;
     return: (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
      let: "$a1" := (![sliceT raftpb.Entry] "unstable") in
-     extend "$a0" "$a1", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+     extend "$a0" "$a1", interface.nil)).
 
 (* go: log.go:415:19 *)
 Definition raftLog__entries : val :=
@@ -661,7 +661,7 @@ Definition raftLog__entries : val :=
     let: "maxSize" := (ref_ty entryEncodingSize "maxSize") in
     let: "i" := (ref_ty uint64T "i") in
     (if: (![uint64T] "i") > ((raftLog__lastIndex (![ptrT] "l")) #())
-    then return: (slice.nil, interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (slice.nil, interface.nil)
     else do:  #());;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] "i") in
     let: "$a1" := (((raftLog__lastIndex (![ptrT] "l")) #()) + #(W64 1)) in
@@ -713,7 +713,7 @@ Definition raftLog__term : val :=
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("ok" <-[boolT] "$r1");;;
     (if: ![boolT] "ok"
-    then return: (![uint64T] "t", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (![uint64T] "t", interface.nil)
     else do:  #()));;;
     (if: ((![uint64T] "i") + #(W64 1)) < ((raftLog__firstIndex (![ptrT] "l")) #())
     then return: (#(W64 0), ![error] "ErrCompacted")
@@ -729,13 +729,13 @@ Definition raftLog__term : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
-    then return: (![uint64T] "t", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") = interface.nil
+    then return: (![uint64T] "t", interface.nil)
     else do:  #());;;
     (if: ((![error] "err") = (![error] "ErrCompacted")) || ((![error] "err") = (![error] "ErrUnavailable"))
     then return: (#(W64 0), ![error] "err")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+    do:  (let: "$a0" := (![error] "err") in
     Panic "$a0")).
 
 (* maybeSendAppend sends an append RPC with new entries to the given peer,
@@ -771,7 +771,7 @@ Definition raft__maybeSendAppend : val :=
     let: "$r1" := "$ret1" in
     do:  ("prevTerm" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
@@ -792,7 +792,7 @@ Definition raft__maybeSendAppend : val :=
     slice.len "$a0") = #(W64 0)) && (~ (![boolT] "sendIfEmpty"))
     then return: (#false)
     else do:  #());;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
@@ -834,7 +834,7 @@ Definition raftLog__matchTerm : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then return: (#false)
     else do:  #());;;
     return: ((![uint64T] "t") = (![uint64T] (struct.field_ref entryID "term" "id")))).
@@ -1006,11 +1006,11 @@ Definition raftLog__lastEntryID : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       do:  (let: "$a0" := #(str "unexpected error when getting the last term at %d: %v") in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "index")) in
-      let: "$sl1" := (interface.make error__mset (![error] "err")) in
+      let: "$sl1" := (![error] "err") in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
@@ -1093,7 +1093,7 @@ Definition raft__Step : val :=
             let: "$sl9" := (interface.make int__mset ((![intT] (struct.field_ref raft "electionTimeout" (![ptrT] "r"))) - (![intT] (struct.field_ref raft "electionElapsed" (![ptrT] "r"))))) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"; "$sl7"; "$sl8"; "$sl9"])) in
             (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-            return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+            return: (interface.nil)
           else do:  #())
         else do:  #());;;
         let: "$sw" := #true in
@@ -1182,7 +1182,7 @@ Definition raft__Step : val :=
                 let: "$sl4" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
                 (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1"))));;;
-          return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+          return: (interface.nil)
         else #())));;;
     let: "$sw" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     (if: "$sw" = raftpb.MsgHup
@@ -1299,10 +1299,10 @@ Definition raft__Step : val :=
             let: "$a1" := (![raftpb.Message] "m") in
             (![stepFunc] (struct.field_ref raft "step" (![ptrT] "r"))) "$a0" "$a1") in
             do:  ("err" <-[error] "$r0");;;
-            (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+            (if: (![error] "err") ≠ interface.nil
             then return: (![error] "err")
             else do:  #())))));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* go: node.go:484:6 *)
 Definition confChangeToMsg : val :=
@@ -1319,7 +1319,7 @@ Definition confChangeToMsg : val :=
     do:  ("typ" <-[raftpb.EntryType] "$r0");;;
     do:  ("data" <-[sliceT byteT] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       return: (struct.make raftpb.Message [{
        }], ![error] "err")
@@ -1331,7 +1331,7 @@ Definition confChangeToMsg : val :=
          "Data" ::= ![sliceT byteT] "data"
        }]) in
        slice.literal raftpb.Entry ["$sl0"])
-     }], interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+     }], interface.nil)).
 
 (* go: log.go:332:19 *)
 Definition raftLog__appliedTo : val :=
@@ -1383,26 +1383,26 @@ Definition raft__appliedTo : val :=
     then
       let: "err" := (ref_ty error (zero_val error)) in
       let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := interface.nil in
       confChangeToMsg "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("m" <-[raftpb.Message] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then
-        do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+        do:  (let: "$a0" := (![error] "err") in
         Panic "$a0")
       else do:  #());;;
       (let: "err" := (ref_ty error (zero_val error)) in
       let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
       (raft__Step (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then
         do:  (let: "$a0" := #(str "not initiating automatic transition out of joint configuration %s: %v") in
         let: "$a1" := ((let: "$sl0" := (interface.make tracker.Config__mset (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
-        let: "$sl1" := (interface.make error__mset (![error] "err")) in
+        let: "$sl1" := (![error] "err") in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
       else
@@ -1573,10 +1573,10 @@ Definition raft__tickElection : val :=
       }]) in
       (raft__Step (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then
         do:  (let: "$a0" := #(str "error occurred during election: %v") in
-        let: "$a1" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+        let: "$a1" := ((let: "$sl0" := (![error] "err") in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
       else do:  #()))
@@ -1691,7 +1691,7 @@ Definition StateType__MarshalJSON : val :=
     return: (string.to_bytes (let: "$a0" := #(str "%q") in
      let: "$a1" := ((let: "$sl0" := (interface.make string__mset ((StateType__String (![StateType] "st")) #())) in
      slice.literal interfaceT ["$sl0"])) in
-     fmt.Sprintf "$a0" "$a1"), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+     fmt.Sprintf "$a0" "$a1"), interface.nil)).
 
 Definition StateType__mset : list (string * val) := [
   ("MarshalJSON", StateType__MarshalJSON%V);
@@ -1892,10 +1892,10 @@ Definition raft__tickHeartbeat : val :=
         }]) in
         (raft__Step (![ptrT] "r")) "$a0") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        (if: (![error] "err") ≠ interface.nil
         then
           do:  (let: "$a0" := #(str "error occurred during checking sending heartbeat: %v") in
-          let: "$a1" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+          let: "$a1" := ((let: "$sl0" := (![error] "err") in
           slice.literal interfaceT ["$sl0"])) in
           (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
         else do:  #()))
@@ -1918,10 +1918,10 @@ Definition raft__tickHeartbeat : val :=
       }]) in
       (raft__Step (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then
         do:  (let: "$a0" := #(str "error occurred during checking sending heartbeat: %v") in
-        let: "$a1" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+        let: "$a1" := ((let: "$sl0" := (![error] "err") in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
       else do:  #()))
@@ -2174,14 +2174,14 @@ Definition raftLog__zeroTermOnOutOfBounds : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "err" := (ref_ty error "err") in
     let: "t" := (ref_ty uint64T "t") in
-    (if: (![error] "err") = (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") = interface.nil
     then return: (![uint64T] "t")
     else do:  #());;;
     (if: ((![error] "err") = (![error] "ErrCompacted")) || ((![error] "err") = (![error] "ErrUnavailable"))
     then return: (#(W64 0))
     else do:  #());;;
     do:  (let: "$a0" := #(str "unexpected error (%v)") in
-    let: "$a1" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+    let: "$a1" := ((let: "$sl0" := (![error] "err") in
     slice.literal interfaceT ["$sl0"])) in
     (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1");;;
     return: (#(W64 0))).
@@ -2254,7 +2254,7 @@ Definition raftLog__findConflictByTerm : val :=
       let: "$r1" := "$ret1" in
       do:  ("ourTerm" <-[uint64T] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then return: (![uint64T] "index", #(W64 0))
       else
         (if: (![uint64T] "ourTerm") ≤ (![uint64T] "term")
@@ -2310,7 +2310,7 @@ Definition stepLeader : val :=
     (if: "$sw" = raftpb.MsgBeat
     then
       do:  ((raft__bcastHeartbeat (![ptrT] "r")) #());;;
-      return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      return: (interface.nil)
     else
       (if: "$sw" = raftpb.MsgCheckQuorum
       then
@@ -2334,7 +2334,7 @@ Definition stepLeader : val :=
           else do:  #()))
           ) in
         (tracker.ProgressTracker__Visit (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
-        return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        return: (interface.nil)
       else
         (if: "$sw" = raftpb.MsgProp
         then
@@ -2373,9 +2373,9 @@ Definition stepLeader : val :=
               let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
               (raftpb.ConfChange__Unmarshal "ccc") "$a0") in
               do:  ("err" <-[error] "$r0");;;
-              (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+              (if: (![error] "err") ≠ interface.nil
               then
-                do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+                do:  (let: "$a0" := (![error] "err") in
                 Panic "$a0")
               else do:  #()));;;
               let: "$r0" := (interface.make raftpb.ConfChange__mset (![raftpb.ConfChange] "ccc")) in
@@ -2388,15 +2388,15 @@ Definition stepLeader : val :=
                 let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
                 (raftpb.ConfChangeV2__Unmarshal "ccc") "$a0") in
                 do:  ("err" <-[error] "$r0");;;
-                (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                (if: (![error] "err") ≠ interface.nil
                 then
-                  do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+                  do:  (let: "$a0" := (![error] "err") in
                   Panic "$a0")
                 else do:  #()));;;
                 let: "$r0" := (interface.make raftpb.ConfChangeV2__mset (![raftpb.ConfChangeV2] "ccc")) in
                 do:  ("cc" <-[raftpb.ConfChangeI] "$r0")
               else do:  #()));;;
-            (if: (![raftpb.ConfChangeI] "cc") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+            (if: (![raftpb.ConfChangeI] "cc") ≠ interface.nil
             then
               let: "alreadyPending" := (ref_ty boolT (zero_val boolT)) in
               let: "$r0" := ((![uint64T] (struct.field_ref raft "pendingConfIndex" (![ptrT] "r"))) > (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
@@ -2433,7 +2433,7 @@ Definition stepLeader : val :=
               then
                 do:  (let: "$a0" := #(str "%x ignoring conf change %v at config %s: %s") in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
-                let: "$sl1" := (interface.make raftpb.ConfChangeI__mset (![raftpb.ConfChangeI] "cc")) in
+                let: "$sl1" := (![raftpb.ConfChangeI] "cc") in
                 let: "$sl2" := (interface.make tracker.Config__mset (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
                 let: "$sl3" := (interface.make string__mset (![stringT] "failedCheck")) in
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
@@ -2454,7 +2454,7 @@ Definition stepLeader : val :=
           then return: (![error] "ErrProposalDropped")
           else do:  #());;;
           do:  ((raft__bcastAppend (![ptrT] "r")) #());;;
-          return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+          return: (interface.nil)
         else
           (if: "$sw" = raftpb.MsgReadIndex
           then
@@ -2470,7 +2470,7 @@ Definition stepLeader : val :=
                 do:  (let: "$a0" := (![raftpb.Message] "resp") in
                 (raft__send (![ptrT] "r")) "$a0")
               else do:  #()));;;
-              return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+              return: (interface.nil)
             else do:  #());;;
             (if: (~ ((raft__committedEntryInCurrentTerm (![ptrT] "r")) #()))
             then
@@ -2479,15 +2479,15 @@ Definition stepLeader : val :=
               slice.literal raftpb.Message ["$sl0"])) in
               (slice.append (sliceT raftpb.Message)) "$a0" "$a1") in
               do:  ((struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r")) <-[sliceT raftpb.Message] "$r0");;;
-              return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+              return: (interface.nil)
             else do:  #());;;
             do:  (let: "$a0" := (![ptrT] "r") in
             let: "$a1" := (![raftpb.Message] "m") in
             sendMsgReadIndexResponse "$a0" "$a1");;;
-            return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+            return: (interface.nil)
           else
             (if: "$sw" = raftpb.MsgForgetLeader
-            then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+            then return: (interface.nil)
             else #())))));;;
     let: "pr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raftpb.Message "From" "m")))) in
@@ -2499,7 +2499,7 @@ Definition stepLeader : val :=
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-      return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      return: (interface.nil)
     else do:  #());;;
     let: "$sw" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     (if: "$sw" = raftpb.MsgAppResp
@@ -2613,13 +2613,13 @@ Definition stepLeader : val :=
         else do:  #());;;
         (if: ((![ReadOnlyOption] (struct.field_ref readOnly "option" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r"))))) ≠ ReadOnlySafe) || ((let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Message "Context" "m")) in
         slice.len "$a0") = #(W64 0))
-        then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        then return: (interface.nil)
         else do:  #());;;
         (if: (let: "$a0" := (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
         let: "$a1" := (![sliceT byteT] (struct.field_ref raftpb.Message "Context" "m")) in
         (readOnly__recvAck (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1") in
         (quorum.JointConfig__VoteResult (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) "$a0") ≠ quorum.VoteWon
-        then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        then return: (interface.nil)
         else do:  #());;;
         let: "rss" := (ref_ty (sliceT ptrT) (zero_val (sliceT ptrT))) in
         let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
@@ -2642,7 +2642,7 @@ Definition stepLeader : val :=
         (if: "$sw" = raftpb.MsgSnapStatus
         then
           (if: (![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) ≠ tracker.StateSnapshot
-          then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+          then return: (interface.nil)
           else do:  #());;;
           (if: (~ (![boolT] (struct.field_ref raftpb.Message "Reject" "m")))
           then
@@ -2686,7 +2686,7 @@ Definition stepLeader : val :=
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 slice.literal interfaceT ["$sl0"])) in
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                return: (interface.nil)
               else do:  #());;;
               let: "leadTransferee" := (ref_ty uint64T (zero_val uint64T)) in
               let: "$r0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
@@ -2705,7 +2705,7 @@ Definition stepLeader : val :=
                   let: "$sl3" := (interface.make uint64__mset (![uint64T] "leadTransferee")) in
                   slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                   (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                  return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                  return: (interface.nil)
                 else do:  #());;;
                 do:  ((raft__abortLeaderTransfer (![ptrT] "r")) #());;;
                 do:  (let: "$a0" := #(str "%x [term %d] abort previous transferring leadership to %x") in
@@ -2721,7 +2721,7 @@ Definition stepLeader : val :=
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 slice.literal interfaceT ["$sl0"])) in
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                return: (interface.nil)
               else do:  #());;;
               do:  (let: "$a0" := #(str "%x [term %d] starts to transfer leadership to %x") in
               let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -2747,7 +2747,7 @@ Definition stepLeader : val :=
                 do:  (let: "$a0" := (![uint64T] "leadTransferee") in
                 (raft__sendAppend (![ptrT] "r")) "$a0"))
             else #())))));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* go: raft.go:934:16 *)
 Definition raft__becomeLeader : val :=
@@ -2940,10 +2940,10 @@ Definition assertConfStatesEquivalent : val :=
     let: "$r0" := (let: "$a0" := (![raftpb.ConfState] "cs2") in
     (raftpb.ConfState__Equivalent (![raftpb.ConfState] "cs1")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") = (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") = interface.nil
     then return: (#())
     else do:  #());;;
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+    do:  (let: "$a0" := ((let: "$sl0" := (![error] "err") in
     slice.literal interfaceT ["$sl0"])) in
     (interface.get "Panic" (![Logger] "l")) "$a0")).
 
@@ -3153,13 +3153,13 @@ Definition raftLog__allEntries : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") = interface.nil
     then return: (![sliceT raftpb.Entry] "ents")
     else do:  #());;;
     (if: (![error] "err") = (![error] "ErrCompacted")
     then return: (("raftLog__allEntries" (![ptrT] "l")) #())
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+    do:  (let: "$a0" := (![error] "err") in
     Panic "$a0")).
 
 (* pbEntryID returns the ID of the given raftpb.Entry.
@@ -3420,10 +3420,10 @@ Definition raftLog__nextCommittedEnts : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       do:  (let: "$a0" := #(str "unexpected error when getting unapplied entries (%v)") in
-      let: "$a1" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+      let: "$a1" := ((let: "$sl0" := (![error] "err") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
@@ -3484,7 +3484,7 @@ Definition raftLog__scan : val :=
       let: "$r1" := "$ret1" in
       do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then return: (![error] "err")
       else
         (if: (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
@@ -3500,12 +3500,12 @@ Definition raftLog__scan : val :=
       let: "$r0" := (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
       (![funcT] "v") "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then return: (![error] "err")
       else do:  #()));;;
       do:  ("lo" <-[uint64T] ((![uint64T] "lo") + (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
       slice.len "$a0"))));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 Definition raftLog__mset_ptr : list (string * val) := [
   ("String", raftLog__String%V);
@@ -3647,11 +3647,11 @@ Definition raft__restore : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       do:  (let: "$a0" := (interface.make string__mset (let: "$a0" := #(str "unable to restore config %+v: %s") in
       let: "$a1" := ((let: "$sl0" := (interface.make raftpb.ConfState__mset (![raftpb.ConfState] "cs")) in
-      let: "$sl1" := (interface.make error__mset (![error] "err")) in
+      let: "$sl1" := (![error] "err") in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       fmt.Sprintf "$a0" "$a1")) in
       Panic "$a0")
@@ -3927,7 +3927,7 @@ Definition stepCandidate : val :=
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
               else #()))))));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* go: raft.go:903:16 *)
 Definition raft__becomeCandidate : val :=
@@ -4016,16 +4016,16 @@ Definition raft__hasUnappliedConfChanges : val :=
           do:  ("found" <-[boolT] "$r0");;;
           return: (![error] "errBreak")
         else do:  #())));;;
-      return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion))
+      return: (interface.nil))
       ) in
     (raftLog__scan (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[error] "$r0");;;
-    (if: ((![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)) && ((![error] "err") ≠ (![error] "errBreak"))
+    (if: ((![error] "err") ≠ interface.nil) && ((![error] "err") ≠ (![error] "errBreak"))
     then
       do:  (let: "$a0" := #(str "error scanning unapplied entries [%d, %d): %v") in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] "hi")) in
-      let: "$sl2" := (interface.make error__mset (![error] "err")) in
+      let: "$sl2" := (![error] "err") in
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
     else do:  #()));;;
@@ -4144,7 +4144,7 @@ Definition stepFollower : val :=
                 let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"])) in
                 (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                return: (interface.nil)
               else do:  #());;;
               let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
               do:  ((struct.field_ref raftpb.Message "To" "m") <-[uint64T] "$r0");;;
@@ -4158,7 +4158,7 @@ Definition stepFollower : val :=
                   do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #(str "ignoring MsgForgetLeader due to ReadOnlyLeaseBased")) in
                   slice.literal interfaceT ["$sl0"])) in
                   (interface.get "Error" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0");;;
-                  return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                  return: (interface.nil)
                 else do:  #());;;
                 (if: (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) ≠ None
                 then
@@ -4192,7 +4192,7 @@ Definition stepFollower : val :=
                       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                       slice.literal interfaceT ["$sl0"; "$sl1"])) in
                       (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                      return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                      return: (interface.nil)
                     else do:  #());;;
                     let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
                     do:  ((struct.field_ref raftpb.Message "To" "m") <-[uint64T] "$r0");;;
@@ -4211,7 +4211,7 @@ Definition stepFollower : val :=
                         slice.len "$a0")) in
                         slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
                         (interface.get "Errorf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                        return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+                        return: (interface.nil)
                       else do:  #());;;
                       let: "$r0" := (let: "$a0" := (![sliceT ReadState] (struct.field_ref raft "readStates" (![ptrT] "r"))) in
                       let: "$a1" := ((let: "$sl0" := (struct.make ReadState [{
@@ -4222,7 +4222,7 @@ Definition stepFollower : val :=
                       (slice.append (sliceT ReadState)) "$a0" "$a1") in
                       do:  ((struct.field_ref raft "readStates" (![ptrT] "r")) <-[sliceT ReadState] "$r0")
                     else #())))))))));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* go: state_trace_nop.go:46:6 *)
 Definition traceConfChangeEvent : val :=
@@ -4275,9 +4275,9 @@ Definition raft__applyConfChange : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     return: (let: "$a0" := (![tracker.Config] "cfg") in
@@ -4310,7 +4310,7 @@ Definition RawNode__Bootstrap : val :=
     let: "$r1" := "$ret1" in
     do:  ("lastIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then return: (![error] "err")
     else do:  #());;;
     (if: (![uint64T] "lastIndex") ≠ #(W64 0)
@@ -4345,7 +4345,7 @@ Definition RawNode__Bootstrap : val :=
       let: "$r1" := "$ret1" in
       do:  ("data" <-[sliceT byteT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+      (if: (![error] "err") ≠ interface.nil
       then return: (![error] "err")
       else do:  #());;;
       let: "$r0" := (struct.make raftpb.Entry [{
@@ -4368,7 +4368,7 @@ Definition RawNode__Bootstrap : val :=
         "Type" ::= raftpb.ConfChangeAddNode
       }])) #()) in
       (raft__applyConfChange (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 Definition raftLog__mset : list (string * val) := [
 ].
@@ -4389,9 +4389,9 @@ Definition newLogWithSize : val :=
     let: "$r1" := "$ret1" in
     do:  ("firstIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     let: "lastIndex" := (ref_ty uint64T (zero_val uint64T)) in
@@ -4400,9 +4400,9 @@ Definition newLogWithSize : val :=
     let: "$r1" := "$ret1" in
     do:  ("lastIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     return: (ref_ty raftLog (struct.make raftLog [{
@@ -5051,7 +5051,7 @@ Definition Config__validate : val :=
       return: (let: "$a0" := #(str "election tick must be greater than heartbeat tick") in
        errors.New "$a0")
     else do:  #());;;
-    (if: (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) = (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) = interface.nil
     then
       return: (let: "$a0" := #(str "storage cannot be nil") in
        errors.New "$a0")
@@ -5081,7 +5081,7 @@ Definition Config__validate : val :=
         return: (let: "$a0" := #(str "max inflight bytes must be >= max message size") in
          errors.New "$a0")
       else do:  #()));;;
-    (if: (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) = (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) = interface.nil
     then
       let: "$r0" := (getLogger #()) in
       do:  ((struct.field_ref Config "Logger" (![ptrT] "c")) <-[Logger] "$r0")
@@ -5091,7 +5091,7 @@ Definition Config__validate : val :=
       return: (let: "$a0" := #(str "CheckQuorum must be enabled when ReadOnlyOption is ReadOnlyLeaseBased") in
        errors.New "$a0")
     else do:  #());;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* go: raft.go:437:6 *)
 Definition newRaft : val :=
@@ -5100,7 +5100,7 @@ Definition newRaft : val :=
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := ((Config__validate (![ptrT] "c")) #()) in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       do:  (let: "$a0" := (interface.make string__mset ((interface.get "Error" (![error] "err")) #())) in
       Panic "$a0")
@@ -5121,9 +5121,9 @@ Definition newRaft : val :=
     do:  ("hs" <-[raftpb.HardState] "$r0");;;
     do:  ("cs" <-[raftpb.ConfState] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     let: "r" := (ref_ty ptrT (zero_val ptrT)) in
@@ -5169,9 +5169,9 @@ Definition newRaft : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![Logger] (struct.field_ref raft "logger" (![ptrT] "r"))) in
@@ -5251,7 +5251,7 @@ Definition NewRawNode : val :=
     do:  ((struct.field_ref RawNode "prevSoftSt" (![ptrT] "rn")) <-[ptrT] "$r0");;;
     let: "$r0" := ((raft__hardState (![ptrT] "r")) #()) in
     do:  ((struct.field_ref RawNode "prevHardSt" (![ptrT] "rn")) <-[raftpb.HardState] "$r0");;;
-    return: (![ptrT] "rn", interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (![ptrT] "rn", interface.nil)).
 
 (* go: node.go:250:6 *)
 Definition setupNode : val :=
@@ -5272,18 +5272,18 @@ Definition setupNode : val :=
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     let: "$r0" := (let: "$a0" := (![sliceT Peer] "peers") in
     (RawNode__Bootstrap (![ptrT] "rn")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       do:  (let: "$a0" := #(str "error occurred during starting a new node: %v") in
-      let: "$a1" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+      let: "$a1" := ((let: "$sl0" := (![error] "err") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c")))) "$a0" "$a1")
     else do:  #());;;
@@ -5336,7 +5336,7 @@ Definition node__stepWithWaitOption : val :=
     (if: (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) ≠ raftpb.MsgProp
     then
       do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-          return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+          return: (interface.nil)
           ))] [("$recvChan0", (λ: "$recvVal",
           return: ((interface.get "Err" (![context.Context] "ctx")) #())
           )); ("$recvChan1", (λ: "$recvVal",
@@ -5358,7 +5358,7 @@ Definition node__stepWithWaitOption : val :=
     else do:  #());;;
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         (if: (~ (![boolT] "wait"))
-        then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        then return: (interface.nil)
         else do:  #())
         ))] [("$recvChan0", (λ: "$recvVal",
         return: ((interface.get "Err" (![context.Context] "ctx")) #())
@@ -5369,7 +5369,7 @@ Definition node__stepWithWaitOption : val :=
         let: "err" := (ref_ty error (zero_val error)) in
         let: "$r0" := (Fst "$recvVal") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        (if: (![error] "err") ≠ interface.nil
         then return: (![error] "err")
         else do:  #())
         )); ("$recvChan1", (λ: "$recvVal",
@@ -5377,7 +5377,7 @@ Definition node__stepWithWaitOption : val :=
         )); ("$recvChan2", (λ: "$recvVal",
         return: (![error] "ErrStopped")
         ))] (InjLV #()));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* go: node.go:500:16 *)
 Definition node__step : val :=
@@ -5468,7 +5468,7 @@ Definition node__Step : val :=
     (if: (let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     IsLocalMsg "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
     IsLocalMsgTarget "$a0"))
-    then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (interface.nil)
     else do:  #());;;
     return: (let: "$a0" := (![context.Context] "ctx") in
      let: "$a1" := (![raftpb.Message] "m") in
@@ -5488,7 +5488,7 @@ Definition node__ProposeConfChange : val :=
     let: "$r1" := "$ret1" in
     do:  ("msg" <-[raftpb.Message] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then return: (![error] "err")
     else do:  #());;;
     return: (let: "$a0" := (![context.Context] "ctx") in
@@ -6400,9 +6400,9 @@ Definition RestartNode : val :=
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
-      do:  (let: "$a0" := (interface.make error__mset (![error] "err")) in
+      do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
     else do:  #());;;
     let: "n" := (ref_ty node (zero_val node)) in
@@ -6598,7 +6598,7 @@ Definition RawNode__ProposeConfChange : val :=
     let: "$r1" := "$ret1" in
     do:  ("m" <-[raftpb.Message] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then return: (![error] "err")
     else do:  #());;;
     return: (let: "$a0" := (![raftpb.Message] "m") in
@@ -6846,7 +6846,7 @@ Definition Status__MarshalJSON : val :=
   rec: "Status__MarshalJSON" "s" <> :=
     exception_do (let: "s" := (ref_ty Status "s") in
     let: "j" := (ref_ty stringT (zero_val stringT)) in
-    let: "$r0" := (let: "$a0" := #(str "{"id":"%x","term":%d,"vote":"%x","commit":%d,"lead":"%x","raftState":%q,"applied":%d,"progress":{") in
+    let: "$r0" := (let: "$a0" := #(str "{""id"":""%x"",""term"":%d,""vote"":""%x"",""commit"":%d,""lead"":""%x"",""raftState"":%q,""applied"":%d,""progress"":{") in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref BasicStatus "ID" (struct.field_ref Status "BasicStatus" "s")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Term" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "s"))))) in
     let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Vote" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "s"))))) in
@@ -6863,7 +6863,7 @@ Definition Status__MarshalJSON : val :=
     else
       do:  (map.for_range (![mapT uint64T tracker.Progress] (struct.field_ref Status "Progress" "s")) (λ: "k" "v",
         let: "subj" := (ref_ty stringT (zero_val stringT)) in
-        let: "$r0" := (let: "$a0" := #(str ""%x":{"match":%d,"next":%d,"state":%q},") in
+        let: "$r0" := (let: "$a0" := #(str """%x"":{""match"":%d,""next"":%d,""state"":%q},") in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "k")) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref tracker.Progress "Match" "v"))) in
         let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref tracker.Progress "Next" "v"))) in
@@ -6876,11 +6876,11 @@ Definition Status__MarshalJSON : val :=
       slice.slice byteT "$s" #(W64 0) ((let: "$a0" := (![stringT] "j") in
       StringLength "$a0") - #(W64 1)))) + #(str "},")) in
       do:  ("j" <-[stringT] "$r0"));;;
-    do:  ("j" <-[stringT] ((![stringT] "j") + (let: "$a0" := #(str ""leadtransferee":"%x"}") in
+    do:  ("j" <-[stringT] ((![stringT] "j") + (let: "$a0" := #(str """leadtransferee"":""%x""}") in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref BasicStatus "LeadTransferee" (struct.field_ref Status "BasicStatus" "s")))) in
     slice.literal interfaceT ["$sl0"])) in
     fmt.Sprintf "$a0" "$a1")));;;
-    return: (string.to_bytes (![stringT] "j"), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (string.to_bytes (![stringT] "j"), interface.nil)).
 
 (* go: status.go:99:17 *)
 Definition Status__String : val :=
@@ -6893,10 +6893,10 @@ Definition Status__String : val :=
     let: "$r1" := "$ret1" in
     do:  ("b" <-[sliceT byteT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    (if: (![error] "err") ≠ interface.nil
     then
       do:  (let: "$a0" := #(str "unexpected error: %v") in
-      let: "$a1" := ((let: "$sl0" := (interface.make error__mset (![error] "err")) in
+      let: "$a1" := ((let: "$sl0" := (![error] "err") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Panicf" (getLogger #())) "$a0" "$a1")
     else do:  #());;;
@@ -7059,7 +7059,7 @@ Definition MemoryStorage__Append : val :=
     let: "entries" := (ref_ty (sliceT raftpb.Entry) "entries") in
     (if: (let: "$a0" := (![sliceT raftpb.Entry] "entries") in
     slice.len "$a0") = #(W64 0)
-    then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (interface.nil)
     else do:  #());;;
     do:  ((sync.Mutex__Lock (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
     do:  (let: "$f" := (sync.Mutex__Unlock (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
@@ -7076,7 +7076,7 @@ Definition MemoryStorage__Append : val :=
     slice.len "$a0")) - #(W64 1)) in
     do:  ("last" <-[uint64T] "$r0");;;
     (if: (![uint64T] "last") < (![uint64T] "first")
-    then return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+    then return: (interface.nil)
     else do:  #());;;
     (if: (![uint64T] "first") > (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] "entries") #(W64 0))))
     then
@@ -7110,7 +7110,7 @@ Definition MemoryStorage__Append : val :=
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] "entries") #(W64 0))))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (getLogger #())) "$a0" "$a1")));;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* ApplySnapshot overwrites the contents of this Storage object with
    those of the given snapshot.
@@ -7144,7 +7144,7 @@ Definition MemoryStorage__ApplySnapshot : val :=
     }]) in
     slice.literal raftpb.Entry ["$sl0"])) in
     do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT raftpb.Entry] "$r0");;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* Compact discards all log entries prior to compactIndex.
    It is the application's responsibility to not attempt to compact an index
@@ -7194,7 +7194,7 @@ Definition MemoryStorage__Compact : val :=
     do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
     let: "$r0" := (![sliceT raftpb.Entry] "ents") in
     do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT raftpb.Entry] "$r0");;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* CreateSnapshot makes a snapshot which can be retrieved with Snapshot() and
    can be used to reconstruct the state at that point.
@@ -7242,7 +7242,7 @@ Definition MemoryStorage__CreateSnapshot : val :=
     else do:  #());;;
     let: "$r0" := (![sliceT byteT] "data") in
     do:  ((struct.field_ref raftpb.Snapshot "Data" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms"))) <-[sliceT byteT] "$r0");;;
-    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), interface.nil)).
 
 (* Entries implements the Storage interface.
 
@@ -7288,7 +7288,7 @@ Definition MemoryStorage__Entries : val :=
     return: (let: "$s" := (![sliceT raftpb.Entry] "ents") in
      slice.full_slice raftpb.Entry "$s" #(W64 0) (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
      slice.len "$a0") (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
-     slice.len "$a0"), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+     slice.len "$a0"), interface.nil)).
 
 (* FirstIndex implements the Storage interface.
 
@@ -7304,7 +7304,7 @@ Definition MemoryStorage__FirstIndex : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "firstIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "firstIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: ((MemoryStorage__firstIndex (![ptrT] "ms")) #(), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: ((MemoryStorage__firstIndex (![ptrT] "ms")) #(), interface.nil)).
 
 (* InitialState implements the Storage interface.
 
@@ -7313,7 +7313,7 @@ Definition MemoryStorage__InitialState : val :=
   rec: "MemoryStorage__InitialState" "ms" <> :=
     exception_do (let: "ms" := (ref_ty ptrT "ms") in
     do:  ((struct.field_ref inMemStorageCallStats "initialState" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "initialState" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: (![raftpb.HardState] (struct.field_ref MemoryStorage "hardState" (![ptrT] "ms")), ![raftpb.ConfState] (struct.field_ref raftpb.SnapshotMetadata "ConfState" (struct.field_ref raftpb.Snapshot "Metadata" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")))), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (![raftpb.HardState] (struct.field_ref MemoryStorage "hardState" (![ptrT] "ms")), ![raftpb.ConfState] (struct.field_ref raftpb.SnapshotMetadata "ConfState" (struct.field_ref raftpb.Snapshot "Metadata" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")))), interface.nil)).
 
 (* LastIndex implements the Storage interface.
 
@@ -7329,7 +7329,7 @@ Definition MemoryStorage__LastIndex : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "lastIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "lastIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: ((MemoryStorage__lastIndex (![ptrT] "ms")) #(), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: ((MemoryStorage__lastIndex (![ptrT] "ms")) #(), interface.nil)).
 
 (* SetHardState saves the current HardState.
 
@@ -7347,7 +7347,7 @@ Definition MemoryStorage__SetHardState : val :=
       )));;;
     let: "$r0" := (![raftpb.HardState] "st") in
     do:  ((struct.field_ref MemoryStorage "hardState" (![ptrT] "ms")) <-[raftpb.HardState] "$r0");;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 (* Snapshot implements the Storage interface.
 
@@ -7363,7 +7363,7 @@ Definition MemoryStorage__Snapshot : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "snapshot" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "snapshot" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), interface.nil)).
 
 (* Term implements the Storage interface.
 
@@ -7390,7 +7390,7 @@ Definition MemoryStorage__Term : val :=
     slice.len "$a0")
     then return: (#(W64 0), ![error] "ErrUnavailable")
     else do:  #());;;
-    return: (![uint64T] (struct.field_ref raftpb.Entry "Term" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) ((![uint64T] "i") - (![uint64T] "offset")))), interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (![uint64T] (struct.field_ref raftpb.Entry "Term" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) ((![uint64T] "i") - (![uint64T] "offset")))), interface.nil)).
 
 Definition MemoryStorage__mset_ptr : list (string * val) := [
   ("Append", MemoryStorage__Append%V);
@@ -7502,7 +7502,7 @@ Definition logSlice__valid : val :=
        slice.literal interfaceT ["$sl0"; "$sl1"])) in
        fmt.Errorf "$a0" "$a1")
     else do:  #());;;
-    return: (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)).
+    return: (interface.nil)).
 
 Definition logSlice__mset : list (string * val) := [
   ("lastEntryID", logSlice__lastEntryID%V);
@@ -7628,7 +7628,7 @@ Definition DescribeEntry : val :=
         let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" "e")) in
         (raftpb.ConfChange__Unmarshal "cc") "$a0") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+        (if: (![error] "err") ≠ interface.nil
         then
           let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
           do:  ("formatted" <-[stringT] "$r0")
@@ -7644,7 +7644,7 @@ Definition DescribeEntry : val :=
           let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" "e")) in
           (raftpb.ConfChangeV2__Unmarshal "cc") "$a0") in
           do:  ("err" <-[error] "$r0");;;
-          (if: (![error] "err") ≠ (interface.make untyped nil__mset BUG: this should get overwritten by handleImplicitConversion)
+          (if: (![error] "err") ≠ interface.nil
           then
             let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
             do:  ("formatted" <-[stringT] "$r0")

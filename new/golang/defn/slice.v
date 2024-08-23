@@ -41,7 +41,7 @@ Definition slice t : val :=
   else Panic "slice indices out of order"
 .
 
-Definition slice_full t : val :=
+Definition full_slice t : val :=
   λ: "a" "low" "high" "max",
   if: (#0 ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "a") then
     (ptr "s" +ₗ[t] "low", "high" - "low", "max" - "low")
