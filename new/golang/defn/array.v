@@ -18,6 +18,7 @@ Section defn.
   Admitted.
 
   Definition slice : val.
+  Admitted.
 
   (* takes a list as input, and makes an array value *)
   Definition literal : val :=

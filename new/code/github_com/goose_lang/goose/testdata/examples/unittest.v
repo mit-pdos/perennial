@@ -57,6 +57,17 @@ Definition sum : val :=
     do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (array.cap (arrayT 100 uint64T))));;;
     return: (![uint64T] "sum")).
 
+(* go: array.go:31:6 *)
+Definition arrayToSlice : val :=
+  rec: "arrayToSlice" <> :=
+    exception_do (let: "x" := (ref_ty (arrayT 2 stringT) (zero_val (arrayT 2 stringT))) in
+    let: "$r0" := ((let: "$ar0" := #(str "a") in
+    let: "$ar1" := #(str "b") in
+    array.literal ["$ar0"; "$ar1"])) in
+    do:  ("x" <-[arrayT 2 stringT] "$r0");;;
+    return: (let: "$a" := "x" in
+     array.slice "$a" #(W64 0) (array.len (arrayT 2 stringT)))).
+
 (* go: chan.go:5:6 *)
 Definition chanBasic : val :=
   rec: "chanBasic" <> :=
