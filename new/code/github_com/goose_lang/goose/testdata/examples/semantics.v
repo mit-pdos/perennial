@@ -7,7 +7,7 @@ From New.code Require sync.
 From New Require Import disk_prelude.
 
 Definition unit : go_type := structT [
-]%struct.
+].
 
 Definition unit__mset : list (string * val) := [
 ].
@@ -75,7 +75,6 @@ Definition testAllocateDistinct : val :=
     let: "$r0" := (let: "$a0" := #(W64 4) in
     freeRange "$a0") in
     do:  ("free" <-[mapT uint64T unit] "$r0");;;
-    let: <> := (ref_ty boolT (zero_val boolT)) in
     let: "a1" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
     allocate "$a0") in
@@ -83,7 +82,6 @@ Definition testAllocateDistinct : val :=
     let: "$r1" := "$ret1" in
     do:  ("a1" <-[uint64T] "$r0");;;
     do:  "$r1";;;
-    let: <> := (ref_ty boolT (zero_val boolT)) in
     let: "a2" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
     allocate "$a0") in
@@ -101,7 +99,6 @@ Definition testAllocateFull : val :=
     freeRange "$a0") in
     do:  ("free" <-[mapT uint64T unit] "$r0");;;
     let: "ok1" := (ref_ty boolT (zero_val boolT)) in
-    let: <> := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
     allocate "$a0") in
     let: "$r0" := "$ret0" in
@@ -109,7 +106,6 @@ Definition testAllocateFull : val :=
     do:  "$r0";;;
     do:  ("ok1" <-[boolT] "$r1");;;
     let: "ok2" := (ref_ty boolT (zero_val boolT)) in
-    let: <> := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
     allocate "$a0") in
     let: "$r0" := "$ret0" in
@@ -117,7 +113,6 @@ Definition testAllocateFull : val :=
     do:  "$r0";;;
     do:  ("ok2" <-[boolT] "$r1");;;
     let: "ok3" := (ref_ty boolT (zero_val boolT)) in
-    let: <> := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
     allocate "$a0") in
     let: "$r0" := "$ret0" in
@@ -448,7 +443,7 @@ Definition testDeferFuncLit : val :=
 
 Definition Enc : go_type := structT [
   "p" :: sliceT byteT
-]%struct.
+].
 
 Definition Enc__mset : list (string * val) := [
 ].
@@ -473,7 +468,7 @@ Definition Enc__mset_ptr : list (string * val) := [
 
 Definition Dec : go_type := structT [
   "p" :: sliceT byteT
-]%struct.
+].
 
 Definition Dec__mset : list (string * val) := [
 ].
@@ -664,7 +659,7 @@ Definition testFirstClassFunction : val :=
 Definition Editor : go_type := structT [
   "s" :: sliceT uint64T;
   "next_val" :: uint64T
-]%struct.
+].
 
 Definition Editor__mset : list (string * val) := [
 ].
@@ -708,7 +703,7 @@ Definition addFour64 : val :=
 Definition Pair : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
-]%struct.
+].
 
 Definition Pair__mset : list (string * val) := [
 ].
@@ -893,7 +888,7 @@ Definition measureVolume : val :=
 
 Definition SquareStruct : go_type := structT [
   "Side" :: uint64T
-]%struct.
+].
 
 (* go: interfaces.go:28:23 *)
 Definition SquareStruct__Square : val :=
@@ -1047,7 +1042,7 @@ Definition standardForLoop : val :=
 
 Definition LoopStruct : go_type := structT [
   "loopNext" :: ptrT
-]%struct.
+].
 
 (* go: loops.go:28:22 *)
 Definition LoopStruct__forLoopWait : val :=
@@ -1409,7 +1404,6 @@ Definition testReturnTwo : val :=
 Definition testAnonymousBinding : val :=
   rec: "testAnonymousBinding" <> :=
     exception_do (let: "y" := (ref_ty uint64T (zero_val uint64T)) in
-    let: <> := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (returnTwo #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1806,7 +1800,7 @@ Definition BoolTest : go_type := structT [
   "f" :: boolT;
   "tc" :: uint64T;
   "fc" :: uint64T
-]%struct.
+].
 
 Definition BoolTest__mset : list (string * val) := [
 ].
@@ -1905,7 +1899,7 @@ Definition testShortcircuitOrFT : val :=
 Definition ArrayEditor : go_type := structT [
   "s" :: sliceT uint64T;
   "next_val" :: uint64T
-]%struct.
+].
 
 Definition ArrayEditor__mset : list (string * val) := [
 ].
@@ -2093,7 +2087,7 @@ Definition testSliceLiteral : val :=
 Definition Bar : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
-]%struct.
+].
 
 Definition Bar__mset : list (string * val) := [
 ].
@@ -2113,7 +2107,7 @@ Definition Bar__mset_ptr : list (string * val) := [
 
 Definition Foo : go_type := structT [
   "bar" :: Bar
-]%struct.
+].
 
 Definition Foo__mset : list (string * val) := [
 ].
@@ -2145,7 +2139,7 @@ Definition failing_testFooBarMutation : val :=
 Definition TwoInts : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
-]%struct.
+].
 
 Definition TwoInts__mset : list (string * val) := [
 ].
@@ -2157,7 +2151,7 @@ Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
-]%struct.
+].
 
 (* go: structs.go:30:12 *)
 Definition S__readBVal : val :=
@@ -2355,7 +2349,7 @@ Definition testIncompleteStruct : val :=
 
 Definition StructWrap : go_type := structT [
   "i" :: uint64T
-]%struct.
+].
 
 Definition StructWrap__mset : list (string * val) := [
 ].
@@ -2414,7 +2408,7 @@ Definition testStoreSlice : val :=
 
 Definition StructWithFunc : go_type := structT [
   "fn" :: funcT
-]%struct.
+].
 
 Definition StructWithFunc__mset : list (string * val) := [
 ].
@@ -2480,7 +2474,7 @@ Definition testSwitchDefaultTrue : val :=
       else return: (#true)))).
 
 Definition switchConcrete : go_type := structT [
-]%struct.
+].
 
 Definition switchConcrete__mset : list (string * val) := [
 ].
@@ -2555,7 +2549,7 @@ Definition Log : go_type := structT [
   "l" :: ptrT;
   "cache" :: mapT uint64T (sliceT byteT);
   "length" :: ptrT
-]%struct.
+].
 
 (* go: wal.go:56:14 *)
 Definition Log__unlock : val :=

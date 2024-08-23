@@ -6,7 +6,7 @@ Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
 Notation "f ::= v" := (PairV #(str f%string) v%V) (at level 60) : val_scope.
 Notation "f ::= v" := (Pair #(str f%string) v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
-Arguments structT _%struct.
+Global Arguments structT _%_list%_struct.
 
 Module struct.
 Section goose_lang.

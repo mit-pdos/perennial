@@ -34,9 +34,9 @@ Axiom ProgressMap__String : val.
 Axiom StateType : go_type.
 Axiom StateType__mset : list (string * val).
 Axiom StateType__mset_ptr : list (string * val).
-Axiom StateProbe : val.
-Axiom StateReplicate : val.
-Axiom StateSnapshot : val.
+Axiom StateProbe : expr.
+Axiom StateReplicate : expr.
+Axiom StateSnapshot : expr.
 Axiom StateType__String : val.
 Axiom Config : go_type.
 Axiom Config__mset : list (string * val).

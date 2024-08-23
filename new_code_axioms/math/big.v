@@ -17,24 +17,24 @@ Axiom ErrNaN__mset : list (string * val).
 Axiom ErrNaN__mset_ptr : list (string * val).
 Axiom ErrNaN__Error : val.
 Axiom NewFloat : val.
-Axiom MaxExp : val.
-Axiom MinExp : val.
-Axiom MaxPrec : val.
+Axiom MaxExp : Z.
+Axiom MinExp : Z.
+Axiom MaxPrec : Z.
 Axiom RoundingMode : go_type.
 Axiom RoundingMode__mset : list (string * val).
 Axiom RoundingMode__mset_ptr : list (string * val).
-Axiom ToNearestEven : val.
-Axiom ToNearestAway : val.
-Axiom ToZero : val.
-Axiom AwayFromZero : val.
-Axiom ToNegativeInf : val.
-Axiom ToPositiveInf : val.
+Axiom ToNearestEven : expr.
+Axiom ToNearestAway : expr.
+Axiom ToZero : expr.
+Axiom AwayFromZero : expr.
+Axiom ToNegativeInf : expr.
+Axiom ToPositiveInf : expr.
 Axiom Accuracy : go_type.
 Axiom Accuracy__mset : list (string * val).
 Axiom Accuracy__mset_ptr : list (string * val).
-Axiom Below : val.
-Axiom Exact : val.
-Axiom Above : val.
+Axiom Below : expr.
+Axiom Exact : expr.
+Axiom Above : expr.
 Axiom Float__SetPrec : val.
 Axiom Float__SetMode : val.
 Axiom Float__Prec : val.
@@ -146,7 +146,7 @@ Axiom Int__UnmarshalText : val.
 Axiom Int__MarshalJSON : val.
 Axiom Int__UnmarshalJSON : val.
 Axiom nat__String : val.
-Axiom MaxBase : val.
+Axiom MaxBase : expr.
 Axiom Int__ProbablyPrime : val.
 Axiom Rat : go_type.
 Axiom Rat__mset : list (string * val).

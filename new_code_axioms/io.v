@@ -4,9 +4,9 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
-Axiom SeekStart : val.
-Axiom SeekCurrent : val.
-Axiom SeekEnd : val.
+Axiom SeekStart : Z.
+Axiom SeekCurrent : Z.
+Axiom SeekEnd : Z.
 Axiom Reader : go_type.
 Axiom Reader__mset : list (string * val).
 Axiom Reader__mset_ptr : list (string * val).

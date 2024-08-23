@@ -11,7 +11,7 @@ From New Require Import grove_prelude.
 
 Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
-]%struct.
+].
 
 Definition Server__mset : list (string * val) := [
 ].
@@ -141,7 +141,7 @@ Definition Callback : go_type := structT [
   "reply" :: ptrT;
   "state" :: ptrT;
   "cond" :: ptrT
-]%struct.
+].
 
 Definition Callback__mset : list (string * val) := [
 ].
@@ -154,7 +154,7 @@ Definition Client : go_type := structT [
   "conn" :: grove_ffi.Connection;
   "seq" :: uint64T;
   "pending" :: mapT uint64T ptrT
-]%struct.
+].
 
 Definition Client__mset : list (string * val) := [
 ].

@@ -9,7 +9,7 @@ Context `{ffi_syntax}.
 Definition Enc : go_type := structT [
   "b" :: sliceT byteT;
   "off" :: ptrT
-]%struct.
+].
 
 (* go: marshal.go:63:16 *)
 Definition Enc__Finish : val :=
@@ -145,7 +145,7 @@ Definition NewEnc : val :=
 Definition Dec : go_type := structT [
   "b" :: sliceT byteT;
   "off" :: ptrT
-]%struct.
+].
 
 (* go: marshal.go:105:16 *)
 Definition Dec__GetBool : val :=

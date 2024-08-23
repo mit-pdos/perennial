@@ -10,7 +10,7 @@ Definition Log : go_type := structT [
   "m" :: ptrT;
   "sz" :: uint64T;
   "diskSz" :: uint64T
-]%struct.
+].
 
 Definition Log__mset : list (string * val) := [
 ].

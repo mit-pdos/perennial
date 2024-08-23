@@ -10,7 +10,7 @@ From New Require Import grove_prelude.
 Definition cacheValue : go_type := structT [
   "v" :: stringT;
   "l" :: uint64T
-]%struct.
+].
 
 Definition cacheValue__mset : list (string * val) := [
 ].
@@ -22,7 +22,7 @@ Definition CacheKv : go_type := structT [
   "kv" :: kv.KvCput;
   "mu" :: ptrT;
   "cache" :: mapT stringT cacheValue
-]%struct.
+].
 
 Definition CacheKv__mset : list (string * val) := [
 ].
@@ -61,7 +61,6 @@ Definition CacheKv__Get : val :=
     do:  ("cv" <-[cacheValue] "$r0");;;
     do:  ("ok" <-[boolT] "$r1");;;
     let: "high" := (ref_ty uint64T (zero_val uint64T)) in
-    let: <> := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (grove_ffi.GetTimeRange #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -123,7 +122,6 @@ Definition CacheKv__GetAndCache : val :=
       DecodeValue "$a0") in
       do:  ("old" <-[cacheValue] "$r0");;;
       let: "latest" := (ref_ty uint64T (zero_val uint64T)) in
-      let: <> := (ref_ty uint64T (zero_val uint64T)) in
       let: ("$ret0", "$ret1") := (grove_ffi.GetTimeRange #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -175,7 +173,6 @@ Definition CacheKv__Put : val :=
       let: "$r0" := (struct.field_get cacheValue "l" (let: "$a0" := (![stringT] "enc") in
       DecodeValue "$a0")) in
       do:  ("leaseExpiration" <-[uint64T] "$r0");;;
-      let: <> := (ref_ty uint64T (zero_val uint64T)) in
       let: "earliest" := (ref_ty uint64T (zero_val uint64T)) in
       let: ("$ret0", "$ret1") := (grove_ffi.GetTimeRange #()) in
       let: "$r0" := "$ret0" in

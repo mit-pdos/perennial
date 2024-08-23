@@ -65,17 +65,17 @@ Axiom ProcessState__String : val.
 Axiom ProcessState__ExitCode : val.
 Axiom Executable : val.
 Axiom File__Name : val.
-Axiom O_RDONLY : val.
-Axiom O_WRONLY : val.
-Axiom O_RDWR : val.
-Axiom O_APPEND : val.
-Axiom O_CREATE : val.
-Axiom O_EXCL : val.
-Axiom O_SYNC : val.
-Axiom O_TRUNC : val.
-Axiom SEEK_SET : val.
-Axiom SEEK_CUR : val.
-Axiom SEEK_END : val.
+Axiom O_RDONLY : expr.
+Axiom O_WRONLY : expr.
+Axiom O_RDWR : expr.
+Axiom O_APPEND : expr.
+Axiom O_CREATE : expr.
+Axiom O_EXCL : expr.
+Axiom O_SYNC : expr.
+Axiom O_TRUNC : expr.
+Axiom SEEK_SET : expr.
+Axiom SEEK_CUR : expr.
+Axiom SEEK_END : expr.
 Axiom LinkError : go_type.
 Axiom LinkError__mset : list (string * val).
 Axiom LinkError__mset_ptr : list (string * val).
@@ -125,7 +125,7 @@ Axiom Chtimes : val.
 Axiom File__Chdir : val.
 Axiom File__Fd : val.
 Axiom NewFile : val.
-Axiom DevNull : val.
+Axiom DevNull : string.
 Axiom Truncate : val.
 Axiom Remove : val.
 Axiom Link : val.
@@ -138,8 +138,8 @@ Axiom unixDirent__String : val.
 Axiom Getwd : val.
 Axiom MkdirAll : val.
 Axiom RemoveAll : val.
-Axiom PathSeparator : val.
-Axiom PathListSeparator : val.
+Axiom PathSeparator : expr.
+Axiom PathListSeparator : expr.
 Axiom IsPathSeparator : val.
 Axiom Pipe : val.
 Axiom Getuid : val.
@@ -167,21 +167,21 @@ Axiom FileInfo__mset_ptr : list (string * val).
 Axiom FileMode : go_type.
 Axiom FileMode__mset : list (string * val).
 Axiom FileMode__mset_ptr : list (string * val).
-Axiom ModeDir : val.
-Axiom ModeAppend : val.
-Axiom ModeExclusive : val.
-Axiom ModeTemporary : val.
-Axiom ModeSymlink : val.
-Axiom ModeDevice : val.
-Axiom ModeNamedPipe : val.
-Axiom ModeSocket : val.
-Axiom ModeSetuid : val.
-Axiom ModeSetgid : val.
-Axiom ModeCharDevice : val.
-Axiom ModeSticky : val.
-Axiom ModeIrregular : val.
-Axiom ModeType : val.
-Axiom ModePerm : val.
+Axiom ModeDir : expr.
+Axiom ModeAppend : expr.
+Axiom ModeExclusive : expr.
+Axiom ModeTemporary : expr.
+Axiom ModeSymlink : expr.
+Axiom ModeDevice : expr.
+Axiom ModeNamedPipe : expr.
+Axiom ModeSocket : expr.
+Axiom ModeSetuid : expr.
+Axiom ModeSetgid : expr.
+Axiom ModeCharDevice : expr.
+Axiom ModeSticky : expr.
+Axiom ModeIrregular : expr.
+Axiom ModeType : expr.
+Axiom ModePerm : expr.
 Axiom fileStat__Name : val.
 Axiom fileStat__IsDir : val.
 Axiom SameFile : val.

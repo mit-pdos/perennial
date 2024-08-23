@@ -178,6 +178,7 @@ def main():
         "go.etcd.io/raft/v3/raftpb",
         "go.etcd.io/raft/v3/tracker",
         "io",
+        "log",
         "math",
         "math/big",
         "os",
@@ -190,6 +191,7 @@ def main():
         "-ignore-errors",
         ".",
     )
+
 
 if __name__ == "__main__":
     main()

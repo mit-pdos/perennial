@@ -12,7 +12,7 @@ Definition ReconnectingClient : go_type := structT [
   "valid" :: boolT;
   "urpcCl" :: ptrT;
   "addr" :: uint64T
-]%struct.
+].
 
 Definition ReconnectingClient__mset : list (string * val) := [
 ].

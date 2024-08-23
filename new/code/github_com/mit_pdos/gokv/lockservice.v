@@ -7,7 +7,7 @@ Context `{ffi_syntax}.
 
 Definition LockClerk : go_type := structT [
   "kv" :: kv.KvCput
-]%struct.
+].
 
 Definition LockClerk__mset : list (string * val) := [
 ].

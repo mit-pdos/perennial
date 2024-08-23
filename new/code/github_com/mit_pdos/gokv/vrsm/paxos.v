@@ -19,7 +19,7 @@ Definition RPC_BECOME_LEADER : expr := #(W64 2).
 
 Definition singleClerk : go_type := structT [
   "cl" :: ptrT
-]%struct.
+].
 
 Definition singleClerk__mset : list (string * val) := [
 ].
@@ -41,7 +41,7 @@ Definition Error : go_type := uint64T.
 
 Definition applyAsFollowerReply : go_type := structT [
   "err" :: Error
-]%struct.
+].
 
 Definition ETimeout : expr := #(W64 3).
 
@@ -53,7 +53,6 @@ Definition decodeApplyAsFollowerReply : val :=
     let: "$r0" := (ref_ty applyAsFollowerReply (struct.make applyAsFollowerReply [{
     }])) in
     do:  ("o" <-[ptrT] "$r0");;;
-    let: <> := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
     let: "err" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT byteT] "s") in
     marshal.ReadInt "$a0") in
@@ -69,7 +68,7 @@ Definition applyAsFollowerArgs : go_type := structT [
   "epoch" :: uint64T;
   "nextIndex" :: uint64T;
   "state" :: sliceT byteT
-]%struct.
+].
 
 (* go: marshal.go:21:6 *)
 Definition encodeApplyAsFollowerArgs : val :=
@@ -126,7 +125,7 @@ Definition enterNewEpochReply : go_type := structT [
   "acceptedEpoch" :: uint64T;
   "nextIndex" :: uint64T;
   "state" :: sliceT byteT
-]%struct.
+].
 
 (* go: marshal.go:77:6 *)
 Definition decodeEnterNewEpochReply : val :=
@@ -163,7 +162,7 @@ Definition decodeEnterNewEpochReply : val :=
 
 Definition enterNewEpochArgs : go_type := structT [
   "epoch" :: uint64T
-]%struct.
+].
 
 (* go: marshal.go:58:6 *)
 Definition encodeEnterNewEpochArgs : val :=
@@ -342,7 +341,7 @@ Definition encodeEnterNewEpochReply : val :=
 Definition applyReply : go_type := structT [
   "err" :: Error;
   "ret" :: sliceT byteT
-]%struct.
+].
 
 Definition applyReply__mset : list (string * val) := [
 ].
@@ -403,7 +402,7 @@ Definition paxosState : go_type := structT [
   "nextIndex" :: uint64T;
   "state" :: sliceT byteT;
   "isLeader" :: boolT
-]%struct.
+].
 
 (* go: marshal.go:128:6 *)
 Definition encodePaxosState : val :=
@@ -485,7 +484,7 @@ Definition Server : go_type := structT [
   "ps" :: ptrT;
   "storage" :: ptrT;
   "clerks" :: sliceT ptrT
-]%struct.
+].
 
 Definition Server__mset : list (string * val) := [
 ].
@@ -500,7 +499,7 @@ Definition Server__TryAcquire : val :=
     then
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
       let: "n" := (ref_ty ptrT (zero_val ptrT)) in
-      return: (ENotLeader, ![ptrT] "n", nil)
+      return: (ENotLeader, ![ptrT] "n", go_nil)
     else do:  #());;;
     let: "tryRelease" := (ref_ty funcT (zero_val funcT)) in
     let: "$r0" := (λ: <>,

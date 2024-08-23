@@ -14,7 +14,7 @@ Definition BankClerk : go_type := structT [
   "lck" :: ptrT;
   "kvck" :: kv.Kv;
   "accts" :: sliceT stringT
-]%struct.
+].
 
 Definition BankClerk__mset : list (string * val) := [
 ].
@@ -23,7 +23,6 @@ Definition BankClerk__mset : list (string * val) := [
 Definition decodeInt : val :=
   rec: "decodeInt" "a" :=
     exception_do (let: "a" := (ref_ty stringT "a") in
-    let: <> := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
     let: "v" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (string.to_bytes (![stringT] "a")) in
     marshal.ReadInt "$a0") in

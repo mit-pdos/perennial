@@ -98,7 +98,7 @@ Definition JoinHandle : go_type := structT [
   "mu" :: ptrT;
   "done" :: boolT;
   "cond" :: ptrT
-]%struct.
+].
 
 Definition JoinHandle__mset : list (string * val) := [
 ].

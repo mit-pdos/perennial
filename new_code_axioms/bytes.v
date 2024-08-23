@@ -18,7 +18,7 @@ Axiom Buffer__Reset : val.
 Axiom Buffer__Grow : val.
 Axiom Buffer__Write : val.
 Axiom Buffer__WriteString : val.
-Axiom MinRead : val.
+Axiom MinRead : Z.
 Axiom Buffer__ReadFrom : val.
 Axiom Buffer__WriteTo : val.
 Axiom Buffer__WriteByte : val.

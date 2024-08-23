@@ -184,7 +184,7 @@ Definition chanDirectional : val :=
     chan.send "$chan" "$v")).
 
 Definition importantStruct : go_type := structT [
-]%struct.
+].
 
 Definition importantStruct__mset : list (string * val) := [
 ].
@@ -601,7 +601,7 @@ Definition getRandom : val :=
 
 Definition diskWrapper : go_type := structT [
   "d" :: disk.Disk
-]%struct.
+].
 
 Definition diskWrapper__mset : list (string * val) := [
 ].
@@ -623,7 +623,7 @@ Definition diskArgument : val :=
 
 Definition embedA : go_type := structT [
   "a" :: uint64T
-]%struct.
+].
 
 (* go: embedded.go:19:17 *)
 Definition embedA__Foo : val :=
@@ -650,7 +650,7 @@ Definition embedA__mset_ptr : list (string * val) := [
 
 Definition embedB : go_type := structT [
   "embedA" :: embedA
-]%struct.
+].
 
 (* go: embedded.go:23:17 *)
 Definition embedB__Foo : val :=
@@ -680,7 +680,7 @@ Definition embedB__mset_ptr : list (string * val) := [
 
 Definition embedC : go_type := structT [
   "embedB" :: ptrT
-]%struct.
+].
 
 Definition embedC__mset : list (string * val) := [
   ("Bar", (λ: "$recv",
@@ -708,7 +708,7 @@ Definition embedC__mset_ptr : list (string * val) := [
 
 Definition embedD : go_type := structT [
   "embedC" :: embedC
-]%struct.
+].
 
 Definition embedD__mset : list (string * val) := [
   ("Bar", (λ: "$recv",
@@ -800,7 +800,7 @@ Definition emptyReturn : val :=
 
 Definition Enc : go_type := structT [
   "p" :: sliceT byteT
-]%struct.
+].
 
 Definition Enc__mset : list (string * val) := [
 ].
@@ -847,7 +847,7 @@ Definition Enc__mset_ptr : list (string * val) := [
 
 Definition Dec : go_type := structT [
   "p" :: sliceT byteT
-]%struct.
+].
 
 Definition Dec__mset : list (string * val) := [
 ].
@@ -898,7 +898,7 @@ Definition Fooer : go_type := interfaceT.
 
 Definition concreteFooer : go_type := structT [
   "a" :: uint64T
-]%struct.
+].
 
 Definition concreteFooer__mset : list (string * val) := [
 ].
@@ -915,7 +915,7 @@ Definition concreteFooer__mset_ptr : list (string * val) := [
 
 Definition FooerUser : go_type := structT [
   "f" :: Fooer
-]%struct.
+].
 
 Definition FooerUser__mset : list (string * val) := [
 ].
@@ -1077,7 +1077,7 @@ Definition testConversionInMultiplePassThrough : val :=
 Definition PointerInterface : go_type := interfaceT.
 
 Definition concrete1 : go_type := structT [
-]%struct.
+].
 
 (* go: interfaces.go:106:20 *)
 Definition concrete1__Foo : val :=
@@ -1155,7 +1155,7 @@ Definition allTheLiterals : go_type := structT [
   "int" :: uint64T;
   "s" :: stringT;
   "b" :: boolT
-]%struct.
+].
 
 Definition allTheLiterals__mset : list (string * val) := [
 ].
@@ -1225,7 +1225,7 @@ Definition useCondVar : val :=
 
 Definition hasCondVar : go_type := structT [
   "cond" :: ptrT
-]%struct.
+].
 
 Definition hasCondVar__mset : list (string * val) := [
 ].
@@ -1497,7 +1497,7 @@ Definition StringMap : val :=
 Definition mapElem : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
-]%struct.
+].
 
 Definition mapElem__mset : list (string * val) := [
 ].
@@ -1653,7 +1653,7 @@ Definition AssignOps : val :=
 Definition wrapExternalStruct : go_type := structT [
   "e" :: marshal.Enc;
   "d" :: marshal.Dec
-]%struct.
+].
 
 (* go: package.go:14:29 *)
 Definition wrapExternalStruct__moveUint64 : val :=
@@ -1689,7 +1689,7 @@ Definition Oracle : val :=
 
 Definition typing : go_type := structT [
   "proph" :: ptrT
-]%struct.
+].
 
 Definition typing__mset : list (string * val) := [
 ].
@@ -1700,7 +1700,7 @@ Definition typing__mset_ptr : list (string * val) := [
 Definition composite : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
-]%struct.
+].
 
 Definition composite__mset : list (string * val) := [
 ].
@@ -1737,7 +1737,7 @@ Definition recur : val :=
     exception_do (do:  ("recur" #())).
 
 Definition R : go_type := structT [
-]%struct.
+].
 
 Definition R__mset : list (string * val) := [
 ].
@@ -1754,11 +1754,20 @@ Definition R__mset_ptr : list (string * val) := [
 
 Definition Other : go_type := structT [
   "RecursiveEmbedded" :: ptrT
-]%struct.
+].
+
+Definition Other__mset : list (string * val) := [
+].
+
+Definition Other__mset_ptr : list (string * val) := [
+].
 
 Definition RecursiveEmbedded : go_type := structT [
   "Other" :: Other
-]%struct.
+].
+
+Definition RecursiveEmbedded__mset : list (string * val) := [
+].
 
 (* go: recursive.go:22:29 *)
 Definition RecursiveEmbedded__recurEmbeddedMethod : val :=
@@ -1766,28 +1775,13 @@ Definition RecursiveEmbedded__recurEmbeddedMethod : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     do:  (("RecursiveEmbedded__recurEmbeddedMethod" (![ptrT] (struct.field_ref Other "RecursiveEmbedded" (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r"))))) #())).
 
-Definition Other__mset : list (string * val) := [
-  ("recurEmbeddedMethod", (λ: "$recv",
-    RecursiveEmbedded__recurEmbeddedMethod (struct.field_get Other "RecursiveEmbedded" "$recv")
-    )%V)
-].
-
-Definition Other__mset_ptr : list (string * val) := [
-  ("recurEmbeddedMethod", (λ: "$recvAddr",
-    RecursiveEmbedded__recurEmbeddedMethod (![ptrT] (struct.field_ref Other "RecursiveEmbedded" "$recvAddr"))
-    )%V)
-].
-
-Definition RecursiveEmbedded__mset : list (string * val) := [
-].
-
 Definition RecursiveEmbedded__mset_ptr : list (string * val) := [
   ("recurEmbeddedMethod", RecursiveEmbedded__recurEmbeddedMethod%V)
 ].
 
 Definition Block : go_type := structT [
   "Value" :: uint64T
-]%struct.
+].
 
 Definition Block__mset : list (string * val) := [
 ].
@@ -1861,7 +1855,6 @@ Definition ReplicatedDiskRead : val :=
       TwoDiskUnlock "$a0");;;
       return: (![Block] "v")
     else do:  #());;;
-    let: <> := (ref_ty boolT (zero_val boolT)) in
     let: "v2" := (ref_ty Block (zero_val Block)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := Disk2 in
     let: "$a1" := (![uint64T] "a") in
@@ -1963,7 +1956,7 @@ Definition makeSingletonSlice : val :=
 
 Definition thing : go_type := structT [
   "x" :: uint64T
-]%struct.
+].
 
 Definition thing__mset : list (string * val) := [
 ].
@@ -1973,7 +1966,7 @@ Definition thing__mset_ptr : list (string * val) := [
 
 Definition sliceOfThings : go_type := structT [
   "things" :: sliceT thing
-]%struct.
+].
 
 (* go: slices.go:26:25 *)
 Definition sliceOfThings__getThingRef : val :=
@@ -2074,7 +2067,7 @@ Definition stringLength : val :=
 Definition Point : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
-]%struct.
+].
 
 (* go: struct_method.go:8:16 *)
 Definition Point__Add : val :=
@@ -2139,7 +2132,7 @@ Definition UseAddWithLiteral : val :=
 Definition TwoInts : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
-]%struct.
+].
 
 Definition TwoInts__mset : list (string * val) := [
 ].
@@ -2151,7 +2144,7 @@ Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
-]%struct.
+].
 
 (* go: struct_pointers.go:30:12 *)
 Definition S__readBVal : val :=
@@ -2260,11 +2253,11 @@ Definition sleep : val :=
     primitive.Sleep "$a0")).
 
 Definition A : go_type := structT [
-]%struct.
+].
 
 Definition B : go_type := structT [
   "a" :: sliceT A
-]%struct.
+].
 
 Definition B__mset : list (string * val) := [
 ].

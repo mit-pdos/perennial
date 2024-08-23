@@ -31,9 +31,9 @@ Axiom mapAckIndexer__AckedIndex : val.
 Axiom VoteResult : go_type.
 Axiom VoteResult__mset : list (string * val).
 Axiom VoteResult__mset_ptr : list (string * val).
-Axiom VotePending : val.
-Axiom VoteLost : val.
-Axiom VoteWon : val.
+Axiom VotePending : expr.
+Axiom VoteLost : expr.
+Axiom VoteWon : expr.
 Axiom VoteResult__String : val.
 
 End axioms.

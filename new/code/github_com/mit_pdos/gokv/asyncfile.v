@@ -17,7 +17,7 @@ Definition AsyncFile : go_type := structT [
   "closeRequested" :: boolT;
   "closed" :: boolT;
   "closedCond" :: ptrT
-]%struct.
+].
 
 Definition AsyncFile__mset : list (string * val) := [
 ].

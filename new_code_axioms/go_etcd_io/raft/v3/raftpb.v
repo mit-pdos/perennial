@@ -20,9 +20,9 @@ Axiom ConfState__Equivalent : val.
 Axiom EntryType : go_type.
 Axiom EntryType__mset : list (string * val).
 Axiom EntryType__mset_ptr : list (string * val).
-Axiom EntryNormal : val.
-Axiom EntryConfChange : val.
-Axiom EntryConfChangeV2 : val.
+Axiom EntryNormal : expr.
+Axiom EntryConfChange : expr.
+Axiom EntryConfChangeV2 : expr.
 Axiom EntryType__Enum : val.
 Axiom EntryType__String : val.
 Axiom EntryType__UnmarshalJSON : val.
@@ -30,30 +30,30 @@ Axiom EntryType__EnumDescriptor : val.
 Axiom MessageType : go_type.
 Axiom MessageType__mset : list (string * val).
 Axiom MessageType__mset_ptr : list (string * val).
-Axiom MsgHup : val.
-Axiom MsgBeat : val.
-Axiom MsgProp : val.
-Axiom MsgApp : val.
-Axiom MsgAppResp : val.
-Axiom MsgVote : val.
-Axiom MsgVoteResp : val.
-Axiom MsgSnap : val.
-Axiom MsgHeartbeat : val.
-Axiom MsgHeartbeatResp : val.
-Axiom MsgUnreachable : val.
-Axiom MsgSnapStatus : val.
-Axiom MsgCheckQuorum : val.
-Axiom MsgTransferLeader : val.
-Axiom MsgTimeoutNow : val.
-Axiom MsgReadIndex : val.
-Axiom MsgReadIndexResp : val.
-Axiom MsgPreVote : val.
-Axiom MsgPreVoteResp : val.
-Axiom MsgStorageAppend : val.
-Axiom MsgStorageAppendResp : val.
-Axiom MsgStorageApply : val.
-Axiom MsgStorageApplyResp : val.
-Axiom MsgForgetLeader : val.
+Axiom MsgHup : expr.
+Axiom MsgBeat : expr.
+Axiom MsgProp : expr.
+Axiom MsgApp : expr.
+Axiom MsgAppResp : expr.
+Axiom MsgVote : expr.
+Axiom MsgVoteResp : expr.
+Axiom MsgSnap : expr.
+Axiom MsgHeartbeat : expr.
+Axiom MsgHeartbeatResp : expr.
+Axiom MsgUnreachable : expr.
+Axiom MsgSnapStatus : expr.
+Axiom MsgCheckQuorum : expr.
+Axiom MsgTransferLeader : expr.
+Axiom MsgTimeoutNow : expr.
+Axiom MsgReadIndex : expr.
+Axiom MsgReadIndexResp : expr.
+Axiom MsgPreVote : expr.
+Axiom MsgPreVoteResp : expr.
+Axiom MsgStorageAppend : expr.
+Axiom MsgStorageAppendResp : expr.
+Axiom MsgStorageApply : expr.
+Axiom MsgStorageApplyResp : expr.
+Axiom MsgForgetLeader : expr.
 Axiom MessageType__Enum : val.
 Axiom MessageType__String : val.
 Axiom MessageType__UnmarshalJSON : val.
@@ -61,9 +61,9 @@ Axiom MessageType__EnumDescriptor : val.
 Axiom ConfChangeTransition : go_type.
 Axiom ConfChangeTransition__mset : list (string * val).
 Axiom ConfChangeTransition__mset_ptr : list (string * val).
-Axiom ConfChangeTransitionAuto : val.
-Axiom ConfChangeTransitionJointImplicit : val.
-Axiom ConfChangeTransitionJointExplicit : val.
+Axiom ConfChangeTransitionAuto : expr.
+Axiom ConfChangeTransitionJointImplicit : expr.
+Axiom ConfChangeTransitionJointExplicit : expr.
 Axiom ConfChangeTransition__Enum : val.
 Axiom ConfChangeTransition__String : val.
 Axiom ConfChangeTransition__UnmarshalJSON : val.
@@ -71,10 +71,10 @@ Axiom ConfChangeTransition__EnumDescriptor : val.
 Axiom ConfChangeType : go_type.
 Axiom ConfChangeType__mset : list (string * val).
 Axiom ConfChangeType__mset_ptr : list (string * val).
-Axiom ConfChangeAddNode : val.
-Axiom ConfChangeRemoveNode : val.
-Axiom ConfChangeUpdateNode : val.
-Axiom ConfChangeAddLearnerNode : val.
+Axiom ConfChangeAddNode : expr.
+Axiom ConfChangeRemoveNode : expr.
+Axiom ConfChangeUpdateNode : expr.
+Axiom ConfChangeAddLearnerNode : expr.
 Axiom ConfChangeType__Enum : val.
 Axiom ConfChangeType__String : val.
 Axiom ConfChangeType__UnmarshalJSON : val.

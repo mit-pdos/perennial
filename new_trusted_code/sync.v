@@ -11,13 +11,14 @@ Definition Mutex : go_type := structT [
 .
 Axiom WaitGroup: struct.descriptor.
 
+Definition Mutex__TryLock : val :=
+  λ: "m" <>, Snd (CmpXchg (struct.field_ref Mutex "state" "m") #false #true).
 Definition Mutex__Lock : val :=
   rec: "f" "m" <> :=
     if: Snd (CmpXchg (struct.field_ref Mutex "state" "m") #false #true) then
       #()
     else
-      "f" "m" #()
-.
+      "f" "m" #().
 Definition Mutex__Unlock : val :=
   λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref Mutex "state" "m") #true #false ;;; return: #())
 .
@@ -25,6 +26,7 @@ Definition Mutex__Unlock : val :=
 Definition Mutex__mset : list (string * val) := [].
 
 Definition Mutex__mset_ptr : list (string * val) := [
+    ("TryLock", Mutex__TryLock) ;
     ("Lock", Mutex__Lock) ;
     ("Unlock", Mutex__Unlock)
   ].
