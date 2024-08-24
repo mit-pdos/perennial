@@ -547,7 +547,7 @@ Section inv.
         (* Take [dom wrs] of [key_inv] and obtain [tid ≠ O]. *)
         iAssert (⌜dom wrs ⊆ keys_all ∧ tid ≠ O⌝)%I as %[Hdom Htidnz].
         { iDestruct "Hprep" as "[Hwrs _]".
-          iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hlookup.
+          iDestruct (txnwrs_receipt_lookup with "Hwrs Hwrsm") as %Hlookup.
           apply lookup_wrsm_dbmap_Some in Hlookup.
           specialize (Hwrsm _ _ Hlookup). simpl in Hwrsm.
           destruct Hwrsm as [Hvt Hvw].
@@ -624,7 +624,7 @@ Section inv.
         simpl.
         (* Obtain [correct_wrs γ tid wrs]. *)
         iDestruct "Hprep" as "[Hwrs _]".
-        iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hwrs.
+        iDestruct (txnwrs_receipt_lookup with "Hwrs Hwrsm") as %Hwrs.
         apply lookup_wrsm_dbmap_Some in Hwrs.
         iDestruct (big_sepM_lookup with "Hcwrs") as "Hpos"; first apply Hwrs.
         iDestruct (correct_incorrect_wrs with "Hpos Hneg") as %[].
@@ -647,7 +647,7 @@ Section inv.
     pose proof (conflict_free_head_commit_eq _ _ _ _ _ Hcf Hhead Hwrs). subst wrsx.
     iAssert (⌜dom wrs ⊆ keys_all⌝)%I as %Hdom.
     { iDestruct "Hprep" as "[Hwrs _]".
-      iDestruct (txnwrs_lookup with "Hwrsm Hwrs") as %Hlookup.
+      iDestruct (txnwrs_receipt_lookup with "Hwrs Hwrsm") as %Hlookup.
       apply lookup_wrsm_dbmap_Some in Hlookup.
       specialize (Hwrsm _ _ Hlookup).
       by destruct Hwrsm as [_ Hgoal].

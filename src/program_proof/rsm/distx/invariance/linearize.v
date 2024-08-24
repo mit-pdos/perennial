@@ -270,7 +270,7 @@ Section inv.
     db_ptstos γ rds ∗
     txnsys_inv_with_future_no_ts γ future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    txnwrs_frag_excl γ tid ∗
+    txnwrs_excl γ tid ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
     txns_lnrz_receipt γ tid.
@@ -295,7 +295,7 @@ Section inv.
     (* Update [tids_excl_auth]. *)
     iMod (tids_excl_insert _ _ tid with "Hexcl") as "[Hexcl Hexcltid]".
     { apply Hnotin. }
-    (* Allocate [txnwrs_frag_excl]. *)
+    (* Allocate [txnwrs_excl]. *)
     assert (Hnotinwrsm : wrsm !! tid = None).
     { rewrite -not_elem_of_dom Hdomw. apply Hnotin. }
     iMod (txnwrs_allocate _ _ tid with "Hwrsm") as "[Hwrsm Hwrsmexcl]".
@@ -398,7 +398,7 @@ Section inv.
     db_ptstos γ (wrs ∪ rds) ∗
     txnsys_inv_with_future_no_ts γ future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
-    txnwrs_frag_excl γ tid ∗
+    txnwrs_excl γ tid ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
     txns_lnrz_receipt γ tid.
@@ -424,7 +424,7 @@ Section inv.
       iDestruct (tids_excl_not_elem_of with "Hwcmts Hexcltid") as %Hnotintmodcs.
       by rewrite not_elem_of_dom in Hnotintmodcs.
     }
-    (* Allocate [txnwrs_frag_excl]. *)
+    (* Allocate [txnwrs_excl]. *)
     assert (Hnotinwrsm : wrsm !! tid = None).
     { rewrite -not_elem_of_dom Hdomw. apply Hnotin. }
     iMod (txnwrs_allocate _ _ tid with "Hwrsm") as "[Hwrsm Hwrsmexcl]".
