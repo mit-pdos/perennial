@@ -7,7 +7,9 @@ Section inv.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : distx_names).
 
-  Definition distxN := nroot .@ "distx".
+  Definition sysNS := nroot .@ "sys".
+  Definition distxNS := sysNS .@ "distx".
+  Definition tsNS := sysNS .@ "ts".
 
   Definition distx_inv γ : iProp Σ :=
     (* txn invariants *)
@@ -23,6 +25,6 @@ Section inv.
   Admitted.
 
   Definition know_distx_inv γ : iProp Σ :=
-    inv distxN (distx_inv γ).
+    inv distxNS (distx_inv γ).
 
 End inv.

@@ -322,12 +322,12 @@ Section program.
   Definition is_replica (rp : loc) (gid : groupid) γ α : iProp Σ :=
     ∃ (mu : loc) (txnlog : loc) (idx : loc),
       "#HmuP"     ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
-      "#Hlock"    ∷ is_lock distxN #mu (own_replica rp gid γ α) ∗
+      "#Hlock"    ∷ is_lock distxNS #mu (own_replica rp gid γ α) ∗
       "#HtxnlogP" ∷ readonly (rp ↦[Replica :: "txnlog"] #txnlog) ∗
       "#Htxnlog"  ∷ is_txnlog txnlog gid γ ∗
       "#HidxP"    ∷ readonly (rp ↦[Replica :: "idx"] #idx) ∗
       "#Hidx"     ∷ is_index idx α ∗
-      "#Hinvh"    ∷ inv distxN (own_hists γ α gid) ∗
+      "#Hinvh"    ∷ inv distxNS (own_hists γ α gid) ∗
       "%Hgid"     ∷ ⌜gid ∈ gids_all⌝.
 
   Definition option_txnst_to_u64 (sto : option txnst) :=

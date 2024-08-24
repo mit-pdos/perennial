@@ -257,13 +257,13 @@ Section inv.
     lia.
   Qed.
 
-  Lemma txnsys_inv_linearize_abort γ (Q : dbmap -> dbmap -> Prop) ts tid future rds form :
+  Lemma txnsys_inv_linearize_abort {γ ts tid future rds} form Q :
     let Qr := λ wrs, Q rds wrs ∧ dom wrs ⊆ dom rds in
     dom rds ⊆ keys_all ->
     (ts < tid)%nat ->
     conflict_cases [] future tid form ->
+    incorrect_fcc Qr form ->
     ts_lb γ tid -∗
-    incorrect_fcc γ tid form -∗
     db_ptstos γ rds -∗
     txnsys_inv_with_future_no_ts γ future ts -∗
     ([∗ set] key ∈ keys_all, key_inv_linearizable_after γ key ts) ==∗
@@ -275,7 +275,7 @@ Section inv.
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
     txns_lnrz_receipt γ tid.
   Proof.
-    iIntros (Qr Hdomrds Hts Hcft) "#Htslb #Hfcc Hpts Htxn Hkeys".
+    iIntros (Qr Hdomrds Hts Hcft Hifcc) "#Htslb Hpts Htxn Hkeys".
     iNamed "Htxn".
     (* Obtain [dom rds] of [hist_lnrz_at]. *)
     iDestruct (big_sepS_subseteq_difference_1 _ _ (dom rds) with "Hkeys") as "[Hkeys HkeysO]".
@@ -376,7 +376,7 @@ Section inv.
       rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
       iSplit; first done.
       iSplit.
-      { by iApply big_sepM_insert_2. }
+      { iApply big_sepM_insert_2; [iFrame "# %" | done]. }
       by rewrite 2!dom_insert_L Hdomq Hdomw.
     }
   Qed.
@@ -385,7 +385,7 @@ Section inv.
      destruct (decide (Q rds wrs ∧ dom wrs ⊆ dom rds)) as [[_ Hdomwrs] | Hneg]; last first.
    *)
 
-  Lemma txnsys_inv_linearize_commit γ (Q : dbmap -> dbmap -> Prop) ts tid future rds wrs :
+  Lemma txnsys_inv_linearize_commit {γ ts tid future rds wrs} Q :
     let Qr := λ wrs, Q rds wrs ∧ dom wrs ⊆ dom rds in
     dom wrs ⊆ dom rds ->
     dom rds ⊆ keys_all ->

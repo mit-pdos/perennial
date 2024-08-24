@@ -602,6 +602,11 @@ Section res.
     ⌜(tslb ≤ ts)%nat⌝.
   Admitted.
 
+  Lemma ts_witness γ ts :
+    ts_auth γ ts -∗
+    ts_lb γ ts.
+  Admitted.
+
   Lemma ts_lb_weaken {γ ts} ts' :
     (ts' ≤ ts)%nat ->
     ts_lb γ ts -∗

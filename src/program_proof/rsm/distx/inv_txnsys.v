@@ -121,6 +121,12 @@ Proof.
   by rewrite lookup_vslice /dual_lookup Htmods.
 Qed.
 
+Definition incorrect_fcc Qr form :=
+  match form with
+  | FCC wrs => not (Qr wrs)
+  |_ => True
+  end.
+
 Section inv.
   Context `{!distx_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
@@ -172,24 +178,18 @@ Section inv.
   Definition correct_wrs γ ts wrs : iProp Σ :=
     ∃ Q, txnpost_receipt γ ts Q ∗ ⌜Q wrs⌝.
 
-  Definition correct_owrs γ ts owrs : iProp Σ :=
-    match owrs with
-    | Some wrs => correct_wrs γ ts wrs
-    | _ => True
-    end.
-
   Definition incorrect_wrs γ ts wrs : iProp Σ :=
     ∃ Q, txnpost_receipt γ ts Q ∗ ⌜not (Q wrs)⌝.
 
-  Definition incorrect_fcc γ ts form : iProp Σ :=
+  Definition incorrect_wrs_in_fcc γ ts form : iProp Σ :=
     match form with
     | FCC wrs => incorrect_wrs γ ts wrs
     |_ => True
     end.
 
   #[global]
-  Instance incorrect_fcc_persistent γ ts form :
-    Persistent (incorrect_fcc γ ts form).
+  Instance incorrect_wrs_in_fcc_persistent γ ts form :
+    Persistent (incorrect_wrs_in_fcc γ ts form).
   Proof. destruct form; apply _. Qed.
 
   Lemma correct_incorrect_wrs γ ts wrs :
@@ -240,7 +240,7 @@ Section inv.
       (* post-conditions hold on the write-set map *)
       "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ (wrsm_dbmap wrsm), correct_wrs γ tid wrs) ∗
       (* post-conditions not hold on the write set for the FCC case *)
-      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
+      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_wrs_in_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
@@ -277,7 +277,7 @@ Section inv.
       (* post-conditions hold on the write-set map *)
       "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ (wrsm_dbmap wrsm), correct_wrs γ tid wrs) ∗
       (* post-conditions not hold on the write set for the FCC case *)
-      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
+      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_wrs_in_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
@@ -317,7 +317,7 @@ Section inv.
       (* post-conditions hold on the write-set map *)
       "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ (wrsm_dbmap wrsm), correct_wrs γ tid wrs) ∗
       (* post-conditions not hold on the write set for the FCC case *)
-      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
+      "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_wrs_in_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
