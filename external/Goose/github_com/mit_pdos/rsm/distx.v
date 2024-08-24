@@ -469,8 +469,7 @@ Definition Replica__Start: val :=
 
 Definition ReplicaGroup := struct.decl [
   "leader" :: uint64T;
-  "rps" :: slice.T ptrT;
-  "pwrs" :: mapT (struct.t Value)
+  "rps" :: slice.T ptrT
 ].
 
 Definition ReplicaGroup__changeLeader: val :=
@@ -483,16 +482,38 @@ Definition slicem: val :=
 
 (* Arguments:
    @ts: Transaction timestamp.
+   @key: Key to be read.
+
+   Return values:
+   @value: Value of @key at timestamp @ts. *)
+Definition ReplicaGroup__Read: val :=
+  rec: "ReplicaGroup__Read" "rg" "ts" "key" :=
+    let: "value" := ref (zero_val (struct.t Value)) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "rp" := SliceGet ptrT (struct.loadF ReplicaGroup "rps" "rg") (struct.loadF ReplicaGroup "leader" "rg") in
+      let: ("v", "ok") := Replica__Read "rp" "ts" "key" in
+      (if: "ok"
+      then
+        "value" <-[struct.t Value] "v";;
+        Break
+      else
+        ReplicaGroup__changeLeader "rg";;
+        Continue));;
+    ![struct.t Value] "value".
+
+(* Arguments:
+   @ts: Transaction timestamp.
 
    Return values:
    @status: Transactin status. *)
 Definition ReplicaGroup__Prepare: val :=
-  rec: "ReplicaGroup__Prepare" "rg" "ts" :=
+  rec: "ReplicaGroup__Prepare" "rg" "ts" "pwrs" :=
     let: "status" := ref (zero_val uint64T) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "rp" := SliceGet ptrT (struct.loadF ReplicaGroup "rps" "rg") (struct.loadF ReplicaGroup "leader" "rg") in
-      let: ("s", "ok") := Replica__Prepare "rp" "ts" (slicem (struct.loadF ReplicaGroup "pwrs" "rg")) in
+      let: ("s", "ok") := Replica__Prepare "rp" "ts" "pwrs" in
       (if: "ok"
       then
         "status" <-[uint64T] "s";;
@@ -530,7 +551,9 @@ Definition ReplicaGroup__Abort: val :=
 
 Definition Txn := struct.decl [
   "ts" :: uint64T;
-  "rgs" :: slice.T (struct.t ReplicaGroup)
+  "rgs" :: mapT ptrT;
+  "wrs" :: mapT (mapT (struct.t Value));
+  "ptgs" :: slice.T uint64T
 ].
 
 Definition GetTS: val :=
@@ -542,52 +565,90 @@ Definition Txn__begin: val :=
     struct.storeF Txn "ts" "txn" (GetTS #());;
     #().
 
+Definition Txn__setptgs: val :=
+  rec: "Txn__setptgs" "txn" :=
+    let: "ptgs" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    MapIter (struct.loadF Txn "wrs" "txn") (λ: "gid" "pwrs",
+      (if: (MapLen "pwrs") ≠ #0
+      then "ptgs" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "ptgs") "gid")
+      else #()));;
+    struct.storeF Txn "ptgs" "txn" (![slice.T uint64T] "ptgs");;
+    #().
+
 (* Main proof for this simplified program. *)
 Definition Txn__prepare: val :=
   rec: "Txn__prepare" "txn" :=
     let: "status" := ref_to uint64T TXN_PREPARED in
-    let: "gid" := ref_to uint64T #0 in
+    Txn__setptgs "txn";;
+    let: "i" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, (![uint64T] "gid") < (slice.len (struct.loadF Txn "rgs" "txn"))); (λ: <>, Skip) := λ: <>,
-      let: "rg" := SliceGet (struct.t ReplicaGroup) (struct.loadF Txn "rgs" "txn") (![uint64T] "gid") in
-      (if: (MapLen (struct.get ReplicaGroup "pwrs" "rg")) = #0
-      then Continue
+    (for: (λ: <>, (![uint64T] "i") < (slice.len (struct.loadF Txn "ptgs" "txn"))); (λ: <>, Skip) := λ: <>,
+      let: "gid" := SliceGet uint64T (struct.loadF Txn "ptgs" "txn") (![uint64T] "i") in
+      let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
+      let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+      "status" <-[uint64T] (ReplicaGroup__Prepare "rg" (struct.loadF Txn "ts" "txn") (slicem "pwrs"));;
+      (if: (![uint64T] "status") ≠ TXN_PREPARED
+      then Break
       else
-        "status" <-[uint64T] (ReplicaGroup__Prepare "rg" (struct.loadF Txn "ts" "txn"));;
-        (if: (![uint64T] "status") ≠ TXN_PREPARED
-        then Break
-        else
-          "gid" <-[uint64T] ((![uint64T] "gid") + #1);;
-          Continue)));;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
+        Continue));;
     ![uint64T] "status".
 
 Definition Txn__commit: val :=
   rec: "Txn__commit" "txn" :=
-    ForSlice (struct.t ReplicaGroup) <> "rg" (struct.loadF Txn "rgs" "txn")
-      ((if: (MapLen (struct.get ReplicaGroup "pwrs" "rg")) ≠ #0
+    ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
+      (let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
+      let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+      (if: (MapLen "pwrs") ≠ #0
       then ReplicaGroup__Commit "rg" (struct.loadF Txn "ts" "txn")
       else #()));;
     #().
 
 Definition Txn__abort: val :=
   rec: "Txn__abort" "txn" :=
-    ForSlice (struct.t ReplicaGroup) <> "rg" (struct.loadF Txn "rgs" "txn")
-      ((if: (MapLen (struct.get ReplicaGroup "pwrs" "rg")) ≠ #0
+    ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
+      (let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
+      let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+      (if: (MapLen "pwrs") ≠ #0
       then ReplicaGroup__Abort "rg" (struct.loadF Txn "ts" "txn")
       else #()));;
     #().
 
+Definition KeyToGroup: val :=
+  rec: "KeyToGroup" "key" :=
+    #0.
+
 Definition Txn__Read: val :=
   rec: "Txn__Read" "txn" "key" :=
-    struct.mk Value [
-    ].
+    let: "gid" := KeyToGroup "key" in
+    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+    let: ("vlocal", "ok") := MapGet "pwrs" "key" in
+    (if: "ok"
+    then "vlocal"
+    else
+      let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
+      let: "v" := ReplicaGroup__Read "rg" (struct.loadF Txn "ts" "txn") "key" in
+      "v").
 
 Definition Txn__Write: val :=
   rec: "Txn__Write" "txn" "key" "value" :=
+    let: "gid" := KeyToGroup "key" in
+    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+    let: "v" := struct.mk Value [
+      "b" ::= #true;
+      "s" ::= "value"
+    ] in
+    MapInsert "pwrs" "key" "v";;
     #().
 
 Definition Txn__Delete: val :=
   rec: "Txn__Delete" "txn" "key" :=
+    let: "gid" := KeyToGroup "key" in
+    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+    let: "v" := struct.mk Value [
+      "b" ::= #false
+    ] in
+    MapInsert "pwrs" "key" "v";;
     #().
 
 (* Main proof for this simplifed program. *)

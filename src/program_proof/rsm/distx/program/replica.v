@@ -6,11 +6,6 @@ From Perennial.program_proof.rsm.distx.invariance Require Import
 From Perennial.program_proof Require Import std_proof.
 From Goose.github_com.mit_pdos.rsm Require Import distx.
 
-Section word.
-
-
-End word.
-
 Section resource.
   Context `{!distx_ghostG Σ}.
   Implicit Type (α : replica_names).
