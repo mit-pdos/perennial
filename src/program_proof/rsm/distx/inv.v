@@ -11,7 +11,7 @@ Section inv.
 
   Definition distx_inv γ : iProp Σ :=
     (* txn invariants *)
-    "Htxn"    ∷ txn_inv γ ∗
+    "Htxn"    ∷ txnsys_inv γ ∗
     (* keys invariants *)
     "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)

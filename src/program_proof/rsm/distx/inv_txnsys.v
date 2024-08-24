@@ -185,7 +185,7 @@ Section inv.
     Persistent (valid_res γ ts res).
   Proof. destruct res; apply _. Qed.
 
-  Definition txn_inv γ : iProp Σ :=
+  Definition txnsys_inv γ : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (future past : list action)
       (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
@@ -196,7 +196,7 @@ Section inv.
       (* exclusive transaction IDs *)
       "Hexcl" ∷ tids_excl_auth γ tids ∗
       "Hpart" ∷ partitioned_tids γ tids tmodcs tmodas resm ∗
-      (* transaction post-conditions; a better design seems to be moving this out of [txn_inv] *)
+      (* transaction post-conditions; a better design seems to be moving this out of [txnsys_inv] *)
       "Hpost" ∷ txnpost_auth γ posts ∗
       (* prophecy variable *)
       "Hproph" ∷ txn_proph γ future ∗
@@ -223,7 +223,7 @@ Section inv.
       "%Hcf"    ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"    ∷ ⌜conflict_past past future tmodas⌝.
 
-  Definition txn_inv_no_future γ future : iProp Σ :=
+  Definition txnsys_inv_no_future γ future : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (past : list action)
       (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
@@ -259,12 +259,12 @@ Section inv.
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
 
-  Lemma txn_inv_extract_future γ :
-    txn_inv γ -∗
-    ∃ future, txn_proph γ future ∗ txn_inv_no_future γ future.
+  Lemma txnsys_inv_extract_future γ :
+    txnsys_inv γ -∗
+    ∃ future, txn_proph γ future ∗ txnsys_inv_no_future γ future.
   Proof. iIntros "Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
 
-  Definition txn_inv_with_future_no_ts γ future ts : iProp Σ :=
+  Definition txnsys_inv_with_future_no_ts γ future ts : iProp Σ :=
     ∃ (tids : gset nat) (past : list action)
       (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
       (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
@@ -298,9 +298,9 @@ Section inv.
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
 
-  Lemma txn_inv_expose_future_extract_ts γ :
-    txn_inv γ -∗
-    ∃ future ts, txn_inv_with_future_no_ts γ future ts ∗ ts_auth γ ts.
+  Lemma txnsys_inv_expose_future_extract_ts γ :
+    txnsys_inv γ -∗
+    ∃ future ts, txnsys_inv_with_future_no_ts γ future ts ∗ ts_auth γ ts.
   Proof. iIntros "Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
 
 End inv.

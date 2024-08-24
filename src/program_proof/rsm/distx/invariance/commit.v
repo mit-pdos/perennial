@@ -474,14 +474,14 @@ Section inv.
     partitioned_tids γ tids tmodcs tmodas resm.
   Proof. iIntros (wcmts wabts cmts Hfate) "Hwcmts Habts Hcmts". iFrame "∗ %". Qed.
 
-  Lemma txn_inv_commit γ tid wrs future :
+  Lemma txnsys_inv_commit γ tid wrs future :
     head_commit future tid wrs ->
     txns_lnrz_receipt γ tid -∗
     all_prepared γ tid wrs -∗
-    txn_inv_no_future γ future -∗
+    txnsys_inv_no_future γ future -∗
     ([∗ set] gid ∈ gids_all, group_inv γ gid) -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ==∗
-    txn_inv_no_future γ (tail future) ∗
+    txnsys_inv_no_future γ (tail future) ∗
     ([∗ set] gid ∈ gids_all, group_inv γ gid) ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     txnres_cmt γ tid wrs.
@@ -665,7 +665,7 @@ Section inv.
     iDestruct "Hkeys" as (kmodls kmodcs) "(Hkeys & Hkmodls' & Hkmodcs' & %Hdomkmodls)".
     iDestruct (big_sepM2_dom with "Hkeys") as %Hdomkmodcs.
     rewrite Hdomkmodls in Hdomkmodcs. symmetry in Hdomkmodcs.
-    (* Agreement of [kmod_lnrz_half] and [kmod_cmtd_half] between [txn_inv] and [key_inv]. *)
+    (* Agreement of [kmod_lnrz_half] and [kmod_cmtd_half] between [txnsys_inv] and [key_inv]. *)
     iDestruct (kmod_lnrz_big_agree with "Hkmodls Hkmodls'") as %Hkmodls.
     { apply Hdomkmodls. }
     iDestruct (kmod_cmtd_big_agree with "Hkmodcs Hkmodcs'") as %Hkmodcs.

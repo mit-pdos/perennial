@@ -6,6 +6,130 @@ Lemma conflict_past_inv_linearize {past future tmodas} ts form :
   conflict_past past future (<[ts := form]> tmodas).
 Proof. intros Hc Hcp. by apply map_Forall_insert_2. Qed.
 
+Lemma ext_by_lnrz_inv_linearize_abort ts cmtd lnrz kmodl :
+  ext_by_lnrz cmtd lnrz kmodl ->
+  ext_by_lnrz cmtd (last_extend ts lnrz) kmodl.
+Proof.
+  intros Hext.
+  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
+  exists vlast.
+  split.
+  { (* Re-establish prefix. *)
+    trans lnrz; [apply Hprefix | apply last_extend_prefix].
+  }
+  split.
+  { (* Re-establish last. *)
+    done.
+  }
+  split.
+  { (* Re-establish len. *)
+    intros n Hn.
+    specialize (Hlen _ Hn). simpl in Hlen.
+    pose proof (last_extend_length_ge ts lnrz) as Hlenext.
+    lia.
+  }
+  (* Re-establish ext. *)
+  intros t u Ht Hu.
+  destruct (decide (t < length lnrz)%nat) as [Hlt | Hge].
+  { (* Case: before extension [t < length lnrz]. *)
+    rewrite /last_extend /extend in Hu.
+    destruct (last lnrz) as [x |]; last done.
+    rewrite lookup_app_l in Hu; last done.
+    by apply Hext.
+  }
+  (* Case: read-extension [length lnrz ≤ t]. *)
+  rewrite Nat.nlt_ge in Hge.
+  apply lookup_lt_Some in Hu as Htlen.
+  rewrite lookup_last_extend_r in Hu; last first.
+  { pose proof (last_extend_length_eq_n_or_same ts lnrz). lia. }
+  { lia. }
+  rewrite (prev_dbval_ge (pred (length lnrz)) t); last first.
+  { intros x Hx. specialize (Hlen _ Hx). simpl in Hlen. lia. }
+  { lia. }
+  apply Hext; last by rewrite -last_lookup.
+  apply Nat.lt_le_pred.
+  assert (Hlenc : length cmtd ≠ O); first by destruct cmtd.
+  apply prefix_length in Hprefix.
+  lia.
+Qed.
+
+Lemma ext_by_lnrz_inv_linearize_commit ts v cmtd lnrz kmodl :
+  (length lnrz ≤ ts)%nat ->
+  ext_by_lnrz cmtd lnrz kmodl ->
+  ext_by_lnrz cmtd (last_extend ts lnrz ++ [v]) (<[ts := v]> kmodl).
+Proof.
+  intros Hts Hext.
+  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
+  exists vlast.
+  split.
+  { (* Re-establish prefix. *)
+    trans lnrz; [apply Hprefix | apply prefix_app_r, last_extend_prefix].
+  }
+  split.
+  { (* Re-establish last. *)
+    done.
+  }
+  split.
+  { (* Re-establish len. *)
+    intros n Hn.
+    rewrite length_app /=.
+    rewrite dom_insert_L elem_of_union in Hn.
+    rewrite last_extend_length; last first.
+    { apply (prefix_not_nil _ _ Hprefix). set_solver. }
+    destruct Hn as [Hn | Hn]; last first.
+    { specialize (Hlen _ Hn). simpl in Hlen. lia. }
+    rewrite elem_of_singleton in Hn. subst n.
+    apply prefix_length in Hprefix.
+    lia.
+  }
+  (* Re-establish ext. *)
+  intros t u Ht Hu.
+  (* Obtain [length (last_extend ts lnrz) = ts]. *)
+  unshelve epose proof (last_extend_length_eq_n ts lnrz _ _) as Hlenext; [| apply Hts |].
+  { apply (prefix_not_nil _ _ Hprefix).
+    set_solver.
+  }
+  destruct (decide (t < ts)%nat) as [Hlt | Hge].
+  { (* Case: before write-extension [t < ts]. *)
+    rewrite prev_dbval_insert; last first.
+    { intros n Hn.
+      specialize (Hlen _ Hn). simpl in Hlen.
+      (* solved by [Hlen] and [Hts] *)
+      lia.
+    }
+    { (* solved by [Hlt] and [Hts] *) lia. }
+    destruct (decide (t < length lnrz)%nat) as [Hltstrong | Hge].
+    { (* Case: before extension [t < length lnrz]. *)
+      rewrite /last_extend /extend in Hu.
+      destruct (last lnrz) as [x |] eqn:Hx; last first.
+      { rewrite last_None in Hx. subst lnrz. apply prefix_nil_inv in Hprefix. set_solver. }
+      rewrite -app_assoc lookup_app_l in Hu; last done.
+      by apply Hext.
+    }
+    (* Case: read-extension [length lnrz ≤ t < ts]. *)
+    rewrite Nat.nlt_ge in Hge.
+    (* Obtain [last lnrz = Some u]. *)
+    rewrite lookup_app_l in Hu; last lia.
+    rewrite lookup_last_extend_r in Hu; [| lia | done].
+    (* Extend [prev_dbval] to hold on [t] using [last lnrz] as the anchor. *)
+    rewrite (prev_dbval_ge (pred (length lnrz)) t); last first.
+    { intros x Hx. specialize (Hlen _ Hx). simpl in Hlen. lia. }
+    { lia. }
+    apply Hext; last by rewrite -last_lookup.
+    apply Nat.lt_le_pred.
+    assert (Hlenc : length cmtd ≠ O); first by destruct cmtd.
+    apply prefix_length in Hprefix.
+    lia.
+  }
+  (* Case: write-extension [t = ts]. *)
+  rewrite Nat.nlt_ge in Hge.
+  rewrite lookup_snoc_Some in Hu.
+  destruct Hu as [? | [Htts Hvu]]; first lia.
+  rewrite Hlenext in Htts.
+  erewrite prev_dbval_lookup; first apply Hvu.
+  by rewrite Htts lookup_insert.
+Qed.
+
 Section inv.
   Context `{!distx_ghostG Σ}.
 
@@ -133,7 +257,7 @@ Section inv.
     lia.
   Qed.
 
-  Lemma txn_inv_linearize_abort γ (Q : dbmap -> dbmap -> Prop) ts tid future rds form :
+  Lemma txnsys_inv_linearize_abort γ (Q : dbmap -> dbmap -> Prop) ts tid future rds form :
     let Qr := λ wrs, Q rds wrs ∧ dom wrs ⊆ dom rds in
     dom rds ⊆ keys_all ->
     (ts < tid)%nat ->
@@ -141,10 +265,10 @@ Section inv.
     ts_lb γ tid -∗
     incorrect_fcc γ tid form -∗
     db_ptstos γ rds -∗
-    txn_inv_with_future_no_ts γ future ts -∗
+    txnsys_inv_with_future_no_ts γ future ts -∗
     ([∗ set] key ∈ keys_all, key_inv_linearizable_after γ key ts) ==∗
     db_ptstos γ rds ∗
-    txn_inv_with_future_no_ts γ future tid ∗
+    txnsys_inv_with_future_no_ts γ future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
@@ -246,7 +370,7 @@ Section inv.
      destruct (decide (Q rds wrs ∧ dom wrs ⊆ dom rds)) as [[_ Hdomwrs] | Hneg]; last first.
    *)
 
-  Lemma txn_inv_linearize_commit γ (Q : dbmap -> dbmap -> Prop) ts tid future rds wrs :
+  Lemma txnsys_inv_linearize_commit γ (Q : dbmap -> dbmap -> Prop) ts tid future rds wrs :
     let Qr := λ wrs, Q rds wrs ∧ dom wrs ⊆ dom rds in
     dom wrs ⊆ dom rds ->
     dom rds ⊆ keys_all ->
@@ -254,10 +378,10 @@ Section inv.
     first_commit_compatible future tid wrs ->
     ts_lb γ tid -∗
     db_ptstos γ rds -∗
-    txn_inv_with_future_no_ts γ future ts -∗
+    txnsys_inv_with_future_no_ts γ future ts -∗
     ([∗ set] key ∈ keys_all, key_inv_linearizable_after γ key ts) ==∗
     db_ptstos γ (wrs ∪ rds) ∗
-    txn_inv_with_future_no_ts γ future tid ∗
+    txnsys_inv_with_future_no_ts γ future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
@@ -303,7 +427,7 @@ Section inv.
     iDestruct (big_sepM_sep with "Hkeys") as "[Hkeys %Htslbm]".
     iDestruct (keys_inv_with_tslb_extract_kmodl with "Hkeys") as (kmodls) "[Hkeys Hkmodls']".
     iDestruct (big_sepM2_dom with "Hkeys") as %Hdomkmodls.
-    (* Agreement of [kmod_lnrz_half] between [txn_inv] and [key_inv]. *)
+    (* Agreement of [kmod_lnrz_half] between [txnsys_inv] and [key_inv]. *)
     iDestruct (kmod_lnrz_big_agree with "Hkmodls Hkmodls'") as %Hkmodls.
     { set_solver. }
     (* Update [kmod_lnrz_half]. *)
@@ -320,7 +444,7 @@ Section inv.
       specialize (Hkmodls _ _ Hkmod).
       by rewrite (vslice_insert_Some _ _ _ _ _ Hv) Hkmodls.
     }
-    (* Update the unmodified part of [kmod_lnrz_half] (from [txn_inv]). *)
+    (* Update the unmodified part of [kmod_lnrz_half] (from [txnsys_inv]). *)
     iAssert ([∗ set] x ∈ (keys_all ∖ dom wrs), kmod_lnrz_half γ x (vslice tmodcs' x))%I
       with "[HkmodlsO]" as "HkmodlsO".
     { iApply (big_sepS_impl with "HkmodlsO").

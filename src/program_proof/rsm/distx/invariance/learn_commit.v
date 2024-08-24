@@ -46,9 +46,9 @@ Section inv.
     map_Forall (λ _ t, t.2 = ts) tpls ->
     txnres_cmt γ ts wrs -∗
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
-    txn_inv γ -∗
+    txnsys_inv γ -∗
     ([∗ map] key ↦ tpl; v ∈ tpls; pwrs, key_inv_cmted_no_repl_tsprep γ key tpl.1 ts v) ∗
-    txn_inv γ.
+    txnsys_inv γ.
   Proof.
     iIntros (Hdom Hwrs Hts) "#Hcmt Htpls Htxn".
     iApply (big_sepM_sepM2_impl_res with "Htpls Htxn"); first done.
@@ -66,10 +66,10 @@ Section inv.
     by iFrame "∗ # %".
   Qed.
 
-  Lemma txn_inv_has_prepared γ gid ts wrs :
+  Lemma txnsys_inv_has_prepared γ gid ts wrs :
     gid ∈ ptgroups (dom wrs) ->
     txnres_cmt γ ts wrs -∗
-    txn_inv γ -∗
+    txnsys_inv γ -∗
     txnprep_prep γ gid ts.
   Proof.
     iIntros (Hptg) "Hres Htxn".
@@ -127,10 +127,10 @@ Section inv.
 
   Lemma group_inv_learn_commit γ gid log cpool ts :
     cpool_subsume_log cpool (log ++ [CmdCmt ts]) ->
-    txn_inv γ -∗
+    txnsys_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
-    txn_inv γ ∗
+    txnsys_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log_with_cpool γ gid (log ++ [CmdCmt ts]) cpool.
   Proof.
@@ -144,7 +144,7 @@ Section inv.
     rewrite /group_inv_no_log_with_cpool.
     destruct (stm !! ts) eqn:Hdup; last first.
     { (* Case: Empty state; contradiction---no prepare before commit. *) 
-      iDestruct (txn_inv_has_prepared with "Hcmt Htxn") as "#Hst"; first apply Hgid.
+      iDestruct (txnsys_inv_has_prepared with "Hcmt Htxn") as "#Hst"; first apply Hgid.
       assert (Hpm : pm !! ts = None).
       { rewrite -not_elem_of_dom. rewrite -not_elem_of_dom in Hdup. set_solver. }
       iDestruct (txnprep_lookup with "Hpm Hst") as %Hlookup.

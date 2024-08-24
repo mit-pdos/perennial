@@ -8,10 +8,10 @@ Section inv.
   Lemma group_inv_learn γ gid cpool cmds :
     ∀ log,
     cpool_subsume_log cpool (log ++ cmds) ->
-    txn_inv γ -∗
+    txnsys_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
-    txn_inv γ ∗
+    txnsys_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log_with_cpool γ gid (log ++ cmds) cpool.
   Proof.

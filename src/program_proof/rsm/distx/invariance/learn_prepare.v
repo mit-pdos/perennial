@@ -76,7 +76,7 @@ Section inv.
     gid = key_to_group key ->
     pm !! ts = None ->
     txnprep_auth γ gid pm -∗
-    txn_inv γ -∗
+    txnsys_inv γ -∗
     key_inv_with_kmodc_no_repl_tsprep γ key kmodc tpl.1 tpl.2 -∗
     ⌜kmodc !! ts = None⌝.
   Proof.
@@ -128,10 +128,10 @@ Section inv.
     pm !! ts = None ->
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
     txnprep_auth γ gid pm -∗
-    txn_inv γ -∗
+    txnsys_inv γ -∗
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_xcmted_no_repl_tsprep γ key tpl.1 tpl.2 ts) ∗
     txnprep_auth γ gid pm ∗
-    txn_inv γ.
+    txnsys_inv γ.
   Proof.
     iIntros (Hgid Hnone) "Hkeys Hst Htxn".
     iApply (big_sepM_impl_res with "Hkeys [Hst Htxn]").
@@ -197,10 +197,10 @@ Section inv.
   tuples out rather than all tuples in the group invariants. *)
   Lemma group_inv_learn_prepare γ gid log cpool ts pwrs :
     CmdPrep ts pwrs ∈ cpool ->
-    txn_inv γ -∗
+    txnsys_inv γ -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
-    txn_inv γ ∗
+    txnsys_inv γ ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log_with_cpool γ gid (log ++ [CmdPrep ts pwrs]) cpool.
   Proof.
@@ -232,7 +232,7 @@ Section inv.
       { apply Hc. }
       iDestruct "Hprep" as (wrs) "(Hwrs & %Hnz & %Hpwrs)".
       (* Obtain evidence that [ts] has aborted. *)
-      iMod (txn_inv_abort with "[Hwrs Hunp] Htxn") as "[Htxn #Habt]".
+      iMod (txnsys_inv_abort with "[Hwrs Hunp] Htxn") as "[Htxn #Habt]".
       { iFrame "#". iPureIntro.
         destruct Hpwrs as (_ & Hne & Hgid).
         by eapply wrs_group_elem_of_ptgroups.

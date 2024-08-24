@@ -1,5 +1,66 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 
+Lemma ext_by_lnrz_inv_read ts cmtd lnrz kmodl :
+  (ts ≤ length lnrz)%nat ->
+  le_all ts (dom kmodl) ->
+  ext_by_lnrz cmtd lnrz kmodl ->
+  ext_by_lnrz (last_extend ts cmtd) lnrz kmodl.
+Proof.
+  intros Hlenl Hles Hext.
+  destruct (decide (ts ≤ length cmtd)%nat) as [Hlenc | Hlenc].
+  { (* Trivial if [cmtd] is not actually extended. *)
+    by rewrite last_extend_id.
+  }
+  apply not_le in Hlenc.
+  destruct Hext as (vlast & Hprefix & Hlast & Hlen & Hext).
+  exists vlast.
+  split.
+  { (* Re-establish prefix. *)
+    apply prefix_pointwise.
+    intros i Hi.
+    rewrite /last_extend Hlast /extend.
+    destruct (decide (i < length cmtd)%nat) as [Hilt | Hige].
+    { (* Case: before-extension [i < length cmtd]. *)
+      rewrite lookup_app_l; last done.
+      by apply prefix_lookup_lt.
+    }
+    (* Case: read-extension [length cmtd ≤ i]. *)
+    rewrite Nat.nlt_ge in Hige.
+    (* Obtain [i < ts]. *)
+    rewrite last_extend_length_eq_n in Hi; [| set_solver | lia].
+    assert (is_Some (lnrz !! i)) as [u Hu].
+    { rewrite lookup_lt_is_Some. lia. }
+    assert (Higeweak : (pred (length cmtd) ≤ i)%nat) by lia.
+    specialize (Hext _ _ Higeweak Hu).
+    rewrite lookup_app_r; last done.
+    rewrite Hu lookup_replicate.
+    split; last lia.
+    rewrite -Hext.
+    apply prev_dbval_lt_all.
+    intros n Hn.
+    (* Obtain [ts ≤ n]. *)
+    specialize (Hles _ Hn). simpl in Hles.
+    (* Prove [i < n] by [i < ts] and [ts ≤ n]. *)
+    lia.
+  }
+  split.
+  { (* Re-establish last. *)
+    by rewrite last_last_extend.
+  }
+  split.
+  { (* Re-establish len. *)
+    intros n Hn.
+    specialize (Hlen _ Hn). simpl in Hlen.
+    specialize (Hles _ Hn). simpl in Hles.
+    rewrite last_extend_length_eq_n; [| set_solver | lia].
+    lia.
+  }
+  (* Re-establish ext. *)
+  intros t u Ht Hu.
+  rewrite last_extend_length_eq_n in Ht; [| set_solver | lia].
+  apply Hext; [lia | done].
+Qed.
+
 Lemma ext_by_cmtd_inv_read {repl cmtd kmodc} tid tsprep :
   (tid ≤ length repl)%nat ->
   cmtd ≠ [] ->
@@ -146,14 +207,14 @@ Section inv.
     by iFrame "∗ # %".
   Qed.
 
-  Lemma txn_inv_read γ tid key vl vr future :
+  Lemma txnsys_inv_read γ tid key vl vr future :
     tid ≠ O ->
     head_read future tid key ->
     hist_lnrz_at γ key (pred tid) vl -∗
     hist_repl_at γ key (pred tid) vr -∗
-    txn_inv_no_future γ future -∗
+    txnsys_inv_no_future γ future -∗
     key_inv γ key ==∗
-    txn_inv_no_future γ (tail future) ∗
+    txnsys_inv_no_future γ (tail future) ∗
     key_inv γ key ∗
     ⌜vl = vr⌝.
   Proof.

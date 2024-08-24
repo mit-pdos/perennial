@@ -13,10 +13,10 @@ Qed.
 Section inv.
   Context `{!distx_ghostG Σ}.
 
-  Lemma txn_inv_abort γ ts :
+  Lemma txnsys_inv_abort γ ts :
     some_aborted γ ts -∗
-    txn_inv γ ==∗
-    txn_inv γ ∗
+    txnsys_inv γ ==∗
+    txnsys_inv γ ∗
     txnres_abt γ ts.
   Proof.
     iIntros "#Habt Htxn".
