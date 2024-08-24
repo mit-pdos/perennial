@@ -14,6 +14,17 @@ Definition ext_by_cmtd
            (ts ≠ O -> length repl ≤ ts)%nat
   end.
 
+Lemma ext_by_cmtd_prefix {repl cmtd kmod ts} :
+  ext_by_cmtd repl cmtd kmod ts ->
+  prefix repl cmtd ∨ prefix cmtd repl.
+Proof.
+  rewrite /ext_by_cmtd.
+  intros Hext.
+  destruct (kmod !! ts) as [v |].
+  - left. rewrite Hext. apply prefix_app_r, last_extend_prefix.
+  - right. destruct Hext as [[tsr Hext] _]. rewrite Hext. apply last_extend_prefix.
+Qed.
+
 Definition prev_dbval (ts : nat) (d : dbval) (kmod : dbkmod) :=
   match largest_before ts (dom kmod) with
   | Some t => match kmod !! t with
@@ -164,6 +175,11 @@ Definition ext_by_lnrz (cmtd lnrz : dbhist) (kmodl : dbkmod) :=
 the additional entries of [lnrz], but also the last overlapping entry between
 [cmtd] and [lnrz]. This allows proving invariance of [ext_by_lnrz]
 w.r.t. linearize actions without considering [cmtd = lnrz] as a special case. *)
+
+Lemma ext_by_lnrz_not_nil cmtd lnrz kmod :
+  ext_by_lnrz cmtd lnrz kmod ->
+  cmtd ≠ [].
+Proof. intros (v & _ & Hlast & _) Hcmtd. by rewrite Hcmtd in Hlast. Qed.
 
 Lemma ext_by_lnrz_inv_read ts cmtd lnrz kmodl :
   (ts ≤ length lnrz)%nat ->
@@ -378,6 +394,19 @@ Section def.
       "#Htslb"    ∷ ts_lb γ tslb ∗
       "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
 
+  Definition key_inv_with_kmodl γ (key : dbkey) (kmodl : dbkmod) : iProp Σ :=
+    ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
+      (tslb tsprep : nat) (kmodc : dbkmod),
+      "Hdbv"      ∷ db_ptsto γ key dbv ∗
+      "Hlnrz"     ∷ hist_lnrz_auth γ key lnrz ∗
+      "Hcmtd"     ∷ hist_cmtd_auth γ key cmtd ∗
+      "Hrepl"     ∷ hist_repl_half γ key repl ∗
+      "Htsprep"   ∷ ts_repl_half γ key tsprep ∗
+      "Hkmodl"    ∷ kmod_lnrz_half γ key kmodl ∗
+      "Hkmodc"    ∷ kmod_cmtd_half γ key kmodc ∗
+      "#Htslb"    ∷ ts_lb γ tslb ∗
+      "Hprop"     ∷ key_inv_prop key dbv lnrz cmtd repl tslb tsprep kmodl kmodc.
+
   Definition key_inv_with_tslb_no_kmodl
     γ (key : dbkey) (tslb : nat) (kmodl : dbkmod) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd repl : dbhist)
@@ -550,9 +579,20 @@ Section lemma.
     ∃ kmodc, key_inv_with_kmodc_no_repl_tsprep γ key kmodc repl tsprep.
   Proof. iIntros "Hkey". iNamed "Hkey". iFrame "% # ∗". Qed.
 
+  (* TODO: rename to expose *)
   Lemma key_inv_unseal_tsprep γ key :
     key_inv γ key -∗
     ∃ tsprep, key_inv_with_tsprep γ key tsprep.
+  Proof. iIntros "Hkey". iNamed "Hkey". iFrame "∗ #". Qed.
+
+  Lemma key_inv_expose_kmodl γ key :
+    key_inv γ key -∗
+    ∃ kmodl, key_inv_with_kmodl γ key kmodl.
+  Proof. iIntros "Hkey". iNamed "Hkey". iFrame "∗ #". Qed.
+
+  Lemma key_inv_hide_kmodl γ key kmodl :
+    key_inv_with_kmodl γ key kmodl -∗
+    key_inv γ key.
   Proof. iIntros "Hkey". iNamed "Hkey". iFrame "∗ #". Qed.
 
   Lemma keys_inv_with_tsprep_extract_kmodl_kmodc {γ} keys tsprep :

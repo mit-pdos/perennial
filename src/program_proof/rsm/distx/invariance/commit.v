@@ -24,6 +24,110 @@ Proof.
     by destruct Hresm as [Hresm | Hresm]; rewrite Hresm.
 Qed.
 
+Lemma ext_by_cmtd_length repl cmtd kmodc ts :
+  ts ≠ O ->
+  kmodc !! ts = None ->
+  ext_by_cmtd repl cmtd kmodc ts ->
+  (length cmtd ≤ ts)%nat.
+Proof.
+  intros Hnz Hnone Hext.
+  rewrite /ext_by_cmtd Hnone in Hext.
+  destruct Hext as [[tsr Hext] Hlen].
+  specialize (Hlen Hnz).
+  trans (length repl); last apply Hlen.
+  rewrite Hext.
+  apply last_extend_length_ge.
+Qed.
+
+Lemma no_commit_head_commit future ts wrs :
+  no_commit future ts ->
+  head_commit future ts wrs ->
+  False.
+Proof.
+  intros Hnc Hhc.
+  specialize (Hnc wrs).
+  by apply head_Some_elem_of in Hhc.
+Qed.
+
+Lemma first_commit_head_commit future lp ls ts wrs wrshd :
+  first_commit future lp ls ts wrs ->
+  head_commit future ts wrshd ->
+  wrshd = wrs.
+Proof.
+  intros (Happ & Hnc & Hhead) Hhc.
+  destruct lp as [| x l]; last first.
+  { rewrite Happ /head_commit /= in Hhc.
+    inv Hhc.
+    specialize (Hnc wrshd).
+    set_solver.
+  }
+  rewrite Happ /= /head_commit Hhead in Hhc.
+  by inv Hhc.
+Qed.
+
+Lemma first_commit_compatible_head_commit future ts tshd wrs wrshd :
+  first_commit_compatible future ts wrs ->
+  head_commit future tshd wrshd ->
+  dom wrs ∩ dom wrshd ≠ ∅ ->
+  (tshd ≤ ts)%nat.
+Proof.
+  intros (lp & ls & (Happ & _ & Hhead) & Hcomp) Hhc Hnempty.
+  destruct (decide (lp = [])) as [-> | Hnnil].
+  { rewrite Happ /= /head_commit Hhead in Hhc. by inv Hhc. }
+  assert (Hlp : ActCommit tshd wrshd ∈ lp).
+  { apply head_Some_elem_of.
+    rewrite (head_prefix _ future); [done | apply Hnnil |].
+    rewrite Happ.
+    by apply prefix_app_r.
+  }
+  rewrite /compatible_all Forall_forall in Hcomp.
+  specialize (Hcomp _ Hlp).
+  destruct Hcomp; [lia | contradiction].
+Qed.
+
+Lemma first_commit_incompatible_head_commit past future ts wrs wrshd :
+  first_commit_incompatible past future ts wrs ->
+  head_commit future ts wrshd ->
+  wrshd = wrs ∧ ∃ a, a ∈ past ∧ not (compatible ts wrs a).
+Proof.
+  intros (lp & ls & (Happ & Hnc & Hhead) & Hincomp) Hhc.
+  destruct lp as [| x l]; last first.
+  { rewrite Happ /head_commit /= in Hhc.
+    inv Hhc.
+    specialize (Hnc wrshd).
+    set_solver.
+  }
+  rewrite Happ /= /head_commit Hhead in Hhc.
+  inv Hhc.
+  split; first done.
+  by rewrite app_nil_r /incompatible_exists Exists_exists in Hincomp.
+Qed.
+
+Lemma first_commit_compatible_inv_commit future ts tshd wrs wrshd :
+  ts ≠ tshd ->
+  head_commit future tshd wrshd ->
+  first_commit_compatible future ts wrs ->
+  first_commit_compatible (tail future) ts wrs.
+Proof.
+  intros Hne Hhead Hfci.
+  unshelve eapply (first_commit_compatible_inv_tail_future _ _ _ _ _ Hhead).
+  { intros Heq. inv Heq. }
+  done.
+Qed.
+
+Lemma first_commit_incompatible_inv_commit past future ts tshd wrs wrshd :
+  ts ≠ tshd ->
+  head_commit future tshd wrshd ->
+  first_commit_incompatible past future ts wrs ->
+  first_commit_incompatible (past ++ [ActCommit tshd wrshd]) (tail future) ts wrs.
+Proof.
+  intros Hne Hhead Hfci.
+  apply first_commit_incompatible_inv_snoc_past_tail_future.
+  { intros Heq. inv Heq. }
+  { done. }
+  done.
+Qed.
+
 Lemma conflict_free_head_commit_eq future tmods ts wrs wrshd :
   conflict_free future tmods ->
   head_commit future ts wrshd ->
@@ -50,26 +154,6 @@ Proof.
   eapply first_commit_compatible_head_commit; [done | done |].
   apply elem_of_dom_2 in Hv.
   set_solver.
-Qed.
-
-Lemma ext_by_lnrz_not_nil cmtd lnrz kmod :
-  ext_by_lnrz cmtd lnrz kmod ->
-  cmtd ≠ [].
-Proof. intros (v & _ & Hlast & _) Hcmtd. by rewrite Hcmtd in Hlast. Qed.
-
-Lemma ext_by_cmtd_length repl cmtd kmodc ts :
-  ts ≠ O ->
-  kmodc !! ts = None ->
-  ext_by_cmtd repl cmtd kmodc ts ->
-  (length cmtd ≤ ts)%nat.
-Proof.
-  intros Hnz Hnone Hext.
-  rewrite /ext_by_cmtd Hnone in Hext.
-  destruct Hext as [[tsr Hext] Hlen].
-  specialize (Hlen Hnz).
-  trans (length repl); last apply Hlen.
-  rewrite Hext.
-  apply last_extend_length_ge.
 Qed.
 
 Lemma conflict_free_inv_commit_committed ts wrs future tmodcs :
@@ -112,14 +196,14 @@ Proof.
   assert (Hne : ts ≠ tsx) by set_solver.
   rewrite /conflict_cases in Hcp.
   destruct form as [| wrsx | wrsx]; simpl.
-  - by apply no_commit_inv_commit.
+  - by apply no_commit_inv_tail_future.
   - by apply first_commit_incompatible_inv_commit.
   - by eapply first_commit_compatible_inv_commit.
 Qed.
 
-Lemma cmtxn_in_past_inv_commit resm past ts wrs :
-  cmtxn_in_past resm past ->
-  cmtxn_in_past (<[ts := ResCommitted wrs]> resm) (past ++ [ActCommit ts wrs]).
+Lemma cmtxn_in_past_inv_commit past resm ts wrs :
+  cmtxn_in_past past resm ->
+  cmtxn_in_past (past ++ [ActCommit ts wrs]) (<[ts := ResCommitted wrs]> resm).
 Proof.
   intros Hcmtxn t m Htm.
   rewrite resm_to_tmods_insert_committed in Htm.
@@ -130,10 +214,10 @@ Proof.
   set_solver.
 Qed.
 
-Lemma cmtxn_in_past_inv_commit_committed resm past ts wrs :
+Lemma cmtxn_in_past_inv_commit_committed past resm ts wrs :
   resm !! ts = Some (ResCommitted wrs) ->
-  cmtxn_in_past resm past ->
-  cmtxn_in_past resm (past ++ [ActCommit ts wrs]).
+  cmtxn_in_past past resm ->
+  cmtxn_in_past (past ++ [ActCommit ts wrs]) resm.
 Proof.
   intros Hsome Hcmtxn t m Htm.
   specialize (Hcmtxn _ _ Htm).
@@ -426,8 +510,8 @@ Section inv.
       iDestruct (tids_excl_not_elem_of with "Hwabts Htidexcl") as %Hnotina.
       iDestruct ("HcmtsC" with "Htidexcl") as "Hcmts".
       pose proof (Hcmtxn _ _ Hlookup) as Hinpast. simpl in Hinpast.
-      iDestruct (big_sepL_elem_of with "Hpa") as "Hpawitness"; first apply Hinpast.
-      iCombine "Hpa Hpawitness" as "Hpa'".
+      iDestruct (big_sepL_elem_of with "Hpas") as "Hpawitness"; first apply Hinpast.
+      iCombine "Hpas Hpawitness" as "Hpas'".
       rewrite -big_sepL_snoc.
       unshelve epose proof (conflict_free_inv_commit_committed _ _ _ _ _ Hhead Hcf) as Hcf'.
       { apply not_elem_of_dom_1, Hnotinc. }
@@ -476,7 +560,7 @@ Section inv.
         (* Prove that for all [key ∈ dom wrsa], the lock must be currently granted to [tid]. *)
         iDestruct (keys_inv_prepared_at_ts with "Hprep Hkeys Hresm Hgroups")
           as "(Hkeys & Hresm & Hgroups)"; first done.
-        iDestruct (big_sepL_elem_of with "Hpa") as "Ha"; first apply Hinpast.
+        iDestruct (big_sepL_elem_of with "Hpas") as "Ha"; first apply Hinpast.
         destruct a as [tsa wrsa | tsa keya].
         { (* Case [a = ActCommit tsa wrsa]. *)
           apply Decidable.not_or in Hic as [Hge Hne].
@@ -719,8 +803,8 @@ Section inv.
     (* Re-establish [valid_res]. *)
     iDestruct (big_sepM_insert_2 _ _ tid (ResCommitted wrs) with "[] Hvr") as "Hvr'"; first done.
     (* Re-establish [past_action_witness]. *)
-    iAssert (past_action_witness γ (ActCommit tid wrs))%I as "#Hpawitness"; first iFrame "Hlbs".
-    iCombine "Hpa Hpawitness" as "Hpa'".
+    iAssert (past_action_witness γ (ActCommit tid wrs))%I as "#Hpa"; first iFrame "Hlbs".
+    iCombine "Hpas Hpa" as "Hpas'".
     rewrite -big_sepL_snoc.
     (* Re-establish [conflict_free], [conflict_past], and [cmtxn_in_past]. *)
     pose proof (conflict_free_inv_commit _ _ _ _ Hhead Hcf) as Hcf'.

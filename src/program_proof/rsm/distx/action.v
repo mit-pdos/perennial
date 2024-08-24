@@ -157,103 +157,16 @@ Proof.
   { exists lp, ls. by rewrite -not_compatible_all_incompatible_exists. }
 Qed.
 
-(* TODO: move to invariance/read *)
-Lemma head_read_first_commit_compatible future ts tshd wrs keyhd :
-  head_read future tshd keyhd ->
-  first_commit_compatible future ts wrs ->
-  keyhd ∈ dom wrs ->
-  (tshd ≤ ts)%nat.
-Proof.
-  intros Hhr (lp & ls & (Happ & _ & Hhead) & Hcomp) Hnempty.
-  destruct (decide (lp = [])) as [-> | Hnnil].
-  { rewrite Happ /= /head_read Hhead in Hhr. inv Hhr. }
-  assert (Hlp : ActRead tshd keyhd ∈ lp).
-  { apply head_Some_elem_of.
-    rewrite (head_prefix _ future); [done | apply Hnnil |].
-    rewrite Happ.
-    by apply prefix_app_r.
-  }
-  rewrite /compatible_all Forall_forall in Hcomp.
-  specialize (Hcomp _ Hlp).
-  destruct Hcomp; [lia | contradiction].
-Qed.
-(* TODO: move to invariance/read *)
-
-(* TODO: move to invariance/commit *)
-Lemma no_commit_head_commit future ts wrs :
+Lemma no_commit_inv_tail_future future ts :
   no_commit future ts ->
-  head_commit future ts wrs ->
-  False.
-Proof.
-  intros Hnc Hhc.
-  specialize (Hnc wrs).
-  by apply head_Some_elem_of in Hhc.
-Qed.
-
-Lemma first_commit_head_commit future lp ls ts wrs wrshd :
-  first_commit future lp ls ts wrs ->
-  head_commit future ts wrshd ->
-  wrshd = wrs.
-Proof.
-  intros (Happ & Hnc & Hhead) Hhc.
-  destruct lp as [| x l]; last first.
-  { rewrite Happ /head_commit /= in Hhc.
-    inv Hhc.
-    specialize (Hnc wrshd).
-    set_solver.
-  }
-  rewrite Happ /= /head_commit Hhead in Hhc.
-  by inv Hhc.
-Qed.
-
-Lemma first_commit_compatible_head_commit future ts tshd wrs wrshd :
-  first_commit_compatible future ts wrs ->
-  head_commit future tshd wrshd ->
-  dom wrs ∩ dom wrshd ≠ ∅ ->
-  (tshd ≤ ts)%nat.
-Proof.
-  intros (lp & ls & (Happ & _ & Hhead) & Hcomp) Hhc Hnempty.
-  destruct (decide (lp = [])) as [-> | Hnnil].
-  { rewrite Happ /= /head_commit Hhead in Hhc. by inv Hhc. }
-  assert (Hlp : ActCommit tshd wrshd ∈ lp).
-  { apply head_Some_elem_of.
-    rewrite (head_prefix _ future); [done | apply Hnnil |].
-    rewrite Happ.
-    by apply prefix_app_r.
-  }
-  rewrite /compatible_all Forall_forall in Hcomp.
-  specialize (Hcomp _ Hlp).
-  destruct Hcomp; [lia | contradiction].
-Qed.
-
-Lemma first_commit_incompatible_head_commit past future ts wrs wrshd :
-  first_commit_incompatible past future ts wrs ->
-  head_commit future ts wrshd ->
-  wrshd = wrs ∧ ∃ a, a ∈ past ∧ not (compatible ts wrs a).
-Proof.
-  intros (lp & ls & (Happ & Hnc & Hhead) & Hincomp) Hhc.
-  destruct lp as [| x l]; last first.
-  { rewrite Happ /head_commit /= in Hhc.
-    inv Hhc.
-    specialize (Hnc wrshd).
-    set_solver.
-  }
-  rewrite Happ /= /head_commit Hhead in Hhc.
-  inv Hhc.
-  split; first done.
-  by rewrite app_nil_r /incompatible_exists Exists_exists in Hincomp.
-Qed.
-
-Lemma no_commit_inv_commit l ts :
-  no_commit l ts ->
-  no_commit (tail l) ts.
+  no_commit (tail future) ts.
 Proof. intros Hnc wrs. by apply not_elem_of_tail. Qed.
 
-Lemma first_commit_incompatible_inv_commit past future ts tshd wrs wrshd :
-  ts ≠ tshd ->
-  head_commit future tshd wrshd ->
+Lemma first_commit_incompatible_inv_snoc_past_tail_future past future ts wrs a :
+  a ≠ ActCommit ts wrs ->
+  head future = Some a ->
   first_commit_incompatible past future ts wrs ->
-  first_commit_incompatible (past ++ [ActCommit tshd wrshd]) (tail future) ts wrs.
+  first_commit_incompatible (past ++ [a]) (tail future) ts wrs.
 Proof.
   intros Hne Hhead (lp & ls & (Happ & Hnc & Hheadls) & Hincomp).
   assert (Hnnil : lp ≠ nil).
@@ -266,7 +179,7 @@ Proof.
   split.
   { split.
     { rewrite Happ. apply tail_app_l, Hnnil. }
-    by split; first apply no_commit_inv_commit.
+    by split; first apply no_commit_inv_tail_future.
   }
   rewrite -app_assoc /=.
   replace (_ :: _) with lp; first apply Hincomp.
@@ -278,9 +191,9 @@ Proof.
   by apply prefix_app_r.
 Qed.
 
-Lemma first_commit_compatible_inv_commit future ts tshd wrs wrshd :
-  ts ≠ tshd ->
-  head_commit future tshd wrshd ->
+Lemma first_commit_compatible_inv_tail_future future ts wrs a :
+  a ≠ ActCommit ts wrs ->
+  head future = Some a ->
   first_commit_compatible future ts wrs ->
   first_commit_compatible (tail future) ts wrs.
 Proof.
@@ -295,8 +208,7 @@ Proof.
   split.
   { split.
     { rewrite Happ. apply tail_app_l, Hnnil. }
-    by split; first apply no_commit_inv_commit.
+    by split; first apply no_commit_inv_tail_future.
   }
   by apply Forall_tail.
 Qed.
-(* TODO: move to invariance/commit *)

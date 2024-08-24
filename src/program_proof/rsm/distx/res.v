@@ -52,6 +52,17 @@ Section res.
   Definition hist_repl_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
     ∃ hist, hist_repl_lb γ k hist ∗ ⌜hist !! ts = Some v⌝.
 
+  Lemma hist_repl_lookup γ k h ts v :
+    hist_repl_half γ k h -∗
+    hist_repl_at γ k ts v -∗
+    ⌜h !! ts = Some v⌝.
+  Proof.
+    iIntros "Hhalf (%lb & #Hlb & %Hv)".
+    iDestruct (hist_repl_prefix with "Hhalf Hlb") as %Hprefix.
+    iPureIntro.
+    by eapply prefix_lookup_Some.
+  Qed.
+
   Definition hist_cmtd_auth γ (k : dbkey) (h : dbhist) : iProp Σ.
   Admitted.
 
@@ -94,9 +105,6 @@ Section res.
     Persistent (hist_lnrz_lb α key hist).
   Admitted.
 
-  Definition hist_lnrz_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
-    ∃ lb, hist_lnrz_lb γ k lb ∗ ⌜lb !! ts = Some v⌝.
-
   Lemma hist_lnrz_update {γ k l} l' :
     prefix l l' ->
     hist_lnrz_auth γ k l ==∗
@@ -107,6 +115,26 @@ Section res.
     hist_lnrz_auth γ k l -∗
     hist_lnrz_lb γ k l.
   Admitted.
+
+  Lemma hist_lnrz_prefix {γ k h hlb} :
+    hist_lnrz_auth γ k h -∗
+    hist_lnrz_lb γ k hlb -∗
+    ⌜prefix hlb h⌝.
+  Admitted.
+
+  Definition hist_lnrz_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
+    ∃ lb, hist_lnrz_lb γ k lb ∗ ⌜lb !! ts = Some v⌝.
+
+  Lemma hist_lnrz_lookup γ k h ts v :
+    hist_lnrz_auth γ k h -∗
+    hist_lnrz_at γ k ts v -∗
+    ⌜h !! ts = Some v⌝.
+  Proof.
+    iIntros "Hauth (%lb & #Hlb & %Hv)".
+    iDestruct (hist_lnrz_prefix with "Hauth Hlb") as %Hprefix.
+    iPureIntro.
+    by eapply prefix_lookup_Some.
+  Qed.
 
   Definition ts_repl_half γ (k : dbkey) (ts : nat) : iProp Σ.
   Admitted.

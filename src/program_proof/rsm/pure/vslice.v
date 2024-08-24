@@ -92,4 +92,16 @@ Section lemma.
     destruct (m2 !! k) as [v |]; set_solver.
   Qed.
 
+  Lemma elem_of_dom_vslice (m : gmap K1 (gmap K2 V)) k1 k2 :
+    k1 ∈ dom (vslice m k2) ->
+    ∃ im, m !! k1 = Some im ∧ k2 ∈ dom im.
+  Proof.
+    intros Hin.
+    apply elem_of_dom in Hin as [v Hlookup].
+    rewrite lookup_vslice /dual_lookup in Hlookup.
+    destruct (m !! k1) as [im |]; last done.
+    exists im.
+    by split; last apply elem_of_dom.
+  Qed.
+
 End lemma.

@@ -27,7 +27,7 @@ Definition res_to_tmod (res : txnres) :=
 Definition resm_to_tmods (resm : gmap nat txnres) :=
   omap res_to_tmod resm.
 
-Definition cmtxn_in_past (resm : gmap nat txnres) (past : list action) :=
+Definition cmtxn_in_past (past : list action) (resm : gmap nat txnres) :=
   map_Forall (λ t m, ActCommit t m ∈ past) (resm_to_tmods resm).
 
 Lemma resm_to_tmods_insert_aborted resm ts :
@@ -214,10 +214,10 @@ Section inv.
       (* post-conditions not hold on the write set for the FCC case *)
       "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
-      "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
       "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
-      "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
+      "%Hcmtxn" ∷ ⌜cmtxn_in_past past resm⌝ ∗
       "%Hwrsm"  ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
       "%Hnz"    ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"    ∷ ⌜conflict_free future tmodcs⌝ ∗
@@ -250,10 +250,10 @@ Section inv.
       (* post-conditions not hold on the write set for the FCC case *)
       "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
-      "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
       "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
-      "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
+      "%Hcmtxn" ∷ ⌜cmtxn_in_past past resm⌝ ∗
       "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
@@ -289,10 +289,10 @@ Section inv.
       (* post-conditions not hold on the write set for the FCC case *)
       "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
-      "#Hpa" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
+      "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
       "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
-      "%Hcmtxn" ∷ ⌜cmtxn_in_past resm past⌝ ∗
+      "%Hcmtxn" ∷ ⌜cmtxn_in_past past resm⌝ ∗
       "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
