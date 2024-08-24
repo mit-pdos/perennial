@@ -270,6 +270,7 @@ Section inv.
     db_ptstos γ rds ∗
     txnsys_inv_with_future_no_ts γ future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    txnwrs_frag_excl γ tid ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
     txns_lnrz_receipt γ tid.
@@ -286,12 +287,19 @@ Section inv.
     iDestruct (keys_inv_after_linearize with "HkeysO") as "HkeysO".
     iDestruct (big_sepS_subseteq_difference_2 with "Hkeys HkeysO") as "Hkeys".
     { apply Hdomrds. }
+    assert (Hnotin : tid ∉ tids).
+    { intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
     (* Update [txns_lnrz_auth] and obtain a witness that [tid] has linearized. *)
     iMod (txns_lnrz_insert _ _ tid with "Htxnsl") as "[Htxnsl #Hlnrzed]".
-    { intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
+    { apply Hnotin. }
     (* Update [tids_excl_auth]. *)
     iMod (tids_excl_insert _ _ tid with "Hexcl") as "[Hexcl Hexcltid]".
-    { intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
+    { apply Hnotin. }
+    (* Allocate [txnwrs_frag_excl]. *)
+    assert (Hnotinwrsm : wrsm !! tid = None).
+    { rewrite -not_elem_of_dom Hdomw. apply Hnotin. }
+    iMod (txnwrs_allocate _ _ tid with "Hwrsm") as "[Hwrsm Hwrsmexcl]".
+    { apply Hnotinwrsm. }
     (* Update [txnpost_auth] and obtain a witness. *)
     iMod (txnpost_insert _ _ tid Qr with "Hpost") as "[Hpost #Htp]".
     { rewrite -not_elem_of_dom Hdomq. intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
@@ -302,6 +310,7 @@ Section inv.
       specialize (Htsge _ Htidx). simpl in Htsge.
       lia.
     }
+    (* Prove [tid ∉ dom wrsm]. *)
     destruct form as [| wrs | wrs]; simpl in Hcft.
     { (* Case: No commit in the entire list of actions. *)
       (* Add [(tid, NC)] to [tmodas]. *)
@@ -317,9 +326,11 @@ Section inv.
       unshelve epose proof (conflict_past_inv_linearize tid NC Hcft Hcp) as Hcp'.
       iFrame "∗ # %".
       iModIntro.
+      rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
+      iSplit; first done.
       iSplit.
       { by iApply big_sepM_insert_2. }
-      by rewrite dom_insert_L Hdomq.
+      by rewrite 2!dom_insert_L Hdomq Hdomw.
     }
     { (* Case: First commit incompatible with some previous actions. *)
       iAssert (partitioned_tids γ ({[tid]} ∪ tids) tmodcs (<[tid := FCI wrs]> tmodas) resm)%I
@@ -343,9 +354,11 @@ Section inv.
       }
       iFrame "∗ # %".
       iModIntro.
+      rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
+      iSplit; first done.
       iSplit.
       { by iApply big_sepM_insert_2. }
-      by rewrite dom_insert_L Hdomq.
+      by rewrite 2!dom_insert_L Hdomq Hdomw.
     }
     { (* Case: [Q rds wrs] does not hold. *)
       iAssert (partitioned_tids γ ({[tid]} ∪ tids) tmodcs (<[tid := FCC wrs]> tmodas) resm)%I
@@ -360,9 +373,11 @@ Section inv.
       unshelve epose proof (conflict_past_inv_linearize tid (FCC wrs) Hcft Hcp) as Hcp'.
       iFrame "∗ # %".
       iModIntro.
+      rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
+      iSplit; first done.
       iSplit.
       { by iApply big_sepM_insert_2. }
-      by rewrite dom_insert_L Hdomq.
+      by rewrite 2!dom_insert_L Hdomq Hdomw.
     }
   Qed.
 
@@ -383,6 +398,7 @@ Section inv.
     db_ptstos γ (wrs ∪ rds) ∗
     txnsys_inv_with_future_no_ts γ future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    txnwrs_frag_excl γ tid ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
     txns_lnrz_receipt γ tid.
@@ -394,18 +410,25 @@ Section inv.
     { apply Hdomrds. }
     iMod (keys_inv_witness_hist_lnrz_at with "Htslb Hpts Hkeys") as "(Hpts & Hkeys & #Hlbs)".
     { apply Hts. }
+    assert (Hnotin : tid ∉ tids).
+    { intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
     (* Update [txns_lnrz_auth] and obtain a witness that [tid] has linearized. *)
     iMod (txns_lnrz_insert _ _ tid with "Htxnsl") as "[Htxnsl #Hlnrzed]".
-    { intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
+    { apply Hnotin. }
     (* Update [tids_excl_auth]. *)
     iMod (tids_excl_insert _ _ tid with "Hexcl") as "[Hexcl Hexcltid]".
-    { intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
+    { apply Hnotin. }
     (* Prove [tmodcs !! tid = None]. *)
     iAssert (⌜tmodcs !! tid = None⌝)%I as %Hnotintmodcs.
     { iNamed "Hpart".
-      iDestruct (tids_excl_not_elem_of with "Hwcmts Hexcltid") as %Hnotin.
-      by rewrite not_elem_of_dom in Hnotin.
+      iDestruct (tids_excl_not_elem_of with "Hwcmts Hexcltid") as %Hnotintmodcs.
+      by rewrite not_elem_of_dom in Hnotintmodcs.
     }
+    (* Allocate [txnwrs_frag_excl]. *)
+    assert (Hnotinwrsm : wrsm !! tid = None).
+    { rewrite -not_elem_of_dom Hdomw. apply Hnotin. }
+    iMod (txnwrs_allocate _ _ tid with "Hwrsm") as "[Hwrsm Hwrsmexcl]".
+    { apply Hnotinwrsm. }
     (* Update [txnpost_auth] and obtain a witness. *)
     iMod (txnpost_insert _ _ tid Qr with "Hpost") as "[Hpost #Htp]".
     { rewrite -not_elem_of_dom Hdomq. intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
@@ -504,8 +527,12 @@ Section inv.
     iDestruct (big_sepS_subseteq_difference_2 with "Hkeys HkeysO") as "Hkeys".
     { apply Hdomrds. }
     iFrame "∗ # %".
+    iModIntro.
+    rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
+    iSplit; first done.
     iPureIntro.
-    split; first by rewrite dom_insert_L Hdomq.
+    rewrite 2!dom_insert_L Hdomq Hdomw.
+    do 3 (split; first done).
     split.
     { rewrite dom_insert_L.
       apply set_Forall_union; last apply Hnz.

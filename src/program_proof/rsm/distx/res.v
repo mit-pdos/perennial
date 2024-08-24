@@ -217,27 +217,45 @@ Section res.
   [safe_submit]. Without which we won't be able to prove that learning a commit
   under an aborted state is impossible, as a non-participant group could have
   received [CmdPrep] and aborted. *)
-  Definition txnwrs_auth γ (wrsm : gmap nat dbmap) : iProp Σ.
+  Definition txnwrs_auth γ (wrsm : gmap nat (option dbmap)) : iProp Σ.
   Admitted.
 
-  Definition txnwrs_receipt γ (ts : nat) (wrs : dbmap) : iProp Σ.
+  Definition txnwrs_frag γ (ts : nat) (dq : dfrac) (owrs : option dbmap) : iProp Σ.
   Admitted.
+
+  Definition txnwrs_frag_excl γ (ts : nat) :=
+    txnwrs_frag γ ts (DfracOwn 1) None.
+
+  Definition txnwrs_receipt γ (ts : nat) (wrs : dbmap) :=
+    txnwrs_frag γ ts DfracDiscarded (Some wrs).
 
   #[global]
   Instance txnwrs_receipt_persistent γ ts wrs  :
     Persistent (txnwrs_receipt γ ts wrs).
   Admitted.
 
+  Lemma txnwrs_allocate γ owrsm ts :
+    owrsm !! ts = None ->
+    txnwrs_auth γ owrsm ==∗
+    txnwrs_auth γ (<[ts := None]> owrsm) ∗ txnwrs_frag_excl γ ts.
+  Admitted.
+
+  Lemma txnwrs_set γ owrsm ts wrs :
+    txnwrs_auth γ owrsm -∗
+    txnwrs_frag_excl γ ts ==∗
+    txnwrs_auth γ (<[ts := Some wrs]> owrsm) ∗ txnwrs_receipt γ ts wrs.
+  Admitted.
+
+  Lemma txnwrs_lookup γ owrsm ts wrs :
+    txnwrs_auth γ owrsm -∗
+    txnwrs_receipt γ ts wrs -∗
+    ⌜owrsm !! ts = Some (Some wrs)⌝.
+  Admitted.
+
   Lemma txnwrs_receipt_agree γ ts wrs1 wrs2 :
     txnwrs_receipt γ ts wrs1 -∗
     txnwrs_receipt γ ts wrs2 -∗
     ⌜wrs2 = wrs1⌝.
-  Admitted.
-
-  Lemma txnwrs_lookup γ wrsm ts wrs :
-    txnwrs_auth γ wrsm -∗
-    txnwrs_receipt γ ts wrs -∗
-    ⌜wrsm !! ts = Some wrs⌝.
   Admitted.
 
   (* Custom transaction status. *)

@@ -27,6 +27,28 @@ Definition res_to_tmod (res : txnres) :=
 Definition resm_to_tmods (resm : gmap nat txnres) :=
   omap res_to_tmod resm.
 
+Definition wrsm_dbmap (wrsm : gmap nat (option dbmap)) :=
+  omap id wrsm.
+
+Lemma lookup_wrsm_dbmap_Some wrsm ts wrs :
+  wrsm !! ts = Some (Some wrs) ->
+  wrsm_dbmap wrsm !! ts = Some wrs.
+Proof. intros Hwrsm. by rewrite /wrsm_dbmap lookup_omap Hwrsm /=. Qed.
+
+Lemma wrsm_dbmap_insert_Some wrsm ts wrs :
+  wrsm_dbmap (<[ts := Some wrs]> wrsm) = <[ts := wrs]> (wrsm_dbmap wrsm).
+Proof. by rewrite /wrsm_dbmap (omap_insert_Some _ _ _ _ wrs). Qed.
+
+Lemma wrsm_dbmap_insert_None wrsm ts :
+  wrsm !! ts = None ->
+  wrsm_dbmap (<[ts := None]> wrsm) = wrsm_dbmap wrsm.
+Proof.
+  intros Hnotin.
+  rewrite /wrsm_dbmap omap_insert_None; last done.
+  rewrite delete_notin; first done.
+  by rewrite lookup_omap Hnotin /=.
+Qed.
+
 Definition cmtxn_in_past (past : list action) (resm : gmap nat txnres) :=
   map_Forall (λ t m, ActCommit t m ∈ past) (resm_to_tmods resm).
 
@@ -150,6 +172,12 @@ Section inv.
   Definition correct_wrs γ ts wrs : iProp Σ :=
     ∃ Q, txnpost_receipt γ ts Q ∗ ⌜Q wrs⌝.
 
+  Definition correct_owrs γ ts owrs : iProp Σ :=
+    match owrs with
+    | Some wrs => correct_wrs γ ts wrs
+    | _ => True
+    end.
+
   Definition incorrect_wrs γ ts wrs : iProp Σ :=
     ∃ Q, txnpost_receipt γ ts Q ∗ ⌜not (Q wrs)⌝.
 
@@ -188,7 +216,7 @@ Section inv.
   Definition txnsys_inv γ : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (future past : list action)
       (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
-      (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
+      (resm : gmap nat txnres) (wrsm : gmap nat (option dbmap)),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
       (* witnesses of txn linearization *)
@@ -210,15 +238,16 @@ Section inv.
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       (* post-conditions hold on the write-set map *)
-      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ wrsm, correct_wrs γ tid wrs) ∗
+      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ (wrsm_dbmap wrsm), correct_wrs γ tid wrs) ∗
       (* post-conditions not hold on the write set for the FCC case *)
       "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
       "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
+      "%Hdomw" ∷ ⌜dom wrsm = tids⌝ ∗
       "%Hcmtxn" ∷ ⌜cmtxn_in_past past resm⌝ ∗
-      "%Hwrsm"  ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
+      "%Hwrsm"  ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) (wrsm_dbmap wrsm)⌝ ∗
       "%Hnz"    ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"    ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"    ∷ ⌜conflict_past past future tmodas⌝.
@@ -226,7 +255,7 @@ Section inv.
   Definition txnsys_inv_no_future γ future : iProp Σ :=
     ∃ (ts : nat) (tids : gset nat) (past : list action)
       (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
-      (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
+      (resm : gmap nat txnres) (wrsm : gmap nat (option dbmap)),
       (* global timestamp *)
       "Hts"    ∷ ts_auth γ ts ∗
       (* witnesses of txn linearization *)
@@ -246,15 +275,16 @@ Section inv.
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       (* post-conditions hold on the write-set map *)
-      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ wrsm, correct_wrs γ tid wrs) ∗
+      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ (wrsm_dbmap wrsm), correct_wrs γ tid wrs) ∗
       (* post-conditions not hold on the write set for the FCC case *)
       "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
       "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
+      "%Hdomw" ∷ ⌜dom wrsm = tids⌝ ∗
       "%Hcmtxn" ∷ ⌜cmtxn_in_past past resm⌝ ∗
-      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
+      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) (wrsm_dbmap wrsm)⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
@@ -267,7 +297,7 @@ Section inv.
   Definition txnsys_inv_with_future_no_ts γ future ts : iProp Σ :=
     ∃ (tids : gset nat) (past : list action)
       (tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
-      (resm : gmap nat txnres) (wrsm : gmap nat dbmap),
+      (resm : gmap nat txnres) (wrsm : gmap nat (option dbmap)),
       (* witnesses of txn linearization *)
       "Htxnsl" ∷ txns_lnrz_auth γ tids ∗
       (* exclusive transaction IDs *)
@@ -285,15 +315,16 @@ Section inv.
       (* safe commit/abort invariant *)
       "#Hvr" ∷ ([∗ map] tid ↦ res ∈ resm, valid_res γ tid res) ∗
       (* post-conditions hold on the write-set map *)
-      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ wrsm, correct_wrs γ tid wrs) ∗
+      "#Hcwrs" ∷ ([∗ map] tid ↦ wrs ∈ (wrsm_dbmap wrsm), correct_wrs γ tid wrs) ∗
       (* post-conditions not hold on the write set for the FCC case *)
       "#Hiwrs" ∷ ([∗ map] tid ↦ form ∈ tmodas, incorrect_fcc γ tid form) ∗
       (* past action witnesses *)
       "#Hpas" ∷ ([∗ list] a ∈ past, past_action_witness γ a) ∗
       "%Htsge" ∷ ⌜ge_all ts tids⌝ ∗
       "%Hdomq" ∷ ⌜dom posts = tids⌝ ∗
+      "%Hdomw" ∷ ⌜dom wrsm = tids⌝ ∗
       "%Hcmtxn" ∷ ⌜cmtxn_in_past past resm⌝ ∗
-      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) wrsm⌝ ∗
+      "%Hwrsm" ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) (wrsm_dbmap wrsm)⌝ ∗
       "%Hnz"   ∷ ⌜nz_all (dom tmodcs)⌝ ∗
       "%Hcf"   ∷ ⌜conflict_free future tmodcs⌝ ∗
       "%Hcp"   ∷ ⌜conflict_past past future tmodas⌝.
