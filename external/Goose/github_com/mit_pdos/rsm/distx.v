@@ -553,8 +553,23 @@ Definition Txn := struct.decl [
   "ts" :: uint64T;
   "rgs" :: mapT ptrT;
   "wrs" :: mapT (mapT (struct.t Value));
-  "ptgs" :: slice.T uint64T
+  "ptgs" :: slice.T uint64T;
+  "proph" :: ProphIdT
 ].
+
+Notation ProphId := ProphIdT (only parsing).
+
+Definition ResolveRead: val :=
+  rec: "ResolveRead" "p" "tid" "key" :=
+    #().
+
+Definition ResolveAbort: val :=
+  rec: "ResolveAbort" "p" "tid" :=
+    #().
+
+Definition ResolveCommit: val :=
+  rec: "ResolveCommit" "p" "tid" "wrs" :=
+    #().
 
 Definition GetTS: val :=
   rec: "GetTS" <> :=
@@ -594,24 +609,38 @@ Definition Txn__prepare: val :=
         Continue));;
     ![uint64T] "status".
 
+Definition Txn__reset: val :=
+  rec: "Txn__reset" "txn" :=
+    #().
+
 Definition Txn__commit: val :=
   rec: "Txn__commit" "txn" :=
+    ResolveCommit (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") (struct.loadF Txn "wrs" "txn");;
     ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
       (let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
       let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
       (if: (MapLen "pwrs") ≠ #0
       then ReplicaGroup__Commit "rg" (struct.loadF Txn "ts" "txn")
       else #()));;
+    Txn__reset "txn";;
     #().
 
 Definition Txn__abort: val :=
   rec: "Txn__abort" "txn" :=
+    ResolveAbort (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn");;
     ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
       (let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
       let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
       (if: (MapLen "pwrs") ≠ #0
       then ReplicaGroup__Abort "rg" (struct.loadF Txn "ts" "txn")
       else #()));;
+    Txn__reset "txn";;
+    #().
+
+Definition Txn__cancel: val :=
+  rec: "Txn__cancel" "txn" :=
+    ResolveAbort (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn");;
+    Txn__reset "txn";;
     #().
 
 Definition KeyToGroup: val :=
@@ -657,11 +686,15 @@ Definition Txn__Run: val :=
     Txn__begin "txn";;
     let: "cmt" := "body" "txn" in
     (if: (~ "cmt")
-    then #false
+    then
+      Txn__cancel "txn";;
+      #false
     else
       let: "status" := Txn__prepare "txn" in
       (if: "status" = TXN_COMMITTED
-      then #true
+      then
+        Txn__reset "txn";;
+        #true
       else
         (if: "status" = TXN_ABORTED
         then

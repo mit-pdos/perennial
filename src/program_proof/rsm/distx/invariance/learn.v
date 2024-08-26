@@ -5,13 +5,13 @@ From Perennial.program_proof.rsm.distx.invariance Require Import
 Section inv.
   Context `{!distx_ghostG Σ}.
 
-  Lemma group_inv_learn γ gid cpool cmds :
+  Lemma group_inv_learn γ p gid cpool cmds :
     ∀ log,
     cpool_subsume_log cpool (log ++ cmds) ->
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
-    txnsys_inv γ ∗
+    txnsys_inv γ p ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log_with_cpool γ gid (log ++ cmds) cpool.
   Proof.

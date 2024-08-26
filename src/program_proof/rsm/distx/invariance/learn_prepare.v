@@ -72,11 +72,50 @@ Section inv.
     by iApply "Htks".
   Qed.
 
-  Lemma key_inv_not_committed γ gid ts pm key kmodc tpl :
+  Lemma txnsys_inv_learn_prepare_failed γ p ts :
+    some_aborted γ ts -∗
+    txnsys_inv γ p ==∗
+    txnsys_inv γ p ∗
+    txnres_abt γ ts.
+  Proof.
+    iIntros "#Habt Htxn".
+    iNamed "Htxn".
+    destruct (resm !! ts) as [res |] eqn:Hres; last first.
+    { (* Case: [ts] has neither aborted nor committed yet. *)
+      iMod (txnres_insert ts ResAborted with "Hresm") as "Hresm"; first done.
+      iDestruct (txnres_witness with "Hresm") as "#Hreceipt".
+      { apply lookup_insert. }
+      iFrame "∗ # %".
+      iNamed "Hpart".
+      rewrite /partitioned_tids resm_to_tmods_insert_aborted; last by left.
+      rewrite big_sepM_insert; last done.
+      iFrame "∗ #".
+      iPureIntro.
+      split; first set_solver.
+      rewrite /cmtxn_in_past resm_to_tmods_insert_aborted; last by left.
+      split; last done.
+      intros t m Htm.
+      specialize (Htidcs _ _ Htm). simpl in Htidcs.
+      destruct Htidcs as [? | Hresmc]; first by left.
+      destruct (decide (t = ts)) as [-> | Hne].
+      { by rewrite Hresmc in Hres. }
+      by rewrite lookup_insert_ne; first right.
+    }
+    destruct res as [wrsc |]; last first.
+    { (* Case: [ts] aborted; get a witness without any update. *)
+      iDestruct (txnres_witness with "Hresm") as "#Hreceipt"; first apply Hres.
+      by iFrame "∗ # %".
+    }
+    (* Case: [ts] committed; contradiction. *)
+    iDestruct (big_sepM_lookup with "Hvr") as "#Hprep"; first apply Hres.
+    iDestruct (all_prepared_some_aborted with "Hprep Habt") as %[].
+  Qed.
+
+  Lemma key_inv_not_committed γ p gid ts pm key kmodc tpl :
     gid = key_to_group key ->
     pm !! ts = None ->
     txnprep_auth γ gid pm -∗
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     key_inv_with_kmodc_no_repl_tsprep γ key kmodc tpl.1 tpl.2 -∗
     ⌜kmodc !! ts = None⌝.
   Proof.
@@ -123,15 +162,15 @@ Section inv.
     by eapply vslice_resm_to_tmods_not_terminated.
   Qed.
 
-  Lemma keys_inv_not_committed γ gid ts pm tpls :
+  Lemma keys_inv_not_committed γ p gid ts pm tpls :
     set_Forall (λ k, key_to_group k = gid) (dom tpls) ->
     pm !! ts = None ->
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
     txnprep_auth γ gid pm -∗
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_xcmted_no_repl_tsprep γ key tpl.1 tpl.2 ts) ∗
     txnprep_auth γ gid pm ∗
-    txnsys_inv γ.
+    txnsys_inv γ p.
   Proof.
     iIntros (Hgid Hnone) "Hkeys Hst Htxn".
     iApply (big_sepM_impl_res with "Hkeys [Hst Htxn]").
@@ -195,12 +234,12 @@ Section inv.
   
   (* TODO: make proof closer to [learn_commit]; i.e., take only the required
   tuples out rather than all tuples in the group invariants. *)
-  Lemma group_inv_learn_prepare γ gid log cpool ts pwrs :
+  Lemma group_inv_learn_prepare γ p gid log cpool ts pwrs :
     CmdPrep ts pwrs ∈ cpool ->
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
-    txnsys_inv γ ∗
+    txnsys_inv γ p ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log_with_cpool γ gid (log ++ [CmdPrep ts pwrs]) cpool.
   Proof.
@@ -232,7 +271,7 @@ Section inv.
       { apply Hc. }
       iDestruct "Hprep" as (wrs) "(Hwrs & %Hnz & %Hpwrs)".
       (* Obtain evidence that [ts] has aborted. *)
-      iMod (txnsys_inv_abort with "[Hwrs Hunp] Htxn") as "[Htxn #Habt]".
+      iMod (txnsys_inv_learn_prepare_failed with "[Hwrs Hunp] Htxn") as "[Htxn #Habt]".
       { iFrame "#". iPureIntro.
         destruct Hpwrs as (_ & Hne & Hgid).
         by eapply wrs_group_elem_of_ptgroups.

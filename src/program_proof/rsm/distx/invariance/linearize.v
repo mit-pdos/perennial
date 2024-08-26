@@ -1,6 +1,6 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 
-Lemma conflict_past_inv_linearize {past future tmodas} ts form :
+Lemma conflict_past_inv_linearize_abort {past future tmodas} ts form :
   conflict_cases past future ts form ->
   conflict_past past future tmodas ->
   conflict_past past future (<[ts := form]> tmodas).
@@ -257,19 +257,20 @@ Section inv.
     lia.
   Qed.
 
-  Lemma txnsys_inv_linearize_abort {γ ts tid future rds} form Q :
-    let Qr := λ wrs, Q rds wrs ∧ dom wrs ⊆ dom rds in
+  Lemma txnsys_inv_linearize_abort {γ p ts tid future rds} form Q :
+    let Qr := λ m, Q rds (m ∪ rds) ∧ dom m ⊆ dom rds in
     dom rds ⊆ keys_all ->
     (ts < tid)%nat ->
     conflict_cases [] future tid form ->
     incorrect_fcc Qr form ->
     ts_lb γ tid -∗
     db_ptstos γ rds -∗
-    txnsys_inv_with_future_no_ts γ future ts -∗
+    txnsys_inv_with_future_no_ts γ p future ts -∗
     ([∗ set] key ∈ keys_all, key_inv_linearizable_after γ key ts) ==∗
     db_ptstos γ rds ∗
-    txnsys_inv_with_future_no_ts γ future tid ∗
+    txnsys_inv_with_future_no_ts γ p future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    txns_abt_elem γ tid ∗
     txnwrs_excl γ tid ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
@@ -300,6 +301,9 @@ Section inv.
     { rewrite -not_elem_of_dom Hdomw. apply Hnotin. }
     iMod (txnwrs_allocate _ _ tid with "Hwrsm") as "[Hwrsm Hwrsmexcl]".
     { apply Hnotinwrsm. }
+    (* Allocate [txns_abt_elem]. *)
+    iMod (txns_abt_insert tid with "Htidas") as "[Htidas Htida]".
+    { set_solver. }
     (* Update [txnpost_auth] and obtain a witness. *)
     iMod (txnpost_insert _ _ tid Qr with "Hpost") as "[Hpost #Htp]".
     { rewrite -not_elem_of_dom Hdomq. intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
@@ -310,94 +314,64 @@ Section inv.
       specialize (Htsge _ Htidx). simpl in Htsge.
       lia.
     }
-    (* Prove [tid ∉ dom wrsm]. *)
-    destruct form as [| wrs | wrs]; simpl in Hcft.
-    { (* Case: No commit in the entire list of actions. *)
-      (* Add [(tid, NC)] to [tmodas]. *)
-      iAssert (partitioned_tids γ ({[tid]} ∪ tids) tmodcs (<[tid := NC]> tmodas) resm)%I
-        with "[Hpart Hexcltid]" as "Hpart".
-      { iNamed "Hpart".
-        iDestruct (big_sepS_insert_2 with "Hexcltid Hwabts") as "Hwabts".
-        rewrite /partitioned_tids dom_insert_L.
-        iFrame.
-        iPureIntro.
-        set_solver.
-      }
-      unshelve epose proof (conflict_past_inv_linearize tid NC Hcft Hcp) as Hcp'.
-      iFrame "∗ # %".
-      iModIntro.
-      rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
-      iSplit; first done.
-      iSplit.
-      { by iApply big_sepM_insert_2. }
-      by rewrite 2!dom_insert_L Hdomq Hdomw.
+    (* Add [(tid, form)] to [tmodas]. *)
+    iAssert (partitioned_tids γ ({[tid]} ∪ tids) tmodcs (<[tid := form]> tmodas) resm)%I
+      with "[Hpart Hexcltid]" as "Hpart".
+    { iNamed "Hpart".
+      iDestruct (big_sepS_insert_2 with "Hexcltid Hwabts") as "Hwabts".
+      rewrite /partitioned_tids dom_insert_L.
+      iFrame.
+      iPureIntro.
+      set_solver.
     }
-    { (* Case: First commit incompatible with some previous actions. *)
-      iAssert (partitioned_tids γ ({[tid]} ∪ tids) tmodcs (<[tid := FCI wrs]> tmodas) resm)%I
-        with "[Hpart Hexcltid]" as "Hpart".
-      { iNamed "Hpart".
-        iDestruct (big_sepS_insert_2 with "Hexcltid Hwabts") as "Hwabts".
-        rewrite /partitioned_tids dom_insert_L.
-        iFrame.
-        iPureIntro.
-        set_solver.
-      }
-      unshelve epose proof (conflict_past_inv_linearize tid (FCI wrs) _ Hcp) as Hcp'.
-      { destruct Hcft as (lp & ls & Hfc & Hincomp). simpl in Hincomp.
-        exists lp, ls.
-        split; first apply Hfc.
-        rewrite /incompatible_exists Exists_exists in Hincomp.
-        destruct Hincomp as (a & Halp & Hincomp).
-        rewrite /incompatible_exists Exists_exists.
-        exists a.
-        split; [set_solver | done].
-      }
-      iFrame "∗ # %".
-      iModIntro.
-      rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
-      iSplit; first done.
-      iSplit.
-      { by iApply big_sepM_insert_2. }
-      by rewrite 2!dom_insert_L Hdomq Hdomw.
+    assert (Hcftcases : conflict_cases past future tid form).
+    { destruct form as [| | wrs | wrs]; simpl in Hcft; [done | done | | done].
+      destruct Hcft as (lp & ls & Hfc & Hincomp). simpl in Hincomp.
+      exists lp, ls.
+      split; first apply Hfc.
+      rewrite /incompatible_exists Exists_exists in Hincomp.
+      destruct Hincomp as (a & Halp & Hincomp).
+      rewrite /incompatible_exists Exists_exists.
+      exists a.
+      split; [set_solver | done].
     }
-    { (* Case: [Q rds wrs] does not hold. *)
-      iAssert (partitioned_tids γ ({[tid]} ∪ tids) tmodcs (<[tid := FCC wrs]> tmodas) resm)%I
-        with "[Hpart Hexcltid]" as "Hpart".
-      { iNamed "Hpart".
-        iDestruct (big_sepS_insert_2 with "Hexcltid Hwabts") as "Hwabts".
-        rewrite /partitioned_tids dom_insert_L.
-        iFrame.
-        iPureIntro.
-        set_solver.
-      }
-      unshelve epose proof (conflict_past_inv_linearize tid (FCC wrs) Hcft Hcp) as Hcp'.
-      iFrame "∗ # %".
-      iModIntro.
-      rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
-      iSplit; first done.
-      iSplit.
+    (* Re-establish [conflict_past] w.r.t. linearize-abort. *)
+    pose proof (conflict_past_inv_linearize_abort tid form Hcftcases Hcp) as Hcp''.
+    (* Re-establish [incorrect_wrs_in_fcc] w.r.t. linearize-abort. *)
+    iAssert ([∗ map] t ↦ f ∈ <[tid := form]> tmodas, incorrect_wrs_in_fcc γ t f)%I as "#Hinwrs'".
+    { destruct form as [| | wrs | wrs].
+      { by iApply big_sepM_insert_2. }
+      { by iApply big_sepM_insert_2. }
+      { by iApply big_sepM_insert_2. }
       { iApply big_sepM_insert_2; [iFrame "# %" | done]. }
-      by rewrite 2!dom_insert_L Hdomq Hdomw.
     }
+    iFrame "∗ # %".
+    iModIntro.
+    rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
+    iSplit; first done.
+    iPureIntro.
+    split; first set_solver.
+    by rewrite 3!dom_insert_L Hdomq Hdomw Htidas.
   Qed.
 
   (* Do this at linearization point:
      destruct (decide (Q rds wrs ∧ dom wrs ⊆ dom rds)) as [[_ Hdomwrs] | Hneg]; last first.
    *)
 
-  Lemma txnsys_inv_linearize_commit {γ ts tid future rds wrs} Q :
-    let Qr := λ wrs, Q rds wrs ∧ dom wrs ⊆ dom rds in
+  Lemma txnsys_inv_linearize_commit {γ p ts tid future rds} wrs Q :
+    let Qr := λ m, Q rds (m ∪ rds) ∧ dom m ⊆ dom rds in
     dom wrs ⊆ dom rds ->
     dom rds ⊆ keys_all ->
     (ts < tid)%nat ->
     first_commit_compatible future tid wrs ->
     ts_lb γ tid -∗
     db_ptstos γ rds -∗
-    txnsys_inv_with_future_no_ts γ future ts -∗
+    txnsys_inv_with_future_no_ts γ p future ts -∗
     ([∗ set] key ∈ keys_all, key_inv_linearizable_after γ key ts) ==∗
     db_ptstos γ (wrs ∪ rds) ∗
-    txnsys_inv_with_future_no_ts γ future tid ∗
+    txnsys_inv_with_future_no_ts γ p future tid ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    txns_cmt_elem γ tid wrs ∗
     txnwrs_excl γ tid ∗
     txnpost_receipt γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
@@ -429,6 +403,9 @@ Section inv.
     { rewrite -not_elem_of_dom Hdomw. apply Hnotin. }
     iMod (txnwrs_allocate _ _ tid with "Hwrsm") as "[Hwrsm Hwrsmexcl]".
     { apply Hnotinwrsm. }
+    (* Allocate [txns_cmt_elem]. *)
+    iMod (txns_cmt_insert tid wrs with "Htidcs") as "[Htidcs Htidc]".
+    { rewrite -not_elem_of_dom. set_solver. }
     (* Update [txnpost_auth] and obtain a witness. *)
     iMod (txnpost_insert _ _ tid Qr with "Hpost") as "[Hpost #Htp]".
     { rewrite -not_elem_of_dom Hdomq. intros Hin. specialize (Htsge _ Hin). simpl in Htsge. lia. }
@@ -531,6 +508,16 @@ Section inv.
     rewrite wrsm_dbmap_insert_None; last apply Hnotinwrsm.
     iSplit; first done.
     iPureIntro.
+    split; first set_solver.
+    split.
+    { clear -Htidcs.
+      intros t m Htm. revert Htm.
+      destruct (decide (t = tid)) as [-> | Hne].
+      { rewrite 2!lookup_insert. inv 1. by left. }
+      do 2 (rewrite lookup_insert_ne; last done).
+      intros Htm.
+      by specialize (Htidcs _ _ Htm).
+    }
     rewrite 2!dom_insert_L Hdomq Hdomw.
     do 3 (split; first done).
     split.

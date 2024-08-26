@@ -135,8 +135,9 @@ Proof.
   intros Hhead Hcp ts form Hform.
   specialize (Hcp _ _ Hform). simpl in Hcp.
   rewrite /conflict_cases in Hcp.
-  destruct form as [| wrsx | wrsx]; simpl.
-  - by apply no_commit_inv_tail_future.
+  destruct form as [| | wrsx | wrsx]; simpl.
+  - by apply no_commit_abort_inv_tail_future.
+  - by unshelve eapply (first_abort_inv_tail_future _ _ _ _ Hhead).
   - by apply first_commit_incompatible_inv_snoc_past_tail_future.
   - by unshelve eapply (first_commit_compatible_inv_tail_future _ _ _ _ _ Hhead).
 Qed.

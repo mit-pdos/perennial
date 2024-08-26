@@ -40,15 +40,15 @@ Section inv.
     by iApply "Htks".
   Qed.
 
-  Lemma keys_inv_committed γ ts pwrs wrs tpls :
+  Lemma keys_inv_committed γ p ts pwrs wrs tpls :
     dom tpls = dom pwrs ->
     pwrs ⊆ wrs ->
     map_Forall (λ _ t, t.2 = ts) tpls ->
     txnres_cmt γ ts wrs -∗
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     ([∗ map] key ↦ tpl; v ∈ tpls; pwrs, key_inv_cmted_no_repl_tsprep γ key tpl.1 ts v) ∗
-    txnsys_inv γ.
+    txnsys_inv γ p.
   Proof.
     iIntros (Hdom Hwrs Hts) "#Hcmt Htpls Htxn".
     iApply (big_sepM_sepM2_impl_res with "Htpls Htxn"); first done.
@@ -66,10 +66,10 @@ Section inv.
     by iFrame "∗ # %".
   Qed.
 
-  Lemma txnsys_inv_has_prepared γ gid ts wrs :
+  Lemma txnsys_inv_has_prepared γ p gid ts wrs :
     gid ∈ ptgroups (dom wrs) ->
     txnres_cmt γ ts wrs -∗
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     txnprep_prep γ gid ts.
   Proof.
     iIntros (Hptg) "Hres Htxn".
@@ -125,12 +125,12 @@ Section inv.
     by inversion_clear Ht2.
   Qed.
 
-  Lemma group_inv_learn_commit γ gid log cpool ts :
+  Lemma group_inv_learn_commit γ p gid log cpool ts :
     cpool_subsume_log cpool (log ++ [CmdCmt ts]) ->
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
-    txnsys_inv γ ∗
+    txnsys_inv γ p ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log_with_cpool γ gid (log ++ [CmdCmt ts]) cpool.
   Proof.

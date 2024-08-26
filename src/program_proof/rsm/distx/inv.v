@@ -11,20 +11,20 @@ Section inv.
   Definition distxNS := sysNS .@ "distx".
   Definition tsNS := sysNS .@ "ts".
 
-  Definition distx_inv γ : iProp Σ :=
+  Definition distx_inv γ p : iProp Σ :=
     (* txn invariants *)
-    "Htxn"    ∷ txnsys_inv γ ∗
+    "Htxnsys" ∷ txnsys_inv γ p ∗
     (* keys invariants *)
     "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)
     "Hgroups" ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid).
 
   #[global]
-  Instance distx_inv_timeless γ :
-    Timeless (distx_inv γ).
+  Instance distx_inv_timeless γ p :
+    Timeless (distx_inv γ p).
   Admitted.
 
-  Definition know_distx_inv γ : iProp Σ :=
-    inv distxNS (distx_inv γ).
+  Definition know_distx_inv γ p : iProp Σ :=
+    inv distxNS (distx_inv γ p).
 
 End inv.

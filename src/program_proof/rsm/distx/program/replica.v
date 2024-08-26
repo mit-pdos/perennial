@@ -402,8 +402,8 @@ Section program.
     by iFrame "∗ %".
   Qed.
 
-  Theorem wp_Replica__QueryTxnStatus (rp : loc) (ts : u64) (gid : groupid) γ α :
-    know_distx_inv γ -∗
+  Theorem wp_Replica__QueryTxnStatus (rp : loc) (ts : u64) (gid : groupid) γ p α :
+    know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__QueryTxnStatus #rp #ts
@@ -456,11 +456,11 @@ Section program.
   Qed.
 
   Theorem wp_Replica__QueryTxnStatus_xrunning
-    (rp : loc) (ts : u64) (gid : groupid) logp lsnp γ α :
+    (rp : loc) (ts : u64) (gid : groupid) logp lsnp γ p α :
     (∃ pwrs, logp !! lsnp = Some (CmdPrep (uint.nat ts) pwrs)) ->
     clog_lb γ gid logp -∗
     lsn_applied_lb α lsnp -∗
-    know_distx_inv γ -∗
+    know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__QueryTxnStatus #rp #ts
@@ -635,9 +635,9 @@ Section program.
 
   Theorem wp_Replica__Prepare
     (rp : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) (pwrs : dbmap)
-    (gid : groupid) γ α :
+    (gid : groupid) γ p α :
     safe_prepare γ gid (uint.nat ts) pwrs -∗
-    know_distx_inv γ -∗
+    know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
     {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
       Replica__Prepare #rp #ts (to_val pwrsS)
@@ -689,7 +689,7 @@ Section program.
     iDestruct (group_inv_merge_cpool with "Hcpool Hgroup") as "Hgroup".
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod "Hmask" as "_".
-    iMod ("HinvC" with "[Htxn Hkeys Hgroups]") as "_"; first by iFrame.
+    iMod ("HinvC" with "[Htxnsys Hkeys Hgroups]") as "_"; first by iFrame.
     iIntros "!>" (lsn term) "#Hcmd".
     wp_pures.
 
@@ -734,9 +734,9 @@ Section program.
     by iApply ("HΦ" $! (Some ret)).
   Qed.
 
-  Theorem wp_Replica__Abort (rp : loc) (ts : u64) (gid : groupid) γ α :
+  Theorem wp_Replica__Abort (rp : loc) (ts : u64) (gid : groupid) γ p α :
     safe_abort γ (uint.nat ts) -∗
-    know_distx_inv γ -∗
+    know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Abort #rp #ts
@@ -778,7 +778,7 @@ Section program.
     iDestruct (group_inv_merge_cpool with "Hcpool Hgroup") as "Hgroup".
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod "Hmask" as "_".
-    iMod ("HinvC" with "[Htxn Hkeys Hgroups]") as "_"; first by iFrame.
+    iMod ("HinvC" with "[Htxnsys Hkeys Hgroups]") as "_"; first by iFrame.
     iIntros "!>" (lsn term) "#Hcmd".
     wp_pures.
     wp_if_destruct; first by iApply "HΦ".
@@ -801,9 +801,9 @@ Section program.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_Replica__Commit (rp : loc) (ts : u64) (wrs : dbmap) (gid : groupid) γ α :
+  Theorem wp_Replica__Commit (rp : loc) (ts : u64) (wrs : dbmap) (gid : groupid) γ p α :
     safe_commit γ gid (uint.nat ts) -∗
-    know_distx_inv γ -∗
+    know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Commit #rp #ts
@@ -845,7 +845,7 @@ Section program.
     iDestruct (group_inv_merge_cpool with "Hcpool Hgroup") as "Hgroup".
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod "Hmask" as "_".
-    iMod ("HinvC" with "[Htxn Hkeys Hgroups]") as "_"; first by iFrame.
+    iMod ("HinvC" with "[Htxnsys Hkeys Hgroups]") as "_"; first by iFrame.
     iIntros "!>" (lsn term) "#Hcmd".
     wp_pures.
     wp_if_destruct; first by iApply "HΦ".
@@ -868,9 +868,9 @@ Section program.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_Replica__Read (rp : loc) (ts : u64) (key : string) (gid : groupid) γ α :
+  Theorem wp_Replica__Read (rp : loc) (ts : u64) (key : string) (gid : groupid) γ p α :
     safe_read gid (uint.nat ts) key ->
-    know_distx_inv γ -∗
+    know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Read #rp #ts #(LitString key)
@@ -914,7 +914,7 @@ Section program.
     iDestruct (group_inv_merge_cpool with "Hcpool Hgroup") as "Hgroup".
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod "Hmask" as "_".
-    iMod ("HinvC" with "[Htxn Hkeys Hgroups]") as "_"; first by iFrame.
+    iMod ("HinvC" with "[Htxnsys Hkeys Hgroups]") as "_"; first by iFrame.
     iIntros "!>" (lsn term) "#Hcmd".
     wp_pures.
     wp_if_destruct; wp_pures; first by iApply ("HΦ" $! None).
@@ -2031,8 +2031,8 @@ Section program.
     }
   Qed.
 
-  Theorem wp_Replica__Start (rp : loc) (gid : groupid) γ α :
-    know_distx_inv γ -∗
+  Theorem wp_Replica__Start (rp : loc) (gid : groupid) γ p α :
+    know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
     {{{ True }}}
       Replica__Start #rp
@@ -2118,7 +2118,7 @@ Section program.
     iDestruct (log_witness with "Hpaxos") as "#Hlbnew".
     subst paxos'.
     (* Re-establish the group invariant w.r.t. the new log. *)
-    iMod (group_inv_learn with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
+    iMod (group_inv_learn with "Htxnsys Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
     { apply Hincl. }
     (* (* Obtain state machine safety for the new log. *) *)
     iAssert (⌜not_stuck (apply_cmds (paxos ++ cmds))⌝)%I as %Hns.
@@ -2185,7 +2185,7 @@ Section program.
       { by rewrite /apply_cmds foldl_app /= apply_cmds_unfold Hrsm Happly. }
       iDestruct (group_inv_merge_log with "Hlog Hgroup") as "Hgroup".
       iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
-      iMod ("HinvC" with "[$Htxn $Hkeys $Hgroups]") as "_".
+      iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups]") as "_".
       by iFrame "#".
     }
     iMod "Hlbs" as "#Hlbs".

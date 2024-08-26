@@ -3,14 +3,14 @@ From Perennial.program_proof.rsm.distx Require Import prelude.
 Section inv.
   Context `{!distx_ghostG Σ}.
 
-  Lemma txnsys_inv_preprepare γ Qr tid wrs :
+  Lemma txnsys_inv_preprepare γ p Qr tid wrs :
     valid_ts tid ->
     valid_wrs wrs ->
     Qr wrs ->
     txnpost_receipt γ tid Qr -∗
     txnwrs_excl γ tid -∗
-    txnsys_inv γ ==∗
-    txnsys_inv γ ∗
+    txnsys_inv γ p ==∗
+    txnsys_inv γ p ∗
     txnwrs_receipt γ tid wrs.
   Proof.
     iIntros (Hvts Hvwrs HQ) "#HQ Hexclwrs Htxn".

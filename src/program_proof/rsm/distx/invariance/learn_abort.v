@@ -39,13 +39,13 @@ Section inv.
     by iApply "Htks".
   Qed.
 
-  Lemma keys_inv_prepared γ ts tpls :
+  Lemma keys_inv_prepared γ p ts tpls :
     map_Forall (λ _ t, t.2 = ts) tpls ->
     txnres_abt γ ts -∗
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_tsprep γ key tpl.1 tpl.2) -∗
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     ([∗ map] key ↦ tpl ∈ tpls, key_inv_prepared_no_repl_tsprep γ key tpl.1 ts) ∗
-    txnsys_inv γ.
+    txnsys_inv γ p.
   Proof.
     iIntros (Hts) "#Habt Htpls Htxn".
     iApply (big_sepM_impl_res with "Htpls Htxn").
@@ -112,12 +112,12 @@ Section inv.
     by inversion_clear Ht2.
   Qed.
 
-  Lemma group_inv_learn_abort γ gid log cpool ts :
+  Lemma group_inv_learn_abort γ p gid log cpool ts :
     cpool_subsume_log cpool (log ++ [CmdAbt ts]) ->
-    txnsys_inv γ -∗
+    txnsys_inv γ p -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
-    txnsys_inv γ ∗
+    txnsys_inv γ p ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     group_inv_no_log_with_cpool γ gid (log ++ [CmdAbt ts]) cpool.
   Proof.

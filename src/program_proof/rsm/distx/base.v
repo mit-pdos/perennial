@@ -76,9 +76,10 @@ Definition txnst_to_u64 (s : txnst) :=
 Definition groupid := nat.
 Definition gids_all : gset groupid := list_to_set (seq 0 2).
 
-(** Transaction R/W action. *)
+(** Transaction R/C/A action. *)
 Inductive action :=
 | ActCommit (tid : nat) (wrs : dbmap)
+| ActAbort (tid : nat)
 | ActRead (tid : nat) (key : dbkey).
 
 (** State-machine commands. *)
