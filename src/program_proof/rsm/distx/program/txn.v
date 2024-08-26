@@ -210,7 +210,7 @@ Section program.
     (∀ ok : bool,
        (own_txn txn tid γ τ ∗
         if ok
-        then ∃ w, ⌜Q r w ∧ dom w ⊆ dom r⌝ ∗ (Rc r w ∧ Ra r) ∗ txnmap_ptstos τ w
+        then ∃ w, ⌜Q r w ∧ dom w ⊆ dom r⌝ ∗ (Rc r w ∧ Ra r) ∗ txnmap_ptstos τ (w ∪ r)
         else Ra r) -∗ Φ #ok) -∗
     WP body #txn {{ v, Φ v }}.
 
