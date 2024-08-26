@@ -59,7 +59,7 @@ Admitted.
 Instance is_pk_persistent pk P : Persistent (is_pk pk P).
 Proof. Admitted.
 
-(* witness that we ran the sign op and got back sig. *)
+(* is_sig says that Verify will ret True on these inputs. *)
 Definition is_sig (pk msg sig : list w8) : iProp Σ.
 Admitted.
 
@@ -67,7 +67,7 @@ Admitted.
 Instance is_sig_persistent pk msg sig : Persistent (is_sig pk msg sig).
 Proof. Admitted.
 
-Lemma is_sig_to_pred {pk P msg sig} :
+Lemma is_sig_to_pred pk P msg sig :
   is_pk pk P -∗ is_sig pk msg sig -∗ P msg.
 Proof. Admitted.
 
@@ -112,7 +112,7 @@ Lemma wp_Verify P sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
     "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg ∗
-    "His_sig" ∷ (is_sig pk msg sig -∗ ⌜ ok = true ⌝) ∗
+    "His_sig" ∷ (is_sig pk msg sig ∗-∗ ⌜ ok = true ⌝) ∗
     "Hok" ∷ (is_pk pk P -∗ if ok then P msg else True)
   }}}.
 Proof. Admitted.
