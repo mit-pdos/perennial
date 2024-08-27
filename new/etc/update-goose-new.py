@@ -115,7 +115,7 @@ def main():
         args.extend(pkgs)
         do_run(args)
 
-    def run_axiomgen(src_path, *pkgs):
+    def run_axiomgen(dst_path, src_path, *pkgs):
         if src_path is None:
             return
         if not pkgs:
@@ -127,7 +127,7 @@ def main():
         goose_bin = path.join(gopath, "bin", "goose_axiom")
         args = [goose_bin]
 
-        output = path.join(perennial_dir, "new_code_axioms/")
+        output = path.join(perennial_dir, dst_path)
         args.extend(["-out", output])
         args.extend(["-dir", src_path])
         args.extend(pkgs)
@@ -167,23 +167,29 @@ def main():
     )
 
     run_axiomgen(
+        "new_code_axioms/",
         etcd_raft_dir,
         "bytes",
         "context",
         "crypto/rand",
         "errors",
-        "fmt",
         "go.etcd.io/raft/v3/confchange",
         "go.etcd.io/raft/v3/quorum",
         "go.etcd.io/raft/v3/raftpb",
         "go.etcd.io/raft/v3/tracker",
         "io",
-        "log",
         "math",
         "math/big",
         "os",
         "sort",
         "strings",
+    )
+
+    run_axiomgen(
+        "new_partial_axioms/",
+        etcd_raft_dir,
+        "fmt",
+        "log",
     )
 
     run_goose(

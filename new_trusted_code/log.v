@@ -1,4 +1,5 @@
 From New.golang Require Import defn.
+From New.code_axioms Require Import log.
 
 Section code.
 Context `{ffi_syntax}.

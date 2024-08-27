@@ -1,4 +1,5 @@
 From New.golang Require Export defn.
+From New.code_axioms Require Import fmt.
 
 Section code.
 Context `{ffi_syntax}.
