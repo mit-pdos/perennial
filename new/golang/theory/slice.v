@@ -215,11 +215,7 @@ Proof.
     iApply "HΦ".
     iModIntro.
     rewrite own_slice_unseal own_slice_cap_unseal.
-    assert (len = W64 0); subst.
-    {
-      assert (uint.Z (W64 0) = uint.Z len ∨ uint.Z (W64 0) < uint.Z len) as [|] by word; try word.
-      apply word.unsigned_inj. done.
-    }
+    assert (len = W64 0) by word; subst.
     unfold own_slice_def. unfold own_slice_cap_def. simpl.
     assert (uint.nat (W64 0) = 0)%nat as -> by word.
     simpl. done.

@@ -334,7 +334,6 @@ Proof.
   iIntros (Φ) "H HΦ".
   wp_rec. wp_pures.
   wp_if_destruct.
-  { contradiction Hnonzero. word. }
   wp_apply (wp_freeBit with "H"); eauto.
   wp_pures. by iApply "HΦ".
 Qed.

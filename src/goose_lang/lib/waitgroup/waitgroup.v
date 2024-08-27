@@ -434,10 +434,8 @@ Proof.
     { exfalso.
       eapply u64_set_size_all_lt in Hremaining.
       assert (size remaining = 0%nat) as Hzero.
-      { word_cleanup.
-        rewrite /W64 in Heqb.
-        apply word.of_Z_inj_small in Heqb; try lia.
-      }
+      { apply word.of_Z_inj_small in Heqb; try lia.
+        word. }
       apply size_empty_inv in Hzero. set_solver.
     }
     eauto.

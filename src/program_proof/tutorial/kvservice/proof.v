@@ -1076,7 +1076,6 @@ Proof.
     iIntros (??) "Hreq_sl Hrep". iNamed 1.
     wp_pures.
     wp_if_destruct.
-    { by exfalso. }
     wp_pures.
     iApply "HΦ".
     by rewrite decide_False.
@@ -1135,7 +1134,6 @@ Proof.
     iNamed 1.
     wp_pures.
     wp_if_destruct.
-    { by exfalso. }
     wp_pures.
     iApply "HΦ".
     by rewrite decide_False.
@@ -1199,7 +1197,6 @@ Proof.
     iNamed 1.
     wp_pures.
     wp_if_destruct.
-    { by exfalso. }
     wp_pures.
     iApply "HΦ".
     by rewrite decide_False.
@@ -1263,7 +1260,6 @@ Proof.
     iNamed 1.
     wp_pures.
     wp_if_destruct.
-    { by exfalso. }
     wp_pures.
     iApply "HΦ".
     by rewrite decide_False.

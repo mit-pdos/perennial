@@ -1490,7 +1490,6 @@ Proof.
         wp_load.
         wp_pures.
         wp_if_destruct.
-        { exfalso. done. }
         iModIntro.
         iLeft. iSplitR; first done.
         iExists _; iFrame.
@@ -1501,7 +1500,6 @@ Proof.
     iIntros (?) "%Herr Hreply_sl Hrep".
     wp_pures.
     wp_if_destruct.
-    2:{ exfalso. done. }
     iModIntro. iLeft.
     iSplitR; first done.
     iExists _. iFrame.
@@ -1583,7 +1581,6 @@ Proof.
     iIntros (?) "%Herr Hreply_sl Hrep".
     wp_pures.
     wp_if_destruct.
-    { exfalso. done. }
     iModIntro. iLeft.
     iSplitR; first done.
     iExists _. iFrame.
@@ -1793,7 +1790,6 @@ Proof.
     iIntros (?) "%Herr Hreply_sl Hrep".
     wp_pures.
     wp_if_destruct.
-    2:{ exfalso. done. }
     iModIntro. iNamed 1. iLeft.
     iSplitR; first done.
     iFrame.
@@ -1979,7 +1975,6 @@ Proof.
     iIntros (?) "%Herr Hreply_sl Hrep".
     wp_pures.
     wp_if_destruct.
-    2:{ exfalso. done. }
     iModIntro. iNamed 1. iLeft.
     iSplitR; first done.
     iFrame.

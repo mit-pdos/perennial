@@ -629,8 +629,6 @@ Proof.
       iFrame.
       iFrame "Hqueue".
       iPureIntro.
-      apply u64_val_ne in Heqb.
-      rewrite unsigned_U64_0 in Heqb.
       word.
   - iExists first0, count0, queue0.
     iFrame.

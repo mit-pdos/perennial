@@ -92,7 +92,6 @@ Proof.
       iApply "HΦ".
       done.
     }
-    { exfalso. done. }
   }
 Qed.
 
@@ -283,10 +282,8 @@ Proof.
       { (* continue with loop *)
         assert (uint.nat i < length backupγ) as Hi.
         { (* XXX: annoying proof *)
-          rewrite length_cons /= Hreplicas_sz in Hreplicas_backup_len.
-          rewrite length_replicate in Hnew_clerks_sz.
-
-          rewrite length_app in Hlen.
+          autorewrite with len in *.
+          rewrite /= Hreplicas_sz in Hreplicas_backup_len.
           rewrite HcompleteLen in Hlen.
           replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1) by word.
           rewrite Hreplicas_sz.
@@ -451,8 +448,7 @@ Proof.
       wp_load.
       wp_loadField.
 
-      assert (numClerks = uint.nat numClerks) as HnumClerksSafe.
-      { unfold numClerks. word. }
+      assert (Z.of_nat numClerks < 2^64)%Z as HnumClerksSafe' by (rewrite /numClerks; lia).
 
       wp_apply (wp_SliceSet with "[$Hclerkss_sl]").
       {
@@ -487,9 +483,7 @@ Proof.
       iSplitR.
       {
         iPureIntro.
-        rewrite length_app.
-        simpl.
-        word.
+        len.
       }
       iSplitR.
       {

@@ -109,10 +109,6 @@ Proof.
     iIntros.
     wp_pures.
     wp_if_destruct.
-    {
-      wp_load.
-      exfalso. done.
-    }
     iRight in "HΦ".
     replace (slice.nil) with (slice_val Slice.nil) by done.
     wp_pures.

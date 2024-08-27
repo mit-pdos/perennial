@@ -338,6 +338,7 @@ Proof.
       word.
     }
     iIntros "wr".
+    subst key.
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, val, true, ent.2).
@@ -372,7 +373,7 @@ Proof.
     { (* prove insertion to list -> insertion to map representation *)
       rewrite Hmods.
       rewrite list_fmap_insert.
-      subst ent' key. unfold wrent_to_key_dbval. simpl.
+      subst ent'. unfold wrent_to_key_dbval. simpl.
       apply list_to_map_insert with (to_dbval ent.1.2 ent.1.1.2); first by apply NoDup_wrent_to_key_dbval.
       by rewrite list_lookup_fmap Hlookup.
     }
@@ -486,6 +487,7 @@ Proof.
       word.
     }
     iIntros "wr".
+    subst key.
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, ent.1.1.2, false, ent.2).
@@ -520,7 +522,7 @@ Proof.
     { (* prove insertion to list -> insertion to map representation *)
       rewrite Hmods.
       rewrite list_fmap_insert.
-      subst ent' key. unfold wrent_to_key_dbval. simpl.
+      subst ent'. unfold wrent_to_key_dbval. simpl.
       apply list_to_map_insert with (to_dbval ent.1.2 ent.1.1.2); first by apply NoDup_wrent_to_key_dbval.
       by rewrite list_lookup_fmap Hlookup.
     }

@@ -265,9 +265,7 @@ Section proof.
         iSplitL "Hl1 Hl2 Hc1"; first (iNext; iExists (word.add u 1); eauto).
         { iFrame.
           rewrite (decide_False); last first.
-          { intros Heq0. rewrite Heq0 in a. word_cleanup.
-            assert (uint.Z 0 = 0%Z) by word.
-            lia. }
+          { intros Heq0. word. }
           iFrame.
         }
         wp_pures. iModIntro. iApply "HΦ". eauto.

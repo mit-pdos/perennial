@@ -29,10 +29,7 @@ Proof.
   iIntros (Hlt) "HΦ".
   wp_rec. wp_pures.
   wp_if_destruct.
-  - assert (uint.Z n = uint.Z m) by word.
-    apply word.unsigned_inj in H; subst.
-    by iFrame.
-  - by iFrame.
+  by iFrame.
 Qed.
 
 Theorem wp_DPrintf stk E (level: u64) (msg arg: val) :

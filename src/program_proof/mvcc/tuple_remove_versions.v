@@ -140,7 +140,6 @@ Proof.
     iIntros "[HversX %Hval_ty]".
     destruct (val_to_ver_with_val_ty ver) as (b & d & v & ->); first auto.
     wp_pures.
-    apply u64_val_ne in Heqb.
     rewrite list_lookup_fmap in HSome.
     apply fmap_Some_1 in HSome as (verx & Hlookup & Everx).
     wp_if_destruct.

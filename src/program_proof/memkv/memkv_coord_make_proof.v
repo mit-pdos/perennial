@@ -97,9 +97,7 @@ Proof.
       { iIntros (? Hin) "H".
         assert (uint.nat i ≠ uint.nat x).
         { cut (i ≠ x).
-          { intros. intros Heq. apply Z2Nat.inj in Heq; try word.
-             apply int_Z_inj in Heq; eauto with *.
-          }
+          { intros. word. }
           move:Hin. set_solver+. }
         rewrite ?list_lookup_insert_ne //.
         iDestruct "H" as (hid ?) "H". iExists hid; iSplit; first eauto.
