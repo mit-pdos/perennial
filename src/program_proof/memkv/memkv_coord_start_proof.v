@@ -182,10 +182,7 @@ Proof.
         { subst. rewrite list_lookup_insert; eauto.
           word. }
         { rewrite list_lookup_insert_ne; eauto.
-          intros Heq'.
-          apply Z2Nat.inj in Heq'; try word.
-          eapply (int_Z_inj) in Heq'; eauto. apply _.
-        }
+          word. }
       }
       iModIntro. iIntros (? Hin Hlookup').
       destruct (decide (sid = uint.nat k)).
@@ -241,10 +238,7 @@ Proof.
         { subst. rewrite list_lookup_insert; eauto.
           word. }
         { rewrite list_lookup_insert_ne; eauto.
-          intros Heq'.
-          apply Z2Nat.inj in Heq'; try word.
-          eapply (int_Z_inj) in Heq'; eauto. apply _.
-        }
+          word. }
       }
       iModIntro. iIntros (? Hin Hlookup').
       destruct (decide (sid = uint.nat k)).

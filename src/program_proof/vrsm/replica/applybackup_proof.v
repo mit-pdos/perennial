@@ -141,7 +141,6 @@ Proof.
       { exfalso. done. }
       { done. }
     }
-    { exfalso. done. }
   }
 Qed.
 

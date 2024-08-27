@@ -395,9 +395,7 @@ Proof.
     iIntros (cap Hcapge).
     wp_pures.
     wp_apply (wp_allocN t); eauto.
-    { apply u64_val_ne in Heqb.
-      change (uint.Z 0) with 0 in Heqb.
-      word. }
+    { word. }
   iIntros (l) "Hl".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
@@ -429,16 +427,12 @@ Proof.
   rewrite ->bool_decide_false by lia.
   wp_if_destruct.
   - rewrite /slice.nil slice_val_fold.
-    (* FIXME: why can [word] not prove [sz = 0] without this help? *)
-    rewrite unsigned_U64_0 in Hsz.
     assert (sz = 0) as -> by word.
     iApply "HΦ".
     rewrite replicate_0.
     iApply own_slice_zero.
   - wp_apply (wp_allocN t); eauto.
-    { apply u64_val_ne in Heqb.
-      change (uint.Z 0) with 0 in Heqb.
-      word. }
+    { word. }
   iIntros (l) "Hl".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
@@ -1119,9 +1113,7 @@ Proof.
   - change (uint.nat 0) with 0%nat.
     iEval (rewrite firstn_O array_nil) in "HΦ" .
     iApply "HΦ"; by iFrame.
-  - apply u64_val_ne in Heqb.
-    change (uint.Z 0) with 0 in *.
-    destruct vs1, vs2; simpl in Hvs1, Hvs2; try word.
+  - destruct vs1, vs2; simpl in Hvs1, Hvs2; try word.
     iDestruct (array_cons with "Hdst") as "[Hdst Hvs1]".
     iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
     wp_load.

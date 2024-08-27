@@ -700,7 +700,7 @@ Proof.
                         "Hdec" ∷ is_dec dec_v ((EncUInt64 <$> todo) ++ r) s q data ∗
                         "*" ∷ ∃ s, "Hsptr" ∷ s_l ↦[slice.T uint64T] (slice_val s) ∗
                                    "Hdone" ∷ own_slice s uint64T (DfracOwn 1) done
-           )%I with "[] [Hi Hsptr Hdec]").
+           )%I _ _ (W64 0) with "[] [Hi Hsptr Hdec]").
   - word.
   - clear Φ.
     iIntros (?) "!>".

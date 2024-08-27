@@ -441,16 +441,6 @@ Proof.
   unfold W32; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U64_0 : uint.Z (W64 0) = 0.
-Proof.
-  reflexivity.
-Qed.
-
-Lemma unsigned_U32_0 : uint.Z (W32 0) = 0.
-Proof.
-  reflexivity.
-Qed.
-
 Lemma signed_U64 z : sint.Z (W64 z) = word.swrap (word:=w64_word_instance) z.
 Proof.
   unfold W64; rewrite word.signed_of_Z; auto.
@@ -461,14 +451,34 @@ Proof.
   unfold W32; rewrite word.signed_of_Z; auto.
 Qed.
 
-Lemma signed_U64_0 : sint.Z (W64 0) = 0.
+Lemma w64_val_f_equal (x y: w64) :
+  x = y →
+  uint.Z x = uint.Z y ∧ sint.Z x = sint.Z y.
+Proof. by intros ->. Qed.
+
+Lemma w32_val_f_equal (x y: w32) :
+  x = y →
+  uint.Z x = uint.Z y ∧ sint.Z x = sint.Z y.
+Proof. by intros ->. Qed.
+
+Lemma w64_val_neq (x y: w64) :
+  x ≠ y →
+  uint.Z x ≠ uint.Z y ∧ sint.Z x ≠ sint.Z y.
 Proof.
-  reflexivity.
+  intros Hne.
+  split; intros Heq; contradiction Hne.
+  - apply (inj uint.Z); auto.
+  - apply (inj sint.Z); auto.
 Qed.
 
-Lemma signed_U32_0 : sint.Z (W32 0) = 0.
+Lemma w32_val_neq (x y: w32) :
+  x ≠ y →
+  uint.Z x ≠ uint.Z y ∧ sint.Z x ≠ sint.Z y.
 Proof.
-  reflexivity.
+  intros Hne.
+  split; intros Heq; contradiction Hne.
+  - apply (inj uint.Z); auto.
+  - apply (inj sint.Z); auto.
 Qed.
 
 Create HintDb word.
@@ -484,26 +494,31 @@ Ltac word_cleanup :=
   isn't the same *)
   rewrite ?word.unsigned_add, ?word.unsigned_sub,
   ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
-  ?unsigned_U64_0, ?unsigned_U32_0,
   ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
   try autorewrite with word;
   repeat match goal with
-         | [ H: context[word.unsigned (W64 (Zpos ?x))] |- _ ] => change (uint.Z (Zpos x)) with (Zpos x) in *
-         | [ |- context[word.unsigned (W64 (Zpos ?x))] ] => change (uint.Z (Zpos x)) with (Zpos x)
-         | [ H: context[word.unsigned (W32 (Zpos ?x))] |- _ ] => change (uint.Z (W32 (Zpos x))) with (Zpos x) in *
-         | [ |- context[word.unsigned (W32 (Zpos ?x))] ] => change (uint.Z (W32 (Zpos x))) with (Zpos x)
+         | [ H: context[word.unsigned (W64 ?x)] |- _ ] => change (uint.Z x) with x in H
+         | [ |- context[word.unsigned (W64 ?x)] ] => change (uint.Z x) with x
+         | [ H: context[word.unsigned (W32 ?x)] |- _ ] => change (uint.Z (W32 x)) with x in H
+         | [ |- context[word.unsigned (W32 ?x)] ] => change (uint.Z (W32 x)) with x
+         | [ H: @eq w64 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w64_val_f_equal in H as [H H']
+         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w32_val_f_equal in H as [H H']
+         | [ H: not (@eq w64 _ _) |- _ ] => let H' := fresh H "_signed" in
+                                      apply w64_val_neq in H as [H H']
+         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w32_val_neq in H as [H H']
          end;
   repeat match goal with
          | [ |- context[uint.Z ?x] ] =>
            lazymatch goal with
            | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
-           | [ H': 0 <= uint.Z x <= 2^_ |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          | [ H: context[uint.Z ?x] |- _ ] =>
            lazymatch goal with
            | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
-           | [ H': 0 <= uint.Z x <= 2^_ |- _ ] => fail (* TODO: should be unnecessary *)
            | _ => pose proof (word.unsigned_range x)
            end
          end;

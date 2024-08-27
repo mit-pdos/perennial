@@ -104,13 +104,7 @@ Proof.
       iApply "HΦ".
       iFrame.
       iModIntro.
-      destruct (decide _).
-      {
-        exfalso. done.
-      }
-      {
-        done.
-      }
+      rewrite decide_False //.
     }
   }
   { (* RPC error *)
@@ -121,11 +115,9 @@ Proof.
       iModIntro.
       iIntros "HΦ".
       iApply "HΦ".
-      destruct (decide (_)).
-      { exfalso. done. }
-      { done. }
+      rewrite -> decide_False by auto.
+      done.
     }
-    { exfalso. done. }
   }
 Qed.
 

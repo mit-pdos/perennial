@@ -178,8 +178,7 @@ Proof.
       rewrite (take_S_r _ _ tidx); last done.
       apply Forall_app_2; first done.
       apply Forall_singleton.
-      apply u64_val_ne in Heqb.
-      unfold not. intros H. rewrite H in Heqb. word.
+      intros H. word.
     }
     { destruct (decide (uint.Z idx < Z.of_nat (length tids) - 1)); first word.
       apply Znot_lt_ge in n.
@@ -192,8 +191,7 @@ Proof.
       rewrite (take_S_r _ _ tidx); last done.
       apply Forall_app_2; first done.
       apply Forall_singleton.
-      apply u64_val_ne in Heqb.
-      unfold not. intros H. rewrite H in Heqb. word.
+      intros H. word.
     }
   }
   { iExists _.

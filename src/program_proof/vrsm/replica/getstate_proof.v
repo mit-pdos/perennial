@@ -130,7 +130,6 @@ Proof.
       replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done.
       iFrame.
     }
-    { exfalso. done. }
   }
 Qed.
 

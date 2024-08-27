@@ -221,9 +221,7 @@ Proof using Ptimeless.
           iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
           exfalso.
           revert Heqb. word_cleanup. intros.
-          revert H0. rewrite length_replicate. word_cleanup. intros.
-          apply Heqb0. rewrite Z.max_r; last by lia. word_cleanup.
-          f_equal. f_equal. word.
+          revert H0 Heqb0. word.
         }
 
         {

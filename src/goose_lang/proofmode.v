@@ -270,6 +270,29 @@ Proof.
   destruct l1, l2; inversion 1; auto.
 Qed.
 
+Lemma lit_ne_inv `{!ffi_syntax} (l1 l2: base_lit) :
+  LitV l1 ≠ LitV l2 →
+  match l1, l2 with
+  | LitInt n1, LitInt n2 => n1 ≠ n2
+  | LitInt32 n1, LitInt32 n2 => n1 ≠ n2
+  | LitBool b1, LitBool b2 => b1 ≠ b2
+  | LitByte n1, LitByte n2 => n1 ≠ n2
+  | LitString s1, LitString s2 => s1 ≠ s2
+  | LitUnit, LitUnit => False
+  | LitPoison, LitPoison => False
+  | LitLoc x1, LitLoc x2 => x1 ≠ x2
+  | LitProphecy p1, LitProphecy p2 => p1 ≠ p2
+  | _, _ => True
+  end.
+Proof.
+  intros Hne.
+  destruct l1, l2; auto;
+    try solve [
+        intros Heq; contradiction Hne;
+        inversion Heq; auto
+      ].
+Qed.
+
 Tactic Notation "wp_if_destruct" :=
   wp_pures;
   (try wp_bind (If _ _ _));
@@ -289,8 +312,10 @@ Tactic Notation "wp_if_destruct" :=
            | [ H: Datatypes.negb _ = false |- _ ] => apply negb_false_iff in H; subst
            | [ H: LitV _ = LitV _ |- _ ] => apply inv_litv in H
            | [ H: @eq base_lit _ _ |- _ ] => apply base_lit_inv in H; simpl in H; subst
+           | [ H: not (LitV _ = LitV _) |- _ ] => apply lit_ne_inv in H; simpl in H
            end;
-    [ wp_pure_filter (If (LitV (LitBool true)) _ _) | wp_pure_filter (If (LitV (LitBool false)) _ _) ]
+    [ wp_pure_filter (If (LitV (LitBool true)) _ _) | wp_pure_filter (If (LitV (LitBool false)) _ _) ];
+    try contradiction
   | |- envs_entails _ (wp _ _ ?e _) =>
     fail "goal is for" e "which is not an if expression"
   | _ => fail "goal is not a wp"

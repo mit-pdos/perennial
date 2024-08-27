@@ -416,10 +416,6 @@ Proof.
     wp_load.
     wp_pures.
     wp_if_destruct.
-    {
-      exfalso.
-      done.
-    }
     wp_apply (wp_Sleep).
     wp_pures.
     wp_loadField.
@@ -651,7 +647,6 @@ Proof.
       wp_load.
       wp_pures.
       wp_if_destruct.
-      { exfalso. apply Herr. word. }
       wp_load. wp_store.
       wp_apply wp_GetTimeRange. iIntros "* _ _ $ !>".
       wp_pures. wp_storeField. wp_pures.
@@ -670,13 +665,11 @@ Proof.
     iDestruct "Hloopcase" as "[Hsuccess | Hfailure]".
     + iNamed "Hsuccess".
       wp_if_destruct.
-      2: { exfalso. replace (Z.of_nat 0) with (0%Z) in Herrval by word. congruence. }
       iModIntro. iRight. iSplitR; first done.
       wp_pures. wp_load. iApply "HΦ".
 
     + iNamed "Hfailure".
       wp_if_destruct.
-      { exfalso. apply Herrval. word. }
 
       wp_apply wp_RandomUint64. iIntros (?) "_".
       wp_pures.
