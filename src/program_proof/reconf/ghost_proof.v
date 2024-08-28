@@ -338,15 +338,8 @@ Proof.
   { (* for term' == highestTerm, we have the first part of "oldInfo" *)
     replace (term') with (highestTerm); last first.
     { (* FIXME: why doesn't word work? *)
-      clear -e.
-      rewrite Z2Nat.inj_iff in e; first last.
-      { word. }
-      { word. }
-      {
-        apply word.unsigned_inj in e.
-        done.
-      }
-    }
+      apply (inj uint.Z).
+      word. }
     iDestruct (own_valid_2 with "Hproposed' Hproposed") as %Hvalid.
     rewrite singleton_op in Hvalid.
     rewrite singleton_valid in Hvalid.
@@ -374,7 +367,7 @@ Proof.
     iDestruct ("Hconf2" $! _ highestVal with "Hcommit' [%]") as "#Hconf3".
     {
       enough (mval' ≠ highestVal) by done.
-      admit. (* TODO: pure fact that if lists have different lengths, they are not equal *)
+      congruence.
     }
     (* In this case, some highest value mval'' was committed, and has
          overlapping quorums with highestVal. *)

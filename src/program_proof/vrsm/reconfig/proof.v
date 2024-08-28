@@ -740,9 +740,7 @@ Proof using waitgroupG0.
   wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hres Hhost").
   {
     iPureIntro.
-    rewrite length_fmap.
-    (* FIXME: why manually rewrite instead of `word`? *)
-    rewrite Hserver_len_eq.
+    autorewrite with len.
     word.
   }
   {
@@ -880,10 +878,6 @@ Proof using waitgroupG0.
       }
       { iPureIntro.
         apply lookup_lt_Some in H.
-        replace (uint.nat k) with (k).
-        { rewrite Hlen. done. }
-        assert (k < length servers). (* FIXME: why do I have to assert this when it's already in context? *)
-        { done. }
         word.
       }
     }

@@ -25,7 +25,7 @@ Proof.
   rewrite /string_to_bytes /bytes_to_string /= /u8_to_ascii.
   pose proof (word.unsigned_range x).
   assert (uint.nat x < 256)%nat.
-  { lia. (* word_cleanup. *) } (* FIXME: word_cleanup doesn't have good support for u8  *)
+  { word. } (* FIXME: word_cleanup doesn't have good support for u8  *)
   rewrite Ascii.nat_ascii_embedding.
   {
     apply word.unsigned_inj.

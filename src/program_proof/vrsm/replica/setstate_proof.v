@@ -312,14 +312,7 @@ Proof.
     iDestruct "HΨ" as (prevEpoch) "(%Henc_snap &  %Hlen_nooverflow & %Hle & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf & #HcommitFacts & HΨ)".
     replace (args.(SetStateArgs.nextIndex)) with (W64 (length (get_rwops opsfull))) by word.
 
-    assert (uint.nat st.(server.epoch) < uint.nat args.(SetStateArgs.epoch)) as HepochIneq.
-    (* FIXME: should be trivial, almost `word` proof. Have (a ≠ b) and ¬(a < b) *)
-    {
-      assert (uint.nat st.(server.epoch) ≠ uint.nat args.(SetStateArgs.epoch)).
-      { intros ?. apply Heqb0.
-        repeat f_equal. word. }
-      word.
-    }
+    assert (uint.nat st.(server.epoch) < uint.nat args.(SetStateArgs.epoch)) as HepochIneq by word.
 
     unfold is_SetStateAndUnseal_fn.
     wp_apply ("HsetStateSpec" with "[$Hstate]").

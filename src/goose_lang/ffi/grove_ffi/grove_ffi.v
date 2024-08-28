@@ -595,12 +595,10 @@ lemmas. *)
     assert (uint.nat old <= uint.nat new) as Hupd.
     2: iMod (mono_nat_own_update (uint.nat new) with "Htsc") as "[Htsc Hnew]"; first lia.
     2: subst new; iFrame "Htsc Hfiles".
-    { subst new. rewrite word.unsigned_ltu. clear.
-      destruct (_ <? _)%Z eqn:Hlt; last by word.
-      (* FIXME Why can word not do this? *)
-      apply Zlt_is_lt_bool in Hlt.
-      apply Z2Nat.inj_le; [word..|].
-      lia. }
+    { subst new. word_cleanup.
+      case_bool_decide; [ | word ].
+      (* FIXME: word introduces a word.wrap which causes [lia] to fail *)
+      apply Z2Nat.inj_le; lia. }
     iApply "HΦ". iFrame. iPureIntro. lia.
   Qed.
 

@@ -276,6 +276,8 @@ Proof.
   iExists _; iFrame "Hghost ∗". iFrame "#". done.
 Qed.
 
+Hint Unfold no_overflow : word.
+
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
@@ -494,13 +496,7 @@ Proof.
     iIntros "_ Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
     { done. }
-    {
-      rewrite Hσ_index.
-      f_equal.
-      unfold no_overflow in HnextIndexNoOverflow.
-      rewrite -HnextIndexNoOverflow.
-      by rewrite Heqb2.
-    } (* FIXME: why doesn't `word` work? *)
+    { word. }
     iModIntro.
     iDestruct "Hghost" as "(Hghost & %Hre & H)".
     rewrite Hre.

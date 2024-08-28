@@ -220,6 +220,7 @@ Section grove.
       time_since_last ← any u64;
       modify_n (set grove_node_tsc (λ old_time,
         let new_time := word.add old_time time_since_last in
+        (* TODO: why does this use [word.ltu] rather than a [decide] over the Z values? *)
         (* Make sure we did not overflow *)
         if word.ltu old_time new_time then new_time else old_time
       ));;

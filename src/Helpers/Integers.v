@@ -471,6 +471,17 @@ Proof.
   - apply (inj sint.Z); auto.
 Qed.
 
+Lemma word_unsigned_ltu {width: Z} (word: Interface.word width) {Hok: word.ok word} (x y: word) :
+  word.ltu x y = bool_decide (uint.Z x < uint.Z y).
+Proof.
+  rewrite word.unsigned_ltu.
+  destruct (Z.ltb_spec0 (uint.Z x) (uint.Z y)).
+  - rewrite bool_decide_eq_true_2; auto.
+  - rewrite bool_decide_eq_false_2; auto.
+Qed.
+
+Definition w64_unsigned_ltu : ∀ (x y: w64), _ := word_unsigned_ltu w64_word_instance.
+
 Lemma w32_val_neq (x y: w32) :
   x ≠ y →
   uint.Z x ≠ uint.Z y ∧ sint.Z x ≠ sint.Z y.
@@ -494,7 +505,8 @@ Ltac word_cleanup :=
   isn't the same *)
   rewrite ?word.unsigned_add, ?word.unsigned_sub,
   ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
-  ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
+  ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32,
+  ?w64_unsigned_ltu;
   try autorewrite with word;
   repeat match goal with
          | [ H: context[word.unsigned (W64 ?x)] |- _ ] => change (uint.Z x) with x in H

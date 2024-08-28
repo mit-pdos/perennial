@@ -222,11 +222,7 @@ Proof.
   }
   wp_pures.
   wp_apply wp_allocN_seq.
-  { (* FIXME(word): tedious *)
-    destruct (decide (uint.Z cap = 0)).
-    - subst. exfalso. assert (cap = W64 0) by word. congruence.
-    - word.
-  }
+  { word. }
   iIntros (?) "Hp".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ".

@@ -420,21 +420,14 @@ Proof.
         enough (uint.nat i ≥ length backupγ) by word.
         rewrite length_cons in Hreplicas_backup_len.
         replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1); last first.
-        { (* FIXME: why doesn't word work on is own? *)
-          rewrite Hreplicas_backup_len.
-          word.
-        }
+        { unfold chan in *. word. }
         rewrite Hreplicas_sz.
         rewrite length_replicate in Hnew_clerks_sz.
         assert (uint.nat i ≥ uint.nat new_clerks_sl.(Slice.sz)) by word.
         rewrite -Hnew_clerks_sz in H.
         replace (uint.nat replicas_sl.(Slice.sz) - 1) with (uint.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
         { done. }
-        (* FIXME: why doesn't word work here anymore? *)
-        enough (uint.nat (replicas_sl.(Slice.sz)) > 0).
-        { word. }
-        rewrite -Hreplicas_sz.
-        rewrite Hreplicas_backup_len.
+        unfold chan in *. (* FIXME: why is this needed for lia and thus word? *)
         word.
       }
       (* FIXME: the list/for loop reasoning above here should a helper lemma *)
