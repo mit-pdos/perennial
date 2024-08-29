@@ -47,16 +47,16 @@ Definition is_com_st γ com_st : iProp Σ :=
 committed state. *)
 Definition serv_sigpred_link γ link_sep : iProp Σ :=
   ∃ epoch prevLink dig com_st,
-  is_com_st γ com_st ∗
-  is_link epoch prevLink dig link_sep.(servSepLink.link) ∗
-  ⌜ com_st.(links) !! (uint.nat epoch) = Some link_sep.(servSepLink.link) ⌝.
+  "#His_com" ∷ is_com_st γ com_st ∗
+  "#His_ln" ∷ is_link epoch prevLink dig link_sep.(servSepLink.link) ∗
+  "%Hlook_ln" ∷ ⌜ com_st.(links) !! (uint.nat epoch) = Some link_sep.(servSepLink.link) ⌝.
 
 (* serv_sigpred_put says that an entry exists at a certain
 (potentially uncommitted) epoch. *)
 Definition serv_sigpred_put γ (put_sep : servSepPut.t) : iProp Σ :=
-  ∃ γtr,
-  mono_list_idx_own γ (uint.nat put_sep.(servSepPut.epoch)) γtr ∗
-  put_sep.(servSepPut.id) ↪[γtr]□ put_sep.(servSepPut.val).
+  ∃ γmap,
+  "#Hidx_γmap" ∷ mono_list_idx_own γ (uint.nat put_sep.(servSepPut.epoch)) γmap ∗
+  "#Hentry" ∷ put_sep.(servSepPut.id) ↪[γmap]□ put_sep.(servSepPut.val).
 
 Definition serv_sigpred γ : (list w8 → iProp Σ) :=
   λ data,

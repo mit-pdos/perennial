@@ -8,6 +8,8 @@ Context `{!heapGS Σ}.
 
 (* Hashes. *)
 
+(* is_hash says that [data] will hash to [hash].
+relative to the crypto model, it says the inputs are in the set of hashes. *)
 Definition is_hash (data hash : list w8) : iProp Σ.
 Proof. Admitted.
 
@@ -46,12 +48,13 @@ Proof. Admitted.
 
 (* Signatures. *)
 
-(* own_sk only stores the sk ptr. the actual sk never leaves the ffi.
-this prevents code from accidentally leaking it.
-need to connect sk with pk for is_sig. *)
+(* own_sk says that an sk is in-distribution.
+sk is a ptr bc the actual sk never leaves the ffi.
+this prevents code from accidentally leaking it. *)
 Definition own_sk (sk : Slice.t) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
+(* is_pk says that a pk is in-distribution. *)
 Definition is_pk (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
@@ -59,7 +62,9 @@ Admitted.
 Instance is_pk_persistent pk P : Persistent (is_pk pk P).
 Proof. Admitted.
 
-(* is_sig says that Verify will ret True on these inputs. *)
+(* is_sig says that Verify will ret True on these inputs.
+relative to the crypto model, it says the inputs are in the set of
+memoized=True Verify inputs. *)
 Definition is_sig (pk msg sig : list w8) : iProp Σ.
 Admitted.
 
@@ -67,6 +72,11 @@ Admitted.
 Instance is_sig_persistent pk msg sig : Persistent (is_sig pk msg sig).
 Proof. Admitted.
 
+(* is_sig_to_pred has two cases:
+1) the sig came from sign. P clearly holds.
+2) an adversary forged the sig.
+EUF-CMA guarantees that this only happens if the genuine key holder
+signed the same msg in the past. P holds from the orig signing op. *)
 Lemma is_sig_to_pred pk P msg sig :
   is_pk pk P -∗ is_sig pk msg sig -∗ P msg.
 Proof. Admitted.
@@ -112,7 +122,7 @@ Lemma wp_Verify P sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
     "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg ∗
-    "His_sig" ∷ (is_sig pk msg sig ∗-∗ ⌜ ok = true ⌝) ∗
+    "Hgenie" ∷ (is_sig pk msg sig ∗-∗ ⌜ ok = true ⌝) ∗
     "Hok" ∷ (is_pk pk P -∗ if ok then P msg else True)
   }}}.
 Proof. Admitted.

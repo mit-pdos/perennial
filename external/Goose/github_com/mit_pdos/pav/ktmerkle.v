@@ -146,7 +146,7 @@ Definition evidServLink__check: val :=
         (if: (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn0" "e")) = (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn1" "e"))
         then std.BytesEqual "link0" "link1"
         else
-          (if: (struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn0" "e")) = ((struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn1" "e")) - #1)
+          (if: ((struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn1" "e")) > #0) && ((struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn0" "e")) = ((struct.loadF signedLink "epoch" (struct.loadF evidServLink "sigLn1" "e")) - #1))
           then std.BytesEqual "link0" (struct.loadF signedLink "prevLink" (struct.loadF evidServLink "sigLn1" "e"))
           else errSome)))).
 

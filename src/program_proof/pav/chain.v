@@ -9,22 +9,19 @@ Context `{!heapGS Σ}.
 it removes the need to think about records or encoding. *)
 Definition is_link epoch prevLink dig link : iProp Σ :=
   is_hash (chainSepSome.encodesF (chainSepSome.mk epoch prevLink dig)) link.
-Notation is_link2 :=
-  (λ (a : w64 * list w8 * list w8) b, is_link a.1.1 a.1.2 a.2 b) (only parsing).
 
-Global Instance is_link_func : Func is_link2.
+Global Instance is_link_func : Func (uncurry3 is_link).
 Proof.
   rewrite /Func /is_link.
-  iIntros (???) "Hlink0 Hlink1".
+  iIntros ([[??]?]??) "Hlink0 Hlink1".
   by iDestruct (is_hash_func with "Hlink0 Hlink1") as %->.
 Qed.
-Global Instance is_link_inj : InjRel is_link2.
+Global Instance is_link_inj : InjRel (uncurry3 is_link).
 Proof.
   rewrite /InjRel /is_link.
-  iIntros (???) "Hlink0 Hlink1".
+  iIntros ([[??]?][[??]?]?) "Hlink0 Hlink1".
   iDestruct (is_hash_inj with "Hlink0 Hlink1") as %Heq.
   eapply chainSepSome.inj in Heq as [=].
-  destruct x1 as [x1' ?], x2 as [x2' ?], x1', x2'.
   naive_solver.
 Qed.
 
