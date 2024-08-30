@@ -923,6 +923,7 @@ Lemma wal_wf_txns_mono_pos {σ txn_id1 pos1 txn_id2 pos2} :
   uint.Z pos1 < uint.Z pos2 ->
   (txn_id1 < txn_id2)%nat.
 Proof.
+  clear P.
   destruct 1 as (_&Hmono&_).
   destruct (decide (txn_id1 = txn_id2)).
   { subst. intros.
@@ -959,6 +960,7 @@ Lemma wal_wf_txns_mono_highest {σ txn_id1 pos1 txn_id2 pos2} :
   uint.Z pos1 ≤ uint.Z pos2 ->
   (txn_id1 ≤ txn_id2)%nat.
 Proof.
+  clear P.
   intros Hwf Htxn1 Htxn2 Hle.
   destruct (decide (pos1 = pos2)); subst.
   - apply Htxn2 in Htxn1; lia.

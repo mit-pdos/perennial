@@ -62,7 +62,7 @@ Proof.
       simpl. repeat f_equal; lia.
     + intro H.
       eapply rangeSet_lookup in H; try lia.
-      intuition idtac. revert H0. word_cleanup.
+      intuition idtac. revert H0. word.
 Qed.
 
 Lemma rangeSet_append_one:

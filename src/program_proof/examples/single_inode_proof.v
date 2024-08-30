@@ -167,6 +167,7 @@ Section goose.
     {{{ l, RET #l; pre_s_inode l (uint.Z sz) σ0 }}}
     {{{ s_inode_cinv (uint.Z sz) σ0 true }}}.
   Proof.
+    clear P.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     rewrite /Open.
     wpc_call.

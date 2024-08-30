@@ -112,6 +112,7 @@ Lemma log_crash_to_wf σ σ' x :
   relation.denote log_crash σ σ' x →
   wal_wf σ'.
 Proof.
+  clear P.
   simpl.
   intros Hwf Htrans; monad_inv.
   destruct Hwf as (Haddrs&Hmono&Hb1&hb2).

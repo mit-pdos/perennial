@@ -592,10 +592,7 @@ Section goose.
         iIntros (???) "Hpre".
         change (uint.Z (W64 5)) with 5%Z in Hbound'.
         iExactEq "Hpre".
-        f_equal; len.
-        rewrite H /num_inodes.
-        replace (uint.nat i `min` 5)%nat with (uint.nat i) by lia.
-        f_equal. }
+        f_equal; len. }
     iIntros "!> (Hinv&Haddr)". iNamed "Hinv".
     change (uint.Z (W64 5)) with 5%Z.
     rewrite -> take_ge by word.
@@ -783,6 +780,7 @@ Section goose.
     {{{ l, RET #l; pre_dir l (uint.Z sz) σ0 }}}
     {{{ dir_cinv (uint.Z sz) σ0 false }}}.
   Proof using Type* - P.
+    clear P.
     iIntros (? Φ Φc) "Hcinv HΦ".
     wpc_call.
     { iApply dir_cinv_post_crash; auto. }

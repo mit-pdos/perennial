@@ -445,8 +445,6 @@ Definition NSHARD_eq : @NSHARD = @NSHARD_def := NSHARD_aux.(seal_eq).
 
 Ltac unseal_nshard := rewrite NSHARD_eq /NSHARD_def.
 
-Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
-
 Definition covered_by_shard (shardnum : Z) (covered: gset u64) : gset u64 :=
   filter (λ x, Z.modulo (uint.Z x) NSHARD = shardnum) covered.
 
@@ -493,8 +491,7 @@ Lemma rangeSet_lookup_mod (x : u64) (n : Z) :
 Proof.
   intros.
   apply rangeSet_lookup; try word.
-  word_cleanup.
-  word.
+  repeat word_cleanup; word.
 Qed.
 
 Lemma covered_by_shard_split (P : u64 -> iProp Σ) covered :

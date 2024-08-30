@@ -206,6 +206,7 @@ Lemma is_mem_memLog_append (bs : list update.t) (σ : locked_state) (σs : log_s
                     (σs.(log_state.txns) ++ [(slidingM.endPos (memWrite σ.(memLog) bs), bs)])
                     memStart_txn_id.
 Proof.
+  clear P.
   intros Hwf HmemStart_bound.
   rewrite /is_mem_memLog /has_updates.
   intros [Hupdates Hpos_bound].

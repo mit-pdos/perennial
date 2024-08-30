@@ -649,8 +649,7 @@ lemmas. *)
       destruct (Z.leb (uint.Z _) (uint.Z (word.add _ _))) eqn:Hlt.
       {
         rewrite Z.leb_le in Hlt.
-        apply Z2Nat.inj_le; [try word..|].
-        { apply word.unsigned_range. }
+        apply Z2Nat.inj_le; [word..|].
         done.
       }
       { word. }

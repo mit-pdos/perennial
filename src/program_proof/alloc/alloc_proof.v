@@ -125,8 +125,6 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
-
 Lemma wp_MkMaxAlloc (max: u64) :
   0 < uint.Z max →
   uint.Z max `mod` 8 = 0 →
@@ -441,5 +439,3 @@ Proof.
 Qed.
 
 End proof.
-
-Ltac Zify.zify_post_hook ::= idtac.

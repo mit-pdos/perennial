@@ -188,11 +188,11 @@ Proof.
 Qed.
 
 Theorem swrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
-  width > 0 ->
   -(2^(width-1)) <= x < 2^(width-1) ->
   @word.swrap _ word x = x.
 Proof.
   unfold word.swrap; intros.
+  pose proof (ok.(word.width_pos)).
   unshelve epose proof ZLib.Z.pow2_times2 width _; first by lia.
   rewrite Zmod_small; lia.
 Qed.
@@ -226,7 +226,7 @@ Theorem s8_to_s64_Z (x:w8) : sint.Z (W64 (sint.Z x)) = sint.Z x.
 Proof.
   unfold W64.
   rewrite word.signed_of_Z.
-  rewrite swrap_small; auto; first by lia.
+  rewrite swrap_small; auto.
   pose proof (word.signed_range x); lia.
 Qed.
 
@@ -234,7 +234,7 @@ Theorem s32_to_s64_Z (x:w32) : sint.Z (W64 (sint.Z x)) = sint.Z x.
 Proof.
   unfold W64.
   rewrite word.signed_of_Z.
-  rewrite swrap_small; auto; first by lia.
+  rewrite swrap_small; auto.
   pose proof (word.signed_range x); lia.
 Qed.
 
@@ -243,7 +243,7 @@ Theorem s32_from_s64_Z (x: w64) : -2^(32-1) ≤ sint.Z x < 2^(32-1) ->
 Proof.
   unfold W32; intros.
   rewrite word.signed_of_Z.
-  rewrite swrap_small; auto; first by lia.
+  rewrite swrap_small; auto.
 Qed.
 
 Theorem tuple_to_list_length A n (t: tuple A n) :
@@ -471,6 +471,11 @@ Proof.
   - apply (inj sint.Z); auto.
 Qed.
 
+Lemma f_not_equal {A B} (f: A → B) (x y: A) :
+  f x ≠ f y →
+  x ≠ y.
+Proof. congruence. Qed.
+
 Lemma word_unsigned_ltu {width: Z} (word: Interface.word width) {Hok: word.ok word} (x y: word) :
   word.ltu x y = bool_decide (uint.Z x < uint.Z y).
 Proof.
@@ -494,12 +499,18 @@ Qed.
 
 Create HintDb word.
 
-Ltac word_cleanup :=
+Ltac word_cleanup_core :=
   repeat autounfold with word in *;
-  try match goal with
+  try lazymatch goal with
+      (* TODO: this isn't the right strategy if the numbers in the goal are used
+      signed. [word] can try both via backtracking, but this can't be part of
+      "cleanup".  *)
       | |- @eq u64 _ _ => apply word.unsigned_inj
       | |- @eq u32 _ _ => apply word.unsigned_inj
       | |- @eq u8 _ _ => apply word.unsigned_inj
+      | |- not (@eq u64 _ _) => apply (f_not_equal uint.Z)
+      | |- not (@eq u32 _ _) => apply (f_not_equal uint.Z)
+      | |- not (@eq u8 _ _) => apply (f_not_equal uint.Z)
       end;
   (* can't replace this with [autorewrite], probably because typeclass inference
   isn't the same *)
@@ -533,16 +544,39 @@ Ltac word_cleanup :=
            | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
            | _ => pose proof (word.unsigned_range x)
            end
+         | [ |- context[sint.Z ?x] ] =>
+           lazymatch goal with
+           | [ H': - (2^ _) ≤ sint.Z x < 2^_ |- _ ] => fail
+           | _ => pose proof (word.signed_range x)
+           end
+         | [ H: context[sint.Z ?x] |- _ ] =>
+           lazymatch goal with
+           | [ H': - (2^ _) ≤ sint.Z x < 2^_ |- _ ] => fail
+           | _ => pose proof (word.signed_range x)
+           end
          end;
   repeat match goal with
          | |- context[@word.wrap _ ?word ?ok ?z] =>
            rewrite (@wrap_small _ word ok z) by lia
+         | |- context[@word.swrap _ ?word ?ok ?z] =>
+           rewrite (@swrap_small _ word ok z) by lia
          | |- context[Z.of_nat (Z.to_nat ?z)] =>
            rewrite (Z2Nat.id z) by lia
-         end;
-  try lia.
+         end.
 
-Ltac word := solve [ word_cleanup ].
+(* TODO: only for backwards compatibility.
+
+[word_cleanup] should be be replaced with a new tactic
+that does a subset of safe and useful rewrites *)
+Ltac word_cleanup := word_cleanup_core; try lia.
+
+Ltac word := solve [
+                 word_cleanup_core;
+                 unfold word.wrap in *;
+                 (* NOTE: some inefficiency here because [lia] will do [zify]
+                 again, but we can't rebind the zify hooks in Ltac *)
+                 zify; Z.div_mod_to_equations; lia
+               ].
 
 Theorem Z_u32 z :
   0 <= z < 2 ^ 32 ->
@@ -640,31 +674,9 @@ Lemma u64_round_up_spec x div :
   uint.Z (u64_round_up x div) < 2^64.
 Proof.
   intros. unfold u64_round_up.
-  rewrite word.unsigned_mul, word.unsigned_divu. 2:word.
-  rewrite word.unsigned_add.
-  rewrite (wrap_small (_ + _)). 2:word.
-  rewrite (wrap_small (_ `div` _)).
-  2:{
-    split.
-    - apply Z_div_nonneg_nonneg; word.
-    - assert (0 < word.unsigned div) as Hdiv by lia.
-      pose proof (ZLib.Z.div_mul_undo_le (uint.Z x + uint.Z div) (uint.Z div) Hdiv) as Hdivle.
-      lia. }
-  rewrite wrap_small.
-  2:{
-    split.
-    - apply Z.mul_nonneg_nonneg. 2:word. apply Z_div_nonneg_nonneg; word.
-    - apply Z.lt_le_pred. etrans. 1: apply ZLib.Z.div_mul_undo_le. all: word. }
+  rewrite -> word.unsigned_mul_nowrap, word.unsigned_divu_nowrap by word.
+  rewrite -> word.unsigned_add_nowrap by word.
   split.
   { rewrite Z.mul_comm. apply ZLib.Z.Z_mod_mult'. }
-  set (x' := uint.Z x).
-  set (div' := uint.Z div).
-  opose proof (Z.div_mod (x' + div') div' _) as Heq. 1:word.
-  replace ((x' + div') `div` div' * div') with (x' + div' - (x' + div') `mod` div') by lia.
-  assert ((x' + div') `mod` div' < div').
-  { apply Z.mod_pos_bound. lia. }
-  split.
-  { apply Z.le_succ_l. lia. }
-  assert (0 ≤ (x' + div') `mod` div'). 2:lia.
-  apply Z_mod_nonneg_nonneg; word.
+  word.
 Qed.

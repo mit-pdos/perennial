@@ -58,7 +58,6 @@ Context `{!heapGS Σ}.
 Context `{!circG Σ}.
 
 Context (N: namespace).
-Context (P: circΣ.t -> iProp Σ).
 
 Record circ_names : Set :=
   { addrs_name: gname;
@@ -275,6 +274,8 @@ Definition circular_crash_ghost_exchange (γold γnew : circ_names) : iProp Σ :
   (start_is γold (1/2) start ∨ start_is γnew (1/2) start) ∗
   (diskEnd_is γold (1/2) dend ∨ diskEnd_is γnew (1/2) dend).
 *)
+
+Context (P: circΣ.t -> iProp Σ).
 
 Definition is_circular γ : iProp Σ :=
   ncinv N (∃ σ, is_circular_state γ σ ∗ P σ).
@@ -533,6 +534,7 @@ Lemma diskEnd_advance_unchanged:
              (set upds (drop (Z.to_nat (uint.Z newStart - uint.Z (start σ)))) σ))
     = circΣ.diskEnd σ.
 Proof.
+  clear P.
   rewrite /circΣ.diskEnd /=.
   intros.
   len.
@@ -570,6 +572,7 @@ Lemma circ_positions_advance (newStart: u64) γ σ (start0: u64) :
                         (set upds (drop (Z.to_nat (uint.Z newStart - uint.Z (start σ)))) σ)) ∗
   start_is γ (1/2) newStart ∗ start_at_least γ newStart.
 Proof.
+  clear P.
   iIntros (Hwf Hmono) "[Hpos Hstart1]".
   iDestruct (start_is_to_eq with "[$] [$]") as %?; subst.
   iDestruct "Hpos" as "[Hstart2 Hend2]".
@@ -981,8 +984,7 @@ Proof.
   induction upds; simpl; intros; auto.
   rewrite -> IHupds by word.
   rewrite list_lookup_insert_ne; auto.
-  apply Zto_nat_neq_inj; try (mod_bound; word).
-  apply mod_neq_gt; try word.
+  word.
 Qed.
 
 Theorem lookup_update_circ_new {A B} (f: A -> B) xs (endpos: Z) upds i :
@@ -1070,6 +1072,7 @@ Lemma circ_positions_append upds γ σ (startpos endpos: u64) :
   |==> circ_positions γ (set circ_proof.upds (λ u : list update.t, u ++ upds) σ) ∗
        diskEnd_is γ (1/2) (uint.Z endpos + length upds).
 Proof.
+  clear P.
   iIntros (Hendpos_overflow Hhasspace) "[$ Hend1] #Hstart Hend2".
   rewrite /circΣ.diskEnd /=; autorewrite with len.
   iDestruct (diskEnd_is_agree with "Hend1 Hend2") as %Heq; rewrite Heq.

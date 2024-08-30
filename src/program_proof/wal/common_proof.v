@@ -191,6 +191,7 @@ Lemma is_txn_mid σ (a b c : nat) pos :
   a ≤ b ≤ c ->
   is_txn σ.(log_state.txns) b pos.
 Proof.
+  clear P.
   rewrite /is_txn /wal_wf; intros Hwf Ha Hc Hle.
   destruct Hwf as [_ [Hwf _]].
   destruct (decide (a < b)).
