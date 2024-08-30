@@ -748,24 +748,24 @@ Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
 Tactic Notation "wp_loadField" :=
   let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _] { _ } _)%I) => l end in
-    iAssumptionCore || fail "wp_loadField: cannot find" l "↦[d :: f] ?" in
+    iAssumptionCore || fail 1 "wp_loadField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
-  wp_bind (struct.loadF _ _ (Val _));
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+      first [wp_bind (struct.loadF _ _ (Val _))
+            | fail "wp_loadField: cannot find 'struct.loadF' in" e ]
+  | _ => fail "wp_loadField: not a 'wp'"
+  end;
   match goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [eapply tac_wp_loadField_ro
-      |fail 1 "wp_loadField: cannot find 'struct.loadF' in" e];
+    eapply tac_wp_loadField_ro;
     [iAssumptionCore
     |]
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [eapply tac_wp_loadField
-      |fail 1 "wp_loadField: cannot find 'struct.loadF' in" e];
+    eapply tac_wp_loadField;
     [tc_solve
     |solve_pointsto ()
     |]
-  | _ => fail 1 "wp_loadField: not a 'wp'"
   end.
 
 Tactic Notation "wp_storeField" :=
@@ -773,16 +773,18 @@ Tactic Notation "wp_storeField" :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
     iAssumptionCore || fail "wp_storeField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
-  wp_bind (struct.storeF _ _ (Val _) (Val _));
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [eapply tac_wp_storeField
-      |fail 1 "wp_storeField: cannot find 'storeField' in" e];
+      first [wp_bind (struct.storeF _ _ (Val _) (Val _))
+            | fail "wp_storeField: cannot find 'struct.storeF' in" e ]
+  | _ => fail "wp_storeField: not a 'wp'"
+  end;
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    eapply tac_wp_storeField;
     [val_ty
     |tc_solve
     |solve_pointsto ()
     |pm_reflexivity
     |try (wp_pure_filter (Rec BAnon BAnon _); wp_rec)]
-  | _ => fail "wp_storeField: not a 'wp'"
   end.
