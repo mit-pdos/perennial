@@ -23,7 +23,7 @@ Context `{!heapGS Σ, !pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
   ∃ ptr_tr sl_prevLink sl_dig sl_link sl_linkSig d0 d1 d2 d3,
-  "Htr" ∷ own_Tree ptr_tr obj.(tree) ∗
+  "Htr" ∷ own_merkle ptr_tr obj.(tree) ∗
   "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
   "Hsl_dig" ∷ own_slice_small sl_dig byteT d1 obj.(dig) ∗
   "Hsl_link" ∷ own_slice_small sl_link byteT d2 obj.(link) ∗
@@ -70,7 +70,7 @@ Definition wp_put ptr_chain chain ptr_tree tree sl_sk pk γ γtrees γtree :
   {{{
     "Hown_chain" ∷ own ptr_chain chain ∗
     "#Hvalid_chain" ∷ valid pk γtrees chain ∗
-    "Hown_tree" ∷ own_Tree ptr_tree tree ∗
+    "Hown_tree" ∷ own_merkle ptr_tree tree ∗
     "Hown_sk" ∷ own_sk sl_sk pk (serv_sigpred γ) ∗
     "#Hpers_updates" ∷ ghost_map_auth_pers γtree tree
   }}}
@@ -324,7 +324,7 @@ Qed.
 
 Lemma wp_applyUpdates ptr_currTr currTr (updates : gmap _ (list w8)) ptr_updates sl_updates d0 :
   {{{
-    "Hown_currTr" ∷ own_Tree ptr_currTr currTr ∗
+    "Hown_currTr" ∷ own_merkle ptr_currTr currTr ∗
     "#Hsl_updates" ∷ ([∗ map] id ↦ sl_v; v ∈ (kmap string_to_bytes sl_updates); updates,
       "#Hsl_v" ∷ own_slice_small sl_v byteT DfracDiscarded v ∗
       "%Hlen_id" ∷ ⌜ length id = hash_len ⌝) ∗
@@ -333,9 +333,9 @@ Lemma wp_applyUpdates ptr_currTr currTr (updates : gmap _ (list w8)) ptr_updates
   applyUpdates #ptr_currTr #ptr_updates
   {{{
     ptr_nextTr, RET #ptr_nextTr;
-    "Hown_currTr" ∷ own_Tree ptr_currTr currTr ∗
+    "Hown_currTr" ∷ own_merkle ptr_currTr currTr ∗
     "Hown_updates" ∷ own_map ptr_updates d0 sl_updates ∗
-    "Hown_nextTr" ∷ own_Tree ptr_nextTr (updates ∪ currTr)
+    "Hown_nextTr" ∷ own_merkle ptr_nextTr (updates ∪ currTr)
   }}}.
 Proof.
   rewrite /applyUpdates.
@@ -352,7 +352,7 @@ Proof.
     to work with. no rewriting under filter preds. *)
     "%Hdom" ∷ ⌜ dom mdone = dom sl_mdone' ⌝ ∗
     "%Hsubset" ∷ ⌜ mdone ⊆ updates ⌝ ∗
-    "Hown_nextTr" ∷ own_Tree ptr_nextTr (mdone ∪ currTr))%I).
+    "Hown_nextTr" ∷ own_merkle ptr_nextTr (mdone ∪ currTr))%I).
   wp_apply (wp_MapIter_3 _ _ _ _ _ loopInv with "[$Hown_updates] [Hown_nextTr]");
     rewrite /loopInv {loopInv}.
   {

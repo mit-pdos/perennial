@@ -38,7 +38,7 @@ Definition is_com_st γ com_st : iProp Σ :=
   "#Hmaps" ∷ ([∗ list] γ;m ∈ com_st.(γkey_maps);com_st.(key_maps),
     ghost_map_auth_pers γ m) ∗
   "#Hdigs" ∷ ([∗ list] m;d ∈ com_st.(key_maps);com_st.(digs),
-    is_tree_dig m d) ∗
+    is_dig m d) ∗
   "%Hlen_links" ∷ ⌜ length com_st.(digs) = length com_st.(links) ⌝ ∗
   "#Hlinks" ∷ ([∗ list] e↦l ∈ com_st.(links),
     is_chain (take e com_st.(digs)) l).
@@ -140,7 +140,7 @@ Proof.
     iApply (ghost_map_auth_pers_pers_agree with "[$H1] [$H2]"). }
   unshelve (iDestruct (big_sepL2_func_prefix with "Hdigs0 Hdigs1") as %Hpref2; [done|]).
   { iIntros ([??]??) "H1 H2".
-    iApply (is_tree_dig_func with "[$H1] [$H2]"). }
+    iApply (is_dig_func with "[$H1] [$H2]"). }
   destruct Hpref2 as [?|?].
   - iLeft. by iApply (links_prefix_carry with "[$Hlinks0] [$Hlinks1]").
   - iRight. by iApply (links_prefix_carry with "[$Hlinks1] [$Hlinks0]").

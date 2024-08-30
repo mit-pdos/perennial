@@ -7,26 +7,26 @@ From Perennial.program_proof Require Import std_proof.
 Section external.
 Context `{!heapGS Σ}.
 
-(* Ownership of a logical merkle tree containing some entries. *)
-Definition own_Tree ptr_tr entries : iProp Σ :=
+(* own_merkle denotes ownership of a merkle tree containing some entries. *)
+Definition own_merkle ptr_tr entries : iProp Σ :=
   ∃ tr root,
   "%Htree" ∷ ⌜tree_to_map tr = entries⌝ ∗
   "Hnode" ∷ own_node root tr ∗
   "Hroot" ∷ ptr_tr ↦[Tree :: "Root"] #root.
 
-(* Knowledge that dig commits to the merkle tree containing some entries. *)
-Definition is_tree_dig entries dig : iProp Σ :=
+(* is_dig says that the tree with these entries has this digest. *)
+Definition is_dig entries dig : iProp Σ :=
   ∃ tr,
   "%Htree" ∷ ⌜tree_to_map tr = entries⌝ ∗
   "#Hdig" ∷ is_node_hash tr dig.
 
-Global Instance is_tree_dig_func : Func is_tree_dig.
+Global Instance is_dig_func : Func is_dig.
 Proof. Admitted.
-Global Instance is_tree_dig_inj : InjRel is_tree_dig.
+Global Instance is_dig_inj : InjRel is_dig.
 Proof. Admitted.
 
-(* Commits entry to a tree with some digest. *)
-Definition commits_entry id val digest : iProp Σ :=
+(* is_merkle_entry says that entry is contained in the tree with this digest. *)
+Definition is_merkle_entry id val digest : iProp Σ :=
   ∃ tr,
   is_node_hash tr digest ∧
   ⌜has_entry tr id
@@ -35,15 +35,15 @@ Definition commits_entry id val digest : iProp Σ :=
     | Some val' => Leaf val'
     end⌝.
 
-Lemma commits_entry_inj' pos rest val1 val2 digest :
-  commits_entry (pos :: rest) val1 digest -∗
-  commits_entry (pos :: rest) val2 digest -∗
+Lemma is_merkle_entry_inj' pos rest val1 val2 digest :
+  is_merkle_entry (pos :: rest) val1 digest -∗
+  is_merkle_entry (pos :: rest) val2 digest -∗
   ∃ digest',
-  commits_entry rest val1 digest' ∗
-  commits_entry rest val2 digest'.
+  is_merkle_entry rest val1 digest' ∗
+  is_merkle_entry rest val2 digest'.
 Proof.
   iIntros "Hval1 Hval2".
-  rewrite /commits_entry.
+  rewrite /is_merkle_entry.
   iDestruct "Hval1" as (tr1) "[Htree1 %Hcont1]".
   iDestruct "Hval2" as (tr2) "[Htree2 %Hcont2]".
   destruct tr1 as [| | |ct1], tr2 as [| | |ct2]; try naive_solver.
@@ -76,15 +76,15 @@ Proof.
   iFrame "%∗".
 Qed.
 
-Lemma commits_entry_inj id val1 val2 digest :
-  commits_entry id val1 digest -∗
-  commits_entry id val2 digest -∗
+Lemma is_merkle_entry_inj id val1 val2 digest :
+  is_merkle_entry id val1 digest -∗
+  is_merkle_entry id val2 digest -∗
   ⌜val1 = val2⌝.
 Proof.
   iInduction (id) as [|a] "IH" forall (digest);
     iIntros "Hpath1 Hpath2".
   {
-    rewrite /commits_entry.
+    rewrite /is_merkle_entry.
     iDestruct "Hpath1" as (tr1) "[Htree1 %Hcont1]".
     iDestruct "Hpath2" as (tr2) "[Htree2 %Hcont2]".
     destruct tr1 as [| | |ct1], tr2 as [| | |ct2], val1, val2; try naive_solver.
@@ -98,7 +98,7 @@ Proof.
     by list_simplifier.
   }
   {
-    iDestruct (commits_entry_inj' with "[$Hpath1] [$Hpath2]") as (digest') "[Hval1 Hval2]".
+    iDestruct (is_merkle_entry_inj' with "[$Hpath1] [$Hpath2]") as (digest') "[Hval1 Hval2]".
     by iSpecialize ("IH" $! digest' with "[$Hval1] [$Hval2]").
   }
 Qed.
@@ -161,20 +161,20 @@ Context `{!heapGS Σ}.
 
 Lemma wp_Tree_Digest ptr_tr entries :
   {{{
-    "Htree" ∷ own_Tree ptr_tr entries
+    "Htree" ∷ own_merkle ptr_tr entries
   }}}
   Tree__Digest #ptr_tr
   {{{
     sl_dig dig, RET (slice_val sl_dig);
-    "Htree" ∷ own_Tree ptr_tr entries ∗
+    "Htree" ∷ own_merkle ptr_tr entries ∗
     "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
-    "#HisDig" ∷ is_tree_dig entries dig
+    "#HisDig" ∷ is_dig entries dig
   }}}.
 Proof. Admitted.
 
 Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
   {{{
-    "Htree" ∷ own_Tree ptr_tr entries ∗
+    "Htree" ∷ own_merkle ptr_tr entries ∗
     "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
     "Hval" ∷ own_slice_small sl_val byteT d1 val
   }}}
@@ -186,18 +186,18 @@ Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
     "%Hvalid_id" ∷ ⌜ length id = hash_len → err = false ⌝ ∗
     "Herr" ∷
       if negb err then
-        "Htree" ∷ own_Tree ptr_tr (<[id:=val]>entries) ∗
+        "Htree" ∷ own_merkle ptr_tr (<[id:=val]>entries) ∗
         "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
-        "#HisDig" ∷ is_tree_dig (<[id:=val]>entries) dig ∗
+        "#HisDig" ∷ is_dig (<[id:=val]>entries) dig ∗
         "Hproof" ∷ is_Slice3D sl_proof proof
       else
-        "Htree" ∷ own_Tree ptr_tr entries
+        "Htree" ∷ own_merkle ptr_tr entries
   }}}.
 Proof. Admitted.
 
 Lemma wp_Tree_Get ptr_tr entries sl_id id d0 :
   {{{
-    "Htree" ∷ own_Tree ptr_tr entries ∗
+    "Htree" ∷ own_merkle ptr_tr entries ∗
     "Hid" ∷ own_slice_small sl_id byteT d0 id
   }}}
   Tree__Get #ptr_tr (slice_val sl_id)
@@ -208,22 +208,22 @@ Lemma wp_Tree_Get ptr_tr entries sl_id id d0 :
     "%Hvalid_id" ∷ ⌜ length id = hash_len → reply.(GetReply.Error) = false ⌝ ∗
     "Herr" ∷
       if negb reply.(GetReply.Error) then
-        "Htree" ∷ own_Tree ptr_tr (<[id:=reply.(GetReply.Val)]>entries) ∗
-        "#HisDig" ∷ is_tree_dig (<[id:=reply.(GetReply.Val)]>entries) reply.(GetReply.Digest)
+        "Htree" ∷ own_merkle ptr_tr (<[id:=reply.(GetReply.Val)]>entries) ∗
+        "#HisDig" ∷ is_dig (<[id:=reply.(GetReply.Val)]>entries) reply.(GetReply.Digest)
       else
-        "Htree" ∷ own_Tree ptr_tr entries
+        "Htree" ∷ own_merkle ptr_tr entries
   }}}.
 Proof. Admitted.
 
 Lemma wp_Tree_DeepCopy ptr_tr entries :
   {{{
-    "Htree" ∷ own_Tree ptr_tr entries
+    "Htree" ∷ own_merkle ptr_tr entries
   }}}
   Tree__DeepCopy #ptr_tr
   {{{
     ptr_new, RET #ptr_new;
-    "Htree" ∷ own_Tree ptr_tr entries ∗
-    "HnewTree" ∷ own_Tree ptr_new entries
+    "Htree" ∷ own_merkle ptr_tr entries ∗
+    "HnewTree" ∷ own_merkle ptr_new entries
   }}}.
 Proof. Admitted.
 
@@ -278,7 +278,7 @@ Lemma wp_pathProof_check ptr_proof proof val :
   {{{
     (err : bool), RET #err;
     if negb err then
-      "Hpath" ∷ commits_entry proof.(pathProof.id) val proof.(pathProof.digest)
+      "Hpath" ∷ is_merkle_entry proof.(pathProof.id) val proof.(pathProof.digest)
     else True%I
   }}}.
 Proof.
@@ -306,7 +306,7 @@ Proof.
       "Hptr_currHash" ∷ ptr_currHash ↦[slice.T byteT] sl_currHash ∗
       "Hptr_err" ∷ ptr_err ↦[boolT] #err ∗
       "Herr_pred" ∷ if negb err then
-        "Hpath_val" ∷ commits_entry
+        "Hpath_val" ∷ is_merkle_entry
           (drop (length proof.(pathProof.id) - (Z.to_nat (word.unsigned loopIdx)))
           proof.(pathProof.id)) val currHash
       else True)%I : w64 → iProp Σ.
@@ -425,7 +425,7 @@ Proof.
     (* Done with code, now re-establish loop inv. *)
 
     destruct err; iNamed "Herr_pred"; iApply "HΦ2"; iFrame "#∗"; [done|].
-    rewrite /commits_entry.
+    rewrite /is_merkle_entry.
     iDestruct "Herr_pred" as "[Htr_hash %Htr_contains]".
     iExists (Interior (
       ((λ h, Cut h) <$> (take (uint.nat pos) obj_dim1')) ++
@@ -522,7 +522,7 @@ Lemma wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_digest (id v
     (err : bool), RET #err;
     "Hvalid_proof" ∷ (is_merkle_proof proof id val digest -∗ ⌜ err = false ⌝) ∗
     if negb err then
-      "#Hpath" ∷ commits_entry id (if proofTy then Some val else None) digest
+      "#Hpath" ∷ is_merkle_entry id (if proofTy then Some val else None) digest
     else True%I
   }}}.
 Proof. Admitted.

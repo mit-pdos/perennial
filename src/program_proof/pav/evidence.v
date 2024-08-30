@@ -95,12 +95,8 @@ Proof.
   iNamed "H". iClear "tag".
   iMod (own_slice_small_persist with "Hsl_prevLink") as "#Hsl_prevLink".
   iMod (own_slice_small_persist with "Hsl_dig") as "#Hsl_dig".
-  wp_apply (chainSepSome.wp_encode with "[epoch prevLink data]").
-  {
-    instantiate (1:=chainSepSome.mk _ _ _).
-    rewrite /chainSepSome.own /=.
-    iFrame "epoch data prevLink #".
-  }
+  wp_apply (chainSepSome.wp_encode (chainSepSome.mk _ _ _) with "[epoch prevLink data]").
+  { rewrite /chainSepSome.own /=. iFrame "epoch data prevLink #". }
   iIntros (??). iNamedSuffix 1 "_pre".
 
   (* hash link. *)
@@ -113,12 +109,8 @@ Proof.
   iIntros (?) "H".
   iDestruct (struct_fields_split with "H") as "H".
   iNamed "H". iClear "tag".
-  wp_apply (servSepLink.wp_encode with "[link]").
-  {
-    instantiate (1:=servSepLink.mk _).
-    rewrite /servSepLink.own /=.
-    iFrame "link #".
-  }
+  wp_apply (servSepLink.wp_encode (servSepLink.mk _) with "[link]").
+  { rewrite /servSepLink.own /=. iFrame "link #". }
   iIntros (??). iNamedSuffix 1 "_sep".
 
   (* verify sig. *)
@@ -134,13 +126,12 @@ Proof.
   iFrame "His_hash_pre".
   (* deal with various combos of ok and bi_iff. *)
   destruct ok; iIntros "!>"; iSplit.
-  { naive_solver. }
-  3: { by iIntros "%". }
+  - naive_solver.
   - iDestruct "Hgenie" as "[_ Hgenie]".
-    by iDestruct ("Hgenie" with "[]") as "$".
-  - iNamedSuffix 1 "'".
-    iDestruct "Hgenie" as "[Hgenie _]".
+    by iDestruct ("Hgenie" with "[//]") as "$".
+  - iNamedSuffix 1 "'". iDestruct "Hgenie" as "[Hgenie _]".
     by iDestruct ("Hgenie" with "His_sig'") as %?.
+  - by iIntros "%".
 Qed.
 
 Lemma wp_evidServLink_check ptr_evid evid sl_pk pk γ d0 :
@@ -187,9 +178,9 @@ Proof.
     iDestruct ("Hgenie1" with "[$]") as "$". }
 
   iDestruct "Hgenie0" as "[_ Hgenie0]".
-  iDestruct ("Hgenie0" with "[]") as "#His_sigLn0"; [done|].
+  iDestruct ("Hgenie0" with "[//]") as "#His_sigLn0".
   iDestruct "Hgenie1" as "[_ Hgenie1]".
-  iDestruct ("Hgenie1" with "[]") as "#His_sigLn1"; [done|].
+  iDestruct ("Hgenie1" with "[//]") as "#His_sigLn1".
 
   (* case: link epochs equal and links differ. *)
   iNamedSuffix "Hown_sigLn0" "0". iNamedSuffix "Hown_sigLn1" "1".
@@ -231,10 +222,10 @@ Proof.
       iPureIntro.
       rewrite -Heq_epoch0 in Hlook_ln1'.
       destruct Hpref as [Hpref | Hpref].
-      (* core reason: link0 differs from link1.
+      (* contradiction: link0 differs from link1.
       they're at the same epoch of prefixed lists. *)
-      { pose proof (prefix_lookup_Some _ _ _ _ Hlook_ln0' Hpref) as ?. naive_solver. }
-      { pose proof (prefix_lookup_Some _ _ _ _ Hlook_ln1' Hpref) as ?. naive_solver. }
+      + pose proof (prefix_lookup_Some _ _ _ _ Hlook_ln0' Hpref) as ?. naive_solver.
+      + pose proof (prefix_lookup_Some _ _ _ _ Hlook_ln1' Hpref) as ?. naive_solver.
   }
 
   (* case: S epoch0 = epoch1 and link0 differs from prevLink1. *)
@@ -245,24 +236,22 @@ Proof.
 
   (* we take two w64 props and show that they're equal to a nat prop.
   the latter can be more easily used in list lemmas. *)
-  assert (
-    bool_decide
-    ((uint.Z (W64 0) < uint.Z evid.(evidServLink.sigLn1).(signedLink.epoch))%Z
-      ∧ (#evid.(evidServLink.sigLn0).(signedLink.epoch) =
-        #(LitInt (word.sub evid.(evidServLink.sigLn1).(signedLink.epoch) (W64 1))))%V) =
+  evar (tmp_cond : bool). wp_bind (If #?tmp_cond _ _).
+  assert (tmp_cond =
     bool_decide (S (uint.nat evid.(evidServLink.sigLn0).(signedLink.epoch)) =
-      uint.nat evid.(evidServLink.sigLn1).(signedLink.epoch))) as ->.
+    uint.nat evid.(evidServLink.sigLn1).(signedLink.epoch))) as Htmp; subst tmp_cond.
   { replace (uint.Z (W64 0)) with (0%Z) by word.
     case_bool_decide as H10; case_bool_decide as H11.
-    { naive_solver. }
     #[local] Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
-    { destruct H10 as [H9 H10].
+    - naive_solver.
+    - destruct H10 as [H9 H10].
       apply inv_litint in H10.
-      rewrite H10 word.unsigned_sub /word.wrap in H11. word. }
-    { apply Classical_Prop.not_and_or in H10 as [H10 | H10]; [lia|].
+      rewrite H10 word.unsigned_sub /word.wrap in H11. word.
+    - apply Classical_Prop.not_and_or in H10 as [H10 | H10]; [lia|].
       apply u64_val_ne in H10.
-      rewrite word.unsigned_sub /word.wrap in H10. word. }
-    { naive_solver. } }
+      rewrite word.unsigned_sub /word.wrap in H10. word.
+    - naive_solver. }
+  rewrite Htmp {Htmp}.
 
   wp_if_destruct; move: Heqb1 => Heq_epoch1.
   { (* S epoch0 = epoch1. *)
@@ -300,8 +289,8 @@ Proof.
         (uint.nat evid.(evidServLink.sigLn0).(signedLink.epoch)) _)
         as [? Hlook_prevLn1].
       { opose proof (lookup_lt_is_Some_1 _ _ _) as ?.
-        { eexists. exact Hlook_ln1'. }
-        lia. }
+        + eexists. exact Hlook_ln1'.
+        + lia. }
       iNamedSuffix "His_com1'" "1".
       iDestruct (big_sepL_lookup with "Hlinks1") as "His_chain_prevLn1".
       { exact Hlook_prevLn1. }
@@ -311,8 +300,8 @@ Proof.
       opose proof (lookup_lt_is_Some_2 com_st0.(digs)
         (uint.nat evid.(evidServLink.sigLn0).(signedLink.epoch)) _) as [? Hlook_tmp].
       { opose proof (lookup_lt_is_Some_1 _ _ _) as ?.
-        { eexists. exact Hlook_prevLn1. }
-        lia. }
+        + eexists. exact Hlook_prevLn1.
+        + lia. }
       opose proof (take_S_r _ _ _ _) as Htake_digs.
       { exact Hlook_tmp. }
       clear Hlook_tmp.
@@ -324,10 +313,10 @@ Proof.
 
       iPureIntro.
       destruct Hpref as [Hpref | Hpref].
-      (* core reason: link0 differs from prevLink1.
+      (* contradiction: link0 differs from prevLink1.
       they're at the same epoch of prefixed lists. *)
-      { pose proof (prefix_lookup_Some _ _ _ _ Hlook_ln0' Hpref) as ?. naive_solver. }
-      { pose proof (prefix_lookup_Some _ _ _ _ Hlook_prevLn1 Hpref) as ?. naive_solver. }
+      + pose proof (prefix_lookup_Some _ _ _ _ Hlook_ln0' Hpref) as ?. naive_solver.
+      + pose proof (prefix_lookup_Some _ _ _ _ Hlook_prevLn1 Hpref) as ?. naive_solver.
   }
 
   (* failed both if conds, so no valid evid. *)
@@ -339,8 +328,47 @@ Proof.
 
   iPureIntro.
   destruct Hneq_links' as [[Heq _] | [Heq _]].
-  { by rewrite Heq in Heq_epoch0. }
-  { by rewrite Heq in Heq_epoch1. }
+  - by rewrite Heq in Heq_epoch0.
+  - by rewrite Heq in Heq_epoch1.
+Qed.
+
+Lemma wp_signedPut_check ptr_sigPut sigPut sl_pk pk d0 γ :
+  {{{
+    "Hown_sigPut" ∷ signedPut.own ptr_sigPut sigPut ∗
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "#Hpk" ∷ is_pk pk (serv_sigpred γ)
+  }}}
+  signedPut__check #ptr_sigPut (slice_val sl_pk)
+  {{{
+    (err : bool), RET #err;
+    "Hown_sigPut" ∷ signedPut.own ptr_sigPut sigPut ∗
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "Hgenie" ∷ (is_signedPut pk sigPut ∗-∗ ⌜ err = false ⌝)
+  }}}.
+Proof.
+  rewrite /signedPut__check.
+  iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_sigPut".
+  do 3 wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros (?) "Hptr_sep".
+  iDestruct (struct_fields_split with "Hptr_sep") as "H".
+  iNamed "H". iClear "tag".
+  wp_apply (servSepPut.wp_encode (servSepPut.mk _ _ _) with "[epoch id val Hsl_id Hsl_val]").
+  { rewrite /servSepPut.own /=. iFrame "epoch id val ∗". }
+  iIntros (??). iNamedSuffix 1 "_sep".
+  wp_loadField.
+  wp_apply (wp_Verify (serv_sigpred γ) with "[$Hsl_pk $Hsl_sig $Hsl_enc_sep]").
+  iIntros (?). iNamedSuffix 1 "_ver".
+  wp_pures. iApply "HΦ". iNamed "Hobj_sep".
+  iFrame "Hptr_epoch Hptr_id Hptr_val Hptr_sig ∗".
+  iEval (rewrite Henc_sep) in "Hgenie_ver".
+  iIntros "!> /=". destruct ok; iSplit.
+  - eauto.
+  - iIntros "_". iDestruct "Hgenie_ver" as "[_ Hgenie_ver]".
+    iDestruct ("Hgenie_ver" with "[//]") as "$".
+  - iIntros "His_sigPut". iDestruct "Hgenie_ver" as "[Hgenie_ver _]".
+    by iDestruct ("Hgenie_ver" with "His_sigPut") as %?.
+  - by iIntros "%".
 Qed.
 
 Lemma wp_evidServPut_check ptr_evid evid sl_pk pk γ d0 :
@@ -357,6 +385,14 @@ Lemma wp_evidServPut_check ptr_evid evid sl_pk pk γ d0 :
     if negb err then False else True
   }}}.
 Proof. Admitted.
+(*
+now let's tie up the put evidence proof!
+what's the core reasoning here?
+we contradict a merkle proof with a put promise.
+but merkle proof is by default isolated onto some dig.
+using a signed link that includes that dig, we know it talks about
+the same map as the put promise.
+*)
 (*
   rewrite /evidServPut__check.
   iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hevid".

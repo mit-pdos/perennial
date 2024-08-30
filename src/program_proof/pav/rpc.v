@@ -22,22 +22,21 @@ Proof. Admitted.
 
 Section local_defs.
 Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_prevLink sl_data d0 d1,
+Definition own ptr obj sl_prevLink sl_data d0 d1 : iProp Σ :=
   "Hepoch" ∷ ptr ↦[chainSepSome :: "epoch"] #obj.(epoch) ∗
   "HprevLink" ∷ ptr ↦[chainSepSome :: "prevLink"] (slice_val sl_prevLink) ∗
   "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
   "Hdata" ∷ ptr ↦[chainSepSome :: "data"] (slice_val sl_data) ∗
   "Hsl_data" ∷ own_slice_small sl_data byteT d1 obj.(data).
 
-Lemma wp_encode ptr obj :
+Lemma wp_encode obj ptr sl_prevLink sl_data d0 d1 :
   {{{
-    "Hobj" ∷ own ptr obj
+    "Hobj" ∷ own ptr obj sl_prevLink sl_data d0 d1
   }}}
     chainSepSome__encode #ptr
   {{{
     sl_enc enc, RET (slice_val sl_enc);
-    "Hobj" ∷ own ptr obj ∗
+    "Hobj" ∷ own ptr obj sl_prevLink sl_data d0 d1 ∗
     "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) enc ∗
     "%Henc" ∷ ⌜encodes enc obj⌝
   }}}.
@@ -62,19 +61,18 @@ Proof. Admitted.
 
 Section local_defs.
 Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_link d0,
+Definition own ptr obj sl_link d0 : iProp Σ :=
   "Hlink" ∷ ptr ↦[servSepLink :: "link"] (slice_val sl_link) ∗
   "Hsl_link" ∷ own_slice_small sl_link byteT d0 obj.(link).
 
-Lemma wp_encode ptr obj :
+Lemma wp_encode obj ptr sl_link d0 :
   {{{
-    "Hobj" ∷ own ptr obj
+    "Hobj" ∷ own ptr obj sl_link d0
   }}}
     servSepLink__encode #ptr
   {{{
     sl_enc enc, RET (slice_val sl_enc);
-    "Hobj" ∷ own ptr obj ∗
+    "Hobj" ∷ own ptr obj sl_link d0 ∗
     "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) enc ∗
     "%Henc" ∷ ⌜encodes enc obj⌝
   }}}.
@@ -95,28 +93,28 @@ Definition encodesF (obj : t) : list w8 :=
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 
+(* TODO: use stdpp Inj. *)
 Lemma inj obj0 obj1 :
   encodesF obj0 = encodesF obj1 → obj0 = obj1.
 Proof. Admitted.
 
 Section local_defs.
 Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_id sl_val d0 d1,
+Definition own ptr obj sl_id sl_val d0 d1 : iProp Σ :=
   "Hepoch" ∷ ptr ↦[servSepPut :: "epoch"] #obj.(epoch) ∗
   "Hid" ∷ ptr ↦[servSepPut :: "id"] (slice_val sl_id) ∗
   "Hsl_id" ∷ own_slice_small sl_id byteT d0 obj.(id) ∗
   "Hval" ∷ ptr ↦[servSepPut :: "val"] (slice_val sl_val) ∗
   "Hsl_val" ∷ own_slice_small sl_val byteT d1 obj.(val).
 
-Lemma wp_encode ptr obj :
+Lemma wp_encode obj ptr sl_id sl_val d0 d1 :
   {{{
-    "Hobj" ∷ own ptr obj
+    "Hobj" ∷ own ptr obj sl_id sl_val d0 d1
   }}}
     servSepPut__encode #ptr
   {{{
     sl_enc enc, RET (slice_val sl_enc);
-    "Hobj" ∷ own ptr obj ∗
+    "Hobj" ∷ own ptr obj sl_id sl_val d0 d1 ∗
     "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) enc ∗
     "%Henc" ∷ ⌜encodes enc obj⌝
   }}}.
