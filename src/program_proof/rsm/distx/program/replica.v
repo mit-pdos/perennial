@@ -1992,7 +1992,7 @@ Section program.
       { apply Hdom. }
       { apply Hvk. }
       { apply Hvg. }
-      { rewrite uint_nat_W64; last word. apply Happly. }
+      { rewrite uint_nat_W64_of_nat; last word. apply Happly. }
       iIntros "Htpls".
       wp_pures.
       simpl in Happly.
@@ -2005,7 +2005,7 @@ Section program.
       wp_apply (wp_Replica__applyPrepare with "Hrp [$Hst $HpwrsS]").
       { apply Hdom. }
       { apply Hvw. }
-      { rewrite uint_nat_W64; last word. apply Happly. }
+      { rewrite uint_nat_W64_of_nat; last word. apply Happly. }
       iIntros "Hst".
       wp_pures.
       iApply "HΦ".
@@ -2014,7 +2014,7 @@ Section program.
     { (* Case: Commit. *)
       wp_apply (wp_Replica__applyCommit with "Hlbs Hrp Hst").
       { apply Hsafe. word. }
-      { by rewrite uint_nat_W64; last word. }
+      { by rewrite uint_nat_W64_of_nat; last word. }
       iIntros "Hst".
       wp_pures.
       iApply "HΦ".
@@ -2023,7 +2023,7 @@ Section program.
     { (* Case: Abort. *)
       wp_apply (wp_Replica__applyAbort with "Hrp Hst").
       { apply Hsafe. word. }
-      { by rewrite uint_nat_W64; last word. }
+      { by rewrite uint_nat_W64_of_nat; last word. }
       iIntros "Hst".
       wp_pures.
       iApply "HΦ".

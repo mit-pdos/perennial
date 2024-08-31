@@ -8,6 +8,11 @@ Section program.
   Definition is_rg (rg : loc) (gid : groupid) (γ : distx_names) : iProp Σ.
   Admitted.
 
+  #[global]
+  Instance is_rg_persistent rg gid γ :
+    Persistent (is_rg rg gid γ).
+  Admitted.
+
   Theorem wp_ReplicaGroup__changeLeader (rg : loc) :
     {{{ True }}}
       ReplicaGroup__changeLeader #rg
@@ -58,7 +63,8 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_ReplicaGroup__Read (rg : loc) (ts : u64) (key : string) :
+  Theorem wp_ReplicaGroup__Read (rg : loc) (ts : u64) (key : string) gid γ :
+    is_rg rg gid γ -∗
     {{{ True }}}
       ReplicaGroup__Read #rg #ts #(LitString key)
     {{{ (value : dbval), RET (dbval_to_val value); True }}}.
@@ -83,6 +89,7 @@ Section program.
 
   Theorem wp_ReplicaGroup__Prepare
     (rg : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) (pwrs : dbmap) gid γ :
+    is_rg rg gid γ -∗
     {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
       ReplicaGroup__Prepare #rg #ts (to_val pwrsS)
     {{{ (st : txnst), RET #(txnst_to_u64 st); txn_token γ gid (uint.nat ts) st }}}.

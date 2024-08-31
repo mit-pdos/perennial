@@ -580,14 +580,49 @@ Definition Txn__begin: val :=
     struct.storeF Txn "ts" "txn" (GetTS #());;
     #().
 
+Definition Txn__resetwrs: val :=
+  rec: "Txn__resetwrs" "txn" :=
+    MapIter (struct.loadF Txn "wrs" "txn") (λ: "gid" <>,
+      MapInsert (struct.loadF Txn "wrs" "txn") "gid" (NewMap stringT (struct.t Value) #()));;
+    #().
+
+Definition KeyToGroup: val :=
+  rec: "KeyToGroup" "key" :=
+    #0.
+
+Definition Txn__setwrs: val :=
+  rec: "Txn__setwrs" "txn" "key" "value" :=
+    let: "gid" := KeyToGroup "key" in
+    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+    MapInsert "pwrs" "key" "value";;
+    #().
+
+Definition Txn__getwrs: val :=
+  rec: "Txn__getwrs" "txn" "key" :=
+    let: "gid" := KeyToGroup "key" in
+    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+    let: ("v", "ok") := MapGet "pwrs" "key" in
+    ("v", "ok").
+
+Definition Txn__resetptgs: val :=
+  rec: "Txn__resetptgs" "txn" :=
+    struct.storeF Txn "ptgs" "txn" (SliceTake (struct.loadF Txn "ptgs" "txn") #0);;
+    #().
+
 Definition Txn__setptgs: val :=
   rec: "Txn__setptgs" "txn" :=
-    let: "ptgs" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    let: "ptgs" := ref_to (slice.T uint64T) (struct.loadF Txn "ptgs" "txn") in
     MapIter (struct.loadF Txn "wrs" "txn") (λ: "gid" "pwrs",
       (if: (MapLen "pwrs") ≠ #0
       then "ptgs" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "ptgs") "gid")
       else #()));;
     struct.storeF Txn "ptgs" "txn" (![slice.T uint64T] "ptgs");;
+    #().
+
+Definition Txn__reset: val :=
+  rec: "Txn__reset" "txn" :=
+    Txn__resetwrs "txn";;
+    Txn__resetptgs "txn";;
     #().
 
 (* Main proof for this simplified program. *)
@@ -608,10 +643,6 @@ Definition Txn__prepare: val :=
         "i" <-[uint64T] ((![uint64T] "i") + #1);;
         Continue));;
     ![uint64T] "status".
-
-Definition Txn__reset: val :=
-  rec: "Txn__reset" "txn" :=
-    #().
 
 Definition Txn__commit: val :=
   rec: "Txn__commit" "txn" :=
@@ -643,41 +674,32 @@ Definition Txn__cancel: val :=
     Txn__reset "txn";;
     #().
 
-Definition KeyToGroup: val :=
-  rec: "KeyToGroup" "key" :=
-    #0.
-
 Definition Txn__Read: val :=
   rec: "Txn__Read" "txn" "key" :=
-    let: "gid" := KeyToGroup "key" in
-    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
-    let: ("vlocal", "ok") := MapGet "pwrs" "key" in
+    let: ("vlocal", "ok") := Txn__getwrs "txn" "key" in
     (if: "ok"
     then "vlocal"
     else
+      let: "gid" := KeyToGroup "key" in
       let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
       let: "v" := ReplicaGroup__Read "rg" (struct.loadF Txn "ts" "txn") "key" in
       "v").
 
 Definition Txn__Write: val :=
   rec: "Txn__Write" "txn" "key" "value" :=
-    let: "gid" := KeyToGroup "key" in
-    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
     let: "v" := struct.mk Value [
       "b" ::= #true;
       "s" ::= "value"
     ] in
-    MapInsert "pwrs" "key" "v";;
+    Txn__setwrs "txn" "key" "v";;
     #().
 
 Definition Txn__Delete: val :=
   rec: "Txn__Delete" "txn" "key" :=
-    let: "gid" := KeyToGroup "key" in
-    let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
     let: "v" := struct.mk Value [
       "b" ::= #false
     ] in
-    MapInsert "pwrs" "key" "v";;
+    Txn__setwrs "txn" "key" "v";;
     #().
 
 (* Main proof for this simplifed program. *)

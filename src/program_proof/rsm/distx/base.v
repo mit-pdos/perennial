@@ -25,6 +25,18 @@ Definition dbval_from_val (v : val) : option dbval :=
   | _ => None
   end.
 
+#[global]
+Instance dbval_into_val : IntoVal dbval.
+Proof.
+  refine {|
+      to_val := dbval_to_val;
+      from_val := dbval_from_val;
+      IntoVal_def := None;
+    |}.
+  intros v.
+  by destruct v.
+Defined.
+
 Definition dbmod_to_val (x : dbmod) : val :=
   (#(LitString x.1), (dbval_to_val x.2, #())).
 
@@ -73,8 +85,8 @@ Definition txnst_to_u64 (s : txnst) :=
   | StAborted => (U64 3)
   end.
 
-Definition groupid := nat.
-Definition gids_all : gset groupid := list_to_set (seq 0 2).
+Definition groupid := w64.
+Definition gids_all : gset groupid := list_to_set (fmap W64 (seqZ 0 2)).
 
 (** Transaction R/C/A action. *)
 Inductive action :=
@@ -130,6 +142,15 @@ Lemma elem_of_ptgroups key keys :
   key ∈ keys ->
   key_to_group key ∈ ptgroups keys.
 Proof. apply elem_of_map_2. Qed.
+
+Lemma subseteq_ptgroups keys :
+  ptgroups keys ⊆ gids_all.
+Proof.
+  unfold ptgroups.
+  intros gid Hgid.
+  apply elem_of_map_1 in Hgid as [key [-> _]].
+  apply elem_of_key_to_group.
+Qed.
 
 Lemma wrs_group_elem_of_ptgroups gid pwrs wrs :
   pwrs ≠ ∅ ->
