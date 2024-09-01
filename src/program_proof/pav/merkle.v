@@ -25,7 +25,9 @@ Proof. Admitted.
 Global Instance is_dig_inj : InjRel is_dig.
 Proof. Admitted.
 
-(* is_merkle_entry says that entry is contained in the tree with this digest. *)
+(* is_merkle_entry says that (id, val) is contained in the tree with this digest.
+we use (val : option string) instead of (val : tree) bc there are really
+only two types of nodes we want to allow. *)
 Definition is_merkle_entry id val digest : iProp Σ :=
   ∃ tr,
   is_node_hash tr digest ∧
@@ -34,6 +36,16 @@ Definition is_merkle_entry id val digest : iProp Σ :=
     | None => Empty
     | Some val' => Leaf val'
     end⌝.
+
+(* is_merkle_entry_with_map says that if you know an entry as well
+as the underlying map, you can combine those to get a pure map fact. *)
+Lemma is_merkle_entry_with_map id val dig m :
+  is_merkle_entry id val dig -∗ is_dig m dig -∗
+  ⌜ match val with
+    | None => id ∉ dom m
+    | Some val' => m !! id = Some val'
+    end ⌝.
+Proof. Admitted.
 
 Lemma is_merkle_entry_inj' pos rest val1 val2 digest :
   is_merkle_entry (pos :: rest) val1 digest -∗
@@ -507,23 +519,36 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Definition is_merkle_proof (proof : list (list (list w8))) (id val dig : list w8) : iProp Σ.
+(* is_merkle_proof says that the merkle proof gives rise to a cut tree
+that has digest dig. and is_merkle_entry id val dig.
+the cut tree is the existential tree in is_merkle_entry. *)
+Definition is_merkle_proof (proof : list (list (list w8))) (id : list w8)
+    (val : option (list w8)) (dig : list w8) : iProp Σ.
 Proof. Admitted.
 
-Lemma wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_digest (id val digest : list w8) d0 d1 d2 :
+Global Instance is_merkle_proof_persis proof id val dig :
+  Persistent (is_merkle_proof proof id val dig).
+Proof. Admitted.
+
+Lemma is_merkle_proof_to_entry proof id val dig :
+  is_merkle_proof proof id val dig -∗ is_merkle_entry id val dig.
+Proof. Admitted.
+
+Definition wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_dig (id val dig : list w8) d0 d1 d2 :
   {{{
-    "#Hproof" ∷ is_Slice3D sl_proof proof ∗
+    "#Hsl_proof" ∷ is_Slice3D sl_proof proof ∗
     "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
     "Hval" ∷ own_slice_small sl_val byteT d1 val ∗
-    "Hdigest" ∷ own_slice_small sl_digest byteT d2 digest
+    "Hdig" ∷ own_slice_small sl_dig byteT d2 dig
   }}}
-  CheckProof #proofTy (slice_val sl_proof) (slice_val sl_id) (slice_val sl_val) (slice_val sl_digest)
+  CheckProof #proofTy (slice_val sl_proof) (slice_val sl_id) (slice_val sl_val) (slice_val sl_dig)
   {{{
     (err : bool), RET #err;
-    "Hvalid_proof" ∷ (is_merkle_proof proof id val digest -∗ ⌜ err = false ⌝) ∗
-    if negb err then
-      "#Hpath" ∷ is_merkle_entry id (if proofTy then Some val else None) digest
-    else True%I
+    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+    "Hval" ∷ own_slice_small sl_val byteT d1 val ∗
+    "Hdig" ∷ own_slice_small sl_dig byteT d2 dig ∗
+    let expected_val := (if proofTy then Some val else None) in
+    "Hgenie" ∷ (is_merkle_proof proof id expected_val dig ∗-∗ ⌜ err = false ⌝)
   }}}.
 Proof. Admitted.
 

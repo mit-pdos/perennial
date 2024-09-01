@@ -222,7 +222,7 @@ Definition own ptr obj : iProp Σ :=
   "Hptr_val" ∷ ptr ↦[evidServPut :: "val"] (slice_val sl_val) ∗
   "Hsl_val" ∷ own_slice_small sl_val byteT d0 obj.(val) ∗
   "Hptr_proof" ∷ ptr ↦[evidServPut :: "proof"] (slice_val sl_proof) ∗
-  "Hsl_proof" ∷ is_Slice3D sl_proof obj.(proof).
+  "#Hsl_proof" ∷ is_Slice3D sl_proof obj.(proof).
 End local_defs.
 End evidServPut.
 

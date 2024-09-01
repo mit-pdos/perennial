@@ -43,13 +43,27 @@ Definition is_com_st γ com_st : iProp Σ :=
   "#Hlinks" ∷ ([∗ list] e↦l ∈ com_st.(links),
     is_chain (take e com_st.(digs)) l).
 
+Definition serv_sigpred_link_aux γ link_sep epoch prevLink dig com_st : iProp Σ :=
+  "#His_com" ∷ is_com_st γ com_st ∗
+  "#His_ln" ∷ is_link epoch prevLink dig link_sep.(servSepLink.link) ∗
+  "%Hlook_ln" ∷ ⌜ com_st.(links) !! (uint.nat epoch) = Some link_sep.(servSepLink.link) ⌝.
+
+(* serv_sigpred_link_get_all_state just fetches the state at epoch from all
+the upper layers, paying special attention to the dig that's
+in the link opening. *)
+Lemma serv_sigpred_link_get_all_state γ link_sep epoch prevLink dig com_st :
+  serv_sigpred_link_aux γ link_sep epoch prevLink dig com_st -∗
+  ∃ γkey_map key_map,
+  "Hγmap" ∷ mono_list_idx_own γ (uint.nat epoch) γkey_map ∗
+  "Hmap" ∷ ghost_map_auth_pers γkey_map key_map ∗
+  "Hdig" ∷ is_dig key_map dig.
+Proof. Admitted.
+
 (* serv_sigpred_link says that a link exists at a particular epoch of
 committed state. *)
 Definition serv_sigpred_link γ link_sep : iProp Σ :=
   ∃ epoch prevLink dig com_st,
-  "#His_com" ∷ is_com_st γ com_st ∗
-  "#His_ln" ∷ is_link epoch prevLink dig link_sep.(servSepLink.link) ∗
-  "%Hlook_ln" ∷ ⌜ com_st.(links) !! (uint.nat epoch) = Some link_sep.(servSepLink.link) ⌝.
+  serv_sigpred_link_aux γ link_sep epoch prevLink dig com_st.
 
 (* serv_sigpred_put says that an entry exists at a certain
 (potentially uncommitted) epoch. *)
