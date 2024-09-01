@@ -51,9 +51,9 @@ Proof.
   { iIntros "!>". iIntros (?? Hlook) "?".
     rewrite Heq; [done|].
     apply lookup_lt_Some in Hlook.
-    rewrite take_length_le in Hlook; [done|lia]. }
+    rewrite length_take_le in Hlook; [done|lia]. }
   iApply (big_sepL_func_eq with "[$H1] [$H2]").
-  rewrite !take_length_le; lia.
+  rewrite !length_take_le; lia.
 Qed.
 End func_sepL.
 
