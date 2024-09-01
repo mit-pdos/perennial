@@ -365,7 +365,7 @@ Section inv.
     iDestruct "Hpreps" as "[Hwrs Hpreps]".
     set gid := key_to_group k.
     iDestruct (big_sepS_elem_of _ _ gid with "Hpreps") as "Hprep".
-    { by apply elem_of_ptgroups. }
+    { by apply elem_of_key_to_group_ptgroups. }
     iDestruct (big_sepS_elem_of_acc _ _ gid with "Hgroups") as "[Hgroup HgroupsC]".
     { apply elem_of_key_to_group. }
     do 2 iNamed "Hgroup".

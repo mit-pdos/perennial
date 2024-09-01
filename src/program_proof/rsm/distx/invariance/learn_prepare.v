@@ -132,7 +132,7 @@ Section inv.
           rewrite /all_prepared.
           iDestruct "Hres" as "[_ Hpreps]".
           iDestruct (big_sepS_elem_of _ _ gid with "Hpreps") as "Hprep".
-          { rewrite Hgid. by eapply elem_of_ptgroups, elem_of_dom_2. }
+          { rewrite Hgid. by eapply elem_of_key_to_group_ptgroups, elem_of_dom_2. }
           iDestruct (txnprep_lookup with "Hpm Hprep") as %Hprep.
           congruence.
         }

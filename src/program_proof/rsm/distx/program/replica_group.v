@@ -24,7 +24,7 @@ Section program.
   Admitted.
 
   Theorem wp_ReplicaGroup__Abort (rg : loc) (ts : u64) (gid : groupid) γ :
-    txnres_abt γ (uint.nat ts) -∗
+    safe_abort γ (uint.nat ts) -∗
     is_rg rg gid γ -∗
     {{{ True }}}
       ReplicaGroup__Abort #rg #ts
@@ -43,8 +43,8 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_ReplicaGroup__Commit (rg : loc) (ts : u64) (wrs : dbmap) (gid : groupid) γ :
-    txnres_cmt γ (uint.nat ts) wrs -∗
+  Theorem wp_ReplicaGroup__Commit (rg : loc) (ts : u64) (gid : groupid) γ :
+    safe_commit γ gid (uint.nat ts) -∗
     is_rg rg gid γ -∗
     {{{ True }}}
       ReplicaGroup__Commit #rg #ts
@@ -64,10 +64,11 @@ Section program.
   Admitted.
 
   Theorem wp_ReplicaGroup__Read (rg : loc) (ts : u64) (key : string) gid γ :
+    safe_read gid (uint.nat ts) key ->
     is_rg rg gid γ -∗
     {{{ True }}}
       ReplicaGroup__Read #rg #ts #(LitString key)
-    {{{ (value : dbval), RET (dbval_to_val value); True }}}.
+    {{{ (value : dbval), RET (dbval_to_val value); hist_repl_at γ key (pred (uint.nat ts)) value }}}.
   Proof.
     (*@ func (rg *ReplicaGroup) Read(ts uint64, key string) Value {             @*)
     (*@     var value Value                                                     @*)
@@ -89,6 +90,7 @@ Section program.
 
   Theorem wp_ReplicaGroup__Prepare
     (rg : loc) (ts : u64) (pwrsS : Slice.t) (pwrsL : list dbmod) (pwrs : dbmap) gid γ :
+    safe_prepare γ gid (uint.nat ts) pwrs -∗
     is_rg rg gid γ -∗
     {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
       ReplicaGroup__Prepare #rg #ts (to_val pwrsS)

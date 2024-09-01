@@ -79,4 +79,18 @@ Section lemma.
     head l1 = head l2.
   Proof. intros Hl1 [lp ->]. by destruct l1 as [| x t]. Qed.
 
+  Lemma NoDup_snoc l x :
+    x ∉ l ->
+    NoDup l ->
+    NoDup (l ++ [x]).
+  Proof.
+    intros Hnotin Hnd.
+    apply NoDup_app.
+    split; first done.
+    split; last apply NoDup_singleton.
+    intros y Hy Heq.
+    rewrite elem_of_list_singleton in Heq.
+    by subst y.
+  Qed.
+
 End lemma.

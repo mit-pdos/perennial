@@ -1,7 +1,7 @@
 From Perennial.program_proof.rsm.distx Require Import prelude.
 From Perennial.program_proof.rsm.distx.program Require Import replica_group txnlog.
 From Perennial.program_proof.rsm.distx.invariance Require Import
-  linearize commit preprepare.
+  linearize commit preprepare read.
 From Goose.github_com.mit_pdos.rsm Require Import distx.
 
 Section program.
@@ -18,6 +18,18 @@ Section program.
 
   Lemma txnmap_alloc m :
     ⊢ |==> ∃ τ, txnmap_auth τ m ∗ ([∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v).
+  Admitted.
+
+  Lemma txnmap_lookup τ m k v :
+    txnmap_auth τ m -∗
+    txnmap_ptsto τ k v -∗
+    ⌜m !! k = Some v⌝.
+  Admitted.
+
+  Lemma txnmap_update {τ m k v1} v2 :
+    txnmap_auth τ m -∗
+    txnmap_ptsto τ k v1 ==∗
+    txnmap_auth τ (<[k := v2]> m) ∗ txnmap_ptsto τ k v2.
   Admitted.
 
   Lemma txnmap_subseteq τ m1 m2 :
@@ -92,6 +104,7 @@ Section program.
       "#Hinv"   ∷ know_distx_inv γ proph ∗
       (* diff from [own_txn_init] *)
       "#Hlnrz"  ∷ ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
+      "%Hdomr"  ∷ ⌜dom rds ⊆ keys_all⌝ ∗
       (* diff from [own_txn_init] *)
       "%Hincl"  ∷ ⌜dom wrs ⊆ dom rds⌝ ∗
       "%Hvts"   ∷ ⌜valid_ts tid⌝ ∗
@@ -107,6 +120,7 @@ Section program.
       "Htxnmap"  ∷ txnmap_auth τ (wrs ∪ rds) ∗
       "#Hinv"    ∷ know_distx_inv γ proph ∗
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
+      "%Hdomr"  ∷ ⌜dom rds ⊆ keys_all⌝ ∗
       (* diff from [own_txn] and [wrs] is exposed *)
       "#Htxnwrs" ∷ txnwrs_receipt γ tid wrs ∗
       "%Hincl"   ∷ ⌜dom wrs ⊆ dom rds⌝ ∗
@@ -124,11 +138,37 @@ Section program.
       "#Hinv"    ∷ know_distx_inv γ proph ∗
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, hist_lnrz_at γ key (pred tid) value) ∗
       "#Htxnwrs" ∷ txnwrs_receipt γ tid wrs ∗
+      "%Hdomr"  ∷ ⌜dom rds ⊆ keys_all⌝ ∗
       "%Hincl"   ∷ ⌜dom wrs ⊆ dom rds⌝ ∗
       "%Hvts"    ∷ ⌜valid_ts tid⌝ ∗
       "%Hvwrs"   ∷ ⌜valid_wrs wrs⌝ ∗
       (* diff from [own_txn_stable] *)
       "%Hptgs"   ∷ ⌜list_to_set ptgs = ptgroups (dom wrs)⌝.
+
+  Lemma wp_ResolveRead γ p (tid : u64) (key : string) (ts : nat) :
+    ⊢ {{{ ⌜uint.nat tid = ts⌝ }}}
+    <<< ∀∀ acs, txn_proph γ p acs >>>
+      ResolveRead #p #tid #(LitString key) @ ∅
+    <<< ∃ acs', ⌜acs = ActRead ts key :: acs'⌝ ∗ txn_proph γ p acs' >>>
+    {{{ RET #(); True }}}.
+  Admitted.
+
+  Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
+    ⊢ {{{ ⌜uint.nat tid = ts⌝ }}}
+    <<< ∀∀ acs, txn_proph γ p acs >>>
+      ResolveAbort #p #tid @ ∅
+    <<< ∃ acs', ⌜acs = ActAbort ts :: acs'⌝ ∗ txn_proph γ p acs' >>>
+    {{{ RET #(); True }}}.
+  Admitted.
+
+  Lemma wp_ResolveCommit
+    γ p (tid : u64) (ts : nat) (wrsP : loc) (wrs : dbmap) :
+    ⊢ {{{ ⌜uint.nat tid = ts⌝ ∗ own_wrs wrsP wrs }}}
+    <<< ∀∀ acs, txn_proph γ p acs >>>
+      ResolveCommit #p #tid #wrsP @ ∅
+    <<< ∃ acs', ⌜acs = ActCommit ts wrs :: acs'⌝ ∗ txn_proph γ p acs' >>>
+    {{{ RET #(); own_wrs wrsP wrs }}}.
+  Admitted.
 
   Theorem wp_KeyToGroup (key : string) :
     {{{ True }}}
@@ -148,50 +188,212 @@ Section program.
         own_txn_wrs txn wrs ∗ ⌜wrs !! key = if ok then Some v else None⌝
     }}}.
   Proof.
+    iIntros (Φ) "Hwrs HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) getwrs(key string) (Value, bool) {                      @*)
     (*@     gid := KeyToGroup(key)                                              @*)
     (*@     pwrs := txn.wrs[gid]                                                @*)
+    (*@                                                                         @*)
+    wp_apply wp_KeyToGroup.
+    iIntros (gid Hgid).
+    do 2 iNamed "Hwrs".
+    wp_loadField.
+    wp_apply (wp_MapGet with "HpwrsmP").
+    iIntros (pwrsP ok) "[%Hget HpwrsmP]".
+    destruct ok; last first.
+    { apply map_get_false in Hget as [Hget _].
+      rewrite -not_elem_of_dom Hdomwrs -Hgid in Hget.
+      by pose proof (elem_of_key_to_group key).
+    }
+    apply map_get_true in Hget.
+    iAssert (⌜is_Some (pwrsm !! gid)⌝)%I as %[pwrs Hpwrs].
+    { iDestruct (big_sepM2_dom with "Hpwrsm") as %Hdom.
+      iPureIntro.
+      by rewrite -elem_of_dom -Hdom elem_of_dom.
+    }
+    iDestruct (big_sepM2_lookup_acc with "Hpwrsm") as "[Hpwrs HpwrsmC]"; [done | done |].
+
     (*@     v, ok := pwrs[key]                                                  @*)
     (*@     return v, ok                                                        @*)
     (*@ }                                                                       @*)
-  Admitted.
+    wp_apply (wp_MapGet with "Hpwrs").
+    iIntros (v ok) "[%Hv Hpwrs]".
+    wp_pures.
+    iApply "HΦ".
+    iDestruct ("HpwrsmC" with "Hpwrs") as "Hpwrsm".
+    iFrame "∗ # %".
+    iPureIntro.
+    specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
+    rewrite Hwrsg in Hv.
+    destruct ok.
+    - apply map_get_true in Hv.
+      rewrite lookup_wrs_group_Some in Hv.
+      by destruct Hv as [Hv _].
+    - apply map_get_false in Hv as [Hv _].
+      rewrite lookup_wrs_group_None in Hv.
+      by destruct Hv.
+  Qed.
 
   Theorem wp_Txn__setwrs (txn : loc) (key : string) (value : dbval) wrs :
     {{{ own_txn_wrs txn wrs }}}
       Txn__setwrs #txn #(LitString key) (dbval_to_val value)
     {{{ RET #(); own_txn_wrs txn (<[key := value]> wrs) }}}.
   Proof.
+    iIntros (Φ) "Hwrs HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) setwrs(key string, value Value) {                       @*)
     (*@     gid := KeyToGroup(key)                                              @*)
     (*@     pwrs := txn.wrs[gid]                                                @*)
+    (*@                                                                         @*)
+    wp_apply wp_KeyToGroup.
+    iIntros (gid Hgid).
+    do 2 iNamed "Hwrs".
+    wp_loadField.
+    wp_apply (wp_MapGet with "HpwrsmP").
+    iIntros (pwrsP ok) "[%Hget HpwrsmP]".
+    destruct ok; last first.
+    { apply map_get_false in Hget as [Hget _].
+      rewrite -not_elem_of_dom Hdomwrs -Hgid in Hget.
+      by pose proof (elem_of_key_to_group key).
+    }
+    apply map_get_true in Hget.
+    iAssert (⌜is_Some (pwrsm !! gid)⌝)%I as %[pwrs Hpwrs].
+    { iDestruct (big_sepM2_dom with "Hpwrsm") as %Hdom.
+      iPureIntro.
+      by rewrite -elem_of_dom -Hdom elem_of_dom.
+    }
+    iDestruct (big_sepM2_delete with "Hpwrsm") as "[Hpwrs Hpwrsm]"; [done | done |].
+
     (*@     pwrs[key] = value                                                   @*)
     (*@ }                                                                       @*)
-  Admitted.
+    wp_apply (wp_MapInsert with "Hpwrs"); first done.
+    iIntros "Hpwrs".
+    wp_pures.
+    iApply "HΦ".
+    set pwrs' := <[key := value]> pwrs.
+    iAssert ([∗ map] p; m ∈ pwrsmP; <[gid := pwrs']> pwrsm, own_map p (DfracOwn 1) m)%I
+      with "[Hpwrsm Hpwrs]" as "Hpwrsm".
+    { iDestruct (big_sepM2_insert_2 (λ k p m, own_map p (DfracOwn 1) m) _ _ gid with "Hpwrs Hpwrsm")
+        as "Hpwrsm".
+      rewrite insert_delete; last apply Hget.
+      rewrite insert_delete_insert.
+      done.
+    }
+    iFrame "∗ %".
+    iPureIntro.
+    intros g m Hgm.
+    destruct (decide (gid = g)) as [-> | Hne].
+    - rewrite lookup_insert in Hgm. inv Hgm.
+      specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
+      by rewrite Hwrsg wrs_group_insert.
+    - rewrite lookup_insert_ne in Hgm; last done.
+      specialize (Hwrsg _ _ Hgm). simpl in Hwrsg.
+      subst m.
+      by rewrite wrs_group_insert_ne; last rewrite Hgid.
+  Qed.
 
   Theorem wp_Txn__Read txn tid key value rds γ τ :
     {{{ own_txn txn tid rds γ τ ∗ txnmap_ptsto τ key value }}}
       Txn__Read #txn #(LitString key)
     {{{ RET (dbval_to_val value); own_txn txn tid rds γ τ ∗ txnmap_ptsto τ key value }}}.
   Proof.
+    iIntros (Φ) "[Htxn Hpt] HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) Read(key string) Value {                                @*)
     (*@     vlocal, ok := txn.getwrs(key)                                       @*)
     (*@     if ok {                                                             @*)
     (*@         return vlocal                                                   @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    iNamed "Htxn".
+    wp_apply (wp_Txn__getwrs with "Hwrs").
+    iIntros (vlocal ok) "[Hwrs %Hv]".
+    iDestruct (txnmap_lookup with "Htxnmap Hpt") as %Hvalue.
+    wp_if_destruct.
+    { (* Prove [vlocal = value]. *)
+      apply (lookup_union_Some_l _ rds) in Hv.
+      rewrite Hv in Hvalue.
+      inv Hvalue.
+      iApply "HΦ".
+      by iFrame "∗ # %".
+    }
+    clear Heqb ok.
+
     (*@     gid := KeyToGroup(key)                                              @*)
     (*@     rg := txn.rgs[gid]                                                  @*)
     (*@                                                                         @*)
+    wp_apply wp_KeyToGroup.
+    iIntros (gid Hgid).
+    iNamed "Hrgs".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Hrgs").
+    iIntros (rg ok) "[%Hget Hrgs]".
+    destruct ok; last first.
+    { apply map_get_false in Hget as [Hget _].
+      rewrite -not_elem_of_dom Hdomrgs -Hgid in Hget.
+      by pose proof (elem_of_key_to_group key).
+    }
+    apply map_get_true in Hget.
+    iDestruct (big_sepM_lookup with "Hrgsabs") as "Hrgabs"; first apply Hget.
+
     (*@     v := rg.Read(txn.ts, key)                                           @*)
+    (*@                                                                         @*)
+    iNamed "Htxn".
+    rewrite lookup_union_r in Hvalue; last apply Hv.
+    wp_loadField.
+    wp_apply (wp_ReplicaGroup__Read with "Hrgabs").
+    { rewrite /safe_read Htsword /valid_key.
+      apply elem_of_dom_2 in Hvalue.
+      by assert (Hin : key ∈ keys_all) by set_solver.
+    }
+    iIntros (v) "#Hhistr".
+    rewrite Htsword.
+
+    (*@     ResolveRead(txn.proph, txn.ts, key)                                 @*)
     (*@     return v                                                            @*)
     (*@ }                                                                       @*)
-  Admitted.
+    iDestruct (big_sepM_lookup with "Hlnrz") as "Hhistl"; first apply Hvalue.
+    (* Prove [vlocal = value]. *)
+    do 2 wp_loadField.
+    wp_apply wp_ResolveRead; first done.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iApply ncfupd_mask_intro; first set_solver.
+    iIntros "Hmask".
+    iNamed "HinvO".
+    iDestruct (txnsys_inv_extract_future with "Htxnsys") as (future) "[Hproph Htxnsys]".
+    iFrame "Hproph".
+    iIntros "(%future' & %Hfuture & Hproph)".
+    iDestruct (big_sepS_elem_of_acc _ _ key with "Hkeys") as "[Hkey HkeysC]".
+    { apply elem_of_dom_2 in Hvalue. set_solver. }
+    iMod (txnsys_inv_read with "Hhistl Hhistr Htxnsys Hkey") as "(Htxnsys & Hkey & %Heq)".
+    { rewrite /valid_ts in Hvts. lia. }
+    { by rewrite Hfuture. }
+    iDestruct ("HkeysC" with "Hkey") as "Hkeys".
+    rewrite Hfuture /=.
+    iDestruct (txnsys_inv_merge_future with "Hproph Htxnsys") as "Htxnsys".
+    iMod "Hmask" as "_".
+    iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups]") as "_".
+    iIntros "!> _".
+    wp_pures.
+    subst value.
+    iApply "HΦ".
+    (* This additional step ensures iFrame below to pick the right resource to frame. *)
+    iAssert (own_txn_rgs txn γ)%I with "[Hrgs HrgsP]" as "Hrgs".
+    { iFrame "∗ # %". }
+    by iFrame "∗ # %".
+  Qed.
 
   Theorem wp_Txn__Write txn tid key value rds γ τ :
     {{{ own_txn txn tid rds γ τ ∗ (∃ vprev, txnmap_ptsto τ key vprev) }}}
       Txn__Write #txn #(LitString key) #(LitString value)
     {{{ RET #(); own_txn txn tid rds γ τ ∗ txnmap_ptsto τ key (Some value) }}}.
   Proof.
+    iIntros (Φ) "[Htxn [%v Hpt]] HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) Write(key string, value string) {                       @*)
     (*@     v := Value{                                                         @*)
     (*@         b : true,                                                       @*)
@@ -199,20 +401,51 @@ Section program.
     (*@     }                                                                   @*)
     (*@     txn.setwrs(key, v)                                                  @*)
     (*@ }                                                                       @*)
-  Admitted.
+    iNamed "Htxn".
+    wp_pures.
+    wp_apply (wp_Txn__setwrs _ _ (Some value) with "Hwrs").
+    iIntros "Hwrs".
+    wp_pures.
+    iApply "HΦ".
+    iDestruct (txnmap_lookup with "Htxnmap Hpt") as %Hlookup.
+    apply elem_of_dom_2 in Hlookup.
+    iMod (txnmap_update (Some value) with "Htxnmap Hpt") as "[Htxnmap Hpt]".
+    rewrite insert_union_l.
+    iFrame "∗ # %".
+    iPureIntro.
+    rewrite /valid_wrs dom_insert_L.
+    set_solver.
+  Qed.
 
-  Theorem wp_Txn__Delete txn tid key value rds γ τ :
-    {{{ own_txn txn tid rds γ τ ∗ txnmap_ptsto τ key value }}}
+  Theorem wp_Txn__Delete txn tid key rds γ τ :
+    {{{ own_txn txn tid rds γ τ ∗ (∃ vprev, txnmap_ptsto τ key vprev) }}}
       Txn__Delete #txn #(LitString key)
     {{{ RET #(); own_txn txn tid rds γ τ ∗ txnmap_ptsto τ key None }}}.
   Proof.
+    iIntros (Φ) "[Htxn [%v Hpt]] HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) Delete(key string) {                                    @*)
     (*@     v := Value{                                                         @*)
     (*@         b : false,                                                      @*)
     (*@     }                                                                   @*)
     (*@     txn.setwrs(key, v)                                                  @*)
     (*@ }                                                                       @*)
-  Admitted.
+    iNamed "Htxn".
+    wp_pures.
+    wp_apply (wp_Txn__setwrs _ _ None with "Hwrs").
+    iIntros "Hwrs".
+    wp_pures.
+    iApply "HΦ".
+    iDestruct (txnmap_lookup with "Htxnmap Hpt") as %Hlookup.
+    apply elem_of_dom_2 in Hlookup.
+    iMod (txnmap_update None with "Htxnmap Hpt") as "[Htxnmap Hpt]".
+    rewrite insert_union_l.
+    iFrame "∗ # %".
+    iPureIntro.
+    rewrite /valid_wrs dom_insert_L.
+    set_solver.
+  Qed.
 
   Theorem wp_Txn__begin (txn : loc) γ :
     ⊢ {{{ own_txn_uninit txn γ }}}
@@ -231,14 +464,22 @@ Section program.
   Theorem wp_Txn__setptgs txn wrs :
     {{{ own_txn_wrs txn wrs ∗ own_txn_ptgs txn [] }}}
       Txn__setptgs #txn
-    {{{ RET #();
-        ∃ ptgs,
-          own_txn_wrs txn wrs ∗ own_txn_ptgs txn ptgs ∗
-          ⌜list_to_set ptgs = ptgroups (dom wrs)⌝
+    {{{ RET #(); ∃ ptgs, own_txn_wrs txn wrs ∗ own_txn_ptgs txn ptgs ∗
+                         ⌜list_to_set ptgs = ptgroups (dom wrs)⌝
     }}}.
-  Proof.
+  Proof using distx_ghostG0 heapGS0 Σ.
+    iIntros (Φ) "[Hwrs Hptgs] HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) setptgs() {                                             @*)
     (*@     var ptgs = txn.ptgs                                                 @*)
+    (*@                                                                         @*)
+    iNamed "Hptgs".
+    clear Hnd.
+    wp_loadField.
+    wp_apply wp_ref_to; first apply slice_val_ty.
+    iIntros (ptgsP) "HptgsP".
+
     (*@     for gid, pwrs := range(txn.wrs) {                                   @*)
     (*@         if uint64(len(pwrs)) != 0 {                                     @*)
     (*@             ptgs = append(ptgs, gid)                                    @*)
@@ -246,7 +487,132 @@ Section program.
     (*@     }                                                                   @*)
     (*@     txn.ptgs = ptgs                                                     @*)
     (*@ }                                                                       @*)
-  Admitted.
+    do 2 iNamed "Hwrs".
+    wp_loadField.
+    set P := (λ (mx : gmap u64 loc),
+      ∃ (s : Slice.t) (ptgs : list groupid),
+        "HptgsP" ∷ ptgsP ↦[slice.T uint64T] (to_val s) ∗
+        "Hptgs"  ∷ own_slice s uint64T (DfracOwn 1) ptgs ∗
+        "Hpwrsm" ∷ ([∗ map] p;m ∈ pwrsmP;pwrsm, own_map p (DfracOwn 1) m) ∗
+        "%Hnd"   ∷ ⌜NoDup ptgs⌝ ∗
+        "%Hincl" ∷ ⌜Forall (λ g, g ∈ dom mx) ptgs⌝ ∗
+        (* non-empty ↔ in ptgs *)
+        "%Hspec" ∷ ⌜set_Forall (λ g, keys_group g (dom wrs) ≠ ∅ ↔ g ∈ ptgs) (dom mx)⌝)%I.
+    wp_apply (wp_MapIter_fold _ _ _ P with "HpwrsmP [$HptgsP $Hptgs $Hpwrsm]").
+    { iPureIntro. by split; first apply NoDup_nil. }
+    { clear Φ.
+      iIntros (m gid pwrsP Φ) "!> [HP [%Hnone %Hsome]] HΦ".
+      iNamed "HP".
+      iAssert (⌜is_Some (pwrsm !! gid)⌝)%I as %[pwrs Hpwrs].
+      { iDestruct (big_sepM2_dom with "Hpwrsm") as %Hdom.
+        iPureIntro.
+        by rewrite -elem_of_dom -Hdom elem_of_dom.
+      }
+      iDestruct (big_sepM2_lookup_acc with "Hpwrsm") as "[Hpwrs HpwrsmC]"; [done | done |].
+      wp_apply (wp_MapLen with "Hpwrs").
+      iIntros "[%Hsize Hpwrs]".
+      iDestruct ("HpwrsmC" with "Hpwrs") as "Hpwrsm".
+      wp_if_destruct.
+      { wp_load.
+        (* NB: need to provide [own_slice] to properly resolve the right typeclass. *)
+        wp_apply (wp_SliceAppend with "Hptgs").
+        iIntros (s') "Hptgs".
+        wp_store.
+        iApply "HΦ".
+        iFrame.
+        iPureIntro.
+        split.
+        { apply NoDup_snoc; last apply Hnd.
+          intros Hgid.
+          rewrite Forall_forall in Hincl.
+          specialize (Hincl _ Hgid).
+          by apply not_elem_of_dom in Hnone.
+        }
+        split.
+        { rewrite Forall_app Forall_singleton dom_insert_L.
+          split; last set_solver.
+          apply (Forall_impl _ _ _ Hincl).
+          set_solver.
+        }
+        intros g Hg.
+        rewrite dom_insert_L elem_of_union in Hg.
+        split.
+        { intros Hne.
+          destruct Hg as [? | Hg]; first set_solver.
+          specialize (Hspec _ Hg). simpl in Hspec.
+          set_solver.
+        }
+        { intros Hsnoc.
+          destruct Hg as [Hgid | Hg]; last first.
+          { specialize (Hspec _ Hg). simpl in Hspec.
+            apply Hspec.
+            rewrite -not_elem_of_dom in Hnone.
+            set_solver.
+          }
+          rewrite elem_of_singleton in Hgid.
+          subst g.
+          assert (Hnz : size pwrs ≠ O).
+          { intros Hz. rewrite Hz in Heqb. word. }
+          clear Heqb.
+          specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
+          intros Hempty.
+          rewrite -wrs_group_keys_group_dom -Hwrsg in Hempty.
+          apply dom_empty_inv_L in Hempty.
+          by rewrite map_size_non_empty_iff in Hnz.
+        }
+      }
+      iApply "HΦ".
+      iFrame.
+      iPureIntro.
+      rewrite dom_insert_L.
+      split; first apply Hnd.
+      split.
+      { apply (Forall_impl _ _ _ Hincl). set_solver. }
+      apply set_Forall_union; last apply Hspec.
+      rewrite set_Forall_singleton.
+      assert (Hsizez : size pwrs = O).
+      { rewrite Heqb in Hsize. done. }
+      split.
+      { intros Hne.
+        specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
+        rewrite -wrs_group_keys_group_dom -Hwrsg in Hne.
+        apply map_size_empty_inv in Hsizez.
+        by rewrite Hsizez in Hne.
+      }
+      { intros Hinptgs.
+        rewrite Forall_forall in Hincl.
+        specialize (Hincl _ Hinptgs).
+        by rewrite -not_elem_of_dom in Hnone.
+      }
+    }
+    iIntros "[HpwrsmP HP]". 
+    iNamed "HP".
+    wp_load. wp_storeField.
+    iApply "HΦ".
+    iFrame "∗ # %".
+    iPureIntro.
+    apply set_eq.
+    intros gid.
+    rewrite elem_of_ptgroups elem_of_list_to_set.
+    split.
+    { intros Hgid.
+      rewrite Forall_forall in Hincl.
+      specialize (Hincl _ Hgid).
+      specialize (Hspec _ Hincl). simpl in Hspec.
+      by apply Hspec.
+    }
+    { intros Hne.
+      destruct (decide (gid ∈ gids_all)) as [Hin | Hnotin]; last first.
+      { rewrite /keys_group in Hne.
+        apply set_choose_L in Hne as [k Hk].
+        pose proof (elem_of_key_to_group k) as Hin.
+        set_solver.
+      }
+      rewrite Hdomwrs in Hspec.
+      specialize (Hspec _ Hin). simpl in Hspec.
+      by apply Hspec.
+    }
+  Qed.
 
   Definition groups_txnst γ (ts : nat) (st : txnst) : iProp Σ :=
     match st with
@@ -383,7 +749,20 @@ Section program.
       iIntros (pwrsS) "(%pwrsL & Hpwrs & HpwrsS)".
       iNamed "Htxn".
       wp_loadField.
-      wp_apply (wp_ReplicaGroup__Prepare with "Hrgabs HpwrsS").
+      wp_apply (wp_ReplicaGroup__Prepare with "[] Hrgabs HpwrsS").
+      { rewrite Htsword.
+        iFrame "Htxnwrs".
+        iPureIntro.
+        assert (Hwg : pwrs = wrs_group gid wrs).
+        { by apply Hwrsg. }
+        assert (Hinptgs : gid ∈ ptgroups (dom wrs)).
+        { rewrite -Hptgs elem_of_list_to_set elem_of_list_lookup. by eauto. }
+        assert (Hne : pwrs ≠ ∅).
+        { rewrite elem_of_ptgroups -wrs_group_keys_group_dom dom_empty_iff_L in Hinptgs.
+          by rewrite Hwg.
+        }
+        done.
+      }
       iIntros (st) "Hst".
       wp_store.
       rename Heqb into Hinbound.
@@ -445,65 +824,109 @@ Section program.
         else Ra r) -∗ Φ #ok) -∗
     WP body #txn {{ v, Φ v }}.
 
-  Lemma wp_ResolveRead γ p (tid : u64) (key : string) (ts : nat) :
-    ⊢ {{{ ⌜uint.nat tid = ts⌝ }}}
-    <<< ∀∀ acs, txn_proph γ p acs >>>
-      ResolveRead #p #tid #(LitString key) @ ∅
-    <<< ∃ acs', ⌜acs = ActRead ts key :: acs'⌝ ∗ txn_proph γ p acs' >>>
-    {{{ RET #(); True }}}.
-  Admitted.
-
-  Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
-    ⊢ {{{ ⌜uint.nat tid = ts⌝ }}}
-    <<< ∀∀ acs, txn_proph γ p acs >>>
-      ResolveAbort #p #tid @ ∅
-    <<< ∃ acs', ⌜acs = ActAbort ts :: acs'⌝ ∗ txn_proph γ p acs' >>>
-    {{{ RET #(); True }}}.
-  Admitted.
-
-  Lemma wp_ResolveCommit
-    γ p (tid : u64) (ts : nat) (wrsP : loc) (wrs : dbmap) :
-    ⊢ {{{ ⌜uint.nat tid = ts⌝ ∗ own_wrs wrsP wrs }}}
-    <<< ∀∀ acs, txn_proph γ p acs >>>
-      ResolveCommit #p #tid #wrsP @ ∅
-    <<< ∃ acs', ⌜acs = ActCommit ts wrs :: acs'⌝ ∗ txn_proph γ p acs' >>>
-    {{{ RET #(); own_wrs wrsP wrs }}}.
-  Admitted.
-
   Theorem wp_Txn__resetwrs (txn : loc) wrs :
     {{{ own_txn_wrs txn wrs }}}
       Txn__resetwrs #txn
     {{{ RET #(); own_txn_wrs txn ∅ }}}.
   Proof.
+    iIntros (Φ) "Hwrs HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) resetwrs() {                                            @*)
+    (*@     wrs := make(map[uint64]map[string]Value)                            @*)
     (*@     for gid := range(txn.wrs) {                                         @*)
-    (*@         // Not supported by Goose                                       @*)
-    (*@         // clear(txn.wrs[gid])                                          @*)
-    (*@         txn.wrs[gid] = make(map[string]Value)                           @*)
+    (*@         wrs[gid] = make(map[string]Value)                               @*)
     (*@     }                                                                   @*)
+    (*@     txn.wrs = wrs                                                       @*)
     (*@ }                                                                       @*)
-  Admitted.
+    wp_apply wp_NewMap.
+    iIntros (wrsP') "HpwrsmP'".
+    do 2 iNamed "Hwrs".
+    iDestruct (big_sepM2_dom with "Hpwrsm") as %Hdom.
+    wp_loadField.
+    set P := (λ (mx : gmap u64 loc),
+      let em := gset_to_gmap (∅ : dbmap) (dom mx) in
+      ∃ (pwrsmP' : gmap u64 loc),
+        "HpwrsmP'" ∷ own_map wrsP' (DfracOwn 1) pwrsmP' ∗
+        "Hpwrsm'" ∷ ([∗ map] p;m ∈ pwrsmP';em, own_map p (DfracOwn 1) m))%I.
+    wp_apply (wp_MapIter_fold _ _ _ P with "HpwrsmP [HpwrsmP']").
+    { subst P. simpl.
+      rewrite dom_empty_L gset_to_gmap_empty.
+      iFrame.
+      by iApply big_sepM2_empty.
+    }
+    { clear Φ.
+      iIntros (m gid pwrsP Φ) "!> [HP [%Hnone %Hsome]] HΦ".
+      iNamed "HP".
+      wp_pures.
+      wp_apply wp_NewMap.
+      iIntros (empP) "HempP".
+      wp_apply (wp_MapInsert with "HpwrsmP'"); first by auto.
+      iIntros "HpwrsmP'".
+      iApply "HΦ".
+      subst P. simpl.
+      iFrame.
+      rewrite dom_insert_L gset_to_gmap_union_singleton.
+      iApply (big_sepM2_insert_2 with "[HempP] Hpwrsm'"); first iFrame.
+    }
+    iIntros "[HpwrsmP HP]".
+    subst P. simpl.
+    iNamed "HP".
+    wp_storeField.
+    iApply "HΦ".
+    iDestruct (big_sepM2_dom with "Hpwrsm'") as %Hdom'.
+    iFrame "∗ %".
+    iPureIntro.
+    split; last first.
+    { by rewrite Hdom' dom_gset_to_gmap Hdomwrs. }
+    intros g m Hgm.
+    rewrite lookup_gset_to_gmap_Some in Hgm.
+    destruct Hgm as [_ Hm].
+    by rewrite /wrs_group map_filter_empty.
+  Qed.
 
   Theorem wp_Txn__resetptgs (txn : loc) ptgs :
     {{{ own_txn_ptgs txn ptgs }}}
       Txn__resetptgs #txn
     {{{ RET #(); own_txn_ptgs txn [] }}}.
   Proof.
+    iIntros (Φ) "Hptgs HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) resetptgs() {                                           @*)
     (*@     txn.ptgs = txn.ptgs[:0]                                             @*)
     (*@ }                                                                       @*)
-  Admitted.
+    iNamed "Hptgs".
+    wp_loadField.
+    wp_apply wp_SliceTake; first word.
+    wp_storeField.
+    iApply "HΦ".
+    iDestruct (own_slice_take_cap _ _ _ (W64 0) with "Hptgs") as "Hptgs"; first word.
+    iFrame.
+    iPureIntro.
+    by apply NoDup_nil.
+  Qed.
 
   Theorem wp_Txn__reset (txn : loc) wrs ptgs :
     {{{ own_txn_wrs txn wrs ∗ own_txn_ptgs txn ptgs }}}
       Txn__reset #txn
     {{{ RET #(); own_txn_wrs txn ∅ ∗ own_txn_ptgs txn [] }}}.
   Proof.
+    iIntros (Φ) "[Hwrs Hptgs] HΦ".
+    wp_rec.
+
     (*@ func (txn *Txn) reset() {                                               @*)
     (*@     txn.resetwrs()                                                      @*)
     (*@     txn.resetptgs()                                                     @*)
     (*@ }                                                                       @*)
-  Admitted.
+    wp_apply (wp_Txn__resetwrs with "Hwrs").
+    iIntros "Hwrs".
+    wp_apply (wp_Txn__resetptgs with "Hptgs").
+    iIntros "Hptgs".
+    wp_pures.
+    iApply "HΦ".
+    by iFrame.
+  Qed.
 
   Theorem wp_Txn__commit txn tid rds wrsphys wrsproph γ τ :
     txns_lnrz_receipt γ tid -∗
@@ -550,21 +973,66 @@ Section program.
     iMod "Hmask" as "_".
     iMod ("HinvC" with "[Htxnsys Hkeys Hgroups]") as "_"; first by iFrame.
     iIntros "!> Hwrs".
+    iAssert (own_txn_wrs txn wrsphys)%I with "[$HwrsP $Hwrs]" as "Hwrs".
     wp_pures.
 
     (*@     for _, gid := range(txn.ptgs) {                                     @*)
     (*@         rg := txn.rgs[gid]                                              @*)
-    (*@         pwrs := txn.wrs[gid]                                            @*)
-    (*@                                                                         @*)
-    (*@         // Should commit in parallel.                                   @*)
-    (*@         if uint64(len(pwrs)) != 0 {                                     @*)
-    (*@             rg.Commit(txn.ts)                                           @*)
-    (*@         }                                                               @*)
+    (*@         rg.Commit(txn.ts)                                               @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    iNamed "Hptgs".
+    wp_loadField.
+    set P := (λ (_ : u64),
+      "HtsW" ∷ txn ↦[Txn::"ts"] #tsW ∗
+      "Hrgs" ∷ own_txn_rgs txn γ)%I.
+    iDestruct (own_slice_small_acc with "Hptgs") as "[Hptgs HptgsC]".
+    wp_apply (wp_forSlice P with "[] [$Hptgs $HtsW $Hrgs]").
+    { (* Loop body. *)
+      clear Φ.
+      iIntros (i gid Φ) "!> (HP & %Hinbound & %Hgid) HΦ".
+      iNamed "HP".
+      iNamed "Hrgs".
+      wp_loadField.
+      assert (Hin : gid ∈ gids_all).
+      { pose proof (subseteq_ptgroups (dom wrsphys)) as Hdom.
+        apply elem_of_list_lookup_2 in Hgid.
+        clear -Hdom Hgid Hptgs.
+        set_solver.
+      }
+      wp_apply (wp_MapGet with "Hrgs").
+      iIntros (rgP ok) "[%Hgetrgs Hrgs]".
+      destruct ok; last first.
+      { apply map_get_false in Hgetrgs as [Hnone _].
+        by rewrite -not_elem_of_dom Hdomrgs in Hnone.
+      }
+      apply map_get_true in Hgetrgs.
+      wp_loadField.
+      iDestruct (big_sepM_lookup with "Hrgsabs") as "Hrgabs"; first apply Hgetrgs.
+      wp_apply (wp_ReplicaGroup__Commit with "[] Hrgabs").
+      { rewrite Htsword.
+        iFrame "Hcmt".
+        iPureIntro.
+        assert (Hinptgs : gid ∈ ptgroups (dom wrsphys)).
+        { rewrite -Hptgs elem_of_list_to_set elem_of_list_lookup. by eauto. }
+        done.
+      }
+      iApply "HΦ".
+      iFrame "∗ # %".
+    }
+    iIntros "[HP Hptgs]".
+    iNamed "HP". clear P.
+    iDestruct ("HptgsC" with "Hptgs") as "Hptgs".
+    iAssert (own_txn_ptgs txn ptgs)%I with "[$HptgsS $Hptgs]" as "Hptgs"; first done.
+
     (*@     txn.reset()                                                         @*)
     (*@ }                                                                       @*)
-  Admitted.
+    wp_apply (wp_Txn__reset with "[$Hwrs $Hptgs]").
+    iIntros "[Hwrs Hptgs]".
+    wp_pures.
+    iApply "HΦ".
+    by iFrame "∗ # %".
+  Qed.
 
   Theorem wp_Txn__commit_in_abort_future txn tid rds wrs γ τ :
     txns_lnrz_receipt γ tid -∗
@@ -603,14 +1071,8 @@ Section program.
 
     (*@     for _, gid := range(txn.ptgs) {                                     @*)
     (*@         rg := txn.rgs[gid]                                              @*)
-    (*@         pwrs := txn.wrs[gid]                                            @*)
-    (*@                                                                         @*)
-    (*@         // Should commit in parallel.                                   @*)
-    (*@         if uint64(len(pwrs)) != 0 {                                     @*)
-    (*@             rg.Commit(txn.ts)                                           @*)
-    (*@         }                                                               @*)
+    (*@         rg.Commit(txn.ts)                                               @*)
     (*@     }                                                                   @*)
-    (*@                                                                         @*)
     (*@     txn.reset()                                                         @*)
     (*@ }                                                                       @*)
   Qed.
@@ -705,17 +1167,55 @@ Section program.
 
     (*@     for _, gid := range(txn.ptgs) {                                     @*)
     (*@         rg := txn.rgs[gid]                                              @*)
-    (*@         pwrs := txn.wrs[gid]                                            @*)
-    (*@                                                                         @*)
-    (*@         // Should abort in parallel.                                    @*)
-    (*@         if uint64(len(pwrs)) != 0 {                                     @*)
-    (*@             rg.Abort(txn.ts)                                            @*)
-    (*@         }                                                               @*)
+    (*@         rg.Abort(txn.ts)                                                @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    iNamed "Hptgs".
+    wp_loadField.
+    set P := (λ (_ : u64),
+      "HtsW" ∷ txn ↦[Txn::"ts"] #tsW ∗
+      "Hrgs" ∷ own_txn_rgs txn γ)%I.
+    iDestruct (own_slice_small_acc with "Hptgs") as "[Hptgs HptgsC]".
+    wp_apply (wp_forSlice P with "[] [$Hptgs $HtsW $Hrgs]").
+    { (* Loop body. *)
+      clear Φ.
+      iIntros (i gid Φ) "!> (HP & %Hinbound & %Hgid) HΦ".
+      iNamed "HP".
+      iNamed "Hrgs".
+      wp_loadField.
+      assert (Hin : gid ∈ gids_all).
+      { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
+        apply elem_of_list_lookup_2 in Hgid.
+        clear -Hdom Hgid Hptgs.
+        set_solver.
+      }
+      wp_apply (wp_MapGet with "Hrgs").
+      iIntros (rgP ok) "[%Hgetrgs Hrgs]".
+      destruct ok; last first.
+      { apply map_get_false in Hgetrgs as [Hnone _].
+        by rewrite -not_elem_of_dom Hdomrgs in Hnone.
+      }
+      apply map_get_true in Hgetrgs.
+      wp_loadField.
+      iDestruct (big_sepM_lookup with "Hrgsabs") as "Hrgabs"; first apply Hgetrgs.
+      wp_apply (wp_ReplicaGroup__Abort with "[] Hrgabs").
+      { rewrite Htsword. by iFrame "Habt". }
+      iApply "HΦ".
+      iFrame "∗ # %".
+    }
+    iIntros "[HP Hptgs]".
+    iNamed "HP". clear P.
+    iDestruct ("HptgsC" with "Hptgs") as "Hptgs".
+    iAssert (own_txn_ptgs txn ptgs)%I with "[$HptgsS $Hptgs]" as "Hptgs"; first done.
+
     (*@     txn.reset()                                                         @*)
     (*@ }                                                                       @*)
-  Admitted.
+    wp_apply (wp_Txn__reset with "[$Hwrs $Hptgs]").
+    iIntros "[Hwrs Hptgs]".
+    wp_pures.
+    iApply "HΦ".
+    by iFrame "∗ # %".
+  Qed.
 
   Theorem wp_Txn__abort_in_commit_future txn tid rds wrsphys wrsproph γ τ :
     txnres_abt γ tid -∗
@@ -749,6 +1249,13 @@ Section program.
     assert (Hhead : head_abort future tid).
     { by rewrite Hfuture. }
     destruct (first_commit_head_abort _ _ _ _ _ Hfc Hhead) as [].
+
+    (*@     for _, gid := range(txn.ptgs) {                                     @*)
+    (*@         rg := txn.rgs[gid]                                              @*)
+    (*@         rg.Abort(txn.ts)                                                @*)
+    (*@     }                                                                   @*)
+    (*@     txn.reset()                                                         @*)
+    (*@ }                                                                       @*)
   Qed.
 
   Lemma txnsys_inv_cancel γ tid future :

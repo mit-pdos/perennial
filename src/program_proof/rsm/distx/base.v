@@ -37,6 +37,10 @@ Proof.
   by destruct v.
 Defined.
 
+#[global]
+Instance dbval_into_val_for_type : IntoValForType dbval (boolT * (stringT * unitT)%ht).
+Proof. constructor; [done | done | intros [v |]; by auto]. Defined.
+
 Definition dbmod_to_val (x : dbmod) : val :=
   (#(LitString x.1), (dbval_to_val x.2, #())).
 
@@ -138,7 +142,7 @@ Lemma elem_of_key_to_group key :
   key_to_group key ∈ gids_all.
 Admitted.
 
-Lemma elem_of_ptgroups key keys :
+Lemma elem_of_key_to_group_ptgroups key keys :
   key ∈ keys ->
   key_to_group key ∈ ptgroups keys.
 Proof. apply elem_of_map_2. Qed.
@@ -151,6 +155,44 @@ Proof.
   apply elem_of_map_1 in Hgid as [key [-> _]].
   apply elem_of_key_to_group.
 Qed.
+
+Lemma elem_of_ptgroups keys gid :
+  gid ∈ ptgroups keys ↔ keys_group gid keys ≠ ∅.
+Proof.
+  rewrite /ptgroups /keys_group.
+  split; first set_solver.
+  intros Hne.
+  rewrite elem_of_map.
+  apply set_choose_L in Hne as [k Hk].
+  set_solver.
+Qed.
+
+Lemma lookup_wrs_group_Some gid wrs k v :
+  (wrs_group gid wrs) !! k = Some v ↔ wrs !! k = Some v ∧ key_to_group k = gid.
+Proof. by rewrite /wrs_group map_lookup_filter_Some /=. Qed.
+
+Lemma lookup_wrs_group_None gid wrs k :
+  (wrs_group gid wrs) !! k = None ↔
+  wrs !! k = None ∨ key_to_group k ≠ gid.
+Proof.
+  rewrite /wrs_group map_lookup_filter_None /=.
+  split; intros [Hnone | Hne].
+  - by left.
+  - destruct (wrs !! k) as [v |] eqn:Hv; last by left.
+    apply Hne in Hv. by right.
+  - by left.
+  - by right.
+Qed.
+
+Lemma wrs_group_insert gid wrs k v :
+  key_to_group k = gid ->
+  wrs_group gid (<[k := v]> wrs) = <[k := v]> (wrs_group gid wrs).
+Proof. intros Hgid. by rewrite /wrs_group map_filter_insert_True. Qed.
+
+Lemma wrs_group_insert_ne gid wrs k v :
+  key_to_group k ≠ gid ->
+  wrs_group gid (<[k := v]> wrs) = wrs_group gid wrs.
+Proof. intros Hgid. by rewrite /wrs_group map_filter_insert_not. Qed.
 
 Lemma wrs_group_elem_of_ptgroups gid pwrs wrs :
   pwrs ≠ ∅ ->

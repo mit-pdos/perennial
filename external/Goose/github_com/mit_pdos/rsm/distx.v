@@ -582,8 +582,10 @@ Definition Txn__begin: val :=
 
 Definition Txn__resetwrs: val :=
   rec: "Txn__resetwrs" "txn" :=
+    let: "wrs" := NewMap uint64T (mapT (struct.t Value)) #() in
     MapIter (struct.loadF Txn "wrs" "txn") (λ: "gid" <>,
-      MapInsert (struct.loadF Txn "wrs" "txn") "gid" (NewMap stringT (struct.t Value) #()));;
+      MapInsert "wrs" "gid" (NewMap stringT (struct.t Value) #()));;
+    struct.storeF Txn "wrs" "txn" "wrs";;
     #().
 
 Definition KeyToGroup: val :=
@@ -649,10 +651,7 @@ Definition Txn__commit: val :=
     ResolveCommit (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") (struct.loadF Txn "wrs" "txn");;
     ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
       (let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
-      let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
-      (if: (MapLen "pwrs") ≠ #0
-      then ReplicaGroup__Commit "rg" (struct.loadF Txn "ts" "txn")
-      else #()));;
+      ReplicaGroup__Commit "rg" (struct.loadF Txn "ts" "txn"));;
     Txn__reset "txn";;
     #().
 
@@ -661,10 +660,7 @@ Definition Txn__abort: val :=
     ResolveAbort (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn");;
     ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
       (let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
-      let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
-      (if: (MapLen "pwrs") ≠ #0
-      then ReplicaGroup__Abort "rg" (struct.loadF Txn "ts" "txn")
-      else #()));;
+      ReplicaGroup__Abort "rg" (struct.loadF Txn "ts" "txn"));;
     Txn__reset "txn";;
     #().
 
@@ -683,6 +679,7 @@ Definition Txn__Read: val :=
       let: "gid" := KeyToGroup "key" in
       let: "rg" := Fst (MapGet (struct.loadF Txn "rgs" "txn") "gid") in
       let: "v" := ReplicaGroup__Read "rg" (struct.loadF Txn "ts" "txn") "key" in
+      ResolveRead (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") "key";;
       "v").
 
 Definition Txn__Write: val :=
