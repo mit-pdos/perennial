@@ -30,12 +30,9 @@ Notation msg_ty := (list w8) (only parsing).
 
 Record state_ty :=
   mk_state {
+    (* TODO: signed functionality can be provided by verify_memo. *)
     signed: gmap sk_ty (list msg_ty);
-    (* pk_to_sk and sk_to_pk are bijective,
-    and dom signed = dom sk_to_pk.
-    if we had a bijective object, that'd simplify things.
-    it's also possible to implement sk_to_pk with preimg pk_to_sk,
-    but that gets very complicated. *)
+    (* TODO: can simplify here by having a bijective gset (pk_ty * sk_ty). *)
     pk_to_sk: gmap pk_ty sk_ty;
     sk_to_pk: gmap sk_ty pk_ty;
     (* make verify deterministic by memoizing outputs. *)
@@ -192,6 +189,9 @@ Record trans_ty :=
     op: op_ty;
     ret: ret_ty;
   }.
+
+Definition get_hash (d : list w8) : list w8.
+Admitted.
 
 Definition step (prev_st : state_ty) (trans : trans_ty) (next_st : state_ty) : Prop :=
   match trans.(op) with

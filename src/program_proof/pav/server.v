@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import ktmerkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi merkle evidence invs rpc.
+From Perennial.program_proof.pav Require Import misc cryptoffi merkle evidence invs rpc.
 From Perennial.program_proof Require Import std_proof.
 From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.
@@ -23,7 +23,7 @@ Context `{!heapGS Σ, !pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
   ∃ ptr_tr sl_prevLink sl_dig sl_link sl_linkSig d0 d1 d2 d3,
-  "Htr" ∷ own_Tree ptr_tr obj.(tree) ∗
+  "Htr" ∷ own_merkle ptr_tr obj.(tree) ∗
   "Hsl_prevLink" ∷ own_slice_small sl_prevLink byteT d0 obj.(prevLink) ∗
   "Hsl_dig" ∷ own_slice_small sl_dig byteT d1 obj.(dig) ∗
   "Hsl_link" ∷ own_slice_small sl_link byteT d2 obj.(link) ∗
@@ -70,7 +70,7 @@ Definition wp_put ptr_chain chain ptr_tree tree sl_sk pk γ γtrees γtree :
   {{{
     "Hown_chain" ∷ own ptr_chain chain ∗
     "#Hvalid_chain" ∷ valid pk γtrees chain ∗
-    "Hown_tree" ∷ own_Tree ptr_tree tree ∗
+    "Hown_tree" ∷ own_merkle ptr_tree tree ∗
     "Hown_sk" ∷ own_sk sl_sk pk (serv_sigpred γ) ∗
     "#Hpers_updates" ∷ ghost_map_auth_pers γtree tree
   }}}
@@ -153,36 +153,6 @@ End misc.
 
 Section proofs.
 Context `{!heapGS Σ, !pavG Σ}.
-
-Lemma sep_auth_agree γtrees trees0 trees1 :
-  ([∗ list] γtr;tr ∈ γtrees;trees0, ghost_map_auth γtr (1/2) tr) -∗
-  ([∗ list] γtr;tr ∈ γtrees;trees1, ghost_map_auth γtr (1/2) tr) -∗
-  ⌜trees0 = trees1⌝.
-Proof.
-  iIntros "Hsep0 Hsep1".
-  unfold_leibniz; setoid_rewrite list_equiv_lookup; fold_leibniz.
-  iDestruct (big_sepL2_length with "Hsep0") as %Hlen0.
-  iDestruct (big_sepL2_length with "Hsep1") as %Hlen1.
-  iIntros (i).
-  destruct (decide (i < length γtrees)) as [Hbound | Hbound].
-  {
-    apply lookup_lt_is_Some in Hbound as [x0 Hlook0].
-    iDestruct (big_sepL2_lookup_1_some with "Hsep0") as %[x1 Hlook1]; [done|].
-    iDestruct (big_sepL2_lookup_1_some with "Hsep1") as %[x2 Hlook2]; [done|].
-    iDestruct (big_sepL2_lookup with "Hsep0") as "Hauth0"; [done..|].
-    iDestruct (big_sepL2_lookup with "Hsep1") as "Hauth1"; [done..|].
-    iDestruct (ghost_map_auth_agree with "Hauth0 Hauth1") as %->.
-    rewrite Hlook1 Hlook2.
-    done.
-  }
-  {
-    assert (trees0 !! i = None) as ->.
-    { apply lookup_ge_None; lia. }
-    assert (trees1 !! i = None) as ->.
-    { apply lookup_ge_None; lia. }
-    done.
-  }
-Qed.
 
 Lemma wp_server_put ptr_serv obj_serv sl_id sl_val (id val : list w8) d0 d1 :
   {{{
@@ -354,7 +324,7 @@ Qed.
 
 Lemma wp_applyUpdates ptr_currTr currTr (updates : gmap _ (list w8)) ptr_updates sl_updates d0 :
   {{{
-    "Hown_currTr" ∷ own_Tree ptr_currTr currTr ∗
+    "Hown_currTr" ∷ own_merkle ptr_currTr currTr ∗
     "#Hsl_updates" ∷ ([∗ map] id ↦ sl_v; v ∈ (kmap string_to_bytes sl_updates); updates,
       "#Hsl_v" ∷ own_slice_small sl_v byteT DfracDiscarded v ∗
       "%Hlen_id" ∷ ⌜ length id = hash_len ⌝) ∗
@@ -363,9 +333,9 @@ Lemma wp_applyUpdates ptr_currTr currTr (updates : gmap _ (list w8)) ptr_updates
   applyUpdates #ptr_currTr #ptr_updates
   {{{
     ptr_nextTr, RET #ptr_nextTr;
-    "Hown_currTr" ∷ own_Tree ptr_currTr currTr ∗
+    "Hown_currTr" ∷ own_merkle ptr_currTr currTr ∗
     "Hown_updates" ∷ own_map ptr_updates d0 sl_updates ∗
-    "Hown_nextTr" ∷ own_Tree ptr_nextTr (updates ∪ currTr)
+    "Hown_nextTr" ∷ own_merkle ptr_nextTr (updates ∪ currTr)
   }}}.
 Proof.
   rewrite /applyUpdates.
@@ -382,7 +352,7 @@ Proof.
     to work with. no rewriting under filter preds. *)
     "%Hdom" ∷ ⌜ dom mdone = dom sl_mdone' ⌝ ∗
     "%Hsubset" ∷ ⌜ mdone ⊆ updates ⌝ ∗
-    "Hown_nextTr" ∷ own_Tree ptr_nextTr (mdone ∪ currTr))%I).
+    "Hown_nextTr" ∷ own_merkle ptr_nextTr (mdone ∪ currTr))%I).
   wp_apply (wp_MapIter_3 _ _ _ _ _ loopInv with "[$Hown_updates] [Hown_nextTr]");
     rewrite /loopInv {loopInv}.
   {

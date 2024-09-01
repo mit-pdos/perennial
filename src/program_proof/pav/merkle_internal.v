@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 
-From Perennial.program_proof.pav Require Import common cryptoffi cryptoutil.
+From Perennial.program_proof.pav Require Import misc cryptoffi cryptoutil.
 From Perennial.program_proof Require Import std_proof.
 
 Section internal.
