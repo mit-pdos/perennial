@@ -1,5 +1,6 @@
 From Perennial.program_proof.pav Require
-  common
+  chain
+  classes
   crypto_model
   cryptoffi
   cryptoutil
@@ -7,5 +8,6 @@ From Perennial.program_proof.pav Require
   invs
   merkle
   merkle_internal
+  misc
   rpc
-  server.
+  (* server *).
