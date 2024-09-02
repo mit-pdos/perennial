@@ -500,6 +500,9 @@ Qed.
 Create HintDb word.
 
 Ltac word_cleanup_core :=
+  (* this is so that the following pattern succeeds when (for some reason)
+  instead of w64 we have its unfolding *)
+  fold w64 w32 w8 in *;
   repeat autounfold with word in *;
   try lazymatch goal with
       (* TODO: this isn't the right strategy if the numbers in the goal are used

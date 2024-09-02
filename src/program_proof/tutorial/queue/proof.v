@@ -639,17 +639,14 @@ Proof.
       }
       iRename "Helem" into "Helem_old".
       iExactEq "Helem_old". unfold named. rewrite H0. f_equal. f_equal. f_equal.
-      (* FIXME word *)
-      rewrite u64_Z_through_nat. rewrite u64_Z.
-      reflexivity.
-      }
-      wp_pures.
-      wp_loadField.
-      wp_apply (wp_condBroadcast with "HrcondC").
-      wp_pures.
-      iModIntro.
-      iApply "Post".
-      iFrame.
+      word. }
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_condBroadcast with "HrcondC").
+    wp_pures.
+    iModIntro.
+    iApply "Post".
+    iFrame.
 Qed.
 
 End proof.
