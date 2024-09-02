@@ -2,59 +2,28 @@
  * Pure invariants and their invariance theorems.
  *)
 From Perennial.program_proof.rsm Require Import fpaxos_top.
-From Perennial.program_proof.rsm.pure Require Import fin_maps.
+From Perennial.program_proof.rsm.pure Require Import fin_maps fin_sets extend quorum.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
-
-Section extend.
-  (* Definition of and lemmas about [extend]. *)
-  Definition extend {X : Type} (x : X) (n : nat) (l : list X) :=
-    l ++ replicate (n - length l) x.
-
-  Lemma extend_length_ge {X : Type} (x : X) (n : nat) (l : list X) :
-    (length l ≤ length (extend x n l))%nat.
-  Proof. rewrite length_app. lia. Qed.
-
-  Lemma extend_length {X : Type} (x : X) (n : nat) (l : list X) :
-    length (extend x n l) = (n - length l + length l)%nat.
-  Proof. rewrite length_app length_replicate. lia. Qed.
-
-  Lemma extend_prefix {X : Type} (x : X) (n : nat) (l : list X) :
-    prefix l (extend x n l).
-  Proof. unfold extend. by apply prefix_app_r. Qed.
-End extend.
 
 Section pure.
   Context `{Countable A}.
 
-  Definition cquorum_size (c q : gset A) :=
-    size c / 2 < size q.
-
-  Definition cquorum (c q : gset A) :=
-    q ⊆ c ∧ cquorum_size c q.
-
-  Definition fquorum_size (c q : gset A) :=
-    (* this is more conservative than what Lamport suggests *)
-    3 * size c / 4 < size q.
-
-  Definition fquorum (c q : gset A) :=
-    q ⊆ c ∧ fquorum_size c q.
-
   (* Transition functions. *)
   Definition caccept_node n l :=
-    extend Reject n l ++ [CAccept].
+    extend n Reject l ++ [CAccept].
 
   Definition caccept (bs : gmap A ballot) x n :=
     alter (λ l, caccept_node n l) x bs.
 
   Definition faccept_node n v l :=
-    extend Reject n l ++ [FAccept v].
+    extend n Reject l ++ [FAccept v].
 
   Definition faccept (bs : gmap A ballot) x n v :=
     alter (λ l, faccept_node n v l) x bs.
 
   Definition prepare_node n l :=
-    extend Reject n l.
+    extend n Reject l.
 
   Definition prepare (bs : gmap A ballot) x n :=
     alter (λ l,prepare_node n l) x bs.
@@ -65,54 +34,6 @@ Section pure.
   Definition advance (ts : gmap A nat) x n :=
     <[x := n]> ts.
 
-  Lemma quorums_overlapped_raw (c q1 q2 : gset A) :
-    q1 ⊆ c ->
-    q2 ⊆ c ->
-    size c < size q1 + size q2 ->
-    ∃ x, x ∈ q1 ∧ x ∈ q2.
-  Proof.
-    intros Hq1 Hq2 Hsize.
-    apply dec_stable.
-    intros Hcontra.
-    assert (Hdisjoint : q1 ## q2) by set_solver.
-    apply size_union in Hdisjoint.
-    assert (Hsubseteq : q1 ∪ q2 ⊆ c) by set_solver.
-    apply subseteq_size in Hsubseteq.
-    rewrite Hdisjoint in Hsubseteq.
-    lia.
-  Qed.
-
-  Lemma quorums_overlapped c q1 q2 :
-    (cquorum c q1 ∨ fquorum c q1) ->
-    (cquorum c q2 ∨ fquorum c q2) ->
-    ∃ x, x ∈ q1 ∧ x ∈ q2.
-  Proof.
-    rewrite /cquorum /cquorum_size /fquorum /fquorum_size.
-    intros [[Hle1 Hsize1] | [Hle1 Hsize1]] [[Hle2 Hsize2] | [Hle2 Hsize2]];
-      (apply (quorums_overlapped_raw c); [done | done | lia]).
-  Qed.
-
-  Lemma quorums_sufficient c qc qf :
-    cquorum_size c qc ->
-    fquorum_size c qf ->
-    2 * size c < size qc + 2 * size qf.
-  Proof.
-    intros Hsizec Hsizef.
-    unfold cquorum_size in Hsizec.
-    unfold fquorum_size in Hsizef.
-    lia.
-  Qed.
-
-  Lemma cquorum_not_empty (c q : gset A) :
-    cquorum c q -> q ≠ empty.
-  Proof.
-    intros Hquorum.
-    unshelve epose proof (quorums_overlapped c q q _ _) as (x & Helem & _).
-    { by left. }
-    { by left. }
-    set_solver.
-  Qed.
-
   Lemma ballots_overlapped (bs bsq1 bsq2 : gmap A ballot) :
     bsq1 ⊆ bs ->
     bsq2 ⊆ bs ->
@@ -121,12 +42,19 @@ Section pure.
     ∃ x l, bsq1 !! x = Some l ∧ bsq2 !! x = Some l.
   Proof.
     intros Hsubseteq1 Hsubseteq2 Hsize1 Hsize2.
-    unshelve epose proof (quorums_overlapped (dom bs) (dom bsq1) (dom bsq2)) as (x & Hin1 & Hin2).
-    { left. split; last apply Hsize1. by apply subseteq_dom. }
+    assert (Hq1 : cquorum (dom bs) (dom bsq1)).
+    { split; last apply Hsize1. by apply subseteq_dom. }
+    assert (Hq2 : cquorum (dom bs) (dom bsq2) ∨ fquorum (dom bs) (dom bsq2)).
     { destruct Hsize2 as [Hsize2 | Hsize2]; [left | right].
-      { split; last apply Hsize2. by apply subseteq_dom. }
-      { split; last apply Hsize2. by apply subseteq_dom. }
+      { split; [by apply subseteq_dom | apply Hsize2]. }
+      { split; first by apply subseteq_dom.
+        split; first apply Hsize2.
+        rewrite size_non_empty_iff_L.
+        apply (cquorum_non_empty_c _ _ Hq1).
+      }
     }
+    unshelve epose proof (quorums_overlapped _ (dom bsq1) _ _ Hq2) as (x & Hin1 & Hin2).
+    { by left. }
     rewrite elem_of_dom in Hin1.
     rewrite elem_of_dom in Hin2.
     destruct Hin1 as [l1 Hlookup1].
@@ -146,7 +74,7 @@ Section pure.
     intros Hsubseteq Hquorum.
     assert (Hq : cquorum (dom bs) (dom bsq)).
     { split; [by apply subseteq_dom | done]. }
-    apply cquorum_not_empty in Hq.
+    apply cquorum_non_empty_q in Hq.
     by rewrite dom_empty_iff_L in Hq.
   Qed.
 
@@ -504,10 +432,10 @@ Section pure.
     v1 = v2.
   Proof.
     intros (bsq1 & Hbsq1 & Hchosen1) (bsq2 & Hbsq2 & Hchosen2).
-    destruct Hchosen1 as [[Hc1 _] | (Hf1 & Hq1 & Hacc1)]; destruct Hchosen2 as [[Hc2 _] | (Hf2 & Hq2 & Hacc2)].
-    { naive_solver. }
-    { naive_solver. }
-    { naive_solver. }
+    destruct Hchosen1 as [[Hc1 _] | (Hf1 & Hq1 & Hacc1)], Hchosen2 as [[Hc2 _] | (Hf2 & Hq2 & Hacc2)].
+    { rewrite Hc1 in Hc2. by inv Hc2. }
+    { by rewrite Hc1 in Hf2. }
+    { by rewrite Hc2 in Hf1. }
     unshelve epose proof (quorums_overlapped (dom bs) (dom bsq1) (dom bsq2) _ _) as (x & Hx1 & Hx2).
     { right. by split; first apply subseteq_dom. }
     { right. by split; first apply subseteq_dom. }
@@ -1000,7 +928,7 @@ Section pure.
       intros y Hlookup.
       pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
       simpl in Hlen.
-      pose proof (extend_length_ge Reject n y) as Hextend.
+      pose proof (extend_length_ge n Reject y) as Hextend.
       unfold prepare_node.
       lia.
     }
@@ -1051,7 +979,7 @@ Section pure.
       pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
       simpl in Hlen.
       rewrite last_length.
-      pose proof (extend_length_ge Reject n y) as Hextend.
+      pose proof (extend_length_ge n Reject y) as Hextend.
       lia.
     }
     unfold equal_latest_proposal.
@@ -1085,7 +1013,7 @@ Section pure.
       pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
       simpl in Hlen.
       rewrite last_length.
-      pose proof (extend_length_ge Reject n y) as Hextend.
+      pose proof (extend_length_ge n Reject y) as Hextend.
       lia.
     }
     unfold equal_latest_proposal.
@@ -1140,7 +1068,7 @@ Section pure.
     apply map_Forall_alter; last apply Hvb.
     intros l Hbsx m Hm.
     unfold valid_ballots in Hvb.
-    destruct (decide (m < length (extend Reject n l))%nat) as [Hlt | Hge].
+    destruct (decide (m < length (extend n Reject l))%nat) as [Hlt | Hge].
     { rewrite /accepted_in_classic lookup_app_l in Hm; last done.
       apply (Hvb x l); first apply Hbsx.
       by eapply prepare_node_accepted_in_classic.

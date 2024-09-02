@@ -36,6 +36,10 @@ Section lemmas.
     (n ≤ length (extend n x l))%nat.
   Proof. rewrite extend_length. lia. Qed.
 
+  Lemma extend_length_ge n x l :
+    (length l ≤ length (extend n x l))%nat.
+  Proof. rewrite length_app. lia. Qed.
+
   Lemma extend_prefix n x l :
     prefix l (extend n x l).
   Proof. by apply prefix_app_r. Qed.
