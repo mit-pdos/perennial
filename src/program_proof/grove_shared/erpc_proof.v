@@ -414,7 +414,7 @@ Proof.
   wp_storeField.
   wp_apply wp_slice_len.
   wp_apply (wp_NewSliceWithCap (V:=u8)).
-  { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
+  { word. }
   iIntros (req_ptr) "Hreq".
   set len := (X in (Slice.mk req_ptr _ X)).
   wp_pures.

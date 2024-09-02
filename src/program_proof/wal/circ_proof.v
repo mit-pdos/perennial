@@ -676,6 +676,13 @@ Proof.
   mod_bound; word.
 Qed.
 
+Theorem wrap_small_log_addr' (x:Z) :
+  word.wrap (word:=w64_word_instance) (2 + x `mod` LogSz) =
+  2 + x `mod` LogSz.
+Proof.
+  word.
+Qed.
+
 Theorem mod_neq_lt a b k :
   0 < k ->
   0 <= a < b ->
@@ -883,7 +890,7 @@ Proof.
   change (word.divu (word.sub 4096 8) 8) with (W64 LogSz).
   wp_apply (wp_Write_atomic with "Hi").
   word_cleanup.
-  rewrite wrap_small_log_addr.
+  rewrite wrap_small_log_addr'.
   word_cleanup.
 
   iInv "Hcirc" as "HcircI" "Hclose".

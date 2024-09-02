@@ -616,8 +616,6 @@ Lemma rangeSet_lookup_mod (x : u64) (n : Z) :
 Proof.
   intros.
   apply rangeSet_lookup; try word.
-  word_cleanup.
-  word.
 Qed.
 
 Lemma covered_by_shard_split (P : u64 -> iProp Σ) covered :

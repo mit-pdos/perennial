@@ -597,8 +597,7 @@ lemmas. *)
     2: subst new; iFrame "Htsc Hfiles".
     { subst new. word_cleanup.
       case_bool_decide; [ | word ].
-      (* FIXME: word introduces a word.wrap which causes [lia] to fail *)
-      apply Z2Nat.inj_le; lia. }
+      word. }
     iApply "HΦ". iFrame. iPureIntro. lia.
   Qed.
 

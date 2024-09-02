@@ -242,7 +242,11 @@ Theorem add_one : forall slice (first : u64) (count : u64) e,
 Proof.
   intuition.
   unfold valid_elems.
-  word_cleanup.
+  (* NOTE: needs to carefully do what the old [word_cleanup] would do, so that
+  the statements of [add_one_lemma_1] and [add_one_lemma_2] apply. *)
+  rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
+    ?word.unsigned_modu_nowrap, ?unsigned_U64; [ | word .. ].
+  rewrite -> !wrap_small by word.
   rewrite (subslice_split_r (uint.nat first0) (uint.nat first0 + uint.nat count0) _ (_ ++ _)).
   - rewrite add_one_lemma_1; eauto.
     rewrite app_inv_head_iff.
@@ -341,7 +345,11 @@ Theorem remove_one : forall slice (first : u64) (count : u64) e,
 Proof.
   intuition.
   unfold valid_elems.
-  word_cleanup.
+  (* NOTE: needs to carefully do what the old [word_cleanup] would do, so that
+  the statements of [add_one_lemma_1] and [add_one_lemma_2] apply. *)
+  rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
+    ?word.unsigned_modu_nowrap, ?unsigned_U64; [ | word .. ].
+  rewrite -> !wrap_small by word.
   rewrite (subslice_split_r (uint.nat first0) (uint.nat first0 + 1) _ (_++_)).
   - rewrite (remove_one_lemma_1 slice first0 e); eauto.
     rewrite app_inv_head_iff.

@@ -337,8 +337,7 @@ Proof.
   destruct (decide (uint.nat term' = uint.nat highestTerm)).
   { (* for term' == highestTerm, we have the first part of "oldInfo" *)
     replace (term') with (highestTerm); last first.
-    { (* FIXME: why doesn't word work? *)
-      apply (inj uint.Z).
+    { fold w64. (* FIXME: [word] is looking for [w64], but the type here has that definition unfolded *)
       word. }
     iDestruct (own_valid_2 with "Hproposed' Hproposed") as %Hvalid.
     rewrite singleton_op in Hvalid.

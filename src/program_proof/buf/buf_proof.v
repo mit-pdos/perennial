@@ -352,26 +352,23 @@ Proof using.
     unfold block_bytes in *.
     iPureIntro; intuition.
     { destruct K.
-      { simpl. repeat word_cleanup. }
-      { simpl. repeat word_cleanup. }
-      { change (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat.
-        repeat word_cleanup. }
-    }
+      { simpl. word. }
+      { simpl. word. }
+      { change (W64 (bufSz KindBlock)) with (W64 32768%Z).
+        change (Z.of_nat (bufSz KindBlock)) with 32768 in *.
+        word. }
+      }
     {
       replace (uint.Z s.(Slice.sz)) with (length (Block_to_vals blk) : Z).
       2: { word. }
       rewrite length_Block_to_vals. unfold block_bytes.
-      repeat word_cleanup.
+      word_cleanup.
       destruct K.
-      { simpl. repeat word_cleanup. }
-      { simpl. simpl in Hoff. repeat word_cleanup. }
+      { simpl. word. }
+      { simpl. simpl in Hoff. word. }
       {
-        assert (a.(addrOff) = 0) as Hoff0.
-        { change (bufSz KindBlock) with (Z.to_nat 4096 * 8)%nat in Hoff.
-          word.
-        }
-
-        rewrite Hoff0. vm_compute. intros; congruence.
+        change (Z.of_nat (bufSz KindBlock)) with 32768 in *.
+        word.
       }
     }
   }
@@ -402,9 +399,6 @@ Opaque PeanoNat.Nat.div.
     unfold block_bytes in *.
     intuition idtac.
     word_cleanup.
-    rewrite word.unsigned_sub.
-    rewrite word.unsigned_add.
-    word_cleanup.
     replace (uint.Z a.(addrOff) + Z.of_nat 1 - 1) with (uint.Z a.(addrOff)) by lia.
 
     rewrite -H3 /extract_nth.
@@ -422,9 +416,6 @@ Opaque PeanoNat.Nat.div.
     unfold addr2flat_z in *.
     unfold inode_bytes, block_bytes in *.
     intuition idtac.
-    word_cleanup.
-    rewrite word.unsigned_sub.
-    rewrite word.unsigned_add.
     word_cleanup.
     replace (uint.Z a.(addrOff) + Z.of_nat (Z.to_nat 128 * 8) - 1) with (uint.Z a.(addrOff) + (128*8-1)) by lia.
 
