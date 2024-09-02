@@ -54,7 +54,7 @@ Proof.
   set tids := {[ tsnew ]} ∪ tidsactiveM.
   assert (∃ tidmin', set_Forall (λ tid, (tidmin' ≤ tid)%nat) tids ∧ tidmin' ∈ tids)
     as (tidmin' & Htidmin' & Helem).
-  { destruct (minimal_exists_L Nat.le tids) as (tidx & Htidx & Hminimal); first set_solver.
+  { destruct (minimal_exists_elem_of_L Nat.le tids) as (tidx & Htidx & Hminimal); first set_solver.
     exists tidx.
     split; last done.
     rewrite minimal_anti_symm in Hminimal.
