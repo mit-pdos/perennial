@@ -140,9 +140,8 @@ Proof.
       assert (uint.Z first0 + uint.Z count0 = uint.Z first0 + uint.Z count0 - length slice + 1 * length slice).
       { word. }
       rewrite H7.
-      rewrite Z_mod_plus.
-      { rewrite Z.mod_small. 2: word. word_cleanup. }
-      word.
+      rewrite Z_mod_plus_full.
+      rewrite Z.mod_small. 2: word. word_cleanup.
   Unshelve.
   { exact u64. }
   { exact (uint.nat first0 + uint.nat count0)%nat. }
@@ -227,9 +226,8 @@ Proof.
       assert (uint.Z first0 + uint.Z count0 = uint.Z first0 + uint.Z count0 - length slice + 1 * length slice).
       { word. }
       rewrite H7.
-      rewrite Z_mod_plus.
-      { rewrite Z.mod_small. 2: word. word_cleanup. }
-      word.
+      rewrite Z_mod_plus_full.
+      rewrite Z.mod_small. 2: word. word_cleanup.
 Qed.
 
 Theorem add_one : forall slice (first : u64) (count : u64) e, 
@@ -491,37 +489,7 @@ Proof.
     (* Search is_slice_small length Slice.sz. *)
     iPoseProof (own_slice_small_sz with "isSlice") as "%".
     wp_apply (wp_SliceSet (V:=u64) with "[isSlice]").
-    { iFrame. iPureIntro. apply lookup_lt_is_Some_2. rewrite H0.
-      (* Search word.modu. *)
-      (* Search (_ `mod` _) (_ < _).  *)
-      (* Z_mod_lt: ∀ a b : Z, b > 0 → 0 ≤ a `mod` b < b *)
-      epose proof (Z_mod_lt _ (uint.Z queueSlice.(Slice.sz))).
-      destruct H1.
-      { epose proof (u64_Z_through_nat (queueSlice.(Slice.sz))).
-        (* Check u64_Z_through_nat. *)
-        (* Check u64_Z. *)
-        rewrite <- H1.
-        rewrite <- H0.
-        apply Hqueue_size_inv0.
-        }
-      apply Nat2Z.inj_lt.
-      assert (uint.Z queueSlice.(Slice.sz) ≠ 0).
-      { epose proof (u64_Z_through_nat (queueSlice.(Slice.sz))).
-        rewrite <- H3.
-        rewrite <- H0.
-        word.
-      }
-      epose proof (word.unsigned_modu_nowrap (word.add first1 count1) queueSlice.(Slice.sz)).
-      epose proof (u64_Z_through_nat (word.modu
-      (word.add first1 count1)
-      queueSlice.(Slice.sz))).
-      rewrite H5.
-      rewrite H4.
-      { epose proof (u64_Z_through_nat (queueSlice.(Slice.sz))).
-        rewrite H6.
-        apply H2. 
-      }
-      eauto. }
+    { iFrame. iPureIntro. apply lookup_lt_is_Some_2. word. }
     iIntros "H4".
     wp_pures.
     wp_loadField.
@@ -549,21 +517,11 @@ Proof.
       (word.modu
         (word.add first1 count1)
         queueSlice.(Slice.sz)))).
-        { split. { word. }
-          epose proof (Z_mod_lt _ (length queue1)).
-          destruct H1. { word. }
-          epose proof (word.unsigned_modu_nowrap (word.add first1 count1) queueSlice.(Slice.sz)).
-          rewrite u64_Z_through_nat.
-          rewrite H3.
-          { epose proof (u64_Z_through_nat (queueSlice.(Slice.sz))).
-            rewrite <- H4.
-            rewrite <- H0.
-            apply H2. }
-          word. }
+        { word. }
           replace queueSlice.(Slice.sz) with (W64 (length queue1)).
           { rewrite add_one. 
             { rewrite big_sepL_app. simpl. iFrame. }
-            { destruct Hqueue_size_inv. destruct H3. word. }
+            { destruct Hqueue_size_inv. word. }
             { intuition. }
             { word. }
             word.
@@ -677,19 +635,13 @@ Proof.
       iFrame "Hqueue".
       iSplitR.
       { 
-        iPureIntro.
-        intuition eauto.
-        { word. }
-        word_cleanup.
-        rewrite H0.
-        rewrite u64_Z_through_nat.
-        apply Z_mod_lt.
-        word.
+        iPureIntro. word.
       }
       iRename "Helem" into "Helem_old".
       iExactEq "Helem_old". unfold named. rewrite H0. f_equal. f_equal. f_equal.
-      rewrite <- u64_Z. rewrite u64_Z_through_nat.
-      reflexivity. 
+      (* FIXME word *)
+      rewrite u64_Z_through_nat. rewrite u64_Z.
+      reflexivity.
       }
       wp_pures.
       wp_loadField.
