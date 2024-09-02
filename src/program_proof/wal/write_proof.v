@@ -70,9 +70,9 @@ Proof.
   { by iFrame. }
   wp_if_destruct; iApply "HΦ"; iFrame; iPureIntro.
   - symmetry; apply bool_decide_eq_false.
-    revert Heqb; repeat word_cleanup.
+    revert Heqb; word.
   - symmetry; apply bool_decide_eq_true.
-    revert Heqb; repeat word_cleanup.
+    revert Heqb; word.
 Qed.
 
 (* TODO: this intermediate function still provides no value, since it has

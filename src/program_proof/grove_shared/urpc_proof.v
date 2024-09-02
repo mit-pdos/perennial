@@ -372,7 +372,7 @@ Proof.
   wp_apply (wp_slice_len).
 
   wp_apply (wp_NewSliceWithCap (V:=u8)).
-  { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
+  { word. }
   iIntros (ptr) "Hmsg".
   rewrite replicate_0.
   wp_apply (wp_WriteInt with "Hmsg"). clear ptr.
@@ -844,7 +844,7 @@ Proof.
   wp_pures.
   wp_apply (wp_slice_len).
   wp_apply (wp_NewSliceWithCap (V:=u8)).
-  { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
+  { word. }
   iIntros (ptr) "Hmsg".
   rewrite replicate_0.
   wp_apply (wp_WriteInt with "Hmsg"). clear ptr.

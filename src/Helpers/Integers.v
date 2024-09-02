@@ -512,13 +512,15 @@ Ltac word_cleanup_core :=
       | |- not (@eq u32 _ _) => apply (f_not_equal uint.Z)
       | |- not (@eq u8 _ _) => apply (f_not_equal uint.Z)
       end;
-  (* can't replace this with [autorewrite], probably because typeclass inference
+  (* can't replace some of these with [autorewrite], probably because typeclass inference
   isn't the same *)
-  rewrite ?word.unsigned_add, ?word.unsigned_sub,
-  ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
-  ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32,
-  ?w64_unsigned_ltu;
-  try autorewrite with word;
+  repeat (
+      rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
+      ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
+      ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32,
+      ?w64_unsigned_ltu
+      || autorewrite with word
+    );
   repeat match goal with
          | [ H: context[word.unsigned (W64 ?x)] |- _ ] => change (uint.Z x) with x in H
          | [ |- context[word.unsigned (W64 ?x)] ] => change (uint.Z x) with x
@@ -557,11 +559,11 @@ Ltac word_cleanup_core :=
          end;
   repeat match goal with
          | |- context[@word.wrap _ ?word ?ok ?z] =>
-           rewrite (@wrap_small _ word ok z) by lia
+           rewrite -> (@wrap_small _ word ok z) by lia
          | |- context[@word.swrap _ ?word ?ok ?z] =>
-           rewrite (@swrap_small _ word ok z) by lia
+           rewrite -> (@swrap_small _ word ok z) by lia
          | |- context[Z.of_nat (Z.to_nat ?z)] =>
-           rewrite (Z2Nat.id z) by lia
+           rewrite -> (Z2Nat.id z) by lia
          end.
 
 (* TODO: only for backwards compatibility.

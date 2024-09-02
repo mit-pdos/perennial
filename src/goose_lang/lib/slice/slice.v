@@ -634,12 +634,10 @@ Theorem slice_skip_skip (n m: u64) s t :
 Proof.
   intros Hbound Hwf.
   rewrite /slice_skip /=.
+  f_equal; try word.
+  rewrite !loc_add_assoc.
   f_equal.
-  - rewrite !loc_add_assoc.
-    f_equal.
-    word_cleanup.
-  - repeat word_cleanup.
-  - repeat word_cleanup.
+  word.
 Qed.
 
 Theorem own_slice_cap_skip s t n :
@@ -665,7 +663,7 @@ Theorem own_slice_cap_skip_more s n1 n2 t :
   own_slice_cap (slice_skip s t n1) t -∗ own_slice_cap (slice_skip s t n2) t.
 Proof.
   iIntros (Hbound Hwf) "Hcap".
-  rewrite (slice_skip_skip n2 n1); try (repeat word_cleanup).
+  rewrite (slice_skip_skip n2 n1); [ | word .. ].
   iApply (own_slice_cap_skip with "Hcap"); simpl; try word.
 Qed.
 
@@ -1334,18 +1332,16 @@ Proof.
     iSplitR.
     { rewrite length_app Hlen /=.
       iPureIntro.
-      (* XXX why twice? *)
-      repeat word_cleanup.
+      word.
     }
     iExists extra'.
     simpl.
     iSplitR.
     { iPureIntro.
-      revert Hextralen. repeat word_cleanup.
+      revert Hextralen. word.
     }
     rewrite ?loc_add_assoc. iModIntro.
-    iExactEq "Hfree". f_equal. f_equal.
-    repeat word_cleanup.
+    iExactEq "Hfree". repeat (f_equal; try word).
 
   - wp_apply wp_make_cap.
     iIntros (cap Hcapgt).
@@ -1421,7 +1417,7 @@ Proof.
       * iPureIntro.
         rewrite length_app /=.
         rewrite Hlen /slice_skip /=.
-        word_cleanup. word_cleanup.
+        word.
     }
 
     iExists (replicate (uint.nat cap - uint.nat s.(Slice.sz) - 1) (zero_val t)).
@@ -1429,7 +1425,7 @@ Proof.
     { rewrite length_replicate.
       iPureIntro.
       simpl.
-      word_cleanup. word_cleanup. }
+      word. }
     simpl. iModIntro.
     iExactEq "HnewFree".
     rewrite loc_add_assoc.
@@ -1438,7 +1434,7 @@ Proof.
     replace (uint.nat n) with (length vs1) by done.
     rewrite Hlen'.
     rewrite /slice_take /=.
-    word_cleanup. word_cleanup.
+    word_cleanup.
     replace (ty_size t * uint.Z n + ty_size t * (uint.Z (Slice.sz s) + 1 - uint.Z n))
        with (ty_size t * ( uint.Z n + ( (uint.Z (Slice.sz s) + 1 - uint.Z n) ) ) ) by lia.
     word_eq.

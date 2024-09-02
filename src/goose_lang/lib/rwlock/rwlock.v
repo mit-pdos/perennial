@@ -34,6 +34,8 @@ Section proof.
   Definition remaining_frac (n: u64) :=
     ((Qp_of_Z (remaining_readers n)) * rfrac)%Qp.
 
+  Hint Unfold num_readers remaining_readers : word.
+
   Lemma remaining_frac_read_acquire n :
     1 ≤ uint.Z n →
     uint.Z n < uint.Z (word.add n 1) →
@@ -43,24 +45,13 @@ Section proof.
     intros.
     rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
-    { f_equal. rewrite /remaining_readers.
-      rewrite Z.max_r //. rewrite /num_readers.
-      word_cleanup.
-    }
+    { f_equal. word. }
     assert (Heq2: Qc_of_Z (1 `max` remaining_readers (word.add n 1)) =
                   Qc_of_Z (remaining_readers (word.add n 1))).
-    { f_equal. rewrite /remaining_readers.
-      rewrite Z.max_r //. rewrite /num_readers.
-      word_cleanup.
-    }
+    { f_equal. word. }
     rewrite ?Heq1 ?Heq2.
     assert (Heq3: (remaining_readers (word.add n 1)) = remaining_readers n - 1).
-    { rewrite /remaining_readers/num_readers.
-      word_cleanup.
-      assert ((uint.Z (word.add n 1) - 1) = uint.Z n) as ->.
-      { word_cleanup. }
-      lia.
-    }
+    { word. }
     rewrite Heq3 //=.
     rewrite Z2Qc_inj_sub.
     field_simplify => //=.
@@ -74,21 +65,12 @@ Section proof.
     intros Hlt.
     rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
-    { f_equal. rewrite /remaining_readers.
-      rewrite Z.max_r //. rewrite /num_readers.
-      word_cleanup.
-    }
+    { f_equal. word. }
     assert (Heq2: Qc_of_Z (1 `max` remaining_readers (word.sub n 1)) =
                   Qc_of_Z (remaining_readers (word.sub n 1))).
-    { f_equal. rewrite /remaining_readers.
-      rewrite Z.max_r //. rewrite /num_readers.
-      word_cleanup.
-    }
+    { f_equal. word. }
     rewrite ?Heq1 ?Heq2.
-    assert (Heq3: (remaining_readers (word.sub n 1)) = remaining_readers n + 1).
-    { rewrite /remaining_readers/num_readers.
-      word_cleanup.
-    }
+    assert (Heq3: (remaining_readers (word.sub n 1)) = remaining_readers n + 1) by word.
     rewrite Heq3 //=.
     rewrite Z2Qc_inj_add.
     field_simplify => //=.
@@ -368,7 +350,7 @@ Section proof.
             }
             split.
             - lia.
-            - word_cleanup.
+            - word.
           }
           iFrame.
         }

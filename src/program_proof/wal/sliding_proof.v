@@ -1257,7 +1257,6 @@ Lemma numMutable_after_clear σ :
 Proof.
   intros Hwf.
   rewrite /slidingM.numMutable /slidingM.endPos /=.
-  word_cleanup.
   word.
 Qed.
 
