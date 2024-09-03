@@ -16,6 +16,9 @@ Section defn.
   Program Definition Match := unseal (_:seal (@Match_def)). Obligation 1. by eexists. Qed.
   Definition Match_unseal : Match = _ := seal_eq _.
 
+  Definition Length : val :=
+    rec: "length" "l" := Match "l" (λ: <>, #(W64 0)) (λ: "hd" "tl", #(W64 1) + ("length" "tl")).
+
   Fixpoint val_def (x : list val) : val :=
     match x with
     | [] => InjLV #()

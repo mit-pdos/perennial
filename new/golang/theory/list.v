@@ -27,4 +27,22 @@ Proof.
   destruct l; wp_rec; wp_pures; iFrame.
 Qed.
 
+Global Instance wp_list_Length (l : list val) :
+  PureWp True
+    (list.Length (list.val l))
+    #(W64 (length l))
+.
+Proof.
+  rewrite /list.Length.
+  intros ?????. iIntros "Hwp".
+  iInduction l as [] "IH" forall (K Φ).
+  - wp_rec; wp_pures; iFrame.
+  - wp_rec. wp_pure. fold list.Length. wp_pures.
+    wp_bind (list.Length _).
+    wp_apply ("IH" $! []).
+    wp_pures. wp_pures. simpl.
+    replace (W64 (S $ length l)) with (word.add (W64 1) (W64 (length l))) by word.
+    wp_apply "Hwp".
+Qed.
+
 End wps.

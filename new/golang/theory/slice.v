@@ -1,9 +1,9 @@
 From RecordUpdate Require Import RecordSet.
-From Perennial.Helpers Require Import List Fractional.
+From Perennial.Helpers Require Import List Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export mem typing exception.
+From New.golang.theory Require Export list mem typing exception.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
@@ -281,6 +281,32 @@ Proof.
   iIntros (?) "(? & ? & ?)".
   iApply "HΦ". iFrame.
 Qed.
+
+Lemma wp_slice_literal {stk E} t (l : list val) :
+  Forall (λ v, has_go_type v t) l →
+  {{{ True }}}
+    slice.literal t (list.val l) @ stk ; E
+  {{{ sl, RET (slice.val sl); own_slice sl t (DfracOwn 1) l }}}.
+Proof.
+  intros Hty. iIntros (Φ) "_ HΦ".
+  wp_rec.
+  wp_pures.
+  wp_apply wp_slice_make2.
+  iIntros (?) "[Hsl Hcap]".
+  wp_pures.
+  wp_apply wp_alloc_untyped.
+  { instantiate (1:=list.val l). rewrite list.val_unseal. by destruct l. }
+  iIntros (l_ptr) "Hl".
+  wp_pures.
+  wp_alloc i_ptr as "Hi".
+  wp_pures.
+  iAssert (∃ (i : w64),
+      "Hi" ∷ i_ptr ↦[uint64T] #i ∗
+      "Hl" ∷ l_ptr ↦ (list.val (drop (uint.nat i) l)) ∗
+      "Hsl" ∷ own_slice sl t (DfracOwn 1) (take (uint.nat i) l ++ replicate (length l - uint.nat i) (zero_val t))
+    )%I
+    with "[Hi Hl Hsl]" as "Hloop".
+Abort.
 
 (* PureExecs *)
 
