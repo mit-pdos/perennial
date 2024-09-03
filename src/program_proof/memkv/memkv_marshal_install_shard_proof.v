@@ -719,13 +719,11 @@ Proof.
     replace (word.add (size mdone') 1) with (uint.Z (size mdone') + 1:u64) by word.
     rewrite Z_u64; last first.
     { split; first lia.
-      word_cleanup.
-      rewrite Hsize in Heqb.
       assert (size mdone' ≤ size m)%nat.
       { rewrite -Hunion.
         rewrite ?Map.map_size_dom.
         apply subseteq_size. set_solver. }
-      lia.
+      word.
     }
     replace (Z.of_nat (S (size mdone'))) with (size mdone' + 1)%Z by lia.
     iFrame.
@@ -762,8 +760,7 @@ Proof.
   {
     exfalso.
     set (mtodo:=(list_to_map (p :: l'))) in *.
-    assert (size m <= size mdone').
-    { rewrite ?Z_u64 in Heqb; try word. }
+    assert (size m <= size mdone') by word.
     rewrite -Hunion in Heqb.
     rewrite map_size_disj_union in Heqb; eauto.
     assert (size mtodo > 0).

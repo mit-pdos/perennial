@@ -594,8 +594,7 @@ Proof.
     2: { unseal_nshard. word. }
     iDestruct (big_sepS_insert with "Hpp") as "[Hp Hpp]".
     { unseal_nshard. intro Hx.
-      apply rangeSet_lookup in Hx; try word.
-      intuition. revert H. word. }
+      apply rangeSet_lookup in Hx; try word. }
     wp_apply (wp_mkLockShard with "Hp").
     iIntros (ls gh) "Hls".
     wp_load.

@@ -931,13 +931,7 @@ Proof.
   wp_loadField.
   wp_pures.
   rewrite -HnewDataSafe in Hsz.
-  assert (W64 (length newData) = data_sl.(Slice.sz)) as HH.
-  {
-    apply Z2Nat.inj in Hsz.
-    { word_cleanup. naive_solver. }
-    { word_cleanup. naive_solver. }
-    word.
-  }
+  assert (W64 (length newData) = data_sl.(Slice.sz)) as HH by word.
   rewrite -HH.
   rewrite -HH in HnoOverflow.
   wp_pures.
@@ -1017,44 +1011,8 @@ Proof.
     rewrite -Hlengthsafe.
     repeat (rewrite Nat2Z.inj_add).
     replace (length newData) with (Z.to_nat (Z.of_nat (length newData))) by lia.
-    rewrite -Z2Nat.inj_add.
-    {
-      rewrite Z2Nat.inj_iff.
-      {
-        rewrite Z2Nat.id.
-        {
-          rewrite wrap_small; first word.
-          split.
-          {
-            apply Z.add_nonneg_nonneg; word_cleanup; naive_solver.
-          }
-          {
-            rewrite Nat2Z.id.
-            rewrite -HnewDataSafe.
-            replace (Z.of_nat (uint.nat (length newData))) with (uint.Z (length newData)); last first.
-            { rewrite u64_Z_through_nat. done. }
-            destruct (bool_decide (uint.Z (length (predurableC ++ membufC)) + (uint.Z (length newData)) < 2 ^ 64))%Z eqn:Hnov.
-            { apply bool_decide_eq_true in Hnov. done. }
-            {
-              apply bool_decide_eq_false in Hnov.
-              word.
-            }
-          }
-        }
-        naive_solver.
-      }
-      {
-        word_cleanup.
-        unfold word.wrap.
-        by apply Z_mod_lt.
-      }
-      {
-        word_cleanup.
-        apply Z.add_nonneg_nonneg; word_cleanup; naive_solver.
-      }
-    }
-    { naive_solver. }
-    { lia. }
+    rewrite /list_safe_size in HnewDataSafe.
+    word.
   }
 
   iAssert (|={⊤}=> (P (γ.(initdata) ++ predurableC) -∗ fmlist_lb γ.(durabledata) (γ.(initdata) ++ predurableC ++ membufC')
@@ -1207,11 +1165,7 @@ Proof.
         (W64 (length (predurableC ++ membufC'))); last first.
     {
       repeat rewrite length_app.
-      rewrite -word.ring_morph_add.
-      word_cleanup.
-      repeat (rewrite Nat2Z.inj_add).
-      rewrite Z.add_assoc.
-      done.
+      word.
     }
     iFrame.
     done.
@@ -1228,11 +1182,7 @@ Proof.
   { iFrame "#". }
 
   repeat rewrite length_app.
-  repeat (rewrite Nat2Z.inj_add).
-  rewrite Z.add_assoc.
-  rewrite -word.ring_morph_add.
-  unfold W64.
-  done.
+  word.
 Qed.
 
 Lemma wp_AppendOnlyFile__WaitAppend aof_ptr γ (l:u64) fname P Pcrash :

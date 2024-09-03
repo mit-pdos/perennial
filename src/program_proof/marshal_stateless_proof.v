@@ -132,7 +132,7 @@ Proof.
   wp_load.
   wp_if_destruct.
   - wp_store. wp_load. iApply "HΦ". iPureIntro. done.
-  - wp_load. iApply "HΦ". iPureIntro. word.
+  - wp_load. iApply "HΦ". iPureIntro. move: Heqb. word.
 Qed.
 
 Local Theorem wp_reserve s (extra : u64) (vs : list u8) :

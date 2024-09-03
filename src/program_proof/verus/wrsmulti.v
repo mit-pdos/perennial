@@ -215,6 +215,7 @@ Proof.
     rewrite take_ge.
     2: {
       rewrite -Hlen2 Hslicesz.
+      word_cleanup.
       (* FIXME: would be nice if [word] could handle this. *)
       rewrite Z_u64 in Heqb. 2: word. word.
     }

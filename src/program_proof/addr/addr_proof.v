@@ -811,10 +811,7 @@ Proof.
   wp_rec. wp_pures.
   iApply "HΦ".
   iPureIntro.
-
-  word_cleanup.
-  rewrite ?word.unsigned_mul. (* XXX why is this needed? *)
-  word_cleanup.
+  word.
 Qed.
 
 End heap.

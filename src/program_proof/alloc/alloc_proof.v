@@ -370,7 +370,7 @@ Proof.
     iExists _, _; iFrame.
     iPureIntro.
     pose proof (and_1_u8 x).
-    word_cleanup.
+    word.
   - iExists _, _; iFrame.
     iPureIntro.
     word.
@@ -433,8 +433,6 @@ Proof.
     iModIntro.
     iApply "HΦ".
     iPureIntro.
-    word_cleanup.
-    rewrite word.unsigned_mul.
     word.
 Qed.
 

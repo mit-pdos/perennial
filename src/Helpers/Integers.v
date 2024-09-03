@@ -441,6 +441,11 @@ Proof.
   unfold W32; rewrite word.unsigned_of_Z; auto.
 Qed.
 
+Lemma unsigned_U8 z : uint.Z (W8 z) = word.wrap (word:=w8_word_instance) z.
+Proof.
+  unfold W8; rewrite word.unsigned_of_Z; auto.
+Qed.
+
 Lemma signed_U64 z : sint.Z (W64 z) = word.swrap (word:=w64_word_instance) z.
 Proof.
   unfold W64; rewrite word.signed_of_Z; auto.
@@ -499,6 +504,19 @@ Qed.
 
 Create HintDb word.
 
+Hint Rewrite unsigned_U64 unsigned_U32 unsigned_U8 : word.
+
+Ltac simpl_word_constants :=
+  repeat match goal with
+         | [ H: context[word.unsigned (W64 ?x)] |- _ ] => change (uint.Z x) with x in H
+         | [ |- context[word.unsigned (W64 ?x)] ] => change (uint.Z x) with x
+         | [ H: context[word.unsigned (W32 ?x)] |- _ ] => change (uint.Z (W32 x)) with x in H
+         | [ |- context[word.unsigned (W32 ?x)] ] => change (uint.Z (W32 x)) with x
+         | [ H: context[word.unsigned (W8 ?x)] |- _ ] => change (uint.Z (W32 8)) with x in H
+         | [ |- context[word.unsigned (W8 ?x)] ] => change (uint.Z (W8 x)) with x
+        (* TODO: add sint versions *)
+    end.
+
 Ltac word_cleanup_core :=
   (* this is so that the following pattern succeeds when (for some reason)
   instead of w64 we have its unfolding *)
@@ -515,20 +533,19 @@ Ltac word_cleanup_core :=
       | |- not (@eq u32 _ _) => apply (f_not_equal uint.Z)
       | |- not (@eq u8 _ _) => apply (f_not_equal uint.Z)
       end;
+  simpl_word_constants;
   (* can't replace some of these with [autorewrite], probably because typeclass inference
   isn't the same *)
   repeat (
       rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
-      ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
-      ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32,
-      ?w64_unsigned_ltu
-      || autorewrite with word
+        ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
+        ?word.unsigned_mul,
+        ?w64_unsigned_ltu
+      || rewrite -> ?word.unsigned_of_Z, ?word.of_Z_unsigned in *
+      || autorewrite with word in *
     );
   repeat match goal with
-         | [ H: context[word.unsigned (W64 ?x)] |- _ ] => change (uint.Z x) with x in H
-         | [ |- context[word.unsigned (W64 ?x)] ] => change (uint.Z x) with x
-         | [ H: context[word.unsigned (W32 ?x)] |- _ ] => change (uint.Z (W32 x)) with x in H
-         | [ |- context[word.unsigned (W32 ?x)] ] => change (uint.Z (W32 x)) with x
+         | _ => progress simpl_word_constants
          | [ H: @eq w64 _ _ |- _ ] => let H' := fresh H "_signed" in
                                       apply w64_val_f_equal in H as [H H']
          | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
@@ -575,45 +592,34 @@ Ltac word_cleanup_core :=
 that does a subset of safe and useful rewrites *)
 Ltac word_cleanup := word_cleanup_core; try lia.
 
-Ltac word := solve [
-                 word_cleanup_core;
-                 unfold word.wrap in *;
-                 (* NOTE: some inefficiency here because [lia] will do [zify]
+Ltac word := first [
+                 solve [
+                     word_cleanup_core;
+                     unfold word.wrap in *;
+                     (* NOTE: some inefficiency here because [lia] will do [zify]
                  again, but we can't rebind the zify hooks in Ltac *)
-                 zify; Z.div_mod_to_equations; lia
+                     zify; Z.div_mod_to_equations; lia
+                   ]
+               | fail 1 "word could not solve goal"
                ].
 
 Theorem Z_u32 z :
   0 <= z < 2 ^ 32 ->
   uint.Z (W32 z) = z.
-Proof.
-  intros.
-  unfold W32.
-  rewrite word.unsigned_of_Z.
-  rewrite wrap_small; auto.
-Qed.
+Proof. word. Qed.
 
 Lemma u32_Z (x : u32) :
   W32 (uint.Z x) = x.
-Proof.
-  unfold W32. apply word.of_Z_unsigned.
-Qed.
+Proof. word. Qed.
 
 Theorem Z_u64 z :
   0 <= z < 2 ^ 64 ->
   uint.Z (W64 z) = z.
-Proof.
-  intros.
-  unfold W64.
-  rewrite word.unsigned_of_Z.
-  rewrite wrap_small; auto.
-Qed.
+Proof. word. Qed.
 
 Lemma u64_Z (x : u64) :
   W64 (uint.Z x) = x.
-Proof.
-  unfold W64. apply word.of_Z_unsigned.
-Qed.
+Proof. word. Qed.
 
 Lemma w64_to_nat_id (x : w64) :
   W64 (Z.of_nat (uint.nat x)) = x.
