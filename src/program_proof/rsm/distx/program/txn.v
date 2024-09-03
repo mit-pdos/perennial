@@ -551,6 +551,7 @@ Section program.
           }
           rewrite elem_of_singleton in Hgid.
           subst g.
+          (* FIXME: not sure if word is supposed to solve this immediately *)
           assert (Hnz : size pwrs ≠ O).
           { intros Hz. rewrite Hz in Heqb. word. }
           clear Heqb.
@@ -570,6 +571,7 @@ Section program.
       { apply (Forall_impl _ _ _ Hincl). set_solver. }
       apply set_Forall_union; last apply Hspec.
       rewrite set_Forall_singleton.
+      (* FIXME: not sure if word is supposed to solve this immediately *)
       assert (Hsizez : size pwrs = O).
       { rewrite Heqb in Hsize. done. }
       split.
