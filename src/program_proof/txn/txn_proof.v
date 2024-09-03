@@ -1680,7 +1680,7 @@ Proof.
     iPureIntro.
     split; last by assumption.
     apply map_Forall_insert_2; first by rewrite /pointsto_valid //.
-    apply map_Forall_insert_1_2 in Hvalids; assumption.
+    apply map_Forall_insert in Hvalids as []; done.
 Qed.
 
 Lemma unsigned_U8 z : uint.Z (W8 z) = @word.wrap 8 _ _ z.

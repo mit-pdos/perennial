@@ -225,8 +225,7 @@ Section proof.
       inversion Hacc.
     }
     intros Hex.
-    apply map_Forall_insert_1_1 in Hex as Hex1.
-    apply map_Forall_insert_1_2 in Hex as Hex2; last by assumption.
+    apply map_Forall_insert in Hex as [Hex1 Hex2]; last by assumption.
     apply IHm in Hex2.
     destruct Hex1 as [y Hex1].
     destruct Hex2 as [m'_sub [Hdoms Hm'_sub]].
@@ -1429,7 +1428,7 @@ Section proof.
             apply dom_fmap in Hin.
             apply dom_fmap in Hin.
             apply elem_of_dom in Hin as [vobj'' Hin].
-            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply map_Forall_insert in Hvalids as [_ Hvalids]; last by assumption.
             apply Hvalids in Hin as (_&Hvalid_off&Hvalid_γ).
             eauto.
         - intros a'' o'' Hacc''.
@@ -1448,7 +1447,7 @@ Section proof.
             rewrite -Hσj2_mt !lookup_fmap in Hacc''.
             apply fmap_Some_1 in Hacc'' as [obj [Hobj ->]].
             apply fmap_Some_1 in Hobj as [vobj' [Hvobj' ->]].
-            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply map_Forall_insert in Hvalids as [_ Hvalids]; last by assumption.
             apply Hvalids in Hvobj' as (_&_&Hvalid_γ).
             rewrite Hvalid_γ.
             eexists _.
@@ -1629,7 +1628,7 @@ Section proof.
             apply dom_fmap in Hin.
             apply dom_fmap in Hin.
             apply elem_of_dom in Hin as [vobj'' Hin].
-            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply map_Forall_insert in Hvalids as [_ Hvalids]; last by assumption.
             apply Hvalids in Hin as (_&Hvalid_off&Hvalid_γ).
             eauto.
         - intros a'' o'' Hacc''.
@@ -1650,7 +1649,7 @@ Section proof.
             rewrite -Hσj2_mt !lookup_fmap in Hacc''.
             apply fmap_Some_1 in Hacc'' as [obj [Hobj ->]].
             apply fmap_Some_1 in Hobj as [vobj' [Hvobj' ->]].
-            apply map_Forall_insert_1_2 in Hvalids; last by assumption.
+            apply map_Forall_insert in Hvalids as [_ Hvalids]; last by assumption.
             apply Hvalids in Hvobj' as (_&_&Hvalid_γ).
             rewrite Hvalid_γ.
             eexists _.
