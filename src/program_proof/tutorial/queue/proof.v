@@ -136,12 +136,9 @@ Proof.
       rewrite take_insert.
       { eauto. }
       word_cleanup.
-    + word_cleanup.
-      assert (uint.Z first0 + uint.Z count0 = uint.Z first0 + uint.Z count0 - length slice + 1 * length slice).
-      { word. }
-      rewrite H7.
-      rewrite Z_mod_plus_full.
-      rewrite Z.mod_small. 2: word. word_cleanup.
+    + (* FIXME: would be cool if [word] could handle this style of reasoning. *)
+      rewrite -(Z_mod_plus_full _ (-1)).
+      rewrite Z.mod_small; word.
   Unshelve.
   { exact u64. }
   { exact (uint.nat first0 + uint.nat count0)%nat. }
@@ -193,10 +190,8 @@ Proof.
         word.
       }
       word_cleanup.
-    + word_cleanup.
-      rewrite Z.mod_small.
-      { done. }
-      word.
+    + (* FIXME: would be cool if [word] could handle this style of reasoning. *)
+      rewrite Z.mod_small; word.
   - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
     + rewrite subslice_comm.
       rewrite drop_app_ge.
@@ -222,12 +217,9 @@ Proof.
         word.
       }
       word.
-    + word_cleanup.
-      assert (uint.Z first0 + uint.Z count0 = uint.Z first0 + uint.Z count0 - length slice + 1 * length slice).
-      { word. }
-      rewrite H7.
-      rewrite Z_mod_plus_full.
-      rewrite Z.mod_small. 2: word. word_cleanup.
+    + (* FIXME: would be cool if [word] could handle this style of reasoning. *)
+      rewrite -(Z_mod_plus_full _ (-1)).
+      rewrite Z.mod_small; word.
 Qed.
 
 Theorem add_one : forall slice (first : u64) (count : u64) e, 
@@ -296,17 +288,8 @@ Proof.
   assert (uint.Z first0 < length slice - 1 ∨ uint.Z first0 = length slice - 1).
   { word. }
   destruct H2.
-  - rewrite Z.mod_small. 2: { word. }
-    word_cleanup.
-    replace (Init.Nat.add (Z.to_nat (word.unsigned first0)) 1)
-      with (Z.to_nat (Z.add (word.unsigned first0) 1)).
-    2: word.
-    replace (Init.Nat.add (Z.to_nat (Z.add (word.unsigned first0) 1))
-        (Z.to_nat (Z.sub (word.unsigned count0) 1)))
-      with (Init.Nat.add (Z.to_nat (word.unsigned first0))
-        (Z.to_nat (word.unsigned count0))).
-    2: word.
-    done.
+  - rewrite Z.mod_small. 2: word.
+    f_equal; word.
   - rewrite H2.
     replace (Init.Nat.add (Z.to_nat (Z.sub (Datatypes.length slice) 1)) 1) with ((length slice)).
     2: word.
@@ -314,23 +297,12 @@ Proof.
     2: word.
     replace ((uint.Z (length slice) `mod` length slice)) with 0.
     2: { rewrite Z_u64. { rewrite Z_mod_same. { done. } word. } word. }
-    rewrite Z2Nat.inj_0.
-    replace (Init.Nat.add 0 (Z.to_nat (Z.sub (word.unsigned count0) 1))) with (Z.to_nat (Z.sub (word.unsigned count0) 1)).
-    2: word.
     rewrite subslice_comm.
     rewrite drop_app_length.
     rewrite subslice_comm.
     rewrite drop_0.
-    replace (Init.Nat.sub (Z.to_nat (Z.sub (word.unsigned count0) 1)) 0) with (Z.to_nat (Z.sub (word.unsigned count0) 1)).
-    2: word.
-    replace (Init.Nat.sub
-    (Init.Nat.add (Z.to_nat (Z.sub (Datatypes.length slice) 1))
-       (Z.to_nat (word.unsigned count0)))
-    (Datatypes.length slice)) with (Z.to_nat (Z.sub (word.unsigned count0) 1)).
-    2: word.
-    rewrite take_app_le.
-    2: word.
-    done.
+    rewrite take_app_le. 2: word.
+    f_equal. word.
 Qed.
 
 Theorem remove_one : forall slice (first : u64) (count : u64) e, 
@@ -510,7 +482,6 @@ Proof.
         iPureIntro.
         (* Search length insert list. *)
         rewrite length_insert.
-        intuition eauto.
         word.
       }
       edestruct (list_lookup_Z_lt queue1 (uint.nat
@@ -637,9 +608,8 @@ Proof.
       { 
         iPureIntro. word.
       }
-      iRename "Helem" into "Helem_old".
-      iExactEq "Helem_old". unfold named. rewrite H0. f_equal. f_equal. f_equal.
-      word. }
+      iExactEq "Helem". unfold named. rewrite H0. f_equal. f_equal. word.
+    }
     wp_pures.
     wp_loadField.
     wp_apply (wp_condBroadcast with "HrcondC").
