@@ -1413,7 +1413,7 @@ Proof.
       rewrite Hkind' in Hkind.
       inversion Hkind.
       reflexivity.
-    - apply map_Forall_insert_1_1 in Hvalids.
+    - apply map_Forall_insert in Hvalids as [Hvalids _]; last done.
       destruct Hvalids as (_&_&Hkind').
       rewrite Hkind' in Hkind.
       inversion Hkind.
@@ -1635,7 +1635,7 @@ Proof.
       with "[$Hjrnl_mem Hjrnl_maps_to Hdata_s]"
     ); [eassumption|eassumption| |by iFrame|].
     {
-      apply map_Forall_insert_1_1 in Hvalids.
+      apply map_Forall_insert in Hvalids as [Hvalids _]; last done.
       destruct Hvalids as (_&_&Hkind).
       rewrite Hobj' in Hkind.
       inversion Hkind as [Hkind'].
@@ -1645,7 +1645,7 @@ Proof.
     iIntros "[Hjrnl_mem Hjrnl_maps_to]".
     destruct obj as [kind obj].
     destruct obj' as [kind' obj'].
-    pose proof (map_Forall_insert_1_1 _ _ _ _ Hvalids) as Hvalid.
+    apply map_Forall_insert in Hvalids as [Hvalid Hvalids]; last done.
     simpl in Hvalid.
     destruct Hvalid as (Hvalid_addr&Hvalid_off&Hkind).
     rewrite Hobj' /= in Hkind.
@@ -1680,7 +1680,7 @@ Proof.
     iPureIntro.
     split; last by assumption.
     apply map_Forall_insert_2; first by rewrite /pointsto_valid //.
-    apply map_Forall_insert in Hvalids as []; done.
+    done.
 Qed.
 
 Lemma unsigned_U8 z : uint.Z (W8 z) = @word.wrap 8 _ _ z.

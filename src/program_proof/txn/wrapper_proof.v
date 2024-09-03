@@ -1421,8 +1421,7 @@ Section proof.
             subst a''.
             eexists _.
             split; first by eassumption.
-            apply map_Forall_insert_1_1 in Hvalids as (_&Hvalid_off&_).
-            assumption.
+            apply map_Forall_insert in Hvalids as [(_&Hvalid_off&_) _]; done.
           + destruct Hjrnl_maps_mt as (_&Hσj2_mt).
             rewrite -Hσj2_mt in Hin.
             apply dom_fmap in Hin.
@@ -1621,7 +1620,7 @@ Section proof.
             subst a''.
             eexists _.
             split; first by eassumption.
-            apply map_Forall_insert_1_1 in Hvalids as (_&Hvalid_off&_).
+            apply map_Forall_insert in Hvalids as [(_&Hvalid_off&_) _]; last done.
             rewrite Hvobj_modified in Hvalid_off; assumption.
           + destruct Hjrnl_maps_mt as (_&Hσj2_mt).
             rewrite -Hσj2_mt in Hin.
