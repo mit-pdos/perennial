@@ -934,7 +934,7 @@ Proof.
   iApply "HΦ". iPureIntro.
   case_bool_decide as Hlt; last done.
   unfold reached_quorum.
-  rewrite word.unsigned_divu_nowrap in Hlt; word.
+  rewrite word.unsigned_divu_nowrap in Hlt; try word.
 Qed.
 
 Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :

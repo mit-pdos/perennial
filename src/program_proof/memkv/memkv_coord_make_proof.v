@@ -176,19 +176,15 @@ Proof.
         rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping.
         word_cleanup.
         rewrite -Hlen_shardMapping in Hle.
-        rewrite Z_u64 ?Nat2Z.id in Hle; word_cleanup.
+        word.
       }
       iDestruct "H" as (??) "H". iExists _.
       assert (host = hid) as ->.
       {
         assert (uint.nat (W64 (Z.of_nat sid)) = sid) as Hcoerce.
-        { word_cleanup.
-          rewrite wrap_small; first lia.
-          { split.
-          * lia.
-          *  apply lookup_lt_Some in Hlookup.
-            rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping. lia.
-          }
+        { apply lookup_lt_Some in Hlookup.
+          rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping.
+          word.
         }
         { rewrite Hcoerce in Hlookup2. congruence. }
       }

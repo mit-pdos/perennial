@@ -742,16 +742,14 @@ Proof.
       assert (replicas_left = nil ∨ 0 < length replicas_left)%nat as [Hnil|Hlen0].
       { destruct replicas_left => /=; auto. right; lia. }
       { subst. rewrite app_nil_r in Hreplicas_prefix. subst. auto.
-        word_cleanup.
-        rewrite Z_u64 in Hlookup; lia.
+        word.
       }
-      rewrite Hreplicas_prefix length_app. lia.
+      len.
     }
     destruct replicas_left as [|next_replica replicas_left'].
     { exfalso.
       rewrite app_nil_r in Hreplicas_prefix.
-      rewrite Hreplicas_prefix in H.
-      word.
+      subst. word.
     }
 
     replace (next_replica :: replicas_left') with ([next_replica] ++ replicas_left') by done.
@@ -764,10 +762,7 @@ Proof.
     {
       iPureIntro.
       apply lookup_lt_is_Some_2.
-      simpl.
-      rewrite length_app.
-      rewrite length_cons.
-      word.
+      len.
     }
     iIntros "Hreplicas_sl".
     wp_pures.
@@ -800,11 +795,7 @@ Proof.
       rewrite e.
       rewrite list_lookup_insert; last first.
       {
-        rewrite length_app.
-        rewrite length_app.
-        simpl.
-        rewrite length_replicate.
-        word.
+        len.
       }
       {
         rewrite lookup_app_l; last first.
@@ -813,7 +804,6 @@ Proof.
           word. }
         rewrite lookup_app_r; last first.
         {
-          rewrite Hreplicas_len.
           word.
         }
         replace (uint.nat i - length replicas_done)%nat with (0%nat) by word.

@@ -109,6 +109,4 @@ Proof.
   intros Hnonneg1 Hoverflow x Hin1 Hin2.
   assert (x = W64 start) by set_solver.
   subst. apply rangeSet_lookup in Hin2; eauto; try word.
-  assert (uint.Z (W64 start) = start) by word.
-  word.
 Qed.

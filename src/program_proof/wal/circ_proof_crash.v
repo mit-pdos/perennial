@@ -345,7 +345,7 @@ Proof.
     rewrite /circΣ.diskEnd in H.
     word_cleanup.
     autorewrite with len in Hupdslen.
-    revert H; word_cleanup; intros.
+    revert Hupdslen H; word_cleanup; intros.
     assert (uint.nat i - uint.nat σ.(start) < length σ.(upds))%nat as Hinbounds by word.
     apply list_lookup_lt in Hinbounds.
     destruct Hinbounds as [[a' b'] Hieq].
@@ -353,6 +353,7 @@ Proof.
     replace (uint.Z (start σ) + Z.of_nat (uint.nat i - uint.nat (start σ)))
       with (uint.Z i) in Haddr_block_eq by word.
     destruct Haddr_block_eq.
+    rewrite -> wrap_small by lia.
     replace (Z.to_nat (uint.Z i + 1) - uint.nat (start σ))%nat with (S (uint.nat i - uint.nat (start σ))) by word.
     erewrite take_S_r; eauto.
     rewrite Hieq /=.

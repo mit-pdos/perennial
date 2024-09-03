@@ -346,29 +346,19 @@ Theorem u8_to_from_u32 (x:w32) :
   uint.Z (W32 (uint.Z (W8 (uint.Z x)))) =
   uint.Z x `mod` 2 ^ 8.
 Proof.
-  unfold W8, W32.
-  autorewrite with word.
-  rewrite word.unsigned_of_Z.
-  rewrite word_wrap_wrap'; last lia.
-  reflexivity.
+  word.
 Qed.
 
 Lemma val_u8_to_u32 (x:w8) :
   uint.Z (W32 (uint.Z x)) = uint.Z x.
 Proof.
-  unfold W32.
-  rewrite word.unsigned_of_Z.
-  pose proof (word.unsigned_range x).
-  rewrite wrap_small; lia.
+  word.
 Qed.
 
 Lemma val_u8_to_u64 (x:w8) :
   uint.Z (W64 (uint.Z x)) = uint.Z x.
 Proof.
-  unfold W64.
-  rewrite word.unsigned_of_Z.
-  pose proof (word.unsigned_range x).
-  rewrite wrap_small; lia.
+  word.
 Qed.
 
 Lemma word_wrap_8_nonneg (x : Z) : 0 ≤ x -> 0 ≤ word.wrap (width:=8) x.
