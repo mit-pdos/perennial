@@ -51,6 +51,9 @@ Section goose_lang.
   Global Instance struct_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{#q} v)%I.
   Proof. unseal. apply _. Qed.
 
+  Global Instance struct_pointsto_as_fractional l t q v: fractional.AsFractional (l ↦[t]{#q} v) (λ q, l ↦[t]{#q} v)%I q.
+  Proof. split; [ auto | apply _ ]. Qed.
+
   Theorem struct_pointsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
     l ↦[t]{q} v ⊢@{_} l ↦{q} v0.
