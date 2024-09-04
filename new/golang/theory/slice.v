@@ -3,7 +3,8 @@ From Perennial.Helpers Require Import List Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export list mem typing exception.
+From New.golang.theory Require Export typing.
+From New.golang.theory Require Export list mem typing exception loop.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
@@ -11,6 +12,10 @@ Set Default Goal Selector "!".
 Module slice.
 Definition slice_f (sl : slice.t) (t : go_type) (n1 n2 : u64) : slice.t :=
   slice.mk (sl.(slice.ptr_f) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub sl.(slice.cap_f) n1).
+
+Definition elem_ref_f (sl : slice.t) (t : go_type) (i : u64) : loc :=
+  sl.(slice.ptr_f) +ₗ[t] (uint.Z i).
+
 End slice.
 
 Section defns_and_lemmas.
@@ -159,6 +164,25 @@ Proof.
   simpl. iPureIntro. word.
 Qed.
 
+Lemma own_slice_elem_acc i v s t q l :
+  l !! (uint.nat i) = Some v →
+  own_slice s t q l -∗
+  slice.elem_ref_f s t i ↦[t]{q} v ∗
+  (∀ v', slice.elem_ref_f s t i ↦[t]{q} v' -∗
+        own_slice s t q (<[uint.nat i := v']> l)).
+Proof.
+  iIntros (Hlookup) "Hsl".
+  rewrite own_slice_unseal /own_slice_def.
+  iDestruct "Hsl" as "[Hsl %]".
+  iDestruct (big_sepL_insert_acc _ _ (uint.nat i) with "Hsl") as "[Hptsto Hsl]".
+  { done. }
+  rewrite u64_Z_through_nat.
+  iFrame "Hptsto".
+  iIntros (?) "Hptsto".
+  iSpecialize ("Hsl" with "Hptsto").
+  iFrame. rewrite length_insert. done.
+Qed.
+
 End defns_and_lemmas.
 
 Section wps.
@@ -282,34 +306,6 @@ Proof.
   iApply "HΦ". iFrame.
 Qed.
 
-Lemma wp_slice_literal {stk E} t (l : list val) :
-  Forall (λ v, has_go_type v t) l →
-  {{{ True }}}
-    slice.literal t (list.val l) @ stk ; E
-  {{{ sl, RET (slice.val sl); own_slice sl t (DfracOwn 1) l }}}.
-Proof.
-  intros Hty. iIntros (Φ) "_ HΦ".
-  wp_rec.
-  wp_pures.
-  wp_apply wp_slice_make2.
-  iIntros (?) "[Hsl Hcap]".
-  wp_pures.
-  wp_apply wp_alloc_untyped.
-  { instantiate (1:=list.val l). rewrite list.val_unseal. by destruct l. }
-  iIntros (l_ptr) "Hl".
-  wp_pures.
-  wp_alloc i_ptr as "Hi".
-  wp_pures.
-  iAssert (∃ (i : w64),
-      "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-      "Hl" ∷ l_ptr ↦ (list.val (drop (uint.nat i) l)) ∗
-      "Hsl" ∷ own_slice sl t (DfracOwn 1) (take (uint.nat i) l ++ replicate (length l - uint.nat i) (zero_val t))
-    )%I
-    with "[Hi Hl Hsl]" as "Hloop".
-Abort.
-
-(* PureExecs *)
-
 Global Instance pure_slice_ptr (s : slice.t) :
   PureWpVal True (slice.ptr (slice.val s)) #(slice.ptr_f s).
 Proof.
@@ -332,6 +328,135 @@ Proof.
   rewrite slice.val_unseal.
   iIntros (???) "_ HΦ".
   wp_rec. wp_pures. by iApply "HΦ".
+Qed.
+
+Global Instance wp_slice_elem_ref s t (i : w64) :
+  PureWpVal (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref t (slice.val s) #i)
+    #(slice.elem_ref_f s t i).
+Proof.
+  iIntros (???) "%H HΦ".
+  wp_rec. wp_pures.
+  wp_if_destruct.
+  wp_pures. iApply "HΦ".
+Qed.
+
+Lemma wp_slice_literal {stk E} t (l : list val) :
+  Forall (λ v, has_go_type v t) l →
+  {{{ True }}}
+    slice.literal t (list.val l) @ stk ; E
+  {{{ sl, RET (slice.val sl); own_slice sl t (DfracOwn 1) l }}}.
+Proof.
+  intros Hty. iIntros (Φ) "_ HΦ".
+  wp_rec.
+  wp_pures.
+  wp_apply wp_list_Length.
+  iIntros "%Hlen".
+  wp_apply wp_slice_make2.
+  iIntros (?) "[Hsl Hcap]".
+  wp_pures.
+  wp_apply wp_alloc_untyped.
+  { instantiate (1:=list.val l). rewrite list.val_unseal. by destruct l. }
+  iIntros (l_ptr) "Hl".
+  wp_pures.
+  wp_alloc i_ptr as "Hi".
+  wp_pures.
+  iDestruct (own_slice_sz with "Hsl") as %Hsz.
+  rewrite length_replicate in Hsz.
+  iAssert (∃ (i : w64),
+      "%Hi" ∷ ⌜ uint.nat i <= uint.nat (W64 (length l)) ⌝ ∗
+      "Hi" ∷ i_ptr ↦[uint64T] #i ∗
+      "Hl" ∷ l_ptr ↦ (list.val (drop (uint.nat i) l)) ∗
+      "Hsl" ∷ own_slice sl t (DfracOwn 1) (take (uint.nat i) l ++ replicate (length l - uint.nat i) (zero_val t))
+    )%I
+    with "[Hi Hl Hsl]" as "Hloop".
+  {
+    rewrite zero_val_eq /=.
+    iExists _; iFrame.
+    rewrite drop_0 take_0 Nat.sub_0_r -Hlen /=.
+    iFrame. iPureIntro. word.
+  }
+  wp_for.
+  iNamed "Hloop".
+  wp_load.
+  wp_pures.
+  case_bool_decide as Hlt.
+  {
+    iLeft. iModIntro. iSplitR; first done.
+    wp_pures.
+    wp_untyped_load.
+    wp_pures.
+    destruct (drop _ _) eqn:Hdrop.
+    { exfalso. apply (f_equal length) in Hdrop. rewrite /= length_drop in Hdrop.
+      word. }
+    wp_pures.
+    wp_apply (wp_store with "[$]").
+    iIntros "Hl".
+    wp_pures.
+    wp_load.
+    wp_pure_steps1.
+    {
+      apply (f_equal length) in Hdrop.
+      rewrite /= length_drop in Hdrop.
+      word.
+    }
+    iDestruct (own_slice_elem_acc i with "Hsl") as "[Hptsto Hsl]".
+    {
+      rewrite lookup_app_r.
+      2:{ rewrite length_take. word. }
+      rewrite length_take.
+      rewrite lookup_replicate.
+      split; first done.
+      word.
+    }
+    wp_store.
+    { apply (Forall_drop _ (uint.nat i)) in Hty.
+      rewrite Hdrop in Hty.
+      by apply Forall_cons in Hty as [? ?]. }
+    wp_pures.
+    iModIntro.
+    iApply wp_for_post_do.
+    wp_load.
+    wp_store.
+    iModIntro.
+    iFrame.
+    replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1)%nat by word.
+    rewrite -drop_drop.
+    rewrite Hdrop.
+    rewrite /= drop_0.
+    iFrame.
+    iSpecialize ("Hsl" with "Hptsto").
+    iSplitR.
+    { iPureIntro. word. }
+    iApply to_named.
+    iExactEq "Hsl".
+    repeat f_equal.
+    rewrite insert_app_r_alt.
+    2:{ rewrite length_take. word. }
+    rewrite take_more.
+    2:{ word. }
+    rewrite -app_assoc.
+    f_equal.
+    rewrite insert_replicate_lt.
+    2:{ rewrite length_take. word. }
+    rewrite length_take.
+    rewrite Nat.min_l.
+    2:{ word. }
+    rewrite Nat.sub_diag Hdrop.
+    simpl.
+    f_equal.
+    f_equal.
+    word.
+  }
+  {
+    iRight.
+    iModIntro. iSplitR; first done.
+    wp_pures.
+    iApply "HΦ".
+    replace (uint.Z i) with (uint.Z (length l)).
+    2:{ word. }
+    rewrite -Hlen Nat.sub_diag.
+    rewrite replicate_0 app_nil_r firstn_all. iFrame. done.
+  }
 Qed.
 
 End wps.

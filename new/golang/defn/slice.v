@@ -1,4 +1,4 @@
-From New.golang.defn Require Export mem loop.
+From New.golang.defn Require Export mem loop exception.
 
 Module slice.
 (* FIXME: seal these functions *)
@@ -83,10 +83,13 @@ Definition literal t : val :=
   let: "s" := make2 t "len" in
   let: "l" := ref "elems" in
   let: "i" := ref_ty uint64T (zero_val uint64T) in
-  for: ![uint64T] "i" < "len" ; "i" <-[t] ![uint64T] "i" + #1 :=
-    let: ("elem", "l_tail") := !"l"  in
-    "l" <- "l_tail" ;;
-    (elem_ref t "s" "i") <-[t] "elem"
+  (for: (λ: <>, ![uint64T] "i" < "len") ; (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) :=
+     (λ: <>,
+        do: (list.Match !"l" (λ: <>, #())
+               (λ: "elem" "l_tail",
+                  "l" <- "l_tail" ;;
+                  (elem_ref t "s" (![uint64T] "i")) <-[t] "elem")))) ;;
+  "s"
 .
 
 End goose_lang.

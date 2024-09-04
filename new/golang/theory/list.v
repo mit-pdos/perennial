@@ -27,22 +27,28 @@ Proof.
   destruct l; wp_rec; wp_pures; iFrame.
 Qed.
 
-Global Instance wp_list_Length (l : list val) :
-  PureWp True
-    (list.Length (list.val l))
-    #(W64 (length l))
-.
+Lemma wp_list_Length {stk E} (l : list val) :
+  {{{ True }}}
+    (list.Length (list.val l)) @ stk ; E
+  {{{ RET #(W64 (length l)); ⌜ length l = uint.nat (W64 (length l)) ⌝ }}}.
 Proof.
-  rewrite /list.Length.
-  intros ?????. iIntros "Hwp".
-  iInduction l as [] "IH" forall (K Φ).
-  - wp_rec; wp_pures; iFrame.
-  - wp_rec. wp_pure. fold list.Length. wp_pures.
-    wp_bind (list.Length _).
-    wp_apply ("IH" $! []).
-    wp_pures. wp_pures. simpl.
-    replace (W64 (S $ length l)) with (word.add (W64 1) (W64 (length l))) by word.
-    wp_apply "Hwp".
+  iIntros (?) "_ HΦ".
+  iInduction l as [] "IH" forall (Φ).
+  - wp_rec; wp_pures. by iApply "HΦ".
+  - wp_rec. wp_pures.
+    wp_apply "IH".
+    iIntros "%".
+    wp_pures. wp_if_destruct.
+    {
+      simpl.
+      replace (W64 (S $ length l)) with (word.add (W64 1) (W64 (length l))) by word.
+      iApply "HΦ".
+      iPureIntro. word.
+    }
+    {
+      iClear "HΦ IH".
+      wp_pure. iLöb as "IH". wp_pure. done.
+    }
 Qed.
 
 End wps.

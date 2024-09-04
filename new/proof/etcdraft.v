@@ -28,7 +28,8 @@ Proof.
   wp_pures.
   wp_load.
   wp_pures.
-  (* FIXME: spec for slice.literal *)
+  wp_apply wp_slice_literal.
+  { repeat constructor. }
 Admitted.
 
 End proof.

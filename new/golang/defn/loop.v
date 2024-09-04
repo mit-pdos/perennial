@@ -61,7 +61,3 @@ Global Notation "continue: e" := (do_continue e%E)
 Notation "'for:' cond ; post := e" := (do_for cond%E e%E post%E)
   (at level 200, cond, post at level 1, e at level 200,
    format "'[' 'for:'  cond  ;  post  :=  '/  ' e ']'") : expr_scope.
-
-Notation "'for:' := e" := (do_loop (LamV BAnon e%E))
-  (at level 200, e at level 200,
-   format "'[' 'for:'  :=  '/  ' e ']'") : expr_scope.

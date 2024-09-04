@@ -17,7 +17,14 @@ Section defn.
   Definition Match_unseal : Match = _ := seal_eq _.
 
   Definition Length : val :=
-    rec: "length" "l" := Match "l" (λ: <>, #(W64 0)) (λ: "hd" "tl", #(W64 1) + ("length" "tl")).
+    rec: "length" "l" := Match "l" (λ: <>, #(W64 0))
+                           (λ: "hd" "tl",
+                              let: "tl_length" := ("length" "tl") in
+                              let: "new_length" := #(W64 1) + "tl_length" in
+                              if: "new_length" > "tl_length" then
+                                "new_length"
+                              else (rec: "infloop" <> := Var "infloop" #()) #()
+                           ).
 
   Fixpoint val_def (x : list val) : val :=
     match x with
