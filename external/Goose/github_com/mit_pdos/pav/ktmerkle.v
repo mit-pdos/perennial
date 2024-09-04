@@ -215,20 +215,20 @@ Definition epochChain__put: val :=
       let: "lastEpoch" := SliceGet ptrT (struct.loadF epochChain "epochs" "c") ("chainLen" - #1) in
       "prevLink" <-[slice.T byteT] (struct.loadF epochInfo "link" "lastEpoch")
     else
-      let: "prevLinkSep" := chainSepNone__encode (struct.new chainSepNone [
+      let: "prePrevLink" := chainSepNone__encode (struct.new chainSepNone [
       ]) in
-      "prevLink" <-[slice.T byteT] (cryptoffi.Hash "prevLinkSep"));;
+      "prevLink" <-[slice.T byteT] (cryptoffi.Hash "prePrevLink"));;
     let: "dig" := merkle.Tree__Digest "tree" in
-    let: "linkSep" := chainSepSome__encode (struct.new chainSepSome [
+    let: "preLink" := chainSepSome__encode (struct.new chainSepSome [
       "epoch" ::= "chainLen";
       "prevLink" ::= ![slice.T byteT] "prevLink";
       "data" ::= "dig"
     ]) in
-    let: "link" := cryptoffi.Hash "linkSep" in
-    let: "sigSep" := servSepLink__encode (struct.new servSepLink [
+    let: "link" := cryptoffi.Hash "preLink" in
+    let: "sepLink" := servSepLink__encode (struct.new servSepLink [
       "link" ::= "link"
     ]) in
-    let: "sig" := cryptoffi.PrivateKey__Sign "sk" "sigSep" in
+    let: "sig" := cryptoffi.PrivateKey__Sign "sk" "sepLink" in
     let: "epoch" := struct.new epochInfo [
       "tree" ::= "tree";
       "prevLink" ::= ![slice.T byteT] "prevLink";
@@ -313,12 +313,12 @@ Definition server__put: val :=
       else
         MapInsert (struct.loadF server "updates" "s") "idS" "val";;
         let: "currEpoch" := (slice.len (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s"))) - #1 in
-        let: "putPre" := servSepPut__encode (struct.new servSepPut [
+        let: "sepPut" := servSepPut__encode (struct.new servSepPut [
           "epoch" ::= "currEpoch" + #1;
           "id" ::= "id";
           "val" ::= "val"
         ]) in
-        let: "putSig" := cryptoffi.PrivateKey__Sign (struct.loadF server "sk" "s") "putPre" in
+        let: "putSig" := cryptoffi.PrivateKey__Sign (struct.loadF server "sk" "s") "sepPut" in
         let: "info" := SliceGet ptrT (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")) "currEpoch" in
         let: "prevLink" := struct.loadF epochInfo "prevLink" "info" in
         let: "dig" := struct.loadF epochInfo "dig" "info" in
@@ -421,21 +421,6 @@ Definition newAuditor: val :=
        "log" ::= slice.nil
      ], "pk").
 
-(* rpc: no decode needed. *)
-Definition adtrSepLink := struct.decl [
-  "tag" :: byteT;
-  "link" :: linkTy
-].
-
-(* adtrSepLink__encode from rpc.out.go *)
-
-Definition adtrSepLink__encode: val :=
-  rec: "adtrSepLink__encode" "o" :=
-    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 0));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrSepLink "link" "o"));;
-    ![slice.T byteT] "b".
-
 (* put adds a link to the log. it's unspecified how this gets called.
    but we need to verify the sig / epoch to prove correctness under
    an honest server and auditor. *)
@@ -446,34 +431,31 @@ Definition auditor__put: val :=
     let: "cachedPrevLink" := ref (zero_val (slice.T byteT)) in
     (if: "epoch" = #0
     then
-      let: "linkSep" := chainSepNone__encode (struct.new chainSepNone [
+      let: "preLink" := chainSepNone__encode (struct.new chainSepNone [
       ]) in
-      "cachedPrevLink" <-[slice.T byteT] (cryptoffi.Hash "linkSep")
+      "cachedPrevLink" <-[slice.T byteT] (cryptoffi.Hash "preLink")
     else "cachedPrevLink" <-[slice.T byteT] (struct.loadF adtrLinkSigs "link" (SliceGet ptrT (struct.loadF auditor "log" "a") ("epoch" - #1))));;
     (if: (~ (std.BytesEqual "prevLink" (![slice.T byteT] "cachedPrevLink")))
     then
       lock.release (struct.loadF auditor "mu" "a");;
       errSome
     else
-      let: "linkSep" := chainSepSome__encode (struct.new chainSepSome [
+      let: "preLink" := chainSepSome__encode (struct.new chainSepSome [
         "epoch" ::= "epoch";
         "prevLink" ::= "prevLink";
         "data" ::= "dig"
       ]) in
-      let: "link" := cryptoffi.Hash "linkSep" in
-      let: "servSep" := servSepLink__encode (struct.new servSepLink [
+      let: "link" := cryptoffi.Hash "preLink" in
+      let: "sepLink" := servSepLink__encode (struct.new servSepLink [
         "link" ::= "link"
       ]) in
-      let: "servOk" := cryptoffi.PublicKey__Verify (struct.loadF auditor "servPk" "a") "servSep" "servSig" in
+      let: "servOk" := cryptoffi.PublicKey__Verify (struct.loadF auditor "servPk" "a") "sepLink" "servSig" in
       (if: (~ "servOk")
       then
         lock.release (struct.loadF auditor "mu" "a");;
         errSome
       else
-        let: "adtrSep" := adtrSepLink__encode (struct.new adtrSepLink [
-          "link" ::= "link"
-        ]) in
-        let: "adtrSig" := cryptoffi.PrivateKey__Sign (struct.loadF auditor "sk" "a") "adtrSep" in
+        let: "adtrSig" := cryptoffi.PrivateKey__Sign (struct.loadF auditor "sk" "a") "sepLink" in
         let: "entry" := struct.new adtrLinkSigs [
           "prevLink" ::= "prevLink";
           "dig" ::= "dig";
@@ -484,8 +466,6 @@ Definition auditor__put: val :=
         struct.storeF auditor "log" "a" (SliceAppend ptrT (struct.loadF auditor "log" "a") "entry");;
         lock.release (struct.loadF auditor "mu" "a");;
         errNone)).
-
-(* adtrGetReply from rpc.go *)
 
 Definition adtrGetReply := struct.decl [
   "prevLink" :: linkTy;
@@ -556,16 +536,16 @@ Definition newClient: val :=
 
 Definition client__addLink: val :=
   rec: "client__addLink" "c" "epoch" "prevLink" "dig" "sig" :=
-    let: "linkSep" := chainSepSome__encode (struct.new chainSepSome [
+    let: "preLink" := chainSepSome__encode (struct.new chainSepSome [
       "epoch" ::= "epoch";
       "prevLink" ::= "prevLink";
       "data" ::= "dig"
     ]) in
-    let: "link" := cryptoffi.Hash "linkSep" in
-    let: "preSig" := servSepLink__encode (struct.new servSepLink [
+    let: "link" := cryptoffi.Hash "preLink" in
+    let: "sepLink" := servSepLink__encode (struct.new servSepLink [
       "link" ::= "link"
     ]) in
-    let: "ok0" := cryptoffi.PublicKey__Verify (struct.loadF client "servPk" "c") "preSig" "sig" in
+    let: "ok0" := cryptoffi.PublicKey__Verify (struct.loadF client "servPk" "c") "sepLink" "sig" in
     (if: (~ "ok0")
     then (slice.nil, errSome)
     else
@@ -759,12 +739,12 @@ Definition client__put: val :=
       (if: "err0"
       then (#0, "evid", "err0")
       else
-        let: "prePut" := servSepPut__encode (struct.new servSepPut [
+        let: "sepPut" := servSepPut__encode (struct.new servSepPut [
           "epoch" ::= struct.loadF servPutReply "putEpoch" "reply";
           "id" ::= struct.loadF client "id" "c";
           "val" ::= "val"
         ]) in
-        let: "ok" := cryptoffi.PublicKey__Verify (struct.loadF client "servPk" "c") "prePut" (struct.loadF servPutReply "putSig" "reply") in
+        let: "ok" := cryptoffi.PublicKey__Verify (struct.loadF client "servPk" "c") "sepPut" (struct.loadF servPutReply "putSig" "reply") in
         (if: (~ "ok")
         then (#0, slice.nil, errSome)
         else
@@ -1004,6 +984,23 @@ Definition callAdtrGet: val :=
       struct.storeF adtrGetReply "error" "errReply" "err1";;
       "errReply"
     else "reply").
+
+(* adtrSepLink from rpc.go *)
+
+(* rpc: no decode needed. *)
+Definition adtrSepLink := struct.decl [
+  "tag" :: byteT;
+  "link" :: linkTy
+].
+
+(* adtrSepLink__encode from rpc.out.go *)
+
+Definition adtrSepLink__encode: val :=
+  rec: "adtrSepLink__encode" "o" :=
+    let: "b" := ref_to (slice.T byteT) (NewSlice byteT #0) in
+    "b" <-[slice.T byteT] (marshalutil.WriteByte (![slice.T byteT] "b") #(U8 0));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF adtrSepLink "link" "o"));;
+    ![slice.T byteT] "b".
 
 (* audit returns epoch idx (exclusive) thru which audit succeeded.
    there could be lots of errors, but currently, we mainly

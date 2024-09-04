@@ -17,8 +17,8 @@ Context `{!heapGS Σ, !pavG Σ}.
 Definition global_inv γ : iProp Σ :=
   ∃ γkey_maps key_maps,
   (* γ commits to all the key_map γs, including the next key_map. *)
-  mono_list_auth_own γ (1/2) γkey_maps ∗
-  ([∗ list] γ;m ∈ γkey_maps;key_maps, ghost_map_auth γ (1/2) m).
+  "Hγmaps" ∷ mono_list_auth_own γ (1/2) γkey_maps ∗
+  "Hmaps" ∷ ([∗ list] γ;m ∈ γkey_maps;key_maps, ghost_map_auth γ (1/2) m).
 End global_inv.
 
 Section serv_sigpreds.
