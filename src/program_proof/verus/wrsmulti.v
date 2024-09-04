@@ -123,7 +123,7 @@ Proof.
     iDestruct (big_sepL_insert_acc with "[Hdisk]") as "[Hdiskblk Hdisk]"; eauto.
 
     wpc_apply (wpc_Write with "[Hblk Hdiskblk]").
-    { rewrite Hoverflow. word_cleanup. iFrame. }
+    { word_cleanup. iFrame. }
     rewrite Hoverflow.
 
     iSplit.
@@ -213,17 +213,9 @@ Proof.
     iRight in "HΦ". iApply "HΦ".
     iFrame.
     rewrite take_ge.
-    2: {
-      rewrite -Hlen2 Hslicesz.
-      word_cleanup.
-      (* FIXME: would be nice if [word] could handle this. *)
-      rewrite Z_u64 in Heqb. 2: word. word.
-    }
+    2: word.
     rewrite drop_ge.
-    2: { rewrite -Hlen -Hlen2 Hslicesz.
-      (* FIXME: would be nice if [word] could handle this. *)
-      rewrite Z_u64 in Heqb. 2: word. word.
-    }
+    2: word.
     rewrite app_nil_r. iFrame.
 Qed.
 
@@ -372,6 +364,7 @@ Proof.
   admit.
 Admitted.
 
+(*
 Theorem wpc_WriteMulti_wrs d (a : u64) s q (bslices : list Slice.t) (bs : list Block) ds stk E1 :
   {{{ own_slice_small s (slice.T byteT) q (slice_val <$> bslices) ∗
       ([∗ list] i ↦ bslice;b ∈ bslices;bs, own_slice_small bslice byteT q (Block_to_vals b) ∗ ⌜(uint.Z a + uint.Z i)%Z ∈ dom ds⌝) ∗
