@@ -1,7 +1,7 @@
 (** Global resources. *)
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
-From Perennial.program_proof.rsm.pure Require Import vslice.
+From Perennial.program_proof.rsm.pure Require Import vslice fin_maps.
 From Perennial.program_proof.rsm.distx Require Import base.
 
 Section res.
@@ -37,6 +37,31 @@ Section res.
   Instance is_hist_repl_lb_persistent α key hist :
     Persistent (hist_repl_lb α key hist).
   Admitted.
+
+  Lemma hist_repl_update {γ k h1} h2 :
+    prefix h1 h2 ->
+    hist_repl_half γ k h1 -∗
+    hist_repl_half γ k h1 ==∗
+    hist_repl_half γ k h2 ∗ hist_repl_half γ k h2.
+  Admitted.
+
+  Lemma hist_repl_big_update {γ hs1} hs2 :
+    dom hs1 = dom hs2 ->
+    prefixes hs1 hs2 ->
+    ([∗ map] k ↦ h ∈ hs1, hist_repl_half γ k h) -∗
+    ([∗ map] k ↦ h ∈ hs1, hist_repl_half γ k h) ==∗
+    ([∗ map] k ↦ h ∈ hs2, hist_repl_half γ k h) ∗
+    ([∗ map] k ↦ h ∈ hs2, hist_repl_half γ k h).
+  Proof.
+    iIntros (Hdom Hprefix) "Hhs1x Hhs1y".
+    iCombine "Hhs1x Hhs1y" as "Hhs1".
+    rewrite -2!big_sepM_sep.
+    iApply big_sepM_bupd.
+    iApply (big_sepM_impl_dom_eq with "Hhs1"); first done.
+    iIntros (k h1 h2 Hh1 Hh2) "!> [Hh1x Hh1y]".
+    iApply (hist_repl_update with "Hh1x Hh1y").
+    by specialize (Hprefix _ _ _ Hh1 Hh2).
+  Qed.
 
   Lemma hist_repl_witness {γ k h} :
     hist_repl_half γ k h -∗
@@ -145,6 +170,7 @@ Section res.
     ⌜ts2 = ts1⌝.
   Admitted.
 
+  (** Replicated tuple [tuple_repl] simply combines [hist_repl] and [ts_repl]. *)
   Definition tuple_repl_half γ (k : dbkey) (t : dbtpl) : iProp Σ :=
     hist_repl_half γ k t.1 ∗ ts_repl_half γ k t.2.
 
@@ -160,21 +186,30 @@ Section res.
     ([∗ map] k ↦ t ∈ tpls2, tuple_repl_half γ k t) -∗
     ⌜tpls2 = tpls1⌝.
   Admitted.
-  
-  Lemma tuple_repl_update {γ k t1 t2} t' :
-    (* XXX: missing prefix check *)
+
+  Lemma tuple_repl_update {γ k t1} t2 :
+    prefix t1.1 t2.1 ->
     tuple_repl_half γ k t1 -∗
-    tuple_repl_half γ k t2 ==∗
-    tuple_repl_half γ k t' ∗ tuple_repl_half γ k t'.
+    tuple_repl_half γ k t1 ==∗
+    tuple_repl_half γ k t2 ∗ tuple_repl_half γ k t2.
   Admitted.
 
-  Lemma tuple_repl_big_update {γ tpls} tpls' :
-    dom tpls = dom tpls' ->
-    ([∗ map] k ↦ t ∈ tpls, tuple_repl_half γ k t) -∗
-    ([∗ map] k ↦ t ∈ tpls, tuple_repl_half γ k t) ==∗
-    ([∗ map] k ↦ t ∈ tpls', tuple_repl_half γ k t) ∗
-    ([∗ map] k ↦ t ∈ tpls', tuple_repl_half γ k t).
-  Admitted.
+  Lemma tuple_repl_big_update {γ tpls1} tpls2 :
+    dom tpls1 = dom tpls2 ->
+    (∀ k tpl1 tpl2, tpls1 !! k = Some tpl1 -> tpls2 !! k = Some tpl2 -> prefix tpl1.1 tpl2.1) ->
+    ([∗ map] k ↦ t ∈ tpls1, tuple_repl_half γ k t) -∗
+    ([∗ map] k ↦ t ∈ tpls1, tuple_repl_half γ k t) ==∗
+    ([∗ map] k ↦ t ∈ tpls2, tuple_repl_half γ k t) ∗ ([∗ map] k ↦ t ∈ tpls2, tuple_repl_half γ k t).
+  Proof.
+    iIntros (Hdom Hprefix) "H1 H2".
+    iCombine "H1 H2" as "Htpls1".
+    rewrite -2!big_sepM_sep.
+    iApply big_sepM_bupd.
+    iApply (big_sepM_impl_dom_eq with "Htpls1"); first done.
+    iIntros (k tpl1 tpl2 Htpl1 Htpl2)"!> [H1 H2]".
+    iApply (tuple_repl_update with "H1 H2").
+    by eapply Hprefix.
+  Qed.
 
   (* Transaction result map RA. *)
   Definition txnres_auth γ (resm : gmap nat txnres) : iProp Σ.

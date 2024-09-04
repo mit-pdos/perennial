@@ -1,5 +1,8 @@
 From iris.proofmode Require Import proofmode.
 
+Definition prefixes `{Countable A} {B : Type} (lbs ls : gmap A (list B)) :=
+  ∀ x lb l, lbs !! x = Some lb -> ls !! x = Some l -> prefix lb l.
+
 Section lemmas.
   Context `{FinMap K M}.
 

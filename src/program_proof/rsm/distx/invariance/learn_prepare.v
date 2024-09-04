@@ -302,6 +302,16 @@ Section inv.
     set tpls' := acquire _ _ _.
     iMod (tuple_repl_big_update (tpls_group gid tpls') with "Hrepls Htpls") as "[Hrepls Htpls]".
     { apply tpls_group_dom. by rewrite acquire_dom. }
+    { intros k tpl1 tpl2 Htpl1 Htpl2.
+      apply map_lookup_filter_Some in Htpl1 as [Htpl1 _].
+      apply map_lookup_filter_Some in Htpl2 as [Htpl2 _].
+      subst tpls'.
+      destruct (pwrs !! k) as [v |] eqn:Hv.
+      { unshelve erewrite (acquire_modified _ Htpl1) in Htpl2; first done.
+        by inv Htpl2.
+      }
+      { rewrite (acquire_unmodified Hv) Htpl1 in Htpl2. by inv Htpl2. }
+    }
     subst tpls'.
     (* Prove txn [ts] has not committed on [tpls]. *)
     iDestruct (keys_inv_not_committed with "Hkeys Hpm Htxn") as "(Hkeys & Hpm & Htxn)".

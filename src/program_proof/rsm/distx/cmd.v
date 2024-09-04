@@ -192,6 +192,7 @@ Lemma multiwrite_dom {tid wrs tpls} :
   dom (multiwrite tid wrs tpls) = dom tpls.
 Proof. apply gmap_nonexpanding_merge_dom, multiwrite_key_nonexpanding. Qed.
 
+(* TODO: better naming would be [lookup_multiwrite_notin]. *)
 Lemma multiwrite_unmodified {tid wrs tpls key} :
   wrs !! key = None ->
   (multiwrite tid wrs tpls) !! key = tpls !! key.
@@ -199,6 +200,16 @@ Proof.
   intros Hlookup.
   rewrite lookup_merge Hlookup /=.
   by destruct (tpls !! key) as [t |] eqn:Ht.
+Qed.
+
+(* TODO: better naming would be [lookup_multiwrite]. *)
+Lemma multiwrite_modified {tid wrs tpls key value tpl} :
+  wrs !! key = Some value ->
+  tpls !! key = Some tpl ->
+  (multiwrite tid wrs tpls) !! key = Some (last_extend tid tpl.1 ++ [value], O).
+Proof.
+  intros Hvalue Htpl.
+  by rewrite lookup_merge Hvalue Htpl /=.
 Qed.
 
 Lemma multiwrite_difference_distr {tid wrs tpls tplsd} :
@@ -250,6 +261,16 @@ Proof.
   intros Hlookup.
   rewrite lookup_merge Hlookup /=.
   by destruct (tpls !! key) as [t |] eqn:Ht.
+Qed.
+
+Lemma release_modified {wrs tpls key tpl} :
+  is_Some (wrs !! key) ->
+  tpls !! key = Some tpl ->
+  (release wrs tpls) !! key = Some (tpl.1, O).
+Proof.
+  intros [v Hv] Htpl.
+  destruct tpl as [hist ts].
+  by rewrite lookup_merge Hv Htpl /=.
 Qed.
 
 Lemma release_dom {wrs tpls} :

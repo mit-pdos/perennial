@@ -104,6 +104,7 @@ Section inv.
     iDestruct (tuple_repl_agree with "Hrepl Htpl") as %->. simpl.
     (* Update the tuple. *)
     iMod (tuple_repl_update tpl' with "Hrepl Htpl") as "[Hrepl Htpl]".
+    { simpl. case_decide; [apply last_extend_prefix | done]. }
     (* Re-establish key invariant w.r.t. the updated tuple. *)
     iDestruct (key_inv_learn_read ts with "Hkey") as "Hkey".
     (* Put back tuple ownership back to key invariant. *)

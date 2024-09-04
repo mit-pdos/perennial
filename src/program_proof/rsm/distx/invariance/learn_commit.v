@@ -213,6 +213,15 @@ Section inv.
     (* Update the tuples (resetting the prepared timestamp and extending the history). *)
     iMod (tuple_repl_big_update (multiwrite ts pwrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
     { by rewrite multiwrite_dom. }
+    { intros k tpl1 tpl2 Htpl1 Htpl2.
+      subst tpls'.
+      apply elem_of_dom_2 in Htpl1 as Hv.
+      rewrite Hdom elem_of_dom in Hv.
+      destruct Hv as [v Hv].
+      rewrite (multiwrite_modified Hv Htpl1) in Htpl2.
+      inv Htpl2. simpl.
+      apply prefix_app_r, last_extend_prefix.
+    }
     (* Prove txn [ts] has committed on [tpls]. *)
     iAssert (⌜Forall (λ c, valid_pts_of_command c) log⌝)%I as %Hpts.
     { rewrite Forall_forall.

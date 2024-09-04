@@ -194,6 +194,13 @@ Section inv.
     (* Update the tuples (resetting the prepared timestamp). *)
     iMod (tuple_repl_big_update (release pwrs tplsg) with "Hrepls Htpls") as "[Hrepls Htpls]".
     { by rewrite release_dom. }
+    { intros k tpl1 tpl2 Htpl1 Htpl2.
+      subst tpls'.
+      apply elem_of_dom_2 in Htpl1 as Hsome.
+      rewrite Hdom elem_of_dom in Hsome.
+      rewrite (release_modified Hsome Htpl1) in Htpl2.
+      by inv Htpl2.
+    }
     (* Prove txn [ts] has prepared but not committed on [tpls]. *)
     iAssert (⌜Forall (λ c, valid_pts_of_command c) log⌝)%I as %Hpts.
     { rewrite Forall_forall.
