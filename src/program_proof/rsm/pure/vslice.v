@@ -22,7 +22,7 @@ Section lemma.
   Lemma lookup_vslice (m : gmap K1 (gmap K2 V)) k1 k2 :
     vslice m k2 !! k1 = dual_lookup m k1 k2.
   Proof.
-    apply (map_fold_ind (λ r m, r !! k1 = dual_lookup m k1 k2)).
+    apply (map_fold_weak_ind (λ r m, r !! k1 = dual_lookup m k1 k2)).
     { by rewrite /dual_lookup lookup_empty. }
     intros x m2 m' m1 Hnone IH.
     rewrite /vslice_step /dual_lookup.
@@ -86,7 +86,7 @@ Section lemma.
   Lemma dom_vslice_subseteq (m : gmap K1 (gmap K2 V)) k :
     dom (vslice m k) ⊆ dom m.
   Proof.
-    apply (map_fold_ind (λ r m, dom r ⊆ dom m)); first done.
+    apply (map_fold_weak_ind (λ r m, dom r ⊆ dom m)); first done.
     intros x m2 m' m1 Hnone IH.
     rewrite /vslice_step.
     destruct (m2 !! k) as [v |]; set_solver.

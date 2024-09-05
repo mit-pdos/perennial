@@ -227,7 +227,7 @@ Section pure.
     map_Forall (λ _ n, (n ≤ map_fold latest_before_quorum_step O ns)%nat) ns.
   Proof.
     intros x n.
-    apply (map_fold_ind (λ p m, (m !! x = Some n -> n ≤ p)%nat)); first done.
+    apply (map_fold_weak_ind (λ p m, (m !! x = Some n -> n ≤ p)%nat)); first done.
     intros y n' m b _ Hnr Hn'.
     unfold latest_before_quorum_step.
     destruct (decide (y = x)) as [-> | Hne].
@@ -239,7 +239,7 @@ Section pure.
     map_fold latest_before_quorum_step O ns = O ∨
     ∃ x, ns !! x = Some (map_fold latest_before_quorum_step O ns).
   Proof.
-    apply (map_fold_ind (λ p m, p = O ∨ ∃ x, m !! x = Some p)); first by left.
+    apply (map_fold_weak_ind (λ p m, p = O ∨ ∃ x, m !! x = Some p)); first by left.
     intros x n m b Hmx IHm.
     unfold latest_before_quorum_step.
     destruct IHm as [-> | [y Hy]]; right.
