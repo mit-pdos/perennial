@@ -184,7 +184,7 @@ Definition epochChain := struct.decl [
 ].
 
 Definition epochInfo := struct.decl [
-  "tree" :: ptrT;
+  "keyMap" :: ptrT;
   "prevLink" :: linkTy;
   "dig" :: slice.T byteT;
   "link" :: linkTy;
@@ -230,7 +230,7 @@ Definition epochChain__put: val :=
     ]) in
     let: "sig" := cryptoffi.PrivateKey__Sign "sk" "sepLink" in
     let: "epoch" := struct.new epochInfo [
-      "tree" ::= "tree";
+      "keyMap" ::= "tree";
       "prevLink" ::= ![slice.T byteT] "prevLink";
       "dig" ::= "dig";
       "link" ::= "link";
@@ -251,11 +251,11 @@ Definition newServer: val :=
     let: ("pk", "sk") := cryptoffi.GenerateKey #() in
     let: "mu" := lock.new #() in
     let: "updates" := NewMap stringT (slice.T byteT) #() in
-    let: "emptyTr" := struct.new merkle.Tree [
+    let: "emptyMap" := struct.new merkle.Tree [
     ] in
     let: "chain" := struct.new epochChain [
     ] in
-    epochChain__put "chain" "emptyTr" "sk";;
+    epochChain__put "chain" "emptyMap" "sk";;
     (struct.new server [
        "sk" ::= "sk";
        "mu" ::= "mu";
@@ -263,22 +263,22 @@ Definition newServer: val :=
        "updates" ::= "updates"
      ], "pk").
 
-(* applyUpdates returns a new merkle tree with the updates applied to the current tree. *)
+(* applyUpdates returns a new map with the updates applied to the current map. *)
 Definition applyUpdates: val :=
-  rec: "applyUpdates" "currTr" "updates" :=
-    let: "nextTr" := merkle.Tree__DeepCopy "currTr" in
+  rec: "applyUpdates" "currMap" "updates" :=
+    let: "nextMap" := merkle.Tree__DeepCopy "currMap" in
     MapIter "updates" (λ: "id" "val",
       let: "idB" := StringToBytes "id" in
-      let: ((<>, <>), "err") := merkle.Tree__Put "nextTr" "idB" "val" in
+      let: ((<>, <>), "err") := merkle.Tree__Put "nextMap" "idB" "val" in
       control.impl.Assert (~ "err"));;
-    "nextTr".
+    "nextMap".
 
 Definition server__updateEpoch: val :=
   rec: "server__updateEpoch" "s" :=
     lock.acquire (struct.loadF server "mu" "s");;
-    let: "currTr" := struct.loadF epochInfo "tree" (SliceGet ptrT (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")) ((slice.len (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s"))) - #1)) in
-    let: "nextTr" := applyUpdates "currTr" (struct.loadF server "updates" "s") in
-    epochChain__put (struct.loadF server "chain" "s") "nextTr" (struct.loadF server "sk" "s");;
+    let: "currMap" := struct.loadF epochInfo "keyMap" (SliceGet ptrT (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")) ((slice.len (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s"))) - #1)) in
+    let: "nextMap" := applyUpdates "currMap" (struct.loadF server "updates" "s") in
+    epochChain__put (struct.loadF server "chain" "s") "nextMap" (struct.loadF server "sk" "s");;
     struct.storeF server "updates" "s" (NewMap stringT (slice.T byteT) #());;
     lock.release (struct.loadF server "mu" "s");;
     #().
@@ -355,7 +355,7 @@ Definition server__getIdAt: val :=
       "errReply"
     else
       let: "info" := SliceGet ptrT (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")) "epoch" in
-      let: "reply" := merkle.Tree__Get (struct.loadF epochInfo "tree" "info") "id" in
+      let: "reply" := merkle.Tree__Get (struct.loadF epochInfo "keyMap" "info") "id" in
       lock.release (struct.loadF server "mu" "s");;
       struct.new servGetIdAtReply [
         "prevLink" ::= struct.loadF epochInfo "prevLink" "info";
