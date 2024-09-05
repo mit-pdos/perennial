@@ -7613,6 +7613,10 @@ Definition testLeaderElection2 : val :=
       let: "$r0" := #(W64 0) in
       do:  ("candTerm" <-[uint64T] "$r0")
     else do:  #());;;
+    let: "nopStepper" := (ref_ty ptrT (zero_val ptrT)) in
+    let: "$r0" := (ref_ty blackHole (struct.make blackHole [{
+    }])) in
+    do:  ("nopStepper" <-[ptrT] "$r0");;;
     let: "tests" := (ref_ty (sliceT testLeaderElectionStruct) (zero_val (sliceT testLeaderElectionStruct))) in
     let: "$r0" := ((let: "$sl0" := (struct.make testLeaderElectionStruct [{
       "network" ::= let: "$a0" := (![funcT] "cfg") in
