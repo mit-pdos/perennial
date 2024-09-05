@@ -30,14 +30,13 @@ Notation msg_ty := (list w8) (only parsing).
 
 Record state_ty :=
   mk_state {
-    (* TODO: can simplify here by having a bijective gset (pk_ty * sk_ty). *)
-    pk_to_sk: gmap pk_ty sk_ty;
-    sk_to_pk: gmap sk_ty pk_ty;
+    (* bijective set of in-distr keys. *)
+    key_distr: gset (sk_ty * pk_ty);
     (* make verify deterministic by memoizing outputs. *)
     verify_memo: gmap (pk_ty * msg_ty * sig_ty) bool;
   }.
 Instance eta_state : Settable _ :=
-  settable! mk_state <pk_to_sk; sk_to_pk; verify_memo>.
+  settable! mk_state <key_distr; verify_memo>.
 
 Inductive op_ty : Type :=
   | key_gen : op_ty
@@ -89,26 +88,27 @@ Definition step (prev_st : state_ty) (trans : trans_ty) (next_st : state_ty) : P
     let sk := arb_bytes in
     let pk := arb_bytes in
     (* check for collisions, either with prior key_gen or with OOD key. *)
-    match (prev_st.(sk_to_pk) !! sk, prev_st.(pk_to_sk) !! pk,
-      bool_decide (map_Exists (λ k _, k.1.1 = pk) prev_st.(verify_memo))) with
-    | (None, None, false) =>
-      (* TODO: make key_gen not directly return the sk, so it's impossible
-      for programs to leak it. *)
-      trans.(ret) = ret_key_gen sk pk ∧
-      next_st = prev_st <| pk_to_sk ::= <[pk:=sk]> |>
-                        <| sk_to_pk ::= <[sk:=pk]> |>
-    | _ =>
+    if
+      bool_decide (set_Exists (λ x, x.1 = sk) prev_st.(key_distr)) ||
+      bool_decide (set_Exists (λ x, x.2 = pk) prev_st.(key_distr)) ||
+      bool_decide (map_Exists (λ k _, k.1.1 = pk) prev_st.(verify_memo))
+    then
       (* collision. infinite loop the machine. *)
       False
-    end
+    else
+      (* TODO: make key_gen return sk ptr, so it's impossible for programs to
+      leak it. *)
+      trans.(ret) = ret_key_gen sk pk ∧
+      next_st = prev_st <| key_distr ::= ({[ (sk, pk) ]} ∪.) |>
 
   | sign sk msg =>
-    match prev_st.(sk_to_pk) !! sk with
-    | None =>
+    if decide (set_Forall (λ x, x.1 ≠ sk) prev_st.(key_distr))
+    then
       (* sign is only defined over in-distribution sk's. return random values. *)
       let sig := arb_bytes in
       trans.(ret) = ret_sign sig ∧ next_st = prev_st
-    | Some pk =>
+    else
+      ∀ pk, (sk, pk) ∈ prev_st.(key_distr) →
       (* sign is probabilistic. might return diff sigs for same data.
       avoid sig dup in the following degenerate case:
       key_gen, verify msg sig = false, sign msg = sig, verify msg sig = ?. *)
@@ -123,7 +123,6 @@ Definition step (prev_st : state_ty) (trans : trans_ty) (next_st : state_ty) : P
         (* bad sig collision (see above case). infinite loop the machine. *)
         False
       end
-    end
 
   | verify pk msg sig =>
     match prev_st.(verify_memo) !! (pk, msg, sig) with
@@ -133,28 +132,27 @@ Definition step (prev_st : state_ty) (trans : trans_ty) (next_st : state_ty) : P
       (λ '(new_ok, new_state),
         trans.(ret) = ret_verify new_ok ∧
         next_st = new_state <| verify_memo ::= <[(pk,msg,sig):=new_ok]> |>)
-      match (prev_st.(pk_to_sk) !! pk,
-        (* have we already signed this msg before? *)
-        bool_decide (map_Exists (λ k v, k.1.1 = pk ∧ k.1.2 = msg ∧ v = true)
-          prev_st.(verify_memo))) with
-      | (None, _) =>
+      (if decide (set_Forall (λ x, x.2 ≠ pk) prev_st.(key_distr))
+      then
         (* verify is only defined over in-distribution pk's. return random values. *)
         let ok := arb_bool in
         (ok, prev_st)
-      | (Some sk, false) =>
-        (* if never signed msg before, should be impossible to verify.
-        this preserves inv that for in-distr pk and some msg, will only have
-        verify_memo=True for any sig if actually signed msg. *)
-        (false, prev_st)
-      | (Some sk, true) =>
-        (* for already signed msgs, either:
-        1) we signed this exact sig.
-        in this case, memoization would run, not this code.
-        2) we signed this msg, but not this sig.
-        could have forged a valid sig. *)
-        let ok := arb_bool in
-        (ok, prev_st)
-      end
+      else
+        if decide (map_Exists (λ k v, k.1.1 = pk ∧ k.1.2 = msg ∧ v = true)
+          prev_st.(verify_memo))
+        then
+          (* for already signed msgs, either:
+          1) we signed this exact sig.
+          in this case, memoization would run, not this code.
+          2) we signed this msg, but not this sig.
+          could have forged a valid sig. *)
+          let ok := arb_bool in
+          (ok, prev_st)
+        else
+          (* if never signed msg before, should be impossible to verify.
+          this preserves inv that for in-distr pk and some msg, will only have
+          verify_memo=True for any sig if actually signed msg. *)
+          (false, prev_st))
     end
   end.
 
