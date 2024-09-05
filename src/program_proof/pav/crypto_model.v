@@ -30,8 +30,6 @@ Notation msg_ty := (list w8) (only parsing).
 
 Record state_ty :=
   mk_state {
-    (* TODO: signed functionality can be provided by verify_memo. *)
-    signed: gmap sk_ty (list msg_ty);
     (* TODO: can simplify here by having a bijective gset (pk_ty * sk_ty). *)
     pk_to_sk: gmap pk_ty sk_ty;
     sk_to_pk: gmap sk_ty pk_ty;
@@ -39,7 +37,7 @@ Record state_ty :=
     verify_memo: gmap (pk_ty * msg_ty * sig_ty) bool;
   }.
 Instance eta_state : Settable _ :=
-  settable! mk_state <signed; pk_to_sk; sk_to_pk; verify_memo>.
+  settable! mk_state <pk_to_sk; sk_to_pk; verify_memo>.
 
 Inductive op_ty : Type :=
   | key_gen : op_ty
@@ -85,14 +83,13 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
     let sk := arb_bytes in
     let pk := arb_bytes in
     (* check for collisions, either with prior key_gen or with OOD key. *)
-    match (state.(signed) !! sk, state.(pk_to_sk) !! pk,
+    match (state.(sk_to_pk) !! sk, state.(pk_to_sk) !! pk,
       bool_decide (map_Exists (λ k _, k.1.1 = pk) state.(verify_memo))) with
     | (None, None, false) =>
       (* TODO: make key_gen not directly return the sk, so it's impossible
       for programs to leak it. *)
       (ret_key_gen sk pk,
-        state <| signed ::= <[sk:=[]]> |>
-              <| pk_to_sk ::= <[pk:=sk]> |>
+        state <| pk_to_sk ::= <[pk:=sk]> |>
               <| sk_to_pk ::= <[sk:=pk]> |>)
     | _ =>
       (* collision. infinite loop the machine. *)
@@ -100,8 +97,12 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
     end
 
   | sign sk msg =>
-    match (state.(signed) !! sk, state.(sk_to_pk) !! sk) with
-    | (Some my_signed, Some pk) =>
+    match state.(sk_to_pk) !! sk with
+    | None =>
+      (* sign is only defined over in-distribution sk's. return random values. *)
+      let sig := arb_bytes in
+      (ret_sign sig, state)
+    | Some pk =>
       (* sign is probabilistic. might return diff sigs for same data.
       avoid sig dup in the following degenerate case:
       key_gen, verify msg sig = false, sign msg = sig, verify msg sig = ?. *)
@@ -110,17 +111,12 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
       | None
       | Some true =>
         (ret_sign sig,
-          state <| signed ::= <[sk:=msg::my_signed]> |>
-                (* immediately memoize so verify returns the right thing. *)
-                <| verify_memo ::= <[(pk,msg,sig):=true]> |>)
+          (* immediately memoize so verify returns the right thing. *)
+          state <| verify_memo ::= <[(pk,msg,sig):=true]> |>)
       | Some false =>
         (* bad sig collision (see above case). infinite loop the machine. *)
         (ret_sign [], state)
       end
-    (* sign is only defined over in-distribution sk's. return random values. *)
-    | _ =>
-      let sig := arb_bytes in
-      (ret_sign sig, state)
     end
 
   | verify pk msg sig =>
@@ -130,34 +126,27 @@ Definition step (op : op_ty) (state : state_ty) : (ret_ty * state_ty) :=
       (* memoize new verify output. *)
       (λ '(new_ok, new_state),
         (ret_verify new_ok, new_state <| verify_memo ::= <[(pk,msg,sig):=new_ok]> |>))
-      match state.(pk_to_sk) !! pk with
-      | None =>
+      match (state.(pk_to_sk) !! pk,
+        (* have we already signed this msg before? *)
+        bool_decide (map_Exists (λ k v, k.1.1 = pk ∧ k.1.2 = msg ∧ v = true)
+          state.(verify_memo))) with
+      | (None, _) =>
         (* verify is only defined over in-distribution pk's. return random values. *)
         let ok := arb_bool in
         (ok, state)
-      | Some sk =>
-        match state.(signed) !! sk with
-        | None =>
-          (* will never happen for in-distribution pk's. return random values. *)
-          let ok := arb_bool in
-          (ok, state)
-        | Some my_signed =>
-          match list_find (λ x, x = msg) my_signed with
-          | None =>
-            (* if never signed msg before, should be impossible to verify. *)
-            (false, state)
-          | Some _ =>
-            (* for already signed msgs, either:
-            1) we signed this exact sig.
-            in this case, memoization would run, not this code.
-            2) we signed this msg, but not this sig.
-            could have forged a valid sig. *)
-            let ok := arb_bool in
-            (* even tho verify might ret true, only update signed state via
-            the sign op, not here. *)
-            (ok, state)
-          end
-        end
+      | (Some sk, false) =>
+        (* if never signed msg before, should be impossible to verify.
+        this preserves inv that for in-distr pk and some msg, will only have
+        verify_memo=True for any sig if actually signed msg. *)
+        (false, state)
+      | (Some sk, true) =>
+        (* for already signed msgs, either:
+        1) we signed this exact sig.
+        in this case, memoization would run, not this code.
+        2) we signed this msg, but not this sig.
+        could have forged a valid sig. *)
+        let ok := arb_bool in
+        (ok, state)
       end
     end
   end.
