@@ -299,7 +299,7 @@ def main():
         "./cryptoutil",
         "./marshalutil",
         "./merkle",
-        "./ktmerkle",
+        "./kt",
     )
 
     run_goose(
