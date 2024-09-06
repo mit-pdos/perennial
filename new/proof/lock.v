@@ -62,14 +62,7 @@ Proof.
   wp_alloc k as "?".
   wp_pures.
   wp_load. wp_pures.
-  wp_apply wp_ref_ty.
-  { (* FIXME: [solve_has_go_type] gets stuck *)
-    econstructor. intros.
-    repeat (destruct H1; [injection H1 as <- <-; repeat apply zero_val_has_go_type || done|]).
-    destruct H1.
-  }
-  iIntros (?) "Hl".
-
+  wp_alloc l as "Hl".
   (* FIXME: automate splitting. *)
   iDestruct (struct_fields_split with "Hl") as "Hl".
   { done. }

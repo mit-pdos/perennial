@@ -310,3 +310,23 @@ Section typing.
   Abort.
 
 End typing.
+
+From Ltac2 Require Import Ltac2.
+Import Ltac2.Message.
+Ltac2 solve_has_go_type_step () :=
+  match! goal with
+  | [ |- has_go_type (zero_val _) _ ] => apply zero_val_has_go_type
+  | [ |- has_go_type _ _ ] => try assumption; constructor
+  | [ |- Forall _ _ ] => constructor
+  | [ |- ∀ (_:_), _ ] => intros
+  | [ h : (In _ _) |- _ ] =>
+      Std.destruct false [ {
+            Std.indcl_arg := (Std.ElimOnIdent h);
+                             Std.indcl_eqn := None;
+                                              Std.indcl_as := None;
+                                                              Std.indcl_in := None
+        } ] None
+  | [ h : (@eq (string * go_type) (_, _) _) |- _ ] =>
+      Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None
+  end.
+Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).

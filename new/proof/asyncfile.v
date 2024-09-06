@@ -211,11 +211,9 @@ Proof.
   wp_apply wp_with_defer.
   iIntros (defer) "Hdefer". simpl subst. wp_pures.
 
-  wp_bind (ref_ty _ _).
-  wp_apply wp_ref_ty. { repeat econstructor. }
-  iIntros (s_addr) "Hlocal2". wp_pures.
-  wp_apply wp_ref_ty. { repeat econstructor. }
-  iIntros (index_addr) "Hlocal1". wp_pures.
+  wp_alloc s_addr as "Hlocal2".
+  wp_pures.
+  wp_alloc index_addr as "Hlocal1".
   wp_load. wp_pures.
   wp_pures. wp_load. wp_pures.
   wp_apply (wp_Mutex__Lock with "[$]").
@@ -394,8 +392,8 @@ Proof.
   wp_apply wp_with_defer.
   iIntros (defer) "Hdefer". simpl subst. wp_pures.
 
-  wp_apply wp_ref_ty; [econstructor|]. iIntros (data_addr) "Hlocal1". wp_pures.
-  wp_apply wp_ref_ty; [econstructor|]. iIntros (s_addr) "Hlocal2". wp_pures.
+  wp_alloc data_addr as "Hlocal1".
+  wp_alloc s_addr as "Hlocal2".
   wp_load.
   wp_load.
   wp_apply (wp_Mutex__Lock with "[$]").
@@ -414,8 +412,7 @@ Proof.
   iIntros (Hno_overflow).
   wp_load. wp_store.
   wp_pures.
-  wp_apply wp_ref_ty; [rewrite zero_val_eq; econstructor|].
-  iIntros (index_ptr) "Hlocal3".
+  wp_alloc index_ptr as "Hlocal3".
   wp_load. wp_load.
   wp_pures. wp_store.
   wp_load. wp_load.
@@ -526,7 +523,7 @@ Proof.
   iNamed "H".
   wp_rec.
   iNamed "His".
-  wp_apply wp_ref_ty; [econstructor|]. iIntros (s_addr) "Hlocal1". wp_pures.
+  wp_alloc s_addr as "Hlocal1".
   wp_load.
   wp_load.
   wp_apply (wp_Mutex__Lock with "[$]").
@@ -566,10 +563,10 @@ Proof.
   }
   (* case: have something to write *)
   wp_pures.
-  wp_apply wp_ref_ty; [rewrite zero_val_eq; econstructor|]. iIntros (index_ptr) "Hlocal2".
+  wp_alloc index_ptr as "Hlocal2".
   wp_pures.
   wp_load. wp_load. wp_pures. wp_store. wp_pures.
-  wp_apply wp_ref_ty; [rewrite zero_val_eq; econstructor|]. iIntros (data_ptr) "Hlocal3".
+  wp_alloc data_ptr as "Hlocal3".
   wp_load. wp_load. wp_store. wp_pures.
   wp_load. wp_load.
 
@@ -725,14 +722,10 @@ Proof.
   iNamed "H".
   Opaque Mutex.
   wp_rec.
-  wp_apply wp_ref_ty; [econstructor|]. iIntros (filename_addr) "Hlocal". wp_pures.
+  wp_alloc filename_addr as "Hlocal".
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
-
-  wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
-  iIntros (mu) "Hmu".
-
-  wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
-  iIntros (s) "Hlocal".
+  wp_alloc mu as "Hmu".
+  wp_alloc s as "Hlocal".
   wp_pures.
   wp_load.
   wp_pures.
@@ -765,18 +758,11 @@ Proof.
   wp_apply (wp_NewCond with "[$]"); [solve_has_go_type|].
   iIntros (?) "#?".
   wp_pures.
-  wp_apply wp_ref_ty.
-  { econstructor. intros.
-    (* FIXME: nontrivial proof. *)
-    repeat (destruct H; [injection H as <- <-; repeat apply zero_val_has_go_type || constructor|]).
-    destruct H.
-  }
-  iIntros (?) "Hl".
+  wp_alloc l as "Hl".
   wp_store.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
   wp_pures.
-  wp_apply wp_ref_ty; [apply zero_val_has_go_type|].
-  iIntros (data_ptr) "Hlocal".
+  wp_alloc data_ptr as "Hlocal".
   wp_pures.
   wp_load. wp_pures.
 

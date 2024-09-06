@@ -513,18 +513,6 @@ Create HintDb has_go_type.
 Hint Constructors has_go_type : has_go_type.
 Hint Resolve zero_val_has_go_type : has_go_type.
 
-(* FIXME: this doesn't work for asyncfile's struct allocation. *)
-Ltac solve_has_go_type :=
-  eauto with has_go_type;
-  try solve [
-      apply has_go_type_struct;
-      intros ??;
-        rewrite -elem_of_list_In ?elem_of_cons ?elem_of_nil ?pair_eq
-                   zero_val_eq;
-      (intuition subst);
-      vm_compute; eauto with has_go_type
-    ].
-
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   wp_apply wp_ref_ty;
   [ solve_has_go_type

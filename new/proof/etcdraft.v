@@ -152,12 +152,8 @@ Proof.
   iIntros (?) "Hnw6".
   wp_pures.
   wp_apply wp_slice_literal.
-  {
-    constructor.
-    - constructor.
-      intros.
-      destruct H as [[]|].
-      (* FIXME: solve has_go_type *)
+  { solve_has_go_type. }
+  iIntros (?) "?".
 Admitted.
 
 End proof.
