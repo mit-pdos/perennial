@@ -4,8 +4,6 @@ Module rwlock.
   Section goose_lang.
     Context {ext:ffi_syntax}.
 
-    Local Coercion Var' (s:string): expr := Var s.
-
     (* RWlock is a reference call containing a uint 64:
       - If value is 0, lock is write locked
       - If value is 1, lock is free

@@ -5,7 +5,6 @@ From Goose Require github_com.tchajed.marshal.
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 (* Implements "exactly-once RPCs" with a reply table. *)
 

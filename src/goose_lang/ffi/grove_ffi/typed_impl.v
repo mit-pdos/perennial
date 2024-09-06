@@ -16,7 +16,6 @@ Module grove_ffi.
 Section grove.
   (* FIXME: figure out which of these clients need to set *)
   Existing Instances grove_op grove_model grove_ty grove_semantics.
-  Local Coercion Var' (s:string) : expr := Var s.
 
   (** [extT] have size 1 so this fits with them being pointers in Go. *)
   Definition Listener : ty := extT GroveListenTy.

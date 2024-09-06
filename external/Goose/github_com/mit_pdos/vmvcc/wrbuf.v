@@ -6,7 +6,6 @@ From Goose Require github_com.mit_pdos.vmvcc.tuple.
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 (* @key and @val
    Key-value pair of the write entry.

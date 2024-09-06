@@ -6,7 +6,6 @@ Notation ListCons hd tl := (InjR (Pair hd tl)).
 
 Section goose_lang.
 Context {ext:ffi_syntax}.
-Local Coercion Var' (s:string) : expr := Var s.
 
 Definition ListMatch : val :=
   λ: "l" "nilfun" "consfun",

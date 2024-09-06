@@ -6,8 +6,6 @@ Module time.
   Section goose_lang.
     Context {ext:ffi_syntax}.
 
-    Local Coercion Var' (s:string): expr := Var s.
-
     Definition Millisecond: val := #1000000.
     Definition Second: val := #1000000000.
     Definition Sleep: val := λ: "duration", #().

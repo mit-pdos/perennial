@@ -5,8 +5,6 @@ Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
 Context {ext_ty:ext_types ext}.
 
-Local Coercion Var' (s:string) : expr := Var s.
-
 Definition ActReadId : Z := 0.
 Definition ActAbortId : Z := 1.
 Definition ActCommitId : Z := 2.

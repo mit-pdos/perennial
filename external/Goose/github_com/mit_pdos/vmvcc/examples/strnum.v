@@ -3,7 +3,6 @@ From Perennial.goose_lang Require Import prelude.
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 (* / This package converts between strings and numbers. Currently Goose has
    / limited support for manipulating string, so this package is trusted. *)

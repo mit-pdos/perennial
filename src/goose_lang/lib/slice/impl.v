@@ -43,8 +43,6 @@ Implicit Types (t:ty).
 
 Set Default Proof Using "ext ext_ty".
 
-Local Coercion Var' s: expr := Var s.
-
 Theorem has_zero_slice_T t : has_zero (slice.T t).
 Proof.
   auto.

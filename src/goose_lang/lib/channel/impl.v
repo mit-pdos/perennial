@@ -13,7 +13,6 @@ Notation ChannelConsV elem content:= (InjRV (elem, content)) (only parsing).
 Section goose_lang.
 Context {ext:ffi_syntax}.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' (s:string) : expr := Var s.
 
   (* 
   infinite loop for nil channels

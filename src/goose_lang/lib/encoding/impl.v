@@ -7,9 +7,6 @@ Set Default Proof Using "Type".
 Section goose_lang.
   Context {ext} {ext_ty:ext_types ext}.
 
-  Definition Var' s : @expr ext := Var s.
-  Local Coercion Var' : string >-> expr.
-
   Definition EncodeUInt32: val :=
     λ: "n" "p",
     "p" +ₗ #0 <-[u8T] to_u8 ("n" ≫ #(W32 $ 0*8));;

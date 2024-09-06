@@ -13,15 +13,13 @@ Global Open Scope Z. (* Make sure everyone gets this scope. *)
    note that we can't also make W32 a coercion because otherwise we would have
    ambiguous paths between Z and base_lit.
  *)
-Coercion W64 : Z >-> u64.
+Coercion W64 : Z >-> w64.
 Add Printing Coercion W64.
 
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
 (* TODO: this should be added *)
 (* Coercion LitString : string >-> base_lit. *)
-(* Coercion LitInt' (x:u64_class) : base_lit := LitInt x.
-Coercion LitInt32' (x:u32_class) : base_lit := LitInt32 x. *)
 Coercion LitInt : u64 >-> base_lit.
 Coercion LitInt32 : u32 >-> base_lit.
 Coercion LitByte : u8 >-> base_lit.
@@ -38,7 +36,10 @@ Qed.
 Coercion App : expr >-> Funclass.
 
 Coercion Val : val >-> expr.
-(* Coercion Var : string >-> expr.  Doesn't work as [Var] has a typeclass parameter. *)
+(** As of https://github.com/coq/coq/pull/15789 Coq does not require the uniform
+inheritance criteria, but silencing the warning is still required. *)
+#[warning="-uniform-inheritance"]
+Coercion Var : string >-> expr.
 
 (** Define some derived forms. *)
 Notation Lam x e := (Rec BAnon x e) (only parsing).

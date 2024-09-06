@@ -3,7 +3,6 @@ From Perennial.goose_lang Require Import prelude.
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 (* Allocator uses a bit map to allocate and free numbers. Bit 0
    corresponds to number 0, bit 1 to 1, and so on. *)

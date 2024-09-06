@@ -74,7 +74,6 @@ Notation W32_val z := (Naive.mk z eq_refl).
 Notation W8_val z := (Naive.mk z eq_refl).
 
 Module Examples.
-  Coercion Var' := Var.
   Definition computeSix : val :=
     (rec: <> <> :=
        #3 + #3).

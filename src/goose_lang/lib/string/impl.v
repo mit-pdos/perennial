@@ -4,7 +4,6 @@ From Perennial.goose_lang.lib Require Import control.impl.
 Section goose_lang.
 Context {ext:ffi_syntax}.
 Context {ext_ty:ext_types ext}. (* need this to use slice *)
-Local Coercion Var' (s:string) : expr := Var s.
 
 Definition StringFromBytes : val :=
   (rec: "StringFromBytes" "b" :=

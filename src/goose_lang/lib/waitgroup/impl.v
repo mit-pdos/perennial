@@ -7,8 +7,6 @@ Module waitgroup.
     Context {ext:ffi_syntax}.
     Context {ext_tys: ext_types ext}.
 
-    Local Coercion Var' (s:string): expr := Var s.
-
     Definition New: val := λ: <>, (lock.new #(), ref_to uint64T #0).
     Definition Add: val := λ: "wg" "delta",
         let: ("mu", "v") := "wg" in
