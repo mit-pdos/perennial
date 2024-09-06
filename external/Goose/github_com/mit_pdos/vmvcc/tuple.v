@@ -4,7 +4,6 @@ From Goose Require github_com.mit_pdos.vmvcc.common.
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 (* @ts
    Starting timestamp of this version, and also ending timestamp of the next

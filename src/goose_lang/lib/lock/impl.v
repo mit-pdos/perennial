@@ -4,8 +4,6 @@ Module lock.
   Section goose_lang.
     Context {ext:ffi_syntax}.
 
-    Local Coercion Var' (s:string): expr := Var s.
-
     Definition new: val := λ: <>, ref #false.
     Definition try_acquire : val := λ: "l", CAS "l" #false #true.
     Definition acquire : val :=

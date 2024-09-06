@@ -3,7 +3,6 @@ From Perennial.goose_lang Require Import prelude.
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 (* BytesEqual returns if the two byte slices are equal. *)
 Definition BytesEqual: val :=

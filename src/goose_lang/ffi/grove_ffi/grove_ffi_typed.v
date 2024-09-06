@@ -22,7 +22,6 @@ Section grove.
   suddenly cause all FFI parameters to be inferred as the grove model *)
   (* FIXME: figure out which of these clients need to set *)
   Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
-  Local Coercion Var' (s:string) : expr := Var s.
 
   Context `{!heapGS Σ}.
 

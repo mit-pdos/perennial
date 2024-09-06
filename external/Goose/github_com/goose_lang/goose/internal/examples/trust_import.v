@@ -4,7 +4,6 @@ From Perennial.goose_lang.trusted Require Import github_com.goose_lang.goose.int
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 Definition Bar: val :=
   rec: "Bar" <> :=

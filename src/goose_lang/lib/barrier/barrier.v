@@ -26,7 +26,6 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context {ext_tys: ext_types ext}.
 
-Local Coercion Var' (s:string): expr := Var s.
 Section proof.
   Context `{!heapGS Σ}.
   Context `{!stagedG Σ, !barrierG Σ}.

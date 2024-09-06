@@ -8,7 +8,6 @@ Notation AllocMap v := (Alloc (MapNilV v)) (only parsing).
 
 Section goose_lang.
 Context {ext:ffi_syntax}.
-Local Coercion Var' (s:string) : expr := Var s.
 
 (* We store the values of the map into single memory cells, even if they are
 entire structs that would usually be laid out with one memory cell per field.

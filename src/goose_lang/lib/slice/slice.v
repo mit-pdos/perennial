@@ -1189,7 +1189,6 @@ Proof.
   wp_apply wp_slice_cap. wp_pures.
   rewrite bool_decide_eq_false_2; [ wp_pures | word ].
   rewrite /SliceCopy.
-  rewrite /impl.Var'.
   wp_pures.
   wp_apply wp_slice_ptr.
   wp_apply wp_slice_cap.

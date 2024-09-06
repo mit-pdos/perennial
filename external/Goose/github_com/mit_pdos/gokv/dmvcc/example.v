@@ -7,7 +7,6 @@ From Goose Require github_com.mit_pdos.gokv.dmvcc.txnmgr.
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 Definition main: val :=
   rec: "main" <> :=

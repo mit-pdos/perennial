@@ -8,7 +8,6 @@ From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.vmvcc.trust
 
 Section code.
 Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
 
 Definition Clerk := struct.decl [
   "p" :: ProphIdT;

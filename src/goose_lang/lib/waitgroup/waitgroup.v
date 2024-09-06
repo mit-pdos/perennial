@@ -20,8 +20,6 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context {ext_tys: ext_types ext}.
 
-Local Coercion Var' (s:string): expr := Var s.
-
 (*
   XXX:
   The waitgroup docs/comments stresses the fact that "the first WaitGroup.Add
