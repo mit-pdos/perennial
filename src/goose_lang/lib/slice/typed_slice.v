@@ -264,6 +264,88 @@ Proof.
   iApply ("HΦ" with "[$]").
 Qed.
 
+Lemma wp_SliceTake_small {stk E s} t q vs (n: u64):
+  uint.Z n ≤ length vs →
+  {{{ own_slice_small s t q vs }}}
+    SliceTake (slice_val s) #n @ stk; E
+  {{{ RET (slice_val (slice_take s n)); own_slice_small (slice_take s n) t q (take (uint.nat n) vs) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  rewrite /own_slice_small.
+  wp_apply (slice.wp_SliceTake_small with "[$Hs]").
+  { rewrite list_untype_length //. }
+  rewrite /list.untype fmap_take //.
+Qed.
+
+Lemma wp_SliceSkip_small s t q vs (n : u64) :
+  uint.Z n ≤ length vs →
+  {{{ own_slice_small s t q vs }}}
+    SliceSkip t (slice_val s) #n
+  {{{ s', RET (slice_val s'); own_slice_small s' t q (drop (uint.nat n) vs) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  rewrite /own_slice_small. rewrite /list.untype fmap_drop.
+  wp_apply (slice.wp_SliceSkip_small with "[$Hs]").
+  { rewrite length_fmap; auto. }
+  auto.
+Qed.
+
+Lemma wp_SliceSkip_full s t q vs (n : u64) :
+  uint.Z n ≤ length vs →
+  {{{ own_slice s t q vs }}}
+    SliceSkip t (slice_val s) #n
+  {{{ s', RET (slice_val s'); own_slice s' t q (drop (uint.nat n) vs) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  iDestruct (own_slice_sz with "Hs") as %Hsz.
+  wp_apply slice.wp_SliceSkip.
+  { word. }
+  iApply "HΦ".
+  iApply own_slice_split.
+  iDestruct (own_slice_split_1 with "Hs") as "[Hs Hcap]".
+  rewrite /own_slice_small. rewrite /list.untype fmap_drop.
+  iDestruct (slice.slice_small_split with "Hs") as "[Hs1 $]".
+  { rewrite length_fmap; word. }
+  iApply (own_slice_cap_skip with "[$Hcap]").
+  { word. }
+Qed.
+
+(* construct the capacity of a slice_take expression from ownership over the
+rest of the slice (expressed using [slice_skip]) and the original capacity. *)
+Lemma own_slice_cap_take s t n vs :
+  uint.Z n ≤ uint.Z s.(Slice.sz) →
+  own_slice_small (slice_skip s t n) t (DfracOwn 1) (drop (uint.nat n) vs) ∗
+    own_slice_cap s t -∗
+  own_slice_cap (slice_take s n) t.
+Proof.
+  iIntros (Hn) "[Hskip Hcap]".
+  rewrite /own_slice_small.
+  iApply (slice.own_slice_cap_take with "[Hskip $Hcap]").
+  { auto. }
+  rewrite /list.untype fmap_drop. iFrame.
+Qed.
+
+(* Take a prefix s[:n] while retaining the capacity, which now includes the
+elements from n to the original length. Since the capacity must be fully owned,
+this variant requires full ownership of the slice and not a partial fraction. *)
+Lemma wp_SliceTake_full {stk E s} t vs (n: u64):
+  uint.Z n ≤ length vs →
+  {{{ own_slice s t (DfracOwn 1) vs }}}
+    SliceTake (slice_val s) #n @ stk; E
+  {{{ RET (slice_val (slice_take s n)); own_slice (slice_take s n) t (DfracOwn 1) (take (uint.nat n) vs) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  iDestruct (own_slice_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_split_1 with "Hs") as "[Hs Hcap]".
+  iDestruct (own_slice_cap_wf with "Hcap") as %Hcap.
+  wp_apply (slice.wp_SliceTake).
+  { word. }
+  iApply "HΦ".
+  iDestruct (slice_small_split with "Hs") as "[$ Hdrop]".
+  { word. }
+  iApply own_slice_cap_take; [ word | ]. iFrame.
+Qed.
+
 Lemma wp_SliceSet stk E s t `{!IntoValForType V t} vs (i: u64) v :
   {{{ own_slice_small s t (DfracOwn 1) vs ∗ ⌜ is_Some (vs !! uint.nat i) ⌝ }}}
     SliceSet t (slice_val s) #i (to_val v) @ stk; E
@@ -487,12 +569,13 @@ Proof.
   word.
 Qed.
 
-Lemma wp_SliceCopy_full_typed stk E sl t q vs dst vs' :
+Lemma wp_SliceCopy_full stk E sl t q vs dst vs' :
   {{{ own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) vs' ∗ ⌜length vs = length vs'⌝}}}
     SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
-  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) vs }}}.
+  {{{ (l: w64), RET #l; ⌜uint.nat l = length vs⌝ ∗ own_slice_small sl t q vs ∗ own_slice_small dst t (DfracOwn 1) vs }}}.
 Proof.
   iIntros (Φ) "(Hsrc & Hdst & %Hlen) HΦ".
+  iDestruct (own_slice_small_sz with "Hsrc") as %Hsz.
   wp_apply (wp_SliceCopy with "[$Hsrc $Hdst]"); [word|].
   iIntros "(? & ?)".
   rewrite Hlen.
@@ -500,6 +583,8 @@ Proof.
   list_simplifier.
   iApply "HΦ".
   iFrame.
+  iPureIntro.
+  word.
 Qed.
 
 Lemma wp_SliceCopy_subslice stk E sl (n1 n2: u64) t q vs dst vs' :

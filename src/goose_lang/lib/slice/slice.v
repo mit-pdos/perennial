@@ -739,6 +739,40 @@ Proof.
   word.
 Qed.
 
+Lemma own_slice_cap_take s t n vs :
+  uint.Z n ≤ uint.Z s.(Slice.sz) →
+  own_slice_small (slice_skip s t n) t (DfracOwn 1) (drop (uint.nat n) vs) ∗
+    own_slice_cap s t -∗
+  own_slice_cap (slice_take s n) t.
+Proof.
+  iIntros (Hn) "[Hskip Hcap]".
+  iDestruct (own_slice_cap_wf with "Hcap") as %Hwf.
+  rewrite /own_slice_cap /own_slice_small.
+  iDestruct "Hskip" as "[Hskip [%Hvs_len %Hskip_wf]]".
+  simpl in Hvs_len, Hskip_wf.
+  rewrite -> !word.unsigned_sub_nowrap in * by word.
+  rewrite length_drop in Hvs_len.
+  iDestruct "Hcap" as (extra Hextra_len) "Hcap".
+  iExists (drop (uint.nat n) vs ++ extra).
+  iSplit.
+  { iPureIntro.
+    simpl.
+    rewrite length_app length_drop.
+    word. }
+  simpl.
+  rewrite array_app.
+  iFrame "Hskip".
+
+  iExactEq "Hcap".
+  rewrite length_drop.
+  rewrite loc_add_assoc.
+  f_equal.
+  f_equal.
+  rewrite -Z.mul_add_distr_l.
+  f_equal.
+  word.
+Qed.
+
 (** We have full ownership, and take into the capacity.
 Cannot be typed, since [extra] might not be valid at this type. *)
 Lemma wp_SliceTake_full_cap {stk E s} t vs (n: u64):
