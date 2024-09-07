@@ -47,7 +47,7 @@ Definition Server := struct.decl [
 (* pre: key == 0 or key == 1 *)
 Definition Server__FetchAndIncrement: val :=
   rec: "Server__FetchAndIncrement" "s" "key" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: "ret" := ref (zero_val uint64T) in
     (if: "key" = #0
     then
@@ -58,7 +58,7 @@ Definition Server__FetchAndIncrement: val :=
       "ret" <-[uint64T] (ctr.Clerk__Get (struct.loadF Server "ck2" "s") (struct.loadF Server "epoch" "s"));;
       std.SumAssumeNoOverflow (![uint64T] "ret") #1;;
       ctr.Clerk__Put (struct.loadF Server "ck2" "s") ((![uint64T] "ret") + #1) (struct.loadF Server "epoch" "s"));;
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     ![uint64T] "ret".
 
 Definition StartServer: val :=
@@ -66,7 +66,7 @@ Definition StartServer: val :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     let: "configCk" := config.MakeClerk "configHost" in
     struct.storeF Server "epoch" "s" (config.Clerk__AcquireEpoch "configCk" "me");;
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     struct.storeF Server "ck1" "s" (ctr.MakeClerk "host1");;
     struct.storeF Server "ck2" "s" (ctr.MakeClerk "host2");;
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in

@@ -566,9 +566,9 @@ Definition testIfStmtInterface: val :=
    locks are correctly interpreted *)
 Definition testsUseLocks: val :=
   rec: "testsUseLocks" <> :=
-    let: "m" := lock.new #() in
-    lock.acquire "m";;
-    lock.release "m";;
+    let: "m" := newMutex #() in
+    Mutex__Lock "m";;
+    Mutex__Unlock "m";;
     #true.
 
 (* loops.go *)
@@ -1036,10 +1036,10 @@ Definition testShiftMod: val :=
 
 Definition testLinearize: val :=
   rec: "testLinearize" <> :=
-    let: "m" := lock.new #() in
-    lock.acquire "m";;
+    let: "m" := newMutex #() in
+    Mutex__Lock "m";;
     Linearize;;
-    lock.release "m";;
+    Mutex__Unlock "m";;
     #true.
 
 (* shortcircuiting.go *)
@@ -1474,7 +1474,7 @@ Definition New: val :=
     disk.Write #0 "header";;
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <-[uint64T] #0;;
-    let: "l" := lock.new #() in
+    let: "l" := newMutex #() in
     struct.mk Log [
       "d" ::= "d";
       "cache" ::= "cache";
@@ -1484,12 +1484,12 @@ Definition New: val :=
 
 Definition Log__lock: val :=
   rec: "Log__lock" "l" :=
-    lock.acquire (struct.get Log "l" "l");;
+    Mutex__Lock (struct.get Log "l" "l");;
     #().
 
 Definition Log__unlock: val :=
   rec: "Log__unlock" "l" :=
-    lock.release (struct.get Log "l" "l");;
+    Mutex__Unlock (struct.get Log "l" "l");;
     #().
 
 (* BeginTxn allocates space for a new transaction in the log.
@@ -1607,7 +1607,7 @@ Definition Open: val :=
     let: "cache" := NewMap uint64T disk.blockT #() in
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <-[uint64T] #0;;
-    let: "l" := lock.new #() in
+    let: "l" := newMutex #() in
     struct.mk Log [
       "d" ::= "d";
       "cache" ::= "cache";

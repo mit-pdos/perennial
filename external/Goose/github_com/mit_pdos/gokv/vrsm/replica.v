@@ -315,10 +315,10 @@ Definition Server__ApplyRoWaitForCommit: val :=
     let: "reply" := struct.alloc ApplyReply (zero_val (struct.t ApplyReply)) in
     struct.storeF ApplyReply "Reply" "reply" slice.nil;;
     struct.storeF ApplyReply "Err" "reply" e.None;;
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (~ (struct.loadF Server "leaseValid" "s"))
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       (* log.Printf("Lease invalid") *)
       struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
@@ -336,7 +336,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
       let: (<>, "h") := grove_ffi.GetTimeRange #() in
       (if: (struct.loadF Server "leaseExpiration" "s") ≤ "h"
       then
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
         struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
         "reply"
@@ -353,22 +353,22 @@ Definition Server__ApplyRoWaitForCommit: val :=
               struct.storeF ApplyReply "Err" "reply" e.None;;
               Break
             else
-              lock.condWait (struct.loadF Server "committedNextIndex_cond" "s");;
+              Cond__Wait (struct.loadF Server "committedNextIndex_cond" "s");;
               Continue)));;
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         "reply")).
 
 (* precondition:
    is_epoch_lb epoch ∗ committed_by epoch log ∗ is_pb_log_lb log *)
 Definition Server__IncreaseCommitIndex: val :=
   rec: "Server__IncreaseCommitIndex" "s" "newCommittedNextIndex" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: ("newCommittedNextIndex" > (struct.loadF Server "committedNextIndex" "s")) && ("newCommittedNextIndex" ≤ (struct.loadF Server "nextIndex" "s"))
     then
       struct.storeF Server "committedNextIndex" "s" "newCommittedNextIndex";;
-      lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s")
+      Cond__Broadcast (struct.loadF Server "committedNextIndex_cond" "s")
     else #());;
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     #().
 
 (* called on the primary server to apply a new operation. *)
@@ -376,16 +376,16 @@ Definition Server__Apply: val :=
   rec: "Server__Apply" "s" "op" :=
     let: "reply" := struct.alloc ApplyReply (zero_val (struct.t ApplyReply)) in
     struct.storeF ApplyReply "Reply" "reply" slice.nil;;
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (~ (struct.loadF Server "isPrimary" "s"))
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       struct.storeF ApplyReply "Err" "reply" e.Stale;;
       "reply"
     else
       (if: struct.loadF Server "sealed" "s"
       then
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         struct.storeF ApplyReply "Err" "reply" e.Stale;;
         "reply"
       else
@@ -396,7 +396,7 @@ Definition Server__Apply: val :=
         let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
         let: "epoch" := struct.loadF Server "epoch" "s" in
         let: "clerks" := struct.loadF Server "clerks" "s" in
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         let: "wg" := waitgroup.New #() in
         let: "args" := struct.new ApplyAsBackupArgs [
           "epoch" ::= "epoch";
@@ -434,11 +434,11 @@ Definition Server__Apply: val :=
         (if: (![uint64T] "err") = e.None
         then Server__IncreaseCommitIndex "s" "nextIndex"
         else
-          lock.acquire (struct.loadF Server "mu" "s");;
+          Mutex__Lock (struct.loadF Server "mu" "s");;
           (if: (struct.loadF Server "epoch" "s") = "epoch"
           then struct.storeF Server "isPrimary" "s" #false
           else #());;
-          lock.release (struct.loadF Server "mu" "s"));;
+          Mutex__Unlock (struct.loadF Server "mu" "s"));;
         "reply")).
 
 Definition Server__leaseRenewalThread: val :=
@@ -447,22 +447,22 @@ Definition Server__leaseRenewalThread: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("leaseErr", "leaseExpiration") := configservice.Clerk__GetLease (struct.loadF Server "confCk" "s") (![uint64T] "latestEpoch") in
-      lock.acquire (struct.loadF Server "mu" "s");;
+      Mutex__Lock (struct.loadF Server "mu" "s");;
       (if: ((struct.loadF Server "epoch" "s") = (![uint64T] "latestEpoch")) && ("leaseErr" = e.None)
       then
         struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
         struct.storeF Server "leaseValid" "s" #true;;
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         time.Sleep (#250 * #1000000);;
         Continue
       else
         (if: (![uint64T] "latestEpoch") ≠ (struct.loadF Server "epoch" "s")
         then
           "latestEpoch" <-[uint64T] (struct.loadF Server "epoch" "s");;
-          lock.release (struct.loadF Server "mu" "s");;
+          Mutex__Unlock (struct.loadF Server "mu" "s");;
           Continue
         else
-          lock.release (struct.loadF Server "mu" "s");;
+          Mutex__Unlock (struct.loadF Server "mu" "s");;
           time.Sleep (#50 * #1000000);;
           Continue)));;
     #().
@@ -471,14 +471,14 @@ Definition Server__sendIncreaseCommitThread: val :=
   rec: "Server__sendIncreaseCommitThread" "s" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      lock.acquire (struct.loadF Server "mu" "s");;
+      Mutex__Lock (struct.loadF Server "mu" "s");;
       Skip;;
       (for: (λ: <>, (~ (struct.loadF Server "isPrimary" "s")) || ((slice.len (SliceGet (slice.T ptrT) (struct.loadF Server "clerks" "s") #0)) = #0)); (λ: <>, Skip) := λ: <>,
-        lock.condWait (struct.loadF Server "isPrimary_cond" "s");;
+        Cond__Wait (struct.loadF Server "isPrimary_cond" "s");;
         Continue);;
       let: "newCommittedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
       let: "clerks" := struct.loadF Server "clerks" "s" in
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((rand.RandomUint64 #()) `rem` (slice.len "clerks")) in
       let: "wg" := waitgroup.New #() in
       ForSlice ptrT <> "clerk" "clerks_inner"
@@ -506,31 +506,31 @@ Definition Server__isEpochStale: val :=
    can be considered committed by primary. *)
 Definition Server__ApplyAsBackup: val :=
   rec: "Server__ApplyAsBackup" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     Skip;;
     (for: (λ: <>, (((struct.loadF ApplyAsBackupArgs "index" "args") > (struct.loadF Server "nextIndex" "s")) && ((struct.loadF Server "epoch" "s") = (struct.loadF ApplyAsBackupArgs "epoch" "args"))) && (~ (struct.loadF Server "sealed" "s"))); (λ: <>, Skip) := λ: <>,
       let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF ApplyAsBackupArgs "index" "args") in
       (if: (~ "ok")
       then
-        let: "cond" := lock.newCond (struct.loadF Server "mu" "s") in
+        let: "cond" := NewCond (struct.loadF Server "mu" "s") in
         MapInsert (struct.loadF Server "opAppliedConds" "s") (struct.loadF ApplyAsBackupArgs "index" "args") "cond";;
         Continue
       else
-        lock.condWait "cond";;
+        Cond__Wait "cond";;
         Continue));;
     (if: struct.loadF Server "sealed" "s"
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       e.Stale
     else
       (if: Server__isEpochStale "s" (struct.loadF ApplyAsBackupArgs "epoch" "args")
       then
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         e.Stale
       else
         (if: (struct.loadF ApplyAsBackupArgs "index" "args") ≠ (struct.loadF Server "nextIndex" "s")
         then
-          lock.release (struct.loadF Server "mu" "s");;
+          Mutex__Unlock (struct.loadF Server "mu" "s");;
           e.OutOfOrder
         else
           let: (<>, "waitFn") := (struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s")) (struct.loadF ApplyAsBackupArgs "op" "args") in
@@ -538,24 +538,24 @@ Definition Server__ApplyAsBackup: val :=
           let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s") in
           (if: "ok"
           then
-            lock.condSignal "cond";;
+            Cond__Signal "cond";;
             MapDelete (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s")
           else #());;
-          lock.release (struct.loadF Server "mu" "s");;
+          Mutex__Unlock (struct.loadF Server "mu" "s");;
           "waitFn" #();;
           e.None))).
 
 Definition Server__SetState: val :=
   rec: "Server__SetState" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (struct.loadF Server "epoch" "s") > (struct.loadF SetStateArgs "Epoch" "args")
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       e.Stale
     else
       (if: (struct.loadF Server "epoch" "s") = (struct.loadF SetStateArgs "Epoch" "args")
       then
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         e.None
       else
         (* log.Print("Entered new epoch") *)
@@ -567,20 +567,20 @@ Definition Server__SetState: val :=
         struct.storeF Server "nextIndex" "s" (struct.loadF SetStateArgs "NextIndex" "args");;
         (struct.loadF StateMachine "SetStateAndUnseal" (struct.loadF Server "sm" "s")) (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "NextIndex" "args") (struct.loadF SetStateArgs "Epoch" "args");;
         MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
-          lock.condSignal "cond");;
-        lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
+          Cond__Signal "cond");;
+        Cond__Broadcast (struct.loadF Server "committedNextIndex_cond" "s");;
         struct.storeF Server "opAppliedConds" "s" (NewMap uint64T ptrT #());;
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         Server__IncreaseCommitIndex "s" (struct.loadF SetStateArgs "CommittedNextIndex" "args");;
         e.None)).
 
 (* XXX: probably should rename to GetStateAndSeal *)
 Definition Server__GetState: val :=
   rec: "Server__GetState" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (struct.loadF GetStateArgs "Epoch" "args") < (struct.loadF Server "epoch" "s")
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
         "Err" ::= e.Stale;
         "State" ::= slice.nil
@@ -591,10 +591,10 @@ Definition Server__GetState: val :=
       let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
       let: "committedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
       MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
-        lock.condSignal "cond");;
+        Cond__Signal "cond");;
       struct.storeF Server "opAppliedConds" "s" (NewMap uint64T ptrT #());;
-      lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
-      lock.release (struct.loadF Server "mu" "s");;
+      Cond__Broadcast (struct.loadF Server "committedNextIndex_cond" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
         "Err" ::= e.None;
         "State" ::= "ret";
@@ -604,16 +604,16 @@ Definition Server__GetState: val :=
 
 Definition Server__BecomePrimary: val :=
   rec: "Server__BecomePrimary" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: ((struct.loadF BecomePrimaryArgs "Epoch" "args") ≠ (struct.loadF Server "epoch" "s")) || (~ (struct.loadF Server "canBecomePrimary" "s"))
     then
       (* log.Printf("Wrong epoch in BecomePrimary request (in %d, got %d)", s.epoch, args.Epoch) *)
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       e.Stale
     else
       (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
-      lock.condSignal (struct.loadF Server "isPrimary_cond" "s");;
+      Cond__Signal (struct.loadF Server "isPrimary_cond" "s");;
       struct.storeF Server "canBecomePrimary" "s" #false;;
       let: "numClerks" := #32 in
       struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
@@ -630,13 +630,13 @@ Definition Server__BecomePrimary: val :=
         SliceSet (slice.T ptrT) (struct.loadF Server "clerks" "s") (![uint64T] "j") "clerks";;
         "j" <-[uint64T] ((![uint64T] "j") + #1);;
         Continue);;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       e.None).
 
 Definition MakeServer: val :=
   rec: "MakeServer" "sm" "confHosts" "nextIndex" "epoch" "sealed" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     struct.storeF Server "epoch" "s" "epoch";;
     struct.storeF Server "sealed" "s" "sealed";;
     struct.storeF Server "sm" "s" "sm";;
@@ -647,8 +647,8 @@ Definition MakeServer: val :=
     struct.storeF Server "canBecomePrimary" "s" #false;;
     struct.storeF Server "opAppliedConds" "s" (NewMap uint64T ptrT #());;
     struct.storeF Server "confCk" "s" (configservice.MakeClerk "confHosts");;
-    struct.storeF Server "committedNextIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
-    struct.storeF Server "isPrimary_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
+    struct.storeF Server "committedNextIndex_cond" "s" (NewCond (struct.loadF Server "mu" "s"));;
+    struct.storeF Server "isPrimary_cond" "s" (NewCond (struct.loadF Server "mu" "s"));;
     "s".
 
 Definition Server__Serve: val :=

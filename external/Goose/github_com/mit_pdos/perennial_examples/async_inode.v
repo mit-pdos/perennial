@@ -23,7 +23,7 @@ Definition Open: val :=
     let: "addrs" := marshal.Dec__GetInts "dec" "numAddrs" in
     struct.new Inode [
       "d" ::= "d";
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "addr" ::= "addr";
       "addrs" ::= "addrs";
       "buffered" ::= slice.nil
@@ -49,16 +49,16 @@ Definition Inode__read: val :=
 
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "b" := Inode__read "i" "off" in
-    lock.release (struct.loadF Inode "m" "i");;
+    Mutex__Unlock (struct.loadF Inode "m" "i");;
     "b".
 
 Definition Inode__Size: val :=
   rec: "Inode__Size" "i" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "sz" := (slice.len (struct.loadF Inode "addrs" "i")) + (slice.len (struct.loadF Inode "buffered" "i")) in
-    lock.release (struct.loadF Inode "m" "i");;
+    Mutex__Unlock (struct.loadF Inode "m" "i");;
     "sz".
 
 Definition Inode__mkHdr: val :=
@@ -112,9 +112,9 @@ Definition Inode__flush: val :=
    returns false on allocator failure *)
 Definition Inode__Flush: val :=
   rec: "Inode__Flush" "i" "allocator" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "ok" := Inode__flush "i" "allocator" in
-    lock.release (struct.loadF Inode "m" "i");;
+    Mutex__Unlock (struct.loadF Inode "m" "i");;
     "ok".
 
 (* assumes lock is held *)
@@ -131,7 +131,7 @@ Definition Inode__append: val :=
    Returns false on failure (if the allocator or inode are out of space) *)
 Definition Inode__Append: val :=
   rec: "Inode__Append" "i" "b" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "ok" := Inode__append "i" "b" in
-    lock.release (struct.loadF Inode "m" "i");;
+    Mutex__Unlock (struct.loadF Inode "m" "i");;
     "ok".

@@ -15,7 +15,7 @@ Definition ConnMan := struct.decl [
 Definition MakeConnMan: val :=
   rec: "MakeConnMan" <> :=
     let: "c" := struct.alloc ConnMan (zero_val (struct.t ConnMan)) in
-    struct.storeF ConnMan "mu" "c" (lock.new #());;
+    struct.storeF ConnMan "mu" "c" (newMutex #());;
     struct.storeF ConnMan "rpcCls" "c" (NewMap HostName ptrT #());;
     struct.storeF ConnMan "making" "c" (NewMap HostName ptrT #());;
     "c".
@@ -23,7 +23,7 @@ Definition MakeConnMan: val :=
 Definition ConnMan__getClient: val :=
   rec: "ConnMan__getClient" "c" "host" :=
     let: "ret" := ref (zero_val ptrT) in
-    lock.acquire (struct.loadF ConnMan "mu" "c");;
+    Mutex__Lock (struct.loadF ConnMan "mu" "c");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("cl", "ok") := MapGet (struct.loadF ConnMan "rpcCls" "c") "host" in
@@ -35,19 +35,19 @@ Definition ConnMan__getClient: val :=
         let: ("cond", "ok") := MapGet (struct.loadF ConnMan "making" "c") "host" in
         (if: "ok"
         then
-          lock.condWait "cond";;
+          Cond__Wait "cond";;
           Continue
         else
-          let: "my_cond" := lock.newCond (struct.loadF ConnMan "mu" "c") in
+          let: "my_cond" := NewCond (struct.loadF ConnMan "mu" "c") in
           MapInsert (struct.loadF ConnMan "making" "c") "host" "my_cond";;
-          lock.release (struct.loadF ConnMan "mu" "c");;
+          Mutex__Unlock (struct.loadF ConnMan "mu" "c");;
           "ret" <-[ptrT] (urpc.MakeClient "host");;
-          lock.acquire (struct.loadF ConnMan "mu" "c");;
+          Mutex__Lock (struct.loadF ConnMan "mu" "c");;
           MapInsert (struct.loadF ConnMan "rpcCls" "c") "host" (![ptrT] "ret");;
-          lock.condBroadcast "my_cond";;
+          Cond__Broadcast "my_cond";;
           MapDelete (struct.loadF ConnMan "making" "c") "host";;
           Break)));;
-    lock.release (struct.loadF ConnMan "mu" "c");;
+    Mutex__Unlock (struct.loadF ConnMan "mu" "c");;
     ![ptrT] "ret".
 
 (* This repeatedly retries the RPC after retryTimeout until it gets a response. *)
@@ -63,11 +63,11 @@ Definition ConnMan__CallAtLeastOnce: val :=
       else
         (if: "err" = urpc.ErrDisconnect
         then
-          lock.acquire (struct.loadF ConnMan "mu" "c");;
+          Mutex__Lock (struct.loadF ConnMan "mu" "c");;
           (if: (![ptrT] "cl") = (Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
           then MapDelete (struct.loadF ConnMan "rpcCls" "c") "host"
           else #());;
-          lock.release (struct.loadF ConnMan "mu" "c");;
+          Mutex__Unlock (struct.loadF ConnMan "mu" "c");;
           "cl" <-[ptrT] (ConnMan__getClient "c" "host");;
           Continue
         else Break)));;

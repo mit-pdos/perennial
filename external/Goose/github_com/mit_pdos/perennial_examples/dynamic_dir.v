@@ -64,7 +64,7 @@ Definition Open: val :=
     struct.new Dir [
       "d" ::= "d";
       "allocator" ::= "allocator";
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "inodes" ::= "inodes"
     ].
 
@@ -76,10 +76,10 @@ Definition Dir__Create: val :=
     else
       let: "empty" := NewSlice byteT disk.BlockSize in
       disk.Write "a" "empty";;
-      lock.acquire (struct.loadF Dir "m" "d");;
+      Mutex__Lock (struct.loadF Dir "m" "d");;
       MapInsert (struct.loadF Dir "inodes" "d") "a" (inode.Open (struct.loadF Dir "d" "d") "a");;
       Dir__writeHdr "d";;
-      lock.release (struct.loadF Dir "m" "d");;
+      Mutex__Unlock (struct.loadF Dir "m" "d");;
       ("a", #true)).
 
 Definition Dir__delete: val :=
@@ -94,40 +94,40 @@ Definition Dir__delete: val :=
 
 Definition Dir__Delete: val :=
   rec: "Dir__Delete" "d" "ino" :=
-    lock.acquire (struct.loadF Dir "m" "d");;
+    Mutex__Lock (struct.loadF Dir "m" "d");;
     Dir__delete "d" "ino";;
-    lock.release (struct.loadF Dir "m" "d");;
+    Mutex__Unlock (struct.loadF Dir "m" "d");;
     #().
 
 Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
-    lock.acquire (struct.loadF Dir "m" "d");;
+    Mutex__Lock (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: "i" = #null
     then Panic "invalid inode"
     else #());;
     let: "b" := inode.Inode__Read "i" "off" in
-    lock.release (struct.loadF Dir "m" "d");;
+    Mutex__Unlock (struct.loadF Dir "m" "d");;
     "b".
 
 Definition Dir__Size: val :=
   rec: "Dir__Size" "d" "ino" :=
-    lock.acquire (struct.loadF Dir "m" "d");;
+    Mutex__Lock (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: "i" = #null
     then Panic "invalid inode"
     else #());;
     let: "sz" := inode.Inode__Size "i" in
-    lock.release (struct.loadF Dir "m" "d");;
+    Mutex__Unlock (struct.loadF Dir "m" "d");;
     "sz".
 
 Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
-    lock.acquire (struct.loadF Dir "m" "d");;
+    Mutex__Lock (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
     (if: "i" = #null
     then Panic "invalid inode"
     else #());;
     let: "ok" := inode.Inode__Append "i" "b" (struct.loadF Dir "allocator" "d") in
-    lock.release (struct.loadF Dir "m" "d");;
+    Mutex__Unlock (struct.loadF Dir "m" "d");;
     "ok".

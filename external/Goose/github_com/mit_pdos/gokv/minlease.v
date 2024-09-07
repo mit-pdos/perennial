@@ -17,35 +17,35 @@ Definition Server := struct.decl [
 (* return true iff successful *)
 Definition Server__TryLocalIncrement: val :=
   rec: "Server__TryLocalIncrement" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: (<>, "h") := grove_ffi.GetTimeRange #() in
     (if: "h" ≥ (struct.loadF Server "leaseExpiration" "s")
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       #false
     else
       struct.storeF Server "val" "s" (std.SumAssumeNoOverflow (struct.loadF Server "val" "s") #1);;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       #true).
 
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "val" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     struct.storeF Server "val" "s" "val";;
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     #().
 
 Definition Server__Get: val :=
   rec: "Server__Get" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: "v" := struct.loadF Server "val" "s" in
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     "v".
 
 Definition StartServer: val :=
   rec: "StartServer" <> :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     struct.storeF Server "val" "s" #0;;
     struct.storeF Server "leaseExpiration" "s" #10;;
     Fork (Skip;;

@@ -37,10 +37,10 @@ Definition hasEndComment: val :=
 Definition condvarWrapping: val :=
   rec: "condvarWrapping" <> :=
     let: "mu" := ref (zero_val ptrT) in
-    "mu" <-[ptrT] (lock.new #());;
-    let: "cond1" := lock.newCond (![ptrT] "mu") in
-    "mu" <-[ptrT] (lock.new #());;
-    lock.condWait "cond1";;
+    "mu" <-[ptrT] (newMutex #());;
+    let: "cond1" := NewCond (![ptrT] "mu") in
+    "mu" <-[ptrT] (newMutex #());;
+    Cond__Wait "cond1";;
     #().
 
 (* const.go *)
@@ -419,19 +419,19 @@ Definition compositeLitLenZero: val :=
 
 Definition useLocks: val :=
   rec: "useLocks" <> :=
-    let: "m" := lock.new #() in
-    lock.acquire "m";;
-    lock.release "m";;
+    let: "m" := newMutex #() in
+    Mutex__Lock "m";;
+    Mutex__Unlock "m";;
     #().
 
 Definition useCondVar: val :=
   rec: "useCondVar" <> :=
-    let: "m" := lock.new #() in
-    let: "c" := lock.newCond "m" in
-    lock.acquire "m";;
-    lock.condSignal "c";;
-    lock.condWait "c";;
-    lock.release "m";;
+    let: "m" := newMutex #() in
+    let: "c" := NewCond "m" in
+    Mutex__Lock "m";;
+    Cond__Signal "c";;
+    Cond__Wait "c";;
+    Mutex__Unlock "m";;
     #().
 
 Definition hasCondVar := struct.decl [
@@ -906,17 +906,17 @@ Definition Skip: val :=
 
 Definition simpleSpawn: val :=
   rec: "simpleSpawn" <> :=
-    let: "l" := lock.new #() in
+    let: "l" := newMutex #() in
     let: "v" := ref (zero_val uint64T) in
-    Fork (lock.acquire "l";;
+    Fork (Mutex__Lock "l";;
           let: "x" := ![uint64T] "v" in
           (if: "x" > #0
           then Skip #()
           else #());;
-          lock.release "l");;
-    lock.acquire "l";;
+          Mutex__Unlock "l");;
+    Mutex__Lock "l";;
     "v" <-[uint64T] #1;;
-    lock.release "l";;
+    Mutex__Unlock "l";;
     #().
 
 Definition threadCode: val :=
@@ -1047,13 +1047,13 @@ Definition setField: val :=
 (* DoSomeLocking uses the entire lock API *)
 Definition DoSomeLocking: val :=
   rec: "DoSomeLocking" "l" :=
-    lock.acquire "l";;
-    lock.release "l";;
+    Mutex__Lock "l";;
+    Mutex__Unlock "l";;
     #().
 
 Definition makeLock: val :=
   rec: "makeLock" <> :=
-    let: "l" := lock.new #() in
+    let: "l" := newMutex #() in
     DoSomeLocking "l";;
     #().
 

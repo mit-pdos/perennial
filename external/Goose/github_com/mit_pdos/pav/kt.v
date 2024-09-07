@@ -249,7 +249,7 @@ Definition server := struct.decl [
 Definition newServer: val :=
   rec: "newServer" <> :=
     let: ("pk", "sk") := cryptoffi.GenerateKey #() in
-    let: "mu" := lock.new #() in
+    let: "mu" := newMutex #() in
     let: "updates" := NewMap stringT (slice.T byteT) #() in
     let: "emptyMap" := struct.new merkle.Tree [
     ] in
@@ -275,12 +275,12 @@ Definition applyUpdates: val :=
 
 Definition server__updateEpoch: val :=
   rec: "server__updateEpoch" "s" :=
-    lock.acquire (struct.loadF server "mu" "s");;
+    Mutex__Lock (struct.loadF server "mu" "s");;
     let: "currMap" := struct.loadF epochInfo "keyMap" (SliceGet ptrT (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")) ((slice.len (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s"))) - #1)) in
     let: "nextMap" := applyUpdates "currMap" (struct.loadF server "updates" "s") in
     epochChain__put (struct.loadF server "chain" "s") "nextMap" (struct.loadF server "sk" "s");;
     struct.storeF server "updates" "s" (NewMap stringT (slice.T byteT) #());;
-    lock.release (struct.loadF server "mu" "s");;
+    Mutex__Unlock (struct.loadF server "mu" "s");;
     #().
 
 Definition servPutReply := struct.decl [
@@ -295,20 +295,20 @@ Definition servPutReply := struct.decl [
 (* put schedules a put to be committed at the next epoch update. *)
 Definition server__put: val :=
   rec: "server__put" "s" "id" "val" :=
-    lock.acquire (struct.loadF server "mu" "s");;
+    Mutex__Lock (struct.loadF server "mu" "s");;
     let: "errReply" := struct.new servPutReply [
     ] in
     struct.storeF servPutReply "error" "errReply" errSome;;
     (if: (slice.len "id") ≠ cryptoffi.HashLen
     then
-      lock.release (struct.loadF server "mu" "s");;
+      Mutex__Unlock (struct.loadF server "mu" "s");;
       "errReply"
     else
       let: "idS" := StringFromBytes "id" in
       let: (<>, "ok") := MapGet (struct.loadF server "updates" "s") "idS" in
       (if: "ok"
       then
-        lock.release (struct.loadF server "mu" "s");;
+        Mutex__Unlock (struct.loadF server "mu" "s");;
         "errReply"
       else
         MapInsert (struct.loadF server "updates" "s") "idS" "val";;
@@ -323,7 +323,7 @@ Definition server__put: val :=
         let: "prevLink" := struct.loadF epochInfo "prevLink" "info" in
         let: "dig" := struct.loadF epochInfo "dig" "info" in
         let: "linkSig" := struct.loadF epochInfo "linkSig" "info" in
-        lock.release (struct.loadF server "mu" "s");;
+        Mutex__Unlock (struct.loadF server "mu" "s");;
         struct.new servPutReply [
           "putEpoch" ::= "currEpoch" + #1;
           "prevLink" ::= "prevLink";
@@ -345,18 +345,18 @@ Definition servGetIdAtReply := struct.decl [
 
 Definition server__getIdAt: val :=
   rec: "server__getIdAt" "s" "id" "epoch" :=
-    lock.acquire (struct.loadF server "mu" "s");;
+    Mutex__Lock (struct.loadF server "mu" "s");;
     let: "errReply" := struct.new servGetIdAtReply [
     ] in
     struct.storeF servGetIdAtReply "error" "errReply" errSome;;
     (if: "epoch" ≥ (slice.len (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")))
     then
-      lock.release (struct.loadF server "mu" "s");;
+      Mutex__Unlock (struct.loadF server "mu" "s");;
       "errReply"
     else
       let: "info" := SliceGet ptrT (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")) "epoch" in
       let: "reply" := merkle.Tree__Get (struct.loadF epochInfo "keyMap" "info") "id" in
-      lock.release (struct.loadF server "mu" "s");;
+      Mutex__Unlock (struct.loadF server "mu" "s");;
       struct.new servGetIdAtReply [
         "prevLink" ::= struct.loadF epochInfo "prevLink" "info";
         "dig" ::= struct.loadF epochInfo "dig" "info";
@@ -376,17 +376,17 @@ Definition servGetLinkReply := struct.decl [
 
 Definition server__getLink: val :=
   rec: "server__getLink" "s" "epoch" :=
-    lock.acquire (struct.loadF server "mu" "s");;
+    Mutex__Lock (struct.loadF server "mu" "s");;
     (if: "epoch" ≥ (slice.len (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")))
     then
       let: "errReply" := struct.new servGetLinkReply [
       ] in
       struct.storeF servGetLinkReply "error" "errReply" errSome;;
-      lock.release (struct.loadF server "mu" "s");;
+      Mutex__Unlock (struct.loadF server "mu" "s");;
       "errReply"
     else
       let: "info" := SliceGet ptrT (struct.loadF epochChain "epochs" (struct.loadF server "chain" "s")) "epoch" in
-      lock.release (struct.loadF server "mu" "s");;
+      Mutex__Unlock (struct.loadF server "mu" "s");;
       struct.new servGetLinkReply [
         "prevLink" ::= struct.loadF epochInfo "prevLink" "info";
         "dig" ::= struct.loadF epochInfo "dig" "info";
@@ -415,7 +415,7 @@ Definition newAuditor: val :=
   rec: "newAuditor" "servPk" :=
     let: ("pk", "sk") := cryptoffi.GenerateKey #() in
     (struct.new auditor [
-       "mu" ::= lock.new #();
+       "mu" ::= newMutex #();
        "sk" ::= "sk";
        "servPk" ::= "servPk";
        "log" ::= slice.nil
@@ -426,7 +426,7 @@ Definition newAuditor: val :=
    an honest server and auditor. *)
 Definition auditor__put: val :=
   rec: "auditor__put" "a" "prevLink" "dig" "servSig" :=
-    lock.acquire (struct.loadF auditor "mu" "a");;
+    Mutex__Lock (struct.loadF auditor "mu" "a");;
     let: "epoch" := slice.len (struct.loadF auditor "log" "a") in
     let: "cachedPrevLink" := ref (zero_val (slice.T byteT)) in
     (if: "epoch" = #0
@@ -437,7 +437,7 @@ Definition auditor__put: val :=
     else "cachedPrevLink" <-[slice.T byteT] (struct.loadF adtrLinkSigs "link" (SliceGet ptrT (struct.loadF auditor "log" "a") ("epoch" - #1))));;
     (if: (~ (std.BytesEqual "prevLink" (![slice.T byteT] "cachedPrevLink")))
     then
-      lock.release (struct.loadF auditor "mu" "a");;
+      Mutex__Unlock (struct.loadF auditor "mu" "a");;
       errSome
     else
       let: "preLink" := chainSepSome__encode (struct.new chainSepSome [
@@ -452,7 +452,7 @@ Definition auditor__put: val :=
       let: "servOk" := cryptoffi.PublicKey__Verify (struct.loadF auditor "servPk" "a") "sepLink" "servSig" in
       (if: (~ "servOk")
       then
-        lock.release (struct.loadF auditor "mu" "a");;
+        Mutex__Unlock (struct.loadF auditor "mu" "a");;
         errSome
       else
         let: "adtrSig" := cryptoffi.PrivateKey__Sign (struct.loadF auditor "sk" "a") "sepLink" in
@@ -464,7 +464,7 @@ Definition auditor__put: val :=
           "adtrSig" ::= "adtrSig"
         ] in
         struct.storeF auditor "log" "a" (SliceAppend ptrT (struct.loadF auditor "log" "a") "entry");;
-        lock.release (struct.loadF auditor "mu" "a");;
+        Mutex__Unlock (struct.loadF auditor "mu" "a");;
         errNone)).
 
 Definition adtrGetReply := struct.decl [
@@ -478,17 +478,17 @@ Definition adtrGetReply := struct.decl [
 (* get returns the signed link at a particular epoch. *)
 Definition auditor__get: val :=
   rec: "auditor__get" "a" "epoch" :=
-    lock.acquire (struct.loadF auditor "mu" "a");;
+    Mutex__Lock (struct.loadF auditor "mu" "a");;
     (if: "epoch" ≥ (slice.len (struct.loadF auditor "log" "a"))
     then
       let: "errReply" := struct.new adtrGetReply [
       ] in
       struct.storeF adtrGetReply "error" "errReply" errSome;;
-      lock.release (struct.loadF auditor "mu" "a");;
+      Mutex__Unlock (struct.loadF auditor "mu" "a");;
       "errReply"
     else
       let: "entry" := SliceGet ptrT (struct.loadF auditor "log" "a") "epoch" in
-      lock.release (struct.loadF auditor "mu" "a");;
+      Mutex__Unlock (struct.loadF auditor "mu" "a");;
       struct.new adtrGetReply [
         "prevLink" ::= struct.loadF adtrLinkSigs "prevLink" "entry";
         "dig" ::= struct.loadF adtrLinkSigs "dig" "entry";

@@ -14,21 +14,21 @@ Definition ReconnectingClient := struct.decl [
 Definition MakeReconnectingClient: val :=
   rec: "MakeReconnectingClient" "addr" :=
     let: "r" := struct.alloc ReconnectingClient (zero_val (struct.t ReconnectingClient)) in
-    struct.storeF ReconnectingClient "mu" "r" (lock.new #());;
+    struct.storeF ReconnectingClient "mu" "r" (newMutex #());;
     struct.storeF ReconnectingClient "valid" "r" #false;;
     struct.storeF ReconnectingClient "addr" "r" "addr";;
     "r".
 
 Definition ReconnectingClient__getClient: val :=
   rec: "ReconnectingClient__getClient" "cl" :=
-    lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
+    Mutex__Lock (struct.loadF ReconnectingClient "mu" "cl");;
     (if: struct.loadF ReconnectingClient "valid" "cl"
     then
       let: "ret" := struct.loadF ReconnectingClient "urpcCl" "cl" in
-      lock.release (struct.loadF ReconnectingClient "mu" "cl");;
+      Mutex__Unlock (struct.loadF ReconnectingClient "mu" "cl");;
       (#0, "ret")
     else
-      lock.release (struct.loadF ReconnectingClient "mu" "cl");;
+      Mutex__Unlock (struct.loadF ReconnectingClient "mu" "cl");;
       let: "newRpcCl" := ref (zero_val ptrT) in
       let: "err" := ref (zero_val uint64T) in
       let: ("0_ret", "1_ret") := urpc.TryMakeClient (struct.loadF ReconnectingClient "addr" "cl") in
@@ -37,13 +37,13 @@ Definition ReconnectingClient__getClient: val :=
       (if: (![uint64T] "err") ≠ #0
       then time.Sleep #10000000
       else #());;
-      lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
+      Mutex__Lock (struct.loadF ReconnectingClient "mu" "cl");;
       (if: (![uint64T] "err") = #0
       then
         struct.storeF ReconnectingClient "urpcCl" "cl" (![ptrT] "newRpcCl");;
         struct.storeF ReconnectingClient "valid" "cl" #true
       else #());;
-      lock.release (struct.loadF ReconnectingClient "mu" "cl");;
+      Mutex__Unlock (struct.loadF ReconnectingClient "mu" "cl");;
       (![uint64T] "err", ![ptrT] "newRpcCl")).
 
 Definition ReconnectingClient__Call: val :=
@@ -55,8 +55,8 @@ Definition ReconnectingClient__Call: val :=
       let: "err" := urpc.Client__Call "urpcCl" "rpcid" "args" "reply" "timeout_ms" in
       (if: "err" = urpc.ErrDisconnect
       then
-        lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
+        Mutex__Lock (struct.loadF ReconnectingClient "mu" "cl");;
         struct.storeF ReconnectingClient "valid" "cl" #false;;
-        lock.release (struct.loadF ReconnectingClient "mu" "cl")
+        Mutex__Unlock (struct.loadF ReconnectingClient "mu" "cl")
       else #());;
       "err").

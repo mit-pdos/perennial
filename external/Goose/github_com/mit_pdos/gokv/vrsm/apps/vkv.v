@@ -105,7 +105,7 @@ Definition ClerkPool := struct.decl [
 Definition MakeClerkPool: val :=
   rec: "MakeClerkPool" "confHosts" :=
     struct.new ClerkPool [
-      "mu" ::= lock.new #();
+      "mu" ::= newMutex #();
       "cls" ::= NewSlice ptrT #0;
       "confHosts" ::= "confHosts"
     ].
@@ -115,25 +115,25 @@ Definition MakeClerkPool: val :=
    optional error saying "get rid of cl". *)
 Definition ClerkPool__doWithClerk: val :=
   rec: "ClerkPool__doWithClerk" "ck" "f" :=
-    lock.acquire (struct.loadF ClerkPool "mu" "ck");;
+    Mutex__Lock (struct.loadF ClerkPool "mu" "ck");;
     let: "cl" := ref (zero_val ptrT) in
     (if: (slice.len (struct.loadF ClerkPool "cls" "ck")) > #0
     then
       "cl" <-[ptrT] (SliceGet ptrT (struct.loadF ClerkPool "cls" "ck") #0);;
       struct.storeF ClerkPool "cls" "ck" (SliceSkip ptrT (struct.loadF ClerkPool "cls" "ck") #1);;
-      lock.release (struct.loadF ClerkPool "mu" "ck");;
+      Mutex__Unlock (struct.loadF ClerkPool "mu" "ck");;
       "f" (![ptrT] "cl");;
-      lock.acquire (struct.loadF ClerkPool "mu" "ck");;
+      Mutex__Lock (struct.loadF ClerkPool "mu" "ck");;
       struct.storeF ClerkPool "cls" "ck" (SliceAppend ptrT (struct.loadF ClerkPool "cls" "ck") (![ptrT] "cl"));;
-      lock.release (struct.loadF ClerkPool "mu" "ck");;
+      Mutex__Unlock (struct.loadF ClerkPool "mu" "ck");;
       #()
     else
-      lock.release (struct.loadF ClerkPool "mu" "ck");;
+      Mutex__Unlock (struct.loadF ClerkPool "mu" "ck");;
       "cl" <-[ptrT] (MakeClerk (struct.loadF ClerkPool "confHosts" "ck"));;
       "f" (![ptrT] "cl");;
-      lock.acquire (struct.loadF ClerkPool "mu" "ck");;
+      Mutex__Lock (struct.loadF ClerkPool "mu" "ck");;
       struct.storeF ClerkPool "cls" "ck" (SliceAppend ptrT (struct.loadF ClerkPool "cls" "ck") (![ptrT] "cl"));;
-      lock.release (struct.loadF ClerkPool "mu" "ck");;
+      Mutex__Unlock (struct.loadF ClerkPool "mu" "ck");;
       #()).
 
 Definition ClerkPool__Put: val :=

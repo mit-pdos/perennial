@@ -33,8 +33,8 @@ Definition Log__writeHdr: val :=
 Definition Init: val :=
   rec: "Init" "logSz" :=
     let: "log" := struct.mk Log [
-      "logLock" ::= lock.new #();
-      "memLock" ::= lock.new #();
+      "logLock" ::= newMutex #();
+      "memLock" ::= newMutex #();
       "logSz" ::= "logSz";
       "memLog" ::= ref (zero_val (slice.T disk.blockT));
       "memLen" ::= ref (zero_val uint64T);
@@ -62,10 +62,10 @@ Definition Log__readBlocks: val :=
 
 Definition Log__Read: val :=
   rec: "Log__Read" "log" :=
-    lock.acquire (struct.get Log "logLock" "log");;
+    Mutex__Lock (struct.get Log "logLock" "log");;
     let: "disklen" := Log__readHdr "log" in
     let: "blks" := Log__readBlocks "log" "disklen" in
-    lock.release (struct.get Log "logLock" "log");;
+    Mutex__Unlock (struct.get Log "logLock" "log");;
     "blks".
 
 Definition Log__memWrite: val :=
@@ -79,25 +79,25 @@ Definition Log__memWrite: val :=
 
 Definition Log__memAppend: val :=
   rec: "Log__memAppend" "log" "l" :=
-    lock.acquire (struct.get Log "memLock" "log");;
+    Mutex__Lock (struct.get Log "memLock" "log");;
     (if: ((![uint64T] (struct.get Log "memLen" "log")) + (slice.len "l")) ≥ (struct.get Log "logSz" "log")
     then
-      lock.release (struct.get Log "memLock" "log");;
+      Mutex__Unlock (struct.get Log "memLock" "log");;
       (#false, #0)
     else
       let: "txn" := ![uint64T] (struct.get Log "memTxnNxt" "log") in
       let: "n" := (![uint64T] (struct.get Log "memLen" "log")) + (slice.len "l") in
       (struct.get Log "memLen" "log") <-[uint64T] "n";;
       (struct.get Log "memTxnNxt" "log") <-[uint64T] ((![uint64T] (struct.get Log "memTxnNxt" "log")) + #1);;
-      lock.release (struct.get Log "memLock" "log");;
+      Mutex__Unlock (struct.get Log "memLock" "log");;
       (#true, "txn")).
 
 (* XXX just an atomic read? *)
 Definition Log__readLogTxnNxt: val :=
   rec: "Log__readLogTxnNxt" "log" :=
-    lock.acquire (struct.get Log "memLock" "log");;
+    Mutex__Lock (struct.get Log "memLock" "log");;
     let: "n" := ![uint64T] (struct.get Log "logTxnNxt" "log") in
-    lock.release (struct.get Log "memLock" "log");;
+    Mutex__Unlock (struct.get Log "memLock" "log");;
     "n".
 
 Definition Log__diskAppendWait: val :=
@@ -130,18 +130,18 @@ Definition Log__writeBlocks: val :=
 
 Definition Log__diskAppend: val :=
   rec: "Log__diskAppend" "log" :=
-    lock.acquire (struct.get Log "logLock" "log");;
+    Mutex__Lock (struct.get Log "logLock" "log");;
     let: "disklen" := Log__readHdr "log" in
-    lock.acquire (struct.get Log "memLock" "log");;
+    Mutex__Lock (struct.get Log "memLock" "log");;
     let: "memlen" := ![uint64T] (struct.get Log "memLen" "log") in
     let: "allblks" := ![slice.T (slice.T byteT)] (struct.get Log "memLog" "log") in
     let: "blks" := SliceSkip (slice.T byteT) "allblks" "disklen" in
     let: "memnxt" := ![uint64T] (struct.get Log "memTxnNxt" "log") in
-    lock.release (struct.get Log "memLock" "log");;
+    Mutex__Unlock (struct.get Log "memLock" "log");;
     Log__writeBlocks "log" "blks" "disklen";;
     Log__writeHdr "log" "memlen";;
     (struct.get Log "logTxnNxt" "log") <-[uint64T] "memnxt";;
-    lock.release (struct.get Log "logLock" "log");;
+    Mutex__Unlock (struct.get Log "logLock" "log");;
     #().
 
 Definition Log__Logger: val :=

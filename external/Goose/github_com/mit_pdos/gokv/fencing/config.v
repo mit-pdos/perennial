@@ -84,10 +84,10 @@ Definition Server := struct.decl [
 
 Definition Server__AcquireEpoch: val :=
   rec: "Server__AcquireEpoch" "s" "newFrontend" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     Skip;;
     (for: (λ: <>, struct.loadF Server "currHolderActive" "s"); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF Server "currHolderActive_cond" "s");;
+      Cond__Wait (struct.loadF Server "currHolderActive_cond" "s");;
       Continue);;
     struct.storeF Server "currHolderActive" "s" #true;;
     struct.storeF Server "data" "s" "newFrontend";;
@@ -95,7 +95,7 @@ Definition Server__AcquireEpoch: val :=
     let: "now" := time.TimeNow #() in
     struct.storeF Server "heartbeatExpiration" "s" ("now" + (TIMEOUT_MS * MILLION));;
     let: "ret" := struct.loadF Server "currentEpoch" "s" in
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     "ret".
 
 Definition Server__HeartbeatListener: val :=
@@ -103,27 +103,27 @@ Definition Server__HeartbeatListener: val :=
     let: "epochToWaitFor" := ref_to uint64T #1 in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      lock.acquire (struct.loadF Server "mu" "s");;
+      Mutex__Lock (struct.loadF Server "mu" "s");;
       Skip;;
       (for: (λ: <>, (struct.loadF Server "currentEpoch" "s") < (![uint64T] "epochToWaitFor")); (λ: <>, Skip) := λ: <>,
-        lock.condWait (struct.loadF Server "epoch_cond" "s");;
+        Cond__Wait (struct.loadF Server "epoch_cond" "s");;
         Continue);;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         let: "now" := time.TimeNow #() in
-        lock.acquire (struct.loadF Server "mu" "s");;
+        Mutex__Lock (struct.loadF Server "mu" "s");;
         (if: "now" < (struct.loadF Server "heartbeatExpiration" "s")
         then
           let: "delay" := (struct.loadF Server "heartbeatExpiration" "s") - "now" in
-          lock.release (struct.loadF Server "mu" "s");;
+          Mutex__Unlock (struct.loadF Server "mu" "s");;
           time.Sleep "delay";;
           Continue
         else
           struct.storeF Server "currHolderActive" "s" #false;;
-          lock.condSignal (struct.loadF Server "currHolderActive_cond" "s");;
+          Cond__Signal (struct.loadF Server "currHolderActive_cond" "s");;
           "epochToWaitFor" <-[uint64T] ((struct.loadF Server "currentEpoch" "s") + #1);;
-          lock.release (struct.loadF Server "mu" "s");;
+          Mutex__Unlock (struct.loadF Server "mu" "s");;
           Break));;
       Continue);;
     #().
@@ -131,7 +131,7 @@ Definition Server__HeartbeatListener: val :=
 (* returns true iff successful *)
 Definition Server__Heartbeat: val :=
   rec: "Server__Heartbeat" "s" "epoch" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: "ret" := ref_to boolT #false in
     (if: (struct.loadF Server "currentEpoch" "s") = "epoch"
     then
@@ -139,26 +139,26 @@ Definition Server__Heartbeat: val :=
       struct.storeF Server "heartbeatExpiration" "s" ("now" + TIMEOUT_MS);;
       "ret" <-[boolT] #true
     else #());;
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     ![boolT] "ret".
 
 (* XXX: don't need to send fencing token here, because client won't need it *)
 Definition Server__Get: val :=
   rec: "Server__Get" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: "ret" := struct.loadF Server "data" "s" in
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     "ret".
 
 Definition StartServer: val :=
   rec: "StartServer" "me" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     struct.storeF Server "data" "s" #0;;
     struct.storeF Server "currentEpoch" "s" #0;;
-    struct.storeF Server "epoch_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
+    struct.storeF Server "epoch_cond" "s" (NewCond (struct.loadF Server "mu" "s"));;
     struct.storeF Server "currHolderActive" "s" #false;;
-    struct.storeF Server "currHolderActive_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
+    struct.storeF Server "currHolderActive_cond" "s" (NewCond (struct.loadF Server "mu" "s"));;
     Fork (Server__HeartbeatListener "s");;
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
     MapInsert "handlers" RPC_ACQUIRE_EPOCH (λ: "args" "reply",

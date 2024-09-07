@@ -20,27 +20,27 @@ Definition Server__HandleRequest: val :=
     (λ: "raw_args" "reply",
       let: ("cid", "raw_args") := marshal.ReadInt "raw_args" in
       let: ("seq", "raw_args") := marshal.ReadInt "raw_args" in
-      lock.acquire (struct.loadF Server "mu" "t");;
+      Mutex__Lock (struct.loadF Server "mu" "t");;
       let: "last" := Fst (MapGet (struct.loadF Server "lastSeq" "t") "cid") in
       (if: "seq" ≤ "last"
       then
         "reply" <-[slice.T byteT] (Fst (MapGet (struct.loadF Server "lastReply" "t") "cid"));;
-        lock.release (struct.loadF Server "mu" "t");;
+        Mutex__Unlock (struct.loadF Server "mu" "t");;
         #()
       else
         "handler" "raw_args" "reply";;
         MapInsert (struct.loadF Server "lastSeq" "t") "cid" "seq";;
         MapInsert (struct.loadF Server "lastReply" "t") "cid" (![slice.T byteT] "reply");;
-        lock.release (struct.loadF Server "mu" "t");;
+        Mutex__Unlock (struct.loadF Server "mu" "t");;
         #())
       ).
 
 Definition Server__GetFreshCID: val :=
   rec: "Server__GetFreshCID" "t" :=
-    lock.acquire (struct.loadF Server "mu" "t");;
+    Mutex__Lock (struct.loadF Server "mu" "t");;
     let: "r" := struct.loadF Server "nextCID" "t" in
     struct.storeF Server "nextCID" "t" (std.SumAssumeNoOverflow (struct.loadF Server "nextCID" "t") #1);;
-    lock.release (struct.loadF Server "mu" "t");;
+    Mutex__Unlock (struct.loadF Server "mu" "t");;
     "r".
 
 Definition MakeServer: val :=
@@ -49,7 +49,7 @@ Definition MakeServer: val :=
     struct.storeF Server "lastReply" "t" (NewMap uint64T (slice.T byteT) #());;
     struct.storeF Server "lastSeq" "t" (NewMap uint64T uint64T #());;
     struct.storeF Server "nextCID" "t" #0;;
-    struct.storeF Server "mu" "t" (lock.new #());;
+    struct.storeF Server "mu" "t" (newMutex #());;
     "t".
 
 Definition Client := struct.decl [

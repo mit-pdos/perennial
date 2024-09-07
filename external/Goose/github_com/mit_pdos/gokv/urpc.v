@@ -78,26 +78,26 @@ Definition Client__replyThread: val :=
       let: "r" := grove_ffi.Receive (struct.loadF Client "conn" "cl") in
       (if: struct.get grove_ffi.ReceiveRet "Err" "r"
       then
-        lock.acquire (struct.loadF Client "mu" "cl");;
+        Mutex__Lock (struct.loadF Client "mu" "cl");;
         MapIter (struct.loadF Client "pending" "cl") (λ: <> "cb",
           (struct.loadF Callback "state" "cb") <-[uint64T] callbackStateAborted;;
-          lock.condSignal (struct.loadF Callback "cond" "cb"));;
-        lock.release (struct.loadF Client "mu" "cl");;
+          Cond__Signal (struct.loadF Callback "cond" "cb"));;
+        Mutex__Unlock (struct.loadF Client "mu" "cl");;
         Break
       else
         let: "data" := struct.get grove_ffi.ReceiveRet "Data" "r" in
         let: ("seqno", "data") := marshal.ReadInt "data" in
         let: "reply" := "data" in
-        lock.acquire (struct.loadF Client "mu" "cl");;
+        Mutex__Lock (struct.loadF Client "mu" "cl");;
         let: ("cb", "ok") := MapGet (struct.loadF Client "pending" "cl") "seqno" in
         (if: "ok"
         then
           MapDelete (struct.loadF Client "pending" "cl") "seqno";;
           (struct.loadF Callback "reply" "cb") <-[slice.T byteT] "reply";;
           (struct.loadF Callback "state" "cb") <-[uint64T] callbackStateDone;;
-          lock.condSignal (struct.loadF Callback "cond" "cb")
+          Cond__Signal (struct.loadF Callback "cond" "cb")
         else #());;
-        lock.release (struct.loadF Client "mu" "cl");;
+        Mutex__Unlock (struct.loadF Client "mu" "cl");;
         Continue));;
     #().
 
@@ -111,7 +111,7 @@ Definition TryMakeClient: val :=
     else
       let: "cl" := struct.new Client [
         "conn" ::= struct.get grove_ffi.ConnectRet "Connection" "a";
-        "mu" ::= lock.new #();
+        "mu" ::= newMutex #();
         "seq" ::= #1;
         "pending" ::= NewMap uint64T ptrT #()
       ] in
@@ -143,14 +143,14 @@ Definition Client__CallStart: val :=
     let: "cb" := struct.new Callback [
       "reply" ::= "reply_buf";
       "state" ::= ref (zero_val uint64T);
-      "cond" ::= lock.newCond (struct.loadF Client "mu" "cl")
+      "cond" ::= NewCond (struct.loadF Client "mu" "cl")
     ] in
     (struct.loadF Callback "state" "cb") <-[uint64T] callbackStateWaiting;;
-    lock.acquire (struct.loadF Client "mu" "cl");;
+    Mutex__Lock (struct.loadF Client "mu" "cl");;
     let: "seqno" := struct.loadF Client "seq" "cl" in
     struct.storeF Client "seq" "cl" (std.SumAssumeNoOverflow (struct.loadF Client "seq" "cl") #1);;
     MapInsert (struct.loadF Client "pending" "cl") "seqno" "cb";;
-    lock.release (struct.loadF Client "mu" "cl");;
+    Mutex__Unlock (struct.loadF Client "mu" "cl");;
     let: "data1" := NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len "args")) in
     let: "data2" := marshal.WriteInt "data1" "rpcid" in
     let: "data3" := marshal.WriteInt "data2" "seqno" in
@@ -163,7 +163,7 @@ Definition Client__CallStart: val :=
 
 Definition Client__CallComplete: val :=
   rec: "Client__CallComplete" "cl" "cb" "reply" "timeout_ms" :=
-    lock.acquire (struct.loadF Client "mu" "cl");;
+    Mutex__Lock (struct.loadF Client "mu" "cl");;
     (if: (![uint64T] (struct.loadF Callback "state" "cb")) = callbackStateWaiting
     then lock.condWaitTimeout (struct.loadF Callback "cond" "cb") "timeout_ms"
     else #());;
@@ -171,10 +171,10 @@ Definition Client__CallComplete: val :=
     (if: "state" = callbackStateDone
     then
       "reply" <-[slice.T byteT] (![slice.T byteT] (struct.loadF Callback "reply" "cb"));;
-      lock.release (struct.loadF Client "mu" "cl");;
+      Mutex__Unlock (struct.loadF Client "mu" "cl");;
       #0
     else
-      lock.release (struct.loadF Client "mu" "cl");;
+      Mutex__Unlock (struct.loadF Client "mu" "cl");;
       (if: "state" = callbackStateAborted
       then ErrDisconnect
       else ErrTimeout)).

@@ -25,22 +25,22 @@ Definition Tracker__registerLocked: val :=
 
 Definition Tracker__Lookup: val :=
   rec: "Tracker__Lookup" "t" "k" :=
-    lock.acquire (struct.loadF Tracker "mu" "t");;
+    Mutex__Lock (struct.loadF Tracker "mu" "t");;
     let: ("v", "ok") := Tracker__lookupLocked "t" "k" in
-    lock.release (struct.loadF Tracker "mu" "t");;
+    Mutex__Unlock (struct.loadF Tracker "mu" "t");;
     ("v", "ok").
 
 Definition Tracker__Register: val :=
   rec: "Tracker__Register" "t" "k" "v" :=
-    lock.acquire (struct.loadF Tracker "mu" "t");;
+    Mutex__Lock (struct.loadF Tracker "mu" "t");;
     let: "r" := Tracker__registerLocked "t" "k" "v" in
-    lock.release (struct.loadF Tracker "mu" "t");;
+    Mutex__Unlock (struct.loadF Tracker "mu" "t");;
     "r".
 
 Definition MakeTracker: val :=
   rec: "MakeTracker" <> :=
     let: "t" := struct.alloc Tracker (zero_val (struct.t Tracker)) in
-    struct.storeF Tracker "mu" "t" (lock.new #());;
+    struct.storeF Tracker "mu" "t" (newMutex #());;
     struct.storeF Tracker "m" "t" (NewMap uint64T uint64T #());;
     "t".
 

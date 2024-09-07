@@ -31,7 +31,7 @@ Definition lockShard := struct.decl [
 Definition mkLockShard: val :=
   rec: "mkLockShard" <> :=
     let: "state" := NewMap uint64T ptrT #() in
-    let: "mu" := lock.new #() in
+    let: "mu" := newMutex #() in
     let: "a" := struct.new lockShard [
       "mu" ::= "mu";
       "state" ::= "state"
@@ -40,7 +40,7 @@ Definition mkLockShard: val :=
 
 Definition lockShard__acquire: val :=
   rec: "lockShard__acquire" "lmap" "addr" :=
-    lock.acquire (struct.loadF lockShard "mu" "lmap");;
+    Mutex__Lock (struct.loadF lockShard "mu" "lmap");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "state" := ref (zero_val ptrT) in
@@ -50,7 +50,7 @@ Definition lockShard__acquire: val :=
       else
         "state" <-[ptrT] (struct.new lockState [
           "held" ::= #false;
-          "cond" ::= lock.newCond (struct.loadF lockShard "mu" "lmap");
+          "cond" ::= NewCond (struct.loadF lockShard "mu" "lmap");
           "waiters" ::= #0
         ]);;
         MapInsert (struct.loadF lockShard "state" "lmap") "addr" (![ptrT] "state"));;
@@ -61,7 +61,7 @@ Definition lockShard__acquire: val :=
         "acquired" <-[boolT] #true
       else
         struct.storeF lockState "waiters" (![ptrT] "state") ((struct.loadF lockState "waiters" (![ptrT] "state")) + #1);;
-        lock.condWait (struct.loadF lockState "cond" (![ptrT] "state"));;
+        Cond__Wait (struct.loadF lockState "cond" (![ptrT] "state"));;
         let: ("state2", "ok2") := MapGet (struct.loadF lockShard "state" "lmap") "addr" in
         (if: "ok2"
         then struct.storeF lockState "waiters" "state2" ((struct.loadF lockState "waiters" "state2") - #1)
@@ -69,18 +69,18 @@ Definition lockShard__acquire: val :=
       (if: ![boolT] "acquired"
       then Break
       else Continue));;
-    lock.release (struct.loadF lockShard "mu" "lmap");;
+    Mutex__Unlock (struct.loadF lockShard "mu" "lmap");;
     #().
 
 Definition lockShard__release: val :=
   rec: "lockShard__release" "lmap" "addr" :=
-    lock.acquire (struct.loadF lockShard "mu" "lmap");;
+    Mutex__Lock (struct.loadF lockShard "mu" "lmap");;
     let: "state" := Fst (MapGet (struct.loadF lockShard "state" "lmap") "addr") in
     struct.storeF lockState "held" "state" #false;;
     (if: (struct.loadF lockState "waiters" "state") > #0
-    then lock.condSignal (struct.loadF lockState "cond" "state")
+    then Cond__Signal (struct.loadF lockState "cond" "state")
     else MapDelete (struct.loadF lockShard "state" "lmap") "addr");;
-    lock.release (struct.loadF lockShard "mu" "lmap");;
+    Mutex__Unlock (struct.loadF lockShard "mu" "lmap");;
     #().
 
 Definition NSHARD : expr := #65537.

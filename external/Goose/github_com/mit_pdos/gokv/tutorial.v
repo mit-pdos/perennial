@@ -19,15 +19,15 @@ Definition ParticipantServer := struct.decl [
 
 Definition ParticipantServer__GetPreference: val :=
   rec: "ParticipantServer__GetPreference" "s" :=
-    lock.acquire (struct.loadF ParticipantServer "m" "s");;
+    Mutex__Lock (struct.loadF ParticipantServer "m" "s");;
     let: "pref" := struct.loadF ParticipantServer "preference" "s" in
-    lock.release (struct.loadF ParticipantServer "m" "s");;
+    Mutex__Unlock (struct.loadF ParticipantServer "m" "s");;
     "pref".
 
 Definition MakeParticipant: val :=
   rec: "MakeParticipant" "pref" :=
     struct.new ParticipantServer [
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "preference" ::= "pref"
     ].
 
@@ -76,7 +76,7 @@ Definition ParticipantClerk__GetPreference: val :=
    assumes we have all preferences (ie, no Unknown) *)
 Definition CoordinatorServer__makeDecision: val :=
   rec: "CoordinatorServer__makeDecision" "s" :=
-    lock.acquire (struct.loadF CoordinatorServer "m" "s");;
+    Mutex__Lock (struct.loadF CoordinatorServer "m" "s");;
     ForSlice byteT <> "pref" (struct.loadF CoordinatorServer "preferences" "s")
       ((if: "pref" = Abort
       then struct.storeF CoordinatorServer "decision" "s" Abort
@@ -84,7 +84,7 @@ Definition CoordinatorServer__makeDecision: val :=
     (if: (struct.loadF CoordinatorServer "decision" "s") = Unknown
     then struct.storeF CoordinatorServer "decision" "s" Commit
     else #());;
-    lock.release (struct.loadF CoordinatorServer "m" "s");;
+    Mutex__Unlock (struct.loadF CoordinatorServer "m" "s");;
     #().
 
 Definition prefToDecision: val :=
@@ -97,16 +97,16 @@ Definition CoordinatorServer__backgroundLoop: val :=
   rec: "CoordinatorServer__backgroundLoop" "s" :=
     ForSlice ptrT "i" "h" (struct.loadF CoordinatorServer "participants" "s")
       (let: "pref" := ParticipantClerk__GetPreference "h" in
-      lock.acquire (struct.loadF CoordinatorServer "m" "s");;
+      Mutex__Lock (struct.loadF CoordinatorServer "m" "s");;
       SliceSet byteT (struct.loadF CoordinatorServer "preferences" "s") "i" (prefToDecision "pref");;
-      lock.release (struct.loadF CoordinatorServer "m" "s"));;
+      Mutex__Unlock (struct.loadF CoordinatorServer "m" "s"));;
     CoordinatorServer__makeDecision "s";;
     #().
 
 Definition MakeCoordinator: val :=
   rec: "MakeCoordinator" "participants" :=
     let: "decision" := Unknown in
-    let: "m" := lock.new #() in
+    let: "m" := newMutex #() in
     let: "preferences" := NewSlice Decision (slice.len "participants") in
     let: "clerks" := ref_to (slice.T ptrT) (NewSlice ptrT #0) in
     ForSlice uint64T <> "a" "participants"
@@ -133,9 +133,9 @@ Definition CoordinatorClerk__GetDecision: val :=
 
 Definition CoordinatorServer__GetDecision: val :=
   rec: "CoordinatorServer__GetDecision" "s" :=
-    lock.acquire (struct.loadF CoordinatorServer "m" "s");;
+    Mutex__Lock (struct.loadF CoordinatorServer "m" "s");;
     let: "decision" := struct.loadF CoordinatorServer "decision" "s" in
-    lock.release (struct.loadF CoordinatorServer "m" "s");;
+    Mutex__Unlock (struct.loadF CoordinatorServer "m" "s");;
     "decision".
 
 Definition CoordinatorMain: val :=

@@ -14,10 +14,10 @@ Definition Queue := struct.decl [
 
 Definition NewQueue: val :=
   rec: "NewQueue" "queue_size" :=
-    let: "lock" := lock.new #() in
+    let: "lock" := newMutex #() in
     struct.mk Queue [
       "queue" ::= NewSliceWithCap uint64T "queue_size" "queue_size";
-      "cond" ::= lock.newCond "lock";
+      "cond" ::= NewCond "lock";
       "lock" ::= "lock";
       "first" ::= #0;
       "count" ::= #0
@@ -25,44 +25,44 @@ Definition NewQueue: val :=
 
 Definition Queue__Enqueue: val :=
   rec: "Queue__Enqueue" "q" "a" :=
-    lock.acquire (struct.loadF Queue "lock" "q");;
+    Mutex__Lock (struct.loadF Queue "lock" "q");;
     let: "queue_size" := ref_to uint64T (slice.len (struct.loadF Queue "queue" "q")) in
     Skip;;
     (for: (λ: <>, (struct.loadF Queue "count" "q") ≥ (![uint64T] "queue_size")); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF Queue "cond" "q");;
+      Cond__Wait (struct.loadF Queue "cond" "q");;
       Continue);;
     let: "last" := ref_to uint64T (((struct.loadF Queue "first" "q") + (struct.loadF Queue "count" "q")) `rem` (![uint64T] "queue_size")) in
     SliceSet uint64T (struct.loadF Queue "queue" "q") (![uint64T] "last") "a";;
     struct.storeF Queue "count" "q" ((struct.loadF Queue "count" "q") + #1);;
-    lock.release (struct.loadF Queue "lock" "q");;
-    lock.condBroadcast (struct.loadF Queue "cond" "q");;
+    Mutex__Unlock (struct.loadF Queue "lock" "q");;
+    Cond__Broadcast (struct.loadF Queue "cond" "q");;
     #().
 
 Definition Queue__Dequeue: val :=
   rec: "Queue__Dequeue" "q" :=
-    lock.acquire (struct.loadF Queue "lock" "q");;
+    Mutex__Lock (struct.loadF Queue "lock" "q");;
     let: "queue_size" := ref_to uint64T (slice.len (struct.loadF Queue "queue" "q")) in
     Skip;;
     (for: (λ: <>, (struct.loadF Queue "count" "q") = #0); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF Queue "cond" "q");;
+      Cond__Wait (struct.loadF Queue "cond" "q");;
       Continue);;
     let: "res" := SliceGet uint64T (struct.loadF Queue "queue" "q") (struct.loadF Queue "first" "q") in
     struct.storeF Queue "first" "q" (((struct.loadF Queue "first" "q") + #1) `rem` (![uint64T] "queue_size"));;
     struct.storeF Queue "count" "q" ((struct.loadF Queue "count" "q") - #1);;
-    lock.release (struct.loadF Queue "lock" "q");;
-    lock.condBroadcast (struct.loadF Queue "cond" "q");;
+    Mutex__Unlock (struct.loadF Queue "lock" "q");;
+    Cond__Broadcast (struct.loadF Queue "cond" "q");;
     "res".
 
 Definition Queue__Peek: val :=
   rec: "Queue__Peek" "q" :=
-    lock.acquire (struct.loadF Queue "lock" "q");;
+    Mutex__Lock (struct.loadF Queue "lock" "q");;
     (if: (struct.loadF Queue "count" "q") > #0
     then
       let: "first" := SliceGet uint64T (struct.loadF Queue "queue" "q") (struct.loadF Queue "first" "q") in
-      lock.release (struct.loadF Queue "lock" "q");;
+      Mutex__Unlock (struct.loadF Queue "lock" "q");;
       ("first", #true)
     else
-      lock.release (struct.loadF Queue "lock" "q");;
+      Mutex__Unlock (struct.loadF Queue "lock" "q");;
       (#0, #false)).
 
 End code.

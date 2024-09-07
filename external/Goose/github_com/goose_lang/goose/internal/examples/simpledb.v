@@ -282,15 +282,15 @@ Definition NewDb: val :=
   rec: "NewDb" <> :=
     let: "wbuf" := makeValueBuffer #() in
     let: "rbuf" := makeValueBuffer #() in
-    let: "bufferL" := lock.new #() in
+    let: "bufferL" := newMutex #() in
     let: "tableName" := #(str"table.0") in
     let: "tableNameRef" := ref (zero_val stringT) in
     "tableNameRef" <-[stringT] "tableName";;
     let: "table" := CreateTable "tableName" in
     let: "tableRef" := struct.alloc Table (zero_val (struct.t Table)) in
     struct.store Table "tableRef" "table";;
-    let: "tableL" := lock.new #() in
-    let: "compactionL" := lock.new #() in
+    let: "tableL" := newMutex #() in
+    let: "compactionL" := newMutex #() in
     struct.mk Database [
       "wbuffer" ::= "wbuf";
       "rbuffer" ::= "rbuf";
@@ -309,26 +309,26 @@ Definition NewDb: val :=
    Reflects any completed in-memory writes. *)
 Definition Read: val :=
   rec: "Read" "db" "k" :=
-    lock.acquire (struct.get Database "bufferL" "db");;
+    Mutex__Lock (struct.get Database "bufferL" "db");;
     let: "buf" := ![mapT (slice.T byteT)] (struct.get Database "wbuffer" "db") in
     let: ("v", "ok") := MapGet "buf" "k" in
     (if: "ok"
     then
-      lock.release (struct.get Database "bufferL" "db");;
+      Mutex__Unlock (struct.get Database "bufferL" "db");;
       ("v", #true)
     else
       let: "rbuf" := ![mapT (slice.T byteT)] (struct.get Database "rbuffer" "db") in
       let: ("v2", "ok") := MapGet "rbuf" "k" in
       (if: "ok"
       then
-        lock.release (struct.get Database "bufferL" "db");;
+        Mutex__Unlock (struct.get Database "bufferL" "db");;
         ("v2", #true)
       else
-        lock.acquire (struct.get Database "tableL" "db");;
+        Mutex__Lock (struct.get Database "tableL" "db");;
         let: "tbl" := struct.load Table (struct.get Database "table" "db") in
         let: ("v3", "ok") := tableRead "tbl" "k" in
-        lock.release (struct.get Database "tableL" "db");;
-        lock.release (struct.get Database "bufferL" "db");;
+        Mutex__Unlock (struct.get Database "tableL" "db");;
+        Mutex__Unlock (struct.get Database "bufferL" "db");;
         ("v3", "ok"))).
 
 (* Write sets a key to a new value.
@@ -339,10 +339,10 @@ Definition Read: val :=
    The new value is buffered in memory. To persist it, call db.Compact(). *)
 Definition Write: val :=
   rec: "Write" "db" "k" "v" :=
-    lock.acquire (struct.get Database "bufferL" "db");;
+    Mutex__Lock (struct.get Database "bufferL" "db");;
     let: "buf" := ![mapT (slice.T byteT)] (struct.get Database "wbuffer" "db") in
     MapInsert "buf" "k" "v";;
-    lock.release (struct.get Database "bufferL" "db");;
+    Mutex__Unlock (struct.get Database "bufferL" "db");;
     #().
 
 Definition freshTable: val :=
@@ -417,14 +417,14 @@ Definition constructNewTable: val :=
    writes with existing writes. *)
 Definition Compact: val :=
   rec: "Compact" "db" :=
-    lock.acquire (struct.get Database "compactionL" "db");;
-    lock.acquire (struct.get Database "bufferL" "db");;
+    Mutex__Lock (struct.get Database "compactionL" "db");;
+    Mutex__Lock (struct.get Database "bufferL" "db");;
     let: "buf" := ![mapT (slice.T byteT)] (struct.get Database "wbuffer" "db") in
     let: "emptyWbuffer" := NewMap uint64T (slice.T byteT) #() in
     (struct.get Database "wbuffer" "db") <-[mapT (slice.T byteT)] "emptyWbuffer";;
     (struct.get Database "rbuffer" "db") <-[mapT (slice.T byteT)] "buf";;
-    lock.release (struct.get Database "bufferL" "db");;
-    lock.acquire (struct.get Database "tableL" "db");;
+    Mutex__Unlock (struct.get Database "bufferL" "db");;
+    Mutex__Lock (struct.get Database "tableL" "db");;
     let: "oldTableName" := ![stringT] (struct.get Database "tableName" "db") in
     let: ("oldTable", "t") := constructNewTable "db" "buf" in
     let: "newTable" := freshTable "oldTableName" in
@@ -434,8 +434,8 @@ Definition Compact: val :=
     FS.atomicCreate #(str"db") #(str"manifest") "manifestData";;
     CloseTable "oldTable";;
     FS.delete #(str"db") "oldTableName";;
-    lock.release (struct.get Database "tableL" "db");;
-    lock.release (struct.get Database "compactionL" "db");;
+    Mutex__Unlock (struct.get Database "tableL" "db");;
+    Mutex__Unlock (struct.get Database "compactionL" "db");;
     #().
 
 Definition recoverManifest: val :=
@@ -485,9 +485,9 @@ Definition Recover: val :=
     deleteOtherFiles "tableName";;
     let: "wbuffer" := makeValueBuffer #() in
     let: "rbuffer" := makeValueBuffer #() in
-    let: "bufferL" := lock.new #() in
-    let: "tableL" := lock.new #() in
-    let: "compactionL" := lock.new #() in
+    let: "bufferL" := newMutex #() in
+    let: "tableL" := newMutex #() in
+    let: "compactionL" := newMutex #() in
     struct.mk Database [
       "wbuffer" ::= "wbuffer";
       "rbuffer" ::= "rbuffer";
@@ -504,12 +504,12 @@ Definition Recover: val :=
    cleanly closing any open files. *)
 Definition Shutdown: val :=
   rec: "Shutdown" "db" :=
-    lock.acquire (struct.get Database "bufferL" "db");;
-    lock.acquire (struct.get Database "compactionL" "db");;
+    Mutex__Lock (struct.get Database "bufferL" "db");;
+    Mutex__Lock (struct.get Database "compactionL" "db");;
     let: "t" := struct.load Table (struct.get Database "table" "db") in
     CloseTable "t";;
-    lock.release (struct.get Database "compactionL" "db");;
-    lock.release (struct.get Database "bufferL" "db");;
+    Mutex__Unlock (struct.get Database "compactionL" "db");;
+    Mutex__Unlock (struct.get Database "bufferL" "db");;
     #().
 
 (* Close closes an open database cleanly, flushing any in-memory writes.

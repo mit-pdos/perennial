@@ -22,7 +22,7 @@ Definition Open: val :=
     let: "addrs" := marshal.Dec__GetInts "dec" "numAddrs" in
     struct.new Inode [
       "d" ::= "d";
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "addr" ::= "addr";
       "addrs" ::= "addrs"
     ].
@@ -44,16 +44,16 @@ Definition Inode__read: val :=
 
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "b" := Inode__read "i" "off" in
-    lock.release (struct.loadF Inode "m" "i");;
+    Mutex__Unlock (struct.loadF Inode "m" "i");;
     "b".
 
 Definition Inode__Size: val :=
   rec: "Inode__Size" "i" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "sz" := slice.len (struct.loadF Inode "addrs" "i") in
-    lock.release (struct.loadF Inode "m" "i");;
+    Mutex__Unlock (struct.loadF Inode "m" "i");;
     "sz".
 
 Definition Inode__mkHdr: val :=
@@ -93,9 +93,9 @@ Definition Inode__Append: val :=
     then #false
     else
       disk.Write "a" "b";;
-      lock.acquire (struct.loadF Inode "m" "i");;
+      Mutex__Lock (struct.loadF Inode "m" "i");;
       let: "ok2" := Inode__append "i" "a" in
-      lock.release (struct.loadF Inode "m" "i");;
+      Mutex__Unlock (struct.loadF Inode "m" "i");;
       (if: (~ "ok2")
       then alloc.Allocator__Free "allocator" "a"
       else #());;

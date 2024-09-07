@@ -305,33 +305,33 @@ Definition Server := struct.decl [
 
 Definition Server__getFreshNum: val :=
   rec: "Server__getFreshNum" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: "n" := struct.loadF Server "nextFreshId" "s" in
     struct.storeF Server "nextFreshId" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextFreshId" "s") #1);;
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     "n".
 
 Definition Server__put: val :=
   rec: "Server__put" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: (<>, "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.loadF putArgs "opId" "args") in
     (if: "ok"
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       #()
     else
       MapInsert (struct.loadF Server "kvs" "s") (struct.loadF putArgs "key" "args") (struct.loadF putArgs "val" "args");;
       MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF putArgs "opId" "args") #(str"");;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       #()).
 
 Definition Server__conditionalPut: val :=
   rec: "Server__conditionalPut" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: ("ret", "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.loadF conditionalPutArgs "opId" "args") in
     (if: "ok"
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       "ret"
     else
       let: "ret2" := ref_to stringT #(str"") in
@@ -341,21 +341,21 @@ Definition Server__conditionalPut: val :=
         "ret2" <-[stringT] #(str"ok")
       else #());;
       MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF conditionalPutArgs "opId" "args") (![stringT] "ret2");;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       ![stringT] "ret2").
 
 Definition Server__get: val :=
   rec: "Server__get" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: ("ret", "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.loadF getArgs "opId" "args") in
     (if: "ok"
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       "ret"
     else
       let: "ret2" := Fst (MapGet (struct.loadF Server "kvs" "s") (struct.loadF getArgs "key" "args")) in
       MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF getArgs "opId" "args") "ret2";;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       "ret2").
 
 Definition Server__Start: val :=
@@ -385,7 +385,7 @@ Definition Server__Start: val :=
 Definition MakeServer: val :=
   rec: "MakeServer" <> :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     struct.storeF Server "kvs" "s" (NewMap stringT stringT #());;
     struct.storeF Server "lastReplies" "s" (NewMap uint64T stringT #());;
     "s".

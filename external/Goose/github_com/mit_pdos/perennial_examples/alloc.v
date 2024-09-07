@@ -52,7 +52,7 @@ Definition New: val :=
     let: "free" := freeRange "start" "sz" in
     mapRemove "free" "used";;
     struct.new Allocator [
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "free" ::= "free"
     ].
 
@@ -73,20 +73,20 @@ Definition findKey: val :=
    The initial contents of the block are arbitrary. *)
 Definition Allocator__Reserve: val :=
   rec: "Allocator__Reserve" "a" :=
-    lock.acquire (struct.loadF Allocator "m" "a");;
+    Mutex__Lock (struct.loadF Allocator "m" "a");;
     let: ("k", "ok") := findKey (struct.loadF Allocator "free" "a") in
     MapDelete (struct.loadF Allocator "free" "a") "k";;
     Linearize;;
-    lock.release (struct.loadF Allocator "m" "a");;
+    Mutex__Unlock (struct.loadF Allocator "m" "a");;
     ("k", "ok").
 
 Definition Allocator__Free: val :=
   rec: "Allocator__Free" "a" "addr" :=
-    lock.acquire (struct.loadF Allocator "m" "a");;
+    Mutex__Lock (struct.loadF Allocator "m" "a");;
     MapInsert (struct.loadF Allocator "free" "a") "addr" (struct.mk unit [
     ]);;
     Linearize;;
-    lock.release (struct.loadF Allocator "m" "a");;
+    Mutex__Unlock (struct.loadF Allocator "m" "a");;
     #().
 
 End code.

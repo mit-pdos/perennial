@@ -56,25 +56,25 @@ Definition findVersion: val :=
 
 Definition Tuple__Own: val :=
   rec: "Tuple__Own" "tuple" "tid" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    Mutex__Lock (struct.loadF Tuple "latch" "tuple");;
     (if: "tid" < (struct.loadF Tuple "tslast" "tuple")
     then
-      lock.release (struct.loadF Tuple "latch" "tuple");;
+      Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
       common.RET_UNSERIALIZABLE
     else
       (if: struct.loadF Tuple "owned" "tuple"
       then
-        lock.release (struct.loadF Tuple "latch" "tuple");;
+        Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
         common.RET_RETRY
       else
         struct.storeF Tuple "owned" "tuple" #true;;
-        lock.release (struct.loadF Tuple "latch" "tuple");;
+        Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
         common.RET_SUCCESS)).
 
 (* Call @WriteOpen before @AppendVersion and @KillVersion. *)
 Definition Tuple__WriteOpen: val :=
   rec: "Tuple__WriteOpen" "tuple" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    Mutex__Lock (struct.loadF Tuple "latch" "tuple");;
     #().
 
 Definition Tuple__appendVersion: val :=
@@ -93,8 +93,8 @@ Definition Tuple__appendVersion: val :=
 Definition Tuple__AppendVersion: val :=
   rec: "Tuple__AppendVersion" "tuple" "tid" "val" :=
     Tuple__appendVersion "tuple" "tid" "val";;
-    lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
+    Cond__Broadcast (struct.loadF Tuple "rcond" "tuple");;
+    Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
     #().
 
 Definition Tuple__killVersion: val :=
@@ -116,27 +116,27 @@ Definition Tuple__KillVersion: val :=
     (if: "ok"
     then "ret" <-[uint64T] common.RET_SUCCESS
     else "ret" <-[uint64T] common.RET_NONEXIST);;
-    lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
+    Cond__Broadcast (struct.loadF Tuple "rcond" "tuple");;
+    Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
     ![uint64T] "ret".
 
 (* Release the write lock without modifying the tuple. *)
 Definition Tuple__Free: val :=
   rec: "Tuple__Free" "tuple" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    Mutex__Lock (struct.loadF Tuple "latch" "tuple");;
     struct.storeF Tuple "owned" "tuple" #false;;
-    lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
+    Cond__Broadcast (struct.loadF Tuple "rcond" "tuple");;
+    Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
     #().
 
 (* Call @ReadWait before @ReadVersion.
    This design allows us to resolve the prophecy at the txn level. *)
 Definition Tuple__ReadWait: val :=
   rec: "Tuple__ReadWait" "tuple" "tid" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    Mutex__Lock (struct.loadF Tuple "latch" "tuple");;
     Skip;;
     (for: (λ: <>, ("tid" > (struct.loadF Tuple "tslast" "tuple")) && (struct.loadF Tuple "owned" "tuple")); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF Tuple "rcond" "tuple");;
+      Cond__Wait (struct.loadF Tuple "rcond" "tuple");;
       Continue);;
     #().
 
@@ -146,7 +146,7 @@ Definition Tuple__ReadVersion: val :=
     (if: (struct.loadF Tuple "tslast" "tuple") < "tid"
     then struct.storeF Tuple "tslast" "tuple" "tid"
     else #());;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
+    Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
     (struct.get Version "val" "ver", (~ (struct.get Version "del" "ver"))).
 
 Definition Tuple__removeVersions: val :=
@@ -167,16 +167,16 @@ Definition Tuple__removeVersions: val :=
 (* Remove all versions whose lifetime ends before @tid. *)
 Definition Tuple__RemoveVersions: val :=
   rec: "Tuple__RemoveVersions" "tuple" "tid" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    Mutex__Lock (struct.loadF Tuple "latch" "tuple");;
     Tuple__removeVersions "tuple" "tid";;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
+    Mutex__Unlock (struct.loadF Tuple "latch" "tuple");;
     #().
 
 Definition MkTuple: val :=
   rec: "MkTuple" <> :=
     let: "tuple" := struct.alloc Tuple (zero_val (struct.t Tuple)) in
-    struct.storeF Tuple "latch" "tuple" (lock.new #());;
-    struct.storeF Tuple "rcond" "tuple" (lock.newCond (struct.loadF Tuple "latch" "tuple"));;
+    struct.storeF Tuple "latch" "tuple" (newMutex #());;
+    struct.storeF Tuple "rcond" "tuple" (NewCond (struct.loadF Tuple "latch" "tuple"));;
     struct.storeF Tuple "owned" "tuple" #false;;
     struct.storeF Tuple "tslast" "tuple" #1;;
     struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t Version) #1 #1);;

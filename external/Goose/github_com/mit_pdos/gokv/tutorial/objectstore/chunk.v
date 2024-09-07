@@ -65,9 +65,9 @@ Definition Server := struct.decl [
 Definition Server__WriteChunk: val :=
   rec: "Server__WriteChunk" "s" "args" :=
     let: "content_hash" := trusted_hash.Hash (struct.get WriteChunkArgs "Chunk" "args") in
-    lock.acquire (struct.loadF Server "m" "s");;
+    Mutex__Lock (struct.loadF Server "m" "s");;
     MapInsert (struct.loadF Server "chunks" "s") "content_hash" (struct.get WriteChunkArgs "Chunk" "args");;
-    lock.release (struct.loadF Server "m" "s");;
+    Mutex__Unlock (struct.loadF Server "m" "s");;
     dir.Clerk__RecordChunk (struct.loadF Server "dir" "s") (struct.mk dir.RecordChunkArgs [
       "WriteId" ::= struct.get WriteChunkArgs "WriteId" "args";
       "Server" ::= struct.loadF Server "me" "s";
@@ -78,16 +78,16 @@ Definition Server__WriteChunk: val :=
 
 Definition Server__GetChunk: val :=
   rec: "Server__GetChunk" "s" "content_hash" :=
-    lock.acquire (struct.loadF Server "m" "s");;
+    Mutex__Lock (struct.loadF Server "m" "s");;
     let: "data" := Fst (MapGet (struct.loadF Server "chunks" "s") "content_hash") in
-    lock.release (struct.loadF Server "m" "s");;
+    Mutex__Unlock (struct.loadF Server "m" "s");;
     "data".
 
 Definition StartServer: val :=
   rec: "StartServer" "me" "dir_addr" :=
     let: "dir" := dir.MakeClerk "dir_addr" in
     let: "s" := struct.new Server [
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "chunks" ::= NewMap stringT (slice.T byteT) #();
       "dir" ::= "dir";
       "me" ::= "me"

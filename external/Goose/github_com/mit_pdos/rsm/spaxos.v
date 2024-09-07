@@ -29,26 +29,26 @@ Definition NextAligned: val :=
 
 Definition Paxos__advance: val :=
   rec: "Paxos__advance" "px" :=
-    lock.acquire (struct.loadF Paxos "mu" "px");;
+    Mutex__Lock (struct.loadF Paxos "mu" "px");;
     let: "term" := NextAligned (struct.loadF Paxos "termc" "px") MAX_NODES (struct.loadF Paxos "nid" "px") in
     struct.storeF Paxos "termc" "px" "term";;
     let: "termp" := struct.loadF Paxos "termp" "px" in
     let: "decreep" := struct.loadF Paxos "decreep" "px" in
-    lock.release (struct.loadF Paxos "mu" "px");;
+    Mutex__Unlock (struct.loadF Paxos "mu" "px");;
     ("term", "termp", "decreep").
 
 Definition Paxos__prepare: val :=
   rec: "Paxos__prepare" "px" "term" :=
-    lock.acquire (struct.loadF Paxos "mu" "px");;
+    Mutex__Lock (struct.loadF Paxos "mu" "px");;
     (if: "term" < (struct.loadF Paxos "termc" "px")
     then
-      lock.release (struct.loadF Paxos "mu" "px");;
+      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       (#0, #(str""), #false)
     else
       struct.storeF Paxos "termc" "px" "term";;
       let: "termp" := struct.loadF Paxos "termp" "px" in
       let: "decreep" := struct.loadF Paxos "decreep" "px" in
-      lock.release (struct.loadF Paxos "mu" "px");;
+      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       ("termp", "decreep", #true)).
 
 Definition Paxos__major: val :=
@@ -77,21 +77,21 @@ Definition Paxos__prepareAll: val :=
 
 Definition Paxos__accept: val :=
   rec: "Paxos__accept" "px" "term" "decree" :=
-    lock.acquire (struct.loadF Paxos "mu" "px");;
+    Mutex__Lock (struct.loadF Paxos "mu" "px");;
     (if: "term" < (struct.loadF Paxos "termc" "px")
     then
-      lock.release (struct.loadF Paxos "mu" "px");;
+      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       #false
     else
       (if: struct.loadF Paxos "learned" "px"
       then
-        lock.release (struct.loadF Paxos "mu" "px");;
+        Mutex__Unlock (struct.loadF Paxos "mu" "px");;
         #false
       else
         struct.storeF Paxos "termc" "px" (std.SumAssumeNoOverflow "term" #1);;
         struct.storeF Paxos "termp" "px" "term";;
         struct.storeF Paxos "decreep" "px" "decree";;
-        lock.release (struct.loadF Paxos "mu" "px");;
+        Mutex__Unlock (struct.loadF Paxos "mu" "px");;
         #true)).
 
 Definition Paxos__acceptAll: val :=
@@ -106,17 +106,17 @@ Definition Paxos__acceptAll: val :=
 
 Definition Paxos__learn: val :=
   rec: "Paxos__learn" "px" "term" "decree" :=
-    lock.acquire (struct.loadF Paxos "mu" "px");;
+    Mutex__Lock (struct.loadF Paxos "mu" "px");;
     (if: "term" < (struct.loadF Paxos "termc" "px")
     then
-      lock.release (struct.loadF Paxos "mu" "px");;
+      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       #()
     else
       struct.storeF Paxos "termc" "px" (std.SumAssumeNoOverflow "term" #1);;
       struct.storeF Paxos "termp" "px" "term";;
       struct.storeF Paxos "decreep" "px" "decree";;
       struct.storeF Paxos "learned" "px" #true;;
-      lock.release (struct.loadF Paxos "mu" "px");;
+      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       #()).
 
 Definition Paxos__learnAll: val :=
@@ -165,10 +165,10 @@ Definition Paxos__Propose: val :=
 
 Definition Paxos__outcome: val :=
   rec: "Paxos__outcome" "px" :=
-    lock.acquire (struct.loadF Paxos "mu" "px");;
+    Mutex__Lock (struct.loadF Paxos "mu" "px");;
     let: "decree" := struct.loadF Paxos "decreep" "px" in
     let: "learned" := struct.loadF Paxos "learned" "px" in
-    lock.release (struct.loadF Paxos "mu" "px");;
+    Mutex__Unlock (struct.loadF Paxos "mu" "px");;
     ("decree", "learned").
 
 Definition Paxos__Outcome: val :=

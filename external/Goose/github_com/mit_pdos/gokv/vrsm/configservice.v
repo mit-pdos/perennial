@@ -60,7 +60,7 @@ Definition MakeClerk: val :=
       ("cls" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "cls") (reconnectclient.MakeReconnectingClient "host")));;
     struct.new Clerk [
       "cls" ::= ![slice.T ptrT] "cls";
-      "mu" ::= lock.new #()
+      "mu" ::= newMutex #()
     ].
 
 Definition Clerk__ReserveEpochAndGetConfig: val :=
@@ -68,9 +68,9 @@ Definition Clerk__ReserveEpochAndGetConfig: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      lock.acquire (struct.loadF Clerk "mu" "ck");;
+      Mutex__Lock (struct.loadF Clerk "mu" "ck");;
       let: "l" := struct.loadF Clerk "leader" "ck" in
-      lock.release (struct.loadF Clerk "mu" "ck");;
+      Mutex__Unlock (struct.loadF Clerk "mu" "ck");;
       let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "l") RPC_RESERVEEPOCH (NewSlice byteT #0) "reply" #100 in
       (if: "err" ≠ #0
       then Continue
@@ -81,11 +81,11 @@ Definition Clerk__ReserveEpochAndGetConfig: val :=
         "reply" <-[slice.T byteT] "1_ret";;
         (if: (![uint64T] "err2") = e.NotLeader
         then
-          lock.acquire (struct.loadF Clerk "mu" "ck");;
+          Mutex__Lock (struct.loadF Clerk "mu" "ck");;
           (if: "l" = (struct.loadF Clerk "leader" "ck")
           then struct.storeF Clerk "leader" "ck" (((struct.loadF Clerk "leader" "ck") + #1) `rem` (slice.len (struct.loadF Clerk "cls" "ck")))
           else #());;
-          lock.release (struct.loadF Clerk "mu" "ck");;
+          Mutex__Unlock (struct.loadF Clerk "mu" "ck");;
           Continue
         else
           (if: (![uint64T] "err2") = e.None
@@ -119,9 +119,9 @@ Definition Clerk__TryWriteConfig: val :=
     "args" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "args") (EncodeConfig "config"));;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      lock.acquire (struct.loadF Clerk "mu" "ck");;
+      Mutex__Lock (struct.loadF Clerk "mu" "ck");;
       let: "l" := struct.loadF Clerk "leader" "ck" in
-      lock.release (struct.loadF Clerk "mu" "ck");;
+      Mutex__Unlock (struct.loadF Clerk "mu" "ck");;
       let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "l") RPC_TRYWRITECONFIG (![slice.T byteT] "args") "reply" #2000 in
       (if: "err" ≠ #0
       then Continue
@@ -129,11 +129,11 @@ Definition Clerk__TryWriteConfig: val :=
         let: ("err2", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
         (if: "err2" = e.NotLeader
         then
-          lock.acquire (struct.loadF Clerk "mu" "ck");;
+          Mutex__Lock (struct.loadF Clerk "mu" "ck");;
           (if: "l" = (struct.loadF Clerk "leader" "ck")
           then struct.storeF Clerk "leader" "ck" (((struct.loadF Clerk "leader" "ck") + #1) `rem` (slice.len (struct.loadF Clerk "cls" "ck")))
           else #());;
-          lock.release (struct.loadF Clerk "mu" "ck");;
+          Mutex__Unlock (struct.loadF Clerk "mu" "ck");;
           Continue
         else Break)));;
     let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
@@ -148,9 +148,9 @@ Definition Clerk__GetLease: val :=
     "args" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "args") "epoch");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      lock.acquire (struct.loadF Clerk "mu" "ck");;
+      Mutex__Lock (struct.loadF Clerk "mu" "ck");;
       let: "l" := struct.loadF Clerk "leader" "ck" in
-      lock.release (struct.loadF Clerk "mu" "ck");;
+      Mutex__Unlock (struct.loadF Clerk "mu" "ck");;
       let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "l") RPC_GETLEASE (![slice.T byteT] "args") "reply" #100 in
       (if: "err" ≠ #0
       then Continue
@@ -158,11 +158,11 @@ Definition Clerk__GetLease: val :=
         let: ("err2", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
         (if: "err2" = e.NotLeader
         then
-          lock.acquire (struct.loadF Clerk "mu" "ck");;
+          Mutex__Lock (struct.loadF Clerk "mu" "ck");;
           (if: "l" = (struct.loadF Clerk "leader" "ck")
           then struct.storeF Clerk "leader" "ck" (((struct.loadF Clerk "leader" "ck") + #1) `rem` (slice.len (struct.loadF Clerk "cls" "ck")))
           else #());;
-          lock.release (struct.loadF Clerk "mu" "ck");;
+          Mutex__Unlock (struct.loadF Clerk "mu" "ck");;
           Continue
         else Break)));;
     let: ("err2", "enc") := marshal.ReadInt (![slice.T byteT] "reply") in

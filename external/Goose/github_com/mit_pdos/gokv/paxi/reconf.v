@@ -295,7 +295,7 @@ Definition EQuorumFailed : expr := #3.
 
 Definition Replica__PrepareRPC: val :=
   rec: "Replica__PrepareRPC" "r" "term" "reply" :=
-    lock.acquire (struct.loadF Replica "mu" "r");;
+    Mutex__Lock (struct.loadF Replica "mu" "r");;
     (if: "term" > (struct.loadF Replica "promisedTerm" "r")
     then
       struct.storeF Replica "promisedTerm" "r" "term";;
@@ -307,12 +307,12 @@ Definition Replica__PrepareRPC: val :=
       struct.storeF PrepareReply "Val" "reply" (struct.alloc MonotonicValue (zero_val (struct.t MonotonicValue)));;
       struct.storeF MonotonicValue "conf" (struct.loadF PrepareReply "Val" "reply") (struct.alloc Config (zero_val (struct.t Config)));;
       struct.storeF PrepareReply "Term" "reply" (struct.loadF Replica "promisedTerm" "r"));;
-    lock.release (struct.loadF Replica "mu" "r");;
+    Mutex__Unlock (struct.loadF Replica "mu" "r");;
     #().
 
 Definition Replica__ProposeRPC: val :=
   rec: "Replica__ProposeRPC" "r" "term" "v" :=
-    lock.acquire (struct.loadF Replica "mu" "r");;
+    Mutex__Lock (struct.loadF Replica "mu" "r");;
     (if: "term" ≥ (struct.loadF Replica "promisedTerm" "r")
     then
       struct.storeF Replica "promisedTerm" "r" "term";;
@@ -320,15 +320,15 @@ Definition Replica__ProposeRPC: val :=
       (if: MonotonicValue__GreaterThan "v" (struct.loadF Replica "acceptedMVal" "r")
       then struct.storeF Replica "acceptedMVal" "r" "v"
       else #());;
-      lock.release (struct.loadF Replica "mu" "r");;
+      Mutex__Unlock (struct.loadF Replica "mu" "r");;
       ENone
     else
-      lock.release (struct.loadF Replica "mu" "r");;
+      Mutex__Unlock (struct.loadF Replica "mu" "r");;
       ETermStale).
 
 Definition Replica__TryBecomeLeader: val :=
   rec: "Replica__TryBecomeLeader" "r" :=
-    lock.acquire (struct.loadF Replica "mu" "r");;
+    Mutex__Lock (struct.loadF Replica "mu" "r");;
     let: "newTerm" := (struct.loadF Replica "promisedTerm" "r") + #1 in
     struct.storeF Replica "promisedTerm" "r" "newTerm";;
     let: "highestTerm" := ref (zero_val uint64T) in
@@ -336,15 +336,15 @@ Definition Replica__TryBecomeLeader: val :=
     let: "highestVal" := ref (zero_val ptrT) in
     "highestVal" <-[ptrT] (struct.loadF Replica "acceptedMVal" "r");;
     let: "conf" := struct.loadF MonotonicValue "conf" (struct.loadF Replica "acceptedMVal" "r") in
-    lock.release (struct.loadF Replica "mu" "r");;
-    let: "mu" := lock.new #() in
+    Mutex__Unlock (struct.loadF Replica "mu" "r");;
+    let: "mu" := newMutex #() in
     let: "prepared" := NewMap uint64T boolT #() in
     Config__ForEachMember "conf" (λ: "addr",
       Fork (let: "reply_ptr" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
             ClerkPool__PrepareRPC (struct.loadF Replica "clerkPool" "r") "addr" "newTerm" "reply_ptr";;
             (if: (struct.loadF PrepareReply "Err" "reply_ptr") = ENone
             then
-              lock.acquire "mu";;
+              Mutex__Lock "mu";;
               MapInsert "prepared" "addr" #true;;
               (if: (struct.loadF PrepareReply "Term" "reply_ptr") > (![uint64T] "highestTerm")
               then "highestVal" <-[ptrT] (struct.loadF PrepareReply "Val" "reply_ptr")
@@ -355,25 +355,25 @@ Definition Replica__TryBecomeLeader: val :=
                   then "highestVal" <-[ptrT] (struct.loadF PrepareReply "Val" "reply_ptr")
                   else #())
                 else #()));;
-              lock.release "mu"
+              Mutex__Unlock "mu"
             else #()));;
       #()
       );;
     time.Sleep (#50 * #1000000);;
-    lock.acquire "mu";;
+    Mutex__Lock "mu";;
     (if: IsQuorum (struct.loadF MonotonicValue "conf" (![ptrT] "highestVal")) "prepared"
     then
-      lock.acquire (struct.loadF Replica "mu" "r");;
+      Mutex__Lock (struct.loadF Replica "mu" "r");;
       (if: (struct.loadF Replica "promisedTerm" "r") = "newTerm"
       then
         struct.storeF Replica "acceptedMVal" "r" (![ptrT] "highestVal");;
         struct.storeF Replica "isLeader" "r" #true
       else #());;
-      lock.release (struct.loadF Replica "mu" "r");;
-      lock.release "mu";;
+      Mutex__Unlock (struct.loadF Replica "mu" "r");;
+      Mutex__Unlock "mu";;
       #true
     else
-      lock.release "mu";;
+      Mutex__Unlock "mu";;
       #false).
 
 (* Returns true iff there was an error;
@@ -383,10 +383,10 @@ Definition Replica__TryBecomeLeader: val :=
    mvalModifier is not allowed to modify the version number in the given mval. *)
 Definition Replica__tryCommit: val :=
   rec: "Replica__tryCommit" "r" "mvalModifier" "reply" :=
-    lock.acquire (struct.loadF Replica "mu" "r");;
+    Mutex__Lock (struct.loadF Replica "mu" "r");;
     (if: (~ (struct.loadF Replica "isLeader" "r"))
     then
-      lock.release (struct.loadF Replica "mu" "r");;
+      Mutex__Unlock (struct.loadF Replica "mu" "r");;
       struct.storeF TryCommitReply "err" "reply" ENotLeader;;
       #()
     else
@@ -395,20 +395,20 @@ Definition Replica__tryCommit: val :=
       struct.storeF MonotonicValue "version" (struct.loadF Replica "acceptedMVal" "r") ((struct.loadF MonotonicValue "version" (struct.loadF Replica "acceptedMVal" "r")) + #1);;
       let: "term" := struct.loadF Replica "promisedTerm" "r" in
       let: "mval" := struct.loadF Replica "acceptedMVal" "r" in
-      lock.release (struct.loadF Replica "mu" "r");;
-      let: "mu" := lock.new #() in
+      Mutex__Unlock (struct.loadF Replica "mu" "r");;
+      let: "mu" := newMutex #() in
       let: "accepted" := NewMap uint64T boolT #() in
       Config__ForEachMember (struct.loadF MonotonicValue "conf" "mval") (λ: "addr",
         Fork ((if: ClerkPool__ProposeRPC (struct.loadF Replica "clerkPool" "r") "addr" "term" "mval"
               then
-                lock.acquire "mu";;
+                Mutex__Lock "mu";;
                 MapInsert "accepted" "addr" #true;;
-                lock.release "mu"
+                Mutex__Unlock "mu"
               else #()));;
         #()
         );;
       time.Sleep (#100 * #1000000);;
-      lock.acquire "mu";;
+      Mutex__Lock "mu";;
       (if: IsQuorum (struct.loadF MonotonicValue "conf" "mval") "accepted"
       then
         struct.storeF TryCommitReply "err" "reply" ENone;;
@@ -419,12 +419,12 @@ Definition Replica__tryCommit: val :=
 
 Definition Replica__TryCommitVal: val :=
   rec: "Replica__TryCommitVal" "r" "v" "reply" :=
-    lock.acquire (struct.loadF Replica "mu" "r");;
+    Mutex__Lock (struct.loadF Replica "mu" "r");;
     (if: (~ (struct.loadF Replica "isLeader" "r"))
     then
-      lock.release (struct.loadF Replica "mu" "r");;
+      Mutex__Unlock (struct.loadF Replica "mu" "r");;
       Replica__TryBecomeLeader "r"
-    else lock.release (struct.loadF Replica "mu" "r"));;
+    else Mutex__Unlock (struct.loadF Replica "mu" "r"));;
     Replica__tryCommit "r" (λ: "mval",
       struct.storeF MonotonicValue "val" "mval" "v";;
       #()
@@ -455,7 +455,7 @@ Definition Replica__TryEnterNewConfig: val :=
 Definition StartReplicaServer: val :=
   rec: "StartReplicaServer" "me" "initConfig" :=
     let: "s" := struct.alloc Replica (zero_val (struct.t Replica)) in
-    struct.storeF Replica "mu" "s" (lock.new #());;
+    struct.storeF Replica "mu" "s" (newMutex #());;
     struct.storeF Replica "promisedTerm" "s" #0;;
     struct.storeF Replica "acceptedTerm" "s" #0;;
     struct.storeF Replica "acceptedMVal" "s" (struct.alloc MonotonicValue (zero_val (struct.t MonotonicValue)));;

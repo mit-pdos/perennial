@@ -33,13 +33,13 @@ Definition Init: val :=
     (if: "diskSz" < #1
     then
       (struct.new Log [
-         "m" ::= lock.new #();
+         "m" ::= newMutex #();
          "sz" ::= #0;
          "diskSz" ::= #0
        ], #false)
     else
       let: "log" := struct.new Log [
-        "m" ::= lock.new #();
+        "m" ::= newMutex #();
         "sz" ::= #0;
         "diskSz" ::= "diskSz"
       ] in
@@ -53,7 +53,7 @@ Definition Open: val :=
     let: "sz" := marshal.Dec__GetInt "dec" in
     let: "diskSz" := marshal.Dec__GetInt "dec" in
     struct.new Log [
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "sz" ::= "sz";
       "diskSz" ::= "diskSz"
     ].
@@ -67,9 +67,9 @@ Definition Log__get: val :=
 
 Definition Log__Get: val :=
   rec: "Log__Get" "log" "i" :=
-    lock.acquire (struct.loadF Log "m" "log");;
+    Mutex__Lock (struct.loadF Log "m" "log");;
     let: ("v", "b") := Log__get "log" "i" in
-    lock.release (struct.loadF Log "m" "log");;
+    Mutex__Unlock (struct.loadF Log "m" "log");;
     ("v", "b").
 
 Definition writeAll: val :=
@@ -91,9 +91,9 @@ Definition Log__append: val :=
 
 Definition Log__Append: val :=
   rec: "Log__Append" "log" "bks" :=
-    lock.acquire (struct.loadF Log "m" "log");;
+    Mutex__Lock (struct.loadF Log "m" "log");;
     let: "b" := Log__append "log" "bks" in
-    lock.release (struct.loadF Log "m" "log");;
+    Mutex__Unlock (struct.loadF Log "m" "log");;
     "b".
 
 Definition Log__reset: val :=
@@ -104,7 +104,7 @@ Definition Log__reset: val :=
 
 Definition Log__Reset: val :=
   rec: "Log__Reset" "log" :=
-    lock.acquire (struct.loadF Log "m" "log");;
+    Mutex__Lock (struct.loadF Log "m" "log");;
     Log__reset "log";;
-    lock.release (struct.loadF Log "m" "log");;
+    Mutex__Unlock (struct.loadF Log "m" "log");;
     #().

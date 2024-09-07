@@ -148,13 +148,13 @@ Definition Server := struct.decl [
 (* From client *)
 Definition Server__PrepareWrite: val :=
   rec: "Server__PrepareWrite" "s" :=
-    lock.acquire (struct.loadF Server "m" "s");;
+    Mutex__Lock (struct.loadF Server "m" "s");;
     let: "id" := struct.loadF Server "nextWriteId" "s" in
     struct.storeF Server "nextWriteId" "s" ((struct.loadF Server "nextWriteId" "s") + #1);;
     MapInsert (struct.loadF Server "ongoing" "s") "id" (struct.mk PartialValue [
       "servers" ::= NewMap uint64T (struct.t ChunkHandle) #()
     ]);;
-    lock.release (struct.loadF Server "m" "s");;
+    Mutex__Unlock (struct.loadF Server "m" "s");;
     struct.mk PreparedWrite [
       "Id" ::= "id";
       "ChunkAddrs" ::= NewSlice uint64T #0
@@ -163,18 +163,18 @@ Definition Server__PrepareWrite: val :=
 (* From chunk *)
 Definition Server__RecordChunk: val :=
   rec: "Server__RecordChunk" "s" "args" :=
-    lock.acquire (struct.loadF Server "m" "s");;
+    Mutex__Lock (struct.loadF Server "m" "s");;
     MapInsert (struct.get PartialValue "servers" (Fst (MapGet (struct.loadF Server "ongoing" "s") (struct.get RecordChunkArgs "WriteId" "args")))) (struct.get RecordChunkArgs "Index" "args") (struct.mk ChunkHandle [
       "Addr" ::= struct.get RecordChunkArgs "Server" "args";
       "ContentHash" ::= struct.get RecordChunkArgs "ContentHash" "args"
     ]);;
-    lock.release (struct.loadF Server "m" "s");;
+    Mutex__Unlock (struct.loadF Server "m" "s");;
     #().
 
 (* From chunk *)
 Definition Server__FinishWrite: val :=
   rec: "Server__FinishWrite" "s" "args" :=
-    lock.acquire (struct.loadF Server "m" "s");;
+    Mutex__Lock (struct.loadF Server "m" "s");;
     let: "v" := struct.get PartialValue "servers" (Fst (MapGet (struct.loadF Server "ongoing" "s") (struct.get FinishWriteArgs "WriteId" "args"))) in
     let: "numChunks" := MapLen "v" in
     let: "servers" := ref_to (slice.T (struct.t ChunkHandle)) (NewSlice (struct.t ChunkHandle) #0) in
@@ -185,14 +185,14 @@ Definition Server__FinishWrite: val :=
     MapInsert (struct.loadF Server "data" "s") (struct.get FinishWriteArgs "Keyname" "args") (struct.mk Value [
       "servers" ::= ![slice.T (struct.t ChunkHandle)] "servers"
     ]);;
-    lock.release (struct.loadF Server "m" "s");;
+    Mutex__Unlock (struct.loadF Server "m" "s");;
     #().
 
 Definition Server__PrepareRead: val :=
   rec: "Server__PrepareRead" "s" "keyname" :=
-    lock.acquire (struct.loadF Server "m" "s");;
+    Mutex__Lock (struct.loadF Server "m" "s");;
     let: "servers" := struct.get Value "servers" (Fst (MapGet (struct.loadF Server "data" "s") "keyname")) in
-    lock.release (struct.loadF Server "m" "s");;
+    Mutex__Unlock (struct.loadF Server "m" "s");;
     struct.mk PreparedRead [
       "Handles" ::= "servers"
     ].
@@ -200,7 +200,7 @@ Definition Server__PrepareRead: val :=
 Definition StartServer: val :=
   rec: "StartServer" "me" :=
     let: "s" := struct.new Server [
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "ongoing" ::= NewMap WriteID (struct.t PartialValue) #();
       "data" ::= NewMap stringT (struct.t Value) #();
       "nextWriteId" ::= #1

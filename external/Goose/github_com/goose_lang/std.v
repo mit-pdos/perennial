@@ -67,8 +67,8 @@ Definition JoinHandle := struct.decl [
 
 Definition newJoinHandle: val :=
   rec: "newJoinHandle" <> :=
-    let: "mu" := lock.new #() in
-    let: "cond" := lock.newCond "mu" in
+    let: "mu" := newMutex #() in
+    let: "cond" := NewCond "mu" in
     struct.new JoinHandle [
       "mu" ::= "mu";
       "done" ::= #false;
@@ -77,10 +77,10 @@ Definition newJoinHandle: val :=
 
 Definition JoinHandle__finish: val :=
   rec: "JoinHandle__finish" "h" :=
-    lock.acquire (struct.loadF JoinHandle "mu" "h");;
+    Mutex__Lock (struct.loadF JoinHandle "mu" "h");;
     struct.storeF JoinHandle "done" "h" #true;;
-    lock.condSignal (struct.loadF JoinHandle "cond" "h");;
-    lock.release (struct.loadF JoinHandle "mu" "h");;
+    Cond__Signal (struct.loadF JoinHandle "cond" "h");;
+    Mutex__Unlock (struct.loadF JoinHandle "mu" "h");;
     #().
 
 (* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
@@ -99,7 +99,7 @@ Definition Spawn: val :=
 
 Definition JoinHandle__Join: val :=
   rec: "JoinHandle__Join" "h" :=
-    lock.acquire (struct.loadF JoinHandle "mu" "h");;
+    Mutex__Lock (struct.loadF JoinHandle "mu" "h");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: struct.loadF JoinHandle "done" "h"
@@ -107,9 +107,9 @@ Definition JoinHandle__Join: val :=
         struct.storeF JoinHandle "done" "h" #false;;
         Break
       else
-        lock.condWait (struct.loadF JoinHandle "cond" "h");;
+        Cond__Wait (struct.loadF JoinHandle "cond" "h");;
         Continue));;
-    lock.release (struct.loadF JoinHandle "mu" "h");;
+    Mutex__Unlock (struct.loadF JoinHandle "mu" "h");;
     #().
 
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
@@ -120,23 +120,23 @@ Definition JoinHandle__Join: val :=
 Definition Multipar: val :=
   rec: "Multipar" "num" "op" :=
     let: "num_left" := ref_to uint64T "num" in
-    let: "num_left_mu" := lock.new #() in
-    let: "num_left_cond" := lock.newCond "num_left_mu" in
+    let: "num_left_mu" := newMutex #() in
+    let: "num_left_cond" := NewCond "num_left_mu" in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, (![uint64T] "i") < "num"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "i" := ![uint64T] "i" in
       Fork ("op" "i";;
-            lock.acquire "num_left_mu";;
+            Mutex__Lock "num_left_mu";;
             "num_left" <-[uint64T] ((![uint64T] "num_left") - #1);;
-            lock.condSignal "num_left_cond";;
-            lock.release "num_left_mu");;
+            Cond__Signal "num_left_cond";;
+            Mutex__Unlock "num_left_mu");;
       Continue);;
-    lock.acquire "num_left_mu";;
+    Mutex__Lock "num_left_mu";;
     Skip;;
     (for: (λ: <>, (![uint64T] "num_left") > #0); (λ: <>, Skip) := λ: <>,
-      lock.condWait "num_left_cond";;
+      Cond__Wait "num_left_cond";;
       Continue);;
-    lock.release "num_left_mu";;
+    Mutex__Unlock "num_left_mu";;
     #().
 
 (* Skip is a no-op that can be useful in proofs.

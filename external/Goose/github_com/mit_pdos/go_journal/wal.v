@@ -355,21 +355,21 @@ Definition Walog__logInstall: val :=
     (if: "numBufs" = #0
     then (#0, "installEnd")
     else
-      lock.release (struct.loadF Walog "memLock" "l");;
+      Mutex__Unlock (struct.loadF Walog "memLock" "l");;
       util.DPrintf #5 #(str"logInstall up to %d
       ") #();;
       installBlocks (struct.loadF Walog "d" "l") "bufs";;
       disk.Barrier #();;
       Advance (struct.loadF Walog "d" "l") "installEnd";;
-      lock.acquire (struct.loadF Walog "memLock" "l");;
+      Mutex__Lock (struct.loadF Walog "memLock" "l");;
       WalogState__cutMemLog (struct.loadF Walog "st" "l") "installEnd";;
-      lock.condBroadcast (struct.loadF Walog "condInstall" "l");;
+      Cond__Broadcast (struct.loadF Walog "condInstall" "l");;
       ("numBufs", "installEnd")).
 
 (* installer installs blocks from the on-disk log to their home location. *)
 Definition Walog__installer: val :=
   rec: "Walog__installer" "l" :=
-    lock.acquire (struct.loadF Walog "memLock" "l");;
+    Mutex__Lock (struct.loadF Walog "memLock" "l");;
     struct.storeF WalogState "nthread" (struct.loadF Walog "st" "l") ((struct.loadF WalogState "nthread" (struct.loadF Walog "st" "l")) + #1);;
     Skip;;
     (for: (λ: <>, (~ (struct.loadF WalogState "shutdown" (struct.loadF Walog "st" "l")))); (λ: <>, Skip) := λ: <>,
@@ -380,13 +380,13 @@ Definition Walog__installer: val :=
         ") #();;
         Continue
       else
-        lock.condWait (struct.loadF Walog "condInstall" "l");;
+        Cond__Wait (struct.loadF Walog "condInstall" "l");;
         Continue));;
     util.DPrintf #1 #(str"installer: shutdown
     ") #();;
     struct.storeF WalogState "nthread" (struct.loadF Walog "st" "l") ((struct.loadF WalogState "nthread" (struct.loadF Walog "st" "l")) - #1);;
-    lock.condSignal (struct.loadF Walog "condShut" "l");;
-    lock.release (struct.loadF Walog "memLock" "l");;
+    Cond__Signal (struct.loadF Walog "condShut" "l");;
+    Mutex__Unlock (struct.loadF Walog "memLock" "l");;
     #().
 
 (* logger.go *)
@@ -399,7 +399,7 @@ Definition Walog__waitForSpace: val :=
   rec: "Walog__waitForSpace" "l" :=
     Skip;;
     (for: (λ: <>, (slice.len (struct.loadF sliding "log" (struct.loadF WalogState "memLog" (struct.loadF Walog "st" "l")))) > LOGSZ); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF Walog "condInstall" "l");;
+      Cond__Wait (struct.loadF Walog "condInstall" "l");;
       Continue);;
     #().
 
@@ -430,13 +430,13 @@ Definition Walog__logAppend: val :=
     (if: (slice.len "newbufs") = #0
     then #false
     else
-      lock.release (struct.loadF Walog "memLock" "l");;
+      Mutex__Unlock (struct.loadF Walog "memLock" "l");;
       circularAppender__Append "circ" (struct.loadF Walog "d" "l") "diskEnd" "newbufs";;
-      lock.acquire (struct.loadF Walog "memLock" "l");;
+      Mutex__Lock (struct.loadF Walog "memLock" "l");;
       Linearize;;
       struct.storeF WalogState "diskEnd" (struct.loadF Walog "st" "l") ("diskEnd" + (slice.len "newbufs"));;
-      lock.condBroadcast (struct.loadF Walog "condLogger" "l");;
-      lock.condBroadcast (struct.loadF Walog "condInstall" "l");;
+      Cond__Broadcast (struct.loadF Walog "condLogger" "l");;
+      Cond__Broadcast (struct.loadF Walog "condInstall" "l");;
       #true).
 
 (* logger writes blocks from the in-memory log to the on-disk log
@@ -445,21 +445,21 @@ Definition Walog__logAppend: val :=
    condLogger for scheduling *)
 Definition Walog__logger: val :=
   rec: "Walog__logger" "l" "circ" :=
-    lock.acquire (struct.loadF Walog "memLock" "l");;
+    Mutex__Lock (struct.loadF Walog "memLock" "l");;
     struct.storeF WalogState "nthread" (struct.loadF Walog "st" "l") ((struct.loadF WalogState "nthread" (struct.loadF Walog "st" "l")) + #1);;
     Skip;;
     (for: (λ: <>, (~ (struct.loadF WalogState "shutdown" (struct.loadF Walog "st" "l")))); (λ: <>, Skip) := λ: <>,
       let: "progress" := Walog__logAppend "l" "circ" in
       (if: (~ "progress")
       then
-        lock.condWait (struct.loadF Walog "condLogger" "l");;
+        Cond__Wait (struct.loadF Walog "condLogger" "l");;
         Continue
       else Continue));;
     util.DPrintf #1 #(str"logger: shutdown
     ") #();;
     struct.storeF WalogState "nthread" (struct.loadF Walog "st" "l") ((struct.loadF WalogState "nthread" (struct.loadF Walog "st" "l")) - #1);;
-    lock.condSignal (struct.loadF Walog "condShut" "l");;
-    lock.release (struct.loadF Walog "memLock" "l");;
+    Cond__Signal (struct.loadF Walog "condShut" "l");;
+    Mutex__Unlock (struct.loadF Walog "memLock" "l");;
     #().
 
 (* wal.go *)
@@ -467,7 +467,7 @@ Definition Walog__logger: val :=
 Definition mkLog: val :=
   rec: "mkLog" "disk" :=
     let: ((("circ", "start"), "end"), "memLog") := recoverCircular "disk" in
-    let: "ml" := lock.new #() in
+    let: "ml" := newMutex #() in
     let: "st" := struct.new WalogState [
       "memLog" ::= mkSliding "memLog" "start";
       "diskEnd" ::= "end";
@@ -479,9 +479,9 @@ Definition mkLog: val :=
       "circ" ::= "circ";
       "memLock" ::= "ml";
       "st" ::= "st";
-      "condLogger" ::= lock.newCond "ml";
-      "condInstall" ::= lock.newCond "ml";
-      "condShut" ::= lock.newCond "ml"
+      "condLogger" ::= NewCond "ml";
+      "condInstall" ::= NewCond "ml";
+      "condShut" ::= NewCond "ml"
     ] in
     util.DPrintf #1 #(str"mkLog: size %d
     ") #();;
@@ -538,10 +538,10 @@ Definition WalogState__readMem: val :=
    the wal). *)
 Definition Walog__ReadMem: val :=
   rec: "Walog__ReadMem" "l" "blkno" :=
-    lock.acquire (struct.loadF Walog "memLock" "l");;
+    Mutex__Lock (struct.loadF Walog "memLock" "l");;
     let: ("blk", "ok") := WalogState__readMem (struct.loadF Walog "st" "l") "blkno" in
     Linearize;;
-    lock.release (struct.loadF Walog "memLock" "l");;
+    Mutex__Unlock (struct.loadF Walog "memLock" "l");;
     ("blk", "ok").
 
 (* Read from only the installed state (a subset of durable state). *)
@@ -585,7 +585,7 @@ Definition Walog__MemAppend: val :=
     else
       let: "txn" := ref_to LogPosition #0 in
       let: "ok" := ref_to boolT #true in
-      lock.acquire (struct.loadF Walog "memLock" "l");;
+      Mutex__Lock (struct.loadF Walog "memLock" "l");;
       let: "st" := struct.loadF Walog "st" "l" in
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -602,10 +602,10 @@ Definition Walog__MemAppend: val :=
           else
             util.DPrintf #5 #(str"memAppend: log is full; try again") #();;
             WalogState__endGroupTxn "st";;
-            lock.condBroadcast (struct.loadF Walog "condLogger" "l");;
-            lock.condWait (struct.loadF Walog "condLogger" "l");;
+            Cond__Broadcast (struct.loadF Walog "condLogger" "l");;
+            Cond__Wait (struct.loadF Walog "condLogger" "l");;
             Continue)));;
-      lock.release (struct.loadF Walog "memLock" "l");;
+      Mutex__Unlock (struct.loadF Walog "memLock" "l");;
       (![LogPosition] "txn", ![boolT] "ok")).
 
 (* Flush flushes a transaction pos (and all preceding transactions)
@@ -616,17 +616,17 @@ Definition Walog__Flush: val :=
   rec: "Walog__Flush" "l" "pos" :=
     util.DPrintf #2 #(str"Flush: commit till txn %d
     ") #();;
-    lock.acquire (struct.loadF Walog "memLock" "l");;
-    lock.condBroadcast (struct.loadF Walog "condLogger" "l");;
+    Mutex__Lock (struct.loadF Walog "memLock" "l");;
+    Cond__Broadcast (struct.loadF Walog "condLogger" "l");;
     (if: "pos" > (struct.loadF sliding "mutable" (struct.loadF WalogState "memLog" (struct.loadF Walog "st" "l")))
     then WalogState__endGroupTxn (struct.loadF Walog "st" "l")
     else #());;
     Skip;;
     (for: (λ: <>, (~ ("pos" ≤ (struct.loadF WalogState "diskEnd" (struct.loadF Walog "st" "l"))))); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF Walog "condLogger" "l");;
+      Cond__Wait (struct.loadF Walog "condLogger" "l");;
       Continue);;
     Linearize;;
-    lock.release (struct.loadF Walog "memLock" "l");;
+    Mutex__Unlock (struct.loadF Walog "memLock" "l");;
     #().
 
 (* Shutdown logger and installer *)
@@ -634,16 +634,16 @@ Definition Walog__Shutdown: val :=
   rec: "Walog__Shutdown" "l" :=
     util.DPrintf #1 #(str"shutdown wal
     ") #();;
-    lock.acquire (struct.loadF Walog "memLock" "l");;
+    Mutex__Lock (struct.loadF Walog "memLock" "l");;
     struct.storeF WalogState "shutdown" (struct.loadF Walog "st" "l") #true;;
-    lock.condBroadcast (struct.loadF Walog "condLogger" "l");;
-    lock.condBroadcast (struct.loadF Walog "condInstall" "l");;
+    Cond__Broadcast (struct.loadF Walog "condLogger" "l");;
+    Cond__Broadcast (struct.loadF Walog "condInstall" "l");;
     Skip;;
     (for: (λ: <>, (struct.loadF WalogState "nthread" (struct.loadF Walog "st" "l")) > #0); (λ: <>, Skip) := λ: <>,
       util.DPrintf #1 #(str"wait for logger/installer") #();;
-      lock.condWait (struct.loadF Walog "condShut" "l");;
+      Cond__Wait (struct.loadF Walog "condShut" "l");;
       Continue);;
-    lock.release (struct.loadF Walog "memLock" "l");;
+    Mutex__Unlock (struct.loadF Walog "memLock" "l");;
     util.DPrintf #1 #(str"wal done
     ") #();;
     #().

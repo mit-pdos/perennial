@@ -26,7 +26,7 @@ Definition Log := struct.decl [
 Definition MkLog: val :=
   rec: "MkLog" "d" :=
     let: "log" := struct.new Log [
-      "mu" ::= lock.new #();
+      "mu" ::= newMutex #();
       "log" ::= wal.MkLog "d";
       "pos" ::= #0
     ] in
@@ -71,13 +71,13 @@ Definition Log__installBufs: val :=
    blocks, and appends the blocks to the in-memory log. *)
 Definition Log__doCommit: val :=
   rec: "Log__doCommit" "l" "bufs" :=
-    lock.acquire (struct.loadF Log "mu" "l");;
+    Mutex__Lock (struct.loadF Log "mu" "l");;
     let: "blks" := Log__installBufs "l" "bufs" in
     util.DPrintf #3 #(str"doCommit: %v bufs
     ") #();;
     let: ("n", "ok") := wal.Walog__MemAppend (struct.loadF Log "log" "l") "blks" in
     struct.storeF Log "pos" "l" "n";;
-    lock.release (struct.loadF Log "mu" "l");;
+    Mutex__Unlock (struct.loadF Log "mu" "l");;
     ("n", "ok").
 
 (* Commit dirty bufs of the transaction into the log, and perhaps wait. *)
@@ -104,9 +104,9 @@ Definition Log__CommitWait: val :=
 (* NOTE: this is coarse-grained and unattached to the transaction ID *)
 Definition Log__Flush: val :=
   rec: "Log__Flush" "l" :=
-    lock.acquire (struct.loadF Log "mu" "l");;
+    Mutex__Lock (struct.loadF Log "mu" "l");;
     let: "pos" := struct.loadF Log "pos" "l" in
-    lock.release (struct.loadF Log "mu" "l");;
+    Mutex__Unlock (struct.loadF Log "mu" "l");;
     wal.Walog__Flush (struct.loadF Log "log" "l") "pos";;
     #true.
 

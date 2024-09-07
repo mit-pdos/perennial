@@ -39,7 +39,7 @@ Definition Open: val :=
     let: "numDirect" := min "size" maxDirect in
     struct.new Inode [
       "d" ::= "d";
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "size" ::= "size";
       "addr" ::= "addr";
       "direct" ::= SliceTake "direct" "numDirect";
@@ -82,29 +82,29 @@ Definition indOff: val :=
 
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     (if: "off" ≥ (struct.loadF Inode "size" "i")
     then
-      lock.release (struct.loadF Inode "m" "i");;
+      Mutex__Unlock (struct.loadF Inode "m" "i");;
       slice.nil
     else
       (if: "off" < maxDirect
       then
         let: "a" := SliceGet uint64T (struct.loadF Inode "direct" "i") "off" in
         let: "b" := disk.Read "a" in
-        lock.release (struct.loadF Inode "m" "i");;
+        Mutex__Unlock (struct.loadF Inode "m" "i");;
         "b"
       else
         let: "addrs" := readIndirect (struct.loadF Inode "d" "i") (SliceGet uint64T (struct.loadF Inode "indirect" "i") (indNum "off")) in
         let: "b" := disk.Read (SliceGet uint64T "addrs" (indOff "off")) in
-        lock.release (struct.loadF Inode "m" "i");;
+        Mutex__Unlock (struct.loadF Inode "m" "i");;
         "b")).
 
 Definition Inode__Size: val :=
   rec: "Inode__Size" "i" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "sz" := struct.loadF Inode "size" "i" in
-    lock.release (struct.loadF Inode "m" "i");;
+    Mutex__Unlock (struct.loadF Inode "m" "i");;
     "sz".
 
 Definition padInts: val :=
@@ -194,40 +194,40 @@ Definition Inode__appendIndirect: val :=
    Returns false on failure (if the allocator or inode are out of space) *)
 Definition Inode__Append: val :=
   rec: "Inode__Append" "i" "b" "allocator" :=
-    lock.acquire (struct.loadF Inode "m" "i");;
+    Mutex__Lock (struct.loadF Inode "m" "i");;
     let: "ok" := Inode__checkTotalSize "i" in
     (if: (~ "ok")
     then
-      lock.release (struct.loadF Inode "m" "i");;
+      Mutex__Unlock (struct.loadF Inode "m" "i");;
       #false
     else
       let: ("a", "ok2") := alloc.Allocator__Reserve "allocator" in
       (if: (~ "ok2")
       then
-        lock.release (struct.loadF Inode "m" "i");;
+        Mutex__Unlock (struct.loadF Inode "m" "i");;
         #false
       else
         disk.Write "a" "b";;
         let: "ok3" := Inode__appendDirect "i" "a" in
         (if: "ok3"
         then
-          lock.release (struct.loadF Inode "m" "i");;
+          Mutex__Unlock (struct.loadF Inode "m" "i");;
           #true
         else
           let: "ok4" := Inode__appendIndirect "i" "a" in
           (if: "ok4"
           then
-            lock.release (struct.loadF Inode "m" "i");;
+            Mutex__Unlock (struct.loadF Inode "m" "i");;
             #true
           else
             let: ("indAddr", "ok") := alloc.Allocator__Reserve "allocator" in
             (if: (~ "ok")
             then
-              lock.release (struct.loadF Inode "m" "i");;
+              Mutex__Unlock (struct.loadF Inode "m" "i");;
               alloc.Allocator__Free "allocator" "a";;
               #false
             else
               struct.storeF Inode "indirect" "i" (SliceAppend uint64T (struct.loadF Inode "indirect" "i") "indAddr");;
               Inode__writeIndirect "i" "indAddr" (SliceSingleton "a");;
-              lock.release (struct.loadF Inode "m" "i");;
+              Mutex__Unlock (struct.loadF Inode "m" "i");;
               #true))))).

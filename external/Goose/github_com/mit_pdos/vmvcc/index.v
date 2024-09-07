@@ -22,7 +22,7 @@ Definition MkIndex: val :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, (![uint64T] "i") < config.N_IDX_BUCKET); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "b" := struct.alloc IndexBucket (zero_val (struct.t IndexBucket)) in
-      struct.storeF IndexBucket "latch" "b" (lock.new #());;
+      struct.storeF IndexBucket "latch" "b" (newMutex #());;
       struct.storeF IndexBucket "m" "b" (NewMap uint64T ptrT #());;
       SliceSet ptrT (struct.loadF Index "buckets" "idx") (![uint64T] "i") "b";;
       Continue);;
@@ -42,16 +42,16 @@ Definition Index__GetTuple: val :=
   rec: "Index__GetTuple" "idx" "key" :=
     let: "b" := getBucket "key" in
     let: "bucket" := SliceGet ptrT (struct.loadF Index "buckets" "idx") "b" in
-    lock.acquire (struct.loadF IndexBucket "latch" "bucket");;
+    Mutex__Lock (struct.loadF IndexBucket "latch" "bucket");;
     let: ("tupleCur", "ok") := MapGet (struct.loadF IndexBucket "m" "bucket") "key" in
     (if: "ok"
     then
-      lock.release (struct.loadF IndexBucket "latch" "bucket");;
+      Mutex__Unlock (struct.loadF IndexBucket "latch" "bucket");;
       "tupleCur"
     else
       let: "tupleNew" := tuple.MkTuple #() in
       MapInsert (struct.loadF IndexBucket "m" "bucket") "key" "tupleNew";;
-      lock.release (struct.loadF IndexBucket "latch" "bucket");;
+      Mutex__Unlock (struct.loadF IndexBucket "latch" "bucket");;
       "tupleNew").
 
 (* @getKeys returns keys in the index. Note that the return key set is merely an
@@ -61,10 +61,10 @@ Definition Index__getKeys: val :=
     let: "keys" := ref (zero_val (slice.T uint64T)) in
     "keys" <-[slice.T uint64T] (NewSliceWithCap uint64T #0 #200);;
     ForSlice ptrT <> "bkt" (struct.loadF Index "buckets" "idx")
-      (lock.acquire (struct.loadF IndexBucket "latch" "bkt");;
+      (Mutex__Lock (struct.loadF IndexBucket "latch" "bkt");;
       MapIter (struct.loadF IndexBucket "m" "bkt") (λ: "k" <>,
         "keys" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "keys") "k"));;
-      lock.release (struct.loadF IndexBucket "latch" "bkt"));;
+      Mutex__Unlock (struct.loadF IndexBucket "latch" "bkt"));;
     ![slice.T uint64T] "keys".
 
 (* TODO: move this out to a separate GC module. *)

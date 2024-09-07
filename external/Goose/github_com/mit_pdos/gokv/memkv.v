@@ -388,9 +388,9 @@ Definition KVShardServer__put_inner: val :=
 
 Definition KVShardServer__PutRPC: val :=
   rec: "KVShardServer__PutRPC" "s" "args" "reply" :=
-    lock.acquire (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Lock (struct.loadF KVShardServer "mu" "s");;
     KVShardServer__put_inner "s" "args" "reply";;
-    lock.release (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Unlock (struct.loadF KVShardServer "mu" "s");;
     #().
 
 Definition KVShardServer__get_inner: val :=
@@ -407,9 +407,9 @@ Definition KVShardServer__get_inner: val :=
 
 Definition KVShardServer__GetRPC: val :=
   rec: "KVShardServer__GetRPC" "s" "args" "reply" :=
-    lock.acquire (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Lock (struct.loadF KVShardServer "mu" "s");;
     KVShardServer__get_inner "s" "args" "reply";;
-    lock.release (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Unlock (struct.loadF KVShardServer "mu" "s");;
     #().
 
 Definition KVShardServer__conditional_put_inner: val :=
@@ -431,9 +431,9 @@ Definition KVShardServer__conditional_put_inner: val :=
 
 Definition KVShardServer__ConditionalPutRPC: val :=
   rec: "KVShardServer__ConditionalPutRPC" "s" "args" "reply" :=
-    lock.acquire (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Lock (struct.loadF KVShardServer "mu" "s");;
     KVShardServer__conditional_put_inner "s" "args" "reply";;
-    lock.release (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Unlock (struct.loadF KVShardServer "mu" "s");;
     #().
 
 (* NOTE: easy to do a little optimization with shard migration:
@@ -450,14 +450,14 @@ Definition KVShardServer__install_shard_inner: val :=
 
 Definition KVShardServer__InstallShardRPC: val :=
   rec: "KVShardServer__InstallShardRPC" "s" "args" :=
-    lock.acquire (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Lock (struct.loadF KVShardServer "mu" "s");;
     KVShardServer__install_shard_inner "s" "args";;
-    lock.release (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Unlock (struct.loadF KVShardServer "mu" "s");;
     #().
 
 Definition KVShardServer__MoveShardRPC: val :=
   rec: "KVShardServer__MoveShardRPC" "s" "args" :=
-    lock.acquire (struct.loadF KVShardServer "mu" "s");;
+    Mutex__Lock (struct.loadF KVShardServer "mu" "s");;
     let: (<>, "ok") := MapGet (struct.loadF KVShardServer "peers" "s") (struct.loadF MoveShardRequest "Dst" "args") in
     (if: (~ "ok")
     then
@@ -466,20 +466,20 @@ Definition KVShardServer__MoveShardRPC: val :=
     else #());;
     (if: (~ (SliceGet boolT (struct.loadF KVShardServer "shardMap" "s") (struct.loadF MoveShardRequest "Sid" "args")))
     then
-      lock.release (struct.loadF KVShardServer "mu" "s");;
+      Mutex__Unlock (struct.loadF KVShardServer "mu" "s");;
       #()
     else
       let: "kvs" := SliceGet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") (struct.loadF MoveShardRequest "Sid" "args") in
       SliceSet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") (struct.loadF MoveShardRequest "Sid" "args") (NewMap uint64T (slice.T byteT) #());;
       SliceSet boolT (struct.loadF KVShardServer "shardMap" "s") (struct.loadF MoveShardRequest "Sid" "args") #false;;
       KVShardClerk__InstallShard (Fst (MapGet (struct.loadF KVShardServer "peers" "s") (struct.loadF MoveShardRequest "Dst" "args"))) (struct.loadF MoveShardRequest "Sid" "args") "kvs";;
-      lock.release (struct.loadF KVShardServer "mu" "s");;
+      Mutex__Unlock (struct.loadF KVShardServer "mu" "s");;
       #()).
 
 Definition MakeKVShardServer: val :=
   rec: "MakeKVShardServer" "is_init" :=
     let: "srv" := struct.alloc KVShardServer (zero_val (struct.t KVShardServer)) in
-    struct.storeF KVShardServer "mu" "srv" (lock.new #());;
+    struct.storeF KVShardServer "mu" "srv" (newMutex #());;
     struct.storeF KVShardServer "erpc" "srv" (erpc.MakeServer #());;
     struct.storeF KVShardServer "shardMap" "srv" (NewSlice boolT NSHARD);;
     struct.storeF KVShardServer "kvss" "srv" (NewSlice KvMap NSHARD);;
@@ -554,7 +554,7 @@ Definition KVCoord := struct.decl [
 
 Definition KVCoord__AddServerRPC: val :=
   rec: "KVCoord__AddServerRPC" "c" "newhost" :=
-    lock.acquire (struct.loadF KVCoord "mu" "c");;
+    Mutex__Lock (struct.loadF KVCoord "mu" "c");;
     (* log.Printf("Rebalancing\n") *)
     MapInsert (struct.loadF KVCoord "hostShards" "c") "newhost" #0;;
     let: "numHosts" := MapLen (struct.loadF KVCoord "hostShards" "c") in
@@ -584,20 +584,20 @@ Definition KVCoord__AddServerRPC: val :=
       else #()));;
     (* log.Println("Done rebalancing") *)
     (* log.Printf("%+v", c.hostShards) *)
-    lock.release (struct.loadF KVCoord "mu" "c");;
+    Mutex__Unlock (struct.loadF KVCoord "mu" "c");;
     #().
 
 Definition KVCoord__GetShardMapRPC: val :=
   rec: "KVCoord__GetShardMapRPC" "c" <> "rep" :=
-    lock.acquire (struct.loadF KVCoord "mu" "c");;
+    Mutex__Lock (struct.loadF KVCoord "mu" "c");;
     "rep" <-[slice.T byteT] (encodeShardMap (struct.fieldRef KVCoord "shardMap" "c"));;
-    lock.release (struct.loadF KVCoord "mu" "c");;
+    Mutex__Unlock (struct.loadF KVCoord "mu" "c");;
     #().
 
 Definition MakeKVCoordServer: val :=
   rec: "MakeKVCoordServer" "initserver" :=
     let: "s" := struct.alloc KVCoord (zero_val (struct.t KVCoord)) in
-    struct.storeF KVCoord "mu" "s" (lock.new #());;
+    struct.storeF KVCoord "mu" "s" (newMutex #());;
     struct.storeF KVCoord "shardMap" "s" (NewSlice HostName NSHARD);;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, (![uint64T] "i") < NSHARD); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
@@ -724,23 +724,23 @@ Definition KVClerk := struct.decl [
 
 Definition KVClerk__getSeqClerk: val :=
   rec: "KVClerk__getSeqClerk" "p" :=
-    lock.acquire (struct.loadF KVClerk "mu" "p");;
+    Mutex__Lock (struct.loadF KVClerk "mu" "p");;
     let: "n" := slice.len (struct.loadF KVClerk "freeClerks" "p") in
     (if: "n" = #0
     then
-      lock.release (struct.loadF KVClerk "mu" "p");;
+      Mutex__Unlock (struct.loadF KVClerk "mu" "p");;
       MakeSeqKVClerk (struct.loadF KVClerk "coord" "p") (connman.MakeConnMan #())
     else
       let: "ck" := SliceGet ptrT (struct.loadF KVClerk "freeClerks" "p") ("n" - #1) in
       struct.storeF KVClerk "freeClerks" "p" (SliceTake (struct.loadF KVClerk "freeClerks" "p") ("n" - #1));;
-      lock.release (struct.loadF KVClerk "mu" "p");;
+      Mutex__Unlock (struct.loadF KVClerk "mu" "p");;
       "ck").
 
 Definition KVClerk__putSeqClerk: val :=
   rec: "KVClerk__putSeqClerk" "p" "ck" :=
-    Fork (lock.acquire (struct.loadF KVClerk "mu" "p");;
+    Fork (Mutex__Lock (struct.loadF KVClerk "mu" "p");;
           struct.storeF KVClerk "freeClerks" "p" (SliceAppend ptrT (struct.loadF KVClerk "freeClerks" "p") "ck");;
-          lock.release (struct.loadF KVClerk "mu" "p"));;
+          Mutex__Unlock (struct.loadF KVClerk "mu" "p"));;
     #().
 
 (* the hope is that after a while, the number of clerks needed to maintain a
@@ -789,7 +789,7 @@ Definition KVClerk__MGet: val :=
 Definition MakeKVClerk: val :=
   rec: "MakeKVClerk" "coord" "cm" :=
     let: "p" := struct.alloc KVClerk (zero_val (struct.t KVClerk)) in
-    struct.storeF KVClerk "mu" "p" (lock.new #());;
+    struct.storeF KVClerk "mu" "p" (newMutex #());;
     struct.storeF KVClerk "coord" "p" "coord";;
     struct.storeF KVClerk "cm" "p" "cm";;
     struct.storeF KVClerk "freeClerks" "p" (NewSlice ptrT #0);;

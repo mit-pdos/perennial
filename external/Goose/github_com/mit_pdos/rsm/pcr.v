@@ -174,9 +174,9 @@ Definition Replica__queryTxnTermination: val :=
 
 Definition Replica__QueryTxnTermination: val :=
   rec: "Replica__QueryTxnTermination" "rp" "ts" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "terminated" := Replica__queryTxnTermination "rp" "ts" in
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "terminated".
 
 (* Arguments:
@@ -312,10 +312,10 @@ Definition Replica__refresh: val :=
 
 Definition Replica__Validate: val :=
   rec: "Replica__Validate" "rp" "ts" "rank" "pwrs" "ptgs" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "res" := Replica__validate "rp" "ts" "pwrs" "ptgs" in
     Replica__refresh "rp" "ts" "rank";;
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
 
 (* Arguments:
@@ -365,10 +365,10 @@ Definition Replica__fastPrepare: val :=
 
 Definition Replica__FastPrepare: val :=
   rec: "Replica__FastPrepare" "rp" "ts" "pwrs" "ptgs" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "res" := Replica__fastPrepare "rp" "ts" "pwrs" "ptgs" in
     Replica__refresh "rp" "ts" #0;;
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
 
 (* Accept the prepare decision for @ts at @rank, if @rank is most recent.
@@ -406,18 +406,18 @@ Definition Replica__acceptPreparedness: val :=
 
 Definition Replica__Prepare: val :=
   rec: "Replica__Prepare" "rp" "ts" "rank" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "res" := Replica__acceptPreparedness "rp" "ts" "rank" #true in
     Replica__refresh "rp" "ts" "rank";;
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
 
 Definition Replica__Unprepare: val :=
   rec: "Replica__Unprepare" "rp" "ts" "rank" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "res" := Replica__acceptPreparedness "rp" "ts" "rank" #false in
     Replica__refresh "rp" "ts" "rank";;
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
 
 Definition Replica__inquire: val :=
@@ -450,10 +450,10 @@ Definition Replica__inquire: val :=
 
 Definition Replica__Inquire: val :=
   rec: "Replica__Inquire" "rp" "ts" "rank" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: (("pp", "vd"), "res") := Replica__inquire "rp" "ts" "rank" in
     Replica__refresh "rp" "ts" "rank";;
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     ("pp", "vd", "res").
 
 Definition Replica__query: val :=
@@ -472,10 +472,10 @@ Definition Replica__query: val :=
 
 Definition Replica__Query: val :=
   rec: "Replica__Query" "rp" "ts" "rank" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "res" := Replica__query "rp" "ts" "rank" in
     Replica__refresh "rp" "ts" "rank";;
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
 
 Definition Replica__multiwrite: val :=
@@ -539,16 +539,16 @@ Definition Replica__apply: val :=
 
 Definition Replica__Start: val :=
   rec: "Replica__Start" "rp" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "lsn" := std.SumAssumeNoOverflow (struct.loadF Replica "lsna" "rp") #1 in
       let: ("cmd", "ok") := TxnLog__Lookup (struct.loadF Replica "txnlog" "rp") "lsn" in
       (if: (~ "ok")
       then
-        lock.release (struct.loadF Replica "mu" "rp");;
+        Mutex__Unlock (struct.loadF Replica "mu" "rp");;
         time.Sleep (#1 * #1000000);;
-        lock.acquire (struct.loadF Replica "mu" "rp");;
+        Mutex__Lock (struct.loadF Replica "mu" "rp");;
         Continue
       else
         Replica__apply "rp" "cmd";;
@@ -630,9 +630,9 @@ Definition GroupCoordinator__action: val :=
 
 Definition GroupCoordinator__Action: val :=
   rec: "GroupCoordinator__Action" "gcoord" "rid" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     let: "act" := GroupCoordinator__action "gcoord" "rid" in
-    lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     "act".
 
 Definition GroupCoordinator__tryResign: val :=
@@ -737,9 +737,9 @@ Definition GroupCoordinator__processFastPrepareResult: val :=
 
 Definition GroupCoordinator__ProcessFastPrepareResult: val :=
   rec: "GroupCoordinator__ProcessFastPrepareResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     GroupCoordinator__processFastPrepareResult "gcoord" "rid" "res";;
-    lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     #().
 
 Definition GroupCoordinator__processValidateResult: val :=
@@ -759,17 +759,17 @@ Definition GroupCoordinator__processValidateResult: val :=
 
 Definition GroupCoordinator__ProcessValidateResult: val :=
   rec: "GroupCoordinator__ProcessValidateResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     GroupCoordinator__processValidateResult "gcoord" "rid" "res";;
-    lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     #().
 
 Definition GroupCoordinator__ProcessPrepareResult: val :=
   rec: "GroupCoordinator__ProcessPrepareResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     (if: GroupCoordinator__tryResign "gcoord" "res"
     then
-      lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
       #()
     else
       MapInsert (struct.loadF GroupCoordinator "sresps" "gcoord") "rid" #true;;
@@ -777,15 +777,15 @@ Definition GroupCoordinator__ProcessPrepareResult: val :=
       (if: GroupCoordinator__cquorum "gcoord" "n"
       then struct.storeF GroupCoordinator "phase" "gcoord" GCOORD_PREPARED
       else #());;
-      lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
       #()).
 
 Definition GroupCoordinator__ProcessUnprepareResult: val :=
   rec: "GroupCoordinator__ProcessUnprepareResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     (if: GroupCoordinator__tryResign "gcoord" "res"
     then
-      lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
       #()
     else
       MapInsert (struct.loadF GroupCoordinator "sresps" "gcoord") "rid" #true;;
@@ -793,28 +793,28 @@ Definition GroupCoordinator__ProcessUnprepareResult: val :=
       (if: GroupCoordinator__cquorum "gcoord" "n"
       then struct.storeF GroupCoordinator "phase" "gcoord" GCOORD_ABORTED
       else #());;
-      lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
       #()).
 
 Definition GroupCoordinator__ProcessQueryResult: val :=
   rec: "GroupCoordinator__ProcessQueryResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     GroupCoordinator__tryResign "gcoord" "res";;
-    lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     #().
 
 Definition GroupCoordinator__PrepareDone: val :=
   rec: "GroupCoordinator__PrepareDone" "gcoord" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     let: "done" := GCOORD_PREPARED ≤ (struct.loadF GroupCoordinator "phase" "gcoord") in
-    lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     "done".
 
 Definition GroupCoordinator__GetPhase: val :=
   rec: "GroupCoordinator__GetPhase" "gcoord" :=
-    lock.acquire (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     let: "phase" := struct.loadF GroupCoordinator "phase" "gcoord" in
-    lock.release (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     "phase".
 
 Definition GroupCoordinator__changeLeader: val :=
@@ -1006,9 +1006,9 @@ Definition GroupReader__replicaDone: val :=
 
 Definition GroupReader__ReplicaDone: val :=
   rec: "GroupReader__ReplicaDone" "grd" "rid" "key" :=
-    lock.acquire (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Lock (struct.loadF GroupReader "mu" "grd");;
     let: "ready" := GroupReader__replicaDone "grd" "rid" "key" in
-    lock.release (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Unlock (struct.loadF GroupReader "mu" "grd");;
     "ready".
 
 Definition GroupReader__processReadResult: val :=
@@ -1034,9 +1034,9 @@ Definition GroupReader__processReadResult: val :=
 
 Definition GroupReader__ProcessReadResult: val :=
   rec: "GroupReader__ProcessReadResult" "grd" "rid" "key" "ver" :=
-    lock.acquire (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Lock (struct.loadF GroupReader "mu" "grd");;
     GroupReader__processReadResult "grd" "rid" "key" "ver";;
-    lock.release (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Unlock (struct.loadF GroupReader "mu" "grd");;
     #().
 
 Definition GroupReader__BeginSession: val :=
@@ -1054,9 +1054,9 @@ Definition GroupReader__BeginSession: val :=
 
 Definition GroupReader__Done: val :=
   rec: "GroupReader__Done" "grd" "key" :=
-    lock.acquire (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Lock (struct.loadF GroupReader "mu" "grd");;
     let: (<>, "final") := MapGet (struct.loadF GroupReader "rds" "grd") "key" in
-    lock.release (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Unlock (struct.loadF GroupReader "mu" "grd");;
     "final".
 
 Definition GroupReader__Read: val :=
@@ -1067,9 +1067,9 @@ Definition GroupReader__Read: val :=
     Skip;;
     (for: (λ: <>, (~ (GroupReader__Done "grd" "key"))); (λ: <>, Skip) := λ: <>,
       Continue);;
-    lock.acquire (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Lock (struct.loadF GroupReader "mu" "grd");;
     let: "v" := Fst (MapGet (struct.loadF GroupReader "rds" "grd") "key") in
-    lock.release (struct.loadF GroupReader "mu" "grd");;
+    Mutex__Unlock (struct.loadF GroupReader "mu" "grd");;
     "v".
 
 Definition Txn__Read: val :=
@@ -1225,9 +1225,9 @@ Definition BackupGroupCoordinator__action: val :=
 
 Definition BackupGroupCoordinator__Action: val :=
   rec: "BackupGroupCoordinator__Action" "gcoord" "rid" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     let: "act" := BackupGroupCoordinator__action "gcoord" "rid" in
-    lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     "act".
 
 Definition BackupGroupCoordinator__fquorum: val :=
@@ -1265,10 +1265,10 @@ Definition BackupGroupCoordinator__tryResign: val :=
 
 Definition BackupGroupCoordinator__ProcessPrepareResult: val :=
   rec: "BackupGroupCoordinator__ProcessPrepareResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     (if: BackupGroupCoordinator__tryResign "gcoord" "res"
     then
-      lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
       #()
     else
       MapInsert (struct.loadF BackupGroupCoordinator "resps" "gcoord") "rid" #true;;
@@ -1276,15 +1276,15 @@ Definition BackupGroupCoordinator__ProcessPrepareResult: val :=
       (if: BackupGroupCoordinator__cquorum "gcoord" "n"
       then struct.storeF BackupGroupCoordinator "phase" "gcoord" BGCOORD_PREPARED
       else #());;
-      lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
       #()).
 
 Definition BackupGroupCoordinator__ProcessUnprepareResult: val :=
   rec: "BackupGroupCoordinator__ProcessUnprepareResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     (if: BackupGroupCoordinator__tryResign "gcoord" "res"
     then
-      lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
       #()
     else
       MapInsert (struct.loadF BackupGroupCoordinator "resps" "gcoord") "rid" #true;;
@@ -1292,7 +1292,7 @@ Definition BackupGroupCoordinator__ProcessUnprepareResult: val :=
       (if: BackupGroupCoordinator__cquorum "gcoord" "n"
       then struct.storeF BackupGroupCoordinator "phase" "gcoord" BGCOORD_ABORTED
       else #());;
-      lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+      Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
       #()).
 
 (* Return value:
@@ -1359,9 +1359,9 @@ Definition BackupGroupCoordinator__processInquireResult: val :=
 
 Definition BackupGroupCoordinator__ProcessInquireResult: val :=
   rec: "BackupGroupCoordinator__ProcessInquireResult" "gcoord" "rid" "pp" "vd" "res" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     BackupGroupCoordinator__processInquireResult "gcoord" "rid" "pp" "vd" "res";;
-    lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     #().
 
 Definition BackupGroupCoordinator__processValidateResult: val :=
@@ -1385,16 +1385,16 @@ Definition BackupGroupCoordinator__processValidateResult: val :=
 
 Definition BackupGroupCoordinator__ProcessValidateResult: val :=
   rec: "BackupGroupCoordinator__ProcessValidateResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     BackupGroupCoordinator__processValidateResult "gcoord" "rid" "res";;
-    lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     #().
 
 Definition BackupGroupCoordinator__ProcessQueryResult: val :=
   rec: "BackupGroupCoordinator__ProcessQueryResult" "gcoord" "rid" "res" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     BackupGroupCoordinator__tryResign "gcoord" "res";;
-    lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     #().
 
 Definition BackupGroupCoordinator__BeginSession: val :=
@@ -1435,16 +1435,16 @@ Definition BackupGroupCoordinator__BeginSession: val :=
 
 Definition BackupGroupCoordinator__InquireDone: val :=
   rec: "BackupGroupCoordinator__InquireDone" "gcoord" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     let: "done" := BGCOORD_PREPARED ≤ (struct.loadF BackupGroupCoordinator "phase" "gcoord") in
-    lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     "done".
 
 Definition BackupGroupCoordinator__GetPhase: val :=
   rec: "BackupGroupCoordinator__GetPhase" "gcoord" :=
-    lock.acquire (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     let: "phase" := struct.loadF BackupGroupCoordinator "phase" "gcoord" in
-    lock.release (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     "phase".
 
 Definition BackupGroupCoordinator__changeLeader: val :=

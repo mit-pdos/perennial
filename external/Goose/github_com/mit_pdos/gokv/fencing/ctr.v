@@ -152,37 +152,37 @@ Definition Server := struct.decl [
 
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (struct.loadF PutArgs "epoch" "args") < (struct.loadF Server "lastEpoch" "s")
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       EStale
     else
       struct.storeF Server "lastEpoch" "s" (struct.loadF PutArgs "epoch" "args");;
       struct.storeF Server "v" "s" (struct.loadF PutArgs "v" "args");;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       ENone).
 
 Definition Server__Get: val :=
   rec: "Server__Get" "s" "epoch" "reply" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     struct.storeF GetReply "err" "reply" ENone;;
     (if: "epoch" < (struct.loadF Server "lastEpoch" "s")
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       struct.storeF GetReply "err" "reply" EStale;;
       #()
     else
       struct.storeF Server "lastEpoch" "s" "epoch";;
       struct.storeF GetReply "val" "reply" (struct.loadF Server "v" "s");;
       Linearize;;
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       #()).
 
 Definition StartServer: val :=
   rec: "StartServer" "me" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     struct.storeF Server "e" "s" (erpc.MakeServer #());;
     struct.storeF Server "v" "s" #0;;
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in

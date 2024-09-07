@@ -24,15 +24,15 @@ Definition MakeServer: val :=
       "p" ::= "p";
       "nextTid" ::= #1
     ] in
-    struct.storeF Server "mu" "txnMgr" (lock.new #());;
+    struct.storeF Server "mu" "txnMgr" (newMutex #());;
     "txnMgr".
 
 Definition Server__New: val :=
   rec: "Server__New" "txnMgr" :=
-    lock.acquire (struct.loadF Server "mu" "txnMgr");;
+    Mutex__Lock (struct.loadF Server "mu" "txnMgr");;
     let: "tid" := struct.loadF Server "nextTid" "txnMgr" in
     struct.storeF Server "nextTid" "txnMgr" ((struct.loadF Server "nextTid" "txnMgr") + #1);;
-    lock.release (struct.loadF Server "mu" "txnMgr");;
+    Mutex__Unlock (struct.loadF Server "mu" "txnMgr");;
     "tid".
 
 End code.

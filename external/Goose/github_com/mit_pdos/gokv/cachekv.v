@@ -42,22 +42,22 @@ Definition Make: val :=
   rec: "Make" "kv" :=
     struct.new CacheKv [
       "kv" ::= "kv";
-      "mu" ::= lock.new #();
+      "mu" ::= newMutex #();
       "cache" ::= NewMap stringT (struct.t cacheValue) #()
     ].
 
 Definition CacheKv__Get: val :=
   rec: "CacheKv__Get" "k" "key" :=
-    lock.acquire (struct.loadF CacheKv "mu" "k");;
+    Mutex__Lock (struct.loadF CacheKv "mu" "k");;
     let: ("cv", "ok") := MapGet (struct.loadF CacheKv "cache" "k") "key" in
     let: (<>, "high") := grove_ffi.GetTimeRange #() in
     (if: "ok" && ("high" < (struct.get cacheValue "l" "cv"))
     then
-      lock.release (struct.loadF CacheKv "mu" "k");;
+      Mutex__Unlock (struct.loadF CacheKv "mu" "k");;
       struct.get cacheValue "v" "cv"
     else
       MapDelete (struct.loadF CacheKv "cache" "k") "key";;
-      lock.release (struct.loadF CacheKv "mu" "k");;
+      Mutex__Unlock (struct.loadF CacheKv "mu" "k");;
       struct.get cacheValue "v" (DecodeValue ((struct.loadF kv.Kv "Get" (struct.loadF CacheKv "kv" "k")) "key"))).
 
 Definition CacheKv__GetAndCache: val :=
@@ -74,7 +74,7 @@ Definition CacheKv__GetAndCache: val :=
       ])) in
       (if: "resp" = #(str"ok")
       then
-        lock.acquire (struct.loadF CacheKv "mu" "k");;
+        Mutex__Lock (struct.loadF CacheKv "mu" "k");;
         MapInsert (struct.loadF CacheKv "cache" "k") "key" (struct.mk cacheValue [
           "v" ::= struct.get cacheValue "v" "old";
           "l" ::= "newLeaseExpiration"
@@ -82,7 +82,7 @@ Definition CacheKv__GetAndCache: val :=
         Break
       else Continue));;
     let: "ret" := struct.get cacheValue "v" (Fst (MapGet (struct.loadF CacheKv "cache" "k") "key")) in
-    lock.release (struct.loadF CacheKv "mu" "k");;
+    Mutex__Unlock (struct.loadF CacheKv "mu" "k");;
     "ret".
 
 Definition CacheKv__Put: val :=

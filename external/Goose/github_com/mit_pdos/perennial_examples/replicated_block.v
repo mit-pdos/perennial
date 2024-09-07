@@ -20,7 +20,7 @@ Definition Open: val :=
     struct.new RepBlock [
       "d" ::= "d";
       "addr" ::= "addr";
-      "m" ::= lock.new #()
+      "m" ::= newMutex #()
     ].
 
 (* readAddr returns the address to read from
@@ -34,9 +34,9 @@ Definition RepBlock__readAddr: val :=
 
 Definition RepBlock__Read: val :=
   rec: "RepBlock__Read" "rb" "primary" :=
-    lock.acquire (struct.loadF RepBlock "m" "rb");;
+    Mutex__Lock (struct.loadF RepBlock "m" "rb");;
     let: "b" := disk.Read (RepBlock__readAddr "rb" "primary") in
-    lock.release (struct.loadF RepBlock "m" "rb");;
+    Mutex__Unlock (struct.loadF RepBlock "m" "rb");;
     "b".
 
 Definition RepBlock__write: val :=
@@ -47,7 +47,7 @@ Definition RepBlock__write: val :=
 
 Definition RepBlock__Write: val :=
   rec: "RepBlock__Write" "rb" "b" :=
-    lock.acquire (struct.loadF RepBlock "m" "rb");;
+    Mutex__Lock (struct.loadF RepBlock "m" "rb");;
     RepBlock__write "rb" "b";;
-    lock.release (struct.loadF RepBlock "m" "rb");;
+    Mutex__Unlock (struct.loadF RepBlock "m" "rb");;
     #().

@@ -21,11 +21,11 @@ Definition CtrServer__MakeDurable: val :=
 
 Definition CtrServer__FetchAndIncrement: val :=
   rec: "CtrServer__FetchAndIncrement" "s" :=
-    lock.acquire (struct.loadF CtrServer "mu" "s");;
+    Mutex__Lock (struct.loadF CtrServer "mu" "s");;
     let: "ret" := struct.loadF CtrServer "val" "s" in
     struct.storeF CtrServer "val" "s" ((struct.loadF CtrServer "val" "s") + #1);;
     CtrServer__MakeDurable "s";;
-    lock.release (struct.loadF CtrServer "mu" "s");;
+    Mutex__Unlock (struct.loadF CtrServer "mu" "s");;
     "ret".
 
 (* the boot/main() function for the server *)
@@ -33,7 +33,7 @@ Definition main: val :=
   rec: "main" <> :=
     let: "me" := #53021371269120 in
     let: "s" := struct.alloc CtrServer (zero_val (struct.t CtrServer)) in
-    struct.storeF CtrServer "mu" "s" (lock.new #());;
+    struct.storeF CtrServer "mu" "s" (newMutex #());;
     struct.storeF CtrServer "filename" "s" #(str"ctr");;
     let: "a" := grove_ffi.FileRead (struct.loadF CtrServer "filename" "s") in
     (if: (slice.len "a") = #0

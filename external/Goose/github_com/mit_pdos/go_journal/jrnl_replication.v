@@ -19,7 +19,7 @@ Definition Open: val :=
   rec: "Open" "txn" "a" :=
     struct.new RepBlock [
       "txn" ::= "txn";
-      "m" ::= lock.new #();
+      "m" ::= newMutex #();
       "a0" ::= addr.MkAddr "a" #0;
       "a1" ::= addr.MkAddr ("a" + #1) #0
     ].
@@ -28,20 +28,20 @@ Definition Open: val :=
    but that's really impossible since it's an empty transaction *)
 Definition RepBlock__Read: val :=
   rec: "RepBlock__Read" "rb" :=
-    lock.acquire (struct.loadF RepBlock "m" "rb");;
+    Mutex__Lock (struct.loadF RepBlock "m" "rb");;
     let: "tx" := jrnl.Begin (struct.loadF RepBlock "txn" "rb") in
     let: "buf" := jrnl.Op__ReadBuf "tx" (struct.loadF RepBlock "a0" "rb") (#8 * disk.BlockSize) in
     let: "b" := util.CloneByteSlice (struct.loadF buf.Buf "Data" "buf") in
     let: "ok" := jrnl.Op__CommitWait "tx" #true in
-    lock.release (struct.loadF RepBlock "m" "rb");;
+    Mutex__Unlock (struct.loadF RepBlock "m" "rb");;
     ("b", "ok").
 
 Definition RepBlock__Write: val :=
   rec: "RepBlock__Write" "rb" "b" :=
-    lock.acquire (struct.loadF RepBlock "m" "rb");;
+    Mutex__Lock (struct.loadF RepBlock "m" "rb");;
     let: "tx" := jrnl.Begin (struct.loadF RepBlock "txn" "rb") in
     jrnl.Op__OverWrite "tx" (struct.loadF RepBlock "a0" "rb") (#8 * disk.BlockSize) "b";;
     jrnl.Op__OverWrite "tx" (struct.loadF RepBlock "a1" "rb") (#8 * disk.BlockSize) "b";;
     let: "ok" := jrnl.Op__CommitWait "tx" #true in
-    lock.release (struct.loadF RepBlock "m" "rb");;
+    Mutex__Unlock (struct.loadF RepBlock "m" "rb");;
     "ok".

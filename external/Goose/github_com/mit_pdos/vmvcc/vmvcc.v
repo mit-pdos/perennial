@@ -25,7 +25,7 @@ Definition MkDB: val :=
     let: "db" := struct.new DB [
       "proph" ::= "proph"
     ] in
-    struct.storeF DB "latch" "db" (lock.new #());;
+    struct.storeF DB "latch" "db" (newMutex #());;
     struct.storeF DB "sites" "db" (NewSlice ptrT config.N_TXN_SITES);;
     tid.GenTID #0;;
     let: "i" := ref_to uint64T #0 in
@@ -48,7 +48,7 @@ Definition Txn := struct.decl [
 
 Definition DB__NewTxn: val :=
   rec: "DB__NewTxn" "db" :=
-    lock.acquire (struct.loadF DB "latch" "db");;
+    Mutex__Lock (struct.loadF DB "latch" "db");;
     let: "txn" := struct.new Txn [
       "proph" ::= struct.loadF DB "proph" "db"
     ] in
@@ -59,7 +59,7 @@ Definition DB__NewTxn: val :=
     (if: (struct.loadF DB "sid" "db") ≥ config.N_TXN_SITES
     then struct.storeF DB "sid" "db" #0
     else #());;
-    lock.release (struct.loadF DB "latch" "db");;
+    Mutex__Unlock (struct.loadF DB "latch" "db");;
     "txn".
 
 (* @GetSafeTS returns a lower bound on the active/future transaction IDs. *)

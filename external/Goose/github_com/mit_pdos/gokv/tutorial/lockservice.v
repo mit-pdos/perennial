@@ -82,10 +82,10 @@ Definition Server := struct.decl [
 
 Definition Server__getFreshNum: val :=
   rec: "Server__getFreshNum" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: "n" := struct.loadF Server "nextId" "s" in
     struct.storeF Server "nextId" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextId" "s") #1);;
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     "n".
 
 Definition StatusGranted : expr := #0.
@@ -97,7 +97,7 @@ Definition StatusStale : expr := #1.
 Definition Server__tryAcquire: val :=
   rec: "Server__tryAcquire" "s" "id" :=
     let: "ret" := ref (zero_val uint64T) in
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (struct.loadF Server "holder" "s") > "id"
     then "ret" <-[uint64T] StatusStale
     else
@@ -111,23 +111,23 @@ Definition Server__tryAcquire: val :=
         struct.storeF Server "locked" "s" #true;;
         (* log.Printf("Lock held by %d", id) *)
         "ret" <-[uint64T] StatusGranted));;
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     ![uint64T] "ret".
 
 Definition Server__release: val :=
   rec: "Server__release" "s" "id" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (struct.loadF Server "holder" "s") = "id"
     then struct.storeF Server "locked" "s" #false
     else #());;
     (* log.Printf("Lock released by %d", id) *)
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     #().
 
 Definition MakeServer: val :=
   rec: "MakeServer" <> :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     "s".
 
 (* 3_lock_rpc_server.gb.go *)

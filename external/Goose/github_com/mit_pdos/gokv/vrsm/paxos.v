@@ -249,10 +249,10 @@ Definition Server := struct.decl [
 
 Definition Server__withLock: val :=
   rec: "Server__withLock" "s" "f" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     "f" (struct.loadF Server "ps" "s");;
     let: "waitFn" := asyncfile.AsyncFile__Write (struct.loadF Server "storage" "s") (encodePaxosState (struct.loadF Server "ps" "s")) in
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     "waitFn" #();;
     #().
 
@@ -313,38 +313,38 @@ Definition Server__enterNewEpoch: val :=
 Definition Server__TryBecomeLeader: val :=
   rec: "Server__TryBecomeLeader" "s" :=
     (* log.Println("started trybecomeleader") *)
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: struct.loadF paxosState "isLeader" (struct.loadF Server "ps" "s")
     then
       (* log.Println("already leader") *)
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       #()
     else
       let: "clerks" := struct.loadF Server "clerks" "s" in
       let: "args" := struct.new enterNewEpochArgs [
         "epoch" ::= (struct.loadF paxosState "epoch" (struct.loadF Server "ps" "s")) + #1
       ] in
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       let: "numReplies" := ref_to uint64T #0 in
       let: "replies" := NewSlice ptrT (slice.len "clerks") in
-      let: "mu" := lock.new #() in
-      let: "numReplies_cond" := lock.newCond "mu" in
+      let: "mu" := newMutex #() in
+      let: "numReplies_cond" := NewCond "mu" in
       let: "n" := slice.len "clerks" in
       ForSlice ptrT "i" "ck" "clerks"
         (let: "ck" := "ck" in
         let: "i" := "i" in
         Fork (let: "reply" := singleClerk__enterNewEpoch "ck" "args" in
-              lock.acquire "mu";;
+              Mutex__Lock "mu";;
               "numReplies" <-[uint64T] ((![uint64T] "numReplies") + #1);;
               SliceSet ptrT "replies" "i" "reply";;
               (if: (#2 * (![uint64T] "numReplies")) > "n"
-              then lock.condSignal "numReplies_cond"
+              then Cond__Signal "numReplies_cond"
               else #());;
-              lock.release "mu"));;
-      lock.acquire "mu";;
+              Mutex__Unlock "mu"));;
+      Mutex__Lock "mu";;
       Skip;;
       (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ "n"); (λ: <>, Skip) := λ: <>,
-        lock.condWait "numReplies_cond";;
+        Cond__Wait "numReplies_cond";;
         Continue);;
       let: "latestReply" := ref (zero_val ptrT) in
       let: "numSuccesses" := ref_to uint64T #0 in
@@ -379,20 +379,20 @@ Definition Server__TryBecomeLeader: val :=
             #()
           else #())
           );;
-        lock.release "mu";;
+        Mutex__Unlock "mu";;
         #()
       else
-        lock.release "mu";;
+        Mutex__Unlock "mu";;
         (* log.Println("failed becomeleader") *)
         #())).
 
 Definition Server__TryAcquire: val :=
   rec: "Server__TryAcquire" "s" :=
     let: "retErr" := ref (zero_val Error) in
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     (if: (~ (struct.loadF paxosState "isLeader" (struct.loadF Server "ps" "s")))
     then
-      lock.release (struct.loadF Server "mu" "s");;
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
       let: "n" := ref (zero_val ptrT) in
       (ENotLeader, ![ptrT] "n", slice.nil)
     else
@@ -404,27 +404,27 @@ Definition Server__TryAcquire: val :=
           "state" ::= struct.loadF paxosState "state" (struct.loadF Server "ps" "s")
         ] in
         let: "waitFn" := asyncfile.AsyncFile__Write (struct.loadF Server "storage" "s") (encodePaxosState (struct.loadF Server "ps" "s")) in
-        lock.release (struct.loadF Server "mu" "s");;
+        Mutex__Unlock (struct.loadF Server "mu" "s");;
         "waitFn" #();;
         let: "clerks" := struct.loadF Server "clerks" "s" in
         let: "numReplies" := ref_to uint64T #0 in
         let: "replies" := NewSlice ptrT (slice.len "clerks") in
-        let: "mu" := lock.new #() in
-        let: "numReplies_cond" := lock.newCond "mu" in
+        let: "mu" := newMutex #() in
+        let: "numReplies_cond" := NewCond "mu" in
         let: "n" := slice.len "clerks" in
         ForSlice ptrT "i" "ck" "clerks"
           (Fork (let: "reply" := singleClerk__applyAsFollower "ck" "args" in
-                lock.acquire "mu";;
+                Mutex__Lock "mu";;
                 "numReplies" <-[uint64T] ((![uint64T] "numReplies") + #1);;
                 SliceSet ptrT "replies" "i" "reply";;
                 (if: (#2 * (![uint64T] "numReplies")) > "n"
-                then lock.condSignal "numReplies_cond"
+                then Cond__Signal "numReplies_cond"
                 else #());;
-                lock.release "mu"));;
-        lock.acquire "mu";;
+                Mutex__Unlock "mu"));;
+        Mutex__Lock "mu";;
         Skip;;
         (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ "n"); (λ: <>, Skip) := λ: <>,
-          lock.condWait "numReplies_cond";;
+          Cond__Wait "numReplies_cond";;
           Continue);;
         let: "numSuccesses" := ref_to uint64T #0 in
         ForSlice ptrT <> "reply" "replies"
@@ -443,15 +443,15 @@ Definition Server__TryAcquire: val :=
 
 Definition Server__WeakRead: val :=
   rec: "Server__WeakRead" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
+    Mutex__Lock (struct.loadF Server "mu" "s");;
     let: "ret" := struct.loadF paxosState "state" (struct.loadF Server "ps" "s") in
-    lock.release (struct.loadF Server "mu" "s");;
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
     "ret".
 
 Definition makeServer: val :=
   rec: "makeServer" "fname" "initstate" "config" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "mu" "s" (newMutex #());;
     struct.storeF Server "clerks" "s" (NewSlice ptrT #0);;
     ForSlice uint64T <> "host" "config"
       (struct.storeF Server "clerks" "s" (SliceAppend ptrT (struct.loadF Server "clerks" "s") (MakeSingleClerk "host")));;

@@ -169,9 +169,9 @@ Definition Replica__WaitUntilApplied: val :=
   rec: "Replica__WaitUntilApplied" "rp" "lsn" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      lock.acquire (struct.loadF Replica "mu" "rp");;
+      Mutex__Lock (struct.loadF Replica "mu" "rp");;
       let: "lsna" := struct.loadF Replica "lsna" "rp" in
-      lock.release (struct.loadF Replica "mu" "rp");;
+      Mutex__Unlock (struct.loadF Replica "mu" "rp");;
       (if: "lsn" ≤ "lsna"
       then Break
       else
@@ -208,9 +208,9 @@ Definition Replica__queryTxnStatus: val :=
 
 Definition Replica__QueryTxnStatus: val :=
   rec: "Replica__QueryTxnStatus" "rp" "ts" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "status" := Replica__queryTxnStatus "rp" "ts" in
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "status".
 
 (* Arguments:
@@ -225,9 +225,9 @@ Definition Replica__queryTxnTermination: val :=
 
 Definition Replica__QueryTxnTermination: val :=
   rec: "Replica__QueryTxnTermination" "rp" "ts" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "terminated" := Replica__queryTxnTermination "rp" "ts" in
-    lock.release (struct.loadF Replica "mu" "rp");;
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "terminated".
 
 (* Arguments:
@@ -449,16 +449,16 @@ Definition Replica__apply: val :=
 
 Definition Replica__Start: val :=
   rec: "Replica__Start" "rp" :=
-    lock.acquire (struct.loadF Replica "mu" "rp");;
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "lsn" := std.SumAssumeNoOverflow (struct.loadF Replica "lsna" "rp") #1 in
       let: ("cmd", "ok") := TxnLog__Lookup (struct.loadF Replica "txnlog" "rp") "lsn" in
       (if: (~ "ok")
       then
-        lock.release (struct.loadF Replica "mu" "rp");;
+        Mutex__Unlock (struct.loadF Replica "mu" "rp");;
         time.Sleep (#1 * #1000000);;
-        lock.acquire (struct.loadF Replica "mu" "rp");;
+        Mutex__Lock (struct.loadF Replica "mu" "rp");;
         Continue
       else
         Replica__apply "rp" "cmd";;

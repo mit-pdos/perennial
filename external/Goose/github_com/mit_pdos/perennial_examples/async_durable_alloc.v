@@ -20,7 +20,7 @@ Definition MkAlloc: val :=
     let: "bitmap" := disk.Read "addr" in
     let: "a" := struct.new Alloc [
       "d" ::= "d";
-      "mu" ::= lock.new #();
+      "mu" ::= newMutex #();
       "addr" ::= "addr";
       "next" ::= #0;
       "bitmap" ::= "bitmap";
@@ -30,12 +30,12 @@ Definition MkAlloc: val :=
 
 Definition Alloc__MarkUsed: val :=
   rec: "Alloc__MarkUsed" "a" "bn" :=
-    lock.acquire (struct.loadF Alloc "mu" "a");;
+    Mutex__Lock (struct.loadF Alloc "mu" "a");;
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
     SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `or` (#(U8 1) ≪ "bit"));;
     struct.storeF Alloc "dirty" "a" #true;;
-    lock.release (struct.loadF Alloc "mu" "a");;
+    Mutex__Unlock (struct.loadF Alloc "mu" "a");;
     #().
 
 Definition Alloc__incNext: val :=
@@ -50,7 +50,7 @@ Definition Alloc__incNext: val :=
 Definition Alloc__allocBit: val :=
   rec: "Alloc__allocBit" "a" :=
     let: "num" := ref (zero_val uint64T) in
-    lock.acquire (struct.loadF Alloc "mu" "a");;
+    Mutex__Lock (struct.loadF Alloc "mu" "a");;
     "num" <-[uint64T] (Alloc__incNext "a");;
     let: "start" := ![uint64T] "num" in
     Skip;;
@@ -69,17 +69,17 @@ Definition Alloc__allocBit: val :=
           "num" <-[uint64T] #0;;
           Break
         else Continue)));;
-    lock.release (struct.loadF Alloc "mu" "a");;
+    Mutex__Unlock (struct.loadF Alloc "mu" "a");;
     ![uint64T] "num".
 
 Definition Alloc__freeBit: val :=
   rec: "Alloc__freeBit" "a" "bn" :=
-    lock.acquire (struct.loadF Alloc "mu" "a");;
+    Mutex__Lock (struct.loadF Alloc "mu" "a");;
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
     SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `and` (~ (#(U8 1) ≪ "bit")));;
     struct.storeF Alloc "dirty" "a" #true;;
-    lock.release (struct.loadF Alloc "mu" "a");;
+    Mutex__Unlock (struct.loadF Alloc "mu" "a");;
     #().
 
 Definition Alloc__AllocNum: val :=
@@ -97,13 +97,13 @@ Definition Alloc__FreeNum: val :=
 
 Definition Alloc__Flush: val :=
   rec: "Alloc__Flush" "a" :=
-    lock.acquire (struct.loadF Alloc "mu" "a");;
+    Mutex__Lock (struct.loadF Alloc "mu" "a");;
     (if: struct.loadF Alloc "dirty" "a"
     then
       disk.Write (struct.loadF Alloc "addr" "a") (struct.loadF Alloc "bitmap" "a");;
       struct.storeF Alloc "dirty" "a" #false
     else #());;
-    lock.release (struct.loadF Alloc "mu" "a");;
+    Mutex__Unlock (struct.loadF Alloc "mu" "a");;
     #().
 
 Definition popCnt: val :=
@@ -119,10 +119,10 @@ Definition popCnt: val :=
 
 Definition Alloc__NumFree: val :=
   rec: "Alloc__NumFree" "a" :=
-    lock.acquire (struct.loadF Alloc "mu" "a");;
+    Mutex__Lock (struct.loadF Alloc "mu" "a");;
     let: "total" := #8 * (slice.len (struct.loadF Alloc "bitmap" "a")) in
     let: "count" := ref (zero_val uint64T) in
     ForSlice byteT <> "b" (struct.loadF Alloc "bitmap" "a")
       ("count" <-[uint64T] ((![uint64T] "count") + (popCnt "b")));;
-    lock.release (struct.loadF Alloc "mu" "a");;
+    Mutex__Unlock (struct.loadF Alloc "mu" "a");;
     "total" - (![uint64T] "count").

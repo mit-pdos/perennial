@@ -14,7 +14,7 @@ Definition TxnSite := struct.decl [
 Definition MkTxnSite: val :=
   rec: "MkTxnSite" "sid" :=
     let: "site" := struct.alloc TxnSite (zero_val (struct.t TxnSite)) in
-    struct.storeF TxnSite "latch" "site" (lock.new #());;
+    struct.storeF TxnSite "latch" "site" (newMutex #());;
     struct.storeF TxnSite "tids" "site" (NewSliceWithCap uint64T #0 #8);;
     struct.storeF TxnSite "sid" "site" "sid";;
     "site".
@@ -22,12 +22,12 @@ Definition MkTxnSite: val :=
 (* @activate adds @tid to the set of active transaction IDs. *)
 Definition TxnSite__Activate: val :=
   rec: "TxnSite__Activate" "site" :=
-    lock.acquire (struct.loadF TxnSite "latch" "site");;
+    Mutex__Lock (struct.loadF TxnSite "latch" "site");;
     let: "t" := ref (zero_val uint64T) in
     "t" <-[uint64T] (tid.GenTID (struct.loadF TxnSite "sid" "site"));;
     control.impl.Assume ((![uint64T] "t") < #18446744073709551615);;
     struct.storeF TxnSite "tids" "site" (SliceAppend uint64T (struct.loadF TxnSite "tids" "site") (![uint64T] "t"));;
-    lock.release (struct.loadF TxnSite "latch" "site");;
+    Mutex__Unlock (struct.loadF TxnSite "latch" "site");;
     ![uint64T] "t".
 
 Definition findTID: val :=
@@ -49,18 +49,18 @@ Definition swapWithEnd: val :=
 (* @deactivate removes @tid from the set of active transaction IDs. *)
 Definition TxnSite__Deactivate: val :=
   rec: "TxnSite__Deactivate" "site" "tid" :=
-    lock.acquire (struct.loadF TxnSite "latch" "site");;
+    Mutex__Lock (struct.loadF TxnSite "latch" "site");;
     let: "idx" := findTID "tid" (struct.loadF TxnSite "tids" "site") in
     swapWithEnd (struct.loadF TxnSite "tids" "site") "idx";;
     struct.storeF TxnSite "tids" "site" (SliceTake (struct.loadF TxnSite "tids" "site") ((slice.len (struct.loadF TxnSite "tids" "site")) - #1));;
-    lock.release (struct.loadF TxnSite "latch" "site");;
+    Mutex__Unlock (struct.loadF TxnSite "latch" "site");;
     #().
 
 (* @GetSafeTS returns a per-site lower bound on the active/future transaction
    IDs. *)
 Definition TxnSite__GetSafeTS: val :=
   rec: "TxnSite__GetSafeTS" "site" :=
-    lock.acquire (struct.loadF TxnSite "latch" "site");;
+    Mutex__Lock (struct.loadF TxnSite "latch" "site");;
     let: "tidnew" := ref (zero_val uint64T) in
     "tidnew" <-[uint64T] (tid.GenTID (struct.loadF TxnSite "sid" "site"));;
     control.impl.Assume ((![uint64T] "tidnew") < #18446744073709551615);;
@@ -69,5 +69,5 @@ Definition TxnSite__GetSafeTS: val :=
       ((if: "tid" < (![uint64T] "tidmin")
       then "tidmin" <-[uint64T] "tid"
       else #()));;
-    lock.release (struct.loadF TxnSite "latch" "site");;
+    Mutex__Unlock (struct.loadF TxnSite "latch" "site");;
     ![uint64T] "tidmin".
