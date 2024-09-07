@@ -21,7 +21,7 @@ Proof.
   { rewrite /list.untype fmap_app take_app_length' //. }
   iIntros "Hs".
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite /list.untype length_fmap length_app /=. word. }
+  { len. }
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
 Qed.
 
@@ -35,7 +35,7 @@ Proof.
   { rewrite /list.untype fmap_app take_app_length' //. }
   iIntros "Hs".
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite /list.untype length_fmap length_app /=. word. }
+  { len. }
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
 Qed.
 
@@ -49,13 +49,15 @@ Proof.
   iMod (own_slice_small_persist with "Hs") as "#Hs".
   wp_rec. wp_pures.
   wp_apply (wp_SliceTake_small with "Hs").
-  { rewrite /list.untype fmap_app length_app !length_fmap. word. }
+  { len. }
   iIntros "Hs1".
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite /list.untype length_fmap length_app /=. word. }
+  { len. }
   iIntros (s') "Hs2". wp_pures. iApply "HΦ".
-  { rewrite /list.untype -fmap_take -fmap_drop.
-    rewrite take_app_length' // drop_app_length' //. iFrame. done. }
+  iModIntro.
+  rewrite take_app_length' //.
+  rewrite drop_app_length' //.
+  iFrame.
 Qed.
 
 Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
@@ -75,17 +77,17 @@ Proof.
   { rewrite length_app. word. }
   iDestruct (own_slice_small_acc with "Hb") as "[Hb Hbclose]".
   wp_apply (wp_SliceCopy_full with "[$Hs $Hb]").
-  { iPureIntro. rewrite !list_untype_length length_replicate length_take length_app. word. }
-  iIntros "[Hs Hb]".
+  { iPureIntro. len. }
+  iIntros (l) "(%Hl_val & Hs & Hb)".
   iDestruct (own_slice_combine with "Hs Hsclose") as "Hs".
   { word. }
   rewrite take_drop.
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite list_untype_length length_app. word. }
+  { len. }
   iIntros (s') "Hs'".
   wp_pures. iApply "HΦ". iModIntro. iSplitR "Hs'".
   - iApply "Hbclose". rewrite take_app_length' //.
-  - rewrite /list.untype -fmap_drop drop_app_length' //.
+  - rewrite drop_app_length' //.
 Qed.
 
 Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
@@ -99,9 +101,8 @@ Proof.
   wp_apply (wp_SliceGet with "[$Hs]"); [ auto | ].
   iIntros "Hs".
   wp_pures.
-  (* TODO: this wp seems to come from untyped library *)
   wp_apply (wp_SliceSkip_small with "Hs").
-  { rewrite list_untype_length /=. word. }
+  { len. }
   iIntros (s') "Hs".
   wp_pures. iModIntro.
   iApply "HΦ".
@@ -112,9 +113,7 @@ Proof.
       split.
     - inversion 1; subst; auto.
     - intros H.
-      do 2 f_equal.
-      apply (inj uint.Z). (* don't know how I even figured this out *)
-      change (uint.Z (U8 0)) with 0%Z; assumption.
+      repeat (f_equal; try word).
     }
     destruct (decide _), (decide _); auto; tauto.
   }
@@ -157,7 +156,7 @@ Proof.
     iIntros (ptr) "Hnew". wp_pures.
     iDestruct (slice.own_slice_to_small with "Hs") as "Hs".
     iDestruct (slice.own_slice_small_acc with "Hnew") as "[Hnew Hcl]".
-    wp_apply (wp_SliceCopy_full with "[Hnew Hs]").
+    wp_apply (slice.wp_SliceCopy_full with "[Hnew Hs]").
     { iFrame. iPureIntro. rewrite list_untype_length Hsz length_replicate //. }
     iIntros "[_ Hnew]". iDestruct ("Hcl" with "Hnew") as "Hnew".
     wp_pures. iApply "HΦ". iModIntro. iFrame. iPureIntro. simpl. word.
@@ -243,17 +242,8 @@ Theorem wp_WriteBool s (vs: list u8) (b: bool) :
 Proof.
   iIntros (Φ) "Hs HΦ". wp_rec. wp_pures.
   destruct b; wp_pures.
-  (* TODO: this also breaks through the typed slice library *)
-  - wp_apply (wp_SliceAppend' with "Hs"); auto.
-    iIntros (s') "Hs".
-    iApply "HΦ".
-    rewrite /own_slice.
-    rewrite list_untype_app //.
-  - wp_apply (wp_SliceAppend' with "Hs"); auto.
-    iIntros (s') "Hs".
-    iApply "HΦ".
-    rewrite /own_slice.
-    rewrite list_untype_app //.
+  - wp_apply (wp_SliceAppend with "Hs"); auto.
+  - wp_apply (wp_SliceAppend with "Hs"); auto.
 Qed.
 
 End goose_lang.

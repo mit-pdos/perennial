@@ -190,6 +190,24 @@ Proof.
   word.
 Qed.
 
+Lemma wp_SliceSplit_full s dq (xs: list w8) (n: w64) :
+  {{{ own_slice s byteT dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
+    SliceSplit (to_val s) #n
+  {{{ RET (to_val (slice_take s n), to_val (slice_skip s byteT n));
+      own_slice_small (slice_take s n) byteT dq (take (uint.nat n) xs) ∗
+      own_slice (slice_skip s byteT n) byteT dq (drop (uint.nat n) xs)
+  }}}.
+Proof.
+  iIntros (Φ) "[Hs %Hn] HΦ".
+  iDestruct (own_slice_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_split_1 with "Hs") as "[Hs Hcap]".
+  wp_apply (wp_SliceSplit with "[$Hs]"); [ done | ].
+  iIntros "[Htake Hskip]".
+  iApply "HΦ". iFrame "Htake".
+  iApply own_slice_split; iFrame "Hskip".
+  iApply (own_slice_cap_skip with "Hcap"). word.
+Qed.
+
 Lemma wp_SumNoOverflow (x y : u64) stk E :
   ∀ Φ : val → iProp Σ,
     Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
