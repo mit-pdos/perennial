@@ -130,7 +130,7 @@ Lemma links_prefix_carry digs0 digs1 links0 links1 :
 Proof.
   iIntros (Hpref ??) "Hlinks0 Hlinks1".
   iDestruct (big_sepL_func_prefix (length digs0) with "Hlinks0 Hlinks1") as %Htake.
-  { unfold Func in *. naive_solver (eauto using (is_chain_func (Σ:=Σ))). }
+  { unfold Func in *. pose proof (is_chain_func (Σ:=Σ)). naive_solver eauto. }
   { lia. }
   { apply prefix_length in Hpref. lia. }
   { intros ??. destruct Hpref as [?->].
