@@ -788,3 +788,7 @@ Tactic Notation "wp_storeField" :=
     |pm_reflexivity
     |try (wp_pure_filter (Rec BAnon BAnon _); wp_rec)]
   end.
+
+Ltac iNamedStruct H :=
+  iDestruct (struct_fields_split with H) as "_temp_";
+  iNamed "_temp_".

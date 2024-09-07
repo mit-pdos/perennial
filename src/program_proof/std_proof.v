@@ -243,7 +243,7 @@ Proof.
   wp_pures.
   wp_apply wp_allocStruct; [ val_ty | ].
   iIntros (l) "Hhandle".
-  iApply struct_fields_split in "Hhandle". iNamed "Hhandle".
+  iNamedStruct "Hhandle".
   iMod (struct_field_pointsto_persist with "mu") as "mu".
   iMod (struct_field_pointsto_persist with "cond") as "cond".
   iMod (alloc_lock (nroot .@ "JoinHandle") _ _

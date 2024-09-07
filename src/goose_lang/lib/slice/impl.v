@@ -48,6 +48,9 @@ Proof.
   auto.
 Qed.
 
+Lemma zero_val_slice t : zero_val (slice.T t) = slice.nil.
+Proof. reflexivity. Qed.
+
 Definition raw_slice (t: ty): val :=
   λ: "p" "sz",
   ("p", "sz", "sz").

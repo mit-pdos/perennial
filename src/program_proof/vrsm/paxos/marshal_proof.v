@@ -76,8 +76,12 @@ Proof.
   iIntros (?) "Hptr". wp_pures.
   wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures. wp_load.
-  iDestruct (struct_fields_split with "Hs") as "HH".
-  iNamed "HH". rewrite Henc.
+  (* FIXME: ssreflect rewrite unfolds [slice.T] even though it's opaque.
+  [rewrite ->] works but typeclass inference is poor so [rewrite -> (@zero_prod_val
+  grove_op grove_ty)] is required. *)
+  rewrite !zero_prod_val.
+  iNamedStruct "Hs".
+  rewrite Henc.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "?". wp_pures. wp_storeField.
   wp_store. wp_load. wp_apply (wp_ReadInt with "[$]").
@@ -145,8 +149,7 @@ Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
   wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
-  iDestruct (struct_fields_split with "Hs") as "HH".
-  iNamed "HH". rewrite Henc.
+  iNamedStruct "Hs". rewrite Henc.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "?". wp_pures. wp_storeField.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
@@ -224,8 +227,7 @@ Proof.
   iIntros (?) "Hs". wp_pures.
   wp_apply wp_ref_of_zero; first done.
   iIntros (?) "Herr". wp_pures. wp_load.
-  iDestruct (struct_fields_split with "Hs") as "HH".
-  iNamed "HH". rewrite Henc.
+  iNamedStruct "Hs". rewrite Henc.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "?". wp_pures. wp_store.
   wp_store. wp_load. wp_storeField.
@@ -288,8 +290,7 @@ Proof.
   iIntros (?) "[%Henc Hsl] HΦ".
   wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
-  iDestruct (struct_fields_split with "Hs") as "HH".
-  iNamed "HH". rewrite Henc.
+  iNamedStruct "Hs". rewrite Henc.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "?". wp_pures. wp_storeField. wp_pures.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
@@ -376,8 +377,7 @@ Proof.
   iIntros (?) "Hs". wp_pures. wp_apply wp_ref_to; first done.
   iIntros (?) "Hptr". wp_pures. wp_apply wp_ref_of_zero; first done.
   iIntros (?) "Herr". wp_pures. wp_load.
-  iDestruct (struct_fields_split with "Hs") as "HH".
-  iNamed "HH". rewrite Henc.
+  iNamedStruct "Hs". rewrite Henc.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "?". wp_pures. wp_store. wp_store.
   wp_load. wp_storeField.
@@ -489,7 +489,7 @@ Proof.
   wp_rec. wp_apply wp_ref_to; first done.
   iIntros (?) "He". wp_pures. wp_apply wp_ref_of_zero; first done.
   iIntros (?) "HleaderInt". wp_pures. wp_apply (wp_allocStruct); first by val_ty.
-  iIntros (?) "Hs". iDestruct (struct_fields_split with "Hs") as "HH". iNamed "HH".
+  iIntros (?) "Hs". iNamedStruct "Hs".
   wp_pures. wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "?".
   wp_pures. wp_storeField. wp_store.
   wp_load. wp_apply (wp_ReadInt with "[$]"). iIntros (?) "?".
