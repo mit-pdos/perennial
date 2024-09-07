@@ -107,13 +107,13 @@ Proof.
   wp_pures.
   iNamed "His".
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iNamed "Hown".
   wp_loadField.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Houtv]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Houtv]").
   {
     iFrame "Hmu_inv Hlocked".
     iNext.
@@ -211,7 +211,7 @@ Proof.
       { (* got a promise *)
         iDestruct "Hpost" as "[%Hbad|#Hpost]".
         { exfalso. done. }
-        wp_apply (acquire_spec with "Hl_inv").
+        wp_apply (wp_Mutex__Lock with "Hl_inv").
         iIntros "[Hlocked Hown]".
         iNamed "Hown".
         wp_pures.
@@ -226,7 +226,7 @@ Proof.
           wp_loadField.
           wp_store.
           wp_pures.
-          wp_apply (release_spec with "[-]"); last done.
+          wp_apply (wp_Mutex__Unlock with "[-]"); last done.
           {
             iFrame "Hl_inv Hlocked".
             iNext.
@@ -321,7 +321,7 @@ Proof.
         }
         { (* not a higher PN; just use Hpost to update Hrejected *)
           wp_pures.
-          wp_apply (release_spec with "[-]").
+          wp_apply (wp_Mutex__Unlock with "[-]").
           {
             iFrame "Hl_inv Hlocked".
             iNext.
@@ -426,7 +426,7 @@ Proof.
 
   iIntros "_".
   wp_pures.
-  wp_apply (acquire_spec with "Hl_inv").
+  wp_apply (wp_Mutex__Lock with "Hl_inv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -434,7 +434,7 @@ Proof.
   wp_pures.
   wp_load.
   wp_pures.
-  wp_apply (release_spec with "[$Hl_inv $Hlocked HnumPrepared HhighestPn HhighestVal Htoks]").
+  wp_apply (wp_Mutex__Unlock with "[$Hl_inv $Hlocked HnumPrepared HhighestPn HhighestVal Htoks]").
   { iNext. iExists _, _, _, _. iFrame "∗#". done. }
   wp_pures.
   wp_loadField.
@@ -536,14 +536,14 @@ Proof.
         wp_if_destruct.
         { (* accepted *)
           iDestruct "Hret" as "[%Hbad|#HacceptedReply]"; first by exfalso.
-          wp_apply (acquire_spec with "Hl2_inv").
+          wp_apply (wp_Mutex__Lock with "Hl2_inv").
           iIntros "[Hlocked Hown]".
           iRename "Haccepted" into "HacceptedServer".
           iNamed "Hown".
           wp_pures.
           wp_load.
           wp_store.
-          wp_apply (release_spec with "[$Hl2_inv $Hlocked HnumAccepted Hγtok Htoks]"); last done.
+          wp_apply (wp_Mutex__Unlock with "[$Hl2_inv $Hlocked HnumAccepted Hγtok Htoks]"); last done.
           {
             iNext.
             iExists _, ({[pid']} ∪ S).
@@ -620,14 +620,14 @@ Proof.
     iIntros "_".
     wp_pures.
 
-    wp_apply (acquire_spec with "Hl2_inv").
+    wp_apply (wp_Mutex__Lock with "Hl2_inv").
     iIntros "[Hlocked Hown]".
     iRename "Haccepted" into "HacceptedOld".
     iNamed "Hown".
     wp_pures.
     wp_load.
     wp_pures.
-    wp_apply (release_spec with "[-HΦ Houtv]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Houtv]").
     { iFrame "Hl2_inv Hlocked". iNext; iExists _, _; iFrame "∗#"; done. }
     wp_pures.
     wp_loadField.

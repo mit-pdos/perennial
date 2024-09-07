@@ -1338,14 +1338,14 @@ Proof.
 
   iNamed "Hck".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[Hlocked Hleader]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
   { iFrame "∗#". iNext. iExists _; iFrame "∗%". }
   wp_pures.
   wp_apply wp_NewSlice.
@@ -1441,7 +1441,7 @@ Proof.
       wp_if_destruct.
       { (* case: ErrNotLeader, so retry *)
         wp_loadField.
-        wp_apply (acquire_spec with "[$]").
+        wp_apply (wp_Mutex__Lock with "[$]").
         iIntros "[Hlocked Hown]".
         wp_pures.
         iNamed "Hown".
@@ -1454,7 +1454,7 @@ Proof.
           wp_pures.
           wp_storeField.
           wp_loadField.
-          wp_apply (release_spec with "[Hlocked Hleader]").
+          wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
           {
             iFrame "∗#".
             iNext. repeat iExists _; iFrame.
@@ -1474,7 +1474,7 @@ Proof.
         }
         { (* case: don't increase leader idx *)
           wp_loadField.
-          wp_apply (release_spec with "[Hlocked Hleader]").
+          wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
           {
             iFrame "∗#".
             iNext. repeat iExists _; iFrame "∗%".
@@ -1645,14 +1645,14 @@ Proof.
 
   iNamed "Hck".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[Hlocked Hleader]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
   { iFrame "∗#". iNext. iExists _; iFrame "∗%". }
   wp_pures.
   wp_load.
@@ -1729,7 +1729,7 @@ Proof.
       wp_if_destruct.
       { (* case: ErrNotLeader, so retry *)
         wp_loadField.
-        wp_apply (acquire_spec with "[$]").
+        wp_apply (wp_Mutex__Lock with "[$]").
         iIntros "[Hlocked Hown]".
         wp_pures.
         iNamed "Hown".
@@ -1742,7 +1742,7 @@ Proof.
           wp_pures.
           wp_storeField.
           wp_loadField.
-          wp_apply (release_spec with "[Hlocked Hleader]").
+          wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
           {
             iFrame "∗#".
             iNext. repeat iExists _; iFrame.
@@ -1761,7 +1761,7 @@ Proof.
         }
         { (* case: don't increase leader idx *)
           wp_loadField.
-          wp_apply (release_spec with "[Hlocked Hleader]").
+          wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
           {
             iFrame "∗#".
             iNext. repeat iExists _; iFrame "∗%".
@@ -1835,14 +1835,14 @@ Proof.
 
   iNamed "Hck".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[Hlocked Hleader]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
   { iFrame "∗#". iNext. iExists _; iFrame "∗%". }
   wp_pures.
   wp_load.
@@ -1910,7 +1910,7 @@ Proof.
       wp_if_destruct.
       { (* case: ErrNotLeader, so retry *)
         wp_loadField.
-        wp_apply (acquire_spec with "[$]").
+        wp_apply (wp_Mutex__Lock with "[$]").
         iIntros "[Hlocked Hown]".
         wp_pures.
         iNamed "Hown".
@@ -1923,7 +1923,7 @@ Proof.
           wp_pures.
           wp_storeField.
           wp_loadField.
-          wp_apply (release_spec with "[Hlocked Hleader]").
+          wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
           {
             iFrame "∗#".
             iNext. repeat iExists _; iFrame.
@@ -1942,7 +1942,7 @@ Proof.
         }
         { (* case: don't increase leader idx *)
           wp_loadField.
-          wp_apply (release_spec with "[Hlocked Hleader]").
+          wp_apply (wp_Mutex__Unlock with "[Hlocked Hleader]").
           {
             iFrame "∗#".
             iNext. repeat iExists _; iFrame "∗%".

@@ -275,7 +275,7 @@ Proof.
   iNamed "Hpre".
   iNamed "Hls".
   wp_loadField.
-  wp_apply (crash_lock.acquire_spec with "Hmu"); first done.
+  wp_apply (crash_lock.wp_Mutex__Lock with "Hmu"); first done.
   iIntros "Hlocked".
   wp_pures.
   iApply (wpc_wp _ _ _ _ _ True).
@@ -347,7 +347,7 @@ Proof.
     wpc_pures; first by iModIntro.
     iApply (wp_wpc).
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "[$Hlocked]"); first done.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "[$Hlocked]"); first done.
     wp_pures.
     iApply "HΦ".
     iExists _; iFrame.
@@ -483,7 +483,7 @@ Proof.
     wp_pures.
     wp_loadField.
     iApply wp_fupd.
-    wp_apply (crash_lock.release_spec with "Hlocked"); first eauto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "Hlocked"); first eauto.
     wp_pures.
     iApply "HΦ".
     iModIntro.

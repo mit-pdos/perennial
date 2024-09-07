@@ -79,7 +79,7 @@ Proof.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   iNamed "Hvol".
@@ -90,7 +90,7 @@ Proof.
   wp_if_destruct.
   { (* case: not leader *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hlc1 Hlc2]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hlc1 Hlc2]").
     {
       do 2 iFrame "∗#%".
     }
@@ -163,7 +163,7 @@ Proof.
     iIntros (?) "[Hfile Hwp]".
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[-Hwp]").
+    wp_apply (wp_Mutex__Unlock with "[-Hwp]").
     { iFrame "HmuInv Hlocked". iNext. repeat iExists _.
       iFrame "∗#%". iPureIntro. by left.
     }
@@ -283,7 +283,7 @@ Proof.
                                                      True
                                          ))
                 )%I).
-  wp_apply (newlock_spec N _ replyInv with "[HnumReplies Hreplies_sl]").
+  wp_apply (wp_newMutex N _ replyInv with "[HnumReplies Hreplies_sl]").
   {
     iNext.
     iExists _, _.
@@ -338,7 +338,7 @@ Proof.
       iIntros (reply_ptr reply) "Hreply".
       wp_pures.
 
-      wp_apply (acquire_spec with "HreplyMuInv").
+      wp_apply (wp_Mutex__Lock with "HreplyMuInv").
       iIntros "[Hlocked Hown]".
       iNamed "Hown".
       wp_pures.
@@ -358,11 +358,11 @@ Proof.
       wp_apply (wp_If_optional _ _ (True%I)).
       {
         iIntros (?) "_ HΦ'".
-        wp_apply (wp_condSignal with "HnumReplies_cond").
+        wp_apply (wp_Cond__Signal with "HnumReplies_cond").
         wp_pures.
         by iApply "HΦ'".
       }
-      wp_apply (release_spec with "[-]").
+      wp_apply (wp_Mutex__Unlock with "[-]").
       {
         iFrame "# Hlocked".
         iNext.
@@ -395,7 +395,7 @@ Proof.
   iIntros "_".
   wp_pures.
 
-  wp_apply (acquire_spec with "[$HreplyMuInv]").
+  wp_apply (wp_Mutex__Lock with "[$HreplyMuInv]").
   iIntros "[Hlocked Hown]".
   wp_pures.
 
@@ -407,7 +407,7 @@ Proof.
   wp_if_destruct.
   { (* not enough replies, wait for cond *)
     wp_pures.
-    wp_apply (wp_condWait with "[-HΦ Herr]").
+    wp_apply (wp_Cond__Wait with "[-HΦ Herr]").
     {
       iFrame "∗#".
       iExists _, _.

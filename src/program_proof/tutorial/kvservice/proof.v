@@ -592,9 +592,9 @@ Proof.
   wp_start.
   iNamed "Hsrv".
   wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown"; wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown"; wp_auto.
   wp_apply (wp_SumAssumeNoOverflow) as (Hoverflow) "".
-  wp_apply (release_spec with "[-HΦ Hspec]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
     repeat iExists _.
@@ -620,13 +620,13 @@ Proof.
   wp_start.
   iNamed "Hsrv".
   wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
+  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
   iNamed "Hargs".
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
   wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
-    wp_apply (release_spec with "[-HΦ Hspec]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
       repeat iExists _.
@@ -637,7 +637,7 @@ Proof.
   }
   wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; first done.
   wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-  wp_apply (release_spec with "[-HΦ Hspec]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
     repeat iExists _.
@@ -660,13 +660,13 @@ Proof.
   wp_start.
   iNamed "Hsrv".
   wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
+  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
   iNamed "Hargs".
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
   wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
-    wp_apply (release_spec with "[-HΦ Hspec]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
       repeat iExists _.
@@ -684,7 +684,7 @@ Proof.
     (* FIXME: delete typed_map.map_insert *)
     rewrite /typed_map.map_insert.
     wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-    wp_apply (release_spec with "[-HΦ Hspec Hret]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec Hret]").
     {
       iFrame "∗#". iNext.
       repeat iExists _.
@@ -696,7 +696,7 @@ Proof.
   }
 
   wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-  wp_apply (release_spec with "[-HΦ Hspec Hret]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec Hret]").
   {
     iFrame "∗#". iNext.
     repeat iExists _.
@@ -722,13 +722,13 @@ Proof.
   wp_start.
   iNamed "Hsrv".
   wp_auto.
-  wp_apply (acquire_spec with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
+  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
   iNamed "Hargs".
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
   wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
-    wp_apply (release_spec with "[-HΦ Hspec]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
       repeat iExists _.
@@ -740,7 +740,7 @@ Proof.
   }
   wp_apply (wp_MapGet with "HkvsM") as (??) "[%Hlookup HkvsM]".
   wp_apply (wp_MapInsert with "HlastRepliesM") as "HlastRepliesM"; first done.
-  wp_apply (release_spec with "[-HΦ Hspec]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
     repeat iExists _.

@@ -183,7 +183,7 @@ Proof.
   wp_pures.
   iNamed "Hkv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -219,7 +219,7 @@ Proof.
     wp_if_destruct.
     2:{ exfalso. word. }
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "HmuInv∗". iNext.
       repeat iExists _; eauto with iFrame.
     }
@@ -245,7 +245,7 @@ Proof.
     iIntros "Hcache".
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[-Hau]").
+    wp_apply (wp_Mutex__Unlock with "[-Hau]").
     { iFrame "HmuInv∗". iNext.
       repeat iExists _.
       iFrame.
@@ -429,7 +429,7 @@ Proof.
     iIntros "_".
     wp_pures.
     wp_loadField.
-    wp_apply (acquire_spec with "[$]").
+    wp_apply (wp_Mutex__Lock with "[$]").
     iIntros "[Hlocked Hown]".
     iNamed "Hown".
     wp_pures.
@@ -450,7 +450,7 @@ Proof.
     rewrite /map_get /typed_map.map_insert lookup_insert /= in Hlookup.
     injection Hlookup as ? ?. subst.
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     {
       iFrame "HmuInv ∗".
       iNext.

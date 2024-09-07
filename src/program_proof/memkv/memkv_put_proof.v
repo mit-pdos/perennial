@@ -31,7 +31,7 @@ Proof.
 
   iNamed "His_shard".
   wp_loadField.
-  wp_apply (acquire_spec with "[$HmuInv]").
+  wp_apply (wp_Mutex__Lock with "[$HmuInv]").
   iIntros "[Hlocked Hown]".
 
   iNamed "Hown".
@@ -104,7 +104,7 @@ Proof.
 
     iDestruct ("HshardMap_sl_close" with "HshardMap_sl") as "HshardMap_sl".
     wp_loadField.
-    wp_apply (release_spec with "[> -HΦ Q HKey Hrep]").
+    wp_apply (wp_Mutex__Unlock with "[> -HΦ Q HKey Hrep]").
     {
       iFrame "HmuInv Hlocked".
       iModIntro. iNext.
@@ -172,7 +172,7 @@ Proof.
 
     wp_loadField.
     iSpecialize ("HshardMap_sl_close" with "HshardMap_sl").
-    wp_apply (release_spec with "[-HΦ Hpre HKey Hrep]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hpre HKey Hrep]").
     {
       iFrame "HmuInv Hlocked".
       iNext.

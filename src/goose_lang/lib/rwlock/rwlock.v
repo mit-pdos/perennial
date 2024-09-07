@@ -214,7 +214,7 @@ Section proof.
     iApply "Hwp". eauto.
   Qed.
 
-  Lemma try_read_acquire_spec E lk R Rc :
+  Lemma try_read_wp_Mutex__Lock E lk R Rc :
     ↑N ⊆ E →
     {{{ is_rwlock lk R Rc }}} rwlock.try_read_acquire lk @ E
     {{{ b, RET #b; if b is true then crash_borrow (R rfrac) (Rc rfrac) else True }}}.
@@ -278,16 +278,16 @@ Section proof.
       * wp_pures. iModIntro. iApply "HΦ". eauto.
   Qed.
 
-  Lemma read_acquire_spec lk R Rc :
+  Lemma read_wp_Mutex__Lock lk R Rc :
     {{{ is_rwlock lk R Rc }}} rwlock.read_acquire lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
-    wp_apply (try_read_acquire_spec with "Hl"); auto. iIntros ([]).
+    wp_apply (try_read_wp_Mutex__Lock with "Hl"); auto. iIntros ([]).
     - iIntros "H". wp_pures. iApply "HΦ"; by iFrame.
     - iIntros "_". wp_pures. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
-  Lemma try_read_release_spec lk R Rc :
+  Lemma try_read_wp_Mutex__Unlock lk R Rc :
     {{{ is_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}} rwlock.try_read_release lk
     {{{ b, RET #b; if b is false then crash_borrow (R rfrac) (Rc rfrac) else True }}}.
   Proof.
@@ -360,16 +360,16 @@ Section proof.
     - wp_pures. iModIntro. iApply "HΦ". eauto.
   Qed.
 
-  Lemma read_release_spec lk R Rc :
+  Lemma read_wp_Mutex__Unlock lk R Rc :
     {{{ is_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}} rwlock.read_release lk {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(#Hl&Hcb) HΦ". iLöb as "IH". wp_rec.
-    wp_apply (try_read_release_spec with "[$Hl $Hcb]"); auto. iIntros ([]).
+    wp_apply (try_read_wp_Mutex__Unlock with "[$Hl $Hcb]"); auto. iIntros ([]).
     - iIntros "H". wp_pures. iApply "HΦ"; by iFrame.
     - iIntros "H". wp_pures. iApply ("IH" with "[$] [HΦ]"). auto.
   Qed.
 
-  Lemma try_write_acquire_spec lk R Rc :
+  Lemma try_write_wp_Mutex__Lock lk R Rc :
     {{{ is_rwlock lk R Rc }}} rwlock.try_write_acquire lk
     {{{ b, RET #b; if b is true then wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) else True }}}.
   Proof.
@@ -400,18 +400,18 @@ Section proof.
       wp_pures. by iApply "HΦ".
   Qed.
 
-  Lemma write_acquire_spec lk R Rc :
+  Lemma write_wp_Mutex__Lock lk R Rc :
     {{{ is_rwlock lk R Rc }}}
       rwlock.write_acquire lk
     {{{ RET #(); wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
-    wp_apply (try_write_acquire_spec with "Hl"); auto. iIntros ([]).
+    wp_apply (try_write_wp_Mutex__Lock with "Hl"); auto. iIntros ([]).
     - iIntros "[Hlked HR]". wp_pures. iApply "HΦ"; by iFrame.
     - iIntros "_". wp_pures. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
-  Lemma release_spec lk R Rc :
+  Lemma wp_Mutex__Unlock lk R Rc :
     {{{ is_rwlock lk R Rc ∗ wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}
       rwlock.write_release lk
     {{{ RET #(); True }}}.

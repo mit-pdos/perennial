@@ -293,7 +293,7 @@ Proof.
   (* tuple.latch.Lock()                                      *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked Htuple]".
   iNamed "Htuple".
   iNamed "Hphys".
@@ -314,7 +314,7 @@ Proof.
     wp_pures.
     wp_loadField.
     iClear "Hgclb'".
-    wp_apply (release_spec with "[-HΦ]"); first eauto 25 with iFrame.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]"); first eauto 25 with iFrame.
     wp_pures.
     by iApply "HΦ".
   }
@@ -344,7 +344,7 @@ Proof.
   wp_loadField.
   destruct HtidGt as (verHead & Hin & HtidGt).
   destruct Hsuffix as (versPrefix & Hprefix & Hsuffix).
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   { iFrame "Hlock Hlocked".
     iNext.
     do 2 iExists _.

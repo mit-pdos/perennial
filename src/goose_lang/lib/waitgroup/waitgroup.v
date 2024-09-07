@@ -215,7 +215,7 @@ Proof.
   iDestruct "His" as (??) "(%HwgPair & Hlk)".
   rewrite HwgPair.
   wp_pures.
-  wp_apply (acquire_spec with "Hlk").
+  wp_apply (wp_Mutex__Lock with "Hlk").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iNamed "Hown".
@@ -233,7 +233,7 @@ Proof.
     apply Hremaining in Hbad.
     word.
   }
-  iApply (release_spec with "[$Hlocked $Hlk Htotal HP Htoks Hv]").
+  iApply (wp_Mutex__Unlock with "[$Hlocked $Hlk Htotal HP Htoks Hv]").
   {
     iNext.
     iExists (remaining ∪ {[total]}).
@@ -328,14 +328,14 @@ Proof.
   rewrite HwgPair.
   wp_pures.
 
-  wp_apply (acquire_spec with "Hlk").
+  wp_apply (wp_Mutex__Lock with "Hlk").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iNamed "Hown".
   wp_load.
   wp_store.
 
-  iApply (release_spec with "[$Hlocked $Hlk Htotal HP Htoks Hv Htok HPn]").
+  iApply (wp_Mutex__Unlock with "[$Hlocked $Hlk Htotal HP Htoks Hv Htok HPn]").
   {
     iNext.
     iExists (remaining ∖ {[n]}), total.
@@ -408,7 +408,7 @@ Proof.
   rewrite HwgPair.
   wp_pures.
 
-  wp_apply (acquire_spec with "Hlk").
+  wp_apply (wp_Mutex__Lock with "Hlk").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iNamed "Hown".
@@ -419,7 +419,7 @@ Proof.
 
   iDestruct "HP" as "#HP".
 
-  wp_apply (release_spec with "[$Hlocked $Hlk Htotal Htoks Hv]").
+  wp_apply (wp_Mutex__Unlock with "[$Hlocked $Hlk Htotal Htoks Hv]").
   {
     iNext.
     iExists _, _. iFrame.  eauto.

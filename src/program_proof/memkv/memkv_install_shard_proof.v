@@ -26,7 +26,7 @@ Proof.
   wp_pures.
   iNamed "His_shard".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -73,7 +73,7 @@ Proof.
   iCombine "Hkvss_sl Hkvss_small" as "Hkvss_sl".
 
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.

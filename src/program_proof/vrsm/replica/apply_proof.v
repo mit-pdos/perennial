@@ -401,7 +401,7 @@ Proof.
   wp_storeField.
 
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   iNamed "Hvol".
@@ -413,7 +413,7 @@ Proof.
   wp_if_destruct.
   { (* return error "not primary" *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -441,7 +441,7 @@ Proof.
   wp_if_destruct.
   { (* return ESealed *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -519,7 +519,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3 HwaitSpec]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3 HwaitSpec]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -878,7 +878,7 @@ Proof.
     wp_pures.
 
     wp_loadField.
-    wp_apply (acquire_spec with "[$]").
+    wp_apply (wp_Mutex__Lock with "[$]").
     iIntros "[Hlocked Hown]".
     iNamed "Hown".
     iClear "HopAppliedConds_conds HcommittedNextIndex_is_cond HisSm HisPrimary_is_cond".
@@ -889,7 +889,7 @@ Proof.
       wp_storeField.
       wp_loadField.
       iDestruct (become_backup with "HghostEph") as "HghostEph".
-      wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
+      wp_apply (wp_Mutex__Unlock with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
       { iFrame "∗#".
         repeat iExists _; iSplitR "HghostEph"; last iFrame.
         repeat iExists _; iFrame "∗#".
@@ -902,7 +902,7 @@ Proof.
       rewrite decide_False; last naive_solver. done.
     }
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
     { iFrame "∗#".
       repeat iExists _; iSplitR "HghostEph"; last iFrame.
       repeat iExists _; iFrame "∗#".

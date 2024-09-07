@@ -291,7 +291,7 @@ Proof.
   iNamed "HisSrv".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   wp_pures.
 
@@ -373,7 +373,7 @@ Proof.
       apply map_get_true in Hlookup.
       iDestruct (big_sepM_lookup_acc with "HopAppliedConds_conds") as "[His_cond _]".
       { done. }
-      wp_apply (wp_condWait with "[-HΦ HΨ Hargs_op Hargs_op_sl Hargs_index Hargs_epoch]").
+      wp_apply (wp_Cond__Wait with "[-HΦ HΨ Hargs_op Hargs_op_sl Hargs_index Hargs_epoch]").
       {
         iFrame "His_cond".
         iFrame "HmuInv Hlocked".
@@ -403,7 +403,7 @@ Proof.
   wp_if_destruct.
   { (* return error: sealed *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -427,7 +427,7 @@ Proof.
   wp_if_destruct.
   { (* return error: stale *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       iFrame "Hlocked HmuInv".
       iNext.
@@ -453,7 +453,7 @@ Proof.
   { (* return error: out-of-order; TODO: we never actually need to return this
        error, if something is out of order that means we already applied it *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       iFrame "Hlocked HmuInv".
       iNext.
@@ -539,7 +539,7 @@ Proof.
     apply map_get_true in Hlookup.
     iDestruct (big_sepM_lookup_acc with "HopAppliedConds_conds") as "[Hiscond _]".
     { done. }
-    wp_apply (wp_condSignal with "Hiscond").
+    wp_apply (wp_Cond__Signal with "Hiscond").
     wp_pures.
     wp_loadField.
     wp_loadField.
@@ -556,7 +556,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (release_spec with "[-HΨ HΦ HwaitSpec Hargs_epoch]").
+  wp_apply (wp_Mutex__Unlock with "[-HΨ HΦ HwaitSpec Hargs_epoch]").
   {
     iFrame "Hlocked HmuInv".
     iNext.

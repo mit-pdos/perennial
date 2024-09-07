@@ -760,7 +760,7 @@ Proof.
   wp_pures.
   iNamed "His_srv".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -782,7 +782,7 @@ Proof.
     iModIntro.
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[$HmuInv $Hlocked Hv HlatestEpoch HghostLatestEpoch HghostV]").
+    wp_apply (wp_Mutex__Unlock with "[$HmuInv $Hlocked Hv HlatestEpoch HghostLatestEpoch HghostV]").
     {
       iNext.
       iExists _, _.
@@ -923,7 +923,7 @@ Proof.
       iModIntro.
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch HghostV HghostLatestEpoch]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlocked $HmuInv Hv HlatestEpoch HghostV HghostLatestEpoch]").
       {
         iNext.
         iExists _, _.
@@ -979,7 +979,7 @@ Proof.
         iModIntro.
         wp_pures.
         wp_loadField.
-        wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch Hval Hlatest]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlocked $HmuInv Hv HlatestEpoch Hval Hlatest]").
         {
           iNext.
           iExists _, _.
@@ -1003,7 +1003,7 @@ Proof.
         iModIntro.
         wp_pures.
         wp_loadField.
-        wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch HghostV HghostLatestEpoch]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlocked $HmuInv Hv HlatestEpoch HghostV HghostLatestEpoch]").
         {
           iNext.
           iExists _, _.
@@ -1056,7 +1056,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
 
@@ -1099,7 +1099,7 @@ Proof.
     }
     iMod ("Hupd" with "Hlatest2") as "HΦclient".
     iModIntro.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HlatestEpoch Hv HghostLatestEpoch HghostV]").
+    wp_apply (wp_Mutex__Unlock with "[$Hlocked $HmuInv HlatestEpoch Hv HghostLatestEpoch HghostV]").
     {
       iNext.
       iExists _, _.
@@ -1185,7 +1185,7 @@ Proof.
     iMod ("Hupd" with "Hlatest2") as "Hupd".
     iModIntro.
 
-    wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch Hlatest Hval]").
+    wp_apply (wp_Mutex__Unlock with "[$Hlocked $HmuInv Hv HlatestEpoch Hlatest Hval]").
     {
       iNext.
       iExists _, _.

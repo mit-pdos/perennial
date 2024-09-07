@@ -86,7 +86,7 @@ Proof.
   (* tupleCur, ok := bucket.m[key]                           *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (acquire_spec with "HlatchRP").
+  wp_apply (wp_Mutex__Lock with "HlatchRP").
   iIntros "[Hlocked HbktOwn]".
   iNamed "HbktOwn".
   wp_pures.
@@ -104,7 +104,7 @@ Proof.
   wp_if_destruct.
   { (* The tuple is already in the index. *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { eauto 10 with iFrame . }
     wp_pures.
     iApply "HΦ".
@@ -138,7 +138,7 @@ Proof.
   iIntros "HlockmOwn".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ HtupleRP]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ HtupleRP]").
   { iFrame "Hlocked HlatchRP".
     iNext.
     rewrite /own_index_bucket.
@@ -221,7 +221,7 @@ Proof.
     rewrite list_lookup_fmap Hbkt_lookup in Hlookup.
     inversion Hlookup.
     wp_loadField.
-    wp_apply (acquire_spec with "HlatchRP").
+    wp_apply (wp_Mutex__Lock with "HlatchRP").
     iIntros "[Hlocked Hbkt]".
     wp_pures.
     iNamed "Hbkt".
@@ -251,7 +251,7 @@ Proof.
     iNamed "HP".
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[- HΦ HkeysR HkeysS]").
+    wp_apply (wp_Mutex__Unlock with "[- HΦ HkeysR HkeysS]").
     { (* Re-establish bucket lock invariant. *) eauto 10 with iFrame. }
     iApply "HΦ".
     eauto with iFrame.

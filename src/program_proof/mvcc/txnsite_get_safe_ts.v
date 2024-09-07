@@ -18,7 +18,7 @@ Proof.
   (*@     site.latch.Lock()                                                   @*)
   (*@                                                                         @*)
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HsiteOwn]".
   iNamed "HsiteOwn".
   iDestruct (typed_slice.own_slice_sz with "HactiveL") as "%HtidsactiveSz".
@@ -182,7 +182,7 @@ Proof.
   (*@                                                                         @*)
   iDestruct ("HactiveC" with "HactiveS") as "HactiveL".
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ HtidminRef]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ HtidminRef]").
   { eauto 10 with iFrame. }
   wp_pures.
 

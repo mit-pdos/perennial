@@ -78,7 +78,7 @@ Proof.
     iNamed 1.
     wp_pures.
     wp_loadField.
-    wp_apply (acquire_spec with "[$]").
+    wp_apply (wp_Mutex__Lock with "[$]").
     iIntros "[Hlocked Hown]".
     iNamed "Hown".
     iNamed "Hvol".
@@ -96,7 +96,7 @@ Proof.
       injection Heqb as Heqb.
       subst.
       iDestruct (lease_renewal_step with "[$] [$] [$] HghostEph") as "HghostEph".
-      wp_apply (release_spec with "[- HlatestEpoch]").
+      wp_apply (wp_Mutex__Unlock with "[- HlatestEpoch]").
       {
         iFrame "# Hlocked".
         iNext.
@@ -118,7 +118,7 @@ Proof.
       wp_loadField.
       wp_store.
       wp_loadField.
-      wp_apply (release_spec with "[- HlatestEpoch]").
+      wp_apply (wp_Mutex__Unlock with "[- HlatestEpoch]").
       {
         iFrame "# Hlocked".
         iNext. repeat iExists _. iFrame "HghostEph".
@@ -129,7 +129,7 @@ Proof.
     }
     (* no new epoch. Sleep a bit and try again later. *)
     wp_loadField.
-    wp_apply (release_spec with "[- HlatestEpoch]").
+    wp_apply (wp_Mutex__Unlock with "[- HlatestEpoch]").
     {
       iFrame "# Hlocked".
       iNext. repeat iExists _. iFrame "HghostEph".
@@ -145,7 +145,7 @@ Proof.
     iIntros (??). iNamed 1.
     wp_pures.
     wp_loadField.
-    wp_apply (acquire_spec with "[$]").
+    wp_apply (wp_Mutex__Lock with "[$]").
     iIntros "[Hlocked Hown]".
     iNamed "Hown".
     iNamed "Hvol".
@@ -164,7 +164,7 @@ Proof.
       wp_loadField.
       wp_store.
       wp_loadField.
-      wp_apply (release_spec with "[- HlatestEpoch]").
+      wp_apply (wp_Mutex__Unlock with "[- HlatestEpoch]").
       {
         iFrame "# Hlocked".
         iNext. repeat iExists _. iFrame "HghostEph".
@@ -175,7 +175,7 @@ Proof.
     }
     (* no new epoch. Sleep a bit and try again later. *)
     wp_loadField.
-    wp_apply (release_spec with "[- HlatestEpoch]").
+    wp_apply (wp_Mutex__Unlock with "[- HlatestEpoch]").
     {
       iFrame "# Hlocked".
       iNext. repeat iExists _. iFrame "HghostEph".

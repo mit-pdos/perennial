@@ -26,7 +26,7 @@ Proof.
   wp_pures.
   iNamed "His_shard".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -86,7 +86,7 @@ Proof.
   { (* don't have the shard, so we're not going to install it somewhere else *)
     iSpecialize ("HshardMap_sl" with "HshardMap_small").
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HSid]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HSid]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -169,7 +169,7 @@ Proof.
   wp_pures.
   wp_loadField.
   iSpecialize ("HshardMap_sl" with "HshardMap_small").
-  wp_apply (release_spec with "[- HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[- HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.

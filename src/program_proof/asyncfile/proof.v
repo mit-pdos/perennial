@@ -206,7 +206,7 @@ Proof.
   iNamed "H".
   iNamed "His".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
 
@@ -217,7 +217,7 @@ Proof.
   wp_if_destruct.
   { (* case: wait *)
     wp_pures. wp_loadField.
-    wp_apply (wp_condWait with "[-Htok HΦ]").
+    wp_apply (wp_Cond__Wait with "[-Htok HΦ]").
     {
       iFrame "HdurableIndexCond_is HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
@@ -235,7 +235,7 @@ Proof.
     wp_loadField.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
-    wp_apply (release_spec with "[-Htok HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[-Htok HΦ]").
     {
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
@@ -367,7 +367,7 @@ Proof.
   iAssert (_) with "His" as "His2".
   iNamed "His2".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -383,11 +383,11 @@ Proof.
   { word. }
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
   iMod (readonly_alloc_1 with "Hdata_in") as "#Hdata_in".
-  wp_apply wp_condSignal.
+  wp_apply wp_Cond__Signal.
   { iFrame "#". }
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hnoclose Hdat Hesc]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -477,7 +477,7 @@ Proof.
   wp_rec.
   iNamed "His".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iAssert (∃ curdata curidx,
@@ -500,7 +500,7 @@ Proof.
   wp_if_destruct.
   {
     wp_loadField.
-    wp_apply (wp_condWait with "[-HΦ HH]").
+    wp_apply (wp_Cond__Wait with "[-HΦ HH]").
     {
       iFrame "HindexCond_is HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
@@ -519,7 +519,7 @@ Proof.
   iNamed "HH".
   iMod (get_upd with "[$] [$] [$] [$]") as "H".
   iDestruct "H" as "(HpreData & HpreIdx & HdurIdx & Hupd & Hghost)".
-  wp_apply (release_spec with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile]").
   {
     iFrame "HmuInv Hlocked".
     repeat iExists _; iFrame "∗#%".
@@ -569,14 +569,14 @@ Proof.
 
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iClear "Hfilename Hdata HindexCond_is HdurableIndexCond_is".
   iNamed "Hown".
   wp_pures.
   wp_storeField.
   wp_loadField.
-  wp_apply wp_condBroadcast.
+  wp_apply wp_Cond__Broadcast.
   { iFrame "#". }
   wp_pures.
   iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".

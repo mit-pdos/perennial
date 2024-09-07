@@ -66,7 +66,7 @@ Proof.
     change (uint.Z (word.divu (word.sub 4096 8) 8)) with LogSz.
     wp_if_destruct.
     - wp_loadField.
-      wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
+      wp_apply (wp_Cond__Wait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
       { by iFrame "∗ #". }
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
@@ -348,7 +348,7 @@ Proof.
   (* use this to also strip a later, which the [wp_loadField] tactic does not do *)
   wp_apply (wp_loadField_ro with "HmemLock").
   iDestruct "Htxns_are" as "#Htxns_are".
-  wp_apply (release_spec with "[
+  wp_apply (wp_Mutex__Unlock with "[
     -HΦ HareLogging HdiskEnd_is Happender Hbufs $His_lock $Hlocked
     HownLoggerPos_logger HownLoggerTxn_logger
     HownDiskEndMem_logger HownDiskEndMemTxn_logger
@@ -547,7 +547,7 @@ Proof.
   rewrite -> subslice_length by word.
   iIntros "(Hpost&Hupds&Hcirc_appender&HdiskEnd_is)"; iNamed "Hpost".
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
+  wp_apply (wp_Mutex__Lock with "His_lock").
   iIntros "(His_locked&Hlockinv)".
   iNamed "Hlockinv".
   iNamed "Hfields".
@@ -714,9 +714,9 @@ Proof.
   wp_apply wp_slice_len.
   wp_loadField. wp_storeField.
   wp_loadField.
-  wp_apply (wp_condBroadcast with "His_cond1").
+  wp_apply (wp_Cond__Broadcast with "His_cond1").
   wp_loadField.
-  wp_apply (wp_condBroadcast with "His_cond2").
+  wp_apply (wp_Cond__Broadcast with "His_cond2").
   wp_pures.
   iApply "HΦ".
   iFrame "His_locked".
@@ -797,7 +797,7 @@ Proof.
   iNamed "Hmem".
   iNamed "Hstfields".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "(Hlk_held&Hlkinv)".
   wp_pures.
 
@@ -817,7 +817,7 @@ Proof.
       wp_pures.
       wp_if_destruct.
       + wp_loadField.
-        wp_apply (wp_condWait with "[$cond_logger $lk $Hlkinv $Hlk_held]").
+        wp_apply (wp_Cond__Wait with "[$cond_logger $lk $Hlkinv $Hlk_held]").
         iIntros "(Hlk_held&Hlkinv)".
         wp_pures.
         iApply ("HΦ" with "[$]").
@@ -828,9 +828,9 @@ Proof.
   wp_apply util_proof.wp_DPrintf.
   wp_apply (wp_dec_nthread with "[$st $Hlkinv]"); iIntros "Hlkinv".
   wp_loadField.
-  wp_apply (wp_condSignal with "cond_shut").
+  wp_apply (wp_Cond__Signal with "cond_shut").
   wp_loadField.
-  wp_apply (release_spec with "[$lk $Hlk_held $Hlkinv]").
+  wp_apply (wp_Mutex__Unlock with "[$lk $Hlk_held $Hlkinv]").
   wp_pures. by iApply ("HΦ" with "[//]").
 Qed.
 

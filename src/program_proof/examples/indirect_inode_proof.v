@@ -925,7 +925,7 @@ Proof.
   iNamed "Hinode". iNamed "Hro_state".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+  wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); auto.
   iIntros "His_locked".
   wp_pures.
 
@@ -944,7 +944,7 @@ Proof.
       word.
     }
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "His_locked"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
     wp_pures.
     change slice.nil with (slice_val Slice.nil).
     iApply "HΦ"; iFrame; auto.
@@ -979,7 +979,7 @@ Proof.
       wp_loadField.
       iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
       { iPureIntro; eauto. }
-      wp_apply (crash_lock.release_spec with "His_locked"); auto.
+      wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
       wp_pures.
       iApply "HΦ"; iFrame.
       rewrite lookup_take in Hlookup2; [ | word ].
@@ -1128,7 +1128,7 @@ Proof.
       iMod ("Hfupd" $! σ σ with "[$HP]") as "[HP HQ]".
       { iPureIntro; eauto. }
 
-      wp_apply (crash_lock.release_spec with "His_locked"); auto.
+      wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
       wp_pures.
       iApply "HΦ"; iFrame.
 
@@ -1150,7 +1150,7 @@ Proof.
   iNamed "Hinode"; iNamed "Hro_state".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+  wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); auto.
   iIntros "His_locked".
   wp_pures.
 
@@ -1165,7 +1165,7 @@ Proof.
     split; auto.
     unfold inode.size. word.
   }
-  wp_apply (crash_lock.release_spec with "His_locked"); auto.
+  wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
   wp_pures.
   iApply ("HΦ" with "[$]").
 Admitted.

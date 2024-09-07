@@ -491,7 +491,7 @@ Proof.
     iClear "HlenCond HdurCond HoldDurCond HcloCond Hcrash_wand Hctx_inv".
     iNamed "His_aof".
     wp_loadField.
-    wp_apply (acquire_spec with "Hmu_inv").
+    wp_apply (wp_Mutex__Lock with "Hmu_inv").
     iIntros "[Hlocked Haof_own]".
     wp_pures.
     iAssert (∃ data',
@@ -540,7 +540,7 @@ Proof.
     wp_if_destruct.
     {
       wp_loadField.
-      wp_apply (wp_condWait with "[- closed2 Hfile_ctx]").
+      wp_apply (wp_Cond__Wait with "[- closed2 Hfile_ctx]").
       { by iFrame "HlenCond Hmu_inv ∗#". }
       iIntros "[Hlocked Haof_own]".
       wp_pures.
@@ -683,14 +683,14 @@ Proof.
       iCombine "HdurLen HdurableLength" as "HdurLen".
       wp_storeField.
       wp_loadField.
-      wp_apply (wp_condBroadcast).
+      wp_apply (wp_Cond__Broadcast).
       { iFrame "#". }
       wp_pures.
       iCombine "closed2 Hclosed" as "Hclosed".
       wp_storeField.
       iDestruct "Hclosed" as "(closed2&Hclosed)".
       wp_loadField.
-      wp_apply (wp_condBroadcast).
+      wp_apply (wp_Cond__Broadcast).
       { iFrame "#". }
       wp_pures.
       wp_loadField.
@@ -707,7 +707,7 @@ Proof.
         iFrame "∗#".
       }
 
-      wp_apply (release_spec with "[-Hlen closed2]").
+      wp_apply (wp_Mutex__Unlock with "[-Hlen closed2]").
       {
         iFrame "Hmu_inv Hcrash_wand Hlocked".
         iNext.
@@ -748,7 +748,7 @@ Proof.
     wp_storeField.
     wp_loadField.
 
-    wp_apply (release_spec with "[-Hfile_ctx Hpredur Hdur Hmembuf_fupd Hmembuf_sl HdurLen Hlen closed2]").
+    wp_apply (wp_Mutex__Unlock with "[-Hfile_ctx Hpredur Hdur Hmembuf_fupd Hmembuf_sl HdurLen Hlen closed2]").
     { iFrame "Hmu_inv Hlocked Hcrash_wand". iNext. iExists _, [], (predurableC ++ membufC),_, _, _.
       rewrite app_nil_r. iFrame "∗#".
       iSplitL ""; first done.
@@ -840,7 +840,7 @@ Proof.
 
     wp_pures.
     wp_loadField.
-    wp_apply (acquire_spec with "Hmu_inv").
+    wp_apply (wp_Mutex__Lock with "Hmu_inv").
     iIntros "[Hlocked Haof_own]".
     iRename "Hdurlen_lb" into "Hdurlen_lb_old".
     iClear "Hcrash_wand".
@@ -853,7 +853,7 @@ Proof.
     iCombine "HdurLen HdurableLength" as "HdurLen".
     wp_storeField.
 
-    wp_apply (wp_condBroadcast).
+    wp_apply (wp_Cond__Broadcast).
     { iFrame "#". }
     wp_pures.
     iLeft.
@@ -904,7 +904,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Haof]".
   iNamed "Haof".
   iDestruct "Hpre" as "(HnewData & Haof_log & Hfupd)".
@@ -936,7 +936,7 @@ Proof.
   rewrite -HH in HnoOverflow.
   wp_pures.
   wp_loadField.
-  wp_apply (wp_condSignal).
+  wp_apply (wp_Cond__Signal).
   { iFrame "#". }
 
   wp_pures.
@@ -1154,7 +1154,7 @@ Proof.
   iMod "HH" as "[Hmembuf_fupd HfupdQ]".
 
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Haof_log HfupdQ Htok]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Haof_log HfupdQ Htok]").
   {
     iFrame "Hmu_inv Hlocked Hcrash_wand".
     iNext.
@@ -1200,7 +1200,7 @@ Proof.
   wp_pures.
   iNamed "Haof".
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Haof_own]".
   wp_pures.
   wp_apply wp_ref_of_zero.
@@ -1257,7 +1257,7 @@ Proof.
   {
     wp_pures.
     wp_load.
-    wp_apply (wp_condWait with "[- HΦ Hcond]").
+    wp_apply (wp_Cond__Wait with "[- HΦ Hcond]").
     {
       iFrame "His_cond Hmu_inv HdurableCond". by iFrame "∗#".
     }
@@ -1284,7 +1284,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (release_spec with "[- HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[- HΦ]").
   {
     by iFrame "Hmu_inv HdurableCond ∗#".
   }
@@ -1307,14 +1307,14 @@ Proof.
   wp_pures.
   iNamed "Haof".
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Haof_own]".
   wp_pures.
   iNamed "Haof_own".
   iNamed "Hclose".
   wp_storeField.
   wp_loadField.
-  wp_apply (wp_condSignal).
+  wp_apply (wp_Cond__Signal).
   { iFrame "#". }
   wp_pures.
 
@@ -1339,7 +1339,7 @@ Proof.
   { (* aof not closed yet, keep looping *)
     wp_pures.
     wp_loadField.
-    wp_apply (wp_condWait with "[-Htok HΦ]").
+    wp_apply (wp_Cond__Wait with "[-Htok HΦ]").
     {
       iFrame "Hmu_inv HdurableCond HoldDurableCond Hclosed HcloseRequested".
       by iFrame "∗#".
@@ -1375,7 +1375,7 @@ Proof.
 
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hf]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hf]").
   {
     iFrame "Hmu_inv HdurableCond ∗#%".
     by simpl.

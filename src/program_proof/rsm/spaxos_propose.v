@@ -259,12 +259,12 @@ Proof.
   (*@ }                                                                       @*)
   iNamed "Hnode".
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HpaxosOwn]".
   wp_pures.
   iNamed "HpaxosOwn".
   do 2 wp_loadField. wp_pures. wp_loadField.
-  wp_apply (release_spec with "[-HAU $Hlock $Hlocked]"); first eauto 15 with iFrame.
+  wp_apply (wp_Mutex__Unlock with "[-HAU $Hlock $Hlocked]"); first eauto 15 with iFrame.
   wp_pures.
 
   destruct learned eqn:Elearned; last first.
@@ -352,7 +352,7 @@ Proof.
   (*@                                                                         @*)
   iNamed "Hnode".
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HpaxosOwn]".
   wp_pures.
 
@@ -365,7 +365,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
     wp_pures.
     by iApply "HΦ".
   }
@@ -402,7 +402,7 @@ Proof.
   (*@     px.mu.Unlock()                                                      @*)
   (*@                                                                         @*)
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
     split; first lia.
@@ -447,7 +447,7 @@ Proof.
   (*@                                                                         @*)
   iNamed "Hnode".
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HpaxosOwn]".
   wp_pures.
 
@@ -492,7 +492,7 @@ Proof.
   (*@     px.mu.Unlock()                                                      @*)
   (*@                                                                         @*)
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
     split; first lia.
@@ -540,7 +540,7 @@ Proof.
   (*@                                                                         @*)
   iNamed "Hnode".
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HpaxosOwn]".
   wp_pures.
 
@@ -553,7 +553,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
     wp_pures.
     by iApply "HΦ".
   }
@@ -566,7 +566,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
     wp_pures.
     by iApply "HΦ".
   }
@@ -620,7 +620,7 @@ Proof.
   iClear "Hproposed".
   iAssert (is_proposal_nz γ (uint.nat term) decree)%I as "#Hproposed".
   { unfold is_proposal_nz. case_decide; done. }
-  wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
     replace (uint.nat (word.add _ _)) with (S (uint.nat term)) by word.
@@ -684,7 +684,7 @@ Proof.
   (*@                                                                         @*)
   iNamed "Hnode".
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HpaxosOwn]".
   wp_pures.
 
@@ -697,7 +697,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HAU $Hlock $Hlocked]"); first by eauto 15 with iFrame.
+    wp_apply (wp_Mutex__Unlock with "[-HAU $Hlock $Hlocked]"); first by eauto 15 with iFrame.
     wp_pures.
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod "HAU" as (vs) "[Hvs' HAU]".
@@ -720,7 +720,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HAU $Hlock $Hlocked]"); first by eauto 15 with iFrame.
+    wp_apply (wp_Mutex__Unlock with "[-HAU $Hlock $Hlocked]"); first by eauto 15 with iFrame.
     wp_pures.
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod "HAU" as (vs) "[Hvs' HAU]".
@@ -892,7 +892,7 @@ Proof.
   wp_loadField.
   iAssert (is_proposal_nz γ (uint.nat term) decree)%I as "#Hproposed".
   { unfold is_proposal_nz. destruct (decide (uint.nat term = _)); done. }
-  wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
     replace (uint.nat (word.add _ _)) with (S (uint.nat term)) by word.
@@ -1248,7 +1248,7 @@ Proof.
   (*@                                                                         @*)
   iNamed "Hnode".
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HpaxosOwn]".
   wp_pures.
 
@@ -1261,7 +1261,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by eauto 15 with iFrame.
     wp_pures.
     by iApply "HΦ".
   }
@@ -1316,7 +1316,7 @@ Proof.
   iClear "Hproposed".
   iAssert (is_proposal_nz γ (uint.nat term) decree)%I as "#Hproposed".
   { unfold is_proposal_nz. case_decide; done. }
-  wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]").
   { do 5 iExists _. iFrame "∗ #".
     iPureIntro.
     replace (uint.nat (word.add _ _)) with (S (uint.nat term)) by word.

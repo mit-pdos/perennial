@@ -114,7 +114,7 @@ Next Obligation.
 Defined. *)
 Admitted.
 
-Program Definition release_spec :=
+Program Definition wp_Mutex__Unlock :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜enc_args = u64_le args⌝ ∗
@@ -130,7 +130,7 @@ Definition is_lockserver_host host : iProp Σ :=
   ∃ γrpc,
   "#H1" ∷ is_urpc_spec_pred γrpc host (W64 0) getFreshNum_spec ∗
   "#H2" ∷ is_urpc_spec_pred γrpc host (W64 1) tryAcquire_spec ∗
-  "#H3" ∷ is_urpc_spec_pred γrpc host (W64 2) release_spec ∗
+  "#H3" ∷ is_urpc_spec_pred γrpc host (W64 2) wp_Mutex__Unlock ∗
   "#Hdom" ∷ is_urpc_dom γrpc {[ W64 0; W64 1; W64 2 ]}
   .
 

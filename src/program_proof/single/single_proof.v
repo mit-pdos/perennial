@@ -76,7 +76,7 @@ Proof.
   iNamed "His".
 
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_loadField.
@@ -103,7 +103,7 @@ Proof.
     wp_loadField.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[$Hmu_inv $Hlocked HpromisedPN HacceptedVal HacceptedPN Hundec Haccepted Hvotes HcommittedVal]").
+    wp_apply (wp_Mutex__Unlock with "[$Hmu_inv $Hlocked HpromisedPN HacceptedVal HacceptedPN Hundec Haccepted Hvotes HcommittedVal]").
     {
       iNext. iExists _, _, _, _.
       iFrame "∗#".
@@ -136,7 +136,7 @@ Proof.
   wp_pures.
   iNamed "His".
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
 
@@ -156,7 +156,7 @@ Proof.
         wp_storeField.
         wp_storeField.
         wp_loadField.
-        wp_apply (release_spec with "[-HΦ]").
+        wp_apply (wp_Mutex__Unlock with "[-HΦ]").
         {
           iFrame "Hmu_inv Hlocked".
           iNext.
@@ -178,7 +178,7 @@ Proof.
       wp_storeField.
       wp_storeField.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ]").
+      wp_apply (wp_Mutex__Unlock with "[-HΦ]").
       {
         iFrame "Hmu_inv Hlocked".
         iNext.

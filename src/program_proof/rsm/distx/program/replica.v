@@ -424,7 +424,7 @@ Section program.
     (*@                                                                         @*)
     iNamed "Hrp".
     wp_loadField.
-    wp_apply (acquire_spec with "Hlock").
+    wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
     wp_pures.
     iNamed "Hrp". iNamed "Hst".
@@ -436,7 +436,7 @@ Section program.
     (*@     return status                                                       @*)
     (*@ }                                                                       @*)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
     wp_pures.
     iApply "HΦ".
     destruct (stm !! uint.nat ts) as [st |] eqn:Hst; last done.
@@ -476,7 +476,7 @@ Section program.
     (*@                                                                         @*)
     iNamed "Hrp".
     wp_loadField.
-    wp_apply (acquire_spec with "Hlock").
+    wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
     wp_pures.
     iNamed "Hrp". iNamed "Hst".
@@ -505,7 +505,7 @@ Section program.
       apply elem_of_list_lookup_2 in Hloga.
       by eapply apply_cmds_elem_of_prepare.
     }
-    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
     wp_pures.
     destruct Hsome as [st Hst].
     rewrite Hst.
@@ -568,13 +568,13 @@ Section program.
     (*@                                                                         @*)
     iNamed "Hrp".
     wp_loadField.
-    wp_apply (acquire_spec with "Hlock").
+    wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
     iNamed "Hrp". iNamed "Hst". iNamed "Hstm".
     wp_apply (wp_Replica__queryTxnTermination with "Htxntbl").
     iIntros (terminated) "[Htxntbl _]".
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
 
     (*@     return terminated                                                   @*)
     (*@ }                                                                       @*)
@@ -611,13 +611,13 @@ Section program.
       wp_pures.
       iNamed "Hrp".
       wp_loadField.
-      wp_apply (acquire_spec with "Hlock").
+      wp_apply (wp_Mutex__Lock with "Hlock").
       iIntros "[Hlocked Hrp]".
       iNamed "Hrp". iNamed "Hlog".
       do 2 wp_loadField.
       (* Obtain a lower bound of [lsna]. *)
       iDestruct (lsn_applied_witness with "Hlsna") as "#Hlsnap".
-      wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+      wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
       wp_if_destruct.
       { (* Weaken the lower bound. *)
         iDestruct (lsn_applied_lb_weaken (uint.nat lsn) with "Hlsnap") as "#Hlsn".
@@ -2046,7 +2046,7 @@ Section program.
     (*@                                                                         @*)
     iPoseProof "Hrp" as "Hrp'". iNamed "Hrp'".
     wp_loadField.
-    wp_apply (acquire_spec with "Hlock").
+    wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked HrpO]".
     wp_pures.
 
@@ -2144,10 +2144,10 @@ Section program.
     { (* Have applied all the commands known to be committed. *)
       wp_loadField.
       iClear "Hlb Hlbnew".
-      wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
+      wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
       wp_apply wp_Sleep.
       wp_loadField.
-      wp_apply (acquire_spec with "Hlock").
+      wp_apply (wp_Mutex__Lock with "Hlock").
       iIntros "[Hlocked HrpO]".
       wp_pures.
       iApply "HΦ".

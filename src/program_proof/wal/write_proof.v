@@ -722,7 +722,7 @@ Proof.
     iNamed "Hmem".
     iNamed "Hstfields".
     wp_loadField.
-    wp_apply (acquire_spec with "lk"); iIntros "(Hlocked&Hlockinv)".
+    wp_apply (wp_Mutex__Lock with "lk"); iIntros "(Hlocked&Hlockinv)".
     wp_loadField.
     wp_pures.
     wp_bind (For _ _ _).
@@ -902,16 +902,16 @@ Proof.
         wp_apply (wp_endGroupTxn with "Hlockinv").
         iIntros "Hlockinv".
         wp_loadField.
-        wp_apply (wp_condBroadcast with "[$cond_logger]").
+        wp_apply (wp_Cond__Broadcast with "[$cond_logger]").
         wp_loadField.
-        wp_apply (wp_condWait with "[$cond_logger $Hlocked $lk $Hlockinv]").
+        wp_apply (wp_Cond__Wait with "[$cond_logger $Hlocked $lk $Hlockinv]").
         iIntros "(Hlocked&Hlockinv)".
         wp_pures.
         iApply "HΦ".
         iExists _, _; by iFrame. }
     iNamed 1.
     wp_loadField.
-    wp_apply (release_spec with "[$lk $Hlocked $Hlockinv]").
+    wp_apply (wp_Mutex__Unlock with "[$lk $Hlocked $Hlockinv]").
     wp_pures.
     wp_load. wp_load.
     wp_pures.

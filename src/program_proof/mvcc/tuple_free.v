@@ -20,7 +20,7 @@ Proof.
   (* tuple.latch.Lock()                                      *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked HtupleOwn]".
   iNamed "HtupleOwn".
   iNamed "Hphys".
@@ -35,7 +35,7 @@ Proof.
   (* tuple.rcond.Broadcast()                                 *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (wp_condBroadcast with "[$HrcondC]").
+  wp_apply (wp_Cond__Broadcast with "[$HrcondC]").
   wp_pures.
 
   (***********************************************************)
@@ -43,7 +43,7 @@ Proof.
   (***********************************************************)
   wp_loadField.
   iNamed "Hrepr".
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   { iFrame "Hlock Hlocked".
     iNext.
     iExists false.

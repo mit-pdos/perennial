@@ -27,7 +27,7 @@ Proof.
   wp_rec. wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
 
@@ -38,7 +38,7 @@ Proof.
   wp_if_destruct.
   { (* already leader, no need to do anything *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       do 2 iFrame "∗#%". by rewrite Heqb.
     }
@@ -54,7 +54,7 @@ Proof.
   iIntros (args_ptr) "Hargs".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hargs HΨ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hargs HΨ]").
   {
     do 2 iFrame "∗#%". by rewrite Heqb.
   }
@@ -91,7 +91,7 @@ Proof.
                                                 True)
                                   ))
                 )%I).
-  wp_apply (newlock_spec N _ replyInv with "[HnumReplies Hreplies_sl]").
+  wp_apply (wp_newMutex N _ replyInv with "[HnumReplies Hreplies_sl]").
   {
     iNext.
     iExists _, _.
@@ -164,7 +164,7 @@ Proof.
       iIntros (reply_ptr reply) "Hreply".
       wp_pures.
 
-      wp_apply (acquire_spec with "HmuReplyInv").
+      wp_apply (wp_Mutex__Lock with "HmuReplyInv").
       iIntros "[Hlocked Hown]".
       iNamed "Hown".
       wp_pures.
@@ -186,12 +186,12 @@ Proof.
       wp_apply (wp_If_optional _ _ (True%I)).
       {
         iIntros (?) "_ HΦ'".
-        wp_apply (wp_condSignal with "HnumReplies_cond").
+        wp_apply (wp_Cond__Signal with "HnumReplies_cond").
         wp_pures.
         by iApply "HΦ'".
       }
       (* iMod (readonly_alloc_1 with "Hreply") as "Hreply". *)
-      wp_apply (release_spec with "[-]").
+      wp_apply (wp_Mutex__Unlock with "[-]").
       {
         iFrame "# Hlocked".
         iNext.
@@ -232,7 +232,7 @@ Proof.
   iIntros "_".
   wp_pures.
 
-  wp_apply (acquire_spec with "HmuReplyInv").
+  wp_apply (wp_Mutex__Lock with "HmuReplyInv").
   iIntros "[Hlocked Hown]".
   wp_pures.
 
@@ -243,7 +243,7 @@ Proof.
   wp_if_destruct.
   { (* continue waiting for there to be enough replies *)
     wp_pures.
-    wp_apply (wp_condWait with "[$HnumReplies_cond $HmuReplyInv $Hlocked Hreplies_sl Hreplies HnumReplies]").
+    wp_apply (wp_Cond__Wait with "[$HnumReplies_cond $HmuReplyInv $Hlocked Hreplies_sl Hreplies HnumReplies]").
     {
       iExists _, _.
       iFrame "∗#%".
@@ -1169,7 +1169,7 @@ Proof.
         word.
       }
       wp_pures.
-      wp_apply (release_spec with "[-HΦ HΨ]").
+      wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
       {
         iFrame "HmuReplyInv Hlocked".
         iNext.
@@ -1192,7 +1192,7 @@ Proof.
       iIntros "$ !#".
       Transparent own_paxosState_ghost.
       wp_pures.
-      wp_apply (release_spec with "[-HΦ HΨ]").
+      wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
       {
         iFrame "HmuReplyInv Hlocked".
         iNext.
@@ -1205,7 +1205,7 @@ Proof.
     }
   }
   { (* case: not enough replies *)
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       iFrame "HmuReplyInv Hlocked".
       iNext.

@@ -639,7 +639,7 @@ Proof using txnG0 Σ.
 
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply acquire_spec; eauto.
+  wp_apply wp_Mutex__Lock; eauto.
   iIntros "[Hlocked Htxnlocked]".
 
   wp_pures.
@@ -1182,7 +1182,7 @@ Proof using txnG0 Σ.
     iDestruct "Hnpos" as "[Hnpos Htxn_pos]".
     iNamed "Hnpos".
     iDestruct "Htxn_pos" as (txn_num) "#Htxn_pos".
-    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hlockedheap Histxn_pos]").
+    wp_apply (wp_Mutex__Unlock with "[$Histxn_lock $Hlocked Hlockedheap Histxn_pos]").
     { iExists _, _, _. iFrame. }
 
     wp_pures.
@@ -1190,7 +1190,7 @@ Proof using txnG0 Σ.
   }
   {
     iNamed "Hnpos".
-    wp_apply (release_spec with "[$Histxn_lock $Hlocked Hlockedheap Histxn_pos]").
+    wp_apply (wp_Mutex__Unlock with "[$Histxn_lock $Hlocked Hlockedheap Histxn_pos]").
     { iExists _, _, _. iFrame. }
 
     wp_pures.

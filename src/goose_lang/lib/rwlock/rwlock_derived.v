@@ -100,41 +100,41 @@ Section proof.
   Qed.
 
 
-  Lemma read_acquire_spec lk R Rc :
+  Lemma read_wp_Mutex__Lock lk R Rc :
     {{{ is_crash_rwlock lk R Rc }}} rwlock.read_acquire lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ".
-    wp_apply (read_acquire_spec with "[$]").
+    wp_apply (read_wp_Mutex__Lock with "[$]").
     eauto.
   Qed.
 
-  Lemma read_release_spec lk R Rc :
+  Lemma read_wp_Mutex__Unlock lk R Rc :
     {{{ is_crash_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}}
       rwlock.read_release lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock&Hborrow) HΦ".
-    wp_apply (read_release_spec with "[$Hlock $Hborrow]").
+    wp_apply (read_wp_Mutex__Unlock with "[$Hlock $Hborrow]").
     iApply "HΦ"; eauto.
   Qed.
 
-  Lemma write_acquire_spec lk R Rc :
+  Lemma write_wp_Mutex__Lock lk R Rc :
     {{{ is_crash_rwlock lk R Rc }}}
       rwlock.write_acquire lk
     {{{ RET #(); wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}.
   Proof.
     iIntros (Φ) "Hlock HΦ".
-    wp_apply (write_acquire_spec with "[$Hlock]").
+    wp_apply (write_wp_Mutex__Lock with "[$Hlock]").
     iApply "HΦ"; eauto.
   Qed.
 
-  Lemma release_spec lk R Rc :
+  Lemma wp_Mutex__Unlock lk R Rc :
     {{{ is_crash_rwlock lk R Rc ∗ wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}
       rwlock.write_release lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock&Hborrow) HΦ".
-    wp_apply (release_spec with "[$Hlock $Hborrow]").
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hborrow]").
     iApply "HΦ"; eauto.
   Qed.
 

@@ -157,7 +157,7 @@ Proof.
   iIntros (Φ) "(Hinv&Hfupd) HΦ"; iNamed "Hinv".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
+  wp_apply (wp_Mutex__Lock with "His_lock").
   iIntros "(His_locked & Hinner)"; iNamed "Hinner".
   iNamed "Hlockinv".
   wp_loadField.
@@ -186,7 +186,7 @@ Proof.
     { apply lookup_gset_to_gmap_None.
       rewrite /alloc.free in Hk; set_solver. }
 
-    wp_apply (release_spec with "[-HΦ HQ Hbk His_used $His_lock $His_locked]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HQ Hbk His_used $His_lock $His_locked]").
     { iExists _; iFrame.
       assert (alloc.wf (set alloc.used ({[k]} ∪.) σ)) as Hwf''.
       { rewrite /alloc.wf in Hwf |- *; set_solver. }
@@ -199,7 +199,7 @@ Proof.
         rewrite -gset_to_gmap_union_singleton //. }
     wp_pures.
     iApply "HΦ"; by iFrame.
-  - wp_apply (release_spec with "[-HΦ HQ $His_lock $His_locked]").
+  - wp_apply (wp_Mutex__Unlock with "[-HΦ HQ $His_lock $His_locked]").
     { iExists _; iFrame "∗ %". iNext.
       iExactEq "Hfreemap"; rewrite /named.
       f_equal.
@@ -258,7 +258,7 @@ Proof.
   iIntros (Φ) "(Halloc&Hb&Hused&Hfupd) HΦ"; iNamed "Halloc".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
+  wp_apply (wp_Mutex__Lock with "His_lock").
   iIntros "(Hlocked&Hinv)"; iNamed "Hinv".
   iNamed "Hlockinv".
   wp_loadField.
@@ -280,7 +280,7 @@ Proof.
   assert (alloc.wf (set alloc.used (λ used : gset u64, used ∖ {[a]}) σ)) as Hwf''.
   { set_solver. }
   iMod (ghost_map_delete with "Hallocated Hused") as "Hallocated".
-  wp_apply (release_spec with "[$His_lock $Hlocked Hb Hdurable Hfreemap Hallocated HP]").
+  wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked Hb Hdurable Hfreemap Hallocated HP]").
   { iNamed "Hdurable".
     iExists _; iFrame "HP".
     iFrame "%".

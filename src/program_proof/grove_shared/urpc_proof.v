@@ -471,7 +471,7 @@ Proof.
 
     (* Loop (MapIter) to wake up all waiting clients *)
     wp_loadField.
-    wp_apply (acquire_spec with "[$]").
+    wp_apply (wp_Mutex__Lock with "[$]").
     iIntros "(Hlked&Hlock_inner)".
     iNamed "Hlock_inner".
 
@@ -496,7 +496,7 @@ Proof.
       wp_loadField.
       wp_store.
       wp_loadField.
-      wp_apply (wp_condSignal with "Hcond").
+      wp_apply (wp_Cond__Signal with "Hcond").
       iDestruct ("Hreqs" with "[-HΦ]") as "Hreqs".
       { iExists _. iFrame "Hreg_entry HPost_saved". iLeft. iExists _, _, _, true. by iFrame "∗#". }
       iClear "Hcond". iThaw "HΦ". iApply "HΦ".
@@ -505,7 +505,7 @@ Proof.
     }
     iIntros "[Hmap [Hreqs _]]".
     wp_loadField.
-    wp_apply (release_spec with "[-]").
+    wp_apply (wp_Mutex__Unlock with "[-]").
     { iFrame "Hlked Hlk". iNext. iExists _, _, _, _, _. iFrame. eauto. }
     wp_pures. iRight. iModIntro. iSplit; first done. wp_pures. eauto.
   }
@@ -518,7 +518,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "(Hlked&Hlock_inner)".
   iNamed "Hlock_inner".
   wp_pures.
@@ -527,7 +527,7 @@ Proof.
   iIntros (v ok) "(%Hget&Hpending_map)".
   wp_pures.
   wp_if_destruct; last first.
-  { wp_pures. wp_loadField. wp_apply (release_spec with "[-]").
+  { wp_pures. wp_loadField. wp_apply (wp_Mutex__Unlock with "[-]").
     { iFrame "∗#". iNext. iExists _, _, _, _, _. iFrame.
       eauto. }
     wp_pures. eauto.
@@ -554,7 +554,7 @@ Proof.
     { econstructor. econstructor. }
     { iFrame. }
     iIntros "Hdone". wp_pures. wp_loadField.
-    wp_apply (wp_condSignal with "[$]").
+    wp_apply (wp_Cond__Signal with "[$]").
     iApply fupd_wp.
     iInv "HPost" as "HPost_inner" "Hclo''".
     iDestruct "HPost_inner" as "[HPost_val|>Hescrow']"; last first.
@@ -563,7 +563,7 @@ Proof.
     { iRight. eauto. }
     iModIntro. wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[-]"); last first.
+    wp_apply (wp_Mutex__Unlock with "[-]"); last first.
     { wp_pures. eauto. }
     iFrame "Hlk Hlked". iNext. iExists (delete seqno pending) , _, _, _, _.
     iFrame. iFrame "%".
@@ -782,7 +782,7 @@ Proof.
   iIntros "done'".
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "(Hlked&Hlock_inner)".
   iNamed "Hlock_inner".
   wp_pures.
@@ -808,7 +808,7 @@ Proof.
   { apply not_elem_of_dom. rewrite -Hdom_eq_es -Hdom_range. lia. }
   iMod (map_alloc n tt with "Hextracted_ctx") as "(Hextracted_ctx&Hextracted)".
   { apply not_elem_of_dom. rewrite -Hdom_eq_ex -Hdom_range. lia. }
-  wp_apply (release_spec with "[-Hslice Hhandler HΦ Hextracted]").
+  wp_apply (wp_Mutex__Unlock with "[-Hslice Hhandler HΦ Hextracted]").
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
     replace (uint.Z (word.add n 1)) with (uint.Z n + 1)%Z by word.
@@ -913,7 +913,7 @@ Proof.
   wp_rec. wp_pures.
 
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hi Hlockinv]".
   wp_pures.
   wp_loadField.
@@ -954,7 +954,7 @@ Proof.
                                   Client_lock_inner Γ cl_ptr lk mref)%I
    with "[Hi Hlockinv]").
   { case_bool_decide; wp_pures.
-    - wp_loadField. wp_apply (wp_condWaitTimeout with "[$cond' $Hi $Hlk $Hlockinv]").
+    - wp_loadField. wp_apply (wp_Cond__WaitTimeout with "[$cond' $Hi $Hlk $Hlockinv]").
       iIntros "(Hi&Hlockinv)". wp_pures.
       iFrame. eauto.
     - iFrame. eauto. }
@@ -978,7 +978,7 @@ Proof.
     rewrite bool_decide_false.
     2: by destruct aborted.
     wp_loadField.
-    wp_apply (release_spec with "[$Hlk $Hi H HPost_saved
+    wp_apply (wp_Mutex__Unlock with "[$Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
     { iExists _, _, _, _, _. iFrame. eauto. }
     wp_pures.
@@ -1003,7 +1003,7 @@ Proof.
     { simpl. iExists _. iFrame "Hsaved Hreg". iRight. iRight.
       iSplit; eauto. }
     wp_loadField.
-    wp_apply (release_spec with "[$Hlk $Hi H HPost_saved
+    wp_apply (wp_Mutex__Unlock with "[$Hlk $Hi H HPost_saved
                  Hpending_map Hmapping_ctx Hescrow_ctx Hextracted_ctx seq]").
     { iExists _, _, _, _, _. iFrame. eauto. }
     wp_pures.

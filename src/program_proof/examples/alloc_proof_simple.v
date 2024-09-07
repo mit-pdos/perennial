@@ -95,7 +95,7 @@ Proof.
   iIntros (Φ) "Hinv HΦ"; iNamed "Hinv".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
+  wp_apply (wp_Mutex__Lock with "His_lock").
   iIntros "(His_locked & Hinner)"; iNamed "Hinner".
   iNamed "Hlockinv".
   wp_loadField.
@@ -117,12 +117,12 @@ Proof.
     iApply wp_wpc.
     wp_loadField.
     iIntros "(HP&Hk)".
-    wp_apply (release_spec with "[-HΦ Hk $His_lock $His_locked]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hk $His_lock $His_locked]").
     { iNext. iExists _; iFrame. rewrite /map_del dom_delete_L. iPureIntro; congruence. }
     wp_pures.
     iApply "HΦ"; by iFrame.
   - wp_loadField.
-    wp_apply (release_spec with "[-HΦ $His_lock $His_locked]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ $His_lock $His_locked]").
     { iNext. iExists _; iFrame. rewrite /map_del dom_delete_L. subst.
       iPureIntro. rewrite Hdom. set_solver. }
     wp_pures.
@@ -151,7 +151,7 @@ Proof.
   iIntros (Φ) "(Halloc&Ha) HΦ"; iNamed "Halloc".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
+  wp_apply (wp_Mutex__Lock with "His_lock").
   iIntros "(Hlocked&Hinv)"; iNamed "Hinv".
   iNamed "Hlockinv".
   wp_loadField.
@@ -171,7 +171,7 @@ Proof.
   iApply wp_wpc.
   wp_loadField.
   iIntros "HP".
-  wp_apply (release_spec with "[$His_lock $Hlocked Hfreemap HP]").
+  wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked Hfreemap HP]").
   { iExists _; iFrame "HP". eauto. }
   wp_pures.
   iApply ("HΦ" with "[$]").
