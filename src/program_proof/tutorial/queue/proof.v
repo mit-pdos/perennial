@@ -336,7 +336,7 @@ Proof.
   wp_pures.
   iNamed "Pre".
   wp_loadField.
-  wp_apply acquire_spec.
+  wp_apply wp_Mutex__Lock.
   { iFrame "HlockC". }
   iIntros "[H0 H1]".
   wp_pures.
@@ -358,7 +358,7 @@ Proof.
       { iIntros "H1".
         wp_pures.
         wp_loadField.
-        wp_apply (release_spec with "[HlockC H0 Hqueue Hfirst Hcount H1 Helem]").
+        wp_apply (wp_Mutex__Unlock with "[HlockC H0 Hqueue Hfirst Hcount H1 Helem]").
         { iFrame "∗#". iNext. iExists _, _, _. iFrame. eauto. }
         wp_pures.
         iModIntro.
@@ -366,7 +366,7 @@ Proof.
         done.
       } }
   - wp_loadField.
-    wp_apply (release_spec with "[HlockC H0 Hqueue Hfirst Hcount isSlice Helem]").
+    wp_apply (wp_Mutex__Unlock with "[HlockC H0 Hqueue Hfirst Hcount isSlice Helem]").
     { iFrame "∗#". iNext. iExists _,_,_. iFrame. eauto. }
     wp_pures.
     iModIntro.
@@ -382,7 +382,7 @@ Proof.
   wp_pures.
   iNamed "Pre".
   wp_loadField.
-  wp_apply acquire_spec.
+  wp_apply wp_Mutex__Lock.
   {iFrame "HlockC". }
   iIntros "[H0 H1]".
   iNamed "H1".
@@ -418,7 +418,7 @@ Proof.
     wp_loadField.
     wp_if_destruct.
     + wp_loadField.
-      wp_apply (wp_condWait with "[H2 Hfirst Hcount isSlice Helem]").
+      wp_apply (wp_Cond__Wait with "[H2 Hfirst Hcount isSlice Helem]").
       { iFrame "# H2". iExists first1, count1, queue1. iFrame. eauto. }
       iIntros "[H0 H2]".
       wp_pures.
@@ -467,7 +467,7 @@ Proof.
     wp_loadField.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[H2 Hqueue Hfirst Hcount H4 Helem HP]").
+    wp_apply (wp_Mutex__Unlock with "[H2 Hqueue Hfirst Hcount H4 Helem HP]").
     { iFrame "HlockC". 
       iFrame "H2". iNext. iExists _, (word.add count1 1).
       iExists (<[uint.nat
@@ -500,7 +500,7 @@ Proof.
           word. }
     wp_pures.
     wp_loadField.
-    wp_apply (wp_condBroadcast with "HrcondC").
+    wp_apply (wp_Cond__Broadcast with "HrcondC").
     wp_pures.
     iModIntro.
     iApply "Post".
@@ -515,7 +515,7 @@ Proof.
   wp_pures.
   iNamed "Pre".
   wp_loadField.
-  wp_apply acquire_spec.
+  wp_apply wp_Mutex__Lock.
   { iFrame "HlockC". }
   iIntros "[H0 H1]".
   wp_pures.
@@ -550,7 +550,7 @@ Proof.
     wp_if_destruct.
     + wp_pures.
       wp_loadField.
-      wp_apply (wp_condWait with "[H2 Hfirst Hcount isSlice Helem]").
+      wp_apply (wp_Cond__Wait with "[H2 Hfirst Hcount isSlice Helem]").
       { iFrame "# H2". iExists first1, (W64 0), queue1. iFrame. eauto. }
       iIntros "[H2 H4]".
       wp_pures.
@@ -597,7 +597,7 @@ Proof.
     wp_loadField.
     erewrite (remove_one queue1 first1 count1); eauto; try word.
     iDestruct "Helem" as "[Hp Helem]". 
-    wp_apply (release_spec with "[HlockC H2 Hqueue Hfirst Hcount H3 Helem]").
+    wp_apply (wp_Mutex__Unlock with "[HlockC H2 Hqueue Hfirst Hcount H3 Helem]").
     { iFrame "∗#". 
       iNext.
       iExists _, (word.sub count1 1).
@@ -612,7 +612,7 @@ Proof.
     }
     wp_pures.
     wp_loadField.
-    wp_apply (wp_condBroadcast with "HrcondC").
+    wp_apply (wp_Cond__Broadcast with "HrcondC").
     wp_pures.
     iModIntro.
     iApply "Post".

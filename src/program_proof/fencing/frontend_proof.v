@@ -92,7 +92,7 @@ Proof.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -394,7 +394,7 @@ Proof.
       iIntros "Hck1_own".
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[$Hlocked $HmuInv Hck1 Hck2 Hck2_own Hck1_own Hval Hghost2]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlocked $HmuInv Hck1 Hck2 Hck2_own Hck1_own Hval Hghost2]").
       {
         iNext.
         iExists _, _, _.
@@ -715,7 +715,7 @@ Proof.
       iIntros "Hck2_own".
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[$Hlocked $HmuInv Hck1 Hck2 Hck2_own Hck1_own Hval Hghost1]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlocked $HmuInv Hck1 Hck2 Hck2_own Hck1_own Hval Hghost1]").
       {
         iNext.
         iExists _, _, _.

@@ -136,7 +136,7 @@ Proof.
 
   Search lock.acquire.
 
-  wp_apply (acquire_spec with "[]").
+  wp_apply (wp_Mutex__Lock with "[]").
   { iApply "Ht_lock". }
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
@@ -148,7 +148,7 @@ Proof.
 
   Search lock.release.
 
-  wp_apply (release_spec with "[Hlocked Ht_state]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Ht_state]").
   { iFrame "Ht_lock". iFrame "Hlocked".
     iExists _. iFrame. }
   wp_pures.
@@ -169,7 +169,7 @@ Proof.
 
   Search lock.acquire.
 
-  wp_apply (acquire_spec with "[]").
+  wp_apply (wp_Mutex__Lock with "[]").
   { iApply "Ht_lock". }
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
@@ -182,7 +182,7 @@ Proof.
 
   Search lock.release.
 
-  wp_apply (release_spec with "[Hlocked Ht_state]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Ht_state]").
   { iFrame "Ht_lock". iFrame "Hlocked".
     iExists _. iFrame. }
   wp_pures.
@@ -200,7 +200,7 @@ Proof.
   iNamed "Ht".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "Ht_lock").
+  wp_apply (wp_Mutex__Lock with "Ht_lock").
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
   wp_pures.
@@ -211,7 +211,7 @@ Proof.
   destruct b.
   {
     iDestruct "Hb" as "[Ht_state Hptsto]".
-    wp_apply (release_spec with "[Hlocked Ht_state]").
+    wp_apply (wp_Mutex__Unlock with "[Hlocked Ht_state]").
     { iFrame "Ht_lock". iFrame "Hlocked". iModIntro.
       iExists _. iFrame. }
     wp_pures.
@@ -220,7 +220,7 @@ Proof.
     iFrame.
   }
   {
-    wp_apply (release_spec with "[Hlocked Hb]").
+    wp_apply (wp_Mutex__Unlock with "[Hlocked Hb]").
     { iFrame "Ht_lock". iFrame "Hlocked". iModIntro.
       iExists _. iFrame. }
     wp_pures.

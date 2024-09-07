@@ -151,7 +151,7 @@ Proof.
   wp_rec.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   { done. }
   iIntros "Hres".
   wp_pures.
@@ -225,7 +225,7 @@ Proof.
     iFrame.
   }
   iApply wp_wpc.
-  wp_apply (release_spec with "[Hres]").
+  wp_apply (wp_Mutex__Unlock with "[Hres]").
   { done. }
   { unfold crash_locked.
     iFrame.

@@ -923,7 +923,7 @@ Proof.
 
   iModIntro.
   wp_loadField.
-  wp_apply (release_spec with "[$lk $His_locked Hlinv
+  wp_apply (wp_Mutex__Unlock with "[$lk $His_locked Hlinv
     HdiskEnd_exactly Hstart_exactly
     His_memLog HmemLog HdiskEnd Hshutdown Hnthread]").
   {
@@ -1181,7 +1181,7 @@ Proof.
   iNamed "Hpost".
 
   wp_loadField.
-  wp_apply (acquire_spec with "lk").
+  wp_apply (wp_Mutex__Lock with "lk").
   iIntros "(His_locked&Hlkinv)".
 
   iDestruct "Hlkinv" as (σ') "Hlkinv".
@@ -1220,7 +1220,7 @@ Proof.
   1: lia.
   iIntros "His_memLog".
   wp_loadField.
-  wp_apply (wp_condBroadcast with "cond_install").
+  wp_apply (wp_Cond__Broadcast with "cond_install").
   wp_pures.
 
   iApply "HΦ".
@@ -1340,7 +1340,7 @@ Proof.
   iNamed "Hmem".
   iNamed "Hstfields".
   wp_loadField.
-  wp_apply (acquire_spec with "lk").
+  wp_apply (wp_Mutex__Lock with "lk").
   iIntros "[Hlocked Hlockinv]".
   wp_apply (wp_inc_nthread with "[$Hlockinv $st]"); iIntros "Hlockinv".
   wp_pures.
@@ -1365,7 +1365,7 @@ Proof.
       { wp_apply util_proof.wp_DPrintf; wp_pures.
         iApply ("HΦ" with "[$]"). }
       wp_loadField.
-      wp_apply (wp_condWait with "[$cond_install $lk $His_locked $Hlkinv]").
+      wp_apply (wp_Cond__Wait with "[$cond_install $lk $His_locked $Hlkinv]").
       iIntros "[His_locked Hlkinv]".
       wp_pures.
       iApply ("HΦ" with "[$]").
@@ -1374,9 +1374,9 @@ Proof.
   wp_apply util_proof.wp_DPrintf.
   wp_apply (wp_dec_nthread with "[$Hlockinv $st]"); iIntros "Hlockinv".
   wp_loadField.
-  wp_apply (wp_condSignal with "[$cond_shut]").
+  wp_apply (wp_Cond__Signal with "[$cond_shut]").
   wp_loadField.
-  wp_apply (release_spec with "[$lk $Hlocked $Hlockinv]").
+  wp_apply (wp_Mutex__Unlock with "[$lk $Hlocked $Hlockinv]").
   wp_pures. by iApply ("HΦ" with "[$]").
 Qed.
 

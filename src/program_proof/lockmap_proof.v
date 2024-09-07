@@ -127,7 +127,7 @@ Proof.
 
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked Hinner]".
 
   wp_pures.
@@ -176,7 +176,7 @@ Proof.
 
         wp_untyped_load.
         wp_loadField.
-        wp_apply (lock.wp_condWait with "[-HΦloop Hstate Hacquired]").
+        wp_apply (lock.wp_Cond__Wait with "[-HΦloop Hstate Hacquired]").
         {
           iFrame "Hlock Hcond Hlocked".
           iExists _, _.
@@ -316,7 +316,7 @@ Proof.
 
   iIntros "(Hinner & Hlocked & Hp & Haddrlocked)".
   wp_loadField.
-  wp_apply (release_spec with "[Hlocked Hinner]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Hinner]").
   {
     iSplitR. { iApply "Hlock". }
     iFrame.
@@ -335,7 +335,7 @@ Proof.
   iDestruct "Hls" as (shardlock mptr) "(#Hls_mu&#Hls_state&#Hlock)".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked Hinner]".
   iDestruct "Hinner" as (m gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
 
@@ -366,12 +366,12 @@ Proof.
   {
     wp_pures.
     wp_loadField.
-    wp_apply (lock.wp_condSignal with "[$Hcond]").
+    wp_apply (lock.wp_Cond__Signal with "[$Hcond]").
 
     iMod (ghost_map_update false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
 
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     {
       iFrame "Hlock Hlocked".
       iExists _, _.
@@ -406,7 +406,7 @@ Proof.
     iMod (ghost_map_delete with "Hghctx Haddrlocked") as "Hghctx".
 
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     {
       iFrame "∗ Hlock".
       iExists _, (delete addr gm).

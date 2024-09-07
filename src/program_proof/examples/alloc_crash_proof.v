@@ -732,7 +732,7 @@ Proof.
 
   wp_bind (lock.acquire _).
   wp_loadField.
-  wp_apply (acquire_spec' with "His_lock"); first assumption.
+  wp_apply (wp_Mutex__Lock' with "His_lock"); first assumption.
   iIntros "(His_locked & Hinner)"; iNamed "Hinner".
 
   wp_loadField.
@@ -795,7 +795,7 @@ Proof.
     iModIntro.
     iIntros "(Hborrow&Hborrows)".
     wp_loadField.
-    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hborrows Hfreemap $His_locked $His_lock]");
+    wp_apply (wp_Mutex__Unlock' with "[Hfreeset_frag Hblocks Hborrows Hfreemap $His_locked $His_lock]");
       first assumption.
     { iExists _; iFrame.
       rewrite alloc_free_reserve. eauto.
@@ -819,7 +819,7 @@ Proof.
     { iNext. iExists _. iFrame. iPureIntro. eauto. }
 
     wp_loadField.
-    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hborrows Hfreemap $His_locked $His_lock]");
+    wp_apply (wp_Mutex__Unlock' with "[Hfreeset_frag Hblocks Hborrows Hfreemap $His_locked $His_lock]");
       first assumption.
     { iExists _; iFrame. rewrite Hk set_empty_difference. iFrame. }
     wp_pures.
@@ -1056,7 +1056,7 @@ Proof.
   iMod (readonly_load with "free") as (?) "free'".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec' with "His_lock").
+  wp_apply (wp_Mutex__Lock' with "His_lock").
   { auto. }
   iIntros "(Hlocked&Hinv)"; iNamed "Hinv".
   wp_loadField.
@@ -1108,7 +1108,7 @@ Proof.
     iIntros "($&$)". eauto. }
   wp_loadField.
   iIntros "Hborrows".
-  wp_apply (release_spec' with "[$His_lock $Hlocked Hmapsto Hfreemap Hfreeset_frag Hblocks Hborrows]").
+  wp_apply (wp_Mutex__Unlock' with "[$His_lock $Hlocked Hmapsto Hfreemap Hfreeset_frag Hblocks Hborrows]").
   { auto. }
   {
     iExists _. iFrame. 

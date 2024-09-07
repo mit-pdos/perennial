@@ -21,6 +21,12 @@ Section proof.
   Definition lock_inv (l : loc) (R : iProp Σ) : iProp Σ :=
     (∃ b : bool, l ↦{#1/4} #b ∗ if b then True else l ↦{#3/4} #b ∗ R)%I.
 
+  (**  [is_lock] takes a namespace that is used for an internal invariant.
+
+       This is typically not relevant and can be safely set to [nroot]. It only
+       matters for some crash reasoning where a lock can be acquired with some
+       invariants open, but not the lock invariant itself.
+   *)
   Definition is_lock (lk : val) (R : iProp Σ) : iProp Σ :=
     (∃ l: loc, ⌜lk = #l⌝ ∧ inv N (lock_inv l R))%I.
 
@@ -74,6 +80,22 @@ Section proof.
   Global Instance locked_timeless l : Timeless (locked l).
   Proof. apply _. Qed.
 
+  (** A "free lock" is a lock that has been allocated as unlocked and has no
+  associated lock invariant. It can be later associated with a lock invariant by
+  firing the [alloc_lock] fupd.
+
+  This is especially useful when a lock is allocated for a struct field before
+  the struct has been created, but needs to refer to the struct itself. There is
+  a small circularity here: the mutex pointer is learned through the struct
+  pointer, but the lock invariant itself refers to the struct pointer (contrast
+  this with Rust, where the data protected by a Mutex must be allocated first to
+  satisfy the type system).
+
+  There is a brief time in such a proof where we rely on the fact that the lock
+  has not yet been shared by other threads; it the fact that [alloc_lock] both
+  takes and consumes ownership over the lock heap data that makes this sound
+  (eg, the same lock cannot be associated with two different lock invariants).
+  *)
   Definition is_free_lock (l: loc): iProp Σ := l ↦ #false.
 
   Theorem is_free_lock_ty lk :
@@ -100,17 +122,17 @@ Section proof.
   Qed.
 
   Lemma wp_new_free_lock E:
-    {{{ True }}} lock.new #() @ E {{{ lk, RET #lk; is_free_lock lk }}}.
+    {{{ True }}} newMutex #() @ E {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
     wp_rec. wp_pures.
     wp_apply wp_alloc_untyped; auto.
   Qed.
 
-  Lemma newlock_spec E (R : iProp Σ):
-    {{{ ▷ R }}} lock.new #() @ E {{{ (lk:loc), RET #lk; is_lock #lk R }}}.
+  Lemma wp_newMutex E (R : iProp Σ):
+    {{{ ▷ R }}} newMutex #() @ E {{{ (lk:loc), RET #lk; is_lock #lk R }}}.
   Proof.
-    iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
+    iIntros (Φ) "HR HΦ". rewrite -wp_fupd /newMutex /=.
     wp_rec. wp_apply wp_alloc_untyped; first by auto.
     iIntros (l) "Hl".
     iMod (alloc_lock with "[$] HR") as "Hlock".
@@ -118,9 +140,9 @@ Section proof.
     iApply "HΦ". iFrame.
   Qed.
 
-  Lemma try_acquire_spec stk E lk R :
+  Lemma wp_Mutex__TryLock stk E lk R :
     ↑N ⊆ E →
-    {{{ is_lock lk R }}} lock.try_acquire lk @ stk; E
+    {{{ is_lock lk R }}} Mutex__TryLock lk @ stk; E
     {{{ b, RET #b; if b is true then locked lk ∗ R else True }}}.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -140,21 +162,23 @@ Section proof.
       eauto with iFrame.
   Qed.
 
-  Lemma acquire_spec' stk E lk R :
+  (** More general spec that allows a non-trivial namespace; rarely needed. *)
+  Lemma wp_Mutex__Lock' stk E lk R :
     ↑N ⊆ E →
-    {{{ is_lock lk R }}} lock.acquire lk @ stk; E {{{ RET #(); locked lk ∗ R }}}.
+    {{{ is_lock lk R }}} Mutex__Lock lk @ stk; E {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (? Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
-    wp_apply (try_acquire_spec with "Hl"); auto. iIntros ([]).
+    wp_apply (wp_Mutex__TryLock with "Hl"); auto. iIntros ([]).
     - iIntros "[Hlked HR]". wp_pures. iApply "HΦ"; by iFrame.
     - iIntros "_". wp_pures. iApply ("IH" with "[HΦ]"). auto.
   Qed.
 
-  Lemma acquire_spec lk R :
-    {{{ is_lock lk R }}} lock.acquire lk {{{ RET #(); locked lk ∗ R }}}.
-  Proof. eapply acquire_spec'; auto. Qed.
+  Lemma wp_Mutex__Lock lk R :
+    {{{ is_lock lk R }}} Mutex__Lock lk {{{ RET #(); locked lk ∗ R }}}.
+  Proof. eapply wp_Mutex__Lock'; auto. Qed.
 
-  Lemma release_spec' stk E lk R :
+  (** More general spec that allows a non-trivial namespace; rarely needed *)
+  Lemma wp_Mutex__Unlock' stk E lk R :
     ↑N ⊆ E →
     {{{ is_lock lk R ∗ locked lk ∗ ▷ R }}} lock.release lk @ stk; E {{{ RET #(); True }}}.
   Proof.
@@ -176,14 +200,14 @@ Section proof.
     iNext. iExists false. iFrame.
   Qed.
 
-  Lemma release_spec lk R :
+  Lemma wp_Mutex__Unlock lk R :
     {{{ is_lock lk R ∗ locked lk ∗ ▷ R }}} lock.release lk {{{ RET #(); True }}}.
-  Proof. eapply release_spec'; auto. Qed.
+  Proof. eapply wp_Mutex__Unlock'; auto. Qed.
 
-  Lemma release_spec'' lk R :
+  Lemma wp_Mutex__Unlock'' lk R :
     is_lock lk R -∗ {{{ locked lk ∗ ▷ R }}} lock.release lk {{{ RET #(); True }}}.
   Proof.
-    iIntros "#Hlock !# %Φ [??] HΦ". iApply (release_spec with "[-HΦ]"); by iFrame.
+    iIntros "#Hlock !# %Φ [??] HΦ". iApply (wp_Mutex__Unlock with "[-HΦ]"); by iFrame.
   Qed.
 
   (** cond var proofs *)
@@ -196,7 +220,7 @@ Section proof.
 
   Theorem wp_newCond' lk :
     {{{ is_free_lock lk }}}
-      lock.newCond #lk
+      NewCond #lk
     {{{ (c: loc), RET #c; is_free_lock lk ∗ is_cond c #lk }}}.
   Proof.
     rewrite /is_cond.
@@ -212,7 +236,7 @@ Section proof.
 
   Theorem wp_newCond lk R :
     {{{ is_lock lk R }}}
-      lock.newCond lk
+      NewCond lk
     {{{ (c: loc), RET #c; is_cond c lk }}}.
   Proof.
     rewrite /is_cond.
@@ -227,9 +251,9 @@ Section proof.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_condSignal c lk :
+  Theorem wp_Cond__Signal c lk :
     {{{ is_cond c lk }}}
-      lock.condSignal #c
+      Cond__Signal #c
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
@@ -237,9 +261,9 @@ Section proof.
     iApply ("HΦ" with "[//]").
   Qed.
 
-  Theorem wp_condBroadcast c lk :
+  Theorem wp_Cond__Broadcast c lk :
     {{{ is_cond c lk }}}
-      lock.condBroadcast #c
+      Cond__Broadcast #c
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "Hc HΦ".
@@ -247,32 +271,32 @@ Section proof.
     iApply ("HΦ" with "[//]").
   Qed.
 
-  Theorem wp_condWait c lk R :
+  Theorem wp_Cond__Wait c lk R :
     {{{ is_cond c lk ∗ is_lock lk R ∗ locked lk ∗ R }}}
-      lock.condWait #c
+      Cond__Wait #c
     {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (Φ) "(#Hcond&#Hlock&Hlocked&HR) HΦ".
     wp_rec. wp_pures.
     rewrite /is_cond.
     wp_untyped_load.
-    wp_apply (release_spec with "[$Hlock $Hlocked $HR]").
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $HR]").
     wp_pures.
     wp_untyped_load.
-    wp_apply (acquire_spec with "[$Hlock]").
+    wp_apply (wp_Mutex__Lock with "[$Hlock]").
     iIntros "(Hlocked&HR)".
     iApply "HΦ".
     iFrame.
   Qed.
 
-  Theorem wp_condWaitTimeout c (t : u64) lk R :
+  Theorem wp_Cond__WaitTimeout c (t : u64) lk R :
     {{{ is_cond c lk ∗ is_lock lk R ∗ locked lk ∗ R }}}
-      lock.condWaitTimeout #c #t
+      Cond__WaitTimeout #c #t
     {{{ RET #(); locked lk ∗ R }}}.
   Proof.
     iIntros (Φ) "Hpre HΦ".
     wp_rec. wp_pures.
-    wp_apply (wp_condWait with "Hpre").
+    wp_apply (wp_Cond__Wait with "Hpre").
     done.
   Qed.
 

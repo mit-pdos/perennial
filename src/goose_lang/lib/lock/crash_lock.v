@@ -67,7 +67,7 @@ Section proof.
     iSplitL "Hwpc".
     { iExact "Hwpc". }
 
-    iApply (newlock_spec Nlock _ (crash_borrow R Rcrash) with "[$Hborrow]").
+    iApply (wp_newMutex Nlock _ (crash_borrow R Rcrash) with "[$Hborrow]").
     iNext.
     iIntros (lk) "His_lock HP".
     iApply "HP". eauto.
@@ -105,18 +105,18 @@ Section proof.
     iApply (init_cancel_elim with "H"). eauto.
   Qed.
 
-  Lemma acquire_spec E (R Rcrash : iProp Σ) lk:
+  Lemma wp_Mutex__Lock E (R Rcrash : iProp Σ) lk:
     ↑Nlock ⊆ E →
     {{{ is_crash_lock lk R Rcrash }}}
     lock.acquire lk @ E
     {{{ RET #(); crash_locked lk R Rcrash }}}.
   Proof.
     iIntros (? Φ) "#Hcrash HΦ".
-    wp_apply (acquire_spec' with "Hcrash"); auto.
+    wp_apply (wp_Mutex__Lock' with "Hcrash"); auto.
     iIntros "(?&?)". iApply "HΦ". iFrame. iFrame "#".
   Qed.
 
-  Lemma partial_try_acquire_spec E lk R Rcrash R' Rcrash':
+  Lemma partial_try_wp_Mutex__Lock E lk R Rcrash R' Rcrash':
     ↑Nlock ⊆ E →
     □ (R' -∗ R ∗ (R -∗ R') ∧ (Rcrash -∗ Rcrash')) -∗
     □ (R -∗ Rcrash) -∗
@@ -161,7 +161,7 @@ Section proof.
       iSplitL ""; eauto.
   Qed.
 
-  Lemma partial_acquire_spec E lk R Rcrash R' Rcrash':
+  Lemma partial_wp_Mutex__Lock E lk R Rcrash R' Rcrash':
     ↑Nlock ⊆ E →
     □ (R' -∗ R ∗ (R -∗ R') ∧ (Rcrash -∗ Rcrash')) -∗
     □ (R -∗ Rcrash) -∗
@@ -169,7 +169,7 @@ Section proof.
     {{{ is_crash_lock lk R' Rcrash' }}} lock.acquire lk @ E {{{ RET #(); partial_crash_locked lk R Rcrash }}}.
   Proof.
     iIntros (?) "#H1 #H2 #H3". iIntros (Φ) "!> #Hl HΦ". iLöb as "IH". wp_rec.
-    iPoseProof (partial_try_acquire_spec E with "H1 H2") as "H"; first done.
+    iPoseProof (partial_try_wp_Mutex__Lock E with "H1 H2") as "H"; first done.
     wp_apply "H"; auto.
     iIntros ([]).
     - iIntros "Hlked". wp_pures. iApply "HΦ"; by iFrame.
@@ -197,7 +197,7 @@ Section proof.
       * iIntros.  iIntros "!>". eauto.
   Qed.
 
-  Lemma release_spec E (R Rcrash : iProp Σ) lk:
+  Lemma wp_Mutex__Unlock E (R Rcrash : iProp Σ) lk:
     ↑Nlock ⊆ E →
     {{{ crash_locked lk R Rcrash }}}
     lock.release lk @ E
@@ -205,13 +205,13 @@ Section proof.
   Proof.
     iIntros (? Φ) "Hcrash_locked HΦ".
     iDestruct "Hcrash_locked" as "(Hfull&#His_lock&Hlocked)".
-    wp_apply (release_spec' with "[His_lock Hlocked Hfull]"); swap 1 2.
+    wp_apply (wp_Mutex__Unlock' with "[His_lock Hlocked Hfull]"); swap 1 2.
     { iFrame "His_lock". iFrame. }
     { auto. }
     by iApply "HΦ".
   Qed.
 
-  Lemma partial_release_spec E (R Rcrash : iProp Σ) lk:
+  Lemma partial_wp_Mutex__Unlock E (R Rcrash : iProp Σ) lk:
     ↑Nlock ⊆ E →
     {{{ partial_crash_locked lk R Rcrash }}}
     lock.release lk @ E
@@ -260,7 +260,7 @@ Section proof.
     wpc_bind (lock.acquire lk).
     wpc_frame "Hwp".
     { iDestruct "Hwp" as "($&_)".  }
-    iApply (acquire_spec with "Hcrash").
+    iApply (wp_Mutex__Lock with "Hcrash").
     { set_solver. }
     iNext. iIntros "H Hwp".
     wpc_pures.
@@ -285,7 +285,7 @@ Section proof.
 
     wpc_frame "H".
     { iDestruct "H" as "($&_)". }
-    iApply (release_spec with "Hlocked").
+    iApply (wp_Mutex__Unlock with "Hlocked").
     { auto. }
     iNext. iIntros "_ H".
     { iDestruct "H" as "(_&$)". }

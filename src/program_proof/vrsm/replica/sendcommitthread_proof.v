@@ -50,7 +50,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   wp_pures.
   wp_forBreak_cond.
@@ -62,7 +62,7 @@ Proof.
   { rewrite HnotPrim.
     wp_pures.
     wp_loadField.
-    wp_apply (wp_condWait with "[- HΦ]").
+    wp_apply (wp_Cond__Wait with "[- HΦ]").
     {
       iFrame "# Hlocked".
       repeat iExists _; iSplitR "HghostEph"; last iFrame.
@@ -98,7 +98,7 @@ Proof.
   { (* not the primary/no clerks; wait and try again later *)
     wp_pures.
     wp_loadField.
-    wp_apply (wp_condWait with "[- HΦ]").
+    wp_apply (wp_Cond__Wait with "[- HΦ]").
     {
       iFrame "# Hlocked".
       iFrame "∗#%".
@@ -119,7 +119,7 @@ Proof.
   iDestruct (get_commitIndex_facts with "HghostEph") as "#Hpre".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iFrame "∗#%".

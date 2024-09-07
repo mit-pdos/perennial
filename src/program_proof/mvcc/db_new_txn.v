@@ -20,7 +20,7 @@ Proof.
   (*@     db.latch.Lock()                                                     @*)
   (*@                                                                         @*)
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked HdbOwn]".
   iNamed "HdbOwn".
   wp_pures.
@@ -89,7 +89,7 @@ Proof.
   (*@     return txn                                                          @*)
   (*@ }                                                                       @*)
   wp_loadField.
-  wp_apply (release_spec with "[Hlocked Hsidcur]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Hsidcur]").
   { iFrame "Hlock Hlocked".
     iNext.
     unfold own_db.

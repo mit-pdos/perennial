@@ -20,7 +20,7 @@ Proof.
   (***********************************************************)
   iNamed "Htuple".
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked HtupleOwn]".
   wp_pures.
 

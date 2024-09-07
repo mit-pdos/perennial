@@ -604,7 +604,7 @@ Proof.
   wp_rec.
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hmulocked Hps]".
   iNamed "Hps".
   wp_pures.
@@ -617,7 +617,7 @@ Proof.
     apply map_get_true in Hmapget.
     iDestruct (big_sepM_lookup_acc with "Htxns_prop_pers") as "[[Hprep Hunknown] _]".
     { done. }
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
+    wp_loadField. wp_apply (wp_Mutex__Unlock with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
@@ -636,7 +636,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* Transaction already finished *)
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
+    wp_loadField. wp_apply (wp_Mutex__Unlock with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
@@ -664,7 +664,7 @@ Proof.
     (* Unsafe increase *)
     wp_loadField. wp_apply (wp_LockMap__Release with "[$HlockMap $Hkeylocked $Hktok]").
     wp_pures.
-    wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
+    wp_loadField. wp_apply (wp_Mutex__Unlock with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
       iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
@@ -726,7 +726,7 @@ Proof.
   iMod (participant_prepare with "Htxn [Hptsto] Hdoprep Hunfinish") as "[#His_prep Hunfinish]".
   { done. }
   { iNext. iExists _; iFrame "Hptsto". iFrame "Hunknown". }
-  wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Hktok Htxns_postcommit Hunfinish]").
+  wp_loadField. wp_apply (wp_Mutex__Unlock with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Hktok Htxns_postcommit Hunfinish]").
   {
     iNext. iExists _, _, _,_,_,_,_; iFrame "HkvsMap HtxnsMap #∗".
     iSplitL "".
@@ -847,7 +847,7 @@ Proof.
   wp_pures.
   iNamed "His_part".
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hmulocked Hps]".
   iNamed "Hps".
   wp_pures.
@@ -857,7 +857,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* No pending transaction with that TID *)
-    wp_loadField. wp_apply (release_spec with "[- HΦ]").
+    wp_loadField. wp_apply (wp_Mutex__Unlock with "[- HΦ]").
     {
       iFrame "∗#".
       iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
@@ -902,7 +902,7 @@ Proof.
   { done. }
   iIntros "HfinishedTxnsMap".
   wp_pures.
-  wp_loadField. wp_apply (release_spec with "[- HΦ]").
+  wp_loadField. wp_apply (wp_Mutex__Unlock with "[- HΦ]").
   {
     iFrame "Hmu_inv Hmulocked".
     iNext. iExists _, _, _,_,_,_,_; iFrame "HtxnsMap HfinishedTxnsMap ∗#".
@@ -960,7 +960,7 @@ Proof.
   wp_pures.
   iNamed "His_part".
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hmulocked Hps]".
   iNamed "Hps".
   wp_pures.
@@ -970,7 +970,7 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* No pending transaction with that TID *)
-    wp_loadField. wp_apply (release_spec with "[- HΦ]").
+    wp_loadField. wp_apply (wp_Mutex__Unlock with "[- HΦ]").
     {
       iFrame "∗#".
       iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
@@ -1027,7 +1027,7 @@ Proof.
   { done. }
   iIntros "HfinishedTxnsMap".
   wp_pures.
-  wp_loadField. wp_apply (release_spec with "[- HΦ]").
+  wp_loadField. wp_apply (wp_Mutex__Unlock with "[- HΦ]").
   {
     iFrame "Hmu_inv Hmulocked".
     iNext. iExists _, _, _,_,_,_,_; iFrame "HtxnsMap HfinishedTxnsMap ∗#".

@@ -389,7 +389,7 @@ Proof.
   iIntros (Φ) "[#Hwal Hfupd] HΦ".
   destruct_is_wal.
   wp_loadField.
-  wp_apply (acquire_spec with "lk"). iIntros "(Hlocked&Hlkinv)".
+  wp_apply (wp_Mutex__Lock with "lk"). iIntros "(Hlocked&Hlkinv)".
   wp_loadField.
   iNamed "Hlkinv".
   wp_apply (wp_WalogState__readMem with "[$Hfields $HmemLog_linv]").
@@ -413,7 +413,7 @@ Proof.
     iSplitL "Hinner HP".
     { iExists _. iFrame. }
     wp_loadField.
-    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields HdiskEnd_circ Hstart_circ]").
+    wp_apply (wp_Mutex__Unlock with "[$lk $Hlocked HmemLog_linv Hfields HdiskEnd_circ Hstart_circ]").
     { iExists _; iFrame. }
     wp_pures.
     iApply "HΦ".
@@ -426,7 +426,7 @@ Proof.
     iModIntro.
     iFrame "Hinv".
     wp_loadField.
-    wp_apply (release_spec with "[$lk $Hlocked HmemLog_linv Hfields HdiskEnd_circ Hstart_circ]").
+    wp_apply (wp_Mutex__Unlock with "[$lk $Hlocked HmemLog_linv Hfields HdiskEnd_circ Hstart_circ]").
     { iExists _; iFrame. }
     wp_pures.
     iApply "HΦ".

@@ -140,7 +140,7 @@ Proof.
   iNamed "His_srv".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$HmuInv]").
+  wp_apply (wp_Mutex__Lock with "[$HmuInv]").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iNamed "Hown".
@@ -168,7 +168,7 @@ Proof.
   { (* stale epoch or unable to become primary *)
     wp_loadField.
     unfold BecomePrimary_core_spec.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -189,7 +189,7 @@ Proof.
     (* Double for loop to make slice of slices of clerks *)
     replace (#32) with (#numClerks); last done.
     wp_loadField.
-    wp_apply (wp_condSignal with "[$]").
+    wp_apply (wp_Cond__Signal with "[$]").
     wp_storeField.
     wp_apply (wp_NewSlice).
     iIntros (new_clerkss_sl) "Hnew_clerkss_sl".
@@ -540,7 +540,7 @@ Proof.
     iModIntro.
 
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ Hargs_epoch]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ Hargs_epoch]").
     {
       iFrame "HmuInv Hlocked".
       iNext.

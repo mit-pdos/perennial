@@ -383,7 +383,7 @@ Proof.
   wpc_bind_seq.
   wpc_frame.
   wp_loadField.
-  wp_apply (crash_lock.acquire_spec with "Hlock"); first by set_solver.
+  wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); first by set_solver.
   iIntros "His_locked".
   iNamed 1.
   wpc_pures.
@@ -447,7 +447,7 @@ Proof.
     wpc_pures.
     wpc_frame "HQ".
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "His_locked"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
     wp_pures.
     iNamed 1.
     iRight in "HQ".
@@ -504,7 +504,7 @@ Proof.
       iCache with "HQ"; first by iLeft in "HQ".
       wpc_frame.
       wp_loadField.
-      wp_apply (crash_lock.release_spec with "His_locked"); auto.
+      wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
       wp_pures.
       iNamed 1.
       iApply "HQ".
@@ -555,7 +555,7 @@ Proof.
       iCache with "HQ"; first by iLeft in "HQ".
       wpc_frame.
       wp_loadField.
-      wp_apply (crash_lock.release_spec with "His_locked"); auto.
+      wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
       wp_pures.
       iNamed 1.
       iApply "HQ".
@@ -611,7 +611,7 @@ Proof.
   iCache with "Hfupd"; first by iLeft in "Hfupd".
   wpc_frame_seq.
   wp_loadField.
-  wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+  wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); auto.
   iIntros "His_locked".
   iNamed 1.
   wpc_pures.
@@ -663,7 +663,7 @@ Proof.
   wpc_pures.
   wpc_frame.
   wp_loadField.
-  wp_apply (crash_lock.release_spec with "His_locked"); auto.
+  wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
   wp_pures.
   iNamed 1.
   by iRight in "HQ".
@@ -803,7 +803,7 @@ Proof.
   iCache with "Hfupd"; first by iLeft in "Hfupd".
   wpc_frame_seq.
   wp_loadField.
-  wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+  wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); auto.
   iIntros "His_locked".
   iNamed 1.
   wpc_pures.
@@ -841,7 +841,7 @@ Proof.
     wpc_pures.
     wpc_frame.
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "His_locked"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
     wp_pures.
     iNamed 1. iRight in "Hfupd". by iLeft in "Hfupd".
   - wp_loadField.
@@ -880,7 +880,7 @@ Proof.
     wpc_frame.
     wp_pures.
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "His_locked"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
     wp_pures.
     iNamed 1.
     by iRight in "HΦ".
@@ -1204,7 +1204,7 @@ Proof.
   iCache with "Hfupd"; first by iLeft in "Hfupd".
   wpc_frame_seq.
   wp_loadField.
-  wp_apply (crash_lock.acquire_spec with "Hlock"); auto.
+  wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); auto.
   iIntros "His_locked".
   iNamed 1.
   wpc_pures.
@@ -1352,7 +1352,7 @@ Proof.
     { by iLeft in "Hfupd". }
     wpc_frame.
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "[$]"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "[$]"); auto.
     wp_pures. iNamed 1.
     iRight in "Hfupd".
     eauto.
@@ -1383,7 +1383,7 @@ Proof.
     { by iLeft in "Hfupd". }
     wpc_frame.
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "[$]"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "[$]"); auto.
     wp_pures. iNamed 1.
     by iRight in "Hfupd".
     (* XXX track this down... *)

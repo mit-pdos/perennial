@@ -168,7 +168,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "His_serv".
 
   wp_loadField.
-  wp_apply (acquire_spec with "[$HmuR]").
+  wp_apply (wp_Mutex__Lock with "[$HmuR]").
   iIntros "[Hlocked Hown_serv]". iNamed "Hown_serv".
 
   (* error val. *)
@@ -182,7 +182,7 @@ Proof.
 
   (* check id len. *)
   wp_apply wp_slice_len. wp_if_destruct.
-  { wp_loadField. wp_apply (release_spec with "[-HΦ Hown_errReply]").
+  { wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ Hown_errReply]").
     { iFrame "HmuR Hlocked ∗#%". }
     wp_pures. iApply "HΦ". by iFrame. }
 
@@ -190,7 +190,7 @@ Proof.
   wp_apply (wp_StringFromBytes with "[$Hid]"). iIntros "Hid". wp_loadField.
   wp_apply (wp_MapGet with "[$Hown_updates]").
   iIntros (? ok) "[%Hmap_get Hown_updates]". destruct ok.
-  { wp_loadField. wp_apply (release_spec with "[-HΦ Hown_errReply]").
+  { wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ Hown_errReply]").
     { iFrame "HmuR Hlocked ∗#%". }
     wp_pures. iApply "HΦ". by iFrame. }
   wp_loadField.
@@ -277,7 +277,7 @@ Proof.
     rewrite bytes_to_string_to_bytes. word. }
   iEval (rewrite -kmap_insert) in "Hsl_updates". wp_loadField.
   (* release lock. *)
-  wp_apply (release_spec with "[-HΦ Hobj_sepPut Hmsg_putSig Hsl_sig_putSig]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hobj_sepPut Hmsg_putSig Hsl_sig_putSig]").
   { (* TODO: some props above would be cleaner if we could rewrite under the insert here. *)
     iFrame "Hlocked HmuR ∗#%". }
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Hown_putReply".
@@ -364,7 +364,7 @@ Lemma wp_server_updateEpoch ptr_serv obj_serv :
 Proof.
   rewrite /server__updateEpoch.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "His_serv". wp_loadField.
-  wp_apply (acquire_spec with "[$HmuR]").
+  wp_apply (wp_Mutex__Lock with "[$HmuR]").
   iIntros "[Hlocked Hown_serv]". iNamed "Hown_serv".
 
   (* index epochChain. *)
@@ -420,7 +420,7 @@ Proof.
     $Hsl_epochs $Hptr_epochs]"); [iFrame "#"|].
   iClear "His_epochChain". iIntros (?). iNamed 1.
   wp_apply wp_NewMap. iIntros (?) "Hown_new_updates".
-  wp_storeField. wp_loadField. wp_apply (release_spec with "[-HΦ]").
+  wp_storeField. wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   { iFrame "HmuR Hlocked ∗#%". iSplit.
     - iPureIntro. rewrite length_app. lia.
     - eauto. }

@@ -35,7 +35,7 @@ Proof.
   wp_rec.
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -70,7 +70,7 @@ Proof.
     iDestruct (own_slice_cap_skip _ _ 1 with "[$]") as "?".
     { word. }
     rewrite skipn_cons drop_0.
-    wp_apply (release_spec with "[-HΦ Hcl_own Hl]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hcl_own Hl]").
     { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". }
     wp_pures.
     wp_load.
@@ -82,7 +82,7 @@ Proof.
     wp_loadField.
     iClear "Hhost".
     clear.
-    wp_apply (acquire_spec with "[$]").
+    wp_apply (wp_Mutex__Lock with "[$]").
     iIntros "[Hlocked Hown]".
     iNamed "Hown".
     wp_pures.
@@ -92,14 +92,14 @@ Proof.
     iIntros (?) "Hsl".
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hl]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hl]").
     { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". done. }
     wp_pures.
     iApply "HΦ".
   }
   {
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hl]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hl]").
     { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". }
     wp_pures.
     wp_loadField.
@@ -114,7 +114,7 @@ Proof.
     iIntros (?) "[Hck HΦ]".
     wp_pures.
     wp_loadField.
-    wp_apply (acquire_spec with "[$]").
+    wp_apply (wp_Mutex__Lock with "[$]").
     iIntros "[Hlocked Hown]".
     iNamed "Hown".
     wp_pures.
@@ -124,7 +124,7 @@ Proof.
     iIntros (?) "Hsl".
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hl]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hl]").
     { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". done. }
     wp_pures.
     iApply "HΦ".

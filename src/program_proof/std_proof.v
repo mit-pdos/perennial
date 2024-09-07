@@ -264,12 +264,12 @@ Proof.
   iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[#Hhandle P]".
   wp_rec. iNamed "Hhandle".
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[locked Hinv]". iNamed "Hinv".
   wp_storeField. wp_loadField.
-  wp_apply (wp_condSignal with "[$Hcond]").
+  wp_apply (wp_Cond__Signal with "[$Hcond]").
   wp_loadField.
-  wp_apply (release_spec with "[$Hlock $locked done_b P]").
+  wp_apply (wp_Mutex__Unlock with "[$Hlock $locked done_b P]").
   { iModIntro. iFrame "done_b P". }
   wp_pures.
   iModIntro. iApply "HΦ".
@@ -302,7 +302,7 @@ Lemma wp_JoinHandle__Join l P :
 Proof.
   iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
   wp_rec. wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
   wp_pures.
   wp_apply (wp_forBreak (λ continue,
@@ -327,7 +327,7 @@ Proof.
       iFrame.
       auto.
     + wp_loadField.
-      wp_apply (wp_condWait with "[$Hcond $Hlock $locked done HP]").
+      wp_apply (wp_Cond__Wait with "[$Hcond $Hlock $locked done HP]").
       { iFrame. }
       iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
       wp_pures.
@@ -338,7 +338,7 @@ Proof.
     exfalso; congruence.
   - iIntros "IH". iNamed "IH".
     wp_loadField.
-    wp_apply (release_spec with "[$Hlock $locked $done $HP]").
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done $HP]").
     wp_pures.
     iModIntro.
     iApply "HΦ".
@@ -367,7 +367,7 @@ Proof.
       "Hnleft" ∷ nleft_l ↦[uint64T] #nleft ∗
       "HPQ" ∷ ([∗ list] i ↦ x ∈ elems, ⌜i ∈ pending⌝ ∨ own γpending (GSet {[i]}) ∗ Q i x)
       )%I.
-  wp_apply (newlock_spec nroot _ lock_inv with "[Hnleft]").
+  wp_apply (wp_newMutex nroot _ lock_inv with "[Hnleft]").
   { iModIntro. rewrite /lock_inv. iRight.
     iExists num, (set_seq 0 (uint.nat num)). iFrame. iSplit.
     - iPureIntro. rewrite -list_to_set_seq size_list_to_set ?length_seq //.
@@ -402,19 +402,19 @@ Proof.
     { iModIntro. wp_bind (op _). iApply (wp_wand with "[HP]").
       { iApply "Hop"; done. }
       iIntros (_v) "HQ". wp_pures. clear _v.
-      wp_apply (acquire_spec with "Hlk").
+      wp_apply (wp_Mutex__Lock with "Hlk").
       iIntros "(Hlocked & [Hinv|Hinv])".
       { (* supposedly the main thread already removed all the resources...
            this cannot really happen, but we just go along with it. *)
         iDestruct "Hinv" as (nleft) "(Hnleft & Htok)".
         wp_load. wp_store.
-        wp_apply (wp_condSignal with "Hcond").
-        wp_apply (release_spec with "[$Hlocked $Hlk Hnleft Htok]"); last done.
+        wp_apply (wp_Cond__Signal with "Hcond").
+        wp_apply (wp_Mutex__Unlock with "[$Hlocked $Hlk Hnleft Htok]"); last done.
         iLeft. eauto with iFrame. }
       iNamed "Hinv".
       wp_load. wp_store.
-      wp_apply (wp_condSignal with "Hcond").
-      wp_apply (release_spec with "[-]"); last done. iFrame "Hlocked Hlk".
+      wp_apply (wp_Cond__Signal with "Hcond").
+      wp_apply (wp_Mutex__Unlock with "[-]"); last done. iFrame "Hlocked Hlk".
       iRight. iExists _, (pending ∖ {[uint.nat cur]}). iFrame "Hnleft".
       iDestruct (big_sepL_lookup_acc_impl (uint.nat cur) with "HPQ") as "[Hcur Hclose]".
       { done. }
@@ -452,7 +452,7 @@ Proof.
     iApply ("IH" with "HPs Hpending"). }
   (* continuation after loop *)
   iIntros "_".
-  wp_apply (acquire_spec with "Hlk").
+  wp_apply (wp_Mutex__Lock with "Hlk").
   iIntros "[Hlocked Hinv]". wp_pures.
   wp_apply (wp_forBreak_cond' with "[-]"); first iNamedAccu.
   iIntros "!> Hloop". iNamed "Hloop".
@@ -464,12 +464,12 @@ Proof.
   wp_load. wp_pures.
   case_bool_decide as Hleft; wp_pures.
   { (* Not yet done, once more around the loop. *)
-    wp_apply (wp_condWait with "[$Hcond $Hlk $Hlocked Hnleft HPQ]").
+    wp_apply (wp_Cond__Wait with "[$Hcond $Hlk $Hlocked Hnleft HPQ]").
     { rewrite /lock_inv. eauto 10 with iFrame. }
     iIntros "[Hlocked Hinv]". wp_pures.
     eauto 10 with iFrame. }
   iModIntro. iRight. iSplit; first done.
-  wp_apply (release_spec with "[$Hlk $Hlocked Hnleft Htok]").
+  wp_apply (wp_Mutex__Unlock with "[$Hlk $Hlocked Hnleft Htok]").
   { rewrite /lock_inv. iLeft. eauto 10 with iFrame. }
   wp_pures. iApply "HΦ".
   iApply (big_sepL_impl with "HPQ").

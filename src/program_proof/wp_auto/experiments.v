@@ -128,7 +128,7 @@ Proof.
   wp_rec. wp_pures.
   wp_loadField.
 
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
   wp_apply (wp_lookupLocked with "[$]").
@@ -137,7 +137,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  iDestruct release_spec as "-#HH".
+  iDestruct wp_Mutex__Unlock as "-#HH".
   notypeclasses refine (coq_tactics.tac_specialize_frame _ "HH" _ false _ _ _ _ _ _ _ _ _ _ _).
   { done. }
   { tc_solve. }
@@ -156,7 +156,7 @@ Proof.
   wp_pures.
 
   (*
-  wp_apply (release_spec with "[Hlocked Ht_state]").
+  wp_apply (wp_Mutex__Unlock with "[Hlocked Ht_state]").
   { iFrame "Ht_lock". iFrame "Hlocked".
     iExists _. iFrame. } *)
   wp_pures.

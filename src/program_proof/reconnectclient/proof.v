@@ -37,7 +37,7 @@ Proof.
   iNamed "His".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -46,14 +46,14 @@ Proof.
   { (* there's already a client there *)
     wp_loadField.
     wp_loadField.
-    wp_apply (release_spec with "[- HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[- HΦ]").
     { iFrame "HmuInv ∗ #". }
     wp_pures. by iApply "HΦ".
   }
 
   (* else make a new one *)
   wp_loadField.
-  wp_apply (release_spec with "[- HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[- HΦ]").
   { iFrame "HmuInv ∗".
     repeat iExists _.
     iFrame "∗#".
@@ -90,7 +90,7 @@ Proof.
 
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
 
   wp_load.
@@ -103,7 +103,7 @@ Proof.
     wp_storeField.
     wp_loadField.
     iDestruct "Hnewcl" as "#Hnewcl".
-    wp_apply (release_spec with "[- HΦ HnewRpcCl Herr]").
+    wp_apply (wp_Mutex__Unlock with "[- HΦ HnewRpcCl Herr]").
     { iFrame "HmuInv ∗ #". }
 
     wp_load.
@@ -112,7 +112,7 @@ Proof.
     iApply "HΦ".
     by iFrame "#".
   - wp_loadField.
-    wp_apply (release_spec with "[- HΦ HnewRpcCl Herr]").
+    wp_apply (wp_Mutex__Unlock with "[- HΦ HnewRpcCl Herr]").
     { iFrame "HmuInv ∗ #". }
 
     wp_load.
@@ -168,7 +168,7 @@ Proof.
   {
     iNamed "Hre".
     wp_loadField.
-    wp_apply (acquire_spec with "HmuInv").
+    wp_apply (wp_Mutex__Lock with "HmuInv").
     iIntros "[Hlocked Hown]".
 
     iClear "Hcl".
@@ -177,7 +177,7 @@ Proof.
     wp_pures.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[Hlocked Hvalid HurpcCl]").
+    wp_apply (wp_Mutex__Unlock with "[Hlocked Hvalid HurpcCl]").
     {
       iFrame "HmuInv Hlocked".
       iNext. repeat iExists _.

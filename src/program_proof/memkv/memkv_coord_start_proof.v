@@ -60,7 +60,7 @@ Proof.
   wp_pures.
   iNamed "His_memkv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$HmuInv]").
+  wp_apply (wp_Mutex__Lock with "[$HmuInv]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -110,7 +110,7 @@ Proof.
   wp_pures.
   iFreeze "IH".
   wp_if_destruct; last first.
-  { iClear "IH". wp_pures. wp_loadField. wp_apply (release_spec with "[-HΦ]").
+  { iClear "IH". wp_pures. wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "Hlocked HmuInv". iNext. iExists _, _, _, _, _.
       iDestruct ("HshardMap_clo" with "[$]") as "$".
       iFrame. iSplit; eauto. }
@@ -305,7 +305,7 @@ Proof.
       simpl.
       iNamed "His_memkv".
       wp_loadField.
-      wp_apply (acquire_spec with "[$HmuInv]").
+      wp_apply (wp_Mutex__Lock with "[$HmuInv]").
       iIntros "[Hlocked Hown]".
       iNamed "Hown".
       wp_pures.
@@ -324,7 +324,7 @@ Proof.
       iDestruct (own_slice_to_small with "Hdata") as "Hdata".
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hrep Hdata]").
+      wp_apply (wp_Mutex__Unlock with "[-HΦ Hrep Hdata]").
       { iFrame "Hlocked HmuInv".
         iNext. iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
         iDestruct "H1" as %Hequiv. iApply Hequiv. iFrame. }

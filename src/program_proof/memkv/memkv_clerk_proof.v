@@ -36,7 +36,7 @@ Proof.
   wp_rec.
   iNamed "Hcck".
   wp_loadField.
-  wp_apply (acquire_spec with "Hinv").
+  wp_apply (wp_Mutex__Lock with "Hinv").
   iIntros "[Hlocked Hown]". iNamed "Hown".
   wp_pures.
   wp_loadField.
@@ -47,7 +47,7 @@ Proof.
     rewrite bool_decide_true; last first.
     { do 2 f_equal. word. }
     wp_loadField.
-    wp_apply (release_spec'' with "Hinv [-HΦ]").
+    wp_apply (wp_Mutex__Unlock'' with "Hinv [-HΦ]").
     { iFrame. }
     wp_pures.
     wp_apply (wp_MakeConnMan).
@@ -84,7 +84,7 @@ Proof.
     iDestruct "HfreeClerks_own" as "[HfreeClerks_own Hck]".
     wp_loadField.
     iDestruct ("HfreeClerks_close" with "HfreeClerks_sl") as "HfreeClerks_sl".
-    wp_apply (release_spec'' with "Hinv [$Hlocked HfreeClerks_own HfreeClerks_sl HfreeClerks]").
+    wp_apply (wp_Mutex__Unlock'' with "Hinv [$Hlocked HfreeClerks_own HfreeClerks_sl HfreeClerks]").
     { rewrite /own_KVClerk. iModIntro. iExists _, _. iFrame.
       (* FIXME need typed slice lemma *)
       iClear "#".
@@ -110,7 +110,7 @@ Proof.
   { iModIntro.
     iNamed "Hcck".
     wp_loadField.
-    wp_apply (acquire_spec with "Hinv").
+    wp_apply (wp_Mutex__Lock with "Hinv").
     iIntros "[Hlocked Hown]". iNamed "Hown".
     wp_loadField.
     wp_apply (wp_SliceAppend with "HfreeClerks_sl").
@@ -118,7 +118,7 @@ Proof.
     wp_bind (struct.storeF _ _ _ _).
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec'' with "Hinv [$Hlocked HfreeClerks_own HfreeClerks_sl HfreeClerks Hck]").
+    wp_apply (wp_Mutex__Unlock'' with "Hinv [$Hlocked HfreeClerks_own HfreeClerks_sl HfreeClerks Hck]").
     { rewrite /own_KVClerk. iModIntro. iExists _, _. iFrame.
       rewrite big_sepL_singleton. done. }
     done.

@@ -32,7 +32,7 @@ Proof.
   (* tuple.latch.Lock()                                      *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked HtupleOwn]".
   iNamed "HtupleOwn".
   iNamed "Hphys".
@@ -47,7 +47,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hactive]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hactive]").
     { eauto 15 with iFrame. }
     wp_pures.
     iApply "HΦ".
@@ -63,7 +63,7 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hactive]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hactive]").
     { eauto 15 with iFrame. }
     wp_pures.
     iApply "HΦ".
@@ -81,7 +81,7 @@ Proof.
   wp_loadField.
   iNamed "Hrepr".
   iDestruct (vchain_split (1 / 4) (1 / 4) with "Hptuple") as "[Hptuple Hptuple']"; first compute_done.
-  wp_apply (release_spec with "[-HΦ Hactive Hptuple']").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hactive Hptuple']").
   { iFrame "Hlock Hlocked".
     iNext.
     iExists true.

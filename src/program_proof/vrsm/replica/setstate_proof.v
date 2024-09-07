@@ -240,7 +240,7 @@ Proof.
   iNamed "His_srv".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$HmuInv]").
+  wp_apply (wp_Mutex__Lock with "[$HmuInv]").
   iIntros "[Hlocked Hown]".
   wp_pures.
   iNamed "Hown".
@@ -254,7 +254,7 @@ Proof.
     unfold SetState_core_spec.
     iDestruct "HΨ" as (?) "(_ & _ & _ & _ & _ & _ & HΨ)".
     iRight in "HΨ".
-    wp_apply (release_spec with "[-HΨ HΦ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΨ HΦ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -278,7 +278,7 @@ Proof.
       iDestruct (get_epoch_eph with "HghostEph") as "#Heph_lb".
       iDestruct "HΨ" as (?) "(_ & _ & _ & _ & _ & _ & _ & _ & HΨ)".
       iLeft in "HΨ".
-      wp_apply (release_spec with "[-HΨ HΦ]").
+      wp_apply (wp_Mutex__Unlock with "[-HΨ HΦ]").
       {
         iFrame "HmuInv Hlocked".
         iNext.
@@ -341,7 +341,7 @@ Proof.
       iIntros.
       iIntros (?) "!# [_ #Hpre] HΦ".
       wp_pures.
-      wp_apply (wp_condSignal with "Hpre").
+      wp_apply (wp_Cond__Signal with "Hpre").
       iApply "HΦ".
       iFrame "#".
       instantiate (1:=(λ _ _, True)%I).
@@ -349,14 +349,14 @@ Proof.
     }
     iIntros "(HopAppliedConds_map & _ & _)".
     wp_loadField.
-    wp_apply (wp_condBroadcast with "[]").
+    wp_apply (wp_Cond__Broadcast with "[]").
     { done. }
     wp_apply (wp_NewMap).
     iIntros (opAppliedConds_loc_new) "Hmapnew".
     wp_storeField.
 
     wp_loadField.
-    wp_apply (release_spec with "[-HΨ HΦ Hargs_committed_next_index]").
+    wp_apply (wp_Mutex__Unlock with "[-HΨ HΦ Hargs_committed_next_index]").
     {
       iFrame "HmuInv Hlocked".
       iNext.

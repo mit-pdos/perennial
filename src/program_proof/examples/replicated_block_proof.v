@@ -196,7 +196,7 @@ Section goose.
     wpc_pures.
     wpc_frame_seq.
     wp_loadField.
-    wp_apply (crash_lock.acquire_spec with "Hlock"); first by auto.
+    wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); first by auto.
     iIntros "His_locked"; iNamed 1.
     wpc_pures.
     wpc_bind (RepBlock__readAddr _ _); wpc_frame.
@@ -242,7 +242,7 @@ Section goose.
     wpc_frame.
 
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "[$His_locked]"); auto.
     wp_pures.
     iModIntro. iNamed 1.
     iRight in "HQ".
@@ -293,7 +293,7 @@ Section goose.
     wpc_pures.
     wpc_frame_seq.
     wp_loadField.
-    wp_apply (crash_lock.acquire_spec with "Hlock"); first by auto.
+    wp_apply (crash_lock.wp_Mutex__Lock with "Hlock"); first by auto.
     iIntros "His_locked".
     iNamed 1.
 
@@ -356,7 +356,7 @@ Section goose.
     wpc_pures.
     wpc_frame.
     wp_loadField.
-    wp_apply (crash_lock.release_spec with "[$His_locked]"); auto.
+    wp_apply (crash_lock.wp_Mutex__Unlock with "[$His_locked]"); auto.
     wp_pures. iModIntro.
     iNamed 1.
     iApply "HΦ"; iFrame.

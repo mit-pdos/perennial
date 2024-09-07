@@ -914,7 +914,7 @@ Proof.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
@@ -927,7 +927,7 @@ Proof.
   wp_loadField.
   iMod (ghost_getFreshNum with "Hspec Hghost") as "[Hghost Hspec]".
   { word. }
-  wp_apply (release_spec with "[-HΦ Hspec]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
     repeat iExists _.
@@ -1005,7 +1005,7 @@ Proof.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
@@ -1021,7 +1021,7 @@ Proof.
     apply map_get_true in HlastReply.
     iDestruct (ghost_put_dup with "Hspec Hghost") as "[Hghost Hspec]".
     { done. }
-    wp_apply (release_spec with "[-HΦ Hspec]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
@@ -1047,7 +1047,7 @@ Proof.
   wp_loadField.
   iMod (ghost_put with "Hlc Hspec Hghost") as "[Hghost Hspec]".
   { apply map_get_false in HlastReply as [? _]. done. }
-  wp_apply (release_spec with "[-HΦ Hspec]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
     repeat iExists _; iFrame "Hghost".
@@ -1184,7 +1184,7 @@ Proof.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
@@ -1199,7 +1199,7 @@ Proof.
     wp_loadField.
     iDestruct (ghost_conditionalPut_dup with "Hspec Hghost") as "[Hghost Hspec]".
     { by apply map_get_true in HlastReply. }
-    wp_apply (release_spec with "[-HΦ Hspec]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
@@ -1249,7 +1249,7 @@ Proof.
       by apply server.gauge_proper_default_lookup. }
     (* simplify by unfolding some of the cond_put stuff *)
 
-    wp_apply (release_spec with "[-HΦ Hspec Hret]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec Hret]").
     {
       iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
@@ -1285,7 +1285,7 @@ Proof.
     by apply server.gauge_proper_default_lookup. }
   (* simplify by unfolding some of the cond_put stuff *)
 
-  wp_apply (release_spec with "[-HΦ Hspec Hret]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec Hret]").
   {
     iFrame "∗#". iNext.
     repeat iExists _; iFrame "Hghost".
@@ -1366,7 +1366,7 @@ Proof.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
@@ -1381,7 +1381,7 @@ Proof.
     wp_loadField.
     iDestruct (ghost_get_dup with "Hspec Hghost") as "[Hghost Hspec]".
     { by apply map_get_true in HlastReply. }
-    wp_apply (release_spec with "[-HΦ Hspec]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
       iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
@@ -1410,7 +1410,7 @@ Proof.
   subst.
   (* FIXME: better map_get *)
   erewrite <- (server.gauge_proper_default_lookup _ _ st.(server.kvs) Hrel_phys).
-  wp_apply (release_spec with "[-HΦ Hspec]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
   {
     iFrame "∗#". iNext.
     repeat iExists _; iFrame "Hghost".

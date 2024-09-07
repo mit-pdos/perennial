@@ -173,7 +173,7 @@ Proof.
   wp_pures.
   iNamed "Hls".
   wp_loadField.
-  wp_apply (acquire_spec with "[$His_rpc]").
+  wp_apply (wp_Mutex__Lock with "[$His_rpc]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -203,7 +203,7 @@ Proof.
   iDestruct "HH" as (??) "(Hrpc_vol & Hrpc_ghost & Hreply & #Hpost & Hkv_own)".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[$His_rpc $Hlocked Hrpc_vol Hrpc_ghost Hkv_own Hsv]").
+  wp_apply (wp_Mutex__Unlock with "[$His_rpc $Hlocked Hrpc_vol Hrpc_ghost Hkv_own Hsv]").
   {
     iNext.
     iDestruct "Hkv_own" as "[Hkv_own|Hkv_own]".

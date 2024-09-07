@@ -192,7 +192,7 @@ Proof.
   (* tuple.latch.Lock()                                      *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
+  wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked HtupleOwn]".
   iNamed "HtupleOwn".
   wp_pures.
@@ -245,7 +245,7 @@ Proof.
     wp_pures.
     (* Evaluate the loop body. *)
     wp_loadField.
-    wp_apply (wp_condWait with "[-HΦ]").
+    wp_apply (wp_Cond__Wait with "[-HΦ]").
     { eauto 15 with iFrame. }
     iIntros "[Hlocked HtupleOwn]".
     iNamed "HtupleOwn".
@@ -479,7 +479,7 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hactive]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hactive]").
   { iFrame "Hlock Hlocked". eauto 25 with iFrame. }
   wp_pures.
   iModIntro.

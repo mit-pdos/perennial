@@ -73,7 +73,7 @@ Proof.
   (***********************************************************)
   iNamed "Hlock".
   wp_loadField.
-  wp_apply (wp_condBroadcast with "[$HrcondC]").
+  wp_apply (wp_Cond__Broadcast with "[$HrcondC]").
 
   (***********************************************************)
   (* tuple.latch.Unlock()                                    *)
@@ -88,7 +88,7 @@ Proof.
   assert (HlenN : length phys = S (uint.nat tidlast)) by word.
   iAssert (⌜uint.Z tid < 2 ^ 64 - 1⌝)%I with "[Hactive]" as "%Htidmax".
   { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
-  wp_apply (release_spec with "[-HΦ Hactive]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hactive]").
   { iFrame "Hlock Hlocked".
     iNext.
     erewrite extend_last_Some; last apply Hlast.

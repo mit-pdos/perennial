@@ -384,9 +384,9 @@ Proof.
 
   wp_apply util_proof.wp_DPrintf.
   wp_loadField.
-  wp_apply (acquire_spec with "lk"). iIntros "(Hlocked&Hlkinv)".
+  wp_apply (wp_Mutex__Lock with "lk"). iIntros "(Hlocked&Hlkinv)".
   wp_loadField.
-  wp_apply (wp_condBroadcast with "cond_logger").
+  wp_apply (wp_Cond__Broadcast with "cond_logger").
   wp_loadField.
 
   wp_apply (wp_load_some_nextDiskEnd with "Hlkinv"); iIntros (x) "Hlkinv".
@@ -418,7 +418,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     - wp_loadField.
-      wp_apply (wp_condWait with "[-HΦ $cond_logger $lk $Hlocked]").
+      wp_apply (wp_Cond__Wait with "[-HΦ $cond_logger $lk $Hlocked]").
       { by iFrame "∗ #". }
       iIntros "(Hlocked&Hlockin)".
       wp_pures.
@@ -459,7 +459,7 @@ Proof.
   { iNext. iExists _. iFrame. }
 
   wp_loadField.
-  wp_apply (release_spec with "[-HQ HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HQ HΦ]").
   { iFrame "lk". iFrame "Hlocked". iNext. iExists _.
     iFrame "Hfields HdiskEnd_circ Hstart_circ".
     iExists _, _, _, _, _, _, _.

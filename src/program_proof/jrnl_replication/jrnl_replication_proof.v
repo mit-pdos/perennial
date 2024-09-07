@@ -84,7 +84,7 @@ Section goose_lang.
     iNamed "Hrb".
     wp_rec. wp_pures.
     wp_loadField.
-    wp_apply (lock.acquire_spec with "His_lock").
+    wp_apply (lock.wp_Mutex__Lock with "His_lock").
     iIntros "[Hlocked Hinv]".
     iNamed "Hinv".
     wp_pures.
@@ -130,7 +130,7 @@ Section goose_lang.
     destruct ok.
     - (* iDestruct "Hpost" as (txn_id') "[rb_rep #Hdurable]". *)
       iRename "Hpost" into "rb_rep".
-      wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
+      wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
         iExists _, _, _.
         iFrame "∗#". }
@@ -139,7 +139,7 @@ Section goose_lang.
       by iFrame.
     - iRename "Hpost" into "rb_rep".
       iDestruct "rb_rep" as "[rb_rep _]".
-      wp_apply (release_spec with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
+      wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked rb_rep a0 a1 HP]").
       { iNext.
         iExists _, _, _.
         iFrame "∗#". }

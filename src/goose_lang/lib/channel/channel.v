@@ -75,7 +75,7 @@ Proof.
   { eauto. }
   iIntros (chanref) "Hc".
   wp_pures.
-  wp_apply (newlock_spec with "[Hc]").
+  wp_apply (wp_newMutex with "[Hc]").
   2: { 
     iIntros (lk) "Hlk".
     wp_pures.
@@ -197,7 +197,7 @@ Proof.
   wp_rec.
   wp_pures.
   iDestruct "HPre" as "#Hlock".
-  wp_apply acquire_spec.
+  wp_apply wp_Mutex__Lock.
   - iFrame "Hlock".
   - iIntros "[H0 H1]".
     wp_pures.
@@ -214,7 +214,7 @@ Proof.
         reflexivity.
       * iIntros "H3".
         wp_pures.
-        wp_apply (release_spec with "[H0 H2 H3]").
+        wp_apply (wp_Mutex__Unlock with "[H0 H2 H3]").
         { unfold is_channel_alloc. iFrame "Hlock". iFrame. iNext. iExists _, _, l. iFrame. simpl. iNamed "H3". iFrame. done. }
         wp_pures.
         iModIntro.
@@ -227,10 +227,10 @@ Proof.
       wp_apply (wp_IncCap chanref cap eff_cap _ ty l with "H1").
       iIntros "H1".
       wp_pures.
-      wp_apply (release_spec with "[H0 H2 H1]").
+      wp_apply (wp_Mutex__Unlock with "[H0 H2 H1]").
       { unfold is_channel_alloc. iFrame "Hlock". iFrame. iNext. iExists cap, _, l. iFrame. }
       wp_pures.
-      wp_apply acquire_spec.
+      wp_apply wp_Mutex__Lock.
       { unfold is_channel_alloc. iFrame "Hlock". }
       iIntros "[H0 H1]".
       wp_pures.
@@ -245,7 +245,7 @@ Proof.
       iIntros "H1".
       wp_pures.
       destruct l0.
-      * wp_apply (release_spec with "[H0 H2 H1]").
+      * wp_apply (wp_Mutex__Unlock with "[H0 H2 H1]").
         { unfold is_channel_alloc. 
           iFrame "Hlock".
           iFrame.
@@ -259,7 +259,7 @@ Proof.
         done.
       * simpl.
         iDestruct "H2" as "[H2 H3]".
-        wp_apply (release_spec with "[H0 H3 H1]").
+        wp_apply (wp_Mutex__Unlock with "[H0 H3 H1]").
         { unfold is_channel_alloc. 
           iFrame "Hlock".
           iFrame.
@@ -335,7 +335,7 @@ Proof.
   wp_rec.
   wp_pures.
   iDestruct "HPre" as "#Hlock".
-  wp_apply acquire_spec.
+  wp_apply wp_Mutex__Lock.
   - iFrame "Hlock".
   - iIntros "[H0 H1]".
     wp_pures.
@@ -346,7 +346,7 @@ Proof.
       iDestruct "H1" as "[H1 H3]".
       wp_untyped_load.
       wp_pures.
-      wp_apply (release_spec with "[Hlock H0 H1 H3 H2]").
+      wp_apply (wp_Mutex__Unlock with "[Hlock H0 H1 H3 H2]").
       * iFrame "Hlock".
         iFrame.
         iNext.
@@ -362,7 +362,7 @@ Proof.
       wp_apply wp_ChanLen'.
       iIntros (len) "Hlen".
       wp_pures.
-      wp_apply (release_spec with "[Hlock H0 H1 H2]").
+      wp_apply (wp_Mutex__Unlock with "[Hlock H0 H1 H2]").
       { iFrame "Hlock".
         iFrame.
         iNext.
@@ -410,7 +410,7 @@ Proof.
   wp_rec.
   wp_pures.
   iDestruct "HPre" as "#Hlock".
-  wp_apply acquire_spec.
+  wp_apply wp_Mutex__Lock.
     - iFrame "Hlock".
     - iIntros "[H0 H1]".
       wp_pures.
@@ -427,7 +427,7 @@ Proof.
       + wp_apply wp_ChanAppend.
         wp_pures.
         wp_untyped_store.
-        wp_apply (release_spec with "[Hlock Hv H0 H1 H2]").
+        wp_apply (wp_Mutex__Unlock with "[Hlock Hv H0 H1 H2]").
         { iFrame "Hlock".
           iFrame.
           iNext.
@@ -439,7 +439,7 @@ Proof.
         iModIntro.
         iApply "HΦ".
         done.
-      + wp_apply (release_spec with "[Hlock H0 H1 H2]").
+      + wp_apply (wp_Mutex__Unlock with "[Hlock H0 H1 H2]").
         { iFrame "Hlock".
           iFrame.
           iNext.

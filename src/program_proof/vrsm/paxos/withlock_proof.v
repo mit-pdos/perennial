@@ -47,7 +47,7 @@ Proof.
   wp_pures.
   iNamed "Hsrv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -84,7 +84,7 @@ Proof.
   iIntros (?) "[Hfile Hwp]".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[-Hwp]").
+  wp_apply (wp_Mutex__Unlock with "[-Hwp]").
   {
     iFrame "HmuInv Hlocked".
     iNext.

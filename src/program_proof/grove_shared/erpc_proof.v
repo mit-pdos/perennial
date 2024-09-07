@@ -139,7 +139,7 @@ Proof.
 
   iNamed "Hs".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]". iNamed "Hown".
 
   wp_loadField.
@@ -207,7 +207,7 @@ Proof.
       { done. }
       iDestruct "HH" as "[Hrpc #Hstale]".
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hsrv_val_sl Hrepptr]").
+      wp_apply (wp_Mutex__Unlock with "[-HΦ Hsrv_val_sl Hrepptr]").
       {
         iFrame "∗#".
         iNext.
@@ -230,7 +230,7 @@ Proof.
 
       (* prove that rid.(Req_CID) is in lastReplyMV (probably just add [∗ map] _ ↦ _;_ ∈ lastReplyMV ; lastSeq, True) *)
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hsrv_val_sl Hrepptr]").
+      wp_apply (wp_Mutex__Unlock with "[-HΦ Hsrv_val_sl Hrepptr]").
       {
         iFrame "∗#".
         iNext.
@@ -276,7 +276,7 @@ Proof.
 
     wp_loadField.
     iMod (own_slice_small_persist with "Hrep") as "#Hrep".
-    wp_apply (release_spec with "[-HΦ Hrep Hrepptr]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hrep Hrepptr]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -344,7 +344,7 @@ Proof.
   iIntros (Φ) "Hs HΦ". wp_rec.
   iNamed "Hs".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]". iNamed "Hown".
 
   wp_loadField.
@@ -356,7 +356,7 @@ Proof.
   { set_solver. }
 
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hcid]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hcid]").
   {
     iFrame "HmuInv Hlocked".
     iNext.

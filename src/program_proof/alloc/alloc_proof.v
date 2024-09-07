@@ -103,7 +103,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hlinv]".
   wp_pures.
   iNamed "Hlinv".
@@ -117,7 +117,7 @@ Proof.
   iIntros "Hbits".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
+  wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked next bitmap Hbits]").
   { rewrite -list_fmap_insert.
     iExists _, _, _; iFrame "∗%".
     rewrite length_insert.
@@ -218,7 +218,7 @@ Proof.
   iIntros (num_l) "num".
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "His_lock").
+  wp_apply (wp_Mutex__Lock with "His_lock").
   iIntros "[Hlocked Hlinv]".
   wp_apply (wp_incNext with "Hlinv"); auto.
   iIntros (?) "[%Hnext_bound Hlinv]".
@@ -270,7 +270,7 @@ Proof.
   - iNamed 1.
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[$His_lock $Hlocked $Hlinv]").
+    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $Hlinv]").
     wp_load.
     iApply "HΦ".
     iPureIntro; done.
@@ -286,7 +286,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hlinv]".
   wp_pures.
   iNamed "Hlinv".
@@ -300,7 +300,7 @@ Proof.
   iIntros "Hbits".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
+  wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked next bitmap Hbits]").
   { rewrite -list_fmap_insert.
     iExists _, _, _; iFrame "∗%".
     rewrite length_insert.
@@ -390,7 +390,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H".
   wp_rec. wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "[$]").
+  wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hlinv]".
   wp_pures.
   iNamed "Hlinv".
@@ -426,7 +426,7 @@ Proof.
   - iIntros "[Hinv Hbits]". iNamed "Hinv".
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[$His_lock $Hlocked next bitmap Hbits]").
+    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked next bitmap Hbits]").
     { iExists _, _, _; iFrame "∗%". }
     wp_load.
     wp_pures.

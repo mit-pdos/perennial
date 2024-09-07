@@ -123,7 +123,7 @@ Proof.
     iNext.
     iNamed "His_aof".
     wp_loadField.
-    wp_apply (acquire_spec with "Hmu_inv").
+    wp_apply (wp_Mutex__Lock with "Hmu_inv").
     iIntros "[Hlocked Haof_own]".
     wp_pures.
     iAssert (∃ data', fname f↦ (data++data') ∗ aof_ctx (data++data') ∗ fmlist γ.(predurabledata) (1/2) (data ++ data')
@@ -141,7 +141,7 @@ Proof.
     wp_if_destruct.
     {
       wp_loadField.
-      wp_apply (wp_condWait with "[- Hfile_ctx]").
+      wp_apply (wp_Cond__Wait with "[- Hfile_ctx]").
       { iFrame "∗#". iExists _, _, _, _; iFrame "∗#". done. }
       iIntros "[Hlocked Haof_own]".
       wp_pures.
@@ -173,7 +173,7 @@ Proof.
     iMod (fmlist_update (predurableC ++ membufC) with "Hpredur") as "[Hpredur _]".
     { by apply prefix_app_r. }
     iDestruct "Hpredur" as "[Hpredur Hpredurable]".
-    wp_apply (release_spec with "[-Hfile Hctx Hpredur Hmembuf_fupd Hmembuf_sl HdurLen Hlen]").
+    wp_apply (wp_Mutex__Unlock with "[-Hfile Hctx Hpredur Hmembuf_fupd Hmembuf_sl HdurLen Hlen]").
     { iFrame "∗#". iNext. iExists _, [], (predurableC ++ membufC), _. iFrame "∗#".
       rewrite app_nil_r.
       iFrame.
@@ -196,7 +196,7 @@ Proof.
     wp_pures.
 
     wp_loadField.
-    wp_apply (acquire_spec with "Hmu_inv").
+    wp_apply (wp_Mutex__Lock with "Hmu_inv").
     iIntros "[Hlocked Haof_own]".
     iRename "Hdurlen_lb" into "Hdurlen_lb_old".
     iNamed "Haof_own".
@@ -212,7 +212,7 @@ Proof.
     iEval (rewrite mono_nat_auth_lb_op) in "Hlen".
     iDestruct "Hlen" as "[Hlen #Hlenlb]".
 
-    wp_apply (wp_condBroadcast).
+    wp_apply (wp_Cond__Broadcast).
     { iFrame "#". }
     wp_pures.
     iLeft.
@@ -262,7 +262,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Haof]".
   iNamed "Haof".
   iDestruct "Hpre" as "(HnewData & Haof_log & Hfupd)".
@@ -314,7 +314,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (wp_condSignal).
+  wp_apply (wp_Cond__Signal).
   { iFrame "#". }
 
   wp_pures.
@@ -592,7 +592,7 @@ Proof.
   iMod "HH" as "[Hmembuf_fupd HfupdQ]".
 
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Haof_log HfupdQ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Haof_log HfupdQ]").
   {
     iFrame "∗#".
     iNext.
@@ -643,7 +643,7 @@ Proof.
   wp_pures.
   iNamed "Haof".
   wp_loadField.
-  wp_apply (acquire_spec with "Hmu_inv").
+  wp_apply (wp_Mutex__Lock with "Hmu_inv").
   iIntros "[Hlocked Haof_own]".
   wp_pures.
   wp_apply (wp_forBreak_cond' with "[-]").
@@ -661,7 +661,7 @@ Proof.
   {
     wp_pures.
     wp_loadField.
-    wp_apply (wp_condWait with "[- HΦ]").
+    wp_apply (wp_Cond__Wait with "[- HΦ]").
     {
       iFrame "∗#".
       iExists _, _, _, _. iFrame "∗#".
@@ -689,7 +689,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (release_spec with "[- HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[- HΦ]").
   {
     iFrame "∗#".
     iExists _, _, _, _. iFrame "∗#".

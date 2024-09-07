@@ -72,7 +72,7 @@ Proof.
   iIntros (cl_ptr) "Hcl_ptr".
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "Hinv").
+  wp_apply (wp_Mutex__Lock with "Hinv").
   iIntros "[Hlocked Hown]".
   wp_pures.
   wp_apply (wp_forBreak' with "[-]").
@@ -92,7 +92,7 @@ Proof.
     iModIntro. iRight. iSplitR; first done.
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
+    wp_apply (wp_Mutex__Unlock with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
     { rewrite /own_ConnMan. eauto 10 with iFrame. }
     wp_pures.
     wp_load.
@@ -108,7 +108,7 @@ Proof.
   { apply map_get_true in Hmk2.
     wp_pures.
     iDestruct (big_sepM_lookup with "HownMaking") as "Hcond"; first done.
-    wp_apply (wp_condWait with "[$Hinv $Hcond $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
+    wp_apply (wp_Cond__Wait with "[$Hinv $Hcond $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
     { rewrite /own_ConnMan. eauto 10 with iFrame. }
     iIntros "[Hlocked Hown]".
     wp_pures.
@@ -126,14 +126,14 @@ Proof.
   iDestruct (big_sepM_insert_2 with "[Hcond] HownMaking") as "{HownMaking} #HownMaking".
   { done. }
   wp_loadField.
-  wp_apply (release_spec with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
+  wp_apply (wp_Mutex__Unlock with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
   { rewrite /own_ConnMan. eauto 10 with iFrame. }
   wp_pures.
   wp_apply wp_MakeClient.
   iIntros (cl_new) "#Hcl_new".
   wp_store.
   wp_loadField.
-  wp_apply (acquire_spec with "Hinv").
+  wp_apply (wp_Mutex__Lock with "Hinv").
   iIntros "[Hlocked Hown]".
   iClear "HownRpcCls HownMaking". clear rpcCls making rpcClsM makingM cl1 mk2 Hcl1 Hmk2.
   wp_pures.
@@ -145,7 +145,7 @@ Proof.
   iDestruct (big_sepM_insert_2 with "[Hcl_new] HownRpcCls") as "{HownRpcCls} #HownRpcCls".
   { done. }
   wp_pures.
-  wp_apply (wp_condBroadcast with "Hcond").
+  wp_apply (wp_Cond__Broadcast with "Hcond").
   wp_pures.
   wp_loadField.
   wp_apply (wp_MapDelete with "Hmaking_map"). iIntros "Hmaking_map".
@@ -155,7 +155,7 @@ Proof.
   iModIntro. iRight. iSplitR; first done.
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
+  wp_apply (wp_Mutex__Unlock with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
   { rewrite /own_ConnMan. eauto 10 with iFrame. }
   wp_load.
   iApply "HΦ". done.
@@ -225,7 +225,7 @@ Proof.
     { (* ErrDisconnected *)
       wp_pures.
       wp_loadField.
-      wp_apply (acquire_spec with "Hinv").
+      wp_apply (wp_Mutex__Lock with "Hinv").
       iIntros "[Hlocked Hown]".
       iClear "Hcl".
       iNamed "Hown".
@@ -248,7 +248,7 @@ Proof.
           rewrite Hsucc. iFrame. }
       iIntros "H". iNamed "H". wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
+      wp_apply (wp_Mutex__Unlock with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
       { rewrite /own_ConnMan. iModIntro. do 4 iExists _. iFrame. iFrame "HownMaking".
         case_bool_decide as Heq.
         - iDestruct (big_sepM_subseteq with "HownRpcCls") as "$".

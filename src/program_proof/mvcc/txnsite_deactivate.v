@@ -242,7 +242,7 @@ Proof.
   (*@     site.latch.Lock()                                                   @*)
   (*@                                                                         @*)
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HsiteOwn]".
   iNamed "HsiteOwn".
   iDestruct (own_slice_sz with "HactiveL") as "%HactiveSz".
@@ -304,7 +304,7 @@ Proof.
 
   (*@     site.latch.Unlock()                                                 @*)
   (*@ }                                                                       @*)
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   { iFrame "Hlock Hlocked".
     iNext.
     set idxlast := (word.sub _ _).

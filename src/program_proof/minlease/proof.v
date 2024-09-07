@@ -163,7 +163,7 @@ Proof.
   wp_rec.
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -176,7 +176,7 @@ Proof.
   { apply Qp.half_half. }
   iMod ("Hupd" with "Hval2") as "HΦ".
   iModIntro.
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -198,7 +198,7 @@ Proof.
   wp_rec.
   wp_pures.
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
@@ -210,7 +210,7 @@ Proof.
   iDestruct (ghost_var_valid_2 with "Hauth Hval2") as %[_ ->].
   iMod ("Hupd" with "Hval2") as "HΦ".
   iModIntro.
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -274,7 +274,7 @@ Proof.
     iClear "Hmu HleaseExpiration".
     iNamed "Hsrv".
     wp_loadField.
-    wp_apply (acquire_spec with "HmuInv").
+    wp_apply (wp_Mutex__Lock with "HmuInv").
     iIntros "[Hlocked Hown]".
     wp_pures.
     wp_apply (wp_GetTimeRange).
@@ -316,7 +316,7 @@ Proof.
       iIntros "%Hoverflow".
       wp_storeField.
       wp_loadField.
-      wp_apply (release_spec with "[-Hlease Hlc1 Hlc2]").
+      wp_apply (wp_Mutex__Unlock with "[-Hlease Hlc1 Hlc2]").
       {
         iFrame "HmuInv Hlocked".
         repeat iExists _; iFrame "∗#%".
@@ -337,7 +337,7 @@ Proof.
     wp_if_destruct.
     2:{ exfalso. word. }
     wp_loadField.
-    wp_apply (release_spec with "[-Hlease]").
+    wp_apply (wp_Mutex__Unlock with "[-Hlease]").
     {
       iFrame "HmuInv Hlocked". iFrame.
     }

@@ -20,7 +20,7 @@ Proof.
   wp_rec. wp_pures.
   
   wp_loadField.
-  wp_apply (acquire_spec with "[$Hlock]").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HsiteOwn]".
   (* replace (W64 (Z.of_nat _)) with sid by word.  *)
   iNamed "HsiteOwn".
@@ -106,7 +106,7 @@ Proof.
   
   (*@     site.latch.Unlock()                                                 @*)
   (*@                                                                         @*)
-  wp_apply (release_spec with "[-HΦ HtidRef HactiveFrag]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ HtidRef HactiveFrag]").
   { iFrame "Hlock Hlocked".
     iNext.
     do 3 iExists _.

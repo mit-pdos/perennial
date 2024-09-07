@@ -171,7 +171,7 @@ Proof.
   wpc_bind (lock.acquire _).
   wpc_frame "HΦ Hvs".
   { iLeft in "HΦ". iRight in "Hvs". do 2 iModIntro. by iApply "HΦ". }
-  wp_apply (crash_lock.acquire_spec with "His_lock"); first by set_solver+.
+  wp_apply (crash_lock.wp_Mutex__Lock with "His_lock"); first by set_solver+.
   iIntros "Hcrash_locked".
   iNamed 1.
 
@@ -221,7 +221,7 @@ Proof.
 
   wp_bind (struct.loadF _ _ _).
   wp_loadField.
-  wp_apply (crash_lock.release_spec with "[$]"); eauto.
+  wp_apply (crash_lock.wp_Mutex__Unlock with "[$]"); eauto.
   iIntros "(HQ&HΦ)".
   by iApply "HΦ".
 Qed.

@@ -144,7 +144,7 @@ Proof.
   wp_rec. wp_pures.
   iNamed "His_srv".
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pure_credit "Hlc".
@@ -172,10 +172,10 @@ Proof.
     { unfold no_overflow. word. }
     wp_storeField.
     wp_loadField.
-    wp_apply (wp_condBroadcast with "[]").
+    wp_apply (wp_Cond__Broadcast with "[]").
     { iFrame "#". }
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -194,7 +194,7 @@ Proof.
   }
   {
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext. repeat (iExists _).

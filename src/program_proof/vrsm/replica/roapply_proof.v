@@ -423,7 +423,7 @@ Proof.
   wp_storeField.
 
   wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
+  wp_apply (wp_Mutex__Lock with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   iNamed "Hvol".
@@ -432,7 +432,7 @@ Proof.
   wp_if_destruct.
   { (* lease invalid *)
     wp_loadField.
-    wp_apply (release_spec with "[-Hlc1 Hlc2 Hlc3 Hupd Err Reply]").
+    wp_apply (wp_Mutex__Unlock with "[-Hlc1 Hlc2 Hlc3 Hupd Err Reply]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -536,7 +536,7 @@ Proof.
       iModIntro. iSplitR; first done.
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-Err Reply Hrep_sl]").
+      wp_apply (wp_Mutex__Unlock with "[-Err Reply Hrep_sl]").
       {
         iFrame "HmuInv Hlocked".
         iNext.
@@ -577,7 +577,7 @@ Proof.
       iModIntro. iSplitR; first done.
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΨ Err Reply Hrep_sl]").
+      wp_apply (wp_Mutex__Unlock with "[-HΨ Err Reply Hrep_sl]").
       {
         iFrame "HmuInv Hlocked".
         iNext.
@@ -613,7 +613,7 @@ Proof.
     wp_loadField.
     iClear "HopAppliedConds_conds HcommittedNextIndex_is_cond".
     iNamed "Hvol".
-    wp_apply (wp_condWait with "[-Err Reply Hrep_sl HlastModified]").
+    wp_apply (wp_Cond__Wait with "[-Err Reply Hrep_sl HlastModified]").
     {
       iFrame "#".
       iFrame "Hlocked".
@@ -635,7 +635,7 @@ Proof.
     wp_if_destruct.
     2:{ exfalso. word. }
     wp_loadField.
-    wp_apply (release_spec with "[-Err Reply HlastModified Hrep_sl]").
+    wp_apply (wp_Mutex__Unlock with "[-Err Reply HlastModified Hrep_sl]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
