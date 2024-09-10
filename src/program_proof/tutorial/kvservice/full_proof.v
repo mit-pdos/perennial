@@ -324,6 +324,8 @@ Proof.
   wp_storeField.
   iModIntro. iApply "HΦ".
   iFrame.
+  rewrite ?string_to_bytes_to_string.
+  iFrame.
 Qed.
 
 End local_defs.
@@ -429,6 +431,8 @@ Proof.
   wp_storeField.
   iModIntro.
   iApply "HΦ".
+  iFrame.
+  rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 
@@ -684,8 +688,6 @@ Proof.
   {
     iRight. iNext.
     iFrame "#".
-    iExists r.
-    iFrame "#".
     iLeft. iFrame.
   }
   iModIntro.
@@ -723,7 +725,6 @@ Proof.
     iNext.
     iRight.
     iFrame "#".
-    iExists _; iFrame "#".
     iRight; iFrame.
   }
   iModIntro.
@@ -846,8 +847,8 @@ Definition own_mem (s:loc) (st:t) : iProp Σ :=
   "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #st.(nextFreshId) ∗
   "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
   "Hkvs" ∷ s ↦[Server :: "kvs"] #kvs_loc ∗
-  "HlastRepliesM" ∷ own_map lastReplies_loc 1 st.(lastReplies) ∗
-  "HkvsM" ∷ own_map kvs_loc 1 kvs_phys ∗
+  "HlastRepliesM" ∷ own_map lastReplies_loc (DfracOwn 1) st.(lastReplies) ∗
+  "HkvsM" ∷ own_map kvs_loc (DfracOwn 1) kvs_phys ∗
   "%Hrel_phys" ∷ ⌜ gauge_eq kvs_phys st.(kvs) ⌝
 .
 
@@ -886,17 +887,10 @@ Lemma ghost_getFreshNum γ st :
 .
 Proof.
   intros Hoverflow.
-  iIntros "Hspec".
   iNamed 1.
-  iFrame.
   iMod (server_fresh_id_step with "Herpc") as "[Herpc Htok]".
   { done. }
-  simpl.
-  iModIntro.
-  iSplitR "Hspec Htok".
-  { repeat iExists _; iFrame "∗%". }
-  iApply "Hspec".
-  iFrame.
+  iFrame. done.
 Qed.
 
 Lemma wp_Server__getFreshNum (s:loc) γ Ψ :
