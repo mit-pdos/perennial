@@ -189,15 +189,15 @@ Definition openR := csumR (prodR fracR (agreeR (leibnizO log_unopen_status))) (a
 Definition Log_Opened (l: loc) : openR := Cinr (to_agree l).
 
 Class logG Σ :=
-  { logG_open_inG :> inG Σ openR;
+  { #[gobal] logG_open_inG :: inG Σ openR;
     logG_open_name : gname;
-    logG_state_inG:> ghost_varG Σ (list disk.Block);
+    #[global] logG_state_inG :: ghost_varG Σ (list disk.Block);
     logG_state_name: gname;
   }.
 
 Class log_preG Σ :=
-  { logG_preG_open_inG :> inG Σ openR;
-    logG_preG_state_inG:> ghost_varG Σ (list disk.Block);
+  { #[global] logG_preG_open_inG :: inG Σ openR;
+    #[global] logG_preG_state_inG :: ghost_varG Σ (list disk.Block);
   }.
 
 Definition logΣ : gFunctors :=

@@ -33,10 +33,10 @@ Definition na_sizeUR (L: Type) `{Countable L} : ucmra :=
   gmapUR L (agreeR (leibnizO Z)).
 
 Class na_heapGS (L V: Type) Σ `{BlockAddr L} := Na_HeapG {
-  na_heap_inG :> inG Σ (na_heapUR L V);
-  na_size_inG :> inG Σ (authR (na_sizeUR Z));
-  na_meta_inG :> inG Σ (gmap_viewR L (agreeR gnameO));
-  na_meta_data_inG :> inG Σ (reservation_mapR (agreeR positiveO));
+  #[global] na_heap_inG :: inG Σ (na_heapUR L V);
+  #[global] na_size_inG :: inG Σ (authR (na_sizeUR Z));
+  #[global] na_meta_inG :: inG Σ (gmap_viewR L (agreeR gnameO));
+  #[global] na_meta_data_inG :: inG Σ (reservation_mapR (agreeR positiveO));
   na_heap_name : gname;
   na_size_name : gname;
   na_meta_name : gname
@@ -47,10 +47,10 @@ Arguments na_size_name {_ _ _ _ _ _} _ : assert.
 Arguments na_meta_name {_ _ _ _ _ _} _ : assert.
 
 Class na_heapGpreS (L V : Type) (Σ : gFunctors) `{BlockAddr L} := {
-  na_heap_preG_inG :> inG Σ (na_heapUR L V);
-  na_size_preG_inG :> inG Σ (authR (na_sizeUR Z));
-  na_meta_preG_inG :> inG Σ (gmap_viewR L (agreeR gnameO));
-  na_meta_data_preG_inG :> inG Σ (reservation_mapR (agreeR positiveO));
+  #[global] na_heap_preG_inG :: inG Σ (na_heapUR L V);
+  #[global] na_size_preG_inG :: inG Σ (authR (na_sizeUR Z));
+  #[global] na_meta_preG_inG :: inG Σ (gmap_viewR L (agreeR gnameO));
+  #[global] na_meta_data_preG_inG :: inG Σ (reservation_mapR (agreeR positiveO));
 }.
 
 Definition na_heapΣ (L V : Type) `{BlockAddr L} : gFunctors := #[

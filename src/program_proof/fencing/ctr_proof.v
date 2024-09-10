@@ -27,10 +27,10 @@ Record ctr_names :=
 Implicit Type γ : ctr_names.
 
 Class ctrG Σ :=
-  { mnat_inG:> mono_natG Σ;
-    val_inG:> mapG Σ u64 u64;
-    unused_tok_inG:> mapG Σ u64 bool;
-    tok_inG :> inG Σ (dfracR)
+  { #[global] mnat_inG :: mono_natG Σ;
+    #[global] val_inG :: mapG Σ u64 u64;
+    #[global] unused_tok_inG :: mapG Σ u64 bool;
+    #[global] tok_inG :: inG Σ (dfracR)
   }.
 
 Context `{!ctrG Σ}.

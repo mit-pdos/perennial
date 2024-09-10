@@ -8,7 +8,7 @@ Set Default Proof Using "Type".
 single thread that is allowed to access it *)
 
 Class thread_ownG Σ :=
-  { thread_own_ghost_bool :> ghost_varG Σ bool; }.
+  { #[global] thread_own_ghost_bool :: ghost_varG Σ bool; }.
 
 Definition thread_ownΣ : gFunctors := #[ ghost_varΣ bool ].
 

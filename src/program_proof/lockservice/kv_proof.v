@@ -12,8 +12,8 @@ Record kvservice_names := KVserviceGN {
 }.
 
 Class kvserviceG Σ := KVserviceG {
-  ls_rpcG :> rpcG Σ u64; (* RPC layer ghost state *)
-  ls_kvMapG :> mapG Σ u64 u64; (* [γkv]: tracks the state of the KV server *logically* *)
+  #[global] ls_rpcG :: rpcG Σ u64; (* RPC layer ghost state *)
+  #[global] ls_kvMapG :: mapG Σ u64 u64; (* [γkv]: tracks the state of the KV server *logically* *)
 }.
 
 Section kv_proof.

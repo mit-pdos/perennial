@@ -10,9 +10,9 @@ Section replica_ghost.
 Definition one_shotR V := csumR (exclR unitR) (agreeR (leibnizO V)).
 
 Class paxosG Σ (V : Type) := PaxosG {
-  paxos_oneshotG :> inG Σ (one_shotR V);
-  paxos_proposalG :> ghost_mapG Σ nat (option V);
-  paxos_acceptG :> ghost_mapG Σ (nat*nat) (option bool);
+  #[global] paxos_oneshotG :: inG Σ (one_shotR V);
+  #[global] paxos_proposalG :: ghost_mapG Σ nat (option V);
+  #[global] paxos_acceptG :: ghost_mapG Σ (nat*nat) (option bool);
 }.
 
 Context (f:nat).

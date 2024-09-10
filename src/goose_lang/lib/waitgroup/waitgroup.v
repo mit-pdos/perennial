@@ -36,8 +36,8 @@ Context {ext_tys: ext_types ext}.
 Section proof.
 
   Class waitgroupG Σ := {
-      wg_tokG :> mapG Σ u64 unit;
-      wg_totalG :> ghost_varG Σ u64 (* TODO: this will need to be mnat *)
+      #[global] wg_tokG :: mapG Σ u64 unit;
+      #[global] wg_totalG :: ghost_varG Σ u64 (* TODO: this will need to be mnat *)
   }.
   Definition waitgroupΣ := #[mapΣ u64 unit ; ghost_varΣ u64].
   Global Instance subG_waitgroupΣ {Σ} : subG (waitgroupΣ) Σ → (waitgroupG Σ).

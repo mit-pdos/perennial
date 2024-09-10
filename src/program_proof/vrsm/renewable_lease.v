@@ -7,8 +7,8 @@ Section renewable_lease_protocol.
 
 Class renewable_leaseG Σ :=
   {
-    escrowG :> ghost_varG Σ () ;
-    mono_natG :> mono_natG Σ ;
+    #[global] escrowG :: ghost_varG Σ () ;
+    #[global] mono_natG :: mono_natG Σ ;
   }.
 
 Definition renewable_leaseΣ := #[ghost_varΣ () ; mono_natΣ ].

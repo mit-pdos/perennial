@@ -7,8 +7,8 @@ From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import typed_slice.
 
 Class multiparG Σ : Set :=
-   { multiparG_auth :> inG Σ (gset_disjR nat);
-     multiparG_tok :> inG Σ (exclR unitO) }.
+   { #[global] multiparG_auth :: inG Σ (gset_disjR nat);
+     #[global] multiparG_tok :: inG Σ (exclR unitO) }.
 Definition multiparΣ := #[GFunctor (gset_disjR nat); GFunctor (exclR unitO)].
 Global Instance subG_multiparΣ {Σ} :
   subG multiparΣ Σ → multiparG Σ.

@@ -16,8 +16,8 @@ Section goose_lang.
   Class AsMapsTo (P: iProp Σ)
         (Φ : Qp -> iProp Σ) : Set :=
     { as_pointsto : P ≡ Φ 1%Qp;
-      as_pointsto_fractional :> Fractional Φ;
-      as_pointsto_timeless :> ∀ q, Timeless (Φ q);
+      #[global] as_pointsto_fractional :: Fractional Φ;
+      #[global] as_pointsto_timeless :: ∀ q, Timeless (Φ q);
     }.
 
   Arguments as_pointsto {P Φ} AsMapsTo.

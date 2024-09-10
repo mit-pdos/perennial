@@ -20,9 +20,9 @@ Record erpc_request_names := eRpcRequestNames {
 
 (** Collecting the CMRAs we need. *)
 Class erpcG Σ (R : Type) := RpcG {
-  rpc_fmcounterG :> fmcounter_mapG Σ;
-  rpc_escrowG :> inG Σ (exclR unitO);
-  rpc_mapG :> ghost_mapG Σ (u64*u64) (option R);
+  #[global] rpc_fmcounterG :: fmcounter_mapG Σ;
+  #[global] rpc_escrowG :: inG Σ (exclR unitO);
+  #[global] rpc_mapG :: ghost_mapG Σ (u64*u64) (option R);
 }.
 
 Definition erpcΣ R := #[fmcounter_mapΣ; GFunctor (exclR unitO); ghost_mapΣ (u64*u64) (option R)].

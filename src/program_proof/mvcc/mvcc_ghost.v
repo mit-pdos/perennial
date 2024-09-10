@@ -25,22 +25,22 @@ Qed.
 Class mvcc_ghostG Σ :=
   {
     (* SST *)
-    mvcc_ptupleG :> inG Σ key_vchainR;
-    mvcc_ltupleG :> inG Σ key_vchainR;
-    mvcc_abort_tids_ncaG :> ghost_mapG Σ nat unit;
-    mvcc_abort_tids_faG :> ghost_mapG Σ nat unit;
-    mvcc_abort_tids_fciG :> ghost_mapG Σ (nat * dbmap) unit;
-    mvcc_abort_tids_fccG :> ghost_mapG Σ (nat * dbmap) unit;
-    mvcc_commit_tidsG :> ghost_mapG Σ (nat * dbmap) unit;
-    mvcc_dbmapG :> ghost_mapG Σ u64 dbval;
+    #[global] mvcc_ptupleG :: inG Σ key_vchainR;
+    #[global] mvcc_ltupleG :: inG Σ key_vchainR;
+    #[global] mvcc_abort_tids_ncaG :: ghost_mapG Σ nat unit;
+    #[global] mvcc_abort_tids_faG :: ghost_mapG Σ nat unit;
+    #[global] mvcc_abort_tids_fciG :: ghost_mapG Σ (nat * dbmap) unit;
+    #[global] mvcc_abort_tids_fccG :: ghost_mapG Σ (nat * dbmap) unit;
+    #[global] mvcc_commit_tidsG :: ghost_mapG Σ (nat * dbmap) unit;
+    #[global] mvcc_dbmapG :: ghost_mapG Σ u64 dbval;
     (* GenTID *)
-    mvcc_tsG :> mono_natG Σ;
-    mvcc_sidG :> inG Σ sid_ownR;
-    mvcc_gentid_reservedG :> ghost_mapG Σ u64 gname;
-    mvcc_gentid_predG :> savedPredG Σ val;
+    #[global] mvcc_tsG :: mono_natG Σ;
+    #[global] mvcc_sidG :: inG Σ sid_ownR;
+    #[global] mvcc_gentid_reservedG :: ghost_mapG Σ u64 gname;
+    #[global] mvcc_gentid_predG :: savedPredG Σ val;
     (* GC *)
-    mvcc_sid_tidsG :> inG Σ sid_tidsR;
-    mvcc_sid_min_tidG :> inG Σ sid_min_tidR;
+    #[global] mvcc_sid_tidsG :: inG Σ sid_tidsR;
+    #[global] mvcc_sid_min_tidG :: inG Σ sid_min_tidR;
   }.
 
 Definition mvcc_ghostΣ :=
@@ -86,7 +86,7 @@ Record mvcc_names :=
 (* Per-txn ghost state. *)
 Class mvcc_txn_ghostG Σ :=
   {
-    mvcc_txnmapG :> ghost_mapG Σ u64 dbval;
+    #[global] mvcc_txnmapG :: ghost_mapG Σ u64 dbval;
   }.
 
 Definition mvcc_txn_ghostΣ :=

@@ -11,7 +11,7 @@ Section election.
 Definition one_shotR V := csumR (exclR unitR) (agreeR (leibnizO V)).
 
 Class electionG Σ := PaxosG {
-  election_voteG :> inG Σ fracR;
+  #[global] election_voteG :: inG Σ fracR;
 }.
 
 Context `{!electionG Σ}.

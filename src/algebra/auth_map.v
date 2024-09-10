@@ -36,7 +36,7 @@ Definition mapUR (K V: Type) `{Countable K}: ucmra :=
                   (agreeR (leibnizO V))).
 
 Class mapG Σ K V `{Countable K} :=
-  { map_inG :> inG Σ (authUR (mapUR K V)); }.
+  { #[global] map_inG :: inG Σ (authUR (mapUR K V)); }.
 
 Definition mapΣ K V `{Countable K} :=
   #[GFunctor (authR (mapUR K V))].

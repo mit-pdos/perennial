@@ -10,7 +10,7 @@ txn_id is referenced by pos, log < pos contains updates through and including up
 [txn_id: (pos, upds)]
 *)
 
-Class txns_ctxG Σ : Set := { txns_ctx_alist :> alistG Σ (u64 * list update.t) }.
+Class txns_ctxG Σ : Set := { #[global] txns_ctx_alist :: alistG Σ (u64 * list update.t) }.
 Definition txns_ctxΣ : gFunctors := #[alistΣ (u64 * list update.t)].
 
 #[global]

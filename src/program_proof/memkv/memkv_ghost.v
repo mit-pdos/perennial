@@ -9,8 +9,8 @@ From Perennial.program_proof.memkv Require Export common_proof.
 Local Definition kvMapUR := gmapUR u64 (dfrac_agreeR (leibnizO (list u8)) ).
 
 Class kvMapG Σ :=
-  { kv_map_inG :> inG Σ kvMapUR;
-    kvMapG_multipar :> multiparG Σ }.
+  { #[global] kv_map_inG :: inG Σ kvMapUR;
+    #[global] kvMapG_multipar :: multiparG Σ }.
 
 Definition kvMapΣ := #[GFunctor kvMapUR; multiparΣ].
 

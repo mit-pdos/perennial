@@ -42,16 +42,16 @@ TODO(RJ): rename to refinement_goose. *)
 Class refinement_heapG Σ := refinement_HeapG {
   refinement_spec_ffiLocalGS : ffiLocalGS Σ;
   refinement_spec_ffiGlobalGS : ffiGlobalGS Σ;
-  refinement_traceG :> traceGS Σ;
-  refinement_cfgG :> @cfgG spec_lang Σ;
-  refinement_na_heapG :> na_heapGS loc (@val spec_ffi_op_field) Σ;
-  refinement_frac_countG :> frac_countG Σ;
+  #[global] refinement_traceG :: traceGS Σ;
+  #[global] refinement_cfgG :: @cfgG spec_lang Σ;
+  #[global] refinement_na_heapG :: na_heapGS loc (@val spec_ffi_op_field) Σ;
+  #[global] refinement_frac_countG :: frac_countG Σ;
   refinement_crash_name : gname;
   refinement_resv_name : gname;
-  refinement_coPset_inG :> inG Σ (frac_coPsetR);
+  #[global] refinement_coPset_inG :: inG Σ (frac_coPsetR);
   (* TODO: do we need prophecies at the spec level? *)
   (*
-  refinement_proph_mapG :> proph_mapGS proph_id (val * val) Σ;
+  #[global] refinement_proph_mapG :: proph_mapGS proph_id (val * val) Σ;
    *)
 }.
 

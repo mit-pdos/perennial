@@ -39,11 +39,11 @@ Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
 Proof. reflexivity. Qed.
 
 Class diskGS Σ : Set := DiskGS
-  { diskG_ghost_async_mapG :> ghost_async_mapG Σ Z Block ;
+  { #[global] diskG_ghost_async_mapG :: ghost_async_mapG Σ Z Block ;
     diskG_ghost_async_name : gname }.
 
 Class disk_preG Σ :=
-  { disk_preG_ghost_async_mapG :> ghost_async_mapG Σ Z Block }.
+  { #[global] disk_preG_ghost_async_mapG :: ghost_async_mapG Σ Z Block }.
 
 Definition diskΣ : gFunctors :=
   #[ghost_async_mapΣ Z Block].

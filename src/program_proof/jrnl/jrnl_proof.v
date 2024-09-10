@@ -59,7 +59,7 @@ Lemma modified_mkVersioned {K} c m : modified (@mkVersioned K c m) = existT K m.
 Proof. reflexivity. Qed.
 
 Class jrnlG Σ : Set :=
-  { jrnl_txn   :> txnG Σ;
+  { #[global] jrnl_txn :: txnG Σ;
   }.
 
 Definition jrnlΣ : gFunctors :=

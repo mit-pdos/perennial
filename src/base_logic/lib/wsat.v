@@ -41,18 +41,18 @@ Qed.
 
 Module invGS.
   Class invGpreS (Σ : gFunctors) : Set := WsatPreG {
-    inv_inPreG :> inG Σ (authR (gmapUR positive
+    #[global] inv_inPreG :: inG Σ (authR (gmapUR positive
                                     (prodR (agreeR (prodO (listO (laterO (iPropO Σ))) bi_schemaO))
                                            (optionR (prodR fracR (agreeR (listO (laterO (iPropO Σ)))))))));
-    enabled_inPreG :> inG Σ coPset_disjR;
-    disabled_inPreG :> inG Σ (gset_disjR positive);
-    mlist_inPreG :> fmlistG (invariant_level_names) Σ;
+    #[global] enabled_inPreG :: inG Σ coPset_disjR;
+    #[global] disabled_inPreG :: inG Σ (gset_disjR positive);
+    #[global] mlist_inPreG :: fmlistG (invariant_level_names) Σ;
     inv_lcPreG : lcGpreS Σ;
   }.
 
   Class invGS (Σ : gFunctors) : Set := WsatG {
-    inv_inG :> invGpreS Σ;
-    invGS_lc :> lcGS Σ;
+    #[global] inv_inG :: invGpreS Σ;
+    #[global] invGS_lc :: lcGS Σ;
     inv_list_name : gname;
     enabled_name : gname;
     disabled_name : gname;

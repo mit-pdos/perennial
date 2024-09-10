@@ -23,13 +23,13 @@ Implicit Type γ : paxos_system_names.
 Definition client_logR := dfrac_agreeR (leibnizO (list u8)).
 
 Class paxosG Σ := {
-    (* mp_ghostG :> mp_ghostG (EntryType:=(list u8 * iProp Σ)%type) Σ ; *)
-    paxos_ghostG :> mpaxosG (EntryType:=(list u8 * gname)%type) Σ ;
-    paxos_urpcG :> urpcregG Σ ;
-    paxos_wgG :> waitgroupG Σ ; (* for apply proof *)
-    paxos_logG :> inG Σ client_logR;
-    paxos_apply_escrow_tok :> ghost_varG Σ unit ;
-    paxos_asyncfile :> asyncfileG Σ ;
+    (* #[global] mp_ghostG :: mp_ghostG (EntryType:=(list u8 * iProp Σ)%type) Σ ; *)
+    #[global] paxos_ghostG :: mpaxosG (EntryType:=(list u8 * gname)%type) Σ ;
+    #[global] paxos_urpcG :: urpcregG Σ ;
+    #[global] paxos_wgG :: waitgroupG Σ ; (* for apply proof *)
+    #[global] paxos_logG :: inG Σ client_logR;
+    #[global] paxos_apply_escrow_tok :: ghost_varG Σ unit ;
+    #[global] paxos_asyncfile :: asyncfileG Σ ;
 }.
 
 Definition paxosΣ :=

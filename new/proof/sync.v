@@ -12,8 +12,8 @@ From Perennial.algebra Require Import map.
 Set Default Proof Using "Type".
 
 Class syncG Σ := {
-    wg_tokG :> mapG Σ u64 unit;
-    wg_totalG :> ghost_varG Σ u64
+    #[global] wg_tokG :: mapG Σ u64 unit;
+    #[global] wg_totalG :: ghost_varG Σ u64
   }.
 
 Definition syncΣ := #[mapΣ u64 unit ; ghost_varΣ u64].

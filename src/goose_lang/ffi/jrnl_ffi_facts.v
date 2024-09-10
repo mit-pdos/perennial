@@ -67,30 +67,30 @@ Definition openR := csumR (prodR fracR (agreeR unitO)) (agreeR unitO).
 Definition jrnl_opened : openR := Cinr (to_agree tt).
 
 Class jrnlG Σ : Set :=
-  { jrnlG_open_inG :> inG Σ openR;
+  { #[global] jrnlG_open_inG :: inG Σ openR;
     jrnlG_open_name : gname;
-    jrnlG_data_inG :> mapG Σ addr obj;
+    #[global] jrnlG_data_inG :: mapG Σ addr obj;
     jrnlG_data_name: gname;
-    jrnlG_kinds_inG :> inG Σ (agreeR (leibnizO (gmap blkno kind)));
+    #[global] jrnlG_kinds_inG :: inG Σ (agreeR (leibnizO (gmap blkno kind)));
     jrnlG_kinds_name: gname;
-    jrnlG_dom_inG :> inG Σ (agreeR (leibnizO (gset addr)));
+    #[global] jrnlG_dom_inG :: inG Σ (agreeR (leibnizO (gset addr)));
     jrnlG_dom_name: gname;
-    jrnlG_crash_toks_inG :> mapG Σ addr unit;
+    #[global] jrnlG_crash_toks_inG :: mapG Σ addr unit;
     jrnlG_crash_toks_name: gname;
-    jrnlG_full_crash_tok_inG :> ghost_varG Σ unit;
+    #[global] jrnlG_full_crash_tok_inG :: ghost_varG Σ unit;
     jrnlG_full_crash_tok_name: gname;
-    jrnlG_allocs_inG :> mapG Σ loc u64;
+    #[global] jrnlG_allocs_inG :: mapG Σ loc u64;
     jrnlG_allocs_name : gname;
   }.
 
 Class jrnl_preG Σ :=
-  { jrnlG_preG_open_inG :> inG Σ openR;
-    jrnlG_preG_data_inG:> mapG Σ addr obj;
-    jrnlG_preG_kinds_inG:> inG Σ (agreeR (leibnizO (gmap blkno kind)));
-    jrnlG_preG_dom_inG:> inG Σ (agreeR (leibnizO (gset addr)));
-    jrnlG_preG_crash_toks_inG:> mapG Σ addr unit;
-    jrnlG_preG_full_crash_tok_inG :> ghost_varG Σ unit;
-    jrnlG_preG_allocs_inG :> mapG Σ loc u64;
+  { #[global] jrnlG_preG_open_inG :: inG Σ openR;
+    #[global] jrnlG_preG_data_inG :: mapG Σ addr obj;
+    #[global] jrnlG_preG_kinds_inG :: inG Σ (agreeR (leibnizO (gmap blkno kind)));
+    #[global] jrnlG_preG_dom_inG :: inG Σ (agreeR (leibnizO (gset addr)));
+    #[global] jrnlG_preG_crash_toks_inG :: mapG Σ addr unit;
+    #[global] jrnlG_preG_full_crash_tok_inG :: ghost_varG Σ unit;
+    #[global] jrnlG_preG_allocs_inG :: mapG Σ loc u64;
   }.
 
 Definition jrnlΣ : gFunctors :=

@@ -227,11 +227,11 @@ Import configParams.
 Section config_global.
 
 Class configG Σ := {
-    config_configG :> ghost_varG Σ (list u64) ;
-    config_urpcG :> urpcregG Σ ;
-    config_epochG :> mono_natG Σ ;
-    config_paxosG :> paxosG Σ ;
-    config_leaseG :> renewable_leaseG Σ ;
+    #[global] config_configG :: ghost_varG Σ (list u64) ;
+    #[global] config_urpcG :: urpcregG Σ ;
+    #[global] config_epochG :: mono_natG Σ ;
+    #[global] config_paxosG :: paxosG Σ ;
+    #[global] config_leaseG :: renewable_leaseG Σ ;
 }.
 
 Definition configΣ := #[mono_natΣ ; paxosΣ ; ghost_varΣ (list u64) ; urpcregΣ ; renewable_leaseΣ ].

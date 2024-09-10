@@ -5,7 +5,7 @@ From iris.proofmode Require Import proofmode.
 
 Section definitions.
 Class mapG Σ K V `{Countable K} :=
-  { map_inG:> inG Σ (gmapR K (dfrac_agreeR (leibnizO V)))} .
+  { #[global] map_inG :: inG Σ (gmapR K (dfrac_agreeR (leibnizO V)))} .
 
 Definition mapΣ K V `{Countable K} := #[GFunctor (gmapR K (dfrac_agreeR (leibnizO V)))].
 Global Instance subG_mapΣ K V `{Countable K} {Σ} : subG (mapΣ K V) Σ → (mapG Σ K V).

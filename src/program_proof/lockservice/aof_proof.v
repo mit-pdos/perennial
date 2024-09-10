@@ -10,10 +10,10 @@ Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 
 Class aofG Σ := AofG {
-  aof_flistG :> fmlistG u8 Σ ;
-  aof_mnatG :> inG Σ mono_natUR ;
-  aof_mapG :> mapG Σ u64 unit ;
-  aof_tokG :> inG Σ (exclR unitO) ;
+  #[global] aof_flistG :: fmlistG u8 Σ ;
+  #[global] aof_mnatG :: inG Σ mono_natUR ;
+  #[global] aof_mapG :: mapG Σ u64 unit ;
+  #[global] aof_tokG :: inG Σ (exclR unitO) ;
 }.
 
 Record aof_vol_names := mk_aof_vol_names {

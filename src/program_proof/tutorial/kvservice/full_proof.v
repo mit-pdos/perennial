@@ -539,9 +539,9 @@ Record erpc_names :=
 Implicit Types γ:erpc_names.
 
 Class erpcG Σ := {
-    receiptG :> ghost_mapG Σ u64 string ;
-    tokenG :> ghost_mapG Σ u64 unit ;
-    clientTokenG :> inG Σ dfracR ;
+    #[global] receiptG :: ghost_mapG Σ u64 string ;
+    #[global] tokenG :: ghost_mapG Σ u64 unit ;
+    #[global] clientTokenG :: inG Σ dfracR ;
 }.
 
 Context `{!erpcG Σ}.
@@ -742,8 +742,8 @@ Record kvservice_names :=
 
 Class kvserviceG Σ :=
   {
-    erpc_inG :> erpcG Σ ;
-    kvs_inG :> ghost_mapG Σ string string ;
+    #[global] erpc_inG :: erpcG Σ ;
+    #[global] kvs_inG :: ghost_mapG Σ string string ;
   }.
 
 End ghost_proof.

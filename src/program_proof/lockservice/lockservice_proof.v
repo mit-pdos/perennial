@@ -11,11 +11,11 @@ Record lockservice_names := LockserviceNames {
 }.
 
 Class lockserviceG Σ := LockserviceG {
-  ls_rpcG :> rpcG Σ u64; (* RPC layer ghost state *)
-  ls_locksAllocG :> mapG Σ u64 unit; (* [ls_locksAllocGN]: tracks with locks *logically* exist; using 
+  #[global] ls_rpcG :: rpcG Σ u64; (* RPC layer ghost state *)
+  #[global] ls_locksAllocG :: mapG Σ u64 unit; (* [ls_locksAllocGN]: tracks with locks *logically* exist; using 
                                         auth_map makes it convenient to have persistent facts that tell
                                         us that a lock logically exists *)
-  ls_locksMapDomG :> ghost_varG Σ (gset u64); (* [ls_mapDomGN]: Tracking the set of locks that *physically* exist *)
+  #[global] ls_locksMapDomG :: ghost_varG Σ (gset u64); (* [ls_mapDomGN]: Tracking the set of locks that *physically* exist *)
 }.
 
 Definition lockserviceN := nroot .@ "lockservice".

@@ -35,10 +35,10 @@ Notation jrnl_nat_K :=
                            → (@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)))).
 
 Class twophaseG (Σ: gFunctors) : Set :=
-  { twophase_stagedG :> stagedG Σ;
-    twophase_lockmapG :> lockmapG Σ;
-    twophase_jrnlG :> sep_jrnl_invariant.jrnlG Σ;
-    twophase_nat_ctx :> ghost_varG Σ (nat * (spec_lang.(language.expr) → spec_lang.(language.expr)))%type;
+  { #[global] twophase_stagedG :: stagedG Σ;
+    #[global] twophase_lockmapG :: lockmapG Σ;
+    #[global] twophase_jrnlG :: sep_jrnl_invariant.jrnlG Σ;
+    #[global] twophase_nat_ctx :: ghost_varG Σ (nat * (spec_lang.(language.expr) → spec_lang.(language.expr)))%type;
   }.
 
 Definition twophase_names := unit.

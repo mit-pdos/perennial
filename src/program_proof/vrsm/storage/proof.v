@@ -14,10 +14,10 @@ Import Sm.
 Instance e : EqDecision OpType := OpType_EqDecision.
 
 Class simplelogG Σ := SimplelogG {
-  simplelog_fmlistG :> fmlistG ((list OpType) * bool) Σ;
-  simplelog_propose_fmlistG :> fmlistG OpType Σ;
-  simplelog_aofG :> aofG Σ ;
-  simplelog_pbG :> pbG Σ ;
+  #[global] simplelog_fmlistG :: fmlistG ((list OpType) * bool) Σ;
+  #[global] simplelog_propose_fmlistG :: fmlistG OpType Σ;
+  #[global] simplelog_aofG :: aofG Σ ;
+  #[global] simplelog_pbG :: pbG Σ ;
 }.
 
 Definition simplelogΣ := #[

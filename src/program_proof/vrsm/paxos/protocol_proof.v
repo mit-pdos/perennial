@@ -23,10 +23,10 @@ Local Canonical Structure EntryTypeO := leibnizO EntryType.
 Local Definition logR := mono_listR EntryTypeO.
 
 Class mpaxosG Σ := {
-    mp_ghost_epochG :> mono_natG Σ ;
-    mp_ghost_mapG :> fmlist_mapG Σ u64 EntryType ;
-    mp_ghost_commitG :> inG Σ logR ;
-    mp_proposal_escrowG :> inG Σ (gmapR (u64) (dfrac_agreeR unitO)) ;
+    #[global] mp_ghost_epochG :: mono_natG Σ ;
+    #[global] mp_ghost_mapG :: fmlist_mapG Σ u64 EntryType ;
+    #[global] mp_ghost_commitG :: inG Σ logR ;
+    #[global] mp_proposal_escrowG :: inG Σ (gmapR (u64) (dfrac_agreeR unitO)) ;
 }.
 
 Definition mpaxosΣ :=

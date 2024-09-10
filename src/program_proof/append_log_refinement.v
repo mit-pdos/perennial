@@ -30,9 +30,9 @@ Notation sexpr := (@expr (@spec_ffi_op_field log_spec_ext)).
 Notation sval := (@val (@spec_ffi_op_field log_spec_ext)).
 
 Class appendG (Σ: gFunctors) :=
-  { append_stagedG :> stagedG Σ;
-    append_stateG :> inG Σ (authR (optionUR (exclR log_stateO)));
-    append_nat_ctx :> inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
+  { #[global] append_stagedG :: stagedG Σ;
+    #[global] append_stateG :: inG Σ (authR (optionUR (exclR log_stateO)));
+    #[global] append_nat_ctx :: inG Σ (authR (optionUR (exclR (leibnizO (nat * (spec_lang.(language.expr) →
                                                                        spec_lang.(language.expr)))))))
   }.
 

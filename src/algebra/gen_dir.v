@@ -17,13 +17,13 @@ Definition to_gen_dir {L1 L2 V} `{Countable L1} `{Countable L2} :
 
 (** The CMRA we need. *)
 Class gen_dirG (L1 L2 V : Type) (Σ : gFunctors) `{Countable L1} `{Countable L2} := GenDirG {
-  gen_dir_inG :> inG Σ (authR (gen_dirUR L1 L2 V));
+  #[global] gen_dir_inG :: inG Σ (authR (gen_dirUR L1 L2 V));
   gen_dir_name : gname
 }.
 Arguments gen_dir_name {_ _ _ _ _ _ _ _} _ : assert.
 
 Class gen_dirPreG (L1 L2 V : Type) (Σ : gFunctors) `{Countable L1} `{Countable L2} :=
-  { gen_dir_preG_inG :> inG Σ (authR (gen_dirUR L1 L2 V)) }.
+  { #[global] gen_dir_preG_inG :: inG Σ (authR (gen_dirUR L1 L2 V)) }.
 
 Definition gen_dirΣ (L1 L2 V : Type) `{Countable L1} `{Countable L2} : gFunctors :=
   #[GFunctor (authR (gen_dirUR L1 L2 V))].

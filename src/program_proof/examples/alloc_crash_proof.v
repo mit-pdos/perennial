@@ -23,8 +23,8 @@ Proof.
 Qed.
 
 Class allocG Σ :=
-  { alloc_used_preG :> ghost_mapG Σ u64 block_status;
-    alloc_freeset :> ghost_varG Σ (gset u64);
+  { #[global] alloc_used_preG :: ghost_mapG Σ u64 block_status;
+    #[global] alloc_freeset :: ghost_varG Σ (gset u64);
  }.
 
 (* state representation types (defined here since modules can't be in sections) *)
