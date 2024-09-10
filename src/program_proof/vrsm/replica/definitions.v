@@ -54,7 +54,7 @@ Module pbParams.
 Class t :=
   mk {
       initconf : list u64 ; (* XXX: have to put these here to construct a configParams.t; bundling problem *)
-      pb_record :> Sm.t
+      #[global] pb_record :: Sm.t
     }
 .
 End pbParams.
@@ -67,18 +67,18 @@ Import Sm.
 Definition client_logR := mono_listR (leibnizO OpType).
 Class pbG Σ := {
     (*
-    pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
+    #[global] pb_ghostG :: pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
      *)
-    (* pb_ghostG :> pb_ghostG (EntryType:=(OpType * gname)) Σ ; *)
-    pb_prereadG :> pb_prereadG (EntryType:=(OpType * gname)) Σ ;
-    pb_primaryG :> primary_ghostG (EntryType:=(OpType * gname)) Σ ;
-    pb_savedG :> savedPredG Σ (list OpType);
-    pb_configG :> configG Σ ;
-    (* pb_urpcG :> urpcregG Σ ; *)
-    pb_wgG :> waitgroupG Σ ; (* for apply proof *)
-    pb_logG :> inG Σ client_logR;
-    pb_apply_escrow_tok :> ghost_varG Σ unit ;
-    pb_prophread_escrow :> inG Σ dfracR ;
+    (* #[global] pb_ghostG :: pb_ghostG (EntryType:=(OpType * gname)) Σ ; *)
+    #[global] pb_prereadG :: pb_prereadG (EntryType:=(OpType * gname)) Σ ;
+    #[global] pb_primaryG :: primary_ghostG (EntryType:=(OpType * gname)) Σ ;
+    #[global] pb_savedG :: savedPredG Σ (list OpType);
+    #[global] pb_configG :: configG Σ ;
+    (* #[global] pb_urpcG :: urpcregG Σ ; *)
+    #[global] pb_wgG :: waitgroupG Σ ; (* for apply proof *)
+    #[global] pb_logG :: inG Σ client_logR;
+    #[global] pb_apply_escrow_tok :: ghost_varG Σ unit ;
+    #[global] pb_prophread_escrow :: inG Σ dfracR ;
 }.
 
 Definition pbΣ :=

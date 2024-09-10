@@ -40,10 +40,10 @@ Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t 
   modify (set circΣ.upds (fun u => u ++ l)).
 
 Class circG Σ : Set :=
-  { circ_list_u64 :> ghost_varG Σ (list u64);
-    circ_list_block :> ghost_varG Σ (list Block);
-    circ_mono_nat :> mono_natG Σ;
-    circ_stagedG :> stagedG Σ;
+  { #[global] circ_list_u64 :: ghost_varG Σ (list u64);
+    #[global] circ_list_block :: ghost_varG Σ (list Block);
+    #[global] circ_mono_nat :: mono_natG Σ;
+    #[global] circ_stagedG :: stagedG Σ;
   }.
 
 Definition circΣ : gFunctors :=

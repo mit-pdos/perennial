@@ -5,7 +5,7 @@ From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude.
 
 Class fmcounter_mapG Σ :=
-   { fmcounter_map_inG :> inG Σ (gmapUR u64 mono_natR) }.
+   { #[global] fmcounter_map_inG :: inG Σ (gmapUR u64 mono_natR) }.
 
 Definition fmcounter_mapΣ := #[GFunctor (gmapUR u64 mono_natR)].
 

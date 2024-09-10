@@ -163,14 +163,14 @@ Record tr_names : Set := {
 }.
 
 Class traceGS (Σ: gFunctors) : Set := {
-  trace_inG :> inG Σ (authR (optionUR (exclR traceO)));
-  oracle_inG :> inG Σ (authR (optionUR (exclR OracleO)));
+  #[global] trace_inG :: inG Σ (authR (optionUR (exclR traceO)));
+  #[global] oracle_inG :: inG Σ (authR (optionUR (exclR OracleO)));
   trace_tr_names : tr_names;
 }.
 
 Class trace_preG (Σ: gFunctors) : Set := {
-  trace_preG_inG :> inG Σ (authR (optionUR (exclR traceO)));
-  oracle_preG_inG :> inG Σ (authR (optionUR (exclR OracleO)));
+  #[global] trace_preG_inG :: inG Σ (authR (optionUR (exclR traceO)));
+  #[global] oracle_preG_inG :: inG Σ (authR (optionUR (exclR OracleO)));
 }.
 
 Definition traceGS_update (Σ: gFunctors) (hT: traceGS Σ) (names: tr_names) :=
@@ -260,13 +260,13 @@ Record cr_names : Set := {
 }.
 
 Class credit_preG (Σ: gFunctors) : Set := {
-  credit_preG_inG :> inG Σ (authR natUR);
-  frac_coPset_preG_inG :> inG Σ (frac_coPsetR);
+  #[global] credit_preG_inG :: inG Σ (authR natUR);
+  #[global] frac_coPset_preG_inG :: inG Σ (frac_coPsetR);
 }.
 
 Class creditGS (Σ: gFunctors) : Set := {
-  credit_inG :> inG Σ (authR natUR);
-  frac_coPset_inG :> inG Σ (frac_coPsetR);
+  #[global] credit_inG :: inG Σ (authR natUR);
+  #[global] frac_coPset_inG :: inG Σ (frac_coPsetR);
   credit_cr_names : cr_names;
 }.
 
@@ -414,8 +414,8 @@ Qed.
 (** Global ghost state for GooseLang. *)
 Class gooseGlobalGS Σ : Set := GooseGlobalGS {
   goose_invGS : invGS Σ;
-  goose_prophGS :> proph_mapGS proph_id val Σ;
-  goose_creditGS :> creditGS Σ;
+  #[global] goose_prophGS :: proph_mapGS proph_id val Σ;
+  #[global] goose_creditGS :: creditGS Σ;
   goose_ffiGlobalGS : ffiGlobalGS Σ;
 }.
 (* Per-generation / "local" ghost state.
@@ -425,8 +425,8 @@ Would be good to align terminology. *)
 Class gooseLocalGS Σ : Set := GooseLocalGS {
   goose_crashGS : crashGS Σ;
   goose_ffiLocalGS : ffiLocalGS Σ;
-  goose_na_heapGS :> na_heapGS loc val Σ;
-  goose_traceGS :> traceGS Σ;
+  #[global] goose_na_heapGS :: na_heapGS loc val Σ;
+  #[global] goose_traceGS :: traceGS Σ;
 }.
 
 (* For convenience we also have a class that bundles both the

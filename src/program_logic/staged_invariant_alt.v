@@ -21,10 +21,10 @@ Proof. econstructor. apply idle. Qed.
 Canonical Structure staged_inv_statusO := leibnizO staged_inv_status.
 
 Class stagedG (Σ : gFunctors) : Set := WsatG {
-  staging_saved_inG :> savedPropG Σ;
-  staging_auth_inG :> inG Σ (authR (optionUR (exclR (prodO gnameO gnameO))));
-  staging_status_inG :> inG Σ (authR (optionUR (exclR staged_inv_statusO)));
-  staging_shot_inG :> inG Σ (csumR (fracR) (agreeR unitO));
+  #[global] staging_saved_inG :: savedPropG Σ;
+  #[global] staging_auth_inG :: inG Σ (authR (optionUR (exclR (prodO gnameO gnameO))));
+  #[global] staging_status_inG :: inG Σ (authR (optionUR (exclR staged_inv_statusO)));
+  #[global] staging_shot_inG :: inG Σ (csumR (fracR) (agreeR unitO));
 }.
 
 Definition stagedΣ : gFunctors :=

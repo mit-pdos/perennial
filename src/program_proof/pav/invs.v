@@ -7,8 +7,8 @@ From Perennial.base_logic.lib Require Import ghost_map.
 Section shared.
 Class pavG Σ :=
   {
-    pavG_mono_key_maps :> mono_listG gname Σ;
-    pavG_key_map_views :> ghost_mapG Σ (list w8) (list w8);
+    #[global] pavG_mono_key_maps :: mono_listG gname Σ;
+    #[global] pavG_key_map_views :: ghost_mapG Σ (list w8) (list w8);
   }.
 End shared.
 

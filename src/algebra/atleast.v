@@ -305,7 +305,7 @@ Arguments MakeAtLeast {_} _ _%I _%I.
 #[global]
 Hint Mode MakeAtLeast + - - - : typeclass_instances.
 Class KnownMakeAtLeast {PROP : bi} k (P Q : PROP) :=
-  known_make_except_0 :> MakeAtLeast k P Q.
+  #[global] known_make_except_0 :: MakeAtLeast k P Q.
 Arguments KnownMakeAtLeast {_} _ _%I _%I.
 #[global]
 Hint Mode KnownMakeAtLeast + + ! - : typeclass_instances.

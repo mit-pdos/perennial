@@ -14,9 +14,9 @@ From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.vrsm.apps Require Import vsm proof kv_vsm_proof log.
 
 Class kvG Σ := KvG {
-  kv_ghostMapG :> ghost_mapG Σ string string ;
-  kv_logG :> inG Σ (mono_listR (leibnizO kvOp)) ;
-  kv_vsmG :> vsmG (sm_record:=kv_record) Σ ;
+  #[global] kv_ghostMapG :: ghost_mapG Σ string string ;
+  #[global] kv_logG :: inG Σ (mono_listR (leibnizO kvOp)) ;
+  #[global] kv_vsmG :: vsmG (sm_record:=kv_record) Σ ;
 }.
 Definition kvΣ := #[configΣ; ghost_mapΣ string string;
                       GFunctor (mono_listR (leibnizO kvOp));
@@ -31,9 +31,9 @@ Local Instance esmParams (initconf: list u64) : pbParams.t := pbParams.mk initco
 
 Class ekvG Σ :=
   {
-    ekv_erpcG :> erpcG Σ (list u8) ;
-    ekv_simplelogG :> simplelogG Σ (sm_record:=ekv_record);
-    ekv_kvG :> kvG Σ ;
+    #[global] ekv_erpcG :: erpcG Σ (list u8) ;
+    #[global] ekv_simplelogG :: simplelogG Σ (sm_record:=ekv_record);
+    #[global] ekv_kvG :: kvG Σ ;
   }.
 
 Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ (sm_record:=ekv_record); kvΣ].

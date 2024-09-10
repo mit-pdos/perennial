@@ -13,13 +13,13 @@ Class spec_ffi_interp_adequacy `{spec_ffi: @spec_ffi_interp ffi} `{EXT: !spec_ex
                                                           (spec_ext_semantics_field) }.
 
 Class refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} Σ := HeapGpreS {
-  refinement_heap_preG_heap :> na_heapGpreS loc (@val spec_ffi_op_field) Σ;
+  #[global] refinement_heap_preG_heap :: na_heapGpreS loc (@val spec_ffi_op_field) Σ;
   refinement_heap_preG_ffi : @ffiGpreS (@spec_ffi_model_field ffi)
                                        (@spec_ffi_interp_field _ spec_ffi)
                                        _ _ (spec_ffi_interp_adequacy_field) Σ;
-  refinement_heap_preG_trace :> trace_preG Σ;
-  refinement_heap_preG_frac :> frac_countG Σ;
-  refinement_heap_resv :> inG Σ (frac_coPsetR);
+  #[global] refinement_heap_preG_trace :: trace_preG Σ;
+  #[global] refinement_heap_preG_frac :: frac_countG Σ;
+  #[global] refinement_heap_resv :: inG Σ (frac_coPsetR);
 }.
 
 #[global]

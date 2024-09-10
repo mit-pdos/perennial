@@ -17,11 +17,11 @@ Record af_names := mk_af_names {
 
 Class asyncfileG Σ :=
   AsyncFileG {
-    map_inG :> mapG Σ u64 ();
-    data_inG :> ghost_varG Σ (list u8);
-    tok_inG :> ghost_varG Σ ();
-    idx_ing :> ghost_varG Σ u64;
-    stagedG :> stagedG Σ ; (* for crash borrows? *)
+    #[global] map_inG :: mapG Σ u64 ();
+    #[global] data_inG :: ghost_varG Σ (list u8);
+    #[global] tok_inG :: ghost_varG Σ ();
+    #[global] idx_ing :: ghost_varG Σ u64;
+    #[global] stagedG :: stagedG Σ ; (* for crash borrows? *)
   }.
 
 Definition asyncfileΣ :=

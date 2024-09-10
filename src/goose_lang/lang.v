@@ -36,19 +36,19 @@ Definition proph_id := positive.
 Class ffi_syntax :=
   mkExtOp {
       ffi_opcode: Set;
-      ffi_opcode_eq_dec :> EqDecision ffi_opcode;
-      ffi_opcode_countable :> Countable ffi_opcode;
+      #[global] ffi_opcode_eq_dec :: EqDecision ffi_opcode;
+      #[global] ffi_opcode_countable :: Countable ffi_opcode;
       ffi_val: Type;
-      ffi_val_eq_dec :> EqDecision ffi_val;
-      ffi_val_countable :> Countable ffi_val;
+      #[global] ffi_val_eq_dec :: EqDecision ffi_val;
+      #[global] ffi_val_countable :: Countable ffi_val;
     }.
 
 Class ffi_model :=
   mkFfiModel {
       ffi_state : Type;
       ffi_global_state : Type;
-      ffi_state_inhabited :> Inhabited ffi_state;
-      ffi_global_state_inhabited :> Inhabited ffi_global_state;
+      #[global] ffi_state_inhabited :: Inhabited ffi_state;
+      #[global] ffi_global_state_inhabited :: Inhabited ffi_global_state;
     }.
 
 Section external.

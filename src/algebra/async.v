@@ -10,8 +10,8 @@ From Perennial.algebra Require Import log_heap own_discrete.
 Set Default Proof Using "Type".
 
 Class asyncG Σ (K V: Type) `{Countable K, EqDecision V} := {
-  async_listG :> fmlistG (gmap K V) Σ;
-  async_mapG :> inG Σ (gmap_viewR K (agreeR natO));
+  #[global] async_listG :: fmlistG (gmap K V) Σ;
+  #[global] async_mapG :: inG Σ (gmap_viewR K (agreeR natO));
 }.
 
 Definition asyncΣ K V `{Countable K, EqDecision V} : gFunctors :=

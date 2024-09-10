@@ -42,13 +42,13 @@ Hint Resolve subG_ffiPreG : typeclass_instances.
 Class gooseGpreS `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
       `{INTERP: !ffi_interp ffi} `{!ffi_interp_adequacy} Σ
   := GooseGpreS {
-  goose_preG_iris :> invGpreS Σ;
-  goose_preG_crash :> crashGpreS Σ;
-  goose_preG_heap :> na_heapGpreS loc val Σ;
-  goose_preG_proph :> proph_mapGpreS proph_id val Σ;
-  goose_preG_ffi :> ffiGpreS Σ;
-  goose_preG_trace :> trace_preG Σ;
-  goose_preG_credit :> credit_preG Σ;
+  #[global] goose_preG_iris :: invGpreS Σ;
+  #[global] goose_preG_crash :: crashGpreS Σ;
+  #[global] goose_preG_heap :: na_heapGpreS loc val Σ;
+  #[global] goose_preG_proph :: proph_mapGpreS proph_id val Σ;
+  #[global] goose_preG_ffi :: ffiGpreS Σ;
+  #[global] goose_preG_trace :: trace_preG Σ;
+  #[global] goose_preG_credit :: credit_preG Σ;
 }.
 
 Ltac solve_inG_deep :=

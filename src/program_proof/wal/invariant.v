@@ -15,21 +15,21 @@ From Perennial.program_proof.wal Require Export boundaries.
 Transparent slice.T.
 
 Class walG Σ : Set :=
-  { wal_circ         :> circG Σ;
-    wal_txns_map     :> ghost_mapG Σ nat (u64 * list update.t);
-    wal_circ_state   :> ghost_varG Σ circΣ.t;
-    wal_txn_id       :> ghost_varG Σ (u64 * nat);
-    wal_list_update  :> ghost_varG Σ (list update.t);
-    wal_txns         :> ghost_varG Σ (list (u64 * (list update.t)));
-    wal_nat          :> ghost_varG Σ nat;
-    wal_addr_set     :> ghost_varG Σ (gset Z);
-    wal_thread_owned :> thread_ownG Σ;
-    wal_txns_ctx     :> txns_ctxG Σ;
-    wal_stable_map   :> ghost_varG Σ (gmap nat unit);
-    wal_stable_mapG  :> mapG Σ nat unit;
-    wal_logger_pos   :> ghost_varG Σ u64;
-    wal_base_disk    :> inG Σ (agreeR (leibnizO disk));
-    wal_mono_natG    :> mono_natG Σ;
+  { #[global] wal_circ         :: circG Σ;
+    #[global] wal_txns_map     :: ghost_mapG Σ nat (u64 * list update.t);
+    #[global] wal_circ_state   :: ghost_varG Σ circΣ.t;
+    #[global] wal_txn_id       :: ghost_varG Σ (u64 * nat);
+    #[global] wal_list_update  :: ghost_varG Σ (list update.t);
+    #[global] wal_txns         :: ghost_varG Σ (list (u64 * (list update.t)));
+    #[global] wal_nat          :: ghost_varG Σ nat;
+    #[global] wal_addr_set     :: ghost_varG Σ (gset Z);
+    #[global] wal_thread_owned :: thread_ownG Σ;
+    #[global] wal_txns_ctx     :: txns_ctxG Σ;
+    #[global] wal_stable_map   :: ghost_varG Σ (gmap nat unit);
+    #[global] wal_stable_mapG  :: mapG Σ nat unit;
+    #[global] wal_logger_pos   :: ghost_varG Σ u64;
+    #[global] wal_base_disk    :: inG Σ (agreeR (leibnizO disk));
+    #[global] wal_mono_natG    :: mono_natG Σ;
   }.
 
 Definition walΣ : gFunctors :=

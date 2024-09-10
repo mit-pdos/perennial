@@ -10,8 +10,8 @@ Set Default Proof Using "Type".
 
 (** The CMRAs/functors we need. *)
 Class barrierG Σ := BarrierG {
-  barrier_inG :> ghost_mapG Σ nat (gname * gname);
-  barrier_savedPropG :> savedPropG Σ;
+  #[global] barrier_inG :: ghost_mapG Σ nat (gname * gname);
+  #[global] barrier_savedPropG :: savedPropG Σ;
 }.
 Definition barrierΣ : gFunctors :=
   #[ ghost_mapΣ nat (gname * gname); savedPropΣ ].

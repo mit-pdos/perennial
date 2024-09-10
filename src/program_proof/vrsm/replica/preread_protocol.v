@@ -10,9 +10,9 @@ Section pb_preread_protocol.
 Context `{EntryType}.
 Class pb_prereadG Σ :=
   {
-    preread_pb_ghostG :> pb_ghostG (EntryType:=EntryType) Σ ;
-    preread_gnameMapG :> inG Σ (authR (gmapUR nat (mono_listR (leibnizO gname)))) ;
-    preread_savedG :> savedPredG Σ (list EntryType)
+    #[global] preread_pb_ghostG :: pb_ghostG (EntryType:=EntryType) Σ ;
+    #[global] preread_gnameMapG :: inG Σ (authR (gmapUR nat (mono_listR (leibnizO gname)))) ;
+    #[global] preread_savedG :: savedPredG Σ (list EntryType)
   }.
 
 Definition pb_prereadΣ :=

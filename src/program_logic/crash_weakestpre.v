@@ -15,7 +15,7 @@ Import uPred.
 entire execution of the crashing or distributed system. It is a single fixed
 global parameter, instantiated once all the way at the top in adequacy. *)
 Class irisGS (Λ : language) (Σ : gFunctors) := IrisGS {
-  iris_invGS :> invGS Σ;
+  #[global] iris_invGS :: invGS Σ;
 
   (** The global state interpretation is a whole-system invariant that should
   hold in between each step of reduction. Here [global_state Λ] is the global
@@ -65,7 +65,7 @@ Global Arguments step_count_next : simpl never.
 (* [generationGS] captures the parameters that can change on each crash,
    and between machines in the distributed setting. *)
 Class generationGS (Λ : language) (Σ : gFunctors) := GenerationGS {
-  iris_crashGS :> crashGS Σ;
+  #[global] iris_crashGS :: crashGS Σ;
 
   (** The state interpretation is a per-machine invariant that should hold in
   between each step of reduction. Here [state Λ] is the per-machine state, and

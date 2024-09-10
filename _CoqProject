@@ -1,7 +1,6 @@
 -Q src Perennial
 -arg -w -arg -ssr-search-moved
 -arg -w -arg +deprecated-instance-without-locality
--arg -w -arg -future-coercion-class-field
 # don't allow ambiguous coercions
 -arg -w -arg +ambiguous-paths
 -arg -w -arg +deprecated-hint-rewrite-without-locality

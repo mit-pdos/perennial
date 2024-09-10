@@ -25,10 +25,10 @@ Local Canonical Structure EntryTypeO := leibnizO EntryType.
 Local Definition logR := mono_listR EntryType.
 
 Class pb_ghostG Σ := {
-    pb_ghost_epochG :> mono_natG Σ ;
-    pb_ghost_map_logG :> fmlist_mapG Σ u64 EntryType;
-    pb_ghost_commitG :> inG Σ logR ;
-    pb_ghost_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
+    #[global] pb_ghost_epochG :: mono_natG Σ ;
+    #[global] pb_ghost_map_logG :: fmlist_mapG Σ u64 EntryType;
+    #[global] pb_ghost_commitG :: inG Σ logR ;
+    #[global] pb_ghost_configG :: inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
 }.
 
 Definition pb_ghostΣ :=

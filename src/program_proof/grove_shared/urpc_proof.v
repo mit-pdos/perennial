@@ -18,13 +18,13 @@ Record urpc_req_desc := ReqDesc {
 }.
 
 Class urpcregG (Σ : gFunctors) := URpcRegG {
-  urpcreg_mono_natG :> mono_natG Σ;
-  urpcreg_mapG :> mapG Σ u64 urpc_req_desc;
-  urpcreg_escrowG :> mapG Σ u64 unit;
-  urpcreg_saved_gname_mapG :> mapG Σ u64 gname;
-  urpcreg_saved_urpc_specG :> savedSpecG Σ (list u8) (list u8);
-  urpcreg_savedG :> savedPredG Σ (list u8);
-  urpcreg_domG :> inG Σ (agreeR (gsetO u64));
+  #[global] urpcreg_mono_natG :: mono_natG Σ;
+  #[global] urpcreg_mapG :: mapG Σ u64 urpc_req_desc;
+  #[global] urpcreg_escrowG :: mapG Σ u64 unit;
+  #[global] urpcreg_saved_gname_mapG :: mapG Σ u64 gname;
+  #[global] urpcreg_saved_urpc_specG :: savedSpecG Σ (list u8) (list u8);
+  #[global] urpcreg_savedG :: savedPredG Σ (list u8);
+  #[global] urpcreg_domG :: inG Σ (agreeR (gsetO u64));
 }.
 
 Definition urpcregΣ :=

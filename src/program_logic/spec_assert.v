@@ -27,9 +27,9 @@ Definition cfgUR := prodUR tpoolUR stateUR.
 
 
 Class cfgPreG (Σ : gFunctors) :=
-  { cfg_preG_inG :> inG Σ (authR cfgUR) ;
-    cfg_preG_stagedG :> stagedG Σ}.
-Class cfgG Σ := { cfg_inG :> cfgPreG Σ;
+  { #[global] cfg_preG_inG :: inG Σ (authR cfgUR) ;
+    #[global] cfg_preG_stagedG :: stagedG Σ}.
+Class cfgG Σ := { #[global] cfg_inG :: cfgPreG Σ;
                   cfg_name : gname }.
 
 Definition cfgΣ : gFunctors :=

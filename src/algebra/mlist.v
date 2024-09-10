@@ -188,7 +188,7 @@ Global Arguments MList {_} _.
 
 Definition fmlistUR (A: Type) {Heq: EqDecision A} := authUR (mlistUR A).
 Class fmlistG (A: Type) {Heq: EqDecision A} Σ :=
-  { fmlist_inG :> inG Σ (fmlistUR A) }.
+  { #[global] fmlist_inG :: inG Σ (fmlistUR A) }.
 Definition fmlistΣ (A: Type) {Heq: EqDecision A} : gFunctors :=
   #[GFunctor (fmlistUR A)].
 

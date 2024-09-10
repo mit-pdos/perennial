@@ -4,7 +4,7 @@ From Perennial.program_proof.lock Require Import lock_proof.
 From Goose.github_com.mit_pdos.gokv Require Import lockservice bank.
 
 Class bankG Σ := {
-    bank_mapG :> mapG Σ string u64 ;
+    #[global] bank_mapG :: mapG Σ string u64 ;
   }.
 
 Definition bankΣ :=

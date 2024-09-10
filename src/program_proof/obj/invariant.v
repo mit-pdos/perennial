@@ -13,11 +13,11 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Class txnG (Σ: gFunctors) : Set :=
   {
-    txn_boolG :> ghost_varG Σ bool;
-    txn_walheapG :> walheapG Σ;
-    txn_logheapG :> ghost_mapG Σ addr object;
-    txn_metaheapG :> mapG Σ addr gname;
-    txn_crashstatesG :> ghost_varG Σ (async (gmap addr object));
+    #[global] txn_boolG :: ghost_varG Σ bool;
+    #[global] txn_walheapG :: walheapG Σ;
+    #[global] txn_logheapG :: ghost_mapG Σ addr object;
+    #[global] txn_metaheapG :: mapG Σ addr gname;
+    #[global] txn_crashstatesG :: ghost_varG Σ (async (gmap addr object));
   }.
 
 Definition txnΣ : gFunctors :=

@@ -9,7 +9,7 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.examples Require Import alloc_addrset.
 
 Class allocG Σ :=
-  { alloc_used_preG :> ghost_mapG Σ u64 (); }.
+  { #[global] alloc_used_preG :: ghost_mapG Σ u64 (); }.
 
 (* state representation types (defined here since modules can't be in sections) *)
 Module alloc.

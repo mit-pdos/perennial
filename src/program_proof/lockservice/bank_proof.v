@@ -9,9 +9,9 @@ Record bank_names := BankNames {
 }.
 
 Class bankG Σ := BankG {
-  bank_ls :> lockserviceG Σ;
-  bank_ks :> kvserviceG Σ;
-  (* bank_logBalG :> mapG Σ u64 u64 *)
+  #[global] bank_ls :: lockserviceG Σ;
+  #[global] bank_ks :: kvserviceG Σ;
+  (* #[global] bank_logBalG :: mapG Σ u64 u64 *)
 }.
 
 Section bank_proof.

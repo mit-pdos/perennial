@@ -249,17 +249,17 @@ Definition Kvs_Opened (l: loc) : openR := Cinr (to_agree l).
 
 (* Type class defn, define which algebras are available *)
 Class kvsG Σ :=
-  { kvsG_open_inG :> inG Σ openR; (* inG --> which resources are available in type class *)
+  { #[global] kvsG_open_inG :: inG Σ openR; (* inG --> which resources are available in type class *)
     (* implicitly insert names for elements, used to tag which generation *)
     kvsG_open_name : gname;
     (* (2) exlusive/etc. algebra for disk blocks --> allows for ownership of blocks *)
-    kvsG_state_inG :> gen_heap.gen_heapGS u64 disk.Block Σ;
+    #[global] kvsG_state_inG :: gen_heap.gen_heapGS u64 disk.Block Σ;
   }.
 
 (* without names: e.g. disk names stay same, memory ones are forgotten *)
 Class kvs_preG Σ :=
-  { kvsG_preG_open_inG :> inG Σ openR;
-    kvsG_preG_state_inG :> gen_heap.gen_heapGpreS u64 disk.Block Σ;
+  { #[global] kvsG_preG_open_inG :: inG Σ openR;
+    #[global] kvsG_preG_state_inG :: gen_heap.gen_heapGpreS u64 disk.Block Σ;
   }.
 
 Definition kvsΣ : gFunctors :=

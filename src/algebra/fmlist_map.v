@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import proof_prelude.
 
 Section definitions.
 Class fmlist_mapG Σ K V `{Countable K} :=
-   { fmlist_map_inG :> inG Σ (gmapR K (mono_listR (leibnizO V))) }.
+   { #[global] fmlist_map_inG :: inG Σ (gmapR K (mono_listR (leibnizO V))) }.
 
 Definition fmlist_mapΣ K V `{Countable K} := #[GFunctor (gmapUR K (mono_listR (leibnizO V)))].
 

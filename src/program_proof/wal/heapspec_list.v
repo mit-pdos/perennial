@@ -17,10 +17,10 @@ Inductive heap_block :=
 .
 
 Class walheapG (Σ: gFunctors) :=
-  { walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
-    (* walheap_max_nat :> inG Σ (authR max_natUR); *)
-    walheap_list_disks :> fmlistG (gmap u64 Block) Σ;
-    walheap_wal :> walG Σ
+  { #[global] walheap_disk_txns :: ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
+    (* #[globa] walheap_max_nat :: inG Σ (authR max_natUR); *)
+    #[global] walheap_list_disks :: fmlistG (gmap u64 Block) Σ;
+    #[global] walheap_wal :: walG Σ
   }.
 
 Section heap.

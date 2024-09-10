@@ -68,14 +68,14 @@ End file_wp_specs.
 Section aof_proof.
 
 Class aofG Σ := AofG {
-  aof_flistG :> fmlistG u8 Σ ;
-  aof_mnatG :> inG Σ mono_natUR ;
-  aof_mapG :> mapG Σ u64 unit ;
-  aof_tokG :> inG Σ (exclR unitO) ;
+  #[global] aof_flistG :: fmlistG u8 Σ ;
+  #[global] aof_mnatG :: inG Σ mono_natUR ;
+  #[global] aof_mapG :: mapG Σ u64 unit ;
+  #[global] aof_tokG :: inG Σ (exclR unitO) ;
   (* XXX: a stagedG shows up in asyncfile, so don't want to bundle this in here. *)
-  (* aof_stagedG :> stagedG Σ ; (* for crash borrows? *) *)
-  aof_ghostG :> ghost_varG Σ unit ;
-  aof_curdataG :> ghost_varG Σ (list u8) ;
+  (* #[global] aof_stagedG :: stagedG Σ ; (* for crash borrows? *) *)
+  #[global] aof_ghostG :: ghost_varG Σ unit ;
+  #[global] aof_curdataG :: ghost_varG Σ (list u8) ;
 }.
 
 Definition aofΣ := #[

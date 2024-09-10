@@ -43,7 +43,7 @@ End async_rel.
 (** The CMRA we need. *)
 
 Class ghost_async_mapG Σ (K V : Type) `{Countable K, Countable V} := GhostMapG {
-  ghost_async_map_inG :> inG Σ (gmap_rel_viewR K (leibnizO (async V)) (leibnizO V) (gset V) async_rel);
+  #[global] ghost_async_map_inG :: inG Σ (gmap_rel_viewR K (leibnizO (async V)) (leibnizO V) (gset V) async_rel);
 }.
 Definition ghost_async_mapΣ (K V : Type) `{Countable K, Countable V} : gFunctors :=
   #[ GFunctor (gmap_rel_viewR K (leibnizO (async V)) _ _ async_rel) ].

@@ -5,7 +5,7 @@ From Perennial.base_logic.lib Require Export invariants.
 From iris.prelude Require Import options.
 Import uPred.
 
-Class cinvG Σ := cinv_inG :> inG Σ fracR.
+Class cinvG Σ := #[global] cinv_inG :: inG Σ fracR.
 Definition cinvΣ : gFunctors := #[GFunctor fracR].
 
 Global Instance subG_cinvΣ {Σ} : subG cinvΣ Σ → cinvG Σ.

@@ -18,11 +18,11 @@ usually written *)
 Set Printing Projections.
 
 Class diskGS Σ : Set := DiskGS
-  { diskG_gen_heapG :> gen_heap.gen_heapGS Z Block Σ; }.
+  { #[global] diskG_gen_heapG :: gen_heap.gen_heapGS Z Block Σ; }.
 
 
 Class disk_preG Σ : Set :=
-  { disk_preG_gen_heapG :> gen_heap.gen_heapGpreS Z Block Σ; }.
+  { #[global] disk_preG_gen_heapG :: gen_heap.gen_heapGpreS Z Block Σ; }.
 
 Definition diskΣ : gFunctors :=
   #[gen_heapΣ Z Block].

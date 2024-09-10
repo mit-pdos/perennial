@@ -15,10 +15,10 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice into_val.
 From Perennial.program_proof Require Import simple.spec.
 
 Class simpleG Σ :=
-  { simple_fs_stateG :> ghost_varG Σ (gmap u64 (list u8));
-    simple_mapG :> mapG Σ u64 (list u8);
-    simple_jrnlG :> jrnlG Σ;
-    simple_lockmapG :> lockmapG Σ;
+  { #[global] simple_fs_stateG :: ghost_varG Σ (gmap u64 (list u8));
+    #[global] simple_mapG :: mapG Σ u64 (list u8);
+    #[global] simple_jrnlG :: jrnlG Σ;
+    #[global] simple_lockmapG :: lockmapG Σ;
   }.
 
 Definition simpleΣ :=

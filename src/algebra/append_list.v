@@ -11,7 +11,7 @@ Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 
 Class alistG Σ A : Set :=
-  { alist_inG :> mapG Σ nat A; }.
+  { #[global] alist_inG :: mapG Σ nat A; }.
 
 Definition alistΣ A : gFunctors := #[ mapΣ nat A ].
 

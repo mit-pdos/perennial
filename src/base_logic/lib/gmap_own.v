@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 Local Definition gmapR (K V : Type) `{Countable K} :=
   gmapUR K (prodR dfracR (agreeR (leibnizO V))).
 Class gmapG Σ (K V : Type) `{Countable K} :=
-   { gmap_inG :> inG Σ (gmapR K V) }.
+   { #[global] gmap_inG :: inG Σ (gmapR K V) }.
 Definition gmapΣ (K V : Type) `{Countable K} := #[GFunctor (gmapR K V)].
 
 Global Instance subG_gmapΣ {Σ} (K V  : Type) `{Countable K} :

@@ -18,11 +18,11 @@ Inductive heap_block :=
 .
 
 Class walheapG (Σ: gFunctors) : Set :=
-  { walheap_u64_heap_block :> ghost_mapG Σ u64 heap_block;
-    walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
-    walheap_mono_nat :> mono_natG Σ;
-    walheap_asyncCrashHeap :> ghost_varG Σ (async (gmap u64 Block));
-    walheap_wal :> walG Σ
+  { #[global] walheap_u64_heap_block :: ghost_mapG Σ u64 heap_block;
+    #[global] walheap_disk_txns :: ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
+    #[global] walheap_mono_nat :: mono_natG Σ;
+    #[global] walheap_asyncCrashHeap :: ghost_varG Σ (async (gmap u64 Block));
+    #[global] walheap_wal :: walG Σ
   }.
 
 Definition walheapΣ : gFunctors :=

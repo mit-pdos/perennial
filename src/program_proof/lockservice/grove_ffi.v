@@ -26,7 +26,7 @@ Context `{!heapGS Σ}.
 
 Class filesysG Σ := FileSysG {
   filesys_gname : gname ; (* Name of str -> []byte authmap used for filesys ffi *)
-  filesys_inG :> mapG Σ string (list byte)
+  #[global] filesys_inG :: mapG Σ string (list byte)
 }.
 
 Definition file_pointsto {fG:filesysG Σ} (s:string) (c:list byte) (q:Qp): iProp Σ :=
@@ -97,7 +97,7 @@ Axiom wp_U64ToString : ∀ (u:u64),
 
 Class rpcregG Σ := RpcRegG {
   rpcreg_gname : gname ;
-  rpcreg_inG :> ghost_mapG Σ (string*u64) ((list u8 → laterO (iPropO Σ)) * (list u8 → list u8 → laterO (iPropO Σ)))
+  #[global] rpcreg_inG :: ghost_mapG Σ (string*u64) ((list u8 → laterO (iPropO Σ)) * (list u8 → list u8 → laterO (iPropO Σ)))
 }.
 (* XXX: these laters probably aren't a problem, because the eventual
    implementation of RPC will possibly have to use invariants to move the Pre to

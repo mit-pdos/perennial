@@ -21,9 +21,9 @@ Record LogEntry :=
 
 Class reconfG Σ :=
 {
-  acc_inG:> inG Σ (gmapR (u64 * u64) (mono_listR (leibnizO LogEntry)));
-  commit_inG:> inG Σ (mono_listR (leibnizO LogEntry));
-  proposal_inG:> inG Σ (gmapR u64 (mono_listR (leibnizO LogEntry)));
+  #[global] acc_inG :: inG Σ (gmapR (u64 * u64) (mono_listR (leibnizO LogEntry)));
+  #[global] commit_inG :: inG Σ (mono_listR (leibnizO LogEntry));
+  #[global] proposal_inG :: inG Σ (gmapR u64 (mono_listR (leibnizO LogEntry)));
 }.
 
 Record reconf_names :=

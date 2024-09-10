@@ -7,8 +7,8 @@ Definition crashR := csumR fracR (agreeR unitO).
 Definition NC_tok q : crashR := Cinl q.
 Definition C_tok : crashR := Cinr (to_agree ()).
 
-Class crashGS Σ := { crash_inG :> inG Σ crashR; crash_name : gname }.
-Class crashGpreS Σ := { crash_inPreG :> inG Σ crashR }.
+Class crashGS Σ := { #[global] crash_inG :: inG Σ crashR; crash_name : gname }.
+Class crashGpreS Σ := { #[global] crash_inPreG :: inG Σ crashR }.
 
 Definition crashΣ : gFunctors :=
     #[GFunctor (csumR fracR (agreeR unitO))].

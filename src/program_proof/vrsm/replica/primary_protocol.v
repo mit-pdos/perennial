@@ -19,8 +19,8 @@ Record primary_server_names :=
 }.
 
 Class primary_ghostG Σ := {
-    primary_ghost_map_logG :> fmlist_mapG Σ u64 EntryType;
-    primary_escrowG :> mapG Σ u64 unit;
+    #[global] primary_ghost_map_logG :: fmlist_mapG Σ u64 EntryType;
+    #[global] primary_escrowG :: mapG Σ u64 unit;
 }.
 
 Definition primary_ghostΣ :=

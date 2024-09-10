@@ -20,8 +20,8 @@ which is a view shift and not tied to any physical action.
 *)
 
 Class netG Σ := NetG {
-  net_msgsG :> inG Σ (authR (gmultisetUR valO));
-  net_ghostG :> ghost_varG Σ (gmultiset val);
+  #[global] net_msgsG :: inG Σ (authR (gmultisetUR valO));
+  #[global] net_ghostG :: ghost_varG Σ (gmultiset val);
 }.
 
 Section movers.

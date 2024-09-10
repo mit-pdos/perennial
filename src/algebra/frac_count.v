@@ -17,7 +17,7 @@ Definition frac_countUR :=
   (optionUR (prodR fracR positiveR)).
 
 Class frac_countG Σ :=
-  { frac_count_inG :> inG Σ (authR frac_countUR) }.
+  { #[global] frac_count_inG :: inG Σ (authR frac_countUR) }.
 
 Definition frac_countΣ : gFunctors := #[GFunctor (authR frac_countUR)].
 #[global]
