@@ -10,14 +10,14 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
 
 Definition bytes_to_string (l:list u8) : string :=
-  string_of_list_ascii (u8_to_ascii <$> l).
+  String.string_of_list_ascii (u8_to_ascii <$> l).
 
 Lemma bytes_to_string_to_bytes l :
   string_to_bytes $ bytes_to_string l = l.
 Proof.
   rewrite /string_to_bytes /bytes_to_string /=.
   rewrite -{2}(list_fmap_id l).
-  rewrite list_ascii_of_string_of_list_ascii.
+  rewrite String.list_ascii_of_string_of_list_ascii.
   rewrite -list_fmap_compose.
   apply list_fmap_ext.
   intros.

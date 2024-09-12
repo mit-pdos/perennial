@@ -124,7 +124,7 @@ Ltac cached_reduce :=
   match goal with |- ?u => let v := cached_eval u in change_no_check v end.
 
 Ltac iCache_go P Hs pat :=
-  let Hs := words Hs in
+  let Hs := String.words Hs in
   let Hs := (eval vm_compute in (INamed <$> Hs)) in
   let Δ := iGetCtx in
   let js := reduction.pm_eval (envs_split base.Left Hs Δ) in

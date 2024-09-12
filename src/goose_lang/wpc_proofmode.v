@@ -353,7 +353,7 @@ Ltac wpc_frame_go pat d js :=
   ].
 
 Ltac wpc_frame_pat d pat :=
-  let js := (eval cbv in (INamed <$> words pat)) in
+  let js := (eval cbv in (INamed <$> String.words pat)) in
   wpc_frame_go pat d js.
 
 Tactic Notation "wpc_frame" constr(pat) := wpc_frame_pat base.Left pat.

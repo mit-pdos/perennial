@@ -885,7 +885,7 @@ Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :
   end.
 
 Definition string_to_bytes (s:string): list u8 :=
-  (λ x, W8 $ Ascii.nat_of_ascii x) <$> list_ascii_of_string s.
+  (λ x, W8 $ Ascii.nat_of_ascii x) <$> String.list_ascii_of_string s.
 
 Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option base_lit :=
   match op with

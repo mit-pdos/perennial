@@ -126,7 +126,7 @@ Proof.
   iApply struct_fields_split in "enc"; eauto.
   { constructor. compute.
     decide_reflect. }
-  rewrite /struct_fields struct.val_unseal /struct.val_def /= /append.
+  rewrite /struct_fields struct.val_unseal /struct.val_def /= /String.append.
   iNamed "enc".
   repeat (wp_load || wp_pures || wp_store).
 
