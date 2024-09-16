@@ -25,6 +25,34 @@ Section lemma.
     by apply app_cons_not_nil in Hcontra.
   Qed.
 
+  Lemma prefix_common_ub l1 l2 l :
+    prefix l1 l ->
+    prefix l2 l ->
+    prefix l1 l2 ∨ prefix l2 l1.
+  Proof.
+    generalize dependent l2.
+    generalize dependent l1.
+    induction l as [| x l IHl].
+    { intros l1 l2 Hl1 Hl2.
+      apply prefix_nil_inv in Hl1 as ->.
+      left.
+      apply prefix_nil.
+    }
+    intros l1 l2 Hl1 Hl2.
+    destruct l1 as [| x' l1'].
+    { left. apply prefix_nil. }
+    apply prefix_cons_inv_2 in Hl1 as Hprefix1.
+    apply prefix_cons_inv_1 in Hl1 as ->.
+    destruct l2 as [| x' l2'].
+    { right. apply prefix_nil. }
+    apply prefix_cons_inv_2 in Hl2 as Hprefix2.
+    apply prefix_cons_inv_1 in Hl2 as ->.
+    specialize (IHl _ _ Hprefix1 Hprefix2).
+    destruct IHl as [Hprefix | Hprefix].
+    - left. by apply prefix_cons.
+    - right. by apply prefix_cons.
+  Qed.
+
   Lemma take_length_prefix l1 l2 :
     prefix l1 l2 ->
     take (length l1) l2 = l1.
