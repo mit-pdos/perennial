@@ -2,7 +2,7 @@
 
 https://github.com/mit-plv/coqutil/blob/f3209a5b2c22eb36c3c1a8688b2a18b0d40fd476/src/coqutil/Word/LittleEndian.v
  *)
-From Coq Require Import ZArith.ZArith.
+From Coq Require Import ZArith.
 From coqutil Require Import Z.Lia.
 From coqutil Require Import Word.Interface Datatypes.HList Datatypes.PrimitivePair.
 From coqutil Require Import Word.Properties.
