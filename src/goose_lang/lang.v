@@ -1,4 +1,4 @@
-From Coq Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders strings.
 From stdpp Require Import gmap.
