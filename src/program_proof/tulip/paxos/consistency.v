@@ -173,8 +173,9 @@ Section lemma.
       intros x l Hl.
       rewrite map_Forall_fmap in Hovs.
       specialize (Hovs _ _ Hl). simpl in Hovs.
-      destruct (l !! t) as [d |]; last by left.
-      by destruct d; last right.
+      destruct (l !! t) as [d |] eqn:Hd; last by left.
+      rewrite /ledger_at_term Hd in Hovs.
+      by destruct d as [v |]; last right.
     }
     (* Case: Longest proposal [v] exists. *)
     destruct Hovs as [Hexists Hlongest].
@@ -182,7 +183,7 @@ Section lemma.
     { destruct Hexists as (x & ov & Hov & ->).
       rewrite lookup_fmap in Hov.
       destruct (bsq !! x) as [l |] eqn:Hl; last done.
-      simpl in Hov.
+      rewrite /= /ledger_at_term in Hov.
       destruct (l !! t) as [d |] eqn:Hd; last done.
       destruct d as [v' |]; last done.
       inv Hov.
@@ -191,7 +192,8 @@ Section lemma.
     { intros x l Hl.
       rewrite map_Forall_fmap in Hlongest.
       specialize (Hlongest _ _ Hl). simpl in Hlongest.
-      destruct (l !! t) as [d |]; last done.
+      destruct (l !! t) as [d |] eqn:Hd; last done.
+      rewrite /ledger_at_term Hd in Hlongest.
       by destruct d.
     }
   Qed.
