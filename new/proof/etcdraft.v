@@ -192,7 +192,7 @@ Tactic Notation "wp_pure1_maybe_lc_no_simpl" constr(maybeCredName) :=
     envs_lookup i Δ' = Some (false, l ↦[t] v)%I →
     envs_simple_replace i false (Esnoc Enil i (l ↦[t] v')) Δ' = Some Δ'' →
     envs_entails Δ'' (WP (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
-    envs_entails Δ (WP (store_ty t (PairV (LitV l) v')) @ stk; E {{ Φ }}).
+    envs_entails Δ (WP (store_ty t (LitV l) v') @ stk; E {{ Φ }}).
   Proof. Admitted.
 
 Tactic Notation "wp_load" :=
@@ -217,7 +217,7 @@ Tactic Notation "wp_store" :=
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
-      [wp_bind (store_ty _ _); eapply tac_wp_store_ty
+      [wp_bind (store_ty _ _ _); eapply tac_wp_store_ty
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
     [(repeat econstructor || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
     |tc_solve
@@ -241,8 +241,7 @@ Proof.
   wp_alloc cfg as "Hcfg".
   wp_alloc candState as "HcandState".
   wp_pures.
-  Time wp_store. (* 197ms *)
-  simpl fill.
+  wp_store.
   wp_pures.
   wp_pures.
   wp_alloc candTerm as "HcandTerm".

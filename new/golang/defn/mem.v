@@ -32,23 +32,21 @@ Section go_lang.
     | structT d =>
         (fix store_ty_struct d : val :=
           match d with
-          | [] => (λ: <>, #())%V
-          | (f,t) :: d => (λ: "pv", let: ("p", "v") := "pv" in
-                                  let: "v" := Snd "pv" in
-                                  store_ty_def t ("p", Fst "v");;
-                                  store_ty_struct d (BinOp (OffsetOp (go_type_size t))
-                                                        "p" #1, Snd "v"))%V
+          | [] => (λ: <> <>, #())%V
+          | (f,t) :: d => (λ: "p" "v",
+                                  store_ty_def t "p" (Fst "v");;
+                                  store_ty_struct d (BinOp (OffsetOp (go_type_size t)) "p" #1)
+                                    (Snd "v"))%V
           end) d
     | arrayT n t =>
         (fix store_ty_array n : val :=
           match n with
-          | O => (λ: <>, #())%V
-          | S n => (λ: "pv", let: ("p", "v") := "pv" in
-                            store_ty_def t ("p", Fst "v");;
-                            store_ty_array n (BinOp (OffsetOp (go_type_size t))
-                                              "p" #1, Snd "v"))%V
+          | O => (λ: <> <>, #())%V
+          | S n => (λ: "p" "v",
+                            store_ty_def t "p" (Fst "v");;
+                            store_ty_array n (BinOp (OffsetOp (go_type_size t)) "p" #1) (Snd "v"))%V
           end) n
-    | _ => (λ: "pv", Fst "pv" <- Snd "pv")%V
+    | _ => (λ: "p" "v", "p" <- "v")%V
     end.
   Program Definition store_ty := unseal (_:seal (@store_ty_def)). Obligation 1. by eexists. Qed.
   Definition store_ty_unseal : store_ty = _ := seal_eq _.
@@ -66,5 +64,4 @@ Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
    trick. *)
 (* FIXME: these notations are a little messed up; they get unfolded where they shouldn't, etc. *)
 Reserved Notation "e1 <-[ t ] e2" (at level 80, format "e1  <-[ t ]  e2").
-Notation "e1 <-[ t ] e2" := (store_ty t (Pair e1%E e2%E)) : expr_scope.
-Notation "v1 <-[ t ] v2" := (store_ty t (PairV v1%V v2%V)) : val_scope.
+Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E) : expr_scope.
