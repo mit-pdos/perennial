@@ -2,6 +2,7 @@ From New.code.go_etcd_io.raft Require Import v3.
 From New.proof Require Import grove_prelude.
 From New.proof Require Import sync.
 From New.proof Require Import proofmode.
+From Ltac2 Require Import Ltac2.
 
 Section proof.
 
@@ -29,8 +30,6 @@ Lemma wp_entsWithConfig terms_sl terms :
 .
 Proof.
 Admitted.
-
-From Ltac2 Require Import Ltac2.
 
 Ltac2 mutable dbg := Message.print.
 Ltac2 mutable dbg_constr c := Message.print (Message.of_constr c).
@@ -287,6 +286,7 @@ Proof.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw2".
 
@@ -304,6 +304,7 @@ Proof.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw3".
 
@@ -321,6 +322,7 @@ Proof.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw4".
 
@@ -334,6 +336,7 @@ Proof.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw5".
 
@@ -346,6 +349,7 @@ Proof.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr1".
 
@@ -355,6 +359,7 @@ Proof.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr2".
 
@@ -364,12 +369,15 @@ Proof.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr3".
 
+  wp_pures.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw6".
   wp_pures.
