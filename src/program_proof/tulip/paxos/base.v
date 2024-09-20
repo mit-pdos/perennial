@@ -13,14 +13,15 @@ Definition ballot := gmap nat nodedec.
 
 Section def.
   Context `{Countable A}.
+  (* XXX: fix the naming scheme *)
   Implicit Type t n : nat.
-  Implicit Type l : ballot.
+  Implicit Type l : proposals.
   Implicit Type v : ledger.
-  Implicit Type bs bsq : gmap A ballot.
+  Implicit Type bs bsq : gmap A proposals.
   Implicit Type ps psb : proposals.
 
   Definition accepted_in l t v :=
-    ∃ v', l !! t = Some (Accept v') ∧ prefix v v'.
+    ∃ v', l !! t = Some v' ∧ prefix v v'.
 
   Definition chosen_in bs t v :=
     ∃ bsq, bsq ⊆ bs ∧
@@ -41,23 +42,25 @@ Section def.
     prefix v1 v2.
 
   (* Compute the latest term in which a proposal is accepted before [n]. *)
-  Fixpoint latest_term_before `{Lookup nat nodedec B} t (m : B) :=
+  Fixpoint latest_term_before_with `{Lookup nat B M}
+    (f : option B -> option ledger) (t : nat) (m : M) :=
     match t with
     | O => O
-    | S p => match m !! p with
-            | Some d => match d with
-                       | Accept _ => p
-                       | Reject => latest_term_before p m
-                       end
-            | _ => latest_term_before p m
+    | S p => match f (m !! p) with
+            | Some _ => p
+            | _ => latest_term_before_with f p m
             end
     end.
+
+  Definition latest_term_before t ps :=
+    latest_term_before_with id t ps.
 
   Definition latest_term_before_quorum_step (x : A) (cur prev : nat) : nat :=
     cur `max` prev.
 
-  Definition latest_term_before_quorum `{Lookup nat nodedec B} (ms : gmap A B) t :=
-    let ts := fmap (latest_term_before t) ms in
+  Definition latest_term_before_quorum_with `{Lookup nat B M}
+    (f : option B -> option ledger) (ms : gmap A M) (t : nat) :=
+    let ts := fmap (latest_term_before_with f t) ms in
     map_fold latest_term_before_quorum_step O ts.
 
   Definition longest_proposal_step (x : A) (cur prev : option ledger) :=
@@ -74,22 +77,24 @@ Section def.
   Definition longest_proposal ovs :=
     map_fold longest_proposal_step None ovs.
 
-  Definition ledger_at_term `{Lookup nat nodedec B} t (m : B) :=
-    match m !! t with
-    | Some (Accept v) => Some v
-    | _ => None
-    end.
+  Definition ledger_at_term_with `{Lookup nat B M}
+    (f : option B -> option ledger) (t : nat) (m : M) := f (m !! t).
 
-  Definition longest_proposal_in_term `{Lookup nat nodedec B} (ms : gmap A B) t :=
-    let ovs := fmap (ledger_at_term t) ms in
+  Definition longest_proposal_in_term_with `{Lookup nat B M}
+    (f : option B -> option ledger) (ms : gmap A M) t :=
+    let ovs := fmap (ledger_at_term_with f t) ms in
     longest_proposal ovs.
 
-  Definition equal_latest_longest_proposal `{Lookup nat nodedec B} (ms : gmap A B) t v :=
-    let t' := latest_term_before_quorum ms t in
-    longest_proposal_in_term ms t' = Some v.
+  Definition equal_latest_longest_proposal_with `{Lookup nat B M}
+    (f : option B -> option ledger) (ms : gmap A M) t v :=
+    let t' := latest_term_before_quorum_with f ms t in
+    longest_proposal_in_term_with f ms t' = Some v.
+
+  Definition equal_latest_longest_proposal bsq t v :=
+    equal_latest_longest_proposal_with id bsq t v.
 
   Definition valid_base_proposal bs t v :=
-    ∃ bsq : gmap A ballot,
+    ∃ bsq : gmap A proposals,
       bsq ⊆ bs ∧
       cquorum_size (dom bs) (dom bsq) ∧
       equal_latest_longest_proposal bsq t v.
@@ -98,13 +103,13 @@ Section def.
     map_Forall (λ n v, valid_base_proposal bs n v) psb.
 
   Definition valid_lb_ballot psb l :=
-    ∀ t v, l !! t = Some (Accept v) -> ∃ v', psb !! t = Some v' ∧ prefix v' v.
+    ∀ t v, l !! t = Some v -> ∃ v', psb !! t = Some v' ∧ prefix v' v.
 
   Definition valid_lb_ballots bs psb :=
     map_Forall (λ _ l, valid_lb_ballot psb l) bs.
 
   Definition valid_ub_ballot ps l :=
-    ∀ t v, l !! t = Some (Accept v) -> ∃ v', ps !! t = Some v' ∧ prefix v v'.
+    ∀ t v, l !! t = Some v -> ∃ v', ps !! t = Some v' ∧ prefix v v'.
 
   Definition valid_ub_ballots bs ps :=
     map_Forall (λ _ l, valid_ub_ballot ps l) bs.

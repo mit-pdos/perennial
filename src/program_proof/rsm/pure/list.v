@@ -121,4 +121,8 @@ Section lemma.
     by subst y.
   Qed.
 
+  Lemma lookup_snoc_length l x :
+    (l ++ [x]) !! length l = Some x.
+  Proof. rewrite lookup_snoc_Some. by right. Qed.
+
 End lemma.

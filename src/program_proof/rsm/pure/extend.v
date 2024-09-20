@@ -44,6 +44,16 @@ Section lemmas.
     prefix l (extend n x l).
   Proof. by apply prefix_app_r. Qed.
 
+  Lemma lookup_extend_l n i x l :
+    (i < length l)%nat ->
+    extend n x l !! i = l !! i.
+  Proof. intros Hlt. by rewrite lookup_app_l. Qed.
+
+  Lemma lookup_extend_r n i x l :
+    (length l ≤ i < n)%nat ->
+    extend n x l !! i = Some x.
+  Proof. intros Hle. rewrite lookup_app_r; last lia. apply lookup_replicate_2. lia. Qed.
+
   (** Lemmas about [last_extend]. *)
 
   Lemma last_extend_id n l :

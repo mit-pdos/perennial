@@ -4,11 +4,15 @@ From Perennial.program_proof.tulip.paxos Require Import base.
 
 Section lemma.
   Context `{Countable A}.
+  Context `{Lookup nat B M}.
   Implicit Type t n : nat.
-  Implicit Type l : ballot.
+  Implicit Type l : proposals.
   Implicit Type v : ledger.
-  Implicit Type bs bsq : gmap A ballot.
+  Implicit Type bs bsq : gmap A proposals.
   Implicit Type ps psb : proposals.
+  Implicit Type m : M.
+  Implicit Type ms : gmap A M.
+  Implicit Type f : option B -> option ledger.
 
   Lemma vub_chosen_in_proposed bs ps t v :
     valid_ub_ballots bs ps ->
@@ -155,17 +159,17 @@ Section lemma.
     destruct ov; [lia | done].
   Qed.
 
-  Lemma longest_proposal_in_term_spec bsq t :
-    match longest_proposal_in_term bsq t with
-    | Some v => map_Exists (λ _ l, l !! t = Some (Accept v)) bsq ∧
-               map_Forall (λ _ l, match l !! t with
-                                  | Some (Accept v') => (length v' ≤ length v)%nat
+  Lemma longest_proposal_in_term_with_spec f ms t :
+    match longest_proposal_in_term_with f ms t with
+    | Some v => map_Exists (λ _ m, f (m !! t) = Some v) ms ∧
+               map_Forall (λ _ m, match f (m !! t) with
+                                  | Some v' => (length v' ≤ length v)%nat
                                   | _ => True
-                                  end) bsq
-    | None => map_Forall (λ _ l, l !! t = None ∨ l !! t = Some Reject) bsq
+                                  end) ms
+    | None => map_Forall (λ _ m, f (m !! t) = None) ms
     end.
   Proof.
-    rewrite /longest_proposal_in_term.
+    rewrite /longest_proposal_in_term_with.
     set ovs := fmap _ _.
     pose proof (longest_proposal_spec ovs) as Hovs.
     destruct (longest_proposal ovs) as [v |]; last first.
@@ -173,41 +177,36 @@ Section lemma.
       intros x l Hl.
       rewrite map_Forall_fmap in Hovs.
       specialize (Hovs _ _ Hl). simpl in Hovs.
-      destruct (l !! t) as [d |] eqn:Hd; last by left.
-      rewrite /ledger_at_term Hd in Hovs.
-      by destruct d as [v |]; last right.
+      by rewrite /ledger_at_term_with in Hovs.
     }
     (* Case: Longest proposal [v] exists. *)
     destruct Hovs as [Hexists Hlongest].
     split.
     { destruct Hexists as (x & ov & Hov & ->).
       rewrite lookup_fmap in Hov.
-      destruct (bsq !! x) as [l |] eqn:Hl; last done.
-      rewrite /= /ledger_at_term in Hov.
-      destruct (l !! t) as [d |] eqn:Hd; last done.
-      destruct d as [v' |]; last done.
+      destruct (ms !! x) as [l |] eqn:Hl; last done.
+      rewrite /= /ledger_at_term_with in Hov.
+      (* destruct (l !! t) as [d |] eqn:Hd; last done. *)
+      (* destruct d as [v' |]; last done. *)
       inv Hov.
       by exists x, l.
     }
     { intros x l Hl.
       rewrite map_Forall_fmap in Hlongest.
-      specialize (Hlongest _ _ Hl). simpl in Hlongest.
-      destruct (l !! t) as [d |] eqn:Hd; last done.
-      rewrite /ledger_at_term Hd in Hlongest.
-      by destruct d.
+      by specialize (Hlongest _ _ Hl).
     }
   Qed.
 
-  Lemma longest_proposal_in_term_Some bsq t v :
-    longest_proposal_in_term bsq t = Some v ->
-    map_Exists (λ _ l, l !! t = Some (Accept v)) bsq ∧
-    map_Forall (λ _ l, match l !! t with
-                       | Some (Accept v') => (length v' ≤ length v)%nat
+  Lemma longest_proposal_in_term_Some f ms t v :
+    longest_proposal_in_term_with f ms t = Some v ->
+    map_Exists (λ _ m, f (m !! t) = Some v) ms ∧
+    map_Forall (λ _ m, match f (m !! t) with
+                       | Some v' => (length v' ≤ length v)%nat
                        | _ => True
-                       end) bsq.
+                       end) ms.
   Proof.
     intros Hv.
-    pose proof (longest_proposal_in_term_spec bsq t) as Hspec.
+    pose proof (longest_proposal_in_term_with_spec f ms t) as Hspec.
     by rewrite Hv in Hspec.
   Qed.
 
@@ -215,7 +214,7 @@ Section lemma.
     map_fold latest_term_before_quorum_step O ts = O ∨
     ∃ x, ts !! x = Some (map_fold latest_term_before_quorum_step O ts).
   Proof.
-    apply (map_fold_weak_ind (λ p m, p = O ∨ ∃ x, m !! x = Some p)); first by left.
+    apply (map_fold_weak_ind (λ p r, p = O ∨ ∃ x, r !! x = Some p)); first by left.
     intros x n m b Hmx IHm.
     unfold latest_term_before_quorum_step.
     destruct IHm as [-> | [y Hy]]; right.
@@ -232,7 +231,7 @@ Section lemma.
     map_Forall (λ _ t, (t ≤ map_fold latest_term_before_quorum_step O ts)%nat) ts.
   Proof.
     intros x t.
-    apply (map_fold_weak_ind (λ p m, (m !! x = Some t -> t ≤ p)%nat)); first done.
+    apply (map_fold_weak_ind (λ p r, (r !! x = Some t -> t ≤ p)%nat)); first done.
     intros y n m b _ Hnr Hn.
     unfold latest_term_before_quorum_step.
     destruct (decide (y = x)) as [-> | Hne].
@@ -242,14 +241,16 @@ Section lemma.
     lia.
   Qed.
 
-  Lemma latest_term_before_quorum_ge bsq t :
-    map_Forall (λ _ l, (latest_term_before t l ≤ latest_term_before_quorum bsq t)%nat) bsq.
+  Lemma latest_term_before_quorum_ge f ms t :
+    map_Forall
+      (λ _ (m : M), (latest_term_before_with f t m ≤ latest_term_before_quorum_with f ms t)%nat)
+      ms.
   Proof.
     intros x l Hlookup.
-    unfold latest_term_before_quorum.
-    pose proof (latest_term_before_quorum_step_ge (latest_term_before t <$> bsq)) as Hstep.
+    unfold latest_term_before_quorum_with.
+    pose proof (latest_term_before_quorum_step_ge (latest_term_before_with f t <$> ms)) as Hstep.
     rewrite map_Forall_lookup in Hstep.
-    apply (Hstep x (latest_term_before t l)).
+    apply (Hstep x (latest_term_before_with f t l)).
     rewrite lookup_fmap.
     by rewrite Hlookup.
   Qed.
@@ -278,13 +279,15 @@ Section lemma.
     lia.
   Qed.
 
-  Lemma latest_term_before_quorum_in bsq t :
-    bsq ≠ ∅ ->
-    map_Exists (λ _ l, (latest_term_before t l = latest_term_before_quorum bsq t)%nat) bsq.
+  Lemma latest_term_before_quorum_in f ms t :
+    ms ≠ ∅ ->
+    map_Exists
+      (λ _ (m : M), (latest_term_before_with f t m = latest_term_before_quorum_with f ms t)%nat)
+      ms.
   Proof.
     intros Hnonempty.
-    unfold latest_term_before_quorum.
-    pose proof (latest_before_quorum_step_in (latest_term_before t <$> bsq)) as Hstep.
+    unfold latest_term_before_quorum_with.
+    pose proof (latest_before_quorum_step_in (latest_term_before_with f t <$> ms)) as Hstep.
     rewrite fmap_empty_iff in Hstep.
     specialize (Hstep Hnonempty).
     destruct Hstep as (x & m & Hlookup & <-).
@@ -293,18 +296,17 @@ Section lemma.
     by exists x, l.
   Qed.
 
-  Lemma latest_term_before_le l t :
-    (latest_term_before t l ≤ t)%nat.
+  Lemma latest_term_before_le f m t :
+    (latest_term_before_with f t m ≤ t)%nat.
   Proof.
     induction t as [| t IH]; first by simpl.
     simpl.
-    destruct (l !! t) as [d |]; last lia.
-    destruct d; lia.
+    destruct (f (m !! t)) as [v |]; lia.
   Qed.
 
-  Lemma latest_term_before_mono l t1 t2 :
+  Lemma latest_term_before_mono f m t1 t2 :
     (t1 ≤ t2)%nat ->
-    (latest_term_before t1 l ≤ latest_term_before t2 l)%nat.
+    (latest_term_before_with f t1 m ≤ latest_term_before_with f t2 m)%nat.
   Proof.
     intros Ht.
     induction t2 as [| t2 IH].
@@ -312,61 +314,62 @@ Section lemma.
     destruct (decide (t1 = S t2)) as [-> | Hne]; first done.
     unshelve epose proof (IH _) as Hle; first lia.
     simpl.
-    destruct (l !! t2) as [d |]; last by eauto.
-    destruct d; last by eauto.
+    destruct (f (m !! t2)) as [v |]; last by eauto.
     etrans; first apply Hle.
     apply latest_term_before_le.
   Qed.
 
-  Lemma latest_term_before_accept l t1 t2 :
+  Lemma latest_term_before_Some f m t1 t2 :
     (t1 < t2)%nat ->
-    (∃ v, l !! t1 = Some (Accept v)) ->
-    (t1 ≤ latest_term_before t2 l)%nat.
+    (∃ v, f (m !! t1) = Some v) ->
+    (t1 ≤ latest_term_before_with f t2 m)%nat.
   Proof.
     intros Hmn Hacc.
-    assert (Ht1 : latest_term_before (S t1) l = t1).
+    assert (Ht1 : latest_term_before_with f (S t1) m = t1).
     { destruct Hacc as [v Hv].
-      by rewrite /latest_term_before Hv.
+      by rewrite /latest_term_before_with Hv.
     }
     rewrite -Ht1.
     apply latest_term_before_mono.
     lia.
   Qed.
 
-  Lemma latest_term_before_lt l t :
+  Lemma latest_term_before_lt f m t :
     t ≠ O ->
-    (latest_term_before t l < t)%nat.
+    (latest_term_before_with f t m < t)%nat.
   Proof.
     induction t as [| t IHt]; first by simpl.
     intros _.
     destruct (decide (t = O)) as [-> | Hneq].
-    { simpl. destruct (l !! O) as [d |]; last lia.
-      destruct d; lia.
-    }
+    { simpl. destruct (f (m !! O)) as [v |]; lia. }
     specialize (IHt Hneq).
     simpl.
-    destruct (l !! t) as [d |]; last lia.
-    destruct d; lia.
+    destruct (f (m !! t)) as [v |]; lia.
   Qed.
 
-  Lemma latest_term_before_quorum_accept bsq t1 t2 :
+  Lemma latest_term_before_quorum_with_Some f ms t1 t2 :
     (t1 < t2)%nat ->
-    map_Exists (λ _ l, ∃ v, l !! t1 = Some (Accept v)) bsq ->
-    (t1 ≤ latest_term_before_quorum bsq t2 < t2)%nat.
+    map_Exists (λ _ m, ∃ v, f (m !! t1) = Some v) ms ->
+    (t1 ≤ latest_term_before_quorum_with f ms t2 < t2)%nat.
   Proof.
     intros Hn (x & l & Hlookup & Hacc).
-    pose proof (latest_term_before_quorum_ge bsq t2) as Hlargest.
+    pose proof (latest_term_before_quorum_ge f ms t2) as Hlargest.
     rewrite map_Forall_lookup in Hlargest.
     specialize (Hlargest _ _ Hlookup).
-    pose proof (latest_term_before_accept _ _ _ Hn Hacc).
+    pose proof (latest_term_before_Some _ _ _ _ Hn Hacc) as Hle.
     split; first lia.
-    assert (Hnonempty : bsq ≠ ∅) by set_solver.
-    destruct (latest_term_before_quorum_in bsq t2 Hnonempty) as (y & ly & _ & <-).
+    assert (Hnonempty : ms ≠ ∅) by set_solver.
+    destruct (latest_term_before_quorum_in f ms t2 Hnonempty) as (y & ly & _ & <-).
     apply latest_term_before_lt.
     lia.
   Qed.
 
-  Lemma vlb_vbp_impl_pac bs ps psb :
+End lemma.
+
+Section impl.
+  Context `{Countable A}.
+
+  Lemma vlb_vbp_impl_pac (bs : gmap A proposals) (ps psb : proposals) :
     valid_lb_ballots bs psb ->
     valid_ub_ballots bs ps ->
     valid_base_proposals bs psb ->
@@ -387,9 +390,9 @@ Section lemma.
     specialize (Hacc _ _ Hbsq1). simpl in Hacc.
     destruct Hacc as (v & Hv & Hprefix).
     (* Obtain [t1 ≤ latest_term_before_quorum bsq1 t2 < t2] *)
-    unshelve epose proof (latest_term_before_quorum_accept bsq2 _ _ Hlt _) as Ht.
+    unshelve epose proof (latest_term_before_quorum_with_Some id bsq2 _ _ Hlt _) as Ht.
     { exists x, l. by eauto. }
-    set t := latest_term_before_quorum _ _ in Ht, Hlongest.
+    set t := latest_term_before_quorum_with _ _ _ in Ht, Hlongest.
     apply longest_proposal_in_term_Some in Hlongest as [Hexists Hlongest].
     destruct Hexists as (x2 & l2 & Hl2 & Hl2t).
     pose proof (lookup_weaken _ _ _ _ Hl2 Hincl2) as Hbsx2.
@@ -417,7 +420,7 @@ Section lemma.
     apply (IH t); [lia | lia | done].
   Qed.
 
-  Theorem vlb_vbp_impl_consistency bs ps psb :
+  Theorem vlb_vbp_impl_consistency (bs : gmap A proposals) (ps psb : proposals) :
     valid_lb_ballots bs psb ->
     valid_ub_ballots bs ps ->
     valid_base_proposals bs psb ->
@@ -429,4 +432,4 @@ Section lemma.
     by eapply vub_pac_impl_consistency.
   Qed.
 
-End lemma.
+End impl.
