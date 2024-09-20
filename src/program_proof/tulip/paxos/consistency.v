@@ -177,7 +177,7 @@ Section lemma.
       intros x l Hl.
       rewrite map_Forall_fmap in Hovs.
       specialize (Hovs _ _ Hl). simpl in Hovs.
-      by rewrite /ledger_at_term_with in Hovs.
+      by rewrite /ledger_in_term_with in Hovs.
     }
     (* Case: Longest proposal [v] exists. *)
     destruct Hovs as [Hexists Hlongest].
@@ -185,7 +185,7 @@ Section lemma.
     { destruct Hexists as (x & ov & Hov & ->).
       rewrite lookup_fmap in Hov.
       destruct (ms !! x) as [l |] eqn:Hl; last done.
-      rewrite /= /ledger_at_term_with in Hov.
+      rewrite /= /ledger_in_term_with in Hov.
       (* destruct (l !! t) as [d |] eqn:Hd; last done. *)
       (* destruct d as [v' |]; last done. *)
       inv Hov.
@@ -393,6 +393,8 @@ Section impl.
     unshelve epose proof (latest_term_before_quorum_with_Some id bsq2 _ _ Hlt _) as Ht.
     { exists x, l. by eauto. }
     set t := latest_term_before_quorum_with _ _ _ in Ht, Hlongest.
+    rewrite /equal_latest_longest_proposal_with in Hlongest.
+    destruct (decide (t2 = O)) as [-> | Hnz]; first lia.
     apply longest_proposal_in_term_Some in Hlongest as [Hexists Hlongest].
     destruct Hexists as (x2 & l2 & Hl2 & Hl2t).
     pose proof (lookup_weaken _ _ _ _ Hl2 Hincl2) as Hbsx2.
@@ -420,7 +422,7 @@ Section impl.
     apply (IH t); [lia | lia | done].
   Qed.
 
-  Theorem vlb_vbp_impl_consistency (bs : gmap A proposals) (ps psb : proposals) :
+  Theorem vlb_vub_vbp_vp_impl_consistency (bs : gmap A proposals) (ps psb : proposals) :
     valid_lb_ballots bs psb ->
     valid_ub_ballots bs ps ->
     valid_base_proposals bs psb ->

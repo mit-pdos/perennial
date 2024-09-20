@@ -52,6 +52,20 @@ Section def.
             end
     end.
 
+  Lemma latest_term_before_with_lt `{Lookup nat B M} f t (m : M) :
+    t ≠ O ->
+    (latest_term_before_with f t m < t)%nat.
+  Proof.
+    intros Hnz.
+    induction t as [| t IH]; first done.
+    simpl.
+    destruct (f (m !! t)); first lia.
+    destruct (decide (t = O)) as [Heq | Hne].
+    { subst t. simpl. lia. }
+    specialize (IH Hne).
+    lia.
+  Qed.
+
   Definition latest_term_before t ps :=
     latest_term_before_with id t ps.
 
@@ -62,6 +76,32 @@ Section def.
     (f : option B -> option ledger) (ms : gmap A M) (t : nat) :=
     let ts := fmap (latest_term_before_with f t) ms in
     map_fold latest_term_before_quorum_step O ts.
+
+  Lemma latest_term_before_quorum_with_lt `{Lookup nat B M} f (ms : gmap A M) t:
+    t ≠ O ->
+    (latest_term_before_quorum_with f ms t < t)%nat.
+  Proof.
+    intros Hnz.
+    rewrite /latest_term_before_quorum_with.
+    set ts := (latest_term_before_with _ _ <$> ms).
+    assert (map_Forall (λ _ t', (t' < t)%nat) ts) as Hlts.
+    { subst ts.
+      rewrite map_Forall_fmap.
+      intros x m Hm.
+      by apply latest_term_before_with_lt.
+    }
+    induction ts as [| x t' ts Hnone Hfold IH] using map_first_key_ind.
+    { rewrite map_fold_empty. lia. }
+    rewrite map_fold_insert_first_key; [| apply Hnone | apply Hfold].
+    rewrite map_Forall_insert in Hlts; last apply Hnone.
+    destruct Hlts as [Hlt Hlts].
+    specialize (IH Hlts).
+    rewrite {1}/latest_term_before_quorum_step.
+    lia.
+  Qed.
+
+  Definition latest_term_before_quorum bs t :=
+    latest_term_before_quorum_with id bs t.
 
   Definition longest_proposal_step (x : A) (cur prev : option ledger) :=
     match prev with
@@ -77,18 +117,26 @@ Section def.
   Definition longest_proposal ovs :=
     map_fold longest_proposal_step None ovs.
 
-  Definition ledger_at_term_with `{Lookup nat B M}
+  Definition ledger_in_term_with `{Lookup nat B M}
     (f : option B -> option ledger) (t : nat) (m : M) := f (m !! t).
+
+  Definition ledger_in_term t ps :=
+    ledger_in_term_with id t ps.
 
   Definition longest_proposal_in_term_with `{Lookup nat B M}
     (f : option B -> option ledger) (ms : gmap A M) t :=
-    let ovs := fmap (ledger_at_term_with f t) ms in
+    let ovs := fmap (ledger_in_term_with f t) ms in
     longest_proposal ovs.
+
+  Definition longest_proposal_in_term bs t :=
+    longest_proposal_in_term_with id bs t.
 
   Definition equal_latest_longest_proposal_with `{Lookup nat B M}
     (f : option B -> option ledger) (ms : gmap A M) t v :=
-    let t' := latest_term_before_quorum_with f ms t in
-    longest_proposal_in_term_with f ms t' = Some v.
+    if decide (t = O)
+    then v = []
+    else let t' := latest_term_before_quorum_with f ms t in
+         longest_proposal_in_term_with f ms t' = Some v.
 
   Definition equal_latest_longest_proposal bsq t v :=
     equal_latest_longest_proposal_with id bsq t v.
