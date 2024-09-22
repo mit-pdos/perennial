@@ -260,7 +260,7 @@ Section res.
 
     (** Rules. *)
 
-    Lemma accepted_proposal_insert {γ nid ps t v} :
+    Lemma accepted_proposal_insert {γ nid ps} t v :
       ps !! t = None ->
       own_accepted_proposals γ nid ps ==∗
       own_accepted_proposals γ nid (<[t := v]> ps) ∗ own_accepted_proposal γ nid t v.
@@ -270,7 +270,18 @@ Section res.
       prefix v1 v2 ->
       own_accepted_proposal γ nid t v1 -∗
       own_accepted_proposals γ nid ps ==∗
-      own_accepted_proposal γ nid t v2 ∗ own_accepted_proposals γ t (<[t := v2]> ps).
+      own_accepted_proposal γ nid t v2 ∗ own_accepted_proposals γ nid (<[t := v2]> ps).
+    Admitted.
+
+    Lemma accepted_proposal_lookup {γ nid ps t v} :
+      own_accepted_proposal γ nid t v -∗
+      own_accepted_proposals γ nid ps -∗
+      ⌜ps !! t = Some v⌝.
+    Admitted.
+
+    Lemma accepted_proposal_witness {γ nid t v} :
+      own_accepted_proposal γ nid t v -∗
+      is_accepted_proposal_lb γ nid t v.
     Admitted.
 
     Lemma accepted_proposal_prefix {γ nid ps t vlb} :
@@ -398,11 +409,11 @@ Section inv.
       "Htermc" ∷ own_current_term_half γ nid termc ∗
       "Hterml" ∷ own_ledger_term_half γ nid terml ∗
       "Hlogn"  ∷ own_node_ledger_half γ nid logn ∗
+      "Hacpt"  ∷ own_accepted_proposal γ nid terml logn ∗
       "#Hpsalbs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_base_ledger γ t v) ∗
       "#Hpsaubs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_growing_ledger γ t v) ∗
       "%Hfixed"  ∷ ⌜fixed_proposals ds psa⌝ ∗
       "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
-      "%Hlogn"   ∷ ⌜psa !! terml = Some logn⌝ ∗
       "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
       "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝.
 
@@ -412,8 +423,8 @@ Section inv.
       "Htermc" ∷ own_current_term_half γ nid termc ∗
       "Hterml" ∷ own_ledger_term_half γ nid terml ∗
       "Hlogn"  ∷ own_node_ledger_half γ nid logn ∗
+      "Hacpt"  ∷ own_accepted_proposal γ nid terml logn ∗
       "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
-      "%Hlogn"   ∷ ⌜psa !! terml = Some logn⌝ ∗
       "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
       "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝.
 
@@ -426,6 +437,16 @@ Section inv.
     "Hpsa"    ∷ node_inv_psa γ nid psa ∗
     "Hpastd"  ∷ own_past_nodedecs γ nid ds ∗
     "%Hfixed" ∷ ⌜fixed_proposals ds psa⌝.
+
+  Lemma own_ledger_term_node_inv_terml_eq γ nid terml terml' :
+    own_ledger_term_half γ nid terml -∗
+    node_inv γ nid terml' -∗
+    ⌜terml' = terml⌝.
+  Proof.
+    iIntros "HtermlX Hnode".
+    iNamed "Hnode".
+    by iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
+  Qed.
 
   Definition prefix_of_accepted_proposal γ nid t logi: iProp Σ :=
     ∃ loga,
@@ -636,7 +657,7 @@ Section inv.
     }
     done.
   Qed.
-  
+
   Definition past_nodedecs_latest_before γ nid ds termc terml v : iProp Σ :=
     "#Hpastd"  ∷ is_past_nodedecs_lb γ nid ds ∗
     "%Hlends"  ∷ ⌜(termc ≤ length ds)%nat⌝ ∗
@@ -671,16 +692,6 @@ Section inv.
     inv paxosNS (paxos_inv γ nids).
 
 End inv.
-
-(**
- * Notes on state-machine actions of Paxos:
- * - ascend(t, v): insert [(t, v)] into [proposals] and [base_proposals].
- * - extend(t, v): update [proposals !! t] to [v]
- * - prepare(t): snoc [accepted_proposals !! (length ballot)] to [ballot] if it exists, and extend [ballot] with [Reject] up to [t].
- * - advance(t, v): insert [(t, v)] into [accepted_proposals].
- * - accept(t, v): update [accepted_proposals !! t] to [v].
- * - commit(v): update [internal_log] to [v].
- *)
 
 Section prepare.
   Context `{!paxos_ghostG Σ}.
@@ -782,6 +793,7 @@ Section prepare.
     iNamed "Hinv".
     iDestruct (current_term_agree with "HtermcX Htermc") as %->.
     iDestruct (node_ledger_agree with "Hv Hlogn") as %->.
+    iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hv.
     destruct (decide (terml = termc)) as [-> | Hne]; last first.
     { (* Case: [terml < termc] iff no ledger accepted at [termc] yet. *)
       (* Update the current term [termc] to [termc']. *)
@@ -807,9 +819,9 @@ Section prepare.
         unshelve epose proof (list_lookup_lt ds terml _) as [d Hd]; first lia.
         specialize (Hfixed _ _ Hd).
         rewrite Hd.
-        rewrite Hfixed in Hlogn.
-        apply nodedec_to_ledger_Some_inv in Hlogn.
-        by rewrite Hlogn.
+        rewrite Hfixed in Hv.
+        apply nodedec_to_ledger_Some_inv in Hv.
+        by rewrite Hv.
       }
       rewrite latest_term_nodedec_extend_Reject.
       unshelve epose proof (free_terms_after_latest_term_before _ _ termc _ _ Hdompsa) as Hlatest.
@@ -830,7 +842,7 @@ Section prepare.
     (* Extract a witness of the extended past decision. *)
     iDestruct (past_nodedecs_witness with "Hds") as "#Hdlb".
     unshelve epose proof
-      (fixed_proposals_inv_prepare_term_eq _ _ _ _ _ Hlends Hlt Hlogn Hdompsa Hfixed) as Hfixed'.
+      (fixed_proposals_inv_prepare_term_eq _ _ _ _ _ Hlends Hlt Hv Hdompsa Hfixed) as Hfixed'.
     iFrame "∗ # %".
     iPureIntro.
     split.
@@ -843,16 +855,6 @@ Section prepare.
       by rewrite -Hlends lookup_snoc_length.
     }
     by rewrite latest_term_nodedec_extend_Reject latest_term_nodedec_snoc_Accept.
-  Qed.
-
-  Lemma own_ledger_term_node_inv_eq γ nid terml terml' :
-    own_ledger_term_half γ nid terml -∗
-    node_inv γ nid terml' -∗
-    ⌜terml' = terml⌝.
-  Proof.
-    iIntros "HtermlX Hnode".
-    iNamed "Hnode".
-    by iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
   Qed.
 
   Lemma paxos_inv_prepare γ nids nid termc termc' terml v :
@@ -874,7 +876,7 @@ Section prepare.
     destruct Hnid as [terml' Hterml'].
     iDestruct (big_sepM_lookup_acc _ _ nid with "Hnodes") as "[Hnode HnodesC]".
     { apply Hterml'. }
-    iDestruct (own_ledger_term_node_inv_eq with "Hterml Hnode") as %->.
+    iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
     iMod (node_inv_prepare _ _ _ _ _ _ Hlt with "Htermc Hv Hnode")
       as "(Htermc & Hv & Hnode & #Hpast)".
     iDestruct ("HnodesC" with "Hnode") as "Hnodes".
@@ -1199,3 +1201,261 @@ Section commit.
   Qed.
 
 End commit.
+
+Lemma free_terms_inv_ascend {nid ts tm} termc :
+  gt_prev_term tm nid termc ->
+  is_term_of_node nid termc ->
+  free_terms ts tm ->
+  free_terms ({[termc]} ∪ ts) (<[nid := termc]> tm).
+Proof.
+  intros Hprev Htermc [Hdisj Hfree].
+  split; first done.
+  intros nidx t Ht t' Ht' Hlt.
+  destruct (decide (nidx = nid)) as [-> | Hne]; last first.
+  { destruct (decide (t' = termc)) as [-> | Hne'].
+    { by specialize (Hdisj _ _ _ Hne Ht'). }
+    rewrite lookup_insert_ne in Ht; last done.
+    specialize (Hfree _ _ Ht _ Ht' Hlt).
+    set_solver.
+  }
+  rewrite lookup_insert in Ht.
+  symmetry in Ht. inv Ht.
+  destruct Hprev as (termp & Htermp & Htermpc).
+  assert (Hlt' : (termp < t')%nat) by lia.
+  specialize (Hfree _ _ Htermp _ Ht' Hlt').
+  assert (Hne : t' ≠ termc) by lia.
+  set_solver.
+Qed.
+
+Section ascend.
+  Context `{!paxos_ghostG Σ}.
+
+  Lemma node_inv_ascend {γ nid termc terml logn} logn' :
+    (terml < termc)%nat ->
+    prefix_base_ledger γ termc logn' -∗
+    prefix_growing_ledger γ termc logn' -∗
+    own_current_term_half γ nid termc -∗
+    own_ledger_term_half γ nid terml -∗
+    own_node_ledger_half γ nid logn -∗
+    node_inv γ nid terml ==∗
+    own_current_term_half γ nid termc ∗
+    own_ledger_term_half γ nid termc ∗
+    own_node_ledger_half γ nid logn' ∗
+    node_inv γ nid termc ∗
+    is_accepted_proposal_lb γ nid termc logn'.
+  Proof.
+    iIntros (Hlt) "#Hpfb #Hpfg HtermcX HtermlX HlognX Hinv".
+    iNamed "Hinv".
+    (* Agreements on the current term and the node ledger. *)
+    iDestruct (current_term_agree with "HtermcX Htermc") as %->.
+    iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+    (* Update the ledger term to [termc]. *)
+    iMod (ledger_term_update termc with "HtermlX Hterml") as "[HtermlX Hterml]".
+    (* Update the current ledger to [logn']. *)
+    iMod (node_ledger_update logn' with "HlognX Hlogn") as "[HlognX Hlogn]".
+    (* Insert [(termc, logn')] into the accepted proposals. *)
+    iMod (accepted_proposal_insert termc logn' with "Hpsa") as "[Hpsa Hp]".
+    { specialize (Hdompsa _ Hlt). by rewrite -not_elem_of_dom. }
+    iDestruct (accepted_proposal_witness with "Hp") as "#Hplb".
+    iClear "Hacpt".
+    iFrame "∗ # %".
+    iModIntro.
+    iSplit.
+    { by iApply big_sepM_insert_2. }
+    iSplit.
+    { by iApply big_sepM_insert_2. }
+    iPureIntro.
+    split.
+    { (* Re-establish [fixed_proposals]. *)
+      intros t d Hd.
+      destruct (decide (t = termc)) as [-> | Hne]; last first.
+      { rewrite lookup_insert_ne; last done.
+        by specialize (Hfixed _ _ Hd).
+      }
+      rewrite lookup_insert.
+      exfalso.
+      (* Derive contradiction from [Hlends] and [Hd]. *)
+      apply lookup_lt_Some in Hd.
+      lia.
+    }
+    split.
+    { (* Re-establish [free_terms_after]. *)
+      rewrite dom_insert_L.
+      intros t Hgttermc.
+      assert (Hgtterml : (terml < t)%nat) by lia.
+      specialize (Hdompsa _ Hgtterml).
+      assert (Hne : t ≠ termc) by lia.
+      set_solver.
+    }
+    done.
+  Qed.
+
+  Lemma paxos_inv_ascend γ nids nid termc terml logn logn' :
+    nid ∈ nids ->
+    is_term_of_node nid termc ->
+    (terml < termc)%nat ->
+    safe_base_proposal γ nids termc logn' -∗
+    own_current_term_half γ nid termc -∗
+    own_ledger_term_half γ nid terml -∗
+    own_node_ledger_half γ nid logn -∗
+    paxos_inv γ nids ==∗
+    own_current_term_half γ nid termc ∗
+    own_ledger_term_half γ nid termc ∗
+    own_node_ledger_half γ nid logn' ∗
+    paxos_inv γ nids ∗
+    own_proposal γ termc logn' ∗
+    is_base_proposal_receipt γ termc logn' ∗
+    is_accepted_proposal_lb γ nid termc logn'.
+  Proof.
+    iIntros (Hnid Hton Hlt) "Hsafe Htermc Hterml Hlogn Hinv".
+    iNamed "Hinv".
+    pose proof Hnid as Hterml.
+    rewrite -Hdomtermlm elem_of_dom in Hterml.
+    destruct Hterml as [terml' Hterml].
+    iDestruct (big_sepM_delete _ _ nid with "Hnodes") as "[Hnode Hnodes]".
+    { apply Hterml. }
+    iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
+    (* Obtain freshness of [termc] before insertion to growing / base proposals. *)
+    assert (Hnotin : termc ∉ dom psb).
+    { rewrite /free_terms /free_terms_with_partf in Hdompsb.
+      destruct Hdompsb as [_ Hfree].
+      by specialize (Hfree _ _ Hterml _ Hton Hlt).
+    }
+    (* Insert [(termc, logn')] into the growing proposals and the base proposals. *)
+    iMod (proposal_insert termc logn' with "Hps") as "[Hps Hp]".
+    { apply map_Forall2_dom_L in Hvp as Hdomps. by rewrite Hdomps not_elem_of_dom in Hnotin. }
+    iMod (base_proposal_insert termc logn' with "Hpsb") as "[Hpsb #Hpsbrcp]".
+    { by rewrite not_elem_of_dom in Hnotin. }
+    (* Extract witness of the inserted proposal to re-establish the node invariant. *)
+    iDestruct (proposal_witness with "Hp") as "#Hplb".
+    (* Re-establish node invariant. *)
+    iMod (node_inv_ascend logn' with "[] [] Htermc Hterml Hlogn Hnode")
+      as "(Htermc & Hterml & Hlogn & Hnode & #Hacptlb)".
+    { apply Hlt. }
+    { by iFrame "Hpsbrcp". }
+    { by iFrame "Hplb". }
+    iDestruct (big_sepM_insert_2 with "Hnode Hnodes") as "Hnodes".
+    rewrite insert_delete_insert.
+    iFrame "∗ # %".
+    iModIntro.
+    iSplit.
+    { (* Re-establish [safe_base_proposal]. *)
+      iApply (big_sepM_insert_2 with "Hsafe Hsafepsb").
+    }
+    iPureIntro.
+    split.
+    { (* Re-establish [valid_proposals]. *)
+      by apply map_Forall2_insert_2.
+    }
+    split.
+    { (* Reestablish that domain of [termlm] equals to [nids]. *)
+      rewrite dom_insert_L.
+      set_solver.
+    }
+    { (* Re-establish [free_terms]. *)
+      rewrite dom_insert_L.
+      apply free_terms_inv_ascend; [| done | done].
+      rewrite /gt_prev_term.
+      by eauto.
+    }
+  Qed.
+
+End ascend.
+
+(**
+ * Notes on state-machine actions of Paxos:
+ * - ascend(t, v): insert [(t, v)] into [proposals] and [base_proposals].
+ * - extend(t, v): update [proposals !! t] to [v]
+ * - prepare(t): snoc [accepted_proposals !! (length ballot)] to [ballot] if it exists, and extend [ballot] with [Reject] up to [t].
+ * - advance(t, v): insert [(t, v)] into [accepted_proposals].
+ * - accept(t, v): update [accepted_proposals !! t] to [v].
+ * - commit(v): update [internal_log] to [v].
+ *)
+
+Section extend.
+  Context `{!paxos_ghostG Σ}.
+
+  Lemma paxos_inv_extend γ nids term logn logn' :
+    prefix logn logn' ->
+    own_proposal γ term logn -∗
+    paxos_inv γ nids ==∗
+    own_proposal γ term logn' ∗
+    paxos_inv γ nids ∗
+    is_proposal_lb γ term logn'.
+  Proof.
+    iIntros (Hprefix) "Hp Hinv".
+    iNamed "Hinv".
+    iDestruct (proposal_lookup with "Hp Hps") as %Hlogn.
+    (* Extend the growing proposal to [logn'] and extract a witness. *)
+    iMod (proposal_update logn' with "Hp Hps") as "[Hp Hps]"; first apply Hprefix.
+    iDestruct (proposal_witness with "Hp") as "#Hplb".
+    iFrame "∗ # %".
+    iPureIntro.
+    intros t.
+    destruct (decide (t = term)) as [-> | Hne]; last by rewrite lookup_insert_ne.
+    rewrite lookup_insert.
+    specialize (Hvp term).
+    destruct (psb !! term) as [loglb |] eqn:Hloglb; rewrite Hlogn Hloglb /= in Hvp; last done.
+    rewrite Hloglb /=.
+    by trans logn.
+  Qed.
+
+End extend.
+
+Lemma free_terms_inv_advance {nid ts tm} termc :
+  gt_prev_term tm nid termc ->
+  free_terms ts tm ->
+  free_terms ts (<[nid := termc]> tm).
+Proof.
+  intros Hprev [Hdisj Hfree].
+  split; first done.
+  intros nidx t Ht t' Ht' Hlt.
+  destruct (decide (nidx = nid)) as [-> | Hne]; last first.
+  { rewrite lookup_insert_ne in Ht; last done.
+    by specialize (Hfree _ _ Ht _ Ht' Hlt).
+  }
+  rewrite lookup_insert in Ht.
+  symmetry in Ht. inv Ht.
+  destruct Hprev as (termp & Htermp & Htermpc).
+  assert (Hlt' : (termp < t')%nat) by lia.
+  by specialize (Hfree _ _ Htermp _ Ht' Hlt').
+Qed.
+
+Section advance.
+  Context `{!paxos_ghostG Σ}.
+
+  Lemma paxos_inv_advance γ nids nid termc terml logn logn' :
+    nid ∈ nids ->
+    prefix_base_ledger γ termc logn' -∗
+    prefix_growing_ledger γ termc logn' -∗
+    own_current_term_half γ nid termc -∗
+    own_ledger_term_half γ nid terml -∗
+    own_node_ledger_half γ nid logn -∗
+    paxos_inv γ nids ==∗
+    own_current_term_half γ nid termc ∗
+    own_ledger_term_half γ nid terml ∗
+    own_node_ledger_half γ nid logn' ∗
+    paxos_inv γ nids ∗
+    is_accepted_proposal_lb γ nid termc logn'.
+  Proof.
+    iIntros (Hnid) "#Hpfb #Hpfg Htermc Hterml Hlogn Hinv".
+    iNamed "Hinv".
+    pose proof Hnid as Hterml.
+    rewrite -Hdomtermlm elem_of_dom in Hterml.
+    destruct Hterml as [terml' Hterml].
+    iDestruct (big_sepM_delete _ _ nid with "Hnodes") as "[Hnode Hnodes]".
+    { apply Hterml. }
+  Qed.
+
+End advance.
+
+Section accept.
+  Context `{!paxos_ghostG Σ}.
+
+  Lemma paxos_inv_accept γ nids :
+    paxos_inv γ nids ==∗
+    paxos_inv γ nids.
+  Proof.
+  Qed.
+
+End accept.

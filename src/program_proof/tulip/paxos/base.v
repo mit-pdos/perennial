@@ -172,6 +172,9 @@ Section def.
     (∀ x1 x2 t, x1 ≠ x2 -> P x1 t -> not (P x2 t)) ∧
     map_Forall (λ x n, free_term_with_partf P ts x n) tm.
 
+  Definition gt_prev_term (tm : gmap A nat) (x : A) (t : nat) :=
+    (∃ t', tm !! x = Some t' ∧ (t' < t)%nat).
+
 End def.
 
 Definition max_nodes : Z := 16.
