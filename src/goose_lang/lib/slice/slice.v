@@ -1200,6 +1200,30 @@ Proof.
   iPureIntro; word.
 Qed.
 
+Lemma wp_SliceCopy_SliceSkip_src stk E src (n : u64) t q vs dst vs' :
+  (uint.nat n ≤ length vs)%nat ->
+  length vs' = (length vs - uint.nat n)%nat ->
+  {{{ own_slice_small src t q vs ∗ own_slice_small dst t (DfracOwn 1) vs' }}}
+    SliceCopy t (slice_val dst) (SliceSkip t (slice_val src) #n) @ stk; E
+  {{{ RET #(W64 (length vs'));
+      own_slice_small src t q vs ∗ own_slice_small dst t (DfracOwn 1) (drop (uint.nat n) vs)
+  }}}.
+Proof.
+  iIntros (Hn Hlen Φ) "[Hsrc Hdst] HΦ".
+  iDestruct (own_slice_small_sz with "Hsrc") as %Hsz.
+  rewrite -{1}(own_slice_small_take_drop src _ _ n); last word.
+  iDestruct "Hsrc" as "[Hsrctake Hsrcdrop]".
+  wp_apply wp_SliceSkip; first word.
+  wp_apply (wp_SliceCopy_full with "[$Hsrctake $Hdst]").
+  { rewrite length_drop. iPureIntro. word. }
+  iIntros "[Hsrctake Hdst]".
+  rewrite length_drop -Hlen.
+  iApply "HΦ".
+  iCombine "Hsrctake Hsrcdrop" as "Hsrc".
+  rewrite own_slice_small_take_drop; last word.
+  iFrame.
+Qed.
+
 Lemma wp_SliceCopy_subslice stk E sl (n1 n2: u64) t q vs dst vs' :
   {{{ own_slice_small sl t q vs ∗
       ⌜uint.Z n1 ≤ uint.Z n2 ≤ Z.of_nat (length vs')⌝ ∗
