@@ -44,7 +44,7 @@ Proof.
   simpl. iPureIntro. lia.
 Qed.
 
-Lemma own_slice_sz s t q vs :
+Lemma own_slice_len s t q vs :
   own_slice s t q vs -∗ ⌜length vs = uint.nat s.(slice.len_f)⌝.
 Proof.
   unseal. iIntros "(_&[%%]) !% //".
@@ -340,6 +340,59 @@ Proof.
   wp_pures. iApply "HΦ".
 Qed.
 
+Lemma wp_slice_for_range {stk E} t sl dq (vs : list val) (body : val) Φ :
+  own_slice sl t dq vs ∗
+  (fold_right (λ v P (i : w64), WP body #i (Val v) @ stk ; E {{ v, ⌜ v = execute_val #() ⌝ ∗
+                                                                   P (word.add i 1) }})
+    (λ (_ : w64), own_slice sl t dq vs -∗ Φ (execute_val #()))
+    vs) (W64 0) -∗
+  WP slice.for_range t (slice.val sl) body @ stk ; E {{ Φ }}
+.
+Proof.
+  iIntros "[Hsl HΦ]".
+  wp_rec.
+  wp_pures.
+  wp_alloc j_ptr as "Hi".
+  wp_pures.
+  iAssert (
+      ∃ (j : u64),
+        "Hi" ∷ j_ptr ↦[uint64T] #j ∗
+        "Hiters" ∷ (fold_right _ _ (drop (uint.nat j) vs)) j
+    )%I with "[Hi HΦ]" as "Hinv".
+  { rewrite zero_val_eq /=. iExists (W64 0). iFrame. }
+  wp_for.
+  iNamed "Hinv".
+  wp_load.
+  wp_pures.
+  iDestruct (own_slice_len with "Hsl") as %Hlen.
+  destruct bool_decide eqn:Hlt.
+  - simpl. (* Case: execute loop body *)
+    iModIntro. rewrite bool_decide_eq_true in Hlt.
+    wp_pures. wp_load. wp_pures.
+    pose proof (list_lookup_lt vs (uint.nat j) ltac:(word)) as [w Hlookup].
+    iDestruct (own_slice_elem_acc with "[$]") as "[Helem Hown]"; [eassumption|].
+    wp_load.
+    iDestruct ("Hown" with "Helem") as "Hown".
+    rewrite list_insert_id; [|assumption].
+    wp_load.
+    erewrite drop_S; last eassumption.
+    simpl.
+    wp_apply (wp_wand with "Hiters").
+    iIntros (?) "[-> Hiters]".
+    iApply wp_for_post_do.
+    wp_load.
+    wp_pures.
+    wp_store.
+    iModIntro. iFrame.
+    replace (uint.nat (word.add _ $ W64 1)) with (S $ uint.nat j) by word.
+    iFrame.
+  - simpl.  (* Case: done with loop body. *)
+    rewrite bool_decide_eq_false in Hlt.
+    rewrite drop_ge.
+    2:{ word. }
+    simpl. iApply "Hiters". by iFrame.
+Qed.
+
 Lemma wp_slice_literal {stk E} t (l : list val) :
   Forall (λ v, has_go_type v t) l →
   {{{ True }}}
@@ -360,7 +413,7 @@ Proof.
   wp_pures.
   wp_alloc i_ptr as "Hi".
   wp_pures.
-  iDestruct (own_slice_sz with "Hsl") as %Hsz.
+  iDestruct (own_slice_len with "Hsl") as %Hsz.
   rewrite length_replicate in Hsz.
   iAssert (∃ (i : w64),
       "%Hi" ∷ ⌜ uint.nat i <= uint.nat (W64 (length l)) ⌝ ∗
@@ -381,7 +434,8 @@ Proof.
   wp_pures.
   case_bool_decide as Hlt.
   {
-    iLeft. iModIntro. iSplitR; first done.
+    simpl.
+    iModIntro.
     wp_pures.
     wp_untyped_load.
     wp_pures.
@@ -448,8 +502,7 @@ Proof.
     word.
   }
   {
-    iRight.
-    iModIntro. iSplitR; first done.
+    simpl. iModIntro.
     wp_pures.
     iApply "HΦ".
     replace (uint.Z i) with (uint.Z (length l)).

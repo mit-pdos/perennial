@@ -48,9 +48,13 @@ Definition for_postcondition stk E (post : val) P Φ bv : iProp Σ :=
 Theorem wp_for P stk E (cond body post : val) Φ :
   P -∗
   □ (P -∗
-     WP cond #() @ stk ; E {{ v, ⌜ v = #true ⌝ ∗
-                                 WP body #() @ stk ; E {{ for_postcondition stk E post P Φ }} ∨
-                                 ⌜ v = #false ⌝ ∗ Φ (execute_val #()) }})  -∗
+     WP cond #() @ stk ; E {{ v, if decide (v = #true) then
+                                   WP body #() @ stk ; E {{ for_postcondition stk E post P Φ }}
+                                 else if decide (v = #false) then
+                                        Φ (execute_val #())
+                                      else False
+                           }}
+    ) -∗
   WP (for: cond; post := body) @ stk ; E {{ Φ }}.
 Proof.
   iIntros "HP #Hloop".
@@ -62,8 +66,8 @@ Proof.
   wp_bind (cond #()).
   wp_apply (wp_wand with "Hloop1").
   iIntros (c) "Hbody".
-  iDestruct "Hbody" as "[[% Hbody]|[% HΦ]]"; subst.
-  - wp_pures.
+  destruct (decide _).
+  - subst. wp_pures.
     wp_apply (wp_wand with "Hbody").
     iIntros (bc) "Hb". (* "[[% HP] | [[% HP] | [[% HΦ] | HΦ]]]". *)
     iDestruct "Hb" as "[[% HP]|Hb]".
@@ -99,7 +103,9 @@ Proof.
     { (* body terminates with other error code *)
       subst. rewrite return_val_unseal. wp_pures. done.
     }
-  - wp_pures. by iFrame.
+  - destruct (decide _); subst.
+    { wp_pures. by iFrame. }
+    { by iExFalso. }
 Qed.
 
 Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :

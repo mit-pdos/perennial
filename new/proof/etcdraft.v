@@ -389,6 +389,12 @@ Proof.
   iIntros (?) "?".
   wp_steps.
 
+  wp_apply wp_slice_for_range.
+  iFrame.
+  simpl.
+  wp_pures.
+  (* Entire for loop is unfolded here *)
+
   Show Ltac Profile.
 Admitted.
 
