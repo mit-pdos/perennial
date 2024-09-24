@@ -270,7 +270,8 @@ Tactic Notation "wp_alloc" ident(l) :=
   | intros l; reduction.pm_reduce; wp_value_head]
 .
 
-(* Tactic Notation "wp_pures" := ltac2:(wp_pures ()). *)
+Ltac wp_steps :=
+  wp_pures'; try ((wp_load; wp_steps) || (wp_store; wp_steps)).
 
 Lemma wp_testLeaderElection2 :
   {{{ True }}}
@@ -281,35 +282,24 @@ Proof.
   iIntros (?) "_ HΦ".
   wp_rec.
   replace (raftpb.MsgHup) with (Val #37) by admit.
-  Time wp_pures'.
+  wp_steps.
   wp_alloc preVote.
   wp_pures'.
   wp_alloc t_ptr.
-  wp_pures'.
+  wp_steps.
   wp_alloc cfg as "Hcfg".
   wp_pures'.
   wp_alloc candState as "HcandState".
-  wp_pures'.
-  wp_store.
-  wp_pures'.
-  wp_pures'.
+  wp_steps.
   wp_alloc candTerm as "HcandTerm".
-  wp_pures'.
-  wp_store.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
 
   wp_alloc nopStepper as "HnopStepper".
   wp_pures'.
   wp_alloc nopStepperPtr as "HnopStepperPtr".
-  wp_pures'.
-  wp_store.
-  wp_pures'.
+  wp_steps.
   wp_alloc tests as "Htests".
-  wp_pures'.
-  wp_load.
-  Time wp_pures'.
+  wp_steps.
 
   (* FIXME: binding is much faster than wp_applying directly. Similar to how
      wp_load/wp_store got faster after the wp_bind. *)
@@ -328,11 +318,7 @@ Proof.
 
   iIntros (?) "Hnw1".
 
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -340,17 +326,7 @@ Proof.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw2".
 
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  Time wp_pures'.
+  wp_steps.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -359,17 +335,7 @@ Proof.
   Time wp_bind (newNetworkWithConfigInit _ _); iApply (wp_newNetworkWithConfigInit with "[$]"); iModIntro.
   iIntros (?) "Hnw3".
 
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -377,13 +343,7 @@ Proof.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw4".
 
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -391,12 +351,8 @@ Proof.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw5".
 
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
 
-  wp_load.
-  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -404,9 +360,7 @@ Proof.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr1".
 
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -414,9 +368,7 @@ Proof.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr2".
 
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -435,14 +387,9 @@ Proof.
   wp_apply wp_slice_literal.
   { solve_has_go_type. }
   iIntros (?) "?".
-  wp_pures'.
-  wp_store.
-  wp_pures'.
-  wp_load.
-  wp_pures'.
+  wp_steps.
+
   Show Ltac Profile.
-  (* NEW(wp_pures using only PureWp): 29.258s total, wp_pures' 47.9% *)
-  (* OLD(wp_pures using only PureWp and PureExec): 30.098s total, 49.2% *)
 Admitted.
 
 
