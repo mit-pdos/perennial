@@ -355,8 +355,8 @@ Proof.
   { repeat constructor. }
   iIntros (?) "?".
   wp_pures'.
-  Time wp_apply (wp_newNetworkWithConfigInit with "[$]").
-  Time wp_bind (newNetworkWithConfigInit _ _); iApply (wp_newNetworkWithConfigInit with "[$]").
+  (* Time wp_apply (wp_newNetworkWithConfigInit with "[$]"). *)
+  Time wp_bind (newNetworkWithConfigInit _ _); iApply (wp_newNetworkWithConfigInit with "[$]"); iModIntro.
   iIntros (?) "Hnw3".
 
   wp_pures'.
