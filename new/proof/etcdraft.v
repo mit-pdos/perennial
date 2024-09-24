@@ -135,115 +135,11 @@ Ltac2 simplify_subst' () :=
       change $g
   end.
 
-Ltac2 rec expr_step e : constr :=
-  lazy_match! e with
-  | Rec ?f ?x ?e =>
-      dbg (Message.of_string "reached Rec");
-      '(Val $ RecV $f $x $e)
-  | App (Val (RecV ?f ?x ?e)) (Val ?v2) =>
-      dbg (Message.of_string "reached App (RecV ...) v");
-      dbg_constr e;
-      (* FIXME: try to keep identifier for function name *)
-      subst_step x v2 (subst_step f '(@LitV grove_op LitUnit) e)
-      (* subst_step x v2 e (subst_step f '#() e) *)
-  | App (?e1) (Val ?v)  =>
-      dbg (Message.of_string "reached App e v");
-      let e1 := expr_step '$e1 in
-      '(App $e1 (Val $v))
-  | App ?e1 ?e2 =>
-      dbg (Message.of_string "reached App e e");
-      let e2new := expr_step '$e2 in
-      dbg_constr e2new;
-      '(App $e1 $e2new)
-  end
-.
-
-Ltac2 rec expr_steps e : constr :=
-  Control.plus
-    (fun () => expr_steps (expr_step e))
-    (fun ex => dbg (Message.of_string "no more steps due to: "); dbg (Message.of_exn ex); e)
-.
-
-Ltac2 wp_pures_fast () :=
-  match! goal with
-  | [ |- envs_entails ?Δ (wp ?s ?et ?e ?Φ)] =>
-      let e' := (expr_steps e) in
-      enough (envs_entails $Δ (wp $s $et $e' $Φ)) by admit
-  end.
-
-Ltac2 mutable fast_mode_wp : bool := false.
-Ltac2 Set dbg := (fun _ => ()).
-Ltac2 Set dbg_constr := (fun _ => ()).
-
-Ltac2 wp_pures () :=
-  if fast_mode_wp then
-    wp_pures_fast ()
-  else
-    ltac1:(wp_pures)
-.
-
-Ltac2 reshape_expr (e : constr) (tac : constr -> constr -> unit) :=
-  let rec go (k : constr) (e : constr) :=
-    let add_item ki e := (go '($ki :: $k) e) in
-    match! e with
-    | _                               => tac k e
-    | App ?e (Val ?v)                 => add_item '(@AppLCtx _ $v) e
-    | App ?e1 ?e2                     => add_item '(@AppRCtx _ $e1) e2
-    | UnOp ?op ?e                     => add_item '(@UnOpCtx _ $op) e
-    | BinOp ?op (Val ?v) ?e           => add_item '(@BinOpRCtx _ $op $v) e
-    | BinOp ?op ?e1 ?e2               => add_item '(@BinOpLCtx _ $op $e2) e1
-    | If ?e0 ?e1 ?e2                  => add_item '(IfCtx $e1 $e2) e0
-    | Pair (Val ?v) ?e                => add_item '(PairRCtx $v) e
-    | Pair ?e1 ?e2                    => add_item '(PairLCtx $e2) e1
-    | Fst ?e                          => add_item '(@FstCtx _) e
-    | Snd ?e                          => add_item '(@SndCtx _) e
-    | InjL ?e                         => add_item '(@InjLCtx _) e
-    | InjR ?e                         => add_item '(@InjRCtx _) e
-    | Case ?e0 ?e1 ?e2                => add_item '(CaseCtx $e1 $e2) e0
-    | Primitive2 ?op (Val ?v) ?e      => add_item '(@Primitive2RCtx _ $op $v) e
-    | Primitive2 ?op ?e1 ?e2          => add_item '(@Primitive2LCtx _ $op $e2) e1
-    | Primitive1 ?op ?e               => add_item '(@Primitive1Ctx _ $op) e
-    | ExternalOp ?op ?e               => add_item '(@ExternalOpCtx _ $op) e
-    | CmpXchg (Val ?v0) (Val ?v1) ?e2 => add_item '(CmpXchgRCtx $v0 $v1) e2
-    | CmpXchg (Val ?v0) ?e1 ?e2       => add_item '(CmpXchgMCtx $v0 $e2) e1
-    | CmpXchg ?e0 ?e1 ?e2             => add_item '(CmpXchgLCtx $e1 $e2) e0
-    | ResolveProph (Val ?v) ?e        => add_item '(@ResolveProphRCtx _ $v) e
-    | ResolveProph ?e1 ?e2            => add_item '(@ResolveProphLCtx _ $e2) e1
-    | fill ?k' ?e                     => match! k with [] => go k' e end
-    end
-  in
-  go '(@nil ectx_item) e.
-
-Ltac2 wp_pure1_maybe_lc_fast () :=
-  match! goal with
-  | [ |- envs_entails ?envs (wp ?s ?et ?e ?q) ] =>
-      reshape_expr e (fun k e' =>
-                        let e2 := '(_ : expr) in
-                        let _ := constr:(ltac2:(apply _): PureExec True _ $e' $e2) in
-                        enough (envs_entails $envs (wp $s $et (fill $k $e2) $q)) by admit)
-  end.
-
 Ltac wp_finish :=
   try wp_value_head;  (* in case we have reached a value, get rid of the WP *)
   reduction.pm_prettify;        (* prettify ▷s caused by [MaybeIntoLaterNEnvs] and
                                   λs caused by wp_value *)
   ltac2:(repeat (simplify_subst' ())); simpl fill.
-
-Tactic Notation "wp_pure1_maybe_lc_no_simpl" constr(maybeCredName) :=
-  lazymatch goal with
-  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
-    let e := eval simpl in e in
-    reshape_expr e ltac:(fun K e' =>
-      first [ eapply (tac_wp_pure maybeCredName K e');
-      [tc_solve                         (* PureExec *)
-      |try solve_vals_compare_safe      (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
-      |tc_solve                         (* IntoLaters *)
-      | reduction.pm_reduce; wp_finish  (* new goal *)
-      ] | fail "wp_pure: first pattern match is not a redex" ]
-          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
-   ) || fail "wp_pure: cannot find redex pattern"
-  | _ => fail "wp_pure: not a 'wp'"
-  end.
 
   Lemma tac_wp_load_ty Δ s E i l q t v Φ is_pers :
     envs_lookup i Δ = Some (is_pers, typed_pointsto l q t v)%I →
@@ -359,7 +255,6 @@ Ltac wp_pures_prev :=
       (* XXX: what did the above comment mean? *)
         repeat (first [ wp_pure_prev | wp_pure]; [])
   end.
-Tactic Notation "wp_pures'" := wp_pures_prev.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   (wp_bind (ref_ty _ _) || fail "the next step is not ref_ty");
@@ -460,7 +355,8 @@ Proof.
   { repeat constructor. }
   iIntros (?) "?".
   wp_pures'.
-  wp_apply (wp_newNetworkWithConfigInit with "[$]").
+  Time wp_apply (wp_newNetworkWithConfigInit with "[$]").
+  Time wp_bind (newNetworkWithConfigInit _ _); iApply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw3".
 
   wp_pures'.
