@@ -20,7 +20,6 @@ Lemma wp_newNetworkWithConfigInit (peers : list val) peers_sl :
 Proof.
 Admitted.
 
-
 Lemma wp_entsWithConfig terms_sl terms :
   {{{
         own_slice terms_sl uint64T (DfracOwn 1) terms
@@ -58,12 +57,33 @@ Ltac2 subst_step x v e : constr :=
             let e1 := go_subst e1 in
             let e2 := go_subst e2 in
             '(Pair $e1 $e2)
+        | Fst ?e =>
+            let e := go_subst e in
+            '(Fst $e)
+        | Snd ?e =>
+            let e := go_subst e in
+            '(Snd $e)
+        | If ?e1 ?e2 ?e3 =>
+            let e1 := go_subst e1 in
+            let e2 := go_subst e2 in
+            let e3 := go_subst e3 in
+            '(If $e1 $e2 $e3)
+        | subst' ?x' ?v' ?e' =>
+            if (Constr.equal x' x) then e
+            else let e' := go_subst e' in
+                 '(subst' $x' $v' $e')
         | _ => constr:(subst' $x $v $e)
                        (* | _ => Control.throw (Tactic_failure None) *)
         end in
       go_subst e
-  end
-.
+  end.
+
+Ltac2 simplify_subst' () :=
+  match! goal with
+  | [ |- context k [subst' ?x ?v ?e] ] =>
+      let g := (Pattern.instantiate k (subst_step x v e)) in
+      change $g
+  end.
 
 Ltac2 rec expr_step e : constr :=
   lazy_match! e with
@@ -154,14 +174,15 @@ Ltac2 wp_pure1_maybe_lc_fast () :=
   | [ |- envs_entails ?envs (wp ?s ?et ?e ?q) ] =>
       reshape_expr e (fun k e' =>
                         let e2 := '(_ : expr) in
-                        let x := constr:(ltac2:(apply _): PureExec True _ $e' $e2) in
+                        let _ := constr:(ltac2:(apply _): PureExec True _ $e' $e2) in
                         enough (envs_entails $envs (wp $s $et (fill $k $e2) $q)) by admit)
   end.
 
 Ltac wp_finish :=
   try wp_value_head;  (* in case we have reached a value, get rid of the WP *)
-  reduction.pm_prettify.        (* prettify ▷s caused by [MaybeIntoLaterNEnvs] and
-                         λs caused by wp_value *)
+  reduction.pm_prettify;        (* prettify ▷s caused by [MaybeIntoLaterNEnvs] and
+                                  λs caused by wp_value *)
+  ltac2:(repeat (simplify_subst' ())); simpl fill.
 
 Tactic Notation "wp_pure1_maybe_lc_no_simpl" constr(maybeCredName) :=
   lazymatch goal with
@@ -179,20 +200,34 @@ Tactic Notation "wp_pure1_maybe_lc_no_simpl" constr(maybeCredName) :=
   | _ => fail "wp_pure: not a 'wp'"
   end.
 
-  Lemma tac_wp_load_ty Δ Δ' s E i l q t v Φ is_pers :
-    coq_tactics.MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (is_pers, typed_pointsto l q t v)%I →
-    envs_entails Δ' (WP (Val v) @ s; E {{ Φ }}) →
+  Lemma tac_wp_load_ty Δ s E i l q t v Φ is_pers :
+    envs_lookup i Δ = Some (is_pers, typed_pointsto l q t v)%I →
+    envs_entails Δ (WP (Val v) @ s; E {{ Φ }}) →
     envs_entails Δ (WP (load_ty t (LitV l)) @ s; E {{ Φ }}).
   Proof. Admitted.
 
-  Lemma tac_wp_store_ty Δ Δ' Δ'' stk E i l t v v' Φ :
+  Lemma tac_wp_store_ty Δ Δ' stk E i l t v v' Φ :
     has_go_type v' t ->
-    coq_tactics.MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (false, l ↦[t] v)%I →
-    envs_simple_replace i false (Esnoc Enil i (l ↦[t] v')) Δ' = Some Δ'' →
-    envs_entails Δ'' (WP (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
+    envs_lookup i Δ = Some (false, l ↦[t] v)%I →
+    envs_simple_replace i false (Esnoc Enil i (l ↦[t] v')) Δ = Some Δ' →
+    envs_entails Δ' (WP (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
     envs_entails Δ (WP (store_ty t (LitV l) v') @ stk; E {{ Φ }}).
+  Proof. Admitted.
+
+  Lemma tac_wp_ref_ty name Δ stk E t v Φ :
+    has_go_type v t ->
+    (∀ (l : loc), envs_entails (envs_snoc Δ false (INamed name) (l ↦[t] v)%I) (WP (Val #l) @ stk; E {{ Φ }})) →
+    envs_entails Δ (WP (ref_ty t v) @ stk; E {{ Φ }}).
+  Proof. Admitted.
+
+  Lemma tac_wp_ref_ty_anon Δ stk E t v Φ :
+    has_go_type v t ->
+    (∀ (l : loc), envs_entails
+                    (envs_incr_counter
+                       (envs_snoc Δ false (IAnon (env_counter Δ)) (l ↦[t] v)%I))
+                    (WP (Val #l) @ stk; E {{ Φ }})
+    ) →
+    envs_entails Δ (WP (ref_ty t v) @ stk; E {{ Φ }}).
   Proof. Admitted.
 
 Tactic Notation "wp_load" :=
@@ -201,11 +236,10 @@ Tactic Notation "wp_load" :=
     iAssumptionCore || fail "wp_load: cannot find" l "↦[t] ?" in
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    ( first
+    (first
         [wp_bind (load_ty _ _); eapply tac_wp_load_ty
         |fail 1 "wp_load: cannot find 'load_ty' in" e];
-      [tc_solve
-      |solve_pointsto ()
+      [solve_pointsto ()
       |wp_finish] )
   | _ => fail "wp_load: not a 'wp'"
   end.
@@ -219,15 +253,74 @@ Tactic Notation "wp_store" :=
     first
       [wp_bind (store_ty _ _ _); eapply tac_wp_store_ty
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
-    [(repeat econstructor || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
-    |tc_solve
+    [solve_has_go_type
     |solve_pointsto ()
     |reduction.pm_reflexivity
     |first [wp_pure_filter (Rec BAnon BAnon _)|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
   end.
 
-Tactic Notation "wp_pures" := ltac2:(wp_pures ()).
+Tactic Notation "wp_pure1_maybe_lc" constr(maybeCredName) :=
+  lazymatch goal with
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
+    reshape_expr e ltac:(fun K e' =>
+      let x := constr:(ltac:(tc_solve) : PureExec _ _ e' _) in
+      first [ eapply (tac_wp_pure maybeCredName K e');
+      [refine x (* PureExec *)
+      |try solve_vals_compare_safe      (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
+      |tc_solve                         (* IntoLaters *)
+      | reduction.pm_reduce; wp_finish  (* new goal *)
+      ] | fail "wp_pure: first pattern match is not a redex" ]
+          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
+   ) || fail "wp_pure: cannot find redex pattern"
+  | _ => fail "wp_pure: not a 'wp'"
+  end.
+
+Ltac wp_pure_steps1 :=
+  lazymatch goal with
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
+      reshape_expr e ltac:(fun K e' =>
+        let x := constr:(ltac:(tc_solve) : PureWp _ e' _) in
+        eapply (tac_wp_pure_wp K e');
+          [refine x (* PureWp *)
+          |try solve_vals_compare_safe (* pure side condition *)
+          |tc_solve (* MaybeIntoLaterNEnvs *)
+          |wp_finish (* new goal *)
+          ]
+      ) || fail "wp_pure_steps: cannot find redex pattern"
+  | _ => fail "wp_pure_steps1: not a 'wp'"
+  end.
+
+Tactic Notation "wp_pure_credit" constr(credName):= wp_pure1_maybe_lc (Some credName).
+Tactic Notation "wp_pure" := wp_pure1_maybe_lc (Datatypes.None : option string).
+
+Ltac wp_pures' :=
+  iStartProof;
+  lazymatch goal with
+    | |- envs_entails ?envs (wp ?s ?E (Val ?v) ?Q) => wp_finish
+    | |- _ =>
+      (* The `;[]` makes sure that no side-condition magically spawns. *)
+      (* TODO: do this in one go, without [repeat]. *)
+      (* XXX: what did the above comment mean? *)
+      repeat (first [ wp_pure | wp_pure_steps1 ]; [])
+  end.
+
+Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
+  (wp_bind (ref_ty _ _) || fail "the next step is not ref_ty");
+  simple eapply (tac_wp_ref_ty H);
+  [ solve_has_go_type
+  | intros l; reduction.pm_reduce; wp_value_head]
+.
+
+Tactic Notation "wp_alloc" ident(l) :=
+  (wp_bind (ref_ty _ _) || fail "the next step is not ref_ty");
+  simple eapply tac_wp_ref_ty_anon;
+  [ solve_has_go_type
+  | intros l; reduction.pm_reduce; wp_value_head]
+.
+
+(* Tactic Notation "wp_pures" := ltac2:(wp_pures ()). *)
+
 Lemma wp_testLeaderElection2 :
   {{{ True }}}
     testLeaderElection2 #null #false
@@ -235,160 +328,167 @@ Lemma wp_testLeaderElection2 :
 Proof.
   Set Ltac Profiling.
   iIntros (?) "_ HΦ".
-  Time wp_rec.
-  Time wp_alloc preVote as "?".
-  wp_alloc t_ptr as "?".
+  wp_rec.
+  replace (raftpb.MsgHup) with (Val #37) by admit.
+  wp_pures'.
+  wp_alloc preVote.
+  wp_pures'.
+  wp_alloc t_ptr.
+  wp_pures'.
   wp_alloc cfg as "Hcfg".
+  wp_pures'.
   wp_alloc candState as "HcandState".
-  wp_pures.
+  wp_pures'.
   wp_store.
-  wp_pures.
-  wp_pures.
+  wp_pures'.
+  wp_pures'.
   wp_alloc candTerm as "HcandTerm".
-  wp_pures.
+  wp_pures'.
   wp_store.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
 
   wp_alloc nopStepper as "HnopStepper".
-  wp_pures.
+  wp_pures'.
   wp_alloc nopStepperPtr as "HnopStepperPtr".
-  Time wp_pures.
-  Time wp_store.
-  simpl fill.
-  Time wp_pures.
+  wp_pures'.
+  wp_store.
+  wp_pures'.
   wp_alloc tests as "Htests".
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
+
+  (* FIXME: binding is much faster than wp_applying directly. Similar to how
+     wp_load/wp_store got faster after the wp_bind. *)
+  Time wp_bind (slice.literal _ _);
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   replace (zero_val funcT) with (zero_val' funcT).
   2:{ by rewrite zero_val_eq. }
-  simpl.
-  wp_apply (wp_newNetworkWithConfigInit with "[$]").
+
+  (* Time wp_apply (wp_newNetworkWithConfigInit with "[]"). 639ms *)
+  Time wp_bind (newNetworkWithConfigInit _ _);
+  iApply (wp_newNetworkWithConfigInit with "[$]");
+  iNext.
+
   iIntros (?) "Hnw1".
 
-  wp_pures.
-  Set Ltac Profiling.
-  goose_lang.proofmode.wp_pures.
-  Show Ltac Profile.
-  Time wp_load.
-
-  (* FIXME: figure out if tc search is slow, or if applying the lemma is slow. *)
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
+  wp_load.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw2".
 
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  Time wp_pures'.
+  Show Ltac Profile.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw3".
 
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw4".
 
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw5".
 
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
 
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr1".
 
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr2".
 
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr3".
 
-  wp_pures.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw6".
-  wp_pures.
+  wp_pures'.
   wp_apply wp_slice_literal.
   { solve_has_go_type. }
   iIntros (?) "?".
-  wp_pures.
+  wp_pures'.
   wp_store.
-  wp_pures.
+  wp_pures'.
   wp_load.
-  wp_pures.
-  simpl.
+  wp_pures'.
 Admitted.
 
 End proof.
