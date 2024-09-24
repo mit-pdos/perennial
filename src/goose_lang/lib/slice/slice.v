@@ -1200,6 +1200,60 @@ Proof.
   iPureIntro; word.
 Qed.
 
+Lemma wp_SliceCopy_SliceSkip_src stk E src (n : u64) t q vs dst vs' :
+  (uint.nat n ≤ length vs)%nat ->
+  length vs' = (length vs - uint.nat n)%nat ->
+  {{{ own_slice_small src t q vs ∗ own_slice_small dst t (DfracOwn 1) vs' }}}
+    SliceCopy t (slice_val dst) (SliceSkip t (slice_val src) #n) @ stk; E
+  {{{ RET #(W64 (length vs'));
+      own_slice_small src t q vs ∗ own_slice_small dst t (DfracOwn 1) (drop (uint.nat n) vs)
+  }}}.
+Proof.
+  iIntros (Hn Hlen Φ) "[[Hsrc [%Hlens %Hcaps]] [Hdst [%Hlend %Hcapd]]] HΦ".
+  wp_rec. wp_pures.
+  wp_apply wp_slice_ptr.
+  wp_apply wp_slice_len.
+  wp_apply wp_slice_cap.
+  wp_pures.
+  rewrite /SliceCopy.
+  wp_pures.
+  wp_apply wp_slice_len.
+  rewrite /slice.len.
+  wp_pures.
+  rewrite bool_decide_eq_false_2; last word.
+  wp_pures.
+  rewrite /slice.ptr.
+  wp_pures.
+  rewrite -{1}(take_drop (uint.nat n) vs).
+  iDestruct (array_app with "Hsrc") as "[Hsrctake Hsrcdrop]".
+  rewrite length_take Nat.min_l; last word.
+  rewrite u64_Z_through_nat.
+  wp_apply (wp_MemCpy_rec with "[$Hdst $Hsrcdrop]").
+  { iPureIntro.
+    rewrite length_drop.
+    word.
+  }
+  iIntros "[Hdst Hsrcdrop]".
+  iDestruct (array_app with "[$Hsrctake Hsrcdrop]") as "Hsrc".
+  { rewrite length_take Nat.min_l; last word.
+    by rewrite u64_Z_through_nat.
+  }
+  replace (uint.nat (word.sub _ n)) with (length vs') by word.
+  rewrite take_drop.
+  rewrite take_ge; last first.
+  { rewrite length_drop. lia. }
+  wp_pures.
+  replace (word.sub _ _) with (W64 (Z.of_nat (length vs'))) by word.
+  iApply "HΦ".
+  iFrame.
+  iModIntro.
+  iPureIntro.
+  split; first done.
+  split; last done.
+  rewrite -Hlend length_drop.
+  lia.
+Qed.
+
 Lemma wp_SliceCopy_subslice stk E sl (n1 n2: u64) t q vs dst vs' :
   {{{ own_slice_small sl t q vs ∗
       ⌜uint.Z n1 ≤ uint.Z n2 ≤ Z.of_nat (length vs')⌝ ∗

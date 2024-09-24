@@ -587,6 +587,26 @@ Proof.
   word.
 Qed.
 
+Lemma wp_SliceCopy_SliceSkip_src stk E src (n : u64) t q vs dst vs' :
+  (uint.nat n ≤ length vs)%nat ->
+  length vs' = (length vs - uint.nat n)%nat ->
+  {{{ own_slice_small src t q vs ∗ own_slice_small dst t (DfracOwn 1) vs' }}}
+    SliceCopy t (slice_val dst) (SliceSkip t (slice_val src) #n) @ stk; E
+  {{{ RET #(W64 (length vs'));
+      own_slice_small src t q vs ∗ own_slice_small dst t (DfracOwn 1) (drop (uint.nat n) vs)
+  }}}.
+Proof.
+  iIntros (Hn Hlen Φ) "[Hsrc Hdst] HΦ".
+  wp_apply (slice.wp_SliceCopy_SliceSkip_src with "[$Hsrc $Hdst]").
+  { by rewrite list_untype_length. }
+  { by rewrite 2!list_untype_length. }
+  iIntros "[Hsrc Hdst]".
+  rewrite list_untype_length.
+  iApply "HΦ".
+  rewrite -list_untype_drop.
+  iFrame.
+Qed.
+
 Lemma wp_SliceCopy_subslice stk E sl (n1 n2: u64) t q vs dst vs' :
   {{{ own_slice_small sl t q vs ∗
       ⌜uint.Z n1 ≤ uint.Z n2 ≤ Z.of_nat (length vs')⌝ ∗
