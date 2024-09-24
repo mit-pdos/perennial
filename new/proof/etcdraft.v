@@ -4,6 +4,56 @@ From New.proof Require Import sync.
 From New.proof Require Import proofmode.
 From Ltac2 Require Import Ltac2.
 
+Set Default Proof Mode "Classic".
+Section instances.
+
+Context `{!heapGS Σ}.
+Local Instance pure_exec_pure_wp {φ n e e'} :
+  PureExec φ (S n) e e' → PureWp φ e e'.
+Proof.
+  intros.
+  intros ?????.
+  iIntros "Hk".
+  wp_pures. iFrame.
+Qed.
+
+(* Found via [Search PureExec.] *)
+Definition pure_wp_injlc v := pure_exec_pure_wp (pure_injlc  v).
+Definition pure_wp_injrc v := pure_exec_pure_wp (pure_injrc  v).
+Definition pure_wp_fst v1 v2 := pure_exec_pure_wp (pure_fst  v1 v2).
+Definition pure_wp_snd v1 v2 := pure_exec_pure_wp (pure_snd  v1 v2).
+Definition pure_wp_recc f x erec := pure_exec_pure_wp (pure_recc  f x erec).
+Definition pure_wp_pairc v1 v2 := pure_exec_pure_wp (pure_pairc  v1 v2).
+Definition pure_wp_if_true e1 e2 := pure_exec_pure_wp (pure_if_true  e1 e2).
+Definition pure_wp_if_false e1 e2 := pure_exec_pure_wp (pure_if_false  e1 e2).
+Definition pure_wp_case_inl v e1 e2 := pure_exec_pure_wp (pure_case_inl  v e1 e2).
+Definition pure_wp_case_inr v e1 e2:= pure_exec_pure_wp (pure_case_inr  v e1 e2).
+Definition pure_wp_total_le v1 v2:= pure_exec_pure_wp (pure_total_le  v1 v2).
+Definition pure_wp_unop op v v':= pure_exec_pure_wp (pure_unop op v v').
+Definition pure_wp_binop op v1 v2 v' := pure_exec_pure_wp (pure_binop op v1 v2 v').
+Definition pure_wp_eqop v1 v2 := pure_exec_pure_wp (pure_eqop  v1 v2).
+Definition pure_wp_eqop_lit l1 l2 := pure_exec_pure_wp (pure_eqop_lit  l1 l2 ).
+Definition pure_wp_beta f x erec v1 v2 {H:AsRecV v1 f x erec} := pure_exec_pure_wp (pure_beta f x erec v1 v2 (AsRecV0:=H)).
+
+Global Existing Instance pure_wp_injlc.
+Global Existing Instance pure_wp_injrc.
+Global Existing Instance pure_wp_fst.
+Global Existing Instance pure_wp_snd.
+Global Existing Instance pure_wp_recc.
+Global Existing Instance pure_wp_pairc.
+Global Existing Instance pure_wp_if_true.
+Global Existing Instance pure_wp_if_false.
+Global Existing Instance pure_wp_case_inl.
+Global Existing Instance pure_wp_case_inr.
+Global Existing Instance pure_wp_total_le.
+Global Existing Instance pure_wp_unop.
+Global Existing Instance pure_wp_binop.
+Global Existing Instance pure_wp_eqop.
+Global Existing Instance pure_wp_eqop_lit.
+Global Existing Instance pure_wp_beta.
+
+End instances.
+
 Section proof.
 
 Context `{!heapGS Σ}.
@@ -132,11 +182,6 @@ Ltac2 wp_pures () :=
     ltac1:(wp_pures)
 .
 
-Set Default Proof Mode "Classic".
-
-Instance maybe_into_later_nenvs_id n Δ : coq_tactics.MaybeIntoLaterNEnvs n Δ Δ (PROP:=iProp Σ).
-Proof. Admitted.
-
 Ltac2 reshape_expr (e : constr) (tac : constr -> constr -> unit) :=
   let rec go (k : constr) (e : constr) :=
     let add_item ki e := (go '($ki :: $k) e) in
@@ -260,6 +305,32 @@ Tactic Notation "wp_store" :=
   | _ => fail "wp_store: not a 'wp'"
   end.
 
+Tactic Notation "wp_pure" :=
+  lazymatch goal with
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
+      reshape_expr e ltac:(fun K e' =>
+        let x := constr:(ltac:(tc_solve) : PureWp _ e' _) in
+        eapply (tac_wp_pure_wp K e');
+          [refine x (* PureWp *)
+          |try solve_vals_compare_safe (* pure side condition *)
+          |tc_solve (* MaybeIntoLaterNEnvs *)
+          |wp_finish (* new goal *)
+          ]
+      ) || fail "wp_pure: cannot find redex pattern"
+  | _ => fail "wp_pure: not a 'wp'"
+  end.
+
+Ltac wp_pures' :=
+  iStartProof;
+  lazymatch goal with
+    | |- envs_entails ?envs (wp ?s ?E (Val ?v) ?Q) => wp_finish
+    | |- _ =>
+      (* The `;[]` makes sure that no side-condition magically spawns. *)
+      (* TODO: do this in one go, without [repeat]. *)
+      (* XXX: what did the above comment mean? *)
+      repeat (wp_pure; [])
+  end.
+
 Tactic Notation "wp_pure1_maybe_lc" constr(maybeCredName) :=
   lazymatch goal with
   | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
@@ -276,25 +347,9 @@ Tactic Notation "wp_pure1_maybe_lc" constr(maybeCredName) :=
   | _ => fail "wp_pure: not a 'wp'"
   end.
 
-Ltac wp_pure_steps1 :=
-  lazymatch goal with
-  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
-      reshape_expr e ltac:(fun K e' =>
-        let x := constr:(ltac:(tc_solve) : PureWp _ e' _) in
-        eapply (tac_wp_pure_wp K e');
-          [refine x (* PureWp *)
-          |try solve_vals_compare_safe (* pure side condition *)
-          |tc_solve (* MaybeIntoLaterNEnvs *)
-          |wp_finish (* new goal *)
-          ]
-      ) || fail "wp_pure_steps: cannot find redex pattern"
-  | _ => fail "wp_pure_steps1: not a 'wp'"
-  end.
+Tactic Notation "wp_pure_prev" := wp_pure1_maybe_lc (Datatypes.None : option string).
 
-Tactic Notation "wp_pure_credit" constr(credName):= wp_pure1_maybe_lc (Some credName).
-Tactic Notation "wp_pure" := wp_pure1_maybe_lc (Datatypes.None : option string).
-
-Ltac wp_pures' :=
+Ltac wp_pures_prev :=
   iStartProof;
   lazymatch goal with
     | |- envs_entails ?envs (wp ?s ?E (Val ?v) ?Q) => wp_finish
@@ -302,8 +357,9 @@ Ltac wp_pures' :=
       (* The `;[]` makes sure that no side-condition magically spawns. *)
       (* TODO: do this in one go, without [repeat]. *)
       (* XXX: what did the above comment mean? *)
-      repeat (first [ wp_pure | wp_pure_steps1 ]; [])
+        repeat (first [ wp_pure_prev | wp_pure]; [])
   end.
+Tactic Notation "wp_pures'" := wp_pures_prev.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   (wp_bind (ref_ty _ _) || fail "the next step is not ref_ty");
@@ -330,7 +386,7 @@ Proof.
   iIntros (?) "_ HΦ".
   wp_rec.
   replace (raftpb.MsgHup) with (Val #37) by admit.
-  wp_pures'.
+  Time wp_pures'.
   wp_alloc preVote.
   wp_pures'.
   wp_alloc t_ptr.
@@ -358,7 +414,7 @@ Proof.
   wp_alloc tests as "Htests".
   wp_pures'.
   wp_load.
-  wp_pures'.
+  Time wp_pures'.
 
   (* FIXME: binding is much faster than wp_applying directly. Similar to how
      wp_load/wp_store got faster after the wp_bind. *)
@@ -400,7 +456,6 @@ Proof.
   wp_pures'.
   wp_load.
   Time wp_pures'.
-  Show Ltac Profile.
   wp_apply wp_slice_literal.
   { repeat constructor. }
   iIntros (?) "?".
@@ -489,6 +544,10 @@ Proof.
   wp_pures'.
   wp_load.
   wp_pures'.
+  Show Ltac Profile.
+  (* NEW(wp_pures using only PureWp): 29.258s total, wp_pures' 47.9% *)
+  (* OLD(wp_pures using only PureWp and PureExec): 30.098s total, 49.2% *)
 Admitted.
+
 
 End proof.
