@@ -136,10 +136,10 @@ Ltac2 simplify_subst' () :=
   end.
 
 Ltac wp_finish :=
-  try wp_value_head;  (* in case we have reached a value, get rid of the WP *)
   reduction.pm_prettify;        (* prettify ▷s caused by [MaybeIntoLaterNEnvs] and
                                   λs caused by wp_value *)
-  ltac2:(repeat (simplify_subst' ())); simpl fill.
+  ltac2:(repeat (simplify_subst' ())); simpl fill;
+  try wp_value_head.  (* in case we have reached a value, get rid of the WP *)
 
   Lemma tac_wp_load_ty Δ s E i l q t v Φ is_pers :
     envs_lookup i Δ = Some (is_pers, typed_pointsto l q t v)%I →
@@ -178,7 +178,7 @@ Tactic Notation "wp_load" :=
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     (first
-        [wp_bind (load_ty _ _); eapply tac_wp_load_ty
+        [wp_bind (load_ty _ (Val _)); eapply tac_wp_load_ty
         |fail 1 "wp_load: cannot find 'load_ty' in" e];
       [solve_pointsto ()
       |wp_finish] )
@@ -192,7 +192,7 @@ Tactic Notation "wp_store" :=
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
-      [wp_bind (store_ty _ _ _); eapply tac_wp_store_ty
+      [wp_bind (store_ty _ (Val _) (Val _)); eapply tac_wp_store_ty
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
     [solve_has_go_type
     |solve_pointsto ()
@@ -200,6 +200,11 @@ Tactic Notation "wp_store" :=
     |first [wp_pure_filter (Rec BAnon BAnon _)|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
   end.
+
+(* To step over a mem operation with
+   x := (struct.field_ref_f t n l), look first for (x ↦[...] ...).
+   Then, look for (l ↦[t])
+ *)
 
 Tactic Notation "wp_pure" :=
   lazymatch goal with
@@ -270,8 +275,51 @@ Tactic Notation "wp_alloc" ident(l) :=
   | intros l; reduction.pm_reduce; wp_value_head]
 .
 
+Ltac iStructSplit n :=
+  iDestruct (struct_fields_split with n) as n;
+  [ done | tc_solve |
+    iEval (repeat (rewrite zero_val_eq || rewrite struct.val_unseal); simpl) in n; iNamed n].
+
 Ltac wp_steps :=
   wp_pures'; try ((wp_load; wp_steps) || (wp_store; wp_steps)).
+
+Global Instance wp_int_gt (l r : w64) :
+  PureWpVal True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
+Proof. Admitted.
+
+Lemma wp_network__send (nw : loc) msgs_sl :
+  {{{ True }}}
+    network__send #nw (slice.val msgs_sl)
+  {{{ RET #(); True }}}
+.
+Proof.
+  iIntros (?) "_ HΦ".
+  wp_rec.
+  wp_pures'.
+  wp_alloc nw_ptr.
+  wp_pures'.
+  wp_alloc msgs_ptr.
+  wp_pures.
+  wp_for.
+  wp_pures'.
+  wp_load.
+  wp_pures'.
+  iModIntro.
+  destruct bool_decide eqn:Hlt.
+  - simpl. (* Case: more messages to send *)
+    wp_pures. rewrite bool_decide_eq_true in Hlt.
+    wp_alloc m.
+    wp_steps.
+    wp_pure.
+    {
+      (* FIXME(word): handle sint.Z *)
+      rewrite !word.signed_eq_swrap_unsigned in Hlt.
+      unfold word.swrap in Hlt.
+      word.
+    }
+    admit. (* TODO: add slice ownership to precondition *)
+  - simpl. wp_steps. iModIntro. by iApply "HΦ".
+Admitted.
 
 Lemma wp_testLeaderElection2 :
   {{{ True }}}
@@ -391,9 +439,25 @@ Proof.
 
   wp_apply wp_slice_for_range.
   iFrame.
-  simpl.
-  wp_pures.
-  (* Entire for loop is unfolded here *)
+  simpl foldr.
+  (* Entire for loop is unfolded here. TODO: is there a way to unfold one iteration at a time? *)
+  wp_pures'.
+  wp_alloc i.
+  wp_pures'.
+  wp_alloc tt as "Htt".
+  wp_pures'.
+  wp_apply wp_struct_make.
+  { admit. }
+  Show Ltac Profile.
+  wp_pures'.
+  Time wp_bind (slice.literal _ _);
+  iApply wp_slice_literal.
+  { solve_has_go_type. admit. }
+  { auto. }
+  iNext. iIntros (?) "?".
+  wp_pures'.
+  iStructSplit "Htt".
+  wp_load.
 
   Show Ltac Profile.
 Admitted.
