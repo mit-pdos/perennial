@@ -5,6 +5,13 @@
 (defvar mixcode-source-strs nil)
 (defvar mixcode-source-tbl  nil)
 
+;;; Note on use with company-coq: The code-inlining feature of mixcode can go
+;;; wrong in some cases (e.g., when the struct being inlined contains a map)
+;;; with the smart-subscripts feature of company-coq. The ad-hoc fix is to
+;;; disable smart-subscripts of company-coq.
+;;;
+;;; (setq company-coq-disabled-features '(smart-subscripts))
+
 ;;; Fontification
 
 (defun mixcode-fontify-source-string (str)
