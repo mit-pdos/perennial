@@ -81,15 +81,15 @@ Section inv.
     by iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
   Qed.
 
-  Definition prefix_of_accepted_proposal γ nid t logi: iProp Σ :=
-    ∃ loga,
-      "#Hloga"   ∷ is_accepted_proposal_lb γ nid t loga ∗
-      "%Hprefix" ∷ ⌜prefix logi loga⌝.
+  Definition safe_ledger_in γ nids t v : iProp Σ :=
+    ∃ nid nidsq,
+      "#Hvacpt"  ∷ is_accepted_proposal_lb γ nid t v ∗
+      "#Hacpt"   ∷ ([∗ set] nid ∈ nidsq, is_accepted_proposal_length_lb γ nid t (length v)) ∗
+      "%Hquorum" ∷ ⌜cquorum nids nidsq⌝ ∗
+      "%Hmember" ∷ ⌜nid ∈ nids⌝.
 
-  Definition safe_ledger γ nids logi : iProp Σ :=
-    ∃ nidsq t,
-      "#Hacpt"   ∷ ([∗ set] nid ∈ nidsq, prefix_of_accepted_proposal γ nid t logi) ∗
-      "%Hquorum" ∷ ⌜cquorum nids nidsq⌝.
+  Definition safe_ledger γ nids v : iProp Σ :=
+    ∃ t, safe_ledger_in γ nids t v.
 
   Definition equal_latest_longest_proposal_nodedec (dssq : gmap u64 (list nodedec)) t v :=
     equal_latest_longest_proposal_with (mbind nodedec_to_ledger) dssq t v.
@@ -291,11 +291,12 @@ Section inv.
     done.
   Qed.
 
-  Definition past_nodedecs_latest_before γ nid ds termc terml v : iProp Σ :=
-    "#Hpastd"  ∷ is_past_nodedecs_lb γ nid ds ∗
-    "%Hlends"  ∷ ⌜(termc ≤ length ds)%nat⌝ ∗
-    "%Hlatest" ∷ ⌜latest_term_nodedec ds = terml⌝ ∗
-    "%Hacpt"   ∷ ⌜ds !! terml = Some (Accept v)⌝.
+  Definition past_nodedecs_latest_before γ nid termc terml v : iProp Σ :=
+    ∃ ds,
+      "#Hpastd"  ∷ is_past_nodedecs_lb γ nid ds ∗
+      "%Hlends"  ∷ ⌜(termc ≤ length ds)%nat⌝ ∗
+      "%Hlatest" ∷ ⌜latest_term_nodedec ds = terml⌝ ∗
+      "%Hacpt"   ∷ ⌜ds !! terml = Some (Accept v)⌝.
 
   Definition paxos_inv γ nids : iProp Σ :=
     ∃ log cpool logi ps psb termlm,
@@ -325,3 +326,54 @@ Section inv.
     inv paxosNS (paxos_inv γ nids).
 
 End inv.
+
+Section lemma.
+  Context `{!paxos_ghostG Σ}.
+
+  Lemma node_inv_is_accepted_proposal_lb_impl_prefix γ bs nid1 nid2 t v1 v2 :
+    nid1 ∈ dom bs ->
+    nid2 ∈ dom bs ->
+    is_accepted_proposal_lb γ nid1 t v1 -∗
+    is_accepted_proposal_lb γ nid2 t v2 -∗
+    ([∗ map] nid ↦ psa ∈ bs, node_inv_psa γ nid psa) -∗
+    ⌜prefix v1 v2 ∨ prefix v2 v1⌝.
+  Proof.
+    iIntros (Hnid1 Hnid2) "Hv1 Hv2 Hnodes".
+    iAssert (prefix_growing_ledger γ t v1)%I as "#Hvub1".
+    { rewrite elem_of_dom in Hnid1.
+      destruct Hnid1 as [ps Hps].
+      iDestruct (big_sepM_lookup _ _ nid1 with "Hnodes") as "Hnode"; first apply Hps.
+      iNamed "Hnode".
+      iDestruct (accepted_proposal_lb_lookup with "Hv1 Hpsa") as %(vub & Hvub & Hprefix).
+      iDestruct (big_sepM_lookup with "Hpsaubs") as (vub') "[Hvub' %Hprefix']"; first apply Hvub.
+      iExists vub'.
+      iFrame "Hvub'".
+      iPureIntro.
+      by trans vub.
+    }
+    iAssert (prefix_growing_ledger γ t v2)%I as "#Hvub2".
+    { rewrite elem_of_dom in Hnid2.
+      destruct Hnid2 as [ps Hps].
+      iDestruct (big_sepM_lookup _ _ nid2 with "Hnodes") as "Hnode"; first apply Hps.
+      iNamed "Hnode".
+      iDestruct (accepted_proposal_lb_lookup with "Hv2 Hpsa") as %(vub & Hvub & Hprefix).
+      iDestruct (big_sepM_lookup with "Hpsaubs") as (vub') "[Hvub' %Hprefix']"; first apply Hvub.
+      iExists vub'.
+      iFrame "Hvub'".
+      iPureIntro.
+      by trans vub.
+    }
+    iDestruct "Hvub1" as (vub1) "[#Hvub1 %Hprefix1]".
+    iDestruct "Hvub2" as (vub2) "[#Hvub2 %Hprefix2]".
+    iDestruct (proposal_lb_prefix with "Hvub1 Hvub2") as %Hprefix.
+    iPureIntro.
+    destruct Hprefix as [Hprefix | Hprefix].
+    { apply (prefix_common_ub _ _ vub2); last apply Hprefix2.
+      by trans vub1.
+    }
+    { apply (prefix_common_ub _ _ vub1); first apply Hprefix1.
+      by trans vub2.
+    }
+  Qed.
+
+End lemma.

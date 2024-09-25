@@ -55,31 +55,6 @@ Section lemma.
     by eapply prefix_common_ub.
   Qed.
 
-  Lemma vub_pac_impl_consistency bs ps psb :
-    valid_ub_ballots bs ps ->
-    valid_proposals ps psb ->
-    proposed_after_chosen bs psb ->
-    consistency bs.
-  Proof.
-    intros Hvub Hvp Hpacb.
-    assert (Hpac : proposed_after_chosen bs ps).
-    { intros t1 t2 v1 v2 Hlt Hchosen Hv2.
-      specialize (Hvp t2).
-      rewrite Hv2 in Hvp.
-      destruct (psb !! t2) as [vlb |] eqn:Heq; rewrite Heq in Hvp; last done.
-      simpl in Hvp.
-      specialize (Hpacb _ _ _ _ Hlt Hchosen Heq).
-      by trans vlb.
-    }
-    intros v1 v2 [t1 Hchosen1] [t2 Hchosen2].
-    destruct (decide (t1 ≤ t2)%nat) as [Hle | Hgt].
-    { by eapply vub_pac_chosen_in_prefix. }
-    { assert (Hge : (t2 ≤ t1)%nat) by lia.
-      rewrite base.or_comm.
-      by eapply vub_pac_chosen_in_prefix.
-    }
-  Qed.
-
   Lemma ballots_overlapped bs bsq1 bsq2 :
     bsq1 ⊆ bs ->
     bsq2 ⊆ bs ->
@@ -420,6 +395,31 @@ Section impl.
     destruct Hvlb as (v' & Hv' & Hprefix').
     trans v'; last apply Hprefix'.
     apply (IH t); [lia | lia | done].
+  Qed.
+
+  Lemma vub_pac_impl_consistency (bs : gmap A proposals) (ps psb : proposals) :
+    valid_ub_ballots bs ps ->
+    valid_proposals ps psb ->
+    proposed_after_chosen bs psb ->
+    consistency bs.
+  Proof.
+    intros Hvub Hvp Hpacb.
+    assert (Hpac : proposed_after_chosen bs ps).
+    { intros t1 t2 v1 v2 Hlt Hchosen Hv2.
+      specialize (Hvp t2).
+      rewrite Hv2 in Hvp.
+      destruct (psb !! t2) as [vlb |] eqn:Heq; rewrite Heq in Hvp; last done.
+      simpl in Hvp.
+      specialize (Hpacb _ _ _ _ Hlt Hchosen Heq).
+      by trans vlb.
+    }
+    intros v1 v2 [t1 Hchosen1] [t2 Hchosen2].
+    destruct (decide (t1 ≤ t2)%nat) as [Hle | Hgt].
+    { by eapply vub_pac_chosen_in_prefix. }
+    { assert (Hge : (t2 ≤ t1)%nat) by lia.
+      rewrite base.or_comm.
+      by eapply vub_pac_chosen_in_prefix.
+    }
   Qed.
 
   Theorem vlb_vub_vbp_vp_impl_consistency (bs : gmap A proposals) (ps psb : proposals) :

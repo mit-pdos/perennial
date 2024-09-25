@@ -94,7 +94,7 @@ Section prepare.
     own_current_term_half γ nid termc' ∗
     own_node_ledger_half γ nid v ∗
     node_inv γ nid terml ∗
-    ∃ d, past_nodedecs_latest_before γ nid d termc' terml v.
+    past_nodedecs_latest_before γ nid termc' terml v.
   Proof.
     iIntros (Hlt) "HtermcX Hv Hinv".
     iNamed "Hinv".
@@ -164,7 +164,7 @@ Section prepare.
     by rewrite latest_term_nodedec_extend_Reject latest_term_nodedec_snoc_Accept.
   Qed.
 
-  Lemma paxos_inv_prepare γ nids nid termc termc' terml v :
+  Lemma paxos_inv_prepare {γ nids nid termc terml v} termc' :
     nid ∈ nids ->
     (termc < termc')%nat ->
     own_current_term_half γ nid termc -∗
@@ -175,7 +175,7 @@ Section prepare.
     own_ledger_term_half γ nid terml ∗
     own_node_ledger_half γ nid v ∗
     paxos_inv γ nids ∗
-    ∃ d, past_nodedecs_latest_before γ nid d termc' terml v.
+    past_nodedecs_latest_before γ nid termc' terml v.
   Proof.
     iIntros (Hnid Hlt) "Htermc Hterml Hv Hinv".
     iNamed "Hinv".

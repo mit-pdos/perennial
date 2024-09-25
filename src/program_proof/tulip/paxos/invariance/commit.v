@@ -215,16 +215,16 @@ Section commit.
     iFrame "∗ # %".
   Qed.
 
-  Lemma nodes_inv_safe_ledger_impl_chosen γ nids bs v :
+  Lemma nodes_inv_safe_ledger_in_impl_chosen_in γ nids bs t v :
     dom bs = nids ->
+    safe_ledger_in γ nids t v -∗
     ([∗ map] nid ↦ psa ∈ bs, node_inv_psa γ nid psa) -∗
-    safe_ledger γ nids v -∗
-    ⌜chosen bs v⌝.
+    ⌜chosen_in bs t v⌝.
   Proof.
-    iIntros (Hdombs) "Hinv Hv".
-    iNamed "Hv".
+    iIntros (Hdombs) "#Hsafe Hinv".
+    iNamed "Hsafe".
     set bsq := (filter (λ x, x.1 ∈ nidsq) bs).
-    iExists t, bsq.
+    iExists bsq.
     rewrite base.and_assoc.
     iSplit.
     { iPureIntro.
@@ -233,25 +233,47 @@ Section commit.
       subst bsq.
       destruct Hquorum as [Hincl Hquorum].
       rewrite (dom_filter_L _ _ nidsq); first apply Hquorum.
-      intros nid.
+      intros nidx.
       split; last by intros (ps & _ & Hin).
       intros Hin.
-      assert (is_Some (bs !! nid)) as [ps Hps].
+      assert (is_Some (bs !! nidx)) as [ps Hps].
       { rewrite -elem_of_dom Hdombs. set_solver. }
       by exists ps.
     }
-    iIntros (nid ps Hps).
-    iDestruct (big_sepS_elem_of _ _ nid with "Hacpt") as "Hprefix".
+    iIntros (nid' ps Hps).
+    iDestruct (big_sepS_elem_of _ _ nid' with "Hacpt") as "Hvacpt'".
     { by apply map_lookup_filter_Some_1_2 in Hps. }
-    iNamed "Hprefix".
-    iDestruct (big_sepM_lookup _ _ nid with "Hinv") as "Hnid".
+    iDestruct "Hvacpt'" as (v') "[Hvacpt' %Hlen]".
+    iDestruct (node_inv_is_accepted_proposal_lb_impl_prefix with "Hvacpt Hvacpt' Hinv") as %Hprefix.
+    { by rewrite -Hdombs in Hmember. }
+    { apply elem_of_dom_2 in Hps.
+      apply (elem_of_weaken _ (dom bsq)); first done.
+      apply dom_filter_subseteq.
+    }
+    assert (Hvv' : prefix v v').
+    { destruct Hprefix as [Hprefix | Hprefix]; first apply Hprefix.
+      by rewrite (prefix_length_eq _ _ Hprefix Hlen).
+    }
+    iDestruct (accepted_proposal_lb_weaken v with "Hvacpt'") as "Hlb"; first apply Hvv'.
+    iDestruct (big_sepM_lookup with "Hinv") as "Hnode".
     { eapply lookup_weaken; [apply Hps | apply map_filter_subseteq]. }
-    iNamed "Hnid".
-    iDestruct (accepted_proposal_prefix with "Hloga Hpsa") as %(va & Hva & Hprefixva).
+    iNamed "Hnode".
+    iDestruct (accepted_proposal_prefix with "Hvacpt' Hpsa") as %(va & Hva & Hprefixva).
     iPureIntro.
     exists va.
     split; first apply Hva.
-    by trans loga.
+    by trans v'.
+  Qed.
+
+  Lemma nodes_inv_safe_ledger_impl_chosen γ nids bs v :
+    dom bs = nids ->
+    safe_ledger γ nids v -∗
+    ([∗ map] nid ↦ psa ∈ bs, node_inv_psa γ nid psa) -∗
+    ⌜chosen bs v⌝.
+  Proof.
+    iIntros (Hdombs) "[%t #Hsafe] Hinv".
+    iExists t.
+    by iApply (nodes_inv_safe_ledger_in_impl_chosen_in with "Hsafe Hinv").
   Qed.
 
   Lemma nodes_inv_ds_psa_impl_nodes_inv_psa γ dss bs :
@@ -285,19 +307,19 @@ Section commit.
     (* Obtain [valid_base_proposals bs psb]. *)
     iDestruct (nodes_inv_impl_valid_base_proposals with "Hsafepsb Hpds") as %Hvbp.
     { apply Hdombs. }
-    (* Obtain [nodes_inv_valid_lb_ballots bs psb]. *)
+    (* Obtain [valid_lb_ballots bs psb]. *)
     iDestruct (nodes_inv_impl_valid_lb_ballots _ bs with "Hpsb [Hpds]") as %Hvlb.
     { by iApply nodes_inv_ds_psa_impl_nodes_inv_psa. }
-    (* Obtain [nodes_inv_valid_ub_ballots bs ps]. *)
+    (* Obtain [valid_ub_ballots bs ps]. *)
     iDestruct (nodes_inv_impl_valid_ub_ballots _ bs with "Hps [Hpds]") as %Hvub.
     { by iApply nodes_inv_ds_psa_impl_nodes_inv_psa. }
     (* Finally, derive [consistency bs]. *)
     pose proof (vlb_vub_vbp_vp_impl_consistency _ _ _ Hvlb Hvub Hvbp Hvp) as Hcst.
     (* Now, derive [chosen bs logi] and [chosen bs logi']. *)
-    iDestruct (nodes_inv_safe_ledger_impl_chosen _ _ bs with "[Hpds] Hsafelogi") as %Hchosen.
+    iDestruct (nodes_inv_safe_ledger_impl_chosen _ _ bs with "Hsafelogi [Hpds]") as %Hchosen.
     { apply Hdombs. }
     { by iApply nodes_inv_ds_psa_impl_nodes_inv_psa. }
-    iDestruct (nodes_inv_safe_ledger_impl_chosen _ _ bs with "[Hpds] Hsafe") as %Hchosen'.
+    iDestruct (nodes_inv_safe_ledger_impl_chosen _ _ bs with "Hsafe [Hpds]") as %Hchosen'.
     { apply Hdombs. }
     { by iApply nodes_inv_ds_psa_impl_nodes_inv_psa. }
     (* Derive [prefix logi logi' ∨ prefix logi' logi]. *)

@@ -163,6 +163,12 @@ Section res.
       ∃ v, ⌜ps !! t = Some v ∧ prefix vlb v⌝.
     Admitted.
 
+    Lemma proposal_lb_prefix {γ t v1 v2} :
+      is_proposal_lb γ t v1 -∗
+      is_proposal_lb γ t v2 -∗
+      ⌜prefix v1 v2 ∨ prefix v2 v1⌝.
+    Admitted.
+
   End proposal.
 
   Section base_proposal.
@@ -249,6 +255,9 @@ Section res.
     Definition is_accepted_proposal_lb γ (nid : u64) (t : nat) (v : ledger) : iProp Σ.
     Admitted.
 
+    Definition is_accepted_proposal_length_lb γ (nid : u64) (t n : nat) : iProp Σ :=
+      ∃ v, is_accepted_proposal_lb γ nid t v ∗ ⌜(n ≤ length v)%nat⌝.
+
     (** Type class instances. *)
 
     #[global]
@@ -277,6 +286,12 @@ Section res.
       ⌜ps !! t = Some v⌝.
     Admitted.
 
+    Lemma accepted_proposal_lb_lookup {γ nid ps t vlb} :
+      is_accepted_proposal_lb γ nid t vlb -∗
+      own_accepted_proposals γ nid ps -∗
+      ⌜∃ v, ps !! t = Some v ∧ prefix vlb v⌝.
+    Admitted.
+
     Lemma accepted_proposal_witness {γ nid t v} :
       own_accepted_proposal γ nid t v -∗
       is_accepted_proposal_lb γ nid t v.
@@ -287,6 +302,18 @@ Section res.
       own_accepted_proposals γ nid ps -∗
       ∃ v, ⌜ps !! t = Some v ∧ prefix vlb v⌝.
     Admitted.
+
+    Lemma accepted_proposal_lb_weaken {γ nid t v1} v2 :
+      prefix v2 v1 ->
+      is_accepted_proposal_lb γ nid t v1 -∗
+      is_accepted_proposal_lb γ nid t v2.
+    Admitted.
+
+    Lemma accepted_proposal_length_lb_weaken {γ nid t n1} n2 :
+      (n2 ≤ n1)%nat ->
+      is_accepted_proposal_length_lb γ nid t n1 -∗
+      is_accepted_proposal_length_lb γ nid t n2.
+    Proof. iIntros (Hlt) "(%v & Hlb & %Hlen)". iFrame. iPureIntro. lia. Qed.
 
   End accepted_proposal.
 
@@ -366,13 +393,3 @@ Section res.
   End node_ledger.
 
 End res.
-
-(**
- * Notes on state-machine actions of Paxos:
- * - ascend(t, v): insert [(t, v)] into [proposals] and [base_proposals].
- * - extend(t, v): update [proposals !! t] to [v]
- * - prepare(t): snoc [accepted_proposals !! (length ballot)] to [ballot] if it exists, and extend [ballot] with [Reject] up to [t].
- * - advance(t, v): insert [(t, v)] into [accepted_proposals].
- * - accept(t, v): update [accepted_proposals !! t] to [v].
- * - commit(v): update [internal_log] to [v].
- *)
