@@ -7,7 +7,8 @@ From Perennial.program_proof.rsm Require Export
 
 (* pure theorems *)
 From Perennial.program_proof.rsm.pure Require Export
-  dual_lookup extend fin_maps list misc nonexpanding_merge word.
+  dual_lookup extend fin_maps fin_sets largest_before list misc
+  nat nonexpanding_merge quorum sets vslice word.
 
 (* distx *)
 From Perennial.program_proof.rsm.distx.program Require Export

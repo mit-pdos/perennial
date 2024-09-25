@@ -58,6 +58,9 @@ From Perennial.program_proof.mvcc Require mvcc_proof.
 (* rsm *)
 From Perennial.program_proof.rsm Require rsm_proof.
 
+(* tulip *)
+From Perennial.program_proof.tulip Require tulip_proof.
+
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
