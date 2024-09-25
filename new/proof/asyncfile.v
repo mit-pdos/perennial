@@ -237,7 +237,7 @@ Proof.
   wp_pures.
   destruct bool_decide eqn:?.
   { (* case: wait *)
-    iModIntro; iLeft; iSplitR; first done.
+    simpl. iModIntro.
     wp_pures. wp_load. wp_load.
     wp_apply (wp_Cond__Wait with "[-Htok HΦ Hlocal1 Hlocal2]").
     {
@@ -251,9 +251,8 @@ Proof.
     by iFrame.
   }
   { (* case: i is durable *)
-    iModIntro.
+    simpl. iModIntro.
     rewrite bool_decide_eq_false in Heqb.
-    iRight. iSplitR; first done.
     wp_pures.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
@@ -538,7 +537,7 @@ Proof.
   { repeat iExists _; iFrame. }
   wp_for.
   wp_pures.
-  iModIntro. iLeft; iSplitR; first done.
+  iModIntro. simpl.
   clear data.
   iNamed "Hown".
   subst.
