@@ -53,6 +53,18 @@ Section lemma.
     - right. by apply prefix_cons.
   Qed.
 
+  Lemma prefix_common_ub_length l1 l2 l :
+    (length l1 ≤ length l2)%nat ->
+    prefix l1 l ->
+    prefix l2 l ->
+    prefix l1 l2.
+  Proof.
+    intros Hlen Hl1 Hl2.
+    pose proof (prefix_common_ub _ _ _ Hl1 Hl2) as Hprefix.
+    destruct Hprefix as [? | Hprefix]; first done.
+    by rewrite (prefix_length_eq _ _ Hprefix Hlen).
+  Qed.
+
   Lemma take_length_prefix l1 l2 :
     prefix l1 l2 ->
     take (length l1) l2 = l1.

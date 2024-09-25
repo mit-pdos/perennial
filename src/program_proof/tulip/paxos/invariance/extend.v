@@ -8,15 +8,13 @@ Section extend.
     own_proposal γ term logn -∗
     paxos_inv γ nids ==∗
     own_proposal γ term logn' ∗
-    paxos_inv γ nids ∗
-    is_proposal_lb γ term logn'.
+    paxos_inv γ nids.
   Proof.
     iIntros (Hprefix) "Hp Hinv".
     iNamed "Hinv".
     iDestruct (proposal_lookup with "Hp Hps") as %Hlogn.
     (* Extend the growing proposal to [logn'] and extract a witness. *)
     iMod (proposal_update logn' with "Hp Hps") as "[Hp Hps]"; first apply Hprefix.
-    iDestruct (proposal_witness with "Hp") as "#Hplb".
     iFrame "∗ # %".
     iPureIntro.
     intros t.
