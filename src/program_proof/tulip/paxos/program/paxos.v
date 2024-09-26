@@ -1,8 +1,7 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Perennial.program_proof.tulip.paxos.invariance Require Import
   accept advance ascend commit extend prepare.
-From Perennial.program_proof.tulip.util Require Import
-  next_aligned.
+From Perennial.program_proof.tulip.util Require Import next_aligned.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
 Section repr.
@@ -18,11 +17,9 @@ Section repr.
   (*@     // Size of the cluster. @sc = @len(peers) + 1.                      @*)
   (*@     sc        uint64                                                    @*)
   (*@     // ID of this node.                                                 @*)
-  (*@     nid       uint64                                                    @*)
+  (*@     nidme     uint64                                                    @*)
   (*@     // Mutex protecting fields below.                                   @*)
   (*@     mu        *sync.Mutex                                               @*)
-  (*@     // Whether this node is the leader in @termc.                       @*)
-  (*@     isleader  bool                                                      @*)
   (*@     // Heartbeat.                                                       @*)
   (*@     hb        bool                                                      @*)
   (*@     // Term in which this Paxos node currently is. Persistent.          @*)
@@ -30,18 +27,20 @@ Section repr.
   (*@     // Term to which the log entries @ents belong. Persistent.          @*)
   (*@     terml     uint64                                                    @*)
   (*@     // List of log entries. Persistent.                                 @*)
-  (*@     ents      []string                                                  @*)
+  (*@     log      []string                                                   @*)
   (*@     // LSN before which entries are committed (exclusively). Persistent. Note @*)
   (*@     // that persistence of @lsnc is *not* a safety requirement, but a   @*)
-  (*@     // performance one (so that the leader's corresponding @lsnpeers entry can @*)
-  (*@     // be updated more efficiently when this node crashes, rather than always @*)
-  (*@     // start from 0).                                                   @*)
+  (*@     // performance improvement (so that the leader's corresponding @lsnpeers @*)
+  (*@     // entry can be updated more efficiently when this node crashes and @*)
+  (*@     // recovers, rather than always start from 0).                      @*)
   (*@     lsnc      uint64                                                    @*)
+  (*@     // Whether this node is the candidate in @termc.                    @*)
+  (*@     iscand    bool                                                      @*)
+  (*@     // Whether this node is the leader in @termc.                       @*)
+  (*@     isleader  bool                                                      @*)
   (*@     //                                                                  @*)
   (*@     // Candidate state below.                                           @*)
   (*@     //                                                                  @*)
-  (*@     // Whether this node is the candidate in @termc.                    @*)
-  (*@     iscand    bool                                                      @*)
   (*@     // Largest term seen in the prepare phase.                          @*)
   (*@     termp     uint64                                                    @*)
   (*@     // Longest entries after @lsnp in @termc in the prepare phase.      @*)
@@ -57,7 +56,7 @@ Section repr.
   (*@     // should be sent to the follower. It is initialized to be an empty map when @*)
   (*@     // a leader is first elected. Absence of an entry means that the node has @*)
   (*@     // not reported what is on its log, in which case the leader could simply @*)
-  (*@     // send an APPEND-ENTRIES with LSN = @len(px.ents). Note that once  @*)
+  (*@     // send an APPEND-ENTRIES with LSN = @len(px.log). Note that once   @*)
   (*@     // @lsnpeers[nid] is set, it should only increase monotonically, as @*)
   (*@     // followers' log are supposed to only grow within a term. This subsumes the @*)
   (*@     // next / match indexes in Raft.                                    @*)
@@ -74,15 +73,48 @@ Section repr.
       "HconnsP"     ∷ paxos ↦[Paxos :: "conns"] #connsP ∗
       "#Hpeers"     ∷ own_slice peersP uint64T DfracDiscarded (elements peers).
 
-  Definition own_paxos_candidate (paxos : loc) (iscand : bool) : iProp Σ :=
-    ∃ (termp : u64) (entspP : Slice.t) (entsp : list string)
-      (resppP : loc) (respp : gmap u64 bool),
+  Definition own_paxos_votes
+    (termc termp : u64) (entsc entsp : list string) (respp : gmap u64 bool) γ : iProp Σ :=
+    ∃ (dss : gmap u64 (list nodedec)),
+      "#Hdss"      ∷ ([∗ map] nid↦ds ∈ dss, is_past_nodedecs_lb γ nid ds) ∗
+      "%Hlendss"   ∷ ⌜map_Forall (λ _ ds, (length ds = uint.nat termc)%nat) dss⌝ ∗
+      "%Hlatestq"  ∷ ⌜latest_term_before_quorum_nodedec dss (uint.nat termc) = (uint.nat termp)⌝ ∗
+      "%Hlongestq" ∷ ⌜longest_proposal_in_term_nodedec dss (uint.nat termp) = Some (entsc ++ entsp)⌝ ∗
+      "%Hrspd"     ∷ ⌜dom dss = dom respp⌝.
+
+  Definition own_paxos_candidate_only
+    (nidme termc terml termp : u64) (entsc : list string)
+    (entspP : Slice.t) (resppP : loc) γ : iProp Σ :=
+    ∃ (entsp : list string) (respp : gmap u64 bool),
+      "Hentsp"    ∷ own_slice entspP stringT (DfracOwn 1) entsp ∗
+      "Hrespp"    ∷ own_map resppP (DfracOwn 1) respp ∗
+      "#Hvotes"   ∷ own_paxos_votes termc termp entsc entsp respp γ ∗
+      "%Hton"     ∷ ⌜is_term_of_node nidme (uint.nat termc)⌝ ∗
+      "%Hlcne"    ∷ ⌜uint.Z terml ≠ uint.Z termc⌝.
+
+  Definition own_paxos_candidate
+    (paxos : loc) (nid termc terml : u64) (entsc : list string) (iscand : bool) γ : iProp Σ :=
+    ∃ (termp : u64) (entspP : Slice.t) (resppP : loc),
       "HiscandP" ∷ paxos ↦[Paxos :: "iscand"] #iscand ∗
       "HtermpP"  ∷ paxos ↦[Paxos :: "termp"] #termp ∗
       "HentspP"  ∷ paxos ↦[Paxos :: "entsp"] (to_val entspP) ∗
-      "Hentsp"   ∷ (if iscand then own_slice entspP stringT (DfracOwn 1) entsp else True) ∗
       "HresppP"  ∷ paxos ↦[Paxos :: "respp"] #resppP ∗
-      "Hrespp"   ∷ (if iscand then own_map resppP (DfracOwn 1) respp else True).
+      "Honlyc"   ∷ (if iscand
+                    then own_paxos_candidate_only nid termc terml termp entsc entspP resppP γ
+                    else True).
+
+  Definition own_paxos_leader_only (termc : u64) (ents : list string) γ : iProp Σ :=
+    ∃ (entsbase : list string),
+      "Hps"   ∷ own_proposal γ (uint.nat termc) ents ∗
+      "#Hpsb" ∷ is_base_proposal_receipt γ (uint.nat termc) entsbase ∗
+      "%Hpsb" ∷ ⌜prefix entsbase ents⌝.
+
+  Definition own_paxos_leader
+    (paxos : loc) (termc : u64) (ents : list string) (isleader : bool) γ : iProp Σ :=
+    ∃ (lsnpeersP : loc),
+      "HisleaderP" ∷ paxos ↦[Paxos :: "isleader"] #isleader ∗
+      "HlsnpeersP" ∷ paxos ↦[Paxos :: "lsnpeers"] #lsnpeersP ∗
+      "Honlyl"     ∷ (if isleader then own_paxos_leader_only termc ents γ else True).
 
   Definition own_paxos_sc (paxos : loc) (nids : gset u64) : iProp Σ :=
     ∃ (sc : u64),
@@ -90,38 +122,63 @@ Section repr.
       "%Hsc" ∷ ⌜size nids = uint.nat sc⌝.
   
   Definition own_paxos_common
-    (paxos : loc) (termc : u64) (terml : u64) (nids : gset u64) γ : iProp Σ :=
-    ∃ (me : u64) (nid : u64) (isleader : bool) (hb : bool)
-      (entsP : Slice.t) (ents : list string)
-      (lsnc : u64) (lsnpeersP : loc) (peers : gset u64),
+    (paxos : loc) (nidme termc terml lsnc : u64) (log : list string)
+    (nids : gset u64) γ : iProp Σ :=
+    ∃ (me : u64) (hb : bool) (logP : Slice.t) (peers : gset u64),
       "HmeP"       ∷ paxos ↦[Paxos :: "me"] #me ∗
-      "HnidP"      ∷ paxos ↦[Paxos :: "nid"] #nid ∗
-      "HisleaderP" ∷ paxos ↦[Paxos :: "isleader"] #isleader ∗
+      "HnidP"      ∷ paxos ↦[Paxos :: "nidme"] #nidme ∗
       "HhbP"       ∷ paxos ↦[Paxos :: "hb"] #hb ∗
       "HtermcP"    ∷ paxos ↦[Paxos :: "termc"] #termc ∗
-      "Htermc"     ∷ own_current_term_half γ nid (uint.nat termc) ∗
+      "Htermc"     ∷ own_current_term_half γ nidme (uint.nat termc) ∗
       "HtermlP"    ∷ paxos ↦[Paxos :: "terml"] #terml ∗
-      "Hterml"     ∷ own_ledger_term_half γ nid (uint.nat terml) ∗
-      "HentsP"     ∷ paxos ↦[Paxos :: "ents"] (to_val entsP) ∗
-      "Hents"      ∷ own_slice entsP stringT (DfracOwn 1) ents ∗
-      "Hlogn"      ∷ own_node_ledger_half γ nid ents ∗
+      "Hterml"     ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
+      "HlogP"      ∷ paxos ↦[Paxos :: "log"] (to_val logP) ∗
+      "Hlog"       ∷ own_slice logP stringT (DfracOwn 1) log ∗
+      "Hlogn"      ∷ own_node_ledger_half γ nidme log ∗
       "HlsncP"     ∷ paxos ↦[Paxos :: "lsnc"] #lsnc ∗
-      "HlsnpeersP" ∷ paxos ↦[Paxos :: "lsnpeers"] #lsnpeersP ∗
+      "Hsafecmt"   ∷ safe_ledger_above γ nids (uint.nat terml) (take (uint.nat lsnc) log) ∗ 
       "Hcomm"      ∷ own_paxos_comm paxos peers ∗
       "Hsc"        ∷ own_paxos_sc paxos nids ∗
-      "%Hnids"     ∷ ⌜nids = {[nid]} ∪ peers⌝ ∗
-      "%Hnid"      ∷ ⌜0 ≤ uint.Z nid < max_nodes⌝ ∗
-      "%Hlsncub"   ∷ ⌜uint.Z lsnc ≤ length ents⌝.
+      "%Hnids"     ∷ ⌜nids = {[nidme]} ∪ peers⌝ ∗
+      "%Hnid"      ∷ ⌜0 ≤ uint.Z nidme < max_nodes⌝ ∗
+      "%Htermlc"   ∷ ⌜uint.Z terml ≤ uint.Z termc⌝ ∗
+      "%Hlsncub"   ∷ ⌜uint.Z lsnc ≤ length log⌝.
 
-  Definition own_paxos_with_termc_terml
-    (paxos : loc) (termc : u64) (terml : u64) nids γ : iProp Σ :=
-    ∃  (iscand : bool),
-      "Hpx"   ∷ own_paxos_common paxos termc terml nids γ ∗
-      "Hcand" ∷ own_paxos_candidate paxos iscand.
+  (** Note on designing the lock invariant abstraction: [own_paxos_internal]
+  serves as a boundary for exposing internal states required for use by internal
+  methods. All [own_paxos{*}_with_{*}] should then be derived from it. Values
+  that are decomposed (e.g., [terml]) into smaller pieces of representation
+  predicates should be existentially quantified. *)
+  Definition own_paxos_internal
+    (paxos : loc) (termc lsnc : u64) (iscand isleader : bool) nids γ : iProp Σ :=
+    ∃ (nidme terml : u64) (log : list string),
+      let logc := (take (uint.nat lsnc) log) in
+      "Hpx"     ∷ own_paxos_common paxos nidme termc terml lsnc log nids γ ∗
+      "Hcand"   ∷ own_paxos_candidate paxos nidme termc terml logc iscand γ ∗
+      "Hleader" ∷ own_paxos_leader paxos termc log isleader γ.
 
-  Definition own_paxos paxos nids γ : iProp Σ :=
-    ∃ (termc : u64) (terml : u64),
-      own_paxos_with_termc_terml paxos termc terml nids γ.
+  Definition own_paxos_with_termc_lsnc
+    (paxos : loc) (termc lsnc : u64) nids γ : iProp Σ :=
+    ∃ (iscand : bool) (isleader : bool),
+      own_paxos_internal paxos termc lsnc iscand isleader nids γ.
+
+  Definition own_paxos_nominiated_with_termc_lsnc
+    (paxos : loc) (termc lsnc : u64) nids γ : iProp Σ :=
+    ∃ (isleader : bool),
+      own_paxos_internal paxos termc lsnc true isleader nids γ.
+
+  Definition own_paxos_with_termc
+    (paxos : loc) (termc : u64) nids γ : iProp Σ :=
+    ∃ (lsnc : u64) (iscand : bool) (isleader : bool),
+      own_paxos_internal paxos termc lsnc iscand isleader nids γ.
+
+  Definition own_paxos (paxos : loc) nids γ : iProp Σ :=
+    ∃ (termc lsnc : u64) (iscand : bool) (isleader : bool),
+      own_paxos_internal paxos termc lsnc iscand isleader nids γ.
+
+  Definition own_paxos_nominated (paxos : loc) nids γ : iProp Σ :=
+    ∃ (termc lsnc : u64) (isleader : bool),
+      own_paxos_internal paxos termc lsnc true isleader nids γ.
 
   Definition is_paxos (paxos : loc) γ : iProp Σ :=
     ∃ (mu : loc) (nids : gset u64),
@@ -134,12 +191,12 @@ End repr.
 Section stepdown.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_Paxos__stepdown (px : loc) (term : u64) (termc terml : u64) nids γ :
-    (uint.nat termc < uint.nat term)%nat ->
+  Theorem wp_Paxos__stepdown px (term : u64) termc nids γ :
+    uint.Z termc < uint.Z term ->
     know_paxos_inv γ nids -∗
-    {{{ own_paxos_with_termc_terml px termc terml nids γ }}}
+    {{{ own_paxos_with_termc px termc nids γ }}}
       Paxos__stepdown #px #term
-    {{{ RET #(); own_paxos_with_termc_terml px term terml nids γ }}}.
+    {{{ RET #(); own_paxos_with_termc px term nids γ }}}.
   Proof.
     iIntros (Hlt) "#Hinv".
     iIntros (Φ) "!> Hpx HΦ".
@@ -150,8 +207,7 @@ Section stepdown.
     (*@     px.iscand = false                                                   @*)
     (*@     px.isleader = false                                                 @*)
     (*@                                                                         @*)
-    do 2 iNamed "Hpx".
-    iNamed "Hcand".
+    do 2 iNamed "Hpx". iNamed "Hcand". iNamed "Hleader".
     do 3 wp_storeField.
 
     (*@     // TODO: Write @px.termc to disk.                                   @*)
@@ -162,10 +218,11 @@ Section stepdown.
     iMod (paxos_inv_prepare (uint.nat term) with "Htermc Hterml Hlogn HinvO")
       as "(Htermc & Hterml & Hlogn & HinvO & #Hpromise)".
     { set_solver. }
-    { apply Hlt. }
+    { word. }
     iMod ("HinvC" with "HinvO") as "_".
     iApply "HΦ".
     iFrame "HiscandP".
+    assert (Htermlc' : uint.Z terml ≤ uint.Z term) by word.
     by iFrame "∗ # %".
   Qed.
 
@@ -189,7 +246,7 @@ Section nominate.
     (*@     px.termc = term                                                     @*)
     (*@     px.isleader = false                                                 @*)
     (*@                                                                         @*)
-    do 2 iNamed "Hpx".
+    do 2 iNamed "Hpx". iNamed "Hleader".
     do 2 wp_loadField.
     wp_apply wp_NextAligned.
     { word. }
@@ -199,23 +256,23 @@ Section nominate.
 
     (*@     // Obtain entries after @px.lsnc.                                   @*)
     (*@     lsn := px.lsnc                                                      @*)
-    (*@     var ents = make([]string, 0, uint64(len(px.ents)) - lsn)            @*)
-    (*@     copy(ents, px.ents[lsn :])                                          @*)
+    (*@     ents := make([]string, uint64(len(px.log)) - lsn)                   @*)
+    (*@     copy(ents, px.log[lsn :])                                           @*)
     (*@                                                                         @*)
     do 2 wp_loadField.
     wp_apply wp_slice_len.
     wp_apply wp_NewSlice.
-    iIntros (entsP') "Hents'".
+    iIntros (entsP) "Hents".
     wp_loadField.
-    iDestruct (own_slice_sz with "Hents") as %Hsz.
+    iDestruct (own_slice_sz with "Hlog") as %Hsz.
+    iDestruct (own_slice_small_acc with "Hlog") as "[Hlog HlogC]".
     iDestruct (own_slice_small_acc with "Hents") as "[Hents HentsC]".
-    iDestruct (own_slice_small_acc with "Hents'") as "[Hents' HentsC']".
-    wp_apply (wp_SliceCopy_SliceSkip_src with "[$Hents $Hents']").
+    wp_apply (wp_SliceCopy_SliceSkip_src with "[$Hlog $Hents]").
     { word. }
     { rewrite length_replicate /=. word. }
-    iIntros "[Hents Hents']".
+    iIntros "[Hlog Hents]".
+    iDestruct ("HlogC" with "Hlog") as "Hlog".
     iDestruct ("HentsC" with "Hents") as "Hents".
-    iDestruct ("HentsC'" with "Hents'") as "Hents'".
 
     (*@     // Use the candidate's log term (@px.terml) and entries (after the committed @*)
     (*@     // LSN, @ents) as the initial preparing term and entries.           @*)
@@ -223,7 +280,7 @@ Section nominate.
     (*@     px.termp  = px.terml                                                @*)
     (*@     px.entsp  = ents                                                    @*)
     (*@     px.respp  = make(map[uint64]bool)                                   @*)
-    (*@     px.respp[px.nid] = true                                             @*)
+    (*@     px.respp[px.nidme] = true                                           @*)
     (*@                                                                         @*)
     iNamed "Hcand".
     wp_storeField.
@@ -249,7 +306,31 @@ Section nominate.
     (*@     return term, lsn                                                    @*)
     (*@ }                                                                       @*)
     iApply "HΦ".
-    iFrame "HiscandP".
+    assert (Hton' : is_term_of_node nidme (uint.nat term)).
+    { rewrite /is_term_of_node /max_nodes. word. }
+    assert (Htermlt' : uint.Z terml ≤ uint.Z term) by word.
+    assert (Hlcne' : uint.Z terml ≠ uint.Z term) by word.
+    set logc := take _ log.
+    set entsp := drop _ log.
+    iAssert (own_paxos_votes term terml logc entsp {[nidme := true]} γ)%I as "Hvotes".
+    { iNamed "Hpromise".
+      iExists {[nidme := ds]}.
+      rewrite big_sepM_singleton.
+      iFrame "Hpastd".
+      iPureIntro.
+      split.
+      { rewrite map_Forall_singleton. clear -Hlends Htermlt'. word. }
+      split.
+      { apply latest_term_before_quorum_with_singleton.
+        by rewrite -latest_term_before_nodedec_unfold -Hlends -latest_term_nodedec_unfold.
+      }
+      split.
+      { apply longest_proposal_in_term_with_singleton.
+        by rewrite Hacpt take_drop.
+      }
+      { by rewrite 2!dom_singleton_L. }
+    }
+    iFrame "HiscandP HisleaderP".
     by iFrame "∗ # %".
   Qed.
 
@@ -280,36 +361,29 @@ Section collect.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__collect
-    (px : loc) (nidpeer : u64) (term : u64)
-    (entspeerP : Slice.t) (entspeer : list string) nids γ :
-    know_paxos_inv γ nids -∗
-    {{{ own_paxos px nids γ ∗ own_slice entspeerP stringT (DfracOwn 1) entspeer }}}
-      Paxos__collect #px #nidpeer #term (to_val entspeerP)
-    {{{ RET #(); own_paxos px nids γ }}}.
+    (px : loc) (nid : u64) (term : u64)
+    (entsP : Slice.t) (ents : list string)
+    (termc lsnc : u64) (logpeer : list string) nids γ :
+    drop (uint.nat lsnc) logpeer = ents ->
+    past_nodedecs_latest_before γ nid (uint.nat termc) (uint.nat term) logpeer -∗
+    {{{ own_paxos_nominiated_with_termc_lsnc px termc lsnc nids γ ∗
+        own_slice entsP stringT (DfracOwn 1) ents
+    }}}
+      Paxos__collect #px #nid #term (to_val entsP)
+    {{{ RET #(); own_paxos_nominated px nids γ }}}.
   Proof.
-    iIntros "#Hinv" (Φ) "!> [Hpx Hentspeer] HΦ".
+    iIntros (Hlogpeer) "#Hpromise".
+    iIntros (Φ) "!> [Hpx Hentspeer] HΦ".
     wp_rec. wp_pures.
 
     (*@ func (px *Paxos) collect(nid uint64, term uint64, ents []string) {      @*)
-    (*@     if !px.iscand {                                                     @*)
-    (*@         return                                                          @*)
-    (*@     }                                                                   @*)
-    (*@                                                                         @*)
-    iNamed "Hpx".
-    iNamed "Hcand".
-    wp_loadField.
-    wp_if_destruct.
-    { iApply "HΦ".
-      iFrame "Hpx".
-      by iFrame "∗ # %".
-    }
-
     (*@     if term < px.termp {                                                @*)
     (*@         // Simply record the response if the peer has a smaller term.   @*)
     (*@         px.respp[nid] = true                                            @*)
     (*@         return                                                          @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    iNamed "Hpx". iNamed "Hcand". iNamed "Honlyc".
     wp_loadField.
     wp_if_destruct.
     { wp_loadField.
@@ -317,8 +391,23 @@ Section collect.
       iIntros "Hrespp".
       wp_pures.
       iApply "HΦ".
-      iFrame "Hpx HentspP".
-      iExists true.
+      set logc := take _ log.
+      iAssert (own_paxos_votes termc termp logc entsp (<[nid := true]> respp) γ)%I
+        as "Hvotes'".
+      { iNamed "Hpromise".
+        iNamed "Hvotes".
+        iDestruct (big_sepM_insert_2 with "Hpastd Hdss") as "Hdss'".
+        iFrame "Hdss'".
+        iPureIntro.
+        split.
+        { by apply map_Forall_insert_2. }
+        split.
+        { admit. }
+        split.
+        { admit. }
+        { by rewrite 2!dom_insert_L Hrspd. }
+      }
+      iFrame "Hpx HentspP HiscandP".
       by iFrame "∗ # %".
     }
 
@@ -348,9 +437,9 @@ Section collect.
       iIntros "Hrespp".
       wp_pures.
       iApply "HΦ".
-      iFrame "Hpx".
-      iExists true.
-      by iFrame "∗ # %".
+      iFrame "Hpx HiscandP".
+      iFrame "∗ # %".
+      admit.
     }
 
     (*@     // Update the largest term and longest log seen so far in this preparing @*)
@@ -363,12 +452,29 @@ Section collect.
     wp_loadField.
     wp_apply (wp_MapInsert with "Hrespp"); first done.
     iIntros "Hrespp".
+  Admitted.
 
+End collect.
+
+Section ascend.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__ascend (px : loc) nids γ :
+    know_paxos_inv γ nids -∗
+    {{{ own_paxos_nominated px nids γ }}}
+      Paxos__ascend #px
+    {{{ RET #(); own_paxos px nids γ }}}.
+  Proof.
+    iIntros "#Hinv" (Φ) "!> Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) ascend() {                                             @*)
     (*@     // Nothing should be done before obtaining a classic quorum of responses. @*)
     (*@     if !px.cquorum(uint64(len(px.respp))) {                             @*)
     (*@         return                                                          @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    iNamed "Hpx". iNamed "Hcand". iNamed "Honlyc".
     wp_loadField.
     wp_apply (wp_MapLen with "Hrespp").
     iIntros "[%Hsz Hrespp]".
@@ -377,22 +483,21 @@ Section collect.
     iIntros (ok) "[Hsc %Hquorum]".
     wp_if_destruct.
     { iApply "HΦ".
-      iFrame "HtermcP HtermlP".
-      iExists true.
-      iFrame "HentsP HentspP".
-      by iFrame "∗ # %".
+      iFrame "HtermcP HtermlP HiscandP HlogP HentspP".
+      iFrame "∗ # %".
+      admit.
     }
 
     (*@     // Add the longest prefix in the largest term among some quorum (i.e., @*)
     (*@     // @px.entsp) to our log starting from @px.lsnc.                    @*)
-    (*@     px.ents = append(px.ents[: px.lsnc], px.entsp...)                   @*)
+    (*@     px.log = append(px.log[: px.lsnc], px.entsp...)                     @*)
     (*@                                                                         @*)
     do 3 wp_loadField.
-    wp_apply (wp_SliceTake_full with "Hents"); first word.
-    iIntros "Hents".
-    iDestruct (own_slice_to_small with "Hentspeer") as "Hentspeer".
-    wp_apply (wp_SliceAppendSlice with "[$Hents $Hentspeer]"); first done.
-    iIntros (entsP') "[Hents Hentspeer]".
+    wp_apply (wp_SliceTake_full with "Hlog"); first word.
+    iIntros "Hlog".
+    iDestruct (own_slice_to_small with "Hentsp") as "Hentsp".
+    wp_apply (wp_SliceAppendSlice with "[$Hlog $Hentsp]"); first done.
+    iIntros (logP') "[Hlog Hentsp]".
     wp_storeField.
 
     (*@     // Update @px.terml to @px.termc here.                              @*)
@@ -405,20 +510,48 @@ Section collect.
     (*@     px.iscand = false                                                   @*)
     (*@     px.isleader = true                                                  @*)
     (*@                                                                         @*)
+    iNamed "Hleader". iNamed "Honlyl".
     do 2 wp_storeField.
-    
-    (*@     // Logical action: Ascend(@px.termc, px.ents).                      @*)
+
+    (*@     // Logical action: Ascend(@px.termc, @px.log).                      @*)
     (*@                                                                         @*)
-    (*@     // TODO: Write @px.ents and @px.terml to disk.                      @*)
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iMod (paxos_inv_ascend with "[] Htermc Hterml Hlogn HinvO")
+      as "(Htermc & Hterml & Hlogn & HinvO & Hps & #Hpsb & #Hacptlb)".
+    { set_solver. }
+    { apply Hton. }
+    { word. }
+    { (* TODO: prove [safe_base_proposal]. *) admit. }
+    iMod ("HinvC" with "HinvO") as "_".
+
+    (*@     // TODO: Write @px.log and @px.terml to disk.                       @*)
     (*@ }                                                                       @*)
     iApply "HΦ".
-    iFrame "HtermcP HtermlP".
-    iExists false.
-    iFrame "HentsP".
+    set log' := _ ++ _.
+    iAssert (own_paxos_leader px termc log' true γ)%I
+      with "[$HisleaderP $HlsnpeersP $Hps]" as "Hleader".
+    { by iFrame "Hpsb". }
+    set entsc' := take (uint.nat lsnc) log'.
+    iDestruct (safe_ledger_above_mono (uint.nat terml) entsc' (uint.nat termc) with "[Hsafecmt]")
+      as "Hsafecmt".
+    { word. }
+    { subst entsc' log'.
+      rewrite take_app_le; last first.
+      { rewrite length_take. lia. }
+      by rewrite take_idemp.
+    }
+    iFrame "Hleader".
+    iFrame "HtermcP HtermlP HiscandP".
     iFrame "∗ # %".
+    iPureIntro.
+    split; first done.
+    split; first done.
+    subst log'.
+    rewrite length_app length_take.
+    lia.
   Admitted.
 
-End collect.
+End ascend.
 
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.

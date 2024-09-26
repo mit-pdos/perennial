@@ -155,7 +155,7 @@ Section prepare.
     split.
     { rewrite extend_length last_length. lia. }
     split.
-    { rewrite extend_length. lia. }
+    { rewrite extend_length length_app Hlends /=. lia. }
     split; last first.
     { rewrite lookup_extend_l; last first.
       { rewrite last_length. lia. }

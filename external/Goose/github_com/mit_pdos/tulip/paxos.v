@@ -16,15 +16,15 @@ Definition Paxos := struct.decl [
   "addrpeers" :: mapT uint64T;
   "me" :: uint64T;
   "sc" :: uint64T;
-  "nid" :: uint64T;
+  "nidme" :: uint64T;
   "mu" :: ptrT;
-  "isleader" :: boolT;
   "hb" :: boolT;
   "termc" :: uint64T;
   "terml" :: uint64T;
-  "ents" :: slice.T stringT;
+  "log" :: slice.T stringT;
   "lsnc" :: uint64T;
   "iscand" :: boolT;
+  "isleader" :: boolT;
   "termp" :: uint64T;
   "entsp" :: slice.T stringT;
   "respp" :: mapT boolT;
@@ -42,8 +42,8 @@ Definition Paxos__Submit: val :=
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       (#0, #0)
     else
-      let: "lsn" := slice.len (struct.loadF Paxos "ents" "px") in
-      struct.storeF Paxos "ents" "px" (SliceAppend stringT (struct.loadF Paxos "ents" "px") "v");;
+      let: "lsn" := slice.len (struct.loadF Paxos "log" "px") in
+      struct.storeF Paxos "log" "px" (SliceAppend stringT (struct.loadF Paxos "log" "px") "v");;
       let: "term" := struct.loadF Paxos "termc" "px" in
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       ("lsn", "term")).
@@ -56,7 +56,7 @@ Definition Paxos__Lookup: val :=
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       (#(str""), #false)
     else
-      let: "v" := SliceGet stringT (struct.loadF Paxos "ents" "px") "lsn" in
+      let: "v" := SliceGet stringT (struct.loadF Paxos "log" "px") "lsn" in
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       ("v", #true)).
 
@@ -73,17 +73,17 @@ Definition Paxos__stepdown: val :=
    hence the content need to be resolved through the leader-election phase. *)
 Definition Paxos__nominate: val :=
   rec: "Paxos__nominate" "px" :=
-    let: "term" := util.NextAligned (struct.loadF Paxos "termc" "px") MAX_NODES (struct.loadF Paxos "nid" "px") in
+    let: "term" := util.NextAligned (struct.loadF Paxos "termc" "px") MAX_NODES (struct.loadF Paxos "nidme" "px") in
     struct.storeF Paxos "termc" "px" "term";;
     struct.storeF Paxos "isleader" "px" #false;;
     let: "lsn" := struct.loadF Paxos "lsnc" "px" in
-    let: "ents" := NewSlice stringT ((slice.len (struct.loadF Paxos "ents" "px")) - "lsn") in
-    SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "ents" "px") "lsn");;
+    let: "ents" := NewSlice stringT ((slice.len (struct.loadF Paxos "log" "px")) - "lsn") in
+    SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "log" "px") "lsn");;
     struct.storeF Paxos "iscand" "px" #true;;
     struct.storeF Paxos "termp" "px" (struct.loadF Paxos "terml" "px");;
     struct.storeF Paxos "entsp" "px" "ents";;
     struct.storeF Paxos "respp" "px" (NewMap uint64T boolT #());;
-    MapInsert (struct.loadF Paxos "respp" "px") (struct.loadF Paxos "nid" "px") #true;;
+    MapInsert (struct.loadF Paxos "respp" "px") (struct.loadF Paxos "nidme" "px") #true;;
     ("term", "lsn").
 
 (* Argument:
@@ -98,8 +98,8 @@ Definition Paxos__prepare: val :=
   rec: "Paxos__prepare" "px" "lsn" :=
     let: "terml" := struct.loadF Paxos "terml" "px" in
     let: "ents" := NewSlice stringT #0 in
-    (if: "lsn" < (slice.len (struct.loadF Paxos "ents" "px"))
-    then SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "ents" "px") "lsn")
+    (if: "lsn" < (slice.len (struct.loadF Paxos "log" "px"))
+    then SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "log" "px") "lsn")
     else #());;
     ("terml", "ents").
 
@@ -119,19 +119,19 @@ Definition Paxos__accept: val :=
         let: "lsnc" := struct.loadF Paxos "lsnc" "px" in
         "lsnc"
       else
-        struct.storeF Paxos "ents" "px" (SliceTake (struct.loadF Paxos "ents" "px") "lsn");;
-        struct.storeF Paxos "ents" "px" (SliceAppendSlice stringT (struct.loadF Paxos "ents" "px") "ents");;
+        struct.storeF Paxos "log" "px" (SliceTake (struct.loadF Paxos "log" "px") "lsn");;
+        struct.storeF Paxos "log" "px" (SliceAppendSlice stringT (struct.loadF Paxos "log" "px") "ents");;
         struct.storeF Paxos "terml" "px" "term";;
-        let: "lsna" := slice.len (struct.loadF Paxos "ents" "px") in
+        let: "lsna" := slice.len (struct.loadF Paxos "log" "px") in
         "lsna")
     else
-      let: "nents" := slice.len (struct.loadF Paxos "ents" "px") in
+      let: "nents" := slice.len (struct.loadF Paxos "log" "px") in
       (if: ("nents" < "lsn") || (("lsn" + (slice.len "ents")) ≤ "nents")
       then "nents"
       else
-        struct.storeF Paxos "ents" "px" (SliceTake (struct.loadF Paxos "ents" "px") "lsn");;
-        struct.storeF Paxos "ents" "px" (SliceAppendSlice stringT (struct.loadF Paxos "ents" "px") "ents");;
-        let: "lsna" := slice.len (struct.loadF Paxos "ents" "px") in
+        struct.storeF Paxos "log" "px" (SliceTake (struct.loadF Paxos "log" "px") "lsn");;
+        struct.storeF Paxos "log" "px" (SliceAppendSlice stringT (struct.loadF Paxos "log" "px") "ents");;
+        let: "lsna" := slice.len (struct.loadF Paxos "log" "px") in
         "lsna")).
 
 Definition Paxos__commit: val :=
@@ -151,36 +151,37 @@ Definition Paxos__learn: val :=
       Paxos__commit "px" "lsn";;
       #()).
 
-Definition Paxos__cquorum: val :=
-  rec: "Paxos__cquorum" "px" "n" :=
-    (quorum.ClassicQuorum (struct.loadF Paxos "sc" "px")) ≤ "n".
-
 Definition Paxos__collect: val :=
   rec: "Paxos__collect" "px" "nid" "term" "ents" :=
-    (if: (~ (struct.loadF Paxos "iscand" "px"))
-    then #()
+    (if: "term" < (struct.loadF Paxos "termp" "px")
+    then
+      MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
+      #()
     else
-      (if: "term" < (struct.loadF Paxos "termp" "px")
+      (if: ("term" = (struct.loadF Paxos "termp" "px")) && ((slice.len "ents") ≤ (slice.len (struct.loadF Paxos "entsp" "px")))
       then
         MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
         #()
       else
-        (if: ("term" = (struct.loadF Paxos "termp" "px")) && ((slice.len "ents") ≤ (slice.len (struct.loadF Paxos "entsp" "px")))
-        then
-          MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
-          #()
-        else
-          struct.storeF Paxos "termp" "px" "term";;
-          struct.storeF Paxos "entsp" "px" "ents";;
-          MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
-          (if: (~ (Paxos__cquorum "px" (MapLen (struct.loadF Paxos "respp" "px"))))
-          then #()
-          else
-            struct.storeF Paxos "ents" "px" (SliceAppendSlice stringT (SliceTake (struct.loadF Paxos "ents" "px") (struct.loadF Paxos "lsnc" "px")) (struct.loadF Paxos "entsp" "px"));;
-            struct.storeF Paxos "terml" "px" (struct.loadF Paxos "termc" "px");;
-            struct.storeF Paxos "iscand" "px" #false;;
-            struct.storeF Paxos "isleader" "px" #true;;
-            #())))).
+        struct.storeF Paxos "termp" "px" "term";;
+        struct.storeF Paxos "entsp" "px" "ents";;
+        MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
+        #())).
+
+Definition Paxos__cquorum: val :=
+  rec: "Paxos__cquorum" "px" "n" :=
+    (quorum.ClassicQuorum (struct.loadF Paxos "sc" "px")) ≤ "n".
+
+Definition Paxos__ascend: val :=
+  rec: "Paxos__ascend" "px" :=
+    (if: (~ (Paxos__cquorum "px" (MapLen (struct.loadF Paxos "respp" "px"))))
+    then #()
+    else
+      struct.storeF Paxos "log" "px" (SliceAppendSlice stringT (SliceTake (struct.loadF Paxos "log" "px") (struct.loadF Paxos "lsnc" "px")) (struct.loadF Paxos "entsp" "px"));;
+      struct.storeF Paxos "terml" "px" (struct.loadF Paxos "termc" "px");;
+      struct.storeF Paxos "iscand" "px" #false;;
+      struct.storeF Paxos "isleader" "px" #true;;
+      #()).
 
 Definition Paxos__forward: val :=
   rec: "Paxos__forward" "px" "nid" "lsn" :=
@@ -212,6 +213,10 @@ Definition Paxos__ltterm: val :=
 Definition Paxos__current: val :=
   rec: "Paxos__current" "px" :=
     struct.loadF Paxos "termc" "px".
+
+Definition Paxos__nominated: val :=
+  rec: "Paxos__nominated" "px" :=
+    struct.loadF Paxos "iscand" "px".
 
 Definition Paxos__leading: val :=
   rec: "Paxos__leading" "px" :=
@@ -280,8 +285,8 @@ Definition Paxos__LeaderSession: val :=
           "ok" <-[boolT] "1_ret";;
           let: "ents" := NewSlice stringT #0 in
           (if: ![boolT] "ok"
-          then SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "ents" "px") (![uint64T] "lsne"))
-          else "lsne" <-[uint64T] (slice.len (struct.loadF Paxos "ents" "px")));;
+          then SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "log" "px") (![uint64T] "lsne"))
+          else "lsne" <-[uint64T] (slice.len (struct.loadF Paxos "log" "px")));;
           Fork (let: "data" := message.EncodePaxosAppendEntriesRequest "termc" "lsnc" (![uint64T] "lsne") "ents" in
                 Paxos__Send "px" "nid" "data"));;
         Mutex__Unlock (struct.loadF Paxos "mu" "px");;
@@ -349,9 +354,15 @@ Definition Paxos__ResponseSession: val :=
           else
             (if: "kind" = message.MSG_PAXOS_REQUEST_VOTE
             then
-              Paxos__collect "px" "nid" (struct.get message.PaxosResponse "TermEntries" "resp") (struct.get message.PaxosResponse "Entries" "resp");;
-              Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-              Continue
+              (if: (~ (Paxos__nominated "px"))
+              then
+                Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                Continue
+              else
+                Paxos__collect "px" "nid" (struct.get message.PaxosResponse "TermEntries" "resp") (struct.get message.PaxosResponse "Entries" "resp");;
+                Paxos__ascend "px";;
+                Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                Continue)
             else
               (if: "kind" = message.MSG_PAXOS_APPEND_ENTRIES
               then

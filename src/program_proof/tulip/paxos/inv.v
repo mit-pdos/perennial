@@ -92,15 +92,24 @@ Section inv.
   Definition safe_ledger γ nids v : iProp Σ :=
     ∃ t, safe_ledger_in γ nids t v.
 
+  Definition safe_ledger_above γ nids t v : iProp Σ :=
+    ∃ t', safe_ledger_in γ nids t' v ∗ ⌜(t' ≤ t)%nat⌝.
+
+  Lemma safe_ledger_above_mono {γ nids} t v t' :
+    (t ≤ t')%nat ->
+    safe_ledger_above γ nids t v -∗
+    safe_ledger_above γ nids t' v.
+  Proof. iIntros (Hle) "(%p & Hsafe & %Hp)". iExists p. iFrame. iPureIntro. lia. Qed.
+
   Definition equal_latest_longest_proposal_nodedec (dssq : gmap u64 (list nodedec)) t v :=
     equal_latest_longest_proposal_with (mbind nodedec_to_ledger) dssq t v.
 
   Definition safe_base_proposal γ nids t v : iProp Σ :=
     ∃ dssqlb,
       "#Hdsq"    ∷ ([∗ map] nid ↦ ds ∈ dssqlb, is_past_nodedecs_lb γ nid ds) ∗
-      "%Hlen"    ∷ ⌜map_Forall (λ _ ds, (t ≤ length ds)%nat) dssqlb⌝ ∗
-      "%Hquorum" ∷ ⌜cquorum nids (dom dssqlb)⌝ ∗
-      "%Heq"     ∷ ⌜equal_latest_longest_proposal_nodedec dssqlb t v⌝.
+      "%Hlen"    ∷ ⌜map_Forall (λ _ ds, (length ds = t)%nat) dssqlb⌝ ∗
+      "%Heq"     ∷ ⌜equal_latest_longest_proposal_nodedec dssqlb t v⌝ ∗
+      "%Hquorum" ∷ ⌜cquorum nids (dom dssqlb)⌝.
 
   Definition latest_term_before_nodedec t (ds : list nodedec) :=
     latest_term_before_with (mbind nodedec_to_ledger) t ds.
@@ -111,6 +120,10 @@ Section inv.
 
   Definition latest_term_nodedec ds :=
     latest_term_before_nodedec (length ds) ds.
+
+  Lemma latest_term_nodedec_unfold ds :
+    latest_term_nodedec ds = latest_term_before_nodedec (length ds) ds.
+  Proof. done. Qed.
 
   Lemma latest_term_before_nodedec_app t ds dsapp :
     (t ≤ length ds)%nat ->
@@ -295,7 +308,7 @@ Section inv.
   Definition past_nodedecs_latest_before γ nid termc terml v : iProp Σ :=
     ∃ ds,
       "#Hpastd"  ∷ is_past_nodedecs_lb γ nid ds ∗
-      "%Hlends"  ∷ ⌜(termc ≤ length ds)%nat⌝ ∗
+      "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
       "%Hlatest" ∷ ⌜latest_term_nodedec ds = terml⌝ ∗
       "%Hacpt"   ∷ ⌜ds !! terml = Some (Accept v)⌝.
 
@@ -437,7 +450,10 @@ Section lemma.
       iDestruct (big_sepM_lookup with "Hm") as "Hinv"; first apply Hmx.
       iNamed "Hinv". simpl.
       iDestruct (past_nodedecs_prefix with "Hdsqx Hpastd") as %Hprefix.
-      by specialize (Hlen _ _ Hdslb).
+      iPureIntro.
+      split; first done.
+      specialize (Hlen _ _ Hdslb). simpl in Hlen.
+      lia.
     }
     pose proof (equal_latest_longest_proposal_nodedec_prefix _ _ _ _ Hprefix Heq) as Heq'.
     iAssert (⌜map_Forall2 (λ _ ds psa, fixed_proposals ds psa ∧ (t ≤ length ds)%nat) dssq bsq⌝)%I

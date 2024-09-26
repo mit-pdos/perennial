@@ -77,6 +77,15 @@ Section def.
     let ts := fmap (latest_term_before_with f t) ms in
     map_fold latest_term_before_quorum_step O ts.
 
+  Lemma latest_term_before_quorum_with_singleton `{Lookup nat B M} f (x : A) (m : M) t tlatest :
+    latest_term_before_with f t m = tlatest ->
+    latest_term_before_quorum_with f {[x := m]} t = tlatest.
+  Proof.
+    intros Hlatest.
+    rewrite /latest_term_before_quorum_with map_fmap_singleton map_fold_singleton.
+    by rewrite /latest_term_before_quorum_step Nat.max_0_r.
+  Qed.
+
   Lemma latest_term_before_quorum_with_lt `{Lookup nat B M} f (ms : gmap A M) t:
     t ≠ O ->
     (latest_term_before_quorum_with f ms t < t)%nat.
@@ -127,6 +136,15 @@ Section def.
     (f : option B -> option ledger) (ms : gmap A M) t :=
     let ovs := fmap (ledger_in_term_with f t) ms in
     longest_proposal ovs.
+
+  Lemma longest_proposal_in_term_with_singleton `{Lookup nat B M} f (x : A) (m : M) t v :
+    f (m !! t) = Some v ->
+    longest_proposal_in_term_with f {[x := m]} t = Some v.
+  Proof.
+    intros Hv.
+    rewrite /longest_proposal_in_term_with map_fmap_singleton.
+    by rewrite /longest_proposal map_fold_singleton /ledger_in_term_with.
+  Qed.
 
   Definition longest_proposal_in_term bs t :=
     longest_proposal_in_term_with id bs t.
