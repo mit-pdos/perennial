@@ -70,6 +70,16 @@ Section lemma.
     take (length l1) l2 = l1.
   Proof. intros [l Happ]. by rewrite Happ take_app_length. Qed.
 
+  Lemma drop_lt_inv l n :
+    drop n l ≠ [] -> n < length l.
+  Proof.
+    intros Hnnil.
+    apply dec_stable.
+    intros Hge.
+    rewrite Nat.nlt_ge in Hge.
+    by apply drop_ge in Hge.
+  Qed.
+
   Lemma NoDup_prefix l1 l2 :
     prefix l1 l2 ->
     NoDup l2 ->

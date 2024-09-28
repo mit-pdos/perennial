@@ -29,11 +29,25 @@ Qed.
 Section ascend.
   Context `{!paxos_ghostG Σ}.
 
+  Lemma node_inv_past_nodedecs_impl_prefix_growing_ledger γ nid ds dslb psa t v :
+    dslb !! t = Some (Accept v) ->
+    is_past_nodedecs_lb γ nid dslb -∗
+    node_inv_ds_psa γ nid ds psa -∗
+    prefix_growing_ledger γ t v.
+  Proof.
+    iIntros (Hv) "Hdslb Hnode".
+    iNamed "Hnode". iNamed "Hpsa".
+    iDestruct (past_nodedecs_prefix with "Hdslb Hpastd") as %Hprefix.
+    pose proof (prefix_lookup_Some _ _ _ _ Hv Hprefix) as Hdst.
+    specialize (Hfixed _ _ Hdst).
+    by iDestruct (big_sepM_lookup with "Hpsaubs") as "?"; first apply Hfixed.
+  Qed.
+
   Lemma paxos_inv_ascend γ nids nid termc terml logn logn' :
     nid ∈ nids ->
     is_term_of_node nid termc ->
     (terml < termc)%nat ->
-    safe_base_proposal γ nids termc logn' -∗
+    safe_base_proposal_by_length γ nids termc logn' -∗
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid terml -∗
     own_node_ledger_half γ nid logn -∗
@@ -46,8 +60,64 @@ Section ascend.
     is_base_proposal_receipt γ termc logn' ∗
     is_accepted_proposal_lb γ nid termc logn'.
   Proof.
-    iIntros (Hnid Hton Hlt) "#Hsafe Htermc Hterml Hlogn Hinv".
+    iIntros (Hnid Hton Hlt) "#Hsafelen Htermc Hterml Hlogn Hinv".
     iNamed "Hinv".
+    iAssert (safe_base_proposal γ nids termc logn')%nat as "#Hsafe".
+    { iNamed "Hsafelen". iNamed "Hvotes".
+      rewrite Hdomdss in Hquorum.
+      iFrame "Hdss %".
+      (* Obtain two nodes [nidx], the node known to have the longest ledger, and
+      [nidy], the node to be proved to have the longest ledger. *)
+      destruct Hvlatest as (nidx & dsx & Hdsx & Hlognx).
+      pose proof (longest_proposal_in_term_with_spec (mbind nodedec_to_ledger) dss p) as Hspec.
+      destruct (longest_proposal_in_term_with _ _ _) as [logny |] eqn:Hlongest; last first.
+      { exfalso.
+        specialize (Hspec _ _ Hdsx).
+        by rewrite Hlognx in Hspec.
+      }
+      destruct Hspec as [(nidy & dsy & Hdsy & Hlogny) Hge].
+      rewrite bind_Some in Hlogny.
+      destruct Hlogny as (d & Hlogny & Hd).
+      apply nodedec_to_ledger_Some_inv in Hd. subst d.
+      iAssert (prefix_growing_ledger γ p logn')%I as "#Hpfgx".
+      { iDestruct (big_sepM_lookup with "Hdss") as "#Hdsx"; first apply Hdsx.
+        assert (is_Some (termlm !! nidx)) as [terml' Hterml'].
+        { rewrite -elem_of_dom Hdomtermlm.
+          apply elem_of_dom_2 in Hdsx.
+          destruct Hquorum as [Hincl _].
+          set_solver.
+        }
+        iDestruct (big_sepM_lookup with "Hnodes") as "Hnode"; first apply Hterml'.
+        iDestruct (node_inv_extract_ds_psa with "Hnode") as (dss' bs') "[_ Hnode]".
+        iApply (node_inv_past_nodedecs_impl_prefix_growing_ledger with "Hdsx Hnode").
+        apply Hlognx.
+      }
+      iAssert (prefix_growing_ledger γ p logny)%I as "#Hpfgy".
+      { iDestruct (big_sepM_lookup with "Hdss") as "#Hdsy"; first apply Hdsy.
+        assert (is_Some (termlm !! nidy)) as [termly Htermly].
+        { rewrite -elem_of_dom Hdomtermlm.
+          apply elem_of_dom_2 in Hdsy.
+          destruct Hquorum as [Hincl _].
+          set_solver.
+        }
+        iDestruct (big_sepM_lookup with "Hnodes") as "Hnode"; first apply Htermly.
+        iDestruct (node_inv_extract_ds_psa with "Hnode") as (dssy bsy) "[_ Hnode]".
+        iApply (node_inv_past_nodedecs_impl_prefix_growing_ledger with "Hdsy Hnode").
+        apply Hlogny.
+      }
+      iDestruct (prefix_growing_ledger_impl_prefix with "Hpfgx Hpfgy") as %Hprefix.
+      iPureIntro.
+      rewrite /equal_latest_longest_proposal_nodedec /equal_latest_longest_proposal_with.
+      case_decide as Htermc; first lia.
+      rewrite -latest_term_before_quorum_nodedec_unfold Hlatestq.
+      pose proof (length_of_longest_ledger_in_term_spec _ _ _ _ _ Hdsy Hlogny) as Hle.
+      rewrite Hlongestq in Hle.
+      specialize (Hge _ _ Hdsx).
+      rewrite Hlognx /= in Hge.
+      assert (Heqlen : length logny = length logn') by lia.
+      replace logn' with logny; first done.
+      by destruct Hprefix as [Hprefix | Hprefix]; rewrite (prefix_length_eq _ _ Hprefix).
+    }
     pose proof Hnid as Hterml.
     rewrite -Hdomtermlm elem_of_dom in Hterml.
     destruct Hterml as [terml' Hterml].

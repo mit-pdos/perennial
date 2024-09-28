@@ -36,6 +36,19 @@ Section inv.
   Definition prefix_growing_ledger γ t v : iProp Σ :=
     ∃ vub, is_proposal_lb γ t vub ∗ ⌜prefix v vub⌝.
 
+  Lemma prefix_growing_ledger_impl_prefix γ t v1 v2 :
+    prefix_growing_ledger γ t v1 -∗
+    prefix_growing_ledger γ t v2 -∗
+    ⌜prefix v1 v2 ∨ prefix v2 v1⌝.
+  Proof.
+    iIntros "(%vub1 & Hlb1 & %Hprefix1) (%vub2 & Hlb2 & %Hprefix2)".
+    iDestruct (proposal_lb_prefix with "Hlb1 Hlb2") as %Hprefix.
+    iPureIntro.
+    destruct Hprefix as [Hprefix | Hprefix].
+    - by apply (prefix_common_ub _ _ vub2); first trans vub1.
+    - by apply (prefix_common_ub _ _ vub1); last trans vub2.
+  Qed.
+
   Definition node_inv γ nid terml : iProp Σ :=
     ∃ ds psa termc logn,
       "Hds" ∷ own_past_nodedecs γ nid ds ∗
@@ -305,6 +318,120 @@ Section inv.
     done.
   Qed.
 
+  Definition length_of_longest_ledger (vs : gmap u64 ledger) :=
+    map_fold (λ _ cur prev, (cur `max` prev)%nat) O (fmap length vs).
+
+  Lemma length_of_longest_ledger_unfold vs :
+    length_of_longest_ledger vs = map_fold (λ _ cur prev, (cur `max` prev)%nat) O (fmap length vs).
+  Proof. done. Qed.
+
+  Lemma length_of_longest_ledger_spec vs nid v :
+    vs !! nid = Some v ->
+    (length v ≤ length_of_longest_ledger vs)%nat.
+  Proof.
+    intros Hv.
+    induction vs as [| nidx v' vs Hnone Hfold IH] using map_first_key_ind.
+    { done. }
+    rewrite /length_of_longest_ledger.
+    rewrite fmap_insert map_fold_insert_first_key; last first.
+    { by rewrite -fmap_insert map_first_key_fmap. }
+    { by rewrite lookup_fmap Hnone. }
+    destruct (decide (nidx = nid)) as [-> | Hne].
+    { rewrite lookup_insert in Hv. inv Hv. lia. }
+    rewrite lookup_insert_ne in Hv; last done.
+    specialize (IH Hv).
+    rewrite /length_of_longest_ledger in IH.
+    lia.
+  Qed.
+
+  Definition length_of_longest_ledger_in_term (dss : gmap u64 (list nodedec)) t :=
+    let vs := omap (ledger_in_term_with (mbind nodedec_to_ledger) t) dss in
+    length_of_longest_ledger vs.
+
+  Lemma length_of_longest_ledger_in_term_spec dss nid ds t v :
+    dss !! nid = Some ds ->
+    ds !! t = Some (Accept v) ->
+    (length v ≤ length_of_longest_ledger_in_term dss t)%nat.
+  Proof.
+    intros Hds Hv.
+    rewrite /length_of_longest_ledger_in_term.
+    apply (length_of_longest_ledger_spec _ nid).
+    rewrite lookup_omap_Some.
+    exists ds.
+    by rewrite /ledger_in_term_with Hv.
+  Qed.
+
+  Lemma length_of_longest_ledger_in_term_singleton nid ds t v :
+    ds !! t = Some (Accept v) ->
+    length_of_longest_ledger_in_term {[nid := ds]} t = length v.
+  Proof.
+    intros Hv.
+    rewrite /length_of_longest_ledger_in_term omap_singleton /ledger_in_term_with Hv /=.
+    rewrite /length_of_longest_ledger map_fmap_singleton map_fold_singleton.
+    lia.
+  Qed.
+
+  Lemma length_of_longest_ledger_in_term_insert_None dss nid ds t :
+    dss !! nid = None ->
+    mbind nodedec_to_ledger (ds !! t) = None ->
+    length_of_longest_ledger_in_term (<[nid := ds]> dss) t =
+    length_of_longest_ledger_in_term dss t.
+  Proof.
+    intros Hnid Hnone.
+    rewrite /length_of_longest_ledger_in_term omap_insert.
+    rewrite /ledger_in_term_with Hnone.
+    by rewrite -omap_delete delete_notin.
+  Qed.
+
+  Lemma length_of_longest_ledger_in_term_insert_Some_length_le dss nid ds t v :
+    dss !! nid = None ->
+    mbind nodedec_to_ledger (ds !! t) = Some v ->
+    (length v ≤ length_of_longest_ledger_in_term dss t)%nat ->
+    length_of_longest_ledger_in_term (<[nid := ds]> dss) t =
+    length_of_longest_ledger_in_term dss t.
+  Proof.
+    intros Hnid Hv Hlen.
+    rewrite /length_of_longest_ledger_in_term omap_insert.
+    rewrite /ledger_in_term_with Hv {1}/length_of_longest_ledger.
+    rewrite fmap_insert map_fold_insert_L; last first.
+    { by rewrite lookup_fmap lookup_omap Hnid. }
+    { intros x1 x2 y1 y2 y _ _ _. lia. }
+    rewrite -length_of_longest_ledger_unfold.
+    rewrite /length_of_longest_ledger_in_term /ledger_in_term_with in Hlen.
+    lia.
+  Qed.
+
+  Lemma length_of_longest_ledger_in_term_insert_Some_length_ge dss nid ds t v :
+    dss !! nid = None ->
+    mbind nodedec_to_ledger (ds !! t) = Some v ->
+    (length_of_longest_ledger_in_term dss t ≤ length v)%nat ->
+    length_of_longest_ledger_in_term (<[nid := ds]> dss) t = length v.
+  Proof.
+    intros Hnid Hv Hlen.
+    rewrite /length_of_longest_ledger_in_term omap_insert.
+    rewrite /ledger_in_term_with Hv {1}/length_of_longest_ledger.
+    rewrite fmap_insert map_fold_insert_L; last first.
+    { by rewrite lookup_fmap lookup_omap Hnid. }
+    { intros x1 x2 y1 y2 y _ _ _. lia. }
+    rewrite -length_of_longest_ledger_unfold.
+    rewrite /length_of_longest_ledger_in_term /ledger_in_term_with in Hlen.
+    lia.
+  Qed.
+
+  Definition votes_in γ nids t p v : iProp Σ :=
+    ∃ dss,
+      "#Hdss"      ∷ ([∗ map] nid ↦ ds ∈ dss, is_past_nodedecs_lb γ nid ds) ∗
+      "%Hlendss"   ∷ ⌜map_Forall (λ _ ds, length ds = t) dss⌝ ∗
+      "%Hlatestq"  ∷ ⌜latest_term_before_quorum_nodedec dss t = p⌝ ∗
+      "%Hlongestq" ∷ ⌜length_of_longest_ledger_in_term dss p = length v⌝ ∗
+      "%Hvlatest"  ∷ ⌜map_Exists (λ _ ds, ds !! p = Some (Accept v)) dss⌝ ∗
+      "%Hdomdss"   ∷ ⌜nids = dom dss⌝.
+
+  Definition safe_base_proposal_by_length γ nids t v : iProp Σ :=
+    ∃ nidsq p,
+      "#Hvotes"  ∷ votes_in γ nidsq t p v ∗
+      "%Hquorum" ∷ ⌜cquorum nids nidsq⌝.
+
   Definition past_nodedecs_latest_before γ nid termc terml v : iProp Σ :=
     ∃ ds,
       "#Hpastd"  ∷ is_past_nodedecs_lb γ nid ds ∗
@@ -542,6 +669,11 @@ Section lemma.
     by trans vlb.
   Qed.
 
+  Lemma paxos_inv_impl_nodes_inv γ nids :
+    paxos_inv γ nids -∗
+    ∃ termlm, ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml) ∗ ⌜dom termlm = nids⌝.
+  Proof. iNamed 1. by iFrame. Qed.
+
   Lemma node_inv_extract_ds_psa γ nid terml :
     node_inv γ nid terml -∗
     ∃ ds psa, node_inv_without_ds_psa γ nid terml ds psa ∗
@@ -680,5 +812,45 @@ Section lemma.
     split; first apply Hva.
     by trans v'.
   Qed.
+
+  Lemma accepted_proposal_past_nodedecs_impl_prefix γ dss bs nid1 nid2 dslb t v1 v2 :
+    nid1 ∈ dom bs ->
+    nid2 ∈ dom bs ->
+    dslb !! t = Some (Accept v2) ->
+    is_accepted_proposal_lb γ nid1 t v1 -∗
+    is_past_nodedecs_lb γ nid2 dslb -∗
+    ([∗ map] nid ↦ ds; psa ∈ dss; bs, node_inv_ds_psa γ nid ds psa) -∗
+    ⌜prefix v1 v2 ∨ prefix v2 v1⌝.
+  Proof.
+    iIntros (Hnid1 Hnid2 Hv2) "Hv1 Hdslb Hnodes".
+    iAssert (prefix_growing_ledger γ t v1)%I as "#Hvub1".
+    { rewrite elem_of_dom in Hnid1.
+      destruct Hnid1 as [ps Hps].
+      iDestruct (nodes_inv_ds_psa_impl_nodes_inv_psa with "Hnodes") as "Hnodes".
+      iDestruct (big_sepM_lookup _ _ nid1 with "Hnodes") as "Hnode"; first apply Hps.
+      iNamed "Hnode".
+      iDestruct (accepted_proposal_lb_lookup with "Hv1 Hpsa") as %(vub & Hvub & Hprefix).
+      iDestruct (big_sepM_lookup with "Hpsaubs") as (vub') "[Hvub' %Hprefix']"; first apply Hvub.
+      iExists vub'.
+      iFrame "Hvub'".
+      iPureIntro.
+      by trans vub.
+    }
+    iDestruct (big_sepM2_dom with "Hnodes") as %Hdom.
+    assert (is_Some (dss !! nid2)) as [ds Hds].
+    { by rewrite -elem_of_dom Hdom. }
+    assert (is_Some (bs !! nid2)) as [psa Hpsa].
+    { by rewrite -elem_of_dom. }
+    iDestruct (big_sepM2_lookup with "Hnodes") as "Hnode"; [apply Hds | apply Hpsa |].
+    iNamed "Hnode".
+    iDestruct (past_nodedecs_prefix with "Hdslb Hpastd") as %Hprefix.
+    pose proof (prefix_lookup_Some _ _ _ _ Hv2 Hprefix) as Hdst.
+    specialize (Hfixed _ _ Hdst). simpl in Hfixed.
+    iNamed "Hpsa".
+    iDestruct (big_sepM_lookup with "Hpsaubs") as "#Hvub2".
+    { apply Hfixed. }
+    iApply (prefix_growing_ledger_impl_prefix with "Hvub1 Hvub2").
+  Qed.
+
 
 End lemma.

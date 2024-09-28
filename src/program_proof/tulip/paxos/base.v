@@ -52,6 +52,7 @@ Section def.
             end
     end.
 
+  (* XXX: duplicate lemma *)
   Lemma latest_term_before_with_lt `{Lookup nat B M} f t (m : M) :
     t ≠ O ->
     (latest_term_before_with f t m < t)%nat.
@@ -66,6 +67,21 @@ Section def.
     lia.
   Qed.
 
+  Lemma latest_term_before_with_None `{Lookup nat B M} f t p (m : M) :
+    (latest_term_before_with f t m < p < t)%nat ->
+    f (m !! p) = None.
+  Proof.
+    intros Hp.
+    induction t as [| t IH]; first lia.
+    destruct (f (m !! t)) as [v |] eqn:Hv.
+    { rewrite /latest_term_before_with Hv in Hp. lia. }
+    destruct (decide (p = t)) as [-> | Hne]; first apply Hv.
+    apply IH.
+    rewrite /latest_term_before_with Hv in Hp.
+    rewrite /latest_term_before_with.
+    lia.
+  Qed.
+
   Definition latest_term_before t ps :=
     latest_term_before_with id t ps.
 
@@ -77,13 +93,143 @@ Section def.
     let ts := fmap (latest_term_before_with f t) ms in
     map_fold latest_term_before_quorum_step O ts.
 
-  Lemma latest_term_before_quorum_with_singleton `{Lookup nat B M} f (x : A) (m : M) t tlatest :
-    latest_term_before_with f t m = tlatest ->
-    latest_term_before_quorum_with f {[x := m]} t = tlatest.
+  Lemma latest_term_before_quorum_with_singleton `{Lookup nat B M} f (x : A) (m : M) t p :
+    latest_term_before_with f t m = p ->
+    latest_term_before_quorum_with f {[x := m]} t = p.
   Proof.
-    intros Hlatest.
+    intros Hp.
     rewrite /latest_term_before_quorum_with map_fmap_singleton map_fold_singleton.
     by rewrite /latest_term_before_quorum_step Nat.max_0_r.
+  Qed.
+
+  Lemma latest_term_before_quorum_with_insert_le `{Lookup nat B M}
+    f (ms : gmap A M) (x : A) (m : M) t p :
+    ms !! x = None ->
+    latest_term_before_with f t m = p ->
+    (p ≤ latest_term_before_quorum_with f ms t)%nat ->
+    latest_term_before_quorum_with f (<[x := m]> ms) t = latest_term_before_quorum_with f ms t.
+  Proof.
+    intros Hnone Hp Hle.
+    rewrite /latest_term_before_quorum_with fmap_insert map_fold_insert_L; last first.
+    { by rewrite lookup_fmap Hnone /=. }
+    { intros x1 x2 n1 n2 n _ _ _. rewrite /latest_term_before_quorum_step. lia. }
+    rewrite Hp {1}/latest_term_before_quorum_step.
+    rewrite /latest_term_before_quorum_with in Hle.
+    lia.
+  Qed.
+
+  Lemma latest_term_before_quorum_with_insert_ge `{Lookup nat B M}
+    f (ms : gmap A M) (x : A) (m : M) t s :
+    ms !! x = None ->
+    latest_term_before_with f t m = s ->
+    (latest_term_before_quorum_with f ms t ≤ s)%nat ->
+    latest_term_before_quorum_with f (<[x := m]> ms) t = s.
+  Proof.
+    intros Hnone Hs Hge.
+    rewrite /latest_term_before_quorum_with fmap_insert map_fold_insert_L; last first.
+    { by rewrite lookup_fmap Hnone /=. }
+    { intros x1 x2 n1 n2 n _ _ _. rewrite /latest_term_before_quorum_step. lia. }
+    rewrite Hs {1}/latest_term_before_quorum_step.
+    rewrite /latest_term_before_quorum_with in Hge.
+    lia.
+  Qed.
+
+  
+  Lemma latest_before_quorum_step_O_or_exists (ts : gmap A nat) :
+    map_fold latest_term_before_quorum_step O ts = O ∨
+    ∃ x, ts !! x = Some (map_fold latest_term_before_quorum_step O ts).
+  Proof.
+    apply (map_fold_weak_ind (λ p r, p = O ∨ ∃ x, r !! x = Some p)); first by left.
+    intros x n m b Hmx IHm.
+    unfold latest_term_before_quorum_step.
+    destruct IHm as [-> | [y Hy]]; right.
+    { exists x. rewrite lookup_insert. by rewrite Nat.max_0_r. }
+    destruct (decide (b ≤ n)%nat).
+    { exists x. rewrite lookup_insert. by replace (_ `max` _)%nat with n by lia. }
+    exists y.
+    assert (Hne : x ≠ y) by set_solver.
+    rewrite lookup_insert_ne; last done. rewrite Hy.
+    by replace (_ `max` _)%nat with b by lia.
+  Qed.
+
+  Lemma latest_term_before_quorum_step_ge (ts : gmap A nat) :
+    map_Forall (λ _ t, (t ≤ map_fold latest_term_before_quorum_step O ts)%nat) ts.
+  Proof.
+    intros x t.
+    apply (map_fold_weak_ind (λ p r, (r !! x = Some t -> t ≤ p)%nat)); first done.
+    intros y n m b _ Hnr Hn.
+    unfold latest_term_before_quorum_step.
+    destruct (decide (y = x)) as [-> | Hne].
+    { rewrite lookup_insert in Hn. inversion_clear Hn. lia. }
+    rewrite lookup_insert_ne in Hn; last done.
+    specialize (Hnr Hn).
+    lia.
+  Qed.
+
+  Lemma latest_term_before_quorum_ge `{Lookup nat B M} f ms t :
+    map_Forall
+      (λ _ (m : M), (latest_term_before_with f t m ≤ latest_term_before_quorum_with f ms t)%nat)
+      ms.
+  Proof.
+    intros x l Hlookup.
+    unfold latest_term_before_quorum_with.
+    pose proof (latest_term_before_quorum_step_ge (latest_term_before_with f t <$> ms)) as Hstep.
+    rewrite map_Forall_lookup in Hstep.
+    apply (Hstep x (latest_term_before_with f t l)).
+    rewrite lookup_fmap.
+    by rewrite Hlookup.
+  Qed.
+
+  Lemma latest_before_quorum_step_in (ts : gmap A nat) :
+    ts ≠ ∅ ->
+    map_Exists (λ _ t, t = map_fold latest_term_before_quorum_step O ts) ts.
+  Proof.
+    intros Hnonempty.
+    destruct (latest_before_quorum_step_O_or_exists ts) as [Hz | [x Hx]]; last first.
+    { exists x. by eauto. }
+    rewrite Hz.
+    destruct (decide (O ∈ (map_img ts : gset nat))) as [Hin | Hnotin].
+    { rewrite elem_of_map_img in Hin.
+      destruct Hin as [x Hx].
+      by exists x, O.
+    }
+    assert (Hallgz : ∀ t, t ∈ (map_img ts : gset nat) -> (0 < t)%nat).
+    { intros t Ht. assert (Hnz : t ≠ O) by set_solver. lia. }
+    apply map_choose in Hnonempty.
+    destruct Hnonempty as (x & n & Hxn).
+    apply latest_term_before_quorum_step_ge in Hxn as Hle.
+    rewrite Hz in Hle.
+    apply (elem_of_map_img_2 (SA:=gset nat)) in Hxn.
+    apply Hallgz in Hxn.
+    lia.
+  Qed.
+
+  Lemma latest_term_before_quorum_in `{Lookup nat B M} f ms t :
+    ms ≠ ∅ ->
+    map_Exists
+      (λ _ (m : M), (latest_term_before_with f t m = latest_term_before_quorum_with f ms t)%nat)
+      ms.
+  Proof.
+    intros Hnonempty.
+    unfold latest_term_before_quorum_with.
+    pose proof (latest_before_quorum_step_in (latest_term_before_with f t <$> ms)) as Hstep.
+    rewrite fmap_empty_iff in Hstep.
+    specialize (Hstep Hnonempty).
+    destruct Hstep as (x & m & Hlookup & <-).
+    rewrite lookup_fmap fmap_Some in Hlookup.
+    destruct Hlookup as (l & Hlookup & Heq).
+    by exists x, l.
+  Qed.
+
+  Lemma latest_term_before_quorum_with_None `{Lookup nat B M}
+    f (ms : gmap A M) t p :
+    (latest_term_before_quorum_with f ms t < p < t)%nat ->
+    map_Forall (λ _ m, f (m !! p) = None) ms.
+  Proof.
+    intros Hp x m Hm.
+    apply (latest_term_before_with_None _ t).
+    pose proof (latest_term_before_quorum_ge f ms t _ _ Hm) as Hle. simpl in Hle.
+    lia.
   Qed.
 
   Lemma latest_term_before_quorum_with_lt `{Lookup nat B M} f (ms : gmap A M) t:
@@ -136,15 +282,6 @@ Section def.
     (f : option B -> option ledger) (ms : gmap A M) t :=
     let ovs := fmap (ledger_in_term_with f t) ms in
     longest_proposal ovs.
-
-  Lemma longest_proposal_in_term_with_singleton `{Lookup nat B M} f (x : A) (m : M) t v :
-    f (m !! t) = Some v ->
-    longest_proposal_in_term_with f {[x := m]} t = Some v.
-  Proof.
-    intros Hv.
-    rewrite /longest_proposal_in_term_with map_fmap_singleton.
-    by rewrite /longest_proposal map_fold_singleton /ledger_in_term_with.
-  Qed.
 
   Definition longest_proposal_in_term bs t :=
     longest_proposal_in_term_with id bs t.

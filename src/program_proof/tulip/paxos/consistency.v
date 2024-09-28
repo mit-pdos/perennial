@@ -185,92 +185,6 @@ Section lemma.
     by rewrite Hv in Hspec.
   Qed.
 
-  Lemma latest_before_quorum_step_O_or_exists (ts : gmap A nat) :
-    map_fold latest_term_before_quorum_step O ts = O ∨
-    ∃ x, ts !! x = Some (map_fold latest_term_before_quorum_step O ts).
-  Proof.
-    apply (map_fold_weak_ind (λ p r, p = O ∨ ∃ x, r !! x = Some p)); first by left.
-    intros x n m b Hmx IHm.
-    unfold latest_term_before_quorum_step.
-    destruct IHm as [-> | [y Hy]]; right.
-    { exists x. rewrite lookup_insert. by rewrite Nat.max_0_r. }
-    destruct (decide (b ≤ n)%nat).
-    { exists x. rewrite lookup_insert. by replace (_ `max` _)%nat with n by lia. }
-    exists y.
-    assert (Hne : x ≠ y) by set_solver.
-    rewrite lookup_insert_ne; last done. rewrite Hy.
-    by replace (_ `max` _)%nat with b by lia.
-  Qed.
-
-  Lemma latest_term_before_quorum_step_ge (ts : gmap A nat) :
-    map_Forall (λ _ t, (t ≤ map_fold latest_term_before_quorum_step O ts)%nat) ts.
-  Proof.
-    intros x t.
-    apply (map_fold_weak_ind (λ p r, (r !! x = Some t -> t ≤ p)%nat)); first done.
-    intros y n m b _ Hnr Hn.
-    unfold latest_term_before_quorum_step.
-    destruct (decide (y = x)) as [-> | Hne].
-    { rewrite lookup_insert in Hn. inversion_clear Hn. lia. }
-    rewrite lookup_insert_ne in Hn; last done.
-    specialize (Hnr Hn).
-    lia.
-  Qed.
-
-  Lemma latest_term_before_quorum_ge f ms t :
-    map_Forall
-      (λ _ (m : M), (latest_term_before_with f t m ≤ latest_term_before_quorum_with f ms t)%nat)
-      ms.
-  Proof.
-    intros x l Hlookup.
-    unfold latest_term_before_quorum_with.
-    pose proof (latest_term_before_quorum_step_ge (latest_term_before_with f t <$> ms)) as Hstep.
-    rewrite map_Forall_lookup in Hstep.
-    apply (Hstep x (latest_term_before_with f t l)).
-    rewrite lookup_fmap.
-    by rewrite Hlookup.
-  Qed.
-
-  Lemma latest_before_quorum_step_in (ts : gmap A nat) :
-    ts ≠ ∅ ->
-    map_Exists (λ _ t, t = map_fold latest_term_before_quorum_step O ts) ts.
-  Proof.
-    intros Hnonempty.
-    destruct (latest_before_quorum_step_O_or_exists ts) as [Hz | [x Hx]]; last first.
-    { exists x. by eauto. }
-    rewrite Hz.
-    destruct (decide (O ∈ (map_img ts : gset nat))) as [Hin | Hnotin].
-    { rewrite elem_of_map_img in Hin.
-      destruct Hin as [x Hx].
-      by exists x, O.
-    }
-    assert (Hallgz : ∀ t, t ∈ (map_img ts : gset nat) -> (0 < t)%nat).
-    { intros t Ht. assert (Hnz : t ≠ O) by set_solver. lia. }
-    apply map_choose in Hnonempty.
-    destruct Hnonempty as (x & n & Hxn).
-    apply latest_term_before_quorum_step_ge in Hxn as Hle.
-    rewrite Hz in Hle.
-    apply (elem_of_map_img_2 (SA:=gset nat)) in Hxn.
-    apply Hallgz in Hxn.
-    lia.
-  Qed.
-
-  Lemma latest_term_before_quorum_in f ms t :
-    ms ≠ ∅ ->
-    map_Exists
-      (λ _ (m : M), (latest_term_before_with f t m = latest_term_before_quorum_with f ms t)%nat)
-      ms.
-  Proof.
-    intros Hnonempty.
-    unfold latest_term_before_quorum_with.
-    pose proof (latest_before_quorum_step_in (latest_term_before_with f t <$> ms)) as Hstep.
-    rewrite fmap_empty_iff in Hstep.
-    specialize (Hstep Hnonempty).
-    destruct Hstep as (x & m & Hlookup & <-).
-    rewrite lookup_fmap fmap_Some in Hlookup.
-    destruct Hlookup as (l & Hlookup & Heq).
-    by exists x, l.
-  Qed.
-
   Lemma latest_term_before_le f m t :
     (latest_term_before_with f t m ≤ t)%nat.
   Proof.
@@ -344,7 +258,7 @@ End lemma.
 Section impl.
   Context `{Countable A}.
 
-  Lemma vlb_vbp_impl_pac (bs : gmap A proposals) (ps psb : proposals) :
+  Lemma vlb_vub_vbp_impl_pac (bs : gmap A proposals) (ps psb : proposals) :
     valid_lb_ballots bs psb ->
     valid_ub_ballots bs ps ->
     valid_base_proposals bs psb ->
@@ -397,7 +311,7 @@ Section impl.
     apply (IH t); [lia | lia | done].
   Qed.
 
-  Lemma vub_pac_impl_consistency (bs : gmap A proposals) (ps psb : proposals) :
+  Lemma vub_vp_pac_impl_consistency (bs : gmap A proposals) (ps psb : proposals) :
     valid_ub_ballots bs ps ->
     valid_proposals ps psb ->
     proposed_after_chosen bs psb ->
@@ -430,8 +344,8 @@ Section impl.
     consistency bs.
   Proof.
     intros Hvlb Hvub Hvbp Hvp.
-    pose proof (vlb_vbp_impl_pac _ _ _ Hvlb Hvub Hvbp) as Hpac.
-    by eapply vub_pac_impl_consistency.
+    pose proof (vlb_vub_vbp_impl_pac _ _ _ Hvlb Hvub Hvbp) as Hpac.
+    by eapply vub_vp_pac_impl_consistency.
   Qed.
 
 End impl.

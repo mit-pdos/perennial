@@ -96,12 +96,12 @@ Definition Paxos__nominate: val :=
    2. @ents: All entries after @lsn. *)
 Definition Paxos__prepare: val :=
   rec: "Paxos__prepare" "px" "lsn" :=
-    let: "terml" := struct.loadF Paxos "terml" "px" in
-    let: "ents" := NewSlice stringT #0 in
-    (if: "lsn" < (slice.len (struct.loadF Paxos "log" "px"))
-    then SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "log" "px") "lsn")
-    else #());;
-    ("terml", "ents").
+    (if: (slice.len (struct.loadF Paxos "log" "px")) ≤ "lsn"
+    then (struct.loadF Paxos "terml" "px", NewSlice stringT #0)
+    else
+      let: "ents" := NewSlice stringT ((slice.len (struct.loadF Paxos "log" "px")) - "lsn") in
+      SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "log" "px") "lsn");;
+      (struct.loadF Paxos "terml" "px", "ents")).
 
 (* Arguments:
    1. @lsn: LSN at which @ents start.
@@ -153,20 +153,24 @@ Definition Paxos__learn: val :=
 
 Definition Paxos__collect: val :=
   rec: "Paxos__collect" "px" "nid" "term" "ents" :=
-    (if: "term" < (struct.loadF Paxos "termp" "px")
-    then
-      MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
-      #()
+    let: (<>, "recved") := MapGet (struct.loadF Paxos "respp" "px") "nid" in
+    (if: "recved"
+    then #()
     else
-      (if: ("term" = (struct.loadF Paxos "termp" "px")) && ((slice.len "ents") ≤ (slice.len (struct.loadF Paxos "entsp" "px")))
+      (if: "term" < (struct.loadF Paxos "termp" "px")
       then
         MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
         #()
       else
-        struct.storeF Paxos "termp" "px" "term";;
-        struct.storeF Paxos "entsp" "px" "ents";;
-        MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
-        #())).
+        (if: ("term" = (struct.loadF Paxos "termp" "px")) && ((slice.len "ents") ≤ (slice.len (struct.loadF Paxos "entsp" "px")))
+        then
+          MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
+          #()
+        else
+          struct.storeF Paxos "termp" "px" "term";;
+          struct.storeF Paxos "entsp" "px" "ents";;
+          MapInsert (struct.loadF Paxos "respp" "px") "nid" #true;;
+          #()))).
 
 Definition Paxos__cquorum: val :=
   rec: "Paxos__cquorum" "px" "n" :=
@@ -202,13 +206,17 @@ Definition Paxos__push: val :=
     Paxos__commit "px" "lsnc";;
     #().
 
-Definition Paxos__gtterm: val :=
-  rec: "Paxos__gtterm" "px" "term" :=
+Definition Paxos__gttermc: val :=
+  rec: "Paxos__gttermc" "px" "term" :=
     "term" < (struct.loadF Paxos "termc" "px").
 
-Definition Paxos__ltterm: val :=
-  rec: "Paxos__ltterm" "px" "term" :=
+Definition Paxos__lttermc: val :=
+  rec: "Paxos__lttermc" "px" "term" :=
     (struct.loadF Paxos "termc" "px") < "term".
+
+Definition Paxos__latest: val :=
+  rec: "Paxos__latest" "px" :=
+    (struct.loadF Paxos "termc" "px") = (struct.loadF Paxos "terml" "px").
 
 Definition Paxos__current: val :=
   rec: "Paxos__current" "px" :=
@@ -342,12 +350,12 @@ Definition Paxos__ResponseSession: val :=
         let: "resp" := message.DecodePaxosResponse "data" in
         let: "kind" := struct.get message.PaxosResponse "Kind" "resp" in
         Mutex__Lock (struct.loadF Paxos "mu" "px");;
-        (if: Paxos__gtterm "px" (struct.get message.PaxosResponse "Term" "resp")
+        (if: Paxos__gttermc "px" (struct.get message.PaxosResponse "Term" "resp")
         then
           Mutex__Unlock (struct.loadF Paxos "mu" "px");;
           Continue
         else
-          (if: Paxos__ltterm "px" (struct.get message.PaxosResponse "Term" "resp")
+          (if: Paxos__lttermc "px" (struct.get message.PaxosResponse "Term" "resp")
           then
             Paxos__stepdown "px" (struct.get message.PaxosResponse "Term" "resp");;
             Continue
@@ -383,23 +391,28 @@ Definition Paxos__RequestSession: val :=
         let: "req" := message.DecodePaxosRequest (struct.get grove_ffi.ReceiveRet "Data" "ret") in
         let: "kind" := struct.get message.PaxosRequest "Kind" "req" in
         Mutex__Lock (struct.loadF Paxos "mu" "px");;
-        (if: Paxos__gtterm "px" (struct.get message.PaxosRequest "Term" "req")
+        (if: Paxos__gttermc "px" (struct.get message.PaxosRequest "Term" "req")
         then
           Mutex__Unlock (struct.loadF Paxos "mu" "px");;
           Continue
         else
-          (if: Paxos__ltterm "px" (struct.get message.PaxosRequest "Term" "req")
+          (if: Paxos__lttermc "px" (struct.get message.PaxosRequest "Term" "req")
           then Paxos__stepdown "px" (struct.get message.PaxosRequest "Term" "req")
           else #());;
           Paxos__heartbeat "px";;
           let: "termc" := Paxos__current "px" in
           (if: "kind" = message.MSG_PAXOS_REQUEST_VOTE
           then
-            let: ("terml", "ents") := Paxos__prepare "px" (struct.get message.PaxosRequest "CommittedLSN" "req") in
-            Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-            let: "data" := message.EncodePaxosRequestVoteResponse "termc" "terml" "ents" in
-            grove_ffi.Send "conn" "data";;
-            Continue
+            (if: Paxos__latest "px"
+            then
+              Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+              Continue
+            else
+              let: ("terml", "ents") := Paxos__prepare "px" (struct.get message.PaxosRequest "CommittedLSN" "req") in
+              Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+              let: "data" := message.EncodePaxosRequestVoteResponse "termc" "terml" "ents" in
+              grove_ffi.Send "conn" "data";;
+              Continue)
           else
             (if: "kind" = message.MSG_PAXOS_APPEND_ENTRIES
             then
