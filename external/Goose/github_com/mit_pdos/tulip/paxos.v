@@ -114,10 +114,8 @@ Definition Paxos__accept: val :=
   rec: "Paxos__accept" "px" "lsn" "term" "ents" :=
     (if: "term" ≠ (struct.loadF Paxos "terml" "px")
     then
-      (if: (struct.loadF Paxos "lsnc" "px") < "lsn"
-      then
-        let: "lsnc" := struct.loadF Paxos "lsnc" "px" in
-        "lsnc"
+      (if: (struct.loadF Paxos "lsnc" "px") ≠ "lsn"
+      then struct.loadF Paxos "lsnc" "px"
       else
         struct.storeF Paxos "log" "px" (SliceTake (struct.loadF Paxos "log" "px") "lsn");;
         struct.storeF Paxos "log" "px" (SliceAppendSlice stringT (struct.loadF Paxos "log" "px") "ents");;
@@ -374,9 +372,14 @@ Definition Paxos__ResponseSession: val :=
             else
               (if: "kind" = message.MSG_PAXOS_APPEND_ENTRIES
               then
-                Paxos__forward "px" "nid" (struct.get message.PaxosResponse "MatchedLSN" "resp");;
-                Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-                Continue
+                (if: (~ (Paxos__leading "px"))
+                then
+                  Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                  Continue
+                else
+                  Paxos__forward "px" "nid" (struct.get message.PaxosResponse "MatchedLSN" "resp");;
+                  Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                  Continue)
               else Continue))))));;
     #().
 
@@ -396,9 +399,7 @@ Definition Paxos__RequestSession: val :=
           Mutex__Unlock (struct.loadF Paxos "mu" "px");;
           Continue
         else
-          (if: Paxos__lttermc "px" (struct.get message.PaxosRequest "Term" "req")
-          then Paxos__stepdown "px" (struct.get message.PaxosRequest "Term" "req")
-          else #());;
+          Paxos__stepdown "px" (struct.get message.PaxosRequest "Term" "req");;
           Paxos__heartbeat "px";;
           let: "termc" := Paxos__current "px" in
           (if: "kind" = message.MSG_PAXOS_REQUEST_VOTE

@@ -70,6 +70,16 @@ Section lemma.
     take (length l1) l2 = l1.
   Proof. intros [l Happ]. by rewrite Happ take_app_length. Qed.
 
+  Lemma take_prefix_le l1 l2 n :
+    n ≤ length l1 ->
+    prefix l1 l2 ->
+    take n l1 = take n l2.
+  Proof.
+    intros Hle Hprefix.
+    destruct Hprefix as [l ->].
+    by rewrite take_app_le.
+  Qed.
+
   Lemma drop_lt_inv l n :
     drop n l ≠ [] -> n < length l.
   Proof.

@@ -118,27 +118,28 @@ Section repr.
     (paxos : loc) (nidme termc terml lsnc : u64) (log : list string)
     (nids : gset u64) γ : iProp Σ :=
     ∃ (me : u64) (hb : bool) (logP : Slice.t) (peers : gset u64),
-      "HmeP"       ∷ paxos ↦[Paxos :: "me"] #me ∗
-      "HnidP"      ∷ paxos ↦[Paxos :: "nidme"] #nidme ∗
-      "HhbP"       ∷ paxos ↦[Paxos :: "hb"] #hb ∗
-      "HtermcP"    ∷ paxos ↦[Paxos :: "termc"] #termc ∗
-      "Htermc"     ∷ own_current_term_half γ nidme (uint.nat termc) ∗
-      "HtermlP"    ∷ paxos ↦[Paxos :: "terml"] #terml ∗
-      "Hterml"     ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
-      "HlogP"      ∷ paxos ↦[Paxos :: "log"] (to_val logP) ∗
-      "Hlog"       ∷ own_slice logP stringT (DfracOwn 1) log ∗
-      "Hlogn"      ∷ own_node_ledger_half γ nidme log ∗
-      "HlsncP"     ∷ paxos ↦[Paxos :: "lsnc"] #lsnc ∗
-      "Hsafecmt"   ∷ safe_ledger_above γ nids (uint.nat terml) (take (uint.nat lsnc) log) ∗ 
-      "Hcomm"      ∷ own_paxos_comm paxos peers ∗
-      "Hsc"        ∷ own_paxos_sc paxos nids ∗
-      "#Hpreped"   ∷ (if decide (termc = terml)
-                      then True
-                      else past_nodedecs_latest_before γ nidme (uint.nat termc) (uint.nat terml) log) ∗
-      "%Hnids"     ∷ ⌜nids = {[nidme]} ∪ peers⌝ ∗
-      "%Hnid"      ∷ ⌜0 ≤ uint.Z nidme < max_nodes⌝ ∗
-      "%Htermlc"   ∷ ⌜uint.Z terml ≤ uint.Z termc⌝ ∗
-      "%Hlsncub"   ∷ ⌜uint.Z lsnc ≤ length log⌝.
+      "HmeP"     ∷ paxos ↦[Paxos :: "me"] #me ∗
+      "HnidP"    ∷ paxos ↦[Paxos :: "nidme"] #nidme ∗
+      "HhbP"     ∷ paxos ↦[Paxos :: "hb"] #hb ∗
+      "HtermcP"  ∷ paxos ↦[Paxos :: "termc"] #termc ∗
+      "Htermc"   ∷ own_current_term_half γ nidme (uint.nat termc) ∗
+      "HtermlP"  ∷ paxos ↦[Paxos :: "terml"] #terml ∗
+      "Hterml"   ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
+      "HlogP"    ∷ paxos ↦[Paxos :: "log"] (to_val logP) ∗
+      "Hlog"     ∷ own_slice logP stringT (DfracOwn 1) log ∗
+      "Hlogn"    ∷ own_node_ledger_half γ nidme log ∗
+      "HlsncP"   ∷ paxos ↦[Paxos :: "lsnc"] #lsnc ∗
+      "Hcomm"    ∷ own_paxos_comm paxos peers ∗
+      "Hsc"      ∷ own_paxos_sc paxos nids ∗
+      "#Hpreped" ∷ (if decide (termc = terml)
+                    then True
+                    else past_nodedecs_latest_before γ nidme (uint.nat termc) (uint.nat terml) log) ∗
+      "#Hacpted" ∷ is_accepted_proposal_lb γ nidme (uint.nat terml) log ∗
+      "#Hcmted"  ∷ safe_ledger_above γ nids (uint.nat terml) (take (uint.nat lsnc) log) ∗
+      "%Hnids"   ∷ ⌜nids = {[nidme]} ∪ peers⌝ ∗
+      "%Hnid"    ∷ ⌜0 ≤ uint.Z nidme < max_nodes⌝ ∗
+      "%Htermlc" ∷ ⌜uint.Z terml ≤ uint.Z termc⌝ ∗
+      "%Hlsncub" ∷ ⌜uint.Z lsnc ≤ length log⌝.
 
   (** Note on designing the lock invariant abstraction: [own_paxos_internal]
   serves as a boundary for exposing internal states required for use by internal
@@ -168,6 +169,11 @@ Section repr.
     ∃ (terml lsnc : u64) (iscand : bool) (isleader : bool),
       own_paxos_internal paxos nidme termc terml lsnc iscand isleader nids γ.
 
+  Definition own_paxos_following_with_termc
+    (paxos : loc) (nidme termc : u64) nids γ : iProp Σ :=
+    ∃ (terml lsnc : u64),
+      own_paxos_internal paxos nidme termc terml lsnc false false nids γ.
+
   Definition own_paxos_with_termc_terml
     (paxos : loc) (nidme termc terml : u64) nids γ : iProp Σ :=
     ∃ (lsnc : u64) (iscand : bool) (isleader : bool),
@@ -195,11 +201,11 @@ Section stepdown.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__stepdown px (nidme term : u64) termc nids γ :
-    uint.Z termc < uint.Z term ->
+    uint.Z termc ≤ uint.Z term ->
     know_paxos_inv γ nids -∗
     {{{ own_paxos_with_termc px nidme termc nids γ }}}
       Paxos__stepdown #px #term
-    {{{ RET #(); own_paxos_with_termc px nidme term nids γ }}}.
+    {{{ RET #(); own_paxos_following_with_termc px nidme term nids γ }}}.
   Proof.
     iIntros (Hlt) "#Hinv".
     iIntros (Φ) "!> Hpx HΦ".
@@ -217,6 +223,12 @@ Section stepdown.
     (*@                                                                         @*)
     (*@     // Logical action: Prepare(@term).                                  @*)
     (*@ }                                                                       @*)
+    destruct (decide (termc = term)) as [-> | Hne].
+    { (* Case: [termc = term]. No logical updates required. *)
+      iApply "HΦ".
+      iFrame "HiscandP HisleaderP".
+      by iFrame "∗ # %".
+    }
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (paxos_inv_prepare (uint.nat term) with "Htermc Hterml Hlogn HinvO")
       as "(Htermc & Hterml & Hlogn & HinvO & #Hpromise)".
@@ -224,7 +236,7 @@ Section stepdown.
     { word. }
     iMod ("HinvC" with "HinvO") as "_".
     iApply "HΦ".
-    iFrame "HiscandP".
+    iFrame "HisleaderP HiscandP".
     assert (Htermlc' : uint.Z terml ≤ uint.Z term) by word.
     iFrame "∗ # %".
     iClear "Hpreped".
@@ -365,8 +377,44 @@ Section cquorum.
 
 End cquorum.
 
-Section lemma.
+
+Section inv.
   Context `{!paxos_ghostG Σ}.
+
+  Lemma safe_ledger_prefix_base_ledger_impl_prefix γ nids t1 t2 v1 v2 :
+    (t1 < t2)%nat ->
+    safe_ledger_in γ nids t1 v1 -∗
+    prefix_base_ledger γ t2 v2 -∗
+    paxos_inv γ nids -∗
+    ⌜prefix v1 v2⌝.
+  Proof.
+    iIntros (Hlt) "Hsafev1 Hpfb Hinv".
+    iNamed "Hinv".
+    iDestruct (nodes_inv_extract_ds_psa with "Hnodes") as (dss bs) "[Hndp Hnodes]".
+    (* Obtain [dom termlm = dom bs]. *)
+    iDestruct (big_sepM2_dom with "Hnodes") as %Hdomdp.
+    iDestruct (big_sepM2_dom with "Hndp") as %Hdom.
+    rewrite dom_map_zip_with_L Hdomdp intersection_idemp_L Hdomtermlm in Hdom.
+    symmetry in Hdom.
+    iClear "Hndp".
+    (* Obtain [valid_base_proposals], [valid_lb_ballots], and [valid_ub_ballots]. *)
+    iDestruct (nodes_inv_impl_valid_base_proposals with "Hsafepsb Hnodes") as %Hvbp.
+    { apply Hdom. }
+    iDestruct (nodes_inv_ds_psa_impl_nodes_inv_psa with "Hnodes") as "Hnodes".
+    iDestruct (nodes_inv_impl_valid_lb_ballots with "Hpsb Hnodes") as %Hvlb.
+    iDestruct (nodes_inv_impl_valid_ub_ballots with "Hps Hnodes") as %Hvub.
+    (* Obtain [proposed_after_chosen] from the above. *)
+    pose proof (vlb_vub_vbp_impl_pac _ _ _ Hvlb Hvub Hvbp) as Hpac.
+    (* Obtain [chosen_in bs p v1] *)
+    iDestruct (nodes_inv_safe_ledger_in_impl_chosen_in with "Hsafev1 Hnodes") as %Hchosen.
+    { apply Hdom. }
+    iDestruct "Hpfb" as (vb) "[Hvb %Hprefix]".
+    (* Obtain [psb !! t2 = Some vb]. *)
+    iDestruct (base_proposal_lookup with "Hvb Hpsb") as %Hvb.
+    iPureIntro.
+    specialize (Hpac _ _ _ _ Hlt Hchosen Hvb).
+    by trans vb.
+  Qed.
 
   Lemma node_inv_past_nodedecs_impl_prefix_base_ledger γ nid ds dslb psa t v :
     dslb !! t = Some (Accept v) ->
@@ -391,43 +439,28 @@ Section lemma.
     paxos_inv γ nids -∗
     ⌜prefix v1 v2⌝.
   Proof.
-    iIntros (Hnid Hlt Hv2) "Hsafev1 Hdslb Hinv".
-    iNamed "Hinv".
-    iDestruct (nodes_inv_extract_ds_psa with "Hnodes") as (dss bs) "[Hndp Hnodes]".
-    (* Obtain [dom termlm = dom bs]. *)
-    iDestruct (big_sepM2_dom with "Hnodes") as %Hdomdp.
-    iDestruct (big_sepM2_dom with "Hndp") as %Hdom.
-    rewrite dom_map_zip_with_L Hdomdp intersection_idemp_L Hdomtermlm in Hdom.
-    symmetry in Hdom.
-    iClear "Hndp".
+    iIntros (Hnid Hlt Hv2) "Hsafe Hdslb Hinv".    
     (* Obtain [prefix_base_ledger γ t2 v2]. *)
-    iAssert (prefix_base_ledger γ t2 v2)%I as (vb) "[#Hvb %Hvblev2]".
-    { assert (is_Some (dss !! nid)) as [ds Hds].
+    iAssert (prefix_base_ledger γ t2 v2)%I as "#Hpfb".
+    { iNamed "Hinv".
+      iDestruct (nodes_inv_extract_ds_psa with "Hnodes") as (dss bs) "[Hndp Hnodes]".
+      (* Obtain [dom termlm = dom bs]. *)
+      iDestruct (big_sepM2_dom with "Hnodes") as %Hdomdp.
+      iDestruct (big_sepM2_dom with "Hndp") as %Hdom.
+      rewrite dom_map_zip_with_L Hdomdp intersection_idemp_L Hdomtermlm in Hdom.
+      symmetry in Hdom.
+      iClear "Hndp".
+      assert (is_Some (dss !! nid)) as [ds Hds].
       { by rewrite -elem_of_dom Hdomdp Hdom. }
       assert (is_Some (bs !! nid)) as [psa Hpsa].
       { by rewrite -elem_of_dom Hdom. }
       iDestruct (big_sepM2_lookup with "Hnodes") as "Hnode"; [apply Hds | apply Hpsa |].
       by iApply (node_inv_past_nodedecs_impl_prefix_base_ledger with "Hdslb Hnode").
     }
-    (* Obtain [valid_base_proposals], [valid_lb_ballots], and [valid_ub_ballots]. *)
-    iDestruct (nodes_inv_impl_valid_base_proposals with "Hsafepsb Hnodes") as %Hvbp.
-    { apply Hdom. }
-    iDestruct (nodes_inv_ds_psa_impl_nodes_inv_psa with "Hnodes") as "Hnodes".
-    iDestruct (nodes_inv_impl_valid_lb_ballots with "Hpsb Hnodes") as %Hvlb.
-    iDestruct (nodes_inv_impl_valid_ub_ballots with "Hps Hnodes") as %Hvub.
-    (* Obtain [proposed_after_chosen] from the above. *)
-    pose proof (vlb_vub_vbp_impl_pac _ _ _ Hvlb Hvub Hvbp) as Hpac.
-    (* Obtain [chosen_in bs p v1] *)
-    iDestruct (nodes_inv_safe_ledger_in_impl_chosen_in with "Hsafev1 Hnodes") as %Hchosen.
-    { apply Hdom. }
-    (* Obtain [psb !! t2 = Some vb]. *)
-    iDestruct (base_proposal_lookup with "Hvb Hpsb") as %Hvb.
-    iPureIntro.
-    specialize (Hpac _ _ _ _ Hlt Hchosen Hvb).
-    by trans vb.
+    by iApply (safe_ledger_prefix_base_ledger_impl_prefix with "Hsafe Hpfb Hinv").
   Qed.
 
-End lemma.
+End inv.
 
 Section collect.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
@@ -635,10 +668,11 @@ Section collect.
     iAssert (⌜logpeer = logc ++ ents⌝)%I as %->.
     { (* Obtain [safe_ledger_above]. *)
       iNamed "Hpx".
-      iDestruct "Hsafecmt" as (p) "[Hsafecmt %Hple]".
+      iDestruct "Hcmted" as (p) "[Hcmted %Hple]".
       iNamed "Hpromise".
       destruct (decide (p < uint.nat term)%nat) as [Hlt | Hge].
-      { iDestruct (safe_ledger_past_nodedecs_impl_prefix with "Hsafecmt Hpastd HinvO") as %Hlogc.
+      { (* Case: The safe term [p] is less than the term [term] of [logpeer] / [ents].  *)
+        iDestruct (safe_ledger_past_nodedecs_impl_prefix with "Hcmted Hpastd HinvO") as %Hlogc.
         { apply Hinnids. }
         { apply Hlt. }
         { apply Hacpt. }
@@ -651,13 +685,14 @@ Section collect.
         { rewrite length_take. clear -Hlsncub. lia. }
         by rewrite take_idemp.
       }
+      (* Case: The safe term equal to the entries term. *)
       assert (term = termp) as ->.
       { clear -Hple Hge Htermple Hllep. word. }
       destruct Hcase as [? | Hlenlt]; first done.
       assert (p = uint.nat termp) as ->.
       { clear -Hple Hge Htermple Hllep. lia. }
-      iDestruct "Hsafecmt" as (nidx nidsq) "Hsafecmt".
-      iNamed "Hsafecmt".
+      iDestruct "Hcmted" as (nidx nidsq) "Hcmted".
+      iNamed "Hcmted".
       iDestruct (paxos_inv_impl_nodes_inv with "HinvO") as (termlm) "[Hnodes %Hdomtermlm]".
       iDestruct (nodes_inv_extract_ds_psa with "Hnodes") as (dss bs) "[Hndp Hnodes]".
       iDestruct (big_sepM2_dom with "Hnodes") as %Hdomdp.
@@ -826,19 +861,21 @@ Section ascend.
     (*@     // TODO: Write @px.log and @px.terml to disk.                       @*)
     (*@ }                                                                       @*)
     iApply "HΦ".
-    set log' := _ ++ _.
+    set logc := take (uint.nat lsnc) log.
+    set log' := logc ++ entsp.
+    set logc' := take (uint.nat lsnc) log'.
     iAssert (own_paxos_leader px termc log' true γ)%I
       with "[$HisleaderP $HlsnpeersP $Hps]" as "Hleader".
     { by iFrame "Hpsb". }
-    set entsc' := take (uint.nat lsnc) log'.
-    iDestruct (safe_ledger_above_mono (uint.nat terml) entsc' (uint.nat termc) with "[Hsafecmt]")
-      as "Hsafecmt".
+    iDestruct (safe_ledger_above_mono (uint.nat terml) logc' (uint.nat termc) with "[]")
+      as "Hcmted'".
     { word. }
-    { subst entsc' log'.
+    { subst logc log' logc'.
       rewrite take_app_le; last first.
       { rewrite length_take. lia. }
       by rewrite take_idemp.
     }
+    iClear "Hcmted".
     iFrame "Hleader".
     iFrame "HtermcP HtermlP HiscandP".
     iFrame "∗ # %".
@@ -923,6 +960,262 @@ Section prepare.
   Qed.
 
 End prepare.
+
+Section accept.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__accept
+    (px : loc) (lsn : u64) (term : u64) (entsP : Slice.t) (ents logleader : list string)
+    (nidme : u64) nids γ :
+    (uint.nat lsn ≤ length logleader)%nat ->
+    drop (uint.nat lsn) logleader = ents ->
+    prefix_base_ledger γ (uint.nat term) logleader -∗
+    prefix_growing_ledger γ (uint.nat term) logleader -∗
+    know_paxos_inv γ nids -∗
+    {{{ own_paxos_following_with_termc px nidme term nids γ ∗
+        own_slice entsP stringT (DfracOwn 1) ents
+    }}}
+      Paxos__accept #px #lsn #term (to_val entsP)
+    {{{ (lsna : u64) (loga : list string), RET #lsna;
+        own_paxos_following_with_termc px nidme term nids γ ∗
+        (is_accepted_proposal_lb γ nidme (uint.nat term) loga ∨
+         safe_ledger_above γ nids (uint.nat term) loga) ∗
+        ⌜length loga = uint.nat lsna⌝
+    }}}.
+  Proof.
+    iIntros (Hlsnle Hents) "#Hpfb #Hpfg #Hinv".
+    iIntros (Φ) "!> [Hpx Hents] HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) accept(lsn uint64, term uint64, ents []string) uint64 { @*)
+    (*@     if term != px.terml {                                               @*)
+    (*@                                                                         @*)
+    do 2 iNamed "Hpx".
+    set logc := take _ log.
+    wp_loadField.
+    wp_if_destruct.
+    { rename Heqb into Htermne.
+      wp_loadField.
+
+      (*@         // Our log term does not match the term @term of @ents. Return an error @*)
+      (*@         // if @px.lsnc < @lsn, as log consistency at @term cannot be guaranteed. @*)
+      (*@         if px.lsnc != lsn {                                             @*)
+      (*@             return px.lsnc                                              @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      wp_if_destruct.
+      { wp_loadField.
+        rename Heqb into Hlsnne.
+        iApply "HΦ".
+        iSplit.
+        { iFrame "Hcand Hleader HlogP".
+          by iFrame "∗ # %".
+        }
+        iDestruct (safe_ledger_above_mono (uint.nat terml) logc (uint.nat term) with "Hcmted")
+          as "Hcmted'".
+        { clear -Htermlc. word. }
+        iFrame "Hcmted'".
+        iPureIntro.
+        rewrite length_take.
+        lia.
+      }
+
+      (*@         // Append @ents to our own log starting at @lsn.                @*)
+      (*@         px.log = px.log[: lsn]                                          @*)
+      (*@         px.log = append(px.log, ents...)                                @*)
+      (*@                                                                         @*)
+      wp_loadField.
+      wp_apply (wp_SliceTake_full with "Hlog"); first word.
+      iIntros "Hlog".
+      iDestruct (own_slice_to_small with "Hents") as "Hents".
+      wp_storeField.
+      wp_loadField.
+      wp_apply (wp_SliceAppendSlice with "[$Hlog $Hents]"); first done.
+      iIntros (logP') "[Hlog Hents]".
+      wp_storeField.
+
+      (*@         // Update the log term to @term.                                @*)
+      (*@         px.terml = term                                                 @*)
+      (*@                                                                         @*)
+      wp_storeField.
+
+      (*@         // TODO: Write @px.log and @px.terml to disk.                   @*)
+      (*@                                                                         @*)
+      (*@         // Return LSN at the end of our log after accepting @ents.      @*)
+      (*@         lsna := uint64(len(px.log))                                     @*)
+      (*@                                                                         @*)
+      wp_loadField.
+      wp_apply wp_slice_len.
+      wp_pures.
+
+      (*@         // Logical action: Advance(term, log).                          @*)
+      (*@                                                                         @*)
+      iInv "Hinv" as "> HinvO" "HinvC".
+      iMod (paxos_inv_advance with "Hpfb Hpfg Htermc Hterml Hlogn HinvO")
+        as "(Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
+      { set_solver. }
+      { clear -Htermlc Htermne. word. }
+      iMod ("HinvC" with "HinvO") as "_".
+
+      (*@         return lsna                                                     @*)
+      (*@     }                                                                   @*)
+      (*@                                                                         @*)
+      iApply "HΦ".
+      set log' := logc ++ _.
+      set logc' := take (uint.nat lsn) log'.
+      iInv "Hinv" as "> HinvO" "HinvC".
+      iAssert (⌜logleader = log'⌝)%I as %Heq.
+      { subst log'.
+        iDestruct "Hcmted" as (p) "[Hsafep %Hple]".
+        iDestruct (safe_ledger_prefix_base_ledger_impl_prefix with "Hsafep Hpfb HinvO")
+          as %Hprefix.
+        { clear -Htermlc Htermne Hple. word. }
+        iPureIntro.
+        rewrite -{1}(take_drop (uint.nat lsn) logleader).
+        f_equal.
+        subst logc.
+        destruct Hprefix as [logtail ->].
+        rewrite take_app_le; last first.
+        { rewrite length_take. clear -Hlsncub. lia. }
+        by rewrite take_idemp.
+      }
+      iMod ("HinvC" with "HinvO") as "_".
+      iDestruct (safe_ledger_above_mono (uint.nat terml) logc' (uint.nat term) with "[]")
+        as "Hcmted'".
+      { word. }
+      { subst logc'.
+        rewrite take_app_le; last first.
+        { rewrite length_take. lia. }
+        by rewrite take_idemp.
+      }
+      iClear "Hcmted".
+      iModIntro.
+      rewrite Heq.
+      iSplit.
+      { iFrame "Hcand Hleader HlogP HtermlP".
+        iClear "Hpreped".
+        case_decide; last done.
+        iFrame "∗ # %".
+        iPureIntro.
+        split; first done.
+        split; first done.
+        rewrite -Heq.
+        word.
+      }
+      iFrame "Hacpted'".
+      iApply (own_slice_sz with "Hlog").
+    }
+
+    (*@     // We're in the same term. Now we should skip appending @ents iff there's @*)
+    (*@     // gap between @ents and @px.log OR appending @ents starting at @lsn @*)
+    (*@     // actually shortens the log.                                       @*)
+    (*@     nents := uint64(len(px.log))                                        @*)
+    (*@     if nents < lsn || lsn + uint64(len(ents)) <= nents {                @*)
+    (*@         return nents                                                    @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_apply wp_slice_len.
+    wp_apply (wp_or with "[Hents]").
+    { iNamedAccu. }
+    { wp_pures. done. }
+    { iIntros "_".
+      iNamed 1.
+      wp_apply wp_slice_len.
+      wp_pures.
+      by iFrame.
+    }
+    iNamed 1.
+    wp_if_destruct.
+    { iApply "HΦ".
+      iModIntro.
+      iSplit.
+      { iFrame "Hcand Hleader HlogP".
+        by iFrame "∗ # %".
+      }
+      iFrame "Hacpted".
+      iApply (own_slice_sz with "Hlog").
+    }
+    apply Classical_Prop.not_or_and in Heqb.
+    destruct Heqb as [Hnogap Hlonger].
+    rewrite Z.nlt_ge in Hnogap.
+    rewrite Z.nle_gt in Hlonger.
+    iDestruct (own_slice_sz with "Hlog") as %Hszlog.
+
+    (*@     // Append @ents to our own log starting at @lsn.                    @*)
+    (*@     px.log = px.log[: lsn]                                              @*)
+    (*@     px.log = append(px.log, ents...)                                    @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_apply (wp_SliceTake_full with "Hlog").
+    { clear -Hnogap Hszlog. word. }
+    iIntros "Hlog".
+    wp_storeField.
+    wp_loadField.
+    iDestruct (own_slice_to_small with "Hents") as "Hents".
+    wp_apply (wp_SliceAppendSlice with "[$Hlog $Hents]"); first done.
+    iIntros (logP') "[Hlog Hents]".
+    wp_storeField.
+
+    (*@     // TODO: Write @px.log to disk.                                     @*)
+    (*@                                                                         @*)
+
+    (*@     lsna := uint64(len(px.log))                                         @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_apply wp_slice_len.
+    wp_pures.
+
+    (*@     // Logical action: Accept(term, log)                                @*)
+    (*@                                                                         @*)
+    iDestruct (own_slice_small_sz with "Hents") as %Hszents.
+    assert (length log ≤ length logleader)%nat as Hlenlog.
+    { rewrite length_drop in Hszents.
+      rewrite word.unsigned_add in Hlonger.
+      clear -Hszlog Hszents Hnogap Hlonger.
+      word.
+    }
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iMod (paxos_inv_accept with "Hpfb Hpfg Htermc Hterml Hlogn HinvO")
+      as "(Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
+    { set_solver. }
+    { apply Hlenlog. }
+    iMod ("HinvC" with "HinvO") as "_".
+
+    (*@     return lsna                                                         @*)
+    (*@ }                                                                       @*)
+    iApply "HΦ".
+    iAssert (⌜prefix log logleader⌝)%I as %Hprefix.
+    { iDestruct (accepted_proposal_lb_prefix with "Hacpted Hacpted'") as %Hprefix.
+      iPureIntro.
+      destruct Hprefix as [? | Hprefix]; first done.
+      by rewrite (prefix_length_eq _ _ Hprefix Hlenlog).
+    }
+    assert (take (uint.nat lsn) log = take (uint.nat lsn) logleader) as ->.
+    { rewrite (take_prefix_le _ _ (uint.nat lsn) _ Hprefix); first done.
+      clear -Hnogap Hszlog. word.
+    }
+    rewrite take_drop.
+    iModIntro.
+    iSplit.
+    { iFrame "Hcand Hleader HlogP HtermlP".
+      case_decide; last done.
+      iFrame "∗ # %".
+      iSplit.
+      { rewrite -(take_prefix_le _ _ (uint.nat lsnc) _ Hprefix); first done.
+        clear -Hlsncub. word.
+      }
+      iPureIntro.
+      split; first done.
+      apply prefix_length in Hprefix.
+      clear -Hlsncub Hprefix.
+      word.
+    }
+    iFrame "Hacpted'".
+    by iApply (own_slice_sz with "Hlog").
+  Qed.
+
+End accept.
 
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.

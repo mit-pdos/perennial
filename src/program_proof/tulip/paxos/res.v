@@ -303,6 +303,12 @@ Section res.
       ∃ v, ⌜ps !! t = Some v ∧ prefix vlb v⌝.
     Admitted.
 
+    Lemma accepted_proposal_lb_prefix {γ nid t v1 v2} :
+      is_accepted_proposal_lb γ nid t v1 -∗
+      is_accepted_proposal_lb γ nid t v2 -∗
+      ⌜prefix v1 v2 ∨ prefix v2 v1⌝.
+    Admitted.
+
     Lemma accepted_proposal_lb_weaken {γ nid t v1} v2 :
       prefix v2 v1 ->
       is_accepted_proposal_lb γ nid t v1 -∗
