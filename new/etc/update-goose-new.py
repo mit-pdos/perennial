@@ -203,7 +203,8 @@ def main():
 
     run_goose(
         etcd_raft_dir,
-        "-partial", "Message,MessageType,MsgHup",
+        "-partial",
+        "Message,MessageType,MsgHup",
         "-ignore-errors",
         "go.etcd.io/raft/v3/raftpb",
     )
