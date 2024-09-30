@@ -99,6 +99,15 @@ Section lemma.
     by apply NoDup_app in Hl2 as [? _].
   Qed.
 
+  Lemma NoDup_suffix l1 l2 :
+    suffix l1 l2 ->
+    NoDup l2 ->
+    NoDup l1.
+  Proof.
+    intros [l Happ] Hl2. rewrite Happ in Hl2.
+    by apply NoDup_app in Hl2 as (_ & _ & ?).
+  Qed.
+
   Lemma not_elem_of_take l n x :
     NoDup l ->
     l !! n = Some x ->

@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import quorum list extend.
-From Perennial.program_proof.tulip.paxos Require Import base res.
+From Perennial.program_proof.tulip.paxos Require Import base consistency res.
 
 Section inv.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
@@ -102,17 +102,46 @@ Section inv.
       "%Hquorum" ∷ ⌜cquorum nids nidsq⌝ ∗
       "%Hmember" ∷ ⌜nid ∈ nids⌝.
 
+  Lemma safe_ledger_in_weaken {γ nids t v} vlb :
+    prefix vlb v ->
+    safe_ledger_in γ nids t v -∗
+    safe_ledger_in γ nids t vlb.
+  Proof.
+    iIntros (Hprefix) "Hv".
+    iNamed "Hv".
+    iDestruct (accepted_proposal_lb_weaken vlb with "Hvacpt") as "Hvacpt'".
+    { apply Hprefix. }
+    set Ψ := λ nid, is_accepted_proposal_length_lb γ nid t (length vlb).
+    iDestruct (big_sepS_impl _ Ψ with "Hacpt []") as "Hacpt'".
+    { iIntros (nidx Hnidx) "!> Hlenlb".
+      iApply (accepted_proposal_length_lb_weaken (length vlb) with "Hlenlb").
+      by apply prefix_length.
+    }
+    iFrame "# %".
+  Qed.
+
   Definition safe_ledger γ nids v : iProp Σ :=
     ∃ t, safe_ledger_in γ nids t v.
 
   Definition safe_ledger_above γ nids t v : iProp Σ :=
     ∃ t', safe_ledger_in γ nids t' v ∗ ⌜(t' ≤ t)%nat⌝.
 
-  Lemma safe_ledger_above_mono {γ nids} t v t' :
+  Lemma safe_ledger_above_mono {γ nids} t t' v :
     (t ≤ t')%nat ->
     safe_ledger_above γ nids t v -∗
     safe_ledger_above γ nids t' v.
   Proof. iIntros (Hle) "(%p & Hsafe & %Hp)". iExists p. iFrame. iPureIntro. lia. Qed.
+
+  Lemma safe_ledger_above_weaken {γ nids t v} vlb :
+    prefix vlb v ->
+    safe_ledger_above γ nids t v -∗
+    safe_ledger_above γ nids t vlb.
+  Proof.
+    iIntros (Hprefix) "(%p & Hv & %Hplet)".
+    iDestruct (safe_ledger_in_weaken with "Hv") as "Hvlb".
+    { apply Hprefix. }
+    by iFrame "Hvlb".
+  Qed.
 
   Definition equal_latest_longest_proposal_nodedec (dssq : gmap u64 (list nodedec)) t v :=
     equal_latest_longest_proposal_with (mbind nodedec_to_ledger) dssq t v.
@@ -491,7 +520,7 @@ Section lemma.
     split; [done | lia].
   Qed.
 
-  Lemma node_inv_is_accepted_proposal_lb_impl_prefix γ bs nid1 nid2 t v1 v2 :
+  Lemma nodes_inv_is_accepted_proposal_lb_impl_prefix γ bs nid1 nid2 t v1 v2 :
     nid1 ∈ dom bs ->
     nid2 ∈ dom bs ->
     is_accepted_proposal_lb γ nid1 t v1 -∗
@@ -662,7 +691,7 @@ Section lemma.
     iNamed "Hinv".
     iIntros (t v Hv).
     iDestruct (big_sepM_lookup with "Hpsaubs") as (vlb) "[Hvub %Hprefix]"; first apply Hv.
-    iDestruct (proposal_prefix with "Hvub Hps") as %(vub & Hvub & Hprefixvlb).
+    iDestruct (proposals_prefix with "Hvub Hps") as %(vub & Hvub & Hprefixvlb).
     iPureIntro.
     exists vub.
     split; first apply Hvub.
@@ -763,6 +792,15 @@ Section lemma.
     by iFrame.
   Qed.
 
+  Lemma paxos_inv_impl_nodes_inv_psa γ nids :
+    paxos_inv γ nids -∗
+    ∃ bs, ([∗ map] nid ↦ psa ∈ bs, node_inv_psa γ nid psa) ∗ ⌜dom bs = nids⌝.
+  Proof.
+    iNamed 1.
+    rewrite -Hdomtermlm.
+    iApply (nodes_inv_impl_nodes_inv_psa with "Hnodes").
+  Qed.
+
   Lemma nodes_inv_safe_ledger_in_impl_chosen_in γ nids bs t v :
     dom bs = nids ->
     safe_ledger_in γ nids t v -∗
@@ -792,7 +830,7 @@ Section lemma.
     iDestruct (big_sepS_elem_of _ _ nid' with "Hacpt") as "Hvacpt'".
     { by apply map_lookup_filter_Some_1_2 in Hps. }
     iDestruct "Hvacpt'" as (v') "[Hvacpt' %Hlen]".
-    iDestruct (node_inv_is_accepted_proposal_lb_impl_prefix with "Hvacpt Hvacpt' Hinv") as %Hprefix.
+    iDestruct (nodes_inv_is_accepted_proposal_lb_impl_prefix with "Hvacpt Hvacpt' Hinv") as %Hprefix.
     { by rewrite -Hdombs in Hmember. }
     { apply elem_of_dom_2 in Hps.
       apply (elem_of_weaken _ (dom bsq)); first done.
@@ -852,5 +890,15 @@ Section lemma.
     iApply (prefix_growing_ledger_impl_prefix with "Hvub1 Hvub2").
   Qed.
 
+  Lemma nodes_inv_safe_ledger_impl_chosen γ nids bs v :
+    dom bs = nids ->
+    safe_ledger γ nids v -∗
+    ([∗ map] nid ↦ psa ∈ bs, node_inv_psa γ nid psa) -∗
+    ⌜chosen bs v⌝.
+  Proof.
+    iIntros (Hdombs) "[%t #Hsafe] Hinv".
+    iExists t.
+    by iApply (nodes_inv_safe_ledger_in_impl_chosen_in with "Hsafe Hinv").
+  Qed.
 
 End lemma.

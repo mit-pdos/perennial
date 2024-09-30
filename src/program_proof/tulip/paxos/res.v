@@ -157,10 +157,16 @@ Section res.
       is_proposal_lb γ t v.
     Admitted.
 
-    Lemma proposal_prefix {γ ps t vlb} :
+    Lemma proposals_prefix {γ ps t vlb} :
       is_proposal_lb γ t vlb -∗
       own_proposals γ ps -∗
       ∃ v, ⌜ps !! t = Some v ∧ prefix vlb v⌝.
+    Admitted.
+
+    Lemma proposal_prefix {γ t v vlb} :
+      is_proposal_lb γ t vlb -∗
+      own_proposal γ t v -∗
+      ⌜prefix vlb v⌝.
     Admitted.
 
     Lemma proposal_lb_prefix {γ t v1 v2} :

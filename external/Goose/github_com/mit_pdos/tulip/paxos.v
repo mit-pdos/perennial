@@ -7,10 +7,6 @@ From Goose Require github_com.mit_pdos.tulip.util.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-(* Key invariants:
-   1. @terml <= @termc
-   2. @lsnc <= @len(ents)
-   3. isleader = true -> @termc = @terml *)
 Definition Paxos := struct.decl [
   "peers" :: slice.T uint64T;
   "addrpeers" :: mapT uint64T;
@@ -184,8 +180,13 @@ Definition Paxos__commit: val :=
     (if: "lsn" ≤ (struct.loadF Paxos "lsnc" "px")
     then #()
     else
-      struct.storeF Paxos "lsnc" "px" "lsn";;
-      #()).
+      (if: (slice.len (struct.loadF Paxos "log" "px")) < "lsn"
+      then
+        struct.storeF Paxos "lsnc" "px" (slice.len (struct.loadF Paxos "log" "px"));;
+        #()
+      else
+        struct.storeF Paxos "lsnc" "px" "lsn";;
+        #())).
 
 (* @learn monotonically increase the commit LSN @px.lsnc in term @term to @lsn. *)
 Definition Paxos__learn: val :=
@@ -207,13 +208,15 @@ Definition Paxos__forward: val :=
 
 Definition Paxos__push: val :=
   rec: "Paxos__push" "px" :=
-    let: "lsns" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 ((slice.len (struct.loadF Paxos "peers" "px")) + #1)) in
-    ForSlice uint64T <> "nid" (struct.loadF Paxos "peers" "px")
-      (let: "lsn" := Fst (MapGet (struct.loadF Paxos "lsnpeers" "px") "nid") in
-      "lsns" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "lsns") "lsn"));;
-    let: "lsnc" := quorum.Median (![slice.T uint64T] "lsns") in
-    Paxos__commit "px" "lsnc";;
-    #().
+    (if: (~ (Paxos__cquorum "px" ((MapLen (struct.loadF Paxos "lsnpeers" "px")) + #1)))
+    then (#0, #false)
+    else
+      let: "lsns" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 (struct.loadF Paxos "sc" "px")) in
+      MapIter (struct.loadF Paxos "lsnpeers" "px") (λ: <> "lsn",
+        "lsns" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "lsns") "lsn"));;
+      util.Sort (![slice.T uint64T] "lsns");;
+      let: "lsn" := SliceGet uint64T (![slice.T uint64T] "lsns") ((slice.len (![slice.T uint64T] "lsns")) - ((struct.loadF Paxos "sc" "px") `quot` #2)) in
+      ("lsn", #true)).
 
 Definition Paxos__gttermc: val :=
   rec: "Paxos__gttermc" "px" "term" :=
@@ -261,7 +264,7 @@ Definition Paxos__GetConnection: val :=
 
 Definition Paxos__Connect: val :=
   rec: "Paxos__Connect" "px" "nid" :=
-    let: "addr" := SliceGet uint64T (struct.loadF Paxos "peers" "px") "nid" in
+    let: "addr" := Fst (MapGet (struct.loadF Paxos "addrpeers" "px") "nid") in
     let: "ret" := grove_ffi.Connect "addr" in
     (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
     then
