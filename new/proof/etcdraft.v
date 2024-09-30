@@ -287,13 +287,15 @@ Global Instance wp_int_gt (l r : w64) :
   PureWpVal True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
 Proof. Admitted.
 
-Lemma wp_network__send (nw : loc) msgs_sl :
-  {{{ True }}}
+Lemma wp_network__send (nw : loc) msgs_sl dq msgs :
+  {{{
+        own_slice msgs_sl raftpb.Message dq msgs
+  }}}
     network__send #nw (slice.val msgs_sl)
   {{{ RET #(); True }}}
 .
 Proof.
-  iIntros (?) "_ HΦ".
+  iIntros (?) "Hsl HΦ".
   wp_rec.
   wp_pures'.
   wp_alloc nw_ptr.
@@ -313,11 +315,24 @@ Proof.
     wp_pure.
     {
       (* FIXME(word): handle sint.Z *)
-      rewrite !word.signed_eq_swrap_unsigned in Hlt.
-      unfold word.swrap in Hlt.
+      rewrite !word.signed_eq_swrap_unsigned /word.swrap in Hlt.
       word.
     }
-    admit. (* TODO: add slice ownership to precondition *)
+    iDestruct (own_slice_len with "Hsl") as %Hsl.
+    destruct msgs.
+    { exfalso. simpl in *. rewrite !word.signed_eq_swrap_unsigned /word.swrap in Hlt. word. }
+    iDestruct (own_slice_elem_acc 0 with "Hsl") as "[Helem Hsl]".
+    { done. }
+    wp_load.
+    wp_pures.
+    iDestruct ("Hsl" with "[$]") as "Hsl".
+    rewrite list_insert_id; last done.
+    wp_store.
+    { admit. } (* val_ty from slice *)
+    wp_steps.
+    wp_alloc p.
+    wp_steps.
+    admit. (* TODO: get v in the form of a raftpb.Message, and split it into its fields *)
   - simpl. wp_steps. iModIntro. by iApply "HΦ".
 Admitted.
 
@@ -329,7 +344,6 @@ Proof.
   Set Ltac Profiling.
   iIntros (?) "_ HΦ".
   wp_rec.
-  replace (raftpb.MsgHup) with (Val #37) by admit.
   wp_steps.
   wp_alloc preVote.
   wp_pures'.
@@ -359,7 +373,6 @@ Proof.
   replace (zero_val funcT) with (zero_val' funcT).
   2:{ by rewrite zero_val_eq. }
 
-  (* Time wp_apply (wp_newNetworkWithConfigInit with "[]"). 639ms *)
   Time wp_bind (newNetworkWithConfigInit _ _);
   iApply (wp_newNetworkWithConfigInit with "[$]");
   iNext.
@@ -446,13 +459,9 @@ Proof.
   wp_pures'.
   wp_alloc tt as "Htt".
   wp_pures'.
-  wp_apply wp_struct_make.
-  { admit. }
-  Show Ltac Profile.
-  wp_pures'.
   Time wp_bind (slice.literal _ _);
   iApply wp_slice_literal.
-  { solve_has_go_type. admit. }
+  { solve_has_go_type. }
   { auto. }
   iNext. iIntros (?) "?".
   wp_pures'.
@@ -461,6 +470,5 @@ Proof.
 
   Show Ltac Profile.
 Admitted.
-
 
 End proof.

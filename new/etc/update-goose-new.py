@@ -176,7 +176,6 @@ def main():
         "errors",
         "go.etcd.io/raft/v3/confchange",
         "go.etcd.io/raft/v3/quorum",
-        "go.etcd.io/raft/v3/raftpb",
         "go.etcd.io/raft/v3/tracker",
         "github.com/stretchr/testify/assert",
         "io",
@@ -193,12 +192,20 @@ def main():
         etcd_raft_dir,
         "fmt",
         "log",
+        "go.etcd.io/raft/v3/raftpb",
     )
 
     run_goose(
         etcd_raft_dir,
         "-ignore-errors",
         ".",
+    )
+
+    run_goose(
+        etcd_raft_dir,
+        "-partial", "Message,MessageType,MsgHup",
+        "-ignore-errors",
+        "go.etcd.io/raft/v3/raftpb",
     )
 
 

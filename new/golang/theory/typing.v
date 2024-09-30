@@ -326,6 +326,6 @@ Ltac2 solve_has_go_type_step () :=
             Std.indcl_in := None
         } ] None
   | [ h : (@eq (string * go_type) (_, _) _) |- _ ] =>
-      Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None
+      Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
   end.
 Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).
