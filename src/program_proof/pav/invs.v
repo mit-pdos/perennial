@@ -18,6 +18,8 @@ Definition global_inv γ : iProp Σ :=
   ∃ γkey_maps key_maps,
   (* γ commits to all the key_map γs, including the next key_map. *)
   "Hγmaps" ∷ mono_list_auth_own γ (1/2) γkey_maps ∗
+  (* TODO: maybe change to ghost_map_auth_pers for all but last.
+  this more closely matches server protocol. *)
   "Hmaps" ∷ ([∗ list] γ;m ∈ γkey_maps;key_maps, ghost_map_auth γ (1/2) m).
 End global_inv.
 
