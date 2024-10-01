@@ -12,8 +12,12 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+      time: "04:00"
+      timezone: "US/Eastern"
 
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "monthly"
+      time: "04:00"
+      timezone: "US/Eastern"
