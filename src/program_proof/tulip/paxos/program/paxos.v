@@ -11,16 +11,16 @@ Section repr.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   (*@ type Paxos struct {                                                     @*)
-  (*@     // Node ID of its peers.                                            @*)
-  (*@     peers     []uint64                                                  @*)
-  (*@     // Addresses of other Paxos nodes.                                  @*)
-  (*@     addrpeers map[uint64]grove_ffi.Address                              @*)
-  (*@     // Address of this node.                                            @*)
-  (*@     me        grove_ffi.Address                                         @*)
-  (*@     // Size of the cluster. @sc = @len(peers) + 1.                      @*)
-  (*@     sc        uint64                                                    @*)
   (*@     // ID of this node.                                                 @*)
   (*@     nidme     uint64                                                    @*)
+  (*@     // Node ID of its peers.                                            @*)
+  (*@     peers     []uint64                                                  @*)
+  (*@     // Address of this node.                                            @*)
+  (*@     addrme    grove_ffi.Address                                         @*)
+  (*@     // Addresses of other Paxos nodes.                                  @*)
+  (*@     addrpeers map[uint64]grove_ffi.Address                              @*)
+  (*@     // Size of the cluster. @sc = @len(peers) + 1.                      @*)
+  (*@     sc        uint64                                                    @*)
   (*@     // Mutex protecting fields below.                                   @*)
   (*@     mu        *sync.Mutex                                               @*)
   (*@     // Heartbeat.                                                       @*)
@@ -65,13 +65,13 @@ Section repr.
   (*@     // next / match indexes in Raft.                                    @*)
   (*@     lsnpeers  map[uint64]uint64                                         @*)
   (*@     //                                                                  @*)
-  (*@     // Connections to peers. Used only when the node is a leader.       @*)
+  (*@     // Connections to peers. Used only when the node is a leader or a candidate. @*)
   (*@     //                                                                  @*)
   (*@     conns     map[uint64]grove_ffi.Connection                           @*)
   (*@ }                                                                       @*)
   Definition own_paxos_comm (paxos : loc) (peers : gset u64) : iProp Σ :=
-    ∃ (me : u64) (addrpeersP : loc) (connsP : loc),
-      "HmeP"        ∷ paxos ↦[Paxos :: "me"] #me ∗
+    ∃ (addrme : u64) (addrpeersP : loc) (connsP : loc),
+      "HaddrmeP"    ∷ paxos ↦[Paxos :: "addrme"] #addrme ∗
       "HaddrpeersP" ∷ paxos ↦[Paxos :: "addrpeers"] #addrpeersP ∗
       "HconnsP"     ∷ paxos ↦[Paxos :: "conns"] #connsP.
 
@@ -79,13 +79,13 @@ Section repr.
     (nidme termc terml termp : u64) (logc : list string)
     (entspP : Slice.t) (resppP : loc) nids γ : iProp Σ :=
     ∃ (entsp : list string) (respp : gmap u64 bool),
-      "Hentsp"    ∷ own_slice entspP stringT (DfracOwn 1) entsp ∗
-      "Hrespp"    ∷ own_map resppP (DfracOwn 1) respp ∗
-      "#Hvotes"   ∷ votes_in γ (dom respp) (uint.nat termc) (uint.nat termp) (logc ++ entsp) ∗
-      "%Hton"     ∷ ⌜is_term_of_node nidme (uint.nat termc)⌝ ∗
-      "%Hdomvts"  ∷ ⌜dom respp ⊆ nids⌝ ∗
-      "%Hllep"    ∷ ⌜uint.Z terml ≤ uint.Z termp⌝ ∗
-      "%Hpltc"    ∷ ⌜uint.Z termp < uint.Z termc⌝.
+      "Hentsp"   ∷ own_slice entspP stringT (DfracOwn 1) entsp ∗
+      "Hrespp"   ∷ own_map resppP (DfracOwn 1) respp ∗
+      "#Hvotes"  ∷ votes_in γ (dom respp) (uint.nat termc) (uint.nat termp) (logc ++ entsp) ∗
+      "%Hton"    ∷ ⌜is_term_of_node nidme (uint.nat termc)⌝ ∗
+      "%Hdomvts" ∷ ⌜dom respp ⊆ nids⌝ ∗
+      "%Hllep"   ∷ ⌜uint.Z terml ≤ uint.Z termp⌝ ∗
+      "%Hpltc"   ∷ ⌜uint.Z termp < uint.Z termc⌝.
 
   Definition own_paxos_candidate
     (paxos : loc) (nid termc terml : u64) (logc : list string) (iscand : bool) nids γ : iProp Σ :=
@@ -421,112 +421,6 @@ Section cquorum.
   Admitted.
 
 End cquorum.
-
-
-Section inv.
-  Context `{!paxos_ghostG Σ}.
-
-  Lemma safe_ledger_prefix_base_ledger_impl_prefix γ nids t1 t2 v1 v2 :
-    (t1 < t2)%nat ->
-    safe_ledger_in γ nids t1 v1 -∗
-    prefix_base_ledger γ t2 v2 -∗
-    paxos_inv γ nids -∗
-    ⌜prefix v1 v2⌝.
-  Proof.
-    iIntros (Hlt) "Hsafev1 Hpfb Hinv".
-    iNamed "Hinv".
-    iDestruct (nodes_inv_extract_ds_psa with "Hnodes") as (dss bs) "[Hndp Hnodes]".
-    (* Obtain [dom termlm = dom bs]. *)
-    iDestruct (big_sepM2_dom with "Hnodes") as %Hdomdp.
-    iDestruct (big_sepM2_dom with "Hndp") as %Hdom.
-    rewrite dom_map_zip_with_L Hdomdp intersection_idemp_L Hdomtermlm in Hdom.
-    symmetry in Hdom.
-    iClear "Hndp".
-    (* Obtain [valid_base_proposals], [valid_lb_ballots], and [valid_ub_ballots]. *)
-    iDestruct (nodes_inv_impl_valid_base_proposals with "Hsafepsb Hnodes") as %Hvbp.
-    { apply Hdom. }
-    iDestruct (nodes_inv_ds_psa_impl_nodes_inv_psa with "Hnodes") as "Hnodes".
-    iDestruct (nodes_inv_impl_valid_lb_ballots with "Hpsb Hnodes") as %Hvlb.
-    iDestruct (nodes_inv_impl_valid_ub_ballots with "Hps Hnodes") as %Hvub.
-    (* Obtain [proposed_after_chosen] from the above. *)
-    pose proof (vlb_vub_vbp_impl_pac _ _ _ Hvlb Hvub Hvbp) as Hpac.
-    (* Obtain [chosen_in bs p v1] *)
-    iDestruct (nodes_inv_safe_ledger_in_impl_chosen_in with "Hsafev1 Hnodes") as %Hchosen.
-    { apply Hdom. }
-    iDestruct "Hpfb" as (vb) "[Hvb %Hprefix]".
-    (* Obtain [psb !! t2 = Some vb]. *)
-    iDestruct (base_proposal_lookup with "Hvb Hpsb") as %Hvb.
-    iPureIntro.
-    specialize (Hpac _ _ _ _ Hlt Hchosen Hvb).
-    by trans vb.
-  Qed.
-
-  Lemma node_inv_past_nodedecs_impl_prefix_base_ledger γ nid ds dslb psa t v :
-    dslb !! t = Some (Accept v) ->
-    is_past_nodedecs_lb γ nid dslb -∗
-    node_inv_ds_psa γ nid ds psa -∗
-    prefix_base_ledger γ t v.
-  Proof.
-    iIntros (Hv) "Hdslb Hnode".
-    iNamed "Hnode". iNamed "Hpsa".
-    iDestruct (past_nodedecs_prefix with "Hdslb Hpastd") as %Hprefix.
-    pose proof (prefix_lookup_Some _ _ _ _ Hv Hprefix) as Hdst.
-    specialize (Hfixed _ _ Hdst).
-    by iDestruct (big_sepM_lookup with "Hpsalbs") as "?"; first apply Hfixed.
-  Qed.
-
-  Lemma safe_ledger_past_nodedecs_impl_prefix γ nids nid dslb t1 t2 v1 v2 :
-    nid ∈ nids ->
-    (t1 < t2)%nat ->
-    dslb !! t2 = Some (Accept v2) ->
-    safe_ledger_in γ nids t1 v1 -∗
-    is_past_nodedecs_lb γ nid dslb -∗
-    paxos_inv γ nids -∗
-    ⌜prefix v1 v2⌝.
-  Proof.
-    iIntros (Hnid Hlt Hv2) "Hsafe Hdslb Hinv".    
-    (* Obtain [prefix_base_ledger γ t2 v2]. *)
-    iAssert (prefix_base_ledger γ t2 v2)%I as "#Hpfb".
-    { iNamed "Hinv".
-      iDestruct (nodes_inv_extract_ds_psa with "Hnodes") as (dss bs) "[Hndp Hnodes]".
-      (* Obtain [dom termlm = dom bs]. *)
-      iDestruct (big_sepM2_dom with "Hnodes") as %Hdomdp.
-      iDestruct (big_sepM2_dom with "Hndp") as %Hdom.
-      rewrite dom_map_zip_with_L Hdomdp intersection_idemp_L Hdomtermlm in Hdom.
-      symmetry in Hdom.
-      iClear "Hndp".
-      assert (is_Some (dss !! nid)) as [ds Hds].
-      { by rewrite -elem_of_dom Hdomdp Hdom. }
-      assert (is_Some (bs !! nid)) as [psa Hpsa].
-      { by rewrite -elem_of_dom Hdom. }
-      iDestruct (big_sepM2_lookup with "Hnodes") as "Hnode"; [apply Hds | apply Hpsa |].
-      by iApply (node_inv_past_nodedecs_impl_prefix_base_ledger with "Hdslb Hnode").
-    }
-    by iApply (safe_ledger_prefix_base_ledger_impl_prefix with "Hsafe Hpfb Hinv").
-  Qed.
-
-  Lemma accepted_proposal_growing_proposal_impl_prefix γ nids nid t v1 v2 :
-    nid ∈ nids ->
-    is_accepted_proposal_lb γ nid t v1 -∗
-    own_proposal γ t v2 -∗
-    paxos_inv γ nids -∗
-    ⌜prefix v1 v2⌝.
-  Proof.
-    iIntros (Hinnids) "Hv1 Hv2 Hinv".
-    iNamed "Hinv".
-    rewrite -Hdomtermlm elem_of_dom in Hinnids.
-    destruct Hinnids as [terml Hterml].
-    iDestruct (big_sepM_lookup with "Hnodes") as "Hnode"; first apply Hterml.
-    iNamed "Hnode".
-    iDestruct (accepted_proposal_prefix with "Hv1 Hpsa") as %(vub1 & Hvub1 & Hprefix1).
-    iDestruct (big_sepM_lookup with "Hpsaubs") as (vub2) "[Hvub2 %Hprefix2]"; first apply Hvub1.
-    iDestruct (proposal_prefix with "Hvub2 Hv2") as %Hprefix.
-    iPureIntro.
-    trans vub1; first done.
-    by trans vub2.
-  Qed.
-
-End inv.
 
 Section collect.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.

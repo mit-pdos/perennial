@@ -8,11 +8,11 @@ From Goose Require github_com.mit_pdos.tulip.util.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Paxos := struct.decl [
-  "peers" :: slice.T uint64T;
-  "addrpeers" :: mapT uint64T;
-  "me" :: uint64T;
-  "sc" :: uint64T;
   "nidme" :: uint64T;
+  "peers" :: slice.T uint64T;
+  "addrme" :: uint64T;
+  "addrpeers" :: mapT uint64T;
+  "sc" :: uint64T;
   "mu" :: ptrT;
   "hb" :: boolT;
   "termc" :: uint64T;
@@ -452,7 +452,7 @@ Definition Paxos__RequestSession: val :=
 
 Definition Paxos__Serve: val :=
   rec: "Paxos__Serve" "px" :=
-    let: "ls" := grove_ffi.Listen (struct.loadF Paxos "me" "px") in
+    let: "ls" := grove_ffi.Listen (struct.loadF Paxos "addrme" "px") in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "conn" := grove_ffi.Accept "ls" in
