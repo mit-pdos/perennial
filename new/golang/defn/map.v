@@ -61,10 +61,10 @@ Definition for_range : val :=
 the general proofs for map iteration weren't ready *)
 Definition len : val :=
   λ: "mref",
-    let: "len" := Alloc #0 in
+    let: "len" := Alloc #(W64 0) in
     for_range "mref" (λ: <> <>,
-                       "len" <- !"len" + #1 ;;
-                       (for: (!"len" < #(2^64-1)) ; Skip := #())) ;;
+                       "len" <- !"len" + #(W64 1) ;;
+                       (for: (!"len" < #(W64 (2^64-1))) ; Skip := #())) ;;
     !"len".
 
 Definition make (kt vt : go_type) : val :=

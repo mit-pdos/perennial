@@ -287,6 +287,26 @@ Global Instance wp_int_gt (l r : w64) :
   PureWpVal True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
 Proof. Admitted.
 
+Definition MessageType_t := w32.
+
+Record Message_t :=
+  {
+    Type' : MessageType_t;
+    To: w64;
+    From: w64;
+    Term: w64;
+    LogTerm: w64;
+    Index: w64;
+    Entries: slice.t;
+    Commit: w64;
+    Vote: w64;
+    Snapshot: loc;
+    Reject: bool;
+    RejectHint: w64;
+    Context: slice.t;
+    Responses: slice.t;
+  }.
+
 Lemma wp_network__send (nw : loc) msgs_sl dq msgs :
   {{{
         own_slice msgs_sl raftpb.Message dq msgs

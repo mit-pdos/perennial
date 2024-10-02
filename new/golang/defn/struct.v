@@ -3,8 +3,8 @@ From New.golang.defn Require Import mem list.
 (* FIXME: these notations don't work properly. *)
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
-Notation "f ::= v" := (PairV #(str f%string) v%V) (at level 60) : val_scope.
-Notation "f ::= v" := (Pair #(str f%string) v%E) (at level 60) : expr_scope.
+Notation "f ::= v" := (PairV #(f%string) v%V) (at level 60) : val_scope.
+Notation "f ::= v" := (Pair #(f%string) v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
 Global Arguments structT _%_list%_struct.
 
@@ -30,7 +30,7 @@ Definition field_offset (t : go_type) f : (Z * go_type) :=
 .
 
 Definition field_ref (t : go_type) f: val :=
-  λ: "p", BinOp (OffsetOp (field_offset t f).1) (Var "p") #1.
+  λ: "p", BinOp (OffsetOp (field_offset t f).1) (Var "p") #(W64 1).
 
 Definition field_ty d f : go_type := (field_offset d f).2.
 
@@ -62,7 +62,7 @@ Definition make_def (t : go_type) : val :=
       (fix make_def_struct (fs : struct.descriptor) : val :=
          match fs with
          | [] => (λ: "fvs", Val #())%V
-         | (f,ft)::fs => (λ: "fvs", ((match: (assocl_lookup #(str f) "fvs") with
+         | (f,ft)::fs => (λ: "fvs", ((match: (assocl_lookup #f "fvs") with
                                      InjL <> => (Val (zero_val ft))
                                      | InjR "x" => "x" end),
                                             (make_def_struct fs) "fvs"))%V

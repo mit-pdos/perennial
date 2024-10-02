@@ -1,41 +1,47 @@
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Import tactics.
 From iris.proofmode Require Import environments.
+From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
 From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export mem.
 From New.golang.theory Require Import typing.
 Require Import Coq.Program.Equality.
+From Ltac2 Require Import Ltac2.
+Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
 Section goose_lang.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-  Definition typed_pointsto_def l (dq : dfrac) (t : go_type) (v : val) : iProp Σ :=
-    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜ has_go_type v t ⌝)%I.
+  Context `{!IntoVal V}.
+  Context `{!IntoValTyped V t}.
+  Implicit Type v : V.
+  Program Definition typed_pointsto_def l (dq : dfrac) (v : V) : iProp Σ :=
+    (([∗ list] j↦vj ∈ flatten_struct (to_val v), (l +ₗ j) ↦{dq} vj))%I.
   Definition typed_pointsto_aux : seal (@typed_pointsto_def). Proof. by eexists. Qed.
   Definition typed_pointsto := typed_pointsto_aux.(unseal).
   Definition typed_pointsto_unseal : @typed_pointsto = @typed_pointsto_def := typed_pointsto_aux.(seal_eq).
 
-  Notation "l ↦[ t ] dq v" := (typed_pointsto l dq t v%V)
-                                   (at level 20, dq custom dfrac at level 1, t at level 50,
-                                    format "l  ↦[ t ] dq  v") : bi_scope.
+  Notation "l ↦# dq v" := (typed_pointsto l dq v%V)
+                                   (at level 20, dq custom dfrac at level 1,
+                                    format "l  ↦# dq  v") : bi_scope.
 
   Ltac unseal := rewrite ?typed_pointsto_unseal /typed_pointsto_def.
 
-  Global Instance typed_pointsto_timeless l t q v: Timeless (l ↦[t]{q} v).
+  Global Instance typed_pointsto_timeless l q v : Timeless (l ↦#{q} v).
   Proof. unseal. apply _. Qed.
 
-  Global Instance typed_pointsto_persistent l t v: Persistent (l ↦[t]□ v).
+  Global Instance typed_pointsto_persistent l v : Persistent (l ↦#□ v).
   Proof. unseal. apply _. Qed.
 
-  Global Instance typed_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{#q} v)%I.
+  Global Instance typed_pointsto_fractional l v : Fractional (λ q, l ↦#{#q} v)%I.
   Proof. unseal. apply _. Qed.
 
-  Global Instance typed_pointsto_as_fractional l t v q: fractional.AsFractional
-                                                     (l ↦[t]{#q} v)
-                                                     (λ q, l ↦[t]{#q} v)%I q.
+  Global Instance typed_pointsto_as_fractional l v q : AsFractional
+                                                     (l ↦#{#q} v)
+                                                     (λ q, l ↦#{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
   Global Instance list_val_inj:
@@ -64,113 +70,161 @@ Section goose_lang.
     done.
   Qed.
 
-  Global Instance typed_pointsto_combine_sep_gives l t dq1 dq2 v1 v2 :
-    CombineSepGives (l ↦[t]{dq1} v1)%I (l ↦[t]{dq2} v2)%I
-                    ⌜ (go_type_size t > O → ✓(dq1 ⋅ dq2)) ∧ v1 = v2 ⌝%I.
+  Local Lemma flatten_struct_inj (v1 v2 : val) :
+    has_go_type v1 t → has_go_type v2 t →
+    flatten_struct v1 = flatten_struct v2 → v1 = v2.
   Proof.
-    unfold CombineSepGives.
-    unseal.
-    rewrite go_type_size_unseal.
-    iIntros "[[H1 %Hty1] [H2 %Hty2]]".
-    rename l into l'.
-    iInduction Hty1 as [] "IH" forall (l' v2 Hty2); subst.
-    Local Ltac solve_combines := inversion Hty2; subst; rewrite ?slice.val_unseal ?interface.val_unseal;
-                                 rewrite /= ?loc_add_0 ?right_id;
-                                 iDestruct (heap_pointsto_agree with "[$]") as "%H";
-                                 inversion H; subst; iCombine "H1 H2" gives %?; iModIntro; iPureIntro; split; naive_solver.
-    all: try solve_combines; shelve.
-    Unshelve.
-    - (* arrays *)
-      inversion_clear Hty2; subst.
-      rewrite array.val_unseal /=.
-      rename a0 into a'.
-      iInduction a as [|? a] "IH2" forall (l' a' Hlen Helems0); destruct a' as [|? ]; try by exfalso.
-      { iModIntro. iPureIntro. simpl. split; first (intros; lia); done. }
-      iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
-      fold flatten_struct.
-      iDestruct ("IH" with "[] [] Ha1 Hb1") as %[Hfrac1 Heq1].
-      { iPureIntro. by left. }
-      { iPureIntro. apply Helems0. by left. }
+    intros Hty1 Hty2 Heq.
+    clear dependent V.
+    dependent induction Hty1 generalizing v2.
+    Ltac2 step () :=
+      match! goal with
+      | [ v : slice.t |- _ ] => let v := Control.hyp v in destruct $v
+      | [ h : has_go_type _ _ |- _ ] => let h := Control.hyp h in (inversion_clear $h in Heq)
+      | [ h : struct.fields_val _ = struct.fields_val _ |- _ ] => apply struct_fields_val_inj in $h; subst
+
+      (* unseal whatever's relevant *)
+      | [ h : context [slice.val]  |- _ ] => rewrite !slice.val_unseal in $h
+      | [ |- context [slice.val] ] => rewrite !slice.val_unseal
+      | [ h : context [interface.val]  |- _ ] => rewrite !interface.val_unseal in $h
+      | [ |- context [interface.val] ] => rewrite !interface.val_unseal
+      | [ h : context [array.val]  |- _ ] => rewrite !array.val_unseal in $h
+      | [ |- context [array.val] ] => rewrite !array.val_unseal
+      | [ h : context [struct.val]  |- _ ] => rewrite !struct.val_unseal in $h
+      | [ |- context [struct.val] ] => rewrite !struct.val_unseal
+
+      | [ h : (flatten_struct _ = flatten_struct _) |- _ ] => progress (simpl in $h)
+      | [ h : cons _ _ = cons _ _  |- _ ] =>
+          Std.inversion Std.FullInversion (Std.ElimOnIdent h) None None;
+          clear $h; subst
+      | [ h : context [length (cons _ _)] |- _ ] => progress (simpl in $h)
+      | [ h : context [length []] |- _ ] => progress (simpl in $h)
+      | [ |- _ ] => reflexivity
+      | [ |- _ ] => discriminate
+      end
+    .
+    all: repeat ltac2:(step ()).
+    {
       subst.
-
-      iDestruct ("IH2" with "[] [] [] [] [Ha2] [Hb2]") as %[Hfrac2 Heq2].
-      { iPureIntro. intros. apply Helems. by right. }
-      { iPureIntro. instantiate (1:=a'). by inversion Hlen. }
-      { iPureIntro. intros. apply Helems0. by right. }
-      { iModIntro. iIntros. iApply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
-      { setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
-      { erewrite has_go_type_len; last (apply Helems0; by left).
-        setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
-      iModIntro. iPureIntro. simpl.
-      split.
-      2:{ simpl in *. by rewrite Heq2. }
-      intros.
-      destruct (decide (go_type_size_def elem = O)).
-      { eapply Hfrac2. lia. }
-      { eapply Hfrac1. lia. }
-    - (* structs*)
-      inversion Hty2; subst; rewrite /= ?loc_add_0 ?right_id.
-      rewrite struct.val_unseal.
-      iInduction d as [|[] d] "IH2" forall (l' Hty2).
-      { iModIntro. iPureIntro. split; first (intros; lia); done. }
-      iDestruct "H1" as "(Ha1 & Ha2)"; iDestruct "H2" as "(Hb1 & Hb2)".
-      fold flatten_struct struct.val.
-      iDestruct ("IH" with "[] [] Ha1 Hb1") as %[Hfrac1 Heq1].
-      { iPureIntro. by left. }
-      { iPureIntro. apply Hfields0. by left. }
-
-      iDestruct ("IH2" with "[] [] [] [] [Ha2] [Hb2]") as %[Hfrac2 Heq2].
-      { iPureIntro. intros. apply Hfields. by right. }
-      { iPureIntro. intros. apply Hfields0. by right. }
-      { iPureIntro. constructor. intros. apply Hfields0. by right. }
-      { iModIntro. iIntros. iApply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
-      { setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
-      { erewrite has_go_type_len; last (apply Hfields0; by left).
-        erewrite has_go_type_len; last (apply Hfields; by left).
-        setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc. iFrame. }
-      iModIntro. iPureIntro. simpl.
-      split.
-      2:{ simpl in *. by rewrite Heq1 Heq2. }
-      intros.
-      destruct (decide (go_type_size_def g = O)).
-      { eapply Hfrac2. lia. }
-      { eapply Hfrac1. lia. }
+      (* XXX: need to reorder hyps to avoid an error in [dependent induction].... *)
+      move a after a0.
+      dependent induction a generalizing a0; destruct a0; repeat ltac2:(step ()).
+      apply app_inj_1 in Heq as [? ?].
+      2:{ by do 2 erewrite has_go_type_len by naive_solver. }
+      simpl. f_equal.
+      + apply H; naive_solver.
+      + apply IHa; naive_solver.
+    }
+    {
+      induction d as [|[]d]; repeat ltac2:(step ()).
+      simpl in *.
+      apply app_inj_1 in Heq as [? ?].
+      2:{ by do 2 erewrite has_go_type_len by naive_solver. }
+      f_equal.
+      + apply H; naive_solver.
+      + apply IHd; naive_solver.
+    }
   Qed.
 
-  Lemma typed_pointsto_persist l t dq v :
-    l ↦[t]{dq} v ==∗ l ↦[t]□ v.
+  Global Instance typed_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
+    CombineSepGives (l ↦#{dq1} v1)%I (l ↦#{dq2} v2)%I
+                    ⌜ (go_type_size t > O → ✓(dq1 ⋅ dq2)) ∧ v1 = v2 ⌝%I.
+  Proof using IntoValTyped0.
+    unfold CombineSepGives.
+    unseal.
+    iIntros "[H1 H2]".
+    rename l into l'.
+    pose proof (to_val_has_go_type v1) as H1.
+    pose proof (to_val_has_go_type v2) as H2.
+    pose proof (flatten_struct_inj _ _ H1 H2).
+    iDestruct (big_sepL2_sepL_2 with "H1 H2") as "H".
+    { do 2 (erewrite has_go_type_len by done). done. }
+    iDestruct (big_sepL2_impl with "H []") as "H".
+    {
+      iModIntro. iIntros "*%%[H1 H2]".
+      iCombine "H1 H2" gives %Heq.
+      instantiate(1:=(λ _ _ _, ⌜ _ ⌝%I )).
+      simpl. iPureIntro. exact Heq.
+    }
+    iDestruct (big_sepL2_pure with "H") as %[Hlen Heq].
+    iModIntro. iPureIntro.
+    split.
+    { intros. specialize (Heq 0%nat).
+      destruct (flatten_struct (# v1)) eqn:Hbad.
+      { exfalso. apply (f_equal length) in Hbad. rewrite (has_go_type_len (t:=t)) /= in Hbad; [lia|done]. }
+      clear Hbad.
+      destruct (flatten_struct (# v2)) eqn:Hbad.
+      { exfalso. apply (f_equal length) in Hbad. rewrite (has_go_type_len (t:=t)) /= in Hbad; [lia|done]. }
+      specialize (Heq v v0 ltac:(done) ltac:(done)) as [??]. assumption.
+    }
+    {
+      apply to_val_inj, H.
+      apply list_eq.
+      intros.
+      replace i with (i + 0)%nat by lia.
+      rewrite <- !lookup_drop.
+      destruct (drop i $ flatten_struct (# v1)) eqn:Hlen1, (drop i $ flatten_struct (# v2)) eqn:Hlen2.
+      { done. }
+      1-2: exfalso; apply (f_equal length) in Hlen1, Hlen2;
+        rewrite !length_drop in Hlen1, Hlen2;
+        simpl in *; lia.
+      specialize (Heq i v v0).
+      replace i with (i + 0)%nat in Heq by lia.
+      rewrite <- !lookup_drop in Heq.
+      rewrite Hlen1 Hlen2 in Heq.
+      simpl in Heq.
+      unshelve epose proof (Heq _ _); naive_solver.
+    }
+  Qed.
+
+  Lemma typed_pointsto_persist l dq v :
+    l ↦#{dq} v ==∗ l ↦#□ v.
   Proof.
-    unseal. iIntros "[? $]".
+    unseal. iIntros "?".
     iApply big_sepL_bupd.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros.
     iApply (heap_pointsto_persist with "[$]").
   Qed.
 
-  Lemma typed_pointsto_not_null l t dq v :
+  Lemma typed_pointsto_not_null l dq v :
     go_type_size t > 0 →
-    l ↦[t]{dq} v -∗ ⌜ l ≠ null ⌝.
-  Proof.
-    unseal. intros Hlen. iIntros "[? %Hty]".
+    l ↦#{dq} v -∗ ⌜ l ≠ null ⌝.
+  Proof using IntoValTyped0.
+    unseal. intros Hlen. iIntros "?".
+    pose proof (to_val_has_go_type v) as Hty.
+    generalize dependent (# v). clear dependent V. intros v Hty.
     iInduction Hty as [] "IH"; subst;
     simpl; rewrite ?slice.val_unseal ?interface.val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
     - (* array *)
       rewrite go_type_size_unseal /= in Hlen.
-      iInduction a as [|] "IH2"; simpl in *.
-      { exfalso. lia. }
+      destruct a as [|].
+      { exfalso. simpl in *. lia. }
       rewrite array.val_unseal /=.
       destruct (decide (go_type_size_def elem = O)).
+      { exfalso. rewrite e in Hlen. simpl in *. lia. }
+      iDestruct select ([∗ list] _ ↦ _ ∈ _, _)%I as "[? _]".
+      iApply ("IH" $! v with "").
+      + naive_solver.
+      + iPureIntro. rewrite go_type_size_unseal. lia.
+      + iFrame.
+    - (* struct *)
+      rewrite go_type_size_unseal /= in Hlen.
+      iInduction d as [|[]] "IH2"; simpl in *.
+      { exfalso. lia. }
+      rewrite struct.val_unseal /=.
+      destruct (decide (go_type_size_def g = O)).
       {
-        rewrite (nil_length_inv (flatten_struct a)).
+        rewrite (nil_length_inv (flatten_struct (default _ _))).
         2:{
           erewrite has_go_type_len.
           { rewrite go_type_size_unseal. done. }
-          apply Helems. by left.
+          apply Hfields. by left.
         }
         rewrite app_nil_l.
         iApply ("IH2" with "[] [] [] [$]").
-        - iPureIntro. intros. apply Helems. by right.
+        - iPureIntro. intros. apply Hfields. by right.
         - iPureIntro. lia.
         - iModIntro. iIntros. iApply ("IH" with "[] [] [$]").
           + iPureIntro. by right.
@@ -182,86 +236,38 @@ Section goose_lang.
         - iPureIntro. by left.
         - iPureIntro. rewrite go_type_size_unseal. lia.
       }
-    - (* struct *)
-      rewrite go_type_size_unseal /= in Hlen.
-      iInduction d as [|[]] "IH2"; simpl in *.
-    { exfalso. lia. }
-    rewrite struct.val_unseal /=.
-    destruct (decide (go_type_size_def g = O)).
-    {
-      rewrite (nil_length_inv (flatten_struct (default _ _))).
-      2:{
-        erewrite has_go_type_len.
-        { rewrite go_type_size_unseal. done. }
-        apply Hfields. by left.
-      }
-      rewrite app_nil_l.
-      iApply ("IH2" with "[] [] [] [$]").
-      - iPureIntro. intros. apply Hfields. by right.
-      - iPureIntro. lia.
-      - iModIntro. iIntros. iApply ("IH" with "[] [] [$]").
-        + iPureIntro. by right.
-        + iPureIntro. lia.
-    }
-    {
-      iDestruct select ([∗ list] _ ↦ _ ∈ _, _)%I as "[? _]".
-      iApply ("IH" with "[] [] [$]").
-      - iPureIntro. by left.
-      - iPureIntro. rewrite go_type_size_unseal. lia.
-    }
   Qed.
 
-  Local Lemma wp_AllocAt t stk E v :
-    has_go_type v t ->
+  Lemma wp_ref_ty stk E (v : V) :
     {{{ True }}}
-      ref v @ stk; E
-    {{{ l, RET #l; l ↦[t] v }}}.
+      ref_ty t (# v) @ stk; E
+    {{{ l, RET #l; l ↦# v }}}.
   Proof.
-    iIntros (Hty Φ) "_ HΦ".
+    iIntros (Φ) "_ HΦ".
+    rewrite ref_ty_unseal.
+    wp_rec.
     wp_apply wp_allocN_seq; first by word.
     change (uint.nat 1) with 1%nat; simpl.
     iIntros (l) "[Hl _]".
     iApply "HΦ".
     unseal.
-    iSplitL; auto.
     rewrite Z.mul_0_r loc_add_0.
     iFrame.
   Qed.
 
-  Lemma wp_ref_ty t stk E v :
-    has_go_type v t ->
-    {{{ True }}}
-      ref_ty t v @ stk; E
-    {{{ l, RET #l; l ↦[t] v }}}.
-  Proof.
-    iIntros (Hty Φ) "_ HΦ".
-    rewrite ref_ty_unseal.
-    wp_rec. wp_pures.
-    wp_apply (wp_AllocAt t); auto.
-  Qed.
-
-  Lemma wp_ref_of_zero stk E t :
-    {{{ True }}}
-      ref (zero_val t) @ stk; E
-    {{{ l, RET #l; l ↦[t] (zero_val t) }}}.
-  Proof.
-    iIntros (Φ) "_ HΦ".
-    wp_apply (wp_AllocAt t); eauto.
-    apply zero_val_has_go_type.
-  Qed.
-
-  Lemma wp_typed_load stk E q l t v :
-    {{{ ▷ l ↦[t]{q} v }}}
+  Lemma wp_typed_load stk E q l v :
+    {{{ ▷ l ↦#{q} v }}}
       load_ty t #l @ stk; E
-    {{{ RET v; l ↦[t]{q} v }}}.
-  Proof.
+    {{{ RET #v; l ↦#{q} v }}}.
+  Proof using IntoValTyped0.
     iIntros (Φ) ">Hl HΦ".
     unseal.
-    iDestruct "Hl" as "[Hl %Hty]".
+    pose proof (to_val_has_go_type v) as Hty.
+    generalize dependent (# v). clear dependent V.
+    intros v Hty.
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
-      iApply "HΦ".
-      iSplit; eauto. }
+      iApply "HΦ". iFrame. }
     rewrite load_ty_unseal.
     rename l into l'.
     iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
@@ -331,7 +337,7 @@ Section goose_lang.
       by iFrame.
   Qed.
 
-  Lemma wp_store stk E l v v' :
+  Lemma wp_store stk E l (v v' : val) :
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
     {{{ RET LitV LitUnit; l ↦ v }}}.
   Proof.
@@ -340,20 +346,20 @@ Section goose_lang.
     by wp_apply (wp_finish_store with "[$Hl $Hl']").
   Qed.
 
-  Lemma wp_typed_store stk E l t v v' :
-    has_go_type v' t ->
-    {{{ ▷ l ↦[t] v }}}
-      (#l <-[t] v')%V @ stk; E
-    {{{ RET #(); l ↦[t] v' }}}.
-  Proof.
-    intros Hty.
+  Lemma wp_typed_store stk E l v v' :
+    {{{ ▷ l ↦# v }}}
+      (#l <-[t] #v')%V @ stk; E
+    {{{ RET #(); l ↦# v' }}}.
+  Proof using IntoValTyped0.
     iIntros (Φ) ">Hl HΦ".
     unseal.
-    iDestruct "Hl" as "[Hl %Hty_old]".
+    pose proof (to_val_has_go_type v) as Hty_old.
+    pose proof (to_val_has_go_type v') as Hty.
+    generalize dependent #v. generalize dependent #v'.
+    clear dependent V. intros v' Hty v Hty_old.
     iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v', (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
-      iApply "HΦ".
-      iSplit; eauto. }
+      iApply "HΦ". iFrame. }
     rename l into l'.
     rewrite store_ty_unseal.
     iInduction Hty_old as [] "IH" forall (v' Hty l' Φ) "HΦ".
@@ -425,12 +431,12 @@ Section goose_lang.
       rewrite ?right_id. iFrame.
   Qed.
 
-  Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ is_pers :
+  Lemma tac_wp_load_ty K Δ Δ' s E i l q v Φ is_pers :
     MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (is_pers, typed_pointsto l q t v)%I →
-    envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
+    envs_lookup i Δ' = Some (is_pers, typed_pointsto l q v)%I →
+    envs_entails Δ' (WP fill K (Val #v) @ s; E {{ Φ }}) →
     envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
-  Proof.
+  Proof using Type*.
     rewrite envs_entails_unseal=> ? ? Hwp.
     rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_typed_load.
     iIntros "H".
@@ -443,16 +449,15 @@ Section goose_lang.
       iSpecialize ("H" with "[$]"). by wp_apply Hwp.
   Qed.
 
-  Lemma tac_wp_store_ty Δ Δ' Δ'' stk E i K l t v v' Φ :
-    has_go_type v' t ->
+  Lemma tac_wp_store_ty K Δ Δ' Δ'' stk E i l v v' Φ :
     MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (false, l ↦[t] v)%I →
-    envs_simple_replace i false (Esnoc Enil i (l ↦[t] v')) Δ' = Some Δ'' →
+    envs_lookup i Δ' = Some (false, l ↦# v)%I →
+    envs_simple_replace i false (Esnoc Enil i (l ↦# v')) Δ' = Some Δ'' →
     envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
-    envs_entails Δ (WP fill K (store_ty t (LitV l) v') @ stk; E {{ Φ }}).
-  Proof.
+    envs_entails Δ (WP fill K (store_ty t (LitV l) #v') @ stk; E {{ Φ }}).
+  Proof using Type*.
     intros Hty.
-    rewrite envs_entails_unseal=> ????.
+    rewrite envs_entails_unseal=> ???.
     rewrite -wp_bind. eapply bi.wand_apply; first by eapply bi.wand_entails, wp_typed_store.
     rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
@@ -468,16 +473,17 @@ Definition is_primitive_type (t : go_type) : Prop :=
   | _ => True
   end.
 
-Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 t :
+Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 :
   is_primitive_type t →
-  has_go_type v1 t →
-  v' ≠ v1 →
-  {{{ ▷ l ↦[t]{dq} v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  {{{ RET (v', #false); l ↦[t]{dq} v' }}}.
-Proof.
-  intros Hprim Hty Hne.
+  #v' ≠ #v1 →
+  {{{ ▷ l ↦#{dq} v' }}} CmpXchg (Val $ LitV $ LitLoc l) #v1 #v2 @ s; E
+  {{{ RET (#v', #false); l ↦#{dq} v' }}}.
+Proof using Type*.
+  intros Hprim Hne.
+  pose proof (to_val_has_go_type v') as Hty_old.
+  pose proof (to_val_has_go_type v1) as Hty.
   iIntros (?) "Hl HΦ". unseal.
-  iDestruct "Hl" as "[H >%Hty_old]".
+  generalize dependent (#v1). generalize dependent (#v'). intros.
   destruct t; try by exfalso.
   all: inversion Hty_old; subst; inversion Hty; subst;
     simpl; rewrite loc_add_0 right_id;
@@ -485,29 +491,30 @@ Proof.
     iIntros; iApply "HΦ"; iFrame; done.
 Qed.
 
-Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 t :
+Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 :
   is_primitive_type t →
-  has_go_type v2 t →
-  v' = v1 →
-  {{{ ▷ l ↦[t] v' }}} CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2) @ s; E
-  {{{ RET (v', #true); l ↦[t] v2 }}}.
-Proof.
-  intros Hprim Hty Heq.
+  #v' = #v1 →
+  {{{ ▷ l ↦# v' }}} CmpXchg (Val $ LitV $ LitLoc l) #v1 #v2 @ s; E
+  {{{ RET (#v', #true); l ↦# v2 }}}.
+Proof using Type*.
+  intros Hprim Heq.
+  pose proof (to_val_has_go_type v') as Hty_old.
+  pose proof (to_val_has_go_type v2) as Hty.
   iIntros (?) "Hl HΦ". unseal.
-  iDestruct "Hl" as "[H >%Hty_old]".
+  generalize dependent (#v1). generalize dependent (#v'). intros.
   destruct t; try by exfalso.
   all: inversion Hty_old; subst;
     inversion Hty; subst;
     simpl; rewrite loc_add_0 right_id;
-    wp_apply (wp_cmpxchg_suc with "[$H]"); first done; first (by econstructor);
+    wp_apply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
     iIntros; iApply "HΦ"; iFrame; done.
 Qed.
 
 End goose_lang.
 
-Notation "l ↦[ t ] dq v" := (typed_pointsto l dq t v%V)
-                              (at level 20, dq custom dfrac at level 50, t at level 50,
-                               format "l  ↦[ t ] dq  v") : bi_scope.
+Notation "l ↦# dq v" := (typed_pointsto l dq v%V)
+                              (at level 20, dq custom dfrac at level 50,
+                               format "l  ↦# dq  v") : bi_scope.
 
 Create HintDb has_go_type.
 Hint Constructors has_go_type : has_go_type.
@@ -521,13 +528,13 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
 
 Tactic Notation "wp_load" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦[_]{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_load: cannot find" l "↦[t] ?" in
+    let l := match goal with |- _ = Some (_, (?l ↦#{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_load: cannot find" l "↦# ?" in
   wp_pures;
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     ( first
-        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty _ _ _ _ _ K))
+        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty K))
         |fail 1 "wp_load: cannot find 'load_ty' in" e];
       [tc_solve
       |solve_pointsto ()
@@ -543,7 +550,7 @@ Tactic Notation "wp_store" :=
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store_ty _ _ _ _ _ _ K))
+      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store_ty K))
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
     [(repeat econstructor || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
     |tc_solve

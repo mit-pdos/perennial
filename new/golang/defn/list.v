@@ -1,4 +1,4 @@
-From New Require Export notation.
+From New Require Import notation.
 
 Module list.
 Section defn.

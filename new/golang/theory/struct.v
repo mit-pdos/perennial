@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import proofmode lifting.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import mem typing exception list.
+From New.golang.theory Require Import mem exception list typing.
 From Perennial.Helpers Require Import NamedProps.
 
 Module struct.
@@ -10,17 +10,17 @@ Context `{ffi_syntax}.
 Implicit Types (d : struct.descriptor).
 Infix "=?" := (String.eqb).
 (* FIXME: what does _f mean? Want better name. *)
-Fixpoint get_field_f d f0: val -> val :=
+Fixpoint field_get_f d f0: val -> val :=
   λ v, match d with
        | [] => #()
        | (f,_)::fs =>
          match v with
-         | PairV v1 v2 => if f =? f0 then v1 else get_field_f fs f0 v2
+         | PairV v1 v2 => if f =? f0 then v1 else field_get_f fs f0 v2
          | _ => #()
          end
        end.
 
-Fixpoint set_field_f d f0 fv: val -> val :=
+Fixpoint field_set_f d f0 fv: val -> val :=
   λ v, match d with
        | [] => v
        | (f,_)::fs =>
@@ -28,7 +28,7 @@ Fixpoint set_field_f d f0 fv: val -> val :=
          | PairV v1 v2 =>
            if f =? f0
            then PairV fv v2
-           else PairV v1 (set_field_f fs f0 fv v2)
+           else PairV v1 (field_set_f fs f0 fv v2)
          | _ => v
          end
        end.
@@ -41,7 +41,7 @@ Class Wf (d : struct.descriptor) : Set :=
 End goose_lang.
 End struct.
 
-Notation "l ↦s[ t :: f ] dq v" := (struct.field_ref_f t f l ↦[struct.field_ty t f]{dq} v)%I
+Notation "l ↦s[ t :: f ] dq v" := (struct.field_ref_f t f l ↦#{dq} v)%I
   (at level 50, dq custom dfrac at level 70, t at level 59, f at level 59,
      format "l  ↦s[ t  ::  f ] dq  v").
 
@@ -62,27 +62,37 @@ Definition proj_descriptor_wf (d : struct.descriptor) :=
 Global Hint Extern 3 (struct.Wf ?d) => exact (proj_descriptor_wf d) : typeclass_instances.
 
 Section lemmas.
-
 Context `{heapGS Σ}.
 
-Fixpoint struct_fields l dq (t : go_type) (fs : struct.descriptor)
-      (v : val): iProp Σ :=
-  match fs with
-  | [] => "_" ∷ ⌜v = #()⌝
-  | (f,t')::fs =>
-    match v with
-    | PairV v1 v2 => ("H" ++ f) ∷ l ↦s[t :: f]{dq} v1 ∗
-                    struct_fields l dq t fs v2
-    | _ => False
-    end
-  end.
+Class IntoValStructField (f : string) (fs : struct.descriptor) (V : Type) (Vf : Type)
+  `{!IntoVal V} `{!IntoVal Vf}
+  `{!IntoValTyped Vf (default boolT (assocl_lookup f fs))}
+  :=
+  {
+    field_proj : V → Vf ;
+    field_proj_eq_field_get : ∀ v, #(field_proj v) = (struct.field_get_f fs f #v);
+  }.
+
+Global Arguments field_proj (f) {_ _ _ _ _ _ _} (v).
+
+Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
+  (fs : struct.descriptor) (v : V) : iProp Σ :=
+  [∗ list] ft ∈ fs,
+    ∀ `(H:IntoValStructField f fs V Vf), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj f v).
 
 (* FIXME: could try stating this with (structT d) substituted in. The main
    concern is that it will result in t getting unfolded. *)
-Theorem struct_fields_split l q t d {Ht : t = structT d} {dwf : struct.Wf d} v :
-  typed_pointsto l q t v ⊣⊢ struct_fields l q t d v.
+Theorem struct_fields_split `{!IntoVal V} `{!IntoValTyped V t}
+  l q d {Ht : t = structT d} {dwf : struct.Wf d} (v : V) :
+  typed_pointsto l q v ⊣⊢ struct_fields l q d v.
 Proof.
-  intros. subst.
+  subst.
+  iSplit.
+  - (* split up struct *)
+    iIntros "Hv".
+    admit.
+  - (* combine struct fields *)
+    admit.
 Admitted.
 
 End lemmas.
@@ -94,9 +104,11 @@ Global Instance pure_struct_field_ref_wp t f (l : loc) :
   PureWpVal True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
   iIntros (?? Φ?) "HΦ".
-  rewrite /struct.field_ref; cbn; wp_pures.
+  rewrite /struct.field_ref. wp_pures.
   iModIntro.
-  iExactEq "HΦ".
+  (* FIXME: avoid unfolding to_val *)
+  iExactEq "HΦ". Transparent to_val. rewrite /to_val /=. Opaque to_val.
+  unfold struct.field_ref_f. simpl.
   rewrite /loc_add /= /addr_id /=.
   repeat (f_equal; try word).
 Qed.
@@ -109,7 +121,7 @@ Definition is_structT (t : go_type) : Prop :=
 
 Global Instance wp_struct_fields_cons_nil (k : string) (l : list (string * val)) (v : val) :
   PureWpVal True
-    (list.Cons (PairV #(str k) v) (struct.fields_val l))
+    (list.Cons (PairV #k v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
 .
 Proof.
@@ -120,7 +132,7 @@ Qed.
 
 Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
   PureWpVal True
-    (list.Cons (PairV #(str k) v) (struct.fields_val l))
+    (list.Cons (PairV #k v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
 .
 Proof.
@@ -129,9 +141,30 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
+Fixpoint is_comparable_type (t : go_type) : Prop :=
+  match t with
+  | arrayT _ elem => is_comparable_type elem
+  | structT d =>
+      (fix is_comparable_type_struct d : Prop :=
+         match d with
+         | [] => True
+         | (_,t) :: d => is_comparable_type t ∧ is_comparable_type_struct d
+         end
+      ) d
+  | funcT => False
+  | _  => True
+  end
+.
+
+Global Instance wp_if_destruct `{!IntoVal V} `{!IntoValTyped V t} `{!EqDecision V} (v1 v2 : V) :
+  PureWpVal (is_comparable_type t) (# v1 = # v2) #(bool_decide (v1 = v2)).
+Proof.
+  iIntros (?? Φk) "%Ht HΦ".
+Admitted.
+
 Global Instance wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
   PureWpVal True
-    (struct.assocl_lookup #(str k) (struct.fields_val l))
+    (struct.assocl_lookup #k (struct.fields_val l))
     (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
 .
 Proof.
@@ -147,9 +180,14 @@ Proof.
     wp_rec.
     rewrite /struct.fields_val_def /=.
     wp_pures.
+    wp_pure; [done|].
     destruct bool_decide eqn:Heqb; wp_pures.
     {
-      rewrite bool_decide_eq_true in Heqb. inversion Heqb; subst. clear Heqb.
+      rewrite bool_decide_eq_true in Heqb.
+      eapply (inj (R:=(=))) in Heqb.
+      2:{
+      }
+      inversion Heqb; subst. clear Heqb.
       wp_pures.
       rewrite (String.eqb_refl).
       by iApply "HΦ".
