@@ -1,5 +1,5 @@
 From New.golang.defn Require Export notation.
-From New.golang.defn Require Import slice.
+From New.golang.defn Require Export typing slice.
 
 Section defn.
   Context `{ffi_syntax}.
@@ -12,10 +12,10 @@ Section defn.
 
   Local Definition to_bytes_aux: val :=
     (rec: "to_bytes" "i" "s" :=
-       if: (Var "i") = #0
+       if: (Var "i") = #(W64 0)
        then slice.nil
        else
-         let: "j" := "i" - #1 in
+         let: "j" := "i" - #(W64 1) in
          (slice.append byteT ("to_bytes" "j" "s") (StringGet "s" "j")))
   .
 
@@ -30,10 +30,10 @@ Section defn.
 
   Definition from_bytes : val :=
     (rec: "from_bytes" "b" :=
-       if: (slice.len "b") = #0
-       then (Val #str "")
-       else (to_string ![byteT] (slice.elem_ref byteT "b" #0)) +
-              ("from_bytes" (slice.slice byteT "b" #1 (slice.len "b")))).
+       if: (slice.len "b") = #(W64 0)
+       then (# "")
+       else (to_string ![byteT] (slice.elem_ref byteT "b" #(W64 0))) +
+              ("from_bytes" (slice.slice byteT "b" #(W64 1) (slice.len "b")))).
 
 End defn.
 End string.

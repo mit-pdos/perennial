@@ -14,13 +14,13 @@ Section go_lang.
         (fix load_ty_struct d : val :=
           match d with
           | [] => (λ: <>, #())%V
-          | (_,t) :: d => (λ: "l", (load_ty_def t "l", load_ty_struct d ("l" +ₗ[t] #1)))%V
+          | (_,t) :: d => (λ: "l", (load_ty_def t "l", load_ty_struct d ("l" +ₗ[t] #(W64 1))))%V
           end) d
     | arrayT n t =>
         (fix load_ty_array n : val :=
           match n with
           | O => (λ: <>, #())%V
-          | S n => (λ: "l", (load_ty_def t "l", load_ty_array n ("l" +ₗ[t] #1)))%V
+          | S n => (λ: "l", (load_ty_def t "l", load_ty_array n ("l" +ₗ[t] #(W64 1))))%V
           end) n
     | _ => (λ: "l", !(Var "l"))%V
     end.
@@ -35,7 +35,7 @@ Section go_lang.
           | [] => (λ: <> <>, #())%V
           | (f,t) :: d => (λ: "p" "v",
                                   store_ty_def t "p" (Fst "v");;
-                                  store_ty_struct d (BinOp (OffsetOp (go_type_size t)) "p" #1)
+                                  store_ty_struct d (BinOp (OffsetOp (go_type_size t)) "p" #(W64 1))
                                     (Snd "v"))%V
           end) d
     | arrayT n t =>
@@ -44,7 +44,7 @@ Section go_lang.
           | O => (λ: <> <>, #())%V
           | S n => (λ: "p" "v",
                             store_ty_def t "p" (Fst "v");;
-                            store_ty_array n (BinOp (OffsetOp (go_type_size t)) "p" #1) (Snd "v"))%V
+                            store_ty_array n (BinOp (OffsetOp (go_type_size t)) "p" #(W64 1)) (Snd "v"))%V
           end) n
     | _ => (λ: "p" "v", "p" <- "v")%V
     end.
@@ -55,13 +55,5 @@ End go_lang.
 
 Reserved Notation "![ t ] e" (at level 9, right associativity, format "![ t ]  e").
 Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
-(* NOTE: in code we want to supply arbitrary expressions, so we have the usual
-   notation, but the specs should be in terms of value pairs, so we have a
-   similar notation in the value-scope (even though this is an expression and
-   not a value)
-
-   See the HeapLang documentation in Iris for par, which has a similar
-   trick. *)
-(* FIXME: these notations are a little messed up; they get unfolded where they shouldn't, etc. *)
 Reserved Notation "e1 <-[ t ] e2" (at level 80, format "e1  <-[ t ]  e2").
 Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E) : expr_scope.

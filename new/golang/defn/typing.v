@@ -1,6 +1,66 @@
 From Perennial.goose_lang Require Export lang notation.
 From New.golang.defn Require Export list.
 
+Class IntoVal `{ffi_syntax} (V : Type) :=
+  {
+    to_val : V → val;
+    (* XXX: strictly speaking, this is only needed for reasoning, so maybe
+       bundle it back with IntoValTyped. *)
+    #[global] to_val_inj :: Inj (=) (=) (to_val);
+  }.
+
+(* Disable Notation "# l". *)
+Global Notation "# x" := (to_val x).
+Global Notation "#" := to_val.
+
+(* One of [V] or [ty] should not be an evar before doing typeclass search *)
+Global Hint Mode IntoVal - ! : typeclass_instances.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Program Global Instance into_val_loc : IntoVal loc :=
+  {| to_val := λ v, (LitV $ LitLoc v) |}.
+Obligation 1. intros ???. naive_solver. Qed.
+
+Program Global Instance into_val_w64 : IntoVal w64 :=
+  {| to_val := λ v, (LitV $ LitInt v) |}.
+Obligation 1. intros ???. naive_solver. Qed.
+
+Program Global Instance into_val_w32 : IntoVal w32 :=
+  {| to_val := λ v, (LitV $ LitInt32 v) |}.
+Obligation 1. intros ???. naive_solver. Qed.
+
+Program Global Instance into_val_w8 : IntoVal w8 :=
+  {| to_val := λ v, (LitV $ LitByte v) |}.
+(* XXX: Why no obligation here? *)
+
+Program Global Instance into_val_unit : IntoVal () :=
+  {| to_val := λ _, (LitV $ LitUnit) |}.
+Obligation 1. intros ???. by destruct x, y. Qed.
+
+Program Global Instance into_val_bool : IntoVal bool :=
+  {| to_val := λ b, (LitV $ LitBool b) |}.
+Obligation 1. intros ???. naive_solver. Qed.
+
+Program Global Instance into_val_string : IntoVal string :=
+  {| to_val := λ s, (LitV $ LitString s) |}.
+Obligation 1. intros ???. naive_solver. Qed.
+
+Inductive GoFunc :=
+| go_func (f x : binder) (e : expr)
+.
+Program Global Instance into_val_func : IntoVal GoFunc :=
+  {| to_val := λ (f : GoFunc),
+                 let (f, x, e) := f in RecV f x e
+  |}.
+Obligation 1. intros ???. destruct x, y. inversion H0. naive_solver. Qed.
+
+End instances.
+Global Notation "()" := tt : val_scope.
+
+Global Opaque to_val.
+
 Module array.
 Section defn.
   Context `{ffi_syntax}.
@@ -53,7 +113,7 @@ Section val_types.
 
   Context `{ffi_syntax}.
   Definition go_nil : val := #null.
-  Definition slice_nil : val := InjLV (go_nil, #0, #0).
+  Definition slice_nil : val := InjLV (go_nil, #(W64 0), #(W64 0)).
   Definition interface_nil : val := InjLV (go_nil, go_nil, go_nil).
   Fixpoint zero_val_def (t : go_type) : val :=
     match t with
@@ -69,7 +129,7 @@ Section val_types.
     | int32T => #(W32 0)
     | int64T => #(W64 0)
 
-    | stringT => #(str "")
+    | stringT => #""
     | arrayT n elem => array.val (replicate n (zero_val_def elem))
     | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
@@ -115,7 +175,7 @@ Section goose_lang.
   Context `{ffi_syntax}.
 
   Definition fields_val_def (m : list (string* val)) : val :=
-    list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
+    list.val (fmap (λ '(a,b), (#a, b)%V) m).
   Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
   Definition fields_val_unseal : fields_val = _ := seal_eq _.
 End goose_lang.

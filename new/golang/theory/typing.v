@@ -1,7 +1,8 @@
-From New.golang.defn Require Export typing.
-From New.golang.theory Require Export list.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
+From New.golang.defn Require Export typing.
+From New.golang.theory Require Export list.
+From New.golang.defn Require Export typing.
 
 Set Default Proof Using "Type".
 
@@ -46,7 +47,7 @@ Section goose_lang.
   (* XXX: the InjLV is subtle: it's there to block `flatten_struct` from
      splitting this up into multiple heap cells. *)
   Definition val_def (mset : list (string * val)) (v : val) : val :=
-    InjLV (#(str "NO TYPE IDS YET"), v, (struct.fields_val mset)).
+    InjLV (#"NO TYPE IDS YET", v, (struct.fields_val mset)).
   Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
   Definition val_unseal : val = _ := seal_eq _.
 
@@ -122,7 +123,7 @@ Section typing.
   | has_go_type_int16 : has_go_type go_nil int16T
   | has_go_type_int8 (x : w8) : has_go_type #x int8T
 
-  | has_go_type_string (s : string) : has_go_type #(str s) stringT
+  | has_go_type_string (s : string) : has_go_type #s stringT
   | has_go_type_slice elem (s : slice.t) : has_go_type (slice.val s) (sliceT elem)
   | has_go_type_slice_nil elem : has_go_type slice.nil (sliceT elem)
 
@@ -150,7 +151,7 @@ Section typing.
   Lemma zero_val_has_go_type t :
     has_go_type (zero_val t) t.
   Proof.
-    induction t using go_type_ind; rewrite zero_val_unseal; try econstructor.
+    induction t using go_type_ind; rewrite zero_val_unseal /to_val; try econstructor.
     (* arrayT *)
     { rewrite array.val_unseal. apply length_replicate. }
     { intros. fold zero_val_def in H.
@@ -224,7 +225,7 @@ Section typing.
     | int32T => #(W32 0)
     | int64T => #(W64 0)
 
-    | stringT => #(str "")
+    | stringT => #("")
     | arrayT n elem => array.val (replicate n (zero_val elem))
     | sliceT _ => slice.nil
     | structT decls => struct.val t []
@@ -277,6 +278,7 @@ Section typing.
     left.
     eexists (slice.mk _ _ _);
       rewrite slice.val_unseal /slice.val_def //=.
+    Transparent to_val. unfold to_val. simpl. done. Opaque to_val.
   Defined.
 
   (* TODO: I think this is possible, but some unfortunate changes are needed: we
@@ -301,15 +303,22 @@ Section typing.
                   )
           end
         ).
-    - admit.
-    - destruct (decide (v = slice.nil)); subst; [ by eauto | ].
-      destruct (is_slice_val v) as [[s ->] | ]; [ by eauto | right ].
-      inversion 1; subst; intuition eauto.
-    - admit.
-    - admit.
+    (* XXX: after changing the "#" notation to refer to IntoVal, this is broken. *)
   Abort.
 
 End typing.
+
+Class IntoValTyped `{!ffi_syntax} (V : Type) (t : go_type) `{!IntoVal V} :=
+  {
+    to_val_has_go_type: ∀ (v : V), has_go_type (# v) t ;
+    default_val : V ;
+    default_val_eq_zero_val : #default_val = zero_val t
+  }.
+(* One of [V] or [ty] should not be an evar before doing typeclass search *)
+Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
+Global Hint Mode IntoValTyped - - ! - : typeclass_instances.
+
+Arguments default_val {_} (V) {_ _ _}.
 
 From Ltac2 Require Import Ltac2.
 Ltac2 solve_has_go_type_step () :=

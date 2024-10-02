@@ -21,7 +21,7 @@ End slice.
 Section defns_and_lemmas.
 Context `{heapGS Σ}.
 Definition own_slice_def (s : slice.t) (t : go_type) (dq : dfrac) (vs : list val): iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦[t]{dq} v ) ∗
+  ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦#{dq} v ) ∗
   ⌜length vs = uint.nat s.(slice.len_f) ∧ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
 Program Definition own_slice := unseal (_:seal (@own_slice_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
@@ -71,6 +71,8 @@ Proof.
   f_equal.
   rewrite Z.mul_1_r //.
 Qed.
+
+l ↦# x
 
 Lemma own_slice_agree s t q1 q2 vs1 vs2 :
   own_slice s t q1 vs1 -∗

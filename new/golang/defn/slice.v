@@ -1,4 +1,4 @@
-From New.golang.defn Require Export mem loop exception.
+From New.golang.defn Require Export mem loop exception typing.
 
 Module slice.
 (* FIXME: seal these functions *)
@@ -21,7 +21,7 @@ Definition cap : val := λ: "s",
 Definition make3 t : val :=
   λ: "sz" "cap",
   if: "cap" < "sz" then Panic "NewSlice with cap smaller than len"
-  else if: "cap" = #0 then InjL (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
+  else if: "cap" = #(W64 0) then InjL (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
   else let: "p" := AllocN "cap" (zero_val t) in
        InjL (Var "p", Var "sz", Var "cap").
 
@@ -36,14 +36,14 @@ Definition elem_ref t : val :=
 
 Definition slice t : val :=
   λ: "a" "low" "high",
-  if: (#0 ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "a") then
+  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "a") then
     (ptr "s" +ₗ[t] "low", "high" - "low", cap "s" - "low")
   else Panic "slice indices out of order"
 .
 
 Definition full_slice t : val :=
   λ: "a" "low" "high" "max",
-  if: (#0 ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "a") then
+  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "a") then
     (ptr "s" +ₗ[t] "low", "high" - "low", "max" - "low")
   else Panic "slice indices out of order"
 .
@@ -51,7 +51,7 @@ Definition full_slice t : val :=
 Definition for_range t : val :=
   λ: "s" "body",
   let: "i" := ref_ty uint64T (zero_val uint64T) in
-  for: (λ: <>, ![uint64T] "i" < len "s") ; (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) :=
+  for: (λ: <>, ![uint64T] "i" < len "s") ; (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #(W64 1)) :=
     (λ: <>, "body" (![uint64T] "i") (![t] (elem_ref t "s" (![uint64T] "i"))))
 .
 
@@ -66,7 +66,7 @@ Definition copy t : val :=
 Definition append t : val :=
   λ: "s" "x",
   let: "s_new" := (if: (cap "s") > (len "s" + len "x") then
-                     (slice t "s" #0 (len "s" + len "x"))
+                     (slice t "s" #(W64 0) (len "s" + len "x"))
                    else
                      let: "extra" := ArbitraryInt in
                      let: "s_new" := make2 t (len "s" + len "x" + "extra") in
@@ -83,7 +83,7 @@ Definition literal t : val :=
   let: "s" := make2 t "len" in
   let: "l" := ref "elems" in
   let: "i" := ref_ty uint64T (zero_val uint64T) in
-  (for: (λ: <>, ![uint64T] "i" < "len") ; (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) :=
+  (for: (λ: <>, ![uint64T] "i" < "len") ; (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #(W64 1)) :=
      (λ: <>,
         do: (list.Match !"l" (λ: <>, #())
                (λ: "elem" "l_tail",
