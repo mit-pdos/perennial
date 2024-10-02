@@ -203,8 +203,8 @@ Definition Paxos__forward: val :=
     (if: (~ "ok") || ("lsnpeer" < "lsn")
     then
       MapInsert (struct.loadF Paxos "lsnpeers" "px") "nid" "lsn";;
-      #()
-    else #()).
+      #true
+    else #false).
 
 Definition Paxos__push: val :=
   rec: "Paxos__push" "px" :=
@@ -216,7 +216,9 @@ Definition Paxos__push: val :=
         "lsns" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "lsns") "lsn"));;
       util.Sort (![slice.T uint64T] "lsns");;
       let: "lsn" := SliceGet uint64T (![slice.T uint64T] "lsns") ((slice.len (![slice.T uint64T] "lsns")) - ((struct.loadF Paxos "sc" "px") `quot` #2)) in
-      ("lsn", #true)).
+      (if: "lsn" < (struct.loadF Paxos "lsnc" "px")
+      then (#0, #false)
+      else ("lsn", #true))).
 
 Definition Paxos__gttermc: val :=
   rec: "Paxos__gttermc" "px" "term" :=
@@ -387,9 +389,21 @@ Definition Paxos__ResponseSession: val :=
                   Mutex__Unlock (struct.loadF Paxos "mu" "px");;
                   Continue
                 else
-                  Paxos__forward "px" "nid" (struct.get message.PaxosResponse "MatchedLSN" "resp");;
-                  Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-                  Continue)
+                  let: "forwarded" := Paxos__forward "px" "nid" (struct.get message.PaxosResponse "MatchedLSN" "resp") in
+                  (if: (~ "forwarded")
+                  then
+                    Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                    Continue
+                  else
+                    let: ("lsnc", "pushed") := Paxos__push "px" in
+                    (if: (~ "pushed")
+                    then
+                      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                      Continue
+                    else
+                      Paxos__commit "px" "lsnc";;
+                      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                      Continue)))
               else Continue))))));;
     #().
 

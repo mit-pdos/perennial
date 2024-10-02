@@ -1388,13 +1388,13 @@ Section forward.
     know_paxos_inv γ nids -∗
     {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
       Paxos__forward #px #nid #lsn
-    {{{ RET #(); own_paxos_leading_with_termc px nidme termc nids γ }}}.
+    {{{ (forwarded : bool), RET #forwarded; own_paxos_leading_with_termc px nidme termc nids γ }}}.
   Proof.
     iIntros (Hnotme Hnid Hlena) "#Haoc #Hinv".
     iIntros (Φ) "!> Hpx HΦ".
     wp_rec.
 
-    (*@ func (px *Paxos) forward(nid uint64, lsn uint64) {                      @*)
+    (*@ func (px *Paxos) forward(nid uint64, lsn uint64) bool {                 @*)
     (*@     lsnpeer, ok := px.lsnpeers[nid]                                     @*)
     (*@                                                                         @*)
     iNamed "Hpx". iNamed "Hleader". iNamed "Honlyl".
@@ -1407,6 +1407,7 @@ Section forward.
     (*@     if !ok || lsnpeer < lsn {                                           @*)
     (*@         // Advance the peer's matching LSN.                             @*)
     (*@         px.lsnpeers[nid] = lsn                                          @*)
+    (*@         return true                                                     @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
     (* Not sure how to properly handle TC resolution here. *)
@@ -1481,6 +1482,9 @@ Section forward.
       { apply map_Forall_insert_2; [lia | apply Hlelog]. }
       { rewrite dom_insert_L. set_solver. }
     }
+
+    (*@     return false                                                        @*)
+    (*@ }                                                                       @*)
     iApply "HΦ".
     iFrame "Hpx Hcand".
     by iFrame "∗ # %".
@@ -1601,9 +1605,9 @@ Section push.
     know_paxos_inv γ nids -∗
     {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
       Paxos__push #px
-    {{{ (lsnc : u64) (ok : bool), RET (#lsnc, #ok);
+    {{{ (lsnc : u64) (pushed : bool), RET (#lsnc, #pushed);
         own_paxos_leading_with_termc px nidme termc nids γ ∗
-        if ok
+        if pushed
         then ∃ logc, safe_ledger_above γ nids (uint.nat termc) logc ∗
                      ⌜length logc = uint.nat lsnc⌝
         else True
@@ -1698,8 +1702,21 @@ Section push.
     iIntros "Hlsns".
     wp_pures.
 
+    (*@     if lsn < px.lsnc {                                                  @*)
+    (*@         return 0, false                                                 @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_if_destruct.
+    { wp_pures.
+      iApply "HΦ".
+      iFrame "Hcand".
+      by iFrame "∗ # %".
+    }
+
     (*@     return lsn, true                                                    @*)
     (*@ }                                                                       @*)
+    wp_pures.
     iApply "HΦ".
     iModIntro.
     iSplit.
