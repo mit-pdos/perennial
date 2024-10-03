@@ -43,43 +43,43 @@ Section ascend.
     by iDestruct (big_sepM_lookup with "Hpsaubs") as "?"; first apply Hfixed.
   Qed.
 
-  Lemma paxos_inv_ascend γ nids nid termc terml logn logn' :
+  Lemma paxos_inv_ascend γ nids nid termc terml v v' :
     nid ∈ nids ->
     is_term_of_node nid termc ->
     (terml < termc)%nat ->
-    safe_base_proposal_by_length γ nids termc logn' -∗
+    safe_base_proposal_by_length γ nids termc v' -∗
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid terml -∗
-    own_node_ledger_half γ nid logn -∗
+    own_node_ledger_half γ nid v -∗
     paxos_inv γ nids ==∗
     own_current_term_half γ nid termc ∗
     own_ledger_term_half γ nid termc ∗
-    own_node_ledger_half γ nid logn' ∗
+    own_node_ledger_half γ nid v' ∗
     paxos_inv γ nids ∗
-    own_proposal γ termc logn' ∗
-    is_base_proposal_receipt γ termc logn' ∗
-    is_accepted_proposal_lb γ nid termc logn'.
+    own_proposal γ termc v' ∗
+    is_base_proposal_receipt γ termc v' ∗
+    is_accepted_proposal_lb γ nid termc v'.
   Proof.
-    iIntros (Hnid Hton Hlt) "#Hsafelen Htermc Hterml Hlogn Hinv".
+    iIntros (Hnid Hton Hlt) "#Hsafelen Htermc Hterml Hv Hinv".
     iNamed "Hinv".
-    iAssert (safe_base_proposal γ nids termc logn')%nat as "#Hsafe".
+    iAssert (safe_base_proposal γ nids termc v')%nat as "#Hsafe".
     { iNamed "Hsafelen". iNamed "Hvotes".
       rewrite Hdomdss in Hquorum.
       iFrame "Hdss %".
       (* Obtain two nodes [nidx], the node known to have the longest ledger, and
       [nidy], the node to be proved to have the longest ledger. *)
-      destruct Hvlatest as (nidx & dsx & Hdsx & Hlognx).
+      destruct Hvlatest as (nidx & dsx & Hdsx & Hvx).
       pose proof (longest_proposal_in_term_with_spec (mbind nodedec_to_ledger) dss p) as Hspec.
-      destruct (longest_proposal_in_term_with _ _ _) as [logny |] eqn:Hlongest; last first.
+      destruct (longest_proposal_in_term_with _ _ _) as [vy |] eqn:Hlongest; last first.
       { exfalso.
         specialize (Hspec _ _ Hdsx).
-        by rewrite Hlognx in Hspec.
+        by rewrite Hvx in Hspec.
       }
-      destruct Hspec as [(nidy & dsy & Hdsy & Hlogny) Hge].
-      rewrite bind_Some in Hlogny.
-      destruct Hlogny as (d & Hlogny & Hd).
+      destruct Hspec as [(nidy & dsy & Hdsy & Hvy) Hge].
+      rewrite bind_Some in Hvy.
+      destruct Hvy as (d & Hvy & Hd).
       apply nodedec_to_ledger_Some_inv in Hd. subst d.
-      iAssert (prefix_growing_ledger γ p logn')%I as "#Hpfgx".
+      iAssert (prefix_growing_ledger γ p v')%I as "#Hpfgx".
       { iDestruct (big_sepM_lookup with "Hdss") as "#Hdsx"; first apply Hdsx.
         assert (is_Some (termlm !! nidx)) as [terml' Hterml'].
         { rewrite -elem_of_dom Hdomtermlm.
@@ -90,9 +90,9 @@ Section ascend.
         iDestruct (big_sepM_lookup with "Hnodes") as "Hnode"; first apply Hterml'.
         iDestruct (node_inv_extract_ds_psa with "Hnode") as (dss' bs') "[_ Hnode]".
         iApply (node_inv_past_nodedecs_impl_prefix_growing_ledger with "Hdsx Hnode").
-        apply Hlognx.
+        apply Hvx.
       }
-      iAssert (prefix_growing_ledger γ p logny)%I as "#Hpfgy".
+      iAssert (prefix_growing_ledger γ p vy)%I as "#Hpfgy".
       { iDestruct (big_sepM_lookup with "Hdss") as "#Hdsy"; first apply Hdsy.
         assert (is_Some (termlm !! nidy)) as [termly Htermly].
         { rewrite -elem_of_dom Hdomtermlm.
@@ -103,24 +103,46 @@ Section ascend.
         iDestruct (big_sepM_lookup with "Hnodes") as "Hnode"; first apply Htermly.
         iDestruct (node_inv_extract_ds_psa with "Hnode") as (dssy bsy) "[_ Hnode]".
         iApply (node_inv_past_nodedecs_impl_prefix_growing_ledger with "Hdsy Hnode").
-        apply Hlogny.
+        apply Hvy.
       }
       iDestruct (prefix_growing_ledger_impl_prefix with "Hpfgx Hpfgy") as %Hprefix.
       iPureIntro.
       rewrite /equal_latest_longest_proposal_nodedec /equal_latest_longest_proposal_with.
       case_decide as Htermc; first lia.
       rewrite -latest_term_before_quorum_nodedec_unfold Hlatestq.
-      pose proof (length_of_longest_ledger_in_term_spec _ _ _ _ _ Hdsy Hlogny) as Hle.
+      pose proof (length_of_longest_ledger_in_term_spec _ _ _ _ _ Hdsy Hvy) as Hle.
       rewrite Hlongestq in Hle.
       specialize (Hge _ _ Hdsx).
-      rewrite Hlognx /= in Hge.
-      assert (Heqlen : length logny = length logn') by lia.
-      replace logn' with logny; first done.
+      rewrite Hvx /= in Hge.
+      assert (Heqlen : length vy = length v') by lia.
+      replace v' with vy; first done.
       by destruct Hprefix as [Hprefix | Hprefix]; rewrite (prefix_length_eq _ _ Hprefix).
     }
     pose proof Hnid as Hterml.
     rewrite -Hdomtermlm elem_of_dom in Hterml.
     destruct Hterml as [terml' Hterml].
+    (* Obtain [proposed_cmds γ v']. *)
+    iAssert (proposed_cmds γ v')%I as "#Hsubsume'".
+    { iNamed "Hsafelen". iNamed "Hvotes".
+      destruct Hvlatest as (nidx & dslb & Hdslb & Hv').
+      iDestruct (big_sepM_lookup with "Hdss") as "Hdslb"; first apply Hdslb.
+      assert (is_Some (termlm !! nidx)) as [termlx Htermlx].
+      { destruct Hquorum as [Hquorum _].
+        apply elem_of_dom_2 in Hdslb.
+        rewrite -elem_of_dom Hdomtermlm.
+        set_solver.
+      }
+      iDestruct (big_sepM_lookup with "Hnodes") as "Hnode"; first apply Htermlx.
+      iDestruct (node_inv_extract_ds_psa with "Hnode") as (ds psa) "[_ Hdp]".
+      iDestruct (node_inv_past_nodedecs_impl_prefix_growing_ledger with "Hdslb Hdp") as "#Hpfg".
+      { apply Hv'. }
+      iDestruct "Hpfg" as (vub1) "[Hlb %Hprefix1]".
+      iDestruct (proposals_prefix with "Hlb Hps") as %(vub2 & Hvub2 & Hprefix2).
+      iDestruct (big_sepM_lookup with "Hsubsume") as "Hsubsume'"; first apply Hvub2.
+      assert (prefix v' vub2) as [vapp ->]; first by trans vub1.
+      rewrite /proposed_cmds.
+      by iDestruct (big_sepL_app with "Hsubsume'") as "[? _]".
+    }
     iDestruct (big_sepM_delete _ _ nid with "Hnodes") as "[Hnode Hnodes]".
     { apply Hterml. }
     iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
@@ -130,16 +152,16 @@ Section ascend.
       destruct Hdompsb as [_ Hfree].
       by specialize (Hfree _ _ Hterml _ Hton Hlt).
     }
-    (* Insert [(termc, logn')] into the growing proposals and the base proposals. *)
-    iMod (proposal_insert termc logn' with "Hps") as "[Hps Hp]".
+    (* Insert [(termc, v')] into the growing proposals and the base proposals. *)
+    iMod (proposal_insert termc v' with "Hps") as "[Hps Hp]".
     { apply map_Forall2_dom_L in Hvp as Hdomps. by rewrite Hdomps not_elem_of_dom in Hnotin. }
-    iMod (base_proposal_insert termc logn' with "Hpsb") as "[Hpsb #Hpsbrcp]".
+    iMod (base_proposal_insert termc v' with "Hpsb") as "[Hpsb #Hpsbrcp]".
     { by rewrite not_elem_of_dom in Hnotin. }
     (* Extract witness of the inserted proposal to re-establish the node invariant. *)
     iDestruct (proposal_witness with "Hp") as "#Hplb".
     (* Re-establish node invariant. *)
-    iMod (node_inv_advance logn' with "[] [] Htermc Hterml Hlogn Hnode")
-      as "(Htermc & Hterml & Hlogn & Hnode & #Hacptlb)".
+    iMod (node_inv_advance v' with "[] [] Htermc Hterml Hv Hnode")
+      as "(Htermc & Hterml & Hv & Hnode & #Hacptlb)".
     { apply Hlt. }
     { by iFrame "Hpsbrcp". }
     { by iFrame "Hplb". }
@@ -147,6 +169,7 @@ Section ascend.
     rewrite insert_delete_insert.
     iFrame "∗ # %".
     iModIntro.
+    iSplit; first by iApply big_sepM_insert_2.
     iSplit.
     { (* Re-establish [safe_base_proposal]. *)
       iApply (big_sepM_insert_2 with "Hsafe Hsafepsb").

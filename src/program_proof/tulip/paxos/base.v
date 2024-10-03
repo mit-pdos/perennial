@@ -134,7 +134,6 @@ Section def.
     lia.
   Qed.
 
-  
   Lemma latest_before_quorum_step_O_or_exists (ts : gmap A nat) :
     map_fold latest_term_before_quorum_step O ts = O ∨
     ∃ x, ts !! x = Some (map_fold latest_term_before_quorum_step O ts).

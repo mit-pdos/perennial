@@ -139,7 +139,7 @@ Section prog.
   Theorem wp_MkPaxos :
     {{{ True }}}
       MkPaxos #()
-      {{{ (γ : mpaxos_names) (px : loc), RET #px; paxos_init px γ }}}.
+    {{{ (γ : mpaxos_names) (px : loc), RET #px; paxos_init px γ }}}.
   Proof.
     (*@ func MkPaxos() *Paxos {                                                 @*)
     (*@     var px *Paxos                                                       @*)

@@ -98,6 +98,18 @@ Section repr.
                     then own_paxos_candidate_only nid termc terml termp logc entspP resppP nids γ
                     else True).
 
+  Lemma terml_eq_termc_impl_not_nominiated paxos nid termc terml logc iscand nids γ :
+    terml = termc ->
+    own_paxos_candidate paxos nid termc terml logc iscand nids γ -∗
+    ⌜iscand = false⌝.
+  Proof.
+    iIntros (->) "Hcand".
+    iNamed "Hcand".
+    destruct iscand; last done.
+    iNamed "Honlyc".
+    clear -Hllep Hpltc. word.
+  Qed.
+
   Definition accepted_or_committed_until γ nids nid (a : bool) t n : iProp Σ :=
     if a
     then is_accepted_proposal_length_lb γ nid t n
@@ -231,6 +243,10 @@ Section repr.
   Definition own_paxos_nominated (paxos : loc) (nidme : u64) nids γ : iProp Σ :=
     ∃ (termc terml lsnc : u64) (isleader : bool),
       own_paxos_internal paxos nidme termc terml lsnc true isleader nids γ.
+
+  Definition own_paxos_leading (paxos : loc) (nidme : u64) nids γ : iProp Σ :=
+    ∃ (termc terml lsnc : u64) (iscand : bool),
+      own_paxos_internal paxos nidme termc terml lsnc iscand true nids γ.
 
   (* TODO: finding the right states to expose after adding network. *)
 
@@ -1777,6 +1793,264 @@ Section push.
   Qed.
 
 End push.
+
+Section leading.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__leading (px : loc) nidme nids γ :
+    {{{ own_paxos px nidme nids γ }}}
+      Paxos__leading #px
+    {{{ (isleader : bool), RET #isleader;
+        if isleader
+        then own_paxos_leading px nidme nids γ
+        else own_paxos px nidme nids γ
+    }}}.
+  Proof.
+    (*@ func (px *Paxos) leading() bool {                                       @*)
+    (*@     return px.isleader                                                  @*)
+    (*@ }                                                                       @*)
+    iIntros (Φ) "Hpx HΦ".
+    iNamed "Hpx". iNamed "Hleader".
+    wp_rec.
+    wp_loadField.
+    iApply "HΦ".
+    destruct isleader; iFrame "Hpx Hcand Hnids Hcomm"; iFrame.
+  Qed.
+
+End leading.
+
+Section submit.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__Submit (px : loc) (c : string) nidme γ :
+    is_paxos px nidme γ -∗
+    {{{ True }}}
+    <<< ∀∀ cpool, own_cpool_half γ cpool >>>
+      Paxos__Submit #px #(LitString c) @ ↑paxosNS
+    <<< own_cpool_half γ ({[c]} ∪ cpool) >>>
+    (* TODO: return a receipt for checking committedness from the client. *)
+    {{{ (lsn : u64) (term : u64), RET (#lsn, #term); True }}}.
+  Proof.
+    iIntros "#Hinv" (Φ) "!> _ HAU".
+    wp_rec.
+
+    (*@ func (px *Paxos) Submit(v string) (uint64, uint64) {                    @*)
+    (*@     px.mu.Lock()                                                        @*)
+    (*@                                                                         @*)
+    iNamed "Hinv".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hpx]".
+
+    (*@     if !px.leading() {                                                  @*)
+    (*@         px.mu.Unlock()                                                  @*)
+    (*@         return 0, 0                                                     @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__leading with "Hpx").
+    iIntros (isleader) "Hpx".
+    destruct isleader; last first.
+    { wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+      wp_pures.
+      iInv "Hinv" as "> HinvO" "HinvC".
+      iMod "HAU" as (cpoolcli) "[Hcpoolcli HAU]".
+      iNamed "HinvO".
+      iDestruct (cpool_agree with "Hcpool Hcpoolcli") as %->.
+      iMod (cpool_update ({[c]} ∪ cpool) with "Hcpool Hcpoolcli") as "[Hcpool Hcpoolcli]".
+      { set_solver. }
+      iMod ("HAU" with "Hcpoolcli") as "HΦ".
+      iMod ("HinvC" with "[-HΦ]") as "_".
+      { iFrame "∗ # %". }
+      by iApply "HΦ".
+    }
+
+    (*@     lsn := uint64(len(px.log))                                          @*)
+    (*@     px.log = append(px.log, v)                                          @*)
+    (*@     term := px.termc                                                    @*)
+    (*@                                                                         @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    wp_apply wp_slice_len.
+    wp_loadField.
+    wp_apply (wp_SliceAppend with "Hlog").
+    iIntros (logP') "Hlog".
+    wp_storeField.
+    wp_loadField.
+
+    (*@     // Logical action: Extend(@px.termc, @px.log).                      @*)
+    (*@                                                                         @*)
+    iApply ncfupd_wp.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iMod "HAU" as (cpoolcli) "[Hcpoolcli HAU]".
+    iAssert (|==> own_cpool_half γ ({[c]} ∪ cpoolcli) ∗ paxos_inv γ nids)%I
+      with "[Hcpoolcli HinvO]" as "HcpoolU".
+    { iNamed "HinvO".
+      iDestruct (cpool_agree with "Hcpool Hcpoolcli") as %->.
+      iMod (cpool_update ({[c]} ∪ cpool) with "Hcpool Hcpoolcli") as "[Hcpool Hcpoolcli]".
+      { set_solver. }
+      by iFrame "∗ # %".
+    }
+    iMod "HcpoolU" as "[Hcpoolcli HinvO]".
+    iDestruct (cpool_witness c with "Hcpoolcli") as "#Hc".
+    { set_solver. }
+    iNamed "Hleader". iNamed "Honlyl".
+    subst terml.
+    iNamed "Hnids".
+    iMod (paxos_inv_extend [c] with "[] Hps Htermc Hterml Hlogn HinvO")
+      as "(Hps & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
+    { set_solver. }
+    { by iApply big_sepL_singleton. }
+    iMod ("HAU" with "Hcpoolcli") as "HΦ".
+    iMod ("HinvC" with "HinvO") as "_".
+    iModIntro.
+
+    (*@     // Potential batch optimization: Even though we update @px.log here, but it @*)
+    (*@     // should be OK to not immediately write them to disk, but wait until those @*)
+    (*@     // entries are sent in @LeaderSession. To prove the optimization, we'll need @*)
+    (*@     // to decouple the "batched entries" from the actual entries @px.log, and @*)
+    (*@     // relate only @px.log to the invariant.                            @*)
+    (*@                                                                         @*)
+    (*@     px.mu.Unlock()                                                      @*)
+    (*@     return lsn, term                                                    @*)
+    (*@ }                                                                       @*)
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "Hlock Hlocked".
+      iDestruct (terml_eq_termc_impl_not_nominiated with "Hcand") as %->; first done.
+      set log' := log ++ [c].
+      iAssert (own_paxos_leader px termc termc log' true peers nids γ)%I
+        with "[$HisleaderP $HlsnpeersP $Hlsnpeers $Hps $Haocm]" as "Hleader".
+      { iPureIntro.
+        split; first done.
+        split; last done.
+        apply (map_Forall_impl _ _ _ Hlelog).
+        intros _ lsn Hlsn.
+        rewrite length_app /=.
+        clear -Hlsn. lia.
+      }
+      iNamed "Hcand".
+      iFrame "Hcomm Hleader HiscandP HlogP".
+      iFrame "∗ # %".
+      iSplit.
+      { iDestruct "Hgebase" as (vlb) "[Hvlb %Hprefix]".
+        iFrame "Hvlb".
+        iPureIntro.
+        trans log; [apply Hprefix | by apply prefix_app_r].
+      }
+      iSplit.
+      { by case_decide. }
+      iSplit.
+      { rewrite take_app_le; first done.
+        clear -Hlsncub. lia.
+      }
+      iPureIntro.
+      rewrite length_app /=.
+      clear -Hlsncub. lia.
+    }
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+End submit.
+
+Section lookup.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__Lookup (px : loc) (lsn : u64) nidme γ :
+    is_paxos px nidme γ -∗
+    {{{ True }}}
+    <<< ∀∀ log, own_log_half γ log >>>
+      Paxos__Lookup #px #lsn @ ↑paxosNS
+    <<< ∃∃ log', own_log_half γ log' >>>
+    {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
+        ⌜if ok then log' !! (uint.nat lsn) = Some v else True⌝
+    }}}.
+  Proof.
+    iIntros "#Hinv" (Φ) "!> _ HAU".
+    wp_rec.
+
+    (*@ func (px *Paxos) Lookup(lsn uint64) (string, bool) {                    @*)
+    (*@     px.mu.Lock()                                                        @*)
+    (*@                                                                         @*)
+    iNamed "Hinv".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hpx]".
+
+    (*@     if px.lsnc <= lsn {                                                 @*)
+    (*@         px.mu.Unlock()                                                  @*)
+    (*@         return "", false                                                @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    wp_if_destruct.
+    { wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[-HAU]").
+      { iFrame "Hlock Hlocked".
+        iFrame "∗ # %".
+      }
+      wp_pures.
+      (* Simply take and give back the same log. *)
+      iMod (ncfupd_mask_subseteq (⊤ ∖ ↑paxosNS)) as "Hclose"; first solve_ndisj.
+      iMod "HAU" as (logcli) "[Hlogcli HAU]".
+      iMod ("HAU" with "Hlogcli") as "HΦ".
+      iMod "Hclose" as "_".
+      by iApply "HΦ".
+    }
+    rename Heqb into Hlt.
+    rewrite Z.nle_gt in Hlt.
+
+    (*@     v := px.log[lsn]                                                    @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    iDestruct (own_slice_small_acc with "Hlog") as "[Hlog HlogC]".
+    assert (is_Some (log !! uint.nat lsn)) as [c Hc].
+    { apply lookup_lt_is_Some_2. clear -Hlt Hlsncub. word. }
+    wp_apply (wp_SliceGet with "[$Hlog]").
+    { iPureIntro. apply Hc. }
+    iIntros "Hlog".
+    iDestruct ("HlogC" with "Hlog") as "Hlog".
+    wp_pures.
+
+    (*@     // Logical action: Commit(@px.log) if @px.log is longer than the global log. @*)
+    (*@                                                                         @*)
+    iApply ncfupd_wp.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iMod "HAU" as (logcli) "[Hlogcli HAU]".
+    set logc := take _ log.
+    iNamed "Hnids".
+    iMod (paxos_inv_commit logc with "[] Hlogcli Hlogn HinvO") as "(Hlogcli & Hlogn & HinvO)".
+    { set_solver. }
+    { apply prefix_take. }
+    { iDestruct "Hcmted" as (t) "[Hsafe _]".
+      iFrame "Hsafe".
+    }
+    iDestruct "Hlogcli" as (logcli') "[Hlogcli %Hprefix]".
+    iMod ("HAU" with "Hlogcli") as "HΦ".
+    iMod ("HinvC" with "HinvO") as "_".
+    iModIntro.
+
+    (*@     px.mu.Unlock()                                                      @*)
+    (*@     return v, true                                                      @*)
+    (*@ }                                                                       @*)
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "Hlock Hlocked".
+      iFrame "Hcand Hleader Hcomm".
+      iFrame "∗ # %".
+    }
+    wp_pures.
+    iApply "HΦ".
+    iPureIntro.
+    rewrite -(prefix_lookup_lt logc log) in Hc; last first.
+    { apply prefix_take. }
+    { rewrite length_take. clear -Hlsncub Hlt. word. }
+    eapply prefix_lookup_Some; [apply Hc | apply Hprefix].
+  Qed.
+
+End lookup.
 
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.

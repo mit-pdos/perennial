@@ -30,10 +30,14 @@ Definition Paxos := struct.decl [
 
 Definition MAX_NODES : expr := #16.
 
+Definition Paxos__leading: val :=
+  rec: "Paxos__leading" "px" :=
+    struct.loadF Paxos "isleader" "px".
+
 Definition Paxos__Submit: val :=
   rec: "Paxos__Submit" "px" "v" :=
     Mutex__Lock (struct.loadF Paxos "mu" "px");;
-    (if: (~ (struct.loadF Paxos "isleader" "px"))
+    (if: (~ (Paxos__leading "px"))
     then
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       (#0, #0)
@@ -243,10 +247,6 @@ Definition Paxos__getlsnc: val :=
 Definition Paxos__nominated: val :=
   rec: "Paxos__nominated" "px" :=
     struct.loadF Paxos "iscand" "px".
-
-Definition Paxos__leading: val :=
-  rec: "Paxos__leading" "px" :=
-    struct.loadF Paxos "isleader" "px".
 
 Definition Paxos__heartbeat: val :=
   rec: "Paxos__heartbeat" "px" :=

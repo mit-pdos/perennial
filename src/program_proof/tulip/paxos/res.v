@@ -19,6 +19,12 @@ Section res.
     Definition own_cpool_half γ (vs : gset string) : iProp Σ.
     Admitted.
 
+    Definition is_cmd_receipt γ (c : string) : iProp Σ.
+    Admitted.
+
+    Definition cpool_subsume_log (l : ledger) (vs : gset string) :=
+      Forall (λ v, v ∈ vs) l.
+
     (** Type class instances. *)
 
     #[global]
@@ -26,15 +32,26 @@ Section res.
       Persistent (is_log_lb γ l).
     Admitted.
 
+    #[global]
+    Instance is_cmd_receipt_persistent γ v :
+      Persistent (is_cmd_receipt γ v).
+    Admitted.
+
     (** Rules. *)
 
     Lemma log_update {γ} l1 l2 vs :
-      Forall (λ v, v ∈ vs) l2 ->
+      cpool_subsume_log l2 vs ->
       prefix l1 l2 ->
       own_log_half γ l1 -∗
       own_log_half γ l1 -∗
       own_cpool_half γ vs ==∗
       own_log_half γ l2 ∗ own_log_half γ l2 ∗ own_cpool_half γ vs.
+    Admitted.
+
+    Lemma log_agree {γ} l1 l2 :
+      own_log_half γ l1 -∗
+      own_log_half γ l2 -∗
+      ⌜l2 = l1⌝.
     Admitted.
 
     Lemma log_witness {γ l} :
@@ -61,55 +78,31 @@ Section res.
       own_cpool_half γ vs2 ∗ own_cpool_half γ vs2.
     Admitted.
 
-    Definition cpool_subsume_log (l : ledger) (vs : gset string) :=
-      Forall (λ v, v ∈ vs) l.
+    Lemma cpool_agree {γ vs1} vs2 :
+      own_cpool_half γ vs1 -∗
+      own_cpool_half γ vs2 -∗
+      ⌜vs2 = vs1⌝.
+    Admitted.
 
-    Lemma consensus_incl {γ l vs} :
+    Lemma cpool_witness {γ vs} v :
+      v ∈ vs ->
+      own_cpool_half γ vs -∗
+      is_cmd_receipt γ v.
+    Admitted.
+
+    Lemma cpool_lookup {γ vs} v :
+      is_cmd_receipt γ v -∗
+      own_cpool_half γ vs -∗
+      ⌜v ∈ vs⌝.
+    Admitted.
+
+    Lemma log_cpool_subsume {γ l vs} :
       own_log_half γ l -∗
       own_cpool_half γ vs -∗
       ⌜cpool_subsume_log l vs⌝.
     Admitted.
 
   End consensus.
-
-  Section internal_log.
-
-    (** Elements. *)
-
-    Definition own_internal_log γ (l : ledger) : iProp Σ.
-    Admitted.
-
-    Definition is_internal_log_lb γ (l : ledger) : iProp Σ.
-    Admitted.
-
-    (** Type class instances. *)
-
-    #[global]
-    Instance is_internal_log_lb_persistent γ l :
-      Persistent (is_internal_log_lb γ l).
-    Admitted.
-
-    (** Rules. *)
-
-    Lemma internal_log_update {γ l1} l2 :
-      prefix l1 l2 ->
-      own_internal_log γ l1 ==∗
-      own_internal_log γ l2.
-    Admitted.
-
-    Lemma internal_log_witness {γ l} lb :
-      prefix lb l ->
-      own_internal_log γ l -∗
-      is_internal_log_lb γ lb.
-    Admitted.
-
-    Lemma internal_log_prefix {γ l lb} :
-      own_internal_log γ l -∗
-      is_internal_log_lb γ lb -∗
-      ⌜prefix lb l⌝.
-    Admitted.
-
-  End internal_log.
 
   Section proposal.
 
@@ -390,9 +383,9 @@ Section res.
 
     (** Rules. *)
 
-    Lemma node_ledger_update {γ nid v1} v2 :
+    Lemma node_ledger_update {γ nid v1 v1'} v2 :
       own_node_ledger_half γ nid v1 -∗
-      own_node_ledger_half γ nid v1 ==∗
+      own_node_ledger_half γ nid v1' ==∗
       own_node_ledger_half γ nid v2 ∗ own_node_ledger_half γ nid v2.
     Admitted.
 

@@ -468,20 +468,22 @@ Section inv.
       "%Hlatest" ∷ ⌜latest_term_nodedec ds = terml⌝ ∗
       "%Hacpt"   ∷ ⌜ds !! terml = Some (Accept v)⌝.
 
+  Definition proposed_cmds γ v : iProp Σ := [∗ list] c ∈ v, is_cmd_receipt γ c.
+
   Definition paxos_inv γ nids : iProp Σ :=
-    ∃ log cpool logi ps psb termlm,
+    ∃ log cpool ps psb termlm,
       (* external states *)
       "Hlog"   ∷ own_log_half γ log ∗
       "Hcpool" ∷ own_cpool_half γ cpool ∗
       (* internal states *)
-      "Hlogi" ∷ own_internal_log γ logi ∗
       "Hps"   ∷ own_proposals γ ps ∗
       "Hpsb"  ∷ own_base_proposals γ psb ∗
       (* node states *)
       "Hnodes" ∷ ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml) ∗
-      (* TODO: constraints between internal and external states *)
+      (* constraints between internal and external states *)
+      "#Hsafelog"   ∷ safe_ledger γ nids log ∗
+      "#Hsubsume"   ∷ ([∗ map] t ↦ v ∈ ps, proposed_cmds γ v) ∗
       (* constraints on internal states *)
-      "#Hsafelogi"  ∷ safe_ledger γ nids logi ∗
       "#Hsafepsb"   ∷ ([∗ map] t ↦ v ∈ psb, safe_base_proposal γ nids t v) ∗
       "%Hvp"        ∷ ⌜valid_proposals ps psb⌝ ∗
       "%Hdomtermlm" ∷ ⌜dom termlm = nids⌝ ∗
