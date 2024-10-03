@@ -308,7 +308,7 @@ Section typing.
 
 End typing.
 
-Class IntoValTyped `{!ffi_syntax} (V : Type) (t : go_type) `{!IntoVal V} :=
+Class IntoValTyped (V : Type) (t : go_type) `{IntoVal V} :=
   {
     to_val_has_go_type: ∀ (v : V), has_go_type (# v) t ;
     default_val : V ;
@@ -316,9 +316,9 @@ Class IntoValTyped `{!ffi_syntax} (V : Type) (t : go_type) `{!IntoVal V} :=
   }.
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
-Global Hint Mode IntoValTyped - - ! - : typeclass_instances.
+Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
 
-Arguments default_val {_} (V) {_ _ _}.
+Arguments default_val (V) {_ _ _ _}.
 
 From Ltac2 Require Import Ltac2.
 Ltac2 solve_has_go_type_step () :=

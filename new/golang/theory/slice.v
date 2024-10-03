@@ -4,7 +4,7 @@ From iris.algebra Require Import dfrac.
 From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export typing.
-From New.golang.theory Require Export list mem typing exception loop.
+From New.golang.theory Require Export list mem exception loop typing.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
@@ -19,33 +19,43 @@ Definition elem_ref_f (sl : slice.t) (t : go_type) (i : u64) : loc :=
 End slice.
 
 Section defns_and_lemmas.
-Context `{heapGS Σ}.
-Definition own_slice_def (s : slice.t) (t : go_type) (dq : dfrac) (vs : list val): iProp Σ :=
+Context `{ffi_syntax} `{ffi_interp}.
+Context `{!heapGS Σ}.
+
+Definition own_slice_def `{!IntoVal V} `{!IntoValTyped V t} (s : slice.t) (dq : dfrac) (vs : list V): iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦#{dq} v ) ∗
   ⌜length vs = uint.nat s.(slice.len_f) ∧ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
 Program Definition own_slice := unseal (_:seal (@own_slice_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
 
-Definition own_slice_cap_def (s : slice.t) (t : go_type): iProp Σ :=
+Global Arguments own_slice {_ _ _ _} (s dq vs).
+
+Notation "s ↦* dq vs" := (own_slice s dq vs)
+                            (at level 20, dq custom dfrac at level 50, format "s  ↦* dq  vs").
+
+Context `{!IntoVal V}.
+Context `{!IntoValTyped V t}.
+Implicit Type (vs : list V).
+Definition own_slice_cap_def (s : slice.t) : iProp Σ :=
   ⌜ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ⌝ ∗
   [∗ list] i ∈ (seq (uint.nat s.(slice.len_f)) (uint.nat s.(slice.cap_f) - uint.nat s.(slice.len_f))),
-    (s.(slice.ptr_f) +ₗ[t] Z.of_nat i) ↦[t] (zero_val t).
+    (s.(slice.ptr_f) +ₗ[t] Z.of_nat i) ↦# (default_val V).
 Program Definition own_slice_cap := unseal (_:seal (@own_slice_cap_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 
 Ltac unseal := rewrite ?own_slice_unseal /own_slice_def
                  ?own_slice_cap_unseal /own_slice_cap_def.
 
-Lemma own_slice_cap_none s t :
+Lemma own_slice_cap_none s :
   s.(slice.len_f) = s.(slice.cap_f) →
-  ⊢ own_slice_cap s t.
+  ⊢ own_slice_cap s.
 Proof.
   destruct s; simpl; intros ->. rewrite own_slice_cap_unseal /own_slice_cap_def Nat.sub_diag //.
   simpl. iPureIntro. lia.
 Qed.
 
-Lemma own_slice_len s t q vs :
-  own_slice s t q vs -∗ ⌜length vs = uint.nat s.(slice.len_f)⌝.
+Lemma own_slice_len s dq vs :
+  s ↦*{dq} vs -∗ ⌜length vs = uint.nat s.(slice.len_f)⌝.
 Proof.
   unseal. iIntros "(_&[%%]) !% //".
 Qed.
@@ -53,15 +63,15 @@ Qed.
 Lemma replicate_0 A (x:A) : replicate 0 x = [].
 Proof. reflexivity. Qed.
 
-Instance own_slice_fractional s t vs :
-  fractional.Fractional (λ q, own_slice s t (DfracOwn q) vs).
+Instance own_slice_fractional s vs :
+  fractional.Fractional (λ q, s ↦*{#q} vs).
 Proof. unseal; apply _. Qed.
 
-Instance own_slice_as_fractional s q t vs :
-  fractional.AsFractional (own_slice s t (DfracOwn q) vs) (λ q, own_slice s t (DfracOwn q) vs) q.
+Instance own_slice_as_fractional s q vs :
+  fractional.AsFractional (s ↦*{#q} vs) (λ q, s ↦*{#q} vs) q.
 Proof. unseal; split; auto; apply _. Qed.
 
-Lemma loc_add_stride_Sn l t n :
+Lemma loc_add_stride_Sn l n :
   l +ₗ[t] S n = (l +ₗ go_type_size t) +ₗ[t] n.
 Proof.
   replace (Z.mul (go_type_size t) (S n)) with (go_type_size t + Z.mul (go_type_size t) n).
@@ -72,19 +82,17 @@ Proof.
   rewrite Z.mul_1_r //.
 Qed.
 
-l ↦# x
-
-Lemma own_slice_agree s t q1 q2 vs1 vs2 :
-  own_slice s t q1 vs1 -∗
-  own_slice s t q2 vs2 -∗
+Lemma own_slice_agree s dq1 dq2 vs1 vs2 :
+  s ↦*{dq1} vs1 -∗
+  s ↦*{dq2} vs2 -∗
   ⌜vs1 = vs2⌝.
-Proof.
+Proof using Type*.
   unseal.
   iIntros "[Hs1 [%%]] [Hs2 [%%]]".
   assert (length vs1 = length vs2) by congruence.
   generalize (slice.ptr_f s). intros l.
   assert (length vs1 = length vs2) as Hlen by done.
-  clear -Hlen.
+  clear -Hlen IntoValTyped0.
   (iInduction vs1 as [|v1 vs1] "IH" forall (l vs2 Hlen)).
   { simpl in Hlen.
     destruct vs2; simpl in Hlen; try congruence.
@@ -98,11 +106,11 @@ Proof.
   iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
 Qed.
 
-Global Instance own_slice_persistent s t vs : Persistent (own_slice s t DfracDiscarded vs).
+Global Instance own_slice_persistent s vs : Persistent (s ↦*□ vs).
 Proof. unseal; apply _. Qed.
 
-Lemma own_slice_persist s t dq vs:
-  own_slice s t dq vs ==∗ own_slice s t DfracDiscarded vs.
+Lemma own_slice_persist s dq vs:
+  s ↦*{dq} vs ==∗ s ↦*□ vs.
 Proof.
   unseal.
   iIntros "[Hs %Hl]".
@@ -113,52 +121,53 @@ Proof.
   iApply (typed_pointsto_persist with "[$]").
 Qed.
 
-Global Instance own_slice_timeless s t q vs : Timeless (own_slice s t q vs).
+Global Instance own_slice_timeless s dq vs : Timeless (s ↦*{dq} vs).
 Proof. unseal; apply _. Qed.
 
-Lemma own_slice_not_null s t q vs :
+Lemma own_slice_not_null s dq vs :
   go_type_size t > 0 →
   length vs > 0 ->
-  own_slice s t q vs -∗
+  s ↦*{dq} vs -∗
   ⌜ s.(slice.ptr_f) ≠ null ⌝.
-Proof.
+Proof using Type*.
   unseal.
   iIntros (Hbt Hvs) "[Hs %]".
   destruct s; destruct vs; simpl in *; try lia.
   iDestruct "Hs" as "[Hptr _]".
   rewrite Z.mul_0_r loc_add_0.
-  by iApply typed_pointsto_not_null.
+  unshelve (by iApply (typed_pointsto_not_null with "[$]")).
+  done.
 Qed.
 
-Lemma own_slice_cap_wf s t :
-  own_slice_cap s t -∗ ⌜uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
+Lemma own_slice_cap_wf s :
+  own_slice_cap s -∗ ⌜uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
 Proof.
   unseal. by iIntros "[% Hcap]".
 Qed.
 
-Lemma own_slice_wf s t q vs :
-  own_slice s t q vs -∗ ⌜uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
+Lemma own_slice_wf s dq vs :
+  s ↦*{dq} vs -∗ ⌜uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
 Proof.
   unseal.
   iIntros "[? %]". naive_solver.
 Qed.
 
-Lemma own_slice_nil t q :
-  ⊢ own_slice slice.nil_f t q [].
+Lemma own_slice_nil dq :
+  ⊢ slice.nil_f ↦*{dq} ([] : list V).
 Proof.
   unseal. simpl. iPureIntro. split_and!; done.
 Qed.
 
-Lemma own_slice_empty t q s :
+Lemma own_slice_empty dq s :
   uint.Z s.(slice.len_f) = 0 ->
-  ⊢ own_slice s t q [].
+  ⊢ s ↦*{dq} ([] : list V).
 Proof.
   unseal. intros Hsz. destruct s. simpl in *.
   iPureIntro. split_and!; [done|word|word].
 Qed.
 
-Lemma own_slice_cap_nil t :
-  ⊢ own_slice_cap slice.nil_f t.
+Lemma own_slice_cap_nil :
+  ⊢ own_slice_cap slice.nil_f.
 Proof.
   unseal. simpl. rewrite right_id.
   rewrite (nil_length_inv (seq _ _)).
@@ -166,12 +175,12 @@ Proof.
   simpl. iPureIntro. word.
 Qed.
 
-Lemma own_slice_elem_acc i v s t q l :
-  l !! (uint.nat i) = Some v →
-  own_slice s t q l -∗
-  slice.elem_ref_f s t i ↦[t]{q} v ∗
-  (∀ v', slice.elem_ref_f s t i ↦[t]{q} v' -∗
-        own_slice s t q (<[uint.nat i := v']> l)).
+Lemma own_slice_elem_acc i v s dq vs :
+  vs !! (uint.nat i) = Some v →
+  s ↦*{dq} vs -∗
+  slice.elem_ref_f s t i ↦#{dq} v ∗
+  (∀ v', slice.elem_ref_f s t i ↦#{dq} v' -∗
+        s ↦*{dq} (<[uint.nat i := v']> vs)).
 Proof.
   iIntros (Hlookup) "Hsl".
   rewrite own_slice_unseal /own_slice_def.
@@ -186,6 +195,11 @@ Proof.
 Qed.
 
 End defns_and_lemmas.
+
+Global Notation "s ↦* dq vs" := (own_slice s dq vs)
+                            (at level 20, dq custom dfrac at level 50, format "s  ↦* dq  vs").
+
+Global Arguments own_slice_cap {_ _ _ _ _} (V) {_ _ _} (s).
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -217,13 +231,16 @@ Proof.
   { simpl. intros. f_equal. by erewrite IHn. }
 Qed.
 
-Lemma wp_slice_make3 stk E t (len cap : u64) :
+Context `{!IntoVal V}.
+Context `{!IntoValTyped V t}.
+
+Lemma wp_slice_make3 stk E (len cap : w64) :
   uint.nat len ≤ uint.nat cap →
   {{{ True }}}
     slice.make3 t #len #cap @ stk; E
   {{{ sl, RET slice.val sl;
-      own_slice sl t (DfracOwn 1) (replicate (uint.nat len) (zero_val t)) ∗
-      own_slice_cap sl t ∗
+      sl ↦* (replicate (uint.nat len) (default_val V)) ∗
+      own_slice_cap V sl ∗
       ⌜ sl.(slice.cap_f) = cap ⌝
   }}}.
 Proof.
@@ -231,7 +248,7 @@ Proof.
   wp_rec. wp_pures.
   wp_if_destruct.
   { exfalso. word. }
-  wp_pures.
+  wp_pure; [done|].
   wp_if_destruct.
   {
     wp_apply wp_ArbitraryInt.
@@ -241,12 +258,15 @@ Proof.
     iApply "HΦ".
     iModIntro.
     rewrite own_slice_unseal own_slice_cap_unseal.
+    eapply to_val_inj in Heqb0.
     assert (len = W64 0) by word; subst.
     unfold own_slice_def. unfold own_slice_cap_def. simpl.
     assert (uint.nat (W64 0) = 0)%nat as -> by word.
     simpl. done.
   }
+  apply f_not_equal in Heqb0.
   wp_pures.
+  Transparent to_val. simpl. Opaque to_val.
   wp_apply wp_allocN_seq.
   { word. }
   iIntros (?) "Hp".
@@ -267,8 +287,7 @@ Proof.
     rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
     erewrite has_go_type_len.
     2:{ apply zero_val_has_go_type. }
-    iSplitL.
-    2:{ iPureIntro. apply zero_val_has_go_type. }
+    rewrite default_val_eq_zero_val.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros. iFrame.
     apply lookup_seq in H0 as [? ?].
@@ -285,19 +304,18 @@ Proof.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros.
     rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
-    iSplitL.
-    2:{ iPureIntro. apply zero_val_has_go_type. }
+    rewrite default_val_eq_zero_val.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros. iFrame.
   }
 Qed.
 
-Lemma wp_slice_make2 stk E t (len : u64) :
+Lemma wp_slice_make2 stk E (len : u64) :
   {{{ True }}}
     slice.make2 t #len @ stk; E
   {{{ sl, RET slice.val sl;
-      own_slice sl t (DfracOwn 1) (replicate (uint.nat len) (zero_val t)) ∗
-      own_slice_cap sl t
+      sl ↦* (replicate (uint.nat len) (default_val V)) ∗
+      own_slice_cap V sl
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -332,7 +350,7 @@ Proof.
   wp_rec. wp_pures. by iApply "HΦ".
 Qed.
 
-Global Instance wp_slice_elem_ref s t (i : w64) :
+Global Instance wp_slice_elem_ref s (i : w64) :
   PureWpVal (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref t (slice.val s) #i)
     #(slice.elem_ref_f s t i).
 Proof.
@@ -342,11 +360,11 @@ Proof.
   wp_pures. iApply "HΦ".
 Qed.
 
-Lemma wp_slice_for_range {stk E} t sl dq (vs : list val) (body : val) Φ :
-  own_slice sl t dq vs ∗
-  (fold_right (λ v P (i : w64), WP body #i (Val v) @ stk ; E {{ v, ⌜ v = execute_val #() ⌝ ∗
-                                                                   P (word.add i 1) }})
-    (λ (_ : w64), own_slice sl t dq vs -∗ Φ (execute_val #()))
+Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
+  sl ↦*{dq} vs ∗
+  (fold_right (λ v P (i : w64),
+                 WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val #()%V ⌝ ∗ P (word.add i 1) }})
+    (λ (_ : w64), sl ↦*{dq} vs -∗ Φ (execute_val #()))
     vs) (W64 0) -∗
   WP slice.for_range t (slice.val sl) body @ stk ; E {{ Φ }}
 .
@@ -354,16 +372,21 @@ Proof.
   iIntros "[Hsl HΦ]".
   wp_rec.
   wp_pures.
-  wp_alloc j_ptr as "Hi".
+  wp_apply wp_ref_ty.
+  iIntros (j_ptr) "Hi".
   wp_pures.
   iAssert (
       ∃ (j : u64),
-        "Hi" ∷ j_ptr ↦[uint64T] #j ∗
+        "Hi" ∷ j_ptr ↦# j ∗
         "Hiters" ∷ (fold_right _ _ (drop (uint.nat j) vs)) j
     )%I with "[Hi HΦ]" as "Hinv".
-  { rewrite zero_val_eq /=. iExists (W64 0). iFrame. }
+  { iExists (W64 0). iFrame. }
   wp_for.
   iNamed "Hinv".
+  wp_pures.
+  wp_bind (load_ty _ _).
+  eapply (tac_wp_load_ty []).
+  wp_apply wp_lo
   wp_load.
   wp_pures.
   iDestruct (own_slice_len with "Hsl") as %Hlen.
@@ -515,3 +538,6 @@ Proof.
 Qed.
 
 End wps.
+
+Notation "s ↦sl dq vs" := (own_slice s dq vs)
+                            (at level 20, dq custom dfrac at level 50, format "s  ↦sl dq  vs").

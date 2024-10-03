@@ -50,7 +50,7 @@ Definition full_slice t : val :=
 
 Definition for_range t : val :=
   λ: "s" "body",
-  let: "i" := ref_ty uint64T (zero_val uint64T) in
+  let: "i" := ref_ty uint64T #(W64 0) in
   for: (λ: <>, ![uint64T] "i" < len "s") ; (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #(W64 1)) :=
     (λ: <>, "body" (![uint64T] "i") (![t] (elem_ref t "s" (![uint64T] "i"))))
 .

@@ -12,6 +12,7 @@ Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
+Transparent to_val.
 Section goose_lang.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
@@ -53,7 +54,7 @@ Section goose_lang.
     - destruct y; done.
     - destruct y.
       + done.
-      + inversion Heq. subst. f_equal. apply IHx. done.
+      + simpl in Heq. inversion Heq. subst. f_equal. apply IHx. done.
   Qed.
 
   Global Instance struct_fields_val_inj :
@@ -431,84 +432,90 @@ Section goose_lang.
       rewrite ?right_id. iFrame.
   Qed.
 
-  Lemma tac_wp_load_ty K Δ Δ' s E i l q v Φ is_pers :
-    MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (is_pers, typed_pointsto l q v)%I →
-    envs_entails Δ' (WP fill K (Val #v) @ s; E {{ Φ }}) →
-    envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
+  Lemma tac_wp_load_ty Δ s E i l dq v Φ is_pers :
+    envs_lookup i Δ = Some (is_pers, typed_pointsto l dq v)%I →
+    envs_entails Δ (Φ #v) →
+    envs_entails Δ (WP (load_ty t #l) @ s; E {{ Φ }}).
   Proof using Type*.
-    rewrite envs_entails_unseal=> ? ? Hwp.
-    rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_typed_load.
-    iIntros "H".
-    rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
-    iNext.
+    rewrite envs_entails_unseal => ? HΦ.
+    rewrite envs_lookup_split //.
+    iIntros "[H Henv]".
     destruct is_pers; simpl.
-    + iDestruct "H" as "[#? H]". iFrame "#". iIntros.
-      iSpecialize ("H" with "[$]"). by wp_apply Hwp.
-    + iDestruct "H" as "[? H]". iFrame. iIntros.
-      iSpecialize ("H" with "[$]"). by wp_apply Hwp.
+    - iDestruct "H" as "#H". wp_apply (wp_typed_load with "[$]").
+      iIntros "_". iApply HΦ. iApply "Henv". iFrame "#".
+    - wp_apply (wp_typed_load with "[$]"). iIntros "H". iApply HΦ.
+      iApply "Henv". iFrame.
   Qed.
 
-  Lemma tac_wp_store_ty K Δ Δ' Δ'' stk E i l v v' Φ :
-    MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (false, l ↦# v)%I →
-    envs_simple_replace i false (Esnoc Enil i (l ↦# v')) Δ' = Some Δ'' →
-    envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
-    envs_entails Δ (WP fill K (store_ty t (LitV l) #v') @ stk; E {{ Φ }}).
+  Lemma tac_wp_store_ty Δ Δ' stk E i l v v' Φ :
+    envs_lookup i Δ = Some (false, l ↦# v)%I →
+    envs_simple_replace i false (Esnoc Enil i (l ↦# v')) Δ = Some Δ' →
+    envs_entails Δ' (Φ #())  →
+    envs_entails Δ (WP (store_ty t #l (Val #v')) @ stk; E {{ Φ }}).
   Proof using Type*.
     intros Hty.
-    rewrite envs_entails_unseal=> ???.
-    rewrite -wp_bind. eapply bi.wand_apply; first by eapply bi.wand_entails, wp_typed_store.
-    rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
-    rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
+    rewrite envs_entails_unseal=> ??.
+    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_typed_store.
+    rewrite -bi.later_sep envs_simple_replace_sound // /= right_id -bi.later_intro.
+    by apply bi.sep_mono_r, bi.wand_mono.
   Qed.
 
-Definition is_primitive_type (t : go_type) : Prop :=
-  match t with
-  | structT d => False
-  | arrayT n t => False
-  | funcT => False
-  | sliceT e => False
-  | interfaceT => False
-  | _ => True
-  end.
+  Lemma tac_wp_ref_ty Δ stk E v Φ :
+    (∀ l, envs_entails Δ (l ↦# v -∗ Φ #l)) →
+    envs_entails Δ (WP (ref_ty t #v) @ stk; E {{ Φ }}).
+  Proof.
+    rewrite envs_entails_unseal => Hwp.
+    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_ref_ty.
+    rewrite left_id -bi.later_intro.
+    by apply bi.forall_intro.
+  Qed.
 
-Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 :
-  is_primitive_type t →
-  #v' ≠ #v1 →
-  {{{ ▷ l ↦#{dq} v' }}} CmpXchg (Val $ LitV $ LitLoc l) #v1 #v2 @ s; E
-  {{{ RET (#v', #false); l ↦#{dq} v' }}}.
-Proof using Type*.
-  intros Hprim Hne.
-  pose proof (to_val_has_go_type v') as Hty_old.
-  pose proof (to_val_has_go_type v1) as Hty.
-  iIntros (?) "Hl HΦ". unseal.
-  generalize dependent (#v1). generalize dependent (#v'). intros.
-  destruct t; try by exfalso.
-  all: inversion Hty_old; subst; inversion Hty; subst;
-    simpl; rewrite loc_add_0 right_id;
-    wp_apply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
-    iIntros; iApply "HΦ"; iFrame; done.
-Qed.
+  Definition is_primitive_type (t : go_type) : Prop :=
+    match t with
+    | structT d => False
+    | arrayT n t => False
+    | funcT => False
+    | sliceT e => False
+    | interfaceT => False
+    | _ => True
+    end.
 
-Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 :
-  is_primitive_type t →
-  #v' = #v1 →
-  {{{ ▷ l ↦# v' }}} CmpXchg (Val $ LitV $ LitLoc l) #v1 #v2 @ s; E
-  {{{ RET (#v', #true); l ↦# v2 }}}.
-Proof using Type*.
-  intros Hprim Heq.
-  pose proof (to_val_has_go_type v') as Hty_old.
-  pose proof (to_val_has_go_type v2) as Hty.
-  iIntros (?) "Hl HΦ". unseal.
-  generalize dependent (#v1). generalize dependent (#v'). intros.
-  destruct t; try by exfalso.
-  all: inversion Hty_old; subst;
-    inversion Hty; subst;
-    simpl; rewrite loc_add_0 right_id;
-    wp_apply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
-    iIntros; iApply "HΦ"; iFrame; done.
-Qed.
+  Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 :
+    is_primitive_type t →
+    #v' ≠ #v1 →
+    {{{ ▷ l ↦#{dq} v' }}} CmpXchg (Val # l) #v1 #v2 @ s; E
+    {{{ RET (#v', #false); l ↦#{dq} v' }}}.
+  Proof using Type*.
+    intros Hprim Hne.
+    pose proof (to_val_has_go_type v') as Hty_old.
+    pose proof (to_val_has_go_type v1) as Hty.
+    iIntros (?) "Hl HΦ". unseal.
+    generalize dependent (#v1). generalize dependent (#v'). intros.
+    destruct t; try by exfalso.
+    all: inversion Hty_old; subst; inversion Hty; subst;
+      simpl; rewrite loc_add_0 right_id;
+      wp_apply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
+      iIntros; iApply "HΦ"; iFrame; done.
+  Qed.
+
+  Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 :
+    is_primitive_type t →
+    #v' = #v1 →
+    {{{ ▷ l ↦# v' }}} CmpXchg (Val $ LitV $ LitLoc l) #v1 #v2 @ s; E
+    {{{ RET (#v', #true); l ↦# v2 }}}.
+  Proof using Type*.
+    intros Hprim Heq.
+    pose proof (to_val_has_go_type v') as Hty_old.
+    pose proof (to_val_has_go_type v2) as Hty.
+    iIntros (?) "Hl HΦ". unseal.
+    generalize dependent (#v1). generalize dependent (#v'). intros.
+    destruct t; try by exfalso.
+    all: inversion Hty_old; subst;
+      inversion Hty; subst;
+      simpl; rewrite loc_add_0 right_id;
+      wp_apply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
+      iIntros; iApply "HΦ"; iFrame; done.
+  Qed.
 
 End goose_lang.
 
@@ -521,16 +528,14 @@ Hint Constructors has_go_type : has_go_type.
 Hint Resolve zero_val_has_go_type : has_go_type.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
-  wp_apply wp_ref_ty;
-  [ solve_has_go_type
-  | iIntros (l) H ]
-.
+  (wp_bind (ref_ty _ _) || fail "cannot find ref_ty");
+  (eapply tac_wp_ref_ty || fail "cannot apply wp_ref_ty");
+  iIntros (l) H.
 
 Tactic Notation "wp_load" :=
   let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦#{_} _)%I) => l end in
     iAssumptionCore || fail "wp_load: cannot find" l "↦# ?" in
-  wp_pures;
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     ( first

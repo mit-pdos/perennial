@@ -141,20 +141,6 @@ Ltac wp_finish :=
   ltac2:(repeat (simplify_subst' ())); simpl fill;
   try wp_value_head.  (* in case we have reached a value, get rid of the WP *)
 
-  Lemma tac_wp_load_ty Δ s E i l q t v Φ is_pers :
-    envs_lookup i Δ = Some (is_pers, typed_pointsto l q t v)%I →
-    envs_entails Δ (WP (Val v) @ s; E {{ Φ }}) →
-    envs_entails Δ (WP (load_ty t (LitV l)) @ s; E {{ Φ }}).
-  Proof. Admitted.
-
-  Lemma tac_wp_store_ty Δ Δ' stk E i l t v v' Φ :
-    has_go_type v' t ->
-    envs_lookup i Δ = Some (false, l ↦[t] v)%I →
-    envs_simple_replace i false (Esnoc Enil i (l ↦[t] v')) Δ = Some Δ' →
-    envs_entails Δ' (WP (Val $ LitV LitUnit) @ stk; E {{ Φ }}) →
-    envs_entails Δ (WP (store_ty t (LitV l) v') @ stk; E {{ Φ }}).
-  Proof. Admitted.
-
   Lemma tac_wp_ref_ty name Δ stk E t v Φ :
     has_go_type v t ->
     (∀ (l : loc), envs_entails (envs_snoc Δ false (INamed name) (l ↦[t] v)%I) (WP (Val #l) @ stk; E {{ Φ }})) →
