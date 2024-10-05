@@ -64,20 +64,20 @@ Definition DecodeTxnResponse: val :=
     ].
 
 (* [REQUEST-VOTE, Term, CommittedLSN]
-   [APPEND-ENTRIES, Term, LSNEntries, Entries, LeaderCommit] *)
+   [APPEND-ENTRIES, Term, CommittedLSN, LSNEntries, Entries] *)
 Definition PaxosRequest := struct.decl [
   "Kind" :: uint64T;
   "Term" :: uint64T;
   "CommittedLSN" :: uint64T;
-  "LSNEntries" :: uint64T;
-  "Entries" :: slice.T stringT;
-  "LeaderCommit" :: uint64T
+  "EntriesLSN" :: uint64T;
+  "Entries" :: slice.T stringT
 ].
 
-(* [REQUEST-VOTE, Term, TermEntries, Entries]
-   [APPEND-ENTRIES, Term, MatchedLSN] *)
+(* [REQUEST-VOTE, NodeID, Term, TermEntries, Entries]
+   [APPEND-ENTRIES, NodeID, Term, MatchedLSN] *)
 Definition PaxosResponse := struct.decl [
   "Kind" :: uint64T;
+  "NodeID" :: uint64T;
   "Term" :: uint64T;
   "TermEntries" :: uint64T;
   "Entries" :: slice.T stringT;
@@ -99,19 +99,19 @@ Definition DecodePaxosResponse: val :=
     ].
 
 Definition EncodePaxosRequestVoteRequest: val :=
-  rec: "EncodePaxosRequestVoteRequest" "termc" "lsnc" :=
+  rec: "EncodePaxosRequestVoteRequest" "term" "lsnc" :=
     slice.nil.
 
 Definition EncodePaxosRequestVoteResponse: val :=
-  rec: "EncodePaxosRequestVoteResponse" "termc" "terma" "ents" :=
+  rec: "EncodePaxosRequestVoteResponse" "nid" "term" "terma" "ents" :=
     slice.nil.
 
 Definition EncodePaxosAppendEntriesRequest: val :=
-  rec: "EncodePaxosAppendEntriesRequest" "termc" "lsnc" "lsne" "ents" :=
+  rec: "EncodePaxosAppendEntriesRequest" "term" "lsnc" "lsne" "ents" :=
     slice.nil.
 
 Definition EncodePaxosAppendEntriesResponse: val :=
-  rec: "EncodePaxosAppendEntriesResponse" "termc" "lsn" :=
+  rec: "EncodePaxosAppendEntriesResponse" "nid" "term" "lsn" :=
     slice.nil.
 
 End code.

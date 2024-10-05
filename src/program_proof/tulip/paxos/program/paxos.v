@@ -3,9 +3,191 @@ From Perennial.program_proof.tulip.paxos.invariance Require Import
   accept advance ascend commit extend prepare.
 From Perennial.program_proof.tulip.program.util Require Import next_aligned sort.
 From Perennial.program_proof.tulip.program Require Import quorum.
-From Goose.github_com.mit_pdos.tulip Require Import paxos.
+From Goose.github_com.mit_pdos.tulip Require Import paxos message.
 
 (* Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations. *)
+
+(* TODO: move them to separate file once stable *)
+
+Inductive pxreq :=
+| RequestVoteReq (term : u64) (lsnlc : u64)
+| AppendEntriesReq (term : u64) (lsnlc : u64) (lsne : u64) (ents : list string).
+
+#[global]
+Instance pxreq_eq_decision :
+  EqDecision pxreq.
+Proof. solve_decision. Qed.
+
+#[global]
+Instance pxreq_countable :
+  Countable pxreq.
+Admitted.
+
+Definition encode_pxreq (req : pxreq) : list u8.
+Admitted.
+
+Definition pxreq_to_val (req : pxreq) (entsP : Slice.t) : val :=
+  match req with
+  | RequestVoteReq term lsnlc =>
+      struct.mk_f PaxosRequest [
+          ("Kind", #(U64 0)); ("Term", #term); ("CommittedLSN", #lsnlc)
+        ]
+  | AppendEntriesReq term lsnlc lsne ents =>
+      struct.mk_f PaxosRequest [
+          ("Kind", #(U64 1)); ("Term", #term); ("CommittedLSN", #lsnlc);
+          ("EntriesLSN", #lsne); ("Entries", to_val entsP)
+        ]
+  end.
+
+Inductive pxresp :=
+| RequestVoteResp (nid term terme : u64) (ents : list string)
+| AppendEntriesResp (nid term lsneq : u64).
+
+#[global]
+Instance pxresp_eq_decision :
+  EqDecision pxresp.
+Proof. solve_decision. Qed.
+
+#[global]
+Instance pxresp_countable :
+  Countable pxresp.
+Admitted.
+
+Definition encode_pxresp (resp : pxresp) : list u8.
+Admitted.
+
+Definition pxresp_to_val (resp : pxresp) (entsP : Slice.t) : val :=
+  match resp with
+  | RequestVoteResp nid term terme ents =>
+      struct.mk_f PaxosResponse [
+          ("Kind", #(U64 0)); ("NodeID", #nid); ("Term", #term);
+          ("TermEntries", #terme); ("Entries", to_val entsP)
+        ]
+  | AppendEntriesResp nid term lsneq =>
+      struct.mk_f PaxosResponse [
+          ("Kind", #(U64 1)); ("NodeID", #nid); ("Term", #term);
+          ("MatchedLSN", #lsneq)
+        ]
+  end.
+
+Section res_network.
+  Context `{!paxos_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : paxos_names).
+
+  Definition own_terminals γ (ts : gset chan) : iProp Σ.
+  Admitted.
+
+  Definition is_terminal γ (t : chan) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance is_terminal_persistent γ t :
+    Persistent (is_terminal γ t).
+  Admitted.
+
+  Lemma terminal_update {γ ts} t :
+    own_terminals γ ts ==∗
+    own_terminals γ ({[t]} ∪ ts) ∗ is_terminal γ t.
+  Admitted.
+
+  Lemma terminal_lookup γ ts t :
+    is_terminal γ t -∗
+    own_terminals γ ts -∗
+    ⌜t ∈ ts⌝.
+  Admitted.
+
+End res_network.
+
+Section inv_network.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Definition paxosnetNS := nroot .@ "paxosnet".
+
+  Definition safe_append_entries_req
+    γ nids (term lsnc lsne : u64) (ents : list string) : iProp Σ :=
+    ∃ (logleader logcmt : list string),
+      "#Hpfb"       ∷ prefix_base_ledger γ (uint.nat term) logleader ∗
+      "#Hpfg"       ∷ prefix_growing_ledger γ (uint.nat term) logleader ∗
+      "#Hlogcmt"    ∷ safe_ledger_above γ nids (uint.nat term) logcmt ∗
+      "%Hlogleader" ∷ ⌜(uint.nat lsne ≤ length logleader)%nat⌝ ∗
+      "%Hents"      ∷ ⌜drop (uint.nat lsne) logleader = ents⌝ ∗
+      "%Hlogcmt"    ∷ ⌜length logcmt = uint.nat lsnc⌝.
+
+  Definition safe_pxreq γ nids req : iProp Σ :=
+    match req with
+    | RequestVoteReq _ _ => True
+    | AppendEntriesReq term lsnc lsne ents =>
+        safe_append_entries_req γ nids term lsnc lsne ents
+    end.
+
+  #[global]
+  Instance safe_pxreq_persistent γ nids req :
+    Persistent (safe_pxreq γ nids req).
+  Proof. destruct req; apply _. Defined.
+
+  Definition safe_request_vote_resp
+    γ (nids : gset u64) (nid term terme : u64) (ents : list string) : iProp Σ :=
+    ∃ (logpeer : list string) (lsne : u64),
+      "#Hpromise" ∷ past_nodedecs_latest_before γ nid (uint.nat term) (uint.nat terme) logpeer ∗
+      (* TODO: start of ents *)
+      "%Hents"    ∷ ⌜drop (uint.nat lsne) logpeer = ents⌝ ∗
+      "%Hinnids"  ∷ ⌜nid ∈ nids⌝.
+
+  Definition safe_append_entries_resp
+    γ (nids : gset u64) (nid term lsneq : u64) : iProp Σ :=
+    ∃ (logacpt : list string),
+      "#Haoc"     ∷ (is_accepted_proposal_lb γ nid (uint.nat term) logacpt ∨
+                     safe_ledger_above γ nids (uint.nat term) logacpt) ∗
+      "%Hlogacpt" ∷ ⌜length logacpt = uint.nat lsneq⌝ ∗
+      "%Hinnids"  ∷ ⌜nid ∈ nids⌝.
+
+  Definition safe_pxresp γ nids resp : iProp Σ :=
+    match resp with
+    | RequestVoteResp nid term terme ents =>
+        safe_request_vote_resp γ nids nid term terme ents
+    | AppendEntriesResp nid term lsneq =>
+        safe_append_entries_resp γ nids nid term lsneq
+    end.
+
+  #[global]
+  Instance safe_pxresp_persistent γ nids resp :
+    Persistent (safe_pxresp γ nids resp).
+  Proof. destruct resp; apply _. Defined.
+
+  Definition listen_inv
+    (addr : chan) (ms : gset message) nids γ : iProp Σ :=
+    ∃ (reqs : gset pxreq),
+      "Hms"      ∷ addr c↦ ms ∗
+      (* senders are always reachable *)
+      "#Hsender" ∷ ([∗ set] trml ∈ set_map msg_sender ms, is_terminal γ trml) ∗
+      "#Hreqs"   ∷ ([∗ set] req ∈ reqs, safe_pxreq γ nids req) ∗
+      "%Henc"    ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_pxreq reqs⌝.
+
+  Definition connect_inv (trml : chan) (ms : gset message) nids γ : iProp Σ :=
+    ∃ (resps : gset pxresp),
+      "Hms"     ∷ trml c↦ ms ∗
+      "#Hresps" ∷ ([∗ set] resp ∈ resps, safe_pxresp γ nids resp) ∗
+      "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_pxresp resps⌝.
+
+  Definition paxos_network_inv
+    (γ : paxos_names) (nids : gset u64) (addrm : gmap u64 chan) : iProp Σ :=
+    ∃ (listens : gmap chan (gset message)) (connects : gmap chan (gset message)),
+      "Hlistens"   ∷ ([∗ map] a ↦ ms ∈ listens, listen_inv a ms nids γ) ∗
+      "Hconnects"  ∷ ([∗ map] t ↦ ms ∈ connects, connect_inv t ms nids γ) ∗
+      "Hterminals" ∷ own_terminals γ (dom connects) ∗
+      "%Himgaddrm" ∷ ⌜map_img addrm = dom listens⌝.
+
+  #[global]
+  Instance paxos_network_inv_timeless γ nids addrm :
+    Timeless (paxos_network_inv γ nids addrm).
+  Admitted.
+
+  Definition know_paxos_network_inv γ nids addrm : iProp Σ :=
+    inv paxosnetNS (paxos_network_inv γ nids addrm).
+
+End inv_network.
+(* TODO: move them *)
 
 Section repr.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
@@ -15,10 +197,8 @@ Section repr.
   (*@     nidme     uint64                                                    @*)
   (*@     // Node ID of its peers.                                            @*)
   (*@     peers     []uint64                                                  @*)
-  (*@     // Address of this node.                                            @*)
-  (*@     addrme    grove_ffi.Address                                         @*)
   (*@     // Addresses of other Paxos nodes.                                  @*)
-  (*@     addrpeers map[uint64]grove_ffi.Address                              @*)
+  (*@     addrm     map[uint64]grove_ffi.Address                              @*)
   (*@     // Size of the cluster. @sc = @len(peers) + 1.                      @*)
   (*@     sc        uint64                                                    @*)
   (*@     // Mutex protecting fields below.                                   @*)
@@ -30,7 +210,7 @@ Section repr.
   (*@     // Term to which the log entries @ents belong. Persistent.          @*)
   (*@     terml     uint64                                                    @*)
   (*@     // List of log entries. Persistent.                                 @*)
-  (*@     log      []string                                                   @*)
+  (*@     log       []string                                                  @*)
   (*@     // LSN before which entries are committed (exclusively). Persistent. Note @*)
   (*@     // that persistence of @lsnc is *not* a safety requirement, but a   @*)
   (*@     // performance improvement (so that the leader's corresponding @lsnpeers @*)
@@ -69,11 +249,27 @@ Section repr.
   (*@     //                                                                  @*)
   (*@     conns     map[uint64]grove_ffi.Connection                           @*)
   (*@ }                                                                       @*)
-  Definition own_paxos_comm (paxos : loc) (peers : gset u64) : iProp Σ :=
-    ∃ (addrme : u64) (addrpeersP : loc) (connsP : loc),
-      "HaddrmeP"    ∷ paxos ↦[Paxos :: "addrme"] #addrme ∗
-      "HaddrpeersP" ∷ paxos ↦[Paxos :: "addrpeers"] #addrpeersP ∗
-      "HconnsP"     ∷ paxos ↦[Paxos :: "conns"] #connsP.
+  Definition is_paxos_addrm (paxos : loc) (addrm : gmap u64 chan) nids : iProp Σ :=
+    ∃ (addrmP : loc),
+      "#HaddrmP"   ∷ readonly (paxos ↦[Paxos :: "addrm"] #addrmP) ∗
+      "#Haddrm"    ∷ own_map addrmP DfracDiscarded addrm ∗
+      "%Hdomaddrm" ∷ ⌜dom addrm = nids⌝.
+
+  Definition is_paxos_nids
+    (paxos : loc) (nidme : u64) (nids : gset u64) : iProp Σ :=
+    ∃ (peersP : Slice.t),
+      let peers := nids ∖ {[nidme]} in
+      "HnidmeP" ∷ readonly (paxos ↦[Paxos :: "nidme"] #nidme) ∗
+      "HpeersP" ∷ readonly (paxos ↦[Paxos :: "peers"] (to_val peersP)) ∗
+      "Hpeers"  ∷ readonly (own_slice_small peersP uint64T (DfracOwn 1) (elements peers)).
+
+  Definition own_paxos_comm (paxos : loc) (addrm : gmap u64 chan) γ : iProp Σ :=
+    ∃ (connsP : loc) (conns : gmap u64 (chan * chan)),
+      let connsV := fmap (λ x, connection_socket x.1 x.2) conns in
+      "HconnsP" ∷ paxos ↦[Paxos :: "conns"] #connsP ∗
+      "Hconns"  ∷ map.own_map connsP (DfracOwn 1) (connsV, #()) ∗
+      "#Htrmls" ∷ ([∗ map] _ ↦ x ∈ conns, is_terminal γ x.1) ∗
+      "%Haddrpeers" ∷ ⌜map_Forall (λ nid x, addrm !! nid = Some x.2) conns⌝.
 
   Definition own_paxos_candidate_only
     (nidme termc terml termp : u64) (logc : list string)
@@ -137,13 +333,13 @@ Section repr.
       "%Hinclnids" ∷ ⌜dom lsnpeers ⊆ peers⌝.
 
   Definition own_paxos_leader
-    (paxos : loc) (termc terml : u64) (log : list string) (isleader : bool) (peers : gset u64)
+    (paxos : loc) (nidme termc terml : u64) (log : list string) (isleader : bool)
     nids γ : iProp Σ :=
     ∃ (lsnpeersP : loc),
       "HisleaderP" ∷ paxos ↦[Paxos :: "isleader"] #isleader ∗
       "HlsnpeersP" ∷ paxos ↦[Paxos :: "lsnpeers"] #lsnpeersP ∗
       "Honlyl"     ∷ (if isleader
-                      then own_paxos_leader_only termc terml log lsnpeersP peers nids γ
+                      then own_paxos_leader_only termc terml log lsnpeersP (nids ∖ {[nidme]}) nids γ
                       else True).
 
   Definition own_paxos_sc (paxos : loc) (nids : gset u64) : iProp Σ :=
@@ -153,15 +349,6 @@ Section repr.
       committed LSN (i.e., @px.push). *)
       "%Hmulti" ∷ ⌜1 < uint.Z sc⌝ ∗
       "%Hsc"    ∷ ⌜size nids = uint.nat sc⌝.
-
-  Definition own_paxos_nids
-    (paxos : loc) (nidme : u64) (peers : gset u64) nids : iProp Σ :=
-    ∃ (peersP : Slice.t),
-      "HnidmeP"  ∷ paxos ↦[Paxos :: "nidme"] #nidme ∗
-      "HpeersP"  ∷ paxos ↦[Paxos :: "peers"] (to_val peersP) ∗
-      "Hpeers"   ∷ own_slice peersP uint64T (DfracOwn 1) (elements peers) ∗
-      "%Hnids"   ∷ ⌜nids = {[nidme]} ∪ peers⌝ ∗
-      "%Hnidsne" ∷ ⌜nidme ∉ peers⌝.
 
   Definition own_paxos_common
     (paxos : loc) (nidme termc terml lsnc : u64) (log : list string) nids γ : iProp Σ :=
@@ -193,20 +380,23 @@ Section repr.
   predicates should be existentially quantified. *)
   Definition own_paxos_internal
     (paxos : loc) (nidme termc terml lsnc : u64) (iscand isleader : bool) nids γ : iProp Σ :=
-    ∃ (log : list string) (peers : gset u64),
+    ∃ (log : list string),
       let logc := (take (uint.nat lsnc) log) in
       "Hpx"     ∷ own_paxos_common paxos nidme termc terml lsnc log nids γ ∗
       "Hcand"   ∷ own_paxos_candidate paxos nidme termc terml logc iscand nids γ ∗
-      "Hleader" ∷ own_paxos_leader paxos termc terml log isleader peers nids γ ∗
-      "Hnids"   ∷ own_paxos_nids paxos nidme peers nids ∗
-      "Hcomm"   ∷ own_paxos_comm paxos peers.
+      "Hleader" ∷ own_paxos_leader paxos nidme termc terml log isleader nids γ.
 
   Definition own_paxos_with_termc_lsnc
     (paxos : loc) (nidme termc lsnc : u64) nids γ : iProp Σ :=
     ∃ (terml : u64) (iscand isleader : bool),
       own_paxos_internal paxos nidme termc terml lsnc iscand isleader nids γ.
 
-  Definition own_paxos_nominiated_with_termc_lsnc
+  Definition own_paxos_nominated_with_termc
+    (paxos : loc) (nidme termc : u64) nids γ : iProp Σ :=
+    ∃ (terml : u64) (lsnc : u64) (isleader : bool),
+      own_paxos_internal paxos nidme termc terml lsnc true isleader nids γ.
+
+  Definition own_paxos_nominated_with_termc_lsnc
     (paxos : loc) (nidme termc lsnc : u64) nids γ : iProp Σ :=
     ∃ (terml : u64) (isleader : bool),
       own_paxos_internal paxos nidme termc terml lsnc true isleader nids γ.
@@ -250,11 +440,26 @@ Section repr.
 
   (* TODO: finding the right states to expose after adding network. *)
 
+  Definition is_paxos_with_addrm_nids
+    (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) (nids : gset u64) γ : iProp Σ :=
+    ∃ (mu : loc),
+      "#HmuP"    ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
+      "#Hlock"   ∷ is_lock paxosNS #mu (own_paxos paxos nidme nids γ) ∗
+      "#Hlockcm" ∷ is_lock paxosNS #mu (own_paxos_comm paxos addrm γ) ∗
+      "#Haddrm"  ∷ is_paxos_addrm paxos addrm nids ∗
+      "#Hnids"   ∷ is_paxos_nids paxos nidme nids ∗
+      "#Hinv"    ∷ know_paxos_inv γ nids ∗
+      "#Hinvnet" ∷ know_paxos_network_inv γ nids addrm ∗
+      "%Hnidme"  ∷ ⌜nidme ∈ nids⌝.
+
+  Definition is_paxos_with_addrm
+    (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) γ : iProp Σ :=
+    ∃ (nids : gset u64),
+      is_paxos_with_addrm_nids paxos nidme addrm nids γ.
+
   Definition is_paxos (paxos : loc) (nidme : u64) γ : iProp Σ :=
-    ∃ (mu : loc) (nids : gset u64),
-      "#HmuP"  ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
-      "#Hlock" ∷ is_lock paxosNS #mu (own_paxos paxos nidme nids γ) ∗
-      "#Hinv"  ∷ know_paxos_inv γ nids.
+    ∃ (addrm : gmap u64 chan) (nids : gset u64),
+      is_paxos_with_addrm_nids paxos nidme addrm nids γ.
 
 End repr.
 
@@ -262,13 +467,14 @@ Section stepdown.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__stepdown px (nidme term : u64) termc nids γ :
+    nidme ∈ nids ->
     uint.Z termc ≤ uint.Z term ->
     know_paxos_inv γ nids -∗
     {{{ own_paxos_with_termc px nidme termc nids γ }}}
       Paxos__stepdown #px #term
     {{{ RET #(); own_paxos_following_with_termc px nidme term nids γ }}}.
   Proof.
-    iIntros (Hlt) "#Hinv".
+    iIntros (Hnidme Hlt) "#Hinv".
     iIntros (Φ) "!> Hpx HΦ".
     wp_rec. wp_pures.
 
@@ -277,7 +483,7 @@ Section stepdown.
     (*@     px.iscand = false                                                   @*)
     (*@     px.isleader = false                                                 @*)
     (*@                                                                         @*)
-    do 2 iNamed "Hpx". iNamed "Hcand". iNamed "Hleader". iNamed "Hnids".
+    do 2 iNamed "Hpx". iNamed "Hcand". iNamed "Hleader".
     do 3 wp_storeField.
 
     (*@     // TODO: Write @px.termc to disk.                                   @*)
@@ -293,7 +499,7 @@ Section stepdown.
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (paxos_inv_prepare (uint.nat term) with "Htermc Hterml Hlogn HinvO")
       as "(Htermc & Hterml & Hlogn & HinvO & #Hpromise)".
-    { set_solver. }
+    { apply Hnidme. }
     { word. }
     iMod ("HinvC" with "HinvO") as "_".
     iApply "HΦ".
@@ -310,12 +516,15 @@ Section nominate.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__nominate (px : loc) (nidme : u64) nids γ :
+    nidme ∈ nids ->
+    is_paxos_nids px nidme nids -∗
     know_paxos_inv γ nids -∗
     {{{ own_paxos px nidme nids γ }}}
       Paxos__nominate #px
     {{{ (term : u64) (lsn : u64), RET (#term, #lsn); own_paxos px nidme nids γ }}}.
   Proof.
-    iIntros "#Hinv" (Φ) "!> Hpx HΦ".
+    iIntros (Hnidme) "#Hnids #Hinv".
+    iIntros (Φ) "!> Hpx HΦ".
     wp_rec. wp_pures.
 
     (*@ func (px *Paxos) nominate() (uint64, uint64) {                          @*)
@@ -377,7 +586,7 @@ Section nominate.
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (paxos_inv_prepare (uint.nat term) with "Htermc Hterml Hlogn HinvO")
       as "(Htermc & Hterml & Hlogn & HinvO & #Hpromise)".
-    { set_solver. }
+    { apply Hnidme. }
     { word. }
     iMod ("HinvC" with "HinvO") as "_".
 
@@ -449,7 +658,7 @@ Section collect.
     drop (uint.nat lsnc) logpeer = ents ->
     past_nodedecs_latest_before γ nid (uint.nat termc) (uint.nat term) logpeer -∗
     know_paxos_inv γ nids -∗
-    {{{ own_paxos_nominiated_with_termc_lsnc px nidme termc lsnc nids γ ∗
+    {{{ own_paxos_nominated_with_termc_lsnc px nidme termc lsnc nids γ ∗
         own_slice entsP stringT (DfracOwn 1) ents
     }}}
       Paxos__collect #px #nid #term (to_val entsP)
@@ -766,12 +975,14 @@ Section ascend.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__ascend (px : loc) (nidme : u64) nids γ :
+    nidme ∈ nids ->
     know_paxos_inv γ nids -∗
     {{{ own_paxos_nominated px nidme nids γ }}}
       Paxos__ascend #px
     {{{ RET #(); own_paxos px nidme nids γ }}}.
   Proof.
-    iIntros "#Hinv" (Φ) "!> Hpx HΦ".
+    iIntros (Hnidme) "#Hinv".
+    iIntros (Φ) "!> Hpx HΦ".
     wp_rec.
 
     (*@ func (px *Paxos) ascend() {                                             @*)
@@ -824,11 +1035,10 @@ Section ascend.
 
     (*@     // Logical action: Ascend(@px.termc, @px.log).                      @*)
     (*@                                                                         @*)
-    iNamed "Hnids".
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (paxos_inv_ascend with "[] Htermc Hterml Hlogn HinvO")
       as "(Htermc & Hterml & Hlogn & HinvO & Hps & #Hpsb & #Hacptlb)".
-    { set_solver. }
+    { apply Hnidme. }
     { apply Hton. }
     { word. }
     { iFrame "Hvotes".
@@ -845,7 +1055,7 @@ Section ascend.
     set logc := take (uint.nat lsnc) log.
     set log' := logc ++ entsp.
     set logc' := take (uint.nat lsnc) log'.
-    iAssert (own_paxos_leader px termc termc log' true peers nids γ)%I
+    iAssert (own_paxos_leader px nidme termc termc log' true nids γ)%I
       with "[$HisleaderP $HlsnpeersP $Hlsnpeers $Hps]" as "Hleader".
     { iSplit; last done.
       iExists ∅.
@@ -952,6 +1162,7 @@ Section accept.
   Theorem wp_Paxos__accept
     (px : loc) (lsn : u64) (term : u64) (entsP : Slice.t) (ents logleader : list string)
     (nidme : u64) nids γ :
+    nidme ∈ nids ->
     (uint.nat lsn ≤ length logleader)%nat ->
     drop (uint.nat lsn) logleader = ents ->
     prefix_base_ledger γ (uint.nat term) logleader -∗
@@ -968,7 +1179,7 @@ Section accept.
         ⌜length loga = uint.nat lsna⌝
     }}}.
   Proof.
-    iIntros (Hlsnle Hents) "#Hpfb #Hpfg #Hinv".
+    iIntros (Hnidme Hlsnle Hents) "#Hpfb #Hpfg #Hinv".
     iIntros (Φ) "!> [Hpx Hents] HΦ".
     wp_rec.
 
@@ -1035,11 +1246,10 @@ Section accept.
 
       (*@         // Logical action: Advance(term, log).                          @*)
       (*@                                                                         @*)
-      iNamed "Hnids".
       iInv "Hinv" as "> HinvO" "HinvC".
       iMod (paxos_inv_advance with "Hpfb Hpfg Htermc Hterml Hlogn HinvO")
         as "(Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
-      { set_solver. }
+      { apply Hnidme. }
       { clear -Htermlc Htermne. word. }
       iMod ("HinvC" with "HinvO") as "_".
 
@@ -1160,17 +1370,16 @@ Section accept.
       clear -Hszlog Hszents Hnogap Hlonger.
       word.
     }
-    iNamed "Hnids".
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (paxos_inv_accept with "Hpfb Hpfg Htermc Hterml Hlogn HinvO")
       as "(Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
-    { set_solver. }
+    { apply Hnidme. }
     { apply Hlenlog. }
     iMod ("HinvC" with "HinvO") as "_".
 
     (*@     return lsna                                                         @*)
     (*@ }                                                                       @*)
-    iApply "HΦ".
+    iApply ("HΦ" $! _ logleader).
     iAssert (⌜prefix log logleader⌝)%I as %Hprefix.
     { iDestruct (accepted_proposal_lb_prefix with "Hacpted Hacpted'") as %Hprefix.
       iPureIntro.
@@ -1186,11 +1395,14 @@ Section accept.
     iSplit.
     { iFrame "Hcand Hleader HlogP HtermlP".
       case_decide; last done.
-      iFrame "∗ # %".
-      iSplit.
-      { rewrite -(take_prefix_le _ _ (uint.nat lsnc) _ Hprefix); first done.
+      set logc' := take (uint.nat lsnc) logleader.
+      iAssert (safe_ledger_above γ nids (uint.nat terml) logc')%I as "Hcmted'".
+      { subst logc.
+        rewrite (take_prefix_le _ _ (uint.nat lsnc) _ Hprefix); first done.
         clear -Hlsncub. word.
       }
+      iFrame "Hcmted'".
+      iFrame "∗ # %".
       iPureIntro.
       apply prefix_length in Hprefix.
       clear -Hlsncub Hprefix.
@@ -1213,6 +1425,7 @@ Section obtain.
         own_slice entsP stringT (DfracOwn 1) ents ∗
         prefix_base_ledger γ (uint.nat termc) loga ∗
         prefix_growing_ledger γ (uint.nat termc) loga ∗
+        ⌜(uint.nat lsne ≤ length loga)%nat⌝ ∗
         ⌜drop (uint.nat lsne) loga = ents⌝
     }}}.
   Proof.
@@ -1364,7 +1577,6 @@ Section forward.
         by apply prefix_length.
       }
       iMod ("HinvC" with "HinvO") as "_".
-      iNamed "Hnids".
       iApply "HΦ".
       iFrame "Hpx Hcand".
       iFrame "∗ #".
@@ -1386,7 +1598,6 @@ Section forward.
       }
       iFrame "Haocm'".
       iPureIntro.
-      split; last set_solver.
       split; first done.
       split.
       { apply map_Forall_insert_2; [lia | apply Hlelog]. }
@@ -1407,6 +1618,7 @@ Section commit.
 
   Theorem wp_Paxos__commit
     (px : loc) (lsn : u64) (nidme term : u64) (logc : list string) nids γ :
+    nidme ∈ nids ->
     length logc = uint.nat lsn ->
     safe_ledger_above γ nids (uint.nat term) logc -∗
     know_paxos_inv γ nids -∗
@@ -1414,7 +1626,7 @@ Section commit.
       Paxos__commit #px #lsn
     {{{ RET #(); own_paxos_with_termc_terml_iscand px nidme term term false nids γ }}}.
   Proof.
-    iIntros (Hlenlogc) "#Hsafe #Hinv".
+    iIntros (Hnidme Hlenlogc) "#Hsafe #Hinv".
     iIntros (Φ) "!> Hpx HΦ".
     wp_rec.
 
@@ -1423,7 +1635,7 @@ Section commit.
     (*@         return                                                          @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    do 2 iNamed "Hpx". iNamed "Hnids".
+    do 2 iNamed "Hpx".
     wp_loadField.
     wp_if_destruct.
     { iApply "HΦ".
@@ -1447,7 +1659,7 @@ Section commit.
       iNamed "Hsafe".
       iDestruct (paxos_inv_impl_nodes_inv_psa with "HinvO") as (bs) "[Hnodes %Hdombs]".
       iApply (nodes_inv_is_accepted_proposal_lb_impl_prefix with "Hacpted Hvacpt Hnodes").
-      { set_solver. }
+      { rewrite Hdombs. apply Hnidme. }
       { by rewrite Hdombs. }
     }
     iMod ("HinvC" with "HinvO") as "_".
@@ -1471,12 +1683,11 @@ Section commit.
       }
       iApply "HΦ".
       iFrame "Hcand Hleader".
+      set logc' := take (uint.nat logP.(Slice.sz)) log.
+      iDestruct (safe_ledger_above_weaken logc' with "Hsafe") as "Hsafe'".
+      { subst logc'. rewrite -Hszlog firstn_all. apply Hprefix. }
+      iFrame "Hsafe'".
       iFrame "∗ # %".
-      iModIntro.
-      iSplit.
-      { rewrite -Hszlog firstn_all.
-        by iApply (safe_ledger_above_weaken log with "Hsafe").
-      }
       iPureIntro.
       clear -Hszlog. word.
     }
@@ -1488,17 +1699,16 @@ Section commit.
     wp_storeField.
     iApply "HΦ".
     iFrame "Hcand Hleader".
-    iFrame "∗ # %".
-    iModIntro.
-    iSplit.
-    { assert (Hprefix : prefix logc log).
-      { destruct Horprefix as [Hprefix | ?]; last done.
-        rewrite (prefix_length_eq _ _ Hprefix); first done.
-        lia.
-      }
-      iApply (safe_ledger_above_weaken with "Hsafe").
-      by rewrite -Hlenlogc take_length_prefix.
+    assert (Hprefix : prefix logc log).
+    { destruct Horprefix as [Hprefix | ?]; last done.
+      rewrite (prefix_length_eq _ _ Hprefix); first done.
+      lia.
     }
+    set logc' := take (uint.nat lsn) log.
+    iDestruct (safe_ledger_above_weaken logc' with "Hsafe") as "Hsafe'".
+    { subst logc'. by rewrite -Hlenlogc take_length_prefix. }
+    iFrame "Hsafe'".
+    iFrame "∗ # %".
     iPureIntro.
     clear -Hlelog Hszlog. word.
 
@@ -1508,10 +1718,59 @@ Section commit.
 
 End commit.
 
+Section learn.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__learn
+    (px : loc) (lsn term : u64) (nidme : u64) (logc : list string) nids γ :
+    nidme ∈ nids ->
+    length logc = uint.nat lsn ->
+    safe_ledger_above γ nids (uint.nat term) logc -∗
+    know_paxos_inv γ nids -∗
+    {{{ own_paxos_following_with_termc px nidme term nids γ }}}
+      Paxos__learn #px #lsn #term
+    {{{ RET #(); own_paxos px nidme nids γ }}}.
+  Proof.
+    iIntros (Hnidme Hlenlogc) "#Hsafe #Hinv".
+    iIntros (Φ) "!> Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) learn(lsn uint64, term uint64) {                       @*)
+    (*@     // Skip if the log term @px.terml does not match @lsn.              @*)
+    (*@     if term != px.terml {                                               @*)
+    (*@         return                                                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    wp_if_destruct.
+    { iApply "HΦ".
+      iFrame "Hcand Hleader".
+      by iFrame "∗ # %".
+    }
+
+    (*@     px.commit(lsn)                                                      @*)
+    (*@ }                                                                       @*)
+    wp_apply (wp_Paxos__commit with "Hsafe Hinv [-HΦ]").
+    { apply Hnidme. }
+    { apply Hlenlogc. }
+    { iFrame "Hcand Hleader".
+      iFrame "∗ # %".
+    }
+    iIntros "Hpx".
+    wp_pures.
+    iApply "HΦ".
+    iNamed "Hpx".
+    by iFrame.
+  Qed.
+
+End learn.
+
 Section push.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__push (px : loc) (nidme termc : u64) nids γ :
+    nidme ∈ nids ->
     know_paxos_inv γ nids -∗
     {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
       Paxos__push #px
@@ -1523,7 +1782,8 @@ Section push.
         else True
     }}}.
   Proof.
-    iIntros "#Hinv" (Φ) "!> Hpx HΦ".
+    iIntros (Hnidme) "#Hinv".
+    iIntros (Φ) "!> Hpx HΦ".
     wp_rec.
 
     (*@ func (px *Paxos) push() (uint64, bool) {                                @*)
@@ -1532,7 +1792,7 @@ Section push.
     (*@         return 0, false                                                 @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    do 2 iNamed "Hpx". iNamed "Hleader". iNamed "Honlyl". iNamed "Hnids".
+    do 2 iNamed "Hpx". iNamed "Hleader". iNamed "Honlyl".
     wp_loadField.
     wp_apply (wp_MapLen with "Hlsnpeers").
     iIntros "[%Hszlsnpeers Hlsnpeers]".
@@ -1726,18 +1986,19 @@ Section push.
       clear -Hgelsn. lia.
     }
     iPureIntro.
-    split; last set_solver.
+    split; last apply Hnidme.
     split.
     { apply union_least; first set_solver.
       trans (dom lsnpeers); [apply dom_filter_subseteq | set_solver].
     }
     rewrite /cquorum_size.
     rewrite size_union; last first.
-    { clear -Hnids Hnidsne Hinclnids.
-      assert (nidpeersq ⊆ peers).
+    { rewrite disjoint_singleton_l.
+      assert (Hsubseteq : nidpeersq ⊆ nids ∖ {[nidme]}).
       { subst nidpeersq lsnpeersq.
         trans (dom lsnpeers); [apply dom_filter_subseteq | apply Hinclnids].
       }
+      clear -Hsubseteq.
       set_solver.
     }
     rewrite size_singleton.
@@ -1806,15 +2067,37 @@ Section leading.
         else own_paxos px nidme nids γ
     }}}.
   Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
     (*@ func (px *Paxos) leading() bool {                                       @*)
     (*@     return px.isleader                                                  @*)
     (*@ }                                                                       @*)
-    iIntros (Φ) "Hpx HΦ".
     iNamed "Hpx". iNamed "Hleader".
-    wp_rec.
     wp_loadField.
     iApply "HΦ".
-    destruct isleader; iFrame "Hpx Hcand Hnids Hcomm"; iFrame.
+    destruct isleader; iFrame "Hpx Hcand"; iFrame.
+  Qed.
+
+  Theorem wp_Paxos__leading__with_termc (px : loc) nidme termc nids γ :
+    {{{ own_paxos_with_termc px nidme termc nids γ }}}
+      Paxos__leading #px
+    {{{ (isleader : bool), RET #isleader;
+        if isleader
+        then own_paxos_leading_with_termc px nidme termc nids γ
+        else own_paxos px nidme nids γ
+    }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) leading() bool {                                       @*)
+    (*@     return px.isleader                                                  @*)
+    (*@ }                                                                       @*)
+    iNamed "Hpx". iNamed "Hleader".
+    wp_loadField.
+    iApply "HΦ".
+    destruct isleader; iFrame "Hpx Hcand"; iFrame.
   Qed.
 
 End leading.
@@ -1919,7 +2202,7 @@ Section submit.
     { iFrame "Hlock Hlocked".
       iDestruct (terml_eq_termc_impl_not_nominiated with "Hcand") as %->; first done.
       set log' := log ++ [c].
-      iAssert (own_paxos_leader px termc termc log' true peers nids γ)%I
+      iAssert (own_paxos_leader px nidme termc termc log' true nids γ)%I
         with "[$HisleaderP $HlsnpeersP $Hlsnpeers $Hps $Haocm]" as "Hleader".
       { iPureIntro.
         split; first done.
@@ -1930,7 +2213,16 @@ Section submit.
         clear -Hlsn. lia.
       }
       iNamed "Hcand".
-      iFrame "Hcomm Hleader HiscandP HlogP".
+      iFrame "Hleader".
+      set logc' := take (uint.nat lsnc) log'.
+      iAssert (safe_ledger_above γ nids (uint.nat termc) logc')%I as "Hcmted'".
+      { subst logc'.
+        rewrite (take_prefix_le _ log' (uint.nat lsnc) _); last first.
+        { by apply prefix_app_r. }
+        { clear -Hlsncub. word. }
+        done.
+      }
+      iFrame "Hcmted'".
       iFrame "∗ # %".
       iSplit.
       { iDestruct "Hgebase" as (vlb) "[Hvlb %Hprefix]".
@@ -1940,10 +2232,6 @@ Section submit.
       }
       iSplit.
       { by case_decide. }
-      iSplit.
-      { rewrite take_app_le; first done.
-        clear -Hlsncub. lia.
-      }
       iPureIntro.
       rewrite length_app /=.
       clear -Hlsncub. lia.
@@ -2038,7 +2326,7 @@ Section lookup.
     wp_loadField.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "Hlock Hlocked".
-      iFrame "Hcand Hleader Hcomm".
+      iFrame "Hcand Hleader".
       iFrame "∗ # %".
     }
     wp_pures.
@@ -2051,6 +2339,1712 @@ Section lookup.
   Qed.
 
 End lookup.
+
+Section lttermc.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__lttermc (px : loc) (term : u64) nidme nids γ :
+    {{{ own_paxos px nidme nids γ }}}
+      Paxos__lttermc #px #term
+    {{{ (outdated : bool), RET #outdated;
+        if outdated
+        then own_paxos px nidme nids γ
+        else (∃ termc, own_paxos_with_termc px nidme termc nids γ ∧
+                       ⌜uint.Z termc ≤ uint.Z term⌝)
+    }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) lttermc(term uint64) bool {                            @*)
+    (*@     return term < px.termc                                              @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    wp_pures.
+    iApply "HΦ".
+    case_bool_decide.
+    - iFrame "Hcand Hleader".
+      by iFrame "∗ # %".
+    - iFrame "Hcand Hleader".
+      iFrame "∗ # %".
+      iPureIntro. word.
+  Qed.
+
+End lttermc.
+
+Section gttermc.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__gttermc (px : loc) (term : u64) nidme termc nids γ :
+    {{{ own_paxos_with_termc px nidme termc nids γ }}}
+      Paxos__gttermc #px #term
+    {{{ (invalid : bool), RET #invalid;
+        own_paxos_with_termc px nidme termc nids γ ∗
+        ⌜if invalid then True else uint.Z term ≤ uint.Z termc⌝
+    }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) gttermc(term uint64) bool {                            @*)
+    (*@     return px.termc < term                                              @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    wp_pures.
+    iApply "HΦ".
+    case_bool_decide as Horder.
+    - iFrame "Hcand Hleader".
+      by iFrame "∗ # %".
+    - iFrame "Hcand Hleader".
+      iFrame "∗ # %".
+      iPureIntro.
+      clear -Horder. word.
+  Qed.
+
+End gttermc.
+
+Section gettermc.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__gettermc__following (px : loc) nidme termc nids γ :
+    {{{ own_paxos_following_with_termc px nidme termc nids γ }}}
+      Paxos__gettermc #px
+    {{{ RET #termc; own_paxos_following_with_termc px nidme termc nids γ }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) gettermc() uint64 {                                    @*)
+    (*@     return px.termc                                                     @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    iApply "HΦ".
+    iFrame "Hcand Hleader".
+    iFrame "∗ # %".
+  Qed.
+
+  Theorem wp_Paxos__gettermc__leading (px : loc) nidme termc nids γ :
+    {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
+      Paxos__gettermc #px
+    {{{ RET #termc; own_paxos_leading_with_termc px nidme termc nids γ }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) gettermc() uint64 {                                    @*)
+    (*@     return px.termc                                                     @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    iApply "HΦ".
+    iFrame "Hcand Hleader".
+    iFrame "∗ # %".
+  Qed.
+
+End gettermc.
+
+Section latest.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__latest (px : loc) nidme termc nids γ :
+    {{{ own_paxos_following_with_termc px nidme termc nids γ }}}
+      Paxos__latest #px
+    {{{ (latest : bool), RET #latest;
+        if latest
+        then own_paxos_following_with_termc px nidme termc nids γ
+        else ∃ terml, own_paxos_with_termc_terml px nidme termc terml nids γ ∧
+                      ⌜termc ≠ terml⌝
+    }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) latest() bool {                                        @*)
+    (*@     return px.termc == px.terml                                         @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    do 2 wp_loadField.
+    wp_pures.
+    iApply "HΦ".
+    case_bool_decide.
+    - iFrame "Hcand Hleader".
+      by iFrame "∗ # %".
+    - iFrame "Hcand Hleader".
+      iFrame "∗ # %".
+      iPureIntro.
+      by intros ->.
+  Qed.
+
+End latest.
+
+Section nominated.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__nominated (px : loc) nidme termc nids γ :
+    {{{ own_paxos_with_termc px nidme termc nids γ }}}
+      Paxos__nominated #px
+    {{{ (iscand : bool), RET #iscand; 
+        if iscand
+        then own_paxos_nominated_with_termc px nidme termc nids γ
+        else own_paxos_with_termc px nidme termc nids γ
+    }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) nominated() bool {                                     @*)
+    (*@     return px.iscand                                                    @*)
+    (*@ }                                                                       @*)
+    iNamed "Hpx". iNamed "Hcand".
+    wp_loadField.
+    iApply "HΦ".
+    destruct iscand; iFrame.
+  Qed.
+
+End nominated.
+
+Section getlsnc.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__getlsnc (px : loc) (nidme termc : u64) nids γ :
+    {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
+      Paxos__getlsnc #px
+    {{{ (lsnc : u64) (logc : list string), RET #lsnc; 
+        own_paxos_leading_with_termc px nidme termc nids γ ∗
+        safe_ledger_above γ nids (uint.nat termc) logc ∗
+        ⌜length logc = uint.nat lsnc⌝
+    }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) getlsnc() uint64 {                                     @*)
+    (*@     return px.lsnc                                                      @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx". iNamed "Hleader". iNamed "Honlyl". subst terml.
+    wp_loadField.
+    set logc := take _ log.
+    iApply ("HΦ" $! _ logc).
+    iFrame "Hcand HisleaderP".
+    iFrame "∗ # %".
+    iPureIntro.
+    split; first done.
+    rewrite length_take.
+    clear -Hlsncub. lia.
+  Qed.
+
+End getlsnc.
+
+Section heartbeat.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__heartbeat__following_with_termc (px : loc) nidme termc nids γ :
+    {{{ own_paxos_following_with_termc px nidme termc nids γ }}}
+      Paxos__heartbeat #px
+    {{{ RET #(); own_paxos_following_with_termc px nidme termc nids γ }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) heartbeat() {                                          @*)
+    (*@     px.hb = true                                                        @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_storeField.
+    iApply "HΦ".
+    iFrame "Hcand Hleader".
+    by iFrame "∗ # %".
+  Qed.
+
+  Theorem wp_Paxos__heartbeat (px : loc) nidme nids γ :
+    {{{ own_paxos px nidme nids γ }}}
+      Paxos__heartbeat #px
+    {{{ RET #(); own_paxos px nidme nids γ }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) heartbeat() {                                          @*)
+    (*@     px.hb = true                                                        @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_storeField.
+    iApply "HΦ".
+    iFrame "Hcand Hleader".
+    by iFrame "∗ # %".
+  Qed.
+
+End heartbeat.
+
+Section heartbeated.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__heartbeated (px : loc) nidme nids γ :
+    {{{ own_paxos px nidme nids γ }}}
+      Paxos__heartbeated #px
+    {{{ (hb : bool), RET #hb; own_paxos px nidme nids γ }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) heartbeated() bool {                                   @*)
+    (*@     return px.hb                                                        @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    iApply "HΦ".
+    iFrame "Hcand Hleader".
+    by iFrame "∗ # %".
+  Qed.
+
+End heartbeated.
+
+Section paxos.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_EncodePaxosRequestVoteRequest (term : u64) (lsnc : u64) :
+    {{{ True }}}
+      EncodePaxosRequestVoteRequest #term #lsnc
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜data = encode_pxreq (RequestVoteReq term lsnc)⌝
+    }}}.
+  Proof.
+    (*@ func EncodePaxosRequestVoteRequest(term uint64, lsnc uint64) []byte {  @*)
+    (*@     return nil                                                          @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_EncodePaxosAppendEntriesRequest
+    (term lsnc lsne : u64) (entsP : Slice.t) (ents : list string) :
+    {{{ own_slice entsP stringT (DfracOwn 1) ents }}}
+      EncodePaxosAppendEntriesRequest #term #lsnc #lsne (to_val entsP)
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜data = encode_pxreq (AppendEntriesReq term lsnc lsne ents)⌝
+    }}}.
+  Proof.
+    (*@ func EncodePaxosAppendEntriesRequest(term uint64, lsnc, lsne uint64, ents []string) []byte { @*)
+    (*@     return nil                                                          @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_EncodePaxosRequestVoteResponse
+    (nid term terma : u64) (entsP : Slice.t) (ents : list string) :
+    {{{ own_slice entsP stringT (DfracOwn 1) ents }}}
+      EncodePaxosRequestVoteResponse #nid #term #terma (to_val entsP)
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜data = encode_pxresp (RequestVoteResp nid term terma ents)⌝
+    }}}.
+  Proof.
+    (*@ func EncodePaxosRequestVoteResponse(term, terma uint64, ents []string) []byte { @*)
+    (*@     return nil                                                          @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_EncodePaxosAppendEntriesResponse (nid : u64) (term : u64) (lsn : u64) :
+    {{{ True }}}
+      EncodePaxosAppendEntriesResponse #nid #term #lsn
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜data = encode_pxresp (AppendEntriesResp nid term lsn)⌝
+    }}}.
+  Proof.
+    (*@ func EncodePaxosAppendEntriesResponse(nid, term uint64, lsn uint64) []byte { @*)
+    (*@     return nil                                                          @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_DecodePaxosRequest (dataP : Slice.t) (data : list u8) (req : pxreq) :
+    data = encode_pxreq req ->
+    {{{ own_slice dataP byteT (DfracOwn 1) data }}}
+      DecodePaxosRequest (to_val dataP)
+    {{{ (entsP : Slice.t), RET (pxreq_to_val req entsP);
+        match req with
+        | RequestVoteReq _ _ => True
+        | AppendEntriesReq _ _ _ ents => own_slice entsP stringT (DfracOwn 1) ents
+        end
+    }}}.
+  Proof.
+    (*@ func DecodePaxosRequest(data []byte) PaxosRequest {                     @*)
+    (*@     return PaxosRequest{}                                               @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_DecodePaxosResponse (dataP : Slice.t) (data : list u8) (resp : pxresp) :
+    data = encode_pxresp resp ->
+    {{{ True }}}
+      DecodePaxosResponse (to_val dataP)
+    {{{ (entsP : Slice.t), RET (pxresp_to_val resp entsP);
+        match resp with
+        | RequestVoteResp nid term terme ents => own_slice entsP stringT (DfracOwn 1) ents
+        | AppendEntriesResp _ _ _ => True
+        end
+    }}}.
+  Proof.
+    (*@ func DecodePaxosResponse(data []byte) PaxosResponse {                   @*)
+    (*@     return PaxosResponse{}                                              @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+End paxos.
+
+Section request_session.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__RequestSession (px : loc) (addrme trml : chan) nidme addrm γ :
+    addrm !! nidme = Some addrme ->
+    is_paxos_with_addrm px nidme addrm γ -∗
+    {{{ True }}}
+      Paxos__RequestSession #px (connection_socket addrme trml)
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros (Haddrme) "#Hinv".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) RequestSession(conn grove_ffi.Connection) {            @*)
+    (*@     for {                                                               @*)
+    (*@         ret := grove_ffi.Receive(conn)                                  @*)
+    (*@                                                                         @*)
+    wp_apply (wp_forBreak (λ _, True)%I); wp_pures; last by iApply "HΦ".
+    clear Φ.
+    iIntros (Φ) "!> _ HΦ".
+    wp_pures.
+    wp_apply wp_Receive.
+    iNamed "Hinv". iNamed "Hnids".
+    iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+    iApply ncfupd_mask_intro; first set_solver.
+    iIntros "Hmask".
+    iNamed "HinvnetO".
+    assert (is_Some (listens !! addrme)) as [msl Hmsl].
+    { rewrite -elem_of_dom -Himgaddrm elem_of_map_img. by eauto. }
+    iDestruct (big_sepM_lookup_acc with "Hlistens") as "[Hlst HlistensC]"; first apply Hmsl.
+    iNamed "Hlst".
+    iFrame "Hms".
+    iIntros (err retdata) "[Hms Herr]".
+    iDestruct ("HlistensC" with "[$Hms]") as "Hlistens"; first iFrame "# %".
+    iMod "Hmask" as "_".
+    iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_"; first done.
+    iIntros "!>" (retdataP) "Hretdata".
+
+    (*@         if ret.Err {                                                    @*)
+    (*@             break                                                       @*)
+    (*@         }                                                               @*)
+    (*@                                                                         @*)
+    wp_pures.
+    destruct err; wp_pures.
+    { by iApply "HΦ". }
+    iDestruct "Herr" as "%Hmsg".
+    assert (∃ req, retdata = encode_pxreq req ∧ req ∈ reqs) as (req & Hreq & Hinreqs).
+    { specialize (Henc retdata).
+      apply (elem_of_map_2 msg_data (D := gset (list u8))) in Hmsg.
+      specialize (Henc Hmsg).
+      by rewrite elem_of_map in Henc.
+    }
+
+    (*@         req  := message.DecodePaxosRequest(ret.Data)                    @*)
+    (*@         kind := req.Kind                                                @*)
+    (*@                                                                         @*)
+    wp_apply (wp_DecodePaxosRequest with "Hretdata").
+    { apply Hreq. }
+    iIntros (entsaP) "Hentsa".
+    destruct req as [term lsnc |]; wp_pures.
+    { (* Case: RequestVote. *)
+      iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+
+      (*@         px.mu.Lock()                                                    @*)
+      (*@                                                                         @*)
+      wp_loadField.
+      wp_apply (wp_Mutex__Lock with "Hlock").
+      iIntros "[Hlocked Hpx]".
+      wp_apply (wp_Paxos__lttermc with "Hpx").
+      iIntros (outdated) "Hpx".
+
+      (*@         if px.lttermc(req.Term) {                                       @*)
+      (*@             // Skip the oudated message.                                @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             // We can additionally send an UPDATE-TERM message, but not sure if @*)
+      (*@             // that's necessary, since eventually the new leader would reach out @*)
+      (*@             // to every node.                                           @*)
+      (*@             continue                                                    @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      destruct outdated; wp_pures.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_pures.
+        by iApply "HΦ".
+      }
+
+      (*@         // Potentially proceed to a new term on receiving a higher-term message. @*)
+      (*@         px.stepdown(req.Term)                                           @*)
+      (*@                                                                         @*)
+      iDestruct "Hpx" as (termc) "[Hpx %Hgetermc]".
+      wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+      { apply Hnidme. }
+      { apply Hgetermc. }
+      iIntros "Hpx".
+
+      (*@         px.heartbeat()                                                  @*)
+      (*@                                                                         @*)
+      wp_pures.
+      wp_apply (wp_Paxos__heartbeat__following_with_termc with "Hpx").
+      iIntros "Hpx".
+
+      (*@         termc := px.gettermc()                                          @*)
+      (*@                                                                         @*)
+      wp_apply (wp_Paxos__gettermc__following with "Hpx").
+      iIntros "Hpx".
+      wp_pures.
+
+      (*@         if kind == message.MSG_PAXOS_REQUEST_VOTE {                     @*)
+      (*@             if px.latest() {                                            @*)
+      (*@                 // The log has already matched up the current term, meaning the @*)
+      (*@                 // leader has already successfully been elected. Simply ignore @*)
+      (*@                 // this request.                                        @*)
+      (*@                 px.mu.Unlock()                                          @*)
+      (*@                 continue                                                @*)
+      (*@             }                                                           @*)
+      (*@                                                                         @*)
+      wp_apply (wp_Paxos__latest with "Hpx").
+      iIntros (latest) "Hpx".
+      destruct latest; wp_pures.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        { iNamed "Hpx". iFrame. }
+        wp_pures.
+        by iApply "HΦ".
+      }
+      iDestruct "Hpx" as (terml) "[Hpx %Hcnel]".
+
+      (*@             terml, ents := px.prepare(req.CommittedLSN)                 @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             data := message.EncodePaxosRequestVoteResponse(px.nidme, termc, terml, ents) @*)
+      (*@             // Request [REQUEST-VOTE, @termc, @lsnc] and                @*)
+      (*@             // Response [REQUEST-VOTE, @termc, @terml, @ents] means:    @*)
+      (*@             // (1) This node will not accept any proposal with term below @termc. @*)
+      (*@             // (2) The largest-term entries after LSN @lsnc this node has @*)
+      (*@             // accepted before @termc is (@terml, @ents).               @*)
+      (*@             grove_ffi.Send(conn, data)                                  @*)
+      (*@                                                                         @*)
+      wp_apply (wp_Paxos__prepare with "Hpx").
+      { apply Hcnel. }
+      iIntros (entsP ents logpeer) "(Hpx & Hents & #Hpastd & %Hents)".
+      wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      { iNamed "Hpx". iFrame. }
+      wp_loadField.
+      wp_apply (wp_EncodePaxosRequestVoteResponse with "Hents").
+      iIntros (dataP data) "[Hdata %Hdata]".
+      wp_pures.
+      (* Obtain [is_terminal γ trml] to respond to the sender. *)
+      assert (Htrml : trml ∈ (set_map msg_sender msl : gset chan)).
+      { rewrite elem_of_map. by exists (Message trml retdata). }
+      iDestruct (big_sepS_elem_of with "Hsender") as "Htrml"; first apply Htrml.
+      (* Now send the message. *)
+      iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+      wp_apply (wp_Send with "Hdata").
+      iNamed "Hinv".
+      clear Himgaddrm Hmsl Henc listens connects.
+      iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+      iApply ncfupd_mask_intro; first set_solver.
+      iIntros "Hmask".
+      iNamed "HinvnetO".
+      iDestruct (terminal_lookup with "Htrml Hterminals") as %Hsend.
+      apply elem_of_dom in Hsend as [msc Hmsc].
+      iDestruct (big_sepM_delete with "Hconnects") as "[Hconn Hconnects]".
+      { apply Hmsc. }
+      iNamed "Hconn".
+      iFrame "Hms".
+      iIntros (sent) "Hms".
+      set msc' := if sent then _ else _.
+      iAssert (connect_inv trml msc' nids γ)%I with "[Hms]" as "Hconn".
+      { iFrame "Hms".
+        set resp := RequestVoteResp _ _ _ _ in Hdata.
+        destruct sent; last first.
+        { iExists resps. iFrame "# %". }
+        iExists ({[resp]} ∪ resps).
+        iSplit.
+        { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
+        iPureIntro.
+        clear -Henc Hdata.
+        set_solver.
+      }
+      iCombine "Hconn Hconnects" as "Hconnects".
+      (* iDestruct (big_sepM_insert_delete _ _ trml msc' with "Hconn Hconnects") as "Hconnects". *)
+      rewrite -(big_sepM_insert_delete _ _ trml msc').
+      iMod "Hmask" as "_".
+      iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
+      { rewrite dom_insert_L.
+        apply elem_of_dom_2 in Hmsc.
+        replace (_ ∪ dom connects) with (dom connects) by set_solver.
+        by iFrame "Hterminals".
+      }
+      iIntros "!>" (err) "Herr".
+      wp_pures.
+      by iApply "HΦ".
+    }
+    { (* Case: AppendEntries. *)
+      iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+
+      (*@         px.mu.Lock()                                                    @*)
+      (*@                                                                         @*)
+      wp_loadField.
+      wp_apply (wp_Mutex__Lock with "Hlock").
+      iIntros "[Hlocked Hpx]".
+      wp_apply (wp_Paxos__lttermc with "Hpx").
+      iIntros (outdated) "Hpx".
+
+      (*@         if px.lttermc(req.Term) {                                       @*)
+      (*@             // Skip the oudated message.                                @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             // We can additionally send an UPDATE-TERM message, but not sure if @*)
+      (*@             // that's necessary, since eventually the new leader would reach out @*)
+      (*@             // to every node.                                           @*)
+      (*@             continue                                                    @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      destruct outdated; wp_pures.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_pures.
+        by iApply "HΦ".
+      }
+
+      (*@         // Potentially proceed to a new term on receiving a higher-term message. @*)
+      (*@         px.stepdown(req.Term)                                           @*)
+      (*@                                                                         @*)
+      iDestruct "Hpx" as (termc) "[Hpx %Hgetermc]".
+      wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+      { apply Hnidme. }
+      { apply Hgetermc. }
+      iIntros "Hpx".
+
+      (*@         px.heartbeat()                                                  @*)
+      (*@                                                                         @*)
+      wp_pures.
+      wp_apply (wp_Paxos__heartbeat__following_with_termc with "Hpx").
+      iIntros "Hpx".
+
+      (*@         termc := px.gettermc()                                          @*)
+      (*@                                                                         @*)
+      wp_apply (wp_Paxos__gettermc__following with "Hpx").
+      iIntros "Hpx".
+      wp_pures.
+
+      (*@         } else if kind == message.MSG_PAXOS_APPEND_ENTRIES {            @*)
+      (*@             lsn := px.accept(req.LSNEntries, req.Term, req.Entries)     @*)
+      (*@             px.learn(req.LeaderCommit, req.Term)                        @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             data := message.EncodePaxosAppendEntriesResponse(px.nidme, termc, lsn) @*)
+      (*@             grove_ffi.Send(conn, data)                                  @*)
+      (*@         }                                                               @*)
+      (*@     }                                                                   @*)
+      (*@ }                                                                       @*)
+      iNamed "Hsafe".
+      wp_apply (wp_Paxos__accept with "Hpfb Hpfg Hinv [$Hpx $Hentsa]").
+      { apply Hnidme. }
+      { apply Hlogleader. }
+      { apply Hents. }
+      iIntros (lsna loga) "(Hpx & #Haoc & %Hlenloga)".
+      wp_pures.
+      wp_apply (wp_Paxos__learn with "Hlogcmt Hinv Hpx").
+      { apply Hnidme. }
+      { apply Hlogcmt. }
+      iIntros "Hpx".
+      wp_loadField.
+
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      { iNamed "Hpx". iFrame. }
+      wp_loadField.
+      wp_apply (wp_EncodePaxosAppendEntriesResponse).
+      iIntros (dataP data) "[Hdata %Hdata]".
+      wp_pures.
+      (* Obtain [is_terminal γ trml] to respond to the sender. *)
+      assert (Htrml : trml ∈ (set_map msg_sender msl : gset chan)).
+      { rewrite elem_of_map. by exists (Message trml retdata). }
+      iDestruct (big_sepS_elem_of with "Hsender") as "Htrml"; first apply Htrml.
+      (* Now send the message. *)
+      iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+      wp_apply (wp_Send with "Hdata").
+      iNamed "Hinv".
+      clear Himgaddrm Hmsl Henc listens connects.
+      iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+      iApply ncfupd_mask_intro; first set_solver.
+      iIntros "Hmask".
+      iNamed "HinvnetO".
+      iDestruct (terminal_lookup with "Htrml Hterminals") as %Hsend.
+      apply elem_of_dom in Hsend as [msc Hmsc].
+      iDestruct (big_sepM_delete with "Hconnects") as "[Hconn Hconnects]".
+      { apply Hmsc. }
+      iNamed "Hconn".
+      iFrame "Hms".
+      iIntros (sent) "Hms".
+      set msc' := if sent then _ else _.
+      iAssert (connect_inv trml msc' nids γ)%I with "[Hms]" as "Hconn".
+      { iFrame "Hms".
+        set resp := AppendEntriesResp _ _ _ in Hdata.
+        destruct sent; last first.
+        { iExists resps. iFrame "# %". }
+        iExists ({[resp]} ∪ resps).
+        iSplit.
+        { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
+        iPureIntro.
+        clear -Henc Hdata.
+        set_solver.
+      }
+      iCombine "Hconn Hconnects" as "Hconnects".
+      rewrite -(big_sepM_insert_delete _ _ trml msc').
+      iMod "Hmask" as "_".
+      iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
+      { rewrite dom_insert_L.
+        apply elem_of_dom_2 in Hmsc.
+        replace (_ ∪ dom connects) with (dom connects) by set_solver.
+        by iFrame "Hterminals".
+      }
+      iIntros "!>" (err) "Herr".
+      wp_pures.
+      by iApply "HΦ".
+    }
+  Qed.
+
+End request_session.
+
+Section serve.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__Serve (px : loc) nidme γ :
+    is_paxos px nidme γ -∗
+    {{{ True }}}
+      Paxos__Serve #px
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros "#Hinv" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) Serve() {                                              @*)
+    (*@     addrme := px.addrm[px.nidme]                                        @*)
+    (*@     ls := grove_ffi.Listen(addrme)                                      @*)
+    (*@     for {                                                               @*)
+    (*@         conn := grove_ffi.Accept(ls)                                    @*)
+    (*@         go func() {                                                     @*)
+    (*@             px.RequestSession(conn)                                     @*)
+    (*@         }()                                                             @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    iNamed "Hinv". iNamed "Haddrm". iNamed "Hnids".
+    do 2 wp_loadField.
+    wp_apply (wp_MapGet with "Haddrm").
+    iIntros (addrme ok) "[%Hok _]".
+    destruct ok; last first.
+    { apply map_get_false in Hok as [Hok _].
+      rewrite -not_elem_of_dom in Hok.
+      set_solver.
+    }
+    apply map_get_true in Hok.
+    wp_apply wp_Listen.
+    wp_pures.
+    wp_apply (wp_forBreak (λ _, True)%I); wp_pures; last by iApply "HΦ".
+    clear Φ.
+    iIntros (Φ) "!> _ HΦ".
+    wp_pures.
+    wp_apply wp_Accept.
+    iIntros (chanpeer) "_".
+    wp_pures.
+    wp_apply (wp_fork).
+    { (* Fork. *)
+      wp_apply wp_Paxos__RequestSession.
+      { apply Hok. }
+      { iFrame "# %". }
+      done.
+    }
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+End serve.
+
+Section get_connection.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__GetConnection
+    (px : loc) (nid : u64) (nidme : u64) (addrm : gmap u64 chan) (addrpeer : chan) γ :
+    addrm !! nid = Some addrpeer ->
+    is_paxos_with_addrm px nidme addrm γ -∗
+    {{{ True }}}
+      Paxos__GetConnection #px #nid
+    {{{ (trml : chan) (ok : bool), RET (if ok 
+                                     then (connection_socket trml addrpeer, #true)
+                                     else (#(), #false));
+        if ok then is_terminal γ trml else True
+    }}}.
+  Proof.
+    iIntros (Haddrpeer) "#Hpx".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) GetConnection(nid uint64) (grove_ffi.Connection, bool) { @*)
+    (*@     px.mu.Lock()                                                        @*)
+    (*@     conn, ok := px.conns[nid]                                           @*)
+    (*@     px.mu.Unlock()                                                      @*)
+    (*@     return conn, ok                                                     @*)
+    (*@ }                                                                       @*)
+    iNamed "Hpx".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlockcm").
+    iIntros "[Hlocked Hcomm]".
+    iNamed "Hcomm".
+    wp_loadField.
+    wp_apply (map.wp_MapGet with "Hconns").
+    iIntros (connV ok) "[%Hok Hconns]".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "Hlockcm Hlocked". iFrame "∗ # %". }
+    wp_pures.
+    destruct ok; last first.
+    { apply map.map_get_false in Hok as [_ ->].
+      (* [U64 0] is a placeholder *)
+      by iApply ("HΦ" $! (U64 0) false).
+    }
+    apply map.map_get_true in Hok.
+    rewrite lookup_fmap_Some in Hok.
+    destruct Hok as ([trml addrpeer'] & <- & Hconns).
+    iDestruct (big_sepM_lookup with "Htrmls") as "Htrml"; first apply Hconns.
+    apply Haddrpeers in Hconns.
+    rewrite Haddrpeer in Hconns.
+    symmetry in Hconns. inv Hconns.
+    by iApply ("HΦ" $! _ true).
+  Qed.
+
+End get_connection.
+
+Section connect.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__Connect
+    (px : loc) (nid : u64) (nidme : u64) (addrm : gmap u64 chan) (addrpeer : chan) γ :
+    addrm !! nid = Some addrpeer ->
+    is_paxos_with_addrm px nidme addrm γ -∗
+    {{{ True }}}
+      Paxos__Connect #px #nid
+    {{{ (ok : bool), RET #ok; True }}}.
+  Proof.
+    iIntros (Haddrpeer) "#Hpx".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) Connect(nid uint64) bool {                             @*)
+    (*@     addr := px.addrm[nid]                                               @*)
+    (*@     ret := grove_ffi.Connect(addr)                                      @*)
+    (*@     if !ret.Err {                                                       @*)
+    (*@         px.mu.Lock()                                                    @*)
+    (*@         px.conns[nid] = ret.Connection                                  @*)
+    (*@         px.mu.Unlock()                                                  @*)
+    (*@         return true                                                     @*)
+    (*@     }                                                                   @*)
+    (*@     return false                                                        @*)
+    (*@ }                                                                       @*)
+    iNamed "Hpx". iNamed "Haddrm".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Haddrm").
+    iIntros (addrpeer' ok) "[%Hok _]".
+    destruct ok; last first.
+    { apply map_get_false in Hok as [Hok _].
+      by rewrite Haddrpeer in Hok.
+    }
+    apply map_get_true in Hok.
+    rewrite Haddrpeer in Hok.
+    symmetry in Hok. inv Hok.
+    wp_pures.
+    wp_apply wp_Connect.
+    iIntros (err trml) "Htrml".
+    wp_pures.
+    wp_if_destruct.
+    { wp_loadField.
+      wp_apply (wp_Mutex__Lock with "Hlockcm").
+      iIntros "[Hlocked Hcomm]".
+      iNamed "Hcomm".
+      wp_loadField.
+      wp_apply (map.wp_MapInsert with "Hconns").
+      iIntros "Hconns".
+      wp_loadField.
+      (* Seal [trml c↦ ∅] in the network invariant and obtain [is_terminal γ trml]. *)
+      iApply ncfupd_wp.
+      iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+      iNamed "HinvnetO".
+      iMod (terminal_update trml with "Hterminals") as "[Hterminals #Htrmlrcpt]".
+      iMod ("HinvnetC" with "[$Hlistens Hconnects Hterminals Htrml]") as "_".
+      { iModIntro.
+        iExists (<[trml := ∅]> connects).
+        rewrite dom_insert_L.
+        iFrame "Hterminals %".
+        iApply (big_sepM_insert_2 with "[Htrml] Hconnects").
+        iExists ∅.
+        iFrame.
+        iSplit; first by rewrite big_sepS_empty.
+        iPureIntro.
+        by rewrite 2!set_map_empty.
+      }
+      iModIntro.
+      wp_apply (wp_Mutex__Unlock with "[$Hlockcm $Hlocked $HconnsP Hconns]").
+      { iModIntro.
+        iExists (<[nid := (trml, addrpeer)]> conns).
+        rewrite fmap_insert.
+        iFrame "Hconns".
+        iSplit.
+        { by iApply big_sepM_insert_2. }
+        iPureIntro.
+        by apply map_Forall_insert_2.
+      }
+      wp_pures.
+      by iApply "HΦ".
+    }
+    by iApply "HΦ".
+  Qed.
+
+End connect.
+
+Section send.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__Send
+    (px : loc) (nid : u64) (dataP : Slice.t) (data : list u8) (nidme : u64)
+    (addrm : gmap u64 chan) (addrpeer : chan) γ :
+    addrm !! nid = Some addrpeer ->
+    is_paxos_with_addrm px nidme addrm γ -∗
+    {{{ own_slice dataP byteT (DfracOwn 1) data }}}
+    <<< ∀∀ ms, addrpeer c↦ ms >>>
+      Paxos__Send #px #nid (to_val dataP) @ ∅
+    <<< ∃∃ (ok : bool),
+            if ok 
+            then ∃ trml, addrpeer c↦ ({[Message trml data]} ∪ ms) ∗ is_terminal γ trml
+            else addrpeer c↦ ms
+    >>>
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros (Haddrpeer) "#Hpx".
+    iIntros (Φ) "!> Hdata HAU".
+    wp_rec.
+
+    (*@ func (px *Paxos) Send(nid uint64, data []byte) {                        @*)
+    (*@     conn, ok := px.GetConnection(nid)                                   @*)
+    (*@     if !ok {                                                            @*)
+    (*@         px.Connect(nid)                                                 @*)
+    (*@         return                                                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__GetConnection with "Hpx").
+    { apply Haddrpeer. }
+    iIntros (trml ok) "#Htrmlrcpt".
+    wp_pures.
+    destruct ok; wp_pures; last first.
+    { wp_apply (wp_Paxos__Connect with "Hpx").
+      { apply Haddrpeer. }
+      iIntros (ok) "Hok".
+      wp_pures.
+      (* Open the AU without updating. *)
+      iMod (ncfupd_mask_subseteq (⊤ ∖ ∅)) as "Hclose"; first solve_ndisj.
+      iMod "HAU" as (ms) "[Hms HAU]".
+      iMod ("HAU" $! false with "Hms") as "HΦ".
+      iMod "Hclose" as "_".
+      by iApply "HΦ".
+    }
+
+    (*@     err := grove_ffi.Send(conn, data)                                   @*)
+    (*@     if err {                                                            @*)
+    (*@         px.Connect(nid)                                                 @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+    wp_apply (wp_Send with "Hdata").
+    iMod "HAU" as (ms) "[Hms HAU]".
+    iFrame "Hms".
+    iIntros "!>" (sent) "Hms".
+    iMod ("HAU" $! sent with "[Hms]") as "HΦ".
+    { rewrite union_comm_L. by destruct sent; first iFrame. }
+    iModIntro.
+    iIntros (err) "[%Herr Hdata]".
+    wp_pures.
+    wp_if_destruct.
+    { wp_apply (wp_Paxos__Connect with "Hpx").
+      { apply Haddrpeer. }
+      iIntros (ok) "_".
+      wp_pures.
+      by iApply "HΦ".
+    }
+    by iApply "HΦ".
+  Qed.
+
+End send.
+
+Section receive.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__Receive
+    (px : loc) (nid : u64) (nidme : u64)
+    (addrpeer : chan) (addrm : gmap u64 chan) nids γ :
+    addrm !! nid = Some addrpeer ->
+    is_paxos_with_addrm_nids px nidme addrm nids γ -∗
+    {{{ True }}}
+      Paxos__Receive #px #nid
+    {{{ (dataP : Slice.t) (ok : bool), RET (to_val dataP, #ok);
+        if ok
+        then ∃ (data : list u8) (resp : pxresp),
+            own_slice dataP byteT (DfracOwn 1) data ∗
+            safe_pxresp γ nids resp ∗
+            ⌜data = encode_pxresp resp⌝
+        else True
+    }}}.
+  Proof.
+    iIntros (Haddrpeer) "#Hpx".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) Receive(nid uint64) ([]byte, bool) {                   @*)
+    (*@     conn, ok := px.GetConnection(nid)                                   @*)
+    (*@     if !ok {                                                            @*)
+    (*@         px.Connect(nid)                                                 @*)
+    (*@         return nil, false                                               @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__GetConnection with "[Hpx]").
+    { apply Haddrpeer. }
+    { iFrame "#". }
+    iIntros (trml ok) "#Htrmlrcpt".
+    wp_pures.
+    destruct ok; wp_pures; last first.
+    { wp_apply (wp_Paxos__Connect with "[Hpx]").
+      { apply Haddrpeer. }
+      { iFrame "#". }
+      iIntros (ok) "Hok".
+      wp_pures.
+      by iApply ("HΦ" $! Slice.nil false).
+    }
+
+    (*@     ret := grove_ffi.Receive(conn)                                      @*)
+    (*@     if ret.Err {                                                        @*)
+    (*@         px.Connect(nid)                                                 @*)
+    (*@         return nil, false                                               @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply wp_Receive.
+    iNamed "Hpx".
+    iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    iNamed "HinvnetO".
+    iDestruct (terminal_lookup with "Htrmlrcpt Hterminals") as %Htrml.
+    apply elem_of_dom in Htrml as [ms Hms].
+    iDestruct (big_sepM_lookup_acc with "Hconnects") as "[Htrml HconnectsC]".
+    { apply Hms. }
+    iNamed "Htrml".
+    iFrame "Hms".
+    iIntros (err data) "[Hms Hmsg]".
+    iDestruct ("HconnectsC" with "[$Hms]") as "Hconnects"; first iFrame "# %".
+    iMod "Hmask" as "_".
+    iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_"; first done.
+    iIntros "!>" (dataP) "Hdata".
+    wp_pures.
+    destruct err; wp_pures.
+    { wp_apply (wp_Paxos__Connect with "[]").
+      { apply Haddrpeer. }
+      { by iFrame "#". }
+      iIntros (ok) "Hok".
+      wp_pures.
+      by iApply ("HΦ" $! Slice.nil false).
+    }
+
+    (*@     return ret.Data, true                                               @*)
+    (*@ }                                                                       @*)
+    iDestruct "Hmsg" as %Hmsg.
+    assert (∃ resp, data = encode_pxresp resp ∧ resp ∈ resps) as (resp & Hresp & Hinresps).
+    { specialize (Henc data).
+      apply (elem_of_map_2 msg_data (D := gset (list u8))) in Hmsg.
+      specialize (Henc Hmsg).
+      by rewrite elem_of_map in Henc.
+    }
+    iDestruct (big_sepS_elem_of with "Hresps") as "Hresp"; first apply Hinresps.
+    iApply "HΦ".
+    by iFrame "∗ # %".
+  Qed.
+
+End receive.
+
+Section leader_session.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__LeaderSession (px : loc) (nidme : u64) γ :
+    is_paxos px nidme γ -∗
+    {{{ True }}}
+      Paxos__LeaderSession #px
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros "#Hpx" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) LeaderSession() {                                      @*)
+    (*@     for {                                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_forBreak (λ _, True)%I); wp_pures; last by iApply "HΦ".
+    clear Φ.
+    iIntros (Φ) "!> _ HΦ".
+    wp_pures.
+
+    (*@         primitive.Sleep(params.NS_BATCH_INTERVAL)                       @*)
+    (*@                                                                         @*)
+    wp_apply wp_Sleep.
+
+    (*@         px.mu.Lock()                                                    @*)
+    (*@                                                                         @*)
+    iNamed "Hpx".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hpx]".    
+
+    (*@         if !px.leading() {                                              @*)
+    (*@             px.mu.Unlock()                                              @*)
+    (*@             continue                                                    @*)
+    (*@         }                                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__leading with "Hpx").
+    iIntros (isleader) "Hpx".
+    destruct isleader; wp_pures; last first.
+    { wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+      wp_pures.
+      by iApply "HΦ".
+    }
+
+    (*@         // TODO: Write @px.log to disk before sending out APPEND-ENTRIES. @*)
+    (*@                                                                         @*)
+    (*@         for _, nidloop := range(px.peers) {                             @*)
+    (*@                                                                         @*)
+    set P := (λ (_ : u64), own_paxos_leading px nidme nids γ)%I.
+    iNamed "Hnids".
+    wp_loadField.
+    iMod (readonly_load with "Hpeers") as (q) "HpeersR".
+    wp_apply (wp_forSlice P with "[] [$HpeersR $Hpx]").
+    { (* Loop body. *)
+      clear Φ.
+      iIntros (i nid Φ) "!> (Hpx & %Hbound & %Hnid) HΦ".
+
+      (*@             nid := nidloop                                              @*)
+      (*@             lsne, ents := px.obtain(nid)                                @*)
+      (*@             termc := px.gettermc()                                      @*)
+      (*@             lsnc  := px.getlsnc()                                       @*)
+      (*@                                                                         @*)
+      wp_pures.
+      subst P. simpl.
+      iAssert (∃ termc, own_paxos_leading_with_termc px nidme termc nids γ)%I
+        with "Hpx" as (termc) "Hpx".
+      wp_apply (wp_Paxos__obtain with "Hpx").
+      iIntros (lsne entsP ents loga) "(Hpx & Hents & #Hpfb & #Hpfg & %Hlenloga & %Hents)".
+      wp_pures.
+      wp_apply (wp_Paxos__gettermc__leading with "Hpx").
+      iIntros "Hpx".
+      wp_apply (wp_Paxos__getlsnc with "Hpx").
+      iIntros (lsnc logc) "(Hpx & #Hlogc & %Hlenlogc)".
+      wp_pures.
+
+      (*@             go func() {                                                 @*)
+      (*@                 data := message.EncodePaxosAppendEntriesRequest(termc, lsnc, lsne, ents) @*)
+      (*@                 px.Send(nid, data)                                      @*)
+      (*@             }()                                                         @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      wp_apply (wp_fork with "[Hents]").
+      { iModIntro.
+        clear Φ.
+        wp_apply (wp_EncodePaxosAppendEntriesRequest with "Hents").
+        iIntros (dataP data) "[Hdata %Hdataenc]".
+        iNamed "Haddrm".
+        assert (is_Some (addrm !! nid)) as [addrpeer Haddrpeer].
+        { rewrite -elem_of_dom Hdomaddrm.
+          apply elem_of_list_lookup_2 in Hnid.
+          set_solver.
+        }
+        wp_apply (wp_Paxos__Send with "[] Hdata"); first apply Haddrpeer.
+        { iFrame "# %". }
+        iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvnetO".
+        assert (is_Some (listens !! addrpeer)) as [ms Hms].
+        { rewrite -elem_of_dom -Himgaddrm elem_of_map_img. by eauto. }
+        iDestruct (big_sepM_delete with "Hlistens") as "[Hlst Hlistens]"; first apply Hms.
+        iNamed "Hlst".
+        iFrame "Hms".
+        iIntros (sent) "Hms".
+        destruct sent; last first.
+        { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
+          { iFrame "∗ # %". }
+          rewrite insert_delete; last apply Hms.
+          iMod "Hmask" as "_".
+          iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
+          { done. }
+          done.
+        }
+        iDestruct "Hms" as (trml) "[Hms #Htrml]".
+        set ms' := _ ∪ ms.
+        iDestruct (big_sepM_insert_2 _ _ addrpeer ms' with "[Hms] Hlistens") as "Hlistens".
+        { iFrame "Hms".
+          set req := AppendEntriesReq _ _ _ _ in Hdataenc.
+          iExists ({[req]} ∪ reqs).
+          iSplit.
+          { rewrite set_map_union_L set_map_singleton_L.
+            by iApply big_sepS_insert_2.
+          }
+          iSplit.
+          { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
+          iPureIntro.
+          rewrite 2!set_map_union_L 2!set_map_singleton_L /= -Hdataenc.
+          set_solver.
+        }
+        rewrite insert_delete_insert.
+        iMod "Hmask" as "_".
+        iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
+        { iPureIntro.
+          rewrite dom_insert_L Himgaddrm.
+          apply (elem_of_map_img_2 (SA := gset chan)) in Haddrpeer.
+          set_solver.
+        }
+        done.
+      }
+      iApply "HΦ".
+      iFrame.
+    }
+
+    (*@         px.mu.Unlock()                                                  @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    iIntros "[Hpx _]".
+    wp_loadField.
+    subst P.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+    { iNamed "Hpx". iFrame. }
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+End leader_session.
+
+Section election_session.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__ElectionSession (px : loc) (nidme : u64) γ :
+    is_paxos px nidme γ -∗
+    {{{ True }}}
+      Paxos__ElectionSession #px
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros "#Hpx" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) ElectionSession() {                                    @*)
+    (*@     for {                                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_forBreak (λ _, True)%I); wp_pures; last by iApply "HΦ".
+    clear Φ.
+    iIntros (Φ) "!> _ HΦ".
+    wp_pures.
+
+    (*@         delta := primitive.RandomUint64() % params.NS_ELECTION_TIMEOUT_DELTA @*)
+    (*@         primitive.Sleep(params.NS_ELECTION_TIMEOUT_BASE + delta)        @*)
+    (*@                                                                         @*)
+    wp_apply wp_RandomUint64.
+    iIntros (dt) "_".
+    wp_apply wp_Sleep.
+
+    (*@         px.mu.Lock()                                                    @*)
+    (*@                                                                         @*)
+    iNamed "Hpx".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hpx]".
+    wp_pures.
+
+    (*@         if px.leading() {                                               @*)
+    (*@             px.mu.Unlock()                                              @*)
+    (*@             continue                                                    @*)
+    (*@         }                                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__leading with "Hpx").
+    iIntros (isleader) "Hpx".
+    wp_if_destruct.
+    { wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      { iNamed "Hpx". iFrame. }
+      wp_pures.
+      by iApply "HΦ".
+    }
+
+    (*@         if px.heartbeated() {                                           @*)
+    (*@             px.mu.Unlock()                                              @*)
+    (*@             continue                                                    @*)
+    (*@         }                                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__heartbeated with "Hpx").
+    iIntros (hb) "Hpx".
+    wp_if_destruct.
+    { wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      { iNamed "Hpx". iFrame. }
+      wp_pures.
+      by iApply "HΦ".
+    }
+
+    (*@         px.heartbeat()                                                  @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__heartbeat with "Hpx").
+    iIntros "Hpx".
+
+    (*@         termc, lsnc := px.nominate()                                    @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__nominate with "Hnids Hinv Hpx").
+    { apply Hnidme. }
+    iIntros (termc lsnc) "Hpx".
+
+    (*@         px.mu.Unlock()                                                  @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+
+    (*@         for _, nidloop := range(px.peers) {                             @*)
+    (*@             nid := nidloop                                              @*)
+    (*@             go func() {                                                 @*)
+    (*@                 data := message.EncodePaxosRequestVoteRequest(termc, lsnc) @*)
+    (*@                 px.Send(nid, data)                                      @*)
+    (*@             }()                                                         @*)
+    (*@         }                                                               @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    iNamed "Hnids".
+    wp_loadField.
+    iMod (readonly_load with "Hpeers") as (q) "HpeersR".
+    wp_apply (wp_forSlice (λ _, True)%I with "[] [$HpeersR]").
+    { (* Loop body. *)
+      clear Φ.
+      iIntros (i nid Φ) "!> (Hpx & %Hbound & %Hnid) HΦ".
+      wp_pures.
+      wp_apply wp_fork.
+      { wp_apply wp_EncodePaxosRequestVoteRequest.
+        iIntros (dataP data) "[Hdata %Hdataenc]".
+        iNamed "Haddrm".
+        assert (is_Some (addrm !! nid)) as [addrpeer Haddrpeer].
+        { rewrite -elem_of_dom Hdomaddrm.
+          apply elem_of_list_lookup_2 in Hnid.
+          set_solver.
+        }
+        wp_apply (wp_Paxos__Send with "[] Hdata"); first apply Haddrpeer.
+        { iFrame "# %". }
+        iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvnetO".
+        assert (is_Some (listens !! addrpeer)) as [ms Hms].
+        { rewrite -elem_of_dom -Himgaddrm elem_of_map_img. by eauto. }
+        iDestruct (big_sepM_delete with "Hlistens") as "[Hlst Hlistens]"; first apply Hms.
+        iNamed "Hlst".
+        iFrame "Hms".
+        iIntros (sent) "Hms".
+        destruct sent; last first.
+        { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
+          { iFrame "∗ # %". }
+          rewrite insert_delete; last apply Hms.
+          iMod "Hmask" as "_".
+          iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
+          { done. }
+          done.
+        }
+        iDestruct "Hms" as (trml) "[Hms #Htrml]".
+        set ms' := _ ∪ ms.
+        iDestruct (big_sepM_insert_2 _ _ addrpeer ms' with "[Hms] Hlistens") as "Hlistens".
+        { iFrame "Hms".
+          set req := RequestVoteReq _ _ in Hdataenc.
+          iExists ({[req]} ∪ reqs).
+          iSplit.
+          { rewrite set_map_union_L set_map_singleton_L.
+            by iApply big_sepS_insert_2.
+          }
+          iSplit.
+          { iApply big_sepS_insert_2; last done.
+            (* TODO: frame the start-of-log res *)
+            done.
+          }
+          iPureIntro.
+          rewrite 2!set_map_union_L 2!set_map_singleton_L /= -Hdataenc.
+          set_solver.
+        }
+        rewrite insert_delete_insert.
+        iMod "Hmask" as "_".
+        iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
+        { iPureIntro.
+          rewrite dom_insert_L Himgaddrm.
+          apply (elem_of_map_img_2 (SA := gset chan)) in Haddrpeer.
+          set_solver.
+        }
+        done.
+      }
+      by iApply "HΦ".
+    }
+    iIntros "_".
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+End election_session.
+
+Section response_sesion.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_Paxos__ResponseSession
+    (px : loc) (nid : u64) (nidme : u64)
+    (addrpeer : chan) (addrm : gmap u64 chan) nids γ :
+    addrm !! nid = Some addrpeer ->
+    is_paxos_with_addrm_nids px nidme addrm nids γ -∗
+    {{{ True }}}
+      Paxos__ResponseSession #px #nid
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros (Haddrpeer) "#Hpx".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) ResponseSession(nid uint64) {                          @*)
+    (*@     for {                                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_forBreak (λ _, True)%I); wp_pures; last by iApply "HΦ".
+    clear Φ.
+    iIntros (Φ) "!> _ HΦ".
+    wp_pures.
+
+    (*@         data, ok := px.Receive(nid)                                     @*)
+    (*@         if !ok {                                                        @*)
+    (*@             // Try to re-establish a connection on failure.             @*)
+    (*@             primitive.Sleep(params.NS_RECONNECT)                        @*)
+    (*@             continue                                                    @*)
+    (*@         }                                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__Receive with "Hpx").
+    { apply Haddrpeer. }
+    iIntros (dataP ok) "Hdata".
+    wp_pures.
+    destruct ok; wp_pures; last first.
+    { wp_apply wp_Sleep.
+      wp_pures.
+      by iApply "HΦ".
+    }
+    iDestruct "Hdata" as (data resp) "(Hdata & #Hresp & %Hdataenc)".
+
+    (*@         resp := message.DecodePaxosResponse(data)                       @*)
+    (*@         kind := resp.Kind                                               @*)
+    (*@                                                                         @*)
+    wp_apply wp_DecodePaxosResponse.
+    { apply Hdataenc. }
+    iIntros (entsP) "Hents".
+    destruct resp as [nid' term terme ents | nid' term lsneq]; wp_pures.
+    { (* Case: RequestVote. *)
+      
+      (*@         px.mu.Lock()                                                    @*)
+      (*@                                                                         @*)
+      iNamed "Hpx".
+      wp_loadField.
+      wp_apply (wp_Mutex__Lock with "Hlock").
+      iIntros "[Hlocked Hpx]".
+
+      (*@         if px.lttermc(resp.Term) {                                      @*)
+      (*@             // Skip the outdated message.                               @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             continue                                                    @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      wp_pures.
+      wp_apply (wp_Paxos__lttermc with "Hpx").
+      iIntros (outdated) "Hpx".
+      wp_if_destruct.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_pures.
+        by iApply "HΦ".
+      }
+
+      (*@         // In the current design, the response would never contain a term higher @*)
+      (*@         // than that in a request, and that means this check is actually not @*)
+      (*@         // used. However, it is kept for two reasons: First, if adding an @*)
+      (*@         // UPDATE-TERM becomes necessary (for performance or liveness reason), @*)
+      (*@         // then this check would then be useful. Second, in the proof, with this @*)
+      (*@         // check and the one above we obtain @px.termc = @resp.Term, which is @*)
+      (*@         // very useful. If we ever want to eliminate this check in the future, @*)
+      (*@         // we will have to find a way to encode ``responses terms never go higher @*)
+      (*@         // than request terms'' in the proof.                           @*)
+      (*@         if px.gttermc(resp.Term) {                                      @*)
+      (*@             // Proceed to a new term on receiving a higher-term message. @*)
+      (*@             px.stepdown(resp.Term)                                      @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             continue                                                    @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      wp_pures.
+      iDestruct "Hpx" as (termc) "[Hpx %Hgttermc]".
+      wp_apply (wp_Paxos__gttermc with "Hpx").
+      iIntros (invalid) "[Hpx %Hlttermc]".
+      wp_if_destruct.
+      { wp_pures.
+        wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+        { apply Hnidme. }
+        { apply Hgttermc. }
+        iIntros "Hpx".
+        wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        { iNamed "Hpx". iFrame. }
+        wp_pures.
+        by iApply "HΦ".
+      }
+      assert (termc = term) as ->.
+      { clear -Hgttermc Hlttermc. word. }
+      wp_pures.
+
+      (*@         if kind == message.MSG_PAXOS_REQUEST_VOTE {                     @*)
+      (*@             if !px.nominated() {                                        @*)
+      (*@                 px.mu.Unlock()                                          @*)
+      (*@                 continue                                                @*)
+      (*@             }                                                           @*)
+      (*@                                                                         @*)
+      wp_apply (wp_Paxos__nominated with "Hpx").
+      iIntros (iscand) "Hpx".
+      wp_if_destruct.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_pures.
+        by iApply "HΦ".
+      }
+      iAssert (∃ lsnc, own_paxos_nominated_with_termc_lsnc px nidme term lsnc nids γ)%I
+        with "[Hpx]" as (lsnc) "Hpx".
+      { iNamed "Hpx". iFrame. }
+
+      (*@             // Ideally, we should not need to include the node ID in the @*)
+      (*@             // response, since the entire session is used exclusively by @nid @*)
+      (*@             // (i.e., in reality @resp.NodeID should always be the same as @*)
+      (*@             // @nid). In the proof, we could maintain a persistent mapping from @*)
+      (*@             // channels to node IDs. However, it seems like the current network @*)
+      (*@             // semantics does not guarantee *freshness* of creating a channel @*)
+      (*@             // through @Connect, and hence such invariant cannot be established. @*)
+      (*@             px.collect(resp.NodeID, resp.TermEntries, resp.Entries)     @*)
+      (*@             px.ascend()                                                 @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@                                                                         @*)
+      iNamed "Hresp".
+      wp_pures.
+      wp_apply (wp_Paxos__collect with "Hpromise Hinv [$Hpx $Hents]").
+      { apply Hinnids. }
+      { (* TODO: prove this with the start-of-log res. *)
+        admit.
+      }
+      iIntros "Hpx".
+      wp_apply (wp_Paxos__ascend with "Hinv Hpx").
+      { apply Hnidme. }
+      iIntros "Hpx".
+      wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+      wp_pures.
+      by iApply "HΦ".
+    }
+    { (* Case: AppendEntries. *)
+
+      (*@         px.mu.Lock()                                                    @*)
+      (*@                                                                         @*)
+      iNamed "Hpx".
+      wp_loadField.
+      wp_apply (wp_Mutex__Lock with "Hlock").
+      iIntros "[Hlocked Hpx]".
+
+      (*@         if px.lttermc(resp.Term) {                                      @*)
+      (*@             // Skip the outdated message.                               @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             continue                                                    @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      wp_pures.
+      wp_apply (wp_Paxos__lttermc with "Hpx").
+      iIntros (outdated) "Hpx".
+      wp_if_destruct.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_pures.
+        by iApply "HΦ".
+      }
+
+      (*@         // In the current design, the response would never contain a term higher @*)
+      (*@         // than that in a request, and that means this check is actually not @*)
+      (*@         // used. However, it is kept for two reasons: First, if adding an @*)
+      (*@         // UPDATE-TERM becomes necessary (for performance or liveness reason), @*)
+      (*@         // then this check would then be useful. Second, in the proof, with this @*)
+      (*@         // check and the one above we obtain @px.termc = @resp.Term, which is @*)
+      (*@         // very useful. If we ever want to eliminate this check in the future, @*)
+      (*@         // we will have to find a way to encode ``responses terms never go higher @*)
+      (*@         // than request terms'' in the proof.                           @*)
+      (*@         if px.gttermc(resp.Term) {                                      @*)
+      (*@             // Proceed to a new term on receiving a higher-term message. @*)
+      (*@             px.stepdown(resp.Term)                                      @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@             continue                                                    @*)
+      (*@         }                                                               @*)
+      (*@                                                                         @*)
+      wp_pures.
+      iDestruct "Hpx" as (termc) "[Hpx %Hgttermc]".
+      wp_apply (wp_Paxos__gttermc with "Hpx").
+      iIntros (invalid) "[Hpx %Hlttermc]".
+      wp_if_destruct.
+      { wp_pures.
+        wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+        { apply Hnidme. }
+        { apply Hgttermc. }
+        iIntros "Hpx".
+        wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        { iNamed "Hpx". iFrame. }
+        wp_pures.
+        by iApply "HΦ".
+      }
+      assert (termc = term) as ->.
+      { clear -Hgttermc Hlttermc. word. }
+      wp_pures.
+
+      (*@         } else if kind == message.MSG_PAXOS_APPEND_ENTRIES {            @*)
+      (*@             if !px.leading() {                                          @*)
+      (*@                 px.mu.Unlock()                                          @*)
+      (*@                 continue                                                @*)
+      (*@             }                                                           @*)
+      (*@                                                                         @*)
+      wp_apply (wp_Paxos__leading__with_termc with "Hpx").
+      iIntros (isleader) "Hpx".
+      wp_if_destruct.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_pures.
+        by iApply "HΦ".
+      }
+      wp_pures.
+
+      (*@             // Same as the reason above, the check below is performed merely for @*)
+      (*@             // the sake of proof.                                       @*)
+      (*@             if resp.NodeID == px.nidme {                                @*)
+      (*@                 px.mu.Unlock()                                          @*)
+      (*@                 continue                                                @*)
+      (*@             }                                                           @*)
+      (*@                                                                         @*)
+      iNamed "Hnids".
+      wp_loadField.
+      wp_if_destruct.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        { iNamed "Hpx". iFrame. }
+        wp_pures.
+        by iApply "HΦ".
+      }
+      rename Heqb into Hnotme.
+      wp_pures.
+
+      (*@             forwarded := px.forward(resp.NodeID, resp.MatchedLSN)       @*)
+      (*@             if !forwarded {                                             @*)
+      (*@                 px.mu.Unlock()                                          @*)
+      (*@                 continue                                                @*)
+      (*@             }                                                           @*)
+      (*@                                                                         @*)
+      iNamed "Hresp".
+      wp_apply (wp_Paxos__forward with "Haoc Hinv Hpx").
+      { apply Hnotme. }
+      { apply Hinnids. }
+      { apply Hlogacpt. }
+      iIntros (forwarded) "Hpx".
+      wp_if_destruct.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        { iNamed "Hpx". iFrame. }
+        wp_pures.
+        by iApply "HΦ".
+      }
+
+      (*@             lsnc, pushed := px.push()                                   @*)
+      (*@             if !pushed {                                                @*)
+      (*@                 px.mu.Unlock()                                          @*)
+      (*@                 continue                                                @*)
+      (*@             }                                                           @*)
+      (*@                                                                         @*)
+      wp_apply (wp_Paxos__push with "Hinv Hpx").
+      { apply Hnidme. }
+      iIntros (lsnc pushed) "[Hpx #Hpushed]".
+      wp_if_destruct.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        { iNamed "Hpx". iFrame. }
+        wp_pures.
+        by iApply "HΦ".
+      }
+      iDestruct "Hpushed" as (logc) "[Hcmted %Hlenlogc]".
+
+      (*@             px.commit(lsnc)                                             @*)
+      (*@             px.mu.Unlock()                                              @*)
+      (*@         }                                                               @*)
+      (*@     }                                                                   @*)
+      (*@ }                                                                       @*)
+      wp_apply (wp_Paxos__commit with "Hcmted Hinv [Hpx]").
+      { apply Hnidme. }
+      { apply Hlenlogc. }
+      { iNamed "Hpx". iNamed "Hleader". iNamed "Honlyl".
+        iDestruct (terml_eq_termc_impl_not_nominiated with "Hcand") as %->.
+        { apply Hleqc. }
+        subst terml.
+        iFrame "Hcand Hpx HisleaderP".
+        by iFrame "∗ # %".
+      }
+      iIntros "Hpx".
+      wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      { iNamed "Hpx". iFrame. }
+      wp_pures.
+      by iApply "HΦ".
+    }
+  Admitted.
+
+End response_sesion.
+
+Section mk_paxos.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Theorem wp_MkPaxos :
+    {{{ True }}}
+      MkPaxos #()
+    {{{ (px : loc), RET #px; True }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ".
+    wp_rec.
+
+    (*@ func MkPaxos() *Paxos {                                                 @*)
+    (*@     conns := make(map[uint64]grove_ffi.Connection)                      @*)
+    (*@     px := &Paxos{                                                       @*)
+    (*@         conns : conns,                                                  @*)
+    (*@     }                                                                   @*)
+    (*@     return px                                                           @*)
+    (*@ }                                                                       @*)
+    wp_apply (map.wp_NewMap).
+    iIntros (conns) "Hconns".
+    rewrite {1}/zero_val /=.
+    wp_pures.
+    wp_apply (wp_allocStruct).
+    { by auto 20. }
+    iIntros (px) "Hpx".
+    wp_pures.
+    iApply "HΦ".
+  Admitted.
+
+End mk_paxos.
 
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.

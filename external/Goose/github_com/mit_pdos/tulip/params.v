@@ -24,6 +24,8 @@ Definition NS_SEND_REFRESH : expr := #4000000000.
 
 Definition NS_BATCH_INTERVAL : expr := #5000000.
 
-Definition NS_ELECTION_TIMEOUT : expr := #1000000000.
+Definition NS_ELECTION_TIMEOUT_BASE : expr := #1000000000.
+
+Definition NS_ELECTION_TIMEOUT_DELTA : expr := #500000000.
 
 End code.

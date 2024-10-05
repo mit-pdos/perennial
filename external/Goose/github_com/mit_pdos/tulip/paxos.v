@@ -10,8 +10,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 Definition Paxos := struct.decl [
   "nidme" :: uint64T;
   "peers" :: slice.T uint64T;
-  "addrme" :: uint64T;
-  "addrpeers" :: mapT uint64T;
+  "addrm" :: mapT uint64T;
   "sc" :: uint64T;
   "mu" :: ptrT;
   "hb" :: boolT;
@@ -226,11 +225,11 @@ Definition Paxos__push: val :=
 
 Definition Paxos__gttermc: val :=
   rec: "Paxos__gttermc" "px" "term" :=
-    "term" < (struct.loadF Paxos "termc" "px").
+    (struct.loadF Paxos "termc" "px") < "term".
 
 Definition Paxos__lttermc: val :=
   rec: "Paxos__lttermc" "px" "term" :=
-    (struct.loadF Paxos "termc" "px") < "term".
+    "term" < (struct.loadF Paxos "termc" "px").
 
 Definition Paxos__latest: val :=
   rec: "Paxos__latest" "px" :=
@@ -266,7 +265,7 @@ Definition Paxos__GetConnection: val :=
 
 Definition Paxos__Connect: val :=
   rec: "Paxos__Connect" "px" "nid" :=
-    let: "addr" := Fst (MapGet (struct.loadF Paxos "addrpeers" "px") "nid") in
+    let: "addr" := Fst (MapGet (struct.loadF Paxos "addrm" "px") "nid") in
     let: "ret" := grove_ffi.Connect "addr" in
     (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
     then
@@ -280,14 +279,16 @@ Definition Paxos__Send: val :=
   rec: "Paxos__Send" "px" "nid" "data" :=
     let: ("conn", "ok") := Paxos__GetConnection "px" "nid" in
     (if: (~ "ok")
-    then Paxos__Connect "px" "nid"
-    else #());;
-    let: "err" := grove_ffi.Send "conn" "data" in
-    (if: "err"
     then
       Paxos__Connect "px" "nid";;
       #()
-    else #()).
+    else
+      let: "err" := grove_ffi.Send "conn" "data" in
+      (if: "err"
+      then
+        Paxos__Connect "px" "nid";;
+        #()
+      else #())).
 
 Definition Paxos__LeaderSession: val :=
   rec: "Paxos__LeaderSession" "px" :=
@@ -315,21 +316,27 @@ Definition Paxos__ElectionSession: val :=
   rec: "Paxos__ElectionSession" "px" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      time.Sleep params.NS_ELECTION_TIMEOUT;;
+      let: "delta" := (rand.RandomUint64 #()) `rem` params.NS_ELECTION_TIMEOUT_DELTA in
+      time.Sleep (params.NS_ELECTION_TIMEOUT_BASE + "delta");;
       Mutex__Lock (struct.loadF Paxos "mu" "px");;
-      (if: (Paxos__leading "px") || (Paxos__heartbeated "px")
+      (if: Paxos__leading "px"
       then
         Mutex__Unlock (struct.loadF Paxos "mu" "px");;
         Continue
       else
-        Paxos__heartbeat "px";;
-        let: ("termc", "lsnc") := Paxos__nominate "px" in
-        Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-        ForSlice uint64T <> "nidloop" (struct.loadF Paxos "peers" "px")
-          (let: "nid" := "nidloop" in
-          Fork (let: "data" := message.EncodePaxosRequestVoteRequest "termc" "lsnc" in
-                Paxos__Send "px" "nid" "data"));;
-        Continue));;
+        (if: Paxos__heartbeated "px"
+        then
+          Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+          Continue
+        else
+          Paxos__heartbeat "px";;
+          let: ("termc", "lsnc") := Paxos__nominate "px" in
+          Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+          ForSlice uint64T <> "nidloop" (struct.loadF Paxos "peers" "px")
+            (let: "nid" := "nidloop" in
+            Fork (let: "data" := message.EncodePaxosRequestVoteRequest "termc" "lsnc" in
+                  Paxos__Send "px" "nid" "data"));;
+          Continue)));;
     #().
 
 Definition Paxos__Receive: val :=
@@ -360,14 +367,15 @@ Definition Paxos__ResponseSession: val :=
         let: "resp" := message.DecodePaxosResponse "data" in
         let: "kind" := struct.get message.PaxosResponse "Kind" "resp" in
         Mutex__Lock (struct.loadF Paxos "mu" "px");;
-        (if: Paxos__gttermc "px" (struct.get message.PaxosResponse "Term" "resp")
+        (if: Paxos__lttermc "px" (struct.get message.PaxosResponse "Term" "resp")
         then
           Mutex__Unlock (struct.loadF Paxos "mu" "px");;
           Continue
         else
-          (if: Paxos__lttermc "px" (struct.get message.PaxosResponse "Term" "resp")
+          (if: Paxos__gttermc "px" (struct.get message.PaxosResponse "Term" "resp")
           then
             Paxos__stepdown "px" (struct.get message.PaxosResponse "Term" "resp");;
+            Mutex__Unlock (struct.loadF Paxos "mu" "px");;
             Continue
           else
             (if: "kind" = message.MSG_PAXOS_REQUEST_VOTE
@@ -377,7 +385,7 @@ Definition Paxos__ResponseSession: val :=
                 Mutex__Unlock (struct.loadF Paxos "mu" "px");;
                 Continue
               else
-                Paxos__collect "px" "nid" (struct.get message.PaxosResponse "TermEntries" "resp") (struct.get message.PaxosResponse "Entries" "resp");;
+                Paxos__collect "px" (struct.get message.PaxosResponse "NodeID" "resp") (struct.get message.PaxosResponse "TermEntries" "resp") (struct.get message.PaxosResponse "Entries" "resp");;
                 Paxos__ascend "px";;
                 Mutex__Unlock (struct.loadF Paxos "mu" "px");;
                 Continue)
@@ -389,21 +397,26 @@ Definition Paxos__ResponseSession: val :=
                   Mutex__Unlock (struct.loadF Paxos "mu" "px");;
                   Continue
                 else
-                  let: "forwarded" := Paxos__forward "px" "nid" (struct.get message.PaxosResponse "MatchedLSN" "resp") in
-                  (if: (~ "forwarded")
+                  (if: (struct.get message.PaxosResponse "NodeID" "resp") = (struct.loadF Paxos "nidme" "px")
                   then
                     Mutex__Unlock (struct.loadF Paxos "mu" "px");;
                     Continue
                   else
-                    let: ("lsnc", "pushed") := Paxos__push "px" in
-                    (if: (~ "pushed")
+                    let: "forwarded" := Paxos__forward "px" (struct.get message.PaxosResponse "NodeID" "resp") (struct.get message.PaxosResponse "MatchedLSN" "resp") in
+                    (if: (~ "forwarded")
                     then
                       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
                       Continue
                     else
-                      Paxos__commit "px" "lsnc";;
-                      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-                      Continue)))
+                      let: ("lsnc", "pushed") := Paxos__push "px" in
+                      (if: (~ "pushed")
+                      then
+                        Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                        Continue
+                      else
+                        Paxos__commit "px" "lsnc";;
+                        Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+                        Continue))))
               else Continue))))));;
     #().
 
@@ -418,7 +431,7 @@ Definition Paxos__RequestSession: val :=
         let: "req" := message.DecodePaxosRequest (struct.get grove_ffi.ReceiveRet "Data" "ret") in
         let: "kind" := struct.get message.PaxosRequest "Kind" "req" in
         Mutex__Lock (struct.loadF Paxos "mu" "px");;
-        (if: Paxos__gttermc "px" (struct.get message.PaxosRequest "Term" "req")
+        (if: Paxos__lttermc "px" (struct.get message.PaxosRequest "Term" "req")
         then
           Mutex__Unlock (struct.loadF Paxos "mu" "px");;
           Continue
@@ -435,16 +448,16 @@ Definition Paxos__RequestSession: val :=
             else
               let: ("terml", "ents") := Paxos__prepare "px" (struct.get message.PaxosRequest "CommittedLSN" "req") in
               Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-              let: "data" := message.EncodePaxosRequestVoteResponse "termc" "terml" "ents" in
+              let: "data" := message.EncodePaxosRequestVoteResponse (struct.loadF Paxos "nidme" "px") "termc" "terml" "ents" in
               grove_ffi.Send "conn" "data";;
               Continue)
           else
             (if: "kind" = message.MSG_PAXOS_APPEND_ENTRIES
             then
-              let: "lsn" := Paxos__accept "px" (struct.get message.PaxosRequest "LSNEntries" "req") (struct.get message.PaxosRequest "Term" "req") (struct.get message.PaxosRequest "Entries" "req") in
-              Paxos__learn "px" (struct.get message.PaxosRequest "LeaderCommit" "req") (struct.get message.PaxosRequest "Term" "req");;
+              let: "lsn" := Paxos__accept "px" (struct.get message.PaxosRequest "EntriesLSN" "req") (struct.get message.PaxosRequest "Term" "req") (struct.get message.PaxosRequest "Entries" "req") in
+              Paxos__learn "px" (struct.get message.PaxosRequest "CommittedLSN" "req") (struct.get message.PaxosRequest "Term" "req");;
               Mutex__Unlock (struct.loadF Paxos "mu" "px");;
-              let: "data" := message.EncodePaxosAppendEntriesResponse "termc" "lsn" in
+              let: "data" := message.EncodePaxosAppendEntriesResponse (struct.loadF Paxos "nidme" "px") "termc" "lsn" in
               grove_ffi.Send "conn" "data";;
               Continue
             else Continue)))));;
@@ -452,7 +465,8 @@ Definition Paxos__RequestSession: val :=
 
 Definition Paxos__Serve: val :=
   rec: "Paxos__Serve" "px" :=
-    let: "ls" := grove_ffi.Listen (struct.loadF Paxos "addrme" "px") in
+    let: "addrme" := Fst (MapGet (struct.loadF Paxos "addrm" "px") (struct.loadF Paxos "nidme" "px")) in
+    let: "ls" := grove_ffi.Listen "addrme" in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "conn" := grove_ffi.Accept "ls" in
@@ -465,3 +479,11 @@ Definition Paxos__ConnectAll: val :=
     ForSlice uint64T <> "nid" (struct.loadF Paxos "peers" "px")
       (Paxos__Connect "px" "nid");;
     #().
+
+Definition MkPaxos: val :=
+  rec: "MkPaxos" <> :=
+    let: "conns" := NewMap uint64T grove_ffi.Connection #() in
+    let: "px" := struct.new Paxos [
+      "conns" ::= "conns"
+    ] in
+    "px".
