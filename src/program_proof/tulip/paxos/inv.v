@@ -233,10 +233,9 @@ Section inv.
     intros nid.
     rewrite 2!lookup_fmap.
     specialize (Hprefixes nid).
-    destruct (dsslb !! nid) as [dslb |], (dss !! nid) as [ds |]; [| done | done | done].
-    simpl. simpl in Hprefixes.
+    inversion Hprefixes as [dslb ds Hprefix Heq1 Heq2 | ]; [ simpl | done ].
+    destruct Hprefix as [[dsapp ->] Hlen].
     f_equal.
-    destruct Hprefixes as [[dsapp ->] Hlen].
     by rewrite -2!latest_term_before_nodedec_unfold latest_term_before_nodedec_app.
   Qed.
 
@@ -252,10 +251,9 @@ Section inv.
     intros x.
     rewrite 2!lookup_fmap.
     specialize (Hfixed x).
-    destruct (dss !! x) as [ds |], (bs !! x) as [ps |]; [| done | done | done].
-    simpl.
+    inversion Hfixed as [ds ps Hfixed' Heq1 Heq2 | ]; [ simpl | done ].
     f_equal.
-    destruct Hfixed as [Hfixed Hlen].
+    destruct Hfixed' as [Hfixed' Hlen].
     by apply fixed_proposals_latest_term_before_nodedec.
   Qed.
 
@@ -294,10 +292,9 @@ Section inv.
     rewrite 2!lookup_fmap.
     specialize (Hprefixes nid).
     rewrite /ledger_in_term_with.
-    destruct (dsslb !! nid) as [dslb |], (dss !! nid) as [ds |]; [| done | done | done].
-    simpl. simpl in Hprefixes.
+    inversion Hprefixes as [dslb ds Hprefix Heq1 Heq2|]; [ simpl | done ].
     f_equal.
-    destruct Hprefixes as [Hprefix Hlen].
+    destruct Hprefix as [Hprefix Hlen].
     by rewrite (prefix_lookup_lt _ _ _ Hlen Hprefix).
   Qed.
 
@@ -313,10 +310,9 @@ Section inv.
     intros x.
     rewrite 2!lookup_fmap.
     specialize (Hfixed x).
-    destruct (dss !! x) as [ds |], (bs !! x) as [ps |]; [| done | done | done].
-    simpl.
+    inversion Hfixed as [ds ps Hfixed' Heq1 Heq2 | ]; [ simpl | done ].
     f_equal.
-    destruct Hfixed as [Hfixed Hlen].
+    destruct Hfixed' as [Hfixed' Hlen].
     by apply fixed_proposals_ledger_in_term_nodedec.
   Qed.
 
@@ -336,9 +332,9 @@ Section inv.
     unshelve erewrite (fixed_proposals_longest_proposal_in_term_nodedec dss bs t' _).
     { intros nid.
       specialize (Hfixed nid).
-      destruct (dss !! nid) as [ds |], (bs !! nid) as [ps |]; [| done | done | done].
-      simpl. simpl in Hfixed.
-      destruct Hfixed as [Hfixed Hlen].
+      inversion Hfixed as [ds ps Hfixed' Heq1 Heq2|]; [ simpl | constructor ].
+      constructor.
+      destruct Hfixed' as [Hfixed' Hlen].
       split; first done.
       subst t'.
       eapply Nat.lt_le_trans; last apply Hlen.
@@ -593,7 +589,7 @@ Section lemma.
       as %Hprefix.
     { iIntros (x).
       destruct (dssqlb !! x) as [dslb |] eqn:Hdslb, (dssq !! x) as [ds |] eqn:Hds; last first.
-      { done. }
+      { eauto using None_Forall2. }
       { rewrite -not_elem_of_dom -Hdomm not_elem_of_dom in Hdslb.
         subst dssq.
         by rewrite lookup_fmap Hdslb /= in Hds.
@@ -609,6 +605,7 @@ Section lemma.
       iNamed "Hinv". simpl.
       iDestruct (past_nodedecs_prefix with "Hdsqx Hpastd") as %Hprefix.
       iPureIntro.
+      constructor.
       split; first done.
       specialize (Hlen _ _ Hdslb). simpl in Hlen.
       lia.
@@ -618,7 +615,7 @@ Section lemma.
       as %Hfixed.
     { iIntros (x).
       destruct (dssq !! x) as [ds |] eqn:Hds, (bsq !! x) as [psa |] eqn:Hpsa; last first.
-      { done. }
+      { eauto using None_Forall2. }
       { rewrite -not_elem_of_dom dom_fmap_L in Hds.
         apply elem_of_dom_2 in Hpsa.
         by rewrite dom_fmap_L in Hpsa.
@@ -645,10 +642,10 @@ Section lemma.
       }
       rewrite Hds Hdslb /= in Hprefix.
       iPureIntro.
-      split; first apply Hfixed.
-      destruct Hprefix as [Hprefix Hlelen].
-      apply prefix_length in Hprefix.
-      lia.
+      constructor; split; first apply Hfixed.
+      inv Hprefix.
+      pose proof (prefix_length dslb ds).
+      intuition. lia.
     }
     iPureIntro.
     split.

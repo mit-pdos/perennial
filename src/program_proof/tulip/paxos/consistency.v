@@ -322,9 +322,9 @@ Section impl.
     { intros t1 t2 v1 v2 Hlt Hchosen Hv2.
       specialize (Hvp t2).
       rewrite Hv2 in Hvp.
-      destruct (psb !! t2) as [vlb |] eqn:Heq; rewrite Heq in Hvp; last done.
-      simpl in Hvp.
-      specialize (Hpacb _ _ _ _ Hlt Hchosen Heq).
+      inversion Hvp as [vlb y Heq1 Heq2 | ]; subst.
+      symmetry in Heq2.
+      specialize (Hpacb _ _ _ _ Hlt Hchosen Heq2).
       by trans vlb.
     }
     intros v1 v2 [t1 Hchosen1] [t2 Hchosen2].

@@ -103,9 +103,13 @@ Section extend.
     destruct (decide (t = term)) as [-> | Hne]; last by rewrite lookup_insert_ne.
     rewrite lookup_insert.
     specialize (Hvp term).
-    destruct (psb !! term) as [loglb |] eqn:Hloglb; rewrite Hv Hloglb /= in Hvp; last done.
-    rewrite Hloglb /=.
-    by trans v; last apply prefix_app_r.
+    inversion Hvp as [loglb y Hprefix Heq1 Heq2|]; subst; [ simpl | ].
+    - constructor.
+      (* XXX: need to unfold this type for congruence to work *)
+      unfold proposals in *.
+      assert (y = v) by congruence; subst.
+      trans v; [ | apply prefix_app_r ]; auto.
+    - unfold proposals in *. congruence.
   Qed.
 
 End extend.
