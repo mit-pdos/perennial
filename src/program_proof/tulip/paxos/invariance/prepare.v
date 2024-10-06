@@ -86,14 +86,15 @@ Section prepare.
     by rewrite Hfree (IH Ht1).
   Qed.
 
-  Lemma node_inv_prepare γ nid termc termc' terml v :
-    (termc < termc')%nat ->
+  Lemma node_inv_prepare γ nid termc terml v termc' :
+    Z.of_nat termc < Z.of_nat termc' < 2 ^ 64 ->
     own_current_term_half γ nid termc -∗
     own_node_ledger_half γ nid v -∗
     node_inv γ nid terml ==∗
     own_current_term_half γ nid termc' ∗
     own_node_ledger_half γ nid v ∗
     node_inv γ nid terml ∗
+    (if decide (is_term_of_node nid termc') then own_free_prepare_lsn γ termc' else True) ∗
     past_nodedecs_latest_before γ nid termc' terml v.
   Proof.
     iIntros (Hlt) "HtermcX Hv Hinv".
@@ -101,6 +102,35 @@ Section prepare.
     iDestruct (current_term_agree with "HtermcX Htermc") as %->.
     iDestruct (node_ledger_agree with "Hv Hlogn") as %->.
     iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hv.
+    (* Obtain the free prepare LSN if [termc'] is owned by [nid]. *)
+    iAssert (([∗ set] t ∈ free_termps nid termc', own_free_prepare_lsn γ t) ∗
+             (if decide (is_term_of_node nid termc') then own_free_prepare_lsn γ termc' else True))%I
+      with "[Hlsnps]" as "[Hlsnps Hlsnp]".
+    { case_decide as Hton; last first.
+      { iSplit; last done.
+        iApply (big_sepS_subseteq with "Hlsnps").
+        rewrite /free_termps.
+        apply filter_subseteq_impl.
+        intros t [Hltt Htont].
+        split; [lia | done].
+      }
+      iDestruct (big_sepS_delete _ _ termc' with "Hlsnps") as "[Hlsnp Hlsnps]".
+      { rewrite elem_of_filter.
+        split; last first.
+        { apply elem_of_terms_all. lia. }
+        split; [lia | done].
+      }
+      iFrame "Hlsnp".
+      iApply (big_sepS_subseteq with "Hlsnps").
+      intros t Ht.
+      rewrite elem_of_filter in Ht.
+      destruct Ht as [[Hlet Htont] Hinall].
+      rewrite elem_of_difference not_elem_of_singleton.
+      split; last lia.
+      rewrite elem_of_filter.
+      split; last done.
+      split; [lia | done].
+    }
     destruct (decide (terml = termc)) as [-> | Hne]; last first.
     { (* Case: [terml < termc] iff no ledger accepted at [termc] yet. *)
       (* Update the current term [termc] to [termc']. *)
@@ -149,7 +179,8 @@ Section prepare.
     (* Extract a witness of the extended past decision. *)
     iDestruct (past_nodedecs_witness with "Hds") as "#Hdlb".
     unshelve epose proof
-      (fixed_proposals_inv_prepare_term_eq _ _ _ _ _ Hlends Hlt Hv Hdompsa Hfixed) as Hfixed'.
+      (fixed_proposals_inv_prepare_term_eq _ _ termc' _ _ Hlends _ Hv Hdompsa Hfixed) as Hfixed'.
+    { lia. }
     iFrame "∗ # %".
     iPureIntro.
     split.
@@ -166,7 +197,7 @@ Section prepare.
 
   Lemma paxos_inv_prepare {γ nids nid termc terml v} termc' :
     nid ∈ nids ->
-    (termc < termc')%nat ->
+    Z.of_nat termc < Z.of_nat termc' < 2 ^ 64 ->
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid terml -∗
     own_node_ledger_half γ nid v -∗
@@ -175,6 +206,7 @@ Section prepare.
     own_ledger_term_half γ nid terml ∗
     own_node_ledger_half γ nid v ∗
     paxos_inv γ nids ∗
+    (if decide (is_term_of_node nid termc') then own_free_prepare_lsn γ termc' else True) ∗
     past_nodedecs_latest_before γ nid termc' terml v.
   Proof.
     iIntros (Hnid Hlt) "Htermc Hterml Hv Hinv".
@@ -185,7 +217,7 @@ Section prepare.
     { apply Hterml'. }
     iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
     iMod (node_inv_prepare _ _ _ _ _ _ Hlt with "Htermc Hv Hnode")
-      as "(Htermc & Hv & Hnode & #Hpast)".
+      as "(Htermc & Hv & Hnode & Hlsnp & #Hpast)".
     iDestruct ("HnodesC" with "Hnode") as "Hnodes".
     by iFrame "∗ # %".
   Qed.

@@ -104,21 +104,24 @@ Section inv_network.
 
   Definition paxosnetNS := nroot .@ "paxosnet".
 
+  Definition safe_request_vote_req γ (term lsnlc : u64) : iProp Σ :=
+    is_prepare_lsn γ (uint.nat term) (uint.nat lsnlc).
+
   Definition safe_append_entries_req
-    γ nids (term lsnc lsne : u64) (ents : list string) : iProp Σ :=
+    γ nids (term lsnlc lsne : u64) (ents : list string) : iProp Σ :=
     ∃ (logleader logcmt : list string),
       "#Hpfb"       ∷ prefix_base_ledger γ (uint.nat term) logleader ∗
       "#Hpfg"       ∷ prefix_growing_ledger γ (uint.nat term) logleader ∗
       "#Hlogcmt"    ∷ safe_ledger_above γ nids (uint.nat term) logcmt ∗
       "%Hlogleader" ∷ ⌜(uint.nat lsne ≤ length logleader)%nat⌝ ∗
       "%Hents"      ∷ ⌜drop (uint.nat lsne) logleader = ents⌝ ∗
-      "%Hlogcmt"    ∷ ⌜length logcmt = uint.nat lsnc⌝.
+      "%Hlogcmt"    ∷ ⌜length logcmt = uint.nat lsnlc⌝.
 
   Definition safe_pxreq γ nids req : iProp Σ :=
     match req with
-    | RequestVoteReq _ _ => True
-    | AppendEntriesReq term lsnc lsne ents =>
-        safe_append_entries_req γ nids term lsnc lsne ents
+    | RequestVoteReq term lsnlc => safe_request_vote_req γ term lsnlc
+    | AppendEntriesReq term lsnlc lsne ents =>
+        safe_append_entries_req γ nids term lsnlc lsne ents
     end.
 
   #[global]
@@ -130,7 +133,7 @@ Section inv_network.
     γ (nids : gset u64) (nid term terme : u64) (ents : list string) : iProp Σ :=
     ∃ (logpeer : list string) (lsne : u64),
       "#Hpromise" ∷ past_nodedecs_latest_before γ nid (uint.nat term) (uint.nat terme) logpeer ∗
-      (* TODO: start of ents *)
+      "#Hlsne"    ∷ is_prepare_lsn γ (uint.nat term) (uint.nat lsne) ∗
       "%Hents"    ∷ ⌜drop (uint.nat lsne) logpeer = ents⌝ ∗
       "%Hinnids"  ∷ ⌜nid ∈ nids⌝.
 
@@ -268,7 +271,7 @@ Section repr.
       let connsV := fmap (λ x, connection_socket x.1 x.2) conns in
       "HconnsP" ∷ paxos ↦[Paxos :: "conns"] #connsP ∗
       "Hconns"  ∷ map.own_map connsP (DfracOwn 1) (connsV, #()) ∗
-      "#Htrmls" ∷ ([∗ map] _ ↦ x ∈ conns, is_terminal γ x.1) ∗
+      "#Htrmls" ∷ ([∗ map] x ∈ conns, is_terminal γ x.1) ∗
       "%Haddrpeers" ∷ ⌜map_Forall (λ nid x, addrm !! nid = Some x.2) conns⌝.
 
   Definition own_paxos_candidate_only
@@ -278,6 +281,7 @@ Section repr.
       "Hentsp"   ∷ own_slice entspP stringT (DfracOwn 1) entsp ∗
       "Hrespp"   ∷ own_map resppP (DfracOwn 1) respp ∗
       "#Hvotes"  ∷ votes_in γ (dom respp) (uint.nat termc) (uint.nat termp) (logc ++ entsp) ∗
+      "#Hlsnprc" ∷ is_prepare_lsn γ (uint.nat termc) (length logc) ∗
       "%Hton"    ∷ ⌜is_term_of_node nidme (uint.nat termc)⌝ ∗
       "%Hdomvts" ∷ ⌜dom respp ⊆ nids⌝ ∗
       "%Hllep"   ∷ ⌜uint.Z terml ≤ uint.Z termp⌝ ∗
@@ -468,7 +472,7 @@ Section stepdown.
 
   Theorem wp_Paxos__stepdown px (nidme term : u64) termc nids γ :
     nidme ∈ nids ->
-    uint.Z termc ≤ uint.Z term ->
+    uint.Z termc ≤ uint.Z term < 2 ^ 64 ->
     know_paxos_inv γ nids -∗
     {{{ own_paxos_with_termc px nidme termc nids γ }}}
       Paxos__stepdown #px #term
@@ -498,7 +502,7 @@ Section stepdown.
     }
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (paxos_inv_prepare (uint.nat term) with "Htermc Hterml Hlogn HinvO")
-      as "(Htermc & Hterml & Hlogn & HinvO & #Hpromise)".
+      as "(Htermc & Hterml & Hlogn & HinvO & Hlsnp & #Hpromise)".
     { apply Hnidme. }
     { word. }
     iMod ("HinvC" with "HinvO") as "_".
@@ -506,7 +510,7 @@ Section stepdown.
     iFrame "HisleaderP HiscandP".
     assert (Htermlc' : uint.Z terml ≤ uint.Z term) by word.
     iFrame "∗ # %".
-    iClear "Hpreped".
+    iClear "Hpreped Hlsnp".
     by case_decide.
   Qed.
 
@@ -521,7 +525,9 @@ Section nominate.
     know_paxos_inv γ nids -∗
     {{{ own_paxos px nidme nids γ }}}
       Paxos__nominate #px
-    {{{ (term : u64) (lsn : u64), RET (#term, #lsn); own_paxos px nidme nids γ }}}.
+    {{{ (term : u64) (lsn : u64), RET (#term, #lsn);
+        own_paxos px nidme nids γ ∗ is_prepare_lsn γ (uint.nat term) (uint.nat lsn)
+    }}}.
   Proof.
     iIntros (Hnidme) "#Hnids #Hinv".
     iIntros (Φ) "!> Hpx HΦ".
@@ -585,9 +591,14 @@ Section nominate.
     (*@                                                                         @*)
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (paxos_inv_prepare (uint.nat term) with "Htermc Hterml Hlogn HinvO")
-      as "(Htermc & Hterml & Hlogn & HinvO & #Hpromise)".
+      as "(Htermc & Hterml & Hlogn & HinvO & Hlsnp & #Hpromise)".
     { apply Hnidme. }
-    { word. }
+    {  word. }
+    destruct (decide (is_term_of_node nidme (uint.nat term))) as [Hton | Hnton]; last first.
+    { exfalso. rewrite /is_term_of_node /max_nodes in Hnton. clear -Hmod Hnton. word. }
+    set logc := take _ log.
+    (* Set the prepare LSN to [length logc]. *)
+    iMod (prepare_lsn_update (length logc) with "Hlsnp") as "#Hlsnprc".
     iMod ("HinvC" with "HinvO") as "_".
 
     (*@     return term, lsn                                                    @*)
@@ -597,7 +608,6 @@ Section nominate.
     { rewrite /is_term_of_node /max_nodes. word. }
     assert (Htermlt' : uint.Z terml ≤ uint.Z term) by word.
     assert (Hlcne' : uint.Z terml ≠ uint.Z term) by word.
-    set logc := take _ log.
     set entsp := drop _ log.
     set respp' := map_insert _ _ _.
     iAssert (votes_in γ (dom respp') (uint.nat term) (uint.nat terml) (logc ++ entsp))%I as "Hvotes".
@@ -620,9 +630,14 @@ Section nominate.
       { by rewrite map_Exists_singleton Hacpt take_drop. }
       { rewrite dom_singleton_L dom_insert_L. set_solver. }
     }
+    iModIntro.
+    iSplit; last first.
+    { rewrite length_take_le; last first.
+      { clear -Hlsncub. lia. }
+      iFrame "Hlsnprc".
+    }
     iFrame "HiscandP HisleaderP".
     iFrame "∗ # %".
-    iModIntro.
     iSplit.
     { iClear "Hpreped". by case_decide. }
     iPureIntro.
@@ -2787,7 +2802,7 @@ Section request_session.
       iDestruct "Hpx" as (termc) "[Hpx %Hgetermc]".
       wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
       { apply Hnidme. }
-      { apply Hgetermc. }
+      { clear -Hgetermc. word. }
       iIntros "Hpx".
 
       (*@         px.heartbeat()                                                  @*)
@@ -2876,7 +2891,6 @@ Section request_session.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
-      (* iDestruct (big_sepM_insert_delete _ _ trml msc' with "Hconn Hconnects") as "Hconnects". *)
       rewrite -(big_sepM_insert_delete _ _ trml msc').
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
@@ -2922,7 +2936,7 @@ Section request_session.
       iDestruct "Hpx" as (termc) "[Hpx %Hgetermc]".
       wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
       { apply Hnidme. }
-      { apply Hgetermc. }
+      { clear -Hgetermc. word. }
       iIntros "Hpx".
 
       (*@         px.heartbeat()                                                  @*)
@@ -3608,7 +3622,7 @@ Section election_session.
     (*@                                                                         @*)
     wp_apply (wp_Paxos__nominate with "Hnids Hinv Hpx").
     { apply Hnidme. }
-    iIntros (termc lsnc) "Hpx".
+    iIntros (termc lsnc) "[Hpx #Hlsnprc]".
 
     (*@         px.mu.Unlock()                                                  @*)
     (*@                                                                         @*)
@@ -3674,8 +3688,7 @@ Section election_session.
           }
           iSplit.
           { iApply big_sepS_insert_2; last done.
-            (* TODO: frame the start-of-log res *)
-            done.
+            iFrame "Hlsnprc".
           }
           iPureIntro.
           rewrite 2!set_map_union_L 2!set_map_singleton_L /= -Hdataenc.
@@ -3798,7 +3811,7 @@ Section response_sesion.
       { wp_pures.
         wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
         { apply Hnidme. }
-        { apply Hgttermc. }
+        { clear -Hgttermc. word. }
         iIntros "Hpx".
         wp_loadField.
         wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
@@ -3840,12 +3853,20 @@ Section response_sesion.
       (*@             px.mu.Unlock()                                              @*)
       (*@                                                                         @*)
       iNamed "Hresp".
+      iAssert (⌜lsne = lsnc⌝)%I as %->.
+      { iNamed "Hpx". iNamed "Hcand". iNamed "Honlyc". iNamed "Hpx".
+        iDestruct (prepare_lsn_eq with "Hlsne Hlsnprc") as %Heq.
+        rewrite length_take_le in Heq; last first.
+        { clear -Hlsncub. lia. }
+        clear -Heq.
+        iPureIntro.
+        clear -Heq.
+        word.
+      }
       wp_pures.
       wp_apply (wp_Paxos__collect with "Hpromise Hinv [$Hpx $Hents]").
       { apply Hinnids. }
-      { (* TODO: prove this with the start-of-log res. *)
-        admit.
-      }
+      { apply Hents. }
       iIntros "Hpx".
       wp_apply (wp_Paxos__ascend with "Hinv Hpx").
       { apply Hnidme. }
@@ -3904,7 +3925,7 @@ Section response_sesion.
       { wp_pures.
         wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
         { apply Hnidme. }
-        { apply Hgttermc. }
+        { clear -Hgttermc. word. }
         iIntros "Hpx".
         wp_loadField.
         wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
@@ -4011,7 +4032,7 @@ Section response_sesion.
       wp_pures.
       by iApply "HΦ".
     }
-  Admitted.
+  Qed.
 
 End response_sesion.
 

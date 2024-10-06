@@ -336,6 +336,11 @@ Definition max_nodes : Z := 16.
 Definition is_term_of_node (x : u64) (t : nat) :=
   t `mod` max_nodes = (uint.Z x).
 
+#[global]
+Instance is_term_of_node_decision x t :
+  Decision (is_term_of_node x t).
+Proof. unfold is_term_of_node. apply _. Defined.
+
 Lemma is_term_of_node_partitioned x1 x2 t :
   x1 ≠ x2 -> is_term_of_node x1 t -> not (is_term_of_node x2 t).
 Proof.

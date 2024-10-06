@@ -203,6 +203,38 @@ Section res.
 
   End base_proposal.
 
+  Section prepare_lsn.
+
+    (** Elements. *)
+
+    Definition own_free_prepare_lsn γ (t : nat) : iProp Σ.
+    Admitted.
+
+    Definition is_prepare_lsn γ (t : nat) (n : nat) : iProp Σ.
+    Admitted.
+
+    (** Type class instances. *)
+
+    #[global]
+    Instance is_prepare_lsn_persistent γ t n :
+      Persistent (is_prepare_lsn γ t n).
+    Admitted.
+
+    (** Rules. *)
+
+    Lemma prepare_lsn_update {γ t} n :
+      own_free_prepare_lsn γ t ==∗
+      is_prepare_lsn γ t n.
+    Admitted.
+
+    Lemma prepare_lsn_eq {γ t n1 n2} :
+      is_prepare_lsn γ t n1 -∗
+      is_prepare_lsn γ t n2 -∗
+      ⌜n2 = n1⌝.
+    Admitted.
+
+  End prepare_lsn.
+
   Section past_nodedecs.
 
     (** Elements. *)

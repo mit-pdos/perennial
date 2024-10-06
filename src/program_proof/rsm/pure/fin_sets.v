@@ -6,7 +6,13 @@ Section fin_set.
 
   Lemma size_empty_iff_L `{!LeibnizEquiv C} X : size X = 0 ↔ X = ∅.
   Proof. unfold_leibniz. apply size_empty_iff. Qed.
+
   Lemma size_non_empty_iff_L `{!LeibnizEquiv C} X : size X ≠ 0 ↔ X ≠ ∅.
   Proof. unfold_leibniz. apply size_non_empty_iff. Qed.
+
+  Lemma filter_subseteq_impl X (P Q : A → Prop) `{!∀ x, Decision (P x)} `{!∀ x, Decision (Q x)} :
+    (∀ x, P x -> Q x) ->
+    filter P X ⊆ filter Q X.
+  Proof. set_solver. Qed.
 
 End fin_set.

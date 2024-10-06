@@ -49,14 +49,33 @@ Section inv.
     - by apply (prefix_common_ub _ _ vub1); last trans vub2.
   Qed.
 
+  Definition terms_all : gset nat := list_to_set (Z.to_nat <$> (seqZ 0 (2 ^ 64))).
+
+  Lemma elem_of_terms_all (n : nat) :
+    n < 2 ^ 64 ->
+    n ∈ terms_all.
+  Proof.
+    intros Hn.
+    rewrite /terms_all.
+    rewrite elem_of_list_to_set elem_of_list_fmap.
+    exists (Z.of_nat n).
+    split; first lia.
+    rewrite elem_of_seqZ.
+    lia.
+  Qed.
+
+  Definition free_termps nid termc :=
+    filter (λ t, (termc < t)%nat ∧ is_term_of_node nid t) terms_all.
+
   Definition node_inv γ nid terml : iProp Σ :=
     ∃ ds psa termc logn,
-      "Hds" ∷ own_past_nodedecs γ nid ds ∗
-      "Hpsa"   ∷ own_accepted_proposals γ nid psa ∗
-      "Htermc" ∷ own_current_term_half γ nid termc ∗
-      "Hterml" ∷ own_ledger_term_half γ nid terml ∗
-      "Hlogn"  ∷ own_node_ledger_half γ nid logn ∗
-      "Hacpt"  ∷ own_accepted_proposal γ nid terml logn ∗
+      "Hds"      ∷ own_past_nodedecs γ nid ds ∗
+      "Hpsa"     ∷ own_accepted_proposals γ nid psa ∗
+      "Htermc"   ∷ own_current_term_half γ nid termc ∗
+      "Hterml"   ∷ own_ledger_term_half γ nid terml ∗
+      "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
+      "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
+      "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
       "#Hpsalbs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_base_ledger γ t v) ∗
       "#Hpsaubs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_growing_ledger γ t v) ∗
       "%Hfixed"  ∷ ⌜fixed_proposals ds psa⌝ ∗
@@ -67,10 +86,11 @@ Section inv.
   Definition node_inv_without_ds_psa
     γ nid terml (ds : list nodedec) (psa : proposals) : iProp Σ :=
     ∃ termc logn,
-      "Htermc" ∷ own_current_term_half γ nid termc ∗
-      "Hterml" ∷ own_ledger_term_half γ nid terml ∗
-      "Hlogn"  ∷ own_node_ledger_half γ nid logn ∗
-      "Hacpt"  ∷ own_accepted_proposal γ nid terml logn ∗
+      "Htermc"   ∷ own_current_term_half γ nid termc ∗
+      "Hterml"   ∷ own_ledger_term_half γ nid terml ∗
+      "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
+      "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
+      "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
       "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
       "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
       "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝.
@@ -472,13 +492,13 @@ Section inv.
       "Hlog"   ∷ own_log_half γ log ∗
       "Hcpool" ∷ own_cpool_half γ cpool ∗
       (* internal states *)
-      "Hps"   ∷ own_proposals γ ps ∗
-      "Hpsb"  ∷ own_base_proposals γ psb ∗
+      "Hps"  ∷ own_proposals γ ps ∗
+      "Hpsb" ∷ own_base_proposals γ psb ∗
       (* node states *)
       "Hnodes" ∷ ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml) ∗
       (* constraints between internal and external states *)
-      "#Hsafelog"   ∷ safe_ledger γ nids log ∗
-      "#Hsubsume"   ∷ ([∗ map] t ↦ v ∈ ps, proposed_cmds γ v) ∗
+      "#Hsafelog" ∷ safe_ledger γ nids log ∗
+      "#Hsubsume" ∷ ([∗ map] t ↦ v ∈ ps, proposed_cmds γ v) ∗
       (* constraints on internal states *)
       "#Hsafepsb"   ∷ ([∗ map] t ↦ v ∈ psb, safe_base_proposal γ nids t v) ∗
       "%Hvp"        ∷ ⌜valid_proposals ps psb⌝ ∗
