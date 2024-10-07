@@ -74,15 +74,18 @@ Lemma agree_same_epoch smap0 smap1 uid pks0 pks1 map :
 Proof. Admitted.
 
 Lemma agree_interp_epoch smap0 smap1 smap2 uid pks0 pks1 map0 map1 map2 i j k maps :
-  (* client 0's Put. *)
+  (* client 0's Put @ i. *)
   skm_pk_seq smap0 uid pks0 →
-  (* client 1's later Get. *)
+  (* client 1's later Get @ j. *)
   skm_pk_seq smap1 uid pks1 →
-  (* client 0's even later SelfMon. *)
+  (* client 0's even later SelfMon @ k. *)
   skm_pk_seq smap2 uid pks0 →
 
+  (* client 0's Audit @ i. *)
   submap_subset smap0 map0 →
+  (* client 1's Audit @ j. *)
   submap_subset smap1 map1 →
+  (* client 0's Audit @ k. *)
   submap_subset smap2 map2 →
 
   i ≤ j →
@@ -98,3 +101,29 @@ Lemma agree_interp_epoch smap0 smap1 smap2 uid pks0 pks1 map0 map1 map2 i j k ma
 Proof. Admitted.
 
 End invs.
+
+Section usage.
+Context `{!heapGS Σ}.
+
+(* auditor sig pred:
+  - auditor has app-only list of maps
+  - they commit to a set of digs.
+  - digs indexed at specific epoch gives us the signed dig.
+  - additionally, pure [auditor_inv] holds on maps.
+*)
+
+(* client Get fn:
+  - check dig and hist proof from server.
+  - get ghost submap for this epoch, or make if needed.
+  - add hist proof pks to submap.
+  - return [skm_pk_seq].
+*)
+
+(* client Audit fn:
+  - check dig against auditor.
+  - all things in our prior submap had merkle proofs,
+  and therefore are in the auditor map as well.
+  - this allows us to provide [submap_subset].
+*)
+
+End usage.
