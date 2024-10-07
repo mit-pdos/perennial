@@ -49,71 +49,8 @@ Section inv.
     - by apply (prefix_common_ub _ _ vub1); last trans vub2.
   Qed.
 
-  Definition terms_all : gset nat := list_to_set (Z.to_nat <$> (seqZ 0 (2 ^ 64))).
-
-  Lemma elem_of_terms_all (n : nat) :
-    n < 2 ^ 64 ->
-    n ∈ terms_all.
-  Proof.
-    intros Hn.
-    rewrite /terms_all.
-    rewrite elem_of_list_to_set elem_of_list_fmap.
-    exists (Z.of_nat n).
-    split; first lia.
-    rewrite elem_of_seqZ.
-    lia.
-  Qed.
-
   Definition free_termps nid termc :=
     filter (λ t, (termc < t)%nat ∧ is_term_of_node nid t) terms_all.
-
-  Definition node_inv γ nid terml : iProp Σ :=
-    ∃ ds psa termc logn,
-      "Hds"      ∷ own_past_nodedecs γ nid ds ∗
-      "Hpsa"     ∷ own_accepted_proposals γ nid psa ∗
-      "Htermc"   ∷ own_current_term_half γ nid termc ∗
-      "Hterml"   ∷ own_ledger_term_half γ nid terml ∗
-      "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
-      "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
-      "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
-      "#Hpsalbs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_base_ledger γ t v) ∗
-      "#Hpsaubs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_growing_ledger γ t v) ∗
-      "%Hfixed"  ∷ ⌜fixed_proposals ds psa⌝ ∗
-      "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
-      "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
-      "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝.
-
-  Definition node_inv_without_ds_psa
-    γ nid terml (ds : list nodedec) (psa : proposals) : iProp Σ :=
-    ∃ termc logn,
-      "Htermc"   ∷ own_current_term_half γ nid termc ∗
-      "Hterml"   ∷ own_ledger_term_half γ nid terml ∗
-      "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
-      "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
-      "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
-      "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
-      "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
-      "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝.
-
-  Definition node_inv_psa γ nid psa : iProp Σ :=
-    "Hpsa"     ∷ own_accepted_proposals γ nid psa ∗
-    "#Hpsalbs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_base_ledger γ t v) ∗
-    "#Hpsaubs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_growing_ledger γ t v).
-
-  Definition node_inv_ds_psa γ nid ds psa : iProp Σ :=
-    "Hpsa"    ∷ node_inv_psa γ nid psa ∗
-    "Hpastd"  ∷ own_past_nodedecs γ nid ds ∗
-    "%Hfixed" ∷ ⌜fixed_proposals ds psa⌝.
-
-  Lemma own_ledger_term_node_inv_terml_eq γ nid terml terml' :
-    own_ledger_term_half γ nid terml -∗
-    node_inv γ nid terml' -∗
-    ⌜terml' = terml⌝.
-  Proof.
-    iIntros "HtermlX Hnode".
-    iNamed "Hnode".
-    by iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
-  Qed.
 
   Definition safe_ledger_in γ nids t v : iProp Σ :=
     ∃ nid nidsq,
@@ -161,6 +98,60 @@ Section inv.
     iDestruct (safe_ledger_in_weaken with "Hv") as "Hvlb".
     { apply Hprefix. }
     by iFrame "Hvlb".
+  Qed.
+
+  Definition node_inv γ nids nid terml : iProp Σ :=
+    ∃ ds psa termc lsnc logn,
+      "Hds"      ∷ own_past_nodedecs γ nid ds ∗
+      "Hpsa"     ∷ own_accepted_proposals γ nid psa ∗
+      "Htermc"   ∷ own_current_term_half γ nid termc ∗
+      "Hterml"   ∷ own_ledger_term_half γ nid terml ∗
+      "Hlsnc"    ∷ own_committed_lsn_half γ nid lsnc ∗
+      "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
+      "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
+      "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
+      "#Hpsalbs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_base_ledger γ t v) ∗
+      "#Hpsaubs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_growing_ledger γ t v) ∗
+      "#Hsafel"  ∷ safe_ledger_above γ nids terml (take lsnc logn) ∗
+      "%Hfixed"  ∷ ⌜fixed_proposals ds psa⌝ ∗
+      "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
+      "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
+      "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝ ∗
+      "%Hltlog"  ∷ ⌜(lsnc ≤ length logn)%nat⌝.
+
+  Definition node_inv_without_ds_psa
+    γ nids nid terml (ds : list nodedec) (psa : proposals) : iProp Σ :=
+    ∃ termc lsnc logn,
+      "Htermc"   ∷ own_current_term_half γ nid termc ∗
+      "Hterml"   ∷ own_ledger_term_half γ nid terml ∗
+      "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
+      "Hlsnc"    ∷ own_committed_lsn_half γ nid lsnc ∗
+      "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
+      "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
+      "#Hsafel"  ∷ safe_ledger_above γ nids terml (take lsnc logn) ∗
+      "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
+      "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
+      "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝ ∗
+      "%Hltlog"  ∷ ⌜(lsnc ≤ length logn)%nat⌝.
+
+  Definition node_inv_psa γ nid psa : iProp Σ :=
+    "Hpsa"     ∷ own_accepted_proposals γ nid psa ∗
+    "#Hpsalbs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_base_ledger γ t v) ∗
+    "#Hpsaubs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_growing_ledger γ t v).
+
+  Definition node_inv_ds_psa γ nid ds psa : iProp Σ :=
+    "Hpsa"    ∷ node_inv_psa γ nid psa ∗
+    "Hpastd"  ∷ own_past_nodedecs γ nid ds ∗
+    "%Hfixed" ∷ ⌜fixed_proposals ds psa⌝.
+
+  Lemma own_ledger_term_node_inv_terml_eq γ nids nid terml terml' :
+    own_ledger_term_half γ nid terml -∗
+    node_inv γ nids nid terml' -∗
+    ⌜terml' = terml⌝.
+  Proof.
+    iIntros "HtermlX Hnode".
+    iNamed "Hnode".
+    by iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
   Qed.
 
   Definition equal_latest_longest_proposal_nodedec (dssq : gmap u64 (list nodedec)) t v :=
@@ -495,7 +486,7 @@ Section inv.
       "Hps"  ∷ own_proposals γ ps ∗
       "Hpsb" ∷ own_base_proposals γ psb ∗
       (* node states *)
-      "Hnodes" ∷ ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml) ∗
+      "Hnodes" ∷ ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nids nid terml) ∗
       (* constraints between internal and external states *)
       "#Hsafelog" ∷ safe_ledger γ nids log ∗
       "#Hsubsume" ∷ ([∗ map] t ↦ v ∈ ps, proposed_cmds γ v) ∗
@@ -504,6 +495,119 @@ Section inv.
       "%Hvp"        ∷ ⌜valid_proposals ps psb⌝ ∗
       "%Hdomtermlm" ∷ ⌜dom termlm = nids⌝ ∗
       "%Hdompsb"    ∷ ⌜free_terms (dom psb) termlm⌝.
+
+  Lemma paxos_inv_alloc nids :
+    (1 < size nids)%nat -> 
+    ⊢ |==> ∃ γ, paxos_inv γ nids ∗ own_log_half γ [] ∗ own_cpool_half γ ∅.
+  Proof.
+    iIntros (Hmulti).
+    iMod (paxos_res_alloc nids) as (γ) "(Hcs & Hps & Hpsb & Hnodes)".
+    iDestruct "Hcs" as "(Hlog & Hlogcli & Hcpool & Hcpoolcli)".
+    iDestruct "Hnodes" as "(Hlsnps & Hdss & Hpsas & Hpas & Htermcs & Htermls & Hlsncs & Hlogns)".
+    iMod (proposal_insert O [] with "Hps") as "[Hps Hp]"; first done.
+    iDestruct (proposal_witness with "Hp") as "#Hplb".
+    iMod (base_proposal_insert O [] with "Hpsb") as "[Hpsb #Hpbrc]"; first done.
+    (* Establish [safe_ledger_in γ nids O []] for use in global and node-local invariants.  *)
+    iAssert (safe_ledger_in γ nids O [])%I as "#Hsafel".
+    { unshelve epose proof (set_choose_L nids _) as [nid Hnid].
+      { rewrite -fin_sets.size_non_empty_iff_L. lia. }
+      iExists nid, nids.
+      iSplit.
+      { iDestruct (big_sepS_elem_of with "Hpas") as "Hpa"; first apply Hnid.
+        iApply (accepted_proposal_witness with "Hpa").
+      }
+      iSplit.
+      { iApply (big_sepS_mono with "Hpas").
+        iIntros (nidx Hnidx) "Hpa".
+        iDestruct (accepted_proposal_witness with "Hpa") as "#Hpalb".
+        by iFrame "Hpalb".
+      }
+      iPureIntro.
+      split; [by apply cquorum_refl | apply Hnid].
+    }
+    iExists γ.
+    iFrame "Hlog Hlogcli Hcpool Hcpoolcli Hps Hpsb".
+    iExists (gset_to_gmap O nids).
+    iModIntro.
+    iSplit.
+    { (* Partition the prepare LSNs. *)
+      iAssert ([∗ set] nid ∈ nids, ([∗ set] t ∈ free_termps nid O, own_free_prepare_lsn γ t))%I
+        with "[Hlsnps]" as "Hlsnps".
+      { iDestruct (big_sepS_partition _ _ nids (λ t nid, is_term_of_node nid t) with "Hlsnps")
+          as "Hlsnps".
+        { intros t nid1 nid2 Hne. by apply is_term_of_node_partitioned. }
+        iApply (big_sepS_mono with "Hlsnps").
+        iIntros (nid Hnid) "Hlsnps".
+        iApply (big_sepS_subseteq with "Hlsnps").
+        rewrite /free_termps.
+        apply fin_sets.filter_subseteq_impl.
+        by intros ? [_ ?].
+      }
+      iCombine "Hdss Hpsas Hpas Htermcs Htermls Hlsncs Hlogns Hlsnps" as "Hnodes".
+      rewrite -!big_sepS_sep.
+      rewrite -{2}(dom_gset_to_gmap nids ([] : list nodedec)).
+      rewrite big_sepS_big_sepM.
+      iApply (big_sepM_impl_dom_eq with "Hnodes").
+      { by rewrite 2!dom_gset_to_gmap. }
+      iIntros (nid ds terml Hds Hterml).
+      iIntros "!> (Hds & Hpsa & Hpa & Htermc & Hterml & Hlsnc & Hlogn & Hlsnp)".
+      apply lookup_gset_to_gmap_Some in Hterml as [_ <-].
+      iFrame.
+      iSplit.
+      { rewrite big_sepM_singleton. by iFrame "Hpbrc". }
+      iSplit.
+      { rewrite big_sepM_singleton. by iFrame "Hplb". }
+      iSplit.
+      { rewrite take_0. by iFrame "Hsafel". }
+      iPureIntro.
+      split; first done.
+      split; last done.
+      { intros t Ht.
+        rewrite dom_singleton_L not_elem_of_singleton.
+        lia.
+      }
+    }
+    iSplit.
+    { iFrame "Hsafel". }
+    iSplit.
+    { by rewrite big_sepM_singleton /proposed_cmds big_sepL_nil. }
+    iSplit.
+    { rewrite big_sepM_singleton /safe_base_proposal.
+      iExists (gset_to_gmap [] nids).
+      iSplit.
+      { set m := gset_to_gmap _ _.
+        rewrite -(dom_gset_to_gmap nids ([] : list nodedec)).
+        iDestruct (big_sepS_big_sepM _ m with "Hdss") as "Hdss".
+        iApply (big_sepM_mono with "Hdss").
+        iIntros (nid ds Hds) "Hds".
+        apply lookup_gset_to_gmap_Some in Hds as [_ <-].
+        by iApply (past_nodedecs_witness).
+      }
+      iPureIntro.
+      split.
+      { intros nid ds Hds.
+        by apply lookup_gset_to_gmap_Some in Hds as [_ <-].
+      }
+      split.
+      { rewrite /equal_latest_longest_proposal_nodedec /equal_latest_longest_proposal_with.
+        by case_decide.
+      }
+      { rewrite dom_gset_to_gmap.
+        by apply cquorum_refl.
+      }
+    }
+    iPureIntro.
+    split.
+    { by rewrite insert_empty /valid_proposals map_Forall2_singleton. }
+    split.
+    { by rewrite dom_gset_to_gmap. }
+    { rewrite insert_empty dom_singleton_L.
+      split; first apply is_term_of_node_partitioned.
+      intros nid terml Hterml t Hton Hlt.
+      rewrite not_elem_of_singleton.
+      lia.
+    }
+  Qed.
 
   #[global]
   Instance paxos_inv_timeless γ nids :
@@ -719,24 +823,37 @@ Section lemma.
 
   Lemma paxos_inv_impl_nodes_inv γ nids :
     paxos_inv γ nids -∗
-    ∃ termlm, ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml) ∗ ⌜dom termlm = nids⌝.
+    ∃ termlm, ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nids nid terml) ∗ ⌜dom termlm = nids⌝.
   Proof. iNamed 1. by iFrame. Qed.
 
-  Lemma node_inv_extract_ds_psa γ nid terml :
-    node_inv γ nid terml -∗
-    ∃ ds psa, node_inv_without_ds_psa γ nid terml ds psa ∗
+  Lemma paxos_inv_impl_node_inv {γ nids} nid :
+    nid ∈ nids ->
+    paxos_inv γ nids -∗
+    ∃ terml, node_inv γ nids nid terml.
+  Proof.
+    iIntros (Hnids) "Hinv".
+    iDestruct (paxos_inv_impl_nodes_inv with "Hinv") as (termlm) "[Hnodes %Hdomtermlm]".
+    assert (is_Some (termlm !! nid)) as [terml Hterml].
+    { by rewrite -elem_of_dom Hdomtermlm. }
+    iDestruct (big_sepM_lookup with "Hnodes") as "Hnode"; first apply Hterml.
+    iFrame.
+  Qed.
+
+  Lemma node_inv_extract_ds_psa γ nids nid terml :
+    node_inv γ nids nid terml -∗
+    ∃ ds psa, node_inv_without_ds_psa γ nids nid terml ds psa ∗
               node_inv_ds_psa γ nid ds psa.
   Proof. iIntros "Hinv". iNamed "Hinv". iFrame "∗ # %". Qed.
 
-  Lemma nodes_inv_extract_ds_psa γ termlm :
-    ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml) -∗
+  Lemma nodes_inv_extract_ds_psa γ nids termlm :
+    ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nids nid terml) -∗
     ∃ dss bs, ([∗ map] nid ↦ terml; dp ∈ termlm; map_zip dss bs,
-                 node_inv_without_ds_psa γ nid terml dp.1 dp.2) ∗
+                 node_inv_without_ds_psa γ nids nid terml dp.1 dp.2) ∗
               ([∗ map] nid ↦ ds; psa ∈ dss; bs, node_inv_ds_psa γ nid ds psa).
   Proof.
     iIntros "Hinvs".
     set Φ := (λ nid terml dp,
-                node_inv_without_ds_psa γ nid terml dp.1 dp.2 ∗
+                node_inv_without_ds_psa γ nids nid terml dp.1 dp.2 ∗
                 node_inv_ds_psa γ nid dp.1 dp.2)%I.
     iDestruct (big_sepM_sepM2_exists Φ termlm with "[Hinvs]") as (dpm) "Hdpm".
     { iApply (big_sepM_mono with "Hinvs").
@@ -761,11 +878,11 @@ Section lemma.
     by rewrite 2!dom_fmap_L.
   Qed.
 
-  Lemma nodes_inv_merge_ds_psa γ termlm dss bs :
+  Lemma nodes_inv_merge_ds_psa γ nids termlm dss bs :
     ([∗ map] nid ↦ terml; dp ∈ termlm; map_zip dss bs,
-       node_inv_without_ds_psa γ nid terml dp.1 dp.2) -∗
+       node_inv_without_ds_psa γ nids nid terml dp.1 dp.2) -∗
     ([∗ map] nid ↦ ds; psa ∈ dss; bs, node_inv_ds_psa γ nid ds psa) -∗
-    ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml).
+    ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nids nid terml).
   Proof.
     iIntros "Hinv Hdp".
     iDestruct (big_sepM2_alt with "Hdp") as "[%Hdom Hdp]".
@@ -797,8 +914,8 @@ Section lemma.
     by iNamed "Hpd".
   Qed.
 
-  Lemma nodes_inv_impl_nodes_inv_psa γ termlm :
-    ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nid terml) -∗
+  Lemma nodes_inv_impl_nodes_inv_psa γ nids termlm :
+    ([∗ map] nid ↦ terml ∈ termlm, node_inv γ nids nid terml) -∗
     ∃ bs, ([∗ map] nid ↦ psa ∈ bs, node_inv_psa γ nid psa) ∗ ⌜dom bs = dom termlm⌝.
   Proof.
     iIntros "Hnodes".

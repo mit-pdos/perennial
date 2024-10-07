@@ -86,14 +86,14 @@ Section prepare.
     by rewrite Hfree (IH Ht1).
   Qed.
 
-  Lemma node_inv_prepare γ nid termc terml v termc' :
+  Lemma node_inv_prepare γ nids nid termc terml v termc' :
     Z.of_nat termc < Z.of_nat termc' < 2 ^ 64 ->
     own_current_term_half γ nid termc -∗
     own_node_ledger_half γ nid v -∗
-    node_inv γ nid terml ==∗
+    node_inv γ nids nid terml ==∗
     own_current_term_half γ nid termc' ∗
     own_node_ledger_half γ nid v ∗
-    node_inv γ nid terml ∗
+    node_inv γ nids nid terml ∗
     (if decide (is_term_of_node nid termc') then own_free_prepare_lsn γ termc' else True) ∗
     past_nodedecs_latest_before γ nid termc' terml v.
   Proof.
@@ -216,7 +216,7 @@ Section prepare.
     iDestruct (big_sepM_lookup_acc _ _ nid with "Hnodes") as "[Hnode HnodesC]".
     { apply Hterml'. }
     iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
-    iMod (node_inv_prepare _ _ _ _ _ _ Hlt with "Htermc Hv Hnode")
+    iMod (node_inv_prepare _ _ _ _ _ _ _ Hlt with "Htermc Hv Hnode")
       as "(Htermc & Hv & Hnode & Hlsnp & #Hpast)".
     iDestruct ("HnodesC" with "Hnode") as "Hnodes".
     by iFrame "∗ # %".

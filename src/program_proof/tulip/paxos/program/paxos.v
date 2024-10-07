@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Perennial.program_proof.tulip.paxos.invariance Require Import
-  accept advance ascend commit extend prepare.
+  accept advance ascend commit expand extend prepare.
 From Perennial.program_proof.tulip.program.util Require Import next_aligned sort.
 From Perennial.program_proof.tulip.program Require Import quorum.
 From Goose.github_com.mit_pdos.tulip Require Import paxos message.
@@ -260,11 +260,11 @@ Section repr.
 
   Definition is_paxos_nids
     (paxos : loc) (nidme : u64) (nids : gset u64) : iProp Σ :=
-    ∃ (peersP : Slice.t),
-      let peers := nids ∖ {[nidme]} in
+    ∃ (peersP : Slice.t) (peers : list u64),
       "HnidmeP" ∷ readonly (paxos ↦[Paxos :: "nidme"] #nidme) ∗
       "HpeersP" ∷ readonly (paxos ↦[Paxos :: "peers"] (to_val peersP)) ∗
-      "Hpeers"  ∷ readonly (own_slice_small peersP uint64T (DfracOwn 1) (elements peers)).
+      "Hpeers"  ∷ readonly (own_slice_small peersP uint64T (DfracOwn 1) peers) ∗
+      "%Hpeers" ∷ ⌜list_to_set peers = nids ∖ {[nidme]}⌝.
 
   Definition own_paxos_comm (paxos : loc) (addrm : gmap u64 chan) γ : iProp Σ :=
     ∃ (connsP : loc) (conns : gmap u64 (chan * chan)),
@@ -366,6 +366,7 @@ Section repr.
       "Hlog"     ∷ own_slice logP stringT (DfracOwn 1) log ∗
       "Hlogn"    ∷ own_node_ledger_half γ nidme log ∗
       "HlsncP"   ∷ paxos ↦[Paxos :: "lsnc"] #lsnc ∗
+      "Hlsnc"    ∷ own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
       "Hsc"      ∷ own_paxos_sc paxos nids ∗
       "#Hgebase" ∷ prefix_base_ledger γ (uint.nat terml) log ∗
       "#Hpreped" ∷ (if decide (termc = terml)
@@ -446,10 +447,10 @@ Section repr.
 
   Definition is_paxos_with_addrm_nids
     (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) (nids : gset u64) γ : iProp Σ :=
-    ∃ (mu : loc),
-      "#HmuP"    ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
-      "#Hlock"   ∷ is_lock paxosNS #mu (own_paxos paxos nidme nids γ) ∗
-      "#Hlockcm" ∷ is_lock paxosNS #mu (own_paxos_comm paxos addrm γ) ∗
+    ∃ (muP : loc),
+      "#HmuP"    ∷ readonly (paxos ↦[Paxos :: "mu"] #muP) ∗
+      "#Hlock"   ∷ is_lock paxosNS #muP (own_paxos paxos nidme nids γ ∗
+                                         own_paxos_comm paxos addrm γ) ∗
       "#Haddrm"  ∷ is_paxos_addrm paxos addrm nids ∗
       "#Hnids"   ∷ is_paxos_nids paxos nidme nids ∗
       "#Hinv"    ∷ know_paxos_inv γ nids ∗
@@ -1051,11 +1052,15 @@ Section ascend.
     (*@     // Logical action: Ascend(@px.termc, @px.log).                      @*)
     (*@                                                                         @*)
     iInv "Hinv" as "> HinvO" "HinvC".
-    iMod (paxos_inv_ascend with "[] Htermc Hterml Hlogn HinvO")
-      as "(Htermc & Hterml & Hlogn & HinvO & Hps & #Hpsb & #Hacptlb)".
+    set logc := take (uint.nat lsnc) log.
+    set log' := logc ++ entsp.
+    iMod (paxos_inv_ascend log' with "[] Htermc Hterml Hlsnc Hlogn HinvO")
+      as "(Htermc & Hterml & Hlsnc & Hlogn & HinvO & Hps & #Hpsb & #Hacptlb)".
     { apply Hnidme. }
     { apply Hton. }
     { word. }
+    { rewrite length_app length_take. clear -Hlsncub. lia. }
+    { by apply prefix_app_r. }
     { iFrame "Hvotes".
       iPureIntro.
       split; first apply Hdomvts.
@@ -1067,8 +1072,6 @@ Section ascend.
     (*@     // TODO: Write @px.log and @px.terml to disk.                       @*)
     (*@ }                                                                       @*)
     iApply "HΦ".
-    set logc := take (uint.nat lsnc) log.
-    set log' := logc ++ entsp.
     set logc' := take (uint.nat lsnc) log'.
     iAssert (own_paxos_leader px nidme termc termc log' true nids γ)%I
       with "[$HisleaderP $HlsnpeersP $Hlsnpeers $Hps]" as "Hleader".
@@ -1262,10 +1265,17 @@ Section accept.
       (*@         // Logical action: Advance(term, log).                          @*)
       (*@                                                                         @*)
       iInv "Hinv" as "> HinvO" "HinvC".
-      iMod (paxos_inv_advance with "Hpfb Hpfg Htermc Hterml Hlogn HinvO")
-        as "(Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
+      iAssert (⌜prefix logc logleader⌝)%I as %Hprefix.
+      { iDestruct "Hcmted" as (p) "[Hcmted %Hple]".
+        iApply (safe_ledger_prefix_base_ledger_impl_prefix with "Hcmted Hpfb HinvO").
+        clear -Htermlc Htermne Hple. word.
+      }
+      iMod (paxos_inv_advance with "Hpfb Hpfg Htermc Hterml Hlsnc Hlogn HinvO")
+        as "(Htermc & Hterml & Hlsnc & Hlogn & HinvO & #Hacpted')".
       { apply Hnidme. }
       { clear -Htermlc Htermne. word. }
+      { apply Hlsnle. }
+      { apply Hprefix. }
       iMod ("HinvC" with "HinvO") as "_".
 
       (*@         return lsna                                                     @*)
@@ -1278,9 +1288,6 @@ Section accept.
       iAssert (⌜logleader = log'⌝)%I as %Heq.
       { subst log'.
         iDestruct "Hcmted" as (p) "[Hsafep %Hple]".
-        iDestruct (safe_ledger_prefix_base_ledger_impl_prefix with "Hsafep Hpfb HinvO")
-          as %Hprefix.
-        { clear -Htermlc Htermne Hple. word. }
         iPureIntro.
         rewrite -{1}(take_drop (uint.nat lsn) logleader).
         f_equal.
@@ -1681,14 +1688,14 @@ Section commit.
     iModIntro.
 
     (*@     if uint64(len(px.log)) < lsn {                                      @*)
-    (*@         px.lsnc = uint64(len(px.log))                                   @*)
-    (*@         return                                                          @*)
-    (*@     }                                                                   @*)
     (*@                                                                         @*)
     wp_loadField.
     wp_apply wp_slice_len.
     wp_if_destruct.
     { rename Heqb into Hgtlog.
+
+      (*@         px.lsnc = uint64(len(px.log))                                   @*)
+      (*@                                                                         @*)
       wp_loadField.
       wp_apply wp_slice_len.
       wp_storeField.
@@ -1696,12 +1703,28 @@ Section commit.
       { apply prefix_length in Hprefix. exfalso.
         clear -Hgtlog Hprefix Hszlog Hlenlogc. word.
       }
-      iApply "HΦ".
-      iFrame "Hcand Hleader".
       set logc' := take (uint.nat logP.(Slice.sz)) log.
       iDestruct (safe_ledger_above_weaken logc' with "Hsafe") as "Hsafe'".
       { subst logc'. rewrite -Hszlog firstn_all. apply Hprefix. }
+
+      (*@         // Logical action: Expand(len(px.log))                          @*)
+      (*@                                                                         @*)
+      iInv "Hinv" as "> HinvO" "HinvC".
+      iMod (paxos_inv_expand (length log) with "[Hsafe'] Hterml Hlsnc Hlogn HinvO")
+        as "(Hterml & Hlsnc & Hlogn & HinvO)".
+      { apply Hnidme. }
+      { clear -Hlsncub. lia. }
+      { done. }
+      { by rewrite Hszlog. }
+      iMod ("HinvC" with "HinvO") as "_".
+
+      (*@         return                                                          @*)
+      (*@     }                                                                   @*)
+      (*@                                                                         @*)
+      iApply "HΦ".
+      iFrame "Hcand Hleader".
       iFrame "Hsafe'".
+      rewrite -Hszlog.
       iFrame "∗ # %".
       iPureIntro.
       clear -Hszlog. word.
@@ -1722,6 +1745,16 @@ Section commit.
     set logc' := take (uint.nat lsn) log.
     iDestruct (safe_ledger_above_weaken logc' with "Hsafe") as "Hsafe'".
     { subst logc'. by rewrite -Hlenlogc take_length_prefix. }
+
+    (*@     // Logical action: Expand(lsn)                                      @*)
+    (*@                                                                         @*)
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iMod (paxos_inv_expand (uint.nat lsn) with "Hsafe' Hterml Hlsnc Hlogn HinvO")
+      as "(Hterml & Hlsnc & Hlogn & HinvO)".
+    { apply Hnidme. }
+    { clear -Hgtlsnc. lia. }
+    { rewrite Hszlog. clear -Hlelog. lia. }
+    iMod ("HinvC" with "HinvO") as "_".
     iFrame "Hsafe'".
     iFrame "∗ # %".
     iPureIntro.
@@ -1838,7 +1871,7 @@ Section push.
     wp_loadField.
     rewrite uint_nat_W64_0 /=.
     set P := (λ (m : gmap u64 u64), ∃ (lsnsP' : Slice.t) (lsns' : list u64),
-                 "HlsnsP" ∷ lsnsPP ↦[slice.T uint64T] (to_val lsnsP')  ∗
+          "HlsnsP"  ∷ lsnsPP ↦[slice.T uint64T] (to_val lsnsP') ∗
           "Hlsns"   ∷ own_slice lsnsP' uint64T (DfracOwn 1) lsns' ∗
           "%Hlsns'" ∷ ⌜(map_to_list m).*2 ≡ₚ lsns'⌝)%I.
     wp_apply (wp_MapIter_fold _ _ _ P with "Hlsnpeers [$HlsnsPP $Hlsns]").
@@ -2138,7 +2171,7 @@ Section submit.
     iNamed "Hinv".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
-    iIntros "[Hlocked Hpx]".
+    iIntros "[Hlocked [Hpx Hcomm]]".
 
     (*@     if !px.leading() {                                                  @*)
     (*@         px.mu.Unlock()                                                  @*)
@@ -2149,7 +2182,7 @@ Section submit.
     iIntros (isleader) "Hpx".
     destruct isleader; last first.
     { wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
       wp_pures.
       iInv "Hinv" as "> HinvO" "HinvC".
       iMod "HAU" as (cpoolcli) "[Hcpoolcli HAU]".
@@ -2279,7 +2312,7 @@ Section lookup.
     iNamed "Hinv".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
-    iIntros "[Hlocked Hpx]".
+    iIntros "[Hlocked [Hpx Hcomm]]".
 
     (*@     if px.lsnc <= lsn {                                                 @*)
     (*@         px.mu.Unlock()                                                  @*)
@@ -2776,7 +2809,7 @@ Section request_session.
       (*@                                                                         @*)
       wp_loadField.
       wp_apply (wp_Mutex__Lock with "Hlock").
-      iIntros "[Hlocked Hpx]".
+      iIntros "[Hlocked [Hpx Hcomm]]".
       wp_apply (wp_Paxos__lttermc with "Hpx").
       iIntros (outdated) "Hpx".
 
@@ -2791,7 +2824,7 @@ Section request_session.
       (*@                                                                         @*)
       destruct outdated; wp_pures.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
         wp_pures.
         by iApply "HΦ".
       }
@@ -2830,7 +2863,7 @@ Section request_session.
       iIntros (latest) "Hpx".
       destruct latest; wp_pures.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
         { iNamed "Hpx". iFrame. }
         wp_pures.
         by iApply "HΦ".
@@ -2851,7 +2884,7 @@ Section request_session.
       { apply Hcnel. }
       iIntros (entsP ents logpeer) "(Hpx & Hents & #Hpastd & %Hents)".
       wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
       { iNamed "Hpx". iFrame. }
       wp_loadField.
       wp_apply (wp_EncodePaxosRequestVoteResponse with "Hents").
@@ -2910,7 +2943,7 @@ Section request_session.
       (*@                                                                         @*)
       wp_loadField.
       wp_apply (wp_Mutex__Lock with "Hlock").
-      iIntros "[Hlocked Hpx]".
+      iIntros "[Hlocked [Hpx Hcomm]]".
       wp_apply (wp_Paxos__lttermc with "Hpx").
       iIntros (outdated) "Hpx".
 
@@ -2925,7 +2958,7 @@ Section request_session.
       (*@                                                                         @*)
       destruct outdated; wp_pures.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
         wp_pures.
         by iApply "HΦ".
       }
@@ -2973,7 +3006,7 @@ Section request_session.
       iIntros "Hpx".
       wp_loadField.
 
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
       { iNamed "Hpx". iFrame. }
       wp_loadField.
       wp_apply (wp_EncodePaxosAppendEntriesResponse).
@@ -3110,8 +3143,8 @@ Section get_connection.
     (*@ }                                                                       @*)
     iNamed "Hpx".
     wp_loadField.
-    wp_apply (wp_Mutex__Lock with "Hlockcm").
-    iIntros "[Hlocked Hcomm]".
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked [Hpx Hcomm]]".
     iNamed "Hcomm".
     wp_loadField.
     wp_apply (map.wp_MapGet with "Hconns").
@@ -3119,7 +3152,7 @@ Section get_connection.
     wp_pures.
     wp_loadField.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
-    { iFrame "Hlockcm Hlocked". iFrame "∗ # %". }
+    { iFrame "Hlock Hlocked". iFrame "Hpx ∗ # %". }
     wp_pures.
     destruct ok; last first.
     { apply map.map_get_false in Hok as [_ ->].
@@ -3181,8 +3214,8 @@ Section connect.
     wp_pures.
     wp_if_destruct.
     { wp_loadField.
-      wp_apply (wp_Mutex__Lock with "Hlockcm").
-      iIntros "[Hlocked Hcomm]".
+      wp_apply (wp_Mutex__Lock with "Hlock").
+      iIntros "[Hlocked [Hpx Hcomm]]".
       iNamed "Hcomm".
       wp_loadField.
       wp_apply (map.wp_MapInsert with "Hconns").
@@ -3206,7 +3239,7 @@ Section connect.
         by rewrite 2!set_map_empty.
       }
       iModIntro.
-      wp_apply (wp_Mutex__Unlock with "[$Hlockcm $Hlocked $HconnsP Hconns]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $HconnsP $Hpx Hconns]").
       { iModIntro.
         iExists (<[nid := (trml, addrpeer)]> conns).
         rewrite fmap_insert.
@@ -3419,7 +3452,7 @@ Section leader_session.
     iNamed "Hpx".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
-    iIntros "[Hlocked Hpx]".    
+    iIntros "[Hlocked [Hpx Hcomm]]".    
 
     (*@         if !px.leading() {                                              @*)
     (*@             px.mu.Unlock()                                              @*)
@@ -3430,7 +3463,7 @@ Section leader_session.
     iIntros (isleader) "Hpx".
     destruct isleader; wp_pures; last first.
     { wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
       wp_pures.
       by iApply "HΦ".
     }
@@ -3540,7 +3573,7 @@ Section leader_session.
     iIntros "[Hpx _]".
     wp_loadField.
     subst P.
-    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
     { iNamed "Hpx". iFrame. }
     wp_pures.
     by iApply "HΦ".
@@ -3580,7 +3613,7 @@ Section election_session.
     iNamed "Hpx".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
-    iIntros "[Hlocked Hpx]".
+    iIntros "[Hlocked [Hpx Hcomm]]".
     wp_pures.
 
     (*@         if px.leading() {                                               @*)
@@ -3592,7 +3625,7 @@ Section election_session.
     iIntros (isleader) "Hpx".
     wp_if_destruct.
     { wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
       { iNamed "Hpx". iFrame. }
       wp_pures.
       by iApply "HΦ".
@@ -3607,7 +3640,7 @@ Section election_session.
     iIntros (hb) "Hpx".
     wp_if_destruct.
     { wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
       { iNamed "Hpx". iFrame. }
       wp_pures.
       by iApply "HΦ".
@@ -3627,7 +3660,7 @@ Section election_session.
     (*@         px.mu.Unlock()                                                  @*)
     (*@                                                                         @*)
     wp_loadField.
-    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
 
     (*@         for _, nidloop := range(px.peers) {                             @*)
     (*@             nid := nidloop                                              @*)
@@ -3769,7 +3802,7 @@ Section response_sesion.
       iNamed "Hpx".
       wp_loadField.
       wp_apply (wp_Mutex__Lock with "Hlock").
-      iIntros "[Hlocked Hpx]".
+      iIntros "[Hlocked [Hpx Hcomm]]".
 
       (*@         if px.lttermc(resp.Term) {                                      @*)
       (*@             // Skip the outdated message.                               @*)
@@ -3782,7 +3815,7 @@ Section response_sesion.
       iIntros (outdated) "Hpx".
       wp_if_destruct.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
         wp_pures.
         by iApply "HΦ".
       }
@@ -3814,7 +3847,7 @@ Section response_sesion.
         { clear -Hgttermc. word. }
         iIntros "Hpx".
         wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
         { iNamed "Hpx". iFrame. }
         wp_pures.
         by iApply "HΦ".
@@ -3833,7 +3866,7 @@ Section response_sesion.
       iIntros (iscand) "Hpx".
       wp_if_destruct.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
         wp_pures.
         by iApply "HΦ".
       }
@@ -3872,7 +3905,7 @@ Section response_sesion.
       { apply Hnidme. }
       iIntros "Hpx".
       wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
       wp_pures.
       by iApply "HΦ".
     }
@@ -3883,7 +3916,7 @@ Section response_sesion.
       iNamed "Hpx".
       wp_loadField.
       wp_apply (wp_Mutex__Lock with "Hlock").
-      iIntros "[Hlocked Hpx]".
+      iIntros "[Hlocked [Hpx Hcomm]]".
 
       (*@         if px.lttermc(resp.Term) {                                      @*)
       (*@             // Skip the outdated message.                               @*)
@@ -3896,7 +3929,7 @@ Section response_sesion.
       iIntros (outdated) "Hpx".
       wp_if_destruct.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
         wp_pures.
         by iApply "HΦ".
       }
@@ -3928,7 +3961,7 @@ Section response_sesion.
         { clear -Hgttermc. word. }
         iIntros "Hpx".
         wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
         { iNamed "Hpx". iFrame. }
         wp_pures.
         by iApply "HΦ".
@@ -3947,7 +3980,7 @@ Section response_sesion.
       iIntros (isleader) "Hpx".
       wp_if_destruct.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
         wp_pures.
         by iApply "HΦ".
       }
@@ -3964,7 +3997,7 @@ Section response_sesion.
       wp_loadField.
       wp_if_destruct.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
         { iNamed "Hpx". iFrame. }
         wp_pures.
         by iApply "HΦ".
@@ -3986,7 +4019,7 @@ Section response_sesion.
       iIntros (forwarded) "Hpx".
       wp_if_destruct.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
         { iNamed "Hpx". iFrame. }
         wp_pures.
         by iApply "HΦ".
@@ -4003,7 +4036,7 @@ Section response_sesion.
       iIntros (lsnc pushed) "[Hpx #Hpushed]".
       wp_if_destruct.
       { wp_loadField.
-        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+        wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
         { iNamed "Hpx". iFrame. }
         wp_pures.
         by iApply "HΦ".
@@ -4027,7 +4060,7 @@ Section response_sesion.
       }
       iIntros "Hpx".
       wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
       { iNamed "Hpx". iFrame. }
       wp_pures.
       by iApply "HΦ".
@@ -4039,21 +4072,100 @@ End response_sesion.
 Section mk_paxos.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_MkPaxos :
-    {{{ True }}}
-      MkPaxos #()
-    {{{ (px : loc), RET #px; True }}}.
+  Theorem wp_mkPaxos
+    (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64)
+    (logP : Slice.t) (log : list string) (addrmP : loc) (addrm : gmap u64 chan) nids γ :
+    (1 < size nids)%nat ->
+    dom addrm = nids ->
+    nidme ∈ nids ->
+    0 ≤ uint.Z nidme < max_nodes ->
+    know_paxos_inv γ nids -∗
+    know_paxos_network_inv γ nids addrm -∗
+    {{{ own_slice logP stringT (DfracOwn 1) log ∗
+        own_map addrmP (DfracOwn 1) addrm ∗
+        own_current_term_half γ nidme (uint.nat termc) ∗
+        own_ledger_term_half γ nidme (uint.nat terml) ∗
+        own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
+        own_node_ledger_half γ nidme log
+    }}}
+      mkPaxos #nidme #termc #terml #lsnc (to_val logP) #addrmP
+    {{{ (px : loc), RET #px; is_paxos px nidme γ }}}.
   Proof.
-    iIntros (Φ) "_ HΦ".
+    iIntros (Hmulti Hdomaddrm Hinnids Hltmax) "#Hinv #Hinvnet".
+    (* avoid naming collision when opening invariant. *)
+    iIntros (Φ) "!> (Hlog & Haddrm & HtermcX & HtermlX & HlsncX & HlognX) HΦ".
     wp_rec.
 
-    (*@ func MkPaxos() *Paxos {                                                 @*)
-    (*@     conns := make(map[uint64]grove_ffi.Connection)                      @*)
-    (*@     px := &Paxos{                                                       @*)
-    (*@         conns : conns,                                                  @*)
+    (*@ func mkPaxos(nidme, termc, terml, lsnc uint64, log []string, addrm map[uint64]grove_ffi.Address) *Paxos { @*)
+    (*@     sc := uint64(len(addrm))                                            @*)
+    (*@                                                                         @*)
+    wp_pures.
+    wp_apply (wp_MapLen with "Haddrm").
+    iIntros "[%Hszaddrm Haddrm]".
+
+    (*@     var peers = make([]uint64, 0, sc - 1)                               @*)
+    (*@                                                                         @*)
+    wp_apply wp_NewSliceWithCap; first word.
+    iIntros (peersP) "Hpeers".
+    wp_apply wp_ref_to; first done.
+    iIntros (peersPP) "HpeersPP".
+
+    (*@     for nid := range(addrm) {                                           @*)
+    (*@         if nid != nidme {                                               @*)
+    (*@             peers = append(peers, nid)                                  @*)
+    (*@         }                                                               @*)
     (*@     }                                                                   @*)
-    (*@     return px                                                           @*)
-    (*@ }                                                                       @*)
+    (*@                                                                         @*)
+    rewrite uint_nat_W64_0 /=.
+    set P := (λ (m : gmap u64 u64), ∃ (peersP' : Slice.t) (peers' : list u64),
+          "HpeersPP" ∷ peersPP ↦[slice.T uint64T] (to_val peersP') ∗
+          "Hpeers"   ∷ own_slice peersP' uint64T (DfracOwn 1) peers' ∗
+          "%Hpeers'" ∷ ⌜list_to_set peers' = dom m ∖ {[nidme]}⌝)%I.
+    wp_apply (wp_MapIter_fold _ _ _ P with "Haddrm [$HpeersPP $Hpeers]").
+    { rewrite dom_empty_L /=. iPureIntro. set_solver. }
+    { clear Φ.
+      iIntros (m nid addr Φ) "!> (HP & %Hnone & %Haddr) HΦ".
+      iNamed "HP".
+      wp_if_destruct.
+      { wp_load.
+        wp_apply (wp_SliceAppend with "Hpeers").
+        iIntros (peersP'') "Hpeers".
+        wp_store.
+        iApply "HΦ".
+        iFrame.
+        iPureIntro.
+        rewrite dom_insert_L list_to_set_app_L Hpeers' /=.
+        set_solver.
+      }
+      iApply "HΦ".
+      iFrame.
+      iPureIntro.
+      rewrite dom_insert_L Hpeers'.
+      clear -Hpeers'. set_solver.
+    }
+    iIntros "[Haddrm HP]".
+    iNamed "HP". clear P.
+    rewrite Hdomaddrm in Hpeers'.
+
+    (*@     px := &Paxos{                                                       @*)
+    (*@         nidme    : nidme,                                               @*)
+    (*@         peers    : peers,                                               @*)
+    (*@         addrm    : addrm,                                               @*)
+    (*@         sc       : sc,                                                  @*)
+    (*@         mu       : new(sync.Mutex),                                     @*)
+    (*@         hb       : false,                                               @*)
+    (*@         termc    : termc,                                               @*)
+    (*@         terml    : terml,                                               @*)
+    (*@         log      : log,                                                 @*)
+    (*@         lsnc     : lsnc,                                                @*)
+    (*@         iscand   : false,                                               @*)
+    (*@         isleader : false,                                               @*)
+    (*@         conns    : make(map[uint64]grove_ffi.Connection),               @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_load.
+    wp_apply wp_new_free_lock.
+    iIntros (muP) "Hfree".
     wp_apply (map.wp_NewMap).
     iIntros (conns) "Hconns".
     rewrite {1}/zero_val /=.
@@ -4062,8 +4174,121 @@ Section mk_paxos.
     { by auto 20. }
     iIntros (px) "Hpx".
     wp_pures.
+    iDestruct (struct_fields_split with "Hpx") as "Hpx".
+    iNamed "Hpx".
+    (* Make read-only persistent resources. *)
+    iMod (readonly_alloc_1 with "mu") as "#HmuP".
+    iMod (readonly_alloc_1 with "nidme") as "#HnidmeP".
+    iMod (readonly_alloc_1 with "peers") as "#HpeersP".
+    iDestruct (own_slice_to_small with "Hpeers") as "Hpeers".
+    iMod (readonly_alloc_1 with "Hpeers") as "#Hpeers".
+    iMod (readonly_alloc_1 with "addrm") as "#HaddrmP".
+    iMod (own_map_persist with "Haddrm") as "#Haddrm".
+    iAssert (own_paxos_comm px addrm γ)%I with "[$conns Hconns]" as "Hcomm".
+    { iExists ∅.
+      rewrite fmap_empty big_sepM_empty.
+      by iFrame.
+    }
+    set logc := take (uint.nat lsnc) log.
+    iAssert (own_paxos_candidate px nidme termc terml logc false nids γ)%I
+      with "[$termp entsp $respp $iscand]" as "Hcand".
+    { by iExists Slice.nil. }
+    iAssert (own_paxos_leader px nidme termc terml log false nids γ)%I
+      with "[$isleader $lsnpeers]" as "Hleader".
+    iAssert (own_paxos_sc px nids)%I with "[$sc]" as "Hsc".
+    { iPureIntro.
+      split.
+      { rewrite -Hdomaddrm size_dom in Hmulti. clear -Hmulti Hszaddrm. word. }
+      { rewrite -Hdomaddrm size_dom. clear -Hmulti Hszaddrm. word. }
+    }
+    (* Obtain persistent/pure resources that for convenience are also kept in lock inv. *)
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iAssert (prefix_base_ledger γ (uint.nat terml) log)%I as "#Hgebase".
+    { iDestruct (paxos_inv_impl_node_inv nidme with "HinvO") as (terml') "Hnode"; first done.
+      iNamed "Hnode".
+      iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
+      iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+      iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hlogn.
+      by iApply (big_sepM_lookup with "Hpsalbs").
+    }
+    iAssert (if decide (termc = terml)
+             then True
+             else past_nodedecs_latest_before γ nidme (uint.nat termc) (uint.nat terml) log)%I
+      as "#Hpreped".
+    { iDestruct (paxos_inv_impl_node_inv nidme with "HinvO") as (terml') "Hnode"; first done.
+      iNamed "Hnode".
+      iDestruct (current_term_agree with "HtermcX Htermc") as %->.
+      iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
+      iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+      case_decide as Hne; first done.
+      iDestruct (past_nodedecs_witness with "Hds") as "#Hdslb".
+      iFrame "Hdslb %".
+      assert (Hlt : (uint.nat terml < uint.nat termc)%nat) by word.
+      iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hlogn.
+      iPureIntro.
+      split.
+      { rewrite /latest_term_nodedec Hlends.
+        unshelve erewrite (fixed_proposals_latest_term_before_nodedec _ _ _ _ Hfixed).
+        { lia. }
+        apply free_terms_after_latest_term_before.
+        { apply Hlt. }
+        { clear -Hlogn. done. }
+        { apply Hdompsa. }
+      }
+      { unshelve epose proof (list_lookup_lt ds (uint.nat terml) _) as [d Hd].
+        { clear -Hlt Hlends. lia. }
+        specialize (Hfixed _ _ Hd).
+        rewrite Hd.
+        rewrite Hfixed in Hlogn.
+        f_equal.
+        by apply nodedec_to_ledger_Some_inv.
+      }
+    }
+    iAssert (is_accepted_proposal_lb γ nidme (uint.nat terml) log)%I as "#Hacpted".
+    { iDestruct (paxos_inv_impl_node_inv nidme with "HinvO") as (terml') "Hnode"; first done.
+      iNamed "Hnode".
+      iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
+      iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+      iApply (accepted_proposal_witness with "Hacpt").
+    }
+    iAssert (safe_ledger_above γ nids (uint.nat terml) (take (uint.nat lsnc) log))%I
+      as "#Hcmted".
+    { iDestruct (paxos_inv_impl_node_inv nidme with "HinvO") as (terml') "Hnode"; first done.
+      iNamed "Hnode".
+      iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
+      iDestruct (committed_lsn_agree with "HlsncX Hlsnc") as %->.
+      iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+      iApply "Hsafel".
+    }
+    iAssert (⌜uint.Z terml ≤ uint.Z termc⌝)%I as %Htermlc.
+    { iDestruct (paxos_inv_impl_node_inv nidme with "HinvO") as (terml') "Hnode"; first done.
+      iNamed "Hnode".
+      iDestruct (current_term_agree with "HtermcX Htermc") as %->.
+      iDestruct (ledger_term_agree with "HtermlX Hterml") as %->.
+      iPureIntro.
+      clear -Htermlc. word.
+    }
+    iAssert (⌜uint.Z lsnc ≤ length log⌝)%I as %Hlsncub.
+    { iDestruct (paxos_inv_impl_node_inv nidme with "HinvO") as (terml') "Hnode"; first done.
+      iNamed "Hnode".
+      iDestruct (committed_lsn_agree with "HlsncX Hlsnc") as %->.
+      iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+      iPureIntro.
+      clear -Hltlog. word.
+    }
+    iMod ("HinvC" with "HinvO") as "_".
+    iAssert (own_paxos px nidme nids γ ∗ own_paxos_comm px addrm γ)%I
+      with "[-HΦ Hfree]" as "(Hpx & Hcomm)".
+    { iFrame "Hcand Hleader Hsc ∗ # %". }
+    iMod (alloc_lock _ _ _ (own_paxos px nidme nids γ ∗ own_paxos_comm px addrm γ)
+           with "Hfree [$Hpx $Hcomm]") as "#Hlock".
+
+    (*@     return px                                                           @*)
+    (*@ }                                                                       @*)
     iApply "HΦ".
-  Admitted.
+    rewrite /is_paxos /is_paxos_with_addrm_nids.
+    by iFrame "# %".
+  Qed.
 
 End mk_paxos.
 

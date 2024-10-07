@@ -404,6 +404,31 @@ Section res.
 
   End ledger_term.
 
+  Section committed_lsn.
+
+    (** Elements. *)
+
+    Definition own_committed_lsn_half γ (nid : u64) (t : nat) : iProp Σ.
+    Admitted.
+
+    (** Type class instances. *)
+
+    (** Rules. *)
+
+    Lemma committed_lsn_update {γ nid t1} t2 :
+      own_committed_lsn_half γ nid t1 -∗
+      own_committed_lsn_half γ nid t1 ==∗
+      own_committed_lsn_half γ nid t2 ∗ own_committed_lsn_half γ nid t2.
+    Admitted.
+
+    Lemma committed_lsn_agree {γ nid t1 t2} :
+      own_committed_lsn_half γ nid t1 -∗
+      own_committed_lsn_half γ nid t2 -∗
+      ⌜t2 = t1⌝.
+    Admitted.
+
+  End committed_lsn.
+
   Section node_ledger.
 
     (** Elements. *)
@@ -428,5 +453,23 @@ Section res.
     Admitted.
 
   End node_ledger.
+
+  Section alloc.
+
+    Lemma paxos_res_alloc nids :
+      ⊢ |==> ∃ γ, (own_log_half γ [] ∗ own_log_half γ [] ∗ own_cpool_half γ ∅ ∗ own_cpool_half γ ∅) ∗
+                  own_proposals γ ∅ ∗
+                  own_base_proposals γ ∅ ∗
+                  ([∗ set] t ∈ terms_all, own_free_prepare_lsn γ t) ∗
+                  ([∗ set] nid ∈ nids, own_past_nodedecs γ nid []) ∗
+                  ([∗ set] nid ∈ nids, own_accepted_proposals γ nid {[O := []]}) ∗
+                  ([∗ set] nid ∈ nids, own_accepted_proposal γ nid O []) ∗
+                  ([∗ set] nid ∈ nids, own_current_term_half γ nid O) ∗
+                  ([∗ set] nid ∈ nids, own_ledger_term_half γ nid O) ∗
+                  ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
+                  ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []).
+    Admitted.
+
+  End alloc.
 
 End res.

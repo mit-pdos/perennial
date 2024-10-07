@@ -431,6 +431,48 @@ Section bi.
     by iDestruct (big_sepS_subseteq_difference_2 with "HY HXY") as "HX"; first apply Hsubseteq.
   Qed.
 
+  Lemma big_sepS_partition
+    `{!BiAffine PROP} `{Countable A} (Φ : A -> PROP) (X : gset A) `{Countable B} (Y : gset B)
+    (P : A -> B -> Prop) `{∀ x y, Decision (P x y)} :
+    (∀ x y1 y2, y1 ≠ y2 -> P x y1 -> not (P x y2)) ->
+    ([∗ set] x ∈ X, Φ x) -∗
+    ([∗ set] y ∈ Y, [∗ set] x ∈ filter (λ x', P x' y) X, Φ x).
+  Proof.
+    iIntros (Hpart) "HX".
+    iInduction X as [| x X] "IH" using set_ind_L.
+    { rewrite big_sepS_sepS. by iApply big_sepS_empty. }
+    iDestruct (big_sepS_insert with "HX") as "[Hx HX]"; first done.
+    iSpecialize ("IH" with "HX").
+    iAssert ([∗ set] y ∈ filter (λ y', P x y') Y, Φ x)%I with "[Hx]" as "Hx".
+    { destruct (decide (filter (λ y', P x y') Y = ∅)) as [-> | Hne].
+      { by iApply big_sepS_empty. }
+      apply set_choose_L in Hne as [y Hy].
+      (* rewrite elem_of_filter in Hy. *)
+      replace (filter _ Y) with ({[y]} : gset B); last first.
+      { apply set_eq.
+        intros y'.
+        split; intros Hy'.
+        { rewrite elem_of_singleton in Hy'. by subst y'. }
+        apply elem_of_filter in Hy as [HP Hy].
+        apply elem_of_filter in Hy' as [HP' Hy'].
+        destruct (decide (y = y')) as [-> | Hne]; first by rewrite elem_of_singleton.
+        exfalso.
+        by specialize (Hpart _ _ _ Hne HP).
+      }
+      by rewrite big_sepS_singleton.
+    }
+    rewrite big_sepS_filter'.
+    iCombine "IH Hx" as "HX".
+    rewrite -big_sepS_sep.
+    iApply (big_sepS_mono with "HX").
+    iIntros (y Hy) "[HX Hx]".
+    rewrite filter_union_L.
+    case_decide as HP; last first.
+    { rewrite filter_singleton_not_L; [by rewrite union_empty_l_L | apply HP]. }
+    rewrite filter_singleton_L; last apply HP.
+    iApply (big_sepS_insert_2 with "Hx HX").
+  Qed.
+
 End bi.
 
 Section bupd.

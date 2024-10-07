@@ -22,24 +22,29 @@ Qed.
 Section advance.
   Context `{!paxos_ghostG Σ}.
 
-  Lemma node_inv_advance {γ nid termc terml v} v' :
+  Lemma node_inv_advance {γ nids nid termc terml lsnc v} v' :
     (terml < termc)%nat ->
+    (lsnc ≤ length v')%nat ->
+    prefix (take lsnc v) v' ->
     prefix_base_ledger γ termc v' -∗
     prefix_growing_ledger γ termc v' -∗
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid terml -∗
+    own_committed_lsn_half γ nid lsnc -∗
     own_node_ledger_half γ nid v -∗
-    node_inv γ nid terml ==∗
+    node_inv γ nids nid terml ==∗
     own_current_term_half γ nid termc ∗
     own_ledger_term_half γ nid termc ∗
+    own_committed_lsn_half γ nid lsnc ∗
     own_node_ledger_half γ nid v' ∗
-    node_inv γ nid termc ∗
+    node_inv γ nids nid termc ∗
     is_accepted_proposal_lb γ nid termc v'.
   Proof.
-    iIntros (Hlt) "#Hpfb #Hpfg HtermcX HtermlX HlognX Hinv".
+    iIntros (Hlt Hlsncub Hprefix) "#Hpfb #Hpfg HtermcX HtermlX HlsncX HlognX Hinv".
     iNamed "Hinv".
-    (* Agreements on the current term and the node ledger. *)
+    (* Agreements on the current term, committed LSN, and the node ledger. *)
     iDestruct (current_term_agree with "HtermcX Htermc") as %->.
+    iDestruct (committed_lsn_agree with "HlsncX Hlsnc") as %->.
     iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
     (* Update the ledger term to [termc]. *)
     iMod (ledger_term_update termc with "HtermlX Hterml") as "[HtermlX Hterml]".
@@ -49,6 +54,11 @@ Section advance.
     iMod (accepted_proposal_insert termc v' with "Hpsa") as "[Hpsa Hp]".
     { specialize (Hdompsa _ Hlt). by rewrite -not_elem_of_dom. }
     iDestruct (accepted_proposal_witness with "Hp") as "#Hplb".
+    (* Re-establish [safe_ledger] w.r.t. [v']. *)
+    rewrite -take_idemp (take_prefix_le (take lsnc v) v' _ _ Hprefix); last first.
+    { rewrite length_take. clear -Hltlog. lia. }
+    iDestruct (safe_ledger_above_mono _ termc with "Hsafel") as "Hsafel'".
+    { apply Htermlc. }
     iClear "Hacpt".
     iFrame "∗ # %".
     iModIntro.
@@ -81,22 +91,26 @@ Section advance.
     done.
   Qed.
 
-  Lemma paxos_inv_advance γ nids nid termc terml v v' :
+  Lemma paxos_inv_advance γ nids nid termc terml lsnc v v' :
     nid ∈ nids ->
     (terml < termc)%nat ->
+    (lsnc ≤ length v')%nat ->
+    prefix (take lsnc v) v' ->
     prefix_base_ledger γ termc v' -∗
     prefix_growing_ledger γ termc v' -∗
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid terml -∗
+    own_committed_lsn_half γ nid lsnc -∗
     own_node_ledger_half γ nid v -∗
     paxos_inv γ nids ==∗
     own_current_term_half γ nid termc ∗
     own_ledger_term_half γ nid termc ∗
+    own_committed_lsn_half γ nid lsnc ∗
     own_node_ledger_half γ nid v' ∗
     paxos_inv γ nids ∗
     is_accepted_proposal_lb γ nid termc v'.
   Proof.
-    iIntros (Hnid Hlt) "#Hpfb #Hpfg Htermc Hterml Hlogn Hinv".
+    iIntros (Hnid Hlt Hlsncub Hprefix) "#Hpfb #Hpfg Htermc Hterml Hlsnc Hlogn Hinv".
     iNamed "Hinv".
     pose proof Hnid as Hterml.
     rewrite -Hdomtermlm elem_of_dom in Hterml.
@@ -104,9 +118,11 @@ Section advance.
     iDestruct (big_sepM_delete _ _ nid with "Hnodes") as "[Hnode Hnodes]".
     { apply Hterml. }
     iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
-    iMod (node_inv_advance v' with "Hpfb Hpfg Htermc Hterml Hlogn Hnode")
-      as "(Htermc & Hterml & Hlogn & Hnode & #Hacptlb)".
+    iMod (node_inv_advance v' with "Hpfb Hpfg Htermc Hterml Hlsnc Hlogn Hnode")
+      as "(Htermc & Hterml & Hlsnc & Hlogn & Hnode & #Hacptlb)".
     { apply Hlt. }
+    { apply Hlsncub. }
+    { apply Hprefix. }
     iDestruct (big_sepM_insert_2 with "Hnode Hnodes") as "Hnodes".
     rewrite insert_delete_insert.
     iFrame "∗ # %".

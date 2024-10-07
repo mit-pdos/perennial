@@ -353,6 +353,21 @@ Qed.
 Definition free_terms ts tm :=
   free_terms_with_partf is_term_of_node ts tm.
 
+Definition terms_all : gset nat := list_to_set (Z.to_nat <$> (seqZ 0 (2 ^ 64))).
+
+Lemma elem_of_terms_all (n : nat) :
+  n < 2 ^ 64 ->
+  n ∈ terms_all.
+Proof.
+  intros Hn.
+  rewrite /terms_all.
+  rewrite elem_of_list_to_set elem_of_list_fmap.
+  exists (Z.of_nat n).
+  split; first lia.
+  rewrite elem_of_seqZ.
+  lia.
+Qed.
+
 Class paxos_ghostG (Σ : gFunctors).
 
 Record paxos_names := {}.

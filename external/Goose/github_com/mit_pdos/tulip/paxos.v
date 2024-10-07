@@ -480,10 +480,40 @@ Definition Paxos__ConnectAll: val :=
       (Paxos__Connect "px" "nid");;
     #().
 
-Definition MkPaxos: val :=
-  rec: "MkPaxos" <> :=
-    let: "conns" := NewMap uint64T grove_ffi.Connection #() in
+Definition mkPaxos: val :=
+  rec: "mkPaxos" "nidme" "termc" "terml" "lsnc" "log" "addrm" :=
+    let: "sc" := MapLen "addrm" in
+    let: "peers" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 ("sc" - #1)) in
+    MapIter "addrm" (λ: "nid" <>,
+      (if: "nid" ≠ "nidme"
+      then "peers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "peers") "nid")
+      else #()));;
     let: "px" := struct.new Paxos [
-      "conns" ::= "conns"
+      "nidme" ::= "nidme";
+      "peers" ::= ![slice.T uint64T] "peers";
+      "addrm" ::= "addrm";
+      "sc" ::= "sc";
+      "mu" ::= newMutex #();
+      "hb" ::= #false;
+      "termc" ::= "termc";
+      "terml" ::= "terml";
+      "log" ::= "log";
+      "lsnc" ::= "lsnc";
+      "iscand" ::= #false;
+      "isleader" ::= #false;
+      "conns" ::= NewMap uint64T grove_ffi.Connection #()
     ] in
+    "px".
+
+Definition Start: val :=
+  rec: "Start" "nidme" "addrm" :=
+    control.impl.Assert (#1 < (MapLen "addrm"));;
+    let: (<>, "ok") := MapGet "addrm" "nidme" in
+    control.impl.Assert "ok";;
+    control.impl.Assert ("nidme" < MAX_NODES);;
+    let: "termc" := ref (zero_val uint64T) in
+    let: "terml" := ref (zero_val uint64T) in
+    let: "lsnc" := ref (zero_val uint64T) in
+    let: "log" := NewSlice stringT #0 in
+    let: "px" := mkPaxos "nidme" (![uint64T] "termc") (![uint64T] "terml") (![uint64T] "lsnc") "log" "addrm" in
     "px".

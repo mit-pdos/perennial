@@ -3,16 +3,16 @@ From Perennial.program_proof.tulip.paxos Require Import prelude.
 Section accept.
   Context `{!paxos_ghostG Σ}.
 
-  Lemma node_inv_accept {γ nid termc v} v' :
+  Lemma node_inv_accept {γ nids nid termc v} v' :
     (length v ≤ length v')%nat ->
     prefix_base_ledger γ termc v' -∗
     prefix_growing_ledger γ termc v' -∗
     own_current_term_half γ nid termc -∗
     own_node_ledger_half γ nid v -∗
-    node_inv γ nid termc ==∗
+    node_inv γ nids nid termc ==∗
     own_current_term_half γ nid termc ∗
     own_node_ledger_half γ nid v' ∗
-    node_inv γ nid termc ∗
+    node_inv γ nids nid termc ∗
     is_accepted_proposal_lb γ nid termc v'.
   Proof.
     iIntros (Hlen) "#Hpfb #Hpfg HtermcX HlognX Hinv".
@@ -39,6 +39,8 @@ Section accept.
     iMod (accepted_proposal_update v' with "Hacpt Hpsa") as "[Hacpt Hpsa]".
     { apply Hprefix. }
     iDestruct (accepted_proposal_witness with "Hacpt") as "#Hacptlb'".
+    (* Re-establish [safe_ledger] w.r.t. [v']. *)
+    rewrite (take_prefix_le _ _ _ Hltlog Hprefix).
     iFrame "∗ # %".
     iModIntro.
     iSplit.
@@ -58,9 +60,13 @@ Section accept.
       apply lookup_lt_Some in Hd.
       lia.
     }
+    split.
     { (* Re-establish [free_terms_after]. *)
       rewrite dom_insert_L.
       by replace (_ ∪ _) with (dom psa) by set_solver.
+    }
+    { (* Re-establish [lsnc ≤ length v']. *)
+      clear -Hlen Hltlog. lia.
     }
   Qed.
 

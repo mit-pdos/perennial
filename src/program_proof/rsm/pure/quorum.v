@@ -95,4 +95,13 @@ Section lemma.
     set_solver.
   Qed.
 
+  Lemma cquorum_refl c :
+    (1 < size c)%nat ->
+    cquorum c c.
+  Proof.
+    split; first done.
+    rewrite /cquorum_size.
+    lia.
+  Qed.
+
 End lemma.
