@@ -303,10 +303,11 @@ def main():
 
     run_goose(
         pav_dir,
+        "./advrpc",
         "./cryptoutil",
+        "./kt",
         "./marshalutil",
         "./merkle",
-        "./kt",
     )
 
     run_goose(

@@ -31,4 +31,28 @@ Definition PublicKey__Verify: val :=
     Panic "ffi";;
     #().
 
+Definition VrfPrivateKey: ty. Admitted.
+
+Definition VrfPublicKey: ty. Admitted.
+
+Definition VrfGenerateKey: val :=
+  rec: "VrfGenerateKey" <> :=
+    Panic "ffi";;
+    #().
+
+Definition VrfPrivateKey__Hash: val :=
+  rec: "VrfPrivateKey__Hash" "data" :=
+    Panic "ffi";;
+    #().
+
+Definition VrfPublicKey__Verify: val :=
+  rec: "VrfPublicKey__Verify" "data" "hash" "proof" :=
+    Panic "ffi";;
+    #().
+
+Definition RandBytes: val :=
+  rec: "RandBytes" "n" :=
+    Panic "ffi";;
+    #().
+
 End code.

@@ -1,11 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import chain misc cryptoffi merkle evidence invs rpc.
-From iris.unstable.base_logic Require Import mono_list.
 From stdpp Require Import gmap.
-From Perennial.base_logic Require Import ghost_map.
-From RecordUpdate Require Import RecordSet.
 
 Section invs.
 
@@ -102,9 +97,6 @@ Proof. Admitted.
 
 End invs.
 
-Section usage.
-Context `{!heapGS Σ}.
-
 (* auditor sig pred:
   - auditor has app-only list of maps
   - they commit to a set of digs.
@@ -125,5 +117,3 @@ Context `{!heapGS Σ}.
   and therefore are in the auditor map as well.
   - this allows us to provide [submap_subset].
 *)
-
-End usage.

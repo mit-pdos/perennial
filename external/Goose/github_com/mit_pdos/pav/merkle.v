@@ -207,10 +207,10 @@ Definition getChildHashes: val :=
     let: "pathIdx" := ref_to uint64T #0 in
     (for: (λ: <>, (![uint64T] "pathIdx") < ((slice.len "nodePath") - #1)); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") + #1)) := λ: <>,
       let: "children" := struct.loadF node "children" (SliceGet ptrT "nodePath" (![uint64T] "pathIdx")) in
-      let: "pos" := SliceGet byteT "id" (![uint64T] "pathIdx") in
+      let: "pos" := to_u64 (SliceGet byteT "id" (![uint64T] "pathIdx")) in
       let: "proofChildren" := ref (zero_val (slice.T (slice.T byteT))) in
       appendNode2D "proofChildren" (SliceTake "children" "pos");;
-      appendNode2D "proofChildren" (SliceSkip ptrT "children" ("pos" + #(U8 1)));;
+      appendNode2D "proofChildren" (SliceSkip ptrT "children" ("pos" + #1));;
       SliceSet (slice.T (slice.T byteT)) "childHashes" (![uint64T] "pathIdx") (![slice.T (slice.T byteT)] "proofChildren");;
       Continue);;
     "childHashes".
