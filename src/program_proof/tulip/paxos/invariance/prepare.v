@@ -68,24 +68,6 @@ Section prepare.
     by replace (_ - _)%nat with O by lia.
   Qed.
 
-  Lemma free_terms_after_latest_term_before psa t1 t2 :
-    (t1 < t2)%nat ->
-    is_Some (psa !! t1) ->
-    free_terms_after t1 (dom psa) ->
-    latest_term_before t2 psa = t1.
-  Proof.
-    intros Hlt Hsome Hfree.
-    induction t2 as [| t IH]; first lia.
-    rewrite /latest_term_before /=.
-    destruct (decide (t = t1)) as [-> | Hne].
-    { destruct Hsome as [v Hv]. by rewrite Hv. }
-    assert (Ht1 : (t1 < t)%nat) by lia.
-    rewrite /latest_term_before in IH.
-    specialize (Hfree _ Ht1).
-    rewrite not_elem_of_dom in Hfree.
-    by rewrite Hfree (IH Ht1).
-  Qed.
-
   Lemma node_inv_prepare γ nids nid termc terml v termc' :
     Z.of_nat termc < Z.of_nat termc' < 2 ^ 64 ->
     own_current_term_half γ nid termc -∗
