@@ -496,119 +496,6 @@ Section inv.
       "%Hdomtermlm" ∷ ⌜dom termlm = nids⌝ ∗
       "%Hdompsb"    ∷ ⌜free_terms (dom psb) termlm⌝.
 
-  Lemma paxos_inv_alloc nids :
-    (1 < size nids)%nat -> 
-    ⊢ |==> ∃ γ, paxos_inv γ nids ∗ own_log_half γ [] ∗ own_cpool_half γ ∅.
-  Proof.
-    iIntros (Hmulti).
-    iMod (paxos_res_alloc nids) as (γ) "(Hcs & Hps & Hpsb & Hnodes)".
-    iDestruct "Hcs" as "(Hlog & Hlogcli & Hcpool & Hcpoolcli)".
-    iDestruct "Hnodes" as "(Hlsnps & Hdss & Hpsas & Hpas & Htermcs & Htermls & Hlsncs & Hlogns)".
-    iMod (proposal_insert O [] with "Hps") as "[Hps Hp]"; first done.
-    iDestruct (proposal_witness with "Hp") as "#Hplb".
-    iMod (base_proposal_insert O [] with "Hpsb") as "[Hpsb #Hpbrc]"; first done.
-    (* Establish [safe_ledger_in γ nids O []] for use in global and node-local invariants.  *)
-    iAssert (safe_ledger_in γ nids O [])%I as "#Hsafel".
-    { unshelve epose proof (set_choose_L nids _) as [nid Hnid].
-      { rewrite -fin_sets.size_non_empty_iff_L. lia. }
-      iExists nid, nids.
-      iSplit.
-      { iDestruct (big_sepS_elem_of with "Hpas") as "Hpa"; first apply Hnid.
-        iApply (accepted_proposal_witness with "Hpa").
-      }
-      iSplit.
-      { iApply (big_sepS_mono with "Hpas").
-        iIntros (nidx Hnidx) "Hpa".
-        iDestruct (accepted_proposal_witness with "Hpa") as "#Hpalb".
-        by iFrame "Hpalb".
-      }
-      iPureIntro.
-      split; [by apply cquorum_refl | apply Hnid].
-    }
-    iExists γ.
-    iFrame "Hlog Hlogcli Hcpool Hcpoolcli Hps Hpsb".
-    iExists (gset_to_gmap O nids).
-    iModIntro.
-    iSplit.
-    { (* Partition the prepare LSNs. *)
-      iAssert ([∗ set] nid ∈ nids, ([∗ set] t ∈ free_termps nid O, own_free_prepare_lsn γ t))%I
-        with "[Hlsnps]" as "Hlsnps".
-      { iDestruct (big_sepS_partition _ _ nids (λ t nid, is_term_of_node nid t) with "Hlsnps")
-          as "Hlsnps".
-        { intros t nid1 nid2 Hne. by apply is_term_of_node_partitioned. }
-        iApply (big_sepS_mono with "Hlsnps").
-        iIntros (nid Hnid) "Hlsnps".
-        iApply (big_sepS_subseteq with "Hlsnps").
-        rewrite /free_termps.
-        apply fin_sets.filter_subseteq_impl.
-        by intros ? [_ ?].
-      }
-      iCombine "Hdss Hpsas Hpas Htermcs Htermls Hlsncs Hlogns Hlsnps" as "Hnodes".
-      rewrite -!big_sepS_sep.
-      rewrite -{2}(dom_gset_to_gmap nids ([] : list nodedec)).
-      rewrite big_sepS_big_sepM.
-      iApply (big_sepM_impl_dom_eq with "Hnodes").
-      { by rewrite 2!dom_gset_to_gmap. }
-      iIntros (nid ds terml Hds Hterml).
-      iIntros "!> (Hds & Hpsa & Hpa & Htermc & Hterml & Hlsnc & Hlogn & Hlsnp)".
-      apply lookup_gset_to_gmap_Some in Hterml as [_ <-].
-      iFrame.
-      iSplit.
-      { rewrite big_sepM_singleton. by iFrame "Hpbrc". }
-      iSplit.
-      { rewrite big_sepM_singleton. by iFrame "Hplb". }
-      iSplit.
-      { rewrite take_0. by iFrame "Hsafel". }
-      iPureIntro.
-      split; first done.
-      split; last done.
-      { intros t Ht.
-        rewrite dom_singleton_L not_elem_of_singleton.
-        lia.
-      }
-    }
-    iSplit.
-    { iFrame "Hsafel". }
-    iSplit.
-    { by rewrite big_sepM_singleton /proposed_cmds big_sepL_nil. }
-    iSplit.
-    { rewrite big_sepM_singleton /safe_base_proposal.
-      iExists (gset_to_gmap [] nids).
-      iSplit.
-      { set m := gset_to_gmap _ _.
-        rewrite -(dom_gset_to_gmap nids ([] : list nodedec)).
-        iDestruct (big_sepS_big_sepM _ m with "Hdss") as "Hdss".
-        iApply (big_sepM_mono with "Hdss").
-        iIntros (nid ds Hds) "Hds".
-        apply lookup_gset_to_gmap_Some in Hds as [_ <-].
-        by iApply (past_nodedecs_witness).
-      }
-      iPureIntro.
-      split.
-      { intros nid ds Hds.
-        by apply lookup_gset_to_gmap_Some in Hds as [_ <-].
-      }
-      split.
-      { rewrite /equal_latest_longest_proposal_nodedec /equal_latest_longest_proposal_with.
-        by case_decide.
-      }
-      { rewrite dom_gset_to_gmap.
-        by apply cquorum_refl.
-      }
-    }
-    iPureIntro.
-    split.
-    { by rewrite insert_empty /valid_proposals map_Forall2_singleton. }
-    split.
-    { by rewrite dom_gset_to_gmap. }
-    { rewrite insert_empty dom_singleton_L.
-      split; first apply is_term_of_node_partitioned.
-      intros nid terml Hterml t Hton Hlt.
-      rewrite not_elem_of_singleton.
-      lia.
-    }
-  Qed.
-
   #[global]
   Instance paxos_inv_timeless γ nids :
     Timeless (paxos_inv γ nids).
@@ -618,6 +505,105 @@ Section inv.
     inv paxosNS (paxos_inv γ nids).
 
 End inv.
+
+Section inv_network.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Definition paxosnetNS := nroot .@ "paxosnet".
+
+  Definition safe_request_vote_req γ (term lsnlc : u64) : iProp Σ :=
+    is_prepare_lsn γ (uint.nat term) (uint.nat lsnlc).
+
+  Definition safe_append_entries_req
+    γ nids (term lsnlc lsne : u64) (ents : list string) : iProp Σ :=
+    ∃ (logleader logcmt : list string),
+      "#Hpfb"       ∷ prefix_base_ledger γ (uint.nat term) logleader ∗
+      "#Hpfg"       ∷ prefix_growing_ledger γ (uint.nat term) logleader ∗
+      "#Hlogcmt"    ∷ safe_ledger_above γ nids (uint.nat term) logcmt ∗
+      "%Hlogleader" ∷ ⌜(uint.nat lsne ≤ length logleader)%nat⌝ ∗
+      "%Hents"      ∷ ⌜drop (uint.nat lsne) logleader = ents⌝ ∗
+      "%Hlogcmt"    ∷ ⌜length logcmt = uint.nat lsnlc⌝.
+
+  Definition safe_pxreq γ nids req : iProp Σ :=
+    match req with
+    | RequestVoteReq term lsnlc => safe_request_vote_req γ term lsnlc
+    | AppendEntriesReq term lsnlc lsne ents =>
+        safe_append_entries_req γ nids term lsnlc lsne ents
+    end.
+
+  #[global]
+  Instance safe_pxreq_persistent γ nids req :
+    Persistent (safe_pxreq γ nids req).
+  Proof. destruct req; apply _. Defined.
+
+  Definition safe_request_vote_resp
+    γ (nids : gset u64) (nid term terme : u64) (ents : list string) : iProp Σ :=
+    ∃ (logpeer : list string) (lsne : u64),
+      "#Hpromise" ∷ past_nodedecs_latest_before γ nid (uint.nat term) (uint.nat terme) logpeer ∗
+      "#Hlsne"    ∷ is_prepare_lsn γ (uint.nat term) (uint.nat lsne) ∗
+      "%Hents"    ∷ ⌜drop (uint.nat lsne) logpeer = ents⌝ ∗
+      "%Hinnids"  ∷ ⌜nid ∈ nids⌝.
+
+  Definition safe_append_entries_resp
+    γ (nids : gset u64) (nid term lsneq : u64) : iProp Σ :=
+    ∃ (logacpt : list string),
+      "#Haoc"     ∷ (is_accepted_proposal_lb γ nid (uint.nat term) logacpt ∨
+                     safe_ledger_above γ nids (uint.nat term) logacpt) ∗
+      "%Hlogacpt" ∷ ⌜length logacpt = uint.nat lsneq⌝ ∗
+      "%Hinnids"  ∷ ⌜nid ∈ nids⌝.
+
+  Definition safe_pxresp γ nids resp : iProp Σ :=
+    match resp with
+    | RequestVoteResp nid term terme ents =>
+        safe_request_vote_resp γ nids nid term terme ents
+    | AppendEntriesResp nid term lsneq =>
+        safe_append_entries_resp γ nids nid term lsneq
+    end.
+
+  #[global]
+  Instance safe_pxresp_persistent γ nids resp :
+    Persistent (safe_pxresp γ nids resp).
+  Proof. destruct resp; apply _. Defined.
+
+  Definition listen_inv
+    (addr : chan) (ms : gset message) nids γ : iProp Σ :=
+    ∃ (reqs : gset pxreq),
+      "Hms"      ∷ addr c↦ ms ∗
+      (* senders are always reachable *)
+      "#Hsender" ∷ ([∗ set] trml ∈ set_map msg_sender ms, is_terminal γ trml) ∗
+      "#Hreqs"   ∷ ([∗ set] req ∈ reqs, safe_pxreq γ nids req) ∗
+      "%Henc"    ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_pxreq reqs⌝.
+
+  Definition connect_inv (trml : chan) (ms : gset message) nids γ : iProp Σ :=
+    ∃ (resps : gset pxresp),
+      "Hms"     ∷ trml c↦ ms ∗
+      "#Hresps" ∷ ([∗ set] resp ∈ resps, safe_pxresp γ nids resp) ∗
+      "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_pxresp resps⌝.
+
+  Definition paxos_network_inv
+    (γ : paxos_names) (nids : gset u64) (addrm : gmap u64 chan) : iProp Σ :=
+    ∃ (listens : gmap chan (gset message)) (connects : gmap chan (gset message)),
+      "Hlistens"   ∷ ([∗ map] a ↦ ms ∈ listens, listen_inv a ms nids γ) ∗
+      "Hconnects"  ∷ ([∗ map] t ↦ ms ∈ connects, connect_inv t ms nids γ) ∗
+      "Hterminals" ∷ own_terminals γ (dom connects) ∗
+      "%Himgaddrm" ∷ ⌜map_img addrm = dom listens⌝.
+
+  #[global]
+  Instance paxos_network_inv_timeless γ nids addrm :
+    Timeless (paxos_network_inv γ nids addrm).
+  Admitted.
+
+  Definition know_paxos_network_inv γ nids addrm : iProp Σ :=
+    inv paxosnetNS (paxos_network_inv γ nids addrm).
+
+  (* Lemma paxos_network_inv_alloc nids addrm : *)
+  (*   ([∗ map] addr ∈ addrm, addr c↦ ∅) ==∗ *)
+  (*   paxos_network_inv γ nids addrm. *)
+  (* Proof. *)
+  (*   iIntros "Hchans". *)
+  (* Qed. *)
+
+End inv_network.
 
 Section lemma.
   Context `{!paxos_ghostG Σ}.
@@ -1138,3 +1124,141 @@ Section lemma.
   Qed.
 
 End lemma.
+
+Section alloc.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Lemma paxos_inv_alloc nids addrm :
+    (1 < size nids)%nat ->
+    dom addrm = nids ->
+    ([∗ set] addr ∈ map_img addrm, addr c↦ ∅) ==∗
+    ∃ γ, paxos_inv γ nids ∗ paxos_network_inv γ nids addrm ∗
+         own_log_half γ [] ∗ own_cpool_half γ ∅.
+  Proof.
+    iIntros (Hmulti Hnids) "Hchans".
+    iMod (paxos_res_alloc nids) as (γ) "(Hcs & Hps & Hpsb & Hnodesnetwork)".
+    iDestruct "Hcs" as "(Hlog & Hlogcli & Hcpool & Hcpoolcli)".
+    iDestruct "Hnodesnetwork" as
+      "(Hlsnps & Hdss & Hpsas & Hpas & Htermcs & Htermls & Hlsncs & Hlogns & Htrmls)".
+    iMod (proposal_insert O [] with "Hps") as "[Hps Hp]"; first done.
+    iDestruct (proposal_witness with "Hp") as "#Hplb".
+    iMod (base_proposal_insert O [] with "Hpsb") as "[Hpsb #Hpbrc]"; first done.
+    (* Establish [safe_ledger_in γ nids O []] for use in global and node-local invariants.  *)
+    iAssert (safe_ledger_in γ nids O [])%I as "#Hsafel".
+    { unshelve epose proof (set_choose_L nids _) as [nid Hnid].
+      { rewrite -fin_sets.size_non_empty_iff_L. lia. }
+      iExists nid, nids.
+      iSplit.
+      { iDestruct (big_sepS_elem_of with "Hpas") as "Hpa"; first apply Hnid.
+        iApply (accepted_proposal_witness with "Hpa").
+      }
+      iSplit.
+      { iApply (big_sepS_mono with "Hpas").
+        iIntros (nidx Hnidx) "Hpa".
+        iDestruct (accepted_proposal_witness with "Hpa") as "#Hpalb".
+        by iFrame "Hpalb".
+      }
+      iPureIntro.
+      split; [by apply cquorum_refl | apply Hnid].
+    }
+    iExists γ.
+    iFrame "Hlog Hlogcli Hcpool Hcpoolcli Hps Hpsb".
+    iSplitR "Htrmls Hchans"; last first.
+    { (* Establish network invariant. *)
+      iModIntro.
+      iExists (gset_to_gmap ∅ (map_img addrm)), ∅.
+      rewrite dom_empty_L.
+      iFrame "Htrmls".
+      iSplitL "Hchans".
+      { iApply (big_sepS_sepM_impl with "Hchans"); first by rewrite dom_gset_to_gmap.
+        iIntros (addr ms Hms) "!> Hchan".
+        apply lookup_gset_to_gmap_Some in Hms as [_ <-].
+        iExists ∅.
+        iFrame "Hchan".
+        by rewrite 3!set_map_empty 2!big_sepS_empty.
+      }
+      by rewrite big_sepM_empty dom_gset_to_gmap.
+    }
+    iModIntro.
+    iExists (gset_to_gmap O nids).
+    iSplit.
+    { (* Partition the prepare LSNs. *)
+      iAssert ([∗ set] nid ∈ nids, ([∗ set] t ∈ free_termps nid O, own_free_prepare_lsn γ t))%I
+        with "[Hlsnps]" as "Hlsnps".
+      { iDestruct (big_sepS_partition _ _ nids (λ t nid, is_term_of_node nid t) with "Hlsnps")
+          as "Hlsnps".
+        { intros t nid1 nid2 Hne. by apply is_term_of_node_partitioned. }
+        iApply (big_sepS_mono with "Hlsnps").
+        iIntros (nid Hnid) "Hlsnps".
+        iApply (big_sepS_subseteq with "Hlsnps").
+        rewrite /free_termps.
+        apply fin_sets.filter_subseteq_impl.
+        by intros ? [_ ?].
+      }
+      iCombine "Hdss Hpsas Hpas Htermcs Htermls Hlsncs Hlogns Hlsnps" as "Hnodes".
+      rewrite -!big_sepS_sep.
+      rewrite -{2}(dom_gset_to_gmap nids ([] : list nodedec)).
+      rewrite big_sepS_big_sepM.
+      iApply (big_sepM_impl_dom_eq with "Hnodes").
+      { by rewrite 2!dom_gset_to_gmap. }
+      iIntros (nid ds terml Hds Hterml).
+      iIntros "!> (Hds & Hpsa & Hpa & Htermc & Hterml & Hlsnc & Hlogn & Hlsnp)".
+      apply lookup_gset_to_gmap_Some in Hterml as [_ <-].
+      iFrame.
+      iSplit.
+      { rewrite big_sepM_singleton. by iFrame "Hpbrc". }
+      iSplit.
+      { rewrite big_sepM_singleton. by iFrame "Hplb". }
+      iSplit.
+      { rewrite take_0. by iFrame "Hsafel". }
+      iPureIntro.
+      split; first done.
+      split; last done.
+      { intros t Ht.
+        rewrite dom_singleton_L not_elem_of_singleton.
+        lia.
+      }
+    }
+    iSplit.
+    { iFrame "Hsafel". }
+    iSplit.
+    { by rewrite big_sepM_singleton /proposed_cmds big_sepL_nil. }
+    iSplit.
+    { rewrite big_sepM_singleton /safe_base_proposal.
+      iExists (gset_to_gmap [] nids).
+      iSplit.
+      { set m := gset_to_gmap _ _.
+        rewrite -(dom_gset_to_gmap nids ([] : list nodedec)).
+        iDestruct (big_sepS_big_sepM _ m with "Hdss") as "Hdss".
+        iApply (big_sepM_mono with "Hdss").
+        iIntros (nid ds Hds) "Hds".
+        apply lookup_gset_to_gmap_Some in Hds as [_ <-].
+        by iApply (past_nodedecs_witness).
+      }
+      iPureIntro.
+      split.
+      { intros nid ds Hds.
+        by apply lookup_gset_to_gmap_Some in Hds as [_ <-].
+      }
+      split.
+      { rewrite /equal_latest_longest_proposal_nodedec /equal_latest_longest_proposal_with.
+        by case_decide.
+      }
+      { rewrite dom_gset_to_gmap.
+        by apply cquorum_refl.
+      }
+    }
+    iPureIntro.
+    split.
+    { by rewrite insert_empty /valid_proposals map_Forall2_singleton. }
+    split.
+    { by rewrite dom_gset_to_gmap. }
+    { rewrite insert_empty dom_singleton_L.
+      split; first apply is_term_of_node_partitioned.
+      intros nid terml Hterml t Hton Hlt.
+      rewrite not_elem_of_singleton.
+      lia.
+    }
+  Qed.
+
+End alloc.

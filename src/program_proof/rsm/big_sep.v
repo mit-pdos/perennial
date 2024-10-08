@@ -364,6 +364,30 @@ Section bi.
     by iSplit; iIntros "Hm"; iDestruct "Hm" as "[Hk Hm]";  iFrame; iApply "IH".
   Qed.
 
+  Lemma big_sepM_sepS_impl `{Countable K} {A}
+    (Φ : K → A → PROP) (Ψ : K → PROP) (m : gmap K A) (s : gset K) :
+    dom m = s →
+    ([∗ map] k ↦ x ∈ m, Φ k x) -∗
+    □ (∀ (k : K) (x : A), ⌜m !! k = Some x⌝ → Φ k x -∗ Ψ k) -∗
+    ([∗ set] k ∈ s, Ψ k).
+  Proof.
+    iIntros (Hdom) "Hm #Himpl".
+    rewrite -Hdom big_sepS_big_sepM.
+    by iApply (big_sepM_impl with "Hm").
+  Qed.
+
+  Lemma big_sepS_sepM_impl `{Countable K} {A}
+    (Φ : K → PROP) (Ψ : K → A -> PROP) (s : gset K) (m : gmap K A) :
+    dom m = s →
+    ([∗ set] k ∈ s, Φ k) -∗
+    □ (∀ (k : K) (x : A), ⌜m !! k = Some x⌝ → Φ k -∗ Ψ k x) -∗
+    ([∗ map] k ↦ x ∈ m, Ψ k x).
+  Proof.
+    iIntros (Hdom) "Hs #Himpl".
+    rewrite -Hdom big_sepS_big_sepM.
+    by iApply (big_sepM_impl with "Hs").
+  Qed.
+
   Lemma big_sepM_big_sepM2_1 `{Countable K} {A B}
     (Φ : K -> A -> PROP) (m1 : gmap K A) (m2 : gmap K B) :
     dom m2 = dom m1 ->

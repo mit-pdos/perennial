@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip.paxos Require Import base.
+From Perennial.program_proof.tulip.paxos Require Export res_network.
 
 Section res.
   Context `{!paxos_ghostG Σ}.
@@ -454,22 +455,25 @@ Section res.
 
   End node_ledger.
 
-  Section alloc.
-
-    Lemma paxos_res_alloc nids :
-      ⊢ |==> ∃ γ, (own_log_half γ [] ∗ own_log_half γ [] ∗ own_cpool_half γ ∅ ∗ own_cpool_half γ ∅) ∗
-                  own_proposals γ ∅ ∗
-                  own_base_proposals γ ∅ ∗
-                  ([∗ set] t ∈ terms_all, own_free_prepare_lsn γ t) ∗
-                  ([∗ set] nid ∈ nids, own_past_nodedecs γ nid []) ∗
-                  ([∗ set] nid ∈ nids, own_accepted_proposals γ nid {[O := []]}) ∗
-                  ([∗ set] nid ∈ nids, own_accepted_proposal γ nid O []) ∗
-                  ([∗ set] nid ∈ nids, own_current_term_half γ nid O) ∗
-                  ([∗ set] nid ∈ nids, own_ledger_term_half γ nid O) ∗
-                  ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
-                  ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []).
-    Admitted.
-
-  End alloc.
-
 End res.
+
+Section alloc.
+  Context `{!paxos_ghostG Σ}.
+
+  Lemma paxos_res_alloc nids :
+    ⊢ |==> ∃ γ, (own_log_half γ [] ∗ own_log_half γ [] ∗ own_cpool_half γ ∅ ∗ own_cpool_half γ ∅) ∗
+                own_proposals γ ∅ ∗
+                own_base_proposals γ ∅ ∗
+                ([∗ set] t ∈ terms_all, own_free_prepare_lsn γ t) ∗
+                ([∗ set] nid ∈ nids, own_past_nodedecs γ nid []) ∗
+                ([∗ set] nid ∈ nids, own_accepted_proposals γ nid {[O := []]}) ∗
+                ([∗ set] nid ∈ nids, own_accepted_proposal γ nid O []) ∗
+                ([∗ set] nid ∈ nids, own_current_term_half γ nid O) ∗
+                ([∗ set] nid ∈ nids, own_ledger_term_half γ nid O) ∗
+                ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
+                ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []) ∗
+                (* network resources *)
+                own_terminals γ ∅.
+  Admitted.
+
+End alloc.

@@ -9,23 +9,6 @@ From Goose.github_com.mit_pdos.tulip Require Import paxos message.
 
 (* TODO: move them to separate file once stable *)
 
-Inductive pxreq :=
-| RequestVoteReq (term : u64) (lsnlc : u64)
-| AppendEntriesReq (term : u64) (lsnlc : u64) (lsne : u64) (ents : list string).
-
-#[global]
-Instance pxreq_eq_decision :
-  EqDecision pxreq.
-Proof. solve_decision. Qed.
-
-#[global]
-Instance pxreq_countable :
-  Countable pxreq.
-Admitted.
-
-Definition encode_pxreq (req : pxreq) : list u8.
-Admitted.
-
 Definition pxreq_to_val (req : pxreq) (entsP : Slice.t) : val :=
   match req with
   | RequestVoteReq term lsnlc =>
@@ -38,23 +21,6 @@ Definition pxreq_to_val (req : pxreq) (entsP : Slice.t) : val :=
           ("EntriesLSN", #lsne); ("Entries", to_val entsP)
         ]
   end.
-
-Inductive pxresp :=
-| RequestVoteResp (nid term terme : u64) (ents : list string)
-| AppendEntriesResp (nid term lsneq : u64).
-
-#[global]
-Instance pxresp_eq_decision :
-  EqDecision pxresp.
-Proof. solve_decision. Qed.
-
-#[global]
-Instance pxresp_countable :
-  Countable pxresp.
-Admitted.
-
-Definition encode_pxresp (resp : pxresp) : list u8.
-Admitted.
 
 Definition pxresp_to_val (resp : pxresp) (entsP : Slice.t) : val :=
   match resp with
@@ -69,128 +35,6 @@ Definition pxresp_to_val (resp : pxresp) (entsP : Slice.t) : val :=
           ("MatchedLSN", #lsneq)
         ]
   end.
-
-Section res_network.
-  Context `{!paxos_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : paxos_names).
-
-  Definition own_terminals γ (ts : gset chan) : iProp Σ.
-  Admitted.
-
-  Definition is_terminal γ (t : chan) : iProp Σ.
-  Admitted.
-
-  #[global]
-  Instance is_terminal_persistent γ t :
-    Persistent (is_terminal γ t).
-  Admitted.
-
-  Lemma terminal_update {γ ts} t :
-    own_terminals γ ts ==∗
-    own_terminals γ ({[t]} ∪ ts) ∗ is_terminal γ t.
-  Admitted.
-
-  Lemma terminal_lookup γ ts t :
-    is_terminal γ t -∗
-    own_terminals γ ts -∗
-    ⌜t ∈ ts⌝.
-  Admitted.
-
-End res_network.
-
-Section inv_network.
-  Context `{!heapGS Σ, !paxos_ghostG Σ}.
-
-  Definition paxosnetNS := nroot .@ "paxosnet".
-
-  Definition safe_request_vote_req γ (term lsnlc : u64) : iProp Σ :=
-    is_prepare_lsn γ (uint.nat term) (uint.nat lsnlc).
-
-  Definition safe_append_entries_req
-    γ nids (term lsnlc lsne : u64) (ents : list string) : iProp Σ :=
-    ∃ (logleader logcmt : list string),
-      "#Hpfb"       ∷ prefix_base_ledger γ (uint.nat term) logleader ∗
-      "#Hpfg"       ∷ prefix_growing_ledger γ (uint.nat term) logleader ∗
-      "#Hlogcmt"    ∷ safe_ledger_above γ nids (uint.nat term) logcmt ∗
-      "%Hlogleader" ∷ ⌜(uint.nat lsne ≤ length logleader)%nat⌝ ∗
-      "%Hents"      ∷ ⌜drop (uint.nat lsne) logleader = ents⌝ ∗
-      "%Hlogcmt"    ∷ ⌜length logcmt = uint.nat lsnlc⌝.
-
-  Definition safe_pxreq γ nids req : iProp Σ :=
-    match req with
-    | RequestVoteReq term lsnlc => safe_request_vote_req γ term lsnlc
-    | AppendEntriesReq term lsnlc lsne ents =>
-        safe_append_entries_req γ nids term lsnlc lsne ents
-    end.
-
-  #[global]
-  Instance safe_pxreq_persistent γ nids req :
-    Persistent (safe_pxreq γ nids req).
-  Proof. destruct req; apply _. Defined.
-
-  Definition safe_request_vote_resp
-    γ (nids : gset u64) (nid term terme : u64) (ents : list string) : iProp Σ :=
-    ∃ (logpeer : list string) (lsne : u64),
-      "#Hpromise" ∷ past_nodedecs_latest_before γ nid (uint.nat term) (uint.nat terme) logpeer ∗
-      "#Hlsne"    ∷ is_prepare_lsn γ (uint.nat term) (uint.nat lsne) ∗
-      "%Hents"    ∷ ⌜drop (uint.nat lsne) logpeer = ents⌝ ∗
-      "%Hinnids"  ∷ ⌜nid ∈ nids⌝.
-
-  Definition safe_append_entries_resp
-    γ (nids : gset u64) (nid term lsneq : u64) : iProp Σ :=
-    ∃ (logacpt : list string),
-      "#Haoc"     ∷ (is_accepted_proposal_lb γ nid (uint.nat term) logacpt ∨
-                     safe_ledger_above γ nids (uint.nat term) logacpt) ∗
-      "%Hlogacpt" ∷ ⌜length logacpt = uint.nat lsneq⌝ ∗
-      "%Hinnids"  ∷ ⌜nid ∈ nids⌝.
-
-  Definition safe_pxresp γ nids resp : iProp Σ :=
-    match resp with
-    | RequestVoteResp nid term terme ents =>
-        safe_request_vote_resp γ nids nid term terme ents
-    | AppendEntriesResp nid term lsneq =>
-        safe_append_entries_resp γ nids nid term lsneq
-    end.
-
-  #[global]
-  Instance safe_pxresp_persistent γ nids resp :
-    Persistent (safe_pxresp γ nids resp).
-  Proof. destruct resp; apply _. Defined.
-
-  Definition listen_inv
-    (addr : chan) (ms : gset message) nids γ : iProp Σ :=
-    ∃ (reqs : gset pxreq),
-      "Hms"      ∷ addr c↦ ms ∗
-      (* senders are always reachable *)
-      "#Hsender" ∷ ([∗ set] trml ∈ set_map msg_sender ms, is_terminal γ trml) ∗
-      "#Hreqs"   ∷ ([∗ set] req ∈ reqs, safe_pxreq γ nids req) ∗
-      "%Henc"    ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_pxreq reqs⌝.
-
-  Definition connect_inv (trml : chan) (ms : gset message) nids γ : iProp Σ :=
-    ∃ (resps : gset pxresp),
-      "Hms"     ∷ trml c↦ ms ∗
-      "#Hresps" ∷ ([∗ set] resp ∈ resps, safe_pxresp γ nids resp) ∗
-      "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_pxresp resps⌝.
-
-  Definition paxos_network_inv
-    (γ : paxos_names) (nids : gset u64) (addrm : gmap u64 chan) : iProp Σ :=
-    ∃ (listens : gmap chan (gset message)) (connects : gmap chan (gset message)),
-      "Hlistens"   ∷ ([∗ map] a ↦ ms ∈ listens, listen_inv a ms nids γ) ∗
-      "Hconnects"  ∷ ([∗ map] t ↦ ms ∈ connects, connect_inv t ms nids γ) ∗
-      "Hterminals" ∷ own_terminals γ (dom connects) ∗
-      "%Himgaddrm" ∷ ⌜map_img addrm = dom listens⌝.
-
-  #[global]
-  Instance paxos_network_inv_timeless γ nids addrm :
-    Timeless (paxos_network_inv γ nids addrm).
-  Admitted.
-
-  Definition know_paxos_network_inv γ nids addrm : iProp Σ :=
-    inv paxosnetNS (paxos_network_inv γ nids addrm).
-
-End inv_network.
-(* TODO: move them *)
 
 Section repr.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
