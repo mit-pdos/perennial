@@ -10,9 +10,9 @@ Section response_sesion.
 
   Theorem wp_Paxos__ResponseSession
     (px : loc) (nid : u64) (nidme : u64)
-    (addrpeer : chan) (addrm : gmap u64 chan) nids γ :
+    (addrpeer : chan) (addrm : gmap u64 chan) γ :
     addrm !! nid = Some addrpeer ->
-    is_paxos_with_addrm_nids px nidme addrm nids γ -∗
+    is_paxos_with_addrm px nidme addrm γ -∗
     {{{ True }}}
       Paxos__ResponseSession #px #nid
     {{{ RET #(); True }}}.
@@ -129,7 +129,7 @@ Section response_sesion.
         wp_pures.
         by iApply "HΦ".
       }
-      iAssert (∃ lsnc, own_paxos_nominated_with_termc_lsnc px nidme term lsnc nids γ)%I
+      iAssert (∃ lsnc, own_paxos_nominated_with_termc_lsnc px nidme term lsnc (dom addrm) γ)%I
         with "[Hpx]" as (lsnc) "Hpx".
       { iNamed "Hpx". iFrame. }
 

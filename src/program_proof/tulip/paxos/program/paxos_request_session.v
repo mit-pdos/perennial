@@ -175,7 +175,7 @@ Section request_session.
       iFrame "Hms".
       iIntros (sent) "Hms".
       set msc' := if sent then _ else _.
-      iAssert (connect_inv trml msc' nids γ)%I with "[Hms]" as "Hconn".
+      iAssert (connect_inv trml msc' (dom addrm) γ)%I with "[Hms]" as "Hconn".
       { iFrame "Hms".
         set resp := RequestVoteResp _ _ _ _ in Hdata.
         destruct sent; last first.
@@ -297,7 +297,7 @@ Section request_session.
       iFrame "Hms".
       iIntros (sent) "Hms".
       set msc' := if sent then _ else _.
-      iAssert (connect_inv trml msc' nids γ)%I with "[Hms]" as "Hconn".
+      iAssert (connect_inv trml msc' (dom addrm) γ)%I with "[Hms]" as "Hconn".
       { iFrame "Hms".
         set resp := AppendEntriesResp _ _ _ in Hdata.
         destruct sent; last first.

@@ -8,16 +8,16 @@ Section receive.
 
   Theorem wp_Paxos__Receive
     (px : loc) (nid : u64) (nidme : u64)
-    (addrpeer : chan) (addrm : gmap u64 chan) nids γ :
+    (addrpeer : chan) (addrm : gmap u64 chan) γ :
     addrm !! nid = Some addrpeer ->
-    is_paxos_with_addrm_nids px nidme addrm nids γ -∗
+    is_paxos_with_addrm px nidme addrm γ -∗
     {{{ True }}}
       Paxos__Receive #px #nid
     {{{ (dataP : Slice.t) (ok : bool), RET (to_val dataP, #ok);
         if ok
         then ∃ (data : list u8) (resp : pxresp),
             own_slice dataP byteT (DfracOwn 1) data ∗
-            safe_pxresp γ nids resp ∗
+            safe_pxresp γ (dom addrm) resp ∗
             ⌜data = encode_pxresp resp⌝
         else True
     }}}.

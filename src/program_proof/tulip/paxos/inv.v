@@ -581,27 +581,20 @@ Section inv_network.
       "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_pxresp resps⌝.
 
   Definition paxos_network_inv
-    (γ : paxos_names) (nids : gset u64) (addrm : gmap u64 chan) : iProp Σ :=
+    (γ : paxos_names) (addrm : gmap u64 chan) : iProp Σ :=
     ∃ (listens : gmap chan (gset message)) (connects : gmap chan (gset message)),
-      "Hlistens"   ∷ ([∗ map] a ↦ ms ∈ listens, listen_inv a ms nids γ) ∗
-      "Hconnects"  ∷ ([∗ map] t ↦ ms ∈ connects, connect_inv t ms nids γ) ∗
+      "Hlistens"   ∷ ([∗ map] a ↦ ms ∈ listens, listen_inv a ms (dom addrm) γ) ∗
+      "Hconnects"  ∷ ([∗ map] t ↦ ms ∈ connects, connect_inv t ms (dom addrm) γ) ∗
       "Hterminals" ∷ own_terminals γ (dom connects) ∗
       "%Himgaddrm" ∷ ⌜map_img addrm = dom listens⌝.
 
   #[global]
-  Instance paxos_network_inv_timeless γ nids addrm :
-    Timeless (paxos_network_inv γ nids addrm).
+  Instance paxos_network_inv_timeless γ addrm :
+    Timeless (paxos_network_inv γ addrm).
   Admitted.
 
-  Definition know_paxos_network_inv γ nids addrm : iProp Σ :=
-    inv paxosnetNS (paxos_network_inv γ nids addrm).
-
-  (* Lemma paxos_network_inv_alloc nids addrm : *)
-  (*   ([∗ map] addr ∈ addrm, addr c↦ ∅) ==∗ *)
-  (*   paxos_network_inv γ nids addrm. *)
-  (* Proof. *)
-  (*   iIntros "Hchans". *)
-  (* Qed. *)
+  Definition know_paxos_network_inv γ addrm : iProp Σ :=
+    inv paxosnetNS (paxos_network_inv γ addrm).
 
 End inv_network.
 
@@ -1146,25 +1139,25 @@ End lemma.
 Section alloc.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Lemma paxos_inv_alloc nids addrm :
-    (1 < size nids)%nat ->
-    dom addrm = nids ->
+  Lemma paxos_inv_alloc addrm :
+    (1 < size addrm)%nat ->
     ([∗ set] addr ∈ map_img addrm, addr c↦ ∅) ==∗
-    ∃ γ, paxos_inv γ nids ∗ paxos_network_inv γ nids addrm ∗
+    ∃ γ, paxos_inv γ (dom addrm) ∗ paxos_network_inv γ addrm ∗
          own_log_half γ [] ∗ own_cpool_half γ ∅.
   Proof.
-    iIntros (Hmulti Hnids) "Hchans".
-    iMod (paxos_res_alloc nids) as (γ) "(Hcs & Hps & Hpsb & Hnodesnetwork)".
+    iIntros (Hmulti) "Hchans".
+    iMod (paxos_res_alloc (dom addrm)) as (γ) "(Hcs & Hps & Hpsb & Hnodesnetwork)".
     iDestruct "Hcs" as "(Hlog & Hlogcli & Hcpool & Hcpoolcli)".
     iDestruct "Hnodesnetwork" as
       "(Hlsnps & Hdss & Hpsas & Hpas & Htermcs & Htermls & Hlsncs & Hlogns & Htrmls)".
     iMod (proposal_insert O [] with "Hps") as "[Hps Hp]"; first done.
     iDestruct (proposal_witness with "Hp") as "#Hplb".
     iMod (base_proposal_insert O [] with "Hpsb") as "[Hpsb #Hpbrc]"; first done.
+    set nids := dom addrm.
     (* Establish [safe_ledger_in γ nids O []] for use in global and node-local invariants.  *)
     iAssert (safe_ledger_in γ nids O [])%I as "#Hsafel".
     { unshelve epose proof (set_choose_L nids _) as [nid Hnid].
-      { rewrite -fin_sets.size_non_empty_iff_L. lia. }
+      { rewrite -fin_sets.size_non_empty_iff_L size_dom. lia. }
       iExists nid, nids.
       iSplit.
       { iDestruct (big_sepS_elem_of with "Hpas") as "Hpa"; first apply Hnid.
@@ -1177,7 +1170,9 @@ Section alloc.
         by iFrame "Hpalb".
       }
       iPureIntro.
-      split; [by apply cquorum_refl | apply Hnid].
+      split; last apply Hnid.
+      apply cquorum_refl.
+      by rewrite size_dom.
     }
     iExists γ.
     iFrame "Hlog Hlogcli Hcpool Hcpoolcli Hps Hpsb".
@@ -1263,7 +1258,8 @@ Section alloc.
         by case_decide.
       }
       { rewrite dom_gset_to_gmap.
-        by apply cquorum_refl.
+        apply cquorum_refl.
+        by rewrite size_dom.
       }
     }
     iPureIntro.

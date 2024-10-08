@@ -67,7 +67,7 @@ Section submit.
     iApply ncfupd_wp.
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod "HAU" as (cpoolcli) "[Hcpoolcli HAU]".
-    iAssert (|==> own_cpool_half γ ({[c]} ∪ cpoolcli) ∗ paxos_inv γ nids)%I
+    iAssert (|==> own_cpool_half γ ({[c]} ∪ cpoolcli) ∗ paxos_inv γ (dom addrm))%I
       with "[Hcpoolcli HinvO]" as "HcpoolU".
     { iNamed "HinvO".
       iDestruct (cpool_agree with "Hcpool Hcpoolcli") as %->.
@@ -103,7 +103,7 @@ Section submit.
     { iFrame "Hlock Hlocked".
       iDestruct (terml_eq_termc_impl_not_nominiated with "Hcand") as %->; first done.
       set log' := log ++ [c].
-      iAssert (own_paxos_leader px nidme termc termc log' true nids γ)%I
+      iAssert (own_paxos_leader px nidme termc termc log' true (dom addrm) γ)%I
         with "[$HisleaderP $HlsnpeersP $Hlsnpeers $Hps $Haocm]" as "Hleader".
       { iPureIntro.
         split; first done.
@@ -116,7 +116,7 @@ Section submit.
       iNamed "Hcand".
       iFrame "Hleader".
       set logc' := take (uint.nat lsnc) log'.
-      iAssert (safe_ledger_above γ nids (uint.nat termc) logc')%I as "Hcmted'".
+      iAssert (safe_ledger_above γ (dom addrm) (uint.nat termc) logc')%I as "Hcmted'".
       { subst logc'.
         rewrite (take_prefix_le _ log' (uint.nat lsnc) _); last first.
         { by apply prefix_app_r. }

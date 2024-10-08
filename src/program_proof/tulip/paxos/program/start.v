@@ -9,10 +9,9 @@ Section start.
 
   Theorem wp_Start
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list string)
-    (addrmP : loc) (addrm : gmap u64 chan) nids γ :
-    dom addrm = nids ->
-    know_paxos_inv γ nids -∗
-    know_paxos_network_inv γ nids addrm -∗
+    (addrmP : loc) (addrm : gmap u64 chan) γ :
+    know_paxos_inv γ (dom addrm) -∗
+    know_paxos_network_inv γ addrm -∗
     {{{ own_map addrmP (DfracOwn 1) addrm ∗
         own_current_term_half γ nidme (uint.nat termc) ∗
         own_ledger_term_half γ nidme (uint.nat terml) ∗
@@ -22,8 +21,7 @@ Section start.
       Start #nidme #addrmP
     {{{ (px : loc), RET #px; is_paxos px nidme γ }}}.
   Proof.
-    iIntros (Hdomaddrm) "#Hinv #Hinvnet".
-    iIntros (Φ) "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
+    iIntros "#Hinv #Hinvnet" (Φ) "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
     wp_rec.
 
     (*@ func Start(nidme uint64, addrm map[uint64]grove_ffi.Address) *Paxos {   @*)
@@ -61,32 +59,41 @@ Section start.
     (*@     px := mkPaxos(nidme, termc, terml, lsnc, log, addrm)                @*)
     (*@                                                                         @*)
     wp_apply (wp_mkPaxos with "Hinv Hinvnet [$Hlog $Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
-    { rewrite -Hdomaddrm size_dom. clear -Hmulti. word. }
-    { apply Hdomaddrm. }
-    { apply elem_of_dom_2 in Hinnids. by rewrite Hdomaddrm in Hinnids. }
+    { clear -Hmulti. word. }
+    { by apply elem_of_dom. }
     { clear -Hltmax. rewrite /max_nodes. word. }
     iIntros (px) "#Hpx".
+    iClear "Hinv Hinvnet".
 
     (*@     go func() {                                                         @*)
     (*@         px.Serve()                                                      @*)
     (*@     }()                                                                 @*)
     (*@                                                                         @*)
     wp_apply wp_fork.
-    { by wp_apply (wp_Paxos__Serve with "Hpx"). }
+    { wp_apply (wp_Paxos__Serve with "[Hpx]").
+      { iNamed "Hpx". iFrame "# %". }
+      done.
+    }
 
     (*@     go func() {                                                         @*)
     (*@         px.LeaderSession()                                              @*)
     (*@     }()                                                                 @*)
     (*@                                                                         @*)
     wp_apply wp_fork.
-    { by wp_apply (wp_Paxos__LeaderSession with "Hpx"). }
+    { wp_apply (wp_Paxos__LeaderSession with "[Hpx]").
+      { iNamed "Hpx". iFrame "# %". }
+      done.
+    }
 
     (*@     go func() {                                                         @*)
     (*@         px.ElectionSession()                                            @*)
     (*@     }()                                                                 @*)
     (*@                                                                         @*)
     wp_apply wp_fork.
-    { by wp_apply (wp_Paxos__ElectionSession with "Hpx"). }
+    { wp_apply (wp_Paxos__ElectionSession with "[Hpx]").
+      { iNamed "Hpx". iFrame "# %". }
+      done.
+    }
 
     (*@     for _, nidloop := range(px.peers) {                                 @*)
     (*@         nid := nidloop                                                  @*)
@@ -95,9 +102,34 @@ Section start.
     (*@         }()                                                             @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    iAssert (is_paxos_nids px nidme (dom addrm))%I as "Hnids".
+    { by iNamed "Hpx". }
+    iNamed "Hnids".
+    iMod (readonly_load with "Hpeers") as (q) "HpeersR".
+    wp_loadField.
+    wp_apply (wp_forSlice (λ _, True)%I with "[] [$HpeersR]").
+    { clear Φ.
+      iIntros (i nid Φ) "!> %Hiter HΦ".
+      destruct Hiter as (_ & Hbound & Hnid).
+      wp_apply wp_fork.
+      { assert (is_Some (addrm !! nid)) as [addr Haddr].
+        { apply elem_of_list_lookup_2 in Hnid.
+          rewrite -elem_of_dom.
+          set_solver.
+        }
+        wp_apply (wp_Paxos__ResponseSession with "Hpx"); first apply Haddr.
+        done.
+      }
+      by iApply "HΦ".
+    }
+    iIntros "_".
 
     (*@     return px                                                           @*)
     (*@ }                                                                       @*)
-  Admitted.
+    wp_pures.
+    iApply "HΦ".
+    iNamed "Hpx".
+    by iFrame "# %".
+  Qed.
 
 End start.

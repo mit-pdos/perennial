@@ -107,7 +107,7 @@ Section election_session.
         iIntros (dataP data) "[Hdata %Hdataenc]".
         iNamed "Haddrm".
         assert (is_Some (addrm !! nid)) as [addrpeer Haddrpeer].
-        { rewrite -elem_of_dom Hdomaddrm.
+        { rewrite -elem_of_dom.
           apply elem_of_list_lookup_2 in Hnid.
           set_solver.
         }

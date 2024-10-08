@@ -7,13 +7,12 @@ Section mk_paxos.
 
   Theorem wp_mkPaxos
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64)
-    (logP : Slice.t) (log : list string) (addrmP : loc) (addrm : gmap u64 chan) nids γ :
-    (1 < size nids)%nat ->
-    dom addrm = nids ->
-    nidme ∈ nids ->
+    (logP : Slice.t) (log : list string) (addrmP : loc) (addrm : gmap u64 chan) γ :
+    (1 < size addrm)%nat ->
+    nidme ∈ dom addrm ->
     0 ≤ uint.Z nidme < max_nodes ->
-    know_paxos_inv γ nids -∗
-    know_paxos_network_inv γ nids addrm -∗
+    know_paxos_inv γ (dom addrm) -∗
+    know_paxos_network_inv γ addrm -∗
     {{{ own_slice logP stringT (DfracOwn 1) log ∗
         own_map addrmP (DfracOwn 1) addrm ∗
         own_current_term_half γ nidme (uint.nat termc) ∗
@@ -22,9 +21,9 @@ Section mk_paxos.
         own_node_ledger_half γ nidme log
     }}}
       mkPaxos #nidme #termc #terml #lsnc (to_val logP) #addrmP
-    {{{ (px : loc), RET #px; is_paxos px nidme γ }}}.
+    {{{ (px : loc), RET #px; is_paxos_with_addrm px nidme addrm γ }}}.
   Proof.
-    iIntros (Hmulti Hdomaddrm Hinnids Hltmax) "#Hinv #Hinvnet".
+    iIntros (Hmulti Hnidme Hltmax) "#Hinv #Hinvnet".
     (* avoid naming collision when opening invariant. *)
     iIntros (Φ) "!> (Hlog & Haddrm & HtermcX & HtermlX & HlsncX & HlognX) HΦ".
     wp_rec.
@@ -78,7 +77,6 @@ Section mk_paxos.
     }
     iIntros "[Haddrm HP]".
     iNamed "HP". clear P.
-    rewrite Hdomaddrm in Hpeers'.
 
     (*@     px := &Paxos{                                                       @*)
     (*@         nidme    : nidme,                                               @*)
@@ -122,6 +120,7 @@ Section mk_paxos.
       rewrite fmap_empty big_sepM_empty.
       by iFrame.
     }
+    set nids := dom addrm.
     set logc := take (uint.nat lsnc) log.
     iAssert (own_paxos_candidate px nidme termc terml logc false nids γ)%I
       with "[$termp entsp $respp $iscand]" as "Hcand".
@@ -131,8 +130,8 @@ Section mk_paxos.
     iAssert (own_paxos_sc px nids)%I with "[$sc]" as "Hsc".
     { iPureIntro.
       split.
-      { rewrite -Hdomaddrm size_dom in Hmulti. clear -Hmulti Hszaddrm. word. }
-      { rewrite -Hdomaddrm size_dom. clear -Hmulti Hszaddrm. word. }
+      { clear -Hmulti Hszaddrm. word. }
+      { rewrite size_dom. clear -Hmulti Hszaddrm. word. }
     }
     (* Obtain persistent/pure resources that for convenience are also kept in lock inv. *)
     iInv "Hinv" as "> HinvO" "HinvC".
@@ -219,7 +218,6 @@ Section mk_paxos.
     (*@     return px                                                           @*)
     (*@ }                                                                       @*)
     iApply "HΦ".
-    rewrite /is_paxos /is_paxos_with_addrm_nids.
     by iFrame "# %".
   Qed.
 

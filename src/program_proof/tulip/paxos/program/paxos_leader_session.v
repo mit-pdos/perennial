@@ -53,7 +53,7 @@ Section leader_session.
     (*@                                                                         @*)
     (*@         for _, nidloop := range(px.peers) {                             @*)
     (*@                                                                         @*)
-    set P := (λ (_ : u64), own_paxos_leading px nidme nids γ)%I.
+    set P := (λ (_ : u64), own_paxos_leading px nidme (dom addrm) γ)%I.
     iNamed "Hnids".
     wp_loadField.
     iMod (readonly_load with "Hpeers") as (q) "HpeersR".
@@ -69,7 +69,7 @@ Section leader_session.
       (*@                                                                         @*)
       wp_pures.
       subst P. simpl.
-      iAssert (∃ termc, own_paxos_leading_with_termc px nidme termc nids γ)%I
+      iAssert (∃ termc, own_paxos_leading_with_termc px nidme termc (dom addrm) γ)%I
         with "Hpx" as (termc) "Hpx".
       wp_apply (wp_Paxos__obtain with "Hpx").
       iIntros (lsne entsP ents loga) "(Hpx & Hents & #Hpfb & #Hpfg & %Hlenloga & %Hents)".
@@ -93,7 +93,7 @@ Section leader_session.
         iIntros (dataP data) "[Hdata %Hdataenc]".
         iNamed "Haddrm".
         assert (is_Some (addrm !! nid)) as [addrpeer Haddrpeer].
-        { rewrite -elem_of_dom Hdomaddrm.
+        { rewrite -elem_of_dom.
           apply elem_of_list_lookup_2 in Hnid.
           set_solver.
         }

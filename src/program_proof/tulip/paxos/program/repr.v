@@ -61,11 +61,10 @@ Section repr.
   (*@     //                                                                  @*)
   (*@     conns     map[uint64]grove_ffi.Connection                           @*)
   (*@ }                                                                       @*)
-  Definition is_paxos_addrm (paxos : loc) (addrm : gmap u64 chan) nids : iProp Σ :=
+  Definition is_paxos_addrm (paxos : loc) (addrm : gmap u64 chan) : iProp Σ :=
     ∃ (addrmP : loc),
       "#HaddrmP"   ∷ readonly (paxos ↦[Paxos :: "addrm"] #addrmP) ∗
-      "#Haddrm"    ∷ own_map addrmP DfracDiscarded addrm ∗
-      "%Hdomaddrm" ∷ ⌜dom addrm = nids⌝.
+      "#Haddrm"    ∷ own_map addrmP DfracDiscarded addrm.
 
   Definition is_paxos_nids
     (paxos : loc) (nidme : u64) (nids : gset u64) : iProp Σ :=
@@ -254,25 +253,21 @@ Section repr.
 
   (* TODO: finding the right states to expose after adding network. *)
 
-  Definition is_paxos_with_addrm_nids
-    (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) (nids : gset u64) γ : iProp Σ :=
+  Definition is_paxos_with_addrm
+    (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) γ : iProp Σ :=
     ∃ (muP : loc),
+      let nids := dom addrm in
       "#HmuP"    ∷ readonly (paxos ↦[Paxos :: "mu"] #muP) ∗
       "#Hlock"   ∷ is_lock paxosNS #muP (own_paxos paxos nidme nids γ ∗
                                          own_paxos_comm paxos addrm γ) ∗
-      "#Haddrm"  ∷ is_paxos_addrm paxos addrm nids ∗
+      "#Haddrm"  ∷ is_paxos_addrm paxos addrm ∗
       "#Hnids"   ∷ is_paxos_nids paxos nidme nids ∗
       "#Hinv"    ∷ know_paxos_inv γ nids ∗
-      "#Hinvnet" ∷ know_paxos_network_inv γ nids addrm ∗
+      "#Hinvnet" ∷ know_paxos_network_inv γ addrm ∗
       "%Hnidme"  ∷ ⌜nidme ∈ nids⌝.
 
-  Definition is_paxos_with_addrm
-    (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) γ : iProp Σ :=
-    ∃ (nids : gset u64),
-      is_paxos_with_addrm_nids paxos nidme addrm nids γ.
-
   Definition is_paxos (paxos : loc) (nidme : u64) γ : iProp Σ :=
-    ∃ (addrm : gmap u64 chan) (nids : gset u64),
-      is_paxos_with_addrm_nids paxos nidme addrm nids γ.
+    ∃ (addrm : gmap u64 chan),
+      is_paxos_with_addrm paxos nidme addrm γ.
 
 End repr.
