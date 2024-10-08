@@ -193,24 +193,45 @@ Notation "'let:' x := e1 'in' e2" := (Lam x%binder e2%E e1%E)
 we could do slightly better by using a variable that can't appear in Go (eg, one
 with spaces), but we would probably still handle nested destructuring
 incorrectly *)
-Notation "'let:' ( x , y ) := e1 'in' e2" :=
+Notation "'let:' ( a1 , a2 ) := e1 'in' e2" :=
   (Lam "__p"
-       (Lam x%binder (Lam y%binder e2%E (Snd "__p")) (Fst "__p"))
-       e1%E)
-  (at level 200, x at level 1, e1, e2 at level 200,
-   format "'[' 'let:'  ( x ,  y )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
-Notation "'let:' ( ( x , y ) , z ) := e1 'in' e2" :=
+    (Lam a1%binder (Lam a2%binder e2%E (Snd "__p")) (Fst "__p"))
+    e1%E)
+  (at level 200, a1, a2 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( a1 , a2 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( a1 , a2 ) , a3 ) := e1 'in' e2" :=
   (Lam "__p"
-       (Lam x%binder (Lam y%binder (Lam z%binder e2%E (Snd "__p")) (Snd (Fst "__p"))) (Fst (Fst "__p")))
-       e1%E)
-  (at level 200, x at level 1, y at level 1, e1, e2 at level 200,
-   format "'[' 'let:'  ( ( x , y ) , z )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
-Notation "'let:' ( ( ( x , y ) , z ) , w ) := e1 'in' e2" :=
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Fst (Fst "__p")))
+    e1%E)
+  (at level 200, a1, a2, a3 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( a1 , a2 ) , a3 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( ( a1 , a2 ) , a3 ) , a4 ) := e1 'in' e2" :=
   (Lam "__p"
-       (Lam x%binder (Lam y%binder (Lam z%binder (Lam w%binder e2%E (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p")))) (Fst (Fst (Fst "__p"))))
-       e1%E)
-  (at level 200, x at level 1, y at level 1, z at level 1, e1, e2 at level 200,
-   format "'[' 'let:'  ( ( ( x , y ) , z ) , w )  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder (Lam a4%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p"))))
+      (Fst (Fst (Fst "__p"))))
+    e1%E)
+  (at level 200, a1, a2, a3, a4 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( ( a1 , a2 ) , a3 ) , a4 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) := e1 'in' e2" :=
+  (Lam "__p"
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder (Lam a4%binder (Lam a5%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p"))))
+      (Snd (Fst (Fst (Fst "__p"))))) (Fst (Fst (Fst (Fst "__p")))))
+    e1%E)
+  (at level 200, a1, a2, a3, a4, a5 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) , a6 ) := e1 'in' e2" :=
+  (Lam "__p"
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder (Lam a4%binder
+      (Lam a5%binder (Lam a6%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p"))))
+      (Snd (Fst (Fst (Fst "__p"))))) (Snd (Fst (Fst (Fst (Fst "__p"))))))
+      (Fst (Fst (Fst (Fst (Fst "__p"))))))
+    e1%E)
+  (at level 200, a1, a2, a3, a4, a5, a6 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) , a6 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
 Notation "e1 ;; e2" := (Lam BAnon e2%E e1%E)
   (at level 100, e2 at level 200,
    format "'[' '[hv' '[' e1 ']' ;;  ']' '/' e2 ']'") : expr_scope.
