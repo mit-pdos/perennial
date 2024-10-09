@@ -11,19 +11,19 @@ Definition For: val :=
   λ: "cond" "body" "post",
   (rec: "loop" <> :=
      let: "continue" :=
-        (if: (Var "cond") #()
-         then (Var "body") #()
+        (if: "cond" #()
+         then "body" #()
          else #false) in
-     if: (Var "continue")
-     then (Var "post") #();; (Var "loop") #()
+     if: "continue"
+     then "post" #();; "loop" #()
      else #()) #().
 
 Definition Loop: val :=
   λ: "body",
   (rec: "loop" <> :=
-     let: "continue" := (Var "body") #() in
-     if: Var "continue"
-     then (Var "loop") #()
+     let: "continue" := "body" #() in
+     if: "continue"
+     then "loop" #()
      else #()) #().
 
 End goose_lang.

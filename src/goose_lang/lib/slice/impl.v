@@ -11,9 +11,9 @@ Module slice.
     Context `{ext_ty: ext_types}.
     Definition T t : ty := (arrayT t * uint64T * uint64T)%ht.
 
-    Definition ptr: val := λ: "s", Fst (Fst (Var "s")).
-    Definition len: val := λ: "s", Snd (Fst (Var "s")).
-    Definition cap: val := λ: "s", Snd (Var "s").
+    Definition ptr: val := λ: "s", Fst (Fst "s").
+    Definition len: val := λ: "s", Snd (Fst "s").
+    Definition cap: val := λ: "s", Snd "s".
 
     Theorem ptr_t t : ∅ ⊢ ptr : (T t -> arrayT t).
     Proof.
@@ -72,14 +72,14 @@ Definition NewSlice (t: ty): val :=
   if: "sz" = #0 then slice.nil
   else let: "cap" := make_cap "sz" in
        let: "p" := AllocN "cap" (zero_val t) in
-       (Var "p", Var "sz", Var "cap").
+       ("p", "sz", "cap").
 
 Definition NewSliceWithCap (t: ty): val :=
   λ: "sz" "cap",
   if: "cap" < "sz" then Panic "NewSlice with cap smaller than len"
   else if: "cap" = #0 then slice.nil
   else let: "p" := AllocN "cap" (zero_val t) in
-       (Var "p", Var "sz", Var "cap").
+       ("p", "sz", "cap").
 
 Definition SliceSingleton: val :=
   λ: "x",
