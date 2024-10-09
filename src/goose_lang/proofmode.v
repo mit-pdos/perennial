@@ -51,38 +51,6 @@ Proof.
   - rewrite -HΔ'. done.
 Qed.
 
-Class PureWp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-  φ (e : expr) (e' : expr) :=
-  pure_wp_wp : ∀ stk E Φ (H : φ) K,
-  ▷ WP (fill K e') @ stk ; E {{ Φ }} -∗ WP (fill K e) @ stk; E {{ Φ }}.
-
-Class PureWpVal `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-  φ (e : expr) (v' : val) :=
-  pure_wp_wp_val : ∀ stk E Φ (H : φ),
-  ▷ Φ v' -∗ WP e @ stk; E {{ Φ }}.
-
-Global Instance pure_wp_val_to_pure_wp
-  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-  φ e v' : PureWpVal φ e v' → PureWp φ e (Val v').
-Proof.
-  intros Hval.
-  intros ?????. iIntros "Hwp".
-  iApply wp_bind. by iApply Hval.
-Qed.
-Global Hint Mode PureWp - - - - - - - - ! - : typeclass_instances.
-
-Lemma tac_wp_pure_wp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-      K e1 Δ Δ' s E (e2 : expr) φ Φ :
-  PureWp φ e1 e2 →
-  φ →
-  MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_entails Δ' (WP (fill K e2) @ s; E {{ Φ }}) →
-  envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
-Proof.
-  rewrite envs_entails_unseal=> Hstep ?? HΔ'. rewrite into_laterN_env_sound /=.
-  rewrite HΔ'. iIntros "H". by iApply Hstep.
-Qed.
-
 Lemma tac_wp_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} Δ s E Φ v :
   envs_entails Δ (Φ v) → envs_entails Δ (WP (Val v) @ s; E {{ Φ }}).
 Proof. rewrite envs_entails_unseal=> ->. by apply wp_value. Qed.

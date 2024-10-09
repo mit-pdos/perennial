@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Export lang notation proofmode wpc_proofmode.
+From Perennial.goose_lang Require Export lang notation.
 From New.golang Require Export defn.
 From New.golang.theory Require Export exception list typing loop struct mem slice interface defer.
 

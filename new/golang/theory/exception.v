@@ -1,5 +1,5 @@
-From Perennial.goose_lang Require Export lifting proofmode.
 From New.golang.defn Require Export exception.
+From New.golang.theory Require Export pure_proofmode.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
