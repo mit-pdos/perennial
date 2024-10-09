@@ -1,8 +1,6 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.Helpers Require Import Integers.
 
-From stdpp Require Import gmap.
-
-Section core.
+From stdpp Require Import ssreflect prelude gmap.
 
 Notation uid_ty := w64 (only parsing).
 (* TODO: make ver_ty, epoch_ty work for w64. *)
@@ -14,8 +12,15 @@ Notation map_ty := (gmap (uid_ty * ver_ty) pk_ty) (only parsing).
 certain keys in a way that they carry across map subsets. *)
 Notation submap_ty := (gmap (uid_ty * ver_ty) (option pk_ty)) (only parsing).
 
+Section msv.
+
 Definition msv_aux (m : map_ty) uid pks :=
   (∀ i, i < length pks → m !! (uid, i) = pks !! i).
+
+(* maximum sequence of versions. *)
+Definition msv m uid pks :=
+  msv_aux m uid pks ∧
+  m !! (uid, (length pks)) = None.
 
 Lemma lookup_snoc {A} (l : list A) (x : A) :
   (l ++ [x]) !! (length l) = Some x.
@@ -49,26 +54,16 @@ Proof.
     simplify_map_eq/=. ospecialize (IH l1 _ _ _); [done..|lia|]. naive_solver.
 Qed.
 
-(* maximum sequence of versions. *)
-Definition msv (m : map_ty) uid pks :=
-  (∀ i, i < length pks → m !! (uid, i) = pks !! i) ∧
-  m !! (uid, (length pks)) = None.
-
-Lemma msv_aux_impl {m uid pks} :
-  msv m uid pks →
-  msv_aux m uid pks.
-Proof. intros [H _] i?. ospecialize (H i _); [lia|done]. Qed.
-
 Lemma msv_len_agree_aux {m uid pks0 pks1} :
   msv m uid pks0 →
   msv m uid pks1 →
   length pks0 < length pks1 →
   False.
 Proof.
-  intros H0 H1 ?. destruct H0 as [_ H0]. destruct H1 as [H1 _].
-  ospecialize (H1 (length pks0) _); [lia|].
+  intros HM0 HM1 ?. destruct HM0 as [_ HM0]. destruct HM1 as [HM1 _].
+  ospecialize (HM1 (length pks0) _); [lia|].
   opose proof (lookup_lt_is_Some_2 pks1 (length pks0) _) as [? Hsome]; [lia|].
-  rewrite Hsome in H1. naive_solver.
+  rewrite Hsome in HM1. naive_solver.
 Qed.
 
 Lemma msv_len_agree {m uid pks0 pks1} :
@@ -88,8 +83,10 @@ Lemma msv_agree {m uid pks0 pks1} :
   msv m uid pks1 →
   pks0 = pks1.
 Proof.
-  intros ??. eapply msv_aux_agree.
-  1-2: by eapply msv_aux_impl. by eapply msv_len_agree.
+  intros HM0 HM1. eapply msv_aux_agree.
+  - by destruct HM0 as [? _].
+  - by destruct HM1 as [? _].
+  - by eapply msv_len_agree.
 Qed.
 
-End core.
+End msv.
