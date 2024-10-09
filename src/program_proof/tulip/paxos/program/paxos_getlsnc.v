@@ -32,4 +32,27 @@ Section getlsnc.
     clear -Hlsncub. lia.
   Qed.
 
+  Theorem wp_Paxos__getlsnc__nominated (px : loc) (nidme termc : u64) nids γ :
+    {{{ own_paxos_nominated_with_termc px nidme termc nids γ }}}
+      Paxos__getlsnc #px
+    {{{ (lsnc : u64), RET #lsnc;
+        own_paxos_nominated_with_termc px nidme termc nids γ ∗
+        is_prepare_lsn γ (uint.nat termc) (uint.nat lsnc)
+    }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) getlsnc() uint64 {                                     @*)
+    (*@     return px.lsnc                                                      @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx". iNamed "Hcand". iNamed "Honlyc".
+    wp_loadField.
+    iApply "HΦ".
+    iAssert (is_prepare_lsn γ (uint.nat termc) (uint.nat lsnc))%I as "#Hlsnprc'".
+    { rewrite length_take_le; [done | word]. }
+    iFrame "Hleader HiscandP".
+    iFrame "∗ # %".
+  Qed.
+
 End getlsnc.

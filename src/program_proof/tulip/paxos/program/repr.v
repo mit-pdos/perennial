@@ -251,6 +251,16 @@ Section repr.
     ∃ (termc terml lsnc : u64) (iscand : bool),
       own_paxos_internal paxos nidme termc terml lsnc iscand true nids γ.
 
+  Lemma own_paxos_expose_termc paxos nidme nids γ :
+    own_paxos paxos nidme nids γ -∗
+    ∃ termc, own_paxos_with_termc paxos nidme termc nids γ.
+  Proof. iIntros "Hpx". iFrame. Qed.
+
+  Lemma own_paxos_hide_termc paxos nidme termc nids γ :
+    own_paxos_with_termc paxos nidme termc nids γ -∗
+    own_paxos paxos nidme nids γ.
+  Proof. iIntros "Hpx". iFrame. Qed.
+
   (* TODO: finding the right states to expose after adding network. *)
 
   Definition is_paxos_with_addrm

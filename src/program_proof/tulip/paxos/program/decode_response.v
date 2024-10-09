@@ -6,7 +6,7 @@ Definition pxresp_to_val (resp : pxresp) (entsP : Slice.t) : val :=
   | RequestVoteResp nid term terme ents =>
       struct.mk_f PaxosResponse [
           ("Kind", #(U64 0)); ("NodeID", #nid); ("Term", #term);
-          ("TermEntries", #terme); ("Entries", to_val entsP)
+          ("EntriesTerm", #terme); ("Entries", to_val entsP)
         ]
   | AppendEntriesResp nid term lsneq =>
       struct.mk_f PaxosResponse [

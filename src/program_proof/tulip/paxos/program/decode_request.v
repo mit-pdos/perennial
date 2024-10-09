@@ -28,6 +28,9 @@ Section decode_request.
         end
     }}}.
   Proof.
+    iIntros (Hdataenc Φ) "Hdata HΦ".
+    wp_rec.
+
     (*@ func DecodeRequest(data []byte) PaxosRequest {                          @*)
     (*@     return PaxosRequest{}                                               @*)
     (*@ }                                                                       @*)

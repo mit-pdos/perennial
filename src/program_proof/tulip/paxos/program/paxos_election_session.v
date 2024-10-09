@@ -1,7 +1,8 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Perennial.program_proof.tulip.paxos.program Require Import
-  repr paxos_leading paxos_heartbeated paxos_heartbeat paxos_nominate paxos_send
-  encode_prepare_request.
+  repr paxos_leading paxos_heartbeated paxos_heartbeat paxos_resethb
+  paxos_nominate paxos_nominated paxos_gettermc paxos_getlsnc
+  paxos_send encode_prepare_request.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
 Section election_session.
@@ -53,8 +54,10 @@ Section election_session.
       wp_pures.
       by iApply "HΦ".
     }
+    subst isleader.
 
     (*@         if px.heartbeated() {                                           @*)
+    (*@             px.resethb()                                                @*)
     (*@             px.mu.Unlock()                                              @*)
     (*@             continue                                                    @*)
     (*@         }                                                               @*)
@@ -62,23 +65,65 @@ Section election_session.
     wp_apply (wp_Paxos__heartbeated with "Hpx").
     iIntros (hb) "Hpx".
     wp_if_destruct.
-    { wp_loadField.
+    { wp_apply (wp_Paxos__resethb with "Hpx").
+      iIntros "Hpx".
+      wp_loadField.
       wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked Hpx $Hcomm]").
       { iNamed "Hpx". iFrame. }
       wp_pures.
       by iApply "HΦ".
     }
+    subst hb.
 
-    (*@         px.heartbeat()                                                  @*)
+    (*@         var termc uint64                                                @*)
+    (*@         var lsnc uint64                                                 @*)
+    (*@         if px.nominated() {                                             @*)
+    (*@             termc = px.gettermc()                                       @*)
+    (*@             lsnc = px.getlsnc()                                         @*)
+    (*@         } else {                                                        @*)
+    (*@             termc, lsnc = px.nominate()                                 @*)
+    (*@         }                                                               @*)
     (*@                                                                         @*)
-    wp_apply (wp_Paxos__heartbeat with "Hpx").
-    iIntros "Hpx".
-
-    (*@         termc, lsnc := px.nominate()                                    @*)
-    (*@                                                                         @*)
-    wp_apply (wp_Paxos__nominate with "Hnids Hinv Hpx").
-    { apply Hnidme. }
-    iIntros (termc lsnc) "[Hpx #Hlsnprc]".
+    wp_apply wp_ref_of_zero; first done.
+    iIntros (termcP) "HtermcP".
+    wp_apply wp_ref_of_zero; first done.
+    iIntros (lsncP) "HlsncP".
+    wp_pures.
+    iDestruct (own_paxos_expose_termc with "Hpx") as (termc) "Hpx".
+    wp_apply (wp_Paxos__nominated with "Hpx").
+    iIntros (iscand) "Hpx".
+    set P := (∃ (termc lsnc : u64),
+                 "Hpx"      ∷ own_paxos px nidme (dom addrm) γ ∗
+                 "HtermcP"  ∷ termcP ↦[uint64T] #termc ∗
+                 "HlsncP"   ∷ lsncP ↦[uint64T] #lsnc ∗
+                 "#Hlsnprc" ∷ is_prepare_lsn γ (uint.nat termc) (uint.nat lsnc))%I.
+    wp_apply (wp_If_join P with "[Hpx HtermcP HlsncP]").
+    { iSplit; iIntros (->).
+      { wp_apply (wp_Paxos__gettermc__nominated with "Hpx").
+        iIntros "Hpx".
+        wp_store.
+        wp_apply (wp_Paxos__getlsnc__nominated with "Hpx").
+        iIntros (lsnc) "[Hpx #Hlsnprc]".
+        wp_store.
+        iModIntro.
+        iSplit; first done.
+        iNamed "Hpx".
+        iFrame "∗ #".
+      }
+      { iDestruct (own_paxos_hide_termc with "Hpx") as "Hpx".
+        clear termc.
+        wp_apply (wp_Paxos__nominate with "Hnids Hinv Hpx").
+        { apply Hnidme. }
+        iIntros (termc lsnc) "[Hpx #Hlsnprc]".
+        wp_pures.
+        do 2 wp_store.
+        iModIntro.
+        iSplit; first done.
+        iFrame "∗ #".
+      }
+    }
+    clear termc. subst P.
+    iNamed 1.
 
     (*@         px.mu.Unlock()                                                  @*)
     (*@                                                                         @*)
@@ -97,13 +142,18 @@ Section election_session.
     iNamed "Hnids".
     wp_loadField.
     iMod (readonly_load with "Hpeers") as (q) "HpeersR".
-    wp_apply (wp_forSlice (λ _, True)%I with "[] [$HpeersR]").
+    iMod (readonly_alloc_1 with "HtermcP") as "#HtermcP".
+    iMod (readonly_alloc_1 with "HlsncP") as "#HlsncP".
+    wp_apply (wp_forSlice (λ _, emp)%I with "[] [$HpeersR]").
     { (* Loop body. *)
       clear Φ.
-      iIntros (i nid Φ) "!> (Hpx & %Hbound & %Hnid) HΦ".
+      iIntros (i nid Φ) "!> (HP & %Hbound & %Hnid) HΦ".
+      iNamed "HP".
       wp_pures.
       wp_apply wp_fork.
-      { wp_apply wp_EncodePrepareRequest.
+      { wp_apply (wp_load_ro with "HlsncP").
+        wp_apply (wp_load_ro with "HtermcP").
+        wp_apply wp_EncodePrepareRequest.
         iIntros (dataP data) "[Hdata %Hdataenc]".
         iNamed "Haddrm".
         assert (is_Some (addrm !! nid)) as [addrpeer Haddrpeer].

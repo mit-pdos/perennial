@@ -23,6 +23,24 @@ Section gettermc.
     iFrame "∗ # %".
   Qed.
 
+  Theorem wp_Paxos__gettermc__nominated (px : loc) nidme termc nids γ :
+    {{{ own_paxos_nominated_with_termc px nidme termc nids γ }}}
+      Paxos__gettermc #px
+    {{{ RET #termc; own_paxos_nominated_with_termc px nidme termc nids γ }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) gettermc() uint64 {                                    @*)
+    (*@     return px.termc                                                     @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx".
+    wp_loadField.
+    iApply "HΦ".
+    iFrame "Hcand Hleader".
+    iFrame "∗ # %".
+  Qed.
+
   Theorem wp_Paxos__gettermc__leading (px : loc) nidme termc nids γ :
     {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
       Paxos__gettermc #px

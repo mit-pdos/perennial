@@ -13,6 +13,9 @@ Section encode_prepare_response.
         ⌜data = encode_pxresp (RequestVoteResp nid term terma ents)⌝
     }}}.
   Proof.
+    iIntros (Φ) "Hents HΦ".
+    wp_rec.
+
     (*@ func EncodePrepareResponse(nid, term, terma uint64, ents []string) []byte { @*)
     (*@     return nil                                                          @*)
     (*@ }                                                                       @*)
