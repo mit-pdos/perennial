@@ -420,6 +420,25 @@ Section bi.
     by iSplit; [iApply big_sepM_big_sepM2_1 | iApply big_sepM_big_sepM2_2].
   Qed.
 
+  Lemma big_sepM_exists_sepM2 `{Countable K} {A B}
+    (Φ : K -> A -> B -> PROP) (m : gmap K A) :
+    ([∗ map] k ↦ x ∈ m, ∃ y, Φ k x y) -∗
+    ∃ m', ([∗ map] k ↦ x; y ∈ m; m', Φ k x y).
+  Proof.
+    iIntros "Hm".
+    iInduction m as [| k x m Hmk] "IH" using map_ind.
+    { iExists ∅. by rewrite big_sepM2_empty. }
+    iDestruct (big_sepM_insert with "Hm") as "[[%y Hy] Hm]"; first apply Hmk.
+    iSpecialize ("IH" with "Hm").
+    iDestruct "IH" as (m') "Hm".
+    iExists (<[k := y]> m').
+    iDestruct (big_sepM2_dom with "Hm") as %Hdom.
+    iApply big_sepM2_insert.
+    { apply Hmk. }
+    { rewrite -not_elem_of_dom -Hdom. by apply not_elem_of_dom in Hmk. }
+    iFrame.
+  Qed.
+
   Lemma big_sepS_subseteq_difference_1 `{Countable A} (Φ : A -> PROP) (X Y : gset A) :
     Y ⊆ X ->
     ([∗ set] x ∈ X, Φ x) -∗

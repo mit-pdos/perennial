@@ -49,4 +49,18 @@ Section lemmas.
     by destruct (decide (i = j)); simplify_map_eq.
   Qed.
 
+  Lemma map_Forall2_lookup_Some
+    {A B : Type} (R : K → A → B → Prop) (m1 : M A) (m2 : M B) (i : K) (x1 : A) (x2 : B) :
+    m1 !! i = Some x1 ->
+    m2 !! i = Some x2 ->
+    map_Forall2 R m1 m2 ->
+    R i x1 x2.
+  Proof.
+    intros Hx1 Hx2 Hm1m2.
+    specialize (Hm1m2 i).
+    inv Hm1m2 as [x1' x2' HR Heq1 Heq2 | Heq1 Heq2].
+    { rewrite Hx1 in Heq1. rewrite Hx2 in Heq2. by inv Heq1. }
+    by rewrite Hx1 in Heq1.
+  Qed.
+
 End lemmas.
