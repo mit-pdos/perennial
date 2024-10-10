@@ -3,12 +3,12 @@ From New.golang.defn Require Export list.
 
 Class IntoVal `{ffi_syntax} (V : Type) :=
   {
-    to_val : V → val;
-    (* XXX: strictly speaking, this is only needed for reasoning, so maybe
-       bundle it back with IntoValTyped. *)
-    #[global] to_val_inj :: Inj (=) (=) (to_val);
+    to_val_def : V → val;
   }.
 
+Program Definition to_val := unseal (_:seal (@to_val_def)). Obligation 1. by eexists. Qed.
+Definition to_val_unseal : to_val = _ := seal_eq _.
+Arguments to_val {_ _ _} v.
 (* Disable Notation "# l". *)
 Global Notation "# x" := (to_val x).
 Global Notation "#" := to_val.
@@ -19,42 +19,34 @@ Global Hint Mode IntoVal - ! : typeclass_instances.
 Section instances.
 Context `{ffi_syntax}.
 
-Program Global Instance into_val_loc : IntoVal loc :=
-  {| to_val := λ v, (LitV $ LitLoc v) |}.
-Obligation 1. intros ???. naive_solver. Qed.
+Global Instance into_val_loc : IntoVal loc :=
+  {| to_val_def := λ v, (LitV $ LitLoc v) |}.
 
-Program Global Instance into_val_w64 : IntoVal w64 :=
-  {| to_val := λ v, (LitV $ LitInt v) |}.
-Obligation 1. intros ???. naive_solver. Qed.
+Global Instance into_val_w64 : IntoVal w64 :=
+  {| to_val_def := λ v, (LitV $ LitInt v) |}.
 
-Program Global Instance into_val_w32 : IntoVal w32 :=
-  {| to_val := λ v, (LitV $ LitInt32 v) |}.
-Obligation 1. intros ???. naive_solver. Qed.
+Global Instance into_val_w32 : IntoVal w32 :=
+  {| to_val_def := λ v, (LitV $ LitInt32 v) |}.
 
-Program Global Instance into_val_w8 : IntoVal w8 :=
-  {| to_val := λ v, (LitV $ LitByte v) |}.
-(* XXX: Why no obligation here? *)
+Global Instance into_val_w8 : IntoVal w8 :=
+  {| to_val_def := λ v, (LitV $ LitByte v) |}.
 
-Program Global Instance into_val_unit : IntoVal () :=
-  {| to_val := λ _, (LitV $ LitUnit) |}.
-Obligation 1. intros ???. by destruct x, y. Qed.
+Global Instance into_val_unit : IntoVal () :=
+  {| to_val_def := λ _, (LitV $ LitUnit) |}.
 
-Program Global Instance into_val_bool : IntoVal bool :=
-  {| to_val := λ b, (LitV $ LitBool b) |}.
-Obligation 1. intros ???. naive_solver. Qed.
+Global Instance into_val_bool : IntoVal bool :=
+  {| to_val_def := λ b, (LitV $ LitBool b) |}.
 
-Program Global Instance into_val_string : IntoVal string :=
-  {| to_val := λ s, (LitV $ LitString s) |}.
-Obligation 1. intros ???. naive_solver. Qed.
+Global Instance into_val_string : IntoVal string :=
+  {| to_val_def := λ s, (LitV $ LitString s) |}.
 
 Inductive GoFunc :=
 | go_func (f x : binder) (e : expr)
 .
-Program Global Instance into_val_func : IntoVal GoFunc :=
-  {| to_val := λ (f : GoFunc),
+Global Instance into_val_func : IntoVal GoFunc :=
+  {| to_val_def := λ (f : GoFunc),
                  let (f, x, e) := f in RecV f x e
   |}.
-Obligation 1. intros ???. destruct x, y. inversion H0. naive_solver. Qed.
 
 End instances.
 Global Notation "()" := tt : val_scope.

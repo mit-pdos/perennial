@@ -865,33 +865,31 @@ Definition bin_op_eval_compare (op : bin_op) {width} {word: Interface.word width
   | _ => None
   end.
 
-Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
+Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option bool :=
   match op with
   | PlusOp | MinusOp | MultOp | QuotOp | RemOp => None (* Arithmetic *)
-  | AndOp => Some (LitBool (b1 && b2))
-  | OrOp => Some (LitBool (b1 || b2))
-  | XorOp => Some (LitBool (xorb b1 b2))
+  | AndOp => Some (b1 && b2)
+  | OrOp => Some (b1 || b2)
+  | XorOp => Some (xorb b1 b2)
   | ShiftLOp | ShiftROp => None (* Shifts *)
   | LeOp | LtOp => None (* InEquality *)
-  | EqOp => Some (LitBool (bool_decide (b1 = b2)))
+  | EqOp => Some (bool_decide (b1 = b2))
   | OffsetOp _ => None (* Pointer arithmetic *)
   | _ => None
   end.
 
-Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :=
+Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option string :=
   match op with
-  | PlusOp => Some $ LitString (s1 ++ s2)
+  | PlusOp => Some $ (s1 +:+ s2)
   | _ => None
   end.
 
 Definition string_to_bytes (s:string): list u8 :=
   (λ x, W8 $ Ascii.nat_of_ascii x) <$> String.list_ascii_of_string s.
 
-Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option base_lit :=
+Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option w8 :=
   match op with
-  | StringGetOp => mbind (M:=option)
-                  (λ (x:u8), Some $ LitByte x)
-                  ((string_to_bytes s1) !! (uint.nat w2))
+  | StringGetOp => ((string_to_bytes s1) !! (uint.nat w2))
   | _ => None
   end.
 
@@ -946,16 +944,16 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitInt n1), LitV (LitInt32 n2) =>
       LitV <$> (LitInt <$> bin_op_eval_shift op n1 (W64 (uint.Z n2)))
 
-    | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
-    | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2
+    | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> (LitBool <$> bin_op_eval_bool op b1 b2)
+    | LitV (LitString s1), LitV (LitString s2) => LitV <$> (LitString <$> bin_op_eval_string op s1 s2)
     | LitV (LitLoc l), LitV (LitInt off) => match op with
                                            | OffsetOp k =>
                                              Some $ LitV $ LitLoc (l +ₗ k * (uint.Z (off: u64)))
                                            | _ => None
                                            end
-    | LitV (LitString s1), LitV (LitByte n) => LitV <$> bin_op_eval_string_word op s1 n
-    | LitV (LitString s1), LitV (LitInt32 n) => LitV <$> bin_op_eval_string_word op s1 n
-    | LitV (LitString s1), LitV (LitInt n) => LitV <$> bin_op_eval_string_word op s1 n
+    | LitV (LitString s1), LitV (LitByte n) => LitV <$> (LitByte <$> bin_op_eval_string_word op s1 n)
+    | LitV (LitString s1), LitV (LitInt32 n) => LitV <$> (LitByte <$> bin_op_eval_string_word op s1 n)
+    | LitV (LitString s1), LitV (LitInt n) => LitV <$> (LitByte <$> bin_op_eval_string_word op s1 n)
     | _, _ => None
     end.
 
