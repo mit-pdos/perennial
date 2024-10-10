@@ -1,8 +1,6 @@
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
 From New.golang.defn Require Export typing.
-From New.golang.theory Require Export list.
-From New.golang.defn Require Export typing.
 
 Set Default Proof Using "Type".
 
@@ -185,11 +183,11 @@ Section typing.
     length (flatten_struct v) = (go_type_size t).
   Proof.
     rewrite go_type_size_unseal.
-    induction 1; simpl; rewrite ?slice.val_unseal ?interface.val_unseal; auto.
+    induction 1; simpl; rewrite ?slice.val_unseal ?interface.val_unseal /go_nil ?to_val_unseal; auto.
     - simpl.
       rewrite array.val_unseal.
       dependent induction a generalizing n.
-      + simpl in *. subst. done.
+      + simpl in *. rewrite to_val_unseal. subst. done.
       + simpl. simpl in Hlen.
         destruct n; first by exfalso.
         inversion_clear Hlen. clear n.
@@ -202,7 +200,7 @@ Section typing.
         f_equal. apply H. by left.
     - rewrite struct.val_unseal.
       induction d.
-      { done. }
+      { rewrite /= ?to_val_unseal. done. }
       destruct a. cbn.
       rewrite length_app.
       rewrite IHd.
@@ -266,7 +264,7 @@ Section typing.
     let solve_right :=
       try (solve [ right;
                   intros [???];
-                  rewrite slice.val_unseal /slice.val_def /=;
+                  rewrite slice.val_unseal /slice.val_def ?to_val_unseal /=;
                     inversion 1;
                   subst ]) in
     repeat match goal with
@@ -277,8 +275,7 @@ Section typing.
            end.
     left.
     eexists (slice.mk _ _ _);
-      rewrite slice.val_unseal /slice.val_def //=.
-    Transparent to_val. unfold to_val. simpl. done. Opaque to_val.
+      rewrite slice.val_unseal /slice.val_def ?to_val_unseal //=.
   Defined.
 
   (* TODO: I think this is possible, but some unfortunate changes are needed: we
@@ -312,13 +309,21 @@ Class IntoValTyped (V : Type) (t : go_type) `{IntoVal V} :=
   {
     to_val_has_go_type: ∀ (v : V), has_go_type (# v) t ;
     default_val : V ;
-    default_val_eq_zero_val : #default_val = zero_val t
+    default_val_eq_zero_val : #default_val = zero_val t ;
+    #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
+    #[global] to_val_eqdec :: EqDecision V ;
   }.
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
-
 Arguments default_val (V) {_ _ _ _}.
+
+Class IntoValTypedComparable (V : Type) (t : go_type) `{IntoValTyped V t} :=
+  {
+    to_val_is_comparable : ∀ (v : V), is_comparable #v
+  }.
+Global Hint Mode IntoValTypedComparable - ! - - - : typeclass_instances.
+Global Hint Mode IntoValTypedComparable ! - - - - : typeclass_instances.
 
 From Ltac2 Require Import Ltac2.
 Ltac2 solve_has_go_type_step () :=

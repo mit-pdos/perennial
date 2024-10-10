@@ -1,92 +1,9 @@
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lang lifting.
 From iris.proofmode Require Import coq_tactics.
-From New.golang.defn Require Export typing.
+From New.golang.theory Require Export typing.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-
-Module go_val.
-
-Polymorphic Fixpoint V (t : go_type) : Type :=
-  match t with
-  | uint64T => w64
-  | structT d =>
-      (fix Vlist (l : list (string * go_type)) : Type :=
-         match l with
-         | [] => unit
-         | (f, t) :: tl => prod (V t) (Vlist tl)
-         end) d
-  | _ => False
-  end.
-
-(*
-Fixpoint proj_def t f {d ft} {Heq : TCSimpl t (structT d)} {Hin : TCSimpl (assocl_lookup f d) (Some ft)}
-  (v : V t) : V ft.
-Proof.
-  rewrite -> TCSimpl_eq in Hin. rewrite -> TCSimpl_eq in Heq.
-  destruct d as [|[f' ft'] tl].
-  - done.
-  - simpl in Hin, v. subst. destruct v.
-    destruct (_ =? _)%string.
-    + inversion Hin; subst. assumption.
-    + eapply proj_def.
-      { apply _. }
-      { rewrite -Hin. done. }
-      { done. }
-Defined.
-*)
-
-Fixpoint proj_def t f {d ft} {Heq : eq t (structT d)} {Hin : eq (assocl_lookup f d) (Some ft)}
-  (v : V t) : V ft.
-Proof.
-  destruct d as [|[f' ft'] tl].
-  - done.
-  - simpl in Hin, v. subst. destruct v.
-    destruct (_ =? _)%string.
-    + inversion Hin; subst. assumption.
-    + by eapply proj_def.
-Defined.
-Program Definition proj := unseal (_:seal (@proj_def)). Obligation 1. by eexists. Qed.
-Definition proj_unseal : proj = _ := seal_eq _.
-Arguments proj (t f) {d ft Heq Hin} (v).
-Notation "v .[ t f ]" := (proj t f v (Heq:=eq_refl) (Hin:=eq_refl)).
-
-Definition S1 := structT [("x", uint64T)].
-Definition S2 := [("a", uint64T) ; ("b", uint64T); ("c", S1)].
-
-Module S1.
-  Definition t : Type := V S1.
-  Definition mk (x : w64) : t := (x, tt).
-  Definition x (v : t) : w64 := proj S1 "x" v (Heq:=eq_refl) (Hin:=eq_refl).
-  Lemma x_simpl c : x (mk c) = c.
-  Proof. rewrite /x proj_unseal. reflexivity. Qed.
-
-  Eval simpl in (x (mk 10)).
-
-  Definition mk (a b : w64 ) (c : ) : V (structT exampleDesc) :=
-    (W64 10, (W64 3, ((W64 10, tt), tt)))
-  .
-
-Definition mk (a b : w64 ) (c : ) : V (structT exampleDesc) :=
-  (W64 10, (W64 3, ((W64 10, tt), tt)))
-.
-
-Eval cbn in (proj exampleDesc "a" uint64T eq_refl x).
-
-Fixpoint struct_make d : V (structT d).
-Proof.
-Qed.
-
-Fixpoint proj2 d f t (Hin : assocl_lookup f d = Some t) (v : V (structT d)) : V t :=
-  match d with
-  | [] => _
-  | (f',t') :: tl => if (String.eqb f f') then
-                     let v := (eq_rect _ id v (prod (V t') _)
-                                 (eq_refl : V (structT d) = (prod (V t') _))) in
-                     let '(h, _) := v in h
-                   else proj tl f t _ v
-  end.
-
 
 (** Classes that are used to tell [wp_pures] about steps it can take. *)
 Section classes.
@@ -139,7 +56,6 @@ End classes.
 (** Some basic, primitive instances. Adapted to use `IntoVal`. *)
 Section instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Transparent to_val.
 
 Global Instance wp_injl (v : val) : PureWp True (InjL v) (InjLV v).
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -160,10 +76,10 @@ Global Instance wp_pair (v1 v2 : val) : PureWp True (v1, v2)%E (v1, v2)%V.
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 Global Instance wp_if_false e1 e2 : PureWp True (if: #false then e1 else e2) e2.
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Proof. apply (pure_exec_pure_wp O). rewrite to_val_unseal. solve_pure_exec. Qed.
 
 Global Instance wp_if_true e1 e2 : PureWp True (if: #true then e1 else e2) e1.
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Proof. apply (pure_exec_pure_wp O). rewrite to_val_unseal. solve_pure_exec. Qed.
 
 Global Instance wp_case_inr v e1 e2 : PureWp True (Case (InjRV v) e1 e2) (e2 v).
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -172,103 +88,231 @@ Global Instance wp_case_inl v e1 e2 : PureWp True (Case (InjLV v) e1 e2) (e1 v).
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 Global Instance wp_total_le (v1 v2 : val) : PureWp True (TotalLe v1 v2) #(val_le v1 v2).
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Proof. apply (pure_exec_pure_wp O). rewrite to_val_unseal. solve_pure_exec. Qed.
 
-Search PureExec.
-Print expr.
+Global Instance wp_eq `{!IntoVal V} `{!IntoValTyped V t} `{!IntoValTypedComparable V t} (v1 v2 : V) :
+  PureWp True (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)).
+Proof.
+  pose proof (conj (to_val_is_comparable v1) (to_val_is_comparable v2)).
+  rewrite to_val_unseal in H.
+  cut (bin_op_eval EqOp (to_val_def v1) (to_val_def v2) = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
+  { rewrite to_val_unseal. intros. apply (pure_exec_pure_wp O). solve_pure_exec. }
+  rewrite /bin_op_eval /bin_op_eval_eq /=.
+  rewrite decide_True //.
+  destruct (decide (v1 = v2)) eqn:Hx.
+  - subst. rewrite !bool_decide_true //.
+  - rewrite !bool_decide_false // -to_val_unseal. by intros Heq%to_val_inj.
+Qed.
 
-Opaque to_val.
+(** Unops *)
+(* w64 unops *)
+Global Instance wp_neg_w64 (v : w64) : PureWp True (~#v) #(word.not v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
+Global Instance wp_w64_u_to_w64 (v : w64) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Context (V : Type).
-Context (Heq : V = bool).
-Check (λ v : V, eq_rect V id v bool Heq).
+Global Instance wp_w64_u_to_w32 (v : w64) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Definition convert (V : Type) (Heq : V = bool) (v : V) : bool :=
-  eq_rect V id v bool Heq.
+Global Instance wp_w64_u_to_w8 (v : w64) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-PureStep (val → val → option val)
+Global Instance wp_w64_s_to_w64 (v : w64) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Definition un_op_eval (V : Type) (op : un_op) (v : V) : option val :=
-  match V as V0, op with
-  | bool, NegOp => Some $ #(negb false)
-  | Z, NegOp => Some $ #(negb false)
-  | _, _ => None
-  end
-.
-Obligation 1.
-intros. rewrite -Heq.
-Show Proof.
+Global Instance wp_w64_s_to_w32 (v : w64) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-  | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.not n)
-  | NegOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.not n)
-  | NegOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.not n)
-  | UToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (uint.Z v))
-  | UToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (uint.Z v))
-  | UToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (uint.Z v))
-  | UToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (uint.Z v))
-  | UToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (uint.Z v))
-  | UToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (uint.Z v))
-  | UToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (uint.Z v))
-  | UToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (uint.Z v))
-  | UToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (uint.Z v))
-  | SToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (sint.Z v))
-  | SToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (sint.Z v))
-  | SToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (sint.Z v))
-  | SToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (sint.Z v))
-  | SToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (sint.Z v))
-  | SToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (sint.Z v))
-  | SToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (sint.Z v))
-  | SToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (sint.Z v))
-  | SToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (sint.Z v))
-  | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
-  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (String.length v))
-  | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide ((String.length v) < 2^64))
-  | _, _ => None
-  end.
+Global Instance wp_w64_s_to_w8 (v : w64) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
+(* w32 unops *)
+Global Instance wp_neg_w32 (v : w32) : PureWp True (~#v) #(word.not v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Definition un_op_eval (op : un_op) (v : val) : option val :=
-  match op, v with
-  | NegOp, LitV (LitBool b) => Some $ #(negb b)
-  | NegOp, LitV (LitInt n) => Some $ #(word.not n)
-  | NegOp, LitV (LitInt32 n) => Some $ #(word.not n)
-  | NegOp, LitV (LitByte n) => Some $ #(word.not n)
-  | UToW64Op, LitV (LitInt v)   => Some $ #(W64 (uint.Z v)) LitV $ LitInt (W64 (uint.Z v))
-  | UToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (uint.Z v))
-  | UToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (uint.Z v))
-  | UToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (uint.Z v))
-  | UToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (uint.Z v))
-  | UToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (uint.Z v))
-  | UToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (uint.Z v))
-  | UToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (uint.Z v))
-  | UToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (uint.Z v))
-  | SToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (sint.Z v))
-  | SToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (sint.Z v))
-  | SToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (sint.Z v))
-  | SToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (sint.Z v))
-  | SToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (sint.Z v))
-  | SToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (sint.Z v))
-  | SToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (sint.Z v))
-  | SToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (sint.Z v))
-  | SToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (sint.Z v))
-  | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
-  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (String.length v))
-  | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide ((String.length v) < 2^64))
-  | _, _ => None
-  end.
+Global Instance wp_w32_u_to_w64 (v : w32) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-(* XXX: does not include β-reduction *)
-Fixpoint pure_compute (e : expr) : option expr :=
-  match e with
-  | Rec f x erec => Some $ Val $ RecV f x erec
-  | InjL (Val v) => Some $ Val $ InjLV v
-  | InjR (Val v) => Some $ Val $ InjRV v
-  | UnOp op (Val v) => un_op_eval op v ≫= (λ v, Some $ Val v)
-  | _ => None
-  end.
+Global Instance wp_w32_u_to_w32 (v : w32) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-PureExec (un_op_eval op v = Some v') 1 (UnOp op v) v'
+Global Instance wp_w32_u_to_w8 (v : w32) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w32_s_to_w64 (v : w32) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w32_s_to_w32 (v : w32) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w32_s_to_w8 (v : w32) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+(* w8 unops *)
+Global Instance wp_neg_w8 (v : w8) : PureWp True (~#v) #(word.not v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w8_u_to_w64 (v : w8) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w8_u_to_w32 (v : w8) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w8_u_to_w8 (v : w8) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w8_s_to_w64 (v : w8) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w8_s_to_w32 (v : w8) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w8_s_to_w8 (v : w8) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #(u8_to_string v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+(* bool unop *)
+Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(negb b).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+(* string unop *)
+Global Instance wp_StringLength (s : string) : PureWp True (StringLength #s) #(W64 $ String.length s).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_IsNoStringOverflow (s : string) : PureWp True (IsNoStringOverflow #s)
+                                                       #(bool_decide ((String.length s) < 2^64)).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+(** Binops *)
+
+(* w64 binop instance *)
+Global Instance wp_w64_binop op (v1 v2 : w64) (v : w64) :
+  PureWp (op ≠ EqOp ∧ bin_op_eval_word op v1 v2 = Some v) (BinOp op #v1 #v2)%E #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec; destruct H as [Hneq Hword].
+  - rewrite /bin_op_eval Hword decide_False // union_Some_l /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval Hword decide_False // union_Some_l /= in H1. Transitions.monad_inv. eauto.
+Qed.
+
+Global Instance wp_w32_binop op (v1 v2 : w32) (v : w32) :
+  PureWp (op ≠ EqOp ∧ bin_op_eval_word op v1 v2 = Some v) (BinOp op #v1 #v2)%E #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec; destruct H as [Hneq Hword].
+  - rewrite /bin_op_eval Hword decide_False // union_Some_l /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval Hword decide_False // union_Some_l /= in H1. Transitions.monad_inv. eauto.
+Qed.
+
+Global Instance wp_w8_binop op (v1 v2 : w8) (v : w8) :
+  PureWp (op ≠ EqOp ∧ bin_op_eval_word op v1 v2 = Some v) (BinOp op #v1 #v2)%E #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec; destruct H as [Hneq Hword].
+  - rewrite /bin_op_eval Hword decide_False // union_Some_l /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval Hword decide_False // union_Some_l /= in H1. Transitions.monad_inv. eauto.
+Qed.
+
+Global Instance wp_w8_w64_binop op (v1 : w8) (v2 : w64) (v : w8) :
+  PureWp (bin_op_eval_shift op v1 (W8 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  rewrite /bin_op_eval_shift /=.
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w8_w32_binop op (v1 : w8) (v2 : w32) (v : w8) :
+  PureWp (bin_op_eval_shift op v1 (W8 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w32_w64_binop op (v1 : w32) (v2 : w64) (v : w32) :
+  PureWp (bin_op_eval_shift op v1 (W32 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w32_w8_binop op (v1 : w32) (v2 : w8) (v : w32) :
+  PureWp (bin_op_eval_shift op v1 (W32 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w64_w8_binop op (v1 : w64) (v2 : w8) (v : w64) :
+  PureWp (bin_op_eval_shift op v1 (W64 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w64_w32_binop op (v1 : w64) (v2 : w32) (v : w64) :
+  PureWp (bin_op_eval_shift op v1 (W64 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+(* bool binop *)
+Global Instance wp_bool_binop op (v1 v2 v : bool) :
+  PureWp (op ≠ EqOp ∧ bin_op_eval_bool op v1 v2 = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  case => ?. solve_pure_exec.
+  - rewrite /bin_op_eval decide_False // b /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval decide_False // b /= in H0. by Transitions.monad_inv.
+Qed.
+
+Global Instance wp_string_binop op (v1 v2 v : string) :
+  PureWp (op ≠ EqOp ∧ bin_op_eval_string op v1 v2 = Some v) (BinOp op #v1 #v2) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  case => ?. solve_pure_exec.
+  - rewrite /bin_op_eval decide_False // b /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval decide_False // b /= in H0. by Transitions.monad_inv.
+Qed.
+
+Global Instance wp_offset k (l : loc) (off : w64) :
+  PureWp True (BinOp (OffsetOp k) #l #off) #(l +ₗ k * (uint.Z off)).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+(* string lookup ops *)
+
+Global Instance wp_StringGet_w64 (s : string) (i : w64) (v : w8) :
+  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
+  - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
+Qed.
+
+Global Instance wp_StringGet_w32 (s : string) (i : w32) (v : w8) :
+  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
+  - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
+Qed.
+
+Global Instance wp_StringGet_w8 (s : string) (i : w8) (v : w8) :
+  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
+  - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
+Qed.
+
+(* TODO: beta *)
+
 End instances.
 
 (** Tactics *)
