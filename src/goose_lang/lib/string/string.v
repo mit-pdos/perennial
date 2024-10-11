@@ -115,14 +115,14 @@ Proof.
   rewrite bytes_to_string_to_bytes //.
 Qed.
 
-Lemma wp_stringToBytes (i:u64) (s:string) :
+Lemma wp_stringToBytes (i:u64) (s:byte_string) :
   {{{
-        ⌜uint.nat i <= String.length s⌝
+        ⌜uint.nat i <= length s⌝
   }}}
     stringToBytes #i #(str s)
   {{{
         (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1)
-                                                    (take (uint.nat i) (string_to_bytes s))
+                                                    (take (uint.nat i) s)
   }}}
 .
 Proof.
@@ -140,11 +140,10 @@ Proof.
   wp_pures.
   destruct (decide (i = 0)).
   { subst. by exfalso. }
-  assert (uint.nat (word.sub i 1%Z) < String.length s)%nat as Hlookup.
+  assert (uint.nat (word.sub i 1%Z) < length s)%nat as Hlookup.
   { enough (uint.nat i ≠ 0%nat) by word.
     intros ?. apply n. word. }
   pose proof Hlookup as Hineq2.
-  rewrite string_bytes_length in Hlookup.
   apply List.list_lookup_lt in Hlookup as [? Hlookup].
   wp_pure.
   { by rewrite /bin_op_eval /= Hlookup. }
@@ -165,13 +164,13 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_StringToBytes (s:string) :
+Lemma wp_StringToBytes (s:byte_string) :
   {{{
         True
   }}}
     StringToBytes #(str s)
   {{{
-        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (string_to_bytes s)
+        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1) s
   }}}
 .
 Proof.
@@ -185,7 +184,6 @@ Proof.
   iDestruct (own_slice_sz with "[$]") as %Hsz.
   rewrite take_ge.
   { iFrame. }
-  rewrite -string_bytes_length.
   word.
 Qed.
 
@@ -195,7 +193,7 @@ Lemma wp_StringFromBytes sl q (l:list u8) :
   }}}
     StringFromBytes (slice_val sl)
   {{{
-        RET #(str bytes_to_string l); own_slice_small sl byteT q l
+        RET #(str l); own_slice_small sl byteT q l
   }}}
 .
 Proof.
