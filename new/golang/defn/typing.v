@@ -33,7 +33,7 @@ Section val_types.
   | stringT
   | arrayT (n : nat) (elem : go_type)
   | sliceT (elem : go_type)
-  | structT (decls : list (string * go_type)) (* What if this were a gmap? *)
+  | structT (decls : list (byte_string * go_type)) (* What if this were a gmap? *)
   | ptrT (* Untyped pointer; convenient to support recursion in structs *)
   | funcT
   | interfaceT
@@ -102,19 +102,19 @@ Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +
 Notation "l +ₗ[ t ] z" := (l +ₗ go_type_size t * z) : stdpp_scope .
 Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (go_type_size t)) e1%E e2%E) : expr_scope .
 
-Fixpoint assocl_lookup {A} (f : string) (field_vals: list (string * A)) : option A :=
+Fixpoint assocl_lookup {A} (f : byte_string) (field_vals: list (byte_string * A)) : option A :=
   match field_vals with
   | [] => None
-  | (f', v)::fs => if String.eqb f' f then Some v else assocl_lookup f fs
+  | (f', v)::fs => if ByteString.eqb f' f then Some v else assocl_lookup f fs
   end.
 
 Module struct.
-  Definition descriptor := list (string * go_type).
+  Definition descriptor := list (byte_string * go_type).
 
 Section goose_lang.
   Context `{ffi_syntax}.
 
-  Definition fields_val_def (m : list (string* val)) : val :=
+  Definition fields_val_def (m : list (byte_string* val)) : val :=
     list.val (fmap (λ '(a,b), (#(str a), b)%V) m).
   Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
   Definition fields_val_unseal : fields_val = _ := seal_eq _.

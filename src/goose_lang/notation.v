@@ -1,5 +1,6 @@
 From Perennial.program_logic Require Import language.
 From Perennial.goose_lang Require Export lang.
+From Perennial.Helpers Require Export ByteString.
 Set Default Proof Using "Type".
 
 Delimit Scope expr_scope with E.
