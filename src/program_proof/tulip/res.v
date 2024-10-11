@@ -25,13 +25,13 @@ Section res.
     Definition own_db_ptstos γ (m : dbmap) : iProp Σ :=
       [∗ map] k ↦ v ∈ m, own_db_ptsto γ k v.
 
-    Lemma own_db_ptsto_update {γ k v1 v2} v :
+    Lemma db_ptsto_update {γ k v1 v2} v :
       own_db_ptsto γ k v1 -∗
       own_db_ptsto γ k v2 ==∗
       own_db_ptsto γ k v ∗ own_db_ptsto γ k v.
     Admitted.
 
-    Lemma own_db_ptsto_agree γ k v1 v2 :
+    Lemma db_ptsto_agree γ k v1 v2 :
       own_db_ptsto γ k v1 -∗
       own_db_ptsto γ k v2 -∗
       ⌜v2 = v1⌝.

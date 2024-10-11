@@ -78,12 +78,12 @@ Section res.
       ⌜prefix hlb h⌝.
     Admitted.
 
-    Definition lnrz_hist_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
+    Definition is_lnrz_hist_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
       ∃ lb, is_lnrz_hist_lb γ k lb ∗ ⌜lb !! ts = Some v⌝.
 
     Lemma lnrz_hist_lookup γ k h ts v :
       own_lnrz_hist γ k h -∗
-      lnrz_hist_at γ k ts v -∗
+      is_lnrz_hist_at γ k ts v -∗
       ⌜h !! ts = Some v⌝.
     Proof.
       iIntros "Hauth (%lb & #Hlb & %Hv)".
@@ -110,10 +110,10 @@ Section res.
       Persistent (is_txn_res γ ts res).
     Admitted.
 
-    Definition txn_res_cmt γ ts wrs :=
+    Definition is_txn_cmted γ ts wrs :=
       is_txn_res γ ts (ResCommitted wrs).
 
-    Definition txn_res_abt γ ts :=
+    Definition is_txn_abted γ ts :=
       is_txn_res γ ts ResAborted.
 
     Lemma txn_res_insert {γ resm} ts res :
