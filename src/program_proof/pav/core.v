@@ -1,4 +1,4 @@
-From Perennial.Helpers Require Import Integers.
+From Perennial.Helpers Require Import Integers ListLen.
 
 From stdpp Require Import ssreflect prelude gmap.
 
@@ -99,6 +99,7 @@ Section ts_msv.
 
 (* timeseries and its interaction with msv. *)
 
+(* lookup_weaken_None and lookup_weaken are useful with this. *)
 Definition maps_mono (ms : list map_ty) :=
   ∀ i j mi mj,
   ms !! i = Some mi →
@@ -123,8 +124,8 @@ Record ts_ty :=
     bound: epoch_ty;
   }.
 
-(* rets Some iff ep ≤ bound. fetches all the pk's thru ep. *)
-Fixpoint ts_get (ts : ts_ty) (ep : epoch_ty) : option (list map_val_ty). Admitted.
+(* ts_get fetches the seq of pk's through this ep. *)
+Definition ts_get ts ep := filter (λ x, x.1 ≤ ep) ts.(entries).
 
 Definition ts_epoch_mono (ts : ts_ty) :=
   ∀ i j ep_i pk_i ep_j pk_j,
@@ -133,10 +134,13 @@ Definition ts_epoch_mono (ts : ts_ty) :=
   i < j →
   ep_i < ep_j.
 
-Definition ts_bound_ok (ts : ts_ty) :=
-  ∀ ep pk,
-  last ts.(entries) = Some (ep, pk) →
+Definition ts_bound_ok0 (ts : ts_ty) :=
+  ∀ i ep pk,
+  ts.(entries) !! i = Some (ep, pk) →
   ep ≤ ts.(bound).
+
+Definition ts_bound_ok1 (ts : ts_ty) (ms : list map_ty) :=
+  ts.(bound) < length ms.
 
 Definition ts_entry_know (ts : ts_ty) (ms : list map_ty) uid :=
   ∀ ver ep pk m,
@@ -152,16 +156,41 @@ Definition ts_bound_know (ts : ts_ty) (ms : list map_ty) uid :=
 (* maintained by client. *)
 Definition ts_inv ts ms uid :=
   ts_epoch_mono ts ∧
-  ts_bound_ok ts ∧
+  ts_bound_ok0 ts ∧
+  ts_bound_ok1 ts ms ∧
   ts_entry_know ts ms uid ∧
   ts_bound_know ts ms uid.
 
-Lemma ts_interp ts ms uid ep m vals :
+Lemma ts_interp ts ms uid ep m :
   ts_inv ts ms uid →
   adtr_inv ms →
   ms !! ep = Some m →
-  ts_get ts ep = Some vals →
-  msv m uid vals.
-Proof. Admitted.
+  ep ≤ ts.(bound) →
+  msv m uid (ts_get ts ep).
+Proof.
+  intros Hts Hadtr Hm_look Hbound. split.
+  (* ver memb. should come all from the ts_get entries. *)
+  - admit.
+  (* ver non-memb. the next ver is either in the TS or in the bound. *)
+  - destruct (decide (filter (λ x, ep < x.1) ts.(entries) = [])) as [Hbig|Hbig].
+    (* in the bound. *)
+    + destruct Hts as (_&_&Hok&_&Hknow).
+      list_elem ms (bound ts) as m_bnd; [done|].
+      ospecialize (Hknow m_bnd Hm_bnd_lookup).
+      assert (length (ts_get ts ep) = length (ts.(entries))) as ->.
+      { pose proof (filter_app_complement (λ x, ep < x.1) ts.(entries)) as H.
+        rewrite Hbig in H. list_simplifier. apply Permutation_length in H.
+        rewrite (list_filter_iff _ (λ x, x.1 ≤ ep)) in H; [done|lia]. }
+      destruct Hadtr as (Hmono&_).
+      ospecialize (Hmono _ _ _ _ Hm_look Hm_bnd_lookup Hbound).
+      by eapply lookup_weaken_None.
+    (* in the TS. *)
+    + eapply (proj2 (head_is_Some _)) in Hbig as [xlt Hbig].
+      destruct Hts as (_&_&_&Hent&_).
+      (* prove that next ver is head of remaining TS. *)
+      admit.
+  (* TODO: maybe better approach is defining ts_get as a recursive prefix,
+  then proving (with ts_inv) that it satisfies the list_filter prop. *)
+Admitted.
 
 End ts_msv.
