@@ -63,6 +63,9 @@ iFrame.
 wp_rec.
 wp_alloc z as "Hz".
 unfold genericStruct.
+(*wp_store.*)
+(*wp_pures.*)
+wp_apply wp_struct_make.
 rewrite struct.make_unseal struct.fields_val_unseal.
 unfold struct.make_def.
 wp_apply wp_struct_make.
