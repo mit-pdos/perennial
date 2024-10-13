@@ -5,7 +5,7 @@ Section inv.
 
   Lemma txnsys_inv_abort γ tid future :
     head_abort future tid ->
-    is_txn_abted γ tid -∗
+    is_txn_aborted γ tid -∗
     own_wabt_tid γ tid -∗
     txnsys_inv_no_future γ future ==∗
     txnsys_inv_no_future γ (tail future).

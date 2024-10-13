@@ -35,16 +35,52 @@ Proof.
   by case_decide as H; first rewrite lookup_insert_ne.
 Qed.
 
+Definition prepared_impl_locked (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl) :=
+  ∀ ts pwrs key,
+  stm !! ts = Some (StPrepared pwrs) ->
+  key ∈ dom pwrs ->
+  ∃ tpl, tpls !! key = Some tpl ∧ tpl.2 = ts.
+
+Definition locked_impl_prepared (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl) :=
+  ∀ key tpl,
+  tpls !! key = Some tpl ->
+  tpl.2 ≠ O ->
+  ∃ pwrs, stm !! tpl.2 = Some (StPrepared pwrs) ∧ key ∈ dom pwrs.
+
 Section inv.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
 
+  Definition safe_prepared γ gid ts pwrs : iProp Σ :=
+    ∃ wrs, is_txn_wrs γ ts wrs ∧
+           ⌜valid_ts ts ∧ valid_wrs wrs ∧ pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs⌝.
+
+  (** The [StAborted] branch says that a transaction is aborted globally if it
+  is aborted locally on some group (the other direction is encoded in
+  [safe_submit]). This gives contradiction when learning a commit command under
+  an aborted state. *)
+  Definition safe_txnst γ gid ts st : iProp Σ :=
+    match st with
+    | StPrepared pwrs => is_group_prepared γ gid ts ∗ safe_prepared γ gid ts pwrs
+    | StCommitted => (∃ wrs, is_txn_committed γ ts wrs)
+    | StAborted => is_txn_aborted γ ts
+    end.
+
+  #[global]
+  Instance safe_txnst_persistent γ gid ts st :
+    Persistent (safe_txnst γ gid ts st).
+  Proof. destruct st; apply _. Qed.
+
   Definition group_inv_no_log_no_cpool
     γ (gid : groupid) (log : dblog) (cpool : gset command) : iProp Σ :=
     ∃ (pm : gmap nat bool) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
-      "Hpm"    ∷ own_group_prepm γ gid pm ∗
-      "Hrepls" ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, own_repl_tuple_half γ key tpl).
+      "Hpm"       ∷ own_group_prepm γ gid pm ∗
+      "Hrepls"    ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, own_repl_tuple_half γ key tpl) ∗
+      "#Hsafestm" ∷ ([∗ map] ts ↦ st ∈ stm, safe_txnst γ gid ts st) ∗
+      "%Hdompm"   ∷ ⌜dom pm ⊆ dom stm⌝ ∗
+      "%Hpil"     ∷ ⌜prepared_impl_locked stm tpls⌝ ∗
+      "%Hlip"     ∷ ⌜locked_impl_prepared stm tpls⌝.
 
   Definition group_inv_no_log_with_cpool
     γ (gid : groupid) (log : dblog) (cpool : gset command) : iProp Σ :=

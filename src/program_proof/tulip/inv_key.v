@@ -5,11 +5,15 @@ From Perennial.program_proof.tulip Require Import base res.
 
 (** Global per-key/tuple invariant. *)
 
+(* TODO: when adding quorum read, the None branch would have to updated to say
+[cmtd = last_extend tsrd repl], and we need an additional invariant that says if
+cmtd is longer than repl, then some quourm of replicas must have promised not to
+prepare between end of repl to end of cmtd. *)
 Definition ext_by_cmtd
   (repl cmtd : dbhist) (kmod : dbkmod) (ts : nat) :=
   match kmod !! ts with
   | Some v => cmtd = last_extend ts repl ++ [v]
-  | None => cmtd = repl
+  | None => cmtd = repl ∧ (ts ≠ O -> length cmtd ≤ ts)%nat
   end.
 
 Lemma ext_by_cmtd_prefix {repl cmtd kmod ts} :
@@ -18,8 +22,9 @@ Lemma ext_by_cmtd_prefix {repl cmtd kmod ts} :
 Proof.
   rewrite /ext_by_cmtd.
   intros Hext.
-  destruct (kmod !! ts) as [v |]; rewrite Hext; last done.
-  apply prefix_app_r, last_extend_prefix.
+  destruct (kmod !! ts) as [v |].
+  { rewrite Hext. apply prefix_app_r, last_extend_prefix. }
+  by destruct Hext as [-> _].
 Qed.
 
 Definition prev_dbval (ts : nat) (d : dbval) (kmod : dbkmod) :=

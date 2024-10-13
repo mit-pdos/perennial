@@ -110,10 +110,10 @@ Section res.
       Persistent (is_txn_res γ ts res).
     Admitted.
 
-    Definition is_txn_cmted γ ts wrs :=
+    Definition is_txn_committed γ ts wrs :=
       is_txn_res γ ts (ResCommitted wrs).
 
-    Definition is_txn_abted γ ts :=
+    Definition is_txn_aborted γ ts :=
       is_txn_res γ ts ResAborted.
 
     Lemma txn_res_insert {γ resm} ts res :
@@ -197,7 +197,7 @@ Section res.
       ⌜owrs2 = owrs1⌝.
     Admitted.
 
-    Lemma txn_oneshot_wrs_lookup_shot γ wrsm ts wrs :
+    Lemma txn_wrs_lookup γ wrsm ts wrs :
       is_txn_wrs γ ts wrs -∗
       own_txn_oneshot_wrsm γ wrsm -∗
       ⌜wrsm !! ts = Some (Some wrs)⌝.
@@ -213,7 +213,7 @@ Section res.
       by apply elem_of_dom_2 in Hlookup.
     Qed.
 
-    Lemma txn_oneshot_wrs_agree_shot γ ts wrs1 wrs2 :
+    Lemma txn_wrs_agree γ ts wrs1 wrs2 :
       is_txn_wrs γ ts wrs1 -∗
       is_txn_wrs γ ts wrs2 -∗
       ⌜wrs2 = wrs1⌝.

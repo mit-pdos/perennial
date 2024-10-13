@@ -1,7 +1,7 @@
 #!/bin/bash
 
 basedir='./src/program_proof/tulip'
-dir='.'
+dir=''
 prefix=''
 
 while getopts ":d:p:" option; do
@@ -16,8 +16,9 @@ done
 echo "Checking files in: ${dir}"
 echo "Matching files with prefix: ${prefix}"
 
-cd ../../../
-files=`find ${basedir}/${dir} -name "${prefix}*.v" ! -name "print_assumptions.v" | sed "s/\.v/\.vos/"`
+# On macOS, install 'gfind' with `brew install findutils`
+cd "$(dirname $0)"/../../../
+files=`gfind ${basedir}/${dir} -name "${prefix}*.v" ! -name "print_assumptions.v" | sed "s/\.v/\.vos/"`
 if [[ -z ${files} ]]; then
     echo "No target files."
     exit 1

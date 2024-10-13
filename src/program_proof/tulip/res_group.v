@@ -22,10 +22,10 @@ Section res.
       Persistent (is_group_prep γ gid ts p).
     Admitted.
 
-    Definition is_group_preped γ gid ts :=
+    Definition is_group_prepared γ gid ts :=
       is_group_prep γ gid ts true.
 
-    Definition is_group_unpreped γ gid ts :=
+    Definition is_group_unprepared γ gid ts :=
       is_group_prep γ gid ts false.
 
     Lemma group_prep_agree γ gid ts p1 p2 :

@@ -202,10 +202,10 @@ Section inv.
 
   Definition all_prepared γ ts wrs : iProp Σ :=
     is_txn_wrs γ ts wrs ∗
-    [∗ set] gid ∈ ptgroups (dom wrs), is_group_preped γ gid ts.
+    [∗ set] gid ∈ ptgroups (dom wrs), is_group_prepared γ gid ts.
 
   Definition some_aborted γ ts : iProp Σ :=
-    ∃ gid wrs, is_group_unpreped γ gid ts ∗
+    ∃ gid wrs, is_group_unprepared γ gid ts ∗
                is_txn_wrs γ ts wrs ∗
                ⌜gid ∈ ptgroups (dom wrs)⌝.
 
