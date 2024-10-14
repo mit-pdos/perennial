@@ -104,20 +104,19 @@ Section val_types.
   Definition intT := int64T.
 
   Context `{ffi_syntax}.
-  Definition go_nil : val := #null.
-  Definition slice_nil : val := InjLV (go_nil, #(W64 0), #(W64 0)).
-  Definition interface_nil : val := InjLV (go_nil, go_nil, go_nil).
+  Definition slice_nil : val := InjLV (#null, #(W64 0), #(W64 0)).
+  Definition interface_nil : val := InjLV (#null, #null, #null).
   Fixpoint zero_val_def (t : go_type) : val :=
     match t with
     | boolT => #false
 
     (* Numeric, except float and impl-specific sized objects *)
     | uint8T => #(W8 0)
-    | uint16T => go_nil
+    | uint16T => #null
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
     | int8T => #(W8 0)
-    | int16T => go_nil
+    | int16T => #null
     | int32T => #(W32 0)
     | int64T => #(W64 0)
 
@@ -125,11 +124,11 @@ Section val_types.
     | arrayT n elem => array.val (replicate n (zero_val_def elem))
     | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
-    | ptrT => go_nil
-    | funcT => go_nil
+    | ptrT => #null
+    | funcT => #null
     | interfaceT => interface_nil
-    | mapT _ _ => go_nil
-    | chanT _ => go_nil
+    | mapT _ _ => #null
+    | chanT _ => #null
     end.
   Program Definition zero_val := unseal (_:seal (@zero_val_def)). Obligation 1. by eexists. Qed.
   Definition zero_val_unseal : zero_val = _ := seal_eq _.

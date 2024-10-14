@@ -8,7 +8,7 @@ From Perennial.Helpers Require Import Transitions.
 From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
-From Perennial.goose_lang Require Export tactics notation.
+From Perennial.goose_lang Require Export notation.
 Set Default Proof Using "Type".
 
 Notation nonAtomic T := (naMode * T)%type.
