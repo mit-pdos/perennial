@@ -1,20 +1,21 @@
 From New Require Export notation.
+From New.golang.defn Require Import typing.
 
 Section defn.
 
 Context `{!ffi_syntax}.
 
-Definition execute_val_def (v : val) : val := (#(str "execute"), v).
+Definition execute_val_def (v : val) : val := (#"execute", v).
 Program Definition execute_val := unseal (_:seal (@execute_val_def)). Obligation 1. by eexists. Qed.
 Definition execute_val_unseal : execute_val = _ := seal_eq _.
 
-Definition return_val_def (v : val) : val := (#(str "return"), v).
+Definition return_val_def (v : val) : val := (#"return", v).
 Program Definition return_val := unseal (_:seal (@return_val_def)). Obligation 1. by eexists. Qed.
 Definition return_val_unseal : return_val = _ := seal_eq _.
 
 (* "Exception" monad *)
 Local Definition do_execute_def : val :=
-  λ: "v", (#(str "execute"), Var "v")
+  λ: "v", (#"execute", Var "v")
 .
 
 Program Definition do_execute := unseal (_:seal (@do_execute_def)). Obligation 1. by eexists. Qed.
@@ -24,7 +25,7 @@ Definition do_execute_unseal : do_execute = _ := seal_eq _.
    next sequential computation. *)
 Local Definition exception_seq_def : val :=
   λ: "s2" "s1",
-    if: (Fst "s1") = #(str "execute") then
+    if: (Fst "s1") = #"execute" then
       "s2" #()
     else
       "s1"
@@ -33,7 +34,7 @@ Program Definition exception_seq := unseal (_:seal (@exception_seq_def)). Obliga
 Definition exception_seq_unseal : exception_seq = _ := seal_eq _.
 
 Local Definition do_return_def : val :=
-  λ: "v", (#(str "return"), Var "v")
+  λ: "v", (#"return", Var "v")
 .
 Program Definition do_return := unseal (_:seal (@do_return_def)). Obligation 1. by eexists. Qed.
 Definition do_return_unseal : do_return = _ := seal_eq _.

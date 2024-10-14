@@ -1,6 +1,8 @@
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
 From New.golang.defn Require Export typing.
+From Ltac2 Require Import Ltac2.
+Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
@@ -12,11 +14,18 @@ Definition nil_f : slice.t := mk null 0 0.
 
 Section goose_lang.
   Context `{ffi_semantics}.
+  (* XXX: might not need to seal this. *)
   Definition val_def (s: slice.t) : val := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f)).
   Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
   Definition val_unseal : val = _ := seal_eq _.
 End goose_lang.
 End slice.
+
+Global Instance into_val_slice `{ffi_syntax} : IntoVal slice.t :=
+  {| to_val_def := slice.val |}.
+
+Global Instance slice_eq_dec : EqDecision slice.t.
+Proof. solve_decision. Qed.
 
 Module struct.
 Section goose_lang.
@@ -113,17 +122,17 @@ Section typing.
   | has_go_type_bool (b : bool) : has_go_type #b boolT
   | has_go_type_uint64 (x : w64) : has_go_type #x uint64T
   | has_go_type_uint32 (x : w32) : has_go_type #x uint32T
-  | has_go_type_uint16 : has_go_type go_nil uint16T
+  | has_go_type_uint16 : has_go_type #null uint16T
   | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
 
   | has_go_type_int64 (x : w64) : has_go_type #x int64T
   | has_go_type_int32 (x : w32) : has_go_type #x int32T
-  | has_go_type_int16 : has_go_type go_nil int16T
+  | has_go_type_int16 : has_go_type #null int16T
   | has_go_type_int8 (x : w8) : has_go_type #x int8T
 
   | has_go_type_string (s : string) : has_go_type #s stringT
-  | has_go_type_slice elem (s : slice.t) : has_go_type (slice.val s) (sliceT elem)
-  | has_go_type_slice_nil elem : has_go_type slice.nil (sliceT elem)
+  | has_go_type_slice elem (s : slice.t) : has_go_type (# s) (sliceT elem)
+  | has_go_type_slice_nil elem : has_go_type (# slice.nil_f) (sliceT elem)
 
   | has_go_type_array n elem (a : list val)
                       (Hlen : length a = n)
@@ -136,7 +145,7 @@ Section typing.
     : has_go_type (struct.val (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func f e v : has_go_type (RecV f e v) funcT
-  | has_go_type_func_nil : has_go_type go_nil funcT
+  | has_go_type_func_nil : has_go_type #null funcT
 
   | has_go_type_interface (mset : list (string * val)) (v : val) :
     has_go_type (interface.val mset v) interfaceT
@@ -156,6 +165,11 @@ Section typing.
       rewrite -elem_of_list_In in H.
       apply elem_of_replicate_inv in H. subst.
       by rewrite -zero_val_unseal.
+    }
+    { (* sliceT *)
+      replace (zero_val_def (sliceT t)) with (# slice.nil_f).
+      { constructor. }
+      rewrite to_val_unseal /= slice.val_unseal //.
     }
 
     (* structT *)
@@ -183,7 +197,7 @@ Section typing.
     length (flatten_struct v) = (go_type_size t).
   Proof.
     rewrite go_type_size_unseal.
-    induction 1; simpl; rewrite ?slice.val_unseal ?interface.val_unseal /go_nil ?to_val_unseal; auto.
+    induction 1; simpl; rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal; auto.
     - simpl.
       rewrite array.val_unseal.
       dependent induction a generalizing n.
@@ -215,23 +229,23 @@ Section typing.
 
     (* Numeric, except float and impl-specific sized objects *)
     | uint8T => #(W8 0)
-    | uint16T => go_nil
+    | uint16T => #null
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
     | int8T => #(W8 0)
-    | int16T => go_nil
+    | int16T => #null
     | int32T => #(W32 0)
     | int64T => #(W64 0)
 
     | stringT => #("")
     | arrayT n elem => array.val (replicate n (zero_val elem))
-    | sliceT _ => slice.nil
+    | sliceT _ => #slice.nil_f
     | structT decls => struct.val t []
-    | ptrT => go_nil
-    | funcT => go_nil
+    | ptrT => #null
+    | funcT => #null
     | interfaceT => interface_nil
-    | mapT _ _ => go_nil
-    | chanT _ => go_nil
+    | mapT _ _ => #null
+    | chanT _ => #null
     end.
 
   Lemma zero_val'_eq_zero_val_1 t :
@@ -240,6 +254,7 @@ Section typing.
     rewrite zero_val_unseal.
     induction t; try done.
     { simpl. by rewrite zero_val_unseal. }
+    { simpl. rewrite to_val_unseal /= slice.val_unseal. done. }
     simpl. rewrite struct.val_unseal.
     induction decls; first done.
     destruct a. simpl.
@@ -307,8 +322,8 @@ End typing.
 
 Class IntoValTyped (V : Type) (t : go_type) `{IntoVal V} :=
   {
-    to_val_has_go_type: ∀ (v : V), has_go_type (# v) t ;
     default_val : V ;
+    to_val_has_go_type: ∀ (v : V), has_go_type (# v) t ;
     default_val_eq_zero_val : #default_val = zero_val t ;
     #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
     #[global] to_val_eqdec :: EqDecision V ;
@@ -318,14 +333,48 @@ Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
 Arguments default_val (V) {_ _ _ _}.
 
-Class IntoValTypedComparable (V : Type) (t : go_type) `{IntoValTyped V t} :=
-  {
-    to_val_is_comparable : ∀ (v : V), is_comparable #v
-  }.
-Global Hint Mode IntoValTypedComparable - ! - - - : typeclass_instances.
-Global Hint Mode IntoValTypedComparable ! - - - - : typeclass_instances.
+Fixpoint is_comparable_go_type (t : go_type) : bool :=
+  match t with
+  | arrayT n elem => is_comparable_go_type elem
+  | structT d => forallb (λ '(f, t), is_comparable_go_type t) d
+  | funcT => false
+  | interfaceT => false (* FIXME: these are currently non-comparable *)
+  | _ => true
+  end
+.
 
-From Ltac2 Require Import Ltac2.
+Lemma to_val_is_comparable `{IntoValTyped V t} (v : V) :
+  is_comparable_go_type t = true →
+  is_comparable #v.
+Proof.
+  pose proof (to_val_has_go_type v) as Hty.
+  generalize dependent #v. clear dependent V.
+  intros v Hty Hcomp.
+  induction Hty; try rewrite to_val_unseal /= ?slice.val_unseal //.
+  - repeat constructor; rewrite to_val_unseal //.
+  - repeat constructor; rewrite to_val_unseal //.
+  - rewrite array.val_unseal. simpl.
+    clear Hlen Helems. simpl in Hcomp.
+    induction a.
+    + rewrite /= to_val_unseal //.
+    + rewrite /=. split.
+      { apply H0; naive_solver. }
+      { apply IHa; naive_solver. }
+  - rewrite struct.val_unseal. simpl.
+    clear Hfields. simpl in Hcomp.
+    induction d as [|[]].
+    + rewrite /= to_val_unseal //.
+    + rewrite /=.
+      simpl in Hcomp.
+      apply andb_prop in Hcomp as[HcompHd Hcomp].
+      split.
+      { apply H0; naive_solver. }
+      { apply IHd; naive_solver. }
+  - by exfalso.
+  - by exfalso.
+  - by exfalso.
+Qed.
+
 Ltac2 solve_has_go_type_step () :=
   match! goal with
   | [ |- has_go_type (zero_val _) _ ] => apply zero_val_has_go_type
@@ -343,3 +392,67 @@ Ltac2 solve_has_go_type_step () :=
       Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
   end.
 Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).
+
+Section into_val_instances.
+Context `{ffi_syntax}.
+
+Program Global Instance into_val_typed_loc : IntoValTyped loc ptrT :=
+{| default_val := null |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w64 : IntoValTyped w64 uint64T :=
+{| default_val := W64 0 |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w32 : IntoValTyped w32 uint32T :=
+{| default_val := W32 0 |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w8 : IntoValTyped w8 uint8T :=
+{| default_val := W8 0 |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w64_signed : IntoValTyped w64 int64T :=
+{| default_val := W64 0 |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+
+Program Global Instance into_val_typed_w32_signed : IntoValTyped w32 int32T :=
+{| default_val := W32 0 |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+
+Program Global Instance into_val_typed_w8_signed : IntoValTyped w8 int8T :=
+{| default_val := W8 0 |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+
+Program Global Instance into_val_typed_bool : IntoValTyped bool boolT :=
+{| default_val := false |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_string : IntoValTyped string stringT :=
+{| default_val := "" |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_slice elemT : IntoValTyped slice.t (sliceT elemT) :=
+{| default_val := slice.nil_f |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal /= slice.val_unseal => ?[???][???] [=] //.
+                 repeat intros [=->%to_val_inj]. done.
+Qed.
+
+End into_val_instances.

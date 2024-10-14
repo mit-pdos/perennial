@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import proofmode lifting.
+From Perennial.goose_lang Require Import lifting.
 From New.golang.defn Require Export struct.
 From New.golang.theory Require Import mem exception list typing.
 From Perennial.Helpers Require Import NamedProps.

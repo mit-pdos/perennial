@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Export proofmode lifting.
+From Perennial.goose_lang Require Export lifting.
 From New.golang.defn Require Export list.
 From New.golang.theory Require Import exception.
 

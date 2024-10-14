@@ -1,9 +1,9 @@
+From Perennial.goose_lang Require Export lifting.
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Import tactics.
 From iris.proofmode Require Import environments.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
-From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export mem.
 From New.golang.theory Require Import typing.
 Require Import Coq.Program.Equality.
@@ -68,7 +68,7 @@ Section goose_lang.
     clear Heq x y.
     intros [][] Heq. simpl in *.
     inversion Heq; subst.
-    done.
+    apply to_val_inj in H0. subst. done.
   Qed.
 
   Local Lemma flatten_struct_inj (v1 v2 : val) :
@@ -93,6 +93,8 @@ Section goose_lang.
       | [ |- context [array.val] ] => rewrite !array.val_unseal
       | [ h : context [struct.val]  |- _ ] => rewrite !struct.val_unseal in $h
       | [ |- context [struct.val] ] => rewrite !struct.val_unseal
+      | [ h : context [to_val]  |- _ ] => rewrite !to_val_unseal in $h
+      | [ |- context [to_val] ] => rewrite !to_val_unseal
 
       | [ h : (flatten_struct _ = flatten_struct _) |- _ ] => progress (simpl in $h)
       | [ h : cons _ _ = cons _ _  |- _ ] =>
