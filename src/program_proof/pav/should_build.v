@@ -5,5 +5,4 @@ From Perennial.program_proof.pav Require
   cryptoutil
   merkle
   merkle_internal
-  misc
-  test.
+  misc.

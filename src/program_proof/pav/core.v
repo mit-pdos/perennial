@@ -1,7 +1,9 @@
 From Perennial.Helpers Require Import Integers ListLen.
+From Perennial.program_proof.pav Require Import serde.
 
 From stdpp Require Import ssreflect prelude gmap.
 
+Notation dig_ty := (list w8) (only parsing).
 Notation uid_ty := w64 (only parsing).
 (* TODO: make ver_ty, epoch_ty work for w64. *)
 Notation ver_ty := nat (only parsing).
@@ -99,8 +101,17 @@ Section ts_msv.
 
 (* timeseries and its interaction with msv. *)
 
+(* TODO: for same reason not using alias's in go code,
+prob shouldn't define all these notations. *)
+Notation map_lowest_ty := (gmap (list w8) (list w8)) (only parsing).
+Notation comm_ty := (list w8) (only parsing).
+Notation map_adtr_ty := (gmap (list w8) (w64 * comm_ty)) (only parsing).
+
+Definition lower_adtr (m : map_adtr_ty) : map_lowest_ty :=
+  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
+
 (* lookup_weaken_None and lookup_weaken are useful with this. *)
-Definition maps_mono (ms : list map_ty) :=
+Definition maps_mono (ms : list map_lowest_ty) :=
   ∀ i j mi mj,
   ms !! i = Some mi →
   ms !! j = Some mj →
@@ -109,14 +120,14 @@ Definition maps_mono (ms : list map_ty) :=
 
 (* note: auditor allows entry to be added after expected.
 but originating client ensures that doesn't happen. *)
-Definition maps_epoch_ok (ms : list map_ty) :=
-  ∀ ep m_ep (k : uid_ty * ver_ty) ep' (pk : pk_ty),
+Definition maps_epoch_ok (ms : list map_adtr_ty) :=
+  ∀ ep m_ep k ep' comm,
   ms !! ep = Some m_ep →
-  m_ep !! k = Some (ep', pk) →
+  m_ep !! k = Some (ep', comm) →
   (* can't have new entries in an old epoch. *)
-  ep' ≤ ep.
+  uint.nat ep' ≤ ep.
 
-Definition adtr_inv ms := maps_mono ms ∧ maps_epoch_ok ms.
+Definition adtr_inv ms := maps_mono (lower_adtr <$> ms) ∧ maps_epoch_ok ms.
 
 Record ts_ty :=
   mk_ts {
@@ -161,6 +172,7 @@ Definition ts_inv ts ms uid :=
   ts_entry_know ts ms uid ∧
   ts_bound_know ts ms uid.
 
+  (*
 Lemma ts_interp ts ms uid ep m :
   ts_inv ts ms uid →
   adtr_inv ms →
@@ -192,5 +204,6 @@ Proof.
   (* TODO: maybe better approach is defining ts_get as a recursive prefix,
   then proving (with ts_inv) that it satisfies the list_filter prop. *)
 Admitted.
+  *)
 
 End ts_msv.

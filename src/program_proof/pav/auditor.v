@@ -1,0 +1,60 @@
+From Perennial.program_proof Require Import grove_prelude.
+From Goose.github_com.mit_pdos.pav Require Import kt.
+
+From Perennial.program_proof.pav Require Import core cryptoffi merkle serde server.
+From iris.unstable.base_logic Require Import mono_list.
+
+Section inv.
+(* gmap map_label (epoch, comm). *)
+Context `{!heapGS Σ, !mono_listG (gmap (list w8) (w64 * list w8)) Σ}.
+Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
+  λ preByt,
+  (∃ pre key_maps digs,
+  "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
+  "#Hmaps" ∷ mono_list_lb_own γ key_maps ∗
+  "#Hdigs" ∷ ([∗ list] m;d ∈ key_maps;digs, is_dig (lower_adtr m) d) ∗
+  "%Hlook" ∷ ⌜ digs !! uint.nat (pre.(PreSigDig.Epoch)) = Some pre.(PreSigDig.Dig) ⌝ ∗
+  "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝
+  )%I.
+End inv.
+
+Module Auditor.
+Record t :=
+  mk {
+    mu: loc;
+    γ: gname;
+    serv_γ: gname;
+    sl_sk: Slice.t;
+    serv_pk: list w8;
+  }.
+
+Section defs.
+Context `{!heapGS Σ, !mono_listG (gmap (list w8) (w64 * list w8)) Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ pk sl_serv_pk key_maps ptr_map last_map sl_hist ptrs_hist hist,
+  (* keys. *)
+  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val obj.(sl_sk)) ∗
+  "Hown_sk" ∷ own_sk obj.(sl_sk) pk (adtr_sigpred obj.(γ)) ∗
+  "#Hptr_servPk" ∷ ptr ↦[Auditor :: "servSigPk"]□ (slice_val sl_serv_pk) ∗
+  "#Hsl_servPk" ∷ own_slice_small sl_serv_pk byteT DfracDiscarded obj.(serv_pk) ∗
+  "#His_servPk" ∷ is_pk obj.(serv_pk) (serv_sigpred obj.(serv_γ)) ∗
+  (* maps. *)
+  "Hmaps" ∷ mono_list_auth_own obj.(γ) 1 key_maps ∗
+  "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝ ∗
+  (* merkle tree. *)
+  "Hown_map" ∷ own_merkle ptr_map (lower_adtr last_map) ∗
+  "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
+  "%Hlast_map" ∷ ⌜ last key_maps = Some last_map ⌝ ∗
+  (* history. *)
+  "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
+  "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
+  "Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
+    AdtrEpochInfo.own ptr_hist info) ∗
+  "#Hdigs_hist" ∷ ([∗ list] m;info ∈ key_maps;hist,
+    is_dig (lower_adtr m) info.(AdtrEpochInfo.Dig)).
+
+Definition valid (ptr : loc) (obj : t) : iProp Σ :=
+  "#Hptr_mu" ∷ ptr ↦[Auditor :: "mu"]□ #obj.(mu) ∗
+  "#HmuR" ∷ is_lock nroot #obj.(mu) (own ptr obj).
+End defs.
+End Auditor.
