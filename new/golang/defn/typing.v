@@ -1,5 +1,4 @@
 From Perennial.goose_lang Require Export lang notation.
-From New.golang.defn Require Export list.
 
 Class IntoVal `{ffi_syntax} (V : Type) :=
   {
@@ -158,6 +157,19 @@ Fixpoint assocl_lookup {A} (f : string) (field_vals: list (string * A)) : option
   | [] => None
   | (f', v)::fs => if String.eqb f' f then Some v else assocl_lookup f fs
   end.
+
+Module list.
+Section defn.
+  Context `{ffi_syntax}.
+  Fixpoint val_def (x : list val) : val :=
+    match x with
+    | [] => InjLV #()
+    | h :: tl => (InjRV (h, val_def tl))
+    end.
+  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
+  Definition val_unseal : val = _ := seal_eq _.
+End defn.
+End list.
 
 Module struct.
   Definition descriptor := list (string * go_type).

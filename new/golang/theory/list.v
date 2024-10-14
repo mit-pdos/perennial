@@ -1,16 +1,16 @@
 From Perennial.goose_lang Require Export lifting.
 From New.golang.defn Require Export list.
 From New.golang.theory Require Import exception.
+From New.golang.theory Require Import pure_proofmode.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Global Instance pure_cons (v : val) (l : list val) :
-  PureWpVal True (list.Cons v (list.val l)) (list.val (v :: l)).
+  PureWp True (list.Cons v (list.val l)) (list.val (v :: l)).
 Proof.
   rewrite list.Cons_unseal list.val_unseal.
-  intros ????. iIntros "HΦ".
-  wp_rec. wp_pures. iApply "HΦ".
+  intros ?????. iIntros "Hwp". wp_call. iFrame.
 Qed.
 
 Global Instance wp_list_Match (l : list val) (handleNil handleCons : val) :
@@ -24,7 +24,7 @@ Global Instance wp_list_Match (l : list val) (handleNil handleCons : val) :
 Proof.
   rewrite list.Match_unseal list.val_unseal.
   intros ?????. iIntros "Hwp".
-  destruct l; wp_rec; wp_pures; iFrame.
+  destruct l; wp_call; iFrame.
 Qed.
 
 Lemma wp_list_Length {stk E} (l : list val) :
@@ -34,11 +34,15 @@ Lemma wp_list_Length {stk E} (l : list val) :
 Proof.
   iIntros (?) "_ HΦ".
   iInduction l as [] "IH" forall (Φ).
-  - wp_rec; wp_pures. by iApply "HΦ".
-  - wp_rec. wp_pures.
+  - wp_call. by iApply "HΦ".
+  - wp_call.
     wp_apply "IH".
     iIntros "%".
-    wp_pures. wp_if_destruct.
+    wp_pures.
+    wp_bind (_ > _)%E.
+    eapply (tac_wp_pure_wp []).
+    { apply wp_w64_binop. }
+    wp_if_destruct.
     {
       simpl.
       replace (W64 (S $ length l)) with (word.add (W64 1) (W64 (length l))) by word.

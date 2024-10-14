@@ -1,4 +1,5 @@
 From New Require Import notation.
+From New.golang.defn Require Import typing.
 
 Module list.
 Section defn.
@@ -25,15 +26,6 @@ Section defn.
                                 "new_length"
                               else (rec: "infloop" <> := Var "infloop" #()) #()
                            ).
-
-  Fixpoint val_def (x : list val) : val :=
-    match x with
-    | [] => InjLV #()
-    | h :: tl => (InjRV (h, val_def tl))
-    end.
-  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
-  Definition val_unseal : val = _ := seal_eq _.
-
 End defn.
 End list.
 

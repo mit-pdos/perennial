@@ -29,17 +29,6 @@ Proof.
 Qed.
 
 (* Now a few lemmas to help establish PureWp in other ways. *)
-Lemma pure_wp_val
-  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-  φ e v' :
-  (∀ stk E Φ (H : φ), ▷ Φ v' -∗ WP e @ stk ; E {{ Φ }}) →
-  PureWp φ e (Val v').
-Proof.
-  intros Hval.
-  intros ?????. iIntros "Hwp".
-  iApply wp_bind. by iApply Hval.
-Qed.
-
 Lemma pure_exec_pure_wp n
   `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} {φ e e'} :
   PureExec φ (S n) e e' → PureWp φ e e'.
@@ -385,7 +374,8 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
 
 Ltac2 wp_pure () :=
   lazy_match! goal with
-  | [ |- envs_entails _ (wp _  _ ?e _) ] =>
+  | [ |- envs_entails _ (wp _ _ (Val _) _) ] => ltac1:(iApply wp_value)
+  | [ |- envs_entails _ (wp _ _ ?e _) ] =>
       orelse (fun () => walk_expr e (fun e k =>
                                     (* This looks for an instance before eapply to make to fail fast. *)
                                     let pure_wp := '(ltac:(tc_solve) : PureWp _ $e _) in
@@ -397,7 +387,7 @@ Ltac2 wp_pure () :=
         (fun _ => Control.backtrack_tactic_failure "wp_pure: could not find a head subexpression with a known next step")
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
   end.
-Tactic Notation "wp_pure" := ltac2:(wp_pure ()).
+Tactic Notation "wp_pure" := ltac2:(Control.enter wp_pure).
 Tactic Notation "wp_pures" := repeat wp_pure.
 
 Ltac2 wp_call () :=
@@ -413,46 +403,41 @@ Ltac2 wp_call () :=
         (fun _ => Control.backtrack_tactic_failure "wp_call: could not find a function call expression at the head")
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_call: current proof is not a WP"
   end.
-Tactic Notation "wp_call" := ltac2:(wp_call ()); wp_pures.
+Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); wp_pures.
 
 Ltac2 wp_bind_filter (filter_tac : constr -> unit) : unit :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
-      walk_expr e (fun e' k => filter_tac e';
-                            eapply (tac_wp_bind $k $e') >
-                              [simpl; reflexivity|ltac1:(reduction.pm_prettify)])
+      orelse (fun () => filter_tac e) (* if the top-level matches, don't walk down the expr at all. *)
+        (fun _ => walk_expr e (fun e' k => filter_tac e';
+                                     eapply (tac_wp_bind $k $e') >
+                                       [simpl; reflexivity|ltac1:(reduction.pm_prettify)]))
   end.
 
-(*
-Ltac2 wp_pure :=
-  lazy_match! goal with
-  | [ |- envs_entails Δ (wp ?s ?emask ?e ?q) ] =>
-      orelse (walk_expr e (fun e k =>
-                             (* see if there is an instance *)
-                             let pure_wp := '(ltac:(tc_solve) : PureWp _ $e _) in
-                             eapply (tac_wp_pure_wp k e pure_wp);
-                )
-        )
-        (Control.backtrack_tactic_failure "wp_pure: could not find a head subexpression with a known next step")
+Tactic Notation "wp_bind" open_constr(e) :=
+  let f := ltac2:(e |-
+                    let e := Ltac1.to_constr e in
+                    let e := Option.get e in
+                    orelse
+                      (fun () => wp_bind_filter (Std.unify e))
+                      (fun _ => Control.backtrack_tactic_failure "wp_bind: could not find pattern")
+                 ) in
+  f e.
+
+Ltac2 wp_bind_apply () :=
+  orelse (fun () => wp_bind_filter
+            (fun e => let rec f e :=
+                     lazy_match! e with
+                     | App (Val _) (Val _) => ()
+                     | App ?e1 (Val _) => f e1
+                     | _ => fail
+                     end
+                   in f e
+    ))
+    (fun _ => Control.backtrack_tactic_failure "wp_bind_apply: could not match a function call with fully evaluated arguments")
 .
 
-Definition x : expr := (App (#false + #false) (#true - #true)).
-Fail Ltac2 Eval (walk_expr '(App (#false + #false) (#true - #true)))
-  (fun e k => fail; Control.assert_true false).
-
-From Ltac2 Require Import Message.
-Ltac2 msg x := print (of_string x).
-Lemma y : True.
-Proof.
-  Proof Mode "Ltac2".
-  Fail (walk_expr '(App (#false + #false) (#true - #true)))
-    (fun e k => Message.print (of_constr '($e, $k)); fail).
-  lazy_match! 'True with
-  | True => msg "branch 1"; fail
-  | _ => msg "branch 2"
-  end.
-
-Ltac2 Eval lazy_match! 'True with
-| True => msg "branch 1"; fail
-| _ => msg "branch 2"
-end. *)
+Tactic Notation "wp_apply" open_constr(lem) :=
+  ltac2:(wp_bind_apply ());
+  iApply lem; last try iNext
+.
