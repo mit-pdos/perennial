@@ -57,6 +57,29 @@ Proof.
   iFrame.
 Qed.
 
+Theorem wp_for_breakCond (I breakCond: iProp Σ) (body: val) :
+  {{{ I }}}
+    body #()
+  {{{ r, RET #r; I ∗ (⌜r = false⌝ -∗ breakCond) }}} -∗
+  {{{ I }}}
+    (for: (λ: <>, #true)%V ; (λ: <>, Skip)%V :=
+       body)
+  {{{ RET #(); I ∗ breakCond }}}.
+Proof.
+  iIntros "#Hbody".
+  iIntros "!>" (Φ) "IH HΦ".
+  wp_apply (wp_forBreak
+              (λ continue, if continue then I else (I ∗ breakCond)%I)
+           with "[] [$IH]").
+  - clear Φ.
+    iIntros "!>" (Φ) "IH HΦ".
+    wp_apply ("Hbody" with "IH").
+    iIntros (r) "[HI Hbreak]".
+    iApply "HΦ".
+    destruct r; iFrame "HI".
+    iApply "Hbreak"; auto.
+  - iApply "HΦ".
+Qed.
 
 Theorem wp_forBreak_cond' (P: iProp Σ) stk E (cond body: val) (Φ : val → iProp Σ) :
   P -∗
