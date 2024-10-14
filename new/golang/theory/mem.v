@@ -1,11 +1,10 @@
-From Perennial.goose_lang Require Export lifting.
 From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Import tactics.
 From iris.proofmode Require Import environments.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
 From New.golang.defn Require Export mem.
-From New.golang.theory Require Import typing.
+From New.golang.theory Require Import pure_proofmode typing.
 Require Import Coq.Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
@@ -198,7 +197,7 @@ Section goose_lang.
     pose proof (to_val_has_go_type v) as Hty.
     generalize dependent (# v). clear dependent V. intros v Hty.
     iInduction Hty as [] "IH"; subst;
-    simpl; rewrite ?slice.val_unseal ?interface.val_unseal /= ?right_id ?loc_add_0;
+    simpl; rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
     - (* array *)
       rewrite go_type_size_unseal /= in Hlen.
@@ -248,10 +247,11 @@ Section goose_lang.
   Proof.
     iIntros (Φ) "_ HΦ".
     rewrite ref_ty_unseal.
-    wp_rec.
-    wp_apply wp_allocN_seq; first by word.
+    wp_call.
+    iApply (wp_allocN_seq with "[//]"); first by word. iNext.
     change (uint.nat 1) with 1%nat; simpl.
     iIntros (l) "[Hl _]".
+    rewrite to_val_unseal /= -to_val_unseal.
     iApply "HΦ".
     unseal.
     rewrite Z.mul_0_r loc_add_0.
@@ -274,20 +274,26 @@ Section goose_lang.
     rewrite load_ty_unseal.
     rename l into l'.
     iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
-    all: rewrite ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id; wp_pures.
-    all: try (wp_apply (wp_load with "[$]"); done).
+    all: rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id; wp_pures.
+    all: try (iApply (wp_load with "[$]"); done).
     - (* case arrayT *)
       subst.
       rewrite array.val_unseal.
       iInduction a as [|] "IH2" forall (l' Φ).
-      { wp_pures. iApply "HΦ". by iFrame. }
+      { simpl. wp_pures. iApply "HΦ". by iFrame. }
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
+      simpl. wp_pures.
+      simpl.
       wp_apply ("IH" with "[] Hf").
       { iPureIntro. by left. }
       iIntros "Hf".
       wp_pures.
+      replace (LitV (LitLoc l')) with (# l').
+      2:{ by rewrite to_val_unseal. }
+      wp_pures.
+      rewrite to_val_unseal /=.
       wp_apply ("IH2" with "[] [] [Hl]").
       { iPureIntro. intros. apply Helems. by right. }
       { iModIntro. iIntros. wp_apply ("IH" with "[] [$] [$]").
@@ -296,7 +302,7 @@ Section goose_lang.
         erewrite has_go_type_len.
         2:{ eapply Helems. by left. }
         rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
-        iFrame.
+        rewrite /array.val_def to_val_unseal. iFrame.
       }
       iIntros "Hl".
       wp_pures.
@@ -318,7 +324,12 @@ Section goose_lang.
       wp_apply ("IH" with "[] Hf").
       { iPureIntro. by left. }
       iIntros "Hf".
+      replace (LitV (LitLoc l')) with (# l').
+      2:{ by rewrite to_val_unseal. }
       wp_pures.
+      simpl.
+      ltac2:(wp_bind_apply ()).
+      rewrite [in (to_val (l' +ₗ _))]to_val_unseal.
       wp_apply ("IH2" with "[] [] [Hl]").
       { iPureIntro. intros. apply Hfields. by right. }
       { iModIntro. iIntros. wp_apply ("IH" with "[] [$] [$]").
@@ -344,9 +355,11 @@ Section goose_lang.
     {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
     {{{ RET LitV LitUnit; l ↦ v }}}.
   Proof.
-    iIntros (Φ) "Hl HΦ". rewrite /Store.
-    wp_apply (wp_prepare_write with "Hl"); iIntros "[Hl Hl']".
-    by wp_apply (wp_finish_store with "[$Hl $Hl']").
+    iIntros (Φ) "Hl HΦ". wp_call.
+    wp_bind (PrepareWrite _).
+    iApply (wp_prepare_write with "Hl"); iNext; iIntros "[Hl Hl']".
+    wp_pures.
+    by iApply (wp_finish_store with "[$Hl $Hl']").
   Qed.
 
   Lemma wp_typed_store stk E l v v' :
@@ -366,15 +379,15 @@ Section goose_lang.
     rename l into l'.
     rewrite store_ty_unseal.
     iInduction Hty_old as [] "IH" forall (v' Hty l' Φ) "HΦ".
-    all: inversion_clear Hty; subst; rewrite ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id;
+    all: inversion_clear Hty; subst; rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id;
       wp_pures.
     all: try (wp_apply (wp_store with "[$]"); iIntros "H"; iApply "HΦ"; iFrame).
     - (* array *)
       rewrite array.val_unseal.
       rename a0 into a'.
       iInduction a as [|] "IH2" forall (l' a' Hlen0 Helems0).
-      { simpl. wp_pures. iApply "HΦ". apply nil_length_inv in Hlen0.
-        subst. done. }
+      { simpl. wp_pures. rewrite ?to_val_unseal. iApply "HΦ". apply nil_length_inv in Hlen0.
+        subst. rewrite /= to_val_unseal //. }
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
@@ -382,12 +395,16 @@ Section goose_lang.
       2:{ eapply Helems. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       destruct a'; first by exfalso.
+      simpl.
       wp_pures.
       wp_apply ("IH" with "[] [] [$Hf]").
       { iPureIntro. simpl. by left. }
       { iPureIntro. apply Helems0. by left. }
       iIntros "Hf".
+      replace (LitV l') with (#l').
+      2:{ rewrite to_val_unseal //. }
       wp_pures.
+      rewrite [in (to_val (l' +ₗ _))]to_val_unseal.
       wp_apply ("IH2" with "[] [] [] [] [Hl]").
       { iPureIntro. intros. apply Helems. by right. }
       { iPureIntro. by inversion Hlen0. }
@@ -406,7 +423,7 @@ Section goose_lang.
       rewrite struct.val_unseal.
       unfold struct.val_def.
       iInduction d as [|] "IH2" forall (l').
-      { simpl. wp_pures. iApply "HΦ". done. }
+      { wp_pures. rewrite to_val_unseal /=. iApply "HΦ". done. }
       destruct a.
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
@@ -418,7 +435,10 @@ Section goose_lang.
       { iPureIntro. simpl. by left. }
       { iPureIntro. apply Hfields0. by left. }
       iIntros "Hf".
+      replace (LitV l') with (#l').
+      2:{ rewrite to_val_unseal //. }
       wp_pures.
+      rewrite [in (to_val (l' +ₗ _))]to_val_unseal.
       wp_apply ("IH2" with "[] [] [] [Hl]").
       { iPureIntro. intros. apply Hfields. by right. }
       { iPureIntro. intros. apply Hfields0. by right. }
@@ -488,16 +508,20 @@ Section goose_lang.
     {{{ ▷ l ↦#{dq} v' }}} CmpXchg (Val # l) #v1 #v2 @ s; E
     {{{ RET (#v', #false); l ↦#{dq} v' }}}.
   Proof using Type*.
-    intros Hprim Hne.
     pose proof (to_val_has_go_type v') as Hty_old.
     pose proof (to_val_has_go_type v1) as Hty.
-    iIntros (?) "Hl HΦ". unseal.
-    generalize dependent (#v1). generalize dependent (#v'). intros.
+    unseal.
+    generalize dependent (to_val v1). generalize dependent (to_val v'). generalize dependent (to_val v2).
+    intros.
+    clear dependent V.
+    rewrite to_val_unseal.
+    iIntros "Hl HΦ".
     destruct t; try by exfalso.
     all: inversion Hty_old; subst; inversion Hty; subst;
-      simpl; rewrite loc_add_0 right_id;
-      wp_apply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
-      iIntros; iApply "HΦ"; iFrame; done.
+      simpl; rewrite to_val_unseal /= in H0 |- *;
+      rewrite loc_add_0 right_id;
+    iApply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
+    iIntros; iApply "HΦ"; iFrame; done.
   Qed.
 
   Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 :
@@ -509,13 +533,16 @@ Section goose_lang.
     intros Hprim Heq.
     pose proof (to_val_has_go_type v') as Hty_old.
     pose proof (to_val_has_go_type v2) as Hty.
-    iIntros (?) "Hl HΦ". unseal.
-    generalize dependent (#v1). generalize dependent (#v'). intros.
+    unseal.
+    generalize dependent (#v1). generalize dependent (#v'). generalize dependent (#v2).
+    clear dependent V.
+    intros.
+    iIntros "Hl HΦ".
     destruct t; try by exfalso.
     all: inversion Hty_old; subst;
       inversion Hty; subst;
-      simpl; rewrite loc_add_0 right_id;
-      wp_apply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
+      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+      iApply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
       iIntros; iApply "HΦ"; iFrame; done.
   Qed.
 
@@ -540,29 +567,25 @@ Tactic Notation "wp_load" :=
     iAssumptionCore || fail "wp_load: cannot find" l "↦# ?" in
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    ( first
-        [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty K))
+    (first
+        [wp_bind (load_ty _ (Val _)); eapply tac_wp_load_ty
         |fail 1 "wp_load: cannot find 'load_ty' in" e];
-      [tc_solve
-      |solve_pointsto ()
-      |wp_finish] )
+      [solve_pointsto () |] )
   | _ => fail "wp_load: not a 'wp'"
   end.
 
 Tactic Notation "wp_store" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦[_] _)%I) => l end in
-    iAssumptionCore || fail "wp_store: cannot find" l "↦[t] ?" in
-  wp_pures;
+    let l := match goal with |- _ = Some (_, (?l ↦# _)%I) => l end in
+    iAssumptionCore || fail "wp_store: cannot find" l "↦# ?" in
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first
-      [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store_ty K))
+      [wp_bind (store_ty _ (Val _) (Val _)); eapply tac_wp_store_ty
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
-    [(repeat econstructor || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
-    |tc_solve
+    [solve_has_go_type
     |solve_pointsto ()
-    |pm_reflexivity
-    |first [wp_pure_filter (Rec BAnon BAnon _)|wp_finish]]
+    |reduction.pm_reflexivity
+    |first [wp_pure | idtac ]]
   | _ => fail "wp_store: not a 'wp'"
   end.
