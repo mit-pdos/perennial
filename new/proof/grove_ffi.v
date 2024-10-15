@@ -4,7 +4,6 @@ From Perennial.program_logic Require Export atomic_fupd.
 From New.proof Require Export proof_prelude.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
 From New.code.github_com.mit_pdos.gokv Require Import grove_ffi.
-From Perennial.goose_lang Require Import control.
 
 Set Default Proof Using "Type".
 
@@ -20,16 +19,16 @@ Section grove.
 
   Lemma wp_Listen c_l s E :
     {{{ True }}}
-      Listen #(LitInt c_l) @ s; E
+      Listen #c_l @ s; E
     {{{ RET listen_socket c_l; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_rec.
-    wp_apply wp_ListenOp. by iApply "HΦ".
+    iIntros (Φ) "_ HΦ". wp_call.
+    rewrite to_val_unseal. by iApply wp_ListenOp.
   Qed.
 
   Lemma wp_Connect c_r s E :
     {{{ True }}}
-      Connect #(LitInt c_r) @ s; E
+      Connect #c_r @ s; E
     {{{ (err : bool) (c_l : chan),
         RET struct.val ConnectRet [
               "Err" ::= #err;
@@ -38,9 +37,11 @@ Section grove.
       if err then True else c_l c↦ ∅
     }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_rec.
-    wp_apply wp_ConnectOp.
-    iIntros (err recv) "Hr". wp_pures.
+    iIntros (Φ) "_ HΦ". wp_call.
+    wp_bind (ExternalOp _ _)%E. rewrite [in #c_r]to_val_unseal. iApply (wp_ConnectOp with "[//]").
+    iNext. iIntros (err recv) "Hr". wp_pures.
+    replace (LitV err) with #err.
+    2:{ rewrite to_val_unseal //. }
     by iApply "HΦ".
   Qed.
 
@@ -49,8 +50,8 @@ Section grove.
       Accept (listen_socket c_l)  @ s; E
     {{{ (c_r : chan), RET connection_socket c_l c_r; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_rec.
-    wp_apply wp_AcceptOp. by iApply "HΦ".
+    iIntros (Φ) "_ HΦ". wp_call.
+    by iApply wp_AcceptOp.
   Qed.
 
   Ltac inv_undefined :=
@@ -69,69 +70,72 @@ Section grove.
     solve_atomic;
     (* TODO(Joe): Cleanup *)
     repeat match goal with
+           | [ h : context [to_val]  |- _ ] => rewrite !to_val_unseal in h
+           | [ |- context [to_val] ] => rewrite !to_val_unseal
            | [ H: relation.denote _ ?s1 ?s2 ?v |- _ ] => inversion_clear H
            | _ => progress monad_inv
            | _ => case_match
            end; eauto.
 
-  Local Lemma own_slice_to_pointsto_vals s q vs :
-    own_slice s byteT q vs -∗ pointsto_vals s.(slice.ptr_f) q vs.
+  Local Lemma own_slice_to_pointsto_vals s dq (vs : list u8) :
+    s ↦*{dq} vs -∗ pointsto_vals s.(slice.ptr_f) dq (data_vals vs).
   Proof.
     rewrite own_slice_unseal /own_slice_def /pointsto_vals.
     iIntros "(Hs & _ & _)". simpl.
+    rewrite big_sepL_fmap.
     iApply (big_sepL_impl with "Hs").
     iModIntro. iIntros "* % Hp". rewrite go_type_size_unseal /= left_id.
-    rewrite typed_pointsto_unseal /typed_pointsto_def.
+    rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=.
     iDestruct select (_) as "[Hp %Hty]". inversion Hty; subst.
-    simpl. rewrite right_id. rewrite loc_add_0. iFrame.
+    rewrite loc_add_0. iFrame.
   Qed.
 
-  Local Lemma pointsto_vals_to_own_slice (p : loc) (cap : w64) (q : dfrac) (d : list w8) :
+  Local Lemma pointsto_vals_to_own_slice (p : loc) (cap : w64) (dq : dfrac) (d : list w8) :
     (length d) = uint.nat (length d) →
     (length d) ≤ uint.Z cap →
-    pointsto_vals p q (data_vals d) -∗
-    own_slice (slice.mk p (length d) cap) byteT q (data_vals d).
+    pointsto_vals p dq (data_vals d) -∗
+    (slice.mk p (length d) cap) ↦*{dq} d.
   Proof.
     intros Hoverflow Hcap.
     rewrite own_slice_unseal /own_slice_def /pointsto_vals.
     iIntros "Hl". simpl.
     iSplitL.
-    2:{ iPureIntro. rewrite /data_vals length_fmap /=. word. }
+    2:{ iPureIntro. word. }
+    rewrite big_sepL_fmap.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros "* % Hp". rewrite go_type_size_unseal /= left_id.
     rewrite typed_pointsto_unseal /typed_pointsto_def.
-    rewrite /data_vals list_lookup_fmap /= in H.
     destruct (d !! k).
     2:{ exfalso. done. }
     simpl in *. inversion H; subst.
-    iSplitL.
-    2:{ iPureIntro. econstructor. }
-    simpl. rewrite right_id. rewrite loc_add_0. iFrame.
+    rewrite to_val_unseal /= right_id loc_add_0.
+    iFrame.
   Qed.
 
-  Lemma wp_Send c_l c_r (s : slice.t) (data : list u8) (q : dfrac) :
-    ⊢ {{{ own_slice s byteT q (data_vals data) }}}
+  Lemma wp_Send c_l c_r (s : slice.t) (data : list u8) (dq : dfrac) :
+    ⊢ {{{ s ↦*{dq} data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
         Send (connection_socket c_l c_r) (slice.val s) @ ∅
       <<< ∃∃ (msg_sent : bool),
         c_r c↦ (if msg_sent then ms ∪ {[Message c_l data]} else ms)
       >>>
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
-                                own_slice s byteT q (data_vals data) }}}.
+                                s ↦*{dq} data }}}.
   Proof.
-    iIntros "!#" (Φ) "Hs HΦ". wp_rec. 
-    destruct s. wp_pures.
+    iIntros "!#" (Φ) "Hs HΦ".
+    wp_call.
+    destruct s.
     iDestruct (own_slice_len with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
-    rewrite difference_empty_L.
+    rewrite difference_empty_L /=.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     { solve_atomic2. }
     cbn in *.
-    rewrite /data_vals length_fmap in Hlen.
-    wp_apply (wp_SendOp with "[$Hc Hs]").
+    rewrite to_val_unseal.
+    iApply (wp_SendOp with "[$Hc Hs]").
     { done. }
     { iApply (own_slice_to_pointsto_vals with "[$]"). }
-    iIntros (err_early err_late) "[Hc Hl]".
+    iNext. iIntros (err_early err_late) "[Hc Hl]".
     iApply ("HΦ" $! (negb err_early) with "[Hc]").
     { by destruct err_early. }
     iSplit.
@@ -142,39 +146,38 @@ Section grove.
       word.
   Qed.
 
-
   Lemma wp_Receive c_l c_r :
     ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
         Receive (connection_socket c_l c_r) @ ∅
       <<< ∃∃ (err : bool) (data : list u8),
         c_l c↦ ms ∗ if err then True else ⌜Message c_r data ∈ ms⌝
       >>>
-      {{{ (s : slice.t),
+      {{{ s,
         RET struct.val ReceiveRet [
               "Err" ::= #err;
-              "Data" ::= slice.val s
+              "Data" ::= #s
             ];
-          own_slice s byteT (DfracOwn 1) (data_vals data)
+          s ↦* data
       }}}.
   Proof.
-    iIntros "!#" (Φ) "HΦ". wp_rec. wp_pures. wp_pures.
+    iIntros "!#" (Φ) "HΦ". wp_call.
     wp_bind (ExternalOp _ _).
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     { solve_atomic2. }
-    wp_apply (wp_RecvOp with "Hc").
-    iIntros (err l len data) "(%Hm & Hc & Hl)".
+    iApply (wp_RecvOp with "Hc").
+    iIntros "!#" (err l len data) "(%Hm & Hc & Hl)".
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
     iModIntro. wp_pures.
     destruct err.
-    { rewrite slice_val_fold. iApply ("HΦ" $! (slice.mk _ _ _)). simpl. destruct Hm as (-> & -> & ->).
-      simpl.
+    {
+      rewrite to_val_unseal /= slice.val_unseal /slice.val_def to_val_unseal /=.
+      iApply ("HΦ" $! (slice.mk _ _ _)). destruct Hm as (-> & -> & ->).
       iApply own_slice_empty. done. }
     destruct Hm as [Hin Hlen].
-    rewrite slice_val_fold.
+    rewrite to_val_unseal /= slice.val_unseal /slice.val_def to_val_unseal /=.
     iApply ("HΦ" $! (slice.mk _ _ _)).
-    iModIntro.
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
     2:{ iExactEq "H". repeat f_equal. word. }
@@ -183,8 +186,8 @@ Section grove.
 
   Lemma wpc_FileRead f dq c E :
     ⊢ {{{ f f↦{dq} c }}}
-        FileRead #(str f) @ E
-      {{{ (s : slice.t), RET slice.val s; f f↦{dq} c ∗ own_slice s byteT (DfracOwn 1) (data_vals c) }}}
+        FileRead #f @ E
+      {{{ s, RET #s; f f↦{dq} c ∗ s ↦* c }}}
       {{{ f f↦{dq} c }}}.
   Proof.
     iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done.

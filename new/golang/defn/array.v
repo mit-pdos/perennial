@@ -1,5 +1,5 @@
 From New Require Export notation.
-From New.golang.defn Require Import typing list.
+From New.golang.defn Require Export typing list.
 
 Module array.
 Section defn.
