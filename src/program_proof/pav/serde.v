@@ -12,6 +12,24 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 End PreSigDig.
 
+Module SigDig.
+Record t :=
+  mk {
+    Epoch: w64;
+    Dig: list w8;
+    Sig: list w8;
+  }.
+Definition encodesF (obj : t) : list w8 :=
+  u64_le obj.(Epoch) ++ u64_le (length obj.(Dig)) ++ obj.(Dig) ++ u64_le (length obj.(Sig)) ++ obj.(Sig).
+Definition encodes (enc : list w8) (obj : t) : Prop :=
+  enc = encodesF obj.
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
+End defs.
+End SigDig.
+
 Module MapValPre.
 Record t :=
   mk {

@@ -4,17 +4,35 @@ From Goose.github_com.mit_pdos.pav Require Import kt.
 From Perennial.program_proof.pav Require Import core cryptoffi merkle serde server.
 From iris.unstable.base_logic Require Import mono_list.
 
+Notation opaque_label_ty := (list w8) (only parsing).
+Notation epoch_ty := w64 (only parsing).
+Notation comm_ty := (list w8) (only parsing).
+Notation dig_ty := (list w8) (only parsing).
+
+Module comm_st.
+Record t :=
+  mk {
+    key_maps: list (gmap opaque_label_ty (epoch_ty * comm_ty));
+    digs: list dig_ty;
+  }.
+
+Section defs.
+Context `{!heapGS Σ, !mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ}.
+Definition valid γ (obj : t) : iProp Σ :=
+  "#Hmaps" ∷ mono_list_lb_own γ obj.(key_maps) ∗
+  "#Hdigs" ∷ ([∗ list] m;d ∈ obj.(key_maps);obj.(digs), is_dig (lower_adtr m) d).
+End defs.
+End comm_st.
+
 Section inv.
-(* gmap map_label (epoch, comm). *)
-Context `{!heapGS Σ, !mono_listG (gmap (list w8) (w64 * list w8)) Σ}.
+Context `{!heapGS Σ, !mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ}.
 Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
-  (∃ pre key_maps digs,
+  (∃ pre st,
   "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
-  "#Hmaps" ∷ mono_list_lb_own γ key_maps ∗
-  "#Hdigs" ∷ ([∗ list] m;d ∈ key_maps;digs, is_dig (lower_adtr m) d) ∗
-  "%Hlook" ∷ ⌜ digs !! uint.nat (pre.(PreSigDig.Epoch)) = Some pre.(PreSigDig.Dig) ⌝ ∗
-  "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝
+  "#Hcomm_st" ∷ comm_st.valid γ st ∗
+  "%Hlook" ∷ ⌜ st.(comm_st.digs) !! uint.nat (pre.(PreSigDig.Epoch)) = Some pre.(PreSigDig.Dig) ⌝ ∗
+  "%Hinv" ∷ ⌜ adtr_inv st.(comm_st.key_maps) ⌝
   )%I.
 End inv.
 

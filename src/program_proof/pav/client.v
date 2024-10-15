@@ -24,13 +24,14 @@ Record t :=
     γ: gname;
     uid: uid_ty;
     next_ver: ver_ty;
+    next_epoch: epoch_ty;
     serv_cli: loc;
     serv_γ: gname;
     serv_sig_pk: list w8;
     serv_vrf_pk: loc;
   }.
 Global Instance eta : Settable _ :=
-  settable! mk <γ; uid; next_ver; serv_cli; serv_γ; serv_sig_pk; serv_vrf_pk>.
+  settable! mk <γ; uid; next_ver; next_epoch; serv_cli; serv_γ; serv_sig_pk; serv_vrf_pk>.
 
 Section defs.
 Context `{!heapGS Σ, !mono_listG (option (dig_ty * gname)) Σ, !ghost_mapG Σ map_label_ty map_val_ty}.
@@ -46,8 +47,17 @@ Definition have_merkle (dig : list w8) (m : cli_map_ty) : iProp Σ :=
       is_merkle_proof proof label (Some val) dig
     end).
 
+Definition list_map_equiv {A B} (EQ : A → B → Prop) (l : list (option A)) (m : gmap w64 B) :=
+  (∀ (i : nat) a, l !! i = Some (Some a) → (∃ b, m !! (W64 i) = Some b ∧ EQ a b)) ∧
+  (∀ (i : nat) b, m !! (W64 i) = Some b → (∃ a, l !! i = Some (Some a) ∧ EQ a b)).
+
+(*
+on heap, gmap w64 loc.
+sep connecting that to gmap w64 struct.
+and on that thing, have list_map_equiv.
+*)
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ (seen_maps : list (option (dig_ty * gname))) sl_serv_sig_pk,
+  ∃ (seen_maps : list (option (dig_ty * gname))) ptr_sd sd_ptrs seen_digs sl_serv_sig_pk,
   (* TODO: vrf. *)
   (* key maps. *)
   "Hseen_maps" ∷ mono_list_auth_own obj.(γ) 1 seen_maps ∗
@@ -56,9 +66,16 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
     | None => True
     | Some y => ∃ submap, ghost_map_auth y.2 1 submap ∗ have_merkle y.1 submap
     end) ∗
-  (* uid and next_ver. *)
+  (* seenDigs. *)
+  "Hown_sd" ∷ own_map ptr_sd (DfracOwn 1) sd_ptrs ∗
+  "Hptr_sd" ∷ ptr ↦[Client :: "seenDigs"] #ptr_sd ∗
+  "Hown_sd_structs" ∷ ([∗ map] l;v ∈ sd_ptrs;seen_digs, SigDig.own l v) ∗
+  "%Hagree_sd" ∷ ⌜ list_map_equiv (λ a b, a.1 = b.(SigDig.Dig)) seen_maps seen_digs ⌝ ∗
+  (* uid, next_ver, next_epoch. *)
   "Hptr_uid" ∷ ptr ↦[Client :: "uid"] #obj.(uid) ∗
   "Hptr_nextVer" ∷ ptr ↦[Client :: "nextVer"] #obj.(next_ver) ∗
+  "Hptr_nextEpoch" ∷ ptr ↦[Client :: "nextEpoch"] #obj.(next_epoch) ∗
+  "%Hep_bound" ∷ ⌜ length seen_maps = uint.nat obj.(next_epoch) ⌝ ∗
   (* clients and parameterized keys. *)
   "#Hptr_servSigPk" ∷ ptr ↦[Client :: "servSigPk"]□ (slice_val sl_serv_sig_pk) ∗
   "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded obj.(serv_sig_pk) ∗
@@ -67,7 +84,7 @@ End defs.
 End Client.
 
 Section specs.
-Context `{!heapGS Σ, !mono_listG (option (dig_ty * gname)) Σ, !ghost_mapG Σ map_label_ty map_val_ty}.
+Context `{!heapGS Σ, !mono_listG (option (dig_ty * gname)) Σ, !ghost_mapG Σ map_label_ty map_val_ty, !mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ}.
 
 Definition is_key cli_γ uid ver ep comm : iProp Σ :=
   ∃ dig sm_γ,
@@ -112,6 +129,34 @@ Lemma wp_Client__SelfMon ptr_c c :
     "Hown_cli" ∷ Client.own ptr_c c ∗
     if negb err then
       "#His_bound" ∷ is_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep
+    else True
+  }}}.
+Proof. Admitted.
+
+(* is_audit says we've audited up *to* ep. *)
+Definition is_audit cli_γ adtr_γ (ep : w64) : iProp Σ :=
+  ∃ adtr_st cli_st,
+  "#Hadtr_st" ∷ comm_st.valid adtr_γ adtr_st ∗
+  "#Hcli_seen_maps" ∷ mono_list_lb_own cli_γ cli_st ∗
+  "%Hlen_ep" ∷ ⌜ length cli_st = uint.nat ep ⌝ ∗
+  "%Hagree_dig" ∷ ([∗ list] ep ↦ x ∈ cli_st,
+    match x with
+    | None => True
+    | Some y => ⌜ ∃ dig, adtr_st.(comm_st.digs) !! ep = Some dig ∧ y.1 = dig ⌝
+    end).
+
+Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk adtr_γ :
+  {{{
+    "Hown_cli" ∷ Client.own ptr_c c ∗
+    "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
+    "#His_adtrPk" ∷ is_pk adtrPk (adtr_sigpred adtr_γ)
+  }}}
+  Client__Audit #ptr_c #adtrAddr (slice_val sl_adtrPk)
+  {{{
+    (ptr_evid : loc) (err : bool), RET (#ptr_evid, #err);
+    "Hown_cli" ∷ Client.own ptr_c c ∗
+    if negb err then
+      "#His_audit" ∷ is_audit c.(Client.γ) adtr_γ c.(Client.next_epoch)
     else True
   }}}.
 Proof. Admitted.
