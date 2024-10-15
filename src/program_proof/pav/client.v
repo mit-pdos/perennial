@@ -86,19 +86,15 @@ End Client.
 Section specs.
 Context `{!heapGS Σ, !mono_listG (option (dig_ty * gname)) Σ, !ghost_mapG Σ map_label_ty map_val_ty, !mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ}.
 
-Definition is_key cli_γ uid ver ep comm : iProp Σ :=
-  ∃ dig sm_γ,
-  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep, comm)) ∗
-  "#Hbound" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None.
-
-Definition is_bound cli_γ uid ver (ep : w64) : iProp Σ :=
-  ∃ dig sm_γ,
-  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hbound" ∷ (uid, ver) ↪[sm_γ]□ None.
-
 (* an opening exists that binds pk to comm. *)
 Definition is_comm (pk : pk_ty) (comm : comm_ty) : iProp Σ. Admitted.
+
+Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
+  ∃ dig sm_γ comm,
+  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
+  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep, comm)) ∗
+  "#Hcomm" ∷ is_comm pk comm ∗
+  "#Hbound" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None.
 
 Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
   {{{
@@ -110,14 +106,19 @@ Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
     (ep : w64) (ptr_evid : loc) (err : bool), RET (#ep, #ptr_evid, #err);
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     if negb err then
-      ∃ comm,
-      let new_c := set Client.next_ver (word.add (W64 1)) c in
+      let new_c := set Client.next_ver (word.add (W64 1))
+        (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
-      "#His_key" ∷ is_key c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep comm ∗
-      "#Hcomm" ∷ is_comm pk comm
-    else "Hown_cli" ∷ Client.own ptr_c c
+      "#His_key" ∷ is_my_key c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep pk
+    else
+      "Hown_cli" ∷ Client.own ptr_c c
   }}}.
 Proof. Admitted.
+
+Definition is_my_bound cli_γ uid ver (ep : w64) : iProp Σ :=
+  ∃ dig sm_γ,
+  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
+  "#Hbound" ∷ (uid, ver) ↪[sm_γ]□ None.
 
 Lemma wp_Client__SelfMon ptr_c c :
   {{{
@@ -126,10 +127,47 @@ Lemma wp_Client__SelfMon ptr_c c :
   Client__SelfMon #ptr_c
   {{{
     (ep : w64) (ptr_evid : loc) (err : bool), RET (#ep, #ptr_evid, #err);
-    "Hown_cli" ∷ Client.own ptr_c c ∗
     if negb err then
-      "#His_bound" ∷ is_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep
-    else True
+      let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
+      "Hown_cli" ∷ Client.own ptr_c new_c ∗
+      "#His_bound" ∷ is_my_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep
+    else
+      "Hown_cli" ∷ Client.own ptr_c c
+  }}}.
+Proof. Admitted.
+
+Definition is_no_other_key cli_γ uid (ep : epoch_ty) : iProp Σ :=
+  ∃ dig sm_γ,
+  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
+  "#Hbound" ∷ (uid, W64 0) ↪[sm_γ]□ None.
+
+Definition is_other_key cli_γ uid (ep : epoch_ty) pk : iProp Σ :=
+  ∃ (ver : nat) dig sm_γ (ep0 : w64) comm0,
+  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
+  "#Hhist" ∷ ∀ (ver' : w64), ⌜ uint.nat ver' < ver ⌝ -∗
+    ∃ ep1 comm1, (uid, ver') ↪[sm_γ]□ (Some (ep1, comm1)) ∗
+  "#Hlatest" ∷ (uid, W64 ver) ↪[sm_γ]□ (Some (ep0, comm0)) ∗
+  "#Hcomm" ∷ is_comm pk comm0 ∗
+  "#Hbound" ∷ (uid, W64 (S ver)) ↪[sm_γ]□ None.
+
+Lemma wp_Client__Get ptr_c c uid :
+  {{{
+    "Hown_cli" ∷ Client.own ptr_c c
+  }}}
+  Client__Get #ptr_c #uid
+  {{{
+    (is_reg : bool) sl_pk pk (ep : w64) (ptr_evid : loc) (err : bool),
+    RET (#is_reg, slice_val sl_pk, #ep, #ptr_evid, #err);
+    if negb err then
+      let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
+      "Hown_cli" ∷ Client.own ptr_c new_c ∗
+      if is_reg then
+        "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
+        "#His_key" ∷ is_other_key c.(Client.γ) c.(Client.uid) ep pk
+      else
+        "#His_no_key" ∷ is_no_other_key c.(Client.γ) c.(Client.uid) ep
+    else
+      "Hown_cli" ∷ Client.own ptr_c c
   }}}.
 Proof. Admitted.
 
