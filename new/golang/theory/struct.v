@@ -101,15 +101,11 @@ Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Global Instance pure_struct_field_ref_wp t f (l : loc) :
-  PureWpVal True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
+  PureWp True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
-  iIntros (?? Φ?) "HΦ".
+  iIntros (?????) "HΦ".
   rewrite /struct.field_ref. wp_pures.
-  iModIntro.
-  (* FIXME: avoid unfolding to_val *)
-  iExactEq "HΦ". Transparent to_val. rewrite /to_val /=. Opaque to_val.
-  unfold struct.field_ref_f. simpl.
-  rewrite /loc_add /= /addr_id /=.
+  iExactEq "HΦ". rewrite /struct.field_ref_f.
   repeat (f_equal; try word).
 Qed.
 
@@ -120,81 +116,52 @@ Definition is_structT (t : go_type) : Prop :=
   end.
 
 Global Instance wp_struct_fields_cons_nil (k : string) (l : list (string * val)) (v : val) :
-  PureWpVal True
+  PureWp  True
     (list.Cons (PairV #k v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
 .
 Proof.
-  iIntros (???) "_ HΦ".
+  iIntros (?????) "HΦ".
   rewrite struct.fields_val_unseal /=.
   wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
-  PureWpVal True
+  PureWp True
     (list.Cons (PairV #k v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
 .
 Proof.
-  iIntros (???) "_ HΦ".
+  iIntros (?????) "HΦ".
   rewrite struct.fields_val_unseal /=.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Fixpoint is_comparable_type (t : go_type) : Prop :=
-  match t with
-  | arrayT _ elem => is_comparable_type elem
-  | structT d =>
-      (fix is_comparable_type_struct d : Prop :=
-         match d with
-         | [] => True
-         | (_,t) :: d => is_comparable_type t ∧ is_comparable_type_struct d
-         end
-      ) d
-  | funcT => False
-  | _  => True
-  end
-.
-
-Global Instance wp_if_destruct `{!IntoVal V} `{!IntoValTyped V t} `{!EqDecision V} (v1 v2 : V) :
-  PureWpVal (is_comparable_type t) (# v1 = # v2) #(bool_decide (v1 = v2)).
-Proof.
-  iIntros (?? Φk) "%Ht HΦ".
-Admitted.
-
 Global Instance wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
-  PureWpVal True
+  PureWp True
     (struct.assocl_lookup #k (struct.fields_val l))
     (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
 .
 Proof.
-  iIntros (?? Φ) "_ HΦ".
+  iIntros (?????) "HΦ".
   rewrite struct.fields_val_unseal.
   iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
-  [base]: {
-    wp_rec.
-    rewrite /struct.fields_val_def /=.
-    wp_pures. by iApply "HΦ".
-  }
+  [base]: wp_call; by iApply "HΦ".
   [cons]: {
-    wp_rec.
+    wp_call.
     rewrite /struct.fields_val_def /=.
-    wp_pures.
-    wp_pure; [done|].
     destruct bool_decide eqn:Heqb; wp_pures.
     {
       rewrite bool_decide_eq_true in Heqb.
-      eapply (inj (R:=(=))) in Heqb.
-      2:{
-      }
-      inversion Heqb; subst. clear Heqb.
+      subst.
       wp_pures.
       rewrite (String.eqb_refl).
       by iApply "HΦ".
     }
     {
       rewrite bool_decide_eq_false in Heqb.
-      wp_apply "IH".
+      wp_pures.
+      iApply "IH".
       destruct (s =? _)%string eqn:Hx.
       { exfalso. apply Heqb. repeat f_equal. symmetry. by apply String.eqb_eq. }
       by iApply "HΦ".
@@ -203,24 +170,26 @@ Proof.
 Qed.
 
 Global Instance wp_struct_make (t : go_type) (l : list (string*val)) :
-  PureWpVal (is_structT t)
+  PureWp (is_structT t)
   (struct.make t (struct.fields_val l))
   (struct.val t l).
 Proof.
-  intros ????Ht.
+  intros ?????K.
   rewrite struct.make_unseal struct.val_unseal.
   destruct t; try by exfalso.
   unfold struct.make_def.
   iIntros "HΦ".
-  iInduction decls as [] "IH" forall (Φ).
+  iInduction decls as [] "IH" forall (Φ K).
   - wp_pures. simpl. done.
   - destruct a.
     wp_pures.
     unfold struct.val_def.
     destruct (assocl_lookup _ _).
-    + wp_pures. wp_apply "IH"; first done.
-      wp_pures. done.
-    + wp_pures. wp_apply "IH"; first done.
-      wp_pures. done.
+    + wp_pures.
+      unshelve wp_apply ("IH" $! _ _ []); first done.
+      simpl fill. wp_pures. done.
+    + wp_pures.
+      unshelve wp_apply ("IH" $! _ _ []); first done.
+      simpl fill. wp_pures. done.
 Qed.
 End wps.

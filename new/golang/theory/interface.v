@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import notation proofmode.
+From Perennial.goose_lang Require Import notation.
 From New.golang.theory Require Import struct typing.
 From New.golang.defn Require Import interface.
 

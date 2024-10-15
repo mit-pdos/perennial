@@ -181,28 +181,37 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 (** Binops *)
 
 (* w64 binop instance *)
-Global Instance wp_w64_binop op (v1 v2 : w64) (v : w64) :
-  PureWp (op ≠ EqOp ∧ bin_op_eval_word op v1 v2 = Some v) (BinOp op #v1 #v2)%E #v | 1.
+Global Instance wp_w64_binop op (v1 v2 : w64) (v : val) :
+  PureWp (op ≠ EqOp ∧
+      (to_val <$> bin_op_eval_word op v1 v2) ∪ (to_val <$> bin_op_eval_compare op v1 v2) = Some v)
+    (BinOp op #v1 #v2)%E v | 1.
 Proof.
-  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec; destruct H as [Hneq Hword].
-  - rewrite /bin_op_eval Hword decide_False // union_Some_l /=. Transitions.monad_simpl.
-  - rewrite /bin_op_eval Hword decide_False // union_Some_l /= in H1. Transitions.monad_inv. eauto.
+  rewrite to_val_unseal /=. apply (pure_exec_pure_wp O).
+  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
+  { rewrite /bin_op_eval decide_False // /=. destruct op; try by simpl in *. }
+  revert H. solve_pure_exec.
 Qed.
 
-Global Instance wp_w32_binop op (v1 v2 : w32) (v : w32) :
-  PureWp (op ≠ EqOp ∧ bin_op_eval_word op v1 v2 = Some v) (BinOp op #v1 #v2)%E #v | 1.
+Global Instance wp_w32_binop op (v1 v2 : w32) (v : val) :
+  PureWp (op ≠ EqOp ∧
+      (to_val <$> bin_op_eval_word op v1 v2) ∪ (to_val <$> bin_op_eval_compare op v1 v2) = Some v)
+    (BinOp op #v1 #v2)%E v | 1.
 Proof.
-  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec; destruct H as [Hneq Hword].
-  - rewrite /bin_op_eval Hword decide_False // union_Some_l /=. Transitions.monad_simpl.
-  - rewrite /bin_op_eval Hword decide_False // union_Some_l /= in H1. Transitions.monad_inv. eauto.
+  rewrite to_val_unseal /=. apply (pure_exec_pure_wp O).
+  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
+  { rewrite /bin_op_eval decide_False // /=. destruct op; try by simpl in *. }
+  revert H. solve_pure_exec.
 Qed.
 
-Global Instance wp_w8_binop op (v1 v2 : w8) (v : w8) :
-  PureWp (op ≠ EqOp ∧ bin_op_eval_word op v1 v2 = Some v) (BinOp op #v1 #v2)%E #v | 1.
+Global Instance wp_w8_binop op (v1 v2 : w8) (v : val) :
+  PureWp (op ≠ EqOp ∧
+      (to_val <$> bin_op_eval_word op v1 v2) ∪ (to_val <$> bin_op_eval_compare op v1 v2) = Some v)
+    (BinOp op #v1 #v2)%E v | 1.
 Proof.
-  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec; destruct H as [Hneq Hword].
-  - rewrite /bin_op_eval Hword decide_False // union_Some_l /=. Transitions.monad_simpl.
-  - rewrite /bin_op_eval Hword decide_False // union_Some_l /= in H1. Transitions.monad_inv. eauto.
+  rewrite to_val_unseal /=. apply (pure_exec_pure_wp O).
+  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
+  { rewrite /bin_op_eval decide_False // /=. destruct op; try by simpl in *. }
+  revert H. solve_pure_exec.
 Qed.
 
 Global Instance wp_w8_w64_binop op (v1 : w8) (v2 : w64) (v : w8) :
@@ -437,7 +446,22 @@ Ltac2 wp_bind_apply () :=
     (fun _ => Control.backtrack_tactic_failure "wp_bind_apply: could not match a function call with fully evaluated arguments")
 .
 
+Lemma tac_wp_true_elim Σ Δ (P: iProp Σ) :
+  envs_entails Δ P ->
+  envs_entails Δ (bi_wand (bi_pure True) P).
+Proof. rewrite envs_entails_unseal=> ->. iIntros "$ _ //". Qed.
+
+Lemma tac_wp_true Σ (Δ: envs (iPropI Σ)) :
+  envs_entails Δ (bi_pure True).
+Proof. done. Qed.
+
+Ltac2 solve_bi_true () :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (bi_pure True) ] => apply tac_wp_true
+  | [ |- envs_entails _ (bi_wand (bi_pure True) _) ] => apply tac_wp_true_elim
+  end.
+
 Tactic Notation "wp_apply" open_constr(lem) :=
-  ltac2:(wp_bind_apply ());
-  iApply lem; last try iNext
+  ltac2:(Control.enter wp_bind_apply);
+  iApply lem; last try iNext; try ltac2:(Control.enter solve_bi_true)
 .

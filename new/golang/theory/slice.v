@@ -1,7 +1,6 @@
 From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import List Fractional NamedProps.
 From iris.algebra Require Import dfrac.
-From Perennial.goose_lang Require Import proofmode.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export typing.
 From New.golang.theory Require Export list mem exception loop typing.
@@ -207,16 +206,14 @@ Lemma wp_slice_len stk E (s : slice.t) (Φ : val -> iProp Σ) :
     Φ #(s.(slice.len_f)) -∗ WP slice.len (slice.val s) @ stk; E {{ v, Φ v }}.
 Proof.
   rewrite slice.val_unseal. iIntros "HΦ".
-  wp_rec. wp_pures.
-  iApply "HΦ".
+  wp_call. iApply "HΦ".
 Qed.
 
 Lemma wp_slice_cap stk E (s : slice.t) (Φ : val -> iProp Σ) :
     Φ #(s.(slice.cap_f)) -∗ WP slice.cap (slice.val s) @ stk; E {{ v, Φ v }}.
 Proof.
   rewrite slice.val_unseal. iIntros "HΦ".
-  wp_rec. wp_pures.
-  iApply "HΦ".
+  wp_call. iApply "HΦ".
 Qed.
 
 Lemma slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
@@ -245,32 +242,41 @@ Lemma wp_slice_make3 stk E (len cap : w64) :
   }}}.
 Proof.
   iIntros (? Φ) "_ HΦ".
-  wp_rec. wp_pures.
-  wp_if_destruct.
+  wp_call.
+
+  destruct bool_decide eqn:Hlt;
+    [apply bool_decide_eq_true_1 in Hlt|apply bool_decide_eq_false_1 in Hlt];
+    wp_pures.
   { exfalso. word. }
-  wp_pure; [done|].
-  wp_if_destruct.
+
+  destruct bool_decide eqn:Hlt2;
+    [apply bool_decide_eq_true_1 in Hlt2|apply bool_decide_eq_false_1 in Hlt2];
+    wp_pures.
   {
-    wp_apply wp_ArbitraryInt.
+    wp_bind ArbitraryInt.
+    iApply (wp_ArbitraryInt with "[//]"). iNext.
     iIntros (?) "_".
+    replace (LitV x) with (#x).
+    2:{ rewrite to_val_unseal //. }
     wp_pures.
     rewrite slice_val_fold.
     iApply "HΦ".
-    iModIntro.
     rewrite own_slice_unseal own_slice_cap_unseal.
-    eapply to_val_inj in Heqb0.
     assert (len = W64 0) by word; subst.
     unfold own_slice_def. unfold own_slice_cap_def. simpl.
     assert (uint.nat (W64 0) = 0)%nat as -> by word.
     simpl. done.
   }
-  apply f_not_equal in Heqb0.
   wp_pures.
-  Transparent to_val. simpl. Opaque to_val.
-  wp_apply wp_allocN_seq.
+  wp_bind (AllocN _ _).
+  rewrite [in #cap]to_val_unseal.
+  iApply (wp_allocN_seq with "[//]").
   { word. }
+  iNext.
   iIntros (?) "Hp".
   wp_pures.
+  replace (LitV l) with (#l); last by rewrite to_val_unseal //.
+  replace (LitV cap) with (#cap); last by rewrite to_val_unseal //.
   rewrite slice_val_fold. iApply "HΦ".
   rewrite own_slice_unseal own_slice_cap_unseal.
   assert (uint.nat cap = uint.nat len + (uint.nat cap - uint.nat len))%nat as Hsplit by word.
@@ -278,7 +284,7 @@ Proof.
   iDestruct "Hp" as "[Hsl Hcap]".
   iSplitL "Hsl".
   {
-    iModIntro. iSplitL.
+    iSplitL.
     2:{ iPureIntro. simpl. rewrite length_replicate. word. }
     erewrite <- (seq_replicate_fmap O).
     iApply (big_sepL_fmap with "[Hsl]").
@@ -294,7 +300,7 @@ Proof.
     subst. iFrame.
   }
   {
-    iModIntro. iSplitL.
+    iSplitL.
     2:{ iPureIntro. done. }
     rewrite /own_slice_cap_def /=.
     iSplitR; first iPureIntro.
@@ -319,7 +325,7 @@ Lemma wp_slice_make2 stk E (len : u64) :
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_rec. wp_pures.
+  wp_call.
   wp_apply wp_slice_make3.
   { done. }
   iIntros (?) "(? & ? & ?)".
@@ -327,35 +333,36 @@ Proof.
 Qed.
 
 Global Instance pure_slice_ptr (s : slice.t) :
-  PureWpVal True (slice.ptr (slice.val s)) #(slice.ptr_f s).
+  PureWp True (slice.ptr (slice.val s)) #(slice.ptr_f s).
 Proof.
   rewrite slice.val_unseal.
-  iIntros (???) "_ HΦ".
-  wp_rec. wp_pures. by iApply "HΦ".
+  iIntros (?????) "HΦ".
+  wp_call. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_len (s : slice.t) :
-  PureWpVal True (slice.len (slice.val s)) #(slice.len_f s).
+  PureWp True (slice.len (slice.val s)) #(slice.len_f s).
 Proof.
   rewrite slice.val_unseal.
-  iIntros (???) "_ HΦ".
-  wp_rec. wp_pures. by iApply "HΦ".
+  iIntros (?????) "HΦ".
+  wp_call. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_cap (s : slice.t) :
-  PureWpVal True (slice.cap (slice.val s)) #(slice.cap_f s).
+  PureWp True (slice.cap (slice.val s)) #(slice.cap_f s).
 Proof.
   rewrite slice.val_unseal.
-  iIntros (???) "_ HΦ".
-  wp_rec. wp_pures. by iApply "HΦ".
+  iIntros (?????) "HΦ".
+  wp_call. by iApply "HΦ".
 Qed.
 
 Global Instance wp_slice_elem_ref s (i : w64) :
-  PureWpVal (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref t (slice.val s) #i)
+  PureWp (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref t (slice.val s) #i)
     #(slice.elem_ref_f s t i).
 Proof.
-  iIntros (???) "%H HΦ".
-  wp_rec. wp_pures.
+  iIntros (?????) "HΦ".
+  wp_call.
+  destruct bool_decide.
   wp_if_destruct.
   wp_pures. iApply "HΦ".
 Qed.

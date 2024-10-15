@@ -4,19 +4,19 @@ From New.golang.defn Require Import exception.
 Section goose_lang.
 Context {ext: ffi_syntax}.
 
-Definition break_val_def : val := (#(str "break"), #()).
+Definition break_val_def : val := (#"break", #()).
 Program Definition break_val := unseal (_:seal (@break_val_def)). Obligation 1. by eexists. Qed.
 Definition break_val_unseal : break_val = _ := seal_eq _.
 
-Definition continue_val_def : val := (#(str "continue"), #()).
+Definition continue_val_def : val := (#"continue", #()).
 Program Definition continue_val := unseal (_:seal (@continue_val_def)). Obligation 1. by eexists. Qed.
 Definition continue_val_unseal : continue_val = _ := seal_eq _.
 
-Definition do_break_def : val := λ: "v", (#(str "break"), Var "v").
+Definition do_break_def : val := λ: "v", (#"break", Var "v").
 Program Definition do_break := unseal (_:seal (@do_break_def)). Obligation 1. by eexists. Qed.
 Definition do_break_unseal : do_break = _ := seal_eq _.
 
-Definition do_continue_def : val := λ: "v", (#(str "continue"), Var "v").
+Definition do_continue_def : val := λ: "v", (#"continue", Var "v").
 Program Definition do_continue := unseal (_:seal (@do_continue_def)). Obligation 1. by eexists. Qed.
 Definition do_continue_unseal : do_continue = _ := seal_eq _.
 
@@ -26,8 +26,8 @@ Local Definition do_for_def : val :=
    if: ~(Var "cond") #() then (return: (do: #()))
    else
      let: "b" := "body" #() in
-     if: Fst "b" = #(str "break") then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst "b" = #(str "continue")) || (Fst $ Var "b" = #(str "execute"))
+     if: Fst "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
+     if: (Fst "b" = #"continue") || (Fst $ Var "b" = #"execute")
           then (do: "post" #();;; return: "loop" "cond" "body" "post") else do: #() ;;;
      return: Var "b"
   ).
@@ -39,8 +39,8 @@ Definition do_loop_def: val :=
   λ: "body",
   (rec: "loop" <> := exception_do (
      let: "b" := (Var "body") #() in
-     if: Fst $ Var "b" = #(str "break") then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst $ Var "b" = #(str "continue")) || (Fst $ Var "b" = #(str "execute"))
+     if: Fst $ Var "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
+     if: (Fst $ Var "b" = #"continue") || (Fst $ Var "b" = #"execute")
           then (return: (Var "loop") #()) else do: #() ;;;
      return: Var "b"
   )) #().

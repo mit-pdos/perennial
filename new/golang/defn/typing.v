@@ -183,3 +183,9 @@ Section goose_lang.
   Definition fields_val_unseal : fields_val = _ := seal_eq _.
 End goose_lang.
 End struct.
+
+(* Shortcircuit Boolean connectives *)
+Notation "e1 && e2" :=
+  (If e1%E e2%E #false) (only parsing) : expr_scope.
+Notation "e1 || e2" :=
+  (If e1%E #true e2%E) (only parsing) : expr_scope.

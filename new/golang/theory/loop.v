@@ -1,6 +1,6 @@
-From Perennial.goose_lang Require Import notation typing proofmode.
+From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Export loop.
-From New.golang.theory Require Import exception.
+From New.golang.theory Require Import exception typing.
 From iris_named_props Require Export named_props.
 
 Set Default Proof Using "Type".
@@ -13,28 +13,28 @@ Global Instance pure_continue_val (v1 : val) :
 Proof.
   rewrite exception_seq_unseal continue_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_rec. wp_pures. iFrame.
+  wp_call. iFrame.
 Qed.
 
 Global Instance pure_break_val (v1 : val) : PureWp True (exception_seq v1 (break_val)) (break_val).
 Proof.
   rewrite exception_seq_unseal break_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_rec. wp_pures. iFrame.
+  wp_call. iFrame.
 Qed.
 
 Global Instance pure_do_continue_val : PureWp True (continue: #()) (continue_val).
 Proof.
   rewrite do_continue_unseal continue_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_rec. wp_pures. iFrame.
+  wp_call. iFrame.
 Qed.
 
 Global Instance pure_do_break_val : PureWp True (break: #()) (break_val).
 Proof.
   rewrite do_break_unseal break_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_rec. wp_pures. iFrame.
+  wp_call. iFrame.
 Qed.
 
 (* FIXME: seal this *)
@@ -60,8 +60,7 @@ Proof.
   iIntros "HP #Hloop".
   rewrite do_for_unseal.
   iLöb as "IH".
-  wp_rec.
-  wp_pures.
+  wp_call.
   iDestruct ("Hloop" with "HP") as "Hloop1".
   wp_bind (cond #()).
   wp_apply (wp_wand with "Hloop1").
@@ -89,6 +88,7 @@ Proof.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
+      wp_pures.
       wp_apply (wp_wand with "IH").
       iIntros (?) "HΦ".
       wp_pures.
