@@ -8,8 +8,8 @@ From Perennial.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions Integers.
-From Perennial.goose_lang Require Import lang lifting proofmode.
-From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
+From Perennial.goose_lang Require Import lang lifting.
+From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.ffi.grove_ffi Require Export impl.
 
 Set Default Proof Using "Type".
@@ -673,7 +673,7 @@ lemmas. *)
    WP e @ s; E {{ Φ }}.
   Proof.
     iIntros (?) "Hacc_wp".
-    wp_apply wp_acc_global_state_interp.
+    iApply wp_acc_global_state_interp.
     { rewrite H. done. }
     iIntros (?????) "[(? & ? & Ht) ?]".
     unfold own_time.

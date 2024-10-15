@@ -371,7 +371,7 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
     | Primitive2 ?op (Val ?v) ?e      => walk_ctx e '(@Primitive2RCtx _ $op $v :: $k)
     | Primitive2 ?op ?e1 ?e2          => walk_ctx e1 '(@Primitive2LCtx _ $op $e2 :: $k)
     | Primitive1 ?op ?e               => walk_ctx e '(@Primitive1Ctx _ $op :: $k)
-    | ExternalOp ?op ?e               => walk_ctx e '(@ExternalOpCtx _ $op :: $k)
+    | @ExternalOp ?ext ?op ?e         => walk_ctx e '(@ExternalOpCtx $ext $op :: $k)
     | CmpXchg (Val ?v0) (Val ?v1) ?e2 => walk_ctx e2 '(CmpXchgRCtx $v0 $v1 :: $k)
     | CmpXchg (Val ?v0) ?e1 ?e2       => walk_ctx e1 '(CmpXchgMCtx $v0 $e2 :: $k)
     | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 '(CmpXchgLCtx $e1 $e2 :: $k)
@@ -463,5 +463,5 @@ Ltac2 solve_bi_true () :=
 
 Tactic Notation "wp_apply" open_constr(lem) :=
   ltac2:(Control.enter wp_bind_apply);
-  iApply lem; last try iNext; try ltac2:(Control.enter solve_bi_true)
+  iApply lem; try iNext; try ltac2:(Control.enter solve_bi_true)
 .

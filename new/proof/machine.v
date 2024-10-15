@@ -11,9 +11,9 @@ Lemma wp_Assume {stk E} (cond : bool) :
 .
 Proof.
   iIntros (Φ) "_ HΦ".
-  wp_rec. wp_pures.
-  wp_if_destruct.
-  - iApply ("HΦ" with "[//]").
+  wp_call.
+  destruct cond; wp_pures.
+  - wp_pures. iApply ("HΦ" with "[//]").
   - wp_pures.
     iLöb as "IH".
     wp_pures.

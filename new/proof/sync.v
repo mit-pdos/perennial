@@ -4,7 +4,6 @@ From iris.algebra Require Import excl.
 From Perennial.base_logic.lib Require Import invariants.
 From Perennial.program_logic Require Import weakestpre.
 
-From Perennial.goose_lang Require Import persistent_readonly.
 From New.code Require Export sync.
 From New.proof Require Import proof_prelude.
 From Perennial.algebra Require Import map.

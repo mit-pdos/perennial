@@ -12,12 +12,11 @@ Lemma wp_SumNoOverflow (x y : u64) :
 Proof.
   iIntros (Φ) "HΦ".
   rewrite /SumNoOverflow. wp_pures.
-  wp_apply wp_ref_ty; [econstructor|].
-  iIntros (y_ptr) "Hy".
-  wp_apply wp_ref_ty; [econstructor|].
-  iIntros (x_ptr) "Hx".
+  wp_alloc y_ptr as "Hy".
+  wp_pures.
+  wp_alloc x_ptr as "Hx".
   wp_pures. wp_load. wp_load. wp_load. wp_pures.
-  iModIntro. iExactEq "HΦ".
+  iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
   pose proof (sum_overflow_check x y).
@@ -28,19 +27,19 @@ Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
   ∀ Φ : val → iProp Σ,
-    (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
+    (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(word.add x y)) -∗
     WP std.SumAssumeNoOverflow #x #y {{ Φ }}.
 Proof.
-  iIntros "%Φ HΦ". wp_rec; wp_pures.
-  wp_apply wp_ref_ty; [econstructor|].
-  iIntros (y_ptr) "Hy".
-  wp_apply wp_ref_ty; [econstructor|].
-  iIntros (x_ptr) "Hx".
-  wp_pures. wp_load. wp_load.
-  wp_apply wp_SumNoOverflow.
+  iIntros "%Φ HΦ". wp_call.
+  wp_alloc y_ptr as "Hy".
+  wp_pures.
+  wp_alloc x_ptr as "Hx".
+  wp_pures. wp_load. wp_pures. wp_load.
+  wp_pures. wp_apply wp_SumNoOverflow.
+  wp_pures.
   wp_apply wp_Assume.
   rewrite bool_decide_eq_true.
-  iIntros (?). wp_pures. do 2 wp_load. wp_pures. iModIntro.
+  iIntros (?). wp_pures. do 2 wp_load. wp_pures.
   iApply "HΦ". iPureIntro. done.
 Qed.
 End wps.
