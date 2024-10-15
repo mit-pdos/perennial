@@ -12,10 +12,9 @@ Section proof.
     WP (with_defer': e) {{ Φ }}.
   Proof.
     iIntros "Hwp".
-    wp_pures.
-    wp_rec.
+    wp_call.
     wp_apply wp_ref_ty. iIntros (defer) "Hdefer". wp_pures.
-    wp_apply "Hwp". iFrame.
+    iApply "Hwp". iFrame.
   Qed.
 
 End proof.

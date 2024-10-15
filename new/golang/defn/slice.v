@@ -1,4 +1,4 @@
-From New.golang.defn Require Export mem loop exception typing.
+From New.golang.defn Require Export mem loop exception typing list.
 
 Module slice.
 (* FIXME: seal these functions *)

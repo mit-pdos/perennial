@@ -39,20 +39,15 @@ Proof.
     wp_apply "IH".
     iIntros "%".
     wp_pures.
-    wp_bind (_ > _)%E.
-    eapply (tac_wp_pure_wp []).
-    { apply wp_w64_binop. }
-    wp_if_destruct.
-    {
+    destruct bool_decide eqn:Hle.
+    + wp_pures.
+      apply bool_decide_eq_true_1 in Hle.
       simpl.
       replace (W64 (S $ length l)) with (word.add (W64 1) (W64 (length l))) by word.
       iApply "HΦ".
       iPureIntro. word.
-    }
-    {
-      iClear "HΦ IH".
-      wp_pure. iLöb as "IH". wp_pure. done.
-    }
+    + iClear "HΦ IH".
+      wp_pures. iLöb as "IH". wp_pures. done.
 Qed.
 
 End wps.
