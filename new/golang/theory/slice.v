@@ -362,8 +362,7 @@ Global Instance wp_slice_elem_ref s (i : w64) :
 Proof.
   iIntros (?????) "HΦ".
   wp_call.
-  destruct bool_decide.
-  wp_if_destruct.
+  rewrite bool_decide_true; last done.
   wp_pures. iApply "HΦ".
 Qed.
 
@@ -377,8 +376,7 @@ Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
 .
 Proof.
   iIntros "[Hsl HΦ]".
-  wp_rec.
-  wp_pures.
+  wp_call.
   wp_apply wp_ref_ty.
   iIntros (j_ptr) "Hi".
   wp_pures.
@@ -391,16 +389,12 @@ Proof.
   wp_for.
   iNamed "Hinv".
   wp_pures.
-  wp_bind (load_ty _ _).
-  eapply (tac_wp_load_ty []).
-  wp_apply wp_lo
   wp_load.
   wp_pures.
   iDestruct (own_slice_len with "Hsl") as %Hlen.
-  destruct bool_decide eqn:Hlt.
+  case_bool_decide as Hlt.
   - simpl. (* Case: execute loop body *)
-    iModIntro. rewrite bool_decide_eq_true in Hlt.
-    wp_pures. wp_load. wp_pures.
+    rewrite decide_True //. wp_pures. wp_load. wp_pures.
     pose proof (list_lookup_lt vs (uint.nat j) ltac:(word)) as [w Hlookup].
     iDestruct (own_slice_elem_acc with "[$]") as "[Helem Hown]"; [eassumption|].
     wp_load.
@@ -412,79 +406,89 @@ Proof.
     wp_apply (wp_wand with "Hiters").
     iIntros (?) "[-> Hiters]".
     iApply wp_for_post_do.
+    wp_pures.
     wp_load.
     wp_pures.
     wp_store.
-    iModIntro. iFrame.
+    iFrame.
     replace (uint.nat (word.add _ $ W64 1)) with (S $ uint.nat j) by word.
     iFrame.
   - simpl.  (* Case: done with loop body. *)
-    rewrite bool_decide_eq_false in Hlt.
     rewrite drop_ge.
     2:{ word. }
-    simpl. iApply "Hiters". by iFrame.
+    rewrite decide_False /=; last naive_solver.
+    rewrite decide_True /=; last naive_solver.
+    iApply "Hiters". by iFrame.
 Qed.
 
-Lemma wp_slice_literal {stk E} t (l : list val) :
-  Forall (λ v, has_go_type v t) l →
+Lemma wp_slice_literal {stk E} (lv : list val) (l : list V) :
+  lv = # <$> l →
   {{{ True }}}
-    slice.literal t (list.val l) @ stk ; E
-  {{{ sl, RET (slice.val sl); own_slice sl t (DfracOwn 1) l }}}.
+    slice.literal t (list.val lv) @ stk ; E
+  {{{ sl, RET (slice.val sl); sl ↦* l }}}.
 Proof.
-  intros Hty. iIntros (Φ) "_ HΦ".
-  wp_rec.
-  wp_pures.
+  intros ->.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
   wp_apply wp_list_Length.
   iIntros "%Hlen".
+  wp_pures.
   wp_apply wp_slice_make2.
   iIntros (?) "[Hsl Hcap]".
   wp_pures.
-  wp_apply wp_alloc_untyped.
-  { instantiate (1:=list.val l). rewrite list.val_unseal. by destruct l. }
-  iIntros (l_ptr) "Hl".
+  wp_bind (ref _)%E.
+  iApply (wp_alloc_untyped with "[//]").
+  { instantiate (1:=list.val (# <$>l)). rewrite list.val_unseal. by destruct l. }
+  iNext. iIntros (l_ptr) "Hl".
   wp_pures.
+  rewrite -default_val_eq_zero_val.
   wp_alloc i_ptr as "Hi".
   wp_pures.
   iDestruct (own_slice_len with "Hsl") as %Hsz.
   rewrite length_replicate in Hsz.
   iAssert (∃ (i : w64),
-      "%Hi" ∷ ⌜ uint.nat i <= uint.nat (W64 (length l)) ⌝ ∗
-      "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-      "Hl" ∷ l_ptr ↦ (list.val (drop (uint.nat i) l)) ∗
-      "Hsl" ∷ own_slice sl t (DfracOwn 1) (take (uint.nat i) l ++ replicate (length l - uint.nat i) (zero_val t))
+      "%Hi" ∷ ⌜ uint.Z i <= uint.Z (W64 (length l)) ⌝ ∗
+      "Hi" ∷ i_ptr ↦# i ∗
+      "Hl" ∷ l_ptr ↦ (list.val $ # <$> (drop (uint.nat i) l)) ∗
+      "Hsl" ∷ sl ↦* (take (uint.nat i) l ++ replicate (length l - uint.nat i) (default_val V))
     )%I
     with "[Hi Hl Hsl]" as "Hloop".
   {
-    rewrite zero_val_eq /=.
     iExists _; iFrame.
+    autorewrite with list in *.
+    simpl.
     rewrite drop_0 take_0 Nat.sub_0_r -Hlen /=.
     iFrame. iPureIntro. word.
   }
   wp_for.
   iNamed "Hloop".
+  wp_pures.
   wp_load.
   wp_pures.
+  autorewrite with list in *.
   case_bool_decide as Hlt.
   {
     simpl.
-    iModIntro.
+    rewrite decide_True //.
     wp_pures.
-    wp_untyped_load.
+    wp_bind (! _)%E.
+    iApply (wp_load with "[$]").
+    iNext. iIntros "Hl".
     wp_pures.
     destruct (drop _ _) eqn:Hdrop.
-    { exfalso. apply (f_equal length) in Hdrop. rewrite /= length_drop in Hdrop.
-      word. }
+    { exfalso. apply (f_equal length) in Hdrop.
+      rewrite length_drop /= in Hdrop.
+      autorewrite with list in *. word. }
+    simpl.
     wp_pures.
     wp_apply (wp_store with "[$]").
     iIntros "Hl".
     wp_pures.
     wp_load.
-    wp_pure_steps1.
-    {
-      apply (f_equal length) in Hdrop.
-      rewrite /= length_drop in Hdrop.
-      word.
-    }
+    autorewrite with list in *.
+    apply Z2Nat.inj in Hsz. 2-3: word.
+    rewrite Hsz in Hlt.
+    wp_pure.
     iDestruct (own_slice_elem_acc i with "Hsl") as "[Hptsto Hsl]".
     {
       rewrite lookup_app_r.
@@ -495,15 +499,12 @@ Proof.
       word.
     }
     wp_store.
-    { apply (Forall_drop _ (uint.nat i)) in Hty.
-      rewrite Hdrop in Hty.
-      by apply Forall_cons in Hty as [? ?]. }
     wp_pures.
-    iModIntro.
     iApply wp_for_post_do.
+    wp_pures.
     wp_load.
+    wp_pures.
     wp_store.
-    iModIntro.
     iFrame.
     replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1)%nat by word.
     rewrite -drop_drop.
@@ -534,13 +535,15 @@ Proof.
     word.
   }
   {
-    simpl. iModIntro.
+    simpl.
+    rewrite decide_False; last naive_solver.
+    rewrite decide_True; last naive_solver.
     wp_pures.
     iApply "HΦ".
     replace (uint.Z i) with (uint.Z (length l)).
     2:{ word. }
     rewrite -Hlen Nat.sub_diag.
-    rewrite replicate_0 app_nil_r firstn_all. iFrame. done.
+    rewrite replicate_0 app_nil_r firstn_all. iFrame.
   }
 Qed.
 

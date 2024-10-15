@@ -583,8 +583,7 @@ Tactic Notation "wp_store" :=
     first
       [wp_bind (store_ty _ (Val _) (Val _)); eapply tac_wp_store_ty
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
-    [solve_has_go_type
-    |solve_pointsto ()
+    [solve_pointsto ()
     |reduction.pm_reflexivity
     |first [wp_pure | idtac ]]
   | _ => fail "wp_store: not a 'wp'"
