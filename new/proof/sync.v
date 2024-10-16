@@ -30,14 +30,14 @@ Context `{!heapGS Σ} `{!syncG Σ}.
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
   inv nroot (
         ∃ b : bool,
-          (m ↦s[ Mutex :: "state" ]{# 1/4} #b) ∗
+          (m ↦s[ Mutex :: "state" ]{# 1/4} b) ∗
                   if b then True else
-                    m ↦s[Mutex :: "state"]{# 3/4} #b ∗ R
+                    m ↦s[Mutex :: "state"]{# 3/4} b ∗ R
         ).
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := m ↦s[Mutex :: "state"]{# 3/4} #true.
+Definition own_Mutex (m: loc) : iProp Σ := m ↦s[Mutex :: "state"]{# 3/4} true.
 
 Lemma own_Mutex_exclusive (m : loc) : own_Mutex m -∗ own_Mutex m -∗ False.
 Proof.
