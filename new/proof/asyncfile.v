@@ -2,7 +2,6 @@ From New.proof Require Import grove_prelude.
 From New.code.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From New.proof Require Import std.
-From Perennial.goose_lang Require Import crash_borrow.
 From New.proof Require Import sync.
 
 Record af_names := mk_af_names {
@@ -110,10 +109,9 @@ Definition own_AsyncFile_ghost N γ P fname data idx durableIndex (closeRequeste
   "#Hwits" ∷ is_witnesses γ durableIndex ∗
   "HcloseReq" ∷ (if (closeRequested || closed) then own_close_req_token γ else True) ∗
   "#Hclose" ∷ □ (if closed then
-                inv N (
-                      crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d) ∨ own_close_token γ)
-              else
-                True)
+                   inv N (crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d) ∨ own_close_token γ)
+                 else
+                   True)
 .
 
 Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=

@@ -1,5 +1,6 @@
 (** Iris specs for Grove FFI *)
-From iris.base_logic.lib Require Import mono_nat.
+From iris.bi.lib Require Import fixpoint.
+From iris.base_logic.lib Require Import mono_nat saved_prop.
 From Perennial.program_logic Require Export atomic_fupd.
 From New.proof Require Export proof_prelude.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
@@ -184,117 +185,231 @@ Section grove.
     word.
   Qed.
 
-  Lemma wpc_FileRead f dq c E :
-    ⊢ {{{ f f↦{dq} c }}}
-        FileRead #f @ E
-      {{{ s, RET #s; f f↦{dq} c ∗ s ↦* c }}}
-      {{{ f f↦{dq} c }}}.
+  Context `{!savedPropG Σ}.
+  Context `{!inG Σ (exclR unitO)}.
+  Definition Ncrash := nroot.
+  Definition own_crash_concrete P Pc : iProp Σ :=
+    ∃ γprop γtok,
+    saved_prop_own γprop (DfracOwn (1/2)) P ∗
+      inv Ncrash (∃ Q, saved_prop_own γprop (DfracOwn (1/2)) Q ∗ (Q ∧ Pc ∨ own γtok (Excl ()) ∗ C))
+  .
+
+  Definition own_crash_abstract_pre Pc (ρ : iProp Σ → iProp Σ) (P : iProp Σ) : iProp Σ :=
+    £ 2 -∗ |NC={⊤,∅}=> P ∗ (∀ P', (P' -∗ Pc) -∗ P' -∗ |NC={∅,⊤}=> ρ P').
+
+  Definition own_crash_abstract Pc P : iProp Σ :=
+    bi_greatest_fixpoint (own_crash_abstract_pre Pc) P.
+
+  Lemma own_crash_unfold P Pc :
+    own_crash_abstract Pc P -∗
+    own_crash_abstract_pre Pc (own_crash_abstract Pc) P.
   Proof.
-    iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done.
-    iCache with "HΦ Hf". { iApply "HΦ". done. }
-    wpc_bind (ExternalOp _ _).
-    iApply wpc_atomic.
-    { solve_atomic2. }
-    iSplit.
-    { iApply "HΦ". done. }
-    wp_apply (wp_FileReadOp with "Hf").
-    iIntros (err l len) "(Hf & Hl)".
-    iSplit; last first.
-    { iApply "HΦ". done. }
+    iIntros "H".
+    rewrite /own_crash_abstract.
+    erewrite greatest_fixpoint_unfold.
+    2:{
+      constructor.
+      - intros. iIntros "#Himpl * H".
+        rewrite /own_crash_abstract_pre.
+        iIntros "Hlc".
+        iMod ("H" with "Hlc") as "[$ H]". iModIntro.
+        iIntros (?) "Hwand HP'".
+        iApply "Himpl".
+        iApply ("H" with "[$] [$]").
+      - intros.
+        solve_proper.
+    }
+    iIntros "Hlc".
+    iMod ("H" with "Hlc") as "[$ H]".
+    iIntros "!# * Hwand HP'".
+    iApply ("H" with "[$] [$]").
+  Qed.
+
+  Lemma alloc_own_crash P Pc :
+    P ∧ Pc ={⊤}=∗ own_crash_abstract Pc P ∗ |C={⊤}=> ▷ Pc.
+  Proof using Type*.
+    iIntros "HP".
+    iMod (saved_prop_alloc P (DfracOwn 1)) as (γprop) "[Hprop Hprop2]"; first done.
+    iMod (own_alloc (Excl ())) as (γtok) "Htok"; first done.
+    iMod (inv_alloc Ncrash ⊤ (∃ Q, saved_prop_own γprop (DfracOwn (1/2)) Q ∗ (Q ∧ Pc ∨ own γtok (Excl ()) ∗ C)) with "[-Hprop Htok]") as "#Hinv".
+    { iNext. iExists _; iFrame. }
+    iSplitL "Hprop".
+    {
+      iModIntro.
+      iApply (greatest_fixpoint_coiter _ (λ P, saved_prop_own γprop (DfracOwn (1/2)) P)%I).
+      2:{ iFrame. }
+      iIntros "!# * Hprop".
+      iIntros "[Hlc Hlc2]".
+      rewrite ncfupd_eq.
+      iIntros (?) "HNC".
+      iInv "Hinv" as "Hi" "Hclose".
+      iMod (lc_fupd_elim_later with "[$] Hi") as (?) "[Hprop2 Hi]".
+      iDestruct (saved_prop_agree with "[$] [$]") as "#-#Hagree".
+      iMod (lc_fupd_elim_later with "[$] Hagree") as "#Hagree".
+      iRewrite -"Hagree".
+      iDestruct "Hi" as "[Hi | [_ Hbad]]".
+      2:{
+        iDestruct (NC_C with "[$] [$]") as %?. done.
+      }
+      iLeft in "Hi". iFrame "Hi".
+      iFrame.
+      iApply fupd_mask_intro.
+      { set_solver. }
+      iIntros "Hmask".
+      iFrame.
+      iIntros (?) "Hwand HP'".
+      iIntros (?) "$".
+      iMod "Hmask".
+      iMod (saved_prop_update_2 with "[$] [$]") as "[$ H]".
+      { rewrite Qp.half_half //. }
+      iMod ("Hclose" with "[-]"); last done.
+      iNext.
+      iExists _; iFrame.
+      iLeft. iSplit.
+      { iFrame. }
+      iApply "Hwand". iFrame.
+    }
     iModIntro.
+    iIntros "C".
+    iInv "Hinv" as "Hi" "Hclose".
+    iDestruct "Hi" as (?) "[? [H|>[Hbad _]]]".
+    2:{ iCombine "Htok Hbad" gives %Hbad. done. }
+    iRight in "H".
+    iFrame.
+    iMod ("Hclose" with "[-]"); last done.
+    iNext. iExists _; iFrame. iRight. iFrame.
+  Qed.
+
+  (* want:
+     combine: own_crash P Pc -∗ own_crash Q Qc -∗
+     own_crash (P ∗ Q) (Pc Qc)
+
+     split: own_crash (P ∗ Q) (Pc ∗ Qc) -∗
+     own_crash P Pc ∗ own_crash Q Qc
+     if P -∗ |C={⊤}=> Pc and Q -∗ |C={⊤}=> Qc.
+   *)
+
+  (* FIXME: this is actually logically atomic because the model doesn't capture
+     the fact that reads and writes are non-atomic w.r.t. concurrency.
+     This avoids existentially quantifying c inside the fupd to require the
+     caller to "know" the file contents before callin Read.
+   *)
+  Lemma wp_FileRead f dq c E Φ :
+    ⊢ (|NC={E, ∅}=> f f↦{dq} c ∗ (f f↦{dq} c -∗ |NC={∅,E}=>
+                                 ∀ s, s ↦* c -∗ Φ #s)) -∗
+    WP FileRead #f @ E {{ Φ }}.
+  Proof.
+    iIntros "Hau".
+    wp_call.
+    wp_bind (ExternalOp _ _).
+    iApply wp_ncatomic.
+    { solve_atomic2. }
+    iMod "Hau" as "[Hf Hau]".
+    rewrite to_val_unseal /=.
+    iModIntro.
+    iApply (wp_FileReadOp with "Hf").
+    iNext. iIntros "* [Hf Hs]".
+    iMod ("Hau" with "Hf") as "HΦ".
+    iModIntro.
+    wp_pures.
+    replace (LitV err) with (#err); last by rewrite to_val_unseal.
     destruct err.
-    { wpc_pures.
-      wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
-    iDestruct "Hl" as "[%Hl Hl]".
-    wpc_pures.
-    iDestruct "HΦ" as "[_ HΦ]".
-    rewrite slice_val_fold.
-    iApply ("HΦ" $! (slice.mk _ _ _)). iFrame. iModIntro.
+    {
+      wp_pures.
+      wp_call.
+      iClear "HΦ Hs".
+      replace (LitV LitUnit) with (#()); last by rewrite to_val_unseal.
+      iLöb as "IH".
+      wp_pures.
+      wp_apply "IH".
+    }
+    wp_pures.
+    rewrite slice.val_unseal /slice.val_def to_val_unseal /=.
+    iDestruct "Hs" as "[% Hl]".
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
-    2:{ iExactEq "H". repeat f_equal. word. }
+    { instantiate (1:=len). word. }
+    iApply ("HΦ" $! (slice.mk _ _ _)).
+    iExactEq "H".
+    repeat f_equal.
     word.
   Qed.
 
-  Lemma wpc_FileWrite f s q old data E :
-    ⊢ {{{ f f↦ old ∗ own_slice s byteT q (data_vals data) }}}
-        FileWrite #(str f) (slice.val s) @ E
-      {{{ RET #(); f f↦ data ∗ own_slice s byteT q (data_vals data) }}}
-      {{{ f f↦ old ∨ f f↦ data }}}.
+  Lemma wp_FileWrite f s dq old data E Φ :
+    ⊢ s ↦*{dq} data -∗
+    (|NC={E, ∅}=> f f↦ old ∗ (f f↦ data -∗ |NC={∅,E}=> s ↦*{dq} data -∗ Φ #()) ∧
+                            (f f↦ old -∗ |NC={∅,E}=> True)
+    ) -∗
+    WP FileWrite #f (slice.val s) @ E {{ Φ }}.
   Proof.
-    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
-    wpc_call. { by iLeft. } { by iLeft. }
-    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
-    (* Urgh so much manual work just calling a WP lemma... *)
-    wpc_pures.
-    iDestruct (own_slice_len with "Hs") as "%Hlen".
-    iDestruct (own_slice_wf with "Hs") as "%Hwf".
-    wpc_bind (ExternalOp _ _).
-    wpc_bind (slice.ptr _). wpc_frame. wp_pures. iModIntro. iNamed 1.
-    wpc_bind (slice.len _). wpc_frame. wp_pures. iModIntro. iNamed 1.
-    wpc_pures.
-    iApply wpc_atomic.
+    iIntros "Hs Hau".
+    wp_call.
+    wp_bind (ExternalOp _ _).
+    rewrite to_val_unseal /=.
+    iApply wp_ncatomic.
     { solve_atomic2. }
-    iSplit.
-    { iApply "HΦ". by iLeft. }
-    rewrite /data_vals length_fmap in Hlen.
-    wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
-    { iApply own_slice_to_pointsto_vals. done. }
-    iIntros (err) "[Hf Hs]".
-    iSplit; last first.
-    { iApply "HΦ". destruct err; by eauto. }
-    iModIntro. destruct err.
-    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
-    wpc_pures.
-    { iApply "HΦ". eauto. }
-    iApply "HΦ". iFrame.
+    iMod "Hau" as "[Hf Hau]".
     iModIntro.
-    destruct s. simpl in *.
-    iDestruct (pointsto_vals_to_own_slice with "Hs") as "H".
-    { word. }
-    2:{ iExactEq "H". repeat f_equal. word. }
-    word.
+    iDestruct (own_slice_len with "Hs") as %Hlen.
+    iDestruct (own_slice_wf with "Hs") as %Hcap.
+    iApply (wp_FileWriteOp with "[$Hf Hs]").
+    { done. }
+    { by iApply own_slice_to_pointsto_vals. }
+    iNext. iIntros "* [Hf Hl]".
+    replace (LitV err) with #err; last by rewrite to_val_unseal //.
+    destruct err.
+    - iMod ("Hau" with "[$]") as "HΦ".
+      iModIntro. wp_pures.
+      wp_pures.
+      wp_call. iClear "HΦ Hl".
+      replace (LitV LitUnit) with (#()); last by rewrite to_val_unseal.
+      iLöb as "IH". wp_pures. wp_apply "IH".
+    - iLeft in "Hau". iMod ("Hau" with "[$]") as "Hau".
+      iModIntro. wp_pures. iApply "Hau".
+      iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
+      { word. }
+      { instantiate (1:= s.(slice.cap_f)). word. }
+      destruct s. iExactEq "H".
+      simpl in *. repeat f_equal. word.
   Qed.
 
-  Lemma wpc_FileAppend f s q old data E :
-    ⊢ {{{ f f↦ old ∗ own_slice s byteT q (data_vals data) }}}
-        FileAppend #(str f) (slice.val s) @ E
-      {{{ RET #(); f f↦ (old ++ data) ∗ own_slice s byteT q (data_vals data) }}}
-      {{{ f f↦ old ∨ f f↦ (old ++ data) }}}.
+  Lemma wp_FileAppend f s dq old data E Φ :
+    ⊢ s ↦*{dq} data -∗
+    (|NC={E, ∅}=> f f↦ old ∗ (f f↦ (old ++ data) -∗ |NC={∅,E}=> s ↦*{dq} data -∗ Φ #()) ∧
+                            (f f↦ old -∗ |NC={∅,E}=> True)
+    ) -∗
+    WP FileAppend #f (slice.val s) @ E {{ Φ }}.
   Proof.
-    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
-    wpc_call. { by iLeft. } { by iLeft. }
-    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
-    (* Urgh so much manual work just calling a WP lemma... *)
-    wpc_pures.
-    iDestruct (own_slice_len with "Hs") as "%Hlen".
-    iDestruct (own_slice_wf with "Hs") as "%Hwf".
-    wpc_bind (slice.ptr _). wpc_frame. wp_pures. iModIntro. iNamed 1.
-    wpc_bind (slice.len _). wpc_frame. wp_pures. iModIntro. iNamed 1.
-    wpc_bind (ExternalOp _ _).
-    wpc_pures.
-    iApply wpc_atomic.
+    iIntros "Hs Hau".
+    wp_call.
+    wp_bind (ExternalOp _ _).
+    iApply wp_ncatomic.
     { solve_atomic2. }
-    iSplit.
-    { iApply "HΦ". by iLeft. }
-    rewrite /data_vals length_fmap in Hlen.
-    wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
-    { iApply own_slice_to_pointsto_vals. done. }
-    iIntros (err) "[Hf Hs]".
-    iSplit; last first.
-    { iApply "HΦ". destruct err; eauto. }
-    iModIntro. destruct err.
-    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
-    wpc_pures.
-    { iApply "HΦ". eauto. }
-    iApply "HΦ". iFrame. iModIntro.
-    destruct s. simpl in *.
-    iDestruct (pointsto_vals_to_own_slice with "Hs") as "H".
-    { word. }
-    2:{ iExactEq "H". repeat f_equal. word. }
-    word.
+    iMod "Hau" as "[Hf Hau]".
+    iModIntro.
+    iDestruct (own_slice_len with "Hs") as %Hlen.
+    iDestruct (own_slice_wf with "Hs") as %Hcap.
+    rewrite to_val_unseal /=.
+    iApply (wp_FileAppendOp with "[$Hf Hs]").
+    { done. }
+    { by iApply own_slice_to_pointsto_vals. }
+    iNext. iIntros "* [Hf Hl]".
+    replace (LitV err) with #err; last by rewrite to_val_unseal //.
+    destruct err.
+    - iMod ("Hau" with "[$]") as "HΦ".
+      iModIntro. wp_pures.
+      wp_pures.
+      wp_call. iClear "HΦ Hl".
+      replace (LitV LitUnit) with (#()); last by rewrite to_val_unseal.
+      iLöb as "IH". wp_pures. wp_apply "IH".
+    - iLeft in "Hau". iMod ("Hau" with "[$]") as "Hau".
+      iModIntro. wp_pures. iApply "Hau".
+      iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
+      { word. }
+      { instantiate (1:= s.(slice.cap_f)). word. }
+      destruct s. iExactEq "H".
+      simpl in *. repeat f_equal. word.
   Qed.
-
 
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
@@ -302,12 +417,13 @@ Section grove.
     <<< ∃∃ (new_time: u64), ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time) >>>
     {{{ RET #new_time; True }}}.
   Proof.
-    iIntros "!>" (Φ) "HAU". wp_rec.
+    iIntros "!>" (Φ) "HAU". wp_call.
     rewrite difference_empty_L.
     iMod "HAU" as (prev_time) "[Hlb HΦ]".
     { solve_atomic2. }
-    wp_apply (wp_GetTscOp with "Hlb").
-    iIntros (new_time) "[%Hprev Hlb]".
+    rewrite to_val_unseal /=.
+    iApply (wp_GetTscOp with "Hlb").
+    iNext. iIntros (new_time) "[%Hprev Hlb]".
     iMod ("HΦ" with "[Hlb]") as "HΦ".
     { eauto with iFrame. }
     by iApply "HΦ".
@@ -320,7 +436,7 @@ Section grove.
   WP GetTimeRange #() {{ Φ }}.
   Proof.
     iIntros (?) "HΦ".
-    wp_rec. wp_pures. wp_apply (wp_GetTimeRangeOp with "HΦ").
+    wp_call. rewrite to_val_unseal /=. iApply (wp_GetTimeRangeOp with "HΦ").
   Qed.
 
   Lemma tsc_lb_0 :
