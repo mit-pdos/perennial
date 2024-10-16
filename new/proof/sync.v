@@ -19,6 +19,37 @@ Definition syncΣ := #[mapΣ u64 unit ; ghost_varΣ u64].
 Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
 Proof. solve_inG. Qed.
 
+Module Mutex.
+Record t := mk {
+    state : bool
+}.
+End Mutex.
+
+Instance into_val_Mutex `{ffi_syntax} : IntoVal Mutex.t :=
+  {|
+    to_val_def := λ v, struct.val Mutex [("state" ::= #v.(Mutex.state))]%V
+  |}.
+
+Program Instance into_val_typed_Mutex `{ffi_syntax} : IntoValTyped Mutex.t Mutex :=
+{| default_val := Mutex.mk false |}.
+Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
+Next Obligation.
+  (* FIXME: [solve_zero_val] tactic *)
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal /=.
+  rewrite zero_val_eq /= !to_val_unseal //.
+Qed.
+Next Obligation.
+  (* FIXME: automation for this *)
+  rewrite to_val_unseal => ? x y Heq.
+  rewrite /= struct.val_unseal /= in Heq.
+  inversion Heq.
+  destruct x, y.
+  f_equal.
+  simpl in *.
+  apply to_val_inj in H0. subst. done.
+Qed.
+Final Obligation. solve_decision. Qed.
+
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
@@ -57,10 +88,11 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Theorem init_Mutex R E m : m ↦[Mutex] (zero_val $ Mutex) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦# (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "Hl HR".
   simpl.
+  (* FIXME: typeclass for relating record projections to struct fields. *)
   iDestruct (struct_fields_split with "Hl") as "Hl".
   { done. }
   { apply _. }
