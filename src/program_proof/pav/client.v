@@ -158,9 +158,9 @@ Lemma wp_Client__Get ptr_c c uid :
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       if is_reg then
         "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
-        "#His_key" ∷ is_other_key c.(Client.γ) c.(Client.uid) ep pk
+        "#His_key" ∷ is_other_key c.(Client.γ) uid ep pk
       else
-        "#His_no_key" ∷ is_no_other_key c.(Client.γ) c.(Client.uid) ep
+        "#His_no_key" ∷ is_no_other_key c.(Client.γ) uid ep
     else
       "Hown_cli" ∷ Client.own ptr_c c
   }}}.
