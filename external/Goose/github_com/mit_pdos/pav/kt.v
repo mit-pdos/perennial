@@ -961,11 +961,11 @@ Definition Client := struct.decl [
 
 Definition newClient: val :=
   rec: "newClient" "uid" "servAddr" "servSigPk" "servVrfPk" :=
-    let: "cli" := advrpc.Dial "servAddr" in
+    let: "c" := advrpc.Dial "servAddr" in
     let: "digs" := NewMap uint64T ptrT #() in
     struct.new Client [
       "uid" ::= "uid";
-      "servCli" ::= "cli";
+      "servCli" ::= "c";
       "servSigPk" ::= "servSigPk";
       "servVrfPk" ::= "servVrfPk";
       "seenDigs" ::= "digs"
@@ -978,6 +978,15 @@ Definition aliceUid : expr := #0.
 Definition bobUid : expr := #1.
 
 Definition charlieUid : expr := #2.
+
+(* clientErr from client.go *)
+
+(* clientErr abstracts errors in the KT client.
+   maybe there's an error. if so, maybe there's irrefutable evidence. *)
+Definition clientErr := struct.decl [
+  "evid" :: ptrT;
+  "err" :: boolT
+].
 
 (* ServerPutArgEncode from serde.out.go *)
 
@@ -1135,9 +1144,13 @@ Definition Evid := struct.decl [
 (* checkDig checks for freshness and prior vals, and evid / err on fail. *)
 Definition Client__checkDig: val :=
   rec: "Client__checkDig" "c" "dig" :=
+    let: "stdErr" := struct.new clientErr [
+      "evid" ::= slice.nil;
+      "err" ::= #true
+    ] in
     let: "err0" := CheckSigDig "dig" (struct.loadF Client "servSigPk" "c") in
     (if: "err0"
-    then (slice.nil, #true)
+    then "stdErr"
     else
       let: ("seenDig", "ok0") := MapGet (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") in
       (if: "ok0"
@@ -1148,18 +1161,28 @@ Definition Client__checkDig: val :=
             "sigDig0" ::= "dig";
             "sigDig1" ::= "seenDig"
           ] in
-          ("evid", #true)
-        else (slice.nil, #false))
+          struct.new clientErr [
+            "evid" ::= "evid";
+            "err" ::= #true
+          ]
+        else
+          struct.new clientErr [
+            "evid" ::= slice.nil;
+            "err" ::= #false
+          ])
       else
         (if: ((struct.loadF Client "nextEpoch" "c") ≠ #0) && ((struct.loadF SigDig "Epoch" "dig") < ((struct.loadF Client "nextEpoch" "c") - #1))
-        then (slice.nil, #true)
+        then "stdErr"
         else
           (if: ((struct.loadF Client "nextEpoch" "c") + #1) = #0
-          then (slice.nil, #true)
+          then "stdErr"
           else
             MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
             struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
-            (slice.nil, #false))))).
+            struct.new clientErr [
+              "evid" ::= slice.nil;
+              "err" ::= #false
+            ])))).
 
 (* checkVrfProof errors on fail.
    TODO: if VRF pubkey is bad, does VRF.Verify still mean something? *)
@@ -1191,28 +1214,35 @@ Definition Client__checkNonMemb: val :=
 (* Put rets the epoch at which the key was put, and evid / error on fail. *)
 Definition Client__Put: val :=
   rec: "Client__Put" "c" "pk" :=
+    let: "stdErr" := struct.new clientErr [
+      "evid" ::= slice.nil;
+      "err" ::= #true
+    ] in
     let: ((("dig", "latest"), "bound"), "err0") := callServPut (struct.loadF Client "servCli" "c") (struct.loadF Client "uid" "c") "pk" in
     (if: "err0"
-    then (#0, slice.nil, #true)
+    then (#0, "stdErr")
     else
-      let: ("evid", "err1") := Client__checkDig "c" "dig" in
-      (if: "err1"
-      then (#0, "evid", #true)
+      let: "err1" := Client__checkDig "c" "dig" in
+      (if: struct.loadF clientErr "err" "err1"
+      then (#0, "err1")
       else
         (if: Client__checkMemb "c" (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "latest"
-        then (#0, slice.nil, #true)
+        then (#0, "stdErr")
         else
           (if: (struct.loadF SigDig "Epoch" "dig") ≠ (struct.loadF Memb "EpochAdded" "latest")
-          then (#0, slice.nil, #true)
+          then (#0, "stdErr")
           else
             (if: (~ (std.BytesEqual "pk" (struct.loadF PkCommOpen "Pk" (struct.loadF Memb "CommOpen" "latest"))))
-            then (#0, slice.nil, #true)
+            then (#0, "stdErr")
             else
               (if: Client__checkNonMemb "c" (struct.loadF Client "uid" "c") ((struct.loadF Client "nextVer" "c") + #1) (struct.loadF SigDig "Dig" "dig") "bound"
-              then (#0, slice.nil, #true)
+              then (#0, "stdErr")
               else
                 struct.storeF Client "nextVer" "c" ((struct.loadF Client "nextVer" "c") + #1);;
-                (struct.loadF SigDig "Epoch" "dig", slice.nil, #false))))))).
+                (struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
+                   "evid" ::= slice.nil;
+                   "err" ::= #false
+                 ]))))))).
 
 (* ServerAuditArgEncode from serde.out.go *)
 
@@ -1427,31 +1457,39 @@ Definition Client__checkHist: val :=
    e.g., if don't check isReg alignment with hist, could have fraud non-exis key. *)
 Definition Client__Get: val :=
   rec: "Client__Get" "c" "uid" :=
+    let: "stdErr" := struct.new clientErr [
+      "evid" ::= slice.nil;
+      "err" ::= #true
+    ] in
     let: ((((("dig", "hist"), "isReg"), "latest"), "bound"), "err0") := callServGet (struct.loadF Client "servCli" "c") "uid" in
     (if: "err0"
-    then (#false, slice.nil, #0, slice.nil, #true)
+    then (#false, slice.nil, #0, "stdErr")
     else
-      let: ("evid", "err1") := Client__checkDig "c" "dig" in
-      (if: "err1"
-      then (#false, slice.nil, #0, "evid", "err1")
+      let: "err1" := Client__checkDig "c" "dig" in
+      (if: struct.loadF clientErr "err" "err1"
+      then (#false, slice.nil, #0, "err1")
       else
         (if: Client__checkHist "c" "uid" (struct.loadF SigDig "Dig" "dig") "hist"
-        then (#false, slice.nil, #0, slice.nil, #true)
+        then (#false, slice.nil, #0, "stdErr")
         else
           let: "numHistVers" := slice.len "hist" in
           (if: ("numHistVers" > #0) && (~ "isReg")
-          then (#false, slice.nil, #0, slice.nil, #true)
+          then (#false, slice.nil, #0, "stdErr")
           else
             (if: "isReg" && (Client__checkMemb "c" "uid" "numHistVers" (struct.loadF SigDig "Dig" "dig") "latest")
-            then (#false, slice.nil, #0, slice.nil, #true)
+            then (#false, slice.nil, #0, "stdErr")
             else
               let: "boundVer" := ref (zero_val uint64T) in
               (if: "isReg"
               then "boundVer" <-[uint64T] ("numHistVers" + #1)
               else #());;
               (if: Client__checkNonMemb "c" "uid" (![uint64T] "boundVer") (struct.loadF SigDig "Dig" "dig") "bound"
-              then (#false, slice.nil, #0, slice.nil, #true)
-              else ("isReg", struct.loadF PkCommOpen "Pk" (struct.loadF Memb "CommOpen" "latest"), struct.loadF SigDig "Epoch" "dig", slice.nil, #false))))))).
+              then (#false, slice.nil, #0, "stdErr")
+              else
+                ("isReg", struct.loadF PkCommOpen "Pk" (struct.loadF Memb "CommOpen" "latest"), struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
+                   "evid" ::= slice.nil;
+                   "err" ::= #false
+                 ]))))))).
 
 (* AdtrGetArgEncode from serde.out.go *)
 
@@ -1520,9 +1558,13 @@ Definition callAdtrGet: val :=
    pre-cond: we've seen this epoch. *)
 Definition Client__auditEpoch: val :=
   rec: "Client__auditEpoch" "c" "epoch" "adtrCli" "adtrPk" :=
+    let: "stdErr" := struct.new clientErr [
+      "evid" ::= slice.nil;
+      "err" ::= #true
+    ] in
     let: ("adtrInfo", "err0") := callAdtrGet "adtrCli" "epoch" in
     (if: "err0"
-    then (slice.nil, #true)
+    then "stdErr"
     else
       let: "servDig" := struct.new SigDig [
         "Epoch" ::= "epoch";
@@ -1535,10 +1577,10 @@ Definition Client__auditEpoch: val :=
         "Sig" ::= struct.loadF AdtrEpochInfo "AdtrSig" "adtrInfo"
       ] in
       (if: CheckSigDig "servDig" (struct.loadF Client "servSigPk" "c")
-      then (slice.nil, #true)
+      then "stdErr"
       else
         (if: CheckSigDig "adtrDig" "adtrPk"
-        then (slice.nil, #true)
+        then "stdErr"
         else
           let: ("seenDig", "ok0") := MapGet (struct.loadF Client "seenDigs" "c") "epoch" in
           control.impl.Assert "ok0";;
@@ -1548,22 +1590,29 @@ Definition Client__auditEpoch: val :=
               "sigDig0" ::= "servDig";
               "sigDig1" ::= "seenDig"
             ] in
-            ("evid", #true)
-          else (slice.nil, #false))))).
+            struct.new clientErr [
+              "evid" ::= "evid";
+              "err" ::= #true
+            ]
+          else
+            struct.new clientErr [
+              "evid" ::= slice.nil;
+              "err" ::= #false
+            ])))).
 
 Definition Client__Audit: val :=
   rec: "Client__Audit" "c" "adtrAddr" "adtrPk" :=
     let: "adtrCli" := advrpc.Dial "adtrAddr" in
-    let: "evid0" := ref (zero_val ptrT) in
-    let: "err1" := ref (zero_val boolT) in
+    let: "err0" := ref_to ptrT (struct.new clientErr [
+      "evid" ::= slice.nil;
+      "err" ::= #false
+    ]) in
     MapIter (struct.loadF Client "seenDigs" "c") (λ: "ep" <>,
-      let: ("evid1", "err2") := Client__auditEpoch "c" "ep" "adtrCli" "adtrPk" in
-      (if: "err2"
-      then
-        "evid0" <-[ptrT] "evid1";;
-        "err1" <-[boolT] #true
+      let: "err1" := Client__auditEpoch "c" "ep" "adtrCli" "adtrPk" in
+      (if: struct.loadF clientErr "err" "err1"
+      then "err0" <-[ptrT] "err1"
       else #()));;
-    (![ptrT] "evid0", ![boolT] "err1").
+    ![ptrT] "err0".
 
 Definition testBasic: val :=
   rec: "testBasic" "servAddr" "adtr0Addr" "adtr1Addr" :=
@@ -1579,8 +1628,8 @@ Definition testBasic: val :=
     time.Sleep #1000000;;
     let: "alice" := newClient aliceUid "servAddr" "servSigPk" "servVrfPk" in
     let: "pk0" := SliceSingleton #(U8 3) in
-    let: (("ep0", <>), "err0") := Client__Put "alice" "pk0" in
-    control.impl.Assume (~ "err0");;
+    let: ("ep0", "err0") := Client__Put "alice" "pk0" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
     let: "servCli" := advrpc.Dial "servAddr" in
     let: "adtr0Cli" := advrpc.Dial "adtr0Addr" in
     let: "adtr1Cli" := advrpc.Dial "adtr1Addr" in
@@ -1597,18 +1646,18 @@ Definition testBasic: val :=
     let: "err6" := callAdtrUpdate "adtr1Cli" "upd1" in
     control.impl.Assume (~ "err6");;
     let: "bob" := newClient bobUid "servAddr" "servSigPk" "servVrfPk" in
-    let: (((("isReg", "pk1"), "ep1"), <>), "err7") := Client__Get "bob" aliceUid in
-    control.impl.Assume (~ "err7");;
+    let: ((("isReg", "pk1"), "ep1"), "err7") := Client__Get "bob" aliceUid in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err7"));;
     control.impl.Assume "isReg";;
     control.impl.Assume ("ep0" = "ep1");;
-    let: (<>, "err8") := Client__Audit "alice" "adtr0Addr" "adtr0Pk" in
-    control.impl.Assume (~ "err8");;
-    let: (<>, "err9") := Client__Audit "alice" "adtr1Addr" "adtr1Pk" in
-    control.impl.Assume (~ "err9");;
-    let: (<>, "err10") := Client__Audit "bob" "adtr0Addr" "adtr0Pk" in
-    control.impl.Assume (~ "err10");;
-    let: (<>, "err11") := Client__Audit "bob" "adtr1Addr" "adtr1Pk" in
-    control.impl.Assume (~ "err11");;
+    let: "err8" := Client__Audit "alice" "adtr0Addr" "adtr0Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err8"));;
+    let: "err9" := Client__Audit "alice" "adtr1Addr" "adtr1Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err9"));;
+    let: "err10" := Client__Audit "bob" "adtr0Addr" "adtr0Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err10"));;
+    let: "err11" := Client__Audit "bob" "adtr1Addr" "adtr1Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err11"));;
     control.impl.Assert (std.BytesEqual "pk0" "pk1");;
     #().
 
@@ -1659,17 +1708,25 @@ Definition callServSelfMon: val :=
    through which it succeeds, or evid / error on fail. *)
 Definition Client__SelfMon: val :=
   rec: "Client__SelfMon" "c" :=
+    let: "stdErr" := struct.new clientErr [
+      "evid" ::= slice.nil;
+      "err" ::= #true
+    ] in
     let: (("dig", "bound"), "err0") := callServSelfMon (struct.loadF Client "servCli" "c") (struct.loadF Client "uid" "c") in
     (if: "err0"
-    then (#0, slice.nil, #true)
+    then (#0, "stdErr")
     else
-      let: ("evid", "err1") := Client__checkDig "c" "dig" in
-      (if: "err1"
-      then (#0, "evid", #true)
+      let: "err1" := Client__checkDig "c" "dig" in
+      (if: struct.loadF clientErr "err" "err1"
+      then (#0, "err1")
       else
         (if: Client__checkNonMemb "c" (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "bound"
-        then (#0, slice.nil, #true)
-        else (struct.loadF SigDig "Epoch" "dig", slice.nil, #false)))).
+        then (#0, "stdErr")
+        else
+          (struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
+             "evid" ::= slice.nil;
+             "err" ::= #false
+           ])))).
 
 (* evidence.go *)
 
@@ -1741,12 +1798,12 @@ Definition chaos: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       time.Sleep #40000000;;
       let: "pk" := SliceSingleton #(U8 2) in
-      let: ((<>, <>), "err0") := Client__Put "charlie" "pk" in
-      control.impl.Assume (~ "err0");;
-      let: ((((<>, <>), <>), <>), "err1") := Client__Get "charlie" aliceUid in
-      control.impl.Assume (~ "err1");;
-      let: ((<>, <>), "err2") := Client__SelfMon "charlie" in
-      control.impl.Assume (~ "err2");;
+      let: (<>, "err0") := Client__Put "charlie" "pk" in
+      control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
+      let: (((<>, <>), <>), "err1") := Client__Get "charlie" aliceUid in
+      control.impl.Assume (~ (struct.loadF clientErr "err" "err1"));;
+      let: (<>, "err2") := Client__SelfMon "charlie" in
+      control.impl.Assume (~ (struct.loadF clientErr "err" "err2"));;
       Client__Audit "charlie" "adtr0Addr" "adtr0Pk";;
       Client__Audit "charlie" "adtr1Addr" "adtr1Pk";;
       Continue);;
@@ -1792,8 +1849,8 @@ Definition alice__run: val :=
     (for: (λ: <>, (![byteT] "i") < #(U8 20)); (λ: <>, "i" <-[byteT] ((![byteT] "i") + #1)) := λ: <>,
       time.Sleep #50000000;;
       let: "pk" := SliceSingleton (![byteT] "i") in
-      let: (("epoch", <>), "err0") := Client__Put "cli" "pk" in
-      control.impl.Assume (~ "err0");;
+      let: ("epoch", "err0") := Client__Put "cli" "pk" in
+      control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
       struct.storeF alice "pks" "a" (SliceAppend ptrT (struct.loadF alice "pks" "a") (struct.new TimeSeriesEntry [
         "Epoch" ::= "epoch";
         "TSVal" ::= "pk"
@@ -1810,8 +1867,8 @@ Definition bob := struct.decl [
 Definition bob__run: val :=
   rec: "bob__run" "b" "cli" :=
     time.Sleep #550000000;;
-    let: (((("isReg", "pk"), "epoch"), <>), "err0") := Client__Get "cli" aliceUid in
-    control.impl.Assume (~ "err0");;
+    let: ((("isReg", "pk"), "epoch"), "err0") := Client__Get "cli" aliceUid in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
     struct.storeF bob "epoch" "b" "epoch";;
     struct.storeF bob "isReg" "b" "isReg";;
     struct.storeF bob "alicePk" "b" "pk";;
@@ -1864,17 +1921,17 @@ Definition testAll: val :=
     Mutex__Lock "aliceMu";;
     Mutex__Lock "bobMu";;
     time.Sleep #1000000000;;
-    let: (("selfMonEp", <>), "err0") := Client__SelfMon "aliceCli" in
-    control.impl.Assume (~ "err0");;
+    let: ("selfMonEp", "err0") := Client__SelfMon "aliceCli" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
     control.impl.Assume ((struct.loadF bob "epoch" "bob") ≤ "selfMonEp");;
-    let: (<>, "err1") := Client__Audit "aliceCli" "adtr0Addr" "adtr0Pk" in
-    control.impl.Assume (~ "err1");;
-    let: (<>, "err2") := Client__Audit "aliceCli" "adtr1Addr" "adtr1Pk" in
-    control.impl.Assume (~ "err2");;
-    let: (<>, "err3") := Client__Audit "bobCli" "adtr0Addr" "adtr0Pk" in
-    control.impl.Assume (~ "err3");;
-    let: (<>, "err4") := Client__Audit "bobCli" "adtr1Addr" "adtr1Pk" in
-    control.impl.Assume (~ "err4");;
+    let: "err1" := Client__Audit "aliceCli" "adtr0Addr" "adtr0Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err1"));;
+    let: "err2" := Client__Audit "aliceCli" "adtr1Addr" "adtr1Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err2"));;
+    let: "err3" := Client__Audit "bobCli" "adtr0Addr" "adtr0Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err3"));;
+    let: "err4" := Client__Audit "bobCli" "adtr1Addr" "adtr1Pk" in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err4"));;
     let: ("isReg", "aliceKey") := GetTimeSeries (struct.loadF alice "pks" "alice") (struct.loadF bob "epoch" "bob") in
     control.impl.Assert ("isReg" = (struct.loadF bob "isReg" "bob"));;
     (if: "isReg"
