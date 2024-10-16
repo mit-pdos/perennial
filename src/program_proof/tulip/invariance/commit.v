@@ -24,18 +24,6 @@ Proof.
     by destruct Hresm as [Hresm | Hresm]; rewrite Hresm.
 Qed.
 
-Lemma ext_by_cmtd_length repl cmtd kmodc ts :
-  ts ≠ O ->
-  kmodc !! ts = None ->
-  ext_by_cmtd repl cmtd kmodc ts ->
-  (length cmtd ≤ ts)%nat.
-Proof.
-  intros Hnz Hnone Hext.
-  rewrite /ext_by_cmtd Hnone in Hext.
-  destruct Hext as [-> Hlen].
-  by specialize (Hlen Hnz).
-Qed.
-
 Lemma no_commit_head_commit future ts wrs :
   no_commit_abort future ts ->
   head_commit future ts wrs ->
@@ -325,14 +313,24 @@ Qed.
 
 Lemma ext_by_cmtd_inv_commit repl cmtd kmodc ts v :
   ts ≠ O ->
+  repl ≠ [] ->
   kmodc !! ts = None ->
   ext_by_cmtd repl cmtd kmodc ts ->
   ext_by_cmtd repl (last_extend ts cmtd ++ [v]) (<[ts := v]> kmodc) ts.
 Proof.
-  intros Hnz Hts Hext.
+  intros Hnz Hnnil Hts Hext.
   rewrite /ext_by_cmtd Hts in Hext.
-  destruct Hext as [-> Hlen].
-  by rewrite /ext_by_cmtd lookup_insert.
+  destruct Hext as (rts & -> & Hlen).
+  rewrite /ext_by_cmtd lookup_insert.
+  f_equal.
+  specialize (Hlen Hnz).
+  rewrite last_extend_twice.
+  assert (Hge : (rts ≤ ts)%nat).
+  { etrans; last apply Hlen.
+    by apply last_extend_length_ge_n.
+  }
+  f_equal.
+  lia.
 Qed.
 
 Section inv.
@@ -384,19 +382,18 @@ Section inv.
       { by rewrite elem_of_filter. }
       by rewrite filter_dom_L in Hgoal.
     }
-    (* From [prepared_impl_locked] we obtain a locked [tpl] associated with [k]. *)
-    destruct (Hpil _ _ _ Hres Hinpwrs) as (tpl & Htpl & Hlocked).
+    (* From [prepared_impl_locked] we know [k] is locked by [ts]. *)
+    pose proof (Hpil _ _ _ Hres Hinpwrs) as Hlocked.
     (* Take [tuple_repl_half] from [Hrepls]. *)
-    iDestruct (big_sepM_lookup_acc _ _ k tpl with "Hrepls") as "[[Hhist Hts] HreplsC]".
+    iDestruct (big_sepM_lookup_acc _ _ k ts with "Hlocks") as "[Hlock HlocksC]".
     { by rewrite /tpls_group map_lookup_filter_Some. }
     iDestruct (key_inv_expose_tsprep with "Hkey") as (tsprep) "Hkey".
     (* Finally, deduce [tsprep = ts]. *)
     iAssert (⌜tsprep = ts⌝)%I as %->.
     { do 2 iNamed "Hkey".
-      iDestruct (repl_ts_agree with "Htsprep Hts") as %Heq.
-      by rewrite Hlocked in Heq.
+      by iDestruct (repl_ts_agree with "Htsprep Hlock") as %?.
     }
-    iDestruct ("HreplsC" with "[$Hhist $Hts]") as "Hrepls".
+    iDestruct ("HlocksC" with "Hlock") as "Hlocks".
     iDestruct ("HgroupsC" with "[-Hresm Hkey]") as "Hgroups".
     { iFrame "∗ # %". }
     iFrame.
@@ -414,26 +411,42 @@ Section inv.
     le_all ts (dom kmodl) ->
     kmodl !! ts = Some v ->
     kmodc !! ts = None ->
+    quorum_validation_fixed_before γ k (S ts) -∗
     key_inv_with_tsprep_no_kmodl_no_kmodc γ k ts kmodl kmodc ==∗
     key_inv_with_tsprep_no_kmodl_no_kmodc γ k ts (delete ts kmodl) (<[ts:=v]> kmodc) ∗
     is_cmtd_hist_length_lb γ k (S ts).
   Proof.
-    iIntros (Hnz Hles Hkmodl Hkmodc) "Hkey".
+    iIntros (Hnz Hles Hkmodl Hkmodc) "#Hqv Hkey".
     do 2 iNamed "Hkey".
     pose proof (ext_by_lnrz_inv_commit _ _ _ _ _ Hkmodl Hles Hdiffl) as Hdiffl'.
-    pose proof (ext_by_cmtd_inv_commit _ _ _ _ v Hnz Hkmodc Hdiffc) as Hdiffc'.
+    unshelve epose proof (ext_by_cmtd_inv_commit _ _ _ _ v Hnz _ Hkmodc Hdiffc) as Hdiffc'.
+    { eapply ext_by_cmtd_partial_impl_repl_not_nil; [| apply Hkmodc | apply Hdiffc].
+      by eapply ext_by_lnrz_impl_cmtd_not_nil.
+    }
     set cmtd' := last_extend _ _ ++ _ in Hdiffl'.
     iMod (cmtd_hist_update cmtd' with "Hcmtd") as "Hcmtd".
     { apply prefix_app_r, last_extend_prefix. }
     iDestruct (cmtd_hist_witness with "Hcmtd") as "#Hlb".
+    iModIntro.
+    unshelve epose proof (last_extend_length_eq_n ts cmtd _ _) as Hlen.
+    { by eapply ext_by_lnrz_impl_cmtd_not_nil. }
+    { by eapply ext_by_cmtd_length. }
+    iSplit; last first.
+    { iFrame "Hlb".
+      iPureIntro.
+      rewrite length_app Hlen /=.
+      lia.
+    }
     iFrame "∗ # %".
-    iPureIntro.
-    split; first by rewrite lookup_insert_ne.
-    subst cmtd'.
-    pose proof (ext_by_lnrz_not_nil _ _ _ Hdiffl) as Hnnil.
-    apply (last_extend_length ts) in Hnnil.
-    rewrite length_app /=.
-    lia.
+    iSplit.
+    { rewrite length_app Hlen.
+      by rewrite Nat.add_1_r.
+    }
+    iSplit.
+    { rewrite {2}/committed_or_quorum_invalidated length_app Hlen /=.
+      by rewrite Nat.add_1_r /= lookup_insert.
+    }
+    by rewrite lookup_insert_ne.
   Qed.
 
   Lemma keys_inv_commit γ kmodls kmodcs ts :
@@ -441,12 +454,13 @@ Section inv.
     map_Forall (λ _ kmodl, le_all ts (dom kmodl)) kmodls ->
     map_Forall (λ _ kmodl, is_Some (kmodl !! ts)) kmodls ->
     map_Forall (λ _ kmodc, kmodc !! ts = None) kmodcs ->
+    ([∗ set] k ∈ dom kmodls, quorum_validation_fixed_before γ k (S ts)) -∗
     ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
        key_inv_with_tsprep_no_kmodl_no_kmodc γ key ts kmodl kmodc) ==∗
     ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
        key_inv_after_commit γ key ts kmodl kmodc ∗ is_cmtd_hist_length_lb γ key (S ts)).
   Proof.
-    iIntros (Hnz Hles Hkmodls Hkmodcs) "Hkeys".
+    iIntros (Hnz Hles Hkmodls Hkmodcs) "#Hqv Hkeys".
     iApply big_sepM2_bupd.
     iApply (big_sepM2_impl with "Hkeys").
     iIntros (k kmodl kmodc Hkmodl Hkmodc) "!> Hkey".
@@ -454,7 +468,9 @@ Section inv.
     specialize (Hles _ _ Hkmodl). simpl in Hles.
     specialize (Hkmodcs _ _ Hkmodc). simpl in Hkmodcs.
     destruct Hkmodls as [v Hv].
-    iMod (key_inv_commit with "Hkey") as "[Hkey #Hlb]"; try done.
+    apply elem_of_dom_2 in Hkmodl.
+    iDestruct (big_sepS_elem_of with "Hqv") as "Hkqv"; first apply Hkmodl.
+    iMod (key_inv_commit with "Hkqv Hkey") as "[Hkey #Hlb]"; try done.
     iModIntro.
     iSplit; last iFrame "Hlb".
     iExists v.
@@ -478,13 +494,15 @@ Section inv.
     all_prepared γ tid wrs -∗
     txnsys_inv_no_future γ future -∗
     ([∗ set] gid ∈ gids_all, group_inv γ gid) -∗
+    ([∗ set] gid ∈ gids_all, ([∗ set] rid ∈ rids_all, replica_inv γ gid rid)) -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ==∗
     txnsys_inv_no_future γ (tail future) ∗
     ([∗ set] gid ∈ gids_all, group_inv γ gid) ∗
+    ([∗ set] gid ∈ gids_all, ([∗ set] rid ∈ rids_all, replica_inv γ gid rid)) ∗
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     is_txn_committed γ tid wrs.
   Proof.
-    iIntros (Hhead) "#Htid #Hprep Htxnsys Hgroups Hkeys".
+    iIntros (Hhead) "#Htid #Hprep Htxnsys Hgroups Hrps Hkeys".
     do 2 iNamed "Htxnsys".
     iDestruct (lnrz_tid_elem_of with "Htxnsl Htid") as %Htid.
     iNamed "Hpart".
@@ -720,8 +738,57 @@ Section inv.
       { rewrite lookup_resm_to_tmods_None. by left. }
       by rewrite Hresm.
     }
+    (* For each [k ∈ dom wrs], obtain that its validation has been fixed by some quorum. *)
+    iAssert ([∗ set] gid ∈ ptgroups (dom wrs),
+               [∗ set] key ∈ keys_group gid (dom wrs),
+                 quorum_validation_fixed_before γ key (S tid))%I as "#Hvdlb".
+    { iDestruct "Hprep" as "[Hwrs Hprep]".
+      iApply big_sepS_forall.
+      iIntros (gid Hgid).
+      iDestruct (big_sepS_elem_of with "Hprep") as "Hpreped"; first apply Hgid.
+      assert (Hinall : gid ∈ gids_all).
+      { apply (elem_of_weaken _ _ _ Hgid), subseteq_ptgroups. }
+      iDestruct (big_sepS_elem_of with "Hgroups") as "Hgroup"; first apply Hinall.
+      do 2 iNamed "Hgroup".
+      iDestruct (group_prep_lookup with "Hpm Hpreped") as %Hpreped.
+      iDestruct (big_sepM_lookup with "Hsafepm") as "Hsafep"; first apply Hpreped.
+      iDestruct "Hsafep" as "[_ Hqv]".
+      iDestruct (big_sepS_elem_of with "Hrps") as "Hrps"; first apply Hinall.
+      iDestruct "Hqv" as (ridsq) "[Hqv %Hridsq]".
+      iDestruct (replicas_inv_validated_keys_of_txn with "Hqv [Hrps]") as "#Hvpwrs".
+      { iApply (big_sepS_subseteq with "Hrps").
+        by destruct Hridsq as [? _].
+      }
+      iApply big_sepS_forall.
+      iIntros (k Hk).
+      iExists ridsq.
+      iSplit; last done.
+      iApply big_sepS_forall.
+      iIntros (rid Hrid).
+      iDestruct (big_sepS_elem_of with "Hvpwrs") as (pwrs) "[Hpwrs Hvds]"; first apply Hrid.
+      iDestruct "Hpwrs" as (wrs') "[Hwrs' %Hpwrs]".
+      iDestruct (txn_wrs_agree with "Hwrs Hwrs'") as %->.
+      rewrite -wrs_group_keys_group_dom -Hpwrs in Hk.
+      iDestruct (big_sepS_elem_of with "Hvds") as "Hvd"; first apply Hk.
+      apply elem_of_dom in Hk as [v Hv].
+      rewrite Hpwrs lookup_wrs_group_Some in Hv.
+      destruct Hv as [_ ->].
+      iDestruct "Hvd" as (l) "[Hvd %Hlookup]".
+      iExists l.
+      iFrame "Hvd".
+      iPureIntro.
+      apply lookup_lt_Some in Hlookup.
+      clear -Hlookup. lia.
+    }
+    iDestruct (big_sepS_partition_2 with "Hvdlb") as "Hvdlb'".
+    { intros k Hk.
+      exists (key_to_group k).
+      split; last done.
+      by apply elem_of_key_to_group_ptgroups.
+    }
+    rewrite -Hdomkmodls.
     (* Re-establish [key_inv] w.r.t. commit. *)
-    iMod (keys_inv_commit with "Hkeys") as "Hkeys".
+    iMod (keys_inv_commit with "Hvdlb' Hkeys") as "Hkeys".
     { by eapply Hnz, elem_of_dom_2. }
     { intros k kmodl Hkmodl.
       pose proof (conflict_free_head_commit_le_all _ _ _ _ Hcf Hhead) as Hle.

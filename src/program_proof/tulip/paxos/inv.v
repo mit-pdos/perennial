@@ -1172,7 +1172,8 @@ Section alloc.
       iPureIntro.
       split; last apply Hnid.
       apply cquorum_refl.
-      by rewrite size_dom.
+      rewrite size_dom.
+      lia.
     }
     iExists γ.
     iFrame "Hlog Hlogcli Hcpool Hcpoolcli Hps Hpsb".
@@ -1198,7 +1199,7 @@ Section alloc.
     { (* Partition the prepare LSNs. *)
       iAssert ([∗ set] nid ∈ nids, ([∗ set] t ∈ free_termps nid O, own_free_prepare_lsn γ t))%I
         with "[Hlsnps]" as "Hlsnps".
-      { iDestruct (big_sepS_partition _ _ nids (λ t nid, is_term_of_node nid t) with "Hlsnps")
+      { iDestruct (big_sepS_partition_1 _ _ nids (λ t nid, is_term_of_node nid t) with "Hlsnps")
           as "Hlsnps".
         { intros t nid1 nid2 Hne. by apply is_term_of_node_partitioned. }
         iApply (big_sepS_mono with "Hlsnps").
@@ -1259,7 +1260,8 @@ Section alloc.
       }
       { rewrite dom_gset_to_gmap.
         apply cquorum_refl.
-        by rewrite size_dom.
+        rewrite size_dom.
+        lia.
       }
     }
     iPureIntro.

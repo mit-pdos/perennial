@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.rsm.pure Require Import list.
-From Perennial.program_proof.tulip Require Import base res.
+From Perennial.program_proof.rsm.pure Require Import list quorum.
+From Perennial.program_proof.tulip Require Import base cmd res.
 
 Lemma tpls_group_keys_group_dom gid tpls :
   dom (tpls_group gid tpls) = keys_group gid (dom tpls).
@@ -9,6 +9,12 @@ Proof. by rewrite /tpls_group /keys_group filter_dom_L. Qed.
 Lemma wrs_group_keys_group_dom gid wrs :
   dom (wrs_group gid wrs) = keys_group gid (dom wrs).
 Proof. by rewrite /wrs_group /keys_group filter_dom_L. Qed.
+
+Lemma filter_group_keys_group_dom `{Countable A} gid (m : gmap dbkey A) :
+  dom (filter_group gid m) = keys_group gid (dom m).
+Proof. by rewrite /filter_group /keys_group filter_dom_L. Qed.
+
+(* TODO: cleanup lemmas about [tpls_group]. *)
 
 Lemma key_to_group_tpls_group key gid tpls :
   key ∈ dom (tpls_group gid tpls) ->
@@ -32,29 +38,112 @@ Proof.
   }
   rewrite lookup_insert_ne; last done.
   rewrite /tpls_group map_filter_insert.
-  by case_decide as H; first rewrite lookup_insert_ne.
+  by case_decide; first rewrite lookup_insert_ne.
 Qed.
 
-Definition prepared_impl_locked (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl) :=
+Lemma key_to_group_filter_group `{Countable A} key gid (m : gmap dbkey A) :
+  key ∈ dom (filter_group gid m) ->
+  key_to_group key = gid.
+Proof. intros Hdom. rewrite filter_group_keys_group_dom in Hdom. set_solver. Qed.
+
+Lemma filter_group_dom `{Countable A} gid (m1 m2 : gmap dbkey A) :
+  dom m1 = dom m2 ->
+  dom (filter_group gid m1) = dom (filter_group gid m2).
+Proof. intros Hdom. by rewrite 2!filter_group_keys_group_dom Hdom. Qed.
+
+Lemma insert_filter_group_commute `{Countable A} key tpl gid (m : gmap dbkey A) :
+  key_to_group key = gid ->
+  <[key := tpl]> (filter_group gid m) = filter_group gid (<[key := tpl]> m).
+Proof.
+  intros Hgid.
+  apply map_eq. intros k.
+  destruct (decide (key = k)) as [-> | Hne].
+  { rewrite lookup_insert /filter_group.
+    by rewrite (map_lookup_filter_Some_2 _ _ k tpl); [| rewrite lookup_insert |].
+  }
+  rewrite lookup_insert_ne; last done.
+  rewrite /filter_group map_filter_insert.
+  by case_decide; first rewrite lookup_insert_ne.
+Qed.
+
+Definition prepared_impl_locked (stm : gmap nat txnst) (tss : gmap dbkey nat) :=
   ∀ ts pwrs key,
   stm !! ts = Some (StPrepared pwrs) ->
   key ∈ dom pwrs ->
-  ∃ tpl, tpls !! key = Some tpl ∧ tpl.2 = ts.
+  tss !! key = Some ts.
 
-Definition locked_impl_prepared (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl) :=
-  ∀ key tpl,
-  tpls !! key = Some tpl ->
-  tpl.2 ≠ O ->
-  ∃ pwrs, stm !! tpl.2 = Some (StPrepared pwrs) ∧ key ∈ dom pwrs.
+Definition locked_impl_prepared (stm : gmap nat txnst) (tss : gmap dbkey nat) :=
+  ∀ key ts,
+  tss !! key = Some ts ->
+  ts ≠ O ->
+  ∃ pwrs, stm !! ts = Some (StPrepared pwrs) ∧ key ∈ dom pwrs.
 
 Section inv.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
 
-  Definition safe_prepared γ gid ts pwrs : iProp Σ :=
+  Definition quorum_validated γ (gid : u64) (ts : nat) : iProp Σ :=
+    ∃ (ridsq : gset u64),
+      ([∗ set] rid ∈ ridsq, is_replica_validated_ts γ gid rid ts) ∧
+      ⌜cquorum rids_all ridsq⌝.
+
+  Definition quorum_fast_pdec γ (gid : u64) (ts : nat) (p : bool) : iProp Σ :=
+    ∃ (ridsq : gset u64),
+      ([∗ set] rid ∈ ridsq, is_replica_pdec_at_rank γ gid rid ts O p) ∗
+      ⌜fquorum rids_all ridsq⌝.
+
+  Definition quorum_classic_pdec γ (gid : u64) (ts rank : nat) (p : bool) : iProp Σ :=
+    ∃ (ridsq : gset u64),
+      ([∗ set] rid ∈ ridsq, is_replica_pdec_at_rank γ gid rid ts rank p) ∗
+      ⌜cquorum rids_all ridsq⌝.
+
+  Definition quorum_pdec_at_rank γ (gid : u64) (ts rank : nat) (p : bool) : iProp Σ :=
+    if decide (rank = O)
+    then quorum_fast_pdec γ gid ts p
+    else quorum_classic_pdec γ gid ts rank p.
+
+  #[global]
+  Instance quorum_pdec_at_rank_persistent γ gid ts rank p :
+    Persistent (quorum_pdec_at_rank γ gid ts rank p).
+  Proof. rewrite /quorum_pdec_at_rank. case_decide; apply _. Defined.
+
+  Definition quorum_pdec γ (gid : u64) (ts : nat) (p : bool) : iProp Σ :=
+    ∃ rank, quorum_pdec_at_rank γ gid ts rank p.
+
+  Definition quorum_prepared γ (gid : u64) (ts : nat) : iProp Σ :=
+    quorum_pdec γ gid ts true.
+
+  Definition quorum_unprepared γ (gid : u64) (ts : nat) : iProp Σ :=
+    quorum_pdec γ gid ts false.
+
+  Definition is_txn_pwrs γ gid ts pwrs : iProp Σ :=
+    ∃ wrs, is_txn_wrs γ ts wrs ∧ ⌜pwrs = wrs_group gid wrs⌝.
+
+  Lemma txn_pwrs_agree γ gid ts pwrs1 pwrs2 :
+    is_txn_pwrs γ gid ts pwrs1 -∗
+    is_txn_pwrs γ gid ts pwrs2 -∗
+    ⌜pwrs2 = pwrs1⌝.
+  Proof.
+    iIntros "Hpwrs1 Hpwrs2".
+    iDestruct "Hpwrs1" as (wrs1) "[Hwrs1 %Hpwrs1]".
+    iDestruct "Hpwrs2" as (wrs2) "[Hwrs2 %Hpwrs2]".
+    iDestruct (txn_wrs_agree with "Hwrs1 Hwrs2") as %->.
+    by rewrite Hpwrs1.
+  Qed.
+
+  Definition safe_txn_pwrs γ gid ts pwrs : iProp Σ :=
     ∃ wrs, is_txn_wrs γ ts wrs ∧
            ⌜valid_ts ts ∧ valid_wrs wrs ∧ pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs⌝.
+
+  Lemma safe_txn_pwrs_impl_is_txn_pwrs γ gid ts pwrs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    is_txn_pwrs γ gid ts pwrs.
+  Proof.
+    iIntros "Hsafe".
+    iDestruct "Hsafe" as (wrs) "(Hwrs & _ & _ & _ & %Hpwrs)".
+    by iFrame "Hwrs".
+  Qed.
 
   (** The [StAborted] branch says that a transaction is aborted globally if it
   is aborted locally on some group (the other direction is encoded in
@@ -62,7 +151,7 @@ Section inv.
   an aborted state. *)
   Definition safe_txnst γ gid ts st : iProp Σ :=
     match st with
-    | StPrepared pwrs => is_group_prepared γ gid ts ∗ safe_prepared γ gid ts pwrs
+    | StPrepared pwrs => is_group_prepared γ gid ts ∗ safe_txn_pwrs γ gid ts pwrs
     | StCommitted => (∃ wrs, is_txn_committed γ ts wrs)
     | StAborted => is_txn_aborted γ ts
     end.
@@ -70,38 +159,65 @@ Section inv.
   #[global]
   Instance safe_txnst_persistent γ gid ts st :
     Persistent (safe_txnst γ gid ts st).
-  Proof. destruct st; apply _. Qed.
+  Proof. destruct st; apply _. Defined.
+
+  Definition safe_prep γ gid ts prep : iProp Σ :=
+    match prep with
+    | true  => quorum_prepared γ gid ts ∗ quorum_validated γ gid ts
+    | false => quorum_unprepared γ gid ts
+    end.
+
+  #[global]
+  Instance safe_prep_persistent γ gid ts p :
+    Persistent (safe_prep γ gid ts p).
+  Proof. destruct p; apply _. Defined.
+
+  Definition txnst_to_option_bool (st : txnst) :=
+    match st with
+    | StPrepared _ => None
+    | StCommitted => Some true
+    | StAborted => Some false
+    end.
 
   Definition group_inv_no_log_no_cpool
-    γ (gid : groupid) (log : dblog) (cpool : gset command) : iProp Σ :=
-    ∃ (pm : gmap nat bool) (stm : gmap nat txnst) (tpls : gmap dbkey dbtpl),
+    γ (gid : u64) (log : dblog) (cpool : gset command) : iProp Σ :=
+    ∃ (pm : gmap nat bool) (cm : gmap nat bool) (stm : gmap nat txnst)
+      (hists : gmap dbkey dbhist) (tspreps : gmap dbkey nat),
       "Hpm"       ∷ own_group_prepm γ gid pm ∗
-      "Hrepls"    ∷ ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, own_repl_tuple_half γ key tpl) ∗
+      "Hhists"    ∷ ([∗ map] k ↦ h ∈ filter_group gid hists, own_repl_hist_half γ k h) ∗
+      "Hlocks"    ∷ ([∗ map] k ↦ t ∈ filter_group gid tspreps, own_repl_ts_half γ k t) ∗
       "#Hsafestm" ∷ ([∗ map] ts ↦ st ∈ stm, safe_txnst γ gid ts st) ∗
+      "#Hsafepm"  ∷ ([∗ map] ts ↦ p ∈ pm, safe_prep γ gid ts p) ∗
+      "%Hrsm"     ∷ ⌜apply_cmds log = State cm hists⌝ ∗
       "%Hdompm"   ∷ ⌜dom pm ⊆ dom stm⌝ ∗
-      "%Hpil"     ∷ ⌜prepared_impl_locked stm tpls⌝ ∗
-      "%Hlip"     ∷ ⌜locked_impl_prepared stm tpls⌝.
+      "%Hdomptsm" ∷ ⌜dom tspreps = keys_all⌝ ∗
+      "%Hcm"      ∷ ⌜cm = omap txnst_to_option_bool stm⌝ ∗
+      "%Hpil"     ∷ ⌜prepared_impl_locked stm tspreps⌝ ∗
+      "%Hlip"     ∷ ⌜locked_impl_prepared stm tspreps⌝ ∗
+      "%Htsnz"    ∷ ⌜stm !! O = None⌝.
 
   Definition group_inv_no_log_with_cpool
-    γ (gid : groupid) (log : dblog) (cpool : gset command) : iProp Σ :=
+    γ (gid : u64) (log : dblog) (cpool : gset command) : iProp Σ :=
     "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
     "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
-  Definition group_inv_no_log γ (gid : groupid) (log : dblog) : iProp Σ :=
+  Definition group_inv_no_log
+    γ (gid : u64) (log : dblog) : iProp Σ :=
     ∃ (cpool : gset command),
       "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
-  Definition group_inv_no_cpool γ (gid : groupid) (cpool : gset command) : iProp Σ :=
+  Definition group_inv_no_cpool
+    γ (gid : u64) (cpool : gset command) : iProp Σ :=
     ∃ (log : dblog),
       "Hlog"   ∷ own_txn_log_half γ gid log ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
-  Definition group_inv γ (gid : groupid) : iProp Σ :=
+  Definition group_inv γ (gid : u64) : iProp Σ :=
     ∃ (log : dblog) (cpool : gset command),
-      "Hlog"   ∷ own_txn_log_half γ gid log ∗
-      "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
-      "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
+      "Hlog"    ∷ own_txn_log_half γ gid log ∗
+      "Hcpool"  ∷ own_txn_cpool_half γ gid cpool ∗
+      "Hgroup"  ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
 End inv.
 

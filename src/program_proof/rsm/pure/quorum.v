@@ -56,6 +56,12 @@ Section lemma.
     lia.
   Qed.
 
+  Lemma cquorum_elem_of c q x :
+    x ∈ q ->
+    cquorum c q ->
+    x ∈ c.
+  Proof. intros Helem [Hincl _]. set_solver. Qed.
+
   Lemma quorums_overlapped c q1 q2 :
     (cquorum c q1 ∨ fquorum c q1) ->
     (cquorum c q2 ∨ fquorum c q2) ->
@@ -72,6 +78,15 @@ Section lemma.
     rewrite /cquorum /cquorum_size /fquorum /fquorum_size.
     intros [[Hle1 Hsize1] | [Hle1 Hsize1]] [[Hle2 Hsize2] | [Hle2 Hsize2]];
       (apply (quorums_overlapped_raw c); [done | done | lia]).
+  Qed.
+
+  Lemma cquorums_overlapped c q1 q2 :
+    cquorum c q1 ->
+    cquorum c q2 ->
+    ∃ x, x ∈ q1 ∧ x ∈ q2.
+  Proof.
+    intros Hq1 Hq2.
+    by eapply quorums_overlapped; left.
   Qed.
 
   Lemma quorums_sufficient c qc qf :
@@ -96,7 +111,7 @@ Section lemma.
   Qed.
 
   Lemma cquorum_refl c :
-    (1 < size c)%nat ->
+    (1 ≤ size c)%nat ->
     cquorum c c.
   Proof.
     split; first done.

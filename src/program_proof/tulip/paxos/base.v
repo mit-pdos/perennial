@@ -9,8 +9,6 @@ Inductive nodedec :=
 | Accept (v : ledger)
 | Reject.
 
-Definition ballot := gmap nat nodedec.
-
 Section def.
   Context `{Countable A}.
   (* XXX: fix the naming scheme *)

@@ -11,10 +11,10 @@ Section res.
 
     (** Mapping from transaction IDs to preparedness of transactions on a group. *)
 
-    Definition own_group_prepm γ (gid : groupid) (pm : gmap nat bool) : iProp Σ.
+    Definition own_group_prepm γ (gid : u64) (pm : gmap nat bool) : iProp Σ.
     Admitted.
 
-    Definition is_group_prep γ (gid : groupid) (ts : nat) (p : bool) : iProp Σ.
+    Definition is_group_prep γ (gid : u64) (ts : nat) (p : bool) : iProp Σ.
     Admitted.
 
     #[global]
@@ -37,14 +37,14 @@ Section res.
     Lemma group_prep_insert {γ gid pm} ts p :
       pm !! ts = None ->
       own_group_prepm γ gid pm ==∗
-      own_group_prepm γ gid (<[ts := p]> pm).
+      own_group_prepm γ gid (<[ts := p]> pm) ∗ is_group_prep γ gid ts p.
     Admitted.
 
-    Lemma group_prep_witness γ gid pm ts p :
-      pm !! ts = Some p ->
-      own_group_prepm γ gid pm -∗
-      is_group_prep γ gid ts p.
-    Admitted.
+    (* Lemma group_prep_witness γ gid pm ts p : *)
+    (*   pm !! ts = Some p -> *)
+    (*   own_group_prepm γ gid pm -∗ *)
+    (*   is_group_prep γ gid ts p. *)
+    (* Admitted. *)
 
     Lemma group_prep_lookup γ gid pm ts p :
       own_group_prepm γ gid pm -∗

@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
-From Perennial.program_proof.tulip Require Export inv_txnsys inv_key inv_group.
+From Perennial.program_proof.tulip Require Export inv_txnsys inv_key inv_group inv_replica.
   
 Section inv.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -13,11 +13,13 @@ Section inv.
 
   Definition distx_inv γ p : iProp Σ :=
     (* txn invariants *)
-    "Htxnsys" ∷ txnsys_inv γ p ∗
+    "Htxnsys"   ∷ txnsys_inv γ p ∗
     (* keys invariants *)
-    "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    "Hkeys"     ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)
-    "Hgroups" ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid).
+    "Hgroups"   ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid) ∗
+    (* replica invariants *)
+    "Hreplicas" ∷ ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid).
 
   #[global]
   Instance distx_inv_timeless γ p :

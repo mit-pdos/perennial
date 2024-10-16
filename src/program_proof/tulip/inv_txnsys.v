@@ -254,7 +254,7 @@ Section inv.
   Proof.
     iIntros "[Hwrs Hps] Habt".
     iDestruct "Habt" as (gid wrsa) "(Hnp & Hwrsa & %Hgid)".
-    iDestruct (txn_oneshot_wrs_agree_shot with "Hwrs Hwrsa") as %->.
+    iDestruct (txn_wrs_agree with "Hwrs Hwrsa") as %->.
     iDestruct (big_sepS_elem_of with "Hps") as "Hp"; first apply Hgid.
     by iDestruct (group_prep_agree with "Hp Hnp") as %Hcontra.
   Qed.

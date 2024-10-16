@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
-From Perennial.program_proof.rsm.pure Require Import list extend largest_before.
+From Perennial.program_proof.rsm.pure Require Import list extend largest_before quorum.
 From Perennial.program_proof.tulip Require Import base res.
 
 (** Global per-key/tuple invariant. *)
@@ -10,10 +10,10 @@ From Perennial.program_proof.tulip Require Import base res.
 cmtd is longer than repl, then some quourm of replicas must have promised not to
 prepare between end of repl to end of cmtd. *)
 Definition ext_by_cmtd
-  (repl cmtd : dbhist) (kmod : dbkmod) (ts : nat) :=
-  match kmod !! ts with
-  | Some v => cmtd = last_extend ts repl ++ [v]
-  | None => cmtd = repl ∧ (ts ≠ O -> length cmtd ≤ ts)%nat
+  (repl cmtd : dbhist) (kmod : dbkmod) (pts : nat) :=
+  match kmod !! pts with
+  | Some v => cmtd = last_extend pts repl ++ [v]
+  | None => ∃ rts, cmtd = last_extend rts repl ∧ (pts ≠ O -> length cmtd ≤ pts)%nat
   end.
 
 Lemma ext_by_cmtd_prefix {repl cmtd kmod ts} :
@@ -24,7 +24,20 @@ Proof.
   intros Hext.
   destruct (kmod !! ts) as [v |].
   { rewrite Hext. apply prefix_app_r, last_extend_prefix. }
-  by destruct Hext as [-> _].
+  destruct Hext as (rts & -> & _).
+  apply last_extend_prefix.
+Qed.
+
+Lemma ext_by_cmtd_length repl cmtd kmodc ts :
+  ts ≠ O ->
+  kmodc !! ts = None ->
+  ext_by_cmtd repl cmtd kmodc ts ->
+  (length cmtd ≤ ts)%nat.
+Proof.
+  intros Hnz Hnone Hext.
+  rewrite /ext_by_cmtd Hnone in Hext.
+  destruct Hext as (rts & -> & Hlen).
+  by specialize (Hlen Hnz).
 Qed.
 
 Definition prev_dbval (ts : nat) (d : dbval) (kmod : dbkmod) :=
@@ -178,15 +191,58 @@ the additional entries of [lnrz], but also the last overlapping entry between
 [cmtd] and [lnrz]. This allows proving invariance of [ext_by_lnrz]
 w.r.t. linearize actions without considering [cmtd = lnrz] as a special case. *)
 
-Lemma ext_by_lnrz_not_nil cmtd lnrz kmod :
+Lemma ext_by_lnrz_impl_cmtd_not_nil cmtd lnrz kmod :
   ext_by_lnrz cmtd lnrz kmod ->
   cmtd ≠ [].
 Proof. intros (v & _ & Hlast & _) Hcmtd. by rewrite Hcmtd in Hlast. Qed.
+
+Lemma ext_by_cmtd_partial_impl_repl_not_nil repl cmtd kmod pts :
+  cmtd ≠ [] ->
+  kmod !! pts = None ->
+  ext_by_cmtd repl cmtd kmod pts ->
+  repl ≠ [].
+Proof.
+  intros Hnnil Hnone Hext.
+  rewrite /ext_by_cmtd Hnone in Hext.
+  destruct Hext as (rts & Hext & _).
+  rewrite Hext in Hnnil.
+  by eapply last_extend_not_nil_inv.
+Qed.
 
 Section def.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
+
+  Definition quorum_validation_fixed_before γ key ts : iProp Σ :=
+    ∃ ridsq,
+      ([∗ set] rid ∈ ridsq,
+         is_replica_key_validation_length_lb γ (key_to_group key) rid key ts) ∧
+      ⌜cquorum rids_all ridsq⌝.
+
+  Definition quorum_invalidated γ key ts : iProp Σ :=
+    ∃ ridsq,
+      ([∗ set] rid ∈ ridsq,
+         is_replica_key_invalidated_at γ (key_to_group key) rid key ts) ∧
+      ⌜cquorum rids_all ridsq⌝.
+
+  (** This predicate allows proving invariance w.r.t. prepare. In more detail,
+  at the time [ts] prepare, an important fact to establish is that the prepare
+  timestamp must be gt the largest commit timestamp, and ge the largest read
+  timestamp (see the [None] branch of [ext_by_cmtd] for how this is
+  encoded). For the case where [ts < pred (length cmtd)], contradiction can be
+  derived with the [quorum_validation_fixed_before] predicate. The problematic
+  case is [ts = pred (length cmtd)], since the overlapped replica can indeed be
+  validated by [ts], and we cannot derive contradiction without the help of this
+  predicate. This predicate says that if [cmtd] has been extended to [ts], but
+  [ts] has not committed, then it can only be extended by some reader with a
+  larger timestamp, which would allow us to derive contradiction in the
+  problematic case mentioned above. *)
+  Definition committed_or_quorum_invalidated γ key (kmodc : dbkmod) ts : iProp Σ :=
+    match kmodc !! ts with
+    | None => quorum_invalidated γ key ts
+    | _ => True
+    end.
 
   Definition key_inv_internal
     γ (key : dbkey) (tslb : nat) (repl : dbhist) (tsprep : nat) (kmodl kmodc : dbkmod) : iProp Σ :=
@@ -194,6 +250,8 @@ Section def.
       "Hdbv"    ∷ own_db_ptsto γ key dbv ∗
       "Hlnrz"   ∷ own_lnrz_hist γ key lnrz ∗
       "Hcmtd"   ∷ own_cmtd_hist γ key cmtd ∗
+      "#Hqvfb"  ∷ quorum_validation_fixed_before γ key (length cmtd) ∗
+      "#Hcori"  ∷ committed_or_quorum_invalidated γ key kmodc (pred (length cmtd)) ∗
       "#Htslb"  ∷ is_largest_ts_lb γ tslb ∗
       "%Hall"   ∷ ⌜key ∈ keys_all⌝ ∗
       "%Hlast"  ∷ ⌜last lnrz = Some dbv⌝ ∗
@@ -241,12 +299,27 @@ Section def.
       "Hkmodc"  ∷ own_cmtd_kmod_half γ key kmodc ∗
       "Hkey"    ∷ key_inv_internal γ key tslb repl tsprep kmodl kmodc.
 
+  Definition key_inv_no_tsprep γ (key : dbkey) (tsprep : nat) : iProp Σ :=
+    ∃ (tslb : nat) (repl : dbhist) (kmodl kmodc : dbkmod),
+      "Hrepl"   ∷ own_repl_hist_half γ key repl ∗
+      "Hkmodl"  ∷ own_lnrz_kmod_half γ key kmodl ∗
+      "Hkmodc"  ∷ own_cmtd_kmod_half γ key kmodc ∗
+      "Hkey"    ∷ key_inv_internal γ key tslb repl tsprep kmodl kmodc.
+
   Definition key_inv_no_repl_no_tsprep
     γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
     ∃ (tslb : nat) (kmodl kmodc : dbkmod),
       "Hkmodl" ∷ own_lnrz_kmod_half γ key kmodl ∗
       "Hkmodc" ∷ own_cmtd_kmod_half γ key kmodc ∗
       "Hkey"   ∷ key_inv_internal γ key tslb repl tsprep kmodl kmodc.
+
+  Definition key_inv_with_kmodc_no_tsprep
+    γ (key : dbkey) (kmodc : dbkmod) (tsprep : nat) : iProp Σ :=
+    ∃ (tslb : nat) (repl : dbhist) (kmodl : dbkmod),
+      "Hrepl"   ∷ own_repl_hist_half γ key repl ∗
+      "Hkmodl"  ∷ own_lnrz_kmod_half γ key kmodl ∗
+      "Hkmodc"  ∷ own_cmtd_kmod_half γ key kmodc ∗
+      "Hkey"    ∷ key_inv_internal γ key tslb repl tsprep kmodl kmodc.
 
   Definition key_inv_with_kmodc_no_repl_no_tsprep
     γ (key : dbkey) (kmodc : dbkmod) (repl : dbhist) (tsprep : nat) : iProp Σ :=
@@ -289,10 +362,10 @@ Section def.
 
   (* TODO: better naming. *)
 
-  Definition key_inv_xcmted_no_repl_no_tsprep
-    γ (key : dbkey) (repl : dbhist) (tsprep : nat) (ts : nat) : iProp Σ :=
+  Definition key_inv_xcmted_no_tsprep
+    γ (key : dbkey) (tsprep : nat) (ts : nat) : iProp Σ :=
     ∃ kmodc,
-      "Hkey" ∷ key_inv_with_kmodc_no_repl_no_tsprep γ key kmodc repl tsprep ∗
+      "Hkey" ∷ key_inv_with_kmodc_no_tsprep γ key kmodc tsprep ∗
       "%Hnc" ∷ ⌜kmodc !! ts = None⌝.
 
   Definition key_inv_cmted_no_repl_tsprep
@@ -313,6 +386,56 @@ Section lemma.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
+
+  (** Extracting and merging the timestamp lock. Used in the invariance of
+  [prepare]. *)
+
+  Lemma key_inv_extract_tsprep {γ} key :
+    key_inv γ key -∗
+    ∃ ts, key_inv_no_tsprep γ key ts ∗ own_repl_ts_half γ key ts.
+  Proof. iNamed 1. iFrame. Qed.
+
+  Lemma keys_inv_extract_tsprep {γ} keys :
+    ([∗ set] key ∈ keys, key_inv γ key) -∗
+    ∃ tss, ([∗ map] key ↦ ts ∈ tss, key_inv_no_tsprep γ key ts) ∗
+           ([∗ map] key ↦ ts ∈ tss, own_repl_ts_half γ key ts) ∧
+           ⌜dom tss = keys⌝.
+  Proof.
+    iIntros "Hkeys".
+    iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+    { iIntros (k Hk) "Hkey". iApply (key_inv_extract_tsprep with "Hkey"). }
+    iDestruct (big_sepS_exists_sepM with "Hkeys") as (tss Hdom) "Htss".
+    iDestruct (big_sepM_sep with "Htss") as "[Hkeys Htss]".
+    by iFrame.
+  Qed.
+
+  Lemma key_inv_merge_tsprep {γ} key ts :
+    key_inv_no_tsprep γ key ts -∗
+    own_repl_ts_half γ key ts -∗
+    key_inv γ key.
+  Proof. iIntros "Hkey Hts". iFrame. Qed.
+
+  Lemma keys_inv_merge_tsprep {γ tss} keys :
+    dom tss = keys ->
+    ([∗ map] key ↦ ts ∈ tss, key_inv_no_tsprep γ key ts) -∗
+    ([∗ map] key ↦ ts ∈ tss, own_repl_ts_half γ key ts) -∗
+    ([∗ set] key ∈ keys, key_inv γ key).
+  Proof.
+    iIntros (Hdom) "Hkeys Htss".
+    iDestruct (big_sepM_sep_2 with "Hkeys Htss") as "Htss".
+    rewrite -Hdom -big_sepM_dom.
+    iApply (big_sepM_mono with "Htss").
+    iIntros (k t Ht) "[Hkey Ht]".
+    iApply (key_inv_merge_tsprep with "Hkey Ht").
+  Qed.
+
+  Lemma key_inv_no_tsprep_unseal_kmodc γ key tsprep :
+    key_inv_no_tsprep γ key tsprep -∗
+    ∃ kmodc, key_inv_with_kmodc_no_tsprep γ key kmodc tsprep.
+  Proof. iNamed 1. iFrame. Qed.
+
+  (** Extracting and merging the replicated tuple (i.e., timestamp lock and
+  replicated history). Used in the invariance of [learn_commit]. *)
 
   Lemma key_inv_extract_repl_tsprep {γ} key :
     key_inv γ key -∗

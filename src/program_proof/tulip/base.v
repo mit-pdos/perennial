@@ -89,8 +89,10 @@ Definition txnst_to_u64 (s : txnst) :=
   | StAborted => (U64 3)
   end.
 
-Definition groupid := w64.
-Definition gids_all : gset groupid := list_to_set (fmap W64 (seqZ 0 2)).
+Definition gids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
+
+(* TODO: Parametrize the number of replicas in each group. *)
+Definition rids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
 
 (** Transaction R/C/A action. *)
 Inductive action :=
@@ -100,10 +102,8 @@ Inductive action :=
 
 (** State-machine commands. *)
 Inductive command :=
-| CmdRead (tid : nat) (key : dbkey)
-| CmdPrep (tid : nat) (wrs : dbmap)
-| CmdCmt (tid : nat)
-| CmdAbt (tid : nat).
+| CmdCommit (tid : nat) (pwrs : dbmap)
+| CmdAbort (tid : nat).
 
 #[global]
 Instance command_eq_decision :
@@ -119,11 +119,11 @@ Admitted.
 Definition dblog := list command.
 
 (** Converting keys to group IDs. *)
-Definition key_to_group (key : dbkey) : groupid.
+Definition key_to_group (key : dbkey) : u64.
 Admitted.
 
 (** Participant groups. *)
-Definition ptgroups (keys : gset dbkey) : gset groupid :=
+Definition ptgroups (keys : gset dbkey) : gset u64 :=
   set_map key_to_group keys.
 
 Definition wrs_group gid (wrs : dbmap) :=
@@ -132,10 +132,14 @@ Definition wrs_group gid (wrs : dbmap) :=
 Definition tpls_group gid (tpls : gmap dbkey dbtpl) :=
   filter (λ t, key_to_group t.1 = gid) tpls.
 
+(* TODO: [filter_group] subsumes [wrs_group] and [tpls_group]. *)
+Definition filter_group `{Countable A} gid (m : gmap dbkey A) :=
+  filter (λ t, key_to_group t.1 = gid) m.
+
 Definition keys_group gid (keys : gset dbkey) :=
   filter (λ k, key_to_group k = gid) keys.
 
-Definition valid_pwrs (gid : groupid) (pwrs : dbmap) :=
+Definition valid_pwrs (gid : u64) (pwrs : dbmap) :=
   dom pwrs ⊆ keys_group gid keys_all.
 
 Lemma elem_of_key_to_group key :
@@ -216,6 +220,9 @@ Definition readable (tid : nat) (hist : dbhist) (tsprep : nat) :=
 
 Definition lockable (tid : nat) (hist : dbhist) (tsprep : nat) :=
   tsprep = O ∧ (length hist ≤ tid)%nat.
+
+Definition tuples_lockable (tid : nat) (tpls : gmap dbkey dbtpl) :=
+  map_Forall (λ _ tpl, lockable tid tpl.1 tpl.2) tpls.
 
 (* Note the coercion here. [word] seems to work better with this. *)
 Definition valid_ts (ts : nat) := 0 < ts < 2 ^ 64.

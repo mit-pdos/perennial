@@ -153,4 +153,9 @@ Section lemmas.
     by rewrite Hlast.
   Qed.
 
+  Lemma last_extend_not_nil_inv n l :
+    last_extend n l ≠ [] ->
+    l ≠ [].
+  Proof. intros Hext Hl. by rewrite /last_extend Hl /= in Hext. Qed.
+
 End lemmas.

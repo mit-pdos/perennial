@@ -474,7 +474,7 @@ Section bi.
     by iDestruct (big_sepS_subseteq_difference_2 with "HY HXY") as "HX"; first apply Hsubseteq.
   Qed.
 
-  Lemma big_sepS_partition
+  Lemma big_sepS_partition_1
     `{!BiAffine PROP} `{Countable A} (Φ : A -> PROP) (X : gset A) `{Countable B} (Y : gset B)
     (P : A -> B -> Prop) `{∀ x y, Decision (P x y)} :
     (∀ x y1 y2, y1 ≠ y2 -> P x y1 -> not (P x y2)) ->
@@ -514,6 +514,38 @@ Section bi.
     { rewrite filter_singleton_not_L; [by rewrite union_empty_l_L | apply HP]. }
     rewrite filter_singleton_L; last apply HP.
     iApply (big_sepS_insert_2 with "Hx HX").
+  Qed.
+
+  Lemma big_sepS_partition_2
+    `{!BiAffine PROP} `{Countable A} (Φ : A -> PROP) (X : gset A) `{Countable B} (Y : gset B)
+    (P : A -> B -> Prop) `{∀ x y, Decision (P x y)} :
+    (∀ x, x ∈ X -> ∃ y, y ∈ Y ∧ P x y) ->
+    ([∗ set] y ∈ Y, [∗ set] x ∈ filter (λ x', P x' y) X, Φ x) -∗
+    ([∗ set] x ∈ X, Φ x).
+  Proof.
+    iIntros (Hpart) "HYX".
+    iInduction X as [| x X Hnotin] "IH" using set_ind_L.
+    { by iApply big_sepS_empty. }
+    rewrite big_sepS_union; last set_solver.
+    assert (Hx : x ∈ {[x]} ∪ X) by set_solver.
+    pose proof (Hpart _ Hx) as (y & Hy & HP).
+    iDestruct (big_sepS_elem_of_acc_impl with "HYX") as "[HΦ HYX]"; first apply Hy.
+    rewrite filter_union_L big_sepS_union; last set_solver.
+    iDestruct "HΦ" as "[Hx HX]".
+    (* rewrite filter_union_L elem_of_union in Hpart. *)
+    (* destruct Hpart as [Hin | Hcontra]; last set_solver. *)
+    rewrite filter_singleton_L; last apply HP.
+    iFrame "Hx".
+    iSpecialize ("HYX" $! (λ y, [∗ set] x ∈ filter (λ x', P x' y) X, Φ x)%I with "[] HX").
+    { iIntros "!>" (y' _ _) "HΦ".
+      rewrite filter_union_L big_sepS_union; last set_solver.
+      by iDestruct "HΦ" as "[_ HΦ]".
+    }
+    iApply ("IH" with "[] HYX").
+    iPureIntro.
+    intros x' Hx'.
+    assert (Hin : x' ∈ {[x]} ∪ X) by set_solver.
+    by apply Hpart.
   Qed.
 
 End bi.

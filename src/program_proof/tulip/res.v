@@ -3,7 +3,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import list fin_maps vslice.
-From Perennial.program_proof.tulip Require Export res_txnsys res_group.
+From Perennial.program_proof.tulip Require Export res_txnsys res_group res_replica.
 
 (** This file contains resources exposed to the users or owned by multiple
 subsystems. Resources onwed exclusively to one subsystem should be defined in
@@ -120,6 +120,27 @@ Section res.
       own_repl_ts_half γ k ts1 -∗
       own_repl_ts_half γ k ts2 -∗
       ⌜ts2 = ts1⌝.
+    Admitted.
+
+    Lemma repl_ts_update {γ k ts1 ts2} ts' :
+      own_repl_ts_half γ k ts1 -∗
+      own_repl_ts_half γ k ts2 -∗
+      own_repl_ts_half γ k ts' ∗ own_repl_ts_half γ k ts'.
+    Admitted.
+
+    Lemma repl_ts_big_agree {γ tss1 tss2} :
+      dom tss1 = dom tss2 ->
+      ([∗ map] k ↦ ts ∈ tss1, own_repl_ts_half γ k ts) -∗
+      ([∗ map] k ↦ ts ∈ tss2, own_repl_ts_half γ k ts) -∗
+      ⌜tss2 = tss1⌝.
+    Admitted.
+
+    Lemma repl_ts_big_update {γ tss} tss' :
+      dom tss = dom tss' ->
+      ([∗ map] k ↦ t ∈ tss, own_repl_ts_half γ k t) -∗
+      ([∗ map] k ↦ t ∈ tss, own_repl_ts_half γ k t) ==∗
+      ([∗ map] k ↦ t ∈ tss', own_repl_ts_half γ k t) ∗
+      ([∗ map] k ↦ t ∈ tss', own_repl_ts_half γ k t).
     Admitted.
 
   End repl_ts.
@@ -314,10 +335,10 @@ Section res.
     (** Consensus resource with transaction semantics. One half owned by the
     group invariant, the other half by the txnlog invariant. *)
 
-    Definition own_txn_log_half γ (gid : groupid) (log : dblog) : iProp Σ.
+    Definition own_txn_log_half γ (gid : u64) (log : dblog) : iProp Σ.
     Admitted.
 
-    Definition is_txn_log_lb γ (gid : groupid) (log : dblog) : iProp Σ.
+    Definition is_txn_log_lb γ (gid : u64) (log : dblog) : iProp Σ.
     Admitted.
 
     #[global]
@@ -325,13 +346,13 @@ Section res.
       Persistent (is_txn_log_lb γ gid log).
     Admitted.
 
-    Definition is_txn_log_lbs γ (logs : gmap groupid dblog) : iProp Σ :=
+    Definition is_txn_log_lbs γ (logs : gmap u64 dblog) : iProp Σ :=
       [∗ map] gid ↦ log ∈ logs, is_txn_log_lb γ gid log.
 
-    Definition own_txn_cpool_half γ (gid : groupid) (cpool : gset command) : iProp Σ.
+    Definition own_txn_cpool_half γ (gid : u64) (cpool : gset command) : iProp Σ.
     Admitted.
 
-    Definition is_proposed_txn_cmd γ (gid : groupid) (lsn : nat) (term : nat) (c : command) : iProp Σ.
+    Definition is_proposed_txn_cmd γ (gid : u64) (lsn : nat) (term : nat) (c : command) : iProp Σ.
     Admitted.
 
     #[global]
