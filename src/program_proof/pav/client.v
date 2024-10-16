@@ -51,11 +51,6 @@ Definition list_map_equiv {A B} (EQ : A → B → Prop) (l : list (option A)) (m
   (∀ (i : nat) a, l !! i = Some (Some a) → (∃ b, m !! (W64 i) = Some b ∧ EQ a b)) ∧
   (∀ (i : nat) b, m !! (W64 i) = Some b → (∃ a, l !! i = Some (Some a) ∧ EQ a b)).
 
-(*
-on heap, gmap w64 loc.
-sep connecting that to gmap w64 struct.
-and on that thing, have list_map_equiv.
-*)
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ (seen_maps : list (option (dig_ty * gname))) ptr_sd sd_ptrs seen_digs sl_serv_sig_pk,
   (* TODO: vrf. *)
