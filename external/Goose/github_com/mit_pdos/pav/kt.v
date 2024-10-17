@@ -1648,7 +1648,6 @@ Definition testBasic: val :=
     let: "bob" := newClient bobUid "servAddr" "servSigPk" "servVrfPk" in
     let: ((("isReg", "pk1"), "ep1"), "err7") := Client__Get "bob" aliceUid in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err7"));;
-    control.impl.Assume "isReg";;
     control.impl.Assume ("ep0" = "ep1");;
     let: "err8" := Client__Audit "alice" "adtr0Addr" "adtr0Pk" in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err8"));;
@@ -1658,6 +1657,7 @@ Definition testBasic: val :=
     control.impl.Assume (~ (struct.loadF clientErr "err" "err10"));;
     let: "err11" := Client__Audit "bob" "adtr1Addr" "adtr1Pk" in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err11"));;
+    control.impl.Assert "isReg";;
     control.impl.Assert (std.BytesEqual "pk0" "pk1");;
     #().
 
