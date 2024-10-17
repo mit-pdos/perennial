@@ -929,11 +929,14 @@ Proof.
     iNamed "H".
     iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
     { iNamed "Hcase1".
-      iDestruct "Hcase1" as "(#?&#?&#?&Hrest)". iNamed "Hrest".
+      iDestruct "Hcase1" as "(#?&#?&#?&Hrest)".
+      (* TODO: handle freshening better with iNamed *)
+      iRename "cond" into "cond0".
+      iNamed "Hrest".
       iExists _. iFrame.
       iIntros "H". iFrame "∗ # %".
       iThaw "Hclo". iApply "Hclo".
-      { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "∗#". eauto. }
+      { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "∗#". }
     }
     { iNamed "Hcase2". iExists _. iFrame.
       iIntros "H". iFrame "∗ # %".
@@ -968,13 +971,14 @@ Proof.
   iFreeze "Hclo".
   iNamed "H".
   iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
-  { iNamed "Hcase1". 
+  { iNamed "Hcase1".
+    iRename "cond" into "cond0".
     iDestruct "Hcase1" as "(#?&#?&#?&Hrest)". iNamed "Hrest".
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     wp_pures.
     iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hcond Hescrow Hrep_ptr]") as "H".
-    { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "∗#". eauto. }
+    { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "∗#". }
     rewrite bool_decide_false.
     2: by destruct aborted.
     wp_loadField.

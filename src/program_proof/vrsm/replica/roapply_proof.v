@@ -613,6 +613,7 @@ Proof.
     wp_loadField.
     iClear "HopAppliedConds_conds HcommittedNextIndex_is_cond".
     iNamed "Hvol".
+    iDestruct "Hvol" as "(?&Hvol)"; iNamed.
     wp_apply (wp_Cond__Wait with "[-Err Reply Hrep_sl HlastModified]").
     {
       iFrame "#".

@@ -1333,7 +1333,11 @@ Proof.
 
   iClear "Hdurlen_lb Hcrash_wand HdurCond".
   iNamed "Haof_own".
+  (* BUG: iris-named-props has a regression in what it does when encountering a
+  non-fresh intuitionistic name *)
+  iDestruct "Haof_own" as "(?&Haof_own)"; iNamed.
   iNamed "Hclose".
+  iDestruct "Hclose" as "(?&Hclose)"; iNamed.
   wp_loadField.
   wp_if_destruct.
   { (* aof not closed yet, keep looping *)

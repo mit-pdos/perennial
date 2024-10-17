@@ -221,12 +221,14 @@ Proof.
   clear.
   iIntros (σ') "[Hlkinv %HmemLog_len]".
   iNamed "Hlkinv". iNamed "Hfields". iNamed "Hfield_ptsto".
-  iNamed "His_memLog". iNamed "Hinv". iNamed "needFlush".
+  iNamed "His_memLog". iNamed "Hinv".
+  iRename "log_readonly" into "log_readonl0".
+  iNamed "Hinv". iNamed "needFlush".
   wp_loadField. wp_loadField. wp_storeField.
   iApply "HΦ".
   iModIntro.
   iFrame (HmemLog_len).
-  by iFrame.
+  iFrame "∗%#".
 Qed.
 
 Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
