@@ -100,9 +100,27 @@ Proof.
   wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_bob1".
 
   (* main part: proving the pk's are equal. *)
-  iClear "Hsl_adtrPk0 His_adtrPk0 Hsl_adtrPk1 His_adtrPk1 Hown_cli0
-    Hown_cli1 Hown_cli2 Hown_upd0 Hown_upd1 Hown_cli_al Hown_cli_bob".
   case_bool_decide; [|done]. simplify_eq/=.
+  iClear "Hsl_adtrPk0 His_adtrPk0 Hsl_adtrPk1 His_adtrPk1 Hown_cli0 Hown_cli1
+    Hown_cli2 Hown_upd0 Hown_upd1 Hown_cli_al Hown_cli_bob".
+  clear -Hnoof_ep_al.
+  (* just focus on adtr0 for now. *)
+  iClear "His_audit_al1 His_audit_bob1".
+  iDestruct (audit_is_my_key with "His_key_al His_audit_al0") as "His_key_al_aud"; [word|].
+  iClear "His_key_al".
+  destruct is_reg; last first.
+  { iNamed "Hreg".
+    iDestruct (audit_is_no_other_key with "His_no_key His_audit_bob0") as "His_no_key_aud"; [word|].
+    iClear "His_no_key".
+    iNamedSuffix "His_key_al_aud" "_al".
+    iNamedSuffix "His_no_key_aud" "_bob".
+    iDestruct (mono_list_idx_agree with "Hadtr_map_al Hadtr_map_bob") as %->.
+    iDestruct (is_vrf_func (W64 0, W64 0) with "[$Hhash0_al] [$Hhash_bob]") as %->.
+    simplify_map_eq/=. }
+  wp_apply wp_Assert_true. iNamedSuffix "Hreg" "_bob".
+  wp_apply (wp_BytesEqual with "[$Hsl_pk_al $Hsl_pk_bob]"). iIntros "_".
+  iDestruct (audit_is_other_key with "His_key_bob His_audit_bob0") as "His_key_bob_aud"; [word|].
+  iClear "His_key_bob His_audit_al0 His_audit_bob0".
 Admitted.
 
 End proof.

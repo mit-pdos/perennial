@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import auditor core cryptoffi merkle serde server.
+From Perennial.program_proof.pav Require Import auditor core classes cryptoffi merkle serde server.
 
 Module Client.
 Record t :=
@@ -84,6 +84,10 @@ Definition is_comm (pk : pk_ty) (comm : comm_ty) : iProp Σ. Admitted.
 Global Instance is_comm_persis pk comm :
   Persistent (is_comm pk comm).
 Proof. Admitted.
+Global Instance is_comm_func : Func is_comm.
+Proof. Admitted.
+Global Instance is_comm_inj : InjRel is_comm.
+Proof. Admitted.
 
 Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
   ∃ dig sm_γ comm,
@@ -106,7 +110,9 @@ Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
       let new_c := set Client.next_ver (word.add (W64 1))
         (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
-      "#His_key" ∷ is_my_key c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep pk
+      "#His_key" ∷ is_my_key c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep pk ∗
+      "%Hnoof_ver" ∷ ⌜ uint.Z new_c.(Client.next_ver) = (uint.Z c.(Client.next_ver) + 1)%Z ⌝ ∗
+      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝
     else
       "Hown_cli" ∷ Client.own ptr_c c
   }}}.
@@ -128,7 +134,8 @@ Lemma wp_Client__SelfMon ptr_c c :
     if negb err.(clientErr.err) then
       let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
-      "#His_bound" ∷ is_my_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep
+      "#His_bound" ∷ is_my_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep ∗
+      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝
     else
       "Hown_cli" ∷ Client.own ptr_c c
   }}}.
@@ -160,6 +167,7 @@ Lemma wp_Client__Get ptr_c c uid :
     if negb err.(clientErr.err) then
       let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
+      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
       if is_reg then
         "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
         "#His_key" ∷ is_other_key c.(Client.γ) uid ep pk
@@ -209,3 +217,97 @@ Lemma wp_newClient (uid servAddr : w64) (servSigPk servVrfPk : loc) :
 Proof. Admitted.
 
 End specs.
+
+Section derived.
+Context `{!heapGS Σ, !pavG Σ}.
+
+Definition is_vrf (uid ver : w64) (hash : opaque_label_ty) : iProp Σ. Admitted.
+Global Instance is_vrf_persis uid ver hash : Persistent (is_vrf uid ver hash).
+Proof. Admitted.
+Global Instance is_vrf_func : Func (uncurry is_vrf).
+Proof. Admitted.
+Global Instance is_vrf_inj : InjRel (uncurry is_vrf).
+Proof. Admitted.
+
+Definition is_my_key_aud_aux (adtr_map : map_adtr_ty) uid ver ep pk : iProp Σ :=
+  ∃ hash0 hash1 comm,
+  "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep, comm) ⌝ ∗
+  "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
+  "#Hhash0" ∷ is_vrf uid ver hash0 ∗
+  "#Hhash1" ∷ is_vrf uid (word.add (W64 1) ver) hash1 ∗
+  "#Hcomm" ∷ is_comm pk comm.
+
+(* auditor GS versions of the above client resources. *)
+Definition is_my_key_aud adtr_γ uid ver ep pk : iProp Σ :=
+  ∃ adtr_map,
+  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
+  "#Haux" ∷ is_my_key_aud_aux adtr_map uid ver ep pk.
+
+Lemma audit_is_my_key ep0 ep1 cli_γ uid ver pk adtr_γ :
+  uint.nat ep0 < uint.nat ep1 →
+  is_my_key cli_γ uid ver ep0 pk -∗
+  is_audit cli_γ adtr_γ ep1 -∗
+  is_my_key_aud adtr_γ uid ver ep0 pk.
+Proof. Admitted.
+
+Definition is_no_other_key_aud adtr_γ uid (ep : epoch_ty) : iProp Σ :=
+  ∃ adtr_map hash,
+  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
+  "%Hbound" ∷ ⌜ adtr_map !! hash = None ⌝ ∗
+  "#Hhash" ∷ is_vrf uid (W64 0) hash.
+
+Lemma audit_is_no_other_key ep0 ep1 cli_γ uid adtr_γ :
+  uint.nat ep0 < uint.nat ep1 →
+  is_no_other_key cli_γ uid ep0 -∗
+  is_audit cli_γ adtr_γ ep1 -∗
+  is_no_other_key_aud adtr_γ uid ep0.
+Proof. Admitted.
+
+Definition is_other_key_aud_aux (adtr_map : map_adtr_ty) uid (ep : epoch_ty) pk : iProp Σ :=
+  ∃ ver ep0 hash0 hash1 comm0,
+  "%Hhist" ∷ ∀ ver', ⌜ uint.nat ver' < ver ⌝ -∗
+    ∃ hash2 ep1 comm1,
+    is_vrf uid ver' hash2 ∗
+    ⌜ adtr_map !! hash2 = Some (ep1, comm1) ⌝ ∗
+  "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep0, comm0) ⌝ ∗
+  "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
+  "#Hhash0" ∷ is_vrf uid (W64 ver) hash0 ∗
+  "#Hhash1" ∷ is_vrf uid (W64 (S ver)) hash1 ∗
+  "#Hcomm" ∷ is_comm pk comm0.
+
+Definition is_other_key_aud adtr_γ uid ep pk : iProp Σ :=
+  ∃ adtr_map,
+  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
+  "#Haux" ∷ is_other_key_aud_aux adtr_map uid ep pk.
+
+Lemma audit_is_other_key ep0 ep1 cli_γ uid pk adtr_γ :
+  uint.nat ep0 < uint.nat ep1 →
+  is_other_key cli_γ uid ep0 pk -∗
+  is_audit cli_γ adtr_γ ep1 -∗
+  is_other_key_aud adtr_γ uid ep0 pk.
+Proof. Admitted.
+
+Definition msv_opaque (m : map_adtr_ty) uid vals : iProp Σ :=
+  (∀ i, ⌜ i < length vals ⌝ -∗
+    ∃ hash, (is_vrf uid (W64 i) hash ∗ ⌜ m !! hash = vals !! i ⌝)) ∗
+  (∃ hash, is_vrf uid (W64 (length vals)) hash ∗ ⌜ m !! hash = None ⌝).
+
+Global Instance msv_opaque_func : Func (uncurry msv_opaque).
+Proof. Admitted.
+
+(*
+Definition msv_is_my_key0 m uid ver ep pk :
+  is_my_key_
+  ∃ adtr_map,
+  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
+  "#Haux" ∷ is_my_key_aud_aux adtr_map uid ver ep pk.
+  *)
+
+Lemma msv_is_other_key m uid ep0 pk comm :
+  is_other_key_aud_aux m uid ep0 pk -∗
+  is_comm pk comm -∗
+  ∃ ep1 vals,
+  msv_opaque m uid vals ∗ ⌜ last vals = Some (ep1, comm) ⌝.
+Proof. Admitted.
+
+End derived.
