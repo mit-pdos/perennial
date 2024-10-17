@@ -2,12 +2,6 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.program_proof.pav Require Import core cryptoffi merkle serde server.
-From iris.unstable.base_logic Require Import mono_list.
-
-Notation opaque_label_ty := (list w8) (only parsing).
-Notation epoch_ty := w64 (only parsing).
-Notation comm_ty := (list w8) (only parsing).
-Notation dig_ty := (list w8) (only parsing).
 
 Module comm_st.
 Record t :=
@@ -17,7 +11,7 @@ Record t :=
   }.
 
 Section defs.
-Context `{!heapGS Σ, !mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ}.
+Context `{!heapGS Σ, !pavG Σ}.
 Definition valid γ (obj : t) : iProp Σ :=
   "#Hmaps" ∷ mono_list_lb_own γ obj.(key_maps) ∗
   "#Hdigs" ∷ ([∗ list] m;d ∈ obj.(key_maps);obj.(digs), is_dig (lower_adtr m) d).
@@ -25,7 +19,7 @@ End defs.
 End comm_st.
 
 Section inv.
-Context `{!heapGS Σ, !mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ}.
+Context `{!heapGS Σ, !pavG Σ}.
 Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
   (∃ pre st,
@@ -47,7 +41,7 @@ Record t :=
   }.
 
 Section defs.
-Context `{!heapGS Σ, !mono_listG (gmap (list w8) (w64 * list w8)) Σ}.
+Context `{!heapGS Σ, !pavG Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ pk sl_serv_pk key_maps ptr_map last_map sl_hist ptrs_hist hist,
   (* keys. *)
@@ -76,3 +70,17 @@ Definition valid (ptr : loc) (obj : t) : iProp Σ :=
   "#HmuR" ∷ is_lock nroot #obj.(mu) (own ptr obj).
 End defs.
 End Auditor.
+
+Section specs.
+Context `{!heapGS Σ, !pavG Σ}.
+Lemma wp_newAuditor (servPk : loc) :
+  {{{ True }}}
+  newAuditor #servPk
+  {{{
+    ptr_adtr (adtr : Auditor.t) sl_adtrPk adtrPk adtr_γ, RET (#ptr_adtr, slice_val sl_adtrPk);
+    "Hown_adtr" ∷ Auditor.own ptr_adtr adtr ∗
+    "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
+    "#His_adtrPk" ∷ is_pk adtrPk (adtr_sigpred adtr_γ)
+  }}}.
+Proof. Admitted.
+End specs.

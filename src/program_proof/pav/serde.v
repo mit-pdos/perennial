@@ -71,3 +71,11 @@ Definition encodesF (obj : t) : list w8 :=
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 End MapLabelPre.
+
+Module UpdateProof.
+Definition t : Type. Admitted.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
+End defs.
+End UpdateProof.

@@ -1,26 +1,52 @@
-From Perennial.Helpers Require Import Integers ListLen.
+From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.pav Require Import serde.
 
-From stdpp Require Import ssreflect prelude gmap.
+(*
+From Perennial.base_logic.lib Require Import ghost_map.
+From iris.unstable.base_logic Require Import mono_list.
+*)
 
+From RecordUpdate Require Export RecordSet.
+From Perennial.base_logic.lib Require Export ghost_map.
+From iris.unstable.base_logic Require Export mono_list.
+
+(* TODO: for same reason not using alias's in go code,
+prob shouldn't define all these notations. *)
+Notation comm_ty := (list w8) (only parsing).
 Notation dig_ty := (list w8) (only parsing).
 Notation uid_ty := w64 (only parsing).
-(* TODO: make ver_ty, epoch_ty work for w64. *)
-Notation ver_ty := nat (only parsing).
-Notation epoch_ty := nat (only parsing).
+Notation ver_ty := w64 (only parsing).
+(* TODO: make fake_ver_ty, fake_epoch_ty work for w64. *)
+Notation fake_ver_ty := nat (only parsing).
+Notation epoch_ty := w64 (only parsing).
+Notation fake_epoch_ty := nat (only parsing).
 Notation pk_ty := (list w8) (only parsing).
 Notation map_label_ty := (uid_ty * ver_ty)%type (only parsing).
+Notation fake_map_label_ty := (uid_ty * fake_ver_ty)%type (only parsing).
+Notation opaque_label_ty := (list w8) (only parsing).
 Notation map_val_ty := (epoch_ty * pk_ty)%type (only parsing).
+Notation fake_map_val_ty := (fake_epoch_ty * pk_ty)%type (only parsing).
 Notation map_ty := (gmap map_label_ty map_val_ty) (only parsing).
-(* sub-maps are useful for helping us state non-existence of
-keys in a way that they carry across map subsets. *)
-Notation submap_ty := (gmap map_label_ty (option map_val_ty)) (only parsing).
+Notation fake_map_ty := (gmap fake_map_label_ty fake_map_val_ty) (only parsing).
+Notation merkle_map_ty := (gmap (list w8) (list w8)) (only parsing).
+Notation map_adtr_ty := (gmap opaque_label_ty (epoch_ty * comm_ty)) (only parsing).
+Notation cli_map_val_ty := (option (epoch_ty * comm_ty))%type (only parsing).
+Notation cli_map_ty := (gmap map_label_ty cli_map_val_ty) (only parsing).
+
+Section misc.
+Class pavG Σ :=
+  {
+    #[global] pavG_adtr :: mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ;
+    #[global] pavG_client_seen_maps :: mono_listG (option (dig_ty * gname)) Σ;
+    #[global] pavG_client_submaps :: ghost_mapG Σ map_label_ty cli_map_val_ty;
+  }.
+End misc.
 
 Section msv.
 
 (* maximum sequence of versions. *)
 
-Definition msv_aux (m : map_ty) uid vals :=
+Definition msv_aux (m : fake_map_ty) uid vals :=
   (∀ i, i < length vals → m !! (uid, i) = vals !! i).
 
 Definition msv m uid vals :=
@@ -101,17 +127,11 @@ Section ts_msv.
 
 (* timeseries and its interaction with msv. *)
 
-(* TODO: for same reason not using alias's in go code,
-prob shouldn't define all these notations. *)
-Notation map_lowest_ty := (gmap (list w8) (list w8)) (only parsing).
-Notation comm_ty := (list w8) (only parsing).
-Notation map_adtr_ty := (gmap (list w8) (w64 * comm_ty)) (only parsing).
-
-Definition lower_adtr (m : map_adtr_ty) : map_lowest_ty :=
+Definition lower_adtr (m : map_adtr_ty) : merkle_map_ty :=
   (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
 
 (* lookup_weaken_None and lookup_weaken are useful with this. *)
-Definition maps_mono (ms : list map_lowest_ty) :=
+Definition maps_mono (ms : list merkle_map_ty) :=
   ∀ i j mi mj,
   ms !! i = Some mi →
   ms !! j = Some mj →
@@ -131,8 +151,8 @@ Definition adtr_inv ms := maps_mono (lower_adtr <$> ms) ∧ maps_epoch_ok ms.
 
 Record ts_ty :=
   mk_ts {
-    entries: list (epoch_ty * pk_ty);
-    bound: epoch_ty;
+    entries: list (fake_epoch_ty * pk_ty);
+    bound: fake_epoch_ty;
   }.
 
 (* ts_get fetches the seq of pk's through this ep. *)
@@ -150,16 +170,16 @@ Definition ts_bound_ok0 (ts : ts_ty) :=
   ts.(entries) !! i = Some (ep, pk) →
   ep ≤ ts.(bound).
 
-Definition ts_bound_ok1 (ts : ts_ty) (ms : list map_ty) :=
+Definition ts_bound_ok1 (ts : ts_ty) (ms : list fake_map_ty) :=
   ts.(bound) < length ms.
 
-Definition ts_entry_know (ts : ts_ty) (ms : list map_ty) uid :=
+Definition ts_entry_know (ts : ts_ty) (ms : list fake_map_ty) uid :=
   ∀ ver ep pk m,
   ts.(entries) !! ver = Some (ep, pk) →
   ms !! ep = Some m →
   m !! (uid, ver) = Some (ep, pk) ∧ m !! (uid, S ver) = None.
 
-Definition ts_bound_know (ts : ts_ty) (ms : list map_ty) uid :=
+Definition ts_bound_know (ts : ts_ty) (ms : list fake_map_ty) uid :=
   ∀ m,
   ms !! ts.(bound) = Some m →
   m !! (uid, length ts.(entries)) = None.

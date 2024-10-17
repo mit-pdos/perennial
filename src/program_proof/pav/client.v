@@ -1,21 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From RecordUpdate Require Import RecordSet.
-From Perennial.base_logic.lib Require Import ghost_map.
-From iris.unstable.base_logic Require Import mono_list.
 From Perennial.program_proof.pav Require Import auditor core cryptoffi merkle serde server.
-
-(* TODO: unify these with core as soon as core uses w64's instead of nat's. *)
-Notation comm_ty := (list w8) (only parsing).
-Notation dig_ty := (list w8) (only parsing).
-Notation uid_ty := w64 (only parsing).
-Notation ver_ty := w64 (only parsing).
-Notation epoch_ty := w64 (only parsing).
-Notation pk_ty := (list w8) (only parsing).
-Notation map_label_ty := (uid_ty * ver_ty)%type (only parsing).
-Notation map_val_ty := (option (epoch_ty * comm_ty))%type (only parsing).
-Notation cli_map_ty := (gmap map_label_ty map_val_ty) (only parsing).
 
 Module Client.
 Record t :=
@@ -34,7 +20,7 @@ Global Instance eta : Settable _ :=
   settable! mk <γ; uid; next_ver; next_epoch; serv_cli; serv_γ; serv_sig_pk; serv_vrf_pk>.
 
 Section defs.
-Context `{!heapGS Σ, !mono_listG (option (dig_ty * gname)) Σ, !ghost_mapG Σ map_label_ty map_val_ty}.
+Context `{!heapGS Σ, !pavG Σ}.
 
 Definition have_merkle (dig : list w8) (m : cli_map_ty) : iProp Σ :=
   ([∗ map] k ↦ x ∈ m,
@@ -78,11 +64,26 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
 End defs.
 End Client.
 
+Module clientErr.
+Record t :=
+  mk {
+    err: bool;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  "Hptr_err" ∷ ptr ↦[clientErr :: "err"] #obj.(err).
+End defs.
+End clientErr.
+
 Section specs.
-Context `{!heapGS Σ, !mono_listG (option (dig_ty * gname)) Σ, !ghost_mapG Σ map_label_ty map_val_ty, !mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ}.
+Context `{!heapGS Σ, !pavG Σ}.
 
 (* an opening exists that binds pk to comm. *)
 Definition is_comm (pk : pk_ty) (comm : comm_ty) : iProp Σ. Admitted.
+Global Instance is_comm_persis pk comm :
+  Persistent (is_comm pk comm).
+Proof. Admitted.
 
 Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
   ∃ dig sm_γ comm,
@@ -98,9 +99,10 @@ Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
   }}}
   Client__Put #ptr_c (slice_val sl_pk)
   {{{
-    (ep : w64) (ptr_evid : loc) (err : bool), RET (#ep, #ptr_evid, #err);
+    (ep : w64) ptr_err err, RET (#ep, #ptr_err);
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    if negb err then
+    "Herr" ∷ clientErr.own ptr_err err ∗
+    if negb err.(clientErr.err) then
       let new_c := set Client.next_ver (word.add (W64 1))
         (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
@@ -121,8 +123,9 @@ Lemma wp_Client__SelfMon ptr_c c :
   }}}
   Client__SelfMon #ptr_c
   {{{
-    (ep : w64) (ptr_evid : loc) (err : bool), RET (#ep, #ptr_evid, #err);
-    if negb err then
+    (ep : w64) ptr_err err, RET (#ep, #ptr_err);
+    "Herr" ∷ clientErr.own ptr_err err ∗
+    if negb err.(clientErr.err) then
       let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       "#His_bound" ∷ is_my_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep
@@ -151,9 +154,10 @@ Lemma wp_Client__Get ptr_c c uid :
   }}}
   Client__Get #ptr_c #uid
   {{{
-    (is_reg : bool) sl_pk pk (ep : w64) (ptr_evid : loc) (err : bool),
-    RET (#is_reg, slice_val sl_pk, #ep, #ptr_evid, #err);
-    if negb err then
+    (is_reg : bool) sl_pk pk (ep : w64) ptr_err err,
+    RET (#is_reg, slice_val sl_pk, #ep, #ptr_err);
+    "Herr" ∷ clientErr.own ptr_err err ∗
+    if negb err.(clientErr.err) then
       let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       if is_reg then
@@ -186,11 +190,21 @@ Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk adtr_γ :
   }}}
   Client__Audit #ptr_c #adtrAddr (slice_val sl_adtrPk)
   {{{
-    (ptr_evid : loc) (err : bool), RET (#ptr_evid, #err);
+    ptr_err err, RET #ptr_err;
     "Hown_cli" ∷ Client.own ptr_c c ∗
-    if negb err then
+    "Herr" ∷ clientErr.own ptr_err err ∗
+    if negb err.(clientErr.err) then
       "#His_audit" ∷ is_audit c.(Client.γ) adtr_γ c.(Client.next_epoch)
     else True
+  }}}.
+Proof. Admitted.
+
+Lemma wp_newClient (uid servAddr : w64) (servSigPk servVrfPk : loc) :
+  {{{ True }}}
+  newClient #uid #servAddr #servSigPk #servVrfPk
+  {{{
+    ptr_cli cli_γ r1 r2 r3 r4, RET #ptr_cli;
+    "Hown_cli" ∷ Client.own ptr_cli (Client.mk cli_γ uid (W64 0) (W64 0) r1 r2 r3 r4)
   }}}.
 Proof. Admitted.
 
