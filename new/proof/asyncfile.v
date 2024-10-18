@@ -73,7 +73,7 @@ Definition own_close_token γ : iProp Σ :=
 
 (* invariant for resources for a single write *)
 Definition is_write_inv N γ idx Q : iProp Σ :=
-  inv N (
+  inv (N.@"inv") (
         own_write_token γ idx ∨
         is_write_witness γ idx ∗
         (Q ∨ own_escrow_token γ idx)
@@ -105,11 +105,11 @@ Definition own_AsyncFile_ghost N γ P fname data idx durableIndex (closeRequeste
   "HpreData" ∷ own_predurable_data γ durdata ∗
   "HpreIdx" ∷ own_predurable_index γ predurIdx ∗
   "HdurIdx" ∷ own_durable_index γ durableIndex ∗
-  "Hbuf_upd" ∷ (P durdata ∗ is_witnesses γ predurIdx ={⊤}=∗ P data ∗ is_witnesses γ idx) ∗
+  "Hbuf_upd" ∷ (P durdata ∗ is_witnesses γ predurIdx ={⊤∖↑N.@"crash"}=∗ P data ∗ is_witnesses γ idx) ∗
   "#Hwits" ∷ is_witnesses γ durableIndex ∗
   "HcloseReq" ∷ (if (closeRequested || closed) then own_close_req_token γ else True) ∗
   "#Hclose" ∷ □ (if closed then
-                   inv N (own_crash (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data) ∨ own_close_token γ)
+                   inv (N.@"inv") (own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data) ∨ own_close_token γ)
                  else
                    True)
 .
@@ -272,7 +272,7 @@ Lemma write_step N γ fname somedata olddata data P Q idx durableIndex closeRequ
   own_close_req_token γ -∗
   own_vol_data γ olddata -∗
   own_AsyncFile_ghost N γ P fname somedata idx durableIndex closeRequested closed -∗
-  (P olddata ={⊤}=∗ P data ∗ Q) ={⊤}=∗
+  (P olddata ={⊤∖↑N.@"crash"}=∗ P data ∗ Q) ={⊤}=∗
   own_close_req_token γ ∗
   own_vol_data γ data ∗
   own_AsyncFile_ghost N γ P fname data (word.add idx 1) durableIndex closeRequested closed ∗
@@ -370,7 +370,7 @@ Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
   {{{
         "Hf" ∷ own_AsyncFile N f γ P olddata ∗
         "Hdata_in" ∷ data_sl ↦* data ∗
-        "Hupd" ∷ (P olddata ={⊤}=∗ P data ∗ Q)
+        "Hupd" ∷ (P olddata ={⊤∖↑N}=∗ P data ∗ Q)
   }}}
     asyncfile.AsyncFile__Write #f #data_sl
   {{{
@@ -419,8 +419,12 @@ Proof.
   wp_pures. wp_load.
   wp_pures. wp_store.
   wp_pures. wp_load. wp_pures. wp_load.
-  iMod (write_step with "[$] [$] [$] Hupd") as "H".
+  iMod (write_step with "[$] [$] [$] [Hupd]") as "H".
   { word. }
+  {
+    rewrite fupd_mask_mono; first done.
+    solve_ndisj.
+  }
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
   iMod (own_slice_persist with "Hdata_in") as "#Hdata_in".
   wp_apply wp_Cond__Signal.
@@ -455,7 +459,7 @@ Lemma get_upd N γ fname newdata data predurIdx P idx durableIndex closeRequeste
   own_predurable_data γ newdata ∗
   own_predurable_index γ idx ∗
   own_durable_index γ predurIdx ∗
-  (P data ={⊤}=∗ P newdata ∗ is_witnesses γ idx) ∗
+  (P data ={⊤∖↑N.@"crash"}=∗ P newdata ∗ is_witnesses γ idx) ∗
   own_AsyncFile_ghost N γ P fname newdata idx durableIndex closeRequested closed
 .
 Proof.
@@ -506,7 +510,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data Φ :
         "HpreIdx" ∷ own_predurable_index γ 0 ∗
         "HdurIdx" ∷ own_durable_index γ 0 ∗
         "#Hfilename_in" ∷ f ↦s[AsyncFile :: "filename"]□ fname ∗
-        "Hfile" ∷ own_crash (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
+        "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
     (v #())
   {{{
@@ -534,7 +538,7 @@ Proof.
               "HpreData" ∷ own_predurable_data γ curdata ∗
               "HpreIdx" ∷ own_predurable_index γ curidx ∗
               "HdurIdx" ∷ own_durable_index γ curidx ∗
-              "Hfile" ∷ own_crash (∃ d : list u8, P d ∗ fname f↦d) (P curdata ∗ fname f↦ curdata)
+              "Hfile" ∷ own_crash (N.@"crash") (∃ d : list u8, P d ∗ fname f↦d) (P curdata ∗ fname f↦ curdata)
           )%I with "[HpreData HpreIdx HdurIdx Hfile]" as "HH".
   { repeat iExists _. iFrame. }
   wp_for.
@@ -589,51 +593,46 @@ Proof.
   wp_apply (wp_FileWrite with "[$Hdata]").
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   rewrite /own_crash_pre /=.
-  iMod ("Hfile" with "[]") as "[[HP $] Hau]".
+  unshelve iMod ("Hfile" $! _ _ with "[]") as "[[HP $] Hau]".
+  { set_solver. }
   { admit. } (* FIXME: a way to get £s *)
-  iModIntro.
+  iApply ncfupd_mask_intro; first set_solver.
+  iIntros "Hmask".
   iSplit.
   2:{ (* case: crash before finishing. *)
     iIntros "Hold".
+    iMod "Hmask".
     iMod ("Hau" with "[] [HP Hold]") as "Hau".
     2:{ iAccu. }
     { eauto with iFrame. }
     done.
   }
   iIntros "Hf".
-
-  (* FIXME: too many invariants open *)
-
-  iMod ("Hupd" with "HP") as "[HP Hwit]".
-  iMod ("Hau" with "[Hf HP] []") as "HP".
-  iSplitL "HP Hf".
-  { iModIntro. iAccu. }
+  iMod "Hmask".
+  iMod ("Hupd" with "HP") as "[HP #HnewWits]".
+  iMod ("Hau" with "[] [HP Hf]") as "HP".
+  2: iAccu.
+  { eauto with iFrame. }
   iModIntro.
-  iSplitR.
-  { iModIntro. iIntros "H". iExists _; iFrame. }
   iIntros "Hfile".
-  iSplit; first done.
-
   wp_pures.
-  wp_load. wp_load.
+  wp_load. wp_pures. wp_load.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
   iClear "Hfilename Hdata HindexCond_is HdurableIndexCond_is".
   iNamed "Hown".
   wp_pures.
-  wp_load. wp_load. wp_store.
-  wp_load. wp_load.
+  wp_load. wp_pures. wp_load. wp_pures. wp_store.
+  wp_pures. wp_load. wp_pures. wp_load.
   wp_apply wp_Cond__Broadcast.
   { iFrame "#". }
-  wp_pures.
   iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".
-  iModIntro.
+  wp_pures.
   iApply wp_for_post_do.
   wp_pures.
   iFrame "HΦ Hlocked".
-  iModIntro.
   iFrame "∗#%".
-Qed.
+Admitted. (* FIXME: get later credits *)
 
 Lemma alloc_ghost N P data fname :
   ⊢ |==>
@@ -705,55 +704,53 @@ Qed.
 
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
-        "Hfile" ∷ crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d)
+        "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    asyncfile.MakeAsyncFile #(str fname)
+    asyncfile.MakeAsyncFile #fname
   {{{
-        γ sl f, RET (slice.val sl, #f); (own_slice sl byteT DfracDiscarded ((λ (x:w8), #x) <$> data)) ∗
-                                        own_AsyncFile N f γ P data
+        γ sl f, RET (#sl, #f); sl ↦*□ data ∗ own_AsyncFile N f γ P data
   }}}
 .
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  Opaque Mutex.
-  wp_rec.
+  wp_call.
   wp_alloc filename_addr as "Hlocal".
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
+  wp_pures.
+  rewrite -!default_val_eq_zero_val /=.
   wp_alloc mu as "Hmu".
+  wp_pures.
   wp_alloc s as "Hlocal".
   wp_pures.
   wp_load.
   wp_pures.
-  wp_bind (grove_ffi.FileRead _).
-  iApply (wpc_wp _ _ _ _ True).
-  wpc_apply (wpc_crash_borrow_open with "Hfile").
-  { done. }
-  iSplit; first done.
-  iIntros "[HP Hf]".
-  wpc_apply (wpc_FileRead with "[$]").
-  iSplit.
-  { (* case: crash in the middle *)
-    iIntros "Hf". iSplitR; first done. iExists _; iFrame.
-  }
-  iNext.
-  iIntros (?) "[Hf Hdata_new]".
-  iFrame.
-  iIntros "Hfile".
-  iSplitR; first done.
-
+  wp_apply wp_FileRead.
+  iDestruct (own_crash_unfold with "Hfile") as "Hfile".
+  unshelve iMod ("Hfile" $! _ _ with "[]") as "[[HP $] Hau]".
+  { solve_ndisj. }
+  { admit. } (* FIXME: get £s *)
+  iApply ncfupd_mask_intro; first solve_ndisj.
+  iIntros "Hmask".
+  iIntros "Hf". iMod "Hmask" as "_".
+  iMod ("Hau" with "[] [HP Hf]"). 2: iAccu.
+  { eauto with iFrame. }
+  iModIntro.
+  iIntros (?) "Hdata_new".
   wp_pures.
   wp_load.
   wp_pures.
-  wp_apply (wp_NewCond with "[$]"); [solve_has_go_type|].
+  wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
   wp_pures.
-  wp_apply (wp_NewCond with "[$]"); [solve_has_go_type|].
+  wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
   wp_pures.
-  wp_apply (wp_NewCond with "[$]"); [solve_has_go_type|].
+  wp_apply (wp_NewCond with "[$]").
   iIntros (?) "#?".
   wp_pures.
+
+  (* FIXME: Record and typeclass for AsyncFile *)
   wp_alloc l as "Hl".
   wp_store.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
