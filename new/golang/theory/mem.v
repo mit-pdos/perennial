@@ -81,6 +81,7 @@ Section goose_lang.
       match! goal with
       | [ v : slice.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : interface.t |- _ ] => let v := Control.hyp v in destruct $v
+      | [ v : func.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ h : has_go_type _ _ |- _ ] => let h := Control.hyp h in (inversion_clear $h in Heq)
       | [ h : struct.fields_val _ = struct.fields_val _ |- _ ] => apply struct_fields_val_inj in $h; subst
 

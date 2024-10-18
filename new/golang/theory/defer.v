@@ -6,10 +6,10 @@ Section proof.
 
   Lemma wp_with_defer e Φ :
     (∀ (defer : loc),
-       defer ↦# (go_func <> <> #())%V -∗
+       defer ↦# (func.mk <> <> #())%V -∗
        WP (let: "$func_ret" := exception_do (subst "$defer" #defer e) in ![funcT] #defer #();; "$func_ret")
          {{ Φ }}) -∗
-    WP (with_defer': e) {{ Φ }}.
+    WP (wrap_defer #(func.mk <> "$defer" e)) {{ Φ }}.
   Proof.
     iIntros "Hwp".
     wp_call.

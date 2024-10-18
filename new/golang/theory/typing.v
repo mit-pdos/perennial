@@ -139,7 +139,7 @@ Program Definition go_type_ind :=
       (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup f fvs)) t)
     : has_go_type (struct.val (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
-  | has_go_type_func f e v : has_go_type (RecV f e v) funcT
+  | has_go_type_func (f : func.t) : has_go_type #f funcT
   | has_go_type_func_nil : has_go_type #null funcT
 
   | has_go_type_mapT kt vt (l : loc) : has_go_type #l (mapT kt vt)
@@ -168,24 +168,25 @@ Program Definition go_type_ind :=
       rewrite to_val_unseal /= struct.fields_val_unseal /= //.
     }
 
-    (* structT *)
-    replace (zero_val_def (structT decls)) with (struct.val (structT decls) []).
-    {
-      econstructor. intros. simpl.
+    { (* structT *)
+      replace (zero_val_def (structT decls)) with (struct.val (structT decls) []).
+      {
+        econstructor. intros. simpl.
+        apply Hfields.
+        apply in_map_iff. eexists _.
+        split; last done. done.
+      }
+      rewrite struct.val_unseal.
+      induction decls.
+      { done. }
+      destruct a. simpl.
+      f_equal.
+      { by rewrite zero_val_unseal. }
+      apply IHdecls.
+      intros.
       apply Hfields.
-      apply in_map_iff. eexists _.
-      split; last done. done.
+      simpl. right. done.
     }
-    rewrite struct.val_unseal.
-    induction decls.
-    { done. }
-    destruct a. simpl.
-    f_equal.
-    { by rewrite zero_val_unseal. }
-    apply IHdecls.
-    intros.
-    apply Hfields.
-    simpl. right. done.
   Qed.
 
   Lemma has_go_type_len {v t} :
@@ -237,7 +238,7 @@ Program Definition go_type_ind :=
     | sliceT _ => #slice.nil_f
     | structT decls => struct.val t []
     | ptrT => #null
-    | funcT => #null
+    | funcT => #func.nil_f
     | interfaceT => #interface.nil_f
     | mapT _ _ => #null
     | chanT _ => #null
@@ -364,7 +365,6 @@ Proof.
       split.
       { apply H0; naive_solver. }
       { apply IHd; naive_solver. }
-  - by exfalso.
 Qed.
 
 Ltac2 solve_has_go_type_step () :=
@@ -446,6 +446,14 @@ Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?[???][???] [=] //.
                  repeat intros [=->%to_val_inj]. done.
 Qed.
+
+Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
+{| default_val := func.nil_f |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
+Qed.
+Final Obligation. solve_decision. Qed.
 
 Lemma struct_fields_val_inj a b :
   struct.fields_val a = struct.fields_val b →

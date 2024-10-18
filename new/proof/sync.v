@@ -103,7 +103,7 @@ Proof.
   { done. }
   { apply _. }
   iDestruct "Hl" as "[Hl _]".
-  Time unshelve iSpecialize ("Hl" $! _ _ _ _ _ _ _); try tc_solve.
+  unshelve iSpecialize ("Hl" $! _ _ _ _ _ _ _); try tc_solve.
   simpl. iNamed "Hl".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
@@ -154,16 +154,16 @@ Qed.
 Lemma wp_Mutex__Unlock' m :
   {{{ True }}}
     Mutex__Unlock #m
-  {{{ (f : val), RET f;
+  {{{ (f : func.t), RET #f;
       ∀ R,
-    {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} f #() {{{ RET #(); True }}}
+    {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} #f #() {{{ RET #(); True }}}
   }}}.
 Proof.
   iIntros (Ψ) "_ HΨ".
   wp_call.
   iApply "HΨ". iIntros (R).
   iIntros (Φ) "!# (#Hinv & Hlocked & HR) HΦ".
-  wp_call.
+  wp_pures.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as (b) "[>Hl _]".
 

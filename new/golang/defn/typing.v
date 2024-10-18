@@ -15,6 +15,19 @@ Global Notation "#" := to_val.
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoVal - ! : typeclass_instances.
 
+Module func.
+Section defn.
+Context `{ffi_syntax}.
+Record t := mk {
+      f : binder;
+      x : binder;
+      e : expr;
+    }.
+Definition nil_f := mk <> <> (LitV LitPoison).
+End defn.
+
+End func.
+
 Section instances.
 Context `{ffi_syntax}.
 
@@ -39,13 +52,8 @@ Global Instance into_val_bool : IntoVal bool :=
 Global Instance into_val_string : IntoVal string :=
   {| to_val_def := λ s, (LitV $ LitString s) |}.
 
-Inductive GoFunc :=
-| go_func (f x : binder) (e : expr)
-.
-Global Instance into_val_func : IntoVal GoFunc :=
-  {| to_val_def := λ (f : GoFunc),
-                 let (f, x, e) := f in RecV f x e
-  |}.
+Global Instance into_val_func : IntoVal func.t :=
+  {| to_val_def := λ (f : func.t), RecV f.(func.f) f.(func.x) f.(func.e) |}.
 
 Global Instance into_val_array `{!IntoVal V} : IntoVal (list V) :=
   {| to_val_def :=
@@ -132,7 +140,7 @@ Section val_types.
     | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => #null
-    | funcT => #null
+    | funcT => #func.nil_f
     | interfaceT => interface_nil
     | mapT _ _ => #null
     | chanT _ => #null
