@@ -2,7 +2,7 @@ From New.proof Require Import grove_prelude.
 From New.code.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From New.proof Require Import std.
-From New.proof Require Import sync.
+From New.proof Require Import sync own_crash.
 
 Record af_names := mk_af_names {
   index_gn : gname ;
@@ -21,13 +21,13 @@ Class asyncfileG Σ :=
     #[global] data_inG :: ghost_varG Σ (list u8);
     #[global] tok_inG :: ghost_varG Σ ();
     #[global] idx_ing :: ghost_varG Σ u64;
-    #[global] stagedG :: stagedG Σ ; (* for crash borrows? *)
     #[global] syncG :: syncG Σ ;
+    #[global] simpleCrashG :: simpleCrashG Σ ;
   }.
 
 Definition asyncfileΣ :=
   #[mapΣ u64 () ; ghost_varΣ (list u8); ghost_varΣ (); ghost_varΣ u64 ;
-    stagedΣ ; syncΣ].
+    simpleCrashΣ; syncΣ].
 Global Instance subG_asyncfileΣ {Σ} : subG (asyncfileΣ) Σ → (asyncfileG Σ).
 Proof. solve_inG. Qed.
 
@@ -109,7 +109,7 @@ Definition own_AsyncFile_ghost N γ P fname data idx durableIndex (closeRequeste
   "#Hwits" ∷ is_witnesses γ durableIndex ∗
   "HcloseReq" ∷ (if (closeRequested || closed) then own_close_req_token γ else True) ∗
   "#Hclose" ∷ □ (if closed then
-                   inv N (crash_borrow (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d) ∨ own_close_token γ)
+                   inv N (own_crash (P data ∗ fname f↦ data) (∃ d, P d ∗ fname f↦ d) ∨ own_close_token γ)
                  else
                    True)
 .
@@ -117,17 +117,17 @@ Definition own_AsyncFile_ghost N γ P fname data idx durableIndex (closeRequeste
 Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
   ∃ data_sl fname (data:list u8) (idx durableIndex : u64) (indexCond durableIndexCond closedCond : loc)
     (closed closeRequested : bool) ,
-  "#Hfilename" ∷ f ↦s[AsyncFile :: "filename"]□ #(str fname) ∗
-  "Hdata_sl" ∷ f ↦s[AsyncFile :: "data"] (slice.val data_sl) ∗
-  "#Hdata" ∷ own_slice data_sl byteT (DfracDiscarded) ((λ (x:w8), #x) <$> data) ∗
-  "Hindex" ∷ f ↦s[AsyncFile :: "index"] #idx ∗
-  "HdurableIndex" ∷ f ↦s[AsyncFile :: "durableIndex"] #durableIndex ∗
-  "HindexCond" ∷ f ↦s[AsyncFile :: "indexCond"] #indexCond ∗
-  "HdurableIndexCond" ∷ f ↦s[AsyncFile :: "durableIndexCond"] #durableIndexCond ∗
+  "#Hfilename" ∷ f ↦s[AsyncFile :: "filename"]□ fname ∗
+  "Hdata_sl" ∷ f ↦s[AsyncFile :: "data"] (data_sl) ∗
+  "#Hdata" ∷ data_sl ↦*□ data ∗
+  "Hindex" ∷ f ↦s[AsyncFile :: "index"] idx ∗
+  "HdurableIndex" ∷ f ↦s[AsyncFile :: "durableIndex"] durableIndex ∗
+  "HindexCond" ∷ f ↦s[AsyncFile :: "indexCond"] indexCond ∗
+  "HdurableIndexCond" ∷ f ↦s[AsyncFile :: "durableIndexCond"] durableIndexCond ∗
 
-  "HcloseRequested" ∷ f ↦s[AsyncFile :: "closeRequested"] #closeRequested ∗
-  "Hclosed" ∷ f ↦s[AsyncFile :: "closed"] #closed ∗
-  "HclosedCond" ∷ f ↦s[AsyncFile :: "closedCond"] #closedCond ∗
+  "HcloseRequested" ∷ f ↦s[AsyncFile :: "closeRequested"] closeRequested ∗
+  "Hclosed" ∷ f ↦s[AsyncFile :: "closed"] closed ∗
+  "HclosedCond" ∷ f ↦s[AsyncFile :: "closedCond"] closedCond ∗
 
   "#HindexCond_is" ∷ is_Cond indexCond lk ∗
   "#HdurableIndexCond_is" ∷ is_Cond durableIndexCond lk ∗
@@ -140,8 +140,8 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
-  "#Hmu" ∷ f ↦s[AsyncFile :: "mu"]□ #mu ∗
-  "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P (interface.val Mutex__mset_ptr #mu))
+  "#Hmu" ∷ f ↦s[AsyncFile :: "mu"]□ mu ∗
+  "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P (interface.mk #mu Mutex__mset_ptr))
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=
@@ -201,7 +201,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
 .
 Proof.
   iIntros (Φ) "H HΦ".
-  wp_rec.
+  wp_call.
   wp_pures.
   iNamed "H".
   iNamed "His".
@@ -212,17 +212,17 @@ Proof.
   wp_alloc s_addr as "Hlocal2".
   wp_pures.
   wp_alloc index_addr as "Hlocal1".
+  wp_pures.
   wp_load. wp_pures.
-  wp_pures. wp_load. wp_pures.
+  wp_load. wp_pures.
   wp_apply (wp_Mutex__Lock with "[$]").
   iIntros "[Hlocked Hown]".
-  wp_pures.
-  wp_load.
-  wp_load.
+  wp_pures. wp_load.
+  wp_pures. wp_load.
   wp_apply wp_Mutex__Unlock'.
   iIntros (m_unlock) "#Hunlock".
   wp_pures.
-  wp_load. wp_store.
+  wp_load. wp_pures. wp_store.
   iMod (typed_pointsto_persist with "Hdefer") as "#?".
   wp_pures.
 

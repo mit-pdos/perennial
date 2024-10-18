@@ -2,7 +2,7 @@
 From iris.bi.lib Require Import fixpoint.
 From iris.base_logic.lib Require Import mono_nat saved_prop.
 From Perennial.program_logic Require Export atomic_fupd.
-From New.proof Require Export proof_prelude.
+From New.proof Require Export proof_prelude own_crash.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
 From New.code.github_com.mit_pdos.gokv Require Import grove_ffi.
 
@@ -116,7 +116,7 @@ Section grove.
   Lemma wp_Send c_l c_r (s : slice.t) (data : list u8) (dq : dfrac) :
     ⊢ {{{ s ↦*{dq} data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
-        Send (connection_socket c_l c_r) (slice.val s) @ ∅
+        Send (connection_socket c_l c_r) #s @ ∅
       <<< ∃∃ (msg_sent : bool),
         c_r c↦ (if msg_sent then ms ∪ {[Message c_l data]} else ms)
       >>>
@@ -173,121 +173,17 @@ Section grove.
     iModIntro. wp_pures.
     destruct err.
     {
-      rewrite to_val_unseal /= slice.val_unseal /slice.val_def to_val_unseal /=.
+      repeat (rewrite to_val_unseal /=).
       iApply ("HΦ" $! (slice.mk _ _ _)). destruct Hm as (-> & -> & ->).
       iApply own_slice_empty. done. }
     destruct Hm as [Hin Hlen].
-    rewrite to_val_unseal /= slice.val_unseal /slice.val_def to_val_unseal /=.
+    repeat (rewrite to_val_unseal /=).
     iApply ("HΦ" $! (slice.mk _ _ _)).
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
     2:{ iExactEq "H". repeat f_equal. word. }
     word.
   Qed.
-
-  Context `{!savedPropG Σ}.
-  Context `{!inG Σ (exclR unitO)}.
-  Definition Ncrash := nroot.
-  Definition own_crash_concrete P Pc : iProp Σ :=
-    ∃ γprop γtok,
-    saved_prop_own γprop (DfracOwn (1/2)) P ∗
-      inv Ncrash (∃ Q, saved_prop_own γprop (DfracOwn (1/2)) Q ∗ (Q ∧ Pc ∨ own γtok (Excl ()) ∗ C))
-  .
-
-  Definition own_crash_abstract_pre Pc (ρ : iProp Σ → iProp Σ) (P : iProp Σ) : iProp Σ :=
-    £ 2 -∗ |NC={⊤,∅}=> P ∗ (∀ P', (P' -∗ Pc) -∗ P' -∗ |NC={∅,⊤}=> ρ P').
-
-  Definition own_crash_abstract Pc P : iProp Σ :=
-    bi_greatest_fixpoint (own_crash_abstract_pre Pc) P.
-
-  Lemma own_crash_unfold P Pc :
-    own_crash_abstract Pc P -∗
-    own_crash_abstract_pre Pc (own_crash_abstract Pc) P.
-  Proof.
-    iIntros "H".
-    rewrite /own_crash_abstract.
-    erewrite greatest_fixpoint_unfold.
-    2:{
-      constructor.
-      - intros. iIntros "#Himpl * H".
-        rewrite /own_crash_abstract_pre.
-        iIntros "Hlc".
-        iMod ("H" with "Hlc") as "[$ H]". iModIntro.
-        iIntros (?) "Hwand HP'".
-        iApply "Himpl".
-        iApply ("H" with "[$] [$]").
-      - intros.
-        solve_proper.
-    }
-    iIntros "Hlc".
-    iMod ("H" with "Hlc") as "[$ H]".
-    iIntros "!# * Hwand HP'".
-    iApply ("H" with "[$] [$]").
-  Qed.
-
-  Lemma alloc_own_crash P Pc :
-    P ∧ Pc ={⊤}=∗ own_crash_abstract Pc P ∗ |C={⊤}=> ▷ Pc.
-  Proof using Type*.
-    iIntros "HP".
-    iMod (saved_prop_alloc P (DfracOwn 1)) as (γprop) "[Hprop Hprop2]"; first done.
-    iMod (own_alloc (Excl ())) as (γtok) "Htok"; first done.
-    iMod (inv_alloc Ncrash ⊤ (∃ Q, saved_prop_own γprop (DfracOwn (1/2)) Q ∗ (Q ∧ Pc ∨ own γtok (Excl ()) ∗ C)) with "[-Hprop Htok]") as "#Hinv".
-    { iNext. iExists _; iFrame. }
-    iSplitL "Hprop".
-    {
-      iModIntro.
-      iApply (greatest_fixpoint_coiter _ (λ P, saved_prop_own γprop (DfracOwn (1/2)) P)%I).
-      2:{ iFrame. }
-      iIntros "!# * Hprop".
-      iIntros "[Hlc Hlc2]".
-      rewrite ncfupd_eq.
-      iIntros (?) "HNC".
-      iInv "Hinv" as "Hi" "Hclose".
-      iMod (lc_fupd_elim_later with "[$] Hi") as (?) "[Hprop2 Hi]".
-      iDestruct (saved_prop_agree with "[$] [$]") as "#-#Hagree".
-      iMod (lc_fupd_elim_later with "[$] Hagree") as "#Hagree".
-      iRewrite -"Hagree".
-      iDestruct "Hi" as "[Hi | [_ Hbad]]".
-      2:{
-        iDestruct (NC_C with "[$] [$]") as %?. done.
-      }
-      iLeft in "Hi". iFrame "Hi".
-      iFrame.
-      iApply fupd_mask_intro.
-      { set_solver. }
-      iIntros "Hmask".
-      iFrame.
-      iIntros (?) "Hwand HP'".
-      iIntros (?) "$".
-      iMod "Hmask".
-      iMod (saved_prop_update_2 with "[$] [$]") as "[$ H]".
-      { rewrite Qp.half_half //. }
-      iMod ("Hclose" with "[-]"); last done.
-      iNext.
-      iExists _; iFrame.
-      iLeft. iSplit.
-      { iFrame. }
-      iApply "Hwand". iFrame.
-    }
-    iModIntro.
-    iIntros "C".
-    iInv "Hinv" as "Hi" "Hclose".
-    iDestruct "Hi" as (?) "[? [H|>[Hbad _]]]".
-    2:{ iCombine "Htok Hbad" gives %Hbad. done. }
-    iRight in "H".
-    iFrame.
-    iMod ("Hclose" with "[-]"); last done.
-    iNext. iExists _; iFrame. iRight. iFrame.
-  Qed.
-
-  (* want:
-     combine: own_crash P Pc -∗ own_crash Q Qc -∗
-     own_crash (P ∗ Q) (Pc Qc)
-
-     split: own_crash (P ∗ Q) (Pc ∗ Qc) -∗
-     own_crash P Pc ∗ own_crash Q Qc
-     if P -∗ |C={⊤}=> Pc and Q -∗ |C={⊤}=> Qc.
-   *)
 
   (* FIXME: this is actually logically atomic because the model doesn't capture
      the fact that reads and writes are non-atomic w.r.t. concurrency.
@@ -324,7 +220,7 @@ Section grove.
       wp_apply "IH".
     }
     wp_pures.
-    rewrite slice.val_unseal /slice.val_def to_val_unseal /=.
+    rewrite to_val_unseal /=.
     iDestruct "Hs" as "[% Hl]".
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
@@ -340,7 +236,7 @@ Section grove.
     (|NC={E, ∅}=> f f↦ old ∗ (f f↦ data -∗ |NC={∅,E}=> s ↦*{dq} data -∗ Φ #()) ∧
                             (f f↦ old -∗ |NC={∅,E}=> True)
     ) -∗
-    WP FileWrite #f (slice.val s) @ E {{ Φ }}.
+    WP FileWrite #f #s @ E {{ Φ }}.
   Proof.
     iIntros "Hs Hau".
     wp_call.
@@ -378,7 +274,7 @@ Section grove.
     (|NC={E, ∅}=> f f↦ old ∗ (f f↦ (old ++ data) -∗ |NC={∅,E}=> s ↦*{dq} data -∗ Φ #()) ∧
                             (f f↦ old -∗ |NC={∅,E}=> True)
     ) -∗
-    WP FileAppend #f (slice.val s) @ E {{ Φ }}.
+    WP FileAppend #f #s @ E {{ Φ }}.
   Proof.
     iIntros "Hs Hau".
     wp_call.

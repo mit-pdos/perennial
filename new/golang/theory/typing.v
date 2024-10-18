@@ -11,18 +11,12 @@ Module slice.
 Record t := mk { ptr_f: loc; len_f: u64; cap_f: u64; }.
 Notation nil := slice_nil.
 Definition nil_f : slice.t := mk null 0 0.
-
-Section goose_lang.
-  Context `{ffi_semantics}.
-  (* XXX: might not need to seal this. *)
-  Definition val_def (s: slice.t) : val := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f)).
-  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
-  Definition val_unseal : val = _ := seal_eq _.
-End goose_lang.
 End slice.
 
 Global Instance into_val_slice `{ffi_syntax} : IntoVal slice.t :=
-  {| to_val_def := slice.val |}.
+  {|
+    to_val_def (s: slice.t) := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f))
+  |}.
 
 Global Instance slice_eq_dec : EqDecision slice.t.
 Proof. solve_decision. Qed.
@@ -50,17 +44,19 @@ End struct.
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.
+  Record t := mk { v: val; mset: list (string * val) }.
 
-  (* XXX: the InjLV is subtle: it's there to block `flatten_struct` from
-     splitting this up into multiple heap cells. *)
-  Definition val_def (mset : list (string * val)) (v : val) : val :=
-    InjLV (#"NO TYPE IDS YET", v, (struct.fields_val mset)).
-  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
-  Definition val_unseal : val = _ := seal_eq _.
-
+  (* FIXME: use the typeid to distinguish nil interface value from nil pointer
+     used as a non-nil interface value. *)
+  Definition nil_f := mk #null [].
 End goose_lang.
 End interface.
 
+Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
+  {|
+    to_val_def (i: interface.t) :=
+      InjLV (#"NO TYPE IDS YET", i.(interface.v), (struct.fields_val i.(interface.mset)))
+  |}.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
@@ -72,38 +68,36 @@ Delimit Scope struct_scope with struct.
 Section typing.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}.
 
-  Program Definition go_type_ind :=
-    λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
-      (f3 : P uint64T) (f4 : P int8T) (f5 : P int16T) (f6 : P int32T) (f7 : P int64T)
-      (f8 : P stringT) (f9 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
-      (f10 : ∀ elem : go_type, P elem → P (sliceT elem))
-      (f11 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
-      (f12 : P ptrT)
-      (f13 : P funcT) (f14 : P interfaceT) (f15 : ∀ key : go_type,
-                                              P key → ∀ elem : go_type, P elem → P (mapT key elem))
-      (f16 : ∀ elem : go_type, P elem → P (chanT elem)),
-    fix F (g : go_type) : P g :=
-      match g as g0 return (P g0) with
-      | boolT => f
-      | uint8T => f0
-      | uint16T => f1
-      | uint32T => f2
-      | uint64T => f3
-      | int8T => f4
-      | int16T => f5
-      | int32T => f6
-      | int64T => f7
-      | stringT => f8
-      | arrayT n elem => f9 n elem (F elem)
-      | sliceT elem => f10 elem (F elem)
-      | structT decls => f11 decls _
-      | ptrT => f12
-      | funcT => f13
-      | interfaceT => f14
-      | mapT key elem => f15 key (F key) elem (F elem)
-      | chanT elem => f16 elem (F elem)
-      end.
-  Obligation 1.
+Program Definition go_type_ind :=
+  λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
+  (f3 : P uint64T) (f4 : P int8T) (f5 : P int16T) (f6 : P int32T) (f7 : P int64T)
+  (f8 : P stringT) (f9 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
+  (f10 : ∀ elem : go_type, P elem → P (sliceT elem)) (f11 : P interfaceT)
+  (f12 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
+  (f13 : P ptrT) (f14 : P funcT) (f15 : ∀ key : go_type, P key → ∀ elem : go_type, P elem → P (mapT key elem))
+  (f16 : ∀ elem : go_type, P elem → P (chanT elem)),
+  fix F (g : go_type) : P g :=
+    match g as g0 return (P g0) with
+    | boolT => f
+    | uint8T => f0
+    | uint16T => f1
+    | uint32T => f2
+    | uint64T => f3
+    | int8T => f4
+    | int16T => f5
+    | int32T => f6
+    | int64T => f7
+    | stringT => f8
+    | arrayT n elem => f9 n elem (F elem)
+    | sliceT elem => f10 elem (F elem)
+    | interfaceT => f11
+    | structT decls => f12 decls _
+    | ptrT => f13
+    | funcT => f14
+    | mapT key elem => f15 key (F key) elem (F elem)
+    | chanT elem => f16 elem (F elem)
+    end.
+  Final Obligation.
   intros.
   revert H.
   enough (Forall P decls.*2).
@@ -131,13 +125,14 @@ Section typing.
   | has_go_type_int8 (x : w8) : has_go_type #x int8T
 
   | has_go_type_string (s : string) : has_go_type #s stringT
-  | has_go_type_slice elem (s : slice.t) : has_go_type (# s) (sliceT elem)
-  | has_go_type_slice_nil elem : has_go_type (# slice.nil_f) (sliceT elem)
+
+  | has_go_type_slice elem (s : slice.t) : has_go_type (#s) (sliceT elem)
+  | has_go_type_interface (i : interface.t) : has_go_type (#i) interfaceT
 
   | has_go_type_array n elem (a : list val)
                       (Hlen : length a = n)
                       (Helems : ∀ v, In v a → has_go_type v elem)
-    : has_go_type (array.val a) (arrayT n elem)
+    : has_go_type (fold_right PairV #() a) (arrayT n elem)
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
@@ -146,10 +141,6 @@ Section typing.
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func f e v : has_go_type (RecV f e v) funcT
   | has_go_type_func_nil : has_go_type #null funcT
-
-  | has_go_type_interface (mset : list (string * val)) (v : val) :
-    has_go_type (interface.val mset v) interfaceT
-  | has_go_type_interface_nil : has_go_type interface_nil interfaceT
 
   | has_go_type_mapT kt vt (l : loc) : has_go_type #l (mapT kt vt)
   | has_go_type_chanT t (l : loc) : has_go_type #l (chanT t)
@@ -160,7 +151,7 @@ Section typing.
   Proof.
     induction t using go_type_ind; rewrite zero_val_unseal /to_val; try econstructor.
     (* arrayT *)
-    { rewrite array.val_unseal. apply length_replicate. }
+    { apply length_replicate. }
     { intros. fold zero_val_def in H.
       rewrite -elem_of_list_In in H.
       apply elem_of_replicate_inv in H. subst.
@@ -169,7 +160,12 @@ Section typing.
     { (* sliceT *)
       replace (zero_val_def (sliceT t)) with (# slice.nil_f).
       { constructor. }
-      rewrite to_val_unseal /= slice.val_unseal //.
+      rewrite to_val_unseal /= //.
+    }
+    { (* interfaceT *)
+      replace (zero_val_def (interfaceT)) with (# interface.nil_f).
+      { constructor. }
+      rewrite to_val_unseal /= struct.fields_val_unseal /= //.
     }
 
     (* structT *)
@@ -197,11 +193,10 @@ Section typing.
     length (flatten_struct v) = (go_type_size t).
   Proof.
     rewrite go_type_size_unseal.
-    induction 1; simpl; rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal; auto.
+    induction 1; simpl; rewrite ?to_val_unseal /=; auto.
     - simpl.
-      rewrite array.val_unseal.
       dependent induction a generalizing n.
-      + simpl in *. rewrite to_val_unseal. subst. done.
+      + simpl in *. subst. done.
       + simpl. simpl in Hlen.
         destruct n; first by exfalso.
         inversion_clear Hlen. clear n.
@@ -238,12 +233,12 @@ Section typing.
     | int64T => #(W64 0)
 
     | stringT => #("")
-    | arrayT n elem => array.val (replicate n (zero_val elem))
+    | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
     | sliceT _ => #slice.nil_f
     | structT decls => struct.val t []
     | ptrT => #null
     | funcT => #null
-    | interfaceT => interface_nil
+    | interfaceT => #interface.nil_f
     | mapT _ _ => #null
     | chanT _ => #null
     end.
@@ -254,7 +249,8 @@ Section typing.
     rewrite zero_val_unseal.
     induction t; try done.
     { simpl. by rewrite zero_val_unseal. }
-    { simpl. rewrite to_val_unseal /= slice.val_unseal. done. }
+    { simpl. rewrite to_val_unseal /= //. }
+    { simpl. rewrite to_val_unseal /= struct.fields_val_unseal //. }
     simpl. rewrite struct.val_unseal.
     induction decls; first done.
     destruct a. simpl.
@@ -274,12 +270,12 @@ Section typing.
     first [ t; let n := numgoals in guard n <= 1
           | idtac ].
 
-  Definition is_slice_val v : {s:slice.t | v = slice.val s} + {∀ (s: slice.t), v ≠ slice.val s}.
+  Definition is_slice_val v : {s:slice.t | v = #s} + {∀ (s: slice.t), v ≠ #s}.
   Proof.
     let solve_right :=
       try (solve [ right;
                   intros [???];
-                  rewrite slice.val_unseal /slice.val_def ?to_val_unseal /=;
+                  repeat (rewrite !to_val_unseal /=);
                     inversion 1;
                   subst ]) in
     repeat match goal with
@@ -290,7 +286,7 @@ Section typing.
            end.
     left.
     eexists (slice.mk _ _ _);
-      rewrite slice.val_unseal /slice.val_def ?to_val_unseal //=.
+      repeat (rewrite !to_val_unseal //=).
   Defined.
 
   (* TODO: I think this is possible, but some unfortunate changes are needed: we
@@ -350,13 +346,11 @@ Proof.
   pose proof (to_val_has_go_type v) as Hty.
   generalize dependent #v. clear dependent V.
   intros v Hty Hcomp.
-  induction Hty; try rewrite to_val_unseal /= ?slice.val_unseal //.
+  induction Hty; try rewrite to_val_unseal /= //.
   - repeat constructor; rewrite to_val_unseal //.
-  - repeat constructor; rewrite to_val_unseal //.
-  - rewrite array.val_unseal. simpl.
-    clear Hlen Helems. simpl in Hcomp.
+  - clear Hlen Helems. simpl in Hcomp.
     induction a.
-    + rewrite /= to_val_unseal //.
+    + done.
     + rewrite /=. split.
       { apply H0; naive_solver. }
       { apply IHa; naive_solver. }
@@ -370,8 +364,6 @@ Proof.
       split.
       { apply H0; naive_solver. }
       { apply IHd; naive_solver. }
-  - by exfalso.
-  - by exfalso.
   - by exfalso.
 Qed.
 
@@ -451,8 +443,36 @@ Program Global Instance into_val_typed_slice elemT : IntoValTyped slice.t (slice
 {| default_val := slice.nil_f |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation. rewrite to_val_unseal /= slice.val_unseal => ?[???][???] [=] //.
+Next Obligation. rewrite to_val_unseal => ?[???][???] [=] //.
                  repeat intros [=->%to_val_inj]. done.
+Qed.
+
+Lemma struct_fields_val_inj a b :
+  struct.fields_val a = struct.fields_val b →
+  a = b.
+Proof.
+  rewrite struct.fields_val_unseal /= /struct.fields_val_def list.val_unseal.
+  dependent induction b generalizing a.
+  { by destruct a. }
+  destruct a0.
+  destruct a as [|[]]; first done.
+  rewrite /= => [=].
+  intros. subst.
+  repeat f_equal.
+  - by apply to_val_inj.
+  - by apply IHb.
+Qed.
+
+Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
+{| default_val := interface.nil_f |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => [[??] [??]] /= [??].
+                 f_equal; try done.
+                 apply struct_fields_val_inj. done.
+Qed.
+Final Obligation.
+  solve_decision.
 Qed.
 
 End into_val_instances.

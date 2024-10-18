@@ -65,20 +65,18 @@ Section lemmas.
 Context `{heapGS Σ}.
 
 Class IntoValStructField (f : string) (fs : struct.descriptor) (V : Type) (Vf : Type)
+  (field_proj : V → Vf)
   `{!IntoVal V} `{!IntoVal Vf}
   `{!IntoValTyped Vf (default boolT (assocl_lookup f fs))}
   :=
   {
-    field_proj : V → Vf ;
     field_proj_eq_field_get : ∀ v, #(field_proj v) = (struct.field_get_f fs f #v);
   }.
-
-Global Arguments field_proj (f) {_ _ _ _ _ _ _} (v).
 
 Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
   (fs : struct.descriptor) (v : V) : iProp Σ :=
   [∗ list] ft ∈ fs,
-    ∀ `(H:IntoValStructField f fs V Vf), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj f v).
+    ∀ `(H:IntoValStructField f fs V Vf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
 
 (* FIXME: could try stating this with (structT d) substituted in. The main
    concern is that it will result in t getting unfolded. *)
