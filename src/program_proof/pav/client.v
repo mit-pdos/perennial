@@ -96,6 +96,9 @@ Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
   "#Hcomm" ∷ is_comm pk comm ∗
   "#Hbound" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None.
 
+(* TODO: change client st froom w64 to Z.
+abstraction for relating maps of different transparency.
+*)
 Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
   {{{
     "Hown_cli" ∷ Client.own ptr_c c ∗
@@ -229,20 +232,21 @@ Proof. Admitted.
 Global Instance is_vrf_inj : InjRel (uncurry is_vrf).
 Proof. Admitted.
 
-Definition is_my_key_aud_aux (adtr_map : map_adtr_ty) uid ver ep pk : iProp Σ :=
-  ∃ hash0 hash1 comm,
+Definition is_my_key_aud_aux (adtr_map : map_adtr_ty) uid ver ep comm : iProp Σ :=
+  ∃ hash0 hash1,
   "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep, comm) ⌝ ∗
   "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
   "#Hhash0" ∷ is_vrf uid ver hash0 ∗
-  "#Hhash1" ∷ is_vrf uid (word.add (W64 1) ver) hash1 ∗
-  "#Hcomm" ∷ is_comm pk comm.
+  "#Hhash1" ∷ is_vrf uid (word.add (W64 1) ver) hash1.
 
 (* auditor GS versions of the above client resources. *)
 Definition is_my_key_aud adtr_γ uid ver ep pk : iProp Σ :=
-  ∃ adtr_map,
+  ∃ adtr_map comm,
   "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
-  "#Haux" ∷ is_my_key_aud_aux adtr_map uid ver ep pk.
+  "#Haux" ∷ is_my_key_aud_aux adtr_map uid ver ep comm ∗
+  "#Hcomm" ∷ is_comm pk comm.
 
+(* TODO: should have cli invariant as well. *)
 Lemma audit_is_my_key ep0 ep1 cli_γ uid ver pk adtr_γ :
   uint.nat ep0 < uint.nat ep1 →
   is_my_key cli_γ uid ver ep0 pk -∗
@@ -263,8 +267,8 @@ Lemma audit_is_no_other_key ep0 ep1 cli_γ uid adtr_γ :
   is_no_other_key_aud adtr_γ uid ep0.
 Proof. Admitted.
 
-Definition is_other_key_aud_aux (adtr_map : map_adtr_ty) uid (ep : epoch_ty) pk : iProp Σ :=
-  ∃ ver ep0 hash0 hash1 comm0,
+Definition is_other_key_aud_aux (adtr_map : map_adtr_ty) uid (ep : epoch_ty) comm0 : iProp Σ :=
+  ∃ ver ep0 hash0 hash1,
   "%Hhist" ∷ ∀ ver', ⌜ uint.nat ver' < ver ⌝ -∗
     ∃ hash2 ep1 comm1,
     is_vrf uid ver' hash2 ∗
@@ -272,13 +276,13 @@ Definition is_other_key_aud_aux (adtr_map : map_adtr_ty) uid (ep : epoch_ty) pk 
   "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep0, comm0) ⌝ ∗
   "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
   "#Hhash0" ∷ is_vrf uid (W64 ver) hash0 ∗
-  "#Hhash1" ∷ is_vrf uid (W64 (S ver)) hash1 ∗
-  "#Hcomm" ∷ is_comm pk comm0.
+  "#Hhash1" ∷ is_vrf uid (W64 (S ver)) hash1.
 
 Definition is_other_key_aud adtr_γ uid ep pk : iProp Σ :=
-  ∃ adtr_map,
+  ∃ adtr_map comm0,
   "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
-  "#Haux" ∷ is_other_key_aud_aux adtr_map uid ep pk.
+  "#Haux" ∷ is_other_key_aud_aux adtr_map uid ep comm0 ∗
+  "#Hcomm" ∷ is_comm pk comm0.
 
 Lemma audit_is_other_key ep0 ep1 cli_γ uid pk adtr_γ :
   uint.nat ep0 < uint.nat ep1 →
@@ -295,17 +299,14 @@ Definition msv_opaque (m : map_adtr_ty) uid vals : iProp Σ :=
 Global Instance msv_opaque_func : Func (uncurry msv_opaque).
 Proof. Admitted.
 
-(*
-Definition msv_is_my_key0 m uid ver ep pk :
-  is_my_key_
-  ∃ adtr_map,
-  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
-  "#Haux" ∷ is_my_key_aud_aux adtr_map uid ver ep pk.
-  *)
+Lemma msv_is_my_key m uid ep0 comm :
+  is_my_key_aud_aux m uid (W64 0) ep0 comm -∗
+  ∃ vals,
+  msv_opaque m uid vals ∗ ⌜ last vals = Some (ep0, comm) ⌝.
+Proof. Admitted.
 
-Lemma msv_is_other_key m uid ep0 pk comm :
-  is_other_key_aud_aux m uid ep0 pk -∗
-  is_comm pk comm -∗
+Lemma msv_is_other_key m uid ep0 comm :
+  is_other_key_aud_aux m uid ep0 comm -∗
   ∃ ep1 vals,
   msv_opaque m uid vals ∗ ⌜ last vals = Some (ep1, comm) ⌝.
 Proof. Admitted.

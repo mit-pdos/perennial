@@ -11,7 +11,7 @@ Lemma wp_testBasic (servAddr adtr0Addr adtr1Addr : w64) :
   {{{ True }}}
   testBasic #servAddr #adtr0Addr #adtr1Addr
   {{{ RET #(); True }}}.
-Proof.
+Proof using Type*.
   rewrite /testBasic.
   iIntros (Φ) "_ HΦ".
 
@@ -112,15 +112,23 @@ Proof.
   { iNamed "Hreg".
     iDestruct (audit_is_no_other_key with "His_no_key His_audit_bob0") as "His_no_key_aud"; [word|].
     iClear "His_no_key".
-    iNamedSuffix "His_key_al_aud" "_al".
+    iNamedSuffix "His_key_al_aud" "_al". iNamedSuffix "Haux_al" "_al".
     iNamedSuffix "His_no_key_aud" "_bob".
     iDestruct (mono_list_idx_agree with "Hadtr_map_al Hadtr_map_bob") as %->.
-    iDestruct (is_vrf_func (W64 0, W64 0) with "[$Hhash0_al] [$Hhash_bob]") as %->.
+    iDestruct (is_vrf_func (W64 0, W64 0) with "Hhash0_al Hhash_bob") as %->.
     simplify_map_eq/=. }
   wp_apply wp_Assert_true. iNamedSuffix "Hreg" "_bob".
   wp_apply (wp_BytesEqual with "[$Hsl_pk_al $Hsl_pk_bob]"). iIntros "_".
   iDestruct (audit_is_other_key with "His_key_bob His_audit_bob0") as "His_key_bob_aud"; [word|].
   iClear "His_key_bob His_audit_al0 His_audit_bob0".
-Admitted.
+  iNamedSuffix "His_key_al_aud" "_al".
+  iNamedSuffix "His_key_bob_aud" "_bob".
+  iDestruct (mono_list_idx_agree with "Hadtr_map_al Hadtr_map_bob") as %->.
+  iDestruct (msv_is_my_key with "Haux_al") as (vals0) "[Hmsv0 %Hvals0]".
+  iDestruct (msv_is_other_key with "Haux_bob") as (? vals1) "[Hmsv1 %Hvals1]".
+  iDestruct (msv_opaque_func (adtr_map0, W64 0) with "Hmsv0 Hmsv1") as %->.
+  simplify_eq/=. iDestruct (is_comm_inj with "Hcomm_al Hcomm_bob") as %->.
+  wp_apply wp_Assert; [by case_bool_decide|]. wp_pures. by iApply "HΦ".
+Qed.
 
 End proof.
