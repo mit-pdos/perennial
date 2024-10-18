@@ -203,22 +203,22 @@ Global Arguments own_slice_cap {_ _ _ _ _} (V) {_ _ _} (s).
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Lemma wp_slice_len stk E (s : slice.t) (Φ : val -> iProp Σ) :
-    Φ #(s.(slice.len_f)) -∗ WP slice.len (slice.val s) @ stk; E {{ v, Φ v }}.
+    Φ #(s.(slice.len_f)) -∗ WP slice.len (#s) @ stk; E {{ v, Φ v }}.
 Proof.
-  rewrite slice.val_unseal. iIntros "HΦ".
-  wp_call. iApply "HΦ".
+  rewrite to_val_unseal. iIntros "HΦ".
+  wp_call. rewrite to_val_unseal. iApply "HΦ".
 Qed.
 
 Lemma wp_slice_cap stk E (s : slice.t) (Φ : val -> iProp Σ) :
-    Φ #(s.(slice.cap_f)) -∗ WP slice.cap (slice.val s) @ stk; E {{ v, Φ v }}.
+    Φ #(s.(slice.cap_f)) -∗ WP slice.cap (#s) @ stk; E {{ v, Φ v }}.
 Proof.
-  rewrite slice.val_unseal. iIntros "HΦ".
-  wp_call. iApply "HΦ".
+  rewrite to_val_unseal. iIntros "HΦ".
+  wp_call. rewrite to_val_unseal. iApply "HΦ".
 Qed.
 
 Lemma slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
-  InjLV (#ptr, #sz, #cap)%V = slice.val (slice.mk ptr sz cap).
-Proof. rewrite slice.val_unseal. done. Qed.
+  InjLV (#ptr, #sz, #cap)%V = #(slice.mk ptr sz cap).
+Proof. repeat rewrite to_val_unseal //=. Qed.
 
 Lemma seq_replicate_fmap {A} y n (a : A) :
   (λ _, a) <$> seq y n = replicate n a.
@@ -235,7 +235,7 @@ Lemma wp_slice_make3 stk E (len cap : w64) :
   uint.nat len ≤ uint.nat cap →
   {{{ True }}}
     slice.make3 t #len #cap @ stk; E
-  {{{ sl, RET slice.val sl;
+  {{{ sl, RET #sl;
       sl ↦* (replicate (uint.nat len) (default_val V)) ∗
       own_slice_cap V sl ∗
       ⌜ sl.(slice.cap_f) = cap ⌝
@@ -319,7 +319,7 @@ Qed.
 Lemma wp_slice_make2 stk E (len : u64) :
   {{{ True }}}
     slice.make2 t #len @ stk; E
-  {{{ sl, RET slice.val sl;
+  {{{ sl, RET #sl;
       sl ↦* (replicate (uint.nat len) (default_val V)) ∗
       own_slice_cap V sl
   }}}.
@@ -333,31 +333,32 @@ Proof.
 Qed.
 
 Global Instance pure_slice_ptr (s : slice.t) :
-  PureWp True (slice.ptr (slice.val s)) #(slice.ptr_f s).
+  PureWp True (slice.ptr (#s)) #(slice.ptr_f s).
 Proof.
-  rewrite slice.val_unseal.
+  rewrite to_val_unseal.
   iIntros (?????) "HΦ".
-  wp_call. by iApply "HΦ".
+  wp_call. rewrite to_val_unseal.
+  by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_len (s : slice.t) :
-  PureWp True (slice.len (slice.val s)) #(slice.len_f s).
+  PureWp True (slice.len (#s)) #(slice.len_f s).
 Proof.
-  rewrite slice.val_unseal.
+  rewrite to_val_unseal.
   iIntros (?????) "HΦ".
-  wp_call. by iApply "HΦ".
+  wp_call. rewrite to_val_unseal. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_cap (s : slice.t) :
-  PureWp True (slice.cap (slice.val s)) #(slice.cap_f s).
+  PureWp True (slice.cap (#s)) #(slice.cap_f s).
 Proof.
-  rewrite slice.val_unseal.
+  rewrite to_val_unseal.
   iIntros (?????) "HΦ".
-  wp_call. by iApply "HΦ".
+  wp_call. rewrite to_val_unseal. by iApply "HΦ".
 Qed.
 
 Global Instance wp_slice_elem_ref s (i : w64) :
-  PureWp (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref t (slice.val s) #i)
+  PureWp (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref t #s #i)
     #(slice.elem_ref_f s t i).
 Proof.
   iIntros (?????) "HΦ".
@@ -372,7 +373,7 @@ Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
                  WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val #()%V ⌝ ∗ P (word.add i 1) }})
     (λ (_ : w64), sl ↦*{dq} vs -∗ Φ (execute_val #()))
     vs) (W64 0) -∗
-  WP slice.for_range t (slice.val sl) body @ stk ; E {{ Φ }}
+  WP slice.for_range t #sl body @ stk ; E {{ Φ }}
 .
 Proof.
   iIntros "[Hsl HΦ]".
@@ -425,7 +426,7 @@ Lemma wp_slice_literal {stk E} (lv : list val) (l : list V) :
   lv = # <$> l →
   {{{ True }}}
     slice.literal t (list.val lv) @ stk ; E
-  {{{ sl, RET (slice.val sl); sl ↦* l }}}.
+  {{{ sl, RET #sl; sl ↦* l }}}.
 Proof.
   intros ->.
   iIntros (Φ) "_ HΦ".

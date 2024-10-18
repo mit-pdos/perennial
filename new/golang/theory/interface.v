@@ -5,21 +5,24 @@ From New.golang.defn Require Import interface.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance wp__interface_get (v : val) (mset : list (string * val)) (method : string) :
-  PureWp (True) (interface.get method (interface.val mset v))
-    (match (assocl_lookup method mset) with | None => (App #() v) | Some m => (App m v) end).
+Global Instance wp__interface_get (i : interface.t) (method : string) :
+  PureWp (True) (interface.get method #i)
+    (match (assocl_lookup method i.(interface.mset)) with
+     | None => (App #() i.(interface.v))
+     | Some m => (App m i.(interface.v))
+     end).
 Proof.
   iIntros (?????) "Hwp".
-  rewrite interface.val_unseal.
+  rewrite to_val_unseal.
   wp_call.
-  destruct (assocl_lookup method mset); wp_pures; done.
+  destruct assocl_lookup; wp_pures; rewrite ?to_val_unseal //=.
 Qed.
 
 Global Instance wp_interface_make (v : val) (mset : list (string * val)) :
-  PureWp (True) (interface.make mset v) (interface.val mset v).
+  PureWp (True) (interface.make mset v) #(interface.mk v mset).
 Proof.
   iIntros (?????) "Hwp".
-  rewrite interface.val_unseal interface.make_unseal.
+  rewrite to_val_unseal interface.make_unseal.
   wp_call. done.
 Qed.
 

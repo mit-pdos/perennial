@@ -47,24 +47,32 @@ Global Instance into_val_func : IntoVal GoFunc :=
                  let (f, x, e) := f in RecV f x e
   |}.
 
+Global Instance into_val_array `{!IntoVal V} : IntoVal (list V) :=
+  {| to_val_def :=
+      fix go (x : list V) : val :=
+        match x with
+        | [] => #()
+        | h :: tl => (#h, go tl)%V
+        end
+  |}.
+
 End instances.
 Global Notation "()" := tt : val_scope.
 
 Global Opaque to_val.
 
-Module array.
+Module list.
 Section defn.
   Context `{ffi_syntax}.
   Fixpoint val_def (x : list val) : val :=
     match x with
-    | [] => #()
-    | h :: tl => (h, val_def tl)
-    end
-  .
+    | [] => InjLV #()
+    | h :: tl => (InjRV (h, val_def tl))
+    end.
   Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
   Definition val_unseal : val = _ := seal_eq _.
 End defn.
-End array.
+End list.
 
 Section val_types.
   Inductive go_type :=
@@ -84,10 +92,10 @@ Section val_types.
   | stringT
   | arrayT (n : nat) (elem : go_type)
   | sliceT (elem : go_type)
+  | interfaceT
   | structT (decls : list (string * go_type)) (* What if this were a gmap? *)
   | ptrT (* Untyped pointer; convenient to support recursion in structs *)
   | funcT
-  | interfaceT
   | mapT (key elem : go_type)
   | chanT (elem : go_type)
   .
@@ -104,7 +112,7 @@ Section val_types.
 
   Context `{ffi_syntax}.
   Definition slice_nil : val := InjLV (#null, #(W64 0), #(W64 0)).
-  Definition interface_nil : val := InjLV (#null, #null, #null).
+  Definition interface_nil : val := InjLV (#"NO TYPE IDS YET", #null, list.val []).
   Fixpoint zero_val_def (t : go_type) : val :=
     match t with
     | boolT => #false
@@ -120,7 +128,7 @@ Section val_types.
     | int64T => #(W64 0)
 
     | stringT => #""
-    | arrayT n elem => array.val (replicate n (zero_val_def elem))
+    | arrayT n elem => fold_right PairV #() (replicate n (zero_val_def elem))
     | sliceT _ => slice_nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => #null
@@ -157,19 +165,6 @@ Fixpoint assocl_lookup {A} (f : string) (field_vals: list (string * A)) : option
   | [] => None
   | (f', v)::fs => if String.eqb f' f then Some v else assocl_lookup f fs
   end.
-
-Module list.
-Section defn.
-  Context `{ffi_syntax}.
-  Fixpoint val_def (x : list val) : val :=
-    match x with
-    | [] => InjLV #()
-    | h :: tl => (InjRV (h, val_def tl))
-    end.
-  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
-  Definition val_unseal : val = _ := seal_eq _.
-End defn.
-End list.
 
 Module struct.
   Definition descriptor := list (string * go_type).

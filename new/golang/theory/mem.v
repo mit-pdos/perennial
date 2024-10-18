@@ -80,16 +80,11 @@ Section goose_lang.
     Ltac2 step () :=
       match! goal with
       | [ v : slice.t |- _ ] => let v := Control.hyp v in destruct $v
+      | [ v : interface.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ h : has_go_type _ _ |- _ ] => let h := Control.hyp h in (inversion_clear $h in Heq)
       | [ h : struct.fields_val _ = struct.fields_val _ |- _ ] => apply struct_fields_val_inj in $h; subst
 
       (* unseal whatever's relevant *)
-      | [ h : context [slice.val]  |- _ ] => rewrite !slice.val_unseal in $h
-      | [ |- context [slice.val] ] => rewrite !slice.val_unseal
-      | [ h : context [interface.val]  |- _ ] => rewrite !interface.val_unseal in $h
-      | [ |- context [interface.val] ] => rewrite !interface.val_unseal
-      | [ h : context [array.val]  |- _ ] => rewrite !array.val_unseal in $h
-      | [ |- context [array.val] ] => rewrite !array.val_unseal
       | [ h : context [struct.val]  |- _ ] => rewrite !struct.val_unseal in $h
       | [ |- context [struct.val] ] => rewrite !struct.val_unseal
       | [ h : context [to_val]  |- _ ] => rewrite !to_val_unseal in $h
@@ -197,13 +192,12 @@ Section goose_lang.
     pose proof (to_val_has_go_type v) as Hty.
     generalize dependent (# v). clear dependent V. intros v Hty.
     iInduction Hty as [] "IH"; subst;
-    simpl; rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal /= ?right_id ?loc_add_0;
+    simpl; rewrite ?to_val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
     - (* array *)
       rewrite go_type_size_unseal /= in Hlen.
       destruct a as [|].
       { exfalso. simpl in *. lia. }
-      rewrite array.val_unseal /=.
       destruct (decide (go_type_size_def elem = O)).
       { exfalso. rewrite e in Hlen. simpl in *. lia. }
       iDestruct select ([∗ list] _ ↦ _ ∈ _, _)%I as "[? _]".
@@ -274,13 +268,12 @@ Section goose_lang.
     rewrite load_ty_unseal.
     rename l into l'.
     iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
-    all: rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id; wp_pures.
+    all: rewrite ?to_val_unseal /= /= ?loc_add_0 ?right_id; wp_pures.
     all: try (iApply (wp_load with "[$]"); done).
     - (* case arrayT *)
       subst.
-      rewrite array.val_unseal.
       iInduction a as [|] "IH2" forall (l' Φ).
-      { simpl. wp_pures. iApply "HΦ". by iFrame. }
+      { simpl. wp_pures. rewrite to_val_unseal. iApply "HΦ". by iFrame. }
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
@@ -302,7 +295,7 @@ Section goose_lang.
         erewrite has_go_type_len.
         2:{ eapply Helems. by left. }
         rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
-        rewrite /array.val_def to_val_unseal. iFrame.
+        iFrame.
       }
       iIntros "Hl".
       wp_pures.
@@ -379,15 +372,14 @@ Section goose_lang.
     rename l into l'.
     rewrite store_ty_unseal.
     iInduction Hty_old as [] "IH" forall (v' Hty l' Φ) "HΦ".
-    all: inversion_clear Hty; subst; rewrite ?to_val_unseal /= ?slice.val_unseal ?interface.val_unseal /= ?loc_add_0 ?right_id;
+    all: inversion_clear Hty; subst; rewrite ?to_val_unseal /= ?loc_add_0 ?right_id;
       wp_pures.
     all: try (wp_apply (wp_store with "[$]"); iIntros "H"; iApply "HΦ"; iFrame).
     - (* array *)
-      rewrite array.val_unseal.
       rename a0 into a'.
       iInduction a as [|] "IH2" forall (l' a' Hlen0 Helems0).
       { simpl. wp_pures. rewrite ?to_val_unseal. iApply "HΦ". apply nil_length_inv in Hlen0.
-        subst. rewrite /= to_val_unseal //. }
+        subst. done. }
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
@@ -520,14 +512,14 @@ Section goose_lang.
     all: inversion Hty_old; subst; inversion Hty; subst;
       simpl; rewrite to_val_unseal /= in H0 |- *;
       rewrite loc_add_0 right_id;
-    iApply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
-    iIntros; iApply "HΦ"; iFrame; done.
+      iApply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
+      iIntros; iApply "HΦ"; iFrame; done.
   Qed.
 
   Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 :
     is_primitive_type t →
     #v' = #v1 →
-    {{{ ▷ l ↦# v' }}} CmpXchg (Val $ LitV $ LitLoc l) #v1 #v2 @ s; E
+    {{{ ▷ l ↦# v' }}} CmpXchg #l #v1 #v2 @ s; E
     {{{ RET (#v', #true); l ↦# v2 }}}.
   Proof using Type*.
     intros Hprim Heq.
@@ -557,7 +549,7 @@ Hint Constructors has_go_type : has_go_type.
 Hint Resolve zero_val_has_go_type : has_go_type.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
-  (wp_bind (ref_ty _ _) || fail "cannot find ref_ty");
+  first [wp_bind (ref_ty _ _) | fail "cannot find ref_ty"];
   (eapply tac_wp_ref_ty || fail "cannot apply wp_ref_ty");
   iIntros (l) H.
 

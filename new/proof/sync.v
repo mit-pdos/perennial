@@ -50,6 +50,12 @@ Next Obligation.
 Qed.
 Final Obligation. solve_decision. Qed.
 
+Program Instance into_val_struct_Mutex_state `{ffi_syntax} :
+  IntoValStructField "state" [("state" :: boolT)%struct] Mutex.t bool Mutex.state.
+Final Obligation.
+intros. by rewrite to_val_unseal /= struct.val_unseal /= to_val_unseal /=.
+Qed.
+
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
@@ -73,11 +79,11 @@ Definition own_Mutex (m: loc) : iProp Σ := m ↦s[Mutex :: "state"]{# 3/4} true
 Lemma own_Mutex_exclusive (m : loc) : own_Mutex m -∗ own_Mutex m -∗ False.
 Proof.
   iIntros "H1 H2".
-  iCombine "H1 H2" as "H".
-  (* FIXME: need
-  iDestruct (struct_field_pointsto_frac_valid with "H") as %Hval. *)
-  admit.
-Admitted.
+  iCombine "H1 H2" gives %[Hbad _].
+  exfalso.
+  rewrite go_type_size_unseal in Hbad. naive_solver.
+  (* FIXME: don't want to unseal go_type_size_unseal *)
+Qed.
 
 Global Instance is_Mutex_ne m : NonExpansive (is_Mutex m).
 Proof. solve_proper. Qed.
@@ -96,8 +102,9 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   { done. }
   { apply _. }
-  iEval (repeat rewrite ?zero_val_eq ?struct.val_unseal ?lookup_empty /=) in "Hl".
-  iNamed "Hl".
+  iDestruct "Hl" as "[Hl _]".
+  Time unshelve iSpecialize ("Hl" $! _ _ _ _ _ _ _); try tc_solve.
+  simpl. iNamed "Hl".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
   { iIntros "!>". iExists false. iFrame.
@@ -113,14 +120,15 @@ Lemma wp_Mutex__Lock m R :
 Proof.
   iIntros (Φ) "#Hinv HΦ".
   iLöb as "IH".
-  wp_rec.
+  wp_call.
   wp_pures.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as ([]) "[Hl HR]".
-  - wp_apply (wp_typed_cmpxchg_fail with "[$]").
-    { repeat econstructor. }
-    { repeat econstructor. }
+  - wp_bind (CmpXchg _ _ _).
+    iApply (wp_typed_cmpxchg_fail (V:=bool) with "[$]").
+    { done. }
     { naive_solver. }
+    iNext.
     iIntros "Hl".
     iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
     wp_pures.
@@ -128,11 +136,11 @@ Proof.
   - iDestruct "HR" as "[Hl2 HR]".
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
-    wp_apply (wp_typed_cmpxchg_suc with "[$]").
-    { econstructor. }
-    { econstructor. }
+    wp_bind (CmpXchg _ _ _).
+    iApply (wp_typed_cmpxchg_suc (V:=bool) with "[$]").
+    { constructor. }
     { done. }
-    iIntros "Hl".
+    iNext. iIntros "Hl".
     iModIntro.
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct "Hl" as "[Hl1 Hl2]".
@@ -152,11 +160,10 @@ Lemma wp_Mutex__Unlock' m :
   }}}.
 Proof.
   iIntros (Ψ) "_ HΨ".
-  wp_rec. wp_pures.
-  iApply "HΨ". iModIntro. iIntros (R).
+  wp_call.
+  iApply "HΨ". iIntros (R).
   iIntros (Φ) "!# (#Hinv & Hlocked & HR) HΦ".
-  wp_rec.
-  wp_pures.
+  wp_call.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as (b) "[>Hl _]".
 
@@ -164,11 +171,10 @@ Proof.
   iCombine "Hl Hlocked" gives %[_ [=]]. subst.
   iCombine "Hl Hlocked" as "Hl".
   rewrite Qp.quarter_three_quarter.
-  wp_apply (wp_typed_cmpxchg_suc with "[$]").
+  iApply (wp_typed_cmpxchg_suc (V:=bool) with "[$]").
   { econstructor. }
   { econstructor. }
-  { done. }
-  iIntros "Hl".
+  iIntros "!# Hl".
   iModIntro.
   iSplitR "HΦ"; last by wp_pures; iApply "HΦ".
   iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
@@ -180,21 +186,22 @@ Lemma wp_Mutex__Unlock m R :
   {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} Mutex__Unlock #m #() {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
+  wp_bind (Mutex__Unlock _).
   wp_apply wp_Mutex__Unlock'. iIntros (?) "Hspec".
   wp_apply ("Hspec" with "[$Hinv $Hlocked $HR]").
   by iApply "HΦ".
 Qed.
 
-Definition is_Locker (v : val) (P : iProp Σ) : iProp Σ :=
-  "#H_Lock" ∷ ({{{ True }}} (interface.get "Lock" v) #() {{{ RET #(); P }}}) ∗
-  "#H_Unlock" ∷ ({{{ P }}} (interface.get "Unlock" v) #() {{{ RET #(); True }}})
+Definition is_Locker (i : interface.t) (P : iProp Σ) : iProp Σ :=
+  "#H_Lock" ∷ ({{{ True }}} (interface.get "Lock" #i) #() {{{ RET #(); P }}}) ∗
+  "#H_Unlock" ∷ ({{{ P }}} (interface.get "Unlock" #i) #() {{{ RET #(); True }}})
 .
 
 Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
 Lemma Mutex_is_Locker (m : loc) R :
   is_Mutex m R -∗
-  is_Locker (interface.val Mutex__mset_ptr #m) (own_Mutex m ∗ R).
+  is_Locker (interface.mk #m Mutex__mset_ptr) (own_Mutex m ∗ R).
 Proof.
   iIntros "#?".
   iSplitL.
@@ -209,20 +216,18 @@ Proof.
 Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
-Definition is_Cond (c : loc) (m : val) : iProp Σ :=
-  c ↦[interfaceT]□ m.
+Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
+  c ↦#□ m.
 
 Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
-Theorem wp_NewCond (m : val) :
-  has_go_type m interfaceT →
+Theorem wp_NewCond (m : interface.t) :
   {{{ True }}}
-    NewCond m
+    NewCond #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
-  intros Hty.
   iIntros (Φ) "Hl HΦ".
-  wp_rec. wp_pures. wp_apply wp_fupd.
+  wp_call. wp_apply wp_fupd.
   wp_alloc c as "Hc".
   wp_pures.
   iApply "HΦ". iMod (typed_pointsto_persist with "Hc") as "$".
@@ -235,8 +240,7 @@ Theorem wp_Cond__Signal c lk :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "Hc HΦ".
-  wp_rec. wp_pures.
-  iApply ("HΦ" with "[//]").
+  wp_call. iApply ("HΦ" with "[//]").
 Qed.
 
 Theorem wp_Cond__Broadcast c lk :
@@ -245,8 +249,7 @@ Theorem wp_Cond__Broadcast c lk :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "Hc HΦ".
-  wp_rec. wp_pures.
-  iApply ("HΦ" with "[//]").
+  wp_call. iApply ("HΦ" with "[//]").
 Qed.
 
 Theorem wp_Cond__Wait c m R :
@@ -292,7 +295,7 @@ Definition is_WaitGroup wg γ P : iProp Σ :=
       ∃ (remaining:gset u64) (total:u64),
         "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → uint.nat r < uint.nat total)⌝ ∗
         "Htotal" ∷ ghost_var γ.(total_gn) (1/2) total ∗
-        "Hv" ∷ vptr ↦[uint64T] #(size remaining) ∗
+        "Hv" ∷ vptr ↦# (W64 $ size remaining) ∗
         "Htoks" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
         "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat i ≥ uint.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
     ).
@@ -308,8 +311,8 @@ Definition own_WaitGroup (wg:val) γ (n:u64) (P:u64 → iProp Σ) : iProp Σ :=
 Definition own_free_WaitGroup (wg:val) : iProp Σ :=
   ∃ (mu:loc) (vptr:loc),
     ⌜wg = (#mu, #vptr)%V⌝ ∗
-    mu ↦[Mutex] (zero_val $ Mutex) ∗
-    vptr ↦[uint64T] #0
+    mu ↦# (default_val Mutex.t) ∗
+    vptr ↦# (W64 0)
 .
 
 Lemma own_WaitGroup_to_is_WaitGroup wg γ P n :
@@ -333,7 +336,7 @@ Proof.
 
   iMod (init_Mutex with "His_Mutex [-]") as "$"; last done.
   iNext.
-  iExists ∅, (U64 0).
+  iExists ∅, (U64 0%Z).
   rewrite size_empty.
   iFrame "Hv Htotal".
   iSplitL "".
@@ -363,7 +366,7 @@ Qed.
 Lemma wp_WaitGroup__Add wg γ n P :
 uint.nat (word.add n 1) > uint.nat n →
   {{{ own_WaitGroup wg γ n P }}}
-    WaitGroup__Add wg #1
+    WaitGroup__Add wg #(W64 1)
   {{{ RET #(); own_WaitGroup wg γ (word.add n 1) P ∗ own_WaitGroup_token γ n }}}.
 Proof.
 Admitted.
