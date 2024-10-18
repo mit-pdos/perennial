@@ -33,10 +33,12 @@ Definition val_slice v : option Slice.t :=
   end.
 
 Transparent slice.T.
-Theorem slice_val_ty s t : val_ty (slice_val s) (slice.T t).
+Lemma slice_val_ty s t : val_ty (slice_val s) (slice.T t).
 Proof.
   val_ty.
 Qed.
+Lemma slice_nil_ty ty : val_ty slice.nil (slice.T ty).
+Proof. val_ty. Qed.
 Opaque slice.T.
 
 (* own_slice_small is a smaller footprint version of own_slice that imprecisely
@@ -1655,7 +1657,7 @@ Qed.
 End goose_lang.
 
 #[global]
-Hint Resolve slice_val_ty : core.
+Hint Resolve slice_val_ty slice_nil_ty : core.
 
 Arguments wp_forSlice {_ _ _ _ _ _ _}
           _%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.
