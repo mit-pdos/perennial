@@ -167,6 +167,16 @@ Definition newAuditor: val :=
 
 (* basictest.go *)
 
+Definition setupParams := struct.decl [
+  "servAddr" :: uint64T;
+  "servSigPk" :: cryptoffi.PublicKey;
+  "servVrfPk" :: ptrT;
+  "adtr0Addr" :: uint64T;
+  "adtr0Pk" :: cryptoffi.PublicKey;
+  "adtr1Addr" :: uint64T;
+  "adtr1Pk" :: cryptoffi.PublicKey
+].
+
 (* servEpochInfo from server.go *)
 
 Definition servEpochInfo := struct.decl [
@@ -947,6 +957,31 @@ Definition newRpcAuditor: val :=
       );;
     advrpc.NewServer "h".
 
+(* setup starts server and auditors. it's mainly a logical convenience.
+   it consolidates the external parties, letting us more easily describe
+   different adversary configs. *)
+Definition setup: val :=
+  rec: "setup" "servAddr" "adtr0Addr" "adtr1Addr" :=
+    let: (("serv", "servSigPk"), "servVrfPk") := newServer #() in
+    let: "servRpc" := newRpcServer "serv" in
+    advrpc.Server__Serve "servRpc" "servAddr";;
+    let: ("adtr0", "adtr0Pk") := newAuditor "servSigPk" in
+    let: "adtr0Rpc" := newRpcAuditor "adtr0" in
+    advrpc.Server__Serve "adtr0Rpc" "adtr0Addr";;
+    let: ("adtr1", "adtr1Pk") := newAuditor "servSigPk" in
+    let: "adtr1Rpc" := newRpcAuditor "adtr1" in
+    advrpc.Server__Serve "adtr1Rpc" "adtr1Addr";;
+    time.Sleep #1000000;;
+    struct.new setupParams [
+      "servAddr" ::= "servAddr";
+      "servSigPk" ::= "servSigPk";
+      "servVrfPk" ::= "servVrfPk";
+      "adtr0Addr" ::= "adtr0Addr";
+      "adtr0Pk" ::= "adtr0Pk";
+      "adtr1Addr" ::= "adtr1Addr";
+      "adtr1Pk" ::= "adtr1Pk"
+    ].
+
 (* Client from client.go *)
 
 Definition Client := struct.decl [
@@ -1615,24 +1650,14 @@ Definition Client__Audit: val :=
     ![ptrT] "err0".
 
 Definition testBasic: val :=
-  rec: "testBasic" "servAddr" "adtr0Addr" "adtr1Addr" :=
-    let: (("serv", "servSigPk"), "servVrfPk") := newServer #() in
-    let: "servRpc" := newRpcServer "serv" in
-    advrpc.Server__Serve "servRpc" "servAddr";;
-    let: ("adtr0", "adtr0Pk") := newAuditor "servSigPk" in
-    let: "adtr0Rpc" := newRpcAuditor "adtr0" in
-    advrpc.Server__Serve "adtr0Rpc" "adtr0Addr";;
-    let: ("adtr1", "adtr1Pk") := newAuditor "servSigPk" in
-    let: "adtr1Rpc" := newRpcAuditor "adtr1" in
-    advrpc.Server__Serve "adtr1Rpc" "adtr1Addr";;
-    time.Sleep #1000000;;
-    let: "alice" := newClient aliceUid "servAddr" "servSigPk" "servVrfPk" in
+  rec: "testBasic" "params" :=
+    let: "alice" := newClient aliceUid (struct.loadF setupParams "servAddr" "params") (struct.loadF setupParams "servSigPk" "params") (struct.loadF setupParams "servVrfPk" "params") in
     let: "pk0" := SliceSingleton #(U8 3) in
     let: ("ep0", "err0") := Client__Put "alice" "pk0" in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
-    let: "servCli" := advrpc.Dial "servAddr" in
-    let: "adtr0Cli" := advrpc.Dial "adtr0Addr" in
-    let: "adtr1Cli" := advrpc.Dial "adtr1Addr" in
+    let: "servCli" := advrpc.Dial (struct.loadF setupParams "servAddr" "params") in
+    let: "adtr0Cli" := advrpc.Dial (struct.loadF setupParams "adtr0Addr" "params") in
+    let: "adtr1Cli" := advrpc.Dial (struct.loadF setupParams "adtr1Addr" "params") in
     let: ("upd0", "err1") := callServAudit "servCli" #0 in
     control.impl.Assume (~ "err1");;
     let: ("upd1", "err2") := callServAudit "servCli" #1 in
@@ -1645,17 +1670,17 @@ Definition testBasic: val :=
     control.impl.Assume (~ "err5");;
     let: "err6" := callAdtrUpdate "adtr1Cli" "upd1" in
     control.impl.Assume (~ "err6");;
-    let: "bob" := newClient bobUid "servAddr" "servSigPk" "servVrfPk" in
+    let: "bob" := newClient bobUid (struct.loadF setupParams "servAddr" "params") (struct.loadF setupParams "servSigPk" "params") (struct.loadF setupParams "servVrfPk" "params") in
     let: ((("isReg", "pk1"), "ep1"), "err7") := Client__Get "bob" aliceUid in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err7"));;
     control.impl.Assume ("ep0" = "ep1");;
-    let: "err8" := Client__Audit "alice" "adtr0Addr" "adtr0Pk" in
+    let: "err8" := Client__Audit "alice" (struct.loadF setupParams "adtr0Addr" "params") (struct.loadF setupParams "adtr0Pk" "params") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err8"));;
-    let: "err9" := Client__Audit "alice" "adtr1Addr" "adtr1Pk" in
+    let: "err9" := Client__Audit "alice" (struct.loadF setupParams "adtr1Addr" "params") (struct.loadF setupParams "adtr1Pk" "params") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err9"));;
-    let: "err10" := Client__Audit "bob" "adtr0Addr" "adtr0Pk" in
+    let: "err10" := Client__Audit "bob" (struct.loadF setupParams "adtr0Addr" "params") (struct.loadF setupParams "adtr0Pk" "params") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err10"));;
-    let: "err11" := Client__Audit "bob" "adtr1Addr" "adtr1Pk" in
+    let: "err11" := Client__Audit "bob" (struct.loadF setupParams "adtr1Addr" "params") (struct.loadF setupParams "adtr1Pk" "params") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err11"));;
     control.impl.Assert "isReg";;
     control.impl.Assert (std.BytesEqual "pk0" "pk1");;
@@ -1836,6 +1861,7 @@ Definition alice := struct.decl [
 
 (* TimeSeriesEntry from timeseries.go *)
 
+(* TODO: rename to history. *)
 Definition TimeSeriesEntry := struct.decl [
   "Epoch" :: uint64T;
   "TSVal" :: slice.T byteT
