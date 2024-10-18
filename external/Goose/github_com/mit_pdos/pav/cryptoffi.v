@@ -1,5 +1,7 @@
 From Perennial.goose_lang Require Import prelude.
 
+Notation PublicKey := (slice.T byteT) (only parsing).
+
 Section code.
 Context `{ext_ty: ext_types}.
 
@@ -13,8 +15,6 @@ Definition Hash: val :=
     #().
 
 Definition PrivateKey: ty := slice.T byteT.
-
-Definition PublicKey: ty := slice.T byteT.
 
 Definition GenerateKey: val :=
   rec: "GenerateKey" <> :=

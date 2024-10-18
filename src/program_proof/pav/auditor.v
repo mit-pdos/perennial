@@ -73,9 +73,11 @@ End Auditor.
 
 Section specs.
 Context `{!heapGS Σ, !pavG Σ}.
-Lemma wp_newAuditor (servPk : loc) :
-  {{{ True }}}
-  newAuditor #servPk
+Lemma wp_newAuditor sl_servPk (servPk : list w8) :
+  {{{
+    "#Hsl_servPk" ∷ own_slice_small sl_servPk byteT DfracDiscarded servPk
+  }}}
+  newAuditor (slice_val sl_servPk)
   {{{
     ptr_adtr (adtr : Auditor.t) sl_adtrPk adtrPk adtr_γ, RET (#ptr_adtr, slice_val sl_adtrPk);
     "Hown_adtr" ∷ Auditor.own ptr_adtr adtr ∗

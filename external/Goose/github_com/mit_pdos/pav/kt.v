@@ -1650,14 +1650,14 @@ Definition Client__Audit: val :=
     ![ptrT] "err0".
 
 Definition testBasic: val :=
-  rec: "testBasic" "params" :=
-    let: "alice" := newClient aliceUid (struct.loadF setupParams "servAddr" "params") (struct.loadF setupParams "servSigPk" "params") (struct.loadF setupParams "servVrfPk" "params") in
+  rec: "testBasic" "setup" :=
+    let: "alice" := newClient aliceUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
     let: "pk0" := SliceSingleton #(U8 3) in
     let: ("ep0", "err0") := Client__Put "alice" "pk0" in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
-    let: "servCli" := advrpc.Dial (struct.loadF setupParams "servAddr" "params") in
-    let: "adtr0Cli" := advrpc.Dial (struct.loadF setupParams "adtr0Addr" "params") in
-    let: "adtr1Cli" := advrpc.Dial (struct.loadF setupParams "adtr1Addr" "params") in
+    let: "servCli" := advrpc.Dial (struct.loadF setupParams "servAddr" "setup") in
+    let: "adtr0Cli" := advrpc.Dial (struct.loadF setupParams "adtr0Addr" "setup") in
+    let: "adtr1Cli" := advrpc.Dial (struct.loadF setupParams "adtr1Addr" "setup") in
     let: ("upd0", "err1") := callServAudit "servCli" #0 in
     control.impl.Assume (~ "err1");;
     let: ("upd1", "err2") := callServAudit "servCli" #1 in
@@ -1670,17 +1670,17 @@ Definition testBasic: val :=
     control.impl.Assume (~ "err5");;
     let: "err6" := callAdtrUpdate "adtr1Cli" "upd1" in
     control.impl.Assume (~ "err6");;
-    let: "bob" := newClient bobUid (struct.loadF setupParams "servAddr" "params") (struct.loadF setupParams "servSigPk" "params") (struct.loadF setupParams "servVrfPk" "params") in
+    let: "bob" := newClient bobUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
     let: ((("isReg", "pk1"), "ep1"), "err7") := Client__Get "bob" aliceUid in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err7"));;
     control.impl.Assume ("ep0" = "ep1");;
-    let: "err8" := Client__Audit "alice" (struct.loadF setupParams "adtr0Addr" "params") (struct.loadF setupParams "adtr0Pk" "params") in
+    let: "err8" := Client__Audit "alice" (struct.loadF setupParams "adtr0Addr" "setup") (struct.loadF setupParams "adtr0Pk" "setup") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err8"));;
-    let: "err9" := Client__Audit "alice" (struct.loadF setupParams "adtr1Addr" "params") (struct.loadF setupParams "adtr1Pk" "params") in
+    let: "err9" := Client__Audit "alice" (struct.loadF setupParams "adtr1Addr" "setup") (struct.loadF setupParams "adtr1Pk" "setup") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err9"));;
-    let: "err10" := Client__Audit "bob" (struct.loadF setupParams "adtr0Addr" "params") (struct.loadF setupParams "adtr0Pk" "params") in
+    let: "err10" := Client__Audit "bob" (struct.loadF setupParams "adtr0Addr" "setup") (struct.loadF setupParams "adtr0Pk" "setup") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err10"));;
-    let: "err11" := Client__Audit "bob" (struct.loadF setupParams "adtr1Addr" "params") (struct.loadF setupParams "adtr1Pk" "params") in
+    let: "err11" := Client__Audit "bob" (struct.loadF setupParams "adtr1Addr" "setup") (struct.loadF setupParams "adtr1Pk" "setup") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err11"));;
     control.impl.Assert "isReg";;
     control.impl.Assert (std.BytesEqual "pk0" "pk1");;

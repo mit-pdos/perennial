@@ -96,9 +96,6 @@ Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
   "#Hcomm" ∷ is_comm pk comm ∗
   "#Hbound" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None.
 
-(* TODO: change client st froom w64 to Z.
-abstraction for relating maps of different transparency.
-*)
 Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
   {{{
     "Hown_cli" ∷ Client.own ptr_c c ∗
@@ -193,11 +190,10 @@ Definition is_audit cli_γ adtr_γ (ep : w64) : iProp Σ :=
     | Some y => ⌜ ∃ dig, adtr_st.(comm_st.digs) !! ep = Some dig ∧ y.1 = dig ⌝
     end).
 
-Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk adtr_γ :
+Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk :
   {{{
     "Hown_cli" ∷ Client.own ptr_c c ∗
-    "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
-    "#His_adtrPk" ∷ is_pk adtrPk (adtr_sigpred adtr_γ)
+    "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk
   }}}
   Client__Audit #ptr_c #adtrAddr (slice_val sl_adtrPk)
   {{{
@@ -205,17 +201,20 @@ Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk adtr_γ :
     "Hown_cli" ∷ Client.own ptr_c c ∗
     "Herr" ∷ clientErr.own ptr_err err ∗
     if negb err.(clientErr.err) then
-      "#His_audit" ∷ is_audit c.(Client.γ) adtr_γ c.(Client.next_epoch)
+      "Hcan_audit" ∷ (∀ adtr_γ, is_pk adtrPk (adtr_sigpred adtr_γ) -∗
+        ("#His_audit" ∷ is_audit c.(Client.γ) adtr_γ c.(Client.next_epoch)))
     else True
   }}}.
 Proof. Admitted.
 
-Lemma wp_newClient (uid servAddr : w64) (servSigPk servVrfPk : loc) :
-  {{{ True }}}
-  newClient #uid #servAddr #servSigPk #servVrfPk
+Lemma wp_newClient (uid servAddr : w64) sl_servSigPk servSigPk (servVrfPk : loc) :
   {{{
-    ptr_cli cli_γ r1 r2 r3 r4, RET #ptr_cli;
-    "Hown_cli" ∷ Client.own ptr_cli (Client.mk cli_γ uid (W64 0) (W64 0) r1 r2 r3 r4)
+    "#Hsl_servSigPk" ∷ own_slice_small sl_servSigPk byteT DfracDiscarded servSigPk
+  }}}
+  newClient #uid #servAddr (slice_val sl_servSigPk) #servVrfPk
+  {{{
+    ptr_cli cli_γ r1 r2 r3, RET #ptr_cli;
+    "Hown_cli" ∷ Client.own ptr_cli (Client.mk cli_γ uid (W64 0) (W64 0) r1 r2 servSigPk r3)
   }}}.
 Proof. Admitted.
 
