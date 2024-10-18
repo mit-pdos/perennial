@@ -58,8 +58,8 @@ Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_fst (v1 v2 : val) : PureWp True (Fst (v1, v2)%V) v1.
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_recc f x erec : PureWp True (rec: f x := erec)%E (rec: f x := erec)%V.
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Global Instance wp_recc f x erec : PureWp True (rec: f x := erec)%E #(func.mk f x erec).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 Global Instance wp_pair (v1 v2 : val) : PureWp True (v1, v2)%E (v1, v2)%V.
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -320,6 +320,10 @@ Definition wp_call (v2 : val) f x e :
   PureWp True (App (rec: f x := e)%V v2) (subst' x v2 (subst' f (rec: f x := e)%V e)).
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
+Global Instance wp_call_go_func (v2 : val) f x e :
+  PureWp True (App #(func.mk f x e) v2) (subst' x v2 (subst' f #(func.mk f x e) e)).
+Proof. rewrite to_val_unseal /=. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
 End instances.
 
 Global Hint Extern 0 (PureWp _ (App (Val (RecV _ _ _)) _) _) => simple apply wp_call : typeclass_instances.
@@ -344,6 +348,16 @@ Proof.
   rewrite envs_entails_unseal=> ? HΔ'. rewrite into_laterN_env_sound /=.
   rewrite HΔ'. iIntros "H". rewrite TCEq_eq in Hwp. rewrite Hwp.
   by iApply wp_call.
+Qed.
+
+Lemma tac_wp_call_go_func `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+      K f x e v2 Δ Δ' s E Φ :
+  MaybeIntoLaterNEnvs 1 Δ Δ' →
+  envs_entails Δ' (WP (fill K (subst' x v2 (subst' f #(func.mk f x e) e))) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP (fill K (#(func.mk f x e) v2)) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_unseal=> ? HΔ'. rewrite into_laterN_env_sound /=.
+  rewrite HΔ'. iIntros "H". by iApply wp_call_go_func.
 Qed.
 
 End lemmas.
