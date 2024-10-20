@@ -189,6 +189,19 @@ Proof.
   - iIntros "%". done.
 Qed.
 
+(* only works for first field *)
+Lemma struct_field_pointsto_not_null l q (d:descriptor) f v ft :
+  field_offset d f = Some (0, ft) →
+  0 < ty_size ft →
+  struct_field_pointsto l q d f v -∗ ⌜l ≠ null⌝.
+Proof.
+  unseal.
+  intros -> Hsize.
+  rewrite loc_add_0.
+  iIntros "H".
+  iApply (struct_pointsto_not_null with "H"). auto.
+Qed.
+
 Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
   match d with
   | [] => ⌜v = #()⌝

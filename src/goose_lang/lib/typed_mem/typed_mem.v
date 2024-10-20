@@ -85,9 +85,9 @@ Section goose_lang.
       auto.
   Qed.
 
-  Theorem struct_pointsto_not_null l q t v :
+  Theorem struct_pointsto_not_null l dq t v :
     0 < ty_size t →
-    l ↦[t]{#q} v -∗ ⌜l ≠ null⌝.
+    l ↦[t]{dq} v -∗ ⌜l ≠ null⌝.
   Proof.
     unseal.
     iIntros (?) "[Hvals %Hval_ty]".
