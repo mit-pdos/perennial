@@ -1,8 +1,21 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import advrpc auditor core client cryptoffi rpc server.
+From Perennial.program_proof.pav Require Import advrpc auditor core client cryptoffi rpc serde server.
 From Perennial.program_proof Require Import std_proof.
+
+Module adtrPk.
+Record t :=
+  mk {
+    pk: list w8;
+    γ: gname;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : Slice.t) (obj : t) : iProp Σ :=
+  own_slice_small ptr byteT DfracDiscarded obj.(pk).
+End defs.
+End adtrPk.
 
 Module setupParams.
 Record t :=
@@ -11,61 +24,200 @@ Record t :=
     servSigPk: list w8;
     serv_γ: gname;
     servVrfPk: loc;
-    adtr0Addr: w64;
-    adtr0Pk: list w8;
-    adtr0_γ: gname;
-    adtr1Addr: w64;
-    adtr1Pk: list w8;
-    adtr1_γ: gname;
+    adtrAddrs: list w64;
+    adtrPks: list adtrPk.t;
   }.
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 Definition own (ptr : loc) (obj : t) (serv_good adtrs_good : bool) : iProp Σ :=
-  ∃ sl_servSigPk sl_adtr0Pk sl_adtr1Pk,
+  ∃ sl_servSigPk sl_adtrAddrs sl_adtrPks dim0_adtrPks,
   "Hptr_servAddr" ∷ ptr ↦[setupParams :: "servAddr"] #obj.(servAddr) ∗
   "Hptr_servSigPk" ∷ ptr ↦[setupParams :: "servSigPk"] (slice_val sl_servSigPk) ∗
   "#Hsl_servSigPk" ∷ own_slice_small sl_servSigPk byteT DfracDiscarded obj.(servSigPk) ∗
   "#His_good_serv" ∷ (if serv_good then is_pk obj.(servSigPk) (serv_sigpred obj.(serv_γ)) else True) ∗
   "Hptr_servVrfPk" ∷ ptr ↦[setupParams :: "servVrfPk"] #obj.(servVrfPk) ∗
-  "Hptr_adtr0Addr" ∷ ptr ↦[setupParams :: "adtr0Addr"] #obj.(adtr0Addr) ∗
-  "Hptr_adtr0Pk" ∷ ptr ↦[setupParams :: "adtr0Pk"] (slice_val sl_adtr0Pk) ∗
-  "#Hsl_adtr0Pk" ∷ own_slice_small sl_adtr0Pk byteT DfracDiscarded obj.(adtr0Pk) ∗
-  "Hptr_adtr1Addr" ∷ ptr ↦[setupParams :: "adtr1Addr"] #obj.(adtr1Addr) ∗
-  "Hptr_adtr1Pk" ∷ ptr ↦[setupParams :: "adtr1Pk"] (slice_val sl_adtr1Pk) ∗
-  "#Hsl_adtr1Pk" ∷ own_slice_small sl_adtr1Pk byteT DfracDiscarded obj.(adtr1Pk) ∗
+  "Hptr_adtrAddrs" ∷ ptr ↦[setupParams :: "adtrAddrs"] (slice_val sl_adtrAddrs) ∗
+  "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded obj.(adtrAddrs) ∗
+  "Hptr_adtrPks" ∷ ptr ↦[setupParams :: "adtrPks"] (slice_val sl_adtrPks) ∗
+  "#Hsl_adtrPks" ∷ own_slice_small sl_adtrPks (slice.T byteT) DfracDiscarded dim0_adtrPks ∗
+  "#Hdim0_adtrPks" ∷ ([∗ list] p;o ∈ dim0_adtrPks;obj.(adtrPks), adtrPk.own p o) ∗
   "#His_good_adtrs" ∷ (if adtrs_good then
-    is_pk obj.(adtr0Pk) (adtr_sigpred obj.(adtr0_γ)) ∨
-    is_pk obj.(adtr1Pk) (adtr_sigpred obj.(adtr1_γ)) else True).
+    ∃ i o, ⌜ obj.(adtrPks) !! i = Some o ⌝ ∗
+      is_pk o.(adtrPk.pk) (adtr_sigpred o.(adtrPk.γ))
+    else True) ∗
+  "%Hlen_addr_pk" ∷ ⌜ length obj.(adtrAddrs) = length obj.(adtrPks) ⌝.
 End defs.
 End setupParams.
 
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma wp_setup (servAddr adtr0Addr adtr1Addr : w64) (serv_good adtrs_good : bool) :
-  {{{ True }}}
-  setup #servAddr #adtr0Addr #adtr1Addr
+Lemma wp_setup (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) (serv_good adtrs_good : bool) :
+  {{{
+    "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
+    "%Hlen_adtrs" ∷ ⌜ length adtrAddrs > 0 ⌝
+  }}}
+  setup #servAddr (slice_val sl_adtrAddrs)
   {{{
     ptr_setup setup, RET #ptr_setup;
     "Hsetup" ∷ setupParams.own ptr_setup setup serv_good adtrs_good
   }}}.
 Proof.
-  rewrite /setup. iIntros (Φ) "_ HΦ".
-  wp_apply wp_newServer. iIntros (???? serv_γ ?). iNamedSuffix 1 "0".
-  wp_apply (wp_newRpcServer with "Hown_serv0"). iIntros (??). iNamed 1.
+  rewrite /setup. iIntros (Φ) "H HΦ". iNamed "H".
+  wp_apply wp_newServer. iIntros (???? serv_γ ?). iNamed 1.
+  wp_apply (wp_newRpcServer with "Hown_serv"). iIntros (??). iNamed 1.
   wp_apply (wp_Server__Serve with "Hown_rpcserv").
-  wp_apply (wp_newAuditor with "Hsl_sigPk0"). iIntros (???? adtr0_γ). iNamedSuffix 1 "1".
-  wp_apply (wp_newRpcAuditor with "[$Hown_adtr1]"). iIntros (??). iNamed 1.
-  wp_apply (wp_Server__Serve with "Hown_rpcserv").
-  wp_apply (wp_newAuditor with "Hsl_sigPk0"). iIntros (???? adtr1_γ). iNamedSuffix 1 "2".
-  wp_apply (wp_newRpcAuditor with "[$Hown_adtr2]"). iIntros (??). iNamed 1.
-  wp_apply (wp_Server__Serve with "Hown_rpcserv").
-  wp_apply wp_Sleep. wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+  wp_apply wp_ref_of_zero; [done|]. iIntros (?) "Hptr_adtrPks".
+  wp_apply (wp_forSlicePrefix
+    (λ doneV _, ∃ sl_adtrPks dim0_adtrPks adtrPks,
+    "Hptr_adtrPks" ∷ l ↦[slice.T (slice.T byteT)] (slice_val sl_adtrPks) ∗
+    "Hsl_adtrPks" ∷ own_slice sl_adtrPks (slice.T byteT) (DfracOwn 1) dim0_adtrPks ∗
+    "#Hdim0_adtrPks" ∷ ([∗ list] p;o ∈ dim0_adtrPks;adtrPks, adtrPk.own p o) ∗
+    "#His_adtrPks" ∷ ([∗ list] x ∈ adtrPks, is_pk x.(adtrPk.pk) (adtr_sigpred x.(adtrPk.γ))) ∗
+    "%Hlen_adtrPks" ∷ ⌜ length doneV = length dim0_adtrPks ⌝)%I
+    with "[] [$Hsl_adtrAddrs Hptr_adtrPks]").
+  { clear. iIntros "* _". iIntros (Φ) "!>". iIntros "(%&%&%&H) HΦ". iNamed "H".
+    wp_apply (wp_newAuditor with "Hsl_sigPk"). iIntros "*". iNamed 1.
+    wp_apply (wp_newRpcAuditor with "[$Hown_adtr]"). iIntros "*". iNamed 1.
+    wp_apply (wp_Server__Serve with "Hown_rpcserv").
+    wp_load. wp_apply (wp_SliceAppend with "Hsl_adtrPks"). iIntros "* Hsl_adtrPks".
+    wp_store. iApply "HΦ". iFrame.
+    iExists (adtrPks ++ [adtrPk.mk adtrPk adtr_γ]). iIntros "!>". iSplit; [|iSplit].
+    - iApply big_sepL2_snoc. iFrame "#".
+    - by iFrame "#".
+    - iPureIntro. rewrite !length_app. solve_length. }
+  { iExists Slice.nil, [], []. iFrame. iSplit; [|naive_solver].
+    iApply own_slice_zero. }
+  iIntros "[_ (%&%&%&H)]". iNamed "H".
+  iDestruct (own_slice_to_small with "Hsl_adtrPks") as "Hsl_adtrPks".
+  iMod (own_slice_small_persist with "Hsl_adtrPks") as "#Hsl_adtrPks".
+  wp_apply wp_Sleep. wp_load. wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
-  iApply ("HΦ" $! _ (setupParams.mk _ _ serv_γ _ _ _ adtr0_γ _ _ adtr1_γ)).
-  iFrame "∗#". simpl. iSplitL.
+  iApply ("HΦ" $! _ (setupParams.mk _ _ serv_γ _ _ _)).
+  iFrame "∗#". simpl. iSplitL; [|iSplitL].
   - destruct serv_good; [iFrame "#"|done].
-  - destruct adtrs_good; [iFrame "#"|done].
+  - destruct adtrs_good; [|done].
+    iDestruct (big_sepL2_length with "Hdim0_adtrPks") as %Hlen.
+    list_elem adtrPks 0 as adtrPk.
+    iDestruct (big_sepL_lookup with "His_adtrPks") as "His_adtrPk"; [exact HadtrPk_lookup|].
+    iFrame "#%".
+  - iDestruct (big_sepL2_length with "Hdim0_adtrPks") as %?. iPureIntro. lia.
+Qed.
+
+Lemma wp_mkRpcClients sl_addrs (addrs : list w64) :
+  {{{
+    "#Hsl_addrs" ∷ own_slice_small sl_addrs uint64T DfracDiscarded addrs
+  }}}
+  mkRpcClients (slice_val sl_addrs)
+  {{{
+    sl_rpcs dim0_rpcs rpcs, RET (slice_val sl_rpcs);
+    "#Hsl_rpcs" ∷ own_slice_small sl_rpcs ptrT DfracDiscarded dim0_rpcs ∗
+    "Hdim0_rpcs" ∷ ([∗ list] p;o ∈ dim0_rpcs;rpcs, advrpc.Client.own p o)
+  }}}.
+Proof.
+  rewrite /mkRpcClients. iIntros (ϕ) "H HΦ". iNamed "H".
+  wp_apply wp_ref_of_zero; [done|]. iIntros "* Hptr_c".
+  wp_apply (wp_forSlicePrefix
+    (λ doneV _, ∃ sl_c dim0_c c,
+    "Hptr_c" ∷ l ↦[slice.T ptrT] (slice_val sl_c) ∗
+    "Hsl_c" ∷ own_slice sl_c ptrT (DfracOwn 1) dim0_c ∗
+    "Hdim0_c" ∷ ([∗ list] p;o ∈ dim0_c;c, advrpc.Client.own p o) ∗
+    "%Hlen_c" ∷ ⌜ length doneV = length dim0_c ⌝)%I
+    with "[] [$Hsl_addrs Hptr_c]").
+  { clear. iIntros "* _". iIntros (ϕ) "!>". iIntros "(%&%&%&H) HΦ". iNamed "H".
+    wp_apply wp_Dial. iIntros (??). iNamed 1. wp_load.
+    wp_apply (wp_SliceAppend with "Hsl_c"). iIntros (?) "Hsl_c". wp_store.
+    iApply "HΦ". iFrame. iExists (c ++ [cli]). iIntros "!>". iSplit.
+    - iApply big_sepL2_snoc. iFrame.
+    - iPureIntro. rewrite !length_app. solve_length. }
+  { iExists Slice.nil, [], []. iFrame. iSplit; [|naive_solver].
+    iApply own_slice_zero. }
+  iIntros "[_ (%&%&%&H)]". iNamed "H". wp_load.
+  iDestruct (own_slice_to_small with "Hsl_c") as "Hsl_c".
+  iMod (own_slice_small_persist with "Hsl_c") as "#Hsl_c".
+  iApply "HΦ". naive_solver.
+Qed.
+
+Lemma wp_updAdtrs ptr_upd upd sl_rpcs dim0_rpcs rpcs :
+  {{{
+    "Hown_upd" ∷ UpdateProof.own ptr_upd upd ∗
+    "#Hsl_rpcs" ∷ own_slice_small sl_rpcs ptrT DfracDiscarded dim0_rpcs ∗
+    "Hdim0_rpcs" ∷ ([∗ list] p;o ∈ dim0_rpcs;rpcs, advrpc.Client.own p o)
+  }}}
+  updAdtrs #ptr_upd (slice_val sl_rpcs)
+  {{{
+    RET #();
+    "Hown_upd" ∷ UpdateProof.own ptr_upd upd ∗
+    "Hdim0_rpcs" ∷ ([∗ list] p;o ∈ dim0_rpcs;rpcs, advrpc.Client.own p o)
+  }}}.
+Proof.
+  rewrite /updAdtrs. iIntros (Φ) "H HΦ". iNamed "H".
+  wp_apply (wp_forSlicePrefix
+    (λ _ _,
+    "Hown_upd" ∷ UpdateProof.own ptr_upd upd ∗
+    "Hdim0_rpcs" ∷ ([∗ list] p;o ∈ dim0_rpcs;rpcs, advrpc.Client.own p o))%I
+    with "[] [$Hsl_rpcs $Hown_upd $Hdim0_rpcs]").
+  { clear. iIntros "* %Hin". iIntros (ϕ) "!>". iIntros "H HΦ". iNamed "H".
+    (* TODO: would be better if lemma just gave lookup. *)
+    assert (dim0_rpcs !! (length done) = Some x) as Hlook0.
+    { simplify_eq/=. by rewrite list_lookup_middle. }
+    iDestruct (big_sepL2_lookup_1_some with "Hdim0_rpcs") as %[? Hlook1]; [exact Hlook0|].
+    iDestruct (big_sepL2_lookup_acc with "Hdim0_rpcs") as "[Hown_cli Hclose]"; [done..|].
+    wp_apply (wp_callAdtrUpdate with "[$Hown_cli $Hown_upd]"). iIntros "*". iNamed 1.
+    wp_apply wp_Assume. iIntros "_".
+    iDestruct ("Hclose" with "Hown_cli") as "Hdim0_rpcs". iApply "HΦ". iFrame. }
+  iIntros "[_ H]". iNamed "H". wp_pures. iApply "HΦ". by iFrame.
+Qed.
+
+Lemma wp_doAudits ptr_cli cli sl_addrs (addrs : list w64) sl_adtrPks dim0_adtrPks adtrPks :
+  {{{
+    "Hown_cli" ∷ client.Client.own ptr_cli cli ∗
+    "#Hsl_addrs" ∷ own_slice_small sl_addrs uint64T DfracDiscarded addrs ∗
+    "#Hsl_adtrPks" ∷ own_slice_small sl_adtrPks (slice.T byteT) DfracDiscarded dim0_adtrPks ∗
+    "#Hdim0_adtrPks" ∷ ([∗ list] p;o ∈ dim0_adtrPks;adtrPks, adtrPk.own p o) ∗
+    "%Hlen_addr_pk" ∷ ⌜ length addrs = length dim0_adtrPks ⌝
+  }}}
+  doAudits #ptr_cli (slice_val sl_addrs) (slice_val sl_adtrPks)
+  {{{
+    RET #();
+    "Hown_cli" ∷ client.Client.own ptr_cli cli ∗
+    "Haudits" ∷ ([∗ list] x ∈ adtrPks,
+      is_pk x.(adtrPk.pk) (adtr_sigpred x.(adtrPk.γ)) -∗
+      ("#His_audit" ∷ is_audit cli.(Client.γ) x.(adtrPk.γ) cli.(Client.next_epoch)))
+  }}}.
+Proof.
+  rewrite /doAudits. iIntros "* H HΦ". iNamed "H".
+  wp_apply wp_slice_len. wp_apply wp_ref_to; [val_ty|]. iIntros "* Hptr_idx".
+  iDestruct (own_slice_small_sz with "Hsl_addrs") as %?.
+  iDestruct (own_slice_small_sz with "Hsl_adtrPks") as %?.
+  iDestruct (big_sepL2_length with "Hdim0_adtrPks") as %?.
+  wp_apply (wp_forUpto'
+    (λ i,
+    "Hown_cli" ∷ client.Client.own ptr_cli cli ∗
+    "Haudits" ∷ ([∗ list] x ∈ (take (uint.nat i) adtrPks),
+      is_pk x.(adtrPk.pk) (adtr_sigpred x.(adtrPk.γ)) -∗
+      ("#His_audit" ∷ is_audit cli.(Client.γ) x.(adtrPk.γ) cli.(Client.next_epoch))))%I
+    with "[$Hptr_idx $Hown_cli]").
+  { iSplit; [|naive_solver]. iPureIntro. word. }
+  { iIntros "!> * (H&Hptr_idx&%Hinb) HΦ". iNamed "H".
+    list_elem addrs (uint.nat i) as addr.
+    wp_load. wp_apply (wp_SliceGet with "[$Hsl_addrs]"); [done|]. iIntros "_".
+    list_elem dim0_adtrPks (uint.nat i) as ptr_adtrPk.
+    wp_load. wp_apply (wp_SliceGet with "[$Hsl_adtrPks]"); [done|]. iIntros "_".
+    list_elem adtrPks (uint.nat i) as adtrPk.
+    iDestruct (big_sepL2_lookup _ _ _ (uint.nat i) with "Hdim0_adtrPks") as "Hadtr_pk"; [done..|].
+    wp_apply (wp_Client__Audit with "[$Hown_cli $Hadtr_pk]").
+    iIntros (? err) "Haud". iNamed "Haud". wp_loadField.
+    destruct err.(clientErr.err).
+    { wp_apply wp_Assume_false. }
+    wp_apply wp_Assume. iIntros "_ /=". iNamed "Haud".
+    wp_pures. iApply "HΦ". iFrame.
+    replace (uint.nat (word.add i (W64 1))) with (S $ uint.nat i); [|word].
+    rewrite (take_S_r _ _ _ HadtrPk_lookup).
+    iSpecialize ("Hcan_audit" $! adtrPk.(adtrPk.γ)). iFrame. naive_solver. }
+  iIntros "[H _]". iNamed "H".
+  replace (uint.nat sl_addrs.(Slice.sz)) with (length adtrPks); [|lia].
+  iEval (rewrite take_ge) in "Haudits". wp_pures. iApply "HΦ". by iFrame.
 Qed.
 
 Lemma wp_testBasic ptr_setup setup :
@@ -91,33 +243,22 @@ Proof using Type*.
   wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_al".
 
   (* update auditors. *)
-  wp_loadField. wp_apply wp_Dial. iIntros (??). iNamedSuffix 1 "0".
-  wp_loadField. wp_apply wp_Dial. iIntros (??). iNamedSuffix 1 "1".
-  wp_loadField. wp_apply wp_Dial. iIntros (??). iNamedSuffix 1 "2".
-  wp_apply (wp_callServAudit with "Hown_cli0").
-  iIntros (?? err1) "H". iNamedSuffix "H" "0". destruct err1.
+  wp_loadField. wp_apply wp_Dial. iIntros (??). iNamedSuffix 1 "_serv".
+  wp_apply (wp_callServAudit with "Hown_cli_serv").
+  iIntros (?? err1) "H". iNamedSuffix "H" "_serv". destruct err1.
   { wp_apply wp_Assume_false. }
   simpl. iNamedSuffix "H" "0". wp_apply wp_Assume. iIntros "_".
-  wp_apply (wp_callServAudit with "Hown_cli0").
-  iIntros (?? err2) "H". iNamedSuffix "H" "0". destruct err2.
+  wp_apply (wp_callServAudit with "Hown_cli_serv").
+  iIntros (?? err2) "H". iNamedSuffix "H" "_serv". destruct err2.
   { wp_apply wp_Assume_false. }
   simpl. iNamedSuffix "H" "1". wp_apply wp_Assume. iIntros "_".
-  wp_apply (wp_callAdtrUpdate with "[$Hown_cli1 $Hown_upd0]").
-  iIntros (?) "H". iEval (rewrite /named) in "H".
-  iDestruct "H" as "[Hown_cli1 Hown_upd0]".
-  wp_apply wp_Assume. iIntros "_".
-  wp_apply (wp_callAdtrUpdate with "[$Hown_cli1 $Hown_upd1]").
-  iIntros (?) "H". iEval (rewrite /named) in "H".
-  iDestruct "H" as "[Hown_cli1 Hown_upd1]".
-  wp_apply wp_Assume. iIntros "_".
-  wp_apply (wp_callAdtrUpdate with "[$Hown_cli2 $Hown_upd0]").
-  iIntros (?) "H". iEval (rewrite /named) in "H".
-  iDestruct "H" as "[Hown_cli2 Hown_upd0]".
-  wp_apply wp_Assume. iIntros "_".
-  wp_apply (wp_callAdtrUpdate with "[$Hown_cli2 $Hown_upd1]").
-  iIntros (?) "H". iEval (rewrite /named) in "H".
-  iDestruct "H" as "[Hown_cli2 Hown_upd1]".
-  wp_apply wp_Assume. iIntros "_".
+
+  wp_loadField. wp_apply (wp_mkRpcClients with "Hsl_adtrAddrs").
+  iIntros "*". iNamed 1.
+  wp_apply (wp_updAdtrs with "[$Hown_upd0 $Hsl_rpcs $Hdim0_rpcs]").
+  iNamedSuffix 1 "0".
+  wp_apply (wp_updAdtrs with "[$Hown_upd1 $Hsl_rpcs $Hdim0_rpcs0]").
+  iNamedSuffix 1 "1".
 
   (* bob get. *)
   do 3 wp_loadField.
@@ -131,48 +272,29 @@ Proof using Type*.
 
   (* alice and bob audit. *)
   do 2 wp_loadField.
-  wp_apply (wp_Client__Audit with "[$Hown_cli_al $Hsl_adtr0Pk]").
-  iIntros (? err8) "H /=". iNamedSuffix "H" "_al".
-  wp_loadField. iClear "Herr_al". destruct err8.(clientErr.err).
-  { wp_apply wp_Assume_false. }
-  wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_al0".
-  do 2 wp_loadField.
-  wp_apply (wp_Client__Audit with "[$Hown_cli_al $Hsl_adtr1Pk]").
-  iIntros (? err9) "H /=". iNamedSuffix "H" "_al".
-  wp_loadField. iClear "Herr_al". destruct err9.(clientErr.err).
-  { wp_apply wp_Assume_false. }
-  wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_al1".
-  do 2 wp_loadField.
-  wp_apply (wp_Client__Audit with "[$Hown_cli_bob $Hsl_adtr0Pk]").
-  iIntros (? err10) "H /=". iNamedSuffix "H" "_bob".
-  wp_loadField. iClear "Herr_bob". destruct err10.(clientErr.err).
-  { wp_apply wp_Assume_false. }
-  wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_bob0".
-  do 2 wp_loadField.
-  wp_apply (wp_Client__Audit with "[$Hown_cli_bob $Hsl_adtr1Pk]").
-  iIntros (? err11) "H /=". iNamedSuffix "H" "_bob".
-  wp_loadField. iClear "Herr_bob". destruct err11.(clientErr.err).
-  { wp_apply wp_Assume_false. }
-  wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_bob1".
+  iDestruct (big_sepL2_length with "Hdim0_adtrPks") as %?. 
+  wp_apply (wp_doAudits with "[$Hown_cli_al $Hsl_adtrAddrs $Hsl_adtrPks $Hdim0_adtrPks]").
+  { iPureIntro. lia. }
+  simpl. iNamedSuffix 1 "_al". do 2 wp_loadField.
+  wp_apply (wp_doAudits with "[$Hown_cli_bob $Hsl_adtrAddrs $Hsl_adtrPks $Hdim0_adtrPks]").
+  { iPureIntro. lia. }
+  simpl. iNamedSuffix 1 "_bob".
 
   (* main part: proving the pk's are equal. *)
+  iDestruct "His_good_adtrs" as (??) "[%Hlook_pk His_pk]".
+  iDestruct (big_sepL_lookup_acc with "Haudits_al") as "[Hcan_aud_al _]"; [exact Hlook_pk|].
+  iDestruct ("Hcan_aud_al" with "His_pk") as "H". iNamedSuffix "H" "_al".
+  iDestruct (big_sepL_lookup_acc with "Haudits_bob") as "[Hcan_aud_bob _]"; [exact Hlook_pk|].
+  iDestruct ("Hcan_aud_bob" with "His_pk") as "H". iNamedSuffix "H" "_bob".
   case_bool_decide; [|done]. simplify_eq/=.
-  iClear "Hsl_adtr0Pk Hsl_adtr1Pk Hown_cli0 Hown_cli1 Hown_cli2
-    Hown_upd0 Hown_upd1 Hown_cli_al Hown_cli_bob
-    Hptr_servAddr Hptr_servSigPk Hptr_servVrfPk Hptr_adtr0Addr Hptr_adtr0Pk
-    Hptr_adtr1Addr Hptr_adtr1Pk".
+  iClear "Hsl_servSigPk Hsl_adtrAddrs Hsl_adtrPks Hdim0_adtrPks His_pk Hsl_rpcs
+    Hptr_servAddr Hptr_servSigPk Hptr_servVrfPk Hptr_adtrAddrs Hptr_adtrPks
+    Hown_cli_serv Hown_upd0 Hown_upd1 Hdim0_rpcs1 Hown_cli_al Hown_cli_bob".
   clear -Hnoof_ep_al.
-Admitted.
-
-(*
-  (* just focus on adtr0 for now. *)
-  iClear "His_audit_al1 His_audit_bob1".
-  iDestruct (audit_is_my_key with "His_key_al His_audit_al0") as "His_key_al_aud"; [word|].
-  iClear "His_key_al".
+  iDestruct (audit_is_my_key with "His_key_al His_audit_al") as "His_key_al_aud"; [word|].
   destruct is_reg; last first.
   { iNamed "Hreg".
-    iDestruct (audit_is_no_other_key with "His_no_key His_audit_bob0") as "His_no_key_aud"; [word|].
-    iClear "His_no_key".
+    iDestruct (audit_is_no_other_key with "His_no_key His_audit_bob") as "His_no_key_aud"; [word|].
     iNamedSuffix "His_key_al_aud" "_al". iNamedSuffix "Haux_al" "_al".
     iNamedSuffix "His_no_key_aud" "_bob".
     iDestruct (mono_list_idx_agree with "Hadtr_map_al Hadtr_map_bob") as %->.
@@ -180,10 +302,8 @@ Admitted.
     simplify_map_eq/=. }
   wp_apply wp_Assert_true. iNamedSuffix "Hreg" "_bob".
   wp_apply (wp_BytesEqual with "[$Hsl_pk_al $Hsl_pk_bob]"). iIntros "_".
-  iDestruct (audit_is_other_key with "His_key_bob His_audit_bob0") as "His_key_bob_aud"; [word|].
-  iClear "His_key_bob His_audit_al0 His_audit_bob0".
-  iNamedSuffix "His_key_al_aud" "_al".
-  iNamedSuffix "His_key_bob_aud" "_bob".
+  iDestruct (audit_is_other_key with "His_key_bob His_audit_bob") as "His_key_bob_aud"; [word|].
+  iNamedSuffix "His_key_al_aud" "_al". iNamedSuffix "His_key_bob_aud" "_bob".
   iDestruct (mono_list_idx_agree with "Hadtr_map_al Hadtr_map_bob") as %->.
   iDestruct (msv_is_my_key with "Haux_al") as (vals0) "[Hmsv0 %Hvals0]".
   iDestruct (msv_is_other_key with "Haux_bob") as (? vals1) "[Hmsv1 %Hvals1]".
@@ -191,6 +311,18 @@ Admitted.
   simplify_eq/=. iDestruct (is_comm_inj with "Hcomm_al Hcomm_bob") as %->.
   wp_apply wp_Assert; [by case_bool_decide|]. wp_pures. by iApply "HΦ".
 Qed.
-*)
+
+Lemma wp_testBasicFull (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
+  {{{
+    "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
+    "%Hlen_adtrAddrs" ∷ ⌜ length adtrAddrs > 0 ⌝
+  }}}
+  testBasicFull #servAddr (slice_val sl_adtrAddrs)
+  {{{ RET #(); True }}}.
+Proof using Type*.
+  rewrite /testBasicFull. iIntros (Φ) "H HΦ". iNamed "H".
+  wp_apply (wp_setup with "[$Hsl_adtrAddrs]"); [done|]. iIntros "*". iNamed 1.
+  wp_apply (wp_testBasic with "Hsetup"). wp_pures. by iApply "HΦ".
+Qed.
 
 End proof.

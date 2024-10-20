@@ -171,816 +171,9 @@ Definition setupParams := struct.decl [
   "servAddr" :: uint64T;
   "servSigPk" :: cryptoffi.PublicKey;
   "servVrfPk" :: ptrT;
-  "adtr0Addr" :: uint64T;
-  "adtr0Pk" :: cryptoffi.PublicKey;
-  "adtr1Addr" :: uint64T;
-  "adtr1Pk" :: cryptoffi.PublicKey
+  "adtrAddrs" :: slice.T uint64T;
+  "adtrPks" :: slice.T cryptoffi.PublicKey
 ].
-
-(* servEpochInfo from server.go *)
-
-Definition servEpochInfo := struct.decl [
-  "updates" :: mapT (slice.T byteT);
-  "dig" :: slice.T byteT;
-  "sig" :: slice.T byteT
-].
-
-Definition Server := struct.decl [
-  "mu" :: ptrT;
-  "sigSk" :: cryptoffi.PrivateKey;
-  "vrfSk" :: ptrT;
-  "keyMap" :: ptrT;
-  "histInfo" :: slice.T ptrT;
-  "pkCommOpens" :: mapT ptrT;
-  "nextVers" :: mapT uint64T
-].
-
-Definition newServer: val :=
-  rec: "newServer" <> :=
-    let: "mu" := newMutex #() in
-    let: ("sigPk", "sigSk") := cryptoffi.GenerateKey #() in
-    let: ("vrfPk", "vrfSk") := cryptoffi.VrfGenerateKey #() in
-    let: "m" := struct.new merkle.Tree [
-    ] in
-    let: "opens" := NewMap stringT ptrT #() in
-    let: "vers" := NewMap uint64T uint64T #() in
-    let: "dig" := merkle.Tree__Digest "m" in
-    let: "updates" := NewMap stringT (slice.T byteT) #() in
-    let: "preSig" := struct.new PreSigDig [
-      "Epoch" ::= #0;
-      "Dig" ::= "dig"
-    ] in
-    let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
-    let: "sig" := cryptoffi.PrivateKey__Sign "sigSk" "preSigByt" in
-    let: "newInfo" := struct.new servEpochInfo [
-      "updates" ::= "updates";
-      "dig" ::= "dig";
-      "sig" ::= "sig"
-    ] in
-    let: "hist" := ref (zero_val (slice.T ptrT)) in
-    "hist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "hist") "newInfo");;
-    (struct.new Server [
-       "mu" ::= "mu";
-       "sigSk" ::= "sigSk";
-       "vrfSk" ::= "vrfSk";
-       "keyMap" ::= "m";
-       "histInfo" ::= ![slice.T ptrT] "hist";
-       "pkCommOpens" ::= "opens";
-       "nextVers" ::= "vers"
-     ], "sigPk", "vrfPk").
-
-(* ServerPutArg from serde.go *)
-
-Definition ServerPutArg := struct.decl [
-  "Uid" :: uint64T;
-  "Pk" :: slice.T byteT
-].
-
-(* ServerPutArgDecode from serde.out.go *)
-
-Definition ServerPutArgDecode: val :=
-  rec: "ServerPutArgDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
-      (if: "err2"
-      then (slice.nil, slice.nil, #true)
-      else
-        (struct.new ServerPutArg [
-           "Uid" ::= "a1";
-           "Pk" ::= "a2"
-         ], "b2", #false))).
-
-(* MapLabelPre from serde.go *)
-
-Definition MapLabelPre := struct.decl [
-  "Uid" :: uint64T;
-  "Ver" :: uint64T
-].
-
-(* MapLabelPreEncode from serde.out.go *)
-
-Definition MapLabelPreEncode: val :=
-  rec: "MapLabelPreEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF MapLabelPre "Uid" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF MapLabelPre "Ver" "o"));;
-    ![slice.T byteT] "b".
-
-(* compMapLabel from server.go *)
-
-(* compMapLabel rets mapLabel (VRF(uid || ver)) and a VRF proof. *)
-Definition compMapLabel: val :=
-  rec: "compMapLabel" "uid" "ver" "sk" :=
-    let: "l" := struct.new MapLabelPre [
-      "Uid" ::= "uid";
-      "Ver" ::= "ver"
-    ] in
-    let: "lByt" := MapLabelPreEncode (NewSlice byteT #0) "l" in
-    let: ("h", "p") := cryptoffi.VrfPrivateKey__Hash "sk" "lByt" in
-    ("h", "p").
-
-(* PkCommOpen from serde.go *)
-
-Definition PkCommOpen := struct.decl [
-  "Pk" :: slice.T byteT;
-  "R" :: slice.T byteT
-].
-
-(* PkCommOpenEncode from serde.out.go *)
-
-Definition PkCommOpenEncode: val :=
-  rec: "PkCommOpenEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF PkCommOpen "Pk" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF PkCommOpen "R" "o"));;
-    ![slice.T byteT] "b".
-
-Definition MapValPreEncode: val :=
-  rec: "MapValPreEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF MapValPre "Epoch" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MapValPre "PkComm" "o"));;
-    ![slice.T byteT] "b".
-
-(* compMapVal from server.go *)
-
-Definition compMapVal: val :=
-  rec: "compMapVal" "epoch" "open" :=
-    let: "openByt" := PkCommOpenEncode (NewSlice byteT #0) "open" in
-    let: "comm" := cryptoffi.Hash "openByt" in
-    let: "v" := struct.new MapValPre [
-      "Epoch" ::= "epoch";
-      "PkComm" ::= "comm"
-    ] in
-    let: "vByt" := MapValPreEncode (NewSlice byteT #0) "v" in
-    "vByt".
-
-(* genValComm rets mapVal (epoch || commitment) and a commitment opening,
-   where commitment = Hash(pk || randBytes). *)
-Definition genValComm: val :=
-  rec: "genValComm" "epoch" "pk" :=
-    let: "r" := cryptoffi.RandBytes (#2 * cryptoffi.HashLen) in
-    let: "open" := struct.new PkCommOpen [
-      "Pk" ::= "pk";
-      "R" ::= "r"
-    ] in
-    (compMapVal "epoch" "open", "open").
-
-(* SigDig from serde.go *)
-
-Definition SigDig := struct.decl [
-  "Epoch" :: uint64T;
-  "Dig" :: slice.T byteT;
-  "Sig" :: slice.T byteT
-].
-
-(* Server__getDig from server.go *)
-
-Definition Server__getDig: val :=
-  rec: "Server__getDig" "s" :=
-    let: "numEpochs" := slice.len (struct.loadF Server "histInfo" "s") in
-    let: "lastInfo" := SliceGet ptrT (struct.loadF Server "histInfo" "s") ("numEpochs" - #1) in
-    struct.new SigDig [
-      "Epoch" ::= "numEpochs" - #1;
-      "Dig" ::= struct.loadF servEpochInfo "dig" "lastInfo";
-      "Sig" ::= struct.loadF servEpochInfo "sig" "lastInfo"
-    ].
-
-(* Memb from serde.go *)
-
-Definition Memb := struct.decl [
-  "Label" :: slice.T byteT;
-  "VrfProof" :: slice.T byteT;
-  "EpochAdded" :: uint64T;
-  "CommOpen" :: ptrT;
-  "MerkProof" :: slice.T (slice.T (slice.T byteT))
-].
-
-(* Server__getMemb from server.go *)
-
-(* getMemb pre-cond that (uid, ver) in-bounds. *)
-Definition Server__getMemb: val :=
-  rec: "Server__getMemb" "s" "uid" "ver" :=
-    let: ("label", "vrfProof") := compMapLabel "uid" "ver" (struct.loadF Server "vrfSk" "s") in
-    let: "getReply" := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "label" in
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "getReply"));;
-    control.impl.Assert (struct.loadF merkle.GetReply "ProofTy" "getReply");;
-    let: (("valPre", <>), "err0") := MapValPreDecode (struct.loadF merkle.GetReply "Val" "getReply") in
-    control.impl.Assert (~ "err0");;
-    let: ("open", "ok0") := MapGet (struct.loadF Server "pkCommOpens" "s") (StringFromBytes "label") in
-    control.impl.Assert "ok0";;
-    struct.new Memb [
-      "Label" ::= "label";
-      "VrfProof" ::= "vrfProof";
-      "EpochAdded" ::= struct.loadF MapValPre "Epoch" "valPre";
-      "CommOpen" ::= "open";
-      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "getReply"
-    ].
-
-(* getLatest pre-cond that uid has some versions. *)
-Definition Server__getLatest: val :=
-  rec: "Server__getLatest" "s" "uid" :=
-    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
-    control.impl.Assert ("nextVer" ≠ #0);;
-    let: "latVer" := "nextVer" - #1 in
-    Server__getMemb "s" "uid" "latVer".
-
-(* NonMemb from serde.go *)
-
-Definition NonMemb := struct.decl [
-  "Label" :: slice.T byteT;
-  "VrfProof" :: slice.T byteT;
-  "MerkProof" :: slice.T (slice.T (slice.T byteT))
-].
-
-(* Server__getBound from server.go *)
-
-Definition Server__getBound: val :=
-  rec: "Server__getBound" "s" "uid" :=
-    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
-    let: ("nextLabel", "nextVrfProof") := compMapLabel "uid" "nextVer" (struct.loadF Server "vrfSk" "s") in
-    let: "nextReply" := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "nextLabel" in
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "nextReply"));;
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "ProofTy" "nextReply"));;
-    struct.new NonMemb [
-      "Label" ::= "nextLabel";
-      "VrfProof" ::= "nextVrfProof";
-      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "nextReply"
-    ].
-
-Definition Server__Put: val :=
-  rec: "Server__Put" "s" "uid" "pk" :=
-    Mutex__Lock (struct.loadF Server "mu" "s");;
-    let: "ver" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
-    let: ("label", <>) := compMapLabel "uid" "ver" (struct.loadF Server "vrfSk" "s") in
-    let: "nextEpoch" := slice.len (struct.loadF Server "histInfo" "s") in
-    let: ("val", "open") := genValComm "nextEpoch" "pk" in
-    let: (("dig", <>), "err0") := merkle.Tree__Put (struct.loadF Server "keyMap" "s") "label" "val" in
-    control.impl.Assert (~ "err0");;
-    MapInsert (struct.loadF Server "pkCommOpens" "s") (StringFromBytes "label") "open";;
-    MapInsert (struct.loadF Server "nextVers" "s") "uid" (std.SumAssumeNoOverflow "ver" #1);;
-    let: "updates" := NewMap stringT (slice.T byteT) #() in
-    MapInsert "updates" (StringFromBytes "label") "val";;
-    let: "preSig" := struct.new PreSigDig [
-      "Epoch" ::= "nextEpoch";
-      "Dig" ::= "dig"
-    ] in
-    let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
-    let: "sig" := cryptoffi.PrivateKey__Sign (struct.loadF Server "sigSk" "s") "preSigByt" in
-    let: "newInfo" := struct.new servEpochInfo [
-      "updates" ::= "updates";
-      "dig" ::= "dig";
-      "sig" ::= "sig"
-    ] in
-    struct.storeF Server "histInfo" "s" (SliceAppend ptrT (struct.loadF Server "histInfo" "s") "newInfo");;
-    let: "sigDig" := Server__getDig "s" in
-    let: "latest" := Server__getLatest "s" "uid" in
-    let: "bound" := Server__getBound "s" "uid" in
-    Mutex__Unlock (struct.loadF Server "mu" "s");;
-    ("sigDig", "latest", "bound").
-
-(* ServerPutReply from serde.go *)
-
-Definition ServerPutReply := struct.decl [
-  "Dig" :: ptrT;
-  "Latest" :: ptrT;
-  "Bound" :: ptrT
-].
-
-(* SigDigEncode from serde.out.go *)
-
-Definition SigDigEncode: val :=
-  rec: "SigDigEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF SigDig "Epoch" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF SigDig "Dig" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF SigDig "Sig" "o"));;
-    ![slice.T byteT] "b".
-
-Definition MembEncode: val :=
-  rec: "MembEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "Label" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "VrfProof" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF Memb "EpochAdded" "o"));;
-    "b" <-[slice.T byteT] (PkCommOpenEncode (![slice.T byteT] "b") (struct.loadF Memb "CommOpen" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF Memb "MerkProof" "o"));;
-    ![slice.T byteT] "b".
-
-Definition NonMembEncode: val :=
-  rec: "NonMembEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF NonMemb "Label" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF NonMemb "VrfProof" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF NonMemb "MerkProof" "o"));;
-    ![slice.T byteT] "b".
-
-Definition ServerPutReplyEncode: val :=
-  rec: "ServerPutReplyEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (SigDigEncode (![slice.T byteT] "b") (struct.loadF ServerPutReply "Dig" "o"));;
-    "b" <-[slice.T byteT] (MembEncode (![slice.T byteT] "b") (struct.loadF ServerPutReply "Latest" "o"));;
-    "b" <-[slice.T byteT] (NonMembEncode (![slice.T byteT] "b") (struct.loadF ServerPutReply "Bound" "o"));;
-    ![slice.T byteT] "b".
-
-(* ServerPutRpc from rpc.go *)
-
-Definition ServerPutRpc : expr := #0.
-
-Definition ServerGetRpc : expr := #1.
-
-Definition ServerSelfMonRpc : expr := #2.
-
-Definition ServerAuditRpc : expr := #3.
-
-Definition AdtrUpdateRpc : expr := #0.
-
-Definition AdtrGetRpc : expr := #1.
-
-(* ServerGetArg from serde.go *)
-
-Definition ServerGetArg := struct.decl [
-  "Uid" :: uint64T
-].
-
-(* ServerGetArgDecode from serde.out.go *)
-
-Definition ServerGetArgDecode: val :=
-  rec: "ServerGetArgDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      (struct.new ServerGetArg [
-         "Uid" ::= "a1"
-       ], "b1", #false)).
-
-(* MembHide from serde.go *)
-
-Definition MembHide := struct.decl [
-  "Label" :: slice.T byteT;
-  "VrfProof" :: slice.T byteT;
-  "MapVal" :: slice.T byteT;
-  "MerkProof" :: slice.T (slice.T (slice.T byteT))
-].
-
-(* Server__getMembHide from server.go *)
-
-(* getMembHide pre-cond that (uid, ver) in-bounds. *)
-Definition Server__getMembHide: val :=
-  rec: "Server__getMembHide" "s" "uid" "ver" :=
-    let: ("label", "vrfProof") := compMapLabel "uid" "ver" (struct.loadF Server "vrfSk" "s") in
-    let: "getReply" := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "label" in
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "getReply"));;
-    control.impl.Assert (struct.loadF merkle.GetReply "ProofTy" "getReply");;
-    struct.new MembHide [
-      "Label" ::= "label";
-      "VrfProof" ::= "vrfProof";
-      "MapVal" ::= struct.loadF merkle.GetReply "Val" "getReply";
-      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "getReply"
-    ].
-
-Definition Server__getHist: val :=
-  rec: "Server__getHist" "s" "uid" :=
-    let: "membs" := ref (zero_val (slice.T ptrT)) in
-    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
-    (if: "nextVer" = #0
-    then ![slice.T ptrT] "membs"
-    else
-      let: "latVer" := "nextVer" - #1 in
-      let: "ver" := ref_to uint64T #0 in
-      (for: (λ: <>, (![uint64T] "ver") < "latVer"); (λ: <>, "ver" <-[uint64T] ((![uint64T] "ver") + #1)) := λ: <>,
-        "membs" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "membs") (Server__getMembHide "s" "uid" (![uint64T] "ver")));;
-        Continue);;
-      ![slice.T ptrT] "membs").
-
-(* Get rets, among others, whether the uid has been registered,
-   and if so, a complete latest memb proof. *)
-Definition Server__Get: val :=
-  rec: "Server__Get" "s" "uid" :=
-    Mutex__Lock (struct.loadF Server "mu" "s");;
-    let: "dig" := Server__getDig "s" in
-    let: "hist" := Server__getHist "s" "uid" in
-    let: "bound" := Server__getBound "s" "uid" in
-    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
-    (if: "nextVer" = #0
-    then
-      Mutex__Unlock (struct.loadF Server "mu" "s");;
-      ("dig", "hist", #false, struct.new Memb [
-         "CommOpen" ::= struct.new PkCommOpen [
-         ]
-       ], "bound")
-    else
-      let: "latest" := Server__getLatest "s" "uid" in
-      Mutex__Unlock (struct.loadF Server "mu" "s");;
-      ("dig", "hist", #true, "latest", "bound")).
-
-(* ServerGetReply from serde.go *)
-
-Definition ServerGetReply := struct.decl [
-  "Dig" :: ptrT;
-  "Hist" :: slice.T ptrT;
-  "IsReg" :: boolT;
-  "Latest" :: ptrT;
-  "Bound" :: ptrT
-].
-
-(* MembHideEncode from serde.out.go *)
-
-Definition MembHideEncode: val :=
-  rec: "MembHideEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "Label" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "VrfProof" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "MapVal" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF MembHide "MerkProof" "o"));;
-    ![slice.T byteT] "b".
-
-(* MembHideSlice1DEncode from serde_misc.go *)
-
-Definition MembHideSlice1DEncode: val :=
-  rec: "MembHideSlice1DEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (slice.len "o"));;
-    ForSlice ptrT <> "e" "o"
-      ("b" <-[slice.T byteT] (MembHideEncode (![slice.T byteT] "b") "e"));;
-    ![slice.T byteT] "b".
-
-(* ServerGetReplyEncode from serde.out.go *)
-
-Definition ServerGetReplyEncode: val :=
-  rec: "ServerGetReplyEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (SigDigEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Dig" "o"));;
-    "b" <-[slice.T byteT] (MembHideSlice1DEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Hist" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF ServerGetReply "IsReg" "o"));;
-    "b" <-[slice.T byteT] (MembEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Latest" "o"));;
-    "b" <-[slice.T byteT] (NonMembEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Bound" "o"));;
-    ![slice.T byteT] "b".
-
-(* ServerSelfMonArg from serde.go *)
-
-Definition ServerSelfMonArg := struct.decl [
-  "Uid" :: uint64T
-].
-
-(* ServerSelfMonArgDecode from serde.out.go *)
-
-Definition ServerSelfMonArgDecode: val :=
-  rec: "ServerSelfMonArgDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      (struct.new ServerSelfMonArg [
-         "Uid" ::= "a1"
-       ], "b1", #false)).
-
-(* Server__SelfMon from server.go *)
-
-Definition Server__SelfMon: val :=
-  rec: "Server__SelfMon" "s" "uid" :=
-    Mutex__Lock (struct.loadF Server "mu" "s");;
-    let: "dig" := Server__getDig "s" in
-    let: "bound" := Server__getBound "s" "uid" in
-    Mutex__Unlock (struct.loadF Server "mu" "s");;
-    ("dig", "bound").
-
-(* ServerSelfMonReply from serde.go *)
-
-Definition ServerSelfMonReply := struct.decl [
-  "Dig" :: ptrT;
-  "Bound" :: ptrT
-].
-
-(* ServerSelfMonReplyEncode from serde.out.go *)
-
-Definition ServerSelfMonReplyEncode: val :=
-  rec: "ServerSelfMonReplyEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (SigDigEncode (![slice.T byteT] "b") (struct.loadF ServerSelfMonReply "Dig" "o"));;
-    "b" <-[slice.T byteT] (NonMembEncode (![slice.T byteT] "b") (struct.loadF ServerSelfMonReply "Bound" "o"));;
-    ![slice.T byteT] "b".
-
-(* ServerAuditArg from serde.go *)
-
-Definition ServerAuditArg := struct.decl [
-  "Epoch" :: uint64T
-].
-
-(* ServerAuditArgDecode from serde.out.go *)
-
-Definition ServerAuditArgDecode: val :=
-  rec: "ServerAuditArgDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      (struct.new ServerAuditArg [
-         "Epoch" ::= "a1"
-       ], "b1", #false)).
-
-(* Server__Audit from server.go *)
-
-(* Audit returns an err on fail. *)
-Definition Server__Audit: val :=
-  rec: "Server__Audit" "s" "epoch" :=
-    Mutex__Lock (struct.loadF Server "mu" "s");;
-    (if: "epoch" ≥ (slice.len (struct.loadF Server "histInfo" "s"))
-    then
-      Mutex__Unlock (struct.loadF Server "mu" "s");;
-      (struct.new UpdateProof [
-         "Updates" ::= NewMap stringT (slice.T byteT) #()
-       ], #true)
-    else
-      let: "info" := SliceGet ptrT (struct.loadF Server "histInfo" "s") "epoch" in
-      Mutex__Unlock (struct.loadF Server "mu" "s");;
-      let: "p" := struct.new UpdateProof [
-        "Updates" ::= struct.loadF servEpochInfo "updates" "info";
-        "Sig" ::= struct.loadF servEpochInfo "sig" "info"
-      ] in
-      ("p", #false)).
-
-(* ServerAuditReply from serde.go *)
-
-Definition ServerAuditReply := struct.decl [
-  "P" :: ptrT;
-  "Err" :: boolT
-].
-
-(* MapstringSlbyteEncode from serde_misc.go *)
-
-Definition MapstringSlbyteEncode: val :=
-  rec: "MapstringSlbyteEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (MapLen "o"));;
-    MapIter "o" (λ: "k" "v",
-      "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (StringToBytes "k"));;
-      "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") "v"));;
-    ![slice.T byteT] "b".
-
-(* UpdateProofEncode from serde.out.go *)
-
-Definition UpdateProofEncode: val :=
-  rec: "UpdateProofEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (MapstringSlbyteEncode (![slice.T byteT] "b") (struct.loadF UpdateProof "Updates" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF UpdateProof "Sig" "o"));;
-    ![slice.T byteT] "b".
-
-Definition ServerAuditReplyEncode: val :=
-  rec: "ServerAuditReplyEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (UpdateProofEncode (![slice.T byteT] "b") (struct.loadF ServerAuditReply "P" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF ServerAuditReply "Err" "o"));;
-    ![slice.T byteT] "b".
-
-(* newRpcServer from rpc.go *)
-
-Definition newRpcServer: val :=
-  rec: "newRpcServer" "s" :=
-    let: "h" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
-    MapInsert "h" ServerPutRpc (λ: "arg" "reply",
-      let: (("argObj", <>), "err0") := ServerPutArgDecode "arg" in
-      (if: "err0"
-      then #()
-      else
-        let: (("ret0", "ret1"), "ret2") := Server__Put "s" (struct.loadF ServerPutArg "Uid" "argObj") (struct.loadF ServerPutArg "Pk" "argObj") in
-        let: "replyObj" := struct.new ServerPutReply [
-          "Dig" ::= "ret0";
-          "Latest" ::= "ret1";
-          "Bound" ::= "ret2"
-        ] in
-        "reply" <-[slice.T byteT] (ServerPutReplyEncode (![slice.T byteT] "reply") "replyObj");;
-        #())
-      );;
-    MapInsert "h" ServerGetRpc (λ: "arg" "reply",
-      let: (("argObj", <>), "err0") := ServerGetArgDecode "arg" in
-      (if: "err0"
-      then #()
-      else
-        let: (((("ret0", "ret1"), "ret2"), "ret3"), "ret4") := Server__Get "s" (struct.loadF ServerGetArg "Uid" "argObj") in
-        let: "replyObj" := struct.new ServerGetReply [
-          "Dig" ::= "ret0";
-          "Hist" ::= "ret1";
-          "IsReg" ::= "ret2";
-          "Latest" ::= "ret3";
-          "Bound" ::= "ret4"
-        ] in
-        "reply" <-[slice.T byteT] (ServerGetReplyEncode (![slice.T byteT] "reply") "replyObj");;
-        #())
-      );;
-    MapInsert "h" ServerSelfMonRpc (λ: "arg" "reply",
-      let: (("argObj", <>), "err0") := ServerSelfMonArgDecode "arg" in
-      (if: "err0"
-      then #()
-      else
-        let: ("ret0", "ret1") := Server__SelfMon "s" (struct.loadF ServerSelfMonArg "Uid" "argObj") in
-        let: "replyObj" := struct.new ServerSelfMonReply [
-          "Dig" ::= "ret0";
-          "Bound" ::= "ret1"
-        ] in
-        "reply" <-[slice.T byteT] (ServerSelfMonReplyEncode (![slice.T byteT] "reply") "replyObj");;
-        #())
-      );;
-    MapInsert "h" ServerAuditRpc (λ: "arg" "reply",
-      let: (("argObj", <>), "err0") := ServerAuditArgDecode "arg" in
-      (if: "err0"
-      then #()
-      else
-        let: ("ret0", "ret1") := Server__Audit "s" (struct.loadF ServerAuditArg "Epoch" "argObj") in
-        let: "replyObj" := struct.new ServerAuditReply [
-          "P" ::= "ret0";
-          "Err" ::= "ret1"
-        ] in
-        "reply" <-[slice.T byteT] (ServerAuditReplyEncode (![slice.T byteT] "reply") "replyObj");;
-        #())
-      );;
-    advrpc.NewServer "h".
-
-(* MapstringSlbyteDecode from serde_misc.go *)
-
-Definition MapstringSlbyteDecode: val :=
-  rec: "MapstringSlbyteDecode" "b0" :=
-    let: (("length", "b1"), "err1") := marshalutil.ReadInt "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      let: "loopO" := NewMap stringT (slice.T byteT) #() in
-      let: "loopErr" := ref (zero_val boolT) in
-      let: "loopB" := ref_to (slice.T byteT) "b1" in
-      let: "i" := ref_to uint64T #0 in
-      (for: (λ: <>, (![uint64T] "i") < "length"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
-        let: (("a2", "loopB1"), "err2") := marshalutil.ReadSlice1D (![slice.T byteT] "loopB") in
-        "loopB" <-[slice.T byteT] "loopB1";;
-        (if: "err2"
-        then
-          "loopErr" <-[boolT] #true;;
-          Break
-        else
-          let: (("a3", "loopB2"), "err3") := marshalutil.ReadSlice1D (![slice.T byteT] "loopB") in
-          "loopB" <-[slice.T byteT] "loopB2";;
-          (if: "err3"
-          then
-            "loopErr" <-[boolT] #true;;
-            Break
-          else
-            MapInsert "loopO" (StringFromBytes "a2") "a3";;
-            Continue)));;
-      (if: ![boolT] "loopErr"
-      then (slice.nil, slice.nil, #true)
-      else ("loopO", ![slice.T byteT] "loopB", #false))).
-
-(* UpdateProofDecode from serde.out.go *)
-
-Definition UpdateProofDecode: val :=
-  rec: "UpdateProofDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := MapstringSlbyteDecode "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
-      (if: "err2"
-      then (slice.nil, slice.nil, #true)
-      else
-        (struct.new UpdateProof [
-           "Updates" ::= "a1";
-           "Sig" ::= "a2"
-         ], "b2", #false))).
-
-(* AdtrUpdateArg from serde.go *)
-
-Definition AdtrUpdateArg := struct.decl [
-  "P" :: ptrT
-].
-
-(* AdtrUpdateArgDecode from serde.out.go *)
-
-Definition AdtrUpdateArgDecode: val :=
-  rec: "AdtrUpdateArgDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := UpdateProofDecode "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      (struct.new AdtrUpdateArg [
-         "P" ::= "a1"
-       ], "b1", #false)).
-
-(* AdtrUpdateReply from serde.go *)
-
-Definition AdtrUpdateReply := struct.decl [
-  "Err" :: boolT
-].
-
-(* AdtrUpdateReplyEncode from serde.out.go *)
-
-Definition AdtrUpdateReplyEncode: val :=
-  rec: "AdtrUpdateReplyEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF AdtrUpdateReply "Err" "o"));;
-    ![slice.T byteT] "b".
-
-(* AdtrGetArg from serde.go *)
-
-Definition AdtrGetArg := struct.decl [
-  "Epoch" :: uint64T
-].
-
-(* AdtrGetArgDecode from serde.out.go *)
-
-Definition AdtrGetArgDecode: val :=
-  rec: "AdtrGetArgDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      (struct.new AdtrGetArg [
-         "Epoch" ::= "a1"
-       ], "b1", #false)).
-
-(* AdtrGetReply from serde.go *)
-
-Definition AdtrGetReply := struct.decl [
-  "X" :: ptrT;
-  "Err" :: boolT
-].
-
-(* AdtrEpochInfoEncode from serde.out.go *)
-
-Definition AdtrEpochInfoEncode: val :=
-  rec: "AdtrEpochInfoEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF AdtrEpochInfo "Dig" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF AdtrEpochInfo "ServSig" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF AdtrEpochInfo "AdtrSig" "o"));;
-    ![slice.T byteT] "b".
-
-Definition AdtrGetReplyEncode: val :=
-  rec: "AdtrGetReplyEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (AdtrEpochInfoEncode (![slice.T byteT] "b") (struct.loadF AdtrGetReply "X" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF AdtrGetReply "Err" "o"));;
-    ![slice.T byteT] "b".
-
-(* newRpcAuditor from rpc.go *)
-
-Definition newRpcAuditor: val :=
-  rec: "newRpcAuditor" "a" :=
-    let: "h" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
-    MapInsert "h" AdtrUpdateRpc (λ: "arg" "reply",
-      let: (("argObj", <>), "err0") := AdtrUpdateArgDecode "arg" in
-      (if: "err0"
-      then #()
-      else
-        let: "ret0" := Auditor__Update "a" (struct.loadF AdtrUpdateArg "P" "argObj") in
-        let: "replyObj" := struct.new AdtrUpdateReply [
-          "Err" ::= "ret0"
-        ] in
-        "reply" <-[slice.T byteT] (AdtrUpdateReplyEncode (![slice.T byteT] "reply") "replyObj");;
-        #())
-      );;
-    MapInsert "h" AdtrGetRpc (λ: "arg" "reply",
-      let: (("argObj", <>), "err0") := AdtrGetArgDecode "arg" in
-      (if: "err0"
-      then #()
-      else
-        let: ("ret0", "ret1") := Auditor__Get "a" (struct.loadF AdtrGetArg "Epoch" "argObj") in
-        let: "replyObj" := struct.new AdtrGetReply [
-          "X" ::= "ret0";
-          "Err" ::= "ret1"
-        ] in
-        "reply" <-[slice.T byteT] (AdtrGetReplyEncode (![slice.T byteT] "reply") "replyObj");;
-        #())
-      );;
-    advrpc.NewServer "h".
-
-(* setup starts server and auditors. it's mainly a logical convenience.
-   it consolidates the external parties, letting us more easily describe
-   different adversary configs. *)
-Definition setup: val :=
-  rec: "setup" "servAddr" "adtr0Addr" "adtr1Addr" :=
-    let: (("serv", "servSigPk"), "servVrfPk") := newServer #() in
-    let: "servRpc" := newRpcServer "serv" in
-    advrpc.Server__Serve "servRpc" "servAddr";;
-    let: ("adtr0", "adtr0Pk") := newAuditor "servSigPk" in
-    let: "adtr0Rpc" := newRpcAuditor "adtr0" in
-    advrpc.Server__Serve "adtr0Rpc" "adtr0Addr";;
-    let: ("adtr1", "adtr1Pk") := newAuditor "servSigPk" in
-    let: "adtr1Rpc" := newRpcAuditor "adtr1" in
-    advrpc.Server__Serve "adtr1Rpc" "adtr1Addr";;
-    time.Sleep #1000000;;
-    struct.new setupParams [
-      "servAddr" ::= "servAddr";
-      "servSigPk" ::= "servSigPk";
-      "servVrfPk" ::= "servVrfPk";
-      "adtr0Addr" ::= "adtr0Addr";
-      "adtr0Pk" ::= "adtr0Pk";
-      "adtr1Addr" ::= "adtr1Addr";
-      "adtr1Pk" ::= "adtr1Pk"
-    ].
 
 (* Client from client.go *)
 
@@ -1023,6 +216,13 @@ Definition clientErr := struct.decl [
   "err" :: boolT
 ].
 
+(* ServerPutArg from serde.go *)
+
+Definition ServerPutArg := struct.decl [
+  "Uid" :: uint64T;
+  "Pk" :: slice.T byteT
+].
+
 (* ServerPutArgEncode from serde.out.go *)
 
 Definition ServerPutArgEncode: val :=
@@ -1031,6 +231,30 @@ Definition ServerPutArgEncode: val :=
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF ServerPutArg "Uid" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF ServerPutArg "Pk" "o"));;
     ![slice.T byteT] "b".
+
+(* ServerPutRpc from rpc.go *)
+
+Definition ServerPutRpc : expr := #0.
+
+Definition ServerGetRpc : expr := #1.
+
+Definition ServerSelfMonRpc : expr := #2.
+
+Definition ServerAuditRpc : expr := #3.
+
+Definition AdtrUpdateRpc : expr := #0.
+
+Definition AdtrGetRpc : expr := #1.
+
+(* SigDig from serde.go *)
+
+Definition SigDig := struct.decl [
+  "Epoch" :: uint64T;
+  "Dig" :: slice.T byteT;
+  "Sig" :: slice.T byteT
+].
+
+(* SigDigDecode from serde.out.go *)
 
 Definition SigDigDecode: val :=
   rec: "SigDigDecode" "b0" :=
@@ -1052,6 +276,15 @@ Definition SigDigDecode: val :=
              "Sig" ::= "a3"
            ], "b3", #false)))).
 
+(* PkCommOpen from serde.go *)
+
+Definition PkCommOpen := struct.decl [
+  "Pk" :: slice.T byteT;
+  "R" :: slice.T byteT
+].
+
+(* PkCommOpenDecode from serde.out.go *)
+
 Definition PkCommOpenDecode: val :=
   rec: "PkCommOpenDecode" "b0" :=
     let: (("a1", "b1"), "err1") := marshalutil.ReadSlice1D "b0" in
@@ -1066,6 +299,18 @@ Definition PkCommOpenDecode: val :=
            "Pk" ::= "a1";
            "R" ::= "a2"
          ], "b2", #false))).
+
+(* Memb from serde.go *)
+
+Definition Memb := struct.decl [
+  "Label" :: slice.T byteT;
+  "VrfProof" :: slice.T byteT;
+  "EpochAdded" :: uint64T;
+  "CommOpen" :: ptrT;
+  "MerkProof" :: slice.T (slice.T (slice.T byteT))
+].
+
+(* MembDecode from serde.out.go *)
 
 Definition MembDecode: val :=
   rec: "MembDecode" "b0" :=
@@ -1097,6 +342,16 @@ Definition MembDecode: val :=
                  "MerkProof" ::= "a5"
                ], "b5", #false)))))).
 
+(* NonMemb from serde.go *)
+
+Definition NonMemb := struct.decl [
+  "Label" :: slice.T byteT;
+  "VrfProof" :: slice.T byteT;
+  "MerkProof" :: slice.T (slice.T (slice.T byteT))
+].
+
+(* NonMembDecode from serde.out.go *)
+
 Definition NonMembDecode: val :=
   rec: "NonMembDecode" "b0" :=
     let: (("a1", "b1"), "err1") := marshalutil.ReadSlice1D "b0" in
@@ -1116,6 +371,16 @@ Definition NonMembDecode: val :=
              "VrfProof" ::= "a2";
              "MerkProof" ::= "a3"
            ], "b3", #false)))).
+
+(* ServerPutReply from serde.go *)
+
+Definition ServerPutReply := struct.decl [
+  "Dig" :: ptrT;
+  "Latest" :: ptrT;
+  "Bound" :: ptrT
+].
+
+(* ServerPutReplyDecode from serde.out.go *)
 
 Definition ServerPutReplyDecode: val :=
   rec: "ServerPutReplyDecode" "b0" :=
@@ -1219,6 +484,24 @@ Definition Client__checkDig: val :=
               "err" ::= #false
             ])))).
 
+(* MapLabelPre from serde.go *)
+
+Definition MapLabelPre := struct.decl [
+  "Uid" :: uint64T;
+  "Ver" :: uint64T
+].
+
+(* MapLabelPreEncode from serde.out.go *)
+
+Definition MapLabelPreEncode: val :=
+  rec: "MapLabelPreEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF MapLabelPre "Uid" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF MapLabelPre "Ver" "o"));;
+    ![slice.T byteT] "b".
+
+(* Client__checkVrf from client.go *)
+
 (* checkVrfProof errors on fail.
    TODO: if VRF pubkey is bad, does VRF.Verify still mean something? *)
 Definition Client__checkVrf: val :=
@@ -1229,6 +512,37 @@ Definition Client__checkVrf: val :=
     ] in
     let: "preByt" := MapLabelPreEncode (NewSlice byteT #0) "pre" in
     (~ (cryptoffi.VrfPublicKey__Verify (struct.loadF Client "servVrfPk" "c") "preByt" "label" "proof")).
+
+(* PkCommOpenEncode from serde.out.go *)
+
+Definition PkCommOpenEncode: val :=
+  rec: "PkCommOpenEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF PkCommOpen "Pk" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF PkCommOpen "R" "o"));;
+    ![slice.T byteT] "b".
+
+Definition MapValPreEncode: val :=
+  rec: "MapValPreEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF MapValPre "Epoch" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MapValPre "PkComm" "o"));;
+    ![slice.T byteT] "b".
+
+(* compMapVal from server.go *)
+
+Definition compMapVal: val :=
+  rec: "compMapVal" "epoch" "open" :=
+    let: "openByt" := PkCommOpenEncode (NewSlice byteT #0) "open" in
+    let: "comm" := cryptoffi.Hash "openByt" in
+    let: "v" := struct.new MapValPre [
+      "Epoch" ::= "epoch";
+      "PkComm" ::= "comm"
+    ] in
+    let: "vByt" := MapValPreEncode (NewSlice byteT #0) "v" in
+    "vByt".
+
+(* Client__checkMemb from client.go *)
 
 (* checkMemb errors on fail. *)
 Definition Client__checkMemb: val :=
@@ -1279,6 +593,12 @@ Definition Client__Put: val :=
                    "err" ::= #false
                  ]))))))).
 
+(* ServerAuditArg from serde.go *)
+
+Definition ServerAuditArg := struct.decl [
+  "Epoch" :: uint64T
+].
+
 (* ServerAuditArgEncode from serde.out.go *)
 
 Definition ServerAuditArgEncode: val :=
@@ -1286,6 +606,65 @@ Definition ServerAuditArgEncode: val :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF ServerAuditArg "Epoch" "o"));;
     ![slice.T byteT] "b".
+
+(* MapstringSlbyteDecode from serde_misc.go *)
+
+Definition MapstringSlbyteDecode: val :=
+  rec: "MapstringSlbyteDecode" "b0" :=
+    let: (("length", "b1"), "err1") := marshalutil.ReadInt "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      let: "loopO" := NewMap stringT (slice.T byteT) #() in
+      let: "loopErr" := ref (zero_val boolT) in
+      let: "loopB" := ref_to (slice.T byteT) "b1" in
+      let: "i" := ref_to uint64T #0 in
+      (for: (λ: <>, (![uint64T] "i") < "length"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+        let: (("a2", "loopB1"), "err2") := marshalutil.ReadSlice1D (![slice.T byteT] "loopB") in
+        "loopB" <-[slice.T byteT] "loopB1";;
+        (if: "err2"
+        then
+          "loopErr" <-[boolT] #true;;
+          Break
+        else
+          let: (("a3", "loopB2"), "err3") := marshalutil.ReadSlice1D (![slice.T byteT] "loopB") in
+          "loopB" <-[slice.T byteT] "loopB2";;
+          (if: "err3"
+          then
+            "loopErr" <-[boolT] #true;;
+            Break
+          else
+            MapInsert "loopO" (StringFromBytes "a2") "a3";;
+            Continue)));;
+      (if: ![boolT] "loopErr"
+      then (slice.nil, slice.nil, #true)
+      else ("loopO", ![slice.T byteT] "loopB", #false))).
+
+(* UpdateProofDecode from serde.out.go *)
+
+Definition UpdateProofDecode: val :=
+  rec: "UpdateProofDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := MapstringSlbyteDecode "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
+      (if: "err2"
+      then (slice.nil, slice.nil, #true)
+      else
+        (struct.new UpdateProof [
+           "Updates" ::= "a1";
+           "Sig" ::= "a2"
+         ], "b2", #false))).
+
+(* ServerAuditReply from serde.go *)
+
+Definition ServerAuditReply := struct.decl [
+  "P" :: ptrT;
+  "Err" :: boolT
+].
+
+(* ServerAuditReplyDecode from serde.out.go *)
 
 Definition ServerAuditReplyDecode: val :=
   rec: "ServerAuditReplyDecode" "b0" :=
@@ -1320,13 +699,55 @@ Definition callServAudit: val :=
       then (slice.nil, #true)
       else (struct.loadF ServerAuditReply "P" "reply", struct.loadF ServerAuditReply "Err" "reply"))).
 
-(* AdtrUpdateArgEncode from serde.out.go *)
+(* mkRpcClients from basictest.go *)
+
+Definition mkRpcClients: val :=
+  rec: "mkRpcClients" "addrs" :=
+    let: "c" := ref (zero_val (slice.T ptrT)) in
+    ForSlice uint64T <> "addr" "addrs"
+      (let: "cli" := advrpc.Dial "addr" in
+      "c" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "c") "cli"));;
+    ![slice.T ptrT] "c".
+
+(* AdtrUpdateArg from serde.go *)
+
+Definition AdtrUpdateArg := struct.decl [
+  "P" :: ptrT
+].
+
+(* MapstringSlbyteEncode from serde_misc.go *)
+
+Definition MapstringSlbyteEncode: val :=
+  rec: "MapstringSlbyteEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (MapLen "o"));;
+    MapIter "o" (λ: "k" "v",
+      "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (StringToBytes "k"));;
+      "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") "v"));;
+    ![slice.T byteT] "b".
+
+(* UpdateProofEncode from serde.out.go *)
+
+Definition UpdateProofEncode: val :=
+  rec: "UpdateProofEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (MapstringSlbyteEncode (![slice.T byteT] "b") (struct.loadF UpdateProof "Updates" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF UpdateProof "Sig" "o"));;
+    ![slice.T byteT] "b".
 
 Definition AdtrUpdateArgEncode: val :=
   rec: "AdtrUpdateArgEncode" "b0" "o" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     "b" <-[slice.T byteT] (UpdateProofEncode (![slice.T byteT] "b") (struct.loadF AdtrUpdateArg "P" "o"));;
     ![slice.T byteT] "b".
+
+(* AdtrUpdateReply from serde.go *)
+
+Definition AdtrUpdateReply := struct.decl [
+  "Err" :: boolT
+].
+
+(* AdtrUpdateReplyDecode from serde.out.go *)
 
 Definition AdtrUpdateReplyDecode: val :=
   rec: "AdtrUpdateReplyDecode" "b0" :=
@@ -1356,6 +777,21 @@ Definition callAdtrUpdate: val :=
       then #true
       else struct.loadF AdtrUpdateReply "Err" "reply")).
 
+(* updAdtrs from basictest.go *)
+
+Definition updAdtrs: val :=
+  rec: "updAdtrs" "upd" "adtrs" :=
+    ForSlice ptrT <> "cli" "adtrs"
+      (let: "err" := callAdtrUpdate "cli" "upd" in
+      control.impl.Assume (~ "err"));;
+    #().
+
+(* ServerGetArg from serde.go *)
+
+Definition ServerGetArg := struct.decl [
+  "Uid" :: uint64T
+].
+
 (* ServerGetArgEncode from serde.out.go *)
 
 Definition ServerGetArgEncode: val :=
@@ -1363,6 +799,17 @@ Definition ServerGetArgEncode: val :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF ServerGetArg "Uid" "o"));;
     ![slice.T byteT] "b".
+
+(* MembHide from serde.go *)
+
+Definition MembHide := struct.decl [
+  "Label" :: slice.T byteT;
+  "VrfProof" :: slice.T byteT;
+  "MapVal" :: slice.T byteT;
+  "MerkProof" :: slice.T (slice.T (slice.T byteT))
+].
+
+(* MembHideDecode from serde.out.go *)
 
 Definition MembHideDecode: val :=
   rec: "MembHideDecode" "b0" :=
@@ -1414,6 +861,16 @@ Definition MembHideSlice1DDecode: val :=
       (if: ![boolT] "loopErr"
       then (slice.nil, slice.nil, #true)
       else (![slice.T ptrT] "loopO", ![slice.T byteT] "loopB", #false))).
+
+(* ServerGetReply from serde.go *)
+
+Definition ServerGetReply := struct.decl [
+  "Dig" :: ptrT;
+  "Hist" :: slice.T ptrT;
+  "IsReg" :: boolT;
+  "Latest" :: ptrT;
+  "Bound" :: ptrT
+].
 
 (* ServerGetReplyDecode from serde.out.go *)
 
@@ -1526,6 +983,12 @@ Definition Client__Get: val :=
                    "err" ::= #false
                  ]))))))).
 
+(* AdtrGetArg from serde.go *)
+
+Definition AdtrGetArg := struct.decl [
+  "Epoch" :: uint64T
+].
+
 (* AdtrGetArgEncode from serde.out.go *)
 
 Definition AdtrGetArgEncode: val :=
@@ -1553,6 +1016,15 @@ Definition AdtrEpochInfoDecode: val :=
              "ServSig" ::= "a2";
              "AdtrSig" ::= "a3"
            ], "b3", #false)))).
+
+(* AdtrGetReply from serde.go *)
+
+Definition AdtrGetReply := struct.decl [
+  "X" :: ptrT;
+  "Err" :: boolT
+].
+
+(* AdtrGetReplyDecode from serde.out.go *)
 
 Definition AdtrGetReplyDecode: val :=
   rec: "AdtrGetReplyDecode" "b0" :=
@@ -1649,6 +1121,20 @@ Definition Client__Audit: val :=
       else #()));;
     ![ptrT] "err0".
 
+(* doAudits from basictest.go *)
+
+Definition doAudits: val :=
+  rec: "doAudits" "cli" "adtrAddrs" "adtrPks" :=
+    let: "numAdtrs" := slice.len "adtrAddrs" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "numAdtrs"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      let: "addr" := SliceGet uint64T "adtrAddrs" (![uint64T] "i") in
+      let: "pk" := SliceGet cryptoffi.PublicKey "adtrPks" (![uint64T] "i") in
+      let: "err" := Client__Audit "cli" "addr" "pk" in
+      control.impl.Assume (~ (struct.loadF clientErr "err" "err"));;
+      Continue);;
+    #().
+
 Definition testBasic: val :=
   rec: "testBasic" "setup" :=
     let: "alice" := newClient aliceUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
@@ -1656,34 +1142,577 @@ Definition testBasic: val :=
     let: ("ep0", "err0") := Client__Put "alice" "pk0" in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
     let: "servCli" := advrpc.Dial (struct.loadF setupParams "servAddr" "setup") in
-    let: "adtr0Cli" := advrpc.Dial (struct.loadF setupParams "adtr0Addr" "setup") in
-    let: "adtr1Cli" := advrpc.Dial (struct.loadF setupParams "adtr1Addr" "setup") in
     let: ("upd0", "err1") := callServAudit "servCli" #0 in
     control.impl.Assume (~ "err1");;
     let: ("upd1", "err2") := callServAudit "servCli" #1 in
     control.impl.Assume (~ "err2");;
-    let: "err3" := callAdtrUpdate "adtr0Cli" "upd0" in
-    control.impl.Assume (~ "err3");;
-    let: "err4" := callAdtrUpdate "adtr0Cli" "upd1" in
-    control.impl.Assume (~ "err4");;
-    let: "err5" := callAdtrUpdate "adtr1Cli" "upd0" in
-    control.impl.Assume (~ "err5");;
-    let: "err6" := callAdtrUpdate "adtr1Cli" "upd1" in
-    control.impl.Assume (~ "err6");;
+    let: "adtrs" := mkRpcClients (struct.loadF setupParams "adtrAddrs" "setup") in
+    updAdtrs "upd0" "adtrs";;
+    updAdtrs "upd1" "adtrs";;
     let: "bob" := newClient bobUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
-    let: ((("isReg", "pk1"), "ep1"), "err7") := Client__Get "bob" aliceUid in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err7"));;
+    let: ((("isReg", "pk1"), "ep1"), "err3") := Client__Get "bob" aliceUid in
+    control.impl.Assume (~ (struct.loadF clientErr "err" "err3"));;
     control.impl.Assume ("ep0" = "ep1");;
-    let: "err8" := Client__Audit "alice" (struct.loadF setupParams "adtr0Addr" "setup") (struct.loadF setupParams "adtr0Pk" "setup") in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err8"));;
-    let: "err9" := Client__Audit "alice" (struct.loadF setupParams "adtr1Addr" "setup") (struct.loadF setupParams "adtr1Pk" "setup") in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err9"));;
-    let: "err10" := Client__Audit "bob" (struct.loadF setupParams "adtr0Addr" "setup") (struct.loadF setupParams "adtr0Pk" "setup") in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err10"));;
-    let: "err11" := Client__Audit "bob" (struct.loadF setupParams "adtr1Addr" "setup") (struct.loadF setupParams "adtr1Pk" "setup") in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err11"));;
+    doAudits "alice" (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
+    doAudits "bob" (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
     control.impl.Assert "isReg";;
     control.impl.Assert (std.BytesEqual "pk0" "pk1");;
+    #().
+
+(* servEpochInfo from server.go *)
+
+Definition servEpochInfo := struct.decl [
+  "updates" :: mapT (slice.T byteT);
+  "dig" :: slice.T byteT;
+  "sig" :: slice.T byteT
+].
+
+Definition Server := struct.decl [
+  "mu" :: ptrT;
+  "sigSk" :: cryptoffi.PrivateKey;
+  "vrfSk" :: ptrT;
+  "keyMap" :: ptrT;
+  "histInfo" :: slice.T ptrT;
+  "pkCommOpens" :: mapT ptrT;
+  "nextVers" :: mapT uint64T
+].
+
+Definition newServer: val :=
+  rec: "newServer" <> :=
+    let: "mu" := newMutex #() in
+    let: ("sigPk", "sigSk") := cryptoffi.GenerateKey #() in
+    let: ("vrfPk", "vrfSk") := cryptoffi.VrfGenerateKey #() in
+    let: "m" := struct.new merkle.Tree [
+    ] in
+    let: "opens" := NewMap stringT ptrT #() in
+    let: "vers" := NewMap uint64T uint64T #() in
+    let: "dig" := merkle.Tree__Digest "m" in
+    let: "updates" := NewMap stringT (slice.T byteT) #() in
+    let: "preSig" := struct.new PreSigDig [
+      "Epoch" ::= #0;
+      "Dig" ::= "dig"
+    ] in
+    let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
+    let: "sig" := cryptoffi.PrivateKey__Sign "sigSk" "preSigByt" in
+    let: "newInfo" := struct.new servEpochInfo [
+      "updates" ::= "updates";
+      "dig" ::= "dig";
+      "sig" ::= "sig"
+    ] in
+    let: "hist" := ref (zero_val (slice.T ptrT)) in
+    "hist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "hist") "newInfo");;
+    (struct.new Server [
+       "mu" ::= "mu";
+       "sigSk" ::= "sigSk";
+       "vrfSk" ::= "vrfSk";
+       "keyMap" ::= "m";
+       "histInfo" ::= ![slice.T ptrT] "hist";
+       "pkCommOpens" ::= "opens";
+       "nextVers" ::= "vers"
+     ], "sigPk", "vrfPk").
+
+(* ServerPutArgDecode from serde.out.go *)
+
+Definition ServerPutArgDecode: val :=
+  rec: "ServerPutArgDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
+      (if: "err2"
+      then (slice.nil, slice.nil, #true)
+      else
+        (struct.new ServerPutArg [
+           "Uid" ::= "a1";
+           "Pk" ::= "a2"
+         ], "b2", #false))).
+
+(* compMapLabel from server.go *)
+
+(* compMapLabel rets mapLabel (VRF(uid || ver)) and a VRF proof. *)
+Definition compMapLabel: val :=
+  rec: "compMapLabel" "uid" "ver" "sk" :=
+    let: "l" := struct.new MapLabelPre [
+      "Uid" ::= "uid";
+      "Ver" ::= "ver"
+    ] in
+    let: "lByt" := MapLabelPreEncode (NewSlice byteT #0) "l" in
+    let: ("h", "p") := cryptoffi.VrfPrivateKey__Hash "sk" "lByt" in
+    ("h", "p").
+
+(* genValComm rets mapVal (epoch || commitment) and a commitment opening,
+   where commitment = Hash(pk || randBytes). *)
+Definition genValComm: val :=
+  rec: "genValComm" "epoch" "pk" :=
+    let: "r" := cryptoffi.RandBytes (#2 * cryptoffi.HashLen) in
+    let: "open" := struct.new PkCommOpen [
+      "Pk" ::= "pk";
+      "R" ::= "r"
+    ] in
+    (compMapVal "epoch" "open", "open").
+
+Definition Server__getDig: val :=
+  rec: "Server__getDig" "s" :=
+    let: "numEpochs" := slice.len (struct.loadF Server "histInfo" "s") in
+    let: "lastInfo" := SliceGet ptrT (struct.loadF Server "histInfo" "s") ("numEpochs" - #1) in
+    struct.new SigDig [
+      "Epoch" ::= "numEpochs" - #1;
+      "Dig" ::= struct.loadF servEpochInfo "dig" "lastInfo";
+      "Sig" ::= struct.loadF servEpochInfo "sig" "lastInfo"
+    ].
+
+(* getMemb pre-cond that (uid, ver) in-bounds. *)
+Definition Server__getMemb: val :=
+  rec: "Server__getMemb" "s" "uid" "ver" :=
+    let: ("label", "vrfProof") := compMapLabel "uid" "ver" (struct.loadF Server "vrfSk" "s") in
+    let: "getReply" := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "label" in
+    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "getReply"));;
+    control.impl.Assert (struct.loadF merkle.GetReply "ProofTy" "getReply");;
+    let: (("valPre", <>), "err0") := MapValPreDecode (struct.loadF merkle.GetReply "Val" "getReply") in
+    control.impl.Assert (~ "err0");;
+    let: ("open", "ok0") := MapGet (struct.loadF Server "pkCommOpens" "s") (StringFromBytes "label") in
+    control.impl.Assert "ok0";;
+    struct.new Memb [
+      "Label" ::= "label";
+      "VrfProof" ::= "vrfProof";
+      "EpochAdded" ::= struct.loadF MapValPre "Epoch" "valPre";
+      "CommOpen" ::= "open";
+      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "getReply"
+    ].
+
+(* getLatest pre-cond that uid has some versions. *)
+Definition Server__getLatest: val :=
+  rec: "Server__getLatest" "s" "uid" :=
+    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
+    control.impl.Assert ("nextVer" ≠ #0);;
+    let: "latVer" := "nextVer" - #1 in
+    Server__getMemb "s" "uid" "latVer".
+
+Definition Server__getBound: val :=
+  rec: "Server__getBound" "s" "uid" :=
+    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
+    let: ("nextLabel", "nextVrfProof") := compMapLabel "uid" "nextVer" (struct.loadF Server "vrfSk" "s") in
+    let: "nextReply" := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "nextLabel" in
+    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "nextReply"));;
+    control.impl.Assert (~ (struct.loadF merkle.GetReply "ProofTy" "nextReply"));;
+    struct.new NonMemb [
+      "Label" ::= "nextLabel";
+      "VrfProof" ::= "nextVrfProof";
+      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "nextReply"
+    ].
+
+Definition Server__Put: val :=
+  rec: "Server__Put" "s" "uid" "pk" :=
+    Mutex__Lock (struct.loadF Server "mu" "s");;
+    let: "ver" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
+    let: ("label", <>) := compMapLabel "uid" "ver" (struct.loadF Server "vrfSk" "s") in
+    let: "nextEpoch" := slice.len (struct.loadF Server "histInfo" "s") in
+    let: ("val", "open") := genValComm "nextEpoch" "pk" in
+    let: (("dig", <>), "err0") := merkle.Tree__Put (struct.loadF Server "keyMap" "s") "label" "val" in
+    control.impl.Assert (~ "err0");;
+    MapInsert (struct.loadF Server "pkCommOpens" "s") (StringFromBytes "label") "open";;
+    MapInsert (struct.loadF Server "nextVers" "s") "uid" (std.SumAssumeNoOverflow "ver" #1);;
+    let: "updates" := NewMap stringT (slice.T byteT) #() in
+    MapInsert "updates" (StringFromBytes "label") "val";;
+    let: "preSig" := struct.new PreSigDig [
+      "Epoch" ::= "nextEpoch";
+      "Dig" ::= "dig"
+    ] in
+    let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
+    let: "sig" := cryptoffi.PrivateKey__Sign (struct.loadF Server "sigSk" "s") "preSigByt" in
+    let: "newInfo" := struct.new servEpochInfo [
+      "updates" ::= "updates";
+      "dig" ::= "dig";
+      "sig" ::= "sig"
+    ] in
+    struct.storeF Server "histInfo" "s" (SliceAppend ptrT (struct.loadF Server "histInfo" "s") "newInfo");;
+    let: "sigDig" := Server__getDig "s" in
+    let: "latest" := Server__getLatest "s" "uid" in
+    let: "bound" := Server__getBound "s" "uid" in
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
+    ("sigDig", "latest", "bound").
+
+(* SigDigEncode from serde.out.go *)
+
+Definition SigDigEncode: val :=
+  rec: "SigDigEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF SigDig "Epoch" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF SigDig "Dig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF SigDig "Sig" "o"));;
+    ![slice.T byteT] "b".
+
+Definition MembEncode: val :=
+  rec: "MembEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "Label" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "VrfProof" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF Memb "EpochAdded" "o"));;
+    "b" <-[slice.T byteT] (PkCommOpenEncode (![slice.T byteT] "b") (struct.loadF Memb "CommOpen" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF Memb "MerkProof" "o"));;
+    ![slice.T byteT] "b".
+
+Definition NonMembEncode: val :=
+  rec: "NonMembEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF NonMemb "Label" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF NonMemb "VrfProof" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF NonMemb "MerkProof" "o"));;
+    ![slice.T byteT] "b".
+
+Definition ServerPutReplyEncode: val :=
+  rec: "ServerPutReplyEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (SigDigEncode (![slice.T byteT] "b") (struct.loadF ServerPutReply "Dig" "o"));;
+    "b" <-[slice.T byteT] (MembEncode (![slice.T byteT] "b") (struct.loadF ServerPutReply "Latest" "o"));;
+    "b" <-[slice.T byteT] (NonMembEncode (![slice.T byteT] "b") (struct.loadF ServerPutReply "Bound" "o"));;
+    ![slice.T byteT] "b".
+
+Definition ServerGetArgDecode: val :=
+  rec: "ServerGetArgDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      (struct.new ServerGetArg [
+         "Uid" ::= "a1"
+       ], "b1", #false)).
+
+(* Server__getMembHide from server.go *)
+
+(* getMembHide pre-cond that (uid, ver) in-bounds. *)
+Definition Server__getMembHide: val :=
+  rec: "Server__getMembHide" "s" "uid" "ver" :=
+    let: ("label", "vrfProof") := compMapLabel "uid" "ver" (struct.loadF Server "vrfSk" "s") in
+    let: "getReply" := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "label" in
+    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "getReply"));;
+    control.impl.Assert (struct.loadF merkle.GetReply "ProofTy" "getReply");;
+    struct.new MembHide [
+      "Label" ::= "label";
+      "VrfProof" ::= "vrfProof";
+      "MapVal" ::= struct.loadF merkle.GetReply "Val" "getReply";
+      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "getReply"
+    ].
+
+Definition Server__getHist: val :=
+  rec: "Server__getHist" "s" "uid" :=
+    let: "membs" := ref (zero_val (slice.T ptrT)) in
+    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
+    (if: "nextVer" = #0
+    then ![slice.T ptrT] "membs"
+    else
+      let: "latVer" := "nextVer" - #1 in
+      let: "ver" := ref_to uint64T #0 in
+      (for: (λ: <>, (![uint64T] "ver") < "latVer"); (λ: <>, "ver" <-[uint64T] ((![uint64T] "ver") + #1)) := λ: <>,
+        "membs" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "membs") (Server__getMembHide "s" "uid" (![uint64T] "ver")));;
+        Continue);;
+      ![slice.T ptrT] "membs").
+
+(* Get rets, among others, whether the uid has been registered,
+   and if so, a complete latest memb proof. *)
+Definition Server__Get: val :=
+  rec: "Server__Get" "s" "uid" :=
+    Mutex__Lock (struct.loadF Server "mu" "s");;
+    let: "dig" := Server__getDig "s" in
+    let: "hist" := Server__getHist "s" "uid" in
+    let: "bound" := Server__getBound "s" "uid" in
+    let: "nextVer" := Fst (MapGet (struct.loadF Server "nextVers" "s") "uid") in
+    (if: "nextVer" = #0
+    then
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
+      ("dig", "hist", #false, struct.new Memb [
+         "CommOpen" ::= struct.new PkCommOpen [
+         ]
+       ], "bound")
+    else
+      let: "latest" := Server__getLatest "s" "uid" in
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
+      ("dig", "hist", #true, "latest", "bound")).
+
+(* MembHideEncode from serde.out.go *)
+
+Definition MembHideEncode: val :=
+  rec: "MembHideEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "Label" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "VrfProof" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "MapVal" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF MembHide "MerkProof" "o"));;
+    ![slice.T byteT] "b".
+
+(* MembHideSlice1DEncode from serde_misc.go *)
+
+Definition MembHideSlice1DEncode: val :=
+  rec: "MembHideSlice1DEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (slice.len "o"));;
+    ForSlice ptrT <> "e" "o"
+      ("b" <-[slice.T byteT] (MembHideEncode (![slice.T byteT] "b") "e"));;
+    ![slice.T byteT] "b".
+
+(* ServerGetReplyEncode from serde.out.go *)
+
+Definition ServerGetReplyEncode: val :=
+  rec: "ServerGetReplyEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (SigDigEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Dig" "o"));;
+    "b" <-[slice.T byteT] (MembHideSlice1DEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Hist" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF ServerGetReply "IsReg" "o"));;
+    "b" <-[slice.T byteT] (MembEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Latest" "o"));;
+    "b" <-[slice.T byteT] (NonMembEncode (![slice.T byteT] "b") (struct.loadF ServerGetReply "Bound" "o"));;
+    ![slice.T byteT] "b".
+
+(* ServerSelfMonArg from serde.go *)
+
+Definition ServerSelfMonArg := struct.decl [
+  "Uid" :: uint64T
+].
+
+(* ServerSelfMonArgDecode from serde.out.go *)
+
+Definition ServerSelfMonArgDecode: val :=
+  rec: "ServerSelfMonArgDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      (struct.new ServerSelfMonArg [
+         "Uid" ::= "a1"
+       ], "b1", #false)).
+
+(* Server__SelfMon from server.go *)
+
+Definition Server__SelfMon: val :=
+  rec: "Server__SelfMon" "s" "uid" :=
+    Mutex__Lock (struct.loadF Server "mu" "s");;
+    let: "dig" := Server__getDig "s" in
+    let: "bound" := Server__getBound "s" "uid" in
+    Mutex__Unlock (struct.loadF Server "mu" "s");;
+    ("dig", "bound").
+
+(* ServerSelfMonReply from serde.go *)
+
+Definition ServerSelfMonReply := struct.decl [
+  "Dig" :: ptrT;
+  "Bound" :: ptrT
+].
+
+(* ServerSelfMonReplyEncode from serde.out.go *)
+
+Definition ServerSelfMonReplyEncode: val :=
+  rec: "ServerSelfMonReplyEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (SigDigEncode (![slice.T byteT] "b") (struct.loadF ServerSelfMonReply "Dig" "o"));;
+    "b" <-[slice.T byteT] (NonMembEncode (![slice.T byteT] "b") (struct.loadF ServerSelfMonReply "Bound" "o"));;
+    ![slice.T byteT] "b".
+
+Definition ServerAuditArgDecode: val :=
+  rec: "ServerAuditArgDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      (struct.new ServerAuditArg [
+         "Epoch" ::= "a1"
+       ], "b1", #false)).
+
+(* Server__Audit from server.go *)
+
+(* Audit returns an err on fail. *)
+Definition Server__Audit: val :=
+  rec: "Server__Audit" "s" "epoch" :=
+    Mutex__Lock (struct.loadF Server "mu" "s");;
+    (if: "epoch" ≥ (slice.len (struct.loadF Server "histInfo" "s"))
+    then
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
+      (struct.new UpdateProof [
+         "Updates" ::= NewMap stringT (slice.T byteT) #()
+       ], #true)
+    else
+      let: "info" := SliceGet ptrT (struct.loadF Server "histInfo" "s") "epoch" in
+      Mutex__Unlock (struct.loadF Server "mu" "s");;
+      let: "p" := struct.new UpdateProof [
+        "Updates" ::= struct.loadF servEpochInfo "updates" "info";
+        "Sig" ::= struct.loadF servEpochInfo "sig" "info"
+      ] in
+      ("p", #false)).
+
+(* ServerAuditReplyEncode from serde.out.go *)
+
+Definition ServerAuditReplyEncode: val :=
+  rec: "ServerAuditReplyEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (UpdateProofEncode (![slice.T byteT] "b") (struct.loadF ServerAuditReply "P" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF ServerAuditReply "Err" "o"));;
+    ![slice.T byteT] "b".
+
+(* newRpcServer from rpc.go *)
+
+Definition newRpcServer: val :=
+  rec: "newRpcServer" "s" :=
+    let: "h" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "h" ServerPutRpc (λ: "arg" "reply",
+      let: (("argObj", <>), "err0") := ServerPutArgDecode "arg" in
+      (if: "err0"
+      then #()
+      else
+        let: (("ret0", "ret1"), "ret2") := Server__Put "s" (struct.loadF ServerPutArg "Uid" "argObj") (struct.loadF ServerPutArg "Pk" "argObj") in
+        let: "replyObj" := struct.new ServerPutReply [
+          "Dig" ::= "ret0";
+          "Latest" ::= "ret1";
+          "Bound" ::= "ret2"
+        ] in
+        "reply" <-[slice.T byteT] (ServerPutReplyEncode (![slice.T byteT] "reply") "replyObj");;
+        #())
+      );;
+    MapInsert "h" ServerGetRpc (λ: "arg" "reply",
+      let: (("argObj", <>), "err0") := ServerGetArgDecode "arg" in
+      (if: "err0"
+      then #()
+      else
+        let: (((("ret0", "ret1"), "ret2"), "ret3"), "ret4") := Server__Get "s" (struct.loadF ServerGetArg "Uid" "argObj") in
+        let: "replyObj" := struct.new ServerGetReply [
+          "Dig" ::= "ret0";
+          "Hist" ::= "ret1";
+          "IsReg" ::= "ret2";
+          "Latest" ::= "ret3";
+          "Bound" ::= "ret4"
+        ] in
+        "reply" <-[slice.T byteT] (ServerGetReplyEncode (![slice.T byteT] "reply") "replyObj");;
+        #())
+      );;
+    MapInsert "h" ServerSelfMonRpc (λ: "arg" "reply",
+      let: (("argObj", <>), "err0") := ServerSelfMonArgDecode "arg" in
+      (if: "err0"
+      then #()
+      else
+        let: ("ret0", "ret1") := Server__SelfMon "s" (struct.loadF ServerSelfMonArg "Uid" "argObj") in
+        let: "replyObj" := struct.new ServerSelfMonReply [
+          "Dig" ::= "ret0";
+          "Bound" ::= "ret1"
+        ] in
+        "reply" <-[slice.T byteT] (ServerSelfMonReplyEncode (![slice.T byteT] "reply") "replyObj");;
+        #())
+      );;
+    MapInsert "h" ServerAuditRpc (λ: "arg" "reply",
+      let: (("argObj", <>), "err0") := ServerAuditArgDecode "arg" in
+      (if: "err0"
+      then #()
+      else
+        let: ("ret0", "ret1") := Server__Audit "s" (struct.loadF ServerAuditArg "Epoch" "argObj") in
+        let: "replyObj" := struct.new ServerAuditReply [
+          "P" ::= "ret0";
+          "Err" ::= "ret1"
+        ] in
+        "reply" <-[slice.T byteT] (ServerAuditReplyEncode (![slice.T byteT] "reply") "replyObj");;
+        #())
+      );;
+    advrpc.NewServer "h".
+
+(* AdtrUpdateArgDecode from serde.out.go *)
+
+Definition AdtrUpdateArgDecode: val :=
+  rec: "AdtrUpdateArgDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := UpdateProofDecode "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      (struct.new AdtrUpdateArg [
+         "P" ::= "a1"
+       ], "b1", #false)).
+
+Definition AdtrUpdateReplyEncode: val :=
+  rec: "AdtrUpdateReplyEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF AdtrUpdateReply "Err" "o"));;
+    ![slice.T byteT] "b".
+
+Definition AdtrGetArgDecode: val :=
+  rec: "AdtrGetArgDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      (struct.new AdtrGetArg [
+         "Epoch" ::= "a1"
+       ], "b1", #false)).
+
+Definition AdtrEpochInfoEncode: val :=
+  rec: "AdtrEpochInfoEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF AdtrEpochInfo "Dig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF AdtrEpochInfo "ServSig" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF AdtrEpochInfo "AdtrSig" "o"));;
+    ![slice.T byteT] "b".
+
+Definition AdtrGetReplyEncode: val :=
+  rec: "AdtrGetReplyEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (AdtrEpochInfoEncode (![slice.T byteT] "b") (struct.loadF AdtrGetReply "X" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF AdtrGetReply "Err" "o"));;
+    ![slice.T byteT] "b".
+
+(* newRpcAuditor from rpc.go *)
+
+Definition newRpcAuditor: val :=
+  rec: "newRpcAuditor" "a" :=
+    let: "h" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "h" AdtrUpdateRpc (λ: "arg" "reply",
+      let: (("argObj", <>), "err0") := AdtrUpdateArgDecode "arg" in
+      (if: "err0"
+      then #()
+      else
+        let: "ret0" := Auditor__Update "a" (struct.loadF AdtrUpdateArg "P" "argObj") in
+        let: "replyObj" := struct.new AdtrUpdateReply [
+          "Err" ::= "ret0"
+        ] in
+        "reply" <-[slice.T byteT] (AdtrUpdateReplyEncode (![slice.T byteT] "reply") "replyObj");;
+        #())
+      );;
+    MapInsert "h" AdtrGetRpc (λ: "arg" "reply",
+      let: (("argObj", <>), "err0") := AdtrGetArgDecode "arg" in
+      (if: "err0"
+      then #()
+      else
+        let: ("ret0", "ret1") := Auditor__Get "a" (struct.loadF AdtrGetArg "Epoch" "argObj") in
+        let: "replyObj" := struct.new AdtrGetReply [
+          "X" ::= "ret0";
+          "Err" ::= "ret1"
+        ] in
+        "reply" <-[slice.T byteT] (AdtrGetReplyEncode (![slice.T byteT] "reply") "replyObj");;
+        #())
+      );;
+    advrpc.NewServer "h".
+
+(* setup from basictest.go *)
+
+(* setup starts server and auditors. it's mainly a logical convenience.
+   it consolidates the external parties, letting us more easily describe
+   different adversary configs. *)
+Definition setup: val :=
+  rec: "setup" "servAddr" "adtrAddrs" :=
+    let: (("serv", "servSigPk"), "servVrfPk") := newServer #() in
+    let: "servRpc" := newRpcServer "serv" in
+    advrpc.Server__Serve "servRpc" "servAddr";;
+    let: "adtrPks" := ref (zero_val (slice.T cryptoffi.PublicKey)) in
+    ForSlice uint64T <> "adtrAddr" "adtrAddrs"
+      (let: ("adtr", "adtrPk") := newAuditor "servSigPk" in
+      let: "adtrRpc" := newRpcAuditor "adtr" in
+      advrpc.Server__Serve "adtrRpc" "adtrAddr";;
+      "adtrPks" <-[slice.T cryptoffi.PublicKey] (SliceAppend cryptoffi.PublicKey (![slice.T cryptoffi.PublicKey] "adtrPks") "adtrPk"));;
+    time.Sleep #1000000;;
+    struct.new setupParams [
+      "servAddr" ::= "servAddr";
+      "servSigPk" ::= "servSigPk";
+      "servVrfPk" ::= "servVrfPk";
+      "adtrAddrs" ::= "adtrAddrs";
+      "adtrPks" ::= ![slice.T cryptoffi.PublicKey] "adtrPks"
+    ].
+
+Definition testBasicFull: val :=
+  rec: "testBasicFull" "servAddr" "adtrAddrs" :=
+    testBasic (setup "servAddr" "adtrAddrs");;
     #().
 
 (* client.go *)
