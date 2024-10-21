@@ -29,16 +29,16 @@ Record t :=
   }.
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
-Definition own (ptr : loc) (obj : t) (serv_good adtrs_good : bool) : iProp Σ :=
+Definition valid (ptr : loc) (obj : t) (serv_good adtrs_good : bool) : iProp Σ :=
   ∃ sl_servSigPk sl_adtrAddrs sl_adtrPks dim0_adtrPks,
-  "Hptr_servAddr" ∷ ptr ↦[setupParams :: "servAddr"] #obj.(servAddr) ∗
-  "Hptr_servSigPk" ∷ ptr ↦[setupParams :: "servSigPk"] (slice_val sl_servSigPk) ∗
+  "#Hptr_servAddr" ∷ ptr ↦[setupParams :: "servAddr"]□ #obj.(servAddr) ∗
+  "#Hptr_servSigPk" ∷ ptr ↦[setupParams :: "servSigPk"]□ (slice_val sl_servSigPk) ∗
   "#Hsl_servSigPk" ∷ own_slice_small sl_servSigPk byteT DfracDiscarded obj.(servSigPk) ∗
   "#His_good_serv" ∷ (if serv_good then is_pk obj.(servSigPk) (serv_sigpred obj.(serv_γ)) else True) ∗
-  "Hptr_servVrfPk" ∷ ptr ↦[setupParams :: "servVrfPk"] #obj.(servVrfPk) ∗
-  "Hptr_adtrAddrs" ∷ ptr ↦[setupParams :: "adtrAddrs"] (slice_val sl_adtrAddrs) ∗
+  "#Hptr_servVrfPk" ∷ ptr ↦[setupParams :: "servVrfPk"]□ #obj.(servVrfPk) ∗
+  "#Hptr_adtrAddrs" ∷ ptr ↦[setupParams :: "adtrAddrs"]□ (slice_val sl_adtrAddrs) ∗
   "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded obj.(adtrAddrs) ∗
-  "Hptr_adtrPks" ∷ ptr ↦[setupParams :: "adtrPks"] (slice_val sl_adtrPks) ∗
+  "#Hptr_adtrPks" ∷ ptr ↦[setupParams :: "adtrPks"]□ (slice_val sl_adtrPks) ∗
   "#Hsl_adtrPks" ∷ own_slice_small sl_adtrPks (slice.T byteT) DfracDiscarded dim0_adtrPks ∗
   "#Hdim0_adtrPks" ∷ ([∗ list] p;o ∈ dim0_adtrPks;obj.(adtrPks), adtrPk.own p o) ∗
   "#His_good_adtrs" ∷ (if adtrs_good then
@@ -52,7 +52,7 @@ End setupParams.
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma wp_setup (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) (serv_good adtrs_good : bool) :
+Lemma wp_setup (serv_good adtrs_good : bool) (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
   {{{
     "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
     "%Hlen_adtrs" ∷ ⌜ length adtrAddrs > 0 ⌝
@@ -60,7 +60,7 @@ Lemma wp_setup (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) (serv_good a
   setup #servAddr (slice_val sl_adtrAddrs)
   {{{
     ptr_setup setup, RET #ptr_setup;
-    "Hsetup" ∷ setupParams.own ptr_setup setup serv_good adtrs_good
+    "#Hsetup" ∷ setupParams.valid ptr_setup setup serv_good adtrs_good
   }}}.
 Proof.
   rewrite /setup. iIntros (Φ) "H HΦ". iNamed "H".
@@ -89,11 +89,13 @@ Proof.
   { iExists Slice.nil, [], []. iFrame. iSplit; [|naive_solver].
     iApply own_slice_zero. }
   iIntros "[_ (%&%&%&H)]". iNamed "H".
+  wp_apply wp_Sleep. wp_load. iApply wp_fupd.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+  iMod (struct_pointsto_persist with "H") as "H".
+  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
   iDestruct (own_slice_to_small with "Hsl_adtrPks") as "Hsl_adtrPks".
   iMod (own_slice_small_persist with "Hsl_adtrPks") as "#Hsl_adtrPks".
-  wp_apply wp_Sleep. wp_load. wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
-  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
-  iApply ("HΦ" $! _ (setupParams.mk _ _ serv_γ _ _ _)).
+  iIntros "!>". iApply ("HΦ" $! _ (setupParams.mk _ _ serv_γ _ _ _)).
   iFrame "∗#". simpl. iSplitL; [|iSplitL].
   - destruct serv_good; [iFrame "#"|done].
   - destruct adtrs_good; [|done].
@@ -222,7 +224,7 @@ Qed.
 
 Lemma wp_testBasic ptr_setup setup :
   {{{
-    "Hsetup" ∷ setupParams.own ptr_setup setup false true
+    "#Hsetup" ∷ setupParams.valid ptr_setup setup false true
   }}}
   testBasic #ptr_setup
   {{{ RET #(); True }}}.
@@ -321,7 +323,7 @@ Lemma wp_testBasicFull (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
   {{{ RET #(); True }}}.
 Proof using Type*.
   rewrite /testBasicFull. iIntros (Φ) "H HΦ". iNamed "H".
-  wp_apply (wp_setup with "[$Hsl_adtrAddrs]"); [done|]. iIntros "*". iNamed 1.
+  wp_apply (wp_setup false true with "[$Hsl_adtrAddrs]"); [done|]. iIntros "*". iNamed 1.
   wp_apply (wp_testBasic with "Hsetup"). wp_pures. by iApply "HΦ".
 Qed.
 
