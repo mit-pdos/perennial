@@ -322,15 +322,68 @@ Proof.
   rewrite /ext_by_cmtd Hts in Hext.
   destruct Hext as (rts & -> & Hlen).
   rewrite /ext_by_cmtd lookup_insert.
-  f_equal.
   specialize (Hlen Hnz).
   rewrite last_extend_twice.
   assert (Hge : (rts ≤ ts)%nat).
   { etrans; last apply Hlen.
     by apply last_extend_length_ge_n.
   }
-  f_equal.
-  lia.
+  split.
+  { do 2 f_equal. lia. }
+  { etrans; last apply Hlen. apply last_extend_length_ge. }
+Qed.
+
+Lemma cmtd_yield_from_kmodc_inv_commit cmtd kmodc ts v :
+  (length cmtd ≤ ts)%nat ->
+  cmtd ≠ [] ->
+  gt_all (length cmtd) (dom kmodc) ->
+  cmtd_yield_from_kmodc cmtd kmodc ->
+  cmtd_yield_from_kmodc (last_extend ts cmtd ++ [v]) (<[ts:=v]> kmodc).
+Proof.
+  intros Hts Hnnil Hgtall Hyield t Ht.
+  pose proof (last_extend_length_eq_n _ _ Hnnil Hts) as Hlen.
+  destruct (decide (t < ts)%nat) as [Hlt | Hge].
+  { (* Case: before write-extension [t < ts]. *)
+    rewrite prev_dbval_insert; last first.
+    { intros x Hx.
+      specialize (Hgtall _ Hx). simpl in Hgtall.
+      clear -Hts Hgtall. lia.
+    }
+    { apply Hlt. }
+    rewrite lookup_app_l; last first.
+    { clear -Hlen Hlt. lia. }
+    destruct (decide (t < length cmtd)%nat) as [Hltc | Hge].
+    { (* Case: before extension [t < length cmtd]. *)
+      specialize (Hyield _ Hltc).
+      rewrite lookup_last_extend_l; last apply Hltc.
+      by rewrite Hyield.
+    }
+    (* Case: read-extension [length cmtd ≤ t < ts]. *)
+    rewrite Nat.nlt_ge in Hge.
+    rewrite lookup_last_extend_r; last first.
+    { apply Hlt. }
+    { clear -Hge. lia. }
+    rewrite last_lookup Hyield; last first.
+    { apply length_not_nil in Hnnil. clear -Hnnil. lia. }
+    f_equal.
+    symmetry.
+    apply prev_dbval_ge.
+    { clear -Hge. lia. }
+    intros x Hx.
+    specialize (Hgtall _ Hx). simpl in Hgtall.
+    lia.
+  }
+  (* Case: write-extension [t = ts]. *)
+  rewrite Nat.nlt_ge in Hge.
+  assert (Heq : t = length (last_extend ts cmtd)).
+  { rewrite length_app Hlen /= in Ht.
+    rewrite Hlen.
+    clear -Hge Ht. lia.
+  }
+  rewrite Heq lookup_snoc_length.
+  f_equal. symmetry.
+  apply prev_dbval_lookup.
+  by rewrite Hlen lookup_insert.
 Qed.
 
 Section inv.
@@ -411,13 +464,15 @@ Section inv.
     le_all ts (dom kmodl) ->
     kmodl !! ts = Some v ->
     kmodc !! ts = None ->
-    quorum_validation_fixed_before γ k (S ts) -∗
+    quorum_validated_key γ k ts -∗
     key_inv_with_tsprep_no_kmodl_no_kmodc γ k ts kmodl kmodc ==∗
     key_inv_with_tsprep_no_kmodl_no_kmodc γ k ts (delete ts kmodl) (<[ts:=v]> kmodc) ∗
     is_cmtd_hist_length_lb γ k (S ts).
   Proof.
     iIntros (Hnz Hles Hkmodl Hkmodc) "#Hqv Hkey".
     do 2 iNamed "Hkey".
+    pose proof (ext_by_lnrz_impl_cmtd_not_nil _ _ _ Hdiffl) as Hnnil.
+    pose proof (ext_by_cmtd_length_cmtd _ _ _ _ Hnz Hkmodc Hdiffc) as Hlenc.
     pose proof (ext_by_lnrz_inv_commit _ _ _ _ _ Hkmodl Hles Hdiffl) as Hdiffl'.
     unshelve epose proof (ext_by_cmtd_inv_commit _ _ _ _ v Hnz _ Hkmodc Hdiffc) as Hdiffc'.
     { eapply ext_by_cmtd_partial_impl_repl_not_nil; [| apply Hkmodc | apply Hdiffc].
@@ -429,8 +484,8 @@ Section inv.
     iDestruct (cmtd_hist_witness with "Hcmtd") as "#Hlb".
     iModIntro.
     unshelve epose proof (last_extend_length_eq_n ts cmtd _ _) as Hlen.
-    { by eapply ext_by_lnrz_impl_cmtd_not_nil. }
-    { by eapply ext_by_cmtd_length. }
+    { apply Hnnil. }
+    { apply Hlenc. }
     iSplit; last first.
     { iFrame "Hlb".
       iPureIntro.
@@ -439,14 +494,42 @@ Section inv.
     }
     iFrame "∗ # %".
     iSplit.
-    { rewrite length_app Hlen.
-      by rewrite Nat.add_1_r.
+    { rewrite length_app Hlen Nat.add_1_r.
+      iDestruct "Hqv" as (ridsq) "[Hqv %Hridsq]".
+      iExists ridsq.
+      iSplit; last done.
+      iApply (big_sepS_mono with "Hqv").
+      iIntros (rid _) "Hrv".
+      iApply (replica_key_validation_at_length with "Hrv").
     }
     iSplit.
-    { rewrite {2}/committed_or_quorum_invalidated length_app Hlen /=.
+    { rewrite {2}/committed_or_quorum_invalidated_key length_app Hlen /=.
       by rewrite Nat.add_1_r /= lookup_insert.
     }
-    by rewrite lookup_insert_ne.
+    iSplit.
+    { iApply (big_sepM_insert_2 with "[] Hqvk"). iFrame "Hqv". }
+    iPureIntro.
+    split.
+    { intros x Hx.
+      rewrite dom_insert_L elem_of_union elem_of_singleton in Hx.
+      destruct Hx as [Hx | Hx]; last first.
+      { specialize (Hltlenc _ Hx). simpl in Hltlenc.
+        etrans; first apply Hltlenc.
+        rewrite length_app /=.
+        clear -Hlenc Hlen. lia.
+      }
+      subst x.
+      rewrite length_app /= Hlen.
+      lia.
+    }
+    split.
+    { apply cmtd_yield_from_kmodc_inv_commit.
+      { apply Hlenc. }
+      { apply Hnnil. }
+      { apply Hltlenc. }
+      { apply Hyield. }
+    }
+    { by rewrite lookup_insert_ne. }
   Qed.
 
   Lemma keys_inv_commit γ kmodls kmodcs ts :
@@ -454,7 +537,7 @@ Section inv.
     map_Forall (λ _ kmodl, le_all ts (dom kmodl)) kmodls ->
     map_Forall (λ _ kmodl, is_Some (kmodl !! ts)) kmodls ->
     map_Forall (λ _ kmodc, kmodc !! ts = None) kmodcs ->
-    ([∗ set] k ∈ dom kmodls, quorum_validation_fixed_before γ k (S ts)) -∗
+    ([∗ set] k ∈ dom kmodls, quorum_validated_key γ k ts) -∗
     ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
        key_inv_with_tsprep_no_kmodl_no_kmodc γ key ts kmodl kmodc) ==∗
     ([∗ map] key ↦ kmodl;kmodc ∈ kmodls;kmodcs,
@@ -607,7 +690,7 @@ Section inv.
             { set_solver. }
             iDestruct (cmtd_kmod_agree with "Hkmodc Hkmodc'") as %Hkmodceq.
             iPureIntro.
-            eapply ext_by_cmtd_length; [apply Htidnz | | apply Hdiffc].
+            eapply ext_by_cmtd_length_cmtd; [apply Htidnz | | apply Hdiffc].
             by rewrite -Hkmodceq vslice_resm_to_tmods_not_terminated.
           }
           exfalso. clear -Hge Hlengt Hlenle Hprefix. lia.
@@ -632,7 +715,7 @@ Section inv.
             { set_solver. }
             iDestruct (cmtd_kmod_agree with "Hkmodc Hkmodc'") as %Hkmodceq.
             iPureIntro.
-            eapply ext_by_cmtd_length; [apply Htidnz | | apply Hdiffc].
+            eapply ext_by_cmtd_length_cmtd; [apply Htidnz | | apply Hdiffc].
             by rewrite -Hkmodceq vslice_resm_to_tmods_not_terminated.
           }
           exfalso. clear -Hgt Hlenge Hlenle Hprefix. lia.
@@ -741,7 +824,7 @@ Section inv.
     (* For each [k ∈ dom wrs], obtain that its validation has been fixed by some quorum. *)
     iAssert ([∗ set] gid ∈ ptgroups (dom wrs),
                [∗ set] key ∈ keys_group gid (dom wrs),
-                 quorum_validation_fixed_before γ key (S tid))%I as "#Hvdlb".
+                 quorum_validated_key γ key tid)%I as "#Hvdlb".
     { iDestruct "Hprep" as "[Hwrs Hprep]".
       iApply big_sepS_forall.
       iIntros (gid Hgid).
@@ -774,11 +857,7 @@ Section inv.
       rewrite Hpwrs lookup_wrs_group_Some in Hv.
       destruct Hv as [_ ->].
       iDestruct "Hvd" as (l) "[Hvd %Hlookup]".
-      iExists l.
-      iFrame "Hvd".
-      iPureIntro.
-      apply lookup_lt_Some in Hlookup.
-      clear -Hlookup. lia.
+      iFrame "Hvd %".
     }
     iDestruct (big_sepS_partition_2 with "Hvdlb") as "Hvdlb'".
     { intros k Hk.

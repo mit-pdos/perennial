@@ -56,7 +56,7 @@ Section res.
 
     Definition is_replica_key_validation_length_lb
       γ (gid rid : u64) (key : dbkey) (n : nat) : iProp Σ :=
-      ∃ l, is_replica_key_validation_lb γ gid rid key l ∧ ⌜n ≤ length l⌝.
+      ∃ l, is_replica_key_validation_lb γ gid rid key l ∧ ⌜(n ≤ length l)%nat⌝.
 
     Definition is_replica_key_validation_at
       γ (gid rid : u64) (key : dbkey) (ts : nat) (b : bool) : iProp Σ :=
@@ -101,6 +101,24 @@ Section res.
       iDestruct (replica_key_validation_prefix with "Hlb Hl") as %Hprefix.
       iPureIntro.
       by eapply prefix_lookup_Some.
+    Qed.
+
+    Lemma replica_key_validation_lb_lookup γ gid rid key l ts b :
+      (ts < length l)%nat ->
+      is_replica_key_validation_at γ gid rid key ts b -∗
+      is_replica_key_validation_lb γ gid rid key l -∗
+      ⌜l !! ts = Some b⌝.
+    Admitted.
+
+    Lemma replica_key_validation_at_length γ gid rid key ts b :
+      is_replica_key_validation_at γ gid rid key ts b -∗
+      is_replica_key_validation_length_lb γ gid rid key (S ts).
+    Proof.
+      iIntros "(%lb & Hlb & %Hb)".
+      iFrame.
+      iPureIntro.
+      apply lookup_lt_Some in Hb.
+      lia.
     Qed.
 
   End replica_key_validation.

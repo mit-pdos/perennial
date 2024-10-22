@@ -103,6 +103,31 @@ Proof.
   by subst n.
 Qed.
 
+Lemma largest_before_not_elem_of n ns :
+  n ∉ ns ->
+  largest_before n ns = largest_before (pred n) ns.
+Proof.
+  intros Hnotin.
+  pose proof (largest_before_spec n ns) as Hn.
+  pose proof (largest_before_spec (pred n) ns) as Hpredn.
+  destruct (largest_before n ns) as [p |], (largest_before (pred n) ns) as [q |].
+  - destruct Hn as (Hp & Hple & Houtsidep).
+    destruct Hpredn as (Hq & Hqle & Houtsideq).
+    specialize (Houtsidep _ Hq). simpl in Houtsidep.
+    specialize (Houtsideq _ Hp). simpl in Houtsideq.
+    f_equal.
+    assert (Hne : n ≠ p) by set_solver.
+    clear -Hple Houtsidep Hqle Houtsideq Hne. lia.
+  - destruct Hn as (Hp & Hle & _).
+    assert (Hne : n ≠ p) by set_solver.
+    specialize (Hpredn _ Hp). simpl in Hpredn.
+    clear -Hle Hpredn Hne. lia.
+  - destruct Hpredn as (Hq & Hle & _).
+    specialize (Hn _ Hq). simpl in Hn.
+    clear -Hle Hn. lia.
+  - done.
+Qed.
+
 Lemma largest_before_empty n :
   largest_before n ∅ = None.
 Proof.

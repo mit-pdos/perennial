@@ -130,6 +130,17 @@ Section lemmas.
     split; [done | lia].
   Qed.
 
+  Lemma lookup_last_extend_l n i l :
+    (i < length l) ->
+    last_extend n l !! i = l !! i.
+  Proof.
+    intros Hi.
+    rewrite /last_extend.
+    destruct (last l) as [x |] eqn:Hl; last first.
+    { rewrite last_None in Hl. by rewrite Hl. }
+    by rewrite lookup_app_l.
+  Qed.
+
   Lemma last_extend_twice n1 n2 l :
     last_extend n1 (last_extend n2 l) = last_extend (n1 `max` n2) l.
   Proof.

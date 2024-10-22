@@ -12,32 +12,47 @@ prepare between end of repl to end of cmtd. *)
 Definition ext_by_cmtd
   (repl cmtd : dbhist) (kmod : dbkmod) (pts : nat) :=
   match kmod !! pts with
-  | Some v => cmtd = last_extend pts repl ++ [v]
+  | Some v => cmtd = last_extend pts repl ++ [v] ∧ (length repl ≤ pts)%nat
   | None => ∃ rts, cmtd = last_extend rts repl ∧ (pts ≠ O -> length cmtd ≤ pts)%nat
   end.
 
-Lemma ext_by_cmtd_prefix {repl cmtd kmod ts} :
+Lemma ext_by_cmtd_impl_prefix_repl_cmtd {repl cmtd kmod ts} :
   ext_by_cmtd repl cmtd kmod ts ->
   prefix repl cmtd.
 Proof.
   rewrite /ext_by_cmtd.
   intros Hext.
   destruct (kmod !! ts) as [v |].
-  { rewrite Hext. apply prefix_app_r, last_extend_prefix. }
+  { destruct Hext as [-> _]. apply prefix_app_r, last_extend_prefix. }
   destruct Hext as (rts & -> & _).
   apply last_extend_prefix.
 Qed.
 
-Lemma ext_by_cmtd_length repl cmtd kmodc ts :
-  ts ≠ O ->
-  kmodc !! ts = None ->
-  ext_by_cmtd repl cmtd kmodc ts ->
-  (length cmtd ≤ ts)%nat.
+Lemma ext_by_cmtd_length_cmtd repl cmtd kmodc pts :
+  pts ≠ O ->
+  kmodc !! pts = None ->
+  ext_by_cmtd repl cmtd kmodc pts ->
+  (length cmtd ≤ pts)%nat.
 Proof.
   intros Hnz Hnone Hext.
   rewrite /ext_by_cmtd Hnone in Hext.
   destruct Hext as (rts & -> & Hlen).
   by specialize (Hlen Hnz).
+Qed.
+
+Lemma ext_by_cmtd_length_repl repl cmtd kmodc pts :
+  pts ≠ O ->
+  ext_by_cmtd repl cmtd kmodc pts ->
+  (length repl ≤ pts)%nat.
+Proof.
+  intros Hnz Hext.
+  rewrite /ext_by_cmtd in Hext.
+  destruct (kmodc !! pts) as [v |].
+  { by destruct Hext as [_ ?]. }
+  destruct Hext as (rts & -> & Hlen).
+  specialize (Hlen Hnz).
+  etrans; last apply Hlen.
+  apply last_extend_length_ge.
 Qed.
 
 Definition prev_dbval (ts : nat) (d : dbval) (kmod : dbkmod) :=
@@ -155,6 +170,42 @@ Proof.
   lia.
 Qed.
 
+Lemma prev_dbval_lookup_None ts d kmod :
+  kmod !! ts = None ->
+  prev_dbval ts d kmod = prev_dbval (pred ts) d kmod.
+Proof.
+  intros Hnone.
+  rewrite /prev_dbval.
+  by rewrite largest_before_not_elem_of; last apply not_elem_of_dom.
+Qed.
+
+Lemma prev_dbval_empty t d :
+  prev_dbval t d ∅ = d.
+Proof. by rewrite /prev_dbval largest_before_empty. Qed.
+
+Lemma prev_dbval_outside ts1 ts2 d kmod :
+  (ts1 ≤ ts2)%nat ->
+  outside_all ts1 ts2 (dom kmod) ->
+  prev_dbval ts1 d kmod = prev_dbval ts2 d kmod.
+Proof.
+  intros Hle Houtside.
+  induction ts2 as [| t IH].
+  { replace ts1 with O; [done | lia]. }
+  destruct (decide (ts1 = S t)) as [-> | Hne]; first done.
+  rewrite (prev_dbval_lookup_None (S t)); last first.
+  { rewrite -not_elem_of_dom.
+    intros Hin.
+    specialize (Houtside _ Hin). simpl in Houtside.
+    clear -Houtside Hle Hne. lia.
+  }
+  apply IH.
+  { clear -Hle Hne. lia. }
+  { intros tx Htx.
+    specialize (Houtside _ Htx). simpl in Houtside.
+    clear -Houtside. lia.
+  }
+Qed.
+
 Lemma prefix_pointwise {A} (l1 l2 : list A) :
   (∀ i, (i < length l1)%nat -> l1 !! i = l2 !! i) ->
   prefix l1 l2.
@@ -196,6 +247,11 @@ Lemma ext_by_lnrz_impl_cmtd_not_nil cmtd lnrz kmod :
   cmtd ≠ [].
 Proof. intros (v & _ & Hlast & _) Hcmtd. by rewrite Hcmtd in Hlast. Qed.
 
+Lemma ext_by_lnrz_impl_prefix_cmtd_lnrz cmtd lnrz kmod :
+  ext_by_lnrz cmtd lnrz kmod ->
+  prefix cmtd lnrz.
+Proof. intros Hext. by destruct Hext as (? & ? & _). Qed.
+
 Lemma ext_by_cmtd_partial_impl_repl_not_nil repl cmtd kmod pts :
   cmtd ≠ [] ->
   kmod !! pts = None ->
@@ -209,6 +265,9 @@ Proof.
   by eapply last_extend_not_nil_inv.
 Qed.
 
+Definition cmtd_yield_from_kmodc (cmtd : dbhist) (kmodc : dbkmod) :=
+  ∀ (t : nat), (t < length cmtd)%nat -> cmtd !! t = Some (prev_dbval t None kmodc).
+
 Section def.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
@@ -220,10 +279,16 @@ Section def.
          is_replica_key_validation_length_lb γ (key_to_group key) rid key ts) ∧
       ⌜cquorum rids_all ridsq⌝.
 
-  Definition quorum_invalidated γ key ts : iProp Σ :=
+  Definition quorum_invalidated_key γ key ts : iProp Σ :=
     ∃ ridsq,
       ([∗ set] rid ∈ ridsq,
          is_replica_key_invalidated_at γ (key_to_group key) rid key ts) ∧
+      ⌜cquorum rids_all ridsq⌝.
+
+  Definition quorum_validated_key γ key ts : iProp Σ :=
+    ∃ (ridsq : gset u64),
+      ([∗ set] rid ∈ ridsq,
+         is_replica_key_validated_at γ (key_to_group key) rid key ts) ∧
       ⌜cquorum rids_all ridsq⌝.
 
   (** This predicate allows proving invariance w.r.t. prepare. In more detail,
@@ -238,27 +303,31 @@ Section def.
   [ts] has not committed, then it can only be extended by some reader with a
   larger timestamp, which would allow us to derive contradiction in the
   problematic case mentioned above. *)
-  Definition committed_or_quorum_invalidated γ key (kmodc : dbkmod) ts : iProp Σ :=
+  Definition committed_or_quorum_invalidated_key γ key (kmodc : dbkmod) ts : iProp Σ :=
     match kmodc !! ts with
-    | None => quorum_invalidated γ key ts
+    | None => quorum_invalidated_key γ key ts ∨ is_group_aborted γ (key_to_group key) ts
     | _ => True
     end.
 
   Definition key_inv_internal
     γ (key : dbkey) (tslb : nat) (repl : dbhist) (tsprep : nat) (kmodl kmodc : dbkmod) : iProp Σ :=
     ∃ (dbv : dbval) (lnrz cmtd : dbhist),
-      "Hdbv"    ∷ own_db_ptsto γ key dbv ∗
-      "Hlnrz"   ∷ own_lnrz_hist γ key lnrz ∗
-      "Hcmtd"   ∷ own_cmtd_hist γ key cmtd ∗
-      "#Hqvfb"  ∷ quorum_validation_fixed_before γ key (length cmtd) ∗
-      "#Hcori"  ∷ committed_or_quorum_invalidated γ key kmodc (pred (length cmtd)) ∗
-      "#Htslb"  ∷ is_largest_ts_lb γ tslb ∗
-      "%Hall"   ∷ ⌜key ∈ keys_all⌝ ∗
-      "%Hlast"  ∷ ⌜last lnrz = Some dbv⌝ ∗
-      "%Hext"   ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
-      "%Hdiffl" ∷ ⌜ext_by_lnrz cmtd lnrz kmodl⌝ ∗
-      "%Hdiffc" ∷ ⌜ext_by_cmtd repl cmtd kmodc tsprep⌝ ∗
-      "%Hzrsv"  ∷ ⌜kmodc !! O = None⌝.
+      "Hdbv"     ∷ own_db_ptsto γ key dbv ∗
+      "Hlnrz"    ∷ own_lnrz_hist γ key lnrz ∗
+      "Hcmtd"    ∷ own_cmtd_hist γ key cmtd ∗
+      "#Hqvfb"   ∷ quorum_validation_fixed_before γ key (length cmtd) ∗
+      "#Hcori"   ∷ committed_or_quorum_invalidated_key γ key kmodc (pred (length cmtd)) ∗
+      "#Hqvk"    ∷ ([∗ map] ts ↦ _ ∈ kmodc, quorum_validated_key γ key ts) ∗
+      "#Htslb"   ∷ is_largest_ts_lb γ tslb ∗
+      "%Hall"    ∷ ⌜key ∈ keys_all⌝ ∗
+      "%Hlast"   ∷ ⌜last lnrz = Some dbv⌝ ∗
+      "%Hext"    ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
+      "%Hrnnil"  ∷ ⌜repl ≠ []⌝ ∗
+      "%Hdiffl"  ∷ ⌜ext_by_lnrz cmtd lnrz kmodl⌝ ∗
+      "%Hdiffc"  ∷ ⌜ext_by_cmtd repl cmtd kmodc tsprep⌝ ∗
+      "%Hltlenc" ∷ ⌜gt_all (length cmtd) (dom kmodc)⌝ ∗
+      "%Hyield"  ∷ ⌜cmtd_yield_from_kmodc cmtd kmodc⌝ ∗
+      "%Hzrsv"   ∷ ⌜kmodc !! O = None⌝.
 
   Definition key_inv γ (key : dbkey) : iProp Σ :=
     ∃ (tslb : nat) (repl : dbhist) (tsprep : nat) (kmodl kmodc : dbkmod),
@@ -275,6 +344,15 @@ Section def.
       "Hkmodl"  ∷ own_lnrz_kmod_half γ key kmodl ∗
       "Hkmodc"  ∷ own_cmtd_kmod_half γ key kmodc ∗
       "Hkey"    ∷ key_inv_internal γ key tslb repl tsprep kmodl kmodc.
+
+  Definition key_inv_with_kmodc_with_kmodl_with_pts
+    γ (key : dbkey) (kmodc kmodl : dbkmod) (pts : nat) : iProp Σ :=
+    ∃ (tslb : nat) (repl : dbhist),
+      "Hrepl"   ∷ own_repl_hist_half γ key repl ∗
+      "Htsprep" ∷ own_repl_ts_half γ key pts ∗
+      "Hkmodl"  ∷ own_lnrz_kmod_half γ key kmodl ∗
+      "Hkmodc"  ∷ own_cmtd_kmod_half γ key kmodc ∗
+      "Hkey"    ∷ key_inv_internal γ key tslb repl pts kmodl kmodc.
 
   Definition key_inv_with_tslb_no_kmodl
     γ (key : dbkey) (tslb : nat) (kmodl : dbkmod) : iProp Σ :=
@@ -491,8 +569,18 @@ Section lemma.
     ∃ kmodl, key_inv_with_kmodl γ key kmodl.
   Proof. iNamed 1. iFrame. Qed.
 
+  Lemma key_inv_expose_kmodc_kmodl_pts γ key :
+    key_inv γ key -∗
+    ∃ kmodc kmodl pts, key_inv_with_kmodc_with_kmodl_with_pts γ key kmodc kmodl pts.
+  Proof. iNamed 1. iFrame. Qed.
+
   Lemma key_inv_hide_kmodl γ key kmodl :
     key_inv_with_kmodl γ key kmodl -∗
+    key_inv γ key.
+  Proof. iNamed 1. iFrame. Qed.
+
+  Lemma key_inv_hide_kmodc_kmodl_pts γ key kmodc kmodl pts :
+    key_inv_with_kmodc_with_kmodl_with_pts γ key kmodc kmodl pts -∗
     key_inv γ key.
   Proof. iNamed 1. iFrame. Qed.
 

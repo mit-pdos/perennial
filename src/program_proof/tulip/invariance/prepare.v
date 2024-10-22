@@ -152,18 +152,21 @@ Section inv.
     iFrame "∗ %".
   Qed.
 
-  Lemma key_inv_prepare {γ gid ts} pwrs k :
+  Lemma key_inv_prepare {γ gid ts cm} pwrs k :
     ts ≠ O ->
     key_to_group k = gid ->
     k ∈ dom pwrs ->
+    cm !! ts = None ->
     quorum_validated γ gid ts -∗
     is_txn_pwrs γ gid ts pwrs -∗
     key_inv_xcmted_no_tsprep γ k O ts -∗
     ([∗ set] rid ∈ rids_all, replica_inv_xfinalized γ gid rid {[ts]}) -∗
+    own_group_commit_map γ gid cm -∗
     key_inv_xcmted_no_tsprep γ k ts ts ∗
-    ([∗ set] rid ∈ rids_all, replica_inv_xfinalized γ gid rid {[ts]}).
+    ([∗ set] rid ∈ rids_all, replica_inv_xfinalized γ gid rid {[ts]}) ∗
+    own_group_commit_map γ gid cm.
   Proof.
-    iIntros (Hnz Hgid Hk) "#Hqv #Hpwrs Hkey Hrps".
+    iIntros (Hnz Hgid Hk Hcm) "#Hqv #Hpwrs Hkey Hrps Hcm".
     do 3 iNamed "Hkey".
     destruct (decide (ts < pred (length cmtd))%nat) as [Hlt | Hge].
     { (* From [Hqv] and [Hqpa] we obtain a replica that currently grants the
@@ -207,10 +210,15 @@ Section inv.
     rewrite Nat.nlt_ge in Hge.
     destruct (decide (ts = pred (length cmtd))) as [Heq | Hne].
     { (* From [Hqv] and [Hcori] we obtain a replica that currently grants the
-         lock of [k] to [ts], but also has invalidated (through reading the key)
-         at [ts]. *)
-      rewrite /committed_or_quorum_invalidated -Heq Hnc.
+         lock of [k] to [ts], but also has either invalidated (through reading
+         the key) at [ts] or received abort of [ts]. *)
+      rewrite /committed_or_quorum_invalidated_key -Heq Hnc.
       iDestruct "Hqv" as (ridsq1) "[Hqv %Hq1]".
+      iDestruct "Hcori" as "[Hcori | Habted]"; last first.
+      { rewrite Hgid.
+        iDestruct (group_commit_lookup with "Hcm Habted") as %Habted.
+        by rewrite Habted in Hcm.
+      }
       iDestruct "Hcori" as (ridsq2) "[Hcori %Hq2]".
       pose proof (cquorums_overlapped _ _ _ Hq1 Hq2) as (rid & Hinq1 & Hinq2).
       pose proof (cquorum_elem_of _ _ _ Hinq1 Hq1) as Hinall.
@@ -246,16 +254,19 @@ Section inv.
     by apply ext_by_cmtd_inv_prepare.
   Qed.
 
-  Lemma keys_inv_prepare γ gid ts pwrs :
+  Lemma keys_inv_prepare γ gid ts cm pwrs :
     ts ≠ O ->
+    cm !! ts = None ->
     quorum_validated γ gid ts -∗
     is_txn_pwrs γ gid ts pwrs -∗
     ([∗ set] key ∈ dom pwrs, key_inv_xcmted_no_tsprep γ key O ts) -∗
     ([∗ set] rid ∈ rids_all, replica_inv_xfinalized γ gid rid {[ts]}) -∗
+    own_group_commit_map γ gid cm -∗
     ([∗ set] key ∈ dom pwrs, key_inv_xcmted_no_tsprep γ key ts ts) ∗
-    ([∗ set] rid ∈ rids_all, replica_inv_xfinalized γ gid rid {[ts]}).
+    ([∗ set] rid ∈ rids_all, replica_inv_xfinalized γ gid rid {[ts]}) ∗
+    own_group_commit_map γ gid cm.
   Proof.
-    iIntros (Hnz) "#Hqv #Hpwrs Hkeys Hrps".
+    iIntros (Hnz Hcm) "#Hqv #Hpwrs Hkeys Hrps Hcm".
     iAssert (⌜set_Forall (λ k, key_to_group k = gid) (dom pwrs)⌝)%I as %Hgroup.
     { iDestruct "Hpwrs" as (wrs) "[Hwrs %Hpwrs]".
       iPureIntro.
@@ -265,10 +276,11 @@ Section inv.
       rewrite Hpwrs map_lookup_filter_Some in Hv.
       by destruct Hv as [_ Hgid].
     }
-    iApply (big_sepS_impl_res with "Hkeys Hrps").
-    iIntros (k Hk) "!> Hkey Hrps".
+    iApply (big_sepS_impl_res with "Hkeys [Hrps Hcm]").
+    { iFrame. }
+    iIntros (k Hk) "!> Hkey [Hrps Hcm]".
     specialize (Hgroup _ Hk).
-    by iApply (key_inv_prepare with "Hqv Hpwrs Hkey Hrps").
+    by iApply (key_inv_prepare with "Hqv Hpwrs Hkey Hrps Hcm").
   Qed.
 
   Lemma apply_cmds_cm_subseteq {log logp cm cmp histm histmp} :
@@ -508,8 +520,9 @@ Section inv.
     }
     (* Re-establish keys invariant w.r.t. updated tuples. *)
     rewrite Hdom.
-    iDestruct (keys_inv_prepare with "Hqv [] Hkeys Hrps") as "[Hkeys Hrps]".
+    iDestruct (keys_inv_prepare with "Hqv [] Hkeys Hrps Hcm") as "(Hkeys & Hrps & Hcm)".
     { rewrite /valid_ts in Hvts. lia. }
+    { apply Hnotincm. }
     { iFrame "Hwrs %". }
     (* Put ownership of prepare timestamp back to keys invariant. *)
     iDestruct (keys_inv_merge_tsprep (dom pwrs) with "[Hkeys] Htssk") as "Hkeys".

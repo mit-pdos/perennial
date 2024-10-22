@@ -50,8 +50,11 @@ Section res.
     Definition is_repl_hist_lb γ (k : dbkey) (h : dbhist) : iProp Σ.
     Admitted.
 
+    Definition is_repl_hist_at γ (k : dbkey) (ts : nat) (v : dbval) : iProp Σ :=
+      ∃ lb, is_repl_hist_lb γ k lb ∗ ⌜lb !! ts = Some v⌝.
+
     #[global]
-      Instance is_is_repl_hist_lb_persistent α key hist :
+    Instance is_repl_hist_lb_persistent α key hist :
       Persistent (is_repl_hist_lb α key hist).
     Admitted.
 

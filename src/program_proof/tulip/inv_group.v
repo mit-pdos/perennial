@@ -46,6 +46,11 @@ Lemma key_to_group_filter_group `{Countable A} key gid (m : gmap dbkey A) :
   key_to_group key = gid.
 Proof. intros Hdom. rewrite filter_group_keys_group_dom in Hdom. set_solver. Qed.
 
+Lemma lookup_filter_group_key_to_group `{Countable A} k v (m : gmap dbkey A) :
+  m !! k = Some v ->
+  filter_group (key_to_group k) m !! k = Some v.
+Proof. intros Hv. by apply map_lookup_filter_Some_2. Qed.
+
 Lemma filter_group_dom `{Countable A} gid (m1 m2 : gmap dbkey A) :
   dom m1 = dom m2 ->
   dom (filter_group gid m1) = dom (filter_group gid m2).
@@ -184,6 +189,7 @@ Section inv.
     ∃ (pm : gmap nat bool) (cm : gmap nat bool) (stm : gmap nat txnst)
       (hists : gmap dbkey dbhist) (tspreps : gmap dbkey nat),
       "Hpm"       ∷ own_group_prepm γ gid pm ∗
+      "Hcm"       ∷ own_group_commit_map γ gid cm ∗
       "Hhists"    ∷ ([∗ map] k ↦ h ∈ filter_group gid hists, own_repl_hist_half γ k h) ∗
       "Hlocks"    ∷ ([∗ map] k ↦ t ∈ filter_group gid tspreps, own_repl_ts_half γ k t) ∗
       "#Hsafestm" ∷ ([∗ map] ts ↦ st ∈ stm, safe_txnst γ gid ts st) ∗
