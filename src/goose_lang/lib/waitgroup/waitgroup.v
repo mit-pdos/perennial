@@ -56,6 +56,10 @@ Section proof.
 
   Definition own_WaitGroup_token γ (i:u64) : iProp Σ := i ⤳[γ.(tok_gn)] ().
 
+  (* TODO: it should be possible to generalize this to a non-persistent P.
+  i started doing this and the set reasoning in the WaitGroup.Done proof got weird.
+  to make this work, i think we need to change the sep domains to
+  [(fin_to_set u64) ∖ remaining], but i started running into fin_to_set typeclass issues. *)
   Definition is_WaitGroup wg γ P : iProp Σ :=
     ∃ lk (vptr:loc),
       ⌜wg = (lk, #vptr)%V⌝ ∗
