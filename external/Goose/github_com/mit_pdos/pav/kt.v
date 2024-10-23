@@ -205,8 +205,6 @@ Definition aliceUid : expr := #0.
 
 Definition bobUid : expr := #1.
 
-Definition charlieUid : expr := #2.
-
 (* clientErr from client.go *)
 
 (* clientErr abstracts errors in the KT client.
@@ -777,10 +775,10 @@ Definition callAdtrUpdate: val :=
       then #true
       else struct.loadF AdtrUpdateReply "Err" "reply")).
 
-(* updAdtrs from basictest.go *)
+(* updAdtrsOnce from basictest.go *)
 
-Definition updAdtrs: val :=
-  rec: "updAdtrs" "upd" "adtrs" :=
+Definition updAdtrsOnce: val :=
+  rec: "updAdtrsOnce" "upd" "adtrs" :=
     ForSlice ptrT <> "cli" "adtrs"
       (let: "err" := callAdtrUpdate "cli" "upd" in
       control.impl.Assume (~ "err"));;
@@ -1147,8 +1145,8 @@ Definition testBasic: val :=
     let: ("upd1", "err2") := callServAudit "servCli" #1 in
     control.impl.Assume (~ "err2");;
     let: "adtrs" := mkRpcClients (struct.loadF setupParams "adtrAddrs" "setup") in
-    updAdtrs "upd0" "adtrs";;
-    updAdtrs "upd1" "adtrs";;
+    updAdtrsOnce "upd0" "adtrs";;
+    updAdtrsOnce "upd1" "adtrs";;
     let: "bob" := newClient bobUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
     let: ((("isReg", "pk1"), "ep1"), "err3") := Client__Get "bob" aliceUid in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err3"));;
@@ -1800,6 +1798,27 @@ Definition Evid__Check: val :=
         then #true
         else std.BytesEqual (struct.loadF SigDig "Dig" (struct.loadF Evid "sigDig0" "e")) (struct.loadF SigDig "Dig" (struct.loadF Evid "sigDig1" "e"))))).
 
+(* history.go *)
+
+Definition HistEntry := struct.decl [
+  "Epoch" :: uint64T;
+  "HistVal" :: slice.T byteT
+].
+
+(* GetHist searches hist at the epoch and rets the latest val, or false
+   if there's no registered val. *)
+Definition GetHist: val :=
+  rec: "GetHist" "o" "epoch" :=
+    let: "isReg" := ref (zero_val boolT) in
+    let: "val" := ref (zero_val (slice.T byteT)) in
+    ForSlice ptrT <> "e" "o"
+      ((if: (struct.loadF HistEntry "Epoch" "e") ≤ "epoch"
+      then
+        "isReg" <-[boolT] #true;;
+        "val" <-[slice.T byteT] (struct.loadF HistEntry "HistVal" "e")
+      else #()));;
+    (![boolT] "isReg", ![slice.T byteT] "val").
+
 (* rpc.go *)
 
 (* serde.go *)
@@ -1845,149 +1864,84 @@ Definition MapLabelPreDecode: val :=
 
 (* test.go *)
 
-(* chaos from Charlie running all the ops. *)
-Definition chaos: val :=
-  rec: "chaos" "charlie" "adtr0Addr" "adtr1Addr" "adtr0Pk" "adtr1Pk" :=
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      time.Sleep #40000000;;
-      let: "pk" := SliceSingleton #(U8 2) in
-      let: (<>, "err0") := Client__Put "charlie" "pk" in
-      control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
-      let: (((<>, <>), <>), "err1") := Client__Get "charlie" aliceUid in
-      control.impl.Assume (~ (struct.loadF clientErr "err" "err1"));;
-      let: (<>, "err2") := Client__SelfMon "charlie" in
-      control.impl.Assume (~ (struct.loadF clientErr "err" "err2"));;
-      Client__Audit "charlie" "adtr0Addr" "adtr0Pk";;
-      Client__Audit "charlie" "adtr1Addr" "adtr1Pk";;
-      Continue);;
-    #().
-
-Definition syncAdtr: val :=
-  rec: "syncAdtr" "servAddr" "adtr0Addr" "adtr1Addr" :=
-    let: "servCli" := advrpc.Dial "servAddr" in
-    let: "adtr0Cli" := advrpc.Dial "adtr0Addr" in
-    let: "adtr1Cli" := advrpc.Dial "adtr1Addr" in
-    let: "epoch" := ref (zero_val uint64T) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      time.Sleep #1000000;;
-      let: ("upd", "err0") := callServAudit "servCli" (![uint64T] "epoch") in
-      (if: "err0"
-      then Continue
-      else
-        let: "err1" := callAdtrUpdate "adtr0Cli" "upd" in
-        control.impl.Assume (~ "err1");;
-        let: "err2" := callAdtrUpdate "adtr1Cli" "upd" in
-        control.impl.Assume (~ "err2");;
-        "epoch" <-[uint64T] ((![uint64T] "epoch") + #1);;
-        Continue));;
-    #().
-
 Definition alice := struct.decl [
-  "pks" :: slice.T ptrT
+  "cli" :: ptrT;
+  "hist" :: slice.T ptrT
 ].
-
-(* TimeSeriesEntry from timeseries.go *)
-
-(* TODO: rename to history. *)
-Definition TimeSeriesEntry := struct.decl [
-  "Epoch" :: uint64T;
-  "TSVal" :: slice.T byteT
-].
-
-(* alice__run from test.go *)
-
-Definition alice__run: val :=
-  rec: "alice__run" "a" "cli" :=
-    let: "i" := ref_to byteT #(U8 0) in
-    (for: (λ: <>, (![byteT] "i") < #(U8 20)); (λ: <>, "i" <-[byteT] ((![byteT] "i") + #1)) := λ: <>,
-      time.Sleep #50000000;;
-      let: "pk" := SliceSingleton (![byteT] "i") in
-      let: ("epoch", "err0") := Client__Put "cli" "pk" in
-      control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
-      struct.storeF alice "pks" "a" (SliceAppend ptrT (struct.loadF alice "pks" "a") (struct.new TimeSeriesEntry [
-        "Epoch" ::= "epoch";
-        "TSVal" ::= "pk"
-      ]));;
-      Continue);;
-    #().
 
 Definition bob := struct.decl [
+  "cli" :: ptrT;
   "epoch" :: uint64T;
   "isReg" :: boolT;
   "alicePk" :: slice.T byteT
 ].
 
+Definition alice__run: val :=
+  rec: "alice__run" "a" :=
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < #20); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      time.Sleep #5000000;;
+      let: "pk" := SliceSingleton (![uint64T] "i") in
+      let: ("epoch", "err0") := Client__Put (struct.loadF alice "cli" "a") "pk" in
+      control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
+      struct.storeF alice "hist" "a" (SliceAppend ptrT (struct.loadF alice "hist" "a") (struct.new HistEntry [
+        "Epoch" ::= "epoch";
+        "HistVal" ::= "pk"
+      ]));;
+      Continue);;
+    #().
+
 Definition bob__run: val :=
-  rec: "bob__run" "b" "cli" :=
-    time.Sleep #550000000;;
-    let: ((("isReg", "pk"), "epoch"), "err0") := Client__Get "cli" aliceUid in
+  rec: "bob__run" "b" :=
+    time.Sleep #120000000;;
+    let: ((("isReg", "pk"), "epoch"), "err0") := Client__Get (struct.loadF bob "cli" "b") aliceUid in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
     struct.storeF bob "epoch" "b" "epoch";;
     struct.storeF bob "isReg" "b" "isReg";;
     struct.storeF bob "alicePk" "b" "pk";;
     #().
 
-(* GetTimeSeries from timeseries.go *)
-
-(* GetTimeSeries rets whether a val is registered at the time and, if so, the val. *)
-Definition GetTimeSeries: val :=
-  rec: "GetTimeSeries" "o" "epoch" :=
-    let: "isReg" := ref (zero_val boolT) in
-    let: "val" := ref (zero_val (slice.T byteT)) in
-    ForSlice ptrT <> "e" "o"
-      ((if: (struct.loadF TimeSeriesEntry "Epoch" "e") ≤ "epoch"
-      then
-        "isReg" <-[boolT] #true;;
-        "val" <-[slice.T byteT] (struct.loadF TimeSeriesEntry "TSVal" "e")
-      else #()));;
-    (![boolT] "isReg", ![slice.T byteT] "val").
+Definition updAdtrsAll: val :=
+  rec: "updAdtrsAll" "servAddr" "adtrAddrs" :=
+    let: "servCli" := advrpc.Dial "servAddr" in
+    let: "adtrs" := mkRpcClients "adtrAddrs" in
+    let: "epoch" := ref (zero_val uint64T) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("upd", "err") := callServAudit "servCli" (![uint64T] "epoch") in
+      (if: "err"
+      then Break
+      else
+        updAdtrsOnce "upd" "adtrs";;
+        "epoch" <-[uint64T] ((![uint64T] "epoch") + #1);;
+        Continue));;
+    #().
 
 Definition testAll: val :=
-  rec: "testAll" "servAddr" "adtr0Addr" "adtr1Addr" :=
-    let: (("serv", "servSigPk"), "servVrfPk") := newServer #() in
-    let: "servRpc" := newRpcServer "serv" in
-    advrpc.Server__Serve "servRpc" "servAddr";;
-    let: ("adtr0", "adtr0Pk") := newAuditor "servSigPk" in
-    let: "adtr0Rpc" := newRpcAuditor "adtr0" in
-    advrpc.Server__Serve "adtr0Rpc" "adtr0Addr";;
-    let: ("adtr1", "adtr1Pk") := newAuditor "servSigPk" in
-    let: "adtr1Rpc" := newRpcAuditor "adtr1" in
-    advrpc.Server__Serve "adtr1Rpc" "adtr1Addr";;
-    time.Sleep #1000000;;
-    Fork (let: "charlie" := newClient charlieUid "servAddr" "servSigPk" "servVrfPk" in
-          chaos "charlie" "adtr0Addr" "adtr1Addr" "adtr0Pk" "adtr1Pk");;
-    Fork (syncAdtr "servAddr" "adtr0Addr" "adtr1Addr");;
+  rec: "testAll" "setup" :=
+    let: "aliceCli" := newClient aliceUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
     let: "alice" := struct.new alice [
+      "cli" ::= "aliceCli"
     ] in
-    let: "aliceMu" := newMutex #() in
-    Mutex__Lock "aliceMu";;
-    let: "aliceCli" := newClient aliceUid "servAddr" "servSigPk" "servVrfPk" in
-    Fork (alice__run "alice" "aliceCli";;
-          Mutex__Unlock "aliceMu");;
+    let: "bobCli" := newClient bobUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
     let: "bob" := struct.new bob [
+      "cli" ::= "bobCli"
     ] in
-    let: "bobMu" := newMutex #() in
-    Mutex__Lock "bobMu";;
-    let: "bobCli" := newClient bobUid "servAddr" "servSigPk" "servVrfPk" in
-    Fork (bob__run "bob" "bobCli";;
-          Mutex__Unlock "bobMu");;
-    Mutex__Lock "aliceMu";;
-    Mutex__Lock "bobMu";;
-    time.Sleep #1000000000;;
-    let: ("selfMonEp", "err0") := Client__SelfMon "aliceCli" in
+    let: "wg" := waitgroup.New #() in
+    waitgroup.Add "wg" #1;;
+    waitgroup.Add "wg" #1;;
+    Fork (alice__run "alice";;
+          waitgroup.Done "wg");;
+    Fork (bob__run "bob";;
+          waitgroup.Done "wg");;
+    waitgroup.Wait "wg";;
+    let: ("selfMonEp", "err0") := Client__SelfMon (struct.loadF alice "cli" "alice") in
     control.impl.Assume (~ (struct.loadF clientErr "err" "err0"));;
     control.impl.Assume ((struct.loadF bob "epoch" "bob") ≤ "selfMonEp");;
-    let: "err1" := Client__Audit "aliceCli" "adtr0Addr" "adtr0Pk" in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err1"));;
-    let: "err2" := Client__Audit "aliceCli" "adtr1Addr" "adtr1Pk" in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err2"));;
-    let: "err3" := Client__Audit "bobCli" "adtr0Addr" "adtr0Pk" in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err3"));;
-    let: "err4" := Client__Audit "bobCli" "adtr1Addr" "adtr1Pk" in
-    control.impl.Assume (~ (struct.loadF clientErr "err" "err4"));;
-    let: ("isReg", "aliceKey") := GetTimeSeries (struct.loadF alice "pks" "alice") (struct.loadF bob "epoch" "bob") in
+    updAdtrsAll (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "adtrAddrs" "setup");;
+    doAudits (struct.loadF alice "cli" "alice") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
+    doAudits (struct.loadF bob "cli" "bob") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
+    let: ("isReg", "aliceKey") := GetHist (struct.loadF alice "hist" "alice") (struct.loadF bob "epoch" "bob") in
     control.impl.Assert ("isReg" = (struct.loadF bob "isReg" "bob"));;
     (if: "isReg"
     then
@@ -1995,6 +1949,9 @@ Definition testAll: val :=
       #()
     else #()).
 
-(* timeseries.go *)
+Definition testAllFull: val :=
+  rec: "testAllFull" "servAddr" "adtrAddrs" :=
+    testAll (setup "servAddr" "adtrAddrs");;
+    #().
 
 End code.

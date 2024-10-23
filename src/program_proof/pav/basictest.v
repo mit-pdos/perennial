@@ -140,20 +140,20 @@ Proof.
   iApply "HΦ". naive_solver.
 Qed.
 
-Lemma wp_updAdtrs ptr_upd upd sl_rpcs dim0_rpcs rpcs :
+Lemma wp_updAdtrsOnce ptr_upd upd sl_rpcs dim0_rpcs rpcs :
   {{{
     "Hown_upd" ∷ UpdateProof.own ptr_upd upd ∗
     "#Hsl_rpcs" ∷ own_slice_small sl_rpcs ptrT DfracDiscarded dim0_rpcs ∗
     "Hdim0_rpcs" ∷ ([∗ list] p;o ∈ dim0_rpcs;rpcs, advrpc.Client.own p o)
   }}}
-  updAdtrs #ptr_upd (slice_val sl_rpcs)
+  updAdtrsOnce #ptr_upd (slice_val sl_rpcs)
   {{{
     RET #();
     "Hown_upd" ∷ UpdateProof.own ptr_upd upd ∗
     "Hdim0_rpcs" ∷ ([∗ list] p;o ∈ dim0_rpcs;rpcs, advrpc.Client.own p o)
   }}}.
 Proof.
-  rewrite /updAdtrs. iIntros (Φ) "H HΦ". iNamed "H".
+  rewrite /updAdtrsOnce. iIntros (Φ) "H HΦ". iNamed "H".
   wp_apply (wp_forSlicePrefix
     (λ _ _,
     "Hown_upd" ∷ UpdateProof.own ptr_upd upd ∗
@@ -257,9 +257,9 @@ Proof using Type*.
 
   wp_loadField. wp_apply (wp_mkRpcClients with "Hsl_adtrAddrs").
   iIntros "*". iNamed 1.
-  wp_apply (wp_updAdtrs with "[$Hown_upd0 $Hsl_rpcs $Hdim0_rpcs]").
+  wp_apply (wp_updAdtrsOnce with "[$Hown_upd0 $Hsl_rpcs $Hdim0_rpcs]").
   iNamedSuffix 1 "0".
-  wp_apply (wp_updAdtrs with "[$Hown_upd1 $Hsl_rpcs $Hdim0_rpcs0]").
+  wp_apply (wp_updAdtrsOnce with "[$Hown_upd1 $Hsl_rpcs $Hdim0_rpcs0]").
   iNamedSuffix 1 "1".
 
   (* bob get. *)
