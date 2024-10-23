@@ -40,46 +40,41 @@ Section typing.
 
 Program Definition go_type_ind :=
   λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
-  (f3 : P uint64T) (f4 : P int8T) (f5 : P int16T) (f6 : P int32T) (f7 : P int64T)
-  (f8 : P stringT) (f9 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
-  (f10 : P sliceT) (f11 : P interfaceT)
-  (f12 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
-  (f13 : P ptrT) (f14 : P funcT) (f15 : ∀ key : go_type, P key → ∀ elem : go_type, P elem → P (mapT key elem))
-  (f16 : ∀ elem : go_type, P elem → P (chanT elem)),
-  fix F (g : go_type) : P g :=
+    (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
+    (f6 : P sliceT) (f7 : P interfaceT)
+    (f8 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
+    (f9 : P ptrT) (f10 : P funcT) (f11 : ∀ key : go_type, P key → ∀ elem : go_type, P elem → P (mapT key elem))
+    (f12 : ∀ elem : go_type, P elem → P (chanT elem)),
+    fix F (g : go_type) : P g :=
     match g as g0 return (P g0) with
     | boolT => f
     | uint8T => f0
     | uint16T => f1
     | uint32T => f2
     | uint64T => f3
-    | int8T => f4
-    | int16T => f5
-    | int32T => f6
-    | int64T => f7
-    | stringT => f8
-    | arrayT n elem => f9 n elem (F elem)
-    | sliceT => f10
-    | interfaceT => f11
-    | structT decls => f12 decls _
-    | ptrT => f13
-    | funcT => f14
-    | mapT key elem => f15 key (F key) elem (F elem)
-    | chanT elem => f16 elem (F elem)
+    | stringT => f4
+    | arrayT n elem => f5 n elem (F elem)
+    | sliceT => f6
+    | interfaceT => f7
+    | structT decls => f8 decls _
+    | ptrT => f9
+    | funcT => f10
+    | mapT key elem => f11 key (F key) elem (F elem)
+    | chanT elem => f12 elem (F elem)
     end.
-  Final Obligation.
+Final Obligation.
+intros.
+revert H.
+enough (Forall P decls.*2).
+1:{
   intros.
-  revert H.
-  enough (Forall P decls.*2).
-  1:{
-    intros.
-    rewrite List.Forall_forall in H.
-    apply H. done.
-  }
-  induction decls; first done.
-  destruct a. apply Forall_cons. split.
-  { apply F. }
-  { apply IHdecls. }
+  rewrite List.Forall_forall in H.
+  apply H. done.
+}
+induction decls; first done.
+destruct a. apply Forall_cons. split.
+{ apply F. }
+{ apply IHdecls. }
   Defined.
 
   Inductive has_go_type : val → go_type → Prop :=
@@ -88,11 +83,6 @@ Program Definition go_type_ind :=
   | has_go_type_uint32 (x : w32) : has_go_type #x uint32T
   | has_go_type_uint16 : has_go_type #null uint16T
   | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
-
-  | has_go_type_int64 (x : w64) : has_go_type #x int64T
-  | has_go_type_int32 (x : w32) : has_go_type #x int32T
-  | has_go_type_int16 : has_go_type #null int16T
-  | has_go_type_int8 (x : w8) : has_go_type #x int8T
 
   | has_go_type_string (s : string) : has_go_type #s stringT
 
@@ -187,10 +177,6 @@ Program Definition go_type_ind :=
     | uint16T => #null
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
-    | int8T => #(W8 0)
-    | int16T => #null
-    | int32T => #(W32 0)
-    | int64T => #(W64 0)
 
     | stringT => #("")
     | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
@@ -368,21 +354,6 @@ Program Global Instance into_val_typed_w8 : IntoValTyped w8 uint8T :=
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
-
-Program Global Instance into_val_typed_w64_signed : IntoValTyped w64 int64T :=
-{| default_val := W64 0 |}.
-Next Obligation. solve_has_go_type. Qed.
-Next Obligation. rewrite zero_val_eq //. Qed.
-
-Program Global Instance into_val_typed_w32_signed : IntoValTyped w32 int32T :=
-{| default_val := W32 0 |}.
-Next Obligation. solve_has_go_type. Qed.
-Next Obligation. rewrite zero_val_eq //. Qed.
-
-Program Global Instance into_val_typed_w8_signed : IntoValTyped w8 int8T :=
-{| default_val := W8 0 |}.
-Next Obligation. solve_has_go_type. Qed.
-Next Obligation. rewrite zero_val_eq //. Qed.
 
 Program Global Instance into_val_typed_bool : IntoValTyped bool boolT :=
 {| default_val := false |}.
