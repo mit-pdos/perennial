@@ -337,7 +337,7 @@ Global Instance pure_slice_ptr (s : slice.t) :
 Proof.
   rewrite to_val_unseal.
   iIntros (?????) "HΦ".
-  wp_call. rewrite to_val_unseal.
+  wp_call_lc "?". rewrite to_val_unseal.
   by iApply "HΦ".
 Qed.
 
@@ -346,7 +346,7 @@ Global Instance pure_slice_len (s : slice.t) :
 Proof.
   rewrite to_val_unseal.
   iIntros (?????) "HΦ".
-  wp_call. rewrite to_val_unseal. by iApply "HΦ".
+  wp_call_lc "?". rewrite to_val_unseal. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_cap (s : slice.t) :
@@ -354,7 +354,7 @@ Global Instance pure_slice_cap (s : slice.t) :
 Proof.
   rewrite to_val_unseal.
   iIntros (?????) "HΦ".
-  wp_call. rewrite to_val_unseal. by iApply "HΦ".
+  wp_call_lc "?". rewrite to_val_unseal. by iApply "HΦ".
 Qed.
 
 Global Instance wp_slice_elem_ref s (i : w64) :
@@ -364,7 +364,7 @@ Proof.
   iIntros (?????) "HΦ".
   wp_call.
   rewrite bool_decide_true; last done.
-  wp_pures. iApply "HΦ".
+  wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
