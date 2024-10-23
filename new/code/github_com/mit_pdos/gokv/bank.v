@@ -60,7 +60,7 @@ Definition BankClerk__SimpleAudit : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((BankClerk__get_total (![ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
-        do:  (let: "$a0" := (interface.make string__mset #(str "Balance total invariant violated")) in
+        do:  (let: "$a0" := (interface.make string__mset #"Balance total invariant violated") in
         Panic "$a0")
       else do:  #()))).
 
@@ -80,7 +80,7 @@ Definition release_two : val :=
 Definition encodeInt : val :=
   rec: "encodeInt" "a" :=
     exception_do (let: "a" := (ref_ty uint64T "a") in
-    return: (string.from_bytes (let: "$a0" := slice.nil in
+    return: (string.from_bytes (let: "$a0" := #slice.nil in
      let: "$a1" := (![uint64T] "a") in
      marshal.WriteInt "$a0" "$a1"))).
 
@@ -202,7 +202,7 @@ Definition MakeBankClerkSlice : val :=
     do:  (let: "$a0" := (![stringT] "init_flag") in
     (lockservice.LockClerk__Lock (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck")))) "$a0");;;
     (if: (let: "$a0" := (![stringT] "init_flag") in
-    (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") = #(str "")
+    (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") = #""
     then
       do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT stringT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) #(W64 0))) in
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
@@ -217,7 +217,7 @@ Definition MakeBankClerkSlice : val :=
         encodeInt "$a0") in
         (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")));;;
       do:  (let: "$a0" := (![stringT] "init_flag") in
-      let: "$a1" := #(str "1") in
+      let: "$a1" := #"1" in
       (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![stringT] "init_flag") in

@@ -7,19 +7,6 @@ Set Default Proof Mode "Classic".
 Set Default Proof Using "Type".
 
 (** * Typed data representations for struct and slice *)
-Module slice.
-Record t := mk { ptr_f: loc; len_f: u64; cap_f: u64; }.
-Notation nil := slice_nil.
-Definition nil_f : slice.t := mk null 0 0.
-End slice.
-
-Global Instance into_val_slice `{ffi_syntax} : IntoVal slice.t :=
-  {|
-    to_val_def (s: slice.t) := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f))
-  |}.
-
-Global Instance slice_eq_dec : EqDecision slice.t.
-Proof. solve_decision. Qed.
 
 Module struct.
 Section goose_lang.
@@ -40,23 +27,6 @@ Section goose_lang.
   Definition val_unseal : val = _ := seal_eq _.
 End goose_lang.
 End struct.
-
-Module interface.
-Section goose_lang.
-  Context `{ffi_syntax}.
-  Record t := mk { v: val; mset: list (string * val) }.
-
-  (* FIXME: use the typeid to distinguish nil interface value from nil pointer
-     used as a non-nil interface value. *)
-  Definition nil_f := mk #null [].
-End goose_lang.
-End interface.
-
-Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
-  {|
-    to_val_def (i: interface.t) :=
-      InjLV (#"NO TYPE IDS YET", i.(interface.v), (struct.fields_val i.(interface.mset)))
-  |}.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
@@ -157,17 +127,6 @@ Program Definition go_type_ind :=
       apply elem_of_replicate_inv in H. subst.
       by rewrite -zero_val_unseal.
     }
-    { (* sliceT *)
-      replace (zero_val_def (sliceT t)) with (# slice.nil_f).
-      { constructor. }
-      rewrite to_val_unseal /= //.
-    }
-    { (* interfaceT *)
-      replace (zero_val_def (interfaceT)) with (# interface.nil_f).
-      { constructor. }
-      rewrite to_val_unseal /= struct.fields_val_unseal /= //.
-    }
-
     { (* structT *)
       replace (zero_val_def (structT decls)) with (struct.val (structT decls) []).
       {
@@ -235,11 +194,11 @@ Program Definition go_type_ind :=
 
     | stringT => #("")
     | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
-    | sliceT _ => #slice.nil_f
+    | sliceT _ => #slice.nil
     | structT decls => struct.val t []
     | ptrT => #null
-    | funcT => #func.nil_f
-    | interfaceT => #interface.nil_f
+    | funcT => #func.nil
+    | interfaceT => #interface.nil
     | mapT _ _ => #null
     | chanT _ => #null
     end.
@@ -250,8 +209,6 @@ Program Definition go_type_ind :=
     rewrite zero_val_unseal.
     induction t; try done.
     { simpl. by rewrite zero_val_unseal. }
-    { simpl. rewrite to_val_unseal /= //. }
-    { simpl. rewrite to_val_unseal /= struct.fields_val_unseal //. }
     simpl. rewrite struct.val_unseal.
     induction decls; first done.
     destruct a. simpl.
@@ -440,7 +397,7 @@ Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
 Program Global Instance into_val_typed_slice elemT : IntoValTyped slice.t (sliceT elemT) :=
-{| default_val := slice.nil_f |}.
+{| default_val := slice.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?[???][???] [=] //.
@@ -448,7 +405,7 @@ Next Obligation. rewrite to_val_unseal => ?[???][???] [=] //.
 Qed.
 
 Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
-{| default_val := func.nil_f |}.
+{| default_val := func.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
@@ -472,7 +429,7 @@ Proof.
 Qed.
 
 Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
-{| default_val := interface.nil_f |}.
+{| default_val := interface.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => [[??] [??]] /= [??].

@@ -152,7 +152,7 @@ Proof.
 Qed.
 
 Lemma own_slice_nil dq :
-  ⊢ slice.nil_f ↦*{dq} ([] : list V).
+  ⊢ slice.nil ↦*{dq} ([] : list V).
 Proof.
   unseal. simpl. iPureIntro. split_and!; done.
 Qed.
@@ -166,7 +166,7 @@ Proof.
 Qed.
 
 Lemma own_slice_cap_nil :
-  ⊢ own_slice_cap slice.nil_f.
+  ⊢ own_slice_cap slice.nil.
 Proof.
   unseal. simpl. rewrite right_id.
   rewrite (nil_length_inv (seq _ _)).

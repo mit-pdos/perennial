@@ -46,10 +46,10 @@ Definition BytesEqual : val :=
 Definition BytesClone : val :=
   rec: "BytesClone" "b" :=
     exception_do (let: "b" := (ref_ty (sliceT byteT) "b") in
-    (if: (![sliceT byteT] "b") = slice.nil
-    then return: (slice.nil)
+    (if: (![sliceT byteT] "b") = #slice.nil
+    then return: (#slice.nil)
     else do:  #());;;
-    return: (let: "$a0" := slice.nil in
+    return: (let: "$a0" := #slice.nil in
      let: "$a1" := (![sliceT byteT] "b") in
      (slice.append (sliceT byteT)) "$a0" "$a1")).
 

@@ -1,7 +1,6 @@
 From New.code.go_etcd_io.raft Require Import v3.
 From New.proof Require Import grove_prelude.
 From New.proof Require Import sync.
-From New.proof Require Import proofmode.
 From Ltac2 Require Import Ltac2.
 
 Set Default Proof Mode "Classic".

@@ -499,7 +499,7 @@ Definition Server__TryAcquire : val :=
     then
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
       let: "n" := (ref_ty ptrT (zero_val ptrT)) in
-      return: (ENotLeader, ![ptrT] "n", go_nil)
+      return: (ENotLeader, ![ptrT] "n", #func.nil)
     else do:  #());;;
     let: "tryRelease" := (ref_ty funcT (zero_val funcT)) in
     let: "$r0" := (λ: <>,
@@ -614,13 +614,13 @@ Definition Server__withLock : val :=
 Definition Server__TryBecomeLeader : val :=
   rec: "Server__TryBecomeLeader" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #(str "started trybecomeleader")) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"started trybecomeleader") in
     slice.literal interfaceT ["$sl0"])) in
     log.Println "$a0");;;
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
     (if: ![boolT] (struct.field_ref paxosState "isLeader" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #(str "already leader")) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"already leader") in
       slice.literal interfaceT ["$sl0"])) in
       log.Println "$a0");;;
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
@@ -710,8 +710,8 @@ Definition Server__TryBecomeLeader : val :=
         exception_do (let: "ps" := (ref_ty ptrT "ps") in
         (if: (![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] "ps"))) ≤ (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args")))
         then
-          do:  (let: "$a0" := #(str "succeeded becomeleader in epoch %d
-          ") in
+          do:  (let: "$a0" := #"succeeded becomeleader in epoch %d
+          " in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args")))) in
           slice.literal interfaceT ["$sl0"])) in
           log.Printf "$a0" "$a1");;;
@@ -731,7 +731,7 @@ Definition Server__TryBecomeLeader : val :=
       do:  ((sync.Mutex__Unlock (![ptrT] "mu")) #())
     else
       do:  ((sync.Mutex__Unlock (![ptrT] "mu")) #());;;
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #(str "failed becomeleader")) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"failed becomeleader") in
       slice.literal interfaceT ["$sl0"])) in
       log.Println "$a0"))).
 
