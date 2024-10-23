@@ -219,7 +219,6 @@ Proof.
       iRight.
       iSplitR; first done.
       wp_apply (wp_WaitGroup__Done with "[$Hwg_tok $His_wg]").
-      { done. }
       done.
     }
     iApply "HΦ".
