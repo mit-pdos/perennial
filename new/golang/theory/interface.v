@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.theory Require Import struct typing pure_proofmode.
+From New.golang.theory Require Import struct typing proofmode.
 From New.golang.defn Require Import interface.
 
 Section wps.
@@ -14,8 +14,8 @@ Global Instance wp__interface_get (i : interface.t) (method : string) :
 Proof.
   iIntros (?????) "Hwp".
   rewrite to_val_unseal.
-  wp_call.
-  destruct assocl_lookup; wp_pures; rewrite ?to_val_unseal //=.
+  wp_call_lc "?".
+  destruct assocl_lookup; wp_pures; rewrite ?to_val_unseal /=; by iApply "Hwp".
 Qed.
 
 Global Instance wp_interface_make (v : val) (mset : list (string * val)) :
@@ -23,7 +23,7 @@ Global Instance wp_interface_make (v : val) (mset : list (string * val)) :
 Proof.
   iIntros (?????) "Hwp".
   rewrite to_val_unseal interface.make_unseal.
-  wp_call. done.
+  wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 End wps.

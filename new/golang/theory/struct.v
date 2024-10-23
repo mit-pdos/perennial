@@ -120,7 +120,8 @@ Global Instance pure_struct_field_ref_wp t f (l : loc) :
   PureWp True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
   iIntros (?????) "HΦ".
-  rewrite /struct.field_ref. wp_pures.
+  wp_call_lc "?".
+  iSpecialize ("HΦ" with "[$]").
   iExactEq "HΦ". rewrite /struct.field_ref_f.
   repeat (f_equal; try word).
 Qed.
@@ -138,8 +139,8 @@ Global Instance wp_struct_fields_cons_nil (k : string) (l : list (string * val))
 .
 Proof.
   iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal /=.
-  wp_pures. by iApply "HΦ".
+  rewrite struct.fields_val_unseal.
+  wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
@@ -150,7 +151,7 @@ Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v 
 Proof.
   iIntros (?????) "HΦ".
   rewrite struct.fields_val_unseal /=.
-  wp_pures. by iApply "HΦ".
+  wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
@@ -162,9 +163,9 @@ Proof.
   iIntros (?????) "HΦ".
   rewrite struct.fields_val_unseal.
   iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
-  [base]: wp_call; by iApply "HΦ".
+  [base]: wp_call_lc "?"; by iApply "HΦ".
   [cons]: {
-    wp_call.
+    wp_call_lc "?".
     rewrite /struct.fields_val_def /=.
     destruct bool_decide eqn:Heqb; wp_pures.
     {
@@ -196,16 +197,18 @@ Proof.
   unfold struct.make_def.
   iIntros "HΦ".
   iInduction decls as [] "IH" forall (Φ K).
-  - wp_pures. simpl. done.
+  - wp_pure_lc "?". by iApply "HΦ".
   - destruct a.
-    wp_pures.
+    wp_pure_lc "?". wp_pures.
     unfold struct.val_def.
     destruct (assocl_lookup _ _).
     + wp_pures.
       unshelve wp_apply ("IH" $! _ _ []); first done.
-      simpl fill. wp_pures. done.
+      iIntros "_".
+      simpl fill. wp_pures. by iApply "HΦ".
     + wp_pures.
       unshelve wp_apply ("IH" $! _ _ []); first done.
-      simpl fill. wp_pures. done.
+      iIntros "_".
+      simpl fill. wp_pures. by iApply "HΦ".
 Qed.
 End wps.

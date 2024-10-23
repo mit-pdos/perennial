@@ -13,7 +13,7 @@ Section classes.
 Class PureWp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
   φ (e : expr) (e' : expr) :=
   pure_wp_wp : ∀ stk E Φ (H : φ) K,
-  ▷ WP (fill K e') @ stk ; E {{ Φ }} -∗ WP (fill K e) @ stk; E {{ Φ }}.
+  ▷ (£ 1 -∗  WP (fill K e') @ stk ; E {{ Φ }}) -∗ WP (fill K e) @ stk; E {{ Φ }}.
 
 Global Hint Mode PureWp - - - - - - - - ! - : typeclass_instances.
 
@@ -22,6 +22,17 @@ Lemma tac_wp_pure_wp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobal
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_entails Δ' (WP (fill K e2) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_unseal=> ?? HΔ'. rewrite into_laterN_env_sound /=.
+  rewrite HΔ'. iIntros "H". iApply Hwp; [done|iIntros "!# _ //"].
+Qed.
+
+Lemma tac_wp_pure_wp_later_credit `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+      K e1 {e2 φ} (Hwp:PureWp φ e1 e2) Δ Δ' s E Φ :
+  φ →
+  MaybeIntoLaterNEnvs 1 Δ Δ' →
+  envs_entails Δ' (£ 1 -∗ WP (fill K e2) @ s; E {{ Φ }}) →
   envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ?? HΔ'. rewrite into_laterN_env_sound /=.
@@ -37,7 +48,7 @@ Proof.
   iIntros "Hk".
   pose proof @pure_exec_fill.
   iApply (lifting.wp_pure_step_later with "[-]"); [done|].
-  repeat iModIntro. iIntros "_". iFrame.
+  repeat iModIntro. iIntros "[Hlc _]". by iApply "Hk".
 Qed.
 
 End classes.
@@ -342,7 +353,7 @@ Proof. rewrite envs_entails_unseal=> -> ->. by apply: wp_bind. Qed.
 Lemma tac_wp_rec `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
       K v1 v2 {f x e} {Hwp:TCEq v1 (rec: f x := e)%V} Δ Δ' s E Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_entails Δ' (WP (fill K (subst' x v2 (subst' f v1 e))) @ s; E {{ Φ }}) →
+  envs_entails Δ' (£ 1 -∗ WP (fill K (subst' x v2 (subst' f v1 e))) @ s; E {{ Φ }}) →
   envs_entails Δ (WP (fill K (App v1 v2)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ? HΔ'. rewrite into_laterN_env_sound /=.
@@ -357,7 +368,7 @@ Lemma tac_wp_call_go_func `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseG
   envs_entails Δ (WP (fill K (#(func.mk f x e) v2)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ? HΔ'. rewrite into_laterN_env_sound /=.
-  rewrite HΔ'. iIntros "H". by iApply wp_call_go_func.
+  rewrite HΔ'. iIntros "H". iApply wp_call_go_func; [done|iIntros "!# _ //"].
 Qed.
 
 End lemmas.
@@ -395,6 +406,7 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
   in (walk_ctx e) '(@nil ectx_item)
 .
 
+(* Maybe avoid MaybeIntoLaterNEnvs if there are no  laters syntactically. *)
 Ltac2 wp_pure () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ (Val _) _) ] => ltac1:(iApply wp_value)
@@ -411,7 +423,25 @@ Ltac2 wp_pure () :=
         (fun _ => Control.backtrack_tactic_failure "wp_pure: could not find a head subexpression with a known next step")
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
   end.
+Ltac2 wp_pure_lc () :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (wp _ _ (Val _) _) ] => ltac1:(iApply wp_value)
+  | [ |- envs_entails _ (wp _ _ ?e _) ] =>
+      orelse (fun () => walk_expr e (fun e k =>
+                                    (* This looks for an instance before eapply to make to fail fast. *)
+                                    let pure_wp := '(ltac:(tc_solve) : PureWp _ $e _) in
+                                    eapply (tac_wp_pure_wp_later_credit $k $e $pure_wp) >
+                                      [ltac1:(try done)|
+                                        ltac1:(tc_solve)|
+                                        ltac1:(reduction.pm_prettify; simpl subst';
+                                               simpl fill)]
+                       )
+        )
+        (fun _ => Control.backtrack_tactic_failure "wp_pure: could not find a head subexpression with a known next step")
+  | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
+  end.
 Tactic Notation "wp_pure" := ltac2:(Control.enter wp_pure).
+Tactic Notation "wp_pure_lc" constr(H) := ltac2:(Control.enter wp_pure_lc); iIntros H.
 Tactic Notation "wp_pures" := repeat (wp_pure; []).
 
 Ltac2 wp_call () :=
@@ -427,7 +457,8 @@ Ltac2 wp_call () :=
         (fun _ => Control.backtrack_tactic_failure "wp_call: could not find a function call expression at the head")
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_call: current proof is not a WP"
   end.
-Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); wp_pures.
+Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
+Tactic Notation "wp_call_lc" constr(H) := ltac2:(Control.enter wp_call); iIntros H; wp_pures.
 
 Ltac2 wp_bind_filter (filter_tac : constr -> unit) : unit :=
   lazy_match! goal with

@@ -48,7 +48,7 @@ Module AsyncFile.
       }.
 End AsyncFile.
 
-Instance into_val_AsyncFile `{ffi_syntax} : IntoVal AsyncFile.t :=
+Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
   {|
     to_val_def :=
       λ v, struct.val AsyncFile [
@@ -64,7 +64,7 @@ Instance into_val_AsyncFile `{ffi_syntax} : IntoVal AsyncFile.t :=
                "closedCond" ::= #v.(AsyncFile.closedCond)
              ]%V
   |}.
-Lemma struct_val_inj d fvs1 fvs2:
+Lemma struct_val_inj d fvs1 fvs2 :
   struct.val (structT d) fvs1 = struct.val (structT d) fvs2 →
   ∀ f, In f d.*1 → assocl_lookup f fvs1 = assocl_lookup f fvs2.
 Proof.
@@ -73,8 +73,11 @@ Proof.
   { done. }
   intros ?? [].
   - subst. simpl in H.
-Abort.
-Program Instance into_val_typed_AsyncFile `{ffi_syntax} : IntoValTyped AsyncFile.t AsyncFile :=
+    injection H as ??.
+    repeat destruct assocl_lookup.
+    destruct assocl_lookup.
+Admitted.
+Program Instance into_val_typed_AsyncFile : IntoValTyped AsyncFile.t AsyncFile :=
 {| default_val := AsyncFile.mk (default_val _) (default_val _) (default_val _) (default_val _)
                     (default_val _) (default_val _) (default_val _) (default_val _)
                     (default_val _) (default_val _)
@@ -95,8 +98,31 @@ Next Obligation.
 Qed.
 Next Obligation.
   rewrite to_val_unseal.
-  ltac2:(solve_to_val_inj_step ()).
-Admitted.
+  intros x y Heq.
+  destruct x, y.
+  simpl in *.
+  f_equal.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 0 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 1 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 2 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 3 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 4 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 5 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 6 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 7 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 8 right; left).
+    injection Heq. apply to_val_inj.
+  - eapply (struct_val_inj _ _ _) in Heq; last by (do 9 right; left).
+    injection Heq. apply to_val_inj.
+Qed.
 Final Obligation. solve_decision. Qed.
 
 Program Instance iv_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" AsyncFile AsyncFile.mu.
@@ -684,16 +710,17 @@ Proof.
     done.
   }
   wp_pures.
-  wp_load. wp_pures. wp_load. wp_pures. wp_load. wp_pures.
+  wp_load. wp_pures. wp_load. wp_pures. wp_load.
+  wp_pure_lc "H1". wp_pure_lc "H2".
+  iCombine "H1 H2" as "Hlc".
+  wp_pures.
 
   iCombine "Hfilename_in Hfilename" gives %[_ [=<-]].
-  wp_pures.
   wp_apply (wp_FileWrite with "[$Hdata]").
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   rewrite /own_crash_pre /=.
-  unshelve iMod ("Hfile" $! _ _ with "[]") as "[[HP $] Hau]".
+  unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
   { set_solver. }
-  { admit. } (* FIXME: a way to get £s *)
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hmask".
   iSplit.
@@ -730,7 +757,7 @@ Proof.
   wp_pures.
   iFrame "HΦ Hlocked".
   iFrame "∗#%".
-Admitted. (* FIXME: get later credits *)
+Qed.
 
 Lemma alloc_ghost N P data fname :
   ⊢ |==>
@@ -822,12 +849,12 @@ Proof.
   wp_alloc s as "Hlocal".
   wp_pures.
   wp_load.
-  wp_pures.
+  wp_pure_lc "H1". wp_pure_lc "H2".
+  iCombine "H1 H2" as "Hlc".
   wp_apply wp_FileRead.
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
-  unshelve iMod ("Hfile" $! _ _ with "[]") as "[[HP $] Hau]".
+  unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
   { solve_ndisj. }
-  { admit. } (* FIXME: get £s *)
   iApply ncfupd_mask_intro; first solve_ndisj.
   iIntros "Hmask".
   iIntros "Hf". iMod "Hmask" as "_".
@@ -905,6 +932,6 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iFrame "∗#".
-Admitted. (* FIXME: get later credits *)
+Qed.
 
 End asyncfile_proof.

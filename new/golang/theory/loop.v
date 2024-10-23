@@ -13,28 +13,28 @@ Global Instance pure_continue_val (v1 : val) :
 Proof.
   rewrite exception_seq_unseal continue_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_call. iFrame.
+  wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance pure_break_val (v1 : val) : PureWp True (exception_seq v1 (break_val)) (break_val).
 Proof.
   rewrite exception_seq_unseal break_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_call. iFrame.
+  wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance pure_do_continue_val : PureWp True (continue: #()) (continue_val).
 Proof.
   rewrite do_continue_unseal continue_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_call. iFrame.
+  wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance pure_do_break_val : PureWp True (break: #()) (break_val).
 Proof.
   rewrite do_break_unseal break_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_call. iFrame.
+  wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 (* FIXME: seal this *)

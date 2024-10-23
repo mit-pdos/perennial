@@ -4,7 +4,7 @@ From iris.proofmode Require Import environments.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
 From New.golang.defn Require Export mem.
-From New.golang.theory Require Import pure_proofmode typing.
+From New.golang.theory Require Import proofmode typing.
 Require Import Coq.Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".

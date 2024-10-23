@@ -1,7 +1,7 @@
 From Perennial.goose_lang Require Export lifting.
 From New.golang.defn Require Export list.
 From New.golang.theory Require Import exception.
-From New.golang.theory Require Import pure_proofmode.
+From New.golang.theory Require Import proofmode.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -10,7 +10,7 @@ Global Instance pure_cons (v : val) (l : list val) :
   PureWp True (list.Cons v (list.val l)) (list.val (v :: l)).
 Proof.
   rewrite list.Cons_unseal list.val_unseal.
-  intros ?????. iIntros "Hwp". wp_call. iFrame.
+  intros ?????. iIntros "Hwp". wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance wp_list_Match (l : list val) (handleNil handleCons : val) :
@@ -24,7 +24,7 @@ Global Instance wp_list_Match (l : list val) (handleNil handleCons : val) :
 Proof.
   rewrite list.Match_unseal list.val_unseal.
   intros ?????. iIntros "Hwp".
-  destruct l; wp_call; iFrame.
+  destruct l; wp_call_lc "?"; by iApply "Hwp".
 Qed.
 
 Lemma wp_list_Length {stk E} (l : list val) :
