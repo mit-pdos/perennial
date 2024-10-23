@@ -31,6 +31,105 @@ Definition asyncfileΣ :=
 Global Instance subG_asyncfileΣ {Σ} : subG (asyncfileΣ) Σ → (asyncfileG Σ).
 Proof. solve_inG. Qed.
 
+Module AsyncFile.
+  Record t :=
+    mk {
+        mu : loc;
+        data : slice.t;
+        filename :  string;
+        index : w64;
+        indexCond : loc;
+        durableIndex : w64;
+        durableIndexCond : loc;
+
+        closeRequested : bool;
+        closed : bool;
+        closedCond : loc;
+      }.
+End AsyncFile.
+
+Instance into_val_AsyncFile `{ffi_syntax} : IntoVal AsyncFile.t :=
+  {|
+    to_val_def :=
+      λ v, struct.val AsyncFile [
+               "mu" ::= #v.(AsyncFile.mu);
+               "data" ::= #v.(AsyncFile.data);
+               "filename" ::= #v.(AsyncFile.filename);
+               "index" ::= #v.(AsyncFile.index);
+               "indexCond" ::= #v.(AsyncFile.indexCond);
+               "durableIndex" ::= #v.(AsyncFile.durableIndex);
+               "durableIndexCond" ::= #v.(AsyncFile.durableIndexCond);
+               "closeRequested" ::= #v.(AsyncFile.closeRequested);
+               "closed" ::= #v.(AsyncFile.closed);
+               "closedCond" ::= #v.(AsyncFile.closedCond)
+             ]%V
+  |}.
+Lemma struct_val_inj d fvs1 fvs2:
+  struct.val (structT d) fvs1 = struct.val (structT d) fvs2 →
+  ∀ f, In f d.*1 → assocl_lookup f fvs1 = assocl_lookup f fvs2.
+Proof.
+  rewrite struct.val_unseal.
+  induction d as [|[]].
+  { done. }
+  intros ?? [].
+  - subst. simpl in H.
+Abort.
+Program Instance into_val_typed_AsyncFile `{ffi_syntax} : IntoValTyped AsyncFile.t AsyncFile :=
+{| default_val := AsyncFile.mk (default_val _) (default_val _) (default_val _) (default_val _)
+                    (default_val _) (default_val _) (default_val _) (default_val _)
+                    (default_val _) (default_val _)
+|}.
+Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
+
+Import Ltac2.
+Set Default Proof Mode "Classic".
+Ltac2 solve_to_val_inj_step () : unit :=
+  match! goal with
+  | [ |- ∀ (_:_), _ ] => intros
+  | [ |- Inj eq eq _ ] => intros [] [] Heq
+  end.
+Next Obligation.
+  rewrite to_val_unseal.
+  ltac2:(solve_to_val_inj_step ()).
+Admitted.
+Next Obligation. solve_decision. Qed.
+Next Obligation. (* FIXME: why is does goal exist? *) Admitted.
+Final Obligation.
+  (* FIXME: [solve_zero_val] tactic *)
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal /=.
+  rewrite zero_val_eq /= !to_val_unseal //.
+Qed.
+
+Program Instance iv_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" AsyncFile AsyncFile.mu.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_data `{ffi_syntax} : IntoValStructField "data" AsyncFile AsyncFile.data.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_filename `{ffi_syntax} : IntoValStructField "filename" AsyncFile AsyncFile.filename.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_index `{ffi_syntax} : IntoValStructField "index" AsyncFile AsyncFile.index.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_indexCond `{ffi_syntax} : IntoValStructField "indexCond" AsyncFile AsyncFile.indexCond.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_durableIndex `{ffi_syntax} : IntoValStructField "durableIndex" AsyncFile AsyncFile.durableIndex.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_durableIndexCond `{ffi_syntax} : IntoValStructField "durableIndexCond" AsyncFile AsyncFile.durableIndexCond.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" AsyncFile AsyncFile.closeRequested.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_closed `{ffi_syntax} : IntoValStructField "closed" AsyncFile AsyncFile.closed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" AsyncFile AsyncFile.closedCond.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
 Section asyncfile_proof.
 
 Context `{!heapGS Σ}.
@@ -733,7 +832,7 @@ Proof.
   iApply ncfupd_mask_intro; first solve_ndisj.
   iIntros "Hmask".
   iIntros "Hf". iMod "Hmask" as "_".
-  iMod ("Hau" with "[] [HP Hf]"). 2: iAccu.
+  iMod ("Hau" with "[] [HP Hf]") as "Hfile". 2: iAccu.
   { eauto with iFrame. }
   iModIntro.
   iIntros (?) "Hdata_new".
@@ -750,8 +849,12 @@ Proof.
   iIntros (?) "#?".
   wp_pures.
 
-  (* FIXME: Record and typeclass for AsyncFile *)
+  (* FIXME: automatically convert struct.make into the typed thing. *)
+  eassert (struct.val AsyncFile _ = #(AsyncFile.mk _ _ _ _ _ _ _ _ _ _)) as ->.
+  { repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). }
+
   wp_alloc l as "Hl".
+  wp_pures.
   wp_store.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
   wp_pures.
@@ -762,10 +865,12 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   { done. }
   { apply _. }
-  iEval (repeat (rewrite zero_val_eq || rewrite struct.val_unseal)) in "Hl".
+  rewrite /struct_fields /=.
   iRename "Hmu" into "Hmu_uninit".
-  iNamed "Hl".
-
+  repeat (iDestruct "Hl" as "[H1 Hl]";
+          unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
+          iNamed "H1").
+  simpl.
   wp_load.
   wp_pures. wp_store.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
@@ -788,23 +893,18 @@ Proof.
   iIntros (flush) "Hwp_flush".
   wp_pures.
   wp_bind (Fork (flush #()))%E.
-  wp_apply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile Hwp_flush]").
+  iApply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile Hwp_flush]").
   {
     iNext.
     wp_apply ("Hwp_flush" with "[-]").
-    {
-      (* FIXME: without this, [iFrame "His".] is extremely slow. *)
-      Typeclasses Opaque is_AsyncFile.
-      iFrame "∗#".
-      Typeclasses Transparent is_AsyncFile.
-    }
+    { Time iFrame "∗#". }
     wp_pures.
     done.
   }
-  wp_pures. wp_load. wp_load.
+  iNext. wp_pures. wp_load. wp_load.
   wp_pures.
-  iApply "HΦ". iModIntro.
+  iApply "HΦ".
   iFrame "∗#".
-Qed.
+Admitted. (* FIXME: get later credits *)
 
 End asyncfile_proof.

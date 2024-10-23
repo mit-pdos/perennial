@@ -9,29 +9,41 @@ Context `{ffi_syntax}.
 
 Implicit Types (d : struct.descriptor).
 Infix "=?" := (String.eqb).
-(* FIXME: what does _f mean? Want better name. *)
-Fixpoint field_get_f d f0: val -> val :=
-  λ v, match d with
-       | [] => #()
-       | (f,_)::fs =>
-         match v with
-         | PairV v1 v2 => if f =? f0 then v1 else field_get_f fs f0 v2
-         | _ => #()
-         end
-       end.
 
-Fixpoint field_set_f d f0 fv: val -> val :=
-  λ v, match d with
-       | [] => v
-       | (f,_)::fs =>
-         match v with
-         | PairV v1 v2 =>
-           if f =? f0
-           then PairV fv v2
-           else PairV v1 (field_set_f fs f0 fv v2)
-         | _ => v
-         end
-       end.
+(* FIXME: what does _f mean? Want better name. *)
+Definition field_get_f t f0: val -> val :=
+  match t with
+  | structT d =>
+      (fix go d v :=
+         match d with
+         | [] => #()
+         | (f,_)::fs =>
+             match v with
+             | PairV v1 v2 => if f =? f0 then v1 else go fs v2
+             | _ => #()
+             end
+         end) d
+  | _ => λ v, LitV LitPoison
+  end.
+
+Definition field_set_f t f0 fv: val -> val :=
+  match t with
+  | structT d =>
+      (fix go d v :=
+         match d with
+         | [] => v
+         | (f,_)::fs =>
+             match v with
+             | PairV v1 v2 =>
+                 if f =? f0
+                 then PairV fv v2
+                 else PairV v1 (go d v2)
+             | _ => v
+             end
+         end) d
+  | _ => λ v, LitV LitPoison
+  end
+  .
 
 Definition field_ref_f t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
 
@@ -64,19 +76,25 @@ Global Hint Extern 3 (struct.Wf ?d) => exact (proj_descriptor_wf d) : typeclass_
 Section lemmas.
 Context `{heapGS Σ}.
 
-Class IntoValStructField (f : string) (fs : struct.descriptor) (V : Type) (Vf : Type)
+Class IntoValStructField (f : string) (t : go_type) {V Vf : Type}
   (field_proj : V → Vf)
   `{!IntoVal V} `{!IntoVal Vf}
-  `{!IntoValTyped Vf (default boolT (assocl_lookup f fs))}
+  `{!IntoValTyped Vf (
+        match t with
+        | structT fs => default boolT (assocl_lookup f fs)
+        | _ => boolT
+        end
+      )
+  }
   :=
   {
-    field_proj_eq_field_get : ∀ v, #(field_proj v) = (struct.field_get_f fs f #v);
+    field_proj_eq_field_get : ∀ v, #(field_proj v) = (struct.field_get_f t f #v);
   }.
 
 Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
   (fs : struct.descriptor) (v : V) : iProp Σ :=
-  [∗ list] ft ∈ fs,
-    ∀ `(H:IntoValStructField f fs V Vf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
+  [∗ list] '(f, _) ∈ fs,
+    ∀ `(H:IntoValStructField f t V Vf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
 
 (* FIXME: could try stating this with (structT d) substituted in. The main
    concern is that it will result in t getting unfolded. *)
