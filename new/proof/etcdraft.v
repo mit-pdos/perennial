@@ -59,6 +59,60 @@ Qed.
 Next Obligation. Admitted.
 Final Obligation. solve_decision. Qed.
 
+Program Instance iv_Message_Type `{ffi_syntax} : IntoValStructField "Type" raftpb.Message Message.Type'.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_To `{ffi_syntax} : IntoValStructField "To" raftpb.Message Message.To.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_From `{ffi_syntax} : IntoValStructField "From" raftpb.Message Message.From.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Term `{ffi_syntax} : IntoValStructField "Term" raftpb.Message Message.Term.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_LogTerm `{ffi_syntax} : IntoValStructField "LogTerm" raftpb.Message Message.LogTerm.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Index `{ffi_syntax} : IntoValStructField "Index" raftpb.Message Message.Index.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Entries `{ffi_syntax} : IntoValStructField "Entries" raftpb.Message Message.Entries.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Commit `{ffi_syntax} : IntoValStructField "Commit" raftpb.Message Message.Commit.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Vote `{ffi_syntax} : IntoValStructField "Vote" raftpb.Message Message.Vote.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Snapshot `{ffi_syntax} : IntoValStructField "Snapshot" raftpb.Message Message.Snapshot.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Reject `{ffi_syntax} : IntoValStructField "Reject" raftpb.Message Message.Reject.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_RejectHint `{ffi_syntax} : IntoValStructField "RejectHint" raftpb.Message Message.RejectHint.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Context `{ffi_syntax} : IntoValStructField "Context" raftpb.Message Message.Context.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Program Instance iv_Message_Responses `{ffi_syntax} : IntoValStructField "Responses" raftpb.Message Message.Responses.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+
+Module network.
+Record t :=
+  mk {
+      t' : loc;
+      peers : loc ;
+      storage : loc ;
+      dropm64 : loc ;
+      ignorem : loc ;
+      msgHook : func.t ;
+    }.
+End network.
+
 Section proof.
 Context `{!heapGS Σ}.
 
@@ -110,7 +164,7 @@ Proof.
   - rewrite decide_True //. (* Case: more messages to send *)
     wp_pures.
     rewrite -!default_val_eq_zero_val.
-    wp_alloc m as "?".
+    wp_alloc m as "Hm".
     wp_pures.
     iDestruct (own_slice_len with "Hsl") as %Hsl.
     destruct msgs.
@@ -132,6 +186,18 @@ Proof.
     wp_pures.
     wp_alloc p as "?".
     wp_pures.
+    iDestruct (struct_fields_split with "Hm") as "Hm".
+    { done. }
+    { apply _. }
+    rewrite /struct_fields /=.
+    repeat (iDestruct "Hm" as "[H1 Hm]";
+            unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
+            iNamed "H1").
+    wp_load.
+    wp_load.
+    wp_pures.
+    wp_load.
+
     admit. (* TODO: get v in the form of a raftpb.Message, and split it into its fields *)
   - simpl. wp_steps. iModIntro. by iApply "HΦ".
 Admitted.
