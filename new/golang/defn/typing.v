@@ -9,10 +9,11 @@ Inductive go_type :=
 | uint16T
 | uint32T
 | uint64T
+    (*
 | int8T
 | int16T
 | int32T
-| int64T
+| int64T *)
 
 | stringT
 | arrayT (n : nat) (elem : go_type)
@@ -24,6 +25,15 @@ Inductive go_type :=
 | mapT (key elem : go_type)
 | chanT (elem : go_type)
 .
+
+(* XXX: these are the same as the unsigned types because we want to have a 1-to-1 mapping
+   between Go types and the Coq types that represent them, and there's only a
+   single `w64` type representing both signed and unsigned integers.
+ *)
+Definition int8T := uint8T.
+Definition int16T := uint16T.
+Definition int32T := uint32T.
+Definition int64T := uint64T.
 
 Class IntoVal `{ffi_syntax} (V : Type) :=
   {
@@ -179,10 +189,6 @@ Section val_types.
     | uint16T => #null
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
-    | int8T => #(W8 0)
-    | int16T => #null
-    | int32T => #(W32 0)
-    | int64T => #(W64 0)
 
     | stringT => #""
     | arrayT n elem => fold_right PairV #() (replicate n (zero_val_def elem))

@@ -6,6 +6,51 @@ Module MessageType.
 Definition t := w32.
 End MessageType.
 
+Module blackHole.
+Record t := mk {}.
+End blackHole.
+
+Instance into_val_blackHole `{ffi_syntax} : IntoVal blackHole.t :=
+  {|
+    to_val_def := λ v, struct.val blackHole []
+  |}.
+Program Instance into_val_typed_blackHole `{ffi_syntax} : IntoValTyped blackHole.t blackHole :=
+{| default_val := blackHole.mk |}.
+Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
+Next Obligation.
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal //=.
+Qed.
+Next Obligation. Admitted.
+Final Obligation. solve_decision. Qed.
+
+Module testLeaderElectionStruct.
+Record t :=
+  mk {
+      network : loc;
+      state : w64;
+      expTerm : w64
+    }.
+End testLeaderElectionStruct.
+Instance into_val_testLeaderElectionStruct `{ffi_syntax} : IntoVal testLeaderElectionStruct.t :=
+  {|
+    to_val_def :=
+      λ v, struct.val testLeaderElectionStruct [
+               "network" ::= #v.(testLeaderElectionStruct.network);
+               "state" ::= #v.(testLeaderElectionStruct.state);
+               "expTerm" ::= #v.(testLeaderElectionStruct.expTerm)
+             ]%V
+  |}.
+Program Instance into_val_typed_testLeaderElectionStruct `{ffi_syntax} : IntoValTyped testLeaderElectionStruct.t testLeaderElectionStruct :=
+{| default_val := testLeaderElectionStruct.mk
+                    (default_val _) (default_val _) (default_val _) |}.
+Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
+Next Obligation.
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal //=.
+  rewrite zero_val_eq /= to_val_unseal //=.
+Qed.
+Next Obligation. Admitted.
+Final Obligation. solve_decision. Qed.
+
 Module Message.
 Record t :=
   mk {
@@ -196,11 +241,14 @@ Proof.
     wp_load.
     wp_load.
     wp_pures.
-    wp_load.
-
-    admit. (* TODO: get v in the form of a raftpb.Message, and split it into its fields *)
-  - simpl. wp_steps. iModIntro. by iApply "HΦ".
+    admit. (* TODO: load peers from network *)
+  - rewrite decide_False; last naive_solver.
+    rewrite decide_True; last naive_solver.
+    wp_pures. by iApply "HΦ".
 Admitted.
+
+Ltac wp_steps :=
+  wp_pures; try ((wp_load; wp_steps) || (wp_store; wp_steps)).
 
 Lemma wp_testLeaderElection2 :
   {{{ True }}}
@@ -209,110 +257,110 @@ Lemma wp_testLeaderElection2 :
 Proof.
   Set Ltac Profiling.
   iIntros (?) "_ HΦ".
-  wp_rec.
+  wp_call.
+  wp_alloc preVote as "?".
+  wp_pures.
+  wp_alloc t_ptr as "?".
   wp_steps.
-  wp_alloc preVote.
-  wp_pures'.
-  wp_alloc t_ptr.
-  wp_steps.
+  rewrite -!default_val_eq_zero_val.
   wp_alloc cfg as "Hcfg".
-  wp_pures'.
+  wp_pures.
   wp_alloc candState as "HcandState".
   wp_steps.
   wp_alloc candTerm as "HcandTerm".
   wp_steps.
 
   wp_alloc nopStepper as "HnopStepper".
-  wp_pures'.
+  wp_pures.
+  replace (struct.val blackHole []) with (#blackHole.mk).
+  2:{ rewrite to_val_unseal //. }
   wp_alloc nopStepperPtr as "HnopStepperPtr".
   wp_steps.
   wp_alloc tests as "Htests".
   wp_steps.
 
-  (* FIXME: binding is much faster than wp_applying directly. Similar to how
-     wp_load/wp_store got faster after the wp_bind. *)
-  Time wp_bind (slice.literal _ _);
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { instantiate (1:=[_ ; _ ; _ ]). done. }
   iIntros (?) "?".
-  wp_pures'.
-  replace (zero_val funcT) with (zero_val' funcT).
-  2:{ by rewrite zero_val_eq. }
 
-  Time wp_bind (newNetworkWithConfigInit _ _);
-  iApply (wp_newNetworkWithConfigInit with "[$]");
-  iNext.
-
+  wp_pures.
+  wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw1".
 
   wp_steps.
+  (* FIXME: slice literal simplification *)
+  Ltac solve_slice_literal :=
+    repeat ((by instantiate (1:=nil)) || instantiate (1:=cons _ _); simpl; f_equal).
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw2".
 
   wp_steps.
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   (* Time wp_apply (wp_newNetworkWithConfigInit with "[$]"). *)
   Time wp_bind (newNetworkWithConfigInit _ _); iApply (wp_newNetworkWithConfigInit with "[$]"); iModIntro.
   iIntros (?) "Hnw3".
 
   wp_steps.
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw4".
 
   wp_steps.
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw5".
 
   wp_steps.
 
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr1".
 
   wp_steps.
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr2".
 
   wp_steps.
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr3".
 
-  wp_pures'.
+  wp_pures.
   wp_apply wp_slice_literal.
-  { repeat constructor. }
+  { solve_slice_literal. }
   iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw6".
-  wp_pures'.
+  wp_pures.
+  eassert (struct.val testLeaderElectionStruct _ = to_val (testLeaderElectionStruct.mk _ _ _)) as ->.
+  {
+    rewrite -> to_val_unseal at 3. simpl. done.
   wp_apply wp_slice_literal.
-  { solve_has_go_type. }
+  { solve_slice_literal. }
   iIntros (?) "?".
   wp_steps.
 
@@ -320,17 +368,17 @@ Proof.
   iFrame.
   simpl foldr.
   (* Entire for loop is unfolded here. TODO: is there a way to unfold one iteration at a time? *)
-  wp_pures'.
+  wp_pures.
   wp_alloc i.
-  wp_pures'.
+  wp_pures.
   wp_alloc tt as "Htt".
-  wp_pures'.
+  wp_pures.
   Time wp_bind (slice.literal _ _);
   iApply wp_slice_literal.
   { solve_has_go_type. }
   { auto. }
   iNext. iIntros (?) "?".
-  wp_pures'.
+  wp_pures.
   iStructSplit "Htt".
   wp_load.
 

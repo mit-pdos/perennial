@@ -550,5 +550,5 @@ Qed.
 
 End wps.
 
-Notation "s ↦sl dq vs" := (own_slice s dq vs)
-                            (at level 20, dq custom dfrac at level 50, format "s  ↦sl dq  vs").
+Notation "s ↦* dq vs" := (own_slice s dq vs)
+                            (at level 20, dq custom dfrac at level 50, format "s  ↦* dq  vs").
