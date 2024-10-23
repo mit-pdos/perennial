@@ -707,7 +707,6 @@ Proof.
       iMod (readonly_alloc_1 with "Herr") as "#Herr_ptr".
       wp_apply (wp_WaitGroup__Done with "[$Hwg_tok $His_wg Herr_ptr Hpost]").
       {
-        iModIntro.
         iExists _, _.
         iSplitL ""; first done.
         iFrame "#".

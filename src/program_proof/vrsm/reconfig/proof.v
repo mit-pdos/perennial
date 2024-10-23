@@ -533,7 +533,6 @@ Proof using waitgroupG0.
       {
         rewrite lookup_take_Some in Hlookup2.
         destruct Hlookup2 as [Hlookup2 _].
-        iModIntro.
         unfold P.
         iExists _, _.
         iSplitL; first done.
