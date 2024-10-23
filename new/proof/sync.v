@@ -51,7 +51,7 @@ Qed.
 Final Obligation. solve_decision. Qed.
 
 Program Instance into_val_struct_Mutex_state `{ffi_syntax} :
-  IntoValStructField "state" [("state" :: boolT)%struct] Mutex.t bool Mutex.state.
+  IntoValStructField "state" Mutex Mutex.state.
 Final Obligation.
 intros. by rewrite to_val_unseal /= struct.val_unseal /= to_val_unseal /=.
 Qed.
@@ -102,8 +102,9 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   { done. }
   { apply _. }
+  rewrite /struct_fields /=.
   iDestruct "Hl" as "[Hl _]".
-  unshelve iSpecialize ("Hl" $! _ _ _ _ _ _ _); try tc_solve.
+  unshelve iSpecialize ("Hl" $! _ _ _ _ _ _); try tc_solve.
   simpl. iNamed "Hl".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
