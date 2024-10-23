@@ -64,19 +64,7 @@ Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
                "closedCond" ::= #v.(AsyncFile.closedCond)
              ]%V
   |}.
-Lemma struct_val_inj d fvs1 fvs2 :
-  struct.val (structT d) fvs1 = struct.val (structT d) fvs2 →
-  ∀ f, In f d.*1 → assocl_lookup f fvs1 = assocl_lookup f fvs2.
-Proof.
-  rewrite struct.val_unseal.
-  induction d as [|[]].
-  { done. }
-  intros ?? [].
-  - subst. simpl in H.
-    injection H as ??.
-    repeat destruct assocl_lookup.
-    destruct assocl_lookup.
-Admitted.
+
 Program Instance into_val_typed_AsyncFile : IntoValTyped AsyncFile.t AsyncFile :=
 {| default_val := AsyncFile.mk (default_val _) (default_val _) (default_val _) (default_val _)
                     (default_val _) (default_val _) (default_val _) (default_val _)
@@ -103,25 +91,25 @@ Next Obligation.
   simpl in *.
   f_equal.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 0 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 1 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 2 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 3 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 4 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 5 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 6 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 7 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 8 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
   - eapply (struct_val_inj _ _ _) in Heq; last by (do 9 right; left).
-    injection Heq. apply to_val_inj.
+    simpl in Heq. by apply to_val_inj.
 Qed.
 Final Obligation. solve_decision. Qed.
 
@@ -924,7 +912,7 @@ Proof.
   {
     iNext.
     wp_apply ("Hwp_flush" with "[-]").
-    { Time iFrame "∗#". }
+    { iFrame "∗#". }
     wp_pures.
     done.
   }

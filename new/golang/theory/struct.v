@@ -96,6 +96,24 @@ Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
   [∗ list] '(f, _) ∈ fs,
     ∀ `(H:IntoValStructField f t V Vf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
 
+Lemma struct_val_inj d fvs1 fvs2 :
+  struct.val (structT d) fvs1 = struct.val (structT d) fvs2 →
+  ∀ f, In f d.*1 →
+       match (assocl_lookup f fvs1), (assocl_lookup f fvs2) with
+       | Some v1, Some v2 => v1 = v2
+       | _, _ => True
+       end.
+Proof.
+  rewrite struct.val_unseal.
+  induction d as [|[]].
+  { done. }
+  intros Heq ? [].
+  - subst. simpl in Heq.
+    injection Heq as ??.
+    repeat destruct assocl_lookup; naive_solver.
+  - simpl in *. injection Heq as ??. by apply IHd.
+Qed.
+
 (* FIXME: could try stating this with (structT d) substituted in. The main
    concern is that it will result in t getting unfolded. *)
 Theorem struct_fields_split `{!IntoVal V} `{!IntoValTyped V t}
