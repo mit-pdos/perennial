@@ -8,7 +8,7 @@ From New Require Import grove_prelude.
 
 Definition AsyncFile : go_type := structT [
   "mu" :: ptrT;
-  "data" :: sliceT byteT;
+  "data" :: sliceT;
   "filename" :: stringT;
   "index" :: uint64T;
   "indexCond" :: ptrT;
@@ -58,7 +58,7 @@ Definition AsyncFile__wait : val :=
 Definition AsyncFile__Write : val :=
   rec: "AsyncFile__Write" "s" "data" :=
     with_defer: (let: "s" := (ref_ty ptrT "s") in
-    let: "data" := (ref_ty (sliceT byteT) "data") in
+    let: "data" := (ref_ty sliceT "data") in
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
     do:  (let: "$f" := (sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
@@ -66,8 +66,8 @@ Definition AsyncFile__Write : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "$r0" := (![sliceT byteT] "data") in
-    do:  ((struct.field_ref AsyncFile "data" (![ptrT] "s")) <-[sliceT byteT] "$r0");;;
+    let: "$r0" := (![sliceT] "data") in
+    do:  ((struct.field_ref AsyncFile "data" (![ptrT] "s")) <-[sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
     std.SumAssumeNoOverflow "$a0" "$a1") in
@@ -90,7 +90,7 @@ Definition AsyncFile__flushThread : val :=
       (if: ![boolT] (struct.field_ref AsyncFile "closeRequested" (![ptrT] "s"))
       then
         do:  (let: "$a0" := (![stringT] (struct.field_ref AsyncFile "filename" (![ptrT] "s"))) in
-        let: "$a1" := (![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
+        let: "$a1" := (![sliceT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
         grove_ffi.FileWrite "$a0" "$a1");;;
         let: "$r0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
         do:  ((struct.field_ref AsyncFile "durableIndex" (![ptrT] "s")) <-[uint64T] "$r0");;;
@@ -109,12 +109,12 @@ Definition AsyncFile__flushThread : val :=
       let: "index" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
       do:  ("index" <-[uint64T] "$r0");;;
-      let: "data" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-      let: "$r0" := (![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
-      do:  ("data" <-[sliceT byteT] "$r0");;;
+      let: "data" := (ref_ty sliceT (zero_val sliceT)) in
+      let: "$r0" := (![sliceT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
+      do:  ("data" <-[sliceT] "$r0");;;
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
       do:  (let: "$a0" := (![stringT] (struct.field_ref AsyncFile "filename" (![ptrT] "s"))) in
-      let: "$a1" := (![sliceT byteT] "data") in
+      let: "$a1" := (![sliceT] "data") in
       grove_ffi.FileWrite "$a0" "$a1");;;
       do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
       let: "$r0" := (![uint64T] "index") in
@@ -153,9 +153,9 @@ Definition MakeAsyncFile : val :=
       "closeRequested" ::= #false
     }])) in
     do:  ("s" <-[ptrT] "$r0");;;
-    let: "data" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (![sliceT byteT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
-    do:  ("data" <-[sliceT byteT] "$r0");;;
+    let: "data" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (![sliceT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
+    do:  ("data" <-[sliceT] "$r0");;;
     let: "$go" := (AsyncFile__flushThread (![ptrT] "s")) in
     do:  (Fork ("$go" #()));;;
-    return: (![sliceT byteT] "data", ![ptrT] "s")).
+    return: (![sliceT] "data", ![ptrT] "s")).

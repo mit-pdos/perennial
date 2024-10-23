@@ -17,14 +17,14 @@ Definition Message : go_type := structT [
   "Term" :: uint64T;
   "LogTerm" :: uint64T;
   "Index" :: uint64T;
-  "Entries" :: sliceT Entry;
+  "Entries" :: sliceT;
   "Commit" :: uint64T;
   "Vote" :: uint64T;
   "Snapshot" :: ptrT;
   "Reject" :: boolT;
   "RejectHint" :: uint64T;
-  "Context" :: sliceT byteT;
-  "Responses" :: sliceT Message
+  "Context" :: sliceT;
+  "Responses" :: sliceT
 ].
 
 

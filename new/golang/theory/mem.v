@@ -490,7 +490,7 @@ Section goose_lang.
     | structT d => False
     | arrayT n t => False
     | funcT => False
-    | sliceT e => False
+    | sliceT => False
     | interfaceT => False
     | _ => True
     end.

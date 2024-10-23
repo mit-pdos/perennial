@@ -16,7 +16,7 @@ Inductive go_type :=
 
 | stringT
 | arrayT (n : nat) (elem : go_type)
-| sliceT (elem : go_type)
+| sliceT
 | interfaceT
 | structT (decls : list (string * go_type)) (* What if this were a gmap? *)
 | ptrT (* Untyped pointer; convenient to support recursion in structs *)
@@ -186,7 +186,7 @@ Section val_types.
 
     | stringT => #""
     | arrayT n elem => fold_right PairV #() (replicate n (zero_val_def elem))
-    | sliceT _ => #slice.nil
+    | sliceT => #slice.nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => #null
     | funcT => #func.nil

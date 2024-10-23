@@ -89,16 +89,15 @@ Ltac2 solve_to_val_inj_step () : unit :=
   | [ |- Inj eq eq _ ] => intros [] [] Heq
   end.
 Next Obligation.
-  rewrite to_val_unseal.
-  ltac2:(solve_to_val_inj_step ()).
-Admitted.
-Next Obligation. solve_decision. Qed.
-Next Obligation. (* FIXME: why is does goal exist? *) Admitted.
-Final Obligation.
   (* FIXME: [solve_zero_val] tactic *)
   intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal /=.
   rewrite zero_val_eq /= !to_val_unseal //.
 Qed.
+Next Obligation.
+  rewrite to_val_unseal.
+  ltac2:(solve_to_val_inj_step ()).
+Admitted.
+Final Obligation. solve_decision. Qed.
 
 Program Instance iv_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" AsyncFile AsyncFile.mu.
 Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.

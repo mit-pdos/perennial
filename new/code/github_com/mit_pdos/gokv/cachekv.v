@@ -31,20 +31,20 @@ Definition CacheKv__mset : list (string * val) := [
 Definition DecodeValue : val :=
   rec: "DecodeValue" "v" :=
     exception_do (let: "v" := (ref_ty stringT "v") in
-    let: "e" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
+    let: "e" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (string.to_bytes (![stringT] "v")) in
-    do:  ("e" <-[sliceT byteT] "$r0");;;
-    let: "vBytes" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
+    do:  ("e" <-[sliceT] "$r0");;;
+    let: "vBytes" := (ref_ty sliceT (zero_val sliceT)) in
     let: "l" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT byteT] "e") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "e") in
     marshal.ReadInt "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("l" <-[uint64T] "$r0");;;
-    do:  ("vBytes" <-[sliceT byteT] "$r1");;;
+    do:  ("vBytes" <-[sliceT] "$r1");;;
     return: (struct.make cacheValue [{
        "l" ::= ![uint64T] "l";
-       "v" ::= string.from_bytes (![sliceT byteT] "vBytes")
+       "v" ::= string.from_bytes (![sliceT] "vBytes")
      }])).
 
 (* go: clerk.go:55:19 *)
@@ -83,18 +83,18 @@ Definition CacheKv__Get : val :=
 Definition EncodeValue : val :=
   rec: "EncodeValue" "c" :=
     exception_do (let: "c" := (ref_ty cacheValue "c") in
-    let: "e" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
+    let: "e" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 0)) in
-    do:  ("e" <-[sliceT byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "e") in
+    do:  ("e" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "e") in
     let: "$a1" := (![uint64T] (struct.field_ref cacheValue "l" "c")) in
     marshal.WriteInt "$a0" "$a1") in
-    do:  ("e" <-[sliceT byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "e") in
+    do:  ("e" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "e") in
     let: "$a1" := (string.to_bytes (![stringT] (struct.field_ref cacheValue "v" "c"))) in
     marshal.WriteBytes "$a0" "$a1") in
-    do:  ("e" <-[sliceT byteT] "$r0");;;
-    return: (string.from_bytes (![sliceT byteT] "e"))).
+    do:  ("e" <-[sliceT] "$r0");;;
+    return: (string.from_bytes (![sliceT] "e"))).
 
 (* go: clerk.go:40:6 *)
 Definition max : val :=

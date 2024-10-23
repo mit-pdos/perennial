@@ -18,7 +18,7 @@ Section grove.
 
   Definition ReceiveRet := structT [
                                "Err" :: boolT;
-                               "Data" :: sliceT byteT
+                               "Data" :: sliceT
                              ].
 
   (** Type: func(uint64) Listener *)

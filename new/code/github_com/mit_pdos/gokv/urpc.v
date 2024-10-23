@@ -20,35 +20,35 @@ Definition Server__mset : list (string * val) := [
 Definition Server__rpcHandle : val :=
   rec: "Server__rpcHandle" "srv" "conn" "rpcid" "seqno" "data" :=
     exception_do (let: "srv" := (ref_ty ptrT "srv") in
-    let: "data" := (ref_ty (sliceT byteT) "data") in
+    let: "data" := (ref_ty sliceT "data") in
     let: "seqno" := (ref_ty uint64T "seqno") in
     let: "rpcid" := (ref_ty uint64T "rpcid") in
     let: "conn" := (ref_ty grove_ffi.Connection "conn") in
     let: "replyData" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
+    let: "$r0" := (ref_ty sliceT (zero_val sliceT)) in
     do:  ("replyData" <-[ptrT] "$r0");;;
     let: "f" := (ref_ty funcT (zero_val funcT)) in
     let: "$r0" := (Fst (map.get (![mapT uint64T funcT] (struct.field_ref Server "handlers" (![ptrT] "srv"))) (![uint64T] "rpcid"))) in
     do:  ("f" <-[funcT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT byteT] "data") in
+    do:  (let: "$a0" := (![sliceT] "data") in
     let: "$a1" := (![ptrT] "replyData") in
     (![funcT] "f") "$a0" "$a1");;;
-    let: "data1" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![sliceT byteT] (![ptrT] "replyData")) in
+    let: "data1" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![sliceT] (![ptrT] "replyData")) in
     slice.len "$a0"))) in
-    do:  ("data1" <-[sliceT byteT] "$r0");;;
-    let: "data2" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "data1") in
+    do:  ("data1" <-[sliceT] "$r0");;;
+    let: "data2" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "data1") in
     let: "$a1" := (![uint64T] "seqno") in
     marshal.WriteInt "$a0" "$a1") in
-    do:  ("data2" <-[sliceT byteT] "$r0");;;
-    let: "data3" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "data2") in
-    let: "$a1" := (![sliceT byteT] (![ptrT] "replyData")) in
+    do:  ("data2" <-[sliceT] "$r0");;;
+    let: "data3" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "data2") in
+    let: "$a1" := (![sliceT] (![ptrT] "replyData")) in
     marshal.WriteBytes "$a0" "$a1") in
-    do:  ("data3" <-[sliceT byteT] "$r0");;;
+    do:  ("data3" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := (![grove_ffi.Connection] "conn") in
-    let: "$a1" := (![sliceT byteT] "data3") in
+    let: "$a1" := (![sliceT] "data3") in
     grove_ffi.Send "$a0" "$a1")).
 
 (* go: urpc.go:36:20 *)
@@ -64,31 +64,31 @@ Definition Server__readThread : val :=
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then break: #()
       else do:  #());;;
-      let: "data" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-      let: "$r0" := (![sliceT byteT] (struct.field_ref grove_ffi.ReceiveRet "Data" "r")) in
-      do:  ("data" <-[sliceT byteT] "$r0");;;
+      let: "data" := (ref_ty sliceT (zero_val sliceT)) in
+      let: "$r0" := (![sliceT] (struct.field_ref grove_ffi.ReceiveRet "Data" "r")) in
+      do:  ("data" <-[sliceT] "$r0");;;
       let: "rpcid" := (ref_ty uint64T (zero_val uint64T)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT byteT] "data") in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "data") in
       marshal.ReadInt "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("rpcid" <-[uint64T] "$r0");;;
-      do:  ("data" <-[sliceT byteT] "$r1");;;
+      do:  ("data" <-[sliceT] "$r1");;;
       let: "seqno" := (ref_ty uint64T (zero_val uint64T)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT byteT] "data") in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "data") in
       marshal.ReadInt "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("seqno" <-[uint64T] "$r0");;;
-      do:  ("data" <-[sliceT byteT] "$r1");;;
-      let: "req" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-      let: "$r0" := (![sliceT byteT] "data") in
-      do:  ("req" <-[sliceT byteT] "$r0");;;
+      do:  ("data" <-[sliceT] "$r1");;;
+      let: "req" := (ref_ty sliceT (zero_val sliceT)) in
+      let: "$r0" := (![sliceT] "data") in
+      do:  ("req" <-[sliceT] "$r0");;;
       let: "$go" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![grove_ffi.Connection] "conn") in
         let: "$a1" := (![uint64T] "rpcid") in
         let: "$a2" := (![uint64T] "seqno") in
-        let: "$a3" := (![sliceT byteT] "req") in
+        let: "$a3" := (![sliceT] "req") in
         (Server__rpcHandle (![ptrT] "srv")) "$a0" "$a1" "$a2" "$a3"))
         ) in
       do:  (Fork ("$go" #()));;;
@@ -182,8 +182,8 @@ Definition Client__CallComplete : val :=
     do:  ("state" <-[uint64T] "$r0");;;
     (if: (![uint64T] "state") = callbackStateDone
     then
-      let: "$r0" := (![sliceT byteT] (![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb")))) in
-      do:  ((![ptrT] "reply") <-[sliceT byteT] "$r0");;;
+      let: "$r0" := (![sliceT] (![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb")))) in
+      do:  ((![ptrT] "reply") <-[sliceT] "$r0");;;
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       return: (#(W64 0))
     else
@@ -198,10 +198,10 @@ Definition ErrNone : expr := #(W64 0).
 Definition Client__CallStart : val :=
   rec: "Client__CallStart" "cl" "rpcid" "args" :=
     exception_do (let: "cl" := (ref_ty ptrT "cl") in
-    let: "args" := (ref_ty (sliceT byteT) "args") in
+    let: "args" := (ref_ty sliceT "args") in
     let: "rpcid" := (ref_ty uint64T "rpcid") in
     let: "reply_buf" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
+    let: "$r0" := (ref_ty sliceT (zero_val sliceT)) in
     do:  ("reply_buf" <-[ptrT] "$r0");;;
     let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty Callback (struct.make Callback [{
@@ -224,27 +224,27 @@ Definition Client__CallStart : val :=
     let: "$r0" := (![ptrT] "cb") in
     do:  (map.insert (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (![uint64T] "seqno") "$r0");;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
-    let: "data1" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![sliceT byteT] "args") in
+    let: "data1" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![sliceT] "args") in
     slice.len "$a0"))) in
-    do:  ("data1" <-[sliceT byteT] "$r0");;;
-    let: "data2" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "data1") in
+    do:  ("data1" <-[sliceT] "$r0");;;
+    let: "data2" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "data1") in
     let: "$a1" := (![uint64T] "rpcid") in
     marshal.WriteInt "$a0" "$a1") in
-    do:  ("data2" <-[sliceT byteT] "$r0");;;
-    let: "data3" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "data2") in
+    do:  ("data2" <-[sliceT] "$r0");;;
+    let: "data3" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "data2") in
     let: "$a1" := (![uint64T] "seqno") in
     marshal.WriteInt "$a0" "$a1") in
-    do:  ("data3" <-[sliceT byteT] "$r0");;;
-    let: "reqData" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "data3") in
-    let: "$a1" := (![sliceT byteT] "args") in
+    do:  ("data3" <-[sliceT] "$r0");;;
+    let: "reqData" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "data3") in
+    let: "$a1" := (![sliceT] "args") in
     marshal.WriteBytes "$a0" "$a1") in
-    do:  ("reqData" <-[sliceT byteT] "$r0");;;
+    do:  ("reqData" <-[sliceT] "$r0");;;
     (if: let: "$a0" := (![grove_ffi.Connection] (struct.field_ref Client "conn" (![ptrT] "cl"))) in
-    let: "$a1" := (![sliceT byteT] "reqData") in
+    let: "$a1" := (![sliceT] "reqData") in
     grove_ffi.Send "$a0" "$a1"
     then
       return: (ref_ty Callback (struct.make Callback [{
@@ -258,12 +258,12 @@ Definition Client__Call : val :=
     exception_do (let: "cl" := (ref_ty ptrT "cl") in
     let: "timeout_ms" := (ref_ty uint64T "timeout_ms") in
     let: "reply" := (ref_ty ptrT "reply") in
-    let: "args" := (ref_ty (sliceT byteT) "args") in
+    let: "args" := (ref_ty sliceT "args") in
     let: "rpcid" := (ref_ty uint64T "rpcid") in
     let: "err" := (ref_ty uint64T (zero_val uint64T)) in
     let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "rpcid") in
-    let: "$a1" := (![sliceT byteT] "args") in
+    let: "$a1" := (![sliceT] "args") in
     (Client__CallStart (![ptrT] "cl")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -296,19 +296,19 @@ Definition Client__replyThread : val :=
         do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
         break: #()
       else do:  #());;;
-      let: "data" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-      let: "$r0" := (![sliceT byteT] (struct.field_ref grove_ffi.ReceiveRet "Data" "r")) in
-      do:  ("data" <-[sliceT byteT] "$r0");;;
+      let: "data" := (ref_ty sliceT (zero_val sliceT)) in
+      let: "$r0" := (![sliceT] (struct.field_ref grove_ffi.ReceiveRet "Data" "r")) in
+      do:  ("data" <-[sliceT] "$r0");;;
       let: "seqno" := (ref_ty uint64T (zero_val uint64T)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT byteT] "data") in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "data") in
       marshal.ReadInt "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("seqno" <-[uint64T] "$r0");;;
-      do:  ("data" <-[sliceT byteT] "$r1");;;
-      let: "reply" := (ref_ty (sliceT byteT) (zero_val (sliceT byteT))) in
-      let: "$r0" := (![sliceT byteT] "data") in
-      do:  ("reply" <-[sliceT byteT] "$r0");;;
+      do:  ("data" <-[sliceT] "$r1");;;
+      let: "reply" := (ref_ty sliceT (zero_val sliceT)) in
+      let: "$r0" := (![sliceT] "data") in
+      do:  ("reply" <-[sliceT] "$r0");;;
       do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       let: "ok" := (ref_ty boolT (zero_val boolT)) in
       let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
@@ -322,8 +322,8 @@ Definition Client__replyThread : val :=
         do:  (let: "$a0" := (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) in
         let: "$a1" := (![uint64T] "seqno") in
         map.delete "$a0" "$a1");;;
-        let: "$r0" := (![sliceT byteT] "reply") in
-        do:  ((![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb"))) <-[sliceT byteT] "$r0");;;
+        let: "$r0" := (![sliceT] "reply") in
+        do:  ((![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb"))) <-[sliceT] "$r0");;;
         let: "$r0" := callbackStateDone in
         do:  ((![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb"))) <-[uint64T] "$r0");;;
         do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb")))) #())

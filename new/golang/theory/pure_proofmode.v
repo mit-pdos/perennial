@@ -403,7 +403,8 @@ Ltac2 wp_pure () :=
                                     (* This looks for an instance before eapply to make to fail fast. *)
                                     let pure_wp := '(ltac:(tc_solve) : PureWp _ $e _) in
                                     eapply (tac_wp_pure_wp $k $e $pure_wp) >
-                                      [ltac1:(done)|ltac1:(tc_solve)|
+                                      [ltac1:(try done)|
+                                        ltac1:(tc_solve)|
                                         ltac1:(reduction.pm_prettify; simpl subst'; simpl fill)]
                        )
         )
@@ -411,7 +412,7 @@ Ltac2 wp_pure () :=
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
   end.
 Tactic Notation "wp_pure" := ltac2:(Control.enter wp_pure).
-Tactic Notation "wp_pures" := repeat wp_pure.
+Tactic Notation "wp_pures" := repeat (wp_pure; []).
 
 Ltac2 wp_call () :=
   lazy_match! goal with
