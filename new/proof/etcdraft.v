@@ -356,9 +356,8 @@ Proof.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw6".
   wp_pures.
-  eassert (struct.val testLeaderElectionStruct _ = to_val (testLeaderElectionStruct.mk _ _ _)) as ->.
-  {
-    rewrite -> to_val_unseal at 3. simpl. done.
+  do 6 (eassert (struct.val testLeaderElectionStruct _ = to_val (testLeaderElectionStruct.mk _ _ _)) as ->;
+    first rewrite [in (to_val (V:=testLeaderElectionStruct.t))]to_val_unseal /= //).
   wp_apply wp_slice_literal.
   { solve_slice_literal. }
   iIntros (?) "?".
@@ -369,18 +368,13 @@ Proof.
   simpl foldr.
   (* Entire for loop is unfolded here. TODO: is there a way to unfold one iteration at a time? *)
   wp_pures.
-  wp_alloc i.
+  wp_alloc i as "?".
   wp_pures.
   wp_alloc tt as "Htt".
   wp_pures.
-  Time wp_bind (slice.literal _ _);
-  iApply wp_slice_literal.
-  { solve_has_go_type. }
-  { auto. }
-  iNext. iIntros (?) "?".
-  wp_pures.
-  iStructSplit "Htt".
-  wp_load.
+  eassert (struct.val raftpb.Message _ = to_val (Message.mk _ _ _ _ _ _ _ _ _ _ _ _ _ _)) as ->;
+    first rewrite [in (to_val (V:=Message.t))]to_val_unseal /= //.
+  (* FIXME: incomplete struct.val *)
 
   Show Ltac Profile.
 Admitted.
