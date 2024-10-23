@@ -43,21 +43,25 @@ Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
   length head = uint.nat len →
   {{{ own_slice_small s byteT q (head ++ tail) }}}
     ReadBytes (slice_val s) #len
-  {{{ b s' q', RET (slice_val b, slice_val s'); own_slice_small b byteT q' head ∗ own_slice_small s' byteT q' tail }}}.
+  {{{ b s', RET (slice_val b, slice_val s'); own_slice_small b byteT q head ∗ own_slice_small s' byteT q tail }}}.
 Proof.
   iIntros (Hlen Φ) "Hs HΦ".
-  iMod (own_slice_small_persist with "Hs") as "#Hs".
   wp_rec. wp_pures.
-  wp_apply (wp_SliceTake_small with "Hs").
-  { len. }
-  iIntros "Hs1".
-  wp_apply (wp_SliceSkip_small with "Hs").
-  { len. }
-  iIntros (s') "Hs2". wp_pures. iApply "HΦ".
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
+  autorewrite with len in Hsz.
+  iDestruct (own_slice_small_wf with "Hs") as %Hwf.
+  wp_apply (wp_SliceTake).
+  { word. }
+  wp_apply (wp_SliceSkip).
+  { word. }
+  wp_pures.
   iModIntro.
-  rewrite take_app_length' //.
-  rewrite drop_app_length' //.
-  iFrame.
+  iApply "HΦ".
+  iDestruct (slice_small_split _ len with "Hs") as "[Hs1 Hs2]".
+  { len. }
+  iSplitL "Hs1".
+  - rewrite take_app_length' //.
+  - rewrite drop_app_length' //.
 Qed.
 
 Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
