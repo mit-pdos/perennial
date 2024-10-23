@@ -61,7 +61,7 @@ Definition ReconnectingClient__Call : val :=
     exception_do (let: "cl" := (ref_ty ptrT "cl") in
     let: "timeout_ms" := (ref_ty uint64T "timeout_ms") in
     let: "reply" := (ref_ty ptrT "reply") in
-    let: "args" := (ref_ty (sliceT byteT) "args") in
+    let: "args" := (ref_ty sliceT "args") in
     let: "rpcid" := (ref_ty uint64T "rpcid") in
     let: "urpcCl" := (ref_ty ptrT (zero_val ptrT)) in
     let: "err1" := (ref_ty uint64T (zero_val uint64T)) in
@@ -75,7 +75,7 @@ Definition ReconnectingClient__Call : val :=
     else do:  #());;;
     let: "err" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "rpcid") in
-    let: "$a1" := (![sliceT byteT] "args") in
+    let: "$a1" := (![sliceT] "args") in
     let: "$a2" := (![ptrT] "reply") in
     let: "$a3" := (![uint64T] "timeout_ms") in
     (urpc.Client__Call (![ptrT] "urpcCl")) "$a0" "$a1" "$a2" "$a3") in

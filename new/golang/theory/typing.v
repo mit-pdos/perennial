@@ -42,7 +42,7 @@ Program Definition go_type_ind :=
   λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
   (f3 : P uint64T) (f4 : P int8T) (f5 : P int16T) (f6 : P int32T) (f7 : P int64T)
   (f8 : P stringT) (f9 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
-  (f10 : ∀ elem : go_type, P elem → P (sliceT elem)) (f11 : P interfaceT)
+  (f10 : P sliceT) (f11 : P interfaceT)
   (f12 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
   (f13 : P ptrT) (f14 : P funcT) (f15 : ∀ key : go_type, P key → ∀ elem : go_type, P elem → P (mapT key elem))
   (f16 : ∀ elem : go_type, P elem → P (chanT elem)),
@@ -59,7 +59,7 @@ Program Definition go_type_ind :=
     | int64T => f7
     | stringT => f8
     | arrayT n elem => f9 n elem (F elem)
-    | sliceT elem => f10 elem (F elem)
+    | sliceT => f10
     | interfaceT => f11
     | structT decls => f12 decls _
     | ptrT => f13
@@ -96,7 +96,7 @@ Program Definition go_type_ind :=
 
   | has_go_type_string (s : string) : has_go_type #s stringT
 
-  | has_go_type_slice elem (s : slice.t) : has_go_type (#s) (sliceT elem)
+  | has_go_type_slice (s : slice.t) : has_go_type (#s) sliceT
   | has_go_type_interface (i : interface.t) : has_go_type (#i) interfaceT
 
   | has_go_type_array n elem (a : list val)
@@ -194,7 +194,7 @@ Program Definition go_type_ind :=
 
     | stringT => #("")
     | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
-    | sliceT _ => #slice.nil
+    | sliceT => #slice.nil
     | structT decls => struct.val t []
     | ptrT => #null
     | funcT => #func.nil
@@ -396,11 +396,11 @@ Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
-Program Global Instance into_val_typed_slice elemT : IntoValTyped slice.t (sliceT elemT) :=
+Program Global Instance into_val_typed_slice : IntoValTyped slice.t sliceT :=
 {| default_val := slice.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation. rewrite to_val_unseal => ?[???][???] [=] //.
+Next Obligation. rewrite to_val_unseal. move => [???][???] [=].
                  repeat intros [=->%to_val_inj]. done.
 Qed.
 

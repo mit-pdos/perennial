@@ -11,13 +11,13 @@ Context `{ffi_syntax}.
    go: goose_std.go:10:6 *)
 Definition BytesEqual : val :=
   rec: "BytesEqual" "x" "y" :=
-    exception_do (let: "y" := (ref_ty (sliceT byteT) "y") in
-    let: "x" := (ref_ty (sliceT byteT) "x") in
+    exception_do (let: "y" := (ref_ty sliceT "y") in
+    let: "x" := (ref_ty sliceT "x") in
     let: "xlen" := (ref_ty intT (zero_val intT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT byteT] "x") in
+    let: "$r0" := (let: "$a0" := (![sliceT] "x") in
     slice.len "$a0") in
     do:  ("xlen" <-[intT] "$r0");;;
-    (if: (![intT] "xlen") ≠ (let: "$a0" := (![sliceT byteT] "y") in
+    (if: (![intT] "xlen") ≠ (let: "$a0" := (![sliceT] "y") in
     slice.len "$a0")
     then return: (#false)
     else do:  #());;;
@@ -28,7 +28,7 @@ Definition BytesEqual : val :=
     let: "$r0" := #true in
     do:  ("retval" <-[boolT] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < (![intT] "xlen")); (λ: <>, Skip) := λ: <>,
-      (if: (![byteT] (slice.elem_ref byteT (![sliceT byteT] "x") (![uint64T] "i"))) ≠ (![byteT] (slice.elem_ref byteT (![sliceT byteT] "y") (![uint64T] "i")))
+      (if: (![byteT] (slice.elem_ref byteT (![sliceT] "x") (![uint64T] "i"))) ≠ (![byteT] (slice.elem_ref byteT (![sliceT] "y") (![uint64T] "i")))
       then
         let: "$r0" := #false in
         do:  ("retval" <-[boolT] "$r0");;;
@@ -45,13 +45,13 @@ Definition BytesEqual : val :=
    go: goose_std.go:31:6 *)
 Definition BytesClone : val :=
   rec: "BytesClone" "b" :=
-    exception_do (let: "b" := (ref_ty (sliceT byteT) "b") in
-    (if: (![sliceT byteT] "b") = #slice.nil
+    exception_do (let: "b" := (ref_ty sliceT "b") in
+    (if: (![sliceT] "b") = #slice.nil
     then return: (#slice.nil)
     else do:  #());;;
     return: (let: "$a0" := #slice.nil in
-     let: "$a1" := (![sliceT byteT] "b") in
-     (slice.append (sliceT byteT)) "$a0" "$a1")).
+     let: "$a1" := (![sliceT] "b") in
+     (slice.append sliceT) "$a0" "$a1")).
 
 (* SliceSplit splits xs at n into two slices.
 
@@ -65,9 +65,9 @@ Definition BytesClone : val :=
 Definition SliceSplit : val :=
   rec: "SliceSplit" "xs" "n" :=
     exception_do (let: "n" := (ref_ty uint64T "n") in
-    let: "xs" := (ref_ty (sliceT byteT) "xs") in
-    return: (let: "$s" := (![sliceT byteT] "xs") in
-     slice.slice byteT "$s" #(W64 0) (![uint64T] "n"), let: "$s" := (![sliceT byteT] "xs") in
+    let: "xs" := (ref_ty sliceT "xs") in
+    return: (let: "$s" := (![sliceT] "xs") in
+     slice.slice byteT "$s" #(W64 0) (![uint64T] "n"), let: "$s" := (![sliceT] "xs") in
      slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s"))).
 
 (* Returns true if x + y does not overflow
