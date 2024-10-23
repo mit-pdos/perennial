@@ -142,7 +142,7 @@ Definition CacheKv__GetAndCache : val :=
       EncodeValue "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[stringT] "$r0");;;
-      (if: (![stringT] "resp") = #(str "ok")
+      (if: (![stringT] "resp") = #"ok"
       then
         do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
         let: "$r0" := (struct.make cacheValue [{
@@ -192,7 +192,7 @@ Definition CacheKv__Put : val :=
       EncodeValue "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[stringT] "$r0");;;
-      (if: (![stringT] "resp") = #(str "ok")
+      (if: (![stringT] "resp") = #"ok"
       then break: #()
       else do:  #()))).
 

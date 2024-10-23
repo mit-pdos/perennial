@@ -167,7 +167,7 @@ Definition raft__send : val :=
     then
       (if: (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) = #(W64 0)
       then
-        do:  (let: "$a0" := #(str "term should be set when sending %s") in
+        do:  (let: "$a0" := #"term should be set when sending %s" in
         let: "$a1" := ((let: "$sl0" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -175,7 +175,7 @@ Definition raft__send : val :=
     else
       (if: (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) ≠ #(W64 0)
       then
-        do:  (let: "$a0" := #(str "term should not be set when sending %s (was %d)") in
+        do:  (let: "$a0" := #"term should not be set when sending %s (was %d)" in
         let: "$a1" := ((let: "$sl0" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -199,7 +199,7 @@ Definition raft__send : val :=
     else
       (if: (![uint64T] (struct.field_ref raftpb.Message "To" "m")) = (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))
       then
-        do:  (let: "$a0" := #(str "message should not be self-addressed when sending %s") in
+        do:  (let: "$a0" := #"message should not be self-addressed when sending %s" in
         let: "$a1" := ((let: "$sl0" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -246,7 +246,7 @@ Definition raftLog__firstIndex : val :=
     let: "$r1" := "$ret1" in
     do:  ("index" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -266,7 +266,7 @@ Definition raftLog__snapshot : val :=
   rec: "raftLog__snapshot" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     (if: (![ptrT] (struct.field_ref unstable "snapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l")))) ≠ #null
-    then return: (![raftpb.Snapshot] (![ptrT] (struct.field_ref unstable "snapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l")))), interface.nil)
+    then return: (![raftpb.Snapshot] (![ptrT] (struct.field_ref unstable "snapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l")))), #interface.nil)
     else do:  #());;;
     let: ("$ret0", "$ret1") := (((interface.get "Snapshot" (![Storage] (struct.field_ref raftLog "storage" (![ptrT] "l")))) #())) in
     return: ("$ret0", "$ret1")).
@@ -282,7 +282,7 @@ Definition raft__maybeSendSnapshot : val :=
     let: "to" := (ref_ty uint64T "to") in
     (if: (~ (![boolT] (struct.field_ref tracker.Progress "RecentActive" (![ptrT] "pr"))))
     then
-      do:  (let: "$a0" := #(str "ignore sending snapshot to %x since it is not recently active") in
+      do:  (let: "$a0" := #"ignore sending snapshot to %x since it is not recently active" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "to")) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -295,11 +295,11 @@ Definition raft__maybeSendSnapshot : val :=
     let: "$r1" := "$ret1" in
     do:  ("snapshot" <-[raftpb.Snapshot] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       (if: (![error] "err") = (![error] "ErrSnapshotTemporarilyUnavailable")
       then
-        do:  (let: "$a0" := #(str "%x failed to send snapshot to %x because snapshot is temporarily unavailable") in
+        do:  (let: "$a0" := #"%x failed to send snapshot to %x because snapshot is temporarily unavailable" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] "to")) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -312,7 +312,7 @@ Definition raft__maybeSendSnapshot : val :=
     (if: let: "$a0" := (![raftpb.Snapshot] "snapshot") in
     IsEmptySnap "$a0"
     then
-      do:  (let: "$a0" := (interface.make string__mset #(str "need non-empty snapshot")) in
+      do:  (let: "$a0" := (interface.make string__mset #"need non-empty snapshot") in
       Panic "$a0")
     else do:  #());;;
     let: "sterm" := (ref_ty uint64T (zero_val uint64T)) in
@@ -321,7 +321,7 @@ Definition raft__maybeSendSnapshot : val :=
     let: "$r1" := (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Term" (struct.field_ref raftpb.Snapshot "Metadata" "snapshot"))) in
     do:  ("sindex" <-[uint64T] "$r0");;;
     do:  ("sterm" <-[uint64T] "$r1");;;
-    do:  (let: "$a0" := #(str "%x [firstindex: %d, commit: %d] sent snapshot[index: %d, term: %d] to %x [%s]") in
+    do:  (let: "$a0" := #"%x [firstindex: %d, commit: %d] sent snapshot[index: %d, term: %d] to %x [%s]" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset ((raftLog__firstIndex (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) in
     let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
@@ -333,7 +333,7 @@ Definition raft__maybeSendSnapshot : val :=
     (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![uint64T] "sindex") in
     (tracker.Progress__BecomeSnapshot (![ptrT] "pr")) "$a0");;;
-    do:  (let: "$a0" := #(str "%x paused sending replication messages to %x [%s]") in
+    do:  (let: "$a0" := #"%x paused sending replication messages to %x [%s]" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] "to")) in
     let: "$sl2" := (interface.make tracker.Progress__mset_ptr (![ptrT] "pr")) in
@@ -435,7 +435,7 @@ Definition unstable__mustCheckOutOfBounds : val :=
     let: "lo" := (ref_ty uint64T "lo") in
     (if: (![uint64T] "lo") > (![uint64T] "hi")
     then
-      do:  (let: "$a0" := #(str "invalid unstable.slice %d > %d") in
+      do:  (let: "$a0" := #"invalid unstable.slice %d > %d" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] "hi")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -447,7 +447,7 @@ Definition unstable__mustCheckOutOfBounds : val :=
     do:  ("upper" <-[uint64T] "$r0");;;
     (if: ((![uint64T] "lo") < (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))) || ((![uint64T] "hi") > (![uint64T] "upper"))
     then
-      do:  (let: "$a0" := #(str "unstable.slice[%d,%d) out of bound [%d,%d]") in
+      do:  (let: "$a0" := #"unstable.slice[%d,%d) out of bound [%d,%d]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] "hi")) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))) in
@@ -517,7 +517,7 @@ Definition raftLog__lastIndex : val :=
     let: "$r1" := "$ret1" in
     do:  ("i" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -534,7 +534,7 @@ Definition raftLog__mustCheckOutOfBounds : val :=
     let: "lo" := (ref_ty uint64T "lo") in
     (if: (![uint64T] "lo") > (![uint64T] "hi")
     then
-      do:  (let: "$a0" := #(str "invalid slice %d > %d") in
+      do:  (let: "$a0" := #"invalid slice %d > %d" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] "hi")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -551,7 +551,7 @@ Definition raftLog__mustCheckOutOfBounds : val :=
     do:  ("length" <-[uint64T] "$r0");;;
     (if: (![uint64T] "hi") > ((![uint64T] "fi") + (![uint64T] "length"))
     then
-      do:  (let: "$a0" := #(str "slice[%d,%d) out of bound [%d,%d]") in
+      do:  (let: "$a0" := #"slice[%d,%d) out of bound [%d,%d]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] "hi")) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] "fi")) in
@@ -559,7 +559,7 @@ Definition raftLog__mustCheckOutOfBounds : val :=
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* slice returns a slice of log entries from lo through hi-1, inclusive.
 
@@ -575,11 +575,11 @@ Definition raftLog__slice : val :=
     let: "$a1" := (![uint64T] "hi") in
     (raftLog__mustCheckOutOfBounds (![ptrT] "l")) "$a0" "$a1") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ interface.nil
-    then return: (slice.nil, ![error] "err")
+    (if: (![error] "err") ≠ #interface.nil
+    then return: (#slice.nil, ![error] "err")
     else do:  #()));;;
     (if: (![uint64T] "lo") = (![uint64T] "hi")
-    then return: (slice.nil, interface.nil)
+    then return: (#slice.nil, #interface.nil)
     else do:  #());;;
     (if: (![uint64T] "lo") ≥ (![uint64T] (struct.field_ref unstable "offset" (struct.field_ref raftLog "unstable" (![ptrT] "l"))))
     then
@@ -593,7 +593,7 @@ Definition raftLog__slice : val :=
       return: (let: "$s" := (![sliceT raftpb.Entry] "ents") in
        slice.full_slice raftpb.Entry "$s" #(W64 0) (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
        slice.len "$a0") (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
-       slice.len "$a0"), interface.nil)
+       slice.len "$a0"), #interface.nil)
     else do:  #());;;
     let: "cut" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "hi") in
@@ -611,34 +611,34 @@ Definition raftLog__slice : val :=
     do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
     (if: (![error] "err") = (![error] "ErrCompacted")
-    then return: (slice.nil, ![error] "err")
+    then return: (#slice.nil, ![error] "err")
     else
       (if: (![error] "err") = (![error] "ErrUnavailable")
       then
-        do:  (let: "$a0" := #(str "entries[%d:%d) is unavailable from storage") in
+        do:  (let: "$a0" := #"entries[%d:%d) is unavailable from storage" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] "cut")) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
       else
-        (if: (![error] "err") ≠ interface.nil
+        (if: (![error] "err") ≠ #interface.nil
         then
           do:  (let: "$a0" := (![error] "err") in
           Panic "$a0")
         else do:  #())));;;
     (if: (![uint64T] "hi") ≤ (![uint64T] (struct.field_ref unstable "offset" (struct.field_ref raftLog "unstable" (![ptrT] "l"))))
-    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
+    then return: (![sliceT raftpb.Entry] "ents", #interface.nil)
     else do:  #());;;
     (if: (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
     slice.len "$a0") < ((![uint64T] "cut") - (![uint64T] "lo"))
-    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
+    then return: (![sliceT raftpb.Entry] "ents", #interface.nil)
     else do:  #());;;
     let: "size" := (ref_ty entryEncodingSize (zero_val entryEncodingSize)) in
     let: "$r0" := (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
     entsSize "$a0") in
     do:  ("size" <-[entryEncodingSize] "$r0");;;
     (if: (![entryEncodingSize] "size") ≥ (![entryEncodingSize] "maxSize")
-    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
+    then return: (![sliceT raftpb.Entry] "ents", #interface.nil)
     else do:  #());;;
     let: "unstable" := (ref_ty (sliceT raftpb.Entry) (zero_val (sliceT raftpb.Entry))) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![uint64T] (struct.field_ref unstable "offset" (struct.field_ref raftLog "unstable" (![ptrT] "l")))) in
@@ -650,11 +650,11 @@ Definition raftLog__slice : val :=
     (if: ((let: "$a0" := (![sliceT raftpb.Entry] "unstable") in
     slice.len "$a0") = #(W64 1)) && (((![entryEncodingSize] "size") + (let: "$a0" := (![sliceT raftpb.Entry] "unstable") in
     entsSize "$a0")) > (![entryEncodingSize] "maxSize"))
-    then return: (![sliceT raftpb.Entry] "ents", interface.nil)
+    then return: (![sliceT raftpb.Entry] "ents", #interface.nil)
     else do:  #());;;
     return: (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
      let: "$a1" := (![sliceT raftpb.Entry] "unstable") in
-     extend "$a0" "$a1", interface.nil)).
+     extend "$a0" "$a1", #interface.nil)).
 
 (* go: log.go:415:19 *)
 Definition raftLog__entries : val :=
@@ -663,7 +663,7 @@ Definition raftLog__entries : val :=
     let: "maxSize" := (ref_ty entryEncodingSize "maxSize") in
     let: "i" := (ref_ty uint64T "i") in
     (if: (![uint64T] "i") > ((raftLog__lastIndex (![ptrT] "l")) #())
-    then return: (slice.nil, interface.nil)
+    then return: (#slice.nil, #interface.nil)
     else do:  #());;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] "i") in
     let: "$a1" := (((raftLog__lastIndex (![ptrT] "l")) #()) + #(W64 1)) in
@@ -715,7 +715,7 @@ Definition raftLog__term : val :=
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("ok" <-[boolT] "$r1");;;
     (if: ![boolT] "ok"
-    then return: (![uint64T] "t", interface.nil)
+    then return: (![uint64T] "t", #interface.nil)
     else do:  #()));;;
     (if: ((![uint64T] "i") + #(W64 1)) < ((raftLog__firstIndex (![ptrT] "l")) #())
     then return: (#(W64 0), ![error] "ErrCompacted")
@@ -731,8 +731,8 @@ Definition raftLog__term : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = interface.nil
-    then return: (![uint64T] "t", interface.nil)
+    (if: (![error] "err") = #interface.nil
+    then return: (![uint64T] "t", #interface.nil)
     else do:  #());;;
     (if: ((![error] "err") = (![error] "ErrCompacted")) || ((![error] "err") = (![error] "ErrUnavailable"))
     then return: (#(W64 0), ![error] "err")
@@ -773,7 +773,7 @@ Definition raft__maybeSendAppend : val :=
     let: "$r1" := "$ret1" in
     do:  ("prevTerm" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
@@ -794,7 +794,7 @@ Definition raft__maybeSendAppend : val :=
     slice.len "$a0") = #(W64 0)) && (~ (![boolT] "sendIfEmpty"))
     then return: (#false)
     else do:  #());;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
@@ -836,7 +836,7 @@ Definition raftLog__matchTerm : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then return: (#false)
     else do:  #());;;
     return: ((![uint64T] "t") = (![uint64T] (struct.field_ref entryID "term" "id")))).
@@ -850,7 +850,7 @@ Definition raftLog__commitTo : val :=
     then
       (if: ((raftLog__lastIndex (![ptrT] "l")) #()) < (![uint64T] "tocommit")
       then
-        do:  (let: "$a0" := #(str "tocommit(%d) is out of range [lastIndex(%d)]. Was the raft log corrupted, truncated, or lost?") in
+        do:  (let: "$a0" := #"tocommit(%d) is out of range [lastIndex(%d)]. Was the raft log corrupted, truncated, or lost?" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "tocommit")) in
         let: "$sl1" := (interface.make uint64__mset ((raftLog__lastIndex (![ptrT] "l")) #())) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -1054,7 +1054,7 @@ Definition raft__becomeFollower : val :=
     do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
     let: "$r0" := StateFollower in
     do:  ((struct.field_ref raft "state" (![ptrT] "r")) <-[StateType] "$r0");;;
-    do:  (let: "$a0" := #(str "%x became follower at term %d") in
+    do:  (let: "$a0" := #"%x became follower at term %d" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -1089,7 +1089,7 @@ Definition raft__switchToConfig : val :=
     do:  ((struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))) <-[tracker.Config] "$r0");;;
     let: "$r0" := (![tracker.ProgressMap] "trk") in
     do:  ((struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r"))) <-[tracker.ProgressMap] "$r0");;;
-    do:  (let: "$a0" := #(str "%x switched to configuration %s") in
+    do:  (let: "$a0" := #"%x switched to configuration %s" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make tracker.Config__mset (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -1189,7 +1189,7 @@ Definition raft__applyConfChange : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -1217,7 +1217,7 @@ Definition unstable__truncateAndAppend : val :=
     else
       (if: "$sw" = ((![uint64T] "fromIndex") ≤ (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u"))))
       then
-        do:  (let: "$a0" := #(str "replace the unstable entries from index %d") in
+        do:  (let: "$a0" := #"replace the unstable entries from index %d" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "fromIndex")) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Infof" (![Logger] (struct.field_ref unstable "logger" (![ptrT] "u")))) "$a0" "$a1");;;
@@ -1228,7 +1228,7 @@ Definition unstable__truncateAndAppend : val :=
         let: "$r0" := (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u"))) in
         do:  ((struct.field_ref unstable "offsetInProgress" (![ptrT] "u")) <-[uint64T] "$r0")
       else
-        do:  (let: "$a0" := #(str "truncate the unstable entries before index %d") in
+        do:  (let: "$a0" := #"truncate the unstable entries before index %d" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "fromIndex")) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Infof" (![Logger] (struct.field_ref unstable "logger" (![ptrT] "u")))) "$a0" "$a1");;;
@@ -1260,7 +1260,7 @@ Definition raftLog__append : val :=
     do:  ("after" <-[uint64T] "$r0");;;
     (if: (![uint64T] "after") < (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l")))
     then
-      do:  (let: "$a0" := #(str "after(%d) is out of range [committed(%d)]") in
+      do:  (let: "$a0" := #"after(%d) is out of range [committed(%d)]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "after")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -1286,7 +1286,7 @@ Definition RawNode__Bootstrap : val :=
     (if: (let: "$a0" := (![sliceT Peer] "peers") in
     slice.len "$a0") = #(W64 0)
     then
-      return: (let: "$a0" := #(str "must provide at least one peer to Bootstrap") in
+      return: (let: "$a0" := #"must provide at least one peer to Bootstrap" in
        errors.New "$a0")
     else do:  #());;;
     let: "err" := (ref_ty error (zero_val error)) in
@@ -1296,12 +1296,12 @@ Definition RawNode__Bootstrap : val :=
     let: "$r1" := "$ret1" in
     do:  ("lastIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then return: (![error] "err")
     else do:  #());;;
     (if: (![uint64T] "lastIndex") ≠ #(W64 0)
     then
-      return: (let: "$a0" := #(str "can't bootstrap a nonempty Storage") in
+      return: (let: "$a0" := #"can't bootstrap a nonempty Storage" in
        errors.New "$a0")
     else do:  #());;;
     let: "$r0" := (![raftpb.HardState] "emptyState") in
@@ -1331,7 +1331,7 @@ Definition RawNode__Bootstrap : val :=
       let: "$r1" := "$ret1" in
       do:  ("data" <-[sliceT byteT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then return: (![error] "err")
       else do:  #());;;
       let: "$r0" := (struct.make raftpb.Entry [{
@@ -1354,7 +1354,7 @@ Definition RawNode__Bootstrap : val :=
         "Type" ::= raftpb.ConfChangeAddNode
       }])) #()) in
       (raft__applyConfChange (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 Definition raftLog__mset : list (string * val) := [
 ].
@@ -1363,7 +1363,7 @@ Definition raftLog__mset : list (string * val) := [
 Definition raftLog__String : val :=
   rec: "raftLog__String" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    return: (let: "$a0" := #(str "committed=%d, applied=%d, applying=%d, unstable.offset=%d, unstable.offsetInProgress=%d, len(unstable.Entries)=%d") in
+    return: (let: "$a0" := #"committed=%d, applied=%d, applying=%d, unstable.offset=%d, unstable.offsetInProgress=%d, len(unstable.Entries)=%d" in
      let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l")))) in
      let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] "l")))) in
      let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "applying" (![ptrT] "l")))) in
@@ -1405,7 +1405,7 @@ Definition raftLog__acceptApplying : val :=
     let: "i" := (ref_ty uint64T "i") in
     (if: (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l"))) < (![uint64T] "i")
     then
-      do:  (let: "$a0" := #(str "applying(%d) is out of range [prevApplying(%d), committed(%d)]") in
+      do:  (let: "$a0" := #"applying(%d) is out of range [prevApplying(%d), committed(%d)]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "i")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "applying" (![ptrT] "l")))) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l")))) in
@@ -1470,7 +1470,7 @@ Definition raftLog__allEntries : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = interface.nil
+    (if: (![error] "err") = #interface.nil
     then return: (![sliceT raftpb.Entry] "ents")
     else do:  #());;;
     (if: (![error] "err") = (![error] "ErrCompacted")
@@ -1487,7 +1487,7 @@ Definition raftLog__appliedTo : val :=
     let: "i" := (ref_ty uint64T "i") in
     (if: ((![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l"))) < (![uint64T] "i")) || ((![uint64T] "i") < (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] "l"))))
     then
-      do:  (let: "$a0" := #(str "applied(%d) is out of range [prevApplied(%d), committed(%d)]") in
+      do:  (let: "$a0" := #"applied(%d) is out of range [prevApplied(%d), committed(%d)]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "i")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] "l")))) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l")))) in
@@ -1514,13 +1514,13 @@ Definition raftLog__zeroTermOnOutOfBounds : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "err" := (ref_ty error "err") in
     let: "t" := (ref_ty uint64T "t") in
-    (if: (![error] "err") = interface.nil
+    (if: (![error] "err") = #interface.nil
     then return: (![uint64T] "t")
     else do:  #());;;
     (if: ((![error] "err") = (![error] "ErrCompacted")) || ((![error] "err") = (![error] "ErrUnavailable"))
     then return: (#(W64 0))
     else do:  #());;;
-    do:  (let: "$a0" := #(str "unexpected error (%v)") in
+    do:  (let: "$a0" := #"unexpected error (%v)" in
     let: "$a1" := ((let: "$sl0" := (![error] "err") in
     slice.literal interfaceT ["$sl0"])) in
     (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1");;;
@@ -1565,7 +1565,7 @@ Definition raftLog__findConflict : val :=
       then
         (if: (![uint64T] (struct.field_ref entryID "index" "id")) ≤ ((raftLog__lastIndex (![ptrT] "l")) #())
         then
-          do:  (let: "$a0" := #(str "found conflict at index %d [existing term: %d, conflicting term: %d]") in
+          do:  (let: "$a0" := #"found conflict at index %d [existing term: %d, conflicting term: %d]" in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "id"))) in
           let: "$sl1" := (interface.make uint64__mset (let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] (struct.field_ref entryID "index" "id")) in
           (raftLog__term (![ptrT] "l")) "$a0")) in
@@ -1609,7 +1609,7 @@ Definition raftLog__findConflictByTerm : val :=
       let: "$r1" := "$ret1" in
       do:  ("ourTerm" <-[uint64T] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then return: (![uint64T] "index", #(W64 0))
       else
         (if: (![uint64T] "ourTerm") ≤ (![uint64T] "term")
@@ -1672,7 +1672,7 @@ Definition unstable__nextEntries : val :=
     do:  ("inProgress" <-[intT] "$r0");;;
     (if: (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref unstable "entries" (![ptrT] "u"))) in
     slice.len "$a0") = (![intT] "inProgress")
-    then return: (slice.nil)
+    then return: (#slice.nil)
     else do:  #());;;
     return: (let: "$s" := (![sliceT raftpb.Entry] (struct.field_ref unstable "entries" (![ptrT] "u"))) in
      slice.slice raftpb.Entry "$s" (![intT] "inProgress") (slice.len "$s"))).
@@ -1734,9 +1734,9 @@ Definition raftLog__lastEntryID : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
-      do:  (let: "$a0" := #(str "unexpected error when getting the last term at %d: %v") in
+      do:  (let: "$a0" := #"unexpected error when getting the last term at %d: %v" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "index")) in
       let: "$sl1" := (![error] "err") in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -1798,7 +1798,7 @@ Definition raftLog__maybeAppend : val :=
     else
       (if: "$sw" = ((![uint64T] "ci") ≤ (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l"))))
       then
-        do:  (let: "$a0" := #(str "entry %d conflict with committed entry [committed(%d)]") in
+        do:  (let: "$a0" := #"entry %d conflict with committed entry [committed(%d)]" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "ci")) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l")))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -1810,7 +1810,7 @@ Definition raftLog__maybeAppend : val :=
         (if: ((![uint64T] "ci") - (![uint64T] "offset")) > (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref logSlice "entries" "a")) in
         slice.len "$a0")
         then
-          do:  (let: "$a0" := #(str "index, %d, is out of range [%d]") in
+          do:  (let: "$a0" := #"index, %d, is out of range [%d]" in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset ((![uint64T] "ci") - (![uint64T] "offset"))) in
           let: "$sl1" := (interface.make int__mset (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref logSlice "entries" "a")) in
           slice.len "$a0")) in
@@ -1842,10 +1842,10 @@ Definition raftLog__nextCommittedEnts : val :=
     let: "allowUnstable" := (ref_ty boolT "allowUnstable") in
     let: "ents" := (ref_ty (sliceT raftpb.Entry) (zero_val (sliceT raftpb.Entry))) in
     (if: ![boolT] (struct.field_ref raftLog "applyingEntsPaused" (![ptrT] "l"))
-    then return: (slice.nil)
+    then return: (#slice.nil)
     else do:  #());;;
     (if: (raftLog__hasNextOrInProgressSnapshot (![ptrT] "l")) #()
-    then return: (slice.nil)
+    then return: (#slice.nil)
     else do:  #());;;
     let: "hi" := (ref_ty uint64T (zero_val uint64T)) in
     let: "lo" := (ref_ty uint64T (zero_val uint64T)) in
@@ -1855,14 +1855,14 @@ Definition raftLog__nextCommittedEnts : val :=
     do:  ("lo" <-[uint64T] "$r0");;;
     do:  ("hi" <-[uint64T] "$r1");;;
     (if: (![uint64T] "lo") ≥ (![uint64T] "hi")
-    then return: (slice.nil)
+    then return: (#slice.nil)
     else do:  #());;;
     let: "maxSize" := (ref_ty entryEncodingSize (zero_val entryEncodingSize)) in
     let: "$r0" := ((![entryEncodingSize] (struct.field_ref raftLog "maxApplyingEntsSize" (![ptrT] "l"))) - (![entryEncodingSize] (struct.field_ref raftLog "applyingEntsSize" (![ptrT] "l")))) in
     do:  ("maxSize" <-[entryEncodingSize] "$r0");;;
     (if: (![entryEncodingSize] "maxSize") ≤ #(W64 0)
     then
-      do:  (let: "$a0" := #(str "applying entry size (%d-%d)=%d not positive") in
+      do:  (let: "$a0" := #"applying entry size (%d-%d)=%d not positive" in
       let: "$a1" := ((let: "$sl0" := (interface.make entryEncodingSize__mset (![entryEncodingSize] (struct.field_ref raftLog "maxApplyingEntsSize" (![ptrT] "l")))) in
       let: "$sl1" := (interface.make entryEncodingSize__mset (![entryEncodingSize] (struct.field_ref raftLog "applyingEntsSize" (![ptrT] "l")))) in
       let: "$sl2" := (interface.make entryEncodingSize__mset (![entryEncodingSize] "maxSize")) in
@@ -1878,9 +1878,9 @@ Definition raftLog__nextCommittedEnts : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
-      do:  (let: "$a0" := #(str "unexpected error when getting unapplied entries (%v)") in
+      do:  (let: "$a0" := #"unexpected error when getting unapplied entries (%v)" in
       let: "$a1" := ((let: "$sl0" := (![error] "err") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
@@ -1905,7 +1905,7 @@ Definition unstable__restore : val :=
     do:  ((struct.field_ref unstable "offset" (![ptrT] "u")) <-[uint64T] "$r0");;;
     let: "$r0" := (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u"))) in
     do:  ((struct.field_ref unstable "offsetInProgress" (![ptrT] "u")) <-[uint64T] "$r0");;;
-    let: "$r0" := slice.nil in
+    let: "$r0" := #slice.nil in
     do:  ((struct.field_ref unstable "entries" (![ptrT] "u")) <-[sliceT raftpb.Entry] "$r0");;;
     let: "$r0" := "s" in
     do:  ((struct.field_ref unstable "snapshot" (![ptrT] "u")) <-[ptrT] "$r0");;;
@@ -1952,13 +1952,13 @@ Definition raftLog__scan : val :=
       let: "$r1" := "$ret1" in
       do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then return: (![error] "err")
       else
         (if: (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
         slice.len "$a0") = #(W64 0)
         then
-          return: (let: "$a0" := #(str "got 0 entries in [%d, %d)") in
+          return: (let: "$a0" := #"got 0 entries in [%d, %d)" in
            let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
            let: "$sl1" := (interface.make uint64__mset (![uint64T] "hi")) in
            slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -1968,12 +1968,12 @@ Definition raftLog__scan : val :=
       let: "$r0" := (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
       (![funcT] "v") "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then return: (![error] "err")
       else do:  #()));;;
       do:  ("lo" <-[uint64T] ((![uint64T] "lo") + (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
       slice.len "$a0"))));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* go: log_unstable.go:182:20 *)
 Definition unstable__stableSnapTo : val :=
@@ -2005,7 +2005,7 @@ Definition unstable__shrinkEntriesArray : val :=
     (if: (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref unstable "entries" (![ptrT] "u"))) in
     slice.len "$a0") = #(W64 0)
     then
-      let: "$r0" := slice.nil in
+      let: "$r0" := #slice.nil in
       do:  ((struct.field_ref unstable "entries" (![ptrT] "u")) <-[sliceT raftpb.Entry] "$r0")
     else
       (if: int_lt ((let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref unstable "entries" (![ptrT] "u"))) in
@@ -2045,7 +2045,7 @@ Definition unstable__stableTo : val :=
     do:  ("ok" <-[boolT] "$r1");;;
     (if: (~ (![boolT] "ok"))
     then
-      do:  (let: "$a0" := #(str "entry at index %d missing from unstable log; ignoring") in
+      do:  (let: "$a0" := #"entry at index %d missing from unstable log; ignoring" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "id"))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Infof" (![Logger] (struct.field_ref unstable "logger" (![ptrT] "u")))) "$a0" "$a1");;;
@@ -2053,7 +2053,7 @@ Definition unstable__stableTo : val :=
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref entryID "index" "id")) < (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))
     then
-      do:  (let: "$a0" := #(str "entry at index %d matched unstable snapshot; ignoring") in
+      do:  (let: "$a0" := #"entry at index %d matched unstable snapshot; ignoring" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "id"))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Infof" (![Logger] (struct.field_ref unstable "logger" (![ptrT] "u")))) "$a0" "$a1");;;
@@ -2146,7 +2146,7 @@ Definition newLogWithSize : val :=
     let: "$r1" := "$ret1" in
     do:  ("firstIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -2157,7 +2157,7 @@ Definition newLogWithSize : val :=
     let: "$r1" := "$ret1" in
     do:  ("lastIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -2230,7 +2230,7 @@ Definition header : val :=
   rec: "header" "lvl" "msg" :=
     exception_do (let: "msg" := (ref_ty stringT "msg") in
     let: "lvl" := (ref_ty stringT "lvl") in
-    return: (let: "$a0" := #(str "%s: %s") in
+    return: (let: "$a0" := #"%s: %s" in
      let: "$a1" := ((let: "$sl0" := (interface.make string__mset (![stringT] "lvl")) in
      let: "$sl1" := (interface.make string__mset (![stringT] "msg")) in
      slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -2244,7 +2244,7 @@ Definition DefaultLogger__Debug : val :=
     (if: ![boolT] (struct.field_ref DefaultLogger "debug" (![ptrT] "l"))
     then
       do:  (let: "$a0" := #(W64 calldepth) in
-      let: "$a1" := (let: "$a0" := #(str "DEBUG") in
+      let: "$a1" := (let: "$a0" := #"DEBUG" in
       let: "$a1" := (let: "$a0" := (![sliceT interfaceT] "v") in
       fmt.Sprint "$a0") in
       header "$a0" "$a1") in
@@ -2260,7 +2260,7 @@ Definition DefaultLogger__Debugf : val :=
     (if: ![boolT] (struct.field_ref DefaultLogger "debug" (![ptrT] "l"))
     then
       do:  (let: "$a0" := #(W64 calldepth) in
-      let: "$a1" := (let: "$a0" := #(str "DEBUG") in
+      let: "$a1" := (let: "$a0" := #"DEBUG" in
       let: "$a1" := (let: "$a0" := (![stringT] "format") in
       let: "$a1" := (![sliceT interfaceT] "v") in
       fmt.Sprintf "$a0" "$a1") in
@@ -2288,7 +2288,7 @@ Definition DefaultLogger__Error : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "ERROR") in
+    let: "$a1" := (let: "$a0" := #"ERROR" in
     let: "$a1" := (let: "$a0" := (![sliceT interfaceT] "v") in
     fmt.Sprint "$a0") in
     header "$a0" "$a1") in
@@ -2301,7 +2301,7 @@ Definition DefaultLogger__Errorf : val :=
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     let: "format" := (ref_ty stringT "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "ERROR") in
+    let: "$a1" := (let: "$a0" := #"ERROR" in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT interfaceT] "v") in
     fmt.Sprintf "$a0" "$a1") in
@@ -2314,7 +2314,7 @@ Definition DefaultLogger__Fatal : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "FATAL") in
+    let: "$a1" := (let: "$a0" := #"FATAL" in
     let: "$a1" := (let: "$a0" := (![sliceT interfaceT] "v") in
     fmt.Sprint "$a0") in
     header "$a0" "$a1") in
@@ -2329,7 +2329,7 @@ Definition DefaultLogger__Fatalf : val :=
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     let: "format" := (ref_ty stringT "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "FATAL") in
+    let: "$a1" := (let: "$a0" := #"FATAL" in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT interfaceT] "v") in
     fmt.Sprintf "$a0" "$a1") in
@@ -2344,7 +2344,7 @@ Definition DefaultLogger__Info : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "INFO") in
+    let: "$a1" := (let: "$a0" := #"INFO" in
     let: "$a1" := (let: "$a0" := (![sliceT interfaceT] "v") in
     fmt.Sprint "$a0") in
     header "$a0" "$a1") in
@@ -2357,7 +2357,7 @@ Definition DefaultLogger__Infof : val :=
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     let: "format" := (ref_ty stringT "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "INFO") in
+    let: "$a1" := (let: "$a0" := #"INFO" in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT interfaceT] "v") in
     fmt.Sprintf "$a0" "$a1") in
@@ -2388,7 +2388,7 @@ Definition DefaultLogger__Warning : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "WARN") in
+    let: "$a1" := (let: "$a0" := #"WARN" in
     let: "$a1" := (let: "$a0" := (![sliceT interfaceT] "v") in
     fmt.Sprint "$a0") in
     header "$a0" "$a1") in
@@ -2401,7 +2401,7 @@ Definition DefaultLogger__Warningf : val :=
     let: "v" := (ref_ty (sliceT interfaceT) "v") in
     let: "format" := (ref_ty stringT "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
-    let: "$a1" := (let: "$a0" := #(str "WARN") in
+    let: "$a1" := (let: "$a0" := #"WARN" in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT interfaceT] "v") in
     fmt.Sprintf "$a0" "$a1") in
@@ -2740,7 +2740,7 @@ Definition raft__loadState : val :=
     let: "state" := (ref_ty raftpb.HardState "state") in
     (if: ((![uint64T] (struct.field_ref raftpb.HardState "Commit" "state")) < (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) || ((![uint64T] (struct.field_ref raftpb.HardState "Commit" "state")) > ((raftLog__lastIndex (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()))
     then
-      do:  (let: "$a0" := #(str "%x state.commit %d is out of range [%d, %d]") in
+      do:  (let: "$a0" := #"%x state.commit %d is out of range [%d, %d]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Commit" "state"))) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
@@ -2765,7 +2765,7 @@ Definition assertConfStatesEquivalent : val :=
     let: "$r0" := (let: "$a0" := (![raftpb.ConfState] "cs2") in
     (raftpb.ConfState__Equivalent (![raftpb.ConfState] "cs1")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") = interface.nil
+    (if: (![error] "err") = #interface.nil
     then return: (#())
     else do:  #());;;
     do:  (let: "$a0" := ((let: "$sl0" := (![error] "err") in
@@ -2791,7 +2791,7 @@ Definition voteRespMsgType : val :=
       (if: "$sw" = raftpb.MsgPreVote
       then return: (raftpb.MsgPreVoteResp)
       else
-        do:  (let: "$a0" := (interface.make string__mset (let: "$a0" := #(str "not a vote message: %s") in
+        do:  (let: "$a0" := (interface.make string__mset (let: "$a0" := #"not a vote message: %s" in
         let: "$a1" := ((let: "$sl0" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] "msgt")) in
         slice.literal interfaceT ["$sl0"])) in
         fmt.Sprintf "$a0" "$a1")) in
@@ -2826,7 +2826,7 @@ Definition confChangeToMsg : val :=
     do:  ("typ" <-[raftpb.EntryType] "$r0");;;
     do:  ("data" <-[sliceT byteT] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       return: (struct.make raftpb.Message [{
        }], ![error] "err")
@@ -2838,7 +2838,7 @@ Definition confChangeToMsg : val :=
          "Data" ::= ![sliceT byteT] "data"
        }]) in
        slice.literal raftpb.Entry ["$sl0"])
-     }], interface.nil)).
+     }], #interface.nil)).
 
 (* go: raft.go:748:16 *)
 Definition raft__appliedTo : val :=
@@ -2861,13 +2861,13 @@ Definition raft__appliedTo : val :=
     then
       let: "err" := (ref_ty error (zero_val error)) in
       let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := interface.nil in
+      let: ("$ret0", "$ret1") := (let: "$a0" := #interface.nil in
       confChangeToMsg "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("m" <-[raftpb.Message] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then
         do:  (let: "$a0" := (![error] "err") in
         Panic "$a0")
@@ -2876,15 +2876,15 @@ Definition raft__appliedTo : val :=
       let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
       (![funcT] (struct.field_ref raft "StepHigherOrder" (![ptrT] "r"))) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then
-        do:  (let: "$a0" := #(str "not initiating automatic transition out of joint configuration %s: %v") in
+        do:  (let: "$a0" := #"not initiating automatic transition out of joint configuration %s: %v" in
         let: "$a1" := ((let: "$sl0" := (interface.make tracker.Config__mset (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
         let: "$sl1" := (![error] "err") in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
       else
-        do:  (let: "$a0" := #(str "initiating automatic transition out of joint configuration %s") in
+        do:  (let: "$a0" := #"initiating automatic transition out of joint configuration %s" in
         let: "$a1" := ((let: "$sl0" := (interface.make tracker.Config__mset (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")))
@@ -2906,7 +2906,7 @@ Definition raft__appliedSnap : val :=
 
 Definition CampaignType : go_type := stringT.
 
-Definition campaignTransfer : expr := #(str "CampaignTransfer").
+Definition campaignTransfer : expr := #"CampaignTransfer".
 
 (* go: state_trace_nop.go:40:6 *)
 Definition traceBecomeCandidate : val :=
@@ -2922,7 +2922,7 @@ Definition raft__becomeCandidate : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     (if: (![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) = StateLeader
     then
-      do:  (let: "$a0" := (interface.make string__mset #(str "invalid transition [leader -> candidate]")) in
+      do:  (let: "$a0" := (interface.make string__mset #"invalid transition [leader -> candidate]") in
       Panic "$a0")
     else do:  #());;;
     let: "$r0" := (![funcT] "stepCandidateGlobal") in
@@ -2935,7 +2935,7 @@ Definition raft__becomeCandidate : val :=
     do:  ((struct.field_ref raft "Vote" (![ptrT] "r")) <-[uint64T] "$r0");;;
     let: "$r0" := StateCandidate in
     do:  ((struct.field_ref raft "state" (![ptrT] "r")) <-[StateType] "$r0");;;
-    do:  (let: "$a0" := #(str "%x became candidate at term %d") in
+    do:  (let: "$a0" := #"%x became candidate at term %d" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -2943,7 +2943,7 @@ Definition raft__becomeCandidate : val :=
     do:  (let: "$a0" := (![ptrT] "r") in
     traceBecomeCandidate "$a0")).
 
-Definition campaignPreElection : expr := #(str "CampaignPreElection").
+Definition campaignPreElection : expr := #"CampaignPreElection".
 
 Definition StatePreCandidate : expr := #(W64 3).
 
@@ -2953,7 +2953,7 @@ Definition raft__becomePreCandidate : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     (if: (![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) = StateLeader
     then
-      do:  (let: "$a0" := (interface.make string__mset #(str "invalid transition [leader -> pre-candidate]")) in
+      do:  (let: "$a0" := (interface.make string__mset #"invalid transition [leader -> pre-candidate]") in
       Panic "$a0")
     else do:  #());;;
     let: "$r0" := (![funcT] "stepCandidateGlobal") in
@@ -2965,7 +2965,7 @@ Definition raft__becomePreCandidate : val :=
     do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
     let: "$r0" := StatePreCandidate in
     do:  ((struct.field_ref raft "state" (![ptrT] "r")) <-[StateType] "$r0");;;
-    do:  (let: "$a0" := #(str "%x became pre-candidate at term %d") in
+    do:  (let: "$a0" := #"%x became pre-candidate at term %d" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -2993,7 +2993,7 @@ Definition raft__campaign : val :=
     let: "t" := (ref_ty CampaignType "t") in
     (if: (~ ((raft__promotable (![ptrT] "r")) #()))
     then
-      do:  (let: "$a0" := #(str "%x is unpromotable; campaign() should have been called") in
+      do:  (let: "$a0" := #"%x is unpromotable; campaign() should have been called" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -3055,7 +3055,7 @@ Definition raft__campaign : val :=
       let: "last" := (ref_ty entryID (zero_val entryID)) in
       let: "$r0" := ((raftLog__lastEntryID (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
       do:  ("last" <-[entryID] "$r0");;;
-      do:  (let: "$a0" := #(str "%x [logterm: %d, index: %d] sent %s request to %x at term %d") in
+      do:  (let: "$a0" := #"%x [logterm: %d, index: %d] sent %s request to %x at term %d" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "term" "last"))) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "last"))) in
@@ -3114,13 +3114,13 @@ Definition raft__hasUnappliedConfChanges : val :=
           do:  ("found" <-[boolT] "$r0");;;
           return: (![error] "errBreak")
         else do:  #())));;;
-      return: (interface.nil))
+      return: (#interface.nil))
       ) in
     (raftLog__scan (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[error] "$r0");;;
-    (if: ((![error] "err") ≠ interface.nil) && ((![error] "err") ≠ (![error] "errBreak"))
+    (if: ((![error] "err") ≠ #interface.nil) && ((![error] "err") ≠ (![error] "errBreak"))
     then
-      do:  (let: "$a0" := #(str "error scanning unapplied entries [%d, %d): %v") in
+      do:  (let: "$a0" := #"error scanning unapplied entries [%d, %d): %v" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "lo")) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] "hi")) in
       let: "$sl2" := (![error] "err") in
@@ -3136,7 +3136,7 @@ Definition raft__hup : val :=
     let: "t" := (ref_ty CampaignType "t") in
     (if: (![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) = StateLeader
     then
-      do:  (let: "$a0" := #(str "%x ignoring MsgHup because already leader") in
+      do:  (let: "$a0" := #"%x ignoring MsgHup because already leader" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -3144,7 +3144,7 @@ Definition raft__hup : val :=
     else do:  #());;;
     (if: (~ ((raft__promotable (![ptrT] "r")) #()))
     then
-      do:  (let: "$a0" := #(str "%x is unpromotable and can not campaign") in
+      do:  (let: "$a0" := #"%x is unpromotable and can not campaign" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -3152,14 +3152,14 @@ Definition raft__hup : val :=
     else do:  #());;;
     (if: (raft__hasUnappliedConfChanges (![ptrT] "r")) #()
     then
-      do:  (let: "$a0" := #(str "%x cannot campaign at term %d since there are still pending configuration changes to apply") in
+      do:  (let: "$a0" := #"%x cannot campaign at term %d since there are still pending configuration changes to apply" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
       return: (#())
     else do:  #());;;
-    do:  (let: "$a0" := #(str "%x is starting a new election at term %d") in
+    do:  (let: "$a0" := #"%x is starting a new election at term %d" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -3167,7 +3167,7 @@ Definition raft__hup : val :=
     do:  (let: "$a0" := (![CampaignType] "t") in
     (raft__campaign (![ptrT] "r")) "$a0")).
 
-Definition campaignElection : expr := #(str "CampaignElection").
+Definition campaignElection : expr := #"CampaignElection".
 
 (* go: state_trace_nop.go:50:6 *)
 Definition traceReceiveMessage : val :=
@@ -3205,7 +3205,7 @@ Definition raft__Step : val :=
             let: "last" := (ref_ty entryID (zero_val entryID)) in
             let: "$r0" := ((raftLog__lastEntryID (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
             do:  ("last" <-[entryID] "$r0");;;
-            do:  (let: "$a0" := #(str "%x [logterm: %d, index: %d, vote: %x] ignored %s from %x [logterm: %d, index: %d] at term %d: lease is not expired (remaining ticks: %d)") in
+            do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] ignored %s from %x [logterm: %d, index: %d] at term %d: lease is not expired (remaining ticks: %d)" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "term" "last"))) in
             let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "last"))) in
@@ -3218,7 +3218,7 @@ Definition raft__Step : val :=
             let: "$sl9" := (interface.make int__mset ((![intT] (struct.field_ref raft "electionTimeout" (![ptrT] "r"))) - (![intT] (struct.field_ref raft "electionElapsed" (![ptrT] "r"))))) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"; "$sl7"; "$sl8"; "$sl9"])) in
             (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-            return: (interface.nil)
+            return: (#interface.nil)
           else do:  #())
         else do:  #());;;
         let: "$sw" := #true in
@@ -3228,7 +3228,7 @@ Definition raft__Step : val :=
           (if: "$sw" = (((![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) = raftpb.MsgPreVoteResp) && (~ (![boolT] (struct.field_ref raftpb.Message "Reject" "m"))))
           then do:  #()
           else
-            do:  (let: "$a0" := #(str "%x [term: %d] received a %s message with higher term from %x [term: %d]") in
+            do:  (let: "$a0" := #"%x [term: %d] received a %s message with higher term from %x [term: %d]" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
             let: "$sl2" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
@@ -3261,7 +3261,7 @@ Definition raft__Step : val :=
               let: "last" := (ref_ty entryID (zero_val entryID)) in
               let: "$r0" := ((raftLog__lastEntryID (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
               do:  ("last" <-[entryID] "$r0");;;
-              do:  (let: "$a0" := #(str "%x [logterm: %d, index: %d, vote: %x] rejected %s from %x [logterm: %d, index: %d] at term %d") in
+              do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] rejected %s from %x [logterm: %d, index: %d] at term %d" in
               let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "term" "last"))) in
               let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "last"))) in
@@ -3285,7 +3285,7 @@ Definition raft__Step : val :=
               then
                 (if: (![uint64T] (struct.field_ref raftpb.Message "Index" "m")) ≠ #(W64 0)
                 then
-                  do:  (let: "$a0" := #(str "%x [term: %d] ignored entry appends from a %s message with lower term [term: %d]") in
+                  do:  (let: "$a0" := #"%x [term: %d] ignored entry appends from a %s message with lower term [term: %d]" in
                   let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                   let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                   let: "$sl2" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
@@ -3299,7 +3299,7 @@ Definition raft__Step : val :=
                   (raft__appliedSnap (![ptrT] "r")) "$a0")
                 else do:  #())
               else
-                do:  (let: "$a0" := #(str "%x [term: %d] ignored a %s message with lower term from %x [term: %d]") in
+                do:  (let: "$a0" := #"%x [term: %d] ignored a %s message with lower term from %x [term: %d]" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                 let: "$sl2" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
@@ -3307,7 +3307,7 @@ Definition raft__Step : val :=
                 let: "$sl4" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
                 (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1"))));;;
-          return: (interface.nil)
+          return: (#interface.nil)
         else #())));;;
     let: "$sw" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     (if: "$sw" = raftpb.MsgHup
@@ -3371,7 +3371,7 @@ Definition raft__Step : val :=
             (if: (![boolT] "canVote") && (let: "$a0" := (![entryID] "candLastID") in
             (raftLog__isUpToDate (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")
             then
-              do:  (let: "$a0" := #(str "%x [logterm: %d, index: %d, vote: %x] cast %s for %x [logterm: %d, index: %d] at term %d") in
+              do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] cast %s for %x [logterm: %d, index: %d] at term %d" in
               let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "term" "lastID"))) in
               let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "lastID"))) in
@@ -3398,7 +3398,7 @@ Definition raft__Step : val :=
                 do:  ((struct.field_ref raft "Vote" (![ptrT] "r")) <-[uint64T] "$r0")
               else do:  #())
             else
-              do:  (let: "$a0" := #(str "%x [logterm: %d, index: %d, vote: %x] rejected %s from %x [logterm: %d, index: %d] at term %d") in
+              do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] rejected %s from %x [logterm: %d, index: %d] at term %d" in
               let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "term" "lastID"))) in
               let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "lastID"))) in
@@ -3424,10 +3424,10 @@ Definition raft__Step : val :=
             let: "$a1" := (![raftpb.Message] "m") in
             (![funcT] (struct.field_ref raft "step" (![ptrT] "r"))) "$a0" "$a1") in
             do:  ("err" <-[error] "$r0");;;
-            (if: (![error] "err") ≠ interface.nil
+            (if: (![error] "err") ≠ #interface.nil
             then return: (![error] "err")
             else do:  #())))));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 Definition ReadOnlyLeaseBased : expr := #(W64 1).
 
@@ -3447,28 +3447,28 @@ Definition Config__validate : val :=
     exception_do (let: "c" := (ref_ty ptrT "c") in
     (if: (![uint64T] (struct.field_ref Config "ID" (![ptrT] "c"))) = None
     then
-      return: (let: "$a0" := #(str "cannot use none as id") in
+      return: (let: "$a0" := #"cannot use none as id" in
        errors.New "$a0")
     else do:  #());;;
     (if: let: "$a0" := (![uint64T] (struct.field_ref Config "ID" (![ptrT] "c"))) in
     IsLocalMsgTarget "$a0"
     then
-      return: (let: "$a0" := #(str "cannot use local target as id") in
+      return: (let: "$a0" := #"cannot use local target as id" in
        errors.New "$a0")
     else do:  #());;;
     (if: int_leq (![intT] (struct.field_ref Config "HeartbeatTick" (![ptrT] "c"))) #(W64 0)
     then
-      return: (let: "$a0" := #(str "heartbeat tick must be greater than 0") in
+      return: (let: "$a0" := #"heartbeat tick must be greater than 0" in
        errors.New "$a0")
     else do:  #());;;
     (if: int_leq (![intT] (struct.field_ref Config "ElectionTick" (![ptrT] "c"))) (![intT] (struct.field_ref Config "HeartbeatTick" (![ptrT] "c")))
     then
-      return: (let: "$a0" := #(str "election tick must be greater than heartbeat tick") in
+      return: (let: "$a0" := #"election tick must be greater than heartbeat tick" in
        errors.New "$a0")
     else do:  #());;;
-    (if: (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) = interface.nil
+    (if: (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) = #interface.nil
     then
-      return: (let: "$a0" := #(str "storage cannot be nil") in
+      return: (let: "$a0" := #"storage cannot be nil" in
        errors.New "$a0")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref Config "MaxUncommittedEntriesSize" (![ptrT] "c"))) = #(W64 0)
@@ -3483,7 +3483,7 @@ Definition Config__validate : val :=
     else do:  #());;;
     (if: int_leq (![intT] (struct.field_ref Config "MaxInflightMsgs" (![ptrT] "c"))) #(W64 0)
     then
-      return: (let: "$a0" := #(str "max inflight messages must be greater than 0") in
+      return: (let: "$a0" := #"max inflight messages must be greater than 0" in
        errors.New "$a0")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref Config "MaxInflightBytes" (![ptrT] "c"))) = #(W64 0)
@@ -3493,20 +3493,20 @@ Definition Config__validate : val :=
     else
       (if: (![uint64T] (struct.field_ref Config "MaxInflightBytes" (![ptrT] "c"))) < (![uint64T] (struct.field_ref Config "MaxSizePerMsg" (![ptrT] "c")))
       then
-        return: (let: "$a0" := #(str "max inflight bytes must be >= max message size") in
+        return: (let: "$a0" := #"max inflight bytes must be >= max message size" in
          errors.New "$a0")
       else do:  #()));;;
-    (if: (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) = interface.nil
+    (if: (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) = #interface.nil
     then
       let: "$r0" := (getLogger #()) in
       do:  ((struct.field_ref Config "Logger" (![ptrT] "c")) <-[Logger] "$r0")
     else do:  #());;;
     (if: ((![ReadOnlyOption] (struct.field_ref Config "ReadOnlyOption" (![ptrT] "c"))) = ReadOnlyLeaseBased) && (~ (![boolT] (struct.field_ref Config "CheckQuorum" (![ptrT] "c"))))
     then
-      return: (let: "$a0" := #(str "CheckQuorum must be enabled when ReadOnlyOption is ReadOnlyLeaseBased") in
+      return: (let: "$a0" := #"CheckQuorum must be enabled when ReadOnlyOption is ReadOnlyLeaseBased" in
        errors.New "$a0")
     else do:  #());;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* go: raft.go:444:6 *)
 Definition newRaft : val :=
@@ -3515,7 +3515,7 @@ Definition newRaft : val :=
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := ((Config__validate (![ptrT] "c")) #()) in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (interface.make string__mset ((interface.get "Error" (![error] "err")) #())) in
       Panic "$a0")
@@ -3536,7 +3536,7 @@ Definition newRaft : val :=
     do:  ("hs" <-[raftpb.HardState] "$r0");;;
     do:  ("cs" <-[raftpb.ConfState] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -3586,7 +3586,7 @@ Definition newRaft : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -3617,17 +3617,17 @@ Definition newRaft : val :=
     slice.for_range uint64T "$range" (λ: <> "n",
       let: "n" := ref_ty uint64T "n" in
       let: "$r0" := (let: "$a0" := (![sliceT stringT] "nodesStrs") in
-      let: "$a1" := ((let: "$sl0" := (let: "$a0" := #(str "%x") in
+      let: "$a1" := ((let: "$sl0" := (let: "$a0" := #"%x" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "n")) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Sprintf "$a0" "$a1") in
       slice.literal stringT ["$sl0"])) in
       (slice.append (sliceT stringT)) "$a0" "$a1") in
       do:  ("nodesStrs" <-[sliceT stringT] "$r0")));;;
-    do:  (let: "$a0" := #(str "newRaft %x [peers: [%s], term: %d, commit: %d, applied: %d, lastindex: %d, lastterm: %d]") in
+    do:  (let: "$a0" := #"newRaft %x [peers: [%s], term: %d, commit: %d, applied: %d, lastindex: %d, lastterm: %d]" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make string__mset (let: "$a0" := (![sliceT stringT] "nodesStrs") in
-    let: "$a1" := #(str ",") in
+    let: "$a1" := #"," in
     strings.Join "$a0" "$a1")) in
     let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
     let: "$sl3" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
@@ -3668,7 +3668,7 @@ Definition NewRawNode : val :=
     do:  ((struct.field_ref RawNode "prevSoftSt" (![ptrT] "rn")) <-[ptrT] "$r0");;;
     let: "$r0" := ((raft__hardState (![ptrT] "r")) #()) in
     do:  ((struct.field_ref RawNode "prevHardSt" (![ptrT] "rn")) <-[raftpb.HardState] "$r0");;;
-    return: (![ptrT] "rn", interface.nil)).
+    return: (![ptrT] "rn", #interface.nil)).
 
 (* go: node.go:250:6 *)
 Definition setupNode : val :=
@@ -3678,7 +3678,7 @@ Definition setupNode : val :=
     (if: (let: "$a0" := (![sliceT Peer] "peers") in
     slice.len "$a0") = #(W64 0)
     then
-      do:  (let: "$a0" := (interface.make string__mset #(str "no peers given; use RestartNode instead")) in
+      do:  (let: "$a0" := (interface.make string__mset #"no peers given; use RestartNode instead") in
       Panic "$a0")
     else do:  #());;;
     let: "err" := (ref_ty error (zero_val error)) in
@@ -3689,7 +3689,7 @@ Definition setupNode : val :=
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -3697,9 +3697,9 @@ Definition setupNode : val :=
     let: "$r0" := (let: "$a0" := (![sliceT Peer] "peers") in
     (RawNode__Bootstrap (![ptrT] "rn")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
-      do:  (let: "$a0" := #(str "error occurred during starting a new node: %v") in
+      do:  (let: "$a0" := #"error occurred during starting a new node: %v" in
       let: "$a1" := ((let: "$sl0" := (![error] "err") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c")))) "$a0" "$a1")
@@ -3753,7 +3753,7 @@ Definition node__stepWithWaitOption : val :=
     (if: (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) ≠ raftpb.MsgProp
     then
       do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-          return: (interface.nil)
+          return: (#interface.nil)
           ))] [("$recvChan0", (λ: "$recvVal",
           return: ((interface.get "Err" (![context.Context] "ctx")) #())
           )); ("$recvChan1", (λ: "$recvVal",
@@ -3775,7 +3775,7 @@ Definition node__stepWithWaitOption : val :=
     else do:  #());;;
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         (if: (~ (![boolT] "wait"))
-        then return: (interface.nil)
+        then return: (#interface.nil)
         else do:  #())
         ))] [("$recvChan0", (λ: "$recvVal",
         return: ((interface.get "Err" (![context.Context] "ctx")) #())
@@ -3786,7 +3786,7 @@ Definition node__stepWithWaitOption : val :=
         let: "err" := (ref_ty error (zero_val error)) in
         let: "$r0" := (Fst "$recvVal") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ interface.nil
+        (if: (![error] "err") ≠ #interface.nil
         then return: (![error] "err")
         else do:  #())
         )); ("$recvChan1", (λ: "$recvVal",
@@ -3794,7 +3794,7 @@ Definition node__stepWithWaitOption : val :=
         )); ("$recvChan2", (λ: "$recvVal",
         return: (![error] "ErrStopped")
         ))] (InjLV #()));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* go: node.go:500:16 *)
 Definition node__step : val :=
@@ -3885,7 +3885,7 @@ Definition node__Step : val :=
     (if: (let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     IsLocalMsg "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
     IsLocalMsgTarget "$a0"))
-    then return: (interface.nil)
+    then return: (#interface.nil)
     else do:  #());;;
     return: (let: "$a0" := (![context.Context] "ctx") in
      let: "$a1" := (![raftpb.Message] "m") in
@@ -3905,7 +3905,7 @@ Definition node__ProposeConfChange : val :=
     let: "$r1" := "$ret1" in
     do:  ("msg" <-[raftpb.Message] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then return: (![error] "err")
     else do:  #());;;
     return: (let: "$a0" := (![context.Context] "ctx") in
@@ -3998,7 +3998,7 @@ Definition node__Tick : val :=
         ))] [("$recvChan0", (λ: "$recvVal",
         do:  #()
         ))] (InjR (λ: <>,
-      do:  (let: "$a0" := #(str "%x A tick missed to fire. Node blocks too long!") in
+      do:  (let: "$a0" := #"%x A tick missed to fire. Node blocks too long!" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))))))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))))))) "$a0" "$a1")
@@ -4051,9 +4051,9 @@ Definition raft__tickHeartbeat : val :=
         }]) in
         (raft__Step (![ptrT] "r")) "$a0") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ interface.nil
+        (if: (![error] "err") ≠ #interface.nil
         then
-          do:  (let: "$a0" := #(str "error occurred during checking sending heartbeat: %v") in
+          do:  (let: "$a0" := #"error occurred during checking sending heartbeat: %v" in
           let: "$a1" := ((let: "$sl0" := (![error] "err") in
           slice.literal interfaceT ["$sl0"])) in
           (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -4077,9 +4077,9 @@ Definition raft__tickHeartbeat : val :=
       }]) in
       (raft__Step (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then
-        do:  (let: "$a0" := #(str "error occurred during checking sending heartbeat: %v") in
+        do:  (let: "$a0" := #"error occurred during checking sending heartbeat: %v" in
         let: "$a1" := ((let: "$sl0" := (![error] "err") in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -4114,9 +4114,9 @@ Definition raft__tickElection : val :=
       }]) in
       (raft__Step (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ interface.nil
+      (if: (![error] "err") ≠ #interface.nil
       then
-        do:  (let: "$a0" := #(str "error occurred during election: %v") in
+        do:  (let: "$a0" := #"error occurred during election: %v" in
         let: "$a1" := ((let: "$sl0" := (![error] "err") in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -4260,7 +4260,7 @@ Definition RawNode__acceptReady : val :=
     (if: (let: "$a0" := (![sliceT ReadState] (struct.field_ref Ready "ReadStates" "rd")) in
     slice.len "$a0") ≠ #(W64 0)
     then
-      let: "$r0" := slice.nil in
+      let: "$r0" := #slice.nil in
       do:  ((struct.field_ref raft "readStates" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) <-[sliceT ReadState] "$r0")
     else do:  #());;;
     (if: (~ (![boolT] (struct.field_ref RawNode "asyncStorageWrites" (![ptrT] "rn"))))
@@ -4268,8 +4268,8 @@ Definition RawNode__acceptReady : val :=
       (if: (let: "$a0" := (![sliceT raftpb.Message] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
       slice.len "$a0") ≠ #(W64 0)
       then
-        do:  (let: "$a0" := #(str "two accepted Ready structs without call to Advance") in
-        let: "$a1" := slice.nil in
+        do:  (let: "$a0" := #"two accepted Ready structs without call to Advance" in
+        let: "$a1" := #slice.nil in
         (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0" "$a1")
       else do:  #());;;
       do:  (let: "$range" := (![sliceT raftpb.Message] (struct.field_ref raft "msgsAfterAppend" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))))) in
@@ -4313,9 +4313,9 @@ Definition RawNode__acceptReady : val :=
         do:  ((struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn")) <-[sliceT raftpb.Message] "$r0")
       else do:  #())
     else do:  #());;;
-    let: "$r0" := slice.nil in
+    let: "$r0" := #slice.nil in
     do:  ((struct.field_ref raft "msgs" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) <-[sliceT raftpb.Message] "$r0");;;
-    let: "$r0" := slice.nil in
+    let: "$r0" := #slice.nil in
     do:  ((struct.field_ref raft "msgsAfterAppend" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) <-[sliceT raftpb.Message] "$r0");;;
     do:  ((raftLog__acceptUnstable (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) #());;;
     (if: int_gt (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref Ready "CommittedEntries" "rd")) in
@@ -4350,8 +4350,8 @@ Definition RawNode__Advance : val :=
     let: <> := (ref_ty Ready "_") in
     (if: ![boolT] (struct.field_ref RawNode "asyncStorageWrites" (![ptrT] "rn"))
     then
-      do:  (let: "$a0" := #(str "Advance must not be called when using AsyncStorageWrites") in
-      let: "$a1" := slice.nil in
+      do:  (let: "$a0" := #"Advance must not be called when using AsyncStorageWrites" in
+      let: "$a1" := #slice.nil in
       (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$range" := (![sliceT raftpb.Message] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
@@ -4699,7 +4699,7 @@ Definition node__run : val :=
     do:  ("lead" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((![chanT (structT [
-      ])] "advancec") = chan.nil) && ((RawNode__HasReady (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #())
+      ])] "advancec") = #null) && ((RawNode__HasReady (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #())
       then
         let: "$r0" := ((RawNode__readyWithoutAccept (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #()) in
         do:  ("rd" <-[Ready] "$r0");;;
@@ -4712,14 +4712,14 @@ Definition node__run : val :=
         then
           (if: (![uint64T] "lead") = None
           then
-            do:  (let: "$a0" := #(str "raft.node: %x elected leader %x at term %d") in
+            do:  (let: "$a0" := #"raft.node: %x elected leader %x at term %d" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r")))) in
             let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
             (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
           else
-            do:  (let: "$a0" := #(str "raft.node: %x changed leader from %x to %x at term %d") in
+            do:  (let: "$a0" := #"raft.node: %x changed leader from %x to %x at term %d" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] "lead")) in
             let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r")))) in
@@ -4729,13 +4729,13 @@ Definition node__run : val :=
           let: "$r0" := (![chanT msgWithResult] (struct.field_ref node "propc" (![ptrT] "n"))) in
           do:  ("propc" <-[chanT msgWithResult] "$r0")
         else
-          do:  (let: "$a0" := #(str "raft.node: %x lost leader %x at term %d") in
+          do:  (let: "$a0" := #"raft.node: %x lost leader %x at term %d" in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
           let: "$sl1" := (interface.make uint64__mset (![uint64T] "lead")) in
           let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
           slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-          let: "$r0" := chan.nil in
+          let: "$r0" := #null in
           do:  ("propc" <-[chanT msgWithResult] "$r0"));;;
         let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
         do:  ("lead" <-[uint64T] "$r0")
@@ -4753,7 +4753,7 @@ Definition node__run : val :=
             let: "$r0" := (struct.make Ready [{
             }]) in
             do:  ("rd" <-[Ready] "$r0"));;;
-          let: "$r0" := chan.nil in
+          let: "$r0" := #null in
           do:  ("readyc" <-[chanT Ready] "$r0")
           ))] [("$recvChan0", (λ: "$recvVal",
           let: "pm" := (ref_ty msgWithResult (zero_val msgWithResult)) in
@@ -4768,7 +4768,7 @@ Definition node__run : val :=
           let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
           (raft__Step (![ptrT] "r")) "$a0") in
           do:  ("err" <-[error] "$r0");;;
-          (if: (![chanT error] (struct.field_ref msgWithResult "result" "pm")) ≠ chan.nil
+          (if: (![chanT error] (struct.field_ref msgWithResult "result" "pm")) ≠ #null
           then
             do:  (let: "$chan" := (![chanT error] (struct.field_ref msgWithResult "result" "pm")) in
             let: "$v" := (![error] "err") in
@@ -4829,7 +4829,7 @@ Definition node__run : val :=
               else do:  #())));;;
             (if: (~ (![boolT] "found"))
             then
-              let: "$r0" := chan.nil in
+              let: "$r0" := #null in
               do:  ("propc" <-[chanT msgWithResult] "$r0")
             else do:  #())
           else do:  #()));;;
@@ -4846,7 +4846,7 @@ Definition node__run : val :=
           let: "$r0" := (struct.make Ready [{
           }]) in
           do:  ("rd" <-[Ready] "$r0");;;
-          let: "$r0" := chan.nil in
+          let: "$r0" := #null in
           do:  ("advancec" <-[chanT (structT [
           ])] "$r0")
           )); ("$recvChan5", (λ: "$recvVal",
@@ -4922,7 +4922,7 @@ Definition RestartNode : val :=
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -4977,10 +4977,10 @@ Definition StateType__String : val :=
 Definition StateType__MarshalJSON : val :=
   rec: "StateType__MarshalJSON" "st" <> :=
     exception_do (let: "st" := (ref_ty StateType "st") in
-    return: (string.to_bytes (let: "$a0" := #(str "%q") in
+    return: (string.to_bytes (let: "$a0" := #"%q" in
      let: "$a1" := ((let: "$sl0" := (interface.make string__mset ((StateType__String (![StateType] "st")) #())) in
      slice.literal interfaceT ["$sl0"])) in
-     fmt.Sprintf "$a0" "$a1"), interface.nil)).
+     fmt.Sprintf "$a0" "$a1"), #interface.nil)).
 
 Definition StateType__mset : list (string * val) := [
   ("MarshalJSON", StateType__MarshalJSON%V);
@@ -5020,7 +5020,7 @@ Definition raft__stepOrSend : val :=
         let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
         (raft__Step (![ptrT] "r")) "$a0") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ interface.nil
+        (if: (![error] "err") ≠ #interface.nil
         then return: (![error] "err")
         else do:  #()))
       else
@@ -5029,7 +5029,7 @@ Definition raft__stepOrSend : val :=
         slice.literal raftpb.Message ["$sl0"])) in
         (slice.append (sliceT raftpb.Message)) "$a0" "$a1") in
         do:  ((struct.field_ref raft "msgs" (![ptrT] "r")) <-[sliceT raftpb.Message] "$r0"))));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* go: raft2.go:101:16 *)
 Definition raft__takeMessagesAfterAppend : val :=
@@ -5038,7 +5038,7 @@ Definition raft__takeMessagesAfterAppend : val :=
     let: "msgs" := (ref_ty (sliceT raftpb.Message) (zero_val (sliceT raftpb.Message))) in
     let: "$r0" := (![sliceT raftpb.Message] (struct.field_ref raft "msgsAfterAppend" (![ptrT] "r"))) in
     do:  ("msgs" <-[sliceT raftpb.Message] "$r0");;;
-    let: "$r0" := slice.nil in
+    let: "$r0" := #slice.nil in
     do:  ((struct.field_ref raft "msgsAfterAppend" (![ptrT] "r")) <-[sliceT raftpb.Message] "$r0");;;
     return: (![sliceT raftpb.Message] "msgs")).
 
@@ -5108,7 +5108,7 @@ Definition raft__appendEntry : val :=
     (if: (~ (let: "$a0" := (![sliceT raftpb.Entry] "es") in
     (raft__increaseUncommittedSize (![ptrT] "r")) "$a0"))
     then
-      do:  (let: "$a0" := #(str "%x appending new entries to log would exceed uncommitted entry size limit; dropping proposal") in
+      do:  (let: "$a0" := #"%x appending new entries to log would exceed uncommitted entry size limit; dropping proposal" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -5180,7 +5180,7 @@ Definition readOnly__lastPendingRequestCtx : val :=
     exception_do (let: "ro" := (ref_ty ptrT "ro") in
     (if: (let: "$a0" := (![sliceT stringT] (struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro"))) in
     slice.len "$a0") = #(W64 0)
-    then return: (#(str ""))
+    then return: (#"")
     else do:  #());;;
     return: (![stringT] (slice.elem_ref stringT (![sliceT stringT] (struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro"))) ((let: "$a0" := (![sliceT stringT] (struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro"))) in
      slice.len "$a0") - #(W64 1))))).
@@ -5197,7 +5197,7 @@ Definition raft__bcastHeartbeat : val :=
     (if: (let: "$a0" := (![stringT] "lastCtx") in
     StringLength "$a0") = #(W64 0)
     then
-      do:  (let: "$a0" := slice.nil in
+      do:  (let: "$a0" := #slice.nil in
       (raft__bcastHeartbeatWithCtx (![ptrT] "r")) "$a0")
     else
       do:  (let: "$a0" := (string.to_bytes (![stringT] "lastCtx")) in
@@ -5215,7 +5215,7 @@ Definition raft__becomeLeader : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     (if: (![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) = StateFollower
     then
-      do:  (let: "$a0" := (interface.make string__mset #(str "invalid transition [follower -> leader]")) in
+      do:  (let: "$a0" := (interface.make string__mset #"invalid transition [follower -> leader]") in
       Panic "$a0")
     else do:  #());;;
     let: "$r0" := (![funcT] "stepLeaderGlobal") in
@@ -5240,18 +5240,18 @@ Definition raft__becomeLeader : val :=
     traceBecomeLeader "$a0");;;
     let: "emptyEnt" := (ref_ty raftpb.Entry (zero_val raftpb.Entry)) in
     let: "$r0" := (struct.make raftpb.Entry [{
-      "Data" ::= slice.nil
+      "Data" ::= #slice.nil
     }]) in
     do:  ("emptyEnt" <-[raftpb.Entry] "$r0");;;
     (if: (~ (let: "$a0" := ((let: "$sl0" := (![raftpb.Entry] "emptyEnt") in
     slice.literal raftpb.Entry ["$sl0"])) in
     (raft__appendEntry (![ptrT] "r")) "$a0"))
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #(str "empty entry was dropped")) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"empty entry was dropped") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Panic" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := #(str "%x became leader at term %d") in
+    do:  (let: "$a0" := #"%x became leader at term %d" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -5322,7 +5322,7 @@ Definition raft__handleAppendEntries : val :=
       (raft__send (![ptrT] "r")) "$a0");;;
       return: (#())
     else do:  #()));;;
-    do:  (let: "$a0" := #(str "%x [logterm: %d, index: %d] rejected MsgApp [logterm: %d, index: %d] from %x") in
+    do:  (let: "$a0" := #"%x [logterm: %d, index: %d] rejected MsgApp [logterm: %d, index: %d] from %x" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Index" "m")) in
     (raftLog__term (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")) in
@@ -5386,7 +5386,7 @@ Definition raft__restore : val :=
     else do:  #());;;
     (if: (![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) ≠ StateFollower
     then
-      do:  (let: "$a0" := #(str "%x attempted to restore snapshot as leader; should never happen") in
+      do:  (let: "$a0" := #"%x attempted to restore snapshot as leader; should never happen" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -5421,7 +5421,7 @@ Definition raft__restore : val :=
       else do:  #())));;;
     (if: (~ (![boolT] "found"))
     then
-      do:  (let: "$a0" := #(str "%x attempted to restore snapshot but it is not in the ConfState %v; should never happen") in
+      do:  (let: "$a0" := #"%x attempted to restore snapshot but it is not in the ConfState %v; should never happen" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make raftpb.ConfState__mset (![raftpb.ConfState] "cs")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -5440,7 +5440,7 @@ Definition raft__restore : val :=
       let: "last" := (ref_ty entryID (zero_val entryID)) in
       let: "$r0" := ((raftLog__lastEntryID (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
       do:  ("last" <-[entryID] "$r0");;;
-      do:  (let: "$a0" := #(str "%x [commit: %d, lastindex: %d, lastterm: %d] fast-forwarded commit to snapshot [index: %d, term: %d]") in
+      do:  (let: "$a0" := #"%x [commit: %d, lastindex: %d, lastterm: %d] fast-forwarded commit to snapshot [index: %d, term: %d]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "last"))) in
@@ -5474,9 +5474,9 @@ Definition raft__restore : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
-      do:  (let: "$a0" := (interface.make string__mset (let: "$a0" := #(str "unable to restore config %+v: %s") in
+      do:  (let: "$a0" := (interface.make string__mset (let: "$a0" := #"unable to restore config %+v: %s" in
       let: "$a1" := ((let: "$sl0" := (interface.make raftpb.ConfState__mset (![raftpb.ConfState] "cs")) in
       let: "$sl1" := (![error] "err") in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -5492,7 +5492,7 @@ Definition raft__restore : val :=
     let: "last" := (ref_ty entryID (zero_val entryID)) in
     let: "$r0" := ((raftLog__lastEntryID (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     do:  ("last" <-[entryID] "$r0");;;
-    do:  (let: "$a0" := #(str "%x [commit: %d, lastindex: %d, lastterm: %d] restored snapshot [index: %d, term: %d]") in
+    do:  (let: "$a0" := #"%x [commit: %d, lastindex: %d, lastterm: %d] restored snapshot [index: %d, term: %d]" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
     let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref entryID "index" "last"))) in
@@ -5523,7 +5523,7 @@ Definition raft__handleSnapshot : val :=
     (if: let: "$a0" := (![raftpb.Snapshot] "s") in
     (raft__restore (![ptrT] "r")) "$a0"
     then
-      do:  (let: "$a0" := #(str "%x [commit: %d] restored snapshot [index: %d, term: %d]") in
+      do:  (let: "$a0" := #"%x [commit: %d] restored snapshot [index: %d, term: %d]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] "sindex")) in
@@ -5537,7 +5537,7 @@ Definition raft__handleSnapshot : val :=
       }]) in
       (raft__send (![ptrT] "r")) "$a0")
     else
-      do:  (let: "$a0" := #(str "%x [commit: %d] ignored snapshot [index: %d, term: %d]") in
+      do:  (let: "$a0" := #"%x [commit: %d] ignored snapshot [index: %d, term: %d]" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] "sindex")) in
@@ -5562,7 +5562,7 @@ Definition raft__poll : val :=
     let: "id" := (ref_ty uint64T "id") in
     (if: ![boolT] "v"
     then
-      do:  (let: "$a0" := #(str "%x received %s from %x at term %d") in
+      do:  (let: "$a0" := #"%x received %s from %x at term %d" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] "t")) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] "id")) in
@@ -5570,7 +5570,7 @@ Definition raft__poll : val :=
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
     else
-      do:  (let: "$a0" := #(str "%x received %s rejection from %x at term %d") in
+      do:  (let: "$a0" := #"%x received %s rejection from %x at term %d" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] "t")) in
       let: "$sl2" := (interface.make uint64__mset (![uint64T] "id")) in
@@ -5591,7 +5591,7 @@ Definition raft__readMessages : val :=
     let: "msgs" := (ref_ty (sliceT raftpb.Message) (zero_val (sliceT raftpb.Message))) in
     let: "$r0" := (![sliceT raftpb.Message] (struct.field_ref raft "msgs" (![ptrT] "r"))) in
     do:  ("msgs" <-[sliceT raftpb.Message] "$r0");;;
-    let: "$r0" := slice.nil in
+    let: "$r0" := #slice.nil in
     do:  ((struct.field_ref raft "msgs" (![ptrT] "r")) <-[sliceT raftpb.Message] "$r0");;;
     return: (![sliceT raftpb.Message] "msgs")).
 
@@ -5728,7 +5728,7 @@ Definition readOnly__advance : val :=
       do:  ("ok" <-[boolT] "$r1");;;
       (if: (~ (![boolT] "ok"))
       then
-        do:  (let: "$a0" := (interface.make string__mset #(str "cannot find corresponding read state from pending map")) in
+        do:  (let: "$a0" := (interface.make string__mset #"cannot find corresponding read state from pending map") in
         Panic "$a0")
       else do:  #());;;
       let: "$r0" := (let: "$a0" := (![sliceT ptrT] "rss") in
@@ -5755,7 +5755,7 @@ Definition readOnly__advance : val :=
         map.delete "$a0" "$a1")));;;
       return: (![sliceT ptrT] "rss")
     else do:  #());;;
-    return: (slice.nil)).
+    return: (#slice.nil)).
 
 (* recvAck notifies the readonly struct that the raft state machine received
    an acknowledgment of the heartbeat that attached with the read only request
@@ -5775,7 +5775,7 @@ Definition readOnly__recvAck : val :=
     do:  ("rs" <-[ptrT] "$r0");;;
     do:  ("ok" <-[boolT] "$r1");;;
     (if: (~ (![boolT] "ok"))
-    then return: (map.nil)
+    then return: (#null)
     else do:  #());;;
     let: "$r0" := #true in
     do:  (map.insert (![mapT uint64T boolT] (struct.field_ref readIndexStatus "acks" (![ptrT] "rs"))) (![uint64T] "id") "$r0");;;
@@ -5857,7 +5857,7 @@ Definition releasePendingReadIndexMessages : val :=
     else do:  #());;;
     (if: (~ ((raft__committedEntryInCurrentTerm (![ptrT] "r")) #()))
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #(str "pending MsgReadIndex should be released only after first commit in current term")) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"pending MsgReadIndex should be released only after first commit in current term") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Error" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0");;;
       return: (#())
@@ -5865,7 +5865,7 @@ Definition releasePendingReadIndexMessages : val :=
     let: "msgs" := (ref_ty (sliceT raftpb.Message) (zero_val (sliceT raftpb.Message))) in
     let: "$r0" := (![sliceT raftpb.Message] (struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r"))) in
     do:  ("msgs" <-[sliceT raftpb.Message] "$r0");;;
-    let: "$r0" := slice.nil in
+    let: "$r0" := #slice.nil in
     do:  ((struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r")) <-[sliceT raftpb.Message] "$r0");;;
     do:  (let: "$range" := (![sliceT raftpb.Message] "msgs") in
     slice.for_range raftpb.Message "$range" (λ: <> "m",
@@ -5890,13 +5890,13 @@ Definition stepLeader : val :=
     (if: "$sw" = raftpb.MsgBeat
     then
       do:  ((raft__bcastHeartbeat (![ptrT] "r")) #());;;
-      return: (interface.nil)
+      return: (#interface.nil)
     else
       (if: "$sw" = raftpb.MsgCheckQuorum
       then
         (if: (~ ((tracker.ProgressTracker__QuorumActive (struct.field_ref raft "trk" (![ptrT] "r"))) #()))
         then
-          do:  (let: "$a0" := #(str "%x stepped down to follower since quorum is not active") in
+          do:  (let: "$a0" := #"%x stepped down to follower since quorum is not active" in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
           slice.literal interfaceT ["$sl0"])) in
           (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -5914,14 +5914,14 @@ Definition stepLeader : val :=
           else do:  #()))
           ) in
         (tracker.ProgressTracker__Visit (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
-        return: (interface.nil)
+        return: (#interface.nil)
       else
         (if: "$sw" = raftpb.MsgProp
         then
           (if: (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref raftpb.Message "Entries" "m")) in
           slice.len "$a0") = #(W64 0)
           then
-            do:  (let: "$a0" := #(str "%x stepped empty MsgProp") in
+            do:  (let: "$a0" := #"%x stepped empty MsgProp" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             slice.literal interfaceT ["$sl0"])) in
             (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -5931,7 +5931,7 @@ Definition stepLeader : val :=
           else do:  #());;;
           (if: (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r"))) ≠ None
           then
-            do:  (let: "$a0" := #(str "%x [term %d] transfer leadership to %x is in progress; dropping proposal") in
+            do:  (let: "$a0" := #"%x [term %d] transfer leadership to %x is in progress; dropping proposal" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
             let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r")))) in
@@ -5953,7 +5953,7 @@ Definition stepLeader : val :=
               let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
               (raftpb.ConfChange__Unmarshal "ccc") "$a0") in
               do:  ("err" <-[error] "$r0");;;
-              (if: (![error] "err") ≠ interface.nil
+              (if: (![error] "err") ≠ #interface.nil
               then
                 do:  (let: "$a0" := (![error] "err") in
                 Panic "$a0")
@@ -5968,7 +5968,7 @@ Definition stepLeader : val :=
                 let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
                 (raftpb.ConfChangeV2__Unmarshal "ccc") "$a0") in
                 do:  ("err" <-[error] "$r0");;;
-                (if: (![error] "err") ≠ interface.nil
+                (if: (![error] "err") ≠ #interface.nil
                 then
                   do:  (let: "$a0" := (![error] "err") in
                   Panic "$a0")
@@ -5976,7 +5976,7 @@ Definition stepLeader : val :=
                 let: "$r0" := (interface.make raftpb.ConfChangeV2__mset (![raftpb.ConfChangeV2] "ccc")) in
                 do:  ("cc" <-[raftpb.ConfChangeI] "$r0")
               else do:  #()));;;
-            (if: (![raftpb.ConfChangeI] "cc") ≠ interface.nil
+            (if: (![raftpb.ConfChangeI] "cc") ≠ #interface.nil
             then
               let: "alreadyPending" := (ref_ty boolT (zero_val boolT)) in
               let: "$r0" := ((![uint64T] (struct.field_ref raft "pendingConfIndex" (![ptrT] "r"))) > (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
@@ -5992,7 +5992,7 @@ Definition stepLeader : val :=
               let: "failedCheck" := (ref_ty stringT (zero_val stringT)) in
               (if: ![boolT] "alreadyPending"
               then
-                let: "$r0" := (let: "$a0" := #(str "possible unapplied conf change at index %d (applied to %d)") in
+                let: "$r0" := (let: "$a0" := #"possible unapplied conf change at index %d (applied to %d)" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "pendingConfIndex" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -6001,17 +6001,17 @@ Definition stepLeader : val :=
               else
                 (if: (![boolT] "alreadyJoint") && (~ (![boolT] "wantsLeaveJoint"))
                 then
-                  let: "$r0" := #(str "must transition out of joint config first") in
+                  let: "$r0" := #"must transition out of joint config first" in
                   do:  ("failedCheck" <-[stringT] "$r0")
                 else
                   (if: (~ (![boolT] "alreadyJoint")) && (![boolT] "wantsLeaveJoint")
                   then
-                    let: "$r0" := #(str "not in joint state; refusing empty conf change") in
+                    let: "$r0" := #"not in joint state; refusing empty conf change" in
                     do:  ("failedCheck" <-[stringT] "$r0")
                   else do:  #())));;;
-              (if: ((![stringT] "failedCheck") ≠ #(str "")) && (~ (![boolT] (struct.field_ref raft "disableConfChangeValidation" (![ptrT] "r"))))
+              (if: ((![stringT] "failedCheck") ≠ #"") && (~ (![boolT] (struct.field_ref raft "disableConfChangeValidation" (![ptrT] "r"))))
               then
-                do:  (let: "$a0" := #(str "%x ignoring conf change %v at config %s: %s") in
+                do:  (let: "$a0" := #"%x ignoring conf change %v at config %s: %s" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (![raftpb.ConfChangeI] "cc") in
                 let: "$sl2" := (interface.make tracker.Config__mset (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
@@ -6034,7 +6034,7 @@ Definition stepLeader : val :=
           then return: (![error] "ErrProposalDropped")
           else do:  #());;;
           do:  ((raft__bcastAppend (![ptrT] "r")) #());;;
-          return: (interface.nil)
+          return: (#interface.nil)
         else
           (if: "$sw" = raftpb.MsgReadIndex
           then
@@ -6050,7 +6050,7 @@ Definition stepLeader : val :=
                 do:  (let: "$a0" := (![raftpb.Message] "resp") in
                 (raft__send (![ptrT] "r")) "$a0")
               else do:  #()));;;
-              return: (interface.nil)
+              return: (#interface.nil)
             else do:  #());;;
             (if: (~ ((raft__committedEntryInCurrentTerm (![ptrT] "r")) #()))
             then
@@ -6059,27 +6059,27 @@ Definition stepLeader : val :=
               slice.literal raftpb.Message ["$sl0"])) in
               (slice.append (sliceT raftpb.Message)) "$a0" "$a1") in
               do:  ((struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r")) <-[sliceT raftpb.Message] "$r0");;;
-              return: (interface.nil)
+              return: (#interface.nil)
             else do:  #());;;
             do:  (let: "$a0" := (![ptrT] "r") in
             let: "$a1" := (![raftpb.Message] "m") in
             sendMsgReadIndexResponse "$a0" "$a1");;;
-            return: (interface.nil)
+            return: (#interface.nil)
           else
             (if: "$sw" = raftpb.MsgForgetLeader
-            then return: (interface.nil)
+            then return: (#interface.nil)
             else #())))));;;
     let: "pr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raftpb.Message "From" "m")))) in
     do:  ("pr" <-[ptrT] "$r0");;;
     (if: (![ptrT] "pr") = #null
     then
-      do:  (let: "$a0" := #(str "%x no progress available for %x") in
+      do:  (let: "$a0" := #"%x no progress available for %x" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-      return: (interface.nil)
+      return: (#interface.nil)
     else do:  #());;;
     let: "$sw" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     (if: "$sw" = raftpb.MsgAppResp
@@ -6088,7 +6088,7 @@ Definition stepLeader : val :=
       do:  ((struct.field_ref tracker.Progress "RecentActive" (![ptrT] "pr")) <-[boolT] "$r0");;;
       (if: ![boolT] (struct.field_ref raftpb.Message "Reject" "m")
       then
-        do:  (let: "$a0" := #(str "%x received MsgAppResp(rejected, hint: (index %d, term %d)) from %x for index %d") in
+        do:  (let: "$a0" := #"%x received MsgAppResp(rejected, hint: (index %d, term %d)) from %x for index %d" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "RejectHint" "m"))) in
         let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m"))) in
@@ -6113,7 +6113,7 @@ Definition stepLeader : val :=
         let: "$a1" := (![uint64T] "nextProbeIdx") in
         (tracker.Progress__MaybeDecrTo (![ptrT] "pr")) "$a0" "$a1"
         then
-          do:  (let: "$a0" := #(str "%x decreased progress of %x to [%s]") in
+          do:  (let: "$a0" := #"%x decreased progress of %x to [%s]" in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
           let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
           let: "$sl2" := (interface.make tracker.Progress__mset_ptr (![ptrT] "pr")) in
@@ -6135,7 +6135,7 @@ Definition stepLeader : val :=
           else
             (if: "$sw" = (((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateSnapshot) && (((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) + #(W64 1)) ≥ ((raftLog__firstIndex (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())))
             then
-              do:  (let: "$a0" := #(str "%x recovered from needing snapshot, resumed sending replication messages to %x [%s]") in
+              do:  (let: "$a0" := #"%x recovered from needing snapshot, resumed sending replication messages to %x [%s]" in
               let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
               let: "$sl2" := (interface.make tracker.Progress__mset_ptr (![ptrT] "pr")) in
@@ -6170,7 +6170,7 @@ Definition stepLeader : val :=
           else do:  #());;;
           (if: ((![uint64T] (struct.field_ref raftpb.Message "From" "m")) = (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r")))) && ((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) = ((raftLog__lastIndex (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()))
           then
-            do:  (let: "$a0" := #(str "%x sent MsgTimeoutNow to %x after received MsgAppResp") in
+            do:  (let: "$a0" := #"%x sent MsgTimeoutNow to %x after received MsgAppResp" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
             slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -6193,13 +6193,13 @@ Definition stepLeader : val :=
         else do:  #());;;
         (if: ((![ReadOnlyOption] (struct.field_ref readOnly "option" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r"))))) ≠ ReadOnlySafe) || ((let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Message "Context" "m")) in
         slice.len "$a0") = #(W64 0))
-        then return: (interface.nil)
+        then return: (#interface.nil)
         else do:  #());;;
         (if: (let: "$a0" := (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
         let: "$a1" := (![sliceT byteT] (struct.field_ref raftpb.Message "Context" "m")) in
         (readOnly__recvAck (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1") in
         (quorum.JointConfig__VoteResult (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) "$a0") ≠ quorum.VoteWon
-        then return: (interface.nil)
+        then return: (#interface.nil)
         else do:  #());;;
         let: "rss" := (ref_ty (sliceT ptrT) (zero_val (sliceT ptrT))) in
         let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
@@ -6222,12 +6222,12 @@ Definition stepLeader : val :=
         (if: "$sw" = raftpb.MsgSnapStatus
         then
           (if: (![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) ≠ tracker.StateSnapshot
-          then return: (interface.nil)
+          then return: (#interface.nil)
           else do:  #());;;
           (if: (~ (![boolT] (struct.field_ref raftpb.Message "Reject" "m")))
           then
             do:  ((tracker.Progress__BecomeProbe (![ptrT] "pr")) #());;;
-            do:  (let: "$a0" := #(str "%x snapshot succeeded, resumed sending replication messages to %x [%s]") in
+            do:  (let: "$a0" := #"%x snapshot succeeded, resumed sending replication messages to %x [%s]" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
             let: "$sl2" := (interface.make tracker.Progress__mset_ptr (![ptrT] "pr")) in
@@ -6237,7 +6237,7 @@ Definition stepLeader : val :=
             let: "$r0" := #(W64 0) in
             do:  ((struct.field_ref tracker.Progress "PendingSnapshot" (![ptrT] "pr")) <-[uint64T] "$r0");;;
             do:  ((tracker.Progress__BecomeProbe (![ptrT] "pr")) #());;;
-            do:  (let: "$a0" := #(str "%x snapshot failed, resumed sending replication messages to %x [%s]") in
+            do:  (let: "$a0" := #"%x snapshot failed, resumed sending replication messages to %x [%s]" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
             let: "$sl2" := (interface.make tracker.Progress__mset_ptr (![ptrT] "pr")) in
@@ -6251,7 +6251,7 @@ Definition stepLeader : val :=
             (if: (![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateReplicate
             then do:  ((tracker.Progress__BecomeProbe (![ptrT] "pr")) #())
             else do:  #());;;
-            do:  (let: "$a0" := #(str "%x failed to send message to %x because it is unreachable [%s]") in
+            do:  (let: "$a0" := #"%x failed to send message to %x because it is unreachable [%s]" in
             let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
             let: "$sl2" := (interface.make tracker.Progress__mset_ptr (![ptrT] "pr")) in
@@ -6262,11 +6262,11 @@ Definition stepLeader : val :=
             then
               (if: ![boolT] (struct.field_ref tracker.Progress "IsLearner" (![ptrT] "pr"))
               then
-                do:  (let: "$a0" := #(str "%x is learner. Ignored transferring leadership") in
+                do:  (let: "$a0" := #"%x is learner. Ignored transferring leadership" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 slice.literal interfaceT ["$sl0"])) in
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                return: (interface.nil)
+                return: (#interface.nil)
               else do:  #());;;
               let: "leadTransferee" := (ref_ty uint64T (zero_val uint64T)) in
               let: "$r0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
@@ -6278,17 +6278,17 @@ Definition stepLeader : val :=
               then
                 (if: (![uint64T] "lastLeadTransferee") = (![uint64T] "leadTransferee")
                 then
-                  do:  (let: "$a0" := #(str "%x [term %d] transfer leadership to %x is in progress, ignores request to same node %x") in
+                  do:  (let: "$a0" := #"%x [term %d] transfer leadership to %x is in progress, ignores request to same node %x" in
                   let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                   let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                   let: "$sl2" := (interface.make uint64__mset (![uint64T] "leadTransferee")) in
                   let: "$sl3" := (interface.make uint64__mset (![uint64T] "leadTransferee")) in
                   slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                   (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                  return: (interface.nil)
+                  return: (#interface.nil)
                 else do:  #());;;
                 do:  ((raft__abortLeaderTransfer (![ptrT] "r")) #());;;
-                do:  (let: "$a0" := #(str "%x [term %d] abort previous transferring leadership to %x") in
+                do:  (let: "$a0" := #"%x [term %d] abort previous transferring leadership to %x" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                 let: "$sl2" := (interface.make uint64__mset (![uint64T] "lastLeadTransferee")) in
@@ -6297,13 +6297,13 @@ Definition stepLeader : val :=
               else do:  #());;;
               (if: (![uint64T] "leadTransferee") = (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))
               then
-                do:  (let: "$a0" := #(str "%x is already leader. Ignored transferring leadership to self") in
+                do:  (let: "$a0" := #"%x is already leader. Ignored transferring leadership to self" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 slice.literal interfaceT ["$sl0"])) in
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                return: (interface.nil)
+                return: (#interface.nil)
               else do:  #());;;
-              do:  (let: "$a0" := #(str "%x [term %d] starts to transfer leadership to %x") in
+              do:  (let: "$a0" := #"%x [term %d] starts to transfer leadership to %x" in
               let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
               let: "$sl2" := (interface.make uint64__mset (![uint64T] "leadTransferee")) in
@@ -6317,7 +6317,7 @@ Definition stepLeader : val :=
               then
                 do:  (let: "$a0" := (![uint64T] "leadTransferee") in
                 (raft__sendTimeoutNow (![ptrT] "r")) "$a0");;;
-                do:  (let: "$a0" := #(str "%x sends MsgTimeoutNow to %x immediately as %x already has up-to-date log") in
+                do:  (let: "$a0" := #"%x sends MsgTimeoutNow to %x immediately as %x already has up-to-date log" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make uint64__mset (![uint64T] "leadTransferee")) in
                 let: "$sl2" := (interface.make uint64__mset (![uint64T] "leadTransferee")) in
@@ -6327,7 +6327,7 @@ Definition stepLeader : val :=
                 do:  (let: "$a0" := (![uint64T] "leadTransferee") in
                 (raft__sendAppend (![ptrT] "r")) "$a0"))
             else #())))));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* stepCandidate is shared by StateCandidate and StatePreCandidate; the difference is
    whether they respond to MsgVoteResp or MsgPreVoteResp.
@@ -6348,7 +6348,7 @@ Definition stepCandidate : val :=
     let: "$sw" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     (if: "$sw" = raftpb.MsgProp
     then
-      do:  (let: "$a0" := #(str "%x no leader at term %d; dropping proposal") in
+      do:  (let: "$a0" := #"%x no leader at term %d; dropping proposal" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -6394,7 +6394,7 @@ Definition stepCandidate : val :=
               do:  ("gr" <-[intT] "$r0");;;
               do:  ("rj" <-[intT] "$r1");;;
               do:  ("res" <-[quorum.VoteResult] "$r2");;;
-              do:  (let: "$a0" := #(str "%x has received %d %s votes and %d vote rejections") in
+              do:  (let: "$a0" := #"%x has received %d %s votes and %d vote rejections" in
               let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make int__mset (![intT] "gr")) in
               let: "$sl2" := (interface.make raftpb.MessageType__mset (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
@@ -6421,7 +6421,7 @@ Definition stepCandidate : val :=
             else
               (if: "$sw" = raftpb.MsgTimeoutNow
               then
-                do:  (let: "$a0" := #(str "%x [term %d state %v] ignored MsgTimeoutNow from %x") in
+                do:  (let: "$a0" := #"%x [term %d state %v] ignored MsgTimeoutNow from %x" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                 let: "$sl2" := (interface.make StateType__mset (![StateType] (struct.field_ref raft "state" (![ptrT] "r")))) in
@@ -6429,7 +6429,7 @@ Definition stepCandidate : val :=
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
               else #()))))));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* go: raft.go:1738:6 *)
 Definition stepFollower : val :=
@@ -6441,7 +6441,7 @@ Definition stepFollower : val :=
     then
       (if: (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) = None
       then
-        do:  (let: "$a0" := #(str "%x no leader at term %d; dropping proposal") in
+        do:  (let: "$a0" := #"%x no leader at term %d; dropping proposal" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -6450,7 +6450,7 @@ Definition stepFollower : val :=
       else
         (if: ![boolT] (struct.field_ref raft "disableProposalForwarding" (![ptrT] "r"))
         then
-          do:  (let: "$a0" := #(str "%x not forwarding to leader %x at term %d; dropping proposal") in
+          do:  (let: "$a0" := #"%x not forwarding to leader %x at term %d; dropping proposal" in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
           let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r")))) in
           let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
@@ -6494,12 +6494,12 @@ Definition stepFollower : val :=
             then
               (if: (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) = None
               then
-                do:  (let: "$a0" := #(str "%x no leader at term %d; dropping leader transfer msg") in
+                do:  (let: "$a0" := #"%x no leader at term %d; dropping leader transfer msg" in
                 let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"])) in
                 (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                return: (interface.nil)
+                return: (#interface.nil)
               else do:  #());;;
               let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
               do:  ((struct.field_ref raftpb.Message "To" "m") <-[uint64T] "$r0");;;
@@ -6510,14 +6510,14 @@ Definition stepFollower : val :=
               then
                 (if: (![ReadOnlyOption] (struct.field_ref readOnly "option" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r"))))) = ReadOnlyLeaseBased
                 then
-                  do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #(str "ignoring MsgForgetLeader due to ReadOnlyLeaseBased")) in
+                  do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"ignoring MsgForgetLeader due to ReadOnlyLeaseBased") in
                   slice.literal interfaceT ["$sl0"])) in
                   (interface.get "Error" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0");;;
-                  return: (interface.nil)
+                  return: (#interface.nil)
                 else do:  #());;;
                 (if: (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) ≠ None
                 then
-                  do:  (let: "$a0" := #(str "%x forgetting leader %x at term %d") in
+                  do:  (let: "$a0" := #"%x forgetting leader %x at term %d" in
                   let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                   let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r")))) in
                   let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
@@ -6529,7 +6529,7 @@ Definition stepFollower : val :=
               else
                 (if: "$sw" = raftpb.MsgTimeoutNow
                 then
-                  do:  (let: "$a0" := #(str "%x [term %d] received MsgTimeoutNow from %x and starts an election to get leadership.") in
+                  do:  (let: "$a0" := #"%x [term %d] received MsgTimeoutNow from %x and starts an election to get leadership." in
                   let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                   let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                   let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
@@ -6542,12 +6542,12 @@ Definition stepFollower : val :=
                   then
                     (if: (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) = None
                     then
-                      do:  (let: "$a0" := #(str "%x no leader at term %d; dropping index reading msg") in
+                      do:  (let: "$a0" := #"%x no leader at term %d; dropping index reading msg" in
                       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                       let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
                       slice.literal interfaceT ["$sl0"; "$sl1"])) in
                       (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                      return: (interface.nil)
+                      return: (#interface.nil)
                     else do:  #());;;
                     let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
                     do:  ((struct.field_ref raftpb.Message "To" "m") <-[uint64T] "$r0");;;
@@ -6559,14 +6559,14 @@ Definition stepFollower : val :=
                       (if: (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref raftpb.Message "Entries" "m")) in
                       slice.len "$a0") ≠ #(W64 1)
                       then
-                        do:  (let: "$a0" := #(str "%x invalid format of MsgReadIndexResp from %x, entries count: %d") in
+                        do:  (let: "$a0" := #"%x invalid format of MsgReadIndexResp from %x, entries count: %d" in
                         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
                         let: "$sl2" := (interface.make int__mset (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref raftpb.Message "Entries" "m")) in
                         slice.len "$a0")) in
                         slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
                         (interface.get "Errorf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-                        return: (interface.nil)
+                        return: (#interface.nil)
                       else do:  #());;;
                       let: "$r0" := (let: "$a0" := (![sliceT ReadState] (struct.field_ref raft "readStates" (![ptrT] "r"))) in
                       let: "$a1" := ((let: "$sl0" := (struct.make ReadState [{
@@ -6577,7 +6577,7 @@ Definition stepFollower : val :=
                       (slice.append (sliceT ReadState)) "$a0" "$a1") in
                       do:  ((struct.field_ref raft "readStates" (![ptrT] "r")) <-[sliceT ReadState] "$r0")
                     else #())))))))));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* go: raft.go:2185:6 *)
 Definition init : val :=
@@ -6646,7 +6646,7 @@ Definition MemoryStorage__Append : val :=
     let: "entries" := (ref_ty (sliceT raftpb.Entry) "entries") in
     (if: (let: "$a0" := (![sliceT raftpb.Entry] "entries") in
     slice.len "$a0") = #(W64 0)
-    then return: (interface.nil)
+    then return: (#interface.nil)
     else do:  #());;;
     do:  ((sync.Mutex__Lock (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
     do:  (let: "$f" := (sync.Mutex__Unlock (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
@@ -6663,7 +6663,7 @@ Definition MemoryStorage__Append : val :=
     slice.len "$a0")) - #(W64 1)) in
     do:  ("last" <-[uint64T] "$r0");;;
     (if: (![uint64T] "last") < (![uint64T] "first")
-    then return: (interface.nil)
+    then return: (#interface.nil)
     else do:  #());;;
     (if: (![uint64T] "first") > (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] "entries") #(W64 0))))
     then
@@ -6692,12 +6692,12 @@ Definition MemoryStorage__Append : val :=
         (slice.append (sliceT raftpb.Entry)) "$a0" "$a1") in
         do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT raftpb.Entry] "$r0")
       else
-        do:  (let: "$a0" := #(str "missing log entry [last: %d, append at: %d]") in
+        do:  (let: "$a0" := #"missing log entry [last: %d, append at: %d]" in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset ((MemoryStorage__lastIndex (![ptrT] "ms")) #())) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] "entries") #(W64 0))))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (getLogger #())) "$a0" "$a1")));;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* ApplySnapshot overwrites the contents of this Storage object with
    those of the given snapshot.
@@ -6731,7 +6731,7 @@ Definition MemoryStorage__ApplySnapshot : val :=
     }]) in
     slice.literal raftpb.Entry ["$sl0"])) in
     do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT raftpb.Entry] "$r0");;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* Compact discards all log entries prior to compactIndex.
    It is the application's responsibility to not attempt to compact an index
@@ -6757,7 +6757,7 @@ Definition MemoryStorage__Compact : val :=
     else do:  #());;;
     (if: (![uint64T] "compactIndex") > ((MemoryStorage__lastIndex (![ptrT] "ms")) #())
     then
-      do:  (let: "$a0" := #(str "compact %d is out of bound lastindex(%d)") in
+      do:  (let: "$a0" := #"compact %d is out of bound lastindex(%d)" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "compactIndex")) in
       let: "$sl1" := (interface.make uint64__mset ((MemoryStorage__lastIndex (![ptrT] "ms")) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -6781,7 +6781,7 @@ Definition MemoryStorage__Compact : val :=
     do:  ("ents" <-[sliceT raftpb.Entry] "$r0");;;
     let: "$r0" := (![sliceT raftpb.Entry] "ents") in
     do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT raftpb.Entry] "$r0");;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* CreateSnapshot makes a snapshot which can be retrieved with Snapshot() and
    can be used to reconstruct the state at that point.
@@ -6812,7 +6812,7 @@ Definition MemoryStorage__CreateSnapshot : val :=
     do:  ("offset" <-[uint64T] "$r0");;;
     (if: (![uint64T] "i") > ((MemoryStorage__lastIndex (![ptrT] "ms")) #())
     then
-      do:  (let: "$a0" := #(str "snapshot %d is out of bound lastindex(%d)") in
+      do:  (let: "$a0" := #"snapshot %d is out of bound lastindex(%d)" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "i")) in
       let: "$sl1" := (interface.make uint64__mset ((MemoryStorage__lastIndex (![ptrT] "ms")) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -6829,7 +6829,7 @@ Definition MemoryStorage__CreateSnapshot : val :=
     else do:  #());;;
     let: "$r0" := (![sliceT byteT] "data") in
     do:  ((struct.field_ref raftpb.Snapshot "Data" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms"))) <-[sliceT byteT] "$r0");;;
-    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), interface.nil)).
+    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), #interface.nil)).
 
 (* Entries implements the Storage interface.
 
@@ -6852,11 +6852,11 @@ Definition MemoryStorage__Entries : val :=
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[uint64T] "$r0");;;
     (if: (![uint64T] "lo") ≤ (![uint64T] "offset")
-    then return: (slice.nil, ![error] "ErrCompacted")
+    then return: (#slice.nil, ![error] "ErrCompacted")
     else do:  #());;;
     (if: (![uint64T] "hi") > (((MemoryStorage__lastIndex (![ptrT] "ms")) #()) + #(W64 1))
     then
-      do:  (let: "$a0" := #(str "entries' hi(%d) is out of bound lastindex(%d)") in
+      do:  (let: "$a0" := #"entries' hi(%d) is out of bound lastindex(%d)" in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "hi")) in
       let: "$sl1" := (interface.make uint64__mset ((MemoryStorage__lastIndex (![ptrT] "ms")) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -6864,7 +6864,7 @@ Definition MemoryStorage__Entries : val :=
     else do:  #());;;
     (if: (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
     slice.len "$a0") = #(W64 1)
-    then return: (slice.nil, ![error] "ErrUnavailable")
+    then return: (#slice.nil, ![error] "ErrUnavailable")
     else do:  #());;;
     let: "ents" := (ref_ty (sliceT raftpb.Entry) (zero_val (sliceT raftpb.Entry))) in
     let: "$r0" := (let: "$a0" := (let: "$s" := (![sliceT raftpb.Entry] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
@@ -6875,7 +6875,7 @@ Definition MemoryStorage__Entries : val :=
     return: (let: "$s" := (![sliceT raftpb.Entry] "ents") in
      slice.full_slice raftpb.Entry "$s" #(W64 0) (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
      slice.len "$a0") (let: "$a0" := (![sliceT raftpb.Entry] "ents") in
-     slice.len "$a0"), interface.nil)).
+     slice.len "$a0"), #interface.nil)).
 
 (* FirstIndex implements the Storage interface.
 
@@ -6891,7 +6891,7 @@ Definition MemoryStorage__FirstIndex : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "firstIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "firstIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: ((MemoryStorage__firstIndex (![ptrT] "ms")) #(), interface.nil)).
+    return: ((MemoryStorage__firstIndex (![ptrT] "ms")) #(), #interface.nil)).
 
 (* InitialState implements the Storage interface.
 
@@ -6900,7 +6900,7 @@ Definition MemoryStorage__InitialState : val :=
   rec: "MemoryStorage__InitialState" "ms" <> :=
     exception_do (let: "ms" := (ref_ty ptrT "ms") in
     do:  ((struct.field_ref inMemStorageCallStats "initialState" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "initialState" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: (![raftpb.HardState] (struct.field_ref MemoryStorage "hardState" (![ptrT] "ms")), ![raftpb.ConfState] (struct.field_ref raftpb.SnapshotMetadata "ConfState" (struct.field_ref raftpb.Snapshot "Metadata" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")))), interface.nil)).
+    return: (![raftpb.HardState] (struct.field_ref MemoryStorage "hardState" (![ptrT] "ms")), ![raftpb.ConfState] (struct.field_ref raftpb.SnapshotMetadata "ConfState" (struct.field_ref raftpb.Snapshot "Metadata" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")))), #interface.nil)).
 
 (* LastIndex implements the Storage interface.
 
@@ -6916,7 +6916,7 @@ Definition MemoryStorage__LastIndex : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "lastIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "lastIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: ((MemoryStorage__lastIndex (![ptrT] "ms")) #(), interface.nil)).
+    return: ((MemoryStorage__lastIndex (![ptrT] "ms")) #(), #interface.nil)).
 
 (* SetHardState saves the current HardState.
 
@@ -6934,7 +6934,7 @@ Definition MemoryStorage__SetHardState : val :=
       )));;;
     let: "$r0" := (![raftpb.HardState] "st") in
     do:  ((struct.field_ref MemoryStorage "hardState" (![ptrT] "ms")) <-[raftpb.HardState] "$r0");;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* Snapshot implements the Storage interface.
 
@@ -6950,7 +6950,7 @@ Definition MemoryStorage__Snapshot : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "snapshot" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "snapshot" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), interface.nil)).
+    return: (![raftpb.Snapshot] (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")), #interface.nil)).
 
 (* Term implements the Storage interface.
 
@@ -6977,7 +6977,7 @@ Definition MemoryStorage__Term : val :=
     slice.len "$a0")
     then return: (#(W64 0), ![error] "ErrUnavailable")
     else do:  #());;;
-    return: (![uint64T] (struct.field_ref raftpb.Entry "Term" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) ((![uint64T] "i") - (![uint64T] "offset")))), interface.nil)).
+    return: (![uint64T] (struct.field_ref raftpb.Entry "Term" (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) ((![uint64T] "i") - (![uint64T] "offset")))), #interface.nil)).
 
 Definition MemoryStorage__mset_ptr : list (string * val) := [
   ("Append", MemoryStorage__Append%V);
@@ -7038,7 +7038,7 @@ Definition entsWithConfig : val :=
     let: "$a3" := (interface.make MemoryStorage__mset_ptr (![ptrT] "storage")) in
     newTestConfig "$a0" "$a1" "$a2" "$a3") in
     do:  ("cfg" <-[ptrT] "$r0");;;
-    (if: (![funcT] "configFunc") ≠ go_nil
+    (if: (![funcT] "configFunc") ≠ #func.nil
     then
       do:  (let: "$a0" := (![ptrT] "cfg") in
       (![funcT] "configFunc") "$a0")
@@ -7060,7 +7060,7 @@ Definition blackHole__Step : val :=
   rec: "blackHole__Step" <> "" :=
     exception_do (let: <> := (ref_ty blackHole "_") in
     let: "" := (ref_ty raftpb.Message "") in
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 (* go: raft2.go:39:18 *)
 Definition blackHole__advanceMessagesAfterAppend : val :=
@@ -7072,7 +7072,7 @@ Definition blackHole__advanceMessagesAfterAppend : val :=
 Definition blackHole__readMessages : val :=
   rec: "blackHole__readMessages" <> <> :=
     exception_do (let: <> := (ref_ty blackHole "_") in
-    return: (slice.nil)).
+    return: (#slice.nil)).
 
 Definition blackHole__mset : list (string * val) := [
   ("Step", blackHole__Step%V);
@@ -7139,7 +7139,7 @@ Definition network__filter : val :=
       let: "$sw" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
       (if: "$sw" = raftpb.MsgHup
       then
-        do:  (let: "$a0" := (interface.make string__mset #(str "unexpected msgHup")) in
+        do:  (let: "$a0" := (interface.make string__mset #"unexpected msgHup") in
         Panic "$a0")
       else
         let: "perc64" := (ref_ty uint64T (zero_val uint64T)) in
@@ -7154,7 +7154,7 @@ Definition network__filter : val :=
         (if: (![uint64T] "n") < (![uint64T] "perc64")
         then continue: #()
         else do:  #())));;;
-      (if: (![funcT] (struct.field_ref network "msgHook" (![ptrT] "nw"))) ≠ go_nil
+      (if: (![funcT] (struct.field_ref network "msgHook" (![ptrT] "nw"))) ≠ #func.nil
       then
         (if: (~ (let: "$a0" := (![raftpb.Message] "m") in
         (![funcT] (struct.field_ref network "msgHook" (![ptrT] "nw"))) "$a0"))
@@ -7174,7 +7174,7 @@ Definition EntryFormatter : go_type := funcT.
 Definition DescribeConfState : val :=
   rec: "DescribeConfState" "state" :=
     exception_do (let: "state" := (ref_ty raftpb.ConfState "state") in
-    return: (let: "$a0" := #(str "Voters:%v VotersOutgoing:%v Learners:%v LearnersNext:%v AutoLeave:%v") in
+    return: (let: "$a0" := #"Voters:%v VotersOutgoing:%v Learners:%v LearnersNext:%v AutoLeave:%v" in
      let: "$a1" := ((let: "$sl0" := (interface.make slice__mset (![sliceT uint64T] (struct.field_ref raftpb.ConfState "Voters" "state"))) in
      let: "$sl1" := (interface.make slice__mset (![sliceT uint64T] (struct.field_ref raftpb.ConfState "VotersOutgoing" "state"))) in
      let: "$sl2" := (interface.make slice__mset (![sliceT uint64T] (struct.field_ref raftpb.ConfState "Learners" "state"))) in
@@ -7190,7 +7190,7 @@ Definition DescribeSnapshot : val :=
     let: "m" := (ref_ty raftpb.SnapshotMetadata (zero_val raftpb.SnapshotMetadata)) in
     let: "$r0" := (![raftpb.SnapshotMetadata] (struct.field_ref raftpb.Snapshot "Metadata" "snap")) in
     do:  ("m" <-[raftpb.SnapshotMetadata] "$r0");;;
-    return: (let: "$a0" := #(str "Index:%d Term:%d ConfState:%s") in
+    return: (let: "$a0" := #"Index:%d Term:%d ConfState:%s" in
      let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" "m"))) in
      let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Term" "m"))) in
      let: "$sl2" := (interface.make string__mset (let: "$a0" := (![raftpb.ConfState] (struct.field_ref raftpb.SnapshotMetadata "ConfState" "m")) in
@@ -7206,11 +7206,11 @@ Definition DescribeEntry : val :=
   rec: "DescribeEntry" "e" "f" :=
     exception_do (let: "f" := (ref_ty EntryFormatter "f") in
     let: "e" := (ref_ty raftpb.Entry "e") in
-    (if: (![EntryFormatter] "f") = go_nil
+    (if: (![EntryFormatter] "f") = #func.nil
     then
       let: "$r0" := (λ: "data",
         exception_do (let: "data" := (ref_ty (sliceT byteT) "data") in
-        return: (let: "$a0" := #(str "%q") in
+        return: (let: "$a0" := #"%q" in
          let: "$a1" := ((let: "$sl0" := (interface.make slice__mset (![sliceT byteT] "data")) in
          slice.literal interfaceT ["$sl0"])) in
          fmt.Sprintf "$a0" "$a1"))
@@ -7239,7 +7239,7 @@ Definition DescribeEntry : val :=
         let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" "e")) in
         (raftpb.ConfChange__Unmarshal "cc") "$a0") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ interface.nil
+        (if: (![error] "err") ≠ #interface.nil
         then
           let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
           do:  ("formatted" <-[stringT] "$r0")
@@ -7255,7 +7255,7 @@ Definition DescribeEntry : val :=
           let: "$r0" := (let: "$a0" := (![sliceT byteT] (struct.field_ref raftpb.Entry "Data" "e")) in
           (raftpb.ConfChangeV2__Unmarshal "cc") "$a0") in
           do:  ("err" <-[error] "$r0");;;
-          (if: (![error] "err") ≠ interface.nil
+          (if: (![error] "err") ≠ #interface.nil
           then
             let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
             do:  ("formatted" <-[stringT] "$r0")
@@ -7264,12 +7264,12 @@ Definition DescribeEntry : val :=
             (![funcT] "formatConfChange") "$a0") in
             do:  ("formatted" <-[stringT] "$r0")))
         else #())));;;
-    (if: (![stringT] "formatted") ≠ #(str "")
+    (if: (![stringT] "formatted") ≠ #""
     then
-      let: "$r0" := (#(str " ") + (![stringT] "formatted")) in
+      let: "$r0" := (#" " + (![stringT] "formatted")) in
       do:  ("formatted" <-[stringT] "$r0")
     else do:  #());;;
-    return: (let: "$a0" := #(str "%d/%d %s%s") in
+    return: (let: "$a0" := #"%d/%d %s%s" in
      let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Entry "Term" "e"))) in
      let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Entry "Index" "e"))) in
      let: "$sl2" := (interface.make raftpb.EntryType__mset (![raftpb.EntryType] (struct.field_ref raftpb.Entry "Type" "e"))) in
@@ -7283,15 +7283,15 @@ Definition describeTarget : val :=
     exception_do (let: "id" := (ref_ty uint64T "id") in
     let: "$sw" := (![uint64T] "id") in
     (if: "$sw" = None
-    then return: (#(str "None"))
+    then return: (#"None")
     else
       (if: "$sw" = LocalAppendThread
-      then return: (#(str "AppendThread"))
+      then return: (#"AppendThread")
       else
         (if: "$sw" = LocalApplyThread
-        then return: (#(str "ApplyThread"))
+        then return: (#"ApplyThread")
         else
-          return: (let: "$a0" := #(str "%x") in
+          return: (let: "$a0" := #"%x" in
            let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "id")) in
            slice.literal interfaceT ["$sl0"])) in
            fmt.Sprintf "$a0" "$a1"))))).
@@ -7304,7 +7304,7 @@ Definition describeMessageWithIndent : val :=
     let: "indent" := (ref_ty stringT "indent") in
     let: "buf" := (ref_ty bytes.Buffer (zero_val bytes.Buffer)) in
     do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-    let: "$a1" := #(str "%s%s->%s %v Term:%d Log:%d/%d") in
+    let: "$a1" := #"%s%s->%s %v Term:%d Log:%d/%d" in
     let: "$a2" := ((let: "$sl0" := (interface.make string__mset (![stringT] "indent")) in
     let: "$sl1" := (interface.make string__mset (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
     describeTarget "$a0")) in
@@ -7319,7 +7319,7 @@ Definition describeMessageWithIndent : val :=
     (if: ![boolT] (struct.field_ref raftpb.Message "Reject" "m")
     then
       do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-      let: "$a1" := #(str " Rejected (Hint: %d)") in
+      let: "$a1" := #" Rejected (Hint: %d)" in
       let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "RejectHint" "m"))) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")
@@ -7327,7 +7327,7 @@ Definition describeMessageWithIndent : val :=
     (if: (![uint64T] (struct.field_ref raftpb.Message "Commit" "m")) ≠ #(W64 0)
     then
       do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-      let: "$a1" := #(str " Commit:%d") in
+      let: "$a1" := #" Commit:%d" in
       let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "Commit" "m"))) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")
@@ -7335,7 +7335,7 @@ Definition describeMessageWithIndent : val :=
     (if: (![uint64T] (struct.field_ref raftpb.Message "Vote" "m")) ≠ #(W64 0)
     then
       do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-      let: "$a1" := #(str " Vote:%d") in
+      let: "$a1" := #" Vote:%d" in
       let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.Message "Vote" "m"))) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")
@@ -7347,7 +7347,7 @@ Definition describeMessageWithIndent : val :=
     (if: (![intT] "ln") = #(W64 1)
     then
       do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-      let: "$a1" := #(str " Entries:[%s]") in
+      let: "$a1" := #" Entries:[%s]" in
       let: "$a2" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![raftpb.Entry] (slice.elem_ref raftpb.Entry (![sliceT raftpb.Entry] (struct.field_ref raftpb.Message "Entries" "m")) #(W64 0))) in
       let: "$a1" := (![EntryFormatter] "f") in
       DescribeEntry "$a0" "$a1")) in
@@ -7357,15 +7357,15 @@ Definition describeMessageWithIndent : val :=
       (if: int_gt (![intT] "ln") #(W64 1)
       then
         do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-        let: "$a1" := ((let: "$sl0" := (interface.make string__mset #(str " Entries:[")) in
+        let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" Entries:[") in
         slice.literal interfaceT ["$sl0"])) in
         fmt.Fprint "$a0" "$a1");;;
         do:  (let: "$range" := (![sliceT raftpb.Entry] (struct.field_ref raftpb.Message "Entries" "m")) in
         slice.for_range raftpb.Entry "$range" (λ: <> "e",
           let: "e" := ref_ty raftpb.Entry "e" in
           do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-          let: "$a1" := #(str "
-          %s  ") in
+          let: "$a1" := #"
+          %s  " in
           let: "$a2" := ((let: "$sl0" := (interface.make string__mset (![stringT] "indent")) in
           slice.literal interfaceT ["$sl0"])) in
           fmt.Fprintf "$a0" "$a1" "$a2");;;
@@ -7374,8 +7374,8 @@ Definition describeMessageWithIndent : val :=
           DescribeEntry "$a0" "$a1") in
           (bytes.Buffer__WriteString "buf") "$a0")));;;
         do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-        let: "$a1" := #(str "
-        %s]") in
+        let: "$a1" := #"
+        %s]" in
         let: "$a2" := ((let: "$sl0" := (interface.make string__mset (![stringT] "indent")) in
         slice.literal interfaceT ["$sl0"])) in
         fmt.Fprintf "$a0" "$a1" "$a2")
@@ -7387,8 +7387,8 @@ Definition describeMessageWithIndent : val :=
     IsEmptySnap "$a0"))
     then
       do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-      let: "$a1" := #(str "
-      %s  Snapshot: %s") in
+      let: "$a1" := #"
+      %s  Snapshot: %s" in
       let: "$a2" := ((let: "$sl0" := (interface.make string__mset (![stringT] "indent")) in
       let: "$sl1" := (interface.make string__mset (let: "$a0" := (![raftpb.Snapshot] (![ptrT] "s")) in
       DescribeSnapshot "$a0")) in
@@ -7399,23 +7399,23 @@ Definition describeMessageWithIndent : val :=
     slice.len "$a0") #(W64 0)
     then
       do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-      let: "$a1" := #(str " Responses:[") in
-      let: "$a2" := slice.nil in
+      let: "$a1" := #" Responses:[" in
+      let: "$a2" := #slice.nil in
       fmt.Fprintf "$a0" "$a1" "$a2");;;
       do:  (let: "$range" := (![sliceT raftpb.Message] (struct.field_ref raftpb.Message "Responses" "m")) in
       slice.for_range raftpb.Message "$range" (λ: <> "m",
         let: "m" := ref_ty raftpb.Message "m" in
-        do:  (let: "$a0" := #(str "
-        ") in
+        do:  (let: "$a0" := #"
+        " in
         (bytes.Buffer__WriteString "buf") "$a0");;;
-        do:  (let: "$a0" := (let: "$a0" := ((![stringT] "indent") + #(str "  ")) in
+        do:  (let: "$a0" := (let: "$a0" := ((![stringT] "indent") + #"  ") in
         let: "$a1" := (![raftpb.Message] "m") in
         let: "$a2" := (![EntryFormatter] "f") in
         "describeMessageWithIndent" "$a0" "$a1" "$a2") in
         (bytes.Buffer__WriteString "buf") "$a0")));;;
       do:  (let: "$a0" := (interface.make bytes.Buffer__mset_ptr "buf") in
-      let: "$a1" := #(str "
-      %s]") in
+      let: "$a1" := #"
+      %s]" in
       let: "$a2" := ((let: "$sl0" := (interface.make string__mset (![stringT] "indent")) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")
@@ -7430,7 +7430,7 @@ Definition DescribeMessage : val :=
   rec: "DescribeMessage" "m" "f" :=
     exception_do (let: "f" := (ref_ty EntryFormatter "f") in
     let: "m" := (ref_ty raftpb.Message "m") in
-    return: (let: "$a0" := #(str "") in
+    return: (let: "$a0" := #"" in
      let: "$a1" := (![raftpb.Message] "m") in
      let: "$a2" := (![EntryFormatter] "f") in
      describeMessageWithIndent "$a0" "$a1" "$a2")).
@@ -7451,7 +7451,7 @@ Definition network__send : val :=
       (if: (![ptrT] (struct.field_ref network "t" (![ptrT] "nw"))) ≠ #null
       then
         do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![raftpb.Message] "m") in
-        let: "$a1" := go_nil in
+        let: "$a1" := #func.nil in
         DescribeMessage "$a0" "$a1")) in
         slice.literal interfaceT ["$sl0"])) in
         (testing.common__Log (struct.field_ref testing.T "common" (![ptrT] (struct.field_ref network "t" (![ptrT] "nw"))))) "$a0")
@@ -7545,7 +7545,7 @@ Definition newNetworkWithConfigInit : val :=
       let: "id" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT uint64T] "peerAddrs") (![intT] "j"))) in
       do:  ("id" <-[uint64T] "$r0");;;
-      (if: (![stateMachine] "p") = interface.nil
+      (if: (![stateMachine] "p") = #interface.nil
       then
         let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![sliceT uint64T] "peerAddrs") in
         withPeers "$a0") in
@@ -7559,7 +7559,7 @@ Definition newNetworkWithConfigInit : val :=
         let: "$a3" := (interface.make MemoryStorage__mset_ptr (Fst (map.get (![mapT uint64T ptrT] "nstorage") (![uint64T] "id")))) in
         newTestConfig "$a0" "$a1" "$a2" "$a3") in
         do:  ("cfg" <-[ptrT] "$r0");;;
-        (if: (![funcT] "configFunc") ≠ go_nil
+        (if: (![funcT] "configFunc") ≠ #func.nil
         then
           do:  (let: "$a0" := (![ptrT] "cfg") in
           (![funcT] "configFunc") "$a0")
@@ -7620,9 +7620,9 @@ Definition testLeaderElection2 : val :=
     let: "tests" := (ref_ty (sliceT testLeaderElectionStruct) (zero_val (sliceT testLeaderElectionStruct))) in
     let: "$r0" := ((let: "$sl0" := (struct.make testLeaderElectionStruct [{
       "network" ::= let: "$a0" := (![funcT] "cfg") in
-      let: "$a1" := ((let: "$sl0" := interface.nil in
-      let: "$sl1" := interface.nil in
-      let: "$sl2" := interface.nil in
+      let: "$a1" := ((let: "$sl0" := #interface.nil in
+      let: "$sl1" := #interface.nil in
+      let: "$sl2" := #interface.nil in
       slice.literal stateMachine ["$sl0"; "$sl1"; "$sl2"])) in
       newNetworkWithConfigInit "$a0" "$a1";
       "state" ::= StateLeader;
@@ -7630,8 +7630,8 @@ Definition testLeaderElection2 : val :=
     }]) in
     let: "$sl1" := (struct.make testLeaderElectionStruct [{
       "network" ::= let: "$a0" := (![funcT] "cfg") in
-      let: "$a1" := ((let: "$sl0" := interface.nil in
-      let: "$sl1" := interface.nil in
+      let: "$a1" := ((let: "$sl0" := #interface.nil in
+      let: "$sl1" := #interface.nil in
       let: "$sl2" := (interface.make blackHole__mset_ptr (![ptrT] "nopStepper")) in
       slice.literal stateMachine ["$sl0"; "$sl1"; "$sl2"])) in
       newNetworkWithConfigInit "$a0" "$a1";
@@ -7640,7 +7640,7 @@ Definition testLeaderElection2 : val :=
     }]) in
     let: "$sl2" := (struct.make testLeaderElectionStruct [{
       "network" ::= let: "$a0" := (![funcT] "cfg") in
-      let: "$a1" := ((let: "$sl0" := interface.nil in
+      let: "$a1" := ((let: "$sl0" := #interface.nil in
       let: "$sl1" := (interface.make blackHole__mset_ptr (![ptrT] "nopStepper")) in
       let: "$sl2" := (interface.make blackHole__mset_ptr (![ptrT] "nopStepper")) in
       slice.literal stateMachine ["$sl0"; "$sl1"; "$sl2"])) in
@@ -7650,10 +7650,10 @@ Definition testLeaderElection2 : val :=
     }]) in
     let: "$sl3" := (struct.make testLeaderElectionStruct [{
       "network" ::= let: "$a0" := (![funcT] "cfg") in
-      let: "$a1" := ((let: "$sl0" := interface.nil in
+      let: "$a1" := ((let: "$sl0" := #interface.nil in
       let: "$sl1" := (interface.make blackHole__mset_ptr (![ptrT] "nopStepper")) in
       let: "$sl2" := (interface.make blackHole__mset_ptr (![ptrT] "nopStepper")) in
-      let: "$sl3" := interface.nil in
+      let: "$sl3" := #interface.nil in
       slice.literal stateMachine ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       newNetworkWithConfigInit "$a0" "$a1";
       "state" ::= ![StateType] "candState";
@@ -7661,11 +7661,11 @@ Definition testLeaderElection2 : val :=
     }]) in
     let: "$sl4" := (struct.make testLeaderElectionStruct [{
       "network" ::= let: "$a0" := (![funcT] "cfg") in
-      let: "$a1" := ((let: "$sl0" := interface.nil in
+      let: "$a1" := ((let: "$sl0" := #interface.nil in
       let: "$sl1" := (interface.make blackHole__mset_ptr (![ptrT] "nopStepper")) in
       let: "$sl2" := (interface.make blackHole__mset_ptr (![ptrT] "nopStepper")) in
-      let: "$sl3" := interface.nil in
-      let: "$sl4" := interface.nil in
+      let: "$sl3" := #interface.nil in
+      let: "$sl4" := #interface.nil in
       slice.literal stateMachine ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
       newNetworkWithConfigInit "$a0" "$a1";
       "state" ::= StateLeader;
@@ -7673,7 +7673,7 @@ Definition testLeaderElection2 : val :=
     }]) in
     let: "$sl5" := (struct.make testLeaderElectionStruct [{
       "network" ::= let: "$a0" := (![funcT] "cfg") in
-      let: "$a1" := ((let: "$sl0" := interface.nil in
+      let: "$a1" := ((let: "$sl0" := #interface.nil in
       let: "$sl1" := (interface.make raft__mset_ptr (let: "$a0" := (![funcT] "cfg") in
       let: "$a1" := ((let: "$sl0" := #(W64 1) in
       slice.literal uint64T ["$sl0"])) in
@@ -7687,7 +7687,7 @@ Definition testLeaderElection2 : val :=
       let: "$sl1" := #(W64 1) in
       slice.literal uint64T ["$sl0"; "$sl1"])) in
       entsWithConfig "$a0" "$a1")) in
-      let: "$sl4" := interface.nil in
+      let: "$sl4" := #interface.nil in
       slice.literal stateMachine ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
       newNetworkWithConfigInit "$a0" "$a1";
       "state" ::= StateFollower;
@@ -7712,14 +7712,14 @@ Definition testLeaderElection2 : val :=
       do:  (let: "$a0" := (interface.make testing.T__mset_ptr (![ptrT] "t")) in
       let: "$a1" := (interface.make StateType__mset (![StateType] (struct.field_ref testLeaderElectionStruct "state" "tt"))) in
       let: "$a2" := (interface.make StateType__mset (![StateType] (struct.field_ref raft "state" (![ptrT] "sm")))) in
-      let: "$a3" := ((let: "$sl0" := (interface.make string__mset #(str "#%d")) in
+      let: "$a3" := ((let: "$sl0" := (interface.make string__mset #"#%d") in
       let: "$sl1" := (interface.make int__mset (![intT] "i")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       assert.Equal "$a0" "$a1" "$a2" "$a3");;;
       do:  (let: "$a0" := (interface.make testing.T__mset_ptr (![ptrT] "t")) in
       let: "$a1" := (interface.make uint64__mset (![uint64T] (struct.field_ref testLeaderElectionStruct "expTerm" "tt"))) in
       let: "$a2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raft "Term" (![ptrT] "sm")))) in
-      let: "$a3" := ((let: "$sl0" := (interface.make string__mset #(str "#%d")) in
+      let: "$a3" := ((let: "$sl0" := (interface.make string__mset #"#%d") in
       let: "$sl1" := (interface.make int__mset (![intT] "i")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       assert.Equal "$a0" "$a1" "$a2" "$a3")))).
@@ -7808,7 +7808,7 @@ Definition RawNode__ProposeConfChange : val :=
     let: "$r1" := "$ret1" in
     do:  ("m" <-[raftpb.Message] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then return: (![error] "err")
     else do:  #());;;
     return: (let: "$a0" := (![raftpb.Message] "m") in
@@ -8056,7 +8056,7 @@ Definition Status__MarshalJSON : val :=
   rec: "Status__MarshalJSON" "s" <> :=
     exception_do (let: "s" := (ref_ty Status "s") in
     let: "j" := (ref_ty stringT (zero_val stringT)) in
-    let: "$r0" := (let: "$a0" := #(str "{""id"":""%x"",""term"":%d,""vote"":""%x"",""commit"":%d,""lead"":""%x"",""raftState"":%q,""applied"":%d,""progress"":{") in
+    let: "$r0" := (let: "$a0" := #"{""id"":""%x"",""term"":%d,""vote"":""%x"",""commit"":%d,""lead"":""%x"",""raftState"":%q,""applied"":%d,""progress"":{" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref BasicStatus "ID" (struct.field_ref Status "BasicStatus" "s")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Term" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "s"))))) in
     let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Vote" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "s"))))) in
@@ -8069,11 +8069,11 @@ Definition Status__MarshalJSON : val :=
     do:  ("j" <-[stringT] "$r0");;;
     (if: (let: "$a0" := (![mapT uint64T tracker.Progress] (struct.field_ref Status "Progress" "s")) in
     map.len "$a0") = #(W64 0)
-    then do:  ("j" <-[stringT] ((![stringT] "j") + #(str "},")))
+    then do:  ("j" <-[stringT] ((![stringT] "j") + #"},"))
     else
       do:  (map.for_range (![mapT uint64T tracker.Progress] (struct.field_ref Status "Progress" "s")) (λ: "k" "v",
         let: "subj" := (ref_ty stringT (zero_val stringT)) in
-        let: "$r0" := (let: "$a0" := #(str """%x"":{""match"":%d,""next"":%d,""state"":%q},") in
+        let: "$r0" := (let: "$a0" := #"""%x"":{""match"":%d,""next"":%d,""state"":%q}," in
         let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "k")) in
         let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref tracker.Progress "Match" "v"))) in
         let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref tracker.Progress "Next" "v"))) in
@@ -8084,13 +8084,13 @@ Definition Status__MarshalJSON : val :=
         do:  ("j" <-[stringT] ((![stringT] "j") + (![stringT] "subj")))));;;
       let: "$r0" := ((string.from_bytes (let: "$s" := (string.to_bytes (![stringT] "j")) in
       slice.slice byteT "$s" #(W64 0) ((let: "$a0" := (![stringT] "j") in
-      StringLength "$a0") - #(W64 1)))) + #(str "},")) in
+      StringLength "$a0") - #(W64 1)))) + #"},") in
       do:  ("j" <-[stringT] "$r0"));;;
-    do:  ("j" <-[stringT] ((![stringT] "j") + (let: "$a0" := #(str """leadtransferee"":""%x""}") in
+    do:  ("j" <-[stringT] ((![stringT] "j") + (let: "$a0" := #"""leadtransferee"":""%x""}" in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref BasicStatus "LeadTransferee" (struct.field_ref Status "BasicStatus" "s")))) in
     slice.literal interfaceT ["$sl0"])) in
     fmt.Sprintf "$a0" "$a1")));;;
-    return: (string.to_bytes (![stringT] "j"), interface.nil)).
+    return: (string.to_bytes (![stringT] "j"), #interface.nil)).
 
 (* go: status.go:99:17 *)
 Definition Status__String : val :=
@@ -8103,9 +8103,9 @@ Definition Status__String : val :=
     let: "$r1" := "$ret1" in
     do:  ("b" <-[sliceT byteT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ interface.nil
+    (if: (![error] "err") ≠ #interface.nil
     then
-      do:  (let: "$a0" := #(str "unexpected error: %v") in
+      do:  (let: "$a0" := #"unexpected error: %v" in
       let: "$a1" := ((let: "$sl0" := (![error] "err") in
       slice.literal interfaceT ["$sl0"])) in
       (interface.get "Panicf" (getLogger #())) "$a0" "$a1")
@@ -8275,7 +8275,7 @@ Definition logSlice__valid : val :=
       do:  ("id" <-[entryID] "$r0");;;
       (if: ((![uint64T] (struct.field_ref entryID "term" "id")) < (![uint64T] (struct.field_ref entryID "term" "prev"))) || ((![uint64T] (struct.field_ref entryID "index" "id")) ≠ ((![uint64T] (struct.field_ref entryID "index" "prev")) + #(W64 1)))
       then
-        return: (let: "$a0" := #(str "leader term %d: entries %+v and %+v not consistent") in
+        return: (let: "$a0" := #"leader term %d: entries %+v and %+v not consistent" in
          let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref logSlice "term" "s"))) in
          let: "$sl1" := (interface.make entryID__mset (![entryID] "prev")) in
          let: "$sl2" := (interface.make entryID__mset (![entryID] "id")) in
@@ -8286,13 +8286,13 @@ Definition logSlice__valid : val :=
       do:  ("prev" <-[entryID] "$r0")));;;
     (if: (![uint64T] (struct.field_ref logSlice "term" "s")) < (![uint64T] (struct.field_ref entryID "term" "prev"))
     then
-      return: (let: "$a0" := #(str "leader term %d: entry %+v has a newer term") in
+      return: (let: "$a0" := #"leader term %d: entry %+v has a newer term" in
        let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref logSlice "term" "s"))) in
        let: "$sl1" := (interface.make entryID__mset (![entryID] "prev")) in
        slice.literal interfaceT ["$sl0"; "$sl1"])) in
        fmt.Errorf "$a0" "$a1")
     else do:  #());;;
-    return: (interface.nil)).
+    return: (#interface.nil)).
 
 Definition logSlice__mset : list (string * val) := [
   ("lastEntryID", logSlice__lastEntryID%V);
@@ -8318,20 +8318,20 @@ Definition DescribeHardState : val :=
     exception_do (let: "hs" := (ref_ty raftpb.HardState "hs") in
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-    let: "$a1" := #(str "Term:%d") in
+    let: "$a1" := #"Term:%d" in
     let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Term" "hs"))) in
     slice.literal interfaceT ["$sl0"])) in
     fmt.Fprintf "$a0" "$a1" "$a2");;;
     (if: (![uint64T] (struct.field_ref raftpb.HardState "Vote" "hs")) ≠ #(W64 0)
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #(str " Vote:%d") in
+      let: "$a1" := #" Vote:%d" in
       let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Vote" "hs"))) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")
     else do:  #());;;
     do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-    let: "$a1" := #(str " Commit:%d") in
+    let: "$a1" := #" Commit:%d" in
     let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref raftpb.HardState "Commit" "hs"))) in
     slice.literal interfaceT ["$sl0"])) in
     fmt.Fprintf "$a0" "$a1" "$a2");;;
@@ -8341,7 +8341,7 @@ Definition DescribeHardState : val :=
 Definition DescribeSoftState : val :=
   rec: "DescribeSoftState" "ss" :=
     exception_do (let: "ss" := (ref_ty SoftState "ss") in
-    return: (let: "$a0" := #(str "Lead:%d State:%s") in
+    return: (let: "$a0" := #"Lead:%d State:%s" in
      let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref SoftState "Lead" "ss"))) in
      let: "$sl1" := (interface.make StateType__mset (![StateType] (struct.field_ref SoftState "RaftState" "ss"))) in
      slice.literal interfaceT ["$sl0"; "$sl1"])) in
@@ -8361,8 +8361,8 @@ Definition DescribeEntries : val :=
       let: "e" := ref_ty raftpb.Entry "e" in
       let: ("$ret0", "$ret1") := (let: "$a0" := ((let: "$a0" := (![raftpb.Entry] "e") in
       let: "$a1" := (![EntryFormatter] "f") in
-      DescribeEntry "$a0" "$a1") + #(str "
-      ")) in
+      DescribeEntry "$a0" "$a1") + #"
+      ") in
       (bytes.Buffer__WriteString "buf") "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -8390,7 +8390,7 @@ Definition DescribeReady : val :=
     IsEmptyHardState "$a0"))
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #(str "HardState %s") in
+      let: "$a1" := #"HardState %s" in
       let: "$a2" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![raftpb.HardState] (struct.field_ref Ready "HardState" "rd")) in
       DescribeHardState "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
@@ -8402,8 +8402,8 @@ Definition DescribeReady : val :=
     slice.len "$a0") #(W64 0)
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #(str "ReadStates %v
-      ") in
+      let: "$a1" := #"ReadStates %v
+      " in
       let: "$a2" := ((let: "$sl0" := (interface.make slice__mset (![sliceT ReadState] (struct.field_ref Ready "ReadStates" "rd"))) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")
@@ -8411,8 +8411,8 @@ Definition DescribeReady : val :=
     (if: int_gt (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref Ready "Entries" "rd")) in
     slice.len "$a0") #(W64 0)
     then
-      do:  (let: "$a0" := #(str "Entries:
-      ") in
+      do:  (let: "$a0" := #"Entries:
+      " in
       (strings.Builder__WriteString "buf") "$a0");;;
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref Ready "Entries" "rd")) in
@@ -8425,8 +8425,8 @@ Definition DescribeReady : val :=
     IsEmptySnap "$a0"))
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #(str "Snapshot %s
-      ") in
+      let: "$a1" := #"Snapshot %s
+      " in
       let: "$a2" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
       DescribeSnapshot "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
@@ -8435,8 +8435,8 @@ Definition DescribeReady : val :=
     (if: int_gt (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref Ready "CommittedEntries" "rd")) in
     slice.len "$a0") #(W64 0)
     then
-      do:  (let: "$a0" := #(str "CommittedEntries:
-      ") in
+      do:  (let: "$a0" := #"CommittedEntries:
+      " in
       (strings.Builder__WriteString "buf") "$a0");;;
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![sliceT raftpb.Entry] (struct.field_ref Ready "CommittedEntries" "rd")) in
@@ -8448,8 +8448,8 @@ Definition DescribeReady : val :=
     (if: int_gt (let: "$a0" := (![sliceT raftpb.Message] (struct.field_ref Ready "Messages" "rd")) in
     slice.len "$a0") #(W64 0)
     then
-      do:  (let: "$a0" := #(str "Messages:
-      ") in
+      do:  (let: "$a0" := #"Messages:
+      " in
       (strings.Builder__WriteString "buf") "$a0");;;
       do:  (let: "$range" := (![sliceT raftpb.Message] (struct.field_ref Ready "Messages" "rd")) in
       slice.for_range raftpb.Message "$range" (λ: <> "msg",
@@ -8465,14 +8465,14 @@ Definition DescribeReady : val :=
     else do:  #());;;
     (if: int_gt ((strings.Builder__Len "buf") #()) #(W64 0)
     then
-      return: (let: "$a0" := #(str "Ready MustSync=%t:
-       %s") in
+      return: (let: "$a0" := #"Ready MustSync=%t:
+       %s" in
        let: "$a1" := ((let: "$sl0" := (interface.make bool__mset (![boolT] (struct.field_ref Ready "MustSync" "rd"))) in
        let: "$sl1" := (interface.make string__mset ((strings.Builder__String "buf") #())) in
        slice.literal interfaceT ["$sl0"; "$sl1"])) in
        fmt.Sprintf "$a0" "$a1")
     else do:  #());;;
-    return: (#(str "<empty Ready>"))).
+    return: (#"<empty Ready>")).
 
 Definition EntryFormatter__mset : list (string * val) := [
 ].

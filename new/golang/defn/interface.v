@@ -5,8 +5,6 @@ Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition nil : val := interface_nil.
-
 Definition get (f : string) : val :=
   λ: "v",
     let: "v" := (match: "v" with InjL "v" => "v" | InjR <> => #() end) in

@@ -5,7 +5,6 @@ Module slice.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition nil : val := slice_nil.
 Definition ptr : val := λ: "s",
                           let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
                           Fst (Fst "s").

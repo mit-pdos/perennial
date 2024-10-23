@@ -381,7 +381,7 @@ Definition MakeClient : val :=
     do:  ("cl" <-[ptrT] "$r1");;;
     (if: (![uint64T] "err") ≠ #(W64 0)
     then
-      do:  (let: "$a0" := #(str "Unable to connect to %s") in
+      do:  (let: "$a0" := #"Unable to connect to %s" in
       let: "$a1" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![uint64T] "host_name") in
       grove_ffi.AddressToStr "$a0")) in
       slice.literal interfaceT ["$sl0"])) in

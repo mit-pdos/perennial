@@ -13,7 +13,7 @@ Section defn.
   Local Definition to_bytes_aux: val :=
     (rec: "to_bytes" "i" "s" :=
        if: (Var "i") = #(W64 0)
-       then slice.nil
+       then #slice.nil
        else
          let: "j" := "i" - #(W64 1) in
          (slice.append byteT ("to_bytes" "j" "s") (StringGet "s" "j")))
