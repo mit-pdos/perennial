@@ -155,20 +155,6 @@ Tactic Notation "wp_pure" := wp_pure1_maybe_lc (None : option string) ltac:(fun 
 Tactic Notation "wp_pure_filter" open_constr(efoc) :=
   wp_pure1_maybe_lc (None : option string) ltac:(fun e' => unify e' efoc).
 
-Ltac wp_pure_steps1 :=
-  lazymatch goal with
-  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
-      reshape_expr e ltac:(fun K e' =>
-        eapply (tac_wp_pure_wp K e');
-          [tc_solve (* PureWp *)
-          |try solve_vals_compare_safe (* pure side condition *)
-          |tc_solve (* MaybeIntoLaterNEnvs *)
-          |wp_finish (* new goal *)
-          ]
-      ) || fail "wp_pure_steps: cannot find redex pattern"
-  | _ => fail "wp_pure_steps1: not a 'wp'"
-  end.
-
 Ltac wp_pures :=
   iStartProof;
   lazymatch goal with
@@ -177,7 +163,7 @@ Ltac wp_pures :=
       (* The `;[]` makes sure that no side-condition magically spawns. *)
       (* TODO: do this in one go, without [repeat]. *)
       (* XXX: what did the above comment mean? *)
-      repeat (first [ wp_pure | wp_pure_steps1 ]; [])
+      repeat (wp_pure; [])
   end.
 
 (** Unlike [wp_pures], the tactic [wp_rec] should also reduce
