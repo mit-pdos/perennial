@@ -78,4 +78,75 @@ Lemma wp_newAuditor :
   }}}.
 Proof. Admitted.
 
+Lemma wp_Auditor__Update a ptr_upd upd :
+  {{{
+        "#Hvalid" ∷ Auditor.valid a ∗
+        "Hupdate" ∷ UpdateProof.own ptr_upd upd
+  }}}
+  Auditor__Update #a #ptr_upd
+  {{{
+        (e : bool), RET #e; True
+  }}}.
+Proof.
+  iIntros (?) "H HΦ". iNamed "H".
+  iNamed "Hvalid".
+  wp_rec. wp_pures.
+  wp_loadField.
+  wp_apply (wp_Mutex__Lock with "[$]").
+  iIntros "[Hlock Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
+  iNamed "Hupdate".
+  admit. (* TODO: fill in UpdateProof.own *)
+Admitted.
+
+Lemma wp_Auditor__Get a (epoch : u64) :
+  {{{
+        "#Hvalid" ∷ Auditor.valid a
+  }}}
+  Auditor__Get #a #epoch
+  {{{
+        (b : bool) (p : loc) o, RET (#p, #b); AdtrEpochInfo.own p o
+  }}}.
+Proof.
+  iIntros (?) "H HΦ". iNamed "H".
+  iNamed "Hvalid".
+  wp_rec. wp_pures.
+  wp_loadField.
+  wp_apply (wp_Mutex__Lock with "[$]").
+  iIntros "[Hlock Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_if_destruct.
+  -  wp_loadField.
+     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+     { iFrame "HmuR ∗#%". }
+     wp_pures.
+     wp_apply wp_allocStruct.
+     { val_ty. }
+     iIntros (?) "?".
+     wp_pures.
+     iApply "HΦ".
+     admit. (* TODO: fill in AdtrEpochInfo.own *)
+  - wp_loadField.
+    iDestruct (own_slice_small_sz with "Hsl_hist") as %Hsz.
+    unshelve epose proof (list_lookup_lt ptrs_hist (uint.nat epoch) ltac:(word)) as [? Hlookup].
+    wp_apply (wp_SliceGet with "[$Hsl_hist //]").
+    iIntros "Hsl".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "HmuR ∗#%". }
+    wp_pures.
+    iApply "HΦ".
+    (* FIXME: make Hown_hist have persistent ownership of AdtrEpochInfo *)
+    admit.
+Admitted.
+
 End specs.
