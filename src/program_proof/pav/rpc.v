@@ -16,9 +16,9 @@ Lemma wp_newRpcServer ptr_serv serv :
   }}}.
 Proof. Admitted.
 
-Lemma wp_newRpcAuditor ptr_adtr adtr :
+Lemma wp_newRpcAuditor ptr_adtr :
   {{{
-    "Hown_adtr" ∷ Auditor.own ptr_adtr adtr
+    "Hown_adtr" ∷ Auditor.valid ptr_adtr
   }}}
   newRpcAuditor #ptr_adtr
   {{{

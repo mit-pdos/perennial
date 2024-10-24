@@ -77,8 +77,8 @@ Proof.
     "%Hlen_adtrPks" ∷ ⌜ length doneV = length dim0_adtrPks ⌝)%I
     with "[] [$Hsl_adtrAddrs Hptr_adtrPks]").
   { clear. iIntros "* _". iIntros (Φ) "!>". iIntros "(%&%&%&H) HΦ". iNamed "H".
-    wp_apply (wp_newAuditor with "Hsl_sigPk"). iIntros "*". iNamed 1.
-    wp_apply (wp_newRpcAuditor with "[$Hown_adtr]"). iIntros "*". iNamed 1.
+    wp_apply wp_newAuditor. iIntros "*". iNamed 1.
+    wp_apply (wp_newRpcAuditor with "[$Hvalid_adtr]"). iIntros "*". iNamed 1.
     wp_apply (wp_Server__Serve with "Hown_rpcserv").
     wp_load. wp_apply (wp_SliceAppend with "Hsl_adtrPks"). iIntros "* Hsl_adtrPks".
     wp_store. iApply "HΦ". iFrame.

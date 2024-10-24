@@ -31,27 +31,17 @@ Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
 End inv.
 
 Module Auditor.
-Record t :=
-  mk {
-    mu: loc;
-    γ: gname;
-    serv_γ: gname;
-    sl_sk: Slice.t;
-    serv_pk: list w8;
-  }.
 
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ pk sl_serv_pk key_maps ptr_map last_map sl_hist ptrs_hist hist,
+(* This representation predicate existentially hides the state of the auditor. *)
+Definition own (ptr : loc) : iProp Σ :=
+  ∃ γ pk key_maps ptr_map last_map sl_sk sl_hist ptrs_hist hist,
   (* keys. *)
-  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val obj.(sl_sk)) ∗
-  "Hown_sk" ∷ own_sk obj.(sl_sk) pk (adtr_sigpred obj.(γ)) ∗
-  "#Hptr_servPk" ∷ ptr ↦[Auditor :: "servSigPk"]□ (slice_val sl_serv_pk) ∗
-  "#Hsl_servPk" ∷ own_slice_small sl_serv_pk byteT DfracDiscarded obj.(serv_pk) ∗
-  "#His_servPk" ∷ is_pk obj.(serv_pk) (serv_sigpred obj.(serv_γ)) ∗
+  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val sl_sk) ∗
+  "Hown_sk" ∷ own_sk sl_sk pk (adtr_sigpred γ) ∗
   (* maps. *)
-  "Hmaps" ∷ mono_list_auth_own obj.(γ) 1 key_maps ∗
+  "Hmaps" ∷ mono_list_auth_own γ 1 key_maps ∗
   "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝ ∗
   (* merkle tree. *)
   "Hown_map" ∷ own_merkle ptr_map (lower_adtr last_map) ∗
@@ -65,24 +55,27 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "#Hdigs_hist" ∷ ([∗ list] m;info ∈ key_maps;hist,
     is_dig (lower_adtr m) info.(AdtrEpochInfo.Dig)).
 
-Definition valid (ptr : loc) (obj : t) : iProp Σ :=
-  "#Hptr_mu" ∷ ptr ↦[Auditor :: "mu"]□ #obj.(mu) ∗
-  "#HmuR" ∷ is_lock nroot #obj.(mu) (own ptr obj).
+Definition valid (ptr : loc) : iProp Σ :=
+  ∃ (mu : loc),
+  "#Hptr_mu" ∷ ptr ↦[Auditor :: "mu"]□ #mu ∗
+  "#HmuR" ∷ is_lock nroot #mu (own ptr).
 End defs.
 End Auditor.
 
 Section specs.
 Context `{!heapGS Σ, !pavG Σ}.
-Lemma wp_newAuditor sl_servPk (servPk : list w8) :
+
+Lemma wp_newAuditor :
   {{{
-    "#Hsl_servPk" ∷ own_slice_small sl_servPk byteT DfracDiscarded servPk
+        True
   }}}
-  newAuditor (slice_val sl_servPk)
+  newAuditor #()
   {{{
-    ptr_adtr (adtr : Auditor.t) sl_adtrPk adtrPk adtr_γ, RET (#ptr_adtr, slice_val sl_adtrPk);
-    "Hown_adtr" ∷ Auditor.own ptr_adtr adtr ∗
+    ptr_adtr sl_adtrPk adtrPk adtr_γ, RET (#ptr_adtr, slice_val sl_adtrPk);
+    "Hvalid_adtr" ∷ Auditor.valid ptr_adtr ∗
     "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
     "#His_adtrPk" ∷ is_pk adtrPk (adtr_sigpred adtr_γ)
   }}}.
 Proof. Admitted.
+
 End specs.
