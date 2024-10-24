@@ -152,10 +152,27 @@ Proof using Type*.
   iRename "Hptr_cli_al" into "Hptr0". iRename "Hptr_cli_bob" into "Hptr1".
   iDestruct "H0" as (?) "H0". iNamed "H0". iNamedSuffix "Hown_al" "_al".
   iDestruct "H1" as (?) "H1". iNamed "H1". iNamedSuffix "Hown_bob" "_bob".
-  Search struct_field_pointsto.
   iDestruct (struct_field_pointsto_agree with "Hptr0 Hptr_cli_al") as %->.
   iDestruct (struct_field_pointsto_agree with "Hptr1 Hptr_cli_bob") as %->.
   iClear "His_wg Hptr0 Hptr1".
+
+  wp_loadField. wp_apply (wp_Client__SelfMon with "Hown_cli_al").
+  iIntros (selfMonEp ? err) "H /=". iNamedSuffix "H" "_al".
+  wp_loadField. iClear "Herr_al".
+  destruct err.(clientErr.err). { wp_apply wp_Assume_false. }
+  wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_al".
+  wp_loadField. wp_apply wp_Assume. iIntros "%Hlt_ep".
+  do 2 wp_loadField. wp_apply (wp_updAdtrsAll with "Hsl_adtrAddrs").
+  do 3 wp_loadField.
+  iDestruct (big_sepL2_length with "Hdim0_adtrPks") as %Hlen0.
+  wp_apply (wp_doAudits with "[$Hown_cli_al $Hsl_adtrAddrs $Hsl_adtrPks $Hdim0_adtrPks]").
+  { iPureIntro. lia. }
+  iNamedSuffix 1 "_al". do 3 wp_loadField.
+  wp_apply (wp_doAudits with "[$Hown_cli_bob $Hsl_adtrAddrs $Hsl_adtrPks $Hdim0_adtrPks]").
+  { iPureIntro. lia. }
+  iNamedSuffix 1 "_bob". do 2 wp_loadField.
+
+
 Admitted.
 
 End proof.

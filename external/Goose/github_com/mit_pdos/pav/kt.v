@@ -1941,11 +1941,11 @@ Definition testAll: val :=
     updAdtrsAll (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "adtrAddrs" "setup");;
     doAudits (struct.loadF alice "cli" "alice") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
     doAudits (struct.loadF bob "cli" "bob") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
-    let: ("isReg", "aliceKey") := GetHist (struct.loadF alice "hist" "alice") (struct.loadF bob "epoch" "bob") in
+    let: ("isReg", "alicePk") := GetHist (struct.loadF alice "hist" "alice") (struct.loadF bob "epoch" "bob") in
     control.impl.Assert ("isReg" = (struct.loadF bob "isReg" "bob"));;
     (if: "isReg"
     then
-      control.impl.Assert (std.BytesEqual "aliceKey" (struct.loadF bob "alicePk" "bob"));;
+      control.impl.Assert (std.BytesEqual "alicePk" (struct.loadF bob "alicePk" "bob"));;
       #()
     else #()).
 

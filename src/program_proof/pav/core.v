@@ -47,6 +47,7 @@ Section msv.
 (* maximum sequence of versions. *)
 
 Definition msv_aux (m : fake_map_ty) uid vals :=
+  (* TODO: change to know elem exists there. *)
   (∀ i, i < length vals → m !! (uid, i) = vals !! i).
 
 Definition msv m uid vals :=
@@ -123,9 +124,9 @@ Qed.
 
 End msv.
 
-Section ts_msv.
+Section hist_msv.
 
-(* timeseries and its interaction with msv. *)
+(* history and its interaction with msv. *)
 
 Definition lower_adtr (m : map_adtr_ty) : merkle_map_ty :=
   (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
@@ -149,81 +150,60 @@ Definition maps_epoch_ok (ms : list map_adtr_ty) :=
 
 Definition adtr_inv ms := maps_mono (lower_adtr <$> ms) ∧ maps_epoch_ok ms.
 
-Record ts_ty :=
-  mk_ts {
-    entries: list (fake_epoch_ty * pk_ty);
-    bound: fake_epoch_ty;
+(* tmp duplicate adtr invs that use the same map type as below. *)
+Definition maps_mono' (ms : list fake_map_ty) :=
+  ∀ i j mi mj,
+  ms !! i = Some mi →
+  ms !! j = Some mj →
+  i ≤ j →
+  mi ⊆ mj.
+
+Definition maps_epoch_ok' (ms : list fake_map_ty) :=
+  ∃ ep m_ep uid ver ep' val,
+  ms !! ep = Some m_ep →
+  m_ep !! (uid, ver) = Some (ep', val) →
+  ep' ≤ ep.
+
+Definition adtr_inv' ms := maps_mono' ms ∧ maps_epoch_ok' ms.
+
+Record hist_entry_ty :=
+  mk_hist_entry {
+    (* TODO: make msv only talk about latest val at some version.
+    this seems to more naturally capture what people care abt with KT.
+    and it'd allow us to only make visible the latest val and version here.
+    do this by proving new msv on top of old one. *)
+    vals: list (nat * list w8);
   }.
 
-(* ts_get fetches the seq of pk's through this ep. *)
-Definition ts_get ts ep := filter (λ x, x.1 ≤ ep) ts.(entries).
+Definition know_entry (uid : w64) (ep : nat) (entry : hist_entry_ty) (ms : list fake_map_ty) :=
+  (* vals exist in prior maps. *)
+  (∀ ver val, entry.(vals) !! ver = Some val →
+    (∃ prior m, prior ≤ ep ∧ ms !! prior = Some m ∧ m !! (uid, ver) = Some val)) ∧
+  (* next ver doesn't exist in some future map. *)
+  (∃ bound m, bound ≥ ep ∧ ms !! bound = Some m ∧ m !! (uid, length entry.(vals)) = None).
 
-Definition ts_epoch_mono (ts : ts_ty) :=
-  ∀ i j ep_i pk_i ep_j pk_j,
-  ts.(entries) !! i = Some (ep_i, pk_i) →
-  ts.(entries) !! j = Some (ep_j, pk_j) →
-  i < j →
-  ep_i < ep_j.
+Definition know_hist (uid : w64) (hist : list hist_entry_ty) (ms : list fake_map_ty) :=
+  (∀ ep entry, hist !! ep = Some entry → know_entry uid ep entry ms).
 
-Definition ts_bound_ok0 (ts : ts_ty) :=
-  ∀ i ep pk,
-  ts.(entries) !! i = Some (ep, pk) →
-  ep ≤ ts.(bound).
-
-Definition ts_bound_ok1 (ts : ts_ty) (ms : list fake_map_ty) :=
-  ts.(bound) < length ms.
-
-Definition ts_entry_know (ts : ts_ty) (ms : list fake_map_ty) uid :=
-  ∀ ver ep pk m,
-  ts.(entries) !! ver = Some (ep, pk) →
+Lemma hist_msv ms uid hist ep m entry :
+  adtr_inv' ms →
+  know_hist uid hist ms →
+  hist !! ep = Some entry →
   ms !! ep = Some m →
-  m !! (uid, ver) = Some (ep, pk) ∧ m !! (uid, S ver) = None.
-
-Definition ts_bound_know (ts : ts_ty) (ms : list fake_map_ty) uid :=
-  ∀ m,
-  ms !! ts.(bound) = Some m →
-  m !! (uid, length ts.(entries)) = None.
-
-(* maintained by client. *)
-Definition ts_inv ts ms uid :=
-  ts_epoch_mono ts ∧
-  ts_bound_ok0 ts ∧
-  ts_bound_ok1 ts ms ∧
-  ts_entry_know ts ms uid ∧
-  ts_bound_know ts ms uid.
-
-  (*
-Lemma ts_interp ts ms uid ep m :
-  ts_inv ts ms uid →
-  adtr_inv ms →
-  ms !! ep = Some m →
-  ep ≤ ts.(bound) →
-  msv m uid (ts_get ts ep).
+  msv m uid entry.(vals).
 Proof.
-  intros Hts Hadtr Hm_look Hbound. split.
-  (* ver memb. should come all from the ts_get entries. *)
-  - admit.
-  (* ver non-memb. the next ver is either in the TS or in the bound. *)
-  - destruct (decide (filter (λ x, ep < x.1) ts.(entries) = [])) as [Hbig|Hbig].
-    (* in the bound. *)
-    + destruct Hts as (_&_&Hok&_&Hknow).
-      list_elem ms (bound ts) as m_bnd; [done|].
-      ospecialize (Hknow m_bnd Hm_bnd_lookup).
-      assert (length (ts_get ts ep) = length (ts.(entries))) as ->.
-      { pose proof (filter_app_complement (λ x, ep < x.1) ts.(entries)) as H.
-        rewrite Hbig in H. list_simplifier. apply Permutation_length in H.
-        rewrite (list_filter_iff _ (λ x, x.1 ≤ ep)) in H; [done|lia]. }
-      destruct Hadtr as (Hmono&_).
-      ospecialize (Hmono _ _ _ _ Hm_look Hm_bnd_lookup Hbound).
-      by eapply lookup_weaken_None.
-    (* in the TS. *)
-    + eapply (proj2 (head_is_Some _)) in Hbig as [xlt Hbig].
-      destruct Hts as (_&_&_&Hent&_).
-      (* prove that next ver is head of remaining TS. *)
-      admit.
-  (* TODO: maybe better approach is defining ts_get as a recursive prefix,
-  then proving (with ts_inv) that it satisfies the list_filter prop. *)
-Admitted.
-  *)
+  intros Hadtr Hhist Hlook_entry Hlook_m. split.
+  - intros ver Hlook_ver.
+    specialize (Hhist _ _ Hlook_entry) as [Hhist _].
+    list_elem entry.(vals) ver as val.
+    specialize (Hhist _ _ Hval_lookup) as (?&?&?&Hlook_prior&Hlook_mprior).
+    opose proof ((proj1 Hadtr) _ _ _ _ Hlook_prior Hlook_m _); [lia|].
+    rewrite Hval_lookup.
+    by eapply lookup_weaken.
+  - specialize (Hhist _ _ Hlook_entry).
+    destruct Hhist as [_ (bound&mbound&Hlt_bound&Hlook_bound&Hlook_mbound)].
+    opose proof ((proj1 Hadtr) _ _ _ _ Hlook_m Hlook_bound _); [lia|].
+    by eapply lookup_weaken_None.
+Qed.
 
-End ts_msv.
+End hist_msv.
