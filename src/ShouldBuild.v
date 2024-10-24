@@ -104,7 +104,7 @@ From Perennial.program_proof.tutorial Require
 From Perennial.program_proof.cachekv Require proof.
 
 From New.code.go_etcd_io.raft Require v3.
-From New.proof Require asyncfile append_log marshal etcdraft.
+From New.proof Require asyncfile etcdraft.
 
 From New.code.github_com.goose_lang.goose.testdata.examples Require unittest semantics.
 
