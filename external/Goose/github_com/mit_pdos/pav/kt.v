@@ -15,7 +15,6 @@ Context `{ext_ty: ext_types}.
 Definition Auditor := struct.decl [
   "mu" :: ptrT;
   "sk" :: cryptoffi.PrivateKey;
-  "servSigPk" :: cryptoffi.PublicKey;
   "keyMap" :: ptrT;
   "histInfo" :: slice.T ptrT
 ].
@@ -120,21 +119,15 @@ Definition Auditor__Update: val :=
         "Dig" ::= "dig"
       ] in
       let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
-      let: "ok0" := cryptoffi.PublicKey__Verify (struct.loadF Auditor "servSigPk" "a") "preSigByt" (struct.loadF UpdateProof "Sig" "proof") in
-      (if: (~ "ok0")
-      then
-        Mutex__Unlock (struct.loadF Auditor "mu" "a");;
-        #true
-      else
-        let: "sig" := cryptoffi.PrivateKey__Sign (struct.loadF Auditor "sk" "a") "preSigByt" in
-        let: "newInfo" := struct.new AdtrEpochInfo [
-          "Dig" ::= "dig";
-          "ServSig" ::= struct.loadF UpdateProof "Sig" "proof";
-          "AdtrSig" ::= "sig"
-        ] in
-        struct.storeF Auditor "histInfo" "a" (SliceAppend ptrT (struct.loadF Auditor "histInfo" "a") "newInfo");;
-        Mutex__Unlock (struct.loadF Auditor "mu" "a");;
-        #false)).
+      let: "sig" := cryptoffi.PrivateKey__Sign (struct.loadF Auditor "sk" "a") "preSigByt" in
+      let: "newInfo" := struct.new AdtrEpochInfo [
+        "Dig" ::= "dig";
+        "ServSig" ::= struct.loadF UpdateProof "Sig" "proof";
+        "AdtrSig" ::= "sig"
+      ] in
+      struct.storeF Auditor "histInfo" "a" (SliceAppend ptrT (struct.loadF Auditor "histInfo" "a") "newInfo");;
+      Mutex__Unlock (struct.loadF Auditor "mu" "a");;
+      #false).
 
 (* Get returns the auditor's known link for a particular epoch,
    and errs on fail. *)
@@ -153,7 +146,7 @@ Definition Auditor__Get: val :=
       ("info", #false)).
 
 Definition newAuditor: val :=
-  rec: "newAuditor" "servPk" :=
+  rec: "newAuditor" <> :=
     let: "mu" := newMutex #() in
     let: ("pk", "sk") := cryptoffi.GenerateKey #() in
     let: "m" := struct.new merkle.Tree [
@@ -161,7 +154,6 @@ Definition newAuditor: val :=
     (struct.new Auditor [
        "mu" ::= "mu";
        "sk" ::= "sk";
-       "servSigPk" ::= "servPk";
        "keyMap" ::= "m"
      ], "pk").
 
@@ -1695,7 +1687,7 @@ Definition setup: val :=
     advrpc.Server__Serve "servRpc" "servAddr";;
     let: "adtrPks" := ref (zero_val (slice.T cryptoffi.PublicKey)) in
     ForSlice uint64T <> "adtrAddr" "adtrAddrs"
-      (let: ("adtr", "adtrPk") := newAuditor "servSigPk" in
+      (let: ("adtr", "adtrPk") := newAuditor #() in
       let: "adtrRpc" := newRpcAuditor "adtr" in
       advrpc.Server__Serve "adtrRpc" "adtrAddr";;
       "adtrPks" <-[slice.T cryptoffi.PublicKey] (SliceAppend cryptoffi.PublicKey (![slice.T cryptoffi.PublicKey] "adtrPks") "adtrPk"));;
