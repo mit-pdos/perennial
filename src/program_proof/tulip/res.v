@@ -58,6 +58,13 @@ Section res.
       Persistent (is_repl_hist_lb α key hist).
     Admitted.
 
+    Lemma repl_hist_big_agree {γ histm1 histm2} :
+      dom histm1 = dom histm2 ->
+      ([∗ map] k ↦ ts ∈ histm1, own_repl_hist_half γ k ts) -∗
+      ([∗ map] k ↦ ts ∈ histm2, own_repl_hist_half γ k ts) -∗
+      ⌜histm2 = histm1⌝.
+    Admitted.
+
     Lemma repl_hist_update {γ k h1} h2 :
       prefix h1 h2 ->
       own_repl_hist_half γ k h1 -∗

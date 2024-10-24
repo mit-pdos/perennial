@@ -64,3 +64,33 @@ Section lemmas.
   Qed.
 
 End lemmas.
+
+Section lemmas.
+  Context `{FinMapDom K M D}.
+  Context `{!LeibnizEquiv D}.
+
+  Lemma map_Forall2_forall
+    {A B : Type} (R : K → A → B → Prop) (m1 : M A) (m2 : M B) :
+    map_Forall2 R m1 m2 <->
+    (∀ k x y, m1 !! k = Some x -> m2 !! k = Some y -> R k x y) ∧ dom m1 = dom m2.
+  Proof.
+    split.
+    - intros Hm1m2.
+      split; last by eapply map_Forall2_dom_L.
+      intros k x y Hx Hy.
+      by eapply map_Forall2_lookup_Some.
+    - intros [HR Hdom] k.
+      destruct (m1 !! k) as [x |] eqn:Hm1, (m2 !! k) as [y |] eqn:Hm2.
+      + by apply Some_Forall2, HR.
+      + apply elem_of_dom_2 in Hm1.
+        apply not_elem_of_dom in Hm2.
+        rewrite Hdom in Hm1.
+        set_solver.
+      + apply elem_of_dom_2 in Hm2.
+        apply not_elem_of_dom in Hm1.
+        rewrite Hdom in Hm1.
+        set_solver.
+      + apply None_Forall2.
+  Qed.
+
+End lemmas.

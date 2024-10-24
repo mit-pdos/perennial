@@ -166,16 +166,37 @@ Section inv.
     Persistent (safe_txnst γ gid ts st).
   Proof. destruct st; apply _. Defined.
 
-  Definition safe_prep γ gid ts prep : iProp Σ :=
+  Definition safe_prepare γ gid ts prep : iProp Σ :=
     match prep with
     | true  => quorum_prepared γ gid ts ∗ quorum_validated γ gid ts
     | false => quorum_unprepared γ gid ts
     end.
 
   #[global]
-  Instance safe_prep_persistent γ gid ts p :
-    Persistent (safe_prep γ gid ts p).
+  Instance safe_prepare_persistent γ gid ts p :
+    Persistent (safe_prepare γ gid ts p).
   Proof. destruct p; apply _. Defined.
+
+  Definition safe_commit γ gid ts pwrs : iProp Σ :=
+    ∃ wrs, is_txn_committed γ ts wrs ∗
+           is_txn_wrs γ ts wrs ∗
+           ⌜pwrs = wrs_group gid wrs⌝ ∗
+           ⌜gid ∈ ptgroups (dom wrs)⌝.
+           (* ⌜valid_ts ts ∧ gid ∈ ptgroups (dom wrs)⌝. *)
+
+  Definition safe_abort γ ts : iProp Σ :=
+    is_txn_aborted γ ts ∧ ⌜valid_ts ts⌝.
+
+  Definition safe_submit γ gid c : iProp Σ :=
+    match c with
+    | CmdCommit ts pwrs => safe_commit γ gid ts pwrs
+    | CmdAbort ts => safe_abort γ ts
+    end.
+
+  #[global]
+  Instance safe_submit_persistent γ gid c :
+    Persistent (safe_submit γ gid c).
+  Proof. destruct c; apply _. Defined.
 
   Definition txnst_to_option_bool (st : txnst) :=
     match st with
@@ -193,7 +214,8 @@ Section inv.
       "Hhists"    ∷ ([∗ map] k ↦ h ∈ filter_group gid hists, own_repl_hist_half γ k h) ∗
       "Hlocks"    ∷ ([∗ map] k ↦ t ∈ filter_group gid tspreps, own_repl_ts_half γ k t) ∗
       "#Hsafestm" ∷ ([∗ map] ts ↦ st ∈ stm, safe_txnst γ gid ts st) ∗
-      "#Hsafepm"  ∷ ([∗ map] ts ↦ p ∈ pm, safe_prep γ gid ts p) ∗
+      "#Hsafepm"  ∷ ([∗ map] ts ↦ p ∈ pm, safe_prepare γ gid ts p) ∗
+      "#Hsafecp"  ∷ ([∗ set] c ∈ cpool, safe_submit γ gid c) ∗
       "%Hrsm"     ∷ ⌜apply_cmds log = State cm hists⌝ ∗
       "%Hdompm"   ∷ ⌜dom pm ⊆ dom stm⌝ ∗
       "%Hdomptsm" ∷ ⌜dom tspreps = keys_all⌝ ∗

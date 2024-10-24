@@ -574,8 +574,8 @@ Section inv.
       by iFrame "Hwrs Hpreped".
     }
     iClear "Hsafestm".
-    (* Re-establish [safe_prep] w.r.t. new prepare map. *)
-    iAssert ([∗ map] ts ↦ p ∈ <[ts := true]> pm, safe_prep γ gid ts p)%I as "Hsafepm'".
+    (* Re-establish [safe_prepare] w.r.t. new prepare map. *)
+    iAssert ([∗ map] ts ↦ p ∈ <[ts := true]> pm, safe_prepare γ gid ts p)%I as "Hsafepm'".
     { iApply big_sepM_insert_2; last done.
       iFrame "Hqv Hqp".
     }

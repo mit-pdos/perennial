@@ -276,13 +276,15 @@ Section release.
     by destruct (tss !! key) as [t |] eqn:Ht.
   Qed.
 
-  Lemma release_modified {wrs tss key ts} :
-    is_Some (wrs !! key) ->
-    tss !! key = Some ts ->
-    (release wrs tss) !! key = Some O.
+  Lemma release_modified {wrs ptsm key} :
+    key ∈ dom wrs ->
+    key ∈ dom ptsm ->
+    (release wrs ptsm) !! key = Some O.
   Proof.
-    intros [v Hv] Hts.
-    by rewrite lookup_merge Hv Hts /=.
+    intros Hwrs Hptsm.
+    apply elem_of_dom in Hwrs as [v Hv].
+    apply elem_of_dom in Hptsm as [t Ht].
+    by rewrite lookup_merge Hv Ht /=.
   Qed.
 
   Lemma release_dom {wrs tss} :

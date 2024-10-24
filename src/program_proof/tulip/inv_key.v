@@ -452,10 +452,10 @@ Section def.
       "Hkey" ∷ key_inv_with_kmodc_no_repl_no_tsprep γ key kmodc repl tsprep ∗
       "%Hv"  ∷ ⌜kmodc !! tsprep = Some v⌝.
 
-  Definition key_inv_prepared_no_repl_tsprep
-    γ (key : dbkey) (repl : dbhist) (tsprep : nat) : iProp Σ :=
+  Definition key_inv_prepared_no_tsprep
+    γ (key : dbkey) (tsprep : nat) : iProp Σ :=
     ∃ kmodc,
-      "Hkey" ∷ key_inv_with_kmodc_no_repl_no_tsprep γ key kmodc repl tsprep ∗
+      "Hkey" ∷ key_inv_with_kmodc_no_tsprep γ key kmodc tsprep ∗
       "%Hnc" ∷ ⌜kmodc !! tsprep = None⌝.
 
 End def.
@@ -515,43 +515,71 @@ Section lemma.
   (** Extracting and merging the replicated tuple (i.e., timestamp lock and
   replicated history). Used in the invariance of [learn_commit]. *)
 
-  Lemma key_inv_extract_repl_tsprep {γ} key :
+  Lemma key_inv_extract_repl_pts {γ} key :
     key_inv γ key -∗
-    ∃ tpl, key_inv_no_repl_no_tsprep γ key tpl.1 tpl.2 ∗ own_repl_tuple_half γ key tpl.
+    ∃ tpl,
+      key_inv_no_repl_no_tsprep γ key tpl.1 tpl.2 ∗ own_repl_tuple_half γ key tpl.
   Proof. iNamed 1. iExists (repl, tsprep). iFrame "∗ # %". Qed.
 
-  Lemma keys_inv_extract_repl_tsprep {γ} keys :
+  Lemma keys_inv_extract_repl_pts {γ} keys :
     ([∗ set] key ∈ keys, key_inv γ key) -∗
-    ∃ tpls, ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_no_tsprep γ key tpl.1 tpl.2) ∗
-            ([∗ map] key ↦ tpl ∈ tpls, own_repl_tuple_half γ key tpl) ∧
-            ⌜dom tpls = keys⌝.
+    ∃ hists ptsm,
+      ([∗ map] key ↦ hist; pts ∈ hists; ptsm, key_inv_no_repl_no_tsprep γ key hist pts) ∗
+      ([∗ map] key ↦ hist ∈ hists, own_repl_hist_half γ key hist) ∗
+      ([∗ map] key ↦ pts ∈ ptsm, own_repl_ts_half γ key pts) ∗
+      ⌜dom hists = keys⌝.
   Proof.
     iIntros "Hkeys".
     iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
-    { iIntros (k Hk) "Hkey". iApply (key_inv_extract_repl_tsprep with "Hkey"). }
-    iDestruct (big_sepS_exists_sepM with "Hkeys") as (tpls Hdom) "Htpls".
-    iDestruct (big_sepM_sep with "Htpls") as "[Hkeys Htpls]".
-    by iFrame.
+    { iIntros (k Hk) "Hkey". iApply (key_inv_extract_repl_pts with "Hkey"). }
+    iDestruct (big_sepS_exists_sepM with "Hkeys") as (tpls Hdom) "Hkeys".
+    iDestruct (big_sepM_sep with "Hkeys") as "[Hkeys Htpls]".
+    rewrite /own_repl_tuple_half.
+    iDestruct (big_sepM_sep with "Htpls") as "[Hhists Hptsm]".
+    iExists (fst <$> tpls), (snd <$> tpls).
+    rewrite big_sepM2_fst_snd.
+    iFrame.
+    iSplitL "Hhists".
+    { iApply (big_sepM_impl_dom_eq with "Hhists"); first by rewrite dom_fmap_L.
+      iIntros (k [h t] h' Hht Hh') "!> Hhist".
+      rewrite lookup_fmap Hht in Hh'.
+      by inv Hh'.
+    }
+    iSplit.
+    { iApply (big_sepM_impl_dom_eq with "Hptsm"); first by rewrite dom_fmap_L.
+      iIntros (k [h t] t' Hht Ht') "!> Hptsm".
+      rewrite lookup_fmap Hht in Ht'.
+      by inv Ht'.
+    }
+    iPureIntro.
+    by rewrite dom_fmap_L.
   Qed.
 
-  Lemma key_inv_merge_repl_tsprep {γ} key tpl :
-    key_inv_no_repl_no_tsprep γ key tpl.1 tpl.2 -∗
-    own_repl_tuple_half γ key tpl -∗
+  Lemma key_inv_merge_repl_pts {γ} key hist pts :
+    key_inv_no_repl_no_tsprep γ key hist pts -∗
+    own_repl_hist_half γ key hist -∗
+    own_repl_ts_half γ key pts -∗
     key_inv γ key.
-  Proof. iIntros "Hkey [Hrepl Htsprep]". iFrame. Qed.
+  Proof. iIntros "Hkey Hhist Hpts". iFrame. Qed.
 
-  Lemma keys_inv_merge_repl_tsprep {γ tpls} keys :
-    dom tpls = keys ->
-    ([∗ map] key ↦ tpl ∈ tpls, key_inv_no_repl_no_tsprep γ key tpl.1 tpl.2) -∗
-    ([∗ map] key ↦ tpl ∈ tpls, own_repl_tuple_half γ key tpl) -∗
+  Lemma keys_inv_merge_repl_pts {γ histm ptsm} keys :
+    dom histm = keys ->
+    ([∗ map] key ↦ hist; pts ∈ histm; ptsm, key_inv_no_repl_no_tsprep γ key hist pts) -∗
+    ([∗ map] key ↦ hist ∈ histm, own_repl_hist_half γ key hist) -∗
+    ([∗ map] key ↦ pts ∈ ptsm, own_repl_ts_half γ key pts) -∗
     ([∗ set] key ∈ keys, key_inv γ key).
   Proof.
-    iIntros (Hdom) "Hkeys Htpls".
-    iDestruct (big_sepM_sep_2 with "Hkeys Htpls") as "Htpls".
+    iIntros (Hdom) "Hkeys Hhistm Hptsm".
+    iDestruct (big_sepM2_dom with "Hkeys") as %Hdomtpl.
+    iDestruct (big_sepM_big_sepM2 _ _ ptsm with "Hhistm") as "Hhistm"; first done.
+    iDestruct (big_sepM_big_sepM2 _ _ histm with "Hptsm") as "Hptsm"; first done.
+    iDestruct (big_sepM2_flip with "Hptsm") as "Hptsm".
+    iDestruct (big_sepM2_sep_2 with "Hhistm Hkeys") as "Hkeys".
+    iDestruct (big_sepM2_sep_2 with "Hptsm Hkeys") as "Hkeys".
     rewrite -Hdom -big_sepM_dom.
-    iApply (big_sepM_mono with "Htpls").
-    iIntros (k t Ht) "[Hkey Htpl]".
-    iApply (key_inv_merge_repl_tsprep with "Hkey Htpl").
+    iApply (big_sepM2_sepM_impl with "Hkeys"); first done.
+    iIntros (k h t h' Hh Ht Hh') "!> (Hpts & Hhist & Hkey)".
+    iApply (key_inv_merge_repl_pts with "Hkey Hhist Hpts").
   Qed.
 
   Lemma key_inv_no_repl_tsprep_unseal_kmodc γ key repl tsprep :
