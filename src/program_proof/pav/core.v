@@ -143,24 +143,36 @@ Section hist_msv.
 
 (* history and its interaction with msv. *)
 
-(* TODO: took out adtr epoch check. do i still need it? *)
-Definition adtr_inv' (ms : list fake_map_ty) :=
+(* for now, duplicate adtr invs so that below proofs can use this more pure version. *)
+Definition maps_mono' (ms : list fake_map_ty) :=
   ∀ i j mi mj,
   ms !! i = Some mi →
   ms !! j = Some mj →
   i ≤ j →
   mi ⊆ mj.
 
+(* maps_epoch_ok prevents entries from being added too early. *)
+Definition maps_epoch_ok' (ms : list fake_map_ty) :=
+  ∀ ep m k ep' comm,
+  ms !! ep = Some m →
+  m !! k = Some (ep', comm) →
+  ep' ≤ ep.
+
+Definition adtr_inv' ms := maps_mono' ms ∧ maps_epoch_ok' ms.
+
+(* TODO: this is one way to write it. consolidates cases.
+let's see how easy it is to prove with the physical hist. *)
 Definition know_hist_val (ms : list fake_map_ty) (uid : w64) (ep : nat) (lat : lat_val_ty) :=
   let len_vals := match lat with None => 0 | Some (ver, val) => S ver end in
-  (* TODO: this is one way to write it. consolidates cases.
-  let's see how easy it is to prove with the physical hist. *)
   ∃ vals, length vals = len_vals ∧ last vals = snd <$> lat ∧
-  (* vals exist in prior maps. *)
+  (* prior vers exist in prior or this map. *)
   (∀ ver val, vals !! ver = Some val →
     (∃ prior m, prior ≤ ep ∧ ms !! prior = Some m ∧ m !! (uid, ver) = Some val)) ∧
-  (* next ver doesn't exist in some future map. *)
-  (∃ bound m, bound ≥ ep ∧ ms !! bound = Some m ∧ m !! (uid, length vals) = None).
+  ( (* next ver doesn't exist in this or later map. *)
+    (∃ bound m, bound ≥ ep ∧ ms !! bound = Some m ∧ m !! (uid, length vals) = None)
+    ∨
+    (* next ver exists in later map. *)
+    (∃ bound m comm, bound > ep ∧ ms !! bound = Some m ∧ m !! (uid, length vals) = Some (bound, comm))).
 
 Definition know_hist (ms : list fake_map_ty) (uid : w64) (hist : list lat_val_ty) :=
   (∀ ep lat, hist !! ep = Some lat → know_hist_val ms uid ep lat).
@@ -174,16 +186,22 @@ Lemma hist_msv ms uid hist ep m lat :
   ms !! ep = Some m →
   msv m uid lat.
 Proof.
-  intros Hadtr Hhist Hlook_entry Hlook_m.
-  specialize (Hhist _ _ Hlook_entry) as (vals&?&?&Hhist&Hbound).
-  exists vals. split_and?; [done..|split].
+  intros Hadtr Hhist Hlook_hist Hlook_m.
+  specialize (Hhist _ _ Hlook_hist) as (vals&?&?&Hhist&Hbound).
+  exists vals. split_and?; [done..|]. split; [|destruct Hbound as [Hbound|Hbound]].
   - intros ?? Hlook_ver.
     specialize (Hhist _ _ Hlook_ver) as (?&?&?&?Hlook_prior&?).
-    opose proof (Hadtr _ _ _ _ Hlook_prior Hlook_m _); [lia|].
+    opose proof ((proj1 Hadtr) _ _ _ _ Hlook_prior Hlook_m _); [lia|].
     by eapply lookup_weaken.
   - destruct Hbound as (?&?&?&Hlook_bound&?).
-    opose proof (Hadtr _ _ _ _ Hlook_m Hlook_bound _); [lia|].
+    opose proof ((proj1 Hadtr) _ _ _ _ Hlook_m Hlook_bound _); [lia|].
     by eapply lookup_weaken_None.
+  - destruct Hbound as (?&?&?&?&Hlook_bound&?).
+    destruct (decide $ is_Some $ m !! (uid, length vals)) as [[? Hlook_mkey]|]; last first.
+    { by eapply eq_None_not_Some. }
+    opose proof ((proj1 Hadtr) _ _ _ _ Hlook_m Hlook_bound _); [lia|].
+    opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
+    opose proof ((proj2 Hadtr) _ _ _ _ _ Hlook_m Hlook_mkey) as ?. lia.
 Qed.
 
 End hist_msv.
