@@ -184,13 +184,6 @@ Qed.
 Section inv.
   Context `{!tulip_ghostG Σ}.
 
-  Definition invalidated_key_or_group_aborted_between γ gid rid key lb ub : iProp Σ :=
-    ∃ vdl,
-      "#Hvdl"    ∷ is_replica_key_validation_lb γ gid rid key vdl ∗
-      "#Habtifp" ∷ ([∗ list] i ↦ b ∈ vdl,
-                      ⌜(lb < i < ub)%nat ∧ b = true⌝ -∗ is_group_aborted γ gid i) ∗
-      "%Hlenvdl" ∷ ⌜(ub ≤ length vdl)%nat⌝.
-
   Definition quorum_invalidated_key_or_group_aborted γ key ts : iProp Σ :=
     quorum_invalidated_key γ key ts ∨ is_group_aborted γ (key_to_group key) ts.
 
@@ -198,7 +191,7 @@ Section inv.
     ∃ (ridsq : gset u64) (lts : nat),
       "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
       "#Hioa"  ∷ ([∗ set] rid ∈ ridsq,
-                    invalidated_key_or_group_aborted_between γ (key_to_group key) rid key lts ts) ∗
+                    read_promise γ (key_to_group key) rid key lts ts) ∗
       "%Hltts" ∷ ⌜(lts < pred ts)%nat⌝ ∗
       "%Hqrm"  ∷ ⌜cquorum rids_all ridsq⌝.
 
@@ -485,7 +478,11 @@ Section inv.
       iDestruct (replica_key_validation_lb_lookup with "Hrvk Hvdl") as %Hvd.
       { clear -Ht Hlenvdl. lia. }
       iDestruct (big_sepL_lookup with "Habtifp") as "Habtgroup"; first apply Hvd.
-      iSpecialize ("Habtgroup" with "[]"); first done.
+      iSpecialize ("Habtgroup" with "[]").
+      { iPureIntro.
+        split; last done.
+        clear -Ht. lia.
+      }
       (* Derive txn abortedness from group abortedness. *)
       iAssert (is_txn_aborted γ t)%I as "#Habttxn".
       { do 2 iNamed "Hgroup".

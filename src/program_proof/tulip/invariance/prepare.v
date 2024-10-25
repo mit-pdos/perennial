@@ -193,29 +193,32 @@ Section inv.
       (* Prove the validation list for [k] has extended beyond [length cmtd]. *)
       iDestruct "Hrvfb" as (vdlb) "[Hvdlb %Hlen]".
       assert (is_Some (kvdm !! k)) as [vd Hvd].
-      { pose proof (map_Forall2_dom_L _ _ _ Hlocked) as Hdom.
-        by rewrite -elem_of_dom Hdom elem_of_dom.
-      }
+      { by rewrite -elem_of_dom Hdomkvdm. }
       iDestruct (big_sepM_lookup with "Hkvdm") as "Hvd"; first apply Hvd.
       rewrite Hgid.
       iDestruct (replica_key_validation_prefix with "Hvdlb Hvd") as %Hprefix.
       exfalso.
       apply prefix_length in Hprefix.
-      pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvd Hpil Hlocked) as Hub.
-      specialize (Hub Hnz).
-      destruct Hub as [_ Hub].
-      clear -Hlt Hlen Hprefix Hub.
+      assert (is_Some (sptsm !! k)) as [spts Hspts].
+      { pose proof (map_Forall2_dom_L _ _ _ Hsptsmlk) as Hdomsptsm.
+        by rewrite -elem_of_dom Hdomsptsm elem_of_dom.
+      }
+      pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvd Hspts Hlenkvd) as Hlenvd.
+      simpl in Hlenvd.
+      pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hspts Hpil Hsptsmlk Hnz) as Hub.
+      clear -Hlt Hlen Hprefix Hlenvd Hub.
       lia.
     }
     rewrite Nat.nlt_ge in Hge.
     destruct (decide (ts = pred (length cmtd))) as [Heq | Hne].
     { (* From [Hqv] and [Hcori] we obtain a replica that currently grants the
-         lock of [k] to [ts], but also has either invalidated (through reading
-         the key) at [ts] or received abort of [ts]. *)
+         lock of [k] to [ts], but also has either invalidated (by txn [S ts]
+         reading the key) at [ts] or received abort of [ts]. *)
       rewrite /committed_or_quorum_invalidated_key -Heq Hnc.
       iDestruct "Hqv" as (ridsq1) "[Hqv %Hq1]".
       iDestruct "Hcori" as "[Hcori | Habted]"; last first.
-      { rewrite Hgid.
+      { (* Prove the abort case is impossible. *)
+        rewrite Hgid.
         iDestruct (group_commit_lookup with "Hcm Habted") as %Habted.
         by rewrite Habted in Hcm.
       }
@@ -225,28 +228,20 @@ Section inv.
       iDestruct (big_sepS_elem_of with "Hqv") as "Hrv"; first apply Hinq1.
       iDestruct (big_sepS_elem_of with "Hcori") as "Hvdlb"; first apply Hinq2.
       iDestruct (big_sepS_elem_of with "Hrps") as "Hrp"; first apply Hinall.
-      iNamed "Hrp".
-      iDestruct (replica_inv_xfinalized_validated_impl_prepared with "Hrv Hrp")
-        as (pwrs') "%Hpreped".
-      { apply Hxfinal. }
-      { set_solver. }
+      do 2 iNamed "Hrp".
+      iDestruct (replica_validated_ts_elem_of with "Hrv Hvtss") as %Hinvtss.
+      iDestruct (big_sepS_elem_of with "Hvpwrs") as (pwrs') "[Hpwrs' Hvdks]".
+      { apply Hinvtss. }
       (* Prove [pwrs' = pwrs]. *)
-      iNamed "Hrp".
-      iDestruct (big_sepM_lookup with "Hsafep") as "Hpwrs'"; first apply Hpreped.
       iDestruct (txn_pwrs_agree with "Hpwrs Hpwrs'") as %->.
-      (* Prove [k] is locked by [ts]. *)
-      specialize (Hpil _ _ _ Hpreped Hk).
+      iDestruct (big_sepS_elem_of with "Hvdks") as "Hvdk"; first apply Hk.
       assert (is_Some (kvdm !! k)) as [vd Hvd].
-      { pose proof (map_Forall2_dom_L _ _ _ Hlocked) as Hdom.
-        by rewrite -elem_of_dom Hdom elem_of_dom.
-      }
+      { by rewrite -elem_of_dom Hdomkvdm. }
       iDestruct (big_sepM_lookup with "Hkvdm") as "Hvd"; first apply Hvd.
       rewrite Hgid.
-      pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvd Hpil Hlocked) as Hvts.
-      specialize (Hvts Hnz).
-      destruct Hvts as [Hvts _].
-      iDestruct (replica_key_validation_lookup with "Hvdlb Hvd") as %Hnvts.
-      by rewrite Hvts in Hnvts.
+      iDestruct (replica_key_validation_lookup with "Hvdlb Hvd") as %Hneg.
+      iDestruct (replica_key_validation_lookup with "Hvdk Hvd") as %Hpos.
+      by rewrite Hneg in Hpos.
     }
     assert (Hle : (length cmtd ≤ ts)%nat) by lia.
     iFrame "∗ # %".

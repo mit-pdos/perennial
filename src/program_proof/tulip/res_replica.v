@@ -110,6 +110,12 @@ Section res.
       ⌜l !! ts = Some b⌝.
     Admitted.
 
+    Lemma replica_key_validation_lb_weaken {γ gid rid key l} l' :
+      prefix l' l ->
+      is_replica_key_validation_lb γ gid rid key l -∗
+      is_replica_key_validation_lb γ gid rid key l'.
+    Admitted.
+
     Lemma replica_key_validation_at_length γ gid rid key ts b :
       is_replica_key_validation_at γ gid rid key ts b -∗
       is_replica_key_validation_length_lb γ gid rid key (S ts).

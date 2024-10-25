@@ -20,9 +20,6 @@ Section inv.
     Persistent (safe_replica_prepare γ gid ts st).
   Proof. destruct st; apply _. Defined.
 
-  Definition locked_key_validation vd pts :=
-    pts ≠ O -> vd !! pts = Some true ∧ length vd = S pts.
-
   Definition validated_pwrs_of_txn γ gid rid vts : iProp Σ :=
     ∃ pwrs, is_txn_pwrs γ gid vts pwrs ∗
             ([∗ set] key ∈ dom pwrs, is_replica_key_validated_at γ gid rid key vts).
@@ -30,16 +27,18 @@ Section inv.
   Definition replica_inv_with_cm_with_stm
     γ (gid rid : u64) (cm : gmap nat bool) (stm : gmap nat txnst) : iProp Σ :=
     ∃ (clog : dblog) (vtss : gset nat) (kvdm : gmap dbkey (list bool))
-      (histm : gmap dbkey dbhist) (ptsm : gmap dbkey nat),
+      (histm : gmap dbkey dbhist) (sptsm ptsm : gmap dbkey nat),
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
       "#Hclog"    ∷ is_txn_log_lb γ gid clog ∗
+      "#Hhistm"   ∷ ([∗ map] k ↦ h ∈ histm, is_repl_hist_lb γ k h) ∗
       "#Hsafep"   ∷ ([∗ map] ts ↦ st ∈ stm, safe_replica_prepare γ gid ts st) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "%Hrsm"     ∷ ⌜apply_cmds clog = State cm histm⌝ ∗
       "%Hdomstm"  ∷ ⌜vtss ⊆ dom stm⌝ ∗
-      "%Hdomptsm" ∷ ⌜dom ptsm = keys_all⌝ ∗
-      "%Hlocked"  ∷ ⌜map_Forall2 (λ _ vd pts, locked_key_validation vd pts) kvdm ptsm⌝ ∗
+      "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
+      "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = spts) kvdm sptsm⌝ ∗
+      "%Hsptsmlk" ∷ ⌜map_Forall2 (λ _ spts pts, pts ≠ O -> spts = S pts) sptsm ptsm⌝ ∗
       "%Hcm"      ∷ ⌜cm = omap txnst_to_option_bool stm⌝ ∗
       "%Hpil"     ∷ ⌜prepared_impl_locked stm ptsm⌝.
 
@@ -111,6 +110,43 @@ Section inv.
     iDestruct (big_sepS_elem_of with "Hvds") as "Hvd"; first apply Hrid.
     iDestruct (big_sepS_elem_of with "Hrps") as "Hrp"; first apply Hrid.
     iApply (replica_inv_validated_keys_of_txn with "Hvd Hrp").
+  Qed.
+
+  Definition read_promise γ gid rid key lb ub : iProp Σ :=
+    ∃ vdl,
+      "#Hvdl"    ∷ is_replica_key_validation_lb γ gid rid key vdl ∗
+      "#Habtifp" ∷ ([∗ list] i ↦ b ∈ vdl,
+                      ⌜(lb < i)%nat ∧ b = true⌝ -∗ is_group_aborted γ gid i) ∗
+      "%Hlenvdl" ∷ ⌜(length vdl = ub)%nat⌝.
+
+  Lemma read_promise_weaken_lb {γ gid rid key lb ub} lb' :
+    (lb ≤ lb')%nat ->
+    read_promise γ gid rid key lb ub -∗
+    read_promise γ gid rid key lb' ub.
+  Proof.
+    iIntros (Hge).
+    iNamed 1.
+    iFrame "Hvdl %".
+    iApply (big_sepL_impl with "Habtifp").
+    iIntros (t b Hb) "!> Habt [%Ht %Htrue]".
+    iApply "Habt".
+    iPureIntro.
+    split; [lia | done].
+  Qed.
+
+  Lemma read_promise_weaken_ub {γ gid rid key lb ub} ub' :
+    (ub' ≤ ub)%nat ->
+    read_promise γ gid rid key lb ub -∗
+    read_promise γ gid rid key lb ub'.
+  Proof.
+    iIntros (Hle).
+    iNamed 1.
+    iDestruct (replica_key_validation_lb_weaken (take ub' vdl) with "Hvdl") as "Hvdl'".
+    { apply prefix_take. }
+    iFrame "Hvdl'".
+    iSplit; last first.
+    { iPureIntro. rewrite length_take. lia. }
+    by iDestruct (big_sepL_take_drop _ _ ub' with "Habtifp") as "[Htake Hdrop]".
   Qed.
 
 End inv.
