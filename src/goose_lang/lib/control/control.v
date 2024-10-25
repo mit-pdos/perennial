@@ -269,6 +269,17 @@ Proof.
   iApply ("HΦ" with "[//]").
 Qed.
 
+Theorem wp_Assert_decide stk E `{!Decision P} :
+  P →
+  ∀ Φ, ▷Φ #() -∗
+    WP Assert #(bool_decide P) @ stk; E {{ Φ }}.
+Proof.
+  iIntros (HP Φ) "HΦ".
+  rewrite bool_decide_eq_true_2 //.
+  wp_rec. wp_pures.
+  iModIntro. iApply "HΦ".
+Qed.
+
 Theorem wp_Assert_true stk E Φ :
   ▷Φ #() -∗ WP (Assert #true) @ stk; E {{ Φ }}.
 Proof.
