@@ -9,17 +9,6 @@ Section inv.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
 
-  Definition safe_replica_prepare γ gid ts st : iProp Σ :=
-    match st with
-    | StPrepared pwrs => is_txn_pwrs γ gid ts pwrs
-    | _ => True
-    end.
-
-  #[global]
-  Instance safe_replica_prepare_persistent γ gid ts st :
-    Persistent (safe_replica_prepare γ gid ts st).
-  Proof. destruct st; apply _. Defined.
-
   Definition validated_pwrs_of_txn γ gid rid vts : iProp Σ :=
     ∃ pwrs, is_txn_pwrs γ gid vts pwrs ∗
             ([∗ set] key ∈ dom pwrs, is_replica_key_validated_at γ gid rid key vts).
@@ -39,8 +28,15 @@ Section inv.
     | _, _, _ => True
     end.
 
-  Definition replica_inv_with_cm_with_stm
-    γ (gid rid : u64) (cm : gmap nat bool) (stm : gmap nat txnst) : iProp Σ :=
+  (* TODO: Remove "_cpm" if we can also remove [stm] in the group invariant. *)
+  Definition prepared_impl_locked_cpm (cpm : gmap nat dbmap) (ptsm : gmap dbkey nat) :=
+    ∀ ts pwrs key,
+    cpm !! ts = Some pwrs ->
+    key ∈ dom pwrs ->
+    ptsm !! key = Some ts.
+
+  Definition replica_inv_with_cm_with_cpm
+    γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
     ∃ (clog : dblog) (vtss : gset nat) (kvdm : gmap dbkey (list bool))
       (histm : gmap dbkey dbhist) (sptsm ptsm : gmap dbkey nat),
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
@@ -50,24 +46,23 @@ Section inv.
       "Hptsm"     ∷ ([∗ map] k ↦ pts ∈ ptsm, own_replica_pts_half γ rid k pts) ∗
       "#Hclog"    ∷ is_txn_log_lb γ gid clog ∗
       "#Hreplhm"  ∷ ([∗ map] k ↦ h ∈ histm, is_repl_hist_lb γ k h) ∗
-      "#Hsafep"   ∷ ([∗ map] ts ↦ st ∈ stm, safe_replica_prepare γ gid ts st) ∗
+      "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, is_txn_pwrs γ gid ts pwrs) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "%Hrsm"     ∷ ⌜apply_cmds clog = State cm histm⌝ ∗
-      "%Hdomstm"  ∷ ⌜vtss ⊆ dom stm⌝ ∗
+      "%Hvtss"    ∷ ⌜vtss ⊆ dom cm ∪ dom cpm⌝ ∗
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
       "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = spts) kvdm sptsm⌝ ∗
       "%Hsptsmlk" ∷ ⌜map_Forall2 (λ _ spts pts, pts ≠ O -> spts = S pts) sptsm ptsm⌝ ∗
-      "%Hcm"      ∷ ⌜cm = omap txnst_to_option_bool stm⌝ ∗
-      "%Hpil"     ∷ ⌜prepared_impl_locked stm ptsm⌝.
+      "%Hpil"     ∷ ⌜prepared_impl_locked_cpm cpm ptsm⌝.
 
   Definition replica_inv γ (gid rid : u64) : iProp Σ :=
-    ∃ cm stm, "Hrp" ∷ replica_inv_with_cm_with_stm γ gid rid cm stm.
+    ∃ cm cpm, "Hrp" ∷ replica_inv_with_cm_with_cpm γ gid rid cm cpm.
 
-  Definition replica_inv_xfinalized γ (gid rid : u64) (tss : gset nat) : iProp Σ :=
-    ∃ cm stm,
-      "Hrp"      ∷ replica_inv_with_cm_with_stm γ gid rid cm stm ∗
-      "%Hxfinal" ∷ ⌜set_Forall (λ t, cm !! t = None) tss⌝.
+  Definition replica_inv_xfinalized γ (gid rid : u64) (ptsm : gset nat) : iProp Σ :=
+    ∃ cm cpm,
+      "Hrp"      ∷ replica_inv_with_cm_with_cpm γ gid rid cm cpm ∗
+      "%Hxfinal" ∷ ⌜set_Forall (λ t, cm !! t = None) ptsm⌝.
 
   Lemma replica_inv_xfinalized_empty γ gid rid :
     replica_inv γ gid rid -∗
@@ -85,26 +80,22 @@ Section inv.
   Qed.
 
   Lemma replica_inv_xfinalized_validated_impl_prepared
-    γ gid rid cm stm (tss : gset nat) ts :
+    γ gid rid cm cpm (tss : gset nat) ts :
     set_Forall (λ t, cm !! t = None) tss ->
     ts ∈ tss ->
     is_replica_validated_ts γ gid rid ts -∗
-    replica_inv_with_cm_with_stm γ gid rid cm stm -∗
-    ⌜∃ pwrs, stm !! ts = Some (StPrepared pwrs)⌝.
+    replica_inv_with_cm_with_cpm γ gid rid cm cpm -∗
+    ⌜∃ pwrs, cpm !! ts = Some pwrs⌝.
   Proof.
     iIntros (Hxfinal Hin) "Hvd Hrp".
     iNamed "Hrp".
     iDestruct (replica_validated_ts_elem_of with "Hvd Hvtss") as %Hinvtss.
-    destruct (stm !! ts) as [st |] eqn:Hstm; last first.
-    { exfalso.
-      rewrite -not_elem_of_dom in Hstm.
-      clear -Hdomstm Hinvtss Hstm. set_solver.
-    }
-    specialize (Hxfinal _ Hin). simpl in Hxfinal.
-    destruct st as [pwrs | |]; last first.
-    { exfalso. by rewrite Hcm lookup_omap Hstm in Hxfinal. }
-    { exfalso. by rewrite Hcm lookup_omap Hstm in Hxfinal. }
-    by eauto.
+    destruct (cpm !! ts) as [pwrs |] eqn:Hpwrs; first by eauto.
+    exfalso.
+    specialize (Hxfinal _ Hin).
+    apply not_elem_of_dom in Hpwrs, Hxfinal.
+    clear -Hpwrs Hxfinal Hvtss Hinvtss.
+    set_solver.
   Qed.
 
   Lemma replica_inv_validated_keys_of_txn γ gid rid ts :
