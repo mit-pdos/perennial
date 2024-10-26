@@ -24,16 +24,35 @@ Section inv.
     ∃ pwrs, is_txn_pwrs γ gid vts pwrs ∗
             ([∗ set] key ∈ dom pwrs, is_replica_key_validated_at γ gid rid key vts).
 
+  Definition group_aborted_if_validated
+    γ gid (kvdm : gmap dbkey (list bool)) (histm : gmap dbkey dbhist)
+    (ptsm : gmap dbkey nat) : iProp Σ :=
+    ∀ k ts,
+    match kvdm !! k, histm !! k, ptsm !! k with
+    | Some vdl, Some hist, Some pts =>
+        match vdl !! ts with
+        | Some true => if decide ((length hist ≤ ts)%nat ∧ ts ≠ pts)
+                      then is_group_aborted γ gid ts
+                      else True
+        | _ => True
+        end
+    | _, _, _ => True
+    end.
+
   Definition replica_inv_with_cm_with_stm
     γ (gid rid : u64) (cm : gmap nat bool) (stm : gmap nat txnst) : iProp Σ :=
     ∃ (clog : dblog) (vtss : gset nat) (kvdm : gmap dbkey (list bool))
       (histm : gmap dbkey dbhist) (sptsm ptsm : gmap dbkey nat),
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
+      "Hhistm"    ∷ ([∗ map] k ↦ h ∈ histm, own_dura_hist_half γ rid k h) ∗
+      "Hsptsm"    ∷ ([∗ map] k ↦ spts ∈ sptsm, own_replica_spts_half γ rid k spts) ∗
+      "Hptsm"     ∷ ([∗ map] k ↦ pts ∈ ptsm, own_replica_pts_half γ rid k pts) ∗
       "#Hclog"    ∷ is_txn_log_lb γ gid clog ∗
-      "#Hhistm"   ∷ ([∗ map] k ↦ h ∈ histm, is_repl_hist_lb γ k h) ∗
+      "#Hreplhm"  ∷ ([∗ map] k ↦ h ∈ histm, is_repl_hist_lb γ k h) ∗
       "#Hsafep"   ∷ ([∗ map] ts ↦ st ∈ stm, safe_replica_prepare γ gid ts st) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
+      "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "%Hrsm"     ∷ ⌜apply_cmds clog = State cm histm⌝ ∗
       "%Hdomstm"  ∷ ⌜vtss ⊆ dom stm⌝ ∗
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
@@ -117,7 +136,7 @@ Section inv.
       "#Hvdl"    ∷ is_replica_key_validation_lb γ gid rid key vdl ∗
       "#Habtifp" ∷ ([∗ list] i ↦ b ∈ vdl,
                       ⌜(lb < i)%nat ∧ b = true⌝ -∗ is_group_aborted γ gid i) ∗
-      "%Hlenvdl" ∷ ⌜(length vdl = ub)%nat⌝.
+      "%Hlenvdl" ∷ ⌜length vdl = ub⌝.
 
   Lemma read_promise_weaken_lb {γ gid rid key lb ub} lb' :
     (lb ≤ lb')%nat ->

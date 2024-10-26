@@ -129,10 +129,78 @@ Section res.
 
   End replica_key_validation.
 
+  Section dura_hist.
+
+    (** Mapping from keys to durable histories on each replica. The durable
+    history reflects all the commands up to the highest LSN of inconsistent
+    commands. *)
+
+    Definition own_dura_hist_half γ (rid : u64) (k : dbkey) (h : dbhist) : iProp Σ.
+    Admitted.
+
+    Lemma dura_hist_update {γ rid k h1 h2} h' :
+      own_dura_hist_half γ rid k h1 -∗
+      own_dura_hist_half γ rid k h2 ==∗
+      own_dura_hist_half γ rid k h' ∗
+      own_dura_hist_half γ rid k h'.
+    Admitted.
+
+    Lemma dura_hist_agree {γ rid k h1 h2} :
+      own_dura_hist_half γ rid k h1 -∗
+      own_dura_hist_half γ rid k h2 -∗
+      ⌜h2 = h1⌝.
+    Admitted.
+
+  End dura_hist.
+
+  Section replica_pts.
+
+    (** Mapping from keys to the prepare timestamps on each replica. *)
+
+    Definition own_replica_pts_half γ (rid : u64) (k : dbkey) (ts : nat) : iProp Σ.
+    Admitted.
+
+    Lemma replica_pts_update {γ rid k ts1 ts2} ts' :
+      own_replica_pts_half γ rid k ts1 -∗
+      own_replica_pts_half γ rid k ts2 ==∗
+      own_replica_pts_half γ rid k ts' ∗
+      own_replica_pts_half γ rid k ts'.
+    Admitted.
+
+    Lemma replica_pts_agree {γ rid k ts1 ts2} :
+      own_replica_pts_half γ rid k ts1 -∗
+      own_replica_pts_half γ rid k ts2 -∗
+      ⌜ts2 = ts1⌝.
+    Admitted.
+
+  End replica_pts.
+
+  Section replica_spts.
+
+    (** Mapping from keys to the smallest preparable timestamps on each replica. *)
+
+    Definition own_replica_spts_half γ (rid : u64) (k : dbkey) (ts : nat) : iProp Σ.
+    Admitted.
+
+    Lemma replica_spts_update {γ rid k ts1 ts2} ts' :
+      own_replica_spts_half γ rid k ts1 -∗
+      own_replica_spts_half γ rid k ts2 ==∗
+      own_replica_spts_half γ rid k ts' ∗
+      own_replica_spts_half γ rid k ts'.
+    Admitted.
+
+    Lemma replica_spts_agree {γ rid k ts1 ts2} :
+      own_replica_spts_half γ rid k ts1 -∗
+      own_replica_spts_half γ rid k ts2 -∗
+      ⌜ts2 = ts1⌝.
+    Admitted.
+
+  End replica_spts.
+
   Section replica_ballot.
 
-    (** Mapping from transaction IDs to whether they are prepared on a replica
-    in a group at a certain rank. *)
+    (** Mapping from transaction IDs to booleans indicating whether they are
+    prepared on a replica in a group at a certain rank. *)
 
     Definition own_replica_ballots γ (gid rid : u64) (bs : gmap nat ballot) : iProp Σ.
     Admitted.
