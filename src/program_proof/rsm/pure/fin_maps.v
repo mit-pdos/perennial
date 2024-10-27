@@ -69,6 +69,19 @@ Section lemmas.
   Context `{FinMapDom K M D}.
   Context `{!LeibnizEquiv D}.
 
+  Lemma map_union_difference_union_L {A : Type} (m1 m2 m3 : M A) :
+    dom m1 = dom m3 ->
+    m1 ∪ m2 ∖ m3 = m1 ∪ m2.
+  Proof.
+    intros Hdom.
+    apply map_eq. intros k.
+    destruct (m1 !! k) as [x |] eqn:Hm1.
+    { by rewrite 2!(lookup_union_Some_l _ _ _ _ Hm1). }
+    rewrite 2!(lookup_union_r _ _ _ Hm1).
+    rewrite -not_elem_of_dom Hdom not_elem_of_dom in Hm1.
+    by rewrite lookup_difference Hm1.
+  Qed.
+
   Lemma map_Forall2_forall
     {A B : Type} (R : K → A → B → Prop) (m1 : M A) (m2 : M B) :
     map_Forall2 R m1 m2 <->

@@ -35,11 +35,29 @@ Section inv.
     key ∈ dom pwrs ->
     ptsm !! key = Some ts.
 
+  Lemma prepared_impl_locked_disjoint cpm ptsm t1 t2 pwrs1 pwrs2 :
+    t1 ≠ t2 ->
+    cpm !! t1 = Some pwrs1 ->
+    cpm !! t2 = Some pwrs2 ->
+    prepared_impl_locked_cpm cpm ptsm ->
+    dom pwrs1 ## dom pwrs2.
+  Proof.
+    intros Hne Hpwrs1 Hpwrs2 Hpil.
+    rewrite elem_of_disjoint.
+    intros Hk Hin1 Hin2.
+    pose proof (Hpil _ _ _ Hpwrs1 Hin1) as Ht1.
+    pose proof (Hpil _ _ _ Hpwrs2 Hin2) as Ht2.
+    rewrite Ht1 in Ht2.
+    inv Ht2.
+  Qed.
+
   Definition replica_inv_with_cm_with_cpm
     γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
     ∃ (clog : dblog) (vtss : gset nat) (kvdm : gmap dbkey (list bool))
       (histm : gmap dbkey dbhist) (sptsm ptsm : gmap dbkey nat),
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
+      "Hcm"       ∷ own_replica_commit_map_half γ rid cm ∗
+      "Hcpm"      ∷ own_replica_currently_prepared_map_half γ rid cpm ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
       "Hhistm"    ∷ ([∗ map] k ↦ h ∈ histm, own_dura_hist_half γ rid k h) ∗
       "Hsptsm"    ∷ ([∗ map] k ↦ spts ∈ sptsm, own_replica_spts_half γ rid k spts) ∗
@@ -54,7 +72,8 @@ Section inv.
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
       "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = spts) kvdm sptsm⌝ ∗
       "%Hsptsmlk" ∷ ⌜map_Forall2 (λ _ spts pts, pts ≠ O -> spts = S pts) sptsm ptsm⌝ ∗
-      "%Hpil"     ∷ ⌜prepared_impl_locked_cpm cpm ptsm⌝.
+      "%Hpil"     ∷ ⌜prepared_impl_locked_cpm cpm ptsm⌝ ∗
+      "%Hcpmnz"   ∷ ⌜cpm !! O = None⌝.
 
   Definition replica_inv γ (gid rid : u64) : iProp Σ :=
     ∃ cm cpm, "Hrp" ∷ replica_inv_with_cm_with_cpm γ gid rid cm cpm.
