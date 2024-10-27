@@ -691,3 +691,8 @@ Proof.
   { rewrite Z.mul_comm. apply ZLib.Z.Z_mod_mult'. }
   word.
 Qed.
+
+Lemma nat_thru_w64_id (x : nat) :
+  Z.of_nat x < 2^64 ->
+  uint.nat (W64 (Z.of_nat x)) = x.
+Proof. word. Qed.
