@@ -885,7 +885,7 @@ Definition testGenericStructs : val :=
     do:  ("c" <-[genericStruct2 uint64T] "$r0");;;
     let: "u" := (ref_ty (genericStruct stringT uint64T) (zero_val (genericStruct stringT uint64T))) in
     let: "$r0" := (struct.make (genericStruct stringT uint64T) [{
-      "x" ::= #(str "test");
+      "x" ::= #"test";
       "y" ::= #(W64 7)
     }]) in
     do:  ("u" <-[genericStruct stringT uint64T] "$r0");;;
@@ -894,7 +894,7 @@ Definition testGenericStructs : val :=
     (identity2 uint64T) "$a0") in
     do:  ("d" <-[uint64T] "$r0");;;
     let: "d2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #(str "test") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := #"test" in
     let: "$a1" := #(W64 5) in
     (identity stringT uint64T) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
@@ -905,7 +905,7 @@ Definition testGenericStructs : val :=
     let: "$r0" := (identity stringT uint64T) in
     do:  ("g" <-[funcT] "$r0");;;
     let: "b" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #(str "test") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := #"test" in
     let: "$a1" := #(W64 3) in
     (![funcT] "g") "$a0" "$a1") in
     let: "$r0" := "$ret0" in
