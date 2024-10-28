@@ -1,11 +1,12 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import core.
+From Perennial.program_proof.pav Require Import client core.
 
 Section core_iprop.
 Context `{!heapGS Σ, !pavG Σ}.
 
+(* TODO: maybe only cliG version needed. not pure or adtrG. *)
 Definition know_hist_val_cliG cli_γ (uid ep : w64) (lat : lat_val_ty) : iProp Σ :=
   let len_vals := match lat with None => 0%nat | Some (ver, val) => S $ uint.nat ver end in
   ∃ vals,
@@ -67,3 +68,52 @@ Definition own_hist cli_γ uid sl_hist (hist : list HistEntry.t) : iProp Σ :=
   "%Hlogic_reln" ∷ ⌜ phys_logic_reln hist logic_hist ⌝ ∗
   "#Hknow_hist" ∷ know_hist_cliG cli_γ uid logic_hist.
 End hist.
+
+Section wps.
+Context `{!heapGS Σ, !pavG Σ}.
+
+Lemma wp_put_hist cli_γ uid sl_hist hist ptr_e e ver :
+  match last hist with
+  | None => True
+  | Some lat => uint.Z lat.(HistEntry.Epoch) < uint.Z e.(HistEntry.Epoch)
+  end →
+  length hist = uint.nat ver →
+  {{{
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist ∗
+    "Hown_entry" ∷ HistEntry.own ptr_e e ∗
+    "#His_key" ∷ is_my_key cli_γ uid ver e.(HistEntry.Epoch) e.(HistEntry.HistVal)
+  }}}
+  SliceAppend ptrT (slice_val sl_hist) #ptr_e
+  {{{
+    sl_hist', RET (slice_val sl_hist');
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist' (hist ++ [e]) ∗
+    "Hown_entry" ∷ HistEntry.own ptr_e e
+  }}}.
+Proof. Admitted.
+
+Definition msv_final (adtr_γ : gname) (ep uid : w64) (lat : option map_val_ty) : iProp Σ.
+Admitted.
+
+Lemma wp_GetHist cli_γ uid sl_hist hist bound_ep (ep : w64) aud_ep adtr_γ :
+  match last hist with
+  | None => True
+  | Some lat => uint.Z lat.(HistEntry.Epoch) ≤ uint.Z bound_ep
+  end →
+  uint.Z ep ≤ uint.Z bound_ep →
+  uint.Z bound_ep < uint.Z aud_ep →
+  {{{
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist ∗
+    (* even if don't do SelfMon, can always create this from latest Put. *)
+    "#His_bound" ∷ is_my_bound cli_γ uid (W64 $ length hist) bound_ep ∗
+    "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep
+  }}}
+  GetHist (slice_val sl_hist) #ep
+  {{{
+    (is_reg : bool) (ep' : w64) sl_pk pk, RET (#is_reg, slice_val sl_pk);
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist ∗
+    "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
+    "#Hmsv" ∷ msv_final adtr_γ ep uid (if is_reg then Some (ep', pk) else None)
+  }}}.
+Proof. Admitted.
+
+End wps.

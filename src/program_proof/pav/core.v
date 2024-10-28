@@ -139,6 +139,7 @@ Section msv.
 
 (* msv hides all but the latest val.
 a None val corresponds to an unregistered val. *)
+(* TODO: should take in latest val, without version. *)
 Definition msv (m : map_ty) uid (lat : lat_val_ty) :=
   let len_vals := match lat with None => 0%nat | Some (ver, val) => S (uint.nat ver) end in
   ∃ vals, length vals = len_vals ∧ last vals = snd <$> lat ∧

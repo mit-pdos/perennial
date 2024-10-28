@@ -102,7 +102,8 @@ Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       "#His_key" ∷ is_my_key c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep pk ∗
       "%Hnoof_ver" ∷ ⌜ uint.Z new_c.(Client.next_ver) = (uint.Z c.(Client.next_ver) + 1)%Z ⌝ ∗
-      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝
+      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
+      "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) ≤ uint.Z ep ⌝
     else
       "Hown_cli" ∷ Client.own ptr_c c
   }}}.
@@ -125,7 +126,8 @@ Lemma wp_Client__SelfMon ptr_c c :
       let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       "#His_bound" ∷ is_my_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep ∗
-      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝
+      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
+      "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) - 1 ≤ uint.Z ep ⌝
     else
       "Hown_cli" ∷ Client.own ptr_c c
   }}}.
@@ -137,13 +139,13 @@ Definition is_no_other_key cli_γ uid (ep : epoch_ty) : iProp Σ :=
   "#Hbound" ∷ (uid, W64 0) ↪[sm_γ]□ None.
 
 Definition is_other_key cli_γ uid (ep : epoch_ty) pk : iProp Σ :=
-  ∃ (ver : nat) dig sm_γ (ep0 : w64) comm0,
+  ∃ (ver : w64) dig sm_γ (ep0 : w64) comm0,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hhist" ∷ ∀ (ver' : w64), ⌜ uint.nat ver' < ver ⌝ -∗
+  "#Hhist" ∷ ∀ (ver' : w64), ⌜ uint.Z ver' < uint.Z ver ⌝ -∗
     ∃ ep1 comm1, (uid, ver') ↪[sm_γ]□ (Some (ep1, comm1)) ∗
-  "#Hlatest" ∷ (uid, W64 ver) ↪[sm_γ]□ (Some (ep0, comm0)) ∗
+  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep0, comm0)) ∗
   "#Hcomm" ∷ is_comm pk comm0 ∗
-  "#Hbound" ∷ (uid, W64 (S ver)) ↪[sm_γ]□ None.
+  "#Hbound" ∷ (uid, (word.add ver (W64 1))) ↪[sm_γ]□ None.
 
 Lemma wp_Client__Get ptr_c c uid :
   {{{
@@ -155,9 +157,10 @@ Lemma wp_Client__Get ptr_c c uid :
     RET (#is_reg, slice_val sl_pk, #ep, #ptr_err);
     "Herr" ∷ clientErr.own ptr_err err ∗
     if negb err.(clientErr.err) then
-      let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
+      let new_c := (set Client.next_epoch (λ _, word.add ep (W64 1)) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
+      "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) - 1 ≤ uint.Z ep ⌝ ∗
       if is_reg then
         "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
         "#His_key" ∷ is_other_key c.(Client.γ) uid ep pk
@@ -213,14 +216,6 @@ End specs.
 Section derived.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition is_vrf (uid ver : w64) (hash : opaque_label_ty) : iProp Σ. Admitted.
-Global Instance is_vrf_persis uid ver hash : Persistent (is_vrf uid ver hash).
-Proof. Admitted.
-Global Instance is_vrf_func : Func (uncurry is_vrf).
-Proof. Admitted.
-Global Instance is_vrf_inj : InjRel (uncurry is_vrf).
-Proof. Admitted.
-
 Definition is_my_key_aud_aux (adtr_map : map_adtr_ty) uid ver ep comm : iProp Σ :=
   ∃ hash0 hash1,
   "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep, comm) ⌝ ∗
@@ -237,7 +232,7 @@ Definition is_my_key_aud adtr_γ uid ver ep pk : iProp Σ :=
 
 (* TODO: should have cli invariant as well. *)
 Lemma audit_is_my_key ep0 ep1 cli_γ uid ver pk adtr_γ :
-  uint.nat ep0 < uint.nat ep1 →
+  uint.Z ep0 < uint.Z ep1 →
   is_my_key cli_γ uid ver ep0 pk -∗
   is_audit cli_γ adtr_γ ep1 -∗
   is_my_key_aud adtr_γ uid ver ep0 pk.
@@ -250,22 +245,22 @@ Definition is_no_other_key_aud adtr_γ uid (ep : epoch_ty) : iProp Σ :=
   "#Hhash" ∷ is_vrf uid (W64 0) hash.
 
 Lemma audit_is_no_other_key ep0 ep1 cli_γ uid adtr_γ :
-  uint.nat ep0 < uint.nat ep1 →
+  uint.Z ep0 < uint.Z ep1 →
   is_no_other_key cli_γ uid ep0 -∗
   is_audit cli_γ adtr_γ ep1 -∗
   is_no_other_key_aud adtr_γ uid ep0.
 Proof. Admitted.
 
 Definition is_other_key_aud_aux (adtr_map : map_adtr_ty) uid (ep : epoch_ty) comm0 : iProp Σ :=
-  ∃ ver ep0 hash0 hash1,
-  "%Hhist" ∷ ∀ ver', ⌜ uint.nat ver' < ver ⌝ -∗
+  ∃ (ver : w64) ep0 hash0 hash1,
+  "%Hhist" ∷ ∀ (ver' : w64), ⌜ uint.Z ver' < uint.Z ver ⌝ -∗
     ∃ hash2 ep1 comm1,
     is_vrf uid ver' hash2 ∗
     ⌜ adtr_map !! hash2 = Some (ep1, comm1) ⌝ ∗
   "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep0, comm0) ⌝ ∗
   "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
-  "#Hhash0" ∷ is_vrf uid (W64 ver) hash0 ∗
-  "#Hhash1" ∷ is_vrf uid (W64 (S ver)) hash1.
+  "#Hhash0" ∷ is_vrf uid ver hash0 ∗
+  "#Hhash1" ∷ is_vrf uid (word.add ver (W64 1)) hash1.
 
 Definition is_other_key_aud adtr_γ uid ep pk : iProp Σ :=
   ∃ adtr_map comm0,
@@ -274,14 +269,15 @@ Definition is_other_key_aud adtr_γ uid ep pk : iProp Σ :=
   "#Hcomm" ∷ is_comm pk comm0.
 
 Lemma audit_is_other_key ep0 ep1 cli_γ uid pk adtr_γ :
-  uint.nat ep0 < uint.nat ep1 →
+  uint.Z ep0 < uint.Z ep1 →
   is_other_key cli_γ uid ep0 pk -∗
   is_audit cli_γ adtr_γ ep1 -∗
   is_other_key_aud adtr_γ uid ep0 pk.
 Proof. Admitted.
 
+(* TODO: needs to be changed after msv change. *)
 Definition msv_opaque (m : map_adtr_ty) uid vals : iProp Σ :=
-  (∀ i, ⌜ i < length vals ⌝ -∗
+  (∀ (i : nat), ⌜ i < length vals ⌝ -∗
     ∃ hash, (is_vrf uid (W64 i) hash ∗ ⌜ m !! hash = vals !! i ⌝)) ∗
   (∃ hash, is_vrf uid (W64 (length vals)) hash ∗ ⌜ m !! hash = None ⌝).
 
