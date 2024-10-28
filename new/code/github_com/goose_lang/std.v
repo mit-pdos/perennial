@@ -143,10 +143,13 @@ Definition newJoinHandle : val :=
     let: "$r0" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr (![ptrT] "mu")) in
     sync.NewCond "$a0") in
     do:  ("cond" <-[ptrT] "$r0");;;
-    return: (ref_ty JoinHandle (struct.make JoinHandle [{
-       "mu" ::= ![ptrT] "mu";
-       "done" ::= #false;
-       "cond" ::= ![ptrT] "cond"
+    return: (ref_ty JoinHandle (let: "mu" := (![ptrT] "mu") in
+     let: "done" := #false in
+     let: "cond" := (![ptrT] "cond") in
+     struct.make JoinHandle [{
+       "mu" ::= "mu";
+       "done" ::= "done";
+       "cond" ::= "cond"
      }]))).
 
 (* Spawn runs `f` in a parallel goroutine and returns a handle to wait for

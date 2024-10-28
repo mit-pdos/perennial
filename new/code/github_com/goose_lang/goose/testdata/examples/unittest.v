@@ -738,12 +738,14 @@ Definition embedD__mset_ptr : list (string * val) := [
 Definition returnEmbedVal : val :=
   rec: "returnEmbedVal" <> :=
     exception_do (return: (struct.make embedB [{
+       "embedA" ::= zero_val embedA
      }])).
 
 (* go: embedded.go:39:6 *)
 Definition returnEmbedValWithPointer : val :=
   rec: "returnEmbedValWithPointer" <> :=
     exception_do (return: (struct.make embedD [{
+       "embedC" ::= zero_val embedC
      }])).
 
 (* go: embedded.go:43:6 *)
@@ -759,6 +761,7 @@ Definition useEmbeddedField : val :=
     do:  ((struct.field_ref embedA "a" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) <-[uint64T] "$r0");;;
     let: "y" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty embedD (struct.make embedD [{
+      "embedC" ::= zero_val embedC
     }])) in
     do:  ("y" <-[ptrT] "$r0");;;
     let: "$r0" := #(W64 11) in
@@ -935,6 +938,7 @@ Definition testAssignConcreteToInterface : val :=
     exception_do (let: "x" := (ref_ty ptrT "x") in
     let: "c" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }])) in
     do:  ("c" <-[ptrT] "$r0");;;
     let: "$r0" := (interface.make concreteFooer__mset_ptr (![ptrT] "c")) in
@@ -945,6 +949,7 @@ Definition testPassConcreteToInterfaceArg : val :=
   rec: "testPassConcreteToInterfaceArg" <> :=
     exception_do (let: "c" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }])) in
     do:  ("c" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (interface.make concreteFooer__mset_ptr (![ptrT] "c")) in
@@ -962,10 +967,12 @@ Definition testPassConcreteToInterfaceArgSpecial : val :=
   rec: "testPassConcreteToInterfaceArgSpecial" <> :=
     exception_do (let: "c1" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }])) in
     do:  ("c1" <-[ptrT] "$r0");;;
     let: "c2" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }])) in
     do:  ("c2" <-[ptrT] "$r0");;;
     let: "l" := (ref_ty sliceT (zero_val sliceT)) in
@@ -995,8 +1002,10 @@ Definition takesVarArgsInterface : val :=
 Definition test : val :=
   rec: "test" <> :=
     exception_do (do:  (let: "$a0" := ((let: "$sl0" := (interface.make concreteFooer__mset_ptr (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }]))) in
     let: "$sl1" := (interface.make concreteFooer__mset_ptr (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }]))) in
     slice.literal Fooer ["$sl0"; "$sl1"])) in
     takesVarArgsInterface "$a0")).
@@ -1005,6 +1014,7 @@ Definition test : val :=
 Definition returnConcrete : val :=
   rec: "returnConcrete" <> :=
     exception_do (return: (ref_ty concreteFooer (struct.make concreteFooer [{
+       "a" ::= zero_val uint64T
      }]), #(W64 10))).
 
 (* converts an object into an interface in a multiple return destructuring statement.
@@ -1026,6 +1036,7 @@ Definition testReturnStatment : val :=
   rec: "testReturnStatment" <> :=
     exception_do (let: "y" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }])) in
     do:  ("y" <-[ptrT] "$r0");;;
     return: (interface.make concreteFooer__mset_ptr (![ptrT] "y"))).
@@ -1036,6 +1047,7 @@ Definition testConversionInEq : val :=
     exception_do (let: "f" := (ref_ty Fooer "f") in
     let: "c" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty concreteFooer (struct.make concreteFooer [{
+      "a" ::= zero_val uint64T
     }])) in
     do:  ("c" <-[ptrT] "$r0");;;
     let: "$r0" := (interface.make concreteFooer__mset_ptr (![ptrT] "c")) in
@@ -1053,7 +1065,9 @@ Definition takeMultiple : val :=
 Definition giveMultiple : val :=
   rec: "giveMultiple" <> :=
     exception_do (return: (#(W64 0), interface.make concreteFooer__mset_ptr (ref_ty concreteFooer (struct.make concreteFooer [{
+       "a" ::= zero_val uint64T
      }])), ref_ty concreteFooer (struct.make concreteFooer [{
+       "a" ::= zero_val uint64T
      }]))).
 
 (* go: interfaces.go:89:6 *)
@@ -1166,31 +1180,52 @@ Definition allTheLiterals__mset_ptr : list (string * val) := [
 (* go: literals.go:9:6 *)
 Definition normalLiterals : val :=
   rec: "normalLiterals" <> :=
-    exception_do (return: (struct.make allTheLiterals [{
-       "int" ::= #(W64 0);
-       "s" ::= #"foo";
-       "b" ::= #true
+    exception_do (return: (let: "int" := #(W64 0) in
+     let: "s" := #"foo" in
+     let: "b" := #true in
+     struct.make allTheLiterals [{
+       "int" ::= "int";
+       "s" ::= "s";
+       "b" ::= "b"
      }])).
 
 (* go: literals.go:17:6 *)
-Definition specialLiterals : val :=
-  rec: "specialLiterals" <> :=
-    exception_do (return: (struct.make allTheLiterals [{
-       "int" ::= #(W64 4096);
-       "s" ::= #"";
-       "b" ::= #false
+Definition outOfOrderLiteral : val :=
+  rec: "outOfOrderLiteral" <> :=
+    exception_do (return: (let: "b" := #true in
+     let: "s" := #"foo" in
+     let: "int" := #(W64 0) in
+     struct.make allTheLiterals [{
+       "int" ::= "int";
+       "s" ::= "s";
+       "b" ::= "b"
      }])).
 
 (* go: literals.go:25:6 *)
-Definition oddLiterals : val :=
-  rec: "oddLiterals" <> :=
-    exception_do (return: (struct.make allTheLiterals [{
-       "int" ::= #(W64 5);
-       "s" ::= #"backquote string";
-       "b" ::= #false
+Definition specialLiterals : val :=
+  rec: "specialLiterals" <> :=
+    exception_do (return: (let: "int" := #(W64 4096) in
+     let: "s" := #"" in
+     let: "b" := #false in
+     struct.make allTheLiterals [{
+       "int" ::= "int";
+       "s" ::= "s";
+       "b" ::= "b"
      }])).
 
 (* go: literals.go:33:6 *)
+Definition oddLiterals : val :=
+  rec: "oddLiterals" <> :=
+    exception_do (return: (let: "int" := #(W64 5) in
+     let: "s" := #"backquote string" in
+     let: "b" := #false in
+     struct.make allTheLiterals [{
+       "int" ::= "int";
+       "s" ::= "s";
+       "b" ::= "b"
+     }])).
+
+(* go: literals.go:41:6 *)
 Definition unKeyedLiteral : val :=
   rec: "unKeyedLiteral" <> :=
     exception_do (return: (struct.make allTheLiterals [{
@@ -1718,14 +1753,18 @@ Definition ReassignVars : val :=
     let: "$r0" := #(W64 3) in
     do:  ("x" <-[uint64T] "$r0");;;
     let: "z" := (ref_ty composite (zero_val composite)) in
-    let: "$r0" := (struct.make composite [{
-      "a" ::= ![uint64T] "x";
-      "b" ::= ![uint64T] "y"
+    let: "$r0" := (let: "a" := (![uint64T] "x") in
+    let: "b" := (![uint64T] "y") in
+    struct.make composite [{
+      "a" ::= "a";
+      "b" ::= "b"
     }]) in
     do:  ("z" <-[composite] "$r0");;;
-    let: "$r0" := (struct.make composite [{
-      "a" ::= ![uint64T] "y";
-      "b" ::= ![uint64T] "x"
+    let: "$r0" := (let: "a" := (![uint64T] "y") in
+    let: "b" := (![uint64T] "x") in
+    struct.make composite [{
+      "a" ::= "a";
+      "b" ::= "b"
     }]) in
     do:  ("z" <-[composite] "$r0");;;
     let: "$r0" := (![uint64T] (struct.field_ref composite "a" "z")) in
@@ -1812,8 +1851,9 @@ Definition TwoDiskRead : val :=
   rec: "TwoDiskRead" "diskId" "a" :=
     exception_do (let: "a" := (ref_ty uint64T "a") in
     let: "diskId" := (ref_ty uint64T "diskId") in
-    return: (struct.make Block [{
-       "Value" ::= #(W64 0)
+    return: (let: "Value" := #(W64 0) in
+     struct.make Block [{
+       "Value" ::= "Value"
      }], #true)).
 
 (* TwoDiskLock is a dummy function to represent locking an address in the
@@ -2106,9 +2146,11 @@ Definition Point__mset_ptr : list (string * val) := [
 Definition UseAdd : val :=
   rec: "UseAdd" <> :=
     exception_do (let: "c" := (ref_ty Point (zero_val Point)) in
-    let: "$r0" := (struct.make Point [{
-      "x" ::= #(W64 2);
-      "y" ::= #(W64 3)
+    let: "$r0" := (let: "x" := #(W64 2) in
+    let: "y" := #(W64 3) in
+    struct.make Point [{
+      "x" ::= "x";
+      "y" ::= "y"
     }]) in
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (ref_ty uint64T (zero_val uint64T)) in
@@ -2122,9 +2164,11 @@ Definition UseAddWithLiteral : val :=
   rec: "UseAddWithLiteral" <> :=
     exception_do (let: "r" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (Point__Add (struct.make Point [{
-      "x" ::= #(W64 2);
-      "y" ::= #(W64 3)
+    (Point__Add (let: "x" := #(W64 2) in
+    let: "y" := #(W64 3) in
+    struct.make Point [{
+      "x" ::= "x";
+      "y" ::= "y"
     }])) "$a0") in
     do:  ("r" <-[uint64T] "$r0");;;
     return: (![uint64T] "r")).
@@ -2203,13 +2247,18 @@ Definition S__mset_ptr : list (string * val) := [
 (* go: struct_pointers.go:14:6 *)
 Definition NewS : val :=
   rec: "NewS" <> :=
-    exception_do (return: (ref_ty S (struct.make S [{
-       "a" ::= #(W64 2);
-       "b" ::= struct.make TwoInts [{
-         "x" ::= #(W64 1);
-         "y" ::= #(W64 2)
-       }];
-       "c" ::= #true
+    exception_do (return: (ref_ty S (let: "a" := #(W64 2) in
+     let: "b" := (let: "x" := #(W64 1) in
+     let: "y" := #(W64 2) in
+     struct.make TwoInts [{
+       "x" ::= "x";
+       "y" ::= "y"
+     }]) in
+     let: "c" := #true in
+     struct.make S [{
+       "a" ::= "a";
+       "b" ::= "b";
+       "c" ::= "c"
      }]))).
 
 (* go: struct_pointers.go:46:6 *)

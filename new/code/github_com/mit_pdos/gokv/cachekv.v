@@ -42,9 +42,11 @@ Definition DecodeValue : val :=
     let: "$r1" := "$ret1" in
     do:  ("l" <-[uint64T] "$r0");;;
     do:  ("vBytes" <-[sliceT] "$r1");;;
-    return: (struct.make cacheValue [{
-       "l" ::= ![uint64T] "l";
-       "v" ::= string.from_bytes (![sliceT] "vBytes")
+    return: (let: "l" := (![uint64T] "l") in
+     let: "v" := (string.from_bytes (![sliceT] "vBytes")) in
+     struct.make cacheValue [{
+       "v" ::= "v";
+       "l" ::= "l"
      }])).
 
 (* go: clerk.go:55:19 *)
@@ -135,9 +137,11 @@ Definition CacheKv__GetAndCache : val :=
       let: "resp" := (ref_ty stringT (zero_val stringT)) in
       let: "$r0" := (let: "$a0" := (![stringT] "key") in
       let: "$a1" := (![stringT] "enc") in
-      let: "$a2" := (let: "$a0" := (struct.make cacheValue [{
-        "v" ::= ![stringT] (struct.field_ref cacheValue "v" "old");
-        "l" ::= ![uint64T] "newLeaseExpiration"
+      let: "$a2" := (let: "$a0" := (let: "v" := (![stringT] (struct.field_ref cacheValue "v" "old")) in
+      let: "l" := (![uint64T] "newLeaseExpiration") in
+      struct.make cacheValue [{
+        "v" ::= "v";
+        "l" ::= "l"
       }]) in
       EncodeValue "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
@@ -145,9 +149,11 @@ Definition CacheKv__GetAndCache : val :=
       (if: (![stringT] "resp") = #"ok"
       then
         do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
-        let: "$r0" := (struct.make cacheValue [{
-          "v" ::= ![stringT] (struct.field_ref cacheValue "v" "old");
-          "l" ::= ![uint64T] "newLeaseExpiration"
+        let: "$r0" := (let: "v" := (![stringT] (struct.field_ref cacheValue "v" "old")) in
+        let: "l" := (![uint64T] "newLeaseExpiration") in
+        struct.make cacheValue [{
+          "v" ::= "v";
+          "l" ::= "l"
         }]) in
         do:  (map.insert (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key") "$r0");;;
         break: #()
@@ -185,9 +191,11 @@ Definition CacheKv__Put : val :=
       let: "resp" := (ref_ty stringT (zero_val stringT)) in
       let: "$r0" := (let: "$a0" := (![stringT] "key") in
       let: "$a1" := (![stringT] "enc") in
-      let: "$a2" := (let: "$a0" := (struct.make cacheValue [{
-        "v" ::= ![stringT] "val";
-        "l" ::= #(W64 0)
+      let: "$a2" := (let: "$a0" := (let: "v" := (![stringT] "val") in
+      let: "l" := #(W64 0) in
+      struct.make cacheValue [{
+        "v" ::= "v";
+        "l" ::= "l"
       }]) in
       EncodeValue "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
@@ -206,8 +214,11 @@ Definition CacheKv__mset_ptr : list (string * val) := [
 Definition Make : val :=
   rec: "Make" "kv" :=
     exception_do (let: "kv" := (ref_ty kv.KvCput "kv") in
-    return: (ref_ty CacheKv (struct.make CacheKv [{
-       "kv" ::= ![kv.KvCput] "kv";
-       "mu" ::= ref_ty sync.Mutex (zero_val sync.Mutex);
-       "cache" ::= map.make stringT cacheValue #()
+    return: (ref_ty CacheKv (let: "kv" := (![kv.KvCput] "kv") in
+     let: "mu" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
+     let: "cache" := (map.make stringT cacheValue #()) in
+     struct.make CacheKv [{
+       "kv" ::= "kv";
+       "mu" ::= "mu";
+       "cache" ::= "cache"
      }]))).

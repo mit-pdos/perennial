@@ -127,8 +127,9 @@ Definition Server__mset_ptr : list (string * val) := [
 Definition MakeServer : val :=
   rec: "MakeServer" "handlers" :=
     exception_do (let: "handlers" := (ref_ty (mapT uint64T funcT) "handlers") in
-    return: (ref_ty Server (struct.make Server [{
-       "handlers" ::= ![mapT uint64T funcT] "handlers"
+    return: (ref_ty Server (let: "handlers" := (![mapT uint64T funcT] "handlers") in
+     struct.make Server [{
+       "handlers" ::= "handlers"
      }]))).
 
 Definition callbackStateWaiting : expr := #(W64 0).
@@ -204,11 +205,14 @@ Definition Client__CallStart : val :=
     let: "$r0" := (ref_ty sliceT (zero_val sliceT)) in
     do:  ("reply_buf" <-[ptrT] "$r0");;;
     let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty Callback (struct.make Callback [{
-      "reply" ::= ![ptrT] "reply_buf";
-      "state" ::= ref_ty uint64T (zero_val uint64T);
-      "cond" ::= let: "$a0" := (interface.make sync.Mutex__mset_ptr (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) in
-      sync.NewCond "$a0"
+    let: "$r0" := (ref_ty Callback (let: "reply" := (![ptrT] "reply_buf") in
+    let: "state" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "cond" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) in
+    sync.NewCond "$a0") in
+    struct.make Callback [{
+      "reply" ::= "reply";
+      "state" ::= "state";
+      "cond" ::= "cond"
     }])) in
     do:  ("cb" <-[ptrT] "$r0");;;
     let: "$r0" := callbackStateWaiting in
@@ -248,6 +252,9 @@ Definition Client__CallStart : val :=
     grove_ffi.Send "$a0" "$a1"
     then
       return: (ref_ty Callback (struct.make Callback [{
+         "reply" ::= zero_val ptrT;
+         "state" ::= zero_val ptrT;
+         "cond" ::= zero_val ptrT
        }]), ErrDisconnect)
     else do:  #());;;
     return: (![ptrT] "cb", ErrNone)).
@@ -354,11 +361,15 @@ Definition TryMakeClient : val :=
     then return: (#(W64 1), ![ptrT] "nilClient")
     else do:  #());;;
     let: "cl" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty Client (struct.make Client [{
-      "conn" ::= ![grove_ffi.Connection] (struct.field_ref grove_ffi.ConnectRet "Connection" "a");
-      "mu" ::= ref_ty sync.Mutex (zero_val sync.Mutex);
-      "seq" ::= #(W64 1);
-      "pending" ::= map.make uint64T ptrT #()
+    let: "$r0" := (ref_ty Client (let: "conn" := (![grove_ffi.Connection] (struct.field_ref grove_ffi.ConnectRet "Connection" "a")) in
+    let: "mu" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
+    let: "seq" := #(W64 1) in
+    let: "pending" := (map.make uint64T ptrT #()) in
+    struct.make Client [{
+      "mu" ::= "mu";
+      "conn" ::= "conn";
+      "seq" ::= "seq";
+      "pending" ::= "pending"
     }])) in
     do:  ("cl" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
