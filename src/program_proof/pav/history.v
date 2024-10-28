@@ -1,6 +1,38 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
+From Perennial.program_proof.pav Require Import core.
+
+Section core_iprop.
+Context `{!heapGS Σ, !pavG Σ}.
+
+Definition know_hist_val_cliG cli_γ (uid ep : w64) (lat : lat_val_ty) : iProp Σ :=
+  let len_vals := match lat with None => 0%nat | Some (ver, val) => S $ uint.nat ver end in
+  ∃ vals,
+  "%Hlen_vals" ∷ ⌜ length vals = len_vals ⌝ ∗
+  "%Hbound_vals" ∷ ⌜ length vals < 2^64 ⌝ ∗
+  "%Hlook_lat" ∷ ⌜ last vals = snd <$> lat ⌝ ∗
+  "#Hhist" ∷ ([∗ list] ver ↦ '(prior, pk) ∈ vals,
+    (∃ dig m_γ comm,
+    "%Hlt_prior" ∷ ⌜ uint.Z prior ≤ uint.Z ep ⌝ ∗
+    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat prior) (Some (dig, m_γ)) ∗
+    "#Hin_prior" ∷ (uid, W64 ver) ↪[m_γ]□ Some (prior, comm) ∗
+    "#Hcomm" ∷ is_comm pk comm)) ∗
+  ( "Hnin_nextver" ∷ (∃ (bound : w64) dig m_γ,
+      "%Hgte_bound" ∷ ⌜ uint.Z ep ≤ uint.Z bound ⌝ ∗
+      "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat bound) (Some (dig, m_γ)) ∗
+      "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ] None)
+    ∨
+    "Hin_nextver" ∷ (∃ (bound : w64) dig m_γ comm,
+      "%Hgt_bound" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
+      "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat bound) (Some (dig, m_γ)) ∗
+      "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ] Some (bound, comm))).
+
+Definition know_hist_cliG cli_γ (uid : w64) (hist : list lat_val_ty) : iProp Σ :=
+  ([∗ list] ep ↦ lat ∈ hist, know_hist_val_cliG cli_γ uid (W64 ep) lat).
+
+End core_iprop.
+
 Module HistEntry.
 Record t :=
   mk {
@@ -17,47 +49,21 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
 End defs.
 End HistEntry.
 
-(* logical history. this may be the same as the physical history.
-but lets leave it abstract for now, so we can fill in details later
-once we know the use case. *)
-Module hist.
-Definition t : Type. Admitted.
-(* TODO: the core invariant about the logical history. *)
-Definition inv (obj : t) : Prop. Admitted.
-(* relation bw physical and logical st.  *)
-Definition phys_relate (obj : t) (hist : list HistEntry.t) : Prop. Admitted.
-End hist.
+Section hist.
+Context `{!heapGS Σ, !pavG Σ}.
 
-Section defs.
-Context `{!heapGS Σ}.
-Definition own_hist sl_hist (hist : list HistEntry.t) : iProp Σ :=
-  ∃ dim0_hist,
+Definition get_lat (phys : list HistEntry.t) (ep : w64) : lat_val_ty :=
+  let hist := (filter (λ x, uint.Z x.(HistEntry.Epoch) ≤ uint.Z ep) phys) in
+  (λ x, (W64 $ pred $ length hist, (x.(HistEntry.Epoch), x.(HistEntry.HistVal)))) <$> (last hist).
+
+Definition phys_logic_reln (phys : list HistEntry.t) (logic : list lat_val_ty) :=
+  (∀ (ep : w64) lat, logic !! uint.nat ep = Some lat → lat = get_lat phys ep) ∧
+  length logic = match last phys with None => 0%nat | Some x => S $ uint.nat x.(HistEntry.Epoch) end.
+
+Definition own_hist cli_γ uid sl_hist (hist : list HistEntry.t) : iProp Σ :=
+  ∃ dim0_hist logic_hist,
   "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
   "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, HistEntry.own p o) ∗
-  "Hrelate" ∷ hist.phys_relate log_hist hist ∗
-  "Hhist_inv" ∷ inv hist.
-End defs.
-
-Section wps.
-Context `{!heapGS Σ}.
-Lemma wp_GetHist sl_hist hist (epoch : w64) :
-  {{{
-    "Hown_hist" ∷ own_hist sl_hist hist
-  }}}
-  GetHist (slice_val sl_hist) #epoch
-  {{{
-    (is_reg : bool) sl_lat_val (lat_val : list w8), RET (#is_reg, slice_val sl_lat_val);
-    (* could directly say that lat_val is an element in the hist that corresponds to the max epoch
-    less than the one queried. *)
-    (* or, could say that the output matches whatever is returned by some logical object.
-    ultimately, it's prob easier to reason about the logical object with other things,
-    e.g., msv's, so let's have the output match that. *)
-    (* secondly, what logical state do we wanna use?
-    before, i explicitly made the logical object basically the same thing.
-    and i made the get fn something.
-    can i be more abstract here?
-    there exists some logical object, and this thing is tied into it.
-    and that object has a get fn.
-    *)
-  }}}.
-End wps.
+  "%Hlogic_reln" ∷ ⌜ phys_logic_reln hist logic_hist ⌝ ∗
+  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid logic_hist.
+End hist.

@@ -1,10 +1,10 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.pav Require Import serde.
+From Perennial.program_proof.pav Require Import classes serde.
 
 From RecordUpdate Require Export RecordSet.
 From iris.unstable.base_logic Require Export mono_list.
 From Perennial.base_logic.lib Require Export ghost_map.
-From Perennial.Helpers Require Import Integers.
+From Perennial.Helpers Require Export Integers.
 
 (* TODO: for same reason not using alias's in go code,
 prob shouldn't define all these notations. *)
@@ -31,6 +31,27 @@ Class pavG Σ :=
     #[global] pavG_client_seen_maps :: mono_listG (option (dig_ty * gname)) Σ;
     #[global] pavG_client_submaps :: ghost_mapG Σ map_label_ty cli_map_val_ty;
   }.
+
+Context `{!heapGS Σ}.
+
+(* an opening exists that binds pk to comm. *)
+Definition is_comm (pk : pk_ty) (comm : comm_ty) : iProp Σ. Admitted.
+Global Instance is_comm_persis pk comm :
+  Persistent (is_comm pk comm).
+Proof. Admitted.
+Global Instance is_comm_func : Func is_comm.
+Proof. Admitted.
+Global Instance is_comm_inj : InjRel is_comm.
+Proof. Admitted.
+
+Definition is_vrf (uid ver : w64) (hash : opaque_label_ty) : iProp Σ. Admitted.
+Global Instance is_vrf_persis uid ver hash : Persistent (is_vrf uid ver hash).
+Proof. Admitted.
+Global Instance is_vrf_func : Func (uncurry is_vrf).
+Proof. Admitted.
+Global Instance is_vrf_inj : InjRel (uncurry is_vrf).
+Proof. Admitted.
+
 End misc.
 
 Section msv_core.
@@ -158,9 +179,7 @@ Definition maps_epoch_ok' (ms : list map_ty) :=
 
 Definition adtr_inv' ms := maps_mono' ms ∧ maps_epoch_ok' ms.
 
-(* TODO: this is one way to write it. consolidates cases.
-let's see how easy it is to prove with the physical hist. *)
-Definition know_hist_val (ms : list map_ty) (uid : w64) (ep : w64) (lat : lat_val_ty) :=
+Definition know_hist_val (ms : list map_ty) (uid ep : w64) (lat : lat_val_ty) :=
   let len_vals := match lat with None => 0%nat | Some (ver, val) => S (uint.nat ver) end in
   ∃ vals, length vals = len_vals ∧ length vals < 2^64 ∧ last vals = snd <$> lat ∧
   (* prior vers exist in prior or this map. *)
@@ -172,8 +191,8 @@ Definition know_hist_val (ms : list map_ty) (uid : w64) (ep : w64) (lat : lat_va
       m !! (uid, W64 (length vals)) = None)
     ∨
     (* next ver exists in later map. *)
-    (∃ (bound : w64) m comm, uint.Z ep < uint.Z bound ∧ ms !! uint.nat bound = Some m ∧
-      m !! (uid, W64 (length vals)) = Some (bound, comm))).
+    (∃ (bound : w64) m pk, uint.Z ep < uint.Z bound ∧ ms !! uint.nat bound = Some m ∧
+      m !! (uid, W64 (length vals)) = Some (bound, pk))).
 
 Definition know_hist (ms : list map_ty) (uid : w64) (hist : list lat_val_ty) :=
   (∀ (ep : w64) lat, hist !! uint.nat ep = Some lat → know_hist_val ms uid ep lat).

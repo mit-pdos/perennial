@@ -79,16 +79,6 @@ End clientErr.
 Section specs.
 Context `{!heapGS Σ, !pavG Σ}.
 
-(* an opening exists that binds pk to comm. *)
-Definition is_comm (pk : pk_ty) (comm : comm_ty) : iProp Σ. Admitted.
-Global Instance is_comm_persis pk comm :
-  Persistent (is_comm pk comm).
-Proof. Admitted.
-Global Instance is_comm_func : Func is_comm.
-Proof. Admitted.
-Global Instance is_comm_inj : InjRel is_comm.
-Proof. Admitted.
-
 Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
   ∃ dig sm_γ comm,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
