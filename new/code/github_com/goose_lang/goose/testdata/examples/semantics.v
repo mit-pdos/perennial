@@ -818,6 +818,107 @@ Definition failing_testArgumentOrder : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
+Definition genericStruct (A: go_type) (B: go_type) : go_type := structT [
+  "x" :: A;
+  "y" :: B
+].
+
+Definition genericStruct__mset : list (string * val) := [
+].
+
+Definition genericStruct__mset_ptr : list (string * val) := [
+].
+
+Definition genericStruct2 (T: go_type) : go_type := structT [
+  "g" :: T
+].
+
+Definition genericStruct2__mset : list (string * val) := [
+].
+
+Definition genericStruct2__mset_ptr : list (string * val) := [
+].
+
+Definition nonGenericStruct : go_type := structT [
+  "p" :: uint64T
+].
+
+Definition nonGenericStruct__mset : list (string * val) := [
+].
+
+Definition nonGenericStruct__mset_ptr : list (string * val) := [
+].
+
+Definition IntMap (T: go_type) : go_type := mapT uint64T T.
+
+Definition IntMap__mset : list (string * val) := [
+].
+
+Definition IntMap__mset_ptr : list (string * val) := [
+].
+
+(* go: generics.go:18:6 *)
+Definition identity (A: go_type) (B: go_type) : val :=
+  rec: "identity" "a" "b" :=
+    exception_do (let: "b" := (ref_ty B "b") in
+    let: "a" := (ref_ty A "a") in
+    return: (![A] "a", ![B] "b")).
+
+(* go: generics.go:22:6 *)
+Definition identity2 (A: go_type) : val :=
+  rec: "identity2" "a" :=
+    exception_do (let: "a" := (ref_ty A "a") in
+    return: (![A] "a")).
+
+(* go: generics.go:26:6 *)
+Definition testGenericStructs : val :=
+  rec: "testGenericStructs" <> :=
+    exception_do (let: "intMap" := (ref_ty (IntMap uint64T) (zero_val (IntMap uint64T))) in
+    let: "$r0" := (map.make uint64T uint64T #()) in
+    do:  ("intMap" <-[IntMap uint64T] "$r0");;;
+    let: "$r0" := #(W64 2) in
+    do:  (map.insert (![IntMap uint64T] "intMap") #(W64 1) "$r0");;;
+    let: "c" := (ref_ty (genericStruct2 uint64T) (zero_val (genericStruct2 uint64T))) in
+    let: "$r0" := (struct.make (genericStruct2 uint64T) [{
+      "g" ::= #(W64 2)
+    }]) in
+    do:  ("c" <-[genericStruct2 uint64T] "$r0");;;
+    let: "u" := (ref_ty (genericStruct stringT uint64T) (zero_val (genericStruct stringT uint64T))) in
+    let: "$r0" := (struct.make (genericStruct stringT uint64T) [{
+      "x" ::= #(str "test");
+      "y" ::= #(W64 7)
+    }]) in
+    do:  ("u" <-[genericStruct stringT uint64T] "$r0");;;
+    let: "d" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := #(W64 5) in
+    (identity2 uint64T) "$a0") in
+    do:  ("d" <-[uint64T] "$r0");;;
+    let: "d2" := (ref_ty uint64T (zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := #(str "test") in
+    let: "$a1" := #(W64 5) in
+    (identity stringT uint64T) "$a0" "$a1") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  "$r0";;;
+    do:  ("d2" <-[uint64T] "$r1");;;
+    let: "g" := (ref_ty funcT (zero_val funcT)) in
+    let: "$r0" := (identity stringT uint64T) in
+    do:  ("g" <-[funcT] "$r0");;;
+    let: "b" := (ref_ty uint64T (zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := #(str "test") in
+    let: "$a1" := #(W64 3) in
+    (![funcT] "g") "$a0" "$a1") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  "$r0";;;
+    do:  ("b" <-[uint64T] "$r1");;;
+    let: "h" := (ref_ty nonGenericStruct (zero_val nonGenericStruct)) in
+    let: "$r0" := (struct.make nonGenericStruct [{
+      "p" ::= #(W64 3)
+    }]) in
+    do:  ("h" <-[nonGenericStruct] "$r0");;;
+    return: ((((((((![uint64T] "d") + (![uint64T] "d2")) + (![uint64T] (struct.field_ref (genericStruct2 uint64T) "g" "c"))) + (![uint64T] (struct.field_ref (genericStruct stringT uint64T) "y" "u"))) + (![uint64T] "b")) + (![uint64T] (struct.field_ref nonGenericStruct "p" "h"))) + (Fst (map.get (![IntMap uint64T] "intMap") #(W64 1)))) = #(W64 27))).
+
 (* go: int_conversions.go:3:6 *)
 Definition testU64ToU32 : val :=
   rec: "testU64ToU32" <> :=
