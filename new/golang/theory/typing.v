@@ -387,9 +387,9 @@ Lemma struct_fields_val_inj a b :
   struct.fields_val a = struct.fields_val b →
   a = b.
 Proof.
-  rewrite struct.fields_val_unseal /= /struct.fields_val_def list.val_unseal.
+  rewrite struct.fields_val_unseal.
   dependent induction b generalizing a.
-  { by destruct a. }
+  { by destruct a as [|[]]. }
   destruct a0.
   destruct a as [|[]]; first done.
   rewrite /= => [=].

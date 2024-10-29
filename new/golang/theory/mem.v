@@ -44,30 +44,21 @@ Section goose_lang.
                                                      (λ q, l ↦#{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
-  Global Instance list_val_inj:
-    Inj (=) (=) list.val.
-  Proof.
-    rewrite list.val_unseal.
-    intros ?? Heq.
-    dependent induction x.
-    - destruct y; done.
-    - destruct y.
-      + done.
-      + simpl in Heq. inversion Heq. subst. f_equal. apply IHx. done.
-  Qed.
-
   Global Instance struct_fields_val_inj :
     Inj (=) (=) struct.fields_val.
   Proof.
     rewrite struct.fields_val_unseal /struct.fields_val_def.
     intros ?? Heq.
+    dependent induction y generalizing x;
+    destruct x as [|[]]; try done.
+    { destruct a; done. }
+    destruct a.
+    injection Heq as Heq.
+    subst.
     eapply inj in Heq; last apply _.
-    eapply inj in Heq; first done.
-    apply list_fmap_eq_inj.
-    clear Heq x y.
-    intros [][] Heq. simpl in *.
-    inversion Heq; subst.
-    apply to_val_inj in H0. subst. done.
+    subst.
+    f_equal.
+    by apply IHy.
   Qed.
 
   Local Lemma flatten_struct_inj (v1 v2 : val) :

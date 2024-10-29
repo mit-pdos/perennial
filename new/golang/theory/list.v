@@ -5,31 +5,59 @@ From New.golang.theory Require Import proofmode.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!IntoVal V}.
 
-Global Instance pure_cons (v : val) (l : list val) :
-  PureWp True (list.Cons v (list.val l)) (list.val (v :: l)).
+Global Instance to_val_list : IntoVal (list V) :=
+  {|
+    to_val_def := fix go (l : list V) :=
+        match l with
+        | [] => InjLV #()
+        | h :: tl => (InjRV (#h, go tl))
+        end
+  |}.
+
+Global Instance wp_Cons (v : V) (l : list V) :
+  PureWp True (list.Cons #v #l) #(v :: l).
 Proof.
-  rewrite list.Cons_unseal list.val_unseal.
-  intros ?????. iIntros "Hwp". wp_call_lc "?". by iApply "Hwp".
+  rewrite list.Cons_unseal.
+  intros ?????. iIntros "Hwp". wp_call_lc "?".
+  simpl.
+  repeat rewrite to_val_unseal /=.
+  by iApply "Hwp".
 Qed.
 
-Global Instance wp_list_Match (l : list val) (handleNil handleCons : val) :
+Global Instance wp_Cons_Nil (v : V) :
+  PureWp True (list.Cons #v list.Nil) #(v :: nil).
+Proof.
+  rewrite list.Cons_unseal list.Nil_unseal.
+  intros ?????. iIntros "Hwp". wp_call_lc "?".
+  simpl.
+  rewrite /list.Nil_def.
+  repeat rewrite to_val_unseal /=.
+  by iApply "Hwp".
+Qed.
+
+Global Instance wp_list_Match (l : list V) (handleNil handleCons : val) :
   PureWp True
-    (list.Match (list.val l) handleNil handleCons)
+    (list.Match #l handleNil handleCons)
     (match l with
      | nil => (handleNil #())%V
-     | cons a l => (handleCons a (list.val l))%V
+     | cons v l => (handleCons #v #l)%V
      end)
 .
 Proof.
-  rewrite list.Match_unseal list.val_unseal.
+  rewrite list.Match_unseal.
   intros ?????. iIntros "Hwp".
-  destruct l; wp_call_lc "?"; by iApply "Hwp".
+  rewrite [in #l]to_val_unseal.
+  destruct l; wp_call_lc "?".
+  - by iApply "Hwp".
+  - repeat rewrite to_val_unseal /=.
+    by iApply "Hwp".
 Qed.
 
-Lemma wp_list_Length {stk E} (l : list val) :
+Lemma wp_list_Length {stk E} (l : list V) :
   {{{ True }}}
-    (list.Length (list.val l)) @ stk ; E
+    (list.Length #l) @ stk ; E
   {{{ RET #(W64 (length l)); ⌜ length l = uint.nat (W64 (length l)) ⌝ }}}.
 Proof.
   iIntros (?) "_ HΦ".

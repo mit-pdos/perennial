@@ -112,26 +112,16 @@ Fixpoint assocl_lookup {A} (f : string) (field_vals: list (string * A)) : option
   | (f', v)::fs => if String.eqb f' f then Some v else assocl_lookup f fs
   end.
 
-Module list.
-Section defn.
-  Context `{ffi_syntax}.
-  Fixpoint val_def (x : list val) : val :=
-    match x with
-    | [] => InjLV #()
-    | h :: tl => (InjRV (h, val_def tl))
-    end.
-  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
-  Definition val_unseal : val = _ := seal_eq _.
-End defn.
-End list.
-
 Module struct.
 Definition descriptor := list (string * go_type).
 Section goose_lang.
   Context `{ffi_syntax}.
 
-  Definition fields_val_def (m : list (string* val)) : val :=
-    list.val (fmap (λ '(a,b), (#a, b)%V) m).
+  Fixpoint fields_val_def (m : list (string * val)) : val :=
+    match m with
+    | [] => InjLV #()
+    | (f, v) :: tl => InjRV ((#f, v), fields_val_def tl)
+    end.
   Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
   Definition fields_val_unseal : fields_val = _ := seal_eq _.
 End goose_lang.
@@ -139,14 +129,15 @@ End struct.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_array `{!IntoVal V} : IntoVal (list V) :=
+(* FIXME
+Global Instance into_val_array `{!IntoVal V} n : IntoVal (vec n V) :=
   {| to_val_def :=
-      fix go (x : list V) : val :=
+      fix go n (x : vec n V) : val :=
         match x with
         | [] => #()
-        | h :: tl => (#h, go tl)%V
+        | Vector.cons h n tl => (#h, go n tl)%V
         end
-  |}.
+  |}. *)
 
 Global Instance into_val_slice : IntoVal slice.t :=
   {|

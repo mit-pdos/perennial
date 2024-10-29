@@ -157,8 +157,8 @@ Global Instance wp_struct_fields_cons_nil (k : string) (l : list (string * val))
 .
 Proof.
   iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal.
-  wp_pure_lc "?". wp_pures. by iApply "HΦ".
+  rewrite struct.fields_val_unseal list.Cons_unseal.
+  wp_call_lc "?". by iApply "HΦ".
 Qed.
 
 Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
@@ -168,8 +168,8 @@ Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v 
 .
 Proof.
   iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal /=.
-  wp_pure_lc "?". wp_pures. by iApply "HΦ".
+  rewrite struct.fields_val_unseal list.Cons_unseal /=.
+  wp_call_lc "?". by iApply "HΦ".
 Qed.
 
 Global Instance wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
@@ -181,10 +181,14 @@ Proof.
   iIntros (?????) "HΦ".
   rewrite struct.fields_val_unseal.
   iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
-  [base]: wp_call_lc "?"; by iApply "HΦ".
+  [base]:{
+    simpl. wp_call. rewrite list.Match_unseal.
+    wp_call_lc "?". by iApply "HΦ".
+  }
   [cons]: {
     wp_call_lc "?".
-    rewrite /struct.fields_val_def /=.
+    rewrite /struct.fields_val_def list.Match_unseal /=.
+    wp_call.
     destruct bool_decide eqn:Heqb; wp_pures.
     {
       rewrite bool_decide_eq_true in Heqb.

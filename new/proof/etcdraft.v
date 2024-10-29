@@ -308,6 +308,15 @@ Admitted.
 Ltac wp_steps :=
   wp_pures; try ((wp_load; wp_steps) || (wp_store; wp_steps)).
 
+
+Lemma wp_slice_literal t {V stk E} :
+  ∀ (l : list V) `{!IntoVal V} `{!IntoValTyped V t},
+  {{{ True }}}
+    slice.literal t #l @ stk ; E
+  {{{ sl, RET #sl; sl ↦* l }}}.
+Proof.
+Admitted.
+
 Lemma wp_testLeaderElection2 :
   {{{ True }}}
     testLeaderElection2 #null #false
@@ -335,8 +344,12 @@ Proof.
   wp_alloc tests as "Htests".
   wp_steps.
 
-  wp_apply wp_slice_literal.
-  { instantiate (1:=[_ ; _ ; _ ]). done. }
+  (* wp_bind (slice.literal _ _)%E.
+  unshelve iPoseProofCore (wp_slice_literal stateMachine _ with "[//]") as false
+    (fun Htmp => iApplyHyp Htmp). *)
+  (* FIXME: find a way to avoid shelved typeclass goal. Not sure why [_] is
+     needed to avoid the shelved goal. *)
+  wp_apply (wp_slice_literal stateMachine _).
   iIntros (?) "?".
 
   wp_pures.
@@ -344,19 +357,14 @@ Proof.
   iIntros (?) "Hnw1".
 
   wp_steps.
-  (* FIXME: slice literal simplification *)
-  Ltac solve_slice_literal :=
-    repeat ((by instantiate (1:=nil)) || instantiate (1:=cons _ _); simpl; f_equal).
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  wp_apply (wp_slice_literal stateMachine _).
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw2".
 
   wp_steps.
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   (* Time wp_apply (wp_newNetworkWithConfigInit with "[$]"). *)
@@ -364,16 +372,14 @@ Proof.
   iIntros (?) "Hnw3".
 
   wp_steps.
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw4".
 
   wp_steps.
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
@@ -381,39 +387,34 @@ Proof.
 
   wp_steps.
 
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr1".
 
   wp_steps.
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr2".
 
   wp_steps.
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_entsWithConfig with "[$]").
   iIntros (?) "Hr3".
 
   wp_pures.
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw6".
   wp_pures.
-  wp_apply wp_slice_literal.
-  { solve_slice_literal. }
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_steps.
 

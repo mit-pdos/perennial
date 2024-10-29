@@ -422,13 +422,11 @@ Proof.
     iApply "Hiters". by iFrame.
 Qed.
 
-Lemma wp_slice_literal {stk E} (lv : list val) (l : list V) :
-  lv = # <$> l →
+Lemma wp_slice_literal {stk E} (l : list V) :
   {{{ True }}}
-    slice.literal t (list.val lv) @ stk ; E
+    slice.literal t #l @ stk ; E
   {{{ sl, RET #sl; sl ↦* l }}}.
 Proof.
-  intros ->.
   iIntros (Φ) "_ HΦ".
   wp_call.
   wp_apply wp_list_Length.
@@ -439,7 +437,7 @@ Proof.
   wp_pures.
   wp_bind (ref _)%E.
   iApply (wp_alloc_untyped with "[//]").
-  { instantiate (1:=list.val (# <$>l)). rewrite list.val_unseal. by destruct l. }
+  { instantiate (1:=#l). rewrite to_val_unseal /=. by destruct l. }
   iNext. iIntros (l_ptr) "Hl".
   wp_pures.
   rewrite -default_val_eq_zero_val.
@@ -450,7 +448,7 @@ Proof.
   iAssert (∃ (i : w64),
       "%Hi" ∷ ⌜ uint.Z i <= uint.Z (W64 (length l)) ⌝ ∗
       "Hi" ∷ i_ptr ↦# i ∗
-      "Hl" ∷ l_ptr ↦ (list.val $ # <$> (drop (uint.nat i) l)) ∗
+      "Hl" ∷ l_ptr ↦ (# (drop (uint.nat i) l)) ∗
       "Hsl" ∷ sl ↦* (take (uint.nat i) l ++ replicate (length l - uint.nat i) (default_val V))
     )%I
     with "[Hi Hl Hsl]" as "Hloop".

@@ -5,6 +5,10 @@ Module list.
 Section defn.
   Context `{ffi_syntax}.
 
+  Definition Nil_def : val := InjLV #().
+  Program Definition Nil := unseal (_:seal (@Nil_def)). Obligation 1. by eexists. Qed.
+  Definition Nil_unseal : Nil = _ := seal_eq _.
+
   Definition Cons_def : val := λ: "h" "tl", InjR ("h", "tl").
   Program Definition Cons := unseal (_:seal (@Cons_def)). Obligation 1. by eexists. Qed.
   Definition Cons_unseal : Cons = _ := seal_eq _.
@@ -29,6 +33,6 @@ Section defn.
 End defn.
 End list.
 
-Notation "[ ]" := (list.val nil) (only parsing) : expr_scope.
+Notation "[ ]" := (list.Nil) (only parsing) : expr_scope.
 Notation "[ x ]" := (list.Cons x []%E) : expr_scope.
 Notation "[ x ; y ; .. ; z ]" := (list.Cons x (list.Cons y .. (list.Cons z []%E) ..)) : expr_scope.
