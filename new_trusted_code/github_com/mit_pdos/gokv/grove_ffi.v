@@ -23,14 +23,14 @@ Section grove.
 
   (** Type: func(uint64) Listener *)
   Definition Listen : val :=
-    λ: "e", ExternalOp ListenOp "e".
+    λ: "e", ref (ExternalOp ListenOp "e").
 
   (** Type: func(uint64) (bool, Connection) *)
   Definition Connect : val :=
     λ: "e",
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
-      let: "socket" := Snd "c" in
+      let: "socket" := ref (Snd "c") in
       struct.make ConnectRet [{
         "Err" ::= "err" ;
         "Connection" ::= "socket"
@@ -38,16 +38,16 @@ Section grove.
 
   (** Type: func(Listener) Connection *)
   Definition Accept : val :=
-    λ: "e", ExternalOp AcceptOp "e".
+    λ: "e", ref (ExternalOp AcceptOp (!"e")).
 
   (** Type: func(Connection, []byte) *)
   Definition Send : val :=
-    λ: "e" "m", ExternalOp SendOp ("e", (slice.ptr "m", slice.len "m")).
+    λ: "e" "m", ExternalOp SendOp (!"e", (slice.ptr "m", slice.len "m")).
 
   (** Type: func(Connection) (bool, []byte) *)
   Definition Receive : val :=
     λ: "e",
-      let: "r" := ExternalOp RecvOp "e" in
+      let: "r" := ExternalOp RecvOp (!"e") in
       let: "err" := Fst "r" in
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in

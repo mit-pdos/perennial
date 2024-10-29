@@ -14,7 +14,7 @@ Section goose_lang.
 
   Infix "=?" := (String.eqb).
 
-  Definition val_def (t : go_type) (field_vals: list (string*val)): val :=
+  Definition val_aux_def (t : go_type) (field_vals: list (string*val)): val :=
     match t with
     | structT d => (fix val_struct (fs : list (string*go_type)) :=
                      match fs with
@@ -23,8 +23,8 @@ Section goose_lang.
                      end) d
     | _ => LitV LitPoison
     end.
-  Program Definition val := unseal (_:seal (@val_def)). Obligation 1. by eexists. Qed.
-  Definition val_unseal : val = _ := seal_eq _.
+  Program Definition val_aux := unseal (_:seal (@val_aux_def)). Obligation 1. by eexists. Qed.
+  Definition val_aux_unseal : val_aux = _ := seal_eq _.
 End goose_lang.
 End struct.
 
@@ -97,7 +97,7 @@ destruct a. apply Forall_cons. split.
   | has_go_type_struct
       (d : struct.descriptor) fvs
       (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup f fvs)) t)
-    : has_go_type (struct.val (structT d) fvs) (structT d)
+    : has_go_type (struct.val_aux (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func (f : func.t) : has_go_type #f funcT
   | has_go_type_func_nil : has_go_type #null funcT
@@ -118,14 +118,14 @@ destruct a. apply Forall_cons. split.
       by rewrite -zero_val_unseal.
     }
     { (* structT *)
-      replace (zero_val_def (structT decls)) with (struct.val (structT decls) []).
+      replace (zero_val_def (structT decls)) with (struct.val_aux (structT decls) []).
       {
         econstructor. intros. simpl.
         apply Hfields.
         apply in_map_iff. eexists _.
         split; last done. done.
       }
-      rewrite struct.val_unseal.
+      rewrite struct.val_aux_unseal.
       induction decls.
       { done. }
       destruct a. simpl.
@@ -157,7 +157,7 @@ destruct a. apply Forall_cons. split.
         rewrite length_app.
         rewrite IHa Nat.mul_succ_l Nat.add_comm.
         f_equal. apply H. by left.
-    - rewrite struct.val_unseal.
+    - rewrite struct.val_aux_unseal.
       induction d.
       { rewrite /= ?to_val_unseal. done. }
       destruct a. cbn.
@@ -181,7 +181,7 @@ destruct a. apply Forall_cons. split.
     | stringT => #("")
     | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
     | sliceT => #slice.nil
-    | structT decls => struct.val t []
+    | structT decls => struct.val_aux t []
     | ptrT => #null
     | funcT => #func.nil
     | interfaceT => #interface.nil
@@ -195,7 +195,7 @@ destruct a. apply Forall_cons. split.
     rewrite zero_val_unseal.
     induction t; try done.
     { simpl. by rewrite zero_val_unseal. }
-    simpl. rewrite struct.val_unseal.
+    simpl. rewrite struct.val_aux_unseal.
     induction decls; first done.
     destruct a. simpl.
     by rewrite IHdecls /= !zero_val_unseal.
@@ -298,7 +298,7 @@ Proof.
     + rewrite /=. split.
       { apply H0; naive_solver. }
       { apply IHa; naive_solver. }
-  - rewrite struct.val_unseal. simpl.
+  - rewrite struct.val_aux_unseal. simpl.
     clear Hfields. simpl in Hcomp.
     induction d as [|[]].
     + rewrite /= to_val_unseal //.

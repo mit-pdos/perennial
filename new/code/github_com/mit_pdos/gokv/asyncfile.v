@@ -136,31 +136,31 @@ Definition MakeAsyncFile : val :=
     exception_do (let: "filename" := (ref_ty stringT "filename") in
     let: "mu" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
     let: "s" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty AsyncFile (let: "mu" := "mu" in
-    let: "indexCond" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr "mu") in
+    let: "$r0" := (ref_ty AsyncFile (let: "$mu" := "mu" in
+    let: "$indexCond" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr "mu") in
     sync.NewCond "$a0") in
-    let: "closedCond" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr "mu") in
+    let: "$closedCond" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr "mu") in
     sync.NewCond "$a0") in
-    let: "durableIndexCond" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr "mu") in
+    let: "$durableIndexCond" := (let: "$a0" := (interface.make sync.Mutex__mset_ptr "mu") in
     sync.NewCond "$a0") in
-    let: "filename" := (![stringT] "filename") in
-    let: "data" := (let: "$a0" := (![stringT] "filename") in
+    let: "$filename" := (![stringT] "filename") in
+    let: "$data" := (let: "$a0" := (![stringT] "filename") in
     grove_ffi.FileRead "$a0") in
-    let: "index" := #(W64 0) in
-    let: "durableIndex" := #(W64 0) in
-    let: "closed" := #false in
-    let: "closeRequested" := #false in
+    let: "$index" := #(W64 0) in
+    let: "$durableIndex" := #(W64 0) in
+    let: "$closed" := #false in
+    let: "$closeRequested" := #false in
     struct.make AsyncFile [{
-      "mu" ::= "mu";
-      "data" ::= "data";
-      "filename" ::= "filename";
-      "index" ::= "index";
-      "indexCond" ::= "indexCond";
-      "durableIndex" ::= "durableIndex";
-      "durableIndexCond" ::= "durableIndexCond";
-      "closeRequested" ::= "closeRequested";
-      "closed" ::= "closed";
-      "closedCond" ::= "closedCond"
+      "mu" ::= "$mu";
+      "data" ::= "$data";
+      "filename" ::= "$filename";
+      "index" ::= "$index";
+      "indexCond" ::= "$indexCond";
+      "durableIndex" ::= "$durableIndex";
+      "durableIndexCond" ::= "$durableIndexCond";
+      "closeRequested" ::= "$closeRequested";
+      "closed" ::= "$closed";
+      "closedCond" ::= "$closedCond"
     }])) in
     do:  ("s" <-[ptrT] "$r0");;;
     let: "data" := (ref_ty sliceT (zero_val sliceT)) in

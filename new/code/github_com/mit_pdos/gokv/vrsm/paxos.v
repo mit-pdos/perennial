@@ -117,9 +117,9 @@ Definition singleClerk__applyAsFollower : val :=
       return: (let: "$a0" := (![sliceT] (![ptrT] "raw_reply")) in
        decodeApplyAsFollowerReply "$a0")
     else
-      return: (ref_ty applyAsFollowerReply (let: "err" := ETimeout in
+      return: (ref_ty applyAsFollowerReply (let: "$err" := ETimeout in
        struct.make applyAsFollowerReply [{
-         "err" ::= "err"
+         "err" ::= "$err"
        }])))).
 
 Definition enterNewEpochReply : go_type := structT [
@@ -207,9 +207,9 @@ Definition singleClerk__enterNewEpoch : val :=
       return: (let: "$a0" := (![sliceT] (![ptrT] "raw_reply")) in
        decodeEnterNewEpochReply "$a0")
     else
-      return: (ref_ty enterNewEpochReply (let: "err" := ETimeout in
+      return: (ref_ty enterNewEpochReply (let: "$err" := ETimeout in
        struct.make enterNewEpochReply [{
-         "err" ::= "err";
+         "err" ::= "$err";
          "acceptedEpoch" ::= zero_val uint64T;
          "nextIndex" ::= zero_val uint64T;
          "state" ::= zero_val sliceT
@@ -226,10 +226,10 @@ Definition MakeSingleClerk : val :=
   rec: "MakeSingleClerk" "addr" :=
     exception_do (let: "addr" := (ref_ty uint64T "addr") in
     let: "ck" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty singleClerk (let: "cl" := (let: "$a0" := (![uint64T] "addr") in
+    let: "$r0" := (ref_ty singleClerk (let: "$cl" := (let: "$a0" := (![uint64T] "addr") in
     reconnectclient.MakeReconnectingClient "$a0") in
     struct.make singleClerk [{
-      "cl" ::= "cl"
+      "cl" ::= "$cl"
     }])) in
     do:  ("ck" <-[ptrT] "$r0");;;
     return: (![ptrT] "ck")).
@@ -521,13 +521,13 @@ Definition Server__TryAcquire : val :=
       std.SumAssumeNoOverflow "$a0" "$a1") in
       do:  ((struct.field_ref paxosState "nextIndex" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s")))) <-[uint64T] "$r0");;;
       let: "args" := (ref_ty ptrT (zero_val ptrT)) in
-      let: "$r0" := (ref_ty applyAsFollowerArgs (let: "epoch" := (![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) in
-      let: "nextIndex" := (![uint64T] (struct.field_ref paxosState "nextIndex" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) in
-      let: "state" := (![sliceT] (struct.field_ref paxosState "state" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) in
+      let: "$r0" := (ref_ty applyAsFollowerArgs (let: "$epoch" := (![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) in
+      let: "$nextIndex" := (![uint64T] (struct.field_ref paxosState "nextIndex" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) in
+      let: "$state" := (![sliceT] (struct.field_ref paxosState "state" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) in
       struct.make applyAsFollowerArgs [{
-        "epoch" ::= "epoch";
-        "nextIndex" ::= "nextIndex";
-        "state" ::= "state"
+        "epoch" ::= "$epoch";
+        "nextIndex" ::= "$nextIndex";
+        "state" ::= "$state"
       }])) in
       do:  ("args" <-[ptrT] "$r0");;;
       let: "waitFn" := (ref_ty funcT (zero_val funcT)) in
@@ -646,9 +646,9 @@ Definition Server__TryBecomeLeader : val :=
     let: "$r0" := (![sliceT] (struct.field_ref Server "clerks" (![ptrT] "s"))) in
     do:  ("clerks" <-[sliceT] "$r0");;;
     let: "args" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty enterNewEpochArgs (let: "epoch" := ((![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) + #(W64 1)) in
+    let: "$r0" := (ref_ty enterNewEpochArgs (let: "$epoch" := ((![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))) + #(W64 1)) in
     struct.make enterNewEpochArgs [{
-      "epoch" ::= "epoch"
+      "epoch" ::= "$epoch"
     }])) in
     do:  ("args" <-[ptrT] "$r0");;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;

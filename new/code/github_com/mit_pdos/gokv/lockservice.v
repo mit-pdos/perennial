@@ -41,9 +41,9 @@ Definition LockClerk__mset_ptr : list (string * val) := [
 Definition MakeLockClerk : val :=
   rec: "MakeLockClerk" "kv" :=
     exception_do (let: "kv" := (ref_ty kv.KvCput "kv") in
-    return: (ref_ty LockClerk (let: "kv" := (![kv.KvCput] "kv") in
+    return: (ref_ty LockClerk (let: "$kv" := (![kv.KvCput] "kv") in
      struct.make LockClerk [{
-       "kv" ::= "kv"
+       "kv" ::= "$kv"
      }]))).
 
 End code.

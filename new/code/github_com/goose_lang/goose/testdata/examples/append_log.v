@@ -148,23 +148,23 @@ Definition Init : val :=
     exception_do (let: "diskSz" := (ref_ty uint64T "diskSz") in
     (if: (![uint64T] "diskSz") < #(W64 1)
     then
-      return: (ref_ty Log (let: "m" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-       let: "sz" := #(W64 0) in
-       let: "diskSz" := #(W64 0) in
+      return: (ref_ty Log (let: "$m" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
+       let: "$sz" := #(W64 0) in
+       let: "$diskSz" := #(W64 0) in
        struct.make Log [{
-         "m" ::= "m";
-         "sz" ::= "sz";
-         "diskSz" ::= "diskSz"
+         "m" ::= "$m";
+         "sz" ::= "$sz";
+         "diskSz" ::= "$diskSz"
        }]), #false)
     else do:  #());;;
     let: "log" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty Log (let: "m" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-    let: "sz" := #(W64 0) in
-    let: "diskSz" := (![uint64T] "diskSz") in
+    let: "$r0" := (ref_ty Log (let: "$m" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
+    let: "$sz" := #(W64 0) in
+    let: "$diskSz" := (![uint64T] "diskSz") in
     struct.make Log [{
-      "m" ::= "m";
-      "sz" ::= "sz";
-      "diskSz" ::= "diskSz"
+      "m" ::= "$m";
+      "sz" ::= "$sz";
+      "diskSz" ::= "$diskSz"
     }])) in
     do:  ("log" <-[ptrT] "$r0");;;
     do:  ((Log__writeHdr (![ptrT] "log")) #());;;
@@ -187,11 +187,11 @@ Definition Open : val :=
     let: "diskSz" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((marshal.Dec__GetInt (![marshal.Dec] "dec")) #()) in
     do:  ("diskSz" <-[uint64T] "$r0");;;
-    return: (ref_ty Log (let: "m" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-     let: "sz" := (![uint64T] "sz") in
-     let: "diskSz" := (![uint64T] "diskSz") in
+    return: (ref_ty Log (let: "$m" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
+     let: "$sz" := (![uint64T] "sz") in
+     let: "$diskSz" := (![uint64T] "diskSz") in
      struct.make Log [{
-       "m" ::= "m";
-       "sz" ::= "sz";
-       "diskSz" ::= "diskSz"
+       "m" ::= "$m";
+       "sz" ::= "$sz";
+       "diskSz" ::= "$diskSz"
      }]))).

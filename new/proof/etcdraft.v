@@ -12,16 +12,28 @@ End blackHole.
 
 Instance into_val_blackHole `{ffi_syntax} : IntoVal blackHole.t :=
   {|
-    to_val_def := λ v, struct.val blackHole []
+    to_val_def := λ v, struct.val_aux blackHole []
   |}.
 Program Instance into_val_typed_blackHole `{ffi_syntax} : IntoValTyped blackHole.t blackHole :=
 {| default_val := blackHole.mk |}.
 Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
 Next Obligation.
-  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal //=.
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal //=.
 Qed.
 Next Obligation. Admitted.
 Final Obligation. solve_decision. Qed.
+
+Instance wp_struct_make_blackHole `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} :
+  PureWp True
+  (struct.make blackHole (struct.fields_val []%V))
+  #(blackHole.mk)
+.
+Proof.
+  pose proof wp_struct_make.
+  rewrite /PureWp => *. iIntros "Hwp".
+  wp_pure_lc "Hlc".
+  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+Qed.
 
 Module testLeaderElectionStruct.
 Record t :=
@@ -34,7 +46,7 @@ End testLeaderElectionStruct.
 Instance into_val_testLeaderElectionStruct `{ffi_syntax} : IntoVal testLeaderElectionStruct.t :=
   {|
     to_val_def :=
-      λ v, struct.val testLeaderElectionStruct [
+      λ v, struct.val_aux testLeaderElectionStruct [
                "network" ::= #v.(testLeaderElectionStruct.network);
                "state" ::= #v.(testLeaderElectionStruct.state);
                "expTerm" ::= #v.(testLeaderElectionStruct.expTerm)
@@ -45,11 +57,28 @@ Program Instance into_val_typed_testLeaderElectionStruct `{ffi_syntax} : IntoVal
                     (default_val _) (default_val _) (default_val _) |}.
 Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
 Next Obligation.
-  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal //=.
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal //=.
   rewrite zero_val_eq /= to_val_unseal //=.
 Qed.
 Next Obligation. Admitted.
 Final Obligation. solve_decision. Qed.
+
+Instance wp_struct_make_testLeaderElectionStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  network state expTerm :
+  PureWp True
+    (struct.make testLeaderElectionStruct (struct.fields_val [
+                                               "network" ::= #network;
+                                               "state" ::= #state;
+                                               "expTerm" ::= #expTerm
+                                             ]%V))
+    #(testLeaderElectionStruct.mk network state expTerm)
+.
+Proof.
+  pose proof wp_struct_make.
+  rewrite /PureWp => *. iIntros "Hwp".
+  wp_pure_lc "Hlc".
+  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+Qed.
 
 Module Message.
 Record t :=
@@ -73,7 +102,7 @@ End Message.
 Instance into_val_Message `{ffi_syntax} : IntoVal Message.t :=
   {|
     to_val_def :=
-      λ v, struct.val raftpb.Message [
+      λ v, struct.val_aux raftpb.Message [
                "Type" ::= #v.(Message.Type');
                "To" ::= #v.(Message.To);
                "From" ::= #v.(Message.From);
@@ -98,53 +127,82 @@ Program Instance into_val_typed_Message `{ffi_syntax} : IntoValTyped Message.t r
 |}.
 Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
 Next Obligation.
-  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal /=.
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=.
   rewrite zero_val_eq /= !to_val_unseal //.
 Qed.
 Next Obligation. Admitted.
 Final Obligation. solve_decision. Qed.
 
+Instance wp_struct_make_Message `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  Type' To From Term LogTerm Index Entries Commit Vote Snapshot Reject RejectHint Context Responses:
+  PureWp True
+    (struct.make raftpb.Message (struct.fields_val [
+                              "Type" ::= #Type';
+                              "To" ::= #To;
+                              "From" ::= #From;
+                              "Term" ::= #Term;
+                              "LogTerm" ::= #LogTerm;
+                              "Index" ::= #Index;
+                              "Entries" ::= #Entries;
+                              "Commit" ::= #Commit;
+                              "Vote" ::= #Vote;
+                              "Snapshot" ::= #Snapshot;
+                              "Reject" ::= #Reject;
+                              "RejectHint" ::= #RejectHint;
+                              "Context" ::= #Context;
+                              "Responses" ::= #Responses
+                            ]%V))
+    #(Message.mk Type' To From Term LogTerm Index Entries Commit Vote Snapshot Reject RejectHint
+                 Context Responses)
+.
+Proof.
+  pose proof wp_struct_make.
+  rewrite /PureWp => *. iIntros "Hwp".
+  wp_pure_lc "Hlc".
+  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+Qed.
+
 Program Instance iv_Message_Type `{ffi_syntax} : IntoValStructField "Type" raftpb.Message Message.Type'.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_To `{ffi_syntax} : IntoValStructField "To" raftpb.Message Message.To.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_From `{ffi_syntax} : IntoValStructField "From" raftpb.Message Message.From.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Term `{ffi_syntax} : IntoValStructField "Term" raftpb.Message Message.Term.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_LogTerm `{ffi_syntax} : IntoValStructField "LogTerm" raftpb.Message Message.LogTerm.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Index `{ffi_syntax} : IntoValStructField "Index" raftpb.Message Message.Index.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Entries `{ffi_syntax} : IntoValStructField "Entries" raftpb.Message Message.Entries.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Commit `{ffi_syntax} : IntoValStructField "Commit" raftpb.Message Message.Commit.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Vote `{ffi_syntax} : IntoValStructField "Vote" raftpb.Message Message.Vote.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Snapshot `{ffi_syntax} : IntoValStructField "Snapshot" raftpb.Message Message.Snapshot.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Reject `{ffi_syntax} : IntoValStructField "Reject" raftpb.Message Message.Reject.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_RejectHint `{ffi_syntax} : IntoValStructField "RejectHint" raftpb.Message Message.RejectHint.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Context `{ffi_syntax} : IntoValStructField "Context" raftpb.Message Message.Context.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_Message_Responses `{ffi_syntax} : IntoValStructField "Responses" raftpb.Message Message.Responses.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Module network.
 Record t :=
@@ -272,8 +330,6 @@ Proof.
 
   wp_alloc nopStepper as "HnopStepper".
   wp_pures.
-  replace (struct.val blackHole []) with (#blackHole.mk).
-  2:{ rewrite to_val_unseal //. }
   wp_alloc nopStepperPtr as "HnopStepperPtr".
   wp_steps.
   wp_alloc tests as "Htests".
@@ -356,8 +412,6 @@ Proof.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
   iIntros (?) "Hnw6".
   wp_pures.
-  do 6 (eassert (struct.val testLeaderElectionStruct _ = to_val (testLeaderElectionStruct.mk _ _ _)) as ->;
-    first rewrite [in (to_val (V:=testLeaderElectionStruct.t))]to_val_unseal /= //).
   wp_apply wp_slice_literal.
   { solve_slice_literal. }
   iIntros (?) "?".
@@ -372,9 +426,6 @@ Proof.
   wp_pures.
   wp_alloc tt as "Htt".
   wp_pures.
-  eassert (struct.val raftpb.Message _ = to_val (Message.mk _ _ _ _ _ _ _ _ _ _ _ _ _ _)) as ->;
-    first rewrite [in (to_val (V:=Message.t))]to_val_unseal /= //.
-  (* FIXME: incomplete struct.val *)
 
   Show Ltac Profile.
 Admitted.

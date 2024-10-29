@@ -1180,49 +1180,49 @@ Definition allTheLiterals__mset_ptr : list (string * val) := [
 (* go: literals.go:9:6 *)
 Definition normalLiterals : val :=
   rec: "normalLiterals" <> :=
-    exception_do (return: (let: "int" := #(W64 0) in
-     let: "s" := #"foo" in
-     let: "b" := #true in
+    exception_do (return: (let: "$int" := #(W64 0) in
+     let: "$s" := #"foo" in
+     let: "$b" := #true in
      struct.make allTheLiterals [{
-       "int" ::= "int";
-       "s" ::= "s";
-       "b" ::= "b"
+       "int" ::= "$int";
+       "s" ::= "$s";
+       "b" ::= "$b"
      }])).
 
 (* go: literals.go:17:6 *)
 Definition outOfOrderLiteral : val :=
   rec: "outOfOrderLiteral" <> :=
-    exception_do (return: (let: "b" := #true in
-     let: "s" := #"foo" in
-     let: "int" := #(W64 0) in
+    exception_do (return: (let: "$b" := #true in
+     let: "$s" := #"foo" in
+     let: "$int" := #(W64 0) in
      struct.make allTheLiterals [{
-       "int" ::= "int";
-       "s" ::= "s";
-       "b" ::= "b"
+       "int" ::= "$int";
+       "s" ::= "$s";
+       "b" ::= "$b"
      }])).
 
 (* go: literals.go:25:6 *)
 Definition specialLiterals : val :=
   rec: "specialLiterals" <> :=
-    exception_do (return: (let: "int" := #(W64 4096) in
-     let: "s" := #"" in
-     let: "b" := #false in
+    exception_do (return: (let: "$int" := #(W64 4096) in
+     let: "$s" := #"" in
+     let: "$b" := #false in
      struct.make allTheLiterals [{
-       "int" ::= "int";
-       "s" ::= "s";
-       "b" ::= "b"
+       "int" ::= "$int";
+       "s" ::= "$s";
+       "b" ::= "$b"
      }])).
 
 (* go: literals.go:33:6 *)
 Definition oddLiterals : val :=
   rec: "oddLiterals" <> :=
-    exception_do (return: (let: "int" := #(W64 5) in
-     let: "s" := #"backquote string" in
-     let: "b" := #false in
+    exception_do (return: (let: "$int" := #(W64 5) in
+     let: "$s" := #"backquote string" in
+     let: "$b" := #false in
      struct.make allTheLiterals [{
-       "int" ::= "int";
-       "s" ::= "s";
-       "b" ::= "b"
+       "int" ::= "$int";
+       "s" ::= "$s";
+       "b" ::= "$b"
      }])).
 
 (* go: literals.go:41:6 *)
@@ -1753,18 +1753,18 @@ Definition ReassignVars : val :=
     let: "$r0" := #(W64 3) in
     do:  ("x" <-[uint64T] "$r0");;;
     let: "z" := (ref_ty composite (zero_val composite)) in
-    let: "$r0" := (let: "a" := (![uint64T] "x") in
-    let: "b" := (![uint64T] "y") in
+    let: "$r0" := (let: "$a" := (![uint64T] "x") in
+    let: "$b" := (![uint64T] "y") in
     struct.make composite [{
-      "a" ::= "a";
-      "b" ::= "b"
+      "a" ::= "$a";
+      "b" ::= "$b"
     }]) in
     do:  ("z" <-[composite] "$r0");;;
-    let: "$r0" := (let: "a" := (![uint64T] "y") in
-    let: "b" := (![uint64T] "x") in
+    let: "$r0" := (let: "$a" := (![uint64T] "y") in
+    let: "$b" := (![uint64T] "x") in
     struct.make composite [{
-      "a" ::= "a";
-      "b" ::= "b"
+      "a" ::= "$a";
+      "b" ::= "$b"
     }]) in
     do:  ("z" <-[composite] "$r0");;;
     let: "$r0" := (![uint64T] (struct.field_ref composite "a" "z")) in
@@ -1851,9 +1851,9 @@ Definition TwoDiskRead : val :=
   rec: "TwoDiskRead" "diskId" "a" :=
     exception_do (let: "a" := (ref_ty uint64T "a") in
     let: "diskId" := (ref_ty uint64T "diskId") in
-    return: (let: "Value" := #(W64 0) in
+    return: (let: "$Value" := #(W64 0) in
      struct.make Block [{
-       "Value" ::= "Value"
+       "Value" ::= "$Value"
      }], #true)).
 
 (* TwoDiskLock is a dummy function to represent locking an address in the
@@ -2146,11 +2146,11 @@ Definition Point__mset_ptr : list (string * val) := [
 Definition UseAdd : val :=
   rec: "UseAdd" <> :=
     exception_do (let: "c" := (ref_ty Point (zero_val Point)) in
-    let: "$r0" := (let: "x" := #(W64 2) in
-    let: "y" := #(W64 3) in
+    let: "$r0" := (let: "$x" := #(W64 2) in
+    let: "$y" := #(W64 3) in
     struct.make Point [{
-      "x" ::= "x";
-      "y" ::= "y"
+      "x" ::= "$x";
+      "y" ::= "$y"
     }]) in
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (ref_ty uint64T (zero_val uint64T)) in
@@ -2164,11 +2164,11 @@ Definition UseAddWithLiteral : val :=
   rec: "UseAddWithLiteral" <> :=
     exception_do (let: "r" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (Point__Add (let: "x" := #(W64 2) in
-    let: "y" := #(W64 3) in
+    (Point__Add (let: "$x" := #(W64 2) in
+    let: "$y" := #(W64 3) in
     struct.make Point [{
-      "x" ::= "x";
-      "y" ::= "y"
+      "x" ::= "$x";
+      "y" ::= "$y"
     }])) "$a0") in
     do:  ("r" <-[uint64T] "$r0");;;
     return: (![uint64T] "r")).
@@ -2247,18 +2247,18 @@ Definition S__mset_ptr : list (string * val) := [
 (* go: struct_pointers.go:14:6 *)
 Definition NewS : val :=
   rec: "NewS" <> :=
-    exception_do (return: (ref_ty S (let: "a" := #(W64 2) in
-     let: "b" := (let: "x" := #(W64 1) in
-     let: "y" := #(W64 2) in
+    exception_do (return: (ref_ty S (let: "$a" := #(W64 2) in
+     let: "$b" := (let: "$x" := #(W64 1) in
+     let: "$y" := #(W64 2) in
      struct.make TwoInts [{
-       "x" ::= "x";
-       "y" ::= "y"
+       "x" ::= "$x";
+       "y" ::= "$y"
      }]) in
-     let: "c" := #true in
+     let: "$c" := #true in
      struct.make S [{
-       "a" ::= "a";
-       "b" ::= "b";
-       "c" ::= "c"
+       "a" ::= "$a";
+       "b" ::= "$b";
+       "c" ::= "$c"
      }]))).
 
 (* go: struct_pointers.go:46:6 *)

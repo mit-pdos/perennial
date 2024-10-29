@@ -51,7 +51,7 @@ End AsyncFile.
 Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
   {|
     to_val_def :=
-      λ v, struct.val AsyncFile [
+      λ v, struct.val_aux AsyncFile [
                "mu" ::= #v.(AsyncFile.mu);
                "data" ::= #v.(AsyncFile.data);
                "filename" ::= #v.(AsyncFile.filename);
@@ -81,7 +81,7 @@ Ltac2 solve_to_val_inj_step () : unit :=
   end.
 Next Obligation.
   (* FIXME: [solve_zero_val] tactic *)
-  intros. rewrite zero_val_eq to_val_unseal /= struct.val_unseal /=.
+  intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=.
   rewrite zero_val_eq /= !to_val_unseal //.
 Qed.
 Next Obligation.
@@ -114,34 +114,34 @@ Qed.
 Final Obligation. solve_decision. Qed.
 
 Program Instance iv_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" AsyncFile AsyncFile.mu.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_data `{ffi_syntax} : IntoValStructField "data" AsyncFile AsyncFile.data.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_filename `{ffi_syntax} : IntoValStructField "filename" AsyncFile AsyncFile.filename.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_index `{ffi_syntax} : IntoValStructField "index" AsyncFile AsyncFile.index.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_indexCond `{ffi_syntax} : IntoValStructField "indexCond" AsyncFile AsyncFile.indexCond.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_durableIndex `{ffi_syntax} : IntoValStructField "durableIndex" AsyncFile AsyncFile.durableIndex.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_durableIndexCond `{ffi_syntax} : IntoValStructField "durableIndexCond" AsyncFile AsyncFile.durableIndexCond.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" AsyncFile AsyncFile.closeRequested.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_closed `{ffi_syntax} : IntoValStructField "closed" AsyncFile AsyncFile.closed.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Program Instance iv_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" AsyncFile AsyncFile.closedCond.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). Qed.
+Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Section asyncfile_proof.
 
@@ -815,6 +815,31 @@ Proof.
   done.
 Qed.
 
+Instance wp_struct_make_AsyncFile mu data filename index indexCond durableIndex durableIndexCond
+        closeRequested closed closedCond :
+  PureWp True
+  (struct.make AsyncFile (struct.fields_val [
+                              "mu" ::= #mu;
+                              "data" ::= #data;
+                              "filename" ::= #filename;
+                              "index" ::= #index;
+                              "indexCond" ::= #indexCond;
+                              "durableIndex" ::= #durableIndex;
+                              "durableIndexCond" ::= #durableIndexCond;
+                              "closeRequested" ::= #closeRequested;
+                              "closed" ::= #closed;
+                              "closedCond" ::= #closedCond
+                            ]%V
+  ))
+  #(AsyncFile.mk mu data filename index indexCond durableIndex durableIndexCond closeRequested closed closedCond)
+.
+Proof.
+  pose proof wp_struct_make.
+  rewrite /PureWp => *. iIntros "Hwp".
+  wp_pure_lc "Hlc".
+  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+Qed.
+
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
@@ -836,6 +861,17 @@ Proof.
   wp_pures.
   wp_alloc s as "Hlocal".
   wp_pures.
+  wp_apply (wp_NewCond with "[$]").
+  iIntros (?) "#?".
+  wp_pures.
+  wp_apply (wp_NewCond with "[$]").
+  iIntros (?) "#?".
+  wp_pures.
+  wp_apply (wp_NewCond with "[$]").
+  iIntros (?) "#?".
+  wp_pures.
+  wp_load.
+  wp_pures.
   wp_load.
   wp_pure_lc "H1". wp_pure_lc "H2".
   iCombine "H1 H2" as "Hlc".
@@ -851,22 +887,6 @@ Proof.
   iModIntro.
   iIntros (?) "Hdata_new".
   wp_pures.
-  wp_load.
-  wp_pures.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_pures.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_pures.
-  wp_apply (wp_NewCond with "[$]").
-  iIntros (?) "#?".
-  wp_pures.
-
-  (* FIXME: automatically convert struct.make into the typed thing. *)
-  eassert (struct.val AsyncFile _ = #(AsyncFile.mk _ _ _ _ _ _ _ _ _ _)) as ->.
-  { repeat (rewrite ?to_val_unseal ?struct.val_unseal //=). }
-
   wp_alloc l as "Hl".
   wp_pures.
   wp_store.

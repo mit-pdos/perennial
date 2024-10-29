@@ -86,8 +86,8 @@ Section goose_lang.
       | [ h : struct.fields_val _ = struct.fields_val _ |- _ ] => apply struct_fields_val_inj in $h; subst
 
       (* unseal whatever's relevant *)
-      | [ h : context [struct.val]  |- _ ] => rewrite !struct.val_unseal in $h
-      | [ |- context [struct.val] ] => rewrite !struct.val_unseal
+      | [ h : context [struct.val_aux]  |- _ ] => rewrite !struct.val_aux_unseal in $h
+      | [ |- context [struct.val_aux] ] => rewrite !struct.val_aux_unseal
       | [ h : context [to_val]  |- _ ] => rewrite !to_val_unseal in $h
       | [ |- context [to_val] ] => rewrite !to_val_unseal
 
@@ -210,7 +210,7 @@ Section goose_lang.
       rewrite go_type_size_unseal /= in Hlen.
       iInduction d as [|[]] "IH2"; simpl in *.
       { exfalso. lia. }
-      rewrite struct.val_unseal /=.
+      rewrite struct.val_aux_unseal /=.
       destruct (decide (go_type_size_def g = O)).
       {
         rewrite (nil_length_inv (flatten_struct (default _ _))).
@@ -308,7 +308,7 @@ Section goose_lang.
       rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       by iFrame.
     - (* case structT *)
-      rewrite struct.val_unseal.
+      rewrite struct.val_aux_unseal.
       iInduction d as [|] "IH2" forall (l' Φ).
       { wp_pures. iApply "HΦ". by iFrame. }
       destruct a.
@@ -413,8 +413,8 @@ Section goose_lang.
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
       rewrite ?right_id. iFrame.
     - (* struct *)
-      rewrite struct.val_unseal.
-      unfold struct.val_def.
+      rewrite struct.val_aux_unseal.
+      unfold struct.val_aux_def.
       iInduction d as [|] "IH2" forall (l').
       { wp_pures. rewrite to_val_unseal /=. iApply "HΦ". done. }
       destruct a.

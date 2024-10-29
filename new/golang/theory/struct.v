@@ -97,14 +97,14 @@ Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
     ∀ `(H:IntoValStructField f t V Vf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
 
 Lemma struct_val_inj d fvs1 fvs2 :
-  struct.val (structT d) fvs1 = struct.val (structT d) fvs2 →
+  struct.val_aux (structT d) fvs1 = struct.val_aux (structT d) fvs2 →
   ∀ f, In f d.*1 →
        match (assocl_lookup f fvs1), (assocl_lookup f fvs2) with
        | Some v1, Some v2 => v1 = v2
        | _, _ => True
        end.
 Proof.
-  rewrite struct.val_unseal.
+  rewrite struct.val_aux_unseal.
   induction d as [|[]].
   { done. }
   intros Heq ? [].
@@ -204,13 +204,13 @@ Proof.
   }
 Qed.
 
-Global Instance wp_struct_make (t : go_type) (l : list (string*val)) :
+Definition wp_struct_make (t : go_type) (l : list (string*val)) :
   PureWp (is_structT t)
   (struct.make t (struct.fields_val l))
-  (struct.val t l).
+  (struct.val_aux t l).
 Proof.
   intros ?????K.
-  rewrite struct.make_unseal struct.val_unseal.
+  rewrite struct.make_unseal struct.val_aux_unseal.
   destruct t; try by exfalso.
   unfold struct.make_def.
   iIntros "HΦ".
@@ -218,7 +218,7 @@ Proof.
   - wp_pure_lc "?". by iApply "HΦ".
   - destruct a.
     wp_pure_lc "?". wp_pures.
-    unfold struct.val_def.
+    unfold struct.val_aux_def.
     destruct (assocl_lookup _ _).
     + wp_pures.
       unshelve wp_apply ("IH" $! _ _ []); first done.

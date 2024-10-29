@@ -8,6 +8,65 @@ From New.code.github_com.mit_pdos.gokv Require Import grove_ffi.
 
 Set Default Proof Using "Type".
 
+Module ConnectRet.
+Record t :=
+  mk {
+      Err : bool;
+      Connection : loc;
+    }.
+End ConnectRet.
+
+Global Instance into_val_ConnectRet `{ffi_syntax} : IntoVal ConnectRet.t :=
+  {|
+    to_val_def :=
+      λ v, struct.val_aux ConnectRet [
+               "Err" ::= #v.(ConnectRet.Err);
+               "Connection" ::= #v.(ConnectRet.Connection)
+             ]%V
+  |}.
+
+Instance wp_struct_make_ConnectRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  err conn :
+  PureWp True
+  (struct.make ConnectRet (struct.fields_val [("Err" ::= #err)%V; ("Connection" ::= #conn)%V]))
+  #(ConnectRet.mk err conn).
+Proof.
+  pose proof wp_struct_make.
+  rewrite /PureWp => *. iIntros "Hwp".
+  wp_pure_lc "Hlc".
+  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+Qed.
+
+
+Module ReceiveRet.
+Record t :=
+  mk {
+      Err : bool;
+      Data : slice.t;
+    }.
+End ReceiveRet.
+
+Global Instance into_val_ReceiveRet `{ffi_syntax} : IntoVal ReceiveRet.t :=
+  {|
+    to_val_def :=
+      λ v, struct.val_aux ReceiveRet [
+               "Err" ::= #v.(ReceiveRet.Err);
+               "Data" ::= #v.(ReceiveRet.Data)
+             ]%V
+  |}.
+
+Instance wp_struct_make_ReceiveRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  err data :
+  PureWp True
+  (struct.make ReceiveRet (struct.fields_val [("Err" ::= #err)%V; ("Data" ::= #data)%V]))
+  #(ReceiveRet.mk err data).
+Proof.
+  pose proof wp_struct_make.
+  rewrite /PureWp => *. iIntros "Hwp".
+  wp_pure_lc "Hlc".
+  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+Qed.
+
 (** * Specs for user-facing operations *)
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -18,41 +77,79 @@ Section grove.
 
   Context `{!heapGS Σ}.
 
-  Lemma wp_Listen c_l s E :
-    {{{ True }}}
-      Listen #c_l @ s; E
-    {{{ RET listen_socket c_l; True }}}.
-  Proof.
-    iIntros (Φ) "_ HΦ". wp_call.
-    rewrite to_val_unseal. by iApply wp_ListenOp.
-  Qed.
+  Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
+    l ↦□ (listen_socket host).
 
-  Lemma wp_Connect c_r s E :
+  Global Instance is_Listener_persistent l host : Persistent (is_Listener l host) := _.
+
+  Lemma wp_Listen host s E :
     {{{ True }}}
-      Connect #c_r @ s; E
-    {{{ (err : bool) (c_l : chan),
-        RET struct.val ConnectRet [
-              "Err" ::= #err;
-              "Connection" ::= if err then bad_socket else connection_socket c_l c_r
-            ];
-      if err then True else c_l c↦ ∅
-    }}}.
+      Listen #host @ s; E
+    {{{ l, RET #l; is_Listener l host }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_call.
-    wp_bind (ExternalOp _ _)%E. rewrite [in #c_r]to_val_unseal. iApply (wp_ConnectOp with "[//]").
-    iNext. iIntros (err recv) "Hr". wp_pures.
-    replace (LitV err) with #err.
-    2:{ rewrite to_val_unseal //. }
+    rewrite to_val_unseal. simpl. wp_bind (ExternalOp _ _).
+    iApply wp_ListenOp; first done.
+    iIntros "!# _".
+    iApply wp_fupd.
+    iApply wp_alloc_untyped; try done.
+    iIntros "!> * Hl". iMod (heap_pointsto_persist with "[$]").
     by iApply "HΦ".
   Qed.
 
-  Lemma wp_Accept c_l s E :
+  Definition is_Connection (c : loc) (local remote : u64) : iProp Σ :=
+    c ↦□ (connection_socket local remote).
+
+  Global Instance is_Connection_persistent c local remote : Persistent (is_Connection c local remote) := _.
+
+  Lemma wp_Connect remote s E :
     {{{ True }}}
-      Accept (listen_socket c_l)  @ s; E
-    {{{ (c_r : chan), RET connection_socket c_l c_r; True }}}.
+      Connect #remote @ s; E
+    {{{ (err : bool) (local : chan) l,
+        RET #(ConnectRet.mk err l);
+        if err then True else is_Connection l local remote
+    }}}.
   Proof.
     iIntros (Φ) "_ HΦ". wp_call.
-    by iApply wp_AcceptOp.
+    wp_bind (ExternalOp _ _)%E. rewrite [in #remote]to_val_unseal. iApply (wp_ConnectOp with "[//]").
+    iNext. iIntros (err recv) "Hr". wp_pures.
+    replace (LitV err) with #err.
+    2:{ rewrite to_val_unseal //. }
+    wp_bind (ref _)%E.
+    destruct err.
+    - iApply wp_alloc_untyped; try done.
+      iIntros "!# * ?".
+      replace (LitV l) with #l.
+      2:{ rewrite to_val_unseal //. }
+      wp_pures. by iApply "HΦ".
+      Unshelve. done.
+    - iApply wp_alloc_untyped; try done.
+      iIntros "!# * ?".
+      replace (LitV l) with #l.
+      2:{ rewrite to_val_unseal //. }
+      iMod (heap_pointsto_persist with "[$]").
+      wp_pures. by iApply "HΦ".
+  Qed.
+
+  Lemma wp_Accept l local s E :
+    {{{ is_Listener l local }}}
+      Accept #l @ s; E
+    {{{ c remote, RET #c; is_Connection c local remote }}}.
+  Proof.
+    iIntros (Φ) "? HΦ". wp_call.
+    wp_bind (! _)%E.
+    rewrite [in #l]to_val_unseal.
+    iApply (wp_load with "[$]").
+    iIntros "!> ?".
+    wp_bind (ExternalOp _ _).
+    iApply wp_AcceptOp; try done.
+    iNext. iIntros.
+    iApply wp_fupd.
+    iApply wp_alloc_untyped; try done.
+    iNext. iIntros "* ?".
+    iMod (heap_pointsto_persist with "[$]").
+    replace (LitV l0) with #l0; last by rewrite to_val_unseal.
+    by iApply "HΦ".
   Qed.
 
   Ltac inv_undefined :=
@@ -113,18 +210,23 @@ Section grove.
     iFrame.
   Qed.
 
-  Lemma wp_Send c_l c_r (s : slice.t) (data : list u8) (dq : dfrac) :
-    ⊢ {{{ s ↦*{dq} data }}}
-      <<< ∀∀ ms, c_r c↦ ms >>>
-        Send (connection_socket c_l c_r) #s @ ∅
+  Lemma wp_Send c local remote (s : slice.t) (data : list u8) (dq : dfrac) :
+    ⊢ {{{ s ↦*{dq} data ∗ is_Connection c local remote }}}
+      <<< ∀∀ ms, remote c↦ ms >>>
+        Send #c #s @ ∅
       <<< ∃∃ (msg_sent : bool),
-        c_r c↦ (if msg_sent then ms ∪ {[Message c_l data]} else ms)
+        remote c↦ (if msg_sent then ms ∪ {[Message local data]} else ms)
       >>>
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
                                 s ↦*{dq} data }}}.
   Proof.
-    iIntros "!#" (Φ) "Hs HΦ".
+    iIntros "!#" (Φ) "[Hs #Hconn] HΦ".
     wp_call.
+    wp_bind (! _)%E.
+    rewrite [in #c]to_val_unseal.
+    iApply (wp_load with "[$]").
+    iIntros "!> * #?".
+    wp_pures.
     destruct s.
     iDestruct (own_slice_len with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
@@ -147,21 +249,20 @@ Section grove.
       word.
   Qed.
 
-  Lemma wp_Receive c_l c_r :
-    ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
-        Receive (connection_socket c_l c_r) @ ∅
+  Lemma wp_Receive c local remote :
+    ⊢ {{{ is_Connection c local remote }}}
+      <<< ∀∀ ms, local c↦ ms >>>
+        Receive #c @ ∅
       <<< ∃∃ (err : bool) (data : list u8),
-        c_l c↦ ms ∗ if err then True else ⌜Message c_r data ∈ ms⌝
+        local c↦ ms ∗ if err then True else ⌜Message remote data ∈ ms⌝
       >>>
-      {{{ s,
-        RET struct.val ReceiveRet [
-              "Err" ::= #err;
-              "Data" ::= #s
-            ];
-          s ↦* data
-      }}}.
+      {{{ s, RET #(ReceiveRet.mk err s); s ↦* data }}}.
   Proof.
-    iIntros "!#" (Φ) "HΦ". wp_call.
+    iIntros "!#" (Φ) "#? HΦ". wp_call.
+    wp_bind (! _)%E.
+    rewrite [in #c]to_val_unseal.
+    iApply (wp_load with "[$]").
+    iIntros "!> * ?".
     wp_bind (ExternalOp _ _).
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
@@ -171,13 +272,19 @@ Section grove.
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
     iModIntro. wp_pures.
+
+    replace (LitV err) with #err; last by rewrite to_val_unseal.
+    replace (InjLV _) with #(slice.mk l len len).
+    2:{ repeat rewrite to_val_unseal //=. }
     destruct err.
     {
-      repeat (rewrite to_val_unseal /=).
-      iApply ("HΦ" $! (slice.mk _ _ _)). destruct Hm as (-> & -> & ->).
-      iApply own_slice_empty. done. }
+      destruct Hm as (?&?&?); subst.
+      wp_pures.
+      iApply "HΦ".
+      iApply own_slice_empty. done.
+    }
     destruct Hm as [Hin Hlen].
-    repeat (rewrite to_val_unseal /=).
+    wp_pures.
     iApply ("HΦ" $! (slice.mk _ _ _)).
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
@@ -344,3 +451,5 @@ Section grove.
     tsc_lb t2 -∗ tsc_lb t1.
   Proof. intros. apply mono_nat_lb_own_le. done. Qed.
 End grove.
+
+Typeclasses Opaque is_Listener is_Connection.

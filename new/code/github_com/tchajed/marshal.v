@@ -127,11 +127,11 @@ Definition Enc__mset_ptr : list (string * val) := [
 Definition NewEncFromSlice : val :=
   rec: "NewEncFromSlice" "b" :=
     exception_do (let: "b" := (ref_ty sliceT "b") in
-    return: (let: "b" := (![sliceT] "b") in
-     let: "off" := (ref_ty uint64T (zero_val uint64T)) in
+    return: (let: "$b" := (![sliceT] "b") in
+     let: "$off" := (ref_ty uint64T (zero_val uint64T)) in
      struct.make Enc [{
-       "b" ::= "b";
-       "off" ::= "off"
+       "b" ::= "$b";
+       "off" ::= "$off"
      }])).
 
 (* go: marshal.go:20:6 *)
@@ -247,11 +247,11 @@ Definition Dec__mset_ptr : list (string * val) := [
 Definition NewDec : val :=
   rec: "NewDec" "b" :=
     exception_do (let: "b" := (ref_ty sliceT "b") in
-    return: (let: "b" := (![sliceT] "b") in
-     let: "off" := (ref_ty uint64T (zero_val uint64T)) in
+    return: (let: "$b" := (![sliceT] "b") in
+     let: "$off" := (ref_ty uint64T (zero_val uint64T)) in
      struct.make Dec [{
-       "b" ::= "b";
-       "off" ::= "off"
+       "b" ::= "$b";
+       "off" ::= "$off"
      }])).
 
 (* go: stateless.go:8:6 *)
