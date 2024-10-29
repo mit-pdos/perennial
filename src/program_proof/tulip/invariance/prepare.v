@@ -34,14 +34,11 @@ Proof.
       rewrite Hfree in Hpil.
       inv Hpil.
     }
-    by rewrite acquire_unmodified.
+    by rewrite setts_unmodified.
   }
   rewrite lookup_insert in Hpwrsx.
   inv Hpwrsx.
-  apply acquire_modified.
-  { by apply elem_of_dom. }
-  apply elem_of_dom.
-  set_solver.
+  apply setts_modified; [apply Hkey | set_solver].
 Qed.
 
 Lemma locked_impl_prepared_inv_prepare stm ptsm ts pwrs :
@@ -56,12 +53,10 @@ Proof.
     apply Hlip; last done.
     destruct (pwrs !! key) as [v |] eqn:Hpwrs.
     { exfalso.
-      rewrite acquire_modified in Htsx; [inv Htsx | done |].
       apply elem_of_dom_2 in Hpwrs.
-      apply elem_of_dom.
-      set_solver.
+      rewrite setts_modified in Htsx; [inv Htsx | done | set_solver].
     }
-    by rewrite -Htsx acquire_unmodified.
+    by rewrite -Htsx setts_unmodified.
   }
   exists pwrs.
   rewrite lookup_insert.
@@ -70,7 +65,7 @@ Proof.
   apply dec_stable.
   intros Hkey.
   apply not_elem_of_dom in Hkey.
-  rewrite acquire_unmodified in Htsx; last apply Hkey.
+  rewrite setts_unmodified in Htsx; last apply Hkey.
   specialize (Hlip _ _ Htsx Hnz).
   destruct Hlip as (pwrsx & Hpwrsx & _).
   by rewrite Hpwrsx in Hnotin.
@@ -185,7 +180,7 @@ Section inv.
       { apply Hxfinal. }
       { set_solver. }
       (* Prove [pwrs' = pwrs]. *)
-      iNamed "Hrp".
+      do 2 iNamed "Hrp".
       iDestruct (big_sepM_lookup with "Hsafep") as "Hpwrs'"; first apply Hpreped.
       iDestruct (txn_pwrs_agree with "Hpwrs Hpwrs'") as %->.
       (* Prove [k] is locked by [ts]. *)
@@ -228,7 +223,7 @@ Section inv.
       iDestruct (big_sepS_elem_of with "Hqv") as "Hrv"; first apply Hinq1.
       iDestruct (big_sepS_elem_of with "Hcori") as "Hvdlb"; first apply Hinq2.
       iDestruct (big_sepS_elem_of with "Hrps") as "Hrp"; first apply Hinall.
-      do 2 iNamed "Hrp".
+      do 3 iNamed "Hrp".
       iDestruct (replica_validated_ts_elem_of with "Hrv Hvtss") as %Hinvtss.
       iDestruct (big_sepS_elem_of with "Hvpwrs") as (pwrs') "[Hpwrs' Hvdks]".
       { apply Hinvtss. }
@@ -285,19 +280,22 @@ Section inv.
     cmp ⊆ cm.
   Admitted.
 
-  Lemma replica_inv_not_finalized γ gid rid log cm hists tss ts :
+  Lemma replica_inv_not_finalized γ gid rid log cm histm tss ts :
     cm !! ts = None ->
-    apply_cmds log = State cm hists ->
+    apply_cmds log = State cm histm ->
     replica_inv_xfinalized γ gid rid tss -∗
     own_txn_log_half γ gid log -∗
     replica_inv_xfinalized γ gid rid ({[ts]} ∪ tss) ∗
     own_txn_log_half γ gid log.
   Proof.
     iIntros (Hnone Happly) "Hrp Hlog".
-    iDestruct "Hrp" as (cmrp) "Hrp".
-    do 2 iNamed "Hrp".
-    iDestruct (txn_log_prefix with "Hlog Hclog") as %Hprefix.
-    pose proof (apply_cmds_cm_subseteq Hprefix Happly Hrsm) as Hincl.
+    do 3 iNamed "Hrp".
+    rename cm0 into cmrp.
+    rename histm0 into histmrp.
+    iDestruct (txn_log_prefix with "Hlog Hcloglb") as %Hprefix.
+    unshelve epose proof (execute_cmds_apply_cmds clog ilog cmrp histmrp _) as Happly'.
+    { by eauto. }
+    pose proof (apply_cmds_cm_subseteq Hprefix Happly Happly') as Hincl.
     iFrame "Hlog ∗ # %".
     iPureIntro.
     apply set_Forall_union; last apply Hxfinal.
@@ -346,7 +344,7 @@ Section inv.
       as (pwrs2') "%Hpwrs2".
     { apply Hxfinal. }
     { apply Hin2. }
-    iNamed "Hrp".
+    do 2 iNamed "Hrp".
     iAssert (⌜pwrs1' = pwrs1⌝)%I as %->.
     { iDestruct (big_sepM_lookup with "Hsafep") as "Hsafe"; first apply Hpwrs1.
       iApply (txn_pwrs_agree with "Hwrs1 Hsafe").
@@ -364,13 +362,13 @@ Section inv.
     inv Hts2.
   Qed.
 
-  Lemma repl_ts_acquire_disjoint {γ} ts wrs tss :
+  Lemma repl_ts_setts_disjoint {γ} ts wrs tss :
     dom tss ## dom wrs ->
     ([∗ map] k ↦ t ∈ tss, own_repl_ts_half γ k t) -∗
     ([∗ map] k ↦ t ∈ acquire ts wrs tss, own_repl_ts_half γ k t).
   Proof.
     iIntros (Hdom) "Htpls".
-    iApply (big_sepM_impl_dom_eq with "Htpls"); first apply acquire_dom.
+    iApply (big_sepM_impl_dom_eq with "Htpls"); first apply setts_dom.
     iIntros "!>" (k ts1 ts2 Hts1 Hts2) "Hts".
     destruct (wrs !! k) as [v |] eqn:Hwrs.
     { apply elem_of_dom_2 in Hts1. apply elem_of_dom_2 in Hwrs. set_solver. }
@@ -533,23 +531,19 @@ Section inv.
     (* Merge ownership of tuples back to group invariants. *)
     iAssert ([∗ map] k ↦ x ∈ filter_group gid (acquire ts pwrs tspreps), own_repl_ts_half γ k x)%I
       with "[HlocksO Htss]" as "Hlocks".
-    { iDestruct (repl_ts_acquire_disjoint ts pwrs with "HlocksO") as "HlocksO".
+    { iDestruct (repl_ts_setts_disjoint ts pwrs with "HlocksO") as "HlocksO".
       { clear -Hdom. set_solver. }
-      rewrite acquire_difference_distr.
+      rewrite /acquire setts_difference_distr.
       replace (gset_to_gmap _ _) with (acquire ts pwrs tss); last first.
       { apply map_eq.
         intros k.
-        destruct (pwrs !! k) as [v |] eqn:Hk.
-        { rewrite acquire_modified; last first.
-          { apply elem_of_dom_2 in Hk.
-            by rewrite -elem_of_dom Hdom.
-          }
-          { done. }
+        destruct (decide (k ∈ dom pwrs)) as [Hin | Hnotin].
+        { rewrite setts_modified; [| done | by rewrite Hdom].
           symmetry.
-          rewrite lookup_gset_to_gmap_Some.
-          by apply elem_of_dom_2 in Hk.
+          by rewrite lookup_gset_to_gmap_Some.
         }
-        rewrite acquire_unmodified; last apply Hk.
+        rewrite not_elem_of_dom in Hnotin.
+        rewrite setts_unmodified; last apply Hnotin.
         replace (tss !! k) with (None : option nat); last first.
         { symmetry. by rewrite -not_elem_of_dom Hdom not_elem_of_dom. }
         symmetry.
@@ -557,8 +551,8 @@ Section inv.
         by apply not_elem_of_dom.
       }
       iDestruct (big_sepM_subseteq_difference_2 with "Htss HlocksO") as "Hlocks".
-      { by apply acquire_mono. }
-      by rewrite acquire_filter_group_commute.
+      { by apply setts_mono. }
+      by rewrite setts_filter_group_commute.
     }
     (* Insert [(ts, true)] into the prepare map and extract a witness. *)
     iMod (group_prep_insert ts true with "Hpm") as "[Hpm #Hpreped]"; first apply Hnone.
@@ -580,7 +574,7 @@ Section inv.
     iSplit.
     { iApply (big_sepS_mono with "Hrps").
       iIntros (rid Hrid) "Hrp".
-      iNamed "Hrp".
+      do 2 iNamed "Hrp".
       iFrame.
     }
     iPureIntro.
@@ -592,7 +586,7 @@ Section inv.
     split.
     { rewrite 2!dom_insert_L. clear -Hdompm. set_solver. }
     split.
-    { by rewrite acquire_dom. }
+    { by rewrite setts_dom. }
     split.
     { rewrite omap_insert_None; last done.
       by rewrite -Hcm delete_notin.

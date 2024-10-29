@@ -206,7 +206,7 @@ Section inv.
     end.
 
   Definition group_inv_no_log_no_cpool
-    γ (gid : u64) (log : dblog) (cpool : gset command) : iProp Σ :=
+    γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
     ∃ (pm : gmap nat bool) (cm : gmap nat bool) (stm : gmap nat txnst)
       (hists : gmap dbkey dbhist) (tspreps : gmap dbkey nat),
       "Hpm"       ∷ own_group_prepm γ gid pm ∗
@@ -225,24 +225,24 @@ Section inv.
       "%Htsnz"    ∷ ⌜stm !! O = None⌝.
 
   Definition group_inv_no_log_with_cpool
-    γ (gid : u64) (log : dblog) (cpool : gset command) : iProp Σ :=
+    γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
     "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
     "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv_no_log
     γ (gid : u64) (log : dblog) : iProp Σ :=
-    ∃ (cpool : gset command),
+    ∃ (cpool : gset ccommand),
       "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv_no_cpool
-    γ (gid : u64) (cpool : gset command) : iProp Σ :=
+    γ (gid : u64) (cpool : gset ccommand) : iProp Σ :=
     ∃ (log : dblog),
       "Hlog"   ∷ own_txn_log_half γ gid log ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv γ (gid : u64) : iProp Σ :=
-    ∃ (log : dblog) (cpool : gset command),
+    ∃ (log : dblog) (cpool : gset ccommand),
       "Hlog"    ∷ own_txn_log_half γ gid log ∗
       "Hcpool"  ∷ own_txn_cpool_half γ gid cpool ∗
       "Hgroup"  ∷ group_inv_no_log_no_cpool γ gid log cpool.

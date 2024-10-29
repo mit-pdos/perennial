@@ -225,7 +225,8 @@ Section inv.
       apply elem_of_dom_2 in Hh as Hinpwrs.
       rewrite multiwrite_dom Hdomhistmg in Hinpwrs.
       pose proof Hinpwrs as Hinptsm. rewrite -Hdomptsmg in Hinptsm.
-      pose proof (release_modified Hinpwrs Hinptsm) as Hunlocked.
+      assert (Hunlocked : release pwrs ptsm !! k = Some O).
+      { by apply release_modified. }
       by inv Hunlocked.
     }
     iDestruct ("HkeysC" with "Hkeys") as "Hkeys".

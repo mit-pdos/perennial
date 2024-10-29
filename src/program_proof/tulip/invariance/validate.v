@@ -3,109 +3,110 @@ From Perennial.program_proof.tulip Require Import prelude.
 Section validate.
   Context `{!tulip_ghostG Σ}.
 
-  Lemma replica_inv_validate γ gid rid cpm psptsm ts pwrs :
+  Definition validated_ptsm (ptsm : gmap dbkey nat) (pwrs : dbmap) :=
+    map_Forall (λ _ pts, pts = O) (filter (λ kn, kn.1 ∈ dom pwrs) ptsm).
+
+  Lemma validated_ptsm_lookup {ptsm pwrs k} :
+    validated_ptsm ptsm pwrs ->
+    k ∈ dom ptsm ->
+    k ∈ dom pwrs ->
+    ptsm !! k = Some O.
+  Proof.
+    intros Hvd Hinptsm Hinpwrs.
+    apply elem_of_dom in Hinptsm as [pts Hpts].
+    set f := λ kn : dbkey * nat, kn.1 ∈ dom pwrs.
+    unshelve epose proof (map_lookup_filter_Some_2 f _ _ _ Hpts _) as Hpts'.
+    { done. }
+    specialize (Hvd _ _ Hpts'). simpl in Hvd.
+    by subst pts.
+  Qed.
+
+  Definition validated_sptsm (sptsm : gmap dbkey nat) (ts : nat) (pwrs : dbmap) :=
+    map_Forall (λ _ spts, (spts ≤ ts)%nat) (filter (λ kn, kn.1 ∈ dom pwrs) sptsm).
+
+  Lemma validated_sptsm_lookup {sptsm ts pwrs k spts} :
+    validated_sptsm sptsm ts pwrs ->
+    sptsm !! k = Some spts ->
+    k ∈ dom pwrs ->
+    (spts ≤ ts)%nat.
+  Proof.
+    intros Hvd Hspts Hinpwrs.
+    set f := λ kn : dbkey * nat, kn.1 ∈ dom pwrs.
+    unshelve epose proof (map_lookup_filter_Some_2 f _ _ _ Hspts _) as Hspts'.
+    { done. }
+    by specialize (Hvd _ _ Hspts').
+  Qed.
+
+  Definition validate_requirement st ts pwrs :=
+    match st with
+    | LocalState cm histm cpm ptgsm sptsm ptsm =>
+        validated_ptsm ptsm pwrs ∧
+        validated_sptsm sptsm ts pwrs ∧
+        cpm !! ts = None
+    | _ => False
+    end.
+
+  Lemma replica_inv_validate γ gid rid clog ilog st ts pwrs ptgs :
     (* cm !! ts = None -> *)
     ts ≠ O ->
     dom pwrs ⊆ keys_all ->
-    cpm !! ts = None ->
-    dom psptsm = dom pwrs ->
-    map_Forall (λ _ spts, (spts ≤ ts)%nat) psptsm ->
-    (* own_replica_commit_map_half γ rid cm -∗ *)
+    execute_cmds (merge_clog_ilog clog ilog) = st ->
+    validate_requirement st ts pwrs ->
     is_txn_pwrs γ gid ts pwrs -∗
-    own_replica_currently_prepared_map_half γ rid cpm -∗
-    ([∗ map] k ↦ spts ∈ psptsm, own_replica_spts_half γ rid k spts) -∗
-    ([∗ set] k ∈ dom pwrs, own_replica_pts_half γ rid k O) -∗
+    own_replica_clog_half γ rid clog -∗
+    own_replica_ilog_half γ rid ilog -∗
     replica_inv γ gid rid ==∗
-    (* own_replica_commit_map_half γ rid cm ∗ *)
-    own_replica_currently_prepared_map_half γ rid (<[ts := pwrs]> cpm) ∗
-    ([∗ set] k ∈ dom pwrs, own_replica_spts_half γ rid k (S ts)) ∗
-    ([∗ set] k ∈ dom pwrs, own_replica_pts_half γ rid k ts) ∗
+    (* own_replica_currently_prepared_map_half γ rid (<[ts := pwrs]> cpm) ∗ *)
+    (* ([∗ set] k ∈ dom pwrs, own_replica_spts_half γ rid k (S ts)) ∗ *)
+    (* ([∗ set] k ∈ dom pwrs, own_replica_pts_half γ rid k ts) ∗ *)
+    own_replica_clog_half γ rid clog ∗
+    own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdAcquire ts pwrs ptgs)]) ∗
     replica_inv γ gid rid ∗
     is_replica_validated_ts γ gid rid ts.
   Proof.
-    iIntros (Hnz Hdompwrs Hnp Hdompsptsm Hgespts) "#Hpwrs Hcpmprog Hpsptsmprog Hpptsmprog Hrp".
+    iIntros (Hnz Hdompwrs Hst Hrequire) "#Hpwrs Hclogprog Hilogprog Hrp".
     do 2 iNamed "Hrp".
-    (* Obtain facts about domain of the timestamp maps. *)
-    pose proof (map_Forall2_dom_L _ _ _ Hlenkvd) as Hdomsptsm.
-    symmetry in Hdomsptsm. rewrite Hdomkvdm in Hdomsptsm.
-    pose proof (map_Forall2_dom_L _ _ _ Hsptsmlk) as Hdomptsm.
-    symmetry in Hdomptsm. rewrite Hdomsptsm in Hdomptsm.
-    (* Take the relevant smallest preparable/prepare timestamps. *)
-    iDestruct (big_sepM_dom_subseteq_difference _ _ (dom pwrs) with "Hsptsm") as
-      (psptsm' [Hdompsptsm' Hsptsmincl]) "[Hpsptsm Hsptsm]".
-    { clear -Hdomsptsm Hdompwrs. set_solver. }
-    iDestruct (big_sepM_dom_subseteq_difference _ _ (dom pwrs) with "Hptsm") as
-      (pptsm [Hdompptsm Hptsmincl]) "[Hpptsm Hptsm]".
-    { clear -Hdomptsm Hdompwrs. set_solver. }
-    (* Agreements. *)
-    iDestruct (replica_currently_prepared_map_agree with "Hcpmprog Hcpm") as %->.
-    iDestruct (replica_spts_big_agree with "Hpsptsmprog Hpsptsm") as %->.
-    { by rewrite Hdompsptsm Hdompsptsm'. }
-    iDestruct (big_sepM_gset_to_gmap with "Hpptsmprog") as "Hpptsmprog".
-    iDestruct (replica_pts_big_agree with "Hpptsmprog Hpptsm") as %->.
-    { by rewrite dom_gset_to_gmap. }
-    (* Insert [(ts, pwrs)] into the currently-prepared txn map. *)
-    set cpm' := insert _ _ cpm.
-    iMod (replica_currently_prepared_map_update cpm' with "Hcpmprog Hcpm")
-      as "[Hcpmprog Hcpm]".
-    (* Set the smallest preparable timestamp to [S ts]. *)
-    set sptsm' := gset_to_gmap (S ts) (dom pwrs).
-    iMod (replica_spts_big_update sptsm' with "Hpsptsmprog Hpsptsm")
-      as "[Hpsptsmprog Hpsptsm]".
-    { by rewrite dom_gset_to_gmap Hdompsptsm. }
-    (* Set the prepare timestamp to [ts]. *)
-    set ptsm' := gset_to_gmap ts (dom pwrs).
-    iMod (replica_pts_big_update ptsm' with "Hpptsmprog Hpptsm") as "[Hpptsmprog Hpptsm]".
-    { by rewrite 2!dom_gset_to_gmap. }
-    rewrite 2!big_sepM_gset_to_gmap.
+    (* Agreement on the consistent and inconsistent logs. *)
+    iDestruct (replica_clog_agree with "Hclogprog Hclog") as %->.
+    iDestruct (replica_ilog_agree with "Hilogprog Hilog") as %->.
+    (* Update the inconsistent log. *)
+    set ilog' := ilog ++ _.
+    iMod (replica_ilog_update ilog' with "Hilogprog Hilog") as "[Hilogprog Hilog]".
+    set st' := execute_acquire st ts pwrs ptgs.
+    assert (Hrsm' : execute_cmds (merge_clog_ilog clog ilog') = st').
+    { rewrite merge_clog_ilog_snoc_ilog; last done.
+      by rewrite execute_cmds_snoc Hst /=.
+    }
+    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx |]; last done.
+    simpl in Hrequire.
+    destruct Hrequire as (Hvptsm & Hvsptsm & Hnp).
+    rewrite Hrsm in Hst. symmetry in Hst. inv Hst.
     (* Insert [ts] into the set of validated timestamps [vtss]. *)
     iMod (replica_validated_ts_insert ts with "Hvtss") as "Hvtss".
     iDestruct (replica_validated_ts_witness ts with "Hvtss") as "#Htsvd".
     { set_solver. }
-    iFrame "Hcpm Hpsptsmprog Hpptsmprog Htsvd".
-    (* Put the relevant smallest preparable/prepare timestamps back. *)
-    iDestruct (big_sepM_gset_to_gmap with "Hpsptsm") as "Hpsptsm".
-    iCombine "Hpsptsm Hsptsm" as "Hsptsm".
-    rewrite -big_sepM_union; last first.
-    { rewrite map_disjoint_dom dom_gset_to_gmap.
-      clear -Hdomsptsm Hdompsptsm. set_solver.
-    }
-    rewrite map_union_difference_union_L; last first.
-    { by rewrite dom_gset_to_gmap Hdompsptsm. }
-    iDestruct (big_sepM_gset_to_gmap with "Hpptsm") as "Hpptsm".
-    iCombine "Hpptsm Hptsm" as "Hptsm".
-    rewrite -big_sepM_union; last first.
-    { rewrite map_disjoint_dom dom_gset_to_gmap.
-      clear -Hdomptsm Hdompptsm. set_solver.
-    }
-    rewrite map_union_difference_union_L; last first.
-    { by rewrite dom_gset_to_gmap Hdompptsm. }
     (* Extend the validation list for each [k ∈ dom pwrs]. *)
-    set extendf := λ (ov : option dbval) (ol : option (list bool)),
-                     match ov, ol with
-                     | Some _, Some l => Some (extend ts false l ++ [true])
-                     | None, Some l => Some l
-                     | _, _ => None
-                     end.
-    set kvdm' := merge extendf pwrs kvdm.
-    unshelve epose proof (gmap_nonexpanding_merge_dom pwrs kvdm extendf _)
-      as Hdomkvdm'.
-    { intros ov ol. by destruct ov, ol. }
+    set kvdm' := validate ts pwrs kvdm.
     iMod (replica_key_validation_big_update kvdm' with "Hkvdm") as "Hkvdm".
     { rewrite map_Forall2_forall.
       split; last first.
-      { symmetry. apply Hdomkvdm'. }
+      { by rewrite validate_dom. }
       intros k l l' Hl Hl'.
       destruct (pwrs !! k) as [v |] eqn:Hpwrsk;
         rewrite lookup_merge Hl Hpwrsk /= in Hl'; inv Hl'; last done.
       apply prefix_app_r, extend_prefix.
     }
-    (* Obtain witnesses that key [k ∈ dom pwrs] has been validated. *)
+    (* Obtain facts about domain of the timestamp maps. *)
+    pose proof (map_Forall2_dom_L _ _ _ Hlenkvd) as Hdomsptsm.
+    symmetry in Hdomsptsm. rewrite Hdomkvdm in Hdomsptsm.
+    pose proof (map_Forall2_dom_L _ _ _ Hsptsmlk) as Hdomptsm.
+    symmetry in Hdomptsm. rewrite Hdomsptsm in Hdomptsm.
+    (* Obtain witnesses that for each key [k ∈ dom pwrs] has been validated. *)
     iAssert (validated_pwrs_of_txn γ gid rid ts)%I as "#Hvkeys".
     { iFrame "Hpwrs".
       iDestruct (big_sepM_dom_subseteq_difference _ _ (dom pwrs) with "Hkvdm")
         as (m [Hdomm Hincl]) "[Hkvdm _]".
-      { rewrite Hdomkvdm' Hdomkvdm. apply Hdompwrs. }
+      { rewrite validate_dom Hdomkvdm. apply Hdompwrs. }
       iApply (big_sepM_sepS_impl with "Hkvdm"); first apply Hdomm.
       iIntros (k l Hl) "!> Hkvd".
       iDestruct (replica_key_validation_witness with "Hkvd") as "#Hlb".
@@ -119,37 +120,139 @@ Section validate.
       { rewrite -elem_of_dom Hdomkvdm. clear -Hl Hdomm Hdompwrs. set_solver. }
       rewrite lookup_merge Hv Hvl /= in Hl'.
       inv Hl'.
-      assert (is_Some (psptsm !! k)) as [spts Hspts].
-      { by rewrite -elem_of_dom Hdompsptsm -Hdomm. }
-      specialize (Hgespts _ _ Hspts). simpl in Hgespts.
-      pose proof (lookup_weaken _ _ _ _ Hspts Hsptsmincl) as Hspts'.
-      pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvl Hspts' Hlenkvd) as Hlenvl.
+      assert (is_Some (sptsm !! k)) as [spts Hspts].
+      { rewrite -elem_of_dom Hdomsptsm. clear -Hl Hdomm Hdompwrs. set_solver. }
+      (* specialize (Hgespts _ _ Hspts). simpl in Hgespts. *)
+      (* pose proof (lookup_weaken _ _ _ _ Hspts Hsptsmincl) as Hspts'. *)
+      pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvl Hspts Hlenkvd) as Hlenvl.
       simpl in Hlenvl.
+      unshelve epose proof (validated_sptsm_lookup Hvsptsm Hspts _) as Hle.
+      { by apply elem_of_dom. }
       rewrite lookup_snoc_Some.
       right.
       split; last done.
       rewrite extend_length.
-      clear -Hlenvl Hgespts. lia.
+      clear -Hlenvl Hle. lia.
     }
+    (* Re-establish [is_txn_pwrs] over [<[ts := pwrs]> cpm]. *)
+    iDestruct (big_sepM_insert_2 _ _ ts pwrs with "Hpwrs Hsafep") as "#Hsafep'".
+    (* Re-establish [validated_pwrs_of_txn] over [{[ts]} ∪ vtss]. *)
+    iDestruct (big_sepS_insert_2 ts with "Hvkeys Hvpwrs") as "#Hvpwrs'".
     iFrame "∗ # %".
     iModIntro.
     iSplit.
-    { by iApply big_sepM_insert_2. }
-    iSplit.
-    { by iApply big_sepS_insert_2. }
-    iSplit.
     { iIntros (k t).
-      admit.
+      subst kvdm'.
+      destruct (decide (k ∈ dom pwrs)) as [Hin | Hnotin]; last first.
+      { rewrite validate_unmodified; last by apply not_elem_of_dom.
+        by rewrite setts_unmodified; last by apply not_elem_of_dom.
+      }
+      assert (is_Some (kvdm !! k)) as [vl Hvl].
+      { rewrite -elem_of_dom Hdomkvdm. clear -Hin Hdompwrs. set_solver. }
+      rewrite (validate_modified Hin Hvl).
+      unshelve erewrite (setts_modified Hin _).
+      { rewrite Hdomptsm. clear -Hin Hdompwrs. set_solver. }
+      destruct (histm !! k) as [hist |] eqn:Hhist; last done.
+      destruct (decide (ts < t)%nat) as [Hgtts | Hlets].
+      { (* Case: [ts < t]. *)
+        rewrite lookup_ge_None_2; first done.
+        rewrite length_app extend_length /=.
+        assert (is_Some (sptsm !! k)) as [spts Hspts].
+        { rewrite -elem_of_dom Hdomsptsm. clear -Hin Hdompwrs. set_solver. }
+        pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvl Hspts Hlenkvd) as Hlenvl.
+        simpl in Hlenvl.
+        pose proof (validated_sptsm_lookup Hvsptsm Hspts Hin) as Hle.
+        clear -Hlenvl Hle Hgtts. lia.
+      }
+      rewrite Nat.nlt_ge in Hlets.
+      destruct (decide (t = ts)) as [-> | Hne].
+      { (* Case: [ts = t]. *)
+        destruct ((_ ++ [true]) !! ts); last done.
+        destruct b; last done.
+        case_decide as Hne; last done.
+        by destruct Hne as (_ & ? & _).
+      }
+      rewrite lookup_app_l; last first.
+      { rewrite extend_length. clear -Hlets Hne. lia. }
+      destruct (decide (length vl ≤ t)%nat) as [Hfalse | Hex].
+      { (* Case: Extended part [length vl ≤ t < ts]. *)
+        rewrite lookup_extend_r; first done.
+        clear -Hlets Hne Hfalse. lia.
+      }
+      (* Case: The existing part [length vl < t]. *)
+      rewrite Nat.nle_gt in Hex.
+      rewrite lookup_extend_l; last apply Hex.
+      iSpecialize ("Hgabt" $! k t).
+      unshelve epose proof (validated_ptsm_lookup Hvptsm _ Hin) as Hz.
+      { rewrite Hdomptsm. clear -Hin Hdompwrs. set_solver. }
+      rewrite Hvl Hhist Hz.
+      destruct (vl !! t) eqn:Hvlt; last done.
+      destruct b; last done.
+      case_decide as Htz; last first.
+      { case_decide as Htts; last done.
+        destruct Htts as [Htge [Htts Htnz]].
+        apply Classical_Prop.not_and_or in Htz.
+        destruct Htz as [? | Htz]; first done.
+        rewrite and_idemp in Htz.
+        apply dec_stable in Htz.
+        by subst t.
+      }
+      by case_decide.
     }
     iPureIntro.
     split.
     { rewrite dom_insert_L. clear -Hvtss. set_solver. }
     split.
-    { by rewrite Hdomkvdm'. }
+    { by rewrite validate_dom. }
     split.
-    { admit. }
+    { (* Re-establish constraint on validation lists and smallest preparable timestamps. *)
+      rewrite map_Forall2_forall.
+      split; last first.
+      { by rewrite validate_dom Hdomkvdm setts_dom Hdomsptsm. }
+      intros k vl' spts' Hvl' Hspts'.
+      subst kvdm'.
+      destruct (decide (k ∈ dom pwrs)) as [Hin | Hnotin]; last first.
+      { rewrite validate_unmodified in Hvl'; last by apply not_elem_of_dom.
+        rewrite setts_unmodified in Hspts'; last by apply not_elem_of_dom.
+        by apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hvl' Hspts' Hlenkvd).
+      }
+      assert (is_Some (kvdm !! k)) as [vl Hvl].
+      { rewrite -elem_of_dom Hdomkvdm. clear -Hin Hdompwrs. set_solver. }
+      rewrite (validate_modified Hin Hvl) in Hvl'.
+      inv Hvl'.
+      rewrite setts_modified in Hspts'; last first.
+      { rewrite Hdomsptsm. clear -Hin Hdompwrs. set_solver. }
+      { apply Hin. }
+      assert (is_Some (sptsm !! k)) as [spts Hspts].
+      { rewrite -elem_of_dom Hdomsptsm. clear -Hin Hdompwrs. set_solver. }
+      inv Hspts'.
+      pose proof (validated_sptsm_lookup Hvsptsm Hspts Hin) as Hle.
+      pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvl Hspts Hlenkvd) as Hlen.
+      simpl in Hlen.
+      rewrite length_app extend_length /=.
+      clear -Hle Hlen. lia.
+    }
     split.
-    { admit. }
+    { (* Re-establish constraint on prepare and smallest preparable timestamps. *)
+      rewrite map_Forall2_forall.
+      split; last first.
+      { by rewrite 2!setts_dom Hdomsptsm Hdomptsm. }
+      intros k spts pts Hspts' Hpts'.
+      destruct (decide (k ∈ dom pwrs)) as [Hin | Hnotin]; last first.
+      { rewrite setts_unmodified in Hspts'; last by apply not_elem_of_dom.
+        rewrite setts_unmodified in Hpts'; last by apply not_elem_of_dom.
+        by apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hspts' Hpts' Hsptsmlk).
+      }
+      intros _.
+      rewrite setts_modified in Hpts'; last first.
+      { rewrite Hdomptsm. clear -Hin Hdompwrs. set_solver. }
+      { apply Hin. }
+      inv Hpts'.
+      rewrite setts_modified in Hspts'; last first.
+      { rewrite Hdomsptsm. clear -Hin Hdompwrs. set_solver. }
+      { apply Hin. }
+      by inv Hspts'.
+    }
     split.
     { intros t w k Hw Hk.
       destruct (decide (t = ts)) as [-> | Hne]; last first.
@@ -157,23 +260,23 @@ Section validate.
         specialize (Hpil _ _ _ Hw Hk).
         destruct (decide (k ∈ dom pwrs)) as [Hin | Hnotin].
         { exfalso.
-          assert (Hz : ptsm !! k = Some O).
-          { unshelve eapply (lookup_weaken _ _ _ _ _ Hptsmincl).
-            by rewrite lookup_gset_to_gmap_Some.
-          }
-          clear -Hz Hpil Hw Hcpmnz.
-          inv Hz.
+          set f := λ kn : dbkey * nat, kn.1 ∈ dom pwrs.
+          unshelve epose proof (map_lookup_filter_Some_2 f _ _ _ Hpil _) as Hpts'.
+          { apply Hin. }
+          specialize (Hvptsm _ _ Hpts'). simpl in Hvptsm. subst t.
+          clear -Hw Hcpmnz.
+          inv Hw.
         }
-        rewrite lookup_union_r; last first.
-        { by rewrite lookup_gset_to_gmap_None. }
+        rewrite setts_unmodified; last by apply not_elem_of_dom.
         apply Hpil.
       }
       rewrite lookup_insert in Hw.
       symmetry in Hw. inv Hw.
-      apply lookup_union_Some_l.
-      by rewrite lookup_gset_to_gmap_Some.
+      rewrite setts_modified; [done | apply Hk |].
+      rewrite Hdomptsm.
+      clear -Hdompwrs Hk. set_solver.
     }
     { by rewrite lookup_insert_ne. }
-  Admitted.
+  Qed.
 
 End validate.

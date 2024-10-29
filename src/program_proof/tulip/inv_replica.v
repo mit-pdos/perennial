@@ -4,6 +4,28 @@ From Perennial.program_proof.tulip Require Import base cmd res.
 (* TODO: might be better to separate out the common definitions from [inv_group]. *)
 From Perennial.program_proof.tulip Require Import inv_group.
 
+Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
+Admitted.
+
+Lemma merge_clog_ilog_app_clog clog ilog ccmds :
+  Forall (λ nc, (nc.1 ≤ length clog)%nat) ilog ->
+  merge_clog_ilog (clog ++ ccmds) ilog =
+  merge_clog_ilog clog ilog ++ (fmap CCmd ccmds).
+Admitted.
+
+Lemma merge_clog_ilog_snoc_ilog clog ilog lsn icmd :
+  (length clog ≤ lsn)%nat ->
+  merge_clog_ilog clog (ilog ++ [(lsn, icmd)]) =
+  merge_clog_ilog clog ilog ++ [ICmd icmd].
+Admitted.
+
+Lemma execute_cmds_apply_cmds clog ilog cm histm :
+  let log := merge_clog_ilog clog ilog in
+  (∃ cpm ptgsm sptsm ptsm,
+      execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm) ->
+  apply_cmds clog = State cm histm.
+Admitted.
+
 Section inv.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
@@ -20,7 +42,7 @@ Section inv.
     match kvdm !! k, histm !! k, ptsm !! k with
     | Some vdl, Some hist, Some pts =>
         match vdl !! ts with
-        | Some true => if decide ((length hist ≤ ts)%nat ∧ ts ≠ pts)
+        | Some true => if decide ((length hist ≤ ts)%nat ∧ ts ≠ pts ∧ ts ≠ O)
                       then is_group_aborted γ gid ts
                       else True
         | _ => True
@@ -51,23 +73,22 @@ Section inv.
     inv Ht2.
   Qed.
 
-  Definition replica_inv_with_cm_with_cpm
-    γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
-    ∃ (clog : dblog) (vtss : gset nat) (kvdm : gmap dbkey (list bool))
-      (histm : gmap dbkey dbhist) (sptsm ptsm : gmap dbkey nat),
+  Definition replica_inv_internal
+    γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand))
+    (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
+    ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (histm : gmap dbkey dbhist)
+      (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat),
+      let log := merge_clog_ilog clog ilog in
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
-      "Hcm"       ∷ own_replica_commit_map_half γ rid cm ∗
-      "Hcpm"      ∷ own_replica_currently_prepared_map_half γ rid cpm ∗
+      "Hclog"     ∷ own_replica_clog_half γ rid clog ∗
+      "Hilog"     ∷ own_replica_ilog_half γ rid ilog ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
-      "Hhistm"    ∷ ([∗ map] k ↦ h ∈ histm, own_dura_hist_half γ rid k h) ∗
-      "Hsptsm"    ∷ ([∗ map] k ↦ spts ∈ sptsm, own_replica_spts_half γ rid k spts) ∗
-      "Hptsm"     ∷ ([∗ map] k ↦ pts ∈ ptsm, own_replica_pts_half γ rid k pts) ∗
-      "#Hclog"    ∷ is_txn_log_lb γ gid clog ∗
       "#Hreplhm"  ∷ ([∗ map] k ↦ h ∈ histm, is_repl_hist_lb γ k h) ∗
       "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, is_txn_pwrs γ gid ts pwrs) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
-      "%Hrsm"     ∷ ⌜apply_cmds clog = State cm histm⌝ ∗
+      "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗
+      "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm⌝ ∗
       "%Hvtss"    ∷ ⌜vtss ⊆ dom cm ∪ dom cpm⌝ ∗
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
       "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = spts) kvdm sptsm⌝ ∗
@@ -75,8 +96,16 @@ Section inv.
       "%Hpil"     ∷ ⌜prepared_impl_locked_cpm cpm ptsm⌝ ∗
       "%Hcpmnz"   ∷ ⌜cpm !! O = None⌝.
 
+  Definition replica_inv_with_cm_with_cpm
+    γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
+    ∃ clog ilog, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
+
+  Definition replica_inv_with_clog_with_ilog
+    γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand)) : iProp Σ :=
+    ∃ cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
+
   Definition replica_inv γ (gid rid : u64) : iProp Σ :=
-    ∃ cm cpm, "Hrp" ∷ replica_inv_with_cm_with_cpm γ gid rid cm cpm.
+    ∃ clog ilog cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
 
   Definition replica_inv_xfinalized γ (gid rid : u64) (ptsm : gset nat) : iProp Σ :=
     ∃ cm cpm,
@@ -107,7 +136,7 @@ Section inv.
     ⌜∃ pwrs, cpm !! ts = Some pwrs⌝.
   Proof.
     iIntros (Hxfinal Hin) "Hvd Hrp".
-    iNamed "Hrp".
+    do 2 iNamed "Hrp".
     iDestruct (replica_validated_ts_elem_of with "Hvd Hvtss") as %Hinvtss.
     destruct (cpm !! ts) as [pwrs |] eqn:Hpwrs; first by eauto.
     exfalso.

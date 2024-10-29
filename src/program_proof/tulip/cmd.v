@@ -4,180 +4,172 @@ From Perennial.program_proof.rsm.pure Require Import
 From Perennial.program_proof.tulip Require Import base.
 
 Section validate.
-  Definition validate_key (tid : nat) (wr : option dbval) (tpl : option dbtpl) :=
-    match wr, tpl with
-    | Some _, Some (vs, tsprep) => Some (bool_decide (lockable tid vs tsprep))
-    | Some _, None => Some false
+  Definition validate_key (tid : nat) (ov : option dbval) (ovl : option (list bool)) :=
+    match ov, ovl with
+    | Some _, Some vl => Some (extend tid false vl ++ [true])
+    | None, Some _ => ovl
     | _, _ => None
     end.
 
-  Definition validate (tid : nat) (wrs : dbmap) (tpls : gmap dbkey dbtpl) :=
-    map_fold (λ _, andb) true (merge (validate_key tid) wrs tpls).
+  Lemma validate_key_nonexpanding ts :
+    mergef_nonexpanding (validate_key ts).
+  Proof. intros ov ovl. by destruct ov, ovl. Qed.
 
-  Lemma map_fold_andb_true `{Countable K} (m : gmap K bool) :
-    map_fold (λ _, andb) true m = true <-> map_Forall (λ _ b, b = true) m.
+  Definition validate (tid : nat) (wrs : dbmap) (kvdm : gmap dbkey (list bool)) :=
+    merge (validate_key tid) wrs kvdm.
+
+  Lemma validate_dom {tid wrs kvdm} :
+    dom (validate tid wrs kvdm) = dom kvdm.
   Proof.
-    split.
-    - intros Hfold k b Hkb.
-      destruct b; first done.
-      exfalso.
-      induction m as [| x v m Hnone IHm] using map_ind; first done.
-      rewrite map_fold_insert_L in Hfold; last first.
-      { done. }
-      { intros _ _ b1 b2 b3 _ _ _. by rewrite andb_comm -andb_assoc (andb_comm b3). }
-      destruct (decide (x = k)) as [-> | Hne].
-      { rewrite lookup_insert in Hkb. inversion Hkb. subst v. done. }
-      rewrite lookup_insert_ne in Hkb; last done.
-      destruct v; last done.
-      rewrite andb_true_l in Hfold.
-      by apply IHm.
-    - intros Hall.
-      induction m as [| x v m Hnone IHm] using map_ind; first done.
-      rewrite map_fold_insert_L; last first.
-      { done. }
-      { intros _ _ b1 b2 b3 _ _ _. by rewrite andb_comm -andb_assoc (andb_comm b3). }
-      rewrite map_Forall_insert in Hall; last done.
-      destruct Hall as [-> Hall].
-      by apply IHm.
+    apply gmap_nonexpanding_merge_dom, validate_key_nonexpanding.
   Qed.
 
-  Lemma validate_true_lockable {tid wrs tpls} key tpl :
-    is_Some (wrs !! key) ->
-    tpls !! key = Some tpl ->
-    validate tid wrs tpls = true ->
-    lockable tid tpl.1 tpl.2.
+  Lemma validate_unmodified {tid wrs kvdm key} :
+    wrs !! key = None ->
+    (validate tid wrs kvdm) !! key = kvdm !! key.
   Proof.
-    intros [v Hv] Htpl Hvd.
-    destruct tpl as [h t].
-    rewrite /validate map_fold_andb_true in Hvd.
-    specialize (Hvd key false).
-    rewrite lookup_merge Hv Htpl /= in Hvd.
-    case_bool_decide; [done | naive_solver].
+    intros Hnone.
+    rewrite /validate lookup_merge Hnone /=.
+    by destruct (kvdm !! key).
   Qed.
 
-  Lemma validate_true_subseteq_dom tid wrs tpls :
-    validate tid wrs tpls = true ->
-    dom wrs ⊆ dom tpls.
+  Lemma validate_modified {tid wrs kvdm key vl} :
+    key ∈ dom wrs ->
+    kvdm !! key = Some vl ->
+    (validate tid wrs kvdm) !! key = Some (extend tid false vl ++ [true]).
   Proof.
-    intros Hvd.
-    intros key Hkey.
-    rewrite /validate map_fold_andb_true in Hvd.
-    specialize (Hvd key false).
-    rewrite elem_of_dom in Hkey. destruct Hkey as [v Hv].
-    destruct (decide (key ∈ dom tpls)) as [? | Hnotin]; first done.
-    rewrite not_elem_of_dom in Hnotin.
-    rewrite lookup_merge Hv Hnotin /= in Hvd.
-    naive_solver.
-  Qed.
-
-  Lemma validate_true_exists {tid wrs tpls} key :
-    is_Some (wrs !! key) ->
-    validate tid wrs tpls = true ->
-    ∃ tpl, tpls !! key = Some tpl ∧ lockable tid tpl.1 tpl.2.
-  Proof.
-    intros [v Hv] Hvd.
-    pose proof (validate_true_subseteq_dom _ _ _ Hvd) as Hdom.
-    apply elem_of_dom_2 in Hv as Hkey.
-    specialize (Hdom _ Hkey).
-    rewrite elem_of_dom in Hdom.
-    destruct Hdom as [tpl Htpl].
-    exists tpl.
-    split; first done.
-    by eapply validate_true_lockable.
-  Qed.
-
-  Lemma validate_false {tid wrs tpls} key tpl :
-    is_Some (wrs !! key) ->
-    tpls !! key = Some tpl ->
-    ¬ lockable tid tpl.1 tpl.2 ->
-    validate tid wrs tpls = false.
-  Proof.
-    intros [v Hv] Htpl Hfail.
-    rewrite -not_true_iff_false.
-    intros Hvd.
-    rewrite map_fold_andb_true in Hvd.
-    specialize (Hvd key false). simpl in Hvd.
-    destruct tpl as [hist tsprep].
-    rewrite lookup_merge Hv Htpl /= in Hvd.
-    case_bool_decide; [done | naive_solver].
-  Qed.
-
-  Lemma validate_empty tid tpls :
-    validate tid ∅ tpls = true.
-  Proof.
-    rewrite map_fold_andb_true.
-    intros k b Hkb.
-    rewrite lookup_merge lookup_empty /= in Hkb.
-    by destruct (tpls !! k).
+    intros Hdomwrs Hvl.
+    apply elem_of_dom in Hdomwrs as [v Hv].
+    by rewrite /validate lookup_merge Hv Hvl /=.
   Qed.
 
 End validate.
 
-Section acquire.
-  Definition acquire_key (tid : nat) (wr : option dbval) (ots : option nat) :=
+Section setts.
+  Definition setts_key (tid : nat) (wr : option dbval) (ots : option nat) :=
     match wr, ots with
     | None, Some ts => Some ts
     | Some _, Some _ => Some tid
     | _, _ => None
     end.
 
-  Lemma acquire_key_nonexpanding ts :
-    mergef_nonexpanding (acquire_key ts).
+  Lemma setts_key_nonexpanding ts :
+    mergef_nonexpanding (setts_key ts).
   Proof. intros x y. by destruct x, y as [t |]. Qed.
 
-  Definition acquire (tid : nat) (wrs : dbmap) (tpls : gmap dbkey nat) :=
-    merge (acquire_key tid) wrs tpls.
+  Definition setts (tid : nat) (wrs : dbmap) (tpls : gmap dbkey nat) :=
+    merge (setts_key tid) wrs tpls.
 
-  Lemma acquire_dom {tid wrs tss} :
-    dom (acquire tid wrs tss) = dom tss.
+  Lemma setts_dom {tid wrs tss} :
+    dom (setts tid wrs tss) = dom tss.
   Proof.
-    apply gmap_nonexpanding_merge_dom, acquire_key_nonexpanding.
+    apply gmap_nonexpanding_merge_dom, setts_key_nonexpanding.
   Qed.
 
-  Lemma acquire_unmodified {tid wrs tss key} :
+  Lemma setts_unmodified {tid wrs tss key} :
     wrs !! key = None ->
-    (acquire tid wrs tss) !! key = tss !! key.
+    (setts tid wrs tss) !! key = tss !! key.
   Proof.
     intros Hnone.
-    rewrite /acquire lookup_merge Hnone /=.
+    rewrite /setts lookup_merge Hnone /=.
     by destruct (tss !! key).
   Qed.
 
-  Lemma acquire_modified {tid wrs tss key} :
-    is_Some (wrs !! key) ->
-    is_Some (tss !! key) ->
-    (acquire tid wrs tss) !! key = Some tid.
+  Lemma setts_modified {tid wrs tsm key} :
+    key ∈ dom wrs ->
+    key ∈ dom tsm ->
+    (setts tid wrs tsm) !! key = Some tid.
   Proof.
-    intros [v Hv] [ts Hts].
-    by rewrite /acquire lookup_merge Hv Hts /=.
+    intros Hdomwrs Hdomtsm.
+    apply elem_of_dom in Hdomwrs as [v Hv].
+    apply elem_of_dom in Hdomtsm as [ts Hts].
+    by rewrite /setts lookup_merge Hv Hts /=.
   Qed.
 
-  Lemma acquire_difference_distr {tid wrs tss tssd} :
-    acquire tid wrs (tss ∖ tssd) =
-    acquire tid wrs tss ∖ acquire tid wrs tssd.
-  Proof. apply gmap_nonexpanding_merge_difference_distr, acquire_key_nonexpanding. Qed.
+  Lemma setts_difference_distr {tid wrs tss tssd} :
+    setts tid wrs (tss ∖ tssd) =
+    setts tid wrs tss ∖ setts tid wrs tssd.
+  Proof. apply gmap_nonexpanding_merge_difference_distr, setts_key_nonexpanding. Qed.
   
-  Lemma acquire_mono tid wrs tss1 tss2 :
+  Lemma setts_mono tid wrs tss1 tss2 :
     tss1 ⊆ tss2 ->
-    acquire tid wrs tss1 ⊆ acquire tid wrs tss2.
-  Proof. apply gmap_nonexpanding_merge_mono, acquire_key_nonexpanding. Qed.
+    setts tid wrs tss1 ⊆ setts tid wrs tss2.
+  Proof. apply gmap_nonexpanding_merge_mono, setts_key_nonexpanding. Qed.
   
-  Lemma acquire_filter_group_commute tid wrs tss gid :
-    acquire tid wrs (filter_group gid tss) = filter_group gid (acquire tid wrs tss).
+  Lemma setts_filter_group_commute tid wrs tss gid :
+    setts tid wrs (filter_group gid tss) = filter_group gid (setts tid wrs tss).
   Proof.
     set P := (λ x, key_to_group x = gid).
-    pose proof (acquire_key_nonexpanding tid) as Hne.
+    pose proof (setts_key_nonexpanding tid) as Hne.
     by apply (gmap_nonexpanding_merge_filter_commute P wrs tss) in Hne.
   Qed.
 
-  Lemma acquire_empty tid tss :
-    acquire tid ∅ tss = tss.
+  Lemma setts_empty tid tss :
+    setts tid ∅ tss = tss.
   Proof.
     apply map_eq. intros k.
     rewrite lookup_merge lookup_empty /=.
     by destruct (tss !! k).
   Qed.
-End acquire.
+End setts.
+
+Definition acquire := setts.
+
+Section release.
+  Definition release wrs tpls := setts O wrs tpls.
+
+  Lemma release_dom {wrs tss} :
+    dom (release wrs tss) = dom tss.
+  Proof.
+    apply gmap_nonexpanding_merge_dom, setts_key_nonexpanding.
+  Qed.
+
+  Lemma release_unmodified {wrs tss key} :
+    wrs !! key = None ->
+    (release wrs tss) !! key = tss !! key.
+  Proof.
+    intros Hnone.
+    rewrite /release lookup_merge Hnone /=.
+    by destruct (tss !! key).
+  Qed.
+
+  Lemma release_modified {wrs tsm key} :
+    key ∈ dom wrs ->
+    key ∈ dom tsm ->
+    (release wrs tsm) !! key = Some O.
+  Proof.
+    intros Hdomwrs Hdomtsm.
+    apply elem_of_dom in Hdomwrs as [v Hv].
+    apply elem_of_dom in Hdomtsm as [ts Hts].
+    by rewrite /release lookup_merge Hv Hts /=.
+  Qed.
+
+  Lemma release_difference_distr {wrs tss tssd} :
+    release wrs (tss ∖ tssd) =
+    release wrs tss ∖ release wrs tssd.
+  Proof. apply gmap_nonexpanding_merge_difference_distr, setts_key_nonexpanding. Qed.
+  
+  Lemma release_mono wrs tss1 tss2 :
+    tss1 ⊆ tss2 ->
+    release wrs tss1 ⊆ release wrs tss2.
+  Proof. apply gmap_nonexpanding_merge_mono, setts_key_nonexpanding. Qed.
+  
+  Lemma release_filter_group_commute wrs tss gid :
+    release wrs (filter_group gid tss) = filter_group gid (release wrs tss).
+  Proof.
+    set P := (λ x, key_to_group x = gid).
+    pose proof (setts_key_nonexpanding O) as Hne.
+    by apply (gmap_nonexpanding_merge_filter_commute P wrs tss) in Hne.
+  Qed.
+
+  Lemma release_empty tss :
+    release ∅ tss = tss.
+  Proof.
+    apply map_eq. intros k.
+    rewrite lookup_merge lookup_empty /=.
+    by destruct (tss !! k).
+  Qed.
+End release.
 
 Section multiwrite.
 
@@ -252,95 +244,11 @@ Section multiwrite.
 
 End multiwrite.
 
-Section release.
-  Definition release_key (wr : option dbval) (ots : option nat) :=
-    match wr, ots with
-    | None, Some _ => ots
-    | Some _, Some _ => Some O
-    | _, _ => None
-    end.
-
-  Lemma release_key_nonexpanding :
-    mergef_nonexpanding release_key.
-  Proof. intros x y. by destruct x, y as [t |]. Qed.
-
-  Definition release (wrs : dbmap) (tss : gmap dbkey nat) :=
-    merge release_key wrs tss.
-
-  Lemma release_unmodified {wrs tss key} :
-    wrs !! key = None ->
-    (release wrs tss) !! key = tss !! key.
-  Proof.
-    intros Hlookup.
-    rewrite lookup_merge Hlookup /=.
-    by destruct (tss !! key) as [t |] eqn:Ht.
-  Qed.
-
-  Lemma release_modified {wrs ptsm key} :
-    key ∈ dom wrs ->
-    key ∈ dom ptsm ->
-    (release wrs ptsm) !! key = Some O.
-  Proof.
-    intros Hwrs Hptsm.
-    apply elem_of_dom in Hwrs as [v Hv].
-    apply elem_of_dom in Hptsm as [t Ht].
-    by rewrite lookup_merge Hv Ht /=.
-  Qed.
-
-  Lemma release_dom {wrs tss} :
-    dom (release wrs tss) = dom tss.
-  Proof. apply gmap_nonexpanding_merge_dom, release_key_nonexpanding. Qed.
-
-  Lemma release_difference_distr {wrs tss tssd} :
-    release wrs (tss ∖ tssd) =
-    release wrs tss ∖ release wrs tssd.
-  Proof. apply gmap_nonexpanding_merge_difference_distr, release_key_nonexpanding. Qed.
-
-  Lemma release_mono wrs tss1 tss2 :
-    tss1 ⊆ tss2 ->
-    release wrs tss1 ⊆ release wrs tss2.
-  Proof. apply gmap_nonexpanding_merge_mono, release_key_nonexpanding. Qed.
-
-  Lemma release_filter_group_commute wrs tss gid :
-    release wrs (filter_group gid tss) = filter_group gid (release wrs tss).
-  Proof.
-    set P := (λ x, key_to_group x = gid).
-    pose proof release_key_nonexpanding as Hne.
-    by apply (gmap_nonexpanding_merge_filter_commute P wrs tss) in Hne.
-  Qed.
-
-  (* Lemma release_acquire_inverse tid wrs tss : *)
-  (*   validate tid wrs tss = true -> *)
-  (*   release wrs (acquire tid wrs tss) = tss. *)
-  (* Proof. *)
-  (*   intros Hvd. *)
-  (*   apply map_eq. intros k. *)
-  (*   rewrite /release lookup_merge /acquire lookup_merge. *)
-  (*   destruct (wrs !! k) as [v |] eqn:Hv, *)
-  (*              (tss !! k) as [[h t] |] eqn:Hts; rewrite Hv; [| done | done | done]. *)
-  (*   (* not sure why [rewrite Hv] is required. *) *)
-  (*   rewrite /validate map_fold_andb_true in Hvd. *)
-  (*   specialize (Hvd k false). *)
-  (*   rewrite lookup_merge Hv Hts /= in Hvd. *)
-  (*   case_bool_decide as Hlock; last naive_solver. *)
-  (*   destruct Hlock as [Ht _]. *)
-  (*   by subst t. *)
-  (* Qed. *)
-
-  Lemma release_empty tss :
-    release ∅ tss = tss.
-  Proof.
-    apply map_eq. intros k.
-    rewrite lookup_merge lookup_empty /=.
-    by destruct (tss !! k) eqn:Hk.
-  Qed.
-
-End release.
-
 Section apply_cmds.
 
-  (** Replica state. *)
-  Inductive rpst :=
+  (** Group state. *)
+
+  Inductive gpst :=
   | State (cm : gmap nat bool) (hists : gmap dbkey dbhist)
   | Stuck.
 
@@ -368,7 +276,7 @@ Section apply_cmds.
     | Stuck => Stuck
     end.
 
-  Definition apply_cmd st (cmd : command) :=
+  Definition apply_cmd st (cmd : ccommand) :=
     match cmd with
     | CmdCommit tid pwrs => apply_commit st tid pwrs
     | CmdAbort tid => apply_abort st tid
@@ -376,14 +284,14 @@ Section apply_cmds.
 
   Definition init_hists : gmap dbkey dbhist := gset_to_gmap [None] keys_all.
 
-  Definition init_rpst :=
+  Definition init_gpst :=
     State ∅ init_hists.
 
-  Definition apply_cmds (cmds : list command) :=
-    foldl apply_cmd init_rpst cmds.
+  Definition apply_cmds (cmds : list ccommand) :=
+    foldl apply_cmd init_gpst cmds.
 
   Lemma apply_cmds_unfold cmds :
-    foldl apply_cmd init_rpst cmds = apply_cmds cmds.
+    foldl apply_cmd init_gpst cmds = apply_cmds cmds.
   Proof. done. Qed.
 
   Lemma foldl_apply_cmd_from_stuck l :
@@ -439,3 +347,98 @@ Section apply_cmds.
   Qed.
 
 End apply_cmds.
+
+Section execute_cmds.
+
+  (** Replica state. *)
+
+  Inductive rpst :=
+  | LocalState
+      (cm : gmap nat bool) (hists : gmap dbkey dbhist)
+      (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat)
+  | LocalStuck.
+
+  Definition execute_commit st (tid : nat) (pwrs : dbmap) :=
+    match st with
+    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+        match cm !! tid with
+        | Some true => st
+        | Some false => LocalStuck
+        | None => match cpm !! tid with
+                 | Some _ => LocalState
+                              (<[tid := true]> cm) (multiwrite tid pwrs hists)
+                              (delete tid cpm) (delete tid ptgsm) sptsm (release pwrs ptsm)
+                 | None => LocalState
+                            (<[tid := true]> cm) (multiwrite tid pwrs hists)
+                            cpm ptgsm sptsm ptsm
+                 end
+        end
+    | LocalStuck => LocalStuck
+    end.
+
+  Definition execute_abort st (tid : nat) :=
+    match st with
+    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+        match cm !! tid with
+        | Some true => LocalStuck
+        | Some false => st
+        | None => match cpm !! tid with
+                 | Some pwrs => LocalState
+                                 (<[tid := false]> cm) hists
+                                 (delete tid cpm) (delete tid ptgsm) sptsm (release pwrs ptsm)
+                 | None => LocalState (<[tid := false]> cm) hists cpm ptgsm sptsm ptsm
+                 end
+        end
+    | LocalStuck => LocalStuck
+    end.
+
+  Definition execute_acquire st (tid : nat) (pwrs : dbmap) (ptgs : gset u64) :=
+    match st with
+    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+        LocalState
+          cm hists (<[tid := pwrs]> cpm) (<[tid := ptgs]> ptgsm)
+          (setts (S tid) pwrs sptsm) (acquire tid pwrs ptsm) 
+    | LocalStuck => LocalStuck
+    end.
+
+  Definition execute_read st (tid : nat) (key : dbkey) :=
+    match st with
+    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+        LocalState
+          cm hists cpm ptgsm (alter (λ spts, (spts `max` tid)%nat) key sptsm) ptsm
+    | LocalStuck => LocalStuck
+    end.
+
+  (* TODO *)
+  Definition execute_decide st (tid : nat) (rank : nat) (pdec : bool) :=
+    match st with
+    | LocalState cm hists cpm ptgsm sptsm ptsm => st
+    | LocalStuck => LocalStuck
+    end.
+
+  Definition execute_cmd st (cmd : command) :=
+    match cmd with
+    | CCmd cmd => match cmd with
+                 | CmdCommit tid pwrs => execute_commit st tid pwrs
+                 | CmdAbort tid => execute_abort st tid
+                 end
+    | ICmd cmd => match cmd with
+                 | CmdAcquire tid pwrs ptgs => execute_acquire st tid pwrs ptgs
+                 | CmdRead tid key => execute_read st tid key
+                 | CmdDecide tid rank pdec => execute_decide st tid rank pdec
+                 end
+    end.
+
+  Definition init_sptsm : gmap dbkey nat := gset_to_gmap 1%nat keys_all.
+  Definition init_ptsm : gmap dbkey nat := gset_to_gmap O%nat keys_all.
+  Definition init_rpst :=
+    LocalState ∅ init_hists ∅ ∅ init_sptsm init_ptsm.
+
+  Definition execute_cmds (cmds : list command) :=
+    foldl execute_cmd init_rpst cmds.
+
+  Lemma execute_cmds_snoc (cmds : list command) (cmd : command) :
+    execute_cmds (cmds ++ [cmd]) = execute_cmd (execute_cmds cmds) cmd.
+  Proof. by rewrite /execute_cmds foldl_snoc. Qed.
+
+End execute_cmds.

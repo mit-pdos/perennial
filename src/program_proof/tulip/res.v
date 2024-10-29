@@ -359,10 +359,10 @@ Section res.
     Definition is_txn_log_lbs γ (logs : gmap u64 dblog) : iProp Σ :=
       [∗ map] gid ↦ log ∈ logs, is_txn_log_lb γ gid log.
 
-    Definition own_txn_cpool_half γ (gid : u64) (cpool : gset command) : iProp Σ.
+    Definition own_txn_cpool_half γ (gid : u64) (cpool : gset ccommand) : iProp Σ.
     Admitted.
 
-    Definition is_proposed_txn_cmd γ (gid : u64) (lsn : nat) (term : nat) (c : command) : iProp Σ.
+    Definition is_proposed_txn_cmd γ (gid : u64) (lsn : nat) (term : nat) (c : ccommand) : iProp Σ.
     Admitted.
 
     #[global]
@@ -393,7 +393,7 @@ Section res.
       is_txn_log_lb γ gid logp1.
     Admitted.
 
-    Definition cpool_subsume_log (cpool : gset command) (log : list command) :=
+    Definition cpool_subsume_log (cpool : gset ccommand) (log : list ccommand) :=
       Forall (λ c, c ∈ cpool) log.
 
     Lemma txn_log_cpool_incl γ gid log cpool :

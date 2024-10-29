@@ -101,9 +101,38 @@ Inductive action :=
 | ActRead (tid : nat) (key : dbkey).
 
 (** State-machine commands. *)
-Inductive command :=
+Inductive ccommand :=
 | CmdCommit (tid : nat) (pwrs : dbmap)
 | CmdAbort (tid : nat).
+
+Inductive icommand :=
+| CmdAcquire (tid : nat) (pwrs : dbmap) (ptgs : gset u64)
+| CmdRead (tid : nat) (key : dbkey)
+| CmdDecide (tid : nat) (rank : nat) (pdec : bool).
+
+Inductive command :=
+| CCmd (cmd : ccommand)
+| ICmd (cmd : icommand).
+
+#[global]
+Instance ccommand_eq_decision :
+  EqDecision ccommand.
+Proof. solve_decision. Qed.
+
+#[global]
+Instance ccommand_countable :
+  Countable ccommand.
+Admitted.
+
+#[global]
+Instance icommand_eq_decision :
+  EqDecision icommand.
+Proof. solve_decision. Qed.
+
+#[global]
+Instance icommand_countable :
+  Countable icommand.
+Admitted.
 
 #[global]
 Instance command_eq_decision :
@@ -116,7 +145,7 @@ Instance command_countable :
 Admitted.
 
 (** State-machine log. *)
-Definition dblog := list command.
+Definition dblog := list ccommand.
 
 (** Converting keys to group IDs. *)
 Definition key_to_group (key : dbkey) : u64.

@@ -135,144 +135,49 @@ Section res.
 
   End replica_key_validation.
 
-  Section dura_hist.
+  Section replica_clog.
 
-    (** Mapping from keys to durable histories on each replica. The durable
-    history reflects all the commands up to the highest LSN of inconsistent
-    commands. *)
+    (** Per-replica consistent log. *)
 
-    Definition own_dura_hist_half γ (rid : u64) (k : dbkey) (h : dbhist) : iProp Σ.
+    Definition own_replica_clog_half γ (rid : u64) (l : list ccommand) : iProp Σ.
     Admitted.
 
-    Lemma dura_hist_update {γ rid k h1 h2} h' :
-      own_dura_hist_half γ rid k h1 -∗
-      own_dura_hist_half γ rid k h2 ==∗
-      own_dura_hist_half γ rid k h' ∗
-      own_dura_hist_half γ rid k h'.
+    Lemma replica_clog_update {γ rid l1 l2} l' :
+      own_replica_clog_half γ rid l1 -∗
+      own_replica_clog_half γ rid l2 ==∗
+      own_replica_clog_half γ rid l' ∗
+      own_replica_clog_half γ rid l'.
     Admitted.
 
-    Lemma dura_hist_agree {γ rid k h1 h2} :
-      own_dura_hist_half γ rid k h1 -∗
-      own_dura_hist_half γ rid k h2 -∗
-      ⌜h2 = h1⌝.
+    Lemma replica_clog_agree {γ rid l1 l2} :
+      own_replica_clog_half γ rid l1 -∗
+      own_replica_clog_half γ rid l2 -∗
+      ⌜l2 = l1⌝.
     Admitted.
 
-  End dura_hist.
+  End replica_clog.
 
-  Section replica_pts.
+  Section replica_ilog.
 
-    (** Mapping from keys to the prepare timestamps on each replica. *)
+    (** Per-replica inconsistent log. *)
 
-    Definition own_replica_pts_half γ (rid : u64) (k : dbkey) (ts : nat) : iProp Σ.
+    Definition own_replica_ilog_half γ (rid : u64) (l : list (nat * icommand)) : iProp Σ.
     Admitted.
 
-    Lemma replica_pts_update {γ rid k ts1 ts2} ts' :
-      own_replica_pts_half γ rid k ts1 -∗
-      own_replica_pts_half γ rid k ts2 ==∗
-      own_replica_pts_half γ rid k ts' ∗
-      own_replica_pts_half γ rid k ts'.
+    Lemma replica_ilog_update {γ rid l1 l2} l' :
+      own_replica_ilog_half γ rid l1 -∗
+      own_replica_ilog_half γ rid l2 ==∗
+      own_replica_ilog_half γ rid l' ∗
+      own_replica_ilog_half γ rid l'.
     Admitted.
 
-    Lemma replica_pts_agree {γ rid k ts1 ts2} :
-      own_replica_pts_half γ rid k ts1 -∗
-      own_replica_pts_half γ rid k ts2 -∗
-      ⌜ts2 = ts1⌝.
+    Lemma replica_ilog_agree {γ rid l1 l2} :
+      own_replica_ilog_half γ rid l1 -∗
+      own_replica_ilog_half γ rid l2 -∗
+      ⌜l2 = l1⌝.
     Admitted.
 
-    Lemma replica_pts_big_agree {γ rid ptsm1 ptsm2} :
-      dom ptsm1 = dom ptsm2 ->
-      ([∗ map] k ↦ pts ∈ ptsm1, own_replica_pts_half γ rid k pts) -∗
-      ([∗ map] k ↦ pts ∈ ptsm2, own_replica_pts_half γ rid k pts) -∗
-      ⌜ptsm2 = ptsm1⌝.
-    Admitted.
-
-    Lemma replica_pts_big_update {γ rid ptsm} ptsm' :
-      dom ptsm = dom ptsm' ->
-      ([∗ map] k ↦ pts ∈ ptsm, own_replica_pts_half γ rid k pts) -∗
-      ([∗ map] k ↦ pts ∈ ptsm, own_replica_pts_half γ rid k pts) ==∗
-      ([∗ map] k ↦ pts ∈ ptsm', own_replica_pts_half γ rid k pts) ∗
-      ([∗ map] k ↦ pts ∈ ptsm', own_replica_pts_half γ rid k pts).
-    Admitted.
-
-  End replica_pts.
-
-  Section replica_spts.
-
-    (** Mapping from keys to the smallest preparable timestamps on each replica. *)
-
-    Definition own_replica_spts_half γ (rid : u64) (k : dbkey) (ts : nat) : iProp Σ.
-    Admitted.
-
-    Lemma replica_spts_update {γ rid k ts1 ts2} ts' :
-      own_replica_spts_half γ rid k ts1 -∗
-      own_replica_spts_half γ rid k ts2 ==∗
-      own_replica_spts_half γ rid k ts' ∗
-      own_replica_spts_half γ rid k ts'.
-    Admitted.
-
-    Lemma replica_spts_agree {γ rid k ts1 ts2} :
-      own_replica_spts_half γ rid k ts1 -∗
-      own_replica_spts_half γ rid k ts2 -∗
-      ⌜ts2 = ts1⌝.
-    Admitted.
-
-    Lemma replica_spts_big_agree {γ rid sptsm1 sptsm2} :
-      dom sptsm1 = dom sptsm2 ->
-      ([∗ map] k ↦ spts ∈ sptsm1, own_replica_spts_half γ rid k spts) -∗
-      ([∗ map] k ↦ spts ∈ sptsm2, own_replica_spts_half γ rid k spts) -∗
-      ⌜sptsm2 = sptsm1⌝.
-    Admitted.
-
-    Lemma replica_spts_big_update {γ rid sptsm} sptsm' :
-      dom sptsm = dom sptsm' ->
-      ([∗ map] k ↦ spts ∈ sptsm, own_replica_spts_half γ rid k spts) -∗
-      ([∗ map] k ↦ spts ∈ sptsm, own_replica_spts_half γ rid k spts) ==∗
-      ([∗ map] k ↦ spts ∈ sptsm', own_replica_spts_half γ rid k spts) ∗
-      ([∗ map] k ↦ spts ∈ sptsm', own_replica_spts_half γ rid k spts).
-    Admitted.
-
-  End replica_spts.
-
-  Section replica_commit_map.
-
-    Definition own_replica_commit_map_half γ (rid : u64) (cm : gmap nat bool) : iProp Σ.
-    Admitted.
-
-    Lemma replica_commit_map_update {γ rid cm1 cm2} cm' :
-      own_replica_commit_map_half γ rid cm1 -∗
-      own_replica_commit_map_half γ rid cm2 ==∗
-      own_replica_commit_map_half γ rid cm' ∗
-      own_replica_commit_map_half γ rid cm'.
-    Admitted.
-
-    Lemma replica_commit_map_agree {γ rid cm1 cm2} :
-      own_replica_commit_map_half γ rid cm1 -∗
-      own_replica_commit_map_half γ rid cm2 -∗
-      ⌜cm2 = cm1⌝.
-    Admitted.
-
-  End replica_commit_map.
-
-  Section replica_currently_prepared_map.
-
-    Definition own_replica_currently_prepared_map_half
-      γ (rid : u64) (cpm : gmap nat dbmap) : iProp Σ.
-    Admitted.
-
-    Lemma replica_currently_prepared_map_update {γ rid cpm1 cpm2} cpm' :
-      own_replica_currently_prepared_map_half γ rid cpm1 -∗
-      own_replica_currently_prepared_map_half γ rid cpm2 ==∗
-      own_replica_currently_prepared_map_half γ rid cpm' ∗
-      own_replica_currently_prepared_map_half γ rid cpm'.
-    Admitted.
-
-    Lemma replica_currently_prepared_map_agree {γ rid cpm1 cpm2} :
-      own_replica_currently_prepared_map_half γ rid cpm1 -∗
-      own_replica_currently_prepared_map_half γ rid cpm2 -∗
-      ⌜cpm2 = cpm1⌝.
-    Admitted.
-
-  End replica_currently_prepared_map.
+  End replica_ilog.
 
   Section replica_ballot.
 
