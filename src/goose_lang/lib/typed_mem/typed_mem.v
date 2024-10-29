@@ -34,7 +34,7 @@ Section goose_lang.
   Qed.
 
   Definition struct_pointsto_def l (dq:dfrac) (t:ty) (v: val): iProp Σ :=
-    (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{dq} vj) ∗ ⌜val_ty v t⌝)%I.
+    (([∗ list] j↦vj ∈ flatten_struct v, heap_pointsto (l +ₗ j) dq vj) ∗ ⌜val_ty v t⌝)%I.
   Definition struct_pointsto_aux : seal (@struct_pointsto_def). Proof. by eexists. Qed.
   Definition struct_pointsto := struct_pointsto_aux.(unseal).
   Definition struct_pointsto_eq : @struct_pointsto = @struct_pointsto_def := struct_pointsto_aux.(seal_eq).
@@ -56,7 +56,7 @@ Section goose_lang.
 
   Theorem struct_pointsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
-    l ↦[t]{q} v ⊢@{_} l ↦{q} v0.
+    l ↦[t]{q} v ⊢@{_} heap_pointsto l q v0.
   Proof.
     intros Hv.
     unseal.
@@ -155,7 +155,7 @@ Section goose_lang.
   Qed.
 
   Lemma byte_pointsto_untype l q (x: u8) :
-    l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
+    l ↦[byteT]{q} #x ⊣⊢ heap_pointsto l q #x.
   Proof.
     rewrite struct_pointsto_eq /struct_pointsto_def /=.
     rewrite loc_add_0 right_id.
@@ -170,7 +170,7 @@ Section goose_lang.
     | unitBT => false
     | _ => true
     end = true ->
-    l ↦[baseT bt]{q} v ⊣⊢ l ↦{q} v ∗ ⌜val_ty v (baseT bt)⌝.
+    l ↦[baseT bt]{q} v ⊣⊢ heap_pointsto l q v ∗ ⌜val_ty v (baseT bt)⌝.
   Proof.
     intros Hnotunit.
     iSplit.
@@ -377,7 +377,7 @@ Section goose_lang.
     unseal.
     iDestruct "Hl" as "[Hl %]".
     hnf in H.
-    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
+    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, heap_pointsto (l +ₗ j) q vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ".
       iSplit; eauto. }
@@ -444,8 +444,8 @@ Section goose_lang.
   Qed.
 
   Theorem wp_store stk E l v v' :
-    {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
-    {{{ RET LitV LitUnit; l ↦ v }}}.
+    {{{ ▷ heap_pointsto l (DfracOwn 1) v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
+    {{{ RET LitV LitUnit; heap_pointsto l (DfracOwn 1) v }}}.
   Proof.
     iIntros (Φ) "Hl HΦ". rewrite /Store.
     wp_apply (wp_prepare_write with "Hl"); iIntros "[Hl Hl']".
@@ -461,7 +461,7 @@ Section goose_lang.
     intros Hty.
     unseal.
     iIntros (Φ) ">[Hl %] HΦ".
-    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
+    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, heap_pointsto (l +ₗ j) (DfracOwn 1) vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ".
       iSplit; eauto. }

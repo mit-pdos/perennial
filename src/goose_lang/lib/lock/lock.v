@@ -19,7 +19,7 @@ Section proof.
   Context `{!heapGS Σ} (N : namespace).
 
   Definition lock_inv (l : loc) (R : iProp Σ) : iProp Σ :=
-    (∃ b : bool, l ↦{#1/4} #b ∗ if b then True else l ↦{#3/4} #b ∗ R)%I.
+    (∃ b : bool, heap_pointsto l (DfracOwn (1/4)) #b ∗ if b then True else heap_pointsto l (DfracOwn (3/4)) #b ∗ R)%I.
 
   (**  [is_lock] takes a namespace that is used for an internal invariant.
 
@@ -45,10 +45,10 @@ Section proof.
     val_ty.
   Qed.
 
-  Definition locked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ l ↦{#3/4} #true.
+  Definition locked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ heap_pointsto l (DfracOwn (3/4)) #true.
 
   Lemma locked_loc (l:loc) :
-    locked #l ⊣⊢ l ↦{#3/4} #true.
+    locked #l ⊣⊢ heap_pointsto l (DfracOwn (3/4)) #true.
   Proof.
     rewrite /locked.
     iSplit; auto.
@@ -96,7 +96,7 @@ Section proof.
   takes and consumes ownership over the lock heap data that makes this sound
   (eg, the same lock cannot be associated with two different lock invariants).
   *)
-  Definition is_free_lock (l: loc): iProp Σ := l ↦ #false.
+  Definition is_free_lock (l: loc): iProp Σ := heap_pointsto l (DfracOwn 1) #false.
 
   Theorem is_free_lock_ty lk :
     is_free_lock lk -∗ ⌜val_ty #lk ptrT⌝.
@@ -213,7 +213,7 @@ Section proof.
   (** cond var proofs *)
 
   Definition is_cond (c: loc) (lk : val) : iProp Σ :=
-    c ↦□ lk.
+    heap_pointsto c DfracDiscarded lk.
 
   Global Instance is_cond_persistent c lk :
     Persistent (is_cond c lk) := _.

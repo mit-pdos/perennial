@@ -16,7 +16,7 @@ Instance into_val_blackHole `{ffi_syntax} : IntoVal blackHole.t :=
   |}.
 Program Instance into_val_typed_blackHole `{ffi_syntax} : IntoValTyped blackHole.t blackHole :=
 {| default_val := blackHole.mk |}.
-Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
+Next Obligation. rewrite to_val_unseal /=. intros. solve_has_go_type. Qed.
 Next Obligation.
   intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal //=.
 Qed.

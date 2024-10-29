@@ -298,9 +298,9 @@ Ltac iFramePtsTo_core tac :=
       replace z with z';
       [ iExact j | tac ]
     end
-  | [ |- envs_entails ?Δ (?l ↦ ?v) ] =>
+  | [ |- envs_entails ?Δ (heap_pointsto ?l (DfracOwn 1) ?v) ] =>
     match Δ with
-    | context[Esnoc _ ?j (l ↦ ?v')] =>
+    | context[Esnoc _ ?j (heap_pointsto l (DfracOwn 1) ?v')] =>
       replace v with v';
       [ iExact j | tac ]
     end

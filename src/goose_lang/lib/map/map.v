@@ -146,7 +146,7 @@ Proof using IntoValComparable0.
 Qed.
 
 Definition own_map (mref:loc) q (m: gmap K val * val): iProp Σ :=
-  ∃ mv, ⌜map_val mv = Some m⌝ ∗ mref ↦{q} mv.
+  ∃ mv, ⌜map_val mv = Some m⌝ ∗ heap_pointsto mref q mv.
 
 Global Instance own_map_timeless mref q m :
   Timeless (own_map mref q m) := _.
@@ -699,7 +699,7 @@ Proof using IntoValComparable0.
   wp_apply (wp_MapIter_fold
               (λ m,
                 ∃ (s: u64),
-                  l ↦ #s ∗
+                  heap_pointsto l (DfracOwn 1) #s ∗
                   ⌜uint.nat s = size m ∧ (uint.Z s < 2^64-1)%Z⌝)%I
   with "Hm [Hlen]").
   { (* I ∅ *)
