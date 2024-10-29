@@ -248,7 +248,7 @@ lemmas. *)
   Qed.
 
   Definition pointsto_block (l: loc) (q: dfrac) (b: Block) :=
-    ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
+    ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), heap_pointsto l q v)%I.
 
   Lemma wp_ReadOp s E (a: u64) aset q b :
     {{{ ▷ uint.Z a d↦{q}[aset] b }}}
@@ -319,7 +319,7 @@ lemmas. *)
   Theorem pointsto_block_extract i l q b :
     (0 <= i)%Z ->
     (i < 4096)%Z ->
-    ⊢ pointsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝.
+    ⊢ pointsto_block l q b -∗ ∃ v, heap_pointsto (l +ₗ i) q v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝.
   Proof.
     unfold pointsto_block; intros Hlow Hhi.
     iIntros "Hm".

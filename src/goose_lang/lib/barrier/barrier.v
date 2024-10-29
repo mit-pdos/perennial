@@ -46,7 +46,7 @@ Qed.
 
 Definition barrier_inv (l : loc) (γ : gname) (P : iProp Σ) (Pc : iProp Σ) : iProp Σ :=
   (∃ (b : bool) (gmm : gmap nat (gname * gname)) (fprop fcprop : gname → iProp Σ),
-    l ↦ #b ∗
+    heap_pointsto l (DfracOwn 1) #b ∗
     ghost_map_auth γ 1 gmm ∗
     ([∗ map] i ↦ γsp ∈ fst <$> gmm, saved_prop_own γsp DfracDiscarded (fprop γsp)) ∗
     ([∗ map] i ↦ γsp ∈ snd <$> gmm, saved_prop_own γsp DfracDiscarded (fcprop γsp)) ∗

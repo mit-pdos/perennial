@@ -92,11 +92,11 @@ Section proof.
   Qed.
 
   Definition rwlock_inv (l : loc) (R: Qp → iProp Σ) : iProp Σ :=
-    (∃ u : u64, l ↦{#1/4} #u ∗
+    (∃ u : u64, heap_pointsto l (DfracOwn (1/4)) #u ∗
                 if decide (u = W64 0) then
                   True
                 else
-                  l ↦{#3/4} #u ∗
+                  heap_pointsto l (DfracOwn (3/4)) #u ∗
                   R (remaining_frac u)).
 
   Definition is_rwlock (lk : val) R : iProp Σ :=
@@ -119,10 +119,10 @@ Section proof.
     val_ty.
   Qed.
 
-  Definition wlocked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ l ↦{#3/4} #0.
+  Definition wlocked (lk: val) : iProp Σ := ∃ (l:loc), ⌜lk = #l⌝ ∗ heap_pointsto l (DfracOwn (3/4)) #0.
 
   Lemma locked_loc (l:loc) :
-    wlocked #l ⊣⊢ l ↦{#3/4} #0.
+    wlocked #l ⊣⊢ heap_pointsto l (DfracOwn (3/4)) #0.
   Proof.
     rewrite /wlocked.
     iSplit; auto.
@@ -156,7 +156,7 @@ Section proof.
   Global Instance wlocked_timeless l : Timeless (wlocked l).
   Proof. apply _. Qed.
 
-  Definition is_free_lock (l: loc): iProp Σ := l ↦ #1 ∗ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
+  Definition is_free_lock (l: loc): iProp Σ := heap_pointsto l (DfracOwn 1) #1 ∗ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
 
   Theorem is_free_lock_ty lk :
     is_free_lock lk -∗ ⌜val_ty #lk ptrT⌝.
@@ -169,7 +169,7 @@ Section proof.
   Theorem alloc_lock E l R :
     □ (∀ q1 q2, ▷ R (q1 + q2)%Qp -∗ post_expr ∅ (R q1 ∗ R q2)) -∗
     □ (∀ q1 q2, ▷ R q1 -∗ ▷ R q2 -∗ post_expr ∅ (R (q1 + q2)%Qp)) -∗
-    l ↦ #1 -∗ (R 1%Qp) ={E}=∗ is_rwlock #l R.
+    heap_pointsto l (DfracOwn 1) #1 -∗ (R 1%Qp) ={E}=∗ is_rwlock #l R.
   Proof.
     iIntros "? ? Hl HR".
     iMod (inv_alloc N _ (rwlock_inv l R) with "[Hl HR]") as "#?".

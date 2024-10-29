@@ -135,7 +135,7 @@ Proof.
   iNamed "Hwrbuf". wp_loadField. wp_pures.
   iDestruct (own_slice_split with "HentsS") as "[HentsS HentsC]".
   wp_apply (wp_forSlice (λ i, ∃ m' v,
-    ⌜decode_dbmap v = m' ∧ m' = list_to_map (wrbuf_prelude.wrent_to_key_dbval <$> (take (uint.nat i) ents))⌝ ∗ l ↦ v
+    ⌜decode_dbmap v = m' ∧ m' = list_to_map (wrbuf_prelude.wrent_to_key_dbval <$> (take (uint.nat i) ents))⌝ ∗ heap_pointsto l (DfracOwn 1) v
   )%I with "[] [Hl $HentsS]").
   2:{ iExists ∅, _. iFrame. iPureIntro. split; done. }
   { clear Φ. iIntros (i ent Φ) "!# (I & %Hi & %Hent) HΦ".

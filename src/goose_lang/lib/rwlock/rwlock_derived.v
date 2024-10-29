@@ -34,7 +34,7 @@ Section proof.
   Global Instance is_crash_rwlock_persistent l R Rc : Persistent (is_crash_rwlock l R Rc).
   Proof. apply _. Qed.
 
-  Definition is_free_lock (l: loc): iProp Σ := l ↦ #1 ∗ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
+  Definition is_free_lock (l: loc): iProp Σ := heap_pointsto l (DfracOwn 1) #1 ∗ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
 
   Theorem is_free_lock_ty lk :
     is_free_lock lk -∗ ⌜val_ty #lk ptrT⌝.
@@ -48,7 +48,7 @@ Section proof.
     □ (∀ q1 q2, R (q1 + q2)%Qp ∗-∗ R q1 ∗ R q2) -∗
     □ (∀ q1 q2, Rc (q1 + q2)%Qp ∗-∗ Rc q1 ∗ Rc q2) -∗
     □ (∀ q, R q -∗ Rc q) -∗
-    l ↦ #1 -∗ crash_borrow (R 1%Qp) (Rc 1%Qp) ={E}=∗ is_crash_rwlock #l R Rc.
+    heap_pointsto l (DfracOwn 1) #1 -∗ crash_borrow (R 1%Qp) (Rc 1%Qp) ={E}=∗ is_crash_rwlock #l R Rc.
   Proof.
     iIntros "#H1 #H2 #H3 Hl HR".
     iMod (alloc_lock N E l (λ q, (crash_borrow (R q) (Rc q))) with "[] [] [$] [$]").

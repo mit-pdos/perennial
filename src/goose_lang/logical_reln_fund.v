@@ -446,7 +446,7 @@ Qed.
 
 Lemma is_loc_init l ls v vs:
   forall  P,
-  l ↦ v -∗
+  heap_pointsto l (DfracOwn 1) v -∗
   meta_token l ⊤ -∗
   ls s↦ vs -∗
   meta_token (hG := refinement_na_heapG) ls ⊤ -∗

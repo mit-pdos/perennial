@@ -102,12 +102,12 @@ Inductive loc_status :=
 Canonical Structure loc_statusO := leibnizO loc_status.
 
 Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
-   (∃ vs v, (fc_auth γ None ∗ ls s↦ vs ∗ l ↦ v ∗ vTy vs v) ∨
+   (∃ vs v, (fc_auth γ None ∗ ls s↦ vs ∗ heap_pointsto l (DfracOwn 1) v ∗ vTy vs v) ∨
             (∃ q q' (n: positive), ⌜ (q + q' = 1)%Qp ⌝ ∗
                 fc_auth γ (Some (q, n)) ∗
                 na_heap_pointsto_st (RSt (Pos.to_nat n)) ls (DfracOwn q') vs ∗
                 (∀ v', na_heap_pointsto (hG := refinement_na_heapG) ls (DfracOwn 1) v' -∗ ls s↦ v') ∗
-                l ↦{#q'} v ∗ vTy vs v)
+                heap_pointsto l (DfracOwn q') v ∗ vTy vs v)
             ∨
             (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
              na_heap_pointsto_st WSt ls (DfracOwn (1/2)%Qp) vs))%I.

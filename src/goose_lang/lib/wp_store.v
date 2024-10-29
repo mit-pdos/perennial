@@ -12,8 +12,8 @@ Context {ext_ty: ext_types ext}.
 
 Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, l ↦ v)%I →
-  envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ' = Some Δ'' →
+  envs_lookup i Δ' = Some (false, heap_pointsto l (DfracOwn 1) v)%I →
+  envs_simple_replace i false (Esnoc Enil i (heap_pointsto l (DfracOwn 1) v')) Δ' = Some Δ'' →
   envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
 Proof.
@@ -27,7 +27,7 @@ End goose_lang.
 
 Tactic Notation "wp_untyped_store" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
+    let l := match goal with |- _ = Some (_, (heap_pointsto ?l _ _)%I) => l end in
     iAssumptionCore || fail "wp_untyped_store: cannot find" l "↦ ?" in
   wp_pures;
   lazymatch goal with

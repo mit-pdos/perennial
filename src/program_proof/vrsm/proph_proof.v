@@ -52,7 +52,7 @@ Proof.
   wp_apply wp_alloc_untyped. { done. }
   iIntros (l) "Hl". wp_apply (wp_store with "Hl"). iIntros "Hl". wp_pures.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  wp_apply (wp_forSlice (λ i, ∃ b' v, ⌜decode_bytes v = b' ∧ b' = take (uint.nat i) b⌝ ∗ l ↦ v)%I
+  wp_apply (wp_forSlice (λ i, ∃ b' v, ⌜decode_bytes v = b' ∧ b' = take (uint.nat i) b⌝ ∗ heap_pointsto l (DfracOwn 1) v)%I
     with "[] [Hl $Hsl]").
   2:{ iExists [], _. iFrame. iPureIntro. done. }
   { clear Φ. iIntros (i x Φ) "!# (I & %Hi & %Hx) HΦ".

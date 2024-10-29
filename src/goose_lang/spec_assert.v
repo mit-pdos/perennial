@@ -98,7 +98,7 @@ Proof. apply _. Qed.
 Notation "l s↦ dq v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
   (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  v") : bi_scope.
 
-Notation "l s↦ dq -" := (∃ v, l ↦{dq} v)%I
+Notation "l s↦ dq -" := (∃ v, heap_pointsto l dq v)%I
   (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  -") : bi_scope.
 
 Section go_ghost_step.
@@ -923,7 +923,7 @@ End go_refinement.
 Notation "l s↦ dq v" := (heap_pointsto (hG := refinement_na_heapG) l dq v%V)
   (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  v") : bi_scope.
 
-Notation "l s↦ dq -" := (∃ v, l ↦{dq} v)%I
+Notation "l s↦ dq -" := (∃ v, heap_pointsto l dq v)%I
   (at level 20, dq custom dfrac at level 1, format "l  s↦ dq  -") : bi_scope.
 
 Section trace_inv.
@@ -972,7 +972,7 @@ Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 
 Lemma test_resolution1 l v :
-  l ↦ v -∗ (heap_pointsto (hG := goose_na_heapGS) l (DfracOwn 1) (v)).
+  heap_pointsto l (DfracOwn 1) v -∗ (heap_pointsto (hG := goose_na_heapGS) l (DfracOwn 1) (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
@@ -984,7 +984,7 @@ Proof using Type.
 Qed.
 
 Lemma test_resolution3 l v :
-  l ↦ v -∗ (heap_pointsto l (DfracOwn 1) (v)).
+  heap_pointsto l (DfracOwn 1) v -∗ (heap_pointsto l (DfracOwn 1) (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
