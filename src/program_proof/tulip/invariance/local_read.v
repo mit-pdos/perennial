@@ -14,18 +14,22 @@ Section local_read.
     end.
 
   Lemma replica_inv_local_read γ gid rid clog ilog st key rts hist :
+    valid_key key ->
+    key_to_group key = gid ->
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     local_read_requirement st key rts hist ->
     own_replica_clog_half γ rid clog -∗
     own_replica_ilog_half γ rid ilog -∗
+    group_inv γ gid -∗
     replica_inv γ gid rid ==∗
     own_replica_clog_half γ rid clog ∗
     own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdRead rts key)]) ∗
+    group_inv γ gid ∗
     replica_inv γ gid rid ∗
     read_promise γ gid rid key (pred (length hist)) rts ∗
     is_repl_hist_lb γ key hist.
   Proof.
-    iIntros (Hst Hrequire) "Hclogprog Hilogprog Hrp".
+    iIntros (Hvk Hgid Hst Hrequire) "Hclogprog Hilogprog Hgroup Hrp".
     do 2 iNamed "Hrp".
     (* Agreement on the consistent and inconsistent logs. *)
     iDestruct (replica_clog_agree with "Hclogprog Hclog") as %->.
@@ -42,6 +46,8 @@ Section local_read.
     simpl in Hrequire.
     destruct Hrequire as (spts & pts & Hspts & Hpts & Hhist & Hlock).
     rewrite Hrsm in Hst. symmetry in Hst. inv Hst.
+    (* [inv] eats the eq... *)
+    set gid := key_to_group _.
     assert (is_Some (kvdm !! key)) as [vd Hvd].
     { pose proof (map_Forall2_dom_L _ _ _ Hlenkvd) as Hdomsptsm.
       by rewrite -elem_of_dom Hdomsptsm elem_of_dom.
@@ -49,6 +55,14 @@ Section local_read.
     pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hvd Hspts Hlenkvd) as Hlenvd.
     simpl in Hlenvd.
     iDestruct (big_sepM_delete with "Hkvdm") as "[Hkvd Hkvdm]"; first apply Hvd.
+    (* Obtain a lower-bound on the replicated history. *)
+    iDestruct (group_inv_witness_repl_hist key hist with "Hcloglb Hgroup") as "#Hrepllb".
+    { apply Hvk. }
+    { done. }
+    { unshelve epose proof (execute_cmds_apply_cmds clog ilog cm histm _) as Happly.
+      { by eauto. }
+      by rewrite /hist_from_log Happly.
+    }
     destruct (decide (pts = O)) as [Hz | Hnz]; last first.
     { (* Case: Key locked by txn [pts] where [rts ≤ pts]. No extension required. *)
       destruct Hlock as [? | Hle]; first done.
@@ -76,9 +90,6 @@ Section local_read.
         apply Classical_Prop.not_and_or in Ht.
         destruct Ht as [Htlt | Hnpt].
         { clear -Htlt Htge. lia. }
-        apply Classical_Prop.not_and_or in Hnpt.
-        destruct Hnpt as [Hnpt | Hz]; last first.
-        { apply dec_stable in Hz. subst t. clear -Htge. lia. }
         apply dec_stable in Hnpt. subst t.
         apply lookup_lt_Some in Hb.
         rewrite length_take_le in Hb; last first.
@@ -87,8 +98,6 @@ Section local_read.
       }
       iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
       rewrite insert_delete; last apply Hvd.
-      (* Obtain a lower-bound on the replicated history. *)
-      iDestruct (big_sepM_lookup with "Hreplhm") as "Hreplh"; first apply Hhist.
       iFrame "∗ # %".
       iPureIntro.
       rewrite (lookup_alter_Some _ _ _ _ Hspts).
@@ -122,8 +131,6 @@ Section local_read.
       }
       iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
       rewrite insert_delete; last apply Hvd.
-      (* Obtain a lower-bound on the replicated history. *)
-      iDestruct (big_sepM_lookup with "Hreplhm") as "Hreplh"; first apply Hhist.
       iFrame "∗ # %".
       iPureIntro.
       rewrite (lookup_alter_Some _ _ _ _ Hspts).
@@ -161,8 +168,6 @@ Section local_read.
     }
     iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
     rewrite insert_delete_insert.
-    (* Obtain a lower-bound on the replicated history. *)
-    iDestruct (big_sepM_lookup with "Hreplhm") as "Hreplh"; first apply Hhist.
     iFrame "∗ # %".
     iModIntro.
     iSplit.

@@ -4,28 +4,6 @@ From Perennial.program_proof.tulip Require Import base cmd res.
 (* TODO: might be better to separate out the common definitions from [inv_group]. *)
 From Perennial.program_proof.tulip Require Import inv_group.
 
-Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
-Admitted.
-
-Lemma merge_clog_ilog_app_clog clog ilog ccmds :
-  Forall (λ nc, (nc.1 ≤ length clog)%nat) ilog ->
-  merge_clog_ilog (clog ++ ccmds) ilog =
-  merge_clog_ilog clog ilog ++ (fmap CCmd ccmds).
-Admitted.
-
-Lemma merge_clog_ilog_snoc_ilog clog ilog lsn icmd :
-  (length clog ≤ lsn)%nat ->
-  merge_clog_ilog clog (ilog ++ [(lsn, icmd)]) =
-  merge_clog_ilog clog ilog ++ [ICmd icmd].
-Admitted.
-
-Lemma execute_cmds_apply_cmds clog ilog cm histm :
-  let log := merge_clog_ilog clog ilog in
-  (∃ cpm ptgsm sptsm ptsm,
-      execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm) ->
-  apply_cmds clog = State cm histm.
-Admitted.
-
 Section inv.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
@@ -42,7 +20,7 @@ Section inv.
     match kvdm !! k, histm !! k, ptsm !! k with
     | Some vdl, Some hist, Some pts =>
         match vdl !! ts with
-        | Some true => if decide ((length hist ≤ ts)%nat ∧ ts ≠ pts ∧ ts ≠ O)
+        | Some true => if decide ((length hist ≤ ts)%nat ∧ ts ≠ pts)
                       then is_group_aborted γ gid ts
                       else True
         | _ => True
@@ -83,8 +61,7 @@ Section inv.
       "Hclog"     ∷ own_replica_clog_half γ rid clog ∗
       "Hilog"     ∷ own_replica_ilog_half γ rid ilog ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
-      "#Hreplhm"  ∷ ([∗ map] k ↦ h ∈ histm, is_repl_hist_lb γ k h) ∗
-      "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, is_txn_pwrs γ gid ts pwrs) ∗
+      "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid ts pwrs) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗

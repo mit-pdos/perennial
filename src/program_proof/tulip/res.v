@@ -115,6 +115,12 @@ Section res.
       by eapply prefix_lookup_Some.
     Qed.
 
+    Lemma repl_hist_lb_weaken {γ k hlb1} hlb2 :
+      prefix hlb2 hlb1 ->
+      is_repl_hist_lb γ k hlb1 -∗
+      is_repl_hist_lb γ k hlb2.
+    Admitted.
+
   End repl_hist.
 
   Section repl_ts.

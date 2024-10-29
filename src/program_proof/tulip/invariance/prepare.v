@@ -181,7 +181,8 @@ Section inv.
       { set_solver. }
       (* Prove [pwrs' = pwrs]. *)
       do 2 iNamed "Hrp".
-      iDestruct (big_sepM_lookup with "Hsafep") as "Hpwrs'"; first apply Hpreped.
+      iDestruct (big_sepM_lookup with "Hsafep") as "Hsafepwrs'"; first apply Hpreped.
+      iDestruct (safe_txn_pwrs_impl_is_txn_pwrs with "Hsafepwrs'") as "Hpwrs'".
       iDestruct (txn_pwrs_agree with "Hpwrs Hpwrs'") as %->.
       (* Prove [k] is locked by [ts]. *)
       specialize (Hpil _ _ _ Hpreped Hk).
@@ -273,13 +274,6 @@ Section inv.
     by iApply (key_inv_prepare with "Hqv Hpwrs Hkey Hrps Hcm").
   Qed.
 
-  Lemma apply_cmds_cm_subseteq {log logp cm cmp histm histmp} :
-    prefix logp log ->
-    apply_cmds log = State cm histm ->
-    apply_cmds logp = State cmp histmp ->
-    cmp ⊆ cm.
-  Admitted.
-
   Lemma replica_inv_not_finalized γ gid rid log cm histm tss ts :
     cm !! ts = None ->
     apply_cmds log = State cm histm ->
@@ -295,7 +289,7 @@ Section inv.
     iDestruct (txn_log_prefix with "Hlog Hcloglb") as %Hprefix.
     unshelve epose proof (execute_cmds_apply_cmds clog ilog cmrp histmrp _) as Happly'.
     { by eauto. }
-    pose proof (apply_cmds_cm_subseteq Hprefix Happly Happly') as Hincl.
+    pose proof (apply_cmds_mono_cm Hprefix Happly Happly') as Hincl.
     iFrame "Hlog ∗ # %".
     iPureIntro.
     apply set_Forall_union; last apply Hxfinal.
@@ -334,7 +328,7 @@ Section inv.
     replica_inv_xfinalized γ gid rid tss -∗
     False.
   Proof.
-    iIntros (Hne Hin1 Hin2 Hoverlap) "Hts1 Hts2 Hwrs1 Hwrs2 Hrp".
+    iIntros (Hne Hin1 Hin2 Hoverlap) "Hts1 Hts2 Hpwrs1 Hpwrs2 Hrp".
     iNamed "Hrp".
     iDestruct (replica_inv_xfinalized_validated_impl_prepared with "Hts1 Hrp")
       as (pwrs1') "%Hpwrs1".
@@ -347,11 +341,13 @@ Section inv.
     do 2 iNamed "Hrp".
     iAssert (⌜pwrs1' = pwrs1⌝)%I as %->.
     { iDestruct (big_sepM_lookup with "Hsafep") as "Hsafe"; first apply Hpwrs1.
-      iApply (txn_pwrs_agree with "Hwrs1 Hsafe").
+      iDestruct (safe_txn_pwrs_impl_is_txn_pwrs with "Hsafe") as "Hpwrs1'".
+      iApply (txn_pwrs_agree with "Hpwrs1 Hpwrs1'").
     }
     iAssert (⌜pwrs2' = pwrs2⌝)%I as %->.
     { iDestruct (big_sepM_lookup with "Hsafep") as "Hsafe"; first apply Hpwrs2.
-      iApply (txn_pwrs_agree with "Hwrs2 Hsafe").
+      iDestruct (safe_txn_pwrs_impl_is_txn_pwrs with "Hsafe") as "Hpwrs2'".
+      iApply (txn_pwrs_agree with "Hpwrs2 Hpwrs2'").
     }
     exfalso.
     apply set_choose_L in Hoverlap as [k Hk].

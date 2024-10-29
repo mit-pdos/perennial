@@ -308,6 +308,10 @@ Section apply_cmds.
     by rewrite Happ /apply_cmds foldl_app apply_cmds_unfold Hl1 foldl_apply_cmd_from_stuck in Hns.
   Qed.
 
+  Lemma apply_cmds_snoc (cmds : list ccommand) (cmd : ccommand) :
+    apply_cmds (cmds ++ [cmd]) = apply_cmd (apply_cmds cmds) cmd.
+  Proof. by rewrite /apply_cmds foldl_snoc. Qed.
+
   Lemma apply_cmds_dom_nonexpanding l1 l2 :
     ∀ stm1 stm2 tpls1 tpls2,
     apply_cmds l1 = State stm1 tpls1 ->
@@ -336,15 +340,29 @@ Section apply_cmds.
   Qed.
 
   Lemma apply_cmds_dom log :
-    ∀ stm tpls,
-    apply_cmds log = State stm tpls ->
-    dom tpls = keys_all.
+    ∀ cm histm,
+    apply_cmds log = State cm histm ->
+    dom histm = keys_all.
   Proof.
-    intros stm tpls Hrsm.
+    intros cm histm Hrsm.
     replace keys_all with (dom init_hists); last first.
     { apply dom_gset_to_gmap. }
     by eapply (apply_cmds_dom_nonexpanding [] log).
   Qed.
+
+  Lemma apply_cmds_mono_cm {log logp cm cmp histm histmp} :
+    prefix logp log ->
+    apply_cmds log = State cm histm ->
+    apply_cmds logp = State cmp histmp ->
+    cmp ⊆ cm.
+  Admitted.
+
+  Lemma apply_cmds_mono_histm {log logp cm cmp histm histmp} :
+    prefix logp log ->
+    apply_cmds log = State cm histm ->
+    apply_cmds logp = State cmp histmp ->
+    map_Forall2 (λ _ h hp, prefix hp h) histm histmp.
+  Admitted.
 
 End apply_cmds.
 
@@ -357,6 +375,8 @@ Section execute_cmds.
       (cm : gmap nat bool) (hists : gmap dbkey dbhist)
       (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat)
   | LocalStuck.
+
+  Definition not_local_stuck st := st ≠ LocalStuck.
 
   Definition execute_commit st (tid : nat) (pwrs : dbmap) :=
     match st with
@@ -441,4 +461,39 @@ Section execute_cmds.
     execute_cmds (cmds ++ [cmd]) = execute_cmd (execute_cmds cmds) cmd.
   Proof. by rewrite /execute_cmds foldl_snoc. Qed.
 
+  Lemma execute_cmds_dom_histm {log cm histm cpm ptgsm sptsm ptsm} :
+    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm ->
+    dom histm = keys_all.
+  Proof.
+  Admitted.
+
+  Lemma execute_cmds_hist_not_nil {log cm histm cpm ptgsm sptsm ptsm} :
+    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm ->
+    map_Forall (λ _ h, h ≠ []) histm.
+  Admitted.
+
 End execute_cmds.
+
+Section merge_clog_ilog.
+  Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
+  Admitted.
+
+  Lemma merge_clog_ilog_snoc_clog clog ilog ccmd :
+    Forall (λ nc, (nc.1 ≤ length clog)%nat) ilog ->
+    merge_clog_ilog (clog ++ [ccmd]) ilog =
+    merge_clog_ilog clog ilog ++ [CCmd ccmd].
+  Admitted.
+
+  Lemma merge_clog_ilog_snoc_ilog clog ilog lsn icmd :
+    (length clog ≤ lsn)%nat ->
+    merge_clog_ilog clog (ilog ++ [(lsn, icmd)]) =
+    merge_clog_ilog clog ilog ++ [ICmd icmd].
+  Admitted.
+
+  Lemma execute_cmds_apply_cmds clog ilog cm histm :
+    let log := merge_clog_ilog clog ilog in
+    (∃ cpm ptgsm sptsm ptsm,
+        execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm) ->
+    apply_cmds clog = State cm histm.
+  Admitted.
+End merge_clog_ilog.

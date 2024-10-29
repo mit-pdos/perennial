@@ -47,24 +47,20 @@ Section validate.
     end.
 
   Lemma replica_inv_validate γ gid rid clog ilog st ts pwrs ptgs :
-    (* cm !! ts = None -> *)
     ts ≠ O ->
     dom pwrs ⊆ keys_all ->
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     validate_requirement st ts pwrs ->
-    is_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_pwrs γ gid ts pwrs -∗
     own_replica_clog_half γ rid clog -∗
     own_replica_ilog_half γ rid ilog -∗
     replica_inv γ gid rid ==∗
-    (* own_replica_currently_prepared_map_half γ rid (<[ts := pwrs]> cpm) ∗ *)
-    (* ([∗ set] k ∈ dom pwrs, own_replica_spts_half γ rid k (S ts)) ∗ *)
-    (* ([∗ set] k ∈ dom pwrs, own_replica_pts_half γ rid k ts) ∗ *)
     own_replica_clog_half γ rid clog ∗
     own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdAcquire ts pwrs ptgs)]) ∗
     replica_inv γ gid rid ∗
     is_replica_validated_ts γ gid rid ts.
   Proof.
-    iIntros (Hnz Hdompwrs Hst Hrequire) "#Hpwrs Hclogprog Hilogprog Hrp".
+    iIntros (Hnz Hdompwrs Hst Hrequire) "#Hsafepwrs Hclogprog Hilogprog Hrp".
     do 2 iNamed "Hrp".
     (* Agreement on the consistent and inconsistent logs. *)
     iDestruct (replica_clog_agree with "Hclogprog Hclog") as %->.
@@ -103,7 +99,8 @@ Section validate.
     symmetry in Hdomptsm. rewrite Hdomsptsm in Hdomptsm.
     (* Obtain witnesses that for each key [k ∈ dom pwrs] has been validated. *)
     iAssert (validated_pwrs_of_txn γ gid rid ts)%I as "#Hvkeys".
-    { iFrame "Hpwrs".
+    { iDestruct (safe_txn_pwrs_impl_is_txn_pwrs with "Hsafepwrs") as "Hpwrs".
+      iFrame "Hpwrs".
       iDestruct (big_sepM_dom_subseteq_difference _ _ (dom pwrs) with "Hkvdm")
         as (m [Hdomm Hincl]) "[Hkvdm _]".
       { rewrite validate_dom Hdomkvdm. apply Hdompwrs. }
@@ -134,8 +131,8 @@ Section validate.
       rewrite extend_length.
       clear -Hlenvl Hle. lia.
     }
-    (* Re-establish [is_txn_pwrs] over [<[ts := pwrs]> cpm]. *)
-    iDestruct (big_sepM_insert_2 _ _ ts pwrs with "Hpwrs Hsafep") as "#Hsafep'".
+    (* Re-establish [safe_txn_pwrs] over [<[ts := pwrs]> cpm]. *)
+    iDestruct (big_sepM_insert_2 _ _ ts pwrs with "Hsafepwrs Hsafep") as "#Hsafep'".
     (* Re-establish [validated_pwrs_of_txn] over [{[ts]} ∪ vtss]. *)
     iDestruct (big_sepS_insert_2 ts with "Hvkeys Hvpwrs") as "#Hvpwrs'".
     iFrame "∗ # %".
@@ -170,7 +167,7 @@ Section validate.
         destruct ((_ ++ [true]) !! ts); last done.
         destruct b; last done.
         case_decide as Hne; last done.
-        by destruct Hne as (_ & ? & _).
+        by destruct Hne as [_ ?].
       }
       rewrite lookup_app_l; last first.
       { rewrite extend_length. clear -Hlets Hne. lia. }
@@ -190,12 +187,14 @@ Section validate.
       destruct b; last done.
       case_decide as Htz; last first.
       { case_decide as Htts; last done.
-        destruct Htts as [Htge [Htts Htnz]].
+        destruct Htts as [Htge Htts].
         apply Classical_Prop.not_and_or in Htz.
         destruct Htz as [? | Htz]; first done.
-        rewrite and_idemp in Htz.
         apply dec_stable in Htz.
-        by subst t.
+        subst t.
+        pose proof (execute_cmds_hist_not_nil Hrsm) as Hnnil.
+        specialize (Hnnil _ _ Hhist). simpl in Hnnil.
+        unshelve epose proof (nil_length_inv hist _) as ->; [lia | done].
       }
       by case_decide.
     }

@@ -41,12 +41,6 @@ Section res.
       own_group_prepm γ gid (<[ts := p]> pm) ∗ is_group_prep γ gid ts p.
     Admitted.
 
-    (* Lemma group_prep_witness γ gid pm ts p : *)
-    (*   pm !! ts = Some p -> *)
-    (*   own_group_prepm γ gid pm -∗ *)
-    (*   is_group_prep γ gid ts p. *)
-    (* Admitted. *)
-
     Lemma group_prep_lookup γ gid pm ts p :
       own_group_prepm γ gid pm -∗
       is_group_prep γ gid ts p -∗

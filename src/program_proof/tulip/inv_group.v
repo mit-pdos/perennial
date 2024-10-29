@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.rsm.pure Require Import list quorum.
+From Perennial.program_proof.rsm.pure Require Import list quorum fin_maps.
 From Perennial.program_proof.tulip Require Import base cmd res.
 
 Lemma tpls_group_keys_group_dom gid tpls :
@@ -181,8 +181,8 @@ Section inv.
     ∃ wrs, is_txn_committed γ ts wrs ∗
            is_txn_wrs γ ts wrs ∗
            ⌜pwrs = wrs_group gid wrs⌝ ∗
-           ⌜gid ∈ ptgroups (dom wrs)⌝.
-           (* ⌜valid_ts ts ∧ gid ∈ ptgroups (dom wrs)⌝. *)
+           ⌜gid ∈ ptgroups (dom wrs)⌝ ∗
+           ⌜valid_wrs wrs⌝.
 
   Definition safe_abort γ ts : iProp Σ :=
     is_txn_aborted γ ts ∧ ⌜valid_ts ts⌝.
@@ -251,6 +251,38 @@ End inv.
 
 Section lemma.
   Context `{!tulip_ghostG Σ}.
+
+  Definition hist_from_log log key hist :=
+    match apply_cmds log with
+    | State _ histm => histm !! key = Some hist
+    | _ => False
+    end.
+
+  Lemma group_inv_witness_repl_hist {γ gid loglb} key hlb :
+    valid_key key ->
+    key_to_group key = gid ->
+    hist_from_log loglb key hlb ->
+    is_txn_log_lb γ gid loglb -∗
+    group_inv γ gid -∗
+    is_repl_hist_lb γ key hlb.
+  Proof.
+    iIntros (Hkey Hgid Hhlb) "#Hloglb Hgroup".
+    do 2 iNamed "Hgroup".
+    pose proof (apply_cmds_dom _ _ _ Hrsm) as Hdom.
+    assert (is_Some (hists !! key)) as [h Hh].
+    { rewrite -elem_of_dom. set_solver. }
+    iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
+    rewrite /hist_from_log in Hhlb.
+    destruct (apply_cmds loglb) as [cmlb histmlb |] eqn:Happly; last done.
+    pose proof (apply_cmds_mono_histm Hprefix Hrsm Happly) as Hprefixes.
+    pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hh Hhlb Hprefixes) as Hprefixh.
+    simpl in Hprefixh.
+    iDestruct (big_sepM_lookup _ _ key h with "Hhists") as "Hhist".
+    { by rewrite map_lookup_filter_Some. }
+    iDestruct (repl_hist_witness with "Hhist") as "#Hhistlb".
+    iApply (repl_hist_lb_weaken hlb with "Hhistlb").
+    apply Hprefixh.
+  Qed.
 
   Lemma group_inv_extract_log_expose_cpool {γ} gid :
     group_inv γ gid -∗
