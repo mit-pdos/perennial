@@ -22,7 +22,7 @@ Notation merkle_map_ty := (gmap (list w8) (list w8)) (only parsing).
 Notation map_adtr_ty := (gmap opaque_label_ty (epoch_ty * comm_ty)) (only parsing).
 Notation cli_map_val_ty := (option (epoch_ty * comm_ty))%type (only parsing).
 Notation cli_map_ty := (gmap map_label_ty cli_map_val_ty) (only parsing).
-Notation lat_val_ty := (option (ver_ty * map_val_ty)) (only parsing).
+Notation lat_val_ty := (option map_val_ty) (only parsing).
 
 Section misc.
 Class pavG Σ :=
@@ -138,23 +138,17 @@ End msv_core.
 Section msv.
 
 (* msv hides all but the latest val.
-a None val corresponds to an unregistered val. *)
-(* TODO: should take in latest val, without version. *)
+a None val corresponds to a not yet registered val. *)
 Definition msv (m : map_ty) uid (lat : lat_val_ty) :=
-  let len_vals := match lat with None => 0%nat | Some (ver, val) => S (uint.nat ver) end in
-  ∃ vals, length vals = len_vals ∧ last vals = snd <$> lat ∧
-  msv_core m uid vals.
+  ∃ vals, last vals = lat ∧ msv_core m uid vals.
 
 Lemma msv_agree {m uid val0 val1} :
   msv m uid val0 →
   msv m uid val1 →
   val0 = val1.
 Proof.
-  intros HM0 HM1.
-  destruct HM0 as (?&Hlen0&?&HM0). destruct HM1 as (?&Hlen1&?&HM1).
-  pose proof (msv_core_agree HM0 HM1) as ->. rewrite Hlen0 in Hlen1.
-  destruct val0 as [[ver0 ?]|], val1 as [[ver1 ?]|]; [|done..].
-  assert (ver0 = ver1) as -> by word. naive_solver.
+  intros HM0 HM1. destruct HM0 as (?&?&?HM0), HM1 as (?&?&?HM1).
+  pose proof (msv_core_agree HM0 HM1) as ->. naive_solver.
 Qed.
 
 End msv.
@@ -181,17 +175,16 @@ Definition maps_epoch_ok' (ms : list map_ty) :=
 Definition adtr_inv' ms := maps_mono' ms ∧ maps_epoch_ok' ms.
 
 Definition know_hist_val (ms : list map_ty) (uid ep : w64) (lat : lat_val_ty) :=
-  let len_vals := match lat with None => 0%nat | Some (ver, val) => S (uint.nat ver) end in
-  ∃ vals, length vals = len_vals ∧ length vals < 2^64 ∧ last vals = snd <$> lat ∧
-  (* prior vers exist in prior or this map. *)
+  ∃ vals, last vals = lat ∧ length vals < 2^64 ∧
+  (* prior vers exist in prior or this map. from prior client.Put. *)
   (∀ (ver : w64) val, vals !! uint.nat ver = Some val →
     (∃ (prior : w64) m, uint.Z prior ≤ uint.Z ep ∧ ms !! uint.nat prior = Some m ∧
       m !! (uid, ver) = Some val)) ∧
-  ( (* next ver doesn't exist in this or later map. *)
+  ( (* next ver doesn't exist in this or later map. from future client.SelfMon. *)
     (∃ (bound : w64) m, uint.Z ep ≤ uint.Z bound ∧ ms !! uint.nat bound = Some m ∧
       m !! (uid, W64 (length vals)) = None)
     ∨
-    (* next ver exists in later map. *)
+    (* next ver exists in later map. from future client.Put. *)
     (∃ (bound : w64) m pk, uint.Z ep < uint.Z bound ∧ ms !! uint.nat bound = Some m ∧
       m !! (uid, W64 (length vals)) = Some (bound, pk))).
 
@@ -208,8 +201,8 @@ Lemma hist_msv ms uid hist (ep : w64) m lat :
   msv m uid lat.
 Proof.
   intros Hadtr Hhist Hlook_hist Hlook_m.
-  specialize (Hhist _ _ Hlook_hist) as (vals&?&?&?&Hhist&Hbound).
-  exists vals. split_and?; [done..|]. split; [|destruct Hbound as [Hbound|Hbound]].
+  specialize (Hhist _ _ Hlook_hist) as (vals&?&?&Hhist&Hbound).
+  exists vals. split; [done|]. split; [|destruct Hbound as [Hbound|Hbound]].
   - split; [done|]. intros ?? Hlook_ver.
     specialize (Hhist _ _ Hlook_ver) as (?&?&?&?Hlook_prior&?).
     opose proof ((proj1 Hadtr) _ _ _ _ Hlook_prior Hlook_m _); [lia|].
