@@ -22,7 +22,7 @@ Context `{ffi_syntax} `{ffi_interp}.
 Context `{!heapGS Σ}.
 
 Definition own_slice_def `{!IntoVal V} `{!IntoValTyped V t} (s : slice.t) (dq : dfrac) (vs : list V): iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦#{dq} v ) ∗
+  ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦{dq} v ) ∗
   ⌜length vs = uint.nat s.(slice.len_f) ∧ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
 Program Definition own_slice := unseal (_:seal (@own_slice_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
@@ -38,7 +38,7 @@ Implicit Type (vs : list V).
 Definition own_slice_cap_def (s : slice.t) : iProp Σ :=
   ⌜ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ⌝ ∗
   [∗ list] i ∈ (seq (uint.nat s.(slice.len_f)) (uint.nat s.(slice.cap_f) - uint.nat s.(slice.len_f))),
-    (s.(slice.ptr_f) +ₗ[t] Z.of_nat i) ↦# (default_val V).
+    (s.(slice.ptr_f) +ₗ[t] Z.of_nat i) ↦ (default_val V).
 Program Definition own_slice_cap := unseal (_:seal (@own_slice_cap_def)). Obligation 1. by eexists. Qed.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 
@@ -177,8 +177,8 @@ Qed.
 Lemma own_slice_elem_acc i v s dq vs :
   vs !! (uint.nat i) = Some v →
   s ↦*{dq} vs -∗
-  slice.elem_ref_f s t i ↦#{dq} v ∗
-  (∀ v', slice.elem_ref_f s t i ↦#{dq} v' -∗
+  slice.elem_ref_f s t i ↦{dq} v ∗
+  (∀ v', slice.elem_ref_f s t i ↦{dq} v' -∗
         s ↦*{dq} (<[uint.nat i := v']> vs)).
 Proof.
   iIntros (Hlookup) "Hsl".
@@ -383,7 +383,7 @@ Proof.
   wp_pures.
   iAssert (
       ∃ (j : u64),
-        "Hi" ∷ j_ptr ↦# j ∗
+        "Hi" ∷ j_ptr ↦ j ∗
         "Hiters" ∷ (fold_right _ _ (drop (uint.nat j) vs)) j
     )%I with "[Hi HΦ]" as "Hinv".
   { iExists (W64 0). iFrame. }
@@ -447,8 +447,8 @@ Proof.
   rewrite length_replicate in Hsz.
   iAssert (∃ (i : w64),
       "%Hi" ∷ ⌜ uint.Z i <= uint.Z (W64 (length l)) ⌝ ∗
-      "Hi" ∷ i_ptr ↦# i ∗
-      "Hl" ∷ l_ptr ↦ (# (drop (uint.nat i) l)) ∗
+      "Hi" ∷ i_ptr ↦ i ∗
+      "Hl" ∷ heap_pointsto l_ptr (DfracOwn 1) (# (drop (uint.nat i) l)) ∗
       "Hsl" ∷ sl ↦* (take (uint.nat i) l ++ replicate (length l - uint.nat i) (default_val V))
     )%I
     with "[Hi Hl Hsl]" as "Hloop".

@@ -19,29 +19,29 @@ Section goose_lang.
   Context `{!IntoValTyped V t}.
   Implicit Type v : V.
   Program Definition typed_pointsto_def l (dq : dfrac) (v : V) : iProp Σ :=
-    (([∗ list] j↦vj ∈ flatten_struct (to_val v), (l +ₗ j) ↦{dq} vj))%I.
+    (([∗ list] j↦vj ∈ flatten_struct (to_val v), heap_pointsto (l +ₗ j) dq vj))%I.
   Definition typed_pointsto_aux : seal (@typed_pointsto_def). Proof. by eexists. Qed.
   Definition typed_pointsto := typed_pointsto_aux.(unseal).
   Definition typed_pointsto_unseal : @typed_pointsto = @typed_pointsto_def := typed_pointsto_aux.(seal_eq).
 
-  Notation "l ↦# dq v" := (typed_pointsto l dq v%V)
+  Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                                    (at level 20, dq custom dfrac at level 1,
-                                    format "l  ↦# dq  v") : bi_scope.
+                                    format "l  ↦ dq  v") : bi_scope.
 
   Ltac unseal := rewrite ?typed_pointsto_unseal /typed_pointsto_def.
 
-  Global Instance typed_pointsto_timeless l q v : Timeless (l ↦#{q} v).
+  Global Instance typed_pointsto_timeless l q v : Timeless (l ↦{q} v).
   Proof. unseal. apply _. Qed.
 
-  Global Instance typed_pointsto_persistent l v : Persistent (l ↦#□ v).
+  Global Instance typed_pointsto_persistent l v : Persistent (l ↦□ v).
   Proof. unseal. apply _. Qed.
 
-  Global Instance typed_pointsto_fractional l v : Fractional (λ q, l ↦#{#q} v)%I.
+  Global Instance typed_pointsto_fractional l v : Fractional (λ q, l ↦{#q} v)%I.
   Proof. unseal. apply _. Qed.
 
   Global Instance typed_pointsto_as_fractional l v q : AsFractional
-                                                     (l ↦#{#q} v)
-                                                     (λ q, l ↦#{#q} v)%I q.
+                                                     (l ↦{#q} v)
+                                                     (λ q, l ↦{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
   Global Instance struct_fields_val_inj :
@@ -116,7 +116,7 @@ Section goose_lang.
   Qed.
 
   Global Instance typed_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
-    CombineSepGives (l ↦#{dq1} v1)%I (l ↦#{dq2} v2)%I
+    CombineSepGives (l ↦{dq1} v1)%I (l ↦{dq2} v2)%I
                     ⌜ (go_type_size t > O → ✓(dq1 ⋅ dq2)) ∧ v1 = v2 ⌝%I.
   Proof using IntoValTyped0.
     unfold CombineSepGives.
@@ -167,7 +167,7 @@ Section goose_lang.
   Qed.
 
   Lemma typed_pointsto_persist l dq v :
-    l ↦#{dq} v ==∗ l ↦#□ v.
+    l ↦{dq} v ==∗ l ↦□ v.
   Proof.
     unseal. iIntros "?".
     iApply big_sepL_bupd.
@@ -178,7 +178,7 @@ Section goose_lang.
 
   Lemma typed_pointsto_not_null l dq v :
     go_type_size t > 0 →
-    l ↦#{dq} v -∗ ⌜ l ≠ null ⌝.
+    l ↦{dq} v -∗ ⌜ l ≠ null ⌝.
   Proof using IntoValTyped0.
     unseal. intros Hlen. iIntros "?".
     pose proof (to_val_has_go_type v) as Hty.
@@ -229,7 +229,7 @@ Section goose_lang.
   Lemma wp_ref_ty stk E (v : V) :
     {{{ True }}}
       ref_ty t (# v) @ stk; E
-    {{{ l, RET #l; l ↦# v }}}.
+    {{{ l, RET #l; l ↦ v }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
     rewrite ref_ty_unseal.
@@ -245,16 +245,16 @@ Section goose_lang.
   Qed.
 
   Lemma wp_typed_load stk E q l v :
-    {{{ ▷ l ↦#{q} v }}}
+    {{{ ▷ l ↦{q} v }}}
       load_ty t #l @ stk; E
-    {{{ RET #v; l ↦#{q} v }}}.
+    {{{ RET #v; l ↦{q} v }}}.
   Proof using IntoValTyped0.
     iIntros (Φ) ">Hl HΦ".
     unseal.
     pose proof (to_val_has_go_type v) as Hty.
     generalize dependent (# v). clear dependent V.
     intros v Hty.
-    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j)↦{q} vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
+    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v, heap_pointsto (l +ₗ j) q vj) -∗ Φ v))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ". iFrame. }
     rewrite load_ty_unseal.
@@ -337,8 +337,8 @@ Section goose_lang.
   Qed.
 
   Lemma wp_store stk E l (v v' : val) :
-    {{{ ▷ l ↦ v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
-    {{{ RET LitV LitUnit; l ↦ v }}}.
+    {{{ ▷ heap_pointsto l (DfracOwn 1) v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
+    {{{ RET LitV LitUnit; heap_pointsto l (DfracOwn 1) v }}}.
   Proof.
     iIntros (Φ) "Hl HΦ". wp_call.
     wp_bind (PrepareWrite _).
@@ -348,9 +348,9 @@ Section goose_lang.
   Qed.
 
   Lemma wp_typed_store stk E l v v' :
-    {{{ ▷ l ↦# v }}}
+    {{{ ▷ l ↦ v }}}
       (#l <-[t] #v')%V @ stk; E
-    {{{ RET #(); l ↦# v' }}}.
+    {{{ RET #(); l ↦ v' }}}.
   Proof using IntoValTyped0.
     iIntros (Φ) ">Hl HΦ".
     unseal.
@@ -358,7 +358,7 @@ Section goose_lang.
     pose proof (to_val_has_go_type v') as Hty.
     generalize dependent #v. generalize dependent #v'.
     clear dependent V. intros v' Hty v Hty_old.
-    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v', (l +ₗ j)↦ vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
+    iAssert (▷ (([∗ list] j↦vj ∈ flatten_struct v', heap_pointsto (l +ₗ j) (DfracOwn 1) vj) -∗ Φ #()))%I with "[HΦ]" as "HΦ".
     { iIntros "!> HPost".
       iApply "HΦ". iFrame. }
     rename l into l'.
@@ -454,8 +454,8 @@ Section goose_lang.
   Qed.
 
   Lemma tac_wp_store_ty Δ Δ' stk E i l v v' Φ :
-    envs_lookup i Δ = Some (false, l ↦# v)%I →
-    envs_simple_replace i false (Esnoc Enil i (l ↦# v')) Δ = Some Δ' →
+    envs_lookup i Δ = Some (false, l ↦ v)%I →
+    envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ = Some Δ' →
     envs_entails Δ' (Φ #())  →
     envs_entails Δ (WP (store_ty t #l (Val #v')) @ stk; E {{ Φ }}).
   Proof using Type*.
@@ -467,7 +467,7 @@ Section goose_lang.
   Qed.
 
   Lemma tac_wp_ref_ty Δ stk E v Φ :
-    (∀ l, envs_entails Δ (l ↦# v -∗ Φ #l)) →
+    (∀ l, envs_entails Δ (l ↦ v -∗ Φ #l)) →
     envs_entails Δ (WP (ref_ty t #v) @ stk; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => Hwp.
@@ -489,8 +489,8 @@ Section goose_lang.
   Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 :
     is_primitive_type t →
     #v' ≠ #v1 →
-    {{{ ▷ l ↦#{dq} v' }}} CmpXchg (Val # l) #v1 #v2 @ s; E
-    {{{ RET (#v', #false); l ↦#{dq} v' }}}.
+    {{{ ▷ l ↦{dq} v' }}} CmpXchg (Val # l) #v1 #v2 @ s; E
+    {{{ RET (#v', #false); l ↦{dq} v' }}}.
   Proof using Type*.
     pose proof (to_val_has_go_type v') as Hty_old.
     pose proof (to_val_has_go_type v1) as Hty.
@@ -511,8 +511,8 @@ Section goose_lang.
   Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 :
     is_primitive_type t →
     #v' = #v1 →
-    {{{ ▷ l ↦# v' }}} CmpXchg #l #v1 #v2 @ s; E
-    {{{ RET (#v', #true); l ↦# v2 }}}.
+    {{{ ▷ l ↦ v' }}} CmpXchg #l #v1 #v2 @ s; E
+    {{{ RET (#v', #true); l ↦ v2 }}}.
   Proof using Type*.
     intros Hprim Heq.
     pose proof (to_val_has_go_type v') as Hty_old.
@@ -532,9 +532,9 @@ Section goose_lang.
 
 End goose_lang.
 
-Notation "l ↦# dq v" := (typed_pointsto l dq v%V)
+Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                               (at level 20, dq custom dfrac at level 50,
-                               format "l  ↦# dq  v") : bi_scope.
+                               format "l  ↦ dq  v") : bi_scope.
 
 Create HintDb has_go_type.
 Hint Constructors has_go_type : has_go_type.
@@ -547,8 +547,8 @@ Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
 
 Tactic Notation "wp_load" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦#{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_load: cannot find" l "↦# ?" in
+    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_load: cannot find" l "↦ ?" in
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     (first
@@ -560,8 +560,8 @@ Tactic Notation "wp_load" :=
 
 Tactic Notation "wp_store" :=
   let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦# _)%I) => l end in
-    iAssumptionCore || fail "wp_store: cannot find" l "↦# ?" in
+    let l := match goal with |- _ = Some (_, (?l ↦ _)%I) => l end in
+    iAssumptionCore || fail "wp_store: cannot find" l "↦ ?" in
   lazymatch goal with
   | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
     first

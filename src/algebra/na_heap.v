@@ -151,7 +151,7 @@ Typeclasses Opaque na_heap_pointsto.
 #[global]
 Instance: Params (@na_heap_pointsto) 8 := {}.
 
-Notation "l ↦ dq v" := (na_heap_pointsto l dq v)
+Local Notation "l ↦ dq v" := (na_heap_pointsto l dq v)
   (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  v") : bi_scope.
 
 Local Notation "l ↦ dq -" := (∃ v, l ↦{dq} v)%I

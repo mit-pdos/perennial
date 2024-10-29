@@ -78,7 +78,7 @@ Section grove.
   Context `{!heapGS Σ}.
 
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
-    l ↦□ (listen_socket host).
+    heap_pointsto l (DfracDiscarded) (listen_socket host).
 
   Global Instance is_Listener_persistent l host : Persistent (is_Listener l host) := _.
 
@@ -98,7 +98,7 @@ Section grove.
   Qed.
 
   Definition is_Connection (c : loc) (local remote : u64) : iProp Σ :=
-    c ↦□ (connection_socket local remote).
+    heap_pointsto c (DfracDiscarded) (connection_socket local remote).
 
   Global Instance is_Connection_persistent c local remote : Persistent (is_Connection c local remote) := _.
 

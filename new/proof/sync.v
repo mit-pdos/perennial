@@ -94,7 +94,7 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Theorem init_Mutex R E m : m ↦# (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "Hl HR".
   simpl.
@@ -217,7 +217,7 @@ Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
-  c ↦#□ m.
+  c ↦□ m.
 
 Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
@@ -295,7 +295,7 @@ Definition is_WaitGroup wg γ P : iProp Σ :=
       ∃ (remaining:gset u64) (total:u64),
         "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → uint.nat r < uint.nat total)⌝ ∗
         "Htotal" ∷ ghost_var γ.(total_gn) (1/2) total ∗
-        "Hv" ∷ vptr ↦# (W64 $ size remaining) ∗
+        "Hv" ∷ vptr ↦ (W64 $ size remaining) ∗
         "Htoks" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
         "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat i ≥ uint.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
     ).
@@ -311,8 +311,8 @@ Definition own_WaitGroup (wg:val) γ (n:u64) (P:u64 → iProp Σ) : iProp Σ :=
 Definition own_free_WaitGroup (wg:val) : iProp Σ :=
   ∃ (mu:loc) (vptr:loc),
     ⌜wg = (#mu, #vptr)%V⌝ ∗
-    mu ↦# (default_val Mutex.t) ∗
-    vptr ↦# (W64 0)
+    mu ↦ (default_val Mutex.t) ∗
+    vptr ↦ (W64 0)
 .
 
 Lemma own_WaitGroup_to_is_WaitGroup wg γ P n :

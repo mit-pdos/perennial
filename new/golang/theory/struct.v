@@ -53,7 +53,7 @@ Class Wf (d : struct.descriptor) : Set :=
 End goose_lang.
 End struct.
 
-Notation "l ↦s[ t :: f ] dq v" := (struct.field_ref_f t f l ↦#{dq} v)%I
+Notation "l ↦s[ t :: f ] dq v" := (struct.field_ref_f t f l ↦{dq} v)%I
   (at level 50, dq custom dfrac at level 70, t at level 59, f at level 59,
      format "l  ↦s[ t  ::  f ] dq  v").
 

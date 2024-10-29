@@ -104,22 +104,11 @@ Section definitions.
 End definitions.
 
 (** Override the notations so that scopes and coercions work out *)
-Notation "l ↦{# q } v" := (heap_pointsto l (DfracOwn q) v%V)
-  (at level 20, q at level 50, format "l  ↦{# q }  v") : bi_scope.
-Notation "l ↦□ v" := (heap_pointsto l DfracDiscarded v%V)
-  (at level 20, format "l  ↦□  v") : bi_scope.
-Notation "l ↦{ q } v" := (heap_pointsto l q v%V)
-  (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
-Notation "l ↦ v" := (heap_pointsto l (DfracOwn 1) v%V)
-  (at level 20, v at next level) : bi_scope.
+Local Notation "l ↦ dq v" := (heap_pointsto l dq v%V)
+  (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  v") : bi_scope.
 
-Notation "l ↦{# q } -" := (∃ v, l ↦{#q} v)%I
-  (at level 20, q at level 50, format "l  ↦{# q }  -") : bi_scope.
-Notation "l ↦□ -" := (∃ v, l ↦□ v)%I
-  (at level 20, format "l  ↦□  -") : bi_scope.
-Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
-  (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
-Notation "l ↦ -" := (l ↦{#1} -)%I (at level 20) : bi_scope.
+Local Notation "l ↦ dq -" := (∃ v, l ↦{dq} v)%I
+  (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  -") : bi_scope.
 
 (* An FFI layer will use certain CMRAs for its primitive rules.
    Besides needing to know that these CMRAs are included in Σ, there may
