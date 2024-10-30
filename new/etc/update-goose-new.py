@@ -238,15 +238,6 @@ def main():
         "go.etcd.io/raft/v3/raftpb",
     )
 
-    run_goose(
-        etcd_raft_dir,
-        "-partial",
-        "Message,MessageType,MsgHup,Entry,ConfState,SnapshotMetadata,Snapshot,HardState,"
-        + "ConfChange,ConfChangeType,ConfChangeSingle,ConfChangeV2,ConfChangeTransition,EntryType",
-        "-ignore-errors",
-        "go.etcd.io/raft/v3/raftpb",
-    )
-
     run_recordgen(
         "new/proof/structs/",
         etcd_raft_dir,

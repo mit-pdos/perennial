@@ -16,7 +16,7 @@ Lemma wp_newNetworkWithConfigInit (peers : list interface.t) peers_sl :
   }}}
     newNetworkWithConfigInit #func.nil #peers_sl
   {{{
-        (nw : loc), RET #nw; True
+        nw_ptr (nw : network.t), RET #nw; nw_ptr ↦ nw
   }}}
 .
 Proof.
@@ -32,15 +32,17 @@ Lemma wp_entsWithConfig terms_sl (terms : list u64) :
 Proof.
 Admitted.
 
-Lemma wp_network__send (nw : loc) msgs_sl dq (msgs : list Message.t) :
+Lemma wp_network__send nw msgs_sl dq (n : network.t) (msgs : list Message.t) :
   {{{
-        msgs_sl ↦*{dq}  msgs
+        "Hmsg" ∷ msgs_sl ↦*{dq} msgs ∗
+        "Hnw" ∷ nw ↦ n
   }}}
     network__send #nw #msgs_sl
   {{{ RET #(); True }}}
 .
 Proof.
-  iIntros (?) "Hsl HΦ".
+  iIntros (?) "H HΦ".
+  iNamed "H".
   wp_call.
   wp_alloc nw_ptr as "?".
   wp_pures.
@@ -56,10 +58,10 @@ Proof.
     rewrite -!default_val_eq_zero_val.
     wp_alloc m as "Hm".
     wp_pures.
-    iDestruct (own_slice_len with "Hsl") as %Hsl.
+    iDestruct (own_slice_len with "Hmsg") as %Hsz.
     destruct msgs.
     { exfalso. simpl in *. rewrite !word.signed_eq_swrap_unsigned /word.swrap in Hlt. word. }
-    iDestruct (own_slice_elem_acc 0 with "Hsl") as "[Helem Hsl]".
+    iDestruct (own_slice_elem_acc 0 with "Hmsg") as "[Helem Hmsg]".
     { done. }
     wp_load.
     wp_pure.
@@ -70,12 +72,13 @@ Proof.
     }
     wp_load.
     wp_pures.
-    iDestruct ("Hsl" with "[$]") as "Hsl".
+    iDestruct ("Hmsg" with "[$]") as "Hmsg".
     rewrite list_insert_id; last done.
     wp_store.
     wp_pures.
     wp_alloc p as "?".
     wp_pures.
+
     iDestruct (struct_fields_split with "Hm") as "Hm".
     { done. }
     { apply _. }
@@ -86,7 +89,17 @@ Proof.
     wp_load.
     wp_load.
     wp_pures.
-    admit. (* TODO: load peers from network *)
+    wp_pures.
+
+    iDestruct (struct_fields_split with "Hnw") as "Hnw".
+    { done. }
+    { apply _. }
+    rewrite /struct_fields /=.
+    repeat (iDestruct "Hnw" as "[H1 Hnw]";
+            unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
+            iNamed "H1").
+    wp_load.
+    admit. (* FIXME: need own_map *)
   - rewrite decide_False; last naive_solver.
     rewrite decide_True; last naive_solver.
     wp_pures. by iApply "HΦ".
