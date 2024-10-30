@@ -39,6 +39,17 @@ Admitted.
 Global Instance into_val_struct_field_Entry_Data `{ffi_syntax} : IntoValStructField "Data" Entry Entry.Data.
 Admitted.
 
+Instance wp_struct_make_Entry `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term Index Type' Data:
+  PureWp True
+    (struct.make Entry (struct.fields_val [
+      "Term" ::= #Term;
+      "Index" ::= #Index;
+      "Type" ::= #Type';
+      "Data" ::= #Data
+    ]))%V 
+    #(Entry.mk Term Index Type' Data).
+Admitted.
+
 Module ConfState.
 Section def.
 Context `{ffi_syntax}.
@@ -78,6 +89,18 @@ Admitted.
 Global Instance into_val_struct_field_ConfState_AutoLeave `{ffi_syntax} : IntoValStructField "AutoLeave" ConfState ConfState.AutoLeave.
 Admitted.
 
+Instance wp_struct_make_ConfState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters Learners VotersOutgoing LearnersNext AutoLeave:
+  PureWp True
+    (struct.make ConfState (struct.fields_val [
+      "Voters" ::= #Voters;
+      "Learners" ::= #Learners;
+      "VotersOutgoing" ::= #VotersOutgoing;
+      "LearnersNext" ::= #LearnersNext;
+      "AutoLeave" ::= #AutoLeave
+    ]))%V 
+    #(ConfState.mk Voters Learners VotersOutgoing LearnersNext AutoLeave).
+Admitted.
+
 Module SnapshotMetadata.
 Section def.
 Context `{ffi_syntax}.
@@ -109,6 +132,16 @@ Admitted.
 Global Instance into_val_struct_field_SnapshotMetadata_Term `{ffi_syntax} : IntoValStructField "Term" SnapshotMetadata SnapshotMetadata.Term.
 Admitted.
 
+Instance wp_struct_make_SnapshotMetadata `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ConfState Index Term:
+  PureWp True
+    (struct.make SnapshotMetadata (struct.fields_val [
+      "ConfState" ::= #ConfState;
+      "Index" ::= #Index;
+      "Term" ::= #Term
+    ]))%V 
+    #(SnapshotMetadata.mk ConfState Index Term).
+Admitted.
+
 Module Snapshot.
 Section def.
 Context `{ffi_syntax}.
@@ -134,6 +167,15 @@ Global Instance into_val_struct_field_Snapshot_Data `{ffi_syntax} : IntoValStruc
 Admitted.
 
 Global Instance into_val_struct_field_Snapshot_Metadata `{ffi_syntax} : IntoValStructField "Metadata" Snapshot Snapshot.Metadata.
+Admitted.
+
+Instance wp_struct_make_Snapshot `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Data Metadata:
+  PureWp True
+    (struct.make Snapshot (struct.fields_val [
+      "Data" ::= #Data;
+      "Metadata" ::= #Metadata
+    ]))%V 
+    #(Snapshot.mk Data Metadata).
 Admitted.
 
 Module Message.
@@ -211,6 +253,27 @@ Admitted.
 Global Instance into_val_struct_field_Message_Responses `{ffi_syntax} : IntoValStructField "Responses" Message Message.Responses.
 Admitted.
 
+Instance wp_struct_make_Message `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' To From Term LogTerm Index Entries Commit Vote Snapshot Reject RejectHint Context Responses:
+  PureWp True
+    (struct.make Message (struct.fields_val [
+      "Type" ::= #Type';
+      "To" ::= #To;
+      "From" ::= #From;
+      "Term" ::= #Term;
+      "LogTerm" ::= #LogTerm;
+      "Index" ::= #Index;
+      "Entries" ::= #Entries;
+      "Commit" ::= #Commit;
+      "Vote" ::= #Vote;
+      "Snapshot" ::= #Snapshot;
+      "Reject" ::= #Reject;
+      "RejectHint" ::= #RejectHint;
+      "Context" ::= #Context;
+      "Responses" ::= #Responses
+    ]))%V 
+    #(Message.mk Type' To From Term LogTerm Index Entries Commit Vote Snapshot Reject RejectHint Context Responses).
+Admitted.
+
 Module HardState.
 Section def.
 Context `{ffi_syntax}.
@@ -240,6 +303,16 @@ Global Instance into_val_struct_field_HardState_Vote `{ffi_syntax} : IntoValStru
 Admitted.
 
 Global Instance into_val_struct_field_HardState_Commit `{ffi_syntax} : IntoValStructField "Commit" HardState HardState.Commit.
+Admitted.
+
+Instance wp_struct_make_HardState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term Vote Commit:
+  PureWp True
+    (struct.make HardState (struct.fields_val [
+      "Term" ::= #Term;
+      "Vote" ::= #Vote;
+      "Commit" ::= #Commit
+    ]))%V 
+    #(HardState.mk Term Vote Commit).
 Admitted.
 
 Module ConfChange.
@@ -277,6 +350,17 @@ Admitted.
 Global Instance into_val_struct_field_ConfChange_ID `{ffi_syntax} : IntoValStructField "ID" ConfChange ConfChange.ID.
 Admitted.
 
+Instance wp_struct_make_ConfChange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' NodeID Context ID:
+  PureWp True
+    (struct.make ConfChange (struct.fields_val [
+      "Type" ::= #Type';
+      "NodeID" ::= #NodeID;
+      "Context" ::= #Context;
+      "ID" ::= #ID
+    ]))%V 
+    #(ConfChange.mk Type' NodeID Context ID).
+Admitted.
+
 Module ConfChangeSingle.
 Section def.
 Context `{ffi_syntax}.
@@ -302,6 +386,15 @@ Global Instance into_val_struct_field_ConfChangeSingle_Type `{ffi_syntax} : Into
 Admitted.
 
 Global Instance into_val_struct_field_ConfChangeSingle_NodeID `{ffi_syntax} : IntoValStructField "NodeID" ConfChangeSingle ConfChangeSingle.NodeID.
+Admitted.
+
+Instance wp_struct_make_ConfChangeSingle `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' NodeID:
+  PureWp True
+    (struct.make ConfChangeSingle (struct.fields_val [
+      "Type" ::= #Type';
+      "NodeID" ::= #NodeID
+    ]))%V 
+    #(ConfChangeSingle.mk Type' NodeID).
 Admitted.
 
 Module ConfChangeV2.
@@ -333,5 +426,15 @@ Global Instance into_val_struct_field_ConfChangeV2_Changes `{ffi_syntax} : IntoV
 Admitted.
 
 Global Instance into_val_struct_field_ConfChangeV2_Context `{ffi_syntax} : IntoValStructField "Context" ConfChangeV2 ConfChangeV2.Context.
+Admitted.
+
+Instance wp_struct_make_ConfChangeV2 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Transition Changes Context:
+  PureWp True
+    (struct.make ConfChangeV2 (struct.fields_val [
+      "Transition" ::= #Transition;
+      "Changes" ::= #Changes;
+      "Context" ::= #Context
+    ]))%V 
+    #(ConfChangeV2.mk Transition Changes Context).
 Admitted.
 

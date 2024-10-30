@@ -50,6 +50,19 @@ Admitted.
 Global Instance into_val_struct_field_unstable_logger `{ffi_syntax} : IntoValStructField "logger" unstable unstable.logger.
 Admitted.
 
+Instance wp_struct_make_unstable `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} snapshot entries offset snapshotInProgress offsetInProgress logger:
+  PureWp True
+    (struct.make unstable (struct.fields_val [
+      "snapshot" ::= #snapshot;
+      "entries" ::= #entries;
+      "offset" ::= #offset;
+      "snapshotInProgress" ::= #snapshotInProgress;
+      "offsetInProgress" ::= #offsetInProgress;
+      "logger" ::= #logger
+    ]))%V 
+    #(unstable.mk snapshot entries offset snapshotInProgress offsetInProgress logger).
+Admitted.
+
 Module raftLog.
 Section def.
 Context `{ffi_syntax}.
@@ -105,6 +118,22 @@ Admitted.
 Global Instance into_val_struct_field_raftLog_applyingEntsPaused `{ffi_syntax} : IntoValStructField "applyingEntsPaused" raftLog raftLog.applyingEntsPaused.
 Admitted.
 
+Instance wp_struct_make_raftLog `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} storage unstable committed applying applied logger maxApplyingEntsSize applyingEntsSize applyingEntsPaused:
+  PureWp True
+    (struct.make raftLog (struct.fields_val [
+      "storage" ::= #storage;
+      "unstable" ::= #unstable;
+      "committed" ::= #committed;
+      "applying" ::= #applying;
+      "applied" ::= #applied;
+      "logger" ::= #logger;
+      "maxApplyingEntsSize" ::= #maxApplyingEntsSize;
+      "applyingEntsSize" ::= #applyingEntsSize;
+      "applyingEntsPaused" ::= #applyingEntsPaused
+    ]))%V 
+    #(raftLog.mk storage unstable committed applying applied logger maxApplyingEntsSize applyingEntsSize applyingEntsPaused).
+Admitted.
+
 Module DefaultLogger.
 Section def.
 Context `{ffi_syntax}.
@@ -132,6 +161,15 @@ Admitted.
 Global Instance into_val_struct_field_DefaultLogger_debug `{ffi_syntax} : IntoValStructField "debug" DefaultLogger DefaultLogger.debug.
 Admitted.
 
+Instance wp_struct_make_DefaultLogger `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Logger debug:
+  PureWp True
+    (struct.make DefaultLogger (struct.fields_val [
+      "Logger" ::= #Logger;
+      "debug" ::= #debug
+    ]))%V 
+    #(DefaultLogger.mk Logger debug).
+Admitted.
+
 Module SoftState.
 Section def.
 Context `{ffi_syntax}.
@@ -157,6 +195,15 @@ Global Instance into_val_struct_field_SoftState_Lead `{ffi_syntax} : IntoValStru
 Admitted.
 
 Global Instance into_val_struct_field_SoftState_RaftState `{ffi_syntax} : IntoValStructField "RaftState" SoftState SoftState.RaftState.
+Admitted.
+
+Instance wp_struct_make_SoftState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Lead RaftState:
+  PureWp True
+    (struct.make SoftState (struct.fields_val [
+      "Lead" ::= #Lead;
+      "RaftState" ::= #RaftState
+    ]))%V 
+    #(SoftState.mk Lead RaftState).
 Admitted.
 
 Module Ready.
@@ -210,6 +257,21 @@ Admitted.
 Global Instance into_val_struct_field_Ready_MustSync `{ffi_syntax} : IntoValStructField "MustSync" Ready Ready.MustSync.
 Admitted.
 
+Instance wp_struct_make_Ready `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} SoftState HardState ReadStates Entries Snapshot CommittedEntries Messages MustSync:
+  PureWp True
+    (struct.make Ready (struct.fields_val [
+      "SoftState" ::= #SoftState;
+      "HardState" ::= #HardState;
+      "ReadStates" ::= #ReadStates;
+      "Entries" ::= #Entries;
+      "Snapshot" ::= #Snapshot;
+      "CommittedEntries" ::= #CommittedEntries;
+      "Messages" ::= #Messages;
+      "MustSync" ::= #MustSync
+    ]))%V 
+    #(Ready.mk SoftState HardState ReadStates Entries Snapshot CommittedEntries Messages MustSync).
+Admitted.
+
 Module Peer.
 Section def.
 Context `{ffi_syntax}.
@@ -237,6 +299,15 @@ Admitted.
 Global Instance into_val_struct_field_Peer_Context `{ffi_syntax} : IntoValStructField "Context" Peer Peer.Context.
 Admitted.
 
+Instance wp_struct_make_Peer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID Context:
+  PureWp True
+    (struct.make Peer (struct.fields_val [
+      "ID" ::= #ID;
+      "Context" ::= #Context
+    ]))%V 
+    #(Peer.mk ID Context).
+Admitted.
+
 Module msgWithResult.
 Section def.
 Context `{ffi_syntax}.
@@ -262,6 +333,15 @@ Global Instance into_val_struct_field_msgWithResult_m `{ffi_syntax} : IntoValStr
 Admitted.
 
 Global Instance into_val_struct_field_msgWithResult_result `{ffi_syntax} : IntoValStructField "result" msgWithResult msgWithResult.result.
+Admitted.
+
+Instance wp_struct_make_msgWithResult `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} m result:
+  PureWp True
+    (struct.make msgWithResult (struct.fields_val [
+      "m" ::= #m;
+      "result" ::= #result
+    ]))%V 
+    #(msgWithResult.mk m result).
 Admitted.
 
 Module node.
@@ -327,6 +407,24 @@ Admitted.
 Global Instance into_val_struct_field_node_rn `{ffi_syntax} : IntoValStructField "rn" node node.rn.
 Admitted.
 
+Instance wp_struct_make_node `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} propc recvc confc confstatec readyc advancec tickc done stop status rn:
+  PureWp True
+    (struct.make node (struct.fields_val [
+      "propc" ::= #propc;
+      "recvc" ::= #recvc;
+      "confc" ::= #confc;
+      "confstatec" ::= #confstatec;
+      "readyc" ::= #readyc;
+      "advancec" ::= #advancec;
+      "tickc" ::= #tickc;
+      "done" ::= #done;
+      "stop" ::= #stop;
+      "status" ::= #status;
+      "rn" ::= #rn
+    ]))%V 
+    #(node.mk propc recvc confc confstatec readyc advancec tickc done stop status rn).
+Admitted.
+
 Module lockedRand.
 Section def.
 Context `{ffi_syntax}.
@@ -348,6 +446,14 @@ Global Instance into_val_typed_lockedRand `{ffi_syntax} : IntoValTyped lockedRan
   to_val_eqdec := ltac:(solve_decision);
 |}.
 Global Instance into_val_struct_field_lockedRand_mu `{ffi_syntax} : IntoValStructField "mu" lockedRand lockedRand.mu.
+Admitted.
+
+Instance wp_struct_make_lockedRand `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu:
+  PureWp True
+    (struct.make lockedRand (struct.fields_val [
+      "mu" ::= #mu
+    ]))%V 
+    #(lockedRand.mk mu).
 Admitted.
 
 Module Config.
@@ -443,6 +549,32 @@ Global Instance into_val_struct_field_Config_StepDownOnRemoval `{ffi_syntax} : I
 Admitted.
 
 Global Instance into_val_struct_field_Config_TraceLogger `{ffi_syntax} : IntoValStructField "TraceLogger" Config Config.TraceLogger.
+Admitted.
+
+Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID ElectionTick HeartbeatTick Storage Applied AsyncStorageWrites MaxSizePerMsg MaxCommittedSizePerReady MaxUncommittedEntriesSize MaxInflightMsgs MaxInflightBytes CheckQuorum PreVote ReadOnlyOption Logger DisableProposalForwarding DisableConfChangeValidation StepDownOnRemoval TraceLogger:
+  PureWp True
+    (struct.make Config (struct.fields_val [
+      "ID" ::= #ID;
+      "ElectionTick" ::= #ElectionTick;
+      "HeartbeatTick" ::= #HeartbeatTick;
+      "Storage" ::= #Storage;
+      "Applied" ::= #Applied;
+      "AsyncStorageWrites" ::= #AsyncStorageWrites;
+      "MaxSizePerMsg" ::= #MaxSizePerMsg;
+      "MaxCommittedSizePerReady" ::= #MaxCommittedSizePerReady;
+      "MaxUncommittedEntriesSize" ::= #MaxUncommittedEntriesSize;
+      "MaxInflightMsgs" ::= #MaxInflightMsgs;
+      "MaxInflightBytes" ::= #MaxInflightBytes;
+      "CheckQuorum" ::= #CheckQuorum;
+      "PreVote" ::= #PreVote;
+      "ReadOnlyOption" ::= #ReadOnlyOption;
+      "Logger" ::= #Logger;
+      "DisableProposalForwarding" ::= #DisableProposalForwarding;
+      "DisableConfChangeValidation" ::= #DisableConfChangeValidation;
+      "StepDownOnRemoval" ::= #StepDownOnRemoval;
+      "TraceLogger" ::= #TraceLogger
+    ]))%V 
+    #(Config.mk ID ElectionTick HeartbeatTick Storage Applied AsyncStorageWrites MaxSizePerMsg MaxCommittedSizePerReady MaxUncommittedEntriesSize MaxInflightMsgs MaxInflightBytes CheckQuorum PreVote ReadOnlyOption Logger DisableProposalForwarding DisableConfChangeValidation StepDownOnRemoval TraceLogger).
 Admitted.
 
 Module raft.
@@ -596,6 +728,46 @@ Admitted.
 Global Instance into_val_struct_field_raft_traceLogger `{ffi_syntax} : IntoValStructField "traceLogger" raft raft.traceLogger.
 Admitted.
 
+Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id Term Vote readStates raftLog maxMsgSize maxUncommittedSize trk state isLearner msgs msgsAfterAppend lead leadTransferee pendingConfIndex disableConfChangeValidation uncommittedSize readOnly electionElapsed heartbeatElapsed checkQuorum preVote heartbeatTimeout electionTimeout randomizedElectionTimeout disableProposalForwarding stepDownOnRemoval tickId step StepHigherOrder logger pendingReadIndexMessages traceLogger:
+  PureWp True
+    (struct.make raft (struct.fields_val [
+      "id" ::= #id;
+      "Term" ::= #Term;
+      "Vote" ::= #Vote;
+      "readStates" ::= #readStates;
+      "raftLog" ::= #raftLog;
+      "maxMsgSize" ::= #maxMsgSize;
+      "maxUncommittedSize" ::= #maxUncommittedSize;
+      "trk" ::= #trk;
+      "state" ::= #state;
+      "isLearner" ::= #isLearner;
+      "msgs" ::= #msgs;
+      "msgsAfterAppend" ::= #msgsAfterAppend;
+      "lead" ::= #lead;
+      "leadTransferee" ::= #leadTransferee;
+      "pendingConfIndex" ::= #pendingConfIndex;
+      "disableConfChangeValidation" ::= #disableConfChangeValidation;
+      "uncommittedSize" ::= #uncommittedSize;
+      "readOnly" ::= #readOnly;
+      "electionElapsed" ::= #electionElapsed;
+      "heartbeatElapsed" ::= #heartbeatElapsed;
+      "checkQuorum" ::= #checkQuorum;
+      "preVote" ::= #preVote;
+      "heartbeatTimeout" ::= #heartbeatTimeout;
+      "electionTimeout" ::= #electionTimeout;
+      "randomizedElectionTimeout" ::= #randomizedElectionTimeout;
+      "disableProposalForwarding" ::= #disableProposalForwarding;
+      "stepDownOnRemoval" ::= #stepDownOnRemoval;
+      "tickId" ::= #tickId;
+      "step" ::= #step;
+      "StepHigherOrder" ::= #StepHigherOrder;
+      "logger" ::= #logger;
+      "pendingReadIndexMessages" ::= #pendingReadIndexMessages;
+      "traceLogger" ::= #traceLogger
+    ]))%V 
+    #(raft.mk id Term Vote readStates raftLog maxMsgSize maxUncommittedSize trk state isLearner msgs msgsAfterAppend lead leadTransferee pendingConfIndex disableConfChangeValidation uncommittedSize readOnly electionElapsed heartbeatElapsed checkQuorum preVote heartbeatTimeout electionTimeout randomizedElectionTimeout disableProposalForwarding stepDownOnRemoval tickId step StepHigherOrder logger pendingReadIndexMessages traceLogger).
+Admitted.
+
 Module blackHole.
 Section def.
 Context `{ffi_syntax}.
@@ -615,6 +787,13 @@ Global Instance into_val_typed_blackHole `{ffi_syntax} : IntoValTyped blackHole.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
+Instance wp_struct_make_blackHole `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+  PureWp True
+    (struct.make blackHole (struct.fields_val [
+    ]))%V 
+    #(blackHole.mk).
+Admitted.
+
 Module connem.
 Section def.
 Context `{ffi_syntax}.
@@ -640,6 +819,15 @@ Global Instance into_val_struct_field_connem_from `{ffi_syntax} : IntoValStructF
 Admitted.
 
 Global Instance into_val_struct_field_connem_to `{ffi_syntax} : IntoValStructField "to" connem connem.to.
+Admitted.
+
+Instance wp_struct_make_connem `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} from to:
+  PureWp True
+    (struct.make connem (struct.fields_val [
+      "from" ::= #from;
+      "to" ::= #to
+    ]))%V 
+    #(connem.mk from to).
 Admitted.
 
 Module network.
@@ -685,6 +873,19 @@ Admitted.
 Global Instance into_val_struct_field_network_msgHook `{ffi_syntax} : IntoValStructField "msgHook" network network.msgHook.
 Admitted.
 
+Instance wp_struct_make_network `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' peers storage dropm64 ignorem msgHook:
+  PureWp True
+    (struct.make network (struct.fields_val [
+      "t" ::= #t';
+      "peers" ::= #peers;
+      "storage" ::= #storage;
+      "dropm64" ::= #dropm64;
+      "ignorem" ::= #ignorem;
+      "msgHook" ::= #msgHook
+    ]))%V 
+    #(network.mk t' peers storage dropm64 ignorem msgHook).
+Admitted.
+
 Module testLeaderElectionStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -714,6 +915,16 @@ Global Instance into_val_struct_field_testLeaderElectionStruct_state `{ffi_synta
 Admitted.
 
 Global Instance into_val_struct_field_testLeaderElectionStruct_expTerm `{ffi_syntax} : IntoValStructField "expTerm" testLeaderElectionStruct testLeaderElectionStruct.expTerm.
+Admitted.
+
+Instance wp_struct_make_testLeaderElectionStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} network state expTerm:
+  PureWp True
+    (struct.make testLeaderElectionStruct (struct.fields_val [
+      "network" ::= #network;
+      "state" ::= #state;
+      "expTerm" ::= #expTerm
+    ]))%V 
+    #(testLeaderElectionStruct.mk network state expTerm).
 Admitted.
 
 Module RawNode.
@@ -755,6 +966,18 @@ Admitted.
 Global Instance into_val_struct_field_RawNode_stepsOnAdvance `{ffi_syntax} : IntoValStructField "stepsOnAdvance" RawNode RawNode.stepsOnAdvance.
 Admitted.
 
+Instance wp_struct_make_RawNode `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} raft asyncStorageWrites prevSoftSt prevHardSt stepsOnAdvance:
+  PureWp True
+    (struct.make RawNode (struct.fields_val [
+      "raft" ::= #raft;
+      "asyncStorageWrites" ::= #asyncStorageWrites;
+      "prevSoftSt" ::= #prevSoftSt;
+      "prevHardSt" ::= #prevHardSt;
+      "stepsOnAdvance" ::= #stepsOnAdvance
+    ]))%V 
+    #(RawNode.mk raft asyncStorageWrites prevSoftSt prevHardSt stepsOnAdvance).
+Admitted.
+
 Module ReadState.
 Section def.
 Context `{ffi_syntax}.
@@ -780,6 +1003,15 @@ Global Instance into_val_struct_field_ReadState_Index `{ffi_syntax} : IntoValStr
 Admitted.
 
 Global Instance into_val_struct_field_ReadState_RequestCtx `{ffi_syntax} : IntoValStructField "RequestCtx" ReadState ReadState.RequestCtx.
+Admitted.
+
+Instance wp_struct_make_ReadState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Index RequestCtx:
+  PureWp True
+    (struct.make ReadState (struct.fields_val [
+      "Index" ::= #Index;
+      "RequestCtx" ::= #RequestCtx
+    ]))%V 
+    #(ReadState.mk Index RequestCtx).
 Admitted.
 
 Module readIndexStatus.
@@ -813,6 +1045,16 @@ Admitted.
 Global Instance into_val_struct_field_readIndexStatus_acks `{ffi_syntax} : IntoValStructField "acks" readIndexStatus readIndexStatus.acks.
 Admitted.
 
+Instance wp_struct_make_readIndexStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} req index acks:
+  PureWp True
+    (struct.make readIndexStatus (struct.fields_val [
+      "req" ::= #req;
+      "index" ::= #index;
+      "acks" ::= #acks
+    ]))%V 
+    #(readIndexStatus.mk req index acks).
+Admitted.
+
 Module readOnly.
 Section def.
 Context `{ffi_syntax}.
@@ -844,6 +1086,16 @@ Admitted.
 Global Instance into_val_struct_field_readOnly_readIndexQueue `{ffi_syntax} : IntoValStructField "readIndexQueue" readOnly readOnly.readIndexQueue.
 Admitted.
 
+Instance wp_struct_make_readOnly `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} option pendingReadIndex readIndexQueue:
+  PureWp True
+    (struct.make readOnly (struct.fields_val [
+      "option" ::= #option;
+      "pendingReadIndex" ::= #pendingReadIndex;
+      "readIndexQueue" ::= #readIndexQueue
+    ]))%V 
+    #(readOnly.mk option pendingReadIndex readIndexQueue).
+Admitted.
+
 Module TracingEvent.
 Section def.
 Context `{ffi_syntax}.
@@ -863,6 +1115,13 @@ Global Instance into_val_typed_TracingEvent `{ffi_syntax} : IntoValTyped Tracing
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
+Instance wp_struct_make_TracingEvent `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+  PureWp True
+    (struct.make TracingEvent (struct.fields_val [
+    ]))%V 
+    #(TracingEvent.mk).
+Admitted.
+
 Module BasicStatus.
 Section def.
 Context `{ffi_syntax}.
@@ -902,6 +1161,18 @@ Admitted.
 Global Instance into_val_struct_field_BasicStatus_LeadTransferee `{ffi_syntax} : IntoValStructField "LeadTransferee" BasicStatus BasicStatus.LeadTransferee.
 Admitted.
 
+Instance wp_struct_make_BasicStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID HardState SoftState Applied LeadTransferee:
+  PureWp True
+    (struct.make BasicStatus (struct.fields_val [
+      "ID" ::= #ID;
+      "HardState" ::= #HardState;
+      "SoftState" ::= #SoftState;
+      "Applied" ::= #Applied;
+      "LeadTransferee" ::= #LeadTransferee
+    ]))%V 
+    #(BasicStatus.mk ID HardState SoftState Applied LeadTransferee).
+Admitted.
+
 Module Status.
 Section def.
 Context `{ffi_syntax}.
@@ -931,6 +1202,16 @@ Global Instance into_val_struct_field_Status_Config `{ffi_syntax} : IntoValStruc
 Admitted.
 
 Global Instance into_val_struct_field_Status_Progress `{ffi_syntax} : IntoValStructField "Progress" Status Status.Progress.
+Admitted.
+
+Instance wp_struct_make_Status `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} BasicStatus Config Progress:
+  PureWp True
+    (struct.make Status (struct.fields_val [
+      "BasicStatus" ::= #BasicStatus;
+      "Config" ::= #Config;
+      "Progress" ::= #Progress
+    ]))%V 
+    #(Status.mk BasicStatus Config Progress).
 Admitted.
 
 Module inMemStorageCallStats.
@@ -976,6 +1257,19 @@ Admitted.
 Global Instance into_val_struct_field_inMemStorageCallStats_snapshot `{ffi_syntax} : IntoValStructField "snapshot" inMemStorageCallStats inMemStorageCallStats.snapshot.
 Admitted.
 
+Instance wp_struct_make_inMemStorageCallStats `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} initialState firstIndex lastIndex entries term snapshot:
+  PureWp True
+    (struct.make inMemStorageCallStats (struct.fields_val [
+      "initialState" ::= #initialState;
+      "firstIndex" ::= #firstIndex;
+      "lastIndex" ::= #lastIndex;
+      "entries" ::= #entries;
+      "term" ::= #term;
+      "snapshot" ::= #snapshot
+    ]))%V 
+    #(inMemStorageCallStats.mk initialState firstIndex lastIndex entries term snapshot).
+Admitted.
+
 Module MemoryStorage.
 Section def.
 Context `{ffi_syntax}.
@@ -1015,6 +1309,18 @@ Admitted.
 Global Instance into_val_struct_field_MemoryStorage_callStats `{ffi_syntax} : IntoValStructField "callStats" MemoryStorage MemoryStorage.callStats.
 Admitted.
 
+Instance wp_struct_make_MemoryStorage `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Mutex hardState snapshot ents callStats:
+  PureWp True
+    (struct.make MemoryStorage (struct.fields_val [
+      "Mutex" ::= #Mutex;
+      "hardState" ::= #hardState;
+      "snapshot" ::= #snapshot;
+      "ents" ::= #ents;
+      "callStats" ::= #callStats
+    ]))%V 
+    #(MemoryStorage.mk Mutex hardState snapshot ents callStats).
+Admitted.
+
 Module entryID.
 Section def.
 Context `{ffi_syntax}.
@@ -1040,6 +1346,15 @@ Global Instance into_val_struct_field_entryID_term `{ffi_syntax} : IntoValStruct
 Admitted.
 
 Global Instance into_val_struct_field_entryID_index `{ffi_syntax} : IntoValStructField "index" entryID entryID.index.
+Admitted.
+
+Instance wp_struct_make_entryID `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} term index:
+  PureWp True
+    (struct.make entryID (struct.fields_val [
+      "term" ::= #term;
+      "index" ::= #index
+    ]))%V 
+    #(entryID.mk term index).
 Admitted.
 
 Module logSlice.
@@ -1071,5 +1386,15 @@ Global Instance into_val_struct_field_logSlice_prev `{ffi_syntax} : IntoValStruc
 Admitted.
 
 Global Instance into_val_struct_field_logSlice_entries `{ffi_syntax} : IntoValStructField "entries" logSlice logSlice.entries.
+Admitted.
+
+Instance wp_struct_make_logSlice `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} term prev entries:
+  PureWp True
+    (struct.make logSlice (struct.fields_val [
+      "term" ::= #term;
+      "prev" ::= #prev;
+      "entries" ::= #entries
+    ]))%V 
+    #(logSlice.mk term prev entries).
 Admitted.
 

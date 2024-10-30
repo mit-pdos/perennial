@@ -31,6 +31,15 @@ Admitted.
 Global Instance into_val_struct_field_inflight_bytes `{ffi_syntax} : IntoValStructField "bytes" inflight inflight.bytes.
 Admitted.
 
+Instance wp_struct_make_inflight `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} index bytes:
+  PureWp True
+    (struct.make inflight (struct.fields_val [
+      "index" ::= #index;
+      "bytes" ::= #bytes
+    ]))%V 
+    #(inflight.mk index bytes).
+Admitted.
+
 Module Inflights.
 Section def.
 Context `{ffi_syntax}.
@@ -72,6 +81,19 @@ Global Instance into_val_struct_field_Inflights_maxBytes `{ffi_syntax} : IntoVal
 Admitted.
 
 Global Instance into_val_struct_field_Inflights_buffer `{ffi_syntax} : IntoValStructField "buffer" Inflights Inflights.buffer.
+Admitted.
+
+Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} start count bytes size maxBytes buffer:
+  PureWp True
+    (struct.make Inflights (struct.fields_val [
+      "start" ::= #start;
+      "count" ::= #count;
+      "bytes" ::= #bytes;
+      "size" ::= #size;
+      "maxBytes" ::= #maxBytes;
+      "buffer" ::= #buffer
+    ]))%V 
+    #(Inflights.mk start count bytes size maxBytes buffer).
 Admitted.
 
 Module Progress.
@@ -129,6 +151,22 @@ Admitted.
 Global Instance into_val_struct_field_Progress_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" Progress Progress.IsLearner.
 Admitted.
 
+Instance wp_struct_make_Progress `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Match Next sentCommit State PendingSnapshot RecentActive MsgAppFlowPaused Inflights IsLearner:
+  PureWp True
+    (struct.make Progress (struct.fields_val [
+      "Match" ::= #Match;
+      "Next" ::= #Next;
+      "sentCommit" ::= #sentCommit;
+      "State" ::= #State;
+      "PendingSnapshot" ::= #PendingSnapshot;
+      "RecentActive" ::= #RecentActive;
+      "MsgAppFlowPaused" ::= #MsgAppFlowPaused;
+      "Inflights" ::= #Inflights;
+      "IsLearner" ::= #IsLearner
+    ]))%V 
+    #(Progress.mk Match Next sentCommit State PendingSnapshot RecentActive MsgAppFlowPaused Inflights IsLearner).
+Admitted.
+
 Module Config.
 Section def.
 Context `{ffi_syntax}.
@@ -162,6 +200,17 @@ Global Instance into_val_struct_field_Config_Learners `{ffi_syntax} : IntoValStr
 Admitted.
 
 Global Instance into_val_struct_field_Config_LearnersNext `{ffi_syntax} : IntoValStructField "LearnersNext" Config Config.LearnersNext.
+Admitted.
+
+Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters AutoLeave Learners LearnersNext:
+  PureWp True
+    (struct.make Config (struct.fields_val [
+      "Voters" ::= #Voters;
+      "AutoLeave" ::= #AutoLeave;
+      "Learners" ::= #Learners;
+      "LearnersNext" ::= #LearnersNext
+    ]))%V 
+    #(Config.mk Voters AutoLeave Learners LearnersNext).
 Admitted.
 
 Module ProgressTracker.
@@ -201,5 +250,17 @@ Global Instance into_val_struct_field_ProgressTracker_MaxInflight `{ffi_syntax} 
 Admitted.
 
 Global Instance into_val_struct_field_ProgressTracker_MaxInflightBytes `{ffi_syntax} : IntoValStructField "MaxInflightBytes" ProgressTracker ProgressTracker.MaxInflightBytes.
+Admitted.
+
+Instance wp_struct_make_ProgressTracker `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Config Progress Votes MaxInflight MaxInflightBytes:
+  PureWp True
+    (struct.make ProgressTracker (struct.fields_val [
+      "Config" ::= #Config;
+      "Progress" ::= #Progress;
+      "Votes" ::= #Votes;
+      "MaxInflight" ::= #MaxInflight;
+      "MaxInflightBytes" ::= #MaxInflightBytes
+    ]))%V 
+    #(ProgressTracker.mk Config Progress Votes MaxInflight MaxInflightBytes).
 Admitted.
 
