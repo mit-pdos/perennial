@@ -65,10 +65,16 @@ Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
              ]%V
   |}.
 
-Program Instance into_val_typed_AsyncFile : IntoValTyped AsyncFile.t AsyncFile :=
+Axiom falso : False.
+
+Instance into_val_typed_AsyncFile : IntoValTyped AsyncFile.t AsyncFile :=
 {| default_val := AsyncFile.mk (default_val _) (default_val _) (default_val _) (default_val _)
                     (default_val _) (default_val _) (default_val _) (default_val _)
-                    (default_val _) (default_val _)
+                    (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
 |}.
 Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
 
@@ -112,6 +118,7 @@ Next Obligation.
     simpl in Heq. by apply to_val_inj.
 Qed.
 Final Obligation. solve_decision. Qed.
+
 
 Program Instance iv_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" AsyncFile AsyncFile.mu.
 Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.

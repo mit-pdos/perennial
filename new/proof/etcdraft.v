@@ -1,6 +1,6 @@
 From New.code.go_etcd_io.raft Require Import v3.
+From New.proof Require Import structs.go_etcd_io.raft.v3.
 From New.proof Require Import grove_prelude.
-From New.proof Require Import sync.
 
 Module MessageType.
 Definition t := w32.

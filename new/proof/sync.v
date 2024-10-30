@@ -6,6 +6,7 @@ From Perennial.program_logic Require Import weakestpre.
 
 From New.code Require Export sync.
 From New.proof Require Import proof_prelude.
+From New.proof.structs Require Import sync.
 From Perennial.algebra Require Import map.
 
 Set Default Proof Using "Type".
@@ -18,43 +19,6 @@ Class syncG Σ := {
 Definition syncΣ := #[mapΣ u64 unit ; ghost_varΣ u64].
 Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
 Proof. solve_inG. Qed.
-
-Module Mutex.
-Record t := mk {
-    state : bool
-}.
-End Mutex.
-
-Instance into_val_Mutex `{ffi_syntax} : IntoVal Mutex.t :=
-  {|
-    to_val_def := λ v, struct.val_aux Mutex [("state" ::= #v.(Mutex.state))]%V
-  |}.
-
-Program Instance into_val_typed_Mutex `{ffi_syntax} : IntoValTyped Mutex.t Mutex :=
-{| default_val := Mutex.mk false |}.
-Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
-Next Obligation.
-  (* FIXME: [solve_zero_val] tactic *)
-  intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=.
-  rewrite zero_val_eq /= !to_val_unseal //.
-Qed.
-Next Obligation.
-  (* FIXME: automation for this *)
-  rewrite to_val_unseal => ? x y Heq.
-  rewrite /= struct.val_aux_unseal /= in Heq.
-  inversion Heq.
-  destruct x, y.
-  f_equal.
-  simpl in *.
-  apply to_val_inj in H0. subst. done.
-Qed.
-Final Obligation. solve_decision. Qed.
-
-Program Instance into_val_struct_Mutex_state `{ffi_syntax} :
-  IntoValStructField "state" Mutex Mutex.state.
-Final Obligation.
-intros. by rewrite to_val_unseal /= struct.val_aux_unseal /= to_val_unseal /=.
-Qed.
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.

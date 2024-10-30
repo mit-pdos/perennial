@@ -95,6 +95,7 @@ def main():
         os.chdir(goose_dir)
         do_run(["go", "install", "./cmd/goose"])
         do_run(["go", "install", "./cmd/goose_axiom"])
+        do_run(["go", "install", "./cmd/recordgen"])
         os.chdir(old_dir)
 
     def run_goose(src_path, *pkgs):
@@ -125,6 +126,24 @@ def main():
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
         goose_bin = path.join(gopath, "bin", "goose_axiom")
+        args = [goose_bin]
+
+        output = path.join(perennial_dir, dst_path)
+        args.extend(["-out", output])
+        args.extend(["-dir", src_path])
+        args.extend(pkgs)
+        do_run(args)
+
+    def run_recordgen(dst_path, src_path, *pkgs):
+        if src_path is None:
+            return
+        if not pkgs:
+            pkgs = ["."]
+
+        gopath = os.getenv("GOPATH", default=None)
+        if gopath is None or gopath == "":
+            gopath = path.join(path.expanduser("~"), "go")
+        goose_bin = path.join(gopath, "bin", "recordgen")
         args = [goose_bin]
 
         output = path.join(perennial_dir, dst_path)
@@ -175,8 +194,7 @@ def main():
         "crypto/rand",
         "errors",
         "go.etcd.io/raft/v3/confchange",
-        "go.etcd.io/raft/v3/quorum",
-        "go.etcd.io/raft/v3/tracker",
+        "go.etcd.io/raft/v3/quorum/slices64",
         "github.com/stretchr/testify/assert",
         "io",
         "math",
@@ -184,6 +202,8 @@ def main():
         "math/rand",
         "os",
         "sort",
+        "slices",
+        "strconv",
         "strings",
     )
 
@@ -199,14 +219,34 @@ def main():
         etcd_raft_dir,
         "-ignore-errors",
         ".",
+        "go.etcd.io/raft/v3/tracker",
+        "go.etcd.io/raft/v3/quorum",
     )
 
     run_goose(
         etcd_raft_dir,
         "-partial",
-        "Message,MessageType,MsgHup",
+        "Message,MessageType,MsgHup,Entry,ConfState,SnapshotMetadata,Snapshot,HardState," +
+        "ConfChange,ConfChangeType,ConfChangeSingle,ConfChangeV2,ConfChangeTransition,EntryType",
         "-ignore-errors",
         "go.etcd.io/raft/v3/raftpb",
+    )
+
+    run_goose(
+        etcd_raft_dir,
+        "-partial",
+        "Message,MessageType,MsgHup,Entry,ConfState,SnapshotMetadata,Snapshot,HardState," +
+        "ConfChange,ConfChangeType,ConfChangeSingle,ConfChangeV2,ConfChangeTransition,EntryType",
+        "-ignore-errors",
+        "go.etcd.io/raft/v3/raftpb",
+    )
+
+    run_recordgen(
+        "new/proof/structs/",
+        etcd_raft_dir,
+        "go.etcd.io/raft/v3/raftpb",
+        "go.etcd.io/raft/v3/tracker",
+        "go.etcd.io/raft/v3",
     )
 
 

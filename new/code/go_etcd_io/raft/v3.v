@@ -8271,7 +8271,7 @@ Definition testLeaderElectionStruct__mset : list (string * val) := [
 Definition testLeaderElectionStruct__mset_ptr : list (string * val) := [
 ].
 
-(* go: raft2.go:203:6 *)
+(* go: raft2.go:204:6 *)
 Definition testLeaderElection2 : val :=
   rec: "testLeaderElection2" "t" "preVote" :=
     exception_do (let: "preVote" := (ref_ty boolT "preVote") in
