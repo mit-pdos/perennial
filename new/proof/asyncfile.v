@@ -3,6 +3,7 @@ From New.code.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From New.proof Require Import std.
 From New.proof Require Import sync own_crash.
+From New.proof.structs Require Import github_com.mit_pdos.gokv.asyncfile.
 
 Record af_names := mk_af_names {
   index_gn : gname ;
@@ -30,125 +31,6 @@ Definition asyncfileΣ :=
     simpleCrashΣ; syncΣ].
 Global Instance subG_asyncfileΣ {Σ} : subG (asyncfileΣ) Σ → (asyncfileG Σ).
 Proof. solve_inG. Qed.
-
-Module AsyncFile.
-  Record t :=
-    mk {
-        mu : loc;
-        data : slice.t;
-        filename :  string;
-        index : w64;
-        indexCond : loc;
-        durableIndex : w64;
-        durableIndexCond : loc;
-
-        closeRequested : bool;
-        closed : bool;
-        closedCond : loc;
-      }.
-End AsyncFile.
-
-Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
-  {|
-    to_val_def :=
-      λ v, struct.val_aux AsyncFile [
-               "mu" ::= #v.(AsyncFile.mu);
-               "data" ::= #v.(AsyncFile.data);
-               "filename" ::= #v.(AsyncFile.filename);
-               "index" ::= #v.(AsyncFile.index);
-               "indexCond" ::= #v.(AsyncFile.indexCond);
-               "durableIndex" ::= #v.(AsyncFile.durableIndex);
-               "durableIndexCond" ::= #v.(AsyncFile.durableIndexCond);
-               "closeRequested" ::= #v.(AsyncFile.closeRequested);
-               "closed" ::= #v.(AsyncFile.closed);
-               "closedCond" ::= #v.(AsyncFile.closedCond)
-             ]%V
-  |}.
-
-Axiom falso : False.
-
-Instance into_val_typed_AsyncFile : IntoValTyped AsyncFile.t AsyncFile :=
-{| default_val := AsyncFile.mk (default_val _) (default_val _) (default_val _) (default_val _)
-                    (default_val _) (default_val _) (default_val _) (default_val _)
-                    (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
-|}.
-Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
-
-Import Ltac2.
-Set Default Proof Mode "Classic".
-Ltac2 solve_to_val_inj_step () : unit :=
-  match! goal with
-  | [ |- ∀ (_:_), _ ] => intros
-  | [ |- Inj eq eq _ ] => intros [] [] Heq
-  end.
-Next Obligation.
-  (* FIXME: [solve_zero_val] tactic *)
-  intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=.
-  rewrite zero_val_eq /= !to_val_unseal //.
-Qed.
-Next Obligation.
-  rewrite to_val_unseal.
-  intros x y Heq.
-  destruct x, y.
-  simpl in *.
-  f_equal.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 0 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 1 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 2 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 3 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 4 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 5 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 6 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 7 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 8 right; left).
-    simpl in Heq. by apply to_val_inj.
-  - eapply (struct_val_inj _ _ _) in Heq; last by (do 9 right; left).
-    simpl in Heq. by apply to_val_inj.
-Qed.
-Final Obligation. solve_decision. Qed.
-
-
-Program Instance iv_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" AsyncFile AsyncFile.mu.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_data `{ffi_syntax} : IntoValStructField "data" AsyncFile AsyncFile.data.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_filename `{ffi_syntax} : IntoValStructField "filename" AsyncFile AsyncFile.filename.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_index `{ffi_syntax} : IntoValStructField "index" AsyncFile AsyncFile.index.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_indexCond `{ffi_syntax} : IntoValStructField "indexCond" AsyncFile AsyncFile.indexCond.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_durableIndex `{ffi_syntax} : IntoValStructField "durableIndex" AsyncFile AsyncFile.durableIndex.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_durableIndexCond `{ffi_syntax} : IntoValStructField "durableIndexCond" AsyncFile AsyncFile.durableIndexCond.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" AsyncFile AsyncFile.closeRequested.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_closed `{ffi_syntax} : IntoValStructField "closed" AsyncFile AsyncFile.closed.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
-
-Program Instance iv_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" AsyncFile AsyncFile.closedCond.
-Final Obligation. intros. repeat (rewrite ?to_val_unseal ?struct.val_aux_unseal //=). Qed.
 
 Section asyncfile_proof.
 
@@ -820,31 +702,6 @@ Proof.
     { word. }
   }
   done.
-Qed.
-
-Instance wp_struct_make_AsyncFile mu data filename index indexCond durableIndex durableIndexCond
-        closeRequested closed closedCond :
-  PureWp True
-  (struct.make AsyncFile (struct.fields_val [
-                              "mu" ::= #mu;
-                              "data" ::= #data;
-                              "filename" ::= #filename;
-                              "index" ::= #index;
-                              "indexCond" ::= #indexCond;
-                              "durableIndex" ::= #durableIndex;
-                              "durableIndexCond" ::= #durableIndexCond;
-                              "closeRequested" ::= #closeRequested;
-                              "closed" ::= #closed;
-                              "closedCond" ::= #closedCond
-                            ]%V
-  ))
-  #(AsyncFile.mk mu data filename index indexCond durableIndex durableIndexCond closeRequested closed closedCond)
-.
-Proof.
-  pose proof wp_struct_make.
-  rewrite /PureWp => *. iIntros "Hwp".
-  wp_pure_lc "Hlc".
-  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
 Qed.
 
 Lemma wp_MakeAsyncFile fname N P data :

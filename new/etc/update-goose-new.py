@@ -185,6 +185,12 @@ def main():
         # "./vrsm/replica",
     )
 
+    run_recordgen(
+        "new/proof/structs/",
+        gokv_dir,
+        "./asyncfile",
+    )
+
     run_axiomgen(
         "new_code_axioms/",
         etcd_raft_dir,
