@@ -43,8 +43,7 @@ Program Definition go_type_ind :=
     (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
     (f6 : P sliceT) (f7 : P interfaceT)
     (f8 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
-    (f9 : P ptrT) (f10 : P funcT) (f11 : ∀ key : go_type, P key → ∀ elem : go_type, P elem → P (mapT key elem))
-    (f12 : ∀ elem : go_type, P elem → P (chanT elem)),
+    (f9 : P ptrT) (f10 : P funcT),
     fix F (g : go_type) : P g :=
     match g as g0 return (P g0) with
     | boolT => f
@@ -59,8 +58,6 @@ Program Definition go_type_ind :=
     | structT decls => f8 decls _
     | ptrT => f9
     | funcT => f10
-    | mapT key elem => f11 key (F key) elem (F elem)
-    | chanT elem => f12 elem (F elem)
     end.
 Final Obligation.
 intros.
@@ -89,10 +86,9 @@ destruct a. apply Forall_cons. split.
   | has_go_type_slice (s : slice.t) : has_go_type (#s) sliceT
   | has_go_type_interface (i : interface.t) : has_go_type (#i) interfaceT
 
-  | has_go_type_array n elem (a : list val)
-                      (Hlen : length a = n)
+  | has_go_type_array n elem (a : vec val n)
                       (Helems : ∀ v, In v a → has_go_type v elem)
-    : has_go_type (fold_right PairV #() a) (arrayT n elem)
+    : has_go_type (Vector.fold_right PairV a #()) (arrayT n elem)
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
@@ -101,20 +97,17 @@ destruct a. apply Forall_cons. split.
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func (f : func.t) : has_go_type #f funcT
   | has_go_type_func_nil : has_go_type #null funcT
-
-  | has_go_type_mapT kt vt (l : loc) : has_go_type #l (mapT kt vt)
-  | has_go_type_chanT t (l : loc) : has_go_type #l (chanT t)
   .
 
   Lemma zero_val_has_go_type t :
     has_go_type (zero_val t) t.
   Proof.
     induction t using go_type_ind; rewrite zero_val_unseal /to_val; try econstructor.
-    (* arrayT *)
-    { apply length_replicate. }
     { intros. fold zero_val_def in H.
       rewrite -elem_of_list_In in H.
-      apply elem_of_replicate_inv in H. subst.
+      rewrite elem_of_vlookup in H.
+      destruct H as [??].
+      rewrite vlookup_replicate in H. subst.
       by rewrite -zero_val_unseal.
     }
     { (* structT *)
@@ -145,17 +138,14 @@ destruct a. apply Forall_cons. split.
     rewrite go_type_size_unseal.
     induction 1; simpl; rewrite ?to_val_unseal /=; auto.
     - simpl.
-      dependent induction a generalizing n.
+      dependent induction a.
       + simpl in *. subst. done.
-      + simpl. simpl in Hlen.
-        destruct n; first by exfalso.
-        inversion_clear Hlen. clear n.
-        specialize (IHa _ ltac:(done)).
+      + simpl.
         unshelve epose proof (IHa _ _) as IHa.
         { intros. apply Helems. by right. }
         { intros. apply H. by right. }
         rewrite length_app.
-        rewrite IHa Nat.mul_succ_l Nat.add_comm.
+        rewrite IHa.
         f_equal. apply H. by left.
     - rewrite struct.val_aux_unseal.
       induction d.
@@ -179,14 +169,12 @@ destruct a. apply Forall_cons. split.
     | uint64T => #(W64 0)
 
     | stringT => #("")
-    | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
+    | arrayT n elem => Vector.fold_right PairV (vreplicate n (zero_val_def elem)) #()
     | sliceT => #slice.nil
     | structT decls => struct.val_aux t []
     | ptrT => #null
     | funcT => #func.nil
     | interfaceT => #interface.nil
-    | mapT _ _ => #null
-    | chanT _ => #null
     end.
 
   Lemma zero_val'_eq_zero_val_1 t :
@@ -194,7 +182,6 @@ destruct a. apply Forall_cons. split.
   Proof.
     rewrite zero_val_unseal.
     induction t; try done.
-    { simpl. by rewrite zero_val_unseal. }
     simpl. rewrite struct.val_aux_unseal.
     induction decls; first done.
     destruct a. simpl.
@@ -292,7 +279,7 @@ Proof.
   intros v Hty Hcomp.
   induction Hty; try rewrite to_val_unseal /= //.
   - repeat constructor; rewrite to_val_unseal //.
-  - clear Hlen Helems. simpl in Hcomp.
+  - clear Helems. simpl in Hcomp.
     induction a.
     + done.
     + rewrite /=. split.
@@ -374,6 +361,28 @@ Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal. move => [???][???] [=].
                  repeat intros [=->%to_val_inj]. done.
 Qed.
+
+Program Global Instance into_val_typed_array `{!IntoVal V} `{!IntoValTyped V t} n :
+  IntoValTyped (vec V n) (arrayT n t) :=
+{| default_val := vreplicate n (default_val _) |}.
+Next Obligation.
+  rewrite to_val_unseal /=.
+  solve_has_go_type.
+  induction v as [|].
+  - by exfalso.
+  - simpl in *. destruct H0.
+    + subst. apply to_val_has_go_type.
+    + by apply IHv.
+Qed.
+Next Obligation.
+  rewrite to_val_unseal zero_val_eq /= to_val_unseal //.
+  intros.
+  setoid_rewrite vmap_replicate.
+  rewrite -zero_val_unseal.
+  rewrite -default_val_eq_zero_val to_val_unseal //.
+Qed.
+Final Obligation.
+Admitted.
 
 Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
 {| default_val := func.nil |}.

@@ -94,10 +94,12 @@ Section goose_lang.
     .
     all: repeat ltac2:(step ()).
     {
-      subst.
       (* XXX: need to reorder hyps to avoid an error in [dependent induction].... *)
       move a after a0.
-      dependent induction a generalizing a0; destruct a0; repeat ltac2:(step ()).
+      dependent induction a generalizing a0.
+      { dependent destruction a0. done. }
+      dependent destruction a0.
+      simpl in Heq.
       apply app_inj_1 in Heq as [? ?].
       2:{ by do 2 erewrite has_go_type_len by naive_solver. }
       simpl. f_equal.
@@ -193,7 +195,7 @@ Section goose_lang.
       destruct (decide (go_type_size_def elem = O)).
       { exfalso. rewrite e in Hlen. simpl in *. lia. }
       iDestruct select ([∗ list] _ ↦ _ ∈ _, _)%I as "[? _]".
-      iApply ("IH" $! v with "").
+      iApply ("IH" $! h with "").
       + naive_solver.
       + iPureIntro. rewrite go_type_size_unseal. lia.
       + iFrame.
@@ -369,16 +371,16 @@ Section goose_lang.
     all: try (wp_apply (wp_store with "[$]"); iIntros "H"; iApply "HΦ"; iFrame).
     - (* array *)
       rename a0 into a'.
-      iInduction a as [|] "IH2" forall (l' a' Hlen0 Helems0).
-      { simpl. wp_pures. rewrite ?to_val_unseal. iApply "HΦ". apply nil_length_inv in Hlen0.
-        subst. done. }
+      iInduction a as [|] "IH2" forall (l' a' Helems0).
+      { wp_pures. rewrite ?to_val_unseal. iApply "HΦ".
+        dependent destruction a'. done. }
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
       erewrite has_go_type_len.
       2:{ eapply Helems. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
-      destruct a'; first by exfalso.
+      dependent destruction a'.
       simpl.
       wp_pures.
       wp_apply ("IH" with "[] [] [$Hf]").
@@ -389,9 +391,8 @@ Section goose_lang.
       2:{ rewrite to_val_unseal //. }
       wp_pures.
       rewrite [in (to_val (l' +ₗ _))]to_val_unseal.
-      wp_apply ("IH2" with "[] [] [] [] [Hl]").
+      wp_apply ("IH2" with "[] [] [] [Hl]").
       { iPureIntro. intros. apply Helems. by right. }
-      { iPureIntro. by inversion Hlen0. }
       { iPureIntro. intros. apply Helems0. by right. }
       { iModIntro. iIntros. wp_apply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
       { rewrite ?right_id. iFrame. }

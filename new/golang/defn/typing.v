@@ -22,9 +22,10 @@ Inductive go_type :=
 | structT (decls : list (string * go_type)) (* What if this were a gmap? *)
 | ptrT (* Untyped pointer; convenient to support recursion in structs *)
 | funcT
-| mapT (key elem : go_type)
-| chanT (elem : go_type)
 .
+
+Definition mapT (key elem : go_type) : go_type := ptrT.
+Definition chanT (elem : go_type) : go_type := ptrT.
 
 (* XXX: these are the same as the unsigned types because we want to have a 1-to-1 mapping
    between Go types and the Coq types that represent them, and there's only a
@@ -129,15 +130,10 @@ End struct.
 
 Section instances.
 Context `{ffi_syntax}.
-(* FIXME
-Global Instance into_val_array `{!IntoVal V} n : IntoVal (vec n V) :=
+Global Instance into_val_array `{!IntoVal V} n : IntoVal (vec V n) :=
   {| to_val_def :=
-      fix go n (x : vec n V) : val :=
-        match x with
-        | [] => #()
-        | Vector.cons h n tl => (#h, go n tl)%V
-        end
-  |}. *)
+      λ v, (Vector.fold_right PairV (vmap to_val v) #())
+  |}.
 
 Global Instance into_val_slice : IntoVal slice.t :=
   {|
@@ -182,14 +178,12 @@ Section val_types.
     | uint64T => #(W64 0)
 
     | stringT => #""
-    | arrayT n elem => fold_right PairV #() (replicate n (zero_val_def elem))
+    | arrayT n elem => Vector.fold_right PairV (vreplicate n (zero_val_def elem)) #()
     | sliceT => #slice.nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => #null
     | funcT => #func.nil
     | interfaceT => #interface.nil
-    | mapT _ _ => #null
-    | chanT _ => #null
     end.
   Program Definition zero_val := unseal (_:seal (@zero_val_def)). Obligation 1. by eexists. Qed.
   Definition zero_val_unseal : zero_val = _ := seal_eq _.
