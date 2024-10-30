@@ -214,7 +214,26 @@ Proof.
   wp_pures.
   wp_alloc tt as "Htt".
   wp_pures.
+  wp_apply wp_slice_literal.
+  iIntros (?) "?".
 
+  (* FIXME: better tactic for splitting. *)
+  iDestruct (struct_fields_split with "Htt") as "Htt".
+  { done. }
+  { apply _. }
+  rewrite /struct_fields /=.
+  repeat (iDestruct "Htt" as "[H1 Htt]";
+          unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
+          iNamed "H1").
+
+  wp_steps.
+
+  wp_apply (wp_network__send with "[$]").
+  wp_steps.
+  wp_alloc sm_ptr as "?".
+  wp_steps.
+  simpl.
+  (* TODO: should get of ownership of network struct from newNetworkWithConfigInit *)
   Show Ltac Profile.
 Admitted.
 
