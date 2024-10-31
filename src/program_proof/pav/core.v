@@ -19,10 +19,12 @@ Notation opaque_label_ty := (list w8) (only parsing).
 Notation map_val_ty := (epoch_ty * pk_ty)%type (only parsing).
 Notation map_ty := (gmap map_label_ty map_val_ty) (only parsing).
 Notation merkle_map_ty := (gmap (list w8) (list w8)) (only parsing).
-Notation map_adtr_ty := (gmap opaque_label_ty (epoch_ty * comm_ty)) (only parsing).
-Notation cli_map_val_ty := (option (epoch_ty * comm_ty))%type (only parsing).
+Notation opaque_map_val_ty := (epoch_ty * comm_ty)%type (only parsing).
+Notation adtr_map_ty := (gmap opaque_label_ty opaque_map_val_ty) (only parsing).
+Notation cli_map_val_ty := (option (epoch_ty * comm_ty)) (only parsing).
 Notation cli_map_ty := (gmap map_label_ty cli_map_val_ty) (only parsing).
 Notation lat_val_ty := (option map_val_ty) (only parsing).
+Notation lat_opaque_val_ty := (option opaque_map_val_ty) (only parsing).
 
 Section misc.
 Class pavG Σ :=
@@ -64,7 +66,7 @@ Definition msv_core_aux (m : map_ty) uid (vals : list map_val_ty) :=
 
 Definition msv_core m uid vals :=
   msv_core_aux m uid vals ∧
-  m !! (uid, W64 (length vals)) = None.
+  m !! (uid, W64 $ length vals) = None.
 
 (* TODO: upstream. *)
 Lemma lookup_snoc {A} (l : list A) (x : A) :
@@ -73,7 +75,7 @@ Proof. by opose proof (proj2 (lookup_snoc_Some x l (length l) x) _) as H; [naive
 
 Lemma msv_core_aux_snoc {m uid l x} :
   msv_core_aux m uid (l ++ [x]) →
-  msv_core_aux m uid l ∧ m !! (uid, W64 (length l)) = Some x.
+  msv_core_aux m uid l ∧ m !! (uid, W64 $ length l) = Some x.
 Proof.
   intros [Hlen HM]. rewrite app_length in Hlen. list_simplifier. split.
   - split; [lia|]. intros ?? Hlook. ospecialize (HM _ _ _); [|done].
@@ -105,7 +107,7 @@ Lemma msv_core_len_agree_aux {m uid vals0 vals1} :
   length vals0 < length vals1 →
   False.
 Proof.
-  intros HM0 HM1 ?. destruct HM0 as [_ HM0], HM1 as [[? HM1] _].
+  intros [_ HM0] [[? HM1] _] ?.
   list_elem vals1 (uint.nat (length vals0)) as val.
   ospecialize (HM1 _ _ _); [exact Hval_lookup|naive_solver].
 Qed.
@@ -147,7 +149,7 @@ Lemma msv_agree {m uid val0 val1} :
   msv m uid val1 →
   val0 = val1.
 Proof.
-  intros HM0 HM1. destruct HM0 as (?&?&?HM0), HM1 as (?&?&?HM1).
+  intros (?&?&?HM0) (?&?&?HM1).
   pose proof (msv_core_agree HM0 HM1) as ->. naive_solver.
 Qed.
 
@@ -168,7 +170,7 @@ Definition maps_mono' (ms : list map_ty) :=
 (* maps_epoch_ok prevents entries from being added too early. *)
 Definition maps_epoch_ok' (ms : list map_ty) :=
   ∀ (ep : w64) m k ep' comm,
-  ms !! (uint.nat ep) = Some m →
+  ms !! uint.nat ep = Some m →
   m !! k = Some (ep', comm) →
   uint.Z ep' ≤ uint.Z ep.
 
@@ -182,11 +184,11 @@ Definition know_hist_val (ms : list map_ty) (uid ep : w64) (lat : lat_val_ty) :=
       m !! (uid, ver) = Some val)) ∧
   ( (* next ver doesn't exist in this or later map. from future client.SelfMon. *)
     (∃ (bound : w64) m, uint.Z ep ≤ uint.Z bound ∧ ms !! uint.nat bound = Some m ∧
-      m !! (uid, W64 (length vals)) = None)
+      m !! (uid, W64 $ length vals) = None)
     ∨
     (* next ver exists in later map. from future client.Put. *)
     (∃ (bound : w64) m pk, uint.Z ep < uint.Z bound ∧ ms !! uint.nat bound = Some m ∧
-      m !! (uid, W64 (length vals)) = Some (bound, pk))).
+      m !! (uid, W64 $ length vals) = Some (bound, pk))).
 
 Definition know_hist (ms : list map_ty) (uid : w64) (hist : list lat_val_ty) :=
   (∀ (ep : w64) lat, hist !! uint.nat ep = Some lat → know_hist_val ms uid ep lat).
@@ -211,7 +213,7 @@ Proof.
     opose proof ((proj1 Hadtr) _ _ _ _ Hlook_m Hlook_bound _); [lia|].
     by eapply lookup_weaken_None.
   - destruct Hbound as (?&?&?&?&Hlook_bound&?).
-    destruct (decide $ is_Some $ m !! (uid, W64 (length vals))) as [[? Hlook_mkey]|]; last first.
+    destruct (decide $ is_Some $ m !! (uid, W64 $ length vals)) as [[? Hlook_mkey]|]; last first.
     { by eapply eq_None_not_Some. }
     opose proof ((proj1 Hadtr) _ _ _ _ Hlook_m Hlook_bound _); [lia|].
     opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
@@ -222,7 +224,7 @@ End hist_msv.
 
 Section proper_adtr_inv.
 
-Definition lower_adtr (m : map_adtr_ty) : merkle_map_ty :=
+Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
   (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
 
 Definition maps_mono (ms : list merkle_map_ty) :=
@@ -232,7 +234,7 @@ Definition maps_mono (ms : list merkle_map_ty) :=
   i ≤ j →
   mi ⊆ mj.
 
-Definition maps_epoch_ok (ms : list map_adtr_ty) :=
+Definition maps_epoch_ok (ms : list adtr_map_ty) :=
   ∀ (ep : nat) m_ep k ep' comm,
   ms !! ep = Some m_ep →
   m_ep !! k = Some (ep', comm) →

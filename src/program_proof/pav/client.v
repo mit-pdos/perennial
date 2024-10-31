@@ -216,7 +216,7 @@ End specs.
 Section derived.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition is_my_key_aud_aux (adtr_map : map_adtr_ty) uid ver ep comm : iProp Σ :=
+Definition is_my_key_aud_aux (adtr_map : adtr_map_ty) uid ver ep comm : iProp Σ :=
   ∃ hash0 hash1,
   "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep, comm) ⌝ ∗
   "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
@@ -251,7 +251,7 @@ Lemma audit_is_no_other_key ep0 ep1 cli_γ uid adtr_γ :
   is_no_other_key_aud adtr_γ uid ep0.
 Proof. Admitted.
 
-Definition is_other_key_aud_aux (adtr_map : map_adtr_ty) uid (ep : epoch_ty) comm0 : iProp Σ :=
+Definition is_other_key_aud_aux (adtr_map : adtr_map_ty) uid (ep : epoch_ty) comm0 : iProp Σ :=
   ∃ (ver : w64) ep0 hash0 hash1,
   "%Hhist" ∷ ∀ (ver' : w64), ⌜ uint.Z ver' < uint.Z ver ⌝ -∗
     ∃ hash2 ep1 comm1,
@@ -276,7 +276,7 @@ Lemma audit_is_other_key ep0 ep1 cli_γ uid pk adtr_γ :
 Proof. Admitted.
 
 (* TODO: needs to be changed after msv change. *)
-Definition msv_opaque (m : map_adtr_ty) uid vals : iProp Σ :=
+Definition msv_opaque (m : adtr_map_ty) uid vals : iProp Σ :=
   (∀ (i : nat), ⌜ i < length vals ⌝ -∗
     ∃ hash, (is_vrf uid (W64 i) hash ∗ ⌜ m !! hash = vals !! i ⌝)) ∗
   (∃ hash, is_vrf uid (W64 (length vals)) hash ∗ ⌜ m !! hash = None ⌝).
