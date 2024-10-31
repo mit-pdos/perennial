@@ -16,7 +16,7 @@ Lemma wp_newNetworkWithConfigInit (peers : list interface.t) peers_sl :
   }}}
     newNetworkWithConfigInit #func.nil #peers_sl
   {{{
-        nw_ptr (nw : network.t), RET #nw; nw_ptr ↦ nw
+        nw_ptr (nw : network.t), RET #nw_ptr; nw_ptr ↦ nw
   }}}
 .
 Proof.
@@ -154,14 +154,14 @@ Proof.
 
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
-  iIntros (?) "Hnw1".
+  iIntros "* Hnw1".
 
   wp_steps.
   wp_apply (wp_slice_literal stateMachine _).
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
-  iIntros (?) "Hnw2".
+  iIntros "* Hnw2".
 
   wp_steps.
   unshelve wp_apply wp_slice_literal; first apply _.
@@ -169,21 +169,21 @@ Proof.
   wp_pures.
   (* Time wp_apply (wp_newNetworkWithConfigInit with "[$]"). *)
   Time wp_bind (newNetworkWithConfigInit _ _); iApply (wp_newNetworkWithConfigInit with "[$]"); iModIntro.
-  iIntros (?) "Hnw3".
+  iIntros "* Hnw3".
 
   wp_steps.
   unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
-  iIntros (?) "Hnw4".
+  iIntros "* Hnw4".
 
   wp_steps.
   unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
-  iIntros (?) "Hnw5".
+  iIntros "* Hnw5".
 
   wp_steps.
 
@@ -212,14 +212,14 @@ Proof.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
-  iIntros (?) "Hnw6".
+  iIntros "* Hnw6".
   wp_pures.
   unshelve wp_apply wp_slice_literal; first apply _.
-  iIntros (?) "?".
+  iIntros (?) "Hsl".
   wp_steps.
 
   wp_apply wp_slice_for_range.
-  iFrame.
+  iFrame "Hsl".
   simpl foldr.
   (* Entire for loop is unfolded here. TODO: is there a way to unfold one iteration at a time? *)
   wp_pures.
@@ -228,7 +228,7 @@ Proof.
   wp_alloc tt as "Htt".
   wp_pures.
   wp_apply wp_slice_literal.
-  iIntros (?) "?".
+  iIntros (?) "Hsl".
 
   (* FIXME: better tactic for splitting. *)
   iDestruct (struct_fields_split with "Htt") as "Htt".
@@ -241,11 +241,11 @@ Proof.
 
   wp_steps.
 
-  wp_apply (wp_network__send with "[$]").
+  simpl.
+  wp_apply (wp_network__send with "[$Hnw1 $Hsl]").
   wp_steps.
   wp_alloc sm_ptr as "?".
   wp_steps.
-  simpl.
   (* TODO: should get of ownership of network struct from newNetworkWithConfigInit *)
   Show Ltac Profile.
 Admitted.

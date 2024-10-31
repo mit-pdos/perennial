@@ -1,8 +1,6 @@
-From RecordUpdate Require Import RecordSet.
 From Perennial.Helpers Require Import List Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export typing.
 From New.golang.theory Require Export list mem exception loop typing.
 
 Set Default Proof Using "Type".

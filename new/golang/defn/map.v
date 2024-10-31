@@ -57,8 +57,6 @@ Definition for_range : val :=
      end) "mv";;
   FinishRead "mref".
 
-(* alternate implementation strategy - MapLen above was perhaps implemented when
-the general proofs for map iteration weren't ready *)
 Definition len : val :=
   λ: "mref",
     let: "len" := Alloc #(W64 0) in
