@@ -26,15 +26,14 @@ Definition msv_final (adtr_γ : gname) (ep uid : w64) (lat : lat_val_ty) : iProp
     "#His_label" ∷ is_vrf uid (W64 $ length vals) label ∗
     "%Hnin_map" ∷ ⌜ m !! label = None ⌝).
 
-Definition know_hist_val_cliG cli_γ (uid ep : w64) (lat : lat_val_ty) : iProp Σ :=
-  ∃ (vals : list opaque_map_val_ty),
-  "%Hbound_vals" ∷ ⌜ length vals < 2^64 ⌝ ∗
-  "#Hcomm_reln" ∷ lat_pk_comm_reln lat (last vals) ∗
+Definition know_hist_val_cliG cli_γ (uid ep : w64) (hist : list map_val_ty) : iProp Σ :=
+  let vals := filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist in
   (* prior vers exist in prior or this map. *)
-  "#Hhist" ∷ ([∗ list] ver ↦ '(prior, comm) ∈ vals,
-    (∃ dig m_γ,
+  "#Hhist" ∷ ([∗ list] ver ↦ '(prior, pk) ∈ vals,
+    (∃ dig m_γ comm,
     "%Hlt_prior" ∷ ⌜ uint.Z prior ≤ uint.Z ep ⌝ ∗
     "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat prior) (Some (dig, m_γ)) ∗
+    "#Hcomm" ∷ is_comm pk comm ∗
     "#Hin_prior" ∷ (uid, W64 ver) ↪[m_γ]□ Some (prior, comm))) ∗
   ( (* next ver doesn't exist in this or later map. *)
     "Hnin_nextver" ∷ (∃ (bound : w64) dig m_γ,
@@ -48,17 +47,9 @@ Definition know_hist_val_cliG cli_γ (uid ep : w64) (lat : lat_val_ty) : iProp �
       "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat bound) (Some (dig, m_γ)) ∗
       "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ]□ Some (bound, comm))).
 
-Definition get_lat (phys : list map_val_ty) (ep : w64) : lat_val_ty :=
-  last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) phys.
-
-Definition phys_logic_reln phys (logic : list lat_val_ty) :=
-  (∀ (ep : w64) lat, logic !! uint.nat ep = Some lat → lat = get_lat phys ep).
-
-(* know_hist_cliG ties together phys_hist and logic_hist as two different
-hist repr's, either of which may be convenient at a given time. *)
-Definition know_hist_cliG cli_γ (uid : w64) (phys_hist : list map_val_ty) (logic_hist : list lat_val_ty) : iProp Σ :=
-  "%Hphys_log" ∷ ⌜ phys_logic_reln phys_hist logic_hist ⌝ ∗
-  "#Hknow_vals" ∷ ([∗ list] ep ↦ lat ∈ logic_hist, know_hist_val_cliG cli_γ uid (W64 ep) lat).
+Definition know_hist_cliG cli_γ (uid : w64) (hist : list map_val_ty) (bound : w64) : iProp Σ :=
+  "%Hok_bound" ∷ ⌜ ∀ ep val, hist !! ep = Some val → uint.Z val.1 ≤ uint.Z bound ⌝ ∗
+  "#Hknow_vals" ∷ ∀ (ep : w64), ⌜ uint.Z ep ≤ uint.Z bound ⌝ -∗ know_hist_val_cliG cli_γ uid ep hist.
 
 Definition own_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
   ∃ sl_HistVal,
@@ -66,43 +57,65 @@ Definition own_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
   "Hptr_HistVal" ∷ ptr ↦[HistEntry :: "HistVal"] (slice_val sl_HistVal) ∗
   "#Hsl_HistVal" ∷ own_slice_small sl_HistVal byteT DfracDiscarded obj.2.
 
-Definition own_hist cli_γ uid sl_hist phys_hist : iProp Σ :=
-  ∃ dim0_hist logic_hist,
+Definition own_hist cli_γ uid sl_hist hist bound : iProp Σ :=
+  ∃ dim0_hist,
   "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
-  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;phys_hist, own_HistEntry p o) ∗
-  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid phys_hist logic_hist.
+  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, own_HistEntry p o) ∗
+  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist bound.
 End defs.
 
 Section derived.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma hist_extend_selfmon logic_hist (ep : w64) cli_γ uid phys_hist :
-  length logic_hist ≤ S $ uint.nat ep →
-  ("#Hknow_hist" ∷ know_hist_cliG cli_γ uid phys_hist logic_hist ∗
-  "#His_bound" ∷ is_my_bound cli_γ uid (W64 $ length phys_hist) ep) -∗
-  ∃ new_hist,
-  "%Hlen_hist" ∷ ⌜ length new_hist = S $ uint.nat ep ⌝ ∗
-  "Hknow_hist" ∷ know_hist_cliG cli_γ uid phys_hist new_hist.
+(* TODO: upstream. *)
+Lemma list_filter_iff_strong {A} (P1 P2 : A → Prop)
+    `{!∀ x, Decision (P1 x), !∀ x, Decision (P2 x)} (l : list A) :
+  (∀ i x, l !! i = Some x → (P1 x ↔ P2 x)) →
+  filter P1 l = filter P2 l.
 Proof.
-  intros Hlen_hist. iNamed 1.
-  iExists (logic_hist ++ (replicate ((S $ uint.nat ep) - length logic_hist) (mjoin $ last logic_hist))).
+  intros HPiff. induction l as [|a l IH]; [done|].
+  opose proof (HPiff 0%nat a _) as ?; [done|].
+  ospecialize (IH _). { intros i x ?. by ospecialize (HPiff (S i) x _). }
+  destruct (decide (P1 a)).
+  - rewrite !filter_cons_True; [|by naive_solver..]. by rewrite IH.
+  - rewrite !filter_cons_False; [|by naive_solver..]. by rewrite IH.
+Qed.
+
+(* TODO: upstream. *)
+Lemma list_filter_all {A} (P : A → Prop)
+    `{!∀ x, Decision (P x)} (l : list A) :
+  (∀ i x, l !! i = Some x → P x) →
+  filter P l = l.
+Proof.
+  intros HP. induction l as [|a l IH]; [done|].
+  opose proof (HP 0%nat a _) as ?; [done|].
+  ospecialize (IH _). { intros i x ?. by ospecialize (HP (S i) x _). }
+  rewrite filter_cons_True; [|done]. by rewrite IH.
+Qed.
+
+Lemma hist_extend_selfmon cli_γ uid hist bound new_bound :
+  uint.Z bound ≤ uint.Z new_bound →
+  ("#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist bound ∗
+  "#His_bound" ∷ is_my_bound cli_γ uid (W64 $ length hist) new_bound) -∗
+  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist new_bound.
+Proof.
+  intros ?. iNamed 1. iNamed "Hknow_hist". iSplit.
+  { iIntros (?? Hlook). iPureIntro. specialize (Hok_bound _ _ Hlook). word. }
+  iIntros (ep ?). destruct (decide (uint.Z ep ≤ uint.Z bound)).
+  { by iApply "Hknow_vals". }
+  iSpecialize ("Hknow_vals" $! bound with "[]"). { iPureIntro. lia. }
   iSplit.
-  { iPureIntro. rewrite app_length length_replicate. lia. }
-  iSplit; [admit|].
-  iNamed "Hknow_hist". iFrame "#".
-  iApply big_sepL_forall. iIntros "* %Hlook_repl".
-  apply lookup_replicate in Hlook_repl as [-> ?].
-  destruct (last logic_hist) eqn:Hlook_last; simpl.
-  (* if some last elem, use that for hist. *)
-  - rewrite last_lookup in Hlook_last.
-    iDestruct (big_sepL_lookup with "Hknow_vals") as "Hknow_last"; [exact Hlook_last|].
-    iDestruct "Hknow_last" as (vals) "Hknow_last". iNamed "Hknow_last".
-    iExists vals. iFrame "#%". iSplit.
-    + iApply (big_sepL_impl with "Hhist"). iIntros (?[??]) "!> %". iNamed 1.
-      iFrame "#". iPureIntro. word.
-    + iClear "Hhist Hknow_last". iNamed "His_bound". iLeft. iFrame "#".
-      (* TODO: issue relating length phys_hist with length vals. *)
-Admitted.
+  - iNamed "Hknow_vals".
+    rewrite (list_filter_iff_strong
+      (λ x, uint.Z x.1 ≤ uint.Z ep)
+      (λ x, uint.Z x.1 ≤ uint.Z bound) hist); [|naive_solver word].
+    iApply (big_sepL_impl with "Hhist"). iIntros (?[??]) "!> %". iNamed 1.
+    iFrame "#". iPureIntro. word.
+  - iClear "Hknow_vals". iLeft.
+    rewrite list_filter_all; last first.
+    { intros ?? Hlook. ospecialize (Hok_bound _ _ Hlook). word. }
+    iNamed "His_bound". iFrame "#". iPureIntro. word.
+Qed.
 
 Lemma hist_audit_msv (ep aud_ep : w64) lat logic_hist cli_γ uid phys_hist adtr_γ :
   logic_hist !! uint.nat ep = Some lat →
