@@ -117,13 +117,23 @@ Proof.
     iNamed "His_bound". iFrame "#". iPureIntro. word.
 Qed.
 
-Lemma hist_audit_msv (ep aud_ep : w64) lat logic_hist cli_γ uid phys_hist adtr_γ :
-  logic_hist !! uint.nat ep = Some lat →
-  Z.of_nat $ length logic_hist ≤ uint.Z aud_ep →
-  ("#Hknow_hist" ∷ know_hist_cliG cli_γ uid phys_hist logic_hist ∗
+Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
+  last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
+
+Lemma hist_audit_msv cli_γ uid hist bound adtr_γ aud_ep (ep : w64) :
+  uint.Z ep ≤ uint.Z bound →
+  uint.Z bound < uint.Z aud_ep →
+  ("#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist bound ∗
   "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
-  "#Hmsv" ∷ msv_final adtr_γ ep uid lat.
-Proof. Admitted.
+  "#Hmsv" ∷ msv_final adtr_γ ep uid (get_lat hist ep).
+Proof.
+  intros ??. iNamed 1.
+  rewrite /msv_final.
+  iNamed "Hknow_hist".
+  iSpecialize ("Hknow_vals" $! ep with "[//]"). iNamed "Hknow_vals".
+  iNamed "His_audit".
+  rewrite /is_audit.
+Admitted.
 
 End derived.
 

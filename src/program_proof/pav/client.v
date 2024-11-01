@@ -171,17 +171,21 @@ Lemma wp_Client__Get ptr_c c uid :
   }}}.
 Proof. Admitted.
 
-(* is_audit says we've audited up *to* ep. *)
-Definition is_audit cli_γ adtr_γ (ep : w64) : iProp Σ :=
-  ∃ adtr_st cli_st,
-  "#Hadtr_st" ∷ comm_st.valid adtr_γ adtr_st ∗
-  "#Hcli_seen_maps" ∷ mono_list_lb_own cli_γ cli_st ∗
-  "%Hlen_ep" ∷ ⌜ length cli_st = uint.nat ep ⌝ ∗
-  "%Hagree_dig" ∷ ([∗ list] ep ↦ x ∈ cli_st,
-    match x with
-    | None => True
-    | Some y => ⌜ ∃ dig, adtr_st.(comm_st.digs) !! ep = Some dig ∧ y.1 = dig ⌝
-    end).
+(* is_audit says we've audited up *to* (not including) bound. *)
+Definition is_audit (cli_γ adtr_γ : gname) (bound : w64) : iProp Σ :=
+  ∃ ms,
+  "#Hadtr_maps" ∷ mono_list_lb_own adtr_γ ms ∗
+  "%Hlen_maps" ∷ ⌜ length ms = uint.nat bound ⌝ ∗
+  "%Hinv_adtr" ∷ ⌜ adtr_inv ms ⌝ ∗
+  "#Hincl_transf" ∷ (□ ∀ (ep : w64) m uid ver val,
+    (∃ dig sm_γ,
+    "%Hlook_map" ∷ ⌜ ms !! uint.nat ep = Some m ⌝ ∗
+    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
+    "#Hin_cli" ∷ (uid, ver) ↪[sm_γ]□ val) -∗
+
+    (∃ label,
+    "#His_label" ∷ is_vrf uid ver label ∗
+    "%Hin_adtr" ∷ ⌜ m !! label = val ⌝)).
 
 Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk :
   {{{
