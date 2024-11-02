@@ -554,7 +554,7 @@ Section pure.
     { by apply map_subseteq_size, map_filter_subseteq_mono. }
     pose proof (nfast_nfastneg_dom_size bs n v) as Hsize.
     epose proof (quorums_sufficient _ _ _ Hqc Hqf) as Hsuff.
-    lia.
+    clear -Hsizef Hf Hsize Hc Hsizec Hsuff. lia.
   Qed.
 
   Lemma vp_impl_pac bs ps :

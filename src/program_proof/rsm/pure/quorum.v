@@ -94,9 +94,8 @@ Section lemma.
     fquorum_size c qf ->
     2 * size c < size qc + 2 * size qf.
   Proof.
+    rewrite /cquorum_size /fquorum_size.
     intros Hsizec Hsizef.
-    unfold cquorum_size in Hsizec.
-    unfold fquorum_size in Hsizef.
     lia.
   Qed.
 
@@ -116,6 +115,14 @@ Section lemma.
   Proof.
     split; first done.
     rewrite /cquorum_size.
+    lia.
+  Qed.
+
+  Lemma fquorum_non_empty_q c q :
+    fquorum c q -> q ≠ ∅.
+  Proof.
+    intros (Hincl & Hsize & Hnz).
+    rewrite -size_non_empty_iff_L.
     lia.
   Qed.
 
