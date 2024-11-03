@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import list.
-From Perennial.program_proof.tulip Require Import base cmd res.
+From Perennial.program_proof.tulip Require Import base cmd res stability.
 (* TODO: might be better to separate out the common definitions from [inv_group]. *)
 From Perennial.program_proof.tulip Require Import inv_group.
 
@@ -51,16 +51,27 @@ Section inv.
     inv Ht2.
   Qed.
 
+  Definition safe_ballot γ gid ts l : iProp Σ :=
+    [∗ list] r ↦ b ∈ l, match b with
+                        | Accept p => is_group_prepare_proposal γ gid ts r p
+                        | _ => True
+                        end.
+
+  Definition replica_inv_ballot_map γ gid rid bm : iProp Σ :=
+    "Hblt"      ∷ own_replica_ballot_map γ gid rid bm ∗
+    "#Hsafebm"  ∷ ([∗ map] ts ↦ l ∈ bm, safe_ballot γ gid ts l).
+
   Definition replica_inv_internal
     γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand))
     (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
-    ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (histm : gmap dbkey dbhist)
-      (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat),
+    ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (bm : gmap nat ballot)
+      (histm : gmap dbkey dbhist) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat),
       let log := merge_clog_ilog clog ilog in
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
       "Hclog"     ∷ own_replica_clog_half γ rid clog ∗
       "Hilog"     ∷ own_replica_ilog_half γ rid ilog ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
+      "Hbm"       ∷ replica_inv_ballot_map γ gid rid bm ∗
       "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid ts pwrs) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
@@ -77,6 +88,7 @@ Section inv.
     γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
     ∃ clog ilog, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
 
+  (* TODO: check if this is actually needed *)
   Definition replica_inv_with_clog_with_ilog
     γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand)) : iProp Σ :=
     ∃ cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
@@ -182,6 +194,26 @@ Section inv.
     iSplit; last first.
     { iPureIntro. rewrite length_take. lia. }
     by iDestruct (big_sepL_take_drop _ _ ub' with "Habtifp") as "[Htake Hdrop]".
+  Qed.
+
+  Lemma replica_inv_weaken_ballot_map γ gid rid :
+    replica_inv γ gid rid -∗
+    ∃ bm, replica_inv_ballot_map γ gid rid bm.
+  Proof. iIntros "Hrp". do 2 iNamed "Hrp". iFrame "Hbm". Qed.
+
+  Lemma replicas_inv_weaken_ballot_map γ gid rids :
+    ([∗ set] rid ∈ rids, replica_inv γ gid rid) -∗
+    ∃ bmm,
+      ([∗ map] rid ↦ bm ∈ bmm, replica_inv_ballot_map γ gid rid bm) ∗
+      ⌜dom bmm = rids⌝.
+  Proof.
+    iIntros "Hrps".
+    iDestruct (big_sepS_impl with "Hrps []") as "Hrps".
+    { iIntros (rid Hrid) "!> Hrp".
+      iApply (replica_inv_weaken_ballot_map with "Hrp").
+    }
+    iDestruct (big_sepS_exists_sepM with "Hrps") as (bmm) "[%Hdom Hrps]".
+    iFrame "Hrps %".
   Qed.
 
 End inv.

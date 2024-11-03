@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import list quorum fin_maps.
-From Perennial.program_proof.tulip Require Import base cmd res.
+From Perennial.program_proof.tulip Require Import base cmd res stability.
 
 Lemma tpls_group_keys_group_dom gid tpls :
   dom (tpls_group gid tpls) = keys_group gid (dom tpls).
@@ -205,6 +205,32 @@ Section inv.
     | StAborted => Some false
     end.
 
+  Definition is_group_prepare_proposal_if_classic γ gid ts rk p : iProp Σ :=
+    (if decide (rk = O) then emp else is_group_prepare_proposal γ gid ts rk p)%I.
+
+  #[global]
+  Instance is_group_prepare_proposal_if_classic_persistent γ gid ts rk p :
+    Persistent (is_group_prepare_proposal_if_classic γ gid ts rk p).
+  Proof. rewrite /is_group_prepare_proposal_if_classic. case_decide; apply _. Defined.
+
+  Definition safe_proposal γ gid (ts : nat) (rk : nat) (p : bool) : iProp Σ :=
+    ∃ bsqlb : gmap u64 ballot,
+      let n := latest_before_quorum rk bsqlb in
+      "#Hlbs"     ∷ ([∗ map] rid ↦ l ∈ bsqlb, is_replica_ballot_lb γ gid rid ts l) ∗
+      "#Hlatestc" ∷ is_group_prepare_proposal_if_classic γ gid ts n p ∗
+      "%Hquorum"  ∷ ⌜cquorum rids_all (dom bsqlb)⌝ ∗
+      "%Hlen"     ∷ ⌜map_Forall (λ _ l, (rk ≤ length l)%nat) bsqlb⌝ ∗
+      "%Hlatestf" ∷ ⌜if decide (n = O) then nfast bsqlb (negb p) ≤ size bsqlb / 2 else True⌝.
+
+  Definition safe_proposals γ gid (ts : nat) (ps : gmap nat bool) : iProp Σ :=
+    [∗ map] r ↦ p ∈ ps, safe_proposal γ gid ts r p.
+
+  Definition group_inv_proposals_map γ gid : iProp Σ :=
+    ∃ (psm : gmap nat (gmap nat bool)),
+      "Hpsm"      ∷ own_group_prepare_proposals_map γ gid psm ∗
+      "#Hsafepsm" ∷ ([∗ map] ts ↦ ps ∈ psm, safe_proposals γ gid ts ps) ∗
+      "%Hzunused" ∷ ⌜map_Forall (λ _ ps, ps !! O = None) psm⌝.
+
   Definition group_inv_no_log_no_cpool
     γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
     ∃ (pm : gmap nat bool) (cm : gmap nat bool) (stm : gmap nat txnst)
@@ -213,6 +239,7 @@ Section inv.
       "Hcm"       ∷ own_group_commit_map γ gid cm ∗
       "Hhists"    ∷ ([∗ map] k ↦ h ∈ filter_group gid hists, own_repl_hist_half γ k h) ∗
       "Hlocks"    ∷ ([∗ map] k ↦ t ∈ filter_group gid tspreps, own_repl_ts_half γ k t) ∗
+      "Hpsm"      ∷ group_inv_proposals_map γ gid ∗
       "#Hsafestm" ∷ ([∗ map] ts ↦ st ∈ stm, safe_txnst γ gid ts st) ∗
       "#Hsafepm"  ∷ ([∗ map] ts ↦ p ∈ pm, safe_prepare γ gid ts p) ∗
       "#Hsafecp"  ∷ ([∗ set] c ∈ cpool, safe_submit γ gid c) ∗

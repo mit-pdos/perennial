@@ -71,8 +71,212 @@ Proof.
   by rewrite Hpwrsx in Hnotin.
 Qed.
 
+Definition ballot_map_at_ts (bmm : gmap u64 (gmap nat ballot)) (ts : nat) :=
+  fmap (λ bm, match bm !! ts with
+              | Some l => l
+              | _ => [] (* placeholder for replicas that have no ballot at [ts] yet *)
+              end) bmm.
+
 Section inv.
   Context `{!tulip_ghostG Σ}.
+
+  Lemma quorum_pdec_impl_chosen γ gid bmm ts d :
+    dom bmm = rids_all ->
+    quorum_pdec γ gid ts d -∗
+    ([∗ map] rid ↦ bm ∈ bmm, replica_inv_ballot_map γ gid rid bm) -∗
+    ⌜chosen (ballot_map_at_ts bmm ts) d⌝.
+  Proof.
+    iIntros (Hdombmm) "#Hqd Hrps".
+    set bs := (ballot_map_at_ts _ _).
+    iDestruct "Hqd" as (r) "Hqd".
+    iExists (r).
+    iAssert (∃ (ridsq : gset u64),
+                ([∗ set] rid ∈ ridsq, is_replica_pdec_at_rank γ gid rid ts r d) ∗
+                ⌜if decide (r = O) then fquorum rids_all ridsq else cquorum rids_all ridsq⌝)%I
+      as (ridsq) "[Hqd' %Hq]".
+    { rewrite /quorum_pdec_at_rank.
+      case_decide as Hr; last iFrame "Hqd".
+      subst r. iFrame "Hqd".
+    }
+    iAssert (⌜∃ bsq, bsq ⊆ bs ∧
+                     (if decide (r = O)
+                      then fquorum_size (dom bs) (dom bsq)
+                      else cquorum_size (dom bs) (dom bsq)) ∧
+                     map_Forall (λ _ l, accepted_in l r d) bsq⌝)%I
+      as %(bsq & Hincl & Hquorum & Hacc).
+    { set bsq := filter (λ x, x.1 ∈ ridsq) bs.
+      iExists (bsq).
+      iSplit.
+      { iPureIntro. apply map_filter_subseteq. }
+      iSplit.
+      { iPureIntro.
+        rewrite dom_fmap_L Hdombmm.
+        subst bsq.
+        rewrite (dom_filter_L _ _ ridsq).
+        { case_decide; by destruct Hq as [_ ?]. }
+        intros rid.
+        split; intros Hrid.
+        { subst bs.
+          assert (is_Some (bmm !! rid)) as [bm Hbm].
+          { rewrite -elem_of_dom Hdombmm.
+            case_decide; destruct Hq as [Hincl _]; set_solver.
+          }
+          rewrite lookup_fmap Hbm /=.
+          by eauto.
+        }
+        by destruct Hrid as (? & _ & ?).
+      }
+      iIntros (rid l Hl).
+      apply map_lookup_filter_Some in Hl as [Hl Hrid]. simpl in Hrid.
+      iDestruct (big_sepS_elem_of with "Hqd'") as "Hd"; first apply Hrid.
+      apply lookup_fmap_Some in Hl as (bm & Hl & Hbm).
+      iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
+      iNamed "Hrp".
+      iDestruct "Hd" as (lb) "[Hlb %Hd]".
+      iDestruct (replica_ballot_lookup with "Hlb Hblt") as %(l' & Hl' & Hprefix).
+      iPureIntro.
+      rewrite Hl' in Hl. inv Hl.
+      by eapply prefix_lookup_Some.
+    }
+    iPureIntro.
+    rewrite /chosen_in.
+    case_decide.
+    { subst r. rewrite /chosen_in_fast. by eauto. }
+    { rewrite /chosen_in_classic. by eauto. }
+  Qed.
+
+  Lemma group_inv_replica_inv_impl_stability γ gid bmm ts :
+    dom bmm = rids_all ->
+    group_inv_proposals_map γ gid -∗
+    ([∗ map] rid ↦ bm ∈ bmm, replica_inv_ballot_map γ gid rid bm) -∗
+    ⌜stability (ballot_map_at_ts bmm ts)⌝.
+  Proof.
+    iIntros (Hdombmm) "Hgroup Hrps".
+    iNamed "Hgroup".
+    set bs := (ballot_map_at_ts _ _).
+    iIntros (d1 d2 Hd1 Hd2).
+    destruct (psm !! ts) as [ps |] eqn:Hpsm; last first.
+    { (* Case: Proposals map not present at [ts]. Could only be chosen in fast rank. *)
+      destruct (Hd1) as [r1 Hchosen1].
+      rewrite /chosen_in in Hchosen1.
+      case_decide as Hr1; last first.
+      { (* [d1] chosen in classic rank. Derive contradiction. *)
+        destruct Hchosen1 as (bsq & Hincl & Hq & Hacc).
+        assert (∃ rid, is_Some (bsq !! rid)) as (rid & l & Hl).
+        { unshelve epose proof (cquorum_non_empty_q (dom bs) (dom bsq) _) as Hne.
+          { by split; first apply subseteq_dom. }
+          apply set_choose_L in Hne as [rid Hrid].
+          apply elem_of_dom in Hrid.
+          by eauto.
+        }
+        pose proof (lookup_weaken _ _ _ _ Hl Hincl) as Hbsl.
+        apply lookup_fmap_Some in Hbsl as (bm & Hbml & Hbm).
+        specialize (Hacc _ _ Hl). simpl in Hacc.
+        destruct (bm !! ts) as [l' |] eqn:Hbmts; last by subst l.
+        subst l'.
+        iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
+        iNamed "Hrp".
+        iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
+        iDestruct (big_sepL_lookup with "Hsafel") as "Hpsl"; first apply Hacc.
+        simpl.
+        iDestruct (group_prepare_proposal_lookup with "Hpsl Hpsm") as %(ps & Hps & _).
+        by rewrite Hpsm in Hps.
+      }
+      destruct (Hd2) as [r2 Hchosen2].
+      rewrite /chosen_in in Hchosen2.
+      case_decide as Hr2; last first.
+      { (* [d2] chosen in classic rank. Derive contradiction. *)
+        destruct Hchosen2 as (bsq & Hincl & Hq & Hacc).
+        assert (∃ rid, is_Some (bsq !! rid)) as (rid & l & Hl).
+        { unshelve epose proof (cquorum_non_empty_q (dom bs) (dom bsq) _) as Hne.
+          { by split; first apply subseteq_dom. }
+          apply set_choose_L in Hne as [rid Hrid].
+          apply elem_of_dom in Hrid.
+          by eauto.
+        }
+        pose proof (lookup_weaken _ _ _ _ Hl Hincl) as Hbsl.
+        apply lookup_fmap_Some in Hbsl as (bm & Hbml & Hbm).
+        specialize (Hacc _ _ Hl). simpl in Hacc.
+        destruct (bm !! ts) as [l' |] eqn:Hbmts; last by subst l.
+        subst l'.
+        iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
+        iNamed "Hrp".
+        iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
+        iDestruct (big_sepL_lookup with "Hsafel") as "Hpsl"; first apply Hacc.
+        simpl.
+        iDestruct (group_prepare_proposal_lookup with "Hpsl Hpsm") as %(ps & Hps & _).
+        by rewrite Hpsm in Hps.
+      }
+      iPureIntro.
+      by eapply chosen_in_fast_agree.
+    }
+    (* Case: Proposals map present at [ts]. Use [vp_vb_impl_stability]. *)
+    iAssert (⌜valid_proposals bs ps⌝)%I as %Hvp.
+    { iIntros (r d Hd).
+      iDestruct (big_sepM_lookup with "Hsafepsm") as "Hsafeps"; first apply Hpsm.
+      iDestruct (big_sepM_lookup with "Hsafeps") as "Hsafep"; first apply Hd.
+      iNamed "Hsafep".
+      set bsq := bs ∩ bsqlb.
+      assert (Hdombsq : dom bsq = dom bsqlb).
+      { subst bsq.
+        rewrite dom_intersection_L intersection_comm_L subseteq_intersection_1_L.
+        { done. }
+        rewrite dom_fmap_L Hdombmm.
+        by destruct Hquorum as [? _].
+      }
+      iAssert (⌜equal_latest_proposal_or_free bsq ps r d⌝)%I as %Heq.
+      { iAssert (⌜map_Forall2 (λ _ lb l, prefix lb l) bsqlb bsq⌝)%I as %Hprefix.
+        { rewrite map_Forall2_forall.
+          iSplit; last done.
+          iIntros (rid lb l Hlb Hl).
+          iDestruct (big_sepM_lookup with "Hlbs") as "Hlb"; first apply Hlb.
+          apply lookup_intersection_Some in Hl as [Hl _].
+          apply lookup_fmap_Some in Hl as (bm & Hl & Hbm).
+          iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
+          iNamed "Hrp".
+          iDestruct (replica_ballot_lookup with "Hlb Hblt") as %(l' & Hl' & Hprefix).
+          rewrite Hl' in Hl. by inv Hl.
+        }
+        assert (Hnz : r ≠ O).
+        { intros Hr. subst r.
+          specialize (Hzunused _ _ Hpsm).
+          by rewrite Hzunused in Hd.
+        }
+        rewrite (equal_latest_proposal_or_free_eq _ _ _ _ _ Hnz Hlen Hprefix).
+        rewrite /equal_latest_proposal_or_free /is_group_prepare_proposal_if_classic.
+        case_decide as Hr; first done.
+        iDestruct (group_prepare_proposal_lookup with "Hlatestc Hpsm")
+          as %(ps' & Hps' & Hlookup).
+        rewrite Hpsm in Hps'.
+        by inv Hps'.
+      }
+      iPureIntro.
+      exists bsq.
+      split; first apply map_intersection_subseteq.
+      split.
+      { rewrite Hdombsq dom_fmap_L Hdombmm.
+        by destruct Hquorum as [_ ?].
+      }
+      { apply Heq. }
+    }
+    iAssert (⌜valid_ballots bs ps⌝)%I as %Hvb.
+    { iIntros (rid l Hl r d Hnz Hd).
+      apply lookup_fmap_Some in Hl as (bm & Hl & Hbm).
+      iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
+      iNamed "Hrp".
+      destruct (bm !! ts) as [l' |] eqn:Hbmts; last by subst l.
+      subst l'.
+      iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
+      iDestruct (big_sepL_lookup with "Hsafel") as "Hsafed"; first apply Hd.
+      simpl.
+      iDestruct (group_prepare_proposal_lookup with "Hsafed Hpsm")
+        as %(ps' & Hps' & Hlookup).
+      rewrite Hpsm in Hps'. by inv Hps'.
+    }
+    iPureIntro.
+    pose proof (vp_vb_impl_stability _ _ Hvp Hvb) as Hstable.
+    by apply Hstable.
+  Qed.
 
   Lemma key_inv_not_committed γ p gid ts pm key kmodc tsprep :
     gid = key_to_group key ->
@@ -396,16 +600,62 @@ Section inv.
         iDestruct "Hst" as "[Hpreped _]".
         by iFrame "Htxnsys Hkeys Hrps ∗ # %".
       }
-      { (* Case: Committed. Use stability to obtain [pm !! ts = true] and
-           extract a witness. Note that another way to prove this case is to
-           deduce preparedness from committedness. Having two ways to prove the
-           same thing might suggest something is redudant? *)
-        admit.
+      { (* Case: Committed. Deduce preparedness from committedness. *)
+        iAssert (is_group_prepared γ gid ts)%I as "#Hpreped".
+        { iDestruct (big_sepM_lookup with "Hsafestm") as "Hsafecmt"; first apply Hstm.
+          iDestruct "Hsafecmt" as (wrs) "Hcmt".
+          do 2 iNamed "Htxnsys".
+          iDestruct (txn_res_lookup with "Hresm Hcmt") as %Hwrs.
+          iDestruct (big_sepM_lookup with "Hvr") as "Hpreped"; first apply Hwrs.
+          iDestruct "Hpreped" as "[Hwrs Hpreped]".
+          iDestruct "Hpwrs" as (wrs') "[Hwrs' %Hpwrs]".
+          iDestruct (txn_wrs_agree with "Hwrs Hwrs'") as %->.
+          iApply (big_sepS_elem_of with "Hpreped").
+          destruct Hpwrs as (_ & _ & Hne & Hwg).
+          by eapply wrs_group_elem_of_ptgroups.
+        }
+        by iFrame "Htxnsys Hkeys Hrps ∗ # %".
       }
-      { (* Case: Aborted. Same as the committed case. Note that this case (i.e.,
-           not prepared but aborted) could indeed happen if another participant
-           group has aborted earlier. *)
-        admit.
+      { (* Case: Aborted. *)
+        destruct (pm !! ts) as [d |] eqn:Hpm; last first.
+        { (* Case: [pm !! ts = None]. Insert [(ts, true)] into [pm]. Note that
+           this case (i.e., not prepared but aborted) could indeed happen if
+           another participant group has aborted earlier. *)
+          iMod (group_prep_insert ts true with "Hpm") as "[Hpm Hpreped]".
+          { apply Hpm. }
+          iFrame "Htxnsys Hkeys Hrps ∗ # %".
+          iModIntro.
+          iSplit.
+          { iApply (big_sepM_insert_2 with "[] Hsafepm").
+            iFrame "Hqv Hqp".
+          }
+          iPureIntro.
+          rewrite dom_insert_L.
+          apply elem_of_dom_2 in Hstm.
+          clear -Hstm Hdompm. set_solver.
+        }
+        (* Case: [pm !! ts = Some d]. *)
+        iAssert (is_group_prepared γ gid ts)%I as "#Hpreped".
+        { destruct d.
+          { (* Case [d = true]. Extract a witness. *)
+            iApply (group_prep_witness with "Hpm").
+            apply Hpm.
+          }
+          (* Case [d = false]. Derive contradiction with stability. *)
+          iDestruct (big_sepM_lookup with "Hsafepm") as "Hqn"; first apply Hpm.
+          iDestruct (replicas_inv_weaken_ballot_map with "Hrps") as (bmm) "[Hrps %Hdombmm]".
+          simpl.
+          iDestruct (group_inv_replica_inv_impl_stability _ _ _ ts with "Hpsm Hrps")
+            as %Hstable.
+          { apply Hdombmm. }
+          iDestruct (quorum_pdec_impl_chosen with "Hqp Hrps") as %Hp.
+          { apply Hdombmm. }
+          iDestruct (quorum_pdec_impl_chosen with "Hqn Hrps") as %Hn.
+          { apply Hdombmm. }
+          exfalso.
+          by specialize (Hstable _ _ Hp Hn).
+        }
+        by iFrame "Htxnsys Hkeys Hrps ∗ # %".
       }
     }
     (* Case: Txn [ts] has not prepared, aborted, or committed. *)
@@ -611,6 +861,6 @@ Section inv.
       rewrite /valid_ts in Hvts.
       lia.
     }
-  Admitted.
+  Qed.
 
 End inv.

@@ -106,4 +106,19 @@ Section lemmas.
       + apply None_Forall2.
   Qed.
 
+  Lemma dom_eq_lookup {A : Type} {m1 m2 : M A} i :
+    dom m1 = dom m2 ->
+    (is_Some (m1 !! i) ∧ is_Some (m2 !! i)) ∨ (m1 !! i = None ∧ m2 !! i = None).
+  Proof.
+    intros Hdom.
+    rewrite set_eq in Hdom.
+    specialize (Hdom i).
+    do 2 rewrite elem_of_dom in Hdom.
+    destruct (decide (is_Some (m1 !! i))) as [? | Hm1]; first naive_solver.
+    destruct (decide (is_Some (m2 !! i))) as [? | Hm2]; first naive_solver.
+    rewrite -eq_None_not_Some in Hm1.
+    rewrite -eq_None_not_Some in Hm2.
+    by right.
+  Qed.
+
 End lemmas.

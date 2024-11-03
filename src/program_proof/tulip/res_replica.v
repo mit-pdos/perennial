@@ -184,7 +184,7 @@ Section res.
     (** Mapping from transaction IDs to booleans indicating whether they are
     prepared on a replica in a group at a certain rank. *)
 
-    Definition own_replica_ballots γ (gid rid : u64) (bs : gmap nat ballot) : iProp Σ.
+    Definition own_replica_ballot_map γ (gid rid : u64) (bs : gmap nat ballot) : iProp Σ.
     Admitted.
 
     Definition is_replica_ballot_lb γ (gid rid : u64) (ts : nat) (blt : ballot) : iProp Σ.
@@ -197,6 +197,38 @@ Section res.
 
     Definition is_replica_pdec_at_rank γ (gid rid : u64) (ts rank : nat) (p : bool) : iProp Σ :=
       ∃ blt, is_replica_ballot_lb γ gid rid ts blt ∧ ⌜blt !! rank = Some (Accept p)⌝.
+
+    Lemma replica_ballot_insert {γ gid rid bs} ts l :
+      bs !! ts = None ->
+      own_replica_ballot_map γ gid rid bs ==∗
+      own_replica_ballot_map γ gid rid (<[ts := l]> bs).
+    Admitted.
+
+    Lemma replica_ballot_update {γ gid rid bs} ts l l' :
+      bs !! ts = Some l ->
+      prefix l l' ->
+      own_replica_ballot_map γ gid rid bs ==∗
+      own_replica_ballot_map γ gid rid (<[ts := l']> bs).
+    Admitted.
+
+    Lemma replica_ballot_witness {γ gid rid bs} ts l :
+      bs !! ts = Some l ->
+      own_replica_ballot_map γ gid rid bs -∗
+      is_replica_ballot_lb γ gid rid ts l.
+    Admitted.
+
+    Lemma replica_ballot_lookup {γ gid rid bs} ts lb :
+      is_replica_ballot_lb γ gid rid ts lb -∗
+      own_replica_ballot_map γ gid rid bs -∗
+      ⌜∃ l, bs !! ts = Some l ∧ prefix lb l⌝.
+    Admitted.
+
+    Lemma replica_ballot_prefix {γ gid rid bs} ts l lb :
+      bs !! ts = Some l ->
+      is_replica_ballot_lb γ gid rid ts lb -∗
+      own_replica_ballot_map γ gid rid bs -∗
+      ⌜prefix lb l⌝.
+    Admitted.
 
   End replica_ballot.
 

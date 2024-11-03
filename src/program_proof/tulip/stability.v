@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.rsm.pure Require Import quorum list fin_sets.
+From Perennial.program_proof.rsm.pure Require Import quorum list fin_sets fin_maps.
 From Perennial.program_proof.tulip Require Import base.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
@@ -47,7 +47,7 @@ Section def.
 
   Definition chosen bs d := ∃ r, chosen_in bs r d.
 
-  Definition consistency bs :=
+  Definition stability bs :=
     ∀ d1 d2, chosen bs d1 -> chosen bs d2 -> d2 = d1.
 
   Definition proposed_after_chosen bs ps :=
@@ -89,7 +89,6 @@ Section def.
     ∃ bsq : gmap A ballot,
       bsq ⊆ bs ∧
       cquorum_size (dom bs) (dom bsq) ∧
-      map_Forall (λ _ l, (r ≤ length l)%nat) bsq ∧
       equal_latest_proposal_or_free bsq ps r d.
 
   Definition valid_proposals bs ps :=
@@ -100,7 +99,7 @@ Section def.
 
 End def.
 
-Section lemma.
+Section stability.
   Context `{Countable A}.
   Implicit Type r : nat.
   Implicit Type d : bool.
@@ -315,7 +314,7 @@ Section lemma.
     (* Strong induction on [r2]. *)
     induction (lt_wf r2) as [r _ IH].
     destruct Hr2 as [d' Hd'].
-    edestruct Hvp as (bsq1 & Hincl1 & Hquorum1 & _ & Heq).
+    edestruct Hvp as (bsq1 & Hincl1 & Hquorum1 & Heq).
     { apply Hd'. }
     rewrite /chosen_in in Hchosen.
     assert (∃ bsq2, bsq2 ⊆ bs ∧
@@ -417,10 +416,10 @@ Section lemma.
     by inv Hps'.
   Qed.
 
-  Lemma vb_pac_impl_consistency bs ps :
+  Lemma vb_pac_impl_stability bs ps :
     valid_ballots bs ps ->
     proposed_after_chosen bs ps ->
-    consistency bs.
+    stability bs.
   Proof.
     intros Hvb Hpac d1 d2 [r1 Hchosen1] [r2 Hchosen2].
     destruct (decide (r1 < r2)%nat) as [Hlt | Hge].
@@ -472,14 +471,155 @@ Section lemma.
     by inv Hacc2.
   Qed.
 
-  Theorem vp_vb_impl_consistency bs ps :
+  Theorem vp_vb_impl_stability bs ps :
     valid_proposals bs ps ->
     valid_ballots bs ps ->
-    consistency bs.
+    stability bs.
   Proof.
     intros Hvp Hvb.
-    eapply vb_pac_impl_consistency; first apply Hvb.
+    eapply vb_pac_impl_stability; first apply Hvb.
     by apply vp_vb_impl_pac.
+  Qed.
+
+End stability.
+
+Section lemma.
+  Context `{Countable A}.
+  Implicit Type r : nat.
+  Implicit Type d : bool.
+  Implicit Type l : ballot.
+  Implicit Type bs bsq : gmap A ballot.
+  Implicit Type ps : proposals.
+
+  (** Lemmas used by users of stability. *)
+
+  Lemma chosen_in_fast_agree bs d1 d2 :
+    chosen_in_fast bs d1 ->
+    chosen_in_fast bs d2 ->
+    d2 = d1.
+  Proof.
+    intros (bsq1 & Hincl1 & Hq1 & Hacc1) (bsq2 & Hincl2 & Hq2 & Hacc2).
+    pose proof (quorums_overlapped (dom bs) (dom bsq1) (dom bsq2))
+      as (rid & Hin1 & Hin2).
+    { right. by split; first apply subseteq_dom. }
+    { right. by split; first apply subseteq_dom. }
+    apply elem_of_dom in Hin1 as [l1 Hl1].
+    apply elem_of_dom in Hin2 as [l2 Hl2].
+    specialize (Hacc1 _ _ Hl1). simpl in Hacc1.
+    specialize (Hacc2 _ _ Hl2). simpl in Hacc2.
+    pose proof (lookup_weaken _ _ _ _ Hl1 Hincl1) as Hbsl1.
+    pose proof (lookup_weaken _ _ _ _ Hl2 Hincl2) as Hbsl2.
+    rewrite Hbsl2 in Hbsl1. inv Hbsl1.
+    rewrite /accepted_in Hacc2 in Hacc1.
+    by inv Hacc1.
+  Qed.
+
+  Lemma latest_before_append_eq (n : nat) (l t : ballot) :
+    (n ≤ length l)%nat ->
+    latest_before n (l ++ t) = latest_before n l.
+  Proof.
+    intros Hlen.
+    induction n as [| n' IHn']; first done.
+    simpl.
+    rewrite -IHn'; last by lia.
+    rewrite lookup_app_l; [done | lia].
+  Qed.
+
+  Lemma latest_before_quorum_eq bs bslb n :
+    map_Forall (λ _ l, (n ≤ length l)%nat) bslb ->
+    map_Forall2 (λ _ lb l, prefix lb l) bslb bs ->
+    latest_before_quorum n bs = latest_before_quorum n bslb.
+  Proof.
+    intros Hlen Hprefix.
+    apply map_Forall2_forall in Hprefix as [Hprefix Hdom].
+    unfold latest_before_quorum.
+    replace (latest_before n <$> bs) with (latest_before n <$> bslb); first done.
+    rewrite map_eq_iff.
+    intros x.
+    rewrite 2!lookup_fmap.
+    (* Why does the following fail? *)
+    (* destruct (dom_eq_lookup x Hdom) as [[[l Hl] [lb Hlb]] | [-> ->]]. *)
+    destruct (dom_eq_lookup x Hdom) as [[[lb Hlb] [l Hl]] | [Hbslb Hbsl]]; last first.
+    { by rewrite Hbslb Hbsl. }
+    rewrite Hlb Hl.
+    simpl.
+    f_equal.
+    specialize (Hlen _ _ Hlb). simpl in Hlen.
+    specialize (Hprefix _ _ _  Hlb Hl).
+    destruct Hprefix as [tail ->].
+    symmetry.
+    by apply latest_before_append_eq.
+  Qed.
+
+  Lemma nfast_eq bs bslb d :
+    map_Forall (λ _ l, (length l ≠ O)%nat) bslb ->
+    map_Forall2 (λ _ lb l, prefix lb l) bslb bs ->
+    nfast bs d = nfast bslb d.
+  Proof.
+    intros Hlen.
+    generalize dependent bs.
+    induction bslb as [| x lb bslb Hnone IH] using map_ind.
+    { intros bs Hprefix.
+      apply map_Forall2_dom_L in Hprefix.
+      rewrite dom_empty_L in Hprefix. symmetry in Hprefix.
+      apply dom_empty_inv_L in Hprefix.
+      by subst bs.
+    }
+    intros bs Hprefix.
+    apply map_Forall2_dom_L in Hprefix as Hdom.
+    assert (is_Some (bs !! x)) as [l Hl].
+    { rewrite -elem_of_dom -Hdom dom_insert_L. set_solver. }
+    rewrite /nfast -(insert_delete bs x l Hl).
+    apply map_Forall2_insert_inv_l in Hprefix; last apply Hnone.
+    destruct Hprefix as (l' & bsnx & -> & Hbsn & Hprefixlb & Hprefix).
+    rewrite lookup_insert in Hl. inv Hl.
+    apply map_Forall_insert in Hlen as [Hlenlb Hlen]; last apply Hnone.
+    rewrite 2!map_filter_insert.
+    case_decide as Hcasel.
+    { case_decide as Hcaselb.
+      { rewrite map_size_insert_None; last first.
+        { rewrite map_lookup_filter_None. left. apply lookup_delete. }
+        rewrite map_size_insert_None; last first.
+        { rewrite map_lookup_filter_None. left. apply Hnone. }
+        f_equal.
+        apply IH; [apply Hlen | by rewrite delete_insert].
+      }
+      exfalso.
+      unshelve epose proof (prefix_lookup_lt lb l O _ Hprefixlb) as Hlookup.
+      { clear -Hlenlb. lia. }
+      by rewrite /accepted_in Hlookup Hcasel in Hcaselb.
+    }
+    { case_decide as Hcaselb; last first.
+      { rewrite delete_idemp delete_insert; last apply Hbsn.
+        rewrite delete_notin; last apply Hnone.
+        by apply IH.
+      }
+      exfalso.
+      pose proof (prefix_lookup_Some _ _ _ _ Hcaselb Hprefixlb) as Hlookup.
+      by rewrite /accepted_in Hlookup in Hcasel.
+    }
+  Qed.
+
+  Lemma equal_latest_proposal_or_free_eq bs bslb ps n d :
+    n ≠ O ->
+    map_Forall (λ _ l, (n ≤ length l)%nat) bslb ->
+    map_Forall2 (λ _ lb l, prefix lb l) bslb bs ->
+    equal_latest_proposal_or_free bs ps n d =
+    equal_latest_proposal_or_free bslb ps n d.
+  Proof.
+    intros Hnz Hlen Hprefix.
+    rewrite /equal_latest_proposal_or_free.
+    rewrite (latest_before_quorum_eq _ bslb); last first.
+    { apply Hprefix. }
+    { apply Hlen. }
+    case_decide as Hn; last done.
+    rewrite (nfast_eq _ bslb); last first.
+    { apply Hprefix. }
+    { intros x l Hl. specialize (Hlen _ _ Hl). simpl in Hlen.
+      clear -Hlen Hnz. lia.
+    }
+    apply map_Forall2_dom_L in Hprefix.
+    by rewrite -(size_dom bs) -(size_dom bslb) Hprefix.
   Qed.
 
 End lemma.

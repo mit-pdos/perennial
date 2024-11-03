@@ -5,4 +5,4 @@ From Perennial.program_proof.rsm.pure Require Export
   dual_lookup extend fin_maps largest_before list misc nat nonexpanding_merge sets vslice word
   quorum.
 From Perennial.program_proof.tulip Require Export
-  action base cmd res inv.
+  action base cmd res inv stability.

@@ -47,7 +47,58 @@ Section res.
       ⌜pm !! ts = Some p⌝.
     Admitted.
 
+    Lemma group_prep_witness γ gid pm ts p :
+      pm !! ts = Some p ->
+      own_group_prepm γ gid pm -∗
+      is_group_prep γ gid ts p.
+    Admitted.
+
   End group_prep.
+
+  Section group_prepare_proposal.
+
+    (** Mapping from transaction IDs to proposals (i.e., pairs of rank and bool). *)
+
+    Definition own_group_prepare_proposals_map
+      γ (gid : u64) (psm : gmap nat (gmap nat bool)) : iProp Σ.
+    Admitted.
+
+    Definition is_group_prepare_proposal γ (gid : u64) (ts : nat) (rk : nat) (p : bool) : iProp Σ.
+    Admitted.
+
+    #[global]
+    Instance is_group_prepare_proposal_persistent γ gid ts rk p :
+      Persistent (is_group_prepare_proposal γ gid ts rk p).
+    Admitted.
+
+    Lemma group_prepare_proposal_init γ gid psm ts ps :
+      psm !! ts = None ->
+      own_group_prepare_proposals_map γ gid psm ==∗
+      own_group_prepare_proposals_map γ gid (<[ts := ps]> psm).
+    Admitted.
+
+    Lemma group_prepare_proposal_insert γ gid psm ts ps rk p :
+      let ps' := <[rk := p]> ps in
+      psm !! ts = Some ps ->
+      ps !! rk = None ->
+      own_group_prepare_proposals_map γ gid psm ==∗
+      own_group_prepare_proposals_map γ gid (<[ts := ps']> psm).
+    Admitted.
+
+    Lemma group_prepare_proposal_witness γ gid psm ts ps rk p :
+      psm !! ts = Some ps ->
+      ps !! rk = Some p ->
+      own_group_prepare_proposals_map γ gid psm -∗
+      is_group_prepare_proposal γ gid ts rk p.
+    Admitted.
+
+    Lemma group_prepare_proposal_lookup γ gid psm ts rk p :
+      is_group_prepare_proposal γ gid ts rk p -∗
+      own_group_prepare_proposals_map γ gid psm -∗
+      ∃ ps, ⌜psm !! ts = Some ps ∧ ps !! rk = Some p⌝.
+    Admitted.
+
+  End group_prepare_proposal.
 
   Section group_commit.
 
