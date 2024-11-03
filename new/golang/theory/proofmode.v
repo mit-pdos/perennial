@@ -460,13 +460,13 @@ Ltac2 wp_call () :=
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
 Tactic Notation "wp_call_lc" constr(H) := ltac2:(Control.enter wp_call); iIntros H; wp_pures.
 
-Ltac2 wp_bind_filter (filter_tac : constr -> unit) : unit :=
+Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
-      orelse (fun () => filter_tac e) (* if the top-level matches, don't walk down the expr at all. *)
+      orelse (fun () => filter_tac e; e) (* if the top-level matches, don't walk down the expr at all. *)
         (fun _ => walk_expr e (fun e' k => filter_tac e';
                                      eapply (tac_wp_bind $k $e') >
-                                       [simpl; reflexivity|ltac1:(reduction.pm_prettify)]))
+                                       [simpl; reflexivity|ltac1:(reduction.pm_prettify)]; e'))
   end.
 
 Tactic Notation "wp_bind" open_constr(e) :=
@@ -474,13 +474,13 @@ Tactic Notation "wp_bind" open_constr(e) :=
                     let e := Ltac1.to_constr e in
                     let e := Option.get e in
                     orelse
-                      (fun () => wp_bind_filter (Std.unify e))
+                      (fun () => let _ := wp_bind_filter (Std.unify e) in ())
                       (fun _ => Control.backtrack_tactic_failure "wp_bind: could not find pattern")
                  ) in
   f e.
 
-Ltac2 wp_bind_apply () :=
-  orelse (fun () => wp_bind_filter
+Ltac2 wp_bind_apply () : unit :=
+  orelse (fun () => let _ := wp_bind_filter
             (fun e => let rec f e :=
                      lazy_match! e with
                      | App (Val _) (Val _) => ()
@@ -488,7 +488,7 @@ Ltac2 wp_bind_apply () :=
                      | _ => fail
                      end
                    in f e
-    ))
+    ) in ())
     (fun _ => Control.backtrack_tactic_failure "wp_bind_apply: could not match a function call with fully evaluated arguments")
 .
 

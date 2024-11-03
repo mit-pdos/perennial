@@ -2,6 +2,7 @@ From Perennial.goose_lang Require Import lifting.
 From New.golang.defn Require Export struct.
 From New.golang.theory Require Import mem exception list typing.
 From Perennial.Helpers Require Import NamedProps.
+From RecordUpdate Require Export RecordUpdate.
 
 Module struct.
 Section goose_lang.
@@ -128,6 +129,32 @@ Proof.
   - (* combine struct fields *)
     admit.
 Admitted.
+
+Theorem struct_fields_acc_update f t V Vf
+  l dq d {Ht : t = structT d} {dwf : struct.Wf d} (v : V)
+  `{IntoValStructField f t V Vf field_proj} `{!SetterWf field_proj} :
+  typed_pointsto l dq v -∗
+  l ↦s[t :: f]{dq} (field_proj v) ∗
+  (∀ fv', l ↦s[t :: f]{dq} fv' -∗
+          typed_pointsto l dq (set field_proj (λ _, fv') v)).
+Proof.
+Admitted.
+
+Theorem struct_fields_acc f t V Vf
+  l dq d {Ht : t = structT d} {dwf : struct.Wf d} (v : V)
+  `{IntoValStructField f t V Vf field_proj} `{!SetterWf field_proj} :
+  typed_pointsto l dq v -∗
+  l ↦s[t :: f]{dq} (field_proj v) ∗
+  (l ↦s[t :: f]{dq} (field_proj v) -∗ typed_pointsto l dq v).
+Proof.
+  iIntros "Hl".
+  iDestruct (struct_fields_acc_update with "[$]") as "[$ H]".
+  { done. }
+  iIntros "* Hl".
+  iSpecialize ("H" with "[$]").
+  erewrite set_eq.
+  2:{ done. } iFrame.
+Qed.
 
 End lemmas.
 
