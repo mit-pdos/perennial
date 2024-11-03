@@ -73,11 +73,10 @@ Tactic Notation "wp_load" :=
   end. *)
 
 Class PointsToAccess {V Vsmall}
+  {t tsmall} `{!IntoVal V} `{!IntoVal Vsmall} `{!IntoValTyped V t} `{!IntoValTyped Vsmall tsmall}
   (l' l : loc) (v : V) (vsmall : Vsmall) (update : Vsmall → V → V) : Prop :=
   {
-    points_to_acc
-      {t tsmall} `{!IntoVal V} `{!IntoVal Vsmall} `{!IntoValTyped V t} `{!IntoValTyped Vsmall tsmall}
-    : ∀ dq, l' ↦{dq} v -∗ l ↦{dq} vsmall ∗
+    points_to_acc : ∀ dq, l' ↦{dq} v -∗ l ↦{dq} vsmall ∗
                         (∀ vsmall', l ↦{dq} vsmall' -∗ l' ↦{dq} (update vsmall' v));
     points_to_update_eq : update vsmall v = v
   }.
@@ -195,7 +194,24 @@ Proof.
     wp_pures.
     wp_bind (load_ty _ _).
     ltac2:(eapply (tac_wp_load_ty) > [| |]).
-    + apply points_to_access_struct_field_ref.
+    {
+      (* FIXME: unification fails here because tsmall has been filled in, whereas the
+         instance  has the non-trivial expression
+          [(match t with
+                     | structT fs => default boolT (assocl_lookup f fs)
+                     | _ => boolT
+                     end)]
+         for tsmall.
+         Maybe
+       *)
+      epose proof (points_to_access_struct_field_ref _ "To" _ _ _).
+      done.
+    }
+    { iAssumptionCore. }
+    ltac2:(wp_load ()).
+    wp_pures.
+    ltac2:(wp_load ()).
+
 
     ltac2:(wp_load ()).
     iDestruct (struct_fields_acc_update "To" with "Hm") as "[Hf Hm]".
