@@ -10,15 +10,36 @@ Context `{!heapGS Σ}.
 Instance wp_int_gt (l r : w64) : PureWp True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
 Proof. Admitted.
 
+(* TODO: automatically generate these instances? *)
+Instance countable_connem : Countable connem.t.
+Admitted.
+
+(*
+Lemma test :
+  ∀ nw_ptr nw, True -∗
+        nw_ptr ↦ nw ∗
+        nw.(network.ignorem) ↦$ (∅ : gmap w32 bool)
+. *)
+
 Lemma wp_newNetworkWithConfigInit (peers : list interface.t) peers_sl :
   {{{
         peers_sl ↦* peers
   }}}
     newNetworkWithConfigInit #func.nil #peers_sl
   {{{
-        nw_ptr (nw : network.t), RET #nw_ptr; nw_ptr ↦ nw
-  }}}
-.
+        (peersMap : gmap w64 interface.t) nw_ptr (nw : network.t), RET #nw_ptr;
+        nw_ptr ↦ nw ∗
+        nw.(network.peers) ↦$□ peersMap ∗
+        nw.(network.dropm64) ↦$ (∅ : gmap connem.t w64) ∗
+        nw.(network.ignorem) ↦$ (∅ : gmap w32 bool) ∗
+        ⌜ ∀ (i : nat) peer, peers !! i = Some peer →
+           if decide (peer = interface.nil) then
+             ∃ raftPeer mset, peersMap !! (W64 i) = Some (interface.mk raftPeer mset)
+           else
+             peersMap !! (W64 i) = Some peer ⌝
+        (* FIXME: Coq takes essentially forever if either the `i : nat`
+           annotation is removed or if the explicit `W64 i` is removed. *)
+  }}}.
 Proof.
 Admitted.
 
@@ -32,10 +53,102 @@ Lemma wp_entsWithConfig terms_sl (terms : list u64) :
 Proof.
 Admitted.
 
+Global Instance message_settable : Settable _ :=
+  settable! Message.mk < Message.Type'; Message.To; Message.From; Message.Term;
+Message.LogTerm; Message.Index; Message.Entries; Message.Commit;
+Message.Vote; Message.Snapshot; Message.Reject; Message.RejectHint; Message.Context; Message.Responses >.
+
+(*
+Tactic Notation "wp_load" :=
+  let solve_pointsto _ :=
+    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
+    iAssumptionCore || fail "wp_load: cannot find" l "↦ ?" in
+  lazymatch goal with
+  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
+    (first
+        [wp_bind (load_ty _ (Val _)); eapply tac_wp_load_ty
+        |fail 1 "wp_load: cannot find 'load_ty' in" e];
+      [solve_pointsto () |] )
+  | _ => fail "wp_load: not a 'wp'"
+  end. *)
+
+Class PointsToAccess {V Vsmall}
+  (l' l : loc) (v : V) (vsmall : Vsmall) (update : Vsmall → V → V) : Prop :=
+  {
+    points_to_acc
+      {t tsmall} `{!IntoVal V} `{!IntoVal Vsmall} `{!IntoValTyped V t} `{!IntoValTyped Vsmall tsmall}
+    : ∀ dq, l' ↦{dq} v -∗ l ↦{dq} vsmall ∗
+                        (∀ vsmall', l ↦{dq} vsmall' -∗ l' ↦{dq} (update vsmall' v));
+    points_to_update_eq : update vsmall v = v
+  }.
+
+(* XXX: what about getting rid of the [t] parameter and using [structT d] in its place? *)
+Instance points_to_access_struct_field_ref {V Vf} l f d v (proj : V → Vf) {t : go_type}
+  `{!IntoVal V} `{!IntoValTyped V t}
+  `{!IntoVal Vf} `{!IntoValTyped Vf (match t with
+                     | structT fs => default boolT (assocl_lookup f fs)
+                     | _ => boolT
+                     end)}
+  `{!IntoValStructField f t proj} `{!SetterWf proj}
+  {Heq : TCEq t (structT d)} `{!struct.Wf d}
+  : PointsToAccess l (struct.field_ref_f t f l) v (proj v) (λ vf', set proj (λ _, vf')).
+Proof.
+  apply TCEq_eq in Heq as ->. constructor.
+  - intros. by iApply struct_fields_acc_update.
+  - by rewrite RecordSet.set_eq.
+Qed.
+
+Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t}
+  : PointsToAccess l l v v (λ v' _, v').
+Proof. constructor; [eauto with iFrame|done]. Qed.
+
+Import environments.
+
+Lemma tac_wp_load_ty {V t Vsmall tsmall}
+  `{!IntoVal V} `{!IntoValTyped V t} `{!IntoVal Vsmall} `{!IntoValTyped Vsmall tsmall}
+  (l' l : loc) (v : V) (vsmall : Vsmall) update Δ s E i dq Φ is_pers
+  `{!PointsToAccess l' l v vsmall update} :
+  envs_lookup i Δ = Some (is_pers, typed_pointsto l' dq v)%I →
+  envs_entails Δ (Φ #vsmall) →
+  envs_entails Δ (WP (load_ty tsmall #l) @ s; E {{ Φ }}).
+Proof using Type*.
+  rewrite envs_entails_unseal => ? HΦ.
+  rewrite envs_lookup_split //.
+  iIntros "[H Henv]".
+  destruct is_pers; simpl.
+  - iDestruct "H" as "#H".
+    iDestruct (points_to_acc with "H") as "[H' _]".
+    wp_load.
+    iApply HΦ. iApply "Henv". iFrame "#".
+  - iDestruct (points_to_acc with "H") as "[H Hclose]".
+    wp_load.
+    iApply HΦ. iApply "Henv".
+    iSpecialize ("Hclose" with "[$]").
+    rewrite points_to_update_eq. iFrame.
+Qed.
+
+Import Ltac2.
+Set Default Proof Mode "Classic".
+Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
+Ltac2 wp_load () :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (wp _ _ _ _) ] =>
+      let _ := (orelse
+        (fun () =>
+           let e := wp_bind_filter (Std.unify '(load_ty _ (Val _))) in
+           match! e with (App (Val (load_ty _)) (Val #?l)) => l end
+        )
+        (fun _ => Control.backtrack_tactic_failure "wp_load: could not bind to load instruction")
+      ) in
+      (* XXX: we want to backtrack to typeclass search if [iAssumptionCore] failed. *)
+      eapply (tac_wp_load_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore) |]
+  end.
+
 Lemma wp_network__send nw msgs_sl dq (n : network.t) (msgs : list Message.t) :
   {{{
         "Hmsg" ∷ msgs_sl ↦*{dq} msgs ∗
-        "Hnw" ∷ nw ↦ n
+        "Hnw" ∷ nw ↦ n ∗
+        "Hn_peers" ∷ ∃ (peersMap : gmap w64 interface.t), n.(network.peers) ↦$□ peersMap
   }}}
     network__send #nw #msgs_sl
   {{{ RET #(); True }}}
@@ -48,9 +161,11 @@ Proof.
   wp_pures.
   wp_alloc msgs_ptr as "?".
   wp_pures.
+  Print env.
+  Print envs.
   wp_for.
   wp_pures.
-  wp_load.
+  ltac2:(wp_load ()).
   wp_pures.
   case_bool_decide as Hlt.
   - rewrite decide_True //. (* Case: more messages to send *)
@@ -63,14 +178,14 @@ Proof.
     { exfalso. simpl in *. rewrite !word.signed_eq_swrap_unsigned /word.swrap in Hlt. word. }
     iDestruct (own_slice_elem_acc 0 with "Hmsg") as "[Helem Hmsg]".
     { done. }
-    wp_load.
+    ltac2:(wp_load ()).
     wp_pure.
     {
       (* FIXME(word): handle sint.Z *)
       rewrite !word.signed_eq_swrap_unsigned /word.swrap in Hlt.
       word.
     }
-    wp_load.
+    ltac2:(wp_load ()).
     wp_pures.
     iDestruct ("Hmsg" with "[$]") as "Hmsg".
     rewrite list_insert_id; last done.
@@ -78,28 +193,55 @@ Proof.
     wp_pures.
     wp_alloc p as "?".
     wp_pures.
+    wp_bind (load_ty _ _).
+    ltac2:(eapply (tac_wp_load_ty) > [| |]).
+    + apply points_to_access_struct_field_ref.
 
-    iDestruct (struct_fields_split with "Hm") as "Hm".
+    ltac2:(wp_load ()).
+    iDestruct (struct_fields_acc_update "To" with "Hm") as "[Hf Hm]".
     { done. }
     { apply _. }
-    rewrite /struct_fields /=.
-    repeat (iDestruct "Hm" as "[H1 Hm]";
-            unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
-            iNamed "H1").
     wp_load.
-    wp_load.
-    wp_pures.
+    iSpecialize ("Hm" with "[$]").
+    rewrite ?RecordSet.set_eq //.
+
+    wp_bind (load_ty _ (Val _)).
+    iRename select (nw_ptr ↦ nw)%I into "H1".
+    Time wp_apply (wp_typed_load with "H1").
+    Time wp_load.
     wp_pures.
 
-    iDestruct (struct_fields_split with "Hnw") as "Hnw".
+    iDestruct (struct_fields_acc_update "peers" with "Hnw") as "[Hf Hnw]".
     { done. }
     { apply _. }
-    rewrite /struct_fields /=.
-    repeat (iDestruct "Hnw" as "[H1 Hnw]";
-            unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
-            iNamed "H1").
     wp_load.
-    admit. (* FIXME: need own_map *)
+    iSpecialize ("Hnw" with "[$]").
+
+    rewrite ?RecordSet.set_eq //.
+    (* FIXME: persistent instance for ↦$□ *)
+    iDestruct "Hn_peers" as (?) "Hn_peers".
+    wp_apply (wp_map_get with "[$]").
+    iIntros "_".
+    wp_pures.
+    wp_store.
+    wp_pures.
+    wp_load.
+    wp_pures.
+
+    iDestruct (struct_fields_acc_update "t" with "Hnw") as "[Hf Hnw]".
+    { done. }
+    { apply _. }
+    Time wp_load.
+    iSpecialize ("Hnw" with "[$]").
+    wp_pures.
+    (* XXX: should be an "irrelevant" if statement. *)
+    case_bool_decide.
+    + (* no testing object, so no logging. *)
+      wp_pures.
+      (* FIXME: combine back the Message points-to, or avoid splitting it up in the first place. *)
+      wp_load.
+      admit.
+    + admit.
   - rewrite decide_False; last naive_solver.
     rewrite decide_True; last naive_solver.
     wp_pures. by iApply "HΦ".
@@ -135,6 +277,10 @@ Proof.
   wp_alloc candState as "HcandState".
   wp_steps.
   wp_alloc candTerm as "HcandTerm".
+  wp_pures.
+  wp_store.
+  wp_pures.
+
   wp_steps.
 
   wp_alloc nopStepper as "HnopStepper".
