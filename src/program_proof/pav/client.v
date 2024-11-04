@@ -80,11 +80,13 @@ Section specs.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
-  ∃ dig sm_γ comm,
+  ∃ dig sm_γ comm label0 label1,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep, comm)) ∗
   "#Hcomm" ∷ is_comm pk comm ∗
-  "#Hbound" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None.
+  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep, comm)) ∗
+  "#His_label0" ∷ is_vrf uid ver label0 ∗
+  "#Hbound" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None ∗
+  "#His_label1" ∷ is_vrf uid (word.add (W64 1) ver) label1.
 
 Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
   {{{
@@ -110,9 +112,10 @@ Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
 Proof. Admitted.
 
 Definition is_my_bound cli_γ uid ver (ep : w64) : iProp Σ :=
-  ∃ dig sm_γ,
+  ∃ dig sm_γ label,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hbound" ∷ (uid, ver) ↪[sm_γ]□ None.
+  "#Hbound" ∷ (uid, ver) ↪[sm_γ]□ None ∗
+  "#His_label" ∷ is_vrf uid ver label.
 
 Lemma wp_Client__SelfMon ptr_c c :
   {{{
@@ -134,18 +137,25 @@ Lemma wp_Client__SelfMon ptr_c c :
 Proof. Admitted.
 
 Definition is_no_other_key cli_γ uid (ep : epoch_ty) : iProp Σ :=
-  ∃ dig sm_γ,
+  ∃ dig sm_γ label,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hbound" ∷ (uid, W64 0) ↪[sm_γ]□ None.
+  "#Hbound" ∷ (uid, W64 0) ↪[sm_γ]□ None ∗
+  "#His_label" ∷ is_vrf uid (W64 0) label.
 
 Definition is_other_key cli_γ uid (ep : epoch_ty) pk : iProp Σ :=
-  ∃ (ver : w64) dig sm_γ (ep0 : w64) comm0,
+  ∃ (ver : w64) dig sm_γ (ep0 : w64) comm0 label0 label1,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hhist" ∷ ∀ (ver' : w64), ⌜ uint.Z ver' < uint.Z ver ⌝ -∗
-    ∃ ep1 comm1, (uid, ver') ↪[sm_γ]□ (Some (ep1, comm1)) ∗
-  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep0, comm0)) ∗
+  "#Hhist" ∷
+    (∀ (ver' : w64),
+    "%Hlt_ver" ∷ ⌜ uint.Z ver' < uint.Z ver ⌝ -∗
+    (∃ ep1 comm1 label,
+    "#Hin_map" ∷ (uid, ver') ↪[sm_γ]□ (Some (ep1, comm1)) ∗
+    "#His_label" ∷ is_vrf uid ver' label)) ∗
   "#Hcomm" ∷ is_comm pk comm0 ∗
-  "#Hbound" ∷ (uid, (word.add ver (W64 1))) ↪[sm_γ]□ None.
+  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep0, comm0)) ∗
+  "#His_label0" ∷ is_vrf uid ver label0 ∗
+  "#Hbound" ∷ (uid, (word.add ver (W64 1))) ↪[sm_γ]□ None ∗
+  "#His_label1" ∷ is_vrf uid (word.add ver (W64 1)) label1.
 
 Lemma wp_Client__Get ptr_c c uid :
   {{{
@@ -177,15 +187,13 @@ Definition is_audit (cli_γ adtr_γ : gname) (bound : w64) : iProp Σ :=
   "#Hadtr_maps" ∷ mono_list_lb_own adtr_γ ms ∗
   "%Hlen_maps" ∷ ⌜ length ms = uint.nat bound ⌝ ∗
   "%Hinv_adtr" ∷ ⌜ adtr_inv ms ⌝ ∗
-  "#Hincl_transf" ∷ (□ ∀ (ep : w64) m uid ver val,
-    (∃ dig sm_γ,
-    "%Hlook_map" ∷ ⌜ ms !! uint.nat ep = Some m ⌝ ∗
+  "#Hmap_transf" ∷ (□ ∀ (ep : w64) m uid ver val dig sm_γ label,
+    ("%Hlook_map" ∷ ⌜ ms !! uint.nat ep = Some m ⌝ ∗
     "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-    "#Hin_cli" ∷ (uid, ver) ↪[sm_γ]□ val) -∗
-
-    (∃ label,
-    "#His_label" ∷ is_vrf uid ver label ∗
-    "%Hin_adtr" ∷ ⌜ m !! label = val ⌝)).
+    "#Hin_cli" ∷ (uid, ver) ↪[sm_γ]□ val ∗
+    "#His_label" ∷ is_vrf uid ver label)
+    -∗
+    "%Hin_adtr" ∷ ⌜ m !! label = val ⌝).
 
 Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk :
   {{{

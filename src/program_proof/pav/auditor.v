@@ -3,6 +3,9 @@ From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.program_proof.pav Require Import core cryptoffi merkle serde server.
 
+Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
+  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
+
 Module comm_st.
 Record t :=
   mk {

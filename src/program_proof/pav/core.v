@@ -41,8 +41,7 @@ Definition is_comm (pk : pk_ty) (comm : comm_ty) : iProp Σ. Admitted.
 Global Instance is_comm_persis pk comm :
   Persistent (is_comm pk comm).
 Proof. Admitted.
-Global Instance is_comm_func : Func is_comm.
-Proof. Admitted.
+(* Func doesn't hold. there's mult comms for a single pk. *)
 Global Instance is_comm_inj : InjRel is_comm.
 Proof. Admitted.
 
@@ -224,10 +223,7 @@ End hist_msv.
 
 Section proper_adtr_inv.
 
-Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
-  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
-
-Definition maps_mono (ms : list merkle_map_ty) :=
+Definition maps_mono (ms : list adtr_map_ty) :=
   ∀ (i j : nat) mi mj,
   ms !! i = Some mi →
   ms !! j = Some mj →
@@ -240,6 +236,6 @@ Definition maps_epoch_ok (ms : list adtr_map_ty) :=
   m_ep !! k = Some (ep', comm) →
   uint.nat ep' ≤ ep.
 
-Definition adtr_inv ms := maps_mono (lower_adtr <$> ms) ∧ maps_epoch_ok ms.
+Definition adtr_inv ms := maps_mono ms ∧ maps_epoch_ok ms.
 
 End proper_adtr_inv.
