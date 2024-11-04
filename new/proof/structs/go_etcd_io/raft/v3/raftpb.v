@@ -16,6 +16,9 @@ Record t := mk {
 End def.
 End Entry.
 
+
+Global Instance settable_Entry `{ffi_syntax}: Settable _ :=
+  settable! Entry.mk < Entry.Term; Entry.Index; Entry.Type'; Entry.Data >.
 Global Instance into_val_Entry `{ffi_syntax} : IntoVal Entry.t.
 Admitted.
 
@@ -63,6 +66,9 @@ Record t := mk {
 End def.
 End ConfState.
 
+
+Global Instance settable_ConfState `{ffi_syntax}: Settable _ :=
+  settable! ConfState.mk < ConfState.Voters; ConfState.Learners; ConfState.VotersOutgoing; ConfState.LearnersNext; ConfState.AutoLeave >.
 Global Instance into_val_ConfState `{ffi_syntax} : IntoVal ConfState.t.
 Admitted.
 
@@ -112,6 +118,9 @@ Record t := mk {
 End def.
 End SnapshotMetadata.
 
+
+Global Instance settable_SnapshotMetadata `{ffi_syntax}: Settable _ :=
+  settable! SnapshotMetadata.mk < SnapshotMetadata.ConfState; SnapshotMetadata.Index; SnapshotMetadata.Term >.
 Global Instance into_val_SnapshotMetadata `{ffi_syntax} : IntoVal SnapshotMetadata.t.
 Admitted.
 
@@ -152,6 +161,9 @@ Record t := mk {
 End def.
 End Snapshot.
 
+
+Global Instance settable_Snapshot `{ffi_syntax}: Settable _ :=
+  settable! Snapshot.mk < Snapshot.Data; Snapshot.Metadata >.
 Global Instance into_val_Snapshot `{ffi_syntax} : IntoVal Snapshot.t.
 Admitted.
 
@@ -200,6 +212,9 @@ Record t := mk {
 End def.
 End Message.
 
+
+Global Instance settable_Message `{ffi_syntax}: Settable _ :=
+  settable! Message.mk < Message.Type'; Message.To; Message.From; Message.Term; Message.LogTerm; Message.Index; Message.Entries; Message.Commit; Message.Vote; Message.Snapshot; Message.Reject; Message.RejectHint; Message.Context; Message.Responses >.
 Global Instance into_val_Message `{ffi_syntax} : IntoVal Message.t.
 Admitted.
 
@@ -285,6 +300,9 @@ Record t := mk {
 End def.
 End HardState.
 
+
+Global Instance settable_HardState `{ffi_syntax}: Settable _ :=
+  settable! HardState.mk < HardState.Term; HardState.Vote; HardState.Commit >.
 Global Instance into_val_HardState `{ffi_syntax} : IntoVal HardState.t.
 Admitted.
 
@@ -327,6 +345,9 @@ Record t := mk {
 End def.
 End ConfChange.
 
+
+Global Instance settable_ConfChange `{ffi_syntax}: Settable _ :=
+  settable! ConfChange.mk < ConfChange.Type'; ConfChange.NodeID; ConfChange.Context; ConfChange.ID >.
 Global Instance into_val_ConfChange `{ffi_syntax} : IntoVal ConfChange.t.
 Admitted.
 
@@ -371,6 +392,9 @@ Record t := mk {
 End def.
 End ConfChangeSingle.
 
+
+Global Instance settable_ConfChangeSingle `{ffi_syntax}: Settable _ :=
+  settable! ConfChangeSingle.mk < ConfChangeSingle.Type'; ConfChangeSingle.NodeID >.
 Global Instance into_val_ConfChangeSingle `{ffi_syntax} : IntoVal ConfChangeSingle.t.
 Admitted.
 
@@ -408,6 +432,9 @@ Record t := mk {
 End def.
 End ConfChangeV2.
 
+
+Global Instance settable_ConfChangeV2 `{ffi_syntax}: Settable _ :=
+  settable! ConfChangeV2.mk < ConfChangeV2.Transition; ConfChangeV2.Changes; ConfChangeV2.Context >.
 Global Instance into_val_ConfChangeV2 `{ffi_syntax} : IntoVal ConfChangeV2.t.
 Admitted.
 

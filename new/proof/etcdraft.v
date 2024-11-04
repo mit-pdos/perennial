@@ -53,11 +53,6 @@ Lemma wp_entsWithConfig terms_sl (terms : list u64) :
 Proof.
 Admitted.
 
-Global Instance message_settable : Settable _ :=
-  settable! Message.mk < Message.Type'; Message.To; Message.From; Message.Term;
-Message.LogTerm; Message.Index; Message.Entries; Message.Commit;
-Message.Vote; Message.Snapshot; Message.Reject; Message.RejectHint; Message.Context; Message.Responses >.
-
 (*
 Tactic Notation "wp_load" :=
   let solve_pointsto _ :=
@@ -80,26 +75,6 @@ Class PointsToAccess {V Vsmall}
                         (∀ vsmall', l ↦{dq} vsmall' -∗ l' ↦{dq} (update vsmall' v));
     points_to_update_eq : update vsmall v = v
   }.
-
-(* XXX: what about getting rid of the [t] parameter and using [structT d] in its place? *)
-Instance points_to_access_struct_field_ref {V Vf} l f d v (proj : V → Vf) {t : go_type}
-  `{!IntoVal V} `{!IntoValTyped V t}
-  `{!IntoVal Vf} `{!IntoValTyped Vf (match t with
-                     | structT fs => default boolT (assocl_lookup f fs)
-                     | _ => boolT
-                     end)}
-  `{!IntoValStructField f t proj} `{!SetterWf proj}
-  {Heq : TCEq t (structT d)} `{!struct.Wf d}
-  : PointsToAccess l (struct.field_ref_f t f l) v (proj v) (λ vf', set proj (λ _, vf')).
-Proof.
-  apply TCEq_eq in Heq as ->. constructor.
-  - intros. by iApply struct_fields_acc_update.
-  - by rewrite RecordSet.set_eq.
-Qed.
-
-Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t}
-  : PointsToAccess l l v v (λ v' _, v').
-Proof. constructor; [eauto with iFrame|done]. Qed.
 
 Import environments.
 
@@ -126,6 +101,23 @@ Proof using Type*.
     rewrite points_to_update_eq. iFrame.
 Qed.
 
+(* XXX: what about getting rid of the [t] parameter and using [structT d] in its place? *)
+Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) {t tf : go_type}
+  `{!IntoVal V} `{!IntoValTyped V t}
+  `{!IntoVal Vf} `{!IntoValTyped Vf tf}
+  `{!IntoValStructField f t proj} `{!SetterWf proj}
+  `{!struct.Wf t}
+  : PointsToAccess l (struct.field_ref_f t f l) v (proj v) (λ vf', set proj (λ _, vf')).
+Proof.
+  constructor.
+  - intros. by iApply struct_fields_acc_update.
+  - by rewrite RecordSet.set_eq.
+Qed.
+
+Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t}
+  : PointsToAccess l l v v (λ v' _, v').
+Proof. constructor; [eauto with iFrame|done]. Qed.
+
 Import Ltac2.
 Set Default Proof Mode "Classic".
 Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
@@ -140,6 +132,10 @@ Ltac2 wp_load () :=
         (fun _ => Control.backtrack_tactic_failure "wp_load: could not bind to load instruction")
       ) in
       (* XXX: we want to backtrack to typeclass search if [iAssumptionCore] failed. *)
+
+      (* FIXME: only want backtracking to happen if [iAssumptionCore] fails.
+         Better yet, get rid of backtracking entirely here. Wrap this whole
+         thing in a backtracking pattern match or something. *)
       eapply (tac_wp_load_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore) |]
   end.
 
@@ -192,26 +188,10 @@ Proof.
     wp_pures.
     wp_alloc p as "?".
     wp_pures.
-    wp_bind (load_ty _ _).
-    ltac2:(eapply (tac_wp_load_ty) > [| |]).
-    {
-      (* FIXME: unification fails here because tsmall has been filled in, whereas the
-         instance  has the non-trivial expression
-          [(match t with
-                     | structT fs => default boolT (assocl_lookup f fs)
-                     | _ => boolT
-                     end)]
-         for tsmall.
-         Maybe
-       *)
-      epose proof (points_to_access_struct_field_ref _ "To" _ _ _).
-      done.
-    }
-    { iAssumptionCore. }
+    ltac2:(wp_load ()).
     ltac2:(wp_load ()).
     wp_pures.
     ltac2:(wp_load ()).
-
 
     ltac2:(wp_load ()).
     iDestruct (struct_fields_acc_update "To" with "Hm") as "[Hf Hm]".

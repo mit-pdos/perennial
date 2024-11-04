@@ -48,8 +48,13 @@ Definition field_set_f t f0 fv: val -> val :=
 
 Definition field_ref_f t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
 
-Class Wf (d : struct.descriptor) : Set :=
-  { descriptor_NoDup: NoDup d.*1; }.
+Class Wf (t : go_type) : Set :=
+  {
+    descriptor_NoDup: match t with
+    | structT d => NoDup d.*1
+    | _ => False
+    end
+  }.
 
 End goose_lang.
 End struct.
@@ -58,35 +63,31 @@ Notation "l ↦s[ t :: f ] dq v" := (struct.field_ref_f t f l ↦{dq} v)%I
   (at level 50, dq custom dfrac at level 70, t at level 59, f at level 59,
      format "l  ↦s[ t  ::  f ] dq  v").
 
-Definition option_descriptor_wf (d : struct.descriptor) : option (struct.Wf d).
+Definition option_descriptor_wf (d : struct.descriptor) : option (struct.Wf (structT d)).
   destruct (decide (NoDup d.*1)); [ apply Some | apply None ].
   constructor; auto.
 Defined.
 
 Definition proj_descriptor_wf (d : struct.descriptor) :=
   match option_descriptor_wf d as mwf return match mwf with
-                                             | Some _ => struct.Wf d
+                                             | Some _ => struct.Wf (structT d)
                                              | None => True
                                              end  with
   | Some pf => pf
   | None => I
   end.
 
-Global Hint Extern 3 (struct.Wf ?d) => exact (proj_descriptor_wf d) : typeclass_instances.
+(* This hint converts [someStructType] into [structT blah] *)
+Global Hint Extern 10 (struct.Wf ?t) => unfold t : typeclass_instances.
+Global Hint Extern 3 (struct.Wf (structT ?d)) => exact (proj_descriptor_wf d) : typeclass_instances.
 
 Section lemmas.
 Context `{heapGS Σ}.
 
-Class IntoValStructField (f : string) (t : go_type) {V Vf : Type}
+Class IntoValStructField (f : string) (t : go_type) {V Vf : Type} {tf}
   (field_proj : V → Vf)
   `{!IntoVal V} `{!IntoVal Vf}
-  `{!IntoValTyped Vf (
-        match t with
-        | structT fs => default boolT (assocl_lookup f fs)
-        | _ => boolT
-        end
-      )
-  }
+  `{!IntoValTyped Vf tf}
   :=
   {
     field_proj_eq_field_get : ∀ v, #(field_proj v) = (struct.field_get_f t f #v);
@@ -95,7 +96,7 @@ Class IntoValStructField (f : string) (t : go_type) {V Vf : Type}
 Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
   (fs : struct.descriptor) (v : V) : iProp Σ :=
   [∗ list] '(f, _) ∈ fs,
-    ∀ `(H:IntoValStructField f t V Vf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
+    ∀ `(H:IntoValStructField f t V Vf tf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
 
 Lemma struct_val_inj d fvs1 fvs2 :
   struct.val_aux (structT d) fvs1 = struct.val_aux (structT d) fvs2 →
@@ -118,7 +119,7 @@ Qed.
 (* FIXME: could try stating this with (structT d) substituted in. The main
    concern is that it will result in t getting unfolded. *)
 Theorem struct_fields_split `{!IntoVal V} `{!IntoValTyped V t}
-  l q d {Ht : t = structT d} {dwf : struct.Wf d} (v : V) :
+  l q d {Ht : t = structT d} {dwf : struct.Wf t} (v : V) :
   typed_pointsto l q v ⊣⊢ struct_fields l q d v.
 Proof.
   subst.
@@ -131,8 +132,8 @@ Proof.
 Admitted.
 
 Theorem struct_fields_acc_update f t V Vf
-  l dq d {Ht : t = structT d} {dwf : struct.Wf d} (v : V)
-  `{IntoValStructField f t V Vf field_proj} `{!SetterWf field_proj} :
+  l dq {dwf : struct.Wf t} (v : V)
+  `{IntoValStructField f t V Vf tf field_proj} `{!SetterWf field_proj} :
   typed_pointsto l dq v -∗
   l ↦s[t :: f]{dq} (field_proj v) ∗
   (∀ fv', l ↦s[t :: f]{dq} fv' -∗
@@ -141,15 +142,14 @@ Proof.
 Admitted.
 
 Theorem struct_fields_acc f t V Vf
-  l dq d {Ht : t = structT d} {dwf : struct.Wf d} (v : V)
-  `{IntoValStructField f t V Vf field_proj} `{!SetterWf field_proj} :
+  l dq {dwf : struct.Wf t} (v : V)
+  `{IntoValStructField f t V Vf tf field_proj} `{!SetterWf field_proj} :
   typed_pointsto l dq v -∗
   l ↦s[t :: f]{dq} (field_proj v) ∗
   (l ↦s[t :: f]{dq} (field_proj v) -∗ typed_pointsto l dq v).
 Proof.
   iIntros "Hl".
   iDestruct (struct_fields_acc_update with "[$]") as "[$ H]".
-  { done. }
   iIntros "* Hl".
   iSpecialize ("H" with "[$]").
   erewrite set_eq.

@@ -14,6 +14,9 @@ Record t := mk {
 End def.
 End inflight.
 
+
+Global Instance settable_inflight `{ffi_syntax}: Settable _ :=
+  settable! inflight.mk < inflight.index; inflight.bytes >.
 Global Instance into_val_inflight `{ffi_syntax} : IntoVal inflight.t.
 Admitted.
 
@@ -54,6 +57,9 @@ Record t := mk {
 End def.
 End Inflights.
 
+
+Global Instance settable_Inflights `{ffi_syntax}: Settable _ :=
+  settable! Inflights.mk < Inflights.start; Inflights.count; Inflights.bytes; Inflights.size; Inflights.maxBytes; Inflights.buffer >.
 Global Instance into_val_Inflights `{ffi_syntax} : IntoVal Inflights.t.
 Admitted.
 
@@ -113,6 +119,9 @@ Record t := mk {
 End def.
 End Progress.
 
+
+Global Instance settable_Progress `{ffi_syntax}: Settable _ :=
+  settable! Progress.mk < Progress.Match; Progress.Next; Progress.sentCommit; Progress.State; Progress.PendingSnapshot; Progress.RecentActive; Progress.MsgAppFlowPaused; Progress.Inflights; Progress.IsLearner >.
 Global Instance into_val_Progress `{ffi_syntax} : IntoVal Progress.t.
 Admitted.
 
@@ -179,6 +188,9 @@ Record t := mk {
 End def.
 End Config.
 
+
+Global Instance settable_Config `{ffi_syntax}: Settable _ :=
+  settable! Config.mk < Config.Voters; Config.AutoLeave; Config.Learners; Config.LearnersNext >.
 Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
 Admitted.
 
@@ -226,6 +238,9 @@ Record t := mk {
 End def.
 End ProgressTracker.
 
+
+Global Instance settable_ProgressTracker `{ffi_syntax}: Settable _ :=
+  settable! ProgressTracker.mk < ProgressTracker.Config; ProgressTracker.Progress; ProgressTracker.Votes; ProgressTracker.MaxInflight; ProgressTracker.MaxInflightBytes >.
 Global Instance into_val_ProgressTracker `{ffi_syntax} : IntoVal ProgressTracker.t.
 Admitted.
 
