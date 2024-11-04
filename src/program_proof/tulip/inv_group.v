@@ -244,7 +244,7 @@ Section inv.
       "#Hsafepm"  ∷ ([∗ map] ts ↦ p ∈ pm, safe_prepare γ gid ts p) ∗
       "#Hsafecp"  ∷ ([∗ set] c ∈ cpool, safe_submit γ gid c) ∗
       "%Hrsm"     ∷ ⌜apply_cmds log = State cm hists⌝ ∗
-      "%Hdompm"   ∷ ⌜dom pm ⊆ dom stm⌝ ∗
+      "%Hpmstm"   ∷ ⌜map_Forall (λ t p, if p : bool then t ∈ dom stm else True) pm⌝ ∗
       "%Hdomptsm" ∷ ⌜dom tspreps = keys_all⌝ ∗
       "%Hcm"      ∷ ⌜cm = omap txnst_to_option_bool stm⌝ ∗
       "%Hpil"     ∷ ⌜prepared_impl_locked stm tspreps⌝ ∗

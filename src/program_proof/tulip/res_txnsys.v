@@ -122,7 +122,7 @@ Section res.
       own_txn_resm γ (<[ts := res]> resm).
     Admitted.
 
-    Lemma txn_res_witness γ resm ts res :
+    Lemma txn_res_witness {γ resm} ts res :
       resm !! ts = Some res ->
       own_txn_resm γ resm -∗
       is_txn_res γ ts res.

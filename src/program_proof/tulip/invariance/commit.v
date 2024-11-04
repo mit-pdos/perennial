@@ -412,7 +412,7 @@ Section inv.
     do 2 iNamed "Hgroup".
     iDestruct (group_prep_lookup with "Hpm Hprep") as %Hp.
     assert (is_Some (stm !! ts)) as [res Hres].
-    { rewrite -elem_of_dom. apply elem_of_dom_2 in Hp. set_solver. }
+    { rewrite -elem_of_dom. by specialize (Hpmstm _ _ Hp). }
     destruct res as [pwrs | |]; last first.
     { (* Case: Txn [ts] has already aborted. Contradiction. *)
       iDestruct (big_sepM_lookup with "Hsafestm") as "Habt"; first apply Hres.
@@ -953,7 +953,7 @@ Section inv.
     { apply Hdom. }
     (* Add [(tid, ResCommitted wrs)] to [resm] and extract a witness. *)
     iMod (txn_res_insert _ (ResCommitted wrs) with "Hresm") as "Hresm"; first apply Hnone.
-    iDestruct (txn_res_witness _ _ tid with "Hresm") as "#Hcmt".
+    iDestruct (txn_res_witness tid with "Hresm") as "#Hcmt".
     { by rewrite lookup_insert. }
     (* Re-establish [valid_res]. *)
     iDestruct (big_sepM_insert_2 _ _ tid (ResCommitted wrs) with "[] Hvr") as "Hvr'"; first done.

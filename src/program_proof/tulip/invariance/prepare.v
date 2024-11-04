@@ -576,6 +576,27 @@ Section inv.
     by inv Hts2.
   Qed.
 
+  Lemma not_quorum_prepared_unprepared γ gid ts :
+    quorum_prepared γ gid ts -∗
+    quorum_unprepared γ gid ts -∗
+    ([∗ set] rid ∈ rids_all, replica_inv γ gid rid) -∗
+    group_inv_proposals_map γ gid -∗
+    False.
+  Proof.
+    iIntros "#Hqp #Hqn Hrps Hgroup".
+    iDestruct (replicas_inv_weaken_ballot_map with "Hrps") as (bmm) "[Hrps %Hdombmm]".
+    simpl.
+    iDestruct (group_inv_replica_inv_impl_stability _ _ _ ts with "Hgroup Hrps")
+      as %Hstable.
+    { apply Hdombmm. }
+    iDestruct (quorum_pdec_impl_chosen with "Hqp Hrps") as %Hp.
+    { apply Hdombmm. }
+    iDestruct (quorum_pdec_impl_chosen with "Hqn Hrps") as %Hn.
+    { apply Hdombmm. }
+    exfalso.
+    by specialize (Hstable _ _ Hp Hn).
+  Qed.
+
   Lemma group_inv_prepare γ p gid ts pwrs :
     quorum_validated γ gid ts -∗
     quorum_prepared γ gid ts -∗
@@ -630,9 +651,14 @@ Section inv.
             iFrame "Hqv Hqp".
           }
           iPureIntro.
-          rewrite dom_insert_L.
-          apply elem_of_dom_2 in Hstm.
-          clear -Hstm Hdompm. set_solver.
+          intros t b Hb.
+          destruct (decide (t = ts)) as [-> | Hne]; last first.
+          { rewrite lookup_insert_ne in Hb; last done.
+            by specialize (Hpmstm _ _ Hb).
+          }
+          rewrite lookup_insert in Hb.
+          inv Hb.
+          by apply elem_of_dom_2 in Hstm.
         }
         (* Case: [pm !! ts = Some d]. *)
         iAssert (is_group_prepared γ gid ts)%I as "#Hpreped".
@@ -643,24 +669,21 @@ Section inv.
           }
           (* Case [d = false]. Derive contradiction with stability. *)
           iDestruct (big_sepM_lookup with "Hsafepm") as "Hqn"; first apply Hpm.
-          iDestruct (replicas_inv_weaken_ballot_map with "Hrps") as (bmm) "[Hrps %Hdombmm]".
-          simpl.
-          iDestruct (group_inv_replica_inv_impl_stability _ _ _ ts with "Hpsm Hrps")
-            as %Hstable.
-          { apply Hdombmm. }
-          iDestruct (quorum_pdec_impl_chosen with "Hqp Hrps") as %Hp.
-          { apply Hdombmm. }
-          iDestruct (quorum_pdec_impl_chosen with "Hqn Hrps") as %Hn.
-          { apply Hdombmm. }
-          exfalso.
-          by specialize (Hstable _ _ Hp Hn).
+          iDestruct (not_quorum_prepared_unprepared with "Hqp Hqn Hrps Hpsm") as %[].
         }
         by iFrame "Htxnsys Hkeys Hrps ∗ # %".
       }
     }
     (* Case: Txn [ts] has not prepared, aborted, or committed. *)
-    assert (Hnone : pm !! ts = None).
-    { apply not_elem_of_dom. apply not_elem_of_dom in Hstm. set_solver. }
+    iAssert (⌜pm !! ts = None⌝)%I as %Hnone.
+    { destruct (pm !! ts) as [b |] eqn:Hpm; last done.
+      destruct b.
+      { specialize (Hpmstm _ _ Hpm). simpl in Hpmstm.
+        by apply not_elem_of_dom in Hstm.
+      }
+      iDestruct (big_sepM_lookup with "Hsafepm") as "Hqn"; first apply Hpm.
+      iDestruct (not_quorum_prepared_unprepared with "Hqp Hqn Hrps Hpsm") as %[].
+    }
     (* Take the required keys invariants. *)
     iDestruct "Hpwrs" as (wrs) "[Hwrs %Hpwrs]".
     destruct Hpwrs as (Hvts & Hvwrs & Hnempty & Hpwrs).
@@ -830,7 +853,17 @@ Section inv.
       rewrite Hpwrs. apply dom_filter_subseteq.
     }
     split.
-    { rewrite 2!dom_insert_L. clear -Hdompm. set_solver. }
+    { rewrite dom_insert_L.
+      intros t b Hb.
+      destruct (decide (ts = t)) as [-> | Hne]; last first.
+      { rewrite lookup_insert_ne in Hb; last done.
+        specialize (Hpmstm _ _ Hb). simpl in Hpmstm.
+        destruct b; [set_solver | done].
+      }
+      rewrite lookup_insert in Hb.
+      inv Hb.
+      set_solver.
+    }
     split.
     { by rewrite setts_dom. }
     split.

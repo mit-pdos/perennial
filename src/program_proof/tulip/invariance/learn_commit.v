@@ -110,10 +110,9 @@ Section inv.
     destruct (stm !! ts) as [st |] eqn:Hdup; last first.
     { (* Case: Empty state; contradiction---no prepare before commit. *) 
       iDestruct (txnsys_inv_has_prepared with "Hcmt Htxnsys") as "#Hst"; first apply Hgid.
-      assert (Hpm : pm !! ts = None).
-      { rewrite -not_elem_of_dom. rewrite -not_elem_of_dom in Hdup. set_solver. }
       iDestruct (group_prep_lookup with "Hpm Hst") as %Hlookup.
-      congruence.
+      specialize (Hpmstm _ _ Hlookup). simpl in Hpmstm.
+      by apply not_elem_of_dom in Hdup.
     }
     (* Case: Transaction prepared, aborted, or committed. *)
     destruct st as [pwrs' | |] eqn:Hst; last first.
@@ -254,7 +253,11 @@ Section inv.
     iPureIntro.
     split; first done.
     split.
-    { rewrite dom_insert_L. clear -Hdompm. set_solver. }
+    { rewrite dom_insert_L.
+      apply (map_Forall_impl _ _ _ Hpmstm).
+      intros t b Hb. clear -Hb.
+      destruct b; [set_solver | done].
+    }
     split.
     { by rewrite release_dom. }
     split.

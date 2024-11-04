@@ -94,7 +94,11 @@ Section inv.
       iPureIntro.
       split; first done.
       split.
-      { rewrite dom_insert_L. clear -Hdompm. set_solver. }
+      { rewrite dom_insert_L.
+        apply (map_Forall_impl _ _ _ Hpmstm).
+        intros t b Hb. clear -Hb.
+        destruct b; [set_solver | done].
+      }
       split.
       { by rewrite Hcm omap_insert /=. }
       split.
@@ -222,7 +226,11 @@ Section inv.
     iPureIntro.
     split; first done.
     split.
-    { rewrite dom_insert_L. clear -Hdompm. set_solver. }
+    { rewrite dom_insert_L.
+      apply (map_Forall_impl _ _ _ Hpmstm).
+      intros t b Hb. clear -Hb.
+      destruct b; [set_solver | done].
+    }
     split.
     { by rewrite release_dom. }
     split.
