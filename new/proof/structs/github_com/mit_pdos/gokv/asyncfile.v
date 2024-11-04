@@ -22,6 +22,9 @@ Record t := mk {
 End def.
 End AsyncFile.
 
+
+Global Instance settable_AsyncFile `{ffi_syntax}: Settable _ :=
+  settable! AsyncFile.mk < AsyncFile.mu; AsyncFile.data; AsyncFile.filename; AsyncFile.index; AsyncFile.indexCond; AsyncFile.durableIndex; AsyncFile.durableIndexCond; AsyncFile.closeRequested; AsyncFile.closed; AsyncFile.closedCond >.
 Global Instance into_val_AsyncFile `{ffi_syntax} : IntoVal AsyncFile.t.
 Admitted.
 

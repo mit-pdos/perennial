@@ -21,6 +21,9 @@ Record t := mk {
 End def.
 End unstable.
 
+
+Global Instance settable_unstable `{ffi_syntax}: Settable _ :=
+  settable! unstable.mk < unstable.snapshot; unstable.entries; unstable.offset; unstable.snapshotInProgress; unstable.offsetInProgress; unstable.logger >.
 Global Instance into_val_unstable `{ffi_syntax} : IntoVal unstable.t.
 Admitted.
 
@@ -80,6 +83,9 @@ Record t := mk {
 End def.
 End raftLog.
 
+
+Global Instance settable_raftLog `{ffi_syntax}: Settable _ :=
+  settable! raftLog.mk < raftLog.storage; raftLog.unstable; raftLog.committed; raftLog.applying; raftLog.applied; raftLog.logger; raftLog.maxApplyingEntsSize; raftLog.applyingEntsSize; raftLog.applyingEntsPaused >.
 Global Instance into_val_raftLog `{ffi_syntax} : IntoVal raftLog.t.
 Admitted.
 
@@ -144,6 +150,9 @@ Record t := mk {
 End def.
 End DefaultLogger.
 
+
+Global Instance settable_DefaultLogger `{ffi_syntax}: Settable _ :=
+  settable! DefaultLogger.mk < DefaultLogger.Logger; DefaultLogger.debug >.
 Global Instance into_val_DefaultLogger `{ffi_syntax} : IntoVal DefaultLogger.t.
 Admitted.
 
@@ -180,6 +189,9 @@ Record t := mk {
 End def.
 End SoftState.
 
+
+Global Instance settable_SoftState `{ffi_syntax}: Settable _ :=
+  settable! SoftState.mk < SoftState.Lead; SoftState.RaftState >.
 Global Instance into_val_SoftState `{ffi_syntax} : IntoVal SoftState.t.
 Admitted.
 
@@ -222,6 +234,9 @@ Record t := mk {
 End def.
 End Ready.
 
+
+Global Instance settable_Ready `{ffi_syntax}: Settable _ :=
+  settable! Ready.mk < Ready.SoftState; Ready.HardState; Ready.ReadStates; Ready.Entries; Ready.Snapshot; Ready.CommittedEntries; Ready.Messages; Ready.MustSync >.
 Global Instance into_val_Ready `{ffi_syntax} : IntoVal Ready.t.
 Admitted.
 
@@ -282,6 +297,9 @@ Record t := mk {
 End def.
 End Peer.
 
+
+Global Instance settable_Peer `{ffi_syntax}: Settable _ :=
+  settable! Peer.mk < Peer.ID; Peer.Context >.
 Global Instance into_val_Peer `{ffi_syntax} : IntoVal Peer.t.
 Admitted.
 
@@ -318,6 +336,9 @@ Record t := mk {
 End def.
 End msgWithResult.
 
+
+Global Instance settable_msgWithResult `{ffi_syntax}: Settable _ :=
+  settable! msgWithResult.mk < msgWithResult.m; msgWithResult.result >.
 Global Instance into_val_msgWithResult `{ffi_syntax} : IntoVal msgWithResult.t.
 Admitted.
 
@@ -363,6 +384,9 @@ Record t := mk {
 End def.
 End node.
 
+
+Global Instance settable_node `{ffi_syntax}: Settable _ :=
+  settable! node.mk < node.propc; node.recvc; node.confc; node.confstatec; node.readyc; node.advancec; node.tickc; node.done; node.stop; node.status; node.rn >.
 Global Instance into_val_node `{ffi_syntax} : IntoVal node.t.
 Admitted.
 
@@ -434,6 +458,9 @@ Record t := mk {
 End def.
 End lockedRand.
 
+
+Global Instance settable_lockedRand `{ffi_syntax}: Settable _ :=
+  settable! lockedRand.mk < lockedRand.mu >.
 Global Instance into_val_lockedRand `{ffi_syntax} : IntoVal lockedRand.t.
 Admitted.
 
@@ -483,6 +510,9 @@ Record t := mk {
 End def.
 End Config.
 
+
+Global Instance settable_Config `{ffi_syntax}: Settable _ :=
+  settable! Config.mk < Config.ID; Config.ElectionTick; Config.HeartbeatTick; Config.Storage; Config.Applied; Config.AsyncStorageWrites; Config.MaxSizePerMsg; Config.MaxCommittedSizePerReady; Config.MaxUncommittedEntriesSize; Config.MaxInflightMsgs; Config.MaxInflightBytes; Config.CheckQuorum; Config.PreVote; Config.ReadOnlyOption; Config.Logger; Config.DisableProposalForwarding; Config.DisableConfChangeValidation; Config.StepDownOnRemoval; Config.TraceLogger >.
 Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
 Admitted.
 
@@ -618,6 +648,9 @@ Record t := mk {
 End def.
 End raft.
 
+
+Global Instance settable_raft `{ffi_syntax}: Settable _ :=
+  settable! raft.mk < raft.id; raft.Term; raft.Vote; raft.readStates; raft.raftLog; raft.maxMsgSize; raft.maxUncommittedSize; raft.trk; raft.state; raft.isLearner; raft.msgs; raft.msgsAfterAppend; raft.lead; raft.leadTransferee; raft.pendingConfIndex; raft.disableConfChangeValidation; raft.uncommittedSize; raft.readOnly; raft.electionElapsed; raft.heartbeatElapsed; raft.checkQuorum; raft.preVote; raft.heartbeatTimeout; raft.electionTimeout; raft.randomizedElectionTimeout; raft.disableProposalForwarding; raft.stepDownOnRemoval; raft.tickId; raft.step; raft.StepHigherOrder; raft.logger; raft.pendingReadIndexMessages; raft.traceLogger >.
 Global Instance into_val_raft `{ffi_syntax} : IntoVal raft.t.
 Admitted.
 
@@ -804,6 +837,9 @@ Record t := mk {
 End def.
 End connem.
 
+
+Global Instance settable_connem `{ffi_syntax}: Settable _ :=
+  settable! connem.mk < connem.from; connem.to >.
 Global Instance into_val_connem `{ffi_syntax} : IntoVal connem.t.
 Admitted.
 
@@ -844,6 +880,9 @@ Record t := mk {
 End def.
 End network.
 
+
+Global Instance settable_network `{ffi_syntax}: Settable _ :=
+  settable! network.mk < network.t'; network.peers; network.storage; network.dropm64; network.ignorem; network.msgHook >.
 Global Instance into_val_network `{ffi_syntax} : IntoVal network.t.
 Admitted.
 
@@ -897,6 +936,9 @@ Record t := mk {
 End def.
 End testLeaderElectionStruct.
 
+
+Global Instance settable_testLeaderElectionStruct `{ffi_syntax}: Settable _ :=
+  settable! testLeaderElectionStruct.mk < testLeaderElectionStruct.network; testLeaderElectionStruct.state; testLeaderElectionStruct.expTerm >.
 Global Instance into_val_testLeaderElectionStruct `{ffi_syntax} : IntoVal testLeaderElectionStruct.t.
 Admitted.
 
@@ -940,6 +982,9 @@ Record t := mk {
 End def.
 End RawNode.
 
+
+Global Instance settable_RawNode `{ffi_syntax}: Settable _ :=
+  settable! RawNode.mk < RawNode.raft; RawNode.asyncStorageWrites; RawNode.prevSoftSt; RawNode.prevHardSt; RawNode.stepsOnAdvance >.
 Global Instance into_val_RawNode `{ffi_syntax} : IntoVal RawNode.t.
 Admitted.
 
@@ -988,6 +1033,9 @@ Record t := mk {
 End def.
 End ReadState.
 
+
+Global Instance settable_ReadState `{ffi_syntax}: Settable _ :=
+  settable! ReadState.mk < ReadState.Index; ReadState.RequestCtx >.
 Global Instance into_val_ReadState `{ffi_syntax} : IntoVal ReadState.t.
 Admitted.
 
@@ -1025,6 +1073,9 @@ Record t := mk {
 End def.
 End readIndexStatus.
 
+
+Global Instance settable_readIndexStatus `{ffi_syntax}: Settable _ :=
+  settable! readIndexStatus.mk < readIndexStatus.req; readIndexStatus.index; readIndexStatus.acks >.
 Global Instance into_val_readIndexStatus `{ffi_syntax} : IntoVal readIndexStatus.t.
 Admitted.
 
@@ -1066,6 +1117,9 @@ Record t := mk {
 End def.
 End readOnly.
 
+
+Global Instance settable_readOnly `{ffi_syntax}: Settable _ :=
+  settable! readOnly.mk < readOnly.option; readOnly.pendingReadIndex; readOnly.readIndexQueue >.
 Global Instance into_val_readOnly `{ffi_syntax} : IntoVal readOnly.t.
 Admitted.
 
@@ -1135,6 +1189,9 @@ Record t := mk {
 End def.
 End BasicStatus.
 
+
+Global Instance settable_BasicStatus `{ffi_syntax}: Settable _ :=
+  settable! BasicStatus.mk < BasicStatus.ID; BasicStatus.HardState; BasicStatus.SoftState; BasicStatus.Applied; BasicStatus.LeadTransferee >.
 Global Instance into_val_BasicStatus `{ffi_syntax} : IntoVal BasicStatus.t.
 Admitted.
 
@@ -1184,6 +1241,9 @@ Record t := mk {
 End def.
 End Status.
 
+
+Global Instance settable_Status `{ffi_syntax}: Settable _ :=
+  settable! Status.mk < Status.BasicStatus; Status.Config; Status.Progress >.
 Global Instance into_val_Status `{ffi_syntax} : IntoVal Status.t.
 Admitted.
 
@@ -1228,6 +1288,9 @@ Record t := mk {
 End def.
 End inMemStorageCallStats.
 
+
+Global Instance settable_inMemStorageCallStats `{ffi_syntax}: Settable _ :=
+  settable! inMemStorageCallStats.mk < inMemStorageCallStats.initialState; inMemStorageCallStats.firstIndex; inMemStorageCallStats.lastIndex; inMemStorageCallStats.entries; inMemStorageCallStats.term; inMemStorageCallStats.snapshot >.
 Global Instance into_val_inMemStorageCallStats `{ffi_syntax} : IntoVal inMemStorageCallStats.t.
 Admitted.
 
@@ -1283,6 +1346,9 @@ Record t := mk {
 End def.
 End MemoryStorage.
 
+
+Global Instance settable_MemoryStorage `{ffi_syntax}: Settable _ :=
+  settable! MemoryStorage.mk < MemoryStorage.Mutex; MemoryStorage.hardState; MemoryStorage.snapshot; MemoryStorage.ents; MemoryStorage.callStats >.
 Global Instance into_val_MemoryStorage `{ffi_syntax} : IntoVal MemoryStorage.t.
 Admitted.
 
@@ -1331,6 +1397,9 @@ Record t := mk {
 End def.
 End entryID.
 
+
+Global Instance settable_entryID `{ffi_syntax}: Settable _ :=
+  settable! entryID.mk < entryID.term; entryID.index >.
 Global Instance into_val_entryID `{ffi_syntax} : IntoVal entryID.t.
 Admitted.
 
@@ -1368,6 +1437,9 @@ Record t := mk {
 End def.
 End logSlice.
 
+
+Global Instance settable_logSlice `{ffi_syntax}: Settable _ :=
+  settable! logSlice.mk < logSlice.term; logSlice.prev; logSlice.entries >.
 Global Instance into_val_logSlice `{ffi_syntax} : IntoVal logSlice.t.
 Admitted.
 
