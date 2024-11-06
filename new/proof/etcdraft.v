@@ -133,10 +133,9 @@ Ltac2 wp_load () :=
       ) in
       (* XXX: we want to backtrack to typeclass search if [iAssumptionCore] failed. *)
 
-      (* FIXME: only want backtracking to happen if [iAssumptionCore] fails.
-         Better yet, get rid of backtracking entirely here. Wrap this whole
-         thing in a backtracking pattern match or something. *)
-      eapply (tac_wp_load_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore) |]
+      (* The orelse avoids failures higher-level from backtracking down into the tc_solve_many here. *)
+      orelse (fun _ => eapply (tac_wp_load_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore) |])
+             (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")
   end.
 
 Lemma wp_network__send nw msgs_sl dq (n : network.t) (msgs : list Message.t) :
