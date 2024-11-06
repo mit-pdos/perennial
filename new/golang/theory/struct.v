@@ -119,10 +119,15 @@ Qed.
 (* FIXME: could try stating this with (structT d) substituted in. The main
    concern is that it will result in t getting unfolded. *)
 Theorem struct_fields_split `{!IntoVal V} `{!IntoValTyped V t}
-  l q d {Ht : t = structT d} {dwf : struct.Wf t} (v : V) :
-  typed_pointsto l q v ⊣⊢ struct_fields l q d v.
+  l q {dwf : struct.Wf t} (v : V) :
+  typed_pointsto l q v
+  ⊣⊢ match t with
+     | structT d  => struct_fields l q d v
+     | _ => typed_pointsto l q v
+     end.
 Proof.
   subst.
+  destruct t; try done.
   iSplit.
   - (* split up struct *)
     iIntros "Hv".

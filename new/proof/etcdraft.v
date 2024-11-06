@@ -156,8 +156,6 @@ Proof.
   wp_pures.
   wp_alloc msgs_ptr as "?".
   wp_pures.
-  Print env.
-  Print envs.
   wp_for.
   wp_pures.
   ltac2:(wp_load ()).
@@ -192,29 +190,6 @@ Proof.
     ltac2:(wp_load ()).
     wp_pures.
     ltac2:(wp_load ()).
-
-    ltac2:(wp_load ()).
-    iDestruct (struct_fields_acc_update "To" with "Hm") as "[Hf Hm]".
-    { done. }
-    { apply _. }
-    wp_load.
-    iSpecialize ("Hm" with "[$]").
-    rewrite ?RecordSet.set_eq //.
-
-    wp_bind (load_ty _ (Val _)).
-    iRename select (nw_ptr ↦ nw)%I into "H1".
-    Time wp_apply (wp_typed_load with "H1").
-    Time wp_load.
-    wp_pures.
-
-    iDestruct (struct_fields_acc_update "peers" with "Hnw") as "[Hf Hnw]".
-    { done. }
-    { apply _. }
-    wp_load.
-    iSpecialize ("Hnw" with "[$]").
-
-    rewrite ?RecordSet.set_eq //.
-    (* FIXME: persistent instance for ↦$□ *)
     iDestruct "Hn_peers" as (?) "Hn_peers".
     wp_apply (wp_map_get with "[$]").
     iIntros "_".
@@ -224,11 +199,7 @@ Proof.
     wp_load.
     wp_pures.
 
-    iDestruct (struct_fields_acc_update "t" with "Hnw") as "[Hf Hnw]".
-    { done. }
-    { apply _. }
-    Time wp_load.
-    iSpecialize ("Hnw" with "[$]").
+    ltac2:(wp_load ()).
     wp_pures.
     (* XXX: should be an "irrelevant" if statement. *)
     case_bool_decide.
@@ -369,22 +340,15 @@ Proof.
   wp_pures.
   wp_alloc tt as "Htt".
   wp_pures.
-  wp_apply wp_slice_literal.
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "Hsl".
 
   (* FIXME: better tactic for splitting. *)
-  iDestruct (struct_fields_split with "Htt") as "Htt".
-  { done. }
-  { apply _. }
-  rewrite /struct_fields /=.
-  repeat (iDestruct "Htt" as "[H1 Htt]";
-          unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
-          iNamed "H1").
-
-  wp_steps.
-
-  simpl.
-  wp_apply (wp_network__send with "[$Hnw1 $Hsl]").
+  wp_pures.
+  ltac2:(wp_load ()).
+  wp_pures.
+  wp_apply (wp_network__send with "[Hnw1 $Hsl]").
+  { iDestruct "Hnw1" as "($ & $ & $)". }
   wp_steps.
   wp_alloc sm_ptr as "?".
   wp_steps.

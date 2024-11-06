@@ -63,11 +63,9 @@ Proof.
   iIntros "Hl HR".
   simpl.
   iDestruct (struct_fields_split with "Hl") as "Hl".
-  { done. }
-  { apply _. }
   rewrite /struct_fields /=.
   iDestruct "Hl" as "[Hl _]".
-  unshelve iSpecialize ("Hl" $! _ _ _ _ _ _); try tc_solve.
+  unshelve iSpecialize ("Hl" $! _ _ _ _ _ _ _); try tc_solve.
   simpl. iNamed "Hl".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
