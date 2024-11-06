@@ -763,11 +763,9 @@ Proof.
   iRename "Hmu" into "Hmu_uninit".
 
   iDestruct (struct_fields_split with "Hl") as "Hl".
-  { done. }
-  { apply _. }
   rewrite /struct_fields /=.
   repeat (iDestruct "Hl" as "[H1 Hl]";
-          unshelve iSpecialize ("H1" $! _ _ _ _ _ _); try tc_solve;
+          unshelve iSpecialize ("H1" $! _ _ _ _ _ _ _); try tc_solve;
           iNamed "H1").
   simpl.
   wp_load.
