@@ -3,149 +3,16 @@ From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.program_proof.pav Require Import client core.
 
-Section defs.
+Section hist.
+(* logical history. *)
 Context `{!heapGS Σ, !pavG Σ}.
-
-Definition lat_pk_comm_reln (lat_pk : lat_val_ty) (lat_comm : lat_opaque_val_ty) : iProp Σ :=
-  match lat_pk, lat_comm with
-  | Some (ep0, pk), Some (ep1, comm) =>
-    "%Heq_ep" ∷ ⌜ ep0 = ep1 ⌝ ∗
-    "#His_comm" ∷ is_comm pk comm
-  | None, None => True
-  | _, _ => False
-  end.
-
-Definition msva_core_aux (m : adtr_map_ty) uid (vals : list opaque_map_val_ty) : iProp Σ :=
-  "%Hlt_vals" ∷ ⌜ length vals < 2^64 ⌝ ∗
-  (∀ (ver : w64) val,
-    "%Hlook_ver" ∷ ⌜ vals !! (uint.nat ver) = Some val ⌝ -∗
-    ∃ label,
-    ("#His_label" ∷ is_vrf uid ver label ∗
-    "%Hin_map" ∷ ⌜ m !! label = Some val ⌝)).
-
-Definition msva_core m uid vals : iProp Σ :=
-  ∃ label,
-  "#Hmsv_aux" ∷ msva_core_aux m uid vals ∗
-  "#His_label" ∷ is_vrf uid (W64 $ length vals) label ∗
-  "%Hnin_next" ∷ ⌜ m !! label = None ⌝.
-
-Lemma msva_core_aux_snoc m uid l x :
-  "#Hmsv_aux" ∷ msva_core_aux m uid (l ++ [x]) -∗
-  (∃ label,
-  "#Hmsv_aux" ∷ msva_core_aux m uid l ∗
-  "#His_label" ∷ is_vrf uid (W64 $ length l) label ∗
-  "%Hin_lat" ∷ ⌜ m !! label = Some x ⌝).
-Proof.
-  iNamed 1. iNamed "Hmsv_aux". rewrite app_length in Hlt_vals. list_simplifier.
-  iDestruct ("Hmsv_aux" $! (W64 $ length l) with "[]") as "Hlat".
-  { rewrite nat_thru_w64_id; [|lia]. iPureIntro. apply lookup_snoc. }
-  iNamed "Hlat". iFrame "#%". iSplit. { iPureIntro. lia. }
-  iIntros "*". iNamed 1. iSpecialize ("Hmsv_aux" with "[]").
-  { iPureIntro. rewrite lookup_app_l; [exact Hlook_ver|by eapply lookup_lt_Some]. }
-  iFrame "#".
-Qed.
-
-Lemma msva_core_aux_agree m uid vals0 vals1 :
-  ("#Hmsv_aux0" ∷ msva_core_aux m uid vals0 ∗
-  "#Hmsv_aux1" ∷ msva_core_aux m uid vals1 ∗
-  "%Heq_len" ∷ ⌜ length vals0 = length vals1 ⌝) -∗
-  ⌜ vals0 = vals1 ⌝.
-Proof.
-  revert vals1. induction vals0 as [|x0 l0 IH] using rev_ind;
-    destruct vals1 as [|x1 l1 _] using rev_ind; iNamed 1.
-  - done.
-  - rewrite length_app/= in Heq_len. lia.
-  - rewrite length_app/= in Heq_len. lia.
-  - rewrite !length_app/= in Heq_len.
-    iRename "Hmsv_aux0" into "HM0". iRename "Hmsv_aux1" into "HM1".
-    iDestruct (msva_core_aux_snoc with "HM0") as "H". iNamedSuffix "H" "0".
-    iDestruct (msva_core_aux_snoc with "HM1") as "H". iNamedSuffix "H" "1".
-    assert (length l0 = length l1) as HT by lia.
-    iEval (rewrite HT) in "His_label0". clear HT.
-    iDestruct (is_vrf_func (_, _) with "His_label0 His_label1") as %->.
-    simplify_map_eq/=. specialize (IH l1).
-    iDestruct (IH with "[$Hmsv_aux0 $Hmsv_aux1]") as %->. { iPureIntro. lia. }
-    naive_solver.
-Qed.
-
-Lemma msva_core_len_agree_aux m uid vals0 vals1 :
-  ("#Hmsv0" ∷ msva_core m uid vals0 ∗
-  "#Hmsv1" ∷ msva_core m uid vals1 ∗
-  "%Hlt_len" ∷ ⌜ length vals0 < length vals1 ⌝) -∗
-  False.
-Proof.
-  iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1". iNamed "Hmsv_aux1".
-  list_elem vals1 (uint.nat (length vals0)) as val.
-  iSpecialize ("Hmsv_aux1" with "[]"). { iPureIntro. exact Hval_lookup. }
-  iNamed "Hmsv_aux1".
-  iDestruct (is_vrf_func (_, _) with "His_label0 His_label") as %->.
-  naive_solver.
-Qed.
-
-Lemma msva_core_len_agree m uid vals0 vals1 :
-  ("#Hmsv0" ∷ msva_core m uid vals0 ∗
-  "#Hmsv1" ∷ msva_core m uid vals1) -∗
-  ⌜ length vals0 = length vals1 ⌝.
-Proof.
-  iNamed 1. destruct (decide (length vals0 = length vals1)) as [?|?]; [done|iExFalso].
-  destruct (decide (length vals0 < length vals1)) as [?|?].
-  - iApply (msva_core_len_agree_aux _ _ vals0 vals1 with "[]").
-    iFrame "Hmsv0 Hmsv1". iPureIntro. lia.
-  - iApply (msva_core_len_agree_aux _ _ vals1 vals0 with "[]").
-    iFrame "Hmsv1 Hmsv0". iPureIntro. lia.
-Qed.
-
-Lemma msva_core_agree m uid vals0 vals1 :
-  ("#Hmsv0" ∷ msva_core m uid vals0 ∗
-  "#Hmsv1" ∷ msva_core m uid vals1) -∗
-  ⌜ vals0 = vals1 ⌝.
-Proof.
-  iNamed 1. iApply msva_core_aux_agree.
-  iPoseProof "Hmsv0" as "Hmsv0'". iPoseProof "Hmsv1" as "Hmsv1'".
-  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1". iFrame "#".
-  iApply msva_core_len_agree. iFrame "Hmsv0' Hmsv1'".
-Qed.
-
-Definition msv_final (adtr_γ : gname) (ep uid : w64) (lat : lat_val_ty) : iProp Σ :=
-  ∃ (m : adtr_map_ty) (vals : list opaque_map_val_ty),
-  "%Hlen_vals" ∷ ⌜ length vals < 2^64 ⌝ ∗
-  "#Hcomm_reln" ∷ lat_pk_comm_reln lat (last vals) ∗
-  "#Hmap" ∷ mono_list_idx_own adtr_γ (uint.nat ep) m ∗
-  "#Hhist" ∷ ([∗ list] ver ↦ val ∈ vals,
-    ∃ label,
-    "#His_label" ∷ is_vrf uid (W64 ver) label ∗
-    "%Hin_map" ∷ ⌜ m !! label = Some val ⌝) ∗
-  "#Hbound" ∷
-    (∃ label,
-    "#His_label" ∷ is_vrf uid (W64 $ length vals) label ∗
-    "%Hnin_map" ∷ ⌜ m !! label = None ⌝).
-
-Lemma msv_final_agree γ ep uid lat0 lat1 :
-  ("#Hmsv0" ∷ msv_final γ ep uid lat0 ∗
-  "#Hmsv1" ∷ msv_final γ ep uid lat1) -∗
-  ⌜ lat0 = lat1 ⌝.
-Proof.
-  iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
-  iDestruct (mono_list_idx_agree with "Hmap0 Hmap1") as %->.
-  iClear "Hmap0 Hmap1".
-  iDestruct (msva_core_agree with "[]") as %->; [iSplit|].
-  { iNamed "Hbound0". iFrame "#%". iClear "His_label". iIntros "*". iNamed 1.
-    iDestruct (big_sepL_lookup with "Hhist0") as "H"; [exact Hlook_ver|].
-    iNamed "H". iEval (rewrite w64_to_nat_id) in "His_label". iFrame "#%". }
-  { iNamed "Hbound1". iFrame "#%". iClear "His_label". iIntros "*". iNamed 1.
-    iDestruct (big_sepL_lookup with "Hhist1") as "H"; [exact Hlook_ver|].
-    iNamed "H". iEval (rewrite w64_to_nat_id) in "His_label". iFrame "#%". }
-  destruct lat0 as [[??]|], lat1 as [[??]|], (last vals0) as [[??]|]; [|done..].
-  iNamedSuffix "Hcomm_reln0" "0". iNamedSuffix "Hcomm_reln1" "1".
-  iDestruct (is_comm_inj with "His_comm0 His_comm1") as %->. naive_solver.
-Qed.
 
 (* TODO: add inv that says every key in cli submap will have a vrf. *)
 Definition know_hist_val_cliG cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
   ∃ (vals : list opaque_map_val_ty),
   "#Hpk_comm_reln" ∷
     ([∗ list] pk_val;comm_val ∈ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist;vals,
-    "%Heq_ep" ∷ ⌜ pk_val.1 = comm_val.1⌝ ∗
+    "%Heq_ep" ∷ ⌜ pk_val.1 = comm_val.1 ⌝ ∗
     "#Hcomm" ∷ is_comm pk_val.2 comm_val.2) ∗
   (* prior vers exist in prior or this map. *)
   "#Hhist" ∷
@@ -174,20 +41,9 @@ Definition know_hist_cliG cli_γ (uid : w64) (hist : list map_val_ty) (valid : w
   "#Hknow_vals" ∷ (∀ (ep : w64), ⌜ uint.Z ep ≤ uint.Z valid ⌝ -∗
     know_hist_val_cliG cli_γ uid ep hist valid).
 
-Definition own_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
-  ∃ sl_HistVal,
-  "Hptr_Epoch" ∷ ptr ↦[HistEntry :: "Epoch"] #obj.1 ∗
-  "Hptr_HistVal" ∷ ptr ↦[HistEntry :: "HistVal"] (slice_val sl_HistVal) ∗
-  "#Hsl_HistVal" ∷ own_slice_small sl_HistVal byteT DfracDiscarded obj.2.
+End hist.
 
-Definition own_hist cli_γ uid sl_hist hist valid : iProp Σ :=
-  ∃ dim0_hist,
-  "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
-  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, own_HistEntry p o) ∗
-  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist valid.
-End defs.
-
-Section derived.
+Section hist_derived.
 Context `{!heapGS Σ, !pavG Σ}.
 
 (* TODO: upstream. *)
@@ -260,7 +116,7 @@ Lemma hist_audit_msv cli_γ uid hist valid adtr_γ aud_ep (ep : w64) :
   uint.Z valid < uint.Z aud_ep →
   ("#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist valid ∗
   "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
-  "#Hmsv" ∷ msv_final adtr_γ ep uid (get_lat hist ep).
+  "#Hmsv" ∷ msv adtr_γ ep uid (get_lat hist ep).
 Proof.
   intros ??. iNamed 1.
   iNamed "Hknow_hist". iSpecialize ("Hknow_vals" $! ep with "[//]").
@@ -311,10 +167,22 @@ Proof.
       opose proof ((proj2 Hinv_adtr) _ _ _ _ _ Hm_lookup Hlook_mkey) as ?. word.
 Qed.
 
-End derived.
+End hist_derived.
 
 Section wps.
 Context `{!heapGS Σ, !pavG Σ}.
+
+Definition own_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
+  ∃ sl_HistVal,
+  "Hptr_Epoch" ∷ ptr ↦[HistEntry :: "Epoch"] #obj.1 ∗
+  "Hptr_HistVal" ∷ ptr ↦[HistEntry :: "HistVal"] (slice_val sl_HistVal) ∗
+  "#Hsl_HistVal" ∷ own_slice_small sl_HistVal byteT DfracDiscarded obj.2.
+
+Definition own_hist cli_γ uid sl_hist hist valid : iProp Σ :=
+  ∃ dim0_hist,
+  "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
+  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, own_HistEntry p o) ∗
+  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist valid.
 
 Lemma wp_put_hist cli_γ uid sl_hist hist ptr_e e :
   match last hist with
