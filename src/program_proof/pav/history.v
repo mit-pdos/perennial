@@ -36,8 +36,7 @@ Definition know_hist_val_cliG cli_γ (uid ep : w64) (hist : list map_val_ty) (va
     "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ]□ Some (bound, comm)))).
 
 Definition know_hist_cliG cli_γ (uid : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
-  "%Hok_valid" ∷ ⌜ ∀ i ep pk, hist !! i = Some (ep, pk) →
-    uint.Z ep ≤ uint.Z valid ⌝ ∗
+  "%Hhist_valid" ∷ ([∗ list] x ∈ hist, ⌜ uint.Z x.1 ≤ uint.Z valid ⌝) ∗
   "#Hknow_vals" ∷ (∀ (ep : w64), ⌜ uint.Z ep ≤ uint.Z valid ⌝ -∗
     know_hist_val_cliG cli_γ uid ep hist valid).
 
@@ -45,32 +44,6 @@ End hist.
 
 Section hist_derived.
 Context `{!heapGS Σ, !pavG Σ}.
-
-(* TODO: upstream. *)
-Lemma list_filter_iff_strong {A} (P1 P2 : A → Prop)
-    `{!∀ x, Decision (P1 x), !∀ x, Decision (P2 x)} (l : list A) :
-  (∀ i x, l !! i = Some x → (P1 x ↔ P2 x)) →
-  filter P1 l = filter P2 l.
-Proof.
-  intros HPiff. induction l as [|a l IH]; [done|].
-  opose proof (HPiff 0%nat a _) as ?; [done|].
-  ospecialize (IH _). { intros i x ?. by ospecialize (HPiff (S i) x _). }
-  destruct (decide (P1 a)).
-  - rewrite !filter_cons_True; [|by naive_solver..]. by rewrite IH.
-  - rewrite !filter_cons_False; [|by naive_solver..]. by rewrite IH.
-Qed.
-
-(* TODO: upstream. *)
-Lemma list_filter_all {A} (P : A → Prop)
-    `{!∀ x, Decision (P x)} (l : list A) :
-  (∀ i x, l !! i = Some x → P x) →
-  filter P l = l.
-Proof.
-  intros HP. induction l as [|a l IH]; [done|].
-  opose proof (HP 0%nat a _) as ?; [done|].
-  ospecialize (IH _). { intros i x ?. by ospecialize (HP (S i) x _). }
-  rewrite filter_cons_True; [|done]. by rewrite IH.
-Qed.
 
 Lemma hist_val_extend_valid γ uid ep hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
@@ -88,7 +61,8 @@ Lemma hist_extend_selfmon cli_γ uid hist valid new_valid :
   "#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist new_valid.
 Proof.
   intros ?. iNamed 1. iNamed "Hknow_hist". iSplit.
-  { iIntros (??? Hlook) "!%". specialize (Hok_valid _ _ _ Hlook). word. }
+  { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
+    specialize (Hhist_valid _ _ Hlook). word. }
   iIntros (ep ?). destruct (decide (uint.Z ep ≤ uint.Z valid)).
   { iSpecialize ("Hknow_vals" $! ep with "[]"). { iPureIntro. word. }
     iApply (hist_val_extend_valid with "Hknow_vals"). word. }
@@ -97,14 +71,14 @@ Proof.
   - rewrite (list_filter_iff_strong
       (λ x, uint.Z x.1 ≤ uint.Z ep)
       (λ x, uint.Z x.1 ≤ uint.Z valid) hist); last first.
-    { intros ?[??] Hlook. ospecialize (Hok_valid _ _ _ Hlook).
+    { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook).
       naive_solver word. }
     iFrame "#".
   - iFrame "#".
   - iClear "Hhist Hbound".
     iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
     rewrite list_filter_all in Hlen_vals; last first.
-    { intros ?[??] Hlook. ospecialize (Hok_valid _ _ _ Hlook). simpl. word. }
+    { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
     iNamed "His_bound". rewrite Hlen_vals. by iFrame "#%".
 Qed.
 
@@ -120,44 +94,42 @@ Lemma hist_audit_msv cli_γ uid hist valid adtr_γ aud_ep (ep : w64) :
 Proof.
   intros ??. iNamed 1.
   iNamed "Hknow_hist". iSpecialize ("Hknow_vals" $! ep with "[//]").
-  iDestruct "His_audit" as (ms) "His_audit". iNamed "His_audit".
-  list_elem ms (uint.nat ep) as m.
+  iNamed "His_audit". list_elem ms (uint.nat ep) as m.
   iDestruct (mono_list_idx_own_get _ _ Hm_lookup with "Hadtr_maps") as "Hadtr_map".
-  iFrame "Hadtr_map".
-  iDestruct "Hknow_vals" as (vals) "Hknow_vals". iExists vals.
-  iNamed "Hknow_vals". iSplit; [|iSplit].
-  - iClear "Hhist Hbound".
+  iFrame "Hadtr_map". iNamed "Hknow_vals". iExists vals. iSplit.
+  { iClear "Hhist Hbound".
     iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
-    destruct (get_lat hist ep) as [[??]|] eqn:Hlat_pk, (last vals) as [[??]|] eqn:Hlat_comm;
-      [|exfalso..|done];
+    destruct (get_lat hist ep) as [[??]|] eqn:Hlat_pk, (last vals) as [[??]|]
+      eqn:Hlat_comm; [|exfalso..|done];
       rewrite /get_lat last_lookup in Hlat_pk; rewrite last_lookup in Hlat_comm.
     + rewrite Hlen_vals in Hlat_pk.
       iDestruct (big_sepL2_lookup with "Hpk_comm_reln") as "?"; [exact Hlat_pk|exact Hlat_comm|].
       iFrame "#".
     + apply lookup_lt_Some in Hlat_pk. apply lookup_ge_None in Hlat_comm. lia.
-    + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_comm. lia.
-  - iClear "Hbound".
-    iApply (big_sepL_impl with "Hhist"). iIntros (?[prior ?]) "!> %Hlook_vals". iNamed 1. iFrame "#".
-    (* tedious: trace prior ep back to filtered hist to get filter bound on it. *)
+    + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_comm. lia. }
+  iNamedSuffix "Hbound" "_bnd". iFrame "#". iSplit.
+  - iClear "Hbound". iApply (big_sepL_impl with "Hhist").
+    iIntros (?[prior ?]) "!> %Hlook_vals". iNamed 1. iFrame "#".
+    (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
+    get that by tracing val back to filtered hist and using hist validity. *)
     iDestruct (big_sepL2_lookup_2_some with "Hpk_comm_reln") as %[[??] Hlook_hist]; [exact Hlook_vals|].
     iDestruct (big_sepL2_lookup with "Hpk_comm_reln") as "Htmp"; [exact Hlook_hist|exact Hlook_vals|].
     iNamed "Htmp". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
     { eapply elem_of_list_lookup. eauto using Hlook_hist. }
     simpl in *. list_elem ms (uint.nat prior) as mprior.
-    iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_prior $His_label]") as "Htmp".
+    iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_prior $His_label]") as "H".
     { iPureIntro. exact Hmprior_lookup. }
-    iNamed "Htmp". iPureIntro.
+    iNamed "H". iPureIntro.
     opose proof ((proj1 Hinv_adtr) _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
     by eapply lookup_weaken.
-  - iClear "Hhist". iNamed "Hbound". iFrame "#".
-    list_elem ms (uint.nat bound) as mbound.
+  - iClear "Hhist". list_elem ms (uint.nat bound) as mbound.
     iDestruct "Hbound" as "[Hbound|Hbound]"; iNamed "Hbound".
-    + iSpecialize ("Hmap_transf" with "[$Hsubmap $Hin_bound $His_label]").
+    + iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
       { iPureIntro. exact Hmbound_lookup. }
       iNamed "Hmap_transf". iPureIntro.
       opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
       by eapply lookup_weaken_None.
-    + iSpecialize ("Hmap_transf" with "[$Hsubmap $Hin_bound $His_label]").
+    + iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
       { iPureIntro. exact Hmbound_lookup. }
       iNamed "Hmap_transf". iPureIntro.
       destruct (decide $ is_Some $ m !! label) as [[? Hlook_mkey]|]; last first.
