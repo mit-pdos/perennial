@@ -59,72 +59,14 @@ Section msv_core.
 (* maximum sequence of versions. *)
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition lat_pk_comm_reln (lat_pk : lat_val_ty) (lat_comm : lat_opaque_val_ty) : iProp Σ :=
-  match lat_pk, lat_comm with
-  | Some (ep0, pk), Some (ep1, comm) =>
-    "%Heq_ep" ∷ ⌜ ep0 = ep1 ⌝ ∗
-    "#His_comm" ∷ is_comm pk comm
-  | None, None => True
-  | _, _ => False
-  end.
-
-Definition msv_core_aux (m : adtr_map_ty) uid (vals : list opaque_map_val_ty) : iProp Σ :=
-  "%Hlt_vals" ∷ ⌜ length vals < 2^64 ⌝ ∗
-  (∀ (ver : w64) val,
-    "%Hlook_ver" ∷ ⌜ vals !! (uint.nat ver) = Some val ⌝ -∗
-    ∃ label,
-    ("#His_label" ∷ is_vrf uid ver label ∗
-    "%Hin_map" ∷ ⌜ m !! label = Some val ⌝)).
-
-Definition msv_core m uid vals : iProp Σ :=
+Definition msv_core (m : adtr_map_ty) uid vals : iProp Σ :=
   ∃ label,
-  "#Hmsv_aux" ∷ msv_core_aux m uid vals ∗
+  "#Hhist" ∷ ([∗ list] ver ↦ val ∈ vals,
+    ∃ label,
+    "#His_label" ∷ is_vrf uid (W64 ver) label ∗
+    "%Hin_prev" ∷ ⌜ m !! label = Some val ⌝) ∗
   "#His_label" ∷ is_vrf uid (W64 $ length vals) label ∗
   "%Hnin_next" ∷ ⌜ m !! label = None ⌝.
-
-(* TODO: upstream. *)
-Lemma lookup_snoc {A} (l : list A) (x : A) :
-  (l ++ [x]) !! (length l) = Some x.
-Proof. by opose proof (proj2 (lookup_snoc_Some x l (length l) x) _) as H; [naive_solver|]. Qed.
-
-Lemma msv_core_aux_snoc m uid l x :
-  "#Hmsv_aux" ∷ msv_core_aux m uid (l ++ [x]) -∗
-  (∃ label,
-  "#Hmsv_aux" ∷ msv_core_aux m uid l ∗
-  "#His_label" ∷ is_vrf uid (W64 $ length l) label ∗
-  "%Hin_lat" ∷ ⌜ m !! label = Some x ⌝).
-Proof.
-  iNamed 1. iNamed "Hmsv_aux". rewrite app_length in Hlt_vals. list_simplifier.
-  iDestruct ("Hmsv_aux" $! (W64 $ length l) with "[]") as "Hlat".
-  { rewrite nat_thru_w64_id; [|lia]. iPureIntro. apply lookup_snoc. }
-  iNamed "Hlat". iFrame "#%". iSplit. { iPureIntro. lia. }
-  iIntros "*". iNamed 1. iSpecialize ("Hmsv_aux" with "[]").
-  { iPureIntro. rewrite lookup_app_l; [exact Hlook_ver|by eapply lookup_lt_Some]. }
-  iFrame "#".
-Qed.
-
-Lemma msv_core_aux_agree m uid vals0 vals1 :
-  ("#Hmsv_aux0" ∷ msv_core_aux m uid vals0 ∗
-  "#Hmsv_aux1" ∷ msv_core_aux m uid vals1 ∗
-  "%Heq_len" ∷ ⌜ length vals0 = length vals1 ⌝) -∗
-  ⌜ vals0 = vals1 ⌝.
-Proof.
-  revert vals1. induction vals0 as [|x0 l0 IH] using rev_ind;
-    destruct vals1 as [|x1 l1 _] using rev_ind; iNamed 1.
-  - done.
-  - rewrite length_app/= in Heq_len. lia.
-  - rewrite length_app/= in Heq_len. lia.
-  - rewrite !length_app/= in Heq_len.
-    iRename "Hmsv_aux0" into "HM0". iRename "Hmsv_aux1" into "HM1".
-    iDestruct (msv_core_aux_snoc with "HM0") as "H". iNamedSuffix "H" "0".
-    iDestruct (msv_core_aux_snoc with "HM1") as "H". iNamedSuffix "H" "1".
-    assert (length l0 = length l1) as HT by lia.
-    iEval (rewrite HT) in "His_label0". clear HT.
-    iDestruct (is_vrf_func (_, _) with "His_label0 His_label1") as %->.
-    simplify_map_eq/=. specialize (IH l1).
-    iDestruct (IH with "[$Hmsv_aux0 $Hmsv_aux1]") as %->. { iPureIntro. lia. }
-    naive_solver.
-Qed.
 
 Lemma msv_core_len_agree_aux m uid vals0 vals1 :
   ("#Hmsv0" ∷ msv_core m uid vals0 ∗
@@ -132,10 +74,10 @@ Lemma msv_core_len_agree_aux m uid vals0 vals1 :
   "%Hlt_len" ∷ ⌜ length vals0 < length vals1 ⌝) -∗
   False.
 Proof.
-  iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1". iNamed "Hmsv_aux1".
-  list_elem vals1 (uint.nat (length vals0)) as val.
-  iSpecialize ("Hmsv_aux1" with "[]"). { iPureIntro. exact Hval_lookup. }
-  iNamed "Hmsv_aux1".
+  iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
+  list_elem vals1 (length vals0) as val.
+  iDestruct (big_sepL_lookup with "Hhist1") as "H"; [exact Hval_lookup|].
+  iNamed "H".
   iDestruct (is_vrf_func (_, _) with "His_label0 His_label") as %->.
   naive_solver.
 Qed.
@@ -158,10 +100,12 @@ Lemma msv_core_agree m uid vals0 vals1 :
   "#Hmsv1" ∷ msv_core m uid vals1) -∗
   ⌜ vals0 = vals1 ⌝.
 Proof.
-  iNamed 1. iApply msv_core_aux_agree.
-  iPoseProof "Hmsv0" as "Hmsv0'". iPoseProof "Hmsv1" as "Hmsv1'".
-  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1". iFrame "#".
-  iApply msv_core_len_agree. iFrame "Hmsv0' Hmsv1'".
+  iNamed 1.
+  iDestruct (msv_core_len_agree _ _ vals0 vals1 with "[$Hmsv0 $Hmsv1]") as %?.
+  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
+  iApply (big_sepL_func_eq with "Hhist0 Hhist1"); [|done].
+  rewrite /Func. iIntros "*". iNamedSuffix 1 "0". iNamedSuffix 1 "1".
+  iDestruct (is_vrf_func (_,_) with "His_label0 His_label1") as %->. naive_solver.
 Qed.
 
 End msv_core.
@@ -169,19 +113,20 @@ End msv_core.
 Section msv.
 Context `{!heapGS Σ, !pavG Σ}.
 
+Definition pk_comm_reln (lat_pk : lat_val_ty) (lat_comm : lat_opaque_val_ty) : iProp Σ :=
+  match lat_pk, lat_comm with
+  | Some (ep0, pk), Some (ep1, comm) =>
+    "%Heq_ep" ∷ ⌜ ep0 = ep1 ⌝ ∗
+    "#His_comm" ∷ is_comm pk comm
+  | None, None => True
+  | _, _ => False
+  end.
+
 Definition msv (adtr_γ : gname) (ep uid : w64) (lat : lat_val_ty) : iProp Σ :=
   ∃ (m : adtr_map_ty) (vals : list opaque_map_val_ty),
-  "%Hlen_vals" ∷ ⌜ length vals < 2^64 ⌝ ∗
-  "#Hcomm_reln" ∷ lat_pk_comm_reln lat (last vals) ∗
+  "#Hpk_comm_reln" ∷ pk_comm_reln lat (last vals) ∗
   "#Hmap" ∷ mono_list_idx_own adtr_γ (uint.nat ep) m ∗
-  "#Hhist" ∷ ([∗ list] ver ↦ val ∈ vals,
-    ∃ label,
-    "#His_label" ∷ is_vrf uid (W64 ver) label ∗
-    "%Hin_map" ∷ ⌜ m !! label = Some val ⌝) ∗
-  "#Hbound" ∷
-    (∃ label,
-    "#His_label" ∷ is_vrf uid (W64 $ length vals) label ∗
-    "%Hnin_map" ∷ ⌜ m !! label = None ⌝).
+  "#Hmsv_core" ∷ msv_core m uid vals.
 
 Lemma msv_agree γ ep uid lat0 lat1 :
   ("#Hmsv0" ∷ msv γ ep uid lat0 ∗
@@ -189,15 +134,8 @@ Lemma msv_agree γ ep uid lat0 lat1 :
   ⌜ lat0 = lat1 ⌝.
 Proof.
   iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
-  iDestruct (mono_list_idx_agree with "Hmap0 Hmap1") as %->.
-  iClear "Hmap0 Hmap1".
-  iDestruct (msv_core_agree with "[]") as %->; [iSplit|].
-  { iNamed "Hbound0". iFrame "#%". iClear "His_label". iIntros "*". iNamed 1.
-    iDestruct (big_sepL_lookup with "Hhist0") as "H"; [exact Hlook_ver|].
-    iNamed "H". iEval (rewrite w64_to_nat_id) in "His_label". iFrame "#%". }
-  { iNamed "Hbound1". iFrame "#%". iClear "His_label". iIntros "*". iNamed 1.
-    iDestruct (big_sepL_lookup with "Hhist1") as "H"; [exact Hlook_ver|].
-    iNamed "H". iEval (rewrite w64_to_nat_id) in "His_label". iFrame "#%". }
+  iDestruct (mono_list_idx_agree with "Hmap0 Hmap1") as %->. iClear "Hmap0 Hmap1".
+  iDestruct (msv_core_agree _ _ vals vals0 with "[$Hmsv_core0 $Hmsv_core1]") as %->.
   destruct lat0 as [[??]|], lat1 as [[??]|], (last vals0) as [[??]|]; [|done..].
   iNamedSuffix "Hcomm_reln0" "0". iNamedSuffix "Hcomm_reln1" "1".
   iDestruct (is_comm_inj with "His_comm0 His_comm1") as %->. naive_solver.
