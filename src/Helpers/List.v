@@ -9,6 +9,37 @@ Section list.
   Notation list := (list A).
   Implicit Types l : list.
 
+  (* TODO: upstream. *)
+  Lemma list_filter_iff_strong (P1 P2 : A → Prop)
+      `{!∀ x, Decision (P1 x), !∀ x, Decision (P2 x)} l :
+    (∀ i x, l !! i = Some x → (P1 x ↔ P2 x)) →
+    filter P1 l = filter P2 l.
+  Proof.
+    intros HPiff. induction l as [|a l IH]; [done|].
+    opose proof (HPiff 0 a _) as ?; [done|].
+    ospecialize (IH _). { intros i x ?. by ospecialize (HPiff (S i) x _). }
+    destruct (decide (P1 a)).
+    - rewrite !filter_cons_True; [by naive_solver..|]. by rewrite IH.
+    - rewrite !filter_cons_False; [by naive_solver..|]. by rewrite IH.
+  Qed.
+
+  (* TODO: upstream. *)
+  Lemma list_filter_all (P : A → Prop)
+      `{!∀ x, Decision (P x)} l :
+    (∀ i x, l !! i = Some x → P x) →
+    filter P l = l.
+  Proof.
+    intros HP. induction l as [|a l IH]; [done|].
+    opose proof (HP 0 a _) as ?; [done|].
+    ospecialize (IH _). { intros i x ?. by ospecialize (HP (S i) x _). }
+    rewrite filter_cons_True; [done|]. by rewrite IH.
+  Qed.
+
+  (* TODO: upstream. *)
+  Lemma lookup_snoc l x :
+    (l ++ [x]) !! (length l) = Some x.
+  Proof. by opose proof (proj2 (lookup_snoc_Some _ _ (length l) x) _) as ?; [naive_solver|]. Qed.
+
   Lemma list_singleton_exists l :
     length l = 1 →
     ∃ x, l = [x].
