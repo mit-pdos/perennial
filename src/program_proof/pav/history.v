@@ -8,7 +8,7 @@ Section hist.
 Context `{!heapGS Σ, !pavG Σ}.
 
 (* TODO: add inv that says every key in cli submap will have a vrf. *)
-Definition know_hist_val_cliG cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
+Definition is_hist_ep cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
   ∃ (vals : list opaque_map_val_ty),
   "#Hpk_comm_reln" ∷
     ([∗ list] pk_val;comm_val ∈ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist;vals,
@@ -35,10 +35,10 @@ Definition know_hist_val_cliG cli_γ (uid ep : w64) (hist : list map_val_ty) (va
     "%Hgt_bound" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
     "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ]□ Some (bound, comm)))).
 
-Definition know_hist_cliG cli_γ (uid : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
+Definition is_hist cli_γ (uid : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
   "%Hhist_valid" ∷ ([∗ list] x ∈ hist, ⌜ uint.Z x.1 ≤ uint.Z valid ⌝) ∗
-  "#Hknow_vals" ∷ (∀ (ep : w64), ⌜ uint.Z ep ≤ uint.Z valid ⌝ -∗
-    know_hist_val_cliG cli_γ uid ep hist valid).
+  "#Hknow_eps" ∷ (∀ (ep : w64), ⌜ uint.Z ep ≤ uint.Z valid ⌝ -∗
+    is_hist_ep cli_γ uid ep hist valid).
 
 End hist.
 
@@ -47,33 +47,33 @@ Context `{!heapGS Σ, !pavG Σ}.
 
 Lemma hist_val_extend_valid γ uid ep hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
-  know_hist_val_cliG γ uid ep hist valid -∗
-  know_hist_val_cliG γ uid ep hist new_valid.
+  is_hist_ep γ uid ep hist valid -∗
+  is_hist_ep γ uid ep hist new_valid.
 Proof.
   intros ?. iNamed 1. iNamed "Hbound". iExists vals. iFrame "#".
-  iDestruct "Hbound" as "[Hbound|Hbound]"; iNamed "Hbound"; iPureIntro; word.
+  iDestruct "Hbound" as "[H|H]"; iNamed "H"; iPureIntro; word.
 Qed.
 
 Lemma hist_extend_selfmon cli_γ uid hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
-  ("#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist valid ∗
+  ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_bound" ∷ is_my_bound cli_γ uid (W64 $ length hist) new_valid) -∗
-  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist new_valid.
+  "#His_hist" ∷ is_hist cli_γ uid hist new_valid.
 Proof.
-  intros ?. iNamed 1. iNamed "Hknow_hist". iSplit.
+  intros ?. iNamed 1. iNamed "His_hist". iSplit.
   { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
     specialize (Hhist_valid _ _ Hlook). word. }
   iIntros (ep ?). destruct (decide (uint.Z ep ≤ uint.Z valid)).
-  { iSpecialize ("Hknow_vals" $! ep with "[]"). { iPureIntro. word. }
-    iApply (hist_val_extend_valid with "Hknow_vals"). word. }
-  iSpecialize ("Hknow_vals" $! valid with "[]"). { iPureIntro. lia. }
-  iNamed "Hknow_vals". iExists vals. iSplit; [|iSplit].
+  (* case 1: ep ≤ valid. *)
+  { iSpecialize ("Hknow_eps" $! ep with "[]"). { iPureIntro. word. }
+    iApply (hist_val_extend_valid with "Hknow_eps"). word. }
+  (* case 2: valid < ep ≤ new_valid. *)
+  iSpecialize ("Hknow_eps" $! valid with "[]"). { iPureIntro. lia. }
+  iNamed "Hknow_eps". iExists vals. iSplit; [|iSplit].
   - rewrite (list_filter_iff_strong
       (λ x, uint.Z x.1 ≤ uint.Z ep)
-      (λ x, uint.Z x.1 ≤ uint.Z valid) hist); last first.
-    { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook).
-      naive_solver word. }
-    iFrame "#".
+      (λ x, uint.Z x.1 ≤ uint.Z valid) hist); [iFrame "#"|].
+    intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
   - iFrame "#".
   - iClear "Hhist Hbound".
     iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
@@ -82,21 +82,77 @@ Proof.
     iNamed "His_bound". rewrite Hlen_vals. by iFrame "#%".
 Qed.
 
+Lemma hist_extend_put cli_γ uid hist valid new_valid pk :
+  uint.Z valid < uint.Z new_valid →
+  ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
+  "#His_my_key" ∷ is_my_key cli_γ uid (W64 $ length hist) new_valid pk) -∗
+  "#His_hist" ∷ is_hist cli_γ uid (hist ++ [(new_valid, pk)]) new_valid.
+Proof.
+  intros ?. iNamed 1. iNamed "His_hist". iSplit.
+  { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
+    apply lookup_app_Some in Hlook as [Hlook|[_ Hlook]].
+    - specialize (Hhist_valid _ _ Hlook). word.
+    - apply list_lookup_singleton_Some in Hlook as [_ ?]. by simplify_eq/=. }
+  iIntros (ep ?). destruct (decide (uint.Z ep < uint.Z new_valid)).
+  - iEval (rewrite /is_hist_ep). rewrite filter_app.
+    opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
+      (new_valid, pk)) as [[->_]|[_?]]. 2: { exfalso. simpl in *. word. }
+    list_simplifier. destruct (decide (uint.Z ep ≤ uint.Z valid)).
+    (* case 1: ep ≤ valid. *)
+    + iSpecialize ("Hknow_eps" $! ep with "[]"). { iPureIntro. word. }
+      iNamed "Hknow_eps". iExists (vals). iNamed "Hbound". iFrame "#".
+      iDestruct "Hbound" as "[H|H]"; iNamed "H"; iPureIntro; word.
+    (* case 2: valid < ep < new_valid. *)
+    + iSpecialize ("Hknow_eps" $! valid with "[//]").
+      iNamed "Hknow_eps". iExists (vals). iFrame "#". iSplit.
+      * rewrite (list_filter_iff_strong
+          (λ x, uint.Z x.1 ≤ uint.Z ep)
+          (λ x, uint.Z x.1 ≤ uint.Z valid) hist); [iFrame "#"|].
+        intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
+      * iNamed "His_my_key". iFrame "#".
+        iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
+        rewrite list_filter_all in Hlen_vals; last first.
+        { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook).
+          simpl in *. word. }
+        rewrite Hlen_vals. iFrame "#". iSplit; [done|]. iRight. iPureIntro. word.
+  (* case 3: ep = new_valid. *)
+  - iSpecialize ("Hknow_eps" $! valid with "[//]").
+    iNamed "Hknow_eps". iNamed "His_my_key".
+    iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
+    iExists (vals ++ [(new_valid, comm)]).
+    rewrite list_filter_all in Hlen_vals; last first.
+    { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
+    rewrite Hlen_vals. iSplit; [|iSplit].
+    + rewrite filter_app.
+      opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
+        (new_valid, pk)) as [[_?]|[->_]]. { exfalso. simpl in *. word. }
+      iApply big_sepL2_snoc. iSplit.
+      * rewrite (list_filter_iff_strong
+          (λ x, uint.Z x.1 ≤ uint.Z ep)
+          (λ x, uint.Z x.1 ≤ uint.Z valid) hist); [iFrame "#"|].
+        intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
+      * simpl in *. by iFrame "#".
+    + iApply big_sepL_snoc. iFrame "#".
+    + rewrite length_app. simpl.
+      replace (W64 (length vals + 1)%nat) with (word.add (W64 1) (W64 $ length vals)) by word.
+      iFrame "#". iSplit; [done|]. iLeft. iPureIntro. word.
+Qed.
+
 Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
   last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
 
 Lemma hist_audit_msv cli_γ uid hist valid adtr_γ aud_ep (ep : w64) :
   uint.Z ep ≤ uint.Z valid →
   uint.Z valid < uint.Z aud_ep →
-  ("#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist valid ∗
+  ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
   "#Hmsv" ∷ msv adtr_γ ep uid (get_lat hist ep).
 Proof.
   intros ??. iNamed 1.
-  iNamed "Hknow_hist". iSpecialize ("Hknow_vals" $! ep with "[//]").
+  iNamed "His_hist". iSpecialize ("Hknow_eps" $! ep with "[//]").
   iNamed "His_audit". list_elem ms (uint.nat ep) as m.
   iDestruct (mono_list_idx_own_get _ _ Hm_lookup with "Hadtr_maps") as "Hadtr_map".
-  iFrame "Hadtr_map". iNamed "Hknow_vals". iExists vals. iSplit.
+  iFrame "Hadtr_map". iNamed "Hknow_eps". iExists vals. iSplit.
   { iClear "Hhist Hbound".
     iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
     destruct (get_lat hist ep) as [[??]|] eqn:Hlat_pk, (last vals) as [[??]|]
@@ -107,7 +163,9 @@ Proof.
       iFrame "#".
     + apply lookup_lt_Some in Hlat_pk. apply lookup_ge_None in Hlat_comm. lia.
     + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_comm. lia. }
-  iNamedSuffix "Hbound" "_bnd". iFrame "#". iSplit.
+  iNamedSuffix "Hbound" "_bnd". iFrame "#".
+  list_elem ms (uint.nat bound) as mbound.
+  iSplit; [|iClear "Hhist"; iDestruct "Hbound" as "[H|H]"; iNamed "H"].
   - iClear "Hbound". iApply (big_sepL_impl with "Hhist").
     iIntros (?[prior ?]) "!> %Hlook_vals". iNamed 1. iFrame "#".
     (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
@@ -122,21 +180,19 @@ Proof.
     iNamed "H". iPureIntro.
     opose proof ((proj1 Hinv_adtr) _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
     by eapply lookup_weaken.
-  - iClear "Hhist". list_elem ms (uint.nat bound) as mbound.
-    iDestruct "Hbound" as "[Hbound|Hbound]"; iNamed "Hbound".
-    + iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
-      { iPureIntro. exact Hmbound_lookup. }
-      iNamed "Hmap_transf". iPureIntro.
-      opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
-      by eapply lookup_weaken_None.
-    + iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
-      { iPureIntro. exact Hmbound_lookup. }
-      iNamed "Hmap_transf". iPureIntro.
-      destruct (decide $ is_Some $ m !! label) as [[? Hlook_mkey]|]; last first.
-      { by eapply eq_None_not_Some. }
-      opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
-      opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
-      opose proof ((proj2 Hinv_adtr) _ _ _ _ _ Hm_lookup Hlook_mkey) as ?. word.
+  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
+    { iPureIntro. exact Hmbound_lookup. }
+    iNamed "Hmap_transf". iPureIntro.
+    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+    by eapply lookup_weaken_None.
+  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
+    { iPureIntro. exact Hmbound_lookup. }
+    iNamed "Hmap_transf". iPureIntro.
+    destruct (decide $ is_Some $ m !! label) as [[? Hlook_mkey]|]; last first.
+    { by eapply eq_None_not_Some. }
+    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+    opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
+    opose proof ((proj2 Hinv_adtr) _ _ _ _ _ Hm_lookup Hlook_mkey) as ?. word.
 Qed.
 
 End hist_derived.
@@ -154,7 +210,7 @@ Definition own_hist cli_γ uid sl_hist hist valid : iProp Σ :=
   ∃ dim0_hist,
   "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
   "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, own_HistEntry p o) ∗
-  "#Hknow_hist" ∷ know_hist_cliG cli_γ uid hist valid.
+  "#His_hist" ∷ is_hist cli_γ uid hist valid.
 
 Lemma wp_put_hist cli_γ uid sl_hist hist ptr_e e :
   match last hist with

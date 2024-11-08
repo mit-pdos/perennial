@@ -83,9 +83,9 @@ Definition is_my_key cli_γ uid ver ep pk : iProp Σ :=
   ∃ dig sm_γ comm label0 label1,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
   "#Hcomm" ∷ is_comm pk comm ∗
-  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep, comm)) ∗
+  "#Hin_map_lat" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep, comm)) ∗
   "#His_label0" ∷ is_vrf uid ver label0 ∗
-  "#Hbound" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None ∗
+  "#Hnin_map_next" ∷ (uid, word.add (W64 1) ver) ↪[sm_γ]□ None ∗
   "#His_label1" ∷ is_vrf uid (word.add (W64 1) ver) label1.
 
 Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
@@ -114,7 +114,7 @@ Proof. Admitted.
 Definition is_my_bound cli_γ uid ver (ep : w64) : iProp Σ :=
   ∃ dig sm_γ label,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hbound" ∷ (uid, ver) ↪[sm_γ]□ None ∗
+  "#Hnin_map_next" ∷ (uid, ver) ↪[sm_γ]□ None ∗
   "#His_label" ∷ is_vrf uid ver label.
 
 Lemma wp_Client__SelfMon ptr_c c :
@@ -139,7 +139,7 @@ Proof. Admitted.
 Definition is_no_other_key cli_γ uid (ep : epoch_ty) : iProp Σ :=
   ∃ dig sm_γ label,
   "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hbound" ∷ (uid, W64 0) ↪[sm_γ]□ None ∗
+  "#Hnin_map" ∷ (uid, W64 0) ↪[sm_γ]□ None ∗
   "#His_label" ∷ is_vrf uid (W64 0) label.
 
 Definition is_other_key cli_γ uid (ep : epoch_ty) pk : iProp Σ :=
@@ -154,7 +154,7 @@ Definition is_other_key cli_γ uid (ep : epoch_ty) pk : iProp Σ :=
   "#Hcomm" ∷ is_comm pk comm0 ∗
   "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep0, comm0)) ∗
   "#His_label0" ∷ is_vrf uid ver label0 ∗
-  "#Hbound" ∷ (uid, (word.add ver (W64 1))) ↪[sm_γ]□ None ∗
+  "#Hnin_map_next" ∷ (uid, (word.add ver (W64 1))) ↪[sm_γ]□ None ∗
   "#His_label1" ∷ is_vrf uid (word.add ver (W64 1)) label1.
 
 Lemma wp_Client__Get ptr_c c uid :

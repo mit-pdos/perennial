@@ -137,7 +137,7 @@ Proof.
   iDestruct (mono_list_idx_agree with "Hmap0 Hmap1") as %->. iClear "Hmap0 Hmap1".
   iDestruct (msv_core_agree _ _ vals vals0 with "[$Hmsv_core0 $Hmsv_core1]") as %->.
   destruct lat0 as [[??]|], lat1 as [[??]|], (last vals0) as [[??]|]; [|done..].
-  iNamedSuffix "Hcomm_reln0" "0". iNamedSuffix "Hcomm_reln1" "1".
+  iNamedSuffix "Hpk_comm_reln0" "0". iNamedSuffix "Hpk_comm_reln1" "1".
   iDestruct (is_comm_inj with "His_comm0 His_comm1") as %->. naive_solver.
 Qed.
 
