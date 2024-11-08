@@ -390,6 +390,29 @@ Section translate.
                f_equal. f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
                f_equal; eauto.
+      * (* AtomicStore *)
+        inversion Hstep; monad_inv.
+        inv H1. inv H2. monad_inv.
+        destruct x0. destruct n; monad_inv.
+        destruct n; monad_inv.
+        inv H3; monad_inv.
+        destruct (heap σ1 !! l) eqn:Heq; subst.
+        ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H); monad_inv.
+           inversion H.
+           intuition.
+           exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                      world := world pσ2 |}).
+           eexists.
+           split_and!.
+           *** simpl in *. split_and!; eauto.
+           *** eauto.
+           *** econstructor; eauto; repeat econstructor; eauto.
+               { rewrite //=. rewrite Heq. econstructor; eauto. }
+               rewrite //=. repeat econstructor; eauto. f_equal.
+               f_equal. destruct pσ2; subst.
+               simpl in * => //=. rewrite /RecordSet.set //=.
+               congruence.
+        ** inversion H4; intuition.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       inversion Hstep; monad_inv.
@@ -845,7 +868,8 @@ Section translate.
            *** repeat econstructor => //=.
         ** right. split_and!; eauto.
            split_and!; eauto. rewrite /RecordSet.set//=. congruence.
-      * inversion Hstep; monad_inv.
+      * (* FinishStore *)
+        inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1. subst.
         inversion H3; monad_inv; subst; clear H3.
         destruct (decide (is_Writing (heap pσ1 !! l))); monad_inv.
@@ -859,6 +883,28 @@ Section translate.
            *** repeat econstructor => //=.
         ** right. split_and!; eauto.
            split_and!; eauto. rewrite /RecordSet.set//=. congruence.
+      * (* AtomicStore *)
+        inversion Hstep; monad_inv.
+        inversion H1; monad_inv; clear H1.
+        simpl in H2; inversion H2; monad_inv; subst; clear H2.
+        destruct x0. destruct n; monad_inv.
+        destruct n; monad_inv.
+        inversion H3; monad_inv; subst; clear H3.
+        destruct (heap pσ1 !! l) eqn:Heq; subst.
+        ** inversion H7; monad_inv; subst.
+           inversion H.
+           intuition.
+           eexists ({| heap := _; oracle := oracle σ1; trace := trace σ1;
+                      world := world σ1 |}).
+           do 2 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+               { rewrite //=. rewrite H1 Heq. econstructor; eauto. }
+               subst.
+               rewrite //=. repeat econstructor; eauto.
+           *** right. split_and!; eauto.
+               split_and!; eauto. rewrite /RecordSet.set//=. congruence.
+        ** inversion H7; intuition.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       inversion Hstep; monad_inv.
@@ -1518,7 +1564,8 @@ Section translate.
            simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
            intuition congruence.
         ** rewrite //=.
-      * inversion Hstep; monad_inv.
+      * (* FinishStore *)
+        inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H. subst.
         inversion H1; monad_inv; subst; clear H1.
         destruct (decide (is_Writing (heap pσ1 !! l))); monad_inv.
@@ -1532,6 +1579,27 @@ Section translate.
            simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
            intuition congruence.
         ** rewrite //=.
+      * (* AtomicStore *)
+        inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H.
+        simpl in H0; inversion H0; monad_inv; subst; clear H0.
+        destruct x0. destruct n; monad_inv.
+        destruct n; monad_inv.
+        inversion H1; monad_inv; subst; clear H1.
+        destruct (heap pσ1 !! l) eqn:Heq; subst.
+        ** inversion H5; monad_inv; subst.
+           destruct Hmatch_curr as (?&?&?&?).
+           do 4 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+               { rewrite //=. rewrite -H Heq. econstructor; eauto. }
+               subst.
+               rewrite //=. repeat econstructor; eauto.
+           *** split_and!; eauto. destruct pσ1, pσ1' => //=.
+               simpl in H. rewrite -H. eauto.
+           *** eauto.
+           *** econstructor; eauto; repeat econstructor; eauto.
+        ** inversion H5; intuition.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       inversion Hstep; monad_inv.

@@ -1144,6 +1144,24 @@ Section go_refinement.
            rewrite /= /foheap in Hstep. eapply Hstep.
            rewrite /Free. apply lookup_insert.
         ** exfalso; eauto.
+      * inv_expr_impl; inv_base_step. monad_inv.
+        destruct (heap _ !! l) as [(?&?)|] eqn:Heq; subst.
+        ** inv_base_step. monad_inv.
+           inv_base_step.
+           destruct n; inv_base_step; monad_inv; try done; [].
+           destruct n; inv_base_step; monad_inv; try done; [].
+           eapply abstraction_heap_lookup in Heq as (sv&Hlook&Hrel); eauto.
+           do 4 eexists. split_and!; eauto.
+           { repeat econstructor; rewrite ?Hlook => //=. repeat econstructor. }
+           apply abstraction_insert; auto.
+           assert (base_step_atomic (AtomicStore #l v0) sσ1 sg1 [] #() (RecordSet.set heap <[l:=Free v0]> sσ1) sg1 []) as Hstep.
+           { econstructor. econstructor; unfold check; rewrite ?ifThenElse_if //.
+             repeat (monad_simpl; simpl). }
+           apply foval_val_impl_relation; auto.
+           apply Hfohead in Hstep.
+           rewrite /= /foheap in Hstep. eapply Hstep.
+           rewrite /Free. apply lookup_insert.
+        **  inv_base_step. monad_inv. exfalso; eauto.
     - rewrite /base_step//= in Hstep.
       monad_inv; destruct_head.
       inv_base_step. monad_inv. inv_base_step.
@@ -1390,6 +1408,17 @@ Section go_refinement.
            }
            do 4 eexists; eauto.
         ** exfalso; eauto.
+      * inv_expr_impl; inv_base_step. monad_inv.
+        destruct (heap _ !! l) as [(?&?)|] eqn:Heq; subst.
+        ** inv_base_step. monad_inv.
+           inv_base_step.
+           destruct n; inv_base_step; monad_inv; try done; [].
+           destruct n; inv_base_step; monad_inv; try done; [].
+           eapply abstraction_heap_lookupS in Heq as (sv&Hlook&Hrel); eauto.
+           do 4 eexists.
+           { repeat econstructor; repeat (monad_simpl; simpl); rewrite ?Hlook => //=. }
+        ** inv_base_step. monad_inv. exfalso; eauto.
+
     - rewrite /base_step//= in Hstep.
       monad_inv; destruct_head.
       inv_base_step. monad_inv. inv_base_step.
