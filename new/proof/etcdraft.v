@@ -53,91 +53,6 @@ Lemma wp_entsWithConfig terms_sl (terms : list u64) :
 Proof.
 Admitted.
 
-(*
-Tactic Notation "wp_load" :=
-  let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_load: cannot find" l "↦ ?" in
-  lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    (first
-        [wp_bind (load_ty _ (Val _)); eapply tac_wp_load_ty
-        |fail 1 "wp_load: cannot find 'load_ty' in" e];
-      [solve_pointsto () |] )
-  | _ => fail "wp_load: not a 'wp'"
-  end. *)
-
-Class PointsToAccess {V Vsmall}
-  {t tsmall} `{!IntoVal V} `{!IntoVal Vsmall} `{!IntoValTyped V t} `{!IntoValTyped Vsmall tsmall}
-  (l' l : loc) (v : V) (vsmall : Vsmall) (update : Vsmall → V → V) : Prop :=
-  {
-    points_to_acc : ∀ dq, l' ↦{dq} v -∗ l ↦{dq} vsmall ∗
-                        (∀ vsmall', l ↦{dq} vsmall' -∗ l' ↦{dq} (update vsmall' v));
-    points_to_update_eq : update vsmall v = v
-  }.
-
-Import environments.
-
-Lemma tac_wp_load_ty {V t Vsmall tsmall}
-  `{!IntoVal V} `{!IntoValTyped V t} `{!IntoVal Vsmall} `{!IntoValTyped Vsmall tsmall}
-  (l' l : loc) (v : V) (vsmall : Vsmall) update Δ s E i dq Φ is_pers
-  `{!PointsToAccess l' l v vsmall update} :
-  envs_lookup i Δ = Some (is_pers, typed_pointsto l' dq v)%I →
-  envs_entails Δ (Φ #vsmall) →
-  envs_entails Δ (WP (load_ty tsmall #l) @ s; E {{ Φ }}).
-Proof using Type*.
-  rewrite envs_entails_unseal => ? HΦ.
-  rewrite envs_lookup_split //.
-  iIntros "[H Henv]".
-  destruct is_pers; simpl.
-  - iDestruct "H" as "#H".
-    iDestruct (points_to_acc with "H") as "[H' _]".
-    wp_load.
-    iApply HΦ. iApply "Henv". iFrame "#".
-  - iDestruct (points_to_acc with "H") as "[H Hclose]".
-    wp_load.
-    iApply HΦ. iApply "Henv".
-    iSpecialize ("Hclose" with "[$]").
-    rewrite points_to_update_eq. iFrame.
-Qed.
-
-(* XXX: what about getting rid of the [t] parameter and using [structT d] in its place? *)
-Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) {t tf : go_type}
-  `{!IntoVal V} `{!IntoValTyped V t}
-  `{!IntoVal Vf} `{!IntoValTyped Vf tf}
-  `{!IntoValStructField f t proj} `{!SetterWf proj}
-  `{!struct.Wf t}
-  : PointsToAccess l (struct.field_ref_f t f l) v (proj v) (λ vf', set proj (λ _, vf')).
-Proof.
-  constructor.
-  - intros. by iApply struct_fields_acc_update.
-  - by rewrite RecordSet.set_eq.
-Qed.
-
-Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t}
-  : PointsToAccess l l v v (λ v' _, v').
-Proof. constructor; [eauto with iFrame|done]. Qed.
-
-Import Ltac2.
-Set Default Proof Mode "Classic".
-Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
-Ltac2 wp_load () :=
-  lazy_match! goal with
-  | [ |- envs_entails _ (wp _ _ _ _) ] =>
-      let _ := (orelse
-        (fun () =>
-           let e := wp_bind_filter (Std.unify '(load_ty _ (Val _))) in
-           match! e with (App (Val (load_ty _)) (Val #?l)) => l end
-        )
-        (fun _ => Control.backtrack_tactic_failure "wp_load: could not bind to load instruction")
-      ) in
-      (* XXX: we want to backtrack to typeclass search if [iAssumptionCore] failed. *)
-
-      (* The orelse avoids failures higher-level from backtracking down into the tc_solve_many here. *)
-      orelse (fun _ => eapply (tac_wp_load_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore) |])
-             (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")
-  end.
-
 Lemma wp_network__send nw msgs_sl dq (n : network.t) (msgs : list Message.t) :
   {{{
         "Hmsg" ∷ msgs_sl ↦*{dq} msgs ∗
@@ -157,7 +72,7 @@ Proof.
   wp_pures.
   wp_for.
   wp_pures.
-  ltac2:(wp_load ()).
+  wp_load.
   wp_pures.
   case_bool_decide as Hlt.
   - rewrite decide_True //. (* Case: more messages to send *)
@@ -177,7 +92,7 @@ Proof.
       rewrite !word.signed_eq_swrap_unsigned /word.swrap in Hlt.
       word.
     }
-    ltac2:(wp_load ()).
+    wp_load.
     wp_pures.
     iDestruct ("Hmsg" with "[$]") as "Hmsg".
     rewrite list_insert_id; last done.
@@ -185,10 +100,10 @@ Proof.
     wp_pures.
     wp_alloc p as "?".
     wp_pures.
-    ltac2:(wp_load ()).
-    ltac2:(wp_load ()).
+    wp_load.
+    wp_load.
     wp_pures.
-    ltac2:(wp_load ()).
+    wp_load.
     iDestruct "Hn_peers" as (?) "Hn_peers".
     wp_apply (wp_map_get with "[$]").
     iIntros "_".
@@ -198,14 +113,16 @@ Proof.
     wp_load.
     wp_pures.
 
-    ltac2:(wp_load ()).
+    wp_load.
     wp_pures.
     (* XXX: should be an "irrelevant" if statement. *)
     case_bool_decide.
     + (* no testing object, so no logging. *)
       wp_pures.
-      (* FIXME: combine back the Message points-to, or avoid splitting it up in the first place. *)
       wp_load.
+      wp_pures.
+      wp_load.
+      (* FIXME: deal with stateMachine interface [Step] function *)
       admit.
     + admit.
   - rewrite decide_False; last naive_solver.
@@ -256,9 +173,6 @@ Proof.
   wp_alloc tests as "Htests".
   wp_steps.
 
-  (* wp_bind (slice.literal _ _)%E.
-  unshelve iPoseProofCore (wp_slice_literal stateMachine _ with "[//]") as false
-    (fun Htmp => iApplyHyp Htmp). *)
   (* FIXME: find a way to avoid shelved typeclass goal. Not sure why [_] is
      needed to avoid the shelved goal. *)
   wp_apply (wp_slice_literal stateMachine _).
@@ -342,15 +256,15 @@ Proof.
   unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "Hsl".
 
-  (* FIXME: better tactic for splitting. *)
   wp_pures.
-  ltac2:(wp_load ()).
+  wp_load.
   wp_pures.
   wp_apply (wp_network__send with "[Hnw1 $Hsl]").
   { iDestruct "Hnw1" as "($ & $ & $)". }
   wp_steps.
   wp_alloc sm_ptr as "?".
   wp_steps.
+  wp_load.
   (* TODO: should get of ownership of network struct from newNetworkWithConfigInit *)
   Show Ltac Profile.
 Admitted.

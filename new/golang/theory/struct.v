@@ -265,4 +265,16 @@ Proof.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
 Qed.
+
+Global Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) {t tf : go_type}
+  `{!IntoVal V} `{!IntoValTyped V t}
+  `{!IntoVal Vf} `{!IntoValTyped Vf tf}
+  `{!IntoValStructField f t proj} `{!SetterWf proj}
+  `{!struct.Wf t}
+  : PointsToAccess l (struct.field_ref_f t f l) v (proj v) (λ vf', set proj (λ _, vf')).
+Proof.
+  constructor.
+  - intros. by iApply struct_fields_acc_update.
+  - by rewrite RecordSet.set_eq.
+Qed.
 End wps.

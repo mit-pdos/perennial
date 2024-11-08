@@ -11,7 +11,6 @@ Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
-Transparent to_val.
 Section goose_lang.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
@@ -246,7 +245,7 @@ Section goose_lang.
     iFrame.
   Qed.
 
-  Lemma wp_typed_load stk E q l v :
+  Lemma wp_load_ty stk E q l v :
     {{{ ▷ l ↦{q} v }}}
       load_ty t #l @ stk; E
     {{{ RET #v; l ↦{q} v }}}.
@@ -349,7 +348,7 @@ Section goose_lang.
     by iApply (wp_finish_store with "[$Hl $Hl']").
   Qed.
 
-  Lemma wp_typed_store stk E l v v' :
+  Lemma wp_store_ty stk E l v v' :
     {{{ ▷ l ↦ v }}}
       (#l <-[t] #v')%V @ stk; E
     {{{ RET #(); l ↦ v' }}}.
@@ -439,44 +438,6 @@ Section goose_lang.
       rewrite ?right_id. iFrame.
   Qed.
 
-  Lemma tac_wp_load_ty Δ s E i l dq v Φ is_pers :
-    envs_lookup i Δ = Some (is_pers, typed_pointsto l dq v)%I →
-    envs_entails Δ (Φ #v) →
-    envs_entails Δ (WP (load_ty t #l) @ s; E {{ Φ }}).
-  Proof using Type*.
-    rewrite envs_entails_unseal => ? HΦ.
-    rewrite envs_lookup_split //.
-    iIntros "[H Henv]".
-    destruct is_pers; simpl.
-    - iDestruct "H" as "#H". wp_apply (wp_typed_load with "[$]").
-      iIntros "_". iApply HΦ. iApply "Henv". iFrame "#".
-    - wp_apply (wp_typed_load with "[$]"). iIntros "H". iApply HΦ.
-      iApply "Henv". iFrame.
-  Qed.
-
-  Lemma tac_wp_store_ty Δ Δ' stk E i l v v' Φ :
-    envs_lookup i Δ = Some (false, l ↦ v)%I →
-    envs_simple_replace i false (Esnoc Enil i (l ↦ v')) Δ = Some Δ' →
-    envs_entails Δ' (Φ #())  →
-    envs_entails Δ (WP (store_ty t #l (Val #v')) @ stk; E {{ Φ }}).
-  Proof using Type*.
-    intros Hty.
-    rewrite envs_entails_unseal=> ??.
-    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_typed_store.
-    rewrite -bi.later_sep envs_simple_replace_sound // /= right_id -bi.later_intro.
-    by apply bi.sep_mono_r, bi.wand_mono.
-  Qed.
-
-  Lemma tac_wp_ref_ty Δ stk E v Φ :
-    (∀ l, envs_entails Δ (l ↦ v -∗ Φ #l)) →
-    envs_entails Δ (WP (ref_ty t #v) @ stk; E {{ Φ }}).
-  Proof.
-    rewrite envs_entails_unseal => Hwp.
-    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_ref_ty.
-    rewrite left_id -bi.later_intro.
-    by apply bi.forall_intro.
-  Qed.
-
   Definition is_primitive_type (t : go_type) : Prop :=
     match t with
     | structT d => False
@@ -537,39 +498,114 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                               (at level 20, dq custom dfrac at level 50,
                                format "l  ↦ dq  v") : bi_scope.
 
-Create HintDb has_go_type.
-Hint Constructors has_go_type : has_go_type.
-Hint Resolve zero_val_has_go_type : has_go_type.
+Section tac_lemmas.
+  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+
+  Class PointsToAccess {V Vsmall}
+    {t tsmall} `{!IntoVal V} `{!IntoVal Vsmall} `{!IntoValTyped V t} `{!IntoValTyped Vsmall tsmall}
+    (l' l : loc) (v : V) (vsmall : Vsmall) (update : Vsmall → V → V) : Prop :=
+    {
+      points_to_acc : ∀ dq, l' ↦{dq} v -∗ l ↦{dq} vsmall ∗
+                            (∀ vsmall', l ↦{dq} vsmall' -∗ l' ↦{dq} (update vsmall' v));
+      points_to_update_eq : update vsmall v = v
+    }.
+
+  Lemma tac_wp_load_ty {V t Vsmall tsmall}
+    `{!IntoVal V} `{!IntoValTyped V t} `{!IntoVal Vsmall} `{!IntoValTyped Vsmall tsmall}
+    (l' l : loc) (v : V) (vsmall : Vsmall) update Δ s E i dq Φ is_pers
+    `{!PointsToAccess l' l v vsmall update} :
+    envs_lookup i Δ = Some (is_pers, l' ↦{dq} v)%I →
+    envs_entails Δ (Φ #vsmall) →
+    envs_entails Δ (WP (load_ty tsmall #l) @ s; E {{ Φ }}).
+  Proof using Type*.
+    rewrite envs_entails_unseal => ? HΦ.
+    rewrite envs_lookup_split //.
+    iIntros "[H Henv]".
+    destruct is_pers; simpl.
+    - iDestruct "H" as "#H".
+      iDestruct (points_to_acc with "H") as "[H' _]".
+      unshelve wp_apply (wp_load_ty with "[$]"); first apply _.
+      iIntros "?".
+      iApply HΦ. iApply "Henv". iFrame "#".
+    - iDestruct (points_to_acc with "H") as "[H Hclose]".
+      unshelve wp_apply (wp_load_ty with "[$]"); first apply _.
+      iIntros "?".
+      iApply HΦ. iApply "Henv".
+      iSpecialize ("Hclose" with "[$]").
+      rewrite points_to_update_eq. iFrame.
+  Qed.
+
+  Lemma tac_wp_store_ty {V t Vsmall tsmall}
+    `{!IntoVal V} `{!IntoValTyped V t} `{!IntoVal Vsmall} `{!IntoValTyped Vsmall tsmall}
+    (l' l : loc) (v : V) (vsmall vsmall' : Vsmall) update Δ Δ' s E i Φ
+    `{!PointsToAccess l' l v vsmall update} :
+    envs_lookup i Δ = Some (false, l' ↦ v)%I →
+    envs_simple_replace i false (Esnoc Enil i (l' ↦ (update vsmall' v))) Δ = Some Δ' →
+    envs_entails Δ' (Φ #()) →
+    envs_entails Δ (WP (store_ty tsmall #l (Val #vsmall')) @ s; E {{ Φ }}).
+  Proof.
+    rewrite envs_entails_unseal => ?? HΦ.
+    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_store_ty.
+    rewrite -bi.later_sep envs_simple_replace_sound // /= right_id -bi.later_intro.
+    iIntros "[Hl Hw]".
+    unshelve iDestruct (points_to_acc with "Hl") as "[$ Hl]".
+    iIntros "?". iSpecialize ("Hl" with "[$]").
+    iApply HΦ. by iApply "Hw".
+  Qed.
+
+  Lemma tac_wp_ref_ty
+    `{!IntoVal V} `{!IntoValTyped V t}
+    Δ stk E (v : V) Φ :
+    (∀ l, envs_entails Δ (l ↦ v -∗ Φ #l)) →
+    envs_entails Δ (WP (ref_ty t #v) @ stk; E {{ Φ }}).
+  Proof.
+    rewrite envs_entails_unseal => Hwp.
+    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_ref_ty.
+    rewrite left_id -bi.later_intro.
+    by apply bi.forall_intro.
+  Qed.
+
+  Global Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t}
+    : PointsToAccess l l v v (λ v' _, v').
+  Proof. constructor; [eauto with iFrame|done]. Qed.
+
+End tac_lemmas.
+
+Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
+Ltac2 wp_load () :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (wp _ _ _ _) ] =>
+      let _ := (orelse
+                  (fun () =>
+                     let e := wp_bind_filter (Std.unify '(load_ty _ (Val _))) in
+                     match! e with (App (Val (load_ty _)) (Val #?l)) => l end
+                  )
+                  (fun _ => Control.backtrack_tactic_failure "wp_load: could not bind to load instruction")
+               ) in
+
+      (* The orelse avoids failures higher-level from backtracking down into the
+         tc_solve_many here, but allows failed iAssumptionCore to backtrack. *)
+      orelse (fun _ => eapply (tac_wp_load_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore) |])
+        (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")
+  end.
+
+Ltac2 wp_store () :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (wp _ _ _ _) ] =>
+      orelse (fun () => let _ := wp_bind_filter (Std.unify '(store_ty _ _ (Val _))) in ())
+        (fun _ => Control.backtrack_tactic_failure "wp_store: could not bind to store instruction");
+      (* XXX: we want to backtrack to typeclass search if [iAssumptionCore] failed. *)
+
+      (* The orelse avoids failures higher-level from backtracking down into the tc_solve_many here. *)
+      orelse (fun _ => eapply (tac_wp_store_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore)
+                                               |ltac1:(pm_reflexivity) | ])
+        (fun _ => Control.backtrack_tactic_failure "wp_store: could not find a points-to in context covering the address")
+  end.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   first [wp_bind (ref_ty _ _) | fail "cannot find ref_ty"];
   (eapply tac_wp_ref_ty || fail "cannot apply wp_ref_ty");
   iIntros (l) H.
 
-Tactic Notation "wp_load" :=
-  let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
-    iAssumptionCore || fail "wp_load: cannot find" l "↦ ?" in
-  lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    (first
-        [wp_bind (load_ty _ (Val _)); eapply tac_wp_load_ty
-        |fail 1 "wp_load: cannot find 'load_ty' in" e];
-      [solve_pointsto () |] )
-  | _ => fail "wp_load: not a 'wp'"
-  end.
-
-Tactic Notation "wp_store" :=
-  let solve_pointsto _ :=
-    let l := match goal with |- _ = Some (_, (?l ↦ _)%I) => l end in
-    iAssumptionCore || fail "wp_store: cannot find" l "↦ ?" in
-  lazymatch goal with
-  | |- envs_entails _ (wp ?s ?E ?e ?Q) =>
-    first
-      [wp_bind (store_ty _ (Val _) (Val _)); eapply tac_wp_store_ty
-      |fail 1 "wp_store: cannot find 'store_ty' in" e];
-    [solve_pointsto ()
-    |reduction.pm_reflexivity
-    |first [wp_pure | idtac ]]
-  | _ => fail "wp_store: not a 'wp'"
-  end.
+Tactic Notation "wp_load" := ltac2:(Control.enter wp_load).
+Tactic Notation "wp_store" := ltac2:(Control.enter wp_store).
