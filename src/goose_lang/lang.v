@@ -104,6 +104,7 @@ Inductive prim_op1 : Set :=
 Inductive prim_op2 : Set :=
  | AllocNOp (* array length (positive number), initial value *)
  | FinishStoreOp (* pointer, value *)
+ | AtomicStoreOp (* pointer, value *) (* atomic store *)
 .
 
 Inductive arity : Set := args0 | args1 | args2.
@@ -172,6 +173,7 @@ Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
+Notation AtomicStore := (Primitive2 AtomicStoreOp).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
@@ -537,7 +539,7 @@ Instance prim_op1_countable : Countable prim_op1.
 Proof. solve_countable prim_op1_rec 7%nat. Qed.
 
 Instance prim_op2_countable : Countable prim_op2.
-Proof. solve_countable prim_op2_rec 4%nat. Qed.
+Proof. solve_countable prim_op2_rec 5%nat. Qed.
 
 Definition prim_op' : Set := prim_op0 + prim_op1 + prim_op2.
 
@@ -1180,6 +1182,15 @@ Definition base_trans (e: expr) :
        check (is_Writing nav);;
        modifyσ (set heap <[l:=Free v]>);;
        ret $ LitV $ LitUnit)
+  | AtomicStore (Val (LitV (LitLoc l))) (Val v) => (* atomic write *)
+    atomically
+      (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
+       match nav with
+       | (Reading 0, _) =>
+           modifyσ (set heap <[l:=Free v]>);;
+           ret $ LitV $ LitUnit
+       | _ => undefined
+      end)
   | ExternalOp op (Val v) => atomicallyM $ ffi_step op v
   | Input (Val (LitV (LitInt selv))) =>
     atomically
@@ -1718,6 +1729,7 @@ Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
+Notation AtomicStore := (Primitive2 AtomicStoreOp).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).

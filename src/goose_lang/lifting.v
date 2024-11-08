@@ -549,6 +549,8 @@ Global Instance load_atomic s v : Atomic s (Load (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance finish_store_atomic s v1 v2 : Atomic s (FinishStore (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
+Global Instance atomic_store_atomic s v1 v2 : Atomic s (AtomicStore (Val v1) (Val v2)).
+Proof. solve_atomic. Qed.
 Global Instance start_read_atomic s v : Atomic s (StartRead (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance finish_read_atomic s v1 : Atomic s (FinishRead (Val v1)).
@@ -1087,6 +1089,31 @@ Proof.
   { rewrite /step_count_next/=. lia. }
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
+Qed.
+
+Lemma wp_atomic_store s E l v0 v :
+  {{{ ▷ l ↦ v0 }}} AtomicStore (Val $ LitV (LitLoc l)) v @ s; E
+  {{{ RET #(); l ↦ v }}}.
+Proof.
+  iIntros (Φ) ">Hl HΦ".
+  iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ _ _ v with "Hσ Hl") as "(Hσ&Hl)"; first done.
+  iModIntro.
+  iSplit.
+  { iPureIntro.
+    eexists _, _, _, _, _.
+    constructor.
+    eauto. }
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iSplit=>//.
+  iFrame "Hσ ∗". iApply "HΦ".
+  iApply "Hl_rest". iFrame.
 Qed.
 
 Lemma wp_start_read s E l q v :
