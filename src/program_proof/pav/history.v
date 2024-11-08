@@ -58,7 +58,7 @@ Lemma hist_extend_selfmon cli_γ uid hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
   ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_bound" ∷ is_my_bound cli_γ uid (W64 $ length hist) new_valid) -∗
-  "#His_hist" ∷ is_hist cli_γ uid hist new_valid.
+  is_hist cli_γ uid hist new_valid.
 Proof.
   intros ?. iNamed 1. iNamed "His_hist". iSplit.
   { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
@@ -86,7 +86,7 @@ Lemma hist_extend_put cli_γ uid hist valid new_valid pk :
   uint.Z valid < uint.Z new_valid →
   ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_my_key" ∷ is_my_key cli_γ uid (W64 $ length hist) new_valid pk) -∗
-  "#His_hist" ∷ is_hist cli_γ uid (hist ++ [(new_valid, pk)]) new_valid.
+  is_hist cli_γ uid (hist ++ [(new_valid, pk)]) new_valid.
 Proof.
   intros ?. iNamed 1. iNamed "His_hist". iSplit.
   { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
@@ -146,7 +146,7 @@ Lemma hist_audit_msv cli_γ uid hist valid adtr_γ aud_ep (ep : w64) :
   uint.Z valid < uint.Z aud_ep →
   ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
-  "#Hmsv" ∷ msv adtr_γ ep uid (get_lat hist ep).
+  msv adtr_γ ep uid (get_lat hist ep).
 Proof.
   intros ??. iNamed 1.
   iNamed "His_hist". iSpecialize ("Hknow_eps" $! ep with "[//]").
@@ -171,8 +171,8 @@ Proof.
     (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
     get that by tracing val back to filtered hist and using hist validity. *)
     iDestruct (big_sepL2_lookup_2_some with "Hpk_comm_reln") as %[[??] Hlook_hist]; [exact Hlook_vals|].
-    iDestruct (big_sepL2_lookup with "Hpk_comm_reln") as "Htmp"; [exact Hlook_hist|exact Hlook_vals|].
-    iNamed "Htmp". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
+    iDestruct (big_sepL2_lookup with "Hpk_comm_reln") as "H"; [exact Hlook_hist|exact Hlook_vals|].
+    iNamed "H". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
     { eapply elem_of_list_lookup. eauto using Hlook_hist. }
     simpl in *. list_elem ms (uint.nat prior) as mprior.
     iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_prior $His_label]") as "H".
@@ -200,44 +200,46 @@ End hist_derived.
 Section wps.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition own_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
+Definition is_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
   ∃ sl_HistVal,
-  "Hptr_Epoch" ∷ ptr ↦[HistEntry :: "Epoch"] #obj.1 ∗
-  "Hptr_HistVal" ∷ ptr ↦[HistEntry :: "HistVal"] (slice_val sl_HistVal) ∗
+  "#Hptr_Epoch" ∷ ptr ↦[HistEntry :: "Epoch"]□ #obj.1 ∗
+  "#Hptr_HistVal" ∷ ptr ↦[HistEntry :: "HistVal"]□ (slice_val sl_HistVal) ∗
   "#Hsl_HistVal" ∷ own_slice_small sl_HistVal byteT DfracDiscarded obj.2.
 
 Definition own_hist cli_γ uid sl_hist hist valid : iProp Σ :=
   ∃ dim0_hist,
   "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
-  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, own_HistEntry p o) ∗
+  "#Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, is_HistEntry p o) ∗
   "#His_hist" ∷ is_hist cli_γ uid hist valid.
 
-Lemma wp_put_hist cli_γ uid sl_hist hist ptr_e e :
-  match last hist with
-  | None => True
-  | Some lat => uint.Z lat.1 < uint.Z e.1
-  end →
+Lemma wp_put_hist cli_γ uid sl_hist hist valid ptr_e e :
+  uint.Z valid < uint.Z e.1 →
   {{{
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist ∗
-    "Hown_entry" ∷ own_HistEntry ptr_e e ∗
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist valid ∗
+    "#His_entry" ∷ is_HistEntry ptr_e e ∗
     "#His_key" ∷ is_my_key cli_γ uid (W64 $ length hist) e.1 e.2
   }}}
   SliceAppend ptrT (slice_val sl_hist) #ptr_e
   {{{
     sl_hist', RET (slice_val sl_hist');
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist' (hist ++ [e]) ∗
-    "Hown_entry" ∷ own_HistEntry ptr_e e
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist' (hist ++ [e]) e.1
   }}}.
-Proof. Admitted.
+Proof.
+  intros ?. iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_hist".
+  wp_apply (wp_SliceAppend with "Hsl_hist"). iIntros (?) "Hsl_hist".
+  iDestruct (big_sepL2_snoc with "[$Hdim0_hist $His_entry]") as "Hnew_dim0_hist".
+  iDestruct (hist_extend_put with "[$His_hist $His_key]") as "Hnew_is_hist"; [done|].
+  iApply "HΦ". destruct e. simpl in *. iFrame "∗#".
+Qed.
 
-Lemma wp_GetHist cli_γ uid sl_hist hist (ep : w64) :
+Lemma wp_GetHist cli_γ uid sl_hist hist valid (ep : w64) :
   {{{
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist valid
   }}}
   GetHist (slice_val sl_hist) #ep
   {{{
     (is_reg : bool) sl_pk pk, RET (#is_reg, slice_val sl_pk);
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist ∗
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist valid ∗
     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
     "%Heq_lat" ∷
       ⌜ match get_lat hist ep with
@@ -245,6 +247,51 @@ Lemma wp_GetHist cli_γ uid sl_hist hist (ep : w64) :
         | Some lat => is_reg = true ∧ pk = lat.2
         end ⌝
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". rewrite /GetHist. iNamed "Hown_hist".
+  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_isReg) "Hptr_isReg".
+  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_val) "Hptr_val".
+  iDestruct (own_slice_small_read with "Hsl_hist") as "[Hsl_hist Hsl_restore]".
+  wp_apply (wp_forSlicePrefix
+    (λ donel _,
+    ∃ (is_reg : bool) sl_pk pk,
+    "Hptr_isReg" ∷ ptr_isReg ↦[boolT] #is_reg ∗
+    "Hptr_val" ∷ ptr_val ↦[slice.T byteT] (slice_val sl_pk) ∗
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
+    "%Heq_lat" ∷
+      ⌜ match get_lat (take (length donel) hist) ep with
+        | None => is_reg = false
+        | Some lat => is_reg = true ∧ pk = lat.2
+        end ⌝)%I with "[] [$Hsl_hist Hptr_isReg Hptr_val]").
+  2: { iExists _, Slice.nil, []. iFrame. iSplit; [|done].
+    iDestruct (own_slice_zero byteT) as "H".
+    by iDestruct (own_slice_to_small with "H") as "?". }
+  { clear. iIntros "* %". iIntros (Φ) "!> H HΦ". iNamed "H".
+    opose proof (list_lookup_middle done todo x _ _) as Hlook_x; [done|].
+    subst dim0_hist.
+    iDestruct (big_sepL2_lookup_1_some with "Hdim0_hist")
+      as %[[new_ep new_pk] Hlook_hist]; [exact Hlook_x|].
+    iDestruct (big_sepL2_lookup with "Hdim0_hist")
+      as "His_entry"; [exact Hlook_x|exact Hlook_hist|].
+    iNamed "His_entry". wp_loadField. wp_if_destruct.
+    - wp_store. wp_loadField. wp_store. iApply "HΦ".
+      iFrame "Hsl_HistVal". iFrame "∗#". rewrite app_length. simpl.
+      replace (length done + 1)%nat with (S $ length done)%nat; [|lia].
+      rewrite (take_S_r _ _ _ Hlook_hist). rewrite /get_lat filter_app.
+      opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
+        (new_ep, new_pk)) as [[_?]|[Htmp _]]. { exfalso. simpl in *. word. }
+      rewrite Htmp. clear Htmp. rewrite last_snoc. naive_solver.
+    - iApply "HΦ". iFrame "Hsl_pk". iFrame "∗#". rewrite app_length. simpl.
+      replace (length done + 1)%nat with (S $ length done)%nat; [|lia].
+      rewrite (take_S_r _ _ _ Hlook_hist). rewrite /get_lat filter_app.
+      opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
+        (new_ep, new_pk)) as [[Htmp _]|[_?]]. 2: { exfalso. simpl in *. word. }
+      rewrite Htmp. clear Htmp. list_simplifier. by iFrame "%". }
+  iIntros "[H0 H1]". iNamed "H1". iDestruct ("Hsl_restore" with "H0") as "Hsl_hist".
+  do 2 wp_load. wp_pures. iApply "HΦ". iFrame "∗#".
+  iDestruct (big_sepL2_length with "Hdim0_hist") as %Htmp.
+  rewrite Htmp in Heq_lat. clear Htmp.
+  rewrite firstn_all in Heq_lat. naive_solver.
+Qed.
 
 End wps.
