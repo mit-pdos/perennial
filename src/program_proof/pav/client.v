@@ -136,26 +136,19 @@ Lemma wp_Client__SelfMon ptr_c c :
   }}}.
 Proof. Admitted.
 
-Definition is_no_other_key cli_γ uid (ep : epoch_ty) : iProp Σ :=
-  ∃ dig sm_γ label,
-  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
-  "#Hnin_map" ∷ (uid, W64 0) ↪[sm_γ]□ None ∗
-  "#His_label" ∷ is_vrf uid (W64 0) label.
-
-Definition is_other_key cli_γ uid (ep : epoch_ty) pk : iProp Σ :=
-  ∃ (ver : w64) dig sm_γ (ep0 : w64) comm0 label0 label1,
-  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, sm_γ)) ∗
+Definition is_other_key cli_γ uid (ep : w64) (lat : lat_val_ty) : iProp Σ :=
+  ∃ (vals : list opaque_map_val_ty) dig m_γ,
+  "#Hpk_comm_reln" ∷ pk_comm_reln lat (last vals) ∗
+  "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some (dig, m_γ)) ∗
   "#Hhist" ∷
-    (∀ (ver' : w64),
-    "%Hlt_ver" ∷ ⌜ uint.Z ver' < uint.Z ver ⌝ -∗
-    (∃ ep1 comm1 label,
-    "#Hin_map" ∷ (uid, ver') ↪[sm_γ]□ (Some (ep1, comm1)) ∗
-    "#His_label" ∷ is_vrf uid ver' label)) ∗
-  "#Hcomm" ∷ is_comm pk comm0 ∗
-  "#Hlatest" ∷ (uid, ver) ↪[sm_γ]□ (Some (ep0, comm0)) ∗
-  "#His_label0" ∷ is_vrf uid ver label0 ∗
-  "#Hnin_map_next" ∷ (uid, (word.add ver (W64 1))) ↪[sm_γ]□ None ∗
-  "#His_label1" ∷ is_vrf uid (word.add ver (W64 1)) label1.
+    ([∗ list] ver ↦ val ∈ vals,
+    ∃ label,
+    "#Hin_map" ∷ (uid, W64 ver) ↪[m_γ]□ Some val ∗
+    "#His_label" ∷ is_vrf uid (W64 ver) label) ∗
+  "#Hbound" ∷
+    (∃ label,
+    "#Hin_map" ∷ (uid, W64 $ length vals) ↪[m_γ]□ None ∗
+    "#His_label" ∷ is_vrf uid (W64 $ length vals) label).
 
 Lemma wp_Client__Get ptr_c c uid :
   {{{
@@ -171,11 +164,9 @@ Lemma wp_Client__Get ptr_c c uid :
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
       "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) - 1 ≤ uint.Z ep ⌝ ∗
-      if is_reg then
-        "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
-        "#His_key" ∷ is_other_key c.(Client.γ) uid ep pk
-      else
-        "#His_no_key" ∷ is_no_other_key c.(Client.γ) uid ep
+      "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
+      "#His_key" ∷ is_other_key c.(Client.γ) uid ep
+        (if is_reg then Some (ep, pk) else None)
     else
       "Hown_cli" ∷ Client.own ptr_c c
   }}}.
@@ -228,84 +219,21 @@ End specs.
 Section derived.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition is_my_key_aud_aux (adtr_map : adtr_map_ty) uid ver ep comm : iProp Σ :=
-  ∃ hash0 hash1,
-  "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep, comm) ⌝ ∗
-  "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
-  "#Hhash0" ∷ is_vrf uid ver hash0 ∗
-  "#Hhash1" ∷ is_vrf uid (word.add (W64 1) ver) hash1.
-
-(* auditor GS versions of the above client resources. *)
-Definition is_my_key_aud adtr_γ uid ver ep pk : iProp Σ :=
-  ∃ adtr_map comm,
-  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
-  "#Haux" ∷ is_my_key_aud_aux adtr_map uid ver ep comm ∗
-  "#Hcomm" ∷ is_comm pk comm.
-
-(* TODO: should have cli invariant as well. *)
-Lemma audit_is_my_key ep0 ep1 cli_γ uid ver pk adtr_γ :
-  uint.Z ep0 < uint.Z ep1 →
-  is_my_key cli_γ uid ver ep0 pk -∗
-  is_audit cli_γ adtr_γ ep1 -∗
-  is_my_key_aud adtr_γ uid ver ep0 pk.
-Proof. Admitted.
-
-Definition is_no_other_key_aud adtr_γ uid (ep : epoch_ty) : iProp Σ :=
-  ∃ adtr_map hash,
-  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
-  "%Hbound" ∷ ⌜ adtr_map !! hash = None ⌝ ∗
-  "#Hhash" ∷ is_vrf uid (W64 0) hash.
-
-Lemma audit_is_no_other_key ep0 ep1 cli_γ uid adtr_γ :
-  uint.Z ep0 < uint.Z ep1 →
-  is_no_other_key cli_γ uid ep0 -∗
-  is_audit cli_γ adtr_γ ep1 -∗
-  is_no_other_key_aud adtr_γ uid ep0.
-Proof. Admitted.
-
-Definition is_other_key_aud_aux (adtr_map : adtr_map_ty) uid (ep : epoch_ty) comm0 : iProp Σ :=
-  ∃ (ver : w64) ep0 hash0 hash1,
-  "%Hhist" ∷ ∀ (ver' : w64), ⌜ uint.Z ver' < uint.Z ver ⌝ -∗
-    ∃ hash2 ep1 comm1,
-    is_vrf uid ver' hash2 ∗
-    ⌜ adtr_map !! hash2 = Some (ep1, comm1) ⌝ ∗
-  "%Hlatest" ∷ ⌜ adtr_map !! hash0 = Some (ep0, comm0) ⌝ ∗
-  "%Hbound" ∷ ⌜ adtr_map !! hash1 = None ⌝ ∗
-  "#Hhash0" ∷ is_vrf uid ver hash0 ∗
-  "#Hhash1" ∷ is_vrf uid (word.add ver (W64 1)) hash1.
-
-Definition is_other_key_aud adtr_γ uid ep pk : iProp Σ :=
-  ∃ adtr_map comm0,
-  "#Hadtr_map" ∷ mono_list_idx_own adtr_γ (uint.nat ep) adtr_map ∗
-  "#Haux" ∷ is_other_key_aud_aux adtr_map uid ep comm0 ∗
-  "#Hcomm" ∷ is_comm pk comm0.
-
-Lemma audit_is_other_key ep0 ep1 cli_γ uid pk adtr_γ :
-  uint.Z ep0 < uint.Z ep1 →
-  is_other_key cli_γ uid ep0 pk -∗
-  is_audit cli_γ adtr_γ ep1 -∗
-  is_other_key_aud adtr_γ uid ep0 pk.
-Proof. Admitted.
-
-(* TODO: needs to be changed after msv change. *)
-Definition msv_opaque (m : adtr_map_ty) uid vals : iProp Σ :=
-  (∀ (i : nat), ⌜ i < length vals ⌝ -∗
-    ∃ hash, (is_vrf uid (W64 i) hash ∗ ⌜ m !! hash = vals !! i ⌝)) ∗
-  (∃ hash, is_vrf uid (W64 (length vals)) hash ∗ ⌜ m !! hash = None ⌝).
-
-Global Instance msv_opaque_func : Func (uncurry msv_opaque).
-Proof. Admitted.
-
-Lemma msv_is_my_key m uid ep0 comm :
-  is_my_key_aud_aux m uid (W64 0) ep0 comm -∗
-  ∃ vals,
-  msv_opaque m uid vals ∗ ⌜ last vals = Some (ep0, comm) ⌝.
-Proof. Admitted.
-
-Lemma msv_is_other_key m uid ep0 comm :
-  is_other_key_aud_aux m uid ep0 comm -∗
-  ∃ ep1 vals,
-  msv_opaque m uid vals ∗ ⌜ last vals = Some (ep1, comm) ⌝.
-Proof. Admitted.
+Lemma get_audit_msv cli_γ uid ep lat adtr_γ aud_ep :
+  uint.Z ep < uint.Z aud_ep →
+  ("#His_key" ∷ is_other_key cli_γ uid ep lat ∗
+  "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
+  msv adtr_γ ep uid lat.
+Proof.
+  intros ?. iNamed 1. iNamed "His_audit". iNamed "His_key". iNamedSuffix "Hbound" "_bnd".
+  list_elem ms (uint.nat ep) as m.
+  iDestruct (mono_list_idx_own_get with "Hadtr_maps") as "Hadtr_map"; [exact Hm_lookup|].
+  iFrame "#". iSplit.
+  - iApply big_sepL_forall.  iIntros "* %Hlook_val".
+    iDestruct (big_sepL_lookup with "Hhist") as "H"; [exact Hlook_val|]. iNamed "H".
+    iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_map $His_label]") as %?; [done|].
+    iFrame "#%".
+  - by iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_map_bnd $His_label_bnd]") as %?.
+Qed.
 
 End derived.
