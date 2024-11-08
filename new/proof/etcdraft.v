@@ -10,6 +10,9 @@ Context `{!heapGS Σ}.
 Instance wp_int_gt (l r : w64) : PureWp True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
 Proof. Admitted.
 
+Instance wp_int_lt (l r : w64) : PureWp True (int_lt #l #r) #(bool_decide (sint.Z l < sint.Z r)).
+Proof. Admitted.
+
 (* TODO: automatically generate these instances? *)
 Instance countable_connem : Countable connem.t.
 Admitted.
@@ -53,11 +56,23 @@ Lemma wp_entsWithConfig terms_sl (terms : list u64) :
 Proof.
 Admitted.
 
+(*
+Lemma wp_irrelevant e e' Φ Ψ :
+  WP e {{ _, Ψ }} -∗
+  (Ψ -∗ WP e' {{ Φ }}) -∗
+  WP e ;;; e' {{ Φ }}.
+Proof.
+  iIntros "HΨ HΦ".
+Qed. *)
+
+(*
 Lemma wp_network__send nw msgs_sl dq (n : network.t) (msgs : list Message.t) :
   {{{
         "Hmsg" ∷ msgs_sl ↦*{dq} msgs ∗
         "Hnw" ∷ nw ↦ n ∗
-        "Hn_peers" ∷ ∃ (peersMap : gmap w64 interface.t), n.(network.peers) ↦$□ peersMap
+        "Hn_peers" ∷ (∃ (peersMap : gmap w64 interface.t), n.(network.peers) ↦$□ peersMap) ∗
+        "Hpeer" ∷ ∃ peer msg, peersMap !! msg.(Message.To) = Some peer ∧
+                              peer.(interface.mset)
   }}}
     network__send #nw #msgs_sl
   {{{ RET #(); True }}}
@@ -81,7 +96,7 @@ Proof.
     wp_alloc m as "Hm".
     wp_pures.
     iDestruct (own_slice_len with "Hmsg") as %Hsz.
-    destruct msgs.
+    destruct msgs as [|msg msgs].
     { exfalso. simpl in *. rewrite !word.signed_eq_swrap_unsigned /word.swrap in Hlt. word. }
     iDestruct (own_slice_elem_acc 0 with "Hmsg") as "[Helem Hmsg]".
     { done. }
@@ -115,31 +130,77 @@ Proof.
 
     wp_load.
     wp_pures.
-    (* XXX: should be an "irrelevant" if statement. *)
-    case_bool_decide.
-    + (* no testing object, so no logging. *)
-      wp_pures.
-      wp_load.
-      wp_pures.
-      wp_load.
-      (* FIXME: deal with stateMachine interface [Step] function *)
-      admit.
-    + admit.
+    wp_bind (if: _ then _ else _)%E.
+    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #()%V ⌝ ∗ _)%I with "[-]").
+    {
+      case_bool_decide.
+      - wp_pures. iSplitR; first done. iNamedAccu.
+      - wp_pures. wp_load.
+        wp_pures. (* FIXME: wp_DescribeMessage. *)
+        admit.
+    }
+    iIntros (vunused) "[% H]". subst. iNamed "H".
+    wp_pures.
+    wp_bind (App (Val _) _).
+    wp_pures.
+    wp_load.
+    wp_pures.
+    wp_load.
+    destruct (peersMap !! msg.(Message.To)) as [peer|] eqn:Hpeer; rewrite Hpeer.
+    2:{ admit. } (* FIXME: require that Message.To ∈ peersMap *)
+    wp_pures.
+    (* FIXME: deal with stateMachine interface [Step] function *)
+    admit.
   - rewrite decide_False; last naive_solver.
     rewrite decide_True; last naive_solver.
     wp_pures. by iApply "HΦ".
-Admitted.
+Admitted. *)
 
 Ltac wp_steps :=
   wp_pures; try ((wp_load; wp_steps) || (wp_store; wp_steps)).
 
-
-Lemma wp_slice_literal t {V stk E} :
-  ∀ (l : list V) `{!IntoVal V} `{!IntoValTyped V t},
+Lemma wp_testLeaderElection2_symbolic_execute :
   {{{ True }}}
-    slice.literal t #l @ stk ; E
-  {{{ sl, RET #sl; sl ↦* l }}}.
+    testLeaderElection2 #null #false
+  {{{ RET #(); True }}}.
 Proof.
+  Set Ltac Profiling.
+  iIntros (?) "_ HΦ".
+  Ltac wp_progress := (first [progress (rewrite -!default_val_eq_zero_val)|
+                               progress wp_pures |
+                               wp_load |
+                               wp_store |
+                               let x := fresh "ptr" in wp_alloc x as "?" |
+                               (unshelve wp_apply wp_slice_literal; first apply _; iIntros (?) "Hsl") |
+                               (unshelve wp_apply wp_slice_make2; [| | apply _ | ];
+                                iIntros (?) "[Hsl ?]") |
+                               (let Hlen:=fresh "Hlen" in
+                                iDestruct (own_slice_len with "Hsl") as %Hlen; iDestruct "Hsl" as "?";
+                                apply (f_equal (λ x, W64 (Z.of_nat x))) in Hlen;
+                                rewrite w64_to_nat_id in Hlen; simpl in Hlen;
+                                let x := fresh in rename Hlen into x) |
+                               wp_pure; [word|] |
+                               rewrite do_for_unseal |
+
+                               (* for storing to a slice.elem_ref_f *)
+                               wp_bind (store_ty _ _ _);
+                               unshelve (eapply tac_wp_store_ty;
+                                         [ eapply points_to_access_slice_elem_ref; shelve |
+                                           iAssumptionCore |
+                                           reduction.pm_reflexivity |
+                                 ]); try tc_solve |
+
+                               (* for making progress inside body of for loop control-flow handler *)
+                               rewrite [in (Fst (execute_val _))]execute_val_unseal |
+                               wp_call
+                      ]).
+  Time repeat wp_progress.
+  rewrite -H in H0 |- *.
+  rewrite length_replicate w64_to_nat_id in H0.
+  vm_compute bool_decide.
+  Time repeat wp_progress.
+
+  (* FIXME: WP for map.make *)
 Admitted.
 
 Lemma wp_testLeaderElection2 :
@@ -175,7 +236,7 @@ Proof.
 
   (* FIXME: find a way to avoid shelved typeclass goal. Not sure why [_] is
      needed to avoid the shelved goal. *)
-  wp_apply (wp_slice_literal stateMachine _).
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
 
   wp_pures.
@@ -183,7 +244,7 @@ Proof.
   iIntros "* Hnw1".
 
   wp_steps.
-  wp_apply (wp_slice_literal stateMachine _).
+  unshelve wp_apply wp_slice_literal; first apply _.
   iIntros (?) "?".
   wp_pures.
   wp_apply (wp_newNetworkWithConfigInit with "[$]").
@@ -258,14 +319,6 @@ Proof.
 
   wp_pures.
   wp_load.
-  wp_pures.
-  wp_apply (wp_network__send with "[Hnw1 $Hsl]").
-  { iDestruct "Hnw1" as "($ & $ & $)". }
-  wp_steps.
-  wp_alloc sm_ptr as "?".
-  wp_steps.
-  wp_load.
-  (* TODO: should get of ownership of network struct from newNetworkWithConfigInit *)
   Show Ltac Profile.
 Admitted.
 

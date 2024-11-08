@@ -70,3 +70,5 @@ Definition make (kt vt : go_type) : val :=
 
 End goose_lang.
 End map.
+
+Global Opaque map.insert map.get map.delete map.for_range map.len map.make.

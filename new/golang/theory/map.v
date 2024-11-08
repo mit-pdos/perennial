@@ -2,6 +2,8 @@ From Perennial.Helpers Require Import NamedProps.
 From New.golang.defn Require Export map.
 From New.golang.theory Require Export list mem exception loop typing.
 
+Transparent map.insert map.get map.delete map.for_range map.len map.make.
+
 Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 

@@ -266,12 +266,15 @@ Proof.
       simpl fill. wp_pures. by iApply "HΦ".
 Qed.
 
-Global Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) {t tf : go_type}
+Global Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) dq {t tf : go_type}
   `{!IntoVal V} `{!IntoValTyped V t}
   `{!IntoVal Vf} `{!IntoValTyped Vf tf}
   `{!IntoValStructField f t proj} `{!SetterWf proj}
   `{!struct.Wf t}
-  : PointsToAccess l (struct.field_ref_f t f l) v (proj v) (λ vf', set proj (λ _, vf')).
+  : PointsToAccess (struct.field_ref_f t f l) (proj v)
+                   dq
+                   (l ↦{dq} v)%I
+                   (λ vf', l ↦{dq} (set proj (λ _, vf') v))%I.
 Proof.
   constructor.
   - intros. by iApply struct_fields_acc_update.

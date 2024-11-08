@@ -501,22 +501,19 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
 Section tac_lemmas.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-  Class PointsToAccess {V Vsmall}
-    {t tsmall} `{!IntoVal V} `{!IntoVal Vsmall} `{!IntoValTyped V t} `{!IntoValTyped Vsmall tsmall}
-    (l' l : loc) (v : V) (vsmall : Vsmall) (update : Vsmall → V → V) : Prop :=
+  Class PointsToAccess {V} {t} `{!IntoVal V} `{!IntoValTyped V t}
+    (l : loc) (v : V) dq (P : iProp Σ) (P' : V → iProp Σ) : Prop :=
     {
-      points_to_acc : ∀ dq, l' ↦{dq} v -∗ l ↦{dq} vsmall ∗
-                            (∀ vsmall', l ↦{dq} vsmall' -∗ l' ↦{dq} (update vsmall' v));
-      points_to_update_eq : update vsmall v = v
+      points_to_acc : P -∗ l ↦{dq} v ∗ (∀ v', l ↦{dq} v' -∗ P' v');
+      points_to_update_eq : P' v ⊣⊢ P;
     }.
 
-  Lemma tac_wp_load_ty {V t Vsmall tsmall}
-    `{!IntoVal V} `{!IntoValTyped V t} `{!IntoVal Vsmall} `{!IntoValTyped Vsmall tsmall}
-    (l' l : loc) (v : V) (vsmall : Vsmall) update Δ s E i dq Φ is_pers
-    `{!PointsToAccess l' l v vsmall update} :
-    envs_lookup i Δ = Some (is_pers, l' ↦{dq} v)%I →
-    envs_entails Δ (Φ #vsmall) →
-    envs_entails Δ (WP (load_ty tsmall #l) @ s; E {{ Φ }}).
+  Lemma tac_wp_load_ty {V t} `{!IntoVal V} `{!IntoValTyped V t}
+    (l : loc) (v : V) Δ s E i dq Φ is_pers
+    `{!PointsToAccess l v dq P P'} :
+    envs_lookup i Δ = Some (is_pers, P)%I →
+    envs_entails Δ (Φ #v) →
+    envs_entails Δ (WP (load_ty t #l) @ s; E {{ Φ }}).
   Proof using Type*.
     rewrite envs_entails_unseal => ? HΦ.
     rewrite envs_lookup_split //.
@@ -535,14 +532,13 @@ Section tac_lemmas.
       rewrite points_to_update_eq. iFrame.
   Qed.
 
-  Lemma tac_wp_store_ty {V t Vsmall tsmall}
-    `{!IntoVal V} `{!IntoValTyped V t} `{!IntoVal Vsmall} `{!IntoValTyped Vsmall tsmall}
-    (l' l : loc) (v : V) (vsmall vsmall' : Vsmall) update Δ Δ' s E i Φ
-    `{!PointsToAccess l' l v vsmall update} :
-    envs_lookup i Δ = Some (false, l' ↦ v)%I →
-    envs_simple_replace i false (Esnoc Enil i (l' ↦ (update vsmall' v))) Δ = Some Δ' →
+  Lemma tac_wp_store_ty {V t} `{!IntoVal V} `{!IntoValTyped V t}
+    (l : loc) (v v' : V) Δ Δ' s E i Φ
+    `{!PointsToAccess l v (DfracOwn 1) P P'} :
+    envs_lookup i Δ = Some (false, P)%I →
+    envs_simple_replace i false (Esnoc Enil i (P' v')) Δ = Some Δ' →
     envs_entails Δ' (Φ #()) →
-    envs_entails Δ (WP (store_ty tsmall #l (Val #vsmall')) @ s; E {{ Φ }}).
+    envs_entails Δ (WP (store_ty t #l (Val #v')) @ s; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => ?? HΦ.
     eapply bi.wand_apply; first by eapply bi.wand_entails, wp_store_ty.
@@ -565,8 +561,8 @@ Section tac_lemmas.
     by apply bi.forall_intro.
   Qed.
 
-  Global Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t}
-    : PointsToAccess l l v v (λ v' _, v').
+  Global Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t} dq
+    : PointsToAccess l v dq (l ↦{dq} v)%I (λ v', l ↦{dq} v')%I.
   Proof. constructor; [eauto with iFrame|done]. Qed.
 
 End tac_lemmas.

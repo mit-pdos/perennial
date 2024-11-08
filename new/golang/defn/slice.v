@@ -93,3 +93,7 @@ Definition literal t : val :=
 
 End goose_lang.
 End slice.
+
+Global Opaque slice.ptr slice.len slice.cap slice.make3 slice.make2
+  slice.elem_ref slice.slice slice.full_slice slice.for_range
+  slice.copy slice.append slice.literal.

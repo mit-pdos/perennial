@@ -6,6 +6,10 @@ From New.golang.theory Require Export list mem exception loop typing.
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
 
+Transparent slice.ptr slice.len slice.cap slice.make3 slice.make2
+  slice.elem_ref slice.slice slice.full_slice slice.for_range
+  slice.copy slice.append slice.literal.
+
 Module slice.
 Definition slice_f (sl : slice.t) (t : go_type) (n1 n2 : u64) : slice.t :=
   slice.mk (sl.(slice.ptr_f) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub sl.(slice.cap_f) n1).
@@ -543,6 +547,12 @@ Proof.
     rewrite replicate_0 app_nil_r firstn_all. iFrame.
   }
 Qed.
+
+Global Instance points_to_access_slice_elem_ref s (i : w64) (vs : list V) dq v
+  {Hlookup : TCSimpl (vs !! (uint.nat i)) (Some v)}
+  : PointsToAccess (slice.elem_ref_f s t i) v dq (s ↦*{dq} vs)
+      (λ v', s ↦*{dq} <[(uint.nat i) := v]> vs).
+Proof. Admitted.
 
 End wps.
 
