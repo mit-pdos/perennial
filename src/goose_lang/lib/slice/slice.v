@@ -1199,7 +1199,7 @@ Proof.
   iApply "HΦ".
   rewrite -> take_ge by word.
   iFrame.
-  iPureIntro; word.
+  word.
 Qed.
 
 Lemma wp_SliceCopy_SliceSkip_src stk E src (n : u64) t q vs dst vs' :
@@ -1217,7 +1217,7 @@ Proof.
   iDestruct "Hsrc" as "[Hsrctake Hsrcdrop]".
   wp_apply wp_SliceSkip; first word.
   wp_apply (wp_SliceCopy_full with "[$Hsrctake $Hdst]").
-  { rewrite length_drop. iPureIntro. word. }
+  { rewrite length_drop. word. }
   iIntros "[Hsrctake Hdst]".
   rewrite length_drop -Hlen.
   iApply "HΦ".
@@ -1281,7 +1281,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iSplit.
-  { iPureIntro. word. }
+  { word. }
   iSplitR "Hsrc".
   - iDestruct (array_combine with "Hdst1 Hdst2") as "Hdst".
     { rewrite length_take; word. }
@@ -1300,7 +1300,7 @@ Proof.
     rewrite !length_app length_take length_drop.
     word.
   - iFrame.
-    iPureIntro. word.
+    word.
 Qed.
 
 Global Opaque SliceCopy.
@@ -1387,7 +1387,7 @@ Proof.
     iSplitR.
     { rewrite Hlen' /=. done. }
     iSplitL.
-    2: { iPureIntro. word. }
+    2: { word. }
     iSplitR.
     { rewrite length_app Hlen /=.
       iPureIntro.
@@ -1459,7 +1459,7 @@ Proof.
     { iPureIntro. split; first done. word. }
 
     iSplitL.
-    2: { iPureIntro. word. }
+    2: { word. }
 
     iSplitL "Hvs Hlast".
     { iSplitL.
@@ -1518,7 +1518,7 @@ Proof.
     2: { iExactEq "Hs". f_equal. destruct s; simpl; f_equal. replace (ty_size t * uint.Z 0) with 0 by word.
       rewrite loc_add_0. done. }
     rewrite /own_slice_small /=.
-    rewrite array_nil. iPureIntro. word.
+    rewrite array_nil. word.
   }
   { word. }
   { eapply (Qextra.Qp_div_2_lt 1). }

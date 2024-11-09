@@ -813,7 +813,7 @@ Proof.
     iFrame. rewrite ?dom_insert_L.
     replace (uint.Z (word.add n 1)) with (uint.Z n + 1)%Z by word.
     iSplit.
-    { iPureIntro. word. }
+    { word. }
     iSplit.
     { iPureIntro. intros. set_unfold. split.
       * intros Hrange.
@@ -879,7 +879,7 @@ Proof.
     assert (W64 (Z.of_nat (uint.nat (req.(Slice.sz)))) = req.(Slice.sz)) as Heqlen.
     { word. }
     iFrame "#". iSplit; last by eauto.
-    iPureIntro. word.
+    word.
   }
   iModIntro. iIntros (err) "[%Herr _]".
   destruct err; wp_pures.

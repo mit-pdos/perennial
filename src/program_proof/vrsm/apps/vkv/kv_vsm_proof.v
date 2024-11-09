@@ -859,7 +859,7 @@ Proof.
     apply map_get_true in Hlookup.
     pose proof (Hle s0) as Hle2.
     rewrite Hlookup /= in Hle2.
-    iSplitR. { iPureIntro. word. }
+    iSplitR. { word. }
     injection Hkv_lookup as <- ?.
     iDestruct (own_slice_to_small with "Hrep_sl") as "$".
     rewrite /kv_record /compute_reply /= /compute_state /=.
@@ -869,8 +869,8 @@ Proof.
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".
-    { iPureIntro. word. }
-    { iPureIntro. word. }
+    { word. }
+    { word. }
   }
   {
     wp_loadField. wp_pures. iApply "HΦ". iModIntro.
@@ -878,7 +878,7 @@ Proof.
     subst.
     pose proof (Hle s0) as Hle2.
     rewrite Hlookup /= in Hle2.
-    iSplitR. { iPureIntro. word. }
+    iSplitR. { word. }
     injection Hkv_lookup as <- ?.
     iDestruct (own_slice_to_small with "Hrep_sl") as "$".
     rewrite /kv_record /compute_reply /= /compute_state /=.
@@ -888,8 +888,8 @@ Proof.
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".
-    { iPureIntro. word. }
-    { iPureIntro. word. }
+    { word. }
+    { word. }
   }
 Qed.
 

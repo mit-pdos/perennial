@@ -199,7 +199,7 @@ Proof.
   destruct sl. simpl.
   iDestruct "Hsl" as "(Hsl & #Hsz & #Hcap)".
   iAssert (⌜uint.Z sz <= 2^64⌝%Z)%I with "[]" as "#Hsz2".
-  { iPureIntro. word. }
+  { word. }
   iClear "Hcap".
   iRevert "Hsz2".
   iInduction l as [|] "IH" forall (ptr sz).
@@ -302,7 +302,7 @@ Proof.
     wp_apply ("Hwp" with "[HI Hϕ]").
     {
       iFrame "∗%".
-      iSplit. 1: iPureIntro; word.
+      iSplit. 1: word.
       iDestruct (big_sepL_lookup_acc with "Hϕ") as "[H _]".
       {
         rewrite lookup_take.
@@ -344,7 +344,7 @@ Proof.
   iDestruct "Hprop_facts2" as "[Hmax _]".
   iApply "Hmax".
   2: iFrame "#".
-  iPureIntro. word.
+  word.
 Qed.
 
 Local Instance a x y : Decision (apply_postcond x y).
@@ -755,7 +755,7 @@ Proof.
     {
       iIntros.
       iSplitL "".
-      { iPureIntro. word. }
+      { word. }
       iModIntro.
       iIntros.
       replace (uint.nat 0%Z) with (0) in H by word.
@@ -815,7 +815,7 @@ Proof.
       iSplitL ""; first done.
       iFrame "∗".
       iSplitL "".
-      { iPureIntro. word. }
+      { word. }
       iModIntro.
       destruct (decide (err = 0%Z)).
       {

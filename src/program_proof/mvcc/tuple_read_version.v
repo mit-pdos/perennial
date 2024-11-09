@@ -327,7 +327,7 @@ Proof.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
   iDestruct (active_ge_min with "HinvgcO Hactive Hgclb") as "%HtidGe".
   iAssert (⌜uint.Z tid > 0⌝)%I with "[Hactive]" as "%HtidGZ".
-  { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
+  { iDestruct "Hactive" as "[_ %H]". word. }
   iMod ("HinvgcC" with "HinvgcO") as "_".
   iModIntro.
   wp_apply (wp_findVersion with "[$HversS]").

@@ -30,7 +30,7 @@ Section lttermc.
       by iFrame "∗ # %".
     - iFrame "Hcand Hleader".
       iFrame "∗ # %".
-      iPureIntro. word.
+      word.
   Qed.
 
 End lttermc.

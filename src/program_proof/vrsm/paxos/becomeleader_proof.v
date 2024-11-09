@@ -1062,7 +1062,7 @@ Proof.
         word.
       }
       iSplitR.
-      { iPureIntro. word. }
+      { word. }
 
       (* XXX: copy/pasted *)
       iApply (big_sepL2_impl with "Hreplies").

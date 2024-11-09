@@ -328,7 +328,7 @@ Proof.
   iSplit; eauto.
   rewrite encoded_length_app1. simpl.
   iSplit.
-  { iPureIntro. word. }
+  { word. }
   iSplit.
   { iExactEq "Hoff". rewrite /named. do 3 f_equal. word. }
   iPureIntro.

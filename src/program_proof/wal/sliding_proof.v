@@ -53,7 +53,7 @@ Theorem memLog_sz s q σ :
   ⌜uint.nat s.(Slice.sz) = length (slidingM.log σ)⌝.
 Proof.
   iNamed 1.
-  iPureIntro; word.
+  word.
 Qed.
 
 Theorem memLog_wf s q σ :
@@ -61,7 +61,7 @@ Theorem memLog_wf s q σ :
   ⌜uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
 Proof.
   iNamed 1.
-  iPureIntro; word.
+  word.
 Qed.
 
 Theorem wp_log_len l q σ :
@@ -1239,7 +1239,7 @@ Proof.
   iSplitL "log_mutable".
   {
     rewrite /mutable_log /set length_drop /=.
-    iSplit; first by (iPureIntro; word).
+    iSplit; first by (word).
     rewrite /slice_skip /slidingM.numMutable drop_drop loc_add_assoc -Z.mul_add_distr_l /=.
     iExactEq "log_mutable".
     rewrite /named.
@@ -1327,7 +1327,7 @@ Proof.
 
     + rewrite /mutable_log /=.
       iSplit.
-      { iPureIntro; word. }
+      { word. }
       rewrite numMutable_after_clear; auto.
       rewrite drop_ge; len.
       rewrite updates_slice_cap_acc'.

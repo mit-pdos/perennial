@@ -73,7 +73,7 @@ Proof.
       simpl.
       replace (W64 (S $ length l)) with (word.add (W64 1) (W64 (length l))) by word.
       iApply "HΦ".
-      iPureIntro. word.
+      word.
     + iClear "HΦ IH".
       wp_pures. iLöb as "IH". wp_pures. done.
 Qed.

@@ -441,7 +441,7 @@ Proof.
       iSplitR; first done.
       iFrame "Hret Hop_sl".
       repeat iExists _. iFrame "HisConfCk ∗#%".
-      iPureIntro. word.
+      word.
     }
     {
       wp_pures.

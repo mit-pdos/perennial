@@ -198,7 +198,7 @@ Section grove.
     rewrite own_slice_unseal /own_slice_def /pointsto_vals.
     iIntros "Hl". simpl.
     iSplitL.
-    2:{ iPureIntro. word. }
+    2:{ word. }
     rewrite big_sepL_fmap.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros "* % Hp". rewrite go_type_size_unseal /= left_id.

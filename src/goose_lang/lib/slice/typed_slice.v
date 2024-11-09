@@ -505,7 +505,7 @@ Proof.
   rewrite /list.untype.
   rewrite length_fmap.
   rewrite -> subslice_length by lia.
-  iSplit; last by iPureIntro; word.
+  iSplit; last by word.
   rewrite -{1}(take_drop (uint.nat m) vs) fmap_app.
   rewrite /subslice.
   iDestruct (array.array_app with "Ha") as "[Ha1 _]".
@@ -758,7 +758,7 @@ Proof.
     wp_apply ("Hwp" with "[HI Hϕ]").
     {
       iFrame "∗%".
-      iSplit. 1: iPureIntro; word.
+      iSplit. 1: word.
       iDestruct (big_sepL_lookup_acc with "Hϕ") as "[H _]".
       {
         rewrite lookup_take.

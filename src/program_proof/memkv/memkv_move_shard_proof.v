@@ -159,7 +159,7 @@ Proof.
   {
     iFrame "Hclerk".
     iFrame "HshardGhost".
-    iSplitR ""; last (iPureIntro; word).
+    iSplitR ""; last (word).
     iExists _; iFrame.
     eauto.
   }

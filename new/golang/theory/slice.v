@@ -173,7 +173,7 @@ Proof.
   unseal. simpl. rewrite right_id.
   rewrite (nil_length_inv (seq _ _)).
   2:{ rewrite length_seq. word. }
-  simpl. iPureIntro. word.
+  simpl. word.
 Qed.
 
 Lemma own_slice_elem_acc i v s dq vs :
@@ -459,7 +459,7 @@ Proof.
     autorewrite with list in *.
     simpl.
     rewrite drop_0 take_0 Nat.sub_0_r -Hlen /=.
-    iFrame. iPureIntro. word.
+    iFrame. word.
   }
   wp_for.
   iNamed "Hloop".
@@ -514,7 +514,7 @@ Proof.
     iFrame.
     iSpecialize ("Hsl" with "Hptsto").
     iSplitR.
-    { iPureIntro. word. }
+    { word. }
     iApply to_named.
     iExactEq "Hsl".
     repeat f_equal.

@@ -53,7 +53,7 @@ Proof.
   iIntros (fh2) "Hfh".
   wp_apply (wp_NFSPROC3_WRITE with "[$Hfs $Hfh $Hs]").
   { rewrite !length_replicate. iSplit.
-    { iPureIntro. word. }
+    { word. }
     iIntros (σ σ' r E) "%Hrel HP".
     iModIntro. iSplit; done. }
   iIntros (v2) "Hv2".

@@ -329,7 +329,7 @@ Proof.
     iFrame "∗".
     iSplitR.
     {
-      iPureIntro. word.
+      word.
     }
     unfold P.
     iFrame "∗".

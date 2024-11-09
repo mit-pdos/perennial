@@ -875,7 +875,7 @@ Proof.
         iMod (ghost_var_update new_conf with "Hconf_ghost") as "[Hconf_ghost Hconf_ghost2]".
         iDestruct (mono_nat_lb_own_valid with "Hreserved_ghost Hepoch_lb") as %[_ Hineq].
         iMod ("Hupd" with "[] Hconf_ghost2 Hres2 Hepoch_ghost2") as "HΨ".
-        { iPureIntro. word. }
+        { word. }
         iMod "Hmask" as "_".
         clear γl.
         iMod (fupd_mask_subseteq _) as "Hmask".
@@ -976,14 +976,14 @@ Proof.
       iMod (ghost_var_update new_conf with "Hconf_ghost") as "[Hconf_ghost Hconf_ghost2]".
       replace (new_epoch) with (st.(state.epoch)) by word.
       iMod ("HΨ" with "[] Hconf_ghost2 Hres2 Hepoch_ghost2") as "HΨ".
-      { iPureIntro. word. }
+      { word. }
       iMod "Hmask".
       iMod ("Hclose" with "[$]") as "Hlatest_epoch".
       iModIntro.
       repeat rewrite sep_exist_r.
       iExists _; simpl; iFrame "∗#".
       iSplitR.
-      { iPureIntro. word. }
+      { word. }
       iNamed 1.
       wp_pures.
       iClear "Hrep_sl".
@@ -1306,8 +1306,8 @@ Proof.
   iFrame "Hrpc".
   rewrite Hsz0.
   iMod (alloc_lock with "HmuInv [leader]") as "$".
-  { iNext. repeat iExists _; iFrame. iPureIntro. word. }
-  iPureIntro. word.
+  { iNext. repeat iExists _; iFrame. word. }
+  word.
 Qed.
 
 Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :

@@ -68,7 +68,7 @@ Proof.
     iSplitR; first done.
     simpl.
     iSplitR.
-    { iPureIntro. word. }
+    { word. }
     iFrame "Hprop_lb Hprop_facts Hprop_facts_prim #".
     iSplit.
     { (* No error from RPC, state was accepted *)
@@ -183,12 +183,12 @@ Proof.
   {
     iModIntro. iIntros (???) "?". iApply "Hcommit_fact".
     2: { iPureIntro. right. word. }
-    iPureIntro. word.
+    word.
   }
   iSplitL.
   2:{ iFrame "%". }
   iDestruct ("Hcommit_fact" with "[] [] Hprop_lb Hprop_facts") as "%".
-  { iPureIntro. word. }
+  { word. }
   { iPureIntro. right. done. }
   iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
   done.
@@ -318,7 +318,7 @@ Proof.
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
       iSplitR.
-      { iPureIntro. word. }
+      { word. }
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".

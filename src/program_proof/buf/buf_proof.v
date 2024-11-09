@@ -829,14 +829,14 @@ Proof.
   destruct (lookup_lt_is_Some_2 dst_bs (Z.to_nat (uint.Z dstoff `div` 8)))
     as [dst_b Hlookup]; first word.
   wp_apply (wp_SliceGet (V:=u8) with "[$Hdst]").
-  { iPureIntro. word_cleanup. eauto. }
+  { word_cleanup. eauto. }
   iIntros "Hdst".
   wp_apply (wp_SliceGet (V:=u8) with "[$Hsrc]").
   { iPureIntro. change (uint.nat 0) with 0%nat. reflexivity. }
   iIntros "Hsrc".
   wp_apply wp_installOneBit; first word.
   wp_apply (wp_SliceSet (V:=u8) with "[$Hdst]").
-  { iPureIntro. word_cleanup. eauto. }
+  { word_cleanup. eauto. }
   iIntros "Hdst".
   wp_pures. iModIntro. iApply "HΦ".
   iFrame "Hsrc".

@@ -153,7 +153,7 @@ Proof.
     wp_pures.
     wp_store. wp_pures.
     iApply ("IH" with "[] HIx Hl").
-    { iPureIntro; word. }
+    { word. }
     iFrame.
   - wp_pures.
     assert (uint.Z x = uint.Z max) by word.
@@ -180,7 +180,7 @@ Proof.
 Qed.
 
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
-iExists _; iFrame; iPureIntro; word : core.
+iExists _; iFrame; word : core.
 
 Theorem wpc_forBreak_cond' (I: bool -> iProp Σ) Ic Φ Φc stk E1 (cond body: val) :
   (∀ b, I b -∗ Ic) -∗
@@ -349,7 +349,7 @@ Proof.
     iCache with "HΦ HIx".
     {
       iDestruct (Himpl with "[] [$]") as "?"; eauto.
-      {iPureIntro; word. }
+      {word. }
       crash_case.
       eauto.
     }
@@ -365,7 +365,7 @@ Proof.
     { iIntros (i Hbound) "HIx".
       iDestruct (Himpl with "[%] HIx") as "$".
       revert Hbound; word. }
-    { iPureIntro; word. }
+    { word. }
     iSplit.
     + iLeft in "HΦ".
       iIntros "HIx".

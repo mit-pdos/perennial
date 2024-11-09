@@ -437,7 +437,7 @@ Proof.
         {
           repeat iExists _.
           iFrame "∗#".
-          iPureIntro. word.
+          word.
         }
         {
           simpl.
@@ -694,7 +694,7 @@ Proof.
         rewrite HnoOverflow.
         rewrite u64_Z_through_nat u64_Z //.
       }
-      { iPureIntro. word. }
+      { word. }
     }
   }
 Qed.
@@ -912,7 +912,7 @@ Proof.
       repeat f_equal. word.
     }
     iFrame "Hislow".
-    iPureIntro. word.
+    word.
   }
   { (* case: apply an op *)
     destruct Henc as [? [HlowEnc Henc]].
@@ -1062,8 +1062,8 @@ Proof.
           replace (compute_state ops) with st by done.
           rewrite X /=.
           iApply "HprevVers".
-          { iPureIntro; word. }
-          { iPureIntro; word. }
+          { word. }
+          { word. }
         }
         {
           iExactEq "HnewVer".
@@ -1137,7 +1137,7 @@ Proof.
         repeat f_equal. word.
       }
       iFrame "#".
-      iPureIntro. word.
+      word.
     }
   }
   { (* apply a readonly op *)
@@ -1665,7 +1665,7 @@ Proof.
   repeat iExists _.
   iFrame "∗".
   iFrame "Hislow".
-  iPureIntro; word.
+  word.
 Qed.
 
 Lemma alloc_own_ghost_vnums :

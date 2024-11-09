@@ -485,7 +485,7 @@ Proof.
     }
     rewrite take_app_le; last word.
     iApply "H".
-    iPureIntro. word.
+    word.
   }
   {
     iMod ("Hclose" with "[-]"); last done.
@@ -498,7 +498,7 @@ Proof.
     { exfalso. subst. by rewrite Hlookup in H0. }
     rewrite take_app_le; last word.
     iApply "H".
-    iPureIntro. word.
+    word.
   }
 Qed.
 

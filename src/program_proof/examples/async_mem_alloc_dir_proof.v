@@ -284,7 +284,7 @@ Section goose.
     {
       iInduction num_inodes as [|n Sn] "IH".
       + iExists []; auto.
-      + iAssert (⌜(n <= sz)%Z ∧ (sz < 2^64)%Z⌝)%I as "IHbound"; [iPureIntro; word|].
+      + iAssert (⌜(n <= sz)%Z ∧ (sz < 2^64)%Z⌝)%I as "IHbound"; [word|].
         rewrite !seq_S.
         rewrite seqZ_S.
         repeat change (0+n) with n.

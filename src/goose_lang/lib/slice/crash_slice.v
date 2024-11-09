@@ -109,8 +109,8 @@ Proof.
           assert (uint.Z (z + 1) = uint.Z z + 1) by word.
           replace (word.add z 1) with (W64 (z + 1)) by word.
           iSpecialize ("IH" $! (z+1) with "[] []").
-          { iPureIntro; word. }
-          { iPureIntro; word. }
+          { word. }
+          { word. }
           wpc_apply ("IH" with "[$] [$] [$]"). }
   - assert (z = uint.Z s.(Slice.sz)) by lia; subst z.
     wpc_pures; swap 2 3.

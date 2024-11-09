@@ -184,7 +184,7 @@ Proof.
       iNext. iExists _, _, _, _.
       iFrame "Hepoch Hres Hconf His_conf ∗#".
       iSplitR.
-      { iPureIntro. word. }
+      { word. }
       iSplitL "Hunused".
       {
         iApply "Hunused".
@@ -244,7 +244,7 @@ Proof.
       iNext. iExists _, _, _, _.
       iFrame "∗ His_conf #".
       iSplitR.
-      { iPureIntro. word. }
+      { word. }
       iSplitL "Hunused".
       {
         iApply "Hunused".

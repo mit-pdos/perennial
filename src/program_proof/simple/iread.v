@@ -201,7 +201,7 @@ Proof.
     iFrame "Hdatavar".
     iFrame "Hdataslice".
     iSplit.
-    { iPureIntro. word_cleanup.
+    { word_cleanup.
       replace (Z.to_nat (uint.Z b' + 1)) with (S (uint.nat b')) by word.
       erewrite take_S_r.
       { rewrite Hcontent. eauto. }

@@ -379,7 +379,7 @@ Proof.
     wp_pures. wp_load.
     iModIntro.
     iApply "HΦ".
-    iPureIntro. word.
+    word.
 Qed.
 
 Lemma wp_NumFree max l :
@@ -422,7 +422,7 @@ Proof.
     iPureIntro.
     word.
   - iExists _; iFrame.
-    iPureIntro; word.
+    word.
   - iIntros "[Hinv Hbits]". iNamed "Hinv".
     wp_pures.
     wp_loadField.

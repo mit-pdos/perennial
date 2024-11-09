@@ -117,7 +117,7 @@ Proof.
   wp_load.
   wp_if_destruct.
   - wp_store. wp_load. iApply "HΦ". iPureIntro. done.
-  - wp_load. iApply "HΦ". iPureIntro. word.
+  - wp_load. iApply "HΦ". word.
 Qed.
 
 Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
@@ -147,7 +147,7 @@ Proof.
     iIntros "[_ Hnew]". iDestruct ("Hcl" with "Hnew") as "Hnew".
     wp_pures. iApply "HΦ". iModIntro. iFrame. iPureIntro. simpl. word.
   - (* already big enough *)
-    iApply "HΦ". iFrame. iPureIntro. word.
+    iApply "HΦ". iFrame. word.
 Qed.
 
 Theorem wp_WriteInt s x (vs : list u8) :

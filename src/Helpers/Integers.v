@@ -1,4 +1,5 @@
 From stdpp Require Import decidable countable finite.
+From iris.proofmode Require Import proofmode.
 From coqutil Require Import Datatypes.HList.
 From coqutil.Z Require Import BitOps.
 From coqutil.Word Require Naive.
@@ -278,7 +279,7 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem tuple_of_to_list_u64 A (t: tuple A w64_bytes) :
+Theorem tuple_of_to_list_u64 {A} (t: tuple A w64_bytes) :
   tuple.of_list (tuple.to_list t) = t.
 Proof.
   unfold tuple in t.
@@ -294,10 +295,10 @@ Proof.
   intros x; simpl.
   unfold le_to_u64, u64_le.
   f_equal.
-  rewrite tuple_of_to_list_u64.
+  rewrite (tuple_of_to_list_u64 (split 8 _)).
   rewrite combine_split.
   change (Z.of_nat w64_bytes * 8) with 64.
-  rewrite word.wrap_unsigned by lia.
+  rewrite word.wrap_unsigned.
   by rewrite word.of_Z_unsigned.
 Qed.
 (* end 64-bit code *)
@@ -325,7 +326,7 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem tuple_of_to_list_u32 A (t: tuple A w32_bytes) :
+Theorem tuple_of_to_list_u32 {A} (t: tuple A w32_bytes) :
   tuple.of_list (tuple.to_list t) = t.
 Proof.
   unfold tuple in t.
@@ -341,10 +342,10 @@ Proof.
   intros x; simpl.
   unfold le_to_u32, u32_le.
   f_equal.
-  rewrite tuple_of_to_list_u32.
+  rewrite (tuple_of_to_list_u32 (split 4 _)).
   rewrite combine_split.
   change (Z.of_nat w32_bytes * 8) with 32.
-  rewrite word.wrap_unsigned by lia.
+  rewrite word.wrap_unsigned.
   by rewrite word.of_Z_unsigned.
 Qed.
 (* end 32-bit code *)
@@ -594,6 +595,7 @@ Ltac word_cleanup := word_cleanup_core; try lia.
 
 Ltac word := first [
                  solve [
+                     try iPureIntro;
                      word_cleanup_core;
                      unfold word.wrap in *;
                      (* NOTE: some inefficiency here because [lia] will do [zify]

@@ -606,7 +606,7 @@ Proof.
       iFrame "Hqueue".
       iSplitR.
       { 
-        iPureIntro. word.
+        word.
       }
       iExactEq "Helem". unfold named. rewrite H0. f_equal. f_equal. word.
     }

@@ -300,7 +300,7 @@ Proof.
   iIntros (Φ) "_ HΦ".
   wp_rec.
   wp_pures.
-  wp_if_destruct; iApply "HΦ"; iPureIntro; word.
+  wp_if_destruct; iApply "HΦ"; word.
 Qed.
 
 Lemma wp_CacheKv__GetAndCache (k:loc) key (cachetime:u64) γ :

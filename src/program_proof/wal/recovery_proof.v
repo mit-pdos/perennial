@@ -1283,7 +1283,7 @@ Proof.
             word.
           }
           iSplit.
-          { iPureIntro; word. }
+          { word. }
           iFrame "Hinstalled_pos'".
           iFrame "HdiskEnd_stable".
           rewrite length_take.

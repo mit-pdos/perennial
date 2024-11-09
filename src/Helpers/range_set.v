@@ -96,7 +96,7 @@ Lemma rangeSet_first:
 Proof.
   rewrite /rangeSet.
   intros.
-  rewrite seqZ_cons; first by lia.
+  rewrite seqZ_cons; [|lia].
   simpl.
   reflexivity.
 Qed.

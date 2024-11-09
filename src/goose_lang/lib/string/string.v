@@ -180,7 +180,7 @@ Proof.
   wp_apply wp_Assume. iIntros (Hover).
   rewrite bool_decide_eq_true in Hover.
   wp_apply wp_stringToBytes.
-  { iPureIntro. word. }
+  { word. }
   iIntros. iApply "HΦ".
   iDestruct (own_slice_sz with "[$]") as %Hsz.
   rewrite take_ge.

@@ -121,7 +121,7 @@ Proof.
   wp_loadField.
   assert (HlenN : length phys = S (uint.nat tidlast)) by word.
   iAssert (⌜uint.Z tid < 2 ^ 64 - 1⌝)%I with "[Hactive]" as "%Htidmax".
-  { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
+  { iDestruct "Hactive" as "[_ %H]". word. }
   wp_apply (wp_Mutex__Unlock with "[-HΦ Hactive HretR]").
   { iFrame "Hlock Hlocked".
     iNext.

@@ -701,7 +701,7 @@ Proof.
       iDestruct "Hkv" as "[Hkv Hkv2]".
 
       iSpecialize ("Hkvfupd" with "[]").
-      { iPureIntro. word. }
+      { word. }
       iMod ("Hkvfupd" with "Hkv2") as "Hkvfupd".
       iEval (rewrite -Qp.quarter_quarter) in "HnewVal".
       iDestruct (own_val_split with "HnewVal") as "[Hval Hval2]".

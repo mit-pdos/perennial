@@ -186,7 +186,7 @@ Proof.
     iLeft. iFrame. iSplit; first done. iExists (idx + 1). iSplitL "Hoff".
     { iExactEq "Hoff". f_equal. f_equal. f_equal. word. }
     iSplitR.
-    { iPureIntro. word. }
+    { word. }
 
         iExactEq "Hdisk". f_equal.
         rewrite insert_take_drop.

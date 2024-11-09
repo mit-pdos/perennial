@@ -519,7 +519,7 @@ Proof using waitgroupG0.
             done.
           }
         }
-        iPureIntro. word.
+        word.
       }
       iIntros (err) "#Hpost".
 
@@ -550,7 +550,7 @@ Proof using waitgroupG0.
     iSplitR; first done.
     iFrame "∗".
     iSplitR.
-    { iPureIntro. word. }
+    { word. }
     iApply to_named.
     iExactEq "Herr_ptrs".
     f_equal.
@@ -597,7 +597,7 @@ Proof using waitgroupG0.
     iExists _, _.
     iFrame "∗".
     iSplitL.
-    { iPureIntro. word. }
+    { word. }
     iModIntro.
     destruct (decide (_)); last first.
     { done. }
@@ -652,7 +652,7 @@ Proof using waitgroupG0.
       iSplitL ""; first done.
       iFrame "∗".
       iSplitL "".
-      { iPureIntro. word. }
+      { word. }
       iModIntro.
       destruct (decide (err = 0%Z)).
       {

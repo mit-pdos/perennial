@@ -776,7 +776,7 @@ Proof.
       - iNamed "Hfields". iNamed "Hfield_ptsto".
         wp_loadField.
         wp_apply (wp_WalogState__doMemAppend with "[$His_memLog $Hbufs]").
-        { rewrite -Hbufs_sz. iPureIntro. word. }
+        { rewrite -Hbufs_sz. word. }
         assert (slidingM.wf σ.(memLog)).
         { destruct Hlocked_wf; auto. }
         set (memLog' := memWrite σ.(memLog) bs).

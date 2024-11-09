@@ -165,7 +165,7 @@ Proof.
     iIntros "[_ Hnew]". iDestruct ("Hcl" with "Hnew") as "Hnew".
     wp_pures. iApply "HΦ". iModIntro. iFrame. iPureIntro. simpl. word.
   - (* already big enough *)
-    iApply "HΦ". iFrame. iPureIntro. word.
+    iApply "HΦ". iFrame. word.
 Qed.
 
 Theorem wp_WriteInt s x (vs : list u8) :

@@ -663,7 +663,7 @@ Proof.
   iApply "HΦ".
   iExists _, _. iFrame.
   iExists _; iFrame.
-  by iPureIntro; word.
+  by word.
 Qed.
 
 Lemma MakeRPCServer_spec γrpc :

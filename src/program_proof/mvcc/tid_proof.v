@@ -144,7 +144,7 @@ Proof.
   { iFrame. eauto with lia. }
   iModIntro. iExists _. iFrame. rewrite bool_decide_true.
   2:word.
-  iIntros "Hsid". iApply "Hfin". iFrame. iPureIntro. word.
+  iIntros "Hsid". iApply "Hfin". iFrame. word.
 Qed.
 
 Local Lemma gentid_completed γ γr clock ts Φ :

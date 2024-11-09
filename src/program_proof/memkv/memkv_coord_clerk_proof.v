@@ -138,7 +138,7 @@ Proof.
   }
   rewrite Heq_kv_gn. iFrame "Hcid".
   rewrite /uNSHARD.
-  iPureIntro. word.
+  word.
 Qed.
 
 Lemma wp_ShardClerkSet__GetClerk (γ:memkv_shard_names) (γkv:gname) (s:loc) (host:u64) :

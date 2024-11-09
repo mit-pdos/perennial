@@ -200,7 +200,7 @@ Proof.
       is_pk x.(adtrPk.pk) (adtr_sigpred x.(adtrPk.γ)) -∗
       ("#His_audit" ∷ is_audit cli.(Client.γ) x.(adtrPk.γ) cli.(Client.next_epoch))))%I
     with "[$Hptr_idx $Hown_cli]").
-  { iSplit; [|naive_solver]. iPureIntro. word. }
+  { iSplit; [|naive_solver]. word. }
   { iIntros "!> * (H&Hptr_idx&%Hinb) HΦ". iNamed "H".
     list_elem addrs (uint.nat i) as addr.
     wp_load. wp_apply (wp_SliceGet with "[$Hsl_addrs]"); [done|]. iIntros "_".

@@ -448,7 +448,7 @@ lemmas. *)
     do 2 (iSplitR; first done).
     iApply "HΦ". iFrame "Hf".
     rewrite /pointsto_vals. iSplitR.
-    { iPureIntro. word. }
+    { word. }
     iApply (big_sepL_mono with "Hl").
     clear -Hfresh. simpl. iIntros (i v _) "Hpointsto".
     iApply (na_pointsto_to_heap with "Hpointsto").

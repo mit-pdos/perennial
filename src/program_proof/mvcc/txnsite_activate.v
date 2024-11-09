@@ -145,7 +145,7 @@ Proof.
   iSplit; last done.
   unfold active_tid.
   rewrite Etid.
-  iFrame. iPureIntro. word.
+  iFrame. word.
 Qed.
 
 End program.

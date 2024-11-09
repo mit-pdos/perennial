@@ -337,7 +337,7 @@ Proof.
 
     iApply "HΦ".
     iFrame.
-    iSplit; first by iPureIntro; word.
+    iSplit; first by word.
     iExactEq "Hupds'".
     f_equal.
     destruct Hwf.
@@ -362,7 +362,7 @@ Proof.
   - iDestruct (own_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".
     iFrame.
     rewrite zero_slice_val.
-    iSplit; first by iPureIntro; word.
+    iSplit; first by word.
     iExists _. iFrame.
     iExists nil; simpl.
     iSplitL.

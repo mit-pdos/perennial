@@ -329,7 +329,7 @@ Proof.
   iNamed 1.
   iIntros "[#Hprop_lb2 #Hprop_facts2]".
   iAssert (⌜st.(mp_epoch) = epoch'⌝)%I as "%HepochEq".
-  { iPureIntro. word. }
+  { word. }
   iFrame "%".
   destruct (decide _); last first.
   {
@@ -374,7 +374,7 @@ Proof.
   iNamed 1.
   iIntros "#[Hprop_lb2 _]".
   iAssert (⌜st.(mp_epoch) = epoch'⌝)%I as "%HepochEq".
-  { iPureIntro. word. }
+  { word. }
   iFrame "%".
   destruct (decide _); last first.
   {
@@ -435,7 +435,7 @@ Proof.
         iIntros (???) "Hwand".
         iIntros (Hy).
         iApply "Hwand".
-        iPureIntro. word.
+        word.
       }
       {
         iIntros.
@@ -446,7 +446,7 @@ Proof.
     iModIntro.
     iIntros (??) "[%|$]".
     iLeft.
-    iPureIntro. word.
+    word.
   }
   { (* case: mp_acceptedEpoch < mp_epoch == epoch'; use existing acc *)
     destruct (decide _).
@@ -476,14 +476,14 @@ Proof.
       iIntros (??) "Hwand".
       iIntros (?).
       iApply "Hwand".
-      iPureIntro. word.
+      word.
     }
     {
       iApply (big_sepS_impl with "Hvotes").
       iModIntro.
       iIntros (??) "[%|$]".
       iLeft.
-      iPureIntro. word.
+      word.
     }
   }
 Qed.
@@ -623,8 +623,8 @@ Proof.
   iModIntro.
   iIntros.
   iApply "Hskip".
-  { iPureIntro. word. }
-  { iPureIntro. word. }
+  { word. }
+  { word. }
 Qed.
 
 Lemma is_proposal_compare γsys log log' epoch :
@@ -961,7 +961,7 @@ Proof.
       iSplitL "Hwand".
       {
         iSplitL "Hwand".
-        { iIntros. iApply "Hwand". iPureIntro. word. }
+        { iIntros. iApply "Hwand". word. }
         { iIntros. exfalso. word. }
       }
       { iIntros. exfalso. word. }
@@ -973,7 +973,7 @@ Proof.
         {
           iSplitR "Hwand".
           { iIntros. exfalso. word. }
-          { iIntros. iApply "Hwand". iPureIntro. word. }
+          { iIntros. iApply "Hwand". word. }
         }
         { iIntros. exfalso. word. }
     }
@@ -985,7 +985,7 @@ Proof.
         { iIntros. exfalso. word. }
         { iIntros. exfalso. word. }
       }
-      { iIntros. iApply "Hwand". iPureIntro. word. }
+      { iIntros. iApply "Hwand". word. }
     }
     }
   }
@@ -1048,8 +1048,8 @@ Proof.
       iDestruct (big_sepS_elem_of_acc_impl epoch' with "Hunused") as "[Hunused2 _]".
       { set_solver. }
       iApply "Hunused2".
-      { iPureIntro. word. }
-      { iPureIntro. word. }
+      { word. }
+      { word. }
     }
     {
       iMod (fmlist_ptsto_persist with "Hacc") as "#Hacc_ro".
@@ -1075,8 +1075,8 @@ Proof.
         iFrame "#".
       }
       iApply "Hunused2".
-      { iPureIntro. word. }
-      { iPureIntro. word. }
+      { word. }
+      { word. }
     }
   }
 
@@ -1097,11 +1097,11 @@ Proof.
     iModIntro.
     iIntros (???) "[%|$]".
     iLeft.
-    iPureIntro. word.
+    word.
   }
   {
     iLeft.
-    iPureIntro. word.
+    word.
   }
 Qed.
 

@@ -1208,7 +1208,7 @@ Proof.
     iApply "Hϕ0".
     iFrame.
     iSplitR "Henc".
-    - iPureIntro. word.
+    - word.
     - replace (uint.nat (word.add i0 1)) with (S (uint.nat i0)) by word.
       rewrite replicate_S_end.
       rewrite fmap_app; simpl.
@@ -1220,7 +1220,7 @@ Proof.
   {
     iSplitL "Henc"; iFrame; auto.
     iSplitR "Henc".
-    - iPureIntro. word.
+    - word.
     - rewrite replicate_0 fmap_nil app_nil_r.
       iExactEq "Henc".
       rewrite /named.

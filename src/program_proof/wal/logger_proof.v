@@ -770,7 +770,7 @@ Proof.
   replace (W64 _) with (σ.(memLog).(slidingM.mutable)) by word.
   iFrame.
   iSplit.
-  { iPureIntro. word. }
+  { word. }
   iSplit.
   { iPureIntro. lia. }
   iSplit.

@@ -319,7 +319,7 @@ Proof.
   {
     iSplit; eauto.
     iDestruct "HSeqPositive" as %?.
-    iPureIntro. word.
+    word.
   }
   iSplit.
   { iModIntro. iIntros. iSplit; first done.

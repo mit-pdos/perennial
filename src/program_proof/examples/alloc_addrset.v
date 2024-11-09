@@ -60,7 +60,7 @@ Proof.
     iApply "HΦ".
     iFrame.
     iSplitR.
-    { iPureIntro; word. }
+    { word. }
     rewrite /named.
     iPureIntro.
     rewrite /map_insert dom_insert_L.

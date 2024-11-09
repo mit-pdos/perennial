@@ -675,7 +675,7 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_loadField.
-  wp_apply (wp_indNum); [ iPureIntro; word | ].
+  wp_apply (wp_indNum); [ word | ].
 
   iIntros (indNum) "%HindNum".
   unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.

@@ -531,7 +531,7 @@ Proof.
   iExists _; iFrame.
   replace (1 + length (bs0 ++ bs)) with (1 + length bs0 + length bs) by len.
   iFrame.
-  iPureIntro; word.
+  word.
 Qed.
 
 Theorem wpc_init (sz: u64) k E1 E2 vs:
@@ -555,7 +555,7 @@ Proof.
     wp_apply wp_allocStruct; [ val_ty | iIntros (lptr) "Hs" ].
     wp_pures.
     iIntros "!> (Hdisk&HΦ)".
-    iApply "HΦ". iFrame. iPureIntro. word.
+    iApply "HΦ". iFrame. word.
   - destruct vs.
     { simpl in *.
       word. }

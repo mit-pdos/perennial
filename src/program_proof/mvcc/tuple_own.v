@@ -24,7 +24,7 @@ Theorem wp_tuple__Own tuple (tid : u64) (key : u64) (sid : u64) γ :
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
   iAssert (⌜uint.Z tid > 0⌝)%I with "[Hactive]" as "%Htid".
-  { iDestruct "Hactive" as "[_ %Htid]". iPureIntro. word. }
+  { iDestruct "Hactive" as "[_ %Htid]". word. }
   iNamed "Htuple".
   wp_rec. wp_pures.
   

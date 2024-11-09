@@ -175,7 +175,7 @@ Proof.
       (* Swap entries at [j - 1] and at [j]. *)
       do 2 wp_load.
       wp_apply (wp_swap with "[$HentsS]").
-      { iPureIntro. word. }
+      { word. }
         
       iIntros (ents1) "[HentsS %Hperm1]".
       wp_load.

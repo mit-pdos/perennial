@@ -1849,7 +1849,7 @@ Proof.
       {
         iFrame "%".
         iSplitR.
-        { iPureIntro. word. }
+        { word. }
         iIntros "H1".
         instantiate (1:=Q).
         iMod (fupd_mask_subseteq _) as "Hmask".
