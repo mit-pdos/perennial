@@ -320,6 +320,8 @@ Proof.
   wp_steps.
 
   wp_apply wp_slice_for_range.
+Admitted.
+(*
   iFrame "Hsl".
   simpl foldr.
   (* Entire for loop is unfolded here. TODO: is there a way to unfold one iteration at a time? *)
@@ -335,5 +337,6 @@ Proof.
   wp_load.
   Show Ltac Profile.
 Admitted.
+*)
 
 End proof.
