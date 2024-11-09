@@ -396,11 +396,12 @@ Section translate.
         destruct x0. destruct n; monad_inv.
         destruct n; monad_inv.
         inv H3; monad_inv.
+        destruct s2 as [σ' g']. inv H1.
         destruct (heap σ1 !! l) eqn:Heq; subst.
         ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H); monad_inv.
            inversion H.
            intuition.
-           exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+           eexists ({| heap := _; oracle := _; trace := _;
                       world := world pσ2 |}).
            eexists.
            split_and!.
@@ -411,7 +412,7 @@ Section translate.
                rewrite //=. repeat econstructor; eauto. f_equal.
                f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /RecordSet.set //=.
-               congruence.
+               f_equal; eauto.
         ** match goal with
            | H: relation.denote (unwrap _) _ _ _ |- _ => inv H; intuition
            end.
