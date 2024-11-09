@@ -105,6 +105,20 @@ Definition testAssignBitwise: val :=
     "ok" <-[boolT] ((![boolT] "ok") && ((![uint64T] "x") = (((#123 `or` #31) `and` #15) `xor` #170)));;
     ![boolT] "ok".
 
+(* atomic.go *)
+
+Definition testAtomicLoadStore64: val :=
+  rec: "testAtomicLoadStore64" <> :=
+    let: "x" := ref (zero_val uint64T) in
+    let: "ok" := ref_to boolT #true in
+    atomic.StoreUint64 "x" #42;;
+    let: "y" := atomic.LoadUint64 "x" in
+    "ok" <-[boolT] ((![boolT] "ok") && ("y" = #42));;
+    atomic.StoreUint64 "x" #1;;
+    let: "z" := atomic.LoadUint64 "x" in
+    "ok" <-[boolT] ((![boolT] "ok") && ("z" = #1));;
+    ![boolT] "ok".
+
 (* closures.go *)
 
 Notation AdderType := (uint64T -> uint64T)%ht (only parsing).

@@ -19,6 +19,9 @@ Example testAppendSlice_ok : testAppendSlice #() ~~> #true := t.
 Example testAssignAddSub_ok : testAssignAddSub #() ~~> #true := t.
 Example testAssignBitwise_ok : testAssignBitwise #() ~~> #true := t.
 
+(* atomic.go *)
+Example testAtomicLoadStore64_ok : testAtomicLoadStore64 #() ~~> #true := t.
+
 (* closures.go *)
 Example testClosureBasic_ok : testClosureBasic #() ~~> #true := t.
 
