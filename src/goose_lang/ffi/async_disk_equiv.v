@@ -412,7 +412,9 @@ Section translate.
                f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /RecordSet.set //=.
                congruence.
-        ** inversion H4; intuition.
+        ** match goal with
+           | H: relation.denote (unwrap _) _ _ _ |- _ => inv H; intuition
+           end.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       inversion Hstep; monad_inv.
