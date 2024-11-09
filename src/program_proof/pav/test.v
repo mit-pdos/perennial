@@ -50,7 +50,27 @@ Definition own ptr obj : iProp Σ :=
 End defs.
 End bob.
 
-Section proof.
+Section defs.
+Context `{!heapGS Σ, !pavG Σ}.
+
+Definition own_alice ptr cli_γ uid next_ver next_epoch hist : iProp Σ :=
+  ∃ ptr_cli a1 a2 a3 a4 sl_hist dim0_hist,
+  "Hown_cli" ∷ client.Client.own ptr_cli
+    (client.Client.mk cli_γ uid next_ver next_epoch a1 a2 a3 a4) ∗
+  "#Hptr_cli" ∷ ptr ↦[alice :: "cli"]□ #ptr_cli ∗
+  "Hptr_hist" ∷ ptr ↦[alice :: "hist"] (slice_val sl_hist) ∗
+  "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist next_epoch ∗
+  "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
+  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;obj.(hist), HistEntry.own p o) ∗
+  "#His_keys" ∷ ([∗ list] ver ↦ x ∈ obj.(hist),
+    (* aliceUid = 0. *)
+    is_my_key obj.(cli).(Client.γ) (W64 0) (W64 ver)
+      x.(HistEntry.Epoch) x.(HistEntry.HistVal)).
+
+
+End defs.
+
+Section wps.
 Context `{!heapGS Σ, !pavG Σ, !waitGroupG Σ}.
 
 Lemma wp_updAdtrsAll (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
@@ -175,4 +195,4 @@ Proof using Type*.
 
 Admitted.
 
-End proof.
+End wps.

@@ -25,7 +25,7 @@ Definition is_hist_ep cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w6
     (∃ (bound : w64) dig m_γ label,
     "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat bound) (Some (dig, m_γ)) ∗
     "#His_label" ∷ is_vrf uid (W64 $ length vals) label ∗
-    "%Hlt_bound" ∷ ⌜ uint.Z bound ≤ uint.Z valid ⌝ ∗
+    "%Hlt_bound" ∷ ⌜ uint.Z bound < uint.Z valid ⌝ ∗
     (* next ver doesn't exist in this or later map. *)
     (("%Hgt_bound" ∷ ⌜ uint.Z ep ≤ uint.Z bound ⌝ ∗
     "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ]□ None)
@@ -35,9 +35,10 @@ Definition is_hist_ep cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w6
     "%Hgt_bound" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
     "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ]□ Some (bound, comm)))).
 
+(* is_hist says a history is okay up to valid. *)
 Definition is_hist cli_γ (uid : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
-  "%Hhist_valid" ∷ ([∗ list] x ∈ hist, ⌜ uint.Z x.1 ≤ uint.Z valid ⌝) ∗
-  "#Hknow_eps" ∷ (∀ (ep : w64), ⌜ uint.Z ep ≤ uint.Z valid ⌝ -∗
+  "%Hhist_valid" ∷ ([∗ list] x ∈ hist, ⌜ uint.Z x.1 < uint.Z valid ⌝) ∗
+  "#Hknow_eps" ∷ (∀ (ep : w64), ⌜ uint.Z ep < uint.Z valid ⌝ -∗
     is_hist_ep cli_γ uid ep hist valid).
 
 End hist.
@@ -54,96 +55,133 @@ Proof.
   iDestruct "Hbound" as "[H|H]"; iNamed "H"; iPureIntro; word.
 Qed.
 
+Lemma hist_nil γ uid hist :
+  is_hist γ uid hist (W64 0) -∗
+  ⌜ hist = [] ⌝.
+Proof.
+  iNamed 1. destruct hist; [done|].
+  ospecialize (Hhist_valid 0%nat _ _); [done|word].
+Qed.
+
 Lemma hist_extend_selfmon cli_γ uid hist valid new_valid :
-  uint.Z valid ≤ uint.Z new_valid →
+  uint.Z valid ≤ uint.Z (word.add new_valid (W64 1)) →
+  uint.Z (word.add new_valid (W64 1)) = uint.Z new_valid + uint.Z 1 →
   ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_bound" ∷ is_my_bound cli_γ uid (W64 $ length hist) new_valid) -∗
-  is_hist cli_γ uid hist new_valid.
+  is_hist cli_γ uid hist (word.add new_valid (W64 1)).
 Proof.
-  intros ?. iNamed 1. iNamed "His_hist". iSplit.
+  intros ??. iNamed 1. iNamed "His_hist".
+  (* FIXME: word should work without this. *)
+  set (word.add new_valid (W64 1)) in *. iSplit.
   { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
     specialize (Hhist_valid _ _ Hlook). word. }
-  iIntros (ep ?). destruct (decide (uint.Z ep ≤ uint.Z valid)).
-  (* case 1: ep ≤ valid. *)
+  iIntros (ep ?). destruct (decide (uint.Z ep < uint.Z valid)).
+  (* case 1: ep < valid. *)
   { iSpecialize ("Hknow_eps" $! ep with "[]"). { iPureIntro. word. }
     iApply (hist_val_extend_valid with "Hknow_eps"). word. }
-  (* case 2: valid < ep ≤ new_valid. *)
-  iSpecialize ("Hknow_eps" $! valid with "[]"). { iPureIntro. lia. }
+  destruct (decide (valid = 0)) as [->|].
+  (* case 2: valid = 0. *)
+  { iDestruct (hist_nil with "[$Hknow_eps //]") as %->.
+    iExists []. iSplit; [|iSplit]; [naive_solver..|].
+    iNamed "His_bound". iFrame "#". iSplit. { iPureIntro. word. }
+    iLeft. iPureIntro. word. }
+  (* case 3: valid ≤ ep < new_valid. *)
+  iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"). { iPureIntro. word. }
   iNamed "Hknow_eps". iExists vals. iSplit; [|iSplit].
   - rewrite (list_filter_iff_strong
       (λ x, uint.Z x.1 ≤ uint.Z ep)
-      (λ x, uint.Z x.1 ≤ uint.Z valid) hist); [iFrame "#"|].
+      (λ x, uint.Z x.1 ≤ uint.Z (word.sub valid (W64 1))) hist); [iFrame "#"|].
     intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
   - iFrame "#".
   - iClear "Hhist Hbound".
     iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
     rewrite list_filter_all in Hlen_vals; last first.
     { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
-    iNamed "His_bound". rewrite Hlen_vals. by iFrame "#%".
+    iNamed "His_bound". rewrite Hlen_vals. iFrame "#".
+    iSplit. { iPureIntro. word. } iLeft. iPureIntro. word.
 Qed.
 
 Lemma hist_extend_put cli_γ uid hist valid new_valid pk :
-  uint.Z valid < uint.Z new_valid →
+  uint.Z valid ≤ uint.Z (word.add new_valid (W64 1)) →
+  uint.Z (word.add new_valid (W64 1)) = uint.Z new_valid + uint.Z 1 →
   ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_my_key" ∷ is_my_key cli_γ uid (W64 $ length hist) new_valid pk) -∗
-  is_hist cli_γ uid (hist ++ [(new_valid, pk)]) new_valid.
+  is_hist cli_γ uid (hist ++ [(new_valid, pk)]) (word.add new_valid (W64 1)).
 Proof.
-  intros ?. iNamed 1. iNamed "His_hist". iSplit.
+  intros ??. iNamed 1. iNamed "His_hist". iSplit.
   { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
     apply lookup_app_Some in Hlook as [Hlook|[_ Hlook]].
     - specialize (Hhist_valid _ _ Hlook). word.
-    - apply list_lookup_singleton_Some in Hlook as [_ ?]. by simplify_eq/=. }
+    - apply list_lookup_singleton_Some in Hlook as [_ ?]. simplify_eq/=. word. }
   iIntros (ep ?). destruct (decide (uint.Z ep < uint.Z new_valid)).
-  - iEval (rewrite /is_hist_ep). rewrite filter_app.
+  (* case 1: ep < new_valid. *)
+  { iEval (rewrite /is_hist_ep). rewrite filter_app.
     opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
       (new_valid, pk)) as [[->_]|[_?]]. 2: { exfalso. simpl in *. word. }
-    list_simplifier. destruct (decide (uint.Z ep ≤ uint.Z valid)).
-    (* case 1: ep ≤ valid. *)
-    + iSpecialize ("Hknow_eps" $! ep with "[]"). { iPureIntro. word. }
+    list_simplifier. destruct (decide (uint.Z ep < uint.Z valid)).
+    (* case 1.1: ep < valid. *)
+    { iSpecialize ("Hknow_eps" $! ep with "[]"). { iPureIntro. word. }
       iNamed "Hknow_eps". iExists (vals). iNamed "Hbound". iFrame "#".
-      iDestruct "Hbound" as "[H|H]"; iNamed "H"; iPureIntro; word.
-    (* case 2: valid < ep < new_valid. *)
-    + iSpecialize ("Hknow_eps" $! valid with "[//]").
+      iDestruct "Hbound" as "[H|H]"; iNamed "H"; iPureIntro; word. }
+    destruct (decide (valid = 0)) as [->|].
+    (* case 1.2: valid = 0. *)
+    { iDestruct (hist_nil with "[$Hknow_eps //]") as %->.
+      iExists []. iSplit; [|iSplit]; [naive_solver..|].
+      iNamed "His_my_key". iFrame "#". iSplit. { iPureIntro. word. }
+      iRight. iPureIntro. word. }
+    (* case 1.3: valid ≤ ep < new_valid. *)
+    { iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]").
+      { iPureIntro. word. }
       iNamed "Hknow_eps". iExists (vals). iFrame "#". iSplit.
-      * rewrite (list_filter_iff_strong
+      - rewrite (list_filter_iff_strong
           (λ x, uint.Z x.1 ≤ uint.Z ep)
-          (λ x, uint.Z x.1 ≤ uint.Z valid) hist); [iFrame "#"|].
+          (λ x, uint.Z x.1 ≤ uint.Z (word.sub valid (W64 1))) hist); [iFrame "#"|].
         intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
-      * iNamed "His_my_key". iFrame "#".
+      - iNamed "His_my_key". iFrame "#".
         iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
         rewrite list_filter_all in Hlen_vals; last first.
         { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook).
           simpl in *. word. }
-        rewrite Hlen_vals. iFrame "#". iSplit; [done|]. iRight. iPureIntro. word.
-  (* case 3: ep = new_valid. *)
-  - iSpecialize ("Hknow_eps" $! valid with "[//]").
+        rewrite Hlen_vals. iFrame "#". iSplit. { iPureIntro. word. }
+        iRight. iPureIntro. word. } }
+  (* case 2: ep = new_valid. *)
+  iEval (rewrite /is_hist_ep). rewrite filter_app.
+  opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
+    (new_valid, pk)) as [[_?]|[->_]]. { exfalso. simpl in *. word. }
+  destruct (decide (valid = 0)) as [->|].
+  (* case 2.1: valid = 0. *)
+  { iDestruct (hist_nil with "[$Hknow_eps //]") as %->. iNamed "His_my_key".
+    iExists [(new_valid, comm)]. iSplit; [|iSplit].
+    - simpl. by iFrame "#".
+    - simpl. iFrame "#".
+    - iFrame "#". iSplit. { iPureIntro. word. } iLeft. iPureIntro. word. }
+  (* case 2.2: valid != 0. *)
+  - iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]").
+    { iPureIntro. word. }
     iNamed "Hknow_eps". iNamed "His_my_key".
     iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
     iExists (vals ++ [(new_valid, comm)]).
     rewrite list_filter_all in Hlen_vals; last first.
     { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
     rewrite Hlen_vals. iSplit; [|iSplit].
-    + rewrite filter_app.
-      opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
-        (new_valid, pk)) as [[_?]|[->_]]. { exfalso. simpl in *. word. }
-      iApply big_sepL2_snoc. iSplit.
+    + iApply big_sepL2_snoc. iSplit.
       * rewrite (list_filter_iff_strong
           (λ x, uint.Z x.1 ≤ uint.Z ep)
-          (λ x, uint.Z x.1 ≤ uint.Z valid) hist); [iFrame "#"|].
+          (λ x, uint.Z x.1 ≤ uint.Z (word.sub valid (W64 1))) hist); [iFrame "#"|].
         intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
-      * simpl in *. by iFrame "#".
+      * simpl. by iFrame "#".
     + iApply big_sepL_snoc. iFrame "#".
     + rewrite length_app. simpl.
       replace (W64 (length vals + 1)%nat) with (word.add (W64 1) (W64 $ length vals)) by word.
-      iFrame "#". iSplit; [done|]. iLeft. iPureIntro. word.
+      iFrame "#". iSplit. { iPureIntro. word. } iLeft. iPureIntro. word.
 Qed.
 
 Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
   last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
 
 Lemma hist_audit_msv cli_γ uid hist valid adtr_γ aud_ep (ep : w64) :
-  uint.Z ep ≤ uint.Z valid →
-  uint.Z valid < uint.Z aud_ep →
+  uint.Z ep < uint.Z valid →
+  uint.Z valid ≤ uint.Z aud_ep →
   ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
   "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
   msv adtr_γ ep uid (get_lat hist ep).
@@ -212,24 +250,33 @@ Definition own_hist cli_γ uid sl_hist hist valid : iProp Σ :=
   "#Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, is_HistEntry p o) ∗
   "#His_hist" ∷ is_hist cli_γ uid hist valid.
 
-Lemma wp_put_hist cli_γ uid sl_hist hist valid ptr_e e :
-  uint.Z valid < uint.Z e.1 →
+Lemma mk_hist cli_γ uid :
+  ⊢ own_hist cli_γ uid Slice.nil [] (W64 0).
+Proof.
+  iEval (rewrite /own_hist). iExists [].
+  iSplit. { iApply own_slice_zero. } iSplit; [|iSplit]; [naive_solver..|].
+  iIntros (??). word.
+Qed.
+
+Lemma wp_put_hist cli_γ uid sl_hist hist valid ptr_e ep pk  :
+  uint.Z valid ≤ uint.Z (word.add ep (W64 1)) →
+  uint.Z (word.add ep (W64 1)) = uint.Z ep + uint.Z 1 →
   {{{
     "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist valid ∗
-    "#His_entry" ∷ is_HistEntry ptr_e e ∗
-    "#His_key" ∷ is_my_key cli_γ uid (W64 $ length hist) e.1 e.2
+    "#His_entry" ∷ is_HistEntry ptr_e (ep, pk) ∗
+    "#His_key" ∷ is_my_key cli_γ uid (W64 $ length hist) ep pk
   }}}
   SliceAppend ptrT (slice_val sl_hist) #ptr_e
   {{{
     sl_hist', RET (slice_val sl_hist');
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist' (hist ++ [e]) e.1
+    "Hown_hist" ∷ own_hist cli_γ uid sl_hist' (hist ++ [(ep, pk)]) (word.add ep (W64 1))
   }}}.
 Proof.
-  intros ?. iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_hist".
+  intros ??. iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_hist".
   wp_apply (wp_SliceAppend with "Hsl_hist"). iIntros (?) "Hsl_hist".
   iDestruct (big_sepL2_snoc with "[$Hdim0_hist $His_entry]") as "Hnew_dim0_hist".
-  iDestruct (hist_extend_put with "[$His_hist $His_key]") as "Hnew_is_hist"; [done|].
-  iApply "HΦ". destruct e. simpl in *. iFrame "∗#".
+  iDestruct (hist_extend_put with "[$His_hist $His_key]") as "Hnew_is_hist"; [done..|].
+  iApply "HΦ". iFrame "∗#".
 Qed.
 
 Lemma wp_GetHist cli_γ uid sl_hist hist valid (ep : w64) :
