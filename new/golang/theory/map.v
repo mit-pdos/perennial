@@ -20,8 +20,7 @@ Local Definition is_map_val (mv : val) (m : gmap K V) : Prop :=
                   else go mv
      | _ => False
      end
-  ) mv
-.
+  ) mv.
 
 Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
   ∃ (v : val) ,
@@ -97,6 +96,27 @@ Proof.
     + wp_pure.
       rewrite decide_False // in Hm.
       iApply ("IH" with "[//] HΦ").
+Qed.
+
+Lemma wp_map_make :
+  is_comparable_go_type kt = true →
+  {{{ True }}}
+    map.make kt vt #()
+  {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
+Proof.
+  rewrite own_map_unseal.
+  iIntros (??) "_ HΦ".
+  wp_call.
+  iApply wp_alloc_untyped; try done.
+  iNext.
+  iIntros (?) "Hl".
+  replace (LitV l) with #l; last by rewrite to_val_unseal.
+  iApply "HΦ".
+  iFrame. iPureIntro.
+  split; first done.
+  unfold is_map_val.
+  intros ?.
+  by rewrite default_val_eq_zero_val.
 Qed.
 
 End defns_and_lemmas.

@@ -370,7 +370,7 @@ Proof.
 Qed.
 
 Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
-  sl ↦*{dq} vs ∗
+  sl ↦*{dq} vs -∗
   (fold_right (λ v P (i : w64),
                  WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val #()%V ⌝ ∗ P (word.add i 1) }})
     (λ (_ : w64), sl ↦*{dq} vs -∗ Φ (execute_val #()))
@@ -378,7 +378,7 @@ Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
   WP slice.for_range t #sl body @ stk ; E {{ Φ }}
 .
 Proof.
-  iIntros "[Hsl HΦ]".
+  iIntros "Hsl HΦ".
   wp_call.
   wp_apply wp_ref_ty.
   iIntros (j_ptr) "Hi".

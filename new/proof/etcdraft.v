@@ -190,8 +190,16 @@ Proof.
                                            reduction.pm_reflexivity |
                                  ]); try tc_solve |
 
+                               (* for loading from a slice.elem_ref_f *)
+                               wp_bind (load_ty _ _);
+                               unshelve (eapply tac_wp_load_ty;
+                                         [ eapply points_to_access_slice_elem_ref; shelve |
+                                           iAssumptionCore |
+                                 ]); try tc_solve |
+
                                (* for making progress inside body of for loop control-flow handler *)
                                rewrite [in (Fst (execute_val _))]execute_val_unseal |
+                               unshelve (wp_apply wp_map_make; [done| iIntros (?) "?"]); try tc_solve |
                                wp_call
                       ]).
   Time repeat wp_progress.
@@ -199,8 +207,14 @@ Proof.
   rewrite length_replicate w64_to_nat_id in H0.
   vm_compute bool_decide.
   Time repeat wp_progress.
-
-  (* FIXME: WP for map.make *)
+  iDestruct select (sl ↦* _) as "Hsl".
+  (* FIXME: want to match syntax of expr first, then solve goal. *)
+  wp_apply (wp_slice_for_range with "[$Hsl]").
+  simpl.
+  Time repeat wp_progress.
+  wp_pure.
+  (* FIXME: need to make interfaceT comparable *)
+  Show Ltac Profile.
 Admitted.
 
 Lemma wp_testLeaderElection2 :
