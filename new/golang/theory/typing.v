@@ -265,7 +265,7 @@ Fixpoint is_comparable_go_type (t : go_type) : bool :=
   | arrayT n elem => is_comparable_go_type elem
   | structT d => forallb (λ '(f, t), is_comparable_go_type t) d
   | funcT => false
-  | interfaceT => false (* FIXME: these are currently non-comparable *)
+  | interfaceT => false
   | _ => true
   end
 .

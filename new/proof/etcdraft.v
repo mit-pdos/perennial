@@ -184,17 +184,19 @@ Proof.
 
                                (* for storing to a slice.elem_ref_f *)
                                wp_bind (store_ty _ _ _);
-                               unshelve (eapply tac_wp_store_ty;
+                               unshelve (eapply (tac_wp_store_ty []);
                                          [ eapply points_to_access_slice_elem_ref; shelve |
                                            iAssumptionCore |
                                            reduction.pm_reflexivity |
+                                           simpl fill
                                  ]); try tc_solve |
 
                                (* for loading from a slice.elem_ref_f *)
                                wp_bind (load_ty _ _);
-                               unshelve (eapply tac_wp_load_ty;
+                               unshelve (eapply (tac_wp_load_ty []);
                                          [ eapply points_to_access_slice_elem_ref; shelve |
                                            iAssumptionCore |
+                                           simpl fill
                                  ]); try tc_solve |
 
                                (* for making progress inside body of for loop control-flow handler *)

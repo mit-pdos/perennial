@@ -20,6 +20,13 @@ Local Definition make_def (mset : list (string*val)) : val :=
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 
+Definition equals : val :=
+  λ: "v1 v2",
+    let: "v1" := (match: "v1" with InjL "v1" => "v1" | InjR <> => #() end) in
+    let: "v2" := (match: "v2" with InjL "v2" => "v2" | InjR <> => #() end) in
+    (Snd (Fst "v1")) = (Snd (Fst "v2"))
+.
+
 End goose_lang.
 End interface.
 

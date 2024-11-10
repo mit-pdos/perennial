@@ -397,7 +397,9 @@ Proof.
   iDestruct (own_slice_len with "Hsl") as %Hlen.
   case_bool_decide as Hlt.
   - simpl. (* Case: execute loop body *)
-    rewrite decide_True //. wp_pures. wp_load. wp_pures.
+    rewrite decide_True //. wp_pures.
+    wp_load.
+    wp_pures.
     pose proof (list_lookup_lt vs (uint.nat j) ltac:(word)) as [w Hlookup].
     iDestruct (own_slice_elem_acc with "[$]") as "[Helem Hown]"; [eassumption|].
     wp_load.
@@ -412,7 +414,7 @@ Proof.
     wp_pures.
     wp_load.
     wp_pures.
-    wp_store.
+    wp_store. wp_pures.
     iFrame.
     replace (uint.nat (word.add _ $ W64 1)) with (S $ uint.nat j) by word.
     iFrame.
@@ -505,7 +507,7 @@ Proof.
     wp_pures.
     wp_load.
     wp_pures.
-    wp_store.
+    wp_store. wp_pures.
     iFrame.
     replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1)%nat by word.
     rewrite -drop_drop.

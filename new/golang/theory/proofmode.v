@@ -374,87 +374,108 @@ Qed.
 End lemmas.
 
 (** Tactics *)
+
+Ltac2 Type exn ::= [ Walk_expr_more ].
+Ltac2 Type exn ::= [ Walk_expr_not_found ].
+
 Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
   let rec walk_ctx (e : constr) (k : constr) :=
     lazy_match! e with | Val _ => Control.backtrack_tactic_failure "walk_expr: reached a val" | _ => () end;
-    match! e with
-    | _ => f e k
-    | fill ?k' ?e                     => walk_ctx e '($k ++ $k')
-    | App ?e1 (Val ?v)                => walk_ctx e1 '(@AppLCtx _ $v :: $k)
-    | App ?e1 ?e2                     => walk_ctx e2 '(@AppRCtx _ $e1 :: $k)
-    | UnOp ?op ?e                     => walk_ctx e '(@UnOpCtx _ $op :: $k)
-    | BinOp ?op (Val ?v) ?e           => walk_ctx e '(@BinOpRCtx _ $op $v :: $k)
-    | BinOp ?op ?e1 ?e2               => walk_ctx e1 '(@BinOpLCtx _ $op $e2 :: $k)
-    | If ?e0 ?e1 ?e2                  => walk_ctx e0 '(IfCtx $e1 $e2 :: $k)
-    | Pair (Val ?v) ?e                => walk_ctx e '(PairRCtx $v :: $k)
-    | Pair ?e1 ?e2                    => walk_ctx e1 '(PairLCtx $e2 :: $k)
-    | Fst ?e                          => walk_ctx e '(@FstCtx _ :: $k)
-    | Snd ?e                          => walk_ctx e '(@SndCtx _ :: $k)
-    | InjL ?e                         => walk_ctx e '(@InjLCtx _ :: $k)
-    | InjR ?e                         => walk_ctx e '(@InjRCtx _ :: $k)
-    | Case ?e0 ?e1 ?e2                => walk_ctx e0 '(CaseCtx $e1 $e2 :: $k)
-    | Primitive2 ?op (Val ?v) ?e      => walk_ctx e '(@Primitive2RCtx _ $op $v :: $k)
-    | Primitive2 ?op ?e1 ?e2          => walk_ctx e1 '(@Primitive2LCtx _ $op $e2 :: $k)
-    | Primitive1 ?op ?e               => walk_ctx e '(@Primitive1Ctx _ $op :: $k)
-    | @ExternalOp ?ext ?op ?e         => walk_ctx e '(@ExternalOpCtx $ext $op :: $k)
-    | CmpXchg (Val ?v0) (Val ?v1) ?e2 => walk_ctx e2 '(CmpXchgRCtx $v0 $v1 :: $k)
-    | CmpXchg (Val ?v0) ?e1 ?e2       => walk_ctx e1 '(CmpXchgMCtx $v0 $e2 :: $k)
-    | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 '(CmpXchgLCtx $e1 $e2 :: $k)
-    | ResolveProph (Val ?v) ?e        => walk_ctx e '(@ResolveProphRCtx _ $v :: $k)
-    | ResolveProph ?e1 ?e2            => walk_ctx e1 '(@ResolveProphLCtx _ $e2 :: $k)
+    match Control.case (fun () => f e k) with
+    | Val (a, _) => a
+    | Err Walk_expr_more =>
+        match! e with
+        | fill ?k' ?e                     => walk_ctx e '($k ++ $k')
+        | App ?e1 (Val ?v)                => walk_ctx e1 '(@AppLCtx _ $v :: $k)
+        | App ?e1 ?e2                     => walk_ctx e2 '(@AppRCtx _ $e1 :: $k)
+        | UnOp ?op ?e                     => walk_ctx e '(@UnOpCtx _ $op :: $k)
+        | BinOp ?op (Val ?v) ?e           => walk_ctx e '(@BinOpRCtx _ $op $v :: $k)
+        | BinOp ?op ?e1 ?e2               => walk_ctx e1 '(@BinOpLCtx _ $op $e2 :: $k)
+        | If ?e0 ?e1 ?e2                  => walk_ctx e0 '(IfCtx $e1 $e2 :: $k)
+        | Pair (Val ?v) ?e                => walk_ctx e '(PairRCtx $v :: $k)
+        | Pair ?e1 ?e2                    => walk_ctx e1 '(PairLCtx $e2 :: $k)
+        | Fst ?e                          => walk_ctx e '(@FstCtx _ :: $k)
+        | Snd ?e                          => walk_ctx e '(@SndCtx _ :: $k)
+        | InjL ?e                         => walk_ctx e '(@InjLCtx _ :: $k)
+        | InjR ?e                         => walk_ctx e '(@InjRCtx _ :: $k)
+        | Case ?e0 ?e1 ?e2                => walk_ctx e0 '(CaseCtx $e1 $e2 :: $k)
+        | Primitive2 ?op (Val ?v) ?e      => walk_ctx e '(@Primitive2RCtx _ $op $v :: $k)
+        | Primitive2 ?op ?e1 ?e2          => walk_ctx e1 '(@Primitive2LCtx _ $op $e2 :: $k)
+        | Primitive1 ?op ?e               => walk_ctx e '(@Primitive1Ctx _ $op :: $k)
+        | @ExternalOp ?ext ?op ?e         => walk_ctx e '(@ExternalOpCtx $ext $op :: $k)
+        | CmpXchg (Val ?v0) (Val ?v1) ?e2 => walk_ctx e2 '(CmpXchgRCtx $v0 $v1 :: $k)
+        | CmpXchg (Val ?v0) ?e1 ?e2       => walk_ctx e1 '(CmpXchgMCtx $v0 $e2 :: $k)
+        | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 '(CmpXchgLCtx $e1 $e2 :: $k)
+        | ResolveProph (Val ?v) ?e        => walk_ctx e '(@ResolveProphRCtx _ $v :: $k)
+        | ResolveProph ?e1 ?e2            => walk_ctx e1 '(@ResolveProphLCtx _ $e2 :: $k)
+        | _ => Control.zero Walk_expr_not_found
+        end
+    | Err e => Control.zero e
     end
-  in (walk_ctx e) '(@nil ectx_item)
+  in (walk_ctx e) '(@nil ectx_item).
+
+Local Ltac2 wp_pure_unwrap t s :=
+  match Control.case t with
+  | Val (a, _) => a
+  | Err Walk_expr_not_found => Control.backtrack_tactic_failure s
+  | Err e => Control.zero e
+  end
 .
 
 (* Maybe avoid MaybeIntoLaterNEnvs if there are no  laters syntactically. *)
+Ltac2 wp_pure_visit e k :=
+     (* This looks for an instance before eapply to make to fail fast. *)
+     let pure_wp := orelse (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
+                      (fun _ => Control.zero Walk_expr_more) in
+     eapply (tac_wp_pure_wp $k $e $pure_wp) >
+       [ltac1:(try done)|
+         ltac1:(tc_solve)|
+         ltac1:(reduction.pm_prettify; simpl subst'; simpl fill)].
+
 Ltac2 wp_pure () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ (Val _) _) ] => ltac1:(iApply wp_value)
   | [ |- envs_entails _ (wp _ _ ?e _) ] =>
-      orelse (fun () => walk_expr e (fun e k =>
-                                    (* This looks for an instance before eapply to make to fail fast. *)
-                                    let pure_wp := '(ltac:(tc_solve) : PureWp _ $e _) in
-                                    eapply (tac_wp_pure_wp $k $e $pure_wp) >
-                                      [ltac1:(try done)|
-                                        ltac1:(tc_solve)|
-                                        ltac1:(reduction.pm_prettify; simpl subst'; simpl fill)]
-                       )
-        )
-        (fun _ => Control.backtrack_tactic_failure "wp_pure: could not find a head subexpression with a known next step")
+      wp_pure_unwrap
+        (fun () => walk_expr e wp_pure_visit)
+        "wp_pure: could not find a head subexpression with a known next step"
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
   end.
+
+Ltac2 wp_pure_lc_visit e k :=
+  (* This looks for an instance before eapply to make to fail fast. *)
+  let pure_wp := orelse (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
+                   (fun _ => Control.zero Walk_expr_more) in
+  eapply (tac_wp_pure_wp_later_credit $k $e $pure_wp) >
+    [ltac1:(try done)|
+      ltac1:(tc_solve)|
+      ltac1:(reduction.pm_prettify; simpl subst';
+             simpl fill)].
+
 Ltac2 wp_pure_lc () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ (Val _) _) ] => ltac1:(iApply wp_value)
   | [ |- envs_entails _ (wp _ _ ?e _) ] =>
-      orelse (fun () => walk_expr e (fun e k =>
-                                    (* This looks for an instance before eapply to make to fail fast. *)
-                                    let pure_wp := '(ltac:(tc_solve) : PureWp _ $e _) in
-                                    eapply (tac_wp_pure_wp_later_credit $k $e $pure_wp) >
-                                      [ltac1:(try done)|
-                                        ltac1:(tc_solve)|
-                                        ltac1:(reduction.pm_prettify; simpl subst';
-                                               simpl fill)]
-                       )
-        )
-        (fun _ => Control.backtrack_tactic_failure "wp_pure: could not find a head subexpression with a known next step")
+      wp_pure_unwrap (fun () => walk_expr e wp_pure_lc_visit)
+        "wp_pure: could not find a head subexpression with a known next step"
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
   end.
 Tactic Notation "wp_pure" := ltac2:(Control.enter wp_pure).
 Tactic Notation "wp_pure_lc" constr(H) := ltac2:(Control.enter wp_pure_lc); iIntros H.
 Tactic Notation "wp_pures" := repeat (wp_pure; []).
 
+Ltac2 wp_call_visit e k :=
+  orelse (fun () => Std.unify e '(App (rec: _ _ := _)%V _))
+    (fun _ => Control.zero Walk_expr_more);
+  eapply (tac_wp_rec $k) >
+    [ltac1:(tc_solve) | ltac1:(tc_solve)|
+      ltac1:(reduction.pm_prettify; simpl subst'; simpl fill)].
+
 Ltac2 wp_call () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
-      orelse (fun () => walk_expr e (fun e k =>
-                                    Std.unify e '(App _ _);
-                                    eapply (tac_wp_rec $k) >
-                                      [ltac1:(tc_solve) | ltac1:(tc_solve)|
-                                        ltac1:(reduction.pm_prettify; simpl subst'; simpl fill)]
-                       )
-        )
-        (fun _ => Control.backtrack_tactic_failure "wp_call: could not find a function call expression at the head")
+      wp_pure_unwrap (fun () => walk_expr e wp_call_visit)
+        "wp_call: could not find a function call expression at the head"
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_call: current proof is not a WP"
   end.
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
@@ -464,7 +485,10 @@ Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
       orelse (fun () => filter_tac e; e) (* if the top-level matches, don't walk down the expr at all. *)
-        (fun _ => walk_expr e (fun e' k => filter_tac e';
+        (fun _ => walk_expr e (fun e' k =>
+                              orelse (fun () => filter_tac e')
+                                     (fun _ => Control.zero Walk_expr_more)
+                              ;
                                      eapply (tac_wp_bind $k $e') >
                                        [simpl; reflexivity|ltac1:(reduction.pm_prettify)]; e'))
   end.

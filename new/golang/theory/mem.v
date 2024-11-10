@@ -509,11 +509,11 @@ Section tac_lemmas.
     }.
 
   Lemma tac_wp_load_ty {V t} `{!IntoVal V} `{!IntoValTyped V t}
-    (l : loc) (v : V) Δ s E i dq Φ is_pers
+    K (l : loc) (v : V) Δ s E i dq Φ is_pers
     `{!PointsToAccess l v dq P P'} :
     envs_lookup i Δ = Some (is_pers, P)%I →
-    envs_entails Δ (Φ #v) →
-    envs_entails Δ (WP (load_ty t #l) @ s; E {{ Φ }}).
+    envs_entails Δ (WP (fill K (Val #v)) @ s; E {{ Φ }}) →
+    envs_entails Δ (WP (fill K (load_ty t #l)) @ s; E {{ Φ }}).
   Proof using Type*.
     rewrite envs_entails_unseal => ? HΦ.
     rewrite envs_lookup_split //.
@@ -533,20 +533,21 @@ Section tac_lemmas.
   Qed.
 
   Lemma tac_wp_store_ty {V t} `{!IntoVal V} `{!IntoValTyped V t}
-    (l : loc) (v v' : V) Δ Δ' s E i Φ
+    K (l : loc) (v v' : V) Δ Δ' s E i Φ
     `{!PointsToAccess l v (DfracOwn 1) P P'} :
     envs_lookup i Δ = Some (false, P)%I →
     envs_simple_replace i false (Esnoc Enil i (P' v')) Δ = Some Δ' →
-    envs_entails Δ' (Φ #()) →
-    envs_entails Δ (WP (store_ty t #l (Val #v')) @ s; E {{ Φ }}).
+    envs_entails Δ' (WP fill K (Val #()) @ s ; E {{ Φ }}) →
+    envs_entails Δ (WP (fill K (store_ty t #l (Val #v'))) @ s; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => ?? HΦ.
-    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_store_ty.
-    rewrite -bi.later_sep envs_simple_replace_sound // /= right_id -bi.later_intro.
-    iIntros "[Hl Hw]".
-    unshelve iDestruct (points_to_acc with "Hl") as "[$ Hl]".
-    iIntros "?". iSpecialize ("Hl" with "[$]").
-    iApply HΦ. by iApply "Hw".
+    rewrite envs_simple_replace_sound // /=.
+    iIntros "[H Henv]".
+    iDestruct (points_to_acc with "H") as "[H Hclose]".
+    unshelve wp_apply (wp_store_ty with "[$]"); first tc_solve.
+    iIntros "H". iSpecialize ("Hclose" with "[$]").
+    iApply HΦ.
+    iApply "Henv". iFrame.
   Qed.
 
   Lemma tac_wp_ref_ty
@@ -568,34 +569,32 @@ Section tac_lemmas.
 End tac_lemmas.
 
 Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
+
+Ltac2 ectx_simpl () := cbv [fill flip foldl ectxi_language.fill_item goose_ectxi_lang fill_item].
+
+Ltac2 wp_load_visit e k :=
+  orelse (fun () => Std.unify e '(load_ty _ (Val _)))
+         (fun _ => Control.zero Walk_expr_more);
+  orelse (fun _ => eapply (tac_wp_load_ty $k) > [tc_solve_many ()| ltac1:(iAssumptionCore) | ectx_simpl ()])
+    (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")
+.
+
 Ltac2 wp_load () :=
   lazy_match! goal with
-  | [ |- envs_entails _ (wp _ _ _ _) ] =>
-      let _ := (orelse
-                  (fun () =>
-                     let e := wp_bind_filter (Std.unify '(load_ty _ (Val _))) in
-                     match! e with (App (Val (load_ty _)) (Val #?l)) => l end
-                  )
-                  (fun _ => Control.backtrack_tactic_failure "wp_load: could not bind to load instruction")
-               ) in
-
-      (* The orelse avoids failures higher-level from backtracking down into the
-         tc_solve_many here, but allows failed iAssumptionCore to backtrack. *)
-      orelse (fun _ => eapply (tac_wp_load_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore) |])
-        (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")
+  | [ |- envs_entails _ (wp _ _ ?e _) ] => walk_expr e wp_load_visit
   end.
+
+Ltac2 wp_store_visit e k :=
+  orelse (fun () => (Std.unify e '(store_ty _ _ (Val _))))
+         (fun _ => Control.zero Walk_expr_more);
+  orelse (fun _ => eapply (tac_wp_store_ty $k) > [tc_solve_many ()| ltac1:(iAssumptionCore)
+                                           |ltac1:(pm_reflexivity) | ectx_simpl () ])
+    (fun _ => Control.backtrack_tactic_failure "wp_store: could not find a points-to in context covering the address")
+.
 
 Ltac2 wp_store () :=
   lazy_match! goal with
-  | [ |- envs_entails _ (wp _ _ _ _) ] =>
-      orelse (fun () => let _ := wp_bind_filter (Std.unify '(store_ty _ _ (Val _))) in ())
-        (fun _ => Control.backtrack_tactic_failure "wp_store: could not bind to store instruction");
-      (* XXX: we want to backtrack to typeclass search if [iAssumptionCore] failed. *)
-
-      (* The orelse avoids failures higher-level from backtracking down into the tc_solve_many here. *)
-      orelse (fun _ => eapply (tac_wp_store_ty) > [tc_solve_many ()| ltac1:(iAssumptionCore)
-                                               |ltac1:(pm_reflexivity) | ])
-        (fun _ => Control.backtrack_tactic_failure "wp_store: could not find a points-to in context covering the address")
+  | [ |- envs_entails _ (wp _ _ ?e _) ] => walk_expr e wp_store_visit
   end.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
