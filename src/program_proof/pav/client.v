@@ -156,7 +156,7 @@ Lemma wp_Client__Get ptr_c c uid :
   }}}
   Client__Get #ptr_c #uid
   {{{
-    (is_reg : bool) sl_pk pk (ep : w64) ptr_err err,
+    (is_reg : bool) sl_pk pk (ep : w64) ep' ptr_err err,
     RET (#is_reg, slice_val sl_pk, #ep, #ptr_err);
     "Herr" ∷ clientErr.own ptr_err err ∗
     if negb err.(clientErr.err) then
@@ -166,7 +166,7 @@ Lemma wp_Client__Get ptr_c c uid :
       "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) - 1 ≤ uint.Z ep ⌝ ∗
       "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
       "#His_key" ∷ is_other_key c.(Client.γ) uid ep
-        (if is_reg then Some (ep, pk) else None)
+        (if is_reg then Some (ep', pk) else None)
     else
       "Hown_cli" ∷ Client.own ptr_c c
   }}}.

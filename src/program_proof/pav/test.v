@@ -6,72 +6,38 @@ From Perennial.program_proof.pav Require Import advrpc auditor basictest core cl
 From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang.lib Require Import waitgroup.
 
-Module alice.
-Record t :=
-  mk {
-    cli: client.Client.t;
-    hist: list HistEntry.t;
-  }.
-Section defs.
-Context `{!heapGS Σ, !pavG Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ ptr_cli sl_hist dim0_hist,
-  "Hown_cli" ∷ client.Client.own ptr_cli obj.(cli) ∗
-  "#Hptr_cli" ∷ ptr ↦[alice :: "cli"]□ #ptr_cli ∗
-  "Hptr_hist" ∷ ptr ↦[alice :: "hist"] (slice_val sl_hist) ∗
-  "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
-  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;obj.(hist), HistEntry.own p o) ∗
-  "#His_keys" ∷ ([∗ list] ver ↦ x ∈ obj.(hist),
-    (* aliceUid = 0. *)
-    is_my_key obj.(cli).(Client.γ) (W64 0) (W64 ver)
-      x.(HistEntry.Epoch) x.(HistEntry.HistVal)).
-
-End defs.
-End alice.
-
-Module bob.
-Record t :=
-  mk {
-    cli: client.Client.t;
-    epoch: w64;
-    isReg: bool;
-    alicePk: list w8;
-  }.
-Section defs.
-Context `{!heapGS Σ, !pavG Σ}.
-Definition own ptr obj : iProp Σ :=
-  ∃ ptr_cli sl_alicePk,
-  "Hown_cli" ∷ client.Client.own ptr_cli obj.(cli) ∗
-  "#Hptr_cli" ∷ ptr ↦[bob :: "cli"]□ #ptr_cli ∗
-  "Hptr_epoch" ∷ ptr ↦[bob :: "epoch"] #obj.(epoch) ∗
-  "Hptr_isReg" ∷ ptr ↦[bob :: "isReg"] #obj.(isReg) ∗
-  "Hptr_alicePk" ∷ ptr ↦[bob :: "alicePk"] (slice_val sl_alicePk) ∗
-  "#Hsl_alicePk" ∷ own_slice_small sl_alicePk byteT DfracDiscarded obj.(alicePk).
-End defs.
-End bob.
-
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition own_alice ptr cli_γ uid next_ver next_epoch hist : iProp Σ :=
-  ∃ ptr_cli a1 a2 a3 a4 sl_hist dim0_hist,
+Definition own_alice ptr cli_γ next_ep hist : iProp Σ :=
+  ∃ ptr_cli a1 a2 a3 a4 sl_hist,
   "Hown_cli" ∷ client.Client.own ptr_cli
-    (client.Client.mk cli_γ uid next_ver next_epoch a1 a2 a3 a4) ∗
+    (client.Client.mk cli_γ (W64 0) (W64 $ length hist) next_ep a1 a2 a3 a4) ∗
   "#Hptr_cli" ∷ ptr ↦[alice :: "cli"]□ #ptr_cli ∗
   "Hptr_hist" ∷ ptr ↦[alice :: "hist"] (slice_val sl_hist) ∗
-  "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist next_epoch ∗
-  "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
-  "Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;obj.(hist), HistEntry.own p o) ∗
-  "#His_keys" ∷ ([∗ list] ver ↦ x ∈ obj.(hist),
-    (* aliceUid = 0. *)
-    is_my_key obj.(cli).(Client.γ) (W64 0) (W64 ver)
-      x.(HistEntry.Epoch) x.(HistEntry.HistVal)).
+  "Hown_hist" ∷ own_hist cli_γ (W64 0) sl_hist hist next_ep.
 
+Definition own_bob ptr cli_γ next_ep (ep : w64) (is_reg : bool) (pk : list w8) : iProp Σ :=
+  ∃ ptr_cli a1 a2 a3 a4 a5 sl_alicePk,
+  "Hown_cli" ∷ client.Client.own ptr_cli
+    (client.Client.mk cli_γ (W64 1) a1 next_ep a2 a3 a4 a5) ∗
+  "#Hptr_cli" ∷ ptr ↦[bob :: "cli"]□ #ptr_cli ∗
+  "Hptr_epoch" ∷ ptr ↦[bob :: "epoch"] #ep ∗
+  "Hptr_isReg" ∷ ptr ↦[bob :: "isReg"] #is_reg ∗
+  "Hptr_alicePk" ∷ ptr ↦[bob :: "alicePk"] (slice_val sl_alicePk) ∗
+  "#Hsl_alicePk" ∷ own_slice_small sl_alicePk byteT DfracDiscarded pk.
+
+Definition bob_post ptr cli_γ next_ep ep is_reg pk : iProp Σ :=
+  ∃ ep',
+  "Hown_bob" ∷ own_bob ptr cli_γ next_ep ep is_reg pk ∗
+  "His_other_key" ∷ is_other_key cli_γ (W64 0) ep
+    (if is_reg then Some (ep', pk) else None) ∗
+  "%Heq_ep" ∷ ⌜ (uint.Z ep + 1)%Z = uint.Z next_ep ⌝.
 
 End defs.
 
 Section wps.
-Context `{!heapGS Σ, !pavG Σ, !waitGroupG Σ}.
+Context `{!heapGS Σ, !pavG Σ, !waitgroupG Σ}.
 
 Lemma wp_updAdtrsAll (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
   {{{
@@ -81,38 +47,25 @@ Lemma wp_updAdtrsAll (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
   {{{ RET #(); True }}}.
 Proof. Admitted.
 
-Definition alice_post ptr_al al : iProp Σ :=
-  "Hown_al" ∷ alice.own ptr_al al ∗
-  "%Hlen_hist" ∷ ⌜ length al.(alice.hist) = 20 ⌝.
-
-Lemma wp_alice__run ptr_al al :
+Lemma wp_alice__run hist ptr cli_γ next_ep :
   {{{
-    "Hown_al" ∷ alice.own ptr_al al ∗
-    "%Hlen_hist" ∷ ⌜ length al.(alice.hist) = 0 ⌝
+    "Hown_al" ∷ own_alice ptr cli_γ next_ep hist
   }}}
-  alice__run #ptr_al
+  alice__run #ptr
   {{{
-    al', RET #();
-    alice_post ptr_al al'
+    next_ep' hist', RET #();
+    "Hown_al" ∷ own_alice ptr cli_γ next_ep' hist'
   }}}.
 Proof. Admitted.
 
-Definition bob_post ptr_bob bob : iProp Σ :=
-  "Hown_bob" ∷ bob.own ptr_bob bob ∗
-  "#Hknow_key" ∷ (if bob.(bob.isReg) then
-    (* aliceUid = 0. *)
-    "#His_key" ∷ is_other_key bob.(bob.cli).(Client.γ) (W64 0) bob.(bob.epoch) bob.(bob.alicePk)
-  else
-    "#His_no_key" ∷ is_no_other_key bob.(bob.cli).(Client.γ) (W64 0) bob.(bob.epoch)).
-
-Lemma wp_bob__run ptr_bob bob :
+Lemma wp_bob__run ptr cli_γ next_ep ep is_reg pk :
   {{{
-    "Hown_bob" ∷ bob.own ptr_bob bob
+    "Hown_bob" ∷ own_bob ptr cli_γ next_ep ep is_reg pk
   }}}
-  bob__run #ptr_bob
+  bob__run #ptr
   {{{
-    bob', RET #();
-    bob_post ptr_bob bob'
+    next_ep' ep' is_reg' pk', RET #();
+    "Hbob_post" ∷ bob_post ptr cli_γ next_ep' ep' is_reg' pk'
   }}}.
 Proof. Admitted.
 
@@ -132,8 +85,8 @@ Proof using Type*.
 
   wp_apply (wp_NewWaitGroup nroot (λ wg_id,
     match uint.Z wg_id with
-    | 0%Z => ∃ al, alice_post ptr_al al
-    | 1%Z => ∃ bob, bob_post ptr_bob bob
+    | 0%Z => ∃ next_ep hist, own_alice ptr_al cli_γ next_ep hist
+    | 1%Z => ∃ next_ep ep is_reg pk, bob_post ptr_bob cli_γ0 next_ep ep is_reg pk
     | _ => True
     end)%I).
   iIntros "* Hown_wg".
@@ -146,9 +99,8 @@ Proof using Type*.
   iMod (struct_field_pointsto_persist with "cli") as "#Hptr_cli_al".
   wp_apply (wp_fork with "[Hown_cli_al hist Hown_tok0]").
   { iIntros "!>".
-    wp_apply (wp_alice__run _ (alice.mk _ []) with "[$Hown_cli_al $Hptr_cli_al hist]").
-    { iSplit; [|done]. iExists Slice.nil, [].
-      iDestruct (own_slice_zero) as "H0". iFrame "∗#". simpl. by iSplit. }
+    wp_apply (wp_alice__run [] with "[$Hown_cli_al $Hptr_cli_al hist]").
+    { iExists Slice.nil. iSplitL; [iFrame|iApply mk_hist]. }
     iIntros "*". iNamed 1.
     by wp_apply (wp_WaitGroup__Done with "[$His_wg $Hown_tok0 $Hown_al //]"). }
 
@@ -156,12 +108,11 @@ Proof using Type*.
   iMod (struct_field_pointsto_persist with "cli") as "#Hptr_cli_bob".
   wp_apply (wp_fork with "[Hown_cli_bob epoch isReg alicePk Hown_tok1]").
   { iIntros "!>".
-    wp_apply (wp_bob__run _ (bob.mk _ _ _ _) with "[$Hown_cli_bob $Hptr_cli_bob $epoch $isReg alicePk]").
-    { iExists Slice.nil.
-      iDestruct (own_slice_zero) as "H0".
-      iDestruct (own_slice_to_small with "H0") as "H1". iFrame "∗#". }
+    wp_apply (wp_bob__run with "[$Hown_cli_bob $Hptr_cli_bob $epoch $isReg alicePk]").
+    { iExists Slice.nil. iFrame.
+      iApply own_slice_to_small. iApply own_slice_zero. }
     iIntros "*". iNamed 1.
-    by wp_apply (wp_WaitGroup__Done with "[$His_wg $Hown_tok1 $Hown_bob //]"). }
+    by wp_apply (wp_WaitGroup__Done with "[$His_wg $Hown_tok1 $Hbob_post //]"). }
 
   wp_apply (wp_WaitGroup__Wait with "[$Hown_wg]"). iIntros "H".
   iDestruct (big_sepS_delete _ _ (W64 0) with "H") as "[H0 H]"; [set_solver|].
@@ -170,7 +121,7 @@ Proof using Type*.
   iDestruct "H1" as "[%|H1]". { exfalso. word. }
   iSimpl in "H0 H1".
   iRename "Hptr_cli_al" into "Hptr0". iRename "Hptr_cli_bob" into "Hptr1".
-  iDestruct "H0" as (?) "H0". iNamed "H0". iNamedSuffix "Hown_al" "_al".
+  iDestruct "H0" as (?) "H0". iNamedSuffix "H0" "_al".
   iDestruct "H1" as (?) "H1". iNamed "H1". iNamedSuffix "Hown_bob" "_bob".
   iDestruct (struct_field_pointsto_agree with "Hptr0 Hptr_cli_al") as %->.
   iDestruct (struct_field_pointsto_agree with "Hptr1 Hptr_cli_bob") as %->.
@@ -181,7 +132,7 @@ Proof using Type*.
   wp_loadField. iClear "Herr_al".
   destruct err.(clientErr.err). { wp_apply wp_Assume_false. }
   wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_al".
-  wp_loadField. wp_apply wp_Assume. iIntros "%Hlt_ep".
+  wp_loadField. wp_apply wp_Assume. iIntros "%". case_bool_decide; [|done].
   do 2 wp_loadField. wp_apply (wp_updAdtrsAll with "Hsl_adtrAddrs").
   do 3 wp_loadField.
   iDestruct (big_sepL2_length with "Hdim0_adtrPks") as %Hlen0.
@@ -191,8 +142,33 @@ Proof using Type*.
   wp_apply (wp_doAudits with "[$Hown_cli_bob $Hsl_adtrAddrs $Hsl_adtrPks $Hdim0_adtrPks]").
   { iPureIntro. lia. }
   iNamedSuffix 1 "_bob". do 2 wp_loadField.
+  simpl in *.
+  iClear "Hptr_servAddr Hptr_servSigPk Hsl_servSigPk Hptr_servVrfPk Hptr_adtrAddrs
+    Hsl_adtrAddrs Hptr_adtrPks Hsl_adtrPks Hdim0_adtrPks Hptr_cli_al Hptr_cli_bob
+    Hptr_hist_al Hptr_epoch_bob Hown_cli_al Hown_cli_bob".
 
+  (* the important part. *)
+  wp_apply (wp_GetHist with "Hown_hist_al"). iIntros "*". iNamed 1. wp_loadField.
+  iDestruct "His_good_adtrs" as (??) "[%Hlook_pk His_pk]".
+  iDestruct (big_sepL_lookup with "Haudits_al") as "Haudit_al"; [exact Hlook_pk|].
+  iDestruct (big_sepL_lookup with "Haudits_bob") as "Haudit_bob"; [exact Hlook_pk|].
+  iDestruct ("Haudit_al" with "His_pk") as "H". iNamedSuffix "H" "_al".
+  iDestruct ("Haudit_bob" with "His_pk") as "H". iNamedSuffix "H" "_bob".
+  iNamed "Hown_hist". iClear "Hsl_hist".
+  iDestruct (hist_extend_selfmon with "[$His_hist $His_bound_al]") as "His_hist_new"; [word..|].
+  iDestruct (hist_audit_msv ep with "[$His_hist_new $His_audit_al]") as "#Hmsv_al"; [word..|].
+  iDestruct (get_audit_msv with "[$His_other_key $His_audit_bob]") as "#Hmsv_bob"; [word|].
+  iDestruct (msv_agree with "[]") as %?.
+  { iSplit; [iFrame "Hmsv_al"|iFrame "Hmsv_bob"]. }
+  iClear "His_pk His_bound_al His_audit_al His_audit_bob Hdim0_hist His_hist
+    His_hist_new Hmsv_al Hmsv_bob Hptr_isReg_bob His_other_key".
 
-Admitted.
+  destruct (get_lat hist ep) as [[??]|], is_reg; [|done..|].
+  - destruct Heq_lat. simplify_eq/=. wp_apply wp_Assert; [done|]. wp_loadField.
+    wp_apply (wp_BytesEqual sl_pk sl_alicePk with "[$Hsl_pk $Hsl_alicePk_bob]").
+    iIntros "_". wp_apply wp_Assert; [by case_bool_decide|].
+    wp_pures. by iApply "HΦ".
+  - simplify_eq/=. wp_apply wp_Assert; [done|]. wp_pures. by iApply "HΦ".
+Qed.
 
 End wps.

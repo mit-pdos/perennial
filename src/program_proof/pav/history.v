@@ -77,16 +77,15 @@ Proof.
     specialize (Hhist_valid _ _ Hlook). word. }
   iIntros (ep ?). destruct (decide (uint.Z ep < uint.Z valid)).
   (* case 1: ep < valid. *)
-  { iSpecialize ("Hknow_eps" $! ep with "[]"). { word. }
+  { iSpecialize ("Hknow_eps" $! ep with "[]"); [word|].
     iApply (hist_val_extend_valid with "Hknow_eps"). word. }
   destruct (decide (valid = 0)) as [->|].
   (* case 2: valid = 0. *)
   { iDestruct (hist_nil with "[$Hknow_eps //]") as %->.
     iExists []. iSplit; [|iSplit]; [naive_solver..|].
-    iNamed "His_bound". iFrame "#". iSplit. { word. }
-    iLeft. word. }
+    iNamed "His_bound". iFrame "#". iSplit; [word|]. iLeft. word. }
   (* case 3: valid ≤ ep < new_valid. *)
-  iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"). { word. }
+  iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"); [word|].
   iNamed "Hknow_eps". iExists vals. iSplit; [|iSplit].
   - rewrite (list_filter_iff_strong
       (λ x, uint.Z x.1 ≤ uint.Z ep)
@@ -98,7 +97,7 @@ Proof.
     rewrite list_filter_all in Hlen_vals; last first.
     { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
     iNamed "His_bound". rewrite Hlen_vals. iFrame "#".
-    iSplit. { word. } iLeft. word.
+    iSplit; [word|]. iLeft. word.
 Qed.
 
 Lemma hist_extend_put cli_γ uid hist valid new_valid pk :
@@ -120,18 +119,16 @@ Proof.
       (new_valid, pk)) as [[->_]|[_?]]. 2: { exfalso. simpl in *. word. }
     list_simplifier. destruct (decide (uint.Z ep < uint.Z valid)).
     (* case 1.1: ep < valid. *)
-    { iSpecialize ("Hknow_eps" $! ep with "[]"). { word. }
+    { iSpecialize ("Hknow_eps" $! ep with "[]"); [word|].
       iNamed "Hknow_eps". iExists (vals). iNamed "Hbound". iFrame "#".
       iDestruct "Hbound" as "[H|H]"; iNamed "H"; word. }
     destruct (decide (valid = 0)) as [->|].
     (* case 1.2: valid = 0. *)
     { iDestruct (hist_nil with "[$Hknow_eps //]") as %->.
       iExists []. iSplit; [|iSplit]; [naive_solver..|].
-      iNamed "His_my_key". iFrame "#". iSplit. { word. }
-      iRight. word. }
+      iNamed "His_my_key". iFrame "#". iSplit; [word|]. iRight. word. }
     (* case 1.3: valid ≤ ep < new_valid. *)
-    { iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]").
-      { word. }
+    { iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"); [word|].
       iNamed "Hknow_eps". iExists (vals). iFrame "#". iSplit.
       - rewrite (list_filter_iff_strong
           (λ x, uint.Z x.1 ≤ uint.Z ep)
@@ -142,8 +139,7 @@ Proof.
         rewrite list_filter_all in Hlen_vals; last first.
         { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook).
           simpl in *. word. }
-        rewrite Hlen_vals. iFrame "#". iSplit. { word. }
-        iRight. word. } }
+        rewrite Hlen_vals. iFrame "#". iSplit; [word|]. iRight. word. } }
   (* case 2: ep = new_valid. *)
   iEval (rewrite /is_hist_ep). rewrite filter_app.
   opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
@@ -154,10 +150,9 @@ Proof.
     iExists [(new_valid, comm)]. iSplit; [|iSplit].
     - simpl. by iFrame "#".
     - simpl. iFrame "#".
-    - iFrame "#". iSplit. { word. } iLeft. word. }
+    - iFrame "#". iSplit; [word|]. iLeft. word. }
   (* case 2.2: valid != 0. *)
-  - iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]").
-    { word. }
+  - iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"); [word|].
     iNamed "Hknow_eps". iNamed "His_my_key".
     iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
     iExists (vals ++ [(new_valid, comm)]).
@@ -173,13 +168,13 @@ Proof.
     + iApply big_sepL_snoc. iFrame "#".
     + rewrite length_app. simpl.
       replace (W64 (length vals + 1)%nat) with (word.add (W64 1) (W64 $ length vals)) by word.
-      iFrame "#". iSplit. { word. } iLeft. word.
+      iFrame "#". iSplit; [word|]. iLeft. word.
 Qed.
 
 Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
   last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
 
-Lemma hist_audit_msv cli_γ uid hist valid adtr_γ aud_ep (ep : w64) :
+Lemma hist_audit_msv (ep : w64) cli_γ uid hist valid adtr_γ aud_ep :
   uint.Z ep < uint.Z valid →
   uint.Z valid ≤ uint.Z aud_ep →
   ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
