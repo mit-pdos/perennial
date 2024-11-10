@@ -39,7 +39,7 @@ Section validate.
 
   Definition validate_requirement st ts pwrs :=
     match st with
-    | LocalState cm histm cpm ptgsm sptsm ptsm =>
+    | LocalState cm histm cpm ptgsm sptsm ptsm bm ladm =>
         validated_ptsm ptsm pwrs ∧
         validated_sptsm sptsm ts pwrs ∧
         cpm !! ts = None

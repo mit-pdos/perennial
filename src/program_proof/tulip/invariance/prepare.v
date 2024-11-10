@@ -492,7 +492,7 @@ Section inv.
     rename histm0 into histmrp.
     iDestruct (txn_log_prefix with "Hlog Hcloglb") as %Hprefix.
     unshelve epose proof (execute_cmds_apply_cmds clog ilog cmrp histmrp _) as Happly'.
-    { by eauto. }
+    { by eauto 10. }
     pose proof (apply_cmds_mono_cm Hprefix Happly Happly') as Hincl.
     iFrame "Hlog ∗ # %".
     iPureIntro.

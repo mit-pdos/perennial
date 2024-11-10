@@ -5,7 +5,7 @@ Section local_read.
 
   Definition local_read_requirement st key rts hist :=
     match st with
-    | LocalState cm histm cpm ptgsm sptsm ptsm =>
+    | LocalState cm histm cpm ptgsm sptsm ptsm bm ladm =>
         (∃ spts pts, sptsm !! key = Some spts ∧
                      ptsm !! key = Some pts ∧
                      histm !! key = Some hist ∧
@@ -60,7 +60,7 @@ Section local_read.
     { apply Hvk. }
     { done. }
     { unshelve epose proof (execute_cmds_apply_cmds clog ilog cm histm _) as Happly.
-      { by eauto. }
+      { by eauto 10. }
       by rewrite /hist_from_log Happly.
     }
     destruct (decide (pts = O)) as [Hz | Hnz]; last first.
