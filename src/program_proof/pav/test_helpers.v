@@ -1,8 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import advrpc auditor core client cryptoffi rpc serde server.
-From Perennial.program_proof Require Import std_proof.
+From Perennial.program_proof.pav Require Import advrpc auditor core client cryptoffi history rpc serde server.
 
 Module adtrPk.
 Record t :=
@@ -49,7 +48,7 @@ Definition valid (ptr : loc) (obj : t) (serv_good adtrs_good : bool) : iProp Σ 
 End defs.
 End setupParams.
 
-Section proof.
+Section helpers.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Lemma wp_setup (serv_good adtrs_good : bool) (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
@@ -222,109 +221,12 @@ Proof.
   iEval (rewrite take_ge) in "Haudits". wp_pures. iApply "HΦ". by iFrame.
 Qed.
 
-Lemma wp_testBasic ptr_setup setup :
+Lemma wp_updAdtrsAll (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
   {{{
-    "#Hsetup" ∷ setupParams.valid ptr_setup setup false true
+    "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs
   }}}
-  testBasic #ptr_setup
+  updAdtrsAll #servAddr (slice_val sl_adtrAddrs)
   {{{ RET #(); True }}}.
-Proof using Type*.
-  rewrite /testBasic. iIntros (Φ) "H HΦ". iNamed "H".
-  iNamed "Hsetup". iClear "His_good_serv".
+Proof. Admitted.
 
-  (* alice put. *)
-  do 3 wp_loadField. wp_apply (wp_newClient with "Hsl_servSigPk").
-  iIntros (?????). iNamedSuffix 1 "_al".
-  wp_apply wp_SliceSingleton; [val_ty|]. iIntros (?) "Hpk0".
-  iDestruct (slice.own_slice_to_small with "Hpk0") as "Hpk0".
-  wp_apply (wp_Client__Put with "[$Hown_cli_al Hpk0]").
-  { instantiate (1:=[_]). iFrame "Hpk0". }
-  iIntros (ep0 ? err0) "H /=". iNamedSuffix "H" "_al".
-  wp_loadField. iClear "Herr_al". destruct err0.(clientErr.err).
-  { wp_apply wp_Assume_false. }
-  wp_apply wp_Assume. iIntros "_ /=". iNamedSuffix "H" "_al".
-
-  (* update auditors. *)
-  wp_loadField. wp_apply wp_Dial. iIntros (??). iNamedSuffix 1 "_serv".
-  wp_apply (wp_callServAudit with "Hown_cli_serv").
-  iIntros (?? err1) "H". iNamedSuffix "H" "_serv". destruct err1.
-  { wp_apply wp_Assume_false. }
-  simpl. iNamedSuffix "H" "0". wp_apply wp_Assume. iIntros "_".
-  wp_apply (wp_callServAudit with "Hown_cli_serv").
-  iIntros (?? err2) "H". iNamedSuffix "H" "_serv". destruct err2.
-  { wp_apply wp_Assume_false. }
-  simpl. iNamedSuffix "H" "1". wp_apply wp_Assume. iIntros "_".
-
-  wp_loadField. wp_apply (wp_mkRpcClients with "Hsl_adtrAddrs").
-  iIntros "*". iNamed 1.
-  wp_apply (wp_updAdtrsOnce with "[$Hown_upd0 $Hsl_rpcs $Hdim0_rpcs]").
-  iNamedSuffix 1 "0".
-  wp_apply (wp_updAdtrsOnce with "[$Hown_upd1 $Hsl_rpcs $Hdim0_rpcs0]").
-  iNamedSuffix 1 "1".
-
-  (* bob get. *)
-  do 3 wp_loadField.
-  wp_apply (wp_newClient with "Hsl_servSigPk"). iIntros (?????). iNamedSuffix 1 "_bob".
-  wp_apply (wp_Client__Get with "Hown_cli_bob").
-  iIntros (is_reg ?? ep1 ? err7) "H /=". iNamedSuffix "H" "_bob".
-  wp_loadField. iClear "Herr_bob". destruct err7.(clientErr.err).
-  { wp_apply wp_Assume_false. }
-  wp_apply wp_Assume. iIntros "_". wp_apply wp_Assume. iIntros "%Heq_ep /=".
-  iNamedSuffix "H" "_bob". iRename "H" into "Hreg".
-
-  (* alice and bob audit. *)
-  do 2 wp_loadField.
-  iDestruct (big_sepL2_length with "Hdim0_adtrPks") as %?. 
-  wp_apply (wp_doAudits with "[$Hown_cli_al $Hsl_adtrAddrs $Hsl_adtrPks $Hdim0_adtrPks]").
-  { iPureIntro. lia. }
-  simpl. iNamedSuffix 1 "_al". do 2 wp_loadField.
-  wp_apply (wp_doAudits with "[$Hown_cli_bob $Hsl_adtrAddrs $Hsl_adtrPks $Hdim0_adtrPks]").
-  { iPureIntro. lia. }
-  simpl. iNamedSuffix 1 "_bob".
-
-  (* main part: proving the pk's are equal. *)
-  iDestruct "His_good_adtrs" as (??) "[%Hlook_pk His_pk]".
-  iDestruct (big_sepL_lookup_acc with "Haudits_al") as "[Hcan_aud_al _]"; [exact Hlook_pk|].
-  iDestruct ("Hcan_aud_al" with "His_pk") as "H". iNamedSuffix "H" "_al".
-  iDestruct (big_sepL_lookup_acc with "Haudits_bob") as "[Hcan_aud_bob _]"; [exact Hlook_pk|].
-  iDestruct ("Hcan_aud_bob" with "His_pk") as "H". iNamedSuffix "H" "_bob".
-  case_bool_decide; [|done]. simplify_eq/=.
-  iClear "Hsl_servSigPk Hsl_adtrAddrs Hsl_adtrPks Hdim0_adtrPks His_pk Hsl_rpcs
-    Hptr_servAddr Hptr_servSigPk Hptr_servVrfPk Hptr_adtrAddrs Hptr_adtrPks
-    Hown_cli_serv Hown_upd0 Hown_upd1 Hdim0_rpcs1 Hown_cli_al Hown_cli_bob".
-  clear -Hnoof_ep_al.
-  iDestruct (audit_is_my_key with "His_key_al His_audit_al") as "His_key_al_aud"; [word|].
-  destruct is_reg; last first.
-  { iNamed "Hreg".
-    iDestruct (audit_is_no_other_key with "His_no_key His_audit_bob") as "His_no_key_aud"; [word|].
-    iNamedSuffix "His_key_al_aud" "_al". iNamedSuffix "Haux_al" "_al".
-    iNamedSuffix "His_no_key_aud" "_bob".
-    iDestruct (mono_list_idx_agree with "Hadtr_map_al Hadtr_map_bob") as %->.
-    iDestruct (is_vrf_func (W64 0, W64 0) with "Hhash0_al Hhash_bob") as %->.
-    simplify_map_eq/=. }
-  wp_apply wp_Assert_true. iNamedSuffix "Hreg" "_bob".
-  wp_apply (wp_BytesEqual with "[$Hsl_pk_al $Hsl_pk_bob]"). iIntros "_".
-  iDestruct (audit_is_other_key with "His_key_bob His_audit_bob") as "His_key_bob_aud"; [word|].
-  iNamedSuffix "His_key_al_aud" "_al". iNamedSuffix "His_key_bob_aud" "_bob".
-  iDestruct (mono_list_idx_agree with "Hadtr_map_al Hadtr_map_bob") as %->.
-  iDestruct (msv_is_my_key with "Haux_al") as (vals0) "[Hmsv0 %Hvals0]".
-  iDestruct (msv_is_other_key with "Haux_bob") as (? vals1) "[Hmsv1 %Hvals1]".
-  iDestruct (msv_opaque_func (adtr_map0, W64 0) with "Hmsv0 Hmsv1") as %->.
-  simplify_eq/=. iDestruct (is_comm_inj with "Hcomm_al Hcomm_bob") as %->.
-  wp_apply wp_Assert; [by case_bool_decide|]. wp_pures. by iApply "HΦ".
-Qed.
-
-Lemma wp_testBasicFull (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
-  {{{
-    "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
-    "%Hlen_adtrAddrs" ∷ ⌜ length adtrAddrs > 0 ⌝
-  }}}
-  testBasicFull #servAddr (slice_val sl_adtrAddrs)
-  {{{ RET #(); True }}}.
-Proof using Type*.
-  rewrite /testBasicFull. iIntros (Φ) "H HΦ". iNamed "H".
-  wp_apply (wp_setup false true with "[$Hsl_adtrAddrs]"); [done|]. iIntros "*". iNamed 1.
-  wp_apply (wp_testBasic with "Hsetup"). wp_pures. by iApply "HΦ".
-Qed.
-
-End proof.
+End helpers.
