@@ -552,14 +552,14 @@ Section tac_lemmas.
 
   Lemma tac_wp_ref_ty
     `{!IntoVal V} `{!IntoValTyped V t}
-    Δ stk E (v : V) Φ :
-    (∀ l, envs_entails Δ (l ↦ v -∗ Φ #l)) →
-    envs_entails Δ (WP (ref_ty t #v) @ stk; E {{ Φ }}).
+    K Δ stk E (v : V) Φ :
+    (∀ l, envs_entails Δ (l ↦ v -∗ WP (fill K (Val #l)) @ stk; E {{ Φ }})) →
+    envs_entails Δ (WP fill K (ref_ty t #v) @ stk; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => Hwp.
-    eapply bi.wand_apply; first by eapply bi.wand_entails, wp_ref_ty.
-    rewrite left_id -bi.later_intro.
-    by apply bi.forall_intro.
+    iIntros "Henv".
+    wp_apply wp_ref_ty. iIntros.
+    by iApply (Hwp with "[$]").
   Qed.
 
   Global Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t} dq
@@ -581,7 +581,9 @@ Ltac2 wp_load_visit e k :=
 
 Ltac2 wp_load () :=
   lazy_match! goal with
-  | [ |- envs_entails _ (wp _ _ ?e _) ] => walk_expr e wp_load_visit
+  | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_load_visit)
+                                                        "wp_load: could not find load_ty"
+  | [ |- _ ] => Control.backtrack_tactic_failure "wp_load: not a wp"
   end.
 
 Ltac2 wp_store_visit e k :=
@@ -594,12 +596,27 @@ Ltac2 wp_store_visit e k :=
 
 Ltac2 wp_store () :=
   lazy_match! goal with
-  | [ |- envs_entails _ (wp _ _ ?e _) ] => walk_expr e wp_store_visit
+  | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_store_visit)
+                                                        "wp_store: could not find store_ty"
+  | [ |- _ ] => Control.backtrack_tactic_failure "wp_store: not a wp"
+  end.
+
+Ltac2 wp_alloc_visit e k :=
+  orelse (fun () => (Std.unify e '(ref_ty _ (Val _))))
+         (fun _ => Control.zero Walk_expr_more);
+  orelse (fun _ => eapply (tac_wp_ref_ty $k); ectx_simpl ())
+    (fun _ => Control.backtrack_tactic_failure "wp_alloc: failed to apply tac_wp_ref_ty")
+.
+
+Ltac2 wp_alloc () :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_alloc_visit)
+                                                        "wp_alloc: could not find ref_ty"
+  | [ |- _ ] => Control.backtrack_tactic_failure "wp_alloc: not a wp"
   end.
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
-  first [wp_bind (ref_ty _ _) | fail "cannot find ref_ty"];
-  (eapply tac_wp_ref_ty || fail "cannot apply wp_ref_ty");
+  ltac2:(Control.enter wp_alloc);
   iIntros (l) H.
 
 Tactic Notation "wp_load" := ltac2:(Control.enter wp_load).

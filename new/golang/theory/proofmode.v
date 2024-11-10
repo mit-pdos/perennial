@@ -414,7 +414,7 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
     end
   in (walk_ctx e) '(@nil ectx_item).
 
-Local Ltac2 wp_pure_unwrap t s :=
+Ltac2 wp_walk_unwrap t s :=
   match Control.case t with
   | Val (a, _) => a
   | Err Walk_expr_not_found => Control.backtrack_tactic_failure s
@@ -436,7 +436,7 @@ Ltac2 wp_pure () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ (Val _) _) ] => ltac1:(iApply wp_value)
   | [ |- envs_entails _ (wp _ _ ?e _) ] =>
-      wp_pure_unwrap
+      wp_walk_unwrap
         (fun () => walk_expr e wp_pure_visit)
         "wp_pure: could not find a head subexpression with a known next step"
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
@@ -456,7 +456,7 @@ Ltac2 wp_pure_lc () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ (Val _) _) ] => ltac1:(iApply wp_value)
   | [ |- envs_entails _ (wp _ _ ?e _) ] =>
-      wp_pure_unwrap (fun () => walk_expr e wp_pure_lc_visit)
+      wp_walk_unwrap (fun () => walk_expr e wp_pure_lc_visit)
         "wp_pure: could not find a head subexpression with a known next step"
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
   end.
@@ -474,7 +474,7 @@ Ltac2 wp_call_visit e k :=
 Ltac2 wp_call () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
-      wp_pure_unwrap (fun () => walk_expr e wp_call_visit)
+      wp_walk_unwrap (fun () => walk_expr e wp_call_visit)
         "wp_call: could not find a function call expression at the head"
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_call: current proof is not a WP"
   end.
