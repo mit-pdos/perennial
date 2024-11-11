@@ -6,6 +6,24 @@ From Perennial.program_proof.pav Require Import core cryptoffi merkle serde serv
 Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
   (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
 
+Section invs.
+Context `{!heapGS Σ, !pavG Σ}.
+Definition maps_mono (ms : list adtr_map_ty) :=
+  ∀ (i j : nat) mi mj,
+  ms !! i = Some mi →
+  ms !! j = Some mj →
+  i ≤ j →
+  mi ⊆ mj.
+
+Definition maps_epoch_ok (ms : list adtr_map_ty) :=
+  ∀ (ep : nat) m_ep k ep' comm,
+  ms !! ep = Some m_ep →
+  m_ep !! k = Some (ep', comm) →
+  uint.nat ep' ≤ ep.
+
+Definition adtr_inv ms := maps_mono ms ∧ maps_epoch_ok ms.
+End invs.
+
 Module comm_st.
 Record t :=
   mk {

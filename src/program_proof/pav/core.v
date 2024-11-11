@@ -142,22 +142,3 @@ Proof.
 Qed.
 
 End msv.
-
-Section adtr_inv.
-
-Definition maps_mono (ms : list adtr_map_ty) :=
-  ∀ (i j : nat) mi mj,
-  ms !! i = Some mi →
-  ms !! j = Some mj →
-  i ≤ j →
-  mi ⊆ mj.
-
-Definition maps_epoch_ok (ms : list adtr_map_ty) :=
-  ∀ (ep : nat) m_ep k ep' comm,
-  ms !! ep = Some m_ep →
-  m_ep !! k = Some (ep', comm) →
-  uint.nat ep' ≤ ep.
-
-Definition adtr_inv ms := maps_mono ms ∧ maps_epoch_ok ms.
-
-End adtr_inv.
