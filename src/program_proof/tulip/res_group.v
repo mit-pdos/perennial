@@ -71,13 +71,13 @@ Section res.
       Persistent (is_group_prepare_proposal γ gid ts rk p).
     Admitted.
 
-    Lemma group_prepare_proposal_init γ gid psm ts ps :
+    Lemma group_prepare_proposal_init {γ gid psm} ts ps :
       psm !! ts = None ->
       own_group_prepare_proposals_map γ gid psm ==∗
       own_group_prepare_proposals_map γ gid (<[ts := ps]> psm).
     Admitted.
 
-    Lemma group_prepare_proposal_insert γ gid psm ts ps rk p :
+    Lemma group_prepare_proposal_insert {γ gid psm} ts ps rk p :
       let ps' := <[rk := p]> ps in
       psm !! ts = Some ps ->
       ps !! rk = None ->
@@ -85,7 +85,7 @@ Section res.
       own_group_prepare_proposals_map γ gid (<[ts := ps']> psm).
     Admitted.
 
-    Lemma group_prepare_proposal_witness γ gid psm ts ps rk p :
+    Lemma group_prepare_proposal_witness {γ gid psm} ts ps rk p :
       psm !! ts = Some ps ->
       ps !! rk = Some p ->
       own_group_prepare_proposals_map γ gid psm -∗

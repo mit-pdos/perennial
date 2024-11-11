@@ -4,6 +4,35 @@ From Perennial.program_proof.tulip Require Import base cmd res stability.
 (* TODO: might be better to separate out the common definitions from [inv_group]. *)
 From Perennial.program_proof.tulip Require Import inv_group.
 
+Definition rank_freshness {A} (blt : ballot) (m : gmap nat A) :=
+  ∀ rank, (length blt < rank)%nat -> m !! rank = None.
+
+Definition confined_by_ballot_map {A} (bm : gmap nat ballot) (mm : gmap nat (gmap nat A)) :=
+  map_Forall2 (λ _ l m, rank_freshness l m) bm mm.
+
+(* TODO: Remove "_cpm" if we can also remove [stm] in the group invariant. *)
+Definition prepared_impl_locked_cpm (cpm : gmap nat dbmap) (ptsm : gmap dbkey nat) :=
+  ∀ ts pwrs key,
+  cpm !! ts = Some pwrs ->
+  key ∈ dom pwrs ->
+  ptsm !! key = Some ts.
+
+Lemma prepared_impl_locked_disjoint cpm ptsm t1 t2 pwrs1 pwrs2 :
+  t1 ≠ t2 ->
+  cpm !! t1 = Some pwrs1 ->
+  cpm !! t2 = Some pwrs2 ->
+  prepared_impl_locked_cpm cpm ptsm ->
+  dom pwrs1 ## dom pwrs2.
+Proof.
+  intros Hne Hpwrs1 Hpwrs2 Hpil.
+  rewrite elem_of_disjoint.
+  intros Hk Hin1 Hin2.
+  pose proof (Hpil _ _ _ Hpwrs1 Hin1) as Ht1.
+  pose proof (Hpil _ _ _ Hpwrs2 Hin2) as Ht2.
+  rewrite Ht1 in Ht2.
+  inv Ht2.
+Qed.
+
 Section inv.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
@@ -28,43 +57,32 @@ Section inv.
     | _, _, _ => True
     end.
 
-  (* TODO: Remove "_cpm" if we can also remove [stm] in the group invariant. *)
-  Definition prepared_impl_locked_cpm (cpm : gmap nat dbmap) (ptsm : gmap dbkey nat) :=
-    ∀ ts pwrs key,
-    cpm !! ts = Some pwrs ->
-    key ∈ dom pwrs ->
-    ptsm !! key = Some ts.
-
-  Lemma prepared_impl_locked_disjoint cpm ptsm t1 t2 pwrs1 pwrs2 :
-    t1 ≠ t2 ->
-    cpm !! t1 = Some pwrs1 ->
-    cpm !! t2 = Some pwrs2 ->
-    prepared_impl_locked_cpm cpm ptsm ->
-    dom pwrs1 ## dom pwrs2.
-  Proof.
-    intros Hne Hpwrs1 Hpwrs2 Hpil.
-    rewrite elem_of_disjoint.
-    intros Hk Hin1 Hin2.
-    pose proof (Hpil _ _ _ Hpwrs1 Hin1) as Ht1.
-    pose proof (Hpil _ _ _ Hpwrs2 Hin2) as Ht2.
-    rewrite Ht1 in Ht2.
-    inv Ht2.
-  Qed.
-
-  Definition safe_ballot γ gid ts l : iProp Σ :=
-    [∗ list] r ↦ b ∈ l, match b with
-                        | Accept p => is_group_prepare_proposal γ gid ts r p
-                        | _ => True
-                        end.
+  Definition safe_ballot γ gid ts (l : ballot) : iProp Σ :=
+    ∀ r,
+    if decide (r = O)
+    then True
+    else match l !! r with
+         | Some (Accept p) => is_group_prepare_proposal γ gid ts r p
+         | _ => True
+         end.
 
   Definition replica_inv_ballot_map γ gid rid bm : iProp Σ :=
     "Hblt"      ∷ own_replica_ballot_map γ gid rid bm ∗
     "#Hsafebm"  ∷ ([∗ map] ts ↦ l ∈ bm, safe_ballot γ gid ts l).
 
+  Definition replica_inv_backup γ gid rid (bm : gmap nat ballot) : iProp Σ :=
+    ∃ (bvm : gmap nat (gmap nat coordid)) (btm : gmap nat (gmap nat (gset u64))),
+      "Hbvm"     ∷ own_replica_backup_vote_map γ gid rid bvm ∗
+      "Hbtm"     ∷ own_replica_backup_tokens_map γ gid rid btm ∗
+      "%Hdombvm" ∷ ⌜dom bvm = dom bm⌝ ∗
+      "%Hdombtm" ∷ ⌜dom btm = dom bm⌝ ∗
+      "%Hbmbvm"  ∷ ⌜confined_by_ballot_map bm bvm⌝ ∗
+      "%Hbmbtm"  ∷ ⌜confined_by_ballot_map bm btm⌝.
+
   Definition replica_inv_internal
     γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand))
     (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
-    ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (bm : gmap nat ballot) (ladm : gmap nat nat)
+    ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (bm : gmap nat ballot) (laim : gmap nat nat)
       (histm : gmap dbkey dbhist) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat),
       let log := merge_clog_ilog clog ilog in
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
@@ -72,17 +90,19 @@ Section inv.
       "Hilog"     ∷ own_replica_ilog_half γ rid ilog ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
       "Hbm"       ∷ replica_inv_ballot_map γ gid rid bm ∗
+      "Hbackup"   ∷ replica_inv_backup γ gid rid bm ∗
       "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid ts pwrs) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗
-      "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm ladm⌝ ∗
+      "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim⌝ ∗
       "%Hvtss"    ∷ ⌜vtss ⊆ dom cm ∪ dom cpm⌝ ∗
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
       "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = spts) kvdm sptsm⌝ ∗
       "%Hsptsmlk" ∷ ⌜map_Forall2 (λ _ spts pts, pts ≠ O -> spts = S pts) sptsm ptsm⌝ ∗
       "%Hpil"     ∷ ⌜prepared_impl_locked_cpm cpm ptsm⌝ ∗
-      "%Hcpmnz"   ∷ ⌜cpm !! O = None⌝.
+      "%Hcpmnz"   ∷ ⌜cpm !! O = None⌝ ∗
+      "%Hbmlaim"  ∷ ⌜map_Forall2 (λ _ l n, latest_term l = n ∧ ∃ p, l !! n = Some (Accept p)) bm laim⌝.
 
   Definition replica_inv_with_cm_with_cpm
     γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
@@ -195,6 +215,14 @@ Section inv.
     { iPureIntro. rewrite length_take. lia. }
     by iDestruct (big_sepL_take_drop _ _ ub' with "Habtifp") as "[Htake Hdrop]".
   Qed.
+
+  Definition prepare_promise γ gid rid (ts : nat) (rk : nat) (p : bool) : iProp Σ :=
+    ∃ lb : ballot,
+      let n := latest_term lb in
+      "#Hlb"    ∷ is_replica_ballot_lb γ gid rid ts lb ∗
+      "#Hgpsl"  ∷ is_group_prepare_proposal_if_classic γ gid ts n p ∗
+      "%Hp"     ∷ ⌜lb !! n = Some (Accept p)⌝ ∗
+      "%Hlenlb" ∷ ⌜length lb = rk⌝.
 
   Lemma replica_inv_weaken_ballot_map γ gid rid :
     replica_inv γ gid rid -∗

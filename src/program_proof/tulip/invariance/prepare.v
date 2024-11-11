@@ -177,9 +177,10 @@ Section inv.
         iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
         iNamed "Hrp".
         iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
-        iDestruct (big_sepL_lookup with "Hsafel") as "Hpsl"; first apply Hacc.
-        simpl.
-        iDestruct (group_prepare_proposal_lookup with "Hpsl Hpsm") as %(ps & Hps & _).
+        iSpecialize ("Hsafel" $! r1).
+        case_decide; first done.
+        rewrite Hacc.
+        iDestruct (group_prepare_proposal_lookup with "Hsafel Hpsm") as %(ps & Hps & _).
         by rewrite Hpsm in Hps.
       }
       destruct (Hd2) as [r2 Hchosen2].
@@ -202,9 +203,10 @@ Section inv.
         iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
         iNamed "Hrp".
         iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
-        iDestruct (big_sepL_lookup with "Hsafel") as "Hpsl"; first apply Hacc.
-        simpl.
-        iDestruct (group_prepare_proposal_lookup with "Hpsl Hpsm") as %(ps & Hps & _).
+        iSpecialize ("Hsafel" $! r2).
+        case_decide; first done.
+        rewrite Hacc.
+        iDestruct (group_prepare_proposal_lookup with "Hsafel Hpsm") as %(ps & Hps & _).
         by rewrite Hpsm in Hps.
       }
       iPureIntro.
@@ -267,9 +269,10 @@ Section inv.
       destruct (bm !! ts) as [l' |] eqn:Hbmts; last by subst l.
       subst l'.
       iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
-      iDestruct (big_sepL_lookup with "Hsafel") as "Hsafed"; first apply Hd.
-      simpl.
-      iDestruct (group_prepare_proposal_lookup with "Hsafed Hpsm")
+      iSpecialize ("Hsafel" $! r).
+      case_decide; first done.
+      rewrite Hd.
+      iDestruct (group_prepare_proposal_lookup with "Hsafel Hpsm")
         as %(ps' & Hps' & Hlookup).
       rewrite Hpsm in Hps'. by inv Hps'.
     }

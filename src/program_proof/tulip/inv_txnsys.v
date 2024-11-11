@@ -281,7 +281,7 @@ Section inv.
   Definition txnsys_inv_no_ts_no_future γ ts future : iProp Σ :=
     ∃ (tids tidas : gset nat) (past : list action)
       (tmods tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
-      (resm : gmap nat txnres) (wrsm : gmap nat (option dbmap)),
+      (resm : gmap nat txnres) (wrsm : gmap nat (option dbmap)) (ctm : gmap nat (gset u64)),
       (* witnesses of txn linearization *)
       "Htxnsl" ∷ own_lnrz_tids γ tids ∗
       (* exclusive transaction IDs *)
@@ -297,6 +297,8 @@ Section inv.
       "Hresm"  ∷ own_txn_resm γ resm ∗
       (* transaction write-set map *)
       "Hwrsm"  ∷ own_txn_oneshot_wrsm γ wrsm ∗
+      (* transaction client tokens *)
+      "Hctm"   ∷ own_txn_client_tokens γ ctm ∗
       (* key modifications *)
       "Hkmodls" ∷ ([∗ set] key ∈ keys_all, own_lnrz_kmod_half γ key (vslice tmodcs key)) ∗
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, own_cmtd_kmod_half γ key (vslice (resm_to_tmods resm) key)) ∗
@@ -316,6 +318,7 @@ Section inv.
       "%Htidas"  ∷ ⌜dom tmodas = tidas⌝ ∗
       "%Hdomq"   ∷ ⌜dom posts = tids⌝ ∗
       "%Hdomw"   ∷ ⌜dom wrsm = tids⌝ ∗
+      "%Hdomctm" ∷ ⌜dom ctm = tids⌝ ∗
       "%Hcmtxn"  ∷ ⌜cmtxn_in_past past resm⌝ ∗
       "%Hwrsm"   ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) (wrsm_dbmap wrsm)⌝ ∗
       "%Hnz"     ∷ ⌜nz_all (dom tmodcs)⌝ ∗

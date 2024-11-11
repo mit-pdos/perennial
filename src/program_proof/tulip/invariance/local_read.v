@@ -42,7 +42,7 @@ Section local_read.
     { rewrite merge_clog_ilog_snoc_ilog; last done.
       by rewrite execute_cmds_snoc Hst /=.
     }
-    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx |]; last done.
+    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx bmx laimx |]; last done.
     simpl in Hrequire.
     destruct Hrequire as (spts & pts & Hspts & Hpts & Hhist & Hlock).
     rewrite Hrsm in Hst. symmetry in Hst. inv Hst.

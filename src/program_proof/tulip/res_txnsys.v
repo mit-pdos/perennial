@@ -340,6 +340,32 @@ Section res.
 
   End excl_tid.
 
+  Section txn_client_token.
+
+    (** Exclusive tokens of transaction clients used in proving freshness of
+    slow-path prepare decision proposal. *)
+
+    Definition own_txn_client_tokens γ (ctm : gmap nat (gset u64)) : iProp Σ.
+    Admitted.
+
+    Definition own_txn_client_token γ (tid : nat) (gid : u64) : iProp Σ.
+    Admitted.
+
+    Lemma txn_client_token_insert {γ ctm} ts gids :
+      ctm !! ts = None ->
+      own_txn_client_tokens γ ctm ==∗
+      own_txn_client_tokens γ (<[ts := gids]> ctm) ∗
+      ([∗ set] gid ∈ gids, own_txn_client_token γ ts gid).
+    Admitted.
+
+    Lemma txn_client_token_excl γ ts gid :
+      own_txn_client_token γ ts gid -∗
+      own_txn_client_token γ ts gid -∗
+      False.
+    Admitted.
+
+  End txn_client_token.
+
   Section txn_postcond.
 
     (** Transaction post-conditions. Might need a [ghost_map nat gname] and a [saved_prop]? *)

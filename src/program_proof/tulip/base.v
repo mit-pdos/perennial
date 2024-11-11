@@ -7,6 +7,7 @@ Definition dbtpl := (dbhist * nat)%type.
 Definition dbmod := (dbkey * dbval)%type.
 Definition dbmap := gmap dbkey dbval.
 Definition dbkmod := gmap nat dbval.
+Definition coordid := (u64 * u64)%type.
 
 (** Transaction result. *)
 Inductive txnres :=

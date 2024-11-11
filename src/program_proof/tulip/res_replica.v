@@ -232,4 +232,81 @@ Section res.
 
   End replica_ballot.
 
+  Section replica_backup_vote.
+
+    (** Mappings from transaction IDs and ranks to coordinator IDs to which vote
+    of the transaction ID and rank is casted by this replica. This is used to
+    ensure no two replicas could serve as the coordinator in the same term. *)
+
+    Definition own_replica_backup_vote_map
+      γ (gid rid : u64) (bvm : gmap nat (gmap nat coordid)) : iProp Σ.
+    Admitted.
+
+    Definition is_replica_backup_vote
+      γ (gid rid : u64) (ts rank : nat) (cid : coordid) : iProp Σ.
+    Admitted.
+
+    #[global]
+    Instance is_replica_backup_vote_persistent γ gid rid ts rank cid :
+      Persistent (is_replica_backup_vote γ gid rid ts rank cid).
+    Admitted.
+
+    Lemma replica_backup_vote_init {γ gid rid bvm} ts :
+      bvm !! ts = None ->
+      own_replica_backup_vote_map γ gid rid bvm ==∗
+      own_replica_backup_vote_map γ gid rid (<[ts := ∅]> bvm).
+    Admitted.
+
+    Lemma replica_backup_vote_insert {γ gid rid bvm m} ts rank cid :
+      bvm !! ts = Some m ->
+      m !! rank = None ->
+      own_replica_backup_vote_map γ gid rid bvm ==∗
+      own_replica_backup_vote_map γ gid rid (<[ts := (<[rank := cid]> m)]> bvm) ∗
+      is_replica_backup_vote γ gid rid ts rank cid.
+    Admitted.
+
+    Lemma replica_backup_vote_agree γ gid rid ts rank cid1 cid2 :
+      is_replica_backup_vote γ gid rid ts rank cid1 -∗
+      is_replica_backup_vote γ gid rid ts rank cid2 -∗
+      ⌜cid2 = cid1⌝.
+    Admitted.
+
+  End replica_backup_vote.
+
+  Section replica_backup_token.
+
+    (** Mappings from transaction IDs and ranks to sets of groups IDs. This is
+    used to ensure that the same replica proposes become the coordinator at a
+    certain rank for a certain group at most once. *)
+
+    Definition own_replica_backup_tokens_map
+      γ (gid rid : u64) (btm : gmap nat (gmap nat (gset u64))) : iProp Σ.
+    Admitted.
+
+    Definition own_replica_backup_token
+      γ (gid rid : u64) (ts rank : nat) (tgid : u64) : iProp Σ.
+    Admitted.
+
+    Lemma replica_backup_token_init {γ gid rid btm} ts :
+      btm !! ts = None ->
+      own_replica_backup_tokens_map γ gid rid btm ==∗
+      own_replica_backup_tokens_map γ gid rid (<[ts := ∅]> btm).
+    Admitted.
+
+    Lemma replica_backup_token_insert {γ gid rid btm m} ts rank tgids :
+      btm !! ts = Some m ->
+      m !! rank = None ->
+      own_replica_backup_tokens_map γ gid rid btm ==∗
+      own_replica_backup_tokens_map γ gid rid (<[ts := (<[rank := tgids]> m)]> btm) ∗
+      ([∗ set] tgid ∈ tgids, own_replica_backup_token γ gid rid ts rank tgid).
+    Admitted.
+
+    Lemma replica_backup_token_excl γ gid rid ts rank tgid :
+      own_replica_backup_token γ gid rid ts rank tgid -∗
+      own_replica_backup_token γ gid rid ts rank tgid -∗
+      False.
+    Admitted.
+
+  End replica_backup_token.
+
 End res.

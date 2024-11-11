@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.rsm.pure Require Import quorum list fin_sets fin_maps.
+From Perennial.program_proof.rsm.pure Require Import quorum list fin_sets fin_maps extend.
 From Perennial.program_proof.tulip Require Import base.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
@@ -621,5 +621,41 @@ Section lemma.
     apply map_Forall2_dom_L in Hprefix.
     by rewrite -(size_dom bs) -(size_dom bslb) Hprefix.
   Qed.
+
+  Definition latest_term (l : ballot) := latest_before (length l) l.
+
+  Lemma latest_term_snoc_Accept (l : ballot) p :
+    latest_term (l ++ [Accept p]) = length l.
+  Proof. by rewrite /latest_term last_length /= lookup_snoc_length. Qed.
+
+  Lemma latest_term_singleton v :
+    latest_term [v] = O.
+  Proof. rewrite /latest_term /=. by destruct v. Qed.
+
+  Lemma latest_term_snoc_Reject (l : ballot) :
+    latest_term (l ++ [Reject]) = latest_term l.
+  Proof.
+    rewrite /latest_term last_length /=.
+    rewrite lookup_snoc_length.
+    by apply latest_before_append_eq.
+  Qed.
+
+  Lemma latest_term_extend_Reject (n : nat) (l : ballot) :
+    latest_term (extend n Reject l) = latest_term l.
+  Proof.
+    unfold extend.
+    induction n as [| n' IHn']; first by rewrite app_nil_r.
+    destruct (decide (n' < length l)%nat) as [Hlt | Hge].
+    { replace (n' - length l)%nat with O in IHn' by lia.
+      by replace (S n' - length l)%nat with O by lia.
+    }
+    replace (S n' - length l)%nat with (S (n' - length l)%nat) by lia.
+    by rewrite replicate_S_end assoc latest_term_snoc_Reject.
+  Qed.
+
+  Lemma latest_term_length_lt (l : ballot) :
+    l ≠ [] ->
+    (latest_term l < length l)%nat.
+  Proof. intros Hnnil. by apply latest_before_lt, length_not_nil. Qed.
 
 End lemma.
