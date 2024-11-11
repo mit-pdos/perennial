@@ -573,9 +573,9 @@ Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
 Ltac2 ectx_simpl () := cbv [fill flip foldl ectxi_language.fill_item goose_ectxi_lang fill_item].
 
 Ltac2 wp_load_visit e k :=
-  orelse (fun () => Std.unify e '(load_ty _ (Val _)))
+  Control.once_plus (fun () => Std.unify e '(load_ty _ (Val _)))
          (fun _ => Control.zero Walk_expr_more);
-  orelse (fun _ => eapply (tac_wp_load_ty $k) > [tc_solve_many ()| ltac1:(iAssumptionCore) | ectx_simpl ()])
+  Control.once_plus (fun _ => eapply (tac_wp_load_ty $k) > [tc_solve_many ()| ltac1:(iAssumptionCore) | ectx_simpl ()])
     (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")
 .
 
@@ -587,9 +587,9 @@ Ltac2 wp_load () :=
   end.
 
 Ltac2 wp_store_visit e k :=
-  orelse (fun () => (Std.unify e '(store_ty _ _ (Val _))))
+  Control.once_plus (fun () => (Std.unify e '(store_ty _ _ (Val _))))
          (fun _ => Control.zero Walk_expr_more);
-  orelse (fun _ => eapply (tac_wp_store_ty $k) > [tc_solve_many ()| ltac1:(iAssumptionCore)
+  Control.once_plus (fun _ => eapply (tac_wp_store_ty $k) > [tc_solve_many ()| ltac1:(iAssumptionCore)
                                            |ltac1:(pm_reflexivity) | ectx_simpl () ])
     (fun _ => Control.backtrack_tactic_failure "wp_store: could not find a points-to in context covering the address")
 .
@@ -602,9 +602,9 @@ Ltac2 wp_store () :=
   end.
 
 Ltac2 wp_alloc_visit e k :=
-  orelse (fun () => (Std.unify e '(ref_ty _ (Val _))))
+  Control.once_plus (fun () => (Std.unify e '(ref_ty _ (Val _))))
          (fun _ => Control.zero Walk_expr_more);
-  orelse (fun _ => eapply (tac_wp_ref_ty $k); ectx_simpl ())
+  Control.once_plus (fun _ => eapply (tac_wp_ref_ty $k); ectx_simpl ())
     (fun _ => Control.backtrack_tactic_failure "wp_alloc: failed to apply tac_wp_ref_ty")
 .
 

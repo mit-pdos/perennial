@@ -425,7 +425,7 @@ Ltac2 wp_walk_unwrap t s :=
 (* Maybe avoid MaybeIntoLaterNEnvs if there are no  laters syntactically. *)
 Ltac2 wp_pure_visit e k :=
      (* This looks for an instance before eapply to make to fail fast. *)
-     let pure_wp := orelse (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
+     let pure_wp := Control.once_plus (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
                       (fun _ => Control.zero Walk_expr_more) in
      eapply (tac_wp_pure_wp $k $e $pure_wp) >
        [ltac1:(try done)|
@@ -444,7 +444,7 @@ Ltac2 wp_pure () :=
 
 Ltac2 wp_pure_lc_visit e k :=
   (* This looks for an instance before eapply to make to fail fast. *)
-  let pure_wp := orelse (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
+  let pure_wp := Control.once_plus (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
                    (fun _ => Control.zero Walk_expr_more) in
   eapply (tac_wp_pure_wp_later_credit $k $e $pure_wp) >
     [ltac1:(try done)|
@@ -465,7 +465,7 @@ Tactic Notation "wp_pure_lc" constr(H) := ltac2:(Control.enter wp_pure_lc); iInt
 Tactic Notation "wp_pures" := repeat (wp_pure; []).
 
 Ltac2 wp_call_visit e k :=
-  orelse (fun () => Std.unify e '(App (rec: _ _ := _)%V _))
+  Control.once_plus (fun () => Std.unify e '(App (rec: _ _ := _)%V _))
     (fun _ => Control.zero Walk_expr_more);
   eapply (tac_wp_rec $k) >
     [ltac1:(tc_solve) | ltac1:(tc_solve)|
@@ -484,27 +484,26 @@ Tactic Notation "wp_call_lc" constr(H) := ltac2:(Control.enter wp_call); iIntros
 Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
-      orelse (fun () => filter_tac e; e) (* if the top-level matches, don't walk down the expr at all. *)
+      Control.once_plus (fun () => filter_tac e; e) (* if the top-level matches, don't walk down the expr at all. *)
         (fun _ => walk_expr e (fun e' k =>
-                              orelse (fun () => filter_tac e')
-                                     (fun _ => Control.zero Walk_expr_more)
-                              ;
-                                     eapply (tac_wp_bind $k $e') >
-                                       [simpl; reflexivity|ltac1:(reduction.pm_prettify)]; e'))
+                              Control.once_plus (fun () => filter_tac e')
+                                (fun _ => Control.zero Walk_expr_more);
+                              eapply (tac_wp_bind $k $e') >
+                                [simpl; reflexivity|ltac1:(reduction.pm_prettify)]; e'))
   end.
 
 Tactic Notation "wp_bind" open_constr(e) :=
   let f := ltac2:(e |-
                     let e := Ltac1.to_constr e in
                     let e := Option.get e in
-                    orelse
+                    Control.once_plus
                       (fun () => let _ := wp_bind_filter (Std.unify e) in ())
                       (fun _ => Control.backtrack_tactic_failure "wp_bind: could not find pattern")
                  ) in
   f e.
 
 Ltac2 wp_bind_apply () : unit :=
-  orelse (fun () => let _ := wp_bind_filter
+  Control.once_plus (fun () => let _ := wp_bind_filter
             (fun e => let rec f e :=
                      lazy_match! e with
                      | App (Val _) (Val _) => ()
