@@ -56,7 +56,7 @@ Section grove.
   Definition file_content_bounds (g : gmap string (list byte)) : Prop :=
     ∀ f c, g !! f = Some c → length c < 2^64.
 
-  Local Program Instance grove_interp: ffi_interp grove_model :=
+  Local Program Definition grove_interp_def : ffi_interp grove_model :=
     {| ffiGlobalGS := groveGS;
        ffiLocalGS := groveNodeGS;
        ffi_local_ctx _ _ σ :=
@@ -75,6 +75,10 @@ Section grove.
         (* TODO: you could also assume the tsc is non-decreasing across a crash *)
        ⌜ hF1 = hF2 ∧ σ1.(grove_node_files) = σ2.(grove_node_files) ⌝%I;
     |}.
+  Program Definition grove_interp := unseal (_:seal (@grove_interp_def)). Obligation 1. by eexists. Qed.
+  Definition grove_interp_unseal : grove_interp = _ := seal_eq _.
+
+  Local Existing Instance grove_interp.
 End grove.
 
 Notation "c c↦ ms" := (pointsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
@@ -87,13 +91,24 @@ Notation "s f↦ c" := (s f↦{DfracOwn 1} c)%I
                        (at level 20, format "s  f↦ c") : bi_scope.
 
 Section lifting.
-  Existing Instances grove_op grove_model grove_semantics grove_interp.
-  Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
-  Local Instance goose_groveGS : groveGS Σ := goose_ffiGlobalGS.
-  Local Instance goose_groveNodeGS : groveNodeGS Σ := goose_ffiLocalGS.
+  Existing Instances grove_op grove_model grove_semantics.
+  Context `{!gooseGlobalGS Σ (ffi_interp0:=grove_interp), !gooseLocalGS Σ (ffi_interp0:=grove_interp)}.
+
+  Local Definition gooseGlobalGS0' : gooseGlobalGS Σ (ffi_interp0:=grove_interp_def).
+  Proof using gooseGlobalGS0. by rewrite -grove_interp_unseal. Qed.
+
+  Local Definition gooseLocalGS0' : gooseLocalGS Σ (ffi_interp0:=grove_interp_def).
+  Proof using gooseLocalGS0. by rewrite -grove_interp_unseal. Qed.
+
+  Instance goose_groveGS : groveGS Σ := (let _ := grove_interp_def in
+                                         let _ := gooseGlobalGS0' in
+                                         goose_ffiGlobalGS).
+  Local Instance goose_groveNodeGS : groveNodeGS Σ := (let _ := grove_interp_def in
+                                                       let _ := gooseLocalGS0' in goose_ffiLocalGS).
 
   Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
     gen_heap.meta_token (hG := groveG_net_heapG) c E.
+
   Definition chan_meta `{Countable A} (c : chan) N (x : A) : iProp Σ :=
     gen_heap.meta (hG := groveG_net_heapG) c N x.
 
@@ -122,10 +137,10 @@ Section lifting.
     word.
   Qed.
 
-  Definition connection_socket (c_l : chan) (c_r : chan) : val :=
-    ExtV (ConnectionSocketV c_l c_r).
   Definition listen_socket (c : chan) : val :=
     ExtV (ListenSocketV c).
+  Definition connection_socket (c_l : chan) (c_r : chan) : val :=
+    ExtV (ConnectionSocketV c_l c_r).
   Definition bad_socket : val :=
     ExtV BadSocketV.
 
@@ -150,8 +165,8 @@ lemmas. *)
           inversion H; subst; clear H
         end.
 
-  Lemma wp_ListenOp c s E :
-    {{{ True }}}
+  Lemma wp_ListenOp c (s : stuckness) E :
+    {{{ True : iProp Σ }}}
       ExternalOp ListenOp (LitV $ LitInt c) @ s; E
     {{{ RET listen_socket c; True }}}.
   Proof.
@@ -180,6 +195,58 @@ lemmas. *)
       if err then True else c_l c↦ ∅
     }}}.
   Proof.
+    assert (exists H, H = gooseGlobalGS0) as [? <-].
+    { by eexists. }
+    Set Printing All.
+    clear H. clear gooseGlobalGS0.
+    pose proof (ltac:(done) : gooseGlobalGS Σ).
+    pose proof (ltac:(done) : gooseLocalGS Σ).
+    clear gooseGlobalGS0
+    generalize grove_interp.
+    Set Printing All.
+    revert gooseLocalGS0.
+    revert E s c_r.
+    unfold goose_groveGS.
+
+    pattern grove_interp.
+  change_no_check (forall (E : coPset) (s : stuckness) (c_r : chan)
+    (gooseLocalGS0 : @gooseLocalGS grove_op grove_model grove_interp Σ)
+    (Φ : forall _ : @val grove_op, bi_car (uPredI (iResUR Σ))),
+  @bi_emp_valid (uPredI (iResUR Σ))
+    (@bi_wand (uPredI (iResUR Σ)) (@bi_pure (uPredI (iResUR Σ)) True)
+       (@bi_wand (uPredI (iResUR Σ))
+          (@bi_later (uPredI (iResUR Σ))
+             (@bi_forall (uPredI (iResUR Σ)) bool
+                (fun err : bool =>
+                 @bi_forall (uPredI (iResUR Σ)) chan
+                   (fun c_l : chan =>
+                    @bi_wand (uPredI (iResUR Σ))
+                      match err return (bi_car (uPredI (iResUR Σ))) with
+                      | true => @bi_pure (uPredI (iResUR Σ)) True
+                      | false =>
+                          @pointsto chan w64_eq_dec w64_countable
+                            (@gset message message_eq_decision message_countable) Σ
+                            (@groveG_net_heapG Σ
+                               (@goose_ffiGlobalGS grove_op grove_model grove_interp_def Σ gooseGlobalGS0'))
+                            c_l (DfracOwn (pos_to_Qp xH))
+                            (@empty (@gset message message_eq_decision message_countable)
+                               (@gset_empty message message_eq_decision message_countable))
+                      end
+                      (Φ
+                         (@PairV grove_op (@LitV grove_op (LitBool err))
+                            match err return (@val grove_op) with
+                            | true => bad_socket
+                            | false => connection_socket c_l c_r
+                            end))))))
+          (@wp (uPred (iResUR Σ)) (language.expr (@goose_lang grove_op grove_model grove_semantics))
+             (language.val (@goose_lang grove_op grove_model grove_semantics)) stuckness
+             (@wp' (@goose_lang grove_op grove_model grove_semantics) Σ
+                (@goose_irisGS grove_op grove_model grove_semantics grove_interp Σ gooseGlobalGS0)
+                (@goose_generationGS grove_op grove_model grove_semantics grove_interp Σ gooseLocalGS0)) s E
+             (@ExternalOp grove_op ConnectOp (@Val grove_op (@LitV grove_op (LitInt c_r)))) Φ)))
+    ).
+
+    rewrite grove_interp_unseal.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
@@ -716,6 +783,7 @@ Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
   iMod (gen_heap_init g.(grove_net)) as (names) "(H1&H2&H3)".
   iMod (mono_nat_own_alloc (uint.nat g.(grove_global_time))) as (?) "[Ht _]".
+  rewrite grove_interp_unseal.
   iExists (GroveGS _ names _ _). iFrame. eauto.
 Qed.
 Next Obligation.
@@ -723,9 +791,11 @@ Next Obligation.
   iIntros (Σ hPre σ ??).
   iMod (mono_nat_own_alloc (uint.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
   iMod (gen_heap_init σ.(grove_node_files)) as (names) "(H1&H2&_)".
+  rewrite grove_interp_unseal.
   iExists (GroveNodeGS _ _ tsc_name _). eauto with iFrame.
 Qed.
 Next Obligation.
+  rewrite grove_interp_unseal.
   iIntros (Σ σ σ' Hcrash Hold) "(Htsc_old & %Hfilebound & Hfiles_old)".
   simpl in Hold. destruct Hcrash.
   iExists Hold. iFrame. iPureIntro. done.
@@ -733,13 +803,20 @@ Qed.
 
 Section crash.
   Existing Instances grove_op grove_model.
-  Existing Instances grove_semantics grove_interp.
+  Existing Instances grove_semantics grove_interp_def.
   Existing Instance goose_groveNodeGS.
 
-  Lemma file_pointsto_post_crash `{!heapGS Σ} f q v:
-    f f↦{q} v ⊢@{_} post_crash (λ _, f f↦{q} v).
+  Lemma file_pointsto_post_crash `{!heapGS Σ (ffi_interp0:=grove_interp)} f q v:
+    f f↦{q} v ⊢@{_} post_crash (λ _, f f↦{q} v) (ffi_interp0:=grove_interp).
   Proof.
-    iIntros "H". iIntros (???) "#Hrel".
+    Set Printing All.
+    opose proof (_ : heapGS Σ (ffi_interp0:=grove_interp_def)).
+    { rewrite -grove_interp_unseal. done. }
+
+    iIntros "H".
+    Print post_crash.
+    iIntros (???) "Hrel".
+    iEval (rewrite grove_interp_unseal).
     iDestruct "Hrel" as %(Heq1&Heq2).
     rewrite /goose_groveNodeGS.
     rewrite Heq1. eauto.

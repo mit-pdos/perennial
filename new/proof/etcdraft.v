@@ -159,6 +159,167 @@ Admitted. *)
 Ltac wp_steps :=
   wp_pures; try ((wp_load; wp_steps) || (wp_store; wp_steps)).
 
+Axiom falso : False.
+
+Lemma wp_test :
+    (base.negb (bool_decide (sint.Z (W64 0) < sint.Z (W64 3%nat))%Z)) = false.
+Proof. vm_compute. done.
+Qed.
+
+About wp'.
+Check @goose_irisGS.
+
+Axiom s: ∀ (ext : ffi_syntax) (ffi : ffi_model) (ffi_sem : ffi_semantics ext ffi) (ffi_interp0 :
+             ffi_interp ffi)
+           (Σ : gFunctors), gooseGlobalGS Σ → irisGS goose_lang Σ. (* := @goose_irisGS. *)
+Opaque s.
+Print goose_irisGS.
+
+Program Definition g :=
+λ (ext : ffi_syntax) (ffi : ffi_model) (ffi_sem : ffi_semantics ext ffi) (ffi_interp0 : ffi_interp ffi)
+  (Σ : gFunctors) (G : gooseGlobalGS Σ),
+  {|
+    iris_invGS := G.(goose_invGS);
+    global_state_interp :=
+      λ (g : goose_lang.(language.global_state)) (ns : nat) (mj : fracR) (D : coPset)
+        (κs : list goose_lang.(language.observation)),
+        (ffi_interp0.(ffi_global_ctx) G.(goose_ffiGlobalGS) g.(global_world));
+    fork_post := λ _ : goose_lang.(language.val), True%I;
+    num_laters_per_step := λ n : nat, (3 ^ (n + 1))%nat;
+    step_count_next := λ n : nat, (10 * (n + 1))%nat;
+  |}
+.
+Next Obligation. Admitted.
+Final Obligation. Admitted.
+
+(* Derived from bisecting down to [grove_interp.(ffi_global_ctx)]. *)
+(* FIXME: seal up [grove_interp]. *)
+Definition x_def : Prop := (2 ^ 64 = 2 ^ 64)%nat.
+Program Definition x := unseal (_:seal (@x_def)). Obligation 1. by eexists. Qed.
+Definition x_unseal : x = _ := seal_eq _.
+Lemma test :
+  Nat.add O O = Nat.add O O →
+  x = x.
+Proof using Type*.
+  vm_compute Nat.add.
+  done.
+  Show Proof.
+Time Qed.
+
+
+((fun _ : @eq bool true true =>
+  @eq_refl
+    (forall (Σ : gFunctors) (_ : @gooseGlobalGS grove_op grove_model grove_interp Σ),
+     irisGS (@goose_lang grove_op grove_model grove_semantics) Σ)
+    (s grove_op grove_model grove_semantics grove_interp))
+ <:
+ forall _ : @eq bool (@bool_decide True True_dec) (@bool_decide True True_dec),
+ @eq
+   (forall (Σ : gFunctors) (_ : @gooseGlobalGS grove_op grove_model grove_interp Σ),
+    irisGS (@goose_lang grove_op grove_model grove_semantics) Σ)
+   (s grove_op grove_model grove_semantics grove_interp)
+   (s grove_op grove_model grove_semantics grove_interp))
+
+
+Proof.
+  vm_compute bool_decide.
+  intros. reflexivity.
+  Validate Proof.
+  Set Printing All.
+  Show Proof.
+Admitted.
+
+Check ((fun _ : @eq bool true true => O))
+  @eq_refl
+    (forall (Σ : gFunctors) (_ : @gooseGlobalGS grove_op grove_model grove_interp Σ),
+     irisGS (@goose_lang grove_op grove_model grove_semantics) Σ)
+    (@goose_irisGS grove_op grove_model grove_semantics grove_interp))
+ :
+ forall _ : @eq bool (@bool_decide True True_dec) (@bool_decide True True_dec),
+ @eq
+   (forall (Σ : gFunctors) (_ : @gooseGlobalGS grove_op grove_model grove_interp Σ),
+    irisGS (@goose_lang grove_op grove_model grove_semantics) Σ)
+   (@goose_irisGS grove_op grove_model grove_semantics grove_interp)
+   (@goose_irisGS grove_op grove_model grove_semantics grove_interp))
+.
+
+Time Qed.
+
+Lemma test2 :
+  wp = wp.
+Proof. vm_compute bool_decide. refine eq_refl. Show Proof. Qed.
+
+Check (eq_refl wp <: eq wp wp).
+
+Check ((let f : False := falso in
+  match
+    f
+    return
+      (forall _ : @eq bool true true,
+       @eq
+         (forall (_ : stuckness) (_ : coPset)
+            (_ : language.expr (@goose_lang grove_op grove_model grove_semantics))
+            (_ : forall _ : language.val (@goose_lang grove_op grove_model grove_semantics), uPred (iResUR Σ)),
+          uPred (iResUR Σ))
+         (@wp (uPred (iResUR Σ)) (language.expr (@goose_lang grove_op grove_model grove_semantics))
+            (language.val (@goose_lang grove_op grove_model grove_semantics)) stuckness
+            (@wp' (@goose_lang grove_op grove_model grove_semantics) Σ
+               (@goose_irisGS grove_op grove_model grove_semantics grove_interp Σ
+                  (@goose_globalGS _ _ _ _ heapGS0))
+               (@goose_generationGS grove_op grove_model grove_semantics grove_interp Σ
+                  (@goose_localGS _ _ _ _ heapGS0))))
+         (@wp (uPred (iResUR Σ)) (language.expr (@goose_lang grove_op grove_model grove_semantics))
+            (language.val (@goose_lang grove_op grove_model grove_semantics)) stuckness
+            (@wp' (@goose_lang grove_op grove_model grove_semantics) Σ
+               (@goose_irisGS grove_op grove_model grove_semantics grove_interp Σ
+                  (@goose_globalGS _ _ _ _ heapGS0))
+               (@goose_generationGS grove_op grove_model grove_semantics grove_interp Σ
+                  (@goose_localGS _ _ _ _ heapGS0)))))
+  with
+  end)
+ :>
+ forall _ : @eq bool (@bool_decide True True_dec) true,
+ @eq
+   (forall (_ : stuckness) (_ : coPset) (_ : language.expr (@goose_lang grove_op grove_model grove_semantics))
+      (_ : forall _ : language.val (@goose_lang grove_op grove_model grove_semantics), uPred (iResUR Σ)),
+    uPred (iResUR Σ))
+   (@wp (uPred (iResUR Σ)) (language.expr (@goose_lang grove_op grove_model grove_semantics))
+      (language.val (@goose_lang grove_op grove_model grove_semantics)) stuckness
+      (@wp' (@goose_lang grove_op grove_model grove_semantics) Σ
+         (@goose_irisGS grove_op grove_model grove_semantics grove_interp Σ (@goose_globalGS _ _ _ _ heapGS0))
+         (@goose_generationGS grove_op grove_model grove_semantics grove_interp Σ
+            (@goose_localGS _ _ _ _ heapGS0))))
+   (@wp (uPred (iResUR Σ)) (language.expr (@goose_lang grove_op grove_model grove_semantics))
+      (language.val (@goose_lang grove_op grove_model grove_semantics)) stuckness
+      (@wp' (@goose_lang grove_op grove_model grove_semantics) Σ
+         (@goose_irisGS grove_op grove_model grove_semantics grove_interp Σ (@goose_globalGS _ _ _ _ heapGS0))
+         (@goose_generationGS grove_op grove_model grove_semantics grove_interp Σ
+            (@goose_localGS _ _ _ _ heapGS0))))).
+
+Check
+(let f : False := falso in
+  match
+    f
+    return
+      (true = true
+       → ⊢ ∀ (s : stuckness) (E : coPset) (e : expr) (Φ : val → iPropI Σ), WP e @ s; E {{ v, Φ v }})
+  with
+  end).
+
+Check ((let f : False := falso in
+  match
+    f
+    return
+      (true = true
+       → ⊢ ∀ (s : stuckness) (E : coPset) (e : goose_lang.(language.expr)) (Φ : goose_lang.(language.val)
+                                                                                →
+                                                                                iPropI Σ),
+             WP e @ s; E {{ v, Φ v }})
+  with
+  end) : true = true
+       → ⊢ ∀ (s : stuckness) (E : coPset) (e : expr) (Φ : val → iPropI Σ), WP e @ s; E {{ v, Φ v }}
+      ).
+
 Lemma wp_testLeaderElection2_symbolic_execute :
   {{{ True }}}
     testLeaderElection2 #null #false
@@ -207,8 +368,42 @@ Proof.
   Time repeat wp_progress.
   rewrite -H in H0 |- *.
   rewrite length_replicate w64_to_nat_id in H0.
+  Disable Notation "?=" (all).
+  Set Printing Depth 100000.
+  Set Printing All.
+  vm_compute (bool_decide _).
+  all: destruct falso.
+Time Qed.
+
+  2:{ vm_compute bool_decide. done. }
   vm_compute bool_decide.
+  all: destruct falso.
+Time Qed.
+  -
+  wp_bind (bool_decide.
+  vm_compute bool_decide.
+  all: destruct falso.
+  Time Validate Proof.
+  Time Guarded.
+Time Qed.
+  Check Proof.
+  (* do 68 wp_progress. *)
+(*
+   61 -> 2.159
+   62 -> 2.258
+   68 -> 2.398
+ *)
+
   Time repeat wp_progress.
+  rewrite -H in H0 |- *.
+  rewrite length_replicate w64_to_nat_id in H0.
+  vm_compute bool_decide.
+  all: destruct falso.
+Time Qed.
+  (* do 10 wp_progress. *)
+  all: destruct falso.
+Time Qed.
+
   iDestruct select (sl ↦* _) as "Hsl".
   (* FIXME: want to match syntax of expr first, then solve goal. *)
   wp_apply (wp_slice_for_range with "[$Hsl]").
@@ -217,7 +412,8 @@ Proof.
   wp_pure.
   (* FIXME: need to make interfaceT comparable *)
   Show Ltac Profile.
-Admitted.
+  all: destruct falso.
+Time Qed.
 
 Lemma wp_testLeaderElection2 :
   {{{ True }}}
