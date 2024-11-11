@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
+From Goose.github_com.mit_pdos.pav Require Import kt.
 
 Module PreSigDig.
 Record t :=
@@ -10,6 +11,15 @@ Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Epoch) ++ u64_le (length obj.(Dig)) ++ obj.(Dig).
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_Dig,
+  "Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"] #obj.(Epoch) ∗
+  "Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"] (slice_val sl_Dig) ∗
+  "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig).
+End defs.
 End PreSigDig.
 
 Module SigDig.
@@ -26,7 +36,13 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
 
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_Dig sl_Sig,
+  "Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"] #obj.(Epoch) ∗
+  "Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"] (slice_val sl_Dig) ∗
+  "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
+  "Hptr_Sig" ∷ ptr ↦[SigDig :: "Sig"] (slice_val sl_Sig) ∗
+  "#Hsl_Sig" ∷ own_slice_small sl_Sig byteT DfracDiscarded obj.(Sig).
 End defs.
 End SigDig.
 
@@ -56,7 +72,14 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
 
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_Dig sl_ServSig sl_AdtrSig,
+  "Hptr_Dig" ∷ ptr ↦[AdtrEpochInfo :: "Dig"] (slice_val sl_Dig) ∗
+  "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
+  "Hptr_ServSig" ∷ ptr ↦[AdtrEpochInfo :: "ServSig"] (slice_val sl_ServSig) ∗
+  "#Hsl_ServSig" ∷ own_slice_small sl_ServSig byteT DfracDiscarded obj.(ServSig) ∗
+  "Hptr_AdtrSig" ∷ ptr ↦[AdtrEpochInfo :: "AdtrSig"] (slice_val sl_AdtrSig) ∗
+  "#Hsl_AdtrSig" ∷ own_slice_small sl_AdtrSig byteT DfracDiscarded obj.(AdtrSig).
 End defs.
 End AdtrEpochInfo.
 

@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import auditor advrpc client core serde server.
+From Perennial.program_proof.pav Require Import auditor advrpc core serde server.
 
 Section specs.
 Context `{!heapGS Σ, !pavG Σ}.
@@ -51,6 +51,20 @@ Lemma wp_callAdtrUpdate ptr_cli cli ptr_upd upd :
     (err : bool), RET #err;
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
     "Hown_upd" ∷ UpdateProof.own ptr_upd upd
+  }}}.
+Proof. Admitted.
+
+Lemma wp_callAdtrGet ptr_cli cli (ep : w64) :
+  {{{
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli
+  }}}
+  callAdtrGet #ptr_cli #ep
+  {{{
+    ptr_adtrInfo adtrInfo (err : bool), RET (#ptr_adtrInfo, #err);
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
+    if negb err then
+      "Hown_info" ∷ AdtrEpochInfo.own ptr_adtrInfo adtrInfo
+    else True
   }}}.
 Proof. Admitted.
 

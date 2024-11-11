@@ -1,7 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import advrpc auditor core classes cryptoffi merkle serde server.
+From Perennial.program_proof.pav Require Import advrpc auditor core classes cryptoffi evidence merkle rpc serde server.
+From Perennial.program_proof Require Import std_proof.
 
 Section invs.
 Context `{!heapGS Σ, !pavG Σ}.
@@ -15,7 +16,8 @@ Definition cli_inv γ : iProp Σ :=
     end) ∗
   "#His_entry" ∷ (□ ∀ (ep : w64) dig m_γ uid ver val,
     ("#Hsubmap" ∷ mono_list_idx_own γ (uint.nat ep) (Some (dig, m_γ)) ∗
-    "#Hin_map" ∷ (uid, ver) ↪[m_γ]□ val) -∗
+    "#Hin_map" ∷ (uid, ver) ↪[m_γ]□ val)
+    -∗
     (∃ label,
     "#His_label" ∷ is_vrf uid ver label ∗
     "#Hhas_mproof" ∷ has_merkp label
@@ -42,6 +44,7 @@ Context `{!heapGS Σ, !pavG Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ ms ptr_sd sd_ptrs sd ptr_serv_cli serv_cli sl_serv_sig_pk,
   (* GS. *)
+  "#Hinv" ∷ inv nroot (cli_inv obj.(γ)) ∗
   "Hown_maps" ∷ mono_list_auth_own obj.(γ) (1/2) ms ∗
   "Hown_entries" ∷ ([∗ list] x ∈ ms,
     match x with
@@ -72,11 +75,15 @@ End Client.
 Module clientErr.
 Record t :=
   mk {
+    evid: option Evid.t;
     err: bool;
   }.
 Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ (ptr_evid : loc),
+  "Hptr_evid" ∷ ptr ↦[clientErr :: "evid"] #ptr_evid ∗
+  (* leftoff: if evid not nil, own and valid evid. *)
   "Hptr_err" ∷ ptr ↦[clientErr :: "err"] #obj.(err).
 End defs.
 End clientErr.
@@ -190,6 +197,76 @@ Definition is_audit (cli_γ adtr_γ : gname) (bound : w64) : iProp Σ :=
     "#His_label" ∷ is_vrf uid ver label)
     -∗
     "%Hin_adtr" ∷ ⌜ m !! label = val ⌝).
+
+Lemma wp_Client__auditEpoch (ep : w64) ptr_c ptr_sd sd_ptrs sd sl_serv_sig_pk (serv_sig_pk : list w8) ptr_adtr_cli adtr_cli sl_adtr_pk adtr_pk cli_dig :
+  {{{
+    (* cli.own sub-parts. *)
+    "Hown_sd" ∷ own_map ptr_sd (DfracOwn 1) sd_ptrs ∗
+    "Hptr_sd" ∷ ptr_c ↦[Client :: "seenDigs"] #ptr_sd ∗
+    "Hown_sd_ptrs" ∷ ([∗ map] l;v ∈ sd_ptrs;sd, SigDig.own l v) ∗
+    "Hptr_servSigPk" ∷ ptr_c ↦[Client :: "servSigPk"] (slice_val sl_serv_sig_pk) ∗
+    "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv_sig_pk ∗
+    (* the rest. *)
+    "Hown_adtr_cli" ∷ advrpc.Client.own ptr_adtr_cli adtr_cli ∗
+    "#Hsl_adtrPk" ∷ own_slice_small sl_adtr_pk byteT DfracDiscarded adtr_pk ∗
+    "%His_ep" ∷ ⌜ sd !! ep = Some cli_dig ⌝
+  }}}
+  Client__auditEpoch #ptr_c #ep #ptr_adtr_cli (slice_val sl_adtr_pk)
+  {{{
+    ptr_err err, RET #ptr_err;
+    "Hown_sd" ∷ own_map ptr_sd (DfracOwn 1) sd_ptrs ∗
+    "Hptr_sd" ∷ ptr_c ↦[Client :: "seenDigs"] #ptr_sd ∗
+    "Hown_sd_ptrs" ∷ ([∗ map] l;v ∈ sd_ptrs;sd, SigDig.own l v) ∗
+    "Hptr_servSigPk" ∷ ptr_c ↦[Client :: "servSigPk"] (slice_val sl_serv_sig_pk) ∗
+    "Hown_adtr_cli" ∷ advrpc.Client.own ptr_adtr_cli adtr_cli ∗
+    "Herr" ∷ clientErr.own ptr_err err ∗
+    if negb err.(clientErr.err) then
+      ∀ adtr_γ,
+      ("#His_pk_adtr" ∷ is_pk adtr_pk (adtr_sigpred adtr_γ))
+      -∗
+      (∃ adtr_st adtr_dig, "#Hcomm_st" ∷ comm_st.valid adtr_γ adtr_st ∗
+      "%Hlook_adtr_dig" ∷ ⌜ adtr_st.(comm_st.digs) !! uint.nat ep = Some adtr_dig ⌝ ∗
+      "%Heq_dig" ∷ ⌜ cli_dig.(SigDig.Dig) = adtr_dig ⌝)
+    else True
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". rewrite /Client__auditEpoch.
+  wp_pures.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+  iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_stdErr".
+  wp_apply (wp_callAdtrGet with "Hown_adtr_cli"). iIntros "* H". iNamed "H".
+  wp_if_destruct.
+  { iApply ("HΦ" $! _ (clientErr.mk _ _)). by iFrame "∗#". }
+  simpl. iNamed "H". iNamed "Hown_info".
+  do 2 wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "HservDig".
+  do 2 wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "HadtrDig".
+  wp_loadField.
+  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _) with "[HservDig]").
+  { iDestruct (struct_fields_split with "HservDig") as "H". iNamed "H". iFrame "∗#". }
+  iIntros (err0). iNamedSuffix 1 "_servSig".
+  wp_if_destruct.
+  { iApply ("HΦ" $! _ (clientErr.mk _ _)). by iFrame "∗#". }
+  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _) with "[HadtrDig]").
+  { iDestruct (struct_fields_split with "HadtrDig") as "H". iNamed "H". iFrame "∗#". }
+  iIntros (err1). iNamedSuffix 1 "_adtrSig".
+  wp_if_destruct.
+  { iApply ("HΦ" $! _ (clientErr.mk _ _)). by iFrame "∗#". }
+  wp_loadField.
+  wp_apply (wp_MapGet with "Hown_sd"). iIntros (??) "[%Hlook_map Hown_sd]".
+  iDestruct (big_sepM2_lookup_r with "Hown_sd_ptrs") as (?) "[%Hlook_ptrs H]"; [exact His_ep|].
+  iNamedSuffix "H" "_cli".
+  destruct ok. 2: { exfalso. apply map_get_false in Hlook_map. set_solver. }
+  apply map_get_true in Hlook_map. simplify_eq/=.
+  wp_apply wp_Assert_true.
+  do 2 wp_loadField.
+  wp_apply (wp_BytesEqual sl_Dig sl_Dig0 with "[$Hsl_Dig $Hsl_Dig_cli]").
+  iIntros "_".
+  wp_if_destruct.
+  { wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+    iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_evid".
+Admitted.
 
 Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtrPk :
   {{{
