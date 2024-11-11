@@ -1,66 +1,71 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import auditor core classes cryptoffi merkle serde server.
+From Perennial.program_proof.pav Require Import advrpc auditor core classes cryptoffi merkle serde server.
+
+Section invs.
+Context `{!heapGS Σ, !pavG Σ}.
+Definition cli_inv γ : iProp Σ :=
+  ∃ ms,
+  "Hown_maps" ∷ mono_list_auth_own γ (1/2) ms ∗
+  "Hown_entries" ∷ ([∗ list] x ∈ ms,
+    match x with
+    | None => True
+    | Some (_, m_γ) => ∃ m, ghost_map_auth m_γ (1/2) m
+    end) ∗
+  "#His_entry" ∷ (□ ∀ (ep : w64) dig m_γ uid ver val,
+    ("#Hsubmap" ∷ mono_list_idx_own γ (uint.nat ep) (Some (dig, m_γ)) ∗
+    "#Hin_map" ∷ (uid, ver) ↪[m_γ]□ val) -∗
+    (∃ label,
+    "#His_label" ∷ is_vrf uid ver label ∗
+    "#Hhas_mproof" ∷ has_merkp label
+      ((λ x, MapValPre.encodesF (MapValPre.mk x.1 x.2)) <$> val) dig)).
+End invs.
 
 Module Client.
 Record t :=
   mk {
-    (* client's ghost state. *)
     γ: gname;
     uid: uid_ty;
     next_ver: ver_ty;
     next_epoch: epoch_ty;
-    serv_cli: loc;
     serv_γ: gname;
     serv_sig_pk: list w8;
     serv_vrf_pk: loc;
   }.
 Global Instance eta : Settable _ :=
-  settable! mk <γ; uid; next_ver; next_epoch; serv_cli; serv_γ; serv_sig_pk; serv_vrf_pk>.
+  settable! mk <γ; uid; next_ver; next_epoch; serv_γ; serv_sig_pk; serv_vrf_pk>.
 
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition have_merkle (dig : list w8) (m : cli_map_ty) : iProp Σ :=
-  ([∗ map] k ↦ x ∈ m,
-    ∃ proof,
-    let label := MapLabelPre.encodesF (MapLabelPre.mk k.1 k.2) in
-    match x with
-    | None => is_merkle_proof proof label None dig
-    | Some y =>
-      let val := MapValPre.encodesF (MapValPre.mk y.1 y.2) in
-      is_merkle_proof proof label (Some val) dig
-    end).
-
-Definition list_map_equiv {A B} (EQ : A → B → Prop) (l : list (option A)) (m : gmap w64 B) :=
-  (∀ (i : nat) a, l !! i = Some (Some a) → (∃ b, m !! (W64 i) = Some b ∧ EQ a b)) ∧
-  (∀ (i : nat) b, m !! (W64 i) = Some b → (∃ a, l !! i = Some (Some a) ∧ EQ a b)).
-
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ (seen_maps : list (option (dig_ty * gname))) ptr_sd sd_ptrs seen_digs sl_serv_sig_pk,
-  (* TODO: vrf. *)
-  (* key maps. *)
-  "Hseen_maps" ∷ mono_list_auth_own obj.(γ) 1 seen_maps ∗
-  "Hsubmaps" ∷ ([∗ list] x ∈ seen_maps,
+  ∃ ms ptr_sd sd_ptrs sd ptr_serv_cli serv_cli sl_serv_sig_pk,
+  (* GS. *)
+  "Hown_maps" ∷ mono_list_auth_own obj.(γ) (1/2) ms ∗
+  "Hown_entries" ∷ ([∗ list] x ∈ ms,
     match x with
     | None => True
-    | Some y => ∃ submap, ghost_map_auth y.2 1 submap ∗ have_merkle y.1 submap
+    | Some (_, m_γ) => ∃ m, ghost_map_auth m_γ (1/2) m
     end) ∗
   (* seenDigs. *)
   "Hown_sd" ∷ own_map ptr_sd (DfracOwn 1) sd_ptrs ∗
   "Hptr_sd" ∷ ptr ↦[Client :: "seenDigs"] #ptr_sd ∗
-  "Hown_sd_structs" ∷ ([∗ map] l;v ∈ sd_ptrs;seen_digs, SigDig.own l v) ∗
-  "%Hagree_sd" ∷ ⌜ list_map_equiv (λ a b, a.1 = b.(SigDig.Dig)) seen_maps seen_digs ⌝ ∗
+  "Hown_sd_ptrs" ∷ ([∗ map] l;v ∈ sd_ptrs;sd, SigDig.own l v) ∗
+  "%Hagree_sd" ∷ ⌜ (∀ (ep : w64) dig m_γ,
+    ms !! (uint.nat ep) = Some (Some (dig, m_γ)) →
+    (∃ x, sd !! ep = Some x ∧ x.(SigDig.Dig) = dig)) ⌝ ∗
   (* uid, next_ver, next_epoch. *)
   "Hptr_uid" ∷ ptr ↦[Client :: "uid"] #obj.(uid) ∗
   "Hptr_nextVer" ∷ ptr ↦[Client :: "nextVer"] #obj.(next_ver) ∗
   "Hptr_nextEpoch" ∷ ptr ↦[Client :: "nextEpoch"] #obj.(next_epoch) ∗
-  "%Hep_bound" ∷ ⌜ length seen_maps = uint.nat obj.(next_epoch) ⌝ ∗
-  (* clients and parameterized keys. *)
-  "#Hptr_servSigPk" ∷ ptr ↦[Client :: "servSigPk"]□ (slice_val sl_serv_sig_pk) ∗
+  "%Heq_next_ep" ∷ ⌜ length ms = uint.nat obj.(next_epoch) ⌝ ∗
+  (* server info. *)
+  "Hown_servCli" ∷ advrpc.Client.own ptr_serv_cli serv_cli ∗
+  "Hptr_servCli" ∷ ptr ↦[Client :: "servCli"] #ptr_serv_cli ∗
+  "Hptr_servSigPk" ∷ ptr ↦[Client :: "servSigPk"] (slice_val sl_serv_sig_pk) ∗
   "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded obj.(serv_sig_pk) ∗
-  "#His_servSigPk" ∷ is_pk obj.(serv_sig_pk) (serv_sigpred obj.(serv_γ)).
+  "Hptr_servVrfPk" ∷ ptr ↦[Client :: "servVrfPk"] #obj.(serv_vrf_pk).
 End defs.
 End Client.
 
@@ -103,8 +108,8 @@ Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
         (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       "#His_key" ∷ is_my_key c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep pk ∗
-      "%Hnoof_ver" ∷ ⌜ uint.Z new_c.(Client.next_ver) = (uint.Z c.(Client.next_ver) + 1)%Z ⌝ ∗
-      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
+      "%Hnoof_ver" ∷ ⌜ uint.Z (word.add c.(Client.next_ver) (W64 1)) = (uint.Z c.(Client.next_ver) + 1)%Z ⌝ ∗
+      "%Hnoof_eq" ∷ ⌜ uint.Z (word.add ep (W64 1)) = (uint.Z ep + 1)%Z ⌝ ∗
       "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) ≤ uint.Z ep ⌝
     else
       "Hown_cli" ∷ Client.own ptr_c c
@@ -129,7 +134,7 @@ Lemma wp_Client__SelfMon ptr_c c :
       let new_c := (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
       "#His_bound" ∷ is_my_bound c.(Client.γ) c.(Client.uid) c.(Client.next_ver) ep ∗
-      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
+      "%Hnoof_ep" ∷ ⌜ uint.Z (word.add ep (W64 1)) = (uint.Z ep + 1)%Z ⌝ ∗
       "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) - 1 ≤ uint.Z ep ⌝
     else
       "Hown_cli" ∷ Client.own ptr_c c
@@ -162,7 +167,7 @@ Lemma wp_Client__Get ptr_c c uid :
     if negb err.(clientErr.err) then
       let new_c := (set Client.next_epoch (λ _, word.add ep (W64 1)) c) in
       "Hown_cli" ∷ Client.own ptr_c new_c ∗
-      "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
+      "%Hnoof_ep" ∷ ⌜ uint.Z (word.add ep (W64 1)) = (uint.Z ep + 1)%Z ⌝ ∗
       "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) - 1 ≤ uint.Z ep ⌝ ∗
       "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
       "#His_key" ∷ is_other_key c.(Client.γ) uid ep
@@ -209,8 +214,8 @@ Lemma wp_newClient (uid servAddr : w64) sl_servSigPk servSigPk (servVrfPk : loc)
   }}}
   newClient #uid #servAddr (slice_val sl_servSigPk) #servVrfPk
   {{{
-    ptr_cli cli_γ r1 r2 r3, RET #ptr_cli;
-    "Hown_cli" ∷ Client.own ptr_cli (Client.mk cli_γ uid (W64 0) (W64 0) r1 r2 servSigPk r3)
+    ptr_cli cli_γ r1 r2, RET #ptr_cli;
+    "Hown_cli" ∷ Client.own ptr_cli (Client.mk cli_γ uid (W64 0) (W64 0) r1 servSigPk r2)
   }}}.
 Proof. Admitted.
 

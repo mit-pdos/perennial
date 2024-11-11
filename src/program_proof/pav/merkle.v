@@ -530,6 +530,9 @@ Global Instance is_merkle_proof_persis proof id val dig :
   Persistent (is_merkle_proof proof id val dig).
 Proof. Admitted.
 
+Definition has_merkp id val dig : iProp Σ :=
+  ∃ proof, is_merkle_proof proof id val dig.
+
 Lemma is_merkle_proof_to_entry proof id val dig :
   is_merkle_proof proof id val dig -∗ is_merkle_entry id val dig.
 Proof. Admitted.
