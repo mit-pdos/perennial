@@ -206,7 +206,6 @@ Definition Evid := struct.decl [
 Definition Client__checkDig: val :=
   rec: "Client__checkDig" "c" "dig" :=
     let: "stdErr" := struct.new clientErr [
-      "evid" ::= slice.nil;
       "err" ::= #true
     ] in
     let: "err0" := CheckSigDig "dig" (struct.loadF Client "servSigPk" "c") in
@@ -228,7 +227,6 @@ Definition Client__checkDig: val :=
           ]
         else
           struct.new clientErr [
-            "evid" ::= slice.nil;
             "err" ::= #false
           ])
       else
@@ -241,7 +239,6 @@ Definition Client__checkDig: val :=
             MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
             struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
             struct.new clientErr [
-              "evid" ::= slice.nil;
               "err" ::= #false
             ])))).
 
@@ -533,7 +530,6 @@ Definition callServPut: val :=
 Definition Client__Put: val :=
   rec: "Client__Put" "c" "pk" :=
     let: "stdErr" := struct.new clientErr [
-      "evid" ::= slice.nil;
       "err" ::= #true
     ] in
     let: ((("dig", "latest"), "bound"), "err0") := callServPut (struct.loadF Client "servCli" "c") (struct.loadF Client "uid" "c") "pk" in
@@ -558,7 +554,6 @@ Definition Client__Put: val :=
               else
                 struct.storeF Client "nextVer" "c" ((struct.loadF Client "nextVer" "c") + #1);;
                 (struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
-                   "evid" ::= slice.nil;
                    "err" ::= #false
                  ]))))))).
 
@@ -695,7 +690,6 @@ Definition callServGet: val :=
 Definition Client__Get: val :=
   rec: "Client__Get" "c" "uid" :=
     let: "stdErr" := struct.new clientErr [
-      "evid" ::= slice.nil;
       "err" ::= #true
     ] in
     let: ((((("dig", "hist"), "isReg"), "latest"), "bound"), "err0") := callServGet (struct.loadF Client "servCli" "c") "uid" in
@@ -724,7 +718,6 @@ Definition Client__Get: val :=
               then (#false, slice.nil, #0, "stdErr")
               else
                 ("isReg", struct.loadF PkCommOpen "Pk" (struct.loadF Memb "CommOpen" "latest"), struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
-                   "evid" ::= slice.nil;
                    "err" ::= #false
                  ]))))))).
 
@@ -789,7 +782,6 @@ Definition callServSelfMon: val :=
 Definition Client__SelfMon: val :=
   rec: "Client__SelfMon" "c" :=
     let: "stdErr" := struct.new clientErr [
-      "evid" ::= slice.nil;
       "err" ::= #true
     ] in
     let: (("dig", "bound"), "err0") := callServSelfMon (struct.loadF Client "servCli" "c") (struct.loadF Client "uid" "c") in
@@ -804,7 +796,6 @@ Definition Client__SelfMon: val :=
         then (#0, "stdErr")
         else
           (struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
-             "evid" ::= slice.nil;
              "err" ::= #false
            ])))).
 
@@ -889,7 +880,6 @@ Definition callAdtrGet: val :=
 Definition Client__auditEpoch: val :=
   rec: "Client__auditEpoch" "c" "epoch" "adtrCli" "adtrPk" :=
     let: "stdErr" := struct.new clientErr [
-      "evid" ::= slice.nil;
       "err" ::= #true
     ] in
     let: ("adtrInfo", "err0") := callAdtrGet "adtrCli" "epoch" in
@@ -926,7 +916,6 @@ Definition Client__auditEpoch: val :=
             ]
           else
             struct.new clientErr [
-              "evid" ::= slice.nil;
               "err" ::= #false
             ])))).
 
@@ -934,7 +923,6 @@ Definition Client__Audit: val :=
   rec: "Client__Audit" "c" "adtrAddr" "adtrPk" :=
     let: "adtrCli" := advrpc.Dial "adtrAddr" in
     let: "err0" := ref_to ptrT (struct.new clientErr [
-      "evid" ::= slice.nil;
       "err" ::= #false
     ]) in
     MapIter (struct.loadF Client "seenDigs" "c") (λ: "ep" <>,

@@ -83,8 +83,6 @@ Definition newGenericNode: val :=
   rec: "newGenericNode" <> :=
     let: "c" := NewSlice ptrT numChildren in
     struct.new node [
-      "val" ::= slice.nil;
-      "hash" ::= slice.nil;
       "children" ::= "c"
     ].
 
@@ -299,7 +297,6 @@ Definition Tree__Get: val :=
       (if: "lastNode" = #null
       then
         struct.new GetReply [
-          "Val" ::= slice.nil;
           "Digest" ::= "digest";
           "ProofTy" ::= NonmembProofTy;
           "Proof" ::= "proof";
