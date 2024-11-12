@@ -57,24 +57,26 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃ γ pk key_maps ptr_map last_map sl_sk sl_hist ptrs_hist hist,
-  (* keys. *)
-  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val sl_sk) ∗
-  "Hown_sk" ∷ own_sk sl_sk pk (adtr_sigpred γ) ∗
-  (* maps. *)
-  "Hmaps" ∷ mono_list_auth_own γ 1 key_maps ∗
-  "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝ ∗
-  (* merkle tree. *)
-  "Hown_map" ∷ own_merkle ptr_map (lower_adtr last_map) ∗
+  ∃ γ pk key_maps (ptr_map : loc) last_map sl_sk sl_hist ptrs_hist hist,
+    (* Physical ownership *)
   "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
-  "%Hlast_map" ∷ ⌜ last key_maps = Some last_map ⌝ ∗
-  (* history. *)
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
+  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val sl_sk) ∗
   "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
   "Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
     AdtrEpochInfo.own ptr_hist info) ∗
+  "Hown_map" ∷ own_merkle ptr_map (lower_adtr last_map) ∗
+
+    (* Ghost ownership *)
+  "Hmaps" ∷ mono_list_auth_own γ 1 key_maps ∗
+
+    (* Crypto props *)
+  "Hown_sk" ∷ own_sk sl_sk pk (adtr_sigpred γ) ∗
   "#Hdigs_hist" ∷ ([∗ list] m;info ∈ key_maps;hist,
-    is_dig (lower_adtr m) info.(AdtrEpochInfo.Dig)).
+    is_dig (lower_adtr m) info.(AdtrEpochInfo.Dig)) ∗
+
+  "%Hlast_map" ∷ ⌜ last key_maps = Some last_map ⌝ ∗
+  "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝.
 
 Definition valid (ptr : loc) : iProp Σ :=
   ∃ (mu : loc),
@@ -97,7 +99,79 @@ Lemma wp_newAuditor :
     "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
     "#His_adtrPk" ∷ is_pk adtrPk (adtr_sigpred adtr_γ)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (?) "_ HΦ".
+  wp_rec.
+  wp_apply wp_new_free_lock.
+  iIntros (?) "Hl".
+  wp_apply wp_GenerateKey.
+  { shelve. }
+  iIntros "*". iNamed 1.
+  wp_pures.
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros "* Hm".
+  wp_pures.
+  wp_apply wp_allocStruct.
+  { rewrite /Auditor /cryptoffi.PrivateKey.
+    (* XXX: unfolding [PrivateKey] because the val_ty hitns look for slice.T syntactically. *)
+    val_ty.
+  }
+  iIntros "* Ha".
+  iDestruct (struct_fields_split with "Ha") as "Ha".
+  iNamed "Ha".
+  iMod (mono_list_own_alloc []) as (?) "[? _]".
+  wp_pures. iApply "HΦ".
+  iFrame "#".
+  iMod (own_slice_small_persist with "Hsl_pk") as "#$".
+  repeat iExists _.
+  iMod (struct_field_pointsto_persist with "mu") as "#?".
+  iMod (struct_field_pointsto_persist with "sk") as "#?".
+  iFrame "#".
+  Search is_free_lock.
+  iMod (alloc_lock with "[$] [-]") as "$"; last done.
+  iNext. repeat iExists _.
+  iFrame "∗#%".
+  rewrite zero_slice_val.
+  iFrame.
+  iSplitR.
+  { by iApply own_slice_small_nil. }
+  iSplitR.
+  { by iApply big_sepL2_nil. }
+  iSplitL "Hm".
+  {
+    (* FIXME: abstraction violation. *)
+    unfold own_merkle.
+    repeat iExists _.
+    iDestruct (struct_fields_split with "Hm") as "Hm".
+    iNamed "Hm".
+    iFrame.
+    iSplit.
+    2:{
+      iApply merkle_internal.own_node_unfold.
+      instantiate (1:=merkle_internal.Empty).
+      simpl.
+      iExists _; iSplit; last done.
+      (* FIXME(sanjit): the [Empty] case of own_node' requires
+         knowing that there exists something that is the hasth of [[W8 0]].
+         Requiring that as a precondition to newAuditor would violate the
+         Auditor interface boundary since it would expose that there's
+         hashing/merkle trees being used inside. Seems like the requirement for
+         the empty hash in [own_node'] could be removed?
+       *)
+      admit.
+    }
+    instantiate (1:=∅). done.
+  }
+  (* FIXME:(upamanyu): γ unified between different [adtr_sigpred]s. Need to alloc ghost state earlier. *)
+
+  (* FIXME(sanjit):
+     [Auditor.own] implies that [length key_maps > 0] because it states that [last key_maps = Some _].
+     However, ["#Hdigs_hist"] requires that [length key_maps = length hist].
+     So, [Auditor.own] implies that [length hist > 0] which is not true upon
+     initialization since hist is left empty.
+   *)
+  admit.
+Admitted.
 
 Lemma wp_Auditor__Update a ptr_upd upd :
   {{{
