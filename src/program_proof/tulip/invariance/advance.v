@@ -64,11 +64,11 @@ Section advance.
   Lemma replica_inv_advance γ gid rid clog ilog st ts rk cid :
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     advance_requirement st ts rk ->
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid clog ∗
-    own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdAdvance ts rk)]) ∗
+    own_replica_clog_half γ gid rid clog ∗
+    own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdAdvance ts rk)]) ∗
     replica_inv γ gid rid ∗
     ([∗ set] tgid ∈ gids_all, own_replica_backup_token γ gid rid ts rk tgid) ∗
     is_replica_backup_vote γ gid rid ts rk cid ∗

@@ -104,4 +104,8 @@ Section lemma.
     by split; last apply elem_of_dom.
   Qed.
 
+  Lemma vslice_empty k :
+    vslice (∅ : gmap K1 (gmap K2 V)) k = ∅.
+  Proof. by rewrite /vslice map_fold_empty. Qed.
+
 End lemma.

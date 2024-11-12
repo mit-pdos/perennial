@@ -18,12 +18,12 @@ Section local_read.
     key_to_group key = gid ->
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     local_read_requirement st key rts hist ->
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid clog ∗
-    own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdRead rts key)]) ∗
+    own_replica_clog_half γ gid rid clog ∗
+    own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdRead rts key)]) ∗
     group_inv γ gid ∗
     replica_inv γ gid rid ∗
     read_promise γ gid rid key (pred (length hist)) rts ∗

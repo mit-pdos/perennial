@@ -139,19 +139,19 @@ Section res.
 
     (** Per-replica consistent log. *)
 
-    Definition own_replica_clog_half γ (rid : u64) (l : list ccommand) : iProp Σ.
+    Definition own_replica_clog_half γ (gid rid : u64) (l : list ccommand) : iProp Σ.
     Admitted.
 
-    Lemma replica_clog_update {γ rid l1 l2} l' :
-      own_replica_clog_half γ rid l1 -∗
-      own_replica_clog_half γ rid l2 ==∗
-      own_replica_clog_half γ rid l' ∗
-      own_replica_clog_half γ rid l'.
+    Lemma replica_clog_update {γ gid rid l1 l2} l' :
+      own_replica_clog_half γ gid rid l1 -∗
+      own_replica_clog_half γ gid rid l2 ==∗
+      own_replica_clog_half γ gid rid l' ∗
+      own_replica_clog_half γ gid rid l'.
     Admitted.
 
-    Lemma replica_clog_agree {γ rid l1 l2} :
-      own_replica_clog_half γ rid l1 -∗
-      own_replica_clog_half γ rid l2 -∗
+    Lemma replica_clog_agree {γ gid rid l1 l2} :
+      own_replica_clog_half γ gid rid l1 -∗
+      own_replica_clog_half γ gid rid l2 -∗
       ⌜l2 = l1⌝.
     Admitted.
 
@@ -161,19 +161,19 @@ Section res.
 
     (** Per-replica inconsistent log. *)
 
-    Definition own_replica_ilog_half γ (rid : u64) (l : list (nat * icommand)) : iProp Σ.
+    Definition own_replica_ilog_half γ (gid rid : u64) (l : list (nat * icommand)) : iProp Σ.
     Admitted.
 
-    Lemma replica_ilog_update {γ rid l1 l2} l' :
-      own_replica_ilog_half γ rid l1 -∗
-      own_replica_ilog_half γ rid l2 ==∗
-      own_replica_ilog_half γ rid l' ∗
-      own_replica_ilog_half γ rid l'.
+    Lemma replica_ilog_update {γ gid rid l1 l2} l' :
+      own_replica_ilog_half γ gid rid l1 -∗
+      own_replica_ilog_half γ gid rid l2 ==∗
+      own_replica_ilog_half γ gid rid l' ∗
+      own_replica_ilog_half γ gid rid l'.
     Admitted.
 
-    Lemma replica_ilog_agree {γ rid l1 l2} :
-      own_replica_ilog_half γ rid l1 -∗
-      own_replica_ilog_half γ rid l2 -∗
+    Lemma replica_ilog_agree {γ gid rid l1 l2} :
+      own_replica_ilog_half γ gid rid l1 -∗
+      own_replica_ilog_half γ gid rid l2 -∗
       ⌜l2 = l1⌝.
     Admitted.
 

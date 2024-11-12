@@ -25,12 +25,12 @@ Section execute.
     ∀ clog,
     Forall (λ nc, (nc.1 <= length clog)%nat) ilog ->
     is_txn_log_lb γ gid (clog ++ ccmds) -∗
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid (clog ++ ccmds) ∗
-    own_replica_ilog_half γ rid ilog ∗
+    own_replica_clog_half γ gid rid (clog ++ ccmds) ∗
+    own_replica_ilog_half γ gid rid ilog ∗
     group_inv γ gid ∗
     replica_inv γ gid rid.
   Proof.

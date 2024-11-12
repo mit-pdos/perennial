@@ -439,7 +439,7 @@ Section res.
 
     (** Prophecy variable predicting a global trace of transaction commands. *)
 
-    Definition own_txn_proph γ (p : proph_id) (acts : list action) : iProp Σ.
+    Definition own_txn_proph (p : proph_id) (acts : list action) : iProp Σ.
     Admitted.
 
   End txn_proph.

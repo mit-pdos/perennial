@@ -86,8 +86,8 @@ Section inv.
       (histm : gmap dbkey dbhist) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat),
       let log := merge_clog_ilog clog ilog in
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
-      "Hclog"     ∷ own_replica_clog_half γ rid clog ∗
-      "Hilog"     ∷ own_replica_ilog_half γ rid ilog ∗
+      "Hclog"     ∷ own_replica_clog_half γ gid rid clog ∗
+      "Hilog"     ∷ own_replica_ilog_half γ gid rid ilog ∗
       "Hkvdm"     ∷ ([∗ map] k ↦ vd ∈ kvdm, own_replica_key_validation γ gid rid k vd) ∗
       "Hbm"       ∷ replica_inv_ballot_map γ gid rid bm ∗
       "Hbackup"   ∷ replica_inv_backup γ gid rid bm ∗

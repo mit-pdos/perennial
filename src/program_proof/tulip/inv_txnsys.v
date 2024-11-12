@@ -333,7 +333,7 @@ Section inv.
 
   Definition txnsys_inv_with_future_no_ts γ p ts future : iProp Σ :=
     (* prophecy variable *)
-    "Hproph"  ∷ own_txn_proph γ p future ∗
+    "Hproph"  ∷ own_txn_proph p future ∗
     "Htxnsys" ∷ txnsys_inv_no_ts_no_future γ ts future.
 
   Definition txnsys_inv γ p : iProp Σ :=
@@ -341,7 +341,7 @@ Section inv.
       (* largest assigned timestamp *)
       "Hts"     ∷ own_largest_ts γ ts ∗
       (* prophecy variable *)
-      "Hproph"  ∷ own_txn_proph γ p future ∗
+      "Hproph"  ∷ own_txn_proph p future ∗
       "Htxnsys" ∷ txnsys_inv_no_ts_no_future γ ts future.
 
   Lemma txnsys_inv_expose_future_extract_ts γ p :
@@ -351,11 +351,11 @@ Section inv.
 
   Lemma txnsys_inv_extract_future γ p :
     txnsys_inv γ p -∗
-    ∃ future, own_txn_proph γ p future ∗ txnsys_inv_no_future γ future.
+    ∃ future, own_txn_proph p future ∗ txnsys_inv_no_future γ future.
   Proof. iIntros "Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
 
   Lemma txnsys_inv_merge_future γ p future :
-    own_txn_proph γ p future -∗
+    own_txn_proph p future -∗
     txnsys_inv_no_future γ future -∗
     txnsys_inv γ p.
   Proof. iIntros "Hproph Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.

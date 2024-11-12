@@ -501,6 +501,10 @@ Section merge_clog_ilog.
   Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
   Admitted.
 
+  Lemma merge_clog_ilog_nil :
+    merge_clog_ilog [] [] = [].
+  Admitted.
+
   Lemma merge_clog_ilog_snoc_clog clog ilog ccmd :
     Forall (λ nc, (nc.1 ≤ length clog)%nat) ilog ->
     merge_clog_ilog (clog ++ [ccmd]) ilog =
@@ -519,4 +523,5 @@ Section merge_clog_ilog.
         execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim) ->
     apply_cmds clog = State cm histm.
   Admitted.
+
 End merge_clog_ilog.

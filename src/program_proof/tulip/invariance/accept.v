@@ -53,11 +53,11 @@ Section accept.
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     accept_requirement st ts rk ->
     (if decide (rk = O) then True else is_group_prepare_proposal γ gid ts rk p) -∗
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid clog ∗
-    own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdAccept ts rk p)]) ∗
+    own_replica_clog_half γ gid rid clog ∗
+    own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdAccept ts rk p)]) ∗
     replica_inv γ gid rid ∗
     is_replica_pdec_at_rank γ gid rid ts rk p.
   Proof.

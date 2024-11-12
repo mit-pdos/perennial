@@ -52,11 +52,11 @@ Section validate.
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     validate_requirement st ts pwrs ->
     safe_txn_pwrs γ gid ts pwrs -∗
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid clog ∗
-    own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdAcquire ts pwrs ptgs)]) ∗
+    own_replica_clog_half γ gid rid clog ∗
+    own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdAcquire ts pwrs ptgs)]) ∗
     replica_inv γ gid rid ∗
     is_replica_validated_ts γ gid rid ts.
   Proof.
