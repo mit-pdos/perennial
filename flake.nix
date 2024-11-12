@@ -32,6 +32,7 @@
 
           # grackle
           grackle
+          protobuf
         ];
 
         shellHook = ''
