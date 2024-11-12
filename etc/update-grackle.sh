@@ -21,18 +21,35 @@ coq_logical_name() {
 # Run grackle on the input go package.
 #
 # We will assume that:
-# 1. The proto file is in the directory $1/$2
+# 1. The proto file is in the directory $2/$1
 # 2. We only want to output coq code
-# 3. The coq code should be output into $2
+# 3. The coq code should be output into "src/program_proof/$1"
 # 4. The desired coq package matches the directory structure
 # 5. Grackle is on your $PATH
 #
 # Parameters
-# - $1 : path to go repo with proto files
-# - $2 : go package in that repo we're grackling
-# - $3 : path to output in perennial
+# - $1 : Name of the go package inside its repo
+# - $2 : Path to the root of the go repo. Go package to translate should be at "$2/$1"
+# - $3 : Prefix to compute the go package name, "$3/$1"
 run_grackle() {
-    echo grackle --coq-logical-path "Perennial.program_proof.$(coq_logical_name $3)" --coq-physical-path "src/program_proof/$3" "$1/$2"
+    grackle --coq-logical-path "Perennial.program_proof.$(coq_logical_name $1)" --coq-physical-path "src/program_proof/$1" --go-package "$3/$1" $(realpath "$2/$1")
+}
+
+# Generate Coq files from gokv repo.
+#
+# Parameters
+# - $1 : Path to the gokv repo.
+grackle_gokv() {
+    gokv_packages=(
+        "tutorial/kvservice"
+        "tutorial/lockservice"
+        "tutorial/objectstore/chunk"
+        "tutorial/objectstore/dir"
+    )
+
+    for gopkg in "${gokv_packages[@]}"; do
+        run_grackle "$gopkg" "$1" "github.com/mit-pdos/gokv"
+    done
 }
 
 ARGS=$(getopt -o "c:g:h" --long "compile-grackle:,gokv:,help" -- "$@")
@@ -50,11 +67,14 @@ while [ $# -ge 1 ]; do
         ;;
     -h | --help)
         cat <<EOF
-usage: update-grackle.sh [--compile-grackle <grackle repo> | -c <grackle repo>] [--help | -h]
+usage: update-grackle.sh [--compile-grackle <grackle repo> | -c <grackle repo>]
+                         [--gokv | -g] [--help | -h]
 
 Calls grackle on all gokv go modules known to have proto files for grackle usage, generating coq proofs.
 
---compile-grackle [-g] : Takes the path to the grackle repository, recompiles and installs grackle
+--compile-grackle [-c] : Takes the path to the grackle repository, recompiles and installs grackle
+
+--gokv [-g] : Regenerate Coq proofs for the gokv project
 EOF
         shift
         exit 0
@@ -66,20 +86,3 @@ EOF
     esac
     shift
 done
-
-# Generate Coq files from gokv repo.
-#
-# Parameters
-# - $1 : Path to the gokv repo.
-grackle_gokv() {
-    gokv_packages=(
-        "tutorial/kvservice"
-        "tutorial/lockservice"
-        "tutorial/objectstore/chunk"
-        "tutorial/objectstore/dir"
-    )
-
-    for gopkg in "${gokv_packages[@]}"; do
-        run_grackle "$1" "$gopkg" "program_proof/$gokv"
-    done
-}
