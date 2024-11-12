@@ -28,7 +28,7 @@
         # create an environment with the required coq libraries
         packages = with pkgs; [
           # coq deps
-          coqc
+          coq
 
           # grackle
           grackle
