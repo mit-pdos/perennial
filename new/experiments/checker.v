@@ -1,14 +1,15 @@
 From New.golang Require Import defn.
 From New.proof Require Import grove_prelude.
 From New.code.go_etcd_io.raft Require Import v3.
-Import Ltac2.
+From Ltac2 Require Import Ltac2.
+Set Default Proof Mode "Classic".
 
 Module expr.
 
+Import Ltac2.
 Inductive t :=
-| RawExpr (e : expr)
 | Named (n : string)
-| App (f : t) (args : list t)
+| App (f : t) (arg : t)
 | Val {V:Type} `{!IntoVal V} (v : V)
 | Rec (f x : binder) (body : t)
 | Var (x : string)
@@ -31,9 +32,8 @@ Definition ctx : Type := (gmap string val).
 
 Fixpoint interp (Γ : ctx) (e : t) {struct e} : expr :=
   match e with
-  | RawExpr e => e
   | Named n => goose_lang.Val (default (LitV LitPoison) (Γ !! n))
-  | App f args => fold_left goose_lang.App ((interp Γ) <$> args) (interp Γ f)
+  | App f arg => goose_lang.App (interp Γ f) (interp Γ arg)
   | Val v => (goose_lang.Val #v)
   | Rec f x e => goose_lang.Rec f x (interp Γ e)
   | Var x => goose_lang.Var x
@@ -64,7 +64,7 @@ Ltac2 rec reify (e : constr) (Γ : constr) : (constr * constr) :=
   lazy_match! e with
   | @goose_lang.App _ ?e1 ?e2 => let (e1, Γ) := reify e1 Γ in
                                 let (e2, Γ) := reify e2 Γ in
-                                ('(App $e1 [$e2]), Γ)
+                                ('(App $e1 $e2), Γ)
   | @goose_lang.Val _ (@to_val _ ?vt ?h ?v) => ('(@Val $vt $h $v), Γ)
   | @goose_lang.Val _ (ref_ty ?t) => ('(@RefTy $t), Γ)
   | @goose_lang.Val _ (load_ty ?t) => ('(@LoadTy $t), Γ)
@@ -102,8 +102,14 @@ Ltac2 rec reify (e : constr) (Γ : constr) : (constr * constr) :=
       ('(If $e0 $e1 $e2), Γ)
   | @goose_lang.Fst _ ?e => let (e, Γ) := reify e Γ in ('(Fst $e), Γ)
   | _ => Control.zero (Reify_unsupported "" e)
-  end
-.
+  end.
+
+End expr.
+
+Module go_prop.
+Inductive t :=
+| heap_pointsto {V:Type} `{!IntoVal V} (l : string) (dq : dfrac) (v : V).
+End go_prop.
 
 Notation e := (
   rec: "newNetworkWithConfigInit" "configFunc" "peers" :=
@@ -165,52 +171,94 @@ Notation e := (
      return: #()
      ))))%E.
 
-Definition x : (t * ctx)%type.
-  Time unshelve (let (x, Γ):=(reify 'e '(∅ : ctx)) in
+Definition x : (expr.t * expr.ctx)%type.
+  unshelve ltac2:(let (x, Γ):=(expr.reify 'e '(∅ : expr.ctx)) in
             refine '($x, $Γ));
-  try ltac1:(tc_solve).
+  try tc_solve.
 Defined.
 
-Check eq_refl : (interp x.2 x.1 = e).
+Definition subst (x : binder) (v : expr.t) (e : expr.t) : expr.t :=
+  match x with
+  | <>%binder => e
+  | BNamed x =>
+      (fix subst e : expr.t :=
+         match e with
+         | expr.App e1 e2 => expr.App (subst e1) (subst e2)
+         | expr.Rec f x' ebody =>
+             if decide (x' = BNamed x ∨ f = BNamed x) then e
+             else expr.Rec f x' (subst ebody)
+         | expr.Var x' => if String.eqb x' x then v else e
+         | expr.BinOp o e1 e2 => expr.BinOp o (subst e1) (subst e2)
+         | expr.UnOp o e1 => expr.UnOp o (subst e1)
+         | expr.If e0 e1 e2 => expr.If (subst e0) (subst e1) (subst e2)
+         | expr.Fst e' => expr.Fst (subst e')
+         | _ => e
+         end
+      ) e
+  end.
 
-End expr.
+Definition step_pure (e : expr.t) : option expr.t :=
+  match e with
+  | expr.App (expr.Rec f x e') (expr.Val v) =>
+      Some (subst x (expr.Val v) (subst f (expr.Rec f x e') e'))
+  | _ => Datatypes.None
+  end.
 
-Module iprop.
+Definition step_ref_ty (e : expr.t) (s : list go_prop.t) : option (expr.t * list go_prop.t) :=
+  match e with
+  | expr.App (expr.RefTy t) (expr.Val v) =>
+      Some (expr.Val (), (go_prop.heap_pointsto "ptr" (DfracOwn 1) v) :: s)
+  | _ => Datatypes.None
+  end.
 
-Inductive t :=
-| heap_points_to (x : loc) (v : w64)
-.
-Section def.
-Context `{!heapGS Σ}.
-Definition interp (a : t) : iProp Σ :=
-  match a with
-  | heap_points_to x v => x ↦ v
+Definition walk_expr (f : expr.t → option expr.t) (e : expr.t) : option expr.t :=
+  (fix walk (e : expr.t) :=
+     match (f e) with
+     | Some a => Some a
+     | _ =>
+         match e with
+         | expr.App e1 (expr.Val v) => match (walk e1) with
+                                      | Some e1' => Some (expr.App e1' (expr.Val v))
+                                      | _ => Datatypes.None
+                                      end
+         | expr.App e1 e2 => match (walk e2) with
+                            | Some e2' => Some (expr.App e1 e2')
+                            | _ => Datatypes.None
+                            end
+         | _ => Datatypes.None
+         end
+     end
+  ) e.
+
+(*
+   try (f e);
+   if failed, modify e by recursing down.
+   Then, try (f e) again.
+*)
+
+Fixpoint pure_steps (fuel : nat) (e : expr.t) : (string * expr.t) :=
+  match fuel with
+  | S fuel =>
+      match (walk_expr pure_step e) with
+      | Some e' => pure_steps fuel e'
+      | _ => ("no known steps", e)
+      end
+  | _ => ("out of fuel", e)
   end
-.
-End def.
-End iprop.
+  .
 
-Module proof_state.
-Record t :=
-  mk {
-      hyps : list (iprop.t);
-      prg : expr
-    }.
+Definition e_reified : expr.t.
+  unshelve ltac2:(let (x, _):=(expr.reify '(e #func.nil #slice.nil) '(∅ : expr.ctx)) in
+            refine x);
+  try tc_solve.
+Defined.
 
-Section def.
-Context `{!heapGS Σ}.
-Definition interp (a : t) : Prop :=
-  ([∗ list] p ∈ a.(hyps), iprop.interp p) -∗
-  WP a.(prg) {{ _, True }}.
-End def.
-End proof_state.
+Lemma y : ∃ f, (pure_steps f e_reified) = ("ok", expr.Named "bad").
+Proof.
+  unfold e_reified.
+  simpl.
+  exists 3%nat.
+  Time simpl.
+  Time vm_compute.
 
-Section checker_proof.
-
-Axiom checker : val.
-Context `{!heapGS Σ}.
-
-(* Axiom own_Expr : ∀ (l : loc) (e : expr), iProp Σ. *)
-Axiom own_ProofState : ∀ (l : loc) (e : proof_state.t), iProp Σ.
-
-End checker_proof.
+Time Eval simpl in (pure_steps 3 e_reified).
