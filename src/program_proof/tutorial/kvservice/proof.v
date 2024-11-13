@@ -6,6 +6,10 @@ From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang.automation Require Import extra_tactics.
 From Perennial.goose_lang Require Import proofmode.
 
+From Perennial.program_proof.tutorial.kvservice Require Import get_proof.
+From Perennial.program_proof.tutorial.kvservice Require Import conditionalput_proof.
+From Perennial.program_proof.tutorial.kvservice Require Import put_proof.
+
 Unset Printing Projections.
 
 (********************************************************************************)
@@ -623,6 +627,9 @@ Proof.
   wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
   iNamed "Hargs".
   wp_auto.
+
+  wp_loadField.
+
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
   wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
