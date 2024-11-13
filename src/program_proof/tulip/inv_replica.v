@@ -98,8 +98,8 @@ Section inv.
       "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim⌝ ∗
       "%Hvtss"    ∷ ⌜vtss ⊆ dom cm ∪ dom cpm⌝ ∗
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
-      "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = spts) kvdm sptsm⌝ ∗
-      "%Hsptsmlk" ∷ ⌜map_Forall2 (λ _ spts pts, pts ≠ O -> spts = S pts) sptsm ptsm⌝ ∗
+      "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = S spts) kvdm sptsm⌝ ∗
+      "%Hsptsmlk" ∷ ⌜map_Forall2 (λ _ spts pts, pts ≠ O -> spts = pts) sptsm ptsm⌝ ∗
       "%Hpil"     ∷ ⌜prepared_impl_locked_cpm cpm ptsm⌝ ∗
       "%Hcpmnz"   ∷ ⌜cpm !! O = None⌝ ∗
       "%Hbmlaim"  ∷ ⌜map_Forall2 (λ _ l n, latest_term l = n ∧ ∃ p, l !! n = Some (Accept p)) bm laim⌝.

@@ -105,7 +105,7 @@ Section local_read.
       by rewrite insert_id.
     }
     (* Case: Key not locked. *)
-    destruct (decide (rts ≤ spts)%nat) as [Hle | Hgt].
+    destruct (decide (pred rts ≤ spts)%nat) as [Hle | Hgt].
     { (* Case: [rts ≤ spts]. No extension required. *)
       iAssert (read_promise γ gid rid key (pred (length hist)) rts)%I as "#Hpromise".
       { iDestruct (replica_key_validation_witness with "Hkvd") as "#Hkvdlb".
@@ -150,7 +150,7 @@ Section local_read.
       { iPureIntro. rewrite extend_length. clear -Hlenvd Hgt. lia. }
       iApply big_sepL_forall.
       iIntros (t b Hb [Htge ->]).
-      destruct (decide (t < spts)%nat) as [Hlt | Hge].
+      destruct (decide (t < S spts)%nat) as [Hlt | Hge].
       { rewrite lookup_extend_l in Hb; last first.
         { clear -Hlenvd Hlt. lia. }
         iSpecialize ("Hgabt" $! key t).
@@ -164,7 +164,8 @@ Section local_read.
       apply lookup_lt_Some in Hb as Htlt.
       rewrite extend_length in Htlt.
       rewrite lookup_extend_r in Hb; first done.
-      clear -Hlenvd Hgt Hge Htlt. lia.
+      clear -Hlenvd Hgt Hge Htlt.
+      lia.
     }
     iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
     rewrite insert_delete_insert.
@@ -181,10 +182,11 @@ Section local_read.
         clear -Hlenvd Hgerts Hgt. lia.
       }
       rewrite Nat.nle_gt in Hltrts.
-      destruct (decide (t < spts)%nat) as [Hltspts | Hgespts]; last first.
+      destruct (decide (t < S spts)%nat) as [Hltspts | Hgespts]; last first.
       { rewrite Nat.nlt_ge in Hgespts.
         rewrite lookup_extend_r; first done.
-        clear -Hlenvd Hltrts Hgespts. lia.
+        clear -Hlenvd Hltrts Hgespts.
+        lia.
       }
       rewrite lookup_extend_l; last first.
       { clear -Hlenvd Hltspts. lia. }
@@ -193,7 +195,7 @@ Section local_read.
     }
     iPureIntro.
     rewrite (lookup_alter_Some _ _ _ _ Hspts).
-    replace (_ `max` _)%nat with rts by lia.
+    replace (_ `max` _)%nat with (pred rts) by lia.
     split.
     { rewrite dom_insert_L.
       apply elem_of_dom_2 in Hvd.

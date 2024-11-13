@@ -22,13 +22,13 @@ Section validate.
   Qed.
 
   Definition validated_sptsm (sptsm : gmap dbkey nat) (ts : nat) (pwrs : dbmap) :=
-    map_Forall (λ _ spts, (spts ≤ ts)%nat) (filter (λ kn, kn.1 ∈ dom pwrs) sptsm).
+    map_Forall (λ _ spts, (spts < ts)%nat) (filter (λ kn, kn.1 ∈ dom pwrs) sptsm).
 
   Lemma validated_sptsm_lookup {sptsm ts pwrs k spts} :
     validated_sptsm sptsm ts pwrs ->
     sptsm !! k = Some spts ->
     k ∈ dom pwrs ->
-    (spts ≤ ts)%nat.
+    (spts < ts)%nat.
   Proof.
     intros Hvd Hspts Hinpwrs.
     set f := λ kn : dbkey * nat, kn.1 ∈ dom pwrs.

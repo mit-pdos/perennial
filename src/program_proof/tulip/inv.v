@@ -231,7 +231,7 @@ Section alloc.
       set kvdm := gset_to_gmap [false] keys_all.
       set histm := gset_to_gmap [(None : dbval)] keys_all.
       set ptsgm := gset_to_gmap O keys_all.
-      set sptsgm := gset_to_gmap 1%nat keys_all.
+      set sptsgm := gset_to_gmap O keys_all.
       iExists ∅, ∅, kvdm, ∅, histm, ∅, sptsgm, ptsgm.
       iSplitL "Hkvdm".
       { iApply (big_sepS_sepM_impl with "Hkvdm").
@@ -279,7 +279,7 @@ Section alloc.
       }
       split.
       { rewrite map_Forall2_forall.
-        split; last by rewrite 2!dom_gset_to_gmap.
+        split; last by rewrite dom_gset_to_gmap.
         intros k x y Hx Hy Hnz.
         apply lookup_gset_to_gmap_Some in Hx as [_ <-].
         by apply lookup_gset_to_gmap_Some in Hy as [_ <-].

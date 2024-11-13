@@ -419,7 +419,7 @@ Section execute_cmds.
     | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
         LocalState
           cm hists (<[tid := pwrs]> cpm) (<[tid := ptgs]> ptgsm)
-          (setts (S tid) pwrs sptsm) (acquire tid pwrs ptsm) bm laim
+          (setts tid pwrs sptsm) (acquire tid pwrs ptsm) bm laim
     | LocalStuck => LocalStuck
     end.
 
@@ -427,7 +427,7 @@ Section execute_cmds.
     match st with
     | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
         LocalState
-          cm hists cpm ptgsm (alter (λ spts, (spts `max` tid)%nat) key sptsm) ptsm bm laim
+          cm hists cpm ptgsm (alter (λ spts, (spts `max` pred tid)%nat) key sptsm) ptsm bm laim
     | LocalStuck => LocalStuck
     end.
 
@@ -472,8 +472,8 @@ Section execute_cmds.
                  end
     end.
 
-  Definition init_sptsm : gmap dbkey nat := gset_to_gmap 1%nat keys_all.
-  Definition init_ptsm : gmap dbkey nat := gset_to_gmap O%nat keys_all.
+  Definition init_sptsm : gmap dbkey nat := gset_to_gmap O keys_all.
+  Definition init_ptsm : gmap dbkey nat := gset_to_gmap O keys_all.
   Definition init_rpst :=
     LocalState ∅ init_hists ∅ ∅ init_sptsm init_ptsm ∅ ∅.
 
