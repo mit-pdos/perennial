@@ -351,7 +351,7 @@ Section res.
     (** Consensus resource with transaction semantics. One half owned by the
     group invariant, the other half by the txnlog invariant. *)
 
-    Definition own_txn_log_half γ (gid : u64) (log : dblog) : iProp Σ.
+    Definition own_txn_log γ (gid : u64) (log : dblog) : iProp Σ.
     Admitted.
 
     Definition is_txn_log_lb γ (gid : u64) (log : dblog) : iProp Σ.
@@ -365,7 +365,7 @@ Section res.
     Definition is_txn_log_lbs γ (logs : gmap u64 dblog) : iProp Σ :=
       [∗ map] gid ↦ log ∈ logs, is_txn_log_lb γ gid log.
 
-    Definition own_txn_cpool_half γ (gid : u64) (cpool : gset ccommand) : iProp Σ.
+    Definition own_txn_cpool γ (gid : u64) (cpool : gset ccommand) : iProp Σ.
     Admitted.
 
     Definition is_proposed_txn_cmd γ (gid : u64) (lsn : nat) (term : nat) (c : ccommand) : iProp Σ.
@@ -377,12 +377,12 @@ Section res.
     Admitted.
 
     Lemma txn_log_witness γ gid log :
-      own_txn_log_half γ gid log -∗
+      own_txn_log γ gid log -∗
       is_txn_log_lb γ gid log.
     Admitted.
 
     Lemma txn_log_prefix γ gid log logp :
-      own_txn_log_half γ gid log -∗
+      own_txn_log γ gid log -∗
       is_txn_log_lb γ gid logp -∗
       ⌜prefix logp log⌝.
     Admitted.
@@ -403,18 +403,94 @@ Section res.
       Forall (λ c, c ∈ cpool) log.
 
     Lemma txn_log_cpool_incl γ gid log cpool :
-      own_txn_log_half γ gid log -∗
-      own_txn_cpool_half γ gid cpool -∗
+      own_txn_log γ gid log -∗
+      own_txn_cpool γ gid cpool -∗
       ⌜cpool_subsume_log cpool log⌝.
     Admitted.
 
     Lemma txn_log_update γ gid log cpool v :
       v ∈ cpool ->
-      own_txn_log_half γ gid log -∗
-      own_txn_cpool_half γ gid cpool ==∗
-      own_txn_log_half γ gid (log ++ [v]).
+      own_txn_log γ gid log -∗
+      own_txn_cpool γ gid cpool ==∗
+      own_txn_log γ gid (log ++ [v]).
     Admitted.
 
   End txn_consensus.
 
 End res.
+
+Section alloc.
+  Context `{!tulip_ghostG Σ}.
+
+  Definition replica_init_res γ (g : u64) : iProp Σ :=
+    (* per-replica validated transaction IDs *)
+    ([∗ set] r ∈ rids_all, own_replica_validated_tss γ g r ∅) ∗
+    (* per-replica validation history *)
+    ([∗ set] r ∈ rids_all, [∗ set] k ∈ keys_all, own_replica_key_validation γ g r k [false]) ∗
+    (* per-replica consistent log *)
+    ([∗ set] r ∈ rids_all, own_replica_clog_half γ g r []) ∗
+    (* per-replica inconsistent log *)
+    ([∗ set] r ∈ rids_all, own_replica_ilog_half γ g r []) ∗
+    (* per-replica vote-history map *)
+    ([∗ set] r ∈ rids_all, own_replica_ballot_map γ g r ∅) ∗
+    (* per-replica backup-vote map *)
+    ([∗ set] r ∈ rids_all, own_replica_backup_vote_map γ g r ∅) ∗
+    (* per-replica backup-tokens map *)
+    ([∗ set] r ∈ rids_all, own_replica_backup_tokens_map γ g r ∅).
+
+  Lemma tulip_res_alloc :
+    ⊢ |==> ∃ γ,
+      (* database points-to | client *)
+      ([∗ set] k ∈ keys_all, own_db_ptsto γ k None) ∗
+      (* transaction result map | txnsys *)
+      own_txn_resm γ ∅ ∗
+      (* transaction write-set | txnsys *)
+      own_txn_oneshot_wrsm γ ∅ ∗
+      (* IDs of linearized transaction | txnsys *)
+      own_lnrz_tids γ ∅ ∗
+      (* IDs of transaction predicted to abort | txnsys *)
+      own_wabt_tids γ ∅ ∗
+      (* IDs and write-sets of transaction predicted to commit or has committed | txnsys *)
+      own_cmt_tmods γ ∅ ∗
+      (* exclusive transaction tokens to partition predictions | txnsys *)
+      own_excl_tids γ ∅ ∗
+      (* exclusive (transaction, group) tokens for ownerhsip of slow-path prepare proposal | txnsys *)
+      own_txn_client_tokens γ ∅ ∗
+      (* transaction post-condition | txnsys *)
+      own_txn_postconds γ ∅ ∗
+      (* largest assigned timestamp | txnsys *)
+      own_largest_ts γ O ∗
+      (* database points-to | key *)
+      ([∗ set] k ∈ keys_all, own_db_ptsto γ k None) ∗
+      (* per-key replicated tuples | group / key *)
+      ([∗ set] k ∈ keys_all, own_repl_hist_half γ k [None]) ∗
+      ([∗ set] k ∈ keys_all, own_repl_hist_half γ k [None]) ∗
+      ([∗ set] k ∈ keys_all, own_repl_ts_half γ k O) ∗
+      ([∗ set] k ∈ keys_all, own_repl_ts_half γ k O) ∗
+      (* per-key committed history | txnsys *)
+      ([∗ set] k ∈ keys_all, own_cmtd_hist γ k [None]) ∗
+      (* per-key linearized history | txnsys *)
+      ([∗ set] k ∈ keys_all, own_lnrz_hist γ k [None]) ∗
+      (* per-key linearized modification | txnsys / key *)
+      ([∗ set] k ∈ keys_all, own_lnrz_kmod_half γ k ∅) ∗
+      ([∗ set] k ∈ keys_all, own_lnrz_kmod_half γ k ∅) ∗
+      (* per-key committed modification | txnsys / key *)
+      ([∗ set] k ∈ keys_all, own_cmtd_kmod_half γ k ∅) ∗
+      ([∗ set] k ∈ keys_all, own_cmtd_kmod_half γ k ∅) ∗
+      (* per-group txn consensus | group *)
+      ([∗ set] g ∈ gids_all, own_txn_log γ g []) ∗
+      ([∗ set] g ∈ gids_all, own_txn_cpool γ g ∅) ∗
+      (* per-group prepare map | group *)
+      ([∗ set] g ∈ gids_all, own_group_prepm γ g ∅) ∗
+      (* per-group prepare proposal map | group *)
+      ([∗ set] g ∈ gids_all, own_group_prepare_proposals_map γ g ∅) ∗
+      (* per-group prepare map | group *)
+      ([∗ set] g ∈ gids_all, own_group_commit_map γ g ∅) ∗
+      (* per-replica resources *)
+      ([∗ set] g ∈ gids_all, replica_init_res γ g) ∗
+      (* per-replica logs | replica lock *)
+      ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
+         own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []).
+  Admitted.
+
+End alloc.

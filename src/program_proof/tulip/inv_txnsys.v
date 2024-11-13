@@ -281,7 +281,7 @@ Section inv.
   Definition txnsys_inv_no_ts_no_future γ ts future : iProp Σ :=
     ∃ (tids tidas : gset nat) (past : list action)
       (tmods tmodcs : gmap nat dbmap) (tmodas : gmap nat tcform) (posts : gmap nat (dbmap -> Prop))
-      (resm : gmap nat txnres) (wrsm : gmap nat (option dbmap)),
+      (resm : gmap nat txnres) (wrsm : gmap nat (option dbmap)) (ctm : gmap nat (gset u64)),
       (* witnesses of txn linearization *)
       "Htxnsl" ∷ own_lnrz_tids γ tids ∗
       (* exclusive transaction IDs *)
@@ -297,6 +297,8 @@ Section inv.
       "Hresm"  ∷ own_txn_resm γ resm ∗
       (* transaction write-set map *)
       "Hwrsm"  ∷ own_txn_oneshot_wrsm γ wrsm ∗
+      (* transaction client tokens *)
+      "Hctm"   ∷ own_txn_client_tokens γ ctm ∗
       (* key modifications *)
       "Hkmodls" ∷ ([∗ set] key ∈ keys_all, own_lnrz_kmod_half γ key (vslice tmodcs key)) ∗
       "Hkmodcs" ∷ ([∗ set] key ∈ keys_all, own_cmtd_kmod_half γ key (vslice (resm_to_tmods resm) key)) ∗
@@ -316,6 +318,7 @@ Section inv.
       "%Htidas"  ∷ ⌜dom tmodas = tidas⌝ ∗
       "%Hdomq"   ∷ ⌜dom posts = tids⌝ ∗
       "%Hdomw"   ∷ ⌜dom wrsm = tids⌝ ∗
+      "%Hdomctm" ∷ ⌜dom ctm = tids⌝ ∗
       "%Hcmtxn"  ∷ ⌜cmtxn_in_past past resm⌝ ∗
       "%Hwrsm"   ∷ ⌜map_Forall (λ tid wrs, valid_ts tid ∧ valid_wrs wrs) (wrsm_dbmap wrsm)⌝ ∗
       "%Hnz"     ∷ ⌜nz_all (dom tmodcs)⌝ ∗
@@ -330,7 +333,7 @@ Section inv.
 
   Definition txnsys_inv_with_future_no_ts γ p ts future : iProp Σ :=
     (* prophecy variable *)
-    "Hproph"  ∷ own_txn_proph γ p future ∗
+    "Hproph"  ∷ own_txn_proph p future ∗
     "Htxnsys" ∷ txnsys_inv_no_ts_no_future γ ts future.
 
   Definition txnsys_inv γ p : iProp Σ :=
@@ -338,7 +341,7 @@ Section inv.
       (* largest assigned timestamp *)
       "Hts"     ∷ own_largest_ts γ ts ∗
       (* prophecy variable *)
-      "Hproph"  ∷ own_txn_proph γ p future ∗
+      "Hproph"  ∷ own_txn_proph p future ∗
       "Htxnsys" ∷ txnsys_inv_no_ts_no_future γ ts future.
 
   Lemma txnsys_inv_expose_future_extract_ts γ p :
@@ -348,11 +351,11 @@ Section inv.
 
   Lemma txnsys_inv_extract_future γ p :
     txnsys_inv γ p -∗
-    ∃ future, own_txn_proph γ p future ∗ txnsys_inv_no_future γ future.
+    ∃ future, own_txn_proph p future ∗ txnsys_inv_no_future γ future.
   Proof. iIntros "Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
 
   Lemma txnsys_inv_merge_future γ p future :
-    own_txn_proph γ p future -∗
+    own_txn_proph p future -∗
     txnsys_inv_no_future γ future -∗
     txnsys_inv γ p.
   Proof. iIntros "Hproph Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.

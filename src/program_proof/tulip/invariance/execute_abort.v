@@ -8,12 +8,12 @@ Section execute_abort.
     let clog' := clog ++ [CmdAbort ts] in
     Forall (λ nc, (nc.1 <= length clog)%nat) ilog ->
     is_txn_log_lb γ gid clog' -∗
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid clog' ∗
-    own_replica_ilog_half γ rid ilog ∗
+    own_replica_clog_half γ gid rid clog' ∗
+    own_replica_ilog_half γ gid rid ilog ∗
     group_inv γ gid ∗
     replica_inv γ gid rid.
   Proof.
@@ -53,7 +53,7 @@ Section execute_abort.
     (* Update the consistent log. *)
     iMod (replica_clog_update clog' with "Hclogprog Hclog") as "[Hclogprog Hclog]".
     rewrite /not_stuck apply_cmds_snoc /= in Hns.
-    set st := LocalState _ _ _ _ _ _ in Hrsm.
+    set st := LocalState _ _ _ _ _ _ _ _ in Hrsm.
     (* Re-establish the RSM predicate. This will compute to the right form along
     the way in each branch. *)
     assert (Hrsm' : execute_cmds (merge_clog_ilog clog' ilog) = execute_abort st ts).
@@ -62,7 +62,7 @@ Section execute_abort.
     }
     iFrame "Hclogprog Hilogprog Hgroup".
     unshelve epose proof (execute_cmds_apply_cmds clog ilog cm histm _) as Happly.
-    { by eauto. }
+    { by eauto 10. }
     rewrite /apply_abort Happly in Hns.
     subst st.
     rewrite /execute_abort in Hrsm'.

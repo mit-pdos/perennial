@@ -166,4 +166,9 @@ Section lemma.
     (l ++ [x]) !! length l = Some x.
   Proof. rewrite lookup_snoc_Some. by right. Qed.
 
+  Lemma lookup_snoc_length' l n x :
+    n = length l ->
+    (l ++ [x]) !! n = Some x.
+  Proof. intros ->. apply lookup_snoc_length. Qed.
+
 End lemma.

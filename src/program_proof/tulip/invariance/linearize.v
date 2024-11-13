@@ -274,7 +274,8 @@ Section inv.
     own_txn_reserved_wrs γ tid ∗
     is_txn_postcond γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
-    is_lnrz_tid γ tid.
+    is_lnrz_tid γ tid ∗
+    ([∗ set] gid ∈ gids_all, own_txn_client_token γ tid gid).
   Proof.
     iIntros (Qr Hdomrds Hts Hcft Hifcc) "#Htslb Hpts Htxnsys Hkeys".
     do 2 iNamed "Htxnsys".
@@ -296,6 +297,9 @@ Section inv.
     (* Update [tids_excl_auth]. *)
     iMod (excl_tid_insert _ _ tid with "Hexcl") as "[Hexcl Hexcltid]".
     { apply Hnotin. }
+    (* Allocate [own_txn_client_token]. *)
+    iMod (txn_client_token_insert tid gids_all with "Hctm") as "[Hctm Hcts]".
+    { apply not_elem_of_dom. by rewrite Hdomctm. }
     (* Allocate [own_txn_reserved_wrs]. *)
     assert (Hnotinwrsm : wrsm !! tid = None).
     { rewrite -not_elem_of_dom Hdomw. apply Hnotin. }
@@ -351,12 +355,8 @@ Section inv.
     iSplit; first done.
     iPureIntro.
     split; first set_solver.
-    by rewrite 3!dom_insert_L Hdomq Hdomw Htidas.
+    by rewrite 4!dom_insert_L Hdomq Hdomw Hdomctm Htidas.
   Qed.
-
-  (* Do this at linearization point:
-     destruct (decide (Q rds wrs ∧ dom wrs ⊆ dom rds)) as [[_ Hdomwrs] | Hneg]; last first.
-   *)
 
   Lemma txnsys_inv_linearize_commit {γ p ts tid future rds} wrs Q :
     let Qr := λ m, Q rds (m ∪ rds) ∧ dom m ⊆ dom rds in
@@ -375,7 +375,8 @@ Section inv.
     own_txn_reserved_wrs γ tid ∗
     is_txn_postcond γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
-    is_lnrz_tid γ tid.
+    is_lnrz_tid γ tid ∗
+    ([∗ set] gid ∈ gids_all, own_txn_client_token γ tid gid).
   Proof.
     iIntros (Qr Hdomwrs Hdomrds Hts Hfcc) "#Htslb Hpts Htxnsys Hkeys".
     do 2 iNamed "Htxnsys".
@@ -392,6 +393,9 @@ Section inv.
     (* Update [tids_excl_auth]. *)
     iMod (excl_tid_insert _ _ tid with "Hexcl") as "[Hexcl Hexcltid]".
     { apply Hnotin. }
+    (* Allocate [own_txn_client_token]. *)
+    iMod (txn_client_token_insert tid gids_all with "Hctm") as "[Hctm Hcts]".
+    { apply not_elem_of_dom. by rewrite Hdomctm. }
     (* Prove [tmodcs !! tid = None]. *)
     iAssert (⌜tmodcs !! tid = None⌝)%I as %Hnotintmodcs.
     { iNamed "Hpart".
@@ -518,8 +522,8 @@ Section inv.
       intros Htm.
       by specialize (Htidcs _ _ Htm).
     }
-    rewrite 2!dom_insert_L Hdomq Hdomw.
-    do 3 (split; first done).
+    rewrite 3!dom_insert_L Hdomq Hdomw Hdomctm.
+    do 4 (split; first done).
     split.
     { rewrite dom_insert_L.
       apply set_Forall_union; last apply Hnz.

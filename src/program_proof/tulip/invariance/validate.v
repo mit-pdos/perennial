@@ -22,13 +22,13 @@ Section validate.
   Qed.
 
   Definition validated_sptsm (sptsm : gmap dbkey nat) (ts : nat) (pwrs : dbmap) :=
-    map_Forall (λ _ spts, (spts ≤ ts)%nat) (filter (λ kn, kn.1 ∈ dom pwrs) sptsm).
+    map_Forall (λ _ spts, (spts < ts)%nat) (filter (λ kn, kn.1 ∈ dom pwrs) sptsm).
 
   Lemma validated_sptsm_lookup {sptsm ts pwrs k spts} :
     validated_sptsm sptsm ts pwrs ->
     sptsm !! k = Some spts ->
     k ∈ dom pwrs ->
-    (spts ≤ ts)%nat.
+    (spts < ts)%nat.
   Proof.
     intros Hvd Hspts Hinpwrs.
     set f := λ kn : dbkey * nat, kn.1 ∈ dom pwrs.
@@ -39,7 +39,7 @@ Section validate.
 
   Definition validate_requirement st ts pwrs :=
     match st with
-    | LocalState cm histm cpm ptgsm sptsm ptsm =>
+    | LocalState cm histm cpm ptgsm sptsm ptsm bm ladm =>
         validated_ptsm ptsm pwrs ∧
         validated_sptsm sptsm ts pwrs ∧
         cpm !! ts = None
@@ -52,11 +52,11 @@ Section validate.
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     validate_requirement st ts pwrs ->
     safe_txn_pwrs γ gid ts pwrs -∗
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid clog ∗
-    own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdAcquire ts pwrs ptgs)]) ∗
+    own_replica_clog_half γ gid rid clog ∗
+    own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdAcquire ts pwrs ptgs)]) ∗
     replica_inv γ gid rid ∗
     is_replica_validated_ts γ gid rid ts.
   Proof.
@@ -73,7 +73,7 @@ Section validate.
     { rewrite merge_clog_ilog_snoc_ilog; last done.
       by rewrite execute_cmds_snoc Hst /=.
     }
-    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx |]; last done.
+    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx bmx laimx |]; last done.
     simpl in Hrequire.
     destruct Hrequire as (Hvptsm & Hvsptsm & Hnp).
     rewrite Hrsm in Hst. symmetry in Hst. inv Hst.

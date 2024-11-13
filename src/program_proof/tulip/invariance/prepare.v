@@ -177,9 +177,10 @@ Section inv.
         iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
         iNamed "Hrp".
         iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
-        iDestruct (big_sepL_lookup with "Hsafel") as "Hpsl"; first apply Hacc.
-        simpl.
-        iDestruct (group_prepare_proposal_lookup with "Hpsl Hpsm") as %(ps & Hps & _).
+        iSpecialize ("Hsafel" $! r1).
+        case_decide; first done.
+        rewrite Hacc.
+        iDestruct (group_prepare_proposal_lookup with "Hsafel Hpsm") as %(ps & Hps & _).
         by rewrite Hpsm in Hps.
       }
       destruct (Hd2) as [r2 Hchosen2].
@@ -202,9 +203,10 @@ Section inv.
         iDestruct (big_sepM_lookup with "Hrps") as "Hrp"; first apply Hbm.
         iNamed "Hrp".
         iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
-        iDestruct (big_sepL_lookup with "Hsafel") as "Hpsl"; first apply Hacc.
-        simpl.
-        iDestruct (group_prepare_proposal_lookup with "Hpsl Hpsm") as %(ps & Hps & _).
+        iSpecialize ("Hsafel" $! r2).
+        case_decide; first done.
+        rewrite Hacc.
+        iDestruct (group_prepare_proposal_lookup with "Hsafel Hpsm") as %(ps & Hps & _).
         by rewrite Hpsm in Hps.
       }
       iPureIntro.
@@ -267,9 +269,10 @@ Section inv.
       destruct (bm !! ts) as [l' |] eqn:Hbmts; last by subst l.
       subst l'.
       iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafel"; first apply Hbmts.
-      iDestruct (big_sepL_lookup with "Hsafel") as "Hsafed"; first apply Hd.
-      simpl.
-      iDestruct (group_prepare_proposal_lookup with "Hsafed Hpsm")
+      iSpecialize ("Hsafel" $! r).
+      case_decide; first done.
+      rewrite Hd.
+      iDestruct (group_prepare_proposal_lookup with "Hsafel Hpsm")
         as %(ps' & Hps' & Hlookup).
       rewrite Hpsm in Hps'. by inv Hps'.
     }
@@ -482,9 +485,9 @@ Section inv.
     cm !! ts = None ->
     apply_cmds log = State cm histm ->
     replica_inv_xfinalized γ gid rid tss -∗
-    own_txn_log_half γ gid log -∗
+    own_txn_log γ gid log -∗
     replica_inv_xfinalized γ gid rid ({[ts]} ∪ tss) ∗
-    own_txn_log_half γ gid log.
+    own_txn_log γ gid log.
   Proof.
     iIntros (Hnone Happly) "Hrp Hlog".
     do 3 iNamed "Hrp".
@@ -492,7 +495,7 @@ Section inv.
     rename histm0 into histmrp.
     iDestruct (txn_log_prefix with "Hlog Hcloglb") as %Hprefix.
     unshelve epose proof (execute_cmds_apply_cmds clog ilog cmrp histmrp _) as Happly'.
-    { by eauto. }
+    { by eauto 10. }
     pose proof (apply_cmds_mono_cm Hprefix Happly Happly') as Hincl.
     iFrame "Hlog ∗ # %".
     iPureIntro.
@@ -505,9 +508,9 @@ Section inv.
     cm !! ts = None ->
     apply_cmds log = State cm hists ->
     ([∗ set] rid ∈ rids, replica_inv γ gid rid) -∗
-    own_txn_log_half γ gid log -∗
+    own_txn_log γ gid log -∗
     ([∗ set] rid ∈ rids, replica_inv_xfinalized γ gid rid {[ts]}) ∗
-    own_txn_log_half γ gid log.
+    own_txn_log γ gid log.
   Proof.
     iIntros (Hxfinal Happly) "Hrps Hlog".
     iApply (big_sepS_impl_res with "Hrps Hlog").

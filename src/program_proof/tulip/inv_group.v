@@ -225,10 +225,57 @@ Section inv.
   Definition safe_proposals γ gid (ts : nat) (ps : gmap nat bool) : iProp Σ :=
     [∗ map] r ↦ p ∈ ps, safe_proposal γ gid ts r p.
 
+  Definition safe_backup_token γ gid ts rk : iProp Σ :=
+    ∃ cid ridsq,
+      "Hexcl"    ∷ own_replica_backup_token γ cid.1 cid.2 ts rk gid ∗
+      "#Hvotes"  ∷ ([∗ set] rid ∈ ridsq, is_replica_backup_vote γ gid rid ts rk cid) ∗
+      "%Hquorum" ∷ ⌜cquorum rids_all ridsq⌝.
+
+  Lemma safe_backup_token_excl γ gid ts rk :
+    safe_backup_token γ gid ts rk -∗
+    safe_backup_token γ gid ts rk -∗
+    False.
+  Proof.
+    iIntros "Htk1 Htk2".
+    iNamedSuffix "Htk1" "1".
+    rename cid into cid1. rename ridsq into ridsq1.
+    iNamedSuffix "Htk2" "2".
+    rename cid into cid2. rename ridsq into ridsq2.
+    (* Prove [cid1] = [cid2] using the quorum votes. *)
+    pose proof (cquorums_overlapped _ _ _ Hquorum1 Hquorum2) as (x & Hq1 & Hq2).
+    iDestruct (big_sepS_elem_of with "Hvotes1") as "Hvote1"; first apply Hq1.
+    iDestruct (big_sepS_elem_of with "Hvotes2") as "Hvote2"; first apply Hq2.
+    iDestruct (replica_backup_vote_agree with "Hvote1 Hvote2") as %->.
+    (* Derive contradiction with exclusive backup token. *)
+    iDestruct (replica_backup_token_excl with "Hexcl1 Hexcl2") as %[].
+  Qed.
+
+  Definition exclusive_proposal γ gid ts rk : iProp Σ :=
+    if decide (rk = 1%nat)
+    then own_txn_client_token γ ts gid
+    else safe_backup_token γ gid ts rk.
+
+  Lemma exclusive_proposal_excl γ gid ts rk :
+    exclusive_proposal γ gid ts rk -∗
+    exclusive_proposal γ gid ts rk -∗
+    False.
+  Proof.
+    iIntros "Hexcl1 Hexcl2".
+    rewrite /exclusive_proposal.
+    case_decide.
+    - iDestruct (txn_client_token_excl with "Hexcl1 Hexcl2") as %[].
+    - iDestruct (safe_backup_token_excl with "Hexcl1 Hexcl2") as %[].
+  Qed.
+
+  Definition exclusive_proposals γ gid (ts : nat) (ps : gmap nat bool) : iProp Σ :=
+    [∗ set] r ∈ dom ps, exclusive_proposal γ gid ts r.
+
   Definition group_inv_proposals_map γ gid : iProp Σ :=
     ∃ (psm : gmap nat (gmap nat bool)),
       "Hpsm"      ∷ own_group_prepare_proposals_map γ gid psm ∗
+      "Hfresh"    ∷ ([∗ map] ts ↦ ps ∈ psm, exclusive_proposals γ gid ts ps) ∗
       "#Hsafepsm" ∷ ([∗ map] ts ↦ ps ∈ psm, safe_proposals γ gid ts ps) ∗
+      (* TODO: program proof should also need "prepare proposed implies quorum-validated"  *)
       "%Hzunused" ∷ ⌜map_Forall (λ _ ps, ps !! O = None) psm⌝.
 
   Definition group_inv_no_log_no_cpool
@@ -253,25 +300,25 @@ Section inv.
 
   Definition group_inv_no_log_with_cpool
     γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
-    "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
+    "Hcpool" ∷ own_txn_cpool γ gid cpool ∗
     "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv_no_log
     γ (gid : u64) (log : dblog) : iProp Σ :=
     ∃ (cpool : gset ccommand),
-      "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
+      "Hcpool" ∷ own_txn_cpool γ gid cpool ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv_no_cpool
     γ (gid : u64) (cpool : gset ccommand) : iProp Σ :=
     ∃ (log : dblog),
-      "Hlog"   ∷ own_txn_log_half γ gid log ∗
+      "Hlog"   ∷ own_txn_log γ gid log ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv γ (gid : u64) : iProp Σ :=
     ∃ (log : dblog) (cpool : gset ccommand),
-      "Hlog"    ∷ own_txn_log_half γ gid log ∗
-      "Hcpool"  ∷ own_txn_cpool_half γ gid cpool ∗
+      "Hlog"    ∷ own_txn_log γ gid log ∗
+      "Hcpool"  ∷ own_txn_cpool γ gid cpool ∗
       "Hgroup"  ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
 End inv.
@@ -314,12 +361,12 @@ Section lemma.
   Lemma group_inv_extract_log_expose_cpool {γ} gid :
     group_inv γ gid -∗
     ∃ log cpool,
-      own_txn_log_half γ gid log ∗
+      own_txn_log γ gid log ∗
       group_inv_no_log_with_cpool γ gid log cpool.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   Lemma group_inv_merge_log_hide_cpool {γ gid} log cpool :
-    own_txn_log_half γ gid log -∗
+    own_txn_log γ gid log -∗
     group_inv_no_log_with_cpool γ gid log cpool -∗
     group_inv γ gid.
   Proof. iIntros "Hlog Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
@@ -327,12 +374,12 @@ Section lemma.
   Lemma group_inv_extract_log {γ} gid :
     group_inv γ gid -∗
     ∃ log,
-      own_txn_log_half γ gid log ∗
+      own_txn_log γ gid log ∗
       group_inv_no_log γ gid log.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   Lemma group_inv_merge_log {γ gid} log :
-    own_txn_log_half γ gid log -∗
+    own_txn_log γ gid log -∗
     group_inv_no_log γ gid log -∗
     group_inv γ gid.
   Proof. iIntros "Hlog Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
@@ -340,12 +387,12 @@ Section lemma.
   Lemma group_inv_extract_cpool {γ} gid :
     group_inv γ gid -∗
     ∃ cpool,
-      own_txn_cpool_half γ gid cpool ∗
+      own_txn_cpool γ gid cpool ∗
       group_inv_no_cpool γ gid cpool.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   Lemma group_inv_merge_cpool {γ gid} cpool :
-    own_txn_cpool_half γ gid cpool -∗
+    own_txn_cpool γ gid cpool -∗
     group_inv_no_cpool γ gid cpool -∗
     group_inv γ gid.
   Proof. iIntros "Hcpool Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.

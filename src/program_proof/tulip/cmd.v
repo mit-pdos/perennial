@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import
   extend nonexpanding_merge.
-From Perennial.program_proof.tulip Require Import base.
+From Perennial.program_proof.tulip Require Import base stability.
 
 Section validate.
   Definition validate_key (tid : nat) (ov : option dbval) (ovl : option (list bool)) :=
@@ -372,15 +372,16 @@ Section execute_cmds.
 
   Inductive rpst :=
   | LocalState
-      (cm : gmap nat bool) (hists : gmap dbkey dbhist)
-      (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat)
+      (cm : gmap nat bool) (hists : gmap dbkey dbhist) (cpm : gmap nat dbmap)
+      (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat)
+      (bm : gmap nat ballot) (laim : gmap nat nat)
   | LocalStuck.
 
   Definition not_local_stuck st := st ≠ LocalStuck.
 
   Definition execute_commit st (tid : nat) (pwrs : dbmap) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
         match cm !! tid with
         | Some true => st
         | Some false => LocalStuck
@@ -388,9 +389,10 @@ Section execute_cmds.
                  | Some _ => LocalState
                               (<[tid := true]> cm) (multiwrite tid pwrs hists)
                               (delete tid cpm) (delete tid ptgsm) sptsm (release pwrs ptsm)
+                              bm laim
                  | None => LocalState
                             (<[tid := true]> cm) (multiwrite tid pwrs hists)
-                            cpm ptgsm sptsm ptsm
+                            cpm ptgsm sptsm ptsm bm laim
                  end
         end
     | LocalStuck => LocalStuck
@@ -398,15 +400,15 @@ Section execute_cmds.
 
   Definition execute_abort st (tid : nat) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
         match cm !! tid with
         | Some true => LocalStuck
         | Some false => st
         | None => match cpm !! tid with
                  | Some pwrs => LocalState
-                                 (<[tid := false]> cm) hists
-                                 (delete tid cpm) (delete tid ptgsm) sptsm (release pwrs ptsm)
-                 | None => LocalState (<[tid := false]> cm) hists cpm ptgsm sptsm ptsm
+                                 (<[tid := false]> cm) hists (delete tid cpm)
+                                 (delete tid ptgsm) sptsm (release pwrs ptsm) bm laim
+                 | None => LocalState (<[tid := false]> cm) hists cpm ptgsm sptsm ptsm bm laim
                  end
         end
     | LocalStuck => LocalStuck
@@ -414,25 +416,45 @@ Section execute_cmds.
 
   Definition execute_acquire st (tid : nat) (pwrs : dbmap) (ptgs : gset u64) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
         LocalState
           cm hists (<[tid := pwrs]> cpm) (<[tid := ptgs]> ptgsm)
-          (setts (S tid) pwrs sptsm) (acquire tid pwrs ptsm) 
+          (setts tid pwrs sptsm) (acquire tid pwrs ptsm) bm laim
     | LocalStuck => LocalStuck
     end.
 
   Definition execute_read st (tid : nat) (key : dbkey) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
         LocalState
-          cm hists cpm ptgsm (alter (λ spts, (spts `max` tid)%nat) key sptsm) ptsm
+          cm hists cpm ptgsm (alter (λ spts, (spts `max` pred tid)%nat) key sptsm) ptsm bm laim
     | LocalStuck => LocalStuck
     end.
 
-  (* TODO *)
-  Definition execute_decide st (tid : nat) (rank : nat) (pdec : bool) :=
+  Definition execute_advance st (tid : nat) (rank : nat) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm => st
+    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
+        let blt := extend rank Reject (match bm !! tid with
+                                       | Some l => l
+                                       | None => [Accept false]
+                                       end) in
+        let laim' := match laim !! tid with
+                     | Some _ => laim
+                     | _ => <[tid := O]> laim
+                     end in
+        LocalState cm hists cpm ptgsm sptsm ptsm (<[tid := blt]> bm) laim'
+    | LocalStuck => LocalStuck
+    end.
+
+  Definition execute_accept st (tid : nat) (rank : nat) (pdec : bool) :=
+    match st with
+    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
+        let blt := match bm !! tid with
+                   | Some l => extend rank Reject l
+                   | None => replicate rank Reject
+                   end ++ [Accept pdec] in
+        LocalState
+          cm hists cpm ptgsm sptsm ptsm (<[tid := blt]> bm) (<[tid := rank]> laim)
     | LocalStuck => LocalStuck
     end.
 
@@ -445,14 +467,15 @@ Section execute_cmds.
     | ICmd cmd => match cmd with
                  | CmdAcquire tid pwrs ptgs => execute_acquire st tid pwrs ptgs
                  | CmdRead tid key => execute_read st tid key
-                 | CmdDecide tid rank pdec => execute_decide st tid rank pdec
+                 | CmdAdvance tid rank => execute_advance st tid rank
+                 | CmdAccept tid rank pdec => execute_accept st tid rank pdec
                  end
     end.
 
-  Definition init_sptsm : gmap dbkey nat := gset_to_gmap 1%nat keys_all.
-  Definition init_ptsm : gmap dbkey nat := gset_to_gmap O%nat keys_all.
+  Definition init_sptsm : gmap dbkey nat := gset_to_gmap O keys_all.
+  Definition init_ptsm : gmap dbkey nat := gset_to_gmap O keys_all.
   Definition init_rpst :=
-    LocalState ∅ init_hists ∅ ∅ init_sptsm init_ptsm.
+    LocalState ∅ init_hists ∅ ∅ init_sptsm init_ptsm ∅ ∅.
 
   Definition execute_cmds (cmds : list command) :=
     foldl execute_cmd init_rpst cmds.
@@ -461,14 +484,14 @@ Section execute_cmds.
     execute_cmds (cmds ++ [cmd]) = execute_cmd (execute_cmds cmds) cmd.
   Proof. by rewrite /execute_cmds foldl_snoc. Qed.
 
-  Lemma execute_cmds_dom_histm {log cm histm cpm ptgsm sptsm ptsm} :
-    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm ->
+  Lemma execute_cmds_dom_histm {log cm histm cpm ptgsm sptsm ptsm bm laim} :
+    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim ->
     dom histm = keys_all.
   Proof.
   Admitted.
 
-  Lemma execute_cmds_hist_not_nil {log cm histm cpm ptgsm sptsm ptsm} :
-    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm ->
+  Lemma execute_cmds_hist_not_nil {log cm histm cpm ptgsm sptsm ptsm bm laim} :
+    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim ->
     map_Forall (λ _ h, h ≠ []) histm.
   Admitted.
 
@@ -476,6 +499,10 @@ End execute_cmds.
 
 Section merge_clog_ilog.
   Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
+  Admitted.
+
+  Lemma merge_clog_ilog_nil :
+    merge_clog_ilog [] [] = [].
   Admitted.
 
   Lemma merge_clog_ilog_snoc_clog clog ilog ccmd :
@@ -492,8 +519,9 @@ Section merge_clog_ilog.
 
   Lemma execute_cmds_apply_cmds clog ilog cm histm :
     let log := merge_clog_ilog clog ilog in
-    (∃ cpm ptgsm sptsm ptsm,
-        execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm) ->
+    (∃ cpm ptgsm sptsm ptsm bm laim,
+        execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim) ->
     apply_cmds clog = State cm histm.
   Admitted.
+
 End merge_clog_ilog.

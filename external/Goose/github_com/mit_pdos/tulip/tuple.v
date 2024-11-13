@@ -5,37 +5,16 @@ From Goose Require github_com.mit_pdos.tulip.tulip.
 Section code.
 Context `{ext_ty: ext_types}.
 
-(* Key invariants:
-   (1) @vers[len(vers) - 1].Timestamp < @tslast.
-   (2) @tslast <= @tsown, if @tsown != 0.
-   (3) length of the abstract history is equal to @tslast. *)
 Definition Tuple := struct.decl [
   "mu" :: ptrT;
-  "tsown" :: uint64T;
-  "tslast" :: uint64T;
+  "tssafe" :: uint64T;
   "vers" :: slice.T (struct.t tulip.Version)
 ].
 
-Definition Tuple__Own: val :=
-  rec: "Tuple__Own" "tuple" "ts" :=
-    Mutex__Lock (struct.loadF Tuple "mu" "tuple");;
-    (if: "ts" < (struct.loadF Tuple "tslast" "tuple")
-    then
-      Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-      #false
-    else
-      (if: (struct.loadF Tuple "tsown" "tuple") ≠ #0
-      then
-        Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-        #false
-      else
-        struct.storeF Tuple "tsown" "tuple" "ts";;
-        Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-        #true)).
-
 (* @findVersion starts from the end of @vers and return the first version whose
    timestamp is less than or equal to @ts, and whether the returned version is
-   the latest one. *)
+   the latest one. If the returned version is the latest one, the postcondition
+   should say something about the length of the history. *)
 Definition findVersion: val :=
   rec: "findVersion" "ts" "vers" :=
     let: "ver" := ref (zero_val (struct.t tulip.Version)) in
@@ -64,24 +43,18 @@ Definition findVersion: val :=
 Definition Tuple__ReadVersion: val :=
   rec: "Tuple__ReadVersion" "tuple" "ts" :=
     Mutex__Lock (struct.loadF Tuple "mu" "tuple");;
-    (if: ((struct.loadF Tuple "tsown" "tuple") ≠ #0) && ((struct.loadF Tuple "tsown" "tuple") ≤ "ts")
+    let: ("ver", "slow") := findVersion "ts" (struct.loadF Tuple "vers" "tuple") in
+    (if: (~ "slow")
     then
-      (struct.mk tulip.Version [
-       ], #false)
+      let: "verfast" := struct.mk tulip.Version [
+        "Timestamp" ::= #0;
+        "Value" ::= struct.get tulip.Version "Value" "ver"
+      ] in
+      Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
+      "verfast"
     else
-      let: ("ver", "slow") := findVersion "ts" (struct.loadF Tuple "vers" "tuple") in
-      (if: (~ "slow")
-      then
-        let: "verfast" := struct.mk tulip.Version [
-          "Timestamp" ::= #0;
-          "Value" ::= struct.get tulip.Version "Value" "ver"
-        ] in
-        Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-        ("verfast", #true)
-      else
-        struct.storeF Tuple "tslast" "tuple" "ts";;
-        Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-        ("ver", #true))).
+      Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
+      "ver").
 
 Definition Tuple__AppendVersion: val :=
   rec: "Tuple__AppendVersion" "tuple" "ts" "value" :=
@@ -94,8 +67,6 @@ Definition Tuple__AppendVersion: val :=
       ]
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t tulip.Version) (struct.loadF Tuple "vers" "tuple") "ver");;
-    struct.storeF Tuple "tsown" "tuple" #0;;
-    struct.storeF Tuple "tslast" "tuple" ("ts" + #1);;
     Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
     #().
 
@@ -109,15 +80,6 @@ Definition Tuple__KillVersion: val :=
       ]
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t tulip.Version) (struct.loadF Tuple "vers" "tuple") "ver");;
-    struct.storeF Tuple "tsown" "tuple" #0;;
-    struct.storeF Tuple "tslast" "tuple" ("ts" + #1);;
-    Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-    #().
-
-Definition Tuple__Free: val :=
-  rec: "Tuple__Free" "tuple" :=
-    Mutex__Lock (struct.loadF Tuple "mu" "tuple");;
-    struct.storeF Tuple "tsown" "tuple" #0;;
     Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
     #().
 
@@ -125,8 +87,6 @@ Definition MkTuple: val :=
   rec: "MkTuple" <> :=
     let: "tuple" := struct.alloc Tuple (zero_val (struct.t Tuple)) in
     struct.storeF Tuple "mu" "tuple" (newMutex #());;
-    struct.storeF Tuple "tsown" "tuple" #0;;
-    struct.storeF Tuple "tslast" "tuple" #1;;
     struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t tulip.Version) #1 #1);;
     SliceSet (struct.t tulip.Version) (struct.loadF Tuple "vers" "tuple") #0 (struct.mk tulip.Version [
       "Timestamp" ::= #0;

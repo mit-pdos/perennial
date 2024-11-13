@@ -7,6 +7,7 @@ Definition dbtpl := (dbhist * nat)%type.
 Definition dbmod := (dbkey * dbval)%type.
 Definition dbmap := gmap dbkey dbval.
 Definition dbkmod := gmap nat dbval.
+Definition coordid := (u64 * u64)%type.
 
 (** Transaction result. *)
 Inductive txnres :=
@@ -108,7 +109,8 @@ Inductive ccommand :=
 Inductive icommand :=
 | CmdAcquire (tid : nat) (pwrs : dbmap) (ptgs : gset u64)
 | CmdRead (tid : nat) (key : dbkey)
-| CmdDecide (tid : nat) (rank : nat) (pdec : bool).
+| CmdAdvance (tid : nat) (rank : nat)
+| CmdAccept (tid : nat) (rank : nat) (pdec : bool).
 
 Inductive command :=
 | CCmd (cmd : ccommand)

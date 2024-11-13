@@ -27,6 +27,8 @@ Definition Replica := struct.decl [
   "ptgsm" :: mapT (slice.T uint64T);
   "pstbl" :: mapT (struct.t PrepareStatusEntry);
   "txntbl" :: mapT boolT;
+  "ptsm" :: mapT uint64T;
+  "sptsm" :: mapT uint64T;
   "idx" :: ptrT;
   "rps" :: mapT uint64T;
   "leader" :: uint64T
@@ -89,6 +91,26 @@ Definition Replica__Abort: val :=
         then #false
         else #true))).
 
+Definition Replica__readableKey: val :=
+  rec: "Replica__readableKey" "rp" "ts" "key" :=
+    let: "pts" := Fst (MapGet (struct.loadF Replica "ptsm" "rp") "key") in
+    (if: ("pts" ≠ #0) && ("pts" ≤ "ts")
+    then #false
+    else #true).
+
+Definition Replica__bumpKey: val :=
+  rec: "Replica__bumpKey" "rp" "ts" "key" :=
+    let: "spts" := Fst (MapGet (struct.loadF Replica "sptsm" "rp") "key") in
+    (if: ("ts" - #1) ≤ "spts"
+    then #false
+    else
+      MapInsert (struct.loadF Replica "sptsm" "rp") "key" ("ts" - #1);;
+      #true).
+
+Definition Replica__logRead: val :=
+  rec: "Replica__logRead" "rp" "ts" "key" :=
+    #().
+
 (* Arguments:
    @ts: Transaction timestamp.
    @key: Key to be read.
@@ -99,18 +121,64 @@ Definition Replica__Abort: val :=
    the replica promises not to accept prepare requests from transactions that
    modifies this tuple and whose timestamp lies within @ver.Timestamp and @ts.
 
-   @ok: @ver is meaningful iff @ok is true. *)
+   @ok: @ver is meaningful iff @ok is true.
+
+   Design note:
+
+   1. It might seem redundant and inefficient to call @tpl.ReadVersion twice for
+   each @rp.Read, but the point is that the first one is called without holding
+   the global replica lock, which improves the latency for a fast-read, and
+   throughput for non-conflicting fast-reads. An alternative design is to remove
+   the first part at all, which favors slow-reads.
+
+   2. Right now the index is still a global lock; ideally we should also shard
+   the index lock as done in vMVCC. However, the index lock should be held
+   relatively short compared to the replica lock, so the performance impact
+   should be less. *)
 Definition Replica__Read: val :=
   rec: "Replica__Read" "rp" "ts" "key" :=
-    let: "terminated" := Replica__QueryTxnTermination "rp" "ts" in
-    (if: "terminated"
-    then
-      (struct.mk tulip.Version [
-       ], #false)
+    let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
+    let: "verfast" := tuple.Tuple__ReadVersion "tpl" "ts" in
+    (if: (struct.get tulip.Version "Timestamp" "verfast") = #0
+    then ("verfast", #true)
     else
-      let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
-      let: ("ver", "ok") := tuple.Tuple__ReadVersion "tpl" "ts" in
-      ("ver", "ok")).
+      Mutex__Lock (struct.loadF Replica "mu" "rp");;
+      let: "ok" := Replica__readableKey "rp" "ts" "key" in
+      (if: (~ "ok")
+      then
+        Mutex__Unlock (struct.loadF Replica "mu" "rp");;
+        (struct.mk tulip.Version [
+         ], #false)
+      else
+        let: "ver" := tuple.Tuple__ReadVersion "tpl" "ts" in
+        (if: (struct.get tulip.Version "Timestamp" "ver") = #0
+        then
+          Mutex__Unlock (struct.loadF Replica "mu" "rp");;
+          ("ver", #true)
+        else
+          let: "bumped" := Replica__bumpKey "rp" "ts" "key" in
+          (if: "bumped"
+          then Replica__logRead "rp" "ts" "key"
+          else #());;
+          Mutex__Unlock (struct.loadF Replica "mu" "rp");;
+          ("ver", #true)))).
+
+Definition Replica__writableKey: val :=
+  rec: "Replica__writableKey" "rp" "ts" "key" :=
+    let: "pts" := Fst (MapGet (struct.loadF Replica "ptsm" "rp") "key") in
+    (if: "pts" ≠ #0
+    then #false
+    else
+      let: "spts" := Fst (MapGet (struct.loadF Replica "sptsm" "rp") "key") in
+      (if: "ts" ≤ "spts"
+      then #false
+      else #true)).
+
+Definition Replica__acquireKey: val :=
+  rec: "Replica__acquireKey" "rp" "ts" "key" :=
+    MapInsert (struct.loadF Replica "ptsm" "rp") "key" "ts";;
+    MapInsert (struct.loadF Replica "sptsm" "rp") "key" "ts";;
+    #().
 
 Definition Replica__acquire: val :=
   rec: "Replica__acquire" "rp" "ts" "pwrs" :=
@@ -118,25 +186,18 @@ Definition Replica__acquire: val :=
     Skip;;
     (for: (λ: <>, (![uint64T] "pos") < (slice.len "pwrs")); (λ: <>, Skip) := λ: <>,
       let: "ent" := SliceGet (struct.t tulip.WriteEntry) "pwrs" (![uint64T] "pos") in
-      let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") (struct.get tulip.WriteEntry "Key" "ent") in
-      let: "ret" := tuple.Tuple__Own "tpl" "ts" in
-      (if: (~ "ret")
+      let: "writable" := Replica__writableKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent") in
+      (if: (~ "writable")
       then Break
       else
         "pos" <-[uint64T] ((![uint64T] "pos") + #1);;
         Continue));;
     (if: (![uint64T] "pos") < (slice.len "pwrs")
-    then
-      let: "i" := ref_to uint64T #0 in
-      Skip;;
-      (for: (λ: <>, (![uint64T] "i") < (![uint64T] "pos")); (λ: <>, Skip) := λ: <>,
-        let: "ent" := SliceGet (struct.t tulip.WriteEntry) "pwrs" (![uint64T] "i") in
-        let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") (struct.get tulip.WriteEntry "Key" "ent") in
-        tuple.Tuple__Free "tpl";;
-        "i" <-[uint64T] ((![uint64T] "i") + #1);;
-        Continue);;
-      #false
-    else #true).
+    then #false
+    else
+      ForSlice (struct.t tulip.WriteEntry) <> "ent" "pwrs"
+        (Replica__acquireKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent"));;
+      #true).
 
 (* Arguments:
    @ts: Transaction timestamp.
@@ -163,7 +224,6 @@ Definition Replica__validate: val :=
         then tulip.REPLICA_FAILED_VALIDATION
         else
           MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-          MapInsert (struct.loadF Replica "ptgsm" "rp") "ts" "ptgs";;
           tulip.REPLICA_OK))).
 
 (* Keep alive coordinator for @ts at @rank. *)
@@ -178,6 +238,25 @@ Definition Replica__Validate: val :=
     Replica__refresh "rp" "ts" "rank";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
+
+Definition Replica__probe: val :=
+  rec: "Replica__probe" "rp" "ts" :=
+    let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
+    let: "pp" := struct.get PrepareStatusEntry "prep" "ps" in
+    (struct.get PrepareStatusEntry "rankl" "ps", struct.get PrepareProposal "rank" "pp", struct.get PrepareProposal "dec" "pp", "ok").
+
+Definition Replica__accept: val :=
+  rec: "Replica__accept" "rp" "ts" "rank" "dec" :=
+    let: "pp" := struct.mk PrepareProposal [
+      "rank" ::= "rank";
+      "dec" ::= "dec"
+    ] in
+    let: "psnew" := struct.mk PrepareStatusEntry [
+      "rankl" ::= "rank" + #1;
+      "prep" ::= "pp"
+    ] in
+    MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "psnew";;
+    #().
 
 (* Arguments:
    @ts: Transaction timestamp.
@@ -196,33 +275,27 @@ Definition Replica__fastPrepare: val :=
       then tulip.REPLICA_COMMITTED_TXN
       else tulip.REPLICA_ABORTED_TXN)
     else
-      let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
+      let: (((<>, "rank"), "dec"), "ok") := Replica__probe "rp" "ts" in
       (if: "ok"
       then
-        let: "pp" := struct.get PrepareStatusEntry "prep" "ps" in
-        (if: #0 < (struct.get PrepareProposal "rank" "pp")
+        (if: #0 < "rank"
         then tulip.REPLICA_STALE_COORDINATOR
         else
-          (if: (~ (struct.get PrepareProposal "dec" "pp"))
+          (if: (~ "dec")
           then tulip.REPLICA_FAILED_VALIDATION
           else tulip.REPLICA_OK))
       else
-        let: "acquired" := Replica__acquire "rp" "ts" "pwrs" in
-        let: "pp" := struct.mk PrepareProposal [
-          "rank" ::= #0;
-          "dec" ::= "acquired"
-        ] in
-        let: "psnew" := struct.mk PrepareStatusEntry [
-          "rankl" ::= #1;
-          "prep" ::= "pp"
-        ] in
-        MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "psnew";;
-        (if: (~ "acquired")
-        then tulip.REPLICA_FAILED_VALIDATION
+        let: (<>, "validated") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
+        (if: "validated"
+        then tulip.REPLICA_STALE_COORDINATOR
         else
-          MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-          MapInsert (struct.loadF Replica "ptgsm" "rp") "ts" "ptgs";;
-          tulip.REPLICA_OK))).
+          let: "acquired" := Replica__acquire "rp" "ts" "pwrs" in
+          Replica__accept "rp" "ts" #0 "acquired";;
+          (if: (~ "acquired")
+          then tulip.REPLICA_FAILED_VALIDATION
+          else
+            MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
+            tulip.REPLICA_OK)))).
 
 Definition Replica__FastPrepare: val :=
   rec: "Replica__FastPrepare" "rp" "ts" "pwrs" "ptgs" :=
@@ -241,8 +314,8 @@ Definition Replica__FastPrepare: val :=
 
    Return values:
    @error: Error code. *)
-Definition Replica__acceptPreparedness: val :=
-  rec: "Replica__acceptPreparedness" "rp" "ts" "rank" "dec" :=
+Definition Replica__tryAccept: val :=
+  rec: "Replica__tryAccept" "rp" "ts" "rank" "dec" :=
     let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
     (if: "done"
     then
@@ -250,25 +323,17 @@ Definition Replica__acceptPreparedness: val :=
       then tulip.REPLICA_COMMITTED_TXN
       else tulip.REPLICA_ABORTED_TXN)
     else
-      let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
-      (if: "ok" && ("rank" < (struct.get PrepareStatusEntry "rankl" "ps"))
+      let: ((("rankl", <>), <>), "ok") := Replica__probe "rp" "ts" in
+      (if: "ok" && ("rank" < "rankl")
       then tulip.REPLICA_STALE_COORDINATOR
       else
-        let: "pp" := struct.mk PrepareProposal [
-          "rank" ::= "rank";
-          "dec" ::= "dec"
-        ] in
-        let: "psnew" := struct.mk PrepareStatusEntry [
-          "rankl" ::= "rank" + #1;
-          "prep" ::= "pp"
-        ] in
-        MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "psnew";;
+        Replica__accept "rp" "ts" "rank" "dec";;
         tulip.REPLICA_OK)).
 
 Definition Replica__Prepare: val :=
   rec: "Replica__Prepare" "rp" "ts" "rank" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
-    let: "res" := Replica__acceptPreparedness "rp" "ts" "rank" #true in
+    let: "res" := Replica__tryAccept "rp" "ts" "rank" #true in
     Replica__refresh "rp" "ts" "rank";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
@@ -276,7 +341,7 @@ Definition Replica__Prepare: val :=
 Definition Replica__Unprepare: val :=
   rec: "Replica__Unprepare" "rp" "ts" "rank" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
-    let: "res" := Replica__acceptPreparedness "rp" "ts" "rank" #false in
+    let: "res" := Replica__tryAccept "rp" "ts" "rank" #false in
     Replica__refresh "rp" "ts" "rank";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
@@ -326,8 +391,8 @@ Definition Replica__query: val :=
       then tulip.REPLICA_COMMITTED_TXN
       else tulip.REPLICA_ABORTED_TXN)
     else
-      let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
-      (if: "ok" && ("rank" < (struct.get PrepareStatusEntry "rankl" "ps"))
+      let: ((("rankl", <>), <>), "ok") := Replica__probe "rp" "ts" in
+      (if: "ok" && ("rank" < "rankl")
       then tulip.REPLICA_STALE_COORDINATOR
       else tulip.REPLICA_OK)).
 
@@ -354,8 +419,19 @@ Definition Replica__multiwrite: val :=
       let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
       (if: struct.get tulip.Value "Present" "value"
       then tuple.Tuple__AppendVersion "tpl" "ts" (struct.get tulip.Value "Content" "value")
-      else tuple.Tuple__KillVersion "tpl" "ts");;
-      tuple.Tuple__Free "tpl");;
+      else tuple.Tuple__KillVersion "tpl" "ts"));;
+    #().
+
+Definition Replica__releaseKey: val :=
+  rec: "Replica__releaseKey" "rp" "key" :=
+    MapDelete (struct.loadF Replica "ptsm" "rp") "key";;
+    #().
+
+Definition Replica__release: val :=
+  rec: "Replica__release" "rp" "pwrs" :=
+    ForSlice (struct.t tulip.WriteEntry) <> "ent" "pwrs"
+      (let: "key" := struct.get tulip.WriteEntry "Key" "ent" in
+      Replica__releaseKey "rp" "key");;
     #().
 
 Definition Replica__applyCommit: val :=
@@ -365,17 +441,14 @@ Definition Replica__applyCommit: val :=
     then #()
     else
       Replica__multiwrite "rp" "ts" "pwrs";;
-      MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
       MapInsert (struct.loadF Replica "txntbl" "rp") "ts" #true;;
-      #()).
-
-Definition Replica__abort: val :=
-  rec: "Replica__abort" "rp" "pwrs" :=
-    ForSlice (struct.t tulip.WriteEntry) <> "ent" "pwrs"
-      (let: "key" := struct.get tulip.WriteEntry "Key" "ent" in
-      let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
-      tuple.Tuple__Free "tpl");;
-    #().
+      let: (<>, "prepared") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
+      (if: "prepared"
+      then
+        Replica__release "rp" "pwrs";;
+        MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+        #()
+      else #())).
 
 Definition Replica__applyAbort: val :=
   rec: "Replica__applyAbort" "rp" "ts" :=
@@ -383,14 +456,14 @@ Definition Replica__applyAbort: val :=
     (if: "aborted"
     then #()
     else
+      MapInsert (struct.loadF Replica "txntbl" "rp") "ts" #false;;
       let: ("pwrs", "prepared") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
       (if: "prepared"
       then
-        Replica__abort "rp" "pwrs";;
-        MapDelete (struct.loadF Replica "prepm" "rp") "ts"
-      else #());;
-      MapInsert (struct.loadF Replica "txntbl" "rp") "ts" #false;;
-      #()).
+        Replica__release "rp" "pwrs";;
+        MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+        #()
+      else #())).
 
 Definition Replica__apply: val :=
   rec: "Replica__apply" "rp" "cmd" :=

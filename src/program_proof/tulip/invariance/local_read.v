@@ -5,7 +5,7 @@ Section local_read.
 
   Definition local_read_requirement st key rts hist :=
     match st with
-    | LocalState cm histm cpm ptgsm sptsm ptsm =>
+    | LocalState cm histm cpm ptgsm sptsm ptsm bm ladm =>
         (∃ spts pts, sptsm !! key = Some spts ∧
                      ptsm !! key = Some pts ∧
                      histm !! key = Some hist ∧
@@ -18,12 +18,12 @@ Section local_read.
     key_to_group key = gid ->
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     local_read_requirement st key rts hist ->
-    own_replica_clog_half γ rid clog -∗
-    own_replica_ilog_half γ rid ilog -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
     replica_inv γ gid rid ==∗
-    own_replica_clog_half γ rid clog ∗
-    own_replica_ilog_half γ rid (ilog ++ [(length clog, CmdRead rts key)]) ∗
+    own_replica_clog_half γ gid rid clog ∗
+    own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdRead rts key)]) ∗
     group_inv γ gid ∗
     replica_inv γ gid rid ∗
     read_promise γ gid rid key (pred (length hist)) rts ∗
@@ -42,7 +42,7 @@ Section local_read.
     { rewrite merge_clog_ilog_snoc_ilog; last done.
       by rewrite execute_cmds_snoc Hst /=.
     }
-    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx |]; last done.
+    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx bmx laimx |]; last done.
     simpl in Hrequire.
     destruct Hrequire as (spts & pts & Hspts & Hpts & Hhist & Hlock).
     rewrite Hrsm in Hst. symmetry in Hst. inv Hst.
@@ -60,7 +60,7 @@ Section local_read.
     { apply Hvk. }
     { done. }
     { unshelve epose proof (execute_cmds_apply_cmds clog ilog cm histm _) as Happly.
-      { by eauto. }
+      { by eauto 10. }
       by rewrite /hist_from_log Happly.
     }
     destruct (decide (pts = O)) as [Hz | Hnz]; last first.
@@ -105,7 +105,7 @@ Section local_read.
       by rewrite insert_id.
     }
     (* Case: Key not locked. *)
-    destruct (decide (rts ≤ spts)%nat) as [Hle | Hgt].
+    destruct (decide (pred rts ≤ spts)%nat) as [Hle | Hgt].
     { (* Case: [rts ≤ spts]. No extension required. *)
       iAssert (read_promise γ gid rid key (pred (length hist)) rts)%I as "#Hpromise".
       { iDestruct (replica_key_validation_witness with "Hkvd") as "#Hkvdlb".
@@ -150,7 +150,7 @@ Section local_read.
       { iPureIntro. rewrite extend_length. clear -Hlenvd Hgt. lia. }
       iApply big_sepL_forall.
       iIntros (t b Hb [Htge ->]).
-      destruct (decide (t < spts)%nat) as [Hlt | Hge].
+      destruct (decide (t < S spts)%nat) as [Hlt | Hge].
       { rewrite lookup_extend_l in Hb; last first.
         { clear -Hlenvd Hlt. lia. }
         iSpecialize ("Hgabt" $! key t).
@@ -164,7 +164,8 @@ Section local_read.
       apply lookup_lt_Some in Hb as Htlt.
       rewrite extend_length in Htlt.
       rewrite lookup_extend_r in Hb; first done.
-      clear -Hlenvd Hgt Hge Htlt. lia.
+      clear -Hlenvd Hgt Hge Htlt.
+      lia.
     }
     iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
     rewrite insert_delete_insert.
@@ -181,10 +182,11 @@ Section local_read.
         clear -Hlenvd Hgerts Hgt. lia.
       }
       rewrite Nat.nle_gt in Hltrts.
-      destruct (decide (t < spts)%nat) as [Hltspts | Hgespts]; last first.
+      destruct (decide (t < S spts)%nat) as [Hltspts | Hgespts]; last first.
       { rewrite Nat.nlt_ge in Hgespts.
         rewrite lookup_extend_r; first done.
-        clear -Hlenvd Hltrts Hgespts. lia.
+        clear -Hlenvd Hltrts Hgespts.
+        lia.
       }
       rewrite lookup_extend_l; last first.
       { clear -Hlenvd Hltspts. lia. }
@@ -193,7 +195,7 @@ Section local_read.
     }
     iPureIntro.
     rewrite (lookup_alter_Some _ _ _ _ Hspts).
-    replace (_ `max` _)%nat with rts by lia.
+    replace (_ `max` _)%nat with (pred rts) by lia.
     split.
     { rewrite dom_insert_L.
       apply elem_of_dom_2 in Hvd.
