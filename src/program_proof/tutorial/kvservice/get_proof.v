@@ -52,11 +52,14 @@ Proof.
   wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hargs_key_enc]").
   iIntros (?) "[Hsl _]". wp_store.
 
+
   wp_load. iApply "HΦ". iModIntro. rewrite -?app_assoc.
   iFrame. iPureIntro.
 
-  unfold has_encoding. rewrite ?string_bytes_length. rewrite Hargs_key_sz.
-  rewrite w64_to_nat_id. exact.
+  unfold has_encoding. 
+  rewrite ?string_bytes_length.
+  rewrite Hargs_key_sz.
+  rewrite ?w64_to_nat_id. exact.
 Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) (suffix:list u8) (q:dfrac):
