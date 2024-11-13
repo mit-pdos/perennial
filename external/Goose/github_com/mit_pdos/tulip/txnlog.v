@@ -8,8 +8,7 @@ Context `{ext_ty: ext_types}.
 Definition Cmd := struct.decl [
   "Kind" :: uint64T;
   "Timestamp" :: uint64T;
-  "PartialWrites" :: slice.T (struct.t tulip.WriteEntry);
-  "Key" :: stringT
+  "PartialWrites" :: slice.T (struct.t tulip.WriteEntry)
 ].
 
 Definition TxnLog := struct.decl [
