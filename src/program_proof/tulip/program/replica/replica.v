@@ -63,14 +63,6 @@ Section replica.
     | _ => ptsm !! k = Some O
     end.
 
-  Definition absrel_sptsm (sptsm : gmap dbkey nat) (sptsmM : gmap dbkey u64) :=
-    ∀ k,
-    k ∈ keys_all ->
-    match sptsmM !! k with
-    | Some sptsW => sptsm !! k = Some (uint.nat sptsW)
-    | _ => sptsm !! k = Some 1%nat
-    end.
-
   Definition own_replica_ptsm_sptsm
     (rp : loc) (ptsm sptsm : gmap dbkey nat) : iProp Σ :=
     ∃ (ptsmP : loc) (sptsmP : loc) (ptsmM : gmap dbkey u64) (sptsmM : gmap dbkey u64),
@@ -79,7 +71,7 @@ Section replica.
       "HptsmM"     ∷ own_map ptsmP (DfracOwn 1) ptsmM ∗
       "HsptsmM"    ∷ own_map sptsmP (DfracOwn 1) sptsmM ∗
       "%Hptsmabs"  ∷ ⌜absrel_ptsm ptsm ptsmM⌝ ∗
-      "%Hsptsmabs" ∷ ⌜absrel_sptsm sptsm sptsmM⌝.
+      "%Hsptsmabs" ∷ ⌜absrel_ptsm sptsm sptsmM⌝.
 
   Definition own_replica_bm_laim
     (rp : loc) (bm : gmap nat ballot) (laim : gmap nat nat) : iProp Σ :=
@@ -122,7 +114,7 @@ Section replica.
 
   Definition key_writable_sptsm (sptsm : gmap dbkey nat) (ts : nat) (key : dbkey) :=
     match sptsm !! key with
-    | Some spts => (spts ≤ ts)%nat
+    | Some spts => (spts < ts)%nat
     | _ => False
     end.
 
@@ -160,7 +152,9 @@ Section replica.
     (*@     // Even though the default of smallest preparable timestamps are 1, using @*)
     (*@     // the fact that @ts is positive also means no need to check existence. @*)
     (*@     spts := rp.sptsm[key]                                               @*)
-    (*@     if ts < spts {                                                      @*)
+
+    (*@     if ts <= spts {                                                     @*)
+
     (*@         return false                                                    @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
@@ -260,20 +254,18 @@ Section replica.
   Qed.
 
   Theorem wp_Replica__acquireKey rp (ts : u64) key ptsm sptsm :
-    (* TODO: might be able to remove the - 1 part if sptsm is defined exclusively *)
-    uint.Z ts < 2 ^ 64 - 1 ->
     {{{ own_replica_ptsm_sptsm rp ptsm sptsm }}}
       Replica__acquireKey #rp #ts #(LitString key)
     {{{ RET #();
-        own_replica_ptsm_sptsm rp (<[key := uint.nat ts]> ptsm) (<[key := S (uint.nat ts)]> sptsm)
+        own_replica_ptsm_sptsm rp (<[key := uint.nat ts]> ptsm) (<[key := uint.nat ts]> sptsm)
     }}}.
   Proof.
-    iIntros (Hts Φ) "Hrp HΦ".
+    iIntros (Φ) "Hrp HΦ".
     wp_rec.
 
     (*@ func (rp *Replica) acquireKey(ts uint64, key string) {                  @*)
     (*@     rp.ptsm[key]  = ts                                                  @*)
-    (*@     rp.sptsm[key] = ts + 1                                              @*)
+    (*@     rp.sptsm[key] = ts                                                  @*)
     (*@ }                                                                       @*)
     iNamed "Hrp".
     wp_loadField.
@@ -299,9 +291,7 @@ Section replica.
       { do 2 (rewrite lookup_insert_ne; last done).
         by apply Hsptsmabs.
       }
-      rewrite 2!lookup_insert.
-      f_equal.
-      clear -Hts. word.
+      by rewrite 2!lookup_insert.
     }
   Qed.
 
@@ -339,8 +329,8 @@ Section replica.
     key ∈ keys_all ->
     {{{ own_replica_ptsm_sptsm rp ptsm sptsm }}}
       Replica__bumpKey #rp #ts #(LitString key)
-    {{{ (spts : nat), RET #(bool_decide (spts < uint.nat ts)%nat);
-        own_replica_ptsm_sptsm rp ptsm (<[key := (spts `max` uint.nat ts)%nat]> sptsm) ∗
+    {{{ (spts : nat), RET #(bool_decide (spts < pred (uint.nat ts))%nat);
+        own_replica_ptsm_sptsm rp ptsm (<[key := (spts `max` pred (uint.nat ts))%nat]> sptsm) ∗
         ⌜sptsm !! key = Some spts⌝
     }}}.
   Proof.
@@ -349,10 +339,10 @@ Section replica.
 
     (*@ func (rp *Replica) bumpKey(ts uint64, key string) bool {                @*)
     (*@     spts := rp.sptsm[key]                                               @*)
-    (*@     if ts <= spts {                                                     @*)
+    (*@     if ts - 1 <= spts {                                                 @*)
     (*@         return false                                                    @*)
     (*@     }                                                                   @*)
-    (*@     rp.sptsm[key] = ts                                                  @*)
+    (*@     rp.sptsm[key] = ts - 1                                              @*)
     (*@     return true                                                         @*)
     (*@ }                                                                       @*)
     iNamed "Hrp".
@@ -361,7 +351,8 @@ Section replica.
     iIntros (sptsW ok) "[%Hspts HsptsmM]".
     wp_pures.
     case_bool_decide as Hcond; wp_pures.
-    { destruct ok.
+    { rewrite word.unsigned_sub_nowrap in Hcond; last word.
+      destruct ok.
       { apply map_get_true in Hspts.
         iSpecialize ("HΦ" $! (uint.nat sptsW)).
         case_bool_decide as Hts; first word.
@@ -379,14 +370,26 @@ Section replica.
         }
         rewrite lookup_insert Hspts.
         f_equal.
-        clear -Hts.
-        word.
+        clear -Hts. word.
       }
-      { apply map_get_false in Hspts as [_ ->].
+      { apply map_get_false in Hspts as [Hspts ->].
         simpl in Hcond.
-        clear -Htsnz Hcond. word.
+        iSpecialize ("HΦ" $! O).
+        case_bool_decide as Hts; first word.
+        assert (uint.Z ts = 1) by word.
+        iApply "HΦ".
+        iFrame "HptsmP HsptsmP ∗ %".
+        iPureIntro.
+        assert (Hz : sptsm !! key = Some O).
+        { specialize (Hsptsmabs _ Hkey).
+          by rewrite Hspts in Hsptsmabs.
+        }
+        split; last apply Hz.
+        replace (_ `max` _)%nat with O; last word.
+        by rewrite insert_id.
       }
     }
+    rewrite word.unsigned_sub_nowrap in Hcond; last word.
     wp_loadField.
     wp_apply (wp_MapInsert with "HsptsmM"); first done.
     iIntros "HsptsmM".
@@ -411,14 +414,14 @@ Section replica.
       f_equal.
       clear -Hcond. word.
     }
-    { apply map_get_false in Hspts as [Hnone ->].
+    { apply map_get_false in Hspts as [Hspts ->].
       simpl in Hcond.
-      iSpecialize ("HΦ" $! 1%nat).
-      case_bool_decide as Hts.
+      iSpecialize ("HΦ" $! O).
+      case_bool_decide as Hts; last word.
       { iApply "HΦ".
-        assert (Hsptsmkey : sptsm !! key = Some 1%nat).
+        assert (Hsptsmkey : sptsm !! key = Some O).
         { specialize (Hsptsmabs _ Hkey).
-          by rewrite Hnone in Hsptsmabs.
+          by rewrite Hspts in Hsptsmabs.
         }
         iFrame "HptsmP HsptsmP ∗ %".
         iPureIntro.
@@ -429,12 +432,9 @@ Section replica.
         }
         rewrite 2!lookup_insert.
         f_equal.
-        clear -Hts. word.
-      }
-      { assert (uint.Z ts = 1) by word.
-        admit.
+        word.
       }
     }
-  Admitted.
+  Qed.
 
 End replica.

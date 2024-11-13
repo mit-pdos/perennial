@@ -101,10 +101,10 @@ Definition Replica__readableKey: val :=
 Definition Replica__bumpKey: val :=
   rec: "Replica__bumpKey" "rp" "ts" "key" :=
     let: "spts" := Fst (MapGet (struct.loadF Replica "sptsm" "rp") "key") in
-    (if: "ts" ≤ "spts"
+    (if: ("ts" - #1) ≤ "spts"
     then #false
     else
-      MapInsert (struct.loadF Replica "sptsm" "rp") "key" "ts";;
+      MapInsert (struct.loadF Replica "sptsm" "rp") "key" ("ts" - #1);;
       #true).
 
 Definition Replica__logRead: val :=
@@ -170,14 +170,14 @@ Definition Replica__writableKey: val :=
     then #false
     else
       let: "spts" := Fst (MapGet (struct.loadF Replica "sptsm" "rp") "key") in
-      (if: "ts" < "spts"
+      (if: "ts" ≤ "spts"
       then #false
       else #true)).
 
 Definition Replica__acquireKey: val :=
   rec: "Replica__acquireKey" "rp" "ts" "key" :=
     MapInsert (struct.loadF Replica "ptsm" "rp") "key" "ts";;
-    MapInsert (struct.loadF Replica "sptsm" "rp") "key" ("ts" + #1);;
+    MapInsert (struct.loadF Replica "sptsm" "rp") "key" "ts";;
     #().
 
 Definition Replica__acquire: val :=
