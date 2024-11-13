@@ -1086,9 +1086,9 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__putRpc Post cl args args_ptr :
+Lemma wp_Client__putRpc Post cl args args_ptr:
   {{{
-        "Hargs" ∷ put.own args_ptr args DfracDiscarded ∗
+        "Hargs" ∷ put.own args_ptr args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl ∗
         "#Hspec" ∷ □ put_core_spec args Post
   }}}
@@ -1108,7 +1108,7 @@ Proof.
   wp_pures.
   wp_apply wp_NewSlice. iIntros (s) "Hs".
   wp_apply (put.wp_Encode with "[$]").
-  iIntros (??) "(%Henc & Hreq_sl)".
+  iIntros (??) "(%Henc & Hargs_own & Hreq_sl)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.
@@ -1147,7 +1147,7 @@ Qed.
 
 Lemma wp_Client__conditionalPutRpc Post cl args args_ptr :
   {{{
-        "Hargs" ∷ conditionalPut.own args_ptr args DfracDiscarded ∗
+        "Hargs" ∷ conditionalPut.own args_ptr args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl ∗
         "#Hspec" ∷ □ conditionalPut_core_spec args Post
   }}}
@@ -1167,7 +1167,7 @@ Proof.
   wp_pures.
   wp_apply wp_NewSlice. iIntros (s) "Hs".
   wp_apply (conditionalPut.wp_Encode with "[$]").
-  iIntros (??) "(%Henc & Hreq_sl)".
+  iIntros (??) "(%Henc & Hargs_own & Hreq_sl)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.
@@ -1211,7 +1211,7 @@ Qed.
 
 Lemma wp_Client__getRpc Post cl args args_ptr :
   {{{
-        "Hargs" ∷ get.own args_ptr args DfracDiscarded ∗
+        "Hargs" ∷ get.own args_ptr args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl ∗
         "#Hspec" ∷ □ get_core_spec args Post
   }}}
@@ -1231,7 +1231,7 @@ Proof.
   wp_pures.
   wp_apply wp_NewSlice. iIntros (s) "Hs".
   wp_apply (get.wp_Encode with "[$]").
-  iIntros (??) "(%Henc & Hreq_sl)".
+  iIntros (??) "(%Henc & Hargs_own & Hreq_sl)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.
@@ -1423,8 +1423,8 @@ Proof.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__conditionalPutRpc (λ _, True)%I with "[Hcl opId key expectedVal newVal]").
-  { instantiate (2:=conditionalPutArgs.mk _ _ _ _). iFrame "∗#". done. }
+  wp_apply (wp_Client__conditionalPutRpc (λ _, True)%I with "[Hcl OpId Key ExpectedVal NewVal]").
+  { instantiate (2:=conditionalPut.mkC _ _ _ _). iFrame "∗#". done. }
   iClear "Hpost".
   iIntros (ret err) "Hpost".
   wp_pures.
@@ -1506,8 +1506,8 @@ Proof.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__getRpc (λ _, True)%I with "[Hcl opId key]").
-  { instantiate (2:=getArgs.mk _ _). iFrame "∗#". done. }
+  wp_apply (wp_Client__getRpc (λ _, True)%I with "[Hcl OpId Key]").
+  { instantiate (2:=get.mkC _ _). iFrame "∗#". done. }
   iClear "Hpost".
   iIntros (ret err) "Hpost".
   wp_pures.

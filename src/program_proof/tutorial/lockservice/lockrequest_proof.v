@@ -17,18 +17,19 @@ Record C :=
 Definition has_encoding (encoded:list u8) (args:C) : Prop :=
   encoded = (u64_le args.(id)).
 
-Definition own (args_ptr:loc) (args:C) (q:dfrac) : iProp Σ :=
-  "Hargs_id" ∷ args_ptr ↦[lockrequest_gk.S :: "Id"]{q} #args.(id).
+Definition own (args_ptr: loc) (args: C) (dq: dfrac) : iProp Σ :=
+  "Hargs_id" ∷ args_ptr ↦[lockrequest_gk.S :: "Id"]{dq} #args.(id).
 
-Lemma wp_Encode (args_ptr:loc) (args:C) (pre_sl:Slice.t) (prefix:list u8) :
+Lemma wp_Encode (args_ptr:loc) (args:C) (pre_sl:Slice.t) (prefix:list u8) (dq: dfrac):
   {{{
-        own args_ptr args (DfracDiscarded) ∗
+        own args_ptr args dq ∗
         own_slice pre_sl byteT (DfracOwn 1) prefix
   }}}
     lockrequest_gk.Marshal #args_ptr (slice_val pre_sl)
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
+        own args_ptr args dq ∗
         own_slice enc_sl byteT (DfracOwn 1) (prefix ++ enc)
   }}}.
 
@@ -40,21 +41,22 @@ Proof.
   wp_loadField. wp_load. wp_apply (wp_WriteInt with "[$Hsl]").
   iIntros (?) "Hsl". wp_store.
 
+
   wp_load. iApply "HΦ". iModIntro. rewrite -?app_assoc.
   iFrame. iPureIntro.
 
-   done.
+  done.
 Qed.
 
-Lemma wp_Decode enc enc_sl (args:C) (suffix:list u8) (q:dfrac):
+Lemma wp_Decode enc enc_sl (args: C) (suffix: list u8) (dq: dfrac):
   {{{
         ⌜has_encoding enc args⌝ ∗
-        own_slice_small enc_sl byteT q (enc ++ suffix)
+        own_slice_small enc_sl byteT dq (enc ++ suffix)
   }}}
     lockrequest_gk.Unmarshal (slice_val enc_sl)
   {{{
         args_ptr suff_sl, RET (#args_ptr, suff_sl); own args_ptr args (DfracOwn 1) ∗
-                                                    own_slice_small suff_sl byteT q suffix
+                                                    own_slice_small suff_sl byteT dq suffix
   }}}.
 
 Proof.
