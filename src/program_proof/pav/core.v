@@ -29,9 +29,8 @@ Notation lat_opaque_val_ty := (option opaque_map_val_ty) (only parsing).
 Section misc.
 Class pavG Σ :=
   {
-    #[global] pavG_adtr :: mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ;
-    #[global] pavG_client_seen_maps :: mono_listG (option (gname * dig_ty)) Σ;
-    #[global] pavG_client_submaps :: ghost_mapG Σ map_label_ty cli_map_val_ty;
+    #[global] pavG_adtr :: mono_listG ((gmap opaque_label_ty (epoch_ty * comm_ty)) * dig_ty) Σ;
+    #[global] pavG_cli :: mono_listG (option dig_ty) Σ;
   }.
 
 Context `{!heapGS Σ}.
@@ -123,9 +122,9 @@ Definition pk_comm_reln (lat_pk : lat_val_ty) (lat_comm : lat_opaque_val_ty) : i
   end.
 
 Definition msv (adtr_γ : gname) (ep uid : w64) (lat : lat_val_ty) : iProp Σ :=
-  ∃ (m : adtr_map_ty) (vals : list opaque_map_val_ty),
+  ∃ m dig (vals : list opaque_map_val_ty),
   "#Hpk_comm_reln" ∷ pk_comm_reln lat (last vals) ∗
-  "#Hmap" ∷ mono_list_idx_own adtr_γ (uint.nat ep) m ∗
+  "#Hmap" ∷ mono_list_idx_own adtr_γ (uint.nat ep) (m, dig) ∗
   "#Hmsv_core" ∷ msv_core m uid vals.
 
 Lemma msv_agree γ ep uid lat0 lat1 :

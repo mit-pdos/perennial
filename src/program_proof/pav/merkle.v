@@ -40,11 +40,7 @@ Definition is_merkle_entry id val digest : iProp Σ :=
 (* is_merkle_entry_with_map says that if you know an entry as well
 as the underlying map, you can combine those to get a pure map fact. *)
 Lemma is_merkle_entry_with_map id val dig m :
-  is_merkle_entry id val dig -∗ is_dig m dig -∗
-  ⌜ match val with
-    | None => id ∉ dom m
-    | Some val' => m !! id = Some val'
-    end ⌝.
+  is_merkle_entry id val dig -∗ is_dig m dig -∗ ⌜ m !! id = val ⌝.
 Proof. Admitted.
 
 Lemma is_merkle_entry_inj' pos rest val1 val2 digest :
@@ -529,9 +525,6 @@ Proof. Admitted.
 Global Instance is_merkle_proof_persis proof id val dig :
   Persistent (is_merkle_proof proof id val dig).
 Proof. Admitted.
-
-Definition has_merkp id val dig : iProp Σ :=
-  ∃ proof, is_merkle_proof proof id val dig.
 
 Lemma is_merkle_proof_to_entry proof id val dig :
   is_merkle_proof proof id val dig -∗ is_merkle_entry id val dig.

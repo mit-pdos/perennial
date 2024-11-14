@@ -59,6 +59,8 @@ Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Epoch) ++ u64_le (length obj.(PkComm)) ++ obj.(PkComm).
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
+Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
+Proof. Admitted.
 End MapValPre.
 
 Module AdtrEpochInfo.

@@ -3,11 +3,9 @@ From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.program_proof.pav Require Import core cryptoffi merkle serde.
 
-Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
-  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
-
 Section invs.
 Context `{!heapGS Σ, !pavG Σ}.
+
 Definition maps_mono (ms : list adtr_map_ty) :=
   ∀ (i j : nat) mi mj,
   ms !! i = Some mi →
@@ -22,34 +20,20 @@ Definition maps_epoch_ok (ms : list adtr_map_ty) :=
   uint.nat ep' ≤ ep.
 
 Definition adtr_inv ms := maps_mono ms ∧ maps_epoch_ok ms.
-End invs.
 
-Module comm_st.
-Record t :=
-  mk {
-    key_maps: list (gmap opaque_label_ty (epoch_ty * comm_ty));
-    digs: list dig_ty;
-  }.
+Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
+  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
 
-Section defs.
-Context `{!heapGS Σ, !pavG Σ}.
-Definition valid γ (obj : t) : iProp Σ :=
-  "#Hmaps" ∷ mono_list_lb_own γ obj.(key_maps) ∗
-  "#Hdigs" ∷ ([∗ list] m;d ∈ obj.(key_maps);obj.(digs), is_dig (lower_adtr m) d).
-End defs.
-End comm_st.
-
-Section inv.
-Context `{!heapGS Σ, !pavG Σ}.
 Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
-  (∃ pre st,
+  (∃ pre (st : list (adtr_map_ty * dig_ty)),
   "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
-  "#Hcomm_st" ∷ comm_st.valid γ st ∗
-  "%Hlook" ∷ ⌜ st.(comm_st.digs) !! uint.nat (pre.(PreSigDig.Epoch)) = Some pre.(PreSigDig.Dig) ⌝ ∗
-  "%Hinv" ∷ ⌜ adtr_inv st.(comm_st.key_maps) ⌝
+  "#Hlb" ∷ mono_list_lb_own γ st ∗
+  "#His_digs" ∷ ([∗ list] x ∈ st, is_dig (lower_adtr x.1) x.2) ∗
+  "[% %Hlook_dig]" ∷ (∃ m, ⌜ st !! uint.nat pre.(PreSigDig.Epoch) = Some (m, pre.(PreSigDig.Dig)) ⌝) ∗
+  "%Hinv" ∷ ⌜ adtr_inv st.*1 ⌝
   )%I.
-End inv.
+End invs.
 
 Module Auditor.
 
@@ -57,7 +41,7 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃ γ pk key_maps (ptr_map : loc) last_map sl_sk sl_hist ptrs_hist hist,
+  ∃ γ pk gs (ptr_map : loc) last_map sl_sk sl_hist ptrs_hist hist,
     (* Physical ownership *)
   "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
@@ -68,15 +52,17 @@ Definition own (ptr : loc) : iProp Σ :=
   "Hown_map" ∷ own_merkle ptr_map (lower_adtr last_map) ∗
 
     (* Ghost ownership *)
-  "Hmaps" ∷ mono_list_auth_own γ 1 key_maps ∗
+  "Hmaps" ∷ mono_list_auth_own γ 1 gs ∗
 
     (* Crypto props *)
   "Hown_sk" ∷ own_sk sl_sk pk (adtr_sigpred γ) ∗
-  "#Hdigs_hist" ∷ ([∗ list] m;info ∈ key_maps;hist,
-    is_dig (lower_adtr m) info.(AdtrEpochInfo.Dig)) ∗
+  (* TODO(SB): with new GS, figure out what tie-in should actually
+  be with phys. *)
+  "%Hdigs_hist" ∷ ([∗ list] x;info ∈ gs;hist,
+    ⌜ x.2 = info.(AdtrEpochInfo.Dig) ⌝) ∗
 
-  "%Hlast_map" ∷ ⌜ last key_maps = Some last_map ⌝ ∗
-  "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝.
+  "%Hlast_map" ∷ ⌜ last gs.*1 = Some last_map ⌝ ∗
+  "%Hinv" ∷ ⌜ adtr_inv gs.*1 ⌝.
 
 Definition valid (ptr : loc) : iProp Σ :=
   ∃ (mu : loc),
