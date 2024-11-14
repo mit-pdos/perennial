@@ -111,6 +111,17 @@ Section setts.
     rewrite lookup_merge lookup_empty /=.
     by destruct (tss !! k).
   Qed.
+
+  Lemma setts_insert ts wrs tsm k v :
+    k ∈ dom tsm ->
+    setts ts (<[k := v]> wrs) tsm = <[k := ts]> (setts ts wrs tsm).
+  Proof.
+    intros Hk. apply elem_of_dom in Hk as [t Ht].
+    symmetry.
+    apply insert_merge_l.
+    by rewrite /= Ht.
+  Qed.
+
 End setts.
 
 Definition acquire := setts.
@@ -479,6 +490,10 @@ Section execute_cmds.
 
   Definition execute_cmds (cmds : list command) :=
     foldl execute_cmd init_rpst cmds.
+
+  Lemma execute_cmds_unfold cmds :
+    foldl execute_cmd init_rpst cmds = execute_cmds cmds.
+  Proof. done. Qed.
 
   Lemma execute_cmds_snoc (cmds : list command) (cmd : command) :
     execute_cmds (cmds ++ [cmd]) = execute_cmd (execute_cmds cmds) cmd.

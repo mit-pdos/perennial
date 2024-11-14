@@ -13,7 +13,7 @@ Section inv.
   Definition tulipNS := sysNS .@ "tulip".
   Definition tsNS := sysNS .@ "ts".
 
-  Definition tulip_inv γ p : iProp Σ :=
+  Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)
     "Htxnsys"   ∷ txnsys_inv γ p ∗
     (* keys invariants *)
@@ -24,12 +24,17 @@ Section inv.
     "Hreplicas" ∷ ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid).
 
   #[global]
-  Instance tulip_inv_timeless γ p :
-    Timeless (tulip_inv γ p).
+  Instance tulip_inv_with_proph_timeless γ p :
+    Timeless (tulip_inv_with_proph γ p).
   Admitted.
 
-  Definition know_tulip_inv γ p : iProp Σ :=
-    inv tulipNS (tulip_inv γ p).
+  Definition tulip_inv γ : iProp Σ := ∃ p, tulip_inv_with_proph γ p.
+
+  Definition know_tulip_inv_with_proph γ p : iProp Σ :=
+    inv tulipNS (tulip_inv_with_proph γ p).
+
+  Definition know_tulip_inv γ : iProp Σ :=
+    inv tulipNS (tulip_inv γ).
 
 End inv.
 
@@ -45,7 +50,7 @@ Section alloc.
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
          own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
       (* tulip atomic invariant *)
-      tulip_inv γ p.
+      tulip_inv_with_proph γ p.
   Proof.
     iIntros "Hproph".
     iMod (tulip_res_alloc) as (γ) "Hres".

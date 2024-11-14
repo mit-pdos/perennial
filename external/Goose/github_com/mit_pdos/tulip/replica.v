@@ -199,6 +199,10 @@ Definition Replica__acquire: val :=
         (Replica__acquireKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent"));;
       #true).
 
+Definition Replica__logValidate: val :=
+  rec: "Replica__logValidate" "rp" "ts" "pwrs" "ptgs" :=
+    #().
+
 (* Arguments:
    @ts: Transaction timestamp.
    @pwrs: Write set of transaction @ts.
@@ -224,6 +228,7 @@ Definition Replica__validate: val :=
         then tulip.REPLICA_FAILED_VALIDATION
         else
           MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
+          Replica__logValidate "rp" "ts" "pwrs" "ptgs";;
           tulip.REPLICA_OK))).
 
 (* Keep alive coordinator for @ts at @rank. *)

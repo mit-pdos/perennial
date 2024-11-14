@@ -150,6 +150,23 @@ Section inv.
     by iFrame "Hwrs".
   Qed.
 
+  Lemma safe_txn_pwrs_dom_pwrs γ gid ts pwrs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    ⌜dom pwrs ⊆ keys_all⌝.
+  Proof.
+    iIntros "Hsafe".
+    iDestruct "Hsafe" as (wrs) "(Hwrs & _ & %Hvw & _ & %Hpwrs)".
+    iPureIntro.
+    trans (dom wrs); last apply Hvw.
+    rewrite Hpwrs.
+    apply dom_filter_subseteq.
+  Qed.
+
+  Lemma safe_txn_pwrs_impl_valid_ts γ gid ts pwrs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    ⌜valid_ts ts⌝.
+  Proof. iIntros "Hsafe". by iDestruct "Hsafe" as (?) "(_ & ? & _ & _ & _)". Qed.
+
   (** The [StAborted] branch says that a transaction is aborted globally if it
   is aborted locally on some group (the other direction is encoded in
   [safe_submit]). This gives contradiction when learning a commit command under

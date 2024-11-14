@@ -23,7 +23,6 @@ Section execute.
 
   Lemma replica_inv_execute γ gid rid ilog ccmds :
     ∀ clog,
-    Forall (λ nc, (nc.1 <= length clog)%nat) ilog ->
     is_txn_log_lb γ gid (clog ++ ccmds) -∗
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
@@ -34,41 +33,25 @@ Section execute.
     group_inv γ gid ∗
     replica_inv γ gid rid.
   Proof.
-    iInduction ccmds as [| c l] "IH"; iIntros (clog Hpos) "#Hloglb Hclog Hilog Hgroup Hrp".
+    iInduction ccmds as [| c l] "IH"; iIntros (clog) "#Hloglb Hclog Hilog Hgroup Hrp".
     { rewrite app_nil_r. by iFrame. }
     rewrite cons_middle app_assoc.
     destruct c as [ts pwrs | ts].
     { (* Case: [CmdCommit ts pwrs] *)
       iMod (replica_inv_execute_commit with "[] Hclog Hilog Hgroup Hrp")
         as "(Hclog & Hilog & Hgroup & Hrp)".
-      { apply Hpos. }
       { iApply (txn_log_lb_weaken (clog ++ [CmdCommit ts pwrs]) with "Hloglb").
         by apply prefix_app_r.
       }
-      iApply ("IH" with "[] Hloglb Hclog Hilog Hgroup Hrp").
-      { iPureIntro.
-        eapply Forall_impl; first apply Hpos.
-        intros [t c] Ht.
-        simpl in Ht.
-        rewrite length_app /=.
-        lia.
-      }
+      iApply ("IH" with "Hloglb Hclog Hilog Hgroup Hrp").
     }
     { (* Case: [CmdAbort ts] *)
       iMod (replica_inv_execute_abort with "[] Hclog Hilog Hgroup Hrp")
         as "(Hclog & Hilog & Hgroup & Hrp)".
-      { apply Hpos. }
       { iApply (txn_log_lb_weaken (clog ++ [CmdAbort ts]) with "Hloglb").
         by apply prefix_app_r.
       }
-      iApply ("IH" with "[] Hloglb Hclog Hilog Hgroup Hrp").
-      { iPureIntro.
-        eapply Forall_impl; first apply Hpos.
-        intros [t c] Ht.
-        simpl in Ht.
-        rewrite length_app /=.
-        lia.
-      }
+      iApply ("IH" with "Hloglb Hclog Hilog Hgroup Hrp").
     }
   Qed.
 

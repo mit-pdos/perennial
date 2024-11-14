@@ -92,10 +92,12 @@ Section inv.
       "Hbm"       ∷ replica_inv_ballot_map γ gid rid bm ∗
       "Hbackup"   ∷ replica_inv_backup γ gid rid bm ∗
       "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid ts pwrs) ∗
+      "#Hrpvds"   ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗
       "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim⌝ ∗
+      "%Hcloglen" ∷ ⌜Forall (λ nc, (nc.1 <= length clog)%nat) ilog⌝ ∗
       "%Hvtss"    ∷ ⌜vtss ⊆ dom cm ∪ dom cpm⌝ ∗
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
       "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = S spts) kvdm sptsm⌝ ∗

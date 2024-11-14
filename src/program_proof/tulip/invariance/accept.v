@@ -130,6 +130,8 @@ Section accept.
         rewrite length_replicate in Hlen. by inv Hlen.
       }
       iPureIntro.
+      split.
+      { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
       apply map_Forall2_insert_2; last apply Hbmlaim.
       subst blt'.
       split; first by rewrite latest_term_snoc_Accept length_replicate.
@@ -204,6 +206,8 @@ Section accept.
       by case_decide.
     }
     iPureIntro.
+    split.
+    { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
     apply map_Forall2_insert_2; last apply Hbmlaim.
     subst blt'.
     split.

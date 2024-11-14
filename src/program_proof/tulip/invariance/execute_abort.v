@@ -6,7 +6,6 @@ Section execute_abort.
 
   Lemma replica_inv_execute_abort γ gid rid clog ilog ts :
     let clog' := clog ++ [CmdAbort ts] in
-    Forall (λ nc, (nc.1 <= length clog)%nat) ilog ->
     is_txn_log_lb γ gid clog' -∗
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
@@ -17,7 +16,7 @@ Section execute_abort.
     group_inv γ gid ∗
     replica_inv γ gid rid.
   Proof.
-    iIntros (clog' Hpos) "#Hloglb Hclogprog Hilogprog Hgroup Hrp".
+    iIntros (clog') "#Hloglb Hclogprog Hilogprog Hgroup Hrp".
     iAssert (⌜not_stuck (apply_cmds clog')⌝)%I as %Hns.
     { do 2 iNamed "Hgroup".
       iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
@@ -57,7 +56,7 @@ Section execute_abort.
     (* Re-establish the RSM predicate. This will compute to the right form along
     the way in each branch. *)
     assert (Hrsm' : execute_cmds (merge_clog_ilog clog' ilog) = execute_abort st ts).
-    { rewrite merge_clog_ilog_snoc_clog; last apply Hpos.
+    { rewrite merge_clog_ilog_snoc_clog; last apply Hcloglen.
       by rewrite execute_cmds_snoc Hrsm.
     }
     iFrame "Hclogprog Hilogprog Hgroup".
@@ -66,6 +65,12 @@ Section execute_abort.
     rewrite /apply_abort Happly in Hns.
     subst st.
     rewrite /execute_abort in Hrsm'.
+    assert (Hcloglen' : Forall (λ nc, (nc.1 <= length clog')%nat) ilog).
+    { eapply Forall_impl; first apply Hcloglen.
+      intros [n c] Hlen. simpl in Hlen.
+      rewrite length_app /=.
+      clear -Hlen. lia.
+    }
     destruct (cm !! ts) as [b |] eqn:Hcm.
     { (* Case: Txn [ts] already finalized. Contradiction for committed; no-op for aborted. *)
       destruct b; first done.
@@ -124,6 +129,12 @@ Section execute_abort.
         iFrame "Hgabtts".
       }
       iFrame "∗ # %".
+      iModIntro.
+      iSplit.
+      { rewrite dom_delete_L.
+        iApply (big_sepS_subseteq with "Hrpvds").
+        set_solver.
+      }
       iPureIntro.
       split.
       { rewrite dom_insert_L dom_delete_L. clear -Hvtss.

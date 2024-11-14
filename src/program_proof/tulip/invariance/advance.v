@@ -173,6 +173,8 @@ Section advance.
       }
       iPureIntro.
       rewrite Hlaimts.
+      split.
+      { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
       apply map_Forall2_insert_2; last apply Hbmlaim.
       rewrite latest_term_extend_Reject latest_term_singleton.
       split; first done.
@@ -270,6 +272,8 @@ Section advance.
     iPureIntro.
     rewrite Hlaimts.
     rewrite -(insert_id _ _ _ Hlaimts).
+    split.
+    { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
     apply map_Forall2_insert_2; last apply Hbmlaim.
     split.
     { by rewrite latest_term_extend_Reject. }
