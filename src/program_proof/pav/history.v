@@ -7,7 +7,6 @@ Section hist.
 (* logical history. *)
 Context `{!heapGS Σ, !pavG Σ}.
 
-(* TODO: add inv that says every key in cli submap will have a vrf. *)
 Definition is_hist_ep cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
   ∃ (vals : list opaque_map_val_ty),
   "#Hpk_comm_reln" ∷
@@ -17,14 +16,12 @@ Definition is_hist_ep cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w6
   (* prior vers exist in prior or this map. *)
   "#Hhist" ∷
     ([∗ list] ver ↦ '(prior, comm) ∈ vals,
-    ∃ dig m_γ label,
-    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat prior) (Some (dig, m_γ)) ∗
-    "#Hin_prior" ∷ (uid, W64 ver) ↪[m_γ]□ Some (prior, comm) ∗
-    "#His_label" ∷ is_vrf uid (W64 ver) label) ∗
+    ∃ m_γ dig label,
+    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat prior) (Some (m_γ, dig)) ∗
+    "#Hin_prior" ∷ (uid, W64 ver) ↪[m_γ]□ Some (prior, comm))
   "#Hbound" ∷
-    (∃ (bound : w64) dig m_γ label,
-    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat bound) (Some (dig, m_γ)) ∗
-    "#His_label" ∷ is_vrf uid (W64 $ length vals) label ∗
+    (∃ (bound : w64) m_γ dig label,
+    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat bound) (Some (m_γ, dig)) ∗
     "%Hlt_bound" ∷ ⌜ uint.Z bound < uint.Z valid ⌝ ∗
     (* next ver doesn't exist in this or later map. *)
     (("%Hgt_bound" ∷ ⌜ uint.Z ep ≤ uint.Z bound ⌝ ∗

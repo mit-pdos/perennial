@@ -12,6 +12,9 @@ Definition encodesF (obj : t) : list w8 :=
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 
+Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
+Proof. Admitted.
+
 Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
@@ -38,10 +41,10 @@ Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_Dig sl_Sig,
-  "Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"] #obj.(Epoch) ∗
-  "Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"] (slice_val sl_Dig) ∗
+  "#Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"]□ #obj.(Epoch) ∗
+  "#Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"]□ (slice_val sl_Dig) ∗
   "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
-  "Hptr_Sig" ∷ ptr ↦[SigDig :: "Sig"] (slice_val sl_Sig) ∗
+  "#Hptr_Sig" ∷ ptr ↦[SigDig :: "Sig"]□ (slice_val sl_Sig) ∗
   "#Hsl_Sig" ∷ own_slice_small sl_Sig byteT DfracDiscarded obj.(Sig).
 End defs.
 End SigDig.

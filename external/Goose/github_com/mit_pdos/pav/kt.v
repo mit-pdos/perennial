@@ -875,35 +875,32 @@ Definition callAdtrGet: val :=
       then (slice.nil, #true)
       else (struct.loadF AdtrGetReply "X" "reply", struct.loadF AdtrGetReply "Err" "reply"))).
 
-(* auditEpoch checks a single epoch against an auditor, and evid / error on fail.
-   pre-cond: we've seen this epoch. *)
-Definition Client__auditEpoch: val :=
-  rec: "Client__auditEpoch" "c" "epoch" "adtrCli" "adtrPk" :=
+(* auditEpoch checks a single epoch against an auditor, and evid / error on fail. *)
+Definition auditEpoch: val :=
+  rec: "auditEpoch" "seenDig" "servSigPk" "adtrCli" "adtrPk" :=
     let: "stdErr" := struct.new clientErr [
       "err" ::= #true
     ] in
-    let: ("adtrInfo", "err0") := callAdtrGet "adtrCli" "epoch" in
+    let: ("adtrInfo", "err0") := callAdtrGet "adtrCli" (struct.loadF SigDig "Epoch" "seenDig") in
     (if: "err0"
     then "stdErr"
     else
       let: "servDig" := struct.new SigDig [
-        "Epoch" ::= "epoch";
+        "Epoch" ::= struct.loadF SigDig "Epoch" "seenDig";
         "Dig" ::= struct.loadF AdtrEpochInfo "Dig" "adtrInfo";
         "Sig" ::= struct.loadF AdtrEpochInfo "ServSig" "adtrInfo"
       ] in
       let: "adtrDig" := struct.new SigDig [
-        "Epoch" ::= "epoch";
+        "Epoch" ::= struct.loadF SigDig "Epoch" "seenDig";
         "Dig" ::= struct.loadF AdtrEpochInfo "Dig" "adtrInfo";
         "Sig" ::= struct.loadF AdtrEpochInfo "AdtrSig" "adtrInfo"
       ] in
-      (if: CheckSigDig "servDig" (struct.loadF Client "servSigPk" "c")
+      (if: CheckSigDig "servDig" "servSigPk"
       then "stdErr"
       else
         (if: CheckSigDig "adtrDig" "adtrPk"
         then "stdErr"
         else
-          let: ("seenDig", "ok0") := MapGet (struct.loadF Client "seenDigs" "c") "epoch" in
-          control.impl.Assert "ok0";;
           (if: (~ (std.BytesEqual (struct.loadF AdtrEpochInfo "Dig" "adtrInfo") (struct.loadF SigDig "Dig" "seenDig")))
           then
             let: "evid" := struct.new Evid [
@@ -925,8 +922,8 @@ Definition Client__Audit: val :=
     let: "err0" := ref_to ptrT (struct.new clientErr [
       "err" ::= #false
     ]) in
-    MapIter (struct.loadF Client "seenDigs" "c") (λ: "ep" <>,
-      let: "err1" := Client__auditEpoch "c" "ep" "adtrCli" "adtrPk" in
+    MapIter (struct.loadF Client "seenDigs" "c") (λ: <> "dig",
+      let: "err1" := auditEpoch "dig" (struct.loadF Client "servSigPk" "c") "adtrCli" "adtrPk" in
       (if: struct.loadF clientErr "err" "err1"
       then "err0" <-[ptrT] "err1"
       else #()));;

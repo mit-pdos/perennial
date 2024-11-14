@@ -30,7 +30,7 @@ Section misc.
 Class pavG Σ :=
   {
     #[global] pavG_adtr :: mono_listG (gmap opaque_label_ty (epoch_ty * comm_ty)) Σ;
-    #[global] pavG_client_seen_maps :: mono_listG (option (dig_ty * gname)) Σ;
+    #[global] pavG_client_seen_maps :: mono_listG (option (gname * dig_ty)) Σ;
     #[global] pavG_client_submaps :: ghost_mapG Σ map_label_ty cli_map_val_ty;
   }.
 
