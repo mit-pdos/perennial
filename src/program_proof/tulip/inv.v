@@ -244,7 +244,7 @@ Section alloc.
         iIntros (k l Hl) "!> Hl".
         by apply lookup_gset_to_gmap_Some in Hl as [_ <-].
       }
-      rewrite !big_sepM_empty big_sepS_empty.
+      rewrite !dom_empty_L !big_sepM_empty !big_sepS_empty.
       iSplit; first done.
       iSplit.
       { iPureIntro.
@@ -252,7 +252,7 @@ Section alloc.
         do 2 (split; first done).
         split; apply map_Forall2_empty.
       }
-      do 2 (iSplit; first done).
+      do 3 (iSplit; first done).
       iSplit.
       { iIntros (k t).
         destruct (kvdm !! k) as [l |] eqn:Hl; rewrite Hl; last done.
@@ -274,6 +274,7 @@ Section alloc.
       split.
       { by rewrite /execute_cmds merge_clog_ilog_nil. }
       split; first done.
+      split; first set_solver.
       split; first apply dom_gset_to_gmap.
       split.
       { rewrite map_Forall2_forall.
