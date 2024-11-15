@@ -101,9 +101,22 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
 End MapLabelPre.
 
 Module UpdateProof.
-Definition t : Type. Admitted.
+Record t : Type :=
+  mk {
+      Updates : gmap string (list w8);
+      Sig: list w8
+  }.
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ (updates_mref : loc) (updatesM : gmap string (Slice.t)) sig_sl,
+    "HUpdates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
+    "HSig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sig_sl) ∗
+    "#HUpdatesM" ∷ own_map updates_mref DfracDiscarded updatesM ∗
+    "#HUpdatesMSl" ∷ ([∗ map] k ↦ sl; upd ∈ updatesM; obj.(Updates),
+                       own_slice_small sl byteT DfracDiscarded upd) ∗
+    "#HSigSl" ∷ own_slice_small sig_sl byteT DfracDiscarded obj.(Sig)
+.
+
 End defs.
 End UpdateProof.

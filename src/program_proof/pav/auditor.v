@@ -90,6 +90,7 @@ Proof.
   wp_rec.
   wp_apply wp_new_free_lock.
   iIntros (?) "Hl".
+  iMod (mono_list_own_alloc ([] : list (gmap opaque_label_ty (epoch_ty * comm_ty)))) as (?) "[? _]".
   wp_apply wp_GenerateKey.
   { shelve. }
   iIntros "*". iNamed 1.
@@ -105,7 +106,6 @@ Proof.
   iIntros "* Ha".
   iDestruct (struct_fields_split with "Ha") as "Ha".
   iNamed "Ha".
-  iMod (mono_list_own_alloc []) as (?) "[? _]".
   wp_pures. iApply "HΦ".
   iFrame "#".
   iMod (own_slice_small_persist with "Hsl_pk") as "#$".
@@ -148,8 +148,8 @@ Proof.
     }
     instantiate (1:=∅). done.
   }
-  (* FIXME:(upamanyu): γ unified between different [adtr_sigpred]s. Need to alloc ghost state earlier. *)
-
+  iSplit.
+  { by iApply big_sepL2_nil. }
   (* FIXME(sanjit):
      [Auditor.own] implies that [length key_maps > 0] because it states that [last key_maps = Some _].
      However, ["#Hdigs_hist"] requires that [length key_maps = length hist].
@@ -181,7 +181,20 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   iNamed "Hupdate".
-  admit. (* TODO: fill in UpdateProof.own *)
+  wp_loadField.
+
+  (* XXX: checkUpd only gets called here. Inlining its proof. *)
+  wp_rec.
+  wp_pures.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (?) "Hl".
+  wp_pures.
+  Search impl.MapIter typed_map.own_map.
+  wp_apply (wp_MapIter_fold _ _ _ _ with "[$]").
 Admitted.
 
 Lemma wp_Auditor__Get a (epoch : u64) :

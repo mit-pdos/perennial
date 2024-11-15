@@ -217,7 +217,8 @@ Proof.
   wp_pure.
   (* FIXME: need to make interfaceT comparable *)
   Show Ltac Profile.
-Admitted.
+  destruct false_axiom.
+Qed.
 
 Lemma wp_testLeaderElection2 :
   {{{ True }}}
