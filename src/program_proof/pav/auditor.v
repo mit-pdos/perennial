@@ -47,7 +47,7 @@ Definition own (ptr : loc) : iProp Σ :=
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
   "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val sl_sk) ∗
   "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
-  "Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
+  "#Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
     AdtrEpochInfo.own ptr_hist info) ∗
   "Hown_map" ∷ own_merkle ptr_map (lower_adtr (default ∅ (last gs.*1))) ∗
 
@@ -202,16 +202,23 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   wp_if_destruct.
-  -  wp_loadField.
-     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
-     { iFrame "HmuR ∗#%". }
-     wp_pures.
-     wp_apply wp_allocStruct.
-     { val_ty. }
-     iIntros (?) "?".
-     wp_pures.
-     iApply "HΦ".
-     admit. (* TODO: fill in AdtrEpochInfo.own *)
+  - wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "HmuR ∗#%". }
+    wp_pures.
+    wp_apply wp_allocStruct.
+    { val_ty. }
+    iIntros (?) "H".
+    wp_pures.
+    iApply "HΦ".
+    repeat iExists _.
+    iDestruct (struct_fields_split with "H") as "H".
+    iNamed "H".
+    do 3 iMod (struct_field_pointsto_persist with "[$]") as "#?".
+    rewrite zero_slice_val.
+    iFrame "#".
+    instantiate (1:=AdtrEpochInfo.mk [] [] []). simpl.
+    repeat iDestruct (own_slice_small_nil byteT DfracDiscarded) as "$"; try done.
   - wp_loadField.
     iDestruct (own_slice_small_sz with "Hsl_hist") as %Hsz.
     unshelve epose proof (list_lookup_lt ptrs_hist (uint.nat epoch) ltac:(word)) as [? Hlookup].
@@ -219,12 +226,14 @@ Proof.
     iIntros "Hsl".
     wp_pures.
     wp_loadField.
+    iDestruct (big_sepL2_lookup_1_some with "[$]") as %[??].
+    { done. }
+    iDestruct (big_sepL2_lookup with "Hown_hist") as "H"; try done.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "HmuR ∗#%". }
     wp_pures.
     iApply "HΦ".
-    (* FIXME: make Hown_hist have persistent ownership of AdtrEpochInfo *)
-    admit.
-Admitted.
+    by iFrame "#".
+Qed.
 
 End specs.

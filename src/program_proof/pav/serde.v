@@ -79,11 +79,11 @@ Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_Dig sl_ServSig sl_AdtrSig,
-  "Hptr_Dig" ∷ ptr ↦[AdtrEpochInfo :: "Dig"] (slice_val sl_Dig) ∗
+  "#Hptr_Dig" ∷ ptr ↦[AdtrEpochInfo :: "Dig"]□ (slice_val sl_Dig) ∗
   "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
-  "Hptr_ServSig" ∷ ptr ↦[AdtrEpochInfo :: "ServSig"] (slice_val sl_ServSig) ∗
+  "#Hptr_ServSig" ∷ ptr ↦[AdtrEpochInfo :: "ServSig"]□ (slice_val sl_ServSig) ∗
   "#Hsl_ServSig" ∷ own_slice_small sl_ServSig byteT DfracDiscarded obj.(ServSig) ∗
-  "Hptr_AdtrSig" ∷ ptr ↦[AdtrEpochInfo :: "AdtrSig"] (slice_val sl_AdtrSig) ∗
+  "#Hptr_AdtrSig" ∷ ptr ↦[AdtrEpochInfo :: "AdtrSig"]□ (slice_val sl_AdtrSig) ∗
   "#Hsl_AdtrSig" ∷ own_slice_small sl_AdtrSig byteT DfracDiscarded obj.(AdtrSig).
 End defs.
 End AdtrEpochInfo.
