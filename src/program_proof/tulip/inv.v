@@ -12,6 +12,7 @@ Section inv.
   Definition sysNS := nroot .@ "sys".
   Definition tulipNS := sysNS .@ "tulip".
   Definition tsNS := sysNS .@ "ts".
+  Definition txnlogN := sysNS .@ "txnlog".
 
   Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)

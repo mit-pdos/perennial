@@ -1,5 +1,4 @@
-From Perennial.program_proof.tulip Require Import prelude.
-From Goose.github_com.mit_pdos.tulip Require Import tuple.
+From Perennial.program_proof.tulip.program Require Import prelude.
 
 Section res.
   Context `{!tulip_ghostG Σ}.

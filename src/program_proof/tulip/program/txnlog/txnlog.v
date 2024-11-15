@@ -1,26 +1,14 @@
-From Perennial.program_proof.tulip Require Import prelude.
-From Goose.github_com.mit_pdos.tulip Require Import tulip txnlog.
+From Perennial.program_proof.tulip.program Require Import prelude.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
-
-  Definition txnlogN := nroot .@ "txnlog".
-
-  Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
-    match c with
-    | CmdCommit ts _ => (#(U64 0), (#(U64 ts), (to_val pwrsS, (zero_val stringT, #()))))
-    | CmdAbort ts => (#(U64 1), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
-    end.
-
-  Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=
-    own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m = l⌝.
 
   Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
     match c with
     | CmdCommit _ pwrs => (∃ pwrsL : list dbmod, own_dbmap_in_slice pwrsS pwrsL pwrs)
     | _ => True
     end.
-  
+
   Definition is_txnlog (txnlog : loc) (gid : u64) (γ : tulip_names) : iProp Σ.
   Admitted.
 
