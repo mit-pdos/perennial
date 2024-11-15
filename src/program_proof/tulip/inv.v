@@ -15,13 +15,13 @@ Section inv.
 
   Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)
-    "Htxnsys"   ∷ txnsys_inv γ p ∗
+    "Htxnsys" ∷ txnsys_inv γ p ∗
     (* keys invariants *)
-    "Hkeys"     ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)
-    "Hgroups"   ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid) ∗
+    "Hgroups" ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid) ∗
     (* replica invariants *)
-    "Hreplicas" ∷ ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid).
+    "Hrgs"    ∷ ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid).
 
   #[global]
   Instance tulip_inv_with_proph_timeless γ p :
@@ -230,14 +230,15 @@ Section alloc.
       iApply (big_sepS_impl with "Hrps").
       iIntros (rid Hrid) "!> (Hvtsm & Hkvdm & Hclog & Hilog & Hbm & Hbvm & Hbtm)".
       iFrame.
-      (* Instantiate commit map, currently prepare map, key validation map, last
-      accepted index map, history map, participant group map, smallest
-      preparable timestamp map, prepare timestamp map. *)
+      (* Instantiate commit map, currently prepare map, key validation map,
+      history map, participant group map, smallest preparable timestamp map,
+      prepare timestamp map, prepare proposal map, and lowest acceptable rank
+      map. *)
       set kvdm := gset_to_gmap [false] keys_all.
       set histm := gset_to_gmap [(None : dbval)] keys_all.
       set ptsgm := gset_to_gmap O keys_all.
       set sptsgm := gset_to_gmap O keys_all.
-      iExists ∅, ∅, kvdm, ∅, histm, ∅, sptsgm, ptsgm.
+      iExists ∅, ∅, kvdm, histm, ∅, sptsgm, ptsgm, ∅, ∅.
       iSplitL "Hkvdm".
       { iApply (big_sepS_sepM_impl with "Hkvdm").
         { by rewrite dom_gset_to_gmap. }
@@ -252,7 +253,7 @@ Section alloc.
         do 2 (split; first done).
         split; apply map_Forall2_empty.
       }
-      do 3 (iSplit; first done).
+      do 4 (iSplit; first done).
       iSplit.
       { iIntros (k t).
         destruct (kvdm !! k) as [l |] eqn:Hl; rewrite Hl; last done.
@@ -291,7 +292,7 @@ Section alloc.
         by apply lookup_gset_to_gmap_Some in Hy as [_ <-].
       }
       do 2 (split; first done).
-      apply map_Forall2_empty.
+      split; apply map_Forall2_empty.
     }
     by iFrame.
   Qed.

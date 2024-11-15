@@ -34,9 +34,9 @@ Qed.
 
 Definition advance_requirement st ts rk :=
   match st with
-  | LocalState _ _ _ _ _ _ bm _ =>
-      match bm !! ts with
-      | Some l => (length l < rk)%nat
+  | LocalState _ _ _ _ _ _ _ rkm =>
+      match rkm !! ts with
+      | Some n => (n < rk)%nat
       | _ => (O < rk)%nat
       end
   | _ => False
@@ -44,12 +44,10 @@ Definition advance_requirement st ts rk :=
 
 Definition last_accepted_decision st ts p :=
   match st with
-  | LocalState _ _ _ _ _ _ bm laim =>
-      match bm !! ts, laim !! ts with
-      | Some l, Some i => l !! i = Some (Accept p)
-      | Some _, None => False
-      | None, Some _ => False
-      | None, None => p = false
+  | LocalState _ _ _ _ _ _ psm _ =>
+      match psm !! ts with
+      | Some psl => p = psl.2
+      | None => p = false
       end
   | _ => False
   end.
@@ -89,7 +87,7 @@ Section advance.
     { rewrite merge_clog_ilog_snoc_ilog; last done.
       by rewrite execute_cmds_snoc Hst /=.
     }
-    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx bmx laimx |]; last done.
+    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx psmx rkmx |]; last done.
     simpl in Hrequire.
     rewrite Hrsm in Hst. symmetry in Hst. inv Hst.
     iNamed "Hbackup".
@@ -97,23 +95,32 @@ Section advance.
     simpl in Hrsm'.
     destruct (bm !! ts) as [blt |] eqn:Hbmts; last first.
     { (* Case: [bm !! ts = None]. *)
-      set blt' := extend _ _ _ in Hrsm'.
+      assert (Hpsmts : psm !! ts = None).
+      { apply map_Forall2_dom_L in Hbmpsm.
+        by rewrite -not_elem_of_dom -Hbmpsm not_elem_of_dom.
+      }
+      assert (Hrkmts : rkm !! ts = None).
+      { apply map_Forall2_dom_L in Hbmrkm.
+        by rewrite -not_elem_of_dom -Hbmrkm not_elem_of_dom.
+      }
+      rewrite /init_psm Hpsmts in Hrsm'.
+      set blt' := extend rk Reject [Accept false].
       (* Insert [(ts, blt')] into the ballot map. *)
       iMod (replica_ballot_insert ts blt' with "Hblt") as "Hbm".
       { apply Hbmts. }
       set bm' := insert _ _ bm.
       (* Extract a witness that this replica accepts [false] at the fast rank. *)
+      iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
+      { by rewrite lookup_insert. }
       iAssert (prepare_promise γ gid rid ts rk false)%I as "#Hpromise".
-      { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
-        { by rewrite lookup_insert. }
-        iFrame "Hlb".
+      { iFrame "Hlb".
         subst blt'.
         rewrite latest_term_extend_Reject latest_term_singleton.
         iSplit; first done.
         iPureIntro.
         split.
         { rewrite lookup_extend_l; first done. simpl. lia. }
-        { rewrite extend_length. simpl. clear -Hrequire. lia. }
+        { rewrite extend_length /=. rewrite Hrkmts in Hrequire. clear -Hrequire. lia. }
       }
       (* Vote for [cid] by inserting [(rk, cid)] into the submap of bvm. *)
       (* Insert [(ts, ∅)] into the backup vote map. *)
@@ -131,6 +138,15 @@ Section advance.
       iMod (replica_backup_token_insert ts rk gids_all with "Hbtm") as "[Hbtm Hbts]".
       { by rewrite lookup_insert. }
       { done. }
+      iDestruct (big_sepM_insert_2 _ _ ts (O, false) with "[] Hfpw") as "Hfpw'".
+      { rewrite /fast_proposal_witness /=.
+        iFrame "Hlb".
+        subst blt'.
+        iPureIntro.
+        rewrite lookup_extend_l; first done.
+        simpl. lia.
+      }
+      iClear "Hfpw".
       iAssert (replica_inv_backup γ gid rid bm')%I with "[$Hbvm $Hbtm]" as "Hbackup".
       { iPureIntro.
         rewrite 5!dom_insert_L Hdombvm Hdombtm.
@@ -149,13 +165,9 @@ Section advance.
       iFrame "Hclogprog Hilogprog Hbackup Hpromise Hvote Hbts".
       iFrame "∗ # %".
       iModIntro.
-      assert (laim !! ts = None) as Hlaimts.
-      { apply map_Forall2_dom_L in Hbmlaim.
-        by rewrite -not_elem_of_dom -Hbmlaim not_elem_of_dom.
-      }
       iSplit; last first.
       { iPureIntro.
-        by rewrite /= Hbmts Hlaimts.
+        by rewrite /= Hpsmts.
       }
       iSplit.
       { iApply (big_sepM_insert_2 with "[] Hsafebm").
@@ -172,31 +184,39 @@ Section advance.
         clear -Hr Hlt. lia.
       }
       iPureIntro.
-      rewrite Hlaimts.
       split.
       { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
-      apply map_Forall2_insert_2; last apply Hbmlaim.
-      rewrite latest_term_extend_Reject latest_term_singleton.
-      split; first done.
-      exists false.
-      rewrite lookup_extend_l; first done.
-      simpl. lia.
+      split.
+      { apply map_Forall2_insert_2; last done.
+        split; last done.
+        by rewrite latest_term_extend_Reject latest_term_singleton.
+      }
+      { apply map_Forall2_insert_2; last done.
+        rewrite extend_length /=.
+        rewrite Hrkmts in Hrequire. clear -Hrequire. lia.
+      }
     }
-    set blt' := extend _ _ _ in Hrsm'.
+    assert (is_Some (psm !! ts)) as [psl Hpsmts].
+    { apply map_Forall2_dom_L in Hbmpsm.
+      by rewrite -elem_of_dom -Hbmpsm elem_of_dom.
+    }
+    assert (is_Some (rkm !! ts)) as [rl Hrkmts].
+    { apply map_Forall2_dom_L in Hbmrkm.
+      by rewrite -elem_of_dom -Hbmrkm elem_of_dom.
+    }
+    rewrite Hrkmts in Hrequire.
+    rewrite /init_psm Hpsmts in Hrsm'.
+    set blt' := extend rk Reject blt.
     (* Insert [(ts, blt')] into the ballot map. *)
     iMod (replica_ballot_update ts _ blt' with "Hblt") as "Hbm".
     { apply Hbmts. }
     { apply extend_prefix. }
     set bm' := insert _ _ bm.
-    apply map_Forall2_forall in Hbmlaim as Hp.
-    destruct Hp as [Hp Hdomlaim].
-    assert (is_Some (laim !! ts)) as [i Hlaimts].
-    { by rewrite -elem_of_dom -Hdomlaim elem_of_dom. }
-    specialize (Hp _ _ _ Hbmts Hlaimts).
-    destruct Hp as [Hlatest [p Hp]].
-    subst i.
     (* Extract a witness that this replica accepts [p] at the latest rank in [blt]. *)
-    iAssert (prepare_promise γ gid rid ts rk p)%I as "#Hpromise".
+    pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hbmts Hpsmts Hbmpsm) as [Hpsl1 Hpsl2].
+    pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hbmts Hrkmts Hbmrkm) as Hlenblt.
+    simpl in Hlenblt. subst rl.
+    iAssert (prepare_promise γ gid rid ts rk psl.2)%I as "#Hpromise".
     { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
       { by rewrite lookup_insert. }
       iFrame "Hlb".
@@ -208,15 +228,17 @@ Section advance.
         iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafeblt"; first apply Hbmts.
         iSpecialize ("Hsafeblt" $! (latest_term blt)).
         case_decide as Hnz'; first done.
-        by rewrite Hp.
+        by rewrite Hpsl1 Hpsl2.
       }
       iPureIntro.
       split.
-      { rewrite lookup_extend_l; first apply Hp.
+      { rewrite lookup_extend_l; first by rewrite Hpsl1 Hpsl2.
         apply latest_term_length_lt.
         by intros ->.
       }
-      { rewrite extend_length. clear -Hrequire. lia. }
+      { rewrite extend_length.
+        clear -Hrequire. lia.
+      }
     }
     (* Vote for [cid] by inserting [(rk, cid)] into the submap of bvm. *)
     assert (is_Some (bvm !! ts)) as [bvmts Hbvmts].
@@ -225,7 +247,8 @@ Section advance.
     { apply Hbvmts. }
     { apply map_Forall2_forall in Hbmbvm as [Hbmbvm _].
       specialize (Hbmbvm _ _ _ Hbmts Hbvmts).
-      apply Hbmbvm, Hrequire.
+      apply Hbmbvm.
+      clear -Hrequire. lia.
     }
     (* Obtain exclusive tokens for [cid] by inserting [(rk, cid)] into the submap of btm. *)
     assert (is_Some (btm !! ts)) as [btmts Hbtmts].
@@ -246,9 +269,7 @@ Section advance.
     iFrame "∗ # %".
     iModIntro.
     iSplit; last first.
-    { iPureIntro.
-      by rewrite /= Hbmts Hlaimts.
-    }
+    { iPureIntro. by rewrite /= Hpsmts. }
     iSplit.
     { iApply (big_sepM_insert_2 with "[] Hsafebm").
       subst blt'.
@@ -270,17 +291,22 @@ Section advance.
       by case_decide.
     }
     iPureIntro.
-    rewrite Hlaimts.
-    rewrite -(insert_id _ _ _ Hlaimts).
     split.
     { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
-    apply map_Forall2_insert_2; last apply Hbmlaim.
     split.
-    { by rewrite latest_term_extend_Reject. }
-    { exists p.
-      rewrite lookup_extend_l; first done.
-      apply latest_term_length_lt.
-      by intros ->.
+    { rewrite -(insert_id _ _ _ Hpsmts).
+      apply map_Forall2_insert_2; last done.
+      subst blt'.
+      split.
+      { by rewrite latest_term_extend_Reject Hpsl1. }
+      { rewrite lookup_extend_l; first done.
+        by eapply lookup_lt_Some.
+      }
+    }
+    { apply map_Forall2_insert_2; last done.
+      subst blt'.
+      rewrite extend_length.
+      clear -Hrequire. lia.
     }
   Qed.
 

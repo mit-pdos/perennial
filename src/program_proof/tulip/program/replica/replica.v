@@ -1,7 +1,7 @@
 From Perennial.program_proof.tulip Require Import prelude.
-From Perennial.program_proof.tulip.invariance Require Import validate execute.
+From Perennial.program_proof.tulip.invariance Require Import validate execute accept.
+From Perennial.program_proof Require Import std_proof.
 From Perennial.program_proof.tulip.program Require Import tuple index txnlog.
-(* From Perennial.program_proof.tulip.tulip.invariance Require Import advance accept. *)
 From Goose.github_com.mit_pdos.tulip Require Import tulip replica.
 
 Inductive rpres :=
@@ -107,31 +107,38 @@ Section replica.
       apply elem_of_dom. by destruct (sptsmM !! k).
   Qed.
 
-  Definition own_replica_bm_laim
-    (rp : loc) (bm : gmap nat ballot) (laim : gmap nat nat) : iProp Σ :=
-    (* TODO: find the right type for pstbl and the absrel. *)
-    ∃ (pstblP : loc) (pstbl : gmap u64 u64),
-      "HpstblP" ∷ rp ↦[Replica :: "pstbl"] #pstblP ∗
-      "Hpstbl"  ∷ own_map pstblP (DfracOwn 1) pstbl.
+  Definition ppsl_to_nat_bool (psl : ppsl) := (uint.nat psl.1, psl.2).
+
+  Definition own_replica_psm_rkm
+    (rp : loc) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat) : iProp Σ :=
+    ∃ (pstblP : loc) (rktblP : loc) (pstbl : gmap u64 ppsl) (rktbl : gmap u64 u64),
+      "HpstblP"  ∷ rp ↦[Replica :: "pstbl"] #pstblP ∗
+      "HrktblP"  ∷ rp ↦[Replica :: "rktbl"] #rktblP ∗
+      "Hpstbl"   ∷ own_map pstblP (DfracOwn 1) pstbl ∗
+      "Hrktbl"   ∷ own_map rktblP (DfracOwn 1) rktbl ∗
+      "%Hpsmabs" ∷ ⌜(kmap Z.of_nat psm : gmap Z (nat * bool)) = kmap uint.Z (fmap ppsl_to_nat_bool pstbl)⌝ ∗
+      "%Hrkmabs" ∷ ⌜(kmap Z.of_nat rkm : gmap Z nat) = kmap uint.Z (fmap (λ x, uint.nat x) rktbl)⌝.
 
   Definition own_replica (rp : loc) (gid rid : u64) γ α : iProp Σ :=
     ∃ (lsna : u64) (cm : gmap nat bool) (histm : gmap dbkey dbhist)
       (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64))
-      (sptsm ptsm : gmap dbkey nat) (bm : gmap nat ballot) (laim : gmap nat nat)
+      (sptsm ptsm : gmap dbkey nat) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat)
       (clog cloga : dblog) (ilog : list (nat * icommand)),
       let log := merge_clog_ilog cloga ilog in
-      "Hlsna"      ∷ rp ↦[Replica :: "lsna"] #lsna ∗
-      "Hcm"        ∷ own_replica_cm rp cm ∗
-      "Hphistm"    ∷ ([∗ map] k ↦ h ∈ histm, own_phys_hist_half α k h) ∗
-      "Hcpm"       ∷ own_replica_cpm rp cpm ∗
-      "Hptsmsptsm" ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
-      "Hbmlaim"    ∷ own_replica_bm_laim rp bm laim ∗
-      "Hclog"      ∷ own_replica_clog_half γ gid rid clog ∗
-      "Hilog"      ∷ own_replica_ilog_half γ gid rid ilog ∗
-      "#Hrpvds"    ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
-      "#Hclogalb"  ∷ is_txn_log_lb γ gid cloga ∗
-      "%Hcloga"    ∷ ⌜prefix clog cloga⌝ ∗
-      "%Hexec"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim⌝.
+      "Hlsna"       ∷ rp ↦[Replica :: "lsna"] #lsna ∗
+      "Hcm"         ∷ own_replica_cm rp cm ∗
+      "Hphistm"     ∷ ([∗ map] k ↦ h ∈ histm, own_phys_hist_half α k h) ∗
+      "Hcpm"        ∷ own_replica_cpm rp cpm ∗
+      "Hptsmsptsm"  ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
+      "Hpsmrkm"     ∷ own_replica_psm_rkm rp psm rkm ∗
+      "Hclog"       ∷ own_replica_clog_half γ gid rid clog ∗
+      "Hilog"       ∷ own_replica_ilog_half γ gid rid ilog ∗
+      "#Hrpvds"     ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
+      "#Hfpw"       ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
+      "#Hclogalb"   ∷ is_txn_log_lb γ gid cloga ∗
+      "%Hdompsmrkm" ∷ ⌜dom psm = dom rkm⌝ ∗
+      "%Hcloga"     ∷ ⌜prefix clog cloga⌝ ∗
+      "%Hexec"      ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
 
   Definition is_replica (rp : loc) : iProp Σ :=
     ∃ (mu : loc) (txnlog : loc) (idx : loc) (gid rid : u64) γ α,
@@ -659,53 +666,39 @@ Section replica.
     by iFrame "HptsmP HsptsmP ∗ %".
   Qed.
 
-  Theorem wp_Replica__logValidate rp (ts : u64) (pwrsS : Slice.t) (ptgsS : Slice.t) :
-    {{{ True }}}
-      Replica__logValidate #rp #ts (to_val pwrsS) (to_val ptgsS)
-    {{{ RET #(); True }}}.
-  Proof.
-    (*@ func (rp *Replica) logValidate(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
-    (*@     // TODO: Create an inconsistent log entry for validating @ts with @pwrs and @ptgs. @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-  Definition validate_outcome γ gid rid ts r : iProp Σ :=
-    match r with
-    | ReplicaOK => is_replica_validated_ts γ gid rid ts
+  Definition finalized_outcome γ ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => False
     | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
     | ReplicaAbortedTxn => is_txn_aborted γ ts
     | ReplicaStaleCoordinator => False
-    | ReplicaFailedValidation => True
+    | ReplicaFailedValidation => False
     | ReplicaInvalidRank => False
     | ReplicaWrongLeader => False
     end.
 
-  Theorem wp_Replica__validate
-    rp (tsW : u64) pwrsS pwrsL pwrs (ptgsS : Slice.t) gid rid γ α :
+  Theorem wp_Replica__finalized rp (tsW : u64) gid rid γ α :
     let ts := uint.nat tsW in
     gid ∈ gids_all ->
-    rid ∈ rids_all ->
-    safe_txn_pwrs γ gid ts pwrs -∗
     know_tulip_inv γ -∗
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica rp gid rid γ α }}}
-      Replica__validate #rp #tsW (to_val pwrsS) (to_val ptgsS)
-    {{{ (res : rpres), RET #(rpres_to_u64 res);
-        own_replica rp gid rid γ α ∗ validate_outcome γ gid rid ts res
+    {{{ own_replica rp gid rid γ α }}}
+      Replica__finalized #rp #tsW
+    {{{ (res : rpres) (ok : bool), RET (#(rpres_to_u64 res), #ok);
+        own_replica rp gid rid γ α ∗
+        if ok then finalized_outcome γ ts res else True
     }}}.
   Proof.
-    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv".
-    iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
+    iIntros (ts Hgid) "#Hinv".
+    iIntros (Φ) "!> Hrp HΦ".
     wp_rec.
 
-    (*@ func (rp *Replica) validate(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) uint64 { @*)
-    (*@     // Check if the transaction has aborted or committed. If so, returns the @*)
-    (*@     // status immediately.                                              @*)
+    (*@ func (rp *Replica) finalized(ts uint64) (uint64, bool) {                @*)
     (*@     cmted, done := rp.txntbl[ts]                                        @*)
     (*@     if done {                                                           @*)
     (*@         if cmted {                                                      @*)
-    (*@             return tulip.REPLICA_COMMITTED_TXN                          @*)
+    (*@             return tulip.REPLICA_COMMITTED_TXN, true                    @*)
     (*@         } else {                                                        @*)
-    (*@             return tulip.REPLICA_ABORTED_TXN                            @*)
+    (*@             return tulip.REPLICA_ABORTED_TXN, true                      @*)
     (*@         }                                                               @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
@@ -772,13 +765,73 @@ Section replica.
       }
     }
 
+    (*@     // @tulip.REPLICA_OK is a placeholder.                              @*)
+    (*@     return tulip.REPLICA_OK, false                                      @*)
+    (*@ }                                                                       @*)
+    iApply ("HΦ" $! ReplicaOK).
+    by iFrame "∗ # %".
+  Qed.
+
+  Theorem wp_Replica__logValidate rp (ts : u64) (pwrsS : Slice.t) (ptgsS : Slice.t) :
+    {{{ True }}}
+      Replica__logValidate #rp #ts (to_val pwrsS) (to_val ptgsS)
+    {{{ RET #(); True }}}.
+  Proof.
+    (*@ func (rp *Replica) logValidate(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
+    (*@     // TODO: Create an inconsistent log entry for validating @ts with @pwrs and @ptgs. @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Definition validate_outcome γ gid rid ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_validated_ts γ gid rid ts
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => False
+    | ReplicaFailedValidation => True
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  Theorem wp_Replica__validate
+    rp (tsW : u64) pwrsS pwrsL pwrs (ptgsS : Slice.t) gid rid γ α :
+    let ts := uint.nat tsW in
+    gid ∈ gids_all ->
+    rid ∈ rids_all ->
+    safe_txn_pwrs γ gid ts pwrs -∗
+    know_tulip_inv γ -∗
+    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica rp gid rid γ α }}}
+      Replica__validate #rp #tsW (to_val pwrsS) (to_val ptgsS)
+    {{{ (res : rpres), RET #(rpres_to_u64 res);
+        own_replica rp gid rid γ α ∗ validate_outcome γ gid rid ts res
+    }}}.
+  Proof.
+    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv".
+    iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) validate(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) uint64 { @*)
+    (*@     // Check if the transaction has aborted or committed. If so, returns the @*)
+    (*@     // status immediately.                                              @*)
+    (*@     res, final := rp.finalized(ts)                                      @*)
+    (*@     if final {                                                          @*)
+    (*@         return res                                                      @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__finalized with "Hinv Hrp").
+    { apply Hgid. }
+    iIntros (res final) "[Hrp Hfinal]".
+    wp_pures.
+    destruct final; wp_pures.
+    { iApply ("HΦ" $! res). iFrame "Hrp". by destruct res. }
+
     (*@     // Check if the replica has already validated this transaction.     @*)
     (*@     _, validated := rp.prepm[ts]                                        @*)
     (*@     if validated {                                                      @*)
     (*@         return tulip.REPLICA_OK                                         @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    iNamed "Hcpm".
+    iNamed "Hrp". iNamed "Hcpm".
     iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
     wp_loadField.
     wp_apply (wp_MapGet with "HprepmS").
@@ -832,7 +885,7 @@ Section replica.
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
-    iDestruct (big_sepS_elem_of_acc with "Hreplicas") as "[Hrg HrgsC]"; first apply Hgid.
+    iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
     iDestruct (big_sepS_elem_of_acc with "Hrg") as "[Hrp HrgC]"; first apply Hrid.
     (* First catching up the consistent log. *)
     destruct Hcloga as [cmdsa ->].
@@ -870,11 +923,529 @@ Section replica.
     iFrame "∗ # %".
     iModIntro.
     iPureIntro. simpl.
-    exists (<[ts := ∅]> ptgsm), bm, laim.
+    exists (<[ts := ∅]> ptgsm).
     split.
     { rewrite 2!kmap_insert. f_equal; [word | done]. }
     split; first done.
     rewrite merge_clog_ilog_snoc_ilog; last done.
+    by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=.
+  Qed.
+
+  Theorem wp_Replica__accept (rp : loc) (tsW : u64) (rankW : u64) (dec : bool) psm rkm :
+    let ts := uint.nat tsW in
+    let rank := uint.nat rankW in
+    {{{ own_replica_psm_rkm rp psm rkm }}}
+      Replica__accept #rp #tsW #rankW #dec
+    {{{ RET #(); own_replica_psm_rkm rp (<[ts := (rank, dec)]> psm) (<[ts := S rank]> rkm) }}}.
+  Proof.
+    iIntros (ts rank Φ) "Hrp HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) accept(ts uint64, rank uint64, dec bool) {           @*)
+    (*@     pp := PrepareProposal{                                              @*)
+    (*@         rank : rank,                                                    @*)
+    (*@         dec  : dec,                                                     @*)
+    (*@     }                                                                   @*)
+    (*@     rp.pstbl[ts] = pp                                                   @*)
+    (*@     rp.rktbl[ts] = std.SumAssumeNoOverflow(rank, 1)                     @*)
+    (*@ }                                                                       @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (wp_MapInsert _ _ (rankW, dec) with "Hpstbl"); first done.
+    iIntros "Hpstbl".
+    wp_apply wp_SumAssumeNoOverflow.
+    iIntros (Hnoof).
+    wp_loadField.
+    wp_apply (wp_MapInsert with "Hrktbl"); first done.
+    iIntros "Hrktbl".
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    split.
+    { rewrite fmap_insert 2!kmap_insert. f_equal; [word | done]. }
+    { rewrite fmap_insert 2!kmap_insert. f_equal; [word | word | done]. }
+  Qed.
+
+  Theorem wp_Replica__lowestRank rp (tsW : u64) psm rkm :
+    let ts := uint.nat tsW in
+    {{{ own_replica_psm_rkm rp psm rkm }}}
+      Replica__lowestRank #rp #tsW
+    {{{ (rank : u64) (ok : bool), RET (#rank, #ok);
+        own_replica_psm_rkm rp psm rkm ∗
+        ⌜if ok then rkm !! ts = Some (uint.nat rank) else rkm !! ts = None⌝
+    }}}.
+  Proof.
+    iIntros (ts Φ) "Hrp HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) lowestRank(ts uint64) (uint64, bool) {               @*)
+    (*@     rank, ok := rp.rktbl[ts]                                            @*)
+    (*@     return rank, ok                                                     @*)
+    (*@ }                                                                       @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Hrktbl").
+    iIntros (rankW ok) "[%Hok Hrktbl]".
+    wp_pures.
+    iApply "HΦ".
+    iFrame "∗ %".
+    iPureIntro.
+    destruct ok.
+    { apply map_get_true in Hok.
+      assert (Hrktbl : fmap (λ x, uint.nat x) rktbl !! tsW = Some (uint.nat rankW)).
+      { by rewrite lookup_fmap Hok. }
+      symmetry in Hrkmabs.
+      pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hrkmabs Hrktbl) as (ts' & Hts' & Hrkmts).
+      assert (ts' = ts) as ->.
+      { subst ts. rewrite Hts'. lia. }
+      done.
+    }
+    { apply map_get_false in Hok as [Hnone _].
+      assert (Hrktbl : fmap (λ x, uint.nat x) rktbl !! tsW = None).
+      { by rewrite lookup_fmap Hnone. }
+      symmetry in Hrkmabs.
+      apply (lookup_kmap_eq_None _ _ _ _ _ Hrkmabs Hrktbl).
+      word.
+    }
+  Qed.
+
+  Theorem wp_Replica__lastProposal rp (tsW : u64) psm rkm :
+    let ts := uint.nat tsW in
+    {{{ own_replica_psm_rkm rp psm rkm }}}
+      Replica__lastProposal #rp #tsW
+    {{{ (rank : u64) (pdec : bool) (ok : bool), RET (#rank, #pdec, #ok);
+        own_replica_psm_rkm rp psm rkm ∗
+        ⌜if ok then psm !! ts = Some (uint.nat rank, pdec) else psm !! ts = None⌝
+    }}}.
+  Proof.
+    iIntros (ts Φ) "Hrp HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) lastProposal(ts uint64) (uint64, bool, bool) {       @*)
+    (*@     ps, ok := rp.pstbl[ts]                                              @*)
+    (*@     return ps.rank, ps.dec, ok                                          @*)
+    (*@ }                                                                       @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Hpstbl").
+    iIntros (psl ok) "[%Hok Hpstbl]".
+    wp_pures.
+    iApply "HΦ".
+    iFrame "∗ %".
+    iPureIntro.
+    destruct ok.
+    { apply map_get_true in Hok.
+      assert (Hpstbl : fmap ppsl_to_nat_bool pstbl !! tsW = Some (uint.nat psl.1, psl.2)).
+      { by rewrite lookup_fmap Hok. }
+      symmetry in Hpsmabs.
+      pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hpsmabs Hpstbl) as (ts' & Hts' & Hpsmts).
+      assert (ts' = ts) as ->.
+      { subst ts. rewrite Hts'. lia. }
+      done.
+    }
+    { apply map_get_false in Hok as [Hnone _].
+      assert (Hpstbl : fmap ppsl_to_nat_bool pstbl !! tsW = None).
+      { by rewrite lookup_fmap Hnone. }
+      symmetry in Hpsmabs.
+      apply (lookup_kmap_eq_None _ _ _ _ _ Hpsmabs Hpstbl).
+      word.
+    }
+  Qed.
+
+  Definition try_accept_outcome γ gid rid ts rank pdec res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_pdec_at_rank γ gid rid ts rank pdec
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  Theorem wp_Replica__logAccept (rp : loc) (ts : u64) (rank : u64) (dec : bool) :
+    {{{ True }}}
+      Replica__logAccept #rp #ts #rank #dec
+    {{{ RET #(); True }}}.
+  Proof.
+    (*@ func (rp *Replica) logAccept(ts uint64, rank uint64, dec bool) {        @*)
+    (*@     // TODO: Create an inconsistent log entry for accepting prepare decision @*)
+    (*@     // @dec for @ts in @rank.                                           @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_Replica__tryAccept rp (tsW : u64) (rankW : u64) (dec : bool) gid rid γ α :
+    let ts := uint.nat tsW in
+    let rank := uint.nat rankW in
+    gid ∈ gids_all ->
+    rid ∈ rids_all ->
+    rank ≠ O ->
+    is_group_prepare_proposal γ gid ts rank dec -∗
+    know_tulip_inv γ -∗
+    {{{ own_replica rp gid rid γ α }}}
+      Replica__tryAccept #rp #tsW #rankW #dec
+    {{{ (res : rpres), RET #(rpres_to_u64 res);
+        own_replica rp gid rid γ α ∗ try_accept_outcome γ gid rid ts rank dec res
+    }}}.
+  Proof.
+    iIntros (ts rank Hgid Hrid Hranknz) "#Hgpsl #Hinv".
+    iIntros (Φ) "!> Hrp HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) tryAccept(ts uint64, rank uint64, dec bool) uint64 { @*)
+    (*@     // Check if the transaction has aborted or committed. If so, returns the @*)
+    (*@     // status immediately.                                              @*)
+    (*@     res, final := rp.finalized(ts)                                      @*)
+    (*@     if final {                                                          @*)
+    (*@         return res                                                      @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__finalized with "Hinv Hrp").
+    { apply Hgid. }
+    iIntros (res final) "[Hrp Hfinal]".
+    wp_pures.
+    destruct final; wp_pures.
+    { iApply ("HΦ" $! res). iFrame "Hrp". by destruct res. }
+
+    (*@     // Check if the coordinator is the most recent one. If not, report the @*)
+    (*@     // existence of a more recent coordinator.                          @*)
+    (*@     rankl, ok := rp.lowestRank(ts)                                      @*)
+    (*@     if ok && rank < rankl {                                             @*)
+    (*@         return tulip.REPLICA_STALE_COORDINATOR                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    iNamed "Hrp".
+    wp_apply (wp_Replica__lowestRank with "Hpsmrkm").
+    iIntros (rankl ok) "[Hpsmrkm %Hok]".
+    wp_pures.
+    unshelve wp_apply (wp_and_pure (ok = true)).
+    { shelve. }
+    { apply _. }
+    { shelve. }
+    { wp_pures. case_bool_decide as Hcase; last apply not_true_is_false in Hcase; by subst ok. }
+    { iIntros (_). by wp_pures. }
+    case_bool_decide as Hcase; wp_pures.
+    { iApply ("HΦ" $! ReplicaStaleCoordinator). by iFrame "∗ # %". }
+
+    (*@     // Update prepare status table to record that @ts is prepared at @rank. @*)
+    (*@     rp.accept(ts, rank, dec)                                            @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__accept with "Hpsmrkm").
+    iIntros "Hpsmrkm".
+    wp_pures.
+
+    (*@     // Logical actions: Execute() and then Accept(@ts, @rank, @dec).    @*)
+    (*@     rp.logAccept(ts, rank, dec)                                         @*)
+    (*@                                                                         @*)
+    wp_apply wp_Replica__logAccept.
+    wp_pures.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iNamed "HinvO".
+    iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
+    iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
+    iDestruct (big_sepS_elem_of_acc with "Hrg") as "[Hrp HrgC]"; first apply Hrid.
+    (* First catching up the consistent log. *)
+    destruct Hcloga as [cmdsa ->].
+    iMod (replica_inv_execute with "Hclogalb Hclog Hilog Hgroup Hrp")
+      as "(Hclog & Hilog & Hgroup & Hrp)".
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+    iMod (replica_inv_accept ts rank dec with "[Hgpsl] Hclog Hilog Hrp")
+      as "(Hclog & Hilog & Hrp & #Hacc)".
+    { apply Hexec. }
+    { simpl.
+      destruct ok; rewrite Hok; last done.
+      apply Classical_Prop.not_and_or in Hcase.
+      destruct Hcase as [? | Hge]; first done.
+      clear -Hge. lia.
+    }
+    { case_decide as Hrank; [word | done]. }
+    iDestruct ("HrgC" with "Hrp") as "Hrg".
+    iDestruct ("HrgsC" with "Hrg") as "Hrgs".
+    iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
+
+    (*@     return tulip.REPLICA_OK                                             @*)
+    (*@ }                                                                       @*)
+    iApply ("HΦ" $! ReplicaOK).
+    iAssert ([∗ map] t ↦ ps ∈ <[ts := (rank, dec)]> psm, fast_proposal_witness γ gid rid t ps)%I
+      as "Hfpw'".
+    { iApply (big_sepM_insert_2 with "[] Hfpw").
+      rewrite /fast_proposal_witness /=.
+      case_decide; [word | done].
+    }
+    iClear "Hfpw".
+    iFrame "∗ # %".
+    iPureIntro. simpl.
+    exists ptgsm.
+    split.
+    { by rewrite 2!dom_insert_L Hdompsmrkm. }
+    split; first done.
+    rewrite merge_clog_ilog_snoc_ilog; last done.
+    by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=.
+  Qed.
+
+  Theorem wp_Replica__logFastPrepare (rp : loc) (ts : u64) (pwrs : Slice.t) (ptgs : Slice.t) :
+    {{{ True }}}
+      Replica__logFastPrepare #rp #ts (to_val pwrs) (to_val ptgs)
+    {{{ RET #(); True }}}.
+  Proof.
+    (*@ func (rp *Replica) logFastPrepare(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
+    (*@     // TODO: Create an inconsistent log entry for fast preparing @ts.   @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Definition fast_prepare_outcome γ gid rid ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_validated_ts γ gid rid ts ∗
+                  is_replica_pdec_at_rank γ gid rid ts O true
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => is_replica_pdec_at_rank γ gid rid ts O false
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  Theorem wp_Replica__fastPrepare
+    rp (tsW : u64) pwrsS pwrsL pwrs (ptgsS : Slice.t) gid rid γ α :
+    let ts := uint.nat tsW in
+    gid ∈ gids_all ->
+    rid ∈ rids_all ->
+    safe_txn_pwrs γ gid ts pwrs -∗
+    know_tulip_inv γ -∗
+    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica rp gid rid γ α }}}
+      Replica__fastPrepare #rp #tsW (to_val pwrsS) (to_val ptgsS)
+    {{{ (res : rpres), RET #(rpres_to_u64 res);
+        own_replica rp gid rid γ α ∗ fast_prepare_outcome γ gid rid ts res
+    }}}.
+  Proof.
+    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv".
+    iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) fastPrepare(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) uint64 { @*)
+    (*@     // Check if the transaction has aborted or committed. If so, returns the @*)
+    (*@     // status immediately.                                              @*)
+    (*@     res, final := rp.finalized(ts)                                      @*)
+    (*@     if final {                                                          @*)
+    (*@         return res                                                      @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__finalized with "Hinv Hrp").
+    { apply Hgid. }
+    iIntros (res final) "[Hrp Hfinal]".
+    wp_pures.
+    destruct final; wp_pures.
+    { iApply ("HΦ" $! res). iFrame "Hrp". by destruct res. }
+
+    (*@     // Check if the coordinator is the most recent one. If not, report the @*)
+    (*@     // existence of a more recent coordinator.                          @*)
+    (*@     rank, dec, ok := rp.lastProposal(ts)                                @*)
+    (*@     if ok {                                                             @*)
+    (*@         if 0 < rank {                                                   @*)
+    (*@             // TODO: This would be a performance problem if @pp.rank = 1 (i.e., @*)
+    (*@             // txn client's slow-path prepare) since the client would stops its @*)
+    (*@             // 2PC on receiving such response. For now the ad-hoc fix is to not @*)
+    (*@             // respond to the client in this case, but should figure out a more @*)
+    (*@             // efficient design.                                        @*)
+    (*@             return tulip.REPLICA_STALE_COORDINATOR                      @*)
+    (*@         }                                                               @*)
+    (*@         if !dec {                                                       @*)
+    (*@             return tulip.REPLICA_FAILED_VALIDATION                      @*)
+    (*@         }                                                               @*)
+    (*@         return tulip.REPLICA_OK                                         @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    iNamed "Hrp".
+    wp_apply (wp_Replica__lastProposal with "Hpsmrkm").
+    iIntros (rank dec ok) "[Hpsmrkm %Hok]".
+    wp_pures.
+    destruct ok; wp_pures.
+    { case_bool_decide as Hrank; wp_pures.
+      { iApply ("HΦ" $! ReplicaStaleCoordinator). by iFrame "∗ # %". }
+      destruct dec; wp_pures; last first.
+      { iApply ("HΦ" $! ReplicaFailedValidation).
+        iDestruct (big_sepM_lookup with "Hfpw") as "#Hnp".
+        { apply Hok. }
+        rewrite /fast_proposal_witness.
+        assert (Hz : uint.nat rank = O) by word.
+        case_decide as Hfast; simpl in Hfast; last word.
+        iDestruct "Hnp" as "[Hnp _]".
+        by iFrame "∗ # %".
+      }
+      { iApply ("HΦ" $! ReplicaOK).
+        iDestruct (big_sepM_lookup with "Hfpw") as "#Hpv".
+        { apply Hok. }
+        rewrite /fast_proposal_witness.
+        assert (Hz : uint.nat rank = O) by word.
+        case_decide as Hfast; simpl in Hfast; last word.
+        simpl.
+        iDestruct "Hpv" as "[Hprepared Hvalidated]".
+        by iFrame "∗ # %".
+      }
+    }
+
+    (*@     // If the replica has validated this transaction, but no corresponding @*)
+    (*@     // prepare proposal entry (as is the case after passing the conditional @*)
+    (*@     // above), this means the client has already proceeded to the slow path, and @*)
+    (*@     // hence there's nothing more to be done with this fast-prepare.    @*)
+    (*@     _, validated := rp.prepm[ts]                                        @*)
+    (*@     if validated {                                                      @*)
+    (*@         return tulip.REPLICA_STALE_COORDINATOR                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    iNamed "Hcpm". wp_loadField.
+    wp_apply (wp_MapGet with "HprepmS").
+    iIntros (prepS validated) "[%Hvalidated HprepmS]".
+    wp_pures.
+    destruct validated; wp_pures.
+    { iApply ("HΦ" $! ReplicaStaleCoordinator). by iFrame "∗ # %". }
+
+    (*@     // Validate timestamps.                                             @*)
+    (*@     acquired := rp.acquire(ts, pwrs)                                    @*)
+    (*@                                                                         @*)
+    iDestruct (safe_txn_pwrs_dom_pwrs with "Hsafepwrs") as %Hdompwrs.
+    wp_apply (wp_Replica__acquire with "[$Hpwrs $Hptsmsptsm]").
+    { apply Hdompwrs. }
+    iIntros (acquired) "[Hpwrs Hptsmsptsm]".
+
+    (*@     // Update prepare status table to record that @ts is prepared or unprepared @*)
+    (*@     // at rank 0.                                                       @*)
+    (*@     rp.accept(ts, 0, acquired)                                          @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Replica__accept with "Hpsmrkm").
+    iIntros "Hpsmrkm".
+
+    (*@     if !acquired {                                                      @*)
+    (*@         // Logical actions: Execute() and then Accept(@ts, @0, @false). @*)
+    (*@         rp.logAccept(ts, 0, false)                                      @*)
+    (*@         return tulip.REPLICA_FAILED_VALIDATION                          @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_pures.
+    destruct acquired; wp_pures; last first.
+    { wp_apply wp_Replica__logAccept.
+      wp_pures.
+      iInv "Hinv" as "> HinvO" "HinvC".
+      iNamed "HinvO".
+      iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
+      iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
+      iDestruct (big_sepS_elem_of_acc with "Hrg") as "[Hrp HrgC]"; first apply Hrid.
+      (* First catching up the consistent log. *)
+      destruct Hcloga as [cmdsa ->].
+      iMod (replica_inv_execute with "Hclogalb Hclog Hilog Hgroup Hrp")
+        as "(Hclog & Hilog & Hgroup & Hrp)".
+      iMod (replica_inv_accept ts O false with "[] Hclog Hilog Hrp")
+        as "(Hclog & Hilog & Hrp & #Hacc)".
+      { apply Hexec. }
+      { simpl.
+        destruct (rkm !! ts) as [r |] eqn:Hr; last done.
+        apply elem_of_dom_2 in Hr.
+        by rewrite -not_elem_of_dom Hdompsmrkm in Hok.
+      }
+      { done. }
+      iDestruct ("HrgC" with "Hrp") as "Hrg".
+      iDestruct ("HrgsC" with "Hrg") as "Hrgs".
+      iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+      iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
+      iApply ("HΦ" $! ReplicaFailedValidation).
+      iFrame "∗ # %".
+      iModIntro.
+      iExists ptgsm.
+      iSplit.
+      { iApply (big_sepM_insert_2 with "[] Hfpw").
+        rewrite /fast_proposal_witness /=.
+        case_decide; last done.
+        iFrame "Hacc".
+      }
+      iPureIntro.
+      split.
+      { by rewrite 2!dom_insert_L Hdompsmrkm. }
+      split; first done.
+      rewrite merge_clog_ilog_snoc_ilog; last done.
+      by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=.
+    }
+    iDestruct "Hptsmsptsm" as "(Hptsmsptsm & %Hvptsm & %Hvsptsm)".
+
+    (*@     // Record the write set and the participant groups.                 @*)
+    (*@     rp.prepm[ts] = pwrs                                                 @*)
+    (*@     // rp.ptgsm[ts] = ptgs                                              @*)
+    (*@                                                                         @*)
+    wp_loadField.
+    wp_apply (wp_MapInsert with "HprepmS"); first done.
+    iIntros "HprepmS".
+
+    (*@     // Logical actions: Execute() and then Validate(@ts, @pwrs, @ptgs) and @*)
+    (*@     // Accept(@ts, @0, @true).                                          @*)
+    (*@     rp.logFastPrepare(ts, pwrs, ptgs)                                   @*)
+    (*@                                                                         @*)
+    wp_apply wp_Replica__logFastPrepare.
+    wp_pures.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iNamed "HinvO".
+    iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
+    iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
+    iDestruct (big_sepS_elem_of_acc with "Hrg") as "[Hrp HrgC]"; first apply Hrid.
+    (* First catching up the consistent log. *)
+    destruct Hcloga as [cmdsa ->].
+    iMod (replica_inv_execute with "Hclogalb Hclog Hilog Hgroup Hrp")
+      as "(Hclog & Hilog & Hgroup & Hrp)".
+    iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
+    iMod (replica_inv_validate _ _ ∅ with "Hsafepwrs Hclog Hilog Hrp")
+      as "(Hclog & Hilog & Hrp & #Hvd)".
+    { apply Hexec. }
+    { do 2 (split; first done).
+      apply map_get_false in Hvalidated as [Hnone _].
+      symmetry in Hcpmabs.
+      rewrite -not_elem_of_dom Hdomprepm not_elem_of_dom in Hnone.
+      unshelve epose proof (lookup_kmap_eq_None _ _ _ _ _ Hcpmabs Hnone) as Hcpm.
+      apply Hcpm.
+      word.
+    }
+    iMod (replica_inv_accept ts O true with "[] Hclog Hilog Hrp")
+      as "(Hclog & Hilog & Hrp & #Hacc)".
+    { rewrite merge_clog_ilog_snoc_ilog; last done.
+      by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=.
+    }
+    { simpl.
+      destruct (rkm !! ts) as [r |] eqn:Hr; last done.
+      apply elem_of_dom_2 in Hr.
+      by rewrite -not_elem_of_dom Hdompsmrkm in Hok.
+    }
+    { iFrame "Hvd". }
+    iDestruct ("HrgC" with "Hrp") as "Hrg".
+    iDestruct ("HrgsC" with "Hrg") as "Hrgs".
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
+    iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
+
+    (*@     return tulip.REPLICA_OK                                             @*)
+    (*@ }                                                                       @*)
+    iApply ("HΦ" $! ReplicaOK).
+    iDestruct (big_sepM2_insert_2 _ _ _ tsW with "[Hpwrs] Hprepm") as "Hprepm".
+    { iFrame "Hpwrs". }
+    iAssert ([∗ set] t ∈ dom (<[ts := pwrs]> cpm), is_replica_validated_ts γ gid rid t)%I
+      as "Hrpvds'".
+    { rewrite dom_insert_L.
+      iApply (big_sepS_insert_2 ts with "Hvd Hrpvds").
+    }
+    iClear "Hrpvds".
+    iAssert ([∗ map] t ↦ ps ∈ <[ts := (O, true)]> psm, fast_proposal_witness γ gid rid t ps)%I
+      as "Hfpw'".
+    { iApply (big_sepM_insert_2 with "[] Hfpw").
+      rewrite /fast_proposal_witness /=.
+      iFrame "Hvd Hacc".
+    }
+    iClear "Hfpw".
+    iFrame "∗ # %".
+    iPureIntro. simpl.
+    exists (<[ts := ∅]> ptgsm).
+    split.
+    { rewrite 2!kmap_insert. f_equal; [word | done]. }
+    split.
+    { by rewrite 2!dom_insert_L Hdompsmrkm. }
+    split; first done.
+    do 2 (rewrite merge_clog_ilog_snoc_ilog; last done).
+    rewrite /execute_cmds foldl_snoc execute_cmds_unfold.
     by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=.
   Qed.
 

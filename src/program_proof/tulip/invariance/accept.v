@@ -38,9 +38,9 @@ Qed.
 
 Definition accept_requirement st ts rk :=
   match st with
-  | LocalState _ _ _ _ _ _ bm _ =>
-      match bm !! ts with
-      | Some l => (length l ≤ rk)%nat
+  | LocalState _ _ _ _ _ _ _ rkm =>
+      match rkm !! ts with
+      | Some r => (r ≤ rk)%nat
       | _ => True
       end
   | _ => False
@@ -49,10 +49,12 @@ Definition accept_requirement st ts rk :=
 Section accept.
   Context `{!tulip_ghostG Σ}.
 
-  Lemma replica_inv_accept γ gid rid clog ilog st ts rk p :
+  Lemma replica_inv_accept {γ gid rid clog ilog st} ts rk p :
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     accept_requirement st ts rk ->
-    (if decide (rk = O) then True else is_group_prepare_proposal γ gid ts rk p) -∗
+    (if decide (rk = O)
+     then (if p : bool then is_replica_validated_ts γ gid rid ts else True)
+     else is_group_prepare_proposal γ gid ts rk p) -∗
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
     replica_inv γ gid rid ==∗
@@ -75,7 +77,7 @@ Section accept.
     { rewrite merge_clog_ilog_snoc_ilog; last done.
       by rewrite execute_cmds_snoc Hst /=.
     }
-    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx bmx laimx |]; last done.
+    destruct st as [cmx histmx cpmx ptgsmx sptsmx ptsmx psmx rkmx |]; last done.
     simpl in Hrequire.
     rewrite Hrsm in Hst. symmetry in Hst. inv Hst.
     iNamed "Hbackup".
@@ -83,12 +85,20 @@ Section accept.
     simpl in Hrsm'.
     destruct (bm !! ts) as [blt |] eqn:Hbmts; last first.
     { (* Case: [bm !! ts = None]. *)
-      set blt' := _ ++ _ in Hrsm'.
+      assert (Hpsmts : psm !! ts = None).
+      { apply map_Forall2_dom_L in Hbmpsm.
+        by rewrite -not_elem_of_dom -Hbmpsm not_elem_of_dom.
+      }
+      assert (Hrkmts : rkm !! ts = None).
+      { apply map_Forall2_dom_L in Hbmrkm.
+        by rewrite -not_elem_of_dom -Hbmrkm not_elem_of_dom.
+      }
+      set blt' := replicate rk Reject ++ [Accept p].
       (* Insert [(ts, blt')] into the ballot map. *)
       iMod (replica_ballot_insert ts blt' with "Hblt") as "Hbm".
       { apply Hbmts. }
       set bm' := insert _ _ bm.
-      (* Extract a witness that this replica accepts [p] at the fast rank. *)
+      (* Extract a witness that this replica accepts [p] at the rank [rk]. *)
       iAssert (is_replica_pdec_at_rank γ gid rid ts rk p)%I as "#Hblt".
       { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
         { by rewrite lookup_insert. }
@@ -104,6 +114,12 @@ Section accept.
       (* Insert [(ts, ∅)] into the backup token map. *)
       iMod (replica_backup_token_init ts with "Hbtm") as "Hbtm".
       { rewrite -not_elem_of_dom Hdombtm. by apply not_elem_of_dom in Hbmts. }
+      iDestruct (big_sepM_insert_2 _ _ ts (rk, p) with "[] Hfpw") as "Hfpw'".
+      { rewrite /fast_proposal_witness /=.
+        case_decide as Hz; last done. subst rk.
+        destruct p; iFrame "#".
+      }
+      iClear "Hfpw".
       iAssert (replica_inv_backup γ gid rid bm')%I with "[$Hbvm $Hbtm]" as "Hbackup".
       { iPureIntro.
         rewrite 3!dom_insert_L Hdombvm Hdombtm.
@@ -132,19 +148,35 @@ Section accept.
       iPureIntro.
       split.
       { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
-      apply map_Forall2_insert_2; last apply Hbmlaim.
-      subst blt'.
-      split; first by rewrite latest_term_snoc_Accept length_replicate.
-      exists p.
-      by rewrite lookup_snoc_length'; last rewrite length_replicate.
+      split.
+      { apply map_Forall2_insert_2; last done.
+        rewrite /= latest_term_snoc_Accept length_replicate.
+        split; first done.
+        by rewrite lookup_snoc_length'; last rewrite length_replicate.
+      }
+      { apply map_Forall2_insert_2; last done.
+        rewrite length_app /= length_replicate.
+        lia.
+      }
     }
     (* Case: [bm !! ts = Some blt]. *)
-    set blt' := _ ++ _ in Hrsm'.
+    assert (is_Some (psm !! ts)) as [psl Hpsmts].
+    { apply map_Forall2_dom_L in Hbmpsm.
+      by rewrite -elem_of_dom -Hbmpsm elem_of_dom.
+    }
+    assert (is_Some (rkm !! ts)) as [rl Hrkmts].
+    { apply map_Forall2_dom_L in Hbmrkm.
+      by rewrite -elem_of_dom -Hbmrkm elem_of_dom.
+    }
+    rewrite Hrkmts in Hrequire.
+    set blt' := extend rk Reject blt ++ [Accept p].
     (* Update the ballot map with [(ts, blt')]. *)
     iMod (replica_ballot_update ts _ blt' with "Hblt") as "Hbm".
     { apply Hbmts. }
     { by apply prefix_app_r, extend_prefix. }
     set bm' := insert _ _ bm.
+    pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hbmts Hrkmts Hbmrkm) as Hlenblt.
+    simpl in Hlenblt. subst rl.
     (* Extract a witness that this replica accepts [p] at the fast rank. *)
     iAssert (is_replica_pdec_at_rank γ gid rid ts rk p)%I as "#Hblt".
     { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
@@ -154,8 +186,15 @@ Section accept.
       rewrite lookup_snoc_Some.
       right.
       rewrite extend_length.
-      split; [lia | done].
+      split; last done.
+      clear -Hrequire. lia.
     }
+    iDestruct (big_sepM_insert_2 _ _ ts (rk, p) with "[] Hfpw") as "Hfpw'".
+    { rewrite /fast_proposal_witness /=.
+      case_decide as Hz; last done. subst rk.
+      destruct p; iFrame "#".
+    }
+    iClear "Hfpw".
     iAssert (replica_inv_backup γ gid rid bm')%I with "[$Hbvm $Hbtm]" as "Hbackup".
     { iPureIntro.
       rewrite dom_insert_L Hdombvm Hdombtm.
@@ -208,15 +247,17 @@ Section accept.
     iPureIntro.
     split.
     { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
-    apply map_Forall2_insert_2; last apply Hbmlaim.
-    subst blt'.
     split.
-    { rewrite latest_term_snoc_Accept extend_length.
-      clear -Hrequire. lia.
-    }
-    { exists p.
+    { apply map_Forall2_insert_2; last done.
+      rewrite /= latest_term_snoc_Accept extend_length.
+      split.
+      { clear -Hrequire. lia. }
       rewrite lookup_snoc_length'; first done.
       rewrite extend_length.
+      clear -Hrequire. lia.
+    }
+    { apply map_Forall2_insert_2; last done.
+      rewrite length_app /= extend_length.
       clear -Hrequire. lia.
     }
   Qed.

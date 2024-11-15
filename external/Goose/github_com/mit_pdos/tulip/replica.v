@@ -13,11 +13,6 @@ Definition PrepareProposal := struct.decl [
   "dec" :: boolT
 ].
 
-Definition PrepareStatusEntry := struct.decl [
-  "rankl" :: uint64T;
-  "prep" :: struct.t PrepareProposal
-].
-
 Definition Replica := struct.decl [
   "mu" :: ptrT;
   "rid" :: uint64T;
@@ -25,7 +20,8 @@ Definition Replica := struct.decl [
   "lsna" :: uint64T;
   "prepm" :: mapT (slice.T (struct.t tulip.WriteEntry));
   "ptgsm" :: mapT (slice.T uint64T);
-  "pstbl" :: mapT (struct.t PrepareStatusEntry);
+  "pstbl" :: mapT (struct.t PrepareProposal);
+  "rktbl" :: mapT uint64T;
   "txntbl" :: mapT boolT;
   "ptsm" :: mapT uint64T;
   "sptsm" :: mapT uint64T;
@@ -199,6 +195,16 @@ Definition Replica__acquire: val :=
         (Replica__acquireKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent"));;
       #true).
 
+Definition Replica__finalized: val :=
+  rec: "Replica__finalized" "rp" "ts" :=
+    let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    (if: "done"
+    then
+      (if: "cmted"
+      then (tulip.REPLICA_COMMITTED_TXN, #true)
+      else (tulip.REPLICA_ABORTED_TXN, #true))
+    else (tulip.REPLICA_OK, #false)).
+
 Definition Replica__logValidate: val :=
   rec: "Replica__logValidate" "rp" "ts" "pwrs" "ptgs" :=
     #().
@@ -212,12 +218,9 @@ Definition Replica__logValidate: val :=
    @error: Error code. *)
 Definition Replica__validate: val :=
   rec: "Replica__validate" "rp" "ts" "pwrs" "ptgs" :=
-    let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
-    (if: "done"
-    then
-      (if: "cmted"
-      then tulip.REPLICA_COMMITTED_TXN
-      else tulip.REPLICA_ABORTED_TXN)
+    let: ("res", "final") := Replica__finalized "rp" "ts" in
+    (if: "final"
+    then "res"
     else
       let: (<>, "validated") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
       (if: "validated"
@@ -244,11 +247,14 @@ Definition Replica__Validate: val :=
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
 
-Definition Replica__probe: val :=
-  rec: "Replica__probe" "rp" "ts" :=
+Definition Replica__logFastPrepare: val :=
+  rec: "Replica__logFastPrepare" "rp" "ts" "pwrs" "ptgs" :=
+    #().
+
+Definition Replica__lastProposal: val :=
+  rec: "Replica__lastProposal" "rp" "ts" :=
     let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
-    let: "pp" := struct.get PrepareStatusEntry "prep" "ps" in
-    (struct.get PrepareStatusEntry "rankl" "ps", struct.get PrepareProposal "rank" "pp", struct.get PrepareProposal "dec" "pp", "ok").
+    (struct.get PrepareProposal "rank" "ps", struct.get PrepareProposal "dec" "ps", "ok").
 
 Definition Replica__accept: val :=
   rec: "Replica__accept" "rp" "ts" "rank" "dec" :=
@@ -256,11 +262,12 @@ Definition Replica__accept: val :=
       "rank" ::= "rank";
       "dec" ::= "dec"
     ] in
-    let: "psnew" := struct.mk PrepareStatusEntry [
-      "rankl" ::= "rank" + #1;
-      "prep" ::= "pp"
-    ] in
-    MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "psnew";;
+    MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "pp";;
+    MapInsert (struct.loadF Replica "rktbl" "rp") "ts" (std.SumAssumeNoOverflow "rank" #1);;
+    #().
+
+Definition Replica__logAccept: val :=
+  rec: "Replica__logAccept" "rp" "ts" "rank" "dec" :=
     #().
 
 (* Arguments:
@@ -273,14 +280,11 @@ Definition Replica__accept: val :=
    @error: Error code. *)
 Definition Replica__fastPrepare: val :=
   rec: "Replica__fastPrepare" "rp" "ts" "pwrs" "ptgs" :=
-    let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
-    (if: "done"
-    then
-      (if: "cmted"
-      then tulip.REPLICA_COMMITTED_TXN
-      else tulip.REPLICA_ABORTED_TXN)
+    let: ("res", "final") := Replica__finalized "rp" "ts" in
+    (if: "final"
+    then "res"
     else
-      let: (((<>, "rank"), "dec"), "ok") := Replica__probe "rp" "ts" in
+      let: (("rank", "dec"), "ok") := Replica__lastProposal "rp" "ts" in
       (if: "ok"
       then
         (if: #0 < "rank"
@@ -297,9 +301,12 @@ Definition Replica__fastPrepare: val :=
           let: "acquired" := Replica__acquire "rp" "ts" "pwrs" in
           Replica__accept "rp" "ts" #0 "acquired";;
           (if: (~ "acquired")
-          then tulip.REPLICA_FAILED_VALIDATION
+          then
+            Replica__logAccept "rp" "ts" #0 #false;;
+            tulip.REPLICA_FAILED_VALIDATION
           else
             MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
+            Replica__logFastPrepare "rp" "ts" "pwrs" "ptgs";;
             tulip.REPLICA_OK)))).
 
 Definition Replica__FastPrepare: val :=
@@ -309,6 +316,11 @@ Definition Replica__FastPrepare: val :=
     Replica__refresh "rp" "ts" #0;;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
+
+Definition Replica__lowestRank: val :=
+  rec: "Replica__lowestRank" "rp" "ts" :=
+    let: ("rank", "ok") := MapGet (struct.loadF Replica "rktbl" "rp") "ts" in
+    ("rank", "ok").
 
 (* Accept the prepare decision for @ts at @rank, if @rank is most recent.
 
@@ -321,18 +333,16 @@ Definition Replica__FastPrepare: val :=
    @error: Error code. *)
 Definition Replica__tryAccept: val :=
   rec: "Replica__tryAccept" "rp" "ts" "rank" "dec" :=
-    let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
-    (if: "done"
-    then
-      (if: "cmted"
-      then tulip.REPLICA_COMMITTED_TXN
-      else tulip.REPLICA_ABORTED_TXN)
+    let: ("res", "final") := Replica__finalized "rp" "ts" in
+    (if: "final"
+    then "res"
     else
-      let: ((("rankl", <>), <>), "ok") := Replica__probe "rp" "ts" in
+      let: ("rankl", "ok") := Replica__lowestRank "rp" "ts" in
       (if: "ok" && ("rank" < "rankl")
       then tulip.REPLICA_STALE_COORDINATOR
       else
         Replica__accept "rp" "ts" "rank" "dec";;
+        Replica__logAccept "rp" "ts" "rank" "dec";;
         tulip.REPLICA_OK)).
 
 Definition Replica__Prepare: val :=
@@ -364,18 +374,14 @@ Definition Replica__inquire: val :=
         (struct.mk PrepareProposal [
          ], #false, slice.nil, tulip.REPLICA_ABORTED_TXN))
     else
-      let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
-      (if: "ok" && ("rank" ≤ (struct.get PrepareStatusEntry "rankl" "ps"))
+      let: ("rankl", "ok") := MapGet (struct.loadF Replica "rktbl" "rp") "ts" in
+      (if: "ok" && ("rank" ≤ "rankl")
       then
         (struct.mk PrepareProposal [
          ], #false, slice.nil, tulip.REPLICA_INVALID_RANK)
       else
-        let: "pp" := struct.get PrepareStatusEntry "prep" "ps" in
-        let: "psnew" := struct.mk PrepareStatusEntry [
-          "rankl" ::= "rank";
-          "prep" ::= "pp"
-        ] in
-        MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "psnew";;
+        let: "pp" := Fst (MapGet (struct.loadF Replica "pstbl" "rp") "ts") in
+        MapInsert (struct.loadF Replica "rktbl" "rp") "ts" "rank";;
         let: ("pwrs", "vd") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
         ("pp", "vd", "pwrs", tulip.REPLICA_OK))).
 
@@ -389,14 +395,11 @@ Definition Replica__Inquire: val :=
 
 Definition Replica__query: val :=
   rec: "Replica__query" "rp" "ts" "rank" :=
-    let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
-    (if: "done"
-    then
-      (if: "cmted"
-      then tulip.REPLICA_COMMITTED_TXN
-      else tulip.REPLICA_ABORTED_TXN)
+    let: ("res", "final") := Replica__finalized "rp" "ts" in
+    (if: "final"
+    then "res"
     else
-      let: ((("rankl", <>), <>), "ok") := Replica__probe "rp" "ts" in
+      let: ("rankl", "ok") := Replica__lowestRank "rp" "ts" in
       (if: "ok" && ("rank" < "rankl")
       then tulip.REPLICA_STALE_COORDINATOR
       else tulip.REPLICA_OK)).
@@ -505,8 +508,7 @@ Definition Replica__Start: val :=
 Definition Replica__StartBackupTxnCoordinator: val :=
   rec: "Replica__StartBackupTxnCoordinator" "rp" "ts" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
-    let: "ps" := Fst (MapGet (struct.loadF Replica "pstbl" "rp") "ts") in
-    let: "rank" := (struct.get PrepareStatusEntry "rankl" "ps") + #1 in
+    let: "rank" := (Fst (MapGet (struct.loadF Replica "rktbl" "rp") "ts")) + #1 in
     let: "ptgs" := Fst (MapGet (struct.loadF Replica "ptgsm" "rp") "ts") in
     let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "ptgs" (struct.loadF Replica "rps" "rp") (struct.loadF Replica "leader" "rp") in
     backup.BackupTxnCoordinator__ConnectAll "tcoord";;

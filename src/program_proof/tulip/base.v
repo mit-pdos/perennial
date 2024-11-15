@@ -8,6 +8,7 @@ Definition dbmod := (dbkey * dbval)%type.
 Definition dbmap := gmap dbkey dbval.
 Definition dbkmod := gmap nat dbval.
 Definition coordid := (u64 * u64)%type.
+Definition ppsl := (u64 * bool)%type.
 
 (** Transaction result. *)
 Inductive txnres :=
@@ -63,6 +64,26 @@ Proof.
       IntoVal_def := ("", None);
     |}.
   intros [k v].
+  by destruct v.
+Defined.
+
+Definition ppsl_to_val (v : ppsl) : val := (#v.1, (#v.2, #())).
+
+Definition ppsl_from_val (v : val) : option ppsl :=
+  match v with
+  | (#(LitInt n), (#(LitBool b), #()))%V => Some (n, b)
+  | _ => None
+  end.
+
+#[global]
+Instance ppsl_into_val : IntoVal ppsl.
+Proof.
+  refine {|
+      to_val := ppsl_to_val;
+      from_val := ppsl_from_val;
+      IntoVal_def := (W64 0, false);
+    |}.
+  intros v.
   by destruct v.
 Defined.
 
