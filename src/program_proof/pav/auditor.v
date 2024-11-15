@@ -178,7 +178,29 @@ Proof.
   { done. }
   iIntros (?) "Hl".
   wp_pures.
-  wp_apply (wp_MapIter_fold _ _ _ _ with "[$]").
+  wp_apply (wp_MapIter_fold _ _ _ (λ _,
+                                     _
+              )%I with "[$] [-HΦ]").
+  { iNamedAccu. }
+  {
+    iIntros "* !# * [Hpre %Hlookup] HΦ".
+    iNamed "Hpre".
+    wp_pures.
+    wp_apply wp_StringToBytes.
+    iIntros "* ?".
+    iDestruct (own_slice_to_small with "[$]") as "?".
+    (* XXX: checkOneUpd only called here so inlining a proof. *)
+    wp_rec.
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_Tree_Get with "[$]").
+    iIntros "* HGetPost".
+    iNamed "HGetPost".
+    iNamed "Hreply".
+    wp_pures.
+    wp_loadField.
+    admit.
+  }
 Admitted.
 
 Lemma wp_Auditor__Get a (epoch : u64) :
