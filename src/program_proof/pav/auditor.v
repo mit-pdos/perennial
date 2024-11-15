@@ -112,7 +112,6 @@ Proof.
   iMod (struct_field_pointsto_persist with "mu") as "#?".
   iMod (struct_field_pointsto_persist with "sk") as "#?".
   iFrame "#".
-  Search is_free_lock.
   iMod (alloc_lock with "[$] [-]") as "$"; last done.
   iNext. repeat iExists _.
   iFrame "∗#%".
