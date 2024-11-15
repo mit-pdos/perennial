@@ -82,8 +82,9 @@ Lemma is_sig_to_pred pk P msg sig :
 Proof. Admitted.
 
 Lemma wp_GenerateKey P :
+  (∀ l, Persistent (P l)) →
   {{{
-    "%Hpersis" ∷ ⌜∀ l, Persistent (P l)⌝
+        True
   }}}
   GenerateKey #()
   {{{

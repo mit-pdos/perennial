@@ -133,7 +133,7 @@ Lemma msv_agree γ ep uid lat0 lat1 :
   ⌜ lat0 = lat1 ⌝.
 Proof.
   iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
-  iDestruct (mono_list_idx_agree with "Hmap0 Hmap1") as %->. iClear "Hmap0 Hmap1".
+  iDestruct (mono_list_idx_agree with "Hmap0 Hmap1") as %H. inversion_clear H. iClear "Hmap0 Hmap1".
   iDestruct (msv_core_agree _ _ vals vals0 with "[$Hmsv_core0 $Hmsv_core1]") as %->.
   destruct lat0 as [[??]|], lat1 as [[??]|], (last vals0) as [[??]|]; [|done..].
   iNamedSuffix "Hpk_comm_reln0" "0". iNamedSuffix "Hpk_comm_reln1" "1".

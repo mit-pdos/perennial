@@ -41,7 +41,7 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃ γ pk gs (ptr_map : loc) last_map sl_sk sl_hist ptrs_hist hist,
+  ∃ γ pk gs (ptr_map : loc) sl_sk sl_hist ptrs_hist hist,
     (* Physical ownership *)
   "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
@@ -49,7 +49,7 @@ Definition own (ptr : loc) : iProp Σ :=
   "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
   "Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
     AdtrEpochInfo.own ptr_hist info) ∗
-  "Hown_map" ∷ own_merkle ptr_map (lower_adtr last_map) ∗
+  "Hown_map" ∷ own_merkle ptr_map (lower_adtr (default ∅ (last gs.*1))) ∗
 
     (* Ghost ownership *)
   "Hmaps" ∷ mono_list_auth_own γ 1 gs ∗
@@ -61,7 +61,6 @@ Definition own (ptr : loc) : iProp Σ :=
   "%Hdigs_hist" ∷ ([∗ list] x;info ∈ gs;hist,
     ⌜ x.2 = info.(AdtrEpochInfo.Dig) ⌝) ∗
 
-  "%Hlast_map" ∷ ⌜ last gs.*1 = Some last_map ⌝ ∗
   "%Hinv" ∷ ⌜ adtr_inv gs.*1 ⌝.
 
 Definition valid (ptr : loc) : iProp Σ :=
@@ -90,7 +89,7 @@ Proof.
   wp_rec.
   wp_apply wp_new_free_lock.
   iIntros (?) "Hl".
-  iMod (mono_list_own_alloc ([] : list (gmap opaque_label_ty (epoch_ty * comm_ty)))) as (?) "[? _]".
+  iMod (mono_list_own_alloc ([] : list (adtr_map_ty * dig_ty))) as (?) "[? _]".
   wp_apply wp_GenerateKey.
   { shelve. }
   iIntros "*". iNamed 1.
@@ -135,29 +134,16 @@ Proof.
     2:{
       iApply merkle_internal.own_node_unfold.
       instantiate (1:=merkle_internal.Empty).
-      simpl.
-      iExists _; iSplit; last done.
-      (* FIXME(sanjit): the [Empty] case of own_node' requires
-         knowing that there exists something that is the hasth of [[W8 0]].
-         Requiring that as a precondition to newAuditor would violate the
-         Auditor interface boundary since it would expose that there's
-         hashing/merkle trees being used inside. Seems like the requirement for
-         the empty hash in [own_node'] could be removed?
-       *)
-      admit.
+      simpl. done.
     }
-    instantiate (1:=∅). done.
+    done.
   }
   iSplit.
   { by iApply big_sepL2_nil. }
-  (* FIXME(sanjit):
-     [Auditor.own] implies that [length key_maps > 0] because it states that [last key_maps = Some _].
-     However, ["#Hdigs_hist"] requires that [length key_maps = length hist].
-     So, [Auditor.own] implies that [length hist > 0] which is not true upon
-     initialization since hist is left empty.
-   *)
-  admit.
-Admitted.
+  done.
+  Unshelve.
+  apply _.
+Qed.
 
 Lemma wp_Auditor__Update a ptr_upd upd :
   {{{
@@ -193,7 +179,6 @@ Proof.
   { done. }
   iIntros (?) "Hl".
   wp_pures.
-  Search impl.MapIter typed_map.own_map.
   wp_apply (wp_MapIter_fold _ _ _ _ with "[$]").
 Admitted.
 
