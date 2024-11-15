@@ -14,7 +14,7 @@ Context `{ext_ty: ext_types}.
 
 Definition Auditor := struct.decl [
   "mu" :: ptrT;
-  "sk" :: cryptoffi.PrivateKey;
+  "sk" :: ptrT;
   "keyMap" :: ptrT;
   "histInfo" :: slice.T ptrT
 ].
@@ -119,7 +119,7 @@ Definition Auditor__Update: val :=
         "Dig" ::= "dig"
       ] in
       let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
-      let: "sig" := cryptoffi.PrivateKey__Sign (struct.loadF Auditor "sk" "a") "preSigByt" in
+      let: "sig" := cryptoffi.SigPrivateKey__Sign (struct.loadF Auditor "sk" "a") "preSigByt" in
       let: "newInfo" := struct.new AdtrEpochInfo [
         "Dig" ::= "dig";
         "ServSig" ::= struct.loadF UpdateProof "Sig" "proof";
@@ -148,7 +148,7 @@ Definition Auditor__Get: val :=
 Definition newAuditor: val :=
   rec: "newAuditor" <> :=
     let: "mu" := newMutex #() in
-    let: ("pk", "sk") := cryptoffi.GenerateKey #() in
+    let: ("pk", "sk") := cryptoffi.SigGenerateKey #() in
     let: "m" := struct.new merkle.Tree [
     ] in
     (struct.new Auditor [
@@ -163,7 +163,7 @@ Definition Client := struct.decl [
   "uid" :: uint64T;
   "nextVer" :: uint64T;
   "servCli" :: ptrT;
-  "servSigPk" :: cryptoffi.PublicKey;
+  "servSigPk" :: cryptoffi.SigPublicKey;
   "servVrfPk" :: ptrT;
   "seenDigs" :: mapT ptrT;
   "nextEpoch" :: uint64T
@@ -194,7 +194,7 @@ Definition CheckSigDig: val :=
       "Dig" ::= struct.loadF SigDig "Dig" "o"
     ] in
     let: "preByt" := PreSigDigEncode (NewSlice byteT #0) "pre" in
-    (~ (cryptoffi.PublicKey__Verify "pk" "preByt" (struct.loadF SigDig "Sig" "o"))).
+    (~ (cryptoffi.SigPublicKey__Verify "pk" "preByt" (struct.loadF SigDig "Sig" "o"))).
 
 (* Evid is evidence that the server signed two conflicting digs. *)
 Definition Evid := struct.decl [
@@ -1003,7 +1003,7 @@ Definition ServerPutArgDecode: val :=
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
-  "sigSk" :: cryptoffi.PrivateKey;
+  "sigSk" :: ptrT;
   "vrfSk" :: ptrT;
   "keyMap" :: ptrT;
   "histInfo" :: slice.T ptrT;
@@ -1107,7 +1107,7 @@ Definition Server__Put: val :=
       "Dig" ::= "dig"
     ] in
     let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
-    let: "sig" := cryptoffi.PrivateKey__Sign (struct.loadF Server "sigSk" "s") "preSigByt" in
+    let: "sig" := cryptoffi.SigPrivateKey__Sign (struct.loadF Server "sigSk" "s") "preSigByt" in
     let: "newInfo" := struct.new servEpochInfo [
       "updates" ::= "updates";
       "dig" ::= "dig";
@@ -1663,7 +1663,7 @@ Definition MapLabelPreDecode: val :=
 Definition newServer: val :=
   rec: "newServer" <> :=
     let: "mu" := newMutex #() in
-    let: ("sigPk", "sigSk") := cryptoffi.GenerateKey #() in
+    let: ("sigPk", "sigSk") := cryptoffi.SigGenerateKey #() in
     let: ("vrfPk", "vrfSk") := cryptoffi.VrfGenerateKey #() in
     let: "m" := struct.new merkle.Tree [
     ] in
@@ -1676,7 +1676,7 @@ Definition newServer: val :=
       "Dig" ::= "dig"
     ] in
     let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
-    let: "sig" := cryptoffi.PrivateKey__Sign "sigSk" "preSigByt" in
+    let: "sig" := cryptoffi.SigPrivateKey__Sign "sigSk" "preSigByt" in
     let: "newInfo" := struct.new servEpochInfo [
       "updates" ::= "updates";
       "dig" ::= "dig";
@@ -1704,10 +1704,10 @@ Definition bobUid : expr := #1.
 
 Definition setupParams := struct.decl [
   "servAddr" :: uint64T;
-  "servSigPk" :: cryptoffi.PublicKey;
+  "servSigPk" :: cryptoffi.SigPublicKey;
   "servVrfPk" :: ptrT;
   "adtrAddrs" :: slice.T uint64T;
-  "adtrPks" :: slice.T cryptoffi.PublicKey
+  "adtrPks" :: slice.T cryptoffi.SigPublicKey
 ].
 
 (* alice from test.go *)
@@ -1788,7 +1788,7 @@ Definition doAudits: val :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, (![uint64T] "i") < "numAdtrs"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "addr" := SliceGet uint64T "adtrAddrs" (![uint64T] "i") in
-      let: "pk" := SliceGet cryptoffi.PublicKey "adtrPks" (![uint64T] "i") in
+      let: "pk" := SliceGet cryptoffi.SigPublicKey "adtrPks" (![uint64T] "i") in
       let: "err" := Client__Audit "cli" "addr" "pk" in
       control.impl.Assume (~ (struct.loadF clientErr "err" "err"));;
       Continue);;
@@ -1838,19 +1838,19 @@ Definition setup: val :=
     let: (("serv", "servSigPk"), "servVrfPk") := newServer #() in
     let: "servRpc" := newRpcServer "serv" in
     advrpc.Server__Serve "servRpc" "servAddr";;
-    let: "adtrPks" := ref (zero_val (slice.T cryptoffi.PublicKey)) in
+    let: "adtrPks" := ref (zero_val (slice.T cryptoffi.SigPublicKey)) in
     ForSlice uint64T <> "adtrAddr" "adtrAddrs"
       (let: ("adtr", "adtrPk") := newAuditor #() in
       let: "adtrRpc" := newRpcAuditor "adtr" in
       advrpc.Server__Serve "adtrRpc" "adtrAddr";;
-      "adtrPks" <-[slice.T cryptoffi.PublicKey] (SliceAppend cryptoffi.PublicKey (![slice.T cryptoffi.PublicKey] "adtrPks") "adtrPk"));;
+      "adtrPks" <-[slice.T cryptoffi.SigPublicKey] (SliceAppend cryptoffi.SigPublicKey (![slice.T cryptoffi.SigPublicKey] "adtrPks") "adtrPk"));;
     time.Sleep #1000000;;
     struct.new setupParams [
       "servAddr" ::= "servAddr";
       "servSigPk" ::= "servSigPk";
       "servVrfPk" ::= "servVrfPk";
       "adtrAddrs" ::= "adtrAddrs";
-      "adtrPks" ::= ![slice.T cryptoffi.PublicKey] "adtrPks"
+      "adtrPks" ::= ![slice.T cryptoffi.SigPublicKey] "adtrPks"
     ].
 
 Definition testAllFull: val :=
