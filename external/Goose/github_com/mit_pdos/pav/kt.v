@@ -260,14 +260,14 @@ Definition MapLabelPreEncode: val :=
 
 (* checkVrfProof errors on fail.
    TODO: if VRF pubkey is bad, does VRF.Verify still mean something? *)
-Definition Client__checkVrf: val :=
-  rec: "Client__checkVrf" "c" "uid" "ver" "label" "proof" :=
+Definition checkVrf: val :=
+  rec: "checkVrf" "pk" "uid" "ver" "label" "proof" :=
     let: "pre" := struct.new MapLabelPre [
       "Uid" ::= "uid";
       "Ver" ::= "ver"
     ] in
     let: "preByt" := MapLabelPreEncode (NewSlice byteT #0) "pre" in
-    (~ (cryptoffi.VrfPublicKey__Verify (struct.loadF Client "servVrfPk" "c") "preByt" "label" "proof")).
+    (~ (cryptoffi.VrfPublicKey__Verify "pk" "preByt" "label" "proof")).
 
 (* Memb from serde.go *)
 
@@ -314,9 +314,9 @@ Definition compMapVal: val :=
     "vByt".
 
 (* checkMemb errors on fail. *)
-Definition Client__checkMemb: val :=
-  rec: "Client__checkMemb" "c" "uid" "ver" "dig" "memb" :=
-    (if: Client__checkVrf "c" "uid" "ver" (struct.loadF Memb "Label" "memb") (struct.loadF Memb "VrfProof" "memb")
+Definition checkMemb: val :=
+  rec: "checkMemb" "pk" "uid" "ver" "dig" "memb" :=
+    (if: checkVrf "pk" "uid" "ver" (struct.loadF Memb "Label" "memb") (struct.loadF Memb "VrfProof" "memb")
     then #true
     else
       let: "mapVal" := compMapVal (struct.loadF Memb "EpochAdded" "memb") (struct.loadF Memb "CommOpen" "memb") in
@@ -332,19 +332,19 @@ Definition MembHide := struct.decl [
 ].
 
 (* checkMembHide errors on fail. *)
-Definition Client__checkMembHide: val :=
-  rec: "Client__checkMembHide" "c" "uid" "ver" "dig" "memb" :=
-    (if: Client__checkVrf "c" "uid" "ver" (struct.loadF MembHide "Label" "memb") (struct.loadF MembHide "VrfProof" "memb")
+Definition checkMembHide: val :=
+  rec: "checkMembHide" "pk" "uid" "ver" "dig" "memb" :=
+    (if: checkVrf "pk" "uid" "ver" (struct.loadF MembHide "Label" "memb") (struct.loadF MembHide "VrfProof" "memb")
     then #true
     else merkle.CheckProof #true (struct.loadF MembHide "MerkProof" "memb") (struct.loadF MembHide "Label" "memb") (struct.loadF MembHide "MapVal" "memb") "dig").
 
 (* checkHist errors on fail. *)
-Definition Client__checkHist: val :=
-  rec: "Client__checkHist" "c" "uid" "dig" "membs" :=
+Definition checkHist: val :=
+  rec: "checkHist" "pk" "uid" "dig" "membs" :=
     let: "err0" := ref (zero_val boolT) in
     ForSlice ptrT "ver0" "memb" "membs"
       (let: "ver" := "ver0" in
-      (if: Client__checkMembHide "c" "uid" "ver" "dig" "memb"
+      (if: checkMembHide "pk" "uid" "ver" "dig" "memb"
       then "err0" <-[boolT] #true
       else #()));;
     ![boolT] "err0".
@@ -356,9 +356,9 @@ Definition NonMemb := struct.decl [
 ].
 
 (* checkNonMemb errors on fail. *)
-Definition Client__checkNonMemb: val :=
-  rec: "Client__checkNonMemb" "c" "uid" "ver" "dig" "nonMemb" :=
-    (if: Client__checkVrf "c" "uid" "ver" (struct.loadF NonMemb "Label" "nonMemb") (struct.loadF NonMemb "VrfProof" "nonMemb")
+Definition checkNonMemb: val :=
+  rec: "checkNonMemb" "pk" "uid" "ver" "dig" "nonMemb" :=
+    (if: checkVrf "pk" "uid" "ver" (struct.loadF NonMemb "Label" "nonMemb") (struct.loadF NonMemb "VrfProof" "nonMemb")
     then #true
     else merkle.CheckProof #false (struct.loadF NonMemb "MerkProof" "nonMemb") (struct.loadF NonMemb "Label" "nonMemb") slice.nil "dig").
 
@@ -540,7 +540,7 @@ Definition Client__Put: val :=
       (if: struct.loadF clientErr "err" "err1"
       then (#0, "err1")
       else
-        (if: Client__checkMemb "c" (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "latest"
+        (if: checkMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "latest"
         then (#0, "stdErr")
         else
           (if: (struct.loadF SigDig "Epoch" "dig") ≠ (struct.loadF Memb "EpochAdded" "latest")
@@ -549,7 +549,7 @@ Definition Client__Put: val :=
             (if: (~ (std.BytesEqual "pk" (struct.loadF PkCommOpen "Pk" (struct.loadF Memb "CommOpen" "latest"))))
             then (#0, "stdErr")
             else
-              (if: Client__checkNonMemb "c" (struct.loadF Client "uid" "c") ((struct.loadF Client "nextVer" "c") + #1) (struct.loadF SigDig "Dig" "dig") "bound"
+              (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") ((struct.loadF Client "nextVer" "c") + #1) (struct.loadF SigDig "Dig" "dig") "bound"
               then (#0, "stdErr")
               else
                 struct.storeF Client "nextVer" "c" ((struct.loadF Client "nextVer" "c") + #1);;
@@ -700,21 +700,21 @@ Definition Client__Get: val :=
       (if: struct.loadF clientErr "err" "err1"
       then (#false, slice.nil, #0, "err1")
       else
-        (if: Client__checkHist "c" "uid" (struct.loadF SigDig "Dig" "dig") "hist"
+        (if: checkHist (struct.loadF Client "servVrfPk" "c") "uid" (struct.loadF SigDig "Dig" "dig") "hist"
         then (#false, slice.nil, #0, "stdErr")
         else
           let: "numHistVers" := slice.len "hist" in
           (if: ("numHistVers" > #0) && (~ "isReg")
           then (#false, slice.nil, #0, "stdErr")
           else
-            (if: "isReg" && (Client__checkMemb "c" "uid" "numHistVers" (struct.loadF SigDig "Dig" "dig") "latest")
+            (if: "isReg" && (checkMemb (struct.loadF Client "servVrfPk" "c") "uid" "numHistVers" (struct.loadF SigDig "Dig" "dig") "latest")
             then (#false, slice.nil, #0, "stdErr")
             else
               let: "boundVer" := ref (zero_val uint64T) in
               (if: "isReg"
               then "boundVer" <-[uint64T] ("numHistVers" + #1)
               else #());;
-              (if: Client__checkNonMemb "c" "uid" (![uint64T] "boundVer") (struct.loadF SigDig "Dig" "dig") "bound"
+              (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") "uid" (![uint64T] "boundVer") (struct.loadF SigDig "Dig" "dig") "bound"
               then (#false, slice.nil, #0, "stdErr")
               else
                 ("isReg", struct.loadF PkCommOpen "Pk" (struct.loadF Memb "CommOpen" "latest"), struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
@@ -792,7 +792,7 @@ Definition Client__SelfMon: val :=
       (if: struct.loadF clientErr "err" "err1"
       then (#0, "err1")
       else
-        (if: Client__checkNonMemb "c" (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "bound"
+        (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "bound"
         then (#0, "stdErr")
         else
           (struct.loadF SigDig "Epoch" "dig", struct.new clientErr [
