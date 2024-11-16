@@ -76,8 +76,8 @@ Defined.
 
 Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   match c with
-  | CmdCommit ts _ => (#(U64 0), (#(U64 ts), (to_val pwrsS, (zero_val stringT, #()))))
-  | CmdAbort ts => (#(U64 1), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
+  | CmdCommit ts _ => (#(U64 1), (#(U64 ts), (to_val pwrsS, (zero_val stringT, #()))))
+  | CmdAbort ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
   end.
 
 Section def.

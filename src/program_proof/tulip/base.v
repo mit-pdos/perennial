@@ -211,6 +211,12 @@ Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
 Definition valid_key (key : dbkey) := key ∈ keys_all.
 
+Definition valid_ccommand gid (c : ccommand) :=
+  match c with
+  | CmdCommit ts pwrs => valid_ts ts ∧ valid_pwrs gid pwrs
+  | CmdAbort ts => valid_ts ts
+  end.
+
 Class tulip_ghostG (Σ : gFunctors).
 
 Record tulip_names := {}.

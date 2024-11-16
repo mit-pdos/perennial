@@ -35,7 +35,7 @@ Section execute_commit.
         set_solver.
       }
       iDestruct (big_sepS_elem_of with "Hsafecp") as "Hsafec"; first apply Hin.
-      iDestruct "Hsafec" as (wrs) "(_ & Hwrs & %Hpwrs & %Hgid & %Hvwrs)".
+      iDestruct "Hsafec" as (wrs) "(_ & Hwrs & _ & %Hpwrs & %Hgid & %Hvwrs)".
       assert (Hdompwrs : dom pwrs ⊆ keys_all).
       { rewrite Hpwrs wrs_group_keys_group_dom. set_solver. }
       iFrame "Hwrs %".
@@ -110,6 +110,7 @@ Section execute_commit.
         rewrite Hvl.
         destruct (vl !! t) as [b |] eqn:Hvlt; last done.
         destruct b; last done.
+        clear Hns.
         case_decide as Ht; last done.
         destruct Ht as (Hgelen & Hnz).
         assert (is_Some (ptsm !! k)) as [pts Hpts].
@@ -186,6 +187,7 @@ Section execute_commit.
       rewrite (multiwrite_modified Hv Hh).
       destruct (vl !! t) as [b |] eqn:Hvlt; last done.
       destruct b; last done.
+      clear Hns.
       case_decide as Ht; last done.
       destruct Ht as [Hgelen Hnepts].
       iSpecialize ("Hgabt" $! k t).

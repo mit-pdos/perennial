@@ -265,13 +265,18 @@ Section apply_cmds.
 
   Definition not_stuck st := st ≠ Stuck.
 
+  Definition safe_extension (ts : nat) (pwrs : dbmap) (histm : gmap dbkey dbhist) :=
+    map_Forall (λ _ l, (length l ≤ ts)%nat) (filter (λ x, x.1 ∈ dom pwrs) histm).
+
   Definition apply_commit st (tid : nat) (pwrs : dbmap) :=
     match st with
-    | State cm hists =>
+    | State cm histm =>
         match cm !! tid with
         | Some true => st
         | Some false => Stuck
-        | _ => State (<[tid := true]> cm) (multiwrite tid pwrs hists)
+        | _ => if decide (safe_extension tid pwrs histm)
+              then State (<[tid := true]> cm) (multiwrite tid pwrs histm)
+              else Stuck
         end
     | Stuck => Stuck
     end.
@@ -341,7 +346,7 @@ Section apply_cmds.
     destruct x eqn:Hx; rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm1 /= in Hrsm.
     { (* Case [CmdCommit]. *)
       destruct (stm1 !! tid) as [st |]; last first.
-      { inv Hrsm. apply multiwrite_dom. }
+      { case_decide; last done. inv Hrsm. apply multiwrite_dom. }
       by destruct st; inv Hrsm.
     }
     { (* Case [CmdAbort]. *)

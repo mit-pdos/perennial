@@ -35,15 +35,15 @@ Definition Replica := struct.decl [
 
    Return values:
    @terminated: Whether txn @ts has terminated (committed or aborted). *)
-Definition Replica__queryTxnTermination: val :=
-  rec: "Replica__queryTxnTermination" "rp" "ts" :=
+Definition Replica__terminated: val :=
+  rec: "Replica__terminated" "rp" "ts" :=
     let: (<>, "terminated") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
     "terminated".
 
 Definition Replica__QueryTxnTermination: val :=
   rec: "Replica__QueryTxnTermination" "rp" "ts" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
-    let: "terminated" := Replica__queryTxnTermination "rp" "ts" in
+    let: "terminated" := Replica__terminated "rp" "ts" in
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "terminated".
 
@@ -444,7 +444,7 @@ Definition Replica__release: val :=
 
 Definition Replica__applyCommit: val :=
   rec: "Replica__applyCommit" "rp" "ts" "pwrs" :=
-    let: "committed" := Replica__queryTxnTermination "rp" "ts" in
+    let: "committed" := Replica__terminated "rp" "ts" in
     (if: "committed"
     then #()
     else
@@ -460,7 +460,7 @@ Definition Replica__applyCommit: val :=
 
 Definition Replica__applyAbort: val :=
   rec: "Replica__applyAbort" "rp" "ts" :=
-    let: "aborted" := Replica__queryTxnTermination "rp" "ts" in
+    let: "aborted" := Replica__terminated "rp" "ts" in
     (if: "aborted"
     then #()
     else
@@ -475,24 +475,23 @@ Definition Replica__applyAbort: val :=
 
 Definition Replica__apply: val :=
   rec: "Replica__apply" "rp" "cmd" :=
-    (if: (struct.get txnlog.Cmd "Kind" "cmd") = #0
-    then #()
+    (if: (struct.get txnlog.Cmd "Kind" "cmd") = #1
+    then
+      Replica__applyCommit "rp" (struct.get txnlog.Cmd "Timestamp" "cmd") (struct.get txnlog.Cmd "PartialWrites" "cmd");;
+      #()
     else
-      (if: (struct.get txnlog.Cmd "Kind" "cmd") = #1
+      (if: (struct.get txnlog.Cmd "Kind" "cmd") = #2
       then
-        Replica__applyCommit "rp" (struct.get txnlog.Cmd "Timestamp" "cmd") (struct.get txnlog.Cmd "PartialWrites" "cmd");;
-        #()
-      else
         Replica__applyAbort "rp" (struct.get txnlog.Cmd "Timestamp" "cmd");;
-        #())).
+        #()
+      else #())).
 
 Definition Replica__Start: val :=
   rec: "Replica__Start" "rp" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "lsn" := std.SumAssumeNoOverflow (struct.loadF Replica "lsna" "rp") #1 in
-      let: ("cmd", "ok") := txnlog.TxnLog__Lookup (struct.loadF Replica "txnlog" "rp") "lsn" in
+      let: ("cmd", "ok") := txnlog.TxnLog__Lookup (struct.loadF Replica "txnlog" "rp") (struct.loadF Replica "lsna" "rp") in
       (if: (~ "ok")
       then
         Mutex__Unlock (struct.loadF Replica "mu" "rp");;
@@ -501,7 +500,7 @@ Definition Replica__Start: val :=
         Continue
       else
         Replica__apply "rp" "cmd";;
-        struct.storeF Replica "lsna" "rp" "lsn";;
+        struct.storeF Replica "lsna" "rp" (std.SumAssumeNoOverflow (struct.loadF Replica "lsna" "rp") #1);;
         Continue));;
     #().
 

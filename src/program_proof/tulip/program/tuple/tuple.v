@@ -19,29 +19,36 @@ Section program.
     Persistent (is_tuple tuple key α).
   Admitted.
 
-  Theorem wp_Tuple__AppendVersion (tuple : loc) (tid : u64) (val : string) key hist α :
-    (length hist ≤ uint.nat tid)%nat ->
+  Theorem wp_Tuple__AppendVersion (tuple : loc) (tsW : u64) (value : string) key hist γ α :
+    let ts := uint.nat tsW in
+    let hist' := last_extend ts hist ++ [Some value] in
+    (length hist ≤ ts)%nat ->
+    is_repl_hist_lb γ key hist' -∗
     is_tuple tuple key α -∗
     {{{ own_phys_hist_half α key hist }}}
-      Tuple__AppendVersion #tuple #tid #(LitString val)
-    {{{ RET #(); own_phys_hist_half α key (last_extend (uint.nat tid) hist ++ [Some val]) }}}.
+      Tuple__AppendVersion #tuple #tsW #(LitString value)
+    {{{ RET #(); own_phys_hist_half α key hist' }}}.
   Proof.
   Admitted.
 
-  Theorem wp_Tuple__KillVersion (tuple : loc) (tid : u64) key hist α :
-    (length hist ≤ uint.nat tid)%nat ->
+  Theorem wp_Tuple__KillVersion (tuple : loc) (tsW : u64) key hist γ α :
+    let ts := uint.nat tsW in
+    let hist' := last_extend ts hist ++ [None] in
+    (length hist ≤ ts)%nat ->
+    is_repl_hist_lb γ key hist' -∗
     is_tuple tuple key α -∗
     {{{ own_phys_hist_half α key hist }}}
-      Tuple__KillVersion #tuple #tid
-    {{{ RET #(); own_phys_hist_half α key (last_extend (uint.nat tid) hist ++ [None]) }}}.
+      Tuple__KillVersion #tuple #tsW
+    {{{ RET #(); own_phys_hist_half α key hist' }}}.
   Proof.
   Admitted.
 
   (* TODO *)
-  Theorem wp_Tuple__ReadVersion (tuple : loc) (tid : u64) key α :
+  Theorem wp_Tuple__ReadVersion (tuple : loc) (tsW : u64) key α :
+    let ts := uint.nat tsW in
     is_tuple tuple key α -∗
     {{{ True }}}
-      Tuple__ReadVersion #tuple #tid
+      Tuple__ReadVersion #tuple #tsW
     {{{ (v : dbval) (ok : bool), RET (dbval_to_val v, #ok); True }}}.
   Proof.
   Admitted.
