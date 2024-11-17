@@ -963,7 +963,8 @@ Lemma ownI_bupd_factory_alloc lvl φ Q P :
        ==∗ ∃ i, ⌜φ i⌝ ∗ wsat (S lvl) ∗ ownI_full_bupd_factory lvl i (1/2)%Qp Q P.
 Proof.
   iIntros (?) "(Hw&(HQ&#Hfactory))". iMod (ownI_alloc with "[$Hw HQ]") as (i) "(?&?&?&?)"; eauto; last first.
-  { iModIntro. iExists i. iFrame. instantiate (1:= list_to_vec [Q]). rewrite //=. }
+  { iModIntro. iExists i. iFrame. instantiate (1:= list_to_vec [Q]).
+    (try (iExists 1; iExists [#Q]; iSplit)) => //=. }
   repeat (rewrite ?bi_schema_interp_unfold //=).
   iFrame. eauto.
 Qed.
