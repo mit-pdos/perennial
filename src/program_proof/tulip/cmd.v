@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import
-  extend nonexpanding_merge.
+  extend nonexpanding_merge fin_maps.
 From Perennial.program_proof.tulip Require Import base stability.
 
 Section validate.
@@ -371,14 +371,92 @@ Section apply_cmds.
     apply_cmds log = State cm histm ->
     apply_cmds logp = State cmp histmp ->
     cmp ⊆ cm.
-  Admitted.
+  Proof.
+    intros [l ->].
+    generalize dependent histmp.
+    generalize dependent cmp.
+    generalize dependent logp.
+    induction l as [| c l IH]; intros logp cmp histmp Happly Happlyp.
+    { rewrite app_nil_r Happlyp in Happly. by inv Happly. }
+    rewrite cons_middle app_assoc in Happly.
+    destruct (apply_cmds (logp ++ [c])) as [cm' hist' |] eqn:Hrsm; last first.
+    { rewrite /apply_cmds foldl_app apply_cmds_unfold Hrsm in Happly.
+      by rewrite foldl_apply_cmd_from_stuck in Happly.
+    }
+    trans cm'; last first.
+    { eapply IH; [apply Happly | apply Hrsm]. }
+    destruct c as [ts pwrs | ts].
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_commit in Hrsm.
+      destruct (cmp !! ts) eqn:Hcmpts.
+      { by destruct b; first inv Hrsm. }
+      { case_decide; last done. inv Hrsm. by apply insert_subseteq. }
+    }
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_abort in Hrsm.
+      destruct (cmp !! ts) eqn:Hcmpts.
+      { by destruct b; last inv Hrsm. }
+      { inv Hrsm. by apply insert_subseteq. }
+    }
+  Qed.
 
   Lemma apply_cmds_mono_histm {log logp cm cmp histm histmp} :
     prefix logp log ->
     apply_cmds log = State cm histm ->
     apply_cmds logp = State cmp histmp ->
     map_Forall2 (λ _ h hp, prefix hp h) histm histmp.
-  Admitted.
+  Proof.
+    intros [l ->].
+    generalize dependent histmp.
+    generalize dependent cmp.
+    generalize dependent logp.
+    induction l as [| c l IH]; intros logp cmp histmp Happly Happlyp.
+    { rewrite app_nil_r Happlyp in Happly.
+      inv Happly.
+      rewrite map_Forall2_forall.
+      split; last done.
+      intros k x y Hx Hy.
+      rewrite Hx in Hy. by inv Hy.
+    }
+    rewrite cons_middle app_assoc in Happly.
+    destruct (apply_cmds (logp ++ [c])) as [cm' hist' |] eqn:Hrsm; last first.
+    { rewrite /apply_cmds foldl_app apply_cmds_unfold Hrsm in Happly.
+      by rewrite foldl_apply_cmd_from_stuck in Happly.
+    }
+    specialize (IH _ _ _ Happly Hrsm).
+    rewrite map_Forall2_forall.
+    split; last first.
+    { by rewrite (apply_cmds_dom _ _ _ Happly) (apply_cmds_dom _ _ _ Happlyp). }
+    intros k l1 l2 Hl1 Hl2.
+    destruct c as [ts pwrs | ts].
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_commit in Hrsm.
+      destruct (cmp !! ts).
+      { destruct b; last done.
+        symmetry in Hrsm. inv Hrsm.
+        apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+      }
+      { case_decide; last done. inv Hrsm.
+        destruct (pwrs !! k) as [v |] eqn:Hpwrsk.
+        { pose proof (@multiwrite_modified ts _ _ _ _ _ Hpwrsk Hl2) as Hl2'.
+          pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2' IH) as Hprefix.
+          simpl in Hprefix.
+          etrans; last apply Hprefix.
+          apply prefix_app_r, last_extend_prefix.
+        }
+        { rewrite -(@multiwrite_unmodified ts _ _ _ Hpwrsk) in Hl2.
+          apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+        }
+      }
+    }
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_abort in Hrsm.
+      destruct (cmp !! ts) eqn:Hcmpts.
+      { destruct b; first done.
+        symmetry in Hrsm. inv Hrsm.
+        apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+      }
+      { symmetry in Hrsm. inv Hrsm.
+        apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+      }
+    }
+  Qed.
 
 End apply_cmds.
 
@@ -512,6 +590,16 @@ Section execute_cmds.
 End execute_cmds.
 
 Section merge_clog_ilog.
+
+  (* Fixpoint merge_clog_ilog_raw *)
+  (*   (n : nat) (log : list command) (clog : list ccommand) (ilog : list (nat * icommand)) := *)
+  (*   match clog, ilog with *)
+  (*   | ccmd :: ctail, icmd :: itail => if decide (icmd.1 = n) *)
+  (*                                  then merge_clog_ilog_raw n (ICmd icmd.2 :: log) clog itail *)
+  (*                                  else merge_clog_ilog_raw (S n) (CCmd ccmd :: log) ctail ilog *)
+  (*   | _, _ => log *)
+  (*   end. *)
+
   Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
   Admitted.
 
