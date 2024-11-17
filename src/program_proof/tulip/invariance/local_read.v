@@ -13,7 +13,7 @@ Section local_read.
     | _ => False
     end.
 
-  Lemma replica_inv_local_read γ gid rid clog ilog st key rts hist :
+  Lemma replica_inv_local_read {γ gid rid clog ilog st} key rts hist :
     valid_key key ->
     key_to_group key = gid ->
     execute_cmds (merge_clog_ilog clog ilog) = st ->

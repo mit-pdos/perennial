@@ -134,30 +134,28 @@ Definition Replica__logRead: val :=
 Definition Replica__Read: val :=
   rec: "Replica__Read" "rp" "ts" "key" :=
     let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
-    let: "verfast" := tuple.Tuple__ReadVersion "tpl" "ts" in
-    (if: (struct.get tulip.Version "Timestamp" "verfast") = #0
-    then ("verfast", #true)
+    let: ("t1", "v1") := tuple.Tuple__ReadVersion "tpl" "ts" in
+    (if: "t1" = #0
+    then (#0, "v1", #true)
     else
       Mutex__Lock (struct.loadF Replica "mu" "rp");;
       let: "ok" := Replica__readableKey "rp" "ts" "key" in
       (if: (~ "ok")
       then
         Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-        (struct.mk tulip.Version [
+        (#0, struct.mk tulip.Value [
          ], #false)
       else
-        let: "ver" := tuple.Tuple__ReadVersion "tpl" "ts" in
-        (if: (struct.get tulip.Version "Timestamp" "ver") = #0
+        let: ("t2", "v2") := tuple.Tuple__ReadVersion "tpl" "ts" in
+        (if: "t2" = #0
         then
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-          ("ver", #true)
+          (#0, "v2", #true)
         else
-          let: "bumped" := Replica__bumpKey "rp" "ts" "key" in
-          (if: "bumped"
-          then Replica__logRead "rp" "ts" "key"
-          else #());;
+          Replica__bumpKey "rp" "ts" "key";;
+          Replica__logRead "rp" "ts" "key";;
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-          ("ver", #true)))).
+          ("t2", "v2", #true)))).
 
 Definition Replica__writableKey: val :=
   rec: "Replica__writableKey" "rp" "ts" "key" :=
