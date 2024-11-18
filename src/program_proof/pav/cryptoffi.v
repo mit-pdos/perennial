@@ -53,7 +53,7 @@ sk is a ptr bc the actual sk never leaves the ffi.
 this prevents code from accidentally leaking it.
 pk is a mathematical list bc it could potentially be shared,
 altho our app doesn't make use of that. *)
-Definition own_sig_sk (sk : loc) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
+Definition own_sig_sk (ptr_sk : loc) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
 (* is_sig_pk says that a pk is in-distribution. *)
@@ -90,23 +90,23 @@ Lemma wp_SigGenerateKey P :
   }}}
   SigGenerateKey #()
   {{{
-    sl_pk pk sk, RET ((slice_val sl_pk), #sk);
+    sl_pk pk ptr_sk, RET ((slice_val sl_pk), #ptr_sk);
     "Hsl_sig_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
     "#His_sig_pk" ∷ is_sig_pk pk P ∗
-    "Hown_sig_sk" ∷ own_sig_sk sk pk P
+    "Hown_sig_sk" ∷ own_sig_sk ptr_sk pk P
  }}}.
 Proof. Admitted.
 
-Lemma wp_SigPrivateKey__Sign sk pk P sl_msg msg d0 :
+Lemma wp_SigPrivateKey__Sign ptr_sk pk P sl_msg msg d0 :
   {{{
-    "Hown_sig_sk" ∷ own_sig_sk sk pk P ∗
+    "Hown_sig_sk" ∷ own_sig_sk ptr_sk pk P ∗
     "HP" ∷ P msg ∗
     "Hsl_msg" ∷ own_slice_small sl_msg byteT d0 msg
   }}}
-  SigPrivateKey__Sign #sk (slice_val sl_msg)
+  SigPrivateKey__Sign #ptr_sk (slice_val sl_msg)
   {{{
     sl_sig (sig : list w8), RET (slice_val sl_sig);
-    "Hown_sig_sk" ∷ own_sig_sk sk pk P ∗
+    "Hown_sig_sk" ∷ own_sig_sk ptr_sk pk P ∗
     "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig ∗
     "#His_sig" ∷ is_sig pk msg sig
@@ -138,7 +138,7 @@ our model omits the following, since they're not needed in KT.
 - injectivity. *)
 
 (* own_vrf_sk provides ownership of an sk from the VrfGenerateKey function. *)
-Definition own_vrf_sk (sk : loc) : iProp Σ.
+Definition own_vrf_sk (ptr_sk : loc) : iProp Σ.
 Admitted.
 
 (* own_vrf_pk provides enough resources for pk_ptr, and says that
@@ -164,21 +164,21 @@ Lemma wp_VrfGenerateKey :
   {{{ True }}}
   VrfGenerateKey #()
   {{{
-    (ptr_pk sk : loc) (pk : list w8), RET (#ptr_pk, #sk);
+    (ptr_pk ptr_sk : loc) (pk : list w8), RET (#ptr_pk, #ptr_sk);
     "Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk ∗
-    "Hown_vrf_sk" ∷ own_vrf_sk sk
+    "Hown_vrf_sk" ∷ own_vrf_sk ptr_sk
   }}}.
 Proof. Admitted.
 
-Lemma wp_VrfPrivateKey__Hash (sk : loc) sl_data (data : list w8) d0 :
+Lemma wp_VrfPrivateKey__Hash (ptr_sk : loc) sl_data (data : list w8) d0 :
   {{{
-    "Hown_vrf_sk" ∷ own_vrf_sk sk ∗
+    "Hown_vrf_sk" ∷ own_vrf_sk ptr_sk ∗
     "Hsl_data" ∷ own_slice_small sl_data byteT d0 data
   }}}
-  VrfPrivateKey__Hash #sk (slice_val sl_data)
+  VrfPrivateKey__Hash #ptr_sk (slice_val sl_data)
   {{{
     sl_hash sl_proof (hash proof : list w8), RET (slice_val sl_hash, slice_val sl_proof);
-    "Hown_vrf_sk" ∷ own_vrf_sk sk ∗
+    "Hown_vrf_sk" ∷ own_vrf_sk ptr_sk ∗
     "Hsl_data" ∷ own_slice_small sl_data byteT d0 data ∗
     "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
     "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1) proof

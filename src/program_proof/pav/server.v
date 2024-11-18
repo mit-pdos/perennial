@@ -23,12 +23,12 @@ Section specs.
 Context `{!heapGS Σ}.
 Lemma wp_newServer :
   {{{ True }}}
-  newServer #()
+  NewServer #()
   {{{
     ptr_serv (serv : Server.t) sl_sigPk sigPk γ (vrfPk : loc), RET (#ptr_serv, slice_val sl_sigPk, #vrfPk);
     "Hown_serv" ∷ Server.own ptr_serv serv ∗
     "#Hsl_sigPk" ∷ own_slice_small sl_sigPk byteT DfracDiscarded sigPk ∗
-    "#His_sigPk" ∷ is_pk sigPk (serv_sigpred γ)
+    "#His_sigPk" ∷ is_sig_pk sigPk (serv_sigpred γ)
   }}}.
 Proof. Admitted.
 End specs.

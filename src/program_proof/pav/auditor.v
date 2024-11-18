@@ -41,11 +41,11 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃ γ pk gs (ptr_map : loc) sl_sk sl_hist ptrs_hist hist,
+  ∃ γ pk gs (ptr_map : loc) (ptr_sk : loc) sl_hist ptrs_hist hist,
     (* Physical ownership *)
   "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
-  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val sl_sk) ∗
+  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ #ptr_sk ∗
   "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
   "#Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
     AdtrEpochInfo.own ptr_hist info) ∗
@@ -55,7 +55,7 @@ Definition own (ptr : loc) : iProp Σ :=
   "Hmaps" ∷ mono_list_auth_own γ 1 gs ∗
 
     (* Crypto props *)
-  "Hown_sk" ∷ own_sk sl_sk pk (adtr_sigpred γ) ∗
+  "Hown_sk" ∷ own_sig_sk ptr_sk pk (adtr_sigpred γ) ∗
   (* TODO(SB): with new GS, figure out what tie-in should actually
   be with phys. *)
   "%Hdigs_hist" ∷ ([∗ list] x;info ∈ gs;hist,
@@ -77,12 +77,12 @@ Lemma wp_newAuditor :
   {{{
         True
   }}}
-  newAuditor #()
+  NewAuditor #()
   {{{
     ptr_adtr sl_adtrPk adtrPk adtr_γ, RET (#ptr_adtr, slice_val sl_adtrPk);
     "Hvalid_adtr" ∷ Auditor.valid ptr_adtr ∗
     "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
-    "#His_adtrPk" ∷ is_pk adtrPk (adtr_sigpred adtr_γ)
+    "#His_adtrPk" ∷ is_sig_pk adtrPk (adtr_sigpred adtr_γ)
   }}}.
 Proof.
   iIntros (?) "_ HΦ".
@@ -90,24 +90,20 @@ Proof.
   wp_apply wp_new_free_lock.
   iIntros (?) "Hl".
   iMod (mono_list_own_alloc ([] : list (adtr_map_ty * dig_ty))) as (?) "[? _]".
-  wp_apply wp_GenerateKey.
+  wp_apply wp_SigGenerateKey.
   { shelve. }
   iIntros "*". iNamed 1.
   wp_pures.
   wp_apply wp_allocStruct; [val_ty|].
   iIntros "* Hm".
   wp_pures.
-  wp_apply wp_allocStruct.
-  { rewrite /Auditor /cryptoffi.PrivateKey.
-    (* XXX: unfolding [PrivateKey] because the val_ty hitns look for slice.T syntactically. *)
-    val_ty.
-  }
+  wp_apply wp_allocStruct; [val_ty|].
   iIntros "* Ha".
   iDestruct (struct_fields_split with "Ha") as "Ha".
   iNamed "Ha".
   wp_pures. iApply "HΦ".
   iFrame "#".
-  iMod (own_slice_small_persist with "Hsl_pk") as "#$".
+  iMod (own_slice_small_persist with "Hsl_sig_pk") as "#$".
   repeat iExists _.
   iMod (struct_field_pointsto_persist with "mu") as "#?".
   iMod (struct_field_pointsto_persist with "sk") as "#?".

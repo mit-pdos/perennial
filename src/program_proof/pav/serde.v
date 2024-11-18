@@ -53,10 +53,10 @@ Module MapValPre.
 Record t :=
   mk {
     Epoch: w64;
-    PkComm: list w8;
+    PkCommit: list w8;
   }.
 Definition encodesF (obj : t) : list w8 :=
-  u64_le obj.(Epoch) ++ u64_le (length obj.(PkComm)) ++ obj.(PkComm).
+  u64_le obj.(Epoch) ++ u64_le (length obj.(PkCommit)) ++ obj.(PkCommit).
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
@@ -120,3 +120,26 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
 
 End defs.
 End UpdateProof.
+
+Module CommitOpen.
+Record t :=
+  mk {
+    Pk: list w8;
+    Rand: list w8;
+  }.
+Definition encodesF (obj : t) : list w8 :=
+  (u64_le $ length obj.(Pk)) ++ obj.(Pk) ++ (u64_le $ length obj.(Rand)) ++ obj.(Rand).
+Definition encodes (enc : list w8) (obj : t) : Prop :=
+  enc = encodesF obj.
+Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
+Proof. Admitted.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_pk sl_rand,
+  "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded obj.(Pk) ∗
+  "Hptr_pk" ∷ ptr ↦[CommitOpen :: "Pk"] (slice_val sl_pk) ∗
+  "#Hsl_rand" ∷ own_slice_small sl_rand byteT DfracDiscarded obj.(Rand) ∗
+  "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"] (slice_val sl_rand).
+End defs.
+End CommitOpen.
