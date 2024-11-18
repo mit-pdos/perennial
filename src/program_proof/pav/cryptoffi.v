@@ -21,7 +21,7 @@ Proof. Admitted.
 Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
-Lemma is_hash_func d h1 h2 :
+Lemma is_hash_det d h1 h2 :
   is_hash d h1 -∗ is_hash d h2 -∗ ⌜h1 = h2⌝.
 Proof. Admitted.
 
@@ -48,18 +48,20 @@ Proof. Admitted.
 
 (* Signatures. *)
 
-(* own_sk says that an sk is in-distribution.
+(* own_sig_sk says that an sk is in-distribution.
 sk is a ptr bc the actual sk never leaves the ffi.
-this prevents code from accidentally leaking it. *)
-Definition own_sk (sk : Slice.t) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
+this prevents code from accidentally leaking it.
+pk is a mathematical list bc it could potentially be shared,
+altho our app doesn't make use of that. *)
+Definition own_sig_sk (sk : loc) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
-(* is_pk says that a pk is in-distribution. *)
-Definition is_pk (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
+(* is_sig_pk says that a pk is in-distribution. *)
+Definition is_sig_pk (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
 #[global]
-Instance is_pk_persistent pk P : Persistent (is_pk pk P).
+Instance is_sig_pk_persistent pk P : Persistent (is_sig_pk pk P).
 Proof. Admitted.
 
 (* is_sig says that Verify will ret True on these inputs.
@@ -78,53 +80,148 @@ Proof. Admitted.
 EUF-CMA guarantees that this only happens if the genuine key holder
 signed the same msg in the past. P holds from the orig signing op. *)
 Lemma is_sig_to_pred pk P msg sig :
-  is_pk pk P -∗ is_sig pk msg sig -∗ P msg.
+  is_sig_pk pk P -∗ is_sig pk msg sig -∗ P msg.
 Proof. Admitted.
 
-Lemma wp_GenerateKey P :
+Lemma wp_SigGenerateKey P :
   (∀ l, Persistent (P l)) →
   {{{
         True
   }}}
-  GenerateKey #()
+  SigGenerateKey #()
   {{{
-    sl_pk pk sl_sk, RET ((slice_val sl_pk), (slice_val sl_sk));
-    "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
-    "#Hpk" ∷ is_pk pk P ∗
-    "Hsk" ∷ own_sk sl_sk pk P
+    sl_pk pk sk, RET ((slice_val sl_pk), #sk);
+    "Hsl_sig_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
+    "#His_sig_pk" ∷ is_sig_pk pk P ∗
+    "Hown_sig_sk" ∷ own_sig_sk sk pk P
  }}}.
 Proof. Admitted.
 
-Lemma wp_Sign sl_sk pk P sl_msg msg d0 :
+Lemma wp_SigPrivateKey__Sign sk pk P sl_msg msg d0 :
   {{{
-    "Hsk" ∷ own_sk sl_sk pk P ∗
+    "Hown_sig_sk" ∷ own_sig_sk sk pk P ∗
     "HP" ∷ P msg ∗
-    "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg
+    "Hsl_msg" ∷ own_slice_small sl_msg byteT d0 msg
   }}}
-  PrivateKey__Sign (slice_val sl_sk) (slice_val sl_msg)
+  SigPrivateKey__Sign #sk (slice_val sl_msg)
   {{{
     sl_sig (sig : list w8), RET (slice_val sl_sig);
-    "Hsk" ∷ own_sk sl_sk pk P ∗
+    "Hown_sig_sk" ∷ own_sig_sk sk pk P ∗
     "Hmsg" ∷ own_slice_small sl_msg byteT d0 msg ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT (DfracOwn 1) sig ∗
-    "#Hsig" ∷ is_sig pk msg sig
+    "#His_sig" ∷ is_sig pk msg sig
   }}}.
 Proof. Admitted.
 
-Lemma wp_Verify P sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
+Lemma wp_SigPublicKey__Verify P sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
   {{{
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
     "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg
   }}}
-  PublicKey__Verify (slice_val sl_pk) (slice_val sl_msg) (slice_val sl_sig)
+  SigPublicKey__Verify (slice_val sl_pk) (slice_val sl_msg) (slice_val sl_sig)
   {{{
-    (ok : bool), RET #ok;
+    (err : bool), RET #err;
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
     "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg ∗
-    "Hgenie" ∷ (is_sig pk msg sig ∗-∗ ⌜ ok = true ⌝) ∗
-    "Hok" ∷ (is_pk pk P -∗ if ok then P msg else True)
+    "Hgenie" ∷ (is_sig pk msg sig ∗-∗ ⌜ err = false ⌝) ∗
+    "HP" ∷ (is_sig_pk pk P -∗ if negb err then P msg else True)
+  }}}.
+Proof. Admitted.
+
+(* Verifiable Random Functions (VRFs).
+our model omits the following, since they're not needed in KT.
+- a data predicate. this allows the sk owner to prove that hashed
+  data satisfies some properties.
+- correctness.
+- injectivity. *)
+
+(* own_vrf_sk provides ownership of an sk from the VrfGenerateKey function. *)
+Definition own_vrf_sk (sk : loc) : iProp Σ.
+Admitted.
+
+(* own_vrf_pk provides enough resources for pk_ptr, and says that
+pk satisfies certain crypto checks.
+however, pk might still be from outside the VrfGenerateKey distribution. *)
+Definition own_vrf_pk (ptr_pk : loc) (pk : list w8) : iProp Σ.
+Admitted.
+
+(* is_vrf says that for a particular pk, data and hash are tied together,
+through the Verify function. *)
+Definition is_vrf (pk : list w8) (data : list w8) (hash : list w8) : iProp Σ.
+Admitted.
+
+#[global]
+Instance is_vrf_persistent pk data hash : Persistent (is_vrf pk data hash).
+Proof. Admitted.
+
+Lemma is_vrf_det pk d h1 h2 :
+  is_vrf pk d h1 -∗ is_vrf pk d h2 -∗ ⌜h1 = h2⌝.
+Proof. Admitted.
+
+Lemma wp_VrfGenerateKey :
+  {{{ True }}}
+  VrfGenerateKey #()
+  {{{
+    (ptr_pk sk : loc) (pk : list w8), RET (#ptr_pk, #sk);
+    "Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk ∗
+    "Hown_vrf_sk" ∷ own_vrf_sk sk
+  }}}.
+Proof. Admitted.
+
+Lemma wp_VrfPrivateKey__Hash (sk : loc) sl_data (data : list w8) d0 :
+  {{{
+    "Hown_vrf_sk" ∷ own_vrf_sk sk ∗
+    "Hsl_data" ∷ own_slice_small sl_data byteT d0 data
+  }}}
+  VrfPrivateKey__Hash #sk (slice_val sl_data)
+  {{{
+    sl_hash sl_proof (hash proof : list w8), RET (slice_val sl_hash, slice_val sl_proof);
+    "Hown_vrf_sk" ∷ own_vrf_sk sk ∗
+    "Hsl_data" ∷ own_slice_small sl_data byteT d0 data ∗
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
+    "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1) proof
+  }}}.
+Proof. Admitted.
+
+Lemma wp_VrfPublicKey__Verify ptr_pk pk sl_data sl_proof (data proof : list w8) d0 d1 :
+  {{{
+    "Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk ∗
+    "Hsl_data" ∷ own_slice_small sl_data byteT d0 data ∗
+    "Hsl_proof" ∷ own_slice_small sl_proof byteT d1 proof
+  }}}
+  VrfPublicKey__Verify #ptr_pk (slice_val sl_data) (slice_val sl_proof)
+  {{{
+    sl_hash (hash : list w8) (err : bool), RET (slice_val sl_hash, #err);
+    "Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk ∗
+    "Hsl_data" ∷ own_slice_small sl_data byteT d0 data ∗
+    "Hsl_proof" ∷ own_slice_small sl_proof byteT d1 proof ∗
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
+    "#His_vrf" ∷ (if negb err then is_vrf pk data hash else True)
+  }}}.
+Proof. Admitted.
+
+Lemma wp_VrfPublicKeyEncode ptr_pk pk :
+  {{{
+    "Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk
+  }}}
+  VrfPublicKeyEncode #ptr_pk
+  {{{
+    sl_enc, RET slice_val sl_enc;
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT (DfracOwn 1) pk
+  }}}.
+Proof. Admitted.
+
+Lemma wp_VrfPublicKeyDecode sl_enc pk d0 :
+  {{{
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT d0 pk
+  }}}
+  VrfPublicKeyDecode (slice_val sl_enc)
+  {{{
+    (ptr_pk : loc), RET #ptr_pk;
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT d0 pk ∗
+    "Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk
   }}}.
 Proof. Admitted.
 

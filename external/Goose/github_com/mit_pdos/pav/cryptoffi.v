@@ -1,39 +1,31 @@
 From Perennial.goose_lang Require Import prelude.
 
-Notation PublicKey := (slice.T byteT) (only parsing).
+Notation SigPublicKey := (slice.T byteT) (only parsing).
 
 Section code.
 Context `{ext_ty: ext_types}.
 
 Definition HashLen : expr := #32.
 
-Definition SigLen : expr := #64.
-
 Definition Hash: val :=
   rec: "Hash" "data" :=
     Panic "ffi";;
     #().
 
-Definition PrivateKey: ty := slice.T byteT.
-
-Definition GenerateKey: val :=
-  rec: "GenerateKey" <> :=
+Definition SigGenerateKey: val :=
+  rec: "SigGenerateKey" <> :=
     Panic "ffi";;
     #().
 
-Definition PrivateKey__Sign: val :=
-  rec: "PrivateKey__Sign" "priv" "message" :=
+Definition SigPrivateKey__Sign: val :=
+  rec: "SigPrivateKey__Sign" "sk" "message" :=
     Panic "ffi";;
     #().
 
-Definition PublicKey__Verify: val :=
-  rec: "PublicKey__Verify" "pub" "message" "sig" :=
+Definition SigPublicKey__Verify: val :=
+  rec: "SigPublicKey__Verify" "pk" "message" "sig" :=
     Panic "ffi";;
     #().
-
-Definition VrfPrivateKey: ty. Admitted.
-
-Definition VrfPublicKey: ty. Admitted.
 
 Definition VrfGenerateKey: val :=
   rec: "VrfGenerateKey" <> :=
@@ -41,12 +33,22 @@ Definition VrfGenerateKey: val :=
     #().
 
 Definition VrfPrivateKey__Hash: val :=
-  rec: "VrfPrivateKey__Hash" "data" :=
+  rec: "VrfPrivateKey__Hash" "sk" "data" :=
     Panic "ffi";;
     #().
 
 Definition VrfPublicKey__Verify: val :=
-  rec: "VrfPublicKey__Verify" "data" "hash" "proof" :=
+  rec: "VrfPublicKey__Verify" "pk" "data" "proof" :=
+    Panic "ffi";;
+    #().
+
+Definition VrfPublicKeyEncode: val :=
+  rec: "VrfPublicKeyEncode" "pk" :=
+    Panic "ffi";;
+    #().
+
+Definition VrfPublicKeyDecode: val :=
+  rec: "VrfPublicKeyDecode" "b" :=
     Panic "ffi";;
     #().
 
