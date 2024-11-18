@@ -202,17 +202,16 @@ Definition Evid := struct.decl [
   "sigDig1" :: ptrT
 ].
 
-(* checkDig checks for freshness and prior vals, and evid / err on fail. *)
-Definition Client__checkDig: val :=
-  rec: "Client__checkDig" "c" "dig" :=
+Definition checkDig: val :=
+  rec: "checkDig" "servSigPk" "seenDigs" "dig" :=
     let: "stdErr" := struct.new ClientErr [
       "Err" ::= #true
     ] in
-    let: "err0" := CheckSigDig "dig" (struct.loadF Client "servSigPk" "c") in
+    let: "err0" := CheckSigDig "dig" "servSigPk" in
     (if: "err0"
     then "stdErr"
     else
-      let: ("seenDig", "ok0") := MapGet (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") in
+      let: ("seenDig", "ok0") := MapGet "seenDigs" (struct.loadF SigDig "Epoch" "dig") in
       (if: "ok0"
       then
         (if: (~ (std.BytesEqual (struct.loadF SigDig "Dig" "seenDig") (struct.loadF SigDig "Dig" "dig")))
@@ -230,17 +229,12 @@ Definition Client__checkDig: val :=
             "Err" ::= #false
           ])
       else
-        (if: ((struct.loadF Client "nextEpoch" "c") ≠ #0) && ((struct.loadF SigDig "Epoch" "dig") < ((struct.loadF Client "nextEpoch" "c") - #1))
+        (if: ((struct.loadF SigDig "Epoch" "dig") + #1) = #0
         then "stdErr"
         else
-          (if: ((struct.loadF Client "nextEpoch" "c") + #1) = #0
-          then "stdErr"
-          else
-            MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
-            struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
-            struct.new ClientErr [
-              "Err" ::= #false
-            ])))).
+          struct.new ClientErr [
+            "Err" ::= #false
+          ]))).
 
 (* MapLabelPre from serde.go *)
 
@@ -260,13 +254,13 @@ Definition MapLabelPreEncode: val :=
 
 (* checkLabel checks the vrf proof, computes the label, and errors on fail. *)
 Definition checkLabel: val :=
-  rec: "checkLabel" "pk" "uid" "ver" "proof" :=
+  rec: "checkLabel" "servVrfPk" "uid" "ver" "proof" :=
     let: "pre" := struct.new MapLabelPre [
       "Uid" ::= "uid";
       "Ver" ::= "ver"
     ] in
     let: "preByt" := MapLabelPreEncode (NewSlice byteT #0) "pre" in
-    cryptoffi.VrfPublicKey__Verify "pk" "preByt" "proof".
+    cryptoffi.VrfPublicKey__Verify "servVrfPk" "preByt" "proof".
 
 (* Memb from serde.go *)
 
@@ -313,8 +307,8 @@ Definition compMapVal: val :=
 
 (* checkMemb errors on fail. *)
 Definition checkMemb: val :=
-  rec: "checkMemb" "pk" "uid" "ver" "dig" "memb" :=
-    let: ("label", "err") := checkLabel "pk" "uid" "ver" (struct.loadF Memb "LabelProof" "memb") in
+  rec: "checkMemb" "servVrfPk" "uid" "ver" "dig" "memb" :=
+    let: ("label", "err") := checkLabel "servVrfPk" "uid" "ver" (struct.loadF Memb "LabelProof" "memb") in
     (if: "err"
     then #true
     else
@@ -331,19 +325,19 @@ Definition MembHide := struct.decl [
 
 (* checkMembHide errors on fail. *)
 Definition checkMembHide: val :=
-  rec: "checkMembHide" "pk" "uid" "ver" "dig" "memb" :=
-    let: ("label", "err") := checkLabel "pk" "uid" "ver" (struct.loadF MembHide "LabelProof" "memb") in
+  rec: "checkMembHide" "servVrfPk" "uid" "ver" "dig" "memb" :=
+    let: ("label", "err") := checkLabel "servVrfPk" "uid" "ver" (struct.loadF MembHide "LabelProof" "memb") in
     (if: "err"
     then #true
     else merkle.CheckProof #true (struct.loadF MembHide "MerkProof" "memb") "label" (struct.loadF MembHide "MapVal" "memb") "dig").
 
 (* checkHist errors on fail. *)
 Definition checkHist: val :=
-  rec: "checkHist" "pk" "uid" "dig" "membs" :=
+  rec: "checkHist" "servVrfPk" "uid" "dig" "membs" :=
     let: "err0" := ref (zero_val boolT) in
     ForSlice ptrT "ver0" "memb" "membs"
       (let: "ver" := "ver0" in
-      (if: checkMembHide "pk" "uid" "ver" "dig" "memb"
+      (if: checkMembHide "servVrfPk" "uid" "ver" "dig" "memb"
       then "err0" <-[boolT] #true
       else #()));;
     ![boolT] "err0".
@@ -355,8 +349,8 @@ Definition NonMemb := struct.decl [
 
 (* checkNonMemb errors on fail. *)
 Definition checkNonMemb: val :=
-  rec: "checkNonMemb" "pk" "uid" "ver" "dig" "nonMemb" :=
-    let: ("label", "err") := checkLabel "pk" "uid" "ver" (struct.loadF NonMemb "LabelProof" "nonMemb") in
+  rec: "checkNonMemb" "servVrfPk" "uid" "ver" "dig" "nonMemb" :=
+    let: ("label", "err") := checkLabel "servVrfPk" "uid" "ver" (struct.loadF NonMemb "LabelProof" "nonMemb") in
     (if: "err"
     then #true
     else merkle.CheckProof #false (struct.loadF NonMemb "MerkProof" "nonMemb") "label" slice.nil "dig").
@@ -525,26 +519,31 @@ Definition Client__Put: val :=
     (if: "err0"
     then (#0, "stdErr")
     else
-      let: "err1" := Client__checkDig "c" "dig" in
+      let: "err1" := checkDig (struct.loadF Client "servSigPk" "c") (struct.loadF Client "seenDigs" "c") "dig" in
       (if: struct.loadF ClientErr "Err" "err1"
       then (#0, "err1")
       else
-        (if: checkMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "latest"
+        (if: (struct.loadF SigDig "Epoch" "dig") < (struct.loadF Client "nextEpoch" "c")
         then (#0, "stdErr")
         else
-          (if: (struct.loadF SigDig "Epoch" "dig") ≠ (struct.loadF Memb "EpochAdded" "latest")
+          (if: checkMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "latest"
           then (#0, "stdErr")
           else
-            (if: (~ (std.BytesEqual "pk" (struct.loadF CommitOpen "Val" (struct.loadF Memb "PkOpen" "latest"))))
+            (if: (struct.loadF SigDig "Epoch" "dig") ≠ (struct.loadF Memb "EpochAdded" "latest")
             then (#0, "stdErr")
             else
-              (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") ((struct.loadF Client "nextVer" "c") + #1) (struct.loadF SigDig "Dig" "dig") "bound"
+              (if: (~ (std.BytesEqual "pk" (struct.loadF CommitOpen "Val" (struct.loadF Memb "PkOpen" "latest"))))
               then (#0, "stdErr")
               else
-                struct.storeF Client "nextVer" "c" ((struct.loadF Client "nextVer" "c") + #1);;
-                (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
-                   "Err" ::= #false
-                 ]))))))).
+                (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") ((struct.loadF Client "nextVer" "c") + #1) (struct.loadF SigDig "Dig" "dig") "bound"
+                then (#0, "stdErr")
+                else
+                  MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
+                  struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
+                  struct.storeF Client "nextVer" "c" ((struct.loadF Client "nextVer" "c") + #1);;
+                  (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
+                     "Err" ::= #false
+                   ])))))))).
 
 (* ServerGetArg from serde.go *)
 
@@ -680,30 +679,35 @@ Definition Client__Get: val :=
     (if: "err0"
     then (#false, slice.nil, #0, "stdErr")
     else
-      let: "err1" := Client__checkDig "c" "dig" in
+      let: "err1" := checkDig (struct.loadF Client "servSigPk" "c") (struct.loadF Client "seenDigs" "c") "dig" in
       (if: struct.loadF ClientErr "Err" "err1"
       then (#false, slice.nil, #0, "err1")
       else
-        (if: checkHist (struct.loadF Client "servVrfPk" "c") "uid" (struct.loadF SigDig "Dig" "dig") "hist"
+        (if: ((struct.loadF Client "nextEpoch" "c") ≠ #0) && ((struct.loadF SigDig "Epoch" "dig") < ((struct.loadF Client "nextEpoch" "c") - #1))
         then (#false, slice.nil, #0, "stdErr")
         else
-          let: "numHistVers" := slice.len "hist" in
-          (if: ("numHistVers" > #0) && (~ "isReg")
+          (if: checkHist (struct.loadF Client "servVrfPk" "c") "uid" (struct.loadF SigDig "Dig" "dig") "hist"
           then (#false, slice.nil, #0, "stdErr")
           else
-            (if: "isReg" && (checkMemb (struct.loadF Client "servVrfPk" "c") "uid" "numHistVers" (struct.loadF SigDig "Dig" "dig") "latest")
+            let: "numHistVers" := slice.len "hist" in
+            (if: ("numHistVers" > #0) && (~ "isReg")
             then (#false, slice.nil, #0, "stdErr")
             else
-              let: "boundVer" := ref (zero_val uint64T) in
-              (if: "isReg"
-              then "boundVer" <-[uint64T] ("numHistVers" + #1)
-              else #());;
-              (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") "uid" (![uint64T] "boundVer") (struct.loadF SigDig "Dig" "dig") "bound"
+              (if: "isReg" && (checkMemb (struct.loadF Client "servVrfPk" "c") "uid" "numHistVers" (struct.loadF SigDig "Dig" "dig") "latest")
               then (#false, slice.nil, #0, "stdErr")
               else
-                ("isReg", struct.loadF CommitOpen "Val" (struct.loadF Memb "PkOpen" "latest"), struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
-                   "Err" ::= #false
-                 ]))))))).
+                let: "boundVer" := ref (zero_val uint64T) in
+                (if: "isReg"
+                then "boundVer" <-[uint64T] ("numHistVers" + #1)
+                else #());;
+                (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") "uid" (![uint64T] "boundVer") (struct.loadF SigDig "Dig" "dig") "bound"
+                then (#false, slice.nil, #0, "stdErr")
+                else
+                  MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
+                  struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
+                  ("isReg", struct.loadF CommitOpen "Val" (struct.loadF Memb "PkOpen" "latest"), struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
+                     "Err" ::= #false
+                   ])))))))).
 
 (* ServerSelfMonArg from serde.go *)
 
@@ -772,16 +776,21 @@ Definition Client__SelfMon: val :=
     (if: "err0"
     then (#0, "stdErr")
     else
-      let: "err1" := Client__checkDig "c" "dig" in
+      let: "err1" := checkDig (struct.loadF Client "servSigPk" "c") (struct.loadF Client "seenDigs" "c") "dig" in
       (if: struct.loadF ClientErr "Err" "err1"
       then (#0, "err1")
       else
-        (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "bound"
+        (if: ((struct.loadF Client "nextEpoch" "c") ≠ #0) && ((struct.loadF SigDig "Epoch" "dig") < ((struct.loadF Client "nextEpoch" "c") - #1))
         then (#0, "stdErr")
         else
-          (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
-             "Err" ::= #false
-           ])))).
+          (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "bound"
+          then (#0, "stdErr")
+          else
+            MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
+            struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
+            (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
+               "Err" ::= #false
+             ]))))).
 
 (* AdtrGetArg from serde.go *)
 
