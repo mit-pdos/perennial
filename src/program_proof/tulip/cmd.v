@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import
   extend nonexpanding_merge fin_maps.
 From Perennial.program_proof.tulip Require Import base stability.
+From Coq.Program Require Import Wf.
 
 Section validate.
   Definition validate_key (tid : nat) (ov : option dbval) (ovl : option (list bool)) :=
@@ -591,20 +592,40 @@ End execute_cmds.
 
 Section merge_clog_ilog.
 
-  (* Fixpoint merge_clog_ilog_raw *)
-  (*   (n : nat) (log : list command) (clog : list ccommand) (ilog : list (nat * icommand)) := *)
-  (*   match clog, ilog with *)
-  (*   | ccmd :: ctail, icmd :: itail => if decide (icmd.1 = n) *)
-  (*                                  then merge_clog_ilog_raw n (ICmd icmd.2 :: log) clog itail *)
-  (*                                  else merge_clog_ilog_raw (S n) (CCmd ccmd :: log) ctail ilog *)
-  (*   | _, _ => log *)
-  (*   end. *)
-
-  Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
+  Program Fixpoint merge_clog_ilog_raw
+    (n : nat) (log : list command) (clog : list ccommand) (ilog : list (nat * icommand))
+    {measure (length clog + length ilog)%nat} :=
+    match clog, ilog with
+    | ccmd :: ctail, icmd :: itail => if decide (icmd.1 = n)
+                                   then merge_clog_ilog_raw n (ICmd icmd.2 :: log) clog itail
+                                   else merge_clog_ilog_raw (S n) (CCmd ccmd :: log) ctail ilog
+    | _, _ => log
+    end.
+  Next Obligation.
+    intros n log clog ilog _ ccmd ctail icmd itail Hclog Hilog _.
+    rewrite -Hilog /=. lia.
+  Qed.
+  Next Obligation.
+    intros n log clog ilog _ ccmd ctail icmd itail Hclog Hilog _.
+    rewrite -Hclog /=. lia.
+  Qed.
+  Next Obligation.
+    intros _ _ _ _ _ _ _ clog' _ ccmd ctail _ _ [Hcontra _].
+    by subst clog'.
+  Qed.
+  Next Obligation.
+    intros _ _ _ _ _ _ _ _ _ _ ilog' _ _ icmd itail [_ Hcontra].
+    by subst ilog'.
+  Qed.
+  Next Obligation.
   Admitted.
+
+  Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) :=
+    merge_clog_ilog_raw O [] clog ilog.
 
   Lemma merge_clog_ilog_nil :
     merge_clog_ilog [] [] = [].
+  Proof.
   Admitted.
 
   Lemma merge_clog_ilog_snoc_clog clog ilog ccmd :

@@ -15,16 +15,15 @@ Inductive txnres :=
 | ResCommitted (wrs : dbmap)
 | ResAborted.
 
-Definition fstring := {k : string | (String.length k < 2 ^ 64)%nat}.
+Definition fstring := {k : string | String.length k < 2 ^ 64}.
 
 #[local]
 Instance fstring_finite :
   finite.Finite fstring.
 Admitted.
 
-(* Definition keys_all : gset string := fin_to_set fstring. *)
-Definition keys_all : gset string.
-Admitted.
+Definition keys_all : gset string :=
+  list_to_set (map proj1_sig (finite.enum fstring)).
 
 (** Transaction status on group/replica. *)
 Inductive txnst :=
