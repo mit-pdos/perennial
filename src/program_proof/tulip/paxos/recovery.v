@@ -7,7 +7,6 @@ Inductive pxst :=
 
 Inductive pxcmd :=
 | CmdPaxosExtend (ents : ledger)
-| CmdPaxosAppend (ent : string)
 | CmdPaxosPrepare (term : nat)
 | CmdPaxosAdvance (term lsn : nat) (ents : ledger)
 | CmdPaxosAccept (lsn : nat) (ents : ledger)
@@ -17,13 +16,6 @@ Definition execute_paxos_extend st ents :=
   match st with
   | PaxosState termc terml lsnc ledger =>
       PaxosState termc terml lsnc (ledger ++ ents)
-  | PaxosStuck => PaxosStuck
-  end.
-
-Definition execute_paxos_append st ent :=
-  match st with
-  | PaxosState termc terml lsnc ledger =>
-      PaxosState termc terml lsnc (ledger ++ [ent])
   | PaxosStuck => PaxosStuck
   end.
 
@@ -62,7 +54,6 @@ Definition execute_paxos_expand st lsn :=
 Definition execute_paxos_cmd st c :=
   match c with
   | CmdPaxosExtend ents => execute_paxos_extend st ents
-  | CmdPaxosAppend ent => execute_paxos_append st ent
   | CmdPaxosPrepare term => execute_paxos_prepare st term
   | CmdPaxosAdvance term lsn ents => execute_paxos_advance st term lsn ents
   | CmdPaxosAccept lsn ents => execute_paxos_accept st lsn ents
@@ -99,7 +90,6 @@ Admitted.
 Definition encode_paxos_cmd c :=
   match c with
   | CmdPaxosExtend ents => encode_paxos_extend ents
-  | CmdPaxosAppend ent => encode_paxos_append ent
   | CmdPaxosPrepare term => encode_paxos_prepare term
   | CmdPaxosAdvance term lsn ents => encode_paxos_advance term lsn ents
   | CmdPaxosAccept lsn ents => encode_paxos_accept lsn ents

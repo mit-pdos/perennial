@@ -23,7 +23,7 @@ Section start.
       Start #nidme #addrmP #(LitString fname)
     {{{ (px : loc), RET #px; is_paxos px nidme γ }}}.
   Proof.
-    iIntros "#Hfname #Hinv #Hinvfile #Hinvnet" (Φ).
+    iIntros "#Hfnamewal #Hinv #Hinvfile #Hinvnet" (Φ).
     iIntros "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
     wp_rec.
 
@@ -56,13 +56,14 @@ Section start.
 
     (*@     termc, terml, lsnc, log := resume()                                 @*)
     (*@                                                                         @*)
+    wp_pures.
     wp_apply (wp_resume with "[$Htermc $Hterml $Hlsnc $Hlogn]").
     iIntros (logP) "(Htermc & Hterml & Hlsnc & Hlogn & Hlog)".
 
     (*@     px := mkPaxos(nidme, termc, terml, lsnc, log, addrm)                @*)
     (*@                                                                         @*)
     wp_apply (wp_mkPaxos
-               with "Hfname Hinv Hinvfile Hinvnet [$Hlog $Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
+               with "Hfnamewal Hinv Hinvfile Hinvnet [$Hlog $Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
     { clear -Hmulti. word. }
     { by apply elem_of_dom. }
     { clear -Hltmax. rewrite /max_nodes. word. }

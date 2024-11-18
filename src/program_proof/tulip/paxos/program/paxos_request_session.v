@@ -97,7 +97,7 @@ Section request_session.
       (*@         px.stepdown(req.Term)                                           @*)
       (*@                                                                         @*)
       iDestruct "Hpx" as (termc) "[Hpx %Hgetermc]".
-      wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+      wp_apply (wp_Paxos__stepdown with "Hfname Hinvfile Hinv Hpx").
       { apply Hnidme. }
       { clear -Hgetermc. word. }
       iIntros "Hpx".
@@ -231,7 +231,7 @@ Section request_session.
       (*@         px.stepdown(req.Term)                                           @*)
       (*@                                                                         @*)
       iDestruct "Hpx" as (termc) "[Hpx %Hgetermc]".
-      wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+      wp_apply (wp_Paxos__stepdown with "Hfname Hinvfile Hinv Hpx").
       { apply Hnidme. }
       { clear -Hgetermc. word. }
       iIntros "Hpx".
@@ -258,13 +258,13 @@ Section request_session.
       (*@     }                                                                   @*)
       (*@ }                                                                       @*)
       iNamed "Hsafe".
-      wp_apply (wp_Paxos__accept with "Hpfb Hpfg Hinv [$Hpx $Hentsa]").
+      wp_apply (wp_Paxos__accept with "Hpfb Hpfg Hfname Hinvfile Hinv [$Hpx $Hentsa]").
       { apply Hnidme. }
       { apply Hlogleader. }
       { apply Hents. }
       iIntros (lsna loga) "(Hpx & #Haoc & %Hlenloga)".
       wp_pures.
-      wp_apply (wp_Paxos__learn with "Hlogcmt Hinv Hpx").
+      wp_apply (wp_Paxos__learn with "Hlogcmt Hfname Hinvfile Hinv Hpx").
       { apply Hnidme. }
       { apply Hlogcmt. }
       iIntros "Hpx".

@@ -101,7 +101,7 @@ Section response_sesion.
       iIntros (invalid) "[Hpx %Hlttermc]".
       wp_if_destruct.
       { wp_pures.
-        wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+        wp_apply (wp_Paxos__stepdown with "Hfname Hinvfile Hinv Hpx").
         { apply Hnidme. }
         { clear -Hgttermc. word. }
         iIntros "Hpx".
@@ -160,7 +160,7 @@ Section response_sesion.
       { apply Hinnids. }
       { apply Hents. }
       iIntros "Hpx".
-      wp_apply (wp_Paxos__ascend with "Hinv Hpx").
+      wp_apply (wp_Paxos__ascend with "Hfname Hinvfile Hinv Hpx").
       { apply Hnidme. }
       iIntros "Hpx".
       wp_loadField.
@@ -215,7 +215,7 @@ Section response_sesion.
       iIntros (invalid) "[Hpx %Hlttermc]".
       wp_if_destruct.
       { wp_pures.
-        wp_apply (wp_Paxos__stepdown with "Hinv Hpx").
+        wp_apply (wp_Paxos__stepdown with "Hfname Hinvfile Hinv Hpx").
         { apply Hnidme. }
         { clear -Hgttermc. word. }
         iIntros "Hpx".
@@ -307,7 +307,7 @@ Section response_sesion.
       (*@         }                                                               @*)
       (*@     }                                                                   @*)
       (*@ }                                                                       @*)
-      wp_apply (wp_Paxos__commit with "Hcmted Hinv [Hpx]").
+      wp_apply (wp_Paxos__commit with "Hcmted Hfname Hinvfile Hinv [Hpx]").
       { apply Hnidme. }
       { apply Hlenlogc. }
       { iNamed "Hpx". iNamed "Hleader". iNamed "Honlyl".

@@ -73,7 +73,7 @@ Section log.
     {{{ True }}}
     <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal = bs⌝ >>>
       logAppend #(LitString fname) #(LitString ent) @ E
-    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosAppend ent]) = bs'⌝ >>>
+    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosExtend [ent]]) = bs'⌝ >>>
     {{{ RET #(); True }}}.
   Proof.
     (*@ func logAppend(fname string, ent string) {                              @*)
