@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
+From Perennial.program_proof.pav Require Import misc.
 
 Module PreSigDig.
 Record t :=
@@ -143,3 +144,62 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"] (slice_val sl_rand).
 End defs.
 End CommitOpen.
+
+Module Memb.
+Record t :=
+  mk {
+    LabelProof: list w8;
+    EpochAdded: w64;
+    PkOpen: CommitOpen.t;
+    MerkProof: list $ list $ list w8;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_label_proof ptr_pk_open sl_merk_proof,
+  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
+  "Hptr_label_proof" ∷ ptr ↦[Memb :: "LabelProof"] (slice_val sl_label_proof) ∗
+  "Hptr_epoch_added" ∷ ptr ↦[Memb :: "EpochAdded"] #obj.(EpochAdded) ∗
+  "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open obj.(PkOpen) ∗
+  "Hptr_pk_open" ∷ ptr ↦[Memb :: "PkOpen"] #ptr_pk_open ∗
+  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
+  "Hptr_merk_proof" ∷ ptr ↦[Memb :: "MerkProof"] (slice_val sl_merk_proof).
+End defs.
+End Memb.
+
+Module MembHide.
+Record t :=
+  mk {
+    LabelProof: list w8;
+    MapVal: list w8;
+    MerkProof: list $ list $ list w8;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_label_proof sl_map_val sl_merk_proof,
+  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
+  "Hptr_label_proof" ∷ ptr ↦[MembHide :: "LabelProof"] (slice_val sl_label_proof) ∗
+  "#Hsl_map_val" ∷ own_slice_small sl_map_val byteT DfracDiscarded obj.(MapVal) ∗
+  "Hptr_map_val" ∷ ptr ↦[MembHide :: "MapVal"] (slice_val sl_map_val) ∗
+  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
+  "Hptr_merk_proof" ∷ ptr ↦[MembHide :: "MerkProof"] (slice_val sl_merk_proof).
+End defs.
+End MembHide.
+
+Module NonMemb.
+Record t :=
+  mk {
+    LabelProof: list w8;
+    MerkProof: list $ list $ list w8;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_label_proof sl_merk_proof,
+  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
+  "Hptr_label_proof" ∷ ptr ↦[MembHide :: "LabelProof"] (slice_val sl_label_proof) ∗
+  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
+  "Hptr_merk_proof" ∷ ptr ↦[MembHide :: "MerkProof"] (slice_val sl_merk_proof).
+End defs.
+End NonMemb.

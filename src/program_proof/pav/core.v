@@ -35,7 +35,7 @@ Class pavG Σ :=
 
 Context `{!heapGS Σ}.
 
-Definition is_mapLabel pk uid ver label : iProp Σ :=
+Definition is_map_label pk uid ver label : iProp Σ :=
   is_vrf pk (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) label.
 
 Definition is_commit (val : pk_ty) (commit : commit_ty) : iProp Σ :=
@@ -59,9 +59,9 @@ Definition msv_core (m : adtr_map_ty) uid vals pk : iProp Σ :=
   ∃ label,
   "#Hhist" ∷ ([∗ list] ver ↦ val ∈ vals,
     ∃ label,
-    "#His_label" ∷ is_mapLabel pk uid (W64 ver) label ∗
+    "#His_label" ∷ is_map_label pk uid (W64 ver) label ∗
     "%Hin_prev" ∷ ⌜ m !! label = Some val ⌝) ∗
-  "#His_label" ∷ is_mapLabel pk uid (W64 $ length vals) label ∗
+  "#His_label" ∷ is_map_label pk uid (W64 $ length vals) label ∗
   "%Hnin_next" ∷ ⌜ m !! label = None ⌝.
 
 Lemma msv_core_len_agree_aux m uid vals0 vals1 pk :
