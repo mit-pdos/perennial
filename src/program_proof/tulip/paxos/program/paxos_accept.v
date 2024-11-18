@@ -1,5 +1,5 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
-From Perennial.program_proof.tulip.paxos.program Require Import repr.
+From Perennial.program_proof.tulip.paxos.program Require Import repr paxos_log.
 From Perennial.program_proof.tulip.paxos.invariance Require Import advance accept.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
@@ -14,6 +14,8 @@ Section accept.
     drop (uint.nat lsn) logleader = ents ->
     prefix_base_ledger γ (uint.nat term) logleader -∗
     prefix_growing_ledger γ (uint.nat term) logleader -∗
+    is_paxos_fname px nidme γ -∗
+    know_paxos_file_inv γ nids -∗
     know_paxos_inv γ nids -∗
     {{{ own_paxos_following_with_termc px nidme term nids γ ∗
         own_slice entsP stringT (DfracOwn 1) ents
@@ -26,7 +28,7 @@ Section accept.
         ⌜length loga = uint.nat lsna⌝
     }}}.
   Proof.
-    iIntros (Hnidme Hlsnle Hents) "#Hpfb #Hpfg #Hinv".
+    iIntros (Hnidme Hlsnle Hents) "#Hpfb #Hpfg #Hfname #Hinvfile #Hinv".
     iIntros (Φ) "!> [Hpx Hents] HΦ".
     wp_rec.
 
@@ -93,19 +95,41 @@ Section accept.
 
       (*@         // Logical action: Advance(term, log).                          @*)
       (*@                                                                         @*)
+      iNamed "Hfname".
+      wp_loadField.
+      wp_apply (wp_logAdvance with "Hents").
       iInv "Hinv" as "> HinvO" "HinvC".
+      iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+      iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
+      { apply Hnidme. }
+      iNamed "Hnodefile".
+      iApply ncfupd_mask_intro; first solve_ndisj.
+      iIntros "Hmask".
+      iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
+      iFrame "Hfile".
+      iExists wal.
+      iSplit; first done.
+      iIntros (bs') "[Hfile %Hbs']".
       iAssert (⌜prefix logc logleader⌝)%I as %Hprefix.
       { iDestruct "Hcmted" as (p) "[Hcmted %Hple]".
         iApply (safe_ledger_prefix_base_ledger_impl_prefix with "Hcmted Hpfb HinvO").
         clear -Htermlc Htermne Hple. word.
       }
-      iMod (paxos_inv_advance with "Hpfb Hpfg Htermc Hterml Hlsnc Hlogn HinvO")
-        as "(Htermc & Hterml & Hlsnc & Hlogn & HinvO & #Hacpted')".
+      iMod (paxos_inv_advance with "Hpfb Hpfg Hwalfile Htermc Hterml Hlsnc Hlogn HinvO")
+        as "(Hwalfile & Htermc & Hterml & Hlsnc & Hlogn & HinvO & #Hacpted')".
       { apply Hnidme. }
       { clear -Htermlc Htermne. word. }
+      { clear -Hlsncub. word. }
+      { reflexivity. }
       { apply Hlsnle. }
       { apply Hprefix. }
+      iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+      { iFrame "∗ # %". }
+      iMod "Hmask" as "_".
+      iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
+      iIntros "!> Hents".
+      wp_pures.
 
       (*@         return lsna                                                     @*)
       (*@     }                                                                   @*)
@@ -203,9 +227,6 @@ Section accept.
     iIntros (logP') "[Hlog Hents]".
     wp_storeField.
 
-    (*@     // TODO: Write @px.log to disk.                                     @*)
-    (*@                                                                         @*)
-
     (*@     lsna := uint64(len(px.log))                                         @*)
     (*@                                                                         @*)
     wp_loadField.
@@ -221,12 +242,34 @@ Section accept.
       clear -Hszlog Hszents Hnogap Hlonger.
       word.
     }
+    iNamed "Hfname".
+    wp_loadField.
+    wp_apply (wp_logAccept with "Hents").
     iInv "Hinv" as "> HinvO" "HinvC".
-    iMod (paxos_inv_accept with "Hpfb Hpfg Htermc Hterml Hlogn HinvO")
-      as "(Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
+    { apply Hnidme. }
+    iNamed "Hnodefile".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
+    iFrame "Hfile".
+    iExists wal.
+    iSplit; first done.
+    iIntros (bs') "[Hfile %Hbs']".
+    iMod (paxos_inv_accept (uint.nat lsn) with "Hpfb Hpfg Hwalfile Htermc Hterml Hlogn HinvO")
+      as "(Hwalfile & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
     { apply Hnidme. }
     { apply Hlenlog. }
+    { clear -Hnogap Hszlog. word. }
+    { reflexivity. }
+    iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+    { iFrame "∗ # %". }
+    iMod "Hmask" as "_".
+    iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    iIntros "!> Hents".
+    wp_pures.
 
     (*@     return lsna                                                         @*)
     (*@ }                                                                       @*)

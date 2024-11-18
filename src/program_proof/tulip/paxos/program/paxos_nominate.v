@@ -1,5 +1,5 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
-From Perennial.program_proof.tulip.paxos.program Require Import repr.
+From Perennial.program_proof.tulip.paxos.program Require Import repr paxos_log.
 From Perennial.program_proof.tulip.program.util Require Import next_aligned.
 From Perennial.program_proof.tulip.paxos.invariance Require Import prepare.
 From Goose.github_com.mit_pdos.tulip Require Import paxos util.
@@ -10,6 +10,8 @@ Section nominate.
   Theorem wp_Paxos__nominate (px : loc) (nidme : u64) nids γ :
     nidme ∈ nids ->
     is_paxos_nids px nidme nids -∗
+    is_paxos_fname px nidme γ -∗
+    know_paxos_file_inv γ nids -∗
     know_paxos_inv γ nids -∗
     {{{ own_paxos px nidme nids γ }}}
       Paxos__nominate #px
@@ -17,7 +19,7 @@ Section nominate.
         own_paxos px nidme nids γ ∗ is_prepare_lsn γ (uint.nat term) (uint.nat lsn)
     }}}.
   Proof.
-    iIntros (Hnidme) "#Hnids #Hinv".
+    iIntros (Hnidme) "#Hnids #Hfname #Hinvfile #Hinv".
     iIntros (Φ) "!> Hpx HΦ".
     wp_rec. wp_pures.
 
@@ -77,9 +79,23 @@ Section nominate.
 
     (*@     // Logical action: Prepare(@term).                                  @*)
     (*@                                                                         @*)
+    iNamed "Hfname".
+    wp_loadField.
+    wp_apply wp_logPrepare.
     iInv "Hinv" as "> HinvO" "HinvC".
-    iMod (paxos_inv_prepare (uint.nat term) with "Htermc Hterml Hlogn HinvO")
-      as "(Htermc & Hterml & Hlogn & HinvO & Hlsnp & #Hpromise)".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
+    { apply Hnidme. }
+    iNamed "Hnodefile".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
+    iFrame "Hfile".
+    iExists wal.
+    iSplit; first done.
+    iIntros (bs') "[Hfile %Hbs']".
+    iMod (paxos_inv_prepare (uint.nat term) with "Hwalfile Htermc Hterml Hlogn HinvO")
+      as "(Hwalfile & Htermc & Hterml & Hlogn & HinvO & Hlsnp & #Hpromise)".
     { apply Hnidme. }
     {  word. }
     destruct (decide (is_term_of_node nidme (uint.nat term))) as [Hton | Hnton]; last first.
@@ -87,7 +103,13 @@ Section nominate.
     set logc := take _ log.
     (* Set the prepare LSN to [length logc]. *)
     iMod (prepare_lsn_update (length logc) with "Hlsnp") as "#Hlsnprc".
+    iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+    { iFrame "∗ # %". }
+    iMod "Hmask" as "_".
+    iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    iIntros "!> _".
+    wp_pures.
 
     (*@     return term, lsn                                                    @*)
     (*@ }                                                                       @*)

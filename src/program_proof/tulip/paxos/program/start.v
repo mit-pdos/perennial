@@ -9,8 +9,10 @@ Section start.
 
   Theorem wp_Start
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list string)
-    (addrmP : loc) (addrm : gmap u64 chan) γ :
+    (addrmP : loc) (addrm : gmap u64 chan) (fname : string) γ :
+    is_node_wal_fname γ nidme fname -∗
     know_paxos_inv γ (dom addrm) -∗
+    know_paxos_file_inv γ (dom addrm) -∗
     know_paxos_network_inv γ addrm -∗
     {{{ own_map addrmP (DfracOwn 1) addrm ∗
         own_current_term_half γ nidme (uint.nat termc) ∗
@@ -18,10 +20,11 @@ Section start.
         own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
         own_node_ledger_half γ nidme log
     }}}
-      Start #nidme #addrmP
+      Start #nidme #addrmP #(LitString fname)
     {{{ (px : loc), RET #px; is_paxos px nidme γ }}}.
   Proof.
-    iIntros "#Hinv #Hinvnet" (Φ) "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
+    iIntros "#Hfname #Hinv #Hinvfile #Hinvnet" (Φ).
+    iIntros "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
     wp_rec.
 
     (*@ func Start(nidme uint64, addrm map[uint64]grove_ffi.Address) *Paxos {   @*)
@@ -58,7 +61,8 @@ Section start.
 
     (*@     px := mkPaxos(nidme, termc, terml, lsnc, log, addrm)                @*)
     (*@                                                                         @*)
-    wp_apply (wp_mkPaxos with "Hinv Hinvnet [$Hlog $Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
+    wp_apply (wp_mkPaxos
+               with "Hfname Hinv Hinvfile Hinvnet [$Hlog $Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
     { clear -Hmulti. word. }
     { by apply elem_of_dom. }
     { clear -Hltmax. rewrite /max_nodes. word. }

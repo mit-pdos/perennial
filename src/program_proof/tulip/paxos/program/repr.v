@@ -261,20 +261,25 @@ Section repr.
     own_paxos paxos nidme nids γ.
   Proof. iIntros "Hpx". iFrame. Qed.
 
-  (* TODO: finding the right states to expose after adding network. *)
+  Definition is_paxos_fname (paxos : loc) (nidme : u64) γ : iProp Σ :=
+    ∃ (fname : string),
+      "#HfnameP"  ∷ readonly (paxos ↦[Paxos :: "fname"] #(LitString fname)) ∗
+      "#Hfnameme" ∷ is_node_wal_fname γ nidme fname.
 
   Definition is_paxos_with_addrm
     (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) γ : iProp Σ :=
     ∃ (muP : loc),
       let nids := dom addrm in
-      "#HmuP"    ∷ readonly (paxos ↦[Paxos :: "mu"] #muP) ∗
-      "#Hlock"   ∷ is_lock paxosNS #muP (own_paxos paxos nidme nids γ ∗
-                                         own_paxos_comm paxos addrm γ) ∗
-      "#Haddrm"  ∷ is_paxos_addrm paxos addrm ∗
-      "#Hnids"   ∷ is_paxos_nids paxos nidme nids ∗
-      "#Hinv"    ∷ know_paxos_inv γ nids ∗
-      "#Hinvnet" ∷ know_paxos_network_inv γ addrm ∗
-      "%Hnidme"  ∷ ⌜nidme ∈ nids⌝.
+      "#HmuP"     ∷ readonly (paxos ↦[Paxos :: "mu"] #muP) ∗
+      "#Hlock"    ∷ is_lock paxosNS #muP (own_paxos paxos nidme nids γ ∗
+                                          own_paxos_comm paxos addrm γ) ∗
+      "#Hfname"   ∷ is_paxos_fname paxos nidme γ ∗
+      "#Haddrm"   ∷ is_paxos_addrm paxos addrm ∗
+      "#Hnids"    ∷ is_paxos_nids paxos nidme nids ∗
+      "#Hinv"     ∷ know_paxos_inv γ nids ∗
+      "#Hinvfile" ∷ know_paxos_file_inv γ nids ∗
+      "#Hinvnet"  ∷ know_paxos_network_inv γ addrm ∗
+      "%Hnidme"   ∷ ⌜nidme ∈ nids⌝.
 
   Definition is_paxos (paxos : loc) (nidme : u64) γ : iProp Σ :=
     ∃ (addrm : gmap u64 chan),

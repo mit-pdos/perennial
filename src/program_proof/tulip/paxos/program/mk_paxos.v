@@ -7,11 +7,13 @@ Section mk_paxos.
 
   Theorem wp_mkPaxos
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64)
-    (logP : Slice.t) (log : list string) (addrmP : loc) (addrm : gmap u64 chan) γ :
+    (logP : Slice.t) (log : list string) (addrmP : loc) (addrm : gmap u64 chan) (fname : string) γ :
     (1 < size addrm)%nat ->
     nidme ∈ dom addrm ->
     0 ≤ uint.Z nidme < max_nodes ->
+    is_node_wal_fname γ nidme fname -∗
     know_paxos_inv γ (dom addrm) -∗
+    know_paxos_file_inv γ (dom addrm) -∗
     know_paxos_network_inv γ addrm -∗
     {{{ own_slice logP stringT (DfracOwn 1) log ∗
         own_map addrmP (DfracOwn 1) addrm ∗
@@ -20,10 +22,10 @@ Section mk_paxos.
         own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
         own_node_ledger_half γ nidme log
     }}}
-      mkPaxos #nidme #termc #terml #lsnc (to_val logP) #addrmP
+      mkPaxos #nidme #termc #terml #lsnc (to_val logP) #addrmP #(LitString fname)
     {{{ (px : loc), RET #px; is_paxos_with_addrm px nidme addrm γ }}}.
   Proof.
-    iIntros (Hmulti Hnidme Hltmax) "#Hinv #Hinvnet".
+    iIntros (Hmulti Hnidme Hltmax) "#Hfname #Hinv #Hinvfile #Hinvnet".
     (* avoid naming collision when opening invariant. *)
     iIntros (Φ) "!> (Hlog & Haddrm & HtermcX & HtermlX & HlsncX & HlognX) HΦ".
     wp_rec.
@@ -114,6 +116,7 @@ Section mk_paxos.
     iDestruct (own_slice_to_small with "Hpeers") as "Hpeers".
     iMod (readonly_alloc_1 with "Hpeers") as "#Hpeers".
     iMod (readonly_alloc_1 with "addrm") as "#HaddrmP".
+    iMod (readonly_alloc_1 with "fname") as "#HfnameP".
     iMod (own_map_persist with "Haddrm") as "#Haddrm".
     iAssert (own_paxos_comm px addrm γ)%I with "[$conns Hconns]" as "Hcomm".
     { iExists ∅.

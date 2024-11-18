@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.tulip.paxos Require Import base.
+From Perennial.program_proof.tulip.paxos Require Import base recovery.
 From Perennial.program_proof.tulip.paxos Require Export res_network.
 
 Section res.
@@ -457,10 +457,46 @@ Section res.
 
 End res.
 
+Section wal.
+  Context `{!paxos_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : paxos_names).
+
+  Definition own_node_wal_half γ (nid : u64) (wal : list pxcmd) : iProp Σ.
+  Admitted.
+
+  Lemma node_wal_update {γ nid l1 l1'} l2 :
+    own_node_wal_half γ nid l1 -∗
+    own_node_wal_half γ nid l1' ==∗
+    own_node_wal_half γ nid l2 ∗ own_node_wal_half γ nid l2.
+  Admitted.
+
+  Lemma node_wal_agree {γ nid l1 l2} :
+    own_node_wal_half γ nid l1 -∗
+    own_node_wal_half γ nid l2 -∗
+    ⌜l2 = l1⌝.
+  Admitted.
+
+  Definition is_node_wal_fname γ (nid : u64) (fname : string) : iProp Σ.
+  Admitted.
+
+  #[global]
+  Instance is_node_wal_fname_persistent γ nid fname :
+    Persistent (is_node_wal_fname γ nid fname).
+  Admitted.
+
+  Lemma node_wal_fname_agree {γ nid fname1 fname2} :
+    is_node_wal_fname γ nid fname1 -∗
+    is_node_wal_fname γ nid fname2 -∗
+    ⌜fname2 = fname1⌝.
+  Admitted.
+
+End wal.
+
 Section alloc.
   Context `{!paxos_ghostG Σ}.
 
-  Lemma paxos_res_alloc nids :
+  Lemma paxos_res_alloc nids fnames :
     ⊢ |==> ∃ γ, (own_log_half γ [] ∗ own_log_half γ [] ∗ own_cpool_half γ ∅ ∗ own_cpool_half γ ∅) ∗
                 own_proposals γ ∅ ∗
                 own_base_proposals γ ∅ ∗
@@ -469,9 +505,17 @@ Section alloc.
                 ([∗ set] nid ∈ nids, own_accepted_proposals γ nid {[O := []]}) ∗
                 ([∗ set] nid ∈ nids, own_accepted_proposal γ nid O []) ∗
                 ([∗ set] nid ∈ nids, own_current_term_half γ nid O) ∗
+                ([∗ set] nid ∈ nids, own_current_term_half γ nid O) ∗
+                ([∗ set] nid ∈ nids, own_ledger_term_half γ nid O) ∗
                 ([∗ set] nid ∈ nids, own_ledger_term_half γ nid O) ∗
                 ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
+                ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
                 ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []) ∗
+                ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []) ∗
+                (* file resources *)
+                ([∗ set] nid ∈ nids, own_node_wal_half γ nid []) ∗
+                ([∗ set] nid ∈ nids, own_node_wal_half γ nid []) ∗
+                ([∗ map] nid ↦ fname ∈ fnames, is_node_wal_fname γ nid fname) ∗
                 (* network resources *)
                 own_terminals γ ∅.
   Admitted.

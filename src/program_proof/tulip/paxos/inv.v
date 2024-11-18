@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import quorum list extend.
-From Perennial.program_proof.tulip.paxos Require Import base consistency res.
+From Perennial.program_proof.tulip.paxos Require Import base consistency res recovery.
 
 Section inv.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
@@ -101,7 +101,7 @@ Section inv.
   Qed.
 
   Definition node_inv γ nids nid terml : iProp Σ :=
-    ∃ ds psa termc lsnc logn,
+    ∃ ds psa termc lsnc logn wal,
       "Hds"      ∷ own_past_nodedecs γ nid ds ∗
       "Hpsa"     ∷ own_accepted_proposals γ nid psa ∗
       "Htermc"   ∷ own_current_term_half γ nid termc ∗
@@ -110,6 +110,7 @@ Section inv.
       "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
       "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
       "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
+      "Hwalnode" ∷ own_node_wal_half γ nid wal ∗
       "#Hpsalbs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_base_ledger γ t v) ∗
       "#Hpsaubs" ∷ ([∗ map] t ↦ v ∈ psa, prefix_growing_ledger γ t v) ∗
       "#Hsafel"  ∷ safe_ledger_above γ nids terml (take lsnc logn) ∗
@@ -117,22 +118,25 @@ Section inv.
       "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
       "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
       "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝ ∗
-      "%Hltlog"  ∷ ⌜(lsnc ≤ length logn)%nat⌝.
+      "%Hltlog"  ∷ ⌜(lsnc ≤ length logn)%nat⌝ ∗
+      "%Hexec"   ∷ ⌜execute_paxos_cmds wal = PaxosState termc terml lsnc logn⌝.
 
   Definition node_inv_without_ds_psa
     γ nids nid terml (ds : list nodedec) (psa : proposals) : iProp Σ :=
-    ∃ termc lsnc logn,
+    ∃ termc lsnc logn wal,
       "Htermc"   ∷ own_current_term_half γ nid termc ∗
       "Hterml"   ∷ own_ledger_term_half γ nid terml ∗
       "Hlogn"    ∷ own_node_ledger_half γ nid logn ∗
       "Hlsnc"    ∷ own_committed_lsn_half γ nid lsnc ∗
       "Hacpt"    ∷ own_accepted_proposal γ nid terml logn ∗
       "Hlsnps"   ∷ ([∗ set] t ∈ free_termps nid termc, own_free_prepare_lsn γ t) ∗
+      "Hwalnode" ∷ own_node_wal_half γ nid wal ∗
       "#Hsafel"  ∷ safe_ledger_above γ nids terml (take lsnc logn) ∗
       "%Hdompsa" ∷ ⌜free_terms_after terml (dom psa)⌝ ∗
       "%Hlends"  ∷ ⌜length ds = termc⌝ ∗
       "%Htermlc" ∷ ⌜(terml ≤ termc)%nat⌝ ∗
-      "%Hltlog"  ∷ ⌜(lsnc ≤ length logn)%nat⌝.
+      "%Hltlog"  ∷ ⌜(lsnc ≤ length logn)%nat⌝ ∗
+      "%Hexec"   ∷ ⌜execute_paxos_cmds wal = PaxosState termc terml lsnc logn⌝.
 
   Definition node_inv_psa γ nid psa : iProp Σ :=
     "Hpsa"     ∷ own_accepted_proposals γ nid psa ∗
@@ -501,15 +505,42 @@ Section inv.
     Timeless (paxos_inv γ nids).
   Admitted.
 
+  Definition paxoscoreNS := paxosNS .@ "core".
+
   Definition know_paxos_inv γ nids : iProp Σ :=
-    inv paxosNS (paxos_inv γ nids).
+    inv paxoscoreNS (paxos_inv γ nids).
 
 End inv.
+
+Section inv_file.
+  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+
+  Definition paxosfileNS := paxosNS .@ "file".
+
+  Definition node_file_inv (γ : paxos_names) (nid : u64) : iProp Σ :=
+    ∃ (wal : list pxcmd) (fname : string) (content : list u8),
+      "Hwalfile"   ∷ own_node_wal_half γ nid wal ∗
+      "Hfile"      ∷ fname f↦ content ∗
+      "#Hwalfname" ∷ is_node_wal_fname γ nid fname ∗
+      "%Hencwal"   ∷ ⌜encode_paxos_cmds wal = content⌝.
+
+  Definition paxos_file_inv (γ : paxos_names) (nids : gset u64) : iProp Σ :=
+    [∗ set] nid ∈ nids, node_file_inv γ nid.
+
+  #[global]
+  Instance paxos_file_inv_timeless γ nids :
+    Timeless (paxos_file_inv γ nids).
+  Admitted.
+
+  Definition know_paxos_file_inv γ nids : iProp Σ :=
+    inv paxosfileNS (paxos_file_inv γ nids).
+
+End inv_file.
 
 Section inv_network.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Definition paxosnetNS := nroot .@ "paxosnet".
+  Definition paxosnetNS := paxosNS .@ "net".
 
   Definition safe_request_vote_req γ (term lsnlc : u64) : iProp Σ :=
     is_prepare_lsn γ (uint.nat term) (uint.nat lsnlc).
@@ -1139,21 +1170,34 @@ End lemma.
 Section alloc.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Lemma paxos_inv_alloc addrm :
+  Lemma paxos_inv_alloc addrm (fnames : gmap u64 string) :
+    let nids := dom addrm in
     (1 < size addrm)%nat ->
+    dom fnames = dom addrm ->
+    ([∗ map] fname ∈ fnames, fname f↦ []) -∗
     ([∗ set] addr ∈ map_img addrm, addr c↦ ∅) ==∗
-    ∃ γ, paxos_inv γ (dom addrm) ∗ paxos_network_inv γ addrm ∗
-         own_log_half γ [] ∗ own_cpool_half γ ∅.
+    ∃ γ,
+      (* give to client *)
+      own_log_half γ [] ∗ own_cpool_half γ ∅ ∗
+      (* give to paxos lock invariant *)
+      ([∗ set] nid ∈ nids, own_current_term_half γ nid O) ∗
+      ([∗ set] nid ∈ nids, own_ledger_term_half γ nid O) ∗
+      ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
+      ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []) ∗
+      (* paxos atomic invariant *)
+      paxos_inv γ nids ∗ paxos_file_inv γ nids ∗ paxos_network_inv γ addrm.
   Proof.
-    iIntros (Hmulti) "Hchans".
-    iMod (paxos_res_alloc (dom addrm)) as (γ) "(Hcs & Hps & Hpsb & Hnodesnetwork)".
+    iIntros (nids Hmulti Hdomfnames) "Hfiles Hchans".
+    iMod (paxos_res_alloc (dom addrm) fnames) as (γ) "(Hcs & Hps & Hpsb & Hnodesfn)".
     iDestruct "Hcs" as "(Hlog & Hlogcli & Hcpool & Hcpoolcli)".
-    iDestruct "Hnodesnetwork" as
-      "(Hlsnps & Hdss & Hpsas & Hpas & Htermcs & Htermls & Hlsncs & Hlogns & Htrmls)".
+    iDestruct "Hnodesfn" as "(Hlsnps & Hdss & Hpsas & Hpas & Hnodesfn)".
+    iDestruct "Hnodesfn" as "(Htermcs & Htermcslk & Htermls & Htermlslk & Hnodesfn)".
+    iDestruct "Hnodesfn" as "(Hlsncs & Hlsncslk & Hlogns & Hlognslk & Hfilenet)".
+    iDestruct "Hfilenet" as "(Hwalfiles & Hwalnodes & #Hwalnames & Htrmls)".
+    iFrame "Htermcslk Htermlslk Hlsncslk Hlognslk".
     iMod (proposal_insert O [] with "Hps") as "[Hps Hp]"; first done.
     iDestruct (proposal_witness with "Hp") as "#Hplb".
     iMod (base_proposal_insert O [] with "Hpsb") as "[Hpsb #Hpbrc]"; first done.
-    set nids := dom addrm.
     (* Establish [safe_ledger_in γ nids O []] for use in global and node-local invariants.  *)
     iAssert (safe_ledger_in γ nids O [])%I as "#Hsafel".
     { unshelve epose proof (set_choose_L nids _) as [nid Hnid].
@@ -1175,11 +1219,23 @@ Section alloc.
       rewrite size_dom.
       lia.
     }
-    iExists γ.
     iFrame "Hlog Hlogcli Hcpool Hcpoolcli Hps Hpsb".
-    iSplitR "Htrmls Hchans"; last first.
+    iAssert (paxos_file_inv γ (dom addrm))%I with "[Hfiles Hwalfiles]" as "Hpaxosfile".
+    { rewrite /paxos_file_inv 2!big_sepS_big_sepM.
+      rewrite (big_sepM_big_sepM2 _ addrm fnames); last done.
+      do 2 (rewrite (big_sepM_big_sepM2 _ fnames addrm); last done).
+      rewrite (big_sepM2_flip _ fnames).
+      iCombine "Hfiles Hwalfiles" as "Hwalfiles".
+      rewrite -big_sepM2_sep.
+      iApply (big_sepM2_sepM_impl with "Hwalfiles"); first done.
+      iIntros (nid fname c1 c2 Hfname Hc1 Hc2) "!> [Hfile Hwalflie]".
+      iDestruct (big_sepM2_lookup with "Hwalnames") as "Hwalname".
+      { apply Hfname. }
+      { apply Hc1. }
+      by iFrame "∗ #".
+    }
+    iAssert (paxos_network_inv γ addrm)%I with "[Htrmls Hchans]" as "Hpaxosnet".
     { (* Establish network invariant. *)
-      iModIntro.
       iExists (gset_to_gmap ∅ (map_img addrm)), ∅.
       rewrite dom_empty_L.
       iFrame "Htrmls".
@@ -1193,6 +1249,7 @@ Section alloc.
       }
       by rewrite big_sepM_empty dom_gset_to_gmap.
     }
+    iFrame "Hpaxosfile Hpaxosnet".
     iModIntro.
     iExists (gset_to_gmap O nids).
     iSplit.
@@ -1209,14 +1266,14 @@ Section alloc.
         apply fin_sets.filter_subseteq_impl.
         by intros ? [_ ?].
       }
-      iCombine "Hdss Hpsas Hpas Htermcs Htermls Hlsncs Hlogns Hlsnps" as "Hnodes".
+      iCombine "Hdss Hpsas Hpas Htermcs Htermls Hlsncs Hlogns Hlsnps Hwalnodes" as "Hnodes".
       rewrite -!big_sepS_sep.
-      rewrite -{2}(dom_gset_to_gmap nids ([] : list nodedec)).
+      (* rewrite -{2}(dom_gset_to_gmap nids ([] : list nodedec)). *)
       rewrite big_sepS_big_sepM.
       iApply (big_sepM_impl_dom_eq with "Hnodes").
-      { by rewrite 2!dom_gset_to_gmap. }
+      { by rewrite !dom_gset_to_gmap. }
       iIntros (nid ds terml Hds Hterml).
-      iIntros "!> (Hds & Hpsa & Hpa & Htermc & Hterml & Hlsnc & Hlogn & Hlsnp)".
+      iIntros "!> (Hds & Hpsa & Hpa & Htermc & Hterml & Hlsnc & Hlogn & Hlsnp & Hwalnode)".
       apply lookup_gset_to_gmap_Some in Hterml as [_ <-].
       iFrame.
       iSplit.
@@ -1242,7 +1299,7 @@ Section alloc.
       iExists (gset_to_gmap [] nids).
       iSplit.
       { set m := gset_to_gmap _ _.
-        rewrite -(dom_gset_to_gmap nids ([] : list nodedec)).
+        rewrite -{1}(dom_gset_to_gmap (dom addrm) ([] : list nodedec)).
         iDestruct (big_sepS_big_sepM _ m with "Hdss") as "Hdss".
         iApply (big_sepM_mono with "Hdss").
         iIntros (nid ds Hds) "Hds".

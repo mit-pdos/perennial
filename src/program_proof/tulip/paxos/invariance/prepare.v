@@ -68,22 +68,29 @@ Section prepare.
     by replace (_ - _)%nat with O by lia.
   Qed.
 
-  Lemma node_inv_prepare γ nids nid termc terml v termc' :
+  Lemma node_inv_prepare γ nids nid wal termc terml v termc' :
     Z.of_nat termc < Z.of_nat termc' < 2 ^ 64 ->
+    own_node_wal_half γ nid wal -∗
     own_current_term_half γ nid termc -∗
     own_node_ledger_half γ nid v -∗
     node_inv γ nids nid terml ==∗
+    own_node_wal_half γ nid (wal ++ [CmdPaxosPrepare termc']) ∗
     own_current_term_half γ nid termc' ∗
     own_node_ledger_half γ nid v ∗
     node_inv γ nids nid terml ∗
     (if decide (is_term_of_node nid termc') then own_free_prepare_lsn γ termc' else True) ∗
     past_nodedecs_latest_before γ nid termc' terml v.
   Proof.
-    iIntros (Hlt) "HtermcX Hv Hinv".
+    iIntros (Hlt) "HwalX HtermcX Hv Hinv".
     iNamed "Hinv".
+    (* Agreements. *)
+    iDestruct (node_wal_agree with "HwalX Hwalnode") as %->.
     iDestruct (current_term_agree with "HtermcX Htermc") as %->.
     iDestruct (node_ledger_agree with "Hv Hlogn") as %->.
     iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hv.
+    (* Update the write-ahead log. *)
+    set wal' := wal ++ _.
+    iMod (node_wal_update wal' with "HwalX Hwalnode") as "[HwalX Hwalnode]".
     (* Obtain the free prepare LSN if [termc'] is owned by [nid]. *)
     iAssert (([∗ set] t ∈ free_termps nid termc', own_free_prepare_lsn γ t) ∗
              (if decide (is_term_of_node nid termc') then own_free_prepare_lsn γ termc' else True))%I
@@ -130,7 +137,13 @@ Section prepare.
       iFrame "∗ # %".
       iPureIntro.
       split.
-      { rewrite extend_length. lia. }
+      { split.
+        { rewrite extend_length. lia. }
+        split.
+        { clear -Htermlc Hlt. lia. }
+        rewrite /execute_paxos_cmds foldl_snoc /= /execute_paxos_prepare.
+        by rewrite execute_paxos_cmds_unfold Hexec.
+      }
       split.
       { rewrite extend_length. lia. }
       split; last first.
@@ -166,7 +179,13 @@ Section prepare.
     iFrame "∗ # %".
     iPureIntro.
     split.
-    { rewrite extend_length last_length. lia. }
+    { split.
+      { rewrite extend_length last_length. lia. }
+      split.
+      { clear -Htermlc Hlt. lia. }
+      rewrite /execute_paxos_cmds foldl_snoc /= /execute_paxos_prepare.
+      by rewrite execute_paxos_cmds_unfold Hexec.
+    }
     split.
     { rewrite extend_length length_app Hlends /=. lia. }
     split; last first.
@@ -177,13 +196,15 @@ Section prepare.
     by rewrite latest_term_nodedec_extend_Reject latest_term_nodedec_snoc_Accept.
   Qed.
 
-  Lemma paxos_inv_prepare {γ nids nid termc terml v} termc' :
+  Lemma paxos_inv_prepare {γ nids nid wal termc terml v} termc' :
     nid ∈ nids ->
     Z.of_nat termc < Z.of_nat termc' < 2 ^ 64 ->
+    own_node_wal_half γ nid wal -∗
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid terml -∗
     own_node_ledger_half γ nid v -∗
     paxos_inv γ nids ==∗
+    own_node_wal_half γ nid (wal ++ [CmdPaxosPrepare termc']) ∗
     own_current_term_half γ nid termc' ∗
     own_ledger_term_half γ nid terml ∗
     own_node_ledger_half γ nid v ∗
@@ -191,15 +212,15 @@ Section prepare.
     (if decide (is_term_of_node nid termc') then own_free_prepare_lsn γ termc' else True) ∗
     past_nodedecs_latest_before γ nid termc' terml v.
   Proof.
-    iIntros (Hnid Hlt) "Htermc Hterml Hv Hinv".
+    iIntros (Hnid Hlt) "Hwal Htermc Hterml Hv Hinv".
     iNamed "Hinv".
     rewrite -Hdomtermlm elem_of_dom in Hnid.
     destruct Hnid as [terml' Hterml'].
     iDestruct (big_sepM_lookup_acc _ _ nid with "Hnodes") as "[Hnode HnodesC]".
     { apply Hterml'. }
     iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
-    iMod (node_inv_prepare _ _ _ _ _ _ _ Hlt with "Htermc Hv Hnode")
-      as "(Htermc & Hv & Hnode & Hlsnp & #Hpast)".
+    iMod (node_inv_prepare _ _ _ _ _ _ _ _ Hlt with "Hwal Htermc Hv Hnode")
+      as "(Hwal & Htermc & Hv & Hnode & Hlsnp & #Hpast)".
     iDestruct ("HnodesC" with "Hnode") as "Hnodes".
     by iFrame "∗ # %".
   Qed.

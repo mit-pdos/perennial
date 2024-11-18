@@ -43,18 +43,22 @@ Section ascend.
     by iDestruct (big_sepM_lookup with "Hpsaubs") as "?"; first apply Hfixed.
   Qed.
 
-  Lemma paxos_inv_ascend {γ nids nid termc terml lsnc v} v' :
+  Lemma paxos_inv_ascend {γ nids nid wal termc terml lsnc v} ents v' :
     nid ∈ nids ->
     is_term_of_node nid termc ->
     (terml < termc)%nat ->
+    (lsnc ≤ length v)%nat ->
+    ents = drop lsnc v' ->
     (lsnc ≤ length v')%nat ->
     prefix (take lsnc v) v' ->
     safe_base_proposal_by_length γ nids termc v' -∗
+    own_node_wal_half γ nid wal -∗
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid terml -∗
     own_committed_lsn_half γ nid lsnc -∗
     own_node_ledger_half γ nid v -∗
     paxos_inv γ nids ==∗
+    own_node_wal_half γ nid (wal ++ [CmdPaxosAdvance termc lsnc ents]) ∗
     own_current_term_half γ nid termc ∗
     own_ledger_term_half γ nid termc ∗
     own_committed_lsn_half γ nid lsnc ∗
@@ -64,7 +68,7 @@ Section ascend.
     is_base_proposal_receipt γ termc v' ∗
     is_accepted_proposal_lb γ nid termc v'.
   Proof.
-    iIntros (Hnid Hton Hlt Hlsncub Hlsnc) "#Hsafelen Htermc Hterml Hlsnc Hv Hinv".
+    iIntros (Hnid Hton Hlt Hlenv Hents Hlsncub Hlsnc) "#Hsafelen Hwal Htermc Hterml Hlsnc Hv Hinv".
     iNamed "Hinv".
     iAssert (safe_base_proposal γ nids termc v')%nat as "#Hsafe".
     { iNamed "Hsafelen". iNamed "Hvotes".
@@ -164,9 +168,11 @@ Section ascend.
     (* Extract witness of the inserted proposal to re-establish the node invariant. *)
     iDestruct (proposal_witness with "Hp") as "#Hplb".
     (* Re-establish node invariant. *)
-    iMod (node_inv_advance v' with "[] [] Htermc Hterml Hlsnc Hv Hnode")
-      as "(Htermc & Hterml & Hlsnc & Hv & Hnode & #Hacptlb)".
+    iMod (node_inv_advance ents v' with "[] [] Hwal Htermc Hterml Hlsnc Hv Hnode")
+      as "(Hwal & Htermc & Hterml & Hlsnc & Hv & Hnode & #Hacptlb)".
     { apply Hlt. }
+    { apply Hlenv. }
+    { apply Hents. }
     { apply Hlsncub. }
     { apply Hlsnc. }
     { by iFrame "Hpsbrcp". }

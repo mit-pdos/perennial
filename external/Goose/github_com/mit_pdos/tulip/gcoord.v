@@ -436,22 +436,23 @@ Definition GroupReader__processReadResult: val :=
       (if: (struct.get tulip.Version "Timestamp" "ver") = #0
       then
         MapInsert (struct.loadF GroupReader "rds" "grd") "key" (struct.get tulip.Version "Value" "ver");;
-        MapDelete (struct.loadF GroupReader "versm" "grd") "key"
-      else #());;
-      let: "vers" := Fst (MapGet (struct.loadF GroupReader "versm" "grd") "key") in
-      let: (<>, "responded") := MapGet "vers" "rid" in
-      (if: "responded"
-      then #()
+        MapDelete (struct.loadF GroupReader "versm" "grd") "key";;
+        #()
       else
-        MapInsert "vers" "rid" "ver";;
-        let: "n" := MapLen "vers" in
-        (if: (~ (GroupReader__cquorum "grd" "n"))
+        let: "vers" := Fst (MapGet (struct.loadF GroupReader "versm" "grd") "key") in
+        let: (<>, "responded") := MapGet "vers" "rid" in
+        (if: "responded"
         then #()
         else
-          let: "latest" := GroupReader__latestVersion "grd" "key" in
-          MapInsert (struct.loadF GroupReader "rds" "grd") "key" (struct.get tulip.Version "Value" "latest");;
-          MapDelete (struct.loadF GroupReader "versm" "grd") "key";;
-          #()))).
+          MapInsert "vers" "rid" "ver";;
+          let: "n" := MapLen "vers" in
+          (if: (~ (GroupReader__cquorum "grd" "n"))
+          then #()
+          else
+            let: "latest" := GroupReader__latestVersion "grd" "key" in
+            MapInsert (struct.loadF GroupReader "rds" "grd") "key" (struct.get tulip.Version "Value" "latest");;
+            MapDelete (struct.loadF GroupReader "versm" "grd") "key";;
+            #())))).
 
 Definition GroupPreparer__tryResign: val :=
   rec: "GroupPreparer__tryResign" "gpp" "res" :=

@@ -1,5 +1,5 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
-From Perennial.program_proof.tulip.paxos.program Require Import repr.
+From Perennial.program_proof.tulip.paxos.program Require Import repr paxos_log.
 From Perennial.program_proof.tulip.paxos.invariance Require Import expand.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
@@ -11,12 +11,14 @@ Section commit.
     nidme ∈ nids ->
     length logc = uint.nat lsn ->
     safe_ledger_above γ nids (uint.nat term) logc -∗
+    is_paxos_fname px nidme γ -∗
+    know_paxos_file_inv γ nids -∗
     know_paxos_inv γ nids -∗
     {{{ own_paxos_with_termc_terml_iscand px nidme term term false nids γ }}}
       Paxos__commit #px #lsn
     {{{ RET #(); own_paxos_with_termc_terml_iscand px nidme term term false nids γ }}}.
   Proof.
-    iIntros (Hnidme Hlenlogc) "#Hsafe #Hinv".
+    iIntros (Hnidme Hlenlogc) "#Hsafe #Hfname #Hinvfile #Hinv".
     iIntros (Φ) "!> Hpx HΦ".
     wp_rec.
 
@@ -77,14 +79,35 @@ Section commit.
 
       (*@         // Logical action: Expand(len(px.log))                          @*)
       (*@                                                                         @*)
+      iNamed "Hfname".
+      do 2 wp_loadField.
+      wp_apply wp_logExpand.
       iInv "Hinv" as "> HinvO" "HinvC".
-      iMod (paxos_inv_expand (length log) with "[Hsafe'] Hterml Hlsnc Hlogn HinvO")
-        as "(Hterml & Hlsnc & Hlogn & HinvO)".
+      iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+      iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
+      { apply Hnidme. }
+      iNamed "Hnodefile".
+      iApply ncfupd_mask_intro; first solve_ndisj.
+      iIntros "Hmask".
+      iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
+      iFrame "Hfile".
+      iExists wal.
+      iSplit; first done.
+      iIntros (bs') "[Hfile %Hbs']".
+      iMod (paxos_inv_expand (length log) with "[Hsafe'] Hwalfile Hterml Hlsnc Hlogn HinvO")
+        as "(Hwalfile & Hterml & Hlsnc & Hlogn & HinvO)".
       { apply Hnidme. }
       { clear -Hlsncub. lia. }
       { done. }
       { by rewrite Hszlog. }
+      rewrite -Hszlog in Hbs'.
+      iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+      { iFrame "∗ # %". }
+      iMod "Hmask" as "_".
+      iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
+      iIntros "!> _".
+      wp_pures.
 
       (*@         return                                                          @*)
       (*@     }                                                                   @*)
@@ -103,8 +126,24 @@ Section commit.
     (*@     px.lsnc = lsn                                                       @*)
     (*@                                                                         @*)
     wp_storeField.
-    iApply "HΦ".
-    iFrame "Hcand Hleader".
+
+    (*@     // Logical action: Expand(lsn)                                      @*)
+    (*@                                                                         @*)
+    iNamed "Hfname".
+    wp_loadField.
+    wp_apply wp_logExpand.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
+    { apply Hnidme. }
+    iNamed "Hnodefile".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
+    iFrame "Hfile".
+    iExists wal.
+    iSplit; first done.
+    iIntros (bs') "[Hfile %Hbs']".
     assert (Hprefix : prefix logc log).
     { destruct Horprefix as [Hprefix | ?]; last done.
       rewrite (prefix_length_eq _ _ Hprefix); first done.
@@ -113,23 +152,22 @@ Section commit.
     set logc' := take (uint.nat lsn) log.
     iDestruct (safe_ledger_above_weaken logc' with "Hsafe") as "Hsafe'".
     { subst logc'. by rewrite -Hlenlogc take_length_prefix. }
-
-    (*@     // Logical action: Expand(lsn)                                      @*)
-    (*@                                                                         @*)
-    iInv "Hinv" as "> HinvO" "HinvC".
-    iMod (paxos_inv_expand (uint.nat lsn) with "Hsafe' Hterml Hlsnc Hlogn HinvO")
-      as "(Hterml & Hlsnc & Hlogn & HinvO)".
+    iMod (paxos_inv_expand (uint.nat lsn) with "Hsafe' Hwalfile Hterml Hlsnc Hlogn HinvO")
+      as "(Hwalfile & Hterml & Hlsnc & Hlogn & HinvO)".
     { apply Hnidme. }
     { clear -Hgtlsnc. lia. }
     { rewrite Hszlog. clear -Hlelog. lia. }
+    iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+    { iFrame "∗ # %". }
+    iMod "Hmask" as "_".
+    iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
-    iFrame "Hsafe'".
-    iFrame "∗ # %".
+    iIntros "!> _".
+    wp_pures.
+    iApply "HΦ".
+    iFrame "Hcand Hleader ∗ # %".
     iPureIntro.
     clear -Hlelog Hszlog. word.
-
-    (*@     // TODO: Write @px.lsnc to disk.                                    @*)
-    (*@ }                                                                       @*)
   Qed.
 
 End commit.
