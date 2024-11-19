@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
+From Perennial.program_proof.pav Require Import misc.
 
 Module PreSigDig.
 Record t :=
@@ -11,6 +12,9 @@ Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Epoch) ++ u64_le (length obj.(Dig)) ++ obj.(Dig).
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
+
+Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
+Proof. Admitted.
 
 Section defs.
 Context `{!heapGS Σ}.
@@ -38,10 +42,10 @@ Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_Dig sl_Sig,
-  "Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"] #obj.(Epoch) ∗
-  "Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"] (slice_val sl_Dig) ∗
+  "#Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"]□ #obj.(Epoch) ∗
+  "#Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"]□ (slice_val sl_Dig) ∗
   "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
-  "Hptr_Sig" ∷ ptr ↦[SigDig :: "Sig"] (slice_val sl_Sig) ∗
+  "#Hptr_Sig" ∷ ptr ↦[SigDig :: "Sig"]□ (slice_val sl_Sig) ∗
   "#Hsl_Sig" ∷ own_slice_small sl_Sig byteT DfracDiscarded obj.(Sig).
 End defs.
 End SigDig.
@@ -50,12 +54,14 @@ Module MapValPre.
 Record t :=
   mk {
     Epoch: w64;
-    PkComm: list w8;
+    PkCommit: list w8;
   }.
 Definition encodesF (obj : t) : list w8 :=
-  u64_le obj.(Epoch) ++ u64_le (length obj.(PkComm)) ++ obj.(PkComm).
+  u64_le obj.(Epoch) ++ u64_le (length obj.(PkCommit)) ++ obj.(PkCommit).
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
+Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
+Proof. Admitted.
 End MapValPre.
 
 Module AdtrEpochInfo.
@@ -74,11 +80,11 @@ Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_Dig sl_ServSig sl_AdtrSig,
-  "Hptr_Dig" ∷ ptr ↦[AdtrEpochInfo :: "Dig"] (slice_val sl_Dig) ∗
+  "#Hptr_Dig" ∷ ptr ↦[AdtrEpochInfo :: "Dig"]□ (slice_val sl_Dig) ∗
   "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
-  "Hptr_ServSig" ∷ ptr ↦[AdtrEpochInfo :: "ServSig"] (slice_val sl_ServSig) ∗
+  "#Hptr_ServSig" ∷ ptr ↦[AdtrEpochInfo :: "ServSig"]□ (slice_val sl_ServSig) ∗
   "#Hsl_ServSig" ∷ own_slice_small sl_ServSig byteT DfracDiscarded obj.(ServSig) ∗
-  "Hptr_AdtrSig" ∷ ptr ↦[AdtrEpochInfo :: "AdtrSig"] (slice_val sl_AdtrSig) ∗
+  "#Hptr_AdtrSig" ∷ ptr ↦[AdtrEpochInfo :: "AdtrSig"]□ (slice_val sl_AdtrSig) ∗
   "#Hsl_AdtrSig" ∷ own_slice_small sl_AdtrSig byteT DfracDiscarded obj.(AdtrSig).
 End defs.
 End AdtrEpochInfo.
@@ -96,9 +102,104 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
 End MapLabelPre.
 
 Module UpdateProof.
-Definition t : Type. Admitted.
+Record t : Type :=
+  mk {
+      Updates : gmap string (list w8);
+      Sig: list w8
+  }.
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ (updates_mref : loc) (updatesM : gmap string (Slice.t)) sig_sl,
+    "HUpdates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
+    "HSig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sig_sl) ∗
+    "#HUpdatesM" ∷ own_map updates_mref DfracDiscarded updatesM ∗
+    "#HUpdatesMSl" ∷ ([∗ map] k ↦ sl; upd ∈ updatesM; obj.(Updates),
+                       own_slice_small sl byteT DfracDiscarded upd) ∗
+    "#HSigSl" ∷ own_slice_small sig_sl byteT DfracDiscarded obj.(Sig)
+.
+
 End defs.
 End UpdateProof.
+
+Module CommitOpen.
+Record t :=
+  mk {
+    Pk: list w8;
+    Rand: list w8;
+  }.
+Definition encodesF (obj : t) : list w8 :=
+  (u64_le $ length obj.(Pk)) ++ obj.(Pk) ++ (u64_le $ length obj.(Rand)) ++ obj.(Rand).
+Definition encodes (enc : list w8) (obj : t) : Prop :=
+  enc = encodesF obj.
+Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
+Proof. Admitted.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_pk sl_rand,
+  "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded obj.(Pk) ∗
+  "Hptr_pk" ∷ ptr ↦[CommitOpen :: "Pk"] (slice_val sl_pk) ∗
+  "#Hsl_rand" ∷ own_slice_small sl_rand byteT DfracDiscarded obj.(Rand) ∗
+  "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"] (slice_val sl_rand).
+End defs.
+End CommitOpen.
+
+Module Memb.
+Record t :=
+  mk {
+    LabelProof: list w8;
+    EpochAdded: w64;
+    PkOpen: CommitOpen.t;
+    MerkProof: list $ list $ list w8;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_label_proof ptr_pk_open sl_merk_proof,
+  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
+  "Hptr_label_proof" ∷ ptr ↦[Memb :: "LabelProof"] (slice_val sl_label_proof) ∗
+  "Hptr_epoch_added" ∷ ptr ↦[Memb :: "EpochAdded"] #obj.(EpochAdded) ∗
+  "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open obj.(PkOpen) ∗
+  "Hptr_pk_open" ∷ ptr ↦[Memb :: "PkOpen"] #ptr_pk_open ∗
+  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
+  "Hptr_merk_proof" ∷ ptr ↦[Memb :: "MerkProof"] (slice_val sl_merk_proof).
+End defs.
+End Memb.
+
+Module MembHide.
+Record t :=
+  mk {
+    LabelProof: list w8;
+    MapVal: list w8;
+    MerkProof: list $ list $ list w8;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_label_proof sl_map_val sl_merk_proof,
+  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
+  "Hptr_label_proof" ∷ ptr ↦[MembHide :: "LabelProof"] (slice_val sl_label_proof) ∗
+  "#Hsl_map_val" ∷ own_slice_small sl_map_val byteT DfracDiscarded obj.(MapVal) ∗
+  "Hptr_map_val" ∷ ptr ↦[MembHide :: "MapVal"] (slice_val sl_map_val) ∗
+  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
+  "Hptr_merk_proof" ∷ ptr ↦[MembHide :: "MerkProof"] (slice_val sl_merk_proof).
+End defs.
+End MembHide.
+
+Module NonMemb.
+Record t :=
+  mk {
+    LabelProof: list w8;
+    MerkProof: list $ list $ list w8;
+  }.
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ sl_label_proof sl_merk_proof,
+  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
+  "Hptr_label_proof" ∷ ptr ↦[MembHide :: "LabelProof"] (slice_val sl_label_proof) ∗
+  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
+  "Hptr_merk_proof" ∷ ptr ↦[MembHide :: "MerkProof"] (slice_val sl_merk_proof).
+End defs.
+End NonMemb.

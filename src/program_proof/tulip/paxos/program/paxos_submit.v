@@ -1,5 +1,5 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
-From Perennial.program_proof.tulip.paxos.program Require Import repr paxos_leading.
+From Perennial.program_proof.tulip.paxos.program Require Import repr paxos_leading paxos_log.
 From Perennial.program_proof.tulip.paxos.invariance Require Import extend.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
@@ -18,10 +18,28 @@ Section submit.
     iIntros "#Hinv" (Φ) "!> _ HAU".
     wp_rec.
 
+    iNamed "Hinv".
+    iApply ncfupd_wp.
+    iInv "Hinv" as "> HinvO" "HinvC".
+    iMod (ncfupd_mask_subseteq (⊤ ∖ ↑paxosNS)) as "Hmask"; first solve_ndisj.
+    iMod "HAU" as (cpoolcli) "[Hcpoolcli HAU]".
+    iNamed "HinvO".
+    iDestruct (cpool_agree with "Hcpool Hcpoolcli") as %->.
+    iMod (cpool_update ({[c]} ∪ cpool) with "Hcpool Hcpoolcli") as "[Hcpool Hcpoolcli]".
+    { set_solver. }
+    iDestruct (cpool_witness c with "Hcpoolcli") as "#Hc".
+    { set_solver. }
+    iMod ("HAU" with "Hcpoolcli") as "HΦ".
+    iMod "Hmask" as "_".
+    iMod ("HinvC" with "[-HΦ]") as "_".
+    { iFrame "∗ # %". }
+    iModIntro.
+    (* Some cleanup to avoid name collision. *)
+    iClear "Hsafelog". clear log.
+
     (*@ func (px *Paxos) Submit(v string) (uint64, uint64) {                    @*)
     (*@     px.mu.Lock()                                                        @*)
     (*@                                                                         @*)
-    iNamed "Hinv".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked [Hpx Hcomm]]".
@@ -37,15 +55,6 @@ Section submit.
     { wp_loadField.
       wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hpx $Hcomm]").
       wp_pures.
-      iInv "Hinv" as "> HinvO" "HinvC".
-      iMod "HAU" as (cpoolcli) "[Hcpoolcli HAU]".
-      iNamed "HinvO".
-      iDestruct (cpool_agree with "Hcpool Hcpoolcli") as %->.
-      iMod (cpool_update ({[c]} ∪ cpool) with "Hcpool Hcpoolcli") as "[Hcpool Hcpoolcli]".
-      { set_solver. }
-      iMod ("HAU" with "Hcpoolcli") as "HΦ".
-      iMod ("HinvC" with "[-HΦ]") as "_".
-      { iFrame "∗ # %". }
       by iApply "HΦ".
     }
 
@@ -53,7 +62,8 @@ Section submit.
     (*@     px.log = append(px.log, v)                                          @*)
     (*@     term := px.termc                                                    @*)
     (*@                                                                         @*)
-    do 2 iNamed "Hpx".
+    do 2 iNamed "Hpx". iNamed "Hleader". iNamed "Honlyl".
+    subst terml.
     wp_loadField.
     wp_apply wp_slice_len.
     wp_loadField.
@@ -61,33 +71,36 @@ Section submit.
     iIntros (logP') "Hlog".
     wp_storeField.
     wp_loadField.
+    wp_pures.
 
     (*@     // Logical action: Extend(@px.termc, @px.log).                      @*)
     (*@                                                                         @*)
-    iApply ncfupd_wp.
+    iNamed "Hfname".
+    wp_loadField.
+    wp_apply wp_logAppend.
     iInv "Hinv" as "> HinvO" "HinvC".
-    iMod "HAU" as (cpoolcli) "[Hcpoolcli HAU]".
-    iAssert (|==> own_cpool_half γ ({[c]} ∪ cpoolcli) ∗ paxos_inv γ (dom addrm))%I
-      with "[Hcpoolcli HinvO]" as "HcpoolU".
-    { iNamed "HinvO".
-      iDestruct (cpool_agree with "Hcpool Hcpoolcli") as %->.
-      iMod (cpool_update ({[c]} ∪ cpool) with "Hcpool Hcpoolcli") as "[Hcpool Hcpoolcli]".
-      { set_solver. }
-      by iFrame "∗ # %".
-    }
-    iMod "HcpoolU" as "[Hcpoolcli HinvO]".
-    iDestruct (cpool_witness c with "Hcpoolcli") as "#Hc".
-    { set_solver. }
-    iNamed "Hleader". iNamed "Honlyl".
-    subst terml.
-    iNamed "Hnids".
-    iMod (paxos_inv_extend [c] with "[] Hps Htermc Hterml Hlogn HinvO")
-      as "(Hps & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
+    { apply Hnidme. }
+    iNamed "Hnodefile".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
+    iFrame "Hfile".
+    iExists wal.
+    iSplit; first done.
+    iIntros (bs') "[Hfile %Hbs']".
+    iMod (paxos_inv_extend [c] with "[] Hps Hwalfile Htermc Hterml Hlogn HinvO")
+      as "(Hps & Hwalfile & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
     { set_solver. }
     { by iApply big_sepL_singleton. }
-    iMod ("HAU" with "Hcpoolcli") as "HΦ".
+    iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+    { by iFrame "∗ # %". }
+    iMod "Hmask" as "_".
+    iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
-    iModIntro.
+    iIntros "!> Hents".
+    wp_pures.
 
     (*@     // Potential batch optimization: Even though we update @px.log here, but it @*)
     (*@     // should be OK to not immediately write them to disk, but wait until those @*)

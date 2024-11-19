@@ -6,7 +6,6 @@ Section execute_commit.
 
   Lemma replica_inv_execute_commit γ gid rid clog ilog ts pwrs :
     let clog' := clog ++ [CmdCommit ts pwrs] in
-    Forall (λ nc, (nc.1 <= length clog)%nat) ilog ->
     is_txn_log_lb γ gid clog' -∗
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
@@ -17,7 +16,7 @@ Section execute_commit.
     group_inv γ gid ∗
     replica_inv γ gid rid.
   Proof.
-    iIntros (clog' Hpos) "#Hloglb Hclogprog Hilogprog Hgroup Hrp".
+    iIntros (clog') "#Hloglb Hclogprog Hilogprog Hgroup Hrp".
     iAssert (⌜not_stuck (apply_cmds clog')⌝)%I as %Hns.
     { do 2 iNamed "Hgroup".
       iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
@@ -36,7 +35,7 @@ Section execute_commit.
         set_solver.
       }
       iDestruct (big_sepS_elem_of with "Hsafecp") as "Hsafec"; first apply Hin.
-      iDestruct "Hsafec" as (wrs) "(_ & Hwrs & %Hpwrs & %Hgid & %Hvwrs)".
+      iDestruct "Hsafec" as (wrs) "(_ & Hwrs & _ & %Hpwrs & %Hgid & %Hvwrs)".
       assert (Hdompwrs : dom pwrs ⊆ keys_all).
       { rewrite Hpwrs wrs_group_keys_group_dom. set_solver. }
       iFrame "Hwrs %".
@@ -52,7 +51,7 @@ Section execute_commit.
     (* Re-establish the RSM predicate. This will compute to the right form along
     the way in each branch. *)
     assert (Hrsm' : execute_cmds (merge_clog_ilog clog' ilog) = execute_commit st ts pwrs).
-    { rewrite merge_clog_ilog_snoc_clog; last apply Hpos.
+    { rewrite merge_clog_ilog_snoc_clog; last apply Hcloglen.
       by rewrite execute_cmds_snoc Hrsm.
     }
     iFrame "Hclogprog Hilogprog Hgroup".
@@ -61,6 +60,12 @@ Section execute_commit.
     rewrite /apply_commit Happly in Hns.
     subst st.
     rewrite /execute_commit in Hrsm'.
+    assert (Hcloglen' : Forall (λ nc, (nc.1 <= length clog')%nat) ilog).
+    { eapply Forall_impl; first apply Hcloglen.
+      intros [n c] Hlen. simpl in Hlen.
+      rewrite length_app /=.
+      clear -Hlen. lia.
+    }
     destruct (cm !! ts) as [b |] eqn:Hcm.
     { (* Case: Txn [ts] already finalized. Contradiction for aborted; no-op for committed. *)
       destruct b; last done.
@@ -105,6 +110,7 @@ Section execute_commit.
         rewrite Hvl.
         destruct (vl !! t) as [b |] eqn:Hvlt; last done.
         destruct b; last done.
+        clear Hns.
         case_decide as Ht; last done.
         destruct Ht as (Hgelen & Hnz).
         assert (is_Some (ptsm !! k)) as [pts Hpts].
@@ -132,6 +138,12 @@ Section execute_commit.
         clear -Hgelen Hlen. lia.
       }
       iFrame "∗ # %".
+      iModIntro.
+      iSplit.
+      { rewrite dom_delete_L.
+        iApply (big_sepS_subseteq with "Hrpvds").
+        set_solver.
+      }
       iPureIntro.
       split.
       { rewrite dom_insert_L dom_delete_L. clear -Hvtss.
@@ -175,6 +187,7 @@ Section execute_commit.
       rewrite (multiwrite_modified Hv Hh).
       destruct (vl !! t) as [b |] eqn:Hvlt; last done.
       destruct b; last done.
+      clear Hns.
       case_decide as Ht; last done.
       destruct Ht as [Hgelen Hnepts].
       iSpecialize ("Hgabt" $! k t).

@@ -12,6 +12,7 @@ Definition Paxos := struct.decl [
   "peers" :: slice.T uint64T;
   "addrm" :: mapT uint64T;
   "sc" :: uint64T;
+  "fname" :: stringT;
   "mu" :: ptrT;
   "hb" :: boolT;
   "termc" :: uint64T;
@@ -33,6 +34,26 @@ Definition Paxos__leading: val :=
   rec: "Paxos__leading" "px" :=
     struct.loadF Paxos "isleader" "px".
 
+Definition CMD_EXTEND : expr := #0.
+
+Definition CMD_APPEND : expr := #1.
+
+Definition CMD_PREPARE : expr := #2.
+
+Definition CMD_ADVANCE : expr := #3.
+
+Definition CMD_ACCEPT : expr := #4.
+
+Definition CMD_EXPAND : expr := #5.
+
+Definition logAppend: val :=
+  rec: "logAppend" "fname" "ent" :=
+    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #32) in
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_APPEND);;
+    "data" <-[slice.T byteT] (util.EncodeString (![slice.T byteT] "data") "ent");;
+    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    #().
+
 Definition Paxos__Submit: val :=
   rec: "Paxos__Submit" "px" "v" :=
     Mutex__Lock (struct.loadF Paxos "mu" "px");;
@@ -44,6 +65,7 @@ Definition Paxos__Submit: val :=
       let: "lsn" := slice.len (struct.loadF Paxos "log" "px") in
       struct.storeF Paxos "log" "px" (SliceAppend stringT (struct.loadF Paxos "log" "px") "v");;
       let: "term" := struct.loadF Paxos "termc" "px" in
+      logAppend (struct.loadF Paxos "fname" "px") "v";;
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       ("lsn", "term")).
 
@@ -58,6 +80,14 @@ Definition Paxos__Lookup: val :=
       let: "v" := SliceGet stringT (struct.loadF Paxos "log" "px") "lsn" in
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       ("v", #true)).
+
+Definition logPrepare: val :=
+  rec: "logPrepare" "fname" "term" :=
+    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #16) in
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_PREPARE);;
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
+    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    #().
 
 (* Return values:
    1. @term: New term in which this node attempts to be the leader.
@@ -78,14 +108,19 @@ Definition Paxos__nominate: val :=
     MapInsert (struct.loadF Paxos "respp" "px") (struct.loadF Paxos "nidme" "px") #true;;
     (* fmt.Printf("[paxos %d] Become a candidate in %d with log: %v\n",
        	px.nidme, px.termc, px.log) *)
+    logPrepare (struct.loadF Paxos "fname" "px") "term";;
     ("term", "lsn").
 
 Definition Paxos__stepdown: val :=
   rec: "Paxos__stepdown" "px" "term" :=
-    struct.storeF Paxos "termc" "px" "term";;
     struct.storeF Paxos "iscand" "px" #false;;
     struct.storeF Paxos "isleader" "px" #false;;
-    #().
+    (if: (struct.loadF Paxos "termc" "px") = "term"
+    then #()
+    else
+      struct.storeF Paxos "termc" "px" "term";;
+      logPrepare (struct.loadF Paxos "fname" "px") "term";;
+      #()).
 
 (* Argument:
    1. @lsn: LSN after which log entries whose committedness is yet known, and
@@ -129,6 +164,22 @@ Definition Paxos__cquorum: val :=
   rec: "Paxos__cquorum" "px" "n" :=
     (quorum.ClassicQuorum (struct.loadF Paxos "sc" "px")) ≤ "n".
 
+(* Note that we could have defined @logAdvance to take @ents only, since @term
+   and @lsn can be determined directly from the state for the
+   candidate. However, a similar transition also happens on followers, but @term
+   and @lsn are passed through function arguments rather than from state. Given
+   that advance is used only on failure cases, defining a single interface
+   simplify things a bit without hurting too much of the performance. *)
+Definition logAdvance: val :=
+  rec: "logAdvance" "fname" "term" "lsn" "ents" :=
+    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_ADVANCE);;
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsn");;
+    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
+    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    #().
+
 Definition Paxos__ascend: val :=
   rec: "Paxos__ascend" "px" :=
     (if: (~ (Paxos__cquorum "px" (MapLen (struct.loadF Paxos "respp" "px"))))
@@ -141,6 +192,7 @@ Definition Paxos__ascend: val :=
       struct.storeF Paxos "lsnpeers" "px" (NewMap uint64T uint64T #());;
       (* fmt.Printf("[paxos %d] Become a leader in %d with log: %v\n",
          	px.nidme, px.termc, px.log) *)
+      logAdvance (struct.loadF Paxos "fname" "px") (struct.loadF Paxos "termc" "px") (struct.loadF Paxos "lsnc" "px") (struct.loadF Paxos "entsp" "px");;
       #()).
 
 Definition Paxos__obtain: val :=
@@ -152,6 +204,15 @@ Definition Paxos__obtain: val :=
       let: "ents" := NewSlice stringT ((slice.len (struct.loadF Paxos "log" "px")) - "lsne") in
       SliceCopy stringT "ents" (SliceSkip stringT (struct.loadF Paxos "log" "px") "lsne");;
       ("lsne", "ents")).
+
+Definition logAccept: val :=
+  rec: "logAccept" "fname" "lsn" "ents" :=
+    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_ACCEPT);;
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsn");;
+    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
+    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    #().
 
 (* Arguments:
    1. @lsn: LSN at which @ents start.
@@ -173,6 +234,7 @@ Definition Paxos__accept: val :=
         let: "lsna" := slice.len (struct.loadF Paxos "log" "px") in
         (* fmt.Printf("[paxos %d] Accept entries in %d up to %d: %v\n",
            	px.nidme, px.terml, lsna, px.log) *)
+        logAdvance (struct.loadF Paxos "fname" "px") "term" "lsn" "ents";;
         "lsna")
     else
       let: "nents" := slice.len (struct.loadF Paxos "log" "px") in
@@ -184,7 +246,16 @@ Definition Paxos__accept: val :=
         let: "lsna" := slice.len (struct.loadF Paxos "log" "px") in
         (* fmt.Printf("[paxos %d] Accept entries in %d up to %d: %v\n",
            	px.nidme, px.terml, lsna, px.log) *)
+        logAccept (struct.loadF Paxos "fname" "px") "lsn" "ents";;
         "lsna")).
+
+Definition logExpand: val :=
+  rec: "logExpand" "fname" "lsn" :=
+    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #16) in
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_EXPAND);;
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsn");;
+    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    #().
 
 Definition Paxos__commit: val :=
   rec: "Paxos__commit" "px" "lsn" :=
@@ -195,10 +266,12 @@ Definition Paxos__commit: val :=
       then
         struct.storeF Paxos "lsnc" "px" (slice.len (struct.loadF Paxos "log" "px"));;
         (* fmt.Printf("[paxos %d] Commit entries up to %d\n", px.nidme, px.lsnc) *)
+        logExpand (struct.loadF Paxos "fname" "px") (struct.loadF Paxos "lsnc" "px");;
         #()
       else
         struct.storeF Paxos "lsnc" "px" "lsn";;
         (* fmt.Printf("[paxos %d] Commit entries up to %d\n", px.nidme, px.lsnc) *)
+        logExpand (struct.loadF Paxos "fname" "px") "lsn";;
         #())).
 
 (* @learn monotonically increase the commit LSN @px.lsnc in term @term to @lsn. *)
@@ -284,10 +357,7 @@ Definition EncodeAcceptRequest: val :=
     "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
     "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsnc");;
     "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsne");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") (slice.len "ents"));;
-    ForSlice stringT <> "ent" "ents"
-      ("data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") (StringLength "ent"));;
-      "data" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "data") (StringToBytes "ent")));;
+    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
     ![slice.T byteT] "data".
 
 Definition Paxos__GetConnection: val :=
@@ -422,22 +492,13 @@ Definition DecodePrepareResponse: val :=
     let: ("nid", "data") := marshal.ReadInt "data" in
     let: ("term", "data") := marshal.ReadInt "data" in
     let: ("terma", "data") := marshal.ReadInt "data" in
-    let: ("n", "data") := marshal.ReadInt "data" in
-    let: "ents" := ref_to (slice.T stringT) (NewSliceWithCap stringT #0 "n") in
-    let: "i" := ref_to uint64T #0 in
-    Skip;;
-    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
-      let: ("sz", "data") := marshal.ReadInt "data" in
-      let: ("bs", "data") := marshal.ReadBytes "data" "sz" in
-      "ents" <-[slice.T stringT] (SliceAppend stringT (![slice.T stringT] "ents") (StringFromBytes "bs"));;
-      "i" <-[uint64T] ((![uint64T] "i") + #1);;
-      Continue);;
+    let: ("ents", "data") := util.DecodeStrings "data" in
     struct.mk PaxosResponse [
       "Kind" ::= MSG_PREPARE;
       "NodeID" ::= "nid";
       "Term" ::= "term";
       "EntriesTerm" ::= "terma";
-      "Entries" ::= ![slice.T stringT] "ents"
+      "Entries" ::= "ents"
     ].
 
 Definition DecodeAcceptResponse: val :=
@@ -555,22 +616,13 @@ Definition DecodeAcceptRequest: val :=
     let: ("term", "data") := marshal.ReadInt "data" in
     let: ("lsnc", "data") := marshal.ReadInt "data" in
     let: ("lsne", "data") := marshal.ReadInt "data" in
-    let: ("n", "data") := marshal.ReadInt "data" in
-    let: "ents" := ref_to (slice.T stringT) (NewSliceWithCap stringT #0 "n") in
-    let: "i" := ref_to uint64T #0 in
-    Skip;;
-    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
-      let: ("sz", "data") := marshal.ReadInt "data" in
-      let: ("bs", "data") := marshal.ReadBytes "data" "sz" in
-      "ents" <-[slice.T stringT] (SliceAppend stringT (![slice.T stringT] "ents") (StringFromBytes "bs"));;
-      "i" <-[uint64T] ((![uint64T] "i") + #1);;
-      Continue);;
+    let: ("ents", "data") := util.DecodeStrings "data" in
     struct.mk PaxosRequest [
       "Kind" ::= MSG_ACCEPT;
       "Term" ::= "term";
       "CommittedLSN" ::= "lsnc";
       "EntriesLSN" ::= "lsne";
-      "Entries" ::= ![slice.T stringT] "ents"
+      "Entries" ::= "ents"
     ].
 
 Definition DecodeRequest: val :=
@@ -592,10 +644,7 @@ Definition EncodePrepareResponse: val :=
     "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "nid");;
     "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
     "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "terma");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") (slice.len "ents"));;
-    ForSlice stringT <> "ent" "ents"
-      ("data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") (StringLength "ent"));;
-      "data" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "data") (StringToBytes "ent")));;
+    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
     ![slice.T byteT] "data".
 
 Definition EncodeAcceptResponse: val :=
@@ -668,7 +717,7 @@ Definition Paxos__ConnectAll: val :=
     #().
 
 Definition mkPaxos: val :=
-  rec: "mkPaxos" "nidme" "termc" "terml" "lsnc" "log" "addrm" :=
+  rec: "mkPaxos" "nidme" "termc" "terml" "lsnc" "log" "addrm" "fname" :=
     let: "sc" := MapLen "addrm" in
     let: "peers" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 ("sc" - #1)) in
     MapIter "addrm" (λ: "nid" <>,
@@ -680,6 +729,7 @@ Definition mkPaxos: val :=
       "peers" ::= ![slice.T uint64T] "peers";
       "addrm" ::= "addrm";
       "sc" ::= "sc";
+      "fname" ::= "fname";
       "mu" ::= newMutex #();
       "hb" ::= #false;
       "termc" ::= "termc";
@@ -692,18 +742,96 @@ Definition mkPaxos: val :=
     ] in
     "px".
 
+(* Read the underlying file and perform recovery to re-construct @termc, @terml,
+   @lsnc, and @log. *)
 Definition resume: val :=
-  rec: "resume" <> :=
-    (#0, #0, #0, NewSlice stringT #0).
+  rec: "resume" "fname" :=
+    let: "termc" := ref (zero_val uint64T) in
+    let: "terml" := ref (zero_val uint64T) in
+    let: "lsnc" := ref (zero_val uint64T) in
+    let: "log" := ref_to (slice.T stringT) (NewSlice stringT #0) in
+    let: "kind" := ref (zero_val uint64T) in
+    let: "term" := ref (zero_val uint64T) in
+    let: "lsn" := ref (zero_val uint64T) in
+    let: "ents" := ref (zero_val (slice.T stringT)) in
+    let: "data" := ref_to (slice.T byteT) (grove_ffi.FileRead "fname") in
+    Skip;;
+    (for: (λ: <>, #0 < (slice.len (![slice.T byteT] "data"))); (λ: <>, Skip) := λ: <>,
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
+      "kind" <-[uint64T] "0_ret";;
+      "data" <-[slice.T byteT] "1_ret";;
+      (if: (![uint64T] "kind") = CMD_EXTEND
+      then
+        let: ("0_ret", "1_ret") := util.DecodeStrings (![slice.T byteT] "data") in
+        "ents" <-[slice.T stringT] "0_ret";;
+        "data" <-[slice.T byteT] "1_ret";;
+        "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") (![slice.T stringT] "ents"));;
+        Continue
+      else
+        (if: (![uint64T] "kind") = CMD_APPEND
+        then
+          "ents" <-[slice.T stringT] (NewSlice stringT #1);;
+          let: "ent" := ref (zero_val stringT) in
+          let: ("0_ret", "1_ret") := util.DecodeString (![slice.T byteT] "data") in
+          "ent" <-[stringT] "0_ret";;
+          "data" <-[slice.T byteT] "1_ret";;
+          "log" <-[slice.T stringT] (SliceAppend stringT (![slice.T stringT] "log") (![stringT] "ent"));;
+          Continue
+        else
+          (if: (![uint64T] "kind") = CMD_PREPARE
+          then
+            let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
+            "term" <-[uint64T] "0_ret";;
+            "data" <-[slice.T byteT] "1_ret";;
+            "termc" <-[uint64T] (![uint64T] "term");;
+            Continue
+          else
+            (if: (![uint64T] "kind") = CMD_ADVANCE
+            then
+              let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
+              "term" <-[uint64T] "0_ret";;
+              "data" <-[slice.T byteT] "1_ret";;
+              let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
+              "lsn" <-[uint64T] "0_ret";;
+              "data" <-[slice.T byteT] "1_ret";;
+              let: ("0_ret", "1_ret") := util.DecodeStrings (![slice.T byteT] "data") in
+              "ents" <-[slice.T stringT] "0_ret";;
+              "data" <-[slice.T byteT] "1_ret";;
+              "terml" <-[uint64T] (![uint64T] "term");;
+              "log" <-[slice.T stringT] (SliceTake (![slice.T stringT] "log") (![uint64T] "lsn"));;
+              "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") (![slice.T stringT] "ents"));;
+              Continue
+            else
+              (if: (![uint64T] "kind") = CMD_ACCEPT
+              then
+                let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
+                "lsn" <-[uint64T] "0_ret";;
+                "data" <-[slice.T byteT] "1_ret";;
+                let: ("0_ret", "1_ret") := util.DecodeStrings (![slice.T byteT] "data") in
+                "ents" <-[slice.T stringT] "0_ret";;
+                "data" <-[slice.T byteT] "1_ret";;
+                "log" <-[slice.T stringT] (SliceTake (![slice.T stringT] "log") (![uint64T] "lsn"));;
+                "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") (![slice.T stringT] "ents"));;
+                Continue
+              else
+                (if: (![uint64T] "kind") = CMD_EXPAND
+                then
+                  let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
+                  "lsn" <-[uint64T] "0_ret";;
+                  "data" <-[slice.T byteT] "1_ret";;
+                  "lsnc" <-[uint64T] (![uint64T] "lsn");;
+                  Continue
+                else Continue)))))));;
+    (![uint64T] "termc", ![uint64T] "terml", ![uint64T] "lsnc", ![slice.T stringT] "log").
 
 Definition Start: val :=
-  rec: "Start" "nidme" "addrm" :=
+  rec: "Start" "nidme" "addrm" "fname" :=
     control.impl.Assume (#1 < (MapLen "addrm"));;
     let: (<>, "ok") := MapGet "addrm" "nidme" in
     control.impl.Assume "ok";;
     control.impl.Assume ("nidme" < MAX_NODES);;
-    let: ((("termc", "terml"), "lsnc"), "log") := resume #() in
-    let: "px" := mkPaxos "nidme" "termc" "terml" "lsnc" "log" "addrm" in
+    let: ((("termc", "terml"), "lsnc"), "log") := resume "fname" in
+    let: "px" := mkPaxos "nidme" "termc" "terml" "lsnc" "log" "addrm" "fname" in
     Fork (Paxos__Serve "px");;
     Fork (Paxos__LeaderSession "px");;
     Fork (Paxos__ElectionSession "px");;
@@ -711,3 +839,11 @@ Definition Start: val :=
       (let: "nid" := "nidloop" in
       Fork (Paxos__ResponseSession "px" "nid"));;
     "px".
+
+Definition logExtend: val :=
+  rec: "logExtend" "fname" "ents" :=
+    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
+    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_EXTEND);;
+    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
+    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    #().

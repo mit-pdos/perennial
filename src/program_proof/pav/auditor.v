@@ -1,13 +1,11 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import core cryptoffi merkle serde server.
-
-Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
-  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
+From Perennial.program_proof.pav Require Import core cryptoffi merkle serde.
 
 Section invs.
 Context `{!heapGS Σ, !pavG Σ}.
+
 Definition maps_mono (ms : list adtr_map_ty) :=
   ∀ (i j : nat) mi mj,
   ms !! i = Some mi →
@@ -22,34 +20,20 @@ Definition maps_epoch_ok (ms : list adtr_map_ty) :=
   uint.nat ep' ≤ ep.
 
 Definition adtr_inv ms := maps_mono ms ∧ maps_epoch_ok ms.
-End invs.
 
-Module comm_st.
-Record t :=
-  mk {
-    key_maps: list (gmap opaque_label_ty (epoch_ty * comm_ty));
-    digs: list dig_ty;
-  }.
+Definition lower_adtr (m : adtr_map_ty) : merkle_map_ty :=
+  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
 
-Section defs.
-Context `{!heapGS Σ, !pavG Σ}.
-Definition valid γ (obj : t) : iProp Σ :=
-  "#Hmaps" ∷ mono_list_lb_own γ obj.(key_maps) ∗
-  "#Hdigs" ∷ ([∗ list] m;d ∈ obj.(key_maps);obj.(digs), is_dig (lower_adtr m) d).
-End defs.
-End comm_st.
-
-Section inv.
-Context `{!heapGS Σ, !pavG Σ}.
 Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
-  (∃ pre st,
+  (∃ pre (st : list (adtr_map_ty * dig_ty)),
   "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
-  "#Hcomm_st" ∷ comm_st.valid γ st ∗
-  "%Hlook" ∷ ⌜ st.(comm_st.digs) !! uint.nat (pre.(PreSigDig.Epoch)) = Some pre.(PreSigDig.Dig) ⌝ ∗
-  "%Hinv" ∷ ⌜ adtr_inv st.(comm_st.key_maps) ⌝
+  "#Hlb" ∷ mono_list_lb_own γ st ∗
+  "#His_digs" ∷ ([∗ list] x ∈ st, is_dig (lower_adtr x.1) x.2) ∗
+  "[% %Hlook_dig]" ∷ (∃ m, ⌜ st !! uint.nat pre.(PreSigDig.Epoch) = Some (m, pre.(PreSigDig.Dig)) ⌝) ∗
+  "%Hinv" ∷ ⌜ adtr_inv st.*1 ⌝
   )%I.
-End inv.
+End invs.
 
 Module Auditor.
 
@@ -57,26 +41,27 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃ γ pk key_maps (ptr_map : loc) last_map sl_sk sl_hist ptrs_hist hist,
+  ∃ γ pk gs (ptr_map : loc) (ptr_sk : loc) sl_hist ptrs_hist hist,
     (* Physical ownership *)
   "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
-  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ (slice_val sl_sk) ∗
+  "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ #ptr_sk ∗
   "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
-  "Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
+  "#Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
     AdtrEpochInfo.own ptr_hist info) ∗
-  "Hown_map" ∷ own_merkle ptr_map (lower_adtr last_map) ∗
+  "Hown_map" ∷ own_merkle ptr_map (lower_adtr (default ∅ (last gs.*1))) ∗
 
     (* Ghost ownership *)
-  "Hmaps" ∷ mono_list_auth_own γ 1 key_maps ∗
+  "Hmaps" ∷ mono_list_auth_own γ 1 gs ∗
 
     (* Crypto props *)
-  "Hown_sk" ∷ own_sk sl_sk pk (adtr_sigpred γ) ∗
-  "#Hdigs_hist" ∷ ([∗ list] m;info ∈ key_maps;hist,
-    is_dig (lower_adtr m) info.(AdtrEpochInfo.Dig)) ∗
+  "Hown_sk" ∷ own_sig_sk ptr_sk pk (adtr_sigpred γ) ∗
+  (* TODO(SB): with new GS, figure out what tie-in should actually
+  be with phys. *)
+  "%Hdigs_hist" ∷ ([∗ list] x;info ∈ gs;hist,
+    ⌜ x.2 = info.(AdtrEpochInfo.Dig) ⌝) ∗
 
-  "%Hlast_map" ∷ ⌜ last key_maps = Some last_map ⌝ ∗
-  "%Hinv" ∷ ⌜ adtr_inv key_maps ⌝.
+  "%Hinv" ∷ ⌜ adtr_inv gs.*1 ⌝.
 
 Definition valid (ptr : loc) : iProp Σ :=
   ∃ (mu : loc),
@@ -92,42 +77,37 @@ Lemma wp_newAuditor :
   {{{
         True
   }}}
-  newAuditor #()
+  NewAuditor #()
   {{{
     ptr_adtr sl_adtrPk adtrPk adtr_γ, RET (#ptr_adtr, slice_val sl_adtrPk);
     "Hvalid_adtr" ∷ Auditor.valid ptr_adtr ∗
     "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
-    "#His_adtrPk" ∷ is_pk adtrPk (adtr_sigpred adtr_γ)
+    "#His_adtrPk" ∷ is_sig_pk adtrPk (adtr_sigpred adtr_γ)
   }}}.
 Proof.
   iIntros (?) "_ HΦ".
   wp_rec.
   wp_apply wp_new_free_lock.
   iIntros (?) "Hl".
-  wp_apply wp_GenerateKey.
+  iMod (mono_list_own_alloc ([] : list (adtr_map_ty * dig_ty))) as (?) "[? _]".
+  wp_apply wp_SigGenerateKey.
   { shelve. }
   iIntros "*". iNamed 1.
   wp_pures.
   wp_apply wp_allocStruct; [val_ty|].
   iIntros "* Hm".
   wp_pures.
-  wp_apply wp_allocStruct.
-  { rewrite /Auditor /cryptoffi.PrivateKey.
-    (* XXX: unfolding [PrivateKey] because the val_ty hitns look for slice.T syntactically. *)
-    val_ty.
-  }
+  wp_apply wp_allocStruct; [val_ty|].
   iIntros "* Ha".
   iDestruct (struct_fields_split with "Ha") as "Ha".
   iNamed "Ha".
-  iMod (mono_list_own_alloc []) as (?) "[? _]".
   wp_pures. iApply "HΦ".
   iFrame "#".
-  iMod (own_slice_small_persist with "Hsl_pk") as "#$".
+  iMod (own_slice_small_persist with "Hsl_sig_pk") as "#$".
   repeat iExists _.
   iMod (struct_field_pointsto_persist with "mu") as "#?".
   iMod (struct_field_pointsto_persist with "sk") as "#?".
   iFrame "#".
-  Search is_free_lock.
   iMod (alloc_lock with "[$] [-]") as "$"; last done.
   iNext. repeat iExists _.
   iFrame "∗#%".
@@ -149,29 +129,16 @@ Proof.
     2:{
       iApply merkle_internal.own_node_unfold.
       instantiate (1:=merkle_internal.Empty).
-      simpl.
-      iExists _; iSplit; last done.
-      (* FIXME(sanjit): the [Empty] case of own_node' requires
-         knowing that there exists something that is the hasth of [[W8 0]].
-         Requiring that as a precondition to newAuditor would violate the
-         Auditor interface boundary since it would expose that there's
-         hashing/merkle trees being used inside. Seems like the requirement for
-         the empty hash in [own_node'] could be removed?
-       *)
-      admit.
+      simpl. done.
     }
-    instantiate (1:=∅). done.
+    done.
   }
-  (* FIXME:(upamanyu): γ unified between different [adtr_sigpred]s. Need to alloc ghost state earlier. *)
-
-  (* FIXME(sanjit):
-     [Auditor.own] implies that [length key_maps > 0] because it states that [last key_maps = Some _].
-     However, ["#Hdigs_hist"] requires that [length key_maps = length hist].
-     So, [Auditor.own] implies that [length hist > 0] which is not true upon
-     initialization since hist is left empty.
-   *)
-  admit.
-Admitted.
+  iSplit.
+  { by iApply big_sepL2_nil. }
+  done.
+  Unshelve.
+  apply _.
+Qed.
 
 Lemma wp_Auditor__Update a ptr_upd upd :
   {{{
@@ -195,7 +162,41 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   iNamed "Hupdate".
-  admit. (* TODO: fill in UpdateProof.own *)
+  wp_loadField.
+
+  (* XXX: checkUpd only gets called here. Inlining its proof. *)
+  wp_rec.
+  wp_pures.
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (?) "Hl".
+  wp_pures.
+  wp_apply (wp_MapIter_fold _ _ _ (λ _,
+                                     _
+              )%I with "[$] [-HΦ]").
+  { iNamedAccu. }
+  {
+    iIntros "* !# * [Hpre %Hlookup] HΦ".
+    iNamed "Hpre".
+    wp_pures.
+    wp_apply wp_StringToBytes.
+    iIntros "* ?".
+    iDestruct (own_slice_to_small with "[$]") as "?".
+    (* XXX: checkOneUpd only called here so inlining a proof. *)
+    wp_rec.
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_Tree_Get with "[$]").
+    iIntros "* HGetPost".
+    iNamed "HGetPost".
+    iNamed "Hreply".
+    wp_pures.
+    wp_loadField.
+    admit.
+  }
 Admitted.
 
 Lemma wp_Auditor__Get a (epoch : u64) :
@@ -219,16 +220,23 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   wp_if_destruct.
-  -  wp_loadField.
-     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
-     { iFrame "HmuR ∗#%". }
-     wp_pures.
-     wp_apply wp_allocStruct.
-     { val_ty. }
-     iIntros (?) "?".
-     wp_pures.
-     iApply "HΦ".
-     admit. (* TODO: fill in AdtrEpochInfo.own *)
+  - wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "HmuR ∗#%". }
+    wp_pures.
+    wp_apply wp_allocStruct.
+    { val_ty. }
+    iIntros (?) "H".
+    wp_pures.
+    iApply "HΦ".
+    repeat iExists _.
+    iDestruct (struct_fields_split with "H") as "H".
+    iNamed "H".
+    do 3 iMod (struct_field_pointsto_persist with "[$]") as "#?".
+    rewrite zero_slice_val.
+    iFrame "#".
+    instantiate (1:=AdtrEpochInfo.mk [] [] []). simpl.
+    repeat iDestruct (own_slice_small_nil byteT DfracDiscarded) as "$"; try done.
   - wp_loadField.
     iDestruct (own_slice_small_sz with "Hsl_hist") as %Hsz.
     unshelve epose proof (list_lookup_lt ptrs_hist (uint.nat epoch) ltac:(word)) as [? Hlookup].
@@ -236,12 +244,14 @@ Proof.
     iIntros "Hsl".
     wp_pures.
     wp_loadField.
+    iDestruct (big_sepL2_lookup_1_some with "[$]") as %[??].
+    { done. }
+    iDestruct (big_sepL2_lookup with "Hown_hist") as "H"; try done.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "HmuR ∗#%". }
     wp_pures.
     iApply "HΦ".
-    (* FIXME: make Hown_hist have persistent ownership of AdtrEpochInfo *)
-    admit.
-Admitted.
+    by iFrame "#".
+Qed.
 
 End specs.

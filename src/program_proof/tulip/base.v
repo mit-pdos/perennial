@@ -8,74 +8,22 @@ Definition dbmod := (dbkey * dbval)%type.
 Definition dbmap := gmap dbkey dbval.
 Definition dbkmod := gmap nat dbval.
 Definition coordid := (u64 * u64)%type.
+Definition ppsl := (u64 * bool)%type.
 
 (** Transaction result. *)
 Inductive txnres :=
 | ResCommitted (wrs : dbmap)
 | ResAborted.
 
-Definition dbval_to_val (v : dbval) : val :=
-  match v with
-  | Some s => (#true, (#(LitString s), #()))
-  | None => (#false, (zero_val stringT, #()))
-  end.
-
-Definition dbval_from_val (v : val) : option dbval :=
-  match v with
-  | (#(LitBool b), (#(LitString s), #()))%V => if b then Some (Some s) else Some None
-  | _ => None
-  end.
-
-#[global]
-Instance dbval_into_val : IntoVal dbval.
-Proof.
-  refine {|
-      to_val := dbval_to_val;
-      from_val := dbval_from_val;
-      IntoVal_def := None;
-    |}.
-  intros v.
-  by destruct v.
-Defined.
-
-#[global]
-Instance dbval_into_val_for_type : IntoValForType dbval (boolT * (stringT * unitT)%ht).
-Proof. constructor; [done | done | intros [v |]; by auto]. Defined.
-
-Definition dbmod_to_val (x : dbmod) : val :=
-  (#(LitString x.1), (dbval_to_val x.2, #())).
-
-Definition dbmod_from_val (v : val) : option dbmod :=
-  match v with
-  | (#(LitString k), (dbv, #()))%V => match dbval_from_val dbv with
-                                     | Some x => Some (k, x)
-                                     | _ => None
-                                     end
-  | _ => None
-  end.
-
-#[global]
-Instance dbmod_into_val : IntoVal dbmod.
-Proof.
-  refine {|
-      to_val := dbmod_to_val;
-      from_val := dbmod_from_val;
-      IntoVal_def := ("", None);
-    |}.
-  intros [k v].
-  by destruct v.
-Defined.
-
-Definition fstring := {k : string | (String.length k < 2 ^ 64)%nat}.
+Definition fstring := {k : string | String.length k < 2 ^ 64}.
 
 #[local]
 Instance fstring_finite :
   finite.Finite fstring.
 Admitted.
 
-(* Definition keys_all : gset string := fin_to_set fstring. *)
-Definition keys_all : gset string.
-Admitted.
+Definition keys_all : gset string :=
+  list_to_set (map proj1_sig (finite.enum fstring)).
 
 (** Transaction status on group/replica. *)
 Inductive txnst :=
@@ -261,6 +209,12 @@ Definition valid_ts (ts : nat) := 0 < ts < 2 ^ 64.
 Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
 Definition valid_key (key : dbkey) := key ∈ keys_all.
+
+Definition valid_ccommand gid (c : ccommand) :=
+  match c with
+  | CmdCommit ts pwrs => valid_ts ts ∧ valid_pwrs gid pwrs
+  | CmdAbort ts => valid_ts ts
+  end.
 
 Class tulip_ghostG (Σ : gFunctors).
 

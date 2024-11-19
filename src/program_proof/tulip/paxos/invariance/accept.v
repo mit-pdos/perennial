@@ -3,23 +3,31 @@ From Perennial.program_proof.tulip.paxos Require Import prelude.
 Section accept.
   Context `{!paxos_ghostG Σ}.
 
-  Lemma node_inv_accept {γ nids nid termc v} v' :
+  Lemma node_inv_accept {γ nids nid wal termc v} lsn ents v' :
     (length v ≤ length v')%nat ->
+    (lsn ≤ length v)%nat ->
+    ents = drop lsn v' ->
     prefix_base_ledger γ termc v' -∗
     prefix_growing_ledger γ termc v' -∗
+    own_node_wal_half γ nid wal -∗
     own_current_term_half γ nid termc -∗
     own_node_ledger_half γ nid v -∗
     node_inv γ nids nid termc ==∗
+    own_node_wal_half γ nid (wal ++ [CmdPaxosAccept lsn ents]) ∗
     own_current_term_half γ nid termc ∗
     own_node_ledger_half γ nid v' ∗
     node_inv γ nids nid termc ∗
     is_accepted_proposal_lb γ nid termc v'.
   Proof.
-    iIntros (Hlen) "#Hpfb #Hpfg HtermcX HlognX Hinv".
+    iIntros (Hlen Hlsn Hents) "#Hpfb #Hpfg HwalX HtermcX HlognX Hinv".
     iNamed "Hinv".
     (* Agreements. *)
+    iDestruct (node_wal_agree with "HwalX Hwalnode") as %->.
     iDestruct (current_term_agree with "HtermcX Htermc") as %->.
     iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+    (* Update the write-ahead log. *)
+    set wal' := wal ++ _.
+    iMod (node_wal_update wal' with "HwalX Hwalnode") as "[HwalX Hwalnode]".
     iAssert (⌜prefix v v'⌝)%I as %Hprefix.
     { iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hlogn.
       iDestruct (big_sepM_lookup with "Hpsaubs") as (vub1) "[#Hvub1 %Hprefix1]"; first apply Hlogn.
@@ -65,27 +73,38 @@ Section accept.
       rewrite dom_insert_L.
       by replace (_ ∪ _) with (dom psa) by set_solver.
     }
+    split.
     { (* Re-establish [lsnc ≤ length v']. *)
       clear -Hlen Hltlog. lia.
     }
+    { rewrite /execute_paxos_cmds foldl_snoc /= /execute_paxos_accept.
+      rewrite execute_paxos_cmds_unfold Hexec.
+      case_decide; last lia.
+      f_equal.
+      by rewrite Hents -{2}(take_drop lsn v') (take_prefix_le _ _ _ Hlsn Hprefix).
+    }
   Qed.
 
-  Lemma paxos_inv_accept γ nids nid termc v v' :
+  Lemma paxos_inv_accept {γ nids nid wal termc v} lsn ents v' :
     nid ∈ nids ->
     (length v ≤ length v')%nat ->
+    (lsn ≤ length v)%nat ->
+    ents = drop lsn v' ->
     prefix_base_ledger γ termc v' -∗
     prefix_growing_ledger γ termc v' -∗
+    own_node_wal_half γ nid wal -∗
     own_current_term_half γ nid termc -∗
     own_ledger_term_half γ nid termc -∗
     own_node_ledger_half γ nid v -∗
     paxos_inv γ nids ==∗
+    own_node_wal_half γ nid (wal ++ [CmdPaxosAccept lsn ents]) ∗
     own_current_term_half γ nid termc ∗
     own_ledger_term_half γ nid termc ∗
     own_node_ledger_half γ nid v' ∗
     paxos_inv γ nids ∗
     is_accepted_proposal_lb γ nid termc v'.
   Proof.
-    iIntros (Hnid Hlen) "#Hpfb #Hpfg Htermc Hterml Hlogn Hinv".
+    iIntros (Hnid Hlen Hlenv Hent) "#Hpfb #Hpfg Hwal Htermc Hterml Hlogn Hinv".
     iNamed "Hinv".
     rewrite -Hdomtermlm elem_of_dom in Hnid.
     destruct Hnid as [terml' Hnid].
@@ -93,9 +112,11 @@ Section accept.
     { apply Hnid. }
     iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
     (* Re-establish the node invariant. *)
-    iMod (node_inv_accept with "Hpfb Hpfg Htermc Hlogn Hnode")
-      as "(Htermc & Hlogn & Hnode & #Hacptlb')".
+    iMod (node_inv_accept with "Hpfb Hpfg Hwal Htermc Hlogn Hnode")
+      as "(Hwal & Htermc & Hlogn & Hnode & #Hacptlb')".
     { apply Hlen. }
+    { apply Hlenv. }
+    { apply Hent. }
     iDestruct ("HnodesC" with "Hnode") as "Hnodes".
     by iFrame "∗ # %".
   Qed.

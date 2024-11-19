@@ -126,8 +126,6 @@ Definition own_node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPr
     (* We should never have cuts in in-memory trees. *)
     | Cut _ => False
     | Empty =>
-      ∃ hash,
-      "#His_hash" ∷ is_node_hash tr hash ∗
       "%Hnil" ∷ ⌜ptr_tr = null⌝
     | Leaf val =>
       ∃ sl_val hash sl_hash,

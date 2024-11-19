@@ -79,11 +79,23 @@ Section inv.
       "%Hbmbvm"  ∷ ⌜confined_by_ballot_map bm bvm⌝ ∗
       "%Hbmbtm"  ∷ ⌜confined_by_ballot_map bm btm⌝.
 
+  Definition fast_proposal_witness γ gid rid ts (ps : nat * bool) : iProp Σ :=
+    (if decide (ps.1 = O)
+     then is_replica_pdec_at_rank γ gid rid ts O ps.2 ∗
+          if ps.2 then is_replica_validated_ts γ gid rid ts else True
+     else True)%I.
+
+  #[global]
+  Instance fast_proposal_witness_persistent γ gid rid ts ps :
+    Persistent (fast_proposal_witness γ gid rid ts ps).
+  Proof. rewrite /fast_proposal_witness. apply _. Defined.
+
   Definition replica_inv_internal
     γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand))
     (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
-    ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (bm : gmap nat ballot) (laim : gmap nat nat)
-      (histm : gmap dbkey dbhist) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat),
+    ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (bm : gmap nat ballot)
+      (histm : gmap dbkey dbhist) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat)
+      (psm : gmap nat (nat * bool)) (rkm : gmap nat nat),
       let log := merge_clog_ilog clog ilog in
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
       "Hclog"     ∷ own_replica_clog_half γ gid rid clog ∗
@@ -92,17 +104,21 @@ Section inv.
       "Hbm"       ∷ replica_inv_ballot_map γ gid rid bm ∗
       "Hbackup"   ∷ replica_inv_backup γ gid rid bm ∗
       "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid ts pwrs) ∗
+      "#Hrpvds"   ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
+      "#Hfpw"     ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗
-      "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim⌝ ∗
+      "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝ ∗
+      "%Hcloglen" ∷ ⌜Forall (λ nc, (nc.1 <= length clog)%nat) ilog⌝ ∗
       "%Hvtss"    ∷ ⌜vtss ⊆ dom cm ∪ dom cpm⌝ ∗
       "%Hdomkvdm" ∷ ⌜dom kvdm = keys_all⌝ ∗
       "%Hlenkvd"  ∷ ⌜map_Forall2 (λ _ vd spts, length vd = S spts) kvdm sptsm⌝ ∗
       "%Hsptsmlk" ∷ ⌜map_Forall2 (λ _ spts pts, pts ≠ O -> spts = pts) sptsm ptsm⌝ ∗
       "%Hpil"     ∷ ⌜prepared_impl_locked_cpm cpm ptsm⌝ ∗
       "%Hcpmnz"   ∷ ⌜cpm !! O = None⌝ ∗
-      "%Hbmlaim"  ∷ ⌜map_Forall2 (λ _ l n, latest_term l = n ∧ ∃ p, l !! n = Some (Accept p)) bm laim⌝.
+      "%Hbmpsm"   ∷ ⌜map_Forall2 (λ _ l p, latest_term l = p.1 ∧ l !! p.1 = Some (Accept p.2)) bm psm⌝ ∗
+      "%Hbmrkm"   ∷ ⌜map_Forall2 (λ _ l r, length l = r) bm rkm⌝.
 
   Definition replica_inv_with_cm_with_cpm
     γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=

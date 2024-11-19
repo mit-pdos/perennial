@@ -150,6 +150,36 @@ Section inv.
     by iFrame "Hwrs".
   Qed.
 
+  Lemma safe_txn_pwrs_dom_pwrs γ gid ts pwrs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    ⌜dom pwrs ⊆ keys_all⌝.
+  Proof.
+    iIntros "Hsafe".
+    iDestruct "Hsafe" as (wrs) "(Hwrs & _ & %Hvw & _ & %Hpwrs)".
+    iPureIntro.
+    trans (dom wrs); last apply Hvw.
+    rewrite Hpwrs.
+    apply dom_filter_subseteq.
+  Qed.
+
+  Lemma safe_txn_pwrs_impl_valid_ts γ gid ts pwrs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    ⌜valid_ts ts⌝.
+  Proof. iIntros "Hsafe". by iDestruct "Hsafe" as (?) "(_ & ? & _ & _ & _)". Qed.
+
+  Lemma safe_txn_pwrs_impl_valid_wrs γ gid ts pwrs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    ⌜valid_wrs pwrs⌝.
+  Proof.
+    iIntros "Hsafe".
+    iDestruct "Hsafe" as (?) "(_ & _ & %Hvw & _ & %Hpwrs)".
+    iPureIntro.
+    rewrite Hpwrs.
+    rewrite /valid_wrs.
+    etrans; last apply Hvw.
+    apply subseteq_dom, map_filter_subseteq.
+  Qed.
+
   (** The [StAborted] branch says that a transaction is aborted globally if it
   is aborted locally on some group (the other direction is encoded in
   [safe_submit]). This gives contradiction when learning a commit command under
@@ -180,6 +210,7 @@ Section inv.
   Definition safe_commit γ gid ts pwrs : iProp Σ :=
     ∃ wrs, is_txn_committed γ ts wrs ∗
            is_txn_wrs γ ts wrs ∗
+           ⌜valid_ts ts⌝ ∗
            ⌜pwrs = wrs_group gid wrs⌝ ∗
            ⌜gid ∈ ptgroups (dom wrs)⌝ ∗
            ⌜valid_wrs wrs⌝.
@@ -356,6 +387,61 @@ Section lemma.
     iDestruct (repl_hist_witness with "Hhist") as "#Hhistlb".
     iApply (repl_hist_lb_weaken hlb with "Hhistlb").
     apply Hprefixh.
+  Qed.
+
+  Definition group_histm_lbs_from_log γ gid log : iProp Σ :=
+    match apply_cmds log with
+    | State _ histm => ([∗ map] k ↦ h ∈ filter_group gid histm, is_repl_hist_lb γ k h)
+    | _ => False
+    end.
+
+  #[global]
+  Instance group_histm_lbs_from_log_persistent γ gid log :
+    Persistent (group_histm_lbs_from_log γ gid log).
+  Proof. rewrite /group_histm_lbs_from_log. destruct (apply_cmds log); apply _. Defined.
+
+  Lemma group_inv_witness_group_histm_lbs_from_log {γ gid} loglb :
+    is_txn_log_lb γ gid loglb -∗
+    group_inv γ gid -∗
+    group_histm_lbs_from_log γ gid loglb.
+  Proof.
+    iIntros "#Hloglb Hgroup".
+    rewrite /group_histm_lbs_from_log.
+    destruct (apply_cmds loglb) as [cmlb histmlb |] eqn:Happly; last first.
+    { do 2 iNamed "Hgroup".
+      iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
+      unshelve epose proof (apply_cmds_not_stuck loglb _ Hprefix _) as Hns.
+      { by rewrite Hrsm. }
+      done.
+    }
+    iApply big_sepM_forall.
+    iIntros (k h Hh).
+    apply map_lookup_filter_Some in Hh as [Hh Hgid].
+    iApply (group_inv_witness_repl_hist with "Hloglb Hgroup").
+    { pose proof (apply_cmds_dom _ _ _ Happly) as Hdom.
+      apply elem_of_dom_2 in Hh.
+      set_solver.
+    }
+    { done. }
+    { by rewrite /hist_from_log Happly. }
+  Qed.
+
+  Lemma group_inv_impl_valid_ccommand_cpool {γ gid} cpool :
+    group_inv_no_cpool γ gid cpool -∗
+    ⌜set_Forall (valid_ccommand gid) cpool⌝.
+  Proof.
+    iIntros "Hgroup".
+    do 2 iNamed "Hgroup".
+    iIntros (c Hc).
+    iDestruct (big_sepS_elem_of with "Hsafecp") as "Hsafec"; first apply Hc.
+    destruct c; simpl.
+    { iDestruct "Hsafec" as (wrs) "(_ & _ & %Hvts & %Hwg & %Hgid & %Hvw)".
+      iPureIntro.
+      split; first done.
+      rewrite /valid_pwrs Hwg wrs_group_keys_group_dom.
+      set_solver.
+    }
+    { by iDestruct "Hsafec" as "[_ %Hvts]". }
   Qed.
 
   Lemma group_inv_extract_log_expose_cpool {γ} gid :

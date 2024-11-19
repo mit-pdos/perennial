@@ -171,4 +171,14 @@ Section lemma.
     (l ++ [x]) !! n = Some x.
   Proof. intros ->. apply lookup_snoc_length. Qed.
 
+  Lemma prefix_singleton l x :
+    l !! O = Some x ->
+    prefix [x] l.
+  Proof.
+    intros Hx.
+    destruct l as [| x' l']; first done.
+    inv Hx.
+    apply prefix_cons, prefix_nil.
+  Qed.
+
 End lemma.

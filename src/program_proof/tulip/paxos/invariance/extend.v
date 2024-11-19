@@ -3,26 +3,34 @@ From Perennial.program_proof.tulip.paxos Require Import prelude.
 Section extend.
   Context `{!paxos_ghostG Σ}.
 
-  Lemma node_inv_extend {γ nids nid term v} v' :
-    prefix v v' ->
+  Lemma node_inv_extend {γ nids nid wal term v} ents v' :
+    v' = v ++ ents ->
     is_proposal_lb γ term v' -∗
+    own_node_wal_half γ nid wal -∗
     own_current_term_half γ nid term -∗
     own_node_ledger_half γ nid v -∗
     node_inv γ nids nid term ==∗
+    own_node_wal_half γ nid (wal ++ [CmdPaxosExtend ents]) ∗
     own_current_term_half γ nid term ∗
     own_node_ledger_half γ nid v' ∗
     node_inv γ nids nid term ∗
     is_accepted_proposal_lb γ nid term v'.
   Proof.
-    iIntros (Hprefix) "#Hpslb HtermcX HlognX Hnode".
+    iIntros (Hvents) "#Hpslb HwalX HtermcX HlognX Hnode".
     iNamed "Hnode".
     (* Agreements. *)
+    iDestruct (node_wal_agree with "HwalX Hwalnode") as %->.
     iDestruct (current_term_agree with "HtermcX Htermc") as %->.
     iDestruct (node_ledger_agree with "HlognX Hlogn") as %->.
+    (* Update the write-ahead log. *)
+    set wal' := wal ++ _.
+    iMod (node_wal_update wal' with "HwalX Hwalnode") as "[HwalX Hwalnode]".
     (* Update the node-local ledger. *)
     iMod (node_ledger_update v' with "HlognX Hlogn") as "[HlognX Hlogn]".
     iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hv.
     (* Update the accepted ledger at [term]. *)
+    assert (Hprefix : prefix v v').
+    { rewrite Hvents. by apply prefix_app_r. }
     iMod (accepted_proposal_update v' with "Hacpt Hpsa") as "[Hacpt Hpsa]".
     { apply Hprefix. }
     iDestruct (accepted_proposal_witness with "Hacpt") as "#Hacptlb".
@@ -59,37 +67,43 @@ Section extend.
       rewrite dom_insert_L.
       by replace (_ ∪ dom psa) with (dom psa) by set_solver.
     }
+    split.
     { (* Re-establish [lsnc ≤ length v']. *)
       trans (length v); [apply Hltlog | by apply prefix_length].
     }
+    { rewrite /execute_paxos_cmds foldl_snoc /= /execute_paxos_extend.
+      by rewrite execute_paxos_cmds_unfold Hexec Hvents.
+    }
   Qed.
 
-  Lemma paxos_inv_extend {γ nids nid term v} vapp :
-    let v' := v ++ vapp in
+  Lemma paxos_inv_extend {γ nids nid wal term v} ents :
+    let v' := v ++ ents in
     nid ∈ nids ->
-    proposed_cmds γ vapp -∗
+    proposed_cmds γ ents -∗
     own_proposal γ term v -∗
+    own_node_wal_half γ nid wal -∗
     own_current_term_half γ nid term -∗
     own_ledger_term_half γ nid term -∗
     own_node_ledger_half γ nid v -∗
     paxos_inv γ nids ==∗
     own_proposal γ term v' ∗
+    own_node_wal_half γ nid (wal ++ [CmdPaxosExtend ents]) ∗
     own_current_term_half γ nid term ∗
     own_ledger_term_half γ nid term ∗
     own_node_ledger_half γ nid v' ∗
     paxos_inv γ nids ∗
     is_accepted_proposal_lb γ nid term v'.
   Proof.
-    iIntros (v' Hnid) "#Hpcs Hp Htermc Hterml Hlogn Hinv".
+    iIntros (v' Hnid) "#Hpcs Hp Hwal Htermc Hterml Hlogn Hinv".
     iNamed "Hinv".
     iDestruct (proposal_lookup with "Hp Hps") as %Hv.
-    (* Re-establish [proposed_cmds] on the new log [v ++ vapp]. *)
-    iAssert (proposed_cmds γ (v ++ vapp))%I as "Hsubsume'".
+    (* Re-establish [proposed_cmds] on the new log [v ++ ents]. *)
+    iAssert (proposed_cmds γ (v ++ ents))%I as "Hsubsume'".
     { iDestruct (big_sepM_lookup with "Hsubsume") as "Hpcsv"; first apply Hv.
       iFrame "#".
     }
     (* Extend the growing proposal to [v'] and extract a witness. *)
-    iMod (proposal_update (v ++ vapp) with "Hp Hps") as "[Hp Hps]"; first by apply prefix_app_r.
+    iMod (proposal_update (v ++ ents) with "Hp Hps") as "[Hp Hps]"; first by apply prefix_app_r.
     iDestruct (proposal_witness with "Hp") as "#Hplb".
     (* Update the node-local ledger. *)
     rewrite -Hdomtermlm elem_of_dom in Hnid.
@@ -97,9 +111,9 @@ Section extend.
     iDestruct (big_sepM_lookup_acc _ _ nid with "Hnodes") as "[Hnode HnodesC]".
     { apply Hterml. }
     iDestruct (own_ledger_term_node_inv_terml_eq with "Hterml Hnode") as %->.
-    iMod (node_inv_extend v' with "Hplb Htermc Hlogn Hnode")
-      as "(Htermc & Hlogn & Hnode & #Hacpted)".
-    { by apply prefix_app_r. }
+    iMod (node_inv_extend ents v' with "Hplb Hwal Htermc Hlogn Hnode")
+      as "(Hwal & Htermc & Hlogn & Hnode & #Hacpted)".
+    { done. }
     iDestruct ("HnodesC" with "Hnode") as "Hnodes".
     iFrame "∗ # %".
     iModIntro.

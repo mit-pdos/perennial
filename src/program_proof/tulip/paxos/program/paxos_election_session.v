@@ -112,7 +112,7 @@ Section election_session.
       }
       { iDestruct (own_paxos_hide_termc with "Hpx") as "Hpx".
         clear termc.
-        wp_apply (wp_Paxos__nominate with "Hnids Hinv Hpx").
+        wp_apply (wp_Paxos__nominate with "Hnids Hfname Hinvfile Hinv Hpx").
         { apply Hnidme. }
         iIntros (termc lsnc) "[Hpx #Hlsnprc]".
         wp_pures.

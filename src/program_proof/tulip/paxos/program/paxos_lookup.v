@@ -67,6 +67,7 @@ Section lookup.
     (*@                                                                         @*)
     iApply ncfupd_wp.
     iInv "Hinv" as "> HinvO" "HinvC".
+    iMod (ncfupd_mask_subseteq (⊤ ∖ ↑paxosNS)) as "Hmask"; first solve_ndisj.
     iMod "HAU" as (logcli) "[Hlogcli HAU]".
     set logc := take _ log.
     iNamed "Hnids".
@@ -78,6 +79,7 @@ Section lookup.
     }
     iDestruct "Hlogcli" as (logcli') "[Hlogcli %Hprefix]".
     iMod ("HAU" with "Hlogcli") as "HΦ".
+    iMod "Hmask" as "_".
     iMod ("HinvC" with "HinvO") as "_".
     iModIntro.
 

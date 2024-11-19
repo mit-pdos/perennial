@@ -1,7 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import
-  extend nonexpanding_merge.
+  extend nonexpanding_merge fin_maps.
 From Perennial.program_proof.tulip Require Import base stability.
+From Coq.Program Require Import Wf.
 
 Section validate.
   Definition validate_key (tid : nat) (ov : option dbval) (ovl : option (list bool)) :=
@@ -111,6 +112,17 @@ Section setts.
     rewrite lookup_merge lookup_empty /=.
     by destruct (tss !! k).
   Qed.
+
+  Lemma setts_insert ts wrs tsm k v :
+    k ∈ dom tsm ->
+    setts ts (<[k := v]> wrs) tsm = <[k := ts]> (setts ts wrs tsm).
+  Proof.
+    intros Hk. apply elem_of_dom in Hk as [t Ht].
+    symmetry.
+    apply insert_merge_l.
+    by rewrite /= Ht.
+  Qed.
+
 End setts.
 
 Definition acquire := setts.
@@ -254,13 +266,18 @@ Section apply_cmds.
 
   Definition not_stuck st := st ≠ Stuck.
 
+  Definition safe_extension (ts : nat) (pwrs : dbmap) (histm : gmap dbkey dbhist) :=
+    map_Forall (λ _ l, (length l ≤ ts)%nat) (filter (λ x, x.1 ∈ dom pwrs) histm).
+
   Definition apply_commit st (tid : nat) (pwrs : dbmap) :=
     match st with
-    | State cm hists =>
+    | State cm histm =>
         match cm !! tid with
         | Some true => st
         | Some false => Stuck
-        | _ => State (<[tid := true]> cm) (multiwrite tid pwrs hists)
+        | _ => if decide (safe_extension tid pwrs histm)
+              then State (<[tid := true]> cm) (multiwrite tid pwrs histm)
+              else Stuck
         end
     | Stuck => Stuck
     end.
@@ -330,7 +347,7 @@ Section apply_cmds.
     destruct x eqn:Hx; rewrite /apply_cmds foldl_snoc apply_cmds_unfold Hrsm1 /= in Hrsm.
     { (* Case [CmdCommit]. *)
       destruct (stm1 !! tid) as [st |]; last first.
-      { inv Hrsm. apply multiwrite_dom. }
+      { case_decide; last done. inv Hrsm. apply multiwrite_dom. }
       by destruct st; inv Hrsm.
     }
     { (* Case [CmdAbort]. *)
@@ -355,14 +372,92 @@ Section apply_cmds.
     apply_cmds log = State cm histm ->
     apply_cmds logp = State cmp histmp ->
     cmp ⊆ cm.
-  Admitted.
+  Proof.
+    intros [l ->].
+    generalize dependent histmp.
+    generalize dependent cmp.
+    generalize dependent logp.
+    induction l as [| c l IH]; intros logp cmp histmp Happly Happlyp.
+    { rewrite app_nil_r Happlyp in Happly. by inv Happly. }
+    rewrite cons_middle app_assoc in Happly.
+    destruct (apply_cmds (logp ++ [c])) as [cm' hist' |] eqn:Hrsm; last first.
+    { rewrite /apply_cmds foldl_app apply_cmds_unfold Hrsm in Happly.
+      by rewrite foldl_apply_cmd_from_stuck in Happly.
+    }
+    trans cm'; last first.
+    { eapply IH; [apply Happly | apply Hrsm]. }
+    destruct c as [ts pwrs | ts].
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_commit in Hrsm.
+      destruct (cmp !! ts) eqn:Hcmpts.
+      { by destruct b; first inv Hrsm. }
+      { case_decide; last done. inv Hrsm. by apply insert_subseteq. }
+    }
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_abort in Hrsm.
+      destruct (cmp !! ts) eqn:Hcmpts.
+      { by destruct b; last inv Hrsm. }
+      { inv Hrsm. by apply insert_subseteq. }
+    }
+  Qed.
 
   Lemma apply_cmds_mono_histm {log logp cm cmp histm histmp} :
     prefix logp log ->
     apply_cmds log = State cm histm ->
     apply_cmds logp = State cmp histmp ->
     map_Forall2 (λ _ h hp, prefix hp h) histm histmp.
-  Admitted.
+  Proof.
+    intros [l ->].
+    generalize dependent histmp.
+    generalize dependent cmp.
+    generalize dependent logp.
+    induction l as [| c l IH]; intros logp cmp histmp Happly Happlyp.
+    { rewrite app_nil_r Happlyp in Happly.
+      inv Happly.
+      rewrite map_Forall2_forall.
+      split; last done.
+      intros k x y Hx Hy.
+      rewrite Hx in Hy. by inv Hy.
+    }
+    rewrite cons_middle app_assoc in Happly.
+    destruct (apply_cmds (logp ++ [c])) as [cm' hist' |] eqn:Hrsm; last first.
+    { rewrite /apply_cmds foldl_app apply_cmds_unfold Hrsm in Happly.
+      by rewrite foldl_apply_cmd_from_stuck in Happly.
+    }
+    specialize (IH _ _ _ Happly Hrsm).
+    rewrite map_Forall2_forall.
+    split; last first.
+    { by rewrite (apply_cmds_dom _ _ _ Happly) (apply_cmds_dom _ _ _ Happlyp). }
+    intros k l1 l2 Hl1 Hl2.
+    destruct c as [ts pwrs | ts].
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_commit in Hrsm.
+      destruct (cmp !! ts).
+      { destruct b; last done.
+        symmetry in Hrsm. inv Hrsm.
+        apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+      }
+      { case_decide; last done. inv Hrsm.
+        destruct (pwrs !! k) as [v |] eqn:Hpwrsk.
+        { pose proof (@multiwrite_modified ts _ _ _ _ _ Hpwrsk Hl2) as Hl2'.
+          pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2' IH) as Hprefix.
+          simpl in Hprefix.
+          etrans; last apply Hprefix.
+          apply prefix_app_r, last_extend_prefix.
+        }
+        { rewrite -(@multiwrite_unmodified ts _ _ _ Hpwrsk) in Hl2.
+          apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+        }
+      }
+    }
+    { rewrite /apply_cmds foldl_snoc /= apply_cmds_unfold Happlyp /apply_abort in Hrsm.
+      destruct (cmp !! ts) eqn:Hcmpts.
+      { destruct b; first done.
+        symmetry in Hrsm. inv Hrsm.
+        apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+      }
+      { symmetry in Hrsm. inv Hrsm.
+        apply (map_Forall2_lookup_Some _ _ _ _ _ _ Hl1 Hl2 IH).
+      }
+    }
+  Qed.
 
 End apply_cmds.
 
@@ -374,14 +469,14 @@ Section execute_cmds.
   | LocalState
       (cm : gmap nat bool) (hists : gmap dbkey dbhist) (cpm : gmap nat dbmap)
       (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat)
-      (bm : gmap nat ballot) (laim : gmap nat nat)
+      (psm : gmap nat (nat * bool)) (rkm : gmap nat nat)
   | LocalStuck.
 
   Definition not_local_stuck st := st ≠ LocalStuck.
 
   Definition execute_commit st (tid : nat) (pwrs : dbmap) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
         match cm !! tid with
         | Some true => st
         | Some false => LocalStuck
@@ -389,10 +484,10 @@ Section execute_cmds.
                  | Some _ => LocalState
                               (<[tid := true]> cm) (multiwrite tid pwrs hists)
                               (delete tid cpm) (delete tid ptgsm) sptsm (release pwrs ptsm)
-                              bm laim
+                              psm rkm
                  | None => LocalState
                             (<[tid := true]> cm) (multiwrite tid pwrs hists)
-                            cpm ptgsm sptsm ptsm bm laim
+                            cpm ptgsm sptsm ptsm psm rkm
                  end
         end
     | LocalStuck => LocalStuck
@@ -400,15 +495,15 @@ Section execute_cmds.
 
   Definition execute_abort st (tid : nat) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
         match cm !! tid with
         | Some true => LocalStuck
         | Some false => st
         | None => match cpm !! tid with
                  | Some pwrs => LocalState
                                  (<[tid := false]> cm) hists (delete tid cpm)
-                                 (delete tid ptgsm) sptsm (release pwrs ptsm) bm laim
-                 | None => LocalState (<[tid := false]> cm) hists cpm ptgsm sptsm ptsm bm laim
+                                 (delete tid ptgsm) sptsm (release pwrs ptsm) psm rkm
+                 | None => LocalState (<[tid := false]> cm) hists cpm ptgsm sptsm ptsm psm rkm
                  end
         end
     | LocalStuck => LocalStuck
@@ -416,45 +511,39 @@ Section execute_cmds.
 
   Definition execute_acquire st (tid : nat) (pwrs : dbmap) (ptgs : gset u64) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
         LocalState
           cm hists (<[tid := pwrs]> cpm) (<[tid := ptgs]> ptgsm)
-          (setts tid pwrs sptsm) (acquire tid pwrs ptsm) bm laim
+          (setts tid pwrs sptsm) (acquire tid pwrs ptsm) psm rkm
     | LocalStuck => LocalStuck
     end.
 
   Definition execute_read st (tid : nat) (key : dbkey) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
+    | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
         LocalState
-          cm hists cpm ptgsm (alter (λ spts, (spts `max` pred tid)%nat) key sptsm) ptsm bm laim
+          cm hists cpm ptgsm (alter (λ spts, (spts `max` pred tid)%nat) key sptsm) ptsm psm rkm
     | LocalStuck => LocalStuck
+    end.
+
+  Definition init_psm (tid : nat) (psm : gmap nat (nat * bool)) :=
+    match psm !! tid with
+    | Some _ => psm
+    | None => <[tid := (O, false)]> psm
     end.
 
   Definition execute_advance st (tid : nat) (rank : nat) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
-        let blt := extend rank Reject (match bm !! tid with
-                                       | Some l => l
-                                       | None => [Accept false]
-                                       end) in
-        let laim' := match laim !! tid with
-                     | Some _ => laim
-                     | _ => <[tid := O]> laim
-                     end in
-        LocalState cm hists cpm ptgsm sptsm ptsm (<[tid := blt]> bm) laim'
+    | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
+        LocalState cm hists cpm ptgsm sptsm ptsm (init_psm tid psm) (<[tid := rank]> rkm)
     | LocalStuck => LocalStuck
     end.
 
   Definition execute_accept st (tid : nat) (rank : nat) (pdec : bool) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm bm laim =>
-        let blt := match bm !! tid with
-                   | Some l => extend rank Reject l
-                   | None => replicate rank Reject
-                   end ++ [Accept pdec] in
+    | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
         LocalState
-          cm hists cpm ptgsm sptsm ptsm (<[tid := blt]> bm) (<[tid := rank]> laim)
+          cm hists cpm ptgsm sptsm ptsm (<[tid := (rank, pdec)]> psm) (<[tid := S rank]> rkm)
     | LocalStuck => LocalStuck
     end.
 
@@ -480,29 +569,63 @@ Section execute_cmds.
   Definition execute_cmds (cmds : list command) :=
     foldl execute_cmd init_rpst cmds.
 
+  Lemma execute_cmds_unfold cmds :
+    foldl execute_cmd init_rpst cmds = execute_cmds cmds.
+  Proof. done. Qed.
+
   Lemma execute_cmds_snoc (cmds : list command) (cmd : command) :
     execute_cmds (cmds ++ [cmd]) = execute_cmd (execute_cmds cmds) cmd.
   Proof. by rewrite /execute_cmds foldl_snoc. Qed.
 
-  Lemma execute_cmds_dom_histm {log cm histm cpm ptgsm sptsm ptsm bm laim} :
-    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim ->
+  Lemma execute_cmds_dom_histm {log cm histm cpm ptgsm sptsm ptsm psm rkm} :
+    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm ->
     dom histm = keys_all.
   Proof.
   Admitted.
 
-  Lemma execute_cmds_hist_not_nil {log cm histm cpm ptgsm sptsm ptsm bm laim} :
-    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim ->
+  Lemma execute_cmds_hist_not_nil {log cm histm cpm ptgsm sptsm ptsm psm rkm} :
+    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm ->
     map_Forall (λ _ h, h ≠ []) histm.
   Admitted.
 
 End execute_cmds.
 
 Section merge_clog_ilog.
-  Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) : list command.
+
+  Program Fixpoint merge_clog_ilog_raw
+    (n : nat) (log : list command) (clog : list ccommand) (ilog : list (nat * icommand))
+    {measure (length clog + length ilog)%nat} :=
+    match clog, ilog with
+    | ccmd :: ctail, icmd :: itail => if decide (icmd.1 = n)
+                                   then merge_clog_ilog_raw n (ICmd icmd.2 :: log) clog itail
+                                   else merge_clog_ilog_raw (S n) (CCmd ccmd :: log) ctail ilog
+    | _, _ => log
+    end.
+  Next Obligation.
+    intros n log clog ilog _ ccmd ctail icmd itail Hclog Hilog _.
+    rewrite -Hilog /=. lia.
+  Qed.
+  Next Obligation.
+    intros n log clog ilog _ ccmd ctail icmd itail Hclog Hilog _.
+    rewrite -Hclog /=. lia.
+  Qed.
+  Next Obligation.
+    intros _ _ _ _ _ _ _ clog' _ ccmd ctail _ _ [Hcontra _].
+    by subst clog'.
+  Qed.
+  Next Obligation.
+    intros _ _ _ _ _ _ _ _ _ _ ilog' _ _ icmd itail [_ Hcontra].
+    by subst ilog'.
+  Qed.
+  Next Obligation.
   Admitted.
+
+  Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) :=
+    merge_clog_ilog_raw O [] clog ilog.
 
   Lemma merge_clog_ilog_nil :
     merge_clog_ilog [] [] = [].
+  Proof.
   Admitted.
 
   Lemma merge_clog_ilog_snoc_clog clog ilog ccmd :
@@ -519,8 +642,8 @@ Section merge_clog_ilog.
 
   Lemma execute_cmds_apply_cmds clog ilog cm histm :
     let log := merge_clog_ilog clog ilog in
-    (∃ cpm ptgsm sptsm ptsm bm laim,
-        execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm bm laim) ->
+    (∃ cpm ptgsm sptsm ptsm psm rkm,
+        execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm) ->
     apply_cmds clog = State cm histm.
   Admitted.
 

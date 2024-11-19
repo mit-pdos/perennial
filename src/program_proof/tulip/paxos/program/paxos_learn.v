@@ -10,12 +10,14 @@ Section learn.
     nidme ∈ nids ->
     length logc = uint.nat lsn ->
     safe_ledger_above γ nids (uint.nat term) logc -∗
+    is_paxos_fname px nidme γ -∗
+    know_paxos_file_inv γ nids -∗
     know_paxos_inv γ nids -∗
     {{{ own_paxos_following_with_termc px nidme term nids γ }}}
       Paxos__learn #px #lsn #term
     {{{ RET #(); own_paxos px nidme nids γ }}}.
   Proof.
-    iIntros (Hnidme Hlenlogc) "#Hsafe #Hinv".
+    iIntros (Hnidme Hlenlogc) "#Hsafe #Hfname #Hinvfile #Hinv".
     iIntros (Φ) "!> Hpx HΦ".
     wp_rec.
 
@@ -35,7 +37,7 @@ Section learn.
 
     (*@     px.commit(lsn)                                                      @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_Paxos__commit with "Hsafe Hinv [-HΦ]").
+    wp_apply (wp_Paxos__commit with "Hsafe Hfname Hinvfile Hinv [-HΦ]").
     { apply Hnidme. }
     { apply Hlenlogc. }
     { iFrame "Hcand Hleader".

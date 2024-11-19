@@ -46,9 +46,7 @@ Section validate.
     | _ => False
     end.
 
-  Lemma replica_inv_validate γ gid rid clog ilog st ts pwrs ptgs :
-    ts ≠ O ->
-    dom pwrs ⊆ keys_all ->
+  Lemma replica_inv_validate {γ gid rid clog ilog st} ts pwrs ptgs :
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     validate_requirement st ts pwrs ->
     safe_txn_pwrs γ gid ts pwrs -∗
@@ -60,7 +58,8 @@ Section validate.
     replica_inv γ gid rid ∗
     is_replica_validated_ts γ gid rid ts.
   Proof.
-    iIntros (Hnz Hdompwrs Hst Hrequire) "#Hsafepwrs Hclogprog Hilogprog Hrp".
+    iIntros (Hst Hrequire) "#Hsafepwrs Hclogprog Hilogprog Hrp".
+    iDestruct (safe_txn_pwrs_dom_pwrs with "Hsafepwrs") as %Hdompwrs.
     do 2 iNamed "Hrp".
     (* Agreement on the consistent and inconsistent logs. *)
     iDestruct (replica_clog_agree with "Hclogprog Hclog") as %->.
@@ -138,6 +137,10 @@ Section validate.
     iFrame "∗ # %".
     iModIntro.
     iSplit.
+    { rewrite dom_insert_L.
+      by iApply big_sepS_insert_2.
+    }
+    iSplit.
     { iIntros (k t).
       subst kvdm'.
       destruct (decide (k ∈ dom pwrs)) as [Hin | Hnotin]; last first.
@@ -198,7 +201,10 @@ Section validate.
       }
       by case_decide.
     }
+    iDestruct (safe_txn_pwrs_impl_valid_ts with "Hsafepwrs") as %Hvts.
     iPureIntro.
+    split.
+    { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
     split.
     { rewrite dom_insert_L. clear -Hvtss. set_solver. }
     split.
@@ -275,7 +281,7 @@ Section validate.
       rewrite Hdomptsm.
       clear -Hdompwrs Hk. set_solver.
     }
-    { by rewrite lookup_insert_ne. }
+    { rewrite lookup_insert_ne; first done. clear -Hvts. rewrite /valid_ts in Hvts. lia. }
   Qed.
 
 End validate.

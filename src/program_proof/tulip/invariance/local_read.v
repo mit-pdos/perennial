@@ -13,7 +13,7 @@ Section local_read.
     | _ => False
     end.
 
-  Lemma replica_inv_local_read γ gid rid clog ilog st key rts hist :
+  Lemma replica_inv_local_read {γ gid rid clog ilog st} key rts hist :
     valid_key key ->
     key_to_group key = gid ->
     execute_cmds (merge_clog_ilog clog ilog) = st ->
@@ -102,6 +102,8 @@ Section local_read.
       iPureIntro.
       rewrite (lookup_alter_Some _ _ _ _ Hspts).
       replace (_ `max` _)%nat with spts by lia.
+      split.
+      { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
       by rewrite insert_id.
     }
     (* Case: Key not locked. *)
@@ -135,6 +137,8 @@ Section local_read.
       iPureIntro.
       rewrite (lookup_alter_Some _ _ _ _ Hspts).
       replace (_ `max` _)%nat with spts by lia.
+      split.
+      { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
       by rewrite insert_id.
     }
     (* Case: [spts < rts]. Extend the key validation list with [false] until
@@ -196,6 +200,8 @@ Section local_read.
     iPureIntro.
     rewrite (lookup_alter_Some _ _ _ _ Hspts).
     replace (_ `max` _)%nat with (pred rts) by lia.
+    split.
+    { apply Forall_app_2; [apply Hcloglen | by rewrite Forall_singleton]. }
     split.
     { rewrite dom_insert_L.
       apply elem_of_dom_2 in Hvd.

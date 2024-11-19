@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Perennial.program_proof.tulip.paxos.program Require Import
-  repr paxos_cquorum.
+  repr paxos_cquorum paxos_log.
 From Perennial.program_proof.tulip.paxos.invariance Require Import ascend.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
@@ -9,12 +9,14 @@ Section ascend.
 
   Theorem wp_Paxos__ascend (px : loc) (nidme : u64) nids γ :
     nidme ∈ nids ->
+    is_paxos_fname px nidme γ -∗
+    know_paxos_file_inv γ nids -∗
     know_paxos_inv γ nids -∗
     {{{ own_paxos_nominated px nidme nids γ }}}
       Paxos__ascend #px
     {{{ RET #(); own_paxos px nidme nids γ }}}.
   Proof.
-    iIntros (Hnidme) "#Hinv".
+    iIntros (Hnidme) "#Hfname #Hinvfile #Hinv".
     iIntros (Φ) "!> Hpx HΦ".
     wp_rec.
 
@@ -68,14 +70,34 @@ Section ascend.
 
     (*@     // Logical action: Ascend(@px.termc, @px.log).                      @*)
     (*@                                                                         @*)
+    iNamed "Hfname".
+    do 4 wp_loadField.
+    wp_apply (wp_logAdvance with "Hentsp").
     iInv "Hinv" as "> HinvO" "HinvC".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
+    { apply Hnidme. }
+    iNamed "Hnodefile".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
+    iFrame "Hfile".
+    iExists wal.
+    iSplit; first done.
+    iIntros (bs') "[Hfile %Hbs']".
     set logc := take (uint.nat lsnc) log.
     set log' := logc ++ entsp.
-    iMod (paxos_inv_ascend log' with "[] Htermc Hterml Hlsnc Hlogn HinvO")
-      as "(Htermc & Hterml & Hlsnc & Hlogn & HinvO & Hps & #Hpsb & #Hacptlb)".
+    iMod (paxos_inv_ascend entsp log' with "[] Hwalfile Htermc Hterml Hlsnc Hlogn HinvO")
+      as "(Hwalfile & Htermc & Hterml & Hlsnc & Hlogn & HinvO & Hps & #Hpsb & #Hacptlb)".
     { apply Hnidme. }
     { apply Hton. }
     { word. }
+    { clear -Hlsncub. word. }
+    { subst log'.
+      assert (uint.nat lsnc = length logc) as ->.
+      { rewrite length_take. clear -Hlsncub. lia. }
+      by rewrite drop_app_length.
+    }
     { rewrite length_app length_take. clear -Hlsncub. lia. }
     { by apply prefix_app_r. }
     { iFrame "Hvotes".
@@ -84,7 +106,13 @@ Section ascend.
       rewrite /cquorum_size size_dom.
       word.
     }
+    iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+    { iFrame "∗ # %". }
+    iMod "Hmask" as "_".
+    iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    iIntros "!> Hents".
+    wp_pures.
 
     (*@     // TODO: Write @px.log and @px.terml to disk.                       @*)
     (*@ }                                                                       @*)

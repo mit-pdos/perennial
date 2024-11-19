@@ -314,6 +314,7 @@ def main():
         "./advrpc",
         "./cryptoutil",
         "./kt",
+        "./kttest",
         "./marshalutil",
         "./merkle",
     )

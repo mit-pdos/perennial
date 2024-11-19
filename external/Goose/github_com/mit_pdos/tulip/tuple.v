@@ -46,15 +46,11 @@ Definition Tuple__ReadVersion: val :=
     let: ("ver", "slow") := findVersion "ts" (struct.loadF Tuple "vers" "tuple") in
     (if: (~ "slow")
     then
-      let: "verfast" := struct.mk tulip.Version [
-        "Timestamp" ::= #0;
-        "Value" ::= struct.get tulip.Version "Value" "ver"
-      ] in
       Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-      "verfast"
+      (#0, struct.get tulip.Version "Value" "ver")
     else
       Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-      "ver").
+      (struct.get tulip.Version "Timestamp" "ver", struct.get tulip.Version "Value" "ver")).
 
 Definition Tuple__AppendVersion: val :=
   rec: "Tuple__AppendVersion" "tuple" "ts" "value" :=

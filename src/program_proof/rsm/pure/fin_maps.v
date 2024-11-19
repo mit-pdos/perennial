@@ -122,3 +122,40 @@ Section lemmas.
   Qed.
 
 End lemmas.
+
+Section kmap_eq.
+  Context `{FinMap K M} `{FinMap K1 M1} `{FinMap K2 M2}.
+
+  Lemma lookup_kmap_eq_Some
+    {A} (f1 : K1 -> K) `{!Inj (=) (=) f1} (f2 : K2 -> K) `{!Inj (=) (=) f2}
+    (m1 : M1 A) (m2 : M2 A) i x :
+    (kmap f1 m1 : M A) = kmap f2 m2 ->
+    m1 !! i = Some x ->
+    ∃ j, f1 i = f2 j ∧ m2 !! j = Some x.
+  Proof.
+    intros Hm1m2 Hx.
+    rewrite map_eq_iff in Hm1m2.
+    specialize (Hm1m2 (f1 i)).
+    rewrite lookup_kmap Hx in Hm1m2.
+    symmetry in Hm1m2.
+    apply lookup_kmap_Some in Hm1m2 as (j & Hij & Hm2j); last apply _.
+    by eauto.
+  Qed.
+
+  Lemma lookup_kmap_eq_None
+    {A} (f1 : K1 -> K) `{!Inj (=) (=) f1} (f2 : K2 -> K) `{!Inj (=) (=) f2}
+    (m1 : M1 A) (m2 : M2 A) i :
+    (kmap f1 m1 : M A) = kmap f2 m2 ->
+    m1 !! i = None ->
+    ∀ j, f1 i = f2 j -> m2 !! j = None.
+  Proof.
+    intros Hm1m2 Hnone.
+    rewrite map_eq_iff in Hm1m2.
+    specialize (Hm1m2 (f1 i)).
+    rewrite lookup_kmap Hnone in Hm1m2.
+    symmetry in Hm1m2.
+    by rewrite lookup_kmap_None in Hm1m2.
+  Qed.
+
+End kmap_eq.
+

@@ -12,24 +12,30 @@ Section inv.
   Definition sysNS := nroot .@ "sys".
   Definition tulipNS := sysNS .@ "tulip".
   Definition tsNS := sysNS .@ "ts".
+  Definition txnlogN := sysNS .@ "txnlog".
 
-  Definition tulip_inv γ p : iProp Σ :=
+  Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)
-    "Htxnsys"   ∷ txnsys_inv γ p ∗
+    "Htxnsys" ∷ txnsys_inv γ p ∗
     (* keys invariants *)
-    "Hkeys"     ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
+    "Hkeys"   ∷ ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     (* groups invariants *)
-    "Hgroups"   ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid) ∗
+    "Hgroups" ∷ ([∗ set] gid ∈ gids_all, group_inv γ gid) ∗
     (* replica invariants *)
-    "Hreplicas" ∷ ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid).
+    "Hrgs"    ∷ ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid).
 
   #[global]
-  Instance tulip_inv_timeless γ p :
-    Timeless (tulip_inv γ p).
+  Instance tulip_inv_with_proph_timeless γ p :
+    Timeless (tulip_inv_with_proph γ p).
   Admitted.
 
-  Definition know_tulip_inv γ p : iProp Σ :=
-    inv tulipNS (tulip_inv γ p).
+  Definition tulip_inv γ : iProp Σ := ∃ p, tulip_inv_with_proph γ p.
+
+  Definition know_tulip_inv_with_proph γ p : iProp Σ :=
+    inv tulipNS (tulip_inv_with_proph γ p).
+
+  Definition know_tulip_inv γ : iProp Σ :=
+    inv tulipNS (tulip_inv γ).
 
 End inv.
 
@@ -45,7 +51,7 @@ Section alloc.
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
          own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
       (* tulip atomic invariant *)
-      tulip_inv γ p.
+      tulip_inv_with_proph γ p.
   Proof.
     iIntros "Hproph".
     iMod (tulip_res_alloc) as (γ) "Hres".
@@ -225,21 +231,22 @@ Section alloc.
       iApply (big_sepS_impl with "Hrps").
       iIntros (rid Hrid) "!> (Hvtsm & Hkvdm & Hclog & Hilog & Hbm & Hbvm & Hbtm)".
       iFrame.
-      (* Instantiate commit map, currently prepare map, key validation map, last
-      accepted index map, history map, participant group map, smallest
-      preparable timestamp map, prepare timestamp map. *)
+      (* Instantiate commit map, currently prepare map, key validation map,
+      history map, participant group map, smallest preparable timestamp map,
+      prepare timestamp map, prepare proposal map, and lowest acceptable rank
+      map. *)
       set kvdm := gset_to_gmap [false] keys_all.
       set histm := gset_to_gmap [(None : dbval)] keys_all.
       set ptsgm := gset_to_gmap O keys_all.
       set sptsgm := gset_to_gmap O keys_all.
-      iExists ∅, ∅, kvdm, ∅, histm, ∅, sptsgm, ptsgm.
+      iExists ∅, ∅, kvdm, histm, ∅, sptsgm, ptsgm, ∅, ∅.
       iSplitL "Hkvdm".
       { iApply (big_sepS_sepM_impl with "Hkvdm").
         { by rewrite dom_gset_to_gmap. }
         iIntros (k l Hl) "!> Hl".
         by apply lookup_gset_to_gmap_Some in Hl as [_ <-].
       }
-      rewrite !big_sepM_empty big_sepS_empty.
+      rewrite !dom_empty_L !big_sepM_empty !big_sepS_empty.
       iSplit; first done.
       iSplit.
       { iPureIntro.
@@ -247,7 +254,7 @@ Section alloc.
         do 2 (split; first done).
         split; apply map_Forall2_empty.
       }
-      do 2 (iSplit; first done).
+      do 4 (iSplit; first done).
       iSplit.
       { iIntros (k t).
         destruct (kvdm !! k) as [l |] eqn:Hl; rewrite Hl; last done.
@@ -269,6 +276,7 @@ Section alloc.
       split.
       { by rewrite /execute_cmds merge_clog_ilog_nil. }
       split; first done.
+      split; first set_solver.
       split; first apply dom_gset_to_gmap.
       split.
       { rewrite map_Forall2_forall.
@@ -285,7 +293,7 @@ Section alloc.
         by apply lookup_gset_to_gmap_Some in Hy as [_ <-].
       }
       do 2 (split; first done).
-      apply map_Forall2_empty.
+      split; apply map_Forall2_empty.
     }
     by iFrame.
   Qed.

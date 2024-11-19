@@ -105,7 +105,7 @@ Section inv.
     (* Obtain proof that [ts] has committed. *)
     iDestruct (big_sepS_elem_of with "Hsafecp") as "Hc"; first apply Hc.
     simpl.
-    iDestruct "Hc" as (wrs) "(Hcmt & Hwrs & %Hpwrs & %Hgid)".
+    iDestruct "Hc" as (wrs) "(Hcmt & Hwrs & _ & %Hpwrs & %Hgid)".
     rewrite /group_inv_no_log_with_cpool.
     destruct (stm !! ts) as [st |] eqn:Hdup; last first.
     { (* Case: Empty state; contradiction---no prepare before commit. *) 
@@ -213,6 +213,27 @@ Section inv.
     iDestruct (keys_inv_committed with "Hcmt Hkeys Htxnsys") as "[Hkeys Htxnsys]".
     { apply Hdomhistmg. }
     { rewrite Hpwrs. apply map_filter_subseteq. }
+    (* Prove safe extension used later to re-establish the RSM invariant. *)
+    iAssert (⌜safe_extension ts pwrs hists⌝)%I as %Hsafeext.
+    { iIntros (k h Hh).
+      apply map_lookup_filter_Some in Hh as [Hh Hk]. simpl in Hk.
+      assert (Hhistmk : histm !! k = Some h).
+      { clear -Hinclhistmg Hdomhistmg Hh Hk.
+        rewrite -Hdomhistmg elem_of_dom in Hk.
+        destruct Hk as [h' Hh'].
+        unshelve epose proof (lookup_weaken_inv _ _ _ _ _ Hh' _ Hh) as ->.
+        { etrans; [apply Hinclhistmg | apply map_filter_subseteq]. }
+        done.
+      }
+      apply elem_of_dom in Hk as [v Hpwrsk].
+      iDestruct (big_sepM2_lookup with "Hkeys") as "Hkey".
+      { apply Hhistmk. }
+      { apply Hpwrsk. }
+      do 3 iNamed "Hkey".
+      iPureIntro.
+      rewrite /ext_by_cmtd Hv in Hdiffc.
+      by destruct Hdiffc as [_ ?].
+    }
     (* Re-establish keys invariant w.r.t. updated tuples. *)
     iDestruct (keys_inv_learn_commit with "Hkeys") as "Hkeys".
     (* Put ownership of tuples back to keys invariant. *)
@@ -251,7 +272,7 @@ Section inv.
     { iFrame "Hcmt". }
     iFrame "∗ # %".
     iPureIntro.
-    split; first done.
+    split; first by case_decide.
     split.
     { rewrite dom_insert_L.
       apply (map_Forall_impl _ _ _ Hpmstm).
