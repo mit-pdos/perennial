@@ -187,6 +187,11 @@ Section inv.
   Definition quorum_invalidated_key_or_group_aborted γ key ts : iProp Σ :=
     quorum_invalidated_key γ key ts ∨ is_group_aborted γ (key_to_group key) ts.
 
+  Definition slow_read γ rid key lts ts v : iProp Σ :=
+    "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
+    "#Hioa"  ∷ read_promise γ (key_to_group key) rid key lts ts ∗
+    "%Hltts" ∷ ⌜(lts < pred ts)%nat⌝.
+
   Definition quorum_read γ key ts v : iProp Σ :=
     ∃ (ridsq : gset u64) (lts : nat),
       "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
@@ -197,6 +202,16 @@ Section inv.
 
   Definition fast_or_quorum_read γ key ts v : iProp Σ :=
     is_repl_hist_at γ key (pred ts) v ∨ quorum_read γ key ts v.
+
+  Definition fast_or_slow_read γ rid key lts ts v : iProp Σ :=
+    if decide (lts = O)
+    then is_repl_hist_at γ key (pred ts) v
+    else slow_read γ rid key lts ts v.
+
+  #[global]
+  Instance fast_or_slow_read_persistent γ rid key lts ts v :
+    Persistent (fast_or_slow_read γ rid key lts ts v).
+  Proof. rewrite /fast_or_slow_read. case_decide; apply _. Defined.
 
   Lemma key_inv_fast_read γ key ts vr vl :
     is_repl_hist_at γ key (pred ts) vr -∗

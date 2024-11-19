@@ -135,6 +135,7 @@ Definition Txn__Read: val :=
       let: "gid" := KeyToGroup "key" in
       let: "gcoord" := Fst (MapGet (struct.loadF Txn "gcoords" "txn") "gid") in
       let: "v" := gcoord.GroupCoordinator__Read "gcoord" (struct.loadF Txn "ts" "txn") "key" in
+      trusted_proph.ResolveRead (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") "key";;
       "v").
 
 Definition Txn__Write: val :=

@@ -1,5 +1,5 @@
 From Perennial.program_proof.tulip.invariance Require Import
-  validate execute accept learn local_read.
+  validate execute accept learn local_read read.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
@@ -85,11 +85,7 @@ Section replica.
       Replica__Read #rp #tsW #(LitString key)
     {{{ (t : u64) (v : dbval) (ok : bool), RET (#t, dbval_to_val v, #ok);
         if ok
-        then if decide (uint.nat t = O)
-             then is_repl_hist_at γ key (pred ts) v
-             else is_repl_hist_at γ key (uint.nat t) v ∗
-                  read_promise γ gid rid key (uint.nat t) ts ∗
-                  ⌜(uint.nat t < pred ts)⌝
+        then fast_or_slow_read γ rid key (uint.nat t) ts v
         else True
     }}}.
   Proof.
@@ -247,12 +243,15 @@ Section replica.
     }
     wp_pures.
     iApply "HΦ".
+    rewrite /fast_or_slow_read.
     case_decide as Hnz; first done.
     iDestruct "Hlb" as "[Hlb' %Hv2]".
     clear Ht2.
     destruct Hv2 as (Hv2 & Ht2 & Hlenhist).
     rewrite Ht2.
-    iFrame "Hrepllb Hpromise".
+    iFrame "Hrepllb".
+    rewrite Hkg.
+    iFrame "Hpromise".
     iPureIntro.
     split.
     { by rewrite -last_lookup. }

@@ -74,6 +74,37 @@ Proof.
   by destruct v.
 Defined.
 
+Definition u64_dbval_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
+
+Definition u64_dbval_from_val (v : val) : option (u64 * dbval) :=
+  match v with
+  | (#(LitInt n), (dbv, #()))%V => match dbval_from_val dbv with
+                                  | Some x => Some (n, x)
+                                  | _ => None
+                                  end
+  | _ => None
+  end.
+
+#[global]
+Instance u64_dbval_into_val : IntoVal (u64 * dbval).
+Proof.
+  refine {|
+      to_val := u64_dbval_to_val;
+      from_val := u64_dbval_from_val;
+      IntoVal_def := (W64 0, None);
+    |}.
+  intros [n v].
+  by destruct v.
+Defined.
+
+#[global]
+Instance u64_dbval_into_val_for_type :
+  IntoValForType (u64 * dbval) (uint64T * (boolT * (stringT * unitT) * unitT)%ht).
+Proof.
+  constructor; [done | done |].
+  intros [t [v |]]; by auto 10.
+Defined.
+
 Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   match c with
   | CmdCommit ts _ => (#(U64 1), (#(U64 ts), (to_val pwrsS, (zero_val stringT, #()))))

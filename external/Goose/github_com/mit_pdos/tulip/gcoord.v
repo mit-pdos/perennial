@@ -33,26 +33,29 @@ Definition GroupCoordinator := struct.decl [
    / *)
 Definition GroupReader := struct.decl [
   "nrps" :: uint64T;
-  "rds" :: mapT (struct.t tulip.Value);
-  "versm" :: mapT (mapT (struct.t tulip.Version))
+  "valuem" :: mapT (struct.t tulip.Value);
+  "qreadm" :: mapT (mapT (struct.t tulip.Version))
 ].
 
-Definition GroupReader__ready: val :=
-  rec: "GroupReader__ready" "grd" "rid" "key" :=
-    let: (<>, "final") := MapGet (struct.loadF GroupReader "rds" "grd") "key" in
+Definition GroupReader__responded: val :=
+  rec: "GroupReader__responded" "grd" "rid" "key" :=
+    let: (<>, "final") := MapGet (struct.loadF GroupReader "valuem" "grd") "key" in
     (if: "final"
     then #true
     else
-      let: "vers" := Fst (MapGet (struct.loadF GroupReader "versm" "grd") "key") in
-      let: (<>, "responded") := MapGet "vers" "rid" in
-      (if: "responded"
-      then #true
-      else #false)).
+      let: ("qread", "ok") := MapGet (struct.loadF GroupReader "qreadm" "grd") "key" in
+      (if: (~ "ok")
+      then #false
+      else
+        let: (<>, "responded") := MapGet "qread" "rid" in
+        (if: "responded"
+        then #true
+        else #false))).
 
-Definition GroupCoordinator__ValueReady: val :=
-  rec: "GroupCoordinator__ValueReady" "gcoord" "rid" "key" :=
+Definition GroupCoordinator__ValueResponded: val :=
+  rec: "GroupCoordinator__ValueResponded" "gcoord" "rid" "key" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    let: "done" := GroupReader__ready (struct.loadF GroupCoordinator "grd" "gcoord") "rid" "key" in
+    let: "done" := GroupReader__responded (struct.loadF GroupCoordinator "grd" "gcoord") "rid" "key" in
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     "done".
 
@@ -96,7 +99,7 @@ Definition GroupCoordinator__SendRead: val :=
 Definition GroupCoordinator__ReadSession: val :=
   rec: "GroupCoordinator__ReadSession" "gcoord" "rid" "ts" "key" :=
     Skip;;
-    (for: (λ: <>, (~ (GroupCoordinator__ValueReady "gcoord" "rid" "key"))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (GroupCoordinator__ValueResponded "gcoord" "rid" "key"))); (λ: <>, Skip) := λ: <>,
       GroupCoordinator__SendRead "gcoord" "rid" "ts" "key";;
       time.Sleep params.NS_RESEND_READ;;
       Continue);;
@@ -104,7 +107,7 @@ Definition GroupCoordinator__ReadSession: val :=
 
 Definition GroupReader__read: val :=
   rec: "GroupReader__read" "grd" "key" :=
-    let: ("v", "ok") := MapGet (struct.loadF GroupReader "rds" "grd") "key" in
+    let: ("v", "ok") := MapGet (struct.loadF GroupReader "valuem" "grd") "key" in
     ("v", "ok").
 
 Definition GroupCoordinator__WaitUntilValueReady: val :=
@@ -417,42 +420,58 @@ Definition GroupReader__cquorum: val :=
   rec: "GroupReader__cquorum" "grd" "n" :=
     (quorum.ClassicQuorum (struct.loadF GroupReader "nrps" "grd")) ≤ "n".
 
-Definition GroupReader__latestVersion: val :=
-  rec: "GroupReader__latestVersion" "grd" "key" :=
-    let: "latest" := ref (zero_val (struct.t tulip.Version)) in
-    let: "vers" := Fst (MapGet (struct.loadF GroupReader "versm" "grd") "key") in
-    MapIter "vers" (λ: <> "ver",
-      (if: (struct.get tulip.Version "Timestamp" (![struct.t tulip.Version] "latest")) < (struct.get tulip.Version "Timestamp" "ver")
-      then "latest" <-[struct.t tulip.Version] "ver"
+Definition GroupReader__pickLatestValue: val :=
+  rec: "GroupReader__pickLatestValue" "grd" "key" :=
+    let: "lts" := ref (zero_val uint64T) in
+    let: "value" := ref (zero_val (struct.t tulip.Value)) in
+    let: "verm" := Fst (MapGet (struct.loadF GroupReader "qreadm" "grd") "key") in
+    MapIter "verm" (λ: <> "ver",
+      (if: (![uint64T] "lts") ≤ (struct.get tulip.Version "Timestamp" "ver")
+      then
+        "value" <-[struct.t tulip.Value] (struct.get tulip.Version "Value" "ver");;
+        "lts" <-[uint64T] (struct.get tulip.Version "Timestamp" "ver")
       else #()));;
-    ![struct.t tulip.Version] "latest".
+    ![struct.t tulip.Value] "value".
+
+Definition GroupReader__clearVersions: val :=
+  rec: "GroupReader__clearVersions" "grd" "key" :=
+    MapDelete (struct.loadF GroupReader "qreadm" "grd") "key";;
+    #().
 
 Definition GroupReader__processReadResult: val :=
   rec: "GroupReader__processReadResult" "grd" "rid" "key" "ver" :=
-    let: (<>, "final") := MapGet (struct.loadF GroupReader "rds" "grd") "key" in
+    let: (<>, "final") := MapGet (struct.loadF GroupReader "valuem" "grd") "key" in
     (if: "final"
     then #()
     else
       (if: (struct.get tulip.Version "Timestamp" "ver") = #0
       then
-        MapInsert (struct.loadF GroupReader "rds" "grd") "key" (struct.get tulip.Version "Value" "ver");;
-        MapDelete (struct.loadF GroupReader "versm" "grd") "key";;
+        MapInsert (struct.loadF GroupReader "valuem" "grd") "key" (struct.get tulip.Version "Value" "ver");;
+        MapDelete (struct.loadF GroupReader "qreadm" "grd") "key";;
         #()
       else
-        let: "vers" := Fst (MapGet (struct.loadF GroupReader "versm" "grd") "key") in
-        let: (<>, "responded") := MapGet "vers" "rid" in
-        (if: "responded"
-        then #()
+        let: ("qread", "ok") := MapGet (struct.loadF GroupReader "qreadm" "grd") "key" in
+        (if: (~ "ok")
+        then
+          let: "verm" := NewMap uint64T (struct.t tulip.Version) #() in
+          MapInsert "verm" "rid" "ver";;
+          MapInsert (struct.loadF GroupReader "qreadm" "grd") "key" "verm";;
+          #()
         else
-          MapInsert "vers" "rid" "ver";;
-          let: "n" := MapLen "vers" in
-          (if: (~ (GroupReader__cquorum "grd" "n"))
+          let: (<>, "responded") := MapGet "qread" "rid" in
+          (if: "responded"
           then #()
           else
-            let: "latest" := GroupReader__latestVersion "grd" "key" in
-            MapInsert (struct.loadF GroupReader "rds" "grd") "key" (struct.get tulip.Version "Value" "latest");;
-            MapDelete (struct.loadF GroupReader "versm" "grd") "key";;
-            #())))).
+            MapInsert "qread" "rid" "ver";;
+            MapInsert (struct.loadF GroupReader "qreadm" "grd") "key" "qread";;
+            let: "n" := MapLen "qread" in
+            (if: (~ (GroupReader__cquorum "grd" "n"))
+            then #()
+            else
+              let: "latest" := GroupReader__pickLatestValue "grd" "key" in
+              MapInsert (struct.loadF GroupReader "valuem" "grd") "key" "latest";;
+              GroupReader__clearVersions "grd" "key";;
+              #()))))).
 
 Definition GroupPreparer__tryResign: val :=
   rec: "GroupPreparer__tryResign" "gpp" "res" :=

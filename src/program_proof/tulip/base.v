@@ -41,7 +41,15 @@ Definition txnst_to_u64 (s : txnst) :=
 Definition gids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
 
 (* TODO: Parametrize the number of replicas in each group. *)
-Definition rids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
+Definition rids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 3)).
+
+Lemma size_rids_all :
+  size rids_all = 3%nat.
+Proof.
+  rewrite size_list_to_set.
+  { rewrite length_fmap length_seqZ. lia. }
+  { apply seq_U64_NoDup; lia. }
+Qed.
 
 (** Transaction R/C/A action. *)
 Inductive action :=
