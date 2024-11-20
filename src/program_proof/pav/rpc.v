@@ -27,6 +27,20 @@ Lemma wp_NewRpcAuditor ptr_adtr :
   }}}.
 Proof. Admitted.
 
+Lemma wp_CallServSelfMon ptr_cli cli (uid : w64) :
+  {{{
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli
+  }}}
+  CallServSelfMon #ptr_cli #uid
+  {{{
+    ptr_dig dig ptr_nonmemb nonmemb (err : bool), RET (#ptr_dig, #ptr_nonmemb, #err);
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
+    "Herr" ∷ (if err then True else
+      "#Hown_dig" ∷ SigDig.own ptr_dig dig ∗
+      "Hown_nonmemb" ∷ NonMemb.own ptr_nonmemb nonmemb)
+  }}}.
+Proof. Admitted.
+
 Lemma wp_CallServAudit ptr_cli cli (ep : w64) :
   {{{
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli
