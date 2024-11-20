@@ -1138,17 +1138,6 @@ Section replica.
     (*@ }                                                                       @*)
   Admitted.
 
-  Definition validate_outcome γ gid rid ts res : iProp Σ :=
-    match res with
-    | ReplicaOK => is_replica_validated_ts γ gid rid ts
-    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
-    | ReplicaAbortedTxn => is_txn_aborted γ ts
-    | ReplicaStaleCoordinator => False
-    | ReplicaFailedValidation => True
-    | ReplicaInvalidRank => False
-    | ReplicaWrongLeader => False
-    end.
-
   Theorem wp_Replica__validate
     rp (tsW : u64) pwrsS pwrsL pwrs (ptgsS : Slice.t) gid rid γ α :
     let ts := uint.nat tsW in
@@ -1298,17 +1287,6 @@ Section replica.
     { by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=. }
   Qed.
 
-  Definition try_accept_outcome γ gid rid ts rank pdec res : iProp Σ :=
-    match res with
-    | ReplicaOK => is_replica_pdec_at_rank γ gid rid ts rank pdec
-    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
-    | ReplicaAbortedTxn => is_txn_aborted γ ts
-    | ReplicaStaleCoordinator => True
-    | ReplicaFailedValidation => False
-    | ReplicaInvalidRank => False
-    | ReplicaWrongLeader => False
-    end.
-
   Theorem wp_Replica__logAccept (rp : loc) (ts : u64) (rank : u64) (dec : bool) :
     {{{ True }}}
       Replica__logAccept #rp #ts #rank #dec
@@ -1331,7 +1309,7 @@ Section replica.
     {{{ own_replica rp gid rid γ α }}}
       Replica__tryAccept #rp #tsW #rankW #dec
     {{{ (res : rpres), RET #(rpres_to_u64 res);
-        own_replica rp gid rid γ α ∗ try_accept_outcome γ gid rid ts rank dec res
+        own_replica rp gid rid γ α ∗ accept_outcome γ gid rid ts rank dec res
     }}}.
   Proof.
     iIntros (ts rank Hgid Hrid Hranknz) "#Hgpsl #Hinv".
@@ -1446,18 +1424,6 @@ Section replica.
     (*@     // TODO: Create an inconsistent log entry for fast preparing @ts.   @*)
     (*@ }                                                                       @*)
   Admitted.
-
-  Definition fast_prepare_outcome γ gid rid ts res : iProp Σ :=
-    match res with
-    | ReplicaOK => is_replica_validated_ts γ gid rid ts ∗
-                  is_replica_pdec_at_rank γ gid rid ts O true
-    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
-    | ReplicaAbortedTxn => is_txn_aborted γ ts
-    | ReplicaStaleCoordinator => True
-    | ReplicaFailedValidation => is_replica_pdec_at_rank γ gid rid ts O false
-    | ReplicaInvalidRank => False
-    | ReplicaWrongLeader => False
-    end.
 
   Theorem wp_Replica__fastPrepare
     rp (tsW : u64) pwrsS pwrsL pwrs (ptgsS : Slice.t) gid rid γ α :

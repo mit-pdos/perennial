@@ -111,10 +111,101 @@ Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   | CmdAbort ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
   end.
 
+Inductive rpres :=
+| ReplicaOK
+| ReplicaCommittedTxn
+| ReplicaAbortedTxn
+| ReplicaStaleCoordinator
+| ReplicaFailedValidation
+| ReplicaInvalidRank
+| ReplicaWrongLeader.
+
+Definition rpres_to_u64 (r : rpres) :=
+  match r with
+  | ReplicaOK => (U64 0)
+  | ReplicaCommittedTxn => (U64 1)
+  | ReplicaAbortedTxn => (U64 2)
+  | ReplicaStaleCoordinator => (U64 3)
+  | ReplicaFailedValidation => (U64 4)
+  | ReplicaInvalidRank => (U64 5)
+  | ReplicaWrongLeader => (U64 6)
+  end.
+
+#[global]
+Instance rpres_to_u64_inj :
+  Inj eq eq rpres_to_u64.
+Proof. intros x y H. by destruct x, y. Defined.
+
 Section def.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
+  (* TODO: = should be permutation *)
   Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=
     own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m = l⌝.
+
+  Definition validate_outcome γ gid rid ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_validated_ts γ gid rid ts
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => False
+    | ReplicaFailedValidation => True
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance validate_outcome_persistent γ gid rid ts res :
+    Persistent (validate_outcome γ gid rid ts res).
+  Proof. destruct res; apply _. Defined.
+
+  Definition fast_prepare_outcome γ gid rid ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_validated_ts γ gid rid ts ∗
+                  is_replica_pdec_at_rank γ gid rid ts O true
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => is_replica_pdec_at_rank γ gid rid ts O false
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance fast_prepare_outcome_persistent γ gid rid ts res :
+    Persistent (fast_prepare_outcome γ gid rid ts res).
+  Proof. destruct res; apply _. Defined.
+
+  Definition accept_outcome γ gid rid ts rank pdec res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_pdec_at_rank γ gid rid ts rank pdec
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance accept_outcome_persistent γ gid rid ts rank pdec res :
+    Persistent (accept_outcome γ gid rid ts rank pdec res).
+  Proof. destruct res; apply _. Defined.
+
+  Definition query_outcome γ ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => True
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance query_outcome_persistent γ ts res :
+    Persistent (query_outcome γ ts res).
+  Proof. destruct res; apply _. Defined.
 
 End def.

@@ -244,6 +244,13 @@ Section inv.
     Persistent (is_group_prepare_proposal_if_classic γ gid ts rk p).
   Proof. rewrite /is_group_prepare_proposal_if_classic. case_decide; apply _. Defined.
 
+  (* NB: [safe_proposal] seems unnecessarily strong in that it always requires a
+  classic quorum of responses, while sometimes a prepare proposal can be made
+  even without a classic quorum (e.g., in a 3-node cluster, a transaction client
+  should be able to choose to abort in the slow path immediately after receiving
+  the first unprepare). This would not be a liveness issue (since liveness
+  assumes a classic quorum of nodes to be alive), but might affect performance
+  in certain cases. *)
   Definition safe_proposal γ gid (ts : nat) (rk : nat) (p : bool) : iProp Σ :=
     ∃ bsqlb : gmap u64 ballot,
       let n := latest_before_quorum rk bsqlb in
@@ -251,7 +258,7 @@ Section inv.
       "#Hlatestc" ∷ is_group_prepare_proposal_if_classic γ gid ts n p ∗
       "%Hquorum"  ∷ ⌜cquorum rids_all (dom bsqlb)⌝ ∗
       "%Hlen"     ∷ ⌜map_Forall (λ _ l, (rk ≤ length l)%nat) bsqlb⌝ ∗
-      "%Hlatestf" ∷ ⌜if decide (n = O) then nfast bsqlb (negb p) ≤ size bsqlb / 2 else True⌝.
+      "%Hlatestf" ∷ ⌜if decide (n = O) then size rids_all / 4 + 1 ≤ nfast bsqlb p else True⌝.
 
   Definition safe_proposals γ gid (ts : nat) (ps : gmap nat bool) : iProp Σ :=
     [∗ map] r ↦ p ∈ ps, safe_proposal γ gid ts r p.

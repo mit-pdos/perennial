@@ -6,7 +6,7 @@ Context `{ext_ty: ext_types}.
 
 Definition FastQuorum: val :=
   rec: "FastQuorum" "n" :=
-    (("n" + #1) * #3) `quot` #4.
+    ((#3 * "n") + #3) `quot` #4.
 
 Definition ClassicQuorum: val :=
   rec: "ClassicQuorum" "n" :=

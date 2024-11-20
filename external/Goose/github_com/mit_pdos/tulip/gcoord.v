@@ -4,6 +4,7 @@ From Goose Require github_com.mit_pdos.tulip.message.
 From Goose Require github_com.mit_pdos.tulip.params.
 From Goose Require github_com.mit_pdos.tulip.quorum.
 From Goose Require github_com.mit_pdos.tulip.tulip.
+From Goose Require github_com.mit_pdos.tulip.util.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
@@ -150,9 +151,14 @@ Definition GroupCoordinator__Read: val :=
 Definition GroupPreparer := struct.decl [
   "nrps" :: uint64T;
   "phase" :: uint64T;
-  "fresps" :: mapT boolT;
-  "sresps" :: mapT boolT
+  "frespm" :: mapT boolT;
+  "vdm" :: mapT boolT;
+  "srespm" :: mapT boolT
 ].
+
+Definition GroupPreparer__in: val :=
+  rec: "GroupPreparer__in" "gpp" "phase" :=
+    (struct.loadF GroupPreparer "phase" "gpp") = "phase".
 
 Definition GPP_VALIDATING : expr := #0.
 
@@ -187,32 +193,32 @@ Definition GPP_REFRESH : expr := #5.
    @action: Next action to perform. *)
 Definition GroupPreparer__action: val :=
   rec: "GroupPreparer__action" "gpp" "rid" :=
-    (if: (struct.loadF GroupPreparer "phase" "gpp") = GPP_VALIDATING
+    (if: GroupPreparer__in "gpp" GPP_VALIDATING
     then
-      let: (<>, "fresp") := MapGet (struct.loadF GroupPreparer "fresps" "gpp") "rid" in
+      let: (<>, "fresp") := MapGet (struct.loadF GroupPreparer "frespm" "gpp") "rid" in
       (if: (~ "fresp")
       then GPP_FAST_PREPARE
       else
-        let: (<>, "validated") := MapGet (struct.loadF GroupPreparer "sresps" "gpp") "rid" in
+        let: (<>, "validated") := MapGet (struct.loadF GroupPreparer "vdm" "gpp") "rid" in
         (if: (~ "validated")
         then GPP_VALIDATE
         else GPP_QUERY))
     else
-      (if: (struct.loadF GroupPreparer "phase" "gpp") = GPP_PREPARING
+      (if: GroupPreparer__in "gpp" GPP_PREPARING
       then
-        let: (<>, "prepared") := MapGet (struct.loadF GroupPreparer "sresps" "gpp") "rid" in
+        let: (<>, "prepared") := MapGet (struct.loadF GroupPreparer "srespm" "gpp") "rid" in
         (if: (~ "prepared")
         then GPP_PREPARE
         else GPP_QUERY)
       else
-        (if: (struct.loadF GroupPreparer "phase" "gpp") = GPP_UNPREPARING
+        (if: GroupPreparer__in "gpp" GPP_UNPREPARING
         then
-          let: (<>, "unprepared") := MapGet (struct.loadF GroupPreparer "sresps" "gpp") "rid" in
+          let: (<>, "unprepared") := MapGet (struct.loadF GroupPreparer "srespm" "gpp") "rid" in
           (if: (~ "unprepared")
           then GPP_UNPREPARE
           else GPP_QUERY)
         else
-          (if: (struct.loadF GroupPreparer "phase" "gpp") = GPP_WAITING
+          (if: GroupPreparer__in "gpp" GPP_WAITING
           then GPP_QUERY
           else GPP_REFRESH)))).
 
@@ -489,39 +495,24 @@ Definition GroupPreparer__tryResign: val :=
           #true
         else
           (if: "res" = tulip.REPLICA_STALE_COORDINATOR
-          then
-            struct.storeF GroupPreparer "phase" "gpp" GPP_WAITING;;
-            #true
+          then #true
           else #false)))).
 
-Definition countbm: val :=
-  rec: "countbm" "m" "b" :=
-    let: "n" := ref_to uint64T #0 in
-    MapIter "m" (λ: <> "v",
-      (if: "v" = "b"
-      then "n" <-[uint64T] ((![uint64T] "n") + #1)
-      else #()));;
-    ![uint64T] "n".
+Definition GroupPreparer__collectFastDecision: val :=
+  rec: "GroupPreparer__collectFastDecision" "gpp" "rid" "b" :=
+    MapInsert (struct.loadF GroupPreparer "frespm" "gpp") "rid" "b";;
+    #().
 
 Definition GroupPreparer__fquorum: val :=
   rec: "GroupPreparer__fquorum" "gpp" "n" :=
     (quorum.FastQuorum (struct.loadF GroupPreparer "nrps" "gpp")) ≤ "n".
 
-Definition GroupPreparer__tryBecomeAborted: val :=
-  rec: "GroupPreparer__tryBecomeAborted" "gpp" :=
-    let: "n" := countbm (struct.loadF GroupPreparer "fresps" "gpp") #false in
+Definition GroupPreparer__tryFastAbort: val :=
+  rec: "GroupPreparer__tryFastAbort" "gpp" :=
+    let: "n" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #false in
     (if: GroupPreparer__fquorum "gpp" "n"
     then
       struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
-      #true
-    else #false).
-
-Definition GroupPreparer__tryBecomePrepared: val :=
-  rec: "GroupPreparer__tryBecomePrepared" "gpp" :=
-    let: "n" := countbm (struct.loadF GroupPreparer "fresps" "gpp") #true in
-    (if: GroupPreparer__fquorum "gpp" "n"
-    then
-      struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
       #true
     else #false).
 
@@ -529,15 +520,55 @@ Definition GroupPreparer__cquorum: val :=
   rec: "GroupPreparer__cquorum" "gpp" "n" :=
     (quorum.ClassicQuorum (struct.loadF GroupPreparer "nrps" "gpp")) ≤ "n".
 
+Definition GroupPreparer__hcquorum: val :=
+  rec: "GroupPreparer__hcquorum" "gpp" "n" :=
+    (quorum.Half (quorum.ClassicQuorum (struct.loadF GroupPreparer "nrps" "gpp"))) ≤ "n".
+
+Definition GroupPreparer__tryBecomeUnpreparing: val :=
+  rec: "GroupPreparer__tryBecomeUnpreparing" "gpp" :=
+    let: "nresp" := MapLen (struct.loadF GroupPreparer "frespm" "gpp") in
+    (if: (~ (GroupPreparer__cquorum "gpp" "nresp"))
+    then #()
+    else
+      let: "nfu" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #false in
+      (if: (~ (GroupPreparer__hcquorum "gpp" "nfu"))
+      then #()
+      else
+        struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
+        struct.storeF GroupPreparer "phase" "gpp" GPP_UNPREPARING;;
+        #())).
+
+Definition GroupPreparer__tryFastPrepare: val :=
+  rec: "GroupPreparer__tryFastPrepare" "gpp" :=
+    let: "n" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #true in
+    (if: GroupPreparer__fquorum "gpp" "n"
+    then
+      struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
+      #true
+    else #false).
+
+Definition GroupPreparer__collectValidation: val :=
+  rec: "GroupPreparer__collectValidation" "gpp" "rid" :=
+    MapInsert (struct.loadF GroupPreparer "vdm" "gpp") "rid" #true;;
+    #().
+
 Definition GroupPreparer__tryBecomePreparing: val :=
   rec: "GroupPreparer__tryBecomePreparing" "gpp" :=
-    let: "n" := MapLen (struct.loadF GroupPreparer "sresps" "gpp") in
-    (if: GroupPreparer__cquorum "gpp" "n"
-    then
-      struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARING;;
-      struct.storeF GroupPreparer "sresps" "gpp" (NewMap uint64T boolT #());;
-      #()
-    else #()).
+    let: "nvd" := MapLen (struct.loadF GroupPreparer "vdm" "gpp") in
+    (if: (~ (GroupPreparer__cquorum "gpp" "nvd"))
+    then #()
+    else
+      let: "nresp" := MapLen (struct.loadF GroupPreparer "frespm" "gpp") in
+      (if: (~ (GroupPreparer__cquorum "gpp" "nresp"))
+      then #()
+      else
+        let: "nfp" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #true in
+        (if: (~ (GroupPreparer__hcquorum "gpp" "nfp"))
+        then #()
+        else
+          struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
+          struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARING;;
+          #()))).
 
 Definition GroupPreparer__processFastPrepareResult: val :=
   rec: "GroupPreparer__processFastPrepareResult" "gpp" "rid" "res" :=
@@ -546,18 +577,25 @@ Definition GroupPreparer__processFastPrepareResult: val :=
     else
       (if: "res" = tulip.REPLICA_FAILED_VALIDATION
       then
-        MapInsert (struct.loadF GroupPreparer "fresps" "gpp") "rid" #false;;
-        GroupPreparer__tryBecomeAborted "gpp";;
-        #()
-      else
-        MapInsert (struct.loadF GroupPreparer "fresps" "gpp") "rid" #true;;
-        (if: GroupPreparer__tryBecomePrepared "gpp"
+        GroupPreparer__collectFastDecision "gpp" "rid" #false;;
+        let: "aborted" := GroupPreparer__tryFastAbort "gpp" in
+        (if: "aborted"
         then #()
         else
-          (if: (struct.loadF GroupPreparer "phase" "gpp") ≠ GPP_VALIDATING
+          (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
           then #()
           else
-            MapInsert (struct.loadF GroupPreparer "sresps" "gpp") "rid" #true;;
+            GroupPreparer__tryBecomeUnpreparing "gpp";;
+            #()))
+      else
+        GroupPreparer__collectFastDecision "gpp" "rid" #true;;
+        (if: GroupPreparer__tryFastPrepare "gpp"
+        then #()
+        else
+          (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
+          then #()
+          else
+            GroupPreparer__collectValidation "gpp" "rid";;
             GroupPreparer__tryBecomePreparing "gpp";;
             #())))).
 
@@ -566,13 +604,13 @@ Definition GroupPreparer__processValidateResult: val :=
     (if: GroupPreparer__tryResign "gpp" "res"
     then #()
     else
-      (if: (struct.loadF GroupPreparer "phase" "gpp") ≠ GPP_VALIDATING
+      (if: "res" = tulip.REPLICA_FAILED_VALIDATION
       then #()
       else
-        (if: "res" = tulip.REPLICA_FAILED_VALIDATION
+        (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
         then #()
         else
-          MapInsert (struct.loadF GroupPreparer "sresps" "gpp") "rid" #true;;
+          GroupPreparer__collectValidation "gpp" "rid";;
           GroupPreparer__tryBecomePreparing "gpp";;
           #()))).
 
@@ -581,26 +619,32 @@ Definition GroupPreparer__processPrepareResult: val :=
     (if: GroupPreparer__tryResign "gpp" "res"
     then #()
     else
-      MapInsert (struct.loadF GroupPreparer "sresps" "gpp") "rid" #true;;
-      let: "n" := MapLen (struct.loadF GroupPreparer "sresps" "gpp") in
-      (if: GroupPreparer__cquorum "gpp" "n"
-      then
-        struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
-        #()
-      else #())).
+      (if: (~ (GroupPreparer__in "gpp" GPP_PREPARING))
+      then #()
+      else
+        MapInsert (struct.loadF GroupPreparer "srespm" "gpp") "rid" #true;;
+        let: "n" := MapLen (struct.loadF GroupPreparer "srespm" "gpp") in
+        (if: GroupPreparer__cquorum "gpp" "n"
+        then
+          struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
+          #()
+        else #()))).
 
 Definition GroupPreparer__processUnprepareResult: val :=
   rec: "GroupPreparer__processUnprepareResult" "gpp" "rid" "res" :=
     (if: GroupPreparer__tryResign "gpp" "res"
     then #()
     else
-      MapInsert (struct.loadF GroupPreparer "sresps" "gpp") "rid" #true;;
-      let: "n" := MapLen (struct.loadF GroupPreparer "sresps" "gpp") in
-      (if: GroupPreparer__cquorum "gpp" "n"
-      then
-        struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
-        #()
-      else #())).
+      (if: (~ (GroupPreparer__in "gpp" GPP_UNPREPARING))
+      then #()
+      else
+        MapInsert (struct.loadF GroupPreparer "srespm" "gpp") "rid" #true;;
+        let: "n" := MapLen (struct.loadF GroupPreparer "srespm" "gpp") in
+        (if: GroupPreparer__cquorum "gpp" "n"
+        then
+          struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
+          #()
+        else #()))).
 
 Definition GroupPreparer__processQueryResult: val :=
   rec: "GroupPreparer__processQueryResult" "gpp" "rid" "res" :=

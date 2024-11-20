@@ -226,7 +226,7 @@ Section inv.
         rewrite dom_fmap_L Hdombmm.
         by destruct Hquorum as [? _].
       }
-      iAssert (⌜equal_latest_proposal_or_free bsq ps r d⌝)%I as %Heq.
+      iAssert (⌜equal_latest_proposal_or_free bs bsq ps r d⌝)%I as %Heq.
       { iAssert (⌜map_Forall2 (λ _ lb l, prefix lb l) bsqlb bsq⌝)%I as %Hprefix.
         { rewrite map_Forall2_forall.
           iSplit; last done.
@@ -244,9 +244,15 @@ Section inv.
           specialize (Hzunused _ _ Hpsm).
           by rewrite Hzunused in Hd.
         }
-        rewrite (equal_latest_proposal_or_free_eq _ _ _ _ _ Hnz Hlen Hprefix).
+        rewrite (equal_latest_proposal_or_free_eq _ _ _ _ _ _ Hnz Hlen Hprefix).
         rewrite /equal_latest_proposal_or_free /is_group_prepare_proposal_if_classic.
-        case_decide as Hr; first done.
+        case_decide as Hr.
+        { assert (size bs = size rids_all) as Heq.
+          { subst bs.
+            by rewrite /ballot_map_at_ts map_size_fmap -Hdombmm size_dom.
+          }
+          by rewrite Heq.
+        }
         iDestruct (group_prepare_proposal_lookup with "Hlatestc Hpsm")
           as %(ps' & Hps' & Hlookup).
         rewrite Hpsm in Hps'.

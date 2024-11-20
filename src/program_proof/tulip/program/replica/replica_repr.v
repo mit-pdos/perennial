@@ -1,25 +1,5 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 
-Inductive rpres :=
-| ReplicaOK
-| ReplicaCommittedTxn
-| ReplicaAbortedTxn
-| ReplicaStaleCoordinator
-| ReplicaFailedValidation
-| ReplicaInvalidRank
-| ReplicaWrongLeader.
-
-Definition rpres_to_u64 (r : rpres) :=
-  match r with
-  | ReplicaOK => (U64 0)
-  | ReplicaCommittedTxn => (U64 1)
-  | ReplicaAbortedTxn => (U64 2)
-  | ReplicaStaleCoordinator => (U64 3)
-  | ReplicaFailedValidation => (U64 4)
-  | ReplicaInvalidRank => (U64 5)
-  | ReplicaWrongLeader => (U64 6)
-  end.
-
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
