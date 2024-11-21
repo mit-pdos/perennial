@@ -128,15 +128,20 @@ Definition Txn__cancel: val :=
 
 Definition Txn__Read: val :=
   rec: "Txn__Read" "txn" "key" :=
-    let: ("vlocal", "ok") := Txn__getwrs "txn" "key" in
-    (if: "ok"
-    then "vlocal"
+    let: ("vlocal", "hit") := Txn__getwrs "txn" "key" in
+    (if: "hit"
+    then ("vlocal", #true)
     else
       let: "gid" := KeyToGroup "key" in
       let: "gcoord" := Fst (MapGet (struct.loadF Txn "gcoords" "txn") "gid") in
-      let: "v" := gcoord.GroupCoordinator__Read "gcoord" (struct.loadF Txn "ts" "txn") "key" in
-      trusted_proph.ResolveRead (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") "key";;
-      "v").
+      let: ("v", "ok") := gcoord.GroupCoordinator__Read "gcoord" (struct.loadF Txn "ts" "txn") "key" in
+      (if: (~ "ok")
+      then
+        (struct.mk tulip.Value [
+         ], #false)
+      else
+        trusted_proph.ResolveRead (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") "key";;
+        ("v", #true))).
 
 Definition Txn__Write: val :=
   rec: "Txn__Write" "txn" "key" "value" :=

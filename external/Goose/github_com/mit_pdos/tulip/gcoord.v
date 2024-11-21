@@ -60,6 +60,17 @@ Definition GroupCoordinator__ValueResponded: val :=
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     "done".
 
+Definition GroupCoordinator__attachedWith: val :=
+  rec: "GroupCoordinator__attachedWith" "gcoord" "ts" :=
+    (struct.loadF GroupCoordinator "ts" "gcoord") = "ts".
+
+Definition GroupCoordinator__AttachedWith: val :=
+  rec: "GroupCoordinator__AttachedWith" "gcoord" "ts" :=
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    let: "b" := GroupCoordinator__attachedWith "gcoord" "ts" in
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    "b".
+
 Definition GroupCoordinator__GetConnection: val :=
   rec: "GroupCoordinator__GetConnection" "gcoord" "rid" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
@@ -100,7 +111,7 @@ Definition GroupCoordinator__SendRead: val :=
 Definition GroupCoordinator__ReadSession: val :=
   rec: "GroupCoordinator__ReadSession" "gcoord" "rid" "ts" "key" :=
     Skip;;
-    (for: (λ: <>, (~ (GroupCoordinator__ValueResponded "gcoord" "rid" "key"))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (GroupCoordinator__ValueResponded "gcoord" "rid" "key")) && (GroupCoordinator__AttachedWith "gcoord" "ts")); (λ: <>, Skip) := λ: <>,
       GroupCoordinator__SendRead "gcoord" "rid" "ts" "key";;
       time.Sleep params.NS_RESEND_READ;;
       Continue);;
@@ -112,22 +123,28 @@ Definition GroupReader__read: val :=
     ("v", "ok").
 
 Definition GroupCoordinator__WaitUntilValueReady: val :=
-  rec: "GroupCoordinator__WaitUntilValueReady" "gcoord" "key" :=
-    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
+  rec: "GroupCoordinator__WaitUntilValueReady" "gcoord" "ts" "key" :=
     let: "value" := ref (zero_val (struct.t tulip.Value)) in
-    let: "ok" := ref (zero_val boolT) in
-    let: ("0_ret", "1_ret") := GroupReader__read (struct.loadF GroupCoordinator "grd" "gcoord") "key" in
-    "value" <-[struct.t tulip.Value] "0_ret";;
-    "ok" <-[boolT] "1_ret";;
+    let: "valid" := ref (zero_val boolT) in
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     Skip;;
-    (for: (λ: <>, (~ (![boolT] "ok"))); (λ: <>, Skip) := λ: <>,
-      Cond__Wait (struct.loadF GroupCoordinator "cv" "gcoord");;
-      let: ("0_ret", "1_ret") := GroupReader__read (struct.loadF GroupCoordinator "grd" "gcoord") "key" in
-      "value" <-[struct.t tulip.Value] "0_ret";;
-      "ok" <-[boolT] "1_ret";;
-      Continue);;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: (~ (GroupCoordinator__attachedWith "gcoord" "ts"))
+      then
+        "valid" <-[boolT] #false;;
+        Break
+      else
+        let: ("v", "ok") := GroupReader__read (struct.loadF GroupCoordinator "grd" "gcoord") "key" in
+        (if: "ok"
+        then
+          "value" <-[struct.t tulip.Value] "v";;
+          "valid" <-[boolT] #true;;
+          Break
+        else
+          Cond__Wait (struct.loadF GroupCoordinator "cv" "gcoord");;
+          Continue)));;
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    ![struct.t tulip.Value] "value".
+    (![struct.t tulip.Value] "value", ![boolT] "valid").
 
 (* Arguments:
    @ts: Timestamp of the transaction performing this read.
@@ -142,8 +159,8 @@ Definition GroupCoordinator__Read: val :=
     MapIter (struct.loadF GroupCoordinator "rps" "gcoord") (λ: "ridloop" <>,
       let: "rid" := "ridloop" in
       Fork (GroupCoordinator__ReadSession "gcoord" "rid" "ts" "key"));;
-    let: "v" := GroupCoordinator__WaitUntilValueReady "gcoord" "key" in
-    "v".
+    let: ("v", "ok") := GroupCoordinator__WaitUntilValueReady "gcoord" "ts" "key" in
+    ("v", "ok").
 
 (* /
    / Group preparer. Used internally by group coordinator.
@@ -223,18 +240,16 @@ Definition GroupPreparer__action: val :=
           else GPP_REFRESH)))).
 
 Definition GroupCoordinator__NextPrepareAction: val :=
-  rec: "GroupCoordinator__NextPrepareAction" "gcoord" "rid" :=
+  rec: "GroupCoordinator__NextPrepareAction" "gcoord" "rid" "ts" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    let: "a" := GroupPreparer__action (struct.loadF GroupCoordinator "gpp" "gcoord") "rid" in
-    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    "a".
-
-Definition GroupCoordinator__AttachedWith: val :=
-  rec: "GroupCoordinator__AttachedWith" "gcoord" "ts" :=
-    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    let: "b" := (struct.loadF GroupCoordinator "ts" "gcoord") = "ts" in
-    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    "b".
+    (if: (~ (GroupCoordinator__attachedWith "gcoord" "ts"))
+    then
+      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+      (#0, #false)
+    else
+      let: "action" := GroupPreparer__action (struct.loadF GroupCoordinator "gpp" "gcoord") "rid" in
+      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+      ("action", #true)).
 
 Definition GroupCoordinator__SendFastPrepare: val :=
   rec: "GroupCoordinator__SendFastPrepare" "gcoord" "rid" "ts" "pwrs" "ptgs" :=
@@ -263,32 +278,37 @@ Definition GroupCoordinator__SendRefresh: val :=
 
 Definition GroupCoordinator__PrepareSession: val :=
   rec: "GroupCoordinator__PrepareSession" "gcoord" "rid" "ts" "ptgs" "pwrs" :=
-    let: "act" := ref_to uint64T (GroupCoordinator__NextPrepareAction "gcoord" "rid") in
     Skip;;
-    (for: (λ: <>, GroupCoordinator__AttachedWith "gcoord" "ts"); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "act") = GPP_FAST_PREPARE
-      then GroupCoordinator__SendFastPrepare "gcoord" "rid" "ts" "pwrs" "ptgs"
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("act", "attached") := GroupCoordinator__NextPrepareAction "gcoord" "rid" "ts" in
+      (if: (~ "attached")
+      then Break
       else
-        (if: (![uint64T] "act") = GPP_VALIDATE
-        then GroupCoordinator__SendValidate "gcoord" "rid" "ts" #1 "pwrs" "ptgs"
+        (if: "act" = GPP_FAST_PREPARE
+        then GroupCoordinator__SendFastPrepare "gcoord" "rid" "ts" "pwrs" "ptgs"
         else
-          (if: (![uint64T] "act") = GPP_PREPARE
-          then GroupCoordinator__SendPrepare "gcoord" "rid" "ts" #1
+          (if: "act" = GPP_VALIDATE
+          then GroupCoordinator__SendValidate "gcoord" "rid" "ts" #1 "pwrs" "ptgs"
           else
-            (if: (![uint64T] "act") = GPP_UNPREPARE
-            then GroupCoordinator__SendUnprepare "gcoord" "rid" "ts" #1
+            (if: "act" = GPP_PREPARE
+            then GroupCoordinator__SendPrepare "gcoord" "rid" "ts" #1
             else
-              (if: (![uint64T] "act") = GPP_QUERY
-              then GroupCoordinator__SendQuery "gcoord" "rid" "ts" #1
+              (if: "act" = GPP_UNPREPARE
+              then GroupCoordinator__SendUnprepare "gcoord" "rid" "ts" #1
               else
-                (if: (![uint64T] "act") = GPP_REFRESH
-                then GroupCoordinator__SendRefresh "gcoord" "rid" "ts" #1
-                else #()))))));;
-      (if: (![uint64T] "act") = GPP_REFRESH
-      then time.Sleep params.NS_SEND_REFRESH
-      else time.Sleep params.NS_RESEND_PREPARE);;
-      "act" <-[uint64T] (GroupCoordinator__NextPrepareAction "gcoord" "rid");;
-      Continue);;
+                (if: "act" = GPP_QUERY
+                then GroupCoordinator__SendQuery "gcoord" "rid" "ts" #1
+                else
+                  (if: "act" = GPP_REFRESH
+                  then GroupCoordinator__SendRefresh "gcoord" "rid" "ts" #1
+                  else #()))))));;
+        (if: "act" = GPP_REFRESH
+        then
+          time.Sleep params.NS_SEND_REFRESH;;
+          Continue
+        else
+          time.Sleep params.NS_RESEND_PREPARE;;
+          Continue)));;
     #().
 
 Definition GroupPreparer__ready: val :=
@@ -301,22 +321,33 @@ Definition GroupPreparer__getPhase: val :=
 
 Definition GroupCoordinator__WaitUntilPrepareDone: val :=
   rec: "GroupCoordinator__WaitUntilPrepareDone" "gcoord" "ts" :=
+    let: "phase" := ref (zero_val uint64T) in
+    let: "valid" := ref (zero_val boolT) in
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    (if: (struct.loadF GroupCoordinator "ts" "gcoord") ≠ "ts"
-    then
-      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-      (tulip.TXN_PREPARED, #false)
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: (~ (GroupCoordinator__attachedWith "gcoord" "ts"))
+      then
+        "valid" <-[boolT] #false;;
+        Break
+      else
+        let: "ready" := GroupPreparer__ready (struct.loadF GroupCoordinator "gpp" "gcoord") in
+        (if: "ready"
+        then
+          "phase" <-[uint64T] (GroupPreparer__getPhase (struct.loadF GroupCoordinator "gpp" "gcoord"));;
+          "valid" <-[boolT] #true;;
+          Break
+        else
+          Cond__Wait (struct.loadF GroupCoordinator "cv" "gcoord");;
+          Continue)));;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    (if: (~ (![boolT] "valid"))
+    then (tulip.TXN_PREPARED, #false)
     else
-      Skip;;
-      (for: (λ: <>, (~ (GroupPreparer__ready (struct.loadF GroupCoordinator "gpp" "gcoord")))); (λ: <>, Skip) := λ: <>,
-        Cond__Wait (struct.loadF GroupCoordinator "cv" "gcoord");;
-        Continue);;
-      let: "phase" := GroupPreparer__getPhase (struct.loadF GroupCoordinator "gpp" "gcoord") in
-      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-      (if: "phase" = GPP_COMMITTED
+      (if: (![uint64T] "phase") = GPP_COMMITTED
       then (tulip.TXN_COMMITTED, #true)
       else
-        (if: "phase" = GPP_ABORTED
+        (if: (![uint64T] "phase") = GPP_ABORTED
         then (tulip.TXN_ABORTED, #true)
         else (tulip.TXN_PREPARED, #true)))).
 
@@ -670,7 +701,7 @@ Definition GroupCoordinator__ResultSession: val :=
           Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
           Continue
         else
-          (if: (struct.loadF GroupCoordinator "ts" "gcoord") ≠ (struct.get message.TxnResponse "Timestamp" "msg")
+          (if: (~ (GroupCoordinator__attachedWith "gcoord" (struct.get message.TxnResponse "Timestamp" "msg")))
           then
             Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
             Continue
@@ -698,7 +729,7 @@ Definition GroupCoordinator__ResultSession: val :=
                         (if: "kind" = message.MSG_TXN_REFRESH
                         then #()
                         else #())))))));;
-            Cond__Signal (struct.loadF GroupCoordinator "cv" "gcoord");;
+            Cond__Broadcast (struct.loadF GroupCoordinator "cv" "gcoord");;
             Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
             Continue))));;
     #().

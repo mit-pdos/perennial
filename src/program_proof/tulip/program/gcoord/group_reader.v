@@ -211,11 +211,11 @@ Section program.
     by specialize (Hvrids _ _ Hqread).
   Qed.
 
-  Theorem wp_GroupReader__read (grd : loc) (key : string) valuem ts γ :
-    {{{ own_greader_valuem grd valuem ts γ }}}
+  Theorem wp_GroupReader__read (grd : loc) (key : string) ts γ :
+    {{{ own_greader grd ts γ }}}
       GroupReader__read #grd #(LitString key)
     {{{ (v : dbval) (ok : bool), RET (dbval_to_val v, #ok); 
-        own_greader_valuem grd valuem ts γ ∗
+        own_greader grd ts γ ∗
         if ok then fast_or_quorum_read γ key ts v else True
     }}}.
   Proof.
@@ -226,7 +226,7 @@ Section program.
     (*@     v, ok := grd.valuem[key]                                            @*)
     (*@     return v, ok                                                        @*)
     (*@ }                                                                       @*)
-    iNamed "Hgrd".
+    iNamed "Hgrd". iNamed "Hvaluem".
     wp_loadField.
     wp_apply (wp_MapGet with "Hvaluem").
     iIntros (v ok) "[%Hok Hvaluem]".

@@ -89,12 +89,12 @@ Section repr.
   (*@     // @phase = PREPARING / UNPREPARING => records prepared/unprepared. @*)
   (*@     //                                                                  @*)
   (*@ }                                                                       @*)
-  Definition own_group_preparer_nrps (gpp : loc) : iProp Σ :=
+  Definition own_gpreparer_nrps (gpp : loc) : iProp Σ :=
     ∃ (nrps : u64),
       "Hnrps"   ∷ gpp ↦[GroupPreparer :: "nrps"] #nrps ∗
       "%Hnrps"  ∷ ⌜uint.nat nrps = size rids_all⌝.
 
-  Definition own_group_preparer_phase (gpp : loc) (phase : gppphase) : iProp Σ :=
+  Definition own_gpreparer_phase (gpp : loc) (phase : gppphase) : iProp Σ :=
     ∃ (phaseW : u64),
       "HphaseP" ∷ gpp ↦[GroupPreparer :: "phase"] #phaseW ∗
       "%Hphase" ∷ ⌜gppphase_to_u64 phase = phaseW⌝.
@@ -125,7 +125,7 @@ Section repr.
     Persistent (slow_prepare_responses γ ts gid phase srespm).
   Proof. destruct phase; apply _. Defined.
 
-  Definition safe_group_preparer_phase γ ts gid phase : iProp Σ :=
+  Definition safe_gpreparer_phase γ ts gid phase : iProp Σ :=
     match phase with
     | GPPValidating => True
     | GPPPreparing =>
@@ -139,8 +139,8 @@ Section repr.
     end.
 
   #[global]
-  Instance safe_group_preparer_phase_persistent γ ts gid phase :
-    Persistent (safe_group_preparer_phase γ ts gid phase).
+  Instance safe_gpreparer_phase_persistent γ ts gid phase :
+    Persistent (safe_gpreparer_phase γ ts gid phase).
   Proof. destruct phase; apply _. Defined.
 
   Definition slow_path_permission γ ts gid phase : iProp Σ :=
@@ -154,14 +154,14 @@ Section repr.
     | GPPAborted => True
     end.
 
-  Definition own_group_preparer_frespm (gpp : loc) ts gid γ : iProp Σ :=
+  Definition own_gpreparer_frespm (gpp : loc) ts gid γ : iProp Σ :=
     ∃ (frespmP : loc) (frespm : gmap u64 bool),
       "HfrespmP" ∷ gpp ↦[GroupPreparer :: "frespm"] #frespmP ∗
       "Hfrespm"  ∷ own_map frespmP (DfracOwn 1) frespm ∗
       "#Hfast"   ∷ fast_prepare_responses γ ts gid frespm ∗
       "%Hfincl"  ∷ ⌜dom frespm ⊆ rids_all⌝.
 
-  Definition own_group_preparer_vdm (gpp : loc) ts gid γ : iProp Σ :=
+  Definition own_gpreparer_vdm (gpp : loc) ts gid γ : iProp Σ :=
     ∃ (vdmP : loc) (vdm : gmap u64 bool),
       "HvdmP"        ∷ gpp ↦[GroupPreparer :: "vdm"] #vdmP ∗
       "Hvdm"         ∷ own_map vdmP (DfracOwn 1) vdm ∗
@@ -180,26 +180,26 @@ Section repr.
     | GPPAborted => True
     end.
 
-  Definition own_group_preparer_srespm (gpp : loc) (phase : gppphase) ts gid γ : iProp Σ :=
+  Definition own_gpreparer_srespm (gpp : loc) (phase : gppphase) ts gid γ : iProp Σ :=
     ∃ (srespmP : loc) (srespm : gmap u64 bool),
       "HsrespmP" ∷ gpp ↦[GroupPreparer :: "srespm"] #srespmP ∗
       "Hsrespm"  ∷ own_srespm_map_conditional phase srespmP srespm ∗
       "#Hslow"   ∷ slow_prepare_responses γ ts gid phase srespm ∗
       "%Hsincl"  ∷ ⌜dom srespm ⊆ rids_all⌝.
 
-  Definition own_group_preparer_with_phase
+  Definition own_gpreparer_with_phase
     (gpp : loc) (phase : gppphase) ts gid γ : iProp Σ :=
-      "Hnrps"   ∷ own_group_preparer_nrps gpp ∗
-      "Hphase"  ∷ own_group_preparer_phase gpp phase ∗
-      "Hfrespm" ∷ own_group_preparer_frespm gpp ts gid γ ∗
-      "Hvdm"    ∷ own_group_preparer_vdm gpp ts gid γ ∗
-      "Hsrespm" ∷ own_group_preparer_srespm gpp phase ts gid γ ∗
+      "Hnrps"   ∷ own_gpreparer_nrps gpp ∗
+      "Hphase"  ∷ own_gpreparer_phase gpp phase ∗
+      "Hfrespm" ∷ own_gpreparer_frespm gpp ts gid γ ∗
+      "Hvdm"    ∷ own_gpreparer_vdm gpp ts gid γ ∗
+      "Hsrespm" ∷ own_gpreparer_srespm gpp phase ts gid γ ∗
       "Htxncli" ∷ slow_path_permission γ ts gid phase ∗
-      "#Hsafe"  ∷ safe_group_preparer_phase γ ts gid phase.
+      "#Hsafe"  ∷ safe_gpreparer_phase γ ts gid phase.
 
-  Definition own_group_preparer (gpp : loc) ts gid γ : iProp Σ :=
+  Definition own_gpreparer (gpp : loc) ts gid γ : iProp Σ :=
     ∃ (phase : gppphase),
-      "Hgpp" ∷ own_group_preparer_with_phase gpp phase ts gid γ.
+      "Hgpp" ∷ own_gpreparer_with_phase gpp phase ts gid γ.
 
 End repr.
 
@@ -207,9 +207,9 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupPreparer__cquorum (gpp : loc) (n : u64) :
-    {{{ own_group_preparer_nrps gpp }}}
+    {{{ own_gpreparer_nrps gpp }}}
       GroupPreparer__cquorum #gpp #n
-    {{{ RET #(bool_decide (size rids_all / 2 < uint.Z n)); own_group_preparer_nrps gpp }}}.
+    {{{ RET #(bool_decide (size rids_all / 2 < uint.Z n)); own_gpreparer_nrps gpp }}}.
   Proof.
     iIntros (Φ) "Hgpp HΦ".
     wp_rec.
@@ -232,10 +232,10 @@ Section program.
   Qed.
 
   Theorem wp_GroupPreparer__fquorum (gpp : loc) (n : u64) :
-    {{{ own_group_preparer_nrps gpp }}}
+    {{{ own_gpreparer_nrps gpp }}}
       GroupPreparer__fquorum #gpp #n
     {{{ RET #(bool_decide (((3 * size rids_all + 3) / 4 ≤ uint.Z n) ∧ size rids_all ≠ O));
-        own_group_preparer_nrps gpp
+        own_gpreparer_nrps gpp
     }}}.
   Proof.
     iIntros (Φ) "Hgpp HΦ".
@@ -266,10 +266,10 @@ Section program.
   Qed.
 
   Theorem wp_GroupPreparer__hcquorum (gpp : loc) (n : u64) :
-    {{{ own_group_preparer_nrps gpp }}}
+    {{{ own_gpreparer_nrps gpp }}}
       GroupPreparer__hcquorum #gpp #n
     {{{ RET #(bool_decide (size rids_all / 4 + 1 ≤ uint.Z n));
-        own_group_preparer_nrps gpp
+        own_gpreparer_nrps gpp
     }}}.
   Proof.
     iIntros (Φ) "Hgpp HΦ".
@@ -298,9 +298,9 @@ Section program.
   Qed.
 
   Theorem wp_GroupPreparer__ready (gpp : loc) phase :
-    {{{ own_group_preparer_phase gpp phase }}}
+    {{{ own_gpreparer_phase gpp phase }}}
       GroupPreparer__ready #gpp
-    {{{ RET #(bool_decide (gpp_ready phase)); own_group_preparer_phase gpp phase }}}.
+    {{{ RET #(bool_decide (gpp_ready phase)); own_gpreparer_phase gpp phase }}}.
   Proof.
     iIntros (Φ) "Hgpp HΦ".
     wp_rec.
@@ -322,6 +322,19 @@ Section program.
       { iApply "HΦ". by iFrame. }
       destruct phase; word.
     }
+  Qed.
+
+  Theorem wp_GroupPreparer__ready_external (gpp : loc) phase ts gid γ :
+    {{{ own_gpreparer_with_phase gpp phase ts gid γ }}}
+      GroupPreparer__ready #gpp
+    {{{ RET #(bool_decide (gpp_ready phase)); own_gpreparer_with_phase gpp phase ts gid γ }}}.
+  Proof.
+    iIntros (Φ) "Hgpp HΦ".
+    iNamed "Hgpp".
+    wp_apply (wp_GroupPreparer__ready with "Hphase").
+    iIntros "Hphase".
+    iApply "HΦ".
+    by iFrame "∗ #".
   Qed.
 
   Definition try_resign_requirement γ ts (res : rpres) : iProp Σ :=
@@ -353,10 +366,10 @@ Section program.
 
   Theorem wp_GroupPreparer__tryResign (gpp : loc) (res : rpres) ts gid γ :
     try_resign_requirement γ ts res -∗
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__tryResign #gpp #(rpres_to_u64 res)
     {{{ (resigned : bool), RET #resigned; 
-        own_group_preparer gpp ts gid γ ∗
+        own_gpreparer gpp ts gid γ ∗
         ⌜if resigned then True else not_finalizing_rpres res⌝
     }}}.
   Proof.
@@ -428,9 +441,9 @@ Section program.
   Qed.
 
   Theorem wp_GroupPreparer__tryFastAbort (gpp : loc) ts gid γ :
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__tryFastAbort #gpp
-    {{{ (aborted : bool), RET #aborted; own_group_preparer gpp ts gid γ }}}.
+    {{{ (aborted : bool), RET #aborted; own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Φ) "Hgpp HΦ".
     wp_rec.
@@ -443,7 +456,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_CountBoolMap with "Hfrespm").
     iIntros (n) "[Hfrespm %Hn]".
-    iAssert (own_group_preparer_frespm gpp ts gid γ)%I
+    iAssert (own_gpreparer_frespm gpp ts gid γ)%I
       with "[HfrespmP Hfrespm]" as "Hfrespm".
     { by iFrame "∗ # %". }
 
@@ -497,9 +510,9 @@ Section program.
   Qed.
 
   Theorem wp_GroupPreparer__tryFastPrepare (gpp : loc) ts gid γ :
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__tryFastPrepare #gpp
-    {{{ (prepared : bool), RET #prepared; own_group_preparer gpp ts gid γ }}}.
+    {{{ (prepared : bool), RET #prepared; own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Φ) "Hgpp HΦ".
     wp_rec.
@@ -512,7 +525,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_CountBoolMap with "Hfrespm").
     iIntros (n) "[Hfrespm %Hn]".
-    iAssert (own_group_preparer_frespm gpp ts gid γ)%I
+    iAssert (own_gpreparer_frespm gpp ts gid γ)%I
       with "[HfrespmP Hfrespm]" as "Hfrespm".
     { by iFrame "∗ # %". }
 
@@ -591,9 +604,9 @@ Section program.
   Theorem wp_GroupPreparer__tryBecomePreparing (gpp : loc) ts gid γ :
     gid ∈ gids_all ->
     know_tulip_inv γ -∗
-    {{{ own_group_preparer_with_phase gpp GPPValidating ts gid γ }}}
+    {{{ own_gpreparer_with_phase gpp GPPValidating ts gid γ }}}
       GroupPreparer__tryBecomePreparing #gpp
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hgid) "#Hinv".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -612,7 +625,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_MapLen with "Hvdm").
     iIntros "[%Hnvdmnoof Hvdm]".
-    iAssert (own_group_preparer_vdm gpp ts gid γ)%I with "[HvdmP Hvdm]" as "Hvdm".
+    iAssert (own_gpreparer_vdm gpp ts gid γ)%I with "[HvdmP Hvdm]" as "Hvdm".
     { iFrame "∗ # %". }
     wp_apply (wp_GroupPreparer__cquorum with "Hnrps").
     iIntros "Hnrps".
@@ -718,13 +731,13 @@ Section program.
     iNamed "Hphase".
     simpl.
     wp_storeField.
-    iAssert (own_group_preparer_frespm gpp ts gid γ)%I
+    iAssert (own_gpreparer_frespm gpp ts gid γ)%I
       with "[HfrespmP Hfrespm]" as "Hfrespm".
     { iFrame "∗ # %". }
-    iAssert (own_group_preparer_phase gpp GPPPreparing)%I
+    iAssert (own_gpreparer_phase gpp GPPPreparing)%I
       with "[HphaseP]" as "Hphase".
     { by iFrame. }
-    iAssert (own_group_preparer_srespm gpp GPPPreparing ts gid γ)%I
+    iAssert (own_gpreparer_srespm gpp GPPPreparing ts gid γ)%I
       with "[HsrespmP Hsrespm]" as "Hsrespm".
     { iFrame. by rewrite /= dom_empty_L big_sepS_empty. }
 
@@ -751,9 +764,9 @@ Section program.
   Theorem wp_GroupPreparer__tryBecomeUnpreparing (gpp : loc) ts gid γ :
     gid ∈ gids_all ->
     know_tulip_inv γ -∗
-    {{{ own_group_preparer_with_phase gpp GPPValidating ts gid γ }}}
+    {{{ own_gpreparer_with_phase gpp GPPValidating ts gid γ }}}
       GroupPreparer__tryBecomeUnpreparing #gpp
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hgid) "#Hinv".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -860,13 +873,13 @@ Section program.
     iNamed "Hphase".
     simpl.
     wp_storeField.
-    iAssert (own_group_preparer_frespm gpp ts gid γ)%I
+    iAssert (own_gpreparer_frespm gpp ts gid γ)%I
       with "[HfrespmP Hfrespm]" as "Hfrespm".
     { iFrame "∗ # %". }
-    iAssert (own_group_preparer_phase gpp GPPUnpreparing)%I
+    iAssert (own_gpreparer_phase gpp GPPUnpreparing)%I
       with "[HphaseP]" as "Hphase".
     { by iFrame. }
-    iAssert (own_group_preparer_srespm gpp GPPUnpreparing ts gid γ)%I
+    iAssert (own_gpreparer_srespm gpp GPPUnpreparing ts gid γ)%I
       with "[HsrespmP Hsrespm]" as "Hsrespm".
     { iFrame. by rewrite /= dom_empty_L big_sepS_empty. }
 
@@ -891,9 +904,9 @@ Section program.
     rid ∈ rids_all ->
     is_replica_pdec_at_rank γ gid rid ts O b -∗
     (if b then is_replica_validated_ts γ gid rid ts else True) -∗
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__collectFastDecision #gpp #rid #b
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hrid) "#Hpdec #Hvd".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -920,9 +933,9 @@ Section program.
   Theorem wp_GroupPreparer__collectValidation (gpp : loc) (rid : u64) phase ts gid γ :
     rid ∈ rids_all ->
     is_replica_validated_ts γ gid rid ts -∗
-    {{{ own_group_preparer_with_phase gpp phase ts gid γ }}}
+    {{{ own_gpreparer_with_phase gpp phase ts gid γ }}}
       GroupPreparer__collectValidation #gpp #rid
-    {{{ RET #(); own_group_preparer_with_phase gpp phase ts gid γ }}}.
+    {{{ RET #(); own_gpreparer_with_phase gpp phase ts gid γ }}}.
   Proof.
     iIntros (Hrid) "#Hvd".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -949,12 +962,12 @@ Section program.
   Qed.
 
   Theorem wp_GroupPreparer__in (gpp : loc) (phase : gppphase) ts gid γ :
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__in #gpp #(gppphase_to_u64 phase)
     {{{ (ok : bool), RET #ok; 
         if ok
-        then own_group_preparer_with_phase gpp phase ts gid γ
-        else own_group_preparer gpp ts gid γ
+        then own_gpreparer_with_phase gpp phase ts gid γ
+        else own_gpreparer gpp ts gid γ
     }}}.
   Proof.
     iIntros (Φ) "Hgpp HΦ".
@@ -980,9 +993,9 @@ Section program.
     rid ∈ rids_all ->
     fast_prepare_outcome γ gid rid ts res -∗
     know_tulip_inv γ -∗
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__processFastPrepareResult #gpp #rid #(rpres_to_u64 res)
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hgid Hrid) "#Hfp #Hinv".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -1092,9 +1105,9 @@ Section program.
     rid ∈ rids_all ->
     validate_outcome γ gid rid ts res -∗
     know_tulip_inv γ -∗
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__processValidateResult #gpp #rid #(rpres_to_u64 res)
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hgid Hrid) "#Hvd #Hinv".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -1152,9 +1165,9 @@ Section program.
     (gpp : loc) (rid : u64) (res : rpres) ts gid γ :
     rid ∈ rids_all ->
     accept_outcome γ gid rid ts 1%nat true res -∗
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__processPrepareResult #gpp #rid #(rpres_to_u64 res)
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hrid) "#Hvd".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -1211,12 +1224,12 @@ Section program.
     { iNamed "Hphase".
       wp_storeField.
       iApply "HΦ".
-      iAssert (own_group_preparer_phase gpp GPPPrepared)%I with "[HphaseP]" as "Hphase".
+      iAssert (own_gpreparer_phase gpp GPPPrepared)%I with "[HphaseP]" as "Hphase".
       { by iFrame. }
       simpl.
       iDestruct (big_sepS_insert_2 rid with "[] Hslow") as "Hslow'".
       { iFrame "Hvd". }
-      iAssert (own_group_preparer_srespm gpp GPPPrepared ts gid γ)%I
+      iAssert (own_gpreparer_srespm gpp GPPPrepared ts gid γ)%I
         with "[HsrespmP Hsrespm]" as "Hsrespm".
       { iFrame. simpl.
         iExists ∅. (* just a placeholder *)
@@ -1255,7 +1268,7 @@ Section program.
       }
     }
     iApply "HΦ".
-    iAssert (own_group_preparer_srespm gpp GPPPreparing ts gid γ)%I
+    iAssert (own_gpreparer_srespm gpp GPPPreparing ts gid γ)%I
       with "[HsrespmP Hsrespm]" as "Hsrespm".
     { iFrame. simpl.
       iSplit.
@@ -1274,9 +1287,9 @@ Section program.
     (gpp : loc) (rid : u64) (res : rpres) ts gid γ :
     rid ∈ rids_all ->
     accept_outcome γ gid rid ts 1%nat false res -∗
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__processUnprepareResult #gpp #rid #(rpres_to_u64 res)
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hrid) "#Hvd".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -1333,12 +1346,12 @@ Section program.
     { iNamed "Hphase".
       wp_storeField.
       iApply "HΦ".
-      iAssert (own_group_preparer_phase gpp GPPAborted)%I with "[HphaseP]" as "Hphase".
+      iAssert (own_gpreparer_phase gpp GPPAborted)%I with "[HphaseP]" as "Hphase".
       { by iFrame. }
       simpl.
       iDestruct (big_sepS_insert_2 rid with "[] Hslow") as "Hslow'".
       { iFrame "Hvd". }
-      iAssert (own_group_preparer_srespm gpp GPPAborted ts gid γ)%I
+      iAssert (own_gpreparer_srespm gpp GPPAborted ts gid γ)%I
         with "[HsrespmP Hsrespm]" as "Hsrespm".
       { iFrame. simpl.
         iExists ∅. (* just a placeholder *)
@@ -1375,7 +1388,7 @@ Section program.
       }
     }
     iApply "HΦ".
-    iAssert (own_group_preparer_srespm gpp GPPUnpreparing ts gid γ)%I
+    iAssert (own_gpreparer_srespm gpp GPPUnpreparing ts gid γ)%I
       with "[HsrespmP Hsrespm]" as "Hsrespm".
     { iFrame. simpl.
       iSplit.
@@ -1394,9 +1407,9 @@ Section program.
     (gpp : loc) (rid : u64) (res : rpres) ts gid γ :
     rid ∈ rids_all ->
     query_outcome γ ts res -∗
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__processQueryResult #gpp #rid #(rpres_to_u64 res)
-    {{{ RET #(); own_group_preparer gpp ts gid γ }}}.
+    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hrid) "#Hquery".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -1423,11 +1436,16 @@ Section program.
     | GPPRefresh => True
     end.
 
+  #[global]
+  Instance gppaction_persistent γ ts gid action :
+    Persistent (safe_gppaction γ ts gid action).
+  Proof. destruct action; apply _. Defined.
+
   Theorem wp_GroupPreparer__action (gpp : loc) (rid : u64) γ ts gid :
-    {{{ own_group_preparer gpp ts gid γ }}}
+    {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__action #gpp #rid
     {{{ (action : gppaction), RET #(gppaction_to_u64 action); 
-        own_group_preparer gpp ts gid γ ∗
+        own_gpreparer gpp ts gid γ ∗
         safe_gppaction γ ts gid action
     }}}.
   Proof.
@@ -1548,6 +1566,27 @@ Section program.
     (*@     return GPP_REFRESH                                                  @*)
     (*@ }                                                                       @*)
     iApply ("HΦ" $! GPPRefresh). by iFrame.
+  Qed.
+
+  Theorem wp_GroupPreparer__getPhase (gpp : loc) phase ts gid γ :
+    {{{ own_gpreparer_with_phase gpp phase ts gid γ }}}
+      GroupPreparer__getPhase #gpp
+    {{{ RET #(gppphase_to_u64 phase); 
+        own_gpreparer_with_phase gpp phase ts gid γ ∗
+        safe_gpreparer_phase γ ts gid phase
+    }}}.
+  Proof.
+    iIntros (Φ) "Hgpp HΦ".
+    wp_rec.
+
+    (*@ func (gpp *GroupPreparer) getPhase() uint64 {                           @*)
+    (*@     return gpp.phase                                                    @*)
+    (*@ }                                                                       @*)
+    iNamed "Hgpp". iNamed "Hphase".
+    wp_loadField.
+    rewrite Hphase.
+    iApply "HΦ".
+    by iFrame "∗ # %".
   Qed.
 
 End program.

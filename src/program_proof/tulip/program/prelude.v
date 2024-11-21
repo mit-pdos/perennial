@@ -136,6 +136,23 @@ Instance rpres_to_u64_inj :
   Inj eq eq rpres_to_u64.
 Proof. intros x y H. by destruct x, y. Defined.
 
+Inductive txnphase :=
+| TxnPrepared
+| TxnCommitted
+| TxnAborted.
+
+Definition txnphase_to_u64 (p : txnphase) :=
+  match p with
+  | TxnPrepared => (U64 0)
+  | TxnCommitted => (U64 1)
+  | TxnAborted => (U64 2)
+  end.
+
+#[global]
+Instance txnphase_to_u64_inj :
+  Inj eq eq txnphase_to_u64.
+Proof. intros x y H. by destruct x, y. Defined.
+
 Section def.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
@@ -207,5 +224,17 @@ Section def.
   Instance query_outcome_persistent γ ts res :
     Persistent (query_outcome γ ts res).
   Proof. destruct res; apply _. Defined.
+
+  Definition safe_txnphase γ ts gid (phase : txnphase) : iProp Σ :=
+    match phase with
+    | TxnPrepared => quorum_prepared γ gid ts ∗ quorum_validated γ gid ts
+    | TxnCommitted => ∃ wrs, is_txn_committed γ ts wrs
+    | TxnAborted => is_txn_aborted γ ts ∨ quorum_unprepared γ gid ts
+    end.
+
+  #[global]
+  Instance safe_txnphase_persistent γ ts gid phase :
+    Persistent (safe_txnphase γ ts gid phase).
+  Proof. destruct phase; apply _. Defined.
 
 End def.
