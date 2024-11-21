@@ -27,6 +27,42 @@ Lemma wp_NewRpcAuditor ptr_adtr :
   }}}.
 Proof. Admitted.
 
+Lemma wp_CallServPut ptr_cli cli (uid : w64) sl_pk d0 (pk : list w8) :
+  {{{
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk
+  }}}
+  CallServPut #ptr_cli #uid (slice_val sl_pk)
+  {{{
+    ptr_dig dig ptr_memb memb ptr_nonmemb nonmemb (err : bool),
+    RET (#ptr_dig, #ptr_memb, #ptr_nonmemb, #err);
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
+    "Herr" ∷ (if err then True else
+      "#Hown_dig" ∷ SigDig.own ptr_dig dig ∗
+      "Hown_memb" ∷ Memb.own ptr_memb memb ∗
+      "Hown_nonmemb" ∷ NonMemb.own ptr_nonmemb nonmemb)
+  }}}.
+Proof. Admitted.
+
+Lemma wp_CallServGet ptr_cli cli (uid : w64) :
+  {{{
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli
+  }}}
+  CallServGet #ptr_cli #uid
+  {{{
+    ptr_dig dig sl_hist hist_ref hist ptr_memb ptr_nonmemb nonmemb (is_reg err : bool),
+    RET (#ptr_dig, slice_val sl_hist, #is_reg, #ptr_memb, #ptr_nonmemb, #err);
+    "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
+    "Herr" ∷ (if err then True else
+      "#Hown_dig" ∷ SigDig.own ptr_dig dig ∗
+      "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) hist_ref ∗
+      "Hown_hist" ∷ ([∗ list] l;v ∈ hist_ref;hist, MembHide.own l v) ∗
+      "Hown_memb" ∷ (if negb is_reg then True else ∃ memb, Memb.own ptr_memb memb) ∗
+      "Hown_nonmemb" ∷ NonMemb.own ptr_nonmemb nonmemb)
+  }}}.
+Proof. Admitted.
+
 Lemma wp_CallServSelfMon ptr_cli cli (uid : w64) :
   {{{
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli

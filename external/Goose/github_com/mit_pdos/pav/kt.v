@@ -534,7 +534,7 @@ Definition Client__Put: val :=
                 else
                   MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
                   struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
-                  struct.storeF Client "nextVer" "c" ((struct.loadF Client "nextVer" "c") + #1);;
+                  struct.storeF Client "nextVer" "c" (std.SumAssumeNoOverflow (struct.loadF Client "nextVer" "c") #1);;
                   (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
                      "Err" ::= #false
                    ])))))))).
