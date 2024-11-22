@@ -99,7 +99,7 @@ From Perennial.program_proof.tutorial Require
      basics.proof
      queue.proof
      kvservice.proof
-     (* kvservice.full_proof *).
+     kvservice.full_proof.
 
 From Perennial.program_proof.cachekv Require proof.
 

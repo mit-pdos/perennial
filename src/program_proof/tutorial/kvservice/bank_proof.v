@@ -70,15 +70,13 @@ Proof.
   iIntros (Φ) "(Hlck & #Hln1_islock & #Hln2_islock) Hpost".
   wp_rec.
   wp_pures.
-  destruct bool_decide; wp_pures.
-  {
-    wp_apply (wp_LockClerk__Lock with "[$Hlck $Hln1_islock]").
-    iIntros "[Hlck HP1]".
-    wp_pures.
-    wp_apply (wp_LockClerk__Lock with "[$Hlck $Hln2_islock]").
-    iIntros "[Hlck HP2]".
-    wp_pures.
-    iApply "Hpost". by iFrame.
+  wp_apply (wp_LockClerk__Lock with "[$Hlck]").
+  iIntros "[Hlck HP1]".
+  wp_pures.
+  wp_apply (wp_LockClerk__Lock with "[$Hlck $Hln2_islock]").
+  iIntros "[Hlck HP2]".
+  wp_pures.
+  iApply "Hpost". by iFrame.
   }
   {
     wp_apply (wp_LockClerk__Lock with "[$Hlck $Hln2_islock]").
