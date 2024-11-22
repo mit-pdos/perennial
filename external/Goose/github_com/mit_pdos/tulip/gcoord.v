@@ -18,11 +18,12 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
    / Abort(ts)
    / ResultSession(rid uint64) *)
 Definition GroupCoordinator := struct.decl [
-  "rps" :: mapT uint64T;
+  "rps" :: slice.T uint64T;
+  "addrm" :: mapT uint64T;
   "mu" :: ptrT;
   "cv" :: ptrT;
   "ts" :: uint64T;
-  "leader" :: uint64T;
+  "idxleader" :: uint64T;
   "grd" :: ptrT;
   "gpp" :: ptrT;
   "tsfinals" :: mapT boolT;
@@ -80,7 +81,7 @@ Definition GroupCoordinator__GetConnection: val :=
 
 Definition GroupCoordinator__Connect: val :=
   rec: "GroupCoordinator__Connect" "gcoord" "rid" :=
-    let: "addr" := Fst (MapGet (struct.loadF GroupCoordinator "rps" "gcoord") "rid") in
+    let: "addr" := Fst (MapGet (struct.loadF GroupCoordinator "addrm" "gcoord") "rid") in
     let: "ret" := grove_ffi.Connect "addr" in
     (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
     then
@@ -156,7 +157,7 @@ Definition GroupCoordinator__WaitUntilValueReady: val :=
    @gcoord.Read blocks until the value of @key is determined. *)
 Definition GroupCoordinator__Read: val :=
   rec: "GroupCoordinator__Read" "gcoord" "ts" "key" :=
-    MapIter (struct.loadF GroupCoordinator "rps" "gcoord") (λ: "ridloop" <>,
+    MapIter (struct.loadF GroupCoordinator "addrm" "gcoord") (λ: "ridloop" <>,
       let: "rid" := "ridloop" in
       Fork (GroupCoordinator__ReadSession "gcoord" "rid" "ts" "key"));;
     let: ("v", "ok") := GroupCoordinator__WaitUntilValueReady "gcoord" "ts" "key" in
@@ -363,7 +364,7 @@ Definition GroupCoordinator__WaitUntilPrepareDone: val :=
    aborted) is made, or the associated timestamp has changed. *)
 Definition GroupCoordinator__Prepare: val :=
   rec: "GroupCoordinator__Prepare" "gcoord" "ts" "ptgs" "pwrs" :=
-    MapIter (struct.loadF GroupCoordinator "rps" "gcoord") (λ: "ridloop" <>,
+    MapIter (struct.loadF GroupCoordinator "addrm" "gcoord") (λ: "ridloop" <>,
       let: "rid" := "ridloop" in
       Fork (GroupCoordinator__PrepareSession "gcoord" "rid" "ts" "ptgs" "pwrs"));;
     let: ("st", "valid") := GroupCoordinator__WaitUntilPrepareDone "gcoord" "ts" in
@@ -379,9 +380,9 @@ Definition GroupCoordinator__RegisterFinalization: val :=
 Definition GroupCoordinator__GetLeader: val :=
   rec: "GroupCoordinator__GetLeader" "gcoord" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    let: "leader" := struct.loadF GroupCoordinator "leader" "gcoord" in
+    let: "idxleader" := struct.loadF GroupCoordinator "idxleader" "gcoord" in
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    "leader".
+    SliceGet uint64T (struct.loadF GroupCoordinator "rps" "gcoord") "idxleader".
 
 Definition GroupCoordinator__Finalized: val :=
   rec: "GroupCoordinator__Finalized" "gcoord" "ts" :=
@@ -397,10 +398,10 @@ Definition GroupCoordinator__SendCommit: val :=
 Definition GroupCoordinator__ChangeLeader: val :=
   rec: "GroupCoordinator__ChangeLeader" "gcoord" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    let: "leader" := ((struct.loadF GroupCoordinator "leader" "gcoord") + #1) `rem` (MapLen (struct.loadF GroupCoordinator "rps" "gcoord")) in
-    struct.storeF GroupCoordinator "leader" "gcoord" "leader";;
+    let: "idxleader" := ((struct.loadF GroupCoordinator "idxleader" "gcoord") + #1) `rem` (slice.len (struct.loadF GroupCoordinator "rps" "gcoord")) in
+    struct.storeF GroupCoordinator "idxleader" "gcoord" "idxleader";;
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    "leader".
+    SliceGet uint64T (struct.loadF GroupCoordinator "rps" "gcoord") "idxleader".
 
 Definition GroupCoordinator__Commit: val :=
   rec: "GroupCoordinator__Commit" "gcoord" "ts" "pwrs" :=

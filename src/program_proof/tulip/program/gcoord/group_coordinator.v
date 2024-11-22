@@ -2,6 +2,8 @@ From Perennial.program_proof.tulip.invariance Require Import read.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program Require Import prelude group_reader group_preparer.
 
+(* Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations. *)
+
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
@@ -40,60 +42,67 @@ Section repr.
       "HgppP" ∷ gcoord ↦[GroupCoordinator :: "gpp"] #gppP ∗
       "Hgpp"  ∷ own_gpreparer gppP ts gid γ.
 
-  Definition own_gcoord_finalizer gcoord : iProp Σ :=
-    ∃ (leader : u64) (tsfinalsP : loc) (tsfinals : gmap u64 bool),
-      "Hleader"    ∷ gcoord ↦[GroupCoordinator :: "leader"] #leader ∗
+  Definition own_gcoord_finalizer gcoord (rids : gset u64) : iProp Σ :=
+    ∃ (idxleader : u64) (tsfinalsP : loc) (tsfinals : gmap u64 bool),
+      "Hleader"    ∷ gcoord ↦[GroupCoordinator :: "idxleader"] #idxleader ∗
       "HtsfinalsP" ∷ gcoord ↦[GroupCoordinator :: "tsfinals"] #tsfinalsP ∗
-      "Htsfinals"  ∷ own_map tsfinalsP DfracDiscarded tsfinals.
+      "Htsfinals"  ∷ own_map tsfinalsP (DfracOwn 1) tsfinals ∗
+      "%Hleader"   ∷ ⌜(uint.nat idxleader < size rids)⌝.
 
-  Definition own_gcoord_core gcoord ts gid γ : iProp Σ :=
-    "Hts" ∷ own_gcoord_ts gcoord ts ∗
+  Definition own_gcoord_core gcoord ts gid rids γ : iProp Σ :=
+    "Hts"  ∷ own_gcoord_ts gcoord ts ∗
     "Hgrd" ∷ own_gcoord_greader gcoord ts γ ∗
     "Hgpp" ∷ own_gcoord_gpreparer gcoord ts gid γ ∗
-    "Hgfl" ∷ own_gcoord_finalizer gcoord.
+    "Hgfl" ∷ own_gcoord_finalizer gcoord rids.
 
-  Definition own_gcoord_comm gcoord (rps : gmap u64 chan) : iProp Σ :=
+  Definition own_gcoord_comm gcoord (addrm : gmap u64 chan) : iProp Σ :=
     ∃ (connsP : loc) (conns : gmap u64 (chan * chan)),
       let connsV := fmap (λ x, connection_socket x.1 x.2) conns in
       "HconnsP" ∷ gcoord ↦[GroupCoordinator :: "conns"] #connsP ∗
       "Hconns"  ∷ map.own_map connsP (DfracOwn 1) (connsV, #()) ∗
       (* "#Htrmls" ∷ ([∗ map] x ∈ conns, is_terminal γ x.1) ∗ *)
-      "%Haddrpeers" ∷ ⌜map_Forall (λ rid x, rps !! rid = Some x.2) conns⌝.
+      "%Haddrpeers" ∷ ⌜map_Forall (λ rid x, addrm !! rid = Some x.2) conns⌝.
 
-  Definition own_gcoord_with_ts gcoord rps ts gid γ : iProp Σ :=
-    "Hgcoord" ∷ own_gcoord_core gcoord ts gid γ ∗
-    "Hcomm"   ∷ own_gcoord_comm gcoord rps.
+  Definition own_gcoord_with_ts gcoord addrm ts gid γ : iProp Σ :=
+    "Hgcoord" ∷ own_gcoord_core gcoord ts gid (dom addrm) γ ∗
+    "Hcomm"   ∷ own_gcoord_comm gcoord addrm.
 
-  Definition own_gcoord gcoord rps gid γ : iProp Σ :=
-    ∃ ts, "Hgcoord" ∷ own_gcoord_with_ts gcoord rps ts gid γ.
+  Definition own_gcoord gcoord addrm gid γ : iProp Σ :=
+    ∃ ts, "Hgcoord" ∷ own_gcoord_with_ts gcoord addrm ts gid γ.
 
-  Definition is_gcoord_rps gcoord (rps : gmap u64 chan) : iProp Σ :=
-    ∃ (rpsP : loc),
-      "HrpsP" ∷ readonly (gcoord ↦[GroupCoordinator :: "rps"] #rpsP) ∗
-      "#Hrps" ∷ own_map rpsP DfracDiscarded rps.
+  Definition is_gcoord_addrm gcoord (addrm : gmap u64 chan) : iProp Σ :=
+    ∃ (addrmP : loc) (rpsP : Slice.t) (rps : list u64),
+      "#HaddrmP"   ∷ readonly (gcoord ↦[GroupCoordinator :: "addrm"] #addrmP) ∗
+      "#Haddrm"    ∷ own_map addrmP DfracDiscarded addrm ∗
+      "#HrpsP"     ∷ readonly (gcoord ↦[GroupCoordinator :: "rps"] (to_val rpsP)) ∗
+      "#Hrps"      ∷ readonly (own_slice_small rpsP uint64T (DfracOwn 1) rps) ∗
+      "%Hdomaddrm" ∷ ⌜dom addrm = list_to_set rps⌝ ∗
+      "%Hnodup"    ∷ ⌜NoDup rps⌝.
 
-  Definition is_gcoord_with_rps gcoord gid (rps : gmap u64 chan) γ : iProp Σ :=
+  Definition is_gcoord_with_addrm gcoord gid (addrm : gmap u64 chan) γ : iProp Σ :=
     ∃ (muP : loc) (cvP : loc),
-      "#HmuP"  ∷ readonly (gcoord ↦[GroupCoordinator :: "mu"] #muP) ∗
-      "#Hlock" ∷ is_lock tulipNS #muP (own_gcoord gcoord rps gid γ) ∗
-      "#HcvP"  ∷ readonly (gcoord ↦[GroupCoordinator :: "cv"] #cvP) ∗
-      "Hcv"    ∷ is_cond cvP #muP ∗
-      "#Hrps"  ∷ is_gcoord_rps gcoord rps.
+      "#HmuP"   ∷ readonly (gcoord ↦[GroupCoordinator :: "mu"] #muP) ∗
+      "#Hlock"  ∷ is_lock tulipNS #muP (own_gcoord gcoord addrm gid γ) ∗
+      "#HcvP"   ∷ readonly (gcoord ↦[GroupCoordinator :: "cv"] #cvP) ∗
+      "Hcv"     ∷ is_cond cvP #muP ∗
+      "#Haddrm" ∷ is_gcoord_addrm gcoord addrm.
 
   Definition is_gcoord gcoord gid γ : iProp Σ :=
-    ∃ rps, "Hgcoord" ∷ is_gcoord_with_rps gcoord gid rps γ.
+    ∃ addrm, "Hgcoord" ∷ is_gcoord_with_addrm gcoord gid addrm γ.
 
 End repr.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_GroupCoordinator__attachedWith (gcoord : loc) (tsW : u64) tscur gid γ :
+  Theorem wp_GroupCoordinator__attachedWith (gcoord : loc) (tsW : u64) tscur rids gid γ :
     let ts := uint.nat tsW in
-    {{{ own_gcoord_core gcoord tscur gid γ }}}
+    {{{ own_gcoord_core gcoord tscur gid rids γ }}}
       GroupCoordinator__attachedWith #gcoord #tsW
     {{{ (ok : bool), RET #ok;
-        if ok then own_gcoord_core gcoord ts gid γ else own_gcoord_core gcoord tscur gid γ
+        if ok
+        then own_gcoord_core gcoord ts gid rids γ
+        else own_gcoord_core gcoord tscur gid rids γ
     }}}.
   Proof.
     iIntros (ts Φ) "Hgcoord HΦ".
@@ -205,7 +214,7 @@ Section program.
     (*@     for {                                                               @*)
     (*@                                                                         @*)
     set P := (λ (cont : bool), ∃ (value : dbval) (valid : bool),
-      "Hgcoord" ∷ own_gcoord gcoord rps gid γ ∗
+      "Hgcoord" ∷ own_gcoord gcoord addrm gid γ ∗
       "HvalueP" ∷ valueP ↦[boolT * (stringT * unitT)%ht] dbval_to_val value ∗
       "HvalidP" ∷ validP ↦[boolT] #valid ∗
       "Hlocked" ∷ locked #muP ∗
@@ -349,7 +358,7 @@ Section program.
 
     (*@ func (gcoord *GroupCoordinator) Read(ts uint64, key string) (tulip.Value, bool) { @*)
     (*@     // Spawn a session with each replica in the group.                  @*)
-    (*@     for ridloop := range(gcoord.rps) {                                  @*)
+    (*@     for ridloop := range(gcoord.addrm) {                                  @*)
     (*@         rid := ridloop                                                  @*)
     (*@         go func() {                                                     @*)
     (*@             gcoord.ReadSession(rid, ts, key)                            @*)
@@ -357,10 +366,10 @@ Section program.
     (*@     }                                                                   @*)
     (*@                                                                         @*)
     iPoseProof "Hgcoord" as "Hgcoord'".
-    do 2 iNamed "Hgcoord". iNamed "Hrps".
+    do 2 iNamed "Hgcoord". iNamed "Haddrm".
     iRename "Hgcoord'" into "Hgcoord".
     wp_loadField.
-    wp_apply (wp_MapIter_fold _ _ _ (λ _, True)%I with "Hrps []").
+    wp_apply (wp_MapIter_fold _ _ _ (λ _, True)%I with "Haddrm []").
     { done. }
     { clear Φ.
       iIntros (mx rid c Φ) "!> _ HΦ".
@@ -474,7 +483,7 @@ Section program.
     (*@     for {                                                               @*)
     (*@                                                                         @*)
     set P := (λ (cont : bool), ∃ (pphase : gppphase) (valid : bool),
-      "Hgcoord" ∷ own_gcoord gcoord rps gid γ ∗
+      "Hgcoord" ∷ own_gcoord gcoord addrm gid γ ∗
       "HphaseP" ∷ phaseP ↦[uint64T] #(gppphase_to_u64 pphase) ∗
       "HvalidP" ∷ validP ↦[boolT] #valid ∗
       "Hlocked" ∷ locked #muP ∗
@@ -641,6 +650,31 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
+  Theorem wp_GroupCoordinator__SendCommit
+    (gcoord : loc) (rid : u64) (tsW : u64) (pwrsP : loc) gid γ :
+    let ts := uint.nat tsW in
+    (∃ wrs, is_txn_committed γ ts wrs) -∗
+    is_gcoord gcoord gid γ -∗
+    {{{ True }}}
+      GroupCoordinator__SendCommit #gcoord #rid #tsW #pwrsP
+    {{{ RET #(); True }}}.
+  Proof.
+    (*@ func (gcoord *GroupCoordinator) SendCommit(rid, ts uint64, pwrs tulip.KVMap) { @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_GroupCoordinator__SendAbort (gcoord : loc) (rid : u64) (tsW : u64) gid γ :
+    let ts := uint.nat tsW in
+    is_txn_aborted γ ts -∗
+    is_gcoord gcoord gid γ -∗
+    {{{ True }}}
+      GroupCoordinator__SendAbort #gcoord #rid #tsW
+    {{{ RET #(); True }}}.
+  Proof.
+    (*@ func (gcoord *GroupCoordinator) SendAbort(rid, ts uint64) {             @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
   Theorem wp_GroupCoordinator__PrepareSession
     (gcoord : loc) (rid : u64) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) gid γ :
     let ts := uint.nat tsW in
@@ -777,7 +811,7 @@ Section program.
 
     (*@ func (gcoord *GroupCoordinator) Prepare(ts uint64, ptgs []uint64, pwrs tulip.KVMap) (uint64, bool) { @*)
     (*@     // Spawn a prepare session with each replica.                       @*)
-    (*@     for ridloop := range(gcoord.rps) {                                  @*)
+    (*@     for ridloop := range(gcoord.addrm) {                                  @*)
     (*@         rid := ridloop                                                  @*)
     (*@         go func() {                                                     @*)
     (*@             gcoord.PrepareSession(rid, ts, ptgs, pwrs)                  @*)
@@ -785,10 +819,10 @@ Section program.
     (*@     }                                                                   @*)
     (*@                                                                         @*)
     iPoseProof "Hgcoord" as "Hgcoord'".
-    do 2 iNamed "Hgcoord". iNamed "Hrps".
+    do 2 iNamed "Hgcoord". iNamed "Haddrm".
     iRename "Hgcoord'" into "Hgcoord".
     wp_loadField.
-    wp_apply (wp_MapIter_fold _ _ _ (λ _, True)%I with "Hrps []").
+    wp_apply (wp_MapIter_fold _ _ _ (λ _, True)%I with "Haddrm []").
     { done. }
     { clear Φ.
       iIntros (mx rid c Φ) "!> _ HΦ".
@@ -804,6 +838,301 @@ Section program.
     (*@ }                                                                       @*)
     wp_apply (wp_GroupCoordinator__WaitUntilPrepareDone with "Hgcoord").
     iIntros (phase valid) "#Hsafep".
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+  Theorem wp_GroupCoordinator__GetLeader (gcoord : loc) gid addrm γ :
+    is_gcoord_with_addrm gcoord gid addrm γ -∗
+    {{{ True }}}
+      GroupCoordinator__GetLeader #gcoord
+    {{{ (leader : u64), RET #leader; ⌜leader ∈ dom addrm⌝ }}}.
+  Proof.
+    iIntros "#Hgcoord" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (gcoord *GroupCoordinator) GetLeader() uint64 {                    @*)
+    (*@     gcoord.mu.Lock()                                                    @*)
+    (*@     leader := gcoord.leader                                             @*)
+    (*@     gcoord.mu.Unlock()                                                  @*)
+    (*@     return leader                                                       @*)
+    (*@ }                                                                       @*)
+    iNamed "Hgcoord".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hgcoord]".
+    do 3 iNamed "Hgcoord". iNamed "Hgfl".
+    do 2 wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { by iFrame "Hlock Hlocked Hts Hgrd Hgpp Hcomm ∗ %". }
+    wp_pures.
+    iNamed "Haddrm".
+    wp_loadField.
+    iMod (readonly_load with "Hrps") as (q) "Hrpsro".
+    assert (is_Some (rps !! uint.nat idxleader)) as [leader Hlead].
+    { apply lookup_lt_is_Some.
+      assert (length rps = size (dom addrm)); last word.
+      by rewrite Hdomaddrm size_list_to_set.
+    }
+    wp_apply (wp_SliceGet with "[$Hrpsro]").
+    { done. }
+    iIntros "_".
+    iApply "HΦ".
+    iPureIntro.
+    apply elem_of_list_lookup_2 in Hlead.
+    by rewrite Hdomaddrm elem_of_list_to_set.
+  Qed.
+
+  Theorem wp_GroupCoordinator__ChangeLeader (gcoord : loc) gid addrm γ :
+    is_gcoord_with_addrm gcoord gid addrm γ -∗
+    {{{ True }}}
+      GroupCoordinator__ChangeLeader #gcoord
+    {{{ (leader : u64), RET #leader; ⌜leader ∈ dom addrm⌝ }}}.
+  Proof.
+    iIntros "#Hgcoord" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (gcoord *GroupCoordinator) ChangeLeader() uint64 {                 @*)
+    (*@     gcoord.mu.Lock()                                                    @*)
+    (*@     leader := (gcoord.leader + 1) % uint64(len(gcoord.addrm))             @*)
+    (*@     gcoord.leader = leader                                              @*)
+    (*@     gcoord.mu.Unlock()                                                  @*)
+    (*@     return leader                                                       @*)
+    (*@ }                                                                       @*)
+    iNamed "Hgcoord".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hgcoord]".
+    do 3 iNamed "Hgcoord". iNamed "Hgfl".
+    iNamed "Haddrm".
+    do 2 wp_loadField.
+    wp_apply wp_slice_len.
+    wp_storeField.
+    iMod (readonly_load with "Hrps") as (q) "Hrpsro".
+    iDestruct (own_slice_small_sz with "Hrpsro") as %Hlenrps.
+    wp_loadField.
+    set idxleader' := word.modu _ _.
+    assert (Hltrps : (uint.nat idxleader' < length rps)%nat).
+    { assert (size (dom addrm) = length rps) as Hszaddrm.
+      { by rewrite Hdomaddrm size_list_to_set. }
+      rewrite word.unsigned_modu_nowrap; [word | lia].
+    }
+    wp_apply (wp_Mutex__Unlock with "[-HΦ Hrpsro]").
+    { iFrame "Hlock Hlocked Hts Hgrd Hgpp Hcomm ∗ %".
+      iPureIntro.
+      rewrite Hdomaddrm size_list_to_set; [lia | done].
+    }
+    wp_pures.
+    wp_loadField.
+    assert (is_Some (rps !! uint.nat idxleader')) as [leader Hlead].
+    { by apply lookup_lt_is_Some. }
+    wp_apply (wp_SliceGet with "[$Hrpsro]").
+    { done. }
+    iIntros "_".
+    iApply "HΦ".
+    apply elem_of_list_lookup_2 in Hlead.
+    by rewrite Hdomaddrm elem_of_list_to_set.
+  Qed.
+
+  Theorem wp_GroupCoordinator__processFinalizationResult
+    (gcoord : loc) (ts : u64) (res : u64) rids :
+    {{{ own_gcoord_finalizer gcoord rids }}}
+      GroupCoordinator__processFinalizationResult #gcoord #ts #res
+    {{{ RET #(); own_gcoord_finalizer gcoord rids }}}.
+  Proof.
+    iIntros (Φ) "Hgcoord HΦ".
+    wp_rec. wp_pures.
+
+    (*@ func (gcoord *GroupCoordinator) processFinalizationResult(ts uint64, res uint64) { @*)
+    (*@     if res == tulip.REPLICA_WRONG_LEADER {                              @*)
+    (*@         return                                                          @*)
+    (*@     }                                                                   @*)
+    (*@     delete(gcoord.tsfinals, ts)                                         @*)
+    (*@ }                                                                       @*)
+    case_bool_decide as Hwrong; wp_pures.
+    { by iApply "HΦ". }
+    iNamed "Hgcoord".
+    wp_loadField.
+    wp_apply (wp_MapDelete with "Htsfinals").
+    iIntros "Htsfinals".
+    wp_pures.
+    iApply "HΦ".
+    by iFrame "∗ %".
+  Qed.
+
+  Theorem wp_GroupCoordinator__Finalized (gcoord : loc) (tsW : u64) gid γ :
+    is_gcoord gcoord gid γ -∗
+    {{{ True }}}
+      GroupCoordinator__Finalized #gcoord #tsW
+    {{{ (finalized : bool), RET #finalized; True }}}.
+  Proof.
+    iIntros "#Hgcoord" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (gcoord *GroupCoordinator) Finalized(ts uint64) bool {             @*)
+    (*@     gcoord.mu.Lock()                                                    @*)
+    (*@     _, ok := gcoord.tsfinals[ts]                                        @*)
+    (*@     gcoord.mu.Unlock()                                                  @*)
+    (*@     return !ok                                                          @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hgcoord".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hgcoord]".
+    do 3 iNamed "Hgcoord". iNamed "Hgfl".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Htsfinals").
+    iIntros (v ok) "[%Hok Htsfinals]".
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { by iFrame "Hlock Hlocked Hts Hgrd Hgpp Hcomm ∗ %". }
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+  Theorem wp_GroupCoordinator__RegisterFinalization (gcoord : loc) (tsW : u64) gid γ :
+    is_gcoord gcoord gid γ -∗
+    {{{ True }}}
+      GroupCoordinator__RegisterFinalization #gcoord #tsW
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros "#Hgcoord" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (gcoord *GroupCoordinator) RegisterFinalization(ts uint64) {       @*)
+    (*@     gcoord.mu.Lock()                                                    @*)
+    (*@     gcoord.tsfinals[ts] = true                                          @*)
+    (*@     gcoord.mu.Unlock()                                                  @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hgcoord".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hgcoord]".
+    do 3 iNamed "Hgcoord". iNamed "Hgfl".
+    wp_loadField.
+    wp_apply (wp_MapInsert with "Htsfinals"); first done.
+    iIntros "Htsfinals".
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { by iFrame "Hlock Hlocked Hts Hgrd Hgpp Hcomm ∗ %". }
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+  Theorem wp_GroupCoordinator__Commit (gcoord : loc) (tsW : u64) (pwrsP : loc) gid γ :
+    let ts := uint.nat tsW in
+    (∃ wrs, is_txn_committed γ ts wrs) -∗
+    is_gcoord gcoord gid γ -∗
+    {{{ True }}}
+      GroupCoordinator__Commit #gcoord #tsW #pwrsP
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros (ts) "#Hcmted #Hgcoord".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (gcoord *GroupCoordinator) Commit(ts uint64, pwrs tulip.KVMap) {   @*)
+    (*@     gcoord.RegisterFinalization(ts)                                     @*)
+    (*@                                                                         @*)
+    wp_apply (wp_GroupCoordinator__RegisterFinalization with "Hgcoord").
+    iNamed "Hgcoord".
+    wp_apply (wp_GroupCoordinator__GetLeader with "Hgcoord").
+    iIntros (leader Hleader).
+    wp_apply wp_ref_to; first by auto.
+    iIntros (leaderP) "HleaderP".
+    wp_pures.
+
+    (*@     var leader = gcoord.GetLeader()                                     @*)
+    (*@     for !gcoord.Finalized(ts) {                                         @*)
+    (*@         gcoord.SendCommit(leader, ts, pwrs)                             @*)
+    (*@         primitive.Sleep(params.NS_RESEND_COMMIT)                        @*)
+    (*@         // Retry with different leaders until success.                  @*)
+    (*@         leader = gcoord.ChangeLeader()                                  @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    set P := (λ _ : bool, ∃ leader' : u64, leaderP ↦[uint64T] #leader' ∗ ⌜leader' ∈ dom addrm⌝)%I.
+    wp_apply (wp_forBreak_cond P with "[] [$HleaderP]"); last first; first 1 last.
+    { done. }
+    { clear Φ.
+      iIntros (Φ) "!> HP HΦ".
+      wp_apply (wp_GroupCoordinator__Finalized with "[]").
+      { iFrame "Hgcoord". }
+      iIntros (finalized) "_".
+      wp_pures.
+      destruct finalized; wp_pures.
+      { by iApply "HΦ". }
+      iDestruct "HP" as (leader') "[HleaderP %Hin]".
+      wp_load.
+      wp_apply (wp_GroupCoordinator__SendCommit with "Hcmted").
+      { iFrame "Hgcoord". }
+      wp_apply wp_Sleep.
+      wp_apply (wp_GroupCoordinator__ChangeLeader).
+      { iFrame "Hgcoord". }
+      iIntros (leadernew Hleadernew).
+      wp_store.
+      iApply "HΦ".
+      by iFrame.
+    }
+    iIntros "_".
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+  Theorem wp_GroupCoordinator__Abort (gcoord : loc) (tsW : u64) gid γ :
+    let ts := uint.nat tsW in
+    is_txn_aborted γ ts -∗
+    is_gcoord gcoord gid γ -∗
+    {{{ True }}}
+      GroupCoordinator__Abort #gcoord #tsW
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros (ts) "#Habted #Hgcoord".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (gcoord *GroupCoordinator) Abort(ts uint64) {                      @*)
+    (*@     gcoord.RegisterFinalization(ts)                                     @*)
+    (*@                                                                         @*)
+    wp_apply (wp_GroupCoordinator__RegisterFinalization with "Hgcoord").
+    iNamed "Hgcoord".
+    wp_apply (wp_GroupCoordinator__GetLeader with "Hgcoord").
+    iIntros (leader Hleader).
+    wp_apply wp_ref_to; first by auto.
+    iIntros (leaderP) "HleaderP".
+    wp_pures.
+
+    (*@     var leader = gcoord.GetLeader()                                     @*)
+    (*@     for !gcoord.Finalized(ts) {                                         @*)
+    (*@         gcoord.SendAbort(leader, ts)                                    @*)
+    (*@         primitive.Sleep(params.NS_RESEND_ABORT)                         @*)
+    (*@         // Retry with different leaders until success.                  @*)
+    (*@         leader = gcoord.ChangeLeader()                                  @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    set P := (λ _ : bool, ∃ leader' : u64, leaderP ↦[uint64T] #leader' ∗ ⌜leader' ∈ dom addrm⌝)%I.
+    wp_apply (wp_forBreak_cond P with "[] [$HleaderP]"); last first; first 1 last.
+    { done. }
+    { clear Φ.
+      iIntros (Φ) "!> HP HΦ".
+      wp_apply (wp_GroupCoordinator__Finalized with "[]").
+      { iFrame "Hgcoord". }
+      iIntros (finalized) "_".
+      wp_pures.
+      destruct finalized; wp_pures.
+      { by iApply "HΦ". }
+      iDestruct "HP" as (leader') "[HleaderP %Hin]".
+      wp_load.
+      wp_apply (wp_GroupCoordinator__SendAbort with "Habted").
+      { iFrame "Hgcoord". }
+      wp_apply wp_Sleep.
+      wp_apply (wp_GroupCoordinator__ChangeLeader).
+      { iFrame "Hgcoord". }
+      iIntros (leadernew Hleadernew).
+      wp_store.
+      iApply "HΦ".
+      by iFrame.
+    }
+    iIntros "_".
     wp_pures.
     by iApply "HΦ".
   Qed.

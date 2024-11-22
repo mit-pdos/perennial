@@ -109,6 +109,7 @@ Definition Txn__commit: val :=
       (let: "gcoord" := Fst (MapGet (struct.loadF Txn "gcoords" "txn") "gid") in
       let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
       Fork (gcoord.GroupCoordinator__Commit "gcoord" "ts" "pwrs"));;
+    Txn__reset "txn";;
     #().
 
 Definition Txn__abort: val :=
@@ -118,6 +119,7 @@ Definition Txn__abort: val :=
     ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
       (let: "gcoord" := Fst (MapGet (struct.loadF Txn "gcoords" "txn") "gid") in
       Fork (gcoord.GroupCoordinator__Abort "gcoord" "ts"));;
+    Txn__reset "txn";;
     #().
 
 Definition Txn__cancel: val :=
