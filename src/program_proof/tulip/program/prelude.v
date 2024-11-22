@@ -156,9 +156,8 @@ Proof. intros x y H. by destruct x, y. Defined.
 Section def.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  (* TODO: = should be permutation *)
   Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=
-    own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m = l⌝.
+    own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
 
   Definition validate_outcome γ gid rid ts res : iProp Σ :=
     match res with

@@ -372,7 +372,8 @@ Section replica.
     iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
     wp_pures.
     iApply "HΦ".
-    rewrite -Hlenpwrs firstn_all -Hpwrs list_to_map_to_list.
+    pose proof (list_to_map_flip _ _ Hpwrs) as Hltm.
+    rewrite -Hlenpwrs firstn_all -Hltm.
     by iFrame.
   Qed.
 
@@ -460,30 +461,28 @@ Section replica.
       iIntros "Hrp".
       iApply "HΦ".
       (* Obtain proof that the current key [k] has not been written. *)
-      pose proof (NoDup_fst_map_to_list pwrs) as Hnd.
-      rewrite Hpwrs in Hnd.
-      pose proof (list_lookup_fmap fst pwrsL (uint.nat i)) as Hk.
-      rewrite Hi /= in Hk.
-      pose proof (not_elem_of_take _ _ _ Hnd Hk) as Htake.
-      rewrite -fmap_take in Htake.
+      pose proof (map_to_list_not_elem_of_take_key _ _ _ _ Hpwrs Hi) as Htake.
       (* Adjust the goal. *)
       rewrite uint_nat_word_add_S; last by word.
       rewrite (take_S_r _ _ _ Hi) list_to_map_snoc; last apply Htake.
       set pwrs' := list_to_map _.
       rewrite /release setts_insert; last first.
-      { rewrite -Hpwrs in Hi.
-        apply elem_of_list_lookup_2, elem_of_map_to_list, elem_of_dom_2 in Hi.
+      { apply elem_of_list_lookup_2 in Hi.
+        rewrite -Hpwrs in Hi.
+        apply elem_of_map_to_list, elem_of_dom_2 in Hi.
         clear -Hvw Hi Hdomptsm. set_solver.
       }
       done.
     }
     iIntros "[Hrp HpwrsS]".
     subst P. simpl.
-    rewrite -Hlenpwrs firstn_all -Hpwrs list_to_map_to_list.
+    pose proof (list_to_map_flip _ _ Hpwrs) as Hltm.
+    rewrite -Hlenpwrs firstn_all Hltm.
     iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
     wp_pures.
     iApply "HΦ".
-    by iFrame.
+    iFrame.
+    by rewrite -Hltm.
   Qed.
 
   Theorem wp_Replica__applyCommit
