@@ -3,12 +3,6 @@ From Perennial.program_proof.tulip.program Require Import prelude.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
-    match c with
-    | CmdCommit _ pwrs => (∃ pwrsL : list dbmod, own_dbmap_in_slice pwrsS pwrsL pwrs)
-    | _ => True
-    end.
-
   Definition is_txnlog (txnlog : loc) (gid : u64) (γ : tulip_names) : iProp Σ.
   Admitted.
 

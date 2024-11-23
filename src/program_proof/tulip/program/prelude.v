@@ -159,6 +159,12 @@ Section def.
   Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=
     own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
 
+  Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
+    match c with
+    | CmdCommit _ pwrs => (∃ pwrsL : list dbmod, own_dbmap_in_slice pwrsS pwrsL pwrs)
+    | _ => True
+    end.
+
   Definition validate_outcome γ gid rid ts res : iProp Σ :=
     match res with
     | ReplicaOK => is_replica_validated_ts γ gid rid ts

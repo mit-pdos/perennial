@@ -1,4 +1,7 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
+From Perennial.program_proof.tulip.program.tuple Require Import res.
+From Perennial.program_proof.tulip.program.txnlog Require Import txnlog.
+From Perennial.program_proof.tulip.program.index Require Import index.
 
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -94,5 +97,57 @@ Section repr.
       "Hrktbl"   ∷ own_map rktblP (DfracOwn 1) rktbl ∗
       "%Hpsmabs" ∷ ⌜(kmap Z.of_nat psm : gmap Z (nat * bool)) = kmap uint.Z (fmap ppsl_to_nat_bool pstbl)⌝ ∗
       "%Hrkmabs" ∷ ⌜(kmap Z.of_nat rkm : gmap Z nat) = kmap uint.Z (fmap (λ x, uint.nat x) rktbl)⌝.
+
+  Definition own_replica_histm (rp : loc) (histm : gmap dbkey dbhist) α : iProp Σ :=
+    ([∗ map] k ↦ h ∈ histm, own_phys_hist_half α k h).
+
+  Definition own_replica_with_cloga_no_lsna
+    (rp : loc) (cloga : dblog) (gid rid : u64) γ α : iProp Σ :=
+    ∃ (cm : gmap nat bool) (histm : gmap dbkey dbhist)
+      (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64))
+      (sptsm ptsm : gmap dbkey nat) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat)
+      (clog : dblog) (ilog : list (nat * icommand)),
+      let log := merge_clog_ilog cloga ilog in
+      "Hcm"         ∷ own_replica_cm rp cm ∗
+      "Hhistm"      ∷ own_replica_histm rp histm α ∗
+      "Hcpm"        ∷ own_replica_cpm rp cpm ∗
+      "Hptsmsptsm"  ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
+      "Hpsmrkm"     ∷ own_replica_psm_rkm rp psm rkm ∗
+      "Hclog"       ∷ own_replica_clog_half γ gid rid clog ∗
+      "Hilog"       ∷ own_replica_ilog_half γ gid rid ilog ∗
+      "#Hrpvds"     ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
+      "#Hfpw"       ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
+      "#Hclogalb"   ∷ is_txn_log_lb γ gid cloga ∗
+      "%Hdompsmrkm" ∷ ⌜dom psm = dom rkm⌝ ∗
+      "%Hcloga"     ∷ ⌜prefix clog cloga⌝ ∗
+      "%Hvcpm"      ∷ ⌜map_Forall (λ _ m, valid_wrs m) cpm⌝ ∗
+      "%Hvicmds"    ∷ ⌜Forall (λ nc, (nc.1 <= length cloga)%nat) ilog⌝ ∗
+      "%Hexec"      ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
+
+  Definition own_replica (rp : loc) (gid rid : u64) γ α : iProp Σ :=
+    ∃ (cloga : dblog) (lsna : u64),
+      "Hrp"        ∷ own_replica_with_cloga_no_lsna rp cloga gid rid γ α ∗
+      "Hlsna"      ∷ rp ↦[Replica :: "lsna"] #lsna ∗
+      "%Hlencloga" ∷ ⌜length cloga = uint.nat lsna⌝.
+
+  Definition is_replica_txnlog (rp : loc) gid γ : iProp Σ :=
+    ∃ (txnlog : loc),
+      "#HtxnlogP" ∷ readonly (rp ↦[Replica :: "txnlog"] #txnlog) ∗
+      "#Htxnlog"  ∷ is_txnlog txnlog gid γ.
+
+  Definition is_replica_idx (rp : loc) γ α : iProp Σ :=
+    ∃ (idx : loc),
+      "#HidxP" ∷ readonly (rp ↦[Replica :: "idx"] #idx) ∗
+      "#Hidx"  ∷ is_index idx γ α.
+
+  Definition is_replica (rp : loc) gid rid γ : iProp Σ :=
+    ∃ (mu : loc) α,
+      "#HmuP"    ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
+      "#Hlock"   ∷ is_lock tulipNS #mu (own_replica rp gid rid γ α) ∗
+      "#Htxnlog" ∷ is_replica_txnlog rp gid γ ∗
+      "#Hidx"    ∷ is_replica_idx rp γ α ∗
+      "#Hinv"    ∷ know_tulip_inv γ ∗
+      "%Hgid"    ∷ ⌜gid ∈ gids_all⌝ ∗
+      "%Hrid"    ∷ ⌜rid ∈ rids_all⌝.
 
 End repr.
