@@ -456,7 +456,7 @@ Section program.
     {{{ True }}}
       GroupCoordinator__WaitUntilPrepareDone #gcoord #tsW
     {{{ (tphase : txnphase) (valid : bool), RET (#(txnphase_to_u64 tphase), #valid); 
-        if valid then safe_txnphase γ ts gid tphase else True
+        if valid then safe_group_txnphase γ ts gid tphase else True
     }}}.
   Proof.
     iIntros (ts) "#Hgcoord".
@@ -651,13 +651,13 @@ Section program.
   Admitted.
 
   Theorem wp_GroupCoordinator__SendCommit
-    (gcoord : loc) (rid : u64) (tsW : u64) (pwrsP : loc) gid γ :
+    (gcoord : loc) (rid : u64) (tsW : u64) (pwrsP : loc) q (pwrs : dbmap) gid γ :
     let ts := uint.nat tsW in
-    (∃ wrs, is_txn_committed γ ts wrs) -∗
+    safe_commit γ gid ts pwrs -∗
     is_gcoord gcoord gid γ -∗
-    {{{ True }}}
+    {{{ own_map pwrsP q pwrs }}}
       GroupCoordinator__SendCommit #gcoord #rid #tsW #pwrsP
-    {{{ RET #(); True }}}.
+    {{{ RET #(); own_map pwrsP q pwrs }}}.
   Proof.
     (*@ func (gcoord *GroupCoordinator) SendCommit(rid, ts uint64, pwrs tulip.KVMap) { @*)
     (*@ }                                                                       @*)
@@ -665,7 +665,7 @@ Section program.
 
   Theorem wp_GroupCoordinator__SendAbort (gcoord : loc) (rid : u64) (tsW : u64) gid γ :
     let ts := uint.nat tsW in
-    is_txn_aborted γ ts -∗
+    safe_abort γ ts -∗
     is_gcoord gcoord gid γ -∗
     {{{ True }}}
       GroupCoordinator__SendAbort #gcoord #rid #tsW
@@ -802,7 +802,7 @@ Section program.
     {{{ True }}}
       GroupCoordinator__Prepare #gcoord #tsW (to_val ptgsP) #pwrsP
     {{{ (phase : txnphase) (valid : bool), RET (#(txnphase_to_u64 phase), #valid); 
-        if valid then safe_txnphase γ ts gid phase else True
+        if valid then safe_group_txnphase γ ts gid phase else True
     }}}.
   Proof.
     iIntros (ts) "#Hgcoord".
@@ -1019,16 +1019,17 @@ Section program.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_GroupCoordinator__Commit (gcoord : loc) (tsW : u64) (pwrsP : loc) gid γ :
+  Theorem wp_GroupCoordinator__Commit
+    (gcoord : loc) (tsW : u64) (pwrsP : loc) q (pwrs : dbmap) gid γ :
     let ts := uint.nat tsW in
-    (∃ wrs, is_txn_committed γ ts wrs) -∗
+    safe_commit γ gid ts pwrs -∗
     is_gcoord gcoord gid γ -∗
-    {{{ True }}}
+    {{{ own_map pwrsP q pwrs }}}
       GroupCoordinator__Commit #gcoord #tsW #pwrsP
-    {{{ RET #(); True }}}.
+    {{{ RET #(); own_map pwrsP q pwrs }}}.
   Proof.
     iIntros (ts) "#Hcmted #Hgcoord".
-    iIntros (Φ) "!> _ HΦ".
+    iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
     (*@ func (gcoord *GroupCoordinator) Commit(ts uint64, pwrs tulip.KVMap) {   @*)
@@ -1050,8 +1051,11 @@ Section program.
     (*@         leader = gcoord.ChangeLeader()                                  @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    set P := (λ _ : bool, ∃ leader' : u64, leaderP ↦[uint64T] #leader' ∗ ⌜leader' ∈ dom addrm⌝)%I.
-    wp_apply (wp_forBreak_cond P with "[] [$HleaderP]"); last first; first 1 last.
+    set P := (λ _ : bool, ∃ leader' : u64,
+                 "HleaderP"  ∷ leaderP ↦[uint64T] #leader' ∗
+                 "Hpwrs"     ∷ own_map pwrsP q pwrs ∗
+                 "%Hinaddrm" ∷ ⌜leader' ∈ dom addrm⌝)%I.
+    wp_apply (wp_forBreak_cond P with "[] [$Hpwrs $HleaderP]"); last first; first 1 last.
     { done. }
     { clear Φ.
       iIntros (Φ) "!> HP HΦ".
@@ -1061,10 +1065,11 @@ Section program.
       wp_pures.
       destruct finalized; wp_pures.
       { by iApply "HΦ". }
-      iDestruct "HP" as (leader') "[HleaderP %Hin]".
+      iNamed "HP".
       wp_load.
-      wp_apply (wp_GroupCoordinator__SendCommit with "Hcmted").
+      wp_apply (wp_GroupCoordinator__SendCommit with "Hcmted [] Hpwrs").
       { iFrame "Hgcoord". }
+      iIntros "Hpwrs".
       wp_apply wp_Sleep.
       wp_apply (wp_GroupCoordinator__ChangeLeader).
       { iFrame "Hgcoord". }
@@ -1073,14 +1078,14 @@ Section program.
       iApply "HΦ".
       by iFrame.
     }
-    iIntros "_".
+    iNamed 1.
     wp_pures.
     by iApply "HΦ".
   Qed.
 
   Theorem wp_GroupCoordinator__Abort (gcoord : loc) (tsW : u64) gid γ :
     let ts := uint.nat tsW in
-    is_txn_aborted γ ts -∗
+    safe_abort γ ts -∗
     is_gcoord gcoord gid γ -∗
     {{{ True }}}
       GroupCoordinator__Abort #gcoord #tsW

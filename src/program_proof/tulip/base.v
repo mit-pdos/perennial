@@ -40,6 +40,15 @@ Definition txnst_to_u64 (s : txnst) :=
 
 Definition gids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
 
+Lemma size_gids_all :
+  size gids_all < 2 ^ 64 - 1.
+Proof.
+  rewrite /gids_all size_list_to_set; last first.
+  { apply seq_U64_NoDup; lia. }
+  rewrite length_fmap length_seqZ.
+  lia.
+Qed.
+
 (* TODO: Parametrize the number of replicas in each group. *)
 Definition rids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 3)).
 
@@ -199,6 +208,18 @@ Proof.
   destruct Hkv as [Hkv Hgid].
   split; first done.
   by eapply elem_of_dom_2.
+Qed.
+
+Lemma elem_of_ptgroups_non_empty gid wrs :
+  gid ∈ ptgroups (dom wrs) ->
+  wrs_group gid wrs ≠ ∅.
+Proof.
+  intros Hptg Hempty.
+  rewrite /ptgroups elem_of_map in Hptg.
+  destruct Hptg as (k & Hktg & Hin).
+  apply elem_of_dom in Hin as [v Hv].
+  rewrite map_filter_empty_iff in Hempty.
+  specialize (Hempty _ _ Hv). simpl in Hempty. done.
 Qed.
 
 (** Safe state-machine conditions. *)

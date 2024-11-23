@@ -9,6 +9,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 Definition Txn := struct.decl [
   "ts" :: uint64T;
   "wrs" :: mapT (mapT (struct.t tulip.Value));
+  "wrsp" :: mapT (struct.t tulip.Value);
   "ptgs" :: slice.T uint64T;
   "gcoords" :: mapT ptrT;
   "proph" :: ProphIdT
@@ -29,6 +30,7 @@ Definition Txn__resetwrs: val :=
     MapIter (struct.loadF Txn "wrs" "txn") (λ: "gid" <>,
       MapInsert "wrs" "gid" (NewMap stringT (struct.t tulip.Value) #()));;
     struct.storeF Txn "wrs" "txn" "wrs";;
+    struct.storeF Txn "wrsp" "txn" (NewMap stringT (struct.t tulip.Value) #());;
     #().
 
 Definition KeyToGroup: val :=
@@ -40,6 +42,7 @@ Definition Txn__setwrs: val :=
     let: "gid" := KeyToGroup "key" in
     let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
     MapInsert "pwrs" "key" "value";;
+    MapInsert (struct.loadF Txn "wrsp" "txn") "key" "value";;
     #().
 
 Definition Txn__getwrs: val :=
@@ -79,9 +82,10 @@ Definition Txn__prepare: val :=
     let: "cv" := NewCond "mu" in
     let: "np" := ref_to uint64T #0 in
     let: "st" := ref_to uint64T tulip.TXN_PREPARED in
+    let: "wrs" := struct.loadF Txn "wrs" "txn" in
     ForSlice uint64T <> "gid" "ptgs"
       (let: "gcoord" := Fst (MapGet (struct.loadF Txn "gcoords" "txn") "gid") in
-      let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+      let: "pwrs" := Fst (MapGet "wrs" "gid") in
       Fork (let: ("stg", "ok") := gcoord.GroupCoordinator__Prepare "gcoord" "ts" "ptgs" "pwrs" in
             (if: "ok"
             then
@@ -103,11 +107,12 @@ Definition Txn__prepare: val :=
 
 Definition Txn__commit: val :=
   rec: "Txn__commit" "txn" :=
-    trusted_proph.ResolveCommit (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") (struct.loadF Txn "wrs" "txn");;
+    trusted_proph.ResolveCommit (struct.loadF Txn "proph" "txn") (struct.loadF Txn "ts" "txn") (struct.loadF Txn "wrsp" "txn");;
     let: "ts" := struct.loadF Txn "ts" "txn" in
+    let: "wrs" := struct.loadF Txn "wrs" "txn" in
     ForSlice uint64T <> "gid" (struct.loadF Txn "ptgs" "txn")
       (let: "gcoord" := Fst (MapGet (struct.loadF Txn "gcoords" "txn") "gid") in
-      let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
+      let: "pwrs" := Fst (MapGet "wrs" "gid") in
       Fork (gcoord.GroupCoordinator__Commit "gcoord" "ts" "pwrs"));;
     Txn__reset "txn";;
     #().

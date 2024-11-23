@@ -224,7 +224,7 @@ Section def.
     Persistent (query_outcome γ ts res).
   Proof. destruct res; apply _. Defined.
 
-  Definition safe_txnphase γ ts gid (phase : txnphase) : iProp Σ :=
+  Definition safe_group_txnphase γ ts gid (phase : txnphase) : iProp Σ :=
     match phase with
     | TxnPrepared => quorum_prepared γ gid ts ∗ quorum_validated γ gid ts
     | TxnCommitted => ∃ wrs, is_txn_committed γ ts wrs
@@ -232,8 +232,20 @@ Section def.
     end.
 
   #[global]
-  Instance safe_txnphase_persistent γ ts gid phase :
-    Persistent (safe_txnphase γ ts gid phase).
+  Instance safe_group_txnphase_persistent γ ts gid phase :
+    Persistent (safe_group_txnphase γ ts gid phase).
+  Proof. destruct phase; apply _. Defined.
+
+  Definition safe_txnphase γ ts (phase : txnphase) : iProp Σ :=
+    match phase with
+    | TxnPrepared => (∃ wrs, all_prepared γ ts wrs)
+    | TxnCommitted => (∃ wrs, is_txn_committed γ ts wrs)
+    | TxnAborted => is_txn_aborted γ ts
+    end.
+
+  #[global]
+  Instance safe_txnphase_persistent γ ts phase :
+    Persistent (safe_txnphase γ ts phase).
   Proof. destruct phase; apply _. Defined.
 
 End def.
