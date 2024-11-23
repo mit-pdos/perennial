@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip Require Export prelude.
 From Goose.github_com.mit_pdos.tulip Require Export
-  backup gcoord index params quorum replica tulip tuple txn txnlog util.
+  backup gcoord index params quorum replica tulip tuple txn txnlog util message.
 
 Definition dbval_to_val (v : dbval) : val :=
   match v with
@@ -111,15 +111,6 @@ Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   | CmdAbort ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
   end.
 
-Inductive rpres :=
-| ReplicaOK
-| ReplicaCommittedTxn
-| ReplicaAbortedTxn
-| ReplicaStaleCoordinator
-| ReplicaFailedValidation
-| ReplicaInvalidRank
-| ReplicaWrongLeader.
-
 Definition rpres_to_u64 (r : rpres) :=
   match r with
   | ReplicaOK => (U64 0)
@@ -164,71 +155,6 @@ Section def.
     | CmdCommit _ pwrs => (∃ pwrsL : list dbmod, own_dbmap_in_slice pwrsS pwrsL pwrs)
     | _ => True
     end.
-
-  Definition validate_outcome γ gid rid ts res : iProp Σ :=
-    match res with
-    | ReplicaOK => is_replica_validated_ts γ gid rid ts
-    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
-    | ReplicaAbortedTxn => is_txn_aborted γ ts
-    | ReplicaStaleCoordinator => False
-    | ReplicaFailedValidation => True
-    | ReplicaInvalidRank => False
-    | ReplicaWrongLeader => False
-    end.
-
-  #[global]
-  Instance validate_outcome_persistent γ gid rid ts res :
-    Persistent (validate_outcome γ gid rid ts res).
-  Proof. destruct res; apply _. Defined.
-
-  Definition fast_prepare_outcome γ gid rid ts res : iProp Σ :=
-    match res with
-    | ReplicaOK => is_replica_validated_ts γ gid rid ts ∗
-                  is_replica_pdec_at_rank γ gid rid ts O true
-    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
-    | ReplicaAbortedTxn => is_txn_aborted γ ts
-    | ReplicaStaleCoordinator => True
-    | ReplicaFailedValidation => is_replica_pdec_at_rank γ gid rid ts O false
-    | ReplicaInvalidRank => False
-    | ReplicaWrongLeader => False
-    end.
-
-  #[global]
-  Instance fast_prepare_outcome_persistent γ gid rid ts res :
-    Persistent (fast_prepare_outcome γ gid rid ts res).
-  Proof. destruct res; apply _. Defined.
-
-  Definition accept_outcome γ gid rid ts rank pdec res : iProp Σ :=
-    match res with
-    | ReplicaOK => is_replica_pdec_at_rank γ gid rid ts rank pdec
-    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
-    | ReplicaAbortedTxn => is_txn_aborted γ ts
-    | ReplicaStaleCoordinator => True
-    | ReplicaFailedValidation => False
-    | ReplicaInvalidRank => False
-    | ReplicaWrongLeader => False
-    end.
-
-  #[global]
-  Instance accept_outcome_persistent γ gid rid ts rank pdec res :
-    Persistent (accept_outcome γ gid rid ts rank pdec res).
-  Proof. destruct res; apply _. Defined.
-
-  Definition query_outcome γ ts res : iProp Σ :=
-    match res with
-    | ReplicaOK => True
-    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
-    | ReplicaAbortedTxn => is_txn_aborted γ ts
-    | ReplicaStaleCoordinator => True
-    | ReplicaFailedValidation => False
-    | ReplicaInvalidRank => False
-    | ReplicaWrongLeader => False
-    end.
-
-  #[global]
-  Instance query_outcome_persistent γ ts res :
-    Persistent (query_outcome γ ts res).
-  Proof. destruct res; apply _. Defined.
 
   Definition safe_group_txnphase γ ts gid (phase : txnphase) : iProp Σ :=
     match phase with

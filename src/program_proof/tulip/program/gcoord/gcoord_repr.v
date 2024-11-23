@@ -54,17 +54,17 @@ Section repr.
     "Hgpp" ∷ own_gcoord_gpreparer gcoord ts gid γ ∗
     "Hgfl" ∷ own_gcoord_finalizer gcoord rids.
 
-  Definition own_gcoord_comm gcoord (addrm : gmap u64 chan) : iProp Σ :=
+  Definition own_gcoord_comm gcoord (addrm : gmap u64 chan) gid γ : iProp Σ :=
     ∃ (connsP : loc) (conns : gmap u64 (chan * chan)),
       let connsV := fmap (λ x, connection_socket x.1 x.2) conns in
       "HconnsP" ∷ gcoord ↦[GroupCoordinator :: "conns"] #connsP ∗
       "Hconns"  ∷ map.own_map connsP (DfracOwn 1) (connsV, #()) ∗
-      (* "#Htrmls" ∷ ([∗ map] x ∈ conns, is_terminal γ x.1) ∗ *)
-      "%Haddrpeers" ∷ ⌜map_Forall (λ rid x, addrm !! rid = Some x.2) conns⌝.
+      "#Htrmls" ∷ ([∗ map] x ∈ conns, is_terminal γ gid x.1) ∗
+      "%Haddrm" ∷ ⌜map_Forall (λ rid x, addrm !! rid = Some x.2) conns⌝.
 
   Definition own_gcoord_with_ts gcoord addrm ts gid γ : iProp Σ :=
     "Hgcoord" ∷ own_gcoord_core gcoord ts gid (dom addrm) γ ∗
-    "Hcomm"   ∷ own_gcoord_comm gcoord addrm.
+    "Hcomm"   ∷ own_gcoord_comm gcoord addrm gid γ.
 
   Definition own_gcoord gcoord addrm gid γ : iProp Σ :=
     ∃ ts, "Hgcoord" ∷ own_gcoord_with_ts gcoord addrm ts gid γ.
@@ -80,11 +80,14 @@ Section repr.
 
   Definition is_gcoord_with_addrm gcoord gid (addrm : gmap u64 chan) γ : iProp Σ :=
     ∃ (muP : loc) (cvP : loc),
-      "#HmuP"   ∷ readonly (gcoord ↦[GroupCoordinator :: "mu"] #muP) ∗
-      "#Hlock"  ∷ is_lock tulipNS #muP (own_gcoord gcoord addrm gid γ) ∗
-      "#HcvP"   ∷ readonly (gcoord ↦[GroupCoordinator :: "cv"] #cvP) ∗
-      "Hcv"     ∷ is_cond cvP #muP ∗
-      "#Haddrm" ∷ is_gcoord_addrm gcoord addrm.
+      "#HmuP"    ∷ readonly (gcoord ↦[GroupCoordinator :: "mu"] #muP) ∗
+      "#Hlock"   ∷ is_lock tulipNS #muP (own_gcoord gcoord addrm gid γ) ∗
+      "#HcvP"    ∷ readonly (gcoord ↦[GroupCoordinator :: "cv"] #cvP) ∗
+      "#Hcv"     ∷ is_cond cvP #muP ∗
+      "#Hinv"    ∷ know_tulip_inv γ ∗
+      "#Hinvnet" ∷ know_tulip_network_inv γ gid addrm ∗
+      "#Haddrm"  ∷ is_gcoord_addrm gcoord addrm ∗
+      "%Hgid"    ∷ ⌜gid ∈ gids_all⌝.
 
   Definition is_gcoord gcoord gid γ : iProp Σ :=
     ∃ addrm, "Hgcoord" ∷ is_gcoord_with_addrm gcoord gid addrm γ.

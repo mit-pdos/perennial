@@ -39,6 +39,216 @@ Section inv.
 
 End inv.
 
+Section def.
+  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : tulip_names).
+
+  Definition slow_read γ rid key lts ts v : iProp Σ :=
+    "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
+    "#Hioa"  ∷ read_promise γ (key_to_group key) rid key lts ts ∗
+    "%Hltts" ∷ ⌜(lts < pred ts)%nat⌝.
+
+  Definition quorum_read γ key ts v : iProp Σ :=
+    ∃ (ridsq : gset u64) (lts : nat),
+      "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
+      "#Hioa"  ∷ ([∗ set] rid ∈ ridsq,
+                    read_promise γ (key_to_group key) rid key lts ts) ∗
+      "%Hltts" ∷ ⌜(lts < pred ts)%nat⌝ ∗
+      "%Hqrm"  ∷ ⌜cquorum rids_all ridsq⌝.
+
+  Definition fast_or_quorum_read γ key ts v : iProp Σ :=
+    is_repl_hist_at γ key (pred ts) v ∨ quorum_read γ key ts v.
+
+  Definition fast_or_slow_read γ rid key lts ts v : iProp Σ :=
+    if decide (lts = O)
+    then is_repl_hist_at γ key (pred ts) v
+    else slow_read γ rid key lts ts v.
+
+  #[global]
+  Instance fast_or_slow_read_persistent γ rid key lts ts v :
+    Persistent (fast_or_slow_read γ rid key lts ts v).
+  Proof. rewrite /fast_or_slow_read. case_decide; apply _. Defined.
+
+  Definition validate_outcome γ gid rid ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_validated_ts γ gid rid ts
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => False
+    | ReplicaFailedValidation => True
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance validate_outcome_persistent γ gid rid ts res :
+    Persistent (validate_outcome γ gid rid ts res).
+  Proof. destruct res; apply _. Defined.
+
+  Definition fast_prepare_outcome γ gid rid ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_validated_ts γ gid rid ts ∗
+                  is_replica_pdec_at_rank γ gid rid ts O true
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => is_replica_pdec_at_rank γ gid rid ts O false
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance fast_prepare_outcome_persistent γ gid rid ts res :
+    Persistent (fast_prepare_outcome γ gid rid ts res).
+  Proof. destruct res; apply _. Defined.
+
+  Definition accept_outcome γ gid rid ts rank pdec res : iProp Σ :=
+    match res with
+    | ReplicaOK => is_replica_pdec_at_rank γ gid rid ts rank pdec
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance accept_outcome_persistent γ gid rid ts rank pdec res :
+    Persistent (accept_outcome γ gid rid ts rank pdec res).
+  Proof. destruct res; apply _. Defined.
+
+  Definition query_outcome γ ts res : iProp Σ :=
+    match res with
+    | ReplicaOK => True
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance query_outcome_persistent γ ts res :
+    Persistent (query_outcome γ ts res).
+  Proof. destruct res; apply _. Defined.
+
+End def.
+
+Section inv_network.
+  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : tulip_names).
+
+  Definition tulipnetNS := tulipNS .@ "net".
+
+  Definition safe_read_req gid ts key :=
+    valid_ts ts ∧ valid_key key ∧ key_to_group key = gid.
+
+  Definition safe_accept_pdec_req γ gid ts rank dec : iProp Σ :=
+    "#Hpsl"    ∷ is_group_prepare_proposal γ gid ts rank dec ∗
+    "%Hranknz" ∷ ⌜rank ≠ O⌝.
+
+  Definition safe_txnreq γ (gid : u64) req : iProp Σ :=
+    match req with
+    | ReadReq ts key => ⌜safe_read_req gid (uint.nat ts) key⌝
+    | FastPrepareReq ts pwrs => safe_txn_pwrs γ gid (uint.nat ts) pwrs
+    | ValidateReq ts _ pwrs => safe_txn_pwrs γ gid (uint.nat ts) pwrs
+    | PrepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) true
+    | UnprepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) false
+    | CommitReq ts pwrs => safe_commit γ gid (uint.nat ts) pwrs
+    | AbortReq ts => safe_abort γ (uint.nat ts)
+    | _ => True
+    end.
+
+  #[global]
+  Instance safe_txnreq_persistent γ gid req :
+    Persistent (safe_txnreq γ gid req).
+  Proof. destruct req; apply _. Defined.
+
+  Definition safe_read_resp
+    γ (ts rid : u64) (key : string) (ver : u64 * dbval) : iProp Σ :=
+    "#Hsafe" ∷ fast_or_slow_read γ rid key (uint.nat ver.1) (uint.nat ts) ver.2 ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
+  Definition safe_fast_prepare_resp
+    γ (gid rid : u64) (ts : nat) (res : rpres) : iProp Σ :=
+    "#Hsafe" ∷ fast_prepare_outcome γ gid rid ts res ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
+  Definition safe_validate_resp
+    γ (gid rid : u64) (ts : nat) (res : rpres) : iProp Σ :=
+    "#Hsafe" ∷ validate_outcome γ gid rid ts res ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
+  Definition safe_prepare_resp
+    γ (gid rid : u64) (ts rank : nat) (res : rpres) : iProp Σ :=
+    "#Hsafe" ∷ accept_outcome γ gid rid ts rank true res ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
+  Definition safe_unprepare_resp
+    γ (gid rid : u64) (ts rank : nat) (res : rpres) : iProp Σ :=
+    "#Hsafe" ∷ accept_outcome γ gid rid ts rank false res ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
+  Definition safe_txnresp γ (gid : u64) resp : iProp Σ :=
+    match resp with
+    | ReadResp ts rid key ver =>
+        safe_read_resp γ ts rid key ver
+    | FastPrepareResp ts rid res =>
+        safe_fast_prepare_resp γ gid rid (uint.nat ts) res
+    | ValidateResp ts rid res =>
+        safe_validate_resp γ gid rid (uint.nat ts) res
+    | PrepareResp ts rank rid res =>
+        safe_prepare_resp γ gid rid (uint.nat ts) (uint.nat rank) res
+    | UnprepareResp ts rank rid res =>
+        safe_unprepare_resp γ gid rid (uint.nat ts) (uint.nat rank) res
+    | QueryResp ts res =>
+        query_outcome γ (uint.nat ts) res
+    | _ => True
+    end.
+
+  #[global]
+  Instance safe_txnresp_persistent γ gid resp :
+    Persistent (safe_txnresp γ gid resp).
+  Proof. destruct resp; apply _. Defined.
+
+  Definition listen_inv
+    (addr : chan) (ms : gset message) gid γ : iProp Σ :=
+    ∃ (reqs : gset txnreq),
+      "Hms"      ∷ addr c↦ ms ∗
+      (* senders are always reachable *)
+      "#Hsender" ∷ ([∗ set] trml ∈ set_map msg_sender ms, is_terminal γ gid trml) ∗
+      "#Hreqs"   ∷ ([∗ set] req ∈ reqs, safe_txnreq γ gid req) ∗
+      "%Henc"    ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnreq reqs⌝.
+
+  Definition connect_inv (trml : chan) (ms : gset message) gid γ : iProp Σ :=
+    ∃ (resps : gset txnresp),
+      "Hms"     ∷ trml c↦ ms ∗
+      "#Hresps" ∷ ([∗ set] resp ∈ resps, safe_txnresp γ gid resp) ∗
+      "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnresp resps⌝.
+
+  Definition tulip_network_inv
+    γ (gid : u64) (addrm : gmap u64 chan) : iProp Σ :=
+    ∃ (listens : gmap chan (gset message)) (connects : gmap chan (gset message)),
+      "Hlistens"   ∷ ([∗ map] a ↦ ms ∈ listens, listen_inv a ms gid γ) ∗
+      "Hconnects"  ∷ ([∗ map] t ↦ ms ∈ connects, connect_inv t ms gid γ) ∗
+      "Hterminals" ∷ own_terminals γ gid (dom connects) ∗
+      "%Hdomaddrm" ∷ ⌜dom addrm = rids_all⌝ ∗
+      "%Himgaddrm" ∷ ⌜map_img addrm = dom listens⌝.
+
+  #[global]
+  Instance tulip_network_inv_timeless γ gid addrm :
+    Timeless (tulip_network_inv γ gid addrm).
+  Admitted.
+
+  Definition know_tulip_network_inv γ gid addrm : iProp Σ :=
+    inv tulipnetNS (tulip_network_inv γ gid addrm).
+
+End inv_network.
+
 Section alloc.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 

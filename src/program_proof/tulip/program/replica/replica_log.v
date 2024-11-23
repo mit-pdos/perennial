@@ -13,9 +13,9 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Replica__logValidate rp (ts : u64) (pwrsS : Slice.t) (ptgsS : Slice.t) :
+  Theorem wp_Replica__logValidate rp (ts : u64) (pwrsS : Slice.t) :
     {{{ True }}}
-      Replica__logValidate #rp #ts (to_val pwrsS) (to_val ptgsS)
+      Replica__logValidate #rp #ts (to_val pwrsS) slice.nil
     {{{ RET #(); True }}}.
   Proof.
     (*@ func (rp *Replica) logValidate(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
@@ -23,9 +23,9 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Replica__logFastPrepare (rp : loc) (ts : u64) (pwrs : Slice.t) (ptgs : Slice.t) :
+  Theorem wp_Replica__logFastPrepare (rp : loc) (ts : u64) (pwrs : Slice.t) :
     {{{ True }}}
-      Replica__logFastPrepare #rp #ts (to_val pwrs) (to_val ptgs)
+      Replica__logFastPrepare #rp #ts (to_val pwrs) slice.nil
     {{{ RET #(); True }}}.
   Proof.
     (*@ func (rp *Replica) logFastPrepare(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)

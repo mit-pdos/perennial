@@ -3,7 +3,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import list fin_maps vslice.
-From Perennial.program_proof.tulip Require Export res_txnsys res_group res_replica.
+From Perennial.program_proof.tulip Require Export res_txnsys res_group res_replica res_network.
 
 (** This file contains resources exposed to the users or owned by multiple
 subsystems. Resources onwed exclusively to one subsystem should be defined in

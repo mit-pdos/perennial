@@ -140,6 +140,7 @@ Section repr.
       "#HidxP" ∷ readonly (rp ↦[Replica :: "idx"] #idx) ∗
       "#Hidx"  ∷ is_index idx γ α.
 
+  (* TODO: rename this to [is_replica_core] and the one below to just [is_replica]. *)
   Definition is_replica (rp : loc) gid rid γ : iProp Σ :=
     ∃ (mu : loc) α,
       "#HmuP"    ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
@@ -149,5 +150,13 @@ Section repr.
       "#Hinv"    ∷ know_tulip_inv γ ∗
       "%Hgid"    ∷ ⌜gid ∈ gids_all⌝ ∗
       "%Hrid"    ∷ ⌜rid ∈ rids_all⌝.
+
+  Definition is_replica_plus_network (rp : loc) (addr : chan) (gid rid : u64) γ : iProp Σ :=
+    ∃ (addrm : gmap u64 chan),
+      "#HaddrP"  ∷ readonly (rp ↦[Replica :: "addr"] (to_val addr)) ∗
+      "#HridP"   ∷ readonly (rp ↦[Replica :: "rid"] #rid) ∗
+      "#Hinvnet" ∷ know_tulip_network_inv γ gid addrm ∗
+      "Hrp"      ∷ is_replica rp gid rid γ ∗
+      "%Haddr"   ∷ ⌜addrm !! rid = Some addr⌝.
 
 End repr.

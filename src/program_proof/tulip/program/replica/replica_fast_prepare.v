@@ -2,20 +2,20 @@ From Perennial.program_proof.tulip.invariance Require Import execute validate ac
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_finalized replica_last_proposal replica_acquire
-  replica_accept replica_log.
+  replica_accept replica_refresh replica_log.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__fastPrepare
-    rp (tsW : u64) pwrsS pwrsL pwrs (ptgsS : Slice.t) gid rid γ α :
+    rp (tsW : u64) pwrsS pwrsL pwrs gid rid γ α :
     let ts := uint.nat tsW in
     gid ∈ gids_all ->
     rid ∈ rids_all ->
     safe_txn_pwrs γ gid ts pwrs -∗
     know_tulip_inv γ -∗
     {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica rp gid rid γ α }}}
-      Replica__fastPrepare #rp #tsW (to_val pwrsS) (to_val ptgsS)
+      Replica__fastPrepare #rp #tsW (to_val pwrsS) slice.nil
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         own_replica rp gid rid γ α ∗ fast_prepare_outcome γ gid rid ts res
     }}}.
@@ -271,6 +271,44 @@ Section program.
       by inv Hnewc.
     }
     { by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=. }
+  Qed.
+
+  Theorem wp_Replica__FastPrepare
+    rp (tsW : u64) pwrsS pwrsL pwrs gid rid γ :
+    let ts := uint.nat tsW in
+    safe_txn_pwrs γ gid ts pwrs -∗
+    is_replica rp gid rid γ -∗
+    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
+      Replica__FastPrepare #rp #tsW (to_val pwrsS) slice.nil
+    {{{ (res : rpres), RET #(rpres_to_u64 res);
+        fast_prepare_outcome γ gid rid ts res
+    }}}.
+  Proof.
+    iIntros (ts) "#Hsafepwrs #Hrp".
+    iIntros (Φ) "!> Hpwrs HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) FastPrepare(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) uint64 { @*)
+    (*@     rp.mu.Lock()                                                        @*)
+    (*@     res := rp.fastPrepare(ts, pwrs, ptgs)                               @*)
+    (*@     rp.refresh(ts, 0)                                                   @*)
+    (*@     rp.mu.Unlock()                                                      @*)
+    (*@     return res                                                          @*)
+    (*@ }                                                                       @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hrp]".
+    wp_apply (wp_Replica__fastPrepare with "Hsafepwrs Hinv [$Hpwrs $Hrp]").
+    { apply Hgid. }
+    { apply Hrid. }
+    iIntros (res) "[Hrp #Hfp]".
+    wp_apply (wp_Replica__refresh with "Hrp").
+    iIntros "Hrp".
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hrp]").
+    wp_pures.
+    by iApply "HΦ".
   Qed.
 
 End program.

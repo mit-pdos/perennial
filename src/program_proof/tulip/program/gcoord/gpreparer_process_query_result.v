@@ -6,14 +6,13 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupPreparer__processQueryResult
-    (gpp : loc) (rid : u64) (res : rpres) ts gid γ :
-    rid ∈ rids_all ->
+    (gpp : loc) (res : rpres) ts gid γ :
     query_outcome γ ts res -∗
     {{{ own_gpreparer gpp ts gid γ }}}
-      GroupPreparer__processQueryResult #gpp #rid #(rpres_to_u64 res)
+      GroupPreparer__processQueryResult #gpp #(rpres_to_u64 res)
     {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
   Proof.
-    iIntros (Hrid) "#Hquery".
+    iIntros "#Hquery".
     iIntros (Φ) "!> Hgpp HΦ".
     wp_rec.
 

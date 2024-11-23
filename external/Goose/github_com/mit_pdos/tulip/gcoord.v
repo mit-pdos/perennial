@@ -95,18 +95,21 @@ Definition GroupCoordinator__Send: val :=
   rec: "GroupCoordinator__Send" "gcoord" "rid" "data" :=
     let: ("conn", "ok") := GroupCoordinator__GetConnection "gcoord" "rid" in
     (if: (~ "ok")
-    then GroupCoordinator__Connect "gcoord" "rid"
-    else #());;
-    let: "err" := grove_ffi.Send "conn" "data" in
-    (if: "err"
     then
       GroupCoordinator__Connect "gcoord" "rid";;
       #()
-    else #()).
+    else
+      let: "err" := grove_ffi.Send "conn" "data" in
+      (if: "err"
+      then
+        GroupCoordinator__Connect "gcoord" "rid";;
+        #()
+      else #())).
 
 Definition GroupCoordinator__SendRead: val :=
   rec: "GroupCoordinator__SendRead" "gcoord" "rid" "ts" "key" :=
-    GroupCoordinator__Send "gcoord" "rid" (message.EncodeTxnRead "ts" "key");;
+    let: "data" := message.EncodeTxnReadRequest "ts" "key" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__ReadSession: val :=
@@ -254,27 +257,38 @@ Definition GroupCoordinator__NextPrepareAction: val :=
 
 Definition GroupCoordinator__SendFastPrepare: val :=
   rec: "GroupCoordinator__SendFastPrepare" "gcoord" "rid" "ts" "pwrs" "ptgs" :=
-    GroupCoordinator__Send "gcoord" "rid" (message.EncodeTxnFastPrepare "ts" "pwrs" "ptgs");;
+    let: "data" := message.EncodeTxnFastPrepareRequest "ts" "pwrs" "ptgs" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendValidate: val :=
   rec: "GroupCoordinator__SendValidate" "gcoord" "rid" "ts" "rank" "pwrs" "ptgs" :=
+    let: "data" := message.EncodeTxnValidateRequest "ts" "rank" "pwrs" "ptgs" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendPrepare: val :=
   rec: "GroupCoordinator__SendPrepare" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnPrepareRequest "ts" "rank" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendUnprepare: val :=
   rec: "GroupCoordinator__SendUnprepare" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnUnprepareRequest "ts" "rank" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendQuery: val :=
   rec: "GroupCoordinator__SendQuery" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnQueryRequest "ts" "rank" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendRefresh: val :=
   rec: "GroupCoordinator__SendRefresh" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnRefreshRequest "ts" "rank" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__PrepareSession: val :=
@@ -393,6 +407,8 @@ Definition GroupCoordinator__Finalized: val :=
 
 Definition GroupCoordinator__SendCommit: val :=
   rec: "GroupCoordinator__SendCommit" "gcoord" "rid" "ts" "pwrs" :=
+    let: "data" := message.EncodeTxnCommitRequest "ts" "pwrs" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__ChangeLeader: val :=
@@ -417,6 +433,8 @@ Definition GroupCoordinator__Commit: val :=
 
 Definition GroupCoordinator__SendAbort: val :=
   rec: "GroupCoordinator__SendAbort" "gcoord" "rid" "ts" :=
+    let: "data" := message.EncodeTxnAbortRequest "ts" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__Abort: val :=
@@ -679,12 +697,12 @@ Definition GroupPreparer__processUnprepareResult: val :=
         else #()))).
 
 Definition GroupPreparer__processQueryResult: val :=
-  rec: "GroupPreparer__processQueryResult" "gpp" "rid" "res" :=
+  rec: "GroupPreparer__processQueryResult" "gpp" "res" :=
     GroupPreparer__tryResign "gpp" "res";;
     #().
 
-Definition GroupCoordinator__ResultSession: val :=
-  rec: "GroupCoordinator__ResultSession" "gcoord" "rid" :=
+Definition GroupCoordinator__ResponseSession: val :=
+  rec: "GroupCoordinator__ResponseSession" "gcoord" "rid" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("data", "ok") := GroupCoordinator__Receive "gcoord" "rid" in
@@ -707,25 +725,29 @@ Definition GroupCoordinator__ResultSession: val :=
             Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
             Continue
           else
-            let: "gpp" := struct.loadF GroupCoordinator "gpp" "gcoord" in
-            let: "grd" := struct.loadF GroupCoordinator "grd" "gcoord" in
             (if: "kind" = message.MSG_TXN_READ
-            then GroupReader__processReadResult "grd" "rid" (struct.get message.TxnResponse "Key" "msg") (struct.get message.TxnResponse "Version" "msg")
+            then GroupReader__processReadResult (struct.loadF GroupCoordinator "grd" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Key" "msg") (struct.get message.TxnResponse "Version" "msg")
             else
               (if: "kind" = message.MSG_TXN_FAST_PREPARE
-              then GroupPreparer__processFastPrepareResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
+              then GroupPreparer__processFastPrepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
               else
                 (if: "kind" = message.MSG_TXN_VALIDATE
-                then GroupPreparer__processValidateResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
+                then GroupPreparer__processValidateResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
                 else
                   (if: "kind" = message.MSG_TXN_PREPARE
-                  then GroupPreparer__processPrepareResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
+                  then
+                    (if: (struct.get message.TxnResponse "Rank" "msg") = #1
+                    then GroupPreparer__processPrepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
+                    else #())
                   else
                     (if: "kind" = message.MSG_TXN_UNPREPARE
-                    then GroupPreparer__processUnprepareResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
+                    then
+                      (if: (struct.get message.TxnResponse "Rank" "msg") = #1
+                      then GroupPreparer__processUnprepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
+                      else #())
                     else
                       (if: "kind" = message.MSG_TXN_QUERY
-                      then GroupPreparer__processQueryResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
+                      then GroupPreparer__processQueryResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "Result" "msg")
                       else
                         (if: "kind" = message.MSG_TXN_REFRESH
                         then #()

@@ -20,6 +20,7 @@ Section decode_response.
 
   Theorem wp_DecodeResponse (dataP : Slice.t) (data : list u8) (resp : pxresp) :
     data = encode_pxresp resp ->
+    (* FIXME: this should take ownership of data. *)
     {{{ True }}}
       DecodeResponse (to_val dataP)
     {{{ (entsP : Slice.t), RET (pxresp_to_val resp entsP);
