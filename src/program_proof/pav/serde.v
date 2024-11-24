@@ -125,6 +125,7 @@ End UpdateProof.
 Module CommitOpen.
 Record t :=
   mk {
+    d: dfrac;
     Val: list w8;
     Rand: list w8;
   }.
@@ -138,9 +139,9 @@ Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_val sl_rand,
-  "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded obj.(Val) ∗
+  "Hsl_val" ∷ own_slice_small sl_val byteT obj.(d) obj.(Val) ∗
   "Hptr_val" ∷ ptr ↦[CommitOpen :: "Val"] (slice_val sl_val) ∗
-  "#Hsl_rand" ∷ own_slice_small sl_rand byteT DfracDiscarded obj.(Rand) ∗
+  "Hsl_rand" ∷ own_slice_small sl_rand byteT obj.(d) obj.(Rand) ∗
   "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"] (slice_val sl_rand).
 End defs.
 End CommitOpen.

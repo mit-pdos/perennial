@@ -34,7 +34,7 @@ Lemma wp_CallServPut ptr_cli cli (uid : w64) sl_pk d0 (pk : list w8) :
   }}}
   CallServPut #ptr_cli #uid (slice_val sl_pk)
   {{{
-    ptr_dig dig ptr_memb memb ptr_nonmemb nonmemb (err : bool),
+    (err : bool) ptr_dig dig ptr_memb memb ptr_nonmemb nonmemb,
     RET (#ptr_dig, #ptr_memb, #ptr_nonmemb, #err);
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
@@ -51,14 +51,15 @@ Lemma wp_CallServGet ptr_cli cli (uid : w64) :
   }}}
   CallServGet #ptr_cli #uid
   {{{
-    ptr_dig dig sl_hist hist_ref hist ptr_memb ptr_nonmemb nonmemb (is_reg err : bool),
+    (err is_reg : bool) ptr_dig dig sl_hist hist_ref hist ptr_memb memb ptr_nonmemb nonmemb,
     RET (#ptr_dig, slice_val sl_hist, #is_reg, #ptr_memb, #ptr_nonmemb, #err);
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
     "Herr" ∷ (if err then True else
       "#Hown_dig" ∷ SigDig.own ptr_dig dig ∗
       "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) hist_ref ∗
       "Hown_hist" ∷ ([∗ list] l;v ∈ hist_ref;hist, MembHide.own l v) ∗
-      "Hown_memb" ∷ (if negb is_reg then True else ∃ memb, Memb.own ptr_memb memb) ∗
+      "Hown_memb" ∷ Memb.own ptr_memb memb ∗
+      "%Hpk_dfrac" ∷ ⌜ memb.(Memb.PkOpen).(CommitOpen.d) = DfracOwn 1 ⌝ ∗
       "Hown_nonmemb" ∷ NonMemb.own ptr_nonmemb nonmemb)
   }}}.
 Proof. Admitted.
@@ -69,7 +70,7 @@ Lemma wp_CallServSelfMon ptr_cli cli (uid : w64) :
   }}}
   CallServSelfMon #ptr_cli #uid
   {{{
-    ptr_dig dig ptr_nonmemb nonmemb (err : bool), RET (#ptr_dig, #ptr_nonmemb, #err);
+    (err : bool) ptr_dig dig ptr_nonmemb nonmemb, RET (#ptr_dig, #ptr_nonmemb, #err);
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
     "Herr" ∷ (if err then True else
       "#Hown_dig" ∷ SigDig.own ptr_dig dig ∗
@@ -83,7 +84,7 @@ Lemma wp_CallServAudit ptr_cli cli (ep : w64) :
   }}}
   CallServAudit #ptr_cli #ep
   {{{
-    ptr_upd upd (err : bool), RET (#ptr_upd, #err);
+    (err : bool) ptr_upd upd, RET (#ptr_upd, #err);
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
     if negb err then
       "Hown_upd" ∷ UpdateProof.own ptr_upd upd
@@ -110,7 +111,7 @@ Lemma wp_CallAdtrGet ptr_cli cli (ep : w64) :
   }}}
   CallAdtrGet #ptr_cli #ep
   {{{
-    ptr_adtrInfo adtrInfo (err : bool), RET (#ptr_adtrInfo, #err);
+    (err : bool) ptr_adtrInfo adtrInfo, RET (#ptr_adtrInfo, #err);
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
     if negb err then
       "Hown_info" ∷ AdtrEpochInfo.own ptr_adtrInfo adtrInfo
