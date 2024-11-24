@@ -1,10 +1,10 @@
 From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
-From iris.algebra Require Import lib.frac_auth auth numbers gmap excl.
+From iris.algebra Require Import lib.frac_auth auth numbers gmap excl dfrac_agree.
 From iris.bi Require Import fractional.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import ectx_lifting.
-From Perennial.Helpers Require Import Transitions.
+From Perennial.Helpers Require Import Transitions NamedProps.
 From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
@@ -109,6 +109,86 @@ Local Notation "l ↦ dq v" := (heap_pointsto l dq v%V)
 
 Local Notation "l ↦ dq -" := (∃ v, l ↦{dq} v)%I
   (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  -") : bi_scope.
+
+
+Section globals_definitions.
+Context `{ext:ffi_syntax}.
+
+Class globalsGS Σ : Set := GlobalsGS {
+                               (* XXX: optionUR is to turn the cmra into a ucmra
+                                  (it is adjoint to forgetful ucmra → cmra functor). *)
+  #[global] globals_inG :: inG Σ (authUR (optionUR (exclR (leibnizO (gmap string val))))) ;
+  globals_name : gname ;
+}.
+
+Context `{!globalsGS Σ}.
+
+(* XXX: this is using the frag b/c we want the dfrac in the user-owned part. *)
+Definition own_globals_ctx (g : gmap string val) :=
+  own globals_name (◯ (Some (Excl (g : leibnizO _)))).
+
+Definition own_globals_def (dq : dfrac) (g : gmap string val) :=
+  own globals_name (●{dq}Some (Excl (g : leibnizO _))).
+Program Definition own_globals := unseal (_:seal (@own_globals_def)). Obligation 1. by eexists. Qed.
+Definition own_globals_unseal : own_globals = _ := seal_eq _.
+
+Global Instance own_globals_fractional v: Fractional (λ q, own_globals (DfracOwn q) v)%I.
+Proof.
+  intros p q.
+  rewrite own_globals_unseal /own_globals_def -own_op -auth_auth_dfrac_op dfrac_op_own //.
+Qed.
+
+Global Instance own_globals_as_fractional q v:
+  AsFractional (own_globals (DfracOwn q) v) (λ q, own_globals (DfracOwn q) v)%I q.
+Proof. econstructor; eauto. apply _. Qed.
+
+Global Instance own_globals_combine_sep_gives dq1 dq2 v1 v2 :
+  CombineSepGives (own_globals dq1 v1)%I (own_globals dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+Proof.
+  rewrite own_globals_unseal /CombineSepGives. iIntros "[H1 H2]".
+  iCombine "H1 H2" gives %?. iModIntro. iPureIntro.
+  rewrite auth_auth_dfrac_op_valid in H.
+  naive_solver.
+Qed.
+
+Global Instance own_globals_ctx_combine_sep_gives dq v1 v2 :
+  CombineSepGives (own_globals_ctx v1)%I (own_globals dq v2)%I ⌜ v1 = v2 ⌝%I.
+Proof.
+  rewrite own_globals_unseal /CombineSepGives. iIntros "[H1 H2]".
+  iCombine "H2 H1" gives %?. iModIntro. iPureIntro.
+  Search auth_auth auth_frag.
+  rewrite auth_both_dfrac_valid in H.
+  destruct H as (_ & ? & _).
+  specialize (H O).
+  rewrite Excl_includedN in H.
+  naive_solver.
+Qed.
+
+Global Instance own_globals_persistent v : Persistent (own_globals DfracDiscarded v).
+Proof. rewrite own_globals_unseal. apply _. Qed.
+
+Lemma own_globals_persist dq v:
+  own_globals dq v ==∗ own_globals DfracDiscarded v.
+Proof.
+  rewrite own_globals_unseal.
+  iApply own_update.
+  apply auth_update_auth_persist.
+Qed.
+
+Lemma own_globals_update v v' v'' :
+  own_globals (DfracOwn 1) v -∗ own_globals_ctx v' ==∗
+  own_globals (DfracOwn 1) v'' ∗ own_globals_ctx v''.
+Proof.
+  iIntros "H1 H2".
+  iCombine "H2 H1" gives %H. subst.
+  rewrite own_globals_unseal.
+  rewrite -own_op.
+  iApply (own_update_2 with "H1 H2").
+  apply auth_update.
+  (* FIXME: prove local update. *)
+Admitted.
+
+End globals_definitions.
 
 (* An FFI layer will use certain CMRAs for its primitive rules.
    Besides needing to know that these CMRAs are included in Σ, there may
@@ -416,6 +496,7 @@ Class gooseLocalGS Σ : Set := GooseLocalGS {
   goose_ffiLocalGS : ffiLocalGS Σ;
   #[global] goose_na_heapGS :: na_heapGS loc val Σ;
   #[global] goose_traceGS :: traceGS Σ;
+  #[global] goose_globalsGS :: globalsGS Σ;
 }.
 
 (* For convenience we also have a class that bundles both the
@@ -465,8 +546,13 @@ Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
   generationGS goose_lang Σ := {
   iris_crashGS := goose_crashGS;
   state_interp σ nt :=
-    (na_heap_ctx tls σ.(heap) ∗ ffi_local_ctx goose_ffiLocalGS σ.(world)
-      ∗ trace_auth σ.(trace) ∗ oracle_auth σ.(oracle))%I;
+    (
+      "Hσ" ∷ na_heap_ctx tls σ.(heap) ∗
+      "Hffi" ∷ ffi_local_ctx goose_ffiLocalGS σ.(world) ∗
+      "Htr_auth" ∷ trace_auth σ.(trace) ∗
+      "Hor_auth" ∷ oracle_auth σ.(oracle) ∗
+      "Hg_auth" ∷ own_globals_ctx σ.(globals)
+    )%I;
 }.
 
 (** The tactic [inv_base_step] performs inversion on hypotheses of the shape
@@ -564,6 +650,10 @@ Proof. solve_atomic. simpl in H; monad_inv. eauto. Qed.
 Global Instance linearize_atomic s : Atomic s Linearize.
 Proof. rewrite /Linearize. apply _. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
+Proof. solve_atomic. Qed.
+Global Instance atomic_global_get s v1 : Atomic s (GlobalGet (Val v1)).
+Proof. solve_atomic. Qed.
+Global Instance atomic_global_put s v1 v2 : Atomic s (GlobalPut (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 (*
 Global Instance ext_atomic s op v : Atomic s (ExternalOp op (Val v)).
@@ -749,8 +839,9 @@ Lemma wp_input s E tr (sel: u64) Or :
   {{{ RET (LitV (LitInt (Or tr sel))); trace_frag (add_event (In_ev sel (LitInt (Or tr sel))) tr) ∗ oracle_frag Or}}}.
 Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_base_step; [done|].
-  iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&Htr_auth&Hor_auth) Hg !>"; iSplit.
+  iIntros (σ1 g1 ns mj D κ κs n) "H Hg !>"; iSplit.
   { iPureIntro. unshelve (by eauto); apply (W64 0). }
+  iNamed "H".
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
@@ -758,6 +849,52 @@ Proof.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
+Qed.
+
+Lemma wp_GlobalGet s E g dq (k : string) v :
+  g !! k = Some v →
+  {{{ own_globals dq g }}}
+    GlobalGet #(str k) @ s ; E
+  {{{ RET v; own_globals dq g }}}.
+Proof.
+  iIntros (??) "Hg HΦ". iApply wp_lift_atomic_base_step; [done|].
+  iIntros (σ1 g1 ns mj D κ κs n) "H ? !>".
+  iNamed "H".
+  iCombine "Hg_auth Hg" gives %?. subst.
+  iSplit.
+  { iPureIntro.
+    rewrite /base_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; by monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iNext.
+  iMod (global_state_interp_le with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
+Qed.
+
+Lemma wp_GlobalPut s E g (k : string) (v : val) :
+  {{{ own_globals (DfracOwn 1) g }}}
+    GlobalPut #(str k) v @ s ; E
+  {{{ RET #(); own_globals (DfracOwn 1) (<[k := v]> g) }}}.
+Proof.
+  iIntros (?) "Hg HΦ". iApply wp_lift_atomic_base_step; [done|].
+  iIntros (σ1 g1 ns mj D κ κs n) "H ? !>".
+  iNamed "H".
+  iCombine "Hg_auth Hg" gives %?. subst.
+  iSplit.
+  { iPureIntro.
+    rewrite /base_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; by monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iNext.
+  iMod (own_globals_update with "[$] [$]") as "[??]".
+  iMod (global_state_interp_le with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame. iSplitL; last done. rewrite /RecordSet.set /=. iApply ("HΦ" with "[$]").
 Qed.
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
