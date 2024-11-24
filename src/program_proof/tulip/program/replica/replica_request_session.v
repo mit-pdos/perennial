@@ -1,7 +1,7 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_read replica_fast_prepare replica_validate
-  replica_prepare replica_unprepare replica_query.
+  replica_prepare replica_unprepare replica_query replica_commit replica_abort.
 
 Definition txnreq_to_val (req : txnreq) (pwrsP : Slice.t) : val :=
   match req with
@@ -32,7 +32,7 @@ Definition txnreq_to_val (req : txnreq) (pwrsP : Slice.t) : val :=
           ("Kind", #(U64 300)); ("Timestamp", #ts); ("PartialWrites", to_val pwrsP)]
   | AbortReq ts =>
       struct.mk_f TxnRequest [
-          ("Kind", #(U64 201)); ("Timestamp", #ts)]
+          ("Kind", #(U64 301)); ("Timestamp", #ts)]
   end.
 
 Section decode.
@@ -136,6 +136,31 @@ Section encode.
     (*@ }                                                                       @*)
   Admitted.
 
+  Theorem wp_EncodeTxnCommitResponse (ts : u64) (res : rpres) :
+    {{{ True }}}
+      EncodeTxnCommitResponse #ts #(rpres_to_u64 res)
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜data = encode_txnresp (CommitResp ts res)⌝
+    }}}.
+  Proof.
+    (*@ func EncodeTxnCommitResponse(ts, res uint64) []byte {                   @*)
+    (*@     return nil                                                          @*)
+    (*@ }                                                                       @*)
+  Admitted.
+
+  Theorem wp_EncodeTxnAbortResponse (ts : u64) (res : rpres) :
+    {{{ True }}}
+      EncodeTxnAbortResponse #ts #(rpres_to_u64 res)
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜data = encode_txnresp (AbortResp ts res)⌝
+    }}}.
+  Proof.
+    (*@ func EncodeTxnAbortResponse(ts, res uint64) []byte {                    @*)
+    (*@     return nil                                                          @*)
+    (*@ }                                                                       @*)
+  Admitted.
 
 End encode.
 
@@ -599,7 +624,107 @@ Section program.
       (*@                 grove_ffi.Send(conn, data)                              @*)
       (*@             }                                                           @*)
       (*@                                                                         @*)
-      admit.
+      iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+      wp_apply (wp_Replica__Commit with "Hsafe Hrp Hentsa").
+      iIntros (ok) "_".
+      wp_pures.
+      destruct ok; wp_pures.
+      { wp_apply (wp_EncodeTxnCommitResponse _ ReplicaCommittedTxn).
+        iIntros (dataP data) "[Hdata %Hdata]".
+        wp_pures.
+        (* Obtain [is_terminal γ trml] to respond to the sender. *)
+        assert (Htrml : trml ∈ (set_map msg_sender msl : gset chan)).
+        { rewrite elem_of_map. by exists (Message trml retdata). }
+        iDestruct (big_sepS_elem_of with "Hsender") as "Htrml"; first apply Htrml.
+        (* Now send the message. *)
+        iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+        wp_apply (wp_Send with "Hdata").
+        clear Himgaddrm Hmsl Henc listens connects.
+        iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvnetO".
+        iDestruct (terminal_lookup with "Htrml Hterminals") as %Hsend.
+        apply elem_of_dom in Hsend as [msc Hmsc].
+        iDestruct (big_sepM_delete with "Hconnects") as "[Hconn Hconnects]".
+        { apply Hmsc. }
+        iNamed "Hconn".
+        iFrame "Hms".
+        iIntros (sent) "Hms".
+        set msc' := if sent then _ else _.
+        iAssert (connect_inv trml msc' gid γ)%I with "[Hms]" as "Hconn".
+        { iFrame "Hms".
+          set resp := CommitResp _ _ in Hdata.
+          destruct sent; last first.
+          { iExists resps. iFrame "# %". }
+          iExists ({[resp]} ∪ resps).
+          iSplit.
+          { by iApply big_sepS_insert_2. }
+          iPureIntro.
+          clear -Henc Hdata.
+          set_solver.
+        }
+        iCombine "Hconn Hconnects" as "Hconnects".
+        rewrite -(big_sepM_insert_delete _ _ trml msc').
+        iMod "Hmask" as "_".
+        iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
+        { rewrite dom_insert_L.
+          apply elem_of_dom_2 in Hmsc.
+          replace (_ ∪ dom connects) with (dom connects) by set_solver.
+          by iFrame "Hterminals".
+        }
+        iIntros "!>" (err) "Herr".
+        wp_pures.
+        by iApply "HΦ".
+      }
+      { wp_apply (wp_EncodeTxnCommitResponse _ ReplicaWrongLeader).
+        iIntros (dataP data) "[Hdata %Hdata]".
+        wp_pures.
+        (* Obtain [is_terminal γ trml] to respond to the sender. *)
+        assert (Htrml : trml ∈ (set_map msg_sender msl : gset chan)).
+        { rewrite elem_of_map. by exists (Message trml retdata). }
+        iDestruct (big_sepS_elem_of with "Hsender") as "Htrml"; first apply Htrml.
+        (* Now send the message. *)
+        iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+        wp_apply (wp_Send with "Hdata").
+        clear Himgaddrm Hmsl Henc listens connects.
+        iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvnetO".
+        iDestruct (terminal_lookup with "Htrml Hterminals") as %Hsend.
+        apply elem_of_dom in Hsend as [msc Hmsc].
+        iDestruct (big_sepM_delete with "Hconnects") as "[Hconn Hconnects]".
+        { apply Hmsc. }
+        iNamed "Hconn".
+        iFrame "Hms".
+        iIntros (sent) "Hms".
+        set msc' := if sent then _ else _.
+        iAssert (connect_inv trml msc' gid γ)%I with "[Hms]" as "Hconn".
+        { iFrame "Hms".
+          set resp := CommitResp _ _ in Hdata.
+          destruct sent; last first.
+          { iExists resps. iFrame "# %". }
+          iExists ({[resp]} ∪ resps).
+          iSplit.
+          { by iApply big_sepS_insert_2. }
+          iPureIntro.
+          clear -Henc Hdata.
+          set_solver.
+        }
+        iCombine "Hconn Hconnects" as "Hconnects".
+        rewrite -(big_sepM_insert_delete _ _ trml msc').
+        iMod "Hmask" as "_".
+        iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
+        { rewrite dom_insert_L.
+          apply elem_of_dom_2 in Hmsc.
+          replace (_ ∪ dom connects) with (dom connects) by set_solver.
+          by iFrame "Hterminals".
+        }
+        iIntros "!>" (err) "Herr".
+        wp_pures.
+        by iApply "HΦ".
+      }
     }
     { (* Case: TxnAbort. *)
 
@@ -614,11 +739,109 @@ Section program.
       (*@             }                                                           @*)
       (*@         }                                                               @*)
       (*@                                                                         @*)
-      (*@     }                                                                   @*)
-      (*@ }                                                                       @*)
-      admit.
+      iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+      wp_apply (wp_Replica__Abort with "Hsafe Hrp").
+      iIntros (ok) "_".
+      wp_pures.
+      destruct ok; wp_pures.
+      { wp_apply (wp_EncodeTxnAbortResponse _ ReplicaAbortedTxn).
+        iIntros (dataP data) "[Hdata %Hdata]".
+        wp_pures.
+        (* Obtain [is_terminal γ trml] to respond to the sender. *)
+        assert (Htrml : trml ∈ (set_map msg_sender msl : gset chan)).
+        { rewrite elem_of_map. by exists (Message trml retdata). }
+        iDestruct (big_sepS_elem_of with "Hsender") as "Htrml"; first apply Htrml.
+        (* Now send the message. *)
+        iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+        wp_apply (wp_Send with "Hdata").
+        clear Himgaddrm Hmsl Henc listens connects.
+        iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvnetO".
+        iDestruct (terminal_lookup with "Htrml Hterminals") as %Hsend.
+        apply elem_of_dom in Hsend as [msc Hmsc].
+        iDestruct (big_sepM_delete with "Hconnects") as "[Hconn Hconnects]".
+        { apply Hmsc. }
+        iNamed "Hconn".
+        iFrame "Hms".
+        iIntros (sent) "Hms".
+        set msc' := if sent then _ else _.
+        iAssert (connect_inv trml msc' gid γ)%I with "[Hms]" as "Hconn".
+        { iFrame "Hms".
+          set resp := AbortResp _ _ in Hdata.
+          destruct sent; last first.
+          { iExists resps. iFrame "# %". }
+          iExists ({[resp]} ∪ resps).
+          iSplit.
+          { by iApply big_sepS_insert_2. }
+          iPureIntro.
+          clear -Henc Hdata.
+          set_solver.
+        }
+        iCombine "Hconn Hconnects" as "Hconnects".
+        rewrite -(big_sepM_insert_delete _ _ trml msc').
+        iMod "Hmask" as "_".
+        iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
+        { rewrite dom_insert_L.
+          apply elem_of_dom_2 in Hmsc.
+          replace (_ ∪ dom connects) with (dom connects) by set_solver.
+          by iFrame "Hterminals".
+        }
+        iIntros "!>" (err) "Herr".
+        wp_pures.
+        by iApply "HΦ".
+      }
+      { wp_apply (wp_EncodeTxnAbortResponse _ ReplicaWrongLeader).
+        iIntros (dataP data) "[Hdata %Hdata]".
+        wp_pures.
+        (* Obtain [is_terminal γ trml] to respond to the sender. *)
+        assert (Htrml : trml ∈ (set_map msg_sender msl : gset chan)).
+        { rewrite elem_of_map. by exists (Message trml retdata). }
+        iDestruct (big_sepS_elem_of with "Hsender") as "Htrml"; first apply Htrml.
+        (* Now send the message. *)
+        iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+        wp_apply (wp_Send with "Hdata").
+        clear Himgaddrm Hmsl Henc listens connects.
+        iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+        iApply ncfupd_mask_intro; first set_solver.
+        iIntros "Hmask".
+        iNamed "HinvnetO".
+        iDestruct (terminal_lookup with "Htrml Hterminals") as %Hsend.
+        apply elem_of_dom in Hsend as [msc Hmsc].
+        iDestruct (big_sepM_delete with "Hconnects") as "[Hconn Hconnects]".
+        { apply Hmsc. }
+        iNamed "Hconn".
+        iFrame "Hms".
+        iIntros (sent) "Hms".
+        set msc' := if sent then _ else _.
+        iAssert (connect_inv trml msc' gid γ)%I with "[Hms]" as "Hconn".
+        { iFrame "Hms".
+          set resp := AbortResp _ _ in Hdata.
+          destruct sent; last first.
+          { iExists resps. iFrame "# %". }
+          iExists ({[resp]} ∪ resps).
+          iSplit.
+          { by iApply big_sepS_insert_2. }
+          iPureIntro.
+          clear -Henc Hdata.
+          set_solver.
+        }
+        iCombine "Hconn Hconnects" as "Hconnects".
+        rewrite -(big_sepM_insert_delete _ _ trml msc').
+        iMod "Hmask" as "_".
+        iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
+        { rewrite dom_insert_L.
+          apply elem_of_dom_2 in Hmsc.
+          replace (_ ∪ dom connects) with (dom connects) by set_solver.
+          by iFrame "Hterminals".
+        }
+        iIntros "!>" (err) "Herr".
+        wp_pures.
+        by iApply "HΦ".
+      }
     }
-  Admitted.
+  Qed.
 
   Theorem wp_Replica__Serve (rp : loc) addr gid rid γ :
     is_replica_plus_network rp addr gid rid γ -∗

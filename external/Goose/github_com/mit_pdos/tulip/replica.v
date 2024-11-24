@@ -43,8 +43,8 @@ Definition Replica__terminated: val :=
     let: (<>, "terminated") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
     "terminated".
 
-Definition Replica__QueryTxnTermination: val :=
-  rec: "Replica__QueryTxnTermination" "rp" "ts" :=
+Definition Replica__Terminated: val :=
+  rec: "Replica__Terminated" "rp" "ts" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "terminated" := Replica__terminated "rp" "ts" in
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
@@ -57,7 +57,7 @@ Definition Replica__QueryTxnTermination: val :=
    @ok: If @true, this transaction is committed. *)
 Definition Replica__Commit: val :=
   rec: "Replica__Commit" "rp" "ts" "pwrs" :=
-    let: "committed" := Replica__QueryTxnTermination "rp" "ts" in
+    let: "committed" := Replica__Terminated "rp" "ts" in
     (if: "committed"
     then #true
     else
@@ -77,7 +77,7 @@ Definition Replica__Commit: val :=
    @ok: If @true, this transaction is aborted. *)
 Definition Replica__Abort: val :=
   rec: "Replica__Abort" "rp" "ts" :=
-    let: "aborted" := Replica__QueryTxnTermination "rp" "ts" in
+    let: "aborted" := Replica__Terminated "rp" "ts" in
     (if: "aborted"
     then #true
     else
