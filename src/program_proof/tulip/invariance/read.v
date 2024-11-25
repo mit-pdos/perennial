@@ -187,17 +187,6 @@ Section inv.
   Definition quorum_invalidated_key_or_group_aborted γ key ts : iProp Σ :=
     quorum_invalidated_key γ key ts ∨ is_group_aborted γ (key_to_group key) ts.
 
-  Definition quorum_read γ key ts v : iProp Σ :=
-    ∃ (ridsq : gset u64) (lts : nat),
-      "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
-      "#Hioa"  ∷ ([∗ set] rid ∈ ridsq,
-                    read_promise γ (key_to_group key) rid key lts ts) ∗
-      "%Hltts" ∷ ⌜(lts < pred ts)%nat⌝ ∗
-      "%Hqrm"  ∷ ⌜cquorum rids_all ridsq⌝.
-
-  Definition fast_or_quorum_read γ key ts v : iProp Σ :=
-    is_repl_hist_at γ key (pred ts) v ∨ quorum_read γ key ts v.
-
   Lemma key_inv_fast_read γ key ts vr vl :
     is_repl_hist_at γ key (pred ts) vr -∗
     is_lnrz_hist_at γ key (pred ts) vl -∗

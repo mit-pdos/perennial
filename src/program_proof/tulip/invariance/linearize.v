@@ -272,10 +272,10 @@ Section inv.
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     own_wabt_tid γ tid ∗
     own_txn_reserved_wrs γ tid ∗
+    ([∗ set] gid ∈ gids_all, own_txn_client_token γ tid gid) ∗
     is_txn_postcond γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
-    is_lnrz_tid γ tid ∗
-    ([∗ set] gid ∈ gids_all, own_txn_client_token γ tid gid).
+    is_lnrz_tid γ tid.
   Proof.
     iIntros (Qr Hdomrds Hts Hcft Hifcc) "#Htslb Hpts Htxnsys Hkeys".
     do 2 iNamed "Htxnsys".
@@ -373,10 +373,10 @@ Section inv.
     ([∗ set] key ∈ keys_all, key_inv γ key) ∗
     own_cmt_tmod γ tid wrs ∗
     own_txn_reserved_wrs γ tid ∗
+    ([∗ set] gid ∈ gids_all, own_txn_client_token γ tid gid) ∗
     is_txn_postcond γ tid Qr ∗
     ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
-    is_lnrz_tid γ tid ∗
-    ([∗ set] gid ∈ gids_all, own_txn_client_token γ tid gid).
+    is_lnrz_tid γ tid.
   Proof.
     iIntros (Qr Hdomwrs Hdomrds Hts Hfcc) "#Htslb Hpts Htxnsys Hkeys".
     do 2 iNamed "Htxnsys".

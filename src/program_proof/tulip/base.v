@@ -40,8 +40,25 @@ Definition txnst_to_u64 (s : txnst) :=
 
 Definition gids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
 
+Lemma size_gids_all :
+  size gids_all < 2 ^ 64 - 1.
+Proof.
+  rewrite /gids_all size_list_to_set; last first.
+  { apply seq_U64_NoDup; lia. }
+  rewrite length_fmap length_seqZ.
+  lia.
+Qed.
+
 (* TODO: Parametrize the number of replicas in each group. *)
-Definition rids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
+Definition rids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 3)).
+
+Lemma size_rids_all :
+  size rids_all = 3%nat.
+Proof.
+  rewrite size_list_to_set.
+  { rewrite length_fmap length_seqZ. lia. }
+  { apply seq_U64_NoDup; lia. }
+Qed.
 
 (** Transaction R/C/A action. *)
 Inductive action :=
@@ -193,6 +210,18 @@ Proof.
   by eapply elem_of_dom_2.
 Qed.
 
+Lemma elem_of_ptgroups_non_empty gid wrs :
+  gid ∈ ptgroups (dom wrs) ->
+  wrs_group gid wrs ≠ ∅.
+Proof.
+  intros Hptg Hempty.
+  rewrite /ptgroups elem_of_map in Hptg.
+  destruct Hptg as (k & Hktg & Hin).
+  apply elem_of_dom in Hin as [v Hv].
+  rewrite map_filter_empty_iff in Hempty.
+  specialize (Hempty _ _ Hv). simpl in Hempty. done.
+Qed.
+
 (** Safe state-machine conditions. *)
 Definition readable (tid : nat) (hist : dbhist) (tsprep : nat) :=
   tsprep = O ∨ (tid ≤ tsprep)%nat.
@@ -220,3 +249,68 @@ Class tulip_ghostG (Σ : gFunctors).
 
 Record tulip_names := {}.
 Record replica_names := {}.
+
+Section msg.
+
+  Inductive txnreq :=
+  | ReadReq        (ts : u64) (key : string)
+  | FastPrepareReq (ts : u64) (pwrs : dbmap)
+  | ValidateReq    (ts : u64) (rank : u64) (pwrs : dbmap)
+  | PrepareReq     (ts : u64) (rank : u64)
+  | UnprepareReq   (ts : u64) (rank : u64)
+  | QueryReq       (ts : u64) (rank : u64)
+  | RefreshReq     (ts : u64) (rank : u64)
+  | CommitReq      (ts : u64) (pwrs : dbmap)
+  | AbortReq       (ts : u64).
+
+  #[global]
+  Instance txnreq_eq_decision :
+    EqDecision txnreq.
+  Proof. solve_decision. Qed.
+
+  #[global]
+  Instance txnreq_countable :
+    Countable txnreq.
+  Admitted.
+
+  Definition encode_txnreq (req : txnreq) : list u8.
+  Admitted.
+
+  Inductive rpres :=
+  | ReplicaOK
+  | ReplicaCommittedTxn
+  | ReplicaAbortedTxn
+  | ReplicaStaleCoordinator
+  | ReplicaFailedValidation
+  | ReplicaInvalidRank
+  | ReplicaWrongLeader.
+
+  #[global]
+  Instance rpres_eq_decision :
+    EqDecision rpres.
+  Proof. solve_decision. Qed.
+
+  Inductive txnresp :=
+  | ReadResp        (ts : u64) (rid : u64) (key : string) (ver : u64 * dbval)
+  | FastPrepareResp (ts : u64) (rid : u64) (res : rpres)
+  | ValidateResp    (ts : u64) (rid : u64) (res : rpres)
+  | PrepareResp     (ts : u64) (rank : u64) (rid : u64) (res : rpres)
+  | UnprepareResp   (ts : u64) (rank : u64) (rid : u64) (res : rpres)
+  | QueryResp       (ts : u64) (res : rpres)
+  | CommitResp      (ts : u64) (res : rpres)
+  | AbortResp       (ts : u64) (res : rpres).
+
+  #[global]
+  Instance txnresp_eq_decision :
+    EqDecision txnresp.
+  Proof. solve_decision. Qed.
+
+  #[global]
+  Instance txnresp_countable :
+    Countable txnresp.
+  Admitted.
+
+  Definition encode_txnresp (resp : txnresp) : list u8.
+  Admitted.
+
+End msg.

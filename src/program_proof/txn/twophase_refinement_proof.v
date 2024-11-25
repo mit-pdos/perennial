@@ -242,12 +242,13 @@ Proof.
   iDestruct "H" as %[Heq1 Heq2].
   iIntros "Hctx".
   iExists
+    (RecordSet.set globals (λ _, ∅)
     (RecordSet.set trace add_crash
        (RecordSet.set world (λ w : @ffi_state jrnl_model, match w with
                                                 | Closed s => Closed (clearAllocs s)
                                                 | Opened s => Closed (clearAllocs s)
                                               end : @ffi_state jrnl_model)
-          (RecordSet.set heap (λ _ : gmap loc (nonAtomic val), ∅) σs))).
+          (RecordSet.set heap (λ _ : gmap loc (nonAtomic val), ∅) σs)))).
   unshelve (iExists _).
   { econstructor.
     { reflexivity. }

@@ -3,6 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.tulip.backup.
 From Goose Require github_com.mit_pdos.tulip.index.
+From Goose Require github_com.mit_pdos.tulip.message.
 From Goose Require github_com.mit_pdos.tulip.tulip.
 From Goose Require github_com.mit_pdos.tulip.txnlog.
 
@@ -16,6 +17,8 @@ Definition PrepareProposal := struct.decl [
 Definition Replica := struct.decl [
   "mu" :: ptrT;
   "rid" :: uint64T;
+  "addr" :: uint64T;
+  "fname" :: stringT;
   "txnlog" :: ptrT;
   "lsna" :: uint64T;
   "prepm" :: mapT (slice.T (struct.t tulip.WriteEntry));
@@ -512,3 +515,120 @@ Definition Replica__StartBackupTxnCoordinator: val :=
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     backup.BackupTxnCoordinator__Finalize "tcoord";;
     #().
+
+Definition mkReplica: val :=
+  rec: "mkReplica" "rid" "addr" "fname" :=
+    let: "rp" := struct.new Replica [
+      "rid" ::= "rid";
+      "addr" ::= "addr";
+      "fname" ::= "fname"
+    ] in
+    "rp".
+
+Definition Replica__RequestSession: val :=
+  rec: "Replica__RequestSession" "rp" "conn" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "ret" := grove_ffi.Receive "conn" in
+      (if: struct.get grove_ffi.ReceiveRet "Err" "ret"
+      then Break
+      else
+        let: "req" := message.DecodeTxnRequest (struct.get grove_ffi.ReceiveRet "Data" "ret") in
+        let: "kind" := struct.get message.TxnRequest "Kind" "req" in
+        let: "ts" := struct.get message.TxnRequest "Timestamp" "req" in
+        (if: "kind" = message.MSG_TXN_READ
+        then
+          let: "key" := struct.get message.TxnRequest "Key" "req" in
+          let: (("lts", "value"), "ok") := Replica__Read "rp" "ts" "key" in
+          (if: (~ "ok")
+          then Continue
+          else
+            let: "data" := message.EncodeTxnReadResponse "ts" (struct.loadF Replica "rid" "rp") "key" "lts" "value" in
+            grove_ffi.Send "conn" "data";;
+            Continue)
+        else
+          (if: "kind" = message.MSG_TXN_FAST_PREPARE
+          then
+            let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
+            let: "res" := Replica__FastPrepare "rp" "ts" "pwrs" slice.nil in
+            let: "data" := message.EncodeTxnFastPrepareResponse "ts" (struct.loadF Replica "rid" "rp") "res" in
+            grove_ffi.Send "conn" "data";;
+            Continue
+          else
+            (if: "kind" = message.MSG_TXN_VALIDATE
+            then
+              let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
+              let: "rank" := struct.get message.TxnRequest "Rank" "req" in
+              let: "res" := Replica__Validate "rp" "ts" "rank" "pwrs" slice.nil in
+              let: "data" := message.EncodeTxnValidateResponse "ts" (struct.loadF Replica "rid" "rp") "res" in
+              grove_ffi.Send "conn" "data";;
+              Continue
+            else
+              (if: "kind" = message.MSG_TXN_PREPARE
+              then
+                let: "rank" := struct.get message.TxnRequest "Rank" "req" in
+                let: "res" := Replica__Prepare "rp" "ts" "rank" in
+                let: "data" := message.EncodeTxnPrepareResponse "ts" "rank" (struct.loadF Replica "rid" "rp") "res" in
+                grove_ffi.Send "conn" "data";;
+                Continue
+              else
+                (if: "kind" = message.MSG_TXN_UNPREPARE
+                then
+                  let: "rank" := struct.get message.TxnRequest "Rank" "req" in
+                  let: "res" := Replica__Unprepare "rp" "ts" "rank" in
+                  let: "data" := message.EncodeTxnUnprepareResponse "ts" "rank" (struct.loadF Replica "rid" "rp") "res" in
+                  grove_ffi.Send "conn" "data";;
+                  Continue
+                else
+                  (if: "kind" = message.MSG_TXN_QUERY
+                  then
+                    let: "rank" := struct.get message.TxnRequest "Rank" "req" in
+                    let: "res" := Replica__Query "rp" "ts" "rank" in
+                    let: "data" := message.EncodeTxnQueryResponse "ts" "res" in
+                    grove_ffi.Send "conn" "data";;
+                    Continue
+                  else
+                    (if: "kind" = message.MSG_TXN_COMMIT
+                    then
+                      let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
+                      let: "ok" := Replica__Commit "rp" "ts" "pwrs" in
+                      (if: "ok"
+                      then
+                        let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_COMMITTED_TXN in
+                        grove_ffi.Send "conn" "data";;
+                        Continue
+                      else
+                        let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_WRONG_LEADER in
+                        grove_ffi.Send "conn" "data";;
+                        Continue)
+                    else
+                      (if: "kind" = message.MSG_TXN_ABORT
+                      then
+                        let: "ok" := Replica__Abort "rp" "ts" in
+                        (if: "ok"
+                        then
+                          let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_ABORTED_TXN in
+                          grove_ffi.Send "conn" "data";;
+                          Continue
+                        else
+                          let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_WRONG_LEADER in
+                          grove_ffi.Send "conn" "data";;
+                          Continue)
+                      else Continue))))))))));;
+    #().
+
+Definition Replica__Serve: val :=
+  rec: "Replica__Serve" "rp" :=
+    let: "ls" := grove_ffi.Listen (struct.loadF Replica "addr" "rp") in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "conn" := grove_ffi.Accept "ls" in
+      Fork (Replica__RequestSession "rp" "conn");;
+      Continue);;
+    #().
+
+Definition Start: val :=
+  rec: "Start" "rid" "addr" "fname" :=
+    let: "rp" := mkReplica "rid" "addr" "fname" in
+    Fork (Replica__Serve "rp");;
+    "rp".

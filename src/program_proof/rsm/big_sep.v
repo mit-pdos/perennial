@@ -564,3 +564,18 @@ Section bupd.
   Qed.
 
 End bupd.
+
+Section fupd.
+  Context {PROP : bi} `{!BiFUpd PROP}.
+
+  Lemma big_sepM2_fupd `{Countable K} {A B}
+    E (Φ : K → A -> B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
+    ([∗ map] k↦x;y ∈ m1;m2, |={E}=> Φ k x y) ⊢ |={E}=> [∗ map] k↦x;y ∈ m1;m2, Φ k x y.
+  Proof.
+    rewrite 2!big_sepM2_alt.
+    iIntros "[%Hdom Hm1m2]".
+    iMod (big_sepM_fupd with "Hm1m2") as "Hm1m2".
+    by iFrame.
+  Qed.
+
+End fupd.

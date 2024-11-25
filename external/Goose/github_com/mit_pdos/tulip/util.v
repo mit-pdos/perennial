@@ -40,6 +40,15 @@ Definition Sort: val :=
       Continue);;
     #().
 
+Definition CountBoolMap: val :=
+  rec: "CountBoolMap" "m" "b" :=
+    let: "n" := ref_to uint64T #0 in
+    MapIter "m" (λ: <> "v",
+      (if: "v" = "b"
+      then "n" <-[uint64T] (std.SumAssumeNoOverflow (![uint64T] "n") #1)
+      else #()));;
+    ![uint64T] "n".
+
 Definition EncodeString: val :=
   rec: "EncodeString" "bs" "str" :=
     let: "data" := ref_to (slice.T byteT) "bs" in

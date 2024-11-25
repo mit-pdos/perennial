@@ -39,7 +39,7 @@ Definition is_map_label pk uid ver label : iProp Σ :=
   is_vrf pk (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) label.
 
 Definition is_commit (val : pk_ty) (commit : commit_ty) : iProp Σ :=
-  ∃ rand, is_hash (CommitOpen.encodesF $ CommitOpen.mk val rand) commit.
+  ∃ rand, is_hash (CommitOpen.encodesF $ CommitOpen.mk DfracDiscarded val rand) commit.
 
 Lemma is_commit_inj val0 val1 commit :
   is_commit val0 commit -∗ is_commit val1 commit -∗ ⌜ val0 = val1 ⌝.

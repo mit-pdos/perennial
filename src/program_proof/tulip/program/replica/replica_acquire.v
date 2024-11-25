@@ -83,8 +83,9 @@ Section program.
       iIntros "HpwrsL".
       wp_pures.
       wp_apply (wp_Replica__writableKey with "Hrp").
-      { rewrite -HpwrsL in Hwr.
-        apply elem_of_list_lookup_2, elem_of_map_to_list, elem_of_dom_2 in Hwr.
+      { apply elem_of_list_lookup_2 in Hwr.
+        rewrite -HpwrsL in Hwr.
+        apply elem_of_map_to_list, elem_of_dom_2 in Hwr.
         clear -Hvw Hwr. set_solver.
       }
       iIntros (ok) "[Hrp %Hwritable]".
@@ -142,7 +143,8 @@ Section program.
       by iFrame "∗ %".
     }
     rewrite take_ge in Hptsm, Hsptsm; last word.
-    rewrite -HpwrsL list_to_map_to_list in Hptsm, Hsptsm.
+    pose proof (list_to_map_flip _ _ HpwrsL) as Hltm.
+    rewrite -Hltm in Hptsm, Hsptsm.
 
     (*@     // Acquire locks for each key.                                      @*)
     (*@     for _, ent := range(pwrs) {                                         @*)
@@ -170,20 +172,22 @@ Section program.
       rewrite (take_S_r _ _ _ Hi) list_to_map_snoc; last first.
       { by eapply map_to_list_not_elem_of_take_key. }
       rewrite /acquire setts_insert; last first.
-      { rewrite -HpwrsL in Hi.
-        apply elem_of_list_lookup_2, elem_of_map_to_list, elem_of_dom_2 in Hi.
+      { apply elem_of_list_lookup_2 in Hi.
+        rewrite -HpwrsL in Hi.
+        apply elem_of_map_to_list, elem_of_dom_2 in Hi.
         clear -Hvw Hi Hdomptsm. set_solver.
       }
       rewrite /acquire setts_insert; last first.
-      { rewrite -HpwrsL in Hi.
-        apply elem_of_list_lookup_2, elem_of_map_to_list, elem_of_dom_2 in Hi.
+      { apply elem_of_list_lookup_2 in Hi.
+        rewrite -HpwrsL in Hi.
+        apply elem_of_map_to_list, elem_of_dom_2 in Hi.
         clear -Hvw Hi Hdomsptsm. set_solver.
       }
       done.
     }
     iIntros "[HP HpwrsS]".
     iNamed "HP". clear P.
-    rewrite -Hlen firstn_all -HpwrsL list_to_map_to_list in Hptsmabs, Hsptsmabs.
+    rewrite -Hlen firstn_all -Hltm in Hptsmabs, Hsptsmabs.
 
     (*@     return true                                                         @*)
     (*@ }                                                                       @*)

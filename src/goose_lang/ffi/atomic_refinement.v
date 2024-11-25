@@ -177,6 +177,20 @@ Section go_refinement.
     trace sσ = trace iσ ∧
     oracle sσ = oracle iσ.
 
+  (* Don't support try to support Globals in this proof (which was written
+     before GooseLang had globals). *)
+  Definition is_refinement_prim_op1 (o : prim_op1) : Prop :=
+    match o with
+    | GlobalGetOp => False
+    | _ => True
+    end.
+
+  Definition is_refinement_prim_op2 (o : prim_op2) : Prop :=
+    match o with
+    | GlobalPutOp => False
+    | _ => True
+    end.
+
   Inductive expr_impl : sexpr → iexpr → Prop :=
   | expr_impl_val v v' :
     val_impl v v' →
@@ -230,9 +244,11 @@ Section go_refinement.
   | expr_primitive0 op :
     expr_impl (Primitive0 op) (Primitive0 op)
   | expr_primitive1 op e e' :
+    is_refinement_prim_op1 op →
     expr_impl e e' →
     expr_impl (Primitive1 op e) (Primitive1 op e')
   | expr_impl_primitive2 op e1 e1' e2 e2' :
+    is_refinement_prim_op2 op →
     expr_impl e1 e1' →
     expr_impl e2 e2' →
     expr_impl (Primitive2 op e1 e2) (Primitive2 op e1' e2')
@@ -312,11 +328,14 @@ Section go_refinement.
       expr_impl se2 ie2 →
       ectx_item_impl (CaseCtx se1 se2) (CaseCtx ie1 ie2)
   | ectx_item_impl_primitive1 op :
+      is_refinement_prim_op1 op →
       ectx_item_impl (Primitive1Ctx op) (Primitive1Ctx op)
   | ectx_item_impl_primitive2L op se2 ie2 :
+      is_refinement_prim_op2 op →
       expr_impl se2 ie2 →
       ectx_item_impl (Primitive2LCtx op se2) (Primitive2LCtx op ie2)
   | ectx_item_impl_primitive2R op sv1 iv1 :
+      is_refinement_prim_op2 op →
       val_impl sv1 iv1 →
       ectx_item_impl (Primitive2RCtx op sv1) (Primitive2RCtx op iv1)
                      (*
@@ -1101,6 +1120,7 @@ Section go_refinement.
         rewrite /abstraction in Habstr.
         split_and! => //=; intuition.
         congruence.
+      * by inv_expr_impl.
     - rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
       * inv_expr_impl; inv_base_step. monad_inv.
@@ -1162,6 +1182,7 @@ Section go_refinement.
            rewrite /= /foheap in Hstep. eapply Hstep.
            rewrite /Free. apply lookup_insert.
         **  inv_base_step. monad_inv. exfalso; eauto.
+      * by inv_expr_impl.
     - rewrite /base_step//= in Hstep.
       monad_inv; destruct_head.
       inv_base_step. monad_inv. inv_base_step.
@@ -1381,6 +1402,7 @@ Section go_refinement.
       * inv_expr_impl; inv_base_step. monad_inv.
         do 4 eexists. eauto.
         { repeat econstructor; rewrite ?Hlook => //=. }
+      * by inv_expr_impl.
     - rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
       * inv_expr_impl; inv_base_step. monad_inv.
@@ -1418,7 +1440,7 @@ Section go_refinement.
            do 4 eexists.
            { repeat econstructor; repeat (monad_simpl; simpl); rewrite ?Hlook => //=. }
         ** inv_base_step. monad_inv. exfalso; eauto.
-
+      * by inv_expr_impl.
     - rewrite /base_step//= in Hstep.
       monad_inv; destruct_head.
       inv_base_step. monad_inv. inv_base_step.

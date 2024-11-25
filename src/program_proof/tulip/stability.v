@@ -79,17 +79,17 @@ Section def.
   Definition nfastneg bs d :=
     size (filter (λ x, not (accepted_in x.2 O d)) bs).
 
-  Definition equal_latest_proposal_or_free bsq ps r d :=
+  Definition equal_latest_proposal_or_free bs bsq ps r d :=
     let n := latest_before_quorum r bsq in
     if decide (n = O)
-    then nfast bsq (negb d) ≤ size bsq / 2 (* [negb d] must not be chosen *)
+    then size bs / 4 + 1 ≤ nfast bsq d
     else ps !! n = Some d.
 
   Definition valid_proposal bs ps r d :=
     ∃ bsq : gmap A ballot,
       bsq ⊆ bs ∧
       cquorum_size (dom bs) (dom bsq) ∧
-      equal_latest_proposal_or_free bsq ps r d.
+      equal_latest_proposal_or_free bs bsq ps r d.
 
   Definition valid_proposals bs ps :=
     map_Forall (λ r d, valid_proposal bs ps r d) ps.
@@ -297,6 +297,16 @@ Section stability.
     lia.
   Qed.
 
+  Lemma latest_before_quorum_lt bs n :
+    bs ≠ ∅ ->
+    n ≠ O ->
+    (latest_before_quorum n bs < n)%nat.
+  Proof.
+    intros Hnonempty.
+    destruct (latest_before_quorum_in bs n Hnonempty) as (y & ly & _ & <-).
+    apply latest_before_lt.
+  Qed.
+
   Lemma nfast_nfastneg_complement bs v :
     (nfast bs v + nfastneg bs v)%nat = size bs.
   Proof.
@@ -356,31 +366,31 @@ Section stability.
     { (* Fast rank. *)
       rewrite Hk in Hacc.
       destruct (decide (d' = d)) as [-> | Hne]; first apply Hd'.
-      assert (Hneg : negb d' = d).
-      { destruct d.
-        { apply not_true_iff_false in Hne. by subst d'. }
-        { apply not_false_iff_true in Hne. by subst d'. }
+      rewrite /nfast in Heq.
+      set bsq3 := filter _ bsq1 in Heq.
+      assert (Hincl : bsq3 ⊆ bs).
+      { trans bsq1; [apply map_filter_subseteq | apply Hincl1]. }
+      assert (hcquorum (dom bs) (dom bsq3)) as Hhcq.
+      { split; first apply subseteq_dom, Hincl.
+        rewrite /hcquorum_size 2!size_dom.
+        lia.
       }
-      rewrite Hneg in Heq.
-      assert (Hsizef : (size bsq2 = nfast bsq2 d)%nat).
-      { clear -Hacc.
-        rewrite /nfast map_filter_id; first done.
-        intros x l Hxl.
-        by specialize (Hacc _ _ Hxl).
+      unshelve epose proof (hcquorum_fquorum_overlapped _ _ (dom bsq2) Hhcq _)
+        as (y & Hin1 & Hin2).
+      { by split; first apply subseteq_dom. }
+      apply elem_of_dom in Hin1 as [l1 Hl1].
+      apply elem_of_dom in Hin2 as [l2 Hl2].
+      assert (l2 = l1) as ->.
+      { pose proof (lookup_weaken _ _ _ _ Hl1 Hincl) as Hbsy1.
+        pose proof (lookup_weaken _ _ _ _ Hl2 Hincl2) as Hbsy2.
+        rewrite Hbsy1 in Hbsy2.
+        by inv Hbsy2.
       }
-      assert (Hf : (nfast bsq2 d ≤ nfast bs d)%nat).
-      { by apply map_subseteq_size, map_filter_subseteq_mono. }
-      assert (Hsizec : (size bsq1 ≤ 2 * nfastneg bsq1 d)%nat).
-      { pose proof (nfast_nfastneg_complement bsq1 d) as Hsize.
-        clear -Hsize Heq. lia.
-      }
-      assert (Hc : (nfastneg bsq1 d ≤ nfastneg bs d)%nat).
-      { by apply map_subseteq_size, map_filter_subseteq_mono. }
-      pose proof (nfast_nfastneg_complement bs d) as Hsize.
-      pose proof (quorums_sufficient _ _ _ Hquorum1 Hquorum2) as Hsuff.
-      clear -Hsizef Hf Hsizec Hc Hsize Hsuff.
-      rewrite 3!size_dom in Hsuff.
-      lia.
+      subst bsq3.
+      apply map_lookup_filter_Some in Hl1 as [Hl1 Hacc']. simpl in Hacc'.
+      specialize (Hacc _ _ Hl2). simpl in Hacc.
+      rewrite /accepted_in Hacc in Hacc'.
+      inv Hacc'.
     }
     { (* Classic rank. *)
       specialize (Hacc _ _ Hbsq2). simpl in Hacc.
@@ -600,26 +610,27 @@ Section lemma.
     }
   Qed.
 
-  Lemma equal_latest_proposal_or_free_eq bs bslb ps n d :
+  Lemma equal_latest_proposal_or_free_eq bs bsq bsqlb ps n d :
     n ≠ O ->
-    map_Forall (λ _ l, (n ≤ length l)%nat) bslb ->
-    map_Forall2 (λ _ lb l, prefix lb l) bslb bs ->
-    equal_latest_proposal_or_free bs ps n d =
-    equal_latest_proposal_or_free bslb ps n d.
+    map_Forall (λ _ l, (n ≤ length l)%nat) bsqlb ->
+    map_Forall2 (λ _ lb l, prefix lb l) bsqlb bsq ->
+    equal_latest_proposal_or_free bs bsq ps n d =
+    equal_latest_proposal_or_free bs bsqlb ps n d.
   Proof.
     intros Hnz Hlen Hprefix.
     rewrite /equal_latest_proposal_or_free.
-    rewrite (latest_before_quorum_eq _ bslb); last first.
+    rewrite (latest_before_quorum_eq _ bsqlb); last first.
     { apply Hprefix. }
     { apply Hlen. }
     case_decide as Hn; last done.
-    rewrite (nfast_eq _ bslb); last first.
+    rewrite (nfast_eq _ bsqlb); last first.
     { apply Hprefix. }
     { intros x l Hl. specialize (Hlen _ _ Hl). simpl in Hlen.
       clear -Hlen Hnz. lia.
     }
     apply map_Forall2_dom_L in Hprefix.
-    by rewrite -(size_dom bs) -(size_dom bslb) Hprefix.
+    done.
+    (* by rewrite -(size_dom bs) -(size_dom bslb) Hprefix. *)
   Qed.
 
   Definition latest_term (l : ballot) := latest_before (length l) l.

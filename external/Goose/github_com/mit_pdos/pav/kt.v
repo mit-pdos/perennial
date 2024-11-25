@@ -211,10 +211,11 @@ Definition checkDig: val :=
     (if: "err0"
     then "stdErr"
     else
-      let: ("seenDig", "ok0") := MapGet "seenDigs" (struct.loadF SigDig "Epoch" "dig") in
-      (if: "ok0"
-      then
-        (if: (~ (std.BytesEqual (struct.loadF SigDig "Dig" "seenDig") (struct.loadF SigDig "Dig" "dig")))
+      (if: (~ (std.SumNoOverflow (struct.loadF SigDig "Epoch" "dig") #1))
+      then "stdErr"
+      else
+        let: ("seenDig", "ok0") := MapGet "seenDigs" (struct.loadF SigDig "Epoch" "dig") in
+        (if: "ok0" && (~ (std.BytesEqual (struct.loadF SigDig "Dig" "seenDig") (struct.loadF SigDig "Dig" "dig")))
         then
           let: "evid" := struct.new Evid [
             "sigDig0" ::= "dig";
@@ -224,13 +225,6 @@ Definition checkDig: val :=
             "Evid" ::= "evid";
             "Err" ::= #true
           ]
-        else
-          struct.new ClientErr [
-            "Err" ::= #false
-          ])
-      else
-        (if: ((struct.loadF SigDig "Epoch" "dig") + #1) = #0
-        then "stdErr"
         else
           struct.new ClientErr [
             "Err" ::= #false
@@ -540,7 +534,7 @@ Definition Client__Put: val :=
                 else
                   MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
                   struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
-                  struct.storeF Client "nextVer" "c" ((struct.loadF Client "nextVer" "c") + #1);;
+                  struct.storeF Client "nextVer" "c" (std.SumAssumeNoOverflow (struct.loadF Client "nextVer" "c") #1);;
                   (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
                      "Err" ::= #false
                    ])))))))).

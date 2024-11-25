@@ -470,8 +470,8 @@ Section interpreter.
                 end
             | _ => mfail_bt ("Attempted FinishReadOp with non-location argument of type " ++ (pretty addrv))
             end
+        | GlobalGetOp => mfail_bt "GlobalGetOp Unsupported"
         end
-
       | Primitive2 p e1 e2 =>
           v1 <- interpret n e1;
           v2 <- interpret n e2;
@@ -526,7 +526,6 @@ Section interpreter.
                 end
             | _ => mfail_bt ("CmpXchg attempted with non-location argument of type " ++ (pretty addrv))
             end
-
       (* Won't interpret anything involving prophecy variables. *)
       | NewProph => mfail_bt "NotImpl: prophecy variable." (* ignore *)
       | ResolveProph e1 e2 => mfail_bt "NotImpl: resolve."   (* ignore *)
@@ -840,6 +839,9 @@ Ltac runStateT_inv :=
         eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx OutputOp)])|].
         single_step.
       }
+      {
+        done.
+      }
     }
 
     (* Primitive2 *)
@@ -879,6 +881,16 @@ Ltac runStateT_inv :=
         eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx AtomicStoreOp #l4)])|].
         single_step.
         exact H.
+      }
+      { runStateT_inv.
+        destruct v2 eqn:?; simpl in H; try by inversion H.
+        destruct l2 eqn:?; simpl in H; try by inversion H.
+        subst.
+        Transitions.monad_inv.
+        do 2 eexists.
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx GlobalPutOp e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx GlobalPutOp #(str s1))])|].
+        single_step.
       }
     }
 

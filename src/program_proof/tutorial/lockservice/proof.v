@@ -13,7 +13,7 @@ Definition bool_le (b:bool) : list u8 := if b then [W8 1] else [W8 0].
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
     EncodeBool #b
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (bool_le b) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (bool_le b) }}}
 .
 Proof.
 Admitted.
@@ -29,7 +29,7 @@ Admitted.
 Lemma wp_EncodeUint64 x:
   {{{ True }}}
     EncodeUint64 #x
-  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (u64_le x) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (u64_le x) }}}
 .
 Proof.
 Admitted.
@@ -160,7 +160,7 @@ Proof.
   iIntros (handlers) "Hhandlers".
 
   wp_pures.
-  wp_apply (map.wp_MapInsert with "Hhandlers").
+  wp_apply (map.wp_MapInsert w64 with "Hhandlers").
   iIntros "Hhandlers".
   wp_pures.
 
@@ -179,7 +179,7 @@ Proof.
   wp_pures.
 
   iNamed "Hhost".
-  wp_apply (wp_StartServer2 with "[$Hr]").
+  wp_apply (wp_StartServer_pred with "[$Hr]").
   { set_solver. }
   { (* Here, we show that the functions being passed in Go inside `handlers`
        satisfy the spec they should. *)
@@ -196,8 +196,8 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]". subst.
       wp_apply (wp_DecodeUint64 with "[$]").
@@ -205,15 +205,15 @@ Proof.
       wp_apply (wp_Server__release with "[$]").
       iIntros "HΨ".
       wp_pures.
-      iApply ("HΦ" with "[$] [$]").
-      by iApply (own_slice_small_nil _ 1).
+      iApply "HΦ". iFrame.
+      by iApply (own_slice_small_nil _ (DfracOwn 1)).
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]". subst.
       wp_apply (wp_DecodeUint64 with "[$]").
@@ -223,16 +223,17 @@ Proof.
       wp_apply wp_EncodeUint64.
       iIntros (?) "Henc_req".
       wp_store.
-      iApply ("HΦ" with "[HΨ] [$]").
-      { iApply "HΨ". done. }
-      by iDestruct (own_slice_to_small _ _ 1 with "Henc_req") as "$".
+      iApply "HΦ".
+      iFrame "Hrep".
+      iDestruct (own_slice_to_small with "Henc_req") as "$".
+      iApply "HΨ". done.
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iEval (rewrite /getFreshNum_spec /=) in "Hspec".
       wp_apply (wp_Server__getFreshNum with "[$]").
@@ -240,9 +241,10 @@ Proof.
       wp_apply wp_EncodeUint64.
       iIntros (?) "Henc_req".
       wp_store.
-      iApply ("HΦ" with "[HΨ] [$]").
-      { iApply "HΨ". done. }
-      by iDestruct (own_slice_to_small with "Henc_req") as "$".
+      iApply "HΦ".
+      iFrame "Hrep".
+      iDestruct (own_slice_to_small with "Henc_req") as "$".
+      iApply "HΨ". done.
     }
     by iApply big_sepM_empty.
   }
@@ -283,7 +285,8 @@ Proof.
   wp_loadField.
   iNamed "Hhost".
   iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call2' with "[$] [$H1] [$] [$] [Hspec]").
+  wp_apply (wp_Client__Call2 with "[$] [$H1] [$] [$] [Hspec]").
+  iSplit.
   {
     iModIntro. iModIntro.
     rewrite replicate_0.
@@ -348,13 +351,10 @@ Proof.
     wp_load.
     wp_pures.
     wp_if_destruct.
-    {
-      iModIntro. iLeft.
-      iSplitR; first done.
-      iFrame.
-      admit. (* TODO: weaken loop inv for err *)
-    }
-    by exfalso.
+    iModIntro. iLeft.
+    iSplitR; first done.
+    iFrame.
+    admit. (* TODO: weaken loop inv for err *)
   }
   (* case: successful RPC *)
   iModIntro.

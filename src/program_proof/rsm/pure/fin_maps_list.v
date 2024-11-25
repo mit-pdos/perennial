@@ -5,7 +5,7 @@ Section lemmas.
   Context `{FinMap K M}.
 
   Lemma map_to_list_not_elem_of_take_key {A} {m : M A} l i k v :
-    map_to_list m = l ->
+    map_to_list m ≡ₚ l ->
     l !! i = Some (k, v) ->
     k ∉ (take i l).*1.
   Proof.

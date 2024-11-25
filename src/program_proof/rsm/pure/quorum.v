@@ -23,6 +23,12 @@ Section def.
   Definition fquorum c q :=
     q ⊆ c ∧ fquorum_size c q.
 
+  Definition hcquorum_size c q :=
+    size c / 4 < size q.
+
+  Definition hcquorum c q :=
+    q ⊆ c ∧ hcquorum_size c q.
+
 End def.
 
 Section lemma.
@@ -78,6 +84,22 @@ Section lemma.
     rewrite /cquorum /cquorum_size /fquorum /fquorum_size.
     intros [[Hle1 Hsize1] | [Hle1 Hsize1]] [[Hle2 Hsize2] | [Hle2 Hsize2]];
       (apply (quorums_overlapped_raw c); [done | done | lia]).
+  Qed.
+
+  Lemma hcquorum_fquorum_overlapped c q1 q2 :
+    hcquorum c q1 ->
+    fquorum c q2 ->
+    ∃ x, x ∈ q1 ∧ x ∈ q2.
+  Proof.
+    intros Hq1 Hq2.
+    destruct Hq1 as [Hincl1 Hsize1].
+    destruct Hq2 as [Hincl2 Hsize2].
+    apply (quorums_overlapped_raw c).
+    { apply Hincl1. }
+    { apply Hincl2. }
+    rewrite /hcquorum_size in Hsize1.
+    rewrite /fquorum_size in Hsize2.
+    lia.
   Qed.
 
   Lemma cquorums_overlapped c q1 q2 :

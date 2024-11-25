@@ -98,6 +98,8 @@ Inductive prim_op1 : Set :=
   | LoadOp
   | InputOp
   | OutputOp
+
+  | GlobalGetOp (* string *)
 .
 
 
@@ -105,6 +107,7 @@ Inductive prim_op2 : Set :=
  | AllocNOp (* array length (positive number), initial value *)
  | FinishStoreOp (* pointer, value *)
  | AtomicStoreOp (* pointer, value *) (* atomic store *)
+ | GlobalPutOp (* string, val *)
 .
 
 Inductive arity : Set := args0 | args1 | args2.
@@ -179,6 +182,8 @@ Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
+Notation GlobalGet := (Primitive1 GlobalGetOp).
+Notation GlobalPut := (Primitive2 GlobalPutOp).
 
 (* XXX: to avoid splitting things into heap cells, can wrap it in e.g. an InjLV.
    This is how lists can avoid getting split into different heap cells when [ref]'d. *)
@@ -224,6 +229,7 @@ Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0)
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc (nonAtomic val);
+  globals : gmap string val;
   world: ffi_state;
   trace: Trace;
   oracle: Oracle;
@@ -233,7 +239,7 @@ Record global_state : Type := {
   used_proph_id: gset proph_id;
 }.
 
-Global Instance eta_state : Settable _ := settable! Build_state <heap; world; trace; oracle>.
+Global Instance eta_state : Settable _ := settable! Build_state <heap; globals; world; trace; oracle>.
 Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
 
 (* Note that ffi_step takes a val, which is itself parameterized by the
@@ -262,7 +268,7 @@ Inductive goose_crash : state -> state -> Prop :=
   | GooseCrash σ w w' :
      w = σ.(world) ->
      ffi_crash_step w w' ->
-     goose_crash σ (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ)))
+     goose_crash σ (set globals (fun _ => ∅) (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ))))
 .
 
 
@@ -700,7 +706,7 @@ Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
+  populate {| heap := inhabitant; globals := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 Global Instance global_state_inhabited : Inhabited global_state :=
@@ -1201,6 +1207,10 @@ Definition base_trans (e: expr) :
     atomically
       (modifyσ (set trace (add_event (Out_ev v)));;
        ret $ LitV $ LitUnit)
+  | GlobalGet (Val (LitV (LitString k))) =>
+      atomically (reads (λ '(σ, g), σ.(globals) !! k) ≫= unwrap)
+  | GlobalPut (Val (LitV (LitString k))) (Val v) =>
+      atomically (modifyσ (set globals <[k := v]>);; ret $ LitV $ LitUnit)
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
     atomically
       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
@@ -1735,4 +1745,6 @@ Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
+Notation GlobalGet := (Primitive1 GlobalGetOp).
+Notation GlobalPut := (Primitive2 GlobalPutOp).
 Notation nonAtomic T := (naMode * T)%type.

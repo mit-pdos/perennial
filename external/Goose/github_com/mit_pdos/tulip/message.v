@@ -8,14 +8,16 @@ Context `{ext_ty: ext_types}.
 Definition TxnRequest := struct.decl [
   "Kind" :: uint64T;
   "Timestamp" :: uint64T;
+  "Key" :: stringT;
   "Rank" :: uint64T;
-  "PartialWrites" :: tulip.KVMap;
+  "PartialWrites" :: slice.T (struct.t tulip.WriteEntry);
   "ParticipantGroups" :: slice.T uint64T
 ].
 
 Definition TxnResponse := struct.decl [
   "Kind" :: uint64T;
   "Timestamp" :: uint64T;
+  "ReplicaID" :: uint64T;
   "Result" :: uint64T;
   "Key" :: stringT;
   "Version" :: struct.t tulip.Version;
@@ -45,13 +47,158 @@ Definition MSG_TXN_COMMIT : expr := #300.
 
 Definition MSG_TXN_ABORT : expr := #301.
 
-Definition EncodeTxnRead: val :=
-  rec: "EncodeTxnRead" "ts" "key" :=
+Definition EncodeTxnReadRequest: val :=
+  rec: "EncodeTxnReadRequest" "ts" "key" :=
     slice.nil.
 
-Definition EncodeTxnFastPrepare: val :=
-  rec: "EncodeTxnFastPrepare" "ts" "pwrs" "ptgs" :=
+Definition DecodeTxnReadRequest: val :=
+  rec: "DecodeTxnReadRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnReadResponse: val :=
+  rec: "EncodeTxnReadResponse" "ts" "rid" "key" "lts" "value" :=
     slice.nil.
+
+Definition DecodeTxnReadResponse: val :=
+  rec: "DecodeTxnReadResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
+
+Definition EncodeTxnFastPrepareRequest: val :=
+  rec: "EncodeTxnFastPrepareRequest" "ts" "pwrs" "ptgs" :=
+    slice.nil.
+
+Definition DecodeTxnFastPrepareRequest: val :=
+  rec: "DecodeTxnFastPrepareRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnFastPrepareResponse: val :=
+  rec: "EncodeTxnFastPrepareResponse" "ts" "rid" "res" :=
+    slice.nil.
+
+Definition DecodeTxnFastPrepareResponse: val :=
+  rec: "DecodeTxnFastPrepareResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
+
+Definition EncodeTxnValidateRequest: val :=
+  rec: "EncodeTxnValidateRequest" "ts" "rank" "pwrs" "ptgs" :=
+    slice.nil.
+
+Definition DecodeTxnValidateRequest: val :=
+  rec: "DecodeTxnValidateRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnValidateResponse: val :=
+  rec: "EncodeTxnValidateResponse" "ts" "rid" "res" :=
+    slice.nil.
+
+Definition DecodeTxnValidateResponse: val :=
+  rec: "DecodeTxnValidateResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
+
+Definition EncodeTxnPrepareRequest: val :=
+  rec: "EncodeTxnPrepareRequest" "ts" "rank" :=
+    slice.nil.
+
+Definition DecodeTxnPrepareRequest: val :=
+  rec: "DecodeTxnPrepareRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnPrepareResponse: val :=
+  rec: "EncodeTxnPrepareResponse" "ts" "rank" "rid" "res" :=
+    slice.nil.
+
+Definition DecodeTxnPrepareResponse: val :=
+  rec: "DecodeTxnPrepareResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
+
+Definition EncodeTxnUnprepareRequest: val :=
+  rec: "EncodeTxnUnprepareRequest" "ts" "rank" :=
+    slice.nil.
+
+Definition DecodeTxnUnprepareRequest: val :=
+  rec: "DecodeTxnUnprepareRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnUnprepareResponse: val :=
+  rec: "EncodeTxnUnprepareResponse" "ts" "rank" "rid" "res" :=
+    slice.nil.
+
+Definition DecodeTxnUnprepareResponse: val :=
+  rec: "DecodeTxnUnprepareResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
+
+Definition EncodeTxnQueryRequest: val :=
+  rec: "EncodeTxnQueryRequest" "ts" "rank" :=
+    slice.nil.
+
+Definition DecodeTxnQueryRequest: val :=
+  rec: "DecodeTxnQueryRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnQueryResponse: val :=
+  rec: "EncodeTxnQueryResponse" "ts" "res" :=
+    slice.nil.
+
+Definition DecodeTxnQueryResponse: val :=
+  rec: "DecodeTxnQueryResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
+
+Definition EncodeTxnRefreshRequest: val :=
+  rec: "EncodeTxnRefreshRequest" "ts" "rank" :=
+    slice.nil.
+
+Definition DecodeTxnRefreshRequest: val :=
+  rec: "DecodeTxnRefreshRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnCommitRequest: val :=
+  rec: "EncodeTxnCommitRequest" "ts" "pwrs" :=
+    slice.nil.
+
+Definition DecodeTxnCommitRequest: val :=
+  rec: "DecodeTxnCommitRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnCommitResponse: val :=
+  rec: "EncodeTxnCommitResponse" "ts" "res" :=
+    slice.nil.
+
+Definition DecodeTxnCommitResponse: val :=
+  rec: "DecodeTxnCommitResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
+
+Definition EncodeTxnAbortRequest: val :=
+  rec: "EncodeTxnAbortRequest" "ts" :=
+    slice.nil.
+
+Definition DecodeTxnAbortRequest: val :=
+  rec: "DecodeTxnAbortRequest" "data" :=
+    struct.mk TxnRequest [
+    ].
+
+Definition EncodeTxnAbortResponse: val :=
+  rec: "EncodeTxnAbortResponse" "ts" "res" :=
+    slice.nil.
+
+Definition DecodeTxnAbortResponse: val :=
+  rec: "DecodeTxnAbortResponse" "data" :=
+    struct.mk TxnResponse [
+    ].
 
 Definition DecodeTxnRequest: val :=
   rec: "DecodeTxnRequest" "data" :=
