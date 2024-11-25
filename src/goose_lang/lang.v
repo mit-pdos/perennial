@@ -268,7 +268,7 @@ Inductive goose_crash : state -> state -> Prop :=
   | GooseCrash σ w w' :
      w = σ.(world) ->
      ffi_crash_step w w' ->
-     goose_crash σ (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ)))
+     goose_crash σ (set globals (fun _ => ∅) (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ))))
 .
 
 

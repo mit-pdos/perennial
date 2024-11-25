@@ -83,11 +83,16 @@ Proof.
   iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
   { inversion Hcrash; subst; eauto. }
   iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
+  iMod (globals_reinit _) as (globals_name) "[Hg_auth Hglobals]".
   iModIntro.
   iNext.
   iMod (NC_alloc) as (Hc') "HNC".
   (* TODO(RJ): reformulate na_heap_reinit and trace_reinit to better match what we need here. *)
-  set (hL' := GooseLocalGS Σ Hc' ffi_names (na_heapGS_update _ name_na_heap) (traceGS_update Σ _ name_trace)).
+  set (hL' := GooseLocalGS Σ Hc' ffi_names
+                (na_heapGS_update _ name_na_heap)
+                (traceGS_update Σ _ name_trace)
+                (globalsGS_update Σ _ globals_name)
+      ).
   iExists (goose_generationGS (L:=hL')).
   iSpecialize ("Hidemp" $! σ_pre_crash.(world) σ_post_crash.(world) hL' with "Hcrel").
   iMod ("Hidemp") as "(Hrestart&Hidemp)".

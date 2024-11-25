@@ -115,34 +115,47 @@ Section globals_definitions.
 Context `{ext:ffi_syntax}.
 
 Class globalsGS Σ : Set := GlobalsGS {
-                               (* XXX: optionUR is to turn the cmra into a ucmra
-                                  (it is adjoint to forgetful ucmra → cmra functor). *)
   #[global] globals_inG :: inG Σ (authUR (optionUR (exclR (leibnizO (gmap string val))))) ;
   globals_name : gname ;
 }.
 
-Context `{!globalsGS Σ}.
+Class globals_preG (Σ: gFunctors) : Set := {
+  #[global] globals_preG_inG :: inG Σ (authUR (optionUR (exclR (leibnizO (gmap string val))))) ;
+}.
+
+Definition globalsΣ : gFunctors :=
+  #[GFunctor (authR (optionUR (exclR (leibnizO (gmap string val)))))].
+
+Global Instance subG_globalsG {Σ} : subG globalsΣ Σ → globals_preG Σ.
+Proof. solve_inG. Qed.
+
+Definition globalsGS_update_pre (Σ: gFunctors) (hT: globals_preG Σ) (new_globals_name: gname) :=
+  {| globals_inG := globals_preG_inG; globals_name := new_globals_name |}.
+
+Definition globalsGS_update (Σ: gFunctors) (hT: globalsGS Σ) (new_globals_name: gname) :=
+  {| globals_inG := globals_inG; globals_name := new_globals_name |}.
 
 (* XXX: this is using the frag b/c we want the dfrac in the user-owned part. *)
-Definition own_globals_ctx (g : gmap string val) :=
+Definition own_globals_ctx `{hG : globalsGS Σ} (g : gmap string val) :=
   own globals_name (◯ (Some (Excl (g : leibnizO _)))).
 
-Definition own_globals_def (dq : dfrac) (g : gmap string val) :=
+Definition own_globals_def `{hG : globalsGS Σ} (dq : dfrac) (g : gmap string val) :=
   own globals_name (●{dq}Some (Excl (g : leibnizO _))).
 Program Definition own_globals := unseal (_:seal (@own_globals_def)). Obligation 1. by eexists. Qed.
 Definition own_globals_unseal : own_globals = _ := seal_eq _.
+Global Arguments own_globals {Σ hG}.
 
-Global Instance own_globals_fractional v: Fractional (λ q, own_globals (DfracOwn q) v)%I.
+Global Instance own_globals_fractional `{hG:globalsGS Σ} v : Fractional (λ q, own_globals (DfracOwn q) v)%I.
 Proof.
   intros p q.
   rewrite own_globals_unseal /own_globals_def -own_op -auth_auth_dfrac_op dfrac_op_own //.
 Qed.
 
-Global Instance own_globals_as_fractional q v:
+Global Instance own_globals_as_fractional q v `{hG : globalsGS Σ} :
   AsFractional (own_globals (DfracOwn q) v) (λ q, own_globals (DfracOwn q) v)%I q.
 Proof. econstructor; eauto. apply _. Qed.
 
-Global Instance own_globals_combine_sep_gives dq1 dq2 v1 v2 :
+Global Instance own_globals_combine_sep_gives dq1 dq2 v1 v2 `{hG : globalsGS Σ} :
   CombineSepGives (own_globals dq1 v1)%I (own_globals dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
 Proof.
   rewrite own_globals_unseal /CombineSepGives. iIntros "[H1 H2]".
@@ -151,12 +164,11 @@ Proof.
   naive_solver.
 Qed.
 
-Global Instance own_globals_ctx_combine_sep_gives dq v1 v2 :
+Global Instance own_globals_ctx_combine_sep_gives dq v1 v2 `{hG : globalsGS Σ} :
   CombineSepGives (own_globals_ctx v1)%I (own_globals dq v2)%I ⌜ v1 = v2 ⌝%I.
 Proof.
   rewrite own_globals_unseal /CombineSepGives. iIntros "[H1 H2]".
   iCombine "H2 H1" gives %?. iModIntro. iPureIntro.
-  Search auth_auth auth_frag.
   rewrite auth_both_dfrac_valid in H.
   destruct H as (_ & ? & _).
   specialize (H O).
@@ -164,10 +176,10 @@ Proof.
   naive_solver.
 Qed.
 
-Global Instance own_globals_persistent v : Persistent (own_globals DfracDiscarded v).
+Global Instance own_globals_persistent v `{hG : globalsGS Σ} : Persistent (own_globals DfracDiscarded v).
 Proof. rewrite own_globals_unseal. apply _. Qed.
 
-Lemma own_globals_persist dq v:
+Lemma own_globals_persist `{hG : globalsGS Σ} dq v :
   own_globals dq v ==∗ own_globals DfracDiscarded v.
 Proof.
   rewrite own_globals_unseal.
@@ -175,7 +187,7 @@ Proof.
   apply auth_update_auth_persist.
 Qed.
 
-Lemma own_globals_update v v' v'' :
+Lemma own_globals_update `{hG: globalsGS Σ} v v' v'' :
   own_globals (DfracOwn 1) v -∗ own_globals_ctx v' ==∗
   own_globals (DfracOwn 1) v'' ∗ own_globals_ctx v''.
 Proof.
@@ -187,6 +199,24 @@ Proof.
   apply auth_update.
   (* FIXME: prove local update. *)
 Admitted.
+
+Lemma globals_name_init `(hT: globals_preG Σ) (g : gmap string val) :
+  ⊢ |==> ∃ new_globals_name : gname, let _ := globalsGS_update_pre Σ hT new_globals_name in
+     own_globals_ctx g ∗ own_globals (DfracOwn 1) g.
+Proof.
+  iMod (own_alloc (● (Excl' (g : leibnizO _)) ⋅ ◯ (Excl' (g : leibnizO _ )))) as (γ) "[H1 H2]".
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
+  iModIntro. rewrite own_globals_unseal. iFrame.
+Qed.
+
+Lemma globals_reinit `(hT: globalsGS Σ) (g : gmap string val) :
+  ⊢ |==> ∃ new_globals_name : gname, let _ := globalsGS_update Σ hT new_globals_name in
+     own_globals_ctx g ∗ own_globals (DfracOwn 1) g.
+Proof.
+  iMod (own_alloc (● (Excl' (g : leibnizO _)) ⋅ ◯ (Excl' (g : leibnizO _ )))) as (γ) "[H1 H2]".
+  { apply auth_both_valid_discrete; split; eauto. econstructor. }
+  iModIntro. rewrite own_globals_unseal. iFrame.
+Qed.
 
 End globals_definitions.
 
