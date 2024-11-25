@@ -329,9 +329,8 @@ Definition checkMembHide: val :=
 Definition checkHist: val :=
   rec: "checkHist" "servVrfPk" "uid" "dig" "membs" :=
     let: "err0" := ref (zero_val boolT) in
-    ForSlice ptrT "ver0" "memb" "membs"
-      (let: "ver" := "ver0" in
-      (if: checkMembHide "servVrfPk" "uid" "ver" "dig" "memb"
+    ForSlice ptrT "ver" "memb" "membs"
+      ((if: checkMembHide "servVrfPk" "uid" "ver" "dig" "memb"
       then "err0" <-[boolT] #true
       else #()));;
     ![boolT] "err0".

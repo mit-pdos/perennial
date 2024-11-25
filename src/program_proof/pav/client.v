@@ -157,7 +157,18 @@ Lemma wp_checkLabel ptr_vrf_pk vrf_pk sl_proof uid ver (proof : list w8) :
     "Hsl_label" ∷ own_slice_small sl_label byteT (DfracOwn 1) label ∗
     "Herr" ∷ (if err then True else is_map_label vrf_pk uid ver label)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
+  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
+  wp_apply wp_NewSlice_0. iIntros "* Hsl_enc".
+  wp_apply (MapLabelPre.wp_enc (MapLabelPre.mk _ _) with "[$Hsl_enc $Uid $Ver]").
+  iIntros "*". iNamed 1. simpl.
+  iDestruct (own_slice_to_small with "Hsl_enc") as "Hsl_enc".
+  wp_apply (wp_VrfPublicKey__Verify with "[$Hown_vrf_pk $Hsl_enc $Hsl_proof]").
+  iIntros "* H {Hsl_proof}". iNamed "H".
+  iApply "HΦ". iFrame. destruct err; [done|iFrame "#"].
+Qed.
 
 Lemma wp_checkMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb memb :
   {{{
@@ -177,7 +188,23 @@ Lemma wp_checkMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_
       "#Hhas_merk_proof" ∷ is_merkle_entry label
         (Some (MapValPre.encodesF $ MapValPre.mk memb.(Memb.EpochAdded) comm)) dig)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iNamed "Hown_memb". wp_loadField.
+  wp_apply (wp_checkLabel with "[$Hown_vrf_pk $Hsl_label_proof]").
+  iIntros "*". iNamed 1. wp_if_destruct.
+  { iApply "HΦ". by iFrame "∗#". }
+  iDestruct "Herr" as "#His_label".
+  do 2 wp_loadField.
+  wp_apply (wp_compMapVal with "[$Hown_pk_open]"). iIntros "*". iNamed 1.
+  wp_loadField.
+  wp_apply (wp_CheckProof with "[$His_merk_proof $Hsl_label $Hsl_map_val $Hsl_dig]").
+  iClear "Hsl_dig". iIntros (err0). iNamed 1.
+  iApply "HΦ". iFrame "∗#". destruct err0; [done|].
+  iDestruct "Hgenie" as "[_ H]". iDestruct ("H" with "[//]") as "H".
+  iDestruct (is_merkle_proof_to_entry with "H") as "#Hhas_merk_proof".
+  iFrame "∗#".
+Qed.
 
 Lemma wp_checkMembHide ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb_hide memb_hide :
   {{{
@@ -187,14 +214,28 @@ Lemma wp_checkMembHide ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) 
   }}}
   checkMembHide #ptr_vrf_pk #uid #ver (slice_val sl_dig) #ptr_memb_hide
   {{{
-    (err : bool) label, RET #err;
+    (err : bool), RET #err;
     "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
     "Hown_memb_hide" ∷ MembHide.own ptr_memb_hide memb_hide ∗
     "Herr" ∷ (if err then True else
+      ∃ label,
       "#His_label" ∷ is_map_label vrf_pk uid ver label ∗
       "#Hhas_merk_proof" ∷ is_merkle_entry label (Some memb_hide.(MembHide.MapVal)) dig)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iNamed "Hown_memb_hide". wp_loadField.
+  wp_apply (wp_checkLabel with "[$Hown_vrf_pk $Hsl_label_proof]").
+  iIntros "*". iNamed 1. wp_if_destruct.
+  { iApply "HΦ". by iFrame "∗#". }
+  iDestruct "Herr" as "#His_label". do 2 wp_loadField.
+  wp_apply (wp_CheckProof _ sl_map_val sl_dig with "[$His_merk_proof $Hsl_label $Hsl_map_val $Hsl_dig]").
+  iClear "Hsl_map_val Hsl_dig". iIntros (err0). iNamed 1.
+  iApply "HΦ". iFrame "∗#". destruct err0; [done|].
+  iDestruct "Hgenie" as "[_ H]". iDestruct ("H" with "[//]") as "H".
+  iDestruct (is_merkle_proof_to_entry with "H") as "#Hhas_merk_proof".
+  iFrame "∗#".
+Qed.
 
 Lemma wp_checkHist ptr_vrf_pk vrf_pk (uid : w64) sl_dig (dig : list w8) sl_hist (histref : list loc) hist :
   {{{
@@ -216,7 +257,47 @@ Lemma wp_checkHist ptr_vrf_pk vrf_pk (uid : w64) sl_dig (dig : list w8) sl_hist 
         "#His_label" ∷ is_map_label vrf_pk uid (W64 ver) label ∗
         "#Hhas_merk_proof" ∷ is_merkle_entry label (Some val) dig))
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_err0) "Hptr_err0".
+  wp_apply (wp_forSlice
+    (λ i,
+    ∃ (err0 : bool),
+    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
+    "Hown_hist" ∷ ([∗ list] ptr_memb_hide;memb_hide ∈ histref;hist,
+      MembHide.own ptr_memb_hide memb_hide) ∗
+    "Hptr_err0" ∷ ptr_err0 ↦[boolT] #err0 ∗
+    "Hloop_err" ∷ (if err0 then True else
+      ([∗ list] ver ↦ val ∈ (take (uint.nat i) (MembHide.MapVal <$> hist)),
+        ∃ label,
+        "#His_label" ∷ is_map_label vrf_pk uid (W64 ver) label ∗
+        "#Hhas_merk_proof" ∷ is_merkle_entry label (Some val) dig)))%I
+    with "[] [$Hown_vrf_pk $Hown_hist $Hptr_err0 $Hsl_hist]").
+  { clear. iIntros "*". iIntros (Φ) "!> (H&%&%Hlook_histref) HΦ". iNamed "H".
+    iDestruct (big_sepL2_lookup_1_some with "Hown_hist") as %[? Hlook_hist];
+      [exact Hlook_histref|].
+    iDestruct (big_sepL2_lookup_acc with "Hown_hist") as "[Hown_memb_hide Hacc]";
+      [exact Hlook_histref|exact Hlook_hist|].
+    wp_apply (wp_checkMembHide with "[$Hown_vrf_pk $Hsl_dig $Hown_memb_hide]").
+    iIntros "*". iNamed 1.
+    iDestruct ("Hacc" with "Hown_memb_hide") as "Hown_hist". wp_if_destruct.
+    { wp_store. iApply "HΦ". by iFrame "∗#". }
+    iNamed "Herr". destruct err0.
+    { iApply "HΦ". by iFrame "∗#". }
+    iApply "HΦ". iFrame "∗#".
+    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+    rewrite -!fmap_take (take_S_r _ _ _ Hlook_hist) fmap_app. iFrame.
+    rewrite length_fmap length_take_le.
+    2: { apply lookup_lt_Some in Hlook_hist. lia. }
+    simpl. replace (uint.nat i + 0)%nat with (uint.nat i) by lia.
+    rewrite w64_to_nat_id. by iFrame "#". }
+  { naive_solver. }
+  iIntros "(H&_)". iNamed "H". wp_load.
+  iDestruct (big_sepL2_length with "Hown_hist") as %?.
+  iDestruct (own_slice_small_sz with "Hsl_hist") as %?.
+  rewrite take_ge. 2: { rewrite length_fmap. lia. }
+  iApply "HΦ". by iFrame.
+Qed.
 
 Lemma wp_checkNonMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_non_memb non_memb :
   {{{
@@ -226,14 +307,30 @@ Lemma wp_checkNonMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) p
   }}}
   checkNonMemb #ptr_vrf_pk #uid #ver (slice_val sl_dig) #ptr_non_memb
   {{{
-    (err : bool) label, RET #err;
+    (err : bool), RET #err;
     "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
     "Hown_non_memb" ∷ NonMemb.own ptr_non_memb non_memb ∗
     "Herr" ∷ (if err then True else
+      ∃ label,
       "#His_label" ∷ is_map_label vrf_pk uid ver label ∗
       "#Hhas_merk_proof" ∷ is_merkle_entry label None dig)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iNamed "Hown_non_memb". wp_loadField.
+  wp_apply (wp_checkLabel with "[$Hown_vrf_pk $Hsl_label_proof]").
+  iIntros "*". iNamed 1. wp_if_destruct.
+  { iApply "HΦ". by iFrame "∗#". }
+  iDestruct "Herr" as "#His_label".
+  wp_loadField.
+  wp_apply (wp_CheckProof _ Slice.nil sl_dig with "[$His_merk_proof $Hsl_label $Hsl_dig]").
+  { iApply own_slice_to_small. iApply (own_slice_zero _ (DfracOwn 1)). }
+  iClear "Hsl_dig". iIntros (err0). iNamed 1.
+  iApply "HΦ". iFrame "∗#". destruct err0; [done|].
+  iDestruct "Hgenie" as "[_ H]". iDestruct ("H" with "[//]") as "H".
+  iDestruct (is_merkle_proof_to_entry with "H") as "#Hhas_merk_proof".
+  iFrame "∗#".
+Qed.
 
 Definition is_cli_entry cli_γ serv_vrf_pk (ep : w64) uid ver val : iProp Σ :=
   ∃ dig label,

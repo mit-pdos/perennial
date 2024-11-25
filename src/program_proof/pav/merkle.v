@@ -530,7 +530,7 @@ Lemma is_merkle_proof_to_entry proof id val dig :
   is_merkle_proof proof id val dig -∗ is_merkle_entry id val dig.
 Proof. Admitted.
 
-Definition wp_CheckProof (proofTy : bool) sl_proof proof sl_id sl_val sl_dig (id val dig : list w8) d0 d1 d2 :
+Definition wp_CheckProof sl_id sl_val sl_dig (proofTy : bool) sl_proof proof (id val dig : list w8) d0 d1 d2 :
   {{{
     "#Hsl_proof" ∷ is_Slice3D sl_proof proof ∗
     "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
