@@ -997,6 +997,9 @@ Qed.
 
 End wps.
 
+Definition lemmas := (@wp_NewClient, @wp_Client__Audit, @wp_Client__Get, @wp_Client__SelfMon, @wp_Client__Put).
+Print Assumptions lemmas.
+
 Section derived.
 Context `{!heapGS Σ, !pavG Σ}.
 
