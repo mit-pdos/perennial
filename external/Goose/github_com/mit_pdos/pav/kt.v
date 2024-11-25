@@ -211,7 +211,7 @@ Definition checkDig: val :=
     (if: "err0"
     then "stdErr"
     else
-      (if: ((struct.loadF SigDig "Epoch" "dig") + #1) = #0
+      (if: (~ (std.SumNoOverflow (struct.loadF SigDig "Epoch" "dig") #1))
       then "stdErr"
       else
         let: ("seenDig", "ok0") := MapGet "seenDigs" (struct.loadF SigDig "Epoch" "dig") in
