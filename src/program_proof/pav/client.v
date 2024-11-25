@@ -412,8 +412,8 @@ Proof.
   wp_pures. iApply ("HΦ" $! (ClientErr.mk None false)).
   iDestruct (big_sepM2_insert_2 (λ _ x y, SigDig.own x y) _ _ dig.(SigDig.Epoch)
     with "Hown_dig Hown_sd") as "Hnew_own_sd".
-  iDestruct (big_sepM_insert_2 (λ _ x, is_SigDig x _) _ dig.(SigDig.Epoch)
-    with "His_dig His_sd") as "Hnew_is_sd".
+  iDestruct (big_sepM_insert_2 _ _ dig.(SigDig.Epoch)
+    with "[His_dig] His_sd") as "Hnew_is_sd". { by iFrame "His_dig". }
   iClear "Hown_sd His_sd Hown_dig His_dig".
 
   (* grow ghost digs. *)
@@ -488,17 +488,18 @@ Proof.
   wp_apply (wp_checkNonMemb with "[$Hown_vrf_pk $Hsl_Dig $Hown_nonmemb]").
   iIntros "*". iNamed 1. wp_if_destruct.
   { wp_pures. iApply "HΦ". by iFrame "∗∗#%". }
-  do 2 wp_loadField. wp_apply (wp_MapInsert_to_val with "[$Hown_sd_refs]").
+  iNamed "Herr". do 2 wp_loadField.
+  wp_apply (wp_MapInsert_to_val with "[$Hown_sd_refs]").
   iIntros "Hown_sd_refs". wp_loadField. wp_storeField. wp_loadField.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
   wp_pures. iApply ("HΦ" $! (ClientErr.mk None false)).
-  iFrame "Evid Err Herr".
+  iFrame "Evid Err".
   (* our impl always inserts, even if the dig was already there. *)
   iDestruct (big_sepM2_insert_2 (λ _ x y, SigDig.own x y) _ _ dig.(SigDig.Epoch)
     with "Hown_dig Hown_sd") as "Hnew_own_sd".
-  iDestruct (big_sepM_insert_2 (λ _ x, is_SigDig x _) _ dig.(SigDig.Epoch)
-    with "His_dig His_sd") as "Hnew_is_sd".
+  iDestruct (big_sepM_insert_2 _ _ dig.(SigDig.Epoch)
+    with "[His_dig] His_sd") as "Hnew_is_sd". { by iFrame "His_dig". }
   iClear "Hown_sd His_sd Hown_dig His_dig".
   iFrame "Hown_sd_refs Hptr_nextVer Hown_cli Hptr_nextEpoch Hown_vrf_pk #".
   destruct (decide ((S $ uint.nat dig.(SigDig.Epoch)) = length digs)).
@@ -661,8 +662,8 @@ Proof.
   wp_pures. iApply ("HΦ" $! (ClientErr.mk None false)).
   iDestruct (big_sepM2_insert_2 (λ _ x y, SigDig.own x y) _ _ dig.(SigDig.Epoch)
     with "Hown_dig Hown_sd") as "Hnew_own_sd".
-  iDestruct (big_sepM_insert_2 (λ _ x, is_SigDig x _) _ dig.(SigDig.Epoch)
-    with "His_dig His_sd") as "Hnew_is_sd".
+  iDestruct (big_sepM_insert_2 _ _ dig.(SigDig.Epoch)
+    with "[His_dig] His_sd") as "Hnew_is_sd". { by iFrame "His_dig". }
   iClear "Hown_sd His_sd Hown_dig His_dig".
   iFrame "Evid Err Hown_sd_refs Hptr_nextVer Hown_cli Hptr_nextEpoch
     Hown_vrf_pk #".
@@ -734,21 +735,6 @@ Proof.
   - iFrame "#".
 Qed.
 
-(* is_audit says we've audited up *to* (not including) bound. *)
-Definition is_audit (cli_γ adtr_γ : gname) serv_vrf_pk (bound : w64) : iProp Σ :=
-  ∃ adtr_st,
-  "%Hlen_adtr" ∷ ⌜ length adtr_st = uint.nat bound ⌝ ∗
-  "#Hlb_adtr" ∷ mono_list_lb_own adtr_γ adtr_st ∗
-  "#Hdigs_adtr" ∷ ([∗ list] x ∈ adtr_st, is_dig (lower_adtr x.1) x.2) ∗
-  "%Hinv_adtr" ∷ ⌜ adtr_inv (fst <$> adtr_st) ⌝ ∗
-  "#Hmap_transf" ∷ (□ ∀ (ep : w64) m dig uid ver val,
-    ("%Hlook_adtr" ∷ ⌜ adtr_st !! uint.nat ep = Some (m, dig) ⌝ ∗
-    "#His_entry" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver val)
-    -∗
-    (∃ label,
-    "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
-    "%Hin_adtr" ∷ ⌜ m !! label = val ⌝)).
-
 Definition auditEpoch_post adtr_pk seen_dig : iProp Σ :=
   □ ∀ adtr_γ,
   ("#His_pk" ∷ is_sig_pk adtr_pk (adtr_sigpred adtr_γ))
@@ -781,7 +767,7 @@ Proof.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_stdErr".
   wp_loadField.
-  wp_apply (wp_callAdtrGet with "Hown_adtr_cli"). iIntros "* H". iNamed "H".
+  wp_apply (wp_CallAdtrGet with "Hown_adtr_cli"). iIntros "* H". iNamed "H".
   wp_if_destruct.
   { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
   simpl. iNamed "H". iNamed "Hown_info". do 3 wp_loadField.
@@ -837,7 +823,16 @@ Lemma adtr_inv_prefix {l} l' :
   l' `prefix_of` l →
   adtr_inv l →
   adtr_inv l'.
-Proof. Admitted.
+Proof.
+  intros Hpref [Hinv0 Hinv1]. split.
+  - intros ???? Hlook0 Hlook1 ?.
+    opose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as Hlook0'.
+    opose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpref) as Hlook1'.
+    by apply (Hinv0 _ _ _ _ Hlook0' Hlook1').
+  - intros ????? Hlook0 Hlook1.
+    opose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as Hlook0'.
+    by apply (Hinv1 _ _ _ _ _ Hlook0' Hlook1).
+Qed.
 
 Lemma prefix_lookup_agree {A} l1 l2 i (x1 x2 : A) :
   l1 `prefix_of` l2 ∨ l2 `prefix_of` l1 →
@@ -845,11 +840,27 @@ Lemma prefix_lookup_agree {A} l1 l2 i (x1 x2 : A) :
   l2 !! i = Some x2 →
   x1 = x2.
 Proof.
-  intros Hpre Hlook1 Hlook2.
-  destruct Hpre as [Hpre|Hpre].
-  - opose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpre) as ?. by simplify_eq/=.
-  - opose proof (prefix_lookup_Some _ _ _ _ Hlook2 Hpre) as ?. by simplify_eq/=.
+  intros Hpref Hlook1 Hlook2.
+  destruct Hpref as [Hpref|Hpref].
+  - opose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpref) as ?. by simplify_eq/=.
+  - opose proof (prefix_lookup_Some _ _ _ _ Hlook2 Hpref) as ?. by simplify_eq/=.
 Qed.
+
+(* is_audit says we've audited up *to* (not including) bound. *)
+Definition is_audit (cli_γ adtr_γ : gname) serv_vrf_pk (bound : w64) : iProp Σ :=
+  ∃ adtr_st,
+  "%Hlen_adtr" ∷ ⌜ length adtr_st = uint.nat bound ⌝ ∗
+  "#Hlb_adtr" ∷ mono_list_lb_own adtr_γ adtr_st ∗
+  "#Hdigs_adtr" ∷ ([∗ list] x ∈ adtr_st, is_dig (lower_adtr x.1) x.2) ∗
+  "%Hinv_adtr" ∷ ⌜ adtr_inv (fst <$> adtr_st) ⌝ ∗
+  "#Hmap_transf" ∷ (□ ∀ (ep : w64) m dig uid ver val,
+    ("%Hlook_adtr" ∷ ⌜ adtr_st !! uint.nat ep = Some (m, dig) ⌝ ∗
+    "#His_entry" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver val)
+    -∗
+    (∃ label adtr_val,
+    "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
+    "%Hin_adtr" ∷ ⌜ m !! label = adtr_val ⌝ ∗
+    "%Henc_val" ∷ ⌜ val = (λ x, MapValPre.encodesF (MapValPre.mk x.1 x.2)) <$> adtr_val ⌝)).
 
 Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtr_pk :
   uint.Z c.(Client.next_epoch) > 0 →
@@ -864,9 +875,9 @@ Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtr_pk :
     "Hown_err" ∷ ClientErr.own ptr_err err c.(Client.serv_sig_pk) ∗
     "Herr" ∷ if err.(ClientErr.Err) then True else
       ∀ adtr_γ,
-      ("#His_pk" ∷ is_pk adtr_pk (adtr_sigpred adtr_γ))
+      ("#His_pk" ∷ is_sig_pk adtr_pk (adtr_sigpred adtr_γ))
       -∗
-      ("#His_audit" ∷ is_audit c.(Client.γ) adtr_γ c.(Client.next_epoch))
+      ("#His_audit" ∷ is_audit c.(Client.γ) adtr_γ c.(Client.serv_vrf_pk) c.(Client.next_epoch))
   }}}.
 Proof.
   iIntros (? Φ) "H HΦ". iNamed "H". rewrite /Client__Audit.
@@ -885,7 +896,7 @@ Proof.
       "%Hdom" ∷ ⌜ dom sd_ptrs' = dom sd' ⌝ ∗
       "%Hsub" ∷ ⌜ sd' ⊆ sd ⌝ ∗
       "#Hpost" ∷ ([∗ map] x ∈ sd', auditEpoch_post adtr_pk x)
-    else True)%I with "Hown_sd_map [$Hown_cli_adtr $Hptr_err0 Herr0]").
+    else True)%I with "Hown_sd_refs [$Hown_cli_adtr $Hptr_err0 Herr0]").
   { iDestruct (struct_fields_split with "Herr0") as "H". iNamed "H".
     iExists (ClientErr.mk None false). iFrame. iExists ∅.
     iSplit; [done|]. iSplit. { iPureIntro. by eapply map_empty_subseteq. }
@@ -896,8 +907,8 @@ Proof.
     iDestruct (big_sepM_lookup with "His_sd") as "H"; [exact Hlook_dig|].
     iNamed "H". wp_apply (wp_auditEpoch with "[$Hown_cli_adtr]"); [iFrame "#"|].
     iIntros (??) "Haudit". iNamedSuffix "Haudit" "1".
-    iDestruct "Haudit" as "#Haudit".
-    iNamedSuffix "Herr1" "1". wp_loadField. wp_if_destruct.
+    iDestruct "Herr1" as "#Haudit".
+    iNamedSuffix "Hown_err1" "1". wp_loadField. wp_if_destruct.
     - wp_store. iApply "HΦ". iExists ptr_err, err.
       rewrite /ClientErr.own Heqb. by iFrame "∗#".
     - iApply "HΦ". iExists ptr_err0, err0.
@@ -923,21 +934,21 @@ Proof.
   2: { exfalso. rewrite lookup_ge_None in Hlast_dig. word. }
   opose proof (Hlast_digs _ _) as [??]; [done|]. simplify_eq/=.
   rewrite Hlen_digs in Hlast_dig.
-  replace (pred (uint.nat c.(Client.next_epoch))) with
-    (Z.to_nat (uint.Z c.(Client.next_epoch) - 1%Z)) in Hlast_dig; [|word].
+  assert (pred $ uint.nat c.(Client.next_epoch) =
+    uint.nat (word.sub c.(Client.next_epoch) (W64 1))) as Heq_pred by word.
+  rewrite Heq_pred in Hlast_dig.
   pose proof (Hagree_digs_sd _ _ Hlast_dig) as [? Hlook_sd].
   iDestruct (big_sepM_lookup with "Hpost") as "H"; [exact Hlook_sd|].
   iSpecialize ("H" with "His_pk"). iNamed "H". simpl in *.
 
-  iExists (take (uint.nat c.(Client.next_epoch)) adtr_st).
-  iSplit.
+  iExists (take (uint.nat c.(Client.next_epoch)) adtr_st). do 4 try iSplit.
   { iPureIntro. apply lookup_lt_Some in Hlook_dig.
-    rewrite length_take_le; [done|word]. }
-  iSplit. { iApply (mono_list_lb_own_le with "Hlb_adtr"). apply prefix_take. }
-  iSplit. { iApply (big_sepL_take with "Hdigs_adtr"). }
-  iSplit.
-  { iPureIntro. rewrite fmap_take. refine (adtr_inv_prefix _ _ Hinv_adtr).
-    apply prefix_take. }
+    rewrite -Heq_pred in Hlook_dig.
+    rewrite length_take_le; [done|lia]. }
+  { iApply (mono_list_lb_own_le with "Hlb_adtr"). apply prefix_take. }
+  { iApply (big_sepL_take with "Hdigs_adtr"). }
+  { iPureIntro. rewrite fmap_take.
+    refine (adtr_inv_prefix _ _ Hinv_adtr). apply prefix_take. }
   iClear (Hlook_sd Hlook_dig Hinv_adtr) "Hdigs_adtr".
   iRename "Hlb_adtr" into "Hlb_adtr0".
 
@@ -949,17 +960,12 @@ Proof.
   pose proof (Hagree_digs_sd _ _ Hlook_digs) as [? Hlook_sd].
   iDestruct (big_sepM_lookup with "Hpost") as "H"; [exact Hlook_sd|].
   iSpecialize ("H" with "His_pk"). iNamed "H". simpl in *.
-  rewrite w64_to_nat_id in Hlook_dig.
   iDestruct (big_sepL_lookup with "Hdigs_adtr") as "Hmerk_dig"; [exact Hlook_dig|].
   iDestruct (is_merkle_entry_with_map with "Hhas_merk_proof Hmerk_dig") as %Hlook_final.
   iDestruct (mono_list_lb_valid with "Hlb_adtr0 Hlb_adtr") as %Hpref.
   apply lookup_take_Some in Hlook_adtr as [Hlook_adtr _].
   opose proof (prefix_lookup_agree _ _ _ _ _ Hpref Hlook_adtr Hlook_dig) as ?.
-  simplify_eq/=.
-  rewrite lookup_fmap in Hlook_final.
-  opose proof ((option_fmap_eq_inj _ _) _ _ Hlook_final) as ?; [|done].
-  { intros [??][??] Hinj.
-    opose proof (MapValPre.inj _ _ Hinj) as ?. naive_solver. }
+  rewrite lookup_fmap in Hlook_final. simplify_eq/=. naive_solver.
 Qed.
 
 Lemma wp_newClient (uid servAddr : w64) sl_servSigPk servSigPk (servVrfPk : loc) :
