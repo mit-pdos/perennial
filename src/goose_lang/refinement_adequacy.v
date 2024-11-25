@@ -266,21 +266,21 @@ Proof using Hrpre Hhpre Hcpre.
   }
   eapply goose_recv_adequacy; (tc_solve || auto).
   intros hG. exists  Φinv.
-  iIntros "???? Hpre".
+  iIntros "????? Hpre".
   iMod (goose_spec_init2 _ _ _ _ _ _ (P _) with "[$] [$]") as
       (HrG) "(#Hspec&Hpool&Hgs&Hrs&#Htrace&Hcfupd1&Hcfupd3)"; try (by symmetry); eauto.
   iMod (Hwp hG HrG with "[$] [$] [$] [$]") as "(#H1&Hwp)".
   iDestruct (source_pool_singleton with "Hpool") as "Hpool".
   iSpecialize ("Hwp" with "[$] [$] [$] [$]").
   iModIntro. iFrame "Hwp". iSplit.
-  - iModIntro. iIntros (??) "(Hheap_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
+  - iModIntro. iIntros "*". iNamed 1.
     iMod (trace_inv_open with "[$] [$] [$] [$]").
     iApply ncfupd_mask_weaken; eauto.
   - iModIntro. iIntros (hL) "H".
     iDestruct ("H1" $! hL with "H") as (?) "(#Hspec_ctx&#Htrace_ctx)".
     iClear "H1". iModIntro.
-    iIntros (??) "(Hheap_ctx&Hffi_ctx&Htrace_auth&Horacle_auth)".
-    iMod (@trace_inv_open _ hL with "[$] Htrace_ctx Htrace_auth [$]").
+    iIntros "*". iNamed 1.
+    iMod (@trace_inv_open _ hL with "[$] [$] [$] [$]").
     iApply ncfupd_mask_weaken; eauto.
 Qed.
 
@@ -523,9 +523,9 @@ Proof using Hrpre Hhpre Hcpre.
     iIntros (κs' ?).
     iIntros "H". iDestruct "H" as (?? es' σs' gs' stat -> Hexec Hsafe)
                                     "(Hspec_ffi&Hspec_gffi&Htrace_frag&Horacle_frag&HΦc)".
-    iIntros "(_&Hffi_old&Htrace_auth&Horacle_auth) Hg".
-    iDestruct (trace_agree with "Htrace_auth [$]") as %Heq1'.
-    iDestruct (oracle_agree with "Horacle_auth Horacle_frag") as %Heq2'.
+    iNamed 1. iIntros "Hg".
+    iDestruct (trace_agree with "Htr_auth [$]") as %Heq1'.
+    iDestruct (oracle_agree with "Hor_auth Horacle_frag") as %Heq2'.
     iInv "Hpre_inv" as ">H" "Hclo".
     iDestruct (pre_borrowN_global_interp_le _ _ _ _ _ κs' with "[$] [Hg]") as %Hle.
     { rewrite //=. }
@@ -535,18 +535,21 @@ Proof using Hrpre Hhpre Hcpre.
     iNext. iIntros.
     iMod (na_heap.na_heap_reinit _ tls σ_post_crash.(heap)) as (name_na_heap) "Hh".
     iDestruct "Hg" as "(Hffig&Hg)".
-    iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
+    iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi") as (ffi_names) "(Hw&Hcrel&Hc)".
     { inversion Hcrash; subst; eauto. }
     iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
     iMod NC_alloc as (Hc) "HNC".
-    set (hL' := GooseLocalGS _ Hc ffi_names (na_heapGS_update _ name_na_heap) (traceGS_update Σ _ name_trace)).
+    iMod (globals_reinit _ σ_post_crash.(globals)) as (globals_name) "(Hgl&Hgauth)".
+    set (hL' := GooseLocalGS _ Hc ffi_names (na_heapGS_update _ name_na_heap) (traceGS_update Σ _ name_trace)
+                             (globalsGS_update Σ _ globals_name)
+        ).
     iSpecialize ("H" $! hL').
     iExists (goose_generationGS (L:=hL')).
     iMod "H".
     iSpecialize ("H" with "[Hc Hcrel] [$]").
     {  simpl. iExists _, _. iFrame. }
     iDestruct "H" as (σs_post_crash Hspec_crash) "(Hspec_ffi&Hwpc)".
-    iClear "Htrace_auth Horacle_auth Htrace_frag Horacle_frag".
+    iClear "Htr_auth Hor_auth Htrace_frag Horacle_frag".
     iMod (goose_spec_crash_init (hL:=hL') _ _ σs gs _ σs' gs' σs_post_crash _ (trace σ_post_crash) (oracle σ_post_crash)
             with "[$] [$] Hspec_ffi Hspec_gffi") as (HrG) "(#Hspec&Hpool&Hcrash_rel&Hrs&#Htrace&#Hcfupd1'&Hcfupd3)";
       eauto.

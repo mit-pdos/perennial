@@ -545,7 +545,7 @@ Proof.
   { simpl. auto. }
   { simpl. auto. }
   intros. exists (λ _, True%I).
-  iIntros "Hstart Hgstart _ _ _".
+  iIntros "Hstart Hgstart _ _ _ _".
   iModIntro.
   iSplitL "".
   { iModIntro; iIntros. iMod (fupd_mask_subseteq ∅); eauto. }
@@ -580,11 +580,11 @@ Proof.
   { iMod (fupd_mask_subseteq ∅); eauto. }
   rewrite /wpd ?big_sepL_cons big_sepL_nil.
   iSplitL "".
-  { iIntros (?) "H _ _". iModIntro. set (hG' := HeapGS _ _ _).
+  { iIntros (?) "H _ _ _". iModIntro. set (hG' := HeapGS _ _ _).
     iExists _, _, _. simpl.
     iApply (ffi_start_OpenRead with "[-]"); eauto. }
   iSplitL ""; last done.
-  { iIntros (?) "H _ _". iModIntro. set (hG' := HeapGS _ _ _).
+  { iIntros (?) "H _ _ _". iModIntro. set (hG' := HeapGS _ _ _).
     iExists _, _, _. simpl.
     iApply (ffi_start_OpenRead with "[-]"); eauto. }
 Qed.

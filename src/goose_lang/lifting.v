@@ -4,7 +4,8 @@ From iris.algebra Require Import lib.frac_auth auth numbers gmap excl dfrac_agre
 From iris.bi Require Import fractional.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import ectx_lifting.
-From Perennial.Helpers Require Import Transitions NamedProps.
+From Perennial.Helpers Require Import Transitions.
+From Perennial.Helpers Require Export NamedProps.
 From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.

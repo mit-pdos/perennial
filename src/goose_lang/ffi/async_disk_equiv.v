@@ -2288,7 +2288,7 @@ Section translate.
          heap := heap σ1;
          oracle := oracle σ1;
          world := pd1;
-         globals := globals pσ2
+         globals := globals σ1
        |}).
     split.
     { split_and!; eauto. }
