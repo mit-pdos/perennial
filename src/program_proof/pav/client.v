@@ -12,12 +12,11 @@ Record t :=
     uid: uid_ty;
     next_ver: ver_ty;
     next_epoch: epoch_ty;
-    serv_γ: gname;
     serv_sig_pk: list w8;
     serv_vrf_pk: list w8;
   }.
 Global Instance eta : Settable _ :=
-  settable! mk <γ; uid; next_ver; next_epoch; serv_γ; serv_sig_pk; serv_vrf_pk>.
+  settable! mk <γ; uid; next_ver; next_epoch; serv_sig_pk; serv_vrf_pk>.
 
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
@@ -968,16 +967,33 @@ Proof.
   rewrite lookup_fmap in Hlook_final. simplify_eq/=. naive_solver.
 Qed.
 
-Lemma wp_newClient (uid servAddr : w64) sl_servSigPk servSigPk (servVrfPk : loc) :
+Lemma wp_NewClient sl_serv_sig_pk sl_serv_vrf_pk (uid serv_addr : w64) (serv_sig_pk serv_vrf_pk : list w8) :
   {{{
-    "#Hsl_servSigPk" ∷ own_slice_small sl_servSigPk byteT DfracDiscarded servSigPk
+    "#Hsl_serv_sig_pk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv_sig_pk ∗
+    "#Hsl_serv_vrf_pk" ∷ own_slice_small sl_serv_vrf_pk byteT DfracDiscarded serv_vrf_pk
   }}}
-  newClient #uid #servAddr (slice_val sl_servSigPk) #servVrfPk
+  NewClient #uid #serv_addr (slice_val sl_serv_sig_pk) (slice_val sl_serv_vrf_pk)
   {{{
-    ptr_cli cli_γ r1 r2, RET #ptr_cli;
-    "Hown_cli" ∷ Client.own ptr_cli (Client.mk cli_γ uid (W64 0) (W64 0) r1 servSigPk r2)
+    ptr_c γ, RET #ptr_c;
+    "Hown_cli" ∷ Client.own ptr_c (Client.mk γ uid (W64 0) (W64 0) serv_sig_pk serv_vrf_pk)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply wp_Dial. iIntros "*". iNamed 1.
+  wp_apply (wp_VrfPublicKeyDecode with "[$Hsl_serv_vrf_pk]").
+  iClear "Hsl_serv_vrf_pk". iIntros "*". iNamed 1.
+  wp_apply wp_NewMap. iIntros "* Hown_sd_refs". wp_apply wp_fupd.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
+  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
+  iMod (struct_field_pointsto_persist with "uid") as "#uid".
+  iMod (struct_field_pointsto_persist with "servCli") as "#servCli".
+  iMod (struct_field_pointsto_persist with "servSigPk") as "#servSigPk".
+  iMod (struct_field_pointsto_persist with "servVrfPk") as "#servVrfPk".
+  iMod (struct_field_pointsto_persist with "seenDigs") as "#seenDigs".
+  iMod (mono_list_own_alloc []) as (?) "[Hown_digs _]".
+  iApply "HΦ". iFrame "∗#". iExists ∅. iModIntro.
+  repeat try iSplit; naive_solver.
+Qed.
 
 End wps.
 
