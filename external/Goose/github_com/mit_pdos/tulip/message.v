@@ -24,6 +24,7 @@ Definition TxnResponse := struct.decl [
   "Rank" :: uint64T;
   "Prepared" :: boolT;
   "Validated" :: boolT;
+  "Slow" :: boolT;
   "PartialWrites" :: tulip.KVMap
 ].
 
@@ -57,7 +58,7 @@ Definition DecodeTxnReadRequest: val :=
     ].
 
 Definition EncodeTxnReadResponse: val :=
-  rec: "EncodeTxnReadResponse" "ts" "rid" "key" "lts" "value" :=
+  rec: "EncodeTxnReadResponse" "ts" "rid" "key" "ver" "slow" :=
     slice.nil.
 
 Definition DecodeTxnReadResponse: val :=

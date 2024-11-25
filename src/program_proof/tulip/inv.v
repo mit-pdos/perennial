@@ -60,15 +60,15 @@ Section def.
   Definition fast_or_quorum_read γ key ts v : iProp Σ :=
     is_repl_hist_at γ key (pred ts) v ∨ quorum_read γ key ts v.
 
-  Definition fast_or_slow_read γ rid key lts ts v : iProp Σ :=
-    if decide (lts = O)
-    then is_repl_hist_at γ key (pred ts) v
-    else slow_read γ rid key lts ts v.
+  Definition fast_or_slow_read γ rid key lts ts v (slow : bool) : iProp Σ :=
+    if slow
+    then slow_read γ rid key lts ts v
+    else is_repl_hist_at γ key (pred ts) v.
 
   #[global]
-  Instance fast_or_slow_read_persistent γ rid key lts ts v :
-    Persistent (fast_or_slow_read γ rid key lts ts v).
-  Proof. rewrite /fast_or_slow_read. case_decide; apply _. Defined.
+  Instance fast_or_slow_read_persistent γ rid key lts ts v slow :
+    Persistent (fast_or_slow_read γ rid key lts ts v slow).
+  Proof. rewrite /fast_or_slow_read. apply _. Defined.
 
   Definition validate_outcome γ gid rid ts res : iProp Σ :=
     match res with
@@ -169,8 +169,8 @@ Section inv_network.
   Proof. destruct req; apply _. Defined.
 
   Definition safe_read_resp
-    γ (ts rid : u64) (key : string) (ver : u64 * dbval) : iProp Σ :=
-    "#Hsafe" ∷ fast_or_slow_read γ rid key (uint.nat ver.1) (uint.nat ts) ver.2 ∗
+    γ (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) : iProp Σ :=
+    "#Hsafe" ∷ fast_or_slow_read γ rid key (uint.nat ver.1) (uint.nat ts) ver.2 slow ∗
     "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
 
   Definition safe_fast_prepare_resp
@@ -195,8 +195,8 @@ Section inv_network.
 
   Definition safe_txnresp γ (gid : u64) resp : iProp Σ :=
     match resp with
-    | ReadResp ts rid key ver =>
-        safe_read_resp γ ts rid key ver
+    | ReadResp ts rid key ver slow =>
+        safe_read_resp γ ts rid key ver slow
     | FastPrepareResp ts rid res =>
         safe_fast_prepare_resp γ gid rid (uint.nat ts) res
     | ValidateResp ts rid res =>

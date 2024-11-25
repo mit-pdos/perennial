@@ -8,10 +8,10 @@ From Perennial.program_proof.tulip.program.gcoord Require Import
 
 Definition txnresp_to_val (resp : txnresp) (entsP : Slice.t) : val :=
   match resp with
-  | ReadResp ts rid key ver =>
+  | ReadResp ts rid key ver slow =>
       struct.mk_f TxnResponse [
           ("Kind", #(U64 100)); ("Timestamp", #ts); ("ReplicaID", #rid);
-          ("Key", #(LitString key)); ("Version", u64_dbval_to_val ver)]
+          ("Key", #(LitString key)); ("Version", dbpver_to_val ver); ("Slow", #slow)]
   | FastPrepareResp ts rid res =>
       struct.mk_f TxnResponse [
           ("Kind", #(U64 201)); ("Timestamp", #ts); ("ReplicaID", #rid);

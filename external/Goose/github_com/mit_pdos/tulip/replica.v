@@ -137,28 +137,28 @@ Definition Replica__logRead: val :=
 Definition Replica__Read: val :=
   rec: "Replica__Read" "rp" "ts" "key" :=
     let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
-    let: ("t1", "v1") := tuple.Tuple__ReadVersion "tpl" "ts" in
-    (if: "t1" = #0
-    then (#0, "v1", #true)
+    let: ("v1", "slow1") := tuple.Tuple__ReadVersion "tpl" "ts" in
+    (if: (~ "slow1")
+    then ("v1", #false, #true)
     else
       Mutex__Lock (struct.loadF Replica "mu" "rp");;
       let: "ok" := Replica__readableKey "rp" "ts" "key" in
       (if: (~ "ok")
       then
         Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-        (#0, struct.mk tulip.Value [
-         ], #false)
+        (struct.mk tulip.Version [
+         ], #false, #false)
       else
-        let: ("t2", "v2") := tuple.Tuple__ReadVersion "tpl" "ts" in
-        (if: "t2" = #0
+        let: ("v2", "slow2") := tuple.Tuple__ReadVersion "tpl" "ts" in
+        (if: (~ "slow2")
         then
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-          (#0, "v2", #true)
+          ("v2", #false, #true)
         else
           Replica__bumpKey "rp" "ts" "key";;
           Replica__logRead "rp" "ts" "key";;
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-          ("t2", "v2", #true)))).
+          ("v2", #true, #true)))).
 
 Definition Replica__writableKey: val :=
   rec: "Replica__writableKey" "rp" "ts" "key" :=
@@ -539,11 +539,11 @@ Definition Replica__RequestSession: val :=
         (if: "kind" = message.MSG_TXN_READ
         then
           let: "key" := struct.get message.TxnRequest "Key" "req" in
-          let: (("lts", "value"), "ok") := Replica__Read "rp" "ts" "key" in
+          let: (("ver", "slow"), "ok") := Replica__Read "rp" "ts" "key" in
           (if: (~ "ok")
           then Continue
           else
-            let: "data" := message.EncodeTxnReadResponse "ts" (struct.loadF Replica "rid" "rp") "key" "lts" "value" in
+            let: "data" := message.EncodeTxnReadResponse "ts" (struct.loadF Replica "rid" "rp") "key" "ver" "slow" in
             grove_ffi.Send "conn" "data";;
             Continue)
         else

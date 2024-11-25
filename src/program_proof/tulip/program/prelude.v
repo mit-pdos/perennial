@@ -74,9 +74,9 @@ Proof.
   by destruct v.
 Defined.
 
-Definition u64_dbval_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
+Definition dbpver_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
 
-Definition u64_dbval_from_val (v : val) : option (u64 * dbval) :=
+Definition dbpver_from_val (v : val) : option dbpver :=
   match v with
   | (#(LitInt n), (dbv, #()))%V => match dbval_from_val dbv with
                                   | Some x => Some (n, x)
@@ -86,11 +86,11 @@ Definition u64_dbval_from_val (v : val) : option (u64 * dbval) :=
   end.
 
 #[global]
-Instance u64_dbval_into_val : IntoVal (u64 * dbval).
+Instance dbpver_into_val : IntoVal dbpver.
 Proof.
   refine {|
-      to_val := u64_dbval_to_val;
-      from_val := u64_dbval_from_val;
+      to_val := dbpver_to_val;
+      from_val := dbpver_from_val;
       IntoVal_def := (W64 0, None);
     |}.
   intros [n v].
@@ -98,8 +98,8 @@ Proof.
 Defined.
 
 #[global]
-Instance u64_dbval_into_val_for_type :
-  IntoValForType (u64 * dbval) (uint64T * (boolT * (stringT * unitT) * unitT)%ht).
+Instance dbpver_into_val_for_type :
+  IntoValForType dbpver (uint64T * (boolT * (stringT * unitT) * unitT)%ht).
 Proof.
   constructor; [done | done |].
   intros [t [v |]]; by auto 10.

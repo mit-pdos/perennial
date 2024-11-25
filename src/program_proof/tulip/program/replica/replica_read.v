@@ -17,9 +17,9 @@ Section program.
     is_replica rp gid rid γ -∗
     {{{ True }}}
       Replica__Read #rp #tsW #(LitString key)
-    {{{ (t : u64) (v : dbval) (ok : bool), RET (#t, dbval_to_val v, #ok);
+    {{{ (ver : dbpver) (slow ok : bool), RET (dbpver_to_val ver, #slow, #ok);
         if ok
-        then fast_or_slow_read γ rid key (uint.nat t) ts v
+        then fast_or_slow_read γ rid key (uint.nat ver.1) ts ver.2 slow
         else True
     }}}.
   Proof.
@@ -27,7 +27,7 @@ Section program.
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
-    (*@ func (rp *Replica) Read(ts uint64, key string) (uint64, tulip.Value, bool) { @*)
+    (*@ func (rp *Replica) Read(ts uint64, key string) (tulip.Version, bool, bool) { @*)
     (*@     tpl := rp.idx.GetTuple(key)                                         @*)
     (*@                                                                         @*)
     iNamed "Hrp". iNamed "Hidx".
@@ -35,19 +35,19 @@ Section program.
     wp_apply (wp_Index__GetTuple with "Hidx"); first apply Hkey.
     iIntros (tpl) "#Htpl".
 
-    (*@     t1, v1 := tpl.ReadVersion(ts)                                       @*)
+    (*@     v1, slow1 := tpl.ReadVersion(ts)                                    @*)
     (*@                                                                         @*)
     wp_apply (wp_Tuple__ReadVersion_xphys with "Htpl").
-    iIntros (t1 v1) "Hread1".
+    { apply Htsnz. }
+    iIntros (v1 slow1) "Hread1".
     wp_pures.
 
-    (*@     if t1 == 0 {                                                        @*)
+    (*@     if !slow1 {                                                         @*)
     (*@         // Fast-path read.                                              @*)
-    (*@         return 0, v1, true                                              @*)
+    (*@         return v1, false, true                                          @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    case_bool_decide as Ht1; wp_pures.
-    { iApply "HΦ". by case_decide; last inv Ht1. }
+    destruct slow1; wp_pures; last by iApply "HΦ".
 
     (*@     rp.mu.Lock()                                                        @*)
     (*@                                                                         @*)
@@ -67,7 +67,7 @@ Section program.
     (*@         // transaction. This read has to fail because the value to be read is @*)
     (*@         // undetermined---the prepared transaction might or might not commit. @*)
     (*@         rp.mu.Unlock()                                                  @*)
-    (*@         return 0, tulip.Value{}, false                                  @*)
+    (*@         return tulip.Version{}, false, false                            @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
     destruct ok; wp_pures; last first.
@@ -75,10 +75,10 @@ Section program.
       wp_apply (wp_Mutex__Unlock with "[-HΦ]").
       { by iFrame "Hlock Hlocked ∗ # %". }
       wp_pures.
-      by iApply ("HΦ" $! _ None).
+      by iApply ("HΦ" $! (W64 0, None)).
     }
 
-    (*@     t2, v2 := tpl.ReadVersion(ts)                                       @*)
+    (*@     v2, slow2 := tpl.ReadVersion(ts)                                    @*)
     (*@                                                                         @*)
     assert (is_Some (histm !! key)) as [hist Hhist].
     { unshelve epose proof (execute_cmds_apply_cmds cloga ilog cm histm _) as Happly.
@@ -88,23 +88,23 @@ Section program.
     }
     iDestruct (big_sepM_lookup_acc with "Hhistm") as "[Hhist HhistmC]"; first apply Hhist.
     wp_apply (wp_Tuple__ReadVersion with "Htpl Hhist").
-    iIntros (t2 v2) "[Hhist #Hlb]".
+    { apply Htsnz. }
+    iIntros (v2 slow2) "[Hhist #Hlb]".
     iDestruct ("HhistmC" with "Hhist") as "Hhistm".
     wp_pures.
 
-    (*@     if t2 == 0 {                                                        @*)
+    (*@     if !slow2 {                                                         @*)
     (*@         // Fast-path read.                                              @*)
     (*@         rp.mu.Unlock()                                                  @*)
-    (*@         return 0, v2, true                                              @*)
+    (*@         return v2, false, true                                          @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    case_bool_decide as Ht2; wp_pures.
+    destruct slow2; wp_pures; last first.
     { wp_loadField.
       wp_apply (wp_Mutex__Unlock with "[-HΦ]").
       { by iFrame "Hlock Hlocked ∗ # %". }
       wp_pures.
-      iApply "HΦ".
-      by case_decide; last inv Ht2.
+      by iApply "HΦ".
     }
 
     (*@     // Slow-path read.                                                  @*)
@@ -153,7 +153,7 @@ Section program.
     iModIntro.
 
     (*@     rp.mu.Unlock()                                                      @*)
-    (*@     return t2, v2, true                                                 @*)
+    (*@     return v2, true, true                                               @*)
     (*@ }                                                                       @*)
     wp_loadField.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
@@ -177,10 +177,7 @@ Section program.
     }
     wp_pures.
     iApply "HΦ".
-    rewrite /fast_or_slow_read.
-    case_decide as Hnz; first done.
     iDestruct "Hlb" as "[Hlb' %Hv2]".
-    clear Ht2.
     destruct Hv2 as (Hv2 & Ht2 & Hlenhist).
     rewrite Ht2.
     iFrame "Hrepllb".
@@ -189,7 +186,10 @@ Section program.
     iPureIntro.
     split.
     { by rewrite -last_lookup. }
-    { clear -Ht2 Hnz Hlenhist. word. }
+    { assert (length hist ≠ O) as Hlenhistnz.
+      { intros Hz. apply nil_length_inv in Hz. by rewrite Hz in Hv2. }
+      clear -Ht2 Hlenhist Hlenhistnz. word.
+    }
   Qed.
 
 End program.

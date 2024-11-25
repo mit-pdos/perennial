@@ -61,12 +61,12 @@ Section encode.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_EncodeTxnReadResponse
-    (rid : u64) (ts : u64) (key : string) (lts : u64) (value : dbval) :
+    (rid : u64) (ts : u64) (key : string) (ver : dbpver) (slow : bool) :
     {{{ True }}}
-      EncodeTxnReadResponse #rid #ts #(LitString key) #lts (dbval_to_val value)
+      EncodeTxnReadResponse #rid #ts #(LitString key) (dbpver_to_val ver) #slow
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (ReadResp rid ts key (lts, value))⌝
+        ⌜data = encode_txnresp (ReadResp rid ts key ver slow)⌝
     }}}.
   Proof.
   Admitted.
@@ -278,7 +278,7 @@ Section program.
       set msc' := if sent then _ else _.
       iAssert (connect_inv trml msc' gid γ)%I with "[Hms]" as "Hconn".
       { iFrame "Hms".
-        set resp := ReadResp _ _ _ _ in Hdata.
+        set resp := ReadResp _ _ _ _ _ in Hdata.
         destruct sent; last first.
         { iExists resps. iFrame "# %". }
         iExists ({[resp]} ∪ resps).

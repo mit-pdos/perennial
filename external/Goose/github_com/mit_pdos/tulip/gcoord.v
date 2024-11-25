@@ -495,12 +495,12 @@ Definition GroupReader__clearVersions: val :=
     #().
 
 Definition GroupReader__processReadResult: val :=
-  rec: "GroupReader__processReadResult" "grd" "rid" "key" "ver" :=
+  rec: "GroupReader__processReadResult" "grd" "rid" "key" "ver" "slow" :=
     let: (<>, "final") := MapGet (struct.loadF GroupReader "valuem" "grd") "key" in
     (if: "final"
     then #()
     else
-      (if: (struct.get tulip.Version "Timestamp" "ver") = #0
+      (if: (~ "slow")
       then
         MapInsert (struct.loadF GroupReader "valuem" "grd") "key" (struct.get tulip.Version "Value" "ver");;
         MapDelete (struct.loadF GroupReader "qreadm" "grd") "key";;
@@ -726,7 +726,7 @@ Definition GroupCoordinator__ResponseSession: val :=
             Continue
           else
             (if: "kind" = message.MSG_TXN_READ
-            then GroupReader__processReadResult (struct.loadF GroupCoordinator "grd" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Key" "msg") (struct.get message.TxnResponse "Version" "msg")
+            then GroupReader__processReadResult (struct.loadF GroupCoordinator "grd" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Key" "msg") (struct.get message.TxnResponse "Version" "msg") (struct.get message.TxnResponse "Slow" "msg")
             else
               (if: "kind" = message.MSG_TXN_FAST_PREPARE
               then GroupPreparer__processFastPrepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")

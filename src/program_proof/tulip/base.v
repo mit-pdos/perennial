@@ -7,6 +7,7 @@ Definition dbtpl := (dbhist * nat)%type.
 Definition dbmod := (dbkey * dbval)%type.
 Definition dbmap := gmap dbkey dbval.
 Definition dbkmod := gmap nat dbval.
+Definition dbpver := (u64 * dbval)%type.
 Definition coordid := (u64 * u64)%type.
 Definition ppsl := (u64 * bool)%type.
 
@@ -291,7 +292,7 @@ Section msg.
   Proof. solve_decision. Qed.
 
   Inductive txnresp :=
-  | ReadResp        (ts : u64) (rid : u64) (key : string) (ver : u64 * dbval)
+  | ReadResp        (ts : u64) (rid : u64) (key : string) (ver : dbpver) (slow : bool)
   | FastPrepareResp (ts : u64) (rid : u64) (res : rpres)
   | ValidateResp    (ts : u64) (rid : u64) (res : rpres)
   | PrepareResp     (ts : u64) (rank : u64) (rid : u64) (res : rpres)
