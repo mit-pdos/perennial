@@ -55,6 +55,7 @@ Section program.
       iNamed "HP".
       wp_load.
       wp_apply (wp_GroupCoordinator__SendCommit with "Hcmted [] Hpwrs").
+      { apply Hinaddrm. }
       { iFrame "Hgcoord". }
       iIntros "Hpwrs".
       wp_apply wp_Sleep.

@@ -113,6 +113,22 @@ Definition DecodeValue: val :=
       ] in
       ("v", "data")).
 
+Definition EncodeVersion: val :=
+  rec: "EncodeVersion" "bs" "x" :=
+    let: "bs1" := marshal.WriteInt "bs" (struct.get tulip.Version "Timestamp" "x") in
+    let: "data" := EncodeValue "bs1" (struct.get tulip.Version "Value" "x") in
+    "data".
+
+Definition DecodeVersion: val :=
+  rec: "DecodeVersion" "bs" :=
+    let: ("ts", "bs1") := marshal.ReadInt "bs" in
+    let: ("v", "data") := DecodeValue "bs1" in
+    let: "x" := struct.mk tulip.Version [
+      "Timestamp" ::= "ts";
+      "Value" ::= "v"
+    ] in
+    ("x", "data").
+
 Definition EncodeWriteEntry: val :=
   rec: "EncodeWriteEntry" "bs" "x" :=
     let: "bs1" := EncodeString "bs" (struct.get tulip.WriteEntry "Key" "x") in

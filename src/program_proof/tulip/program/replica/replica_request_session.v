@@ -1,61 +1,7 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_read replica_fast_prepare replica_validate
-  replica_prepare replica_unprepare replica_query replica_commit replica_abort.
-
-Definition txnreq_to_val (req : txnreq) (pwrsP : Slice.t) : val :=
-  match req with
-  | ReadReq ts key =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 100)); ("Timestamp", #ts); ("Key", #(LitString key))]
-  | FastPrepareReq ts pwrs =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 201)); ("Timestamp", #ts); ("PartialWrites", to_val pwrsP)]
-  | ValidateReq ts rank pwrs =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 202)); ("Timestamp", #ts); ("Rank", #rank);
-          ("PartialWrites", to_val pwrsP)]
-  | PrepareReq ts rank =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 203)); ("Timestamp", #ts); ("Rank", #rank)]
-  | UnprepareReq ts rank =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 204)); ("Timestamp", #ts); ("Rank", #rank)]
-  | QueryReq ts rank =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 205)); ("Timestamp", #ts); ("Rank", #rank)]
-  | RefreshReq ts rank =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 210)); ("Timestamp", #ts); ("Rank", #rank)]
-  | CommitReq ts pwrs =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 300)); ("Timestamp", #ts); ("PartialWrites", to_val pwrsP)]
-  | AbortReq ts =>
-      struct.mk_f TxnRequest [
-          ("Kind", #(U64 301)); ("Timestamp", #ts)]
-  end.
-
-Section decode.
-  Context `{!heapGS Σ, !tulip_ghostG Σ}.
-
-  Theorem wp_DecodeTxnRequest (dataP : Slice.t) (data : list u8) (req : txnreq) :
-    encode_txnreq req data ->
-    {{{ own_slice dataP byteT (DfracOwn 1) data }}}
-      DecodeTxnRequest (to_val dataP)
-    {{{ (pwrsP : Slice.t), RET (txnreq_to_val req pwrsP);
-        match req with
-        | FastPrepareReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
-        | ValidateReq _ _ pwrs => own_dbmap_in_slice pwrsP pwrs
-        | CommitReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
-        | _ => True
-        end
-    }}}.
-  Proof.
-    iIntros (Hdataenc Φ) "Hdata HΦ".
-    wp_rec.
-  Admitted.
-
-End decode.
+  replica_prepare replica_unprepare replica_query replica_commit replica_abort decode.
 
 Section encode.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
@@ -216,6 +162,7 @@ Section program.
     (*@         kind := req.Kind                                                @*)
     (*@         ts   := req.Timestamp                                           @*)
     (*@                                                                         @*)
+    iDestruct (own_slice_to_small with "Hretdata") as "Hretdata".
     wp_apply (wp_DecodeTxnRequest with "Hretdata").
     { apply Hreq. }
     iIntros (pwrsP) "Hpwrs".

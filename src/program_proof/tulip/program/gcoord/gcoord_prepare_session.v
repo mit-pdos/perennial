@@ -1,19 +1,23 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.gcoord Require Import
-  gcoord_repr gcoord_send gcoord_next_prepare_action.
+  gcoord_repr gcoord_send gcoord_next_prepare_action gpreparer_action.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupCoordinator__PrepareSession
-    (gcoord : loc) (rid : u64) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) gid γ :
+    (gcoord : loc) (rid : u64) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) (pwrs : dbmap)
+    addrm gid γ :
     let ts := uint.nat tsW in
-    is_gcoord gcoord gid γ -∗
+    rid ∈ dom addrm ->
+    safe_txn_pwrs γ gid ts pwrs -∗
+    own_map pwrsP DfracDiscarded pwrs -∗
+    is_gcoord_with_addrm gcoord gid addrm γ -∗
     {{{ True }}}
       GroupCoordinator__PrepareSession #gcoord #rid #tsW (to_val ptgsP) #pwrsP
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts) "#Hgcoord".
+    iIntros (ts Hrid) "#Hsafepwrs #Hpwrs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec. wp_pures.
 
@@ -27,7 +31,8 @@ Section program.
       (*@         act, attached := gcoord.NextPrepareAction(rid, ts)              @*)
       (*@                                                                         @*)
       iIntros (Φ) "!> _ HΦ".
-      wp_apply (wp_GroupCoordinator__NextPrepareAction with "Hgcoord").
+      wp_apply (wp_GroupCoordinator__NextPrepareAction).
+      { by iFrame "Hgcoord". }
       iIntros (action ok) "#Hsafea".
       wp_pures.
 
@@ -40,16 +45,16 @@ Section program.
       (*@         if act == GPP_FAST_PREPARE {                                    @*)
       (*@             gcoord.SendFastPrepare(rid, ts, pwrs, ptgs)                 @*)
       (*@         } else if act == GPP_VALIDATE {                                 @*)
-      (*@             gcoord.SendValidate(rid, ts, 1, pwrs, ptgs)                 @*)
+      (*@             gcoord.SendValidate(rid, ts, pwrs, ptgs)                    @*)
       (*@         } else if act == GPP_PREPARE {                                  @*)
-      (*@             gcoord.SendPrepare(rid, ts, 1)                              @*)
+      (*@             gcoord.SendPrepare(rid, ts)                                 @*)
       (*@         } else if act == GPP_UNPREPARE {                                @*)
-      (*@             gcoord.SendUnprepare(rid, ts, 1)                            @*)
+      (*@             gcoord.SendUnprepare(rid, ts)                               @*)
       (*@         } else if act == GPP_QUERY {                                    @*)
-      (*@             gcoord.SendQuery(rid, ts, 1)                                @*)
+      (*@             gcoord.SendQuery(rid, ts)                                   @*)
       (*@         } else if act == GPP_REFRESH {                                  @*)
       (*@             // Keep sending keep-alive message until the transaction terminated. @*)
-      (*@             gcoord.SendRefresh(rid, ts, 1)                              @*)
+      (*@             gcoord.SendRefresh(rid, ts)                                 @*)
       (*@         }                                                               @*)
       (*@                                                                         @*)
       (*@         if act == GPP_REFRESH {                                         @*)
@@ -67,7 +72,8 @@ Section program.
       (*@     }                                                                   @*)
       (*@                                                                         @*)
       case_bool_decide as Hfp; wp_pures.
-      { wp_apply (wp_GroupCoordinator__SendFastPrepare with "Hgcoord").
+      { wp_apply (wp_GroupCoordinator__SendFastPrepare with "Hsafepwrs Hgcoord Hpwrs").
+        { apply Hrid. }
         wp_pures.
         rewrite Hfp /=.
         case_bool_decide; first done.
@@ -75,7 +81,8 @@ Section program.
         by iApply "HΦ".
       }
       case_bool_decide as Hvd; wp_pures.
-      { wp_apply (wp_GroupCoordinator__SendValidate with "Hgcoord").
+      { wp_apply (wp_GroupCoordinator__SendValidate with "Hsafepwrs Hgcoord Hpwrs").
+        { apply Hrid. }
         wp_pures.
         rewrite Hvd /=.
         case_bool_decide; first done.
@@ -85,6 +92,7 @@ Section program.
       case_bool_decide as Hprep; wp_pures.
       { inv Hprep. destruct action; try done. simpl.
         wp_apply (wp_GroupCoordinator__SendPrepare with "Hsafea Hgcoord").
+        { apply Hrid. }
         wp_pures.
         wp_apply wp_Sleep. wp_pures.
         by iApply "HΦ".
@@ -92,12 +100,14 @@ Section program.
       case_bool_decide as Hunprep; wp_pures.
       { inv Hunprep. destruct action; try done. simpl.
         wp_apply (wp_GroupCoordinator__SendUnprepare with "Hsafea Hgcoord").
+        { apply Hrid. }
         wp_pures.
         wp_apply wp_Sleep. wp_pures.
         by iApply "HΦ".
       }
       case_bool_decide as Hqr; wp_pures.
       { wp_apply (wp_GroupCoordinator__SendQuery with "Hgcoord").
+        { apply Hrid. }
         wp_pures.
         rewrite Hqr /=.
         case_bool_decide; first done.
@@ -106,6 +116,7 @@ Section program.
       }
       case_bool_decide as Hrf; wp_pures.
       { wp_apply (wp_GroupCoordinator__SendRefresh with "Hgcoord").
+        { apply Hrid. }
         wp_pures.
         rewrite Hrf /=.
         case_bool_decide; last done.

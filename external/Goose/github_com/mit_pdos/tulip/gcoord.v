@@ -262,32 +262,32 @@ Definition GroupCoordinator__SendFastPrepare: val :=
     #().
 
 Definition GroupCoordinator__SendValidate: val :=
-  rec: "GroupCoordinator__SendValidate" "gcoord" "rid" "ts" "rank" "pwrs" "ptgs" :=
-    let: "data" := message.EncodeTxnValidateRequest "ts" "rank" "pwrs" "ptgs" in
+  rec: "GroupCoordinator__SendValidate" "gcoord" "rid" "ts" "pwrs" "ptgs" :=
+    let: "data" := message.EncodeTxnValidateRequest "ts" #1 "pwrs" "ptgs" in
     GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendPrepare: val :=
-  rec: "GroupCoordinator__SendPrepare" "gcoord" "rid" "ts" "rank" :=
-    let: "data" := message.EncodeTxnPrepareRequest "ts" "rank" in
+  rec: "GroupCoordinator__SendPrepare" "gcoord" "rid" "ts" :=
+    let: "data" := message.EncodeTxnPrepareRequest "ts" #1 in
     GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendUnprepare: val :=
-  rec: "GroupCoordinator__SendUnprepare" "gcoord" "rid" "ts" "rank" :=
-    let: "data" := message.EncodeTxnUnprepareRequest "ts" "rank" in
+  rec: "GroupCoordinator__SendUnprepare" "gcoord" "rid" "ts" :=
+    let: "data" := message.EncodeTxnUnprepareRequest "ts" #1 in
     GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendQuery: val :=
-  rec: "GroupCoordinator__SendQuery" "gcoord" "rid" "ts" "rank" :=
-    let: "data" := message.EncodeTxnQueryRequest "ts" "rank" in
+  rec: "GroupCoordinator__SendQuery" "gcoord" "rid" "ts" :=
+    let: "data" := message.EncodeTxnQueryRequest "ts" #1 in
     GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition GroupCoordinator__SendRefresh: val :=
-  rec: "GroupCoordinator__SendRefresh" "gcoord" "rid" "ts" "rank" :=
-    let: "data" := message.EncodeTxnRefreshRequest "ts" "rank" in
+  rec: "GroupCoordinator__SendRefresh" "gcoord" "rid" "ts" :=
+    let: "data" := message.EncodeTxnRefreshRequest "ts" #1 in
     GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
@@ -303,19 +303,19 @@ Definition GroupCoordinator__PrepareSession: val :=
         then GroupCoordinator__SendFastPrepare "gcoord" "rid" "ts" "pwrs" "ptgs"
         else
           (if: "act" = GPP_VALIDATE
-          then GroupCoordinator__SendValidate "gcoord" "rid" "ts" #1 "pwrs" "ptgs"
+          then GroupCoordinator__SendValidate "gcoord" "rid" "ts" "pwrs" "ptgs"
           else
             (if: "act" = GPP_PREPARE
-            then GroupCoordinator__SendPrepare "gcoord" "rid" "ts" #1
+            then GroupCoordinator__SendPrepare "gcoord" "rid" "ts"
             else
               (if: "act" = GPP_UNPREPARE
-              then GroupCoordinator__SendUnprepare "gcoord" "rid" "ts" #1
+              then GroupCoordinator__SendUnprepare "gcoord" "rid" "ts"
               else
                 (if: "act" = GPP_QUERY
-                then GroupCoordinator__SendQuery "gcoord" "rid" "ts" #1
+                then GroupCoordinator__SendQuery "gcoord" "rid" "ts"
                 else
                   (if: "act" = GPP_REFRESH
-                  then GroupCoordinator__SendRefresh "gcoord" "rid" "ts" #1
+                  then GroupCoordinator__SendRefresh "gcoord" "rid" "ts"
                   else #()))))));;
         (if: "act" = GPP_REFRESH
         then
