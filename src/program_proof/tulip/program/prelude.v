@@ -28,7 +28,7 @@ Defined.
 
 #[global]
 Instance dbval_into_val_for_type : IntoValForType dbval (boolT * (stringT * unitT)%ht).
-Proof. constructor; [done | done | intros [v |]; by auto]. Defined.
+Proof. by constructor; [| | intros [v |]; auto]. Defined.
 
 Definition dbmod_to_val (x : dbmod) : val :=
   (#(LitString x.1), (dbval_to_val x.2, #())).
@@ -53,6 +53,11 @@ Proof.
   intros [k v].
   by destruct v.
 Defined.
+
+#[global]
+Instance dbmod_into_val_for_type :
+  IntoValForType dbmod (stringT * (boolT * (stringT * unitT) * unitT)%ht).
+Proof. by constructor; [| | intros [k [s |]]; auto 10]. Defined.
 
 Definition ppsl_to_val (v : ppsl) : val := (#v.1, (#v.2, #())).
 
