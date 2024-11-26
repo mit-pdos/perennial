@@ -1,6 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 
+(* TODO: this really should be made general. *)
+
 Definition encode_string (x : string) : list u8 :=
   let bs := string_to_bytes x in
   u64_le (U64 (length bs)) ++ bs.
@@ -67,18 +69,70 @@ Qed.
 
 Definition encode_dbval (x : dbval) : list u8 :=
   match x with
-  | Some v => [U8 0] ++ encode_string v
-  | None => [U8 1]
+  | Some v => [U8 1] ++ encode_string v
+  | None => [U8 0]
   end.
 
 Definition encode_dbmod (x : dbmod) : list u8 :=
   encode_string x.1 ++ encode_dbval x.2.
 
-Fixpoint encode_dbmods (xs : list dbmod) : list u8 :=
-  match xs with
-  | x :: tail => encode_dbmod x ++ encode_dbmods tail
-  | _ => []
-  end.
+Definition encode_dbmods_step (bs : list u8) (x : dbmod) : list u8 :=
+  bs ++ encode_dbmod x.
+
+Definition encode_dbmods_xlen (xs : list dbmod) : list u8 :=
+  foldl encode_dbmods_step [] xs.
+
+Definition encode_dbmods (xs : list dbmod) : list u8 :=
+  u64_le (U64 (length xs)) ++ encode_dbmods_xlen xs.
+
+Lemma encode_dbmods_xlen_snoc xs x :
+  encode_dbmods_xlen (xs ++ [x]) = encode_dbmods_xlen xs ++ encode_dbmod x.
+Proof.
+  by rewrite /encode_dbmods_xlen foldl_snoc /encode_dbmods_step.
+Qed.
+
+Lemma foldl_encode_dbmods_step_app (bs : list u8) (xs : list dbmod) :
+  foldl encode_dbmods_step bs xs = bs ++ foldl encode_dbmods_step [] xs.
+Proof.
+  generalize dependent bs.
+  induction xs as [| x xs IH]; intros bs.
+  { by rewrite /= app_nil_r. }
+  rewrite /= (IH (encode_dbmods_step bs x)) (IH (encode_dbmods_step [] x)).
+  rewrite {1 3}/encode_dbmods_step.
+  by rewrite app_nil_l app_assoc.
+Qed.
+
+Lemma encode_dbmods_xlen_cons xs x :
+  encode_dbmods_xlen (x :: xs) = encode_dbmod x ++ encode_dbmods_xlen xs.
+Proof.
+  rewrite /encode_dbmods_xlen /= foldl_encode_dbmods_step_app.
+  by rewrite {1}/encode_dbmods_step app_nil_l.
+Qed.
+
+Lemma encode_dbmods_xlen_length_inv xs n :
+  (length (encode_dbmods_xlen xs) ≤ n)%nat ->
+  (length xs ≤ n)%nat.
+Proof.
+  generalize dependent n.
+  induction xs as [| x xs IH]; intros n; first done.
+  rewrite encode_dbmods_xlen_cons length_app /=.
+  assert (length (encode_dbmod x) ≠ O).
+  { by destruct (nil_or_length_pos (encode_dbmod x)). }
+  intros Hlen.
+  assert (Hlenxs : (length xs ≤ pred n)%nat).
+  { apply IH. lia. }
+  lia.
+Qed.
+
+Lemma encode_dbmods_length_inv xs n :
+  (length (encode_dbmods xs) ≤ n)%nat ->
+  (length xs ≤ n)%nat.
+Proof.
+  rewrite /encode_dbmods length_app.
+  intros Hn.
+  pose proof (encode_dbmods_xlen_length_inv xs n) as Hlen.
+  lia.
+Qed.
 
 Definition encode_dbmap (m : dbmap) (data : list u8) :=
-  ∃ xs, data = u64_le (size m) ++ encode_dbmods xs ∧ xs ≡ₚ map_to_list m.
+  ∃ xs, data = encode_dbmods xs ∧ xs ≡ₚ map_to_list m.
