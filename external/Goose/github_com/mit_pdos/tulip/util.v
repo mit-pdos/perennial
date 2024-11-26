@@ -51,39 +51,34 @@ Definition CountBoolMap: val :=
 
 Definition EncodeString: val :=
   rec: "EncodeString" "bs" "str" :=
-    let: "data" := ref_to (slice.T byteT) "bs" in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") (StringLength "str"));;
-    "data" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "data") (StringToBytes "str"));;
-    ![slice.T byteT] "data".
+    let: "bs1" := marshal.WriteInt "bs" (StringLength "str") in
+    let: "data" := marshal.WriteBytes "bs1" (StringToBytes "str") in
+    "data".
 
 Definition EncodeStrings: val :=
   rec: "EncodeStrings" "bs" "strs" :=
-    let: "data" := ref_to (slice.T byteT) "bs" in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") (slice.len "strs"));;
+    let: "data" := ref_to (slice.T byteT) (marshal.WriteInt "bs" (slice.len "strs")) in
     ForSlice stringT <> "s" "strs"
       ("data" <-[slice.T byteT] (EncodeString (![slice.T byteT] "data") "s"));;
     ![slice.T byteT] "data".
 
 Definition DecodeString: val :=
   rec: "DecodeString" "bs" :=
-    let: "data" := ref_to (slice.T byteT) "bs" in
-    let: ("sz", "data") := marshal.ReadInt (![slice.T byteT] "data") in
-    let: ("bsr", "data") := marshal.ReadBytes (![slice.T byteT] "data") "sz" in
-    (StringFromBytes "bsr", ![slice.T byteT] "data").
+    let: ("sz", "bs1") := marshal.ReadInt "bs" in
+    let: ("bsr", "data") := marshal.ReadBytes "bs1" "sz" in
+    (StringFromBytes "bsr", "data").
 
 Definition DecodeStrings: val :=
   rec: "DecodeStrings" "bs" :=
-    let: "data" := ref_to (slice.T byteT) "bs" in
-    let: ("n", "data") := marshal.ReadInt (![slice.T byteT] "data") in
+    let: ("n", "bs1") := marshal.ReadInt "bs" in
+    let: "data" := ref_to (slice.T byteT) "bs1" in
     let: "ents" := ref_to (slice.T stringT) (NewSliceWithCap stringT #0 "n") in
     let: "i" := ref_to uint64T #0 in
-    let: "s" := ref (zero_val stringT) in
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
-      let: ("0_ret", "1_ret") := DecodeString (![slice.T byteT] "data") in
-      "s" <-[stringT] "0_ret";;
-      "data" <-[slice.T byteT] "1_ret";;
-      "ents" <-[slice.T stringT] (SliceAppend stringT (![slice.T stringT] "ents") (![stringT] "s"));;
+      let: ("s", "bsloop") := DecodeString (![slice.T byteT] "data") in
+      "ents" <-[slice.T stringT] (SliceAppend stringT (![slice.T stringT] "ents") "s");;
+      "data" <-[slice.T byteT] "bsloop";;
       "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     (![slice.T stringT] "ents", ![slice.T byteT] "data").

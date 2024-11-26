@@ -39,7 +39,7 @@ Section decode.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_DecodeTxnRequest (dataP : Slice.t) (data : list u8) (req : txnreq) :
-    data = encode_txnreq req ->
+    encode_txnreq req data ->
     {{{ own_slice dataP byteT (DfracOwn 1) data }}}
       DecodeTxnRequest (to_val dataP)
     {{{ (pwrsP : Slice.t), RET (txnreq_to_val req pwrsP);
@@ -209,12 +209,14 @@ Section program.
     destruct err; wp_pures.
     { by iApply "HΦ". }
     iDestruct "Herr" as "%Hmsg".
-    assert (∃ req, retdata = encode_txnreq req ∧ req ∈ reqs) as (req & Hreq & Hinreqs).
-    { specialize (Henc retdata).
-      apply (elem_of_map_2 msg_data (D := gset (list u8))) in Hmsg.
-      specialize (Henc Hmsg).
-      by rewrite elem_of_map in Henc.
-    }
+    apply Henc in Hmsg as Hreq.
+    destruct Hreq as (req & Hinreqs & Hreq). simpl in Hreq.
+    (* assert (∃ req, retdata = encode_txnreq req ∧ req ∈ reqs) as (req & Hreq & Hinreqs). *)
+    (* { specialize (Henc retdata). *)
+    (*   apply (elem_of_map_2 msg_data (D := gset (list u8))) in Hmsg. *)
+    (*   specialize (Henc Hmsg). *)
+    (*   by rewrite elem_of_map in Henc. *)
+    (* } *)
 
     (*@         req  := message.DecodeTxnRequest(ret.Data)                      @*)
     (*@         kind := req.Kind                                                @*)

@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps.
-From Perennial.program_proof.tulip Require Import base res cmd.
+From Perennial.program_proof.tulip Require Import base res cmd msg.
 From Perennial.program_proof.tulip Require Export inv_txnsys inv_key inv_group inv_replica.
 
 Section inv.
@@ -222,7 +222,7 @@ Section inv_network.
       (* senders are always reachable *)
       "#Hsender" ∷ ([∗ set] trml ∈ set_map msg_sender ms, is_terminal γ gid trml) ∗
       "#Hreqs"   ∷ ([∗ set] req ∈ reqs, safe_txnreq γ gid req) ∗
-      "%Henc"    ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnreq reqs⌝.
+      "%Henc"    ∷ ⌜set_Forall (λ x, ∃ req, req ∈ reqs ∧ encode_txnreq req (msg_data x)) ms⌝.
 
   Definition connect_inv (trml : chan) (ms : gset message) gid γ : iProp Σ :=
     ∃ (resps : gset txnresp),

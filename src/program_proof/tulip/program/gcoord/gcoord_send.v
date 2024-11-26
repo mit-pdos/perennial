@@ -10,7 +10,7 @@ Section encode.
       EncodeTxnReadRequest #ts #(LitString key)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnreq (ReadReq ts key)⌝
+        ⌜encode_txnreq (ReadReq ts key) data⌝
     }}}.
   Proof.
   Admitted.
@@ -146,8 +146,12 @@ Section program.
       iSplit.
       { iApply big_sepS_insert_2; [done | done]. }
       iPureIntro.
-      rewrite 2!set_map_union_L 2!set_map_singleton_L /= -Hdataenc.
-      set_solver.
+      apply set_Forall_union; last first.
+      { apply (set_Forall_impl _ _ _ Henc). intros m Hm. clear -Hm. set_solver. }
+      rewrite set_Forall_singleton.
+      exists req.
+      split; first set_solver.
+      done.
     }
     rewrite insert_delete_insert.
     iMod "Hmask" as "_".
