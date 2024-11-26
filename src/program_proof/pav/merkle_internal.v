@@ -120,8 +120,8 @@ Proof.
 Qed.
 
 (* Ownership of a logical merkle tree. *)
-Definition own_node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPropO Σ :=
-  (λ ptr_tr tr,
+Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iPropO Σ) : option (list w8) -d> loc -d> tree -d> iPropO Σ :=
+  (λ path ptr_tr tr,
     match tr with
     (* We should never have cuts in in-memory trees. *)
     | Cut _ => False
@@ -131,29 +131,41 @@ Definition own_node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPr
       ∃ sl_val hash sl_hash,
       "Hval" ∷ own_slice_small sl_val byteT (DfracOwn 1) val ∗
       "Hptr_val" ∷ ptr_tr ↦[node :: "Val"] (slice_val sl_val) ∗
-      "#His_hash" ∷ is_node_hash tr hash ∗
       "Hhash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
-      "Hsl_hash" ∷ ptr_tr ↦[node :: "hash"] (slice_val sl_hash)
+      "Hsl_hash" ∷ ptr_tr ↦[node :: "hash"] (slice_val sl_hash) ∗
+      "#His_hash" ∷ match path with
+        | None => is_node_hash tr hash
+        | _ => True
+        end
     | Interior children =>
       ∃ hash sl_hash sl_children ptr_children,
-      "#His_hash" ∷ is_node_hash tr hash ∗
       "Hhash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
       "Hsl_children" ∷ own_slice_small sl_children ptrT (DfracOwn 1) ptr_children ∗
       "Hptr_children" ∷ ptr_tr ↦[node :: "Children"] (slice_val sl_children) ∗
       "Hchildren" ∷
-        ([∗ list] child;ptr_child ∈ children;ptr_children,
-          ▷ recur ptr_child child)
+        ([∗ list] idx ↦ child;ptr_child ∈ children;ptr_children,
+           match path with
+           | Some (a :: path) => if decide (uint.nat a = idx) then ▷ recur (Some path) ptr_child child
+                               else ▷ recur None ptr_child child
+           | None => ▷ recur None ptr_child child
+           | Some [] => ▷ recur None ptr_child child
+           end
+        ) ∗
+      "#His_hash" ∷ match path with
+      | None => is_node_hash tr hash
+      | _ => True
+      end
     end)%I.
 
-Local Instance own_node'_contractive : Contractive own_node'.
-Proof. solve_contractive. Qed.
+Local Instance own_node_except'_contractive : Contractive own_node_except'.
+Proof. Admitted.
 
-Definition own_node : loc → tree → iProp Σ := fixpoint own_node'.
+Definition own_node_except : option (list w8) → loc → tree → iProp Σ := fixpoint own_node_except'.
 
-Lemma own_node_unfold ptr obj :
-  own_node ptr obj ⊣⊢ (own_node' own_node) ptr obj.
+Lemma own_node_except_unfold path ptr obj :
+  own_node_except path ptr obj ⊣⊢ (own_node_except' own_node_except) path ptr obj.
 Proof.
-  apply (fixpoint_unfold own_node').
+  apply (fixpoint_unfold own_node_except').
 Qed.
 
 Definition tree_to_map (tr : tree) : gmap (list w8) (list w8) :=

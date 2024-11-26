@@ -11,7 +11,7 @@ Context `{!heapGS Σ}.
 Definition own_merkle ptr_tr entries : iProp Σ :=
   ∃ tr root,
   "%Htree" ∷ ⌜tree_to_map tr = entries⌝ ∗
-  "Hnode" ∷ own_node root tr ∗
+  "Hnode" ∷ own_node_except None root tr ∗
   "Hroot" ∷ ptr_tr ↦[Tree :: "root"] #root.
 
 (* is_dig says that the tree with these entries has this digest. *)
