@@ -247,7 +247,7 @@ Definition Tree__getPathAddNodes: val :=
     let: "pathIdx" := ref_to uint64T #0 in
     (for: (λ: <>, (![uint64T] "pathIdx") < cryptoffi.HashLen); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") + #1)) := λ: <>,
       let: "currNode" := SliceGet ptrT (![slice.T ptrT] "nodePath") (![uint64T] "pathIdx") in
-      let: "pos" := SliceGet byteT "id" (![uint64T] "pathIdx") in
+      let: "pos" := to_u64 (SliceGet byteT "id" (![uint64T] "pathIdx")) in
       (if: (SliceGet ptrT (struct.loadF node "children" "currNode") "pos") = #null
       then SliceSet ptrT (struct.loadF node "children" "currNode") "pos" (newGenericNode #())
       else #());;
