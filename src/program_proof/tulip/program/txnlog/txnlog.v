@@ -37,10 +37,9 @@ Section program.
   Admitted.
 
   Theorem wp_TxnLog__SubmitCommit
-    (log : loc) (ts : u64) (pwrsS : Slice.t)
-    (pwrsL : list dbmod) (pwrs : dbmap) (gid : u64) γ :
+    (log : loc) (ts : u64) (pwrsS : Slice.t) (pwrs : dbmap) (gid : u64) γ :
     is_txnlog log gid γ -∗
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
+    {{{ own_dbmap_in_slice pwrsS pwrs }}}
     <<< ∀∀ vs, own_txn_cpool γ gid vs >>>
       TxnLog__SubmitCommit #log #ts (to_val pwrsS) @ ↑txnlogN
     <<< own_txn_cpool γ gid ({[CmdCommit (uint.nat ts) pwrs]} ∪ vs) >>>

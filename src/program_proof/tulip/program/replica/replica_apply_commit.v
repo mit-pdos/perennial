@@ -6,19 +6,19 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__applyCommit
-    rp (tsW : u64) pwrsS pwrsL pwrs cloga gid rid γ α :
+    rp (tsW : u64) pwrsS pwrs cloga gid rid γ α :
     let ts := uint.nat tsW in
     let cloga' := cloga ++ [CmdCommit ts pwrs] in
     valid_pwrs gid pwrs ->
     group_histm_lbs_from_log γ gid cloga' -∗
     is_txn_log_lb γ gid cloga' -∗
     is_replica_idx rp γ α -∗
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗
+    {{{ own_dbmap_in_slice pwrsS pwrs ∗
         own_replica_with_cloga_no_lsna rp cloga gid rid γ α
     }}}
       Replica__applyCommit #rp #tsW (to_val pwrsS)
     {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrsL pwrs ∗ 
+        own_dbmap_in_slice pwrsS pwrs ∗ 
         own_replica_with_cloga_no_lsna rp cloga' gid rid γ α
     }}}.
   Proof.

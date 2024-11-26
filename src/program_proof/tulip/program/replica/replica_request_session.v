@@ -44,9 +44,9 @@ Section decode.
       DecodeTxnRequest (to_val dataP)
     {{{ (pwrsP : Slice.t), RET (txnreq_to_val req pwrsP);
         match req with
-        | FastPrepareReq _ pwrs => (∃ pwrsL, own_dbmap_in_slice pwrsP pwrsL pwrs)
-        | ValidateReq _ _ pwrs => (∃ pwrsL, own_dbmap_in_slice pwrsP pwrsL pwrs)
-        | CommitReq _ pwrs => (∃ pwrsL, own_dbmap_in_slice pwrsP pwrsL pwrs)
+        | FastPrepareReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
+        | ValidateReq _ _ pwrs => own_dbmap_in_slice pwrsP pwrs
+        | CommitReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
         | _ => True
         end
     }}}.
@@ -211,12 +211,6 @@ Section program.
     iDestruct "Herr" as "%Hmsg".
     apply Henc in Hmsg as Hreq.
     destruct Hreq as (req & Hinreqs & Hreq). simpl in Hreq.
-    (* assert (∃ req, retdata = encode_txnreq req ∧ req ∈ reqs) as (req & Hreq & Hinreqs). *)
-    (* { specialize (Henc retdata). *)
-    (*   apply (elem_of_map_2 msg_data (D := gset (list u8))) in Hmsg. *)
-    (*   specialize (Henc Hmsg). *)
-    (*   by rewrite elem_of_map in Henc. *)
-    (* } *)
 
     (*@         req  := message.DecodeTxnRequest(ret.Data)                      @*)
     (*@         kind := req.Kind                                                @*)
@@ -224,7 +218,7 @@ Section program.
     (*@                                                                         @*)
     wp_apply (wp_DecodeTxnRequest with "Hretdata").
     { apply Hreq. }
-    iIntros (entsaP) "Hentsa".
+    iIntros (pwrsP) "Hpwrs".
     assert (Hrid : rid ∈ rids_all).
     { apply elem_of_dom_2 in Haddr. by rewrite Hdomaddrm in Haddr. }
     destruct req; wp_pures.
@@ -312,8 +306,6 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
-      simpl.
-      iDestruct "Hentsa" as (pwrsL) "Hpwrs".
       wp_apply (wp_Replica__FastPrepare with "Hsafe Hrp Hpwrs").
       iIntros (res) "#Houtcome".
       wp_loadField.
@@ -376,7 +368,6 @@ Section program.
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       simpl.
-      iDestruct "Hentsa" as (pwrsL) "Hpwrs".
       wp_apply (wp_Replica__Validate with "Hsafe Hrp Hpwrs").
       iIntros (res) "#Houtcome".
       wp_loadField.
@@ -627,7 +618,7 @@ Section program.
       (*@             }                                                           @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
-      wp_apply (wp_Replica__Commit with "Hsafe Hrp Hentsa").
+      wp_apply (wp_Replica__Commit with "Hsafe Hrp Hpwrs").
       iIntros (ok) "_".
       wp_pures.
       destruct ok; wp_pures.

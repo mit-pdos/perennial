@@ -147,12 +147,13 @@ Proof. intros x y H. by destruct x, y. Defined.
 Section def.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=
-    own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
+  Definition own_dbmap_in_slice s (m : dbmap) : iProp Σ :=
+    ∃ l : list dbmod,
+      own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
 
   Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
     match c with
-    | CmdCommit _ pwrs => (∃ pwrsL : list dbmod, own_dbmap_in_slice pwrsS pwrsL pwrs)
+    | CmdCommit _ pwrs => own_dbmap_in_slice pwrsS pwrs
     | _ => True
     end.
 

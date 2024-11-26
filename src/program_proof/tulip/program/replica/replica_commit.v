@@ -12,7 +12,7 @@ Section program.
     let ts := uint.nat tsW in
     safe_commit γ gid ts pwrs -∗
     is_replica rp gid rid γ -∗
-    {{{ ∃ l, own_dbmap_in_slice pwrsS l pwrs }}}
+    {{{ own_dbmap_in_slice pwrsS pwrs }}}
       Replica__Commit #rp #tsW (to_val pwrsS)
     {{{ (ok : bool), RET #ok; True }}}.
   Proof.
@@ -43,7 +43,6 @@ Section program.
     (*@                                                                         @*)
     iNamed "Hrp". iNamed "Htxnlog".
     wp_loadField.
-    iDestruct "Hpwrs" as (l) "Hpwrs".
     wp_apply (wp_TxnLog__SubmitCommit with "Htxnlog Hpwrs").
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".

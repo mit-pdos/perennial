@@ -52,7 +52,7 @@ Section repr.
     ∃ (prepmP : loc) (prepmS : gmap u64 Slice.t) (prepm : gmap u64 dbmap),
       "HprepmP"  ∷ rp ↦[Replica :: "prepm"] #prepmP ∗
       "HprepmS"  ∷ own_map prepmP (DfracOwn 1) prepmS ∗
-      "Hprepm"   ∷ ([∗ map] s; m ∈ prepmS; prepm, ∃ l, own_dbmap_in_slice s l m) ∗
+      "Hprepm"   ∷ ([∗ map] s; m ∈ prepmS; prepm, own_dbmap_in_slice s m) ∗
       "%Hcpmabs" ∷ ⌜(kmap Z.of_nat cpm : gmap Z dbmap) = kmap uint.Z prepm⌝.
 
   Definition absrel_ptsm (ptsm : gmap dbkey nat) (ptsmM : gmap dbkey u64) :=

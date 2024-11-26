@@ -5,16 +5,17 @@ From Perennial.program_proof.tulip.program.replica Require Import
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_Replica__release rp pwrsS pwrsL pwrs ptsm sptsm :
+  Theorem wp_Replica__release rp pwrsS pwrs ptsm sptsm :
     valid_wrs pwrs ->
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_ptsm_sptsm rp ptsm sptsm }}}
+    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_ptsm_sptsm rp ptsm sptsm }}}
       Replica__release #rp (to_val pwrsS)
     {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrsL pwrs ∗
+        own_dbmap_in_slice pwrsS pwrs ∗
         own_replica_ptsm_sptsm rp (release pwrs ptsm) sptsm
     }}}.
   Proof.
-    iIntros (Hvw Φ) "[[HpwrsS %Hpwrs] Hrp] HΦ".
+    iIntros (Hvw Φ) "[Hpwrs Hrp] HΦ".
+    iDestruct "Hpwrs" as (pwrsL) "[HpwrsS %HpwrsL]".
     wp_rec.
     iDestruct (own_replica_ptsm_sptsm_dom with "Hrp") as %[Hdomptsm Hdomsptsm].
 
@@ -45,14 +46,14 @@ Section program.
       iIntros "Hrp".
       iApply "HΦ".
       (* Obtain proof that the current key [k] has not been written. *)
-      pose proof (map_to_list_not_elem_of_take_key _ _ _ _ Hpwrs Hi) as Htake.
+      pose proof (map_to_list_not_elem_of_take_key _ _ _ _ HpwrsL Hi) as Htake.
       (* Adjust the goal. *)
       rewrite uint_nat_word_add_S; last by word.
       rewrite (take_S_r _ _ _ Hi) list_to_map_snoc; last apply Htake.
       set pwrs' := list_to_map _.
       rewrite /release setts_insert; last first.
       { apply elem_of_list_lookup_2 in Hi.
-        rewrite -Hpwrs in Hi.
+        rewrite -HpwrsL in Hi.
         apply elem_of_map_to_list, elem_of_dom_2 in Hi.
         clear -Hvw Hi Hdomptsm. set_solver.
       }
@@ -60,7 +61,7 @@ Section program.
     }
     iIntros "[Hrp HpwrsS]".
     subst P. simpl.
-    pose proof (list_to_map_flip _ _ Hpwrs) as Hltm.
+    pose proof (list_to_map_flip _ _ HpwrsL) as Hltm.
     rewrite -Hlenpwrs firstn_all Hltm.
     iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
     wp_pures.
