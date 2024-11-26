@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
+From Perennial.Helpers Require finite.
 
 Definition dbkey := string.
 Definition dbval := option string.
@@ -21,7 +22,7 @@ Definition fstring := {k : string | String.length k < 2 ^ 64}.
 #[local]
 Instance fstring_finite :
   finite.Finite fstring.
-Admitted.
+Proof. apply Helpers.finite.string_finite_Zlt_length. Qed.
 
 Definition keys_all : gset string :=
   list_to_set (map proj1_sig (finite.enum fstring)).
