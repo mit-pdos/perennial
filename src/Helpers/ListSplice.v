@@ -81,7 +81,7 @@ Lemma list_splice_in_bounds l n l' :
 Proof.
   intros.
   rewrite /list_splice.
-  rewrite Nat.min_l; [ lia | ].
+  rewrite -> Nat.min_l by lia.
   rewrite (take_ge l') //.
 Qed.
 
