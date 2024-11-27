@@ -136,3 +136,6 @@ Qed.
 
 Definition encode_dbmap (m : dbmap) (data : list u8) :=
   ∃ xs, data = encode_dbmods xs ∧ xs ≡ₚ map_to_list m.
+
+Definition encode_dbpver (x : dbpver) : list u8 :=
+  u64_le x.1 ++ encode_dbval x.2.

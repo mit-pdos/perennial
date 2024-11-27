@@ -116,22 +116,6 @@ Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   | CmdAbort ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
   end.
 
-Definition rpres_to_u64 (r : rpres) :=
-  match r with
-  | ReplicaOK => (U64 0)
-  | ReplicaCommittedTxn => (U64 1)
-  | ReplicaAbortedTxn => (U64 2)
-  | ReplicaStaleCoordinator => (U64 3)
-  | ReplicaFailedValidation => (U64 4)
-  | ReplicaInvalidRank => (U64 5)
-  | ReplicaWrongLeader => (U64 6)
-  end.
-
-#[global]
-Instance rpres_to_u64_inj :
-  Inj eq eq rpres_to_u64.
-Proof. intros x y H. by destruct x, y. Defined.
-
 Inductive txnphase :=
 | TxnPrepared
 | TxnCommitted

@@ -1,114 +1,8 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_read replica_fast_prepare replica_validate
-  replica_prepare replica_unprepare replica_query replica_commit replica_abort decode.
-
-Section encode.
-  Context `{!heapGS Σ, !paxos_ghostG Σ}.
-
-  Theorem wp_EncodeTxnReadResponse
-    (rid : u64) (ts : u64) (key : string) (ver : dbpver) (slow : bool) :
-    {{{ True }}}
-      EncodeTxnReadResponse #rid #ts #(LitString key) (dbpver_to_val ver) #slow
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (ReadResp rid ts key ver slow)⌝
-    }}}.
-  Proof.
-  Admitted.
-
-  Theorem wp_EncodeTxnFastPrepareResponse (ts : u64) (rid : u64) (res : rpres) :
-    {{{ True }}}
-      EncodeTxnFastPrepareResponse #ts #rid #(rpres_to_u64 res)
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (FastPrepareResp ts rid res)⌝
-    }}}.
-  Proof.
-    (*@ func EncodeTxnFastPrepareResponse(ts, rid, res uint64) []byte {         @*)
-    (*@     return nil                                                          @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-  Theorem wp_EncodeTxnValidateResponse (ts : u64) (rid : u64) (res : rpres) :
-    {{{ True }}}
-      EncodeTxnValidateResponse #ts #rid #(rpres_to_u64 res)
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (ValidateResp ts rid res)⌝
-    }}}.
-  Proof.
-    (*@ func EncodeTxnValidateResponse(ts, rid, res uint64) []byte {            @*)
-    (*@     return nil                                                          @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-  Theorem wp_EncodeTxnPrepareResponse (ts : u64) (rank : u64) (rid : u64) (res : rpres) :
-    {{{ True }}}
-      EncodeTxnPrepareResponse #ts #rank #rid #(rpres_to_u64 res)
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (PrepareResp ts rank rid res)⌝
-    }}}.
-  Proof.
-    (*@ func EncodeTxnPrepareResponse(ts, rank, rid, res uint64) []byte {       @*)
-    (*@     return nil                                                          @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-  Theorem wp_EncodeTxnUnprepareResponse (ts : u64) (rank : u64) (rid : u64) (res : rpres) :
-    {{{ True }}}
-      EncodeTxnUnprepareResponse #ts #rank #rid #(rpres_to_u64 res)
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (UnprepareResp ts rank rid res)⌝
-    }}}.
-  Proof.
-    (*@ func EncodeTxnUnprepareResponse(ts, rank, rid, res uint64) []byte {     @*)
-    (*@     return nil                                                          @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-  Theorem wp_EncodeTxnQueryResponse (ts : u64) (res : rpres) :
-    {{{ True }}}
-      EncodeTxnQueryResponse #ts #(rpres_to_u64 res)
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (QueryResp ts res)⌝
-    }}}.
-  Proof.
-    (*@ func EncodeTxnQueryResponse(ts, res uint64) []byte {                    @*)
-    (*@     return nil                                                          @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-  Theorem wp_EncodeTxnCommitResponse (ts : u64) (res : rpres) :
-    {{{ True }}}
-      EncodeTxnCommitResponse #ts #(rpres_to_u64 res)
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (CommitResp ts res)⌝
-    }}}.
-  Proof.
-    (*@ func EncodeTxnCommitResponse(ts, res uint64) []byte {                   @*)
-    (*@     return nil                                                          @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-  Theorem wp_EncodeTxnAbortResponse (ts : u64) (res : rpres) :
-    {{{ True }}}
-      EncodeTxnAbortResponse #ts #(rpres_to_u64 res)
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (AbortResp ts res)⌝
-    }}}.
-  Proof.
-    (*@ func EncodeTxnAbortResponse(ts, res uint64) []byte {                    @*)
-    (*@     return nil                                                          @*)
-    (*@ }                                                                       @*)
-  Admitted.
-
-End encode.
+  replica_prepare replica_unprepare replica_query replica_commit replica_abort
+  encode decode.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -229,6 +123,7 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -289,6 +184,7 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -351,6 +247,7 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -413,6 +310,7 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -475,6 +373,7 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -535,6 +434,7 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -602,6 +502,7 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
+          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -650,6 +551,7 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
+          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -717,6 +619,7 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
+          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -765,6 +668,7 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
+          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".

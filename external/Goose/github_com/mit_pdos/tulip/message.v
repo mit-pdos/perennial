@@ -207,8 +207,8 @@ Definition EncodeTxnPrepareResponse: val :=
 Definition DecodeTxnPrepareResponse: val :=
   rec: "DecodeTxnPrepareResponse" "bs" :=
     let: ("ts", "bs1") := marshal.ReadInt "bs" in
-    let: ("rid", "bs2") := marshal.ReadInt "bs1" in
-    let: ("rank", "bs3") := marshal.ReadInt "bs2" in
+    let: ("rank", "bs2") := marshal.ReadInt "bs1" in
+    let: ("rid", "bs3") := marshal.ReadInt "bs2" in
     let: ("res", <>) := marshal.ReadInt "bs3" in
     struct.mk TxnResponse [
       "Kind" ::= MSG_TXN_PREPARE;
@@ -249,8 +249,8 @@ Definition EncodeTxnUnprepareResponse: val :=
 Definition DecodeTxnUnprepareResponse: val :=
   rec: "DecodeTxnUnprepareResponse" "bs" :=
     let: ("ts", "bs1") := marshal.ReadInt "bs" in
-    let: ("rid", "bs2") := marshal.ReadInt "bs1" in
-    let: ("rank", "bs3") := marshal.ReadInt "bs2" in
+    let: ("rank", "bs2") := marshal.ReadInt "bs1" in
+    let: ("rid", "bs3") := marshal.ReadInt "bs2" in
     let: ("res", <>) := marshal.ReadInt "bs3" in
     struct.mk TxnResponse [
       "Kind" ::= MSG_TXN_UNPREPARE;

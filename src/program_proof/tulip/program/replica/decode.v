@@ -132,7 +132,7 @@ Section decode.
   Qed.
 
   Theorem wp_DecodeTxnPrepareRequest (bsP : Slice.t) ts rank :
-    let bs := encode_req_of_ts_rank_xkind ts rank in
+    let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnPrepareRequest (to_val bsP)
     {{{ RET (txnreq_to_val (PrepareReq ts rank) Slice.nil); True }}}.
@@ -158,7 +158,7 @@ Section decode.
   Qed.
 
   Theorem wp_DecodeTxnUnprepareRequest (bsP : Slice.t) ts rank :
-    let bs := encode_req_of_ts_rank_xkind ts rank in
+    let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnUnprepareRequest (to_val bsP)
     {{{ RET (txnreq_to_val (UnprepareReq ts rank) Slice.nil); True }}}.
@@ -184,7 +184,7 @@ Section decode.
   Qed.
 
   Theorem wp_DecodeTxnQueryRequest (bsP : Slice.t) ts rank :
-    let bs := encode_req_of_ts_rank_xkind ts rank in
+    let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnQueryRequest (to_val bsP)
     {{{ RET (txnreq_to_val (QueryReq ts rank) Slice.nil); True }}}.
@@ -210,7 +210,7 @@ Section decode.
   Qed.
 
   Theorem wp_DecodeTxnRefreshRequest (bsP : Slice.t) ts rank :
-    let bs := encode_req_of_ts_rank_xkind ts rank in
+    let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnRefreshRequest (to_val bsP)
     {{{ RET (txnreq_to_val (RefreshReq ts rank) Slice.nil); True }}}.

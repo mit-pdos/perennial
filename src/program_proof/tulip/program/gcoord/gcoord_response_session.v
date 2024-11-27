@@ -4,60 +4,8 @@ From Perennial.program_proof.tulip.program.gcoord Require Import
   gcoord_attached_with gcoord_receive gcoord_process_finalization_result
   greader_process_read_result gpreparer_process_fast_prepare_result
   gpreparer_process_validate_result gpreparer_process_prepare_result
-  gpreparer_process_unprepare_result gpreparer_process_query_result.
-
-Definition txnresp_to_val (resp : txnresp) (entsP : Slice.t) : val :=
-  match resp with
-  | ReadResp ts rid key ver slow =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 100)); ("Timestamp", #ts); ("ReplicaID", #rid);
-          ("Key", #(LitString key)); ("Version", dbpver_to_val ver); ("Slow", #slow)]
-  | FastPrepareResp ts rid res =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 201)); ("Timestamp", #ts); ("ReplicaID", #rid);
-          ("Result", #(rpres_to_u64 res))]
-  | ValidateResp ts rid res =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 202)); ("Timestamp", #ts); ("ReplicaID", #rid);
-          ("Result", #(rpres_to_u64 res))]
-  | PrepareResp ts rank rid res =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 203)); ("Timestamp", #ts); ("Rank", #rank);
-          ("ReplicaID", #rid); ("Result", #(rpres_to_u64 res))]
-  | UnprepareResp ts rank rid res =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 204)); ("Timestamp", #ts); ("Rank", #rank);
-          ("ReplicaID", #rid); ("Result", #(rpres_to_u64 res))]
-  | QueryResp ts res =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 205)); ("Timestamp", #ts); ("Result", #(rpres_to_u64 res))]
-  | CommitResp ts res =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 300)); ("Timestamp", #ts); ("Result", #(rpres_to_u64 res))]
-  | AbortResp ts res =>
-      struct.mk_f TxnResponse [
-          ("Kind", #(U64 301)); ("Timestamp", #ts); ("Result", #(rpres_to_u64 res))]
-  end.
-
-Section decode.
-  Context `{!heapGS Σ, !tulip_ghostG Σ}.
-
-  Theorem wp_DecodeTxnResponse (dataP : Slice.t) (data : list u8) (resp : txnresp) :
-    data = encode_txnresp resp ->
-    {{{ own_slice dataP byteT (DfracOwn 1) data }}}
-      DecodeTxnResponse (to_val dataP)
-    {{{ (entsP : Slice.t), RET (txnresp_to_val resp entsP);
-        (* TODO: this will be used after adding backup coordinator *)
-        match resp with
-        | _ => True
-        end
-    }}}.
-  Proof.
-    iIntros (Hdataenc Φ) "Hdata HΦ".
-    wp_rec.
-  Admitted.
-
-End decode.
+  gpreparer_process_unprepare_result gpreparer_process_query_result
+  decode.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -103,8 +51,9 @@ Section program.
     (*@         msg := message.DecodeTxnResponse(data)                          @*)
     (*@         kind := msg.Kind                                                @*)
     (*@                                                                         @*)
+    iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+    rewrite Hdataenc.
     wp_apply (wp_DecodeTxnResponse with "Hdata").
-    { apply Hdataenc. }
     iIntros (entsP) "Hents".
 
     (*@         gcoord.mu.Lock()                                                @*)
