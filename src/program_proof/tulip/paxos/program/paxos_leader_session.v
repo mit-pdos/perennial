@@ -131,7 +131,7 @@ Section leader_session.
           iSplit.
           { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
           iPureIntro.
-          rewrite 2!set_map_union_L 2!set_map_singleton_L /= -Hdataenc.
+          rewrite 2!set_map_union_L 2!set_map_singleton_L.
           set_solver.
         }
         rewrite insert_delete_insert.

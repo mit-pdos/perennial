@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import quorum list extend.
-From Perennial.program_proof.tulip.paxos Require Import base consistency res recovery.
+From Perennial.program_proof.tulip.paxos Require Import base consistency msg res recovery.
 
 Section inv.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.

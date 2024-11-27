@@ -50,8 +50,9 @@ Section response_sesion.
     (*@         resp := message.DecodePaxosResponse(data)                       @*)
     (*@         kind := resp.Kind                                               @*)
     (*@                                                                         @*)
-    wp_apply wp_DecodeResponse.
-    { apply Hdataenc. }
+    iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+    rewrite Hdataenc.
+    wp_apply (wp_DecodeResponse with "Hdata").
     iIntros (entsP) "Hents".
     destruct resp as [nid' term terme ents | nid' term lsneq]; wp_pures.
     { (* Case: RequestVote. *)

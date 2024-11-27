@@ -329,44 +329,6 @@ Section def.
 
 End def.
 
-Section msg.
-
-  Inductive pxreq :=
-  | RequestVoteReq (term : u64) (lsnlc : u64)
-  | AppendEntriesReq (term : u64) (lsnlc : u64) (lsne : u64) (ents : list string).
-
-  #[global]
-    Instance pxreq_eq_decision :
-    EqDecision pxreq.
-  Proof. solve_decision. Qed.
-
-  #[global]
-    Instance pxreq_countable :
-    Countable pxreq.
-  Admitted.
-
-  Definition encode_pxreq (req : pxreq) : list u8.
-  Admitted.
-
-  Inductive pxresp :=
-  | RequestVoteResp (nid term terme : u64) (ents : list string)
-  | AppendEntriesResp (nid term lsneq : u64).
-
-  #[global]
-    Instance pxresp_eq_decision :
-    EqDecision pxresp.
-  Proof. solve_decision. Qed.
-
-  #[global]
-    Instance pxresp_countable :
-    Countable pxresp.
-  Admitted.
-
-  Definition encode_pxresp (resp : pxresp) : list u8.
-  Admitted.
-
-End msg.
-
 Definition max_nodes : Z := 16.
 
 Definition is_term_of_node (x : u64) (t : nat) :=

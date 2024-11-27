@@ -197,7 +197,7 @@ Section election_session.
             iFrame "Hlsnprc".
           }
           iPureIntro.
-          rewrite 2!set_map_union_L 2!set_map_singleton_L /= -Hdataenc.
+          rewrite 2!set_map_union_L 2!set_map_singleton_L.
           set_solver.
         }
         rewrite insert_delete_insert.

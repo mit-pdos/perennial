@@ -352,13 +352,13 @@ Definition MSG_ACCEPT : expr := #1.
 
 Definition EncodeAcceptRequest: val :=
   rec: "EncodeAcceptRequest" "term" "lsnc" "lsne" "ents" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") MSG_ACCEPT);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsnc");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsne");;
-    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
-    ![slice.T byteT] "data".
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_ACCEPT in
+    let: "bs2" := marshal.WriteInt "bs1" "term" in
+    let: "bs3" := marshal.WriteInt "bs2" "lsnc" in
+    let: "bs4" := marshal.WriteInt "bs3" "lsne" in
+    let: "data" := util.EncodeStrings "bs4" "ents" in
+    "data".
 
 Definition Paxos__GetConnection: val :=
   rec: "Paxos__GetConnection" "px" "nid" :=
@@ -419,11 +419,11 @@ Definition Paxos__LeaderSession: val :=
 
 Definition EncodePrepareRequest: val :=
   rec: "EncodePrepareRequest" "term" "lsnc" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #24) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") MSG_PREPARE);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsnc");;
-    ![slice.T byteT] "data".
+    let: "bs" := NewSliceWithCap byteT #0 #24 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_PREPARE in
+    let: "bs2" := marshal.WriteInt "bs1" "term" in
+    let: "data" := marshal.WriteInt "bs2" "lsnc" in
+    "data".
 
 Definition Paxos__ElectionSession: val :=
   rec: "Paxos__ElectionSession" "px" :=
@@ -488,11 +488,11 @@ Definition PaxosResponse := struct.decl [
 ].
 
 Definition DecodePrepareResponse: val :=
-  rec: "DecodePrepareResponse" "data" :=
-    let: ("nid", "data") := marshal.ReadInt "data" in
-    let: ("term", "data") := marshal.ReadInt "data" in
-    let: ("terma", "data") := marshal.ReadInt "data" in
-    let: ("ents", "data") := util.DecodeStrings "data" in
+  rec: "DecodePrepareResponse" "bs" :=
+    let: ("nid", "bs1") := marshal.ReadInt "bs" in
+    let: ("term", "bs2") := marshal.ReadInt "bs1" in
+    let: ("terma", "bs3") := marshal.ReadInt "bs2" in
+    let: ("ents", <>) := util.DecodeStrings "bs3" in
     struct.mk PaxosResponse [
       "Kind" ::= MSG_PREPARE;
       "NodeID" ::= "nid";
@@ -502,10 +502,10 @@ Definition DecodePrepareResponse: val :=
     ].
 
 Definition DecodeAcceptResponse: val :=
-  rec: "DecodeAcceptResponse" "data" :=
-    let: ("nid", "data") := marshal.ReadInt "data" in
-    let: ("term", "data") := marshal.ReadInt "data" in
-    let: ("lsn", "data") := marshal.ReadInt "data" in
+  rec: "DecodeAcceptResponse" "bs" :=
+    let: ("nid", "bs1") := marshal.ReadInt "bs" in
+    let: ("term", "bs2") := marshal.ReadInt "bs1" in
+    let: ("lsn", <>) := marshal.ReadInt "bs2" in
     struct.mk PaxosResponse [
       "Kind" ::= MSG_ACCEPT;
       "NodeID" ::= "nid";
@@ -514,16 +514,20 @@ Definition DecodeAcceptResponse: val :=
     ].
 
 Definition DecodeResponse: val :=
-  rec: "DecodeResponse" "data" :=
-    let: ("kind", "data") := marshal.ReadInt "data" in
-    let: "resp" := ref (zero_val (struct.t PaxosResponse)) in
+  rec: "DecodeResponse" "bs" :=
+    let: ("kind", "data") := marshal.ReadInt "bs" in
     (if: "kind" = MSG_PREPARE
-    then "resp" <-[struct.t PaxosResponse] (DecodePrepareResponse "data")
+    then
+      let: "resp" := DecodePrepareResponse "data" in
+      "resp"
     else
       (if: "kind" = MSG_ACCEPT
-      then "resp" <-[struct.t PaxosResponse] (DecodeAcceptResponse "data")
-      else #()));;
-    ![struct.t PaxosResponse] "resp".
+      then
+        let: "resp" := DecodeAcceptResponse "data" in
+        "resp"
+      else
+        struct.mk PaxosResponse [
+        ])).
 
 Definition Paxos__ResponseSession: val :=
   rec: "Paxos__ResponseSession" "px" "nid" :=
@@ -602,9 +606,9 @@ Definition PaxosRequest := struct.decl [
 ].
 
 Definition DecodePrepareRequest: val :=
-  rec: "DecodePrepareRequest" "data" :=
-    let: ("term", "data") := marshal.ReadInt "data" in
-    let: ("lsnc", "data") := marshal.ReadInt "data" in
+  rec: "DecodePrepareRequest" "bs" :=
+    let: ("term", "bs1") := marshal.ReadInt "bs" in
+    let: ("lsnc", <>) := marshal.ReadInt "bs1" in
     struct.mk PaxosRequest [
       "Kind" ::= MSG_PREPARE;
       "Term" ::= "term";
@@ -612,11 +616,11 @@ Definition DecodePrepareRequest: val :=
     ].
 
 Definition DecodeAcceptRequest: val :=
-  rec: "DecodeAcceptRequest" "data" :=
-    let: ("term", "data") := marshal.ReadInt "data" in
-    let: ("lsnc", "data") := marshal.ReadInt "data" in
-    let: ("lsne", "data") := marshal.ReadInt "data" in
-    let: ("ents", "data") := util.DecodeStrings "data" in
+  rec: "DecodeAcceptRequest" "bs" :=
+    let: ("term", "bs1") := marshal.ReadInt "bs" in
+    let: ("lsnc", "bs2") := marshal.ReadInt "bs1" in
+    let: ("lsne", "bs3") := marshal.ReadInt "bs2" in
+    let: ("ents", <>) := util.DecodeStrings "bs3" in
     struct.mk PaxosRequest [
       "Kind" ::= MSG_ACCEPT;
       "Term" ::= "term";
@@ -626,35 +630,39 @@ Definition DecodeAcceptRequest: val :=
     ].
 
 Definition DecodeRequest: val :=
-  rec: "DecodeRequest" "data" :=
-    let: ("kind", "data") := marshal.ReadInt "data" in
-    let: "req" := ref (zero_val (struct.t PaxosRequest)) in
+  rec: "DecodeRequest" "bs" :=
+    let: ("kind", "data") := marshal.ReadInt "bs" in
     (if: "kind" = MSG_PREPARE
-    then "req" <-[struct.t PaxosRequest] (DecodePrepareRequest "data")
+    then
+      let: "req" := DecodePrepareRequest "data" in
+      "req"
     else
       (if: "kind" = MSG_ACCEPT
-      then "req" <-[struct.t PaxosRequest] (DecodeAcceptRequest "data")
-      else #()));;
-    ![struct.t PaxosRequest] "req".
+      then
+        let: "req" := DecodeAcceptRequest "data" in
+        "req"
+      else
+        struct.mk PaxosRequest [
+        ])).
 
 Definition EncodePrepareResponse: val :=
   rec: "EncodePrepareResponse" "nid" "term" "terma" "ents" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") MSG_PREPARE);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "nid");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "terma");;
-    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
-    ![slice.T byteT] "data".
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_PREPARE in
+    let: "bs2" := marshal.WriteInt "bs1" "nid" in
+    let: "bs3" := marshal.WriteInt "bs2" "term" in
+    let: "bs4" := marshal.WriteInt "bs3" "terma" in
+    let: "data" := util.EncodeStrings "bs4" "ents" in
+    "data".
 
 Definition EncodeAcceptResponse: val :=
   rec: "EncodeAcceptResponse" "nid" "term" "lsn" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #32) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") MSG_ACCEPT);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "nid");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsn");;
-    ![slice.T byteT] "data".
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_ACCEPT in
+    let: "bs2" := marshal.WriteInt "bs1" "nid" in
+    let: "bs3" := marshal.WriteInt "bs2" "term" in
+    let: "data" := marshal.WriteInt "bs3" "lsn" in
+    "data".
 
 Definition Paxos__RequestSession: val :=
   rec: "Paxos__RequestSession" "px" "conn" :=

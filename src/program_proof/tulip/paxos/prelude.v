@@ -4,4 +4,4 @@ From Perennial.program_proof.rsm Require Export big_sep.
 From Perennial.program_proof.rsm.pure Require Export
   extend fin_maps fin_sets list misc nat sets word quorum.
 From Perennial.program_proof.tulip.paxos Require Export
-  base consistency inv res recovery.
+  base consistency msg inv res recovery.
