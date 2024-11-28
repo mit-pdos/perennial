@@ -6,7 +6,7 @@ Section inv.
 
   Lemma group_inv_learn γ p gid cpool cmds :
     ∀ log,
-    cpool_subsume_log cpool (log ++ cmds) ->
+    txn_cpool_subsume_log cpool (log ++ cmds) ->
     txnsys_inv γ p -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
@@ -24,14 +24,14 @@ Section inv.
     destruct c.
     { (* Case: [CmdCommit ts pwrs] *)
       iMod (group_inv_learn_commit with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
-      { rewrite /cpool_subsume_log Forall_app in Hsubsume.
+      { rewrite /txn_cpool_subsume_log Forall_app in Hsubsume.
         by destruct Hsubsume as [Hsubsume _].
       }
       by iApply ("IH" with "[] Htxn Hkeys Hgroup").
     }
     { (* Case: [CmdAbort ts] *)
       iMod (group_inv_learn_abort with "Htxn Hkeys Hgroup") as "(Htxn & Hkeys & Hgroup)".
-      { rewrite /cpool_subsume_log Forall_app in Hsubsume.
+      { rewrite /txn_cpool_subsume_log Forall_app in Hsubsume.
         by destruct Hsubsume as [Hsubsume _].
       }
       by iApply ("IH" with "[] Htxn Hkeys Hgroup").

@@ -28,7 +28,7 @@ Section execute_commit.
       iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
       iDestruct (txn_log_cpool_incl with "Hlog Hcpool") as %Hincl.
       assert (Hin : CmdCommit ts pwrs ∈ cpool).
-      { rewrite /cpool_subsume_log Forall_forall in Hincl.
+      { rewrite /txn_cpool_subsume_log Forall_forall in Hincl.
         apply Hincl.
         subst clog'.
         eapply elem_of_prefix; last apply Hprefix.

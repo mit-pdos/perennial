@@ -28,4 +28,8 @@ Definition NS_ELECTION_TIMEOUT_BASE : expr := #1000000000.
 
 Definition NS_ELECTION_TIMEOUT_DELTA : expr := #500000000.
 
+Definition N_RETRY_REPLICATED : expr := #10.
+
+Definition NS_REPLICATED_INTERVAL : expr := #1000000000.
+
 End code.

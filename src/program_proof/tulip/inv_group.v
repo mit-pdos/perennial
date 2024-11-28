@@ -338,25 +338,25 @@ Section inv.
 
   Definition group_inv_no_log_with_cpool
     γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
-    "Hcpool" ∷ own_txn_cpool γ gid cpool ∗
+    "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
     "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv_no_log
     γ (gid : u64) (log : dblog) : iProp Σ :=
     ∃ (cpool : gset ccommand),
-      "Hcpool" ∷ own_txn_cpool γ gid cpool ∗
+      "Hcpool" ∷ own_txn_cpool_half γ gid cpool ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv_no_cpool
     γ (gid : u64) (cpool : gset ccommand) : iProp Σ :=
     ∃ (log : dblog),
-      "Hlog"   ∷ own_txn_log γ gid log ∗
+      "Hlog"   ∷ own_txn_log_half γ gid log ∗
       "Hgroup" ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
   Definition group_inv γ (gid : u64) : iProp Σ :=
     ∃ (log : dblog) (cpool : gset ccommand),
-      "Hlog"    ∷ own_txn_log γ gid log ∗
-      "Hcpool"  ∷ own_txn_cpool γ gid cpool ∗
+      "Hlog"    ∷ own_txn_log_half γ gid log ∗
+      "Hcpool"  ∷ own_txn_cpool_half γ gid cpool ∗
       "Hgroup"  ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
 End inv.
@@ -454,12 +454,12 @@ Section lemma.
   Lemma group_inv_extract_log_expose_cpool {γ} gid :
     group_inv γ gid -∗
     ∃ log cpool,
-      own_txn_log γ gid log ∗
+      own_txn_log_half γ gid log ∗
       group_inv_no_log_with_cpool γ gid log cpool.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   Lemma group_inv_merge_log_hide_cpool {γ gid} log cpool :
-    own_txn_log γ gid log -∗
+    own_txn_log_half γ gid log -∗
     group_inv_no_log_with_cpool γ gid log cpool -∗
     group_inv γ gid.
   Proof. iIntros "Hlog Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
@@ -467,12 +467,12 @@ Section lemma.
   Lemma group_inv_extract_log {γ} gid :
     group_inv γ gid -∗
     ∃ log,
-      own_txn_log γ gid log ∗
+      own_txn_log_half γ gid log ∗
       group_inv_no_log γ gid log.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   Lemma group_inv_merge_log {γ gid} log :
-    own_txn_log γ gid log -∗
+    own_txn_log_half γ gid log -∗
     group_inv_no_log γ gid log -∗
     group_inv γ gid.
   Proof. iIntros "Hlog Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
@@ -480,12 +480,12 @@ Section lemma.
   Lemma group_inv_extract_cpool {γ} gid :
     group_inv γ gid -∗
     ∃ cpool,
-      own_txn_cpool γ gid cpool ∗
+      own_txn_cpool_half γ gid cpool ∗
       group_inv_no_cpool γ gid cpool.
   Proof. iIntros "Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
   Lemma group_inv_merge_cpool {γ gid} cpool :
-    own_txn_cpool γ gid cpool -∗
+    own_txn_cpool_half γ gid cpool -∗
     group_inv_no_cpool γ gid cpool -∗
     group_inv γ gid.
   Proof. iIntros "Hcpool Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.

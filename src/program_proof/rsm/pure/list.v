@@ -181,4 +181,17 @@ Section lemma.
     apply prefix_cons, prefix_nil.
   Qed.
 
+  Lemma Forall_exists_Forall2 {B} (l1 : list A) (P : A -> B -> Prop) :
+    Forall (λ x, ∃ y, P x y) l1 ->
+    ∃ (l2 : list B), Forall2 P l1 l2.
+  Proof.
+    intros Hl1.
+    induction l1 as [| x l1 IH].
+    { exists []. by apply Forall2_nil. }
+    apply Forall_cons in Hl1 as [[y Hxy] Hl1].
+    destruct (IH Hl1) as [l2 Hl2].
+    exists (y :: l2).
+    by apply Forall2_cons_2.
+  Qed.
+
 End lemma.

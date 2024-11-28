@@ -3,15 +3,16 @@ From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_terminated.
 From Perennial.program_proof.tulip.program.txnlog Require Import txnlog.
+From Perennial.program_proof.tulip.paxos Require Import base.
 
 Section program.
-  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+  Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Replica__Commit
     (rp : loc) (tsW : u64) (pwrsS : Slice.t) (pwrs : dbmap) gid rid γ :
     let ts := uint.nat tsW in
     safe_commit γ gid ts pwrs -∗
-    is_replica rp gid rid γ -∗
+    is_replica_plus_txnlog rp gid rid γ -∗
     {{{ own_dbmap_in_slice pwrsS pwrs }}}
       Replica__Commit #rp #tsW (to_val pwrsS)
     {{{ (ok : bool), RET #ok; True }}}.
@@ -26,6 +27,7 @@ Section program.
     (*@     // even reading the value of entry.                                 @*)
     (*@     committed := rp.Terminated(ts)                                      @*)
     (*@                                                                         @*)
+    iNamed "Hrp".
     wp_apply (wp_Replica__Terminated with "Hrp").
     iIntros (committed) "_".
     wp_pures.
@@ -57,7 +59,7 @@ Section program.
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod "Hmask" as "_".
     iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
-    iIntros "!>" (lsn term) "#Hcmd".
+    iIntros "!>" (lsn term) "_".
     wp_pures.
     case_bool_decide as Hlsn; wp_pures.
     { by iApply "HΦ". }
@@ -71,7 +73,7 @@ Section program.
     (*@     return true                                                         @*)
     (*@ }                                                                       @*)
     wp_loadField.
-    wp_apply (wp_TxnLog__WaitUntilSafe with "Htxnlog Hcmd").
+    wp_apply (wp_TxnLog__WaitUntilSafe with "Htxnlog").
     iIntros (safe) "_".
     wp_pures.
     by destruct safe; wp_pures; iApply "HΦ".

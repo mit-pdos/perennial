@@ -81,6 +81,40 @@ Definition Paxos__Lookup: val :=
       Mutex__Unlock (struct.loadF Paxos "mu" "px");;
       ("v", #true)).
 
+Definition Paxos__gettermc: val :=
+  rec: "Paxos__gettermc" "px" :=
+    struct.loadF Paxos "termc" "px".
+
+Definition Paxos__getlsnc: val :=
+  rec: "Paxos__getlsnc" "px" :=
+    struct.loadF Paxos "lsnc" "px".
+
+Definition Paxos__WaitUntilSafe: val :=
+  rec: "Paxos__WaitUntilSafe" "px" "lsn" "term" :=
+    let: "safe" := ref (zero_val boolT) in
+    let: "nretry" := ref (zero_val uint64T) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      Mutex__Lock (struct.loadF Paxos "mu" "px");;
+      let: "termc" := Paxos__gettermc "px" in
+      let: "lsnc" := Paxos__getlsnc "px" in
+      Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+      (if: "term" ≠ "termc"
+      then Break
+      else
+        (if: "lsn" < "lsnc"
+        then
+          "safe" <-[boolT] #true;;
+          Break
+        else
+          (if: (![uint64T] "nretry") = params.N_RETRY_REPLICATED
+          then Break
+          else
+            "nretry" <-[uint64T] ((![uint64T] "nretry") + #1);;
+            time.Sleep params.NS_REPLICATED_INTERVAL;;
+            Continue))));;
+    ![boolT] "safe".
+
 Definition logPrepare: val :=
   rec: "logPrepare" "fname" "term" :=
     let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #16) in
@@ -319,14 +353,6 @@ Definition Paxos__lttermc: val :=
 Definition Paxos__latest: val :=
   rec: "Paxos__latest" "px" :=
     (struct.loadF Paxos "termc" "px") = (struct.loadF Paxos "terml" "px").
-
-Definition Paxos__gettermc: val :=
-  rec: "Paxos__gettermc" "px" :=
-    struct.loadF Paxos "termc" "px".
-
-Definition Paxos__getlsnc: val :=
-  rec: "Paxos__getlsnc" "px" :=
-    struct.loadF Paxos "lsnc" "px".
 
 Definition Paxos__nominated: val :=
   rec: "Paxos__nominated" "px" :=

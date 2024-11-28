@@ -3,9 +3,10 @@ From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_read replica_fast_prepare replica_validate
   replica_prepare replica_unprepare replica_query replica_commit replica_abort
   encode decode.
+From Perennial.program_proof.tulip.paxos Require Import base.
 
 Section program.
-  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+  Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Replica__RequestSession (rp : loc) (addr trml : chan) gid rid γ :
     is_replica_plus_network rp addr gid rid γ -∗
@@ -82,6 +83,7 @@ Section program.
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iDestruct "Hsafe" as %(Hvts & Hvk & Hvg).
+      iNamed "Hrp".
       wp_apply (wp_Replica__Read with "Hrp").
       { rewrite /valid_ts in Hvts. lia. }
       { apply Hvk. }
@@ -148,6 +150,7 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+      iNamed "Hrp".
       wp_apply (wp_Replica__FastPrepare with "Hsafe Hrp Hpwrs").
       iIntros (res) "#Houtcome".
       wp_loadField.
@@ -210,7 +213,7 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
-      simpl.
+      iNamed "Hrp".
       wp_apply (wp_Replica__Validate with "Hsafe Hrp Hpwrs").
       iIntros (res) "#Houtcome".
       wp_loadField.
@@ -273,6 +276,7 @@ Section program.
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iNamed "Hsafe".
+      iNamed "Hrp".
       wp_apply (wp_Replica__Prepare with "Hpsl Hrp").
       { apply Hranknz. }
       iIntros (res) "#Houtcome".
@@ -336,6 +340,7 @@ Section program.
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iNamed "Hsafe".
+      iNamed "Hrp".
       wp_apply (wp_Replica__Unprepare with "Hpsl Hrp").
       { apply Hranknz. }
       iIntros (res) "#Houtcome".
@@ -398,6 +403,7 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+      iNamed "Hrp".
       wp_apply (wp_Replica__Query with "Hrp").
       iIntros (res) "#Houtcome".
       wp_pures.

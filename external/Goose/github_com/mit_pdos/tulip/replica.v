@@ -476,12 +476,12 @@ Definition Replica__applyAbort: val :=
 
 Definition Replica__apply: val :=
   rec: "Replica__apply" "rp" "cmd" :=
-    (if: (struct.get txnlog.Cmd "Kind" "cmd") = #1
+    (if: (struct.get txnlog.Cmd "Kind" "cmd") = txnlog.TXNLOG_COMMIT
     then
       Replica__applyCommit "rp" (struct.get txnlog.Cmd "Timestamp" "cmd") (struct.get txnlog.Cmd "PartialWrites" "cmd");;
       #()
     else
-      (if: (struct.get txnlog.Cmd "Kind" "cmd") = #2
+      (if: (struct.get txnlog.Cmd "Kind" "cmd") = txnlog.TXNLOG_ABORT
       then
         Replica__applyAbort "rp" (struct.get txnlog.Cmd "Timestamp" "cmd");;
         #()
@@ -515,15 +515,6 @@ Definition Replica__StartBackupTxnCoordinator: val :=
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     backup.BackupTxnCoordinator__Finalize "tcoord";;
     #().
-
-Definition mkReplica: val :=
-  rec: "mkReplica" "rid" "addr" "fname" :=
-    let: "rp" := struct.new Replica [
-      "rid" ::= "rid";
-      "addr" ::= "addr";
-      "fname" ::= "fname"
-    ] in
-    "rp".
 
 Definition Replica__RequestSession: val :=
   rec: "Replica__RequestSession" "rp" "conn" :=
@@ -627,8 +618,29 @@ Definition Replica__Serve: val :=
       Continue);;
     #().
 
+Definition mkReplica: val :=
+  rec: "mkReplica" "rid" "addr" "fname" "txnlog" :=
+    let: "rp" := struct.new Replica [
+      "mu" ::= newMutex #();
+      "rid" ::= "rid";
+      "addr" ::= "addr";
+      "fname" ::= "fname";
+      "txnlog" ::= "txnlog";
+      "lsna" ::= #0;
+      "prepm" ::= NewMap uint64T (slice.T (struct.t tulip.WriteEntry)) #();
+      "ptgsm" ::= NewMap uint64T (slice.T uint64T) #();
+      "pstbl" ::= NewMap uint64T (struct.t PrepareProposal) #();
+      "rktbl" ::= NewMap uint64T uint64T #();
+      "txntbl" ::= NewMap uint64T boolT #();
+      "ptsm" ::= NewMap stringT uint64T #();
+      "sptsm" ::= NewMap stringT uint64T #();
+      "idx" ::= index.MkIndex #()
+    ] in
+    "rp".
+
 Definition Start: val :=
-  rec: "Start" "rid" "addr" "fname" :=
-    let: "rp" := mkReplica "rid" "addr" "fname" in
+  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
+    let: "txnlog" := txnlog.Start "rid" "addrmpx" "fnamepx" in
+    let: "rp" := mkReplica "rid" "addr" "fname" "txnlog" in
     Fork (Replica__Serve "rp");;
     "rp".

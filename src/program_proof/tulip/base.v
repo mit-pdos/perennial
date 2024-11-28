@@ -251,3 +251,9 @@ Class tulip_ghostG (Σ : gFunctors).
 
 Record tulip_names := {}.
 Record replica_names := {}.
+
+Definition sysNS := nroot .@ "sys".
+Definition tulipNS := sysNS .@ "tulip".
+Definition tsNS := sysNS .@ "ts".
+Definition txnlogNS := sysNS .@ "txnlog".
+

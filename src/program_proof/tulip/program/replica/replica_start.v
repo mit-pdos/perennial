@@ -3,12 +3,13 @@ From Perennial.program_proof Require Import std_proof.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import  replica_repr replica_apply.
 From Perennial.program_proof.tulip.program.txnlog Require Import txnlog.
+From Perennial.program_proof.tulip.paxos Require Import base.
 
 Section program.
-  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+  Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Replica__Start rp gid rid γ :
-    is_replica rp gid rid γ -∗
+    is_replica_plus_txnlog rp gid rid γ -∗
     {{{ True }}}
       Replica__Start #rp
     {{{ RET #(); True }}}.
@@ -19,7 +20,7 @@ Section program.
     (*@ func (rp *Replica) Start() {                                            @*)
     (*@     rp.mu.Lock()                                                        @*)
     (*@                                                                         @*)
-    iNamed "Hrp".
+    do 2 iNamed "Hrp".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
@@ -64,7 +65,7 @@ Section program.
     iDestruct (txn_log_prefix with "Hpaxos Hlb") as %Hpaxos.
     destruct Hpaxos as [cmds Hpaxos].
     (* Obtain inclusion between the command pool and the log. *)
-    iAssert (⌜cpool_subsume_log cpool paxos'⌝)%I as %Hincl.
+    iAssert (⌜txn_cpool_subsume_log cpool paxos'⌝)%I as %Hincl.
     { iNamed "Hgroup".
       by iDestruct (txn_log_cpool_incl with "Hpaxos Hcpool") as %?.
     }

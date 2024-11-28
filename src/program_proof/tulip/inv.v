@@ -2,17 +2,13 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps.
 From Perennial.program_proof.tulip Require Import base res cmd msg.
-From Perennial.program_proof.tulip Require Export inv_txnsys inv_key inv_group inv_replica.
+From Perennial.program_proof.tulip Require Export
+  inv_txnsys inv_key inv_group inv_replica inv_txnlog.
 
 Section inv.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
-
-  Definition sysNS := nroot .@ "sys".
-  Definition tulipNS := sysNS .@ "tulip".
-  Definition tsNS := sysNS .@ "ts".
-  Definition txnlogN := sysNS .@ "txnlog".
 
   Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)

@@ -55,4 +55,22 @@ Section getlsnc.
     iFrame "∗ # %".
   Qed.
 
+  Theorem wp_Paxos__getlsnc__weak (px : loc) (nidme : u64) nids γ :
+    {{{ own_paxos px nidme nids γ }}}
+      Paxos__getlsnc #px
+    {{{ (lsnc : u64), RET #lsnc; own_paxos px nidme nids γ }}}.
+  Proof.
+    iIntros (Φ) "Hpx HΦ".
+    wp_rec.
+
+    (*@ func (px *Paxos) getlsnc() uint64 {                                     @*)
+    (*@     return px.lsnc                                                      @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hpx". iNamed "Hcand". iNamed "Honlyc".
+    wp_loadField.
+    iApply "HΦ".
+    iFrame "Hleader HiscandP".
+    iFrame "∗ # %".
+  Qed.
+
 End getlsnc.
