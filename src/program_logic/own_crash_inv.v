@@ -154,6 +154,62 @@ Qed.
 
 End own_crash_inv.
 
+(*
+
+   In many cases, what we have in the box is always (Φ a) for some a,
+   and the crash predicate is just ∃ a, Φ a. That is, we know that we
+   have Φ for *some* a after the crash, but lose knowledge of which a.
+
+   This next section defines specialized lemmas/definitions for
+   working with this case.
+
+*)
+
+Section own_crash_ex.
+
+Context `{!invGS Σ}.
+Context `{!crashGS Σ}.
+Context `{!stagedG Σ}.
+
+Context {A : Type}.
+
+Implicit Types Φ : A → iProp Σ.
+Implicit Types a : A.
+
+Definition own_crash_ex N Φ a : iProp Σ :=
+  own_crash N (Φ a) (∃ a, Φ a).
+
+Definition own_crash_ex_redeem N Φ : iProp Σ :=
+  own_crash_redeem N (∃ a, Φ a).
+
+Lemma own_crash_ex_alloc N E Φ a :
+  ▷ (Φ a) -∗ |={E}=> own_crash_ex_redeem N Φ ∗ own_crash_ex N Φ a.
+Proof.
+  iIntros "HΦ".
+  iApply own_crash_alloc_weak.
+  iSplit; by eauto with iFrame.
+Qed.
+
+Lemma own_crash_ex_redeem_cfupd N E Φ :
+  ↑N ⊆ E →
+  own_crash_ex_redeem N Φ -∗ |C={E}=> ▷ ∃ a, Φ a.
+Proof. apply own_crash_redeem_cfupd. Qed.
+
+Lemma own_crash_ex_open N E Φ a :
+  ↑N ⊆ E →
+  own_crash_ex N Φ a -∗
+  |NC={E, E ∖ ↑N}=> ▷ Φ a ∗ ∀ a', ▷ Φ a' -∗ |={E ∖ ↑N, E}=> own_crash_ex N Φ a'.
+Proof.
+  iIntros (?) "Hex".
+  iMod (own_crash_open with "Hex") as "H"; first done.
+  iDestruct "H" as "($&Hclo)".
+  iModIntro. iIntros (a') "HΦa'".
+  iMod ("Hclo" $! (Φ a') with "[HΦa']") as "H".
+  { iSplit; by eauto with iFrame. }
+  by iFrame.
+Qed.
+
+End own_crash_ex.
 
 Section wpc.
 Context `{!irisGS Λ Σ, !generationGS Λ Σ, stagedG Σ}.
@@ -177,4 +233,22 @@ Proof.
     iModIntro. iApply "Hpc". auto.
   }
 Qed.
+
+Lemma wpc_own_crash_ex_alloc {A} s E N (Φex : A → iProp Σ) (a : A) (e : expr Λ) Φ Φc :
+  ↑N ⊆ E →
+  ▷ Φex a -∗
+  (own_crash_ex N Φex a -∗ WPC e @ s ; E {{ Φ }} {{ ▷ (∃ a, Φex a) -∗ Φc }}) -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "HP Hwp".
+  iMod (own_crash_ex_alloc N E Φex a with "[$]") as "(Hredeem&H)".
+  iSpecialize ("Hwp" with "[$]").
+  iApply (wpc_strong_mono with "Hwp"); auto.
+  iSplit.
+  { eauto. }
+  { iIntros "Hpc". iMod (own_crash_redeem_cfupd with "Hredeem"); first by auto.
+    iModIntro. iApply "Hpc". auto.
+  }
+Qed.
+
 End wpc.
