@@ -40,7 +40,7 @@ Section program.
       destruct Hrid as [_ Hrid].
       wp_pures.
       iAssert (is_gcoord_with_addrm gcoord gid addrm γ)%I as "#Hgcoord".
-      { iFrame "# %". }
+      { iFrame "HcvP # %". }
       wp_apply wp_fork.
       { wp_apply (wp_GroupCoordinator__PrepareSession with "Hsafepwrs Hpwrs Hgcoord").
         { by apply elem_of_dom_2 in Hrid. }
@@ -54,7 +54,7 @@ Section program.
     (*@     return st, valid                                                    @*)
     (*@ }                                                                       @*)
     wp_apply (wp_GroupCoordinator__WaitUntilPrepareDone).
-    { by iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iIntros (phase valid) "#Hsafep".
     wp_pures.
     by iApply "HΦ".

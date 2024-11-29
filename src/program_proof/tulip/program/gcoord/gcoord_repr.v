@@ -82,11 +82,13 @@ Section repr.
       "%Hnodup"    ∷ ⌜NoDup rps⌝.
 
   Definition is_gcoord_with_addrm gcoord gid (addrm : gmap u64 chan) γ : iProp Σ :=
-    ∃ (muP : loc) (cvP : loc),
+    ∃ (muP : loc) (cvP cvrsP : loc),
       "#HmuP"    ∷ readonly (gcoord ↦[GroupCoordinator :: "mu"] #muP) ∗
       "#Hlock"   ∷ is_lock tulipNS #muP (own_gcoord gcoord addrm gid γ) ∗
       "#HcvP"    ∷ readonly (gcoord ↦[GroupCoordinator :: "cv"] #cvP) ∗
       "#Hcv"     ∷ is_cond cvP #muP ∗
+      "#HcvrsP"  ∷ readonly (gcoord ↦[GroupCoordinator :: "cvrs"] #cvrsP) ∗
+      "#Hcvrs"   ∷ is_cond cvrsP #muP ∗
       "#Hinv"    ∷ know_tulip_inv γ ∗
       "#Hinvnet" ∷ know_tulip_network_inv γ gid addrm ∗
       "#Haddrm"  ∷ is_gcoord_addrm gcoord addrm ∗

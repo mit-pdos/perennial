@@ -5,6 +5,33 @@ From Perennial.program_proof.tulip.program.gcoord Require Import
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
+  Theorem wp_GroupCoordinator__waitOnResendSignal (gcoord : loc) gid γ :
+    is_gcoord gcoord gid γ -∗
+    {{{ True }}}
+      GroupCoordinator__waitOnResendSignal #gcoord
+    {{{ RET #(); True }}}.
+  Proof.
+    iIntros "#Hgcoord" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (gcoord *GroupCoordinator) waitOnResendSignal() {                  @*)
+    (*@     gcoord.mu.Lock()                                                    @*)
+    (*@     gcoord.cvrs.Wait()                                                  @*)
+    (*@     gcoord.mu.Unlock()                                                  @*)
+    (*@ }                                                                       @*)
+    do 2 iNamed "Hgcoord".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hgcoord]".
+    wp_loadField.
+    wp_apply (wp_Cond__Wait with "[$Hlock $Hcvrs $Hlocked $Hgcoord]").
+    iIntros "[Hlocked Hgcoord]".
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hgcoord]").
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
   Theorem wp_GroupCoordinator__PrepareSession
     (gcoord : loc) (rid : u64) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) (pwrs : dbmap)
     addrm gid γ :
@@ -77,7 +104,8 @@ Section program.
         wp_pures.
         rewrite Hfp /=.
         case_bool_decide; first done.
-        wp_apply wp_Sleep. wp_pures.
+        wp_apply (wp_GroupCoordinator__waitOnResendSignal with "[$Hgcoord]").
+        wp_pures.
         by iApply "HΦ".
       }
       case_bool_decide as Hvd; wp_pures.
@@ -86,7 +114,8 @@ Section program.
         wp_pures.
         rewrite Hvd /=.
         case_bool_decide; first done.
-        wp_apply wp_Sleep. wp_pures.
+        wp_apply (wp_GroupCoordinator__waitOnResendSignal with "[$Hgcoord]").
+        wp_pures.
         by iApply "HΦ".
       }
       case_bool_decide as Hprep; wp_pures.
@@ -94,15 +123,16 @@ Section program.
         wp_apply (wp_GroupCoordinator__SendPrepare with "Hsafea Hgcoord").
         { apply Hrid. }
         wp_pures.
-        wp_apply wp_Sleep. wp_pures.
+        wp_apply (wp_GroupCoordinator__waitOnResendSignal with "[$Hgcoord]").
+        wp_pures.
         by iApply "HΦ".
       }
       case_bool_decide as Hunprep; wp_pures.
       { inv Hunprep. destruct action; try done. simpl.
         wp_apply (wp_GroupCoordinator__SendUnprepare with "Hsafea Hgcoord").
         { apply Hrid. }
+        wp_apply (wp_GroupCoordinator__waitOnResendSignal with "[$Hgcoord]").
         wp_pures.
-        wp_apply wp_Sleep. wp_pures.
         by iApply "HΦ".
       }
       case_bool_decide as Hqr; wp_pures.
@@ -111,7 +141,8 @@ Section program.
         wp_pures.
         rewrite Hqr /=.
         case_bool_decide; first done.
-        wp_apply wp_Sleep. wp_pures.
+        wp_apply (wp_GroupCoordinator__waitOnResendSignal with "[$Hgcoord]").
+        wp_pures.
         by iApply "HΦ".
       }
       case_bool_decide as Hrf; wp_pures.
@@ -124,7 +155,8 @@ Section program.
         by iApply "HΦ".
       }
       case_bool_decide; first done.
-      wp_apply wp_Sleep. wp_pures.
+      wp_apply (wp_GroupCoordinator__waitOnResendSignal with "[$Hgcoord]").
+      wp_pures.
       by iApply "HΦ".
 
       (*@     // The coordinator is no longer associated with @ts, this could happen only @*)

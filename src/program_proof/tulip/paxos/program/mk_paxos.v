@@ -96,21 +96,24 @@ Section mk_paxos.
     (*@         conns    : make(map[uint64]grove_ffi.Connection),               @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    wp_load.
     wp_apply wp_new_free_lock.
     iIntros (muP) "Hfree".
+    wp_apply (wp_newCond' with "Hfree").
+    iIntros (cvP) "[Hfree #Hcv]".
+    wp_load.
     wp_apply (map.wp_NewMap).
     iIntros (conns) "Hconns".
     rewrite {1}/zero_val /=.
     wp_pures.
     wp_apply (wp_allocStruct).
-    { by auto 20. }
+    { by auto 25. }
     iIntros (px) "Hpx".
     wp_pures.
     iDestruct (struct_fields_split with "Hpx") as "Hpx".
     iNamed "Hpx".
     (* Make read-only persistent resources. *)
     iMod (readonly_alloc_1 with "mu") as "#HmuP".
+    iMod (readonly_alloc_1 with "cv") as "#HcvP".
     iMod (readonly_alloc_1 with "nidme") as "#HnidmeP".
     iMod (readonly_alloc_1 with "peers") as "#HpeersP".
     iDestruct (own_slice_to_small with "Hpeers") as "Hpeers".

@@ -153,6 +153,9 @@ Section submit.
       clear -Hlsncub. lia.
     }
     wp_pures.
+    wp_loadField.
+    wp_apply (wp_Cond__Broadcast with "Hcv").
+    wp_pures.
     by iApply "HΦ".
   Qed.
 

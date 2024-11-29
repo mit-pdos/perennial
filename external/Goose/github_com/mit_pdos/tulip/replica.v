@@ -487,8 +487,8 @@ Definition Replica__apply: val :=
         #()
       else #())).
 
-Definition Replica__Start: val :=
-  rec: "Replica__Start" "rp" :=
+Definition Replica__Applier: val :=
+  rec: "Replica__Applier" "rp" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -618,8 +618,9 @@ Definition Replica__Serve: val :=
       Continue);;
     #().
 
-Definition mkReplica: val :=
-  rec: "mkReplica" "rid" "addr" "fname" "txnlog" :=
+Definition Start: val :=
+  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
+    let: "txnlog" := txnlog.Start "rid" "addrmpx" "fnamepx" in
     let: "rp" := struct.new Replica [
       "mu" ::= newMutex #();
       "rid" ::= "rid";
@@ -636,11 +637,6 @@ Definition mkReplica: val :=
       "sptsm" ::= NewMap stringT uint64T #();
       "idx" ::= index.MkIndex #()
     ] in
-    "rp".
-
-Definition Start: val :=
-  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
-    let: "txnlog" := txnlog.Start "rid" "addrmpx" "fnamepx" in
-    let: "rp" := mkReplica "rid" "addr" "fname" "txnlog" in
     Fork (Replica__Serve "rp");;
+    Fork (Replica__Applier "rp");;
     "rp".

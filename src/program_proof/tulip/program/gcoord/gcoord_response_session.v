@@ -157,7 +157,19 @@ Section program.
       wp_apply (wp_GroupPreparer__processFastPrepareResult with "Hsafe Hinv Hgpp").
       { apply Hgid. }
       { apply Hrid. }
-      iIntros "Hgpp".
+      iIntros (resend) "Hgpp".
+      wp_pures.
+      destruct resend; wp_pures.
+      { wp_loadField.
+        wp_apply (wp_Cond__Broadcast with "Hcvrs").
+        wp_loadField.
+        wp_apply (wp_Cond__Broadcast with "Hcv").
+        wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+        { by iFrame "Hlock Hlocked ∗". }
+        wp_pures.
+        by iApply "HΦ".
+      }
       wp_loadField.
       wp_apply (wp_Cond__Broadcast with "Hcv").
       wp_loadField.
@@ -190,7 +202,18 @@ Section program.
       wp_apply (wp_GroupPreparer__processValidateResult with "Hsafe Hinv Hgpp").
       { apply Hgid. }
       { apply Hrid. }
-      iIntros "Hgpp".
+      iIntros (resend) "Hgpp".
+      destruct resend; wp_pures.
+      { wp_loadField.
+        wp_apply (wp_Cond__Broadcast with "Hcvrs").
+        wp_loadField.
+        wp_apply (wp_Cond__Broadcast with "Hcv").
+        wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+        { by iFrame "Hlock Hlocked ∗". }
+        wp_pures.
+        by iApply "HΦ".
+      }
       wp_loadField.
       wp_apply (wp_Cond__Broadcast with "Hcv").
       wp_loadField.

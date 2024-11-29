@@ -8,10 +8,10 @@ From Perennial.program_proof.tulip.paxos Require Import base.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_Replica__Start rp gid rid γ :
+  Theorem wp_Replica__Applier rp gid rid γ :
     is_replica_plus_txnlog rp gid rid γ -∗
     {{{ True }}}
-      Replica__Start #rp
+      Replica__Applier #rp
     {{{ RET #(); True }}}.
   Proof.
     iIntros "#Hrp" (Φ) "!> _ HΦ".

@@ -271,11 +271,13 @@ Section repr.
 
   Definition is_paxos_with_addrm
     (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) γ : iProp Σ :=
-    ∃ (muP : loc),
+    ∃ (muP : loc) (cvP : loc),
       let nids := dom addrm in
       "#HmuP"     ∷ readonly (paxos ↦[Paxos :: "mu"] #muP) ∗
       "#Hlock"    ∷ is_lock paxosNS #muP (own_paxos paxos nidme nids γ ∗
                                           own_paxos_comm paxos addrm γ) ∗
+      "#HcvP"     ∷ readonly (paxos ↦[Paxos :: "cv"] #cvP) ∗
+      "#Hcv"      ∷ is_cond cvP #muP ∗
       "#Hfname"   ∷ is_paxos_fname paxos nidme γ ∗
       "#Haddrm"   ∷ is_paxos_addrm paxos addrm ∗
       "#Hnids"    ∷ is_paxos_nids paxos nidme nids ∗

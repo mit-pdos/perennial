@@ -361,6 +361,11 @@ Section program.
   Theorem wp_Start
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list string)
     (addrmP : loc) (addrm : gmap u64 chan) (fname : string) gid γ π :
+    termc = (W64 0) ->
+    terml = (W64 0) ->
+    lsnc = (W64 0) ->
+    log = [] ->
+    (* remove above assumptions once recovery is proven *)
     is_node_wal_fname π nidme fname -∗
     know_paxos_inv π (dom addrm) -∗
     know_paxos_file_inv π (dom addrm) -∗
@@ -375,6 +380,7 @@ Section program.
       Start #nidme #addrmP #(LitString fname)
     {{{ (txnlog : loc), RET #txnlog; is_txnlog txnlog gid γ }}}.
   Proof.
+    iIntros (Htermcz Htermlz Hlsncz Hlogz).
     iIntros "#Hfnamewal #Hinv #Hinvfile #Hinvnet #Hinvtxnlog" (Φ).
     iIntros "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
     wp_rec. wp_pures.
@@ -386,6 +392,10 @@ Section program.
     (*@ }                                                                       @*)
     wp_apply (wp_Start
                with "Hfnamewal Hinv Hinvfile Hinvnet [$Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
+    { done. }
+    { done. }
+    { done. }
+    { done. }
     iIntros (pxP) "#Hpx".
     wp_apply (wp_allocStruct); first by auto.
     iIntros (txnlogP) "HtxnlogP".

@@ -22,6 +22,7 @@ Definition GroupCoordinator := struct.decl [
   "addrm" :: mapT uint64T;
   "mu" :: ptrT;
   "cv" :: ptrT;
+  "cvrs" :: ptrT;
   "ts" :: uint64T;
   "idxleader" :: uint64T;
   "grd" :: ptrT;
@@ -38,6 +39,445 @@ Definition GroupReader := struct.decl [
   "valuem" :: mapT (struct.t tulip.Value);
   "qreadm" :: mapT (mapT (struct.t tulip.Version))
 ].
+
+Definition GroupReader__reset: val :=
+  rec: "GroupReader__reset" "grd" :=
+    struct.storeF GroupReader "valuem" "grd" (NewMap stringT (struct.t tulip.Value) #());;
+    struct.storeF GroupReader "qreadm" "grd" (NewMap stringT (mapT (struct.t tulip.Version)) #());;
+    #().
+
+Definition mkGroupReader: val :=
+  rec: "mkGroupReader" "nrps" :=
+    let: "grd" := struct.new GroupReader [
+      "nrps" ::= "nrps"
+    ] in
+    GroupReader__reset "grd";;
+    "grd".
+
+(* /
+   / Group preparer. Used internally by group coordinator.
+   / *)
+Definition GroupPreparer := struct.decl [
+  "nrps" :: uint64T;
+  "phase" :: uint64T;
+  "frespm" :: mapT boolT;
+  "vdm" :: mapT boolT;
+  "srespm" :: mapT boolT
+].
+
+Definition GPP_VALIDATING : expr := #0.
+
+Definition GPP_PREPARING : expr := #1.
+
+Definition GPP_UNPREPARING : expr := #2.
+
+Definition GPP_WAITING : expr := #3.
+
+Definition GPP_PREPARED : expr := #4.
+
+Definition GPP_COMMITTED : expr := #5.
+
+Definition GPP_ABORTED : expr := #6.
+
+Definition GroupPreparer__reset: val :=
+  rec: "GroupPreparer__reset" "gpp" :=
+    struct.storeF GroupPreparer "phase" "gpp" GPP_VALIDATING;;
+    struct.storeF GroupPreparer "frespm" "gpp" (NewMap uint64T boolT #());;
+    struct.storeF GroupPreparer "vdm" "gpp" (NewMap uint64T boolT #());;
+    struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
+    #().
+
+Definition mkGroupPreparer: val :=
+  rec: "mkGroupPreparer" "nrps" :=
+    let: "gpp" := struct.new GroupPreparer [
+      "nrps" ::= "nrps"
+    ] in
+    GroupPreparer__reset "gpp";;
+    "gpp".
+
+Definition mkGroupCoordinator: val :=
+  rec: "mkGroupCoordinator" "addrm" :=
+    let: "mu" := newMutex #() in
+    let: "cv" := NewCond "mu" in
+    let: "cvrs" := NewCond "mu" in
+    let: "nrps" := MapLen "addrm" in
+    let: "rps" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    MapIter "addrm" (λ: "rid" <>,
+      "rps" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "rps") "rid"));;
+    let: "gcoord" := struct.new GroupCoordinator [
+      "rps" ::= ![slice.T uint64T] "rps";
+      "addrm" ::= "addrm";
+      "mu" ::= "mu";
+      "cv" ::= "cv";
+      "cvrs" ::= "cvrs";
+      "idxleader" ::= #0;
+      "grd" ::= mkGroupReader "nrps";
+      "gpp" ::= mkGroupPreparer "nrps";
+      "tsfinals" ::= NewMap uint64T boolT #();
+      "conns" ::= NewMap uint64T grove_ffi.Connection #()
+    ] in
+    "gcoord".
+
+Definition GroupCoordinator__GetConnection: val :=
+  rec: "GroupCoordinator__GetConnection" "gcoord" "rid" :=
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    let: ("conn", "ok") := MapGet (struct.loadF GroupCoordinator "conns" "gcoord") "rid" in
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    ("conn", "ok").
+
+Definition GroupCoordinator__Connect: val :=
+  rec: "GroupCoordinator__Connect" "gcoord" "rid" :=
+    let: "addr" := Fst (MapGet (struct.loadF GroupCoordinator "addrm" "gcoord") "rid") in
+    let: "ret" := grove_ffi.Connect "addr" in
+    (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
+    then
+      Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
+      MapInsert (struct.loadF GroupCoordinator "conns" "gcoord") "rid" (struct.get grove_ffi.ConnectRet "Connection" "ret");;
+      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+      #true
+    else #false).
+
+Definition GroupCoordinator__Receive: val :=
+  rec: "GroupCoordinator__Receive" "gcoord" "rid" :=
+    let: ("conn", "ok") := GroupCoordinator__GetConnection "gcoord" "rid" in
+    (if: (~ "ok")
+    then
+      GroupCoordinator__Connect "gcoord" "rid";;
+      (slice.nil, #false)
+    else
+      let: "ret" := grove_ffi.Receive "conn" in
+      (if: struct.get grove_ffi.ReceiveRet "Err" "ret"
+      then
+        GroupCoordinator__Connect "gcoord" "rid";;
+        (slice.nil, #false)
+      else (struct.get grove_ffi.ReceiveRet "Data" "ret", #true))).
+
+Definition GroupCoordinator__processFinalizationResult: val :=
+  rec: "GroupCoordinator__processFinalizationResult" "gcoord" "ts" "res" :=
+    (if: "res" = tulip.REPLICA_WRONG_LEADER
+    then #()
+    else
+      MapDelete (struct.loadF GroupCoordinator "tsfinals" "gcoord") "ts";;
+      #()).
+
+Definition GroupCoordinator__attachedWith: val :=
+  rec: "GroupCoordinator__attachedWith" "gcoord" "ts" :=
+    (struct.loadF GroupCoordinator "ts" "gcoord") = "ts".
+
+Definition GroupReader__cquorum: val :=
+  rec: "GroupReader__cquorum" "grd" "n" :=
+    (quorum.ClassicQuorum (struct.loadF GroupReader "nrps" "grd")) ≤ "n".
+
+Definition GroupReader__pickLatestValue: val :=
+  rec: "GroupReader__pickLatestValue" "grd" "key" :=
+    let: "lts" := ref (zero_val uint64T) in
+    let: "value" := ref (zero_val (struct.t tulip.Value)) in
+    let: "verm" := Fst (MapGet (struct.loadF GroupReader "qreadm" "grd") "key") in
+    MapIter "verm" (λ: <> "ver",
+      (if: (![uint64T] "lts") ≤ (struct.get tulip.Version "Timestamp" "ver")
+      then
+        "value" <-[struct.t tulip.Value] (struct.get tulip.Version "Value" "ver");;
+        "lts" <-[uint64T] (struct.get tulip.Version "Timestamp" "ver")
+      else #()));;
+    ![struct.t tulip.Value] "value".
+
+Definition GroupReader__clearVersions: val :=
+  rec: "GroupReader__clearVersions" "grd" "key" :=
+    MapDelete (struct.loadF GroupReader "qreadm" "grd") "key";;
+    #().
+
+Definition GroupReader__processReadResult: val :=
+  rec: "GroupReader__processReadResult" "grd" "rid" "key" "ver" "slow" :=
+    let: (<>, "final") := MapGet (struct.loadF GroupReader "valuem" "grd") "key" in
+    (if: "final"
+    then #()
+    else
+      (if: (~ "slow")
+      then
+        MapInsert (struct.loadF GroupReader "valuem" "grd") "key" (struct.get tulip.Version "Value" "ver");;
+        MapDelete (struct.loadF GroupReader "qreadm" "grd") "key";;
+        #()
+      else
+        let: ("qread", "ok") := MapGet (struct.loadF GroupReader "qreadm" "grd") "key" in
+        (if: (~ "ok")
+        then
+          let: "verm" := NewMap uint64T (struct.t tulip.Version) #() in
+          MapInsert "verm" "rid" "ver";;
+          MapInsert (struct.loadF GroupReader "qreadm" "grd") "key" "verm";;
+          #()
+        else
+          let: (<>, "responded") := MapGet "qread" "rid" in
+          (if: "responded"
+          then #()
+          else
+            MapInsert "qread" "rid" "ver";;
+            MapInsert (struct.loadF GroupReader "qreadm" "grd") "key" "qread";;
+            let: "n" := MapLen "qread" in
+            (if: (~ (GroupReader__cquorum "grd" "n"))
+            then #()
+            else
+              let: "latest" := GroupReader__pickLatestValue "grd" "key" in
+              MapInsert (struct.loadF GroupReader "valuem" "grd") "key" "latest";;
+              GroupReader__clearVersions "grd" "key";;
+              #()))))).
+
+Definition GroupPreparer__ready: val :=
+  rec: "GroupPreparer__ready" "gpp" :=
+    GPP_PREPARED ≤ (struct.loadF GroupPreparer "phase" "gpp").
+
+Definition GroupPreparer__tryResign: val :=
+  rec: "GroupPreparer__tryResign" "gpp" "res" :=
+    (if: GroupPreparer__ready "gpp"
+    then #true
+    else
+      (if: "res" = tulip.REPLICA_COMMITTED_TXN
+      then
+        struct.storeF GroupPreparer "phase" "gpp" GPP_COMMITTED;;
+        #true
+      else
+        (if: "res" = tulip.REPLICA_ABORTED_TXN
+        then
+          struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
+          #true
+        else
+          (if: "res" = tulip.REPLICA_STALE_COORDINATOR
+          then #true
+          else #false)))).
+
+Definition GroupPreparer__collectFastDecision: val :=
+  rec: "GroupPreparer__collectFastDecision" "gpp" "rid" "b" :=
+    MapInsert (struct.loadF GroupPreparer "frespm" "gpp") "rid" "b";;
+    #().
+
+Definition GroupPreparer__fquorum: val :=
+  rec: "GroupPreparer__fquorum" "gpp" "n" :=
+    (quorum.FastQuorum (struct.loadF GroupPreparer "nrps" "gpp")) ≤ "n".
+
+Definition GroupPreparer__tryFastAbort: val :=
+  rec: "GroupPreparer__tryFastAbort" "gpp" :=
+    let: "n" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #false in
+    (if: GroupPreparer__fquorum "gpp" "n"
+    then
+      struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
+      #true
+    else #false).
+
+Definition GroupPreparer__in: val :=
+  rec: "GroupPreparer__in" "gpp" "phase" :=
+    (struct.loadF GroupPreparer "phase" "gpp") = "phase".
+
+Definition GroupPreparer__cquorum: val :=
+  rec: "GroupPreparer__cquorum" "gpp" "n" :=
+    (quorum.ClassicQuorum (struct.loadF GroupPreparer "nrps" "gpp")) ≤ "n".
+
+Definition GroupPreparer__hcquorum: val :=
+  rec: "GroupPreparer__hcquorum" "gpp" "n" :=
+    (quorum.Half (quorum.ClassicQuorum (struct.loadF GroupPreparer "nrps" "gpp"))) ≤ "n".
+
+Definition GroupPreparer__tryBecomeUnpreparing: val :=
+  rec: "GroupPreparer__tryBecomeUnpreparing" "gpp" :=
+    let: "nresp" := MapLen (struct.loadF GroupPreparer "frespm" "gpp") in
+    (if: (~ (GroupPreparer__cquorum "gpp" "nresp"))
+    then #false
+    else
+      let: "nfu" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #false in
+      (if: (~ (GroupPreparer__hcquorum "gpp" "nfu"))
+      then #false
+      else
+        struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
+        struct.storeF GroupPreparer "phase" "gpp" GPP_UNPREPARING;;
+        #true)).
+
+Definition GroupPreparer__tryFastPrepare: val :=
+  rec: "GroupPreparer__tryFastPrepare" "gpp" :=
+    let: "n" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #true in
+    (if: GroupPreparer__fquorum "gpp" "n"
+    then
+      struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
+      #true
+    else #false).
+
+Definition GroupPreparer__collectValidation: val :=
+  rec: "GroupPreparer__collectValidation" "gpp" "rid" :=
+    MapInsert (struct.loadF GroupPreparer "vdm" "gpp") "rid" #true;;
+    #().
+
+Definition GroupPreparer__tryBecomePreparing: val :=
+  rec: "GroupPreparer__tryBecomePreparing" "gpp" :=
+    let: "nvd" := MapLen (struct.loadF GroupPreparer "vdm" "gpp") in
+    (if: (~ (GroupPreparer__cquorum "gpp" "nvd"))
+    then #false
+    else
+      let: "nresp" := MapLen (struct.loadF GroupPreparer "frespm" "gpp") in
+      (if: (~ (GroupPreparer__cquorum "gpp" "nresp"))
+      then #false
+      else
+        let: "nfp" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #true in
+        (if: (~ (GroupPreparer__hcquorum "gpp" "nfp"))
+        then #false
+        else
+          struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
+          struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARING;;
+          #true))).
+
+Definition GroupPreparer__processFastPrepareResult: val :=
+  rec: "GroupPreparer__processFastPrepareResult" "gpp" "rid" "res" :=
+    (if: GroupPreparer__tryResign "gpp" "res"
+    then #false
+    else
+      (if: "res" = tulip.REPLICA_FAILED_VALIDATION
+      then
+        GroupPreparer__collectFastDecision "gpp" "rid" #false;;
+        let: "aborted" := GroupPreparer__tryFastAbort "gpp" in
+        (if: "aborted"
+        then #false
+        else
+          (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
+          then #false
+          else GroupPreparer__tryBecomeUnpreparing "gpp"))
+      else
+        GroupPreparer__collectFastDecision "gpp" "rid" #true;;
+        (if: GroupPreparer__tryFastPrepare "gpp"
+        then #false
+        else
+          (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
+          then #false
+          else
+            GroupPreparer__collectValidation "gpp" "rid";;
+            GroupPreparer__tryBecomePreparing "gpp")))).
+
+Definition GroupPreparer__processValidateResult: val :=
+  rec: "GroupPreparer__processValidateResult" "gpp" "rid" "res" :=
+    (if: GroupPreparer__tryResign "gpp" "res"
+    then #false
+    else
+      (if: "res" = tulip.REPLICA_FAILED_VALIDATION
+      then #false
+      else
+        (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
+        then #false
+        else
+          GroupPreparer__collectValidation "gpp" "rid";;
+          GroupPreparer__tryBecomePreparing "gpp"))).
+
+Definition GroupPreparer__processPrepareResult: val :=
+  rec: "GroupPreparer__processPrepareResult" "gpp" "rid" "res" :=
+    (if: GroupPreparer__tryResign "gpp" "res"
+    then #()
+    else
+      (if: (~ (GroupPreparer__in "gpp" GPP_PREPARING))
+      then #()
+      else
+        MapInsert (struct.loadF GroupPreparer "srespm" "gpp") "rid" #true;;
+        let: "n" := MapLen (struct.loadF GroupPreparer "srespm" "gpp") in
+        (if: GroupPreparer__cquorum "gpp" "n"
+        then
+          struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
+          #()
+        else #()))).
+
+Definition GroupPreparer__processUnprepareResult: val :=
+  rec: "GroupPreparer__processUnprepareResult" "gpp" "rid" "res" :=
+    (if: GroupPreparer__tryResign "gpp" "res"
+    then #()
+    else
+      (if: (~ (GroupPreparer__in "gpp" GPP_UNPREPARING))
+      then #()
+      else
+        MapInsert (struct.loadF GroupPreparer "srespm" "gpp") "rid" #true;;
+        let: "n" := MapLen (struct.loadF GroupPreparer "srespm" "gpp") in
+        (if: GroupPreparer__cquorum "gpp" "n"
+        then
+          struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
+          #()
+        else #()))).
+
+Definition GroupPreparer__processQueryResult: val :=
+  rec: "GroupPreparer__processQueryResult" "gpp" "res" :=
+    GroupPreparer__tryResign "gpp" "res";;
+    #().
+
+Definition GroupCoordinator__ResponseSession: val :=
+  rec: "GroupCoordinator__ResponseSession" "gcoord" "rid" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("data", "ok") := GroupCoordinator__Receive "gcoord" "rid" in
+      (if: (~ "ok")
+      then
+        time.Sleep params.NS_RECONNECT;;
+        Continue
+      else
+        let: "msg" := message.DecodeTxnResponse "data" in
+        let: "kind" := struct.get message.TxnResponse "Kind" "msg" in
+        Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
+        (if: ("kind" = message.MSG_TXN_COMMIT) || ("kind" = message.MSG_TXN_ABORT)
+        then
+          GroupCoordinator__processFinalizationResult "gcoord" (struct.get message.TxnResponse "Timestamp" "msg") (struct.get message.TxnResponse "Result" "msg");;
+          Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+          Continue
+        else
+          (if: (~ (GroupCoordinator__attachedWith "gcoord" (struct.get message.TxnResponse "Timestamp" "msg")))
+          then
+            Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+            Continue
+          else
+            (if: "kind" = message.MSG_TXN_READ
+            then GroupReader__processReadResult (struct.loadF GroupCoordinator "grd" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Key" "msg") (struct.get message.TxnResponse "Version" "msg") (struct.get message.TxnResponse "Slow" "msg")
+            else
+              (if: "kind" = message.MSG_TXN_FAST_PREPARE
+              then
+                let: "resend" := GroupPreparer__processFastPrepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg") in
+                (if: "resend"
+                then Cond__Broadcast (struct.loadF GroupCoordinator "cvrs" "gcoord")
+                else #())
+              else
+                (if: "kind" = message.MSG_TXN_VALIDATE
+                then
+                  let: "resend" := GroupPreparer__processValidateResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg") in
+                  (if: "resend"
+                  then Cond__Broadcast (struct.loadF GroupCoordinator "cvrs" "gcoord")
+                  else #())
+                else
+                  (if: "kind" = message.MSG_TXN_PREPARE
+                  then
+                    (if: (struct.get message.TxnResponse "Rank" "msg") = #1
+                    then GroupPreparer__processPrepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
+                    else #())
+                  else
+                    (if: "kind" = message.MSG_TXN_UNPREPARE
+                    then
+                      (if: (struct.get message.TxnResponse "Rank" "msg") = #1
+                      then GroupPreparer__processUnprepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
+                      else #())
+                    else
+                      (if: "kind" = message.MSG_TXN_QUERY
+                      then GroupPreparer__processQueryResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "Result" "msg")
+                      else
+                        (if: "kind" = message.MSG_TXN_REFRESH
+                        then #()
+                        else #())))))));;
+            Cond__Broadcast (struct.loadF GroupCoordinator "cv" "gcoord");;
+            Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+            Continue))));;
+    #().
+
+Definition GroupCoordinator__ResendSession: val :=
+  rec: "GroupCoordinator__ResendSession" "gcoord" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      time.Sleep params.NS_RESEND_PREPARE;;
+      Cond__Broadcast (struct.loadF GroupCoordinator "cvrs" "gcoord");;
+      Continue);;
+    #().
+
+Definition Start: val :=
+  rec: "Start" "addrm" :=
+    let: "gcoord" := mkGroupCoordinator "addrm" in
+    MapIter "addrm" (λ: "ridloop" <>,
+      let: "rid" := "ridloop" in
+      Fork (GroupCoordinator__ResponseSession "gcoord" "rid"));;
+    Fork (GroupCoordinator__ResendSession "gcoord");;
+    "gcoord".
 
 Definition GroupReader__responded: val :=
   rec: "GroupReader__responded" "grd" "rid" "key" :=
@@ -61,35 +501,12 @@ Definition GroupCoordinator__ValueResponded: val :=
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     "done".
 
-Definition GroupCoordinator__attachedWith: val :=
-  rec: "GroupCoordinator__attachedWith" "gcoord" "ts" :=
-    (struct.loadF GroupCoordinator "ts" "gcoord") = "ts".
-
 Definition GroupCoordinator__AttachedWith: val :=
   rec: "GroupCoordinator__AttachedWith" "gcoord" "ts" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     let: "b" := GroupCoordinator__attachedWith "gcoord" "ts" in
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     "b".
-
-Definition GroupCoordinator__GetConnection: val :=
-  rec: "GroupCoordinator__GetConnection" "gcoord" "rid" :=
-    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    let: ("conn", "ok") := MapGet (struct.loadF GroupCoordinator "conns" "gcoord") "rid" in
-    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-    ("conn", "ok").
-
-Definition GroupCoordinator__Connect: val :=
-  rec: "GroupCoordinator__Connect" "gcoord" "rid" :=
-    let: "addr" := Fst (MapGet (struct.loadF GroupCoordinator "addrm" "gcoord") "rid") in
-    let: "ret" := grove_ffi.Connect "addr" in
-    (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
-    then
-      Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-      MapInsert (struct.loadF GroupCoordinator "conns" "gcoord") "rid" (struct.get grove_ffi.ConnectRet "Connection" "ret");;
-      Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-      #true
-    else #false).
 
 Definition GroupCoordinator__Send: val :=
   rec: "GroupCoordinator__Send" "gcoord" "rid" "data" :=
@@ -165,35 +582,6 @@ Definition GroupCoordinator__Read: val :=
       Fork (GroupCoordinator__ReadSession "gcoord" "rid" "ts" "key"));;
     let: ("v", "ok") := GroupCoordinator__WaitUntilValueReady "gcoord" "ts" "key" in
     ("v", "ok").
-
-(* /
-   / Group preparer. Used internally by group coordinator.
-   / *)
-Definition GroupPreparer := struct.decl [
-  "nrps" :: uint64T;
-  "phase" :: uint64T;
-  "frespm" :: mapT boolT;
-  "vdm" :: mapT boolT;
-  "srespm" :: mapT boolT
-].
-
-Definition GroupPreparer__in: val :=
-  rec: "GroupPreparer__in" "gpp" "phase" :=
-    (struct.loadF GroupPreparer "phase" "gpp") = "phase".
-
-Definition GPP_VALIDATING : expr := #0.
-
-Definition GPP_PREPARING : expr := #1.
-
-Definition GPP_UNPREPARING : expr := #2.
-
-Definition GPP_WAITING : expr := #3.
-
-Definition GPP_PREPARED : expr := #4.
-
-Definition GPP_COMMITTED : expr := #5.
-
-Definition GPP_ABORTED : expr := #6.
 
 Definition GPP_FAST_PREPARE : expr := #0.
 
@@ -291,6 +679,13 @@ Definition GroupCoordinator__SendRefresh: val :=
     GroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
+Definition GroupCoordinator__waitOnResendSignal: val :=
+  rec: "GroupCoordinator__waitOnResendSignal" "gcoord" :=
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    Cond__Wait (struct.loadF GroupCoordinator "cvrs" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    #().
+
 Definition GroupCoordinator__PrepareSession: val :=
   rec: "GroupCoordinator__PrepareSession" "gcoord" "rid" "ts" "ptgs" "pwrs" :=
     Skip;;
@@ -322,13 +717,9 @@ Definition GroupCoordinator__PrepareSession: val :=
           time.Sleep params.NS_SEND_REFRESH;;
           Continue
         else
-          time.Sleep params.NS_RESEND_PREPARE;;
+          GroupCoordinator__waitOnResendSignal "gcoord";;
           Continue)));;
     #().
-
-Definition GroupPreparer__ready: val :=
-  rec: "GroupPreparer__ready" "gpp" :=
-    GPP_PREPARED ≤ (struct.loadF GroupPreparer "phase" "gpp").
 
 Definition GroupPreparer__getPhase: val :=
   rec: "GroupPreparer__getPhase" "gpp" :=
@@ -383,6 +774,15 @@ Definition GroupCoordinator__Prepare: val :=
       Fork (GroupCoordinator__PrepareSession "gcoord" "rid" "ts" "ptgs" "pwrs"));;
     let: ("st", "valid") := GroupCoordinator__WaitUntilPrepareDone "gcoord" "ts" in
     ("st", "valid").
+
+Definition GroupCoordinator__Attach: val :=
+  rec: "GroupCoordinator__Attach" "gcoord" "ts" :=
+    Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    struct.storeF GroupCoordinator "ts" "gcoord" "ts";;
+    GroupReader__reset (struct.loadF GroupCoordinator "grd" "gcoord");;
+    GroupPreparer__reset (struct.loadF GroupCoordinator "gpp" "gcoord");;
+    Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
+    #().
 
 Definition GroupCoordinator__RegisterFinalization: val :=
   rec: "GroupCoordinator__RegisterFinalization" "gcoord" "ts" :=
@@ -447,312 +847,4 @@ Definition GroupCoordinator__Abort: val :=
       time.Sleep params.NS_RESEND_ABORT;;
       "leader" <-[uint64T] (GroupCoordinator__ChangeLeader "gcoord");;
       Continue);;
-    #().
-
-Definition GroupCoordinator__processFinalizationResult: val :=
-  rec: "GroupCoordinator__processFinalizationResult" "gcoord" "ts" "res" :=
-    (if: "res" = tulip.REPLICA_WRONG_LEADER
-    then #()
-    else
-      MapDelete (struct.loadF GroupCoordinator "tsfinals" "gcoord") "ts";;
-      #()).
-
-Definition GroupCoordinator__Receive: val :=
-  rec: "GroupCoordinator__Receive" "gcoord" "rid" :=
-    let: ("conn", "ok") := GroupCoordinator__GetConnection "gcoord" "rid" in
-    (if: (~ "ok")
-    then
-      GroupCoordinator__Connect "gcoord" "rid";;
-      (slice.nil, #false)
-    else
-      let: "ret" := grove_ffi.Receive "conn" in
-      (if: struct.get grove_ffi.ReceiveRet "Err" "ret"
-      then
-        GroupCoordinator__Connect "gcoord" "rid";;
-        (slice.nil, #false)
-      else (struct.get grove_ffi.ReceiveRet "Data" "ret", #true))).
-
-Definition GroupReader__cquorum: val :=
-  rec: "GroupReader__cquorum" "grd" "n" :=
-    (quorum.ClassicQuorum (struct.loadF GroupReader "nrps" "grd")) ≤ "n".
-
-Definition GroupReader__pickLatestValue: val :=
-  rec: "GroupReader__pickLatestValue" "grd" "key" :=
-    let: "lts" := ref (zero_val uint64T) in
-    let: "value" := ref (zero_val (struct.t tulip.Value)) in
-    let: "verm" := Fst (MapGet (struct.loadF GroupReader "qreadm" "grd") "key") in
-    MapIter "verm" (λ: <> "ver",
-      (if: (![uint64T] "lts") ≤ (struct.get tulip.Version "Timestamp" "ver")
-      then
-        "value" <-[struct.t tulip.Value] (struct.get tulip.Version "Value" "ver");;
-        "lts" <-[uint64T] (struct.get tulip.Version "Timestamp" "ver")
-      else #()));;
-    ![struct.t tulip.Value] "value".
-
-Definition GroupReader__clearVersions: val :=
-  rec: "GroupReader__clearVersions" "grd" "key" :=
-    MapDelete (struct.loadF GroupReader "qreadm" "grd") "key";;
-    #().
-
-Definition GroupReader__processReadResult: val :=
-  rec: "GroupReader__processReadResult" "grd" "rid" "key" "ver" "slow" :=
-    let: (<>, "final") := MapGet (struct.loadF GroupReader "valuem" "grd") "key" in
-    (if: "final"
-    then #()
-    else
-      (if: (~ "slow")
-      then
-        MapInsert (struct.loadF GroupReader "valuem" "grd") "key" (struct.get tulip.Version "Value" "ver");;
-        MapDelete (struct.loadF GroupReader "qreadm" "grd") "key";;
-        #()
-      else
-        let: ("qread", "ok") := MapGet (struct.loadF GroupReader "qreadm" "grd") "key" in
-        (if: (~ "ok")
-        then
-          let: "verm" := NewMap uint64T (struct.t tulip.Version) #() in
-          MapInsert "verm" "rid" "ver";;
-          MapInsert (struct.loadF GroupReader "qreadm" "grd") "key" "verm";;
-          #()
-        else
-          let: (<>, "responded") := MapGet "qread" "rid" in
-          (if: "responded"
-          then #()
-          else
-            MapInsert "qread" "rid" "ver";;
-            MapInsert (struct.loadF GroupReader "qreadm" "grd") "key" "qread";;
-            let: "n" := MapLen "qread" in
-            (if: (~ (GroupReader__cquorum "grd" "n"))
-            then #()
-            else
-              let: "latest" := GroupReader__pickLatestValue "grd" "key" in
-              MapInsert (struct.loadF GroupReader "valuem" "grd") "key" "latest";;
-              GroupReader__clearVersions "grd" "key";;
-              #()))))).
-
-Definition GroupPreparer__tryResign: val :=
-  rec: "GroupPreparer__tryResign" "gpp" "res" :=
-    (if: GroupPreparer__ready "gpp"
-    then #true
-    else
-      (if: "res" = tulip.REPLICA_COMMITTED_TXN
-      then
-        struct.storeF GroupPreparer "phase" "gpp" GPP_COMMITTED;;
-        #true
-      else
-        (if: "res" = tulip.REPLICA_ABORTED_TXN
-        then
-          struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
-          #true
-        else
-          (if: "res" = tulip.REPLICA_STALE_COORDINATOR
-          then #true
-          else #false)))).
-
-Definition GroupPreparer__collectFastDecision: val :=
-  rec: "GroupPreparer__collectFastDecision" "gpp" "rid" "b" :=
-    MapInsert (struct.loadF GroupPreparer "frespm" "gpp") "rid" "b";;
-    #().
-
-Definition GroupPreparer__fquorum: val :=
-  rec: "GroupPreparer__fquorum" "gpp" "n" :=
-    (quorum.FastQuorum (struct.loadF GroupPreparer "nrps" "gpp")) ≤ "n".
-
-Definition GroupPreparer__tryFastAbort: val :=
-  rec: "GroupPreparer__tryFastAbort" "gpp" :=
-    let: "n" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #false in
-    (if: GroupPreparer__fquorum "gpp" "n"
-    then
-      struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
-      #true
-    else #false).
-
-Definition GroupPreparer__cquorum: val :=
-  rec: "GroupPreparer__cquorum" "gpp" "n" :=
-    (quorum.ClassicQuorum (struct.loadF GroupPreparer "nrps" "gpp")) ≤ "n".
-
-Definition GroupPreparer__hcquorum: val :=
-  rec: "GroupPreparer__hcquorum" "gpp" "n" :=
-    (quorum.Half (quorum.ClassicQuorum (struct.loadF GroupPreparer "nrps" "gpp"))) ≤ "n".
-
-Definition GroupPreparer__tryBecomeUnpreparing: val :=
-  rec: "GroupPreparer__tryBecomeUnpreparing" "gpp" :=
-    let: "nresp" := MapLen (struct.loadF GroupPreparer "frespm" "gpp") in
-    (if: (~ (GroupPreparer__cquorum "gpp" "nresp"))
-    then #()
-    else
-      let: "nfu" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #false in
-      (if: (~ (GroupPreparer__hcquorum "gpp" "nfu"))
-      then #()
-      else
-        struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
-        struct.storeF GroupPreparer "phase" "gpp" GPP_UNPREPARING;;
-        #())).
-
-Definition GroupPreparer__tryFastPrepare: val :=
-  rec: "GroupPreparer__tryFastPrepare" "gpp" :=
-    let: "n" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #true in
-    (if: GroupPreparer__fquorum "gpp" "n"
-    then
-      struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
-      #true
-    else #false).
-
-Definition GroupPreparer__collectValidation: val :=
-  rec: "GroupPreparer__collectValidation" "gpp" "rid" :=
-    MapInsert (struct.loadF GroupPreparer "vdm" "gpp") "rid" #true;;
-    #().
-
-Definition GroupPreparer__tryBecomePreparing: val :=
-  rec: "GroupPreparer__tryBecomePreparing" "gpp" :=
-    let: "nvd" := MapLen (struct.loadF GroupPreparer "vdm" "gpp") in
-    (if: (~ (GroupPreparer__cquorum "gpp" "nvd"))
-    then #()
-    else
-      let: "nresp" := MapLen (struct.loadF GroupPreparer "frespm" "gpp") in
-      (if: (~ (GroupPreparer__cquorum "gpp" "nresp"))
-      then #()
-      else
-        let: "nfp" := util.CountBoolMap (struct.loadF GroupPreparer "frespm" "gpp") #true in
-        (if: (~ (GroupPreparer__hcquorum "gpp" "nfp"))
-        then #()
-        else
-          struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
-          struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARING;;
-          #()))).
-
-Definition GroupPreparer__processFastPrepareResult: val :=
-  rec: "GroupPreparer__processFastPrepareResult" "gpp" "rid" "res" :=
-    (if: GroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      (if: "res" = tulip.REPLICA_FAILED_VALIDATION
-      then
-        GroupPreparer__collectFastDecision "gpp" "rid" #false;;
-        let: "aborted" := GroupPreparer__tryFastAbort "gpp" in
-        (if: "aborted"
-        then #()
-        else
-          (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
-          then #()
-          else
-            GroupPreparer__tryBecomeUnpreparing "gpp";;
-            #()))
-      else
-        GroupPreparer__collectFastDecision "gpp" "rid" #true;;
-        (if: GroupPreparer__tryFastPrepare "gpp"
-        then #()
-        else
-          (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
-          then #()
-          else
-            GroupPreparer__collectValidation "gpp" "rid";;
-            GroupPreparer__tryBecomePreparing "gpp";;
-            #())))).
-
-Definition GroupPreparer__processValidateResult: val :=
-  rec: "GroupPreparer__processValidateResult" "gpp" "rid" "res" :=
-    (if: GroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      (if: "res" = tulip.REPLICA_FAILED_VALIDATION
-      then #()
-      else
-        (if: (~ (GroupPreparer__in "gpp" GPP_VALIDATING))
-        then #()
-        else
-          GroupPreparer__collectValidation "gpp" "rid";;
-          GroupPreparer__tryBecomePreparing "gpp";;
-          #()))).
-
-Definition GroupPreparer__processPrepareResult: val :=
-  rec: "GroupPreparer__processPrepareResult" "gpp" "rid" "res" :=
-    (if: GroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      (if: (~ (GroupPreparer__in "gpp" GPP_PREPARING))
-      then #()
-      else
-        MapInsert (struct.loadF GroupPreparer "srespm" "gpp") "rid" #true;;
-        let: "n" := MapLen (struct.loadF GroupPreparer "srespm" "gpp") in
-        (if: GroupPreparer__cquorum "gpp" "n"
-        then
-          struct.storeF GroupPreparer "phase" "gpp" GPP_PREPARED;;
-          #()
-        else #()))).
-
-Definition GroupPreparer__processUnprepareResult: val :=
-  rec: "GroupPreparer__processUnprepareResult" "gpp" "rid" "res" :=
-    (if: GroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      (if: (~ (GroupPreparer__in "gpp" GPP_UNPREPARING))
-      then #()
-      else
-        MapInsert (struct.loadF GroupPreparer "srespm" "gpp") "rid" #true;;
-        let: "n" := MapLen (struct.loadF GroupPreparer "srespm" "gpp") in
-        (if: GroupPreparer__cquorum "gpp" "n"
-        then
-          struct.storeF GroupPreparer "phase" "gpp" GPP_ABORTED;;
-          #()
-        else #()))).
-
-Definition GroupPreparer__processQueryResult: val :=
-  rec: "GroupPreparer__processQueryResult" "gpp" "res" :=
-    GroupPreparer__tryResign "gpp" "res";;
-    #().
-
-Definition GroupCoordinator__ResponseSession: val :=
-  rec: "GroupCoordinator__ResponseSession" "gcoord" "rid" :=
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("data", "ok") := GroupCoordinator__Receive "gcoord" "rid" in
-      (if: (~ "ok")
-      then
-        time.Sleep params.NS_RECONNECT;;
-        Continue
-      else
-        let: "msg" := message.DecodeTxnResponse "data" in
-        let: "kind" := struct.get message.TxnResponse "Kind" "msg" in
-        Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
-        (if: ("kind" = message.MSG_TXN_COMMIT) || ("kind" = message.MSG_TXN_ABORT)
-        then
-          GroupCoordinator__processFinalizationResult "gcoord" (struct.get message.TxnResponse "Timestamp" "msg") (struct.get message.TxnResponse "Result" "msg");;
-          Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-          Continue
-        else
-          (if: (~ (GroupCoordinator__attachedWith "gcoord" (struct.get message.TxnResponse "Timestamp" "msg")))
-          then
-            Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-            Continue
-          else
-            (if: "kind" = message.MSG_TXN_READ
-            then GroupReader__processReadResult (struct.loadF GroupCoordinator "grd" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Key" "msg") (struct.get message.TxnResponse "Version" "msg") (struct.get message.TxnResponse "Slow" "msg")
-            else
-              (if: "kind" = message.MSG_TXN_FAST_PREPARE
-              then GroupPreparer__processFastPrepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
-              else
-                (if: "kind" = message.MSG_TXN_VALIDATE
-                then GroupPreparer__processValidateResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
-                else
-                  (if: "kind" = message.MSG_TXN_PREPARE
-                  then
-                    (if: (struct.get message.TxnResponse "Rank" "msg") = #1
-                    then GroupPreparer__processPrepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
-                    else #())
-                  else
-                    (if: "kind" = message.MSG_TXN_UNPREPARE
-                    then
-                      (if: (struct.get message.TxnResponse "Rank" "msg") = #1
-                      then GroupPreparer__processUnprepareResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
-                      else #())
-                    else
-                      (if: "kind" = message.MSG_TXN_QUERY
-                      then GroupPreparer__processQueryResult (struct.loadF GroupCoordinator "gpp" "gcoord") (struct.get message.TxnResponse "Result" "msg")
-                      else
-                        (if: "kind" = message.MSG_TXN_REFRESH
-                        then #()
-                        else #())))))));;
-            Cond__Broadcast (struct.loadF GroupCoordinator "cv" "gcoord");;
-            Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
-            Continue))));;
     #().

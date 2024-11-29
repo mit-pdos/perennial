@@ -96,7 +96,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -176,7 +176,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -257,7 +257,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -337,7 +337,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -417,7 +417,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -496,7 +496,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -575,7 +575,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -655,7 +655,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".
@@ -735,7 +735,7 @@ Section program.
     assert (is_Some (addrm !! rid)) as [addrpeer Haddrpeer].
     { by apply elem_of_dom. }
     wp_apply (wp_GroupCoordinator__Send with "[] Hdata"); first apply Haddrpeer.
-    { iFrame "# %". }
+    { by iFrame "HcvP # %". }
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".

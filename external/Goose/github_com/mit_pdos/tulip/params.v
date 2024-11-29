@@ -8,7 +8,7 @@ Definition N_SHARDS : expr := #2.
 
 Definition NS_RECONNECT : expr := #10000000.
 
-Definition NS_RESEND_PREPARE : expr := #20000000.
+Definition NS_RESEND_PREPARE : expr := #500000000.
 
 Definition NS_RESEND_READ : expr := #20000000.
 
@@ -22,14 +22,18 @@ Definition NS_SPAWN_BACKUP_DELTA : expr := #1000000000.
 
 Definition NS_SEND_REFRESH : expr := #4000000000.
 
-Definition NS_BATCH_INTERVAL : expr := #5000000.
+Definition NS_BATCH_INTERVAL : expr := #300000000.
 
-Definition NS_ELECTION_TIMEOUT_BASE : expr := #1000000000.
+Definition NS_HEARTBEAT_INTERVAL : expr := #1000000000.
 
-Definition NS_ELECTION_TIMEOUT_DELTA : expr := #500000000.
+Definition NS_ELECTION_TIMEOUT_BASE : expr := #2000000000.
+
+Definition NS_ELECTION_TIMEOUT_DELTA : expr := #1000000000.
 
 Definition N_RETRY_REPLICATED : expr := #10.
 
-Definition NS_REPLICATED_INTERVAL : expr := #1000000000.
+Definition NS_REPLICATED_INTERVAL : expr := #1000000.
+
+Definition N_TXN_SITES : expr := #64.
 
 End code.
