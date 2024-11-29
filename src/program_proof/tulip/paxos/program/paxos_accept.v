@@ -103,6 +103,7 @@ Section accept.
       iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
       { apply Hnidme. }
       iNamed "Hnodefile".
+      iMod (own_crash_ex_open with "Htermc") as "(>Htermc&Hclose_termc)"; first solve_ndisj.
       iApply ncfupd_mask_intro; first solve_ndisj.
       iIntros "Hmask".
       iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
@@ -126,6 +127,7 @@ Section accept.
       iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
       { iFrame "∗ # %". }
       iMod "Hmask" as "_".
+      iMod ("Hclose_termc" with "Htermc") as "Htermc".
       iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
       iIntros "!> Hents".
@@ -250,6 +252,7 @@ Section accept.
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
     { apply Hnidme. }
     iNamed "Hnodefile".
+    iMod (own_crash_ex_open with "Htermc") as "(>Htermc&Hclose_termc)"; first solve_ndisj.
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
@@ -266,6 +269,7 @@ Section accept.
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
     { iFrame "∗ # %". }
     iMod "Hmask" as "_".
+    iMod ("Hclose_termc" with "Htermc") as "Htermc".
     iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
     iIntros "!> Hents".

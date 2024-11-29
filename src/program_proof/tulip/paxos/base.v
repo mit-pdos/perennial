@@ -368,4 +368,7 @@ Qed.
 
 Class paxos_ghostG (Σ : gFunctors).
 
+Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ.
+Proof. Admitted.
+
 Record paxos_names := {}.

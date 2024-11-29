@@ -17,7 +17,7 @@ Section mk_paxos.
     know_paxos_network_inv γ addrm -∗
     {{{ own_slice logP stringT (DfracOwn 1) log ∗
         own_map addrmP (DfracOwn 1) addrm ∗
-        own_current_term_half γ nidme (uint.nat termc) ∗
+        own_crash_ex paxoscrashNS (own_current_term_half γ nidme) (uint.nat termc) ∗
         own_ledger_term_half γ nidme (uint.nat terml) ∗
         own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
         own_node_ledger_half γ nidme log
@@ -146,6 +146,8 @@ Section mk_paxos.
       iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hlogn.
       by iApply (big_sepM_lookup with "Hpsalbs").
     }
+    iMod (own_crash_ex_open with "HtermcX") as "(>HtermcX&Hclose_termcX)".
+    { solve_ndisj. }
     iAssert (if decide (termc = terml)
              then True
              else past_nodedecs_latest_before γ nidme (uint.nat termc) (uint.nat terml) log)%I
@@ -211,6 +213,7 @@ Section mk_paxos.
       iPureIntro.
       clear -Hltlog. word.
     }
+    iMod ("Hclose_termcX" with "HtermcX").
     iMod ("HinvC" with "HinvO") as "_".
     iAssert (own_paxos px nidme nids γ ∗ own_paxos_comm px addrm γ)%I
       with "[-HΦ Hfree]" as "(Hpx & Hcomm)".
