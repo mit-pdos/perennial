@@ -25,13 +25,11 @@ Section inv.
     Timeless (tulip_inv_with_proph γ p).
   Admitted.
 
-  Definition tulip_inv γ : iProp Σ := ∃ p, tulip_inv_with_proph γ p.
-
   Definition know_tulip_inv_with_proph γ p : iProp Σ :=
     inv tulipNS (tulip_inv_with_proph γ p).
 
   Definition know_tulip_inv γ : iProp Σ :=
-    inv tulipNS (tulip_inv γ).
+    ∃ p, inv tulipNS (tulip_inv_with_proph γ p).
 
 End inv.
 

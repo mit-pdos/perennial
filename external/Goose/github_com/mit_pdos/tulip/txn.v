@@ -19,8 +19,8 @@ Definition Txn := struct.decl [
   "proph" :: ProphIdT
 ].
 
-Definition MkTxn: val :=
-  rec: "MkTxn" "sid" "gaddrm" "proph" :=
+Definition mkTxn: val :=
+  rec: "mkTxn" "sid" "gaddrm" "proph" :=
     let: "txn" := struct.new Txn [
       "sid" ::= "sid";
       "proph" ::= "proph"
@@ -28,15 +28,18 @@ Definition MkTxn: val :=
     let: "wrs" := NewMap uint64T (mapT (struct.t tulip.Value)) #() in
     MapIter "gaddrm" (λ: "gid" <>,
       MapInsert "wrs" "gid" (NewMap stringT (struct.t tulip.Value) #()));;
-    let: "wrsp" := NewMap stringT (struct.t tulip.Value) #() in
     struct.storeF Txn "wrs" "txn" "wrs";;
-    struct.storeF Txn "wrsp" "txn" "wrsp";;
+    struct.storeF Txn "wrsp" "txn" (NewMap stringT (struct.t tulip.Value) #());;
     struct.storeF Txn "ptgs" "txn" (NewSlice uint64T #0);;
     let: "gcoords" := NewMap uint64T ptrT #() in
     MapIter "gaddrm" (λ: "gid" "addrm",
       MapInsert "gcoords" "gid" (gcoord.Start "addrm"));;
     struct.storeF Txn "gcoords" "txn" "gcoords";;
     "txn".
+
+Definition MkTxn: val :=
+  rec: "MkTxn" "sid" "gaddrm" :=
+    mkTxn "sid" "gaddrm" (NewProph #()).
 
 Definition getTimestamp: val :=
   rec: "getTimestamp" "sid" :=

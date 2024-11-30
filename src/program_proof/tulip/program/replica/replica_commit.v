@@ -46,6 +46,7 @@ Section program.
     iNamed "Hrp". iNamed "Htxnlog".
     wp_loadField.
     wp_apply (wp_TxnLog__SubmitCommit with "Htxnlog Hpwrs").
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.

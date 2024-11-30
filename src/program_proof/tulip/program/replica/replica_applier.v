@@ -46,6 +46,7 @@ Section program.
     iNamed "Htxnlog".
     wp_loadField.
     wp_apply (wp_TxnLog__Lookup with "Htxnlog").
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hmask".

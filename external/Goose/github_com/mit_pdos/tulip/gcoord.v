@@ -79,19 +79,14 @@ Definition GPP_COMMITTED : expr := #5.
 
 Definition GPP_ABORTED : expr := #6.
 
-Definition GroupPreparer__reset: val :=
-  rec: "GroupPreparer__reset" "gpp" :=
-    struct.storeF GroupPreparer "phase" "gpp" GPP_VALIDATING;;
-    struct.storeF GroupPreparer "frespm" "gpp" (NewMap uint64T boolT #());;
-    struct.storeF GroupPreparer "vdm" "gpp" (NewMap uint64T boolT #());;
-    #().
-
 Definition mkGroupPreparer: val :=
   rec: "mkGroupPreparer" "nrps" :=
     let: "gpp" := struct.new GroupPreparer [
       "nrps" ::= "nrps"
     ] in
-    GroupPreparer__reset "gpp";;
+    struct.storeF GroupPreparer "phase" "gpp" GPP_WAITING;;
+    struct.storeF GroupPreparer "frespm" "gpp" (NewMap uint64T boolT #());;
+    struct.storeF GroupPreparer "vdm" "gpp" (NewMap uint64T boolT #());;
     "gpp".
 
 Definition mkGroupCoordinator: val :=
@@ -774,12 +769,19 @@ Definition GroupCoordinator__Prepare: val :=
     let: ("st", "valid") := GroupCoordinator__WaitUntilPrepareDone "gcoord" "ts" in
     ("st", "valid").
 
+Definition GroupPreparer__attach: val :=
+  rec: "GroupPreparer__attach" "gpp" :=
+    struct.storeF GroupPreparer "phase" "gpp" GPP_VALIDATING;;
+    struct.storeF GroupPreparer "frespm" "gpp" (NewMap uint64T boolT #());;
+    struct.storeF GroupPreparer "vdm" "gpp" (NewMap uint64T boolT #());;
+    #().
+
 Definition GroupCoordinator__Attach: val :=
   rec: "GroupCoordinator__Attach" "gcoord" "ts" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     struct.storeF GroupCoordinator "ts" "gcoord" "ts";;
     GroupReader__reset (struct.loadF GroupCoordinator "grd" "gcoord");;
-    GroupPreparer__reset (struct.loadF GroupCoordinator "gpp" "gcoord");;
+    GroupPreparer__attach (struct.loadF GroupCoordinator "gpp" "gcoord");;
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     #().
 

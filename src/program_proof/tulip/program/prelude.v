@@ -1,5 +1,5 @@
 From Perennial.program_proof.tulip Require Export prelude.
-(* FIXME: it's a bad idea to export below for naming can collide *)
+(* FIXME: it's a bad idea to export below for names can collide *)
 From Goose.github_com.mit_pdos.tulip Require Export
   backup gcoord index params quorum replica tulip tuple txn txnlog util message.
 

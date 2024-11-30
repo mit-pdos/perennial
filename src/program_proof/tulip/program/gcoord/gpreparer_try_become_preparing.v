@@ -149,6 +149,7 @@ Section program.
 
     (*@     // Logical action: Propose.                                         @*)
     (*@ }                                                                       @*)
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     simpl.

@@ -104,7 +104,8 @@ Section program.
     iMod phys_hist_alloc as (α) "[Hphysm HphysmX]".
     (* Obtain lower bounds of txn log and replicated history for later use. *)
     iAssert (|={⊤}=> is_txn_log_lb γ gid [])%I as "Htxnloglb".
-    { iInv "Hinv" as "> HinvO" "HinvC".
+    { iNamed "Hinv".
+      iInv "Hinv" as "> HinvO" "HinvC".
       iNamed "HinvO".
       iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]".
       { apply Hgid. }
@@ -118,7 +119,8 @@ Section program.
     }
     iMod "Htxnloglb" as "#Htxnloglb".
     iAssert (|={⊤}=> [∗ set] key ∈ keys_all, is_repl_hist_lb γ key [None])%I as "Hrepllb".
-    { iInv "Hinv" as "> HinvO" "HinvC".
+    { iNamed "Hinv".
+      iInv "Hinv" as "> HinvO" "HinvC".
       iNamed "HinvO".
       iAssert ([∗ set] key ∈ keys_all, is_repl_hist_lb γ key [None])%I as "#Hreplm".
       { iApply (big_sepS_mono with "Hkeys").

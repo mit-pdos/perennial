@@ -95,6 +95,7 @@ Section program.
     (*@                                                                         @*)
     wp_apply (wp_Replica__logValidate).
     wp_pures.
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.

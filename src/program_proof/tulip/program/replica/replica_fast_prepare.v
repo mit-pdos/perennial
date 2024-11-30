@@ -127,6 +127,7 @@ Section program.
     destruct acquired; wp_pures; last first.
     { wp_apply wp_Replica__logAccept.
       wp_pures.
+      iNamed "Hinv".
       iInv "Hinv" as "> HinvO" "HinvC".
       iNamed "HinvO".
       iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
@@ -190,6 +191,7 @@ Section program.
     (*@                                                                         @*)
     wp_apply wp_Replica__logFastPrepare.
     wp_pures.
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.

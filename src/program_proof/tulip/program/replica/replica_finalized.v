@@ -49,6 +49,7 @@ Section program.
     { destruct cmted; wp_pures.
       { iApply ("HΦ" $! ReplicaCommittedTxn).
         (* Open atomic invariant to obtain [is_txn_committed]. *)
+        iNamed "Hinv".
         iInv "Hinv" as "> HinvO" "HinvC".
         iAssert (∃ wrs, is_txn_committed γ ts wrs)%I as "#Hcmted".
         { (* First show that [ts] is committed on the replica. *)
@@ -76,6 +77,7 @@ Section program.
       }
       { iApply ("HΦ" $! ReplicaAbortedTxn).
         (* Open atomic invariant to obtain [is_txn_aborted]. *)
+        iNamed "Hinv".
         iInv "Hinv" as "> HinvO" "HinvC".
         iAssert (is_txn_aborted γ ts)%I as "#Habted".
         { (* First show that [ts] is aborted on the replica. *)

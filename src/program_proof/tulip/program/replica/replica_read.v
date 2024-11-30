@@ -125,6 +125,7 @@ Section program.
     wp_pures.
     wp_apply wp_Replica__logRead.
     iApply fupd_wp.
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
