@@ -20,4 +20,9 @@ Section res.
     ⌜h2 = h1⌝.
   Admitted.
 
+  Lemma phys_hist_alloc :
+    ⊢ |==> ∃ α, ([∗ set] k ∈ keys_all, own_phys_hist_half α k [None]) ∗
+                ([∗ set] k ∈ keys_all, own_phys_hist_half α k [None]).
+  Admitted.
+
 End res.

@@ -323,6 +323,8 @@ Section def.
       "%Hlast"   ∷ ⌜last lnrz = Some dbv⌝ ∗
       "%Hext"    ∷ ⌜(length lnrz ≤ S tslb)%nat⌝ ∗
       "%Hrnnil"  ∷ ⌜repl ≠ []⌝ ∗
+      (* TODO: the one above is implied by the one below *)
+      "%Hrfirst" ∷ ⌜repl !! O = Some None⌝ ∗
       "%Hdiffl"  ∷ ⌜ext_by_lnrz cmtd lnrz kmodl⌝ ∗
       "%Hdiffc"  ∷ ⌜ext_by_cmtd repl cmtd kmodc tsprep⌝ ∗
       "%Hltlenc" ∷ ⌜gt_all (length cmtd) (dom kmodc)⌝ ∗

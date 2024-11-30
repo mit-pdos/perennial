@@ -3,7 +3,7 @@ From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps.
 From Perennial.program_proof.tulip Require Import base res cmd msg.
 From Perennial.program_proof.tulip Require Export
-  inv_txnsys inv_key inv_group inv_replica inv_txnlog.
+  inv_txnsys inv_key inv_group inv_replica.
 
 Section inv.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -248,7 +248,10 @@ End inv_network.
 Section alloc.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Lemma tulip_inv_alloc p future :
+  Lemma tulip_inv_alloc p future (gaddrm : gmap u64 (gmap u64 chan)) :
+    dom gaddrm = gids_all ->
+    map_Forall (λ _ m, dom m = rids_all) gaddrm ->
+    ([∗ map] addrm ∈ gaddrm, [∗ set] addr ∈ map_img addrm, addr c↦ ∅) -∗
     own_txn_proph p future ==∗
     ∃ γ,
       (* give to client *)
@@ -256,16 +259,22 @@ Section alloc.
       (* give to replica lock invariant *)
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
          own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
+      (* give to txnlog invariant *)
+      ([∗ set] gid ∈ dom gaddrm, own_txn_log_half γ gid []) ∗
+      ([∗ set] gid ∈ dom gaddrm, own_txn_cpool_half γ gid ∅) ∗
       (* tulip atomic invariant *)
-      tulip_inv_with_proph γ p.
+      tulip_inv_with_proph γ p ∗
+      ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm).
   Proof.
+    iIntros (Hdomgaddrm Hdomaddrm) "Hchans".
     iIntros "Hproph".
     iMod (tulip_res_alloc) as (γ) "Hres".
     iDestruct "Hres" as "(Hcli & Hresm & Hwrsm & Hltids & Hwabt & Htmods & Hres)".
     iDestruct "Hres" as "(Hexcltids & Hexclctks & Hpost & Hlts & Hres)".
     iDestruct "Hres" as "(Hdbpts & Hrhistmg & Hrhistmk & Hrtsg & Hrtsk & Hres)".
     iDestruct "Hres" as "(Hchistm & Hlhistm & Hkmodlst & Hkmodlsk & Hkmodcst & Hkmodcsk & Hres)".
-    iDestruct "Hres" as "(Hlogs & Hcpools & Hpms & Hpsms & Hcms & Hrps & Hrplocks)".
+    iDestruct "Hres" as "(Hlogs & Hlogstl & Hcpools & Hcpoolstl & Hres)".
+    iDestruct "Hres" as "(Hpms & Hpsms & Hcms & Htrmls & Hrps & Hrplocks)".
     (* Obtain a lb on the largest timestamp to later establish group invariant. *)
     iDestruct (largest_ts_witness with "Hlts") as "#Hltslb".
     iAssert (txnsys_inv γ p)
@@ -501,6 +510,28 @@ Section alloc.
       do 2 (split; first done).
       split; apply map_Forall2_empty.
     }
+    iAssert ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm)%I
+      with "[Hchans Htrmls]" as "Hinvnet".
+    { iClear "Hloglbs".
+      rewrite -Hdomgaddrm big_sepS_big_sepM.
+      iDestruct (big_sepM_sep_2 with "Hchans Htrmls") as "Hnets".
+      iApply (big_sepM_mono with "Hnets").
+      iIntros (gid addrm Haddrm) "[Hchans Htrmls]".
+      iExists (gset_to_gmap ∅ (map_img addrm)), ∅.
+      rewrite dom_empty_L.
+      iFrame "Htrmls".
+      iSplitL "Hchans".
+      { iApply (big_sepS_sepM_impl with "Hchans"); first by rewrite dom_gset_to_gmap.
+        iIntros (addr ms Hms) "!> Hchan".
+        apply lookup_gset_to_gmap_Some in Hms as [_ <-].
+        iExists ∅.
+        iFrame "Hchan".
+        by rewrite set_map_empty 2!big_sepS_empty.
+      }
+      specialize (Hdomaddrm _ _ Haddrm). simpl in Hdomaddrm.
+      by rewrite big_sepM_empty dom_gset_to_gmap Hdomaddrm.
+    }
+    rewrite Hdomgaddrm.
     by iFrame.
   Qed.
 

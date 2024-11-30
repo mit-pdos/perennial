@@ -84,7 +84,6 @@ Definition GroupPreparer__reset: val :=
     struct.storeF GroupPreparer "phase" "gpp" GPP_VALIDATING;;
     struct.storeF GroupPreparer "frespm" "gpp" (NewMap uint64T boolT #());;
     struct.storeF GroupPreparer "vdm" "gpp" (NewMap uint64T boolT #());;
-    struct.storeF GroupPreparer "srespm" "gpp" (NewMap uint64T boolT #());;
     #().
 
 Definition mkGroupPreparer: val :=

@@ -391,7 +391,7 @@ Section program.
     (*@     return txnlog                                                       @*)
     (*@ }                                                                       @*)
     wp_apply (wp_Start
-               with "Hfnamewal Hinv Hinvfile Hinvnet [$Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
+      with "Hfnamewal Hinv Hinvfile Hinvnet [$Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
     { done. }
     { done. }
     { done. }

@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.tulip Require Import base res cmd msg encode.
 From Perennial.program_proof.tulip.paxos Require Import base res.
 
@@ -40,3 +41,27 @@ Section inv_txnlog.
     inv txnlogNS (tulip_txnlog_inv γ π gid).
 
 End inv_txnlog.
+
+Section alloc.
+  Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
+
+  Lemma tulip_txnlog_inv_alloc γ πm :
+    dom πm = gids_all ->
+    ([∗ set] g ∈ gids_all, own_txn_log_half γ g []) -∗
+    ([∗ set] g ∈ gids_all, own_txn_cpool_half γ g ∅) -∗
+    ([∗ map] π ∈ πm, own_log_half π []) -∗
+    ([∗ map] π ∈ πm, own_cpool_half π ∅) -∗
+    [∗ map] g ↦ π ∈ πm, tulip_txnlog_inv γ π g.
+  Proof.
+    iIntros (Hdom) "Htlogs Htcpools Hplogs Hpcpools".
+    rewrite -Hdom 2!big_sepS_big_sepM.
+    iCombine "Htlogs Htcpools" as "Htxn".
+    iCombine "Hplogs Hpcpools" as "Hpx".
+    iCombine "Htxn Hpx" as "Hall".
+    rewrite -!big_sepM_sep.
+    iApply (big_sepM_mono with "Hall").
+    iIntros (gid π Hπ) "[[Htlog Htcpool] [Hplog Hpcpool]]".
+    by iFrame.
+  Qed.
+
+End alloc.

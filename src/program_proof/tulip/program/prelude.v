@@ -1,4 +1,5 @@
 From Perennial.program_proof.tulip Require Export prelude.
+(* FIXME: it's a bad idea to export below for naming can collide *)
 From Goose.github_com.mit_pdos.tulip Require Export
   backup gcoord index params quorum replica tulip tuple txn txnlog util message.
 
@@ -78,6 +79,11 @@ Proof.
   intros v.
   by destruct v.
 Defined.
+
+#[global]
+Instance ppsl_into_val_for_type :
+  IntoValForType ppsl (uint64T * (boolT * unitT)%ht).
+Proof. by constructor; [| | intros [r d]; auto 10]. Defined.
 
 Definition dbpver_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
 

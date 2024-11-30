@@ -75,6 +75,12 @@ Section inv.
     inv Hh'.
     split.
     { by destruct (last_extend _ _). }
+    split.
+    { apply lookup_lt_Some in Hrfirst as Hlen.
+      rewrite lookup_app_l; last first.
+      { rewrite last_extend_length; last done. clear -Hlen. lia. }
+      by rewrite lookup_last_extend_l.
+    }
     by apply ext_by_cmtd_inv_learn_commit.
   Qed.
 

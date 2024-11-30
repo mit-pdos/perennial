@@ -358,7 +358,7 @@ Section res.
     Admitted.
 
     #[global]
-      Instance is_txn_log_lb_persistent γ gid log :
+    Instance is_txn_log_lb_persistent γ gid log :
       Persistent (is_txn_log_lb γ gid log).
     Admitted.
 
@@ -500,8 +500,10 @@ Section alloc.
       (* per-key committed modification | txnsys / key *)
       ([∗ set] k ∈ keys_all, own_cmtd_kmod_half γ k ∅) ∗
       ([∗ set] k ∈ keys_all, own_cmtd_kmod_half γ k ∅) ∗
-      (* per-group txn consensus | group *)
+      (* per-group txn consensus | group / txnlog *)
       ([∗ set] g ∈ gids_all, own_txn_log_half γ g []) ∗
+      ([∗ set] g ∈ gids_all, own_txn_log_half γ g []) ∗
+      ([∗ set] g ∈ gids_all, own_txn_cpool_half γ g ∅) ∗
       ([∗ set] g ∈ gids_all, own_txn_cpool_half γ g ∅) ∗
       (* per-group prepare map | group *)
       ([∗ set] g ∈ gids_all, own_group_prepm γ g ∅) ∗
@@ -509,6 +511,8 @@ Section alloc.
       ([∗ set] g ∈ gids_all, own_group_prepare_proposals_map γ g ∅) ∗
       (* per-group prepare map | group *)
       ([∗ set] g ∈ gids_all, own_group_commit_map γ g ∅) ∗
+      (* per-group network terminals | network *)
+      ([∗ set] g ∈ gids_all, own_terminals γ g ∅ ) ∗
       (* per-replica resources *)
       ([∗ set] g ∈ gids_all, replica_init_res γ g) ∗
       (* per-replica logs | replica lock *)

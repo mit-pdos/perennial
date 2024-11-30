@@ -197,4 +197,13 @@ Section repr.
     ∃ (phase : gppphase),
       "Hgpp" ∷ own_gpreparer_with_phase gpp phase ts gid γ.
 
+  Definition own_gpreparer_uninit (gpp : loc) : iProp Σ :=
+    ∃ (nrps : u64) (phase : u64) (frespmP : loc) (vdmP : loc) (srespmP : loc),
+      "HnrpsP"   ∷ gpp ↦[GroupPreparer :: "nrps"] #nrps ∗
+      "HphaseP"  ∷ gpp ↦[GroupPreparer :: "phase"] #phase ∗
+      "HfrespmP" ∷ gpp ↦[GroupPreparer :: "frespm"] #frespmP ∗
+      "HvdmP"    ∷ gpp ↦[GroupPreparer :: "vdm"] #vdmP ∗
+      "HsrespmP" ∷ gpp ↦[GroupPreparer :: "srespm"] #srespmP ∗
+      "%Hnrps"   ∷ ⌜uint.nat nrps = size rids_all⌝.
+
 End repr.
