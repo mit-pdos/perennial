@@ -170,7 +170,8 @@ Section repr.
     ∃ (hb : bool) (logP : Slice.t),
       "HhbP"     ∷ paxos ↦[Paxos :: "hb"] #hb ∗
       "HtermcP"  ∷ paxos ↦[Paxos :: "termc"] #termc ∗
-      "Htermc"   ∷ own_crash_ex paxoscrashNS (own_current_term_half γ nidme) (uint.nat termc) ∗
+      "Htermc"   ∷ own_current_term_half γ nidme (uint.nat termc) ∗
+      (* "Htermc"   ∷ own_crash_ex paxoscrashNS (own_current_term_half γ nidme) (uint.nat termc) ∗ *)
       "HtermlP"  ∷ paxos ↦[Paxos :: "terml"] #terml ∗
       "Hterml"   ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
       "HlogP"    ∷ paxos ↦[Paxos :: "log"] (to_val logP) ∗
