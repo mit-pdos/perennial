@@ -54,6 +54,10 @@ Definition getTimestamp: val :=
 Definition Txn__begin: val :=
   rec: "Txn__begin" "txn" :=
     struct.storeF Txn "ts" "txn" (getTimestamp (struct.loadF Txn "sid" "txn"));;
+    #().
+
+Definition Txn__attach: val :=
+  rec: "Txn__attach" "txn" :=
     MapIter (struct.loadF Txn "gcoords" "txn") (λ: <> "gcoord",
       gcoord.GroupCoordinator__Attach "gcoord" (struct.loadF Txn "ts" "txn"));;
     #().
@@ -204,6 +208,7 @@ Definition Txn__Delete: val :=
 Definition Txn__Run: val :=
   rec: "Txn__Run" "txn" "body" :=
     Txn__begin "txn";;
+    Txn__attach "txn";;
     let: "cmt" := "body" "txn" in
     (if: (~ "cmt")
     then

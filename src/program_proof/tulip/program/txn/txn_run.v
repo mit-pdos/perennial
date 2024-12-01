@@ -1,7 +1,8 @@
 From Perennial.program_proof.tulip.invariance Require Import linearize preprepare.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.txn Require Import
-  res txn_repr txn_begin txn_cancel txn_prepare txn_reset txn_abort txn_commit.
+  res txn_repr txn_begin txn_attach txn_cancel txn_prepare
+  txn_reset txn_abort txn_commit.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -76,12 +77,16 @@ Section program.
       (* Allocate transaction local view [txnmap_ptstos τ r]. *)
       iMod (txnmap_alloc rds) as (τ) "[Htxnmap Htxnpts]".
       iIntros "!> Htxn".
+      wp_pures.
+      wp_apply (wp_Txn__attach with "[$Hclients $Htxn]").
+      iIntros "Htxn".
       iAssert (own_txn txn tid rds γ τ)%I with "[Htxn Htxnmap]" as "Htxn".
       { iClear "Hinv". do 2 iNamed "Htxn".
         iExists _, ∅.
         rewrite map_empty_union.
         by iFrame "∗ # %".
       }
+
 
       (*@     cmt := body(txn)                                                    @*)
       (*@                                                                         @*)
@@ -207,6 +212,8 @@ Section program.
       (* Allocate transaction local view [txnmap_ptstos τ r]. *)
       iMod (txnmap_alloc rds) as (τ) "[Htxnmap Htxnpts]".
       iIntros "!> Htxn".
+      wp_apply (wp_Txn__attach with "[$Hclients $Htxn]").
+      iIntros "Htxn".
       iAssert (own_txn txn tid rds γ τ)%I with "[Htxn Htxnmap]" as "Htxn".
       { do 2 iNamed "Htxn".
         iExists _, ∅.
