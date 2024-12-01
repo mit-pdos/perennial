@@ -69,7 +69,9 @@ Section program.
     (*@     // Logical actions: Execute() and then Accept(@ts, @rank, @dec).    @*)
     (*@     rp.logAccept(ts, rank, dec)                                         @*)
     (*@                                                                         @*)
-    wp_apply wp_Replica__logAccept.
+    wp_loadField.
+    wp_apply (wp_logAccept with "Hfile").
+    iIntros (bs') "Hfile".
     wp_pures.
     iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".

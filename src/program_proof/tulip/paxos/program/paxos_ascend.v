@@ -84,7 +84,6 @@ Section ascend.
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
     iFrame "Hfile".
     iExists wal.
-    iSplit; first done.
     iIntros (bs') "[Hfile %Hbs']".
     set logc := take (uint.nat lsnc) log.
     set log' := logc ++ entsp.

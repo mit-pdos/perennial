@@ -123,7 +123,9 @@ Section program.
     (*@     rp.logRead(ts, key)                                                 @*)
     (*@                                                                         @*)
     wp_pures.
-    wp_apply wp_Replica__logRead.
+    wp_loadField.
+    wp_apply (wp_logRead with "Hfile").
+    iIntros (bs') "Hfile".
     iApply fupd_wp.
     iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".

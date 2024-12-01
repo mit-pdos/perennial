@@ -93,7 +93,9 @@ Section program.
     (*@     // Logical action: Validate(@ts, @pwrs, @ptgs).                     @*)
     (*@     rp.logValidate(ts, pwrs, ptgs)                                      @*)
     (*@                                                                         @*)
-    wp_apply (wp_Replica__logValidate).
+    wp_loadField.
+    wp_apply (wp_logValidate with "[$Hfile $Hpwrs]").
+    iIntros (bs') "[Hfile Hpwrs]".
     wp_pures.
     iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".

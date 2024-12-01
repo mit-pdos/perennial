@@ -41,7 +41,9 @@ Section program.
         own_node_ledger_half π rid log ∗
         (* persistent states of replica; TODO: replace [] once proving recovery *)
         own_replica_clog_half γ gid rid [] ∗
-        own_replica_ilog_half γ gid rid []
+        own_replica_ilog_half γ gid rid [] ∗
+        (* file points-to; TODO: seal it in atomic invariance once proving recovery *)
+        fname f↦ []
     }}}
       Start #rid (to_val addr) #(LitString fname) #addrmpxP #(LitString fnamepx)
     {{{ (rp : loc), RET #rp; is_replica rp gid rid γ }}}.
@@ -51,7 +53,7 @@ Section program.
     iIntros "#Hfnamewal #Hinvpx #Hinvpxfile #Hinvpxnet".
     iIntros "#Hinvtxnlog #Hinv #Hinvnet".
     iIntros (Φ).
-    iIntros "!> (Haddrmpx & Htermc & Hterml & Hlsnc & Hlogn & Hclog & Hilog) HΦ".
+    iIntros "!> (Haddrmpx & Htermc & Hterml & Hlsnc & Hlogn & Hclog & Hilog & Hfile) HΦ".
     wp_rec. wp_pures.
 
     (*@ func Start(rid uint64, addr grove_ffi.Address, fname string, addrmpx map[uint64]uint64, fnamepx string) *Replica { @*)
@@ -175,7 +177,7 @@ Section program.
       iSplit; first done.
       by rewrite merge_clog_ilog_nil.
     }
-    iAssert (own_replica rp gid rid γ α)%I with "[$lsna Hrp]" as "Hrp".
+    iAssert (own_replica rp gid rid γ α)%I with "[$lsna $Hfile $fname Hrp]" as "Hrp".
     { iExists []. by iFrame. }
     iMod (alloc_lock _ _ _ (own_replica rp gid rid γ α) with "Hfree [$Hrp]") as "#Hlock".
     iAssert (is_replica_plus_txnlog rp gid rid γ)%I as "#Hrptxnlog".

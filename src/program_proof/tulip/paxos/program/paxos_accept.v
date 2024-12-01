@@ -109,7 +109,6 @@ Section accept.
       iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
       iFrame "Hfile".
       iExists wal.
-      iSplit; first done.
       iIntros (bs') "[Hfile %Hbs']".
       iAssert (⌜prefix logc logleader⌝)%I as %Hprefix.
       { iDestruct "Hcmted" as (p) "[Hcmted %Hple]".
@@ -258,7 +257,6 @@ Section accept.
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
     iFrame "Hfile".
     iExists wal.
-    iSplit; first done.
     iIntros (bs') "[Hfile %Hbs']".
     iMod (paxos_inv_accept (uint.nat lsn) with "Hpfb Hpfg Hwalfile Htermc Hterml Hlogn HinvO")
       as "(Hwalfile & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".

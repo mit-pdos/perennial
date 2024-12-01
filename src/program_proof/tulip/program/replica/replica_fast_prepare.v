@@ -125,7 +125,9 @@ Section program.
     (*@                                                                         @*)
     wp_pures.
     destruct acquired; wp_pures; last first.
-    { wp_apply wp_Replica__logAccept.
+    { wp_loadField.
+      wp_apply (wp_logAccept with "Hfile").
+      iIntros (bs') "Hfile".
       wp_pures.
       iNamed "Hinv".
       iInv "Hinv" as "> HinvO" "HinvC".
@@ -189,7 +191,9 @@ Section program.
     (*@     // Accept(@ts, @0, @true).                                          @*)
     (*@     rp.logFastPrepare(ts, pwrs, ptgs)                                   @*)
     (*@                                                                         @*)
-    wp_apply wp_Replica__logFastPrepare.
+    wp_loadField.
+    wp_apply (wp_logFastPrepare with "[$Hfile $Hpwrs]").
+    iIntros (bs') "[Hfile Hpwrs]".
     wp_pures.
     iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".

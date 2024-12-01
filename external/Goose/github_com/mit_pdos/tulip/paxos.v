@@ -49,10 +49,10 @@ Definition CMD_EXPAND : expr := #5.
 
 Definition logAppend: val :=
   rec: "logAppend" "fname" "ent" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #32) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_APPEND);;
-    "data" <-[slice.T byteT] (util.EncodeString (![slice.T byteT] "data") "ent");;
-    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_APPEND in
+    let: "bs2" := util.EncodeString "bs1" "ent" in
+    grove_ffi.FileAppend "fname" "bs2";;
     #().
 
 Definition Paxos__Submit: val :=
@@ -119,10 +119,10 @@ Definition Paxos__WaitUntilSafe: val :=
 
 Definition logPrepare: val :=
   rec: "logPrepare" "fname" "term" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #16) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_PREPARE);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
-    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    let: "bs" := NewSliceWithCap byteT #0 #16 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_PREPARE in
+    let: "bs2" := marshal.WriteInt "bs1" "term" in
+    grove_ffi.FileAppend "fname" "bs2";;
     #().
 
 (* Return values:
@@ -207,12 +207,12 @@ Definition Paxos__cquorum: val :=
    simplify things a bit without hurting too much of the performance. *)
 Definition logAdvance: val :=
   rec: "logAdvance" "fname" "term" "lsn" "ents" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_ADVANCE);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "term");;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsn");;
-    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
-    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_ADVANCE in
+    let: "bs2" := marshal.WriteInt "bs1" "term" in
+    let: "bs3" := marshal.WriteInt "bs2" "lsn" in
+    let: "bs4" := util.EncodeStrings "bs3" "ents" in
+    grove_ffi.FileAppend "fname" "bs4";;
     #().
 
 Definition Paxos__ascend: val :=
@@ -241,11 +241,11 @@ Definition Paxos__obtain: val :=
 
 Definition logAccept: val :=
   rec: "logAccept" "fname" "lsn" "ents" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_ACCEPT);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsn");;
-    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
-    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_ACCEPT in
+    let: "bs2" := marshal.WriteInt "bs1" "lsn" in
+    let: "bs3" := util.EncodeStrings "bs2" "ents" in
+    grove_ffi.FileAppend "fname" "bs3";;
     #().
 
 (* Arguments:
@@ -281,10 +281,10 @@ Definition Paxos__accept: val :=
 
 Definition logExpand: val :=
   rec: "logExpand" "fname" "lsn" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #16) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_EXPAND);;
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "lsn");;
-    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    let: "bs" := NewSliceWithCap byteT #0 #16 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_EXPAND in
+    let: "bs2" := marshal.WriteInt "bs1" "lsn" in
+    grove_ffi.FileAppend "fname" "bs2";;
     #().
 
 Definition Paxos__commit: val :=
@@ -801,10 +801,10 @@ Definition Start: val :=
 
 Definition logExtend: val :=
   rec: "logExtend" "fname" "ents" :=
-    let: "data" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #64) in
-    "data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") CMD_EXTEND);;
-    "data" <-[slice.T byteT] (util.EncodeStrings (![slice.T byteT] "data") "ents");;
-    grove_ffi.FileAppend "fname" (![slice.T byteT] "data");;
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_EXTEND in
+    let: "bs2" := util.EncodeStrings "bs1" "ents" in
+    grove_ffi.FileAppend "fname" "bs2";;
     #().
 
 (* Read the underlying file and perform recovery to re-construct @termc, @terml,

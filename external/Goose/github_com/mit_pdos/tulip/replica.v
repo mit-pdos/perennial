@@ -6,6 +6,8 @@ From Goose Require github_com.mit_pdos.tulip.index.
 From Goose Require github_com.mit_pdos.tulip.message.
 From Goose Require github_com.mit_pdos.tulip.tulip.
 From Goose Require github_com.mit_pdos.tulip.txnlog.
+From Goose Require github_com.mit_pdos.tulip.util.
+From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
@@ -106,8 +108,21 @@ Definition Replica__bumpKey: val :=
       MapInsert (struct.loadF Replica "sptsm" "rp") "key" ("ts" - #1);;
       #true).
 
-Definition Replica__logRead: val :=
-  rec: "Replica__logRead" "rp" "ts" "key" :=
+Definition CMD_READ : expr := #0.
+
+Definition CMD_VALIDATE : expr := #1.
+
+Definition CMD_FAST_PREPARE : expr := #2.
+
+Definition CMD_ACCEPT : expr := #3.
+
+Definition logRead: val :=
+  rec: "logRead" "fname" "ts" "key" :=
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_READ in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := util.EncodeString "bs2" "key" in
+    grove_ffi.FileAppend "fname" "bs3";;
     #().
 
 (* Arguments:
@@ -156,7 +171,7 @@ Definition Replica__Read: val :=
           ("v2", #false, #true)
         else
           Replica__bumpKey "rp" "ts" "key";;
-          Replica__logRead "rp" "ts" "key";;
+          logRead (struct.loadF Replica "fname" "rp") "ts" "key";;
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
           ("v2", #true, #true)))).
 
@@ -206,8 +221,13 @@ Definition Replica__finalized: val :=
       else (tulip.REPLICA_ABORTED_TXN, #true))
     else (tulip.REPLICA_OK, #false)).
 
-Definition Replica__logValidate: val :=
-  rec: "Replica__logValidate" "rp" "ts" "pwrs" "ptgs" :=
+Definition logValidate: val :=
+  rec: "logValidate" "fname" "ts" "pwrs" "ptgs" :=
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_VALIDATE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
+    grove_ffi.FileAppend "fname" "bs3";;
     #().
 
 (* Arguments:
@@ -232,7 +252,7 @@ Definition Replica__validate: val :=
         then tulip.REPLICA_FAILED_VALIDATION
         else
           MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-          Replica__logValidate "rp" "ts" "pwrs" "ptgs";;
+          logValidate (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
           tulip.REPLICA_OK))).
 
 (* Keep alive coordinator for @ts at @rank. *)
@@ -247,10 +267,6 @@ Definition Replica__Validate: val :=
     Replica__refresh "rp" "ts" "rank";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
-
-Definition Replica__logFastPrepare: val :=
-  rec: "Replica__logFastPrepare" "rp" "ts" "pwrs" "ptgs" :=
-    #().
 
 Definition Replica__lastProposal: val :=
   rec: "Replica__lastProposal" "rp" "ts" :=
@@ -267,8 +283,23 @@ Definition Replica__accept: val :=
     MapInsert (struct.loadF Replica "rktbl" "rp") "ts" (std.SumAssumeNoOverflow "rank" #1);;
     #().
 
-Definition Replica__logAccept: val :=
-  rec: "Replica__logAccept" "rp" "ts" "rank" "dec" :=
+Definition logAccept: val :=
+  rec: "logAccept" "fname" "ts" "rank" "dec" :=
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_ACCEPT in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := marshal.WriteInt "bs2" "rank" in
+    let: "bs4" := marshal.WriteBool "bs3" "dec" in
+    grove_ffi.FileAppend "fname" "bs4";;
+    #().
+
+Definition logFastPrepare: val :=
+  rec: "logFastPrepare" "fname" "ts" "pwrs" "ptgs" :=
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_FAST_PREPARE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
+    grove_ffi.FileAppend "fname" "bs3";;
     #().
 
 (* Arguments:
@@ -303,11 +334,11 @@ Definition Replica__fastPrepare: val :=
           Replica__accept "rp" "ts" #0 "acquired";;
           (if: (~ "acquired")
           then
-            Replica__logAccept "rp" "ts" #0 #false;;
+            logAccept (struct.loadF Replica "fname" "rp") "ts" #0 #false;;
             tulip.REPLICA_FAILED_VALIDATION
           else
             MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-            Replica__logFastPrepare "rp" "ts" "pwrs" "ptgs";;
+            logFastPrepare (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
             tulip.REPLICA_OK)))).
 
 Definition Replica__FastPrepare: val :=
@@ -343,7 +374,7 @@ Definition Replica__tryAccept: val :=
       then tulip.REPLICA_STALE_COORDINATOR
       else
         Replica__accept "rp" "ts" "rank" "dec";;
-        Replica__logAccept "rp" "ts" "rank" "dec";;
+        logAccept (struct.loadF Replica "fname" "rp") "ts" "rank" "dec";;
         tulip.REPLICA_OK)).
 
 Definition Replica__Prepare: val :=
