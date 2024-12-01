@@ -32,8 +32,8 @@ Section ascend.
     iIntros "[%Hsz Hrespp]".
     iNamed "Hpx".
     wp_apply (wp_Paxos__cquorum with "Hsc").
-    iIntros (ok) "[Hsc %Hquorum]".
-    wp_if_destruct.
+    iIntros "Hsc".
+    case_bool_decide as Hquorum; wp_pures; last first.
     { iApply "HΦ".
       iFrame "HtermcP HtermlP HiscandP HlogP HentspP".
       by iFrame "∗ # %".
