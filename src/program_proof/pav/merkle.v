@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 
-From Perennial.program_proof.pav Require Import classes misc cryptoffi cryptoutil.
+From Perennial.program_proof.pav Require Import classes misc cryptoffi.
 From Perennial.program_proof Require Import std_proof.
 
 Section internal.
@@ -98,7 +98,7 @@ Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iProp
        "Hchildren" ∷ match tr with
        (* We should never have cuts in in-memory trees. *)
        | Cut _ => False
-       | Leaf _ => True
+       | Leaf v => ⌜ v = val ⌝
        | Interior children =>
            ([∗ list] idx ↦ child;ptr_child ∈ children;ptr_children,
               match child with
@@ -333,6 +333,7 @@ Qed.
 
 End external.
 
+(*
 Module pathProof.
 Record t :=
   mk {
@@ -357,32 +358,7 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "%Hlen_id_depth" ∷ ⌜length obj.(id) = length obj.(childHashes)⌝ ∗
   "%Hlen_id_ub" ∷ ⌜length obj.(id) ≤ 32⌝.
 End local_defs.
-End pathProof.
-
-Module GetReply.
-Record t :=
-  mk {
-    Val: list w8;
-    Digest: list w8;
-    ProofTy: bool;
-    Proof: list (list (list w8));
-    Error: bool;
-  }.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ sl_Val sl_Dig sl_Proof,
-  "HVal" ∷ ptr ↦[GetReply :: "val"] (slice_val sl_Val) ∗
-  "Hptr_Val" ∷ own_slice_small sl_Val byteT (DfracOwn 1) obj.(Val) ∗
-  "HDig" ∷ ptr ↦[GetReply :: "Digest"] (slice_val sl_Dig) ∗
-  "Hptr_Dig" ∷ own_slice_small sl_Dig byteT (DfracOwn 1) obj.(Digest) ∗
-  "HProofTy" ∷ ptr ↦[GetReply :: "ProofTy"] #obj.(ProofTy) ∗
-  "HProof" ∷ ptr ↦[GetReply :: "Proof"] (slice_val sl_Proof) ∗
-  "Hsl_Proof" ∷ is_Slice3D sl_Proof obj.(Proof) ∗
-  "HErr" ∷ ptr ↦[GetReply :: "Error"] #obj.(Error).
-End local_defs.
-End GetReply.
+End pathProof. *)
 
 Section wps.
 Context `{!heapGS Σ}.
@@ -401,12 +377,20 @@ Lemma wp_Tree_Digest ptr_tr entries :
 Proof. Admitted.
 
 
-Lemma newNode_eq_empty :
+Lemma new_interior_eq_empty :
   eq_tree_map (Interior (replicate (uint.nat 256) None)) ∅.
 Proof.
   intros ?. destruct k.
   { done. }
   { simpl. rewrite lookup_replicate_2; [done|word]. }
+Qed.
+
+Lemma new_leaf_eq_map :
+  eq_tree_map (Leaf []) {[ [] := [] ]}.
+Proof.
+  intros ?. destruct k.
+  { done. }
+  { simpl. rewrite lookup_singleton_ne //. }
 Qed.
 
 Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
@@ -449,6 +433,7 @@ Proof.
   wp_rec.
   wp_pures.
   iNamed "Htree".
+  (*
   wp_loadField.
   wp_pures.
 
@@ -489,7 +474,7 @@ Proof.
       (* XXX: could have lemmas for stuff like this *)
       iPureIntro. split.
       - (* tree still matches empty map *)
-        apply newNode_eq_empty.
+        apply new_interior_eq_empty.
       - (* tree respects has_tree_height *)
         rewrite /has_tree_height /=.
         destruct (uint.nat full_height) eqn:H.
@@ -545,12 +530,13 @@ Proof.
               "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree sub_map ⌝ ∗
               "%Hheight" ∷ ⌜ has_tree_height sub_tree (uint.nat full_height - uint.nat i)%nat ⌝ ∗
               "Hrest" ∷ (∀ sub_tree' ,
-                           ⌜ eq_tree_map sub_tree' (<[id := val]> sub_map) ⌝ -∗
-                           ⌜ has_tree_height sub_tree (uint.nat full_height - uint.nat i)%nat ⌝ -∗
-                           own_node_except (Some (drop (uint.nat i) id)) currNode_ptr sub_tree' -∗
-                           ∃ tr', own_node_except (Some id) currNode_ptr tr' ∗
+                           let partial_id := (drop (uint.nat i) id) in
+                           own_node_except (Some partial_id) currNode_ptr sub_tree' -∗
+                           ⌜ eq_tree_map sub_tree' (<[partial_id := val]> sub_map) ⌝ -∗
+                           ⌜ has_tree_height sub_tree' (uint.nat full_height - uint.nat i)%nat ⌝ -∗
+                           ∃ tr', own_node_except (Some id) root tr' ∗
                                   ⌜ eq_tree_map tr' (<[id := val]> entries) ⌝ ∗
-                                  ⌜ has_tree_height sub_tree (uint.nat full_height) ⌝)
+                                  ⌜ has_tree_height tr' (uint.nat full_height) ⌝)
          )%I).
   wp_apply (wp_forUpto' loopInv with "[$HpathIdx Hid Hnode HnodePath_ptr HnodePath]").
   {
@@ -625,22 +611,106 @@ Proof.
       iApply "HΦ'".
       iFrame "HpathIdx".
       iModIntro.
-      repeat iExists _.
-      iFrame.
-      iSplitR.
-      { rewrite last_snoc //. }
-      iSplitL "HchildNode Hsl".
-      {
-        iApply own_node_except_unfold.
+      (* destruct the remaining height to decide whether to interpret the new node as a
+         [Leaf] or as an [Interior].
+       *)
+      rename n into remainingHeight.
+      destruct (remainingHeight).
+      { (* case: leaf *)
         repeat iExists _.
-        iDestruct (struct_fields_split with "HchildNode") as "H".
-        iNamed "H".
-        rewrite zero_slice_val.
         iFrame.
-        iDestruct (own_slice_small_nil) as "$"; first done.
-        iSplitR; first done.
-        iSplitR; first done.
-        instantiate (1:=Interior (replicate _ None)).
+        iSplitR.
+        { rewrite last_snoc //. }
+        iSplitL "HchildNode Hsl".
+        {
+          iApply own_node_except_unfold.
+          repeat iExists _.
+          iDestruct (struct_fields_split with "HchildNode") as "H".
+          iNamed "H".
+          rewrite zero_slice_val.
+          iFrame.
+          iDestruct (own_slice_small_nil) as "$"; first done.
+          iSplitR; first done.
+          iSplitR; first done.
+          instantiate (1:=Leaf _).
+          done.
+        }
+        repeat (iSplitR; try iPureIntro).
+        { rewrite length_app /=. word. }
+        { intros ?. apply new_leaf_eq_map. }
+        { by replace (uint.nat _ - uint.nat _)%nat with (O) by word. }
+
+        iIntros (?) "Hnode' %Heq' %Hheight'".
+        iApply ("Hrest" with "[-]").
+        {
+          iApply own_node_except_unfold.
+          repeat iExists _.
+          iFrame "Hptr_hash Hptr_children ∗".
+          iSplitR; first done.
+          iSplitR.
+          { rewrite length_insert //. }
+          replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
+          instantiate (1:=Interior (<[uint.nat pos := Some sub_tree' ]> children)).
+          simpl.
+          iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[_ Hchildren]".
+          { admit. (* use big_sepL2 to get lookup *) }
+          { done. }
+          iApply "Hchildren".
+          rewrite [in drop (uint.nat i) _](drop_S _ pos) //.
+          rewrite decide_True //.
+          iNext.
+          iExactEq "Hnode'".
+          repeat f_equal.
+          word.
+        }
+        {
+          iPureIntro.
+          intros ?.
+          destruct (decide (k = (drop (uint.nat i) id))).
+          - subst.
+            rewrite lookup_insert /=.
+            erewrite drop_S.
+            2:{ done. }
+            rewrite /= list_lookup_insert //.
+            2:{ admit. (* prove and use [length children = length ptr_children] *) }
+            specialize (Heq' (drop (S (uint.nat i)) id)).
+            simpl in Heq'.
+            replace (uint.nat (w64_word_instance.(word.add) i (W64 1))) with (S (uint.nat i)) in Heq' by word.
+            rewrite lookup_insert in Heq'.
+            done.
+          - rewrite lookup_insert_ne //.
+            rewrite drop_ge in Heq'.
+            2:{ rewrite /full_height in Hdepth. word. }
+            rewrite insert_insert in Heq'.
+            specialize (Hsubmap k).
+            destruct k.
+            + simpl in *. done.
+            + simpl in *.
+              destruct (decide (w = pos)).
+              * subst. rewrite list_lookup_insert //.
+                2:{ admit. }
+                simpl.
+                apply Hsubmap.
+              2:{
+                erewrite drop_S in n; last done.
+                intros Heq.
+                apply n.
+                f_equal.
+              destruct
+
+        }
+        {
+          iPureIntro.
+          simpl.
+          apply Forall_insert.
+          - done.
+          - destruct sub_tree'; try done.
+            replace (uint.nat _ - _)%nat with (O) in Hheight' by word.
+            done.
+        }
+      }
+        iExists _.
+        simpl.
         simpl.
         iApply big_sepL2_replicate_r.
         { rewrite length_replicate //. }
@@ -654,54 +724,31 @@ Proof.
       { rewrite Hchildren_len. apply newNode_eq_empty. }
       { (* FIXME: don't want to always make the new node an Interior; at the
            very end, it should be a leaf node. *)
+          admit.
+        }
         admit.
-      }
-      admit.
-    }
+      } *)
 Admitted.
 
-Lemma wp_Tree_Get ptr_tr entries sl_id id d0 :
+Lemma wp_Tree_Get ptr_tr entries sl_id id dq :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hid" ∷ own_slice_small sl_id byteT d0 id
+    "Hid" ∷ own_slice_small sl_id byteT dq id
   }}}
   Tree__Get #ptr_tr (slice_val sl_id)
   {{{
-    ptr_reply reply, RET #ptr_reply;
-    "Hreply" ∷ GetReply.own ptr_reply reply ∗
-    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
-    "%Hvalid_id" ∷ ⌜ length id = hash_len → reply.(GetReply.Error) = false ⌝ ∗
+        val digest val_sl digest_sl (proofTy : bool) proof_sl (error : bool),
+          RET (slice_val val_sl, slice_val digest_sl, #proofTy, slice_val proof_sl, #error);
+    "Hid" ∷ own_slice_small sl_id byteT dq id ∗
+    "%Hvalid_id" ∷ ⌜ length id = hash_len → error = false ⌝ ∗
     "Herr" ∷
-      if negb reply.(GetReply.Error) then
-        "Htree" ∷ own_merkle ptr_tr (<[id:=reply.(GetReply.Val)]>entries) ∗
-        "#HisDig" ∷ is_dig (<[id:=reply.(GetReply.Val)]>entries) reply.(GetReply.Digest)
+      if negb error then
+        "Htree" ∷ own_merkle ptr_tr (<[id:=val]>entries) ∗
+        "Hval_sl" ∷ own_slice_small val_sl byteT (DfracOwn 1) val ∗
+        "Hdigest_sl" ∷ own_slice_small digest_sl byteT (DfracOwn 1) digest ∗
+        "#HisDig" ∷ is_dig (<[id:=val]>entries) digest
       else
         "Htree" ∷ own_merkle ptr_tr entries
-  }}}.
-Proof. Admitted.
-
-Lemma wp_Tree_DeepCopy ptr_tr entries :
-  {{{
-    "Htree" ∷ own_merkle ptr_tr entries
-  }}}
-  Tree__DeepCopy #ptr_tr
-  {{{
-    ptr_new, RET #ptr_new;
-    "Htree" ∷ own_merkle ptr_tr entries ∗
-    "HnewTree" ∷ own_merkle ptr_new entries
-  }}}.
-Proof. Admitted.
-
-Lemma wp_isValidHashSl sl_data data :
-  {{{
-    "#Hdata" ∷ is_Slice2D sl_data data
-  }}}
-  isValidHashSl (slice_val sl_data)
-  {{{
-    (ok : bool), RET #ok;
-    if bool_decide ok then
-      "%Hlen" ∷ ([∗ list] l ∈ data, ⌜length l = 32%nat⌝)
-    else True%I
   }}}.
 Proof. Admitted.
 

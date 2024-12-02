@@ -304,7 +304,6 @@ def main():
     run_goose(
         pav_dir,
         "./advrpc",
-        "./cryptoutil",
         "./kt",
         "./kttest",
         "./marshalutil",

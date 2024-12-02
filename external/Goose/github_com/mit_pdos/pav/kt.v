@@ -45,8 +45,8 @@ Definition MapValPreDecode: val :=
 
 Definition Auditor__checkOneUpd: val :=
   rec: "Auditor__checkOneUpd" "a" "nextEpoch" "mapLabel" "mapVal" :=
-    let: "getReply" := merkle.Tree__Get (struct.loadF Auditor "keyMap" "a") "mapLabel" in
-    (if: (struct.loadF merkle.GetReply "Error" "getReply") || (struct.loadF merkle.GetReply "ProofTy" "getReply")
+    let: ((((<>, <>), "proofTy"), <>), "err0") := merkle.Tree__Get (struct.loadF Auditor "keyMap" "a") "mapLabel" in
+    (if: "err0" || "proofTy"
     then #true
     else
       let: (("valPre", <>), "err1") := MapValPreDecode "mapVal" in
@@ -149,8 +149,7 @@ Definition NewAuditor: val :=
   rec: "NewAuditor" <> :=
     let: "mu" := newMutex #() in
     let: ("pk", "sk") := cryptoffi.SigGenerateKey #() in
-    let: "m" := struct.new merkle.Tree [
-    ] in
+    let: "m" := merkle.NewTree #() in
     (struct.new Auditor [
        "mu" ::= "mu";
        "sk" ::= "sk";
@@ -262,7 +261,7 @@ Definition Memb := struct.decl [
   "LabelProof" :: slice.T byteT;
   "EpochAdded" :: uint64T;
   "PkOpen" :: ptrT;
-  "MerkProof" :: slice.T (slice.T (slice.T byteT))
+  "MerkProof" :: slice.T byteT
 ].
 
 Definition CommitOpen := struct.decl [
@@ -314,7 +313,7 @@ Definition checkMemb: val :=
 Definition MembHide := struct.decl [
   "LabelProof" :: slice.T byteT;
   "MapVal" :: slice.T byteT;
-  "MerkProof" :: slice.T (slice.T (slice.T byteT))
+  "MerkProof" :: slice.T byteT
 ].
 
 (* checkMembHide errors on fail. *)
@@ -337,7 +336,7 @@ Definition checkHist: val :=
 
 Definition NonMemb := struct.decl [
   "LabelProof" :: slice.T byteT;
-  "MerkProof" :: slice.T (slice.T (slice.T byteT))
+  "MerkProof" :: slice.T byteT
 ].
 
 (* checkNonMemb errors on fail. *)
@@ -427,7 +426,7 @@ Definition MembDecode: val :=
         (if: "err3"
         then (slice.nil, slice.nil, #true)
         else
-          let: (("a4", "b4"), "err4") := marshalutil.ReadSlice3D "b3" in
+          let: (("a4", "b4"), "err4") := marshalutil.ReadSlice1D "b3" in
           (if: "err4"
           then (slice.nil, slice.nil, #true)
           else
@@ -444,7 +443,7 @@ Definition NonMembDecode: val :=
     (if: "err1"
     then (slice.nil, slice.nil, #true)
     else
-      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice3D "b1" in
+      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
       (if: "err2"
       then (slice.nil, slice.nil, #true)
       else
@@ -562,7 +561,7 @@ Definition MembHideDecode: val :=
       (if: "err2"
       then (slice.nil, slice.nil, #true)
       else
-        let: (("a3", "b3"), "err3") := marshalutil.ReadSlice3D "b2" in
+        let: (("a3", "b3"), "err3") := marshalutil.ReadSlice1D "b2" in
         (if: "err3"
         then (slice.nil, slice.nil, #true)
         else
@@ -1083,8 +1082,8 @@ Definition Server__Put: val :=
     let: "open" := genCommitOpen "pk" in
     MapInsert (struct.loadF Server "pkCommOpens" "s") (StringFromBytes (struct.loadF vrfCache "hash" "latLabel")) "open";;
     let: "mapVal" := compMapVal "nextEpoch" "open" in
-    let: (("dig", "latestProof"), "err0") := merkle.Tree__Put (struct.loadF Server "keyMap" "s") (struct.loadF vrfCache "hash" "latLabel") "mapVal" in
-    control.impl.Assert (~ "err0");;
+    let: (("dig", "latestProof"), "err1") := merkle.Tree__Put (struct.loadF Server "keyMap" "s") (struct.loadF vrfCache "hash" "latLabel") "mapVal" in
+    control.impl.Assert (~ "err1");;
     let: "latest" := struct.new Memb [
       "LabelProof" ::= struct.loadF vrfCache "proof" "latLabel";
       "EpochAdded" ::= "nextEpoch";
@@ -1095,12 +1094,12 @@ Definition Server__Put: val :=
     MapInsert "upd" (StringFromBytes (struct.loadF vrfCache "hash" "latLabel")) "mapVal";;
     let: ("newHist", "sigDig") := updHist (struct.loadF Server "histInfo" "s") "nextEpoch" "upd" "dig" (struct.loadF Server "sigSk" "s") in
     struct.storeF Server "histInfo" "s" "newHist";;
-    let: "boundReply" := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "boundLabel" in
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "boundReply"));;
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "ProofTy" "boundReply"));;
+    let: ((((<>, <>), "boundProofTy"), "boundProof"), "err1") := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "boundLabel" in
+    control.impl.Assert (~ "err1");;
+    control.impl.Assert (~ "boundProofTy");;
     let: "bound" := struct.new NonMemb [
       "LabelProof" ::= "boundLabelProof";
-      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "boundReply"
+      "MerkProof" ::= "boundProof"
     ] in
     Mutex__Unlock (struct.loadF Server "mu" "s");;
     ("sigDig", "latest", "bound").
@@ -1121,14 +1120,14 @@ Definition MembEncode: val :=
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "LabelProof" "o"));;
     "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF Memb "EpochAdded" "o"));;
     "b" <-[slice.T byteT] (CommitOpenEncode (![slice.T byteT] "b") (struct.loadF Memb "PkOpen" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF Memb "MerkProof" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "MerkProof" "o"));;
     ![slice.T byteT] "b".
 
 Definition NonMembEncode: val :=
   rec: "NonMembEncode" "b0" "o" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF NonMemb "LabelProof" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF NonMemb "MerkProof" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF NonMemb "MerkProof" "o"));;
     ![slice.T byteT] "b".
 
 Definition ServerPutReplyEncode: val :=
@@ -1171,13 +1170,13 @@ Definition getHist: val :=
       let: "ver" := ref_to uint64T #0 in
       (for: (λ: <>, (![uint64T] "ver") < ("numRegVers" - #1)); (λ: <>, "ver" <-[uint64T] ((![uint64T] "ver") + #1)) := λ: <>,
         let: "label" := SliceGet ptrT "labels" (![uint64T] "ver") in
-        let: "reply" := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
-        control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "reply"));;
-        control.impl.Assert (struct.loadF merkle.GetReply "ProofTy" "reply");;
+        let: (((("mapVal", <>), "proofTy"), "proof"), "err0") := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
+        control.impl.Assert (~ "err0");;
+        control.impl.Assert "proofTy";;
         "hist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "hist") (struct.new MembHide [
           "LabelProof" ::= struct.loadF vrfCache "proof" "label";
-          "MapVal" ::= struct.loadF merkle.GetReply "Val" "reply";
-          "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "reply"
+          "MapVal" ::= "mapVal";
+          "MerkProof" ::= "proof"
         ]));;
         Continue);;
       ![slice.T ptrT] "hist").
@@ -1194,30 +1193,30 @@ Definition getLatest: val :=
        ])
     else
       let: "label" := SliceGet ptrT "labels" ("numRegVers" - #1) in
-      let: "reply" := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
-      control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "reply"));;
-      control.impl.Assert (struct.loadF merkle.GetReply "ProofTy" "reply");;
-      let: (("valPre", <>), "err0") := MapValPreDecode (struct.loadF merkle.GetReply "Val" "reply") in
+      let: (((("mapVal", <>), "proofTy"), "proof"), "err0") := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
       control.impl.Assert (~ "err0");;
+      control.impl.Assert "proofTy";;
+      let: (("valPre", <>), "err1") := MapValPreDecode "mapVal" in
+      control.impl.Assert (~ "err1");;
       let: ("open", "ok0") := MapGet "opens" (StringFromBytes (struct.loadF vrfCache "hash" "label")) in
       control.impl.Assert "ok0";;
       (#true, struct.new Memb [
          "LabelProof" ::= struct.loadF vrfCache "proof" "label";
          "EpochAdded" ::= struct.loadF MapValPre "Epoch" "valPre";
          "PkOpen" ::= "open";
-         "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "reply"
+         "MerkProof" ::= "proof"
        ])).
 
 Definition getBound: val :=
   rec: "getBound" "keyMap" "labels" :=
     let: "boundVer" := (slice.len "labels") - #1 in
     let: "label" := SliceGet ptrT "labels" "boundVer" in
-    let: "reply" := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "Error" "reply"));;
-    control.impl.Assert (~ (struct.loadF merkle.GetReply "ProofTy" "reply"));;
+    let: ((((<>, <>), "proofTy"), "proof"), "err0") := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
+    control.impl.Assert (~ "err0");;
+    control.impl.Assert (~ "proofTy");;
     struct.new NonMemb [
       "LabelProof" ::= struct.loadF vrfCache "proof" "label";
-      "MerkProof" ::= struct.loadF merkle.GetReply "Proof" "reply"
+      "MerkProof" ::= "proof"
     ].
 
 (* Get returns a complete history proof for the uid.
@@ -1241,7 +1240,7 @@ Definition MembHideEncode: val :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "LabelProof" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "MapVal" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice3D (![slice.T byteT] "b") (struct.loadF MembHide "MerkProof" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MembHide "MerkProof" "o"));;
     ![slice.T byteT] "b".
 
 (* MembHideSlice1DEncode from serde_misc.go *)
@@ -1681,8 +1680,7 @@ Definition NewServer: val :=
     let: "mu" := newMutex #() in
     let: ("sigPk", "sigSk") := cryptoffi.SigGenerateKey #() in
     let: ("vrfPk", "vrfSk") := cryptoffi.VrfGenerateKey #() in
-    let: "m" := struct.new merkle.Tree [
-    ] in
+    let: "m" := merkle.NewTree #() in
     let: ("hist", <>) := updHist slice.nil #0 (NewMap stringT (slice.T byteT) #()) (merkle.Tree__Digest "m") "sigSk" in
     let: "opens" := NewMap stringT ptrT #() in
     let: "labelCache" := NewMap uint64T (slice.T ptrT) #() in
