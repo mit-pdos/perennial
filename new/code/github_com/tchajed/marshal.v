@@ -483,4 +483,94 @@ Definition WriteLenPrefixedBytes : val :=
      let: "$a1" := (![sliceT] "bs") in
      WriteBytes "$a0" "$a1")).
 
+(* go: stateless_slice.go:3:6 *)
+Definition ReadSlice (T: go_type) : val :=
+  rec: "ReadSlice" "b" "count" "readOne" :=
+    exception_do (let: "readOne" := (ref_ty funcT "readOne") in
+    let: "count" := (ref_ty uint64T "count") in
+    let: "b" := (ref_ty sliceT "b") in
+    let: "b2" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (![sliceT] "b") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    let: "xs" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := #slice.nil in
+    do:  ("xs" <-[sliceT] "$r0");;;
+    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "count")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "bNew" := (ref_ty sliceT (zero_val sliceT)) in
+      let: "xNew" := (ref_ty T (zero_val T)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "b2") in
+      (![funcT] "readOne") "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("xNew" <-[T] "$r0");;;
+      do:  ("bNew" <-[sliceT] "$r1");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "xs") in
+      let: "$a1" := ((let: "$sl0" := (![T] "xNew") in
+      slice.literal T ["$sl0"])) in
+      (slice.append sliceT) "$a0" "$a1") in
+      do:  ("xs" <-[sliceT] "$r0");;;
+      let: "$r0" := (![sliceT] "bNew") in
+      do:  ("b2" <-[sliceT] "$r0")));;;
+    return: (![sliceT] "xs", ![sliceT] "b2")).
+
+(* go: stateless_slice.go:14:6 *)
+Definition ReadSliceLenPrefix (T: go_type) : val :=
+  rec: "ReadSliceLenPrefix" "b" "readOne" :=
+    exception_do (let: "readOne" := (ref_ty funcT "readOne") in
+    let: "b" := (ref_ty sliceT "b") in
+    let: "b2" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "count" := (ref_ty uint64T (zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "b") in
+    ReadInt "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("count" <-[uint64T] "$r0");;;
+    do:  ("b2" <-[sliceT] "$r1");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "b2") in
+    let: "$a1" := (![uint64T] "count") in
+    let: "$a2" := (![funcT] "readOne") in
+    (ReadSlice T) "$a0" "$a1" "$a2")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: stateless_slice.go:19:6 *)
+Definition WriteSlice (T: go_type) : val :=
+  rec: "WriteSlice" "b" "xs" "writeOne" :=
+    exception_do (let: "writeOne" := (ref_ty funcT "writeOne") in
+    let: "xs" := (ref_ty sliceT "xs") in
+    let: "b" := (ref_ty sliceT "b") in
+    let: "b2" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (![sliceT] "b") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    do:  (let: "$range" := (![sliceT] "xs") in
+    slice.for_range T "$range" (λ: <> "x",
+      let: "x" := ref_ty T "x" in
+      let: "$r0" := (let: "$a0" := (![T] "x") in
+      let: "$a1" := (![sliceT] "b2") in
+      (![funcT] "writeOne") "$a0" "$a1") in
+      do:  ("b2" <-[sliceT] "$r0")));;;
+    return: (![sliceT] "b2")).
+
+(* go: stateless_slice.go:27:6 *)
+Definition WriteSliceLenPrefix (T: go_type) : val :=
+  rec: "WriteSliceLenPrefix" "b" "xs" "writeOne" :=
+    exception_do (let: "writeOne" := (ref_ty funcT "writeOne") in
+    let: "xs" := (ref_ty sliceT "xs") in
+    let: "b" := (ref_ty sliceT "b") in
+    let: "b2" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
+    let: "$a1" := (let: "$a0" := (![sliceT] "xs") in
+    slice.len "$a0") in
+    WriteInt "$a0" "$a1") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    let: "b3" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b2") in
+    let: "$a1" := (![sliceT] "xs") in
+    let: "$a2" := (![funcT] "writeOne") in
+    (WriteSlice T) "$a0" "$a1" "$a2") in
+    do:  ("b3" <-[sliceT] "$r0");;;
+    return: (![sliceT] "b3")).
+
 End code.
