@@ -459,6 +459,23 @@ Section apply_cmds.
     }
   Qed.
 
+  Lemma apply_cmds_hist_not_nil {log cm histm} :
+    apply_cmds log = State cm histm ->
+    map_Forall (λ _ h, h ≠ []) histm.
+  Proof.
+    intros Happly k h Hh Hnil.
+    assert (Hinit : apply_cmds [] = init_gpst) by done.
+    unshelve epose proof (apply_cmds_mono_histm _ Happly Hinit) as Hprefix.
+    { apply prefix_nil. }
+    apply map_Forall2_forall in Hprefix as [Hprefix Hdom].
+    assert (is_Some (init_hists !! k)) as [h' Hh'].
+    { by rewrite -elem_of_dom -Hdom elem_of_dom. }
+    specialize (Hprefix _ _ _ Hh Hh').
+    apply lookup_gset_to_gmap_Some in Hh' as [_ <-].
+    subst h.
+    by eapply prefix_nil_not.
+  Qed.
+
 End apply_cmds.
 
 Section execute_cmds.
@@ -476,19 +493,21 @@ Section execute_cmds.
 
   Definition execute_commit st (tid : nat) (pwrs : dbmap) :=
     match st with
-    | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
+    | LocalState cm histm cpm ptgsm sptsm ptsm psm rkm =>
         match cm !! tid with
         | Some true => st
         | Some false => LocalStuck
-        | None => match cpm !! tid with
-                 | Some _ => LocalState
-                              (<[tid := true]> cm) (multiwrite tid pwrs hists)
-                              (delete tid cpm) (delete tid ptgsm) sptsm (release pwrs ptsm)
-                              psm rkm
-                 | None => LocalState
-                            (<[tid := true]> cm) (multiwrite tid pwrs hists)
-                            cpm ptgsm sptsm ptsm psm rkm
-                 end
+        | None => if decide (safe_extension tid pwrs histm)
+                 then match cpm !! tid with
+                      | Some _ => LocalState
+                                   (<[tid := true]> cm) (multiwrite tid pwrs histm)
+                                   (delete tid cpm) (delete tid ptgsm) sptsm (release pwrs ptsm)
+                                   psm rkm
+                      | None => LocalState
+                                 (<[tid := true]> cm) (multiwrite tid pwrs histm)
+                                 cpm ptgsm sptsm ptsm psm rkm
+                      end
+                 else LocalStuck
         end
     | LocalStuck => LocalStuck
     end.
@@ -577,74 +596,291 @@ Section execute_cmds.
     execute_cmds (cmds ++ [cmd]) = execute_cmd (execute_cmds cmds) cmd.
   Proof. by rewrite /execute_cmds foldl_snoc. Qed.
 
-  Lemma execute_cmds_dom_histm {log cm histm cpm ptgsm sptsm ptsm psm rkm} :
-    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm ->
-    dom histm = keys_all.
-  Proof.
-  Admitted.
-
-  Lemma execute_cmds_hist_not_nil {log cm histm cpm ptgsm sptsm ptsm psm rkm} :
-    execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm ->
-    map_Forall (λ _ h, h ≠ []) histm.
-  Admitted.
-
 End execute_cmds.
 
 Section merge_clog_ilog.
 
-  Program Fixpoint merge_clog_ilog_raw
-    (n : nat) (log : list command) (clog : list ccommand) (ilog : list (nat * icommand))
-    {measure (length clog + length ilog)%nat} :=
-    match clog, ilog with
-    | ccmd :: ctail, icmd :: itail => if decide (icmd.1 = n)
-                                   then merge_clog_ilog_raw n (ICmd icmd.2 :: log) clog itail
-                                   else merge_clog_ilog_raw (S n) (CCmd ccmd :: log) ctail ilog
-    | _, _ => log
-    end.
-  Next Obligation.
-    intros n log clog ilog _ ccmd ctail icmd itail Hclog Hilog _.
-    rewrite -Hilog /=. lia.
-  Qed.
-  Next Obligation.
-    intros n log clog ilog _ ccmd ctail icmd itail Hclog Hilog _.
-    rewrite -Hclog /=. lia.
-  Qed.
-  Next Obligation.
-    intros _ _ _ _ _ _ _ clog' _ ccmd ctail _ _ [Hcontra _].
-    by subst clog'.
-  Qed.
-  Next Obligation.
-    intros _ _ _ _ _ _ _ _ _ _ ilog' _ _ icmd itail [_ Hcontra].
-    by subst ilog'.
-  Qed.
-  Next Obligation.
-  Admitted.
+  Definition merge_until_ilog_step
+    (clog : list ccommand) (nl : nat * list command) (icmd : nat * icommand) :=
+    ((nl.1 `max` icmd.1)%nat, nl.2 ++ (subslice nl.1 icmd.1 (CCmd <$> clog)) ++ [ICmd icmd.2]).
 
-  Definition merge_clog_ilog (clog : list ccommand) (ilog : list (nat * icommand)) :=
-    merge_clog_ilog_raw O [] clog ilog.
+  Definition merge_until_ilog clog ilog :=
+    foldl (merge_until_ilog_step clog) (O, []) ilog.
+
+  Lemma merge_until_ilog_def clog ilog :
+    merge_until_ilog clog ilog = foldl (merge_until_ilog_step clog) (O, []) ilog.
+  Proof. done. Qed.
+
+  Lemma merge_until_ilog_step_skip clog nl icmd ccmd :
+    (icmd.1 ≤ length clog)%nat ->
+    merge_until_ilog_step (clog ++ [ccmd]) nl icmd =
+    merge_until_ilog_step clog nl icmd.
+  Proof.
+    intros Hlenclog.
+    rewrite /merge_until_ilog_step.
+    do 3 f_equal.
+    rewrite 2!subslice_def.
+    by rewrite fmap_app take_app_le; last rewrite length_fmap.
+  Qed.
+
+  Lemma merge_until_ilog_skip_raw clog ilog1 ilog2 ccmd :
+    Forall (λ nc, (nc.1 ≤ length clog)%nat) ilog2 ->
+    merge_until_ilog (clog ++ [ccmd]) ilog1 = merge_until_ilog clog ilog1 ->
+    merge_until_ilog (clog ++ [ccmd]) (ilog1 ++ ilog2) =
+    merge_until_ilog clog (ilog1 ++ ilog2).
+  Proof.
+    intros Hlen.
+    generalize dependent ilog1.
+    induction ilog2 as [| icmd ilog IH]; intros ilog1 Heq.
+    { by rewrite app_nil_r. }
+    apply Forall_cons in Hlen as [Hicmd Hilog].
+    rewrite (cons_middle _ ilog1) app_assoc.
+    rewrite IH; [done | done |].
+    rewrite /merge_until_ilog 2!foldl_snoc.
+    rewrite merge_until_ilog_step_skip; last done.
+    by rewrite -2!merge_until_ilog_def Heq.
+  Qed.
+
+  Lemma merge_until_ilog_skip clog ilog ccmd :
+    Forall (λ nc, (nc.1 ≤ length clog)%nat) ilog ->
+    merge_until_ilog (clog ++ [ccmd]) ilog = merge_until_ilog clog ilog.
+  Proof.
+    intros Hlen.
+    by apply (merge_until_ilog_skip_raw clog [] ilog ccmd).
+  Qed.
+
+  Lemma merge_until_ilog_le_raw clog ilog1 ilog2 x :
+    Forall (λ nc, (nc.1 ≤ x)%nat) ilog2 ->
+    ((merge_until_ilog clog ilog1).1 ≤ x)%nat ->
+    ((merge_until_ilog clog (ilog1 ++ ilog2)).1 ≤ x)%nat.
+  Proof.
+    generalize dependent ilog1.
+    induction ilog2 as [| icmd ilog IH]; intros ilog1 Hle Hilog1.
+    { by rewrite app_nil_r. }
+    apply Forall_cons in Hle as [Hicmd Hilog].
+    rewrite (cons_middle _ ilog1) app_assoc.
+    apply IH; first done.
+    rewrite /merge_until_ilog foldl_snoc -merge_until_ilog_def /merge_until_ilog_step /=.
+    lia.
+  Qed.
+
+  Lemma merge_until_ilog_le clog ilog x :
+    Forall (λ nc, (nc.1 ≤ x)%nat) ilog ->
+    ((merge_until_ilog clog ilog).1 ≤ x)%nat.
+  Proof.
+    intros Hle.
+    apply (merge_until_ilog_le_raw clog [] ilog x); first done.
+    simpl.
+    lia.
+  Qed.
+
+  Definition merge_clog_ilog clog ilog :=
+    let (n, log) := merge_until_ilog clog ilog in
+    log ++ drop n (CCmd <$> clog).
 
   Lemma merge_clog_ilog_nil :
     merge_clog_ilog [] [] = [].
-  Proof.
-  Admitted.
+  Proof. by rewrite /merge_clog_ilog /merge_until_ilog /=. Qed.
 
   Lemma merge_clog_ilog_snoc_clog clog ilog ccmd :
     Forall (λ nc, (nc.1 ≤ length clog)%nat) ilog ->
     merge_clog_ilog (clog ++ [ccmd]) ilog =
     merge_clog_ilog clog ilog ++ [CCmd ccmd].
-  Admitted.
+  Proof.
+    intros Hlen.
+    rewrite /merge_clog_ilog merge_until_ilog_skip; last done.
+    pose proof (merge_until_ilog_le clog _ _ Hlen) as Hle.
+    set nl := merge_until_ilog _ _ in Hle *.
+    destruct nl as [n l] eqn:Hnl.
+    rewrite fmap_app drop_app_le; last first.
+    { by rewrite length_fmap. }
+    by rewrite app_assoc.
+  Qed.
 
   Lemma merge_clog_ilog_snoc_ilog clog ilog lsn icmd :
     (length clog ≤ lsn)%nat ->
     merge_clog_ilog clog (ilog ++ [(lsn, icmd)]) =
     merge_clog_ilog clog ilog ++ [ICmd icmd].
-  Admitted.
+  Proof.
+    intros Hlsn.
+    rewrite {1}/merge_clog_ilog /merge_until_ilog foldl_snoc /=.
+    set trailing := drop _ _.
+    assert (trailing = []) as ->.
+    { subst trailing.
+      apply drop_ge.
+      rewrite length_fmap.
+      lia.
+    }
+    rewrite app_nil_r app_assoc.
+    f_equal.
+    rewrite /merge_clog_ilog -merge_until_ilog_def.
+    set nl := merge_until_ilog _ _.
+    destruct nl as [n l].
+    simpl.
+    f_equal.
+    by rewrite subslice_def take_ge; last rewrite length_fmap.
+  Qed.
+
+  Definition execute_apply_consistent clog ilog :=
+    ∀ cm histm,
+    let log := merge_clog_ilog clog ilog in
+    (∃ cpm ptgsm sptsm ptsm psm rkm,
+        execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm) ->
+    apply_cmds clog = State cm histm.
+
+  Definition is_ccmd (c : command) :=
+    match c with
+    | CCmd _ => True
+    | _ => False
+    end.
+
+  #[global]
+  Instance is_ccmd_decision c :
+    Decision (is_ccmd c).
+  Proof. destruct c; apply _. Defined.
+
+  Definition filter_ccmd (log : list command) :=
+    filter (λ c, is_ccmd c) log.
+
+  Definition rpst_to_gpst st :=
+    match st with
+    | LocalState cm histm _ _ _ _ _ _ => State cm histm
+    | _ => Stuck
+    end.
+
+  Lemma rpst_to_gpst_execute_ccmds_raw log1 log2 :
+    rpst_to_gpst (execute_cmds log1) = rpst_to_gpst (execute_cmds (filter_ccmd log1)) ->
+    rpst_to_gpst (execute_cmds (log1 ++ log2)) =
+    rpst_to_gpst (execute_cmds (filter_ccmd (log1 ++ log2))).
+  Proof.
+    generalize dependent log1.
+    induction log2 as [| cmd log IH]; intros log1 Heq.
+    { by rewrite app_nil_r. }
+    rewrite cons_middle app_assoc.
+    apply IH.
+    destruct cmd.
+    { rewrite /filter_ccmd filter_app filter_cons /= filter_nil.
+      rewrite /execute_cmds 2!foldl_snoc 2!execute_cmds_unfold.
+      destruct (execute_cmds _).
+      { destruct (execute_cmds _); last done.
+        symmetry in Heq. inv Heq.
+        destruct cmd; simpl.
+        { destruct (cm !! tid); first by destruct b.
+          case_decide; last done.
+          destruct (cpm !! tid).
+          { by destruct (cpm0 !! tid). }
+          { by destruct (cpm0 !! tid). }
+        }
+        { destruct (cm !! tid); first by destruct b.
+          destruct (cpm !! tid).
+          { by destruct (cpm0 !! tid). }
+          { by destruct (cpm0 !! tid). }
+        }
+      }
+      { by destruct (execute_cmds _). }
+    }
+    { rewrite /filter_ccmd filter_app filter_cons /= filter_nil app_nil_r -Heq.
+      rewrite /execute_cmds foldl_snoc execute_cmds_unfold.
+      by destruct cmd; destruct (execute_cmds log1).
+    }
+  Qed.
+
+  Lemma rpst_to_gpst_execute_ccmds log :
+    rpst_to_gpst (execute_cmds log) =
+    rpst_to_gpst (execute_cmds (filter_ccmd log)).
+  Proof. by apply (rpst_to_gpst_execute_ccmds_raw [] log). Qed.
+
+  Lemma filter_merged_cmds_raw clog ilog1 ilog2 :
+    filter_ccmd (merge_clog_ilog clog ilog1) = CCmd <$> clog ->
+    filter_ccmd (merge_clog_ilog clog (ilog1 ++ ilog2)) = CCmd <$> clog.
+  Proof.
+    generalize dependent ilog1.
+    induction ilog2 as [| icmd ilog IH]; intros ilog1 Heq.
+    { by rewrite app_nil_r. }
+    rewrite cons_middle app_assoc.
+    apply IH.
+    rewrite /merge_clog_ilog in Heq.
+    destruct (merge_until_ilog clog ilog1) as [n l] eqn:Hnl.
+    rewrite /merge_clog_ilog /merge_until_ilog foldl_snoc -merge_until_ilog_def Hnl /=.
+    rewrite -{3}Heq.
+    destruct (decide (icmd.1 ≤ n)%nat) as [Hle | Hgt].
+    { replace (_ `max` _)%nat with n by lia.
+      rewrite /filter_ccmd !filter_app.
+      f_equal.
+      rewrite subslice_none; last apply Hle.
+      by rewrite filter_cons /= filter_nil app_nil_r.
+    }
+    replace (_ `max` _)%nat with icmd.1 by lia.
+    rewrite /filter_ccmd !filter_app.
+    rewrite filter_cons /= filter_nil app_nil_r -app_assoc.
+    f_equal.
+    rewrite -filter_app.
+    f_equal.
+    rewrite subslice_def.
+    apply drop_take_drop.
+    lia.
+  Qed.
+
+  Lemma filter_merged_cmds clog ilog :
+    filter_ccmd (merge_clog_ilog clog ilog) = CCmd <$> clog.
+  Proof.
+    apply (filter_merged_cmds_raw clog [] ilog).
+    rewrite /merge_clog_ilog /= drop_0.
+    rewrite /filter_ccmd list_filter_all; first done.
+    intros i c Hc.
+    by apply list_lookup_fmap_Some in Hc as (x & _ & ->).
+  Qed.
+
+  Lemma rpst_to_gpst_execute_cmds_raw clog1 clog2 :
+    rpst_to_gpst (execute_cmds (CCmd <$> clog1)) = apply_cmds clog1 ->
+    rpst_to_gpst (execute_cmds (CCmd <$> clog1 ++ clog2)) = apply_cmds (clog1 ++ clog2).
+  Proof.
+    generalize dependent clog1.
+    induction clog2 as [| ccmd clog IH]; intros clog1 Hcst.
+    { by rewrite app_nil_r. }
+    rewrite cons_middle app_assoc.
+    apply IH.
+    rewrite fmap_app /execute_cmds foldl_snoc execute_cmds_unfold.
+    rewrite /apply_cmds foldl_snoc apply_cmds_unfold.
+    rewrite -Hcst.
+    destruct ccmd.
+    { rewrite /= /apply_commit.
+      destruct (execute_cmds _); last done.
+      simpl.
+      destruct (cm !! tid).
+      { by destruct b. }
+      case_decide; last done.
+      by destruct (cpm !! tid).
+    }
+    { rewrite /= /apply_abort.
+      destruct (execute_cmds _); last done.
+      simpl.
+      destruct (cm !! tid).
+      { by destruct b. }
+      by destruct (cpm !! tid).
+    }
+  Qed.
+
+  Lemma rpst_to_gpst_execute_cmds clog :
+    rpst_to_gpst (execute_cmds (CCmd <$> clog)) = apply_cmds clog.
+  Proof. by apply (rpst_to_gpst_execute_cmds_raw [] clog). Qed.
+
+  Lemma rpst_to_gpst_execute_merged_cmds clog ilog :
+    rpst_to_gpst (execute_cmds (merge_clog_ilog clog ilog)) = apply_cmds clog.
+  Proof.
+    rewrite rpst_to_gpst_execute_ccmds filter_merged_cmds.
+    apply rpst_to_gpst_execute_cmds.
+  Qed.
 
   Lemma execute_cmds_apply_cmds clog ilog cm histm :
     let log := merge_clog_ilog clog ilog in
     (∃ cpm ptgsm sptsm ptsm psm rkm,
         execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm) ->
     apply_cmds clog = State cm histm.
-  Admitted.
+  Proof.
+    intros log Hexec.
+    destruct Hexec as (cpm & ptgsm & sptsm & ptsm & psm & rkm & Hexec).
+    by rewrite -(rpst_to_gpst_execute_merged_cmds _ ilog) Hexec.
+  Qed.
 
 End merge_clog_ilog.
