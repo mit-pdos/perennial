@@ -611,121 +611,8 @@ Proof.
        *)
       rename n into remainingHeight.
       destruct (remainingHeight).
-      { (* case: leaf *)
-        repeat iExists _.
-        iFrame.
-        iSplitR.
-        { rewrite last_snoc //. }
-        iSplitL "HchildNode Hsl".
-        {
-          iApply own_node_except_unfold.
-          repeat iExists _.
-          iDestruct (struct_fields_split with "HchildNode") as "H".
-          iNamed "H".
-          rewrite zero_slice_val.
-          iFrame.
-          iDestruct (own_slice_small_nil) as "$"; first done.
-          iSplitR; first done.
-          iSplitR; first done.
-          instantiate (1:=Leaf _).
-          done.
-        }
-        repeat (iSplitR; try iPureIntro).
-        { rewrite length_app /=. word. }
-        { intros ?. apply new_leaf_eq_map. }
-        { by replace (uint.nat _ - uint.nat _)%nat with (O) by word. }
-
-        iDestruct (big_sepL2_length with "Hchildren") as %Hchildren.
-        iIntros (?) "Hnode' %Heq' %Hheight'".
-        iApply ("Hrest" with "[-]").
-        {
-          iApply own_node_except_unfold.
-          repeat iExists _.
-          iFrame "Hptr_hash Hptr_children ∗".
-          iSplitR; first done.
-          iSplitR.
-          { rewrite length_insert //. }
-          replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
-          instantiate (1:=Interior (<[uint.nat pos := Some sub_tree' ]> children)).
-          simpl.
-          iDestruct (big_sepL2_lookup_2_some with "Hchildren") as %[? Hchildren_lookup].
-          { done. }
-          iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[_ Hchildren]".
-          { done. }
-          { done. }
-          iApply "Hchildren".
-          rewrite [in drop (uint.nat i) _](drop_S _ pos) //.
-          rewrite decide_True //.
-          iNext.
-          iExactEq "Hnode'".
-          repeat f_equal.
-          word.
-        }
-        {
-          iPureIntro.
-          intros ?.
-          replace (uint.nat (w64_word_instance.(word.add) i (W64 1))) with (S (uint.nat i)) in Heq', Hheight' by word.
-          replace (uint.nat full_height - S _)%nat with (O) in Hheight' by word.
-          erewrite drop_S; last done.
-          simpl.
-          assert (drop (S (uint.nat i)) id = []) as Heq.
-          {
-            apply drop_ge.
-            rewrite /full_height in Hdepth.
-            word.
-          }
-          rewrite Heq in Heq' |- *.
-          rewrite insert_insert in Heq'.
-          destruct (decide (k = [pos])).
-          - subst.
-            rewrite lookup_insert /=.
-            rewrite /= list_lookup_insert //.
-            2:{ word. }
-            specialize (Heq' []).
-            simpl in Heq'.
-            done.
-          - rewrite lookup_insert_ne //.
-            specialize (Hsubmap k).
-            destruct k.
-            + simpl in *. done.
-            + simpl in *.
-              specialize (Heq' []).
-              simpl in *.
-              destruct sub_tree'; try done.
-              destruct k.
-              2:{ (* In this case, the lookup must be None. *)
-                destruct (decide (pos = w)).
-                - subst.
-                  rewrite list_lookup_insert /=; last word.
-                  opose proof (list_lookup_lt (children) (uint.nat w) _) as
-                    [child Hchild].
-                  { word. }
-                  rewrite Hchild in Hsubmap.
-                  eapply Forall_lookup in Hheight; last done.
-                  destruct child; try done.
-                  by destruct t.
-                - rewrite list_lookup_insert_ne /=.
-                  2:{ intros Hbad. apply n0. word. }
-                  opose proof (list_lookup_lt (children) (uint.nat w) _) as
-                    [child Hchild].
-                  { word. }
-                  rewrite Hchild in Hsubmap |- *.
-                  eapply Forall_lookup in Hheight; last done.
-                  destruct child; try done.
-              }
-              rewrite list_lookup_insert_ne /=.
-              2:{ intros ?. apply n. f_equal. word. }
-              done.
-        }
-        {
-          iPureIntro.
-          simpl.
-          apply Forall_insert.
-          - done.
-          - destruct sub_tree'; try done.
-            replace (uint.nat _ - _)%nat with (O) in Hheight' by word.
-            done.
-        }
+      { (* case: leaf, can't happen *)
+        exfalso. rewrite /full_height in Hdepth. word.
       }
       { (* case: interior node *)
         repeat iExists _.
@@ -803,7 +690,6 @@ Proof.
               simpl in *.
               rewrite list_lookup_insert //.
               2:{ word. }
-              specialize []
             specialize (Heq' []).
             simpl in Heq'.
             done.
