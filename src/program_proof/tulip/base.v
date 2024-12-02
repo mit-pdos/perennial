@@ -91,7 +91,19 @@ Proof. solve_decision. Qed.
 #[global]
 Instance ccommand_countable :
   Countable ccommand.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | CmdCommit tid pwrs => inl (tid, pwrs)
+                  | CmdAbort tid => inr tid
+                  end)
+            (λ x, match x with
+                  | inl (tid, pwrs) => CmdCommit tid pwrs
+                  | inr tid => CmdAbort tid
+                  end)
+            _).
+  intros [|] => //=.
+Qed.
 
 #[global]
 Instance icommand_eq_decision :
@@ -101,7 +113,23 @@ Proof. solve_decision. Qed.
 #[global]
 Instance icommand_countable :
   Countable icommand.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | CmdAcquire tid pwrs ptgs => inl (tid, pwrs, ptgs)
+                  | CmdRead tid key => inr (inl (tid, key))
+                  | CmdAdvance tid rank => inr (inr (inl (tid, rank)))
+                  | CmdAccept tid rank pdec => inr (inr (inr (tid, rank, pdec)))
+                  end)
+            (λ x, match x with
+                  | inl (tid, pwrs, ptgs) => CmdAcquire tid pwrs ptgs
+                  | inr (inl (tid, key)) => CmdRead tid key
+                  | inr (inr (inl (tid, rank))) => CmdAdvance tid rank
+                  | inr (inr (inr (tid, rank, pdec))) => CmdAccept tid rank pdec
+                  end)
+            _).
+  intros [| | |] => //=.
+Qed.
 
 #[global]
 Instance command_eq_decision :
@@ -111,7 +139,19 @@ Proof. solve_decision. Qed.
 #[global]
 Instance command_countable :
   Countable command.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | CCmd cmd => inl cmd
+                  | ICmd cmd => inr cmd
+                  end)
+            (λ x, match x with
+                  | inl cmd => CCmd cmd
+                  | inr cmd => ICmd cmd
+                  end)
+            _).
+  intros [|] => //=.
+Qed.
 
 (** State-machine log. *)
 Definition dblog := list ccommand.
