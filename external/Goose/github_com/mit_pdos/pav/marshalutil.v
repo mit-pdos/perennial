@@ -5,71 +5,65 @@ From Goose Require github_com.tchajed.marshal.
 Section code.
 Context `{ext_ty: ext_types}.
 
-Notation errorTy := boolT (only parsing).
-
-Definition errNone : expr := #false.
-
-Definition errSome : expr := #true.
-
 Definition ReadBool: val :=
   rec: "ReadBool" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     (if: (slice.len (![slice.T byteT] "b")) < #1
-    then (#false, slice.nil, errSome)
+    then (#false, slice.nil, #true)
     else
       let: ("data", "b") := marshal.ReadBool (![slice.T byteT] "b") in
-      ("data", ![slice.T byteT] "b", errNone)).
+      ("data", ![slice.T byteT] "b", #false)).
 
 Definition ReadConstBool: val :=
   rec: "ReadConstBool" "b0" "cst" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     let: (("res", "b"), "err") := ReadBool (![slice.T byteT] "b") in
     (if: "err"
-    then (slice.nil, errSome)
+    then (slice.nil, #true)
     else
       (if: "res" ≠ "cst"
-      then (slice.nil, errSome)
-      else (![slice.T byteT] "b", errNone))).
+      then (slice.nil, #true)
+      else (![slice.T byteT] "b", #false))).
 
 Definition ReadInt: val :=
   rec: "ReadInt" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     (if: (slice.len (![slice.T byteT] "b")) < #8
-    then (#0, slice.nil, errSome)
+    then (#0, slice.nil, #true)
     else
       let: ("data", "b") := marshal.ReadInt (![slice.T byteT] "b") in
-      ("data", ![slice.T byteT] "b", errNone)).
+      ("data", ![slice.T byteT] "b", #false)).
 
 Definition ReadConstInt: val :=
   rec: "ReadConstInt" "b0" "cst" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     let: (("res", "b"), "err") := ReadInt (![slice.T byteT] "b") in
     (if: "err"
-    then (slice.nil, errSome)
+    then (slice.nil, #true)
     else
       (if: "res" ≠ "cst"
-      then (slice.nil, errSome)
-      else (![slice.T byteT] "b", errNone))).
+      then (slice.nil, #true)
+      else (![slice.T byteT] "b", #false))).
 
 Definition ReadByte: val :=
   rec: "ReadByte" "b0" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     (if: (slice.len (![slice.T byteT] "b")) < #1
-    then (#(U8 0), slice.nil, errSome)
+    then (#(U8 0), slice.nil, #true)
     else
       let: ("data", "b") := marshal.ReadBytes (![slice.T byteT] "b") #1 in
-      (SliceGet byteT "data" #0, ![slice.T byteT] "b", errNone)).
+      (SliceGet byteT "data" #0, ![slice.T byteT] "b", #false)).
 
 Definition ReadConstByte: val :=
   rec: "ReadConstByte" "b0" "cst" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     let: (("res", "b"), "err") := ReadByte (![slice.T byteT] "b") in
     (if: "err"
-    then (slice.nil, errSome)
+    then (slice.nil, #true)
     else
       (if: "res" ≠ "cst"
-      then (slice.nil, errSome)
-      else (![slice.T byteT] "b", errNone))).
+      then (slice.nil, #true)
+      else (![slice.T byteT] "b", #false))).
 
 Definition WriteByte: val :=
   rec: "WriteByte" "b0" "data" :=
@@ -81,10 +75,10 @@ Definition ReadBytes: val :=
   rec: "ReadBytes" "b0" "length" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     (if: (slice.len (![slice.T byteT] "b")) < "length"
-    then (slice.nil, slice.nil, errSome)
+    then (slice.nil, slice.nil, #true)
     else
       let: ("data", "b") := marshal.ReadBytes (![slice.T byteT] "b") "length" in
-      ("data", ![slice.T byteT] "b", errNone)).
+      ("data", ![slice.T byteT] "b", #false)).
 
 Definition ReadSlice1D: val :=
   rec: "ReadSlice1D" "b0" :=
@@ -96,7 +90,7 @@ Definition ReadSlice1D: val :=
       let: (("data", "b"), "err") := ReadBytes (![slice.T byteT] "b") "length" in
       (if: "err"
       then (slice.nil, slice.nil, "err")
-      else ("data", ![slice.T byteT] "b", errNone))).
+      else ("data", ![slice.T byteT] "b", #false))).
 
 Definition WriteSlice1D: val :=
   rec: "WriteSlice1D" "b0" "data" :=
@@ -132,7 +126,7 @@ Definition ReadSlice2D: val :=
           Continue));;
       (if: ![boolT] "err0"
       then (slice.nil, slice.nil, ![boolT] "err0")
-      else (![slice.T (slice.T byteT)] "data0", ![slice.T byteT] "b", errNone))).
+      else (![slice.T (slice.T byteT)] "data0", ![slice.T byteT] "b", #false))).
 
 Definition WriteSlice2D: val :=
   rec: "WriteSlice2D" "b0" "data" :=
@@ -169,7 +163,7 @@ Definition ReadSlice3D: val :=
           Continue));;
       (if: ![boolT] "err0"
       then (slice.nil, slice.nil, ![boolT] "err0")
-      else (![slice.T (slice.T (slice.T byteT))] "data0", ![slice.T byteT] "b", errNone))).
+      else (![slice.T (slice.T (slice.T byteT))] "data0", ![slice.T byteT] "b", #false))).
 
 Definition WriteSlice3D: val :=
   rec: "WriteSlice3D" "b0" "data" :=

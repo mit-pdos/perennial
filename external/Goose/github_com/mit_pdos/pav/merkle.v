@@ -102,10 +102,11 @@ Definition Tree__Put: val :=
       then struct.storeF Tree "root" "t" (newInteriorNode #())
       else #());;
       "interiors" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "interiors") (struct.loadF Tree "root" "t"));;
+      let: "n" := cryptoffi.HashLen - #1 in
       let: "depth" := ref_to uint64T #0 in
-      (for: (λ: <>, (![uint64T] "depth") < (cryptoffi.HashLen - #1)); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+      (for: (λ: <>, (![uint64T] "depth") < "n"); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
         let: "currNode" := SliceGet ptrT (![slice.T ptrT] "interiors") (![uint64T] "depth") in
-        let: "pos" := SliceGet byteT "label" (![uint64T] "depth") in
+        let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
         (if: (SliceGet ptrT (struct.loadF node "children" "currNode") "pos") = #null
         then SliceSet ptrT (struct.loadF node "children" "currNode") "pos" (newInteriorNode #())
         else #());;
