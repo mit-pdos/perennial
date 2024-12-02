@@ -684,70 +684,47 @@ Proof.
             specialize (Hsubmap []).
             simpl in Hsubmap.
             rewrite lookup_insert_ne //.
-          - destruct (decide (w = pos)) as [Hw|Hw].
+          - assert (children !! uint.nat pos = Some None) as Hchild.
+            { admit. } (* FIXME: prove this based on the pointer being null. *)
+            destruct (decide (w = pos)) as [Hw|Hw].
             + (* k starts with pos *)
               subst pos.
-              simpl in *.
-              rewrite list_lookup_insert //.
-              2:{ word. }
-            specialize (Heq' []).
-            simpl in Heq'.
-            done.
-          - rewrite lookup_insert_ne //.
-            specialize (Hsubmap k).
-            destruct k.
-            + simpl in *. done.
-            + simpl in *.
-              specialize (Heq' []).
-              simpl in *.
-              destruct sub_tree'; try done.
-              destruct k.
-              2:{ (* In this case, the lookup must be None. *)
-                destruct (decide (pos = w)).
-                - subst.
-                  rewrite list_lookup_insert /=; last word.
-                  opose proof (list_lookup_lt (children) (uint.nat w) _) as
-                    [child Hchild].
-                  { word. }
-                  rewrite Hchild in Hsubmap.
-                  eapply Forall_lookup in Hheight; last done.
-                  destruct child; try done.
-                  by destruct t.
-                - rewrite list_lookup_insert_ne /=.
-                  2:{ intros Hbad. apply n0. word. }
-                  opose proof (list_lookup_lt (children) (uint.nat w) _) as
-                    [child Hchild].
-                  { word. }
-                  rewrite Hchild in Hsubmap |- *.
-                  eapply Forall_lookup in Hheight; last done.
-                  destruct child; try done.
-              }
-              rewrite list_lookup_insert_ne /=.
-              2:{ intros ?. apply n. f_equal. word. }
-              done.
+              destruct (decide (id_rest = k)) as [Hrest|Hrest].
+              * subst k.
+                simpl in *.
+                rewrite list_lookup_insert //.
+                2:{ word. }
+                specialize (Hsubmap (w :: id_rest)).
+                simpl in Hsubmap.
+                rewrite lookup_insert.
+                specialize (Heq' id_rest).
+                rewrite lookup_insert in Heq'.
+                done.
+              * rewrite lookup_insert_ne //.
+                2:{ naive_solver. }
+                simpl.
+                rewrite list_lookup_insert //.
+                2:{ word. }
+                specialize (Hsubmap (w :: k)).
+                rewrite /= Hchild in Hsubmap.
+                rewrite Hsubmap.
+                specialize (Heq' k).
+                rewrite lookup_insert_ne // in Heq'.
+            + rewrite lookup_insert_ne /=.
+              2:{ naive_solver. }
+              rewrite list_lookup_insert_ne //.
+              2:{ intros ?. apply Hw. word. }
+              specialize (Hsubmap (w :: k)).
+              simpl in Hsubmap. done.
         }
         {
           iPureIntro.
           simpl.
           apply Forall_insert.
           - done.
-          - destruct sub_tree'; try done.
-            replace (uint.nat _ - _)%nat with (O) in Hheight' by word.
+          - replace (uint.nat _ - _)%nat with (S n) in Hheight' by word.
             done.
         }
-
-        repeat iExists _.
-        iFrame.
-        iSplitR; try iPureIntro.
-        { rewrite last_snoc. done. }
-        repeat (iSplitR; try iPureIntro).
-        { rewrite length_app /=. word. }
-        { rewrite Hchildren_len. apply newNode_eq_empty. }
-        { (* FIXME: don't want to always make the new node an Interior; at the
-           very end, it should be a leaf node. *)
-          admit.
-        }
-        admit.
       }
     }
 Admitted.
