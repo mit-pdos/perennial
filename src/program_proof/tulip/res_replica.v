@@ -1,5 +1,6 @@
 From iris.algebra Require Import mono_nat mono_list gmap_view gset.
 From iris.algebra.lib Require Import dfrac_agree.
+From Perennial.Helpers Require Import gmap_algebra.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import fin_maps.
@@ -584,7 +585,39 @@ Section res.
           { done. }
           { done. }
         }
-        admit.
+        etrans; last first.
+        { apply cmra_update_op.
+          { reflexivity. }
+          apply cmra_update_included.
+          apply singleton_big_opS_le.
+        }
+        rewrite singleton_op.
+        apply singleton_update.
+        replace (_ ∪ _) with (gset_to_gmap () (tksnew ∪ s)); last first.
+        { apply map_eq.
+          intros tg.
+          rewrite lookup_union.
+          rewrite 3!lookup_gset_to_gmap.
+          destruct (decide (tg ∈ tksnew)) as [Htgin | Htgnotin].
+          { rewrite option_guard_True.
+            { rewrite option_guard_True; last done.
+              by rewrite union_Some_l.
+            }
+            set_solver.
+          }
+          rewrite (option_guard_False (tg ∈ tksnew)); last done.
+          rewrite option_union_left_id.
+          destruct (decide (tg ∈ s)) as [Htgin' | Htgnotin'].
+          { rewrite option_guard_True.
+            { by rewrite option_guard_True. }
+            set_solver.
+          }
+          { rewrite option_guard_False.
+            { by rewrite option_guard_False. }
+            set_solver.
+          }
+        }
+        by rewrite big_opM_gset_to_gmap big_opS_set_map.
       }
       iFrame.
       iPureIntro.
@@ -625,7 +658,7 @@ Section res.
       }
       apply elem_of_map in Hin as (g' & Heq & Hg').
       by inv Heq.
-    Admitted.
+    Qed.
 
     Lemma replica_backup_token_excl γ gid rid ts rank tgid :
       own_replica_backup_token γ gid rid ts rank tgid -∗
