@@ -6,17 +6,6 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Definition proposals := gmap nat bool.
 
-Inductive vote :=
-| Accept (d : bool)
-| Reject.
-
-#[global]
-Instance vote_eq_decision :
-  EqDecision vote.
-Proof. solve_decision. Qed.
-
-Definition ballot := list vote.
-
 Section def.
   Context `{Countable A}.
   Implicit Type r : nat.

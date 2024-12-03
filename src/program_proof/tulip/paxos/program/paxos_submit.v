@@ -12,7 +12,6 @@ Section submit.
     <<< ∀∀ cpool, own_cpool_half γ cpool >>>
       Paxos__Submit #px #(LitString c) @ ↑paxosNS
     <<< own_cpool_half γ ({[c]} ∪ cpool) >>>
-    (* TODO: return a receipt for checking committedness from the client. *)
     {{{ (lsn : u64) (term : u64), RET (#lsn, #term); True }}}.
   Proof.
     iIntros "#Hinv" (Φ) "!> _ HAU".

@@ -15,8 +15,12 @@ Section propose.
     do 2 iNamed "Hgroup". iNamed "Hpsm".
     destruct (psm !! ts) as [ps |] eqn:Hpsmts; last first.
     { (* Case: [psm !! ts = None]. *)
-      iMod (group_prepare_proposal_init ts {[rk := p]} with "Hpsm") as "Hpsm".
+      iMod (group_prepare_proposal_init ts with "Hpsm") as "Hpsm".
       { apply Hpsmts. }
+      iMod (group_prepare_proposal_insert ts _ rk p with "Hpsm") as "Hpsm".
+      { by rewrite lookup_insert. }
+      { done. }
+      rewrite insert_empty insert_insert.
       iDestruct (group_prepare_proposal_witness ts _ rk p with "Hpsm") as "#Hpsl".
       { by rewrite lookup_insert. }
       { by rewrite lookup_singleton. }

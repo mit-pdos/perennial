@@ -1,3 +1,6 @@
+From iris.algebra Require Import mono_nat mono_list gmap_view gset.
+From iris.algebra.lib Require Import dfrac_agree.
+From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.Helpers Require finite.
 
@@ -287,13 +290,158 @@ Definition valid_ccommand gid (c : ccommand) :=
   | CmdAbort ts => valid_ts ts
   end.
 
-Class tulip_ghostG (Σ : gFunctors).
+Inductive vote :=
+| Accept (d : bool)
+| Reject.
 
-Record tulip_names := {}.
+#[global]
+Instance vote_eq_decision :
+  EqDecision vote.
+Proof. solve_decision. Qed.
+
+Definition ballot := list vote.
+
+Canonical Structure dbvalO := leibnizO dbval.
+Definition dbmapR := gmapR dbkey (dfrac_agreeR dbvalO).
+Definition histR := mono_listR dbvalO.
+Definition histmR := gmapR dbkey histR.
+Definition tsmR := gmapR dbkey (dfrac_agreeR natO).
+Canonical Structure dbkmodO := leibnizO dbkmod.
+Definition dbkmodR := gmapR dbkey (dfrac_agreeR dbkmodO).
+Canonical Structure boolO := leibnizO bool.
+Canonical Structure natboolmvR := gmap_viewR nat (agreeR boolO).
+Definition group_natboolmvR := gmapR u64 natboolmvR.
+Canonical Structure ppslmR := gmap_viewR (nat * nat) (agreeR boolO).
+Definition group_ppslmR := gmapR u64 ppslmR.
+Definition replica_tssR := gmapR (u64 * u64) (gmap_viewR nat unitR).
+Definition vdlR := mono_listR boolO.
+Definition replica_kvdlR := gmapR (u64 * u64 * dbkey) vdlR.
+Canonical Structure clogO := leibnizO (list ccommand).
+Definition replica_clogR := gmapR (u64 * u64) (dfrac_agreeR clogO).
+Canonical Structure ilogO := leibnizO (list (nat * icommand)).
+Definition replica_ilogR := gmapR (u64 * u64) (dfrac_agreeR ilogO).
+Canonical Structure voteO := leibnizO vote.
+Definition ballotR := mono_listR voteO.
+Definition ballotmR := gmap_viewR nat ballotR.
+Definition replica_ballotmR := gmapR (u64 * u64) ballotmR.
+Canonical Structure coordidO := leibnizO coordid.
+Definition votemR := gmap_viewR (nat * nat) (agreeR coordidO).
+Definition replica_votemR := gmapR (u64 * u64) votemR.
+Definition tokenmR := gmap_viewR (nat * nat * u64) unitR.
+Definition replica_tokenmR := gmapR (u64 * u64) tokenmR.
+
+Class tulip_ghostG (Σ : gFunctors) :=
+  { (* common resources defined in res.v *)
+    #[global] db_ptstoG :: inG Σ dbmapR;
+    #[global] repl_histG :: inG Σ histmR;
+    #[global] repl_tsG :: inG Σ tsmR;
+    #[global] lnrz_kmodG :: inG Σ dbkmodR;
+    #[global] cmtd_kmodG :: inG Σ dbkmodR;
+    (* txnsys resources defined in res_txnsys.v *)
+    #[global] cmtd_histG :: inG Σ histmR;
+    #[global] lnrz_histG :: inG Σ histmR;
+    #[global] txn_resG :: ghost_mapG Σ nat txnres;
+    #[global] txn_oneshot_wrsG :: ghost_mapG Σ nat (option dbmap);
+    #[global] lnrz_tidG :: ghost_mapG Σ nat unit;
+    #[global] wabt_tidG :: ghost_mapG Σ nat unit;
+    #[global] cmt_tmodG :: ghost_mapG Σ nat dbmap;
+    #[global] excl_tidG :: ghost_mapG Σ nat unit;
+    #[global] txn_client_tokenG :: ghost_mapG Σ (nat * u64) unit;
+    #[global] txn_postcondG :: ghost_mapG Σ nat (dbmap -> Prop);
+    #[global] largest_tsG :: mono_natG Σ;
+    (* TODO: proph *)
+    (* group resources defined in res_group.v *)
+    #[global] group_prepG :: inG Σ group_natboolmvR;
+    #[global] group_ppslG :: inG Σ group_ppslmR;
+    #[global] group_commitG :: inG Σ group_natboolmvR;
+    (* replica resources defined in res_replica.v *)
+    #[global] replica_validated_tsG :: inG Σ replica_tssR;
+    #[global] replica_key_validationG :: inG Σ replica_kvdlR;
+    #[global] replica_clogG :: inG Σ replica_clogR;
+    #[global] replica_ilogG :: inG Σ replica_ilogR;
+    #[global] replica_ballotG :: inG Σ replica_ballotmR;
+    #[global] replica_voteG :: inG Σ replica_votemR;
+    #[global] replica_tokenG :: inG Σ replica_tokenmR;
+  }.
+
+Definition tulip_ghostΣ :=
+  #[ (* res.v *)
+     GFunctor dbmapR;
+     GFunctor histmR;
+     GFunctor tsmR;
+     GFunctor dbkmodR;
+     GFunctor dbkmodR;
+     GFunctor histmR;
+     GFunctor histmR;
+     (* res_txnsys.v *)
+     GFunctor histmR;
+     GFunctor histmR;
+     ghost_mapΣ nat txnres;
+     ghost_mapΣ nat (option dbmap);
+     ghost_mapΣ nat unit;
+     ghost_mapΣ nat unit;
+     ghost_mapΣ nat dbmap;
+     ghost_mapΣ nat unit;
+     ghost_mapΣ (nat * u64) unit;
+     ghost_mapΣ nat (dbmap -> Prop);
+     mono_natΣ;
+     (* TODO: proph *)
+     (* res_group.v *)
+     GFunctor group_natboolmvR;
+     GFunctor group_ppslmR;
+     GFunctor group_natboolmvR;
+     (* res_replica.v *)
+     GFunctor replica_tssR;
+     GFunctor replica_kvdlR;
+     GFunctor replica_clogR;
+     GFunctor replica_ilogR;
+     GFunctor replica_ballotmR;
+     GFunctor replica_votemR;
+     GFunctor replica_tokenmR
+   ].
+
+#[global]
+Instance subG_tulip_ghostG {Σ} :
+  subG tulip_ghostΣ Σ → tulip_ghostG Σ.
+Proof. solve_inG. Qed.
+
+Record tulip_names :=
+  { (* res.v *)
+    db_ptsto : gname;
+    repl_hist : gname;
+    repl_ts : gname;
+    lnrz_kmod : gname;
+    cmtd_kmod : gname;
+    (* res_txnsys.v *)
+    cmtd_hist : gname;
+    lnrz_hist : gname;
+    txn_res : gname;
+    txn_oneshot_wrs : gname;
+    lnrz_tid : gname;
+    wabt_tid : gname;
+    cmt_tmod : gname;
+    excl_tid : gname;
+    txn_client_token : gname;
+    txn_postcond : gname;
+    largest_ts : gname;
+    (* TODO: proph *)
+    (* res_group.v *)
+    group_prep : gname;
+    group_prepare_proposal : gname;
+    group_commit : gname;
+    (* res_replica.v *)
+    replica_validated_ts : gname;
+    replica_key_validation : gname;
+    replica_clog : gname;
+    replica_ilog : gname;
+    replica_ballot : gname;
+    replica_vote : gname;
+    replica_token : gname;
+  }.
+
 Record replica_names := {}.
 
 Definition sysNS := nroot .@ "sys".
 Definition tulipNS := sysNS .@ "tulip".
 Definition tsNS := sysNS .@ "ts".
 Definition txnlogNS := sysNS .@ "txnlog".
-
