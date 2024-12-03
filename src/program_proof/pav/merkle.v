@@ -102,14 +102,14 @@ Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iProp
        | Interior children =>
            ([∗ list] idx ↦ child;ptr_child ∈ children;ptr_children,
               match child with
-              | None => True
+              | None => ⌜ ptr_child = null ⌝
               | Some child =>
-                  match path with
-                  | Some (a :: path) => if decide (uint.nat a = idx) then ▷ recur (Some path) ptr_child child
-                                      else ▷ recur None ptr_child child
-                  | None => ▷ recur None ptr_child child
-                  | Some [] => ▷ recur None ptr_child child
-                  end
+                  ▷ recur (match path with
+                           | Some (a :: path) => if decide (uint.nat a = idx) then (Some path)
+                                               else None
+                           | _ => None
+                           end)
+                    ptr_child child
               end
            )
          end)%I.
@@ -143,8 +143,8 @@ Fixpoint is_tree_lookup (tr : tree) (k : list w8) (v : option (list w8)) : Prop 
       end
   end.
 
-Definition eq_tree_map (tr : tree) (m : gmap (list w8) (list w8)) : Prop :=
-  ∀ k, is_tree_lookup tr k (m !! k).
+Definition eq_tree_map (tr : tree) (key_prefix: list w8) (m : gmap (list w8) (list w8)) : Prop :=
+  ∀ k, is_tree_lookup tr k (m !! (key_prefix ++ k)).
 
 Lemma own_node_except_mono path2 path1 root tr :
   match path1, path2 with
@@ -187,14 +187,14 @@ Definition own_merkle ptr_tr entries : iProp Σ :=
   "Hroot" ∷ ptr_tr ↦[Tree :: "root"] #root ∗
   "Hnode" ∷ (if decide (root = null) then ⌜ entries = ∅ ⌝
              else own_node_except None root tr) ∗
-  "%Htree" ∷ ⌜ eq_tree_map tr entries ⌝ ∗
+  "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
   "%Hheight" ∷ ⌜ has_tree_height tr (uint.nat full_height) ⌝
 .
 
 (* is_dig says that the tree with these entries has this digest. *)
 Definition is_dig entries dig : iProp Σ :=
   ∃ tr,
-  "%Htree" ∷ ⌜ eq_tree_map tr entries ⌝ ∗
+  "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
   "#Hdig" ∷ is_node_hash tr dig.
 
 Global Instance is_dig_func : Func is_dig.
@@ -377,20 +377,34 @@ Lemma wp_Tree_Digest ptr_tr entries :
 Proof. Admitted.
 
 
-Lemma new_interior_eq_empty :
-  eq_tree_map (Interior (replicate (uint.nat 256) None)) ∅.
+Lemma new_interior_eq_empty k' :
+  eq_tree_map (Interior (replicate (uint.nat 256) None)) k' ∅.
 Proof.
   intros ?. destruct k.
   { done. }
   { simpl. rewrite lookup_replicate_2; [done|word]. }
 Qed.
 
-Lemma new_leaf_eq_map :
-  eq_tree_map (Leaf []) {[ [] := [] ]}.
+Lemma new_leaf_eq_map k' :
+  eq_tree_map (Leaf []) k' {[ k' := [] ]}.
 Proof.
   intros ?. destruct k.
-  { done. }
-  { simpl. rewrite lookup_singleton_ne //. }
+  { rewrite /= app_nil_r lookup_insert //. }
+  { rewrite lookup_singleton_ne //. intros H.
+    apply (f_equal length) in H. rewrite app_length /= in H.
+    lia.
+  }
+Qed.
+
+Lemma eq_tree_map_child children x child kp m :
+  children !! (uint.nat x) = Some (Some child) →
+  eq_tree_map (Interior children) kp m →
+  eq_tree_map child (kp ++ [x]) m.
+Proof.
+  intros Hchild Heq k.
+  specialize (Heq (x :: k)).
+  rewrite -app_assoc /=.
+  by rewrite /= Hchild in Heq.
 Qed.
 
 Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
@@ -445,7 +459,7 @@ Proof.
                              ∃ (root : loc) tr,
                                "Hroot" ∷ ptr_tr ↦[Tree::"root"] #root ∗
                                "Hnode" ∷ own_node_except (Some id) root tr ∗
-                               "%Htree" ∷ ⌜ eq_tree_map tr entries ⌝ ∗
+                               "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
                                "%Hheight" ∷ ⌜ has_tree_height tr (uint.nat full_height) ⌝
               )%I
              with "[Hnode Hroot]").
@@ -521,15 +535,14 @@ Proof.
               "%Hinteriors_last" ∷ ⌜ last interiors = Some currNode_ptr ⌝ ∗
               "Hnode" ∷ own_node_except (Some (drop (uint.nat depth) id)) currNode_ptr sub_tree ∗
               "%Hinteriors_length" ∷ ⌜ length interiors = S (uint.nat depth) ⌝ ∗
-              "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree sub_map ⌝ ∗
+              "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree (take (uint.nat depth) id) sub_map ⌝ ∗
               "%Hheight" ∷ ⌜ has_tree_height sub_tree (uint.nat full_height - uint.nat depth)%nat ⌝ ∗
               "Hrest" ∷ (∀ sub_tree' ,
-                           let partial_id := (drop (uint.nat depth) id) in
-                           own_node_except (Some partial_id) currNode_ptr sub_tree' -∗
-                           ⌜ eq_tree_map sub_tree' (<[partial_id := val]> sub_map) ⌝ -∗
+                           own_node_except (Some (drop (uint.nat depth) id)) currNode_ptr sub_tree' -∗
+                           ⌜ eq_tree_map sub_tree' (take (uint.nat depth) id) (<[id := val]> sub_map) ⌝ -∗
                            ⌜ has_tree_height sub_tree' (uint.nat full_height - uint.nat depth)%nat ⌝ -∗
                            ∃ tr', own_node_except (Some id) root tr' ∗
-                                  ⌜ eq_tree_map tr' (<[id := val]> entries) ⌝ ∗
+                                  ⌜ eq_tree_map tr' [] (<[id := val]> entries) ⌝ ∗
                                   ⌜ has_tree_height tr' (uint.nat full_height) ⌝)
          )%I).
   wp_apply (wp_forUpto' loopInv with "[$Hdepth Hid Hnode Hinteriors_ptr Hinteriors]").
@@ -600,133 +613,309 @@ Proof.
       wp_load.
       iDestruct (own_slice_split with "[$Hinteriors $Hinteriors_cap]") as "Hinteriors".
       wp_apply (wp_SliceAppend (V:=loc) with "[$]").
-      iIntros (newNodePath_sl) "Hinteriors".
+      iIntros (newInteriors_sl) "Hinteriors".
+
+      iDestruct (big_sepL2_length with "Hchildren") as %Hchildren.
+      iDestruct (big_sepL2_lookup_2_some with "Hchildren") as %[? Hchildren_lookup].
+      { done. }
+      iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[Hchild Hchildren]".
+      { done. }
+      { done. }
+      destruct x.
+      {
+        iDestruct (own_node_except_unfold with "Hchild") as "Hchild".
+        wp_store.
+        iDestruct "Hchild" as (??????) "(_ & H & _)".
+        iExFalso.
+        iDestruct (struct_field_pointsto_not_null with "H") as %?; done.
+      }
+
+      wp_store.
+      clear interiors_sl.
+
+      iModIntro.
+      iApply "HΦ'".
+      iFrame "HpathIdx".
+      repeat iExists _.
+      iFrame.
+      iSplitR.
+      { rewrite last_snoc //. }
+      iSplitL "HchildNode Hsl".
+      {
+        iApply own_node_except_unfold.
+        repeat iExists _.
+        iDestruct (struct_fields_split with "HchildNode") as "H".
+        iNamed "H".
+        rewrite zero_slice_val.
+        iFrame.
+        iDestruct (own_slice_small_nil) as "$"; first done.
+        iSplitR; first done.
+        iSplitR; first done.
+        instantiate (1:=Interior _).
+        simpl.
+        instantiate (1:=replicate _ None).
+        iApply (big_sepL2_replicate_l).
+        { rewrite length_replicate. done. }
+        iApply big_sepL_forall.
+        iIntros "*".
+        rewrite lookup_replicate.
+        iIntros ([-> _]). done.
+      }
+      repeat (iSplitR; try iPureIntro).
+      { rewrite length_app /=. word. }
+      { rewrite Hchildren_len. apply new_interior_eq_empty. }
+      { replace (uint.nat _ - uint.nat _)%nat with (n) by word.
+        simpl. destruct n.
+        - exfalso. rewrite /full_height in Hdepth. word.
+        - by apply Forall_replicate.
+      }
+
+      iIntros (?) "Hnode' %Heq' %Hheight'".
+      iClear "Hchild".
+      iApply ("Hrest" with "[-]").
+      {
+        iApply own_node_except_unfold.
+        repeat iExists _.
+        iFrame "Hptr_hash Hptr_children ∗".
+        iSplitR; first done.
+        iSplitR.
+        { rewrite length_insert //. }
+        replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
+        instantiate (1:=Interior (<[uint.nat pos := Some sub_tree' ]> children)).
+        simpl.
+        iApply "Hchildren".
+        rewrite [in drop (uint.nat i) _](drop_S _ pos) //.
+        rewrite decide_True //.
+        iNext.
+        iExactEq "Hnode'".
+        repeat f_equal.
+        word.
+      }
+      {
+        iPureIntro.
+        intros k.
+        replace (uint.nat (w64_word_instance.(word.add) i (W64 1))) with (S (uint.nat i)) in Heq', Hheight' by word.
+        replace (uint.nat full_height - _)%nat with (n) in Hheight' by word.
+        set (id_rest:=(drop (S (uint.nat i)) id)) in *.
+        destruct k.
+        - (* If k is empty, then lookup in sub_map should be None. *)
+          simpl.
+          specialize (Hsubmap []).
+          simpl in Hsubmap.
+          rewrite lookup_insert_ne //.
+          rewrite app_nil_r.
+          intros Hbad.
+          apply (f_equal length) in Hbad.
+          rewrite length_take in Hbad.
+          word.
+        - assert (id = (take (uint.nat i) id) ++ pos :: id_rest) as Hid.
+          {
+            rewrite <- (take_drop (uint.nat i)) at 1.
+            f_equal.
+            subst id_rest.
+            rewrite -drop_S //.
+          }
+          rewrite -> Hid at 2.
+          destruct (decide (w = pos)) as [Hw|Hw].
+          + (* k starts with pos *)
+            subst pos.
+            destruct (decide (id_rest = k)) as [Hrest|Hrest].
+            * subst k.
+              simpl in *.
+              rewrite list_lookup_insert //.
+              2:{ word. }
+              specialize (Hsubmap (w :: id_rest)).
+              simpl in Hsubmap.
+              unfold id_rest.
+              rewrite -drop_S //.
+              rewrite take_drop.
+              rewrite lookup_insert.
+              specialize (Heq' id_rest).
+              rewrite take_drop lookup_insert in Heq'.
+              done.
+            * rewrite lookup_insert_ne //.
+              2:{ naive_solver. }
+              simpl.
+              rewrite list_lookup_insert //.
+              2:{ word. }
+              specialize (Hsubmap (w :: k)).
+              specialize (Heq' k).
+              erewrite take_S_r in Heq'; last done.
+              rewrite -app_assoc /= in Heq'.
+              rewrite -> Hid in Heq' at 2.
+
+              (* XXX: this is different from the second branch *)
+              rewrite /= Hchildren_lookup in Hsubmap.
+              rewrite Hsubmap.
+
+              rewrite lookup_insert_ne // in Heq'.
+              naive_solver.
+          + rewrite lookup_insert_ne /=.
+            2:{ naive_solver. }
+            rewrite list_lookup_insert_ne //.
+            2:{ intros ?. apply Hw. word. }
+            specialize (Hsubmap (w :: k)).
+            simpl in Hsubmap. done.
+      }
+      {
+        iPureIntro.
+        simpl.
+        apply Forall_insert.
+        - done.
+        - replace (uint.nat _ - _)%nat with (n) in Hheight' by word.
+          done.
+      }
+    }
+    { (* child was not null *)
+      wp_loadField.
+      wp_apply (wp_SliceGet with "[$Hsl_children]").
+      { iPureIntro. instantiate (1:=ptr_child). rewrite -Hptr_child. f_equal.
+        word. }
+      iIntros "Hsl_children".
+      wp_pures.
+      wp_load.
+      iDestruct (own_slice_split with "[$Hinteriors $Hinteriors_cap]") as "Hinteriors".
+      wp_apply (wp_SliceAppend (V:=loc) with "[$]").
+      iIntros (newInteriors_sl) "Hinteriors".
+
+      (* FIXME: should be able to merge the two branches together. *)
+
+      (* This is for establishing the loop invariant; doing it now to get rid of the later easily. *)
+      iDestruct (big_sepL2_length with "Hchildren") as %Hchildren.
+      iDestruct (big_sepL2_lookup_2_some with "Hchildren") as %[child Hchildren_lookup].
+      { done. }
+      iDestruct (big_sepL2_insert_acc with "Hchildren") as "[HchildNode Hchildren]".
+      { done. }
+      { done. }
+      destruct child as [child|].
+      2:{ iDestruct "HchildNode" as %Hbad. contradiction. }
+
       wp_store.
       clear interiors_sl.
       iApply "HΦ'".
       iFrame "HpathIdx".
       iModIntro.
-      (* destruct the remaining height to decide whether to interpret the new node as a
-         [Leaf] or as an [Interior].
-       *)
       rename n into remainingHeight.
-      destruct (remainingHeight).
-      { (* case: leaf, can't happen *)
-        exfalso. rewrite /full_height in Hdepth. word.
+      repeat iExists _.
+      iFrame.
+      iSplitR.
+      { rewrite last_snoc //. }
+      iSplitL "HchildNode".
+      {
+        erewrite drop_S.
+        2:{ done. }
+        rewrite decide_True //.
+        iApply to_named.
+        iExactEq "HchildNode".
+        repeat f_equal. word.
       }
-      { (* case: interior node *)
-        repeat iExists _.
-        iFrame.
-        iSplitR.
-        { rewrite last_snoc //. }
-        iSplitL "HchildNode Hsl".
-        {
-          iApply own_node_except_unfold.
-          repeat iExists _.
-          iDestruct (struct_fields_split with "HchildNode") as "H".
-          iNamed "H".
-          rewrite zero_slice_val.
-          iFrame.
-          iDestruct (own_slice_small_nil) as "$"; first done.
-          iSplitR; first done.
-          iSplitR; first done.
-          instantiate (1:=Interior _).
-          simpl.
-          instantiate (1:=replicate _ None).
-          iApply (big_sepL2_replicate_l).
-          { rewrite length_replicate. done. }
-          done.
-        }
-        repeat (iSplitR; try iPureIntro).
-        { rewrite length_app /=. word. }
-        { rewrite Hchildren_len. apply new_interior_eq_empty. }
-        { replace (uint.nat _ - uint.nat _)%nat with (S n) by word.
-          simpl. by apply Forall_replicate.
-        }
+      repeat (iSplitR; try iPureIntro).
+      { rewrite length_app /=. word. }
+      {
+        replace (uint.nat _) with (S (uint.nat i)) by word.
+        erewrite take_S_r; last done.
+        eapply eq_tree_map_child; done.
+      }
+      {
+        replace (uint.nat _ - uint.nat _)%nat with (remainingHeight) by word.
+        simpl in Hheight.
+        eapply Forall_lookup in Hheight; last done; done.
+      }
 
-        iDestruct (big_sepL2_length with "Hchildren") as %Hchildren.
-        iIntros (?) "Hnode' %Heq' %Hheight'".
-        iApply ("Hrest" with "[-]").
-        {
-          iApply own_node_except_unfold.
-          repeat iExists _.
-          iFrame "Hptr_hash Hptr_children ∗".
-          iSplitR; first done.
-          iSplitR.
-          { rewrite length_insert //. }
-          replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
-          instantiate (1:=Interior (<[uint.nat pos := Some sub_tree' ]> children)).
+      iIntros (?) "Hnode' %Heq' %Hheight'".
+      iApply ("Hrest" with "[-]").
+      {
+        iApply own_node_except_unfold.
+        repeat iExists _.
+        iFrame "Hptr_hash Hptr_children ∗".
+        iSplitR; first done.
+        iSplitR.
+        { done. }
+        replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
+        instantiate (1:=Interior (<[uint.nat pos := Some sub_tree' ]> children)).
+        simpl.
+        iSpecialize ("Hchildren" $! _ ptr_child).
+        iEval (rewrite (list_insert_id ptr_children); last done) in "Hchildren".
+        iApply "Hchildren".
+        rewrite [in drop (uint.nat i) _](drop_S _ pos) //.
+        rewrite decide_True //.
+        iNext.
+        iExactEq "Hnode'".
+        repeat f_equal.
+        word.
+      }
+      {
+        iPureIntro.
+        intros k.
+        replace (uint.nat (w64_word_instance.(word.add) i (W64 1))) with (S (uint.nat i)) in Heq', Hheight' by word.
+        replace (uint.nat full_height - _)%nat with (remainingHeight) in Hheight' by word.
+        set (id_rest:=(drop (S (uint.nat i)) id)) in *.
+        destruct k.
+        - (* If k is empty, then lookup in sub_map should be None. *)
           simpl.
-          iDestruct (big_sepL2_lookup_2_some with "Hchildren") as %[? Hchildren_lookup].
-          { done. }
-          iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[_ Hchildren]".
-          { done. }
-          { done. }
-          iApply "Hchildren".
-          rewrite [in drop (uint.nat i) _](drop_S _ pos) //.
-          rewrite decide_True //.
-          iNext.
-          iExactEq "Hnode'".
-          repeat f_equal.
+          specialize (Hsubmap []).
+          simpl in Hsubmap.
+          rewrite lookup_insert_ne //.
+          rewrite app_nil_r.
+          intros Hbad.
+          apply (f_equal length) in Hbad.
+          rewrite length_take in Hbad.
           word.
-        }
-        {
-          iPureIntro.
-          intros k.
-          replace (uint.nat (w64_word_instance.(word.add) i (W64 1))) with (S (uint.nat i)) in Heq', Hheight' by word.
-          replace (uint.nat full_height - S _)%nat with (S n) in Hheight' by word.
-          erewrite drop_S; last done.
-          simpl.
-          set (id_rest:=(drop (S (uint.nat i)) id)) in *.
-          destruct k.
-          - (* If k is empty, then lookup in sub_map should be None. *)
-            simpl.
-            specialize (Hsubmap []).
-            simpl in Hsubmap.
-            rewrite lookup_insert_ne //.
-          - assert (children !! uint.nat pos = Some None) as Hchild.
-            { admit. } (* FIXME: prove this based on the pointer being null. *)
-            destruct (decide (w = pos)) as [Hw|Hw].
-            + (* k starts with pos *)
-              subst pos.
-              destruct (decide (id_rest = k)) as [Hrest|Hrest].
-              * subst k.
-                simpl in *.
-                rewrite list_lookup_insert //.
-                2:{ word. }
-                specialize (Hsubmap (w :: id_rest)).
-                simpl in Hsubmap.
-                rewrite lookup_insert.
-                specialize (Heq' id_rest).
-                rewrite lookup_insert in Heq'.
-                done.
-              * rewrite lookup_insert_ne //.
-                2:{ naive_solver. }
-                simpl.
-                rewrite list_lookup_insert //.
-                2:{ word. }
-                specialize (Hsubmap (w :: k)).
-                rewrite /= Hchild in Hsubmap.
-                rewrite Hsubmap.
-                specialize (Heq' k).
-                rewrite lookup_insert_ne // in Heq'.
-            + rewrite lookup_insert_ne /=.
+        - assert (id = (take (uint.nat i) id) ++ pos :: id_rest) as Hid.
+          {
+            rewrite <- (take_drop (uint.nat i)) at 1.
+            f_equal.
+            subst id_rest.
+            rewrite -drop_S //.
+          }
+          rewrite -> Hid at 2.
+          destruct (decide (w = pos)) as [Hw|Hw].
+          + (* k starts with pos *)
+            subst pos.
+            destruct (decide (id_rest = k)) as [Hrest|Hrest].
+            * subst k.
+              simpl in *.
+              rewrite list_lookup_insert //.
+              2:{ word. }
+              specialize (Hsubmap (w :: id_rest)).
+              simpl in Hsubmap.
+              unfold id_rest.
+              rewrite -drop_S //.
+              rewrite take_drop.
+              rewrite lookup_insert.
+              specialize (Heq' id_rest).
+              rewrite take_drop lookup_insert in Heq'.
+              done.
+            * rewrite lookup_insert_ne //.
               2:{ naive_solver. }
-              rewrite list_lookup_insert_ne //.
-              2:{ intros ?. apply Hw. word. }
+              simpl.
+              rewrite list_lookup_insert //.
+              2:{ word. }
               specialize (Hsubmap (w :: k)).
-              simpl in Hsubmap. done.
-        }
-        {
-          iPureIntro.
-          simpl.
-          apply Forall_insert.
-          - done.
-          - replace (uint.nat _ - _)%nat with (S n) in Hheight' by word.
-            done.
-        }
+              specialize (Heq' k).
+              erewrite take_S_r in Heq'; last done.
+              rewrite -app_assoc /= in Heq'.
+              rewrite -> Hid in Heq' at 2.
+              rewrite lookup_insert_ne // in Heq'.
+              naive_solver.
+          + rewrite lookup_insert_ne /=.
+            2:{ naive_solver. }
+            rewrite list_lookup_insert_ne //.
+            2:{ intros ?. apply Hw. word. }
+            specialize (Hsubmap (w :: k)).
+            simpl in Hsubmap. done.
+      }
+      {
+        iPureIntro.
+        simpl.
+        apply Forall_insert.
+        - done.
+        - replace (uint.nat _ - _)%nat with (remainingHeight) in Hheight' by word.
+          done.
       }
     }
+  }
+  iIntros "[Hinv Hdepth]".
 Admitted.
 
 Lemma wp_Tree_Get ptr_tr entries sl_id id dq :
