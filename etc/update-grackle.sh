@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+if [[ -z "$IN_NIX_SHELL" ]]; then 
+    # Not in nix shell, use the default go installs
+    GRACKLE="go run github.com/mjschwenne/grackle/cmd/grackle@latest"
+else 
+    # In a nix shell, expect grackle to be on the PATH and use that
+    GRACKLE="grackle"
+fi
+
 compile_grackle() {
     CWD=$(pwd)
     cd "$1" || return
@@ -25,14 +33,13 @@ coq_logical_name() {
 # 2. We only want to output coq code
 # 3. The coq code should be output into "src/program_proof/$1"
 # 4. The desired coq package matches the directory structure
-# 5. Grackle is on your $PATH
 #
 # Parameters
 # - $1 : Name of the go package inside its repo
 # - $2 : Path to the root of the go repo. Go package to translate should be at "$2/$1"
 # - $3 : Prefix to compute the go package name, "$3/$1"
 run_grackle() {
-    grackle --coq-logical-path "Perennial.program_proof.$(coq_logical_name $1)" --coq-physical-path "src/program_proof/$1" --go-package "$3/$1" $(realpath "$2/$1")
+    $GRACKLE --coq-logical-path "Perennial.program_proof.$(coq_logical_name $1)" --coq-physical-path "src/program_proof/$1" --go-package "$3/$1" "$(realpath "$2/$1")"
 }
 
 # Generate Coq files from gokv repo.
