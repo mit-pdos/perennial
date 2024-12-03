@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 
 From Perennial.program_proof.pav Require Import classes misc cryptoffi.
-From Perennial.program_proof Require Import std_proof.
+From Perennial.program_proof Require Import std_proof marshal_stateless_proof.
 
 Section internal.
 Context `{!heapGS Σ}.
@@ -376,6 +376,43 @@ Lemma wp_Tree_Digest ptr_tr entries :
   }}}.
 Proof. Admitted.
 
+Lemma wp_compLeafNodeHash mapVal_sl mapVal dq :
+   {{{ own_slice_small mapVal_sl byteT dq mapVal }}}
+     compLeafNodeHash (slice_val mapVal_sl)
+   {{{
+         hash_sl hash, RET (slice_val hash_sl);
+         own_slice_small hash_sl byteT (DfracOwn 1) hash ∗
+         is_node_hash (Leaf mapVal) hash
+   }}}.
+Proof.
+  iIntros (?) "HmapVal HΦ".
+  wp_rec.
+  wp_apply wp_slice_len.
+  iDestruct (own_slice_small_sz with "[$]") as %Hsz.
+  wp_pures.
+  wp_apply (wp_NewSliceWithCap).
+  { word. }
+  iIntros (?) "Hhash_sl".
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (b_ptr) "Hb".
+  wp_pures.
+  wp_load.
+  wp_apply (wp_WriteBytes with "[$]").
+  iIntros (?) "[? _]".
+  wp_store.
+  wp_load.
+  wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "?".
+  wp_store.
+  wp_load.
+  iDestruct (own_slice_to_small with "[$]") as "H".
+  wp_apply (wp_Hash with "[$]").
+  iIntros "*". iNamed 1.
+  iApply "HΦ".
+  iFrame.
+  simpl.
+  rewrite replicate_0. done.
+Qed.
 
 Lemma new_interior_eq_empty k' :
   eq_tree_map (Interior (replicate (uint.nat 256) None)) k' ∅.
@@ -916,7 +953,25 @@ Proof.
     }
   }
   iIntros "[Hinv Hdepth]".
+  wp_pures.
+  iNamed "Hinv".
+  wp_load.
+  iDestruct (own_slice_split_1 with "Hinteriors") as "[Hinteriors Hinteriors_cap]".
+  wp_apply (wp_SliceGet with "[$Hinteriors]").
+  {
+    iPureIntro.
+    rewrite last_lookup in Hinteriors_last.
+    rewrite Hinteriors_length /= in Hinteriors_last.
+    done.
+  }
+  iIntros "Hinteriors".
+  wp_pures.
+  opose proof (list_lookup_lt id (uint.nat (word.sub (W64 32) (W64 1))) ltac:(word)) as [pos Hpos].
+  wp_apply (wp_SliceGet with "[$Hid //]").
+  iIntros "Hid".
+  wp_pures.
 Admitted.
+
 
 Lemma wp_Tree_Get ptr_tr entries sl_id id dq :
   {{{
