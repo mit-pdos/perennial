@@ -62,6 +62,28 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
 Proof. Admitted.
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own ptr obj : iProp Σ :=
+  ∃ sl_pk_commit,
+  "Hptr_epoch" ∷ ptr ↦[MapValPre :: "Epoch"] #obj.(Epoch) ∗
+  "Hptr_pk_commit" ∷ ptr ↦[MapValPre :: "PkCommit"] (slice_val sl_pk_commit) ∗
+  "#Hsl_pk_commit" ∷ own_slice_small sl_pk_commit byteT DfracDiscarded obj.(PkCommit).
+
+Lemma wp_enc obj sl_enc (enc : list w8) ptr :
+  {{{
+    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}
+  MapValPreEncode (slice_val sl_enc) #ptr
+  {{{
+    sl_enc', RET (slice_val sl_enc');
+    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}.
+Proof. Admitted.
+End defs.
 End MapValPre.
 
 Module AdtrEpochInfo.
@@ -99,6 +121,26 @@ Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Uid) ++ u64_le obj.(Ver).
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  "Hptr_uid" ∷ ptr ↦[MapLabelPre :: "Uid"] #obj.(Uid) ∗
+  "Hptr_ver" ∷ ptr ↦[MapLabelPre :: "Ver"] #obj.(Ver).
+
+Lemma wp_enc obj sl_enc (enc : list w8) ptr :
+  {{{
+    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}
+  MapLabelPreEncode (slice_val sl_enc) #ptr
+  {{{
+    sl_enc', RET (slice_val sl_enc');
+    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}.
+Proof. Admitted.
+End defs.
 End MapLabelPre.
 
 Module UpdateProof.
@@ -143,6 +185,19 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "Hptr_val" ∷ ptr ↦[CommitOpen :: "Val"] (slice_val sl_val) ∗
   "Hsl_rand" ∷ own_slice_small sl_rand byteT obj.(d) obj.(Rand) ∗
   "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"] (slice_val sl_rand).
+
+Lemma wp_enc sl_enc (enc : list w8) ptr_obj obj :
+  {{{
+    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
+    "Hown_obj" ∷ own ptr_obj obj
+  }}}
+  CommitOpenEncode (slice_val sl_enc) #ptr_obj
+  {{{
+    sl_enc', RET (slice_val sl_enc');
+    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
+    "Hown_obj" ∷ own ptr_obj obj
+  }}}.
+Proof. Admitted.
 End defs.
 End CommitOpen.
 
@@ -199,8 +254,8 @@ Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_label_proof sl_merk_proof,
   "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
-  "Hptr_label_proof" ∷ ptr ↦[MembHide :: "LabelProof"] (slice_val sl_label_proof) ∗
+  "Hptr_label_proof" ∷ ptr ↦[NonMemb :: "LabelProof"] (slice_val sl_label_proof) ∗
   "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
-  "Hptr_merk_proof" ∷ ptr ↦[MembHide :: "MerkProof"] (slice_val sl_merk_proof).
+  "Hptr_merk_proof" ∷ ptr ↦[NonMemb :: "MerkProof"] (slice_val sl_merk_proof).
 End defs.
 End NonMemb.

@@ -49,12 +49,12 @@ Section stepdown.
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
     { apply Hnidme. }
     iNamed "Hnodefile".
+    (* iMod (own_crash_ex_open with "Htermc") as "(>Htermc&Hclose_termc)"; first solve_ndisj. *)
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
     iFrame "Hfile".
     iExists wal.
-    iSplit; first done.
     iIntros (bs') "[Hfile %Hbs']".
     iMod (paxos_inv_prepare (uint.nat term) with "Hwalfile Htermc Hterml Hlogn HinvO")
       as "(Hwalfile & Htermc & Hterml & Hlogn & HinvO & Hlsnp & #Hpromise)".
@@ -63,6 +63,7 @@ Section stepdown.
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
     { iFrame "∗ # %". }
     iMod "Hmask" as "_".
+    (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
     iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
     iIntros "!> _".

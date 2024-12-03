@@ -10,18 +10,18 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupReader__processReadResult
-    grd (rid : u64) (key : string) (ver : u64 * dbval) ts γ :
+    grd (rid : u64) (key : string) (ver : dbpver) (slow : bool) ts γ :
     rid ∈ rids_all ->
-    fast_or_slow_read γ rid key (uint.nat ver.1) ts ver.2 -∗
+    fast_or_slow_read γ rid key (uint.nat ver.1) ts ver.2 slow -∗
     {{{ own_greader grd ts γ }}}
-      GroupReader__processReadResult #grd #rid #(LitString key) (u64_dbval_to_val ver)
+      GroupReader__processReadResult #grd #rid #(LitString key) (dbpver_to_val ver) #slow
     {{{ RET #(); own_greader grd ts γ }}}.
   Proof.
     iIntros (Hrid) "#Hfsread".
     iIntros (Φ) "!> Hgrd HΦ".
     wp_rec.
 
-    (*@ func (grd *GroupReader) processReadResult(rid uint64, key string, ver tulip.Version) { @*)
+    (*@ func (grd *GroupReader) processReadResult(rid uint64, key string, ver tulip.Version, slow bool) { @*)
     (*@     _, final := grd.valuem[key]                                         @*)
     (*@     if final {                                                          @*)
     (*@         // The final value is already determined.                       @*)
@@ -36,7 +36,7 @@ Section program.
     destruct final; wp_pures.
     { iApply "HΦ". by iFrame "∗ # %". }
 
-    (*@     if ver.Timestamp == 0 {                                             @*)
+    (*@     if !slow {                                                          @*)
     (*@         // Fast-path read: set the final value and clean up the read versions. @*)
     (*@         grd.valuem[key] = ver.Value                                     @*)
     (*@         delete(grd.qreadm, key)                                         @*)
@@ -45,7 +45,8 @@ Section program.
     (*@                                                                         @*)
     iDestruct (big_sepM2_dom with "Hqreadm") as %Hdomqreadm.
     destruct ver as [rts value].
-    case_bool_decide as Hrts; simpl in Hrts; wp_pures.
+    destruct slow; wp_pures; last first.
+    (* case_bool_decide as Hrts; simpl in Hrts; wp_pures. *)
     { wp_loadField.
       wp_apply (wp_MapInsert with "Hvaluem"); first done.
       iIntros "Hvaluem".
@@ -69,12 +70,7 @@ Section program.
       iFrame "∗ # %".
       iModIntro.
       iSplit.
-      { rewrite /fast_or_slow_read.
-        inv Hrts.
-        case_decide as Hcase; last first.
-        { simpl in Hcase. clear -Hcase. word. }
-        simpl.
-        iApply (big_sepM_insert_2 with "[] Hfinal").
+      { iApply (big_sepM_insert_2 with "[] Hfinal").
         iFrame "Hfsread".
       }
       { iSplit.
@@ -124,11 +120,7 @@ Section program.
       iModIntro.
       iSplit.
       { iApply (big_sepM_insert_2 with "[] Hqread").
-        rewrite /map_insert insert_empty big_sepM_singleton.
-        rewrite /fast_or_slow_read.
-        case_decide as Hslow; simpl in Hslow.
-        { exfalso. clear -Hrts Hslow. apply u64_val_ne in Hrts. word. }
-        done.
+        by rewrite /map_insert insert_empty big_sepM_singleton.
       }
       { iPureIntro.
         apply map_Forall_insert_2; last done.
@@ -175,13 +167,7 @@ Section program.
     iDestruct (big_sepM_lookup with "Hqread") as "Hqreadprev"; first apply Hqread.
     iDestruct (big_sepM_insert_2 _ _ key qread' with "[] Hqread")
       as "Hqread'".
-    { simpl.
-      iApply (big_sepM_insert_2 with "[] Hqreadprev").
-      rewrite /fast_or_slow_read.
-      case_decide as Hslow; simpl in Hslow.
-      { exfalso. clear -Hrts Hslow. apply u64_val_ne in Hrts. word. }
-      done.
-    }
+    { by iApply (big_sepM_insert_2 with "[] Hqreadprev"). }
     set qreadm' := insert _ _ qreadm.
     assert (Hvrids' : map_Forall (λ _ m, dom m ⊆ rids_all) qreadm').
     { apply map_Forall_insert_2; last done.

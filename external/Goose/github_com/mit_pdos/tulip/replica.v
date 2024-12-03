@@ -6,6 +6,8 @@ From Goose Require github_com.mit_pdos.tulip.index.
 From Goose Require github_com.mit_pdos.tulip.message.
 From Goose Require github_com.mit_pdos.tulip.tulip.
 From Goose Require github_com.mit_pdos.tulip.txnlog.
+From Goose Require github_com.mit_pdos.tulip.util.
+From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
@@ -43,8 +45,8 @@ Definition Replica__terminated: val :=
     let: (<>, "terminated") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
     "terminated".
 
-Definition Replica__QueryTxnTermination: val :=
-  rec: "Replica__QueryTxnTermination" "rp" "ts" :=
+Definition Replica__Terminated: val :=
+  rec: "Replica__Terminated" "rp" "ts" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "terminated" := Replica__terminated "rp" "ts" in
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
@@ -57,7 +59,7 @@ Definition Replica__QueryTxnTermination: val :=
    @ok: If @true, this transaction is committed. *)
 Definition Replica__Commit: val :=
   rec: "Replica__Commit" "rp" "ts" "pwrs" :=
-    let: "committed" := Replica__QueryTxnTermination "rp" "ts" in
+    let: "committed" := Replica__Terminated "rp" "ts" in
     (if: "committed"
     then #true
     else
@@ -77,7 +79,7 @@ Definition Replica__Commit: val :=
    @ok: If @true, this transaction is aborted. *)
 Definition Replica__Abort: val :=
   rec: "Replica__Abort" "rp" "ts" :=
-    let: "aborted" := Replica__QueryTxnTermination "rp" "ts" in
+    let: "aborted" := Replica__Terminated "rp" "ts" in
     (if: "aborted"
     then #true
     else
@@ -106,8 +108,21 @@ Definition Replica__bumpKey: val :=
       MapInsert (struct.loadF Replica "sptsm" "rp") "key" ("ts" - #1);;
       #true).
 
-Definition Replica__logRead: val :=
-  rec: "Replica__logRead" "rp" "ts" "key" :=
+Definition CMD_READ : expr := #0.
+
+Definition CMD_VALIDATE : expr := #1.
+
+Definition CMD_FAST_PREPARE : expr := #2.
+
+Definition CMD_ACCEPT : expr := #3.
+
+Definition logRead: val :=
+  rec: "logRead" "fname" "ts" "key" :=
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_READ in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := util.EncodeString "bs2" "key" in
+    grove_ffi.FileAppend "fname" "bs3";;
     #().
 
 (* Arguments:
@@ -137,28 +152,28 @@ Definition Replica__logRead: val :=
 Definition Replica__Read: val :=
   rec: "Replica__Read" "rp" "ts" "key" :=
     let: "tpl" := index.Index__GetTuple (struct.loadF Replica "idx" "rp") "key" in
-    let: ("t1", "v1") := tuple.Tuple__ReadVersion "tpl" "ts" in
-    (if: "t1" = #0
-    then (#0, "v1", #true)
+    let: ("v1", "slow1") := tuple.Tuple__ReadVersion "tpl" "ts" in
+    (if: (~ "slow1")
+    then ("v1", #false, #true)
     else
       Mutex__Lock (struct.loadF Replica "mu" "rp");;
       let: "ok" := Replica__readableKey "rp" "ts" "key" in
       (if: (~ "ok")
       then
         Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-        (#0, struct.mk tulip.Value [
-         ], #false)
+        (struct.mk tulip.Version [
+         ], #false, #false)
       else
-        let: ("t2", "v2") := tuple.Tuple__ReadVersion "tpl" "ts" in
-        (if: "t2" = #0
+        let: ("v2", "slow2") := tuple.Tuple__ReadVersion "tpl" "ts" in
+        (if: (~ "slow2")
         then
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-          (#0, "v2", #true)
+          ("v2", #false, #true)
         else
           Replica__bumpKey "rp" "ts" "key";;
-          Replica__logRead "rp" "ts" "key";;
+          logRead (struct.loadF Replica "fname" "rp") "ts" "key";;
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
-          ("t2", "v2", #true)))).
+          ("v2", #true, #true)))).
 
 Definition Replica__writableKey: val :=
   rec: "Replica__writableKey" "rp" "ts" "key" :=
@@ -206,8 +221,13 @@ Definition Replica__finalized: val :=
       else (tulip.REPLICA_ABORTED_TXN, #true))
     else (tulip.REPLICA_OK, #false)).
 
-Definition Replica__logValidate: val :=
-  rec: "Replica__logValidate" "rp" "ts" "pwrs" "ptgs" :=
+Definition logValidate: val :=
+  rec: "logValidate" "fname" "ts" "pwrs" "ptgs" :=
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_VALIDATE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
+    grove_ffi.FileAppend "fname" "bs3";;
     #().
 
 (* Arguments:
@@ -232,7 +252,7 @@ Definition Replica__validate: val :=
         then tulip.REPLICA_FAILED_VALIDATION
         else
           MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-          Replica__logValidate "rp" "ts" "pwrs" "ptgs";;
+          logValidate (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
           tulip.REPLICA_OK))).
 
 (* Keep alive coordinator for @ts at @rank. *)
@@ -247,10 +267,6 @@ Definition Replica__Validate: val :=
     Replica__refresh "rp" "ts" "rank";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
-
-Definition Replica__logFastPrepare: val :=
-  rec: "Replica__logFastPrepare" "rp" "ts" "pwrs" "ptgs" :=
-    #().
 
 Definition Replica__lastProposal: val :=
   rec: "Replica__lastProposal" "rp" "ts" :=
@@ -267,8 +283,23 @@ Definition Replica__accept: val :=
     MapInsert (struct.loadF Replica "rktbl" "rp") "ts" (std.SumAssumeNoOverflow "rank" #1);;
     #().
 
-Definition Replica__logAccept: val :=
-  rec: "Replica__logAccept" "rp" "ts" "rank" "dec" :=
+Definition logAccept: val :=
+  rec: "logAccept" "fname" "ts" "rank" "dec" :=
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_ACCEPT in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := marshal.WriteInt "bs2" "rank" in
+    let: "bs4" := marshal.WriteBool "bs3" "dec" in
+    grove_ffi.FileAppend "fname" "bs4";;
+    #().
+
+Definition logFastPrepare: val :=
+  rec: "logFastPrepare" "fname" "ts" "pwrs" "ptgs" :=
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_FAST_PREPARE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
+    grove_ffi.FileAppend "fname" "bs3";;
     #().
 
 (* Arguments:
@@ -303,11 +334,11 @@ Definition Replica__fastPrepare: val :=
           Replica__accept "rp" "ts" #0 "acquired";;
           (if: (~ "acquired")
           then
-            Replica__logAccept "rp" "ts" #0 #false;;
+            logAccept (struct.loadF Replica "fname" "rp") "ts" #0 #false;;
             tulip.REPLICA_FAILED_VALIDATION
           else
             MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-            Replica__logFastPrepare "rp" "ts" "pwrs" "ptgs";;
+            logFastPrepare (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
             tulip.REPLICA_OK)))).
 
 Definition Replica__FastPrepare: val :=
@@ -343,7 +374,7 @@ Definition Replica__tryAccept: val :=
       then tulip.REPLICA_STALE_COORDINATOR
       else
         Replica__accept "rp" "ts" "rank" "dec";;
-        Replica__logAccept "rp" "ts" "rank" "dec";;
+        logAccept (struct.loadF Replica "fname" "rp") "ts" "rank" "dec";;
         tulip.REPLICA_OK)).
 
 Definition Replica__Prepare: val :=
@@ -476,19 +507,19 @@ Definition Replica__applyAbort: val :=
 
 Definition Replica__apply: val :=
   rec: "Replica__apply" "rp" "cmd" :=
-    (if: (struct.get txnlog.Cmd "Kind" "cmd") = #1
+    (if: (struct.get txnlog.Cmd "Kind" "cmd") = txnlog.TXNLOG_COMMIT
     then
       Replica__applyCommit "rp" (struct.get txnlog.Cmd "Timestamp" "cmd") (struct.get txnlog.Cmd "PartialWrites" "cmd");;
       #()
     else
-      (if: (struct.get txnlog.Cmd "Kind" "cmd") = #2
+      (if: (struct.get txnlog.Cmd "Kind" "cmd") = txnlog.TXNLOG_ABORT
       then
         Replica__applyAbort "rp" (struct.get txnlog.Cmd "Timestamp" "cmd");;
         #()
       else #())).
 
-Definition Replica__Start: val :=
-  rec: "Replica__Start" "rp" :=
+Definition Replica__Applier: val :=
+  rec: "Replica__Applier" "rp" :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -516,15 +547,6 @@ Definition Replica__StartBackupTxnCoordinator: val :=
     backup.BackupTxnCoordinator__Finalize "tcoord";;
     #().
 
-Definition mkReplica: val :=
-  rec: "mkReplica" "rid" "addr" "fname" :=
-    let: "rp" := struct.new Replica [
-      "rid" ::= "rid";
-      "addr" ::= "addr";
-      "fname" ::= "fname"
-    ] in
-    "rp".
-
 Definition Replica__RequestSession: val :=
   rec: "Replica__RequestSession" "rp" "conn" :=
     Skip;;
@@ -539,11 +561,11 @@ Definition Replica__RequestSession: val :=
         (if: "kind" = message.MSG_TXN_READ
         then
           let: "key" := struct.get message.TxnRequest "Key" "req" in
-          let: (("lts", "value"), "ok") := Replica__Read "rp" "ts" "key" in
+          let: (("ver", "slow"), "ok") := Replica__Read "rp" "ts" "key" in
           (if: (~ "ok")
           then Continue
           else
-            let: "data" := message.EncodeTxnReadResponse "ts" (struct.loadF Replica "rid" "rp") "key" "lts" "value" in
+            let: "data" := message.EncodeTxnReadResponse "ts" (struct.loadF Replica "rid" "rp") "key" "ver" "slow" in
             grove_ffi.Send "conn" "data";;
             Continue)
         else
@@ -628,7 +650,24 @@ Definition Replica__Serve: val :=
     #().
 
 Definition Start: val :=
-  rec: "Start" "rid" "addr" "fname" :=
-    let: "rp" := mkReplica "rid" "addr" "fname" in
+  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
+    let: "txnlog" := txnlog.Start "rid" "addrmpx" "fnamepx" in
+    let: "rp" := struct.new Replica [
+      "mu" ::= newMutex #();
+      "rid" ::= "rid";
+      "addr" ::= "addr";
+      "fname" ::= "fname";
+      "txnlog" ::= "txnlog";
+      "lsna" ::= #0;
+      "prepm" ::= NewMap uint64T (slice.T (struct.t tulip.WriteEntry)) #();
+      "ptgsm" ::= NewMap uint64T (slice.T uint64T) #();
+      "pstbl" ::= NewMap uint64T (struct.t PrepareProposal) #();
+      "rktbl" ::= NewMap uint64T uint64T #();
+      "txntbl" ::= NewMap uint64T boolT #();
+      "ptsm" ::= NewMap stringT uint64T #();
+      "sptsm" ::= NewMap stringT uint64T #();
+      "idx" ::= index.MkIndex #()
+    ] in
     Fork (Replica__Serve "rp");;
+    Fork (Replica__Applier "rp");;
     "rp".

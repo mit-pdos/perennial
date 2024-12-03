@@ -69,35 +69,29 @@ Lemma execute_paxos_cmds_unfold cmds :
   foldl execute_paxos_cmd init_pxst cmds = execute_paxos_cmds cmds.
 Proof. done. Qed.
 
-Definition encode_paxos_extend (ents : ledger) : list u8.
-Admitted.
+(* Definition encode_paxos_extend (ents : ledger) : list u8. *)
 
-Definition encode_paxos_append (ent : string) : list u8.
-Admitted.
+(* Definition encode_paxos_append (ent : string) : list u8. *)
 
-Definition encode_paxos_prepare (term : u64) : list u8.
-Admitted.
+(* Definition encode_paxos_prepare (term : u64) : list u8. *)
 
-Definition encode_paxos_advance (term lsn : u64) (ents : ledger) : list u8.
-Admitted.
+(* Definition encode_paxos_advance (term lsn : u64) (ents : ledger) : list u8. *)
 
-Definition encode_paxos_accept (lsn : u64) (ents : ledger) : list u8.
-Admitted.
+(* Definition encode_paxos_accept (lsn : u64) (ents : ledger) : list u8. *)
 
-Definition encode_paxos_expand (lsn : u64) : list u8.
-Admitted.
+(* Definition encode_paxos_expand (lsn : u64) : list u8. *)
 
-Definition encode_paxos_cmd c :=
-  match c with
-  | CmdPaxosExtend ents => encode_paxos_extend ents
-  | CmdPaxosPrepare term => encode_paxos_prepare term
-  | CmdPaxosAdvance term lsn ents => encode_paxos_advance term lsn ents
-  | CmdPaxosAccept lsn ents => encode_paxos_accept lsn ents
-  | CmdPaxosExpand lsn => encode_paxos_expand lsn
-  end.
+(* Definition encode_paxos_cmd c := *)
+(*   match c with *)
+(*   | CmdPaxosExtend ents => encode_paxos_extend ents *)
+(*   | CmdPaxosPrepare term => encode_paxos_prepare term *)
+(*   | CmdPaxosAdvance term lsn ents => encode_paxos_advance term lsn ents *)
+(*   | CmdPaxosAccept lsn ents => encode_paxos_accept lsn ents *)
+(*   | CmdPaxosExpand lsn => encode_paxos_expand lsn *)
+(*   end. *)
 
-Definition encode_paxos_cmds_step p c :=
-  p ++ encode_paxos_cmd c.
+(* Definition encode_paxos_cmds_step p c := *)
+(*   p ++ encode_paxos_cmd c. *)
 
-Definition encode_paxos_cmds cmds :=
-  foldl encode_paxos_cmds_step [] cmds.
+Definition encode_paxos_cmds (cmds : list pxcmd) (data : list u8) := True.
+  (* foldl encode_paxos_cmds_step [] cmds. *)

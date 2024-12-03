@@ -92,7 +92,6 @@ Section commit.
       iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
       iFrame "Hfile".
       iExists wal.
-      iSplit; first done.
       iIntros (bs') "[Hfile %Hbs']".
       iMod (paxos_inv_expand (length log) with "[Hsafe'] Hwalfile Hterml Hlsnc Hlogn HinvO")
         as "(Hwalfile & Hterml & Hlsnc & Hlogn & HinvO)".
@@ -142,7 +141,6 @@ Section commit.
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
     iFrame "Hfile".
     iExists wal.
-    iSplit; first done.
     iIntros (bs') "[Hfile %Hbs']".
     assert (Hprefix : prefix logc log).
     { destruct Horprefix as [Hprefix | ?]; last done.

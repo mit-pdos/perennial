@@ -167,7 +167,16 @@ Section program.
         (*@             stg, ok := gcoord.Prepare(ts, ptgs, pwrs)                   @*)
         (*@                                                                         @*)
         iModIntro.
-        wp_apply (wp_GroupCoordinator__Prepare with "Hgcoordabs").
+        iAssert (safe_txn_pwrs γ gid tid pwrs)%I as "#Hsafepwrs".
+        { iFrame "Htxnwrs".
+          iPureIntro.
+          specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
+          pose proof (elem_of_ptgroups_non_empty _ _ Hvg) as Hne.
+          rewrite -Hwrsg in Hne.
+          done.
+        }
+        wp_apply (wp_GroupCoordinator__Prepare with "[] Hpwrs Hgcoordabs").
+        { by rewrite Htsword. }
         iIntros (stg ok) "#Hsafe".
         wp_pures.
 
@@ -190,15 +199,6 @@ Section program.
           { apply subseteq_size. etrans; [apply Hgidsincl | apply subseteq_ptgroups]. }
           pose proof size_gids_all as Hszgidsall.
           wp_pures.
-          (* Prove [safe_txn_pwrs] used in invariance of PREPARE and UNPREPARE. *)
-          iAssert (safe_txn_pwrs γ gid tid pwrs)%I as "#Hsafepwrs".
-          { iFrame "Htxnwrs".
-            iPureIntro.
-            specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
-            pose proof (elem_of_ptgroups_non_empty _ _ Hvg) as Hne.
-            rewrite -Hwrsg in Hne.
-            done.
-          }
           case_bool_decide as Hstg; wp_pures.
           { (* Case [TxnPrepared]. *)
             wp_load. wp_store.

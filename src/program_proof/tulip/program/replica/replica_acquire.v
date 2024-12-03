@@ -6,13 +6,13 @@ From Perennial.program_proof.tulip.program.replica Require Import
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_Replica__acquire rp (tsW : u64) pwrsS pwrsL pwrs ptsm sptsm :
+  Theorem wp_Replica__acquire rp (tsW : u64) pwrsS pwrs ptsm sptsm :
     valid_wrs pwrs ->
     let ts := uint.nat tsW in
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_ptsm_sptsm rp ptsm sptsm }}}
+    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_ptsm_sptsm rp ptsm sptsm }}}
       Replica__acquire #rp #tsW (to_val pwrsS)
     {{{ (acquired : bool), RET #acquired;
-        own_dbmap_in_slice pwrsS pwrsL pwrs ∗
+        own_dbmap_in_slice pwrsS pwrs ∗
         if acquired
         then own_replica_ptsm_sptsm rp (acquire ts pwrs ptsm) (acquire ts pwrs sptsm) ∗
              ⌜validated_ptsm ptsm pwrs⌝ ∗
@@ -20,7 +20,8 @@ Section program.
         else own_replica_ptsm_sptsm rp ptsm sptsm
     }}}.
   Proof.
-    iIntros (Hvw ts Φ) "[[HpwrsS %HpwrsL] Hrp] HΦ".
+    iIntros (Hvw ts Φ) "[Hpwrs Hrp] HΦ".
+    iDestruct "Hpwrs" as (pwrsL) "[HpwrsS %HpwrsL]".
     wp_rec.
     iDestruct (own_replica_ptsm_sptsm_dom with "Hrp") as %[Hdomptsm Hdomsptsm].
 

@@ -34,9 +34,9 @@ Section push.
     wp_apply (wp_MapLen with "Hlsnpeers").
     iIntros "[%Hszlsnpeers Hlsnpeers]".
     wp_apply (wp_Paxos__cquorum with "Hsc").
-    iIntros (ok) "[Hsc %Hqsize]".
+    iIntros "Hsc".
     (* Not using [wp_if_destruct] to prevent it eating equality about [nids]. *)
-    destruct ok eqn:Hok; last first.
+    case_bool_decide as Hqsize; wp_pures; last first.
     { wp_pures.
       iApply "HΦ".
       iFrame "Hcand".

@@ -9,6 +9,7 @@ Section program.
   Theorem wp_GroupCoordinator__Read
     (gcoord : loc) (tsW : u64) (key : string) gid γ :
     let ts := uint.nat tsW in
+    safe_read_req gid ts key ->
     is_gcoord gcoord gid γ -∗
     {{{ True }}}
       GroupCoordinator__Read #gcoord #tsW #(LitString key)
@@ -16,7 +17,7 @@ Section program.
         if ok then fast_or_quorum_read γ key ts value else True
     }}}.
   Proof.
-    iIntros (ts) "#Hgcoord".
+    iIntros (ts Hsafe) "#Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -36,10 +37,17 @@ Section program.
     wp_apply (wp_MapIter_fold _ _ _ (λ _, True)%I with "Haddrm []").
     { done. }
     { clear Φ.
-      iIntros (mx rid c Φ) "!> _ HΦ".
+      iIntros (mx rid c Φ) "!> [_ %Hrid] HΦ".
       wp_pures.
       wp_apply wp_fork.
-      { by wp_apply (wp_GroupCoordinator__ReadSession with "Hgcoord"). }
+      { wp_apply (wp_GroupCoordinator__ReadSession with "Hgcoord").
+        { destruct Hrid as [_ Hrid].
+          apply elem_of_dom_2 in Hrid.
+          by rewrite -Hrps -Hdomaddrm.
+        }
+        { apply Hsafe. }
+        done.
+      }
       by iApply "HΦ".
     }
     iIntros "_".

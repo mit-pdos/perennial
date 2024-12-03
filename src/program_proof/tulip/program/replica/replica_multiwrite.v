@@ -6,7 +6,7 @@ From Perennial.program_proof.tulip.program.index Require Import index.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_Replica__multiwrite rp (tsW : u64) pwrsS pwrsL pwrs histm gid γ α :
+  Theorem wp_Replica__multiwrite rp (tsW : u64) pwrsS pwrs histm gid γ α :
     let ts := uint.nat tsW in
     let histm' := multiwrite ts pwrs histm in
     valid_pwrs gid pwrs ->
@@ -14,14 +14,15 @@ Section program.
     safe_extension ts pwrs histm ->
     ([∗ map] k ↦ h ∈ filter_group gid histm', is_repl_hist_lb γ k h) -∗
     is_replica_idx rp γ α -∗
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_histm rp histm α }}}
+    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_histm rp histm α }}}
       Replica__multiwrite #rp #tsW (to_val pwrsS)
     {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica_histm rp histm' α
+        own_dbmap_in_slice pwrsS pwrs ∗ own_replica_histm rp histm' α
     }}}.
   Proof.
     iIntros (ts histm' Hvw Hdomhistm Hlenhistm) "#Hrlbs #Hidx".
-    iIntros (Φ) "!> [[HpwrsS %Hpwrs] Hhistm] HΦ".
+    iIntros (Φ) "!> [Hpwrs Hhistm] HΦ".
+    iDestruct "Hpwrs" as (pwrsL) "[HpwrsS %HpwrsL]".
     wp_rec.
 
     (*@ func (rp *Replica) multiwrite(ts uint64, pwrs []tulip.WriteEntry) {     @*)
@@ -56,7 +57,7 @@ Section program.
       wp_loadField.
       (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
       apply elem_of_list_lookup_2 in Hi as Hpwrsv.
-      rewrite -Hpwrs elem_of_map_to_list in Hpwrsv.
+      rewrite -HpwrsL elem_of_map_to_list in Hpwrsv.
       apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
       assert (Hvk : k ∈ keys_all).
       { clear -Hvw Hdompwrs. set_solver. }
@@ -64,7 +65,7 @@ Section program.
       iIntros (tpl) "#Htpl".
       (* Obtain proof that the current key [k] has not been written. *)
       pose proof (NoDup_fst_map_to_list pwrs) as Hnd.
-      rewrite Hpwrs in Hnd.
+      rewrite HpwrsL in Hnd.
       pose proof (list_lookup_fmap fst pwrsL (uint.nat i)) as Hk.
       rewrite Hi /= in Hk.
       pose proof (not_elem_of_take _ _ _ Hnd Hk) as Htake.
@@ -120,7 +121,7 @@ Section program.
     iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
     wp_pures.
     iApply "HΦ".
-    pose proof (list_to_map_flip _ _ Hpwrs) as Hltm.
+    pose proof (list_to_map_flip _ _ HpwrsL) as Hltm.
     rewrite -Hlenpwrs firstn_all -Hltm.
     by iFrame.
   Qed.

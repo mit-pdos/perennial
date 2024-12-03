@@ -1,4 +1,5 @@
 From Perennial.program_proof.tulip Require Export prelude.
+(* FIXME: it's a bad idea to export below for names can collide *)
 From Goose.github_com.mit_pdos.tulip Require Export
   backup gcoord index params quorum replica tulip tuple txn txnlog util message.
 
@@ -28,7 +29,7 @@ Defined.
 
 #[global]
 Instance dbval_into_val_for_type : IntoValForType dbval (boolT * (stringT * unitT)%ht).
-Proof. constructor; [done | done | intros [v |]; by auto]. Defined.
+Proof. by constructor; [| | intros [v |]; auto]. Defined.
 
 Definition dbmod_to_val (x : dbmod) : val :=
   (#(LitString x.1), (dbval_to_val x.2, #())).
@@ -54,6 +55,11 @@ Proof.
   by destruct v.
 Defined.
 
+#[global]
+Instance dbmod_into_val_for_type :
+  IntoValForType dbmod (stringT * (boolT * (stringT * unitT) * unitT)%ht).
+Proof. by constructor; [| | intros [k [s |]]; auto 10]. Defined.
+
 Definition ppsl_to_val (v : ppsl) : val := (#v.1, (#v.2, #())).
 
 Definition ppsl_from_val (v : val) : option ppsl :=
@@ -74,9 +80,14 @@ Proof.
   by destruct v.
 Defined.
 
-Definition u64_dbval_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
+#[global]
+Instance ppsl_into_val_for_type :
+  IntoValForType ppsl (uint64T * (boolT * unitT)%ht).
+Proof. by constructor; [| | intros [r d]; auto 10]. Defined.
 
-Definition u64_dbval_from_val (v : val) : option (u64 * dbval) :=
+Definition dbpver_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
+
+Definition dbpver_from_val (v : val) : option dbpver :=
   match v with
   | (#(LitInt n), (dbv, #()))%V => match dbval_from_val dbv with
                                   | Some x => Some (n, x)
@@ -86,11 +97,11 @@ Definition u64_dbval_from_val (v : val) : option (u64 * dbval) :=
   end.
 
 #[global]
-Instance u64_dbval_into_val : IntoVal (u64 * dbval).
+Instance dbpver_into_val : IntoVal dbpver.
 Proof.
   refine {|
-      to_val := u64_dbval_to_val;
-      from_val := u64_dbval_from_val;
+      to_val := dbpver_to_val;
+      from_val := dbpver_from_val;
       IntoVal_def := (W64 0, None);
     |}.
   intros [n v].
@@ -98,8 +109,8 @@ Proof.
 Defined.
 
 #[global]
-Instance u64_dbval_into_val_for_type :
-  IntoValForType (u64 * dbval) (uint64T * (boolT * (stringT * unitT) * unitT)%ht).
+Instance dbpver_into_val_for_type :
+  IntoValForType dbpver (uint64T * (boolT * (stringT * unitT) * unitT)%ht).
 Proof.
   constructor; [done | done |].
   intros [t [v |]]; by auto 10.
@@ -107,25 +118,9 @@ Defined.
 
 Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   match c with
-  | CmdCommit ts _ => (#(U64 1), (#(U64 ts), (to_val pwrsS, (zero_val stringT, #()))))
-  | CmdAbort ts => (#(U64 2), (#(U64 ts), (Slice.nil, (zero_val stringT, #()))))
+  | CmdAbort ts => (#(U64 0), (#(U64 ts), (Slice.nil, #())))
+  | CmdCommit ts _ => (#(U64 1), (#(U64 ts), (to_val pwrsS,  #())))
   end.
-
-Definition rpres_to_u64 (r : rpres) :=
-  match r with
-  | ReplicaOK => (U64 0)
-  | ReplicaCommittedTxn => (U64 1)
-  | ReplicaAbortedTxn => (U64 2)
-  | ReplicaStaleCoordinator => (U64 3)
-  | ReplicaFailedValidation => (U64 4)
-  | ReplicaInvalidRank => (U64 5)
-  | ReplicaWrongLeader => (U64 6)
-  end.
-
-#[global]
-Instance rpres_to_u64_inj :
-  Inj eq eq rpres_to_u64.
-Proof. intros x y H. by destruct x, y. Defined.
 
 Inductive txnphase :=
 | TxnPrepared
@@ -147,12 +142,13 @@ Proof. intros x y H. by destruct x, y. Defined.
 Section def.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Definition own_dbmap_in_slice s (l : list dbmod) (m : dbmap) : iProp Σ :=
-    own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
+  Definition own_dbmap_in_slice s (m : dbmap) : iProp Σ :=
+    ∃ l : list dbmod,
+      own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
 
   Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
     match c with
-    | CmdCommit _ pwrs => (∃ pwrsL : list dbmod, own_dbmap_in_slice pwrsS pwrsL pwrs)
+    | CmdCommit _ pwrs => own_dbmap_in_slice pwrsS pwrs
     | _ => True
     end.
 

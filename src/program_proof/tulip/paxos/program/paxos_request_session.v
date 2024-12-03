@@ -62,8 +62,9 @@ Section request_session.
     (*@         req  := message.DecodePaxosRequest(ret.Data)                    @*)
     (*@         kind := req.Kind                                                @*)
     (*@                                                                         @*)
+    iDestruct (own_slice_to_small with "Hretdata") as "Hretdata".
+    rewrite Hreq.
     wp_apply (wp_DecodeRequest with "Hretdata").
-    { apply Hreq. }
     iIntros (entsaP) "Hentsa".
     destruct req as [term lsnc |]; wp_pures.
     { (* Case: RequestVote. *)
@@ -185,6 +186,7 @@ Section request_session.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union_L 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -307,6 +309,7 @@ Section request_session.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
+        rewrite 2!set_map_union_L 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".

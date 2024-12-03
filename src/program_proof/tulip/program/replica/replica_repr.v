@@ -2,6 +2,7 @@ From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.tuple Require Import res.
 From Perennial.program_proof.tulip.program.txnlog Require Import txnlog.
 From Perennial.program_proof.tulip.program.index Require Import index.
+From Perennial.program_proof.tulip.paxos Require Import prelude.
 
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -52,7 +53,7 @@ Section repr.
     ∃ (prepmP : loc) (prepmS : gmap u64 Slice.t) (prepm : gmap u64 dbmap),
       "HprepmP"  ∷ rp ↦[Replica :: "prepm"] #prepmP ∗
       "HprepmS"  ∷ own_map prepmP (DfracOwn 1) prepmS ∗
-      "Hprepm"   ∷ ([∗ map] s; m ∈ prepmS; prepm, ∃ l, own_dbmap_in_slice s l m) ∗
+      "Hprepm"   ∷ ([∗ map] s; m ∈ prepmS; prepm, own_dbmap_in_slice s m) ∗
       "%Hcpmabs" ∷ ⌜(kmap Z.of_nat cpm : gmap Z dbmap) = kmap uint.Z prepm⌝.
 
   Definition absrel_ptsm (ptsm : gmap dbkey nat) (ptsmM : gmap dbkey u64) :=
@@ -125,15 +126,14 @@ Section repr.
       "%Hexec"      ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
 
   Definition own_replica (rp : loc) (gid rid : u64) γ α : iProp Σ :=
-    ∃ (cloga : dblog) (lsna : u64),
+    ∃ (cloga : dblog) (lsna : u64) (fname : string) (bs : list u8),
       "Hrp"        ∷ own_replica_with_cloga_no_lsna rp cloga gid rid γ α ∗
       "Hlsna"      ∷ rp ↦[Replica :: "lsna"] #lsna ∗
+      "HfnameP"    ∷ rp ↦[Replica :: "fname"] #(LitString fname) ∗
+      (* TODO: The file pointsto really should be sealed in an atomic invariant,
+      but this won't be a problem until we start proving recovery. *)
+      "Hfile"      ∷ fname f↦ bs ∗
       "%Hlencloga" ∷ ⌜length cloga = uint.nat lsna⌝.
-
-  Definition is_replica_txnlog (rp : loc) gid γ : iProp Σ :=
-    ∃ (txnlog : loc),
-      "#HtxnlogP" ∷ readonly (rp ↦[Replica :: "txnlog"] #txnlog) ∗
-      "#Htxnlog"  ∷ is_txnlog txnlog gid γ.
 
   Definition is_replica_idx (rp : loc) γ α : iProp Σ :=
     ∃ (idx : loc),
@@ -145,18 +145,31 @@ Section repr.
     ∃ (mu : loc) α,
       "#HmuP"    ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
       "#Hlock"   ∷ is_lock tulipNS #mu (own_replica rp gid rid γ α) ∗
-      "#Htxnlog" ∷ is_replica_txnlog rp gid γ ∗
       "#Hidx"    ∷ is_replica_idx rp γ α ∗
       "#Hinv"    ∷ know_tulip_inv γ ∗
       "%Hgid"    ∷ ⌜gid ∈ gids_all⌝ ∗
       "%Hrid"    ∷ ⌜rid ∈ rids_all⌝.
+
+End repr.
+
+Section repr.
+  Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
+
+  Definition is_replica_txnlog (rp : loc) gid γ : iProp Σ :=
+    ∃ (txnlog : loc),
+      "#HtxnlogP" ∷ readonly (rp ↦[Replica :: "txnlog"] #txnlog) ∗
+      "#Htxnlog"  ∷ is_txnlog txnlog gid γ.
+
+  Definition is_replica_plus_txnlog (rp : loc) gid rid γ : iProp Σ :=
+    "#Hrp"     ∷ is_replica rp gid rid γ ∗
+    "#Htxnlog" ∷ is_replica_txnlog rp gid γ.
 
   Definition is_replica_plus_network (rp : loc) (addr : chan) (gid rid : u64) γ : iProp Σ :=
     ∃ (addrm : gmap u64 chan),
       "#HaddrP"  ∷ readonly (rp ↦[Replica :: "addr"] (to_val addr)) ∗
       "#HridP"   ∷ readonly (rp ↦[Replica :: "rid"] #rid) ∗
       "#Hinvnet" ∷ know_tulip_network_inv γ gid addrm ∗
-      "Hrp"      ∷ is_replica rp gid rid γ ∗
+      "Hrp"      ∷ is_replica_plus_txnlog rp gid rid γ ∗
       "%Haddr"   ∷ ⌜addrm !! rid = Some addr⌝.
 
 End repr.

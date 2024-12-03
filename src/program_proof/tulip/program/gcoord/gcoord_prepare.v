@@ -7,8 +7,10 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupCoordinator__Prepare
-    (gcoord : loc) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) gid γ :
+    (gcoord : loc) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) (pwrs : dbmap) gid γ :
     let ts := uint.nat tsW in
+    safe_txn_pwrs γ gid ts pwrs -∗
+    own_map pwrsP DfracDiscarded pwrs -∗
     is_gcoord gcoord gid γ -∗
     {{{ True }}}
       GroupCoordinator__Prepare #gcoord #tsW (to_val ptgsP) #pwrsP
@@ -16,7 +18,7 @@ Section program.
         if valid then safe_group_txnphase γ ts gid phase else True
     }}}.
   Proof.
-    iIntros (ts) "#Hgcoord".
+    iIntros (ts) "#Hsafepwrs #Hpwrs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -29,17 +31,21 @@ Section program.
     (*@         }()                                                             @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    iPoseProof "Hgcoord" as "Hgcoord'".
     do 2 iNamed "Hgcoord". iNamed "Haddrm".
-    iRename "Hgcoord'" into "Hgcoord".
     wp_loadField.
     wp_apply (wp_MapIter_fold _ _ _ (λ _, True)%I with "Haddrm []").
     { done. }
     { clear Φ.
-      iIntros (mx rid c Φ) "!> _ HΦ".
+      iIntros (mx rid c Φ) "!> [_ %Hrid] HΦ".
+      destruct Hrid as [_ Hrid].
       wp_pures.
+      iAssert (is_gcoord_with_addrm gcoord gid addrm γ)%I as "#Hgcoord".
+      { iFrame "HcvP # %". }
       wp_apply wp_fork.
-      { by wp_apply (wp_GroupCoordinator__PrepareSession with "Hgcoord"). }
+      { wp_apply (wp_GroupCoordinator__PrepareSession with "Hsafepwrs Hpwrs Hgcoord").
+        { by apply elem_of_dom_2 in Hrid. }
+        done.
+      }
       by iApply "HΦ".
     }
     iIntros "_".
@@ -47,7 +53,8 @@ Section program.
     (*@     st, valid := gcoord.WaitUntilPrepareDone(ts)                        @*)
     (*@     return st, valid                                                    @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_GroupCoordinator__WaitUntilPrepareDone with "Hgcoord").
+    wp_apply (wp_GroupCoordinator__WaitUntilPrepareDone).
+    { by iFrame "HcvP # %". }
     iIntros (phase valid) "#Hsafep".
     wp_pures.
     by iApply "HΦ".

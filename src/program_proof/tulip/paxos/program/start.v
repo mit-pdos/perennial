@@ -1,7 +1,8 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Perennial.program_proof.tulip.paxos.program Require Import
   repr resume mk_paxos paxos_serve
-  paxos_leader_session paxos_election_session paxos_response_session.
+  paxos_leader_session paxos_election_session paxos_response_session
+  paxos_heartbeat_session.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
 Section start.
@@ -10,6 +11,11 @@ Section start.
   Theorem wp_Start
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list string)
     (addrmP : loc) (addrm : gmap u64 chan) (fname : string) γ :
+    termc = (W64 0) ->
+    terml = (W64 0) ->
+    lsnc = (W64 0) ->
+    log = [] ->
+    (* remove above assumptions once recovery is proven *)
     is_node_wal_fname γ nidme fname -∗
     know_paxos_inv γ (dom addrm) -∗
     know_paxos_file_inv γ (dom addrm) -∗
@@ -23,6 +29,7 @@ Section start.
       Start #nidme #addrmP #(LitString fname)
     {{{ (px : loc), RET #px; is_paxos px nidme γ }}}.
   Proof.
+    iIntros (Htermcz Htermlz Hlsncz Hlogz).
     iIntros "#Hfnamewal #Hinv #Hinvfile #Hinvnet" (Φ).
     iIntros "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
     wp_rec.
@@ -57,8 +64,12 @@ Section start.
     (*@     termc, terml, lsnc, log := resume()                                 @*)
     (*@                                                                         @*)
     wp_pures.
-    wp_apply (wp_resume with "[$Htermc $Hterml $Hlsnc $Hlogn]").
-    iIntros (logP) "(Htermc & Hterml & Hlsnc & Hlogn & Hlog)".
+    wp_apply wp_NewSlice.
+    iIntros (logP) "Hlog".
+    rewrite uint_nat_W64_0 replicate_0.
+    rewrite Htermcz Htermlz Hlsncz Hlogz.
+    (* wp_apply (wp_resume with "[$Htermc $Hterml $Hlsnc $Hlogn]"). *)
+    (* iIntros (logP) "(Htermc & Hterml & Hlsnc & Hlogn & Hlog)". *)
 
     (*@     px := mkPaxos(nidme, termc, terml, lsnc, log, addrm)                @*)
     (*@                                                                         @*)
@@ -86,6 +97,12 @@ Section start.
     (*@                                                                         @*)
     wp_apply wp_fork.
     { wp_apply (wp_Paxos__LeaderSession with "[Hpx]").
+      { iNamed "Hpx". iFrame "# %". }
+      done.
+    }
+
+    wp_apply wp_fork.
+    { wp_apply (wp_Paxos__HeartbeatSession with "[Hpx]").
       { iNamed "Hpx". iFrame "# %". }
       done.
     }

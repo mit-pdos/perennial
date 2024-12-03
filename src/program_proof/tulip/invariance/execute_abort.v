@@ -100,7 +100,7 @@ Section execute_abort.
         { by rewrite release_unmodified; last by apply not_elem_of_dom. }
         assert (is_Some (kvdm !! k)) as [vl Hvl].
         { rewrite -elem_of_dom Hdomkvdm. clear -Hin Hdompwrs. set_solver. }
-        pose proof (execute_cmds_dom_histm Hrsm) as Hdomhistm.
+        pose proof (apply_cmds_dom _ _ _ Happly) as Hdomhistm.
         assert (is_Some (histm !! k)) as [h Hh].
         { rewrite -elem_of_dom Hdomhistm. clear -Hin Hdompwrs. set_solver. }
         rewrite release_modified; last first.

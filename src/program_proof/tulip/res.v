@@ -351,40 +351,46 @@ Section res.
     (** Consensus resource with transaction semantics. One half owned by the
     group invariant, the other half by the txnlog invariant. *)
 
-    Definition own_txn_log γ (gid : u64) (log : dblog) : iProp Σ.
+    Definition own_txn_log_half γ (gid : u64) (log : dblog) : iProp Σ.
     Admitted.
 
     Definition is_txn_log_lb γ (gid : u64) (log : dblog) : iProp Σ.
     Admitted.
 
     #[global]
-      Instance is_txn_log_lb_persistent γ gid log :
+    Instance is_txn_log_lb_persistent γ gid log :
       Persistent (is_txn_log_lb γ gid log).
     Admitted.
 
     Definition is_txn_log_lbs γ (logs : gmap u64 dblog) : iProp Σ :=
       [∗ map] gid ↦ log ∈ logs, is_txn_log_lb γ gid log.
 
-    Definition own_txn_cpool γ (gid : u64) (cpool : gset ccommand) : iProp Σ.
+    Definition own_txn_cpool_half γ (gid : u64) (cpool : gset ccommand) : iProp Σ.
     Admitted.
 
-    Definition is_proposed_txn_cmd γ (gid : u64) (lsn : nat) (term : nat) (c : ccommand) : iProp Σ.
-    Admitted.
+    (* Definition is_proposed_txn_cmd γ (gid : u64) (lsn : nat) (term : nat) (c : ccommand) : iProp Σ. *)
+    (* Admitted. *)
 
-    #[global]
-    Instance is_proposed_txn_cmd_persistent γ gid lsn term c :
-      Persistent (is_proposed_txn_cmd γ gid lsn term c).
-    Admitted.
+    (* #[global] *)
+    (* Instance is_proposed_txn_cmd_persistent γ gid lsn term c : *)
+    (*   Persistent (is_proposed_txn_cmd γ gid lsn term c). *)
+    (* Admitted. *)
 
     Lemma txn_log_witness γ gid log :
-      own_txn_log γ gid log -∗
+      own_txn_log_half γ gid log -∗
       is_txn_log_lb γ gid log.
     Admitted.
 
     Lemma txn_log_prefix γ gid log logp :
-      own_txn_log γ gid log -∗
+      own_txn_log_half γ gid log -∗
       is_txn_log_lb γ gid logp -∗
       ⌜prefix logp log⌝.
+    Admitted.
+
+    Lemma txn_log_agree γ gid log1 log2 :
+      own_txn_log_half γ gid log1 -∗
+      own_txn_log_half γ gid log2 -∗
+      ⌜log2 = log1⌝.
     Admitted.
 
     Lemma txn_log_lb_prefix γ gid logp1 logp2 :
@@ -399,20 +405,37 @@ Section res.
       is_txn_log_lb γ gid logp1.
     Admitted.
 
-    Definition cpool_subsume_log (cpool : gset ccommand) (log : list ccommand) :=
+    Lemma txn_cpool_agree γ gid cpool1 cpool2 :
+      own_txn_cpool_half γ gid cpool1 -∗
+      own_txn_cpool_half γ gid cpool2 -∗
+      ⌜cpool2 = cpool1⌝.
+    Admitted.
+
+    Definition txn_cpool_subsume_log (cpool : gset ccommand) (log : list ccommand) :=
       Forall (λ c, c ∈ cpool) log.
 
     Lemma txn_log_cpool_incl γ gid log cpool :
-      own_txn_log γ gid log -∗
-      own_txn_cpool γ gid cpool -∗
-      ⌜cpool_subsume_log cpool log⌝.
+      own_txn_log_half γ gid log -∗
+      own_txn_cpool_half γ gid cpool -∗
+      ⌜txn_cpool_subsume_log cpool log⌝.
     Admitted.
 
-    Lemma txn_log_update γ gid log cpool v :
-      v ∈ cpool ->
-      own_txn_log γ gid log -∗
-      own_txn_cpool γ gid cpool ==∗
-      own_txn_log γ gid (log ++ [v]).
+    Lemma txn_log_extend {γ gid log cpool} logext :
+      txn_cpool_subsume_log cpool logext ->
+      own_txn_log_half γ gid log -∗
+      own_txn_log_half γ gid log -∗
+      own_txn_cpool_half γ gid cpool ==∗
+      own_txn_log_half γ gid (log ++ logext) ∗
+      own_txn_log_half γ gid (log ++ logext) ∗
+      own_txn_cpool_half γ gid cpool.
+    Admitted.
+
+    Lemma txn_cpool_update {γ gid cpool} cpool' :
+      cpool ⊆ cpool' ->
+      own_txn_cpool_half γ gid cpool -∗
+      own_txn_cpool_half γ gid cpool ==∗
+      own_txn_cpool_half γ gid cpool' ∗
+      own_txn_cpool_half γ gid cpool'.
     Admitted.
 
   End txn_consensus.
@@ -477,15 +500,19 @@ Section alloc.
       (* per-key committed modification | txnsys / key *)
       ([∗ set] k ∈ keys_all, own_cmtd_kmod_half γ k ∅) ∗
       ([∗ set] k ∈ keys_all, own_cmtd_kmod_half γ k ∅) ∗
-      (* per-group txn consensus | group *)
-      ([∗ set] g ∈ gids_all, own_txn_log γ g []) ∗
-      ([∗ set] g ∈ gids_all, own_txn_cpool γ g ∅) ∗
+      (* per-group txn consensus | group / txnlog *)
+      ([∗ set] g ∈ gids_all, own_txn_log_half γ g []) ∗
+      ([∗ set] g ∈ gids_all, own_txn_log_half γ g []) ∗
+      ([∗ set] g ∈ gids_all, own_txn_cpool_half γ g ∅) ∗
+      ([∗ set] g ∈ gids_all, own_txn_cpool_half γ g ∅) ∗
       (* per-group prepare map | group *)
       ([∗ set] g ∈ gids_all, own_group_prepm γ g ∅) ∗
       (* per-group prepare proposal map | group *)
       ([∗ set] g ∈ gids_all, own_group_prepare_proposals_map γ g ∅) ∗
       (* per-group prepare map | group *)
       ([∗ set] g ∈ gids_all, own_group_commit_map γ g ∅) ∗
+      (* per-group network terminals | network *)
+      ([∗ set] g ∈ gids_all, own_terminals γ g ∅ ) ∗
       (* per-replica resources *)
       ([∗ set] g ∈ gids_all, replica_init_res γ g) ∗
       (* per-replica logs | replica lock *)

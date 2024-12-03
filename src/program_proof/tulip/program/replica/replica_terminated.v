@@ -48,4 +48,33 @@ Section program.
     }
   Qed.
 
+  Theorem wp_Replica__Terminated (rp : loc) (ts : u64) gid rid γ :
+    is_replica rp gid rid γ -∗
+    {{{ True }}}
+      Replica__Terminated #rp #ts
+    {{{ (terminated : bool), RET #terminated; True }}}.
+  Proof.
+    iIntros "#Hrp" (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) Terminated(ts uint64) bool {                         @*)
+    (*@     rp.mu.Lock()                                                        @*)
+    (*@     terminated := rp.terminated(ts)                                     @*)
+    (*@     rp.mu.Unlock()                                                      @*)
+    (*@     return terminated                                                   @*)
+    (*@ }                                                                       @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hrp]".
+    do 2 iNamed "Hrp".
+    wp_apply (wp_Replica__terminated with "Hcm").
+    iIntros "Hcm".
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "Hlock Hlocked ∗ # %". }
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
 End program.

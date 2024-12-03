@@ -83,12 +83,12 @@ Section submit.
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
     { apply Hnidme. }
     iNamed "Hnodefile".
+    (* iMod (own_crash_ex_open with "Htermc") as "(>Htermc&Hclose_termc)"; first solve_ndisj. *)
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
     iFrame "Hfile".
     iExists wal.
-    iSplit; first done.
     iIntros (bs') "[Hfile %Hbs']".
     iMod (paxos_inv_extend [c] with "[] Hps Hwalfile Htermc Hterml Hlogn HinvO")
       as "(Hps & Hwalfile & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
@@ -97,6 +97,7 @@ Section submit.
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
     { by iFrame "∗ # %". }
     iMod "Hmask" as "_".
+    (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
     iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
     iIntros "!> Hents".
@@ -150,6 +151,9 @@ Section submit.
       rewrite length_app /=.
       clear -Hlsncub. lia.
     }
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_Cond__Broadcast with "Hcv").
     wp_pures.
     by iApply "HΦ".
   Qed.

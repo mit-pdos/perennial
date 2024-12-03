@@ -14,7 +14,7 @@ Section program.
     know_tulip_inv γ -∗
     {{{ own_gpreparer gpp ts gid γ }}}
       GroupPreparer__processValidateResult #gpp #rid #(rpres_to_u64 res)
-    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
+    {{{ (resend : bool), RET #resend; own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hgid Hrid) "#Hvd #Hinv".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -62,10 +62,7 @@ Section program.
     iIntros "Hgpp".
     wp_apply (wp_GroupPreparer__tryBecomePreparing with "Hinv Hgpp").
     { apply Hgid. }
-    iIntros "Hgpp".
-    wp_pures.
-    iApply "HΦ".
-    by iFrame.
+    done.
   Qed.
 
 End program.

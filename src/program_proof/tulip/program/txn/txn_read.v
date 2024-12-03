@@ -8,13 +8,14 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Txn__Read txn tid key value rds γ τ  :
+    valid_key key ->
     {{{ own_txn txn tid rds γ τ ∗ txnmap_ptsto τ key value }}}
       Txn__Read #txn #(LitString key)
     {{{ (ok : bool), RET (dbval_to_val (if ok then value else None), #ok);
         own_txn txn tid rds γ τ ∗ txnmap_ptsto τ key value
     }}}.
   Proof.
-    iIntros (Φ) "[Htxn Hpt] HΦ".
+    iIntros (Hvk Φ) "[Htxn Hpt] HΦ".
     wp_rec.
 
     (*@ func (txn *Txn) Read(key string) (tulip.Value, bool) {                  @*)
@@ -58,6 +59,11 @@ Section program.
     iNamed "Htxn".
     wp_loadField.
     wp_apply (wp_GroupCoordinator__Read with "Hgcoordabs").
+    { rewrite Htsword.
+      split; first apply Hvts.
+      split; first apply Hvk.
+      apply Hgid.
+    }
     iIntros (v ok) "#Hread".
     wp_pures.
 

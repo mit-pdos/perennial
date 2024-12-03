@@ -127,7 +127,7 @@ Proof.
     iFrame.
     iSplit.
     2:{
-      iApply merkle_internal.own_node_unfold.
+      iApply merkle_internal.own_node_except_unfold.
       instantiate (1:=merkle_internal.Empty).
       simpl. done.
     }

@@ -28,7 +28,7 @@ Definition findVersion: val :=
       else
         "idx" <-[uint64T] ((![uint64T] "idx") + #1);;
         Continue));;
-    (![struct.t tulip.Version] "ver", (![uint64T] "idx") = #0).
+    (![struct.t tulip.Version] "ver", ((![uint64T] "idx") = #0) && ("ts" ≠ (struct.get tulip.Version "Timestamp" (![struct.t tulip.Version] "ver")))).
 
 (* Arguments:
    @ts: Index at which lookup of the abstract history is performed.
@@ -43,14 +43,9 @@ Definition findVersion: val :=
 Definition Tuple__ReadVersion: val :=
   rec: "Tuple__ReadVersion" "tuple" "ts" :=
     Mutex__Lock (struct.loadF Tuple "mu" "tuple");;
-    let: ("ver", "slow") := findVersion "ts" (struct.loadF Tuple "vers" "tuple") in
-    (if: (~ "slow")
-    then
-      Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-      (#0, struct.get tulip.Version "Value" "ver")
-    else
-      Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
-      (struct.get tulip.Version "Timestamp" "ver", struct.get tulip.Version "Value" "ver")).
+    let: ("ver", "slow") := findVersion ("ts" - #1) (struct.loadF Tuple "vers" "tuple") in
+    Mutex__Unlock (struct.loadF Tuple "mu" "tuple");;
+    ("ver", "slow").
 
 Definition Tuple__AppendVersion: val :=
   rec: "Tuple__AppendVersion" "tuple" "ts" "value" :=
@@ -83,13 +78,14 @@ Definition MkTuple: val :=
   rec: "MkTuple" <> :=
     let: "tuple" := struct.alloc Tuple (zero_val (struct.t Tuple)) in
     struct.storeF Tuple "mu" "tuple" (newMutex #());;
-    struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t tulip.Version) #1 #1);;
-    SliceSet (struct.t tulip.Version) (struct.loadF Tuple "vers" "tuple") #0 (struct.mk tulip.Version [
+    let: "vers" := NewSliceWithCap (struct.t tulip.Version) #1 #1 in
+    SliceSet (struct.t tulip.Version) "vers" #0 (struct.mk tulip.Version [
       "Timestamp" ::= #0;
       "Value" ::= struct.mk tulip.Value [
         "Present" ::= #false
       ]
     ]);;
+    struct.storeF Tuple "vers" "tuple" "vers";;
     "tuple".
 
 End code.

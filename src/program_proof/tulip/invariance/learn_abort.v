@@ -61,7 +61,7 @@ Section inv.
   Qed.
 
   Lemma group_inv_learn_abort γ p gid log cpool ts :
-    cpool_subsume_log cpool (log ++ [CmdAbort ts]) ->
+    txn_cpool_subsume_log cpool (log ++ [CmdAbort ts]) ->
     txnsys_inv γ p -∗
     ([∗ set] key ∈ keys_all, key_inv γ key) -∗
     group_inv_no_log_with_cpool γ gid log cpool ==∗
@@ -70,7 +70,7 @@ Section inv.
     group_inv_no_log_with_cpool γ gid (log ++ [CmdAbort ts]) cpool.
   Proof.
     iIntros (Hsubsume) "Htxnsys Hkeys Hgroup".
-    rewrite /cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
+    rewrite /txn_cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
     destruct Hsubsume as [Hsubsume Hc].
     do 2 iNamed "Hgroup".
     (* Obtain proof that [ts] has aborted. *)

@@ -74,6 +74,8 @@ From Perennial.goose_lang.lib Require
 
 (* WIP Z-based list library *)
 From Perennial.Helpers Require ListZ.
+(* WIP list helper library *)
+From Perennial.Helpers Require ListSplice.
 
 (* goose output *)
 From Goose.github_com.goose_lang.goose.internal.examples Require

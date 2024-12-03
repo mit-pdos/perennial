@@ -45,4 +45,10 @@ Section repr.
       "Hqreadm" ∷ own_greader_qreadm grd qreadm ts γ ∗
       "Hnrps"   ∷ own_greader_nrps grd.
 
+  Definition own_greader_uninit (grd : loc) : iProp Σ :=
+    ∃ (valuemP qreadmP : loc),
+      "HvaluemP" ∷ grd ↦[GroupReader :: "valuem"] #valuemP ∗
+      "HqreadmP" ∷ grd ↦[GroupReader :: "qreadm"] #qreadmP ∗
+      "Hnrps"    ∷ own_greader_nrps grd.
+
 End repr.

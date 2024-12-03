@@ -24,16 +24,16 @@ Section leader_session.
     iIntros (Φ) "!> _ HΦ".
     wp_pures.
 
-    (*@         primitive.Sleep(params.NS_BATCH_INTERVAL)                       @*)
-    (*@                                                                         @*)
-    wp_apply wp_Sleep.
-
     (*@         px.mu.Lock()                                                    @*)
     (*@                                                                         @*)
     iNamed "Hpx".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
-    iIntros "[Hlocked [Hpx Hcomm]]".    
+    iIntros "[Hlocked [Hpx Hcomm]]".
+    wp_loadField.
+    wp_apply (wp_Cond__Wait with "[-HΦ]").
+    { by iFrame "Hcv Hlock Hlocked ∗". }
+    iIntros "(Hlocked & Hpx & Hcomm)".
 
     (*@         if !px.leading() {                                              @*)
     (*@             px.mu.Unlock()                                              @*)
@@ -131,7 +131,7 @@ Section leader_session.
           iSplit.
           { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
           iPureIntro.
-          rewrite 2!set_map_union_L 2!set_map_singleton_L /= -Hdataenc.
+          rewrite 2!set_map_union_L 2!set_map_singleton_L.
           set_solver.
         }
         rewrite insert_delete_insert.

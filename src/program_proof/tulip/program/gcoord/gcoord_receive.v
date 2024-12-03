@@ -72,7 +72,7 @@ Section program.
     destruct err; wp_pures.
     { wp_apply (wp_GroupCoordinator__Connect with "[]").
       { apply Haddr. }
-      { by iFrame "#". }
+      { by iFrame "HcvP #". }
       iIntros (ok) "Hok".
       wp_pures.
       by iApply ("HΦ" $! Slice.nil false).

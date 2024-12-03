@@ -76,14 +76,19 @@ Section repr.
       "#HrpsP"     ∷ readonly (gcoord ↦[GroupCoordinator :: "rps"] (to_val rpsP)) ∗
       "#Hrps"      ∷ readonly (own_slice_small rpsP uint64T (DfracOwn 1) rps) ∗
       "%Hdomaddrm" ∷ ⌜dom addrm = list_to_set rps⌝ ∗
+      (* right now [rps] is redundant since the set of replicas are fixed up
+      front, but keeping it makes it easier to remove this constraint *)
+      "%Hrps"      ∷ ⌜list_to_set rps = rids_all⌝ ∗
       "%Hnodup"    ∷ ⌜NoDup rps⌝.
 
   Definition is_gcoord_with_addrm gcoord gid (addrm : gmap u64 chan) γ : iProp Σ :=
-    ∃ (muP : loc) (cvP : loc),
+    ∃ (muP : loc) (cvP cvrsP : loc),
       "#HmuP"    ∷ readonly (gcoord ↦[GroupCoordinator :: "mu"] #muP) ∗
       "#Hlock"   ∷ is_lock tulipNS #muP (own_gcoord gcoord addrm gid γ) ∗
       "#HcvP"    ∷ readonly (gcoord ↦[GroupCoordinator :: "cv"] #cvP) ∗
       "#Hcv"     ∷ is_cond cvP #muP ∗
+      "#HcvrsP"  ∷ readonly (gcoord ↦[GroupCoordinator :: "cvrs"] #cvrsP) ∗
+      "#Hcvrs"   ∷ is_cond cvrsP #muP ∗
       "#Hinv"    ∷ know_tulip_inv γ ∗
       "#Hinvnet" ∷ know_tulip_network_inv γ gid addrm ∗
       "#Haddrm"  ∷ is_gcoord_addrm gcoord addrm ∗

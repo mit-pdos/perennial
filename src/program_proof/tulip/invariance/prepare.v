@@ -491,9 +491,9 @@ Section inv.
     cm !! ts = None ->
     apply_cmds log = State cm histm ->
     replica_inv_xfinalized γ gid rid tss -∗
-    own_txn_log γ gid log -∗
+    own_txn_log_half γ gid log -∗
     replica_inv_xfinalized γ gid rid ({[ts]} ∪ tss) ∗
-    own_txn_log γ gid log.
+    own_txn_log_half γ gid log.
   Proof.
     iIntros (Hnone Happly) "Hrp Hlog".
     do 3 iNamed "Hrp".
@@ -514,9 +514,9 @@ Section inv.
     cm !! ts = None ->
     apply_cmds log = State cm hists ->
     ([∗ set] rid ∈ rids, replica_inv γ gid rid) -∗
-    own_txn_log γ gid log -∗
+    own_txn_log_half γ gid log -∗
     ([∗ set] rid ∈ rids, replica_inv_xfinalized γ gid rid {[ts]}) ∗
-    own_txn_log γ gid log.
+    own_txn_log_half γ gid log.
   Proof.
     iIntros (Hxfinal Happly) "Hrps Hlog".
     iApply (big_sepS_impl_res with "Hrps Hlog").

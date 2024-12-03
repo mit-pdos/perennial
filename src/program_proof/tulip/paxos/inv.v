@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import quorum list extend.
-From Perennial.program_proof.tulip.paxos Require Import base consistency res recovery.
+From Perennial.program_proof.tulip.paxos Require Import base consistency msg res recovery.
 
 Section inv.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
@@ -522,7 +522,7 @@ Section inv_file.
       "Hwalfile"   ∷ own_node_wal_half γ nid wal ∗
       "Hfile"      ∷ fname f↦ content ∗
       "#Hwalfname" ∷ is_node_wal_fname γ nid fname ∗
-      "%Hencwal"   ∷ ⌜encode_paxos_cmds wal = content⌝.
+      "%Hencwal"   ∷ ⌜encode_paxos_cmds wal content⌝.
 
   Definition paxos_file_inv (γ : paxos_names) (nids : gset u64) : iProp Σ :=
     [∗ set] nid ∈ nids, node_file_inv γ nid.

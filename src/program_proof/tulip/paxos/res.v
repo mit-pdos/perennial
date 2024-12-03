@@ -364,6 +364,10 @@ Section res.
 
     (** Type class instances. *)
 
+    #[global]
+    Instance own_current_term_timeless γ nid t : Timeless (own_current_term_half γ nid t).
+    Proof. admit. Admitted.
+
     (** Rules. *)
 
     Lemma current_term_update {γ nid t1} t2 :

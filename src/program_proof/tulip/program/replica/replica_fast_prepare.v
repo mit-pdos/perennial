@@ -8,13 +8,13 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__fastPrepare
-    rp (tsW : u64) pwrsS pwrsL pwrs gid rid γ α :
+    rp (tsW : u64) pwrsS pwrs gid rid γ α :
     let ts := uint.nat tsW in
     gid ∈ gids_all ->
     rid ∈ rids_all ->
     safe_txn_pwrs γ gid ts pwrs -∗
     know_tulip_inv γ -∗
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗ own_replica rp gid rid γ α }}}
+    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica rp gid rid γ α }}}
       Replica__fastPrepare #rp #tsW (to_val pwrsS) slice.nil
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         own_replica rp gid rid γ α ∗ fast_prepare_outcome γ gid rid ts res
@@ -125,8 +125,11 @@ Section program.
     (*@                                                                         @*)
     wp_pures.
     destruct acquired; wp_pures; last first.
-    { wp_apply wp_Replica__logAccept.
+    { wp_loadField.
+      wp_apply (wp_logAccept with "Hfile").
+      iIntros (bs') "Hfile".
       wp_pures.
+      iNamed "Hinv".
       iInv "Hinv" as "> HinvO" "HinvC".
       iNamed "HinvO".
       iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
@@ -188,8 +191,11 @@ Section program.
     (*@     // Accept(@ts, @0, @true).                                          @*)
     (*@     rp.logFastPrepare(ts, pwrs, ptgs)                                   @*)
     (*@                                                                         @*)
-    wp_apply wp_Replica__logFastPrepare.
+    wp_loadField.
+    wp_apply (wp_logFastPrepare with "[$Hfile $Hpwrs]").
+    iIntros (bs') "[Hfile Hpwrs]".
     wp_pures.
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
@@ -274,11 +280,11 @@ Section program.
   Qed.
 
   Theorem wp_Replica__FastPrepare
-    rp (tsW : u64) pwrsS pwrsL pwrs gid rid γ :
+    rp (tsW : u64) pwrsS pwrs gid rid γ :
     let ts := uint.nat tsW in
     safe_txn_pwrs γ gid ts pwrs -∗
     is_replica rp gid rid γ -∗
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs }}}
+    {{{ own_dbmap_in_slice pwrsS pwrs }}}
       Replica__FastPrepare #rp #tsW (to_val pwrsS) slice.nil
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         fast_prepare_outcome γ gid rid ts res

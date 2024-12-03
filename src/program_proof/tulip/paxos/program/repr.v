@@ -1,4 +1,5 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
+From Perennial.program_logic Require Export own_crash_inv.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
 Section repr.
@@ -61,6 +62,8 @@ Section repr.
   (*@     //                                                                  @*)
   (*@     conns     map[uint64]grove_ffi.Connection                           @*)
   (*@ }                                                                       @*)
+  Definition paxoscrashNS := nroot.@"paxos_crash".
+
   Definition is_paxos_addrm (paxos : loc) (addrm : gmap u64 chan) : iProp Σ :=
     ∃ (addrmP : loc),
       "#HaddrmP"   ∷ readonly (paxos ↦[Paxos :: "addrm"] #addrmP) ∗
@@ -168,6 +171,7 @@ Section repr.
       "HhbP"     ∷ paxos ↦[Paxos :: "hb"] #hb ∗
       "HtermcP"  ∷ paxos ↦[Paxos :: "termc"] #termc ∗
       "Htermc"   ∷ own_current_term_half γ nidme (uint.nat termc) ∗
+      (* "Htermc"   ∷ own_crash_ex paxoscrashNS (own_current_term_half γ nidme) (uint.nat termc) ∗ *)
       "HtermlP"  ∷ paxos ↦[Paxos :: "terml"] #terml ∗
       "Hterml"   ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
       "HlogP"    ∷ paxos ↦[Paxos :: "log"] (to_val logP) ∗
@@ -268,11 +272,13 @@ Section repr.
 
   Definition is_paxos_with_addrm
     (paxos : loc) (nidme : u64) (addrm : gmap u64 chan) γ : iProp Σ :=
-    ∃ (muP : loc),
+    ∃ (muP : loc) (cvP : loc),
       let nids := dom addrm in
       "#HmuP"     ∷ readonly (paxos ↦[Paxos :: "mu"] #muP) ∗
       "#Hlock"    ∷ is_lock paxosNS #muP (own_paxos paxos nidme nids γ ∗
                                           own_paxos_comm paxos addrm γ) ∗
+      "#HcvP"     ∷ readonly (paxos ↦[Paxos :: "cv"] #cvP) ∗
+      "#Hcv"      ∷ is_cond cvP #muP ∗
       "#Hfname"   ∷ is_paxos_fname paxos nidme γ ∗
       "#Haddrm"   ∷ is_paxos_addrm paxos addrm ∗
       "#Hnids"    ∷ is_paxos_nids paxos nidme nids ∗

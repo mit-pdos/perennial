@@ -195,7 +195,9 @@ Section validate.
         destruct Htz as [? | Htz]; first done.
         apply dec_stable in Htz.
         subst t.
-        pose proof (execute_cmds_hist_not_nil Hrsm) as Hnnil.
+        unshelve epose proof (execute_cmds_apply_cmds clog ilog cm histm _) as Happly.
+        { by eauto 10. }
+        pose proof (apply_cmds_hist_not_nil Happly) as Hnnil.
         specialize (Hnnil _ _ Hhist). simpl in Hnnil.
         unshelve epose proof (nil_length_inv hist _) as ->; [lia | done].
       }

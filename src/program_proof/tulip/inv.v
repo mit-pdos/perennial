@@ -1,18 +1,14 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps.
-From Perennial.program_proof.tulip Require Import base res cmd.
-From Perennial.program_proof.tulip Require Export inv_txnsys inv_key inv_group inv_replica.
+From Perennial.program_proof.tulip Require Import base res cmd msg.
+From Perennial.program_proof.tulip Require Export
+  inv_txnsys inv_key inv_group inv_replica.
 
 Section inv.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
-
-  Definition sysNS := nroot .@ "sys".
-  Definition tulipNS := sysNS .@ "tulip".
-  Definition tsNS := sysNS .@ "ts".
-  Definition txnlogN := sysNS .@ "txnlog".
 
   Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)
@@ -29,13 +25,11 @@ Section inv.
     Timeless (tulip_inv_with_proph γ p).
   Admitted.
 
-  Definition tulip_inv γ : iProp Σ := ∃ p, tulip_inv_with_proph γ p.
-
   Definition know_tulip_inv_with_proph γ p : iProp Σ :=
     inv tulipNS (tulip_inv_with_proph γ p).
 
   Definition know_tulip_inv γ : iProp Σ :=
-    inv tulipNS (tulip_inv γ).
+    ∃ p, inv tulipNS (tulip_inv_with_proph γ p).
 
 End inv.
 
@@ -60,15 +54,15 @@ Section def.
   Definition fast_or_quorum_read γ key ts v : iProp Σ :=
     is_repl_hist_at γ key (pred ts) v ∨ quorum_read γ key ts v.
 
-  Definition fast_or_slow_read γ rid key lts ts v : iProp Σ :=
-    if decide (lts = O)
-    then is_repl_hist_at γ key (pred ts) v
-    else slow_read γ rid key lts ts v.
+  Definition fast_or_slow_read γ rid key lts ts v (slow : bool) : iProp Σ :=
+    if slow
+    then slow_read γ rid key lts ts v
+    else is_repl_hist_at γ key (pred ts) v.
 
   #[global]
-  Instance fast_or_slow_read_persistent γ rid key lts ts v :
-    Persistent (fast_or_slow_read γ rid key lts ts v).
-  Proof. rewrite /fast_or_slow_read. case_decide; apply _. Defined.
+  Instance fast_or_slow_read_persistent γ rid key lts ts v slow :
+    Persistent (fast_or_slow_read γ rid key lts ts v slow).
+  Proof. rewrite /fast_or_slow_read. apply _. Defined.
 
   Definition validate_outcome γ gid rid ts res : iProp Σ :=
     match res with
@@ -169,8 +163,8 @@ Section inv_network.
   Proof. destruct req; apply _. Defined.
 
   Definition safe_read_resp
-    γ (ts rid : u64) (key : string) (ver : u64 * dbval) : iProp Σ :=
-    "#Hsafe" ∷ fast_or_slow_read γ rid key (uint.nat ver.1) (uint.nat ts) ver.2 ∗
+    γ (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) : iProp Σ :=
+    "#Hsafe" ∷ fast_or_slow_read γ rid key (uint.nat ver.1) (uint.nat ts) ver.2 slow ∗
     "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
 
   Definition safe_fast_prepare_resp
@@ -195,8 +189,8 @@ Section inv_network.
 
   Definition safe_txnresp γ (gid : u64) resp : iProp Σ :=
     match resp with
-    | ReadResp ts rid key ver =>
-        safe_read_resp γ ts rid key ver
+    | ReadResp ts rid key ver slow =>
+        safe_read_resp γ ts rid key ver slow
     | FastPrepareResp ts rid res =>
         safe_fast_prepare_resp γ gid rid (uint.nat ts) res
     | ValidateResp ts rid res =>
@@ -222,7 +216,7 @@ Section inv_network.
       (* senders are always reachable *)
       "#Hsender" ∷ ([∗ set] trml ∈ set_map msg_sender ms, is_terminal γ gid trml) ∗
       "#Hreqs"   ∷ ([∗ set] req ∈ reqs, safe_txnreq γ gid req) ∗
-      "%Henc"    ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnreq reqs⌝.
+      "%Henc"    ∷ ⌜set_Forall (λ x, ∃ req, req ∈ reqs ∧ encode_txnreq req (msg_data x)) ms⌝.
 
   Definition connect_inv (trml : chan) (ms : gset message) gid γ : iProp Σ :=
     ∃ (resps : gset txnresp),
@@ -252,7 +246,10 @@ End inv_network.
 Section alloc.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Lemma tulip_inv_alloc p future :
+  Lemma tulip_inv_alloc p future (gaddrm : gmap u64 (gmap u64 chan)) :
+    dom gaddrm = gids_all ->
+    map_Forall (λ _ m, dom m = rids_all) gaddrm ->
+    ([∗ map] addrm ∈ gaddrm, [∗ set] addr ∈ map_img addrm, addr c↦ ∅) -∗
     own_txn_proph p future ==∗
     ∃ γ,
       (* give to client *)
@@ -260,16 +257,22 @@ Section alloc.
       (* give to replica lock invariant *)
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
          own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
+      (* give to txnlog invariant *)
+      ([∗ set] gid ∈ dom gaddrm, own_txn_log_half γ gid []) ∗
+      ([∗ set] gid ∈ dom gaddrm, own_txn_cpool_half γ gid ∅) ∗
       (* tulip atomic invariant *)
-      tulip_inv_with_proph γ p.
+      tulip_inv_with_proph γ p ∗
+      ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm).
   Proof.
+    iIntros (Hdomgaddrm Hdomaddrm) "Hchans".
     iIntros "Hproph".
     iMod (tulip_res_alloc) as (γ) "Hres".
     iDestruct "Hres" as "(Hcli & Hresm & Hwrsm & Hltids & Hwabt & Htmods & Hres)".
     iDestruct "Hres" as "(Hexcltids & Hexclctks & Hpost & Hlts & Hres)".
     iDestruct "Hres" as "(Hdbpts & Hrhistmg & Hrhistmk & Hrtsg & Hrtsk & Hres)".
     iDestruct "Hres" as "(Hchistm & Hlhistm & Hkmodlst & Hkmodlsk & Hkmodcst & Hkmodcsk & Hres)".
-    iDestruct "Hres" as "(Hlogs & Hcpools & Hpms & Hpsms & Hcms & Hrps & Hrplocks)".
+    iDestruct "Hres" as "(Hlogs & Hlogstl & Hcpools & Hcpoolstl & Hres)".
+    iDestruct "Hres" as "(Hpms & Hpsms & Hcms & Htrmls & Hrps & Hrplocks)".
     (* Obtain a lb on the largest timestamp to later establish group invariant. *)
     iDestruct (largest_ts_witness with "Hlts") as "#Hltslb".
     iAssert (txnsys_inv γ p)
@@ -505,6 +508,28 @@ Section alloc.
       do 2 (split; first done).
       split; apply map_Forall2_empty.
     }
+    iAssert ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm)%I
+      with "[Hchans Htrmls]" as "Hinvnet".
+    { iClear "Hloglbs".
+      rewrite -Hdomgaddrm big_sepS_big_sepM.
+      iDestruct (big_sepM_sep_2 with "Hchans Htrmls") as "Hnets".
+      iApply (big_sepM_mono with "Hnets").
+      iIntros (gid addrm Haddrm) "[Hchans Htrmls]".
+      iExists (gset_to_gmap ∅ (map_img addrm)), ∅.
+      rewrite dom_empty_L.
+      iFrame "Htrmls".
+      iSplitL "Hchans".
+      { iApply (big_sepS_sepM_impl with "Hchans"); first by rewrite dom_gset_to_gmap.
+        iIntros (addr ms Hms) "!> Hchan".
+        apply lookup_gset_to_gmap_Some in Hms as [_ <-].
+        iExists ∅.
+        iFrame "Hchan".
+        by rewrite set_map_empty 2!big_sepS_empty.
+      }
+      specialize (Hdomaddrm _ _ Haddrm). simpl in Hdomaddrm.
+      by rewrite big_sepM_empty dom_gset_to_gmap Hdomaddrm.
+    }
+    rewrite Hdomgaddrm.
     by iFrame.
   Qed.
 

@@ -12,7 +12,7 @@ Section program.
     know_tulip_inv γ -∗
     {{{ own_gpreparer_with_phase gpp GPPValidating ts gid γ }}}
       GroupPreparer__tryBecomePreparing #gpp
-    {{{ RET #(); own_gpreparer gpp ts gid γ }}}.
+    {{{ (resend : bool), RET #resend; own_gpreparer gpp ts gid γ }}}.
   Proof.
     iIntros (Hgid) "#Hinv".
     iIntros (Φ) "!> Hgpp HΦ".
@@ -149,6 +149,7 @@ Section program.
 
     (*@     // Logical action: Propose.                                         @*)
     (*@ }                                                                       @*)
+    iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     simpl.

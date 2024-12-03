@@ -2,20 +2,14 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.pav.cryptoffi.
-From Goose Require github_com.mit_pdos.pav.cryptoutil.
+From Goose Require github_com.tchajed.marshal.
 
 Section code.
 Context `{ext_ty: ext_types}.
 
-Notation errorTy := boolT (only parsing).
-
-Notation ProofTy := boolT (only parsing).
-
-Definition errNone : expr := #false.
-
-Definition errSome : expr := #true.
-
 Definition numChildren : expr := #256.
+
+Definition hashesPerProofDepth : expr := (numChildren - #1) * cryptoffi.HashLen.
 
 Definition emptyNodeTag : expr := #(U8 0).
 
@@ -27,289 +21,211 @@ Definition NonmembProofTy : expr := #false.
 
 Definition MembProofTy : expr := #true.
 
-Notation Id := (slice.T byteT) (only parsing).
-
-Notation Val := (slice.T byteT) (only parsing).
+Definition Tree := struct.decl [
+  "ctx" :: ptrT;
+  "root" :: ptrT
+].
 
 Definition node := struct.decl [
-  "val" :: Val;
+  "mapVal" :: slice.T byteT;
   "hash" :: slice.T byteT;
   "children" :: slice.T ptrT
 ].
 
+(* context is a result of:
+   1) for performance reasons, wanting to pre-compute the empty hash.
+   2) requiring that all hashes come from program steps.
+   3) goose not having init() support. *)
+Definition context := struct.decl [
+  "emptyHash" :: slice.T byteT
+].
+
 (* getHash getter to support hashes of empty (nil) nodes. *)
-Definition node__getHash: val :=
-  rec: "node__getHash" "n" :=
+Definition context__getHash: val :=
+  rec: "context__getHash" "ctx" "n" :=
     (if: "n" = #null
-    then cryptoffi.Hash (SliceSingleton emptyNodeTag)
+    then struct.loadF context "emptyHash" "ctx"
     else struct.loadF node "hash" "n").
 
-Definition node__deepCopy: val :=
-  rec: "node__deepCopy" "n" :=
-    (if: "n" = #null
-    then slice.nil
-    else
-      let: "n2" := ref_to ptrT (struct.new node [
-      ]) in
-      struct.storeF node "val" (![ptrT] "n2") (std.BytesClone (struct.loadF node "val" "n"));;
-      struct.storeF node "hash" (![ptrT] "n2") (std.BytesClone (struct.loadF node "hash" "n"));;
-      let: "children" := NewSlice ptrT (slice.len (struct.loadF node "children" "n")) in
-      ForSlice ptrT "i" "c" (struct.loadF node "children" "n")
-        (SliceSet ptrT "children" "i" ("node__deepCopy" "c"));;
-      struct.storeF node "children" (![ptrT] "n2") "children";;
-      ![ptrT] "n2").
+Definition Tree__Digest: val :=
+  rec: "Tree__Digest" "t" :=
+    context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t").
 
-Definition node__updateLeafHash: val :=
-  rec: "node__updateLeafHash" "n" :=
-    let: "h" := ref (zero_val (slice.T byteT)) in
-    cryptoutil.HasherWrite "h" (struct.loadF node "val" "n");;
-    cryptoutil.HasherWrite "h" (SliceSingleton leafNodeTag);;
-    struct.storeF node "hash" "n" (cryptoutil.HasherSum (![slice.T byteT] "h") slice.nil);;
-    #().
-
-(* Assumes recursive child hashes are already up-to-date. *)
-Definition node__updateInteriorHash: val :=
-  rec: "node__updateInteriorHash" "n" :=
-    let: "h" := ref (zero_val (slice.T byteT)) in
-    ForSlice ptrT <> "n" (struct.loadF node "children" "n")
-      (cryptoutil.HasherWrite "h" (node__getHash "n"));;
-    cryptoutil.HasherWrite "h" (SliceSingleton interiorNodeTag);;
-    struct.storeF node "hash" "n" (cryptoutil.HasherSum (![slice.T byteT] "h") slice.nil);;
-    #().
-
-(* This node doesn't satisfy the invariant for any logical node.
-   It'll be specialized after adding it to the tree. *)
-Definition newGenericNode: val :=
-  rec: "newGenericNode" <> :=
+Definition newInteriorNode: val :=
+  rec: "newInteriorNode" <> :=
     let: "c" := NewSlice ptrT numChildren in
     struct.new node [
       "children" ::= "c"
     ].
 
-Notation Digest := (slice.T byteT) (only parsing).
+Definition compLeafNodeHash: val :=
+  rec: "compLeafNodeHash" "mapVal" :=
+    let: "b" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((slice.len "mapVal") + #1)) in
+    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") "mapVal");;
+    "b" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "b") leafNodeTag);;
+    cryptoffi.Hash (![slice.T byteT] "b").
 
-(* General proof object.
-   Binds an id down the tree to a particular node hash. *)
-Definition pathProof := struct.decl [
-  "id" :: Id;
-  "nodeHash" :: slice.T byteT;
-  "digest" :: Digest;
-  "childHashes" :: slice.T (slice.T (slice.T byteT))
-].
+(* Assumes recursive child hashes are already up-to-date.
+   uses and returns hash buf, to allow for its re-use. *)
+Definition context__updInteriorHash: val :=
+  rec: "context__updInteriorHash" "ctx" "b" "n" :=
+    let: "b0" := ref_to (slice.T byteT) "b" in
+    ForSlice ptrT <> "child" (struct.loadF node "children" "n")
+      ("b0" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b0") (context__getHash "ctx" "child")));;
+    "b0" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "b0") interiorNodeTag);;
+    struct.storeF node "hash" "n" (cryptoffi.Hash (![slice.T byteT] "b0"));;
+    ![slice.T byteT] "b0".
 
-Notation Proof := (slice.T (slice.T (slice.T byteT))) (only parsing).
-
-Definition isValidHashSl: val :=
-  rec: "isValidHashSl" "data" :=
-    let: "ok" := ref_to boolT #true in
-    ForSlice (slice.T byteT) <> "hash" "data"
-      ((if: (slice.len "hash") ≠ cryptoffi.HashLen
-      then "ok" <-[boolT] #false
-      else #()));;
-    ![boolT] "ok".
-
-Definition pathProof__check: val :=
-  rec: "pathProof__check" "p" :=
-    let: "err" := ref_to boolT errNone in
-    let: "currHash" := ref_to (slice.T byteT) (struct.loadF pathProof "nodeHash" "p") in
-    let: "proofLen" := slice.len (struct.loadF pathProof "childHashes" "p") in
-    let: "loopIdx" := ref_to uint64T #0 in
-    Skip;;
-    (for: (λ: <>, (![uint64T] "loopIdx") < "proofLen"); (λ: <>, "loopIdx" <-[uint64T] ((![uint64T] "loopIdx") + #1)) := λ: <>,
-      let: "pathIdx" := ("proofLen" - #1) - (![uint64T] "loopIdx") in
-      let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF pathProof "childHashes" "p") "pathIdx" in
-      (if: (slice.len "children") ≠ (numChildren - #1)
-      then
-        "err" <-[boolT] errSome;;
-        Continue
-      else
-        (if: (~ (isValidHashSl "children"))
-        then
-          "err" <-[boolT] errSome;;
-          Continue
-        else
-          let: "pos" := to_u64 (SliceGet byteT (struct.loadF pathProof "id" "p") "pathIdx") in
-          let: "before" := SliceTake "children" "pos" in
-          let: "after" := SliceSkip (slice.T byteT) "children" "pos" in
-          let: "hr" := ref (zero_val (slice.T byteT)) in
-          cryptoutil.HasherWriteSl "hr" "before";;
-          cryptoutil.HasherWrite "hr" (![slice.T byteT] "currHash");;
-          cryptoutil.HasherWriteSl "hr" "after";;
-          cryptoutil.HasherWrite "hr" (SliceSingleton interiorNodeTag);;
-          "currHash" <-[slice.T byteT] (cryptoutil.HasherSum (![slice.T byteT] "hr") slice.nil);;
-          Continue)));;
-    (if: ![boolT] "err"
-    then errSome
-    else
-      (if: (~ (std.BytesEqual (![slice.T byteT] "currHash") (struct.loadF pathProof "digest" "p")))
-      then errSome
-      else errNone)).
-
-Definition getLeafNodeHash: val :=
-  rec: "getLeafNodeHash" "val" :=
-    let: "hr" := ref (zero_val (slice.T byteT)) in
-    cryptoutil.HasherWrite "hr" "val";;
-    cryptoutil.HasherWrite "hr" (SliceSingleton leafNodeTag);;
-    cryptoutil.HasherSum (![slice.T byteT] "hr") slice.nil.
-
-Definition getEmptyNodeHash: val :=
-  rec: "getEmptyNodeHash" <> :=
-    cryptoffi.Hash (SliceSingleton emptyNodeTag).
-
-Definition CheckProof: val :=
-  rec: "CheckProof" "proofTy" "proof" "id" "val" "digest" :=
-    (if: (slice.len "proof") > cryptoffi.HashLen
-    then errSome
-    else
-      (if: (slice.len "id") < (slice.len "proof")
-      then errSome
-      else
-        let: "idPref" := SliceTake "id" (slice.len "proof") in
-        let: "nodeHash" := ref (zero_val (slice.T byteT)) in
-        (if: "proofTy"
-        then "nodeHash" <-[slice.T byteT] (getLeafNodeHash "val")
-        else "nodeHash" <-[slice.T byteT] (getEmptyNodeHash #()));;
-        let: "pathProof" := struct.new pathProof [
-          "id" ::= "idPref";
-          "nodeHash" ::= ![slice.T byteT] "nodeHash";
-          "digest" ::= "digest";
-          "childHashes" ::= "proof"
-        ] in
-        pathProof__check "pathProof")).
-
-(* Having a separate Tree type makes the API more clear compared to if it
-   was just a Node. *)
-Definition Tree := struct.decl [
-  "root" :: ptrT
-].
-
-Definition Tree__DeepCopy: val :=
-  rec: "Tree__DeepCopy" "t" :=
-    struct.new Tree [
-      "root" ::= node__deepCopy (struct.loadF Tree "root" "t")
-    ].
-
-Definition Tree__Digest: val :=
-  rec: "Tree__Digest" "t" :=
-    node__getHash (struct.loadF Tree "root" "t").
-
-Definition appendNode2D: val :=
-  rec: "appendNode2D" "dst" "src" :=
-    ForSlice ptrT <> "sl" "src"
-      ("dst" <-[slice.T (slice.T byteT)] (SliceAppend (slice.T byteT) (![slice.T (slice.T byteT)] "dst") (std.BytesClone (node__getHash "sl"))));;
-    #().
-
-Definition getChildHashes: val :=
-  rec: "getChildHashes" "nodePath" "id" :=
-    let: "childHashes" := NewSlice (slice.T (slice.T byteT)) ((slice.len "nodePath") - #1) in
-    let: "pathIdx" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "pathIdx") < ((slice.len "nodePath") - #1)); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") + #1)) := λ: <>,
-      let: "children" := struct.loadF node "children" (SliceGet ptrT "nodePath" (![uint64T] "pathIdx")) in
-      let: "pos" := to_u64 (SliceGet byteT "id" (![uint64T] "pathIdx")) in
-      let: "proofChildren" := ref (zero_val (slice.T (slice.T byteT))) in
-      appendNode2D "proofChildren" (SliceTake "children" "pos");;
-      appendNode2D "proofChildren" (SliceSkip ptrT "children" ("pos" + #1));;
-      SliceSet (slice.T (slice.T byteT)) "childHashes" (![uint64T] "pathIdx") (![slice.T (slice.T byteT)] "proofChildren");;
+Definition context__getProof: val :=
+  rec: "context__getProof" "ctx" "interiors" "label" :=
+    let: "interiorsLen" := slice.len "interiors" in
+    let: "proof" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ("interiorsLen" * hashesPerProofDepth)) in
+    let: "depth" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "depth") < "interiorsLen"); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+      let: "children" := struct.loadF node "children" (SliceGet ptrT "interiors" (![uint64T] "depth")) in
+      let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
+      ForSlice ptrT <> "n" (SliceTake "children" "pos")
+        ("proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (context__getHash "ctx" "n")));;
+      ForSlice ptrT <> "n" (SliceSkip ptrT "children" ("pos" + #1))
+        ("proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (context__getHash "ctx" "n")));;
       Continue);;
-    "childHashes".
+    ![slice.T byteT] "proof".
 
-(* Get the maximal path corresponding to Id.
-   If the full path to a leaf node doesn't exist,
-   return the partial path that ends in an empty node. *)
-Definition Tree__getPath: val :=
-  rec: "Tree__getPath" "t" "id" :=
+(* Put returns the digest, proof, and error. *)
+Definition Tree__Put: val :=
+  rec: "Tree__Put" "t" "label" "mapVal" :=
+    (if: (slice.len "label") ≠ cryptoffi.HashLen
+    then (slice.nil, slice.nil, #true)
+    else
+      let: "interiors" := ref_to (slice.T ptrT) (NewSliceWithCap ptrT #0 cryptoffi.HashLen) in
+      (if: (struct.loadF Tree "root" "t") = #null
+      then struct.storeF Tree "root" "t" (newInteriorNode #())
+      else #());;
+      "interiors" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "interiors") (struct.loadF Tree "root" "t"));;
+      let: "n" := cryptoffi.HashLen - #1 in
+      let: "depth" := ref_to uint64T #0 in
+      (for: (λ: <>, (![uint64T] "depth") < "n"); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+        let: "currNode" := SliceGet ptrT (![slice.T ptrT] "interiors") (![uint64T] "depth") in
+        let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
+        (if: (SliceGet ptrT (struct.loadF node "children" "currNode") "pos") = #null
+        then SliceSet ptrT (struct.loadF node "children" "currNode") "pos" (newInteriorNode #())
+        else #());;
+        "interiors" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "interiors") (SliceGet ptrT (struct.loadF node "children" "currNode") "pos"));;
+        Continue);;
+      let: "lastInterior" := SliceGet ptrT (![slice.T ptrT] "interiors") (cryptoffi.HashLen - #1) in
+      let: "lastPos" := SliceGet byteT "label" (cryptoffi.HashLen - #1) in
+      SliceSet ptrT (struct.loadF node "children" "lastInterior") "lastPos" (struct.new node [
+        "mapVal" ::= "mapVal";
+        "hash" ::= compLeafNodeHash "mapVal"
+      ]);;
+      let: "loopBuf" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((numChildren * cryptoffi.HashLen) + #1)) in
+      let: "depth" := ref_to uint64T cryptoffi.HashLen in
+      (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
+        "loopBuf" <-[slice.T byteT] (context__updInteriorHash (struct.loadF Tree "ctx" "t") (![slice.T byteT] "loopBuf") (SliceGet ptrT (![slice.T ptrT] "interiors") ((![uint64T] "depth") - #1)));;
+        "loopBuf" <-[slice.T byteT] (SliceTake (![slice.T byteT] "loopBuf") #0);;
+        Continue);;
+      let: "dig" := context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") in
+      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (![slice.T ptrT] "interiors") "label" in
+      ("dig", "proof", #false)).
+
+(* getPath fetches the maximal path to label, including the leaf node.
+   if the path doesn't exist, it terminates in an empty node. *)
+Definition getPath: val :=
+  rec: "getPath" "root" "label" :=
     let: "nodePath" := ref (zero_val (slice.T ptrT)) in
-    "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") (struct.loadF Tree "root" "t"));;
-    (if: (struct.loadF Tree "root" "t") = #null
+    "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") "root");;
+    (if: "root" = #null
     then ![slice.T ptrT] "nodePath"
     else
-      let: "stop" := ref_to boolT #false in
-      let: "pathIdx" := ref_to uint64T #0 in
-      (for: (λ: <>, ((![uint64T] "pathIdx") < cryptoffi.HashLen) && (~ (![boolT] "stop"))); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") + #1)) := λ: <>,
-        let: "currNode" := SliceGet ptrT (![slice.T ptrT] "nodePath") (![uint64T] "pathIdx") in
-        let: "pos" := SliceGet byteT "id" (![uint64T] "pathIdx") in
+      let: "isEmpty" := ref_to boolT #false in
+      let: "depth" := ref_to uint64T #0 in
+      (for: (λ: <>, ((![uint64T] "depth") < cryptoffi.HashLen) && (~ (![boolT] "isEmpty"))); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+        let: "currNode" := SliceGet ptrT (![slice.T ptrT] "nodePath") (![uint64T] "depth") in
+        let: "pos" := SliceGet byteT "label" (![uint64T] "depth") in
         let: "nextNode" := SliceGet ptrT (struct.loadF node "children" "currNode") "pos" in
         "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") "nextNode");;
         (if: "nextNode" = #null
         then
-          "stop" <-[boolT] #true;;
+          "isEmpty" <-[boolT] #true;;
           Continue
         else Continue));;
       ![slice.T ptrT] "nodePath").
 
-Definition Tree__getPathAddNodes: val :=
-  rec: "Tree__getPathAddNodes" "t" "id" :=
-    (if: (struct.loadF Tree "root" "t") = #null
-    then struct.storeF Tree "root" "t" (newGenericNode #())
-    else #());;
-    let: "nodePath" := ref (zero_val (slice.T ptrT)) in
-    "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") (struct.loadF Tree "root" "t"));;
-    let: "pathIdx" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "pathIdx") < cryptoffi.HashLen); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") + #1)) := λ: <>,
-      let: "currNode" := SliceGet ptrT (![slice.T ptrT] "nodePath") (![uint64T] "pathIdx") in
-      let: "pos" := SliceGet byteT "id" (![uint64T] "pathIdx") in
-      (if: (SliceGet ptrT (struct.loadF node "children" "currNode") "pos") = #null
-      then SliceSet ptrT (struct.loadF node "children" "currNode") "pos" (newGenericNode #())
-      else #());;
-      "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") (SliceGet ptrT (struct.loadF node "children" "currNode") "pos"));;
-      Continue);;
-    ![slice.T ptrT] "nodePath".
-
-Definition Tree__Put: val :=
-  rec: "Tree__Put" "t" "id" "val" :=
-    (if: (slice.len "id") ≠ cryptoffi.HashLen
-    then (slice.nil, slice.nil, errSome)
-    else
-      let: "nodePath" := Tree__getPathAddNodes "t" "id" in
-      struct.storeF node "val" (SliceGet ptrT "nodePath" cryptoffi.HashLen) "val";;
-      node__updateLeafHash (SliceGet ptrT "nodePath" cryptoffi.HashLen);;
-      let: "pathIdx" := ref_to uint64T cryptoffi.HashLen in
-      (for: (λ: <>, (![uint64T] "pathIdx") ≥ #1); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") - #1)) := λ: <>,
-        node__updateInteriorHash (SliceGet ptrT "nodePath" ((![uint64T] "pathIdx") - #1));;
-        Continue);;
-      let: "digest" := std.BytesClone (node__getHash (SliceGet ptrT "nodePath" #0)) in
-      let: "proof" := getChildHashes "nodePath" "id" in
-      ("digest", "proof", errNone)).
-
-(* Goose doesn't support returning more than 4 vars. *)
-Definition GetReply := struct.decl [
-  "Val" :: Val;
-  "Digest" :: Digest;
-  "ProofTy" :: ProofTy;
-  "Proof" :: Proof;
-  "Error" :: errorTy
-].
-
-(* Return ProofTy vs. having sep funcs bc regardless, would want a proof. *)
+(* Get returns the mapVal, digest, proofTy, proof, and error.
+   return ProofTy vs. having sep funcs bc regardless, would want a proof. *)
 Definition Tree__Get: val :=
-  rec: "Tree__Get" "t" "id" :=
-    let: "errReply" := struct.new GetReply [
-    ] in
-    (if: (slice.len "id") ≠ cryptoffi.HashLen
-    then
-      struct.storeF GetReply "Error" "errReply" errSome;;
-      "errReply"
+  rec: "Tree__Get" "t" "label" :=
+    (if: (slice.len "label") ≠ cryptoffi.HashLen
+    then (slice.nil, slice.nil, #false, slice.nil, #true)
     else
-      let: "nodePath" := Tree__getPath "t" "id" in
-      let: "lastNode" := SliceGet ptrT "nodePath" ((slice.len "nodePath") - #1) in
-      let: "digest" := std.BytesClone (node__getHash (SliceGet ptrT "nodePath" #0)) in
-      let: "proof" := getChildHashes "nodePath" "id" in
+      let: "nodePath" := getPath (struct.loadF Tree "root" "t") "label" in
+      let: "lastIdx" := (slice.len "nodePath") - #1 in
+      let: "lastNode" := SliceGet ptrT "nodePath" "lastIdx" in
+      let: "dig" := context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") in
+      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (SliceTake "nodePath" "lastIdx") "label" in
       (if: "lastNode" = #null
-      then
-        struct.new GetReply [
-          "Digest" ::= "digest";
-          "ProofTy" ::= NonmembProofTy;
-          "Proof" ::= "proof";
-          "Error" ::= errNone
-        ]
+      then (slice.nil, "dig", NonmembProofTy, "proof", #false)
       else
-        let: "val" := std.BytesClone (struct.loadF node "val" "lastNode") in
-        struct.new GetReply [
-          "Val" ::= "val";
-          "Digest" ::= "digest";
-          "ProofTy" ::= MembProofTy;
-          "Proof" ::= "proof";
-          "Error" ::= errNone
-        ])).
+        let: "val" := struct.loadF node "mapVal" "lastNode" in
+        ("val", "dig", MembProofTy, "proof", #false))).
+
+Definition compEmptyNodeHash: val :=
+  rec: "compEmptyNodeHash" <> :=
+    cryptoffi.Hash (SliceSingleton emptyNodeTag).
+
+Definition newCtx: val :=
+  rec: "newCtx" <> :=
+    struct.new context [
+      "emptyHash" ::= compEmptyNodeHash #()
+    ].
+
+Definition NewTree: val :=
+  rec: "NewTree" <> :=
+    struct.new Tree [
+      "ctx" ::= newCtx #()
+    ].
+
+(* CheckProof returns an error if the proof is invalid. *)
+Definition CheckProof: val :=
+  rec: "CheckProof" "proofTy" "proof" "label" "mapVal" "dig" :=
+    let: "proofLen" := slice.len "proof" in
+    (if: ("proofLen" `rem` hashesPerProofDepth) ≠ #0
+    then #true
+    else
+      let: "proofDepth" := "proofLen" `quot` hashesPerProofDepth in
+      (if: "proofDepth" > cryptoffi.HashLen
+      then #true
+      else
+        (if: (slice.len "label") ≠ cryptoffi.HashLen
+        then #true
+        else
+          let: "labelPref" := SliceTake "label" "proofDepth" in
+          let: "nodeHash" := ref (zero_val (slice.T byteT)) in
+          (if: "proofTy"
+          then "nodeHash" <-[slice.T byteT] (compLeafNodeHash "mapVal")
+          else "nodeHash" <-[slice.T byteT] (compEmptyNodeHash #()));;
+          let: "loopErr" := ref_to boolT #false in
+          let: "loopCurrHash" := ref_to (slice.T byteT) (![slice.T byteT] "nodeHash") in
+          let: "loopBuf" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((numChildren * cryptoffi.HashLen) + #1)) in
+          let: "loopIdx" := ref_to uint64T #0 in
+          Skip;;
+          (for: (λ: <>, (![uint64T] "loopIdx") < "proofDepth"); (λ: <>, "loopIdx" <-[uint64T] ((![uint64T] "loopIdx") + #1)) := λ: <>,
+            let: "depth" := ("proofDepth" - #1) - (![uint64T] "loopIdx") in
+            let: "begin" := "depth" * hashesPerProofDepth in
+            let: "middle" := "begin" + ((to_u64 (SliceGet byteT "labelPref" "depth")) * cryptoffi.HashLen) in
+            let: "end" := ("depth" + #1) * hashesPerProofDepth in
+            "loopBuf" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "loopBuf") (SliceSubslice byteT "proof" "begin" "middle"));;
+            "loopBuf" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "loopBuf") (![slice.T byteT] "loopCurrHash"));;
+            "loopBuf" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "loopBuf") (SliceSubslice byteT "proof" "middle" "end"));;
+            "loopBuf" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "loopBuf") interiorNodeTag);;
+            "loopCurrHash" <-[slice.T byteT] (cryptoffi.Hash (![slice.T byteT] "loopBuf"));;
+            "loopBuf" <-[slice.T byteT] (SliceTake (![slice.T byteT] "loopBuf") #0);;
+            Continue);;
+          (if: ![boolT] "loopErr"
+          then #true
+          else
+            (if: (~ (std.BytesEqual (![slice.T byteT] "loopCurrHash") "dig"))
+            then #true
+            else #false))))).
 
 End code.

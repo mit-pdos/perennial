@@ -7,13 +7,17 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupCoordinator__ReadSession 
-    (gcoord : loc) (rid : u64) (ts : u64) (key : string) gid γ :
+    (gcoord : loc) (rid : u64) (tsW : u64) (key : string) gid γ :
+    let ts := uint.nat tsW in
+    rid ∈ rids_all ->
+    safe_read_req gid ts key ->
     is_gcoord gcoord gid γ -∗
     {{{ True }}}
-      GroupCoordinator__ReadSession #gcoord #rid #ts #(LitString key)
+      GroupCoordinator__ReadSession #gcoord #rid #tsW #(LitString key)
     {{{ RET #(); True }}}.
   Proof.
-    iIntros "#Hgcoord" (Φ) "!> _ HΦ".
+    iIntros (ts Hrid Hsafe) "#Hgcoord".
+    iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
     (*@ func (gcoord *GroupCoordinator) ReadSession(rid uint64, ts uint64, key string) { @*)
@@ -36,7 +40,12 @@ Section program.
       iIntros (attached) "_".
       destruct attached; wp_pures; last first.
       { by iApply "HΦ". }
+      iNamed "Hgcoord".
+      iAssert (⌜dom addrm = rids_all⌝)%I as %Hdomaddrm.
+      { iNamed "Hgcoord". iNamed "Haddrm". by rewrite -Hrps Hdomaddrm. }
       wp_apply (wp_GroupCoordinator__SendRead with "Hgcoord").
+      { apply Hsafe. }
+      { by rewrite Hdomaddrm. }
       wp_apply wp_Sleep.
       wp_pures.
       by iApply "HΦ".

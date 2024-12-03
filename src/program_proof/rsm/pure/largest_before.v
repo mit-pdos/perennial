@@ -141,7 +141,17 @@ Lemma largest_before_ge_max n nmax ns :
   nmax ∈ ns ->
   ge_all nmax ns ->
   largest_before n ns = Some nmax.
-Admitted.
+Proof.
+  intros Hn Hin Hge.
+  pose proof (largest_before_spec n ns) as Hspec.
+  destruct (largest_before n ns) as [p |] eqn:Hp; last first.
+  { specialize (Hspec _ Hin). simpl in Hspec. lia. }
+  destruct Hspec as (Hpin & Hple & Houtside).
+  specialize (Hge _ Hpin). simpl in Hge.
+  specialize (Houtside _ Hin). simpl in Houtside.
+  destruct Houtside as [Hle | ?]; last lia.
+  f_equal. lia.
+Qed.
 
 Lemma largest_before_difference_min n nmin ns :
   le_all nmin ns ->
@@ -180,4 +190,9 @@ Lemma largest_before_union_max n nmax ns :
   (n < nmax)%nat ->
   gt_all nmax ns ->
   largest_before n ({[ nmax ]} ∪ ns) = largest_before n ns.
-Admitted.
+Proof.
+  intros Hn Hgt.
+  rewrite /largest_before.
+  rewrite filter_union_L filter_singleton_not_L; last lia.
+  by rewrite union_empty_l_L.
+Qed.

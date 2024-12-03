@@ -28,7 +28,7 @@ Section execute_commit.
       iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
       iDestruct (txn_log_cpool_incl with "Hlog Hcpool") as %Hincl.
       assert (Hin : CmdCommit ts pwrs ∈ cpool).
-      { rewrite /cpool_subsume_log Forall_forall in Hincl.
+      { rewrite /txn_cpool_subsume_log Forall_forall in Hincl.
         apply Hincl.
         subst clog'.
         eapply elem_of_prefix; last apply Hprefix.
@@ -100,7 +100,7 @@ Section execute_commit.
         { rewrite -elem_of_dom Hdomkvdm. clear -Hin Hdompwrs. set_solver. }
         apply elem_of_dom in Hin as Hv.
         destruct Hv as [v Hv].
-        pose proof (execute_cmds_dom_histm Hrsm) as Hdomhistm.
+        pose proof (apply_cmds_dom _ _ _ Happly) as Hdomhistm.
         assert (is_Some (histm !! k)) as [h Hh].
         { rewrite -elem_of_dom Hdomhistm. clear -Hin Hdompwrs. set_solver. }
         rewrite (multiwrite_modified Hv Hh).
@@ -111,13 +111,15 @@ Section execute_commit.
         destruct (vl !! t) as [b |] eqn:Hvlt; last done.
         destruct b; last done.
         clear Hns.
-        case_decide as Ht; last done.
+        destruct (decide ((length (last_extend ts h ++ [v]) <= t)%nat ∧ t ≠ 0%nat)) as [Ht |]; last done.
+        (* case_decide as Ht; last done. *)
         destruct Ht as (Hgelen & Hnz).
         assert (is_Some (ptsm !! k)) as [pts Hpts].
         { rewrite -elem_of_dom Hdomptsm. clear -Hin Hdompwrs. set_solver. }
         iSpecialize ("Hgabt" $! k t).
         rewrite Hvl Hh Hpts Hvlt.
-        case_decide as Ht; first done.
+        destruct (decide ((length h <= t)%nat ∧ t ≠ pts)) as [| Ht]; first done.
+        (* case_decide as Ht; first done. *)
         exfalso.
         apply Classical_Prop.not_and_or in Ht.
         destruct Ht as [Hltlen | Ht].
@@ -131,12 +133,13 @@ Section execute_commit.
         (* Prove that [k] must be locked by [ts] (i.e., [ts = pts]. *)
         specialize (Hpil _ _ _ Hcpm Hin).
         rewrite Hpil in Hpts. inv Hpts.
-        pose proof (execute_cmds_hist_not_nil Hrsm) as Hnnil.
+        pose proof (apply_cmds_hist_not_nil Happly) as Hnnil.
         specialize (Hnnil _ _ Hh). simpl in Hnnil.
         pose proof (last_extend_length_ge_n pts h Hnnil) as Hlen.
         rewrite length_app /= in Hgelen.
         clear -Hgelen Hlen. lia.
       }
+      case_decide; last done.
       iFrame "∗ # %".
       iModIntro.
       iSplit.
@@ -181,18 +184,20 @@ Section execute_commit.
       rewrite Hvl Hpts.
       apply elem_of_dom in Hin as Hv.
       destruct Hv as [v Hv].
-      pose proof (execute_cmds_dom_histm Hrsm) as Hdomhistm.
+      pose proof (apply_cmds_dom _ _ _ Happly) as Hdomhistm.
       assert (is_Some (histm !! k)) as [h Hh].
       { rewrite -elem_of_dom Hdomhistm. clear -Hin Hdompwrs. set_solver. }
       rewrite (multiwrite_modified Hv Hh).
       destruct (vl !! t) as [b |] eqn:Hvlt; last done.
       destruct b; last done.
       clear Hns.
-      case_decide as Ht; last done.
+      destruct (decide ((length (last_extend ts h ++ [v]) <= t)%nat ∧ t ≠ pts)) as [Ht |]; last done.
+      (* case_decide as Ht; last done. *)
       destruct Ht as [Hgelen Hnepts].
       iSpecialize ("Hgabt" $! k t).
       rewrite Hvl Hpts Hh Hvlt.
-      case_decide as Ht; first done.
+      destruct (decide ((length h <= t)%nat ∧ t ≠ pts)) as [| Ht]; first done.
+      (* case_decide as Ht; first done. *)
       exfalso.
       apply Classical_Prop.not_and_or in Ht.
       destruct Ht as [Hltlen | ?]; last done.
@@ -202,6 +207,7 @@ Section execute_commit.
       pose proof (last_extend_length_ge ts h) as Hlen.
       lia.
     }
+    case_decide; last done.
     iFrame "∗ # %".
     iPureIntro.
     rewrite dom_insert_L.

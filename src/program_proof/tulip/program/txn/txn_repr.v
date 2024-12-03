@@ -49,9 +49,15 @@ Section repr.
       "#Hgcoordsabs" ∷ ([∗ map] gid ↦ gcoord ∈ gcoords, is_gcoord gcoord gid γ) ∗
       "%Hdomgcoords" ∷ ⌜dom gcoords = gids_all⌝.
 
+  Definition own_txn_sid txn : iProp Σ :=
+    ∃ (sid : u64),
+      (* TODO: sid token *)
+      "HsidP" ∷ txn ↦[Txn :: "sid"] #sid.
+
   Definition own_txn_internal txn tid γ : iProp Σ :=
     ∃ (proph : proph_id),
       "Hts"      ∷ own_txn_ts txn tid ∗
+      "Hsid"     ∷ own_txn_sid txn ∗
       "Hwrs"     ∷ own_txn_wrs txn (DfracOwn 1) ∅ ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       "Hptgs"    ∷ own_txn_ptgs txn [] ∗
@@ -68,6 +74,7 @@ Section repr.
   Definition own_txn txn tid rds γ τ : iProp Σ :=
     ∃ (proph : proph_id) wrs,
       "Htxn"     ∷ own_txn_ts txn tid ∗
+      "Hsid"     ∷ own_txn_sid txn ∗
       "Hwrs"     ∷ own_txn_wrs txn (DfracOwn 1) wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       "Hptgs"    ∷ own_txn_ptgs txn [] ∗
@@ -87,6 +94,7 @@ Section repr.
     Definition own_txn_stable txn tid rds wrs γ τ : iProp Σ :=
     ∃ (proph : proph_id),
       "Htxn"     ∷ own_txn_ts txn tid ∗
+      "Hsid"     ∷ own_txn_sid txn ∗
       (* diff from [own_txn] *)
       "Hwrs"     ∷ own_txn_wrs txn DfracDiscarded wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
@@ -105,6 +113,7 @@ Section repr.
   Definition own_txn_prepared txn tid rds wrs γ τ : iProp Σ :=
     ∃ (proph : proph_id) ptgs,
       "Htxn"     ∷ own_txn_ts txn tid ∗
+      "Hsid"     ∷ own_txn_sid txn ∗
       "Hwrs"     ∷ own_txn_wrs txn DfracDiscarded wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       (* diff from [own_txn_stable] *)

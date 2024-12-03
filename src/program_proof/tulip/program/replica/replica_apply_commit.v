@@ -6,19 +6,19 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__applyCommit
-    rp (tsW : u64) pwrsS pwrsL pwrs cloga gid rid γ α :
+    rp (tsW : u64) pwrsS pwrs cloga gid rid γ α :
     let ts := uint.nat tsW in
     let cloga' := cloga ++ [CmdCommit ts pwrs] in
     valid_pwrs gid pwrs ->
     group_histm_lbs_from_log γ gid cloga' -∗
     is_txn_log_lb γ gid cloga' -∗
     is_replica_idx rp γ α -∗
-    {{{ own_dbmap_in_slice pwrsS pwrsL pwrs ∗
+    {{{ own_dbmap_in_slice pwrsS pwrs ∗
         own_replica_with_cloga_no_lsna rp cloga gid rid γ α
     }}}
       Replica__applyCommit #rp #tsW (to_val pwrsS)
     {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrsL pwrs ∗ 
+        own_dbmap_in_slice pwrsS pwrs ∗ 
         own_replica_with_cloga_no_lsna rp cloga' gid rid γ α
     }}}.
   Proof.
@@ -141,7 +141,8 @@ Section program.
         symmetry in Hcpmabs.
         pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hm) as (ts' & Hts' & Hcpmts).
         assert (ts' = ts) as -> by word.
-        by rewrite /execute_cmds foldl_snoc /= execute_cmds_unfold Hexec /= Hterm Hcpmts.
+        rewrite /execute_cmds foldl_snoc /= execute_cmds_unfold Hexec /= Hterm Hcpmts.
+        by case_decide.
       }
     }
     iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
@@ -166,7 +167,8 @@ Section program.
       pose proof (lookup_kmap_eq_None _ _ _ _ _  Hcpmabs Hnone) as Hcpmnone.
       specialize (Hcpmnone ts).
       unshelve epose proof (Hcpmnone _) as Hcpmts; first word.
-      by rewrite /execute_cmds foldl_snoc /= execute_cmds_unfold Hexec /= Hterm Hcpmts.
+      rewrite /execute_cmds foldl_snoc /= execute_cmds_unfold Hexec /= Hterm Hcpmts.
+      by case_decide.
     }
   Qed.
 

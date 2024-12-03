@@ -210,4 +210,36 @@ Definition WriteLenPrefixedBytes: val :=
     let: "b2" := WriteInt "b" (slice.len "bs") in
     WriteBytes "b2" "bs".
 
+(* stateless_slice.go *)
+
+Definition ReadSlice (T:ty): val :=
+  rec: "ReadSlice" "b" "count" "readOne" :=
+    let: "b2" := ref_to (slice.T byteT) "b" in
+    let: "xs" := ref_to (slice.T T) (NewSlice T #0) in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "count"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      let: ("xNew", "bNew") := "readOne" (![slice.T byteT] "b2") in
+      "xs" <-[slice.T T] (SliceAppend T (![slice.T T] "xs") "xNew");;
+      "b2" <-[slice.T byteT] "bNew";;
+      Continue);;
+    (![slice.T T] "xs", ![slice.T byteT] "b2").
+
+Definition ReadSliceLenPrefix (T:ty): val :=
+  rec: "ReadSliceLenPrefix" "b" "readOne" :=
+    let: ("count", "b2") := ReadInt "b" in
+    ReadSlice T "b2" "count" "readOne".
+
+Definition WriteSlice (T:ty): val :=
+  rec: "WriteSlice" "b" "xs" "writeOne" :=
+    let: "b2" := ref_to (slice.T byteT) "b" in
+    ForSlice T <> "x" "xs"
+      ("b2" <-[slice.T byteT] ("writeOne" "x" (![slice.T byteT] "b2")));;
+    ![slice.T byteT] "b2".
+
+Definition WriteSliceLenPrefix (T:ty): val :=
+  rec: "WriteSliceLenPrefix" "b" "xs" "writeOne" :=
+    let: "b2" := WriteInt "b" (slice.len "xs") in
+    let: "b3" := WriteSlice T "b2" "xs" "writeOne" in
+    "b3".
+
 End code.

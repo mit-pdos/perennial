@@ -51,6 +51,7 @@ Section program.
       iDestruct "HP" as (leader') "[HleaderP %Hin]".
       wp_load.
       wp_apply (wp_GroupCoordinator__SendAbort with "Habted").
+      { apply Hin. }
       { iFrame "Hgcoord". }
       wp_apply wp_Sleep.
       wp_apply (wp_GroupCoordinator__ChangeLeader).
