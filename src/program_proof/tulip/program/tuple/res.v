@@ -41,9 +41,20 @@ Section res.
       gset_to_gmap (to_dfrac_agree (DfracOwn 1) [None : dbval]) keys_all.
     iMod (own_alloc m) as (α) "Htpls".
     { intros k.
-      admit.
-      (* rewrite lookup_gset_to_gmap option_guard_True. *)
+      rewrite /m.
+      rewrite lookup_gset_to_gmap.
+      destruct (decide (k ∈ keys_all)).
+      - rewrite option_guard_True //.
+      - rewrite option_guard_False //.
     }
-  Admitted.
+    iExists α.
+    rewrite /m. rewrite /own_phys_hist_half.
+    rewrite -big_sepS_sep.
+    setoid_rewrite <-own_op.
+    setoid_rewrite singleton_op.
+    setoid_rewrite <-dfrac_agree_op.
+    setoid_rewrite dfrac_op_own.
+    rewrite -big_opS_own_1 Qp.half_half big_opS_gset_to_gmap //.
+  Qed.
 
 End res.
