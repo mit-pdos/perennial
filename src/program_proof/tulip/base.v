@@ -322,13 +322,17 @@ Canonical Structure ilogO := leibnizO (list (nat * icommand)).
 Definition replica_ilogR := gmapR (u64 * u64) (dfrac_agreeR ilogO).
 Canonical Structure voteO := leibnizO vote.
 Definition ballotR := mono_listR voteO.
-Definition ballotmR := gmap_viewR nat ballotR.
+Definition ballotmR := gmap_viewR nat (agreeR gnameO).
 Definition replica_ballotmR := gmapR (u64 * u64) ballotmR.
 Canonical Structure coordidO := leibnizO coordid.
 Definition votemR := gmap_viewR (nat * nat) (agreeR coordidO).
 Definition replica_votemR := gmapR (u64 * u64) votemR.
 Definition tokenmR := gmap_viewR (nat * nat * u64) unitR.
 Definition replica_tokenmR := gmapR (u64 * u64) tokenmR.
+Definition trmlmR := gmap_viewR chan unitR.
+Definition group_trmlmR := gmapR u64 trmlmR.
+Canonical Structure dbhistO := leibnizO dbhist.
+Definition phistmR := gmapR dbkey (dfrac_agreeR dbhistO).
 
 Class tulip_ghostG (Σ : gFunctors) :=
   { (* common resources defined in res.v *)
@@ -360,8 +364,16 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] replica_clogG :: inG Σ replica_clogR;
     #[global] replica_ilogG :: inG Σ replica_ilogR;
     #[global] replica_ballotG :: inG Σ replica_ballotmR;
+    #[global] ballotG :: inG Σ ballotR;
     #[global] replica_voteG :: inG Σ replica_votemR;
     #[global] replica_tokenG :: inG Σ replica_tokenmR;
+    (* network resources defined din res_network.v *)
+    #[global] group_trmlmG :: inG Σ group_trmlmR;
+    (* txn local resources defined in program/txn/res.v *)
+    #[global] txnmapG :: ghost_mapG Σ dbkey dbval;
+    #[global] local_gid_tokenG :: ghost_mapG Σ u64 unit;
+    (* replica local resources defined in program/replica/res.v *)
+    #[global] phys_histG :: inG Σ phistmR;
   }.
 
 Definition tulip_ghostΣ :=
@@ -396,8 +408,16 @@ Definition tulip_ghostΣ :=
      GFunctor replica_clogR;
      GFunctor replica_ilogR;
      GFunctor replica_ballotmR;
+     GFunctor ballotR;
      GFunctor replica_votemR;
-     GFunctor replica_tokenmR
+     GFunctor replica_tokenmR;
+     (* res_network.v *)
+     GFunctor group_trmlmR;
+     (* program/txn/res.v *)
+     ghost_mapΣ dbkey dbval;
+     ghost_mapΣ u64 unit;
+     (* program/replica/res.v *)
+     GFunctor phistmR
    ].
 
 #[global]
@@ -437,9 +457,9 @@ Record tulip_names :=
     replica_ballot : gname;
     replica_vote : gname;
     replica_token : gname;
+    (* res_network.v *)
+    group_trmlm : gname;
   }.
-
-Record replica_names := {}.
 
 Definition sysNS := nroot .@ "sys".
 Definition tulipNS := sysNS .@ "tulip".

@@ -291,21 +291,21 @@ Section res.
     (** Mapping from transaction IDs to booleans indicating whether they are
     prepared on a replica in a group at a certain rank. *)
 
-    Definition own_replica_ballot_map_auth γ (gid rid : u64) (bs : gmap nat ballot) : iProp Σ :=
-      let f := (λ l : list vote, mono_list_auth (A:=voteO) (DfracOwn 1) l) in
-      own γ.(replica_ballot) {[ (gid, rid) := gmap_view_auth (DfracOwn 1) (f <$> bs) ]}.
+    Definition own_replica_ballot_map_auth γ (gid rid : u64) (gnames : gmap nat gname) : iProp Σ :=
+      own γ.(replica_ballot) {[ (gid, rid) := gmap_view_auth (DfracOwn 1) (to_agree <$> gnames) ]}.
 
-    Definition own_replica_ballot_map_frag γ (gid rid : u64) (ts : nat) (blt : ballot) : iProp Σ :=
-      let f := (λ l : list vote, mono_list_auth (A:=voteO) (DfracOwn 1) l) in
-      own γ.(replica_ballot) {[ (gid, rid) := gmap_view_frag ts (DfracOwn 1) (f blt) ]}.
+    Definition own_replica_ballot_map_frag γ (gid rid : u64) (ts : nat) (α : gname) : iProp Σ :=
+      own γ.(replica_ballot) {[ (gid, rid) := gmap_view_frag ts DfracDiscarded (to_agree α) ]}.
 
     Definition own_replica_ballot_map γ (gid rid : u64) (bs : gmap nat ballot) : iProp Σ :=
-      own_replica_ballot_map_auth γ gid rid bs ∗
-      ([∗ map] t ↦ l ∈ bs, own_replica_ballot_map_frag γ gid rid t l).
+      ∃ gnames,
+        own_replica_ballot_map_auth γ gid rid gnames ∗
+        ([∗ map] t ↦ α; l ∈ gnames; bs, own α (mono_list_auth (DfracOwn 1) l)) ∗
+        ([∗ map] t ↦ α ∈ gnames, own_replica_ballot_map_frag γ gid rid t α).
 
     Definition is_replica_ballot_lb γ (gid rid : u64) (ts : nat) (blt : ballot) : iProp Σ :=
-      let f := (λ l : list vote, mono_list_lb (A:=voteO) l) in
-      own γ.(replica_ballot) {[ (gid, rid) := gmap_view_frag ts DfracDiscarded (f blt) ]}.
+      ∃ α,
+        own_replica_ballot_map_frag γ gid rid ts α ∗ own α (mono_list_lb blt).
 
     #[global]
     Instance is_replica_ballot_lb_persistent γ gid rid ts blt :
@@ -320,25 +320,30 @@ Section res.
       own_replica_ballot_map γ gid rid bs ==∗
       own_replica_ballot_map γ gid rid (<[ts := l]> bs).
     Proof.
-      intros Hnotin.
-      iIntros "[Hauth Hfrags]".
-      iAssert (own_replica_ballot_map_auth γ gid rid (<[ts:=l]> bs) ∗
-               own_replica_ballot_map_frag γ gid rid ts l)%I
-        with "[> Hauth]" as "[Hauth Hfrag]".
+      iIntros (Hnotin) "Hauth".
+      iDestruct "Hauth" as (gnames) "(Hauth & Hblts & #Hfrags)".
+      iMod (own_alloc (●ML l)) as (α) "Hblt".
+      { apply mono_list_auth_valid. }
+      iDestruct (big_sepM2_dom with "Hblts") as %Hdom.
+      assert (Hgnotin : gnames !! ts = None).
+      { by rewrite -not_elem_of_dom Hdom not_elem_of_dom. }
+      iAssert (own_replica_ballot_map_auth γ gid rid (<[ts := α]> gnames) ∗
+               own_replica_ballot_map_frag γ gid rid ts α)%I
+        with "[> Hauth]" as "[Hauth #Hfrag]".
       { iRevert "Hauth".
         rewrite -own_op.
         iApply own_update.
         rewrite singleton_op.
         apply singleton_update.
         rewrite fmap_insert.
-        apply: gmap_view_alloc.
-        { by rewrite lookup_fmap Hnotin /=. }
-        { apply dfrac_valid_own_1. }
-        { apply mono_list_auth_valid. }
+        apply: gmap_view_alloc; [|done..].
+        by rewrite lookup_fmap Hgnotin.
       }
       iFrame.
       iModIntro.
-      iApply (big_sepM_insert_2 with "Hfrag Hfrags").
+      iSplit.
+      { iApply (big_sepM2_insert_2 with "[Hblt] Hblts"); first done. }
+      by iApply big_sepM_insert_2.
     Qed.
 
     Lemma replica_ballot_update {γ gid rid bs} ts l l' :
@@ -347,25 +352,22 @@ Section res.
       own_replica_ballot_map γ gid rid bs ==∗
       own_replica_ballot_map γ gid rid (<[ts := l']> bs).
     Proof.
-      iIntros (Hl Hprefix) "[Hauth Hfrags]".
-      iDestruct (big_sepM_delete with "Hfrags") as "[Hfrag Hfrags]".
+      iIntros (Hl Hprefix) "Hauth".
+      iDestruct "Hauth" as (gnames) "(Hauth & Hblts & #Hfrags)".
+      iDestruct (big_sepM2_dom with "Hblts") as %Hdom.
+      assert (is_Some (gnames !! ts)) as [α Hα].
+      { by rewrite -elem_of_dom Hdom elem_of_dom. }
+      iDestruct (big_sepM2_delete with "Hblts") as "[Hblt Hblts]".
+      { apply Hα. }
       { apply Hl. }
-      iAssert (own_replica_ballot_map_auth γ gid rid (<[ts := l']> bs) ∗
-               own_replica_ballot_map_frag γ gid rid ts l')%I
-        with "[> Hauth Hfrag]" as "[Hauth Hfrag]".
-      { iCombine "Hauth Hfrag" as "Hauthfrag".
-        iRevert "Hauthfrag".
-        rewrite -!own_op.
-        iApply own_update.
-        rewrite singleton_op.
-        apply singleton_update.
-        rewrite fmap_insert.
-        apply gmap_view_replace.
-        apply mono_list_auth_valid.
-      }
+      iMod (own_update with "Hblt") as "Hblt".
+      { apply mono_list_update, Hprefix. }
+      iDestruct (big_sepM2_insert_2 _ _ _ ts with "[Hblt] Hblts") as "Hblts".
+      { iFrame "Hblt". }
+      rewrite 2!insert_delete_insert.
       iFrame.
-      iDestruct (big_sepM_insert_2 with "Hfrag Hfrags") as "Hfrags".
-      by rewrite insert_delete_insert.
+      rewrite insert_id; last done.
+      by iFrame "∗ #".
     Qed.
 
     Lemma replica_ballot_witness {γ gid rid bs} ts l :
@@ -373,26 +375,71 @@ Section res.
       own_replica_ballot_map γ gid rid bs -∗
       is_replica_ballot_lb γ gid rid ts l.
     Proof.
-      iIntros (Hl) "[Hauth Hfrags]".
-      iDestruct (big_sepM_lookup with "Hfrags") as "Hfrag".
+      iIntros (Hl) "Hauth".
+      iDestruct "Hauth" as (gnames) "(Hauth & Hblts & #Hfrags)".
+      iDestruct (big_sepM2_dom with "Hblts") as %Hdom.
+      assert (is_Some (gnames !! ts)) as [α Hα].
+      { by rewrite -elem_of_dom Hdom elem_of_dom. }
+      iDestruct (big_sepM2_lookup with "Hblts") as "Hblt".
+      { apply Hα. }
       { apply Hl. }
-      iRevert "Hfrag".
-      iApply own_mono.
-      apply singleton_included_mono.
-    Admitted.
+      iDestruct (big_sepM_lookup with "Hfrags") as "Hfrag".
+      { apply Hα. }
+      iFrame "Hfrag".
+      iApply (own_mono with "Hblt").
+      apply mono_list_included.
+    Qed.
 
     Lemma replica_ballot_lookup {γ gid rid bs} ts lb :
       is_replica_ballot_lb γ gid rid ts lb -∗
       own_replica_ballot_map γ gid rid bs -∗
       ⌜∃ l, bs !! ts = Some l ∧ prefix lb l⌝.
-    Admitted.
+    Proof.
+      iIntros "#Hlb Hauth".
+      iDestruct "Hauth" as (gnames) "(Hauth & Hblts & #Hfrags)".
+      iDestruct "Hlb" as (α) "[Hfrag Hlb]".
+      iDestruct (own_valid_2 with "Hauth Hfrag") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      apply gmap_view_both_dfrac_valid_discrete_total in Hvalid.
+      destruct Hvalid as (v' & _ & _ & Hlookup & _ & Hincl).
+      apply lookup_fmap_Some in Hlookup as (b & <- & Hb).
+      apply to_agree_included_L in Hincl.
+      subst b.
+      iDestruct (big_sepM2_dom with "Hblts") as %Hdom.
+      assert (is_Some (bs !! ts)) as [blt Hblt].
+      { by rewrite -elem_of_dom -Hdom elem_of_dom. }
+      iDestruct (big_sepM2_lookup with "Hblts") as "Hblt".
+      { apply Hb. }
+      { apply Hblt. }
+      iDestruct (own_valid_2 with "Hblt Hlb") as %Hvalid.
+      iPureIntro.
+      apply mono_list_both_dfrac_valid_L in Hvalid as [_ Hprefix].
+      by eauto.
+    Qed.
 
     Lemma replica_ballot_prefix {γ gid rid bs} ts l lb :
       bs !! ts = Some l ->
       is_replica_ballot_lb γ gid rid ts lb -∗
       own_replica_ballot_map γ gid rid bs -∗
       ⌜prefix lb l⌝.
-    Admitted.
+    Proof.
+      iIntros (Hl) "#Hlb Hauth".
+      iDestruct "Hauth" as (gnames) "(Hauth & Hblts & #Hfrags)".
+      iDestruct "Hlb" as (α) "[Hfrag Hlb]".
+      iDestruct (own_valid_2 with "Hauth Hfrag") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      apply gmap_view_both_dfrac_valid_discrete_total in Hvalid.
+      destruct Hvalid as (v' & _ & _ & Hlookup & _ & Hincl).
+      apply lookup_fmap_Some in Hlookup as (b & <- & Hb).
+      apply to_agree_included_L in Hincl.
+      subst b.
+      iDestruct (big_sepM2_lookup with "Hblts") as "Hblt".
+      { apply Hb. }
+      { apply Hl. }
+      iDestruct (own_valid_2 with "Hblt Hlb") as %Hvalid.
+      iPureIntro.
+      by apply mono_list_both_dfrac_valid_L in Hvalid as [_ Hprefix].
+    Qed.
 
   End replica_ballot.
 
