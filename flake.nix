@@ -17,8 +17,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "mjschwenne";
           repo = "grackle";
-          rev = "50fb62a4d9363e09c25e997b452eac4af844b5cd";
-          sha256 = "16vgpxdkg2686r0m2dqlxm5czxgf07j0myxixsqc84k1z90kivy6";
+          rev = "275fce5626d662527ff987ad61aad61044019fa6";
+          sha256 = "16iw5hqg2hd12mc62wqv5hxqb8jwymbnhyy16zsza0limhmr0aya";
         };
         vendorHash = "sha256-Wk2v0HSAkrzxHJvCfbw6xOn0OQ1xukvYjDxk3c2LmH8=";
         checkPhase = false;
@@ -28,8 +28,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "goose-lang";
           repo = "goose";
-          rev = "8352f2a82040a814b60e0dd9ac75f09cec3dd619";
-          sha256 = "0as9cw8v6bxwv2100db63nk8h2mk3330c8kmdlk3kjzlkvy1bdwf";
+          rev = "8d13c771b9a80957089f7c5b0ee2ccf58e5eb06f";
+          sha256 = "1fbqs75ya4as3my2knkaq4m0crdh3n004grw5g5iczvb5h5k06lz";
         };
         vendorHash = "sha256-HCJ8v3TSv4UrkOsRuENWVz5Z7zQ1UsOygx0Mo7MELzY=";
       };
