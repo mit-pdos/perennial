@@ -124,6 +124,34 @@ Proof.
   iApply "Hs".
 Qed.
 
+Theorem wp_ReadSlice {A:Type}
+  (enc : list u8) (enc_sl : Slice.t) (count : u64) (args: list A) (goT: ty)
+  (has_encoding : list u8 -> A -> Prop) (own : loc -> A -> dfrac -> iProp Σ) (readOne : val)
+  (suffix : list u8) (dq : dfrac) :
+  {{{ own_slice_small enc_sl byteT dq (enc ++ suffix) ∗
+      ∀ enc' enc_sl' suffix' x,
+      {{{ own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
+          ⌜has_encoding enc' x⌝
+      }}}
+        readOne (slice_val enc_sl')
+      {{{ x (v : A) suff_sl, RET (#x, slice_val suff_sl); own x v (DfracOwn 1) ∗
+          own_slice_small suff_sl byteT dq suffix' ∗
+          (* While this is true, I don't know if it is strong enough *)
+          ⌜v ∈ args⌝
+      }}}
+  }}}
+    ReadSlice goT (slice_val enc_sl) #count readOne
+  {{{ xs b2, RET (slice_val xs, slice_val b2);
+       own_slice_small b2 byteT dq suffix (* ∗ *)
+       (* FIXME We need to show that the type A can be converted into a val in order
+          to represent it in go/goose.
+
+          Error: Could not find an instance for "IntoVal A" *)
+       (* own_slice_small xs goT dq args *)
+  }}}.
+Proof.
+  Admitted.
+
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
     compute_new_cap #old_cap #min_cap
