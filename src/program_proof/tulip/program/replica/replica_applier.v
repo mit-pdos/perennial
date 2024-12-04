@@ -60,16 +60,17 @@ Section program.
     { iNamed "Hgroup". iFrame. }
     (* Obtain a lower bound before passing it to Paxos. *)
     iDestruct (txn_log_witness with "Hpaxos") as "#Hlb".
-    iExists paxos. iFrame.
-    iIntros (paxos') "Hpaxos".
+    iNamed "Hgroup".
+    iFrame.
+    iIntros (paxos') "[[Hpaxos Hcpool] %Hincl]".
     (* Obtain prefix between the old and new logs. *)
     iDestruct (txn_log_prefix with "Hpaxos Hlb") as %Hpaxos.
     destruct Hpaxos as [cmds Hpaxos].
     (* Obtain inclusion between the command pool and the log. *)
-    iAssert (⌜txn_cpool_subsume_log cpool paxos'⌝)%I as %Hincl.
-    { iNamed "Hgroup".
-      by iDestruct (txn_log_cpool_incl with "Hpaxos Hcpool") as %?.
-    }
+    (* iAssert (⌜txn_cpool_subsume_log cpool paxos'⌝)%I as %Hincl. *)
+    (* { iNamed "Hgroup". *)
+    (*   by iDestruct (txn_log_cpool_incl with "Hpaxos Hcpool") as %?. *)
+    (* } *)
     (* Transfer validity of command input on cpool to log; used when executing @apply. *)
     pose proof (set_Forall_Forall_subsume _ _ _ Hvcmds Hincl) as Hvc.
     (* Obtain prefix between the applied log and the new log; needed later. *)
@@ -80,6 +81,7 @@ Section program.
 
     (*@         // Ghost action: Learn a list of new commands.                  @*)
     (*@                                                                         @*)
+    iAssert (group_inv_no_log_with_cpool γ gid paxos cpool)%I with "[$Hgroup $Hcpool]" as "Hgroup".
     iMod (group_inv_learn with "Htxnsys Hkeys Hgroup") as "(Htxnsys & Hkeys & Hgroup)".
     { apply Hincl. }
     iDestruct (group_inv_merge_log_hide_cpool with "Hpaxos Hgroup") as "Hgroup".

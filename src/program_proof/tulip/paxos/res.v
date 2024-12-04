@@ -23,6 +23,9 @@ Section res.
     Definition own_cpool_half γ (vs : gset string) : iProp Σ.
     Admitted.
 
+    Definition own_consensus_half γ (l : ledger) (vs : gset string) : iProp Σ :=
+      own_log_half γ l ∗ own_cpool_half γ vs.
+
     Definition is_cmd_receipt γ (c : string) : iProp Σ.
     Admitted.
 
@@ -43,13 +46,11 @@ Section res.
 
     (** Rules. *)
 
-    Lemma log_update {γ} l1 l2 vs :
-      cpool_subsume_log l2 vs ->
+    Lemma log_update {γ} l1 l2 :
       prefix l1 l2 ->
       own_log_half γ l1 -∗
-      own_log_half γ l1 -∗
-      own_cpool_half γ vs ==∗
-      own_log_half γ l2 ∗ own_log_half γ l2 ∗ own_cpool_half γ vs.
+      own_log_half γ l1 ==∗
+      own_log_half γ l2 ∗ own_log_half γ l2.
     Admitted.
 
     Lemma log_agree {γ} l1 l2 :
@@ -98,12 +99,6 @@ Section res.
       is_cmd_receipt γ v -∗
       own_cpool_half γ vs -∗
       ⌜v ∈ vs⌝.
-    Admitted.
-
-    Lemma log_cpool_subsume {γ l vs} :
-      own_log_half γ l -∗
-      own_cpool_half γ vs -∗
-      ⌜cpool_subsume_log l vs⌝.
     Admitted.
 
   End consensus.

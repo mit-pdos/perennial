@@ -428,6 +428,7 @@ Section alloc.
       rewrite dom_gset_to_gmap.
       assert (Hlip : locked_impl_prepared ∅ (gset_to_gmap O keys_all)).
       { intros k t Ht Hnz. by apply lookup_gset_to_gmap_Some in Ht as [_ <-]. }
+      rewrite /txn_cpool_subsume_log Forall_nil.
       done.
     }
     iAssert ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid)%I

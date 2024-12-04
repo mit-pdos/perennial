@@ -29,6 +29,7 @@ Section inv_txnlog.
       "Htcpool"    ∷ own_txn_cpool_half γ gid tcpool ∗
       "Hplog"      ∷ own_log_half π plog ∗
       "Hpcpool"    ∷ own_cpool_half π pcpool ∗
+      "%Hcsincl"   ∷ ⌜txn_cpool_subsume_log tcpool tlog⌝ ∗
       "%Hlogabs"   ∷ ⌜Forall2 (λ tc pc, encode_ccommand tc pc) tlog plog⌝ ∗
       "%Hcpoolabs" ∷ ⌜set_Forall (λ pc, ∃ tc, tc ∈ tcpool ∧ encode_ccommand tc pc) pcpool⌝.
 
@@ -61,7 +62,11 @@ Section alloc.
     rewrite -!big_sepM_sep.
     iApply (big_sepM_mono with "Hall").
     iIntros (gid π Hπ) "[[Htlog Htcpool] [Hplog Hpcpool]]".
-    by iFrame.
+    iFrame.
+    iPureIntro.
+    split.
+    { rewrite /txn_cpool_subsume_log. by apply Forall_nil. }
+    done.
   Qed.
 
 End alloc.

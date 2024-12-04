@@ -498,7 +498,9 @@ Section inv.
       "#Hsafepsb"   ∷ ([∗ map] t ↦ v ∈ psb, safe_base_proposal γ nids t v) ∗
       "%Hvp"        ∷ ⌜valid_proposals ps psb⌝ ∗
       "%Hdomtermlm" ∷ ⌜dom termlm = nids⌝ ∗
-      "%Hdompsb"    ∷ ⌜free_terms (dom psb) termlm⌝.
+      "%Hdompsb"    ∷ ⌜free_terms (dom psb) termlm⌝ ∗
+      (* constraint on the external states *)
+      "%Hcsincl"    ∷ ⌜cpool_subsume_log log cpool⌝.
 
   #[global]
   Instance paxos_inv_timeless γ nids :
@@ -631,6 +633,19 @@ End inv_network.
 
 Section lemma.
   Context `{!paxos_ghostG Σ}.
+
+  Lemma paxos_inv_impl_cpool_subsume_log γ nids log cpool :
+    own_log_half γ log -∗
+    own_cpool_half γ cpool -∗
+    paxos_inv γ nids -∗
+    ⌜cpool_subsume_log log cpool⌝.
+  Proof.
+    iIntros "HlogX HcpoolX Hinv".
+    iNamed "Hinv".
+    iDestruct (log_agree with "Hlog HlogX") as %->.
+    iDestruct (cpool_agree with "Hcpool HcpoolX") as %->.
+    done.
+  Qed.
 
   Lemma equal_latest_longest_proposal_nodedec_prefix dss dsslb t v :
     map_Forall2 (λ _ dslb ds, prefix dslb ds ∧ (t ≤ length dslb)%nat) dsslb dss ->
@@ -1326,12 +1341,14 @@ Section alloc.
     { by rewrite insert_empty /valid_proposals map_Forall2_singleton. }
     split.
     { by rewrite dom_gset_to_gmap. }
+    split.
     { rewrite insert_empty dom_singleton_L.
       split; first apply is_term_of_node_partitioned.
       intros nid terml Hterml t Hton Hlt.
       rewrite not_elem_of_singleton.
       lia.
     }
+    { by rewrite /cpool_subsume_log Forall_nil. }
   Qed.
 
 End alloc.

@@ -334,7 +334,8 @@ Section inv.
       "%Hcm"      ∷ ⌜cm = omap txnst_to_option_bool stm⌝ ∗
       "%Hpil"     ∷ ⌜prepared_impl_locked stm tspreps⌝ ∗
       "%Hlip"     ∷ ⌜locked_impl_prepared stm tspreps⌝ ∗
-      "%Htsnz"    ∷ ⌜stm !! O = None⌝.
+      "%Htsnz"    ∷ ⌜stm !! O = None⌝ ∗
+      "%Hcscincl" ∷ ⌜txn_cpool_subsume_log cpool log⌝.
 
   Definition group_inv_no_log_with_cpool
     γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=

@@ -31,10 +31,15 @@ Section submit.
     iMod ("HAU" with "Hcpoolcli") as "HΦ".
     iMod "Hmask" as "_".
     iMod ("HinvC" with "[-HΦ]") as "_".
-    { iFrame "∗ # %". }
+    { iFrame "∗ # %".
+      iPureIntro.
+      rewrite /cpool_subsume_log.
+      apply (Forall_impl _ _ _ Hcsincl).
+      set_solver.
+    }
     iModIntro.
     (* Some cleanup to avoid name collision. *)
-    iClear "Hsafelog". clear log.
+    iClear "Hsafelog". clear Hcsincl log.
 
     (*@ func (px *Paxos) Submit(v string) (uint64, uint64) {                    @*)
     (*@     px.mu.Lock()                                                        @*)

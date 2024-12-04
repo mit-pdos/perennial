@@ -105,6 +105,7 @@ Section inv.
     group_inv_no_log_with_cpool γ gid (log ++ [CmdCommit ts pwrs]) cpool.
   Proof.
     iIntros (Hsubsume) "Htxnsys Hkeys Hgroup".
+    pose proof Hsubsume as Hcscincl.
     rewrite /txn_cpool_subsume_log Forall_app Forall_singleton in Hsubsume.
     destruct Hsubsume as [Hsubsume Hc].
     do 2 iNamed "Hgroup".

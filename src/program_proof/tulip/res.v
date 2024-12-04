@@ -450,13 +450,9 @@ Section res.
     Definition own_txn_cpool_half γ (gid : u64) (cpool : gset ccommand) : iProp Σ.
     Admitted.
 
-    (* Definition is_proposed_txn_cmd γ (gid : u64) (lsn : nat) (term : nat) (c : ccommand) : iProp Σ. *)
-    (* Admitted. *)
-
-    (* #[global] *)
-    (* Instance is_proposed_txn_cmd_persistent γ gid lsn term c : *)
-    (*   Persistent (is_proposed_txn_cmd γ gid lsn term c). *)
-    (* Admitted. *)
+    Definition own_txn_consensus_half
+      γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
+      own_txn_log_half γ gid log ∗ own_txn_cpool_half γ gid cpool.
 
     Lemma txn_log_witness γ gid log :
       own_txn_log_half γ gid log -∗
@@ -496,20 +492,11 @@ Section res.
     Definition txn_cpool_subsume_log (cpool : gset ccommand) (log : list ccommand) :=
       Forall (λ c, c ∈ cpool) log.
 
-    Lemma txn_log_cpool_incl γ gid log cpool :
+    Lemma txn_log_extend {γ gid log} logext :
       own_txn_log_half γ gid log -∗
-      own_txn_cpool_half γ gid cpool -∗
-      ⌜txn_cpool_subsume_log cpool log⌝.
-    Admitted.
-
-    Lemma txn_log_extend {γ gid log cpool} logext :
-      txn_cpool_subsume_log cpool logext ->
-      own_txn_log_half γ gid log -∗
-      own_txn_log_half γ gid log -∗
-      own_txn_cpool_half γ gid cpool ==∗
+      own_txn_log_half γ gid log ==∗
       own_txn_log_half γ gid (log ++ logext) ∗
-      own_txn_log_half γ gid (log ++ logext) ∗
-      own_txn_cpool_half γ gid cpool.
+      own_txn_log_half γ gid (log ++ logext).
     Admitted.
 
     Lemma txn_cpool_update {γ gid cpool} cpool' :

@@ -25,8 +25,8 @@ Section execute_commit.
     }
     iAssert (is_txn_pwrs γ gid ts pwrs ∗ ⌜dom pwrs ⊆ keys_all⌝)%I as "[#Hpwrs %Hdompwrs]".
     { do 2 iNamed "Hgroup".
+      rename Hcscincl into Hincl.
       iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
-      iDestruct (txn_log_cpool_incl with "Hlog Hcpool") as %Hincl.
       assert (Hin : CmdCommit ts pwrs ∈ cpool).
       { rewrite /txn_cpool_subsume_log Forall_forall in Hincl.
         apply Hincl.
