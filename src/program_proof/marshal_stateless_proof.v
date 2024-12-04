@@ -124,12 +124,19 @@ Proof.
   iApply "Hs".
 Qed.
 
-Theorem wp_ReadSlice {A:Type}
-  (enc : list u8) (enc_sl : Slice.t) (count : u64) (args: list A) (goT: ty)
+Fixpoint encodes {A:Type} (enc : list u8) (xs : list A) (has_encoding : list u8 -> A -> Prop): Prop :=
+  match xs with
+    | [] => enc = []
+    | x :: xs' => exists bs bs', xs = x :: xs' /\ enc = bs ++ bs' /\ has_encoding bs x /\ encodes bs' xs' has_encoding
+  end.
+
+Theorem wp_ReadSlice {A:Type} {V: IntoVal A} {goT: ty}
+  (enc : list u8) (enc_sl : Slice.t) (count : u64) (args: list A) (ValRel: IntoValForType A goT)
   (has_encoding : list u8 -> A -> Prop) (own : loc -> A -> dfrac -> iProp Σ) (readOne : val)
   (suffix : list u8) (dq : dfrac) :
-  {{{ own_slice_small enc_sl byteT dq (enc ++ suffix) ∗
-      ∀ enc' enc_sl' suffix' x,
+  {{{ "Hsl" ∷ own_slice_small enc_sl byteT dq (enc ++ suffix) ∗
+      "%Henc" ∷ ⌜encodes enc args has_encoding⌝ ∗
+      "HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
       {{{ own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
           ⌜has_encoding enc' x⌝
       }}}
@@ -142,15 +149,27 @@ Theorem wp_ReadSlice {A:Type}
   }}}
     ReadSlice goT (slice_val enc_sl) #count readOne
   {{{ xs b2, RET (slice_val xs, slice_val b2);
-       own_slice_small b2 byteT dq suffix (* ∗ *)
-       (* FIXME We need to show that the type A can be converted into a val in order
-          to represent it in go/goose.
-
-          Error: Could not find an instance for "IntoVal A" *)
-       (* own_slice_small xs goT dq args *)
+       own_slice_small b2 byteT dq suffix ∗
+       own_slice_small xs goT dq args
   }}}.
 Proof.
-  Admitted.
+  iIntros (ϕ) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
+  wp_apply (wp_ref_to); first val_ty. iIntros (l) "Henc_sl".
+  wp_pures.
+
+  wp_apply (wp_NewSlice). iIntros (s) "Hs".
+  wp_apply (wp_ref_to); first val_ty. iIntros (?) "Hret".
+  wp_pures.
+
+  wp_apply (wp_ref_to); first val_ty. iIntros (i) "Hi". wp_pures.
+
+  wp_apply (wp_forUpto'
+              (λ i, ∃ (next: u64),
+                   "%Hi_ge" ∷ ⌜0 ≤ uint.Z i⌝
+              )%I
+              with "[$Hi]"
+           ).
+Admitted.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
