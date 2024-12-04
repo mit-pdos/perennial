@@ -1,3 +1,6 @@
+From iris.algebra Require Import mono_nat mono_list gmap_view gset.
+From iris.algebra.lib Require Import dfrac_agree.
+From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip.paxos Require Import base recovery.
 From Perennial.program_proof.tulip.paxos Require Export res_network.
@@ -109,21 +112,33 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_proposals γ (ps : proposals) : iProp Σ.
-    Admitted.
+    Definition own_proposals_name γ (names : gmap nat gname) : iProp Σ :=
+      ghost_map_auth γ.(proposal) 1 names.
 
-    Definition own_proposal γ (t : nat) (v : ledger) : iProp Σ.
-    Admitted.
+    Definition is_proposal_name γ (t : nat) (name : gname) : iProp Σ :=
+      ghost_map_elem γ.(proposal) t DfracDiscarded name.
 
-    Definition is_proposal_lb γ (t : nat) (v : ledger) : iProp Σ.
-    Admitted.
+    Definition own_proposals γ (ps : proposals) : iProp Σ :=
+      ∃ names,
+        own_proposals_name γ names ∗
+        ([∗ map] t ↦ name; l ∈ names; ps, own name (mono_list_auth (DfracOwn (1 / 2)) l)).
+
+    Definition own_proposal γ (t : nat) (v : ledger) : iProp Σ :=
+      ∃ name,
+        is_proposal_name γ t name ∗
+        own name (mono_list_auth (A:=stringO) (DfracOwn (1 / 2)) v).
+
+    Definition is_proposal_lb γ (t : nat) (v : ledger) : iProp Σ :=
+      ∃ name,
+        is_proposal_name γ t name ∗
+        own name (mono_list_lb (A:=stringO) v).
 
     (** Type class instances. *)
 
     #[global]
     Instance is_proposal_lb_persistent γ t v :
       Persistent (is_proposal_lb γ t v).
-    Admitted.
+    Proof. apply _. Defined.
 
     (** Rules. *)
 
@@ -131,43 +146,133 @@ Section res.
       ps !! t = None ->
       own_proposals γ ps ==∗
       own_proposals γ (<[t := v]> ps) ∗ own_proposal γ t v.
-    Admitted.
+    Proof.
+      intros Hnotin.
+      iIntros "Hauth".
+      iDestruct "Hauth" as (names) "[Hauth Hpslm]".
+      iDestruct (big_sepM2_dom with "Hpslm") as %Hdom.
+      assert (Hnamest : names !! t = None).
+      { by rewrite -not_elem_of_dom Hdom not_elem_of_dom. }
+      iMod (own_alloc (mono_list_auth (A:=stringO) (DfracOwn 1) v)) as (name) "Hl".
+      { apply mono_list_auth_valid. }
+      iMod (ghost_map_insert _ name with "Hauth") as "[Hauth Hfrag]".
+      { apply Hnamest. }
+      iMod (ghost_map_elem_persist with "Hfrag") as "Hfrag".
+      iDestruct "Hl" as "[Hlx Hly]".
+      iFrame.
+      iModIntro.
+      by iApply (big_sepM2_insert_2 with "[Hlx] Hpslm").
+    Qed.
 
     Lemma proposal_lookup {γ ps t v} :
       own_proposal γ t v -∗
       own_proposals γ ps -∗
       ⌜ps !! t = Some v⌝.
-    Admitted.
+    Proof.
+      iIntros "Hfrag Hauth".
+      iDestruct "Hfrag" as (name) "[Hfrag Hpsl]".
+      iDestruct "Hauth" as (names) "[Hauth Hpslm]".
+      iDestruct (ghost_map_lookup with "Hauth Hfrag") as %Hname.
+      iDestruct (big_sepM2_dom with "Hpslm") as %Hdom.
+      assert (is_Some (ps !! t)) as [v' Hv'].
+      { by rewrite -elem_of_dom -Hdom elem_of_dom. }
+      iDestruct (big_sepM2_lookup with "Hpslm") as "Hpsl'".
+      { apply Hname. }
+      { apply Hv'. }
+      iDestruct (own_valid_2 with "Hpsl Hpsl'") as %Hvalid.
+      by apply mono_list_auth_dfrac_op_valid_L in Hvalid as [_ <-].
+    Qed.
 
     Lemma proposal_update {γ ps t v1} v2 :
       prefix v1 v2 ->
       own_proposal γ t v1 -∗
       own_proposals γ ps ==∗
       own_proposal γ t v2 ∗ own_proposals γ (<[t := v2]> ps).
-    Admitted.
+    Proof.
+      iIntros (Hprefix) "Hfrag Hauth".
+      iDestruct "Hfrag" as (name) "[Hfrag Hpsl]".
+      iDestruct "Hauth" as (names) "[Hauth Hpslm]".
+      iDestruct (ghost_map_lookup with "Hauth Hfrag") as %Hname.
+      iDestruct (big_sepM2_dom with "Hpslm") as %Hdom.
+      assert (is_Some (ps !! t)) as [v' Hv'].
+      { by rewrite -elem_of_dom -Hdom elem_of_dom. }
+      iDestruct (big_sepM2_delete with "Hpslm") as "[Hpsl' Hpslm]".
+      { apply Hname. }
+      { apply Hv'. }
+      iDestruct (own_valid_2 with "Hpsl Hpsl'") as %Hvalid.
+      apply mono_list_auth_dfrac_op_valid_L in Hvalid as [_ <-].
+      iCombine "Hpsl Hpsl'" as "Hpsl".
+      iMod (own_update with "Hpsl") as "Hpsl".
+      { apply mono_list_update, Hprefix. }
+      iDestruct "Hpsl" as "[Hpsl Hpsl']".
+      iDestruct (big_sepM2_insert_2 _ _ _ t with "[Hpsl] Hpslm") as "Hpslm".
+      { iFrame "Hpsl". }
+      rewrite 2!insert_delete_insert.
+      iFrame.
+      by rewrite insert_id.
+    Qed.
 
     Lemma proposal_witness {γ t v} :
       own_proposal γ t v -∗
       is_proposal_lb γ t v.
-    Admitted.
+    Proof.
+      iIntros "Hfrag".
+      iDestruct "Hfrag" as (name) "[Hfrag Hpsl]".
+      iFrame.
+      iApply (own_mono with "Hpsl").
+      apply mono_list_included.
+    Qed.
 
     Lemma proposals_prefix {γ ps t vlb} :
       is_proposal_lb γ t vlb -∗
       own_proposals γ ps -∗
       ∃ v, ⌜ps !! t = Some v ∧ prefix vlb v⌝.
-    Admitted.
+    Proof.
+      iIntros "#Hlb Hauth".
+      iDestruct "Hlb" as (name) "[Hname Hpsl]".
+      iDestruct "Hauth" as (names) "[Hauth Hpslm]".
+      iDestruct (ghost_map_lookup with "Hauth Hname") as %Hname.
+      iDestruct (big_sepM2_dom with "Hpslm") as %Hdom.
+      assert (is_Some (ps !! t)) as [v' Hv'].
+      { by rewrite -elem_of_dom -Hdom elem_of_dom. }
+      iDestruct (big_sepM2_lookup with "Hpslm") as "Hpsl'".
+      { apply Hname. }
+      { apply Hv'. }
+      iDestruct (own_valid_2 with "Hpsl Hpsl'") as %Hvalid.
+      iPureIntro.
+      rewrite cmra_comm mono_list_both_dfrac_valid_L in Hvalid.
+      destruct Hvalid as [_ Hprefix].
+      by eauto.
+    Qed.
 
     Lemma proposal_prefix {γ t v vlb} :
       is_proposal_lb γ t vlb -∗
       own_proposal γ t v -∗
       ⌜prefix vlb v⌝.
-    Admitted.
+    Proof.
+      iIntros "#Hlb Hfrag".
+      iDestruct "Hlb" as (name) "[Hname Hpsl]".
+      iDestruct "Hfrag" as (name') "[Hfrag Hpsl']".
+      iDestruct (ghost_map_elem_agree with "Hfrag Hname") as %->.
+      iDestruct (own_valid_2 with "Hpsl Hpsl'") as %Hvalid.
+      iPureIntro.
+      rewrite cmra_comm mono_list_both_dfrac_valid_L in Hvalid.
+      by destruct Hvalid as [_ Hprefix].
+    Qed.
 
     Lemma proposal_lb_prefix {γ t v1 v2} :
       is_proposal_lb γ t v1 -∗
       is_proposal_lb γ t v2 -∗
       ⌜prefix v1 v2 ∨ prefix v2 v1⌝.
-    Admitted.
+    Proof.
+      iIntros "#Hlb Hfrag".
+      iDestruct "Hlb" as (name) "[Hname Hpsl]".
+      iDestruct "Hfrag" as (name') "[Hfrag Hpsl']".
+      iDestruct (ghost_map_elem_agree with "Hfrag Hname") as %->.
+      iDestruct (own_valid_2 with "Hpsl Hpsl'") as %Hvalid.
+      iPureIntro.
+      by rewrite mono_list_lb_op_valid_L in Hvalid.
+    Qed.
 
   End proposal.
 
@@ -175,18 +280,18 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_base_proposals γ (ps : proposals) : iProp Σ.
-    Admitted.
+    Definition own_base_proposals γ (ps : proposals) : iProp Σ :=
+      ghost_map_auth γ.(base_proposal) 1 ps.
 
-    Definition is_base_proposal_receipt γ (t : nat) (v : ledger) : iProp Σ.
-    Admitted.
+    Definition is_base_proposal_receipt γ (t : nat) (v : ledger) : iProp Σ :=
+      ghost_map_elem γ.(base_proposal) t DfracDiscarded v.
 
     (** Type class instances. *)
 
     #[global]
     Instance is_base_proposal_receipt_persistent γ t v :
       Persistent (is_base_proposal_receipt γ t v).
-    Admitted.
+    Proof. apply _. Defined.
 
     (** Rules. *)
 
@@ -194,13 +299,23 @@ Section res.
       ps !! t = None ->
       own_base_proposals γ ps ==∗
       own_base_proposals γ (<[t := v]> ps) ∗ is_base_proposal_receipt γ t v.
-    Admitted.
+    Proof.
+      intros Hnotin.
+      iIntros "Hauth".
+      iMod (ghost_map_insert with "Hauth") as "[Hauth Hfrag]".
+      { apply Hnotin. }
+      iMod (ghost_map_elem_persist with "Hfrag") as "Hfrag".
+      by iFrame.
+    Qed.
 
     Lemma base_proposal_lookup {γ ps t v} :
       is_base_proposal_receipt γ t v -∗
       own_base_proposals γ ps -∗
       ⌜ps !! t = Some v⌝.
-    Admitted.
+    Proof.
+      iIntros "Hfrag Hauth".
+      iApply (ghost_map_lookup with "Hauth Hfrag").
+    Qed.
 
   End base_proposal.
 
@@ -208,31 +323,42 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_free_prepare_lsn γ (t : nat) : iProp Σ.
-    Admitted.
+    Definition own_free_prepare_lsn γ (t : nat) : iProp Σ :=
+      own γ.(prepare_lsn) {[ t := (to_dfrac_agree (DfracOwn 1) O) ]}.
 
-    Definition is_prepare_lsn γ (t : nat) (n : nat) : iProp Σ.
-    Admitted.
+    Definition is_prepare_lsn γ (t : nat) (n : nat) : iProp Σ :=
+      own γ.(prepare_lsn) {[ t := (to_dfrac_agree DfracDiscarded n) ]}.
 
     (** Type class instances. *)
 
     #[global]
     Instance is_prepare_lsn_persistent γ t n :
       Persistent (is_prepare_lsn γ t n).
-    Admitted.
+    Proof. apply _. Defined.
 
     (** Rules. *)
 
     Lemma prepare_lsn_update {γ t} n :
       own_free_prepare_lsn γ t ==∗
       is_prepare_lsn γ t n.
-    Admitted.
+    Proof.
+      iApply own_update.
+      apply singleton_update.
+      trans (to_dfrac_agree (DfracOwn 1) n).
+      { by apply cmra_update_exclusive. }
+      apply dfrac_agree_persist.
+    Qed.
 
     Lemma prepare_lsn_eq {γ t n1 n2} :
       is_prepare_lsn γ t n1 -∗
       is_prepare_lsn γ t n2 -∗
       ⌜n2 = n1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hn1 Hn2".
+      iDestruct (own_valid_2 with "Hn1 Hn2") as %Hvalid.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hvalid.
+      by destruct Hvalid as [_ ?].
+    Qed.
 
   End prepare_lsn.
 
@@ -240,18 +366,18 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_past_nodedecs γ (nid : u64) (d : list nodedec) : iProp Σ.
-    Admitted.
+    Definition own_past_nodedecs γ (nid : u64) (d : list nodedec) : iProp Σ :=
+      own γ.(node_declist) {[ nid := ●ML d ]}.
 
-    Definition is_past_nodedecs_lb γ (nid : u64) (d : list nodedec) : iProp Σ.
-    Admitted.
+    Definition is_past_nodedecs_lb γ (nid : u64) (d : list nodedec) : iProp Σ :=
+      own γ.(node_declist) {[ nid := ◯ML d ]}.
 
     (** Type class instances. *)
 
     #[global]
     Instance is_past_nodedecs_lb_persistent γ nid d :
       Persistent (is_past_nodedecs_lb γ nid d).
-    Admitted.
+    Proof. apply _. Defined.
 
     (** Rules. *)
 
@@ -259,18 +385,34 @@ Section res.
       prefix d1 d2 ->
       own_past_nodedecs γ nid d1 ==∗
       own_past_nodedecs γ nid d2.
-    Admitted.
+    Proof.
+      intros Hprefix.
+      iApply own_update.
+      apply singleton_update.
+      by apply mono_list_update.
+    Qed.
 
     Lemma past_nodedecs_witness γ nid d :
       own_past_nodedecs γ nid d -∗
       is_past_nodedecs_lb γ nid d.
-    Admitted.
+    Proof.
+      iApply own_mono.
+      apply singleton_included_mono.
+      apply mono_list_included.
+    Qed.
 
     Lemma past_nodedecs_prefix γ nid dlb d :
       is_past_nodedecs_lb γ nid dlb -∗
       own_past_nodedecs γ nid d -∗
       ⌜prefix dlb d⌝.
-    Admitted.
+    Proof.
+      iIntros "Hlb Hh".
+      iDestruct (own_valid_2 with "Hh Hlb") as %Hvalid.
+      iPureIntro. revert Hvalid.
+      rewrite singleton_op singleton_valid.
+      rewrite mono_list_both_dfrac_valid_L.
+      by intros [_ ?].
+    Qed.
 
   End past_nodedecs.
 
@@ -278,14 +420,25 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_accepted_proposals γ (nid : u64) (ps : proposals) : iProp Σ.
-    Admitted.
+    Definition own_accepted_proposals_name γ (nid : u64) (names : gmap nat gname) : iProp Σ :=
+      own γ.(node_proposal) {[ nid := gmap_view_auth (DfracOwn 1) (to_agree <$> names) ]}.
 
-    Definition own_accepted_proposal γ (nid : u64) (t : nat) (v : ledger) : iProp Σ.
-    Admitted.
+    Definition is_accepted_proposal_name γ (nid : u64) (t : nat) (name : gname) : iProp Σ :=
+      own γ.(node_proposal) {[ nid := gmap_view_frag t DfracDiscarded (to_agree name) ]}.
 
-    Definition is_accepted_proposal_lb γ (nid : u64) (t : nat) (v : ledger) : iProp Σ.
-    Admitted.
+    Definition own_accepted_proposals γ (nid : u64) (ps : proposals) : iProp Σ :=
+      ∃ names,
+        own_accepted_proposals_name γ nid names ∗
+        ([∗ map] t ↦ α; l ∈ names; ps, own α (mono_list_auth (DfracOwn (1 / 2)) l)).
+
+    Definition own_accepted_proposal γ (nid : u64) (t : nat) (v : ledger) : iProp Σ :=
+      ∃ name,
+        is_accepted_proposal_name γ nid t name ∗
+        own name (mono_list_auth (A:=stringO) (DfracOwn (1 / 2)) v).
+
+    Definition is_accepted_proposal_lb γ (nid : u64) (t : nat) (v : ledger) : iProp Σ :=
+      ∃ name,
+        is_accepted_proposal_name γ nid t name ∗ own name (mono_list_lb (A:=stringO) v).
 
     Definition is_accepted_proposal_length_lb γ (nid : u64) (t n : nat) : iProp Σ :=
       ∃ v, is_accepted_proposal_lb γ nid t v ∗ ⌜(n ≤ length v)%nat⌝.
@@ -295,7 +448,7 @@ Section res.
     #[global]
     Instance is_accepted_proposal_lb_persistent γ nid t v :
       Persistent (is_accepted_proposal_lb γ nid t v).
-    Admitted.
+    Proof. apply _. Defined.
 
     (** Rules. *)
 
@@ -303,49 +456,172 @@ Section res.
       ps !! t = None ->
       own_accepted_proposals γ nid ps ==∗
       own_accepted_proposals γ nid (<[t := v]> ps) ∗ own_accepted_proposal γ nid t v.
-    Admitted.
+    Proof.
+      iIntros (Hnotin) "Hauth".
+      iDestruct "Hauth" as (gnames) "(Hauth & Hblts)".
+      iMod (own_alloc (mono_list_auth (A:=stringO) (DfracOwn 1) v)) as (α) "Hblt".
+      { apply mono_list_auth_valid. }
+      iDestruct (big_sepM2_dom with "Hblts") as %Hdom.
+      assert (Hgnotin : gnames !! t = None).
+      { by rewrite -not_elem_of_dom Hdom not_elem_of_dom. }
+      iAssert (own_accepted_proposals_name γ nid (<[t := α]> gnames) ∗
+               is_accepted_proposal_name γ nid t α)%I
+        with "[> Hauth]" as "[Hauth #Hfrag]".
+      { iRevert "Hauth".
+        rewrite -own_op.
+        iApply own_update.
+        rewrite singleton_op.
+        apply singleton_update.
+        rewrite fmap_insert.
+        apply: gmap_view_alloc; [|done..].
+        by rewrite lookup_fmap Hgnotin.
+      }
+      iDestruct "Hblt" as "[Hblt Hblt']".
+      iFrame "∗ #".
+      iModIntro.
+      by iApply (big_sepM2_insert_2 with "[Hblt] Hblts").
+    Qed.
 
     Lemma accepted_proposal_update {γ nid ps t v1} v2 :
       prefix v1 v2 ->
       own_accepted_proposal γ nid t v1 -∗
       own_accepted_proposals γ nid ps ==∗
       own_accepted_proposal γ nid t v2 ∗ own_accepted_proposals γ nid (<[t := v2]> ps).
-    Admitted.
+    Proof.
+      iIntros (Hprefix) "Hfrag Hauth".
+      iDestruct "Hauth" as (names) "[Hauth Hls]".
+      iDestruct "Hfrag" as (name) "[Hfrag Hl]".
+      iDestruct (own_valid_2 with "Hauth Hfrag") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      apply gmap_view_both_dfrac_valid_discrete_total in Hvalid.
+      destruct Hvalid as (v' & _ & _ & Hlookup & _ & Hincl).
+      apply lookup_fmap_Some in Hlookup as (b & <- & Hb).
+      apply to_agree_included_L in Hincl.
+      subst b.
+      iDestruct (big_sepM2_dom with "Hls") as %Hdom.
+      assert (is_Some (ps !! t)) as [l Hl].
+      { by rewrite -elem_of_dom -Hdom elem_of_dom. }
+      iDestruct (big_sepM2_delete with "Hls") as "[Hlx Hls]".
+      { apply Hb. }
+      { apply Hl. }
+      iDestruct (own_valid_2 with "Hl Hlx") as %Hvalid.
+      apply mono_list_auth_dfrac_op_valid_L in Hvalid as [_ <-].
+      iCombine "Hl Hlx" as "Hl".
+      iMod (own_update with "Hl") as "Hl".
+      { apply mono_list_update, Hprefix. }
+      iDestruct "Hl" as "[Hl Hl']".
+      iDestruct (big_sepM2_insert_2 _ _ _ t with "[Hl] Hls") as "Hls".
+      { iFrame "Hl". }
+      rewrite 2!insert_delete_insert.
+      iFrame.
+      by rewrite insert_id.
+    Qed.
 
     Lemma accepted_proposal_lookup {γ nid ps t v} :
       own_accepted_proposal γ nid t v -∗
       own_accepted_proposals γ nid ps -∗
       ⌜ps !! t = Some v⌝.
-    Admitted.
+    Proof.
+      iIntros "Hfrag Hauth".
+      iDestruct "Hauth" as (names) "[Hauth Hls]".
+      iDestruct "Hfrag" as (name) "[Hfrag Hl]".
+      iDestruct (own_valid_2 with "Hauth Hfrag") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      apply gmap_view_both_dfrac_valid_discrete_total in Hvalid.
+      destruct Hvalid as (v' & _ & _ & Hlookup & _ & Hincl).
+      apply lookup_fmap_Some in Hlookup as (b & <- & Hb).
+      apply to_agree_included_L in Hincl.
+      subst b.
+      iDestruct (big_sepM2_lookup_l with "Hls") as (x) "[%Hx Hx]".
+      { apply Hb. }
+      iDestruct (own_valid_2 with "Hl Hx") as %Hvalid.
+      by apply mono_list_auth_dfrac_op_valid_L in Hvalid as [_ <-].
+    Qed.
 
     Lemma accepted_proposal_lb_lookup {γ nid ps t vlb} :
       is_accepted_proposal_lb γ nid t vlb -∗
       own_accepted_proposals γ nid ps -∗
       ⌜∃ v, ps !! t = Some v ∧ prefix vlb v⌝.
-    Admitted.
+    Proof.
+      iIntros "Hlb Hauth".
+      iDestruct "Hauth" as (names) "[Hauth Hls]".
+      iDestruct "Hlb" as (name) "[Hlb Hl]".
+      iDestruct (own_valid_2 with "Hauth Hlb") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      apply gmap_view_both_dfrac_valid_discrete_total in Hvalid.
+      destruct Hvalid as (v' & _ & _ & Hlookup & _ & Hincl).
+      apply lookup_fmap_Some in Hlookup as (b & <- & Hb).
+      apply to_agree_included_L in Hincl.
+      subst b.
+      iDestruct (big_sepM2_lookup_l with "Hls") as (x) "[%Hx Hx]".
+      { apply Hb. }
+      iDestruct (own_valid_2 with "Hl Hx") as %Hvalid.
+      rewrite cmra_comm in Hvalid.
+      apply mono_list_both_dfrac_valid_L in Hvalid as [_ Hprefix].
+      by eauto.
+    Qed.
 
     Lemma accepted_proposal_witness {γ nid t v} :
       own_accepted_proposal γ nid t v -∗
       is_accepted_proposal_lb γ nid t v.
-    Admitted.
+    Proof.
+      iIntros "Hfrag".
+      iDestruct "Hfrag" as (name) "[Hfrag Hl]".
+      iFrame.
+      iApply (own_mono with "Hl").
+      apply mono_list_included.
+    Qed.
 
     Lemma accepted_proposal_prefix {γ nid ps t vlb} :
       is_accepted_proposal_lb γ nid t vlb -∗
       own_accepted_proposals γ nid ps -∗
       ∃ v, ⌜ps !! t = Some v ∧ prefix vlb v⌝.
-    Admitted.
+    Proof.
+      iIntros "Hlb Hauth".
+      iDestruct "Hlb" as (name) "[Hname Hlb]".
+      iDestruct "Hauth" as (names) "[Hnames Hls]".
+      iDestruct (own_valid_2 with "Hnames Hname") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      apply gmap_view_both_dfrac_valid_discrete_total in Hvalid.
+      destruct Hvalid as (v' & _ & _ & Hlookup & _ & Hincl).
+      apply lookup_fmap_Some in Hlookup as (b & <- & Hb).
+      apply to_agree_included_L in Hincl.
+      subst b.
+      iDestruct (big_sepM2_lookup_l with "Hls") as (x) "[%Hx Hx]".
+      { apply Hb. }
+      iDestruct (own_valid_2 with "Hlb Hx") as %Hvalid.
+      rewrite cmra_comm in Hvalid.
+      apply mono_list_both_dfrac_valid_L in Hvalid as [_ Hprefix].
+      by eauto.
+    Qed.
 
     Lemma accepted_proposal_lb_prefix {γ nid t v1 v2} :
       is_accepted_proposal_lb γ nid t v1 -∗
       is_accepted_proposal_lb γ nid t v2 -∗
       ⌜prefix v1 v2 ∨ prefix v2 v1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hlb1 Hlb2".
+      iDestruct "Hlb1" as (name1) "[Hname1 Hlb1]".
+      iDestruct "Hlb2" as (name2) "[Hname2 Hlb2]".
+      iDestruct (own_valid_2 with "Hname1 Hname2") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      apply gmap_view_frag_op_valid in Hvalid as [_ Hvalid].
+      apply to_agree_op_inv_L in Hvalid as <-.
+      iDestruct (own_valid_2 with "Hlb1 Hlb2") as %Hvalid.
+      by apply mono_list_lb_op_valid_L in Hvalid.
+    Qed.
 
     Lemma accepted_proposal_lb_weaken {γ nid t v1} v2 :
       prefix v2 v1 ->
       is_accepted_proposal_lb γ nid t v1 -∗
       is_accepted_proposal_lb γ nid t v2.
-    Admitted.
+    Proof.
+      iIntros (Hprefix) "Hlb".
+      iDestruct "Hlb" as (name) "[Hname Hlb]".
+      iFrame.
+      iApply (own_mono with "Hlb").
+      by apply mono_list_lb_mono.
+    Qed.
 
     Lemma accepted_proposal_length_lb_weaken {γ nid t n1} n2 :
       (n2 ≤ n1)%nat ->
@@ -359,14 +635,10 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_current_term_half γ (nid : u64) (t : nat) : iProp Σ.
-    Admitted.
+    Definition own_current_term_half γ (nid : u64) (t : nat) : iProp Σ :=
+      own γ.(current_term) {[ nid := (to_dfrac_agree (DfracOwn (1 / 2)) t) ]}.
 
     (** Type class instances. *)
-
-    #[global]
-    Instance own_current_term_timeless γ nid t : Timeless (own_current_term_half γ nid t).
-    Proof. admit. Admitted.
 
     (** Rules. *)
 
@@ -374,13 +646,26 @@ Section res.
       own_current_term_half γ nid t1 -∗
       own_current_term_half γ nid t1 ==∗
       own_current_term_half γ nid t2 ∗ own_current_term_half γ nid t2.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iCombine "Hv1 Hv2" as "Hv".
+      rewrite -own_op singleton_op.
+      iApply (own_update with "Hv").
+      apply singleton_update.
+      apply dfrac_agree_update_2.
+      by rewrite dfrac_op_own Qp.half_half.
+    Qed.
 
     Lemma current_term_agree {γ nid t1 t2} :
       own_current_term_half γ nid t1 -∗
       own_current_term_half γ nid t2 -∗
       ⌜t2 = t1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iDestruct (own_valid_2 with "Hv1 Hv2") as %Hvalid.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hvalid.
+      by destruct Hvalid as [_ ?].
+    Qed.
 
   End current_term.
 
@@ -388,8 +673,8 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_ledger_term_half γ (nid : u64) (t : nat) : iProp Σ.
-    Admitted.
+    Definition own_ledger_term_half γ (nid : u64) (t : nat) : iProp Σ :=
+      own γ.(ledger_term) {[ nid := (to_dfrac_agree (DfracOwn (1 / 2)) t) ]}.
 
     (** Type class instances. *)
 
@@ -399,13 +684,26 @@ Section res.
       own_ledger_term_half γ nid t1 -∗
       own_ledger_term_half γ nid t1 ==∗
       own_ledger_term_half γ nid t2 ∗ own_ledger_term_half γ nid t2.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iCombine "Hv1 Hv2" as "Hv".
+      rewrite -own_op singleton_op.
+      iApply (own_update with "Hv").
+      apply singleton_update.
+      apply dfrac_agree_update_2.
+      by rewrite dfrac_op_own Qp.half_half.
+    Qed.
 
     Lemma ledger_term_agree {γ nid t1 t2} :
       own_ledger_term_half γ nid t1 -∗
       own_ledger_term_half γ nid t2 -∗
       ⌜t2 = t1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iDestruct (own_valid_2 with "Hv1 Hv2") as %Hvalid.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hvalid.
+      by destruct Hvalid as [_ ?].
+    Qed.
 
   End ledger_term.
 
@@ -413,8 +711,8 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_committed_lsn_half γ (nid : u64) (t : nat) : iProp Σ.
-    Admitted.
+    Definition own_committed_lsn_half γ (nid : u64) (t : nat) : iProp Σ :=
+      own γ.(committed_lsn) {[ nid := (to_dfrac_agree (DfracOwn (1 / 2)) t) ]}.
 
     (** Type class instances. *)
 
@@ -424,13 +722,26 @@ Section res.
       own_committed_lsn_half γ nid t1 -∗
       own_committed_lsn_half γ nid t1 ==∗
       own_committed_lsn_half γ nid t2 ∗ own_committed_lsn_half γ nid t2.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iCombine "Hv1 Hv2" as "Hv".
+      rewrite -own_op singleton_op.
+      iApply (own_update with "Hv").
+      apply singleton_update.
+      apply dfrac_agree_update_2.
+      by rewrite dfrac_op_own Qp.half_half.
+    Qed.
 
     Lemma committed_lsn_agree {γ nid t1 t2} :
       own_committed_lsn_half γ nid t1 -∗
       own_committed_lsn_half γ nid t2 -∗
       ⌜t2 = t1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iDestruct (own_valid_2 with "Hv1 Hv2") as %Hvalid.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hvalid.
+      by destruct Hvalid as [_ ?].
+    Qed.
 
   End committed_lsn.
 
@@ -438,8 +749,8 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_node_ledger_half γ (nid : u64) (v : ledger) : iProp Σ.
-    Admitted.
+    Definition own_node_ledger_half γ (nid : u64) (v : ledger) : iProp Σ :=
+      own γ.(node_ledger) {[ nid := (to_dfrac_agree (A:=ledgerO) (DfracOwn (1 / 2)) v) ]}.
 
     (** Type class instances. *)
 
@@ -449,13 +760,26 @@ Section res.
       own_node_ledger_half γ nid v1 -∗
       own_node_ledger_half γ nid v1' ==∗
       own_node_ledger_half γ nid v2 ∗ own_node_ledger_half γ nid v2.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iCombine "Hv1 Hv2" as "Hv".
+      rewrite -own_op singleton_op.
+      iApply (own_update with "Hv").
+      apply singleton_update.
+      apply dfrac_agree_update_2.
+      by rewrite dfrac_op_own Qp.half_half.
+    Qed.
 
     Lemma node_ledger_agree {γ nid v1 v2} :
       own_node_ledger_half γ nid v1 -∗
       own_node_ledger_half γ nid v2 -∗
       ⌜v2 = v1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iDestruct (own_valid_2 with "Hv1 Hv2") as %Hvalid.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hvalid.
+      by destruct Hvalid as [_ ?].
+    Qed.
 
   End node_ledger.
 
@@ -466,34 +790,52 @@ Section wal.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : paxos_names).
 
-  Definition own_node_wal_half γ (nid : u64) (wal : list pxcmd) : iProp Σ.
-  Admitted.
+  Definition own_node_wal_half γ (nid : u64) (wal : list pxcmd) : iProp Σ :=
+      own γ.(node_wal) {[ nid := (to_dfrac_agree (A:=pxcmdlO) (DfracOwn (1 / 2)) wal) ]}.
 
   Lemma node_wal_update {γ nid l1 l1'} l2 :
     own_node_wal_half γ nid l1 -∗
     own_node_wal_half γ nid l1' ==∗
     own_node_wal_half γ nid l2 ∗ own_node_wal_half γ nid l2.
-  Admitted.
+  Proof.
+    iIntros "Hv1 Hv2".
+    iCombine "Hv1 Hv2" as "Hv".
+    rewrite -own_op singleton_op.
+    iApply (own_update with "Hv").
+    apply singleton_update.
+    apply dfrac_agree_update_2.
+    by rewrite dfrac_op_own Qp.half_half.
+  Qed.
 
   Lemma node_wal_agree {γ nid l1 l2} :
     own_node_wal_half γ nid l1 -∗
     own_node_wal_half γ nid l2 -∗
     ⌜l2 = l1⌝.
-  Admitted.
+  Proof.
+    iIntros "Hv1 Hv2".
+    iDestruct (own_valid_2 with "Hv1 Hv2") as %Hvalid.
+    rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hvalid.
+    by destruct Hvalid as [_ ?].
+  Qed.
 
-  Definition is_node_wal_fname γ (nid : u64) (fname : string) : iProp Σ.
-  Admitted.
+  Definition is_node_wal_fname γ (nid : u64) (fname : string) : iProp Σ :=
+      own γ.(node_wal_fname) {[ nid := (to_agree (A:=stringO) fname) ]}.
 
   #[global]
   Instance is_node_wal_fname_persistent γ nid fname :
     Persistent (is_node_wal_fname γ nid fname).
-  Admitted.
+  Proof. apply _. Defined.
 
   Lemma node_wal_fname_agree {γ nid fname1 fname2} :
     is_node_wal_fname γ nid fname1 -∗
     is_node_wal_fname γ nid fname2 -∗
     ⌜fname2 = fname1⌝.
-  Admitted.
+  Proof.
+    iIntros "Hv1 Hv2".
+    iDestruct (own_valid_2 with "Hv1 Hv2") as %Hvalid.
+    rewrite singleton_op singleton_valid in Hvalid.
+    by apply to_agree_op_inv_L in Hvalid.
+  Qed.
 
 End wal.
 
