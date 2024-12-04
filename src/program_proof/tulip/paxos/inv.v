@@ -569,6 +569,11 @@ Section inv_network.
     Persistent (safe_pxreq γ nids req).
   Proof. destruct req; apply _. Defined.
 
+  #[global]
+  Instance safe_pxreq_timeless γ nids req :
+    Timeless (safe_pxreq γ nids req).
+  Proof. destruct req; apply _. Defined.
+
   Definition safe_request_vote_resp
     γ (nids : gset u64) (nid term terme : u64) (ents : list string) : iProp Σ :=
     ∃ (logpeer : list string) (lsne : u64),
@@ -598,6 +603,11 @@ Section inv_network.
     Persistent (safe_pxresp γ nids resp).
   Proof. destruct resp; apply _. Defined.
 
+  #[global]
+  Instance safe_pxresp_timeless γ nids resp :
+    Timeless (safe_pxresp γ nids resp).
+  Proof. destruct resp; apply _. Defined.
+
   Definition listen_inv
     (addr : chan) (ms : gset message) nids γ : iProp Σ :=
     ∃ (reqs : gset pxreq),
@@ -624,7 +634,7 @@ Section inv_network.
   #[global]
   Instance paxos_network_inv_timeless γ addrm :
     Timeless (paxos_network_inv γ addrm).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition know_paxos_network_inv γ addrm : iProp Σ :=
     inv paxosnetNS (paxos_network_inv γ addrm).

@@ -14,7 +14,19 @@ Proof. solve_decision. Qed.
 #[global]
 Instance pxreq_countable :
   Countable pxreq.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | RequestVoteReq term lsnlc => inl (term, lsnlc)
+                  | AppendEntriesReq term lsnlc lsne ents => inr (term, lsnlc, lsne, ents)
+                  end)
+            (λ x, match x with
+                  | inl (term, lsnlc) => RequestVoteReq term lsnlc
+                  | inr (term, lsnlc, lsne, ents) => AppendEntriesReq term lsnlc lsne ents
+                  end)
+            _).
+  intros [|] => //=.
+Qed.
 
 Definition encode_request_vote_req_xkind (term lsnlc : u64) :=
   u64_le term ++ u64_le lsnlc.
@@ -50,7 +62,19 @@ Proof. solve_decision. Qed.
 #[global]
 Instance pxresp_countable :
   Countable pxresp.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | RequestVoteResp nid term terme ents => inl (nid, term, terme, ents)
+                  | AppendEntriesResp nid term lsneq => inr (nid, term, lsneq)
+                  end)
+            (λ x, match x with
+                  | inl (nid, term, terme, ents) => RequestVoteResp nid term terme ents
+                  | inr (nid, term, lsneq) => AppendEntriesResp nid term lsneq
+                  end)
+            _).
+  intros [|] => //=.
+Qed.
 
 Definition encode_request_vote_resp_xkind
   (nid term terme : u64) (ents : list string) :=

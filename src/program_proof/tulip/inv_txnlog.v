@@ -36,7 +36,7 @@ Section inv_txnlog.
   #[global]
   Instance tulip_txnlog_inv_timeless γ π gid :
     Timeless (tulip_txnlog_inv γ π gid).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition know_tulip_txnlog_inv γ π gid : iProp Σ :=
     inv txnlogNS (tulip_txnlog_inv γ π gid).
