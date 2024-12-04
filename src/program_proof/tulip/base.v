@@ -4,6 +4,8 @@ From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.Helpers Require finite.
 
+Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Definition dbkey := string.
 Definition dbval := option string.
 Definition dbhist := list dbval.
@@ -46,7 +48,7 @@ Definition txnst_to_u64 (s : txnst) :=
 Definition gids_all : gset u64 := list_to_set (fmap W64 (seqZ 0 2)).
 
 Lemma size_gids_all :
-  size gids_all < 2 ^ 64 - 1.
+  0 < size gids_all < 2 ^ 64 - 1.
 Proof.
   rewrite /gids_all size_list_to_set; last first.
   { apply seq_U64_NoDup; lia. }
@@ -160,8 +162,8 @@ Qed.
 Definition dblog := list ccommand.
 
 (** Converting keys to group IDs. *)
-Definition key_to_group (key : dbkey) : u64.
-Admitted.
+Definition key_to_group (key : dbkey) : u64 :=
+  String.length key `mod` size gids_all.
 
 (** Participant groups. *)
 Definition ptgroups (keys : gset dbkey) : gset u64 :=
@@ -185,7 +187,14 @@ Definition valid_pwrs (gid : u64) (pwrs : dbmap) :=
 
 Lemma elem_of_key_to_group key :
   key_to_group key ∈ gids_all.
-Admitted.
+Proof.
+  rewrite /key_to_group /gids_all.
+  rewrite size_list_to_set; last first.
+  { apply seq_U64_NoDup; lia. }
+  rewrite length_fmap length_seqZ.
+  apply elem_of_list_to_set, elem_of_list_fmap_1, elem_of_seqZ.
+  lia.
+Qed.
 
 Lemma elem_of_key_to_group_ptgroups key keys :
   key ∈ keys ->
@@ -283,6 +292,16 @@ Definition valid_ts (ts : nat) := 0 < ts < 2 ^ 64.
 Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
 Definition valid_key (key : dbkey) := key ∈ keys_all.
+
+Lemma valid_key_length key :
+  valid_key key ->
+  String.length key < 2 ^ 64.
+Proof.
+  intros Hvk.
+  rewrite /valid_key /keys_all in Hvk.
+  apply elem_of_list_to_set, elem_of_list_fmap_2 in Hvk.
+  by destruct Hvk as ([k Hk] & -> & _).
+Qed.
 
 Definition valid_ccommand gid (c : ccommand) :=
   match c with

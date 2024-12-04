@@ -71,13 +71,13 @@ Definition Txn__resetwrs: val :=
     struct.storeF Txn "wrsp" "txn" (NewMap stringT (struct.t tulip.Value) #());;
     #().
 
-Definition KeyToGroup: val :=
-  rec: "KeyToGroup" "key" :=
-    (StringLength "key") `rem` #2.
+Definition Txn__keyToGroup: val :=
+  rec: "Txn__keyToGroup" "txn" "key" :=
+    (StringLength "key") `rem` (MapLen (struct.loadF Txn "wrs" "txn")).
 
 Definition Txn__setwrs: val :=
   rec: "Txn__setwrs" "txn" "key" "value" :=
-    let: "gid" := KeyToGroup "key" in
+    let: "gid" := Txn__keyToGroup "txn" "key" in
     let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
     MapInsert "pwrs" "key" "value";;
     MapInsert (struct.loadF Txn "wrsp" "txn") "key" "value";;
@@ -85,7 +85,7 @@ Definition Txn__setwrs: val :=
 
 Definition Txn__getwrs: val :=
   rec: "Txn__getwrs" "txn" "key" :=
-    let: "gid" := KeyToGroup "key" in
+    let: "gid" := Txn__keyToGroup "txn" "key" in
     let: "pwrs" := Fst (MapGet (struct.loadF Txn "wrs" "txn") "gid") in
     let: ("v", "ok") := MapGet "pwrs" "key" in
     ("v", "ok").
@@ -177,7 +177,7 @@ Definition Txn__Read: val :=
     (if: "hit"
     then ("vlocal", #true)
     else
-      let: "gid" := KeyToGroup "key" in
+      let: "gid" := Txn__keyToGroup "txn" "key" in
       let: "gcoord" := Fst (MapGet (struct.loadF Txn "gcoords" "txn") "gid") in
       let: ("v", "ok") := gcoord.GroupCoordinator__Read "gcoord" (struct.loadF Txn "ts" "txn") "key" in
       (if: (~ "ok")

@@ -15,4 +15,9 @@ Section fin_set.
     filter P X ⊆ filter Q X.
   Proof. set_solver. Qed.
 
+  Lemma filter_subseteq_mono X Y (P : A -> Prop) `{!∀ x, Decision (P x)} :
+    X ⊆ Y ->
+    filter P X ⊆ filter P Y.
+  Proof. set_solver. Qed.
+
 End fin_set.

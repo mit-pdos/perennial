@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.rsm.pure Require Import list quorum fin_maps.
+From Perennial.program_proof.rsm.pure Require Import list quorum fin_maps fin_sets.
 From Perennial.program_proof.tulip Require Import base cmd res stability.
 
 Lemma tpls_group_keys_group_dom gid tpls :
@@ -447,7 +447,13 @@ Section lemma.
       iPureIntro.
       split; first done.
       rewrite /valid_pwrs Hwg wrs_group_keys_group_dom.
-      set_solver.
+      rewrite /valid_wrs in Hvw.
+      rewrite /keys_group.
+      (* [set_solver] is able to solve this directly when [key_to_group] is
+      admitted, but is unable to solve this after it is defined, so we apply an
+      additional lemma [filter_subseteq_mono]. *)
+      (* set_solver. *)
+      by apply filter_subseteq_mono.
     }
     { by iDestruct "Hsafec" as "[_ %Hvts]". }
   Qed.
