@@ -433,22 +433,22 @@ Section res.
     (** Consensus resource with transaction semantics. One half owned by the
     group invariant, the other half by the txnlog invariant. *)
 
-    Definition own_txn_log_half γ (gid : u64) (log : dblog) : iProp Σ.
-    Admitted.
+    Definition own_txn_log_half γ (gid : u64) (log : dblog) : iProp Σ :=
+      own γ.(txn_log) {[ gid := mono_list_auth (DfracOwn (1 / 2)) log ]}.
 
-    Definition is_txn_log_lb γ (gid : u64) (log : dblog) : iProp Σ.
-    Admitted.
+    Definition is_txn_log_lb γ (gid : u64) (log : dblog) : iProp Σ :=
+      own γ.(txn_log) {[ gid := mono_list_lb log ]}.
 
     #[global]
     Instance is_txn_log_lb_persistent γ gid log :
       Persistent (is_txn_log_lb γ gid log).
-    Admitted.
+    Proof. apply _. Defined.
 
     Definition is_txn_log_lbs γ (logs : gmap u64 dblog) : iProp Σ :=
       [∗ map] gid ↦ log ∈ logs, is_txn_log_lb γ gid log.
 
-    Definition own_txn_cpool_half γ (gid : u64) (cpool : gset ccommand) : iProp Σ.
-    Admitted.
+    Definition own_txn_cpool_half γ (gid : u64) (cpool : gset ccommand) : iProp Σ :=
+      own γ.(txn_cpool) {[ gid := to_dfrac_agree (DfracOwn (1 / 2)) cpool ]}.
 
     Definition own_txn_consensus_half
       γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
@@ -457,37 +457,65 @@ Section res.
     Lemma txn_log_witness γ gid log :
       own_txn_log_half γ gid log -∗
       is_txn_log_lb γ gid log.
-    Admitted.
+    Proof.
+      iApply own_mono.
+      rewrite singleton_included_total.
+      apply mono_list_included.
+    Qed.
 
     Lemma txn_log_prefix γ gid log logp :
       own_txn_log_half γ gid log -∗
       is_txn_log_lb γ gid logp -∗
       ⌜prefix logp log⌝.
-    Admitted.
+    Proof.
+      iIntros "Hauth Hlb".
+      iDestruct (own_valid_2 with "Hauth Hlb") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      by apply mono_list_both_dfrac_valid_L in Hvalid as [_ ?].
+    Qed.
 
     Lemma txn_log_agree γ gid log1 log2 :
       own_txn_log_half γ gid log1 -∗
       own_txn_log_half γ gid log2 -∗
       ⌜log2 = log1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hauth1 Hauth2".
+      iDestruct (own_valid_2 with "Hauth1 Hauth2") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      by apply mono_list_auth_dfrac_op_valid_L in Hvalid as [_ ?].
+    Qed.
 
     Lemma txn_log_lb_prefix γ gid logp1 logp2 :
       is_txn_log_lb γ gid logp1 -∗
       is_txn_log_lb γ gid logp2 -∗
       ⌜prefix logp1 logp2 ∨ prefix logp2 logp1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hlb1 Hlb2".
+      iDestruct (own_valid_2 with "Hlb1 Hlb2") as %Hvalid.
+      by rewrite singleton_op singleton_valid mono_list_lb_op_valid_L in Hvalid.
+    Qed.
 
     Lemma txn_log_lb_weaken {γ gid} logp1 logp2 :
       prefix logp1 logp2 ->
       is_txn_log_lb γ gid logp2 -∗
       is_txn_log_lb γ gid logp1.
-    Admitted.
+    Proof.
+      intros Hprefix.
+      iApply own_mono.
+      rewrite singleton_included_total.
+      by apply mono_list_lb_mono.
+    Qed.
 
     Lemma txn_cpool_agree γ gid cpool1 cpool2 :
       own_txn_cpool_half γ gid cpool1 -∗
       own_txn_cpool_half γ gid cpool2 -∗
       ⌜cpool2 = cpool1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hauth1 Hauth2".
+      iDestruct (own_valid_2 with "Hauth1 Hauth2") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      by apply dfrac_agree_op_valid_L in Hvalid as [_ ?].
+    Qed.
 
     Definition txn_cpool_subsume_log (cpool : gset ccommand) (log : list ccommand) :=
       Forall (λ c, c ∈ cpool) log.
@@ -497,15 +525,32 @@ Section res.
       own_txn_log_half γ gid log ==∗
       own_txn_log_half γ gid (log ++ logext) ∗
       own_txn_log_half γ gid (log ++ logext).
-    Admitted.
+    Proof.
+      iIntros "Hauth1 Hauth2".
+      iCombine "Hauth1 Hauth2" as "Hauth".
+      rewrite -own_op singleton_op.
+      iApply (own_update with "Hauth").
+      apply singleton_update.
+      rewrite -mono_list_auth_dfrac_op dfrac_op_own Qp.half_half.
+      apply mono_list_update.
+      by apply prefix_app_r.
+    Qed.
 
+    (* TODO: the ⊆ is not required *)
     Lemma txn_cpool_update {γ gid cpool} cpool' :
-      cpool ⊆ cpool' ->
       own_txn_cpool_half γ gid cpool -∗
       own_txn_cpool_half γ gid cpool ==∗
       own_txn_cpool_half γ gid cpool' ∗
       own_txn_cpool_half γ gid cpool'.
-    Admitted.
+    Proof.
+      iIntros "Hauth1 Hauth2".
+      iCombine "Hauth1 Hauth2" as "Hauth".
+      rewrite -own_op singleton_op.
+      iApply (own_update with "Hauth").
+      apply singleton_update.
+      apply dfrac_agree_update_2.
+      by rewrite dfrac_op_own Qp.half_half.
+    Qed.
 
   End txn_consensus.
 

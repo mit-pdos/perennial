@@ -230,7 +230,6 @@ Section program.
     (* Update the txn cpool. *)
     set tcpool' := _ ∪ tcpool.
     iMod (txn_cpool_update tcpool' with "Htcpool HtcpoolX") as "[Htcpool HtcpoolX]".
-    { set_solver. }
     (* Apply the view shift. *)
     iMod ("HAU" with "HtcpoolX") as "HΦ".
     (* Re-establish the txnlog invariant. *)
@@ -315,7 +314,6 @@ Section program.
     (* Update the txn cpool. *)
     set tcpool' := _ ∪ tcpool.
     iMod (txn_cpool_update tcpool' with "Htcpool HtcpoolX") as "[Htcpool HtcpoolX]".
-    { set_solver. }
     (* Apply the view shift. *)
     iMod ("HAU" with "HtcpoolX") as "HΦ".
     (* Re-establish the txnlog invariant. *)

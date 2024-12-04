@@ -396,8 +396,9 @@ Definition node_pxcmdlR := gmapR u64 (dfrac_agreeR pxcmdlO).
 Definition node_stringR := gmapR u64 (agreeR stringO).
 
 Class paxos_ghostG (Σ : gFunctors) :=
-  { #[global] proposalG :: ghost_mapG Σ nat gname;
-    #[global] stringmlG :: inG Σ stringmlR;
+  { #[global] stringmlG :: inG Σ stringmlR;
+    #[global] cpoolG :: ghost_mapG Σ string unit;
+    #[global] proposalG :: ghost_mapG Σ nat gname;
     #[global] base_proposalG :: ghost_mapG Σ nat ledger;
     #[global] prepare_lsnG :: inG Σ lsnmR;
     #[global] node_declistG :: inG Σ node_declistR;
@@ -412,10 +413,11 @@ Class paxos_ghostG (Σ : gFunctors) :=
   }.
 
 Definition paxos_ghostΣ :=
-  #[ ghost_mapΣ nat gname;
+  #[ GFunctor lsnmR;
+     ghost_mapΣ string unit;
+     ghost_mapΣ nat gname;
      GFunctor stringmlR;
      ghost_mapΣ nat ledger;
-     GFunctor lsnmR;
      GFunctor node_declistR;
      GFunctor node_proposalmR;
      GFunctor node_natmR;
@@ -432,10 +434,11 @@ Instance subG_paxos_ghostG {Σ} :
   subG paxos_ghostΣ Σ → paxos_ghostG Σ.
 Proof. solve_inG. Qed.
 
-Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ.
-Proof. Admitted.
+(* Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ. *)
 
 Record paxos_names := {
+    consensus_log : gname;
+    consensus_cpool : gname;
     proposal : gname;
     base_proposal : gname;
     prepare_lsn : gname;

@@ -505,7 +505,7 @@ Section inv.
   #[global]
   Instance paxos_inv_timeless γ nids :
     Timeless (paxos_inv γ nids).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition paxoscoreNS := paxosNS .@ "core".
 
@@ -532,7 +532,7 @@ Section inv_file.
   #[global]
   Instance paxos_file_inv_timeless γ nids :
     Timeless (paxos_file_inv γ nids).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition know_paxos_file_inv γ nids : iProp Σ :=
     inv paxosfileNS (paxos_file_inv γ nids).

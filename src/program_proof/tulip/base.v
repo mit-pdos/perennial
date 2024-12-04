@@ -308,6 +308,11 @@ Definition histmR := gmapR dbkey histR.
 Definition tsmR := gmapR dbkey (dfrac_agreeR natO).
 Canonical Structure dbkmodO := leibnizO dbkmod.
 Definition dbkmodR := gmapR dbkey (dfrac_agreeR dbkmodO).
+Canonical Structure ccommandO := leibnizO ccommand.
+Definition ccommandlR := mono_listR ccommandO.
+Definition group_ccommandlR := gmapR u64 ccommandlR.
+Definition ccommandsR := gsetR ccommand.
+Definition group_ccommandsR := gmapR u64 (dfrac_agreeR ccommandsR).
 Canonical Structure boolO := leibnizO bool.
 Canonical Structure natboolmvR := gmap_viewR nat (agreeR boolO).
 Definition group_natboolmvR := gmapR u64 natboolmvR.
@@ -341,6 +346,8 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] repl_tsG :: inG Σ tsmR;
     #[global] lnrz_kmodG :: inG Σ dbkmodR;
     #[global] cmtd_kmodG :: inG Σ dbkmodR;
+    #[global] txn_logG :: inG Σ group_ccommandlR;
+    #[global] txn_cpoolG :: inG Σ group_ccommandsR;
     (* txnsys resources defined in res_txnsys.v *)
     #[global] cmtd_histG :: inG Σ histmR;
     #[global] lnrz_histG :: inG Σ histmR;
@@ -383,8 +390,8 @@ Definition tulip_ghostΣ :=
      GFunctor tsmR;
      GFunctor dbkmodR;
      GFunctor dbkmodR;
-     GFunctor histmR;
-     GFunctor histmR;
+     GFunctor group_ccommandlR;
+     GFunctor group_ccommandsR;
      (* res_txnsys.v *)
      GFunctor histmR;
      GFunctor histmR;
@@ -432,6 +439,8 @@ Record tulip_names :=
     repl_ts : gname;
     lnrz_kmod : gname;
     cmtd_kmod : gname;
+    txn_log : gname;
+    txn_cpool : gname;
     (* res_txnsys.v *)
     cmtd_hist : gname;
     lnrz_hist : gname;

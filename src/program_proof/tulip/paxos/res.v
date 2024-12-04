@@ -2,6 +2,7 @@ From iris.algebra Require Import mono_nat mono_list gmap_view gset.
 From iris.algebra.lib Require Import dfrac_agree.
 From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.rsm.pure Require Import misc.
 From Perennial.program_proof.tulip.paxos Require Import base recovery.
 From Perennial.program_proof.tulip.paxos Require Export res_network.
 
@@ -14,20 +15,21 @@ Section res.
 
     (** Elements. *)
 
-    Definition own_log_half γ (l : ledger) : iProp Σ.
-    Admitted.
+    Definition own_log_half γ (l : ledger) : iProp Σ :=
+      own γ.(consensus_log) (mono_list_auth (A:=stringO) (DfracOwn (1 / 2)) l).
 
-    Definition is_log_lb γ (l : ledger) : iProp Σ.
-    Admitted.
+    Definition is_log_lb γ (l : ledger) : iProp Σ :=
+      own γ.(consensus_log) (mono_list_lb (A:=stringO)  l).
 
-    Definition own_cpool_half γ (vs : gset string) : iProp Σ.
-    Admitted.
+    Definition is_cmd_receipt γ (c : string) : iProp Σ :=
+      ghost_map_elem γ.(consensus_cpool) c DfracDiscarded tt.
+
+    Definition own_cpool_half γ (vs : gset string) : iProp Σ :=
+      ghost_map_auth γ.(consensus_cpool) (1 / 2) (gset_to_gmap tt vs) ∗
+      ([∗ set] v ∈ vs, is_cmd_receipt γ v).
 
     Definition own_consensus_half γ (l : ledger) (vs : gset string) : iProp Σ :=
       own_log_half γ l ∗ own_cpool_half γ vs.
-
-    Definition is_cmd_receipt γ (c : string) : iProp Σ.
-    Admitted.
 
     Definition cpool_subsume_log (l : ledger) (vs : gset string) :=
       Forall (λ v, v ∈ vs) l.
@@ -37,12 +39,12 @@ Section res.
     #[global]
     Instance is_log_lb_persistent γ l :
       Persistent (is_log_lb γ l).
-    Admitted.
+    Proof. apply _. Defined.
 
     #[global]
     Instance is_cmd_receipt_persistent γ v :
       Persistent (is_cmd_receipt γ v).
-    Admitted.
+    Proof. apply _. Defined.
 
     (** Rules. *)
 
@@ -51,55 +53,101 @@ Section res.
       own_log_half γ l1 -∗
       own_log_half γ l1 ==∗
       own_log_half γ l2 ∗ own_log_half γ l2.
-    Admitted.
+    Proof.
+      iIntros (Hprefix) "Hlx Hly".
+      iCombine "Hlx Hly" as "Hl".
+      iMod (own_update with "Hl") as "Hl".
+      { by apply mono_list_update. }
+      iDestruct "Hl" as "[Hlx Hly]".
+      by iFrame.
+    Qed.
 
     Lemma log_agree {γ} l1 l2 :
       own_log_half γ l1 -∗
       own_log_half γ l2 -∗
       ⌜l2 = l1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hlx Hly".
+      iDestruct (own_valid_2 with "Hlx Hly") as %Hvalid.
+      by apply mono_list_auth_dfrac_op_valid_L in Hvalid as [_ ->].
+    Qed.
 
     Lemma log_witness {γ l} :
       own_log_half γ l -∗
       is_log_lb γ l.
-    Admitted.
+    Proof. iApply own_mono. apply mono_list_included. Qed.
 
     Lemma log_prefix {γ l lb} :
       own_log_half γ l -∗
       is_log_lb γ lb -∗
       ⌜prefix lb l⌝.
-    Admitted.
+    Proof.
+      iIntros "Hl Hlb".
+      iDestruct (own_valid_2 with "Hl Hlb") as %Hvalid.
+      by apply mono_list_both_dfrac_valid_L in Hvalid as [_ ?].
+    Qed.
 
     Lemma log_lb_prefix {γ lb1 lb2} :
       is_log_lb γ lb1 -∗
       is_log_lb γ lb2 -∗
       ⌜prefix lb1 lb2 ∨ prefix lb2 lb1⌝.
-    Admitted.
+    Proof.
+      iIntros "Hlb1 Hlb2".
+      iDestruct (own_valid_2 with "Hlb1 Hlb2") as %Hvalid.
+      by apply mono_list_lb_op_valid_1_L in Hvalid.
+    Qed.
 
     Lemma cpool_update {γ vs1} vs2 :
       vs1 ⊆ vs2 ->
       own_cpool_half γ vs1 -∗
       own_cpool_half γ vs1 ==∗
       own_cpool_half γ vs2 ∗ own_cpool_half γ vs2.
-    Admitted.
+    Proof.
+      iIntros (Hincl) "[Hvsx #Hfrags] [Hvsy _]".
+      set vsnew := vs2 ∖ vs1.
+      iCombine "Hvsx Hvsy" as "Hvs".
+      iMod (ghost_map_insert_persist_big (gset_to_gmap tt vsnew) with "Hvs") as "[Hvs #Hfragsnew]".
+      { rewrite map_disjoint_dom 2!dom_gset_to_gmap. set_solver. }
+      iDestruct "Hvs" as "[Hvsx Hvsy]".
+      rewrite -gset_to_gmap_same_union.
+      rewrite big_sepM_gset_to_gmap.
+      iDestruct (big_sepS_union_2 with "Hfragsnew Hfrags") as "Hfrags'".
+      rewrite difference_union_L.
+      replace (vs2 ∪ vs1) with vs2 by set_solver.
+      by iFrame "∗ #".
+    Qed.
 
     Lemma cpool_agree {γ vs1} vs2 :
       own_cpool_half γ vs1 -∗
       own_cpool_half γ vs2 -∗
       ⌜vs2 = vs1⌝.
-    Admitted.
+    Proof.
+      iIntros "[Hvsx _] [Hvsy _]".
+      iDestruct (ghost_map_auth_agree with "Hvsx Hvsy") as %Heq.
+      iPureIntro.
+      replace vs1 with (dom (gset_to_gmap () vs1)); last by rewrite dom_gset_to_gmap.
+      replace vs2 with (dom (gset_to_gmap () vs2)); last by rewrite dom_gset_to_gmap.
+      by rewrite Heq.
+    Qed.
 
     Lemma cpool_witness {γ vs} v :
       v ∈ vs ->
       own_cpool_half γ vs -∗
       is_cmd_receipt γ v.
-    Admitted.
+    Proof.
+      iIntros (Hin) "[_ Hfrags]".
+      by iApply (big_sepS_elem_of with "Hfrags").
+    Qed.
 
     Lemma cpool_lookup {γ vs} v :
       is_cmd_receipt γ v -∗
       own_cpool_half γ vs -∗
       ⌜v ∈ vs⌝.
-    Admitted.
+    Proof.
+      iIntros "Hfrag [Hauth _]".
+      iDestruct (ghost_map_lookup with "Hauth Hfrag") as %Hlookup.
+      by apply lookup_gset_to_gmap_Some in Hlookup as [? _].
+    Qed.
 
   End consensus.
 
