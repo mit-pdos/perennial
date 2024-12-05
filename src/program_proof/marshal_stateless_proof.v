@@ -136,7 +136,8 @@ Theorem wp_ReadSlice {A:Type} {V: IntoVal A} {goT: ty}
   (suffix : list u8) (dq : dfrac) :
   {{{ "Hsl" ∷ own_slice_small enc_sl byteT dq (enc ++ suffix) ∗
       "%Henc" ∷ ⌜encodes enc args has_encoding⌝ ∗
-      "HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
+      "%Hcount" ∷ ⌜ uint.nat count <= length args ⌝ ∗
+      "#HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
       {{{ own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
           ⌜has_encoding enc' x⌝
       }}}
@@ -154,21 +155,43 @@ Theorem wp_ReadSlice {A:Type} {V: IntoVal A} {goT: ty}
   }}}.
 Proof.
   iIntros (ϕ) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
-  wp_apply (wp_ref_to); first val_ty. iIntros (l) "Henc_sl".
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Henc_sl".
   wp_pures.
 
-  wp_apply (wp_NewSlice). iIntros (s) "Hs".
-  wp_apply (wp_ref_to); first val_ty. iIntros (?) "Hret".
+  wp_apply (wp_NewSlice). iIntros (xs) "Hxs".
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__xs) "Hxs_sl".
   wp_pures.
 
-  wp_apply (wp_ref_to); first val_ty. iIntros (i) "Hi". wp_pures.
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__i) "Hi".
+  wp_pures.
 
   wp_apply (wp_forUpto'
-              (λ i, ∃ (next: u64),
-                   "%Hi_ge" ∷ ⌜0 ≤ uint.Z i⌝
+              (λ i, ∃ (enc' : list u8) (enc_sl' : Slice.t),
+                   (* Loop Bounds *)
+                   "%Hi_ge" ∷ ⌜0 ≤ uint.nat i⌝ ∗
+                   "%Hi_le" ∷ ⌜uint.nat i <= uint.Z count⌝ ∗
+                   (* Encoding *)
+                   "%H_b2_enc" ∷ ⌜encodes enc' (drop (uint.nat i) args) has_encoding⌝ ∗
+                   "H_b2_sl" ∷ own_slice_small enc_sl' byteT dq (enc' ++ suffix) ∗
+                   (* Outside variables *)
+                   "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl ∗
+                   "Hxs" ∷ own_slice xs goT (DfracOwn 1) (take (uint.nat i) args) ∗
+                   "Hxs_sl" ∷ l__xs ↦[slice.T goT] xs
               )%I
-              with "[$Hi]"
+              with "[$Hi $Hsl $Henc_sl $Hxs $Hxs_sl]"
            ).
+  - iSplit. { word. }
+    iPureIntro.
+    split; first word. split; first word. done.
+  - clear ϕ. iIntros "!>" (i Φ) "[IH (i & %Hle)] HΦ". iNamed "IH".
+    wp_pures. wp_load.
+    assert (uint.nat i < length args) as Hi_length. { word. }
+    unfold encodes in H_b2_enc.
+    (* TODO Show that args can't be empty at this point to help reduce encodes *)
+    pose proof (drop_lt args $ uint.nat i) as Hargs_ne.
+    (* apply Hargs_ne in Hi_length. *)
+    (* wp_apply ("HreadOne" with "[H_b2_sl]"). *)
+    (* { iFrame. } *)
 Admitted.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
