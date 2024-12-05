@@ -130,35 +130,36 @@ Fixpoint encodes {A:Type} (enc : list u8) (xs : list A) (has_encoding : list u8 
     | x :: xs' => exists bs bs', xs = x :: xs' /\ enc = bs ++ bs' /\ has_encoding bs x /\ encodes bs' xs' has_encoding
   end.
 
-Theorem wp_ReadSlice {A:Type} {V: IntoVal A} {goT: ty}
-  (enc : list u8) (enc_sl : Slice.t) (count : u64) (args: list A) (ValRel: IntoValForType A goT)
-  (has_encoding : list u8 -> A -> Prop) (own : loc -> A -> dfrac -> iProp Σ) (readOne : val)
+Theorem wp_ReadSlice {X : Type} {V : IntoVal X} {goT: ty}
+  (enc : list u8) (enc_sl : Slice.t) (count : u64) (xs : list X) (ValRel: IntoValForType X goT)
+  (has_encoding : list u8 -> X -> Prop) (own : val -> X -> dfrac -> iProp Σ) (readOne : val)
   (suffix : list u8) (dq : dfrac) :
+  (forall (v : val) (x : X) (dq : dfrac), own v x dq -∗ ⌜v = to_val x⌝) ->
   {{{ "Hsl" ∷ own_slice_small enc_sl byteT dq (enc ++ suffix) ∗
-      "%Henc" ∷ ⌜encodes enc args has_encoding⌝ ∗
-      "%Hcount" ∷ ⌜ uint.nat count <= length args ⌝ ∗
+      "%Henc" ∷ ⌜encodes enc xs has_encoding⌝ ∗
+      "%Hcount" ∷ ⌜uint.nat count <= length xs⌝ ∗
       "#HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
       {{{ own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
           ⌜has_encoding enc' x⌝
       }}}
         readOne (slice_val enc_sl')
-      {{{ x (v : A) suff_sl, RET (#x, slice_val suff_sl); own x v (DfracOwn 1) ∗
-          own_slice_small suff_sl byteT dq suffix' ∗
+      {{{ (v : val) (x : X) (suff_sl : Slice.t), RET (v, slice_val suff_sl); own v x (DfracOwn 1) ∗
+          own_slice_small suff_sl byteT dq suffix'
           (* While this is true, I don't know if it is strong enough *)
-          ⌜v ∈ args⌝
+          (* ⌜x ∈ xs⌝ *)
       }}}
   }}}
     ReadSlice goT (slice_val enc_sl) #count readOne
-  {{{ xs b2, RET (slice_val xs, slice_val b2);
+  {{{ vals b2, RET (slice_val vals, slice_val b2);
        own_slice_small b2 byteT dq suffix ∗
-       own_slice_small xs goT dq args
+       own_slice_small vals goT dq xs
   }}}.
 Proof.
-  iIntros (ϕ) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
+  iIntros (Hown_val ϕ) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
   wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Henc_sl".
   wp_pures.
 
-  wp_apply (wp_NewSlice). iIntros (xs) "Hxs".
+  wp_apply (wp_NewSlice). iIntros (gxs) "Hgxs".
   wp_apply (wp_ref_to); first val_ty. iIntros (l__xs) "Hxs_sl".
   wp_pures.
 
@@ -166,35 +167,44 @@ Proof.
   wp_pures.
 
   wp_apply (wp_forUpto'
-              (λ i, ∃ (enc' suffix' : list u8),
+              (λ i, ∃ (enc' suffix' : list u8) (enc_sl' gxs' : Slice.t),
                    (* Loop Bounds *)
                    "%Hi_ge" ∷ ⌜0 ≤ uint.nat i⌝ ∗
                    "%Hi_le" ∷ ⌜uint.nat i <= uint.Z count⌝ ∗
                    (* Encoding *)
-                   "%H_b2_enc" ∷ ⌜encodes enc' (drop (uint.nat i) args) has_encoding⌝ ∗
-                   "H_b2_sl" ∷ own_slice_small enc_sl byteT dq (enc' ++ suffix') ∗
+                   "%H_b2_enc" ∷ ⌜encodes enc' (drop (uint.nat i) xs) has_encoding⌝ ∗
+                   "H_b2_sl" ∷ own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
                    (* Outside variables *)
-                   "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl ∗
-                   "Hxs" ∷ own_slice xs goT (DfracOwn 1) (take (uint.nat i) args) ∗
-                   "Hxs_sl" ∷ l__xs ↦[slice.T goT] xs
+                   "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl' ∗
+                   "Hxs_sl" ∷ l__xs ↦[slice.T goT] gxs' ∗
+                   "Hxs" ∷ own_slice gxs' goT (DfracOwn 1) (take (uint.nat i) xs)
               )%I
-              with "[$Hi $Hsl $Henc_sl $Hxs $Hxs_sl]"
+              with "[$Hi $Hsl $Henc_sl $Hgxs $Hxs_sl]"
            ).
   - iSplit. { word. }
     iPureIntro.
     split; first word. split; first word. done.
   - clear ϕ. iIntros "!>" (i Φ) "[IH (i & %Hle)] HΦ". iNamed "IH".
     wp_pures. wp_load.
-    assert ((uint.nat i < length args)%nat) as Hi_length. { word. }
-    apply drop_lt in Hi_length.
+    assert ((uint.nat i < length xs)%nat) as Hi_length. { word. }
+    assert ((uint.nat i < length xs)%nat) as Hi_l_ne. { word. }
+    apply drop_lt in Hi_l_ne.
     unfold encodes in H_b2_enc.
-    destruct (drop (uint.nat i) args). { contradiction. }
+    destruct (drop (uint.nat i) xs). { contradiction. }
     destruct H_b2_enc as (H_b2_bs & H_b2_bs' & H_b2_enc & H_b2_enc' & H_b2_encoding & H_b2_enc_next).
     subst. rewrite <- app_assoc.
-    wp_apply ("HreadOne"  with "[$H_b2_sl //]").
-    iIntros (???) "(Hown_x & Hsuff_sl & %Helem)".
+    wp_apply ("HreadOne" with "[$H_b2_sl //]").
+    iIntros (???) "(Hown_x & Hsuff_sl)".
     wp_pures. wp_load.
-    wp_apply (wp_SliceAppend'). { apply to_val_has_zero. }
+    pose proof (Hown_val v x0 (DfracOwn 1)) as Hto_val.
+    iApply Hto_val in "Hown_x". iDestruct "Hown_x" as "%Hown_x".
+    rewrite Hown_x.
+    wp_apply (wp_SliceAppend with "[$Hxs]"). iIntros (s') "Hs'".
+    wp_store. wp_store.
+
+    iModIntro. iApply "HΦ". iFrame.
+    (* So I should be able to get rid of the x₀, but take i and take i+1 are fundamentally differenct.
+       The loop invariant needs to be changed somehow, probably to make it less specific. *)
 Admitted.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
