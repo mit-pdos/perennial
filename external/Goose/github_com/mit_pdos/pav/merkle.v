@@ -113,16 +113,18 @@ Definition Tree__Put: val :=
         "interiors" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "interiors") (SliceGet ptrT (struct.loadF node "children" "currNode") "pos"));;
         Continue);;
       let: "lastInterior" := SliceGet ptrT (![slice.T ptrT] "interiors") (cryptoffi.HashLen - #1) in
-      let: "lastPos" := SliceGet byteT "label" (cryptoffi.HashLen - #1) in
+      let: "lastPos" := to_u64 (SliceGet byteT "label" (cryptoffi.HashLen - #1)) in
       SliceSet ptrT (struct.loadF node "children" "lastInterior") "lastPos" (struct.new node [
         "mapVal" ::= "mapVal";
         "hash" ::= compLeafNodeHash "mapVal"
       ]);;
       let: "loopBuf" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((numChildren * cryptoffi.HashLen) + #1)) in
       let: "depth" := ref_to uint64T cryptoffi.HashLen in
-      (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
+      Skip;;
+      (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, Skip) := λ: <>,
         "loopBuf" <-[slice.T byteT] (context__updInteriorHash (struct.loadF Tree "ctx" "t") (![slice.T byteT] "loopBuf") (SliceGet ptrT (![slice.T ptrT] "interiors") ((![uint64T] "depth") - #1)));;
         "loopBuf" <-[slice.T byteT] (SliceTake (![slice.T byteT] "loopBuf") #0);;
+        "depth" <-[uint64T] ((![uint64T] "depth") - #1);;
         Continue);;
       let: "dig" := context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") in
       let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (![slice.T ptrT] "interiors") "label" in
