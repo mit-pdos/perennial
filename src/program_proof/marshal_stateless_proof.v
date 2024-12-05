@@ -166,13 +166,13 @@ Proof.
   wp_pures.
 
   wp_apply (wp_forUpto'
-              (λ i, ∃ (enc' : list u8) (enc_sl' : Slice.t),
+              (λ i, ∃ (enc' suffix' : list u8),
                    (* Loop Bounds *)
                    "%Hi_ge" ∷ ⌜0 ≤ uint.nat i⌝ ∗
                    "%Hi_le" ∷ ⌜uint.nat i <= uint.Z count⌝ ∗
                    (* Encoding *)
                    "%H_b2_enc" ∷ ⌜encodes enc' (drop (uint.nat i) args) has_encoding⌝ ∗
-                   "H_b2_sl" ∷ own_slice_small enc_sl' byteT dq (enc' ++ suffix) ∗
+                   "H_b2_sl" ∷ own_slice_small enc_sl byteT dq (enc' ++ suffix') ∗
                    (* Outside variables *)
                    "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl ∗
                    "Hxs" ∷ own_slice xs goT (DfracOwn 1) (take (uint.nat i) args) ∗
@@ -185,13 +185,16 @@ Proof.
     split; first word. split; first word. done.
   - clear ϕ. iIntros "!>" (i Φ) "[IH (i & %Hle)] HΦ". iNamed "IH".
     wp_pures. wp_load.
-    assert (uint.nat i < length args) as Hi_length. { word. }
+    assert ((uint.nat i < length args)%nat) as Hi_length. { word. }
+    apply drop_lt in Hi_length.
     unfold encodes in H_b2_enc.
-    (* TODO Show that args can't be empty at this point to help reduce encodes *)
-    pose proof (drop_lt args $ uint.nat i) as Hargs_ne.
-    (* apply Hargs_ne in Hi_length. *)
-    (* wp_apply ("HreadOne" with "[H_b2_sl]"). *)
-    (* { iFrame. } *)
+    destruct (drop (uint.nat i) args). { contradiction. }
+    destruct H_b2_enc as (H_b2_bs & H_b2_bs' & H_b2_enc & H_b2_enc' & H_b2_encoding & H_b2_enc_next).
+    subst. rewrite <- app_assoc.
+    wp_apply ("HreadOne"  with "[$H_b2_sl //]").
+    iIntros (???) "(Hown_x & Hsuff_sl & %Helem)".
+    wp_pures. wp_load.
+    wp_apply (wp_SliceAppend'). { apply to_val_has_zero. }
 Admitted.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
