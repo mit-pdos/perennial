@@ -883,12 +883,15 @@ Proof.
 Qed.
 
 Lemma wp_GlobalGet s E g dq (k : string) v :
-  g !! k = Some v →
   {{{ own_globals dq g }}}
     GlobalGet #(str k) @ s ; E
-  {{{ RET v; own_globals dq g }}}.
+  {{{ RET (match g !! k with
+           | Some v => SOMEV v
+           | None => NONEV
+           end);
+      own_globals dq g }}}.
 Proof.
-  iIntros (??) "Hg HΦ". iApply wp_lift_atomic_base_step; [done|].
+  iIntros (?) "Hg HΦ". iApply wp_lift_atomic_base_step; [done|].
   iIntros (σ1 g1 ns mj D κ κs n) "H ? !>".
   iNamed "H".
   iCombine "Hg_auth Hg" gives %?. subst.

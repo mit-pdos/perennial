@@ -1208,7 +1208,11 @@ Definition base_trans (e: expr) :
       (modifyσ (set trace (add_event (Out_ev v)));;
        ret $ LitV $ LitUnit)
   | GlobalGet (Val (LitV (LitString k))) =>
-      atomically (reads (λ '(σ, g), σ.(globals) !! k) ≫= unwrap)
+      atomically (x ← reads (λ '(σ, g), σ.(globals) !! k);
+                  ret (match x with
+                       | Some x => (InjRV x)
+                       | None => (InjLV (LitV LitUnit))
+                       end))
   | GlobalPut (Val (LitV (LitString k))) (Val v) =>
       atomically (modifyσ (set globals <[k := v]>);; ret $ LitV $ LitUnit)
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
