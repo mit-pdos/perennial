@@ -357,6 +357,7 @@ Definition trmlmR := gmap_viewR chan unitR.
 Definition group_trmlmR := gmapR u64 trmlmR.
 Canonical Structure dbhistO := leibnizO dbhist.
 Definition phistmR := gmapR dbkey (dfrac_agreeR dbhistO).
+Definition sid_ownR := gmapR u64 (exclR unitO).
 
 Class tulip_ghostG (Σ : gFunctors) :=
   { (* common resources defined in res.v *)
@@ -400,6 +401,10 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] local_gid_tokenG :: ghost_mapG Σ u64 unit;
     (* replica local resources defined in program/replica/res.v *)
     #[global] phys_histG :: inG Σ phistmR;
+    (* tid *)
+    #[global] gentid_predG :: savedPredG Σ val;
+    #[global] gentid_reservedG :: ghost_mapG Σ u64 gname;
+    #[global] gentid_sidG :: inG Σ sid_ownR;
   }.
 
 Definition tulip_ghostΣ :=
@@ -443,7 +448,10 @@ Definition tulip_ghostΣ :=
      ghost_mapΣ dbkey dbval;
      ghost_mapΣ u64 unit;
      (* program/replica/res.v *)
-     GFunctor phistmR
+     GFunctor phistmR;
+     ghost_mapΣ u64 gname;
+     savedPredΣ val;
+     GFunctor sid_ownR
    ].
 
 #[global]
@@ -487,9 +495,13 @@ Record tulip_names :=
     replica_token : gname;
     (* res_network.v *)
     group_trmlm : gname;
+    (* tid *)
+    sids : gname;
+    gentid_reserved : gname;
   }.
 
 Definition sysNS := nroot .@ "sys".
 Definition tulipNS := sysNS .@ "tulip".
 Definition tsNS := sysNS .@ "ts".
 Definition txnlogNS := sysNS .@ "txnlog".
+Definition tidNS := sysNS .@ "tid".

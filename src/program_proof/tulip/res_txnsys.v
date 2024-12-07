@@ -590,7 +590,7 @@ Section res.
     (** Largest timestamp assigned. *)
 
     Definition own_largest_ts γ (ts : nat) : iProp Σ :=
-      mono_nat_auth_own γ.(largest_ts) 1 ts.
+      mono_nat_auth_own γ.(largest_ts) (1/2) ts.
 
     Definition is_largest_ts_lb γ (ts : nat) : iProp Σ :=
       mono_nat_lb_own γ.(largest_ts) ts.
