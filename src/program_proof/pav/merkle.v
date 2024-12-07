@@ -183,13 +183,15 @@ Definition has_tree_height tr (height : nat) : Prop :=
 
 (* own_merkle denotes ownership of a merkle tree containing some entries. *)
 Definition own_merkle ptr_tr entries : iProp Σ :=
-  ∃ tr (root : loc),
+  ∃ (root : loc),
   "Hroot" ∷ ptr_tr ↦[Tree :: "root"] #root ∗
   "Hnode" ∷ (if decide (root = null) then ⌜ entries = ∅ ⌝
-             else own_node_except None root tr) ∗
-  "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
-  "%Hheight" ∷ ⌜ has_tree_height tr (uint.nat full_height) ⌝
-.
+             else
+               ∃ tr,
+               "Hnode" ∷ own_node_except None root tr ∗
+               "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
+               "%Hheight" ∷ ⌜ has_tree_height tr (uint.nat full_height) ⌝
+    ).
 
 (* is_dig says that the tree with these entries has this digest. *)
 Definition is_dig entries dig : iProp Σ :=
@@ -199,20 +201,12 @@ Definition is_dig entries dig : iProp Σ :=
 
 Global Instance is_dig_func : Func is_dig.
 Proof. Admitted.
-Global Instance is_dig_inj : InjRel is_dig.
-Proof. Admitted.
 
 (* is_merkle_entry says that (id, val) is contained in the tree with this digest.
 we use (val : option string) instead of (val : tree) bc there are really
 only two types of nodes we want to allow. *)
 Definition is_merkle_entry id val digest : iProp Σ :=
   ∃ tr, is_node_hash tr digest ∧ ⌜ is_tree_lookup tr id val ⌝.
-
-(* is_merkle_entry_with_map says that if you know an entry as well
-as the underlying map, you can combine those to get a pure map fact. *)
-Lemma is_merkle_entry_with_map id val dig m :
-  is_merkle_entry id val dig -∗ is_dig m dig -∗ ⌜ m !! id = val ⌝.
-Proof. Admitted.
 
 Lemma is_merkle_entry_inj id val1 val2 digest :
   is_merkle_entry id val1 digest -∗
@@ -329,6 +323,41 @@ Proof.
           apply (f_equal last) in Hbad. rewrite last_snoc //= in Hbad. }
       + done.
   }
+Qed.
+
+Lemma is_dig_inj m1 m2 digest :
+  is_dig m1 digest -∗
+  is_dig m2 digest -∗
+  ⌜ m1 = m2 ⌝.
+Proof.
+  iIntros "Hval1 Hval2".
+  iNamedSuffix "Hval1" "1".
+  rename tr into tr1.
+  iNamedSuffix "Hval2" "2".
+  rename tr into tr2.
+  simpl in *.
+  iApply pure_mono; first apply map_eq.
+  iIntros (k).
+  specialize (Htree1 k).
+  specialize (Htree2 k).
+  iDestruct (is_merkle_entry_inj with "[] []") as %Heq.
+  { iExists _. iFrame "Hdig1". done. }
+  { iExists _. iFrame "Hdig2". done. }
+  done.
+Qed.
+
+(* is_merkle_entry_with_map says that if you know an entry as well
+as the underlying map, you can combine those to get a pure map fact. *)
+Lemma is_merkle_entry_with_map id val dig m :
+  is_merkle_entry id val dig -∗ is_dig m dig -∗ ⌜ m !! id = val ⌝.
+Proof.
+  iIntros "H".
+  iNamed 1.
+  iDestruct "H" as (?) "[#Hdig2 %]".
+  iDestruct (is_merkle_entry_inj with "[] []") as %Heq.
+  { iExists _; iFrame "Hdig". done. }
+  { iExists _; iFrame "Hdig2". done. }
+  done.
 Qed.
 
 End external.
@@ -541,6 +570,7 @@ Proof.
     2:{
       iModIntro. iFrame "∗%".
       rewrite decide_False //.
+      iNamed "Hnode".
       iDestruct (own_node_except_mono (Some id) with "[$]") as "$"; done.
     }
     wp_rec.
@@ -587,7 +617,7 @@ Proof.
   }
   iIntros (?) "HifInv".
   wp_pures.
-  clear v tr root Htree Hheight.
+  clear v root.
   iNamed "HifInv".
   wp_loadField.
   wp_load.
@@ -1245,8 +1275,50 @@ Definition wp_CheckProof sl_id sl_val sl_dig (proofTy : bool) sl_proof proof (id
     "Hval" ∷ own_slice_small sl_val byteT d1 val ∗
     "Hdig" ∷ own_slice_small sl_dig byteT d2 dig ∗
     let expected_val := (if proofTy then Some val else None) in
-    "Hgenie" ∷ (is_merkle_proof proof id expected_val dig ∗-∗ ⌜ err = false ⌝)
+    "Hgenie" ∷ (if err then True else is_merkle_proof proof id expected_val dig)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (?) "H HΦ".
+  iNamed "H".
+  wp_rec.
+  wp_pures.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_if_destruct.
+  { iApply "HΦ". by iFrame. }
+  wp_pures.
+  wp_if_destruct.
+  { iApply "HΦ". by iFrame. }
+  wp_apply wp_slice_len. wp_pures.
+  wp_if_destruct.
+  { iApply "HΦ". by iFrame. }
+Admitted.
+
+Lemma wp_NewTree :
+  {{{ True }}}
+    NewTree #()
+  {{{ m, RET #m; own_merkle m ∅ }}}.
+Proof.
+  iIntros (?) "_ HΦ".
+  wp_rec.
+  wp_rec.
+  wp_rec.
+  wp_apply (wp_SliceSingleton (V:=w8)).
+  iIntros (?) "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_Hash with "[$]").
+  iIntros "*". iNamed 1.
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros (?) "H".
+  iDestruct (struct_fields_split with "H") as "H".
+  iNamed "H".
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros (?) "H".
+  iDestruct (struct_fields_split with "H") as "H".
+  iNamed "H".
+  iApply "HΦ".
+  repeat iExists _.
+  iFrame. simpl. done.
+Qed.
 
 End wps.

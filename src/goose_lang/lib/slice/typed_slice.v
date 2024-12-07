@@ -250,6 +250,19 @@ Proof.
   rewrite //=.
 Qed.
 
+Theorem wp_SliceSingleton stk E t `{!IntoValForType V t} (x : V) :
+  {{{ True }}}
+    SliceSingleton (to_val x) @ stk; E
+  {{{ s, RET slice_val s; own_slice s t (DfracOwn 1) [x] }}}.
+Proof.
+  iIntros (Hty) "_ HΦ".
+  wp_apply wp_SliceSingleton.
+  { apply to_val_ty. }
+  iIntros (?).
+  iIntros "Hsl". iApply "HΦ".
+  rewrite /own_slice /list.untype //.
+Qed.
+
 Lemma wp_SliceGet stk E s t q vs (i: u64) v0 :
   {{{ own_slice_small s t q vs ∗ ⌜ vs !! uint.nat i = Some v0 ⌝ }}}
     SliceGet t (slice_val s) #i @ stk; E

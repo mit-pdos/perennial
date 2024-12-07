@@ -454,12 +454,13 @@ Proof.
   iExactEq "Hextra"; word_eq.
 Qed.
 
-Theorem wp_SliceSingleton Φ stk E t x :
+Theorem wp_SliceSingleton stk E t x :
   val_ty x t ->
-  (∀ s, own_slice s t (DfracOwn 1) [x] -∗ Φ (slice_val s)) -∗
-  WP SliceSingleton x @ stk; E {{ Φ }}.
+  {{{ True }}}
+  SliceSingleton x @ stk; E
+  {{{ s, RET slice_val s; own_slice s t (DfracOwn 1) [x] }}}.
 Proof.
-  iIntros (Hty) "HΦ".
+  iIntros (Hty ?) "_ HΦ".
   wp_rec. wp_pures.
   wp_apply (wp_allocN t); eauto.
   { word. }
