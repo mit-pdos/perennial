@@ -31,13 +31,117 @@ Fixpoint is_node_hash (tr : tree) (hash : list w8) : iProp Σ :=
     is_hash (concat child_hashes ++ [W8 2]) hash
   end%I.
 
+Local Fixpoint tree_height (t : tree) : nat :=
+  match t with
+  | (Interior children) =>
+      let map_fn := (λ c,
+                       match c with
+                       | None => O
+                       | Some c => tree_height c
+                       end
+                    ) in
+      S (list_max (map_fn <$> children))
+  | _ => O
+  end.
+
+Lemma tree_ind_strong_aux (P : tree → Prop) :
+  ∀ (h' : nat),
+  ∀ h, (h ≤ h')%nat →
+  ∀ t, tree_height t = h →
+  (∀ l : list w8, P (Cut l)) →
+  (∀ l : list w8, P (Leaf l)) →
+  (∀ l : list (option tree),
+     (∀ x, In (Some x) l → P x) →
+     P (Interior l)) →
+  P t.
+Proof.
+  induction h'.
+  - intros. destruct h; last lia.
+    destruct t.
+    + done.
+    + done.
+    + exfalso. simpl in *. lia.
+  -
+    intros.
+    destruct (decide (h = S h')).
+    2:{ eapply (IHh' h); try done; lia. }
+    subst.
+    destruct t.
+    + exfalso. simpl in *. lia.
+    + exfalso. simpl in *. lia.
+    + apply H3.
+      intros.
+      eapply IHh'.
+      2:{ done. }
+      {
+        simpl in e.
+        inversion_clear e.
+        clear H.
+        induction l.
+        - simpl. done.
+        - destruct H0 as [|].
+          + subst. simpl. lia.
+          + simpl.
+            rewrite Nat.max_le_iff.
+            right.
+            by apply IHl.
+      }
+      all: done.
+Qed.
+
+Lemma tree_ind_strong (P : tree → Prop) :
+  (∀ l : list w8, P (Cut l)) →
+  (∀ l : list w8, P (Leaf l)) →
+  (∀ l : list (option tree),
+     (∀ x, In (Some x) l → P x) →
+     P (Interior l)) →
+  ∀ t, P t.
+Proof.
+  intros. by eapply tree_ind_strong_aux.
+Qed.
+
+Lemma list_lookup_In (V : Type) (l : list V) i v : l !! i = Some v → In v l.
+Proof.
+  revert i v.
+  induction l; first done; intros.
+  destruct i.
+  - simpl. naive_solver.
+  - right. simpl in H. by eapply IHl.
+Qed.
+
 #[global]
 Instance is_node_hash_timeless tr hash : Timeless (is_node_hash tr hash).
-Proof. Admitted.
+Proof.
+  revert hash.
+  induction tr using tree_ind_strong; try apply _.
+  intros hash.
+  simpl.
+  apply exist_timeless. intros.
+  apply sep_timeless; try apply _.
+  apply big_sepL2_timeless.
+  intros.
+  apply list_lookup_fmap_Some in H0 as [? ?].
+  intuition. subst. destruct x0; try apply _.
+  apply list_lookup_In in H2.
+  by apply H.
+Qed.
 
 #[global]
 Instance is_node_hash_persistent tr hash : Persistent (is_node_hash tr hash).
-Proof. Admitted.
+Proof.
+  revert hash.
+  induction tr using tree_ind_strong; try apply _.
+  intros hash.
+  simpl.
+  apply exist_persistent. intros.
+  apply sep_persistent; try apply _.
+  apply big_sepL2_persistent.
+  intros.
+  apply list_lookup_fmap_Some in H0 as [? ?].
+  intuition. subst. destruct x0; try apply _.
+  apply list_lookup_In in H2.
+  by apply H.
+Qed.
 
 Lemma node_hash_len tr hash :
   is_node_hash tr hash -∗ ⌜length hash = 32%nat⌝.
@@ -115,7 +219,15 @@ Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iProp
          end)%I.
 
 Local Instance own_node_except'_contractive : Contractive own_node_except'.
-Proof. Admitted.
+Proof.
+  intros ????.
+  repeat intros ?.
+  destruct x2; try solve_proper.
+  solve_proper_prepare.
+  repeat (f_contractive || f_equiv).
+  apply H. (* XXX: doing this manually because [f_equiv] doesn't look for 3
+              arguments*)
+Qed.
 
 Definition own_node_except : option (list w8) → loc → tree → iProp Σ := fixpoint own_node_except'.
 
