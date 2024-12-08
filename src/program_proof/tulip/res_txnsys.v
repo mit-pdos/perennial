@@ -637,12 +637,27 @@ Section res.
     Definition to_dbval (b : bool) (v : string) :=
       if b then Some v else None.
 
+    Definition to_dbstring (v : val) : option string :=
+      match v with
+      | (#true, (#(LitString key), _))%V => Some key
+      | (#false, (#(LitString key), _))%V => None
+      | _ => None
+      end.
+
+    Definition decode_dbmap (v: val) : dbmap :=
+      match @map.map_val _ dbkey (@string_IntoVal grove_op) String.eq_dec String.countable v with
+      | None => ∅
+      | Some (mv, _) => to_dbstring <$> mv
+      end.
+
+    (*
     Fixpoint decode_dbmap (v : val) : dbmap :=
       match v with
       | (#(LitString key), #(LitBool present), #(LitString str'), tail)%V =>
           <[key:=to_dbval present str']> (decode_dbmap tail)
       | _ => ∅
       end.
+     *)
 
     Local Definition decode_ev_read (v : val) : option action :=
       match v with
