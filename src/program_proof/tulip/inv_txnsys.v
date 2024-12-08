@@ -125,6 +125,7 @@ Instance incorrect_fcc_decision Qr {H : ∀ m, Decision (Qr m)} form :
 Proof. destruct form; apply _. Defined.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).

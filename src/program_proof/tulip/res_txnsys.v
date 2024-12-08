@@ -6,6 +6,9 @@ From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice fin_maps.
 From Perennial.program_proof.tulip Require Import base.
 
+(* TODO: Needed to get the ID values for actions *)
+From Perennial.goose_lang.trusted.github_com.mit_pdos.tulip Require trusted_proph.
+
 Section res.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
@@ -624,10 +627,63 @@ Section res.
 
   Section txn_proph.
 
-    (** Prophecy variable predicting a global trace of transaction commands. *)
+    (* Needed to be able to refer to prophecies *)
+    Context `{!heapGS Σ}.
 
-    Definition own_txn_proph (p : proph_id) (acts : list action) : iProp Σ.
-    Admitted.
+    (** Prophecy variable predicting a global trace of transaction commands. *)
+    (** Computes a dbmap from its representation as a GooseLang value.
+        If decoding fails, returns some arbitrary nonsense value. *)
+
+    Definition to_dbval (b : bool) (v : string) :=
+      if b then Some v else None.
+
+    Fixpoint decode_dbmap (v : val) : dbmap :=
+      match v with
+      | (#(LitString key), #(LitBool present), #(LitString str'), tail)%V =>
+          <[key:=to_dbval present str']> (decode_dbmap tail)
+      | _ => ∅
+      end.
+
+    Local Definition decode_ev_read (v : val) : option action :=
+      match v with
+      | (#(LitInt tid), #(LitString key))%V => Some (ActRead (uint.nat tid) key)
+      | _ => None
+      end.
+
+    Local Definition decode_ev_abort (v : val) : option action :=
+      match v with
+      | #(LitInt tid) => Some (ActAbort (uint.nat tid))
+      | _ => None
+      end.
+
+    Local Definition decode_ev_commit (v : val) : option action :=
+      match v with
+      | (#(LitInt tid), m)%V => Some (ActCommit (uint.nat tid) (decode_dbmap m))
+      | _ => None
+      end.
+
+    Local Definition decode_action (v : val) : option action :=
+     match v with
+     | (#(LitInt id), data)%V =>
+         if bool_decide (id = trusted_proph.ActReadId) then
+           decode_ev_read data
+         else if bool_decide (id = trusted_proph.ActAbortId) then
+           decode_ev_abort data
+         else if bool_decide (id = trusted_proph.ActCommitId) then
+           decode_ev_commit data
+         else
+           None
+     | _ => None
+     end.
+
+   Fixpoint decode_actions (pvs : list val) : list action :=
+     match pvs with
+     | [] => []
+     | v :: pvs => option_list (decode_action v) ++ decode_actions pvs
+     end.
+
+   Definition own_txn_proph  (p : proph_id) (acs : list action) : iProp Σ :=
+     ∃ (pvs : list val), ⌜decode_actions pvs = acs⌝ ∗ proph p pvs.
 
   End txn_proph.
 
