@@ -18,6 +18,7 @@ Proof.
 Qed.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
   Lemma keys_inv_committed γ p ts pwrs wrs histm :
