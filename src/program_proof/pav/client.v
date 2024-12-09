@@ -988,8 +988,7 @@ Proof.
   iMod (struct_field_pointsto_persist with "servVrfPk") as "#servVrfPk".
   iMod (struct_field_pointsto_persist with "seenDigs") as "#seenDigs".
   iMod (mono_list_own_alloc []) as (?) "[Hown_digs _]".
-  iApply "HΦ". iFrame "∗#". iExists ∅. iModIntro.
-  repeat try iSplit; naive_solver.
+  iApply "HΦ". iFrame "∗#". iExists ∅. iModIntro. naive_solver.
 Qed.
 
 End wps.
