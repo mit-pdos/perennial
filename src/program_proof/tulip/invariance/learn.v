@@ -2,6 +2,7 @@ From Perennial.program_proof.tulip Require Import prelude.
 From Perennial.program_proof.tulip.invariance Require Import learn_commit learn_abort.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
   Lemma group_inv_learn γ p gid cpool cmds :
