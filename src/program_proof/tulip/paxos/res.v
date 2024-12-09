@@ -1,5 +1,6 @@
 From iris.algebra Require Import mono_nat mono_list gmap_view gset.
 From iris.algebra.lib Require Import dfrac_agree.
+From Perennial.Helpers Require Import gmap_algebra.
 From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import misc.
@@ -898,32 +899,6 @@ End wal.
 Section alloc.
   Context `{!paxos_ghostG Σ}.
 
-  (* TODO: move this to a more shareable place *)
-  Lemma big_sepS_singleton_sep_half {K A} `{Countable K} `{!inG Σ (gmapUR K (dfrac_agreeR A))}
-    γ (X : gset K) (f : K → A) :
-    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn 1) (f s)]}) -∗
-    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) (f s)]}) ∗
-    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) (f s)]}).
-  Proof.
-    iIntros "H".
-    rewrite -big_sepS_sep.
-    iApply (big_sepS_mono with "H").
-    iIntros (x Hin) "H".
-    rewrite /own_current_term_half.
-    rewrite -own_op singleton_op.
-    rewrite -dfrac_agree_op.
-    rewrite dfrac_op_own Qp.half_half //.
-  Qed.
-
-  Lemma own_gset_to_gmap_singleton_sep_half {K A} `{Countable K} `{!inG Σ (gmapUR K (dfrac_agreeR A))}
-    γ (X : gset K) (a : A):
-    own γ (gset_to_gmap (to_dfrac_agree (DfracOwn 1) a) X) -∗
-    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) a]}) ∗
-    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) a]}).
-  Proof.
-    rewrite -big_opS_gset_to_gmap big_opS_own_1 -big_sepS_singleton_sep_half //.
-  Qed.
-
   Lemma paxos_res_alloc nids fnames :
     ⊢ |==> ∃ γ, (own_log_half γ [] ∗ own_log_half γ [] ∗ own_cpool_half γ ∅ ∗ own_cpool_half γ ∅) ∗
                 own_proposals γ ∅ ∗
@@ -959,77 +934,39 @@ Section alloc.
 
     iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) terms_all)) as
            (γprepare_lsn) "Hfree_prepare".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { simpl. econstructor; auto; rewrite /=; auto.
-        - rewrite //=.
-        - intros n. econstructor.
-      }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid. rewrite //=. }
 
     iMod (own_alloc (gset_to_gmap (●ML []) nids)) as
            (γnode_declist) "Hnode_declist".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { apply mono_list_auth_valid. }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid; apply mono_list_auth_valid. }
 
     iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> ∅)) nids)) as
            (γnode_proposal) "Hnode_proposal".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { apply gmap_view_auth_valid. }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
 
     iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) nids)) as
            (γcurrent_term) "Hcurrent_term".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { simpl. constructor; auto => //=. }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid. rewrite //=. }
 
     iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) nids)) as
            (γledger_term) "Hledger_term".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { simpl. constructor; auto => //=. }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid. rewrite //=. }
 
     iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) nids)) as
            (γcommitted_lsn) "Hcommitted_lsn".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { simpl. constructor; auto => //=. }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid. rewrite //=. }
 
     iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) ([] : ledgerO)) nids)) as
            (γnode_ledger) "Hnode_ledger".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { simpl. constructor; auto => //=. }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid. rewrite //=. }
 
     iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) ([] : pxcmdlO)) nids)) as
            (γnode_wal) "Hnode_wal".
-    { intros k. rewrite lookup_gset_to_gmap.
-      destruct (guard _).
-      { simpl. constructor; auto => //=. }
-      rewrite //=.
-    }
+    { apply gset_to_gmap_valid. rewrite //=. }
 
     iMod (own_alloc ((to_agree  <$> fnames) : gmapR u64 (agreeR stringO))) as
            (γnode_wal_fname) "Hnode_wal_fname".
-    { intros k.
-      rewrite lookup_fmap.
-      destruct (fnames !! k) eqn:Heq; rewrite Heq //=.
-    }
+    { intros k. rewrite lookup_fmap; destruct (fnames !! k) eqn:Heq; rewrite Heq //=. }
 
     iMod (ghost_map_alloc_empty (K := chan) (V := unit)) as
       (γtrmlm) "Htrmlm".
