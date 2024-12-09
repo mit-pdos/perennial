@@ -94,7 +94,7 @@ Proof.
   { shelve. }
   iIntros "*". iNamed 1.
   wp_pures.
-  wp_apply wp_allocStruct; [val_ty|].
+  wp_apply wp_NewTree.
   iIntros "* Hm".
   wp_pures.
   wp_apply wp_allocStruct; [val_ty|].
@@ -117,22 +117,6 @@ Proof.
   { by iApply own_slice_small_nil. }
   iSplitR.
   { by iApply big_sepL2_nil. }
-  iSplitL "Hm".
-  {
-    (* FIXME: abstraction violation. *)
-    unfold own_merkle.
-    repeat iExists _.
-    iDestruct (struct_fields_split with "Hm") as "Hm".
-    iNamed "Hm".
-    iFrame.
-    iSplit.
-    2:{
-      iApply merkle_internal.own_node_except_unfold.
-      instantiate (1:=merkle_internal.Empty).
-      simpl. done.
-    }
-    done.
-  }
   iSplit.
   { by iApply big_sepL2_nil. }
   done.
@@ -192,9 +176,8 @@ Proof.
     wp_apply (wp_Tree_Get with "[$]").
     iIntros "* HGetPost".
     iNamed "HGetPost".
-    iNamed "Hreply".
+    (* iNamed "Hreply". *)
     wp_pures.
-    wp_loadField.
     admit.
   }
 Admitted.

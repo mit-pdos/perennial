@@ -190,10 +190,10 @@ Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iProp
        "Hptr_val" ∷ ptr_tr ↦[node :: "mapVal"] (slice_val sl_val) ∗
        "Hptr_children" ∷ ptr_tr ↦[node :: "children"] (slice_val sl_children) ∗
 
-       "Hhash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
        "Hsl_children" ∷ own_slice_small sl_children ptrT (DfracOwn 1) ptr_children ∗
        "Hval" ∷ own_slice_small sl_val byteT (DfracOwn 1) val ∗
 
+       "#Hhash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
        "#His_hash" ∷ match path with
          | None => is_node_hash tr hash
          | _ => True
@@ -267,7 +267,28 @@ Lemma own_node_except_mono path2 path1 root tr :
   own_node_except path1 root tr -∗
   own_node_except path2 root tr.
 Proof.
-Admitted.
+  iLöb as "IH" forall (tr root path1 path2).
+  iIntros (Hpre) "Hnode".
+  rewrite own_node_except_unfold.
+  rewrite own_node_except_unfold.
+  iNamed "Hnode".
+  iFrame "Hptr_hash ∗#".
+  iSplitR.
+  { by destruct path1, path2. }
+  iSplitR; first done.
+  destruct tr; iFrame.
+  iApply (big_sepL2_impl with "Hchildren").
+  iModIntro. iIntros.
+  destruct x1; last done.
+  iApply ("IH" with "[] [$]").
+  iPureIntro.
+  destruct path1 as [[]|]; destruct path2 as [[]|]; try done.
+  + exfalso. by apply prefix_nil_not in Hpre.
+  + pose proof Hpre as Hpre2.
+    apply prefix_cons_inv_1 in Hpre2.
+    apply prefix_cons_inv_2 in Hpre.
+    subst. by destruct decide.
+Qed.
 
 End internal.
 
@@ -293,32 +314,57 @@ Definition has_tree_height tr (height : nat) : Prop :=
                   end
      end) tr height.
 
+Definition is_context c : iProp Σ :=
+  ∃ (emptyHash_sl : Slice.t) (emptyHash : list w8),
+    "#HemptyHash" ∷ c ↦[context :: "emptyHash"]□ (slice_val emptyHash_sl) ∗
+    "#Hhash_sl" ∷ own_slice_small emptyHash_sl byteT DfracDiscarded emptyHash ∗
+    "#Hhash" ∷ is_hash [W8 0] emptyHash.
+
 (* own_merkle denotes ownership of a merkle tree containing some entries. *)
 Definition own_merkle ptr_tr entries : iProp Σ :=
-  ∃ (root : loc),
+  ∃ (root ctx : loc),
   "Hroot" ∷ ptr_tr ↦[Tree :: "root"] #root ∗
+  "Hctx" ∷ ptr_tr ↦[Tree :: "ctx"] #ctx ∗
   "Hnode" ∷ (if decide (root = null) then ⌜ entries = ∅ ⌝
              else
                ∃ tr,
                "Hnode" ∷ own_node_except None root tr ∗
                "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
                "%Hheight" ∷ ⌜ has_tree_height tr (uint.nat full_height) ⌝
-    ).
+    ) ∗
+  "#His_ctx" ∷ is_context ctx
+.
 
 (* is_dig says that the tree with these entries has this digest. *)
 Definition is_dig entries dig : iProp Σ :=
-  ∃ tr,
+  ("%Hentries_empty" ∷ ⌜ entries = ∅ ⌝ ∗
+  "#Hdig" ∷ is_hash [W8 0] dig) ∨
+  (∃ tr,
   "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
-  "#Hdig" ∷ is_node_hash tr dig.
-
-Global Instance is_dig_func : Func is_dig.
-Proof. Admitted.
+  "#Hdig" ∷ is_node_hash tr dig)
+.
 
 (* is_merkle_entry says that (id, val) is contained in the tree with this digest.
 we use (val : option string) instead of (val : tree) bc there are really
 only two types of nodes we want to allow. *)
 Definition is_merkle_entry id val digest : iProp Σ :=
   ∃ tr, is_node_hash tr digest ∧ ⌜ is_tree_lookup tr id val ⌝.
+
+Lemma is_node_hash_not_empty tr dig id val :
+  is_tree_lookup tr id val →
+  is_node_hash (Σ := Σ) tr dig -∗
+  is_hash [W8 0] dig -∗
+  False.
+Proof.
+  iIntros (H) "Hdig1 Hdig2".
+  destruct tr.
+  + by destruct id.
+  + simpl. iDestruct (is_hash_inj with "Hdig1 Hdig2") as %Hbad.
+    apply (f_equal last) in Hbad. by rewrite last_app in Hbad.
+  + simpl. iDestruct "Hdig1" as (?) "[_ Hdig1]".
+    iDestruct (is_hash_inj with "Hdig1 Hdig2") as %Hbad.
+    apply (f_equal last) in Hbad. by rewrite last_app in Hbad.
+Qed.
 
 Lemma is_merkle_entry_inj id val1 val2 digest :
   is_merkle_entry id val1 digest -∗
@@ -443,19 +489,23 @@ Lemma is_dig_inj m1 m2 digest :
   ⌜ m1 = m2 ⌝.
 Proof.
   iIntros "Hval1 Hval2".
-  iNamedSuffix "Hval1" "1".
-  rename tr into tr1.
-  iNamedSuffix "Hval2" "2".
-  rename tr into tr2.
-  simpl in *.
-  iApply pure_mono; first apply map_eq.
-  iIntros (k).
-  specialize (Htree1 k).
-  specialize (Htree2 k).
-  iDestruct (is_merkle_entry_inj with "[] []") as %Heq.
-  { iExists _. iFrame "Hdig1". done. }
-  { iExists _. iFrame "Hdig2". done. }
-  done.
+  iDestruct "Hval1" as "[Hval1|Hval1]"; iNamedSuffix "Hval1" "1";
+  try (rename tr into tr1);
+  iDestruct "Hval2" as "[Hval2|Hval2]"; iNamedSuffix "Hval2" "2";
+  try (rename tr into tr2); subst.
+  - done.
+  - iExFalso. specialize (Htree2 []).
+    iDestruct (is_node_hash_not_empty with "[$] [$]") as "?"; done.
+  - iExFalso. specialize (Htree1 []).
+    iDestruct (is_node_hash_not_empty with "[$] [$]") as "?"; done.
+  - iApply pure_mono; first apply map_eq.
+    iIntros (k).
+    specialize (Htree1 k).
+    specialize (Htree2 k).
+    iDestruct (is_merkle_entry_inj with "[] []") as %Heq.
+    { iExists _. iFrame "Hdig1". done. }
+    { iExists _. iFrame "Hdig2". done. }
+    done.
 Qed.
 
 (* is_merkle_entry_with_map says that if you know an entry as well
@@ -463,12 +513,17 @@ as the underlying map, you can combine those to get a pure map fact. *)
 Lemma is_merkle_entry_with_map id val dig m :
   is_merkle_entry id val dig -∗ is_dig m dig -∗ ⌜ m !! id = val ⌝.
 Proof.
-  iIntros "H".
-  iNamed 1.
-  iDestruct "H" as (?) "[#Hdig2 %]".
+  iIntros "H Hdig".
+  iDestruct "H" as (?) "[#Hhash2 %]".
+  iDestruct "Hdig" as "[Hbad|H]".
+  {
+    iNamed "Hbad". subst.
+    by iDestruct (is_node_hash_not_empty with "[$] [$]") as "?".
+  }
+  iNamed "H".
   iDestruct (is_merkle_entry_inj with "[] []") as %Heq.
   { iExists _; iFrame "Hdig". done. }
-  { iExists _; iFrame "Hdig2". done. }
+  { iExists _; iFrame "Hhash2". done. }
   done.
 Qed.
 
@@ -504,6 +559,87 @@ End pathProof. *)
 Section wps.
 Context `{!heapGS Σ}.
 
+Lemma wp_newCtx :
+  {{{ True }}}
+    newCtx #()
+  {{{ ctx, RET #ctx; is_context ctx }}}.
+Proof.
+  iIntros (?) "_ HΦ".
+  wp_rec.
+  wp_rec.
+  wp_apply (wp_SliceSingleton (V:=w8)).
+  iIntros (?) "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_Hash with "[$]").
+  iIntros "*". iNamed 1.
+  iApply wp_fupd.
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros (?) "H".
+  iDestruct (struct_fields_split with "H") as "H".
+  iNamed "H".
+  iApply "HΦ".
+  iClear "Hdata".
+  iMod (struct_field_pointsto_persist with "[$]") as "#?".
+  iMod (own_slice_small_persist with "[$]") as "#?".
+  iMod (own_slice_small_persist with "[$]") as "#?".
+  by iFrame "#".
+Qed.
+
+Lemma wp_context__getHash ctx n tr :
+  {{{
+        "#Hctx" ∷ is_context ctx ∗
+        "Hnode" ∷ own_node_except None n tr
+  }}}
+    context__getHash #ctx #n
+  {{{
+        hash_sl hash, RET (slice_val hash_sl);
+        own_node_except None n tr ∗
+        own_slice_small hash_sl byteT DfracDiscarded hash ∗
+        is_node_hash tr hash
+  }}}.
+Proof.
+  iIntros (?) "H HΦ".
+  iNamed "H".
+  wp_rec.
+  wp_pures. wp_if_destruct.
+  {
+    (* XXX: make this a lemma? *)
+    iExFalso.
+    iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
+    wp_pures.
+    iDestruct "Hnode" as (??????) "(_ & H & _)".
+    iExFalso.
+    iDestruct (struct_field_pointsto_not_null with "H") as %?; done.
+  }
+  iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
+  iNamed "Hnode".
+  wp_loadField.
+  iApply "HΦ".
+  iFrame "∗#%".
+  iApply own_node_except_unfold.
+  iFrame "∗#%".
+Qed.
+
+Lemma wp_context__getHash_null ctx :
+  {{{
+        "#Hctx" ∷ is_context ctx
+  }}}
+    context__getHash #ctx #null
+  {{{
+        hash_sl hash, RET (slice_val hash_sl);
+        own_slice_small hash_sl byteT DfracDiscarded hash ∗
+        is_hash [W8 0] hash
+  }}}.
+Proof.
+  iIntros (?) "H HΦ".
+  iNamed "H". iNamed "Hctx".
+  wp_rec.
+  wp_pures.
+  wp_loadField.
+  iApply "HΦ".
+  iFrame "#".
+Qed.
+
 Lemma wp_Tree_Digest ptr_tr entries :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries
@@ -512,10 +648,35 @@ Lemma wp_Tree_Digest ptr_tr entries :
   {{{
     sl_dig dig, RET (slice_val sl_dig);
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
+    "Hdig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
     "#HisDig" ∷ is_dig entries dig
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (?) "H HΦ".
+  iNamed "H".
+  wp_rec.
+  iNamed "Htree".
+  wp_loadField.
+  iNamed "Hctx".
+  wp_loadField.
+  destruct decide.
+  - subst. wp_apply (wp_context__getHash_null with "[$]").
+    iIntros "* #[? ?]".
+    iApply "HΦ".
+    iDestruct "Hnode" as %->.
+    iFrame. simpl. iFrame "His_ctx". iSplitL; first done.
+    iFrame.
+    simpl.
+    iFrame "#".
+    by iLeft.
+  - iNamed "Hnode".
+    wp_apply (wp_context__getHash with "[$]").
+    iIntros "* (Hnode & #? & #?)".
+    iApply "HΦ".
+    iFrame.
+    rewrite decide_False //.
+    iFrame "∗His_ctx #%".
+Qed.
 
 Lemma wp_compLeafNodeHash mapVal_sl mapVal dq :
    {{{ own_slice_small mapVal_sl byteT dq mapVal }}}
@@ -720,6 +881,7 @@ Proof.
     { done. }
     iSplitR; first done.
     iSplitR; first done.
+    iSplitR; first done.
     iApply big_sepL2_replicate_r.
     { rewrite length_replicate //. }
     iApply big_sepL_impl.
@@ -893,6 +1055,7 @@ Proof.
         iFrame "∗".
         Transparent replicate.
         iDestruct (own_slice_small_nil) as "$"; first done.
+        iDestruct (own_slice_small_nil) as "$"; first done.
         erewrite drop_S; last done.
         rewrite decide_True //.
         iFrame "#".
@@ -965,8 +1128,8 @@ Proof.
       repeat iExists _.
       iFrame "Hptr_hash Hptr_children ∗".
       iSplitR; first done.
-      iSplitR.
-      { done. }
+      iSplitR; first done.
+      iSplitR; first done.
       replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
       instantiate (1:=Interior (<[uint.nat pos := Some sub_tree' ]> children)).
       simpl.
@@ -1413,17 +1576,8 @@ Lemma wp_NewTree :
 Proof.
   iIntros (?) "_ HΦ".
   wp_rec.
-  wp_rec.
-  wp_rec.
-  wp_apply (wp_SliceSingleton (V:=w8)).
-  iIntros (?) "Hsl".
-  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-  wp_apply (wp_Hash with "[$]").
-  iIntros "*". iNamed 1.
-  wp_apply wp_allocStruct; [val_ty|].
-  iIntros (?) "H".
-  iDestruct (struct_fields_split with "H") as "H".
-  iNamed "H".
+  wp_apply wp_newCtx.
+  iIntros "* Hctx".
   wp_apply wp_allocStruct; [val_ty|].
   iIntros (?) "H".
   iDestruct (struct_fields_split with "H") as "H".
