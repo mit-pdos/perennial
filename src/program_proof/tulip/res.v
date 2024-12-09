@@ -6,6 +6,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import list fin_maps vslice.
+From Perennial.program_proof.tulip Require Import big_sep.
 From Perennial.program_proof.tulip Require Export res_txnsys res_group res_replica res_network.
 
 (** This file contains resources exposed to the users or owned by multiple
@@ -723,6 +724,11 @@ Section alloc.
            (γgroup_trmlm) "Hgroup_trmlm".
     { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
 
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (gset_to_gmap () ∅ : (gmap nat unit)))
+                       (gset_cprod gids_all rids_all))) as
+           (γreplica_validated_ts) "Hreplica_validated".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
+
     (* Instantiate all uses of this with an actual proper gname *)
     set TODOgname := γtxn_res.
 
@@ -748,7 +754,7 @@ Section alloc.
     group_prep := γgroup_prep;
     group_prepare_proposal := γgroup_prepare_proposal;
     group_commit := γgroup_commit;
-    replica_validated_ts := TODOgname;
+    replica_validated_ts := γreplica_validated_ts;
     replica_key_validation := TODOgname;
     replica_clog := TODOgname;
     replica_ilog := TODOgname;
@@ -823,6 +829,18 @@ Section alloc.
       iIntros (? Hin) "H". rewrite /own_terminals. rewrite big_sepS_empty //=.
       iFrame.
     }
+
+    iSplitL "Hreplica_validated".
+    { rewrite -big_opS_gset_to_gmap big_opS_own_1.
+      iDestruct (big_sepS_gset_cprod' with "Hreplica_validated") as "H".
+      iApply (big_sepS_mono with "H").
+      { iIntros (gid Hgid_in) "H".
+        rewrite /replica_init_res.
+        iSplitL "H".
+        { rewrite /own_replica_validated_tss. rewrite /own_replica_validated_tss_auth.
+          iApply (big_sepS_mono with "H").
+          { iIntros (??) "$". rewrite //=. }
+        }
 
   Admitted.
 
