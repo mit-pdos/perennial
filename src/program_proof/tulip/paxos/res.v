@@ -907,6 +907,80 @@ Section alloc.
                 ([∗ map] nid ↦ fname ∈ fnames, is_node_wal_fname γ nid fname) ∗
                 (* network resources *)
                 own_terminals γ ∅.
+  Proof.
+    iMod (own_alloc (mono_list_auth (DfracOwn 1) [])) as
+      (γconsensus_log) "(Hconsensus_log1&Hconsensus_log2)".
+    { econstructor; try econstructor; rewrite //=. }
+    iMod (ghost_map_alloc_empty (K := string) (V := unit)) as
+      (γconsensus_cpool) "(Hconsensus_cpool1&Hconsensus_cpool2)".
+    iMod (ghost_map_alloc_empty (K := nat) (V := gname)) as
+      (γproposal) "Hproposals".
+    iMod (ghost_map_alloc_empty (K := nat) (V := ledger)) as
+      (γbase_proposal) "Hbase_proposals".
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) terms_all)) as
+           (γprepare_lsn) "Hfree_prepare".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { simpl. econstructor; auto; rewrite /=; auto.
+        - rewrite //=.
+        - intros n. econstructor.
+      }
+      rewrite //=.
+    }
+
+    iMod (own_alloc (gset_to_gmap (●ML []) nids)) as
+           (γnode_declist) "Hnode_declist".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { apply mono_list_auth_valid. }
+      rewrite //=.
+    }
+
+    (* But this doesn't quite type check? *)
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> {[0%nat := []]})) nids)) as
+           (γnode_proposal) "Hnode_proposal".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { apply gmap_view_auth_valid. }
+      rewrite //=.
+    }
+
+    iModIntro.
+    set γ :=
+      {| consensus_log := γconsensus_log;
+         consensus_cpool := γconsensus_cpool;
+         proposal := γproposal;
+         base_proposal := γbase_proposal;
+         prepare_lsn := γprepare_lsn;
+         node_declist := γnode_declist;
+         node_proposal := γnode_proposal;
+         current_term := γconsensus_cpool;
+         ledger_term := γconsensus_cpool;
+         committed_lsn := γconsensus_cpool;
+         node_ledger := γconsensus_cpool;
+         node_wal := γconsensus_cpool;
+         node_wal_fname := γconsensus_cpool;
+         trmlm := γconsensus_cpool |}.
+    iExists γ.
+    iSplitL "Hconsensus_log1 Hconsensus_log2 Hconsensus_cpool1 Hconsensus_cpool2".
+    { iFrame. rewrite big_sepS_empty //=. }
+    iFrame "Hproposals".
+    iFrame "Hbase_proposals".
+    iSplitL "".
+    { rewrite big_sepM2_empty //=. }
+    iSplitL "Hfree_prepare".
+    { rewrite -big_opS_gset_to_gmap big_opS_own_1. iExact "Hfree_prepare". }
+    iSplitL "Hnode_declist".
+    { rewrite -big_opS_gset_to_gmap big_opS_own_1. iExact "Hnode_declist". }
+    iSplitL "Hnode_proposal".
+    { rewrite -big_opS_gset_to_gmap big_opS_own_1.
+      iApply (big_sepS_mono with "Hnode_proposal").
+      iIntros (? Hin) "H". iExists _. iFrame.
+      (* Seems like an issue here, it should be a map to a γ not an empty list? *)
+      admit.
+    }
+
   Admitted.
 
 End alloc.
