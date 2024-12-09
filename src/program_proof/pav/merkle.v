@@ -914,13 +914,20 @@ Proof.
               "%Hinteriors_length" ∷ ⌜ length interiors = S (uint.nat depth) ⌝ ∗
               "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree (take (uint.nat depth) id) entries ⌝ ∗
               "%Hheight" ∷ ⌜ has_tree_height sub_tree (uint.nat full_height - uint.nat depth)%nat ⌝ ∗
+
               "Hrest" ∷ (∀ sub_tree' ,
-                           own_node_except (Some (drop (uint.nat depth) id)) currNode_ptr sub_tree' -∗
-                           ⌜ eq_tree_map sub_tree' (take (uint.nat depth) id) (<[id := val]> entries) ⌝ -∗
-                           ⌜ has_tree_height sub_tree' (uint.nat full_height - uint.nat depth)%nat ⌝ -∗
-                           ∃ tr', own_node_except (Some id) root tr' ∗
-                                  ⌜ eq_tree_map tr' [] (<[id := val]> entries) ⌝ ∗
-                                  ⌜ has_tree_height tr' (uint.nat full_height) ⌝)
+                 own_node_except None currNode_ptr sub_tree' -∗
+                 ⌜ eq_tree_map sub_tree' (take (uint.nat depth) id) (<[id := val]> entries) ⌝ -∗
+                 ⌜ has_tree_height sub_tree' (uint.nat full_height - uint.nat depth)%nat ⌝ -∗
+                 (foldl (λ P node_ptr,
+                          ∃ tr, own_node_except (Some []) node_ptr tr ∗
+                                (own_node_except None node_ptr tr -∗ P)
+                   )
+                   (∃ tr', own_node_except None root tr' ∗
+                           ⌜ eq_tree_map tr' [] (<[id := val]> entries) ⌝ ∗
+                           ⌜ has_tree_height tr' (uint.nat full_height) ⌝)
+                   (removelast interiors))
+              )
          )%I).
   wp_apply (wp_forUpto' loopInv with "[$Hdepth Hid Hnode Hinteriors_ptr Hinteriors]").
   {
@@ -929,7 +936,7 @@ Proof.
     iSplitR; first done. iSplitR; first done.
     iSplitR; first done.
     iIntros (?). iIntros.
-    iExists _; iFrame. done.
+    simpl. iExists _; iFrame. done.
   }
   { (* one loop iteration *)
     clear Φ Hheight Htree.
@@ -1090,7 +1097,7 @@ Proof.
     wp_apply (wp_SliceAppend (V:=loc) with "[$]").
     iIntros (newInteriors_sl) "Hinteriors".
 
-    iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[Hchild Hchildren]";
+    iDestruct (big_sepL2_delete _ _ _ (uint.nat pos) with "Hchildren") as "[Hchild Hchildren]";
       try eassumption.
 
     wp_store.
@@ -1122,7 +1129,19 @@ Proof.
     }
 
     iIntros (?) "Hnode' %Heq' %Hheight'".
-    iApply ("Hrest" with "[-]").
+    rewrite removelast_app // /= app_nil_r.
+    replace (interiors) with (removelast interiors ++ [currNode_ptr]).
+    2:{
+      rewrite removelast_firstn_len.
+      rewrite Hinteriors_length /=.
+      rewrite -take_S_r.
+      2:{ rewrite last_lookup Hinteriors_length /= // in Hinteriors_last. }
+      rewrite take_ge //.
+      lia.
+    }
+    rewrite foldl_snoc removelast_app //= app_nil_r.
+    iExists (Interior (<[uint.nat pos := Some sub_tree' ]> children)).
+    iSplitR "Hrest".
     {
       iApply own_node_except_unfold.
       repeat iExists _.
@@ -1131,14 +1150,28 @@ Proof.
       iSplitR; first done.
       iSplitR; first done.
       replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
-      instantiate (1:=Interior (<[uint.nat pos := Some sub_tree' ]> children)).
       simpl.
-      iSpecialize ("Hchildren" $! _ child_ptr).
+      iApply (big_sepL2_delete _ _ _ (uint.nat pos)).
+      { rewrite list_lookup_insert //. word. }
+      { done. }
+      simpl.
+      iFrame "Hnode'".
+      iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[_ Hchildren]".
+      { done. }
+      { done. }
+      iSpecialize ("Hchildren" $! (Some sub_tree') child_ptr).
       iEval (rewrite (list_insert_id ptr_children); last done) in "Hchildren".
-      iApply "Hchildren".
-      rewrite [in drop (uint.nat i) _](drop_S _ pos) //.
-      rewrite decide_True //.
+      iSpecialize ("Hchildren" with "[]").
+      { rewrite decide_True //. }
+      iApply (big_sepL2_impl with "Hchildren").
+      iIntros "!# * %% H".
+      destruct decide; first done.
+      destruct x1.
+      { erewrite drop_S; last done. rewrite decide_False //. }
+      { done. }
     }
+    iIntros "Htree".
+    iApply ("Hrest" with "[$]").
     {
       iPureIntro.
       intros k.
