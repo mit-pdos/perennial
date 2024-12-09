@@ -644,12 +644,44 @@ Section alloc.
     iMod (ghost_map_alloc_empty (K := nat) (V := txnres)) as
       (γtxn_res) "Htxn_res".
 
+    iMod (ghost_map_alloc_empty (K := nat) (V := option dbmap)) as
+      (γtxn_oneshot_wrs) "Htxn_oneshot".
+
+    iMod (ghost_map_alloc_empty (K := nat) (V := unit)) as
+      (γlnrz_tid) "Hlnrz_tid".
+
+    iMod (ghost_map_alloc_empty (K := nat) (V := unit)) as
+      (γwabt_tid) "Hwabt_tid".
+
+    iMod (ghost_map_alloc_empty (K := nat) (V := dbmap)) as
+      (γcmt_tmod) "Hcmt_tmod".
+
+    iMod (ghost_map_alloc_empty (K := nat) (V := unit)) as
+      (γexcl_tid) "Hexcl_tid".
+
+    iMod (ghost_map_alloc_empty (K := nat * w64) (V := unit)) as
+      (γtxn_client_token) "Htxn_client_token".
+
+    (* TODO: if the own_txn_postconds become iProp instead of Prop,
+       this probably needs to become a map to gnames, and then have a
+       separate family of saved_preds *)
+    iMod (ghost_map_alloc_empty (K := nat) (V := (dbmap → Prop))) as
+      (γtxn_postcond) "Htxn_postcond".
+
+    iMod (mono_nat.mono_nat_own_alloc 0) as
+      (γlargest_ts) "((Hlargest1&Hlargest2)&Hlb)".
+
+    iMod (own_alloc (gset_to_gmap (●ML ([None] : dbhist)) keys_all)) as
+           (γrepl_hist) "Hrepl_hist".
+    { apply gset_to_gmap_valid; apply mono_list_auth_valid. }
+
+
     (* Instantiate all uses of this with an actual proper gname *)
     set TODOgname := γtxn_res.
 
     set γ := {|
     db_ptsto := γdb_ptsto;
-    repl_hist := TODOgname;
+    repl_hist := γrepl_hist;
     repl_ts := TODOgname;
     lnrz_kmod := TODOgname;
     cmtd_kmod := TODOgname;
@@ -657,15 +689,15 @@ Section alloc.
     txn_cpool := TODOgname;
     cmtd_hist := TODOgname;
     lnrz_hist := TODOgname;
-    txn_res := TODOgname;
-    txn_oneshot_wrs := TODOgname;
-    lnrz_tid := TODOgname;
-    wabt_tid := TODOgname;
-    cmt_tmod := TODOgname;
-    excl_tid := TODOgname;
-    txn_client_token := TODOgname;
-    txn_postcond := TODOgname;
-    largest_ts := TODOgname;
+    txn_res := γtxn_res;
+    txn_oneshot_wrs := γtxn_oneshot_wrs;
+    lnrz_tid := γlnrz_tid;
+    wabt_tid := γwabt_tid;
+    cmt_tmod := γcmt_tmod;
+    excl_tid := γexcl_tid;
+    txn_client_token := γtxn_client_token;
+    txn_postcond := γtxn_postcond;
+    largest_ts := γlargest_ts;
     group_prep := TODOgname;
     group_prepare_proposal := TODOgname;
     group_commit := TODOgname;
@@ -686,6 +718,30 @@ Section alloc.
     { by iFrame. }
     iSplitL "Htxn_res".
     { iFrame. done. }
+    iSplitL "Htxn_oneshot".
+    { iFrame. }
+    iSplitL "Hlnrz_tid".
+    { iFrame. }
+    iSplitL "Hwabt_tid".
+    { iFrame. }
+    iSplitL "Hcmt_tmod".
+    { iFrame. }
+    iSplitL "Hexcl_tid".
+    { iFrame. }
+    iSplitL "Htxn_client_token".
+    { rewrite /own_txn_client_tokens. iExists ∅. iSplit; first by iFrame.
+      set_solver. }
+    iSplitL "Htxn_postcond".
+    { iFrame. }
+    iSplitL "Hlargest1".
+    { iFrame. }
+    iSplitL "Hdb_ptsto2".
+    { iFrame. }
+    iDestruct (own_gset_to_gmap_singleton_is_op with "Hrepl_hist") as "(Hrep1&Hrep2)".
+    iSplitL "Hrep1".
+    { iFrame. }
+    iSplitL "Hrep2".
+    { iFrame. }
 
   Admitted.
 

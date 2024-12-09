@@ -76,6 +76,26 @@ Section big_sepS_split.
     rewrite -big_opS_gset_to_gmap big_opS_own_1 -big_sepS_singleton_sep_half //.
   Qed.
 
+  Lemma own_gset_to_gmap_singleton_is_op {K} {A : cmra} `{Countable K} `{!inG Σ (gmapUR K A)}
+    γ (X : gset K) (a b1 b2 : A):
+    IsOp a b1 b2 →
+    own γ (gset_to_gmap a X) -∗
+    ([∗ set] s ∈ X, own γ {[ s := b1]}) ∗
+    ([∗ set] s ∈ X, own γ {[ s := b2]}).
+  Proof.
+    iIntros (Hop) "H".
+    rewrite -big_opS_gset_to_gmap big_opS_own_1.
+    rewrite -big_sepS_sep.
+    iApply (big_sepS_mono with "H").
+    iIntros (x Hin) "H".
+    rewrite -own_op singleton_op.
+    iApply own_proper; last by eauto.
+    intros k.
+    destruct (decide (x = k)) as [Heq|Hneq].
+    - rewrite Heq ?lookup_singleton. f_equiv. rewrite -Hop //.
+    - rewrite ?lookup_singleton_ne //.
+  Qed.
+
   Lemma gset_to_gmap_valid `{Countable K} {A : cmra} (X : gset K) (a : A):
     ✓ a →
     ✓ (gset_to_gmap a X : gmapUR K A).
