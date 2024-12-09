@@ -191,31 +191,32 @@ Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iProp
        "Hptr_children" ∷ ptr_tr ↦[node :: "children"] (slice_val sl_children) ∗
 
        "Hsl_children" ∷ own_slice_small sl_children ptrT (DfracOwn 1) ptr_children ∗
-       "Hval" ∷ own_slice_small sl_val byteT (DfracOwn 1) val ∗
+       "#Hval" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
 
        "#Hhash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
        "#His_hash" ∷ match path with
          | None => is_node_hash tr hash
          | _ => True
          end ∗
-       "%Hchildren_len" ∷ ⌜ length ptr_children = uint.nat (W64 256) ⌝ ∗
        "Hchildren" ∷ match tr with
        (* We should never have cuts in in-memory trees. *)
        | Cut _ => False
        | Leaf v => ⌜ v = val ⌝
        | Interior children =>
-           ([∗ list] idx ↦ child;ptr_child ∈ children;ptr_children,
-              match child with
-              | None => ⌜ ptr_child = null ⌝
-              | Some child =>
-                  ▷ recur (match path with
-                           | Some (a :: path) => if decide (uint.nat a = idx) then (Some path)
-                                               else None
-                           | _ => None
-                           end)
-                    ptr_child child
-              end
-           )
+           "%Hchildren_len" ∷ ⌜ length ptr_children = uint.nat (W64 256) ⌝ ∗
+           "Hchildren" ∷
+             ([∗ list] idx ↦ child;ptr_child ∈ children;ptr_children,
+                match child with
+                | None => ⌜ ptr_child = null ⌝
+                | Some child =>
+                    ▷ recur (match path with
+                             | Some (a :: path) => if decide (uint.nat a = idx) then (Some path)
+                                                 else None
+                             | _ => None
+                             end)
+                      ptr_child child
+                end
+             )
          end)%I.
 
 Local Instance own_node_except'_contractive : Contractive own_node_except'.
@@ -275,8 +276,9 @@ Proof.
   iFrame "Hptr_hash ∗#".
   iSplitR.
   { by destruct path1, path2. }
-  iSplitR; first done.
   destruct tr; iFrame.
+  iNamed "Hchildren".
+  iSplitR; first done.
   iApply (big_sepL2_impl with "Hchildren").
   iModIntro. iIntros.
   destruct x1; last done.
@@ -300,7 +302,7 @@ Definition full_height := (W64 32).
 Definition has_tree_height tr (height : nat) : Prop :=
   (fix go tr height {struct height} :=
      match height with
-     | O => match tr with Interior _ => False | _ => True end
+     | O => match tr with Cut _ => False | Interior _ => False | _ => True end
      | S height => match tr with
                   | Leaf _ => False
                   | Cut _ => True
@@ -683,6 +685,7 @@ Lemma wp_compLeafNodeHash mapVal_sl mapVal dq :
      compLeafNodeHash (slice_val mapVal_sl)
    {{{
          hash_sl hash, RET (slice_val hash_sl);
+         own_slice_small mapVal_sl byteT dq mapVal ∗
          own_slice_small hash_sl byteT (DfracOwn 1) hash ∗
          is_node_hash (Leaf mapVal) hash
    }}}.
@@ -700,7 +703,7 @@ Proof.
   wp_pures.
   wp_load.
   wp_apply (wp_WriteBytes with "[$]").
-  iIntros (?) "[? _]".
+  iIntros (?) "[? ?]".
   wp_store.
   wp_load.
   wp_apply (wp_SliceAppend with "[$]").
@@ -768,6 +771,40 @@ Proof.
       intros H. apply n. word.
 Qed.
 
+Lemma eq_tree_map_insert_leaf children (x : u8) kp m v :
+  length children = uint.nat (W64 256) →
+  match (children !! (uint.nat x)) with
+  | Some (Some (Leaf _)) => True
+  | Some None => True
+  | _ => False
+  end →
+  eq_tree_map (Interior children) kp m →
+  eq_tree_map (Interior (<[uint.nat x:=Some (Leaf v)]> children))
+    kp (<[ kp ++ [x] := v ]> m).
+Proof.
+  intros Hlen Hleaf Heq k.
+  specialize (Heq k).
+  destruct k.
+  - simpl in *. rewrite lookup_insert_ne //.
+    intros Hbad. naive_solver.
+  - destruct (decide (x = w)).
+    + subst. simpl in *.
+      rewrite list_lookup_insert; last word.
+      destruct k; simpl.
+      * rewrite lookup_insert //.
+      * destruct (children !! uint.nat w) as [[[]|]|]; try done.
+        -- simpl in *. rewrite lookup_insert_ne //.
+           intros Hbad. list_simplifier.
+        -- simpl in *. rewrite lookup_insert_ne //.
+           intros Hbad. list_simplifier.
+    + simpl in *.
+      rewrite list_lookup_insert_ne //.
+      2:{ intros H. apply n. word. }
+      rewrite lookup_insert_ne //.
+      intros Hbad.
+      list_simplifier.
+Qed.
+
 Lemma has_tree_height_interior children (pos h : nat) :
   (h > 1)%nat →
   has_tree_height (Interior children) h →
@@ -776,11 +813,147 @@ Proof.
   intros ? Hheight.
   destruct h; first lia.
   simpl in *.
-  apply Forall_insert; try done.
   destruct h; first lia.
+  apply Forall_insert; try done.
   simpl. apply Forall_forall.
   intros. rewrite elem_of_replicate in H0. naive_solver.
 Qed.
+
+Lemma wp_updInteriorHash (ctx n : loc) b children :
+  {{{
+        "#Hctx" ∷ is_context ctx ∗
+        "Hnode" ∷ own_node_except (Some []) n (Interior children) ∗
+        "Hsl" ∷ own_slice b byteT (DfracOwn 1) ([] : list w8)
+  }}}
+    context__updInteriorHash #ctx (slice_val b) #n
+  {{{
+        sl (x : list w8), RET (slice_val sl);
+        own_slice sl byteT (DfracOwn 1) x ∗
+        own_node_except None n (Interior children)
+  }}}.
+Proof.
+  iIntros (?) "H HΦ".
+  iNamed "H".
+  wp_rec.
+  wp_pures.
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (b_ptr) "Hb".
+  wp_pures.
+  iDestruct (own_node_except_unfold with "Hnode") as "H".
+  iNamed "H". iNamed "Hchildren".
+  iClear "Hhash".
+  eset (loopInv:=(λ (i : w64),
+                   ∃ sl hashes,
+                   "Hb" ∷ b_ptr ↦[slice.T byteT] (slice_val sl) ∗
+                   "Hsl" ∷ own_slice sl byteT (DfracOwn 1) (concat hashes) ∗
+                   "Hhash" ∷ ([∗ list] c;h ∈ (take (uint.nat i) children);hashes,
+                                match c with
+                                | None => is_hash [W8 0] h
+                                | Some c => is_node_hash c h
+                                end) ∗
+                   "Hchildren" ∷ _
+                )%I
+      ).
+  wp_loadField.
+  wp_apply (wp_forSlice loopInv with "[] [Hsl_children Hb Hsl Hchildren]").
+  2:{
+    iSplitR "Hsl_children"; last iFrame.
+    repeat iExists _.
+    iFrame.
+    rewrite take_0.
+    instantiate (1:=[]).
+    simpl.
+    iFrame "∗#".
+  }
+  {
+    clear Φ.
+    iIntros (? child_ptr ?) "!# (HloopInv & %Hlt & %Hlookup) HΦ".
+    iNamed "HloopInv".
+    iDestruct (big_sepL2_lookup_2_some with "Hchildren") as %[child Hchild];
+      try eassumption.
+    iDestruct (big_sepL2_lookup_acc with "Hchildren") as "[Hchild Hchildren]";
+      try eassumption.
+    destruct child.
+    - wp_pures.
+      wp_apply (wp_context__getHash with "[$Hchild]").
+      { iFrame "Hctx". }
+      iIntros "* (Hchild & Hchild_hash_sl & Hchild_hash)".
+      wp_load.
+      wp_apply (wp_WriteBytes with "[$]").
+      iIntros (?) "[Hsl _]".
+      wp_store.
+      iApply "HΦ".
+      iSpecialize ("Hchildren" with "[$]").
+      repeat iExists _. iFrame.
+      instantiate (1:=hashes ++ [hash0]).
+      rewrite concat_app /= app_nil_r.
+      iFrame.
+      iModIntro.
+      replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+      erewrite take_S_r; last done.
+      iApply big_sepL2_snoc.
+      iFrame.
+    - wp_pures.
+      iDestruct "Hchild" as %->.
+      wp_apply (wp_context__getHash_null with "[]").
+      { iFrame "Hctx". }
+      iIntros "* (Hchild_hash_sl & Hchild_hash)".
+      wp_load.
+      wp_apply (wp_WriteBytes with "[$]").
+      iIntros (?) "[Hsl _]".
+      wp_store.
+      iApply "HΦ".
+      iSpecialize ("Hchildren" with "[//]").
+      repeat iExists _. iFrame.
+      instantiate (1:=hashes ++ [hash0]).
+      rewrite concat_app /= app_nil_r.
+      iFrame.
+      iModIntro.
+      replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+      erewrite take_S_r; last done.
+      iApply big_sepL2_snoc.
+      iFrame.
+  }
+  iIntros "[HloopInv Hsl_children]".
+  iDestruct (own_slice_small_sz with "Hsl_children") as %Hchildren_sl_len.
+  wp_pures.
+  iNamed "HloopInv".
+  iDestruct (big_sepL2_length with "Hchildren") as %Hlen.
+  wp_load.
+  wp_apply (wp_SliceAppend with "[$Hsl]").
+  iIntros (?) "Hsl".
+  wp_store.
+  wp_load.
+  iDestruct (own_slice_split with "Hsl") as "[Hsl Hcap]".
+  wp_apply (wp_Hash with "[$]").
+  iClear "His_hash".
+  iRename "Hhash" into "His_hashes".
+  iIntros "*". iNamed 1.
+  wp_storeField.
+  wp_load.
+  iApply "HΦ".
+  iFrame.
+  iApply own_node_except_unfold.
+  iMod (own_slice_small_persist with "Hhash") as "Hhash".
+  iFrame "Hptr_val ∗".
+  iFrame "#%".
+  iApply big_sepL2_fmap_l.
+  rewrite take_ge; last word.
+  iModIntro.
+  iApply (big_sepL2_impl with "His_hashes").
+  iIntros "!# * %% $".
+Qed.
+
+Lemma wp_context__getProof interiors (label : list w8) label_sl :
+  {{{
+        True
+  }}}
+    context__getProof #interiors (slice_val label_sl)
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+Abort.
 
 Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
   {{{
@@ -881,7 +1054,6 @@ Proof.
     { done. }
     iSplitR; first done.
     iSplitR; first done.
-    iSplitR; first done.
     iApply big_sepL2_replicate_r.
     { rewrite length_replicate //. }
     iApply big_sepL_impl.
@@ -915,17 +1087,17 @@ Proof.
               "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree (take (uint.nat depth) id) entries ⌝ ∗
               "%Hheight" ∷ ⌜ has_tree_height sub_tree (uint.nat full_height - uint.nat depth)%nat ⌝ ∗
 
-              "Hrest" ∷ (∀ sub_tree' ,
-                 own_node_except None currNode_ptr sub_tree' -∗
-                 ⌜ eq_tree_map sub_tree' (take (uint.nat depth) id) (<[id := val]> entries) ⌝ -∗
-                 ⌜ has_tree_height sub_tree' (uint.nat full_height - uint.nat depth)%nat ⌝ -∗
+              "Hrest" ∷ (∀ children' ,
+                 own_node_except None currNode_ptr (Interior children') -∗
+                 ⌜ eq_tree_map (Interior children') (take (uint.nat depth) id) (<[id := val]> entries) ⌝ -∗
+                 ⌜ has_tree_height (Interior children') (uint.nat full_height - uint.nat depth)%nat ⌝ -∗
                  (foldl (λ P node_ptr,
-                          ∃ tr, own_node_except (Some []) node_ptr tr ∗
-                                (own_node_except None node_ptr tr -∗ P)
+                          ∃ children, own_node_except (Some []) node_ptr (Interior children) ∗
+                                (own_node_except None node_ptr (Interior children) -∗ P)
                    )
-                   (∃ tr', own_node_except None root tr' ∗
-                           ⌜ eq_tree_map tr' [] (<[id := val]> entries) ⌝ ∗
-                           ⌜ has_tree_height tr' (uint.nat full_height) ⌝)
+                   (∃ children', own_node_except None root (Interior children') ∗
+                           ⌜ eq_tree_map (Interior children') [] (<[id := val]> entries) ⌝ ∗
+                           ⌜ has_tree_height (Interior children') (uint.nat full_height) ⌝)
                    (removelast interiors))
               )
          )%I).
@@ -982,6 +1154,7 @@ Proof.
         { unfold full_height in Hdepth. word. }
         { word. }
       }
+      iNamed "Hchildren".
       opose proof (list_lookup_lt ptr_children (uint.nat pos) ltac:(word)) as [ptr_child Hptr_child].
 
       wp_apply (wp_SliceGet with "[$Hsl_children]").
@@ -1062,7 +1235,6 @@ Proof.
         iFrame "∗".
         Transparent replicate.
         iDestruct (own_slice_small_nil) as "$"; first done.
-        iDestruct (own_slice_small_nil) as "$"; first done.
         erewrite drop_S; last done.
         rewrite decide_True //.
         iFrame "#".
@@ -1085,6 +1257,7 @@ Proof.
 
     iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
     iNamed "Hnode".
+    iNamed "Hchildren".
     wp_loadField.
     iDestruct (big_sepL2_length with "Hchildren") as %Hlen.
     iDestruct (big_sepL2_lookup_1_some with "Hchildren") as %[child_ptr Hptr_children_lookup].
@@ -1140,12 +1313,13 @@ Proof.
       lia.
     }
     rewrite foldl_snoc removelast_app //= app_nil_r.
-    iExists (Interior (<[uint.nat pos := Some sub_tree' ]> children)).
+    iExists ((<[uint.nat pos := Some (Interior children') ]> children)).
     iSplitR "Hrest".
     {
       iApply own_node_except_unfold.
       repeat iExists _.
       iFrame "Hptr_hash Hptr_children ∗".
+      iSplitR; first done.
       iSplitR; first done.
       iSplitR; first done.
       iSplitR; first done.
@@ -1159,7 +1333,7 @@ Proof.
       iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[_ Hchildren]".
       { done. }
       { done. }
-      iSpecialize ("Hchildren" $! (Some sub_tree') child_ptr).
+      iSpecialize ("Hchildren" $! (Some _) child_ptr).
       iEval (rewrite (list_insert_id ptr_children); last done) in "Hchildren".
       iSpecialize ("Hchildren" with "[]").
       { rewrite decide_True //. }
@@ -1262,12 +1436,14 @@ Proof.
   wp_pures.
   rewrite zero_slice_val.
   wp_apply (wp_compLeafNodeHash with "[$Hval]").
-  iIntros "* [Hhash_sl His_leaf_hash]".
+  iIntros "* (Hval_in & Hhash_sl & His_leaf_hash)".
   wp_apply wp_allocStruct; [val_ty|].
   iIntros (leaf_ptr) "Hleaf".
   iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
   iNamed "Hnode".
+  destruct sub_tree as [| | children]; try done.
   wp_loadField.
+  iNamed "Hchildren".
   opose proof (list_lookup_lt ptr_children (uint.nat pos) ltac:(word)) as [child Hchild].
 
   wp_apply (wp_SliceSet with "[$Hsl_children]").
@@ -1287,6 +1463,185 @@ Proof.
   wp_pures.
 
   clear loopInv.
+  iMod (own_slice_small_persist with "Hval_in") as "Hval_in".
+  iMod (own_slice_small_persist with "Hhash_sl") as "Hhash_sl".
+  iAssert (
+      ∃ (depth : w64) current_ptr current_children loopBuf_sl,
+        "Hdepth" ∷ depth_ptr ↦[uint64T] #depth ∗
+        "HloopBuf_ptr" ∷ loopBuf_ptr ↦[slice.T byteT] (slice_val loopBuf_sl) ∗
+        "HloopBuf" ∷ own_slice loopBuf_sl byteT (DfracOwn 1) ([] : list w8) ∗
+        "%Hdepth_ge" ∷ ⌜ uint.nat depth ≥ 0 ⌝ ∗
+        if decide (uint.nat depth = 0)%nat then
+          "HcurrNode" ∷ own_node_except None root (Interior current_children)
+        else
+          "HcurrNode" ∷ own_node_except (Some []) current_ptr (Interior current_children) ∗
+          "%HinteriorLookup" ∷ ⌜ interiors !! ((uint.nat depth) - 1)%nat = Some current_ptr ⌝ ∗
+          "Hrest" ∷ (own_node_except None current_ptr (Interior current_children) -∗
+                     foldl
+                       (λ (P : iPropI Σ) (node_ptr : loc),
+                          ∃ children, own_node_except (Some []) node_ptr (Interior children) ∗
+                                      (own_node_except None node_ptr (Interior children) -∗ P))
+                       (∃ children', own_node_except None root (Interior children') ∗
+                                     ⌜eq_tree_map (Interior children') [] (<[id:=val]> entries)⌝ ∗
+                                     ⌜has_tree_height (Interior children') (uint.nat full_height)⌝)
+                       (take (uint.nat depth - 1)%nat interiors)
+            )
+    )%I with "[Hdepth_ptr His_leaf_hash Hleaf Hptr_hash Hrest Hval_in Hhash_sl
+              Hptr_val Hptr_children Hchildren Hsl_children HloopBuf_ptr HloopBuf]" as "HloopInv".
+  {
+    iFrame "Hdepth_ptr".
+    iFrame.
+    iExists currNode_ptr, (<[ uint.nat pos := Some $ Leaf val ]> children).
+    iDestruct (big_sepL2_length with "Hchildren") as %Hchildren_length.
+    iSplitR.
+    { word. }
+    iSplitR "Hrest".
+    {
+      iApply own_node_except_unfold.
+      iFreeze "Hval_in Hhash_sl".
+      iFrame "∗#%".
+      iThaw "Hval_in Hhash_sl".
+      rewrite length_insert. iFrame "%".
+      replace (uint.nat (W64 (uint.Z pos))) with (uint.nat pos) by word.
+      iApply (big_sepL2_delete _ _ _ (uint.nat pos)).
+      { apply list_lookup_insert. word. }
+      { apply list_lookup_insert. word. }
+      iSplitL "Hleaf Hhash_sl His_leaf_hash Hval_in".
+      { (* prove [own_node_except] for leaf *)
+        iDestruct (struct_fields_split with "Hleaf") as "H".
+        iNamed "H". iNext.
+        iApply own_node_except_unfold.
+        iFrame "∗#".
+        iDestruct (own_slice_small_nil) as "$"; done.
+      }
+      iDestruct (big_sepL2_lookup_2_some with "Hchildren") as %[? ?].
+      { done. }
+
+      (* XXX: this is like re-establishing Hrest in the loop *)
+      iDestruct (big_sepL2_delete _ _ _ (uint.nat pos) with "Hchildren") as "[_ Hchildren]";
+        try eassumption.
+      iDestruct (big_sepL2_insert_acc _ _ _ (uint.nat pos) with "Hchildren") as "[_ Hchildren]";
+        try eassumption.
+      iSpecialize ("Hchildren" $! (Some (Leaf val)) leaf_ptr with "[]").
+      { rewrite decide_True //. }
+      iApply (big_sepL2_impl with "Hchildren").
+      iIntros "!# * %% H".
+      destruct decide; first done.
+      destruct x1.
+      { erewrite drop_S; last done. rewrite decide_False //. }
+      { done. }
+    }
+    iSplitR.
+    { iPureIntro. rewrite -Hinteriors_last last_lookup.
+      f_equal. rewrite Hinteriors_length. word. }
+    iIntros "Ht".
+    rewrite removelast_firstn_len /=.
+    iSpecialize ("Hrest" with "[$] [] []").
+    {
+      iPureIntro.
+      apply (eq_tree_map_insert_leaf _ pos _ _ val) in Hsubmap.
+      2:{ word. }
+      2:{
+        replace (uint.nat _ - _)%nat with (S O) in Hheight0.
+        2:{ unfold full_height. word. }
+        simpl in Hheight0.
+        opose proof (list_lookup_lt children (uint.nat pos) ltac:(word)) as [? Hchild'].
+        rewrite Hchild'.
+        eapply Forall_lookup in Hheight0; last done.
+        destruct x as [[]|]; try done.
+      }
+      erewrite <- take_S_r in Hsubmap.
+      2:{ done. }
+      rewrite -> (take_ge _ (S _)) in Hsubmap.
+      2:{ word. }
+      done.
+    }
+    {
+      iPureIntro.
+      replace (uint.nat _ - _)%nat with (S O).
+      2:{ unfold full_height. word. }
+      simpl. by apply Forall_insert.
+    }
+    iExactEq "Hrest".
+    repeat f_equal.
+    rewrite Hinteriors_length.
+    word.
+  }
+  wp_forBreak_cond.
+
+  iNamed "HloopInv".
+  wp_load.
+  wp_pures.
+  wp_if_destruct.
+  { (* run the loop body *)
+    erewrite decide_False; last word.
+    iNamed "HloopInv".
+    wp_pures. wp_load. wp_pures.
+    wp_load.
+    wp_apply (wp_SliceGet with "[$Hinteriors]").
+    { iPureIntro. erewrite <- HinteriorLookup. f_equal. word. }
+    iIntros "Hinteriors".
+    wp_pures.
+    wp_load.
+    wp_loadField.
+    wp_apply (wp_updInteriorHash with "[$HloopBuf $His_ctx $HcurrNode]").
+    iIntros "* [Hsl HcurrNode]".
+    wp_store.
+    wp_load.
+    wp_apply (wp_SliceTake_full with "Hsl").
+    { word. }
+    iIntros "Hsl". rewrite take_0.
+    wp_store.
+    wp_load.
+    wp_store.
+    iLeft. iModIntro.
+    iSplitR; first done.
+    iSpecialize ("Hrest" with "HcurrNode").
+    replace (uint.nat (word.sub depth (W64 1))) with (uint.nat depth - 1)%nat by word.
+    destruct (uint.nat depth - 1)%nat eqn:Hdepth.
+    {
+      iDestruct "Hrest" as (?) "(Hnode & % & %)".
+      iFrame.
+      repeat iExists _.
+      iSplitR; first word.
+      erewrite decide_True; last word.
+      iFrame "Hnode".
+    }
+    {
+      opose proof (list_lookup_lt interiors n _) as [next_ptr Hnext_lookup].
+      { apply lookup_lt_Some in HinteriorLookup. lia. }
+      erewrite take_S_r; last done.
+      rewrite foldl_snoc.
+      iDestruct "Hrest" as (?) "[Hnode Hrest]".
+      iFrame.
+      repeat iExists _.
+      iSplitR; first word.
+      erewrite decide_False; last word.
+      simpl.
+      replace (uint.nat (word.sub _ _) - 1)%nat with (n) by word.
+      iFrame "∗%".
+    }
+  }
+  (* done with loop *)
+  iRight.
+  iModIntro; iSplitR; first done.
+  wp_pures.
+  wp_loadField.
+  wp_loadField.
+  erewrite decide_True; last word.
+  iNamed "HloopInv".
+  wp_apply (wp_context__getHash with "[$HcurrNode $His_ctx]").
+  iClear "His_hash".
+  iIntros "* (Hnode & #Hhash_sl & #His_hash)".
+  wp_pures.
+  wp_load.
+  wp_loadField.
+  (* TODO: wp_context__getProof.
+     Problematic because nothing is known about [interiors] at this point.
+     To know that [interiors] are the interior nodes for the current tree, we
+     need separate ownership for each node, which means we cannot the own
+     `own_node_except` for the root.
+   *)
 Admitted.
 
 Lemma wp_Tree_Get ptr_tr entries sl_id id dq :
