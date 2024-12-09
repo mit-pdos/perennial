@@ -675,6 +675,53 @@ Section alloc.
            (γrepl_hist) "Hrepl_hist".
     { apply gset_to_gmap_valid; apply mono_list_auth_valid. }
 
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) 0%nat) keys_all)) as
+           (γrepl_ts) "Hrepl_ts".
+    { apply gset_to_gmap_valid. rewrite //=. }
+
+    iMod (own_alloc (gset_to_gmap (●ML ([None] : dbhist)) keys_all)) as
+           (γcmtd_hist) "Hcmtd_hist".
+    { apply gset_to_gmap_valid; apply mono_list_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (●ML ([None] : dbhist)) keys_all)) as
+           (γlnrz_hist) "Hlnrz_hist".
+    { apply gset_to_gmap_valid; apply mono_list_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) (∅ : dbkmod)) keys_all)) as
+           (γlnrz_kmod) "Hlnrz_kmod".
+    { apply gset_to_gmap_valid. rewrite //=. }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) (∅ : dbkmod)) keys_all)) as
+           (γcmtd_kmod) "Hcmtd_kmod".
+    { apply gset_to_gmap_valid. rewrite //=. }
+
+    iMod (own_alloc (gset_to_gmap (●ML ([] : dblog)) gids_all)) as
+           (γtxn_log) "Htxn_log".
+    { apply gset_to_gmap_valid; apply mono_list_auth_valid. }
+
+    iMod (own_alloc (i := tulip_ghostG0.(@txn_cpoolG Σ))
+            (gset_to_gmap (to_dfrac_agree (DfracOwn 1) (∅ : ccommandsR)) gids_all)) as
+           (γtxn_cpool) "Htxn_cpool".
+    { apply gset_to_gmap_valid. rewrite //=. }
+
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> ∅)) gids_all)) as
+           (γgroup_prep) "Hgroup_prep".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> (∅ : gmap (nat * nat) bool)))
+                       gids_all)) as
+           (γgroup_prepare_proposal) "Hgroup_prepare_proposal".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> (∅ : gmap nat bool)))
+                       gids_all)) as
+           (γgroup_commit) "Hgroup_commit".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (gset_to_gmap () ∅ : gmap chan unit))
+                       gids_all)) as
+           (γgroup_trmlm) "Hgroup_trmlm".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
 
     (* Instantiate all uses of this with an actual proper gname *)
     set TODOgname := γtxn_res.
@@ -682,13 +729,13 @@ Section alloc.
     set γ := {|
     db_ptsto := γdb_ptsto;
     repl_hist := γrepl_hist;
-    repl_ts := TODOgname;
-    lnrz_kmod := TODOgname;
-    cmtd_kmod := TODOgname;
-    txn_log := TODOgname;
-    txn_cpool := TODOgname;
-    cmtd_hist := TODOgname;
-    lnrz_hist := TODOgname;
+    repl_ts := γrepl_ts;
+    lnrz_kmod := γlnrz_kmod;
+    cmtd_kmod := γcmtd_kmod;
+    txn_log := γtxn_log;
+    txn_cpool := γtxn_cpool;
+    cmtd_hist := γcmtd_hist;
+    lnrz_hist := γlnrz_hist;
     txn_res := γtxn_res;
     txn_oneshot_wrs := γtxn_oneshot_wrs;
     lnrz_tid := γlnrz_tid;
@@ -698,9 +745,9 @@ Section alloc.
     txn_client_token := γtxn_client_token;
     txn_postcond := γtxn_postcond;
     largest_ts := γlargest_ts;
-    group_prep := TODOgname;
-    group_prepare_proposal := TODOgname;
-    group_commit := TODOgname;
+    group_prep := γgroup_prep;
+    group_prepare_proposal := γgroup_prepare_proposal;
+    group_commit := γgroup_commit;
     replica_validated_ts := TODOgname;
     replica_key_validation := TODOgname;
     replica_clog := TODOgname;
@@ -708,7 +755,7 @@ Section alloc.
     replica_ballot := TODOgname;
     replica_vote := TODOgname;
     replica_token := TODOgname;
-    group_trmlm := TODOgname;
+    group_trmlm := γgroup_trmlm;
     sids := TODOgname;
     gentid_reserved := TODOgname |}.
 
@@ -742,6 +789,40 @@ Section alloc.
     { iFrame. }
     iSplitL "Hrep2".
     { iFrame. }
+
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hrepl_ts") as "($&$)".
+    iSplitL "Hcmtd_hist".
+    { rewrite -big_opS_gset_to_gmap big_opS_own_1. iFrame. }
+    iSplitL "Hlnrz_hist".
+    { rewrite -big_opS_gset_to_gmap big_opS_own_1. iFrame. }
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hlnrz_kmod") as "($&$)".
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hcmtd_kmod") as "($&$)".
+    iDestruct (own_gset_to_gmap_singleton_is_op with "Htxn_log") as "($&$)".
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Htxn_cpool") as "($&$)".
+    iSplitL "Hgroup_prep".
+    { rewrite /own_group_prepm.
+      rewrite -big_opS_gset_to_gmap big_opS_own_1.
+      iApply (big_sepS_mono with "Hgroup_prep").
+      iIntros (? Hin) "H". iFrame "H". rewrite //=. }
+    iSplitL "Hgroup_prepare_proposal".
+    { rewrite /own_group_prepare_proposals_map.
+      rewrite -big_opS_gset_to_gmap big_opS_own_1.
+      iApply (big_sepS_mono with "Hgroup_prepare_proposal").
+      iIntros (? Hin) "H". iExists ∅. iFrame "H". rewrite big_sepM_empty //=. iSplit; first done.
+      iPureIntro. naive_solver.
+    }
+    iSplitL "Hgroup_commit".
+    { rewrite /own_group_commit_map.
+      rewrite -big_opS_gset_to_gmap big_opS_own_1.
+      iApply (big_sepS_mono with "Hgroup_commit").
+      iIntros (? Hin) "H". rewrite big_sepM_empty //=. iFrame.
+    }
+    iSplitL "Hgroup_trmlm".
+    { rewrite -big_opS_gset_to_gmap big_opS_own_1.
+      iApply (big_sepS_mono with "Hgroup_trmlm").
+      iIntros (? Hin) "H". rewrite /own_terminals. rewrite big_sepS_empty //=.
+      iFrame.
+    }
 
   Admitted.
 
