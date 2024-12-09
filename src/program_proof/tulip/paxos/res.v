@@ -672,6 +672,19 @@ Section res.
       is_accepted_proposal_length_lb γ nid t n2.
     Proof. iIntros (Hlt) "(%v & Hlb & %Hlen)". iFrame. iPureIntro. lia. Qed.
 
+    Lemma accepted_proposals_init γ nids:
+      ([∗ set] nid ∈ nids, own_accepted_proposals γ nid ∅) ==∗
+      ([∗ set] nid ∈ nids, own_accepted_proposals γ nid {[0%nat := []]}) ∗
+      ([∗ set] nid ∈ nids, own_accepted_proposal γ nid 0 []).
+    Proof.
+      iIntros "Hempty".
+      rewrite -big_sepS_sep.
+      iApply big_sepS_bupd.
+      iApply (big_sepS_mono with "Hempty").
+      iIntros (nid Hin) "Hown".
+      by iMod (accepted_proposal_insert 0 [] with "[$]").
+    Qed.
+
   End accepted_proposal.
 
   Section current_term.
@@ -885,6 +898,32 @@ End wal.
 Section alloc.
   Context `{!paxos_ghostG Σ}.
 
+  (* TODO: move this to a more shareable place *)
+  Lemma big_sepS_singleton_sep_half {K A} `{Countable K} `{!inG Σ (gmapUR K (dfrac_agreeR A))}
+    γ (X : gset K) (f : K → A) :
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn 1) (f s)]}) -∗
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) (f s)]}) ∗
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) (f s)]}).
+  Proof.
+    iIntros "H".
+    rewrite -big_sepS_sep.
+    iApply (big_sepS_mono with "H").
+    iIntros (x Hin) "H".
+    rewrite /own_current_term_half.
+    rewrite -own_op singleton_op.
+    rewrite -dfrac_agree_op.
+    rewrite dfrac_op_own Qp.half_half //.
+  Qed.
+
+  Lemma own_gset_to_gmap_singleton_sep_half {K A} `{Countable K} `{!inG Σ (gmapUR K (dfrac_agreeR A))}
+    γ (X : gset K) (a : A):
+    own γ (gset_to_gmap (to_dfrac_agree (DfracOwn 1) a) X) -∗
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) a]}) ∗
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) a]}).
+  Proof.
+    rewrite -big_opS_gset_to_gmap big_opS_own_1 -big_sepS_singleton_sep_half //.
+  Qed.
+
   Lemma paxos_res_alloc nids fnames :
     ⊢ |==> ∃ γ, (own_log_half γ [] ∗ own_log_half γ [] ∗ own_cpool_half γ ∅ ∗ own_cpool_half γ ∅) ∗
                 own_proposals γ ∅ ∗
@@ -937,8 +976,7 @@ Section alloc.
       rewrite //=.
     }
 
-    (* But this doesn't quite type check? *)
-    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> {[0%nat := []]})) nids)) as
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> ∅)) nids)) as
            (γnode_proposal) "Hnode_proposal".
     { intros k. rewrite lookup_gset_to_gmap.
       destruct (guard _).
@@ -946,7 +984,57 @@ Section alloc.
       rewrite //=.
     }
 
-    iModIntro.
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) nids)) as
+           (γcurrent_term) "Hcurrent_term".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { simpl. constructor; auto => //=. }
+      rewrite //=.
+    }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) nids)) as
+           (γledger_term) "Hledger_term".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { simpl. constructor; auto => //=. }
+      rewrite //=.
+    }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) O) nids)) as
+           (γcommitted_lsn) "Hcommitted_lsn".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { simpl. constructor; auto => //=. }
+      rewrite //=.
+    }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) ([] : ledgerO)) nids)) as
+           (γnode_ledger) "Hnode_ledger".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { simpl. constructor; auto => //=. }
+      rewrite //=.
+    }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) ([] : pxcmdlO)) nids)) as
+           (γnode_wal) "Hnode_wal".
+    { intros k. rewrite lookup_gset_to_gmap.
+      destruct (guard _).
+      { simpl. constructor; auto => //=. }
+      rewrite //=.
+    }
+
+    iMod (own_alloc ((to_agree  <$> fnames) : gmapR u64 (agreeR stringO))) as
+           (γnode_wal_fname) "Hnode_wal_fname".
+    { intros k.
+      rewrite lookup_fmap.
+      destruct (fnames !! k) eqn:Heq; rewrite Heq //=.
+    }
+
+    iMod (ghost_map_alloc_empty (K := chan) (V := unit)) as
+      (γtrmlm) "Htrmlm".
+
+
     set γ :=
       {| consensus_log := γconsensus_log;
          consensus_cpool := γconsensus_cpool;
@@ -955,14 +1043,28 @@ Section alloc.
          prepare_lsn := γprepare_lsn;
          node_declist := γnode_declist;
          node_proposal := γnode_proposal;
-         current_term := γconsensus_cpool;
-         ledger_term := γconsensus_cpool;
-         committed_lsn := γconsensus_cpool;
-         node_ledger := γconsensus_cpool;
-         node_wal := γconsensus_cpool;
-         node_wal_fname := γconsensus_cpool;
-         trmlm := γconsensus_cpool |}.
+         current_term := γcurrent_term;
+         ledger_term := γledger_term;
+         committed_lsn := γcommitted_lsn;
+         node_ledger := γnode_ledger;
+         node_wal := γnode_wal;
+         node_wal_fname := γnode_wal_fname;
+         trmlm := γtrmlm |}.
+
+    iAssert (|==> [∗ set] nid ∈ nids, own_accepted_proposals γ nid ∅)%I
+      with "[Hnode_proposal]" as ">Hnode_proposal".
+    {
+      rewrite /own_accepted_proposals.
+      rewrite -big_opS_gset_to_gmap big_opS_own_1.
+      iApply (big_sepS_mono with "Hnode_proposal").
+      iIntros (? Hin) "H". iExists _. iFrame.
+      rewrite big_sepM2_empty //.
+    }
+
+    iMod (accepted_proposals_init with "Hnode_proposal") as "(Hnode_proposal1&Hnode_proposal2)".
+    iModIntro.
     iExists γ.
+
     iSplitL "Hconsensus_log1 Hconsensus_log2 Hconsensus_cpool1 Hconsensus_cpool2".
     { iFrame. rewrite big_sepS_empty //=. }
     iFrame "Hproposals".
@@ -973,14 +1075,22 @@ Section alloc.
     { rewrite -big_opS_gset_to_gmap big_opS_own_1. iExact "Hfree_prepare". }
     iSplitL "Hnode_declist".
     { rewrite -big_opS_gset_to_gmap big_opS_own_1. iExact "Hnode_declist". }
-    iSplitL "Hnode_proposal".
-    { rewrite -big_opS_gset_to_gmap big_opS_own_1.
-      iApply (big_sepS_mono with "Hnode_proposal").
-      iIntros (? Hin) "H". iExists _. iFrame.
-      (* Seems like an issue here, it should be a map to a γ not an empty list? *)
-      admit.
-    }
+    iSplitL "Hnode_proposal1".
+    { iFrame. }
+    iSplitL "Hnode_proposal2".
+    { iFrame. }
 
-  Admitted.
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hcurrent_term") as "($&$)".
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hledger_term") as "($&$)".
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hcommitted_lsn") as "($&$)".
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hnode_ledger") as "($&$)".
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hnode_wal") as "($&$)".
+
+    iSplitL "Hnode_wal_fname".
+    { rewrite -big_opM_own_1 -big_opM_fmap big_opM_singletons //. }
+
+    rewrite /own_terminals.
+    iFrame "Htrmlm". rewrite big_sepS_empty //.
+  Qed.
 
 End alloc.
