@@ -81,7 +81,8 @@ Definition context__getProof: val :=
     let: "proof" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (cryptoffi.HashLen * hashesPerProofDepth)) in
     let: "currNode" := ref_to ptrT "root" in
     let: "depth" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "depth") < cryptoffi.HashLen); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+    Skip;;
+    (for: (λ: <>, ((![uint64T] "depth") < cryptoffi.HashLen) && ((![ptrT] "currNode") ≠ #null)); (λ: <>, Skip) := λ: <>,
       let: "children" := struct.loadF node "children" (![ptrT] "currNode") in
       let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
       ForSlice ptrT <> "n" (SliceTake "children" "pos")
@@ -89,6 +90,7 @@ Definition context__getProof: val :=
       "currNode" <-[ptrT] (SliceGet ptrT (struct.loadF node "children" (![ptrT] "currNode")) "pos");;
       ForSlice ptrT <> "n" (SliceSkip ptrT "children" ("pos" + #1))
         ("proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (context__getHash "ctx" "n")));;
+      "depth" <-[uint64T] ((![uint64T] "depth") + #1);;
       Continue);;
     ![slice.T byteT] "proof".
 

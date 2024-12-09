@@ -322,6 +322,8 @@ Definition is_context c : iProp Σ :=
     "#Hhash_sl" ∷ own_slice_small emptyHash_sl byteT DfracDiscarded emptyHash ∗
     "#Hhash" ∷ is_hash [W8 0] emptyHash.
 
+Typeclasses Opaque is_context.
+
 (* own_merkle denotes ownership of a merkle tree containing some entries. *)
 Definition own_merkle ptr_tr entries : iProp Σ :=
   ∃ (root ctx : loc),
@@ -350,7 +352,10 @@ Definition is_dig entries dig : iProp Σ :=
 we use (val : option string) instead of (val : tree) bc there are really
 only two types of nodes we want to allow. *)
 Definition is_merkle_entry id val digest : iProp Σ :=
-  ∃ tr, is_node_hash tr digest ∧ ⌜ is_tree_lookup tr id val ⌝.
+  (is_hash [W8 0] digest ∧ ⌜ val = None ⌝)
+  ∨
+  (∃ tr, is_node_hash tr digest ∧ ⌜ is_tree_lookup tr id val ⌝)
+.
 
 Lemma is_node_hash_not_empty tr dig id val :
   is_tree_lookup tr id val →
@@ -375,27 +380,23 @@ Lemma is_merkle_entry_inj id val1 val2 digest :
 Proof.
   iInduction (id) as [|a] "IH" forall (digest).
   {
-    iIntros "Hval1 Hval2".
-    rewrite /is_merkle_entry.
-    iDestruct "Hval1" as (tr1) "[Htree1 %Hcont1]".
-    iDestruct "Hval2" as (tr2) "[Htree2 %Hcont2]".
-    simpl in *.
-    destruct tr1, tr2; try done; subst.
-    - iDestruct (is_hash_inj with "[$] [$]") as "%Heq".
-      iPureIntro. by list_simplifier.
-    - simpl. iDestruct "Htree2" as (?) "[? Htree2]".
-      iDestruct (is_hash_inj with "[$] [$]") as "%Heq".
-      exfalso. by list_simplifier.
-    - simpl. iDestruct "Htree1" as (?) "[? Htree1]".
-      iDestruct (is_hash_inj with "[$] [$]") as "%Heq".
-      exfalso. by list_simplifier.
-    - done.
+    iIntros "[[Hval1 %]|(%tr1 & Htree1 & %Hlookup1)] [[Hval2 %]|(%tr2 & Htree2 & %Hlookup2)]"; subst; try done.
+    - iExFalso. by iDestruct (is_node_hash_not_empty with "[$] [$]") as "$".
+    - iExFalso. by iDestruct (is_node_hash_not_empty with "[$] [$]") as "$".
+    - simpl in *.  destruct tr1, tr2; simpl in *; subst; try done.
+      + iDestruct (is_hash_inj with "[$] [$]") as "%Heq".
+        list_simplifier. done.
+      + simpl. iDestruct "Htree2" as (?) "[? Htree2]".
+        iDestruct (is_hash_inj with "[$] [$]") as "%Heq".
+        exfalso. by list_simplifier.
+      + simpl. iDestruct "Htree1" as (?) "[? Htree1]".
+        iDestruct (is_hash_inj with "[$] [$]") as "%Heq".
+        exfalso. by list_simplifier.
   }
+  iIntros "[[Hval1 %]|(%tr1 & Htree1 & %Hlookup1)] [[Hval2 %]|(%tr2 & Htree2 & %Hlookup2)]"; subst; try done.
+  { iExFalso. by iDestruct (is_node_hash_not_empty with "[$] [$]") as "$". }
+  { iExFalso. by iDestruct (is_node_hash_not_empty with "[$] [$]") as "$". }
   {
-    iIntros "Hval1 Hval2".
-    rewrite /is_merkle_entry.
-    iDestruct "Hval1" as (tr1) "[Htree1 %Hcont1]".
-    iDestruct "Hval2" as (tr2) "[Htree2 %Hcont2]".
     simpl in *.
     destruct tr1, tr2; subst; try done.
     - simpl. iDestruct "Htree2" as (?) "[? Htree2]".
@@ -421,7 +422,7 @@ Proof.
         iSplit.
         - rewrite Forall_forall.
           iIntros (hash Helem_of).
-          clear a Hcont1 Hcont2.
+          clear a Hlookup1 Hlookup2.
           apply elem_of_list_lookup_1 in Helem_of as [a Hlookup].
           iClear "Hchildren1".
           iDestruct (big_sepL2_lookup_2_some _ _ _ a with "Hchildren2") as %[? Hlookup'].
@@ -436,7 +437,7 @@ Proof.
           { by iApply is_hash_len. }
         - rewrite Forall_forall.
           iIntros (hash Helem_of).
-          clear a Hcont1 Hcont2.
+          clear a Hlookup1 Hlookup2.
           apply elem_of_list_lookup_1 in Helem_of as [a Hlookup].
           iClear "Hchildren2".
           iDestruct (big_sepL2_lookup_2_some _ _ _ a with "Hchildren1") as %[? Hlookup'].
@@ -467,8 +468,8 @@ Proof.
       simpl.
       destruct o, o0; subst.
       + iApply ("IH" with "[Hchild1] [Hchild2]").
-        { by iFrame. }
-        { by iFrame. }
+        { iRight. by iFrame. }
+        { iRight. by iFrame. }
       + destruct t.
         { simpl in *. destruct id; done. }
         { simpl. iDestruct (is_hash_inj with "[$] [$]") as "%Hbad".
@@ -505,8 +506,8 @@ Proof.
     specialize (Htree1 k).
     specialize (Htree2 k).
     iDestruct (is_merkle_entry_inj with "[] []") as %Heq.
-    { iExists _. iFrame "Hdig1". done. }
-    { iExists _. iFrame "Hdig2". done. }
+    { iRight. iExists _. iFrame "Hdig1". done. }
+    { iRight. iExists _. iFrame "Hdig2". done. }
     done.
 Qed.
 
@@ -515,18 +516,17 @@ as the underlying map, you can combine those to get a pure map fact. *)
 Lemma is_merkle_entry_with_map id val dig m :
   is_merkle_entry id val dig -∗ is_dig m dig -∗ ⌜ m !! id = val ⌝.
 Proof.
-  iIntros "H Hdig".
-  iDestruct "H" as (?) "[#Hhash2 %]".
+  iIntros "Hentry Hdig".
   iDestruct "Hdig" as "[Hbad|H]".
   {
     iNamed "Hbad". subst.
+    iDestruct "Hentry" as "[[Hempty %]| (%tr & #Hhash2 & %)]"; subst; try done.
     by iDestruct (is_node_hash_not_empty with "[$] [$]") as "?".
   }
   iNamed "H".
-  iDestruct (is_merkle_entry_inj with "[] []") as %Heq.
-  { iExists _; iFrame "Hdig". done. }
-  { iExists _; iFrame "Hhash2". done. }
-  done.
+  iDestruct (is_merkle_entry_inj with "[] [$]") as %Heq.
+  { iRight. iExists _; iFrame "Hdig". done. }
+  { done. }
 Qed.
 
 End external.
@@ -587,6 +587,18 @@ Proof.
   by iFrame "#".
 Qed.
 
+Lemma own_node_except_not_null p t:
+  own_node_except p null t -∗
+  False.
+Proof.
+  iIntros "Hnode".
+  iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
+  wp_pures.
+  iDestruct "Hnode" as (??????) "(_ & H & _)".
+  iExFalso.
+  iDestruct (struct_field_pointsto_not_null with "H") as %?; done.
+Qed.
+
 Lemma wp_context__getHash ctx n tr :
   {{{
         "#Hctx" ∷ is_context ctx ∗
@@ -604,15 +616,7 @@ Proof.
   iNamed "H".
   wp_rec.
   wp_pures. wp_if_destruct.
-  {
-    (* XXX: make this a lemma? *)
-    iExFalso.
-    iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
-    wp_pures.
-    iDestruct "Hnode" as (??????) "(_ & H & _)".
-    iExFalso.
-    iDestruct (struct_field_pointsto_not_null with "H") as %?; done.
-  }
+  { by iDestruct (own_node_except_not_null with "[$]") as "?". }
   iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
   iNamed "Hnode".
   wp_loadField.
@@ -944,16 +948,72 @@ Proof.
   iIntros "!# * %% $".
 Qed.
 
-Lemma wp_context__getProof interiors (label : list w8) label_sl :
+(* is_merkle_proof says that the merkle proof gives rise to a cut tree
+that has digest dig. and is_merkle_entry id val dig.
+the cut tree is the existential tree in is_merkle_entry. *)
+Definition is_merkle_proof (proof : (list w8)) (id : list w8)
+    (val : option (list w8)) (dig : list w8) : iProp Σ :=
+  ∃ (proof' : list (list (list w8))),
+    ⌜ proof = concat (concat (proof')) ⌝ ∧
+  let otr :=
+    foldl (λ tr '(sibling_digs, pos),
+             let siblings := Some <$> (Cut <$> sibling_digs) in
+             Some (Interior ((take (uint.nat pos) siblings) ++ [tr] ++ (drop (uint.nat pos) siblings)))
+      ) (Leaf <$> val) (zip proof' id) in
+  match otr with
+  | Some tr => is_node_hash tr dig ∧ ⌜ is_tree_lookup tr id val ⌝
+  | None => is_hash [W8 0] dig ∧ ⌜ val = None ⌝
+  end.
+
+Global Instance is_merkle_proof_persis proof id val dig :
+  Persistent (is_merkle_proof proof id val dig).
+Proof. apply _. Qed.
+
+Lemma is_merkle_proof_to_entry proof id val dig :
+  is_merkle_proof proof id val dig -∗ is_merkle_entry id val dig.
+Proof.
+  iIntros "(% & % & #?)"; subst.
+  rewrite /is_merkle_proof.
+  destruct foldl.
+  { iRight. iFrame "#". }
+  { iLeft. iFrame "#". }
+Qed.
+
+Lemma wp_context__getProof ctx n tr (label : list w8) label_sl dq :
   {{{
-        True
+        "#Hctx" ∷ is_context ctx ∗
+        "Hnode" ∷ own_node_except None n tr ∗
+        "Hlabel_sl" ∷ own_slice_small label_sl byteT dq label
   }}}
-    context__getProof #interiors (slice_val label_sl)
+    context__getProof #ctx #n (slice_val label_sl)
   {{{
-        RET #(); True
+        proof_sl (proof : list w8), RET (slice_val proof_sl);
+        own_node_except None n tr ∗
+        own_slice_small label_sl byteT dq label ∗
+        own_slice proof_sl byteT (DfracOwn 1) proof ∗
+        (∀ dig v,
+           ⌜ is_tree_lookup tr label v ⌝ -∗
+           is_node_hash tr dig -∗
+           is_merkle_proof proof label v dig
+        )
   }}}.
 Proof.
-Abort.
+  iIntros (?) "H HΦ".
+  iNamed "H".
+  wp_rec. wp_pures.
+  wp_apply wp_NewSliceWithCap; [word|].
+  iIntros (?) "Hproof_sl".
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (proof_ptr) "Hproof_ptr".
+  wp_pures.
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (currNode_ptr) "HcurrNode_ptr".
+  wp_pures.
+  wp_apply wp_ref_to; [val_ty|].
+  iIntros (depth_ptr) "Hdepth".
+  wp_pures.
+  wp_forBreak_cond.
+Admitted.
 
 Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
   {{{
@@ -971,9 +1031,10 @@ Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
       if negb err then
         ∃ dig proof,
         "Htree" ∷ own_merkle ptr_tr (<[id:=val]>entries) ∗
-        "Hdig" ∷ own_slice_small sl_dig byteT (DfracOwn 1) dig ∗
+        "Hdig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
         "#HisDig" ∷ is_dig (<[id:=val]>entries) dig ∗
-        "Hproof" ∷ is_Slice3D sl_proof proof
+        "Hproof" ∷ own_slice_small sl_proof byteT DfracDiscarded proof ∗
+        "His_proof" ∷ is_merkle_proof proof id (Some val) dig
       else
         "Htree" ∷ own_merkle ptr_tr entries
   }}}.
@@ -1173,11 +1234,8 @@ Proof.
         wp_pures.
         case_bool_decide.
         { inversion_clear H0.
-          iDestruct (own_node_except_unfold with "Hchild") as "Hchild".
           wp_pures.
-          iDestruct "Hchild" as (??????) "(_ & H & _)".
-          iExFalso.
-          iDestruct (struct_field_pointsto_not_null with "H") as %?; done.
+          by iDestruct (own_node_except_not_null with "Hchild") as %?.
         }
         iSpecialize ("Hchildren" with "[$Hchild]").
         wp_pures.
@@ -1439,6 +1497,7 @@ Proof.
   iIntros "* (Hval_in & Hhash_sl & His_leaf_hash)".
   wp_apply wp_allocStruct; [val_ty|].
   iIntros (leaf_ptr) "Hleaf".
+  Opaque node.
   iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
   iNamed "Hnode".
   destruct sub_tree as [| | children]; try done.
@@ -1466,14 +1525,17 @@ Proof.
   iMod (own_slice_small_persist with "Hval_in") as "Hval_in".
   iMod (own_slice_small_persist with "Hhash_sl") as "Hhash_sl".
   iAssert (
-      ∃ (depth : w64) current_ptr current_children loopBuf_sl,
+      ∃ (depth : w64) current_children loopBuf_sl,
         "Hdepth" ∷ depth_ptr ↦[uint64T] #depth ∗
         "HloopBuf_ptr" ∷ loopBuf_ptr ↦[slice.T byteT] (slice_val loopBuf_sl) ∗
         "HloopBuf" ∷ own_slice loopBuf_sl byteT (DfracOwn 1) ([] : list w8) ∗
         "%Hdepth_ge" ∷ ⌜ uint.nat depth ≥ 0 ⌝ ∗
         if decide (uint.nat depth = 0)%nat then
-          "HcurrNode" ∷ own_node_except None root (Interior current_children)
+          "HcurrNode" ∷ own_node_except None root (Interior current_children) ∗
+          "%Hmap_eq" ∷ ⌜ eq_tree_map (Interior current_children) [] (<[id:=val]> entries) ⌝ ∗
+          "%Hheight" ∷ ⌜ has_tree_height (Interior current_children) (uint.nat full_height) ⌝
         else
+          ∃ current_ptr,
           "HcurrNode" ∷ own_node_except (Some []) current_ptr (Interior current_children) ∗
           "%HinteriorLookup" ∷ ⌜ interiors !! ((uint.nat depth) - 1)%nat = Some current_ptr ⌝ ∗
           "Hrest" ∷ (own_node_except None current_ptr (Interior current_children) -∗
@@ -1482,8 +1544,8 @@ Proof.
                           ∃ children, own_node_except (Some []) node_ptr (Interior children) ∗
                                       (own_node_except None node_ptr (Interior children) -∗ P))
                        (∃ children', own_node_except None root (Interior children') ∗
-                                     ⌜eq_tree_map (Interior children') [] (<[id:=val]> entries)⌝ ∗
-                                     ⌜has_tree_height (Interior children') (uint.nat full_height)⌝)
+                                     ⌜ eq_tree_map (Interior children') [] (<[id:=val]> entries) ⌝ ∗
+                                     ⌜ has_tree_height (Interior children') (uint.nat full_height) ⌝)
                        (take (uint.nat depth - 1)%nat interiors)
             )
     )%I with "[Hdepth_ptr His_leaf_hash Hleaf Hptr_hash Hrest Hval_in Hhash_sl
@@ -1491,10 +1553,12 @@ Proof.
   {
     iFrame "Hdepth_ptr".
     iFrame.
-    iExists currNode_ptr, (<[ uint.nat pos := Some $ Leaf val ]> children).
+    iExists (<[ uint.nat pos := Some $ Leaf val ]> children).
     iDestruct (big_sepL2_length with "Hchildren") as %Hchildren_length.
     iSplitR.
     { word. }
+    erewrite decide_False; last word.
+    iExists currNode_ptr.
     iSplitR "Hrest".
     {
       iApply own_node_except_unfold.
@@ -1605,7 +1669,7 @@ Proof.
       repeat iExists _.
       iSplitR; first word.
       erewrite decide_True; last word.
-      iFrame "Hnode".
+      iFrame "Hnode %".
     }
     {
       opose proof (list_lookup_lt interiors n _) as [next_ptr Hnext_lookup].
@@ -1634,15 +1698,29 @@ Proof.
   iClear "His_hash".
   iIntros "* (Hnode & #Hhash_sl & #His_hash)".
   wp_pures.
-  wp_load.
   wp_loadField.
-  (* TODO: wp_context__getProof.
-     Problematic because nothing is known about [interiors] at this point.
-     To know that [interiors] are the interior nodes for the current tree, we
-     need separate ownership for each node, which means we cannot the own
-     `own_node_except` for the root.
-   *)
-Admitted.
+  wp_loadField.
+  wp_apply (wp_context__getProof with "[$His_ctx $Hnode $Hid]").
+  iIntros "* (Hnode & Hid & Hproof & His_proof)".
+  wp_pures.
+  destruct (decide (root = null)); subst.
+  { by iDestruct (own_node_except_not_null with "Hnode") as %?. }
+  iApply "HΦ".
+  iFrame.
+  iSplitR; first done.
+  iDestruct (own_slice_to_small with "Hproof") as "Hproof".
+  iMod (own_slice_small_persist with "Hproof") as "Hproof".
+  iModIntro.
+  rewrite decide_False //.
+  iFrame "His_ctx".
+  iFrame "∗%".
+  iFrame "∗#%".
+  iApply "His_proof".
+  { specialize (Hmap_eq id).
+    rewrite lookup_insert in Hmap_eq.
+    done. }
+  iFrame "#".
+Qed.
 
 Lemma wp_Tree_Get ptr_tr entries sl_id id dq :
   {{{
@@ -1909,34 +1987,21 @@ Proof.
   by iApply "HΦ".
 Qed. *)
 
-(* is_merkle_proof says that the merkle proof gives rise to a cut tree
-that has digest dig. and is_merkle_entry id val dig.
-the cut tree is the existential tree in is_merkle_entry. *)
-Definition is_merkle_proof (proof : list (list (list w8))) (id : list w8)
-    (val : option (list w8)) (dig : list w8) : iProp Σ.
-Proof. Admitted.
-
-Global Instance is_merkle_proof_persis proof id val dig :
-  Persistent (is_merkle_proof proof id val dig).
-Proof. Admitted.
-
-Lemma is_merkle_proof_to_entry proof id val dig :
-  is_merkle_proof proof id val dig -∗ is_merkle_entry id val dig.
-Proof. Admitted.
-
-Definition wp_CheckProof sl_id sl_val sl_dig (proofTy : bool) sl_proof proof (id val dig : list w8) d0 d1 d2 :
+Definition wp_CheckProof sl_id sl_val sl_dig (proofTy : bool) sl_proof proof (id val dig : list w8)
+  dq0 dq1 dq2 dq3 :
   {{{
-    "#Hsl_proof" ∷ is_Slice3D sl_proof proof ∗
-    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
-    "Hval" ∷ own_slice_small sl_val byteT d1 val ∗
-    "Hdig" ∷ own_slice_small sl_dig byteT d2 dig
+    "Hproof" ∷ own_slice sl_proof byteT dq0 proof ∗
+    "Hid" ∷ own_slice_small sl_id byteT dq1 id ∗
+    "Hval" ∷ own_slice_small sl_val byteT dq2 val ∗
+    "Hdig" ∷ own_slice_small sl_dig byteT dq3 dig
   }}}
   CheckProof #proofTy (slice_val sl_proof) (slice_val sl_id) (slice_val sl_val) (slice_val sl_dig)
   {{{
     (err : bool), RET #err;
-    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
-    "Hval" ∷ own_slice_small sl_val byteT d1 val ∗
-    "Hdig" ∷ own_slice_small sl_dig byteT d2 dig ∗
+    "Hproof" ∷ own_slice sl_proof byteT dq0 proof ∗
+    "Hid" ∷ own_slice_small sl_id byteT dq1 id ∗
+    "Hval" ∷ own_slice_small sl_val byteT dq2 val ∗
+    "Hdig" ∷ own_slice_small sl_dig byteT dq3 dig ∗
     let expected_val := (if proofTy then Some val else None) in
     "Hgenie" ∷ (if err then True else is_merkle_proof proof id expected_val dig)
   }}}.
