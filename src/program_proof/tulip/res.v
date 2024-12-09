@@ -1,5 +1,7 @@
 From iris.algebra Require Import mono_nat mono_list gmap_view gset.
 From iris.algebra.lib Require Import dfrac_agree.
+From Perennial.Helpers Require Import gmap_algebra.
+From Perennial.base_logic Require Import ghost_map.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 From Perennial.program_proof.rsm Require Import big_sep.
@@ -633,6 +635,58 @@ Section alloc.
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
          own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []).
   Proof.
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) (None : dbval)) keys_all)) as
+           (γdb_ptsto) "Hdb_ptsto".
+    { apply gset_to_gmap_valid. rewrite //=. }
+    iDestruct (own_gset_to_gmap_singleton_sep_half γdb_ptsto keys_all (None : dbval) with "Hdb_ptsto")
+      as "(Hdb_ptsto1&Hdb_ptsto2)".
+
+    iMod (ghost_map_alloc_empty (K := nat) (V := txnres)) as
+      (γtxn_res) "Htxn_res".
+
+    (* Instantiate all uses of this with an actual proper gname *)
+    set TODOgname := γtxn_res.
+
+    set γ := {|
+    db_ptsto := γdb_ptsto;
+    repl_hist := TODOgname;
+    repl_ts := TODOgname;
+    lnrz_kmod := TODOgname;
+    cmtd_kmod := TODOgname;
+    txn_log := TODOgname;
+    txn_cpool := TODOgname;
+    cmtd_hist := TODOgname;
+    lnrz_hist := TODOgname;
+    txn_res := TODOgname;
+    txn_oneshot_wrs := TODOgname;
+    lnrz_tid := TODOgname;
+    wabt_tid := TODOgname;
+    cmt_tmod := TODOgname;
+    excl_tid := TODOgname;
+    txn_client_token := TODOgname;
+    txn_postcond := TODOgname;
+    largest_ts := TODOgname;
+    group_prep := TODOgname;
+    group_prepare_proposal := TODOgname;
+    group_commit := TODOgname;
+    replica_validated_ts := TODOgname;
+    replica_key_validation := TODOgname;
+    replica_clog := TODOgname;
+    replica_ilog := TODOgname;
+    replica_ballot := TODOgname;
+    replica_vote := TODOgname;
+    replica_token := TODOgname;
+    group_trmlm := TODOgname;
+    sids := TODOgname;
+    gentid_reserved := TODOgname |}.
+
+    iModIntro.
+    iExists γ.
+    iSplitL "Hdb_ptsto1".
+    { by iFrame. }
+    iSplitL "Htxn_res".
+    { iFrame. done. }
+
   Admitted.
 
 End alloc.
