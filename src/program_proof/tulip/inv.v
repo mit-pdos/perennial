@@ -23,7 +23,7 @@ Section inv.
   #[global]
   Instance tulip_inv_with_proph_timeless γ p :
     Timeless (tulip_inv_with_proph γ p).
-  Admitted.
+  Proof. apply _. Qed.
 
   Definition know_tulip_inv_with_proph γ p : iProp Σ :=
     inv tulipNS (tulip_inv_with_proph γ p).

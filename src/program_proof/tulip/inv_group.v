@@ -360,6 +360,45 @@ Section inv.
       "Hcpool"  ∷ own_txn_cpool_half γ gid cpool ∗
       "Hgroup"  ∷ group_inv_no_log_no_cpool γ gid log cpool.
 
+  #[global]
+  Instance group_inv_timeless γ gid :
+    Timeless (group_inv γ gid).
+  Proof.
+    rewrite /group_inv.
+    repeat (apply exist_timeless => ?).
+    repeat (apply sep_timeless; try apply _).
+    rewrite /group_inv_no_log_no_cpool.
+    repeat (apply exist_timeless => ?).
+    repeat (apply sep_timeless; try apply _).
+    - rewrite /group_inv_proposals_map.
+      repeat (apply exist_timeless => ?).
+      repeat (apply sep_timeless; try apply _).
+      * apply big_sepM_timeless. intros ???.
+        rewrite /exclusive_proposals.
+        apply big_sepS_timeless. intros y Hin.
+        rewrite /exclusive_proposal.
+        destruct (decide _); apply _.
+      * apply big_sepM_timeless. intros ???.
+        rewrite /safe_proposals.
+        apply big_sepM_timeless. intros y b Hlook.
+        rewrite /safe_proposal.
+        repeat (apply exist_timeless => ?).
+        repeat (apply sep_timeless; try apply _).
+        rewrite /is_group_prepare_proposal_if_classic.
+        destruct (decide _); apply _.
+    - apply big_sepM_timeless. intros x ??.
+      rewrite /safe_txnst.
+      destruct x; try apply _.
+    - apply big_sepM_timeless. intros x y ?.
+      rewrite /safe_prepare.
+      rewrite /quorum_prepared/quorum_pdec/quorum_unprepared/quorum_validated/quorum_pdec.
+      rewrite /quorum_pdec_at_rank.
+      destruct y; try apply _.
+    - apply big_sepS_timeless. intros x ?.
+      rewrite /safe_submit.
+      destruct x; try apply _.
+  Qed.
+
 End inv.
 
 Section lemma.

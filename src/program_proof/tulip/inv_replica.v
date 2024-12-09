@@ -132,6 +132,18 @@ Section inv.
   Definition replica_inv γ (gid rid : u64) : iProp Σ :=
     ∃ clog ilog cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
 
+  #[global]
+  Instance replica_inv_timeless γ gid rid :
+    Timeless (replica_inv γ gid rid).
+  Proof.
+    rewrite /replica_inv.
+    repeat (apply exist_timeless => ?).
+    repeat (apply sep_timeless; try apply _).
+    apply big_sepM_timeless. intros ???.
+    rewrite /fast_proposal_witness.
+    apply _.
+  Qed.
+
   Definition replica_inv_xfinalized γ (gid rid : u64) (ptsm : gset nat) : iProp Σ :=
     ∃ cm cpm,
       "Hrp"      ∷ replica_inv_with_cm_with_cpm γ gid rid cm cpm ∗

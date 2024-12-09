@@ -201,6 +201,11 @@ Section inv.
     Persistent (past_action_witness γ a).
   Proof. destruct a; apply _. Qed.
 
+  #[global]
+  Instance past_action_witness_timeless γ a :
+    Timeless (past_action_witness γ a).
+  Proof. destruct a; apply _. Qed.
+
   Definition all_prepared γ ts wrs : iProp Σ :=
     is_txn_wrs γ ts wrs ∗
     [∗ set] gid ∈ ptgroups (dom wrs), is_group_prepared γ gid ts.
@@ -227,6 +232,11 @@ Section inv.
     Persistent (incorrect_wrs_in_fcc γ ts form).
   Proof. destruct form; apply _. Qed.
 
+  #[global]
+  Instance incorrect_wrs_in_fcc_timeless γ ts form :
+    Timeless (incorrect_wrs_in_fcc γ ts form).
+  Proof. destruct form; apply _. Qed.
+
   Lemma correct_incorrect_wrs γ ts wrs :
     correct_wrs γ ts wrs -∗
     incorrect_wrs γ ts wrs -∗
@@ -246,6 +256,11 @@ Section inv.
   #[global]
   Instance valid_res_persistent γ ts res :
     Persistent (valid_res γ ts res).
+  Proof. destruct res; apply _. Qed.
+
+  #[global]
+  Instance valid_res_timeless γ ts res :
+    Timeless (valid_res γ ts res).
   Proof. destruct res; apply _. Qed.
   
   Lemma all_prepared_some_aborted γ ts wrs :
@@ -360,5 +375,10 @@ Section inv.
     txnsys_inv_no_future γ future -∗
     txnsys_inv γ p.
   Proof. iIntros "Hproph Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
+
+  #[global]
+  Instance txnsys_inv_timeless γ p :
+    Timeless (txnsys_inv γ p).
+  Proof. apply _. Qed.
 
 End inv.
