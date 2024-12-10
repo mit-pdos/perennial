@@ -5,9 +5,6 @@ From Perennial.program_proof.tulip.program.gcoord Require Import gcoord_repr.
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Definition zN_TXN_SITES : Z := 64.
-  Definition own_sid (γ : tulip_names) (sid : u64) : iProp Σ :=
-    own γ.(sids) ({[ sid := Excl () ]}).
 
   (*@ type Txn struct {                                                       @*)
   (*@     // Timestamp of this transaction.                                   @*)
