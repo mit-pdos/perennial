@@ -729,8 +729,45 @@ Section alloc.
            (γreplica_validated_ts) "Hreplica_validated".
     { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
 
-    (* Instantiate all uses of this with an actual proper gname *)
-    set TODOgname := γtxn_res.
+    iMod (own_alloc (gset_to_gmap (●ML ([false] : list bool))
+                       (gset_cprod (gset_cprod gids_all rids_all) keys_all)))
+              as
+           (γreplica_key_validation) "Hreplica_key_validation".
+    { apply gset_to_gmap_valid; apply mono_list_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (A := clogO) (DfracOwn 1) ([] : (list ccommand)))
+                       (gset_cprod gids_all rids_all))) as
+           (γreplica_clog) "Hreplica_clog".
+    { apply gset_to_gmap_valid. rewrite //=. }
+
+    iMod (own_alloc (gset_to_gmap (to_dfrac_agree (A := ilogO) (DfracOwn 1) ([] : (list (nat * icommand))))
+                       (gset_cprod gids_all rids_all))) as
+           (γreplica_ilog) "Hreplica_ilog".
+    { apply gset_to_gmap_valid. rewrite //=. }
+
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> (∅ : gmap nat gname)))
+                       (gset_cprod gids_all rids_all))) as
+           (γreplica_ballot) "Hreplica_ballot".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (to_agree <$> (∅ : gmap (nat * nat) coordid)))
+                       (gset_cprod gids_all rids_all))) as
+           (γreplica_vote) "Hreplica_vote".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
+
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (gset_to_gmap tt (∅ : gset (nat * nat * u64))))
+                       (gset_cprod gids_all rids_all))) as
+           (γreplica_token) "Hreplica_token".
+    { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
+
+    (* TODO: currently we just throw these away, the lemma probably should be strengthened
+             to use these *)
+
+    iMod (own_alloc (gset_to_gmap (Excl tt) (∅ : gset u64))) as (γsids) "Hγsids".
+    { apply gset_to_gmap_valid. econstructor. }
+
+    iMod (ghost_map_alloc_empty (K := u64) (V := gname)) as
+      (γgentid_reserved) "Hgentid".
 
     set γ := {|
     db_ptsto := γdb_ptsto;
@@ -755,15 +792,15 @@ Section alloc.
     group_prepare_proposal := γgroup_prepare_proposal;
     group_commit := γgroup_commit;
     replica_validated_ts := γreplica_validated_ts;
-    replica_key_validation := TODOgname;
-    replica_clog := TODOgname;
-    replica_ilog := TODOgname;
-    replica_ballot := TODOgname;
-    replica_vote := TODOgname;
-    replica_token := TODOgname;
+    replica_key_validation := γreplica_key_validation;
+    replica_clog := γreplica_clog;
+    replica_ilog := γreplica_ilog;
+    replica_ballot := γreplica_ballot;
+    replica_vote := γreplica_vote;
+    replica_token := γreplica_token;
     group_trmlm := γgroup_trmlm;
-    sids := TODOgname;
-    gentid_reserved := TODOgname |}.
+    sids := γsids;
+    gentid_reserved := γgentid_reserved |}.
 
     iModIntro.
     iExists γ.
@@ -830,18 +867,75 @@ Section alloc.
       iFrame.
     }
 
-    iSplitL "Hreplica_validated".
-    { rewrite -big_opS_gset_to_gmap big_opS_own_1.
-      iDestruct (big_sepS_gset_cprod' with "Hreplica_validated") as "H".
-      iApply (big_sepS_mono with "H").
-      { iIntros (gid Hgid_in) "H".
+
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hreplica_clog")
+      as "(Hreplica_clog1&Hreplica_clog2)".
+
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hreplica_ilog")
+      as "(Hreplica_ilog1&Hreplica_ilog2)".
+
+    iSplitR "Hreplica_clog2 Hreplica_ilog2".
+    {
+      rewrite /replica_init_res. rewrite ?big_sepS_sep.
+      iSplitL "Hreplica_validated".
+      {
+        rewrite -big_opS_gset_to_gmap big_opS_own_1.
+        iDestruct (big_sepS_gset_cprod' with "Hreplica_validated") as "H".
+        iApply (big_sepS_mono with "H").
+        iIntros (gid Hgid_in) "H".
         rewrite /replica_init_res.
-        iSplitL "H".
         { rewrite /own_replica_validated_tss. rewrite /own_replica_validated_tss_auth.
           iApply (big_sepS_mono with "H").
           { iIntros (??) "$". rewrite //=. }
         }
-
-  Admitted.
+      }
+      iSplitL "Hreplica_key_validation".
+      {
+        rewrite -big_opS_gset_to_gmap big_opS_own_1.
+        iDestruct (big_sepS_gset_cprod' with "Hreplica_key_validation") as "H".
+        iDestruct (big_sepS_gset_cprod' with "H") as "H".
+        auto.
+      }
+      iSplitL "Hreplica_clog1".
+      { iDestruct (big_sepS_gset_cprod' with "Hreplica_clog1") as "$". }
+      iSplitL "Hreplica_ilog1".
+      { iDestruct (big_sepS_gset_cprod' with "Hreplica_ilog1") as "$". }
+      iSplitL "Hreplica_ballot".
+      {
+        rewrite -big_opS_gset_to_gmap big_opS_own_1.
+        iDestruct (big_sepS_gset_cprod' with "Hreplica_ballot") as "H".
+        iApply (big_sepS_mono with "H").
+        iIntros (gid Hgid_in) "H".
+        rewrite /own_replica_ballot_map.
+        iApply (big_sepS_mono with "H").
+        iIntros (rid Hrid_in) "H".
+        iExists ∅. iFrame. rewrite big_sepM2_empty big_sepM_empty //.
+      }
+      iSplitL "Hreplica_vote".
+      {
+        rewrite -big_opS_gset_to_gmap big_opS_own_1.
+        iDestruct (big_sepS_gset_cprod' with "Hreplica_vote") as "H".
+        iApply (big_sepS_mono with "H").
+        iIntros (gid Hgid_in) "H".
+        rewrite /own_replica_ballot_map.
+        iApply (big_sepS_mono with "H").
+        iIntros (rid Hrid_in) "H".
+        iExists ∅. iFrame. iPureIntro. set_solver.
+      }
+      {
+        rewrite -big_opS_gset_to_gmap big_opS_own_1.
+        iDestruct (big_sepS_gset_cprod' with "Hreplica_token") as "H".
+        iApply (big_sepS_mono with "H").
+        iIntros (gid Hgid_in) "H".
+        rewrite /own_replica_ballot_map.
+        iApply (big_sepS_mono with "H").
+        iIntros (rid Hrid_in) "H".
+        iExists ∅. iFrame. iPureIntro. set_solver.
+      }
+    }
+    iDestruct (big_sepS_sep with "[$Hreplica_clog2 $Hreplica_ilog2]") as "H".
+    iDestruct (big_sepS_gset_cprod' with "H") as "H".
+    auto.
+  Qed.
 
 End alloc.
