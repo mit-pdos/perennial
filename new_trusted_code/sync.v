@@ -42,4 +42,6 @@ Axiom WaitGroup__Add : val.
 Axiom WaitGroup__Done : val.
 Axiom WaitGroup__Wait : val.
 
+Definition initialize' : val := λ: <>, #().
+
 End code.

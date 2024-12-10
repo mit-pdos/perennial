@@ -891,6 +891,37 @@ Definition Dec__mset_ptr : list (string * val) := [
   ("consume", Dec__consume%V)
 ].
 
+(* go: globals.go:3:6 *)
+Definition foo : val :=
+  rec: "foo" <> :=
+    exception_do (return: (#(W64 10))).
+
+Definition global_id' : string := "github.com/goose-lang/goose/testdata/examples/unittest".
+
+Definition GlobalX : string := global_id' ++ "GlobalX".
+
+Definition globalY : string := global_id' ++ "globalY".
+
+Definition globalA : string := global_id' ++ "globalA".
+
+Definition globalB : string := global_id' ++ "globalB".
+
+(* go: globals.go:12:6 *)
+Definition other : val :=
+  rec: "other" <> :=
+    exception_do (let: "$r0" := #"ok" in
+    do:  ((globals.get globalY) <-[stringT] "$r0")).
+
+(* go: globals.go:16:6 *)
+Definition bar : val :=
+  rec: "bar" <> :=
+    exception_do (do:  (other #());;;
+    (if: ((![uint64T] (globals.get GlobalX)) ≠ #(W64 10)) || ((![stringT] (globals.get globalY)) ≠ #"ok")
+    then
+      do:  (let: "$a0" := (interface.make string__mset #"bad") in
+      Panic "$a0")
+    else do:  #())).
+
 (* go: higher_order.go:3:6 *)
 Definition TakesFunctionType : val :=
   rec: "TakesFunctionType" "f" :=
@@ -2408,3 +2439,43 @@ Definition testVariadicPassThrough : val :=
     let: "$sl1" := "$ret3" in
     slice.literal byteT ["$sl0"; "$sl1"])) in
     variadicFunc "$a0" "$a1" "$a2")).
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (globals.put globalB (ref_ty stringT (zero_val stringT));;;
+    globals.put globalA (ref_ty stringT (zero_val stringT));;;
+    globals.put globalY (ref_ty stringT (zero_val stringT));;;
+    globals.put GlobalX (ref_ty uint64T (zero_val uint64T))).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    exception_do (if: globals.is_uninitialized global_id'
+    then
+      do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  sync.initialize';;;
+      do:  primitive.initialize';;;
+      do:  marshal.initialize';;;
+      do:  log.initialize';;;
+      do:  sync.initialize';;;
+      do:  primitive.initialize';;;
+      do:  disk.initialize';;;
+      do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  fmt.initialize';;;
+      do:  (define' #());;;
+      let: "$r0" := (foo #()) in
+      do:  ((globals.get GlobalX) <-[uint64T] "$r0");;;
+      let: "$r0" := #"a" in
+      do:  ((globals.get globalA) <-[stringT] "$r0");;;
+      let: "$r0" := #"b" in
+      do:  ((globals.get globalB) <-[stringT] "$r0");;;
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := (![uint64T] (globals.get GlobalX)) in
+        do:  ((globals.get GlobalX) <-[uint64T] "$r0"))
+        ) #());;;
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := #"" in
+        do:  ((globals.get globalY) <-[stringT] "$r0"))
+        ) #())
+    else do:  #()).

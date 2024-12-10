@@ -195,3 +195,19 @@ Definition Open : val :=
        "sz" ::= "$sz";
        "diskSz" ::= "$diskSz"
      }]))).
+
+Definition global_id' : string := "github.com/goose-lang/goose/testdata/examples/append_log".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    exception_do (if: globals.is_uninitialized global_id'
+    then
+      do:  disk.initialize';;;
+      do:  marshal.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #())
+    else do:  #()).

@@ -3108,3 +3108,23 @@ Definition disabled_testWal : val :=
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (![ptrT] (struct.field_ref Log "length" "lg"))) = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
+
+Definition global_id' : string := "github.com/goose-lang/goose/testdata/examples/semantics".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    exception_do (if: globals.is_uninitialized global_id'
+    then
+      do:  disk.initialize';;;
+      do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  sync.initialize';;;
+      do:  primitive.initialize';;;
+      do:  (define' #())
+    else do:  #()).

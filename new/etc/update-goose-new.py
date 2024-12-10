@@ -182,6 +182,7 @@ def main():
         "./cachekv",
         "./lockservice",
         "./bank",
+        "./globals_test",
         # "./vrsm/replica",
     )
 

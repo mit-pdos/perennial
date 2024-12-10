@@ -956,3 +956,25 @@ Definition StartServer : val :=
     do:  (let: "$a0" := (![uint64T] "me") in
     (urpc.Server__Serve (![ptrT] "r")) "$a0");;;
     return: (![ptrT] "s")).
+
+Definition global_id' : string := "github.com/mit-pdos/gokv/vrsm/paxos".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    exception_do (if: globals.is_uninitialized global_id'
+    then
+      do:  urpc.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  asyncfile.initialize';;;
+      do:  std.initialize';;;
+      do:  sync.initialize';;;
+      do:  log.initialize';;;
+      do:  marshal.initialize';;;
+      do:  reconnectclient.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  (define' #())
+    else do:  #()).

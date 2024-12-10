@@ -573,4 +573,20 @@ Definition WriteSliceLenPrefix (T: go_type) : val :=
     do:  ("b3" <-[sliceT] "$r0");;;
     return: (![sliceT] "b3")).
 
+Definition global_id' : string := "github.com/tchajed/marshal".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    exception_do (if: globals.is_uninitialized global_id'
+    then
+      do:  std.initialize';;;
+      do:  primitive.initialize';;;
+      do:  primitive.initialize';;;
+      do:  (define' #())
+    else do:  #()).
+
 End code.

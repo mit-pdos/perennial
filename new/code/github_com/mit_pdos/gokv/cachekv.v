@@ -222,3 +222,20 @@ Definition Make : val :=
        "mu" ::= "$mu";
        "cache" ::= "$cache"
      }]))).
+
+Definition global_id' : string := "github.com/mit-pdos/gokv/cachekv".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    exception_do (if: globals.is_uninitialized global_id'
+    then
+      do:  marshal.initialize';;;
+      do:  kv.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #())
+    else do:  #()).

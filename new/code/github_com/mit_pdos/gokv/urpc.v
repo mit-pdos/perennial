@@ -403,3 +403,22 @@ Definition MakeClient : val :=
     return: (![ptrT] "cl")).
 
 Definition Error : go_type := uint64T.
+
+Definition global_id' : string := "github.com/mit-pdos/gokv/urpc".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    exception_do (if: globals.is_uninitialized global_id'
+    then
+      do:  marshal.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  std.initialize';;;
+      do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  log.initialize';;;
+      do:  (define' #())
+    else do:  #()).
