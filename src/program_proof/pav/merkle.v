@@ -979,11 +979,25 @@ Proof.
   { iLeft. iFrame "#". }
 Qed.
 
-Lemma wp_context__getProof ctx n tr (label : list w8) label_sl dq :
+
+Lemma own_node_except_None_is_node_hash n tr :
+  own_node_except None n tr -∗
+  ∃ dig, is_node_hash tr dig.
+Proof.
+  iIntros "H".
+  iDestruct (own_node_except_unfold with "H") as "H".
+  iNamed "H".
+  iFrame "#".
+Qed.
+
+Lemma wp_context__getProof v ctx n tr (label : list w8) label_sl dq :
+  is_tree_lookup tr label v →
+  length label = 32%nat →
   {{{
         "#Hctx" ∷ is_context ctx ∗
         "Hnode" ∷ own_node_except None n tr ∗
-        "Hlabel_sl" ∷ own_slice_small label_sl byteT dq label
+        "Hlabel_sl" ∷ own_slice_small label_sl byteT dq label ∗
+        "%Hheight" ∷ ⌜ has_tree_height tr (uint.nat full_height) ⌝
   }}}
     context__getProof #ctx #n (slice_val label_sl)
   {{{
@@ -991,14 +1005,13 @@ Lemma wp_context__getProof ctx n tr (label : list w8) label_sl dq :
         own_node_except None n tr ∗
         own_slice_small label_sl byteT dq label ∗
         own_slice proof_sl byteT (DfracOwn 1) proof ∗
-        (∀ dig v,
-           ⌜ is_tree_lookup tr label v ⌝ -∗
+        (∀ dig,
            is_node_hash tr dig -∗
            is_merkle_proof proof label v dig
         )
   }}}.
 Proof.
-  iIntros (?) "H HΦ".
+  iIntros (Hlookup Hlabel_length ?) "H HΦ".
   iNamed "H".
   wp_rec. wp_pures.
   wp_apply wp_NewSliceWithCap; [word|].
@@ -1012,7 +1025,89 @@ Proof.
   wp_apply wp_ref_to; [val_ty|].
   iIntros (depth_ptr) "Hdepth".
   wp_pures.
+  iDestruct (own_node_except_None_is_node_hash with "Hnode") as "#[%dig Hdigest]".
+  rewrite replicate_0.
+  iAssert (
+      ∃ (depth : w64) (curr_ptr: loc) curr_tr proof proof_sl,
+        "Hdepth" ∷ depth_ptr ↦[uint64T] #depth ∗
+        "HcurrNode_ptr" ∷ currNode_ptr ↦[ptrT] #curr_ptr ∗
+        "Hnode" ∷ own_node_except None curr_ptr curr_tr∗
+        "HnodeClose" ∷ (own_node_except None curr_ptr curr_tr -∗ own_node_except None n tr) ∗
+        "Hproof_ptr" ∷ proof_ptr ↦[slice.T byteT] (slice_val proof_sl) ∗
+        "Hproof_sl" ∷ own_slice proof_sl byteT (DfracOwn 1) (concat (concat proof)) ∗
+        "%Hlookup" ∷ ⌜ is_tree_lookup curr_tr (drop (uint.nat depth) label) v ⌝ ∗
+        "%Hheight" ∷ ⌜ has_tree_height curr_tr (uint.nat full_height - uint.nat depth)%nat ⌝ ∗
+        "#Hproof" ∷ (let otr :=
+                      foldl (λ tr '(sibling_digs, pos),
+                               let siblings := Some <$> (Cut <$> sibling_digs) in
+                               Some (Interior ((take (uint.nat pos) siblings) ++ [tr] ++ (drop (uint.nat pos) siblings)))
+                        ) (Some tr) (zip proof label) in
+                    match otr with
+                    | Some tr => is_node_hash tr dig ∧ ⌜ is_tree_lookup tr label v ⌝
+                    | None => is_hash [W8 0] dig ∧ ⌜ v = None ⌝
+                    end)
+    )%I with "[Hdepth HcurrNode_ptr Hproof_ptr Hproof_sl Hnode]" as "HloopInv".
+  {
+    repeat iExists _. instantiate (1:=nil).
+    iFrame "∗#%".
+    iIntros "$".
+  }
   wp_forBreak_cond.
+  wp_pures.
+  iNamed "HloopInv".
+  wp_load.
+  wp_pures.
+  wp_bind (if: #_ then _ else _)%E.
+  wp_if_destruct.
+  { (* haven't walked reached a leaf *)
+    wp_load. wp_pures.
+    wp_if_destruct.
+    { (* execute loop body *)
+      wp_pures.
+      wp_load.
+      iDestruct (own_node_except_unfold with "Hnode") as "Hnode".
+      iNamed "Hnode".
+      wp_loadField.
+      wp_pures.
+      wp_load.
+      opose proof (list_lookup_lt label (uint.nat depth) ltac:(word)) as [pos Hlabel_lookup].
+      wp_apply (wp_SliceGet with "[$Hlabel_sl //]").
+      iIntros "Hlabel_sl".
+      wp_pures.
+
+      set (loopInv:=
+             (λ (i : w64),
+                ∃ proof_sl sibling_digs,
+                "Hproof_ptr" ∷ proof_ptr ↦[slice.T byteT] (slice_val proof_sl) ∗
+                "Hproof" ∷ own_slice proof_sl byteT (DfracOwn 1) ((concat (concat proof)) ++
+                                                                        concat (sibling_digs))
+          )%I).
+      destruct curr_tr; try done.
+      { exfalso.
+        destruct (uint.nat full_height - uint.nat depth)%nat eqn:Hbad.
+        { simpl in *. unfold full_height in Hbad. word. }
+        { done. }
+      }
+      iNamed "Hchildren".
+      iDestruct (own_slice_small_sz with "Hsl_children") as %Hsl_children_sz.
+      iDestruct (own_slice_small_wf with "Hsl_children") as %Hsl_children_wf.
+      wp_apply wp_SliceTake.
+      { word. }
+      wp_apply (wp_forSlice loopInv with "[] [Hsl_children Hproof_ptr Hproof]");
+        admit.
+    }
+    { (* done with inner loop *)
+      admit.
+    }
+  }
+  (* done with loop. *)
+  wp_pures.
+  iRight.
+  iModIntro. iSplitR; first done.
+  wp_pures.
+  wp_load.
+  iApply "HΦ".
+  admit.
 Admitted.
 
 Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
@@ -1701,6 +1796,9 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_apply (wp_context__getProof with "[$His_ctx $Hnode $Hid]").
+  { done. }
+  { word. }
+  { done. }
   iIntros "* (Hnode & Hid & Hproof & His_proof)".
   wp_pures.
   destruct (decide (root = null)); subst.
@@ -1715,11 +1813,10 @@ Proof.
   iFrame "His_ctx".
   iFrame "∗%".
   iFrame "∗#%".
+  rewrite lookup_insert.
   iApply "His_proof".
   { specialize (Hmap_eq id).
-    rewrite lookup_insert in Hmap_eq.
     done. }
-  iFrame "#".
 Qed.
 
 Lemma wp_Tree_Get ptr_tr entries sl_id id dq :
