@@ -702,4 +702,10 @@ Section res.
 
   End txn_proph.
 
+  Definition own_sid (γ : tulip_names) (sid : u64) : iProp Σ :=
+    own γ.(sids) ({[ sid := Excl () ]}).
+
+  Definition gentid_init γ : iProp Σ :=
+    own_largest_ts γ 0%nat ∗ ghost_map_auth γ.(gentid_reserved) 1 (∅ : gmap u64 gname).
+
 End res.

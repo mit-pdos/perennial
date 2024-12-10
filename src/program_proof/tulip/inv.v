@@ -297,6 +297,7 @@ Section alloc.
       ([∗ set] gid ∈ dom gaddrm, own_txn_cpool_half γ gid ∅) ∗
       (* tulip atomic invariant *)
       tulip_inv_with_proph γ p ∗
+      gentid_init γ ∗
       ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm).
   Proof.
     iIntros (Hdomgaddrm Hdomaddrm) "Hchans".

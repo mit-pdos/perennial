@@ -85,6 +85,7 @@ Section repr.
       "Htxnmap"  ∷ txnmap_auth τ (wrs ∪ rds) ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
+      "#Hgentid" ∷ have_gentid γ ∗
       (* diff from [own_txn_init] *)
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
       "%Hdomr"   ∷ ⌜dom rds ⊆ keys_all⌝ ∗
@@ -105,6 +106,7 @@ Section repr.
       "Htxnmap"  ∷ txnmap_auth τ (wrs ∪ rds) ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
+      "#Hgentid" ∷ have_gentid γ ∗
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
       "%Hdomr"   ∷ ⌜dom rds ⊆ keys_all⌝ ∗
       (* diff from [own_txn] and [wrs] is exposed *)
@@ -124,6 +126,7 @@ Section repr.
       "Htxnmap"  ∷ txnmap_auth τ (wrs ∪ rds) ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
+      "#Hgentid" ∷ have_gentid γ ∗
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
       "#Htxnwrs" ∷ is_txn_wrs γ tid wrs ∗
       "%Hdomr"   ∷ ⌜dom rds ⊆ keys_all⌝ ∗

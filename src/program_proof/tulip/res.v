@@ -634,7 +634,9 @@ Section alloc.
       ([∗ set] g ∈ gids_all, replica_init_res γ g) ∗
       (* per-replica logs | replica lock *)
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
-         own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []).
+         own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
+      (* gentid init *)
+      gentid_init γ.
   Proof.
     iMod (own_alloc (gset_to_gmap (to_dfrac_agree (DfracOwn 1) (None : dbval)) keys_all)) as
            (γdb_ptsto) "Hdb_ptsto".
@@ -874,7 +876,7 @@ Section alloc.
     iDestruct (own_gset_to_gmap_singleton_sep_half with "Hreplica_ilog")
       as "(Hreplica_ilog1&Hreplica_ilog2)".
 
-    iSplitR "Hreplica_clog2 Hreplica_ilog2".
+    iSplitR "Hreplica_clog2 Hreplica_ilog2 Hlargest2 Hgentid".
     {
       rewrite /replica_init_res. rewrite ?big_sepS_sep.
       iSplitL "Hreplica_validated".
@@ -935,7 +937,7 @@ Section alloc.
     }
     iDestruct (big_sepS_sep with "[$Hreplica_clog2 $Hreplica_ilog2]") as "H".
     iDestruct (big_sepS_gset_cprod' with "H") as "H".
-    auto.
+    iFrame.
   Qed.
 
 End alloc.

@@ -388,10 +388,7 @@ Section tidinv.
   Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
-
   Definition zN_TXN_SITES : Z := 64.
-  Definition own_sid (γ : tulip_names) (sid : u64) : iProp Σ :=
-    own γ.(sids) ({[ sid := Excl () ]}).
 
   Definition sid_of (ts: u64) : u64 := word.modu ts (W64 zN_TXN_SITES).
 
@@ -429,9 +426,6 @@ Section tidinv.
 
   Global Instance have_gentid_persistent γ : Persistent (have_gentid γ).
   Proof. apply _. Qed.
-
-  Definition gentid_init γ : iProp Σ :=
-    own_largest_ts γ 0%nat ∗ ghost_map_auth γ.(gentid_reserved) 1 (∅ : gmap u64 gname).
 
   Lemma init_GenTID γ E :
     gentid_init γ -∗
