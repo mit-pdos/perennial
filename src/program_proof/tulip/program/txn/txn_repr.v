@@ -64,7 +64,8 @@ Section repr.
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       "Hptgs"    ∷ own_txn_ptgs txn [] ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
-      "#Hinv"    ∷ know_tulip_inv_with_proph γ proph.
+      "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
+      "#Hgentid" ∷ have_gentid γ.
 
   Definition own_txn_uninit txn γ : iProp Σ :=
     ∃ tid, "Htxn" ∷ own_txn_internal txn tid γ.

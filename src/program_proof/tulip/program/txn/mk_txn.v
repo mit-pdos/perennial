@@ -14,13 +14,14 @@ Section program.
     map_Forall (λ _ addrm, dom addrm = rids_all) gaddrm ->
     own_map gaddrmPP DfracDiscarded gaddrmP -∗
     ([∗ map] addrmP; addrm ∈ gaddrmP; gaddrm, own_map addrmP DfracDiscarded addrm) -∗
+    have_gentid γ -∗
     know_tulip_inv_with_proph γ proph -∗
     ([∗ map] gid ↦ addrm ∈ gaddrm, know_tulip_network_inv γ gid addrm) -∗
     {{{ own_sid γ sid }}}
       mkTxn #sid #gaddrmPP #proph
     {{{ (txn : loc), RET #txn; own_txn_uninit txn γ }}}.
   Proof.
-    iIntros (Hlt Hgid Hrids) "#HgaddrmP #Hgaddrm #Hinv #Hinvnets".
+    iIntros (Hlt Hgid Hrids) "#HgaddrmP #Hgaddrm #Hgentid #Hinv #Hinvnets".
     iIntros (Φ) "!> Hown_sid HΦ".
     wp_rec.
 

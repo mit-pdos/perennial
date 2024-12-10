@@ -133,9 +133,8 @@ Section program.
     (*@                                                                         @*)
     do 2 iNamed "Htxn". iNamed "Hsid".
     wp_loadField.
-    wp_apply (wp_getTimestamp with "[] Hsid_own").
+    wp_apply (wp_getTimestamp with "[$] [$]").
     { auto. }
-    { admit. }
     iNamed "Hts".
 
     iMod "HAU" as (ts) "[Hts HAU]".
@@ -150,6 +149,6 @@ Section program.
     iFrame "∗ #".
     iPureIntro.
     rewrite /valid_ts. word.
-  Admitted.
+  Qed.
 
 End program.
