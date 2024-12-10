@@ -5,6 +5,10 @@ From Perennial.program_proof.tulip.program.gcoord Require Import gcoord_repr.
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
+  Definition zN_TXN_SITES : Z := 64.
+  Definition own_sid (γ : tulip_names) (sid : u64) : iProp Σ :=
+    own γ.(sids) ({[ sid := Excl () ]}).
+
   (*@ type Txn struct {                                                       @*)
   (*@     // Timestamp of this transaction.                                   @*)
   (*@     ts      uint64                                                      @*)
@@ -49,15 +53,16 @@ Section repr.
       "#Hgcoordsabs" ∷ ([∗ map] gid ↦ gcoord ∈ gcoords, is_gcoord gcoord gid γ) ∗
       "%Hdomgcoords" ∷ ⌜dom gcoords = gids_all⌝.
 
-  Definition own_txn_sid txn : iProp Σ :=
+  Definition own_txn_sid γ txn : iProp Σ :=
     ∃ (sid : u64),
-      (* TODO: sid token *)
+      "%Hsid_range" ∷ ⌜ uint.Z sid < zN_TXN_SITES ⌝ ∗
+      "Hsid_own" ∷ own_sid γ sid ∗
       "HsidP" ∷ txn ↦[Txn :: "sid"] #sid.
 
   Definition own_txn_internal txn tid γ : iProp Σ :=
     ∃ (proph : proph_id),
       "Hts"      ∷ own_txn_ts txn tid ∗
-      "Hsid"     ∷ own_txn_sid txn ∗
+      "Hsid"     ∷ own_txn_sid γ txn ∗
       "Hwrs"     ∷ own_txn_wrs txn (DfracOwn 1) ∅ ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       "Hptgs"    ∷ own_txn_ptgs txn [] ∗
@@ -74,7 +79,7 @@ Section repr.
   Definition own_txn txn tid rds γ τ : iProp Σ :=
     ∃ (proph : proph_id) wrs,
       "Htxn"     ∷ own_txn_ts txn tid ∗
-      "Hsid"     ∷ own_txn_sid txn ∗
+      "Hsid"     ∷ own_txn_sid γ txn ∗
       "Hwrs"     ∷ own_txn_wrs txn (DfracOwn 1) wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       "Hptgs"    ∷ own_txn_ptgs txn [] ∗
@@ -94,7 +99,7 @@ Section repr.
     Definition own_txn_stable txn tid rds wrs γ τ : iProp Σ :=
     ∃ (proph : proph_id),
       "Htxn"     ∷ own_txn_ts txn tid ∗
-      "Hsid"     ∷ own_txn_sid txn ∗
+      "Hsid"     ∷ own_txn_sid γ txn ∗
       (* diff from [own_txn] *)
       "Hwrs"     ∷ own_txn_wrs txn DfracDiscarded wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
@@ -113,7 +118,7 @@ Section repr.
   Definition own_txn_prepared txn tid rds wrs γ τ : iProp Σ :=
     ∃ (proph : proph_id) ptgs,
       "Htxn"     ∷ own_txn_ts txn tid ∗
-      "Hsid"     ∷ own_txn_sid txn ∗
+      "Hsid"     ∷ own_txn_sid γ txn ∗
       "Hwrs"     ∷ own_txn_wrs txn DfracDiscarded wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       (* diff from [own_txn_stable] *)

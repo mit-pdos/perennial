@@ -9,25 +9,22 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
   Locate tulip_ghostG.
 
-  Local Definition zN_TXN_SITES : Z := 64.
   Local Definition sid_of (ts: u64) : u64 := word.modu ts (W64 zN_TXN_SITES).
 
-  Definition sid_own (γ : tulip_names) (sid : u64) : iProp Σ :=
-    own γ.(sids) ({[ sid := Excl () ]}).
 
   Local Definition gentid_au γ (sid : u64) (Φ : val → iProp Σ) : iProp Σ :=
-    (|NC={⊤ ∖ ↑tidNS,∅}=>
+    (|NC={⊤ ∖ ↑tsNS,∅}=>
       ∃ ts : nat, own_largest_ts γ ts ∗
          (∀ ts' : nat, own_largest_ts γ ts' ∗ ⌜(ts < ts')%nat⌝ -∗
-           |NC={∅,⊤ ∖ ↑tidNS}=> ∀ tid : u64, ⌜uint.nat tid = ts'⌝ ∗ sid_own γ sid -∗ Φ #tid)).
+           |NC={∅,⊤ ∖ ↑tsNS}=> ∀ tid : u64, ⌜uint.nat tid = ts'⌝ ∗ own_sid γ sid -∗ Φ #tid)).
 
   Local Definition reserved_inv γ γr now (ts : u64): iProp Σ :=
     ∃ Φ, let sid := sid_of ts in
       saved_pred_own γr DfracDiscarded Φ ∗
-      sid_own γ sid ∗
+      own_sid γ sid ∗
       if bool_decide (uint.nat ts ≤ now)%nat then
         (* This ts has already happened *)
-        sid_own γ sid -∗ Φ #ts
+        own_sid γ sid -∗ Φ #ts
       else
         (* This ts is still in the future *)
         gentid_au γ sid Φ
@@ -41,7 +38,7 @@ Section program.
         reserved_inv γ γr now ts.
 
   Definition have_gentid (γ : tulip_names) : iProp Σ :=
-    inv tidNS (∃ now, gentid_inv γ now).
+    inv tsNS (∃ now, gentid_inv γ now).
 
   Local Definition tid_reserved γ γr ts (Φ : val → iProp Σ) : iProp Σ :=
     ghost_map_elem γ.(gentid_reserved) ts (DfracOwn 1) γr ∗
@@ -65,7 +62,7 @@ Section program.
 
   Local Lemma gentid_reserve γ now sid Φ :
     gentid_inv γ now -∗
-    sid_own γ sid -∗
+    own_sid γ sid -∗
     gentid_au γ sid Φ -∗
     |==> tsc_lb now ∗
       (* The user can pick a timestamp with the right sid, but only gets something
@@ -117,7 +114,7 @@ Section program.
     (now < 2^64) →
     gentid_inv γ old -∗
     tsc_lb now -∗
-    |NC={⊤∖↑tidNS}=> gentid_inv γ now.
+    |NC={⊤∖↑tsNS}=> gentid_inv γ now.
   Proof.
     induction 1 using le_ind.
     { eauto. }
@@ -160,11 +157,11 @@ Section program.
     gentid_inv γ clock -∗
     tid_reserved γ γr ts Φ -∗
     tsc_lb (uint.nat ts) -∗
-    |NC={⊤∖↑tidNS}=> ∃ clock', gentid_inv γ clock' ∗ Φ #ts.
+    |NC={⊤∖↑tsNS}=> ∃ clock', gentid_inv γ clock' ∗ Φ #ts.
   Proof.
     iIntros "LC Hgentid Hreserved Htsc".
     set clock' := max clock (uint.nat ts).
-    iAssert (|NC={⊤∖↑tidNS}=> gentid_inv γ clock')%I with "[Htsc Hgentid]" as ">Hgentid".
+    iAssert (|NC={⊤∖↑tsNS}=> gentid_inv γ clock')%I with "[Htsc Hgentid]" as ">Hgentid".
     { destruct (decide (clock <= uint.nat ts)%nat); last first.
       { replace clock' with clock by lia. done. }
       iMod (gentid_inc_clock with "Hgentid Htsc") as "Hgentid"; first done.
@@ -191,11 +188,11 @@ Section program.
   Theorem wp_getTimestamp (sid : u64) γ :
     uint.Z sid < zN_TXN_SITES →
     ⊢ have_gentid γ -∗
-    {{{ sid_own γ sid }}}
+    {{{ own_sid γ sid }}}
     <<< ∀∀ (ts : nat), own_largest_ts γ ts >>>
-      getTimestamp #sid @ ↑tidNS
+      getTimestamp #sid @ ↑tsNS
     <<< ∃∃ (ts' : nat), own_largest_ts γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
-    {{{ (tid : u64), RET #tid; ⌜uint.nat tid = ts'⌝ ∗ sid_own γ sid }}}.
+    {{{ (tid : u64), RET #tid; ⌜uint.nat tid = ts'⌝ ∗ own_sid γ sid }}}.
   Proof.
   iIntros "%Hsid #Hinv !>" (Φ) "Hsid HAU".
     wp_rec.
@@ -314,15 +311,11 @@ Section program.
     (*@                                                                         @*)
     do 2 iNamed "Htxn". iNamed "Hsid".
     wp_loadField.
-    wp_apply (wp_getTimestamp).
-    { admit. }
-    { admit. }
+    wp_apply (wp_getTimestamp with "[] Hsid_own").
+    { auto. }
     { admit. }
     iNamed "Hts".
 
-    (* Not sure which name space to use. *)
-    assert (↑tidNS = ↑tsNS) as ->.
-    { admit. }
     iMod "HAU" as (ts) "[Hts HAU]".
     iFrame "Hts".
     iIntros "!>" (ts') "[Hts %Hts]".
