@@ -140,13 +140,13 @@ Fixpoint encodes {A:Type} (enc : list u8) (xs : list A) (has_encoding : list u8 
   end.
 
 Theorem wp_ReadSlice {X : Type} {V : IntoVal X} {goT: ty}
-  (enc : list u8) (enc_sl : Slice.t) (xs : list X) (ValRel: IntoValForType X goT)
+  (enc : list u8) (enc_sl : Slice.t) (xs : list X) (count : w64) (ValRel: IntoValForType X goT)
   (has_encoding : list u8 -> X -> Prop) (own : val -> X -> dfrac -> iProp Σ) (readOne : val)
   (suffix : list u8) (dq : dfrac) :
-  (length xs < 2^64) ->
   (forall (v : val) (x : X) (dq : dfrac), own v x dq -∗ ⌜v = to_val x⌝) ->
   {{{ "Hsl" ∷ own_slice_small enc_sl byteT dq (enc ++ suffix) ∗
       "%Henc" ∷ ⌜encodes enc xs has_encoding⌝ ∗
+      "%Hcount" ∷ ⌜uint.nat count = length xs⌝ ∗
       "#HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
       {{{ own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
           ⌜has_encoding enc' x⌝
@@ -156,13 +156,13 @@ Theorem wp_ReadSlice {X : Type} {V : IntoVal X} {goT: ty}
           own_slice_small suff_sl byteT dq suffix'
       }}}
   }}}
-    ReadSlice goT (slice_val enc_sl) #(length xs) readOne
+    ReadSlice goT (slice_val enc_sl) #count readOne
   {{{ vals b2, RET (slice_val vals, slice_val b2);
        own_slice vals goT (DfracOwn 1) xs ∗
        own_slice_small b2 byteT dq suffix
   }}}.
 Proof.
-  iIntros (Hxs_len Hown_val ϕ) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
+  iIntros (Hown_val ϕ) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
   wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Henc_sl".
   wp_pures.
 
@@ -230,7 +230,8 @@ Proof.
     iModIntro. iApply "HΦ".
     replace (uint.nat (W64 (length xs))) with (length xs) by word.
     replace (uint.nat (W64 (length xs))) with (length xs) in H_b2_enc by word.
-    rewrite firstn_all. rewrite skipn_all in H_b2_enc.
+    rewrite take_ge; [ | word ].
+    rewrite drop_ge in H_b2_enc; [ | word ].
     unfold encodes in H_b2_enc. rewrite H_b2_enc. rewrite app_nil_l.
     iFrame.
 Qed.
