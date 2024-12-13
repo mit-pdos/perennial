@@ -12,6 +12,10 @@ Lemma wp_define' :
     globals_test.define' #()
   {{{ RET #(); True }}}.
 Proof.
+  iIntros (?) "_ HΦ".
+  wp_call.
+  rewrite -!default_val_eq_zero_val /=.
+  wp_alloc globalB_ptr as "?".
 Admitted.
 
 Lemma wp_initialize' :
