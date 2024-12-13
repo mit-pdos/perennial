@@ -2,6 +2,8 @@ From New.golang.theory Require Import exception mem typing.
 From New.golang.defn Require Import globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.
 
+From Coq Require Import Ascii.
+
 Class goGlobals_preG (Σ: gFunctors) : Set :=
   {
     #[global] go_globals_inG :: ghost_mapG Σ string loc ;
@@ -36,10 +38,63 @@ Definition own_unused_vars_def (pkg_name : string) (used_var_names : gset string
   "%Hused_vars_dom" ∷ ⌜ dom m = used_var_names ⌝.
 
 Local Definition encode_var_name (pkg_name var_name : string) : string :=
-  pkg_name +:+ "." +:+ var_name.
+  pkg_name +:+ " " +:+ var_name.
 
 Local Definition is_valid_package_name (pkg_name : string) : Prop :=
-  ∀ pkg_name' var_name', pkg_name ≠ encode_var_name pkg_name' var_name'.
+  " "%char ∉ (String.list_ascii_of_string pkg_name).
+
+Lemma list_ascii_of_string_app s s' :
+  String.list_ascii_of_string (s ++ s') = String.list_ascii_of_string s ++ String.list_ascii_of_string s'.
+Proof.
+Admitted.
+
+Lemma encode_var_name_inj pkg_name1 pkg_name2 var_name1 var_name2 :
+  is_valid_package_name pkg_name1 →
+  is_valid_package_name pkg_name2 →
+  encode_var_name pkg_name1 var_name1 = encode_var_name pkg_name2 var_name2 →
+  pkg_name1 = pkg_name2 ∧ var_name1 = var_name2.
+Proof.
+  intros Hvalid1 Hvalid2 Heq.
+  apply (f_equal String.list_ascii_of_string) in Heq.
+  split.
+  {
+    enough (String.list_ascii_of_string pkg_name1 = String.list_ascii_of_string pkg_name2) as H.
+    {
+      apply (f_equal String.string_of_list_ascii) in H.
+      by rewrite !String.string_of_list_ascii_of_string in H.
+    }
+    (* curry *)
+    wlog: var_name1 var_name2 pkg_name1 pkg_name2 Hvalid2 Heq Hvalid1 /
+            (length (String.list_ascii_of_string pkg_name1) <= length (String.list_ascii_of_string pkg_name2))%nat.
+    {
+      intros.
+      destruct (decide (length (String.list_ascii_of_string pkg_name1) <= length (String.list_ascii_of_string pkg_name2))).
+      { by eapply H. }
+      { symmetry. eapply H; try done. lia. }
+    }
+    intros Hlen.
+    refine (let (x1, x2) := (_ : _ ∧ _) in
+            mlist.anti_symm_prefix_of _ _ _ x1 x2).
+    apply (f_equal (take (List.length (list_ascii_of_string pkg_name1)))) in Heq.
+    repeat rewrite !list_ascii_of_string_app in Heq.
+    rewrite take_app_le // take_ge // in Heq.
+    destruct (decide (Datatypes.length (list_ascii_of_string pkg_name1) ≤ (Datatypes.length (list_ascii_of_string pkg_name2)))).
+    {
+      rewrite take_app_le // in Heq.
+
+    }
+      repeat rewrite list_ascii_of_string_app take_app_le // take_ge // in Heq.
+    rewrite take_app_le // take_ge // in Heq.
+    Search take app.
+    rewrite take__app
+  }
+Qed.
+
+Lemma encode_var_name_package_name_ne pkg_name' pkg_name var_name :
+  is_valid_package_name pkg_name' →
+  pkg_name' ≠ encode_var_name pkg_name var_name.
+Proof.
+Admitted.
 
 Definition own_globals_inv : iProp Σ :=
   ∃ g (package_gnames : gmap string gname),
@@ -48,6 +103,7 @@ Definition own_globals_inv : iProp Σ :=
   "Hglobal_addrs" ∷ ([∗ map] pkg_name ↦ γpkg ∈ package_gnames,
                        ∃ (addrs : gmap string loc),
                          ghost_map_auth γpkg (1/2)%Qp addrs ∗
+                         ⌜ is_valid_package_name pkg_name ⌝ ∗
                          ⌜ ∀ var_name,
                             match (addrs !! var_name) with
                             | None => g !! (encode_var_name pkg_name var_name) = None
@@ -69,6 +125,7 @@ Definition is_globals_inv : iProp Σ :=
 
 Lemma wp_globals_put pkg_name var_name used_var_names (addr : loc) :
   var_name ∉ used_var_names →
+  is_valid_package_name pkg_name →
   {{{ is_globals_inv ∗ own_unused_vars_def pkg_name used_var_names }}}
     globals.put #(encode_var_name pkg_name var_name) #addr
   {{{ RET #();
@@ -76,7 +133,7 @@ Lemma wp_globals_put pkg_name var_name used_var_names (addr : loc) :
       is_global_addr_def pkg_name var_name addr
   }}}.
 Proof.
-  iIntros (??) "Hpre HΦ".
+  iIntros (???) "Hpre HΦ".
   iDestruct "Hpre" as "[#Hinv Hu]".
   unfold globals.put.
   wp_call_lc "Hlc".
@@ -110,6 +167,8 @@ Proof.
       iSplitL "Hpkg_auth".
       - iExists _; iFrame.
         iPureIntro.
+        destruct Hg as [Hvalid Hg].
+        split; first done.
         intros var_name'.
         destruct (decide (var_name' = var_name)) as [|Hneq].
         + subst. rewrite !lookup_insert to_val_unseal //.
@@ -126,27 +185,38 @@ Proof.
         clear Hg.
         iDestruct "H" as (?) "[$ %Hg]".
         iPureIntro.
+        destruct Hg as [Hvalid Hg].
+        split; first done.
         intros ?.
         rewrite -> lookup_insert_ne.
-        2:{ admit. } (* annoying proof *)
+        2:{
+          intros Hbad.
+          apply encode_var_name_inj in Hbad as [-> ->]; try assumption.
+          rewrite lookup_delete_Some in Hlookup'. naive_solver.
+        }
         apply Hg.
     }
     iPureIntro.
     intros pkg_name' Hvalid.
-    rewrite lookup_insert_ne.
-    2:{ unfold is_valid_package_name in Hvalid. naive_solver. }
+    rewrite [in <[_ := _]> g !! pkg_name']lookup_insert_ne.
+    2:{ intros Hbad.
+        subst. by eapply encode_var_name_package_name_ne. }
     specialize (Hpackage_ids pkg_name' Hvalid).
-    destruct (package_gnames !! pkg_name'); try done.
+    destruct (package_gnames !! pkg_name') eqn:Hlookup'; try done.
     split; first naive_solver.
     intros.
     rewrite lookup_insert_ne.
-    2:{ admit. }
+    2:{
+      intros Hbad.
+      apply encode_var_name_inj in Hbad as [-> ->]; try assumption.
+      naive_solver.
+    }
     naive_solver.
   }
   iApply "HΦ".
   iFrame "∗#%".
   iPureIntro.
   by rewrite dom_insert_L.
-Admitted.
+Qed.
 
 End definitions.
