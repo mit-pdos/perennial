@@ -43,52 +43,13 @@ Local Definition encode_var_name (pkg_name var_name : string) : string :=
 Local Definition is_valid_package_name (pkg_name : string) : Prop :=
   " "%char ∉ (String.list_ascii_of_string pkg_name).
 
-Lemma list_ascii_of_string_app s s' :
-  String.list_ascii_of_string (s ++ s') = String.list_ascii_of_string s ++ String.list_ascii_of_string s'.
-Proof.
-Admitted.
-
 Lemma encode_var_name_inj pkg_name1 pkg_name2 var_name1 var_name2 :
   is_valid_package_name pkg_name1 →
   is_valid_package_name pkg_name2 →
   encode_var_name pkg_name1 var_name1 = encode_var_name pkg_name2 var_name2 →
   pkg_name1 = pkg_name2 ∧ var_name1 = var_name2.
 Proof.
-  intros Hvalid1 Hvalid2 Heq.
-  apply (f_equal String.list_ascii_of_string) in Heq.
-  split.
-  {
-    enough (String.list_ascii_of_string pkg_name1 = String.list_ascii_of_string pkg_name2) as H.
-    {
-      apply (f_equal String.string_of_list_ascii) in H.
-      by rewrite !String.string_of_list_ascii_of_string in H.
-    }
-    (* curry *)
-    wlog: var_name1 var_name2 pkg_name1 pkg_name2 Hvalid2 Heq Hvalid1 /
-            (length (String.list_ascii_of_string pkg_name1) <= length (String.list_ascii_of_string pkg_name2))%nat.
-    {
-      intros.
-      destruct (decide (length (String.list_ascii_of_string pkg_name1) <= length (String.list_ascii_of_string pkg_name2))).
-      { by eapply H. }
-      { symmetry. eapply H; try done. lia. }
-    }
-    intros Hlen.
-    refine (let (x1, x2) := (_ : _ ∧ _) in
-            mlist.anti_symm_prefix_of _ _ _ x1 x2).
-    apply (f_equal (take (List.length (list_ascii_of_string pkg_name1)))) in Heq.
-    repeat rewrite !list_ascii_of_string_app in Heq.
-    rewrite take_app_le // take_ge // in Heq.
-    destruct (decide (Datatypes.length (list_ascii_of_string pkg_name1) ≤ (Datatypes.length (list_ascii_of_string pkg_name2)))).
-    {
-      rewrite take_app_le // in Heq.
-
-    }
-      repeat rewrite list_ascii_of_string_app take_app_le // take_ge // in Heq.
-    rewrite take_app_le // take_ge // in Heq.
-    Search take app.
-    rewrite take__app
-  }
-Qed.
+Admitted.
 
 Lemma encode_var_name_package_name_ne pkg_name' pkg_name var_name :
   is_valid_package_name pkg_name' →
