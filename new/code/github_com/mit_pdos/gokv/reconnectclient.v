@@ -109,7 +109,7 @@ Definition MakeReconnectingClient : val :=
     do:  ((struct.field_ref ReconnectingClient "addr" (![ptrT] "r")) <-[uint64T] "$r0");;;
     return: (![ptrT] "r")).
 
-Definition global_id' : string := "github.com/mit-pdos/gokv/reconnectclient".
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/reconnectclient".
 
 Definition define' : val :=
   rec: "define'" <> :=
@@ -117,7 +117,7 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
+    exception_do (if: globals.is_uninitialized pkg_name'
     then
       do:  urpc.initialize';;;
       do:  grove_ffi.initialize';;;

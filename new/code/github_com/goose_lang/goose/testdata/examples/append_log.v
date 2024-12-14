@@ -196,7 +196,7 @@ Definition Open : val :=
        "diskSz" ::= "$diskSz"
      }]))).
 
-Definition global_id' : string := "github.com/goose-lang/goose/testdata/examples/append_log".
+Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/append_log".
 
 Definition define' : val :=
   rec: "define'" <> :=
@@ -204,7 +204,7 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
+    exception_do (if: globals.is_uninitialized pkg_name'
     then
       do:  disk.initialize';;;
       do:  marshal.initialize';;;

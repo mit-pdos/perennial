@@ -957,7 +957,7 @@ Definition StartServer : val :=
     (urpc.Server__Serve (![ptrT] "r")) "$a0");;;
     return: (![ptrT] "s")).
 
-Definition global_id' : string := "github.com/mit-pdos/gokv/vrsm/paxos".
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/vrsm/paxos".
 
 Definition define' : val :=
   rec: "define'" <> :=
@@ -965,7 +965,7 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
+    exception_do (if: globals.is_uninitialized pkg_name'
     then
       do:  urpc.initialize';;;
       do:  grove_ffi.initialize';;;

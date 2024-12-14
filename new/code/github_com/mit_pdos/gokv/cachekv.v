@@ -223,7 +223,7 @@ Definition Make : val :=
        "cache" ::= "$cache"
      }]))).
 
-Definition global_id' : string := "github.com/mit-pdos/gokv/cachekv".
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/cachekv".
 
 Definition define' : val :=
   rec: "define'" <> :=
@@ -231,7 +231,7 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
+    exception_do (if: globals.is_uninitialized pkg_name'
     then
       do:  marshal.initialize';;;
       do:  kv.initialize';;;

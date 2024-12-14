@@ -896,27 +896,27 @@ Definition foo : val :=
   rec: "foo" <> :=
     exception_do (return: (#(W64 10))).
 
-Definition global_id' : string := "github.com/goose-lang/goose/testdata/examples/unittest".
+Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/unittest".
 
-Definition GlobalX : string := global_id' ++ "GlobalX".
+Definition GlobalX : (string * string) := (pkg_name', "GlobalX").
 
-Definition globalY : string := global_id' ++ "globalY".
+Definition globalY : (string * string) := (pkg_name', "globalY").
 
-Definition globalA : string := global_id' ++ "globalA".
+Definition globalA : (string * string) := (pkg_name', "globalA").
 
-Definition globalB : string := global_id' ++ "globalB".
+Definition globalB : (string * string) := (pkg_name', "globalB").
 
 (* go: globals.go:12:6 *)
 Definition other : val :=
   rec: "other" <> :=
     exception_do (let: "$r0" := #"ok" in
-    do:  ((globals.get globalY) <-[stringT] "$r0")).
+    do:  ((globals.get globalY #()) <-[stringT] "$r0")).
 
 (* go: globals.go:16:6 *)
 Definition bar : val :=
   rec: "bar" <> :=
     exception_do (do:  (other #());;;
-    (if: ((![uint64T] (globals.get GlobalX)) ≠ #(W64 10)) || ((![stringT] (globals.get globalY)) ≠ #"ok")
+    (if: ((![uint64T] (globals.get GlobalX #())) ≠ #(W64 10)) || ((![stringT] (globals.get globalY #())) ≠ #"ok")
     then
       do:  (let: "$a0" := (interface.make string__mset #"bad") in
       Panic "$a0")
@@ -2442,14 +2442,14 @@ Definition testVariadicPassThrough : val :=
 
 Definition define' : val :=
   rec: "define'" <> :=
-    exception_do (globals.put globalB (ref_ty stringT (zero_val stringT));;;
-    globals.put globalA (ref_ty stringT (zero_val stringT));;;
-    globals.put globalY (ref_ty stringT (zero_val stringT));;;
-    globals.put GlobalX (ref_ty uint64T (zero_val uint64T))).
+    exception_do (do:  (globals.put globalB (ref_ty stringT (zero_val stringT)));;;
+    do:  (globals.put globalA (ref_ty stringT (zero_val stringT)));;;
+    do:  (globals.put globalY (ref_ty stringT (zero_val stringT)));;;
+    do:  (globals.put GlobalX (ref_ty uint64T (zero_val uint64T)))).
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
+    exception_do (if: globals.is_uninitialized pkg_name'
     then
       do:  primitive.initialize';;;
       do:  sync.initialize';;;
@@ -2465,17 +2465,17 @@ Definition initialize' : val :=
       do:  fmt.initialize';;;
       do:  (define' #());;;
       let: "$r0" := (foo #()) in
-      do:  ((globals.get GlobalX) <-[uint64T] "$r0");;;
+      do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
       let: "$r0" := #"a" in
-      do:  ((globals.get globalA) <-[stringT] "$r0");;;
+      do:  ((globals.get globalA #()) <-[stringT] "$r0");;;
       let: "$r0" := #"b" in
-      do:  ((globals.get globalB) <-[stringT] "$r0");;;
+      do:  ((globals.get globalB #()) <-[stringT] "$r0");;;
       do:  ((λ: <>,
-        exception_do (let: "$r0" := (![uint64T] (globals.get GlobalX)) in
-        do:  ((globals.get GlobalX) <-[uint64T] "$r0"))
+        exception_do (let: "$r0" := (![uint64T] (globals.get GlobalX #())) in
+        do:  ((globals.get GlobalX #()) <-[uint64T] "$r0"))
         ) #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := #"" in
-        do:  ((globals.get globalY) <-[stringT] "$r0"))
+        do:  ((globals.get globalY #()) <-[stringT] "$r0"))
         ) #())
     else do:  #()).

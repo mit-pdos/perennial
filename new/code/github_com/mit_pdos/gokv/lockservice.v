@@ -46,7 +46,7 @@ Definition MakeLockClerk : val :=
        "kv" ::= "$kv"
      }]))).
 
-Definition global_id' : string := "github.com/mit-pdos/gokv/lockservice".
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/lockservice".
 
 Definition define' : val :=
   rec: "define'" <> :=
@@ -54,7 +54,7 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
+    exception_do (if: globals.is_uninitialized pkg_name'
     then
       do:  kv.initialize';;;
       do:  (define' #())
