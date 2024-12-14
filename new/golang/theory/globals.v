@@ -60,7 +60,7 @@ Admitted.
 Definition own_globals_inv : iProp Σ :=
   ∃ g (package_gnames : gmap string gname),
   "Hglobals" ∷ own_globals (DfracOwn 1) g ∗
-  "Hunused_vars" ∷ ghost_map_auth go_package_gname_name 1%Qp package_gnames ∗
+  "Hpkg_gnames" ∷ ghost_map_auth go_package_gname_name 1%Qp package_gnames ∗
   "Hglobal_addrs" ∷ ([∗ map] pkg_name ↦ γpkg ∈ package_gnames,
                        ∃ (addrs : gmap string loc),
                          ghost_map_auth γpkg (1/2)%Qp addrs ∗
@@ -104,7 +104,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iNamed "Hi".
   iNamed "Hu".
-  iCombine "Hγpkg Hunused_vars" gives %Hlookup.
+  iCombine "Hγpkg Hpkg_gnames" gives %Hlookup.
   iDestruct (big_sepM_delete with "Hglobal_addrs") as "[Hauth2 Hglobal_addrs]".
   { done. }
   iDestruct "Hauth2" as (?) "[Hauth2 %Hg]".
@@ -178,6 +178,42 @@ Proof.
   iFrame "∗#%".
   iPureIntro.
   by rewrite dom_insert_L.
+Qed.
+
+Lemma wp_globals_get pkg_name var_name (addr : loc) :
+  is_valid_package_name pkg_name →
+  {{{ is_globals_inv ∗ is_global_addr_def pkg_name var_name addr }}}
+    globals.get #(encode_var_name pkg_name var_name)
+  {{{ RET #addr; True }}}.
+Proof.
+  iIntros (??) "Hpre HΦ".
+  iDestruct "Hpre" as "[#Hinv Hu]".
+  unfold globals.put.
+  wp_call_lc "Hlc".
+  rewrite to_val_unseal.
+  simpl.
+  wp_bind (GlobalGet _).
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iNamed "Hi".
+  iDestruct "Hu" as (?) "[#Hpkg #Hvar]".
+  iCombine "Hpkg Hpkg_gnames" gives %Hlookup.
+  iApply (wp_GlobalGet with "[$]").
+  iIntros "!> Hglobals".
+  iDestruct (big_sepM_lookup_acc with "Hglobal_addrs") as "[H Hglobal_addrs]".
+  { done. }
+  iDestruct "H" as (?) "(Hpkg_auth & %Hvalid & %Hg)".
+  iCombine "Hpkg_auth Hvar" gives %Haddrs.
+  pose proof (Hg var_name) as Hvar. rewrite Haddrs /= in Hvar.
+  iSpecialize ("Hglobal_addrs" with "[Hpkg_auth]").
+  { iFrame "∗#%". }
+  iMod ("Hclose" with "[-HΦ]").
+  { iExists _; iFrame "∗#%". }
+  iModIntro.
+  rewrite Hvar.
+  wp_pures.
+  rewrite to_val_unseal.
+  by iApply "HΦ".
 Qed.
 
 End definitions.

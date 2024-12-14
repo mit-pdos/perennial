@@ -882,7 +882,7 @@ Proof.
   iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
-Lemma wp_GlobalGet s E g dq (k : string) v :
+Lemma wp_GlobalGet s E g dq (k : string) :
   {{{ own_globals dq g }}}
     GlobalGet #(str k) @ s ; E
   {{{ RET (match g !! k with
