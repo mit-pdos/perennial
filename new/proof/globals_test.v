@@ -68,19 +68,18 @@ Definition own_initialized : iProp Σ :=
   "HglobalX" ∷ GlobalX_addr ↦ (W64 10)
 .
 
-(* Pick an iProp that is given when initialized.
- *)
-
-Lemma wp_initialize' :
-  {{{ own_globals_tok ∅ {[ globals_test.pkg_name' := own_initialized ]} }}}
+Lemma wp_initialize' pending postconds :
+  globals_test.pkg_name' ∉ pending →
+  postconds !! globals_test.pkg_name' = Some own_initialized →
+  {{{ own_globals_tok pending postconds }}}
     globals_test.initialize' #()
-  {{{ RET #(); own_initialized }}}.
+  {{{ RET #(); is_initialized globals_test.pkg_name' own_initialized }}}.
 Proof.
-  iIntros (?) "Hunused HΦ".
+  iIntros (???) "Hunused HΦ".
   wp_call.
   wp_apply (wp_package_init with "[$]").
   { reflexivity. }
-  { reflexivity. }
+  { eassumption. }
   { (* prove init function *)
     iIntros "Hvars Htok".
     wp_pures.
@@ -116,7 +115,6 @@ Proof.
   iIntros "His Htok".
   iApply "HΦ".
   iFrame.
-  (* FIXME: get token to claim postcond *)
-Admitted.
+Qed.
 
 End proof.
