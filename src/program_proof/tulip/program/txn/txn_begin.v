@@ -24,6 +24,7 @@ Section program.
 
     (*@ func getTimestamp(sid uint64) uint64 {                                  @*)
     (*@     ts := trusted_time.GetTime()                                        @*)
+    (*@                                                                         @*)
     wp_apply (wp_GetTSC).
     iInv "Hinv" as "Hgentid" "Hclose".
     iMod (lc_fupd_elim_later with "LC Hgentid") as (clock) "Hgentid".
@@ -34,21 +35,24 @@ Section program.
     iExists _. iFrame "Hclock".
     iIntros (clock2) "[%Hclock Hclock2]".
     iMod "Hclose2" as "_".
-    set inbounds := bool_decide (uint.Z clock2 + 64 < 2^64).
+    set inbounds := bool_decide (uint.Z clock2 + zN_TXN_SITES < 2^64).
     set clock2_boundsafe := if inbounds then clock2 else 0.
-    opose proof (u64_round_up_spec clock2_boundsafe (W64 64) _ _) as H.
-    { subst clock2_boundsafe inbounds. case_bool_decide; word. }
+    opose proof (u64_round_up_spec clock2_boundsafe (W64 zN_TXN_SITES) _ _) as H.
+    { subst clock2_boundsafe inbounds. rewrite /zN_TXN_SITES. case_bool_decide; word. }
     { word. }
     move:H.
-    set rounded_ts := u64_round_up clock2_boundsafe (W64 64).
+    rewrite /zN_TXN_SITES.
+    set rounded_ts := u64_round_up clock2_boundsafe (W64 zN_TXN_SITES).
     intros (Hmod & Hbound1 & Hbound2).
     set reserved_ts := word.add rounded_ts sid.
-    assert ((uint.Z rounded_ts + uint.Z sid) `mod` 64 = uint.Z sid) as Hsidmod.
-    { rewrite Z.add_mod. 2:lia.
+    assert ((uint.Z rounded_ts + uint.Z sid) `mod` zN_TXN_SITES = uint.Z sid) as Hsidmod.
+    { rewrite /zN_TXN_SITES. rewrite Z.add_mod. 2:lia.
       rewrite Hmod. rewrite [uint.Z sid `mod` _]Z.mod_small. 2:split;[word|done].
       rewrite Z.mod_small. 1:lia. split;[word|done]. }
+    rewrite /zN_TXN_SITES in Hsidmod.
     assert (uint.Z (sid_of reserved_ts) = uint.Z sid) as Hsid_of.
     { rewrite /sid_of /reserved_ts.
+      rewrite /zN_TXN_SITES.
       rewrite word.unsigned_modu. 2:done.
       rewrite word.unsigned_add. rewrite (wrap_small (_+_)). 2:word.
       rewrite wrap_small. 1:done.
@@ -63,28 +67,24 @@ Section program.
     iIntros "!> _".
 
     (*@     n := params.N_TXN_SITES                                             @*)
-    wp_pures.
-
     (*@     tid := std.SumAssumeNoOverflow(ts, n) / n * n + sid                 @*)
-
+    (*@                                                                         @*)
     wp_pures.
     wp_apply std_proof.wp_SumAssumeNoOverflow. iIntros (Hoverflow).
     assert (inbounds = true) as ->.
-    { subst inbounds. rewrite bool_decide_true; first done. word. }
+    { subst inbounds. rewrite bool_decide_true; first done. rewrite /zN_TXN_SITES. word. }
     subst clock2_boundsafe.
     rewrite u64_Z_through_nat in Hclock.
     rewrite bool_decide_true.
-    2:{ subst reserved_ts. word. }
+    2:{ subst reserved_ts rounded_ts. rewrite /zN_TXN_SITES in Hmod Hsidmod Hbound1 *. word. }
     iDestruct "Hreserved" as (γr) "Hreserved".
     wp_pures.
-
     set tid := (word.add _ _).
     assert (tid = reserved_ts) as -> by done.
-    (*@                                                                         @*)
-    (*@                                                                         @*)
+
     (*@     for trusted_time.GetTime() <= tid {                                 @*)
     (*@     }                                                                   @*)
-
+    (*@                                                                         @*)
     set P := λ (b : bool), (if b then True else tsc_lb (uint.nat reserved_ts))%I.
     wp_apply (wp_forBreak_cond P with "[] []").
     { clear Φ. iIntros "!> %Φ _ HΦ".
@@ -111,9 +111,9 @@ Section program.
     { eauto. }
     iModIntro.
 
-      (*@                                                                         @*)
-      (*@     return tid                                                          @*)
-      (*@ }                                                                       @*)
+    (*@                                                                         @*)
+    (*@     return tid                                                          @*)
+    (*@ }                                                                       @*)
 
     iApply "HΦ".
   Qed.

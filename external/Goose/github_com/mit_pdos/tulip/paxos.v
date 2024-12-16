@@ -750,6 +750,44 @@ Definition Paxos__ConnectAll: val :=
       (Paxos__Connect "px" "nid");;
     #().
 
+Definition Paxos__DumpState: val :=
+  rec: "Paxos__DumpState" "px" :=
+    Mutex__Lock (struct.loadF Paxos "mu" "px");;
+    (* fmt.Printf("Current term: %d\n", px.termc) *)
+    (* fmt.Printf("Ledger term: %d\n", px.terml) *)
+    (* fmt.Printf("Number of log entries: %d\n", uint64(len(px.log))) *)
+    (* fmt.Printf("Committed LSN: %d\n", px.lsnc) *)
+    (* fmt.Printf("Is candidate / leader: %t / %t\n", px.iscand, px.isleader) *)
+    (if: struct.loadF Paxos "iscand" "px"
+    then
+      (* fmt.Printf("Candidate state:\n") *)
+      (* fmt.Printf("Largest term seen in prepare: %d\n", px.termp) *)
+      (* fmt.Printf("Longest log after committed LSN in prepare: %d\n", px.termp) *)
+      (* fmt.Printf("Number of votes granted: %d\n", uint64(len(px.respp))) *)
+      #()
+    else #());;
+    (if: struct.loadF Paxos "isleader" "px"
+    then
+      (* fmt.Printf("Leader state:\n") *)
+      (* fmt.Printf("Match LSN for each peer:\n") *)
+      MapIter (struct.loadF Paxos "lsnpeers" "px") (λ: "nid" "lsnpeer",
+        (* fmt.Printf("Peer %d -> %d\n", nid, lsnpeer) *)
+        #())
+    else #());;
+    Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+    #().
+
+Definition Paxos__ForceElection: val :=
+  rec: "Paxos__ForceElection" "px" :=
+    Mutex__Lock (struct.loadF Paxos "mu" "px");;
+    let: ("termc", "lsnc") := Paxos__nominate "px" in
+    Mutex__Unlock (struct.loadF Paxos "mu" "px");;
+    ForSlice uint64T <> "nidloop" (struct.loadF Paxos "peers" "px")
+      (let: "nid" := "nidloop" in
+      Fork (let: "data" := EncodePrepareRequest "termc" "lsnc" in
+            Paxos__Send "px" "nid" "data"));;
+    #().
+
 Definition mkPaxos: val :=
   rec: "mkPaxos" "nidme" "termc" "terml" "lsnc" "log" "addrm" "fname" :=
     let: "sc" := MapLen "addrm" in

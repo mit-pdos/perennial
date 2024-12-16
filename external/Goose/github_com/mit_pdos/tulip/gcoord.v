@@ -799,18 +799,18 @@ Definition GroupCoordinator__GetLeader: val :=
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     SliceGet uint64T (struct.loadF GroupCoordinator "rps" "gcoord") "idxleader".
 
+Definition GroupCoordinator__SendCommit: val :=
+  rec: "GroupCoordinator__SendCommit" "gcoord" "rid" "ts" "pwrs" :=
+    let: "data" := message.EncodeTxnCommitRequest "ts" "pwrs" in
+    GroupCoordinator__Send "gcoord" "rid" "data";;
+    #().
+
 Definition GroupCoordinator__Finalized: val :=
   rec: "GroupCoordinator__Finalized" "gcoord" "ts" :=
     Mutex__Lock (struct.loadF GroupCoordinator "mu" "gcoord");;
     let: (<>, "ok") := MapGet (struct.loadF GroupCoordinator "tsfinals" "gcoord") "ts" in
     Mutex__Unlock (struct.loadF GroupCoordinator "mu" "gcoord");;
     (~ "ok").
-
-Definition GroupCoordinator__SendCommit: val :=
-  rec: "GroupCoordinator__SendCommit" "gcoord" "rid" "ts" "pwrs" :=
-    let: "data" := message.EncodeTxnCommitRequest "ts" "pwrs" in
-    GroupCoordinator__Send "gcoord" "rid" "data";;
-    #().
 
 Definition GroupCoordinator__ChangeLeader: val :=
   rec: "GroupCoordinator__ChangeLeader" "gcoord" :=
@@ -824,11 +824,13 @@ Definition GroupCoordinator__Commit: val :=
   rec: "GroupCoordinator__Commit" "gcoord" "ts" "pwrs" :=
     GroupCoordinator__RegisterFinalization "gcoord" "ts";;
     let: "leader" := ref_to uint64T (GroupCoordinator__GetLeader "gcoord") in
+    GroupCoordinator__SendCommit "gcoord" (![uint64T] "leader") "ts" "pwrs";;
+    time.Sleep params.NS_RESEND_COMMIT;;
     Skip;;
     (for: (λ: <>, (~ (GroupCoordinator__Finalized "gcoord" "ts"))); (λ: <>, Skip) := λ: <>,
+      "leader" <-[uint64T] (GroupCoordinator__ChangeLeader "gcoord");;
       GroupCoordinator__SendCommit "gcoord" (![uint64T] "leader") "ts" "pwrs";;
       time.Sleep params.NS_RESEND_COMMIT;;
-      "leader" <-[uint64T] (GroupCoordinator__ChangeLeader "gcoord");;
       Continue);;
     #().
 
@@ -842,10 +844,12 @@ Definition GroupCoordinator__Abort: val :=
   rec: "GroupCoordinator__Abort" "gcoord" "ts" :=
     GroupCoordinator__RegisterFinalization "gcoord" "ts";;
     let: "leader" := ref_to uint64T (GroupCoordinator__GetLeader "gcoord") in
+    GroupCoordinator__SendAbort "gcoord" (![uint64T] "leader") "ts";;
+    time.Sleep params.NS_RESEND_ABORT;;
     Skip;;
     (for: (λ: <>, (~ (GroupCoordinator__Finalized "gcoord" "ts"))); (λ: <>, Skip) := λ: <>,
+      "leader" <-[uint64T] (GroupCoordinator__ChangeLeader "gcoord");;
       GroupCoordinator__SendAbort "gcoord" (![uint64T] "leader") "ts";;
       time.Sleep params.NS_RESEND_ABORT;;
-      "leader" <-[uint64T] (GroupCoordinator__ChangeLeader "gcoord");;
       Continue);;
     #().

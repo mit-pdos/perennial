@@ -388,7 +388,7 @@ Section tidinv.
   Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
-  Definition zN_TXN_SITES : Z := 64.
+  Definition zN_TXN_SITES : Z := 1024.
 
   Definition sid_of (ts: u64) : u64 := word.modu ts (W64 zN_TXN_SITES).
 
