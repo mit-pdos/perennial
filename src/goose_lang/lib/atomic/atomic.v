@@ -23,10 +23,8 @@ Context `{!heapGS Σ} (N : namespace).
 Proof.
   rewrite struct_pointsto_eq /struct_pointsto_def /=.
   rewrite loc_add_0 right_id.
-  iSplit.
-  - iIntros "[$ _]".
-  - iIntros "$".
-    iPureIntro. val_ty.
+  iSplit; [ iIntros "[$ _]" | iIntros "$" ].
+  iPureIntro. val_ty.
 Qed.
 
 #[local] Lemma uint32_pointsto (l: loc) (x: w32) :
@@ -34,11 +32,29 @@ Qed.
 Proof.
   rewrite struct_pointsto_eq /struct_pointsto_def /=.
   rewrite loc_add_0 right_id.
-  iSplit.
-  - iIntros "[$ _]".
-  - iIntros "$".
-    iPureIntro. val_ty.
+  iSplit; [ iIntros "[$ _]" | iIntros "$" ].
+  iPureIntro. val_ty.
 Qed.
+
+#[local] Lemma loc_pointsto (l: loc) (x: loc) q :
+  l ↦[ptrT]{q} #x ⊣⊢ heap_pointsto l q #x.
+Proof.
+  rewrite struct_pointsto_eq /struct_pointsto_def /=.
+  rewrite loc_add_0 right_id.
+  iSplit; [ iIntros "[$ _]" | iIntros "$" ].
+  iPureIntro. val_ty.
+Qed.
+
+#[global] Instance LoadUint64_Atomic (l:loc) : Atomic StronglyAtomic (atomic.LoadUint64 #l).
+Proof. apply _. Qed.
+#[global] Instance StoreUint64_Atomic (l:loc) (v: base_lit) : Atomic StronglyAtomic (atomic.StoreUint64 #l #v).
+Proof. apply _. Qed.
+#[global] Instance CompareAndSwap64_Atomic (l:loc) (v1 v2: base_lit) : Atomic StronglyAtomic (atomic.CompareAndSwapUint64 #l #v1 #v2).
+Proof. apply _. Qed.
+#[global] Instance Pointer__Load_Atomic t (l:loc) : Atomic StronglyAtomic (atomic.Pointer__Load t #l).
+Proof. apply _. Qed.
+#[global] Instance Pointer__Store_Atomic t (l:loc) (v: base_lit) : Atomic StronglyAtomic (atomic.Pointer__Store t #l #v).
+Proof. apply _. Qed.
 
 Lemma wp_LoadUint64 (l: loc) (x: w64) stk E :
   {{{ ▷l ↦[uint64T] #x }}}
@@ -91,6 +107,33 @@ Proof.
   wp_apply (wp_atomic_store with "[$Hl]"). iIntros "Hl".
   iApply "HΦ". iFrame.
 Qed.
+
+Lemma wp_Pointer__Load (l: loc) (l_v: loc) q stk E :
+  {{{ ▷l ↦[ptrT]{q} #l_v }}}
+    atomic.Pointer__Load ptrT #l @ stk; E
+  {{{ RET #l_v; l ↦[ptrT]{q} #l_v }}}.
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  setoid_rewrite loc_pointsto.
+  rewrite /atomic.Pointer__Load.
+  wp_pures.
+  wp_apply (wp_load with "[$Hl]"). iIntros "Hl".
+  iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_Pointer__Store (l: loc) (l_v0 l_v': loc) stk E :
+  {{{ ▷l ↦[ptrT] #l_v0 }}}
+    atomic.Pointer__Store ptrT #l #l_v' @ stk; E
+  {{{ RET #(); l ↦[ptrT] #l_v' }}}.
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  setoid_rewrite loc_pointsto.
+  rewrite /atomic.Pointer__Store.
+  wp_pures.
+  wp_apply (wp_atomic_store with "[$Hl]"). iIntros "Hl".
+  iApply "HΦ". iFrame.
+Qed.
+
 
 End proof.
 End goose_lang.
