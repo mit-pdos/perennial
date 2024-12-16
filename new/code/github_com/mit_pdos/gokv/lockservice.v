@@ -54,10 +54,9 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  kv.initialize';;;
-      do:  (define' #())
-    else do:  #()).
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  kv.initialize';;;
+      do:  (define' #()))
+      ).
 
 End code.

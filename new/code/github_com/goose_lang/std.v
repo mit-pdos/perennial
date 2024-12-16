@@ -229,7 +229,7 @@ Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
 
-Definition global_id' : string := "github.com/goose-lang/std".
+Definition pkg_name' : string := "github.com/goose-lang/std".
 
 Definition define' : val :=
   rec: "define'" <> :=
@@ -237,11 +237,10 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
-    then
-      do:  primitive.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  primitive.initialize';;;
       do:  sync.initialize';;;
-      do:  (define' #())
-    else do:  #()).
+      do:  (define' #()))
+      ).
 
 End code.

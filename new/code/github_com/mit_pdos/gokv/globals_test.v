@@ -49,9 +49,8 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  (define' #());;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  (define' #());;;
       let: "$r0" := (foo #()) in
       do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
       let: "$r0" := #"a" in
@@ -65,7 +64,7 @@ Definition initialize' : val :=
       do:  ((λ: <>,
         exception_do (let: "$r0" := #"" in
         do:  ((globals.get globalY #()) <-[stringT] "$r0"))
-        ) #())
-    else do:  #()).
+        ) #()))
+      ).
 
 End code.

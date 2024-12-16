@@ -257,13 +257,12 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  marshal.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  marshal.initialize';;;
       do:  lockservice.initialize';;;
       do:  kv.initialize';;;
       do:  primitive.initialize';;;
-      do:  (define' #())
-    else do:  #()).
+      do:  (define' #()))
+      ).
 
 End code.

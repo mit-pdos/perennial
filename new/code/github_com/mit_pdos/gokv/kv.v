@@ -16,8 +16,8 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then do:  (define' #())
-    else do:  #()).
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  (define' #()))
+      ).
 
 End code.

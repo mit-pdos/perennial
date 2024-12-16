@@ -178,10 +178,9 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  grove_ffi.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  grove_ffi.initialize';;;
       do:  std.initialize';;;
       do:  sync.initialize';;;
-      do:  (define' #())
-    else do:  #()).
+      do:  (define' #()))
+      ).

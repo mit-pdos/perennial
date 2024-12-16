@@ -117,11 +117,10 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  urpc.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  urpc.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  primitive.initialize';;;
       do:  sync.initialize';;;
-      do:  (define' #())
-    else do:  #()).
+      do:  (define' #()))
+      ).

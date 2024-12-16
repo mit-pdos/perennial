@@ -2449,9 +2449,8 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  primitive.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  primitive.initialize';;;
       do:  sync.initialize';;;
       do:  sync.initialize';;;
       do:  primitive.initialize';;;
@@ -2477,5 +2476,5 @@ Definition initialize' : val :=
       do:  ((λ: <>,
         exception_do (let: "$r0" := #"" in
         do:  ((globals.get globalY #()) <-[stringT] "$r0"))
-        ) #())
-    else do:  #()).
+        ) #()))
+      ).

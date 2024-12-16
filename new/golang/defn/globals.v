@@ -16,11 +16,11 @@ Definition get (x : string * string) : val :=
 Definition put (x : string * string) : val :=
   λ: "y", GlobalPut #(encode_var_name x.1 x.2) "y".
 
-Definition is_uninitialized (pkg_name : string) : val :=
-  λ: <>,
+Definition package_init (pkg_name : string) : val :=
+  λ: "init",
     match: GlobalGet #pkg_name with
-      SOME <> => #false
-    | NONE => #true
+      SOME <> => #()
+    | NONE => "init" #() ;; GlobalPut #pkg_name #()
     end.
 
 End defns.

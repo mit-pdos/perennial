@@ -965,9 +965,8 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  urpc.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  urpc.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  asyncfile.initialize';;;
       do:  std.initialize';;;
@@ -976,5 +975,5 @@ Definition initialize' : val :=
       do:  marshal.initialize';;;
       do:  reconnectclient.initialize';;;
       do:  grove_ffi.initialize';;;
-      do:  (define' #())
-    else do:  #()).
+      do:  (define' #()))
+      ).

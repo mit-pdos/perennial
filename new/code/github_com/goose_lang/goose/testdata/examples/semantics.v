@@ -3117,14 +3117,13 @@ Definition define' : val :=
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized pkg_name'
-    then
-      do:  disk.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  disk.initialize';;;
       do:  primitive.initialize';;;
       do:  sync.initialize';;;
       do:  primitive.initialize';;;
       do:  sync.initialize';;;
       do:  sync.initialize';;;
       do:  primitive.initialize';;;
-      do:  (define' #())
-    else do:  #()).
+      do:  (define' #()))
+      ).
