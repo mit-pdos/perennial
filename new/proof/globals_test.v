@@ -118,4 +118,26 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wp_main :
+  {{{ own_initialized }}}
+  globals_test.main #()
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (?) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_call.
+  wp_call.
+  wp_apply wp_globals_get; first iFrame "#".
+  wp_store.
+  wp_pures.
+  wp_apply wp_globals_get; first iFrame "#".
+  wp_load.
+  wp_pures.
+  wp_apply wp_globals_get; first iFrame "#".
+  wp_load.
+  wp_pures.
+  by iApply "HΦ".
+Qed.
+
 End proof.
