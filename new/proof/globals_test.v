@@ -80,12 +80,13 @@ Proof.
   wp_apply (wp_package_init with "[$]").
   { reflexivity. }
   { eassumption. }
+  { set_solver. }
   { (* prove init function *)
     iIntros "Hvars Htok".
     wp_pures.
     wp_apply (wp_define' with "[$]").
     iIntros (?) "[Hdefined Hvars]".
-    iSpecialize ("Htok" with "[$]").
+    iMod ("Htok" with "[$]") as "Htok".
     iNamed "Hdefined".
     wp_pures.
 
