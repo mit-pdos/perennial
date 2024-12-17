@@ -18,7 +18,13 @@ Class goGlobalsGS `{ffi_syntax} Σ : Set :=
       go_access_prev_state_name : gname ;
     }.
 
-Section definitions.
+Definition goGlobalsΣ `{ffi_syntax} : gFunctors :=
+  #[ghost_mapΣ (string * string) loc ; ghost_mapΣ string (); ghost_varΣ (option (gmap string val))].
+
+Global Instance subG_goGlobalsG `{ffi_syntax} {Σ} : subG goGlobalsΣ Σ → goGlobals_preG Σ.
+Proof. solve_inG. Qed.
+
+Section definitions_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
@@ -67,10 +73,15 @@ Definition own_globals_tok_def (pending_packages : gset string)
 Program Definition own_globals_tok := unseal (_:seal (@own_globals_tok_def)). Obligation 1. by eexists. Qed.
 Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
 
-Definition own_package_init_post_tok_def (pkg_name : string) : iProp Σ :=
+Definition own_package_post_toks_def (used_pkgs : gset string) : iProp Σ :=
+  ghost_map_auth go_package_postcond_tok_name 1%Qp (gset_to_gmap () used_pkgs).
+Program Definition own_package_post_toks := unseal (_:seal (@own_package_post_toks_def)). Obligation 1. by eexists. Qed.
+Definition own_package_post_toks_unseal : own_package_post_toks = _ := seal_eq _.
+
+Definition own_package_post_tok_def (pkg_name : string) : iProp Σ :=
   pkg_name ↪[go_package_postcond_tok_name] ().
-Program Definition own_package_init_post_tok := unseal (_:seal (@own_package_init_post_tok_def)). Obligation 1. by eexists. Qed.
-Definition own_package_init_post_tok_unseal : own_package_init_post_tok = _ := seal_eq _.
+Program Definition own_package_post_tok := unseal (_:seal (@own_package_post_tok_def)). Obligation 1. by eexists. Qed.
+Definition own_package_post_tok_unseal : own_package_post_tok = _ := seal_eq _.
 
 Definition is_initialized_def (pkg_name : string) (P : iProp Σ) : iProp Σ :=
   inv nroot (pkg_name ↪[go_package_postcond_tok_name] () ∨ P).
@@ -97,12 +108,45 @@ Local Ltac unseal :=
   rewrite ?own_globals_tok_unseal
     ?is_global_addr_unseal
     ?is_initialized_unseal
-    ?own_package_init_post_tok_unseal
+    ?own_package_post_toks_unseal
+    ?own_package_post_tok_unseal
     ?own_unused_vars_unseal.
 
 Global Instance is_global_addr_persistent x a:
   Persistent (is_global_addr x a).
 Proof. unseal. apply _. Qed.
+
+Global Instance is_initialized_persistent a b:
+  Persistent (is_initialized a b).
+Proof. unseal. apply _. Qed.
+
+Lemma own_package_post_toks_get (pkg_name : string) (used_pkgs : gset string) :
+  pkg_name ∉ used_pkgs →
+  own_package_post_toks used_pkgs ==∗
+  own_package_post_tok pkg_name ∗
+  own_package_post_toks ({[ pkg_name ]} ∪ used_pkgs).
+Proof.
+  unseal.
+  iIntros (?) "Hpkg".
+  iMod (ghost_map_insert with "Hpkg") as "[H H2]".
+  { by rewrite lookup_gset_to_gmap_None. }
+  iFrame.
+  rewrite -gset_to_gmap_union_singleton.
+  by iFrame.
+Qed.
+
+Lemma is_initialized_get_post pkg_name P :
+  own_package_post_tok pkg_name -∗
+  is_initialized pkg_name P ={⊤}=∗
+  ▷ P.
+Proof.
+  unseal.
+  iIntros "Htok #Hinv".
+  iInv "Hinv" as "Hi" "Hclose".
+  iDestruct "Hi" as "[>Hbad|$]".
+  { iCombine "Hbad Htok" gives %Hbad. exfalso. naive_solver. }
+  by iMod ("Hclose" with "[$Htok]").
+Qed.
 
 Lemma encode_var_name_inj pkg_name1 pkg_name2 var_name1 var_name2 :
   is_valid_package_name pkg_name1 →
@@ -352,4 +396,39 @@ Proof.
   by apply encode_var_name_package_name_ne.
 Qed.
 
-End definitions.
+End definitions_and_lemmas.
+
+Section init.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+
+Lemma go_global_init (posts : ∀ {H : goGlobalsGS Σ}, gmap string (iProp Σ))
+  {hT: goGlobals_preG Σ}
+  :
+  ⊢
+    own_globals (DfracOwn 1) ∅ ={⊤}=∗ ∃ (H : goGlobalsGS Σ),
+      own_package_post_toks ∅ ∗ own_globals_tok ∅ posts.
+Proof.
+  iMod (ghost_map_alloc (∅ : gmap (string * string) loc)) as (new_globals_name) "[Haddrs _]".
+  iMod (ghost_map_alloc (∅ : gmap string ())) as (new_package_postcond_name) "[Hpost _]".
+  iMod (ghost_var_alloc None) as (new_access_prev_state_name) "Hacc".
+  iIntros "[Hg Hg2]".
+  iExists (GoGlobalsGS _ _ _ _ _ _).
+  rewrite own_globals_tok_unseal.
+  iMod (inv_alloc with "[Hg2 Haddrs]") as "#Hinv".
+  2:{
+    iModIntro.
+    rewrite own_package_post_toks_unseal.
+    iFrame "#∗".
+    repeat iExists _.
+    instantiate (1:=∅).
+    iSplit.
+    { iPureIntro. intros. right. rewrite lookup_empty //. }
+    by iApply big_sepM_empty.
+  }
+  iNext.
+  iFrame.
+  iPureIntro. intros.
+  rewrite !lookup_empty //.
+Qed.
+
+End init.

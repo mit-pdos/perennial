@@ -141,3 +141,56 @@ Proof.
 Qed.
 
 End proof.
+
+From Perennial.goose_lang Require Import adequacy dist_adequacy.
+From Perennial.goose_lang.ffi Require Import grove_ffi.adequacy.
+From New.proof Require Import grove_prelude.
+Section closed.
+
+Definition globals_testΣ : gFunctors := #[heapΣ ; goGlobalsΣ].
+
+Lemma globals_test_boot σ (g : goose_lang.global_state) :
+  ffi_initgP g.(global_world) →
+  ffi_initP σ.(world) g.(global_world) →
+  σ.(globals) = ∅ → (* FIXME: this should be abstracted into a "goose_lang.init" predicate or something. *)
+  dist_adequate_failstop [
+      ((globals_test.initialize' #() ;; globals_test.main #())%E, σ) ] g (λ _, True).
+Proof.
+  simpl.
+  intros ? ? Hgempty.
+  apply (grove_ffi_dist_adequacy_failstop globals_testΣ).
+  { done. }
+  { constructor; done. }
+  intros HG.
+  iIntros "_".
+  iModIntro.
+  iSplitL.
+  2:{ iIntros. iApply fupd_mask_intro; [set_solver|iIntros "_"; done]. }
+  iApply big_sepL_cons.
+  iSplitL.
+  {
+    iIntros (HL) "_".
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+    iIntros "Hglobals".
+    rewrite Hgempty.
+    iMod (go_global_init
+            (λ _, {[ globals_test.pkg_name' := own_initialized ]}) with "[$]") as
+      (hGlobals) "[Hpost Hg]".
+    iModIntro.
+    iExists (λ _, True)%I.
+    wp_apply (wp_initialize' with "[$]").
+    { set_solver. }
+    { done. }
+    iIntros "Hinit".
+    iMod (own_package_post_toks_get globals_test.pkg_name' with "[$]") as "[? _]".
+    { set_solver. }
+    iMod (is_initialized_get_post with "[$] [$]") as "Hinit".
+    wp_pures.
+    by wp_apply (wp_main with "[$]").
+  }
+  by iApply big_sepL_nil.
+Qed.
+
+Print Assumptions globals_test_boot.
+
+End closed.
