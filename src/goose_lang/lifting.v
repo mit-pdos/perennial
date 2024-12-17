@@ -197,9 +197,8 @@ Proof.
   rewrite own_globals_unseal.
   rewrite -own_op.
   iApply (own_update_2 with "H1 H2").
-  apply auth_update.
-  (* FIXME: prove local update. *)
-Admitted.
+  by apply auth_update, option_local_update, exclusive_local_update.
+Qed.
 
 Lemma globals_name_init `(hT: globals_preG Σ) (g : gmap string val) :
   ⊢ |==> ∃ new_globals_name : gname, let _ := globalsGS_update_pre Σ hT new_globals_name in
