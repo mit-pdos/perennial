@@ -68,6 +68,31 @@ Definition arrayToSlice : val :=
     return: (let: "$a" := "x" in
      array.slice "$a" #(W64 0) (array.len (arrayT 2 stringT)))).
 
+Definition arrayA : Z := 0.
+
+Definition arrayB : Z := 10.
+
+(* go: array.go:44:6 *)
+Definition arrayLiteralKeyed : val :=
+  rec: "arrayLiteralKeyed" <> :=
+    exception_do (let: "x" := (ref_ty (arrayT 13 stringT) (zero_val (arrayT 13 stringT))) in
+    let: "$r0" := ((let: "$ar0" := #"A" in
+    let: "$ar1" := #"3" in
+    let: "$ar2" := (zero_val stringT) in
+    let: "$ar3" := (zero_val stringT) in
+    let: "$ar4" := (zero_val stringT) in
+    let: "$ar5" := (zero_val stringT) in
+    let: "$ar6" := (zero_val stringT) in
+    let: "$ar7" := (zero_val stringT) in
+    let: "$ar8" := (zero_val stringT) in
+    let: "$ar9" := (zero_val stringT) in
+    let: "$ar10" := #"B" in
+    let: "$ar11" := #"1" in
+    let: "$ar12" := #"2" in
+    array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"])) in
+    do:  ("x" <-[arrayT 13 stringT] "$r0");;;
+    return: (![stringT] (array.elem_ref stringT (![arrayT 13 stringT] "x") #(W64 0)))).
+
 (* go: chan.go:5:6 *)
 Definition chanBasic : val :=
   rec: "chanBasic" <> :=
@@ -2450,14 +2475,8 @@ Definition define' : val :=
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
-      exception_do (do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  sync.initialize';;;
-      do:  primitive.initialize';;;
-      do:  marshal.initialize';;;
+      exception_do (do:  marshal.initialize';;;
       do:  log.initialize';;;
-      do:  sync.initialize';;;
-      do:  primitive.initialize';;;
       do:  disk.initialize';;;
       do:  primitive.initialize';;;
       do:  sync.initialize';;;

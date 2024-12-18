@@ -531,20 +531,18 @@ Definition _unused : val :=
 
 Definition _VoteResult_name : string := "VotePendingVoteLostVoteWon".
 
-Definition global_id' : string := "go.etcd.io/raft/v3/quorum".
+Definition pkg_name' : string := "go.etcd.io/raft/v3/quorum".
 
-Definition _VoteResult_index : string := global_id' ++ "_VoteResult_index".
+Definition _VoteResult_index : (string * string) := (pkg_name', "_VoteResult_index").
 
 Definition define' : val :=
   rec: "define'" <> :=
-    exception_do (globals.put _VoteResult_index (ref_ty (arrayT 4 uint8T) (zero_val (arrayT 4 uint8T)))).
+    exception_do (do:  (globals.put _VoteResult_index (ref_ty (arrayT 4 uint8T) (zero_val (arrayT 4 uint8T))))).
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
-    then
-      do:  strconv.initialize';;;
-      do:  math.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  strconv.initialize';;;
       do:  strings.initialize';;;
       do:  sort.initialize';;;
       do:  slices64.initialize';;;
@@ -556,7 +554,7 @@ Definition initialize' : val :=
       let: "$ar2" := #(W8 19) in
       let: "$ar3" := #(W8 26) in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"])) in
-      do:  ((globals.get _VoteResult_index) <-[arrayT 4 uint8T] "$r0")
-    else do:  #()).
+      do:  ((globals.get _VoteResult_index #()) <-[arrayT 4 uint8T] "$r0"))
+      ).
 
 End code.

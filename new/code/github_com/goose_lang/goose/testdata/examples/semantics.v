@@ -3119,10 +3119,6 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  disk.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
       do:  sync.initialize';;;
       do:  primitive.initialize';;;
       do:  (define' #()))

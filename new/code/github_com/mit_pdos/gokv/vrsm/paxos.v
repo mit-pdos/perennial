@@ -967,7 +967,6 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  urpc.initialize';;;
-      do:  grove_ffi.initialize';;;
       do:  asyncfile.initialize';;;
       do:  std.initialize';;;
       do:  sync.initialize';;;

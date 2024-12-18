@@ -431,7 +431,7 @@ Definition Progress__SentCommit : val :=
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
     exception_do (let: "st" := (ref_ty StateType "st") in
-    return: (![stringT] (array.elem_ref stringT (![arrayT 3 stringT] (globals.get prstmap)) (![StateType] "st")))).
+    return: (![stringT] (array.elem_ref stringT (![arrayT 3 stringT] (globals.get prstmap #())) (![StateType] "st")))).
 
 Definition StateType__mset : list (string * val) := [
   ("String", StateType__String%V)
@@ -605,9 +605,9 @@ Definition StateType__mset_ptr : list (string * val) := [
     )%V)
 ].
 
-Definition global_id' : string := "go.etcd.io/raft/v3/tracker".
+Definition pkg_name' : string := "go.etcd.io/raft/v3/tracker".
 
-Definition prstmap : string := global_id' ++ "prstmap".
+Definition prstmap : (string * string) := (pkg_name', "prstmap").
 
 Definition Config : go_type := structT [
   "Voters" :: quorum.JointConfig;
@@ -1042,23 +1042,19 @@ Definition matchAckIndexer__mset_ptr : list (string * val) := [
     )%V)
 ].
 
-Definition _ : string := global_id' ++ "_".
+Definition _ : (string * string) := (pkg_name', "_").
 
 Definition define' : val :=
   rec: "define'" <> :=
-    exception_do (globals.put _ (ref_ty quorum.AckedIndexer (zero_val quorum.AckedIndexer));;;
-    globals.put prstmap (ref_ty (arrayT 3 stringT) (zero_val (arrayT 3 stringT)))).
+    exception_do (do:  (globals.put _ (ref_ty quorum.AckedIndexer (zero_val quorum.AckedIndexer)));;;
+    do:  (globals.put prstmap (ref_ty (arrayT 3 stringT) (zero_val (arrayT 3 stringT))))).
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    exception_do (if: globals.is_uninitialized global_id'
-    then
-      do:  raftpb.initialize';;;
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  raftpb.initialize';;;
       do:  slices64.initialize';;;
       do:  quorum.initialize';;;
-      do:  strings.initialize';;;
-      do:  sort.initialize';;;
-      do:  fmt.initialize';;;
       do:  strings.initialize';;;
       do:  sort.initialize';;;
       do:  fmt.initialize';;;
@@ -1067,9 +1063,9 @@ Definition initialize' : val :=
       let: "$ar1" := #"StateReplicate" in
       let: "$ar2" := #"StateSnapshot" in
       array.literal ["$ar0"; "$ar1"; "$ar2"])) in
-      do:  ((globals.get prstmap) <-[arrayT 3 stringT] "$r0");;;
+      do:  ((globals.get prstmap #()) <-[arrayT 3 stringT] "$r0");;;
       let: "$r0" := (interface.make matchAckIndexer__mset #null) in
-      do:  ((globals.get _) <-[quorum.AckedIndexer] "$r0")
-    else do:  #()).
+      do:  ((globals.get _ #()) <-[quorum.AckedIndexer] "$r0"))
+      ).
 
 End code.
