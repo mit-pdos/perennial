@@ -12,7 +12,7 @@ Definition Log : go_type := structT [
   "diskSz" :: uint64T
 ].
 
-Definition Log__mset : list (string * val) := [
+Definition Log__mset : list (go_string * val) := [
 ].
 
 (* go: append_log.go:22:17 *)
@@ -131,15 +131,15 @@ Definition Log__Reset : val :=
     do:  ((Log__reset (![ptrT] "log")) #());;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Log "m" (![ptrT] "log")))) #())).
 
-Definition Log__mset_ptr : list (string * val) := [
-  ("Append", Log__Append%V);
-  ("Get", Log__Get%V);
-  ("Reset", Log__Reset%V);
-  ("append", Log__append%V);
-  ("get", Log__get%V);
-  ("mkHdr", Log__mkHdr%V);
-  ("reset", Log__reset%V);
-  ("writeHdr", Log__writeHdr%V)
+Definition Log__mset_ptr : list (go_string * val) := [
+  ("Append"%go, Log__Append%V);
+  ("Get"%go, Log__Get%V);
+  ("Reset"%go, Log__Reset%V);
+  ("append"%go, Log__append%V);
+  ("get"%go, Log__get%V);
+  ("mkHdr"%go, Log__mkHdr%V);
+  ("reset"%go, Log__reset%V);
+  ("writeHdr"%go, Log__writeHdr%V)
 ].
 
 (* go: append_log.go:33:6 *)
@@ -196,7 +196,7 @@ Definition Open : val :=
        "diskSz" ::= "$diskSz"
      }]))).
 
-Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/append_log".
+Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/append_log".
 
 Definition define' : val :=
   rec: "define'" <> :=

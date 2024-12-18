@@ -2,15 +2,15 @@ From New.golang.defn Require Import mem list.
 
 (* FIXME: these notations don't work properly. *)
 Declare Scope struct_scope.
-Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
-Notation "f ::= v" := (PairV #(f%string) v%V) (at level 60) : val_scope.
-Notation "f ::= v" := (Pair #(f%string) v%E) (at level 60) : expr_scope.
+Notation "f :: t" := (@pair go_string go_type f%go t) : struct_scope.
+Notation "f ::= v" := (PairV #(f%go) v%V) (at level 60) : val_scope.
+Notation "f ::= v" := (Pair #(f%go) v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
 Global Arguments structT _%_list%_struct.
 
 Module struct.
 Section goose_lang.
-Infix "=?" := (String.eqb).
+Infix "=?" := (ByteString.eqb).
 
 Context `{ffi_syntax}.
 

@@ -5,9 +5,9 @@ From Coq Require Import Ascii.
 
 Class goGlobals_preG `{ffi_syntax} (Σ: gFunctors) : Set :=
   {
-    #[global] go_globals_inG :: ghost_mapG Σ (string * string) loc ;
-    #[global] go_package_initialized_inG :: ghost_mapG Σ string () ;
-    #[global] go_access_prev_inG :: ghost_varG Σ (option (gmap string val)) ;
+    #[global] go_globals_inG :: ghost_mapG Σ (go_string * go_string) loc ;
+    #[global] go_package_initialized_inG :: ghost_mapG Σ go_string () ;
+    #[global] go_access_prev_inG :: ghost_varG Σ (option (gmap go_string val)) ;
   }.
 
 Class goGlobalsGS `{ffi_syntax} Σ : Set :=
@@ -19,7 +19,7 @@ Class goGlobalsGS `{ffi_syntax} Σ : Set :=
     }.
 
 Definition goGlobalsΣ `{ffi_syntax} : gFunctors :=
-  #[ghost_mapΣ (string * string) loc ; ghost_mapΣ string (); ghost_varΣ (option (gmap string val))].
+  #[ghost_mapΣ (go_string * go_string) loc ; ghost_mapΣ go_string (); ghost_varΣ (option (gmap go_string val))].
 
 Global Instance subG_goGlobalsG `{ffi_syntax} {Σ} : subG goGlobalsΣ Σ → goGlobals_preG Σ.
 Proof. solve_inG. Qed.
@@ -28,10 +28,12 @@ Section definitions_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
-Fixpoint is_valid_package_name (pkg_name : string) : bool :=
+Fixpoint is_valid_package_name (pkg_name : go_string) : bool :=
   match pkg_name with
-  | EmptyString => true
-  | String a s => negb (Ascii.eqb a " "%char) && is_valid_package_name s
+  | [] => true
+  | {| Naive.unsigned := 32; Naive._unsigned_in_range := eq_refl |} :: _ => false
+    (* Check " "%go. *)
+  | _ :: pkg_name => is_valid_package_name pkg_name
   end.
 
 Local Notation encode_var_name := (globals.globals.encode_var_name).
@@ -39,7 +41,7 @@ Local Notation encode_var_name := (globals.globals.encode_var_name).
 (* The only concurrent access to globals is to read the address of global
    variables, so that's the only thing this invariant is concerned with. *)
 Local Definition own_globals_inv : iProp Σ :=
-  ∃ g (addrs : gmap (string * string) loc),
+  ∃ g (addrs : gmap (go_string * go_string) loc),
   "Hglobals_i" ∷ own_globals (DfracOwn (1/2)) g ∗
   "Haddrs" ∷ ghost_map_auth go_globals_name 1%Qp addrs ∗
   "%Hvars" ∷ (⌜ ∀ pkg_name var_name,
@@ -50,9 +52,9 @@ Local Definition is_globals_inv : iProp Σ :=
   inv nroot own_globals_inv.
 
 (* This must be owned by the `init` thread. *)
-Definition own_globals_tok_def (pending_packages : gset string)
-  (pkg_postconds : gmap string (iProp Σ)): iProp Σ :=
-  ∃ g (pkg_initialized : gmap string ()),
+Definition own_globals_tok_def (pending_packages : gset go_string)
+  (pkg_postconds : gmap go_string (iProp Σ)): iProp Σ :=
+  ∃ g (pkg_initialized : gmap go_string ()),
   "Hglobals" ∷ own_globals (DfracOwn (1/2)) g ∗
   "Hacc" ∷ ghost_var go_access_prev_state_name 1%Qp None ∗
   "%Hpkg" ∷ (⌜ ∀ pkg_name,
@@ -73,27 +75,27 @@ Definition own_globals_tok_def (pending_packages : gset string)
 Program Definition own_globals_tok := unseal (_:seal (@own_globals_tok_def)). Obligation 1. by eexists. Qed.
 Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
 
-Definition own_package_post_toks_def (used_pkgs : gset string) : iProp Σ :=
+Definition own_package_post_toks_def (used_pkgs : gset go_string) : iProp Σ :=
   ghost_map_auth go_package_postcond_tok_name 1%Qp (gset_to_gmap () used_pkgs).
 Program Definition own_package_post_toks := unseal (_:seal (@own_package_post_toks_def)). Obligation 1. by eexists. Qed.
 Definition own_package_post_toks_unseal : own_package_post_toks = _ := seal_eq _.
 
-Definition own_package_post_tok_def (pkg_name : string) : iProp Σ :=
+Definition own_package_post_tok_def (pkg_name : go_string) : iProp Σ :=
   pkg_name ↪[go_package_postcond_tok_name] ().
 Program Definition own_package_post_tok := unseal (_:seal (@own_package_post_tok_def)). Obligation 1. by eexists. Qed.
 Definition own_package_post_tok_unseal : own_package_post_tok = _ := seal_eq _.
 
-Definition is_initialized_def (pkg_name : string) (P : iProp Σ) : iProp Σ :=
+Definition is_initialized_def (pkg_name : go_string) (P : iProp Σ) : iProp Σ :=
   inv nroot (pkg_name ↪[go_package_postcond_tok_name] () ∨ P).
 Program Definition is_initialized := unseal (_:seal (@is_initialized_def)). Obligation 1. by eexists. Qed.
 Definition is_initialized_unseal : is_initialized = _ := seal_eq _.
 
-Definition is_global_addr_def (var_id : string * string) (addr : loc) : iProp Σ :=
+Definition is_global_addr_def (var_id : go_string * go_string) (addr : loc) : iProp Σ :=
   is_globals_inv ∗ var_id ↪[go_globals_name]□ addr ∗ ⌜ is_valid_package_name var_id.1 ⌝.
 Program Definition is_global_addr := unseal (_:seal (@is_global_addr_def)). Obligation 1. by eexists. Qed.
 Definition is_global_addr_unseal : is_global_addr = _ := seal_eq _.
 
-Definition own_unused_vars_def (pkg_name : string) (used_var_names : gset string) : iProp Σ :=
+Definition own_unused_vars_def (pkg_name : go_string) (used_var_names : gset go_string) : iProp Σ :=
   ∃ g_old var_addrs,
   "Hglobals" ∷ own_globals (DfracOwn (1/2)) ((kmap (encode_var_name pkg_name) var_addrs) ∪ g_old) ∗
   "Hacc" ∷ ghost_var go_access_prev_state_name (1/2)%Qp (Some g_old) ∗
@@ -120,7 +122,7 @@ Global Instance is_initialized_persistent a b:
   Persistent (is_initialized a b).
 Proof. unseal. apply _. Qed.
 
-Lemma own_package_post_toks_get (pkg_name : string) (used_pkgs : gset string) :
+Lemma own_package_post_toks_get (pkg_name : go_string) (used_pkgs : gset go_string) :
   pkg_name ∉ used_pkgs →
   own_package_post_toks used_pkgs ==∗
   own_package_post_tok pkg_name ∗
@@ -248,7 +250,7 @@ Proof.
   iModIntro. wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_package_init pending postconds (pkg_name : string) (init_func : val) P Φ :
+Lemma wp_package_init pending postconds (pkg_name : go_string) (init_func : val) P Φ :
   is_valid_package_name pkg_name →
   postconds !! pkg_name = Some P →
   pkg_name ∉ pending →
@@ -272,7 +274,7 @@ Proof.
   rewrite [in GlobalGet _]to_val_unseal.
   iApply (wp_GlobalGet with "[$]").
   iNext. iIntros "Hglobals".
-  destruct (g !! pkg_name) eqn:Hlookup.
+  destruct (lookup pkg_name g) eqn:Hlookup; rewrite Hlookup.
   { (* don't bother running init *)
     wp_pures.
     pose proof (Hpkg pkg_name ltac:(done)) as Hpkg'.
@@ -283,6 +285,7 @@ Proof.
     iDestruct (big_sepM_lookup with "Hinited") as "H".
     { done. }
     rewrite Hpost /=.
+    wp_pures.
     iApply "HΦ".
     { iFrame "#". }
     iFrame "∗#%".
@@ -401,15 +404,15 @@ End definitions_and_lemmas.
 Section init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Lemma go_global_init (posts : ∀ {H : goGlobalsGS Σ}, gmap string (iProp Σ))
+Lemma go_global_init (posts : ∀ {H : goGlobalsGS Σ}, gmap go_string (iProp Σ))
   {hT: goGlobals_preG Σ}
   :
   ⊢
     own_globals (DfracOwn 1) ∅ ={⊤}=∗ ∃ (H : goGlobalsGS Σ),
       own_package_post_toks ∅ ∗ own_globals_tok ∅ posts.
 Proof.
-  iMod (ghost_map_alloc (∅ : gmap (string * string) loc)) as (new_globals_name) "[Haddrs _]".
-  iMod (ghost_map_alloc (∅ : gmap string ())) as (new_package_postcond_name) "[Hpost _]".
+  iMod (ghost_map_alloc (∅ : gmap (go_string * go_string) loc)) as (new_globals_name) "[Haddrs _]".
+  iMod (ghost_map_alloc (∅ : gmap go_string ())) as (new_package_postcond_name) "[Hpost _]".
   iMod (ghost_var_alloc None) as (new_access_prev_state_name) "Hacc".
   iIntros "[Hg Hg2]".
   iExists (GoGlobalsGS _ _ _ _ _ _).

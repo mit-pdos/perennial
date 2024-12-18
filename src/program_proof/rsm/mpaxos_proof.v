@@ -13,19 +13,19 @@ Section consensus.
   Implicit Type (γ : mpaxos_names).
 
   (* Definitions. *)
-  Definition own_consensus γ (l : list string) : iProp Σ.
+  Definition own_consensus γ (l : list byte_string) : iProp Σ.
   Admitted.
 
-  Definition own_consensus_half γ (l : list string) : iProp Σ.
+  Definition own_consensus_half γ (l : list byte_string) : iProp Σ.
   Admitted.
 
-  Definition is_consensus_lb γ (l : list string) : iProp Σ.
+  Definition is_consensus_lb γ (l : list byte_string) : iProp Σ.
   Admitted.
 
-  Definition own_candidates γ (vs : gset string) : iProp Σ.
+  Definition own_candidates γ (vs : gset byte_string) : iProp Σ.
   Admitted.
 
-  Definition own_candidates_half γ (vs : gset string) : iProp Σ.
+  Definition own_candidates_half γ (vs : gset byte_string) : iProp Σ.
   Admitted.
 
   (* Type class instances. *)
@@ -111,7 +111,7 @@ Section prog.
     Persistent (is_paxos px nid sc γ).
   Admitted.
 
-  Theorem wp_Paxos__Propose (px : loc) (v : string) nid sc γ :
+  Theorem wp_Paxos__Propose (px : loc) (v : byte_string) nid sc γ :
   is_paxos px nid sc γ -∗
   {{{ True }}}
   <<< ∀∀ vs, own_candidates_half γ vs >>>
@@ -126,7 +126,7 @@ Section prog.
     <<< ∀∀ l, own_consensus_half γ l >>>
       Paxos__Lookup #px #i @ ↑mpaxosN
     <<< ∃∃ l', own_consensus_half γ l' >>>
-    {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
+    {{{ (v : byte_string) (ok : bool), RET (#(LitString v), #ok);
         ⌜if ok then l' !! (uint.nat i) = Some v else True⌝
     }}}.
   Admitted.
@@ -154,12 +154,12 @@ End prog.
 (* TODO: move to mpaxos_examples.v once stable *)
 
 (* example1 *)
-Definition of_length_five s := String.length s = 5%nat.
+Definition of_length_five (s : byte_string) := length s = 5%nat.
 
 Definition length_of_consensus l :=
   Forall of_length_five l.
 
-Definition length_of_candidates (vs : gset string) :=
+Definition length_of_candidates (vs : gset byte_string) :=
   set_Forall of_length_five vs.
 
 Lemma prefix_lookup_same_index {A : Type} {l1 l2 : list A} {i v1 v2} :
@@ -339,18 +339,18 @@ Section prog.
 End prog.
 
 (* example2 *)
-Fixpoint hello_then_world (l : list string) :=
+Fixpoint hello_then_world (l : list byte_string) :=
   match l with
   | [] => True
-  | hd :: tl => if decide (hd = "hello")
+  | hd :: tl => if decide (hd = "hello"%go)
               then True
-              else if decide (hd = "world")
+              else if decide (hd = "world"%go)
                    then False
                    else hello_then_world tl
   end.
 
 Lemma htw_no_world l :
-  "world" ∉ l ->
+  "world"%go ∉ l ->
   hello_then_world l.
 Proof.
   intros Hnotin.
@@ -362,7 +362,7 @@ Proof.
 Qed.
 
 Theorem htw_inv_app_no_world l1 l2 :
-  "world" ∉ l2 ->
+  "world"%go ∉ l2 ->
   hello_then_world l1 ->
   hello_then_world (l1 ++ l2).
 Proof.
@@ -377,7 +377,7 @@ Proof.
 Qed.
 
 Theorem htw_inv_snoc l1 l2 :
-  "hello" ∈ l1 ->
+  "hello"%go ∈ l1 ->
   hello_then_world l1 ->
   hello_then_world (l1 ++ l2).
 Proof.
@@ -390,8 +390,8 @@ Proof.
   apply IHtl; [set_solver | done].
 Qed.
 
-Definition contain_hello (l : list string) (vs : gset string) :=
-  "world" ∈ vs -> "hello" ∈ l.
+Definition contain_hello (l : list byte_string) (vs : gset byte_string) :=
+  "world"%go ∈ vs -> "hello"%go ∈ l.
 
 Section prog.
   Context `{!heapGS Σ, !mpaxos_ghostG Σ}.
@@ -474,7 +474,7 @@ Section prog.
         by apply (elem_of_prefix l).
       }
       destruct Hprefix as [k Hprefix]. subst l'.
-      destruct (decide ("world" ∈ k)) as [Hk | Hk].
+      destruct (decide ("world"%go ∈ k)) as [Hk | Hk].
       { apply htw_inv_snoc; last done.
         apply Hch.
         rewrite Forall_forall in Hin.
@@ -491,7 +491,7 @@ Section prog.
     (*@         px.Propose("world")                                             @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_and_pure (ok = true) (v = "hello")).
+    wp_apply (wp_and_pure (ok = true) (v = "hello"%go)).
     { wp_pures. iPureIntro.
       case_bool_decide as H; first by rewrite H.
       rewrite not_true_iff_false in H. by rewrite H.

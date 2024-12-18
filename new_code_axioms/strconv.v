@@ -9,11 +9,11 @@ Axiom FormatBool : val.
 Axiom AppendBool : val.
 Axiom ParseComplex : val.
 Axiom ParseFloat : val.
-Axiom ErrRange : (string * string).
-Axiom ErrSyntax : (string * string).
+Axiom ErrRange : (go_string * go_string).
+Axiom ErrSyntax : (go_string * go_string).
 Axiom NumError : go_type.
-Axiom NumError__mset : list (string * val).
-Axiom NumError__mset_ptr : list (string * val).
+Axiom NumError__mset : list (go_string * val).
+Axiom NumError__mset_ptr : list (go_string * val).
 Axiom NumError__Error : val.
 Axiom NumError__Unwrap : val.
 Axiom IntSize : Z.

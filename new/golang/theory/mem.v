@@ -200,7 +200,7 @@ Section goose_lang.
       + iFrame.
     - (* struct *)
       rewrite go_type_size_unseal /= in Hlen.
-      iInduction d as [|[]] "IH2"; simpl in *.
+      iInduction d as [|[a]] "IH2"; simpl in *.
       { exfalso. lia. }
       rewrite struct.val_aux_unseal /=.
       destruct (decide (go_type_size_def g = O)).

@@ -12,11 +12,9 @@ Module struct.
 Section goose_lang.
   Context `{ffi_syntax}.
 
-  Infix "=?" := (String.eqb).
-
-  Definition val_aux_def (t : go_type) (field_vals: list (string*val)): val :=
+  Definition val_aux_def (t : go_type) (field_vals: list (go_string*val)): val :=
     match t with
-    | structT d => (fix val_struct (fs : list (string*go_type)) :=
+    | structT d => (fix val_struct (fs : list (go_string*go_type)) :=
                      match fs with
                      | [] => (#())
                      | (f,ft)::fs => (default (zero_val ft) (assocl_lookup f field_vals), val_struct fs)%V
@@ -29,9 +27,9 @@ End goose_lang.
 End struct.
 
 Declare Scope struct_scope.
-Notation "f :: t" := (@pair string go_type f%string t) : struct_scope.
-Notation "f ::= v" := (@pair string val f%string v%V) (at level 60) : val_scope.
-Notation "f ::= v" := (@pair string expr f%string v%E) (at level 60) : expr_scope.
+Notation "f :: t" := (@pair go_string go_type f%go t) : struct_scope.
+Notation "f ::= v" := (@pair go_string val f%go v%V) (at level 60) : val_scope.
+Notation "f ::= v" := (@pair go_string expr f%go v%E) (at level 60) : expr_scope.
 Delimit Scope struct_scope with struct.
 
 (** * Pure Coq reasoning principles *)
@@ -42,7 +40,7 @@ Program Definition go_type_ind :=
   λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
     (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
     (f6 : P sliceT) (f7 : P interfaceT)
-    (f8 : ∀ (decls : list (string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
+    (f8 : ∀ (decls : list (go_string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
     (f9 : P ptrT) (f10 : P funcT),
     fix F (g : go_type) : P g :=
     match g as g0 return (P g0) with
@@ -81,7 +79,7 @@ destruct a. apply Forall_cons. split.
   | has_go_type_uint16 : has_go_type #null uint16T
   | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
 
-  | has_go_type_string (s : string) : has_go_type #s stringT
+  | has_go_type_string (s : go_string) : has_go_type #s stringT
 
   | has_go_type_slice (s : slice.t) : has_go_type (#s) sliceT
   | has_go_type_interface (i : interface.t) : has_go_type (#i) interfaceT
@@ -310,7 +308,7 @@ Ltac2 solve_has_go_type_step () :=
             Std.indcl_as := None;
             Std.indcl_in := None
         } ] None
-  | [ h : (@eq (string * go_type) (_, _) _) |- _ ] =>
+  | [ h : (@eq (go_string * go_type) (_, _) _) |- _ ] =>
       Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
   end.
 Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).
@@ -348,11 +346,12 @@ Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
-Program Global Instance into_val_typed_string : IntoValTyped string stringT :=
-{| default_val := "" |}.
+Program Global Instance into_val_typed_string : IntoValTyped go_string stringT :=
+{| default_val := ""%go |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Eval simpl in (default_val go_string).
 
 Program Global Instance into_val_typed_slice : IntoValTyped slice.t sliceT :=
 {| default_val := slice.nil |}.

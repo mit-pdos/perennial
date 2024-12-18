@@ -5,8 +5,8 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom CompareType : go_type.
-Axiom CompareType__mset : list (string * val).
-Axiom CompareType__mset_ptr : list (string * val).
+Axiom CompareType__mset : list (go_string * val).
+Axiom CompareType__mset_ptr : list (go_string * val).
 Axiom Greater : val.
 Axiom GreaterOrEqual : val.
 Axiom Less : val.
@@ -237,23 +237,23 @@ Axiom IsNonIncreasing : val.
 Axiom IsDecreasing : val.
 Axiom IsNonDecreasing : val.
 Axiom TestingT : go_type.
-Axiom TestingT__mset : list (string * val).
-Axiom TestingT__mset_ptr : list (string * val).
+Axiom TestingT__mset : list (go_string * val).
+Axiom TestingT__mset_ptr : list (go_string * val).
 Axiom ComparisonAssertionFunc : go_type.
-Axiom ComparisonAssertionFunc__mset : list (string * val).
-Axiom ComparisonAssertionFunc__mset_ptr : list (string * val).
+Axiom ComparisonAssertionFunc__mset : list (go_string * val).
+Axiom ComparisonAssertionFunc__mset_ptr : list (go_string * val).
 Axiom ValueAssertionFunc : go_type.
-Axiom ValueAssertionFunc__mset : list (string * val).
-Axiom ValueAssertionFunc__mset_ptr : list (string * val).
+Axiom ValueAssertionFunc__mset : list (go_string * val).
+Axiom ValueAssertionFunc__mset_ptr : list (go_string * val).
 Axiom BoolAssertionFunc : go_type.
-Axiom BoolAssertionFunc__mset : list (string * val).
-Axiom BoolAssertionFunc__mset_ptr : list (string * val).
+Axiom BoolAssertionFunc__mset : list (go_string * val).
+Axiom BoolAssertionFunc__mset_ptr : list (go_string * val).
 Axiom ErrorAssertionFunc : go_type.
-Axiom ErrorAssertionFunc__mset : list (string * val).
-Axiom ErrorAssertionFunc__mset_ptr : list (string * val).
+Axiom ErrorAssertionFunc__mset : list (go_string * val).
+Axiom ErrorAssertionFunc__mset_ptr : list (go_string * val).
 Axiom Comparison : go_type.
-Axiom Comparison__mset : list (string * val).
-Axiom Comparison__mset_ptr : list (string * val).
+Axiom Comparison__mset : list (go_string * val).
+Axiom Comparison__mset_ptr : list (go_string * val).
 Axiom ObjectsAreEqual : val.
 Axiom ObjectsExportedFieldsAreEqual : val.
 Axiom ObjectsAreEqualValues : val.
@@ -285,8 +285,8 @@ Axiom NotSubset : val.
 Axiom ElementsMatch : val.
 Axiom Condition : val.
 Axiom PanicTestFunc : go_type.
-Axiom PanicTestFunc__mset : list (string * val).
-Axiom PanicTestFunc__mset_ptr : list (string * val).
+Axiom PanicTestFunc__mset : list (go_string * val).
+Axiom PanicTestFunc__mset_ptr : list (go_string * val).
 Axiom Panics : val.
 Axiom PanicsWithValue : val.
 Axiom PanicsWithError : val.
@@ -314,8 +314,8 @@ Axiom JSONEq : val.
 Axiom YAMLEq : val.
 Axiom Eventually : val.
 Axiom CollectT : go_type.
-Axiom CollectT__mset : list (string * val).
-Axiom CollectT__mset_ptr : list (string * val).
+Axiom CollectT__mset : list (go_string * val).
+Axiom CollectT__mset_ptr : list (go_string * val).
 Axiom CollectT__Errorf : val.
 Axiom CollectT__FailNow : val.
 Axiom CollectT__Reset : val.
@@ -325,10 +325,10 @@ Axiom Never : val.
 Axiom ErrorIs : val.
 Axiom NotErrorIs : val.
 Axiom ErrorAs : val.
-Axiom AnError : (string * string).
+Axiom AnError : (go_string * go_string).
 Axiom Assertions : go_type.
-Axiom Assertions__mset : list (string * val).
-Axiom Assertions__mset_ptr : list (string * val).
+Axiom Assertions__mset : list (go_string * val).
+Axiom Assertions__mset_ptr : list (go_string * val).
 Axiom New : val.
 Axiom HTTPSuccess : val.
 Axiom HTTPRedirect : val.

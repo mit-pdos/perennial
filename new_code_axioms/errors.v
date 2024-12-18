@@ -6,7 +6,7 @@ Context `{ffi_syntax}.
 
 Axiom New : val.
 Axiom errorString__Error : val.
-Axiom ErrUnsupported : (string * string).
+Axiom ErrUnsupported : (go_string * go_string).
 Axiom Join : val.
 Axiom joinError__Error : val.
 Axiom joinError__Unwrap : val.

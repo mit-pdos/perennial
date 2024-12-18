@@ -132,10 +132,6 @@ Proof.
 Qed.
 
 #[global]
-Instance byte_eq_dec : EqDecision byte.
-Proof. solve_decision. Defined.
-
-#[global]
 Instance word_countable `(word: Interface.word width) {word_ok: word.ok word} : Countable word.
 Proof.
   apply (inj_countable'

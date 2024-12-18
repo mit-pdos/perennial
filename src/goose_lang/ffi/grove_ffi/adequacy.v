@@ -11,7 +11,7 @@ Set Default Proof Using "Type".
 Existing Instances grove_op grove_model.
 Existing Instances grove_semantics grove_interp.
 Existing Instances goose_groveGS goose_groveNodeGS.
-Theorem grove_ffi_dist_adequacy Σ `{hPre: !gooseGpreS Σ} ebσs g φinv :
+Theorem grove_ffi_dist_adequacy Σ `{hPre: !gooseGpreS Σ} ebσs g (φinv : _ → Prop) :
   chan_msg_bounds g.(global_world).(grove_net) →
   Forall (λ ρ, file_content_bounds ρ.(init_local_state).(world).(grove_node_files)) ebσs →
   (∀ HG : gooseGlobalGS Σ,
@@ -40,18 +40,22 @@ Proof.
   { eauto. }
 Qed.
 
-Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : list (goose_lang.expr * goose_lang.state)) g φinv :
+Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ}
+  (ebσs : list (goose_lang.expr * goose_lang.state)) g (φinv : _ → Prop) :
   chan_msg_bounds g.(global_world).(grove_net) →
   Forall (λ σ, file_content_bounds σ.(world).(grove_node_files)) ebσs.*2 →
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
         ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) ={⊤}=∗
-          (([∗ list] '(e, σ) ∈ ebσs,
+          (([∗ list] ρ ∈ ebσs,
+          (* FIXME: the following doesn't work because of https://github.com/coq/coq/issues/16893 *)
+          (* (([∗ list] '(e, σ) ∈ ebσs, *)
                 (* We reason about node running e with an arbitrary generation *)
                 ∀ HL : gooseLocalGS Σ,
-                  ([∗ map] f ↦ c ∈ σ.(world).(grove_node_files), f f↦ c) -∗
-                  own_globals (DfracOwn 1) σ.(globals)
-                  ={⊤}=∗ ∃ Φ, wp NotStuck ⊤ e Φ) ∗
+                  ([∗ map] f ↦ c ∈ ρ.2.(world).(grove_node_files), f f↦ c) -∗
+                  own_globals (DfracOwn 1) ρ.2.(globals)
+                  ={⊤}=∗ ∃ Φ, wp NotStuck ⊤ ρ.1 Φ
+            ) ∗
           (∀ g', ffi_global_ctx goose_ffiGlobalGS g'.(global_world) ={⊤,∅}=∗ ⌜ φinv g' ⌝) )) →
   dist_adequate_failstop (ffi_sem:=grove_semantics) ebσs g (λ g, φinv g).
 Proof.

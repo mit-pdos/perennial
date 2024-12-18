@@ -6,28 +6,28 @@ Section map_string_marshal_proof.
 
 Context `{!heapGS Σ}.
 
-Local Definition encode_maplist (l:list (string * string)) : list u8 :=
+Local Definition encode_maplist (l:list (byte_string * byte_string)) : list u8 :=
   flat_map (λ u,
-              (u64_le (String.length u.1)) ++
-              (string_to_bytes u.1) ++
-              (u64_le (String.length u.2)) ++
-              (string_to_bytes u.2)) l.
+              (u64_le (length u.1)) ++
+              (u.1) ++
+              (u64_le (length u.2)) ++
+              (u.2)) l.
 
 Local Lemma encode_maplist_cons k data l :
   encode_maplist ((k, data)::l) =
-              ((u64_le $ String.length k) ++
-               (string_to_bytes k) ++
-               (u64_le $ String.length $ data) ++
-               (string_to_bytes data)) ++ encode_maplist l.
+              ((u64_le $ length k) ++
+               k ++
+               (u64_le $ length $ data) ++
+               data) ++ encode_maplist l.
 Proof. done. Qed.
 
-Local Definition has_partial_map_encoding (enc:list u8) (fullsize: u64) (m:gmap string string) : Prop :=
+Local Definition has_partial_map_encoding (enc:list u8) (fullsize: u64) (m:gmap byte_string byte_string) : Prop :=
   ∃ l,
   NoDup l.*1 ∧
   (list_to_map l) = m ∧
   enc = (u64_le fullsize) ++ encode_maplist l.
 
-Definition has_string_map_encoding (enc:list u8) (m:gmap string string) : Prop :=
+Definition has_string_map_encoding (enc:list u8) (m:gmap byte_string byte_string) : Prop :=
   uint.Z (size m) = size m ∧ has_partial_map_encoding enc (size m) m.
 
 Lemma wp_EncodeStringMap mptr m :
@@ -173,7 +173,7 @@ Proof.
     wp_load. wp_load.
     iDestruct (own_slice_small_sz with "Hs") as %Hsl_sz.
     wp_apply (wp_ReadBytes with "[$]").
-    { rewrite string_bytes_length. rewrite length_app in Hsl_sz. word. }
+    { rewrite length_app in Hsl_sz. word. }
     iIntros "* [Hksl Hs]".
     wp_pures. wp_store. wp_store. wp_load.
     wp_apply (wp_ReadInt with "Hs"). iIntros (?) "Hs".
@@ -181,7 +181,7 @@ Proof.
     wp_load. wp_load. clear Hsl_sz.
     iDestruct (own_slice_small_sz with "Hs") as %Hsl_sz.
     wp_apply (wp_ReadBytes with "[$]").
-    { rewrite string_bytes_length. rewrite length_app in Hsl_sz. word. }
+    { rewrite length_app in Hsl_sz. word. }
     iIntros "* [Hvsl Hs]".
     wp_pures. wp_store. wp_store. wp_load.
     wp_apply (wp_StringFromBytes with "[$Hvsl]").
@@ -189,7 +189,6 @@ Proof.
     wp_load.
     wp_apply (wp_StringFromBytes with "[$Hksl]").
     iIntros "_".
-    repeat rewrite string_to_bytes_to_string.
     wp_apply (wp_MapInsert with "[$]").
     { done. }
     iIntros "Hm". wp_pures. iApply "HΦ". iModIntro.

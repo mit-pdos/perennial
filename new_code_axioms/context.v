@@ -5,10 +5,10 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom Context : go_type.
-Axiom Context__mset : list (string * val).
-Axiom Context__mset_ptr : list (string * val).
-Axiom Canceled : (string * string).
-Axiom DeadlineExceeded : (string * string).
+Axiom Context__mset : list (go_string * val).
+Axiom Context__mset_ptr : list (go_string * val).
+Axiom Canceled : (go_string * go_string).
+Axiom DeadlineExceeded : (go_string * go_string).
 Axiom deadlineExceededError__Error : val.
 Axiom deadlineExceededError__Timeout : val.
 Axiom deadlineExceededError__Temporary : val.
@@ -21,12 +21,12 @@ Axiom todoCtx__String : val.
 Axiom Background : val.
 Axiom TODO : val.
 Axiom CancelFunc : go_type.
-Axiom CancelFunc__mset : list (string * val).
-Axiom CancelFunc__mset_ptr : list (string * val).
+Axiom CancelFunc__mset : list (go_string * val).
+Axiom CancelFunc__mset_ptr : list (go_string * val).
 Axiom WithCancel : val.
 Axiom CancelCauseFunc : go_type.
-Axiom CancelCauseFunc__mset : list (string * val).
-Axiom CancelCauseFunc__mset_ptr : list (string * val).
+Axiom CancelCauseFunc__mset : list (go_string * val).
+Axiom CancelCauseFunc__mset_ptr : list (go_string * val).
 Axiom WithCancelCause : val.
 Axiom Cause : val.
 Axiom AfterFunc : val.

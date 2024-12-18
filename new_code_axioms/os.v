@@ -7,8 +7,8 @@ Context `{ffi_syntax}.
 Axiom File__Readdir : val.
 Axiom File__Readdirnames : val.
 Axiom DirEntry : go_type.
-Axiom DirEntry__mset : list (string * val).
-Axiom DirEntry__mset_ptr : list (string * val).
+Axiom DirEntry__mset : list (go_string * val).
+Axiom DirEntry__mset_ptr : list (go_string * val).
 Axiom File__ReadDir : val.
 Axiom ReadDir : val.
 Axiom CopyFS : val.
@@ -20,19 +20,19 @@ Axiom Setenv : val.
 Axiom Unsetenv : val.
 Axiom Clearenv : val.
 Axiom Environ : val.
-Axiom ErrInvalid : (string * string).
-Axiom ErrPermission : (string * string).
-Axiom ErrExist : (string * string).
-Axiom ErrNotExist : (string * string).
-Axiom ErrClosed : (string * string).
-Axiom ErrNoDeadline : (string * string).
-Axiom ErrDeadlineExceeded : (string * string).
+Axiom ErrInvalid : (go_string * go_string).
+Axiom ErrPermission : (go_string * go_string).
+Axiom ErrExist : (go_string * go_string).
+Axiom ErrNotExist : (go_string * go_string).
+Axiom ErrClosed : (go_string * go_string).
+Axiom ErrNoDeadline : (go_string * go_string).
+Axiom ErrDeadlineExceeded : (go_string * go_string).
 Axiom PathError : go_type.
-Axiom PathError__mset : list (string * val).
-Axiom PathError__mset_ptr : list (string * val).
+Axiom PathError__mset : list (go_string * val).
+Axiom PathError__mset_ptr : list (go_string * val).
 Axiom SyscallError : go_type.
-Axiom SyscallError__mset : list (string * val).
-Axiom SyscallError__mset_ptr : list (string * val).
+Axiom SyscallError__mset : list (go_string * val).
+Axiom SyscallError__mset_ptr : list (go_string * val).
 Axiom SyscallError__Error : val.
 Axiom SyscallError__Unwrap : val.
 Axiom SyscallError__Timeout : val.
@@ -41,16 +41,16 @@ Axiom IsExist : val.
 Axiom IsNotExist : val.
 Axiom IsPermission : val.
 Axiom IsTimeout : val.
-Axiom ErrProcessDone : (string * string).
+Axiom ErrProcessDone : (go_string * go_string).
 Axiom Process : go_type.
-Axiom Process__mset : list (string * val).
-Axiom Process__mset_ptr : list (string * val).
+Axiom Process__mset : list (go_string * val).
+Axiom Process__mset_ptr : list (go_string * val).
 Axiom ProcAttr : go_type.
-Axiom ProcAttr__mset : list (string * val).
-Axiom ProcAttr__mset_ptr : list (string * val).
+Axiom ProcAttr__mset : list (go_string * val).
+Axiom ProcAttr__mset_ptr : list (go_string * val).
 Axiom Signal : go_type.
-Axiom Signal__mset : list (string * val).
-Axiom Signal__mset_ptr : list (string * val).
+Axiom Signal__mset : list (go_string * val).
+Axiom Signal__mset_ptr : list (go_string * val).
 Axiom Getpid : val.
 Axiom Getppid : val.
 Axiom FindProcess : val.
@@ -65,19 +65,19 @@ Axiom ProcessState__Exited : val.
 Axiom ProcessState__Success : val.
 Axiom ProcessState__Sys : val.
 Axiom ProcessState__SysUsage : val.
-Axiom Interrupt : (string * string).
-Axiom Kill : (string * string).
+Axiom Interrupt : (go_string * go_string).
+Axiom Kill : (go_string * go_string).
 Axiom ProcessState : go_type.
-Axiom ProcessState__mset : list (string * val).
-Axiom ProcessState__mset_ptr : list (string * val).
+Axiom ProcessState__mset : list (go_string * val).
+Axiom ProcessState__mset_ptr : list (go_string * val).
 Axiom ProcessState__Pid : val.
 Axiom ProcessState__String : val.
 Axiom ProcessState__ExitCode : val.
 Axiom Executable : val.
 Axiom File__Name : val.
-Axiom Stdin : (string * string).
-Axiom Stdout : (string * string).
-Axiom Stderr : (string * string).
+Axiom Stdin : (go_string * go_string).
+Axiom Stdout : (go_string * go_string).
+Axiom Stderr : (go_string * go_string).
 Axiom O_RDONLY : expr.
 Axiom O_WRONLY : expr.
 Axiom O_RDWR : expr.
@@ -90,8 +90,8 @@ Axiom SEEK_SET : expr.
 Axiom SEEK_CUR : expr.
 Axiom SEEK_END : expr.
 Axiom LinkError : go_type.
-Axiom LinkError__mset : list (string * val).
-Axiom LinkError__mset_ptr : list (string * val).
+Axiom LinkError__mset : list (go_string * val).
+Axiom LinkError__mset_ptr : list (go_string * val).
 Axiom LinkError__Error : val.
 Axiom LinkError__Unwrap : val.
 Axiom File__Read : val.
@@ -155,7 +155,7 @@ Axiom PathSeparator : expr.
 Axiom PathListSeparator : expr.
 Axiom IsPathSeparator : val.
 Axiom Pipe : val.
-Axiom Args : (string * string).
+Axiom Args : (go_string * go_string).
 Axiom Getuid : val.
 Axiom Geteuid : val.
 Axiom Getgid : val.
@@ -173,14 +173,14 @@ Axiom CreateTemp : val.
 Axiom MkdirTemp : val.
 Axiom Getpagesize : val.
 Axiom File : go_type.
-Axiom File__mset : list (string * val).
-Axiom File__mset_ptr : list (string * val).
+Axiom File__mset : list (go_string * val).
+Axiom File__mset_ptr : list (go_string * val).
 Axiom FileInfo : go_type.
-Axiom FileInfo__mset : list (string * val).
-Axiom FileInfo__mset_ptr : list (string * val).
+Axiom FileInfo__mset : list (go_string * val).
+Axiom FileInfo__mset_ptr : list (go_string * val).
 Axiom FileMode : go_type.
-Axiom FileMode__mset : list (string * val).
-Axiom FileMode__mset_ptr : list (string * val).
+Axiom FileMode__mset : list (go_string * val).
+Axiom FileMode__mset_ptr : list (go_string * val).
 Axiom ModeDir : expr.
 Axiom ModeAppend : expr.
 Axiom ModeExclusive : expr.

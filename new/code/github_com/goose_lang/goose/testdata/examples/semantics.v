@@ -9,10 +9,10 @@ From New Require Import disk_prelude.
 Definition unit : go_type := structT [
 ].
 
-Definition unit__mset : list (string * val) := [
+Definition unit__mset : list (go_string * val) := [
 ].
 
-Definition unit__mset_ptr : list (string * val) := [
+Definition unit__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: allocator.go:7:6 *)
@@ -337,7 +337,7 @@ Definition testByteSliceToString : val :=
     let: "$r0" := #(W8 67) in
     do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 2)) <-[byteT] "$r0");;;
     return: ((let: "$a0" := (![sliceT] "x") in
-     byteSliceToString "$a0") = #"ABC")).
+     byteSliceToString "$a0") = #"ABC"%go)).
 
 (* go: copy.go:3:6 *)
 Definition testCopySimple : val :=
@@ -445,7 +445,7 @@ Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Enc__mset : list (string * val) := [
+Definition Enc__mset : list (go_string * val) := [
 ].
 
 (* go: encoding.go:10:15 *)
@@ -462,15 +462,15 @@ Definition Enc__consume : val :=
     do:  ((struct.field_ref Enc "p" (![ptrT] "e")) <-[sliceT] "$r0");;;
     return: (![sliceT] "b")).
 
-Definition Enc__mset_ptr : list (string * val) := [
-  ("consume", Enc__consume%V)
+Definition Enc__mset_ptr : list (go_string * val) := [
+  ("consume"%go, Enc__consume%V)
 ].
 
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Dec__mset : list (string * val) := [
+Definition Dec__mset : list (go_string * val) := [
 ].
 
 (* go: encoding.go:20:15 *)
@@ -487,8 +487,8 @@ Definition Dec__consume : val :=
     do:  ((struct.field_ref Dec "p" (![ptrT] "d")) <-[sliceT] "$r0");;;
     return: (![sliceT] "b")).
 
-Definition Dec__mset_ptr : list (string * val) := [
-  ("consume", Dec__consume%V)
+Definition Dec__mset_ptr : list (go_string * val) := [
+  ("consume"%go, Dec__consume%V)
 ].
 
 (* go: encoding.go:26:6 *)
@@ -665,7 +665,7 @@ Definition Editor : go_type := structT [
   "next_val" :: uint64T
 ].
 
-Definition Editor__mset : list (string * val) := [
+Definition Editor__mset : list (go_string * val) := [
 ].
 
 (* advances the array editor, and returns the value it wrote, storing
@@ -688,8 +688,8 @@ Definition Editor__AdvanceReturn : val :=
     do:  ((struct.field_ref Editor "s" (![ptrT] "e")) <-[sliceT] "$r0");;;
     return: (![uint64T] "tmp")).
 
-Definition Editor__mset_ptr : list (string * val) := [
-  ("AdvanceReturn", Editor__AdvanceReturn%V)
+Definition Editor__mset_ptr : list (go_string * val) := [
+  ("AdvanceReturn"%go, Editor__AdvanceReturn%V)
 ].
 
 (* we call this function with side-effectful function calls as arguments,
@@ -709,10 +709,10 @@ Definition Pair : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition Pair__mset : list (string * val) := [
+Definition Pair__mset : list (go_string * val) := [
 ].
 
-Definition Pair__mset_ptr : list (string * val) := [
+Definition Pair__mset_ptr : list (go_string * val) := [
 ].
 
 (* tests
@@ -835,38 +835,38 @@ Definition genericStruct (A: go_type) (B: go_type) : go_type := structT [
   "y" :: B
 ].
 
-Definition genericStruct__mset : list (string * val) := [
+Definition genericStruct__mset : list (go_string * val) := [
 ].
 
-Definition genericStruct__mset_ptr : list (string * val) := [
+Definition genericStruct__mset_ptr : list (go_string * val) := [
 ].
 
 Definition genericStruct2 (T: go_type) : go_type := structT [
   "g" :: T
 ].
 
-Definition genericStruct2__mset : list (string * val) := [
+Definition genericStruct2__mset : list (go_string * val) := [
 ].
 
-Definition genericStruct2__mset_ptr : list (string * val) := [
+Definition genericStruct2__mset_ptr : list (go_string * val) := [
 ].
 
 Definition nonGenericStruct : go_type := structT [
   "p" :: uint64T
 ].
 
-Definition nonGenericStruct__mset : list (string * val) := [
+Definition nonGenericStruct__mset : list (go_string * val) := [
 ].
 
-Definition nonGenericStruct__mset_ptr : list (string * val) := [
+Definition nonGenericStruct__mset_ptr : list (go_string * val) := [
 ].
 
 Definition IntMap (T: go_type) : go_type := mapT uint64T T.
 
-Definition IntMap__mset : list (string * val) := [
+Definition IntMap__mset : list (go_string * val) := [
 ].
 
-Definition IntMap__mset_ptr : list (string * val) := [
+Definition IntMap__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: generics.go:18:6 *)
@@ -897,7 +897,7 @@ Definition testGenericStructs : val :=
     }]) in
     do:  ("c" <-[genericStruct2 uint64T] "$r0");;;
     let: "u" := (ref_ty (genericStruct stringT uint64T) (zero_val (genericStruct stringT uint64T))) in
-    let: "$r0" := (let: "$x" := #"test" in
+    let: "$r0" := (let: "$x" := #"test"%go in
     let: "$y" := #(W64 7) in
     struct.make (genericStruct stringT uint64T) [{
       "x" ::= "$x";
@@ -909,7 +909,7 @@ Definition testGenericStructs : val :=
     (identity2 uint64T) "$a0") in
     do:  ("d" <-[uint64T] "$r0");;;
     let: "d2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #"test" in
+    let: ("$ret0", "$ret1") := (let: "$a0" := #"test"%go in
     let: "$a1" := #(W64 5) in
     (identity stringT uint64T) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
@@ -920,7 +920,7 @@ Definition testGenericStructs : val :=
     let: "$r0" := (identity stringT uint64T) in
     do:  ("g" <-[funcT] "$r0");;;
     let: "b" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #"test" in
+    let: ("$ret0", "$ret1") := (let: "$a0" := #"test"%go in
     let: "$a1" := #(W64 3) in
     (![funcT] "g") "$a0" "$a1") in
     let: "$r0" := "$ret0" in
@@ -964,10 +964,10 @@ Definition testU32Len : val :=
 
 Definition Uint32 : go_type := uint32T.
 
-Definition Uint32__mset : list (string * val) := [
+Definition Uint32__mset : list (go_string * val) := [
 ].
 
-Definition Uint32__mset_ptr : list (string * val) := [
+Definition Uint32__mset_ptr : list (go_string * val) := [
 ].
 
 (* https://github.com/goose-lang/goose/issues/14
@@ -1019,16 +1019,16 @@ Definition SquareStruct__Volume : val :=
     exception_do (let: "t" := (ref_ty SquareStruct "t") in
     return: (((![uint64T] (struct.field_ref SquareStruct "Side" "t")) * (![uint64T] (struct.field_ref SquareStruct "Side" "t"))) * (![uint64T] (struct.field_ref SquareStruct "Side" "t")))).
 
-Definition SquareStruct__mset : list (string * val) := [
-  ("Square", SquareStruct__Square%V);
-  ("Volume", SquareStruct__Volume%V)
+Definition SquareStruct__mset : list (go_string * val) := [
+  ("Square"%go, SquareStruct__Square%V);
+  ("Volume"%go, SquareStruct__Volume%V)
 ].
 
-Definition SquareStruct__mset_ptr : list (string * val) := [
-  ("Square", (λ: "$recvAddr",
+Definition SquareStruct__mset_ptr : list (go_string * val) := [
+  ("Square"%go, (λ: "$recvAddr",
     SquareStruct__Square (![SquareStruct] "$recvAddr")
     )%V);
-  ("Volume", (λ: "$recvAddr",
+  ("Volume"%go, (λ: "$recvAddr",
     SquareStruct__Volume (![SquareStruct] "$recvAddr")
     )%V)
 ].
@@ -1182,12 +1182,12 @@ Definition LoopStruct__forLoopWait : val :=
       do:  ((![ptrT] (struct.field_ref LoopStruct "loopNext" "ls")) <-[uint64T] "$r0");;;
       continue: #())).
 
-Definition LoopStruct__mset : list (string * val) := [
-  ("forLoopWait", LoopStruct__forLoopWait%V)
+Definition LoopStruct__mset : list (go_string * val) := [
+  ("forLoopWait"%go, LoopStruct__forLoopWait%V)
 ].
 
-Definition LoopStruct__mset_ptr : list (string * val) := [
-  ("forLoopWait", (λ: "$recvAddr",
+Definition LoopStruct__mset_ptr : list (go_string * val) := [
+  ("forLoopWait"%go, (λ: "$recvAddr",
     LoopStruct__forLoopWait (![LoopStruct] "$recvAddr")
     )%V)
 ].
@@ -1925,10 +1925,10 @@ Definition BoolTest : go_type := structT [
   "fc" :: uint64T
 ].
 
-Definition BoolTest__mset : list (string * val) := [
+Definition BoolTest__mset : list (go_string * val) := [
 ].
 
-Definition BoolTest__mset_ptr : list (string * val) := [
+Definition BoolTest__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: shortcircuiting.go:11:6 *)
@@ -2040,7 +2040,7 @@ Definition ArrayEditor : go_type := structT [
   "next_val" :: uint64T
 ].
 
-Definition ArrayEditor__mset : list (string * val) := [
+Definition ArrayEditor__mset : list (go_string * val) := [
 ].
 
 (* go: slices.go:9:24 *)
@@ -2058,8 +2058,8 @@ Definition ArrayEditor__Advance : val :=
     slice.slice uint64T "$s" #(W64 1) (slice.len "$s")) in
     do:  ((struct.field_ref ArrayEditor "s" (![ptrT] "ae")) <-[sliceT] "$r0")).
 
-Definition ArrayEditor__mset_ptr : list (string * val) := [
-  ("Advance", ArrayEditor__Advance%V)
+Definition ArrayEditor__mset_ptr : list (go_string * val) := [
+  ("Advance"%go, ArrayEditor__Advance%V)
 ].
 
 (* tests
@@ -2232,7 +2232,7 @@ Definition Bar : go_type := structT [
   "b" :: uint64T
 ].
 
-Definition Bar__mset : list (string * val) := [
+Definition Bar__mset : list (go_string * val) := [
 ].
 
 (* go: struct_pointers.go:14:17 *)
@@ -2244,15 +2244,15 @@ Definition Bar__mutate : val :=
     let: "$r0" := #(W64 3) in
     do:  ((struct.field_ref Bar "b" (![ptrT] "bar")) <-[uint64T] "$r0")).
 
-Definition Bar__mset_ptr : list (string * val) := [
-  ("mutate", Bar__mutate%V)
+Definition Bar__mset_ptr : list (go_string * val) := [
+  ("mutate"%go, Bar__mutate%V)
 ].
 
 Definition Foo : go_type := structT [
   "bar" :: Bar
 ].
 
-Definition Foo__mset : list (string * val) := [
+Definition Foo__mset : list (go_string * val) := [
 ].
 
 (* go: struct_pointers.go:19:17 *)
@@ -2261,8 +2261,8 @@ Definition Foo__mutateBar : val :=
     exception_do (let: "foo" := (ref_ty ptrT "foo") in
     do:  ((Bar__mutate (struct.field_ref Foo "bar" (![ptrT] "foo"))) #())).
 
-Definition Foo__mset_ptr : list (string * val) := [
-  ("mutateBar", Foo__mutateBar%V)
+Definition Foo__mset_ptr : list (go_string * val) := [
+  ("mutateBar"%go, Foo__mutateBar%V)
 ].
 
 (* go: struct_pointers.go:23:6 *)
@@ -2287,10 +2287,10 @@ Definition TwoInts : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition TwoInts__mset : list (string * val) := [
+Definition TwoInts__mset : list (go_string * val) := [
 ].
 
-Definition TwoInts__mset_ptr : list (string * val) := [
+Definition TwoInts__mset_ptr : list (go_string * val) := [
 ].
 
 Definition S : go_type := structT [
@@ -2305,8 +2305,8 @@ Definition S__readBVal : val :=
     exception_do (let: "s" := (ref_ty S "s") in
     return: (![TwoInts] (struct.field_ref S "b" "s"))).
 
-Definition S__mset : list (string * val) := [
-  ("readBVal", S__readBVal%V)
+Definition S__mset : list (go_string * val) := [
+  ("readBVal"%go, S__readBVal%V)
 ].
 
 (* go: structs.go:38:13 *)
@@ -2336,14 +2336,14 @@ Definition S__updateBValX : val :=
     let: "$r0" := (![uint64T] "i") in
     do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "s"))) <-[uint64T] "$r0")).
 
-Definition S__mset_ptr : list (string * val) := [
-  ("negateC", S__negateC%V);
-  ("readA", S__readA%V);
-  ("readB", S__readB%V);
-  ("readBVal", (λ: "$recvAddr",
+Definition S__mset_ptr : list (go_string * val) := [
+  ("negateC"%go, S__negateC%V);
+  ("readA"%go, S__readA%V);
+  ("readB"%go, S__readB%V);
+  ("readBVal"%go, (λ: "$recvAddr",
     S__readBVal (![S] "$recvAddr")
     )%V);
-  ("updateBValX", S__updateBValX%V)
+  ("updateBValX"%go, S__updateBValX%V)
 ].
 
 (* go: structs.go:14:6 *)
@@ -2511,10 +2511,10 @@ Definition StructWrap : go_type := structT [
   "i" :: uint64T
 ].
 
-Definition StructWrap__mset : list (string * val) := [
+Definition StructWrap__mset : list (go_string * val) := [
 ].
 
-Definition StructWrap__mset_ptr : list (string * val) := [
+Definition StructWrap__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: structs.go:126:6 *)
@@ -2573,10 +2573,10 @@ Definition StructWithFunc : go_type := structT [
   "fn" :: funcT
 ].
 
-Definition StructWithFunc__mset : list (string * val) := [
+Definition StructWithFunc__mset : list (go_string * val) := [
 ].
 
-Definition StructWithFunc__mset_ptr : list (string * val) := [
+Definition StructWithFunc__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: structs.go:155:6 *)
@@ -2639,7 +2639,7 @@ Definition testSwitchDefaultTrue : val :=
 Definition switchConcrete : go_type := structT [
 ].
 
-Definition switchConcrete__mset : list (string * val) := [
+Definition switchConcrete__mset : list (go_string * val) := [
 ].
 
 (* go: switch.go:45:26 *)
@@ -2648,8 +2648,8 @@ Definition switchConcrete__marker : val :=
     exception_do (let: "c" := (ref_ty ptrT "c") in
     do:  #()).
 
-Definition switchConcrete__mset_ptr : list (string * val) := [
-  ("marker", switchConcrete__marker%V)
+Definition switchConcrete__mset_ptr : list (go_string * val) := [
+  ("marker"%go, switchConcrete__marker%V)
 ].
 
 Definition switchInterface : go_type := interfaceT.
@@ -2925,7 +2925,7 @@ Definition Log__Write : val :=
     do:  ("length" <-[uint64T] "$r0");;;
     (if: (![uint64T] "length") ≥ MaxTxnWrites
     then
-      do:  (let: "$a0" := (interface.make string__mset #"transaction is at capacity") in
+      do:  (let: "$a0" := (interface.make string__mset #"transaction is at capacity"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "aBlock" := (ref_ty sliceT (zero_val sliceT)) in
@@ -2947,40 +2947,40 @@ Definition Log__Write : val :=
     do:  ((![ptrT] (struct.field_ref Log "length" "l")) <-[uint64T] "$r0");;;
     do:  ((Log__unlock (![Log] "l")) #())).
 
-Definition Log__mset : list (string * val) := [
-  ("Apply", Log__Apply%V);
-  ("BeginTxn", Log__BeginTxn%V);
-  ("Commit", Log__Commit%V);
-  ("Read", Log__Read%V);
-  ("Size", Log__Size%V);
-  ("Write", Log__Write%V);
-  ("lock", Log__lock%V);
-  ("unlock", Log__unlock%V)
+Definition Log__mset : list (go_string * val) := [
+  ("Apply"%go, Log__Apply%V);
+  ("BeginTxn"%go, Log__BeginTxn%V);
+  ("Commit"%go, Log__Commit%V);
+  ("Read"%go, Log__Read%V);
+  ("Size"%go, Log__Size%V);
+  ("Write"%go, Log__Write%V);
+  ("lock"%go, Log__lock%V);
+  ("unlock"%go, Log__unlock%V)
 ].
 
-Definition Log__mset_ptr : list (string * val) := [
-  ("Apply", (λ: "$recvAddr",
+Definition Log__mset_ptr : list (go_string * val) := [
+  ("Apply"%go, (λ: "$recvAddr",
     Log__Apply (![Log] "$recvAddr")
     )%V);
-  ("BeginTxn", (λ: "$recvAddr",
+  ("BeginTxn"%go, (λ: "$recvAddr",
     Log__BeginTxn (![Log] "$recvAddr")
     )%V);
-  ("Commit", (λ: "$recvAddr",
+  ("Commit"%go, (λ: "$recvAddr",
     Log__Commit (![Log] "$recvAddr")
     )%V);
-  ("Read", (λ: "$recvAddr",
+  ("Read"%go, (λ: "$recvAddr",
     Log__Read (![Log] "$recvAddr")
     )%V);
-  ("Size", (λ: "$recvAddr",
+  ("Size"%go, (λ: "$recvAddr",
     Log__Size (![Log] "$recvAddr")
     )%V);
-  ("Write", (λ: "$recvAddr",
+  ("Write"%go, (λ: "$recvAddr",
     Log__Write (![Log] "$recvAddr")
     )%V);
-  ("lock", (λ: "$recvAddr",
+  ("lock"%go, (λ: "$recvAddr",
     Log__lock (![Log] "$recvAddr")
     )%V);
-  ("unlock", (λ: "$recvAddr",
+  ("unlock"%go, (λ: "$recvAddr",
     Log__unlock (![Log] "$recvAddr")
     )%V)
 ].
@@ -2998,7 +2998,7 @@ Definition New : val :=
     do:  ("diskSize" <-[uint64T] "$r0");;;
     (if: (![uint64T] "diskSize") ≤ logLength
     then
-      do:  (let: "$a0" := (interface.make string__mset #"disk is too small to host log") in
+      do:  (let: "$a0" := (interface.make string__mset #"disk is too small to host log"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "cache" := (ref_ty (mapT uint64T sliceT) (zero_val (mapT uint64T sliceT))) in
@@ -3109,7 +3109,7 @@ Definition disabled_testWal : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/semantics".
+Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/semantics".
 
 Definition define' : val :=
   rec: "define'" <> :=
