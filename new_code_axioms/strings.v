@@ -98,5 +98,5 @@ Axiom Index : val.
 Axiom Cut : val.
 Axiom CutPrefix : val.
 Axiom CutSuffix : val.
-
+Axiom initialize' : val.
 End axioms.

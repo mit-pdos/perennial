@@ -20,6 +20,13 @@ Axiom Setenv : val.
 Axiom Unsetenv : val.
 Axiom Clearenv : val.
 Axiom Environ : val.
+Axiom ErrInvalid : (string * string).
+Axiom ErrPermission : (string * string).
+Axiom ErrExist : (string * string).
+Axiom ErrNotExist : (string * string).
+Axiom ErrClosed : (string * string).
+Axiom ErrNoDeadline : (string * string).
+Axiom ErrDeadlineExceeded : (string * string).
 Axiom PathError : go_type.
 Axiom PathError__mset : list (string * val).
 Axiom PathError__mset_ptr : list (string * val).
@@ -34,6 +41,7 @@ Axiom IsExist : val.
 Axiom IsNotExist : val.
 Axiom IsPermission : val.
 Axiom IsTimeout : val.
+Axiom ErrProcessDone : (string * string).
 Axiom Process : go_type.
 Axiom Process__mset : list (string * val).
 Axiom Process__mset_ptr : list (string * val).
@@ -57,6 +65,8 @@ Axiom ProcessState__Exited : val.
 Axiom ProcessState__Success : val.
 Axiom ProcessState__Sys : val.
 Axiom ProcessState__SysUsage : val.
+Axiom Interrupt : (string * string).
+Axiom Kill : (string * string).
 Axiom ProcessState : go_type.
 Axiom ProcessState__mset : list (string * val).
 Axiom ProcessState__mset_ptr : list (string * val).
@@ -65,6 +75,9 @@ Axiom ProcessState__String : val.
 Axiom ProcessState__ExitCode : val.
 Axiom Executable : val.
 Axiom File__Name : val.
+Axiom Stdin : (string * string).
+Axiom Stdout : (string * string).
+Axiom Stderr : (string * string).
 Axiom O_RDONLY : expr.
 Axiom O_WRONLY : expr.
 Axiom O_RDWR : expr.
@@ -142,6 +155,7 @@ Axiom PathSeparator : expr.
 Axiom PathListSeparator : expr.
 Axiom IsPathSeparator : val.
 Axiom Pipe : val.
+Axiom Args : (string * string).
 Axiom Getuid : val.
 Axiom Geteuid : val.
 Axiom Getgid : val.
@@ -189,5 +203,5 @@ Axiom fileStat__Size : val.
 Axiom fileStat__Mode : val.
 Axiom fileStat__ModTime : val.
 Axiom fileStat__Sys : val.
-
+Axiom initialize' : val.
 End axioms.

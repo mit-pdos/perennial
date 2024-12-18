@@ -7,6 +7,8 @@ Context `{ffi_syntax}.
 Axiom Context : go_type.
 Axiom Context__mset : list (string * val).
 Axiom Context__mset_ptr : list (string * val).
+Axiom Canceled : (string * string).
+Axiom DeadlineExceeded : (string * string).
 Axiom deadlineExceededError__Error : val.
 Axiom deadlineExceededError__Timeout : val.
 Axiom deadlineExceededError__Temporary : val.
@@ -47,5 +49,5 @@ Axiom WithTimeoutCause : val.
 Axiom WithValue : val.
 Axiom valueCtx__String : val.
 Axiom valueCtx__Value : val.
-
+Axiom initialize' : val.
 End axioms.

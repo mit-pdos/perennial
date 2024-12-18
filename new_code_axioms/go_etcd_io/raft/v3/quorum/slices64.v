@@ -5,5 +5,5 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom Sort : val.
-
+Axiom initialize' : val.
 End axioms.

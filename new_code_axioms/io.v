@@ -7,6 +7,11 @@ Context `{ffi_syntax}.
 Axiom SeekStart : Z.
 Axiom SeekCurrent : Z.
 Axiom SeekEnd : Z.
+Axiom ErrShortWrite : (string * string).
+Axiom ErrShortBuffer : (string * string).
+Axiom EOF : (string * string).
+Axiom ErrUnexpectedEOF : (string * string).
+Axiom ErrNoProgress : (string * string).
 Axiom Reader : go_type.
 Axiom Reader__mset : list (string * val).
 Axiom Reader__mset_ptr : list (string * val).
@@ -102,6 +107,7 @@ Axiom OffsetWriter__WriteAt : val.
 Axiom OffsetWriter__Seek : val.
 Axiom TeeReader : val.
 Axiom teeReader__Read : val.
+Axiom Discard : (string * string).
 Axiom discard__Write : val.
 Axiom discard__WriteString : val.
 Axiom discard__ReadFrom : val.
@@ -119,6 +125,7 @@ Axiom multiWriter__WriteString : val.
 Axiom MultiWriter : val.
 Axiom onceError__Store : val.
 Axiom onceError__Load : val.
+Axiom ErrClosedPipe : (string * string).
 Axiom PipeReader : go_type.
 Axiom PipeReader__mset : list (string * val).
 Axiom PipeReader__mset_ptr : list (string * val).
@@ -132,5 +139,5 @@ Axiom PipeWriter__Write : val.
 Axiom PipeWriter__Close : val.
 Axiom PipeWriter__CloseWithError : val.
 Axiom Pipe : val.
-
+Axiom initialize' : val.
 End axioms.

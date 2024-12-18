@@ -9,6 +9,8 @@ Axiom FormatBool : val.
 Axiom AppendBool : val.
 Axiom ParseComplex : val.
 Axiom ParseFloat : val.
+Axiom ErrRange : (string * string).
+Axiom ErrSyntax : (string * string).
 Axiom NumError : go_type.
 Axiom NumError__mset : list (string * val).
 Axiom NumError__mset_ptr : list (string * val).
@@ -51,5 +53,5 @@ Axiom QuotedPrefix : val.
 Axiom Unquote : val.
 Axiom IsPrint : val.
 Axiom IsGraphic : val.
-
+Axiom initialize' : val.
 End axioms.

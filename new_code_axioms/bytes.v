@@ -7,6 +7,7 @@ Context `{ffi_syntax}.
 Axiom Buffer : go_type.
 Axiom Buffer__mset : list (string * val).
 Axiom Buffer__mset_ptr : list (string * val).
+Axiom ErrTooLarge : (string * string).
 Axiom Buffer__Bytes : val.
 Axiom Buffer__AvailableBuffer : val.
 Axiom Buffer__String : val.
@@ -100,5 +101,5 @@ Axiom Reader__Seek : val.
 Axiom Reader__WriteTo : val.
 Axiom Reader__Reset : val.
 Axiom NewReader : val.
-
+Axiom initialize' : val.
 End axioms.

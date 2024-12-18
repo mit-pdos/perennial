@@ -12,5 +12,5 @@ Axiom Changer__LeaveJoint : val.
 Axiom Changer__Simple : val.
 Axiom Describe : val.
 Axiom Restore : val.
-
+Axiom initialize' : val.
 End axioms.

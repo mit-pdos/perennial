@@ -61,5 +61,5 @@ Axiom Zipf__mset : list (string * val).
 Axiom Zipf__mset_ptr : list (string * val).
 Axiom NewZipf : val.
 Axiom Zipf__Uint64 : val.
-
+Axiom initialize' : val.
 End axioms.

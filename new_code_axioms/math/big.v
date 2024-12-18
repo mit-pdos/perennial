@@ -185,5 +185,5 @@ Axiom Rat__MarshalText : val.
 Axiom Rat__UnmarshalText : val.
 Axiom RoundingMode__String : val.
 Axiom Float__Sqrt : val.
-
+Axiom initialize' : val.
 End axioms.
