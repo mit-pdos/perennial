@@ -325,6 +325,7 @@ Axiom Never : val.
 Axiom ErrorIs : val.
 Axiom NotErrorIs : val.
 Axiom ErrorAs : val.
+Axiom AnError : (string * string).
 Axiom Assertions : go_type.
 Axiom Assertions__mset : list (string * val).
 Axiom Assertions__mset_ptr : list (string * val).
@@ -336,5 +337,5 @@ Axiom HTTPStatusCode : val.
 Axiom HTTPBody : val.
 Axiom HTTPBodyContains : val.
 Axiom HTTPBodyNotContains : val.
-
+Axiom initialize' : val.
 End axioms.

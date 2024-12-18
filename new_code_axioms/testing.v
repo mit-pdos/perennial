@@ -127,5 +127,5 @@ Axiom M__mset_ptr : list (string * val).
 Axiom MainStart : val.
 Axiom M__Run : val.
 Axiom RunTests : val.
-
+Axiom initialize' : val.
 End axioms.

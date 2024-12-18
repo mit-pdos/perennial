@@ -15,9 +15,9 @@ Definition MajorityConfig : go_type := mapT uint64T (structT [
 
 Definition JointConfig : go_type := arrayT 2 MajorityConfig.
 
-Definition AckedIndexer : go_type := interfaceT.
-
 Definition Index : go_type := uint64T.
+
+Definition AckedIndexer : go_type := interfaceT.
 
 (* CommittedIndex computes the committed index from those supplied via the
    provided AckedIndexer (for the active config).
@@ -309,9 +309,9 @@ Definition JointConfig__String : val :=
     else do:  #());;;
     return: ((MajorityConfig__String (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #())).
 
-Definition VoteResult : go_type := uint8T.
-
 Definition VotePending : expr := #(W8 (1 + 0)).
+
+Definition VoteResult : go_type := uint8T.
 
 Definition VoteLost : expr := #(W8 2).
 
@@ -530,5 +530,31 @@ Definition _unused : val :=
     do:  "$r0").
 
 Definition _VoteResult_name : string := "VotePendingVoteLostVoteWon".
+
+Definition pkg_name' : string := "go.etcd.io/raft/v3/quorum".
+
+Definition _VoteResult_index : (string * string) := (pkg_name', "_VoteResult_index").
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  (globals.put _VoteResult_index (ref_ty (arrayT 4 uint8T) (zero_val (arrayT 4 uint8T))))).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  strconv.initialize';;;
+      do:  strings.initialize';;;
+      do:  sort.initialize';;;
+      do:  slices64.initialize';;;
+      do:  math.initialize';;;
+      do:  fmt.initialize';;;
+      do:  (define' #());;;
+      let: "$r0" := ((let: "$ar0" := #(W8 0) in
+      let: "$ar1" := #(W8 11) in
+      let: "$ar2" := #(W8 19) in
+      let: "$ar3" := #(W8 26) in
+      array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"])) in
+      do:  ((globals.get _VoteResult_index #()) <-[arrayT 4 uint8T] "$r0"))
+      ).
 
 End code.

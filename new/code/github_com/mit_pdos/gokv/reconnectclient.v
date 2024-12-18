@@ -108,3 +108,19 @@ Definition MakeReconnectingClient : val :=
     let: "$r0" := (![uint64T] "addr") in
     do:  ((struct.field_ref ReconnectingClient "addr" (![ptrT] "r")) <-[uint64T] "$r0");;;
     return: (![ptrT] "r")).
+
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/reconnectclient".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  urpc.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).

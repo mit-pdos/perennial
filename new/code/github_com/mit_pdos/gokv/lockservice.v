@@ -46,4 +46,17 @@ Definition MakeLockClerk : val :=
        "kv" ::= "$kv"
      }]))).
 
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/lockservice".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  kv.initialize';;;
+      do:  (define' #()))
+      ).
+
 End code.

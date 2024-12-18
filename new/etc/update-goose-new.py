@@ -182,6 +182,7 @@ def main():
         "./cachekv",
         "./lockservice",
         "./bank",
+        "./globals_test",
         # "./vrsm/replica",
     )
 
@@ -223,7 +224,6 @@ def main():
 
     run_goose(
         etcd_raft_dir,
-        "-ignore-errors",
         ".",
         "go.etcd.io/raft/v3/tracker",
         "go.etcd.io/raft/v3/quorum",

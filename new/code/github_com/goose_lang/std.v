@@ -229,4 +229,18 @@ Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
 
+Definition pkg_name' : string := "github.com/goose-lang/std".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).
+
 End code.

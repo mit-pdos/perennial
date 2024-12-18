@@ -45,5 +45,5 @@ Axiom MaxFunc : val.
 Axiom BinarySearch : val.
 Axiom BinarySearchFunc : val.
 Axiom xorshift__Next : val.
-
+Axiom initialize' : val.
 End axioms.

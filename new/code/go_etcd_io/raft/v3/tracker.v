@@ -427,11 +427,15 @@ Definition Progress__SentCommit : val :=
     let: "$r0" := (![uint64T] "commit") in
     do:  ((struct.field_ref Progress "sentCommit" (![ptrT] "pr")) <-[uint64T] "$r0")).
 
+Definition pkg_name' : string := "go.etcd.io/raft/v3/tracker".
+
+Definition prstmap : (string * string) := (pkg_name', "prstmap").
+
 (* go: state.go:42:21 *)
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
     exception_do (let: "st" := (ref_ty StateType "st") in
-    return: (![stringT] (array.elem_ref stringT (![arrayT 3 stringT] "prstmap") (![StateType] "st")))).
+    return: (![stringT] (array.elem_ref stringT (![arrayT 3 stringT] (globals.get prstmap #())) (![StateType] "st")))).
 
 Definition StateType__mset : list (string * val) := [
   ("String", StateType__String%V)
@@ -1037,5 +1041,28 @@ Definition matchAckIndexer__mset_ptr : list (string * val) := [
     matchAckIndexer__AckedIndex (![matchAckIndexer] "$recvAddr")
     )%V)
 ].
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  (globals.put prstmap (ref_ty (arrayT 3 stringT) (zero_val (arrayT 3 stringT))))).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  raftpb.initialize';;;
+      do:  slices64.initialize';;;
+      do:  quorum.initialize';;;
+      do:  strings.initialize';;;
+      do:  sort.initialize';;;
+      do:  fmt.initialize';;;
+      do:  (define' #());;;
+      let: "$r0" := ((let: "$ar0" := #"StateProbe" in
+      let: "$ar1" := #"StateReplicate" in
+      let: "$ar2" := #"StateSnapshot" in
+      array.literal ["$ar0"; "$ar1"; "$ar2"])) in
+      do:  ((globals.get prstmap #()) <-[arrayT 3 stringT] "$r0");;;
+      let: "$r0" := (interface.make matchAckIndexer__mset #null) in
+      do:  #())
+      ).
 
 End code.

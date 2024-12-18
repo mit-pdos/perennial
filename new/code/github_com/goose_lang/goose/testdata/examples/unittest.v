@@ -68,6 +68,31 @@ Definition arrayToSlice : val :=
     return: (let: "$a" := "x" in
      array.slice "$a" #(W64 0) (array.len (arrayT 2 stringT)))).
 
+Definition arrayA : Z := 0.
+
+Definition arrayB : Z := 10.
+
+(* go: array.go:44:6 *)
+Definition arrayLiteralKeyed : val :=
+  rec: "arrayLiteralKeyed" <> :=
+    exception_do (let: "x" := (ref_ty (arrayT 13 stringT) (zero_val (arrayT 13 stringT))) in
+    let: "$r0" := ((let: "$ar0" := #"A" in
+    let: "$ar1" := #"3" in
+    let: "$ar2" := (zero_val stringT) in
+    let: "$ar3" := (zero_val stringT) in
+    let: "$ar4" := (zero_val stringT) in
+    let: "$ar5" := (zero_val stringT) in
+    let: "$ar6" := (zero_val stringT) in
+    let: "$ar7" := (zero_val stringT) in
+    let: "$ar8" := (zero_val stringT) in
+    let: "$ar9" := (zero_val stringT) in
+    let: "$ar10" := #"B" in
+    let: "$ar11" := #"1" in
+    let: "$ar12" := #"2" in
+    array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"])) in
+    do:  ("x" <-[arrayT 13 stringT] "$r0");;;
+    return: (![stringT] (array.elem_ref stringT (![arrayT 13 stringT] "x") #(W64 0)))).
+
 (* go: chan.go:5:6 *)
 Definition chanBasic : val :=
   rec: "chanBasic" <> :=
@@ -890,6 +915,37 @@ Definition Dec__mset_ptr : list (string * val) := [
   ("UInt64", Dec__UInt64%V);
   ("consume", Dec__consume%V)
 ].
+
+(* go: globals.go:3:6 *)
+Definition foo : val :=
+  rec: "foo" <> :=
+    exception_do (return: (#(W64 10))).
+
+Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/unittest".
+
+Definition GlobalX : (string * string) := (pkg_name', "GlobalX").
+
+Definition globalY : (string * string) := (pkg_name', "globalY").
+
+Definition globalA : (string * string) := (pkg_name', "globalA").
+
+Definition globalB : (string * string) := (pkg_name', "globalB").
+
+(* go: globals.go:14:6 *)
+Definition other : val :=
+  rec: "other" <> :=
+    exception_do (let: "$r0" := #"ok" in
+    do:  ((globals.get globalY #()) <-[stringT] "$r0")).
+
+(* go: globals.go:18:6 *)
+Definition bar : val :=
+  rec: "bar" <> :=
+    exception_do (do:  (other #());;;
+    (if: ((![uint64T] (globals.get GlobalX #())) ≠ #(W64 10)) || ((![stringT] (globals.get globalY #())) ≠ #"ok")
+    then
+      do:  (let: "$a0" := (interface.make string__mset #"bad") in
+      Panic "$a0")
+    else do:  #())).
 
 (* go: higher_order.go:3:6 *)
 Definition TakesFunctionType : val :=
@@ -2408,3 +2464,37 @@ Definition testVariadicPassThrough : val :=
     let: "$sl1" := "$ret3" in
     slice.literal byteT ["$sl0"; "$sl1"])) in
     variadicFunc "$a0" "$a1" "$a2")).
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  (globals.put globalB (ref_ty stringT (zero_val stringT)));;;
+    do:  (globals.put globalA (ref_ty stringT (zero_val stringT)));;;
+    do:  (globals.put globalY (ref_ty stringT (zero_val stringT)));;;
+    do:  (globals.put GlobalX (ref_ty uint64T (zero_val uint64T)))).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  marshal.initialize';;;
+      do:  log.initialize';;;
+      do:  disk.initialize';;;
+      do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  fmt.initialize';;;
+      do:  (define' #());;;
+      let: "$r0" := (foo #()) in
+      do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
+      let: "$r0" := #"a" in
+      do:  ((globals.get globalA #()) <-[stringT] "$r0");;;
+      let: "$r0" := #"b" in
+      do:  ((globals.get globalB #()) <-[stringT] "$r0");;;
+      let: "$r0" := (foo #()) in
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := (![uint64T] (globals.get GlobalX #())) in
+        do:  ((globals.get GlobalX #()) <-[uint64T] "$r0"))
+        ) #());;;
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := #"" in
+        do:  ((globals.get globalY #()) <-[stringT] "$r0"))
+        ) #()))
+      ).

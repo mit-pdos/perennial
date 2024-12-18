@@ -222,3 +222,19 @@ Definition Make : val :=
        "mu" ::= "$mu";
        "cache" ::= "$cache"
      }]))).
+
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/cachekv".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  marshal.initialize';;;
+      do:  kv.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).

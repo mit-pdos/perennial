@@ -23,6 +23,8 @@ Axiom EntryType__mset_ptr : list (string * val).
 Axiom EntryNormal : expr.
 Axiom EntryConfChange : expr.
 Axiom EntryConfChangeV2 : expr.
+Axiom EntryType_name : (string * string).
+Axiom EntryType_value : (string * string).
 Axiom EntryType__Enum : val.
 Axiom EntryType__String : val.
 Axiom EntryType__UnmarshalJSON : val.
@@ -54,6 +56,8 @@ Axiom MsgStorageAppendResp : expr.
 Axiom MsgStorageApply : expr.
 Axiom MsgStorageApplyResp : expr.
 Axiom MsgForgetLeader : expr.
+Axiom MessageType_name : (string * string).
+Axiom MessageType_value : (string * string).
 Axiom MessageType__Enum : val.
 Axiom MessageType__String : val.
 Axiom MessageType__UnmarshalJSON : val.
@@ -64,6 +68,8 @@ Axiom ConfChangeTransition__mset_ptr : list (string * val).
 Axiom ConfChangeTransitionAuto : expr.
 Axiom ConfChangeTransitionJointImplicit : expr.
 Axiom ConfChangeTransitionJointExplicit : expr.
+Axiom ConfChangeTransition_name : (string * string).
+Axiom ConfChangeTransition_value : (string * string).
 Axiom ConfChangeTransition__Enum : val.
 Axiom ConfChangeTransition__String : val.
 Axiom ConfChangeTransition__UnmarshalJSON : val.
@@ -75,6 +81,8 @@ Axiom ConfChangeAddNode : expr.
 Axiom ConfChangeRemoveNode : expr.
 Axiom ConfChangeUpdateNode : expr.
 Axiom ConfChangeAddLearnerNode : expr.
+Axiom ConfChangeType_name : (string * string).
+Axiom ConfChangeType_value : (string * string).
 Axiom ConfChangeType__Enum : val.
 Axiom ConfChangeType__String : val.
 Axiom ConfChangeType__UnmarshalJSON : val.
@@ -232,5 +240,8 @@ Axiom ConfState__Unmarshal : val.
 Axiom ConfChange__Unmarshal : val.
 Axiom ConfChangeSingle__Unmarshal : val.
 Axiom ConfChangeV2__Unmarshal : val.
-
+Axiom ErrInvalidLengthRaft : (string * string).
+Axiom ErrIntOverflowRaft : (string * string).
+Axiom ErrUnexpectedEndOfGroupRaft : (string * string).
+Axiom initialize' : val.
 End axioms.

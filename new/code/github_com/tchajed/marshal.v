@@ -573,4 +573,18 @@ Definition WriteSliceLenPrefix (T: go_type) : val :=
     do:  ("b3" <-[sliceT] "$r0");;;
     return: (![sliceT] "b3")).
 
+Definition pkg_name' : string := "github.com/tchajed/marshal".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  std.initialize';;;
+      do:  primitive.initialize';;;
+      do:  (define' #()))
+      ).
+
 End code.

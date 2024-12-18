@@ -169,3 +169,18 @@ Definition MakeAsyncFile : val :=
     let: "$go" := (AsyncFile__flushThread (![ptrT] "s")) in
     do:  (Fork ("$go" #()));;;
     return: (![sliceT] "data", ![ptrT] "s")).
+
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/asyncfile".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  grove_ffi.initialize';;;
+      do:  std.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).

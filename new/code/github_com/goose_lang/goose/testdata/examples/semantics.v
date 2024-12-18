@@ -3108,3 +3108,18 @@ Definition disabled_testWal : val :=
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (![ptrT] (struct.field_ref Log "length" "lg"))) = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
+
+Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/semantics".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  disk.initialize';;;
+      do:  sync.initialize';;;
+      do:  primitive.initialize';;;
+      do:  (define' #()))
+      ).

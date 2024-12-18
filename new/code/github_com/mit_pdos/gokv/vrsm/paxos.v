@@ -956,3 +956,23 @@ Definition StartServer : val :=
     do:  (let: "$a0" := (![uint64T] "me") in
     (urpc.Server__Serve (![ptrT] "r")) "$a0");;;
     return: (![ptrT] "s")).
+
+Definition pkg_name' : string := "github.com/mit-pdos/gokv/vrsm/paxos".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  urpc.initialize';;;
+      do:  asyncfile.initialize';;;
+      do:  std.initialize';;;
+      do:  sync.initialize';;;
+      do:  log.initialize';;;
+      do:  marshal.initialize';;;
+      do:  reconnectclient.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  (define' #()))
+      ).

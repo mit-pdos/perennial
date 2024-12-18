@@ -51,5 +51,5 @@ Axiom IntsAreSorted : val.
 Axiom Float64sAreSorted : val.
 Axiom StringsAreSorted : val.
 Axiom Stable : val.
-
+Axiom initialize' : val.
 End axioms.

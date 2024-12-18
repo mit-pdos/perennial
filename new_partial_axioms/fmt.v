@@ -63,5 +63,5 @@ Axiom ss__Token : val.
 Axiom readRune__ReadRune : val.
 Axiom readRune__UnreadRune : val.
 Axiom ss__SkipSpace : val.
-
+Axiom initialize' : val.
 End axioms.

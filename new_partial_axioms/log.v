@@ -49,5 +49,5 @@ Axiom Panic : val.
 Axiom Panicf : val.
 Axiom Panicln : val.
 Axiom Output : val.
-
+Axiom initialize' : val.
 End axioms.

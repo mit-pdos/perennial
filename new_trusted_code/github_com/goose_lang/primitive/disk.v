@@ -34,4 +34,6 @@ Section disk.
     λ: "v",
        ExternalOp SizeOp (Var "v").
 
+  Definition initialize' : val := λ: <>, #().
+
 End disk.

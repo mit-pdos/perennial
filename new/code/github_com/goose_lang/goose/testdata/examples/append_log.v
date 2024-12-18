@@ -195,3 +195,18 @@ Definition Open : val :=
        "sz" ::= "$sz";
        "diskSz" ::= "$diskSz"
      }]))).
+
+Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/append_log".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  disk.initialize';;;
+      do:  marshal.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).
