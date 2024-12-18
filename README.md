@@ -1,3 +1,10 @@
+GooseLang files are in `goose_converison/external/Goose/github_com/session`
+
+Proof files are in `goose_converison/src/program_proof/session`
+
+First run git `submodule update --init --recursive`
+To compile dependencies for proofs do (`make src/program_proof/session/dependencyCheck/proof.vos`) 
+
 # Verifying concurrent, crash-safe systems with Perennial
 
 [![CI](https://github.com/mit-pdos/perennial/actions/workflows/ci.yml/badge.svg)](https://github.com/mit-pdos/perennial/actions/workflows/ci.yml)
