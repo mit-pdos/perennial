@@ -261,6 +261,10 @@ Definition IsEmptySnap : val :=
     exception_do (let: "sp" := (ref_ty raftpb.Snapshot "sp") in
     return: ((![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" "sp"))) = #(W64 0))).
 
+Definition pkg_name' : string := "go.etcd.io/raft/v3".
+
+Definition ErrSnapshotTemporarilyUnavailable : (string * string) := (pkg_name', "ErrSnapshotTemporarilyUnavailable").
+
 (* go: log.go:293:19 *)
 Definition raftLog__snapshot : val :=
   rec: "raftLog__snapshot" "l" <> :=
@@ -490,6 +494,10 @@ Definition unstable__slice : val :=
     (unstable__mustCheckOutOfBounds (![ptrT] "u")) "$a0" "$a1");;;
     return: (let: "$s" := (![sliceT] (struct.field_ref unstable "entries" (![ptrT] "u"))) in
      slice.full_slice raftpb.Entry "$s" ((![uint64T] "lo") - (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))) ((![uint64T] "hi") - (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))) ((![uint64T] "hi") - (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))))).
+
+Definition ErrUnavailable : (string * string) := (pkg_name', "ErrUnavailable").
+
+Definition ErrCompacted : (string * string) := (pkg_name', "ErrCompacted").
 
 (* maybeLastIndex returns the last index if it has at least one
    unstable entry or snapshot.
@@ -993,6 +1001,8 @@ Definition newReadOnly : val :=
        "readIndexQueue" ::= zero_val sliceT
      }]))).
 
+Definition globalRand : (string * string) := (pkg_name', "globalRand").
+
 Definition lockedRand : go_type := structT [
   "mu" :: sync.Mutex
 ].
@@ -1079,6 +1089,8 @@ Definition raft__reset : val :=
     let: "$r0" := (let: "$a0" := (![ReadOnlyOption] (struct.field_ref readOnly "option" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r"))))) in
     newReadOnly "$a0") in
     do:  ((struct.field_ref raft "readOnly" (![ptrT] "r")) <-[ptrT] "$r0")).
+
+Definition stepFollowerGlobal : (string * string) := (pkg_name', "stepFollowerGlobal").
 
 (* go: raft.go:909:16 *)
 Definition raft__becomeFollower : val :=
@@ -1313,6 +1325,8 @@ Definition raftLog__append : val :=
     do:  (let: "$a0" := (![sliceT] "ents") in
     (unstable__truncateAndAppend (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0");;;
     return: ((raftLog__lastIndex (![ptrT] "l")) #())).
+
+Definition emptyState : (string * string) := (pkg_name', "emptyState").
 
 (* Bootstrap initializes the RawNode for first use by appending configuration
    changes for the supplied peers. This method returns an error if the Storage
@@ -2284,6 +2298,10 @@ Definition unstable__mset_ptr : list (string * val) := [
   ("truncateAndAppend", unstable__truncateAndAppend%V)
 ].
 
+Definition raftLoggerMu : (string * string) := (pkg_name', "raftLoggerMu").
+
+Definition raftLogger : (string * string) := (pkg_name', "raftLogger").
+
 (* go: logger.go:45:6 *)
 Definition SetLogger : val :=
   rec: "SetLogger" "l" :=
@@ -2292,6 +2310,8 @@ Definition SetLogger : val :=
     let: "$r0" := (![Logger] "l") in
     do:  ((globals.get raftLogger #()) <-[Logger] "$r0");;;
     do:  ((sync.Mutex__Unlock (globals.get raftLoggerMu #())) #())).
+
+Definition defaultLogger : (string * string) := (pkg_name', "defaultLogger").
 
 Definition DefaultLogger : go_type := structT [
   "Logger" :: ptrT;
@@ -2554,15 +2574,7 @@ Definition getLogger : val :=
       )));;;
     return: (![Logger] (globals.get raftLogger #()))).
 
-Definition pkg_name' : string := "go.etcd.io/raft/v3".
-
-Definition defaultLogger : (string * string) := (pkg_name', "defaultLogger").
-
 Definition discardLogger : (string * string) := (pkg_name', "discardLogger").
-
-Definition raftLoggerMu : (string * string) := (pkg_name', "raftLoggerMu").
-
-Definition raftLogger : (string * string) := (pkg_name', "raftLogger").
 
 Definition DefaultLogger__mset : list (string * val) := [
   ("Fatalln", (λ: "$recv",
@@ -2614,8 +2626,6 @@ Definition SnapshotStatus__mset_ptr : list (string * val) := [
 Definition SnapshotFinish : expr := #(W64 1).
 
 Definition SnapshotFailure : expr := #(W64 2).
-
-Definition emptyState : (string * string) := (pkg_name', "emptyState").
 
 Definition ErrStopped : (string * string) := (pkg_name', "ErrStopped").
 
@@ -3053,6 +3063,8 @@ Definition traceBecomeCandidate : val :=
 
 Definition StateCandidate : expr := #(W64 1).
 
+Definition stepCandidateGlobal : (string * string) := (pkg_name', "stepCandidateGlobal").
+
 (* go: raft.go:920:16 *)
 Definition raft__becomeCandidate : val :=
   rec: "raft__becomeCandidate" "r" <> :=
@@ -3244,6 +3256,8 @@ Definition raft__campaign : val :=
         "Responses" ::= zero_val sliceT
       }]) in
       (raft__send (![ptrT] "r")) "$a0")))).
+
+Definition errBreak : (string * string) := (pkg_name', "errBreak").
 
 (* go: raft.go:1013:16 *)
 Definition raft__hasUnappliedConfChanges : val :=
@@ -4180,6 +4194,8 @@ Definition isMsgInArray : val :=
     return: ((int_lt (![intT] "i") (let: "$a0" := (![sliceT] "arr") in
      slice.len "$a0")) && (![boolT] (slice.elem_ref boolT (![sliceT] "arr") (![intT] "i"))))).
 
+Definition isLocalMsg : (string * string) := (pkg_name', "isLocalMsg").
+
 (* go: util.go:57:6 *)
 Definition IsLocalMsg : val :=
   rec: "IsLocalMsg" "msgt" :=
@@ -4352,6 +4368,8 @@ Definition node__TransferLeadership : val :=
         )); ("$recvChan1", (λ: "$recvVal",
         do:  #()
         ))] (InjLV #()))).
+
+Definition isResponseMsg : (string * string) := (pkg_name', "isResponseMsg").
 
 (* go: util.go:61:6 *)
 Definition IsResponseMsg : val :=
@@ -5438,13 +5456,13 @@ Definition lockedRand__mset_ptr : list (string * val) := [
   ("Intn", lockedRand__Intn%V)
 ].
 
-Definition globalRand : (string * string) := (pkg_name', "globalRand").
-
 Definition CampaignType__mset : list (string * val) := [
 ].
 
 Definition CampaignType__mset_ptr : list (string * val) := [
 ].
+
+Definition stmap : (string * string) := (pkg_name', "stmap").
 
 (* go: raft.go:119:21 *)
 Definition StateType__String : val :=
@@ -5474,8 +5492,6 @@ Definition StateType__mset_ptr : list (string * val) := [
     StateType__String (![StateType] "$recvAddr")
     )%V)
 ].
-
-Definition stmap : (string * string) := (pkg_name', "stmap").
 
 Definition Config__mset : list (string * val) := [
 ].
@@ -5717,6 +5733,8 @@ Definition traceBecomeLeader : val :=
   rec: "traceBecomeLeader" "" :=
     exception_do (let: "" := (ref_ty ptrT "") in
     do:  #()).
+
+Definition stepLeaderGlobal : (string * string) := (pkg_name', "stepLeaderGlobal").
 
 (* go: raft.go:951:16 *)
 Definition raft__becomeLeader : val :=
@@ -6336,8 +6354,6 @@ Definition raft__mset_ptr : list (string * val) := [
   ("tickHeartbeat", raft__tickHeartbeat%V)
 ].
 
-Definition errBreak : (string * string) := (pkg_name', "errBreak").
-
 Definition stepFunc : go_type := funcT.
 
 Definition stepFunc__mset : list (string * val) := [
@@ -6345,8 +6361,6 @@ Definition stepFunc__mset : list (string * val) := [
 
 Definition stepFunc__mset_ptr : list (string * val) := [
 ].
-
-Definition stepLeaderGlobal : (string * string) := (pkg_name', "stepLeaderGlobal").
 
 Definition readIndexStatus : go_type := structT [
   "req" :: raftpb.Message;
@@ -6990,8 +7004,6 @@ Definition stepLeader : val :=
             else #())))));;;
     return: (#interface.nil)).
 
-Definition stepCandidateGlobal : (string * string) := (pkg_name', "stepCandidateGlobal").
-
 (* stepCandidate is shared by StateCandidate and StatePreCandidate; the difference is
    whether they respond to MsgVoteResp or MsgPreVoteResp.
 
@@ -7093,8 +7105,6 @@ Definition stepCandidate : val :=
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
               else #()))))));;;
     return: (#interface.nil)).
-
-Definition stepFollowerGlobal : (string * string) := (pkg_name', "stepFollowerGlobal").
 
 (* go: raft.go:1738:6 *)
 Definition stepFollower : val :=
@@ -7374,6 +7384,8 @@ Definition MemoryStorage__Append : val :=
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (getLogger #())) "$a0" "$a1")));;;
     return: (#interface.nil)).
+
+Definition ErrSnapOutOfDate : (string * string) := (pkg_name', "ErrSnapOutOfDate").
 
 (* ApplySnapshot overwrites the contents of this Storage object with
    those of the given snapshot.
@@ -9036,14 +9048,6 @@ Definition BasicStatus__mset_ptr : list (string * val) := [
     )%V)
 ].
 
-Definition ErrCompacted : (string * string) := (pkg_name', "ErrCompacted").
-
-Definition ErrSnapOutOfDate : (string * string) := (pkg_name', "ErrSnapOutOfDate").
-
-Definition ErrUnavailable : (string * string) := (pkg_name', "ErrUnavailable").
-
-Definition ErrSnapshotTemporarilyUnavailable : (string * string) := (pkg_name', "ErrSnapshotTemporarilyUnavailable").
-
 Definition inMemStorageCallStats__mset : list (string * val) := [
 ].
 
@@ -9142,10 +9146,6 @@ Definition logSlice__mset_ptr : list (string * val) := [
     logSlice__valid (![logSlice] "$recvAddr")
     )%V)
 ].
-
-Definition isLocalMsg : (string * string) := (pkg_name', "isLocalMsg").
-
-Definition isResponseMsg : (string * string) := (pkg_name', "isResponseMsg").
 
 (* go: util.go:81:6 *)
 Definition DescribeHardState : val :=

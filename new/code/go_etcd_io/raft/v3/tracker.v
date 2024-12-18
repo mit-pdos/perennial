@@ -427,6 +427,10 @@ Definition Progress__SentCommit : val :=
     let: "$r0" := (![uint64T] "commit") in
     do:  ((struct.field_ref Progress "sentCommit" (![ptrT] "pr")) <-[uint64T] "$r0")).
 
+Definition pkg_name' : string := "go.etcd.io/raft/v3/tracker".
+
+Definition prstmap : (string * string) := (pkg_name', "prstmap").
+
 (* go: state.go:42:21 *)
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
@@ -604,10 +608,6 @@ Definition StateType__mset_ptr : list (string * val) := [
     StateType__String (![StateType] "$recvAddr")
     )%V)
 ].
-
-Definition pkg_name' : string := "go.etcd.io/raft/v3/tracker".
-
-Definition prstmap : (string * string) := (pkg_name', "prstmap").
 
 Definition Config : go_type := structT [
   "Voters" :: quorum.JointConfig;
@@ -1042,12 +1042,9 @@ Definition matchAckIndexer__mset_ptr : list (string * val) := [
     )%V)
 ].
 
-Definition _ : (string * string) := (pkg_name', "_").
-
 Definition define' : val :=
   rec: "define'" <> :=
-    exception_do (do:  (globals.put _ (ref_ty quorum.AckedIndexer (zero_val quorum.AckedIndexer)));;;
-    do:  (globals.put prstmap (ref_ty (arrayT 3 stringT) (zero_val (arrayT 3 stringT))))).
+    exception_do (do:  (globals.put prstmap (ref_ty (arrayT 3 stringT) (zero_val (arrayT 3 stringT))))).
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
@@ -1065,7 +1062,7 @@ Definition initialize' : val :=
       array.literal ["$ar0"; "$ar1"; "$ar2"])) in
       do:  ((globals.get prstmap #()) <-[arrayT 3 stringT] "$r0");;;
       let: "$r0" := (interface.make matchAckIndexer__mset #null) in
-      do:  ((globals.get _ #()) <-[quorum.AckedIndexer] "$r0"))
+      do:  #())
       ).
 
 End code.

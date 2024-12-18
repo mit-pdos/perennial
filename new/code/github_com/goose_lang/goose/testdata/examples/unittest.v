@@ -931,13 +931,13 @@ Definition globalA : (string * string) := (pkg_name', "globalA").
 
 Definition globalB : (string * string) := (pkg_name', "globalB").
 
-(* go: globals.go:12:6 *)
+(* go: globals.go:14:6 *)
 Definition other : val :=
   rec: "other" <> :=
     exception_do (let: "$r0" := #"ok" in
     do:  ((globals.get globalY #()) <-[stringT] "$r0")).
 
-(* go: globals.go:16:6 *)
+(* go: globals.go:18:6 *)
 Definition bar : val :=
   rec: "bar" <> :=
     exception_do (do:  (other #());;;
@@ -2488,6 +2488,7 @@ Definition initialize' : val :=
       do:  ((globals.get globalA #()) <-[stringT] "$r0");;;
       let: "$r0" := #"b" in
       do:  ((globals.get globalB #()) <-[stringT] "$r0");;;
+      let: "$r0" := (foo #()) in
       do:  ((λ: <>,
         exception_do (let: "$r0" := (![uint64T] (globals.get GlobalX #())) in
         do:  ((globals.get GlobalX #()) <-[uint64T] "$r0"))
