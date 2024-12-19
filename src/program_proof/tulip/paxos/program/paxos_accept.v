@@ -7,7 +7,7 @@ Section accept.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__accept
-    (px : loc) (lsn : u64) (term : u64) (entsP : Slice.t) (ents logleader : list string)
+    (px : loc) (lsn : u64) (term : u64) (entsP : Slice.t) (ents logleader : list byte_string)
     (nidme : u64) nids γ :
     nidme ∈ nids ->
     (uint.nat lsn ≤ length logleader)%nat ->
@@ -21,7 +21,7 @@ Section accept.
         own_slice entsP stringT (DfracOwn 1) ents
     }}}
       Paxos__accept #px #lsn #term (to_val entsP)
-    {{{ (lsna : u64) (loga : list string), RET #lsna;
+    {{{ (lsna : u64) (loga : list byte_string), RET #lsna;
         own_paxos_following_with_termc px nidme term nids γ ∗
         (is_accepted_proposal_lb γ nidme (uint.nat term) loga ∨
          safe_ledger_above γ nids (uint.nat term) loga) ∗

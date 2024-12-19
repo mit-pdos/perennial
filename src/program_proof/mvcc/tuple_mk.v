@@ -92,7 +92,7 @@ Proof.
   { iNext.
     unfold P.
     unfold own_tuple.
-    iExists false, (W64 1), (W64 0), [(W64 0, true, "")], [Nil; Nil].
+    iExists false, (W64 1), (W64 0), [(W64 0, true, ""%go)], [Nil; Nil].
     iFrame.
     iSplit.
     { (* Prove [HtupleAbs]. *)

@@ -12,13 +12,13 @@ Section resource.
   the replica invariant, essentially forcing GC to not change the abstract
   view. *)
 
-  Definition hist_phys_quarter α (key : string) (hist : dbhist) : iProp Σ.
+  Definition hist_phys_quarter α (key : byte_string) (hist : dbhist) : iProp Σ.
   Admitted.
 
-  Definition hist_phys_half α (key : string) (hist : dbhist) : iProp Σ.
+  Definition hist_phys_half α (key : byte_string) (hist : dbhist) : iProp Σ.
   Admitted.
 
-  Definition hist_phys_lb α (key : string) (hist : dbhist) : iProp Σ.
+  Definition hist_phys_lb α (key : byte_string) (hist : dbhist) : iProp Σ.
   Admitted.
 
   #[global]
@@ -43,13 +43,13 @@ Section resource.
     ⌜prefix histp hist⌝.
   Admitted.
 
-  Definition hist_phys_at α (key : string) (ts : nat) (v : dbval) : iProp Σ :=
+  Definition hist_phys_at α (key : byte_string) (ts : nat) (v : dbval) : iProp Σ :=
     ∃ hist, ⌜hist !! ts = Some v⌝ ∗ hist_phys_lb α key hist.
 
-  Definition ts_phys_half α (key : string) (tsprep : nat) : iProp Σ.
+  Definition ts_phys_half α (key : byte_string) (tsprep : nat) : iProp Σ.
   Admitted.
 
-  Definition tuple_phys_half α (key : string) (hist : dbhist) (tsprep : nat) : iProp Σ :=
+  Definition tuple_phys_half α (key : byte_string) (hist : dbhist) (tsprep : nat) : iProp Σ :=
     hist_phys_half α key hist ∗ ts_phys_half α key tsprep.
 
 End resource.
@@ -57,7 +57,7 @@ End resource.
 Section program.
   Context `{!heapGS Σ, !distx_ghostG Σ}.
 
-  Definition is_tuple (tuple : loc) (key : string) (α : replica_names) : iProp Σ.
+  Definition is_tuple (tuple : loc) (key : byte_string) (α : replica_names) : iProp Σ.
   Admitted.
 
   #[global]
@@ -71,7 +71,7 @@ Section program.
   timestamp different from the prepared timestamp. A more fundamental reason to
   this difference is that while Paxos allows deducing commit safety at the
   *replica* level, PCR can only deduce such at the *replica group* level. *)
-  Theorem wp_Tuple__AppendVersion (tuple : loc) (tid : u64) (val : string) key α :
+  Theorem wp_Tuple__AppendVersion (tuple : loc) (tid : u64) (val : byte_string) key α :
     is_tuple tuple key α -∗
     {{{ True }}}
     <<< ∀∀ hist, hist_phys_half α key hist ∗ ⌜(length hist ≤ uint.nat tid)%nat⌝ >>>

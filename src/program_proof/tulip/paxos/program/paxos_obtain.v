@@ -8,7 +8,7 @@ Section obtain.
   Theorem wp_Paxos__obtain (px : loc) (nid : u64) (nidme termc : u64) nids γ :
     {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
       Paxos__obtain #px #nid
-    {{{ (lsne : u64) (entsP : Slice.t) (ents loga : list string), RET (#lsne, (to_val entsP)); 
+    {{{ (lsne : u64) (entsP : Slice.t) (ents loga : list byte_string), RET (#lsne, (to_val entsP));
         own_paxos_leading_with_termc px nidme termc nids γ ∗
         own_slice entsP stringT (DfracOwn 1) ents ∗
         prefix_base_ledger γ (uint.nat termc) loga ∗

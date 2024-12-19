@@ -15,10 +15,10 @@ Section defns.
 Inductive kvOp :=
   | putOp : string → string → kvOp
   | getOp : string → kvOp
-  | condPutOp : string → string → string → kvOp
+  | condPutOp : byte_string → byte_string → byte_string → kvOp
 .
 
-Definition apply_op (state:gmap string string) (op:kvOp) :=
+Definition apply_op (state:gmap byte_string byte_string) (op:kvOp) :=
   match op with
     | getOp _ => state
     | putOp k v => <[k:=v]> state
@@ -30,7 +30,7 @@ Definition apply_op (state:gmap string string) (op:kvOp) :=
   end
 .
 
-Definition compute_state ops : gmap string string :=
+Definition compute_state ops : gmap byte_string byte_string :=
   foldl apply_op ∅ ops.
 
 Definition compute_reply ops op : list u8 :=
@@ -86,7 +86,7 @@ Existing Instance kv_record.
 
 Context `{!heapGS Σ}.
 
-Lemma wp_encodePutArgs (args_ptr:loc) (key val:string) :
+Lemma wp_encodePutArgs (args_ptr:loc) (key val:byte_string) :
   {{{
       "Hargs_key" ∷ args_ptr ↦[vkv.PutArgs :: "Key"] #(str key) ∗
       "Hargs_val" ∷ args_ptr ↦[vkv.PutArgs :: "Val"] #(str val)
@@ -136,7 +136,7 @@ Proof.
   by rewrite string_bytes_length.
 Qed.
 
-Lemma wp_decodePutArgs enc_sl enc q (key val:string) :
+Lemma wp_decodePutArgs enc_sl enc q (key val:byte_string) :
   {{{
         "%Henc" ∷ ⌜has_op_encoding enc (putOp key val)⌝ ∗
         "Hsl" ∷ own_slice_small enc_sl byteT q enc
@@ -209,7 +209,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_encodeGetArgs (key:string) :
+Lemma wp_encodeGetArgs (key:byte_string) :
   {{{
         True
   }}}
@@ -246,7 +246,7 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodeGetArgs enc_sl enc q (key:string) :
+Lemma wp_decodeGetArgs enc_sl enc q (key:byte_string) :
   {{{
         "%Henc" ∷ ⌜has_op_encoding enc (getOp key)⌝ ∗
         "Hsl" ∷ own_slice_small enc_sl byteT q enc
@@ -272,7 +272,7 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_encodeCondPutArgs (args_ptr:loc) (key expect val:string) :
+Lemma wp_encodeCondPutArgs (args_ptr:loc) (key expect val:byte_string) :
   {{{
       "Hargs_key" ∷ args_ptr ↦[vkv.CondPutArgs :: "Key"] #(str key) ∗
       "Hargs_expect" ∷ args_ptr ↦[vkv.CondPutArgs :: "Expect"] #(str expect) ∗
@@ -336,7 +336,7 @@ Proof.
   repeat rewrite -app_assoc. done.
 Qed.
 
-Lemma wp_decodeCondPutArgs enc_sl enc q (key expect val:string) :
+Lemma wp_decodeCondPutArgs enc_sl enc q (key expect val:byte_string) :
   {{{
         "%Henc" ∷ ⌜has_op_encoding enc (condPutOp key expect val)⌝ ∗
         "Hsl" ∷ own_slice_small enc_sl byteT q enc
@@ -428,18 +428,18 @@ Notation is_state := (is_state (sm_record:=kv_record)).
 Context `{!vsmG (sm_record:=kv_record) Σ}.
 
 Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp Σ :=
-  ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap string u64) (minVnum:u64),
+  ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap byte_string u64) (minVnum:u64),
   "Hkvs" ∷ s ↦[KVState :: "kvs"] #kvs_loc ∗
   "Hvnums" ∷ s ↦[KVState :: "vnums"] #vnums_loc ∗
   "HminVnum" ∷ s ↦[KVState :: "minVnum"] #minVnum ∗
   "Hkvs_map" ∷ own_map kvs_loc (DfracOwn 1) (compute_state ops) ∗
   "Hvnums_map" ∷ own_map vnums_loc (DfracOwn 1) vnumsM ∗
-  "#Hst" ∷ □ (∀ (k:string),
+  "#Hst" ∷ □ (∀ (k:byte_string),
               (∀ (vnum':u64), ⌜uint.nat vnum' <= uint.nat latestVnum⌝ →
                              ⌜uint.nat (default minVnum (vnumsM !! k)) <= uint.nat vnum'⌝ →
               ∃ someOps, is_state γst vnum' someOps ∗
                       ⌜compute_reply someOps (getOp k) = compute_reply ops (getOp k)⌝)) ∗
-  "%Hle" ∷ ⌜∀ (k:string), uint.nat (default minVnum (vnumsM !! k)) <= uint.nat latestVnum⌝
+  "%Hle" ∷ ⌜∀ (k:byte_string), uint.nat (default minVnum (vnumsM !! k)) <= uint.nat latestVnum⌝
 .
 
 Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.
@@ -922,7 +922,7 @@ Proof.
   iNamed "Hown".
   iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iClear "Hvnums_map".
   iIntros (?) "Hvnums_map".
   wp_storeField.
@@ -993,10 +993,10 @@ Proof.
   iDestruct (struct_fields_split with "Hs") as "Hs".
   iNamed "Hs".
   wp_pures.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (?) "Hmap".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (?) "Hvnums_map".
   wp_storeField.
   wp_apply (wp_KVState__apply).

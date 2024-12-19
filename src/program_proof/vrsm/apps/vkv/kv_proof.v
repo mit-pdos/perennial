@@ -14,11 +14,11 @@ From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.vrsm.apps Require Import vsm proof kv_vsm_proof log.
 
 Class kvG Σ := KvG {
-  #[global] kv_ghostMapG :: ghost_mapG Σ string string ;
+  #[global] kv_ghostMapG :: ghost_mapG Σ byte_string byte_string ;
   #[global] kv_logG :: inG Σ (mono_listR (leibnizO kvOp)) ;
   #[global] kv_vsmG :: vsmG (sm_record:=kv_record) Σ ;
 }.
-Definition kvΣ := #[configΣ; ghost_mapΣ string string;
+Definition kvΣ := #[configΣ; ghost_mapΣ byte_string byte_string;
                       GFunctor (mono_listR (leibnizO kvOp));
                       vsmΣ (sm_record:=kv_record)
    ].
@@ -74,7 +74,7 @@ Definition stateN := nroot .@ "state".
 Definition kv_inv γlog γ : iProp Σ :=
   inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γ ops).
 
-Definition kv_ptsto γ (k v : string) : iProp Σ :=
+Definition kv_ptsto γ (k v : byte_string) : iProp Σ :=
   k ↪[γ.(kv_gn)] v.
 
 Context {params:ekvParams.t}.
@@ -292,7 +292,7 @@ Proof.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
 Qed.
 
-Local Lemma helper (m:gmap string string) s k v d :
+Local Lemma helper (m:gmap byte_string byte_string) s k v d :
   (m ∪ gset_to_gmap d s) !! k = Some v →
   default d (m !! k) = v.
 Proof.

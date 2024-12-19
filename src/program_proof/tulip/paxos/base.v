@@ -4,7 +4,7 @@ From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import quorum.
 
-Definition ledger := list string.
+Definition ledger := list byte_string.
 
 Definition proposals := gmap nat ledger.
 
@@ -380,8 +380,8 @@ Inductive pxcmd :=
 | CmdPaxosAccept (lsn : nat) (ents : ledger)
 | CmdPaxosExpand (lsn : nat).
 
-Definition stringO := leibnizO string.
-Definition stringmlR := mono_listR stringO.
+Definition byte_stringO := listO w8.
+Definition byte_stringmlR := mono_listR byte_stringO.
 Definition lsnmR := gmapR nat (dfrac_agreeR natO).
 Canonical Structure nodedecO := leibnizO nodedec.
 Definition declistR := mono_listR nodedecO.
@@ -393,11 +393,11 @@ Definition node_natmR := gmapR u64 (dfrac_agreeR natO).
 Definition node_ledgerR := gmapR u64 (dfrac_agreeR ledgerO).
 Definition pxcmdlO := leibnizO (list pxcmd).
 Definition node_pxcmdlR := gmapR u64 (dfrac_agreeR pxcmdlO).
-Definition node_stringR := gmapR u64 (agreeR stringO).
+Definition node_stringR := gmapR u64 (agreeR byte_stringO).
 
 Class paxos_ghostG (Σ : gFunctors) :=
-  { #[global] stringmlG :: inG Σ stringmlR;
-    #[global] cpoolG :: ghost_mapG Σ string unit;
+  { #[global] byte_stringmlG :: inG Σ byte_stringmlR;
+    #[global] cpoolG :: ghost_mapG Σ byte_string unit;
     #[global] proposalG :: ghost_mapG Σ nat gname;
     #[global] base_proposalG :: ghost_mapG Σ nat ledger;
     #[global] prepare_lsnG :: inG Σ lsnmR;
@@ -414,9 +414,9 @@ Class paxos_ghostG (Σ : gFunctors) :=
 
 Definition paxos_ghostΣ :=
   #[ GFunctor lsnmR;
-     ghost_mapΣ string unit;
+     ghost_mapΣ byte_string unit;
      ghost_mapΣ nat gname;
-     GFunctor stringmlR;
+     GFunctor byte_stringmlR;
      ghost_mapΣ nat ledger;
      GFunctor node_declistR;
      GFunctor node_proposalmR;

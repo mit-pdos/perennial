@@ -6,8 +6,8 @@ From Perennial.Helpers Require finite.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
-Definition dbkey := string.
-Definition dbval := option string.
+Definition dbkey := byte_string.
+Definition dbval := option byte_string.
 Definition dbhist := list dbval.
 Definition dbtpl := (dbhist * nat)%type.
 Definition dbmod := (dbkey * dbval)%type.
@@ -22,14 +22,14 @@ Inductive txnres :=
 | ResCommitted (wrs : dbmap)
 | ResAborted.
 
-Definition fstring := {k : string | String.length k < 2 ^ 64}.
+Definition fstring := {k : byte_string | (length k < (Z.to_nat (2 ^ 64)%Z))%nat }.
 
 #[local]
 Instance fstring_finite :
   finite.Finite fstring.
-Proof. apply Helpers.finite.string_finite_Zlt_length. Qed.
+Proof. apply Helpers.finite.list_finite_lt_length. Qed.
 
-Definition keys_all : gset string :=
+Definition keys_all : gset byte_string :=
   list_to_set (map proj1_sig (finite.enum fstring)).
 
 (** Transaction status on group/replica. *)
@@ -163,7 +163,7 @@ Definition dblog := list ccommand.
 
 (** Converting keys to group IDs. *)
 Definition key_to_group (key : dbkey) : u64 :=
-  String.length key `mod` size gids_all.
+  length key `mod` size gids_all.
 
 (** Participant groups. *)
 Definition ptgroups (keys : gset dbkey) : gset u64 :=
@@ -295,12 +295,13 @@ Definition valid_key (key : dbkey) := key ∈ keys_all.
 
 Lemma valid_key_length key :
   valid_key key ->
-  String.length key < 2 ^ 64.
+  length key < 2 ^ 64.
 Proof.
   intros Hvk.
   rewrite /valid_key /keys_all in Hvk.
   apply elem_of_list_to_set, elem_of_list_fmap_2 in Hvk.
-  by destruct Hvk as ([k Hk] & -> & _).
+  destruct Hvk as ([k Hk] & -> & _).
+  simpl. lia.
 Qed.
 
 Definition valid_ccommand gid (c : ccommand) :=

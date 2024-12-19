@@ -14,10 +14,10 @@ Definition encode_commit_cmd (ts : nat) (m : dbmap) (data : list u8) :=
 Definition encode_abort_cmd (ts : nat) (data : list u8) :=
   data = u64_le (U64 0) ++ u64_le (W64 ts).
 
-Definition encode_ccommand (ccmd : ccommand) (s : string) :=
+Definition encode_ccommand (ccmd : ccommand) (s : byte_string) :=
   match ccmd with
-  | CmdCommit ts pwrs => encode_commit_cmd ts pwrs (string_to_bytes s)
-  | CmdAbort ts => encode_abort_cmd ts (string_to_bytes s)
+  | CmdCommit ts pwrs => encode_commit_cmd ts pwrs s
+  | CmdAbort ts => encode_abort_cmd ts s
   end.
 
 Section inv_txnlog.

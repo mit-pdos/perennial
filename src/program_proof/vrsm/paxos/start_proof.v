@@ -15,7 +15,7 @@ Context `{!paxosG Σ}.
 Context `{Hparams:!paxosParams.t Σ}.
 Import paxosParams.
 
-Lemma wp_makeServer γ γsrv (fname:string) data conf_sl (hosts:list u64) init_sl :
+Lemma wp_makeServer γ γsrv fname data conf_sl (hosts:list u64) init_sl :
   {{{
         "Hfile" ∷ crash_borrow (own_file_inv γ γsrv data ∗ fname f↦ data)
                 (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗
@@ -180,7 +180,7 @@ Proof.
   }
 Qed.
 
-Lemma wp_StartServer γ γsrv (me:u64) (fname:string) data init_sl conf_sl (hosts:list u64) :
+Lemma wp_StartServer γ γsrv (me:u64) fname data init_sl conf_sl (hosts:list u64) :
   {{{
         "Hfile" ∷ crash_borrow (own_file_inv γ γsrv data ∗ fname f↦ data)
                 (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗

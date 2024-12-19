@@ -23,7 +23,7 @@ Lemma rename_iprop m n {P:iProp Σ} :
 .
 Proof. reflexivity. Qed.
 
-Instance named_proper {A:Type} : Proper ((λ (_ _:string), True) ==> (@eq A) ==> (eq)) named.
+Instance named_proper {A:Type} : Proper ((λ (_ _:byte_string), True) ==> (@eq A) ==> (eq)) named.
 Proof. solve_proper. Qed.
 
 Lemma wp_lookupLocked (t : loc) (m : gmap u64 u64) (k : u64) Htracker :

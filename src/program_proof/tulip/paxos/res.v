@@ -17,22 +17,22 @@ Section res.
     (** Elements. *)
 
     Definition own_log_half γ (l : ledger) : iProp Σ :=
-      own γ.(consensus_log) (mono_list_auth (A:=stringO) (DfracOwn (1 / 2)) l).
+      own γ.(consensus_log) (mono_list_auth (A:=byte_stringO) (DfracOwn (1 / 2)) l).
 
     Definition is_log_lb γ (l : ledger) : iProp Σ :=
-      own γ.(consensus_log) (mono_list_lb (A:=stringO)  l).
+      own γ.(consensus_log) (mono_list_lb (A:=byte_stringO)  l).
 
-    Definition is_cmd_receipt γ (c : string) : iProp Σ :=
+    Definition is_cmd_receipt γ (c : byte_string) : iProp Σ :=
       ghost_map_elem γ.(consensus_cpool) c DfracDiscarded tt.
 
-    Definition own_cpool_half γ (vs : gset string) : iProp Σ :=
+    Definition own_cpool_half γ (vs : gset byte_string) : iProp Σ :=
       ghost_map_auth γ.(consensus_cpool) (1 / 2) (gset_to_gmap tt vs) ∗
       ([∗ set] v ∈ vs, is_cmd_receipt γ v).
 
-    Definition own_consensus_half γ (l : ledger) (vs : gset string) : iProp Σ :=
+    Definition own_consensus_half γ (l : ledger) (vs : gset byte_string) : iProp Σ :=
       own_log_half γ l ∗ own_cpool_half γ vs.
 
-    Definition cpool_subsume_log (l : ledger) (vs : gset string) :=
+    Definition cpool_subsume_log (l : ledger) (vs : gset byte_string) :=
       Forall (λ v, v ∈ vs) l.
 
     (** Type class instances. *)
@@ -170,12 +170,12 @@ Section res.
     Definition own_proposal γ (t : nat) (v : ledger) : iProp Σ :=
       ∃ name,
         is_proposal_name γ t name ∗
-        own name (mono_list_auth (A:=stringO) (DfracOwn (1 / 2)) v).
+        own name (mono_list_auth (A:=byte_stringO) (DfracOwn (1 / 2)) v).
 
     Definition is_proposal_lb γ (t : nat) (v : ledger) : iProp Σ :=
       ∃ name,
         is_proposal_name γ t name ∗
-        own name (mono_list_lb (A:=stringO) v).
+        own name (mono_list_lb (A:=byte_stringO) v).
 
     (** Type class instances. *)
 
@@ -197,7 +197,7 @@ Section res.
       iDestruct (big_sepM2_dom with "Hpslm") as %Hdom.
       assert (Hnamest : names !! t = None).
       { by rewrite -not_elem_of_dom Hdom not_elem_of_dom. }
-      iMod (own_alloc (mono_list_auth (A:=stringO) (DfracOwn 1) v)) as (name) "Hl".
+      iMod (own_alloc (mono_list_auth (A:=byte_stringO) (DfracOwn 1) v)) as (name) "Hl".
       { apply mono_list_auth_valid. }
       iMod (ghost_map_insert _ name with "Hauth") as "[Hauth Hfrag]".
       { apply Hnamest. }
@@ -478,11 +478,11 @@ Section res.
     Definition own_accepted_proposal γ (nid : u64) (t : nat) (v : ledger) : iProp Σ :=
       ∃ name,
         is_accepted_proposal_name γ nid t name ∗
-        own name (mono_list_auth (A:=stringO) (DfracOwn (1 / 2)) v).
+        own name (mono_list_auth (A:=byte_stringO) (DfracOwn (1 / 2)) v).
 
     Definition is_accepted_proposal_lb γ (nid : u64) (t : nat) (v : ledger) : iProp Σ :=
       ∃ name,
-        is_accepted_proposal_name γ nid t name ∗ own name (mono_list_lb (A:=stringO) v).
+        is_accepted_proposal_name γ nid t name ∗ own name (mono_list_lb (A:=byte_stringO) v).
 
     Definition is_accepted_proposal_length_lb γ (nid : u64) (t n : nat) : iProp Σ :=
       ∃ v, is_accepted_proposal_lb γ nid t v ∗ ⌜(n ≤ length v)%nat⌝.
@@ -503,7 +503,7 @@ Section res.
     Proof.
       iIntros (Hnotin) "Hauth".
       iDestruct "Hauth" as (gnames) "(Hauth & Hblts)".
-      iMod (own_alloc (mono_list_auth (A:=stringO) (DfracOwn 1) v)) as (α) "Hblt".
+      iMod (own_alloc (mono_list_auth (A:=byte_stringO) (DfracOwn 1) v)) as (α) "Hblt".
       { apply mono_list_auth_valid. }
       iDestruct (big_sepM2_dom with "Hblts") as %Hdom.
       assert (Hgnotin : gnames !! t = None).
@@ -875,8 +875,8 @@ Section wal.
     by destruct Hvalid as [_ ?].
   Qed.
 
-  Definition is_node_wal_fname γ (nid : u64) (fname : string) : iProp Σ :=
-      own γ.(node_wal_fname) {[ nid := (to_agree (A:=stringO) fname) ]}.
+  Definition is_node_wal_fname γ (nid : u64) (fname : byte_string) : iProp Σ :=
+      own γ.(node_wal_fname) {[ nid := (to_agree (A:=byte_stringO) fname) ]}.
 
   #[global]
   Instance is_node_wal_fname_persistent γ nid fname :
@@ -925,7 +925,7 @@ Section alloc.
     iMod (own_alloc (mono_list_auth (DfracOwn 1) [])) as
       (γconsensus_log) "(Hconsensus_log1&Hconsensus_log2)".
     { econstructor; try econstructor; rewrite //=. }
-    iMod (ghost_map_alloc_empty (K := string) (V := unit)) as
+    iMod (ghost_map_alloc_empty (K := byte_string) (V := unit)) as
       (γconsensus_cpool) "(Hconsensus_cpool1&Hconsensus_cpool2)".
     iMod (ghost_map_alloc_empty (K := nat) (V := gname)) as
       (γproposal) "Hproposals".
@@ -964,7 +964,7 @@ Section alloc.
            (γnode_wal) "Hnode_wal".
     { apply gset_to_gmap_valid. rewrite //=. }
 
-    iMod (own_alloc ((to_agree  <$> fnames) : gmapR u64 (agreeR stringO))) as
+    iMod (own_alloc ((to_agree  <$> fnames) : gmapR u64 (agreeR byte_stringO))) as
            (γnode_wal_fname) "Hnode_wal_fname".
     { intros k. rewrite lookup_fmap; destruct (fnames !! k) eqn:Heq; rewrite Heq //=. }
 

@@ -3,7 +3,7 @@ From Perennial.program_proof.rsm Require Import spaxos_prelude spaxos_propose.
 Section prog.
   Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
-  Definition of_length_five s := String.length s = 5%nat.
+  Definition of_length_five (s : byte_string) := length s = 5%nat.
 
   Definition length_of_consensus v :=
     match v with
@@ -11,7 +11,7 @@ Section prog.
     | _ => True
     end.
 
-  Definition length_of_candidates (vs : gset string) :=
+  Definition length_of_candidates (vs : gset byte_string) :=
     set_Forall of_length_five vs.
 
   Definition inv_example1 γ : iProp Σ :=

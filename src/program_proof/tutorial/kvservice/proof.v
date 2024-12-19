@@ -14,13 +14,13 @@ Module putArgs.
 Record t :=
   mk {
       opId: u64 ;
-      key: string ;
-      val: string ;
+      key: byte_string ;
+      val: byte_string ;
   }.
 
 Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ (u64_le $ length $ string_to_bytes a.(key)) ++
-      string_to_bytes a.(key) ++ string_to_bytes a.(val)
+  x = u64_le a.(opId) ++ (u64_le $ length a.(key)) ++
+      a.(key) ++ a.(val)
 .
 
 Section local_defs.
@@ -147,7 +147,6 @@ Proof.
   wp_storeField.
   iModIntro.
   iApply "HΦ".
-  do 2 rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 
@@ -158,14 +157,14 @@ Module conditionalPutArgs.
 Record t :=
   mk {
       opId: u64 ;
-      key: string ;
-      expectedVal: string ;
-      newVal: string ;
+      key: byte_string ;
+      expectedVal: byte_string ;
+      newVal: byte_string ;
   }.
 
 Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ (u64_le $ length $ string_to_bytes a.(key)) ++ string_to_bytes a.(key) ++
-      (u64_le $ length $ string_to_bytes a.(expectedVal)) ++ string_to_bytes a.(expectedVal) ++ string_to_bytes a.(newVal)
+  x = u64_le a.(opId) ++ (u64_le $ length a.(key)) ++ a.(key) ++
+      (u64_le $ length a.(expectedVal)) ++ a.(expectedVal) ++ a.(newVal)
 .
 
 Section local_defs.
@@ -323,7 +322,6 @@ Proof.
   iIntros "_".
   wp_storeField.
   iModIntro. iApply "HΦ".
-  repeat rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 
@@ -334,11 +332,11 @@ Module getArgs.
 Record t :=
   mk {
       opId: u64 ;
-      key: string ;
+      key: byte_string ;
   }.
 
 Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ string_to_bytes a.(key)
+  x = u64_le a.(opId) ++ a.(key)
 .
 
 Section local_defs.
@@ -430,7 +428,6 @@ Proof.
   wp_storeField.
   iModIntro.
   iApply "HΦ".
-  repeat rewrite string_to_bytes_to_string.
   iFrame.
 Qed.
 
@@ -544,14 +541,14 @@ Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
 Global Instance put_core_MonotonicPred args : MonotonicPred (put_core_spec args).
 Proof. apply _. Qed.
 
-Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
+Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:byte_string → iPropO Σ): iPropO Σ :=
   (* TUTORIAL: write a more useful spec *)
   (∀ status, Φ status)%I.
 
 Global Instance conditionalPut_core_MonotonicPred args : MonotonicPred (conditionalPut_core_spec args).
 Proof. apply _. Qed.
 
-Definition get_core_spec (args:getArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
+Definition get_core_spec (args:getArgs.t) (Φ:byte_string → iPropO Σ): iPropO Σ :=
   (* TUTORIAL: write a more useful spec *)
   (∀ ret, Φ ret)%I.
 
@@ -564,7 +561,7 @@ Section rpc_server_proofs.
 Context `{!heapGS Σ}.
 
 Definition own_Server (s:loc) : iProp Σ :=
-  ∃ (nextFreshId:u64) (lastReplies:gmap u64 string) (kvs:gmap string string)
+  ∃ (nextFreshId:u64) (lastReplies:gmap u64 byte_string) (kvs:gmap byte_string byte_string)
     (lastReplies_loc kvs_loc:loc),
   "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #nextFreshId ∗
   "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
@@ -772,7 +769,7 @@ Proof.
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (kvs_loc) "HkvsM".
   wp_storeField.
   wp_apply (wp_NewMap u64).
@@ -818,7 +815,7 @@ Program Definition conditionalPut_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜conditionalPutArgs.encodes enc_args args⌝ ∗
-   conditionalPut_core_spec args (λ rep, Φ (string_to_bytes rep))
+   conditionalPut_core_spec args (λ rep, Φ rep)
   )%I
 .
 Next Obligation.
@@ -829,7 +826,7 @@ Program Definition get_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜getArgs.encodes enc_args args⌝ ∗
-   get_core_spec args (λ rep, Φ (string_to_bytes rep))
+   get_core_spec args (λ rep, Φ rep)
   )%I
 .
 Next Obligation.
@@ -1148,7 +1145,7 @@ Lemma wp_Client__conditionalPutRpc Post cl args args_ptr :
   }}}
     Client__conditionalPutRpc #cl #args_ptr
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
   }}}
 .
 Proof.
@@ -1189,7 +1186,6 @@ Proof.
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".
-    repeat rewrite string_to_bytes_to_string.
     iFrame.
   }
   {
@@ -1211,7 +1207,7 @@ Lemma wp_Client__getRpc Post cl args args_ptr :
   }}}
     Client__getRpc #cl #args_ptr
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
   }}}
 .
 Proof.
@@ -1252,7 +1248,6 @@ Proof.
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".
-    repeat rewrite string_to_bytes_to_string.
     iFrame.
   }
   {

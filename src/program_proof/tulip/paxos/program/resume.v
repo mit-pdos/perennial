@@ -4,7 +4,7 @@ From Goose.github_com.mit_pdos.tulip Require Import paxos.
 Section resume.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_resume (fname : string) (nidme termc terml lsnc : u64) (log : list string) γ :
+  Theorem wp_resume (fname : byte_string) (nidme termc terml lsnc : u64) (log : list byte_string) γ :
     {{{ own_current_term_half γ nidme (uint.nat termc) ∗
         own_ledger_term_half γ nidme (uint.nat terml) ∗
         own_committed_lsn_half γ nidme (uint.nat lsnc) ∗

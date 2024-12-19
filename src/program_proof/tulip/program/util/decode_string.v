@@ -32,7 +32,6 @@ Section program.
     wp_apply (wp_StringFromBytes with "Hp2").
     iIntros "Hp2".
     wp_pures.
-    rewrite string_to_bytes_to_string.
     by iApply "HΦ".
   Qed.
 

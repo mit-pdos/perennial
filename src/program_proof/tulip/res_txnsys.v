@@ -634,10 +634,10 @@ Section res.
     (** Computes a dbmap from its representation as a GooseLang value.
         If decoding fails, returns some arbitrary nonsense value. *)
 
-    Definition to_dbval (b : bool) (v : string) :=
+    Definition to_dbval (b : bool) (v : byte_string) :=
       if b then Some v else None.
 
-    Definition to_dbstring (v : val) : option string :=
+    Definition to_dbstring (v : val) : option byte_string :=
       match v with
       | (#true, (#(LitString key), _))%V => Some key
       | (#false, (#(LitString key), _))%V => None
@@ -645,7 +645,7 @@ Section res.
       end.
 
     Definition decode_dbmap (v: val) : dbmap :=
-      match @map.map_val _ dbkey (@string_IntoVal grove_op) String.eq_dec String.countable v with
+      match map.map_val v with
       | None => ∅
       | Some (mv, _) => to_dbstring <$> mv
       end.

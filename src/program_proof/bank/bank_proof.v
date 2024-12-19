@@ -4,11 +4,11 @@ From Perennial.program_proof.lock Require Import lock_proof.
 From Goose.github_com.mit_pdos.gokv Require Import lockservice bank.
 
 Class bankG Σ := {
-    #[global] bank_mapG :: mapG Σ string u64 ;
+    #[global] bank_mapG :: mapG Σ byte_string u64 ;
   }.
 
 Definition bankΣ :=
-  #[mapΣ string u64].
+  #[mapΣ byte_string u64].
 Global Instance subG_pbΣ {Σ} : subG (bankΣ) Σ → (bankG Σ).
 Proof. solve_inG. Qed.
 
@@ -18,23 +18,23 @@ Context `{!invGS Σ, !bankG Σ}.
 
 Record bank_names := BankNames {
   bank_ls_names: (lock_names (Σ:=Σ)) ; (* Logical balances of accounts; must match the physical balance by the time you give up the lock *)
-  bank_kvptsto : string → string → iProp Σ ; (* Logical balances of accounts; must match the physical balance by the time you give up the lock *)
+  bank_kvptsto : byte_string → byte_string → iProp Σ ; (* Logical balances of accounts; must match the physical balance by the time you give up the lock *)
   bank_logBalGN : gname ; (* Logical balances of accounts; must match the physical balance by the time you give up the lock *)
 }.
 
 Definition log_gn γ := γ.(bank_logBalGN).
 Definition lock_gn γ := γ.(bank_ls_names).
 
-Definition bankPs γ := λ k, (∃ v, bank_kvptsto γ k (bytes_to_string $ u64_le v) ∗ k [[log_gn γ]]↦v)%I.
+Definition bankPs γ := λ k, (∃ v, bank_kvptsto γ k (u64_le v) ∗ k [[log_gn γ]]↦v)%I.
 
 Definition bankN := nroot .@ "grove_bank_of_boston".
 Definition lockN : namespace := nroot.@"grove_bank_of_boston_vault".
 
 Definition bal_total : u64 := 1000.
 
-Context (init_flag: string). (* Account names for bank *)
+Context (init_flag: byte_string). (* Account names for bank *)
 
-Definition map_total (m : gmap string u64) : u64 :=
+Definition map_total (m : gmap byte_string u64) : u64 :=
   map_fold (λ k v tot, word.add tot v) 0 m.
 
 Lemma map_total_insert m k v :
@@ -72,7 +72,7 @@ Proof.
 Qed.
 
 Lemma map_total_zero m :
-  map_Forall (λ (_:string) (x : u64), x = 0) m ->
+  map_Forall (λ (_:byte_string) (x : u64), x = 0) m ->
   map_total m = 0.
 Proof.
   induction m using map_ind.
@@ -108,22 +108,22 @@ Proof.
       done.
 Qed.
 
-Definition bank_inv γ (accts : gset string) : iProp Σ :=
-  ∃ (m:gmap string u64),
+Definition bank_inv γ (accts : gset byte_string) : iProp Σ :=
+  ∃ (m:gmap byte_string u64),
     "HlogBalCtx" ∷ map_ctx (log_gn γ) 1 m ∗
     "%" ∷ ⌜map_total m = bal_total⌝ ∗
     "%" ∷ ⌜dom m = accts⌝
 .
 
-Definition init_lock_inv γlk kvptsto (accts:gset string) : iProp Σ :=
+Definition init_lock_inv γlk kvptsto (accts:gset byte_string) : iProp Σ :=
   (* Uninit case *)
-  (kvptsto init_flag "" ∗
-   [∗ set] acc ∈ accts, kvptsto acc "" ∗ kvptsto_lock γlk acc ""
+  (kvptsto init_flag ""%go ∗
+   [∗ set] acc ∈ accts, kvptsto acc ""%go ∗ kvptsto_lock γlk acc ""%go
   ) ∨
   (* Already init case *)
   (∃ γlog,
       let γ := (BankNames γlk kvptsto γlog) in
-   bank_kvptsto γ init_flag "1" ∗ inv bankN (bank_inv γ accts) ∗
+   bank_kvptsto γ init_flag "1"%go ∗ inv bankN (bank_inv γ accts) ∗
     [∗ set] acc ∈ accts, is_lock lockN (lock_gn γ) acc (bankPs γ acc)).
 
 Definition is_bank γlk kvptsto accs : iProp Σ :=
@@ -135,10 +135,10 @@ End bank_defs.
 Section bank_proof.
 Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !bankG Σ}.
 
-Context (init_flag: string). (* Account names for bank *)
+Context (init_flag: byte_string). (* Account names for bank *)
 
-Definition own_bank_clerk (bank_ck:loc) (accts : gset string) : iProp Σ :=
-  ∃ (lck kck : loc) (accts_s : Slice.t) (accts_l : list string) γ E,
+Definition own_bank_clerk (bank_ck:loc) (accts : gset byte_string) : iProp Σ :=
+  ∃ (lck kck : loc) (accts_s : Slice.t) (accts_l : list byte_string) γ E,
   "%" ∷ ⌜Permutation (elements accts) (accts_l)⌝ ∗
   "#Hlck_is" ∷ is_LockClerk lockN lck (lock_gn γ) ∗
   "#Hkck_is" ∷ is_Kv kck (bank_kvptsto γ) E ∗
@@ -153,7 +153,7 @@ Definition own_bank_clerk (bank_ck:loc) (accts : gset string) : iProp Σ :=
   "#Haccts_is_lock" ∷ [∗ list] acc ∈ accts_l, is_lock lockN (lock_gn γ) acc (bankPs γ acc)
 .
 
-Lemma acquire_two_spec (lck :loc) (ln1 ln2:string) γ:
+Lemma acquire_two_spec (lck :loc) (ln1 ln2:byte_string) γ:
 {{{
      is_LockClerk lockN lck γ.(bank_ls_names) ∗
      is_lock lockN γ.(bank_ls_names) ln1 (bankPs γ ln1) ∗
@@ -178,7 +178,7 @@ Proof.
   iApply "Hpost". by iFrame.
 Qed.
 
-Lemma release_two_spec (lck :loc) (ln1 ln2:string) γ:
+Lemma release_two_spec (lck :loc) (ln1 ln2:byte_string) γ:
 {{{
      is_LockClerk lockN lck γ.(bank_ls_names) ∗
      is_lock lockN γ.(bank_ls_names) ln1 (bankPs γ ln1) ∗
@@ -205,7 +205,7 @@ Lemma wp_decodeInt (x:u64) :
   {{{
         True
   }}}
-    decodeInt #(str bytes_to_string (u64_le x))
+    decodeInt #(str (u64_le x))
   {{{
         RET #x; True
   }}}
@@ -217,7 +217,6 @@ Proof.
   wp_apply wp_StringToBytes.
   iIntros (?) "Hsl".
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-  rewrite bytes_to_string_to_bytes.
   wp_apply (wp_ReadInt with "[$]").
   iIntros. wp_pures. iModIntro. by iApply "HΦ".
 Qed.
@@ -228,7 +227,7 @@ Lemma wp_encodeInt (x:u64) :
   }}}
     encodeInt #x
   {{{
-        RET #(str bytes_to_string (u64_le x)); True
+        RET #(str (u64_le x)); True
   }}}
 .
 Proof.
@@ -245,7 +244,7 @@ Proof.
   simpl. by iApply "HΦ".
 Qed.
 
-Lemma Bank__transfer_internal_spec (bck:loc) (src dst:string) (amount:u64) accts :
+Lemma Bank__transfer_internal_spec (bck:loc) (src dst:byte_string) (amount:u64) accts :
 {{{
      own_bank_clerk bck accts ∗
      ⌜ src ∈ accts ⌝ ∗
@@ -461,7 +460,7 @@ Proof.
       "%Hlocked_dom" ∷ ⌜Permutation (elements (dom locked)) done⌝ ∗
       "Hml" ∷ [∗ map] acc ↦ bal ∈ locked,
         is_lock lockN γ.(bank_ls_names) acc (bankPs γ acc) ∗
-        (bank_kvptsto γ acc (bytes_to_string $ u64_le $ bal) ∗ acc [[log_gn γ]]↦ bal))%I
+        (bank_kvptsto γ acc (u64_le $ bal) ∗ acc [[log_gn γ]]↦ bal))%I
     with "[] [$Haccts_slice Hsum $Hlck $Hkck]").
   2: {
     iExists ∅. rewrite map_total_empty. iFrame.
@@ -540,7 +539,7 @@ Proof.
   iNamed "HbankInv".
 
   iDestruct (big_sepM_sep with "Hml") as "[#Hml_islock Hmlkv]".
-  iDestruct (big_sepM_mono_wand _ (λ k v, ⌜m !! k = Some v⌝ ∗ bank_kvptsto γ k (bytes_to_string $ u64_le v) ∗ k [[log_gn γ]]↦ v)%I _ (map_ctx (log_gn γ) 1 m)%I with "[] [$HlogBalCtx $Hmlkv]") as "[HlogBalCtx Hmlkv]".
+  iDestruct (big_sepM_mono_wand _ (λ k v, ⌜m !! k = Some v⌝ ∗ bank_kvptsto γ k (u64_le v) ∗ k [[log_gn γ]]↦ v)%I _ (map_ctx (log_gn γ) 1 m)%I with "[] [$HlogBalCtx $Hmlkv]") as "[HlogBalCtx Hmlkv]".
   {
     iModIntro.
     iIntros (??) "%Hsome [HlogBalCtx HbankPs]".
@@ -578,7 +577,7 @@ Proof.
       "Hlck" ∷ bck ↦[BankClerk :: "lck"] #lck ∗
       "%Hdom" ∷ ⌜Permutation (elements (dom mtodo)) todo⌝ ∗
       "Hml" ∷ [∗ map] k↦x ∈ mtodo, is_lock lockN γ.(bank_ls_names) k (bankPs γ k) ∗
-        (bank_kvptsto γ k (bytes_to_string $ u64_le x) ∗ k [[log_gn γ]]↦ x))%I
+        (bank_kvptsto γ k (u64_le x) ∗ k [[log_gn γ]]↦ x))%I
     with "[] [$Haccts_slice $Hlck Hml]").
   {
     iIntros (?? ??) "%Hx".
@@ -638,7 +637,7 @@ Proof.
   iModIntro. iLeft. iFrame. eauto.
 Qed.
 
-Lemma wp_MakeBankClerkSlice (lck kck : loc) γlk kvptsto E accts (accts_s : Slice.t) acc0 (accts_l : list string) :
+Lemma wp_MakeBankClerkSlice (lck kck : loc) γlk kvptsto E accts (accts_s : Slice.t) acc0 (accts_l : list byte_string) :
   {{{
        is_LockClerk lockN lck γlk ∗
        is_Kv kck kvptsto E ∗
@@ -706,15 +705,15 @@ Proof.
     rewrite skipn_cons. replace (drop 0 accts_l) with (accts_l) by reflexivity.
 
     wp_apply (wp_forSlicePrefix
-      (λ done todo, ∃ (sdone: gset string),
+      (λ done todo, ∃ (sdone: gset byte_string),
         "kvck" ∷ l ↦[BankClerk :: "kvck"] #kck ∗
         "Htodo" ∷ ([∗ list] acc ∈ todo,
-          "Hkv2" ∷ kvptsto_lock γlk acc "" ∗
-          "Hkv1" ∷ kvptsto acc "") ∗
+          "Hkv2" ∷ kvptsto_lock γlk acc ""%go ∗
+          "Hkv1" ∷ kvptsto acc ""%go) ∗
         "%Hdone_dom" ∷ ⌜Permutation (elements sdone) done⌝ ∗
         "Hdone" ∷ [∗ map] acc ↦ bal ∈ (gset_to_gmap (W64 0) sdone),
-            kvptsto_lock γlk acc "" ∗
-            kvptsto acc (bytes_to_string $ u64_le bal)
+            kvptsto_lock γlk acc ""%go ∗
+            kvptsto acc (u64_le bal)
             )%I with "[] [$Haccts_slice $kvck Haccs]").
     {
       iIntros (????) "%Hx".
@@ -868,7 +867,7 @@ Proof.
     iDestruct (big_sepS_elements with "H") as "He". rewrite Hperm. iFrame "He".
 Qed.
 
-Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : string ) E :
+Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : byte_string ) E :
   {{{
        is_LockClerk lockN lck γlk ∗
        is_Kv kck kvptsto E ∗

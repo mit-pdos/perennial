@@ -6,7 +6,7 @@ From Goose.github_com.mit_pdos.tulip Require Import paxos.
 Section submit.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_Paxos__Submit (px : loc) (c : string) nidme γ :
+  Theorem wp_Paxos__Submit (px : loc) (c : byte_string) nidme γ :
     is_paxos px nidme γ -∗
     {{{ True }}}
     <<< ∀∀ cpool, own_cpool_half γ cpool >>>

@@ -101,7 +101,7 @@ Section program.
   Admitted.
 
   Theorem wp_TxnLog__SubmitRead
-    (log : loc) (ts : u64) (key : string) (gid : groupid) γ :
+    (log : loc) (ts : u64) (key : byte_string) (gid : groupid) γ :
     is_txnlog log gid γ -∗
     {{{ True }}}
     <<< ∀∀ vs, cpool_half γ gid vs >>>

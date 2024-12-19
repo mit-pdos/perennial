@@ -7,7 +7,7 @@ Section mk_paxos.
 
   Theorem wp_mkPaxos
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64)
-    (logP : Slice.t) (log : list string) (addrmP : loc) (addrm : gmap u64 chan) (fname : string) γ :
+    (logP : Slice.t) (log : list byte_string) (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) γ :
     (1 < size addrm)%nat ->
     nidme ∈ dom addrm ->
     0 ≤ uint.Z nidme < max_nodes ->
