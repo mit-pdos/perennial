@@ -21,14 +21,14 @@ Section heap.
                          xs !! j = Some x2 ->
                   uint.Z x1 <= uint.Z x2.
 
-  Fixpoint insert (lst: list w64) (element: w64) (i: nat) :=
+  (* Fixpoint insert (lst: list w64) (element: w64) (i: nat) :=
     match lst with
     | [] => [element]
     | cons h tl => match i with
                    | 0%nat => cons element lst 
                    | S n => cons h (insert tl element n)
                    end
-    end. 
+    end. *) 
 
   Lemma implies_Sorted :
     forall (xs: list w64) (element: w64) (i: w64),
@@ -287,8 +287,8 @@ Section heap.
     iIntros (Φ) "(H & %H1) H2". unfold SortedInsert. wp_pures. 
     wp_apply (wp_BinarySearch with "[$H]"); auto.
     iIntros (i ok) "H". wp_pures. wp_if_destruct.
-    - iModIntro. iApply "H2". iDestruct "H" as "(H1 & H2 & %H3 & %H4 & %H5)". 
-      iFrame.
+    - iModIntro. iApply "H2". iDestruct "H" as "(H1 & H2 & H3 & %H4 & %H5 & H6)". 
+      iFrame. 
     - wp_bind (SliceSkip uint64T s #i). iDestruct "H" as "(H1 & H3 & %H3 & %H4 & %H5)". 
       (* get the length from the slice *)
       iDestruct (own_slice_sz with "H1") as %Hsz.
@@ -312,9 +312,8 @@ Section heap.
       wp_apply
         wp_SliceAppendSlice. wp_SliceAppendSlice.
 
-Proof.    
-    *) 
 
+   *)
   
 
 End heap. 

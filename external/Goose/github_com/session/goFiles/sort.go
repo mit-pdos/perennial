@@ -18,9 +18,6 @@ func BinarySearch(s []uint64, needle uint64) (uint64, bool) {
 }
 
 func insert(s []uint64, value uint64) []uint64 {
-	index, duplicate := BinarySearch(s, value)
-	if duplicate {
-		return s
-	}
+	index, _ := BinarySearch(s, value)
 	return append(s[:index+1], s[index:]...)
 }

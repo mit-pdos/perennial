@@ -22,11 +22,9 @@ Definition BinarySearch: val :=
     then (![uint64T] "i", (SliceGet uint64T "s" (![uint64T] "i")) = "needle")
     else (![uint64T] "i", #false)).
 
-Definition SortedInsert: val :=
+Definition insert: val :=
   rec: "insert" "s" "value" :=
-    let: ("index", "duplicate") := BinarySearch "s" "value" in
-    (if: "duplicate"
-    then "s"
-    else SliceAppendSlice uint64T (SliceTake "s" ("index" + #1)) (SliceSkip uint64T "s" "index")).
+    let: ("index", <>) := BinarySearch "s" "value" in
+    SliceAppendSlice uint64T (SliceTake "s" ("index" + #1)) (SliceSkip uint64T "s" "index").
 
 End code.
