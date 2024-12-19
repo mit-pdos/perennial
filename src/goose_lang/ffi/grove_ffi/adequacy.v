@@ -47,14 +47,12 @@ Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ}
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
         ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) ={⊤}=∗
-          (([∗ list] ρ ∈ ebσs,
-          (* FIXME: the following doesn't work because of https://github.com/coq/coq/issues/16893 *)
-          (* (([∗ list] '(e, σ) ∈ ebσs, *)
+          (([∗ list] '(e, σ) ∈ ebσs,
                 (* We reason about node running e with an arbitrary generation *)
                 ∀ HL : gooseLocalGS Σ,
-                  ([∗ map] f ↦ c ∈ ρ.2.(world).(grove_node_files), f f↦ c) -∗
-                  own_globals (DfracOwn 1) ρ.2.(globals)
-                  ={⊤}=∗ ∃ Φ, wp NotStuck ⊤ ρ.1 Φ
+                  ([∗ map] f ↦ c ∈ σ.(world).(grove_node_files), f f↦ c) -∗
+                  own_globals (DfracOwn 1) σ.(globals)
+                  ={⊤}=∗ ∃ Φ, wp NotStuck ⊤ e Φ
             ) ∗
           (∀ g', ffi_global_ctx goose_ffiGlobalGS g'.(global_world) ={⊤,∅}=∗ ⌜ φinv g' ⌝) )) →
   dist_adequate_failstop (ffi_sem:=grove_semantics) ebσs g (λ g, φinv g).

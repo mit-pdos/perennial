@@ -80,7 +80,3 @@ Definition is_Kv_Get_hocap2 P E (Get_fn:val) : iProp Σ :=
 .
 
 End hocap_definitions.
-
-Check "a"%go.
-(* [{| Naive.unsigned := 97; Naive._unsigned_in_range := eq_refl |}]
-     : list Naive.rep *)

@@ -73,7 +73,7 @@ Instance fstring_finite :
 Admitted.
 
 (* Definition keys_all : gset string := fin_to_set fstring. *)
-Definition keys_all : gset string.
+Definition keys_all : gset byte_string.
 Admitted.
 
 (** Transaction status on group/replica. *)
@@ -129,7 +129,7 @@ Definition ptgroups (keys : gset dbkey) : gset groupid :=
 Definition wrs_group gid (wrs : dbmap) :=
   filter (λ t, key_to_group t.1 = gid) wrs.
 
-Definition tpls_group gid (tpls : gmap dbkey dbtpl (H:=list_countable)) :=
+Definition tpls_group gid (tpls : gmap dbkey dbtpl) :=
   filter (λ t, key_to_group t.1 = gid) tpls.
 
 Definition keys_group gid (keys : gset dbkey) :=

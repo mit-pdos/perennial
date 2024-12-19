@@ -1,4 +1,7 @@
-From stdpp Require Import countable.
+From stdpp Require Import countable finite.
+
+(* FIXME: https://gitlab.mpi-sws.org/iris/stdpp/-/merge_requests/424 *)
+Global Remove Hints finite_countable : typeclass_instances.
 
 Local Ltac count t_rec :=
   let rec go num f :=
