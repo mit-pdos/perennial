@@ -13,8 +13,8 @@ From Perennial.algebra Require Import map.
 Section defns.
 
 Inductive kvOp :=
-  | putOp : string → string → kvOp
-  | getOp : string → kvOp
+  | putOp : byte_string → byte_string → kvOp
+  | getOp : byte_string → kvOp
   | condPutOp : byte_string → byte_string → byte_string → kvOp
 .
 
@@ -23,7 +23,7 @@ Definition apply_op (state:gmap byte_string byte_string) (op:kvOp) :=
     | getOp _ => state
     | putOp k v => <[k:=v]> state
     | condPutOp k e v =>
-        if decide (default "" (state !! k) = e) then
+        if decide (default ""%go (state !! k) = e) then
           <[k:=v]> state
         else
           state
@@ -35,24 +35,24 @@ Definition compute_state ops : gmap byte_string byte_string :=
 
 Definition compute_reply ops op : list u8 :=
   match op with
-    | getOp k => string_to_bytes (default "" ((compute_state ops) !! k))
+    | getOp k => (default ""%go ((compute_state ops) !! k))
     | putOp k v => []
-    | condPutOp k e v => if decide (default "" ((compute_state ops) !! k) = e) then
-                          string_to_bytes ("ok")
+    | condPutOp k e v => if decide (default ""%go ((compute_state ops) !! k) = e) then
+                          ("ok"%go)
                         else []
   end
 .
 
 Definition encode_op op : list u8 :=
   match op with
-    | putOp k v => [W8 0] ++ u64_le (length (string_to_bytes k)) ++
-                         string_to_bytes k ++ string_to_bytes v
-    | getOp k => [W8 1] ++ string_to_bytes k
-    | condPutOp k e v => [W8 2] ++ u64_le (length (string_to_bytes k)) ++
-                         string_to_bytes k ++
-                         u64_le (length (string_to_bytes e)) ++
-                         string_to_bytes e ++
-                         string_to_bytes v
+    | putOp k v => [W8 0] ++ u64_le (length k) ++
+                         k ++ v
+    | getOp k => [W8 1] ++ k
+    | condPutOp k e v => [W8 2] ++ u64_le (length k) ++
+                         k ++
+                         u64_le (length e) ++
+                         e ++
+                         v
   end
 .
 
@@ -132,8 +132,7 @@ Proof.
   wp_store. clear sl.
   wp_load.
   iApply "HΦ". iModIntro. iFrame.
-  iPureIntro.
-  by rewrite string_bytes_length.
+  done.
 Qed.
 
 Lemma wp_decodePutArgs enc_sl enc q (key val:byte_string) :
@@ -187,13 +186,11 @@ Proof.
   simpl in Hsl_sz. rewrite length_app in Hkv_sz.
   wp_apply wp_SliceTake.
   { word. }
-  iDestruct (slice_small_split with "Hkv_sl") as "[Hk Hv]".
-  { shelve. }
-  replace (uint.nat (length (string_to_bytes key))) with (length (string_to_bytes key)) by word.
-  Unshelve.
-  2:{ rewrite length_app. word. }
+  iDestruct (slice_small_split _ (length key) with "Hkv_sl") as "[Hk Hv]".
+  { rewrite length_app. word. }
   wp_apply (wp_StringFromBytes with "[$Hk]").
   iIntros "Hk".
+  replace (uint.nat (W64 (length key))) with (length key) by word.
   rewrite take_app_length.
   wp_storeField.
   rewrite drop_app_length.
@@ -203,7 +200,6 @@ Proof.
   { word. }
   wp_apply (wp_StringFromBytes with "[$Hv]").
   iIntros "Hv".
-  do 2 rewrite string_to_bytes_to_string.
   wp_storeField.
   iModIntro. iApply "HΦ".
   iFrame.
@@ -268,7 +264,6 @@ Proof.
   wp_apply (wp_StringFromBytes with "[$]").
   iIntros "_".
   wp_pures.
-  rewrite string_to_bytes_to_string.
   by iApply "HΦ".
 Qed.
 
@@ -385,7 +380,6 @@ Proof.
   wp_pures.
   wp_apply (wp_StringFromBytes with "[$Hkey_sl]").
   iIntros "_".
-  rewrite string_to_bytes_to_string.
   wp_storeField.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "Hsl".
@@ -403,7 +397,7 @@ Proof.
   { word. }
   iDestruct (slice_small_split with "Hsl") as "[He Hv]".
   { shelve. }
-  replace (uint.nat (length (string_to_bytes expect))) with (length (string_to_bytes expect)) by word.
+  replace (uint.nat (length expect)) with (length expect) by word.
   Unshelve.
   2:{ rewrite length_app. word. }
   wp_apply (wp_StringFromBytes with "[$He]").
@@ -418,7 +412,6 @@ Proof.
   wp_apply (wp_StringFromBytes with "[$Hv]").
   iIntros "Hv".
   wp_storeField.
-  do 2 rewrite string_to_bytes_to_string.
   iModIntro. iApply "HΦ".
   iFrame.
 Qed.
