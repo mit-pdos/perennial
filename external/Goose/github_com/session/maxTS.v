@@ -4,8 +4,8 @@ From Perennial.goose_lang Require Import prelude.
 Section code.
 Context `{ext_ty: ext_types}.
 
-Definition max: val :=
-  rec: "max" "x" "y" :=
+Definition maxTwoInts: val :=
+  rec: "maxTwoInts" "x" "y" :=
     (if: "x" > "y"
     then "x"
     else "y").
@@ -17,7 +17,7 @@ Definition maxTS: val :=
     let: "output" := ref_to (slice.T uint64T) (NewSlice uint64T (slice.len "t1")) in
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "length")); (λ: <>, Skip) := λ: <>,
-      SliceSet uint64T (![slice.T uint64T] "output") (![uint64T] "i") (max (SliceGet uint64T "t1" (![uint64T] "i")) (SliceGet uint64T "t2" (![uint64T] "i")));;
+      SliceSet uint64T (![slice.T uint64T] "output") (![uint64T] "i") (maxTwoInts (SliceGet uint64T "t1" (![uint64T] "i")) (SliceGet uint64T "t2" (![uint64T] "i")));;
       "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     ![slice.T uint64T] "output".

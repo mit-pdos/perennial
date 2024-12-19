@@ -1,6 +1,6 @@
 package maxTS
 
-func max(x uint64, y uint64) uint64 {
+func maxTwoInts(x uint64, y uint64) uint64 {
 	if x > y {
 		return x
 	} else {
@@ -13,7 +13,7 @@ func maxTS(t1 []uint64, t2 []uint64) []uint64 {
 	var length = uint64(len(t1))
 	var output = make([]uint64, len(t1))
 	for i < length {
-		output[i] = max(t1[i], t2[i])
+		output[i] = maxTwoInts(t1[i], t2[i])
 		i += 1
 	}
 	return output
