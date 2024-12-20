@@ -65,9 +65,6 @@ String Notation byte_string parse_string print_string
   (via IndByteString mapping [id_byte_string => IByteString] )
   : byte_string_scope.
 
-Delimit Scope byte_string_scope with string.
-Delimit Scope byte_char_scope with char.
-
 (* TODO: replace with more computationally efficient version *)
 #[local] Definition eqb (s1 s2: byte_string) : bool :=
   bool_decide (s1 = s2).
