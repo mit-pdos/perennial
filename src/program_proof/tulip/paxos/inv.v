@@ -520,7 +520,7 @@ Section inv_file.
   Definition paxosfileNS := paxosNS .@ "file".
 
   Definition node_file_inv (γ : paxos_names) (nid : u64) : iProp Σ :=
-    ∃ (wal : list pxcmd) (fname : string) (content : list u8),
+    ∃ (wal : list pxcmd) (fname : byte_string) (content : list u8),
       "Hwalfile"   ∷ own_node_wal_half γ nid wal ∗
       "Hfile"      ∷ fname f↦ content ∗
       "#Hwalfname" ∷ is_node_wal_fname γ nid fname ∗
@@ -548,8 +548,8 @@ Section inv_network.
     is_prepare_lsn γ (uint.nat term) (uint.nat lsnlc).
 
   Definition safe_append_entries_req
-    γ nids (term lsnlc lsne : u64) (ents : list string) : iProp Σ :=
-    ∃ (logleader logcmt : list string),
+    γ nids (term lsnlc lsne : u64) (ents : list byte_string) : iProp Σ :=
+    ∃ (logleader logcmt : list byte_string),
       "#Hpfb"       ∷ prefix_base_ledger γ (uint.nat term) logleader ∗
       "#Hpfg"       ∷ prefix_growing_ledger γ (uint.nat term) logleader ∗
       "#Hlogcmt"    ∷ safe_ledger_above γ nids (uint.nat term) logcmt ∗
@@ -575,8 +575,8 @@ Section inv_network.
   Proof. destruct req; apply _. Defined.
 
   Definition safe_request_vote_resp
-    γ (nids : gset u64) (nid term terme : u64) (ents : list string) : iProp Σ :=
-    ∃ (logpeer : list string) (lsne : u64),
+    γ (nids : gset u64) (nid term terme : u64) (ents : list byte_string) : iProp Σ :=
+    ∃ (logpeer : list byte_string) (lsne : u64),
       "#Hpromise" ∷ past_nodedecs_latest_before γ nid (uint.nat term) (uint.nat terme) logpeer ∗
       "#Hlsne"    ∷ is_prepare_lsn γ (uint.nat term) (uint.nat lsne) ∗
       "%Hents"    ∷ ⌜drop (uint.nat lsne) logpeer = ents⌝ ∗
@@ -584,7 +584,7 @@ Section inv_network.
 
   Definition safe_append_entries_resp
     γ (nids : gset u64) (nid term lsneq : u64) : iProp Σ :=
-    ∃ (logacpt : list string),
+    ∃ (logacpt : list byte_string),
       "#Haoc"     ∷ (is_accepted_proposal_lb γ nid (uint.nat term) logacpt ∨
                      safe_ledger_above γ nids (uint.nat term) logacpt) ∗
       "%Hlogacpt" ∷ ⌜length logacpt = uint.nat lsneq⌝ ∗
@@ -1195,7 +1195,7 @@ End lemma.
 Section alloc.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Lemma paxos_inv_alloc addrm (fnames : gmap u64 string) :
+  Lemma paxos_inv_alloc addrm (fnames : gmap u64 byte_string) :
     let nids := dom addrm in
     (1 < size addrm)%nat ->
     dom fnames = dom addrm ->

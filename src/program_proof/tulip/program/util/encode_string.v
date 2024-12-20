@@ -4,7 +4,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_EncodeString (bsP : Slice.t) (s : string) (bs : list u8) :
+  Theorem wp_EncodeString (bsP : Slice.t) (s : byte_string) (bs : list u8) :
     {{{ own_slice bsP byteT (DfracOwn 1) bs }}}
       EncodeString (to_val bsP) #(LitString s)
     {{{ (dataP : Slice.t), RET (to_val dataP);
@@ -29,7 +29,7 @@ Section program.
     wp_pures.
     iApply "HΦ".
     iFrame.
-    by rewrite -app_assoc /encode_string string_bytes_length.
+    by rewrite -app_assoc /encode_string.
   Qed.
 
 End program.

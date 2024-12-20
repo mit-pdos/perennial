@@ -13,8 +13,8 @@ Axiom LUTC : Z.
 Axiom Lmsgprefix : Z.
 Axiom LstdFlags : Z.
 Axiom Logger : go_type.
-Axiom Logger__mset : list (string * val).
-Axiom Logger__mset_ptr : list (string * val).
+Axiom Logger__mset : list (go_string * val).
+Axiom Logger__mset_ptr : list (go_string * val).
 Axiom New : val.
 Axiom Logger__SetOutput : val.
 Axiom Default : val.

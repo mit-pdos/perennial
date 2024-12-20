@@ -6,7 +6,7 @@ From Perennial.program_proof.tulip.program.util Require Import
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_logRead (fname : string) (ts : u64) (key : string) (bs : list u8) :
+  Theorem wp_logRead (fname : byte_string) (ts : u64) (key : byte_string) (bs : list u8) :
     {{{ fname f↦ bs }}}
       logRead #(LitString fname) #ts #(LitString key)
     {{{ (bs' : list u8), RET #(); fname f↦ bs' }}}.
@@ -52,7 +52,7 @@ Section program.
   Qed.
 
   Theorem wp_logValidate
-    (fname : string) (ts : u64) (pwrsP : Slice.t) (pwrs : dbmap) (bs : list u8) :
+    (fname : byte_string) (ts : u64) (pwrsP : Slice.t) (pwrs : dbmap) (bs : list u8) :
     {{{ fname f↦ bs ∗ own_dbmap_in_slice pwrsP pwrs }}}
       logValidate #(LitString fname) #ts (to_val pwrsP) slice.nil
     {{{ (bs' : list u8), RET #(); fname f↦ bs' ∗ own_dbmap_in_slice pwrsP pwrs }}}.
@@ -99,7 +99,7 @@ Section program.
   Qed.
 
   Theorem wp_logFastPrepare
-    (fname : string) (ts : u64) (pwrsP : Slice.t) (pwrs : dbmap) (bs : list u8) :
+    (fname : byte_string) (ts : u64) (pwrsP : Slice.t) (pwrs : dbmap) (bs : list u8) :
     {{{ fname f↦ bs ∗ own_dbmap_in_slice pwrsP pwrs }}}
       logFastPrepare #(LitString fname) #ts (to_val pwrsP) slice.nil
     {{{ (bs' : list u8), RET #(); fname f↦ bs' ∗ own_dbmap_in_slice pwrsP pwrs }}}.
@@ -145,7 +145,7 @@ Section program.
     by iFrame.
   Qed.
 
-  Theorem wp_logAccept (fname : string) (ts : u64) (rank : u64) (dec : bool) (bs : list u8) :
+  Theorem wp_logAccept (fname : byte_string) (ts : u64) (rank : u64) (dec : bool) (bs : list u8) :
     {{{ fname f↦ bs }}}
       logAccept #(LitString fname) #ts #rank #dec
     {{{ (bs' : list u8), RET #(); fname f↦ bs' }}}.

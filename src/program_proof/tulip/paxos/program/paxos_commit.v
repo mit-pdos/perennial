@@ -7,7 +7,7 @@ Section commit.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__commit
-    (px : loc) (lsn : u64) (nidme term : u64) (logc : list string) nids γ :
+    (px : loc) (lsn : u64) (nidme term : u64) (logc : list byte_string) nids γ :
     nidme ∈ nids ->
     length logc = uint.nat lsn ->
     safe_ledger_above γ nids (uint.nat term) logc -∗

@@ -145,7 +145,7 @@ Section program.
       (* diff from [own_txn_stable] *)
       "%Hptgs"   ∷ ⌜list_to_set ptgs = ptgroups (dom wrs)⌝.
 
-  Lemma wp_ResolveRead γ p (tid : u64) (key : string) (ts : nat) :
+  Lemma wp_ResolveRead γ p (tid : u64) (key : byte_string) (ts : nat) :
     ⊢ {{{ ⌜uint.nat tid = ts⌝ }}}
     <<< ∀∀ acs, txn_proph γ p acs >>>
       ResolveRead #p #tid #(LitString key) @ ∅
@@ -170,7 +170,7 @@ Section program.
     {{{ RET #(); own_wrs wrsP wrs }}}.
   Admitted.
 
-  Theorem wp_KeyToGroup (key : string) :
+  Theorem wp_KeyToGroup (key : byte_string) :
     {{{ True }}}
       KeyToGroup #(LitString key)
     {{{ (gid : u64), RET #gid; ⌜key_to_group key = gid⌝ }}}.
@@ -181,7 +181,7 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_Txn__getwrs (txn : loc) (key : string) wrs :
+  Theorem wp_Txn__getwrs (txn : loc) (key : byte_string) wrs :
     {{{ own_txn_wrs txn wrs }}}
       Txn__getwrs #txn #(LitString key)
     {{{ (v : dbval) (ok : bool), RET (dbval_to_val v, #ok);
@@ -235,7 +235,7 @@ Section program.
       by destruct Hv.
   Qed.
 
-  Theorem wp_Txn__setwrs (txn : loc) (key : string) (value : dbval) wrs :
+  Theorem wp_Txn__setwrs (txn : loc) (key : byte_string) (value : dbval) wrs :
     {{{ own_txn_wrs txn wrs }}}
       Txn__setwrs #txn #(LitString key) (dbval_to_val value)
     {{{ RET #(); own_txn_wrs txn (<[key := value]> wrs) }}}.

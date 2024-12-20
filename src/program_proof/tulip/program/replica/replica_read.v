@@ -9,7 +9,7 @@ From Perennial.program_proof.tulip.program.index Require Import index.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_Replica__Read (rp : loc) (tsW : u64) (key : string) gid rid γ :
+  Theorem wp_Replica__Read (rp : loc) (tsW : u64) (key : byte_string) gid rid γ :
     let ts := uint.nat tsW in
     ts ≠ O ->
     key ∈ keys_all ->

@@ -5,8 +5,8 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom Builder : go_type.
-Axiom Builder__mset : list (string * val).
-Axiom Builder__mset_ptr : list (string * val).
+Axiom Builder__mset : list (go_string * val).
+Axiom Builder__mset_ptr : list (go_string * val).
 Axiom Builder__String : val.
 Axiom Builder__Len : val.
 Axiom Builder__Cap : val.
@@ -19,8 +19,8 @@ Axiom Builder__WriteString : val.
 Axiom Clone : val.
 Axiom Compare : val.
 Axiom Reader : go_type.
-Axiom Reader__mset : list (string * val).
-Axiom Reader__mset_ptr : list (string * val).
+Axiom Reader__mset : list (go_string * val).
+Axiom Reader__mset_ptr : list (go_string * val).
 Axiom Reader__Len : val.
 Axiom Reader__Size : val.
 Axiom Reader__Read : val.
@@ -34,8 +34,8 @@ Axiom Reader__WriteTo : val.
 Axiom Reader__Reset : val.
 Axiom NewReader : val.
 Axiom Replacer : go_type.
-Axiom Replacer__mset : list (string * val).
-Axiom Replacer__mset_ptr : list (string * val).
+Axiom Replacer__mset : list (go_string * val).
+Axiom Replacer__mset_ptr : list (go_string * val).
 Axiom NewReplacer : val.
 Axiom Replacer__Replace : val.
 Axiom Replacer__WriteString : val.

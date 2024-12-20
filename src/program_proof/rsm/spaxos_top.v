@@ -4,10 +4,10 @@
 From Perennial.program_proof Require Export grove_prelude.
 From Perennial.program_logic Require Export atomic. (* prefer the ncfupd atomics *)
 
-Definition proposals := gmap nat string.
+Definition proposals := gmap nat byte_string.
 Definition ballot := list bool.
-Inductive consensus : Set :=
-| Chosen (v : string)
+Inductive consensus : Type :=
+| Chosen (v : byte_string)
 | Free.
 
 Definition prefixes `{Countable A} {B : Type} (lbs ls : gmap A (list B)) :=

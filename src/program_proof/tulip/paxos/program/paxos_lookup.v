@@ -12,7 +12,7 @@ Section lookup.
     <<< ∀∀ log cpool, own_consensus_half γ log cpool >>>
       Paxos__Lookup #px #lsn @ ↑paxosNS
     <<< ∃∃ log', own_consensus_half γ log' cpool ∗ ⌜cpool_subsume_log log' cpool⌝ >>>
-    {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
+    {{{ (v : byte_string) (ok : bool), RET (#(LitString v), #ok);
         ⌜if ok then log' !! (uint.nat lsn) = Some v else True⌝
     }}}.
   Proof.

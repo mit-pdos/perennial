@@ -4,7 +4,7 @@ From Perennial.program_proof.tulip.program.gcoord Require Import greader_repr.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_GroupReader__responded (grd : loc) (rid : u64) (key : string) ts γ :
+  Theorem wp_GroupReader__responded (grd : loc) (rid : u64) (key : byte_string) ts γ :
     {{{ own_greader grd ts γ }}}
       GroupReader__responded #grd #rid #(LitString key)
     {{{ (responded : bool), RET #responded; own_greader grd ts γ }}}.

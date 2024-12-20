@@ -4,7 +4,7 @@ From Perennial.goose_lang.trusted.github_com.mit_pdos.tulip Require Import trust
 Section proph.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Lemma wp_ResolveRead p (tid : u64) (key : string) (ts : nat) :
+  Lemma wp_ResolveRead p (tid : u64) (key : byte_string) (ts : nat) :
     ⊢
     {{{ ⌜uint.nat tid = ts⌝ }}}
     <<< ∀∀ acs, own_txn_proph p acs >>>

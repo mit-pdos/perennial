@@ -8,7 +8,7 @@ Definition Kv : go_type := interfaceT.
 
 Definition KvCput : go_type := interfaceT.
 
-Definition pkg_name' : string := "github.com/mit-pdos/gokv/kv".
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/kv".
 
 Definition define' : val :=
   rec: "define'" <> :=

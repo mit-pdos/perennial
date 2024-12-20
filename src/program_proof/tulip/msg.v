@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base encode.
 
 Inductive txnreq :=
-| ReadReq        (ts : u64) (key : string)
+| ReadReq        (ts : u64) (key : byte_string)
 | FastPrepareReq (ts : u64) (pwrs : dbmap)
 | ValidateReq    (ts : u64) (rank : u64) (pwrs : dbmap)
 | PrepareReq     (ts : u64) (rank : u64)
@@ -57,10 +57,10 @@ Proof.
   intros [| | | | | | | |] => //=.
 Qed.
 
-Definition encode_read_req_xkind (ts : u64) (key : string) :=
+Definition encode_read_req_xkind (ts : u64) (key : byte_string) :=
   u64_le ts ++ encode_string key.
 
-Definition encode_read_req (ts : u64) (key : string) (data : list u8) :=
+Definition encode_read_req (ts : u64) (key : byte_string) (data : list u8) :=
   data = u64_le (U64 100) ++ encode_read_req_xkind ts key.
 
 Definition encode_fast_prepare_req_xkind (ts : u64) (m : dbmap) (data : list u8) :=
@@ -162,7 +162,7 @@ Instance rpres_to_u64_inj :
 Proof. intros x y H. by destruct x, y. Defined.
 
 Inductive txnresp :=
-| ReadResp        (ts : u64) (rid : u64) (key : string) (ver : dbpver) (slow : bool)
+| ReadResp        (ts : u64) (rid : u64) (key : byte_string) (ver : dbpver) (slow : bool)
 | FastPrepareResp (ts : u64) (rid : u64) (res : rpres)
 | ValidateResp    (ts : u64) (rid : u64) (res : rpres)
 | PrepareResp     (ts : u64) (rank : u64) (rid : u64) (res : rpres)
@@ -214,12 +214,12 @@ Proof.
 Qed.
 
 Definition encode_read_resp_xkind
-  (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) :=
+  (ts rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) :=
   u64_le ts ++ u64_le rid ++ encode_string key ++
     encode_dbpver ver ++ [if slow then U8 1 else U8 0].
 
 Definition encode_read_resp
-  (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) :=
+  (ts rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) :=
   u64_le (U64 100) ++ encode_read_resp_xkind ts rid key ver slow.
 
 Definition encode_ts_rid_res (ts rid : u64) (res : rpres) :=

@@ -8,7 +8,7 @@ Section encode_prepare_response.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_EncodePrepareResponse
-    (nid term terma : u64) (entsP : Slice.t) (ents : list string) :
+    (nid term terma : u64) (entsP : Slice.t) (ents : list byte_string) :
     {{{ own_slice entsP stringT (DfracOwn 1) ents }}}
       EncodePrepareResponse #nid #term #terma (to_val entsP)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);

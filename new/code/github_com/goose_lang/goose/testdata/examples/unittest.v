@@ -11,10 +11,10 @@ From New Require Import disk_prelude.
 
 Definition Foo : go_type := arrayT 10 uint64T.
 
-Definition Foo__mset : list (string * val) := [
+Definition Foo__mset : list (go_string * val) := [
 ].
 
-Definition Foo__mset_ptr : list (string * val) := [
+Definition Foo__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: array.go:5:6 *)
@@ -27,17 +27,17 @@ Definition takesArray : val :=
 Definition takesPtr : val :=
   rec: "takesPtr" "x" :=
     exception_do (let: "x" := (ref_ty ptrT "x") in
-    do:  ((![ptrT] "x") <-[stringT] ((![stringT] (![ptrT] "x")) + #"bar"))).
+    do:  ((![ptrT] "x") <-[stringT] ((![stringT] (![ptrT] "x")) + #"bar"%go))).
 
 (* go: array.go:13:6 *)
 Definition usesArrayElemRef : val :=
   rec: "usesArrayElemRef" <> :=
     exception_do (let: "x" := (ref_ty (arrayT 2 stringT) (zero_val (arrayT 2 stringT))) in
-    let: "$r0" := ((let: "$ar0" := #"a" in
-    let: "$ar1" := #"b" in
+    let: "$r0" := ((let: "$ar0" := #"a"%go in
+    let: "$ar1" := #"b"%go in
     array.literal ["$ar0"; "$ar1"])) in
     do:  ("x" <-[arrayT 2 stringT] "$r0");;;
-    let: "$r0" := #"c" in
+    let: "$r0" := #"c"%go in
     do:  ((array.elem_ref stringT (![arrayT 2 stringT] "x") #(W64 1)) <-[stringT] "$r0");;;
     do:  (let: "$a0" := (array.elem_ref stringT (![arrayT 2 stringT] "x") #(W64 1)) in
     takesPtr "$a0")).
@@ -61,8 +61,8 @@ Definition sum : val :=
 Definition arrayToSlice : val :=
   rec: "arrayToSlice" <> :=
     exception_do (let: "x" := (ref_ty (arrayT 2 stringT) (zero_val (arrayT 2 stringT))) in
-    let: "$r0" := ((let: "$ar0" := #"a" in
-    let: "$ar1" := #"b" in
+    let: "$r0" := ((let: "$ar0" := #"a"%go in
+    let: "$ar1" := #"b"%go in
     array.literal ["$ar0"; "$ar1"])) in
     do:  ("x" <-[arrayT 2 stringT] "$r0");;;
     return: (let: "$a" := "x" in
@@ -76,8 +76,8 @@ Definition arrayB : Z := 10.
 Definition arrayLiteralKeyed : val :=
   rec: "arrayLiteralKeyed" <> :=
     exception_do (let: "x" := (ref_ty (arrayT 13 stringT) (zero_val (arrayT 13 stringT))) in
-    let: "$r0" := ((let: "$ar0" := #"A" in
-    let: "$ar1" := #"3" in
+    let: "$r0" := ((let: "$ar0" := #"A"%go in
+    let: "$ar1" := #"3"%go in
     let: "$ar2" := (zero_val stringT) in
     let: "$ar3" := (zero_val stringT) in
     let: "$ar4" := (zero_val stringT) in
@@ -86,9 +86,9 @@ Definition arrayLiteralKeyed : val :=
     let: "$ar7" := (zero_val stringT) in
     let: "$ar8" := (zero_val stringT) in
     let: "$ar9" := (zero_val stringT) in
-    let: "$ar10" := #"B" in
-    let: "$ar11" := #"1" in
-    let: "$ar12" := #"2" in
+    let: "$ar10" := #"B"%go in
+    let: "$ar11" := #"1"%go in
+    let: "$ar12" := #"2"%go in
     array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"])) in
     do:  ("x" <-[arrayT 13 stringT] "$r0");;;
     return: (![stringT] (array.elem_ref stringT (![arrayT 13 stringT] "x") #(W64 0)))).
@@ -101,10 +101,10 @@ Definition chanBasic : val :=
     do:  ("x" <-[chanT stringT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$chan" := (![chanT stringT] "x") in
-      let: "$v" := #"Foo" in
+      let: "$v" := #"Foo"%go in
       chan.send "$chan" "$v");;;
       do:  (let: "$chan" := (![chanT stringT] "x") in
-      let: "$v" := #"Foo" in
+      let: "$v" := #"Foo"%go in
       chan.send "$chan" "$v"))
       ) in
     do:  (Fork ("$go" #()));;;
@@ -119,7 +119,7 @@ Definition chanBasic : val :=
     do:  ("y" <-[stringT] "$r0");;;
     (if: ![boolT] "ok"
     then
-      let: "$r0" := ((![stringT] "y") + #" ") in
+      let: "$r0" := ((![stringT] "y") + #" "%go) in
       do:  ("y" <-[stringT] "$r0")
     else do:  #())).
 
@@ -142,10 +142,10 @@ Definition chanSelect : val :=
     let: "i2" := (ref_ty intT (zero_val intT)) in
     let: "i1" := (ref_ty intT (zero_val intT)) in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"sent ") in
+        do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"sent "%go) in
         let: "$sl1" := (interface.make int__mset (![intT] "i2")) in
         let: "$sl2" := (interface.make string__mset #" to c2
-        ") in
+        "%go) in
         slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
         fmt.Print "$a0")
         ))] [("$recvChan0", (λ: "$recvVal",
@@ -153,10 +153,10 @@ Definition chanSelect : val :=
         )); ("$recvChan1", (λ: "$recvVal",
         let: "$r0" := (Fst "$recvVal") in
         do:  ("i1" <-[intT] "$r0");;;
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"received ") in
+        do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"received "%go) in
         let: "$sl1" := (interface.make int__mset (![intT] "i1")) in
         let: "$sl2" := (interface.make string__mset #" from c1
-        ") in
+        "%go) in
         slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
         fmt.Print "$a0")
         )); ("$recvChan2", (λ: "$recvVal",
@@ -169,15 +169,15 @@ Definition chanSelect : val :=
         do:  ("ok" <-[boolT] "$r1");;;
         (if: ![boolT] "ok"
         then
-          do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"received ") in
+          do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"received "%go) in
           let: "$sl1" := (interface.make int__mset (![intT] "i3")) in
           let: "$sl2" := (interface.make string__mset #" from c3
-          ") in
+          "%go) in
           slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           fmt.Print "$a0")
         else
           do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"c3 is closed
-          ") in
+          "%go) in
           slice.literal interfaceT ["$sl0"])) in
           fmt.Print "$a0"))
         )); ("$recvChan3", (λ: "$recvVal",
@@ -186,7 +186,7 @@ Definition chanSelect : val :=
         do:  #()
         ))] (InjR (λ: <>,
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"no communication
-      ") in
+      "%go) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Print "$a0")
       )));;;
@@ -205,16 +205,16 @@ Definition chanDirectional : val :=
     let: "y" := (ref_ty (chanT stringT) (zero_val (chanT stringT))) in
     do:  (Fst (chan.receive (![chanT uint64T] "x")));;;
     do:  (let: "$chan" := (![chanT stringT] "y") in
-    let: "$v" := #"" in
+    let: "$v" := #""%go in
     chan.send "$chan" "$v")).
 
 Definition importantStruct : go_type := structT [
 ].
 
-Definition importantStruct__mset : list (string * val) := [
+Definition importantStruct__mset : list (go_string * val) := [
 ].
 
-Definition importantStruct__mset_ptr : list (string * val) := [
+Definition importantStruct__mset_ptr : list (go_string * val) := [
 ].
 
 (* doSubtleThings does a number of subtle things:
@@ -254,10 +254,10 @@ Definition condvarWrapping : val :=
     do:  ("mu" <-[ptrT] "$r0");;;
     do:  ((sync.Cond__Wait (![ptrT] "cond1")) #())).
 
-Definition GlobalConstant : expr := #"foo".
+Definition GlobalConstant : expr := #"foo"%go.
 
 (* an untyped string *)
-Definition UntypedStringConstant : string := "bar".
+Definition UntypedStringConstant : go_string := "bar"%go.
 
 Definition UntypedInt : Z := 13.
 
@@ -405,10 +405,10 @@ Definition ifStmtInitialization : val :=
 
 Definition stringWrapper : go_type := stringT.
 
-Definition stringWrapper__mset : list (string * val) := [
+Definition stringWrapper__mset : list (go_string * val) := [
 ].
 
-Definition stringWrapper__mset_ptr : list (string * val) := [
+Definition stringWrapper__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: conversions.go:5:6 *)
@@ -516,8 +516,8 @@ Definition useSlice : val :=
     let: "$a1" := (![sliceT] "s") in
     (slice.append sliceT) "$a0" "$a1") in
     do:  ("s1" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := #"dir" in
-    let: "$a1" := #"file" in
+    do:  (let: "$a0" := #"dir"%go in
+    let: "$a1" := #"file"%go in
     let: "$a2" := (![sliceT] "s1") in
     atomicCreateStub "$a0" "$a1" "$a2")).
 
@@ -628,10 +628,10 @@ Definition diskWrapper : go_type := structT [
   "d" :: disk.Disk
 ].
 
-Definition diskWrapper__mset : list (string * val) := [
+Definition diskWrapper__mset : list (go_string * val) := [
 ].
 
-Definition diskWrapper__mset_ptr : list (string * val) := [
+Definition diskWrapper__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: disk.go:9:6 *)
@@ -656,8 +656,8 @@ Definition embedA__Foo : val :=
     exception_do (let: "a" := (ref_ty embedA "a") in
     return: (#(W64 0))).
 
-Definition embedA__mset : list (string * val) := [
-  ("Foo", embedA__Foo%V)
+Definition embedA__mset : list (go_string * val) := [
+  ("Foo"%go, embedA__Foo%V)
 ].
 
 (* go: embedded.go:27:18 *)
@@ -666,9 +666,9 @@ Definition embedA__Bar : val :=
     exception_do (let: "a" := (ref_ty ptrT "a") in
     return: (#(W64 13))).
 
-Definition embedA__mset_ptr : list (string * val) := [
-  ("Bar", embedA__Bar%V);
-  ("Foo", (λ: "$recvAddr",
+Definition embedA__mset_ptr : list (go_string * val) := [
+  ("Bar"%go, embedA__Bar%V);
+  ("Foo"%go, (λ: "$recvAddr",
     embedA__Foo (![embedA] "$recvAddr")
     )%V)
 ].
@@ -683,8 +683,8 @@ Definition embedB__Foo : val :=
     exception_do (let: "a" := (ref_ty embedB "a") in
     return: (#(W64 10))).
 
-Definition embedB__mset : list (string * val) := [
-  ("Foo", embedB__Foo%V)
+Definition embedB__mset : list (go_string * val) := [
+  ("Foo"%go, embedB__Foo%V)
 ].
 
 (* go: embedded.go:31:18 *)
@@ -693,12 +693,12 @@ Definition embedB__Car : val :=
     exception_do (let: "a" := (ref_ty ptrT "a") in
     return: (#(W64 14))).
 
-Definition embedB__mset_ptr : list (string * val) := [
-  ("Bar", (λ: "$recvAddr",
+Definition embedB__mset_ptr : list (go_string * val) := [
+  ("Bar"%go, (λ: "$recvAddr",
     embedA__Bar (struct.field_ref embedB "embedA" "$recvAddr")
     )%V);
-  ("Car", embedB__Car%V);
-  ("Foo", (λ: "$recvAddr",
+  ("Car"%go, embedB__Car%V);
+  ("Foo"%go, (λ: "$recvAddr",
     embedB__Foo (![embedB] "$recvAddr")
     )%V)
 ].
@@ -707,26 +707,26 @@ Definition embedC : go_type := structT [
   "embedB" :: ptrT
 ].
 
-Definition embedC__mset : list (string * val) := [
-  ("Bar", (λ: "$recv",
+Definition embedC__mset : list (go_string * val) := [
+  ("Bar"%go, (λ: "$recv",
     embedA__Bar (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" "$recv"))
     )%V);
-  ("Car", (λ: "$recv",
+  ("Car"%go, (λ: "$recv",
     embedB__Car (struct.field_get embedC "embedB" "$recv")
     )%V);
-  ("Foo", (λ: "$recv",
+  ("Foo"%go, (λ: "$recv",
     embedB__Foo (![embedB] (struct.field_get embedC "embedB" "$recv"))
     )%V)
 ].
 
-Definition embedC__mset_ptr : list (string * val) := [
-  ("Bar", (λ: "$recvAddr",
+Definition embedC__mset_ptr : list (go_string * val) := [
+  ("Bar"%go, (λ: "$recvAddr",
     embedA__Bar (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
     )%V);
-  ("Car", (λ: "$recvAddr",
+  ("Car"%go, (λ: "$recvAddr",
     embedB__Car (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr"))
     )%V);
-  ("Foo", (λ: "$recvAddr",
+  ("Foo"%go, (λ: "$recvAddr",
     embedB__Foo (![embedB] (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
     )%V)
 ].
@@ -735,26 +735,26 @@ Definition embedD : go_type := structT [
   "embedC" :: embedC
 ].
 
-Definition embedD__mset : list (string * val) := [
-  ("Bar", (λ: "$recv",
+Definition embedD__mset : list (go_string * val) := [
+  ("Bar"%go, (λ: "$recv",
     embedA__Bar (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
     )%V);
-  ("Car", (λ: "$recv",
+  ("Car"%go, (λ: "$recv",
     embedB__Car (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv"))
     )%V);
-  ("Foo", (λ: "$recv",
+  ("Foo"%go, (λ: "$recv",
     embedB__Foo (![embedB] (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
     )%V)
 ].
 
-Definition embedD__mset_ptr : list (string * val) := [
-  ("Bar", (λ: "$recvAddr",
+Definition embedD__mset_ptr : list (go_string * val) := [
+  ("Bar"%go, (λ: "$recvAddr",
     embedA__Bar (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
     )%V);
-  ("Car", (λ: "$recvAddr",
+  ("Car"%go, (λ: "$recvAddr",
     embedB__Car (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr")))
     )%V);
-  ("Foo", (λ: "$recvAddr",
+  ("Foo"%go, (λ: "$recvAddr",
     embedB__Foo (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
     )%V)
 ].
@@ -830,7 +830,7 @@ Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Enc__mset : list (string * val) := [
+Definition Enc__mset : list (go_string * val) := [
 ].
 
 (* go: encoding.go:9:15 *)
@@ -867,17 +867,17 @@ Definition Enc__UInt64 : val :=
     let: "$a1" := (![uint64T] "x") in
     primitive.UInt64Put "$a0" "$a1")).
 
-Definition Enc__mset_ptr : list (string * val) := [
-  ("UInt32", Enc__UInt32%V);
-  ("UInt64", Enc__UInt64%V);
-  ("consume", Enc__consume%V)
+Definition Enc__mset_ptr : list (go_string * val) := [
+  ("UInt32"%go, Enc__UInt32%V);
+  ("UInt64"%go, Enc__UInt64%V);
+  ("consume"%go, Enc__consume%V)
 ].
 
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Dec__mset : list (string * val) := [
+Definition Dec__mset : list (go_string * val) := [
 ].
 
 (* go: encoding.go:27:15 *)
@@ -910,10 +910,10 @@ Definition Dec__UInt64 : val :=
      (Dec__consume (![ptrT] "d")) "$a0") in
      primitive.UInt64Get "$a0")).
 
-Definition Dec__mset_ptr : list (string * val) := [
-  ("UInt32", Dec__UInt32%V);
-  ("UInt64", Dec__UInt64%V);
-  ("consume", Dec__consume%V)
+Definition Dec__mset_ptr : list (go_string * val) := [
+  ("UInt32"%go, Dec__UInt32%V);
+  ("UInt64"%go, Dec__UInt64%V);
+  ("consume"%go, Dec__consume%V)
 ].
 
 (* go: globals.go:3:6 *)
@@ -921,29 +921,29 @@ Definition foo : val :=
   rec: "foo" <> :=
     exception_do (return: (#(W64 10))).
 
-Definition pkg_name' : string := "github.com/goose-lang/goose/testdata/examples/unittest".
+Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/unittest".
 
-Definition GlobalX : (string * string) := (pkg_name', "GlobalX").
+Definition GlobalX : (go_string * go_string) := (pkg_name', "GlobalX"%go).
 
-Definition globalY : (string * string) := (pkg_name', "globalY").
+Definition globalY : (go_string * go_string) := (pkg_name', "globalY"%go).
 
-Definition globalA : (string * string) := (pkg_name', "globalA").
+Definition globalA : (go_string * go_string) := (pkg_name', "globalA"%go).
 
-Definition globalB : (string * string) := (pkg_name', "globalB").
+Definition globalB : (go_string * go_string) := (pkg_name', "globalB"%go).
 
 (* go: globals.go:14:6 *)
 Definition other : val :=
   rec: "other" <> :=
-    exception_do (let: "$r0" := #"ok" in
+    exception_do (let: "$r0" := #"ok"%go in
     do:  ((globals.get globalY #()) <-[stringT] "$r0")).
 
 (* go: globals.go:18:6 *)
 Definition bar : val :=
   rec: "bar" <> :=
     exception_do (do:  (other #());;;
-    (if: ((![uint64T] (globals.get GlobalX #())) ≠ #(W64 10)) || ((![stringT] (globals.get globalY #())) ≠ #"ok")
+    (if: ((![uint64T] (globals.get GlobalX #())) ≠ #(W64 10)) || ((![stringT] (globals.get globalY #())) ≠ #"ok"%go)
     then
-      do:  (let: "$a0" := (interface.make string__mset #"bad") in
+      do:  (let: "$a0" := (interface.make string__mset #"bad"%go) in
       Panic "$a0")
     else do:  #())).
 
@@ -959,7 +959,7 @@ Definition concreteFooer : go_type := structT [
   "a" :: uint64T
 ].
 
-Definition concreteFooer__mset : list (string * val) := [
+Definition concreteFooer__mset : list (go_string * val) := [
 ].
 
 (* go: interfaces.go:15:25 *)
@@ -968,18 +968,18 @@ Definition concreteFooer__Foo : val :=
     exception_do (let: "f" := (ref_ty ptrT "f") in
     do:  #()).
 
-Definition concreteFooer__mset_ptr : list (string * val) := [
-  ("Foo", concreteFooer__Foo%V)
+Definition concreteFooer__mset_ptr : list (go_string * val) := [
+  ("Foo"%go, concreteFooer__Foo%V)
 ].
 
 Definition FooerUser : go_type := structT [
   "f" :: Fooer
 ].
 
-Definition FooerUser__mset : list (string * val) := [
+Definition FooerUser__mset : list (go_string * val) := [
 ].
 
-Definition FooerUser__mset_ptr : list (string * val) := [
+Definition FooerUser__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: interfaces.go:18:6 *)
@@ -1155,8 +1155,8 @@ Definition concrete1__Foo : val :=
     exception_do (let: "c" := (ref_ty concrete1 "c") in
     do:  #()).
 
-Definition concrete1__mset : list (string * val) := [
-  ("Foo", concrete1__Foo%V)
+Definition concrete1__mset : list (go_string * val) := [
+  ("Foo"%go, concrete1__Foo%V)
 ].
 
 (* go: interfaces.go:109:21 *)
@@ -1165,9 +1165,9 @@ Definition concrete1__B : val :=
     exception_do (let: "c" := (ref_ty ptrT "c") in
     do:  #()).
 
-Definition concrete1__mset_ptr : list (string * val) := [
-  ("B", concrete1__B%V);
-  ("Foo", (λ: "$recvAddr",
+Definition concrete1__mset_ptr : list (go_string * val) := [
+  ("B"%go, concrete1__B%V);
+  ("Foo"%go, (λ: "$recvAddr",
     concrete1__Foo (![concrete1] "$recvAddr")
     )%V)
 ].
@@ -1205,18 +1205,18 @@ Definition useInts : val :=
 
 Definition my_u32 : go_type := uint32T.
 
-Definition my_u32__mset : list (string * val) := [
+Definition my_u32__mset : list (go_string * val) := [
 ].
 
-Definition my_u32__mset_ptr : list (string * val) := [
+Definition my_u32__mset_ptr : list (go_string * val) := [
 ].
 
 Definition also_u32 : go_type := my_u32.
 
-Definition also_u32__mset : list (string * val) := [
+Definition also_u32__mset : list (go_string * val) := [
 ].
 
-Definition also_u32__mset_ptr : list (string * val) := [
+Definition also_u32__mset_ptr : list (go_string * val) := [
 ].
 
 Definition ConstWithAbbrevType : expr := #(W32 3).
@@ -1227,17 +1227,17 @@ Definition allTheLiterals : go_type := structT [
   "b" :: boolT
 ].
 
-Definition allTheLiterals__mset : list (string * val) := [
+Definition allTheLiterals__mset : list (go_string * val) := [
 ].
 
-Definition allTheLiterals__mset_ptr : list (string * val) := [
+Definition allTheLiterals__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: literals.go:9:6 *)
 Definition normalLiterals : val :=
   rec: "normalLiterals" <> :=
     exception_do (return: (let: "$int" := #(W64 0) in
-     let: "$s" := #"foo" in
+     let: "$s" := #"foo"%go in
      let: "$b" := #true in
      struct.make allTheLiterals [{
        "int" ::= "$int";
@@ -1249,7 +1249,7 @@ Definition normalLiterals : val :=
 Definition outOfOrderLiteral : val :=
   rec: "outOfOrderLiteral" <> :=
     exception_do (return: (let: "$b" := #true in
-     let: "$s" := #"foo" in
+     let: "$s" := #"foo"%go in
      let: "$int" := #(W64 0) in
      struct.make allTheLiterals [{
        "int" ::= "$int";
@@ -1261,7 +1261,7 @@ Definition outOfOrderLiteral : val :=
 Definition specialLiterals : val :=
   rec: "specialLiterals" <> :=
     exception_do (return: (let: "$int" := #(W64 4096) in
-     let: "$s" := #"" in
+     let: "$s" := #""%go in
      let: "$b" := #false in
      struct.make allTheLiterals [{
        "int" ::= "$int";
@@ -1273,7 +1273,7 @@ Definition specialLiterals : val :=
 Definition oddLiterals : val :=
   rec: "oddLiterals" <> :=
     exception_do (return: (let: "$int" := #(W64 5) in
-     let: "$s" := #"backquote string" in
+     let: "$s" := #"backquote string"%go in
      let: "$b" := #false in
      struct.make allTheLiterals [{
        "int" ::= "$int";
@@ -1286,7 +1286,7 @@ Definition unKeyedLiteral : val :=
   rec: "unKeyedLiteral" <> :=
     exception_do (return: (struct.make allTheLiterals [{
        "int" ::= #(W64 0);
-       "s" ::= #"a";
+       "s" ::= #"a"%go;
        "b" ::= #false
      }])).
 
@@ -1318,24 +1318,24 @@ Definition hasCondVar : go_type := structT [
   "cond" :: ptrT
 ].
 
-Definition hasCondVar__mset : list (string * val) := [
+Definition hasCondVar__mset : list (go_string * val) := [
 ].
 
-Definition hasCondVar__mset_ptr : list (string * val) := [
+Definition hasCondVar__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: log_debugging.go:5:6 *)
 Definition ToBeDebugged : val :=
   rec: "ToBeDebugged" "x" :=
     exception_do (let: "x" := (ref_ty uint64T "x") in
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"starting function") in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"starting function"%go) in
     slice.literal interfaceT ["$sl0"])) in
     log.Println "$a0");;;
-    do:  (let: "$a0" := #"called with %d" in
+    do:  (let: "$a0" := #"called with %d"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "x")) in
     slice.literal interfaceT ["$sl0"])) in
     log.Printf "$a0" "$a1");;;
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"ending function") in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"ending function"%go) in
     slice.literal interfaceT ["$sl0"])) in
     log.Println "$a0");;;
     return: (![uint64T] "x")).
@@ -1343,7 +1343,7 @@ Definition ToBeDebugged : val :=
 (* go: log_debugging.go:12:6 *)
 Definition DoNothing : val :=
   rec: "DoNothing" <> :=
-    exception_do (do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"doing nothing") in
+    exception_do (do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"doing nothing"%go) in
     slice.literal interfaceT ["$sl0"])) in
     log.Println "$a0")).
 
@@ -1396,7 +1396,7 @@ Definition conditionalInLoop : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: (![uint64T] "i") < #(W64 3)
       then
-        do:  (let: "$a0" := #"i is small" in
+        do:  (let: "$a0" := #"i is small"%go in
         DoSomething "$a0")
       else do:  #());;;
       (if: (![uint64T] "i") > #(W64 5)
@@ -1557,18 +1557,18 @@ Definition MapSize : val :=
 
 Definition IntWrapper : go_type := uint64T.
 
-Definition IntWrapper__mset : list (string * val) := [
+Definition IntWrapper__mset : list (go_string * val) := [
 ].
 
-Definition IntWrapper__mset_ptr : list (string * val) := [
+Definition IntWrapper__mset_ptr : list (go_string * val) := [
 ].
 
 Definition MapWrapper : go_type := mapT uint64T boolT.
 
-Definition MapWrapper__mset : list (string * val) := [
+Definition MapWrapper__mset : list (go_string * val) := [
 ].
 
-Definition MapWrapper__mset_ptr : list (string * val) := [
+Definition MapWrapper__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: maps.go:24:6 *)
@@ -1583,17 +1583,17 @@ Definition MapTypeAliases : val :=
 Definition StringMap : val :=
   rec: "StringMap" "m" :=
     exception_do (let: "m" := (ref_ty (mapT stringT uint64T) "m") in
-    return: (Fst (map.get (![mapT stringT uint64T] "m") #"foo"))).
+    return: (Fst (map.get (![mapT stringT uint64T] "m") #"foo"%go))).
 
 Definition mapElem : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
 
-Definition mapElem__mset : list (string * val) := [
+Definition mapElem__mset : list (go_string * val) := [
 ].
 
-Definition mapElem__mset_ptr : list (string * val) := [
+Definition mapElem__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: maps.go:37:6 *)
@@ -1753,12 +1753,12 @@ Definition wrapExternalStruct__moveUint64 : val :=
     do:  (let: "$a0" := ((marshal.Dec__GetInt (![marshal.Dec] (struct.field_ref wrapExternalStruct "d" "w"))) #()) in
     (marshal.Enc__PutInt (![marshal.Enc] (struct.field_ref wrapExternalStruct "e" "w"))) "$a0")).
 
-Definition wrapExternalStruct__mset : list (string * val) := [
-  ("moveUint64", wrapExternalStruct__moveUint64%V)
+Definition wrapExternalStruct__mset : list (go_string * val) := [
+  ("moveUint64"%go, wrapExternalStruct__moveUint64%V)
 ].
 
-Definition wrapExternalStruct__mset_ptr : list (string * val) := [
-  ("moveUint64", (λ: "$recvAddr",
+Definition wrapExternalStruct__mset_ptr : list (go_string * val) := [
+  ("moveUint64"%go, (λ: "$recvAddr",
     wrapExternalStruct__moveUint64 (![wrapExternalStruct] "$recvAddr")
     )%V)
 ].
@@ -1766,7 +1766,7 @@ Definition wrapExternalStruct__mset_ptr : list (string * val) := [
 (* go: panic.go:3:6 *)
 Definition PanicAtTheDisco : val :=
   rec: "PanicAtTheDisco" <> :=
-    exception_do (do:  (let: "$a0" := (interface.make string__mset #"disco") in
+    exception_do (do:  (let: "$a0" := (interface.make string__mset #"disco"%go) in
     Panic "$a0")).
 
 (* go: proph.go:5:6 *)
@@ -1782,10 +1782,10 @@ Definition typing : go_type := structT [
   "proph" :: ptrT
 ].
 
-Definition typing__mset : list (string * val) := [
+Definition typing__mset : list (go_string * val) := [
 ].
 
-Definition typing__mset_ptr : list (string * val) := [
+Definition typing__mset_ptr : list (go_string * val) := [
 ].
 
 Definition composite : go_type := structT [
@@ -1793,10 +1793,10 @@ Definition composite : go_type := structT [
   "b" :: uint64T
 ].
 
-Definition composite__mset : list (string * val) := [
+Definition composite__mset : list (go_string * val) := [
 ].
 
-Definition composite__mset_ptr : list (string * val) := [
+Definition composite__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: reassign.go:8:6 *)
@@ -1834,7 +1834,7 @@ Definition recur : val :=
 Definition R : go_type := structT [
 ].
 
-Definition R__mset : list (string * val) := [
+Definition R__mset : list (go_string * val) := [
 ].
 
 (* go: recursive.go:10:13 *)
@@ -1843,25 +1843,25 @@ Definition R__recurMethod : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     do:  (("R__recurMethod" (![ptrT] "r")) #())).
 
-Definition R__mset_ptr : list (string * val) := [
-  ("recurMethod", R__recurMethod%V)
+Definition R__mset_ptr : list (go_string * val) := [
+  ("recurMethod"%go, R__recurMethod%V)
 ].
 
 Definition Other : go_type := structT [
   "RecursiveEmbedded" :: ptrT
 ].
 
-Definition Other__mset : list (string * val) := [
+Definition Other__mset : list (go_string * val) := [
 ].
 
-Definition Other__mset_ptr : list (string * val) := [
+Definition Other__mset_ptr : list (go_string * val) := [
 ].
 
 Definition RecursiveEmbedded : go_type := structT [
   "Other" :: Other
 ].
 
-Definition RecursiveEmbedded__mset : list (string * val) := [
+Definition RecursiveEmbedded__mset : list (go_string * val) := [
 ].
 
 (* go: recursive.go:22:29 *)
@@ -1870,18 +1870,18 @@ Definition RecursiveEmbedded__recurEmbeddedMethod : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     do:  (("RecursiveEmbedded__recurEmbeddedMethod" (![ptrT] (struct.field_ref Other "RecursiveEmbedded" (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r"))))) #())).
 
-Definition RecursiveEmbedded__mset_ptr : list (string * val) := [
-  ("recurEmbeddedMethod", RecursiveEmbedded__recurEmbeddedMethod%V)
+Definition RecursiveEmbedded__mset_ptr : list (go_string * val) := [
+  ("recurEmbeddedMethod"%go, RecursiveEmbedded__recurEmbeddedMethod%V)
 ].
 
 Definition Block : go_type := structT [
   "Value" :: uint64T
 ].
 
-Definition Block__mset : list (string * val) := [
+Definition Block__mset : list (go_string * val) := [
 ].
 
-Definition Block__mset_ptr : list (string * val) := [
+Definition Block__mset_ptr : list (go_string * val) := [
 ].
 
 Definition Disk1 : expr := #(W64 0).
@@ -2013,10 +2013,10 @@ Definition ReplicatedDiskRecover : val :=
 
 Definition SliceAlias : go_type := sliceT.
 
-Definition SliceAlias__mset : list (string * val) := [
+Definition SliceAlias__mset : list (go_string * val) := [
 ].
 
-Definition SliceAlias__mset_ptr : list (string * val) := [
+Definition SliceAlias__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: slices.go:5:6 *)
@@ -2054,10 +2054,10 @@ Definition thing : go_type := structT [
   "x" :: uint64T
 ].
 
-Definition thing__mset : list (string * val) := [
+Definition thing__mset : list (go_string * val) := [
 ].
 
-Definition thing__mset_ptr : list (string * val) := [
+Definition thing__mset_ptr : list (go_string * val) := [
 ].
 
 Definition sliceOfThings : go_type := structT [
@@ -2071,12 +2071,12 @@ Definition sliceOfThings__getThingRef : val :=
     let: "i" := (ref_ty uint64T "i") in
     return: (slice.elem_ref thing (![sliceT] (struct.field_ref sliceOfThings "things" "ts")) (![uint64T] "i"))).
 
-Definition sliceOfThings__mset : list (string * val) := [
-  ("getThingRef", sliceOfThings__getThingRef%V)
+Definition sliceOfThings__mset : list (go_string * val) := [
+  ("getThingRef"%go, sliceOfThings__getThingRef%V)
 ].
 
-Definition sliceOfThings__mset_ptr : list (string * val) := [
-  ("getThingRef", (λ: "$recvAddr",
+Definition sliceOfThings__mset_ptr : list (go_string * val) := [
+  ("getThingRef"%go, (λ: "$recvAddr",
     sliceOfThings__getThingRef (![sliceOfThings] "$recvAddr")
     )%V)
 ].
@@ -2151,7 +2151,7 @@ Definition loopSpawn : val :=
 Definition stringAppend : val :=
   rec: "stringAppend" "s" :=
     exception_do (let: "s" := (ref_ty stringT "s") in
-    return: ((#"prefix " + (![stringT] "s")) + #" ")).
+    return: ((#"prefix "%go + (![stringT] "s")) + #" "%go)).
 
 (* go: strings.go:7:6 *)
 Definition stringLength : val :=
@@ -2159,6 +2159,12 @@ Definition stringLength : val :=
     exception_do (let: "s" := (ref_ty stringT "s") in
     return: (let: "$a0" := (![stringT] "s") in
      StringLength "$a0")).
+
+(* go: strings.go:11:6 *)
+Definition x : val :=
+  rec: "x" <> :=
+    exception_do (do:  (let: "$a0" := #("a"%go ++ "b"%go) in
+    stringAppend "$a0")).
 
 Definition Point : go_type := structT [
   "x" :: uint64T;
@@ -2184,16 +2190,16 @@ Definition Point__GetField : val :=
     do:  ("y" <-[uint64T] "$r0");;;
     return: ((![uint64T] "x") + (![uint64T] "y"))).
 
-Definition Point__mset : list (string * val) := [
-  ("Add", Point__Add%V);
-  ("GetField", Point__GetField%V)
+Definition Point__mset : list (go_string * val) := [
+  ("Add"%go, Point__Add%V);
+  ("GetField"%go, Point__GetField%V)
 ].
 
-Definition Point__mset_ptr : list (string * val) := [
-  ("Add", (λ: "$recvAddr",
+Definition Point__mset_ptr : list (go_string * val) := [
+  ("Add"%go, (λ: "$recvAddr",
     Point__Add (![Point] "$recvAddr")
     )%V);
-  ("GetField", (λ: "$recvAddr",
+  ("GetField"%go, (λ: "$recvAddr",
     Point__GetField (![Point] "$recvAddr")
     )%V)
 ].
@@ -2234,10 +2240,10 @@ Definition TwoInts : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition TwoInts__mset : list (string * val) := [
+Definition TwoInts__mset : list (go_string * val) := [
 ].
 
-Definition TwoInts__mset_ptr : list (string * val) := [
+Definition TwoInts__mset_ptr : list (go_string * val) := [
 ].
 
 Definition S : go_type := structT [
@@ -2252,8 +2258,8 @@ Definition S__readBVal : val :=
     exception_do (let: "s" := (ref_ty S "s") in
     return: (![TwoInts] (struct.field_ref S "b" "s"))).
 
-Definition S__mset : list (string * val) := [
-  ("readBVal", S__readBVal%V)
+Definition S__mset : list (go_string * val) := [
+  ("readBVal"%go, S__readBVal%V)
 ].
 
 (* go: struct_pointers.go:38:13 *)
@@ -2289,15 +2295,15 @@ Definition S__writeB : val :=
     let: "$r0" := (![TwoInts] "two") in
     do:  ((struct.field_ref S "b" (![ptrT] "s")) <-[TwoInts] "$r0")).
 
-Definition S__mset_ptr : list (string * val) := [
-  ("negateC", S__negateC%V);
-  ("readA", S__readA%V);
-  ("readB", S__readB%V);
-  ("readBVal", (λ: "$recvAddr",
+Definition S__mset_ptr : list (go_string * val) := [
+  ("negateC"%go, S__negateC%V);
+  ("readA"%go, S__readA%V);
+  ("readB"%go, S__readB%V);
+  ("readBVal"%go, (λ: "$recvAddr",
     S__readBVal (![S] "$recvAddr")
     )%V);
-  ("refC", S__refC%V);
-  ("writeB", S__writeB%V)
+  ("refC"%go, S__refC%V);
+  ("writeB"%go, S__writeB%V)
 ].
 
 (* go: struct_pointers.go:14:6 *)
@@ -2364,16 +2370,16 @@ Definition B : go_type := structT [
   "a" :: sliceT
 ].
 
-Definition B__mset : list (string * val) := [
+Definition B__mset : list (go_string * val) := [
 ].
 
-Definition B__mset_ptr : list (string * val) := [
+Definition B__mset_ptr : list (go_string * val) := [
 ].
 
-Definition A__mset : list (string * val) := [
+Definition A__mset : list (go_string * val) := [
 ].
 
-Definition A__mset_ptr : list (string * val) := [
+Definition A__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: trailing_call.go:3:6 *)
@@ -2390,26 +2396,26 @@ Definition my_u64 : go_type := uint64T.
 
 Definition Timestamp : go_type := uint64T.
 
-Definition Timestamp__mset : list (string * val) := [
+Definition Timestamp__mset : list (go_string * val) := [
 ].
 
-Definition Timestamp__mset_ptr : list (string * val) := [
+Definition Timestamp__mset_ptr : list (go_string * val) := [
 ].
 
 Definition UseTypeAbbrev : go_type := uint64T.
 
-Definition UseTypeAbbrev__mset : list (string * val) := [
+Definition UseTypeAbbrev__mset : list (go_string * val) := [
 ].
 
-Definition UseTypeAbbrev__mset_ptr : list (string * val) := [
+Definition UseTypeAbbrev__mset_ptr : list (go_string * val) := [
 ].
 
 Definition UseNamedType : go_type := Timestamp.
 
-Definition UseNamedType__mset : list (string * val) := [
+Definition UseNamedType__mset : list (go_string * val) := [
 ].
 
-Definition UseNamedType__mset_ptr : list (string * val) := [
+Definition UseNamedType__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: type_alias.go:11:6 *)
@@ -2432,7 +2438,7 @@ Definition variadicFunc : val :=
 Definition testVariadicCall : val :=
   rec: "testVariadicCall" <> :=
     exception_do (do:  (let: "$a0" := #(W64 10) in
-    let: "$a1" := #"abc" in
+    let: "$a1" := #"abc"%go in
     let: "$a2" := ((let: "$sl0" := #(W8 0) in
     let: "$sl1" := #(W8 1) in
     let: "$sl2" := #(W8 2) in
@@ -2440,19 +2446,19 @@ Definition testVariadicCall : val :=
     slice.literal byteT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
     variadicFunc "$a0" "$a1" "$a2");;;
     do:  (let: "$a0" := #(W64 10) in
-    let: "$a1" := #"abc" in
+    let: "$a1" := #"abc"%go in
     let: "$a2" := #slice.nil in
     variadicFunc "$a0" "$a1" "$a2");;;
     let: "c" := (ref_ty sliceT (zero_val sliceT)) in
     do:  (let: "$a0" := #(W64 10) in
-    let: "$a1" := #"abc" in
+    let: "$a1" := #"abc"%go in
     let: "$a2" := (![sliceT] "c") in
     variadicFunc "$a0" "$a1" "$a2")).
 
 (* go: varargs.go:13:6 *)
 Definition returnMultiple : val :=
   rec: "returnMultiple" <> :=
-    exception_do (return: (#(W64 0), #"xyz", #(W8 0), #(W8 0))).
+    exception_do (return: (#(W64 0), #"xyz"%go, #(W8 0), #(W8 0))).
 
 (* go: varargs.go:17:6 *)
 Definition testVariadicPassThrough : val :=
@@ -2484,9 +2490,9 @@ Definition initialize' : val :=
       do:  (define' #());;;
       let: "$r0" := (foo #()) in
       do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
-      let: "$r0" := #"a" in
+      let: "$r0" := #"a"%go in
       do:  ((globals.get globalA #()) <-[stringT] "$r0");;;
-      let: "$r0" := #"b" in
+      let: "$r0" := #"b"%go in
       do:  ((globals.get globalB #()) <-[stringT] "$r0");;;
       let: "$r0" := (foo #()) in
       do:  ((λ: <>,
@@ -2494,7 +2500,7 @@ Definition initialize' : val :=
         do:  ((globals.get GlobalX #()) <-[uint64T] "$r0"))
         ) #());;;
       do:  ((λ: <>,
-        exception_do (let: "$r0" := #"" in
+        exception_do (let: "$r0" := #""%go in
         do:  ((globals.get globalY #()) <-[stringT] "$r0"))
         ) #()))
       ).

@@ -174,7 +174,7 @@ Section program.
       "#Hmu"   ∷ readonly (tuple ↦[Tuple :: "mu"] #muP) ∗
       "#Hlock" ∷ is_lock tulipNS #muP (own_tuple tuple key γ α).
 
-  Theorem wp_Tuple__AppendVersion (tuple : loc) (tsW : u64) (value : string) key hist γ α :
+  Theorem wp_Tuple__AppendVersion (tuple : loc) (tsW : u64) (value : byte_string) key hist γ α :
     let ts := uint.nat tsW in
     let hist' := last_extend ts hist ++ [Some value] in
     (length hist ≤ ts)%nat ->

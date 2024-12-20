@@ -174,7 +174,7 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_w8_s_to_w8 (v : w8) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #(u8_to_string v).
+Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #([v]).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* bool unop *)
@@ -182,11 +182,11 @@ Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(negb b).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* string unop *)
-Global Instance wp_StringLength (s : string) : PureWp True (StringLength #s) #(W64 $ String.length s).
+Global Instance wp_StringLength (s : go_string) : PureWp True (StringLength #s) #(W64 $ length s).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_IsNoStringOverflow (s : string) : PureWp True (IsNoStringOverflow #s)
-                                                       #(bool_decide ((String.length s) < 2^64)).
+Global Instance wp_IsNoStringOverflow (s : go_string) : PureWp True (IsNoStringOverflow #s)
+                                                       #(bool_decide ((length s) < 2^64)).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (** Binops *)
@@ -284,7 +284,7 @@ Proof.
   - rewrite /bin_op_eval decide_False // b /= in H0. by Transitions.monad_inv.
 Qed.
 
-Global Instance wp_string_binop op (v1 v2 v : string) :
+Global Instance wp_string_binop op (v1 v2 v : go_string) :
   PureWp (op ≠ EqOp ∧ bin_op_eval_string op v1 v2 = Some v) (BinOp op #v1 #v2) #v | 1.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O).
@@ -299,24 +299,24 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* string lookup ops *)
 
-Global Instance wp_StringGet_w64 (s : string) (i : w64) (v : w8) :
-  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Global Instance wp_StringGet_w64 (s : go_string) (i : w64) (v : w8) :
+  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
   - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
 Qed.
 
-Global Instance wp_StringGet_w32 (s : string) (i : w32) (v : w8) :
-  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Global Instance wp_StringGet_w32 (s : go_string) (i : w32) (v : w8) :
+  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
   - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
 Qed.
 
-Global Instance wp_StringGet_w8 (s : string) (i : w8) (v : w8) :
-  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Global Instance wp_StringGet_w8 (s : go_string) (i : w8) (v : w8) :
+  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.

@@ -147,7 +147,7 @@ Section pure.
     let ps := fmap (latest_before n) bsq in
     map_fold latest_before_quorum_step O ps.
 
-  Definition is_fast (l : ballot) (n : nat) (v : string) :=
+  Definition is_fast (l : ballot) (n : nat) (v : byte_string) :=
     l !! n = Some (FAccept v).
 
   #[local]
@@ -155,10 +155,10 @@ Section pure.
     Decision (is_fast l n v).
   Proof. unfold is_fast. apply _. Qed.
 
-  Definition nfast (bsq : gmap A ballot) (n : nat) (v : string) :=
+  Definition nfast (bsq : gmap A ballot) (n : nat) (v : byte_string) :=
     size (filter (λ x : A * ballot, is_fast x.2 n v) bsq).
 
-  Definition nfastneg (bsq : gmap A ballot) (n : nat) (v : string) :=
+  Definition nfastneg (bsq : gmap A ballot) (n : nat) (v : byte_string) :=
     size (filter (λ x : A * ballot, not (is_fast x.2 n v)) bsq).
 
   Definition equal_max_occurrence (bsq : gmap A ballot) n v :=

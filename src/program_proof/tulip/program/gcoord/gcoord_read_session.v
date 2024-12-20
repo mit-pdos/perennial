@@ -7,7 +7,7 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupCoordinator__ReadSession 
-    (gcoord : loc) (rid : u64) (tsW : u64) (key : string) gid γ :
+    (gcoord : loc) (rid : u64) (tsW : u64) (key : byte_string) gid γ :
     let ts := uint.nat tsW in
     rid ∈ rids_all ->
     safe_read_req gid ts key ->

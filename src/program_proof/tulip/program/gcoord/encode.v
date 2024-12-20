@@ -8,7 +8,7 @@ Opaque u64_le.
 Section encode.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_EncodeTxnReadRequest (ts : u64) (key : string) :
+  Theorem wp_EncodeTxnReadRequest (ts : u64) (key : byte_string) :
     {{{ True }}}
       EncodeTxnReadRequest #ts #(LitString key)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
@@ -19,7 +19,7 @@ Section encode.
     iIntros (Φ) "_ HΦ".
     wp_rec.
 
-    (*@ func EncodeTxnReadRequest(ts uint64, key string) []byte {               @*)
+    (*@ func EncodeTxnReadRequest(ts uint64, key byte_string) []byte {               @*)
     (*@     bs := make([]byte, 0, 32)                                           @*)
     (*@     bs1 := marshal.WriteInt(bs, MSG_TXN_READ)                           @*)
     (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)

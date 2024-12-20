@@ -24,10 +24,10 @@ Section consensus.
   Definition is_chosen_consensus γ v : iProp Σ :=
     own_consensus_half γ (Chosen v).
 
-  Definition own_candidates γ (vs : gset string) : iProp Σ.
+  Definition own_candidates γ (vs : gset byte_string) : iProp Σ.
   Admitted.
 
-  Definition own_candidates_half γ (vs : gset string) : iProp Σ.
+  Definition own_candidates_half γ (vs : gset byte_string) : iProp Σ.
   Admitted.
 
   (* Type class instances. *)
@@ -138,10 +138,10 @@ Section proposal.
   Implicit Type (γ : spaxos_names).
 
   (* Definitions. *)
-  Definition is_proposal γ (n : nat) (v : string) : iProp Σ.
+  Definition is_proposal γ (n : nat) (v : byte_string) : iProp Σ.
   Admitted.
 
-  Definition own_proposals γ (ps : gmap nat string) : iProp Σ.
+  Definition own_proposals γ (ps : gmap nat byte_string) : iProp Σ.
   Admitted.
   
   (* Type class instances. *)

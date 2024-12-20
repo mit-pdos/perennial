@@ -14,7 +14,7 @@ Definition ReconnectingClient : go_type := structT [
   "addr" :: uint64T
 ].
 
-Definition ReconnectingClient__mset : list (string * val) := [
+Definition ReconnectingClient__mset : list (go_string * val) := [
 ].
 
 (* go: client.go:30:31 *)
@@ -89,9 +89,9 @@ Definition ReconnectingClient__Call : val :=
     else do:  #());;;
     return: (![uint64T] "err")).
 
-Definition ReconnectingClient__mset_ptr : list (string * val) := [
-  ("Call", ReconnectingClient__Call%V);
-  ("getClient", ReconnectingClient__getClient%V)
+Definition ReconnectingClient__mset_ptr : list (go_string * val) := [
+  ("Call"%go, ReconnectingClient__Call%V);
+  ("getClient"%go, ReconnectingClient__getClient%V)
 ].
 
 (* go: client.go:20:6 *)
@@ -109,7 +109,7 @@ Definition MakeReconnectingClient : val :=
     do:  ((struct.field_ref ReconnectingClient "addr" (![ptrT] "r")) <-[uint64T] "$r0");;;
     return: (![ptrT] "r")).
 
-Definition pkg_name' : string := "github.com/mit-pdos/gokv/reconnectclient".
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/reconnectclient".
 
 Definition define' : val :=
   rec: "define'" <> :=

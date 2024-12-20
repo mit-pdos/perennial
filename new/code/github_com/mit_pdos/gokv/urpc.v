@@ -13,7 +13,7 @@ Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
 
-Definition Server__mset : list (string * val) := [
+Definition Server__mset : list (go_string * val) := [
 ].
 
 (* go: urpc.go:19:20 *)
@@ -117,10 +117,10 @@ Definition Server__Serve : val :=
       ) in
     do:  (Fork ("$go" #()))).
 
-Definition Server__mset_ptr : list (string * val) := [
-  ("Serve", Server__Serve%V);
-  ("readThread", Server__readThread%V);
-  ("rpcHandle", Server__rpcHandle%V)
+Definition Server__mset_ptr : list (go_string * val) := [
+  ("Serve"%go, Server__Serve%V);
+  ("readThread"%go, Server__readThread%V);
+  ("rpcHandle"%go, Server__rpcHandle%V)
 ].
 
 (* go: urpc.go:32:6 *)
@@ -144,10 +144,10 @@ Definition Callback : go_type := structT [
   "cond" :: ptrT
 ].
 
-Definition Callback__mset : list (string * val) := [
+Definition Callback__mset : list (go_string * val) := [
 ].
 
-Definition Callback__mset_ptr : list (string * val) := [
+Definition Callback__mset_ptr : list (go_string * val) := [
 ].
 
 Definition Client : go_type := structT [
@@ -157,7 +157,7 @@ Definition Client : go_type := structT [
   "pending" :: mapT uint64T ptrT
 ].
 
-Definition Client__mset : list (string * val) := [
+Definition Client__mset : list (go_string * val) := [
 ].
 
 Definition ErrTimeout : expr := #(W64 1).
@@ -338,11 +338,11 @@ Definition Client__replyThread : val :=
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       continue: #())).
 
-Definition Client__mset_ptr : list (string * val) := [
-  ("Call", Client__Call%V);
-  ("CallComplete", Client__CallComplete%V);
-  ("CallStart", Client__CallStart%V);
-  ("replyThread", Client__replyThread%V)
+Definition Client__mset_ptr : list (go_string * val) := [
+  ("Call"%go, Client__Call%V);
+  ("CallComplete"%go, Client__CallComplete%V);
+  ("CallStart"%go, Client__CallStart%V);
+  ("replyThread"%go, Client__replyThread%V)
 ].
 
 (* go: urpc.go:120:6 *)
@@ -392,7 +392,7 @@ Definition MakeClient : val :=
     do:  ("cl" <-[ptrT] "$r1");;;
     (if: (![uint64T] "err") ≠ #(W64 0)
     then
-      do:  (let: "$a0" := #"Unable to connect to %s" in
+      do:  (let: "$a0" := #"Unable to connect to %s"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make string__mset (let: "$a0" := (![uint64T] "host_name") in
       grove_ffi.AddressToStr "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
@@ -404,7 +404,7 @@ Definition MakeClient : val :=
 
 Definition Error : go_type := uint64T.
 
-Definition pkg_name' : string := "github.com/mit-pdos/gokv/urpc".
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/urpc".
 
 Definition define' : val :=
   rec: "define'" <> :=

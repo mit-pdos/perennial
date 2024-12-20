@@ -9,29 +9,29 @@ Definition foo : val :=
   rec: "foo" <> :=
     exception_do (return: (#(W64 10))).
 
-Definition pkg_name' : string := "github.com/mit-pdos/gokv/globals_test".
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/globals_test".
 
-Definition GlobalX : (string * string) := (pkg_name', "GlobalX").
+Definition GlobalX : (go_string * go_string) := (pkg_name', "GlobalX"%go).
 
-Definition globalY : (string * string) := (pkg_name', "globalY").
+Definition globalY : (go_string * go_string) := (pkg_name', "globalY"%go).
 
-Definition globalA : (string * string) := (pkg_name', "globalA").
+Definition globalA : (go_string * go_string) := (pkg_name', "globalA"%go).
 
-Definition globalB : (string * string) := (pkg_name', "globalB").
+Definition globalB : (go_string * go_string) := (pkg_name', "globalB"%go).
 
 (* go: globals.go:12:6 *)
 Definition other : val :=
   rec: "other" <> :=
-    exception_do (let: "$r0" := #"ok" in
+    exception_do (let: "$r0" := #"ok"%go in
     do:  ((globals.get globalY #()) <-[stringT] "$r0")).
 
 (* go: globals.go:16:6 *)
 Definition bar : val :=
   rec: "bar" <> :=
     exception_do (do:  (other #());;;
-    (if: ((![uint64T] (globals.get GlobalX #())) ≠ #(W64 10)) || ((![stringT] (globals.get globalY #())) ≠ #"ok")
+    (if: ((![uint64T] (globals.get GlobalX #())) ≠ #(W64 10)) || ((![stringT] (globals.get globalY #())) ≠ #"ok"%go)
     then
-      do:  (let: "$a0" := (interface.make string__mset #"bad") in
+      do:  (let: "$a0" := (interface.make string__mset #"bad"%go) in
       Panic "$a0")
     else do:  #())).
 
@@ -53,16 +53,16 @@ Definition initialize' : val :=
       exception_do (do:  (define' #());;;
       let: "$r0" := (foo #()) in
       do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
-      let: "$r0" := #"a" in
+      let: "$r0" := #"a"%go in
       do:  ((globals.get globalA #()) <-[stringT] "$r0");;;
-      let: "$r0" := #"b" in
+      let: "$r0" := #"b"%go in
       do:  ((globals.get globalB #()) <-[stringT] "$r0");;;
       do:  ((λ: <>,
-        exception_do (let: "$r0" := (![uint64T] (globals.get GlobalX #())) in
+        exception_do (let: "$r0" := ((![uint64T] (globals.get GlobalX #())) + #(W64 0)) in
         do:  ((globals.get GlobalX #()) <-[uint64T] "$r0"))
         ) #());;;
       do:  ((λ: <>,
-        exception_do (let: "$r0" := #"" in
+        exception_do (let: "$r0" := #""%go in
         do:  ((globals.get globalY #()) <-[stringT] "$r0"))
         ) #()))
       ).

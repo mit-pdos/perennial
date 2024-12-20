@@ -868,7 +868,7 @@ Section program.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_Replica__Read (rp : loc) (ts : u64) (key : string) (gid : groupid) γ p α :
+  Theorem wp_Replica__Read (rp : loc) (ts : u64) (key : byte_string) (gid : groupid) γ p α :
     safe_read gid (uint.nat ts) key ->
     know_distx_inv γ p -∗
     is_replica rp gid γ α -∗
@@ -982,7 +982,7 @@ Section program.
     ([∗ map] key ↦ tpl ∈ tpls_group gid tpls, hist_repl_lb γ key tpl.1).
 
   Theorem wp_Replica__applyRead
-    (rp : loc) (ts : u64) (key : string) (tpls tpls' : gmap dbkey dbtpl)
+    (rp : loc) (ts : u64) (key : byte_string) (tpls tpls' : gmap dbkey dbtpl)
     (stm stm' : gmap nat txnst) gid γ α :
     dom tpls = keys_all ->
     valid_key key ->

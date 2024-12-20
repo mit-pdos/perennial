@@ -146,13 +146,13 @@ End MapLabelPre.
 Module UpdateProof.
 Record t : Type :=
   mk {
-      Updates : gmap string (list w8);
+      Updates : gmap byte_string (list w8);
       Sig: list w8
   }.
 Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ (updates_mref : loc) (updatesM : gmap string (Slice.t)) sig_sl,
+  ∃ (updates_mref : loc) (updatesM : gmap byte_string (Slice.t)) sig_sl,
     "HUpdates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
     "HSig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sig_sl) ∗
     "#HUpdatesM" ∷ own_map updates_mref DfracDiscarded updatesM ∗

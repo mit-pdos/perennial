@@ -3,15 +3,15 @@
  *)
 From Perennial.program_proof Require Export grove_prelude.
 
-Inductive proposal : Set :=
+Inductive proposal : Type :=
 | Any
-| Proposed (v : string).
+| Proposed (v : byte_string).
 Definition proposals := gmap nat proposal.
 
-Inductive vote : Set :=
+Inductive vote : Type :=
 | Reject
 | CAccept
-| FAccept (v : string).
+| FAccept (v : byte_string).
 Definition ballot := list vote.
 
 #[global]
@@ -19,8 +19,8 @@ Instance vote_eq_decision :
   EqDecision vote.
 Proof. solve_decision. Qed.
 
-Inductive consensus : Set :=
-| Chosen (v : string)
+Inductive consensus : Type :=
+| Chosen (v : byte_string)
 | Free.
 
 Definition prefixes `{Countable A} {B : Type} (lbs ls : gmap A (list B)) :=

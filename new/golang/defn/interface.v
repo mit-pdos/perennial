@@ -5,7 +5,7 @@ Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition get (f : string) : val :=
+Definition get (f : go_string) : val :=
   λ: "v",
     let: "v" := (match: "v" with InjL "v" => "v" | InjR <> => #() end) in
     let: (("typeid", "val"), "mset") := "v" in
@@ -15,7 +15,7 @@ Definition get (f : string) : val :=
      end) "val"
 .
 
-Local Definition make_def (mset : list (string*val)) : val :=
+Local Definition make_def (mset : list (go_string*val)) : val :=
   λ: "v", InjL (#"NO TYPE IDS YET", "v", (struct.fields_val mset)).
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
@@ -33,10 +33,10 @@ End interface.
 (* method sets for primitive types are empty *)
 Section mset.
 Context `{ffi_syntax}.
-Definition uint64__mset : list (string * val) := [].
-Definition int__mset : list (string * val) := [].
-Definition bool__mset : list (string * val) := [].
-Definition string__mset : list (string * val) := [].
-Definition slice__mset : list (string * val) := [].
-Definition slice__mset_ptr : list (string * val) := [].
+Definition uint64__mset : list (go_string * val) := [].
+Definition int__mset : list (go_string * val) := [].
+Definition bool__mset : list (go_string * val) := [].
+Definition string__mset : list (go_string * val) := [].
+Definition slice__mset : list (go_string * val) := [].
+Definition slice__mset_ptr : list (go_string * val) := [].
 End mset.

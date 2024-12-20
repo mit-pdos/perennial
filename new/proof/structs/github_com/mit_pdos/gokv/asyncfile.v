@@ -10,7 +10,7 @@ Context `{ffi_syntax}.
 Record t := mk {
   mu : loc;
   data : slice.t;
-  filename : string;
+  filename : go_string;
   index : w64;
   indexCond : loc;
   durableIndex : w64;

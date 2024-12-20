@@ -4,7 +4,7 @@ From Perennial.program_proof.tulip.program.txn Require Import txn_repr txn_key_t
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_Txn__getwrs (txn : loc) (key : string) q wrs :
+  Theorem wp_Txn__getwrs (txn : loc) (key : byte_string) q wrs :
     valid_key key ->
     {{{ own_txn_wrs txn q wrs }}}
       Txn__getwrs #txn #(LitString key)

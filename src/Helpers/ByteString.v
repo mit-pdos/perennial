@@ -1,4 +1,4 @@
-From stdpp Require Import base.
+From stdpp Require Import base decidable.
 From Perennial.Helpers Require Import Integers bytes.
 From Coq Require Import ZArith Strings.Byte.
 
@@ -25,25 +25,34 @@ Definition w8_to_byte (w: w8) : byte :=
 
 Notation byte_string := (@list w8) (only parsing).
 
-Definition parse_string (s: list Byte.byte) : byte_string :=
+#[local] Definition parse_string (s: list Byte.byte) : byte_string :=
   byte_to_w8 <$> s.
-Definition print_string (b: byte_string) : list Byte.byte :=
+#[local] Definition print_string (b: byte_string) : list Byte.byte :=
   w8_to_byte <$> b.
 
-String Notation byte_string parse_string print_string : string_scope.
+Declare Scope byte_string_scope.
+Bind Scope byte_string_scope with byte_string.
+String Notation byte_string parse_string print_string : byte_string_scope.
+
+Notation byte_string' := (@list (@Naive.rep 8)) (only parsing).
+String Notation byte_string' parse_string print_string : byte_string_scope.
+
+(* TODO: replace with more computationally efficient version *)
+#[local] Definition eqb (s1 s2: byte_string) : bool :=
+  bool_decide (s1 = s2).
 
 (* These theorems are not actually required, but they are a sanity check that
 the code above is implemented correctly. *)
 
-Lemma byte_to_w8_to_byte b :
+#[local] Lemma byte_to_w8_to_byte b :
   w8_to_byte (byte_to_w8 b) = b.
 Proof. destruct b; auto. Qed.
 
-Lemma w8_to_byte_to_w8 w :
+#[local] Lemma w8_to_byte_to_w8 w :
   byte_to_w8 (w8_to_byte w) = w.
 Proof. byte_cases w; reflexivity. Qed.
 
-Lemma parse_print_inverse s :
+#[local] Lemma parse_print_inverse s :
   print_string (parse_string s) = s.
 Proof.
   rewrite /print_string /parse_string.

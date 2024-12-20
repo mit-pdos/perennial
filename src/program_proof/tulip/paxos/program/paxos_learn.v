@@ -6,7 +6,7 @@ Section learn.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__learn
-    (px : loc) (lsn term : u64) (nidme : u64) (logc : list string) nids γ :
+    (px : loc) (lsn term : u64) (nidme : u64) (logc : list byte_string) nids γ :
     nidme ∈ nids ->
     length logc = uint.nat lsn ->
     safe_ledger_above γ nids (uint.nat term) logc -∗
