@@ -98,7 +98,7 @@ Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
   [∗ list] '(f, _) ∈ fs,
     ∀ `(H:IntoValStructField f t V Vf tf field_proj), ("H" +:+
                                                          (String.string_of_list_byte $
-                                                            ByteString.print_string f)) ∷ l ↦s[t :: f]{dq} (field_proj v).
+                                                            w8_to_byte <$> f)) ∷ l ↦s[t :: f]{dq} (field_proj v).
 
 Lemma struct_val_inj d fvs1 fvs2 :
   struct.val_aux (structT d) fvs1 = struct.val_aux (structT d) fvs2 →

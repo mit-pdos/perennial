@@ -19,7 +19,7 @@ Instance pretty_loc : Pretty loc :=
   fun x => pretty x.(loc_car).
 
 Definition quoted (s:byte_string) : string :=
-  ("""" ++ String.string_of_list_byte (ByteString.print_string s) ++ """")%string.
+  ("""" ++ String.string_of_list_byte (w8_to_byte <$> s) ++ """")%string.
 
 #[global]
 Instance pretty_lit : Pretty base_lit :=

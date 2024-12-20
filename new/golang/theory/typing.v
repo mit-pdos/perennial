@@ -351,7 +351,6 @@ Program Global Instance into_val_typed_string : IntoValTyped go_string stringT :
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
-Eval simpl in (default_val go_string).
 
 Program Global Instance into_val_typed_slice : IntoValTyped slice.t sliceT :=
 {| default_val := slice.nil |}.
