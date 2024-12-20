@@ -22,7 +22,7 @@ Section program.
       "#HmuP" ∷ readonly (idx ↦[Index :: "mu"] #muP) ∗
       "#Hmu"  ∷ is_lock tulipNS #muP (own_index idx γ α).
 
-  Theorem wp_Index__GetTuple (idx : loc) (key : string) γ α :
+  Theorem wp_Index__GetTuple (idx : loc) (key : byte_string) γ α :
     key ∈ keys_all ->
     is_index idx γ α -∗
     {{{ True }}}

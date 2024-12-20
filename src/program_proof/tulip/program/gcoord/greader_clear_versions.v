@@ -4,7 +4,7 @@ From Perennial.program_proof.tulip.program.gcoord Require Import greader_repr.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_GroupReader__clearVersions (grd : loc) (key : string) qreadm ts γ :
+  Theorem wp_GroupReader__clearVersions (grd : loc) (key : byte_string) qreadm ts γ :
     {{{ own_greader_qreadm grd qreadm ts γ }}}
       GroupReader__clearVersions #grd #(LitString key)
     {{{ RET #(); own_greader_qreadm grd (delete key qreadm) ts γ }}}.

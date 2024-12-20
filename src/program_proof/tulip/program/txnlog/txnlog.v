@@ -252,7 +252,6 @@ Section program.
       exists (CmdAbort (uint.nat ts)).
       split; first set_solver.
       simpl.
-      rewrite bytes_to_string_to_bytes.
       rewrite /encode_abort_cmd.
       by rewrite w64_to_nat_id.
     }
@@ -335,7 +334,7 @@ Section program.
       apply set_Forall_singleton.
       exists (CmdCommit (uint.nat ts) pwrs).
       split; first set_solver.
-      rewrite /= bytes_to_string_to_bytes -app_assoc.
+      rewrite /= -app_assoc.
       exists (u64_le ts ++ mdata).
       split; first done.
       exists mdata.
@@ -369,8 +368,8 @@ Section program.
   Qed.
 
   Theorem wp_Start
-    (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list string)
-    (addrmP : loc) (addrm : gmap u64 chan) (fname : string) gid γ π :
+    (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string)
+    (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) gid γ π :
     termc = (W64 0) ->
     terml = (W64 0) ->
     lsnc = (W64 0) ->

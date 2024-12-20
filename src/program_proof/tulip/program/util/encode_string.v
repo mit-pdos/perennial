@@ -29,7 +29,7 @@ Section program.
     wp_pures.
     iApply "HΦ".
     iFrame.
-    by rewrite -app_assoc /encode_string string_bytes_length.
+    by rewrite -app_assoc /encode_string.
   Qed.
 
 End program.

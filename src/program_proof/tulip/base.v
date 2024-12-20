@@ -22,12 +22,23 @@ Inductive txnres :=
 | ResCommitted (wrs : dbmap)
 | ResAborted.
 
-Definition fstring := {k : byte_string | (length k < (Z.to_nat (2 ^ 64)%Z))%nat }.
+Definition fstring := {k : byte_string | length k < 2 ^ 64 }.
 
 #[local]
 Instance fstring_finite :
   finite.Finite fstring.
-Proof. apply Helpers.finite.list_finite_lt_length. Qed.
+Proof.
+  unfold fstring.
+  set(x:=2 ^ 64).
+  generalize x. clear x. intros y.
+  unshelve refine (finite.surjective_finite (λ x : {k : byte_string | (length k < Z.to_nat y)%nat },
+                                               (proj1_sig x) ↾ _ )).
+  { abstract (destruct x; simpl; lia). }
+  { apply Helpers.finite.list_finite_lt_length. }
+  intros [].
+  unshelve eexists (exist _ _ _); last rewrite sig_eq_pi /= //.
+  simpl. lia.
+Qed.
 
 Definition keys_all : gset byte_string :=
   list_to_set (map proj1_sig (finite.enum fstring)).
@@ -300,8 +311,7 @@ Proof.
   intros Hvk.
   rewrite /valid_key /keys_all in Hvk.
   apply elem_of_list_to_set, elem_of_list_fmap_2 in Hvk.
-  destruct Hvk as ([k Hk] & -> & _).
-  simpl. lia.
+  by destruct Hvk as ([k Hk] & -> & _).
 Qed.
 
 Definition valid_ccommand gid (c : ccommand) :=

@@ -36,7 +36,7 @@ Definition encode_request_vote_req (term lsnlc : u64) :=
 
 Definition encode_append_entries_req_xkind
   (term lsnlc lsne : u64) (ents : list byte_string) :=
-  u64_le term ++ u64_le lsnlc ++ u64_le lsne ++ concat ents.
+  u64_le term ++ u64_le lsnlc ++ u64_le lsne ++ encode_strings ents.
 
 Definition encode_append_entries_req
   (term lsnlc lsne : u64) (ents : list byte_string) :=
@@ -78,7 +78,7 @@ Qed.
 
 Definition encode_request_vote_resp_xkind
   (nid term terme : u64) (ents : list byte_string) :=
-  u64_le nid ++ u64_le term ++ u64_le terme ++ concat ents.
+  u64_le nid ++ u64_le term ++ u64_le terme ++ encode_strings ents.
 
 Definition encode_request_vote_resp
   (nid term terme : u64) (ents : list byte_string) :=

@@ -12,8 +12,8 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Start
-    (rid : u64) (addr : chan) (fname : string) (addrmpxP : loc) (fnamepx : string)
-    (termc : u64) (terml : u64) (lsnc : u64) (log : list string) (addrmpx : gmap u64 chan)
+    (rid : u64) (addr : chan) (fname : byte_string) (addrmpxP : loc) (fnamepx : byte_string)
+    (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string) (addrmpx : gmap u64 chan)
     (addrm : gmap u64 chan) gid γ π :
     termc = (W64 0) ->
     terml = (W64 0) ->

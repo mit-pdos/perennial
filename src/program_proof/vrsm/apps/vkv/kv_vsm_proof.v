@@ -13,9 +13,9 @@ From Perennial.algebra Require Import map.
 Section defns.
 
 Inductive kvOp :=
-  | putOp : byte_string → byte_string → kvOp
-  | getOp : byte_string → kvOp
-  | condPutOp : byte_string → byte_string → byte_string → kvOp
+  | putOp (k : byte_string) (v : byte_string) : kvOp
+  | getOp (k : byte_string) : kvOp
+  | condPutOp (k : byte_string) (e : byte_string) (v : byte_string) : kvOp
 .
 
 Definition apply_op (state:gmap byte_string byte_string) (op:kvOp) :=
@@ -504,17 +504,17 @@ Proof.
         iModIntro.
         iIntros.
         rewrite /typed_map.map_insert /= in H0.
-        destruct (decide (k = s0)).
+        destruct (decide (k = k0)).
         { subst. rewrite lookup_insert /= in H0.
           replace (vnum) with (vnum') by word.
           iExists _. by iDestruct "Hintermediate" as "[_ $]".
         }
-        assert (compute_reply (ops ++ [putOp s0 s1]) (getOp k) =
-                  compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+        assert (compute_reply (ops ++ [putOp k v]) (getOp k0) =
+                  compute_reply (ops) (getOp k0)) as Heq; last setoid_rewrite Heq.
         {
           rewrite /compute_reply /= /compute_state.
           rewrite foldl_snoc /=.
-          by rewrite lookup_insert_ne.
+          rewrite lookup_insert_ne //.
         }
         rewrite lookup_insert_ne in H0; last done.
         destruct (decide (uint.nat vnum' <= uint.nat latestVnum)).
@@ -536,7 +536,7 @@ Proof.
       }
       {
         iPureIntro. intros.
-        destruct (decide (k = s0)).
+        destruct (decide (k = k0)).
         { subst.
           by rewrite /typed_map.map_insert lookup_insert /=.
         }
@@ -590,7 +590,7 @@ Proof.
       iSplitL.
       2: {
         iPureIntro. intros.
-        destruct (decide (k = s0)).
+        destruct (decide (k = k0)).
         { subst.
           by rewrite /typed_map.map_insert lookup_insert /=. }
         { rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
@@ -601,13 +601,13 @@ Proof.
       iModIntro.
       iIntros.
       rewrite /typed_map.map_insert /= in H0.
-      destruct (decide (k = s0)).
+      destruct (decide (k = k0)).
       { subst. rewrite lookup_insert /= in H0.
         replace (vnum) with (vnum') by word.
         iExists _. by iDestruct "Hintermediate" as "[_ $]".
       }
-      eassert (compute_reply (ops ++ [_]) (getOp k) =
-                compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+      eassert (compute_reply (ops ++ [_]) (getOp k0) =
+                compute_reply (ops) (getOp k0)) as Heq; last setoid_rewrite Heq.
       {
         rewrite /compute_reply /= /compute_state.
         rewrite foldl_snoc /=. done.
@@ -690,13 +690,13 @@ Proof.
           iModIntro.
           iIntros.
           rewrite /typed_map.map_insert /= in H0.
-          destruct (decide (k = s0)).
+          destruct (decide (k = k0)).
           { subst. rewrite lookup_insert /= in H1.
             replace (vnum) with (vnum') by word.
             iExists _. by iDestruct "Hintermediate" as "[_ $]".
           }
-          eassert (compute_reply (ops ++ [condPutOp s0 _ s2]) (getOp k) =
-                  compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+          eassert (compute_reply (ops ++ [condPutOp k _ _]) (getOp k0) =
+                  compute_reply (ops) (getOp k0)) as Heq; last setoid_rewrite Heq.
           {
             rewrite /compute_reply /= /compute_state.
             rewrite foldl_snoc /=.
@@ -726,7 +726,7 @@ Proof.
         }
         {
           iPureIntro. intros.
-          destruct (decide (k = s0)).
+          destruct (decide (k = k0)).
           { subst.
             by rewrite /typed_map.map_insert lookup_insert /=.
           }
@@ -746,8 +746,6 @@ Proof.
       wp_apply wp_StringToBytes.
       injection Hlookup as <-.
       iIntros (?) "Hreply_sl".
-      assert (default "" (foldl apply_op ∅ ops !! s0) ≠ s1) as Hnot.
-      { intros x. apply Heqb. repeat f_equal. done. }
       iApply "HΦ".
       iSplitL "Hkvs Hkvs_map Hvnums HminVnum Hvnums_map".
       {
@@ -762,7 +760,7 @@ Proof.
           iModIntro.
           iIntros.
           iDestruct "Hintermediate" as "[Hintermediate Hcurst]".
-          assert (compute_state (ops ++ [condPutOp s0 s1 s2])
+          assert (compute_state (ops ++ [condPutOp k e v])
                                 = (compute_state ops)) as Heq.
           { rewrite /compute_state foldl_snoc /=.
             rewrite decide_False; done.
@@ -787,7 +785,7 @@ Proof.
         }
         {
           iPureIntro. intros.
-          specialize (Hle k).
+          specialize (Hle k0).
           word.
         }
       }
@@ -850,7 +848,7 @@ Proof.
   {
     wp_pures. iApply "HΦ". iModIntro.
     apply map_get_true in Hlookup.
-    pose proof (Hle s0) as Hle2.
+    pose proof (Hle k) as Hle2.
     rewrite Hlookup /= in Hle2.
     iSplitR. { word. }
     injection Hkv_lookup as <- ?.
@@ -858,7 +856,7 @@ Proof.
     rewrite /kv_record /compute_reply /= /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
-    iSpecialize ("Hst" $! s0).
+    iSpecialize ("Hst" $! k).
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".
@@ -869,7 +867,7 @@ Proof.
     wp_loadField. wp_pures. iApply "HΦ". iModIntro.
     apply map_get_false in Hlookup as [Hlookup Hv].
     subst.
-    pose proof (Hle s0) as Hle2.
+    pose proof (Hle k) as Hle2.
     rewrite Hlookup /= in Hle2.
     iSplitR. { word. }
     injection Hkv_lookup as <- ?.
@@ -877,7 +875,7 @@ Proof.
     rewrite /kv_record /compute_reply /= /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
-    iSpecialize ("Hst" $! s0).
+    iSpecialize ("Hst" $! k).
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".

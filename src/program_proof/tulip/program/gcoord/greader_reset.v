@@ -17,10 +17,10 @@ Section program.
     (*@     grd.qreadm = make(map[string]map[uint64]tulip.Version)              @*)
     (*@ }                                                                       @*)
     iNamed "Hgrd".
-    wp_apply (wp_NewMap string dbval).
+    wp_apply (wp_NewMap byte_string dbval).
     iIntros (valuemP') "Hvaluem".
     wp_storeField.
-    wp_apply (wp_NewMap string loc).
+    wp_apply (wp_NewMap byte_string loc).
     iIntros (qreadmP') "Hqreadm".
     wp_storeField.
     iApply "HΦ".

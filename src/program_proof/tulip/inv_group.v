@@ -422,7 +422,7 @@ Section lemma.
     do 2 iNamed "Hgroup".
     pose proof (apply_cmds_dom _ _ _ Hrsm) as Hdom.
     assert (is_Some (hists !! key)) as [h Hh].
-    { rewrite -elem_of_dom. rewrite Hdom. set_solver. }
+    { rewrite -elem_of_dom. set_solver. }
     iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.
     rewrite /hist_from_log in Hhlb.
     destruct (apply_cmds loglb) as [cmlb histmlb |] eqn:Happly; last done.
@@ -467,14 +467,6 @@ Section lemma.
     iApply (group_inv_witness_repl_hist with "Hloglb Hgroup").
     { pose proof (apply_cmds_dom _ _ _ Happly) as Hdom.
       apply elem_of_dom_2 in Hh.
-      try fast_done;                                                                                                                                                                                    
-        intros; setoid_subst;
-        set_unfold;
-        intros; setoid_subst;
-        try match goal with |- _ ∈ _ => apply dec_stable end.
-        naive_solver eauto.
-
-      naive_solver.
       set_solver.
     }
     { done. }

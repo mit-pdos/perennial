@@ -66,7 +66,7 @@ Context `{!ekvG Σ}.
    [getOp] doing [default []]. *)
 Definition own_kvs γ ops : iProp Σ :=
   ∃ allocatedKeys,
-  ghost_map_auth γ.(kv_gn) 1 (compute_state ops ∪ gset_to_gmap "" allocatedKeys)
+  ghost_map_auth γ.(kv_gn) 1 (compute_state ops ∪ gset_to_gmap ""%go allocatedKeys)
 .
 
 Definition stateN := nroot .@ "state".
@@ -280,14 +280,13 @@ Proof.
   iIntros (?) "Hck Hsl".
   wp_apply (wp_StringFromBytes with "[$]").
   iIntros "_".
-  simpl. rewrite string_to_bytes_to_string /=.
   rewrite lookup_union in Hlook.
+  simpl.
   destruct (compute_state ops !! key) as [x|]; simpl.
   - simpl in Hlook. rewrite union_Some_l in Hlook.
     injection Hlook as <-.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
-  -
-    rewrite left_id lookup_gset_to_gmap_Some in Hlook.
+  - rewrite left_id lookup_gset_to_gmap_Some in Hlook.
     destruct Hlook as [? ?]; subst.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
 Qed.
@@ -307,7 +306,7 @@ Lemma wp_Clerk__CondPut ck γkv key expect val :
   <<< ∀∀ old_value, kv_ptsto γkv key old_value >>>
     Clerk__CondPut #ck #(str key) #(str expect) #(str val) @ (↑pbN ∪ ↑prophReadN ∪ ↑esmN ∪ ↑stateN)
   <<< kv_ptsto γkv key (if bool_decide (expect = old_value) then val else old_value) >>>
-  {{{ RET #(str (if bool_decide (expect = old_value) then "ok" else "")); own_Clerk ck γkv }}}.
+  {{{ RET #(str (if bool_decide (expect = old_value) then "ok"%go else ""%go)); own_Clerk ck γkv }}}.
 Proof.
   iIntros "%Φ !# Hck Hupd".
   wp_rec.

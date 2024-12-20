@@ -126,7 +126,7 @@ Section repr.
       "%Hexec"      ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
 
   Definition own_replica (rp : loc) (gid rid : u64) γ α : iProp Σ :=
-    ∃ (cloga : dblog) (lsna : u64) (fname : string) (bs : list u8),
+    ∃ (cloga : dblog) (lsna : u64) (fname : byte_string) (bs : list u8),
       "Hrp"        ∷ own_replica_with_cloga_no_lsna rp cloga gid rid γ α ∗
       "Hlsna"      ∷ rp ↦[Replica :: "lsna"] #lsna ∗
       "HfnameP"    ∷ rp ↦[Replica :: "fname"] #(LitString fname) ∗

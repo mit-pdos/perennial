@@ -58,7 +58,7 @@ Proof.
 Qed.
 
 Definition encode_read_req_xkind (ts : u64) (key : byte_string) :=
-  u64_le ts ++ key.
+  u64_le ts ++ encode_string key.
 
 Definition encode_read_req (ts : u64) (key : byte_string) (data : list u8) :=
   data = u64_le (U64 100) ++ encode_read_req_xkind ts key.
@@ -215,7 +215,7 @@ Qed.
 
 Definition encode_read_resp_xkind
   (ts rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) :=
-  u64_le ts ++ u64_le rid ++ key ++
+  u64_le ts ++ u64_le rid ++ encode_string key ++
     encode_dbpver ver ++ [if slow then U8 1 else U8 0].
 
 Definition encode_read_resp
