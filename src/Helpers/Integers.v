@@ -8,6 +8,16 @@ From Perennial Require Import Helpers.LittleEndian.
 
 Open Scope Z_scope.
 
+(* TODO: separate some concerns in this file into three files:
+
+- Create w64, w32, w8 types. These are constructed by using Naive.gen_word to
+  create an instance of the word interface, then taking its carrier. (The actual
+  carrier is a Z and a proof it's in-bounds.)
+- word tactic and its helper lemmas.
+- Little endian encoding and proofs. This can also have roundup I guess.
+
+*)
+
 #[global]
 Instance word_inhabited width (word: Interface.word width) : Inhabited word.
 Proof.
@@ -150,7 +160,7 @@ Proof. apply _. Qed.
 Instance w8_countable : Countable byte.
 Proof. apply _. Qed.
 
-(* uint and the u64_through* theorems are for backwards compatibility *)
+(* the u64_through* theorems are for backwards compatibility *)
 (* Note[SB]: it's a bit long to write `Z.to_nat (word.unsigned x)`,
 so maybe still keep some notation for this? *)
 
@@ -290,12 +300,12 @@ Theorem u64_le_to_word : forall x,
 Proof.
   intros x; simpl.
   unfold le_to_u64, u64_le.
-  f_equal.
-  rewrite (tuple_of_to_list_u64 (split 8 _)).
+  rewrite -> tuple_of_to_list_u64.
   rewrite combine_split.
   change (Z.of_nat w64_bytes * 8) with 64.
   rewrite word.wrap_unsigned.
-  by rewrite word.of_Z_unsigned.
+  rewrite word.of_Z_unsigned.
+  done.
 Qed.
 (* end 64-bit code *)
 
@@ -337,12 +347,12 @@ Theorem u32_le_to_word : forall x,
 Proof.
   intros x; simpl.
   unfold le_to_u32, u32_le.
-  f_equal.
-  rewrite (tuple_of_to_list_u32 (split 4 _)).
+  rewrite -> tuple_of_to_list_u32.
   rewrite combine_split.
   change (Z.of_nat w32_bytes * 8) with 32.
   rewrite word.wrap_unsigned.
-  by rewrite word.of_Z_unsigned.
+  rewrite word.of_Z_unsigned.
+  done.
 Qed.
 (* end 32-bit code *)
 
@@ -421,11 +431,7 @@ Proof.
   { rewrite LittleEndian.split_combine.
     simpl; auto. }
   cbv [length].
-  match goal with
-  | |- context[LittleEndian.combine ?n ?t] =>
-    pose proof (combine_bound n t)
-  end.
-  exact H.
+  apply combine_bound.
 Qed.
 
 Lemma unsigned_U64 z : uint.Z (W64 z) = word.wrap (word:=w64_word_instance) z.
