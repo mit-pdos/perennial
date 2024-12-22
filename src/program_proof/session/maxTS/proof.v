@@ -22,7 +22,7 @@ Section heap.
     match t1 with
     | [] => []
     | cons hd1 tl1 => match t2 with
-                      | [] => [] (* this shouldn't happen*)
+                      | [] => [] 
                       | cons hd2 tl2 => if (uint.Z hd1) >? (uint.Z hd2) then
                                           (cons hd1 (maxTSCoq tl1 tl2)) else (cons hd2 (maxTSCoq tl1 tl2))
                       end
@@ -52,7 +52,6 @@ Section heap.
       auto.
   Qed.
 
-  (* own_slice_small_agree *)
   Lemma getMaxTsEquiv (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
     {{{
           own_slice x uint64T (DfracOwn 1) xs ∗
@@ -86,25 +85,21 @@ Section heap.
                 (λ continue, ∃ (i: w64) (l: list w64),
                     own_slice x uint64T (DfracOwn 1) xs ∗
                       own_slice y uint64T (DfracOwn 1) ys ∗
-                      own_slice s' uint64T (DfracOwn 1) l ∗ (* how do we know the length of l on entry? *)
+                      own_slice s' uint64T (DfracOwn 1) l ∗ 
                       index ↦[uint64T] #i ∗
                       len ↦[uint64T] #(length xs) ∗
-                      slice ↦[slice.T uint64T] s' ∗ (* this is wrong *)
-                      (* Something that says
-                         one is greater than the other
-                       *)
-                      ⌜continue = false -> uint.nat i = (length xs)⌝ ∗
-                                                           ⌜(length l) = (length xs)⌝ ∗
-                                                                           ⌜∀ (i': nat),
-                                                                             i' < uint.nat i <= length xs ->
-                                                                           forall (x y z: w64), l !! i' = Some x ->
-                                                                                          xs !! i' = Some y ->
-                                                                                          ys !! i' = Some z ->
-                                                                                          x = (coqMax y z)⌝
+                      slice ↦[slice.T uint64T] s' ∗ 
+                      ⌜continue = false -> uint.nat i = (length xs)⌝ ∗ ⌜(length l) = (length xs)⌝ ∗
+                                                                                       ⌜forall (i': nat),
+                   i' < uint.nat i <= length xs ->
+                   forall (x y: w64), xs !! i' = Some x ->
+                                      ys !! i' = Some y ->
+                                      l !! i' = Some (coqMax x y)⌝ ∗
+                                                  ⌜uint.Z i <= (uint.Z (length xs))⌝ 
                 )%I
                with "[] [H H1 index len s' slice]").
     - iIntros (?). iModIntro. iIntros "H1 H2".
-      iNamed "H1". iDestruct "H1" as "(H1 & H3 & H4 & H5 & H6 & H7 & H8 & %H9)".
+      iNamed "H1". iDestruct "H1" as "(H1 & H3 & H4 & H5 & H6 & H7 & H8 & %H9 & %H10 & %H11)".
       wp_pures. wp_load. wp_load. wp_if_destruct.
       + wp_pures. wp_load.
         wp_bind (maxTwoInts _ _)%E.
@@ -120,7 +115,7 @@ Section heap.
         * iIntros "Hy". wp_load. wp_apply (wp_SliceGet with "[$Hx]").
           -- iPureIntro. apply H0.
           -- iIntros "Hx".
-             wp_apply (max_equiv). iIntros (r) "%H10".
+             wp_apply (max_equiv). iIntros (r) "%H12".
              wp_load. wp_load.
              wp_apply (wp_SliceSet with "[$Hs]").
              ++ iFrame. iPureIntro.
@@ -131,35 +126,32 @@ Section heap.
                 iExists (<[uint.nat i:=r]> l)%E. iFrame. iSplit.
                 ** unfold own_slice_small. auto.
                 ** iSplitR.
-                   { iPureIntro. destruct H9. rewrite <- H1. apply length_insert. }
-                   { iPureIntro. intros.
-                     -  destruct H9. (* there are two cases either i = i' or i = i *)
-                        destruct (decide (i' = uint.nat i)).
-                        + subst. 
-                          rewrite list_lookup_insert_Some in H2.
-                          destruct H2.
-                         * destruct H2. destruct H9. rewrite <- H9.
-                           rewrite H in H6. injection H6 as ?. rewrite H6. 
-                           rewrite H0 in H5. injection H5 as ?. rewrite H5. auto. 
-                         * destruct H2. assert (uint.nat i = uint.nat i) by word. unfold not in H2.
-                           apply H2 in H10. inversion H10.
+                   { iPureIntro. destruct H9. apply length_insert. }
+                   { intros. iSplit; try word.
+                     - iPureIntro. intros. destruct H9. (* there are two cases either i = i' or i = i *)
+                       destruct (decide (i' = uint.nat i)).
+                       + subst.
+                         rewrite list_lookup_insert_Some.
+                         left. split; auto.
+                         split; try word.
+                         rewrite H0 in H2.
+                         rewrite H in H5.
+                         injection H2 as ?.
+                         injection H5 as ?.
+                         subst.
+                         auto.
                        + destruct H1.
                          rewrite Z.lt_le_pred in H1.
                          assert ((Z.pred (uint.nat (w64_word_instance.(word.add) i (W64 1)))) = uint.nat i) by word.
-                         rewrite H11 in H1.
-                         assert (i' < length l)%nat by word.
-                         assert (i' < uint.nat i <= length xs) by word.
                          assert(uint.nat i ≠ i') by word.
-                         apply (list_lookup_insert_ne l (uint.nat i) (i') r) in H14.
-                         rewrite H14 in H2. 
-                         eapply H8 in H2; auto.
-                         * apply H2.
-                         * eassumption.
-                         * auto.
+                         apply (list_lookup_insert_ne l (uint.nat i) (i') r) in H8.
+                         rewrite H8. 
+                         eapply H10; try word; try auto.
                    }
       + iModIntro. iApply "H2". iExists i. iExists l. iFrame. iPureIntro. split.
-        * intros. word. (* look at old proof to see how we did this? *)
-        * auto.
+        * intros. 
+          word. 
+        * auto. 
     - assert (zero_val uint64T = #(W64 0)). { unfold zero_val. simpl. auto. }
       rewrite H. iExists (W64 0).
       iExists (replicate (uint.nat x.(Slice.sz)) (W64 0))%V.
@@ -171,23 +163,80 @@ Section heap.
             f_equal. rewrite w64_to_nat_id. auto. } rewrite H0. iFrame.
         * iPureIntro. split.
           -- intros.  inversion H0.
-          -- rewrite length_replicate. split; auto. intros.
-             word.
+          -- rewrite length_replicate. split; auto. intros. split; word.
     - iIntros "H". wp_pures. iNamed "H". iDestruct "H" as "(H1 & H3 & H4 & H5 & H6 & H7 & %H8 & %H9 & %H10)".
       wp_load. iModIntro. iApply "H2". iFrame.
       assert (false = false) by auto.
       apply H8 in H.
       assert (maxTSCoq xs ys = l). {
-        generalize dependent ys. generalize dependent l.
+        generalize dependent ys. generalize dependent l. generalize dependent i.
         induction xs.
         + intros. inversion H9. apply nil_length_inv in H1. rewrite H1. auto.
         + induction ys.
           * intros. inversion H3.
           * intros. simpl. destruct (decide (uint.Z a >? uint.Z a0 = true)).
-            -- assert (0 < uint.nat i <= length (a :: xs)) by word.
-            -- admit.
+            -- rewrite e. simpl.
+               rewrite length_cons in H9.
+               assert (0%nat < uint.nat i <= length (a :: xs)). {
+                 rewrite length_cons. rewrite H. rewrite length_cons. word. }
+               destruct H10.
+               eapply H1 in H0; try word; try eassumption; try auto.
+               unfold coqMax in H0. rewrite e in H0.
+               rewrite <- head_lookup in H0. rewrite head_Some in H0. destruct H0.
+               rewrite H0. f_equal. eapply IHxs; try word; try eassumption; try auto.
+               ++ rewrite length_cons in H4. word.
+               ++ intros. rewrite length_cons in H. assert (uint.nat (uint.nat i - 1) = length xs) by word.
+                  eapply H6.
+               ++ rewrite H. rewrite length_cons. assert (S (length xs) - 1 = length xs) by word.
+                  rewrite H5. rewrite length_cons in H4. assert (length xs < 2 ^ 64) by word. word.
+               ++ rewrite H0 in H9. rewrite length_cons in H9. inversion H9. word.
+               ++ split.
+                  ** intros. assert (l !! (S i')%nat = x0 !! i'). {
+                       rewrite H0. rewrite lookup_cons.
+                       auto.
+                     }
+                     rewrite <- H10. apply H1; try word.
+                     { assert (uint.nat i <= length (a :: xs)) by word.
+                       assert (i' < uint.nat (W64 (uint.nat i - 1))) by word.
+                       assert (S i' < uint.nat (W64 (uint.nat i - 1)) + 1) by word.
+                       rewrite length_cons in H4.
+                       assert (length xs < 2 ^ 64) by word. word.
+                     }
+                     { rewrite lookup_cons. auto. }
+                     { rewrite lookup_cons. auto. }
+                  ** rewrite H. rewrite length_cons. word.
+            -- assert (ne: (uint.Z a >? uint.Z a0) = false) by word. rewrite ne. simpl.
+               rewrite length_cons in H9.
+               assert (0%nat < uint.nat i <= length (a :: xs)). {
+                 rewrite length_cons. rewrite H. rewrite length_cons. word. }
+               destruct H10.
+               eapply H1 in H0; try word; try eassumption; try auto.
+               unfold coqMax in H0. rewrite ne in H0.
+               rewrite <- head_lookup in H0. rewrite head_Some in H0. destruct H0.
+               rewrite H0. f_equal. eapply IHxs; try word; try eassumption; try auto.
+               ++ rewrite length_cons in H4. word.
+               ++ intros. rewrite length_cons in H. assert (uint.nat (uint.nat i - 1) = length xs) by word.
+                  eapply H6.
+               ++ rewrite H. rewrite length_cons. assert (S (length xs) - 1 = length xs) by word.
+                  rewrite H5. rewrite length_cons in H4. assert (length xs < 2 ^ 64) by word. word.
+               ++ rewrite H0 in H9. rewrite length_cons in H9. inversion H9. word.
+               ++ split.
+                  ** intros. assert (l !! (S i')%nat = x0 !! i'). {
+                       rewrite H0. rewrite lookup_cons.
+                       auto.
+                     }
+                     rewrite <- H10. apply H1; try word.
+                     { assert (uint.nat i <= length (a :: xs)) by word.
+                       assert (i' < uint.nat (W64 (uint.nat i - 1))) by word.
+                       assert (S i' < uint.nat (W64 (uint.nat i - 1)) + 1) by word.
+                       rewrite length_cons in H4.
+                       assert (length xs < 2 ^ 64) by word. word.
+                     }
+                     { rewrite lookup_cons. auto. }
+                     { rewrite lookup_cons. auto. }
+                  ** rewrite H. rewrite length_cons. word.
       }
-      rewrite H. iFrame.
-  Qed.
+      rewrite H0. iFrame.
+  Qed. 
   
 End heap.
