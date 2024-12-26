@@ -17,7 +17,13 @@ func BinarySearch(s []uint64, needle uint64) (uint64, bool) {
 	return i, false
 }
 
-func insert(s []uint64, value uint64) []uint64 {
+func sortedInsert(s []uint64, value uint64) []uint64 {
 	index, _ := BinarySearch(s, value)
-	return append(s[:index+1], s[index:]...)
+	if uint64(len(s)) == index {
+		return append(s, value)
+	} else {
+		right := append([]uint64{value}, s[index:]...)
+		result := append(s[:index], right...)
+		return result
+	}
 }

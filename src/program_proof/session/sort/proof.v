@@ -19,17 +19,8 @@ Section heap.
   ∀ (i j: nat), (i < j)%nat ->
          ∀ (x1 x2: w64), xs !! i = Some x1 ->
                          xs !! j = Some x2 ->
-                  uint.Z x1 <= uint.Z x2.
-
-  (* Fixpoint insert (lst: list w64) (element: w64) (i: nat) :=
-    match lst with
-    | [] => [element]
-    | cons h tl => match i with
-                   | 0%nat => cons element lst 
-                   | S n => cons h (insert tl element n)
-                   end
-    end. *) 
-
+                         uint.Z x1 <= uint.Z x2.
+  
   Lemma implies_Sorted :
     forall (xs: list w64) (element: w64) (i: w64),
     is_sorted xs ->
@@ -42,13 +33,6 @@ Section heap.
           ∀ (y: w64), xs !! j' = Some y →
                       uint.Z element <= uint.Z y) ->
     is_sorted ((take (uint.nat i) xs) ++ (cons element (drop (uint.nat i) xs))).
-  (* prove inserting xs at some elemnt of a list produces a new list which has the prefix of the
-                                                    previous list ++ element :: tail of the list (take for head of list) (drop for tail)
-                                                    instead of insert function
-                                                    lemma if i < length of list then inserting element insert_take_drop
-                                                  *)
-  (* any sublist of sorted list is sorted *)
-  (* there is an issue which i is it talking about for the new list or the old list? *)
   Proof.
     unfold is_sorted. intros.
     destruct (decide (j < uint.nat i)).
@@ -276,44 +260,82 @@ Section heap.
         { intros. destruct H8; auto. split; try word. eapply H7; eassumption. }
   Qed.
 
-  (* Lemma wp_insert (s: Slice.t) (xs: list w64) (v: w64) :
+  Lemma cons_append (A: Type) (x: list A) (e : A):
+    [e] ++ x = cons e x.
+  Proof.
+    induction x.
+    - auto.
+    - simpl. auto.
+  Qed.
+  
+  Lemma wp_insert (s: Slice.t) (xs: list w64) (v: w64) :
     {{{ own_slice s uint64T (DfracOwn 1) xs ∗ ⌜is_sorted xs⌝ }}}
-      SortedInsert s #v
+      sortedInsert s #v
       {{{ (ns: Slice.t), RET slice_val (ns);
           (∃ (nxs: list w64), own_slice ns uint64T (DfracOwn 1) nxs ∗
                               ⌜is_sorted nxs⌝)%I
       }}}.
   Proof.
-    iIntros (Φ) "(H & %H1) H2". unfold SortedInsert. wp_pures. 
+    iIntros (Φ) "(H & %H1) H2". unfold sortedInsert. wp_pures. 
     wp_apply (wp_BinarySearch with "[$H]"); auto.
-    iIntros (i ok) "H". wp_pures. wp_if_destruct.
-    - iModIntro. iApply "H2". iDestruct "H" as "(H1 & H2 & H3 & %H4 & %H5 & H6)". 
-      iFrame. 
-    - wp_bind (SliceSkip uint64T s #i). iDestruct "H" as "(H1 & H3 & %H3 & %H4 & %H5)". 
-      (* get the length from the slice *)
-      iDestruct (own_slice_sz with "H1") as %Hsz.
-      wp_apply (wp_SliceSkip with "[H1]"). (* we gave ownership of the slice to the other person *)
-      + destruct H5 as (x & y & z & H8 & H9 & H10); auto.
-        assert (uint.Z (length xs) = uint.Z s.(Slice.sz)) by word. rewrite <- H.
-        apply lookup_lt_Some in H9. word.
-      + iModIntro.
-        wp_apply wp_SliceTake_full_cap. (* wp_SliceTake. *)
-        * (* Say that the capacity at smallest is the length *)
-          Search Slice.cap.
-        wp_bind (SliceTake s (#i + #(W64 1)))%I.
-        wp_pures. 
-
-        assert (i <= length xs) by word.
-        
-      + wp_bind (SliceTake s (#i + #(W64 1)))%I.
-      Search "SliceSkip". wp_bind (SliceTake s #(w64_word_instance.(word.add) i (W64 1))).
-
-      Search SliceAppendSlice. wp_pures.
-      wp_apply
-        wp_SliceAppendSlice. wp_SliceAppendSlice.
-
-
-   *)
-  
+    iIntros (i ok) "(H & %H &%H3 & %H4 & %H5 & %H6)". wp_pures.
+    iDestruct (own_slice_sz with "H") as %Hsz.
+    unfold slice.len. wp_pures.
+    wp_if_destruct.
+    - wp_apply (wp_SliceAppend with "[$]").
+      iIntros (s') "H".
+      iApply "H2".
+      iExists (xs ++ [v]).
+      iFrame.
+      iPureIntro.
+      apply (implies_Sorted xs v (length xs)) in H3; try word.
+      + assert ((take (uint.nat (W64 (length xs))) (xs ++ []) ++ v :: drop (uint.nat (W64 (length xs))) (xs ++ []) ) = (xs ++ [v])). {
+          replace (uint.nat (W64 (length xs))) with (length xs)%nat by word.
+          rewrite take_app_length. rewrite drop_app_length. auto. }
+        rewrite app_nil_r in H0. rewrite <- H0. auto.
+      + replace (uint.nat (W64 (length xs))) with (length xs)%nat by word. rewrite Hsz.
+        auto.
+      + replace (uint.nat (W64 (length xs))) with (length xs)%nat by word. rewrite Hsz.
+        auto.
+    - wp_bind (SliceAppendSlice _ _ _).
+      wp_apply wp_SliceSkip; try word.
+      unfold own_slice.
+      unfold slice.own_slice.
+      iDestruct (own_slice_wf with "H") as %Hcap.
+      iDestruct "H" as "[H H1]".
+      iDestruct (slice_small_split with "H") as "H".
+      + assert (uint.Z i <= length xs) by word.
+        apply H0.
+      + iDestruct "H" as "[H H3]".
+        wp_apply slice.wp_SliceSingleton; auto.
+        iIntros (s0) "H4".
+        wp_apply (wp_SliceAppendSlice with "[H3 H4]"); try auto.
+        * unfold own_slice. iSplitL "H4".
+          -- admit.
+          -- iFrame. 
+        * iIntros (s') "[H3 H4]". wp_pures. wp_bind (SliceAppendSlice _ _ _).
+          wp_apply wp_SliceTake; try word.
+          wp_apply (wp_SliceAppendSlice with "[H H1 H3 H4]"); try auto.
+          -- iAssert (own_slice_small (slice_skip s uint64T i) uint64T (DfracOwn 1) (drop (uint.nat i) xs) ∗ own_slice_cap s uint64T)%I with "[H1 H4]" as "H5". { iFrame. }
+             iApply own_slice_cap_take in "H5"; try word.
+             iFrame. unfold own_slice. unfold slice.own_slice. unfold own_slice_small.
+             iDestruct "H3" as "[H3 H4]". iFrame.
+          -- iIntros (s'0) "H". wp_pures. iModIntro. iApply "H2".
+             iExists (take (uint.nat i) xs ++ [#v] ++ drop (uint.nat i) xs).
+             iDestruct "H" as "[H H1]".
+             iSplitL.
+             ++ unfold own_slice. unfold slice.own_slice. iDestruct "H" as "[H H2]".
+                iFrame.
+             ++ iPureIntro. apply (implies_Sorted xs v (uint.nat i)) in H3; try word.
+                ** assert ((take (uint.nat (W64 (uint.nat i))) xs ++ v :: drop (uint.nat (W64 (uint.nat i))) xs) = (take (uint.nat i) xs ++ [#v] ++ drop (uint.nat i) xs)). {
+                     replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
+                     rewrite cons_append. auto.
+                   }
+                   rewrite <- H0. auto.
+                ** replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
+                   apply H4.
+                ** replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
+                   apply H5.
+  Admitted.
 
 End heap. 

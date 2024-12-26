@@ -56,8 +56,7 @@ Section heap.
     {{{
           own_slice x uint64T (DfracOwn 1) xs ∗
             own_slice y uint64T (DfracOwn 1) ys ∗
-            ⌜length xs = length ys⌝ ∗
-                           ⌜length xs < 2^64⌝
+            ⌜length xs = length ys⌝ ∗ ⌜length xs < 2^64⌝
     }}}
       maxTS x y 
       {{{
