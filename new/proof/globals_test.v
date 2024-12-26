@@ -10,11 +10,11 @@ Context `{!goGlobalsGS Σ}.
 Definition own_defined : iProp Σ :=
   ∃ globalB_addr globalA_addr globalY_addr GlobalX_addr,
     "#HglobalB_addr" ∷ is_global_addr globals_test.globalB globalB_addr ∗
-    "HglobalB" ∷ globalB_addr ↦ (default_val string) ∗
+    "HglobalB" ∷ globalB_addr ↦ (default_val go_string) ∗
     "#HglobalA_addr" ∷ is_global_addr globals_test.globalA globalA_addr ∗
-    "HglobalA" ∷ globalA_addr ↦ (default_val string) ∗
+    "HglobalA" ∷ globalA_addr ↦ (default_val go_string) ∗
     "#HglobalY_addry" ∷ is_global_addr globals_test.globalY globalY_addr ∗
-    "HglobalY" ∷ globalY_addr ↦ (default_val string) ∗
+    "HglobalY" ∷ globalY_addr ↦ (default_val go_string) ∗
     "#HGlobalX_addr" ∷ is_global_addr globals_test.GlobalX GlobalX_addr ∗
     "HGlobalX" ∷ GlobalX_addr ↦ (default_val w64)
 .
@@ -62,9 +62,9 @@ Definition own_initialized : iProp Σ :=
   "#HglobalY_addr" ∷ is_global_addr globals_test.globalY globalY_addr ∗
   "#HGlobalX_addr" ∷ is_global_addr globals_test.GlobalX GlobalX_addr ∗
 
-  "HglobalB" ∷ globalB_addr ↦ "b" ∗
-  "HglobalA" ∷ globalA_addr ↦ "a" ∗
-  "HglobalY" ∷ globalY_addr ↦ "" ∗
+  "HglobalB" ∷ globalB_addr ↦ "b"%go ∗
+  "HglobalA" ∷ globalA_addr ↦ "a"%go ∗
+  "HglobalY" ∷ globalY_addr ↦ ""%go ∗
   "HglobalX" ∷ GlobalX_addr ↦ (W64 10)
 .
 
@@ -78,7 +78,6 @@ Proof.
   iIntros (???) "Hunused HΦ".
   wp_call.
   wp_apply (wp_package_init with "[$]").
-  { reflexivity. }
   { eassumption. }
   { set_solver. }
   { (* prove init function *)
@@ -180,7 +179,7 @@ Proof.
     iExists (λ _, True)%I.
     wp_apply (wp_initialize' with "[$]").
     { set_solver. }
-    { done. }
+    { rewrite lookup_singleton. done. }
     iIntros "Hinit".
     iMod (own_package_post_toks_get globals_test.pkg_name' with "[$]") as "[? _]".
     { set_solver. }
