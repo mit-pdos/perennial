@@ -294,20 +294,21 @@ Section heap.
   Fixpoint insert (l : list w64) (i : w64) :=
     match l with
     | [] => [i]
-    | cons h t => if uint.Z i <=? uint.Z h then (i :: h :: t)%list else (h :: insert t i)%list
+    | cons h t => if uint.Z i <? uint.Z h then (i :: h :: t)%list else (h :: insert t i)%list
     end.
   
   Lemma wp_insert (s: Slice.t) (xs: list w64) (v: w64) :
-    {{{ own_slice s uint64T (DfracOwn 1) xs ∗ ⌜is_sorted xs⌝ }}}
+    {{{ own_slice s uint64T (DfracOwn 1) xs ∗ ⌜is_sorted xs⌝ ∗ ⌜length xs < 2^64⌝}}}
       sortedInsert s #v
       {{{ (ns: Slice.t), RET slice_val (ns);
           (∃ (nxs: list w64), own_slice ns uint64T (DfracOwn 1) nxs ∗
-                              ⌜is_sorted nxs⌝ ∗ ⌜Permutation nxs (v :: xs)%list⌝)%I
+                                ⌜nxs = insert xs v⌝)%I
+                              (*⌜is_sorted nxs⌝ ∗ ⌜Permutation nxs (v :: xs)%list⌝)%I *)
       }}}.
   Proof.
-    iIntros (Φ) "(H & %H1) H2". unfold sortedInsert. wp_pures. 
+    iIntros (Φ) "(H & %H1 & %H2) H2". unfold sortedInsert. wp_pures. 
     wp_apply (wp_BinarySearch with "[$H]"); auto.
-    iIntros (i ok) "(H & %H &%H3 & %H4 & %H5 & %H6)". wp_pures.
+    iIntros (i ok) "(H & H1 & H3 & %H4 & %H5 & %H6)". wp_pures.
     iDestruct (own_slice_sz with "H") as %Hsz.
     unfold slice.len. wp_pures.
     wp_if_destruct.
@@ -317,55 +318,227 @@ Section heap.
       iExists (xs ++ [v]).
       iFrame.
       iPureIntro.
-      apply (implies_Sorted xs v (length xs)) in H3; try word.
-      + assert ((take (uint.nat (W64 (length xs))) (xs ++ []) ++ v :: drop (uint.nat (W64 (length xs))) (xs ++ []) ) = (xs ++ [v])). {
-          replace (uint.nat (W64 (length xs))) with (length xs)%nat by word.
-          rewrite take_app_length. rewrite drop_app_length. auto. }
-        rewrite app_nil_r in H0. rewrite <- H0. auto. split; try auto.
-        rewrite H0. assert ((v :: xs)%list = [v] ++ xs) by auto.
-        symmetry. apply Permutation_cons_append. 
-      + replace (uint.nat (W64 (length xs))) with (length xs)%nat by word. rewrite Hsz.
-        auto.
-      + replace (uint.nat (W64 (length xs))) with (length xs)%nat by word. rewrite Hsz.
-        auto.
+      rewrite <- Hsz in H4.
+      rewrite <- Hsz in H5.
+      clear Hsz.
+      clear H6.
+      apply (implies_Sorted xs v (length xs)) in H1; try word.
+      * replace (uint.nat (W64 (length xs))) with (length xs) in H1 by word.
+        clear H2.
+        induction xs; try auto.
+        unfold insert.
+        assert (H3: uint.Z a <= uint.Z v). {
+          simpl in H1.
+          unfold is_sorted in H1.
+          assert (0 < S (length xs))%nat by word.
+          eapply H1 in H.
+          - apply H.
+          - auto.
+          - simpl. rewrite <- cons_append. rewrite lookup_app_r.
+            + rewrite length_take_le; try word. 
+              replace (length xs - length xs)%nat with 0%nat by word.
+              simpl. auto.
+            + rewrite length_take_le; try word.
+        }
+        assert (uint.Z v <? uint.Z a = false) by word. 
+        rewrite H.
+        fold insert. assert (xs ++ [v] = insert xs v). {
+          apply IHxs.
+          - unfold is_sorted.
+            intros. unfold is_sorted in H1. eapply H1.
+            + assert (H8: (S i < S j)%nat) by word. apply H8.
+            + auto.
+            + auto.
+          - intros. eapply H5.
+            + assert (S (length xs) ≤ S j') by word.
+              assert (length (a :: xs) = S (length xs)). {
+                rewrite length_cons. auto. }
+              rewrite H7. apply H6.
+            + auto.
+          - intros. eapply H4.
+            + assert (S i' < S (length xs)) by word.
+              assert (length (a :: xs) = S (length xs)). {
+                rewrite length_cons. auto. }
+              rewrite H7. apply H6.
+            + auto.
+        }
+        rewrite <- app_comm_cons. rewrite H0. auto.
+      * intros. eapply H4.
+        { assert (i' < length xs) by word.
+          apply H3. }
+        { auto. }
+      * intros. eapply H5.
+        { assert (length xs <= j') by word.
+          apply H3. }
+        { auto. }
     - wp_bind (SliceAppendSlice _ _ _).
       wp_apply wp_SliceSkip; try word.
       unfold own_slice.
       unfold slice.own_slice.
       iDestruct (own_slice_wf with "H") as %Hcap.
-      iDestruct "H" as "[H H1]".
+      iDestruct "H" as "[H H4]".
       iDestruct (slice_small_split with "H") as "H".
       + assert (uint.Z i <= length xs) by word.
-        apply H0.
-      + iDestruct "H" as "[H H3]".
+        apply H.
+      + iDestruct "H" as "[H H5]".
         wp_apply slice.wp_SliceSingleton; auto.
-        iIntros (s0) "H4".
-        wp_apply (wp_SliceAppendSlice with "[H3 H4]"); try auto.
-        * unfold own_slice. iSplitL "H4".
-          -- assert (list.untype [#v] = cons #v []). {
+        iIntros (s0) "H6".
+        wp_apply (wp_SliceAppendSlice with "[H6 H5]"); try auto.
+        * unfold own_slice. iSplitL "H6".
+          -- assert (H: list.untype [#v] = cons #v []). {
                auto.
              }
-             rewrite <- H0. iFrame.
+             rewrite <- H. iFrame.
           -- iFrame. 
-        * iIntros (s') "[H3 H4]". wp_pures. wp_bind (SliceAppendSlice _ _ _).
+        * iIntros (s') "[H5 H6]". wp_pures. wp_bind (SliceAppendSlice _ _ _).
           wp_apply wp_SliceTake; try word.
-          wp_apply (wp_SliceAppendSlice with "[H H1 H3 H4]"); try auto.
-          -- iAssert (own_slice_small (slice_skip s uint64T i) uint64T (DfracOwn 1) (drop (uint.nat i) xs) ∗ own_slice_cap s uint64T)%I with "[H1 H4]" as "H5". { iFrame. }
-             iApply own_slice_cap_take in "H5"; try word.
+          wp_apply (wp_SliceAppendSlice with "[H H1 H3 H4 H5 H6]"); try auto.
+          -- iAssert (own_slice_small (slice_skip s uint64T i) uint64T (DfracOwn 1) (drop (uint.nat i) xs) ∗ own_slice_cap s uint64T)%I with "[H6 H4]" as "H7". { iFrame. }
+             iApply own_slice_cap_take in "H7"; try word.
              iFrame. unfold own_slice. unfold slice.own_slice. unfold own_slice_small.
-             iDestruct "H3" as "[H3 H4]". iFrame.
+             iDestruct "H5" as "[H5 H6]". iFrame.
           -- iIntros (s'0) "H". wp_pures. iModIntro. iApply "H2".
              iExists (take (uint.nat i) xs ++ [#v] ++ drop (uint.nat i) xs).
              iDestruct "H" as "[H H1]".
              iSplitL.
              ++ unfold own_slice. unfold slice.own_slice. iDestruct "H" as "[H H2]".
                 iFrame.
-             ++ iPureIntro. apply (implies_Sorted xs v (uint.nat i)) in H3; try word.
+             ++ iPureIntro.
+                apply (implies_Sorted xs v (uint.nat i)) in H1;
+                  try word.
+                ** clear Hsz.
+                   clear Heqb.
+                   clear Hcap.
+                   clear H2.
+                  generalize dependent i. induction xs.
+                   { simpl. intros. rewrite take_nil. rewrite drop_nil. auto. }
+                   { intros. unfold insert.
+                     destruct (decide (uint.nat i = 0%nat)). 
+                     -- rewrite e. simpl.
+                        rewrite e in H1.
+                        replace (uint.nat (W64 0%nat)) with (0%nat) in H1 by word.
+                        simpl in H1.
+                        assert (H2: uint.Z v <= uint.Z a). {
+                          unfold is_sorted in H1. eapply H1.
+                          - assert (0 < 1)%nat by word. apply H.
+                          - auto.
+                          - auto.
+                        }
+                        assert (H: uint.Z v <=? uint.Z a = true) by word.
+                        destruct (decide (v = a)).
+                        { rewrite e0. simpl. assert (uint.Z a <? uint.Z a = false)
+                            by word. rewrite H0. fold insert.
+                          assert (take (uint.nat 0) xs ++ [#v] ++ drop (uint.nat 0) xs = (a :: xs)%list). {
+                            replace (uint.nat 0) with 0%nat by word.
+                            simpl. rewrite e0. auto. }
+                          assert ((a :: xs)%list = (insert xs a)). {
+                            rewrite <- H3. rewrite <- e0.
+                            eapply IHxs.
+                            - replace (uint.nat (W64 (uint.nat (W64 0)))) with 0%nat by word. simpl. rewrite drop_0. rewrite e0. unfold is_sorted.
+                              unfold is_sorted in H1. intros. eapply H1.
+                              + assert (S i0 < S j)%nat by word.
+                                apply H10.
+                              + auto.
+                              + auto.
+                            - intros. word.
+                            - intros. eapply H5.
+                              + assert (0%nat <= S j') by word. rewrite e.
+                                apply H9.
+                              + auto.
+                            - word.
+                          }
+                          rewrite H7. auto. }
+                        assert (uint.Z v <? uint.Z a = true) by word.
+                        rewrite H0. auto.
+                     -- assert (H: (exists n, S n = uint.nat i)%nat). {
+                          exists (Nat.pred (uint.nat i)). word. }
+                        destruct H. 
+                        simpl. rewrite <- H. simpl.
+                        assert (uint.Z a <= uint.Z v). {
+                          unfold is_sorted in H1. eapply H1.
+                          - assert (0 < (uint.nat i))%nat by word.
+                            apply H0.
+                          - replace (uint.nat (W64 (uint.nat i))) with (uint.nat i) by word. rewrite <- H. simpl. auto.
+                          - replace (uint.nat (W64 (uint.nat i))) with (uint.nat i) by word. rewrite <- H. simpl. apply list_lookup_middle. rewrite length_take_le;
+                              try word. rewrite length_cons in H6. word.
+                        }
+                        destruct (decide (v = a)). {
+                          rewrite e. simpl. assert (uint.Z a <? uint.Z a = false)
+                            by word. rewrite H2. fold insert.
+                          assert ((take x xs ++ a :: drop x xs)%list = 
+                                    (take (uint.nat x) xs ++ [#v] ++ drop (uint.nat x) xs)%list). {
+                            replace (uint.nat (W64 x)) with x%nat by word.
+                            rewrite e. simpl. auto. }
+                          rewrite H3.
+                          assert ((take (uint.nat x) xs ++ [#v] ++ drop (uint.nat x) xs)%list = insert xs a). { 
+                            rewrite <- e. eapply IHxs.
+                            - replace (uint.nat (W64 (uint.nat (W64 x)))) with x%nat by word. rewrite <- H in H1. replace (uint.nat (W64 (S x))) with (S x)%nat in H1 by word. simpl in H1. unfold is_sorted. intros. unfold is_sorted in H1.
+                              eapply H1.
+                              + assert (S i0 < S j)%nat by word.
+                                apply H10.
+                              + auto.
+                              + auto.
+                            - intros. eapply H4.
+                              + assert (S i' < uint.nat i) by word. apply H9.
+                              + auto.
+                            - intros. eapply H5.
+                              + assert (uint.nat i <= S j') by word. apply H9.
+                              + auto.
+                            - rewrite length_cons in H6. word.
+                          }
+                          rewrite H7. auto.
+                        }
+                        assert (uint.Z v <? uint.Z a = false) by word.
+                        rewrite H2. fold insert. assert (take (uint.nat x) xs ++ [#v] ++ drop (uint.nat x) xs = insert xs v). { 
+                          eapply IHxs.
+                          - replace (uint.nat (W64 (uint.nat (W64 x)))) with x by word. rewrite <- H in H1. replace (uint.nat (W64 (S x))) with (S x) in H1 by word.
+                            simpl in H1. unfold is_sorted.
+                            unfold is_sorted in H1.
+                            intros. eapply H1.
+                            + assert (S i0 < S j)%nat by word. apply H9.
+                            + auto.
+                            + auto.
+                          - intros. eapply H4.
+                            + assert (S i' < uint.nat i) by word.
+                              apply H8.
+                            + auto.
+                          - intros. eapply H5.
+                            + assert (uint.nat i <= S j') by word.
+                              apply H8.
+                            + auto.
+                          - rewrite length_cons in H6. word.
+                        } rewrite <- H3. simpl. replace (uint.nat (W64 x)) with x by word. auto.
+                   }
+                ** intros. eapply H4.
+                   { assert (i' < uint.nat i) by word. apply H3. }
+                   { auto. }
+                ** intros. eapply H5.
+                   { assert (uint.nat i <= j') by word. apply H3. }
+                   { auto. }
+  Qed.
+                           rewrite H. simpl. fold insert.
+                     unfold is_sorted in H1.
+
+
+                   (* i has to be greater than 0 because the list is sorted *)
+                   destruct (decide (uint.nat i = 0%nat)). {
+                     rewrite e. simpl.
+
+                   
+                   assert (uint.nat i > 0).
+                   Search "take".
+
+
+
+
+
+                apply (implies_Sorted xs v (uint.nat i)) in H1;
+                  try word.
                 ** assert ((take (uint.nat (W64 (uint.nat i))) xs ++ v :: drop (uint.nat (W64 (uint.nat i))) xs) = (take (uint.nat i) xs ++ [#v] ++ drop (uint.nat i) xs)). {
                      replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
                      rewrite cons_append. auto.
                    }
-                   rewrite <- H0. auto. split; try auto. rewrite H0.
+                   rewrite <- H. auto. split; try auto. rewrite H0.
                    rewrite Permutation_app_swap_app. rewrite take_drop.
                    symmetry. auto.
                 ** replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
