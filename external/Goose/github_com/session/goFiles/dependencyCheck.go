@@ -19,7 +19,6 @@ type ClientReply struct {
 	Data          uint64
 }
 
-
 func compareVersionVector(v1 []uint64, v2 []uint64) bool {
 	var output = true
 	var i = uint64(0)
@@ -32,6 +31,34 @@ func compareVersionVector(v1 []uint64, v2 []uint64) bool {
 		i++
 	}
 	return output
+}
+
+func concurrentVersionVector(v1 []uint64, v2 []uint64) bool {
+     return !compareVersionVector(v1, v2) && !compareVersionVector(v2, v1)
+}
+
+func lexiographicCompare(v1 []uint64, v2 []uint64) bool {
+        var output = true
+     	var i = uint64(0)
+      	var l = uint64(len(v1))
+	for i < l {
+	        if v1[i] == v2[i] {
+		   i++ 
+		} else {
+		     output = v1[i] > v2[i]
+		     break 
+		}
+	}
+	
+	return output 
+}
+
+func compareVersionVectorTotal(v1 []uint64, v2 []uint64) bool {
+     if concurrentVersionVector(v1, v2) {
+     	return lexiographicCompare(v1, v2)
+     }
+     
+     return compareVersionVector(v1, v2)
 }
 
 func dependencyCheck(server Server, request ClientRequest) bool {

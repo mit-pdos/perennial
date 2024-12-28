@@ -39,40 +39,50 @@ Definition compareVersionVector: val :=
         Continue));;
     ![boolT] "output".
 
-Definition RYWDependencyCheck: val :=
-  rec: "RYWDependencyCheck" "server" "request" :=
-    compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request").
+Definition concurrentVersionVector: val :=
+  rec: "concurrentVersionVector" "v1" "v2" :=
+    (~ (compareVersionVector "v1" "v2")) && (~ (compareVersionVector "v2" "v1")).
 
-Definition MRDependencyCheck: val :=
-  rec: "MRDependencyCheck" "server" "request" :=
-    compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request").
+Definition lexiographicCompare: val :=
+  rec: "lexiographicCompare" "v1" "v2" :=
+    let: "output" := ref_to boolT #true in
+    let: "i" := ref_to uint64T #0 in
+    let: "l" := ref_to uint64T (slice.len "v1") in
+    Skip;;
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "l")); (λ: <>, Skip) := λ: <>,
+      (if: (SliceGet uint64T "v1" (![uint64T] "i")) = (SliceGet uint64T "v2" (![uint64T] "i"))
+      then
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
+        Continue
+      else
+        "output" <-[boolT] ((SliceGet uint64T "v1" (![uint64T] "i")) > (SliceGet uint64T "v2" (![uint64T] "i")));;
+        Break));;
+    ![boolT] "output".
 
-Definition MWDependencyCheck: val :=
-  rec: "MWDependencyCheck" "server" "request" :=
-    compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request").
-
-Definition WFRDependencyCheck: val :=
-  rec: "WFRDependencyCheck" "server" "request" :=
-    compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request").
+Definition compareVersionVectorTotal: val :=
+  rec: "compareVersionVectorTotal" "v1" "v2" :=
+    (if: concurrentVersionVector "v1" "v2"
+    then lexiographicCompare "v1" "v2"
+    else compareVersionVector "v1" "v2").
 
 Definition dependencyCheck: val :=
   rec: "dependencyCheck" "server" "request" :=
-    let: "output" := ref (zero_val boolT) in
     (if: (struct.get ClientRequest "OperationType" "request") = #0
-    then "output" <-[boolT] (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request"))
-    else #());;
-    (if: (struct.get ClientRequest "OperationType" "request") = #1
-    then "output" <-[boolT] (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request"))
-    else #());;
-    (if: (struct.get ClientRequest "OperationType" "request") = #2
-    then "output" <-[boolT] (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "WriteVector" "request"))
-    else #());;
-    (if: (struct.get ClientRequest "OperationType" "request") = #3
-    then "output" <-[boolT] (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "WriteVector" "request"))
-    else #());;
-    (if: (struct.get ClientRequest "OperationType" "request") = #4
-    then "output" <-[boolT] ((compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request")) && (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "WriteVector" "request")))
-    else #());;
-    ![boolT] "output".
+    then compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request")
+    else
+      (if: (struct.get ClientRequest "OperationType" "request") = #1
+      then compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request")
+      else
+        (if: (struct.get ClientRequest "OperationType" "request") = #2
+        then compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "WriteVector" "request")
+        else
+          (if: (struct.get ClientRequest "OperationType" "request") = #3
+          then compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "WriteVector" "request")
+          else
+            (if: (struct.get ClientRequest "OperationType" "request") = #4
+            then (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "ReadVector" "request")) && (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get ClientRequest "WriteVector" "request"))
+            else
+              Panic "Invalid Operation Number";;
+              #()))))).
 
 End code.

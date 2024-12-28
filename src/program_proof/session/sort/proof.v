@@ -20,7 +20,29 @@ Section heap.
          ∀ (x1 x2: w64), xs !! i = Some x1 ->
                          xs !! j = Some x2 ->
                          uint.Z x1 <= uint.Z x2.
-  
+
+  Definition is_sorted_eq (xs: list w64) := 
+  ∀ (i j: nat), (i <= j)%nat ->
+         ∀ (x1 x2: w64), xs !! i = Some x1 ->
+                         xs !! j = Some x2 ->
+                         uint.Z x1 <= uint.Z x2.
+
+  Lemma sorted_eq (l: list w64) :
+    is_sorted l -> is_sorted_eq l.
+  Proof.
+    unfold is_sorted.
+    intros.
+    unfold is_sorted_eq.
+    intros.
+    destruct (decide (i = j)).
+    - rewrite e in H1. rewrite H2 in H1. injection H1 as ?. word.
+    - eapply H.
+      + assert (i < j)%nat by word. apply H3.
+      + eassumption.
+      + eassumption.
+  Qed.
+
+  (* Allow for it to take in a higher order function *)
   Lemma implies_Sorted :
     forall (xs: list w64) (element: w64) (i: w64),
     is_sorted xs ->
@@ -267,13 +289,20 @@ Section heap.
     - auto.
     - simpl. auto.
   Qed.
+
+  
+  Fixpoint insert (l : list w64) (i : w64) :=
+    match l with
+    | [] => [i]
+    | cons h t => if uint.Z i <=? uint.Z h then (i :: h :: t)%list else (h :: insert t i)%list
+    end.
   
   Lemma wp_insert (s: Slice.t) (xs: list w64) (v: w64) :
     {{{ own_slice s uint64T (DfracOwn 1) xs ∗ ⌜is_sorted xs⌝ }}}
       sortedInsert s #v
       {{{ (ns: Slice.t), RET slice_val (ns);
           (∃ (nxs: list w64), own_slice ns uint64T (DfracOwn 1) nxs ∗
-                              ⌜is_sorted nxs⌝)%I
+                              ⌜is_sorted nxs⌝ ∗ ⌜Permutation nxs (v :: xs)%list⌝)%I
       }}}.
   Proof.
     iIntros (Φ) "(H & %H1) H2". unfold sortedInsert. wp_pures. 
@@ -292,7 +321,9 @@ Section heap.
       + assert ((take (uint.nat (W64 (length xs))) (xs ++ []) ++ v :: drop (uint.nat (W64 (length xs))) (xs ++ []) ) = (xs ++ [v])). {
           replace (uint.nat (W64 (length xs))) with (length xs)%nat by word.
           rewrite take_app_length. rewrite drop_app_length. auto. }
-        rewrite app_nil_r in H0. rewrite <- H0. auto.
+        rewrite app_nil_r in H0. rewrite <- H0. auto. split; try auto.
+        rewrite H0. assert ((v :: xs)%list = [v] ++ xs) by auto.
+        symmetry. apply Permutation_cons_append. 
       + replace (uint.nat (W64 (length xs))) with (length xs)%nat by word. rewrite Hsz.
         auto.
       + replace (uint.nat (W64 (length xs))) with (length xs)%nat by word. rewrite Hsz.
@@ -311,7 +342,10 @@ Section heap.
         iIntros (s0) "H4".
         wp_apply (wp_SliceAppendSlice with "[H3 H4]"); try auto.
         * unfold own_slice. iSplitL "H4".
-          -- admit.
+          -- assert (list.untype [#v] = cons #v []). {
+               auto.
+             }
+             rewrite <- H0. iFrame.
           -- iFrame. 
         * iIntros (s') "[H3 H4]". wp_pures. wp_bind (SliceAppendSlice _ _ _).
           wp_apply wp_SliceTake; try word.
@@ -331,11 +365,150 @@ Section heap.
                      replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
                      rewrite cons_append. auto.
                    }
-                   rewrite <- H0. auto.
+                   rewrite <- H0. auto. split; try auto. rewrite H0.
+                   rewrite Permutation_app_swap_app. rewrite take_drop.
+                   symmetry. auto.
                 ** replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
                    apply H4.
                 ** replace (uint.nat (W64 (uint.nat i))) with (uint.nat i)%nat by word.
                    apply H5.
+  Qed.
+
+  Fixpoint insert (l : list w64) (i : w64) :=
+    match l with
+    | [] => [i]
+    | cons h t => if uint.Z i <=? uint.Z h then (i :: h :: t)%list else (h :: insert t i)%list
+    end.
+
+  Definition is_a_sorted_insert_algorthim (f: list w64 -> w64 -> list w64) := ∀ l e,
+      Permutation (e :: l)%list (f l e) ∧ is_sorted (f l e).
+
+  Lemma proof_insert :
+    is_a_sorted_insert_algorthim insert.
+  Proof.
+    unfold is_a_sorted_insert_algorthim.
+    intros. split.
+    - unfold insert. induction l; try auto.
+      destruct (decide (uint.Z e <=? uint.Z a = true)).
+      + rewrite e0. auto.
+      + assert ((uint.Z e <=? uint.Z a = false)) by word.
+        rewrite H. admit.
   Admitted.
+
+  
+  Lemma impl xs ys :
+    Permutation xs ys ->
+    is_sorted xs ->
+    is_sorted ys ->
+    xs = ys.
+  Proof.
+    intros.
+    apply list_eq.
+    intros. unfold is_sorted in *.
+    induction 
+
+    
+                
+
+(* TODO:
+   Define a sorting function,
+   prove that if two lists are permutations,
+   then they satisfy is_sorted
+ *)
+
+Inductive sorted: list w64 → Prop :=
+| sorted_nil: sorted []
+| sorted_1: ∀ i, sorted [i]
+| sorted_cons: ∀ i j l, uint.Z i ≤ uint.Z j → sorted (j :: l) → sorted (i :: j :: l).
+
+(* There are two places which we require sorting in each case it is with respect to
+   a comparision function 
+ *)
+
+Lemma sorted_equiv (l: list w64) :
+  is_sorted l <-> sorted l.
+Proof.
+  split.
+  - intros.
+    induction l.
+    + apply sorted_nil.
+    + unfold is_sorted in *.
+      destruct l.
+      * apply sorted_1.
+      * apply sorted_cons.
+        { eapply H.
+          - assert (0 < 1)%nat by lia. apply H0.
+          - auto.
+          - auto.
+        }
+        apply IHl. intros. assert (S i < S j)%nat by word. eapply H in H3.
+        { apply H3. }
+        { rewrite lookup_cons. auto. }
+        { rewrite lookup_cons. auto. }
+  - intros.
+    induction l.
+    + unfold is_sorted. intros. inversion H1.
+    + unfold is_sorted in *.
+      intros.
+Admitted.
+
+
+Lemma impl f h l :
+  is_sorted f ->
+  is_sorted h ->
+  
+            
+
+Definition is_a_sorting_algorithm (f: list w64 → list w64) := ∀ al,
+    Permutation al (f al) ∧ is_sorted (f al).
+
+Lemma impl f h l :
+  is_a_sorting_algorithm f ->
+  is_a_sorting_algorithm h ->
+  f l = h l.
+Proof. 
+  intros. unfold is_a_sorting_algorithm in *.
+  induction l.
+  - specialize H with [].
+    specialize H0 with [].
+    destruct H.
+    destruct H0.
+    apply Permutation_nil_l in H0.
+    apply Permutation_nil_l in H.
+    rewrite <- H. rewrite <- H0. auto.
+  - apply list_eq. intros.
+    specialize H with (a :: l)%list.
+    specialize H0 with (a :: l)%list.
+    destruct H.
+    destruct H0.
+    unfold is_sorted in *.
+    
+    
+
+    
+    (* Prove that sorting gives a unique order *)
+    (* every total order results in a unique result *)
+    
+  
+                         
+
+
+Fixpoint insert (i : nat) (l : list nat) :=
+  match l with
+  | [] => [i]
+  | cons h t => if i <=? h then cons i h :: t else h :: insert i t
+  end.
+Fixpoint sort (l : list nat) : list nat :=
+  match l with
+  | [] =? []
+  | h :: t => insert h (sort t)
+  end.
+      
+  
+  
+  
+
+
+
 
 End heap. 

@@ -60,7 +60,6 @@ Section heap.
                                   
     end.
 
-  (* Rewrite this along with file since comparisons are wrong *)
   Definition coqDependencyCheck (server : Server.t) (request : ClientRequest.t) :=
     match uint.Z (request.(ClientRequest.op)) with
     | 0 => coqCompareVersionVector server.(Server.vectorClock) request.(ClientRequest.readVector)
@@ -70,8 +69,20 @@ Section heap.
     | _ => coqCompareVersionVector server.(Server.vectorClock) request.(ClientRequest.readVector) && coqCompareVersionVector server.(Server.vectorClock) request.(ClientRequest.writeVector)
     end.
 
-  Search "own_slice".
+  Definition coqConcurrentVersionVector (v1: list w64) (v2: list w64) : bool :=
+    negb (coqCompareVersionVector v1 v2) && negb (coqCompareVersionVector v2 v1).
 
+  Fixpoint coqLexiographicCompareVersionVector (v1: list w64) (v2: list w64) : bool :=
+    match v1 with
+    | [] => true
+    | cons h1 t1 => match v2 with
+                    | [] => true
+                    | cons h2 t2 => if (uint.Z h1) =? (uint.Z h2) then
+                                      (coqCompareVersionVector t1 t2) else (uint.Z h1) >? (uint.Z h2)
+                    end
+                                  
+    end.
+  
   Lemma versionVec_equiv (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
     {{{
           own_slice x uint64T (DfracOwn 1) xs ∗
@@ -288,7 +299,120 @@ Section heap.
              }
   Qed.
 
-  Lemma equiv id serverData vectorClock opData clientData readVector writeVector
+  Lemma equiv_concurrent_version_vector (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
+    {{{
+          own_slice x uint64T (DfracOwn 1) xs ∗
+          own_slice y uint64T (DfracOwn 1) ys ∗
+          ⌜length xs = length ys⌝ ∗
+          ⌜length xs < 2^64⌝
+    }}}
+       concurrentVersionVector x y 
+      {{{
+            r , RET #r;
+            ⌜r = coqConcurrentVersionVector xs ys⌝ ∗ 
+            own_slice x uint64T (DfracOwn 1) xs ∗
+            own_slice y uint64T (DfracOwn 1) ys ∗
+            ⌜length xs = length ys⌝ ∗
+            ⌜length xs < 2^64⌝
+      }}}.
+  Proof.
+    iIntros (Φ) "(H1 & H2 & H3 & H4) H5".
+    unfold concurrentVersionVector.
+    wp_pures. wp_bind (compareVersionVector x y).
+    wp_apply (versionVec_equiv with "[$H1 $H2 $H3 $H4]").
+    iIntros (r) "(%H & H1 & H2 & %H3 & %H4)". wp_pures. wp_if_destruct.
+    - wp_bind (compareVersionVector y x). wp_apply (versionVec_equiv with "[H1 H2]").
+      + iSplitL "H2"; iFrame.
+        iSplit; try word.
+      + iIntros (r1) "(%H1 & H2 & H3 & H4 & H6)". wp_pures. iModIntro. iApply "H5".
+        iFrame. iSplitL.
+        * rewrite H1. unfold coqConcurrentVersionVector. rewrite Heqb. simpl. auto.
+        * iPureIntro. split; try word.
+    - iModIntro. iApply "H5".
+        iFrame. iSplitL.
+      * unfold coqConcurrentVersionVector. rewrite Heqb. simpl. auto.
+      * iPureIntro. split; try word.
+  Qed.
+
+  Lemma equiv_lexiographic_compare (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
+    {{{
+          own_slice x uint64T (DfracOwn 1) xs ∗
+          own_slice y uint64T (DfracOwn 1) ys ∗
+          ⌜length xs = length ys⌝ ∗
+          ⌜length xs < 2^64⌝
+    }}}
+       lexiographicCompare x y 
+      {{{
+            r , RET #r;
+            ⌜r = coqLexiographicCompareVersionVector xs ys⌝ ∗ 
+            own_slice x uint64T (DfracOwn 1) xs ∗
+            own_slice y uint64T (DfracOwn 1) ys ∗
+            ⌜length xs = length ys⌝ ∗
+            ⌜length xs < 2^64⌝
+      }}}.
+  Proof.
+    iIntros (Φ) "(H1 & H2 & H3 & H4) H5".
+    unfold lexiographicCompare.
+    wp_pures.
+    wp_apply wp_ref_to; auto. iIntros (output) "H6".
+    wp_pures.
+    wp_apply wp_ref_to; auto.
+    iIntros (index) "H7". wp_pures.
+    wp_apply wp_slice_len.
+    wp_apply wp_ref_to; auto.
+    iIntros (l) "H8". wp_pures.
+    wp_apply (wp_forBreak_cond
+                (λ continue,
+                  ∃ (b: bool) (i: w64),
+                    "Hx" ∷ own_slice x uint64T (DfracOwn 1) xs ∗
+                      "Hy" ∷ own_slice y uint64T (DfracOwn 1) ys ∗
+                      output ↦[boolT] #b ∗
+                      index ↦[uint64T] #i ∗
+                      l ↦[uint64T] #(length xs) ∗
+                      ⌜length xs = length ys⌝ ∗                 
+                                     ⌜∀ (i': nat),
+                                     ∀ (x y: w64),
+                                       i' < uint.nat i <= length xs ->
+                                       xs !! i' = Some x ->
+                                       ys !! i' = Some y ->
+                                       (uint.Z x) =? (uint.Z y) = true⌝ ∗ ⌜uint.Z i <= (uint.Z (length xs))⌝ ∗ 
+                                                                                         ⌜continue = false ->
+                                       ((uint.Z i) = uint.Z (W64 (length xs)) /\ b = true)⌝ 
+                )%I
+               with "[] [H1 H4 H2 H5 H6]").
+    - iIntros (?). iModIntro. iIntros "H1 H2".
+      iNamed "H1". iDestruct "H1" as "(H1 & H3 & H4 & %H5 & %H6 & %H7 & %H8)".
+      wp_load. wp_load.
+      wp_if_destruct.
+      + wp_pures. wp_load. assert (uint.nat i < length xs)%nat by word. apply list_lookup_lt in H.
+        destruct H. assert (uint.nat i < length ys)%nat by word. apply list_lookup_lt in H0.
+        destruct H0. iDestruct "Hx" as "[Hx Hxcap]". wp_apply (wp_SliceGet with "[Hx]").
+        * unfold own_slice. unfold slice.own_slice. unfold own_slice_small. iSplitL.
+          { iFrame. }
+          { iPureIntro. apply H. }
+        * iIntros "H". wp_load. iDestruct "Hy" as "[Hy Hycap]". wp_apply (wp_SliceGet with "[Hy]").
+          { iFrame. iPureIntro. apply H0. }
+          { iIntros "H9". wp_if_destruct.
+            - wp_load. wp_pures. wp_store. iModIntro. iApply "H2".
+              iExists b. iExists (w64_word_instance.(word.add) i (W64 1)).
+              iFrame. iSplit.
+              + iPureIntro. auto.
+              + iPureIntro. split.
+                * intros. admit.
+                * split; try word.
+            - wp_load. wp_apply (wp_SliceGet with "[H9]").
+              + iFrame. iPureIntro. apply H0.
+              + iIntros "H5". wp_load. wp_apply (wp_SliceGet with "[H]").
+                * iFrame. iPureIntro. apply H.
+                * iIntros "H". wp_pures. wp_store. iModIntro. iApply "H2".
+                  iExists (bool_decide (uint.Z x1 < uint.Z x0)).
+                  iExists i. admit.
+          }
+      + iModIntro. iApply "H2". admit.
+    - iFrame. admit.
+    - admit.
+
+  (* Lemma equiv id serverData vectorClock opData clientData readVector writeVector
                   (vc: Slice.t) (rv: Slice.t) (wv: Slice.t)
     (s: Server.t) (c: ClientRequest.t) :
     {{{
@@ -319,6 +443,7 @@ Section heap.
     iIntros (Φ) "(%H1 & %H2 & %H3 & %H4 & %H5 & %H6 & %H7 &
 H8 & H9 & H10 & H11 & H12 & H13 & %H14) H15".
     unfold dependencyCheck. wp_pures.
+    wp_if_destruct
     wp_apply wp_ref_of_zero; auto.
     iIntros (l) "H16". wp_pures. wp_if_destruct.
     - wp_pures.
@@ -383,7 +508,7 @@ H8 & H9 & H10 & H11 & H12 & H13 & %H14) H15".
                   auto.
             -- word.
           }        
-  Qed.
+  Qed. *)
 
   
 
