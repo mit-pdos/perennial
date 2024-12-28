@@ -168,8 +168,7 @@ Definition Client := struct.decl [
   "nextEpoch" :: uint64T
 ].
 
-(* ClientErr abstracts errors in the KT client.
-   maybe there's an error. if so, maybe there's irrefutable evidence. *)
+(* ClientErr abstracts errors that potentially have irrefutable evidence. *)
 Definition ClientErr := struct.decl [
   "Evid" :: ptrT;
   "Err" :: boolT
