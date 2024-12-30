@@ -7,17 +7,17 @@ Section gs.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition maps_mono (ms : list adtr_map_ty) :=
-  ∀ (i j : nat) mi mj,
-  ms !! i = Some mi →
-  ms !! j = Some mj →
-  i ≤ j →
+  ∀ (i j : w64) mi mj,
+  ms !! (uint.nat i) = Some mi →
+  ms !! (uint.nat j) = Some mj →
+  uint.Z i ≤ uint.Z j →
   mi ⊆ mj.
 
 Definition epochs_ok (ms : list adtr_map_ty) :=
-  ∀ (ep : nat) m_ep k ep' comm,
-  ms !! ep = Some m_ep →
+  ∀ (ep : w64) m_ep k ep' comm,
+  ms !! (uint.nat ep) = Some m_ep →
   m_ep !! k = Some (ep', comm) →
-  uint.nat ep' ≤ ep.
+  uint.Z ep' ≤ uint.Z ep.
 
 Definition lower_map (m : adtr_map_ty) : merkle_map_ty :=
   (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
@@ -43,7 +43,7 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃ γ pk gs (ptr_map : loc) (ptr_sk : loc) sl_hist ptrs_hist hist,
+  ∃  ptrs_hist hist gs γ pk (ptr_map : loc) (ptr_sk : loc) sl_hist,
   (* Physical ownership. *)
   "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
@@ -71,7 +71,7 @@ End Auditor.
 Section specs.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma wp_newAuditor :
+Lemma wp_NewAuditor :
   {{{
         True
   }}}
@@ -87,39 +87,25 @@ Proof.
   wp_rec.
   wp_apply wp_new_free_lock.
   iIntros (?) "Hl".
-  iMod (mono_list_own_alloc ([] : list (adtr_map_ty * dig_ty))) as (?) "[? _]".
-  wp_apply wp_SigGenerateKey.
-  { shelve. }
+  iMod (mono_list_own_alloc ([] : list (adtr_map_ty * dig_ty))) as (γ) "[Hown_gs _]".
+  wp_apply (wp_SigGenerateKey (adtr_sigpred γ)).
   iIntros "*". iNamed 1.
-  wp_pures.
   wp_apply wp_NewTree.
   iIntros "* Hm".
-  wp_pures.
   wp_apply wp_allocStruct; [val_ty|].
-  iIntros "* Ha".
+  iIntros (ptr) "Ha".
   iDestruct (struct_fields_split with "Ha") as "Ha".
   iNamed "Ha".
+
   wp_pures. iApply "HΦ".
-  iFrame "#".
   iMod (own_slice_small_persist with "Hsl_sig_pk") as "#$".
-  repeat iExists _.
-  iMod (struct_field_pointsto_persist with "mu") as "#?".
-  iMod (struct_field_pointsto_persist with "sk") as "#?".
+  iMod (struct_field_pointsto_persist with "mu") as "#$".
+  iMod (struct_field_pointsto_persist with "sk") as "#sk".
   iFrame "#".
-  iMod (alloc_lock with "[$] [-]") as "$"; last done.
-  iNext. repeat iExists _.
-  iFrame "∗#%".
+  iMod (alloc_lock _ _ _ (Auditor.own ptr) with "Hl [-]") as "$"; [|done].
   rewrite zero_slice_val.
-  iFrame.
-  iSplitR.
-  { by iApply own_slice_small_nil. }
-  iSplitR.
-  { by iApply big_sepL2_nil. }
-  iSplit.
-  { by iApply big_sepL2_nil. }
-  done.
-  Unshelve.
-  apply _.
+  iExists [], []. iFrame "Hown_gs ∗#". repeat try iSplit; try naive_solver.
+  by iApply own_slice_small_nil.
 Qed.
 
 Lemma wp_Auditor__Update a ptr_upd upd :
