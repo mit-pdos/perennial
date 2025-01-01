@@ -78,11 +78,11 @@ Section heap.
     | cons h1 t1 => match v2 with
                     | [] => true
                     | cons h2 t2 => if (uint.Z h1) =? (uint.Z h2) then
-                                      (coqCompareVersionVector t1 t2) else (uint.Z h1) >? (uint.Z h2)
+                                      (coqLexiographicCompareVersionVector t1 t2) else (uint.Z h1) >? (uint.Z h2)
                     end
                                   
     end.
-  
+
   Lemma versionVec_equiv (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
     {{{
           own_slice x uint64T (DfracOwn 1) xs ∗
@@ -351,7 +351,7 @@ Section heap.
             ⌜length xs < 2^64⌝
       }}}.
   Proof.
-    iIntros (Φ) "(H1 & H2 & H3 & H4) H5".
+    iIntros (Φ) "(H1 & H2 & H3 & %H4) H5".
     unfold lexiographicCompare.
     wp_pures.
     wp_apply wp_ref_to; auto. iIntros (output) "H6".
@@ -361,25 +361,32 @@ Section heap.
     wp_apply wp_slice_len.
     wp_apply wp_ref_to; auto.
     iIntros (l) "H8". wp_pures.
+    iDestruct "H1" as "[H1 H9]".
+    iDestruct (own_slice_small_sz with "H1") as %Hsz.
+    iAssert (own_slice x uint64T (DfracOwn 1) xs) with "[H1 H9]" as "H1". { iFrame. }
     wp_apply (wp_forBreak_cond
-                (λ continue,
-                  ∃ (b: bool) (i: w64),
+                (λ continue, ∃ (b: bool) (i: w64),
                     "Hx" ∷ own_slice x uint64T (DfracOwn 1) xs ∗
                       "Hy" ∷ own_slice y uint64T (DfracOwn 1) ys ∗
                       output ↦[boolT] #b ∗
                       index ↦[uint64T] #i ∗
                       l ↦[uint64T] #(length xs) ∗
                       ⌜length xs = length ys⌝ ∗                 
-                                     ⌜∀ (i': nat),
-                                     ∀ (x y: w64),
+                                     ⌜∀ (i': nat) (x y: w64),
                                        i' < uint.nat i <= length xs ->
                                        xs !! i' = Some x ->
                                        ys !! i' = Some y ->
-                                       (uint.Z x) =? (uint.Z y) = true⌝ ∗ ⌜uint.Z i <= (uint.Z (length xs))⌝ ∗ 
-                                                                                         ⌜continue = false ->
-                                       ((uint.Z i) = uint.Z (W64 (length xs)) /\ b = true)⌝ 
+                                       (uint.Z x) =? (uint.Z y) = true⌝ ∗
+                                                                    ⌜uint.nat i <= (length xs)⌝ ∗
+                                                                                   ⌜continue = true -> b = true⌝ ∗
+                                                                                   ⌜continue = false ->
+                                       ((uint.Z i) = uint.Z (W64 (length xs)) /\ b = true) \/
+                                         ( exists (x y : w64),
+                                             xs !! uint.nat i = Some x /\
+                                             ys !! uint.nat i = Some y /\
+                                             b = (uint.Z x >? uint.Z y))⌝ 
                 )%I
-               with "[] [H1 H4 H2 H5 H6]").
+               with "[] [H1 H2 H3 H6 H7 H8]").
     - iIntros (?). iModIntro. iIntros "H1 H2".
       iNamed "H1". iDestruct "H1" as "(H1 & H3 & H4 & %H5 & %H6 & %H7 & %H8)".
       wp_load. wp_load.
@@ -398,19 +405,137 @@ Section heap.
               iFrame. iSplit.
               + iPureIntro. auto.
               + iPureIntro. split.
-                * intros. admit.
-                * split; try word.
+                * intros. destruct (decide (i' <= uint.nat i)).
+                  { destruct (decide (i' = uint.nat i)).
+                    - subst. rewrite H in H2. rewrite H0 in H3. injection H2 as ?. injection H3 as ?.
+                      word.
+                    - assert (i' < uint.nat i <= length xs) by word. eapply H6.
+                      + apply H9.
+                      + auto.
+                      + auto.
+                  }
+                  { destruct (decide (i' = uint.nat i)).
+                    - subst. rewrite H in H2. rewrite H0 in H3. injection H2 as ?. injection H3 as ?.
+                      word.
+                    - assert (i' < uint.Z (w64_word_instance.(word.add) i (W64 1))) by lia.
+                      assert (i' > uint.nat i) by word. assert (i' <= uint.nat i). {
+                        apply Zlt_succ_le.
+                        replace (Z.succ (uint.nat i)) with (uint.Z (w64_word_instance.(word.add) i (W64 1)))
+                          by word. auto. }
+                      unfold not in n. apply n in H11. inversion H11.
+                  } 
+                * split; try word. split; intros.
+                  { destruct H8. destruct H2; auto. }
+                  { word. }
             - wp_load. wp_apply (wp_SliceGet with "[H9]").
               + iFrame. iPureIntro. apply H0.
               + iIntros "H5". wp_load. wp_apply (wp_SliceGet with "[H]").
                 * iFrame. iPureIntro. apply H.
                 * iIntros "H". wp_pures. wp_store. iModIntro. iApply "H2".
                   iExists (bool_decide (uint.Z x1 < uint.Z x0)).
-                  iExists i. admit.
+                  iExists i. iFrame. iPureIntro. split; try auto.
+                  split.
+                  { intros. eapply H6.
+                    - apply H1.
+                    - auto.
+                    - auto.
+                  }
+                  { split; auto.
+                    intros. split.
+                    - intros. inversion H1.
+                    - intros. right. exists x0. exists x1. split; auto. split; auto.
+                      destruct (decide ((uint.Z x0 > uint.Z x1))).
+                      + assert (uint.Z x0 >? uint.Z x1 = true). { word. }
+                        rewrite H2. apply bool_decide_eq_true. word.
+                      + assert (uint.Z x0 >? uint.Z x1 = false). { word. }
+                        rewrite H2. apply bool_decide_eq_false. word.
+                  }
           }
-      + iModIntro. iApply "H2". admit.
-    - iFrame. admit.
-    - admit.
+      + iModIntro. iApply "H2". iExists b. iExists i. iFrame. iPureIntro. split; auto.
+        split.
+        * intros. eapply H6.
+          { apply H. }
+          { auto. }
+          { auto. }
+        * split; try word.
+          split.
+          { intros. inversion H. }
+          { intros. left. 
+            split; try word.
+            destruct H8. destruct H0; auto. }
+    - rewrite Hsz. replace ((W64 (uint.nat x.(Slice.sz)))) with (x.(Slice.sz)) by word. iFrame.
+      iPureIntro.
+      split; try word.
+    - iIntros "Hpost".
+      wp_pures. iNamed "Hpost". iDestruct "Hpost" as "(H1 & H2 & H3 & H4 & %H6 & %H7 & %H8)".
+      wp_load. iModIntro. iApply "H5". iFrame. iSplitL.
+      + destruct H8. destruct H0; auto.
+        * destruct H0.         
+          unfold coqLexiographicCompareVersionVector. iPureIntro.
+          clear Hsz. clear H. clear H7.
+          generalize dependent ys. generalize dependent i. induction xs.
+          { intros. auto. }
+          { intros. induction ys.
+            - auto.
+            - assert ((uint.Z a =? uint.Z a0) = true). {
+                eapply H6.
+                - assert (0%nat < uint.nat i <= length (a :: xs)). {
+                    rewrite H0. rewrite length_cons. rewrite length_cons in H4.
+                    replace (uint.nat (W64 (S (length xs)))) with (S (length xs))%nat by word.
+                    word.
+                  } apply H.
+                - auto.
+                - auto.
+              }
+              rewrite H. fold coqLexiographicCompareVersionVector in *. eapply IHxs.
+              + rewrite length_cons in H4. word.
+              + assert (uint.Z (uint.Z i - 1) = uint.Z (W64 (length xs))). {
+                  apply Z.pred_inj_wd in H0. replace (uint.Z i - 1) with (Z.pred (uint.Z i)) by word.
+                  rewrite length_cons in H0. rewrite H0. word. }
+                apply H2.
+              + intros.
+                eapply H6.
+                * assert ((S i')%nat < uint.nat i <= (length (a :: xs))). { 
+                    rewrite length_cons in H4. word.
+                  } 
+                  apply H7.
+                * auto.
+                * auto.
+          }
+        * clear Hsz. clear H. iPureIntro. 
+          generalize dependent ys. induction xs. 
+          { intros. destruct H0. destruct H. destruct H. inversion H. }
+          { intros. cbn in *. induction ys.
+            - destruct H0. destruct H. destruct H. destruct H0. inversion H0.
+            - destruct (decide (uint.nat i = 0%nat)).
+              + rewrite e in H0. destruct H0. destruct H. destruct H.  destruct H0. simpl in H. simpl in H0.
+                injection H as ?. injection H0 as ?. rewrite H.
+              + assert (0%nat < uint.nat i <= S (length xs)) by word. eapply H6 in H.
+                * assert (uint.Z a =? uint.Z a0 = true). { apply H. }
+                  rewrite H. eapply IHxs; try word.
+                  { destruct (decide (uint.nat i = S (length xs))).
+                    - admit.
+                    - admit.
+                  }
+                  {
+                    intros. eapply H6.
+                    - assert ((i' + 1)%nat < uint.nat i ≤ length xs). {
+                        
+                      }
+                    - 
+                  }
+              destruct (decide (uint.Z a =? uint.Z a0 = true)).
+              + rewrite e. eapply IHxs.
+                * word.
+                * intros. admit.
+                * admit.
+              + assert ((uint.Z a =? uint.Z a0) = false) by word. rewrite H0.
+          } 
+      + word.
+  Admitted.
+            
+            
+
 
   (* Lemma equiv id serverData vectorClock opData clientData readVector writeVector
                   (vc: Slice.t) (rv: Slice.t) (wv: Slice.t)
