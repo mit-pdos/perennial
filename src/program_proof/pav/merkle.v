@@ -348,24 +348,24 @@ Definition is_dig entries dig : iProp Σ :=
   "#Hdig" ∷ is_node_hash tr dig)
 .
 
-(* is_merkle_entry says that (id, val) is contained in the tree with this digest.
+(* is_merkle_entry says that (label, val) is contained in the tree with this digest.
 we use (val : option string) instead of (val : tree) bc there are really
 only two types of nodes we want to allow. *)
-Definition is_merkle_entry id val digest : iProp Σ :=
+Definition is_merkle_entry label val digest : iProp Σ :=
   (is_hash [W8 0] digest ∧ ⌜ val = None ⌝)
   ∨
-  (∃ tr, is_node_hash tr digest ∧ ⌜ is_tree_lookup tr id val ⌝)
+  (∃ tr, is_node_hash tr digest ∧ ⌜ is_tree_lookup tr label val ⌝)
 .
 
-Lemma is_node_hash_not_empty tr dig id val :
-  is_tree_lookup tr id val →
+Lemma is_node_hash_not_empty tr dig label val :
+  is_tree_lookup tr label val →
   is_node_hash (Σ := Σ) tr dig -∗
   is_hash [W8 0] dig -∗
   False.
 Proof.
   iIntros (H) "Hdig1 Hdig2".
   destruct tr.
-  + by destruct id.
+  + by destruct label.
   + simpl. iDestruct (is_hash_inj with "Hdig1 Hdig2") as %Hbad.
     apply (f_equal last) in Hbad. by rewrite last_app in Hbad.
   + simpl. iDestruct "Hdig1" as (?) "[_ Hdig1]".
@@ -373,12 +373,12 @@ Proof.
     apply (f_equal last) in Hbad. by rewrite last_app in Hbad.
 Qed.
 
-Lemma is_merkle_entry_inj id val1 val2 digest :
-  is_merkle_entry id val1 digest -∗
-  is_merkle_entry id val2 digest -∗
+Lemma is_merkle_entry_inj label val1 val2 digest :
+  is_merkle_entry label val1 digest -∗
+  is_merkle_entry label val2 digest -∗
   ⌜val1 = val2⌝.
 Proof.
-  iInduction (id) as [|a] "IH" forall (digest).
+  iInduction (label) as [|a] "IH" forall (digest).
   {
     iIntros "[[Hval1 %]|(%tr1 & Htree1 & %Hlookup1)] [[Hval2 %]|(%tr2 & Htree2 & %Hlookup2)]"; subst; try done.
     - iExFalso. by iDestruct (is_node_hash_not_empty with "[$] [$]") as "$".
@@ -471,13 +471,13 @@ Proof.
         { iRight. by iFrame. }
         { iRight. by iFrame. }
       + destruct t.
-        { simpl in *. destruct id; done. }
+        { simpl in *. destruct label; done. }
         { simpl. iDestruct (is_hash_inj with "[$] [$]") as "%Hbad".
           apply (f_equal last) in Hbad. rewrite last_snoc //= in Hbad. }
         { simpl. iDestruct "Hchild1" as (?) "[? ?]". iDestruct (is_hash_inj with "[$] [$]") as "%Hbad".
           apply (f_equal last) in Hbad. rewrite last_snoc //= in Hbad. }
       + destruct t.
-        { simpl in *. destruct id; done. }
+        { simpl in *. destruct label; done. }
         { simpl. iDestruct (is_hash_inj with "[$] [$]") as "%Hbad".
           apply (f_equal last) in Hbad. rewrite last_snoc //= in Hbad. }
         { simpl. iDestruct "Hchild2" as (?) "[? ?]". iDestruct (is_hash_inj with "[$] [$]") as "%Hbad".
@@ -513,8 +513,8 @@ Qed.
 
 (* is_merkle_entry_with_map says that if you know an entry as well
 as the underlying map, you can combine those to get a pure map fact. *)
-Lemma is_merkle_entry_with_map id val dig m :
-  is_merkle_entry id val dig -∗ is_dig m dig -∗ ⌜ m !! id = val ⌝.
+Lemma is_merkle_entry_with_map label val dig m :
+  is_merkle_entry label val dig -∗ is_dig m dig -∗ ⌜ m !! label = val ⌝.
 Proof.
   iIntros "Hentry Hdig".
   iDestruct "Hdig" as "[Hbad|H]".
@@ -535,7 +535,7 @@ End external.
 Module pathProof.
 Record t :=
   mk {
-    id: list w8;
+    label: list w8;
     nodeHash: list w8;
     digest: list w8;
     childHashes: list (list (list w8));
@@ -544,17 +544,17 @@ Record t :=
 Section local_defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ sl_id sl_nodeHash sl_digest sl_childHashes,
-  "Hid" ∷ own_slice_small sl_id byteT (DfracOwn 1) obj.(id) ∗
-  "Hptr_id" ∷ ptr ↦[pathProof :: "id"] (slice_val sl_id) ∗
+  ∃ sl_label sl_nodeHash sl_digest sl_childHashes,
+  "Hlabel" ∷ own_slice_small sl_label byteT (DfracOwn 1) obj.(label) ∗
+  "Hptr_label" ∷ ptr ↦[pathProof :: "label"] (slice_val sl_label) ∗
   "HnodeHash" ∷ own_slice_small sl_nodeHash byteT (DfracOwn 1) obj.(nodeHash) ∗
   "Hptr_nodeHash" ∷ ptr ↦[pathProof :: "nodeHash"] (slice_val sl_nodeHash) ∗
   "Hdigest" ∷ own_slice_small sl_digest byteT (DfracOwn 1) obj.(digest) ∗
   "Hptr_digest" ∷ ptr ↦[pathProof :: "digest"] (slice_val sl_digest) ∗
   "#HchildHashes" ∷ is_Slice3D sl_childHashes obj.(childHashes) ∗
   "Hptr_childHashes" ∷ ptr ↦[pathProof :: "childHashes"] (slice_val sl_childHashes) ∗
-  "%Hlen_id_depth" ∷ ⌜length obj.(id) = length obj.(childHashes)⌝ ∗
-  "%Hlen_id_ub" ∷ ⌜length obj.(id) ≤ 32⌝.
+  "%Hlen_label_depth" ∷ ⌜length obj.(label) = length obj.(childHashes)⌝ ∗
+  "%Hlen_label_ub" ∷ ⌜length obj.(label) ≤ 32⌝.
 End local_defs.
 End pathProof. *)
 
@@ -949,9 +949,9 @@ Proof.
 Qed.
 
 (* is_merkle_proof says that the merkle proof gives rise to a cut tree
-that has digest dig. and is_merkle_entry id val dig.
+that has digest dig. and is_merkle_entry label val dig.
 the cut tree is the existential tree in is_merkle_entry. *)
-Definition is_merkle_proof (proof : (list w8)) (id : list w8)
+Definition is_merkle_proof (proof : (list w8)) (label : list w8)
     (val : option (list w8)) (dig : list w8) : iProp Σ :=
   ∃ (proof' : list (list (list w8))),
     ⌜ proof = concat (concat (proof')) ⌝ ∧
@@ -959,18 +959,18 @@ Definition is_merkle_proof (proof : (list w8)) (id : list w8)
     foldl (λ tr '(sibling_digs, pos),
              let siblings := Some <$> (Cut <$> sibling_digs) in
              Some (Interior ((take (uint.nat pos) siblings) ++ [tr] ++ (drop (uint.nat pos) siblings)))
-      ) (Leaf <$> val) (zip proof' id) in
+      ) (Leaf <$> val) (zip proof' label) in
   match otr with
-  | Some tr => is_node_hash tr dig ∧ ⌜ is_tree_lookup tr id val ⌝
+  | Some tr => is_node_hash tr dig ∧ ⌜ is_tree_lookup tr label val ⌝
   | None => is_hash [W8 0] dig ∧ ⌜ val = None ⌝
   end.
 
-Global Instance is_merkle_proof_persis proof id val dig :
-  Persistent (is_merkle_proof proof id val dig).
+Global Instance is_merkle_proof_persis proof label val dig :
+  Persistent (is_merkle_proof proof label val dig).
 Proof. apply _. Qed.
 
-Lemma is_merkle_proof_to_entry proof id val dig :
-  is_merkle_proof proof id val dig -∗ is_merkle_entry id val dig.
+Lemma is_merkle_proof_to_entry proof label val dig :
+  is_merkle_proof proof label val dig -∗ is_merkle_entry label val dig.
 Proof.
   iIntros "(% & % & #?)"; subst.
   rewrite /is_merkle_proof.
@@ -1110,26 +1110,26 @@ Proof.
   admit.
 Admitted.
 
-Lemma wp_Tree__Put ptr_tr entries sl_id id sl_val val d0 d1 :
+Lemma wp_Tree__Put ptr_tr entries sl_label label sl_val val d0 d1 :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+    "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hval" ∷ own_slice_small sl_val byteT d1 val
   }}}
-  Tree__Put #ptr_tr (slice_val sl_id) (slice_val sl_val)
+  Tree__Put #ptr_tr (slice_val sl_label) (slice_val sl_val)
   {{{
     sl_dig sl_proof (err : bool),
     RET ((slice_val sl_dig), (slice_val sl_proof), #err);
-    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
-    "%Hgenie" ∷ ⌜ length id = hash_len ↔ err = false ⌝ ∗
+    "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
+    "%Hgenie" ∷ ⌜ length label = hash_len ↔ err = false ⌝ ∗
     "Herr" ∷
       if negb err then
         ∃ dig proof,
-        "Htree" ∷ own_merkle ptr_tr (<[id:=val]>entries) ∗
+        "Htree" ∷ own_merkle ptr_tr (<[label:=val]>entries) ∗
         "Hdig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
-        "#HisDig" ∷ is_dig (<[id:=val]>entries) dig ∗
+        "#HisDig" ∷ is_dig (<[label:=val]>entries) dig ∗
         "Hproof" ∷ own_slice_small sl_proof byteT DfracDiscarded proof ∗
-        "His_proof" ∷ is_merkle_proof proof id (Some val) dig
+        "His_proof" ∷ is_merkle_proof proof label (Some val) dig
       else
         "Htree" ∷ own_merkle ptr_tr entries
   }}}.
@@ -1137,7 +1137,7 @@ Proof.
   iIntros (?) "H HΦ". iNamed "H".
   wp_rec.
   wp_pures.
-  iDestruct (own_slice_small_sz with "Hid") as %Hsz_id.
+  iDestruct (own_slice_small_sz with "Hlabel") as %Hsz_label.
   wp_apply wp_slice_len.
   wp_pures.
   wp_if_destruct.
@@ -1162,7 +1162,7 @@ Proof.
   wp_apply (wp_wand _ _ _ (λ _,
                              ∃ (root : loc) tr,
                                "Hroot" ∷ ptr_tr ↦[Tree::"root"] #root ∗
-                               "Hnode" ∷ own_node_except (Some id) root tr ∗
+                               "Hnode" ∷ own_node_except (Some label) root tr ∗
                                "%Htree" ∷ ⌜ eq_tree_map tr [] entries ⌝ ∗
                                "%Hheight" ∷ ⌜ has_tree_height tr (uint.nat full_height) ⌝
               )%I
@@ -1173,7 +1173,7 @@ Proof.
       iModIntro. iFrame "∗%".
       rewrite decide_False //.
       iNamed "Hnode".
-      iDestruct (own_node_except_mono (Some id) with "[$]") as "$"; done.
+      iDestruct (own_node_except_mono (Some label) with "[$]") as "$"; done.
     }
     wp_rec.
     wp_apply wp_NewSlice.
@@ -1233,31 +1233,31 @@ Proof.
   set (loopInv :=
          (λ (depth : w64),
             ∃ (currNode_ptr : loc) sub_tree interiors_sl (interiors : list loc),
-              "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+              "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
               "Hinteriors_ptr" ∷ interiors_ptr ↦[slice.T ptrT] (slice_val interiors_sl) ∗
               "Hinteriors" ∷ own_slice interiors_sl ptrT (DfracOwn 1) interiors ∗
 
               "%Hinteriors_last" ∷ ⌜ last interiors = Some currNode_ptr ⌝ ∗
-              "Hnode" ∷ own_node_except (Some (drop (uint.nat depth) id)) currNode_ptr sub_tree ∗
+              "Hnode" ∷ own_node_except (Some (drop (uint.nat depth) label)) currNode_ptr sub_tree ∗
               "%Hinteriors_length" ∷ ⌜ length interiors = S (uint.nat depth) ⌝ ∗
-              "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree (take (uint.nat depth) id) entries ⌝ ∗
+              "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree (take (uint.nat depth) label) entries ⌝ ∗
               "%Hheight" ∷ ⌜ has_tree_height sub_tree (uint.nat full_height - uint.nat depth)%nat ⌝ ∗
 
               "Hrest" ∷ (∀ children' ,
                  own_node_except None currNode_ptr (Interior children') -∗
-                 ⌜ eq_tree_map (Interior children') (take (uint.nat depth) id) (<[id := val]> entries) ⌝ -∗
+                 ⌜ eq_tree_map (Interior children') (take (uint.nat depth) label) (<[label := val]> entries) ⌝ -∗
                  ⌜ has_tree_height (Interior children') (uint.nat full_height - uint.nat depth)%nat ⌝ -∗
                  (foldl (λ P node_ptr,
                           ∃ children, own_node_except (Some []) node_ptr (Interior children) ∗
                                 (own_node_except None node_ptr (Interior children) -∗ P)
                    )
                    (∃ children', own_node_except None root (Interior children') ∗
-                           ⌜ eq_tree_map (Interior children') [] (<[id := val]> entries) ⌝ ∗
+                           ⌜ eq_tree_map (Interior children') [] (<[label := val]> entries) ⌝ ∗
                            ⌜ has_tree_height (Interior children') (uint.nat full_height) ⌝)
                    (removelast interiors))
               )
          )%I).
-  wp_apply (wp_forUpto' loopInv with "[$Hdepth Hid Hnode Hinteriors_ptr Hinteriors]").
+  wp_apply (wp_forUpto' loopInv with "[$Hdepth Hlabel Hnode Hinteriors_ptr Hinteriors]").
   {
     iSplitR; first word.
     iFrame. repeat iExists _. iSplitR; first done.
@@ -1283,18 +1283,18 @@ Proof.
     wp_pures.
     wp_load.
     replace (word.sub (W64 32) (W64 1)) with (W64 31) in Hlt by word.
-    opose proof (list_lookup_lt id (uint.nat i) ltac:(word)) as [pos H].
-    wp_apply (wp_SliceGet with "[$Hid //]").
-    iIntros "Hid".
+    opose proof (list_lookup_lt label (uint.nat i) ltac:(word)) as [pos H].
+    wp_apply (wp_SliceGet with "[$Hlabel //]").
+    iIntros "Hlabel".
     wp_pures.
 
     wp_bind (if: _ then _ else _)%E.
     wp_apply (wp_wand _ _ _ (λ _,
                                ∃ children child,
                                  let sub_tree := (Interior children) in
-                                 "Hnode" ∷ own_node_except (Some (drop (uint.nat i) id)) currNode_ptr sub_tree ∗
+                                 "Hnode" ∷ own_node_except (Some (drop (uint.nat i) label)) currNode_ptr sub_tree ∗
                                  "%Hchild_lookup" ∷ ⌜ children !! (uint.nat pos) = Some (Some child) ⌝ ∗
-                                 "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree (take (uint.nat i) id) entries ⌝ ∗
+                                 "%Hsubmap" ∷ ⌜ eq_tree_map sub_tree (take (uint.nat i) label) entries ⌝ ∗
                                  "%Hheight" ∷ ⌜ has_tree_height sub_tree (uint.nat full_height - uint.nat i) ⌝
                 )%I
                with "[Hnode]").
@@ -1504,7 +1504,7 @@ Proof.
       intros k.
       replace (uint.nat (w64_word_instance.(word.add) i (W64 1))) with (S (uint.nat i)) in Heq', Hheight' by word.
       (* replace (uint.nat full_height - _)%nat with (n) in Hheight' by word. *)
-      set (id_rest:=(drop (S (uint.nat i)) id)) in *.
+      set (label_rest:=(drop (S (uint.nat i)) label)) in *.
       destruct k.
       - (* If k is empty, then lookup in sub_map should be None. *)
         simpl.
@@ -1516,29 +1516,29 @@ Proof.
         apply (f_equal length) in Hbad.
         rewrite length_take in Hbad.
         word.
-      - assert (id = (take (uint.nat i) id) ++ pos :: id_rest) as Hid.
+      - assert (label = (take (uint.nat i) label) ++ pos :: label_rest) as Hlabel.
         {
           rewrite <- (take_drop (uint.nat i)) at 1.
           f_equal.
-          subst id_rest.
+          subst label_rest.
           rewrite -drop_S //.
         }
-        rewrite -> Hid at 2.
+        rewrite -> Hlabel at 2.
         destruct (decide (w = pos)) as [Hw|Hw].
         + (* k starts with pos *)
           subst pos.
-          destruct (decide (id_rest = k)) as [Hrest|Hrest].
+          destruct (decide (label_rest = k)) as [Hrest|Hrest].
           * subst k.
             simpl in *.
             rewrite list_lookup_insert //.
             2:{ word. }
-            specialize (Hsubmap (w :: id_rest)).
+            specialize (Hsubmap (w :: label_rest)).
             simpl in Hsubmap.
-            unfold id_rest.
+            unfold label_rest.
             rewrite -drop_S //.
             rewrite take_drop.
             rewrite lookup_insert.
-            specialize (Heq' id_rest).
+            specialize (Heq' label_rest).
             rewrite take_drop lookup_insert in Heq'.
             done.
           * rewrite lookup_insert_ne //.
@@ -1550,7 +1550,7 @@ Proof.
             specialize (Heq' k).
             erewrite take_S_r in Heq'; last done.
             rewrite -app_assoc /= in Heq'.
-            rewrite -> Hid in Heq' at 2.
+            rewrite -> Hlabel in Heq' at 2.
             rewrite /= Hchild_lookup in Hsubmap.
             rewrite lookup_insert_ne // in Heq'.
             naive_solver.
@@ -1583,9 +1583,9 @@ Proof.
   }
   iIntros "Hinteriors".
   wp_pures.
-  opose proof (list_lookup_lt id (uint.nat (word.sub (W64 32) (W64 1))) ltac:(word)) as [pos Hpos].
-  wp_apply (wp_SliceGet with "[$Hid //]").
-  iIntros "Hid".
+  opose proof (list_lookup_lt label (uint.nat (word.sub (W64 32) (W64 1))) ltac:(word)) as [pos Hpos].
+  wp_apply (wp_SliceGet with "[$Hlabel //]").
+  iIntros "Hlabel".
   wp_pures.
   rewrite zero_slice_val.
   wp_apply (wp_compLeafNodeHash with "[$Hval]").
@@ -1627,7 +1627,7 @@ Proof.
         "%Hdepth_ge" ∷ ⌜ uint.nat depth ≥ 0 ⌝ ∗
         if decide (uint.nat depth = 0)%nat then
           "HcurrNode" ∷ own_node_except None root (Interior current_children) ∗
-          "%Hmap_eq" ∷ ⌜ eq_tree_map (Interior current_children) [] (<[id:=val]> entries) ⌝ ∗
+          "%Hmap_eq" ∷ ⌜ eq_tree_map (Interior current_children) [] (<[label:=val]> entries) ⌝ ∗
           "%Hheight" ∷ ⌜ has_tree_height (Interior current_children) (uint.nat full_height) ⌝
         else
           ∃ current_ptr,
@@ -1639,7 +1639,7 @@ Proof.
                           ∃ children, own_node_except (Some []) node_ptr (Interior children) ∗
                                       (own_node_except None node_ptr (Interior children) -∗ P))
                        (∃ children', own_node_except None root (Interior children') ∗
-                                     ⌜ eq_tree_map (Interior children') [] (<[id:=val]> entries) ⌝ ∗
+                                     ⌜ eq_tree_map (Interior children') [] (<[label:=val]> entries) ⌝ ∗
                                      ⌜ has_tree_height (Interior children') (uint.nat full_height) ⌝)
                        (take (uint.nat depth - 1)%nat interiors)
             )
@@ -1795,11 +1795,11 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_context__getProof with "[$His_ctx $Hnode $Hid]").
+  wp_apply (wp_context__getProof with "[$His_ctx $Hnode $Hlabel]").
   { done. }
   { word. }
   { done. }
-  iIntros "* (Hnode & Hid & Hproof & His_proof)".
+  iIntros "* (Hnode & Hlabel & Hproof & His_proof)".
   wp_pures.
   destruct (decide (root = null)); subst.
   { by iDestruct (own_node_except_not_null with "Hnode") as %?. }
@@ -1821,25 +1821,25 @@ Proof.
   *)
 Admitted.
 
-Lemma wp_Tree__Get ptr_tr entries sl_id id d0 :
+Lemma wp_Tree__Get ptr_tr entries sl_label label d0 :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hid" ∷ own_slice_small sl_id byteT d0 id
+    "Hlabel" ∷ own_slice_small sl_label byteT d0 label
   }}}
-  Tree__Get #ptr_tr (slice_val sl_id)
+  Tree__Get #ptr_tr (slice_val sl_label)
   {{{
     sl_val sl_dig (proofTy : bool) sl_proof (err : bool),
     RET (slice_val sl_val, slice_val sl_dig, #proofTy, slice_val sl_proof, #err);
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
-    "%Hgenie" ∷ ⌜ length id = hash_len ↔ err = false ⌝ ∗
+    "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
+    "%Hgenie" ∷ ⌜ length label = hash_len ↔ err = false ⌝ ∗
     "Herr" ∷ (if err then True else
       ∃ val dig proof,
       "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
       "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
       "#Hsl_proof" ∷ own_slice_small sl_proof byteT DfracDiscarded proof ∗
       "#His_dig" ∷ is_dig entries dig ∗
-      "#His_proof" ∷ is_merkle_proof proof id (if proofTy then Some val else None) dig)
+      "#His_proof" ∷ is_merkle_proof proof label (if proofTy then Some val else None) dig)
   }}}.
 Proof. Admitted.
 
@@ -1857,7 +1857,7 @@ Lemma wp_pathProof_check ptr_proof proof val :
   {{{
     (err : bool), RET #err;
     if negb err then
-      "Hpath" ∷ is_merkle_entry proof.(pathProof.id) val proof.(pathProof.digest)
+      "Hpath" ∷ is_merkle_entry proof.(pathProof.label) val proof.(pathProof.digest)
     else True%I
   }}}.
 Proof.
@@ -1878,20 +1878,20 @@ Proof.
   (* Entering the main loop. *)
   set for_inv :=
     (λ loopIdx, ∃ sl_currHash currHash (err : bool),
-      "Hid" ∷ own_slice_small sl_id byteT (DfracOwn 1) proof.(pathProof.id) ∗
-      "Hptr_id" ∷ ptr_proof ↦[pathProof :: "id"] sl_id ∗
+      "Hlabel" ∷ own_slice_small sl_label byteT (DfracOwn 1) proof.(pathProof.label) ∗
+      "Hptr_label" ∷ ptr_proof ↦[pathProof :: "label"] sl_label ∗
       "Hptr_childHashes" ∷ ptr_proof ↦[pathProof :: "childHashes"] sl_childHashes ∗
       "#Hsl_currHash" ∷ own_slice_small sl_currHash byteT DfracDiscarded currHash ∗
       "Hptr_currHash" ∷ ptr_currHash ↦[slice.T byteT] sl_currHash ∗
       "Hptr_err" ∷ ptr_err ↦[boolT] #err ∗
       "Herr_pred" ∷ if negb err then
         "Hpath_val" ∷ is_merkle_entry
-          (drop (length proof.(pathProof.id) - (Z.to_nat (word.unsigned loopIdx)))
-          proof.(pathProof.id)) val currHash
+          (drop (length proof.(pathProof.label) - (Z.to_nat (word.unsigned loopIdx)))
+          proof.(pathProof.label)) val currHash
       else True)%I : w64 → iProp Σ.
-  wp_apply (wp_forUpto for_inv with "[] [$Hid $Hptr_id $Hptr_childHashes $HloopIdx $HcurrHash $HnodeHash $Hptr_err Hhash]"); [word|..].
+  wp_apply (wp_forUpto for_inv with "[] [$Hlabel $Hptr_label $Hptr_childHashes $HloopIdx $HcurrHash $HnodeHash $Hptr_err Hhash]"); [word|..].
   2: {
-    assert ((length proof.(pathProof.id) - 0%nat)%nat = length proof.(pathProof.id)) as H by word;
+    assert ((length proof.(pathProof.label) - 0%nat)%nat = length proof.(pathProof.label)) as H by word;
       iEval (rewrite H); clear H.
     iEval (rewrite drop_all).
     iFrame.
@@ -1916,7 +1916,7 @@ Proof.
       [done..|]; iNamed "H".
     iDestruct (own_slice_small_sz with "Hsl_dim1") as "%Hlen_list_dim1'".
     iDestruct (big_sepL2_length with "Hsep_dim1") as "%Hlen_obj_dim1'".
-    iDestruct (own_slice_small_sz with "Hid") as "%Hlen_id".
+    iDestruct (own_slice_small_sz with "Hlabel") as "%Hlen_label".
 
     (* Rewrite this early since it appears in multiple sub-terms. *)
     replace (word.sub (word.sub sl_childHashes.(Slice.sz) 1) loopIdx) with
@@ -1935,14 +1935,14 @@ Proof.
     { wp_store. iApply "HΦ2". by iFrame "#∗". }
     iSimpl in "H"; iNamed "H"; rename Hlen into Hhash_len_obj_dim1'.
 
-    wp_apply (wp_loadField with "[$Hptr_id]");
-      iIntros "Hptr_id".
+    wp_apply (wp_loadField with "[$Hptr_label]");
+      iIntros "Hptr_label".
     assert (∃ (pos : w8),
-      proof.(pathProof.id) !! uint.nat (length list_dim0 - 1 - uint.nat loopIdx) =
+      proof.(pathProof.label) !! uint.nat (length list_dim0 - 1 - uint.nat loopIdx) =
       Some pos) as [pos Hlook_pos].
     { apply lookup_lt_is_Some. word. }
-    wp_apply (wp_SliceGet with "[$Hid]"); [done|];
-      iIntros "Hid".
+    wp_apply (wp_SliceGet with "[$Hlabel]"); [done|];
+      iIntros "Hlabel".
 
     (* TODO: word should know this. *)
     assert (length list_dim1' = 255%nat) as H255_list_dim1'.
@@ -2049,8 +2049,8 @@ Proof.
     rewrite (drop_S _ pos _ _).
     2: { rewrite <-Hlook_pos. f_equal. word. }
     (* TODO: is there a good way of extracting this goal automatically? *)
-    replace (S (length proof.(pathProof.id) - uint.nat (word.add loopIdx 1))) with
-      ((length proof.(pathProof.id) - uint.nat loopIdx)%nat) by word.
+    replace (S (length proof.(pathProof.label) - uint.nat (word.add loopIdx 1))) with
+      ((length proof.(pathProof.label) - uint.nat loopIdx)%nat) by word.
     exists tr.
     split; [|done].
     rewrite (lookup_app_r _ _ _ _).
@@ -2080,29 +2080,29 @@ Proof.
   wp_apply (wp_BytesEqual with "[Hdigest]"); [iFrame "#∗"|];
     iIntros "[_ Hdigest]".
   wp_if_destruct; [by iApply "HΦ"|]; rename Heqb into Heq_currHash.
-  iEval (replace ((length proof.(pathProof.id) - uint.nat sl_childHashes.(Slice.sz))%nat)
+  iEval (replace ((length proof.(pathProof.label) - uint.nat sl_childHashes.(Slice.sz))%nat)
     with (0%nat) by word) in "Hpath_val".
   iEval (rewrite drop_0 Heq_currHash) in "Hpath_val".
   by iApply "HΦ".
 Qed. *)
 
-Definition wp_CheckProof sl_id sl_val sl_dig (proofTy : bool) sl_proof proof (id val dig : list w8)
+Definition wp_CheckProof sl_label sl_val sl_dig (proofTy : bool) sl_proof proof (label val dig : list w8)
   dq0 dq1 dq2 dq3 :
   {{{
     "Hproof" ∷ own_slice sl_proof byteT dq0 proof ∗
-    "Hid" ∷ own_slice_small sl_id byteT dq1 id ∗
+    "Hlabel" ∷ own_slice_small sl_label byteT dq1 label ∗
     "Hval" ∷ own_slice_small sl_val byteT dq2 val ∗
     "Hdig" ∷ own_slice_small sl_dig byteT dq3 dig
   }}}
-  CheckProof #proofTy (slice_val sl_proof) (slice_val sl_id) (slice_val sl_val) (slice_val sl_dig)
+  CheckProof #proofTy (slice_val sl_proof) (slice_val sl_label) (slice_val sl_val) (slice_val sl_dig)
   {{{
     (err : bool), RET #err;
     "Hproof" ∷ own_slice sl_proof byteT dq0 proof ∗
-    "Hid" ∷ own_slice_small sl_id byteT dq1 id ∗
+    "Hlabel" ∷ own_slice_small sl_label byteT dq1 label ∗
     "Hval" ∷ own_slice_small sl_val byteT dq2 val ∗
     "Hdig" ∷ own_slice_small sl_dig byteT dq3 dig ∗
     let expected_val := (if proofTy then Some val else None) in
-    "Hgenie" ∷ (if err then True else is_merkle_proof proof id expected_val dig)
+    "Hgenie" ∷ (if err then True else is_merkle_proof proof label expected_val dig)
   }}}.
 Proof.
   iIntros (?) "H HΦ".
