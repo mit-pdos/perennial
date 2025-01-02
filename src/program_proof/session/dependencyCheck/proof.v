@@ -379,12 +379,13 @@ Section heap.
                                        (uint.Z x) =? (uint.Z y) = true⌝ ∗
                                                                     ⌜uint.nat i <= (length xs)⌝ ∗
                                                                                    ⌜continue = true -> b = true⌝ ∗
-                                                                                   ⌜continue = false ->
+                                                                                                             ⌜continue = false ->
                                        ((uint.Z i) = uint.Z (W64 (length xs)) /\ b = true) \/
                                          ( exists (x y : w64),
                                              xs !! uint.nat i = Some x /\
-                                             ys !! uint.nat i = Some y /\
-                                             b = (uint.Z x >? uint.Z y))⌝ 
+                                               ys !! uint.nat i = Some y /\
+                                               (uint.Z x =? uint.Z y) = false /\
+                                               b = (uint.Z x >? uint.Z y))⌝ 
                 )%I
                with "[] [H1 H2 H3 H6 H7 H8]").
     - iIntros (?). iModIntro. iIntros "H1 H2".
@@ -446,9 +447,11 @@ Section heap.
                     - intros. right. exists x0. exists x1. split; auto. split; auto.
                       destruct (decide ((uint.Z x0 > uint.Z x1))).
                       + assert (uint.Z x0 >? uint.Z x1 = true). { word. }
-                        rewrite H2. apply bool_decide_eq_true. word.
+                        rewrite H2. split; try word.
+                        apply bool_decide_eq_true. word.
                       + assert (uint.Z x0 >? uint.Z x1 = false). { word. }
-                        rewrite H2. apply bool_decide_eq_false. word.
+                        rewrite H2. split; try word.
+                        apply bool_decide_eq_false. word.
                   }
           }
       + iModIntro. iApply "H2". iExists b. iExists i. iFrame. iPureIntro. split; auto.
@@ -467,7 +470,7 @@ Section heap.
       iPureIntro.
       split; try word.
     - iIntros "Hpost".
-      wp_pures. iNamed "Hpost". iDestruct "Hpost" as "(H1 & H2 & H3 & H4 & %H6 & %H7 & %H8)".
+      wp_pures. iNamed "Hpost". iDestruct "Hpost" as "(H1 & H2 & H3 & %H5 & %H6 & %H7 & %H8)".
       wp_load. iModIntro. iApply "H5". iFrame. iSplitL.
       + destruct H8. destruct H0; auto.
         * destruct H0.         
@@ -493,49 +496,63 @@ Section heap.
                   apply Z.pred_inj_wd in H0. replace (uint.Z i - 1) with (Z.pred (uint.Z i)) by word.
                   rewrite length_cons in H0. rewrite H0. word. }
                 apply H2.
+              + auto.
               + intros.
                 eapply H6.
                 * assert ((S i')%nat < uint.nat i <= (length (a :: xs))). { 
                     rewrite length_cons in H4. word.
-                  } 
-                  apply H7.
+                  }
+                  apply H8.
                 * auto.
                 * auto.
           }
         * clear Hsz. clear H. iPureIntro. 
-          generalize dependent ys. induction xs. 
+          generalize dependent ys. generalize dependent i. induction xs.
           { intros. destruct H0. destruct H. destruct H. inversion H. }
           { intros. cbn in *. induction ys.
             - destruct H0. destruct H. destruct H. destruct H0. inversion H0.
-            - destruct (decide (uint.nat i = 0%nat)).
-              + rewrite e in H0. destruct H0. destruct H. destruct H.  destruct H0. simpl in H. simpl in H0.
-                injection H as ?. injection H0 as ?. rewrite H.
-              + assert (0%nat < uint.nat i <= S (length xs)) by word. eapply H6 in H.
-                * assert (uint.Z a =? uint.Z a0 = true). { apply H. }
-                  rewrite H. eapply IHxs; try word.
-                  { destruct (decide (uint.nat i = S (length xs))).
-                    - admit.
-                    - admit.
+            - destruct H0. destruct H. destruct H. destruct H0. destruct H1.
+              destruct (decide (uint.nat i = 0%nat)).
+              + rewrite e in H0. rewrite e in H. simpl in H0. simpl in H. 
+                injection H as ?. injection H0 as ?. rewrite H. 
+                rewrite H0. rewrite H2. rewrite H1. auto.
+              + assert (0%nat < uint.nat i <= S (length xs)) by word.
+                eapply H6 in H3.
+                * rewrite H3. eapply IHxs; try word.
+                  { assert (uint.nat (uint.nat i - 1%nat) <= length xs) by word. apply H8. }
+                  { auto. }
+                  { intros. eapply H6.
+                    - assert ((S i')%nat < uint.nat i <= S (length xs)) by word. apply H11.
+                    - rewrite lookup_cons. auto.
+                    - rewrite lookup_cons. auto.
                   }
-                  {
-                    intros. eapply H6.
-                    - assert ((i' + 1)%nat < uint.nat i ≤ length xs). {
-                        
-                      }
-                    - 
+                  { apply lookup_lt_Some in H as H11. rewrite length_cons in H11.
+                    rewrite length_cons in H5. inversion H5.
+                    assert (uint.nat i - 1%nat < length xs)%nat by word.
+                    assert (uint.nat i - 1%nat < length ys)%nat by word.
+                    apply list_lookup_lt in H8.
+                    apply list_lookup_lt in H10.
+                    destruct H8.
+                    destruct H10.
+                    exists x2. exists x3.
+                    split.
+                    - replace (uint.nat (W64 (uint.nat i - 1%nat))) with (uint.nat i - 1)%nat by word.
+                      auto.
+                    - split.
+                      + replace (uint.nat (W64 (uint.nat i - 1%nat))) with (uint.nat i - 1)%nat by word.
+                        auto.
+                      + assert ((S (uint.nat i - 1%nat)%nat = uint.nat i)%nat) by word.
+                        rewrite <- H12 in H. rewrite <- H12 in H0. 
+                        rewrite lookup_cons in H.
+                        rewrite lookup_cons in H0.
+                        rewrite H8 in H. rewrite H10 in H0. injection H as ?. injection H0 as ?.
+                        subst. split; auto.
                   }
-              destruct (decide (uint.Z a =? uint.Z a0 = true)).
-              + rewrite e. eapply IHxs.
-                * word.
-                * intros. admit.
-                * admit.
-              + assert ((uint.Z a =? uint.Z a0) = false) by word. rewrite H0.
-          } 
-      + word.
-  Admitted.
-            
-            
-
+                * auto.
+                * auto.
+          }
+      + iPureIntro; word.
+  Qed.
 
   (* Lemma equiv id serverData vectorClock opData clientData readVector writeVector
                   (vc: Slice.t) (rv: Slice.t) (wv: Slice.t)
