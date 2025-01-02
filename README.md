@@ -3,7 +3,28 @@ GooseLang files are in `goose_converison/external/Goose/github_com/session`
 Proof files are in `goose_converison/src/program_proof/session`
 
 First run git `submodule update --init --recursive`
-To compile dependencies for proofs do (`make src/program_proof/session/dependencyCheck/proof.vos`) for respective files  
+To compile dependencies for proofs do (`make src/program_proof/session/dependencyCheck/proof.required_vos`) for respective files  
+
+## Completed equivalence proofs:
+1. Ordered Insertion to a list of unsigned ints
+2. Checking of dependencies for session and causal 
+3. Strictly comparing two version vectors
+4. Getting the max version vector from two version vectors by doing a max of corresponding indexes
+5. Lexicographic comparison of two version vectors 
+6. Checking if two version vectors are concurrent 
+
+## Functions left to complete:
+1. Extend sorting to operations (medium) 
+2. Check if two operations are equivalent (easy) 
+3. Total Order Compare (easy)
+4. Remove duplicates from operations (hard) 
+5. Receiving a gossip request (medium) 
+6. Function to check if we can add an operation to our queue during gossip (easy) 
+7. Function to process client request (medium)
+
+## Rest 
+1. Finish writing go code
+2. Code + Proof to keep track of already sent messages (hard)
 
 # Verifying concurrent, crash-safe systems with Perennial
 
