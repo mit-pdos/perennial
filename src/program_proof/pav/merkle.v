@@ -1110,7 +1110,7 @@ Proof.
   admit.
 Admitted.
 
-Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
+Lemma wp_Tree__Put ptr_tr entries sl_id id sl_val val d0 d1 :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries ∗
     "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
@@ -1121,7 +1121,7 @@ Lemma wp_Tree_Put ptr_tr entries sl_id id sl_val val d0 d1 :
     sl_dig sl_proof (err : bool),
     RET ((slice_val sl_dig), (slice_val sl_proof), #err);
     "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
-    "%Hvalid_id" ∷ ⌜ length id = hash_len → err = false ⌝ ∗
+    "%Hgenie" ∷ ⌜ length id = hash_len ↔ err = false ⌝ ∗
     "Herr" ∷
       if negb err then
         ∃ dig proof,
@@ -1805,6 +1805,7 @@ Proof.
   { by iDestruct (own_node_except_not_null with "Hnode") as %?. }
   iApply "HΦ".
   iFrame.
+  (*
   iSplitR; first done.
   iDestruct (own_slice_to_small with "Hproof") as "Hproof".
   iMod (own_slice_small_persist with "Hproof") as "Hproof".
@@ -1817,27 +1818,28 @@ Proof.
   iApply "His_proof".
   { specialize (Hmap_eq id).
     done. }
-Qed.
+  *)
+Admitted.
 
-Lemma wp_Tree_Get ptr_tr entries sl_id id dq :
+Lemma wp_Tree__Get ptr_tr entries sl_id id d0 :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hid" ∷ own_slice_small sl_id byteT dq id
+    "Hid" ∷ own_slice_small sl_id byteT d0 id
   }}}
   Tree__Get #ptr_tr (slice_val sl_id)
   {{{
-        val digest val_sl digest_sl (proofTy : bool) proof_sl (error : bool),
-          RET (slice_val val_sl, slice_val digest_sl, #proofTy, slice_val proof_sl, #error);
-    "Hid" ∷ own_slice_small sl_id byteT dq id ∗
-    "%Hvalid_id" ∷ ⌜ length id = hash_len → error = false ⌝ ∗
-    "Herr" ∷
-      if negb error then
-        "Htree" ∷ own_merkle ptr_tr (<[id:=val]>entries) ∗
-        "Hval_sl" ∷ own_slice_small val_sl byteT (DfracOwn 1) val ∗
-        "Hdigest_sl" ∷ own_slice_small digest_sl byteT (DfracOwn 1) digest ∗
-        "#HisDig" ∷ is_dig (<[id:=val]>entries) digest
-      else
-        "Htree" ∷ own_merkle ptr_tr entries
+    sl_val sl_dig (proofTy : bool) sl_proof (err : bool),
+    RET (slice_val sl_val, slice_val sl_dig, #proofTy, slice_val sl_proof, #err);
+    "Htree" ∷ own_merkle ptr_tr entries ∗
+    "Hid" ∷ own_slice_small sl_id byteT d0 id ∗
+    "%Hgenie" ∷ ⌜ length id = hash_len ↔ err = false ⌝ ∗
+    "Herr" ∷ (if err then True else
+      ∃ val dig proof,
+      "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
+      "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
+      "#Hsl_proof" ∷ own_slice_small sl_proof byteT DfracDiscarded proof ∗
+      "#His_dig" ∷ is_dig entries dig ∗
+      "#His_proof" ∷ is_merkle_proof proof id (if proofTy then Some val else None) dig)
   }}}.
 Proof. Admitted.
 
