@@ -83,6 +83,33 @@ Lemma wp_enc obj sl_enc (enc : list w8) ptr :
     "Hown_obj" ∷ own ptr obj
   }}}.
 Proof. Admitted.
+
+(* TODO: not fully sure how to prove this, but probably relies
+on the inj lemma. *)
+Lemma enc_inj obj0 tail0 obj1 tail1 :
+  encodesF obj0 ++ tail0 = encodesF obj1 ++ tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Lemma wp_dec sl_enc dq enc :
+  {{{
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT dq enc
+  }}}
+  MapValPreDecode (slice_val sl_enc)
+  {{{
+    ptr_obj sl_tail (err : bool), RET (#ptr_obj, slice_val sl_tail, #err);
+    "%Hgenie" ∷ (⌜ ∀ obj tail, enc = encodesF obj ++ tail → err = false ⌝) ∗
+    (* TODO: with curr structure, genie user needs to apply enc_inj to unify
+    their obj and tail with the one they get back from Herr.
+    is there any way to rewrite the spec to avoid this? *)
+    "Herr" ∷ (⌜ err = false ⌝ -∗
+      ∃ obj tail,
+      own ptr_obj obj ∗
+      own_slice_small sl_tail byteT dq tail ∗
+      ⌜ enc = encodesF obj ++ tail ⌝)
+  }}}.
+Proof. Admitted.
+
 End defs.
 End MapValPre.
 
