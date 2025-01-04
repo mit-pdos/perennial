@@ -1110,18 +1110,18 @@ Proof.
   admit.
 Admitted.
 
-Lemma wp_Tree__Put ptr_tr entries sl_label label sl_val val d0 d1 :
+Lemma wp_Tree__Put ptr_tr entries sl_label label sl_val val dq0 dq1 :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
-    "Hval" ∷ own_slice_small sl_val byteT d1 val
+    "Hlabel" ∷ own_slice_small sl_label byteT dq0 label ∗
+    "Hval" ∷ own_slice_small sl_val byteT dq1 val
   }}}
   Tree__Put #ptr_tr (slice_val sl_label) (slice_val sl_val)
   {{{
     sl_dig sl_proof (err : bool),
     RET ((slice_val sl_dig), (slice_val sl_proof), #err);
-    "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
-    "%Hgenie" ∷ ⌜ length label = hash_len ↔ err = false ⌝ ∗
+    "Hlabel" ∷ own_slice_small sl_label byteT dq0 label ∗
+    "%Hgenie" ∷ ⌜ err = false ↔ length label = hash_len ⌝ ∗
     "Herr" ∷
       if negb err then
         ∃ dig proof,
@@ -1233,7 +1233,7 @@ Proof.
   set (loopInv :=
          (λ (depth : w64),
             ∃ (currNode_ptr : loc) sub_tree interiors_sl (interiors : list loc),
-              "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
+              "Hlabel" ∷ own_slice_small sl_label byteT dq0 label ∗
               "Hinteriors_ptr" ∷ interiors_ptr ↦[slice.T ptrT] (slice_val interiors_sl) ∗
               "Hinteriors" ∷ own_slice interiors_sl ptrT (DfracOwn 1) interiors ∗
 
@@ -1821,18 +1821,18 @@ Proof.
   *)
 Admitted.
 
-Lemma wp_Tree__Get ptr_tr entries sl_label label d0 :
+Lemma wp_Tree__Get ptr_tr entries sl_label label dq0 :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hlabel" ∷ own_slice_small sl_label byteT d0 label
+    "Hlabel" ∷ own_slice_small sl_label byteT dq0 label
   }}}
   Tree__Get #ptr_tr (slice_val sl_label)
   {{{
     sl_val sl_dig (proofTy : bool) sl_proof (err : bool),
     RET (slice_val sl_val, slice_val sl_dig, #proofTy, slice_val sl_proof, #err);
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hlabel" ∷ own_slice_small sl_label byteT d0 label ∗
-    "%Hgenie" ∷ ⌜ length label = hash_len ↔ err = false ⌝ ∗
+    "Hlabel" ∷ own_slice_small sl_label byteT dq0 label ∗
+    "%Hgenie" ∷ ⌜ err = false ↔ length label = hash_len ⌝ ∗
     "Herr" ∷ (if err then True else
       ∃ val dig proof,
       "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗

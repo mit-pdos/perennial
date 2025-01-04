@@ -104,9 +104,9 @@ Lemma wp_dec sl_enc dq enc :
     is there any way to rewrite the spec to avoid this? *)
     "Herr" ∷ (⌜ err = false ⌝ -∗
       ∃ obj tail,
-      own ptr_obj obj ∗
-      own_slice_small sl_tail byteT dq tail ∗
-      ⌜ enc = encodesF obj ++ tail ⌝)
+      "Hown_obj" ∷ own ptr_obj obj ∗
+      "Hsl_tail" ∷ own_slice_small sl_tail byteT dq tail ∗
+      "%Henc_obj" ∷ ⌜ enc = encodesF obj ++ tail ⌝)
   }}}.
 Proof. Admitted.
 
