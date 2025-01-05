@@ -1,6 +1,10 @@
 From Perennial.goose_lang Require Export lang notation.
+From New.golang.defn Require Import hex.
 
 Definition go_string := byte_string.
+Delimit Scope byte_string_scope with go.
+Bind Scope byte_string_scope with go_string.
+Delimit Scope byte_char_scope with go_byte.
 
 Inductive go_type :=
 (* Boolean *)
@@ -47,8 +51,6 @@ Program Definition to_val := unseal (_:seal (@to_val_def)). Obligation 1. by eex
 Definition to_val_unseal : to_val = _ := seal_eq _.
 Arguments to_val {_ _ _} v.
 (* Disable Notation "# l". *)
-Delimit Scope byte_string_scope with go.
-Bind Scope byte_string_scope with go_string.
 Global Notation "# x" := (to_val x%go).
 Global Notation "#" := to_val.
 
@@ -103,11 +105,9 @@ End slice.
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.
-  Record t := mk { v: val; mset: list (go_string * val) }.
+  Record t := mk { v: val; pkg_type_name : option (go_string*go_string) }.
 
-  (* FIXME: use the typeid to distinguish nil interface value from nil pointer
-     used as a non-nil interface value. *)
-  Definition nil := mk #null [].
+  Definition nil := mk #null None.
 End goose_lang.
 End interface.
 
@@ -150,7 +150,14 @@ Proof. solve_decision. Qed.
 Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
   {|
     to_val_def (i: interface.t) :=
-      InjLV (#"NO TYPE IDS YET", i.(interface.v), (struct.fields_val i.(interface.mset)))%V
+      InjRV (
+          match i.(interface.pkg_type_name) with
+          | None => NONEV
+          | Some pkg_type_name =>
+              SOMEV #((hex_encode pkg_type_name.1) ++ " "%go
+                        ++ hex_encode pkg_type_name.2)
+          end,
+            i.(interface.v))%V
   |}.
 
 End instances.

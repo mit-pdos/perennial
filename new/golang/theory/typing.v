@@ -1,6 +1,7 @@
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
 From New.golang.defn Require Export typing.
+From New.golang.theory Require Import hex.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 
@@ -380,7 +381,17 @@ Next Obligation.
   rewrite -default_val_eq_zero_val to_val_unseal //.
 Qed.
 Final Obligation.
-Admitted.
+rewrite to_val_unseal.
+intros. intros ?? Heq.
+simpl in Heq.
+induction x.
+{ rewrite (VectorSpec.nil_spec y) //. }
+destruct y using vec_S_inv.
+simpl in *.
+injection Heq as Heq1 Heq.
+apply to_val_inj in Heq1. subst.
+f_equal. by apply IHx.
+Qed.
 
 Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
 {| default_val := func.nil |}.
@@ -410,9 +421,16 @@ Program Global Instance into_val_typed_interface : IntoValTyped interface.t inte
 {| default_val := interface.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation. rewrite to_val_unseal => [[??] [??]] /= [??].
-                 f_equal; try done.
-                 apply struct_fields_val_inj. done.
+Next Obligation.
+  rewrite to_val_unseal =>[[??] [??]] [Heq ?]. subst.
+  do 2 destruct (_ : option (go_string * go_string)).
+  {
+    f_equal. destruct p, p0. simpl in *.
+    injection Heq as Heq.
+    apply to_val_inj, hex_encode_app_inj in Heq.
+    intuition. subst. done.
+  }
+  all: first [discriminate | reflexivity].
 Qed.
 Final Obligation.
   solve_decision.

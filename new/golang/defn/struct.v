@@ -48,14 +48,6 @@ Definition field_get (t : go_type) f : val :=
       | _ => (#())
   end.
 
-Definition assocl_lookup : val :=
-  rec: "assocl_lookup" "f" "fvs" :=
-    list.Match "fvs"
-              (λ: <>, InjLV #())
-              (λ: "fv" "fvs",
-                 let: ("f'", "v") := "fv" in
-                 if: "f" = "f'" then InjR "v" else "assocl_lookup" "f" "fvs").
-
 Definition make_def (t : go_type) : val :=
   match t with
   | structT d =>

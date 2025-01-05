@@ -4,7 +4,7 @@ From iris.proofmode Require Import environments.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
 From New.golang.defn Require Export mem.
-From New.golang.theory Require Import proofmode typing.
+From New.golang.theory Require Import proofmode typing hex.
 Require Import Coq.Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
@@ -72,6 +72,7 @@ Section goose_lang.
       | [ v : slice.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : interface.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : func.t |- _ ] => let v := Control.hyp v in destruct $v
+      | [ v : option (go_string * go_string )|- _ ] => let v := Control.hyp v in destruct $v as [[??]|]
       | [ h : has_go_type _ _ |- _ ] => let h := Control.hyp h in (inversion_clear $h in Heq)
       | [ h : struct.fields_val _ = struct.fields_val _ |- _ ] => apply struct_fields_val_inj in $h; subst
 
@@ -92,6 +93,11 @@ Section goose_lang.
       end
     .
     all: repeat ltac2:(step ()).
+    {
+      simpl.
+      apply hex_encode_app_inj in H0.
+      intuition. subst. done.
+    }
     {
       (* XXX: need to reorder hyps to avoid an error in [dependent induction].... *)
       move a after a0.

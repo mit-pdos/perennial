@@ -33,6 +33,17 @@ Section defn.
 End defn.
 End list.
 
+Section defn.
+Context `{ffi_syntax}.
+Definition assocl_lookup : val :=
+  rec: "assocl_lookup" "f" "fvs" :=
+    list.Match "fvs"
+              (λ: <>, NONEV)
+              (λ: "fv" "fvs",
+                 let: ("f'", "v") := "fv" in
+                 if: "f" = "f'" then SOME "v" else "assocl_lookup" "f" "fvs").
+End defn.
+
 Notation "[ ]" := (list.Nil) (only parsing) : expr_scope.
 Notation "[ x ]" := (list.Cons x []%E) : expr_scope.
 Notation "[ x ; y ; .. ; z ]" := (list.Cons x (list.Cons y .. (list.Cons z []%E) ..)) : expr_scope.

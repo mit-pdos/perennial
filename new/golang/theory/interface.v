@@ -5,8 +5,11 @@ From New.golang.defn Require Import interface.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance wp__interface_get (i : interface.t) (method : go_string) :
-  PureWp (True) (interface.get method #i)
+Lemma wp_interface_get (i : interface.t) (method : go_string) :
+  {{{ True }}}
+    interface.get method #i
+  {{{ RET #(); True }}}
+.
     (match (assocl_lookup method i.(interface.mset)) with
      | None => (App #() i.(interface.v))
      | Some m => (App m i.(interface.v))
