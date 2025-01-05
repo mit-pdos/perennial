@@ -262,6 +262,54 @@ Proof.
   by rewrite -Hdom -Hdom1.
 Qed.
 
+Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
+  {{{
+    "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
+    "#Hown_upd_refs" ∷ own_map ptr_upd DfracDiscarded upd_refs ∗
+    "#Hown_upd" ∷ ([∗ map] sl;v ∈ upd_refs;upd,
+      own_slice_small sl byteT DfracDiscarded v) ∗
+    "%Hlen_labels" ∷ ([∗ map] label ↦ val ∈ upd, ⌜ length label = 32%nat ⌝)
+  }}}
+  applyUpd #ptr_keys #ptr_upd
+  {{{
+    RET #();
+    "Hown_keys" ∷ own_merkle ptr_keys (upd ∪ lower_map keys)
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply (wp_MapIter_fold _ _ _
+    (λ upd_refs',
+    ∃ upd',
+    "%Hdom" ∷ ⌜ dom upd_refs' = dom upd' ⌝ ∗
+    "%Hsub" ∷ ⌜ upd' ⊆ upd ⌝ ∗
+    "Hown_keys" ∷ own_merkle ptr_keys (upd' ∪ lower_map keys)
+    )%I with "Hown_upd_refs [Hown_keys]").
+  { iExists ∅. rewrite map_empty_union. iFrame.
+    iPureIntro. split; [done|]. eapply map_empty_subseteq. }
+  { clear -Hlen_labels. iIntros (? k sl_v Φ) "!> (H&_&%Hlook_ptr) HΦ". iNamed "H".
+    wp_apply wp_StringToBytes. iIntros (?) "Hsl_label".
+    iDestruct (own_slice_to_small with "Hsl_label") as "Hsl_label".
+    iDestruct (big_sepM2_lookup_l_some with "Hown_upd") as %[v Hlook_val];
+      [exact Hlook_ptr|].
+    iDestruct (big_sepM2_lookup with "Hown_upd") as "#Hsl_val";
+      [exact Hlook_ptr|exact Hlook_val|].
+    wp_apply (wp_Tree__Put with "[$Hown_keys $Hsl_label $Hsl_val]").
+    iIntros "*". iNamed 1.
+    opose proof ((proj2 Hgenie) _) as ->.
+    { by opose proof (map_Forall_lookup_1 _ _ _ _ Hlen_labels Hlook_val) as ?. }
+    wp_apply wp_Assert_true. iApply "HΦ".
+    iExists (<[k:=v]> upd').
+    iNamed "Herr". rewrite insert_union_l. iFrame "Htree".
+    iPureIntro. repeat try split.
+    - set_solver.
+    - by apply insert_subseteq_l. }
+  iIntros "[_ H]". iNamed "H".
+  wp_pures. iApply "HΦ".
+  iDestruct (big_sepM2_dom with "Hown_upd") as %Hdom1.
+  opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as ->; [|done].
+  by rewrite -Hdom -Hdom1.
+Qed.
+
 Lemma wp_Auditor__Update a ptr_upd upd :
   {{{
     "#Hvalid" ∷ Auditor.valid a ∗
