@@ -25,8 +25,43 @@ Definition lower_map (m : adtr_map_ty) : merkle_map_ty :=
 
 Definition gs_inv (gs : list (adtr_map_ty * dig_ty)) : iProp Σ :=
   "#His_digs" ∷ ([∗ list] x ∈ gs, is_dig (lower_map x.1) x.2) ∗
-  "%Hmaps_mono" ∷ ⌜ maps_mono gs.*1 ⌝ ∗
-  "%Hepochs_ok" ∷ ⌜ epochs_ok gs.*1 ⌝.
+  "%Hmono_maps" ∷ ⌜ maps_mono gs.*1 ⌝ ∗
+  "%Hok_epochs" ∷ ⌜ epochs_ok gs.*1 ⌝.
+
+Lemma gs_snoc gs upd dig :
+  let new_map := (upd ∪ (default ∅ (last gs.*1))) in
+  gs_inv gs -∗
+  is_dig (lower_map new_map) dig -∗
+  ⌜ upd ##ₘ (default ∅ (last gs.*1)) ⌝ -∗
+  ([∗ map] val ∈ upd, ⌜ val.1 = W64 (length gs) ⌝) -∗
+  gs_inv (gs ++ [(new_map, dig)]).
+Proof.
+  iIntros "* #Hold_inv #His_dig %Hdisj %Hok_epoch".
+  iNamedSuffix "Hold_inv" "_old".
+  iSplit; [|iPureIntro; split].
+  - iApply big_sepL_snoc. iFrame "#".
+  - unfold maps_mono in *.
+    admit.
+  - unfold epochs_ok in *.
+    intros * Hlook_gs Hlook_m.
+    (* TODO: ep' somehow has w64_word_instance, whereas ep has w64. *)
+    rewrite fmap_app in Hlook_gs.
+    destruct (decide (uint.Z ep < length gs)).
+    + eapply Hok_epochs_old; [|done].
+      rewrite lookup_app_l in Hlook_gs; [done|].
+      rewrite length_fmap. word.
+    + rewrite lookup_app_r in Hlook_gs.
+      2: { rewrite length_fmap. word. }
+      simpl in *. apply list_lookup_singleton_Some in Hlook_gs as [Heq_ep <-].
+      apply lookup_union_Some_raw in Hlook_m as [Hlook_upd | [_ Hlook_last]].
+      { pose proof (map_Forall_lookup_1 _ _ _ _ Hok_epoch Hlook_upd) as ?.
+        simpl in *. subst. word. }
+      destruct (last gs.*1) as [m_last|] eqn:Hlast; [|set_solver]. simpl in *.
+      opose proof (Hok_epochs_old
+        (W64 (pred $ length gs))  _ _ _ _ _ Hlook_last) as ?; [|word].
+      replace (uint.nat (W64 _)) with (pred $ length gs); [|word].
+      by rewrite last_lookup length_fmap in Hlast.
+Admitted.
 
 Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
@@ -223,9 +258,14 @@ Lemma wp_checkUpd ptr_keys keys ptr_upd upd_refs upd nextEp :
     (err : bool), RET #err;
     "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
     "Herr" ∷ (if err then True else
-      ([∗ map] label ↦ val ∈ upd, ⌜ upd_checks keys nextEp label val ⌝))
+      ∃ upd_dec,
+      "%Hlen_labels" ∷ ([∗ map] label ↦ _ ∈ upd, ⌜ length label = 32%nat ⌝) ∗
+      "%Hdecode" ∷ ⌜ upd = lower_map upd_dec ⌝ ∗
+      "%Hok_epoch" ∷ ([∗ map] val ∈ upd_dec, ⌜ val.1 = nextEp ⌝) ∗
+      "%Hdisj" ∷ ⌜ upd_dec ##ₘ keys ⌝)
   }}}.
-Proof.
+Proof. Admitted.
+(*
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_loopErr) "Hptr_loopErr".
   wp_apply (wp_MapIter_fold _ _ _
@@ -263,6 +303,7 @@ Proof.
   opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as ->; [|done].
   by rewrite -Hdom -Hdom1.
 Qed.
+*)
 
 Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
   {{{
@@ -270,7 +311,7 @@ Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
     "#Hown_upd_refs" ∷ own_map ptr_upd DfracDiscarded upd_refs ∗
     "#Hown_upd" ∷ ([∗ map] sl;v ∈ upd_refs;upd,
       own_slice_small sl byteT DfracDiscarded v) ∗
-    "%Hlen_labels" ∷ ([∗ map] label ↦ val ∈ upd, ⌜ length label = 32%nat ⌝)
+    "%Hlen_labels" ∷ ([∗ map] label ↦ _ ∈ upd, ⌜ length label = 32%nat ⌝)
   }}}
   applyUpd #ptr_keys #ptr_upd
   {{{
@@ -333,22 +374,28 @@ Proof.
   { wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     2: { wp_pures. by iApply "HΦ". }
     iFrame "∗#". iModIntro. iFrame "∗#%". }
-  iDestruct "Herr" as "%Hchecks". do 2 wp_loadField.
+  iNamed "Herr". do 2 wp_loadField.
   wp_apply (wp_applyUpd with "[$Hown_keys $HUpdatesM $HUpdatesMSl]").
-  { iPureIntro. apply (map_Forall_impl _ _ _ Hchecks).
+  { iPureIntro. apply (map_Forall_impl _ _ _ Hlen_labels).
     rewrite /upd_checks. naive_solver. }
+  iNamed 1. wp_loadField.
+  wp_apply (wp_Tree__Digest with "[$Hown_keys]"). iIntros "*". iNamed 1.
+
+  (* update gs. *)
+  iMod (mono_list_auth_own_update_app
+    [(upd_dec ∪ (default ∅ (last gs.*1)), dig)]
+    with "Hown_gs") as "[Hown_gs _]".
+  iAssert (gs_inv (gs ++ [(upd_dec ∪ default ∅ (last gs.*1), dig)])) as "Hinv_gs1".
+  { rewrite /gs_inv.
+    (*
+    *)
 
   (* sign dig. *)
   iNamed 1.
   (*
   TODO: can't do this bc don't have updates at a higher-level.
   need to change upd lemmas to get that.
-  iMod (mono_list_auth_own_update_app
-    [upd.(UpdateProof.Updates) ∪ lower_map (default ∅ (last gs.*1))]
-    with "Hown_gs") as "H".
   *)
-  iNamed 1. wp_loadField.
-  wp_apply (wp_Tree__Digest with "[$Hown_keys]"). iIntros "*". iNamed 1.
   wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
   wp_apply wp_NewSlice_0. iIntros "* Hsl_preSigByt".
