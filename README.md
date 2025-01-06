@@ -21,6 +21,8 @@ To compile dependencies for proofs do (`make src/program_proof/session/dependenc
 5. Receiving a gossip request (medium) 
 6. Function to check if we can add an operation to our queue during gossip (easy) 
 7. Function to process client request (medium)
+8. Client read function (easy) 
+9. Client write function (easy)
 
 ## Rest 
 1. Finish writing go code
