@@ -44,12 +44,12 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃  ptrs_hist hist gs γ pk (ptr_map : loc) (ptr_sk : loc) sl_hist,
+  ∃  ptrs_hist hist gs γ pk (ptr_keys : loc) (ptr_sk : loc) sl_hist,
   (* Physical ownership. *)
-  "Hptr_map" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_map ∗
+  "Hptr_keys" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_keys ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
   "#Hptr_sk" ∷ ptr ↦[Auditor :: "sk"]□ #ptr_sk ∗
-  "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
+  "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) ptrs_hist ∗
   "#Hown_hist" ∷ ([∗ list] ptr_hist;info ∈ ptrs_hist;hist,
     AdtrEpochInfo.own ptr_hist info) ∗
   "Hown_sk" ∷ own_sig_sk ptr_sk pk (adtr_sigpred γ) ∗
@@ -59,7 +59,7 @@ Definition own (ptr : loc) : iProp Σ :=
   "#Hinv_gs" ∷ gs_inv gs ∗
 
   (* Physical-ghost relation. *)
-  "Hown_map" ∷ own_merkle ptr_map (lower_map (default ∅ (last gs.*1))) ∗
+  "Hown_keys" ∷ own_merkle ptr_keys (lower_map (default ∅ (last gs.*1))) ∗
   "%Hdigs_gs" ∷ ⌜ gs.*2 = AdtrEpochInfo.Dig <$> hist ⌝.
 
 Definition valid (ptr : loc) : iProp Σ :=
@@ -106,7 +106,7 @@ Proof.
   iMod (alloc_lock _ _ _ (Auditor.own ptr) with "Hl [-]") as "$"; [|done].
   rewrite zero_slice_val.
   iExists [], []. iFrame "Hown_gs ∗#". repeat try iSplit; try naive_solver.
-  by iApply own_slice_small_nil.
+  by iApply own_slice_nil.
 Qed.
 
 Lemma wp_Auditor__Get a (epoch : u64) :
@@ -146,10 +146,12 @@ Proof.
     instantiate (1:=AdtrEpochInfo.mk [] [] []). simpl.
     repeat iDestruct (own_slice_small_nil byteT DfracDiscarded) as "$"; try done.
   - wp_loadField.
-    iDestruct (own_slice_small_sz with "Hsl_hist") as %Hsz.
+    iDestruct (own_slice_sz with "Hsl_hist") as %Hsz.
     unshelve epose proof (list_lookup_lt ptrs_hist (uint.nat epoch) ltac:(word)) as [? Hlookup].
+    iDestruct (own_slice_small_read with "Hsl_hist") as "[Hsl_hist Hread]".
     wp_apply (wp_SliceGet with "[$Hsl_hist //]").
-    iIntros "Hsl".
+    iIntros "Hsl_hist".
+    iDestruct ("Hread" with "Hsl_hist") as "Hsl_hist".
     wp_pures.
     wp_loadField.
     iDestruct (big_sepL2_lookup_1_some with "[$]") as %[??].
@@ -310,14 +312,14 @@ Proof.
   by rewrite -Hdom -Hdom1.
 Qed.
 
-Lemma wp_Auditor__Update a ptr_upd upd :
+Lemma wp_Auditor__Update ptr_a ptr_upd upd :
   {{{
-    "#Hvalid" ∷ Auditor.valid a ∗
+    "#Hvalid" ∷ Auditor.valid ptr_a ∗
     "Hupdate" ∷ UpdateProof.own ptr_upd upd
   }}}
-  Auditor__Update #a #ptr_upd
+  Auditor__Update #ptr_a #ptr_upd
   {{{
-    (e : bool), RET #e; True
+    (err : bool), RET #err; True
   }}}.
 Proof.
   iIntros (?) "H HΦ". iNamed "H". iNamed "Hvalid". wp_rec.
@@ -326,39 +328,54 @@ Proof.
   iIntros "[Hlock H]". iNamed "H".
   wp_loadField. wp_apply wp_slice_len.
   iNamed "Hupdate". do 2 wp_loadField.
+  wp_apply (wp_checkUpd with "[$Hown_keys $HUpdatesM $HUpdatesMSl]").
+  iIntros "*". iNamed 1. wp_if_destruct.
+  { wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    2: { wp_pures. by iApply "HΦ". }
+    iFrame "∗#". iModIntro. iFrame "∗#%". }
+  iDestruct "Herr" as "%Hchecks". do 2 wp_loadField.
+  wp_apply (wp_applyUpd with "[$Hown_keys $HUpdatesM $HUpdatesMSl]").
+  { iPureIntro. apply (map_Forall_impl _ _ _ Hchecks).
+    rewrite /upd_checks. naive_solver. }
 
-  (* XXX: checkUpd only gets called here. Inlining its proof. *)
-  wp_rec.
-  wp_pures.
+  (* sign dig. *)
+  iNamed 1.
+  (*
+  TODO: can't do this bc don't have updates at a higher-level.
+  need to change upd lemmas to get that.
+  iMod (mono_list_auth_own_update_app
+    [upd.(UpdateProof.Updates) ∪ lower_map (default ∅ (last gs.*1))]
+    with "Hown_gs") as "H".
+  *)
+  iNamed 1. wp_loadField.
+  wp_apply (wp_Tree__Digest with "[$Hown_keys]"). iIntros "*". iNamed 1.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
+  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
+  wp_apply wp_NewSlice_0. iIntros "* Hsl_preSigByt".
+  wp_apply (PreSigDig.wp_enc (PreSigDig.mk _ _) with "[$Hsl_preSigByt $Epoch $Dig $Hsl_dig]").
+  iIntros "*". iNamed 1. simpl.
+  iDestruct (own_slice_to_small with "Hsl_enc") as "Hsl_enc".
   wp_loadField.
-  wp_apply wp_slice_len.
-  wp_pures.
-  wp_apply wp_ref_of_zero.
-  { done. }
-  iIntros (?) "Hl".
-  wp_pures.
-  wp_apply (wp_MapIter_fold _ _ _ (λ _,
-                                     _
-              )%I with "[$] [-HΦ]").
-  { iNamedAccu. }
-  {
-    iIntros "* !# * [Hpre %Hlookup] HΦ".
-    iNamed "Hpre".
-    wp_pures.
-    wp_apply wp_StringToBytes.
-    iIntros "* ?".
-    iDestruct (own_slice_to_small with "[$]") as "?".
-    (* XXX: checkOneUpd only called here so inlining a proof. *)
-    wp_rec.
-    wp_pures.
-    wp_loadField.
-    wp_apply (wp_Tree_Get with "[$]").
-    iIntros "* HGetPost".
-    iNamed "HGetPost".
-    (* iNamed "Hreply". *)
-    wp_pures.
-    admit.
-  }
-Admitted.
+  wp_apply (wp_SigPrivateKey__Sign with "[$Hown_sk $Hsl_enc]").
+  1: admit.
+  iIntros "*". iNamedSuffix 1 "_adtr".
+  iMod (own_slice_small_persist with "Hsl_sig_adtr") as "#Hsl_sig_adtr".
+  wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros "* Hptr_newInfo".
+  iMod (struct_pointsto_persist with "Hptr_newInfo") as "#Hptr_newInfo".
+  wp_loadField.
+  wp_apply (wp_SliceAppend with "Hsl_hist").
+  iIntros "* Hsl_hist".
+  wp_storeField.
+  wp_loadField.
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+  2: { wp_pures. by iApply "HΦ". }
+  iFrame "∗#". iModIntro. iFrame "Hptr_keys Hptr_hist Hptr_sk".
+  iFrame "Hsl_hist Hown_sig_sk_adtr".
+  iDestruct (struct_fields_split with "Hptr_newInfo") as "H". iNamed "H".
+  iDestruct (big_sepL2_snoc _ _ (AdtrEpochInfo.mk _ _ _) with "[$Hown_hist]") as "Hown_hist1".
+  { iFrame "#". }
+  iFrame "Hown_hist1".
 
 End specs.

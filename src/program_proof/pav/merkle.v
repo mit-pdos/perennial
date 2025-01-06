@@ -646,7 +646,7 @@ Proof.
   iFrame "#".
 Qed.
 
-Lemma wp_Tree_Digest ptr_tr entries :
+Lemma wp_Tree__Digest ptr_tr entries :
   {{{
     "Htree" ∷ own_merkle ptr_tr entries
   }}}
@@ -654,8 +654,8 @@ Lemma wp_Tree_Digest ptr_tr entries :
   {{{
     sl_dig dig, RET (slice_val sl_dig);
     "Htree" ∷ own_merkle ptr_tr entries ∗
-    "Hdig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
-    "#HisDig" ∷ is_dig entries dig
+    "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
+    "#His_dig" ∷ is_dig entries dig
   }}}.
 Proof.
   iIntros (?) "H HΦ".
