@@ -40,28 +40,51 @@ Proof.
   iNamedSuffix "Hold_inv" "_old".
   iSplit; [|iPureIntro; split].
   - iApply big_sepL_snoc. iFrame "#".
-  - unfold maps_mono in *.
-    admit.
-  - unfold epochs_ok in *.
-    intros * Hlook_gs Hlook_m.
+  - unfold maps_mono in *. intros * Hlook_gsi Hlook_gsj Heq_ep.
+    rewrite fmap_app in Hlook_gsi Hlook_gsj.
+    destruct (decide (uint.Z i = uint.Z j)).
+    { by simplify_eq/=. }
+    destruct (decide (uint.Z j < length gs)).
+    { eapply Hmono_maps_old.
+      { rewrite lookup_app_l in Hlook_gsi; [done|].
+        rewrite length_fmap. word. }
+      { rewrite lookup_app_l in Hlook_gsj; [done|].
+        rewrite length_fmap. word. }
+      done. }
+    rewrite lookup_app_r in Hlook_gsj.
+    2: { rewrite length_fmap. word. }
+    simpl in *. eapply list_lookup_singleton_Some in Hlook_gsj as [Heq_ep1 <-].
+    rewrite length_fmap in Heq_ep1.
+    rewrite lookup_app_l in Hlook_gsi.
+    2: { rewrite length_fmap. word. }
+    destruct (last gs.*1) as [m_last|] eqn:Hlast.
+    2: { apply last_None in Hlast. by rewrite Hlast in Hlook_gsi. }
+    simpl in *. trans m_last.
+    2: { by apply map_union_subseteq_r. }
+    rewrite last_lookup in Hlast.
+    refine (Hmono_maps_old _
+      (W64 (pred $ length gs)) _ _ Hlook_gsi _ _); [|word].
+    replace (uint.nat (W64 _)) with (pred $ length gs); [|word].
+    by rewrite length_fmap in Hlast.
+  - unfold epochs_ok in *. intros * Hlook_gs Hlook_m.
     (* TODO: ep' somehow has w64_word_instance, whereas ep has w64. *)
     rewrite fmap_app in Hlook_gs.
     destruct (decide (uint.Z ep < length gs)).
-    + eapply Hok_epochs_old; [|done].
+    { eapply Hok_epochs_old; [|done].
       rewrite lookup_app_l in Hlook_gs; [done|].
-      rewrite length_fmap. word.
-    + rewrite lookup_app_r in Hlook_gs.
-      2: { rewrite length_fmap. word. }
-      simpl in *. apply list_lookup_singleton_Some in Hlook_gs as [Heq_ep <-].
-      apply lookup_union_Some_raw in Hlook_m as [Hlook_upd | [_ Hlook_last]].
-      { pose proof (map_Forall_lookup_1 _ _ _ _ Hok_epoch Hlook_upd) as ?.
-        simpl in *. subst. word. }
-      destruct (last gs.*1) as [m_last|] eqn:Hlast; [|set_solver]. simpl in *.
-      opose proof (Hok_epochs_old
-        (W64 (pred $ length gs))  _ _ _ _ _ Hlook_last) as ?; [|word].
-      replace (uint.nat (W64 _)) with (pred $ length gs); [|word].
-      by rewrite last_lookup length_fmap in Hlast.
-Admitted.
+      rewrite length_fmap. word. }
+    rewrite lookup_app_r in Hlook_gs.
+    2: { rewrite length_fmap. word. }
+    simpl in *. apply list_lookup_singleton_Some in Hlook_gs as [Heq_ep <-].
+    apply lookup_union_Some_raw in Hlook_m as [Hlook_upd | [_ Hlook_last]].
+    { pose proof (map_Forall_lookup_1 _ _ _ _ Hok_epoch Hlook_upd) as ?.
+      simpl in *. subst. word. }
+    destruct (last gs.*1) as [m_last|] eqn:Hlast; [|set_solver]. simpl in *.
+    opose proof (Hok_epochs_old
+      (W64 (pred $ length gs)) _ _ _ _ _ Hlook_last) as ?; [|word].
+    replace (uint.nat (W64 _)) with (pred $ length gs); [|word].
+    by rewrite last_lookup length_fmap in Hlast.
+Qed.
 
 Definition adtr_sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
