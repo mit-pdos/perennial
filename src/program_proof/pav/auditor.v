@@ -38,7 +38,7 @@ Lemma gs_snoc gs upd dig :
 Proof.
   iIntros "* #Hold_inv #His_dig %Hdisj %Hok_epoch".
   iNamedSuffix "Hold_inv" "_old".
-  iSplit; [|iPureIntro; split].
+iSplit; [|iPureIntro; split].
   - iApply big_sepL_snoc. iFrame "#".
   - unfold maps_mono in *. intros * Hlook_gsi Hlook_gsj Heq_ep.
     rewrite fmap_app in Hlook_gsi Hlook_gsj.
@@ -222,12 +222,6 @@ Proof.
     by iFrame "#".
 Qed.
 
-Definition upd_checks (keys : adtr_map_ty) (nextEp : w64) (label val : list w8) :=
-  ∃ comm,
-  length label = 32%nat ∧
-  keys !! label = None ∧
-  val = MapValPre.encodesF (MapValPre.mk nextEp comm).
-
 Lemma wp_checkOneUpd ptr_keys keys nextEp sl_label dq label sl_val val :
   {{{
     "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
@@ -239,7 +233,11 @@ Lemma wp_checkOneUpd ptr_keys keys nextEp sl_label dq label sl_val val :
     (err : bool), RET #err;
     "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
     "Hsl_label" ∷ own_slice_small sl_label byteT dq label ∗
-    "Herr" ∷ (if err then True else ⌜ upd_checks keys nextEp label val ⌝)
+    "Herr" ∷ (if err then True else
+      ∃ comm,
+      "%Hlen_label" ∷ ⌜ length label = 32%nat ⌝ ∗
+      "%Hlook_keys" ∷ ⌜ keys !! label = None ⌝ ∗
+      "%Hdec_val" ∷ ⌜ val = MapValPre.encodesF (MapValPre.mk nextEp comm) ⌝)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -269,6 +267,12 @@ Proof.
   by list_simplifier.
 Qed.
 
+Definition checkUpd_post keys nextEp upd upd_dec : iProp Σ :=
+  "%Hlen_labels" ∷ ([∗ map] label ↦ _ ∈ upd, ⌜ length label = 32%nat ⌝) ∗
+  "%Hdecode" ∷ ⌜ upd = lower_map upd_dec ⌝ ∗
+  "%Hok_epoch" ∷ ([∗ map] val ∈ upd_dec, ⌜ val.1 = nextEp ⌝) ∗
+  "%Hdisj" ∷ ⌜ upd_dec ##ₘ keys ⌝.
+
 Lemma wp_checkUpd ptr_keys keys ptr_upd upd_refs upd nextEp :
   {{{
     "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
@@ -281,14 +285,9 @@ Lemma wp_checkUpd ptr_keys keys ptr_upd upd_refs upd nextEp :
     (err : bool), RET #err;
     "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
     "Herr" ∷ (if err then True else
-      ∃ upd_dec,
-      "%Hlen_labels" ∷ ([∗ map] label ↦ _ ∈ upd, ⌜ length label = 32%nat ⌝) ∗
-      "%Hdecode" ∷ ⌜ upd = lower_map upd_dec ⌝ ∗
-      "%Hok_epoch" ∷ ([∗ map] val ∈ upd_dec, ⌜ val.1 = nextEp ⌝) ∗
-      "%Hdisj" ∷ ⌜ upd_dec ##ₘ keys ⌝)
+      ∃ upd_dec, checkUpd_post keys nextEp upd upd_dec)
   }}}.
-Proof. Admitted.
-(*
+Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_loopErr) "Hptr_loopErr".
   wp_apply (wp_MapIter_fold _ _ _
@@ -297,13 +296,15 @@ Proof. Admitted.
     "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
     "Hptr_loopErr" ∷ ptr_loopErr ↦[boolT] #loopErr ∗
     "HloopErr" ∷ (if loopErr then True else
-      ∃ upd',
-      "%Hdom" ∷ ⌜ dom upd_refs' = dom upd' ⌝ ∗
+      ∃ upd' upd_dec',
+      "%Hdom0" ∷ ⌜ dom upd_refs' = dom upd' ⌝ ∗
+      "%Hdom1" ∷ ⌜ dom upd' = dom upd_dec' ⌝ ∗
       "%Hsub" ∷ ⌜ upd' ⊆ upd ⌝ ∗
-      "%Hchecks" ∷ ([∗ map] label ↦ val ∈ upd', ⌜ upd_checks keys nextEp label val ⌝))
+      "Hpost" ∷ checkUpd_post keys nextEp upd' upd_dec')
     )%I with "Hown_upd_refs [$Hown_keys $Hptr_loopErr]").
-  { iExists ∅. repeat try iSplit; try naive_solver.
-    iPureIntro. eapply map_empty_subseteq. }
+  { iExists ∅, ∅. repeat try iSplit; try naive_solver; iPureIntro.
+    - eapply map_empty_subseteq.
+    - eapply map_disjoint_empty_l. }
   { clear. iIntros (? k sl_v Φ) "!> (H&_&%Hlook_ptr) HΦ". iNamed "H".
     wp_apply wp_StringToBytes. iIntros (?) "Hsl_label".
     iDestruct (own_slice_to_small with "Hsl_label") as "Hsl_label".
@@ -314,19 +315,23 @@ Proof. Admitted.
     wp_apply (wp_checkOneUpd with "[$Hown_keys $Hsl_label $Hsl_val]").
     iIntros "*". iNamed 1. wp_if_destruct.
     { wp_store. iApply "HΦ". by iFrame. }
-    iDestruct "Herr" as "%Herr". iApply "HΦ". iFrame.
-    destruct loopErr; [done|]. iNamed "HloopErr".
-    iExists (<[k:=v]> upd'). iPureIntro. repeat try split.
+    iNamed "Herr". iApply "HΦ". iFrame.
+    destruct loopErr; [done|]. iNamed "HloopErr". iNamed "Hpost".
+    iPureIntro. exists (<[k:=v]> upd'), (<[k:=(nextEp, comm)]> upd_dec').
+    repeat try split.
+    - set_solver.
     - set_solver.
     - by apply insert_subseteq_l.
-    - by apply map_Forall_insert_2. }
+    - by apply map_Forall_insert_2.
+    - rewrite Hdecode /lower_map fmap_insert Hdec_val //.
+    - by apply map_Forall_insert_2.
+    - by apply map_disjoint_insert_l_2. }
   iIntros "[_ H]". iNamed "H".
   wp_load. iApply "HΦ". iFrame. destruct loopErr; [done|]. iNamed "HloopErr".
-  iDestruct (big_sepM2_dom with "Hown_upd") as %Hdom1.
-  opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as ->; [|done].
-  by rewrite -Hdom -Hdom1.
+  iDestruct (big_sepM2_dom with "Hown_upd") as %Hdom2.
+  opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as <-; [set_solver|].
+  by iFrame.
 Qed.
-*)
 
 Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
   {{{
@@ -397,55 +402,53 @@ Proof.
   { wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     2: { wp_pures. by iApply "HΦ". }
     iFrame "∗#". iModIntro. iFrame "∗#%". }
-  iNamed "Herr". do 2 wp_loadField.
-  wp_apply (wp_applyUpd with "[$Hown_keys $HUpdatesM $HUpdatesMSl]").
-  { iPureIntro. apply (map_Forall_impl _ _ _ Hlen_labels).
-    rewrite /upd_checks. naive_solver. }
+  iNamed "Herr". do 2 wp_loadField. rewrite Hdecode {Hdecode} in Hlen_labels *.
+  wp_apply (wp_applyUpd with "[$Hown_keys $HUpdatesM $HUpdatesMSl //]").
   iNamed 1. wp_loadField.
   wp_apply (wp_Tree__Digest with "[$Hown_keys]"). iIntros "*". iNamed 1.
 
   (* update gs. *)
   iMod (mono_list_auth_own_update_app
     [(upd_dec ∪ (default ∅ (last gs.*1)), dig)]
-    with "Hown_gs") as "[Hown_gs _]".
-  iAssert (gs_inv (gs ++ [(upd_dec ∪ default ∅ (last gs.*1), dig)])) as "Hinv_gs1".
-  { rewrite /gs_inv.
-    (*
-    *)
+    with "Hown_gs") as "[Hown_gs #Hlb_gs]".
+  rewrite -map_fmap_union.
+  pose proof (f_equal length Hdigs_gs) as Hlen_digs_gs.
+  rewrite !length_fmap in Hlen_digs_gs.
+  iDestruct (big_sepL2_length with "Hown_hist") as %Hlen_hist.
+  iDestruct (own_slice_sz with "Hsl_hist") as %Hlen_sl_hist.
+  replace (sl_hist.(Slice.sz)) with (W64 $ length gs) in Hok_epoch; [|word].
+  iDestruct (gs_snoc with "Hinv_gs His_dig [% //] [% //]") as "{Hinv_gs} Hinv_gs".
 
   (* sign dig. *)
-  iNamed 1.
-  (*
-  TODO: can't do this bc don't have updates at a higher-level.
-  need to change upd lemmas to get that.
-  *)
   wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
   wp_apply wp_NewSlice_0. iIntros "* Hsl_preSigByt".
   wp_apply (PreSigDig.wp_enc (PreSigDig.mk _ _) with "[$Hsl_preSigByt $Epoch $Dig $Hsl_dig]").
+  (* TODO: record field getter somehow got unfolded here. *)
+  replace (let (_, sz, _) := sl_hist in sz) with (sl_hist.(Slice.sz)); [|done].
   iIntros "*". iNamed 1. simpl.
   iDestruct (own_slice_to_small with "Hsl_enc") as "Hsl_enc".
   wp_loadField.
   wp_apply (wp_SigPrivateKey__Sign with "[$Hown_sk $Hsl_enc]").
-  1: admit.
+  { iFrame "#". iPureIntro. eexists. split; [done|].
+    simpl. replace (uint.nat sl_hist.(Slice.sz)) with (length gs); [|word].
+    by rewrite list_lookup_fmap lookup_snoc. }
   iIntros "*". iNamedSuffix 1 "_adtr".
   iMod (own_slice_small_persist with "Hsl_sig_adtr") as "#Hsl_sig_adtr".
   wp_loadField.
-  wp_apply wp_allocStruct; [val_ty|].
-  iIntros "* Hptr_newInfo".
+  wp_apply wp_allocStruct; [val_ty|]. iIntros "* Hptr_newInfo".
   iMod (struct_pointsto_persist with "Hptr_newInfo") as "#Hptr_newInfo".
   wp_loadField.
-  wp_apply (wp_SliceAppend with "Hsl_hist").
-  iIntros "* Hsl_hist".
-  wp_storeField.
-  wp_loadField.
+  wp_apply (wp_SliceAppend with "Hsl_hist"). iIntros "* Hsl_hist".
+  wp_storeField. wp_loadField.
   wp_apply (wp_Mutex__Unlock with "[-HΦ]").
   2: { wp_pures. by iApply "HΦ". }
-  iFrame "∗#". iModIntro. iFrame "Hptr_keys Hptr_hist Hptr_sk".
-  iFrame "Hsl_hist Hown_sig_sk_adtr".
+  iFrame "∗#". iModIntro.
   iDestruct (struct_fields_split with "Hptr_newInfo") as "H". iNamed "H".
-  iDestruct (big_sepL2_snoc _ _ (AdtrEpochInfo.mk _ _ _) with "[$Hown_hist]") as "Hown_hist1".
+  iDestruct (big_sepL2_snoc _ _ (AdtrEpochInfo.mk _ _ _) with "[$Hown_hist]") as "{Hown_hist} Hown_hist".
   { iFrame "#". }
-  iFrame "Hown_hist1".
+  iFrame "Hown_gs Hown_hist".
+  rewrite !fmap_app last_snoc Hdigs_gs. by iFrame "∗#".
+Qed.
 
 End specs.
