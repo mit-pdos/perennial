@@ -3,11 +3,21 @@ From New.golang.defn Require Import globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.
 From Coq Require Import Ascii Equality.
 
+Section ghost_map_lemmas.
+  Context `{ghost_mapG Σ K V}.
+  (* FIXME: upstream. *)
+  Global Instance ghost_map_auth_combines_gives {γ q1 q2 m1 m2} :
+    CombineSepGives (ghost_map_auth γ q1 m1) (ghost_map_auth γ q2 m2) ⌜ ((q1 + q2) ≤ 1)%Qp ∧ m1 = m2 ⌝.
+  Proof.
+    rewrite /CombineSepGives. iIntros "[H1 H2]".
+    iDestruct (ghost_map_auth_valid_2 with "H1 H2") as %?. eauto.
+  Qed.
+End ghost_map_lemmas.
+
 Class goGlobals_preG `{ffi_syntax} (Σ: gFunctors) : Set :=
   {
-    #[global] go_globals_inG :: ghost_mapG Σ (go_string * go_string) loc ;
-    #[global] go_package_initialized_inG :: ghost_mapG Σ go_string () ;
-    #[global] go_access_prev_inG :: ghost_varG Σ (option (gmap go_string val)) ;
+    #[global] go_globals_inG :: ghost_mapG Σ go_string val ;
+    #[global] go_postcond_tok_inG :: ghost_mapG Σ go_string () ;
   }.
 
 Class goGlobalsGS `{ffi_syntax} Σ : Set :=
@@ -15,12 +25,11 @@ Class goGlobalsGS `{ffi_syntax} Σ : Set :=
       #[global] go_globals_pre_inG :: goGlobals_preG Σ ;
       go_globals_name : gname ;
       go_package_postcond_tok_name : gname ;
-      go_access_prev_state_name : gname ;
+      (* go_access_prev_state_name : gname ; *)
     }.
 
 Definition goGlobalsΣ `{ffi_syntax} : gFunctors :=
-  #[ghost_mapΣ (go_string * go_string) loc ; ghost_mapΣ go_string ();
-    ghost_varΣ (option (gmap go_string val))].
+  #[ghost_mapΣ go_string val; ghost_mapΣ go_string ()].
 
 Global Instance subG_goGlobalsG `{ffi_syntax} {Σ} : subG goGlobalsΣ Σ → goGlobals_preG Σ.
 Proof. solve_inG. Qed.
@@ -29,32 +38,71 @@ Section definitions_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
-(* The only concurrent access to globals is to read the address of global
-   variables, so that's the only thing this invariant is concerned with. *)
+(* Internal specs for primitive global that only allows for inserting a new key into
+   the globals map and reading existing keys. *)
 Local Definition own_globals_inv : iProp Σ :=
-  ∃ g (addrs : gmap (go_string * go_string) loc),
-  "Hglobals_i" ∷ own_globals (DfracOwn (1/2)) g ∗
-  "Haddrs" ∷ ghost_map_auth go_globals_name 1%Qp addrs ∗
-  "%Hvars" ∷ (⌜ # <$> kmap globals.encode_var addrs ⊆ g ⌝)
-.
+  ∃ (g : gmap go_string val),
+    "Hauth" ∷ ghost_map_auth go_globals_name (1/2)%Qp g ∗
+    "Hg" ∷ own_globals (DfracOwn 1) g.
 
 Local Definition is_globals_inv : iProp Σ :=
   inv nroot own_globals_inv.
+
+Definition is_global (k : go_string) (v : val) : iProp Σ :=
+  "#Hinv" ∷ is_globals_inv ∗
+  "#Hptsto" ∷ k ↪[go_globals_name]□ v.
+
+Definition own_globals (g : gmap go_string val) : iProp Σ :=
+  "#Hinv" ∷ is_globals_inv ∗
+  "Hauth2" ∷ ghost_map_auth go_globals_name (1/2)%Qp g.
+
+Lemma wp_GlobalPut k v g :
+  g !! k = None →
+  {{{ own_globals g }}}
+    GlobalPut #k v
+  {{{ RET #();
+      own_globals (<[ k := v ]> g) ∗
+      is_global k v
+  }}}.
+Proof.
+  intros Hlookup.
+  iIntros (?) "Hg HΦ".
+  iNamed "Hg".
+  iInv "Hinv" as ">Hi".
+  iNamed "Hi".
+  rewrite to_val_unseal.
+  iApply (wp_GlobalPut with "[$]").
+  iIntros " !> Hg".
+  iCombine "Hauth Hauth2" gives %[_ ->].
+  iCombine "Hauth Hauth2" as "Hauth".
+  iMod (ghost_map_insert_persist with "[$]") as "[[Hauth1 Hauth2] #Hptsto]"; first done.
+  iSpecialize ("HΦ" with "[$]").
+  by iFrame.
+Qed.
+
+Lemma wp_GlobalGet k v :
+  {{{ is_global k v }}}
+    GlobalGet #k
+  {{{ RET (SOMEV v); True }}}.
+Proof.
+  iIntros (?) "Hg HΦ".
+  iNamed "Hg".
+  iInv "Hinv" as ">Hi".
+  iNamed "Hi".
+  rewrite to_val_unseal.
+  iApply (wp_GlobalGet with "[$]").
+  iIntros " !> Hg".
+  iCombine "Hauth Hptsto" gives %Hlookup.
+  rewrite Hlookup.
+  iSpecialize ("HΦ" with "[$]").
+  by iFrame.
+Qed.
 
 (* This must be owned by the `init` thread. *)
 Definition own_globals_tok_def (pending_packages : gset go_string)
   (pkg_postconds : gmap go_string (iProp Σ)): iProp Σ :=
   ∃ g (pkg_initialized : gmap go_string ()),
-  "Hglobals" ∷ own_globals (DfracOwn (1/2)) g ∗
-  "Hacc" ∷ ghost_var go_access_prev_state_name 1%Qp None ∗
-  "%Hpkg" ∷ (⌜ ∀ pkg_name,
-               pkg_name ∈ pending_packages ∨
-                 (match pkg_initialized !! pkg_name with
-                  | Some _ => g !! globals.encode_package pkg_name = Some #()%V
-                  | None => g !! globals.encode_package pkg_name = None ∧
-                           ∀ var_name, g !! (globals.encode_var (pkg_name, var_name)) = None
-                  end) ⌝) ∗
-  "#Hinv" ∷ is_globals_inv ∗
+  "Hglobals" ∷ own_globals g ∗
   "#Hinited" ∷ ([∗ map] pkg_name ↦ _ ∈ pkg_initialized,
                   match (pkg_postconds !! pkg_name) with
                   | None => False
@@ -79,30 +127,140 @@ Definition is_initialized_def (pkg_name : go_string) (P : iProp Σ) : iProp Σ :
 Program Definition is_initialized := unseal (_:seal (@is_initialized_def)). Obligation 1. by eexists. Qed.
 Definition is_initialized_unseal : is_initialized = _ := seal_eq _.
 
+End definitions_and_lemmas.
+
+Section context.
+Context {PROP:bi}.
+Class BiContextRoot := { is_bi_context : PROP ; bi_context_pers :: Persistent is_bi_context }.
+Class BiContext `{BiContextRoot} (P : PROP) :=
+  {
+    contains : □ is_bi_context ⊢ P
+  }.
+End context.
+
+Class WpGlobalsGet
+  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  `{!BiContextRoot} (pkg_var_name : go_string * go_string) (addr : loc)
+  :=
+  wp_globals_get : ⊢@{iProp Σ}
+                      ∀ Φ, is_bi_context -∗ (▷ Φ #addr) -∗
+                           WP (globals.get pkg_var_name #()) {{ Φ }}
+.
+
+Class IsDefined :=
+  {
+    h : list (string * (list (string * loc))) ;
+  }.
+
+(* Definition is_defined `{IsDefined} : iProp Σ :=
+  is_global pkg_name #globalA *)
+
+Module bar.
+Section bar.
+Class GlobalAddrs :=
+  {
+    globalX: loc;
+  }.
+
+(* XXX: defined in a different module. *)
+Definition globalX'name := ("bar", "globalX")%go.
+
+Context {addrs : GlobalAddrs}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!goGlobalsGS Σ}.
+Context `{!BiContextRoot (PROP:=iProp Σ)}.
+Definition is_defined : iProp Σ :=
+  is_global "bar"%go #globalX.
+Context {His_defined : BiContext is_defined}.
+
+Instance wp_global_get_globalX : WpGlobalsGet globalX'name globalX.
+Proof.
+  rewrite /WpGlobalsGet.
+  iIntros (?) "#Hdef HΦ".
+  iDestruct (His_defined.(contains) with "[$]") as "#H".
+Admitted.
+End bar.
+End bar.
+
+Module foo.
+Section defs.
+Class GlobalAddrs :=
+  {
+    globalA: loc;
+    globalB: loc;
+    to_bar' : bar.GlobalAddrs
+  }.
+Existing Instance to_bar'.
+
+Context {addrs : GlobalAddrs}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!goGlobalsGS Σ}.
+Definition is_defined : iProp Σ :=
+  is_global "foo"%go #globalA.
+
+Definition globalA'name := ("foo", "globalA")%go.
+
+Context `{!BiContextRoot (PROP:=iProp Σ)}.
+Context {Hbar_def : BiContext (bar.is_defined)}.
+Context {Hdef : BiContext (is_defined)}.
+
+Existing Instance bar.wp_global_get_globalX.
+
+Lemma bar :
+  {{{ is_bi_context }}}
+    globals.get bar.globalX'name #()
+  {{{ RET #bar.globalX; True }}}.
+Proof.
+  iIntros (?) "#Hctx HΦ".
+  wp_apply (wp_globals_get with "[$]").
+  by iApply "HΦ".
+Qed.
+
+Instance wp_global_get_globalA : WpGlobalsGet globalA'name globalA.
+Proof.
+  rewrite /WpGlobalsGet.
+  iIntros (?) "#Hdef HΦ".
+Admitted.
+
+Context `{IrisContextRoot}.
+Context `{!IrisContext (bar.is_defined)}.
+Context `{!IrisContext (is_defined)}.
+
+Ltac iContext := (iStopProof; apply contains).
+
+
+About globals.get.
+Lemma foo :
+  {{{ is_defined }}}
+    globals.get globalA'name #()
+  {{{ RET #globalA; True }}}.
+Proof.
+  iIntros (?) "#Hpre HΦ".
+  wp_apply (wp_globals_get); first iFrame "#".
+  by iApply "HΦ".
+Qed.
+Instance wp_global_get_globalA.
+
+Instance wp_global_get_globalB.
+
+Definition foo.is_defined
+
+globals_contains Γ (pkg_name : string) (record_type : )
+
+Definition is_global_vars_inv : iProp Σ :=
+.
+
 Definition is_global_addr_def (pkg_var_name : go_string * go_string) (addr : loc) : iProp Σ :=
   is_globals_inv ∗ pkg_var_name ↪[go_globals_name]□ addr.
 Program Definition is_global_addr := unseal (_:seal (@is_global_addr_def)). Obligation 1. by eexists. Qed.
 Definition is_global_addr_unseal : is_global_addr = _ := seal_eq _.
-
-Definition own_unused_vars_def (pkg_name : go_string) (used_pkg_vars : gset (go_string * go_string)) :
-  iProp Σ :=
-  ∃ g_old var_addrs,
-  "Hglobals" ∷ own_globals (DfracOwn (1/2)) ((kmap globals.encode_var var_addrs) ∪ g_old) ∗
-  "Hacc" ∷ ghost_var go_access_prev_state_name (1/2)%Qp (Some g_old) ∗
-  "#Hinv" ∷ is_globals_inv ∗
-  "%Hused_vars_dom" ∷ (⌜ dom var_addrs = used_pkg_vars ⌝) ∗
-  "%Hused_pkg" ∷ (⌜ ∀ pkg_var_name, pkg_var_name ∈ used_pkg_vars → pkg_var_name.1 = pkg_name ⌝) ∗
-  "%Hold_unused" ∷ (⌜ ∀ var_name, g_old !! (globals.encode_var (pkg_name, var_name)) = None ⌝).
-Program Definition own_unused_vars := unseal (_:seal (@own_unused_vars_def)). Obligation 1. by eexists. Qed.
-Definition own_unused_vars_unseal : own_unused_vars = _ := seal_eq _.
 
 Local Ltac unseal :=
   rewrite ?own_globals_tok_unseal
     ?is_global_addr_unseal
     ?is_initialized_unseal
     ?own_package_post_toks_unseal
-    ?own_package_post_tok_unseal
-    ?own_unused_vars_unseal.
+    ?own_package_post_tok_unseal.
 
 Global Instance is_global_addr_persistent x a:
   Persistent (is_global_addr x a).

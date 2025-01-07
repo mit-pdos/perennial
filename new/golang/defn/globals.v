@@ -9,7 +9,7 @@ Definition get (pkg_var_name : (go_string * go_string)): val :=
   λ: <>,
     match: GlobalGet #("vars:" ++ pkg_var_name.1) with
       NONE => #() #()
-    | SOME "globalVarAddrs" => list.assocl_lookup #(pkg_var_name.2) "globalVarAddrs"
+    | SOME "globalVarAddrs" => alist_lookup #(pkg_var_name.2) "globalVarAddrs"
     end.
 
 Fixpoint alloc (vars : list (go_string * go_type)) : val :=
@@ -38,14 +38,21 @@ Definition func_call (pkg_func_name : go_string * go_string) : val :=
   λ: <>,
     match: GlobalGet #("funcs:" ++ pkg_func_name.1) with
       NONE => #() #()
-    | SOME "globalVarAddrs" => list.assocl_lookup #(pkg_func_name.2) "globalVarAddrs"
+    | SOME "funcs" => alist_lookup #(pkg_func_name.2) "funcs"
     end.
 
-Definition method_call (pkg_type_name : go_string * go_string) (method_name : go_string) : val :=
+Definition method_call (pkg_type_method_name : go_string * go_string * go_string) : val :=
   λ: <>,
-    match: GlobalGet #("type:" ++ pkg_func_name.1) with
+    let pkg_name := pkg_type_method_name.1.1 in
+    let type_name := pkg_type_method_name.1.2 in
+    let method_name := pkg_type_method_name.2 in
+    match: GlobalGet #("type:" ++ type_name) with
       NONE => #() #()
-    | SOME "globalVarAddrs" => list.assocl_lookup #(pkg_func_name.2) "globalVarAddrs"
+    | SOME "typeToMethodSet" =>
+        let: "methodSet" := (alist_lookup #type_name "globalVarAddrs") in
+        alist_lookup #method_name "methodSet"
     end.
 
 End defns.
+
+Global Arguments globals.get {_} (_)%go.

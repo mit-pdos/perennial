@@ -54,7 +54,7 @@ Definition make_def (t : go_type) : val :=
       (fix make_def_struct (fs : struct.descriptor) : val :=
          match fs with
          | [] => (λ: "fvs", Val #())%V
-         | (f,ft)::fs => (λ: "fvs", ((match: (assocl_lookup #f "fvs") with
+         | (f,ft)::fs => (λ: "fvs", ((match: (alist_lookup #f "fvs") with
                                      InjL <> => (Val (zero_val ft))
                                      | InjR "x" => "x" end),
                                             (make_def_struct fs) "fvs"))%V

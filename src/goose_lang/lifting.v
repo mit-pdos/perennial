@@ -180,6 +180,9 @@ Qed.
 Global Instance own_globals_persistent v `{hG : globalsGS Σ} : Persistent (own_globals DfracDiscarded v).
 Proof. rewrite own_globals_unseal. apply _. Qed.
 
+Global Instance own_globals_timeless v dq `{hG : globalsGS Σ} : Timeless (own_globals dq v).
+Proof. rewrite own_globals_unseal. apply _. Qed.
+
 Lemma own_globals_persist `{hG : globalsGS Σ} dq v :
   own_globals dq v ==∗ own_globals DfracDiscarded v.
 Proof.

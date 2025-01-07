@@ -35,13 +35,13 @@ End list.
 
 Section defn.
 Context `{ffi_syntax}.
-Definition assocl_lookup : val :=
-  rec: "assocl_lookup" "f" "fvs" :=
+Definition alist_lookup : val :=
+  rec: "alist_lookup" "f" "fvs" :=
     list.Match "fvs"
               (λ: <>, NONEV)
               (λ: "fv" "fvs",
                  let: ("f'", "v") := "fv" in
-                 if: "f" = "f'" then SOME "v" else "assocl_lookup" "f" "fvs").
+                 if: "f" = "f'" then SOME "v" else "alist_lookup" "f" "fvs").
 End defn.
 
 Notation "[ ]" := (list.Nil) (only parsing) : expr_scope.
