@@ -206,43 +206,6 @@ Proof.
   wp_call_lc "?". by iApply "HΦ".
 Qed.
 
-Global Instance wp_struct_assocl_lookup (k : go_string) (l : list (go_string * val)) :
-  PureWp True
-    (struct.assocl_lookup #k (struct.fields_val l))
-    (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
-.
-Proof.
-  iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal.
-  iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
-  [base]:{
-    simpl. wp_call. rewrite list.Match_unseal.
-    wp_call_lc "?". by iApply "HΦ".
-  }
-  [cons]: {
-    wp_call_lc "?".
-    rewrite /struct.fields_val_def list.Match_unseal /=.
-    wp_call.
-    destruct bool_decide eqn:Heqb; wp_pures.
-    {
-      rewrite bool_decide_eq_true in Heqb.
-      subst.
-      wp_pures.
-      rewrite /ByteString.eqb bool_decide_true //.
-      by iApply "HΦ".
-    }
-    {
-      rewrite bool_decide_eq_false in Heqb.
-      wp_pures.
-      iApply "IH".
-      destruct (ByteString.eqb g _)%go eqn:Hx.
-      { exfalso. apply Heqb. repeat f_equal. symmetry.
-        rewrite /ByteString.eqb bool_decide_eq_true // in Hx. }
-      by iApply "HΦ".
-    }
-  }
-Qed.
-
 Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
   PureWp (is_structT t)
   (struct.make t (struct.fields_val l))

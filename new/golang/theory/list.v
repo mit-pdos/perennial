@@ -78,4 +78,41 @@ Proof.
       wp_pures. iLöb as "IH". wp_pures. done.
 Qed.
 
+Global Instance wp_struct_alist_lookup (k : go_string) (l : list (go_string * val)) :
+  PureWp True
+    (alist_lookup #k (alist_val l))
+    (match (alist_lookup_f k l) with | None => InjLV #() | Some v => InjRV v end)
+.
+Proof.
+  iIntros (?????) "HΦ".
+  rewrite alist_val_unseal.
+  iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
+  [base]:{
+    simpl. wp_call. rewrite list.Match_unseal.
+    wp_call_lc "?". by iApply "HΦ".
+  }
+  [cons]: {
+    wp_call_lc "?".
+    rewrite list.Match_unseal /=.
+    wp_call.
+    destruct bool_decide eqn:Heqb; wp_pures.
+    {
+      rewrite bool_decide_eq_true in Heqb.
+      subst.
+      wp_pures.
+      rewrite /ByteString.eqb bool_decide_true //.
+      by iApply "HΦ".
+    }
+    {
+      rewrite bool_decide_eq_false in Heqb.
+      wp_pures.
+      iApply "IH".
+      destruct (ByteString.eqb g _)%go eqn:Hx.
+      { exfalso. apply Heqb. repeat f_equal. symmetry.
+        rewrite /ByteString.eqb bool_decide_eq_true // in Hx. }
+      by iApply "HΦ".
+    }
+  }
+Qed.
+
 End wps.

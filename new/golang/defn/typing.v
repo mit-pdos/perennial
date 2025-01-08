@@ -111,25 +111,8 @@ Section goose_lang.
 End goose_lang.
 End interface.
 
-Fixpoint assocl_lookup {A} (f : go_string) (field_vals: list (go_string * A)) : option A :=
-  match field_vals with
-  | [] => None
-  | (f', v)::fs => if ByteString.eqb f' f then Some v else assocl_lookup f fs
-  end.
-
 Module struct.
 Definition descriptor := list (go_string * go_type).
-Section goose_lang.
-  Context `{ffi_syntax}.
-
-  Fixpoint fields_val_def (m : list (go_string * val)) : val :=
-    match m with
-    | [] => InjLV #()
-    | (f, v) :: tl => InjRV ((#f, v), fields_val_def tl)
-    end.
-  Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
-  Definition fields_val_unseal : fields_val = _ := seal_eq _.
-End goose_lang.
 End struct.
 
 Section instances.

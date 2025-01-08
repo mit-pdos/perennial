@@ -1,7 +1,18 @@
-From New.golang.theory Require Import exception mem typing hex.
+From New.golang.theory Require Import exception mem typing hex list.
 From New.golang.defn Require Import globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.
 From Coq Require Import Ascii Equality.
+
+Section wps.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Global Instance wp_unwrap (v : val) :
+  PureWp True (globals.unwrap $ InjRV v) v.
+Proof.
+  rewrite /globals.unwrap.
+  intros ?????. iIntros "Hwp". wp_pure_lc "?".
+  wp_pures. by iApply "Hwp".
+Qed.
+End wps.
 
 Section ghost_map_lemmas.
   Context `{ghost_mapG Σ K V}.
@@ -132,79 +143,118 @@ End definitions_and_lemmas.
 Section context.
 Context {PROP:bi}.
 Class BiContextRoot := { is_bi_context : PROP ; bi_context_pers :: Persistent is_bi_context }.
-Class BiContext `{BiContextRoot} (P : PROP) :=
-  {
-    contains : □ is_bi_context ⊢ P
-  }.
+Class BiContext `{BiContextRoot} (P : PROP) := { contains : is_bi_context -∗ P }.
+Global Arguments contains {_ _} (_).
 End context.
 
-Class WpGlobalsGet
-  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  `{!BiContextRoot} (pkg_var_name : go_string * go_string) (addr : loc)
-  :=
-  wp_globals_get : ⊢@{iProp Σ}
-                      ∀ Φ, is_bi_context -∗ (▷ Φ #addr) -∗
-                           WP (globals.get pkg_var_name #()) {{ Φ }}
-.
+Section global_vars.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!BiContextRoot (PROP:=iProp Σ)}.
+Context `{!goGlobalsGS Σ}.
 
-Class IsDefined :=
-  {
-    h : list (string * (list (string * loc))) ;
-  }.
+Class WpGlobalsGet (pkg_var_name : go_string * go_string) (addr : loc)
+  := wp_globals_get : ⊢ ∀ Φ, is_bi_context -∗ (▷ Φ #addr) -∗
+                             WP (globals.get pkg_var_name #()) {{ Φ }}.
 
-(* Definition is_defined `{IsDefined} : iProp Σ :=
-  is_global pkg_name #globalA *)
+Definition is_defined (pkg_name : go_string) (var_addrs : list (go_string * loc)) : iProp Σ :=
+  is_global ("vars:"%go ++ pkg_name) (alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs)).
 
+Lemma alist_lookup_f_loc n (var_addrs : list (go_string * loc)) :
+  alist_lookup_f n ((λ '(name, addr), (name, #addr)) <$> var_addrs) =
+  # <$> (alist_lookup_f n var_addrs).
+Proof.
+  induction var_addrs.
+  { done. }
+  simpl.
+  destruct a.
+  destruct (ByteString.eqb g n).
+  { done. }
+  rewrite IHvar_addrs //.
+Qed.
+
+Lemma wp_global_get_generic {pkg_name var_name var_addrs addr}
+  {Hdefined : BiContext (is_defined pkg_name var_addrs)} :
+  alist_lookup_f var_name var_addrs = Some addr →
+  WpGlobalsGet (pkg_name, var_name) addr.
+Proof.
+  intros Hlookup. rewrite /WpGlobalsGet.
+  iIntros (?) "#Hctx HΦ".
+  wp_call.
+  wp_pures.
+  iDestruct (Hdefined.(contains) with "[$]") as "#Hdefined".
+  wp_bind (GlobalGet _).
+  (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
+  iApply (wp_GlobalGet with "[$]").
+  iNext. iIntros "_".
+  wp_pures.
+  rewrite alist_lookup_f_loc Hlookup.
+  wp_pures. iApply "HΦ".
+Qed.
+
+End global_vars.
+
+(** Example *)
 Module bar.
+(* XXX: these two are defined in a different module. *)
+Definition pkg_name := "bar"%go.
+Definition globalX'name := (pkg_name, "globalX")%go.
+
 Section bar.
 Class GlobalAddrs :=
   {
     globalX: loc;
   }.
 
-(* XXX: defined in a different module. *)
-Definition globalX'name := ("bar", "globalX")%go.
+Definition var_addrs {addrs : GlobalAddrs} : list (go_string * loc) :=
+  [(bar.globalX'name.2, globalX)].
 
-Context {addrs : GlobalAddrs}.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
 Context `{!BiContextRoot (PROP:=iProp Σ)}.
-Definition is_defined : iProp Σ :=
-  is_global "bar"%go #globalX.
-Context {His_defined : BiContext is_defined}.
+Context `{!goGlobalsGS Σ}.
+Class GoDefinedContext :=
+  {
+    #[global] addrs :: GlobalAddrs;
+    #[global] is_defined :: BiContext (is_defined bar.pkg_name var_addrs);
+  }.
 
-Instance wp_global_get_globalX : WpGlobalsGet globalX'name globalX.
+Context `{!GoDefinedContext}.
+
+Global Instance wp_global_get_globalX : WpGlobalsGet (bar.pkg_name, "globalX")%go globalX.
 Proof.
-  rewrite /WpGlobalsGet.
-  iIntros (?) "#Hdef HΦ".
-  iDestruct (His_defined.(contains) with "[$]") as "#H".
-Admitted.
+  apply wp_global_get_generic; reflexivity.
+Qed.
 End bar.
 End bar.
 
 Module foo.
-Section defs.
+Definition pkg_name := "foo"%go.
+Definition globalA'name := (pkg_name, "globalA")%go.
+Definition globalB'name := (pkg_name, "globalB")%go.
+
+Section foo.
+
 Class GlobalAddrs :=
   {
     globalA: loc;
     globalB: loc;
-    to_bar' : bar.GlobalAddrs
   }.
-Existing Instance to_bar'.
 
-Context {addrs : GlobalAddrs}.
+Definition var_addrs {addrs : GlobalAddrs} : list (go_string * loc) :=
+  [(foo.globalA'name.2, globalA);
+   (foo.globalB'name.2, globalB)].
+
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-Definition is_defined : iProp Σ :=
-  is_global "foo"%go #globalA.
-
-Definition globalA'name := ("foo", "globalA")%go.
-
 Context `{!BiContextRoot (PROP:=iProp Σ)}.
-Context {Hbar_def : BiContext (bar.is_defined)}.
-Context {Hdef : BiContext (is_defined)}.
 
-Existing Instance bar.wp_global_get_globalX.
+Class GoDefinedContext :=
+  {
+    #[global] addrs :: GlobalAddrs;
+    #[global] is_defined :: BiContext (is_defined foo.pkg_name var_addrs);
+    #[global] to_bar :: bar.GoDefinedContext;
+  }.
+
+Context `{!GoDefinedContext}.
 
 Lemma bar :
   {{{ is_bi_context }}}
@@ -218,53 +268,14 @@ Qed.
 
 Instance wp_global_get_globalA : WpGlobalsGet globalA'name globalA.
 Proof.
-  rewrite /WpGlobalsGet.
-  iIntros (?) "#Hdef HΦ".
-Admitted.
-
-Context `{IrisContextRoot}.
-Context `{!IrisContext (bar.is_defined)}.
-Context `{!IrisContext (is_defined)}.
-
-Ltac iContext := (iStopProof; apply contains).
-
-
-About globals.get.
-Lemma foo :
-  {{{ is_defined }}}
-    globals.get globalA'name #()
-  {{{ RET #globalA; True }}}.
-Proof.
-  iIntros (?) "#Hpre HΦ".
-  wp_apply (wp_globals_get); first iFrame "#".
-  by iApply "HΦ".
+  apply wp_global_get_generic; reflexivity.
 Qed.
-Instance wp_global_get_globalA.
-
-Instance wp_global_get_globalB.
-
-Definition foo.is_defined
-
-globals_contains Γ (pkg_name : string) (record_type : )
-
-Definition is_global_vars_inv : iProp Σ :=
-.
-
-Definition is_global_addr_def (pkg_var_name : go_string * go_string) (addr : loc) : iProp Σ :=
-  is_globals_inv ∗ pkg_var_name ↪[go_globals_name]□ addr.
-Program Definition is_global_addr := unseal (_:seal (@is_global_addr_def)). Obligation 1. by eexists. Qed.
-Definition is_global_addr_unseal : is_global_addr = _ := seal_eq _.
 
 Local Ltac unseal :=
   rewrite ?own_globals_tok_unseal
-    ?is_global_addr_unseal
     ?is_initialized_unseal
     ?own_package_post_toks_unseal
     ?own_package_post_tok_unseal.
-
-Global Instance is_global_addr_persistent x a:
-  Persistent (is_global_addr x a).
-Proof. unseal. apply _. Qed.
 
 Global Instance is_initialized_persistent a b:
   Persistent (is_initialized a b).
@@ -297,27 +308,6 @@ Proof.
   { iCombine "Hbad Htok" gives %Hbad. exfalso. naive_solver. }
   by iMod ("Hclose" with "[$Htok]").
 Qed.
-
-Lemma encode_package_inj pkg_name1 pkg_name2 :
-  globals.encode_package pkg_name1 = globals.encode_package pkg_name2 →
-  pkg_name1 = pkg_name2.
-Proof.
-  intros Heq.
-  apply app_inv_head in Heq.
-  by apply hex_encode_inj.
-Qed.
-
-Local Instance encode_var_inj : Inj (=) (=) globals.encode_var.
-Proof.
-  intros pkg_name pkg_name' Heq.
-  apply app_inv_head in Heq.
-  apply hex_encode_app_inj in Heq. destruct pkg_name, pkg_name'.
-  simpl in Heq. intuition. by subst.
-Qed.
-
-Lemma encode_var_name_package_name_ne pkg_name pkg_var_name :
-  globals.encode_package pkg_name ≠ globals.encode_var pkg_var_name.
-Proof. done. Qed.
 
 Lemma wp_globals_put pkg_var_name used_pkg_vars (addr : loc) :
   pkg_var_name ∉ used_pkg_vars →

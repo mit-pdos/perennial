@@ -7,6 +7,26 @@ Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
+Section alist.
+
+Fixpoint alist_lookup_f {A} (f : go_string) (l : list (go_string * A)) : option A :=
+  match l with
+  | [] => None
+  | (f', v)::l => if ByteString.eqb f' f then Some v else alist_lookup_f f l
+  end.
+
+Context `{ffi_syntax}.
+
+Fixpoint alist_val_def (m : list (go_string * val)) : val :=
+  match m with
+  | [] => InjLV #()
+  | (f, v) :: tl => InjRV ((#f, v), alist_val_def tl)
+  end.
+Program Definition alist_val := unseal (_:seal (@alist_val_def)). Obligation 1. by eexists. Qed.
+Definition alist_val_unseal : alist_val = _ := seal_eq _.
+
+End alist.
+
 (** * Typed data representations for struct and slice *)
 
 Module struct.
@@ -18,7 +38,7 @@ Section goose_lang.
     | structT d => (fix val_struct (fs : list (go_string*go_type)) :=
                      match fs with
                      | [] => (#())
-                     | (f,ft)::fs => (default (zero_val ft) (assocl_lookup f field_vals), val_struct fs)%V
+                     | (f,ft)::fs => (default (zero_val ft) (alist_lookup_f f field_vals), val_struct fs)%V
                      end) d
     | _ => LitV LitPoison
     end.
@@ -91,7 +111,7 @@ destruct a. apply Forall_cons. split.
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
-      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup f fvs)) t)
+      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (alist_lookup_f f fvs)) t)
     : has_go_type (struct.val_aux (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func (f : func.t) : has_go_type #f funcT
@@ -400,22 +420,6 @@ Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
 Qed.
 Final Obligation. solve_decision. Qed.
-
-Lemma struct_fields_val_inj a b :
-  struct.fields_val a = struct.fields_val b →
-  a = b.
-Proof.
-  rewrite struct.fields_val_unseal.
-  dependent induction b generalizing a.
-  { by destruct a as [|[]]. }
-  destruct a0.
-  destruct a as [|[]]; first done.
-  rewrite /= => [=].
-  intros. subst.
-  repeat f_equal.
-  - by apply to_val_inj.
-  - by apply IHb.
-Qed.
 
 Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
 {| default_val := interface.nil |}.

@@ -43,21 +43,20 @@ Section goose_lang.
                                                      (λ q, l ↦{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
-  Global Instance struct_fields_val_inj :
-    Inj (=) (=) struct.fields_val.
+  Lemma alist_val_inj a b :
+    alist_val a = alist_val b →
+    a = b.
   Proof.
-    rewrite struct.fields_val_unseal /struct.fields_val_def.
-    intros ?? Heq.
-    dependent induction y generalizing x;
-    destruct x as [|[]]; try done.
-    { destruct a; done. }
-    destruct a.
-    injection Heq as Heq.
-    subst.
-    eapply inj in Heq; last apply _.
-    subst.
-    f_equal.
-    by apply IHy.
+    rewrite alist_val_unseal.
+    dependent induction b generalizing a.
+    { by destruct a as [|[]]. }
+    destruct a0.
+    destruct a as [|[]]; first done.
+    rewrite /= => [=].
+    intros. subst.
+    repeat f_equal.
+    - by apply to_val_inj.
+    - by apply IHb.
   Qed.
 
   Local Lemma flatten_struct_inj (v1 v2 : val) :
@@ -74,7 +73,7 @@ Section goose_lang.
       | [ v : func.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : option (go_string * go_string )|- _ ] => let v := Control.hyp v in destruct $v as [[??]|]
       | [ h : has_go_type _ _ |- _ ] => let h := Control.hyp h in (inversion_clear $h in Heq)
-      | [ h : struct.fields_val _ = struct.fields_val _ |- _ ] => apply struct_fields_val_inj in $h; subst
+      | [ h : alist_val _ = alist_val _ |- _ ] => apply alist_val_inj in $h; subst
 
       (* unseal whatever's relevant *)
       | [ h : context [struct.val_aux]  |- _ ] => rewrite !struct.val_aux_unseal in $h
