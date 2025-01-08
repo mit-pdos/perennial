@@ -21,6 +21,26 @@ Module operation.
           data: w64 ;
         }.
 
+    Search "IntoVal".
+
+    Search "Lit".
+    
+    #[global] Instance into_val : IntoVal t.
+    Proof.
+    Admitted. 
+    (* refine {| into_val.to_val := (λ (x:t),
+                                     ∃ (l: Slice.t),
+                                       struct.mk_f Operation [
+                                           "OperationType" ::= #(LitInt x.(operationType)) ;
+                                                               "VersionVector" ::= own_slice l uint64T (DfracOwn 1) x.(versionVector) ;
+                                                                                 "Data" ::= #x.(l)
+                                   ])%V ;
+             |}.
+      intros. simpl. by destruct v0. *)
+
+    #[global] Instance into_val_for_type : IntoValForType t (struct.t Operation).
+    Proof. constructor; auto. Admitted.
+
   End operation.
 
   Section heap.
@@ -28,10 +48,10 @@ Module operation.
 
     Definition own_operation (o: loc) (op: operation.t) : iProp Σ :=
       ∃ v_l, o ↦[Operation :: "OperationType"] #op.(operationType) ∗
-                                                     o ↦[Operation :: "VersionVector"] (slice_val v_l) ∗
-                                                     
-                                                     own_slice v_l uint64T (DfracOwn 1) op.(versionVector) ∗
-                                                                                             o ↦[Operation :: "Data"] #op.(data).
+             o ↦[Operation :: "VersionVector"] (slice_val v_l) ∗
+             
+             own_slice v_l uint64T (DfracOwn 1) op.(versionVector) ∗
+             o ↦[Operation :: "Data"] #op.(data).
 
     Fixpoint coqEqualSlices (s1: list w64) (s2: list w64) :=
       match s1 with
@@ -47,18 +67,18 @@ Module operation.
     Lemma wp_equal_slices (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
       {{{
             own_slice x uint64T (DfracOwn 1) xs ∗
-              own_slice y uint64T (DfracOwn 1) ys ∗
-              ⌜length xs = length ys⌝ ∗
-                             ⌜length xs < 2^64⌝
+            own_slice y uint64T (DfracOwn 1) ys ∗
+            ⌜length xs = length ys⌝ ∗
+            ⌜length xs < 2^64⌝
       }}}
         equalSlices x y 
         {{{
               r , RET #r;
               ⌜r = coqEqualSlices xs ys⌝ ∗ 
-                     own_slice x uint64T (DfracOwn 1) xs ∗
-                     own_slice y uint64T (DfracOwn 1) ys ∗
-                     ⌜length xs = length ys⌝ ∗
-                                    ⌜length xs < 2^64⌝
+              own_slice x uint64T (DfracOwn 1) xs ∗
+              own_slice y uint64T (DfracOwn 1) ys ∗
+              ⌜length xs = length ys⌝ ∗
+              ⌜length xs < 2^64⌝
         }}}.
     Proof.
       iIntros (Φ) "(H1 & H2) H3".
@@ -73,35 +93,35 @@ Module operation.
       iIntros (l) "H6". wp_pures.
       wp_apply (wp_forBreak_cond
                   (λ continue,
-                    ∃ (b: bool) (i: w64),
-                      "Hx" ∷ own_slice x uint64T (DfracOwn 1) xs ∗
-                        "Hy" ∷ own_slice y uint64T (DfracOwn 1) ys ∗
-                        output ↦[boolT] #b ∗
-                        index ↦[uint64T] #i ∗
-                        l ↦[uint64T] #(length xs) ∗
-                        ⌜length xs = length ys⌝ ∗
-                                       ⌜length xs < 2^64⌝ ∗
-                                                        ⌜∀ (x y: w64),
-                                                          uint.nat i <= length xs ->
-                                                          xs !! (uint.nat i) = Some x ->
-                                                          ys !! (uint.nat i) = Some y ->
-                                                          (uint.Z x) =? (uint.Z y) = true ->
-                                                          b = true⌝ ∗                   
-                                                                ⌜∀ (i': nat),
-                                                                ∀ (x y: w64),
-                                                                  i' < uint.nat i <= length xs ->
-                                                                  xs !! i' = Some x ->
-                                                                  ys !! i' = Some y ->
-                                                                  (uint.Z x) =? (uint.Z y) = false
-                                                                  -> b = false⌝ ∗  
-                                                                           ⌜uint.Z i <= (uint.Z (length xs))⌝ ∗ 
-                                                                                          ⌜continue = true -> 
-                                                                  b = true⌝ ∗
-                                                                        ⌜continue = false ->
-                                                                  (exists x y, xs !! (uint.nat i) = Some x /\
-                                                                                 ys !! (uint.nat i) = Some y /\
-                                                                                 ((uint.Z x) =? (uint.Z y)) = false /\ b = false)
-                                                                  \/ ((uint.Z i) = uint.Z (W64 (length xs)) /\ b = true)⌝ 
+                     ∃ (b: bool) (i: w64),
+                       "Hx" ∷ own_slice x uint64T (DfracOwn 1) xs ∗
+                       "Hy" ∷ own_slice y uint64T (DfracOwn 1) ys ∗
+                       output ↦[boolT] #b ∗
+                       index ↦[uint64T] #i ∗
+                       l ↦[uint64T] #(length xs) ∗
+                       ⌜length xs = length ys⌝ ∗
+                       ⌜length xs < 2^64⌝ ∗
+                       ⌜∀ (x y: w64),
+                     uint.nat i <= length xs ->
+                     xs !! (uint.nat i) = Some x ->
+                     ys !! (uint.nat i) = Some y ->
+                     (uint.Z x) =? (uint.Z y) = true ->
+                     b = true⌝ ∗                   
+                     ⌜∀ (i': nat),
+                     ∀ (x y: w64),
+                     i' < uint.nat i <= length xs ->
+                     xs !! i' = Some x ->
+                     ys !! i' = Some y ->
+                     (uint.Z x) =? (uint.Z y) = false
+                     -> b = false⌝ ∗  
+                     ⌜uint.Z i <= (uint.Z (length xs))⌝ ∗ 
+                     ⌜continue = true -> 
+                     b = true⌝ ∗
+                     ⌜continue = false ->
+                     (exists x y, xs !! (uint.nat i) = Some x /\
+                                  ys !! (uint.nat i) = Some y /\
+                                  ((uint.Z x) =? (uint.Z y)) = false /\ b = false)
+                     \/ ((uint.Z i) = uint.Z (W64 (length xs)) /\ b = true)⌝ 
                   )%I
                  with "[] [H1 H4 H2 H5 H6]").
       - iIntros (?).
@@ -236,8 +256,8 @@ Module operation.
                         auto.
                       - split.
                         + replace (uint.nat (W64 (uint.nat i - 1))) with (Init.Nat.pred (uint.nat i)) by word.
-                        rewrite lookup_cons_ne_0 in H2; try word.
-                        auto.
+                          rewrite lookup_cons_ne_0 in H2; try word.
+                          auto.
                         + auto.
                     }
                     { right. rewrite length_cons in H1. destruct H1.
@@ -249,9 +269,9 @@ Module operation.
                 + destruct H1.
                   eapply H8.
                   * rewrite length_cons in H1.
-                  rewrite length_cons in H6.
-                  assert (uint.nat i = S (length xs)) by word.
-                  assert (0%nat < uint.nat i <= length (a :: xs)). { rewrite length_cons. word. } apply H4.
+                    rewrite length_cons in H6.
+                    assert (uint.nat i = S (length xs)) by word.
+                    assert (0%nat < uint.nat i <= length (a :: xs)). { rewrite length_cons. word. } apply H4.
                   * simpl. auto.
                   * simpl. auto.
                   * auto.
@@ -265,13 +285,13 @@ Module operation.
 
     Lemma wp_equalOperation l1 o1 l2 o2 :
       {{{
-            own_operation l1 o1 ∗  own_operation l2 o2 
+            own_operation l1 o1 ∗ own_operation l2 o2 
       }}}
         equalOperations #l1 #l2
         {{{
               r , RET #r;
               ⌜r = coq_equalOperation o1 o2⌝ ∗
-                     own_operation l1 o1 ∗  own_operation l2 o2 
+              own_operation l1 o1 ∗  own_operation l2 o2 
         }}}.
     Proof.  
       iIntros (Φ) "(H1 & H2) H3".
@@ -313,19 +333,122 @@ Module operation.
     
     Definition coq_deleteAtIndex (o : list operation.t) index :=
       (take index o) ++ (drop (index + 1) o).
-    
-    (* how to handle list of structs *)
-    Lemma wp_deleteAtIndex location index :
-      {{{
-            own_operation l1 o1 
-      }}}
-        equalOperations #l1 #l2
-        {{{
-              r , RET #r;
-              ⌜r = coq_equalOperation o1 o2⌝ ∗
-                     own_operation l1 o1 ∗  own_operation l2 o2 
-        }}}.
-    Proof.  
 
-    
-    
+    Lemma wp_deleteAtIndex (ops: Slice.t) (index: w64) (l: list operation.t) :
+      {{{
+            ⌜0 <= uint.nat index < length l⌝ ∗   
+            own_slice ops (struct.t Operation) (DfracOwn 1) (l)
+      }}}
+        deleteAtIndex ops #index
+        {{{
+              (ns: Slice.t), RET slice_val (ns);
+              own_slice ns (struct.t Operation) (DfracOwn 1) (coq_deleteAtIndex l (uint.nat index)) 
+        }}}.
+    Proof.
+      iIntros (Φ) "(%H & H) H2".
+      iDestruct (own_slice_sz with "H") as %Hsz.
+      unfold deleteAtIndex.
+      wp_pures.
+      wp_apply wp_NewSlice_0.
+      iIntros (s) "H1".
+      wp_apply wp_ref_to; auto.
+      iIntros (l1) "H3".
+      wp_pures. wp_bind (SliceAppendSlice _ _ _).
+      iDestruct (own_slice_wf with "H") as %Hcap.
+      wp_apply (wp_SliceTake); try word.
+      wp_load.
+      iDestruct "H" as "[H H4]".
+      iDestruct (slice_small_split with "H") as "H".
+      + assert (uint.Z index <= length l) by word.
+        eassumption.
+      + iDestruct "H" as "[H H5]". wp_apply (wp_SliceAppendSlice with "[H H1]"); auto.
+        * iSplitL "H1"; iFrame.
+        * iIntros (s') "H". wp_pures. wp_store.
+          wp_pures. wp_apply (wp_SliceSkip); try word.
+          wp_load.
+          wp_apply (wp_SliceAppendSlice with "[H H5 H3]"); auto.
+          { iDestruct "H" as "[H H1]". iSplitL "H"; iFrame.
+            iDestruct (slice_small_split with "H5") as "[H5 H6]".
+            - assert (uint.Z 1 <= length (drop (uint.nat index) l)).
+              { rewrite length_drop. word. }
+              eassumption.
+            - assert ((W64 1) = (w64_word_instance.(word.sub) (w64_word_instance.(word.add) index (W64 1)) (index))) by word. rewrite H0.
+              destruct (slice_skip_skip (w64_word_instance.(word.add) index (W64 1)) index ops (struct.t Operation)); try word. rewrite <- H0. iApply "H6".
+          }
+          iIntros (s'') "H".
+          iApply "H2".
+          iDestruct "H" as "[H H3]".
+          assert ((([] ++ take (uint.nat index) l) ++
+                     drop (uint.nat (W64 1)) (drop (uint.nat index) l)) =
+                  coq_deleteAtIndex l (uint.nat index)). {
+            unfold coq_deleteAtIndex. simpl. rewrite drop_drop.
+            replace (uint.nat (W64 1)) with 1%nat by word. auto.
+          }
+          rewrite H0. auto.
+    Qed.
+
+    (*
+
+              Search "length".
+            unfold own_slice_small.
+            unfold slice_skip.
+            (* we need to advance the slice to skip the element we are deleting *)
+            Search "own_slice_small".
+            iApply own_slice_small_skipn.
+            Search "own_slice_small".
+       i
+      + iDestruct "H" as "[H H1]". iSplitL "H".
+        * iFrame.
+          * 
+          
+        
+
+            iAssert (own_slice_small (slice_skip ops (struct.t Operation) index) (struct.t Operation) (DfracOwn (1)) (drop (uint.nat index) l) ∗ own_slice_cap ops (struct.t Operation))%I with "[H2 H1]" as "H5". { iFrame. } 
+
+      wp_pures.
+      Search "NewSlice".
+      wp_bind (ref_to _)%E.
+        wp_apply wp_ref_to.
+      Search "ref_to".
+
+      wp_bind (SliceAppendSlice _ _ _).
+      wp_apply (wp_SliceSkip); try word.
+      unfold own_slice.
+      unfold slice.own_slice.
+      iDestruct (own_slice_wf with "H") as %Hcap.
+      wp_apply (wp_SliceTake); try word.
+      Search "SliceAppendSlice".
+      (* Why do we want ownership over the prefix? *)
+      wp_apply (wp_SliceAppendSlice with "[H]"); auto.
+      - iDestruct "H" as "[H H1]".
+        iDestruct (slice_small_split with "H") as "H".
+        + assert (uint.Z index <= length l) by word.
+          eassumption.
+        + iDestruct "H" as "[H H2]". iSplitL.
+          * iDestruct "H2" as "[H2 H3]".
+            (* I want to assert that the right slice doesn't change capacity, how do we do this? *)
+            iAssert (own_slice_small (slice_skip ops (struct.t Operation) index) (struct.t Operation) 
+                       (DfracOwn (1 /2)) (drop (uint.nat index) l) ∗ own_slice_cap ops (struct.t Operation))%I with "[H2 H1]" as "H4". { iFrame. }
+            Search "own_slice_cap".
+             iApply own_slice_cap_take in "H3"; try word. iFrame.
+          * 
+        
+      
+      Search 
+        Search "SliceAppendSlice".
+      - iDestruct "H" as "[H H1]".
+        Search "slice_small".
+        iDestruct (slice_small_split with "H") as "H".
+        + assert (uint.Z index <= length l) by word.
+          eassumption.
+        + (* iMod (inv_alloc _ _ (own_slice_cap ops (struct.t Operation)) with "[H1]") as "Hinv". *)
+          iDestruct "H" as "[H H2]". iSplitL.
+          * iAssert (own_slice_small (slice_skip ops (struct.t Operation) index) (struct.t Operation) 
+                       (DfracOwn 1) (drop (uint.nat index) l) ∗ own_slice_cap ops (struct.t Operation))%I with "[H2 H1]" as "H3". { iFrame. }
+            iApply own_slice_cap_take in "H3"; try word. iFrame. (* I think we need ghost state for this *)
+
+     *)
+
+            
+            
+            

@@ -28,5 +28,7 @@ func equalOperations(o1 *Operation, o2 *Operation) bool {
 
 
 func deleteAtIndex(l []Operation, index uint64) []Operation {
-	return append(l[:index], l[index+1:]...)
+        var ret = make([]Operation, 0)
+	ret = append(ret, l[:index]...)
+	return append(ret, l[index+1:]...)
 }

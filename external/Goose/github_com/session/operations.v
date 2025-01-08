@@ -32,6 +32,8 @@ Definition equalOperations: val :=
 
 Definition deleteAtIndex: val :=
   rec: "deleteAtIndex" "l" "index" :=
-    SliceAppendSlice (struct.t Operation) (SliceTake "l" "index") (SliceSkip (struct.t Operation) "l" ("index" + #1)).
+    let: "ret" := ref_to (slice.T (struct.t Operation)) (NewSlice (struct.t Operation) #0) in
+    "ret" <-[slice.T (struct.t Operation)] (SliceAppendSlice (struct.t Operation) (![slice.T (struct.t Operation)] "ret") (SliceTake "l" "index"));;
+    SliceAppendSlice (struct.t Operation) (![slice.T (struct.t Operation)] "ret") (SliceSkip (struct.t Operation) "l" ("index" + #1)).
 
 End code.
