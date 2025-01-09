@@ -72,4 +72,6 @@ this in GooseLang, so we just loop. *)
   Definition ResolveProph : val := λ: "p" "val", ResolveProph (Var "p") (Var "val").
   Definition Linearize := Linearize.
 
+  Definition initialize' : val := λ: <>, #().
+
 End code.

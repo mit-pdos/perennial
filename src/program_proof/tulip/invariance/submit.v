@@ -12,6 +12,10 @@ Section inv.
     do 2 iNamed "Hgroup".
     iDestruct (big_sepS_insert_2 with "Hsafe Hsafecp") as "Hsafecp'".
     iFrame "∗ # %".
+    iPureIntro.
+    rewrite /txn_cpool_subsume_log.
+    apply (Forall_impl _ _ _ Hcscincl).
+    set_solver.
   Qed.
 
 End inv.

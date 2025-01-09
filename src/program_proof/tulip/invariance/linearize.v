@@ -131,6 +131,7 @@ Proof.
 Qed.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
   Definition key_inv_linearizable_after γ (key : dbkey) (ts : nat) : iProp Σ :=

@@ -5,8 +5,9 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom Buffer : go_type.
-Axiom Buffer__mset : list (string * val).
-Axiom Buffer__mset_ptr : list (string * val).
+Axiom Buffer__mset : list (go_string * val).
+Axiom Buffer__mset_ptr : list (go_string * val).
+Axiom ErrTooLarge : (go_string * go_string).
 Axiom Buffer__Bytes : val.
 Axiom Buffer__AvailableBuffer : val.
 Axiom Buffer__String : val.
@@ -86,8 +87,8 @@ Axiom Clone : val.
 Axiom CutPrefix : val.
 Axiom CutSuffix : val.
 Axiom Reader : go_type.
-Axiom Reader__mset : list (string * val).
-Axiom Reader__mset_ptr : list (string * val).
+Axiom Reader__mset : list (go_string * val).
+Axiom Reader__mset_ptr : list (go_string * val).
 Axiom Reader__Len : val.
 Axiom Reader__Size : val.
 Axiom Reader__Read : val.
@@ -100,5 +101,5 @@ Axiom Reader__Seek : val.
 Axiom Reader__WriteTo : val.
 Axiom Reader__Reset : val.
 Axiom NewReader : val.
-
+Axiom initialize' : val.
 End axioms.

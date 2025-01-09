@@ -43,7 +43,7 @@ Definition TXNLOG_COMMIT : expr := #1.
    be done in a general way, without relying on the content. *)
 Definition TxnLog__SubmitCommit: val :=
   rec: "TxnLog__SubmitCommit" "log" "ts" "pwrs" :=
-    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
     let: "bs1" := marshal.WriteInt "bs" TXNLOG_COMMIT in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "data" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
@@ -109,6 +109,16 @@ Definition TxnLog__Lookup: val :=
         else
           (struct.mk Cmd [
            ], #false)))).
+
+Definition TxnLog__DumpState: val :=
+  rec: "TxnLog__DumpState" "log" :=
+    paxos.Paxos__DumpState (struct.loadF TxnLog "px" "log");;
+    #().
+
+Definition TxnLog__ForceElection: val :=
+  rec: "TxnLog__ForceElection" "log" :=
+    paxos.Paxos__ForceElection (struct.loadF TxnLog "px" "log");;
+    #().
 
 Definition Start: val :=
   rec: "Start" "nidme" "addrm" "fname" :=

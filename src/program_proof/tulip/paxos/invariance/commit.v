@@ -92,10 +92,9 @@ Section commit.
       iDestruct (big_sepL_elem_of with "Hpcmds") as "Hc"; first apply Hc'.
       iApply (cpool_lookup with "Hc Hcpool").
     }
-    iMod (log_update with "Hlogcli Hlog Hcpool") as "(Hlogcli & Hlog & Hcpool)".
-    { apply Hsubsume. }
+    iMod (log_update with "Hlogcli Hlog") as "[Hlogcli Hlog]".
     { apply Hext. }
-    by iFrame "∗ # %".
+    by iFrame "∗ #".
   Qed.
 
 End commit.

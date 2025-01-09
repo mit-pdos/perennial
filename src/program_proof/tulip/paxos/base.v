@@ -1,7 +1,10 @@
+From iris.algebra Require Import mono_nat mono_list gmap_view gset.
+From iris.algebra.lib Require Import dfrac_agree.
+From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import quorum.
 
-Definition ledger := list string.
+Definition ledger := list byte_string.
 
 Definition proposals := gmap nat ledger.
 
@@ -366,9 +369,86 @@ Proof.
   lia.
 Qed.
 
-Class paxos_ghostG (Σ : gFunctors).
+Inductive pxst :=
+| PaxosState (termc terml lsnc : nat) (ledger : ledger)
+| PaxosStuck.
 
-Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ.
-Proof. Admitted.
+Inductive pxcmd :=
+| CmdPaxosExtend (ents : ledger)
+| CmdPaxosPrepare (term : nat)
+| CmdPaxosAdvance (term lsn : nat) (ents : ledger)
+| CmdPaxosAccept (lsn : nat) (ents : ledger)
+| CmdPaxosExpand (lsn : nat).
 
-Record paxos_names := {}.
+Definition byte_stringO := listO w8.
+Definition byte_stringmlR := mono_listR byte_stringO.
+Definition lsnmR := gmapR nat (dfrac_agreeR natO).
+Canonical Structure nodedecO := leibnizO nodedec.
+Definition declistR := mono_listR nodedecO.
+Definition node_declistR := gmapR u64 declistR.
+Definition ledgerO := leibnizO ledger.
+Definition proposalmR := gmap_viewR nat (agreeR gnameO).
+Definition node_proposalmR := gmapR u64 proposalmR.
+Definition node_natmR := gmapR u64 (dfrac_agreeR natO).
+Definition node_ledgerR := gmapR u64 (dfrac_agreeR ledgerO).
+Definition pxcmdlO := leibnizO (list pxcmd).
+Definition node_pxcmdlR := gmapR u64 (dfrac_agreeR pxcmdlO).
+Definition node_stringR := gmapR u64 (agreeR byte_stringO).
+
+Class paxos_ghostG (Σ : gFunctors) :=
+  { #[global] byte_stringmlG :: inG Σ byte_stringmlR;
+    #[global] cpoolG :: ghost_mapG Σ byte_string unit;
+    #[global] proposalG :: ghost_mapG Σ nat gname;
+    #[global] base_proposalG :: ghost_mapG Σ nat ledger;
+    #[global] prepare_lsnG :: inG Σ lsnmR;
+    #[global] node_declistG :: inG Σ node_declistR;
+    #[global] node_proposalG :: inG Σ node_proposalmR;
+    #[global] current_termG :: inG Σ node_natmR;
+    #[global] ledger_termG :: inG Σ node_natmR;
+    #[global] committed_lsnG :: inG Σ node_natmR;
+    #[global] node_ledgerG :: inG Σ node_ledgerR;
+    #[global] node_walG :: inG Σ node_pxcmdlR;
+    #[global] node_wal_fnameG :: inG Σ node_stringR;
+    #[global] trmlmG :: ghost_mapG Σ chan unit;
+  }.
+
+Definition paxos_ghostΣ :=
+  #[ GFunctor lsnmR;
+     ghost_mapΣ byte_string unit;
+     ghost_mapΣ nat gname;
+     GFunctor byte_stringmlR;
+     ghost_mapΣ nat ledger;
+     GFunctor node_declistR;
+     GFunctor node_proposalmR;
+     GFunctor node_natmR;
+     GFunctor node_natmR;
+     GFunctor node_natmR;
+     GFunctor node_ledgerR;
+     GFunctor node_pxcmdlR;
+     GFunctor node_stringR;
+     ghost_mapΣ chan unit
+    ].
+
+#[global]
+Instance subG_paxos_ghostG {Σ} :
+  subG paxos_ghostΣ Σ → paxos_ghostG Σ.
+Proof. solve_inG. Qed.
+
+(* Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ. *)
+
+Record paxos_names := {
+    consensus_log : gname;
+    consensus_cpool : gname;
+    proposal : gname;
+    base_proposal : gname;
+    prepare_lsn : gname;
+    node_declist : gname;
+    node_proposal : gname;
+    current_term : gname;
+    ledger_term : gname;
+    committed_lsn : gname;
+    node_ledger : gname;
+    node_wal : gname;
+    node_wal_fname : gname;
+    trmlm : gname;
+  }.

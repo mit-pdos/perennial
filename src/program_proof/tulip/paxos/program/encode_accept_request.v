@@ -8,7 +8,7 @@ Section encode_accept_request.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_EncodeAcceptRequest
-    (term lsnc lsne : u64) (entsP : Slice.t) (ents : list string) :
+    (term lsnc lsne : u64) (entsP : Slice.t) (ents : list byte_string) :
     {{{ own_slice entsP stringT (DfracOwn 1) ents }}}
       EncodeAcceptRequest #term #lsnc #lsne (to_val entsP)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);

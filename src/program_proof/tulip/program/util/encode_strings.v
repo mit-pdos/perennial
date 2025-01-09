@@ -6,7 +6,7 @@ Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_EncodeStrings
-    (bsP : Slice.t) (strsP : Slice.t) (bs : list u8) (strs : list string) :
+    (bsP : Slice.t) (strsP : Slice.t) (bs : list u8) (strs : list byte_string) :
     {{{ own_slice bsP byteT (DfracOwn 1) bs ∗
         own_slice_small strsP stringT (DfracOwn 1) strs
     }}}

@@ -23,19 +23,27 @@ Section program.
     (*@     gcoord.RegisterFinalization(ts)                                     @*)
     (*@                                                                         @*)
     wp_apply (wp_GroupCoordinator__RegisterFinalization with "Hgcoord").
+
+    (*@     var leader = gcoord.GetLeader()                                     @*)
+    (*@     gcoord.SendCommit(leader, ts, pwrs)                                 @*)
+    (*@     primitive.Sleep(params.NS_RESEND_COMMIT)                            @*)
+    (*@                                                                         @*)
     iNamed "Hgcoord".
     wp_apply (wp_GroupCoordinator__GetLeader with "Hgcoord").
     iIntros (leader Hleader).
     wp_apply wp_ref_to; first by auto.
     iIntros (leaderP) "HleaderP".
-    wp_pures.
+    wp_load.
+    wp_apply (wp_GroupCoordinator__SendCommit with "Hcmted Hgcoord Hpwrs").
+    { apply Hleader. }
+    iIntros "Hpwrs".
+    wp_apply wp_Sleep.
 
-    (*@     var leader = gcoord.GetLeader()                                     @*)
     (*@     for !gcoord.Finalized(ts) {                                         @*)
-    (*@         gcoord.SendCommit(leader, ts, pwrs)                             @*)
-    (*@         primitive.Sleep(params.NS_RESEND_COMMIT)                        @*)
     (*@         // Retry with different leaders until success.                  @*)
     (*@         leader = gcoord.ChangeLeader()                                  @*)
+    (*@         gcoord.SendCommit(leader, ts, pwrs)                             @*)
+    (*@         primitive.Sleep(params.NS_RESEND_COMMIT)                        @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
     set P := (λ _ : bool, ∃ leader' : u64,
@@ -53,16 +61,15 @@ Section program.
       destruct finalized; wp_pures.
       { by iApply "HΦ". }
       iNamed "HP".
-      wp_load.
-      wp_apply (wp_GroupCoordinator__SendCommit with "Hcmted [] Hpwrs").
-      { apply Hinaddrm. }
-      { iFrame "Hgcoord". }
-      iIntros "Hpwrs".
-      wp_apply wp_Sleep.
-      wp_apply (wp_GroupCoordinator__ChangeLeader).
-      { iFrame "Hgcoord". }
+      wp_apply (wp_GroupCoordinator__ChangeLeader with "Hgcoord").
       iIntros (leadernew Hleadernew).
       wp_store.
+      wp_load.
+      wp_apply (wp_GroupCoordinator__SendCommit with "Hcmted Hgcoord Hpwrs").
+      { apply Hleadernew. }
+      iIntros "Hpwrs".
+      wp_apply wp_Sleep.
+      wp_pures.
       iApply "HΦ".
       by iFrame.
     }

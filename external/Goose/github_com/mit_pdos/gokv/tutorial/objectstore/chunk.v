@@ -97,7 +97,7 @@ Definition StartServer: val :=
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
     MapInsert "handlers" WriteChunkId (λ: "req" "reply",
       let: ("args", <>) := writechunk_gk.Unmarshal "req" in
-      Server__WriteChunk "s" (struct.load writechunk_gk.S "args");;
+      Server__WriteChunk "s" "args";;
       "reply" <-[slice.T byteT] (NewSlice byteT #0);;
       #()
       );;

@@ -5,7 +5,7 @@ From New.golang.defn Require Import interface.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance wp__interface_get (i : interface.t) (method : string) :
+Global Instance wp__interface_get (i : interface.t) (method : go_string) :
   PureWp (True) (interface.get method #i)
     (match (assocl_lookup method i.(interface.mset)) with
      | None => (App #() i.(interface.v))
@@ -18,7 +18,7 @@ Proof.
   destruct assocl_lookup; wp_pures; rewrite ?to_val_unseal /=; by iApply "Hwp".
 Qed.
 
-Global Instance wp_interface_make (v : val) (mset : list (string * val)) :
+Global Instance wp_interface_make (v : val) (mset : list (go_string * val)) :
   PureWp (True) (interface.make mset v) #(interface.mk v mset).
 Proof.
   iIntros (?????) "Hwp".

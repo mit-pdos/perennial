@@ -16,30 +16,30 @@ Axiom Slice : val.
 Axiom SliceStable : val.
 Axiom SliceIsSorted : val.
 Axiom Interface : go_type.
-Axiom Interface__mset : list (string * val).
-Axiom Interface__mset_ptr : list (string * val).
+Axiom Interface__mset : list (go_string * val).
+Axiom Interface__mset_ptr : list (go_string * val).
 Axiom Sort : val.
 Axiom xorshift__Next : val.
 Axiom reverse__Less : val.
 Axiom Reverse : val.
 Axiom IsSorted : val.
 Axiom IntSlice : go_type.
-Axiom IntSlice__mset : list (string * val).
-Axiom IntSlice__mset_ptr : list (string * val).
+Axiom IntSlice__mset : list (go_string * val).
+Axiom IntSlice__mset_ptr : list (go_string * val).
 Axiom IntSlice__Len : val.
 Axiom IntSlice__Less : val.
 Axiom IntSlice__Swap : val.
 Axiom IntSlice__Sort : val.
 Axiom Float64Slice : go_type.
-Axiom Float64Slice__mset : list (string * val).
-Axiom Float64Slice__mset_ptr : list (string * val).
+Axiom Float64Slice__mset : list (go_string * val).
+Axiom Float64Slice__mset_ptr : list (go_string * val).
 Axiom Float64Slice__Len : val.
 Axiom Float64Slice__Less : val.
 Axiom Float64Slice__Swap : val.
 Axiom Float64Slice__Sort : val.
 Axiom StringSlice : go_type.
-Axiom StringSlice__mset : list (string * val).
-Axiom StringSlice__mset_ptr : list (string * val).
+Axiom StringSlice__mset : list (go_string * val).
+Axiom StringSlice__mset_ptr : list (go_string * val).
 Axiom StringSlice__Len : val.
 Axiom StringSlice__Less : val.
 Axiom StringSlice__Swap : val.
@@ -51,5 +51,5 @@ Axiom IntsAreSorted : val.
 Axiom Float64sAreSorted : val.
 Axiom StringsAreSorted : val.
 Axiom Stable : val.
-
+Axiom initialize' : val.
 End axioms.

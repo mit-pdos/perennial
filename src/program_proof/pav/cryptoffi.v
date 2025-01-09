@@ -126,6 +126,7 @@ Lemma wp_SigPublicKey__Verify P sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1
     "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
     "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg ∗
     "Hgenie" ∷ (is_sig pk msg sig ∗-∗ ⌜ err = false ⌝) ∗
+    (* TODO: remove. subsumed by is_sig_to_pred. *)
     "HP" ∷ (is_sig_pk pk P -∗ if negb err then P msg else True)
   }}}.
 Proof. Admitted.

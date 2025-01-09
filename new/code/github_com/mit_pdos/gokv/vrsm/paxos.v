@@ -21,7 +21,7 @@ Definition singleClerk : go_type := structT [
   "cl" :: ptrT
 ].
 
-Definition singleClerk__mset : list (string * val) := [
+Definition singleClerk__mset : list (go_string * val) := [
 ].
 
 (* go: internalclerk.go:51:23 *)
@@ -215,10 +215,10 @@ Definition singleClerk__enterNewEpoch : val :=
          "state" ::= zero_val sliceT
        }])))).
 
-Definition singleClerk__mset_ptr : list (string * val) := [
-  ("TryBecomeLeader", singleClerk__TryBecomeLeader%V);
-  ("applyAsFollower", singleClerk__applyAsFollower%V);
-  ("enterNewEpoch", singleClerk__enterNewEpoch%V)
+Definition singleClerk__mset_ptr : list (go_string * val) := [
+  ("TryBecomeLeader"%go, singleClerk__TryBecomeLeader%V);
+  ("applyAsFollower"%go, singleClerk__applyAsFollower%V);
+  ("enterNewEpoch"%go, singleClerk__enterNewEpoch%V)
 ].
 
 (* go: internalclerk.go:19:6 *)
@@ -234,10 +234,10 @@ Definition MakeSingleClerk : val :=
     do:  ("ck" <-[ptrT] "$r0");;;
     return: (![ptrT] "ck")).
 
-Definition Error__mset : list (string * val) := [
+Definition Error__mset : list (go_string * val) := [
 ].
 
-Definition Error__mset_ptr : list (string * val) := [
+Definition Error__mset_ptr : list (go_string * val) := [
 ].
 
 Definition ENone : expr := #(W64 0).
@@ -248,10 +248,10 @@ Definition EOutOfOrder : expr := #(W64 2).
 
 Definition ENotLeader : expr := #(W64 4).
 
-Definition applyAsFollowerArgs__mset : list (string * val) := [
+Definition applyAsFollowerArgs__mset : list (go_string * val) := [
 ].
 
-Definition applyAsFollowerArgs__mset_ptr : list (string * val) := [
+Definition applyAsFollowerArgs__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: marshal.go:29:6 *)
@@ -277,10 +277,10 @@ Definition decodeApplyAsFollowerArgs : val :=
     do:  ((struct.field_ref applyAsFollowerArgs "state" (![ptrT] "o")) <-[sliceT] "$r0");;;
     return: (![ptrT] "o")).
 
-Definition applyAsFollowerReply__mset : list (string * val) := [
+Definition applyAsFollowerReply__mset : list (go_string * val) := [
 ].
 
-Definition applyAsFollowerReply__mset_ptr : list (string * val) := [
+Definition applyAsFollowerReply__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: marshal.go:48:6 *)
@@ -296,10 +296,10 @@ Definition encodeApplyAsFollowerReply : val :=
     do:  ("enc" <-[sliceT] "$r0");;;
     return: (![sliceT] "enc")).
 
-Definition enterNewEpochArgs__mset : list (string * val) := [
+Definition enterNewEpochArgs__mset : list (go_string * val) := [
 ].
 
-Definition enterNewEpochArgs__mset_ptr : list (string * val) := [
+Definition enterNewEpochArgs__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: marshal.go:64:6 *)
@@ -317,10 +317,10 @@ Definition decodeEnterNewEpochArgs : val :=
     do:  "$r1";;;
     return: (![ptrT] "o")).
 
-Definition enterNewEpochReply__mset : list (string * val) := [
+Definition enterNewEpochReply__mset : list (go_string * val) := [
 ].
 
-Definition enterNewEpochReply__mset_ptr : list (string * val) := [
+Definition enterNewEpochReply__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: marshal.go:89:6 *)
@@ -354,10 +354,10 @@ Definition applyReply : go_type := structT [
   "ret" :: sliceT
 ].
 
-Definition applyReply__mset : list (string * val) := [
+Definition applyReply__mset : list (go_string * val) := [
 ].
 
-Definition applyReply__mset_ptr : list (string * val) := [
+Definition applyReply__mset_ptr : list (go_string * val) := [
 ].
 
 (* go: marshal.go:103:6 *)
@@ -486,10 +486,10 @@ Definition decodePaxosState : val :=
     do:  ((struct.field_ref paxosState "isLeader" (![ptrT] "ps")) <-[boolT] "$r0");;;
     return: (![ptrT] "ps")).
 
-Definition paxosState__mset : list (string * val) := [
+Definition paxosState__mset : list (go_string * val) := [
 ].
 
-Definition paxosState__mset_ptr : list (string * val) := [
+Definition paxosState__mset_ptr : list (go_string * val) := [
 ].
 
 Definition Server : go_type := structT [
@@ -499,7 +499,7 @@ Definition Server : go_type := structT [
   "clerks" :: sliceT
 ].
 
-Definition Server__mset : list (string * val) := [
+Definition Server__mset : list (go_string * val) := [
 ].
 
 (* go: server.go:165:18 *)
@@ -630,13 +630,13 @@ Definition Server__withLock : val :=
 Definition Server__TryBecomeLeader : val :=
   rec: "Server__TryBecomeLeader" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"started trybecomeleader") in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"started trybecomeleader"%go) in
     slice.literal interfaceT ["$sl0"])) in
     log.Println "$a0");;;
     do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
     (if: ![boolT] (struct.field_ref paxosState "isLeader" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"already leader") in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"already leader"%go) in
       slice.literal interfaceT ["$sl0"])) in
       log.Println "$a0");;;
       do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
@@ -728,7 +728,7 @@ Definition Server__TryBecomeLeader : val :=
         (if: (![uint64T] (struct.field_ref paxosState "epoch" (![ptrT] "ps"))) ≤ (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args")))
         then
           do:  (let: "$a0" := #"succeeded becomeleader in epoch %d
-          " in
+          "%go in
           let: "$a1" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args")))) in
           slice.literal interfaceT ["$sl0"])) in
           log.Printf "$a0" "$a1");;;
@@ -748,7 +748,7 @@ Definition Server__TryBecomeLeader : val :=
       do:  ((sync.Mutex__Unlock (![ptrT] "mu")) #())
     else
       do:  ((sync.Mutex__Unlock (![ptrT] "mu")) #());;;
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"failed becomeleader") in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string__mset #"failed becomeleader"%go) in
       slice.literal interfaceT ["$sl0"])) in
       log.Println "$a0"))).
 
@@ -840,13 +840,13 @@ Definition Server__enterNewEpoch : val :=
       ) in
     (Server__withLock (![ptrT] "s")) "$a0")).
 
-Definition Server__mset_ptr : list (string * val) := [
-  ("TryAcquire", Server__TryAcquire%V);
-  ("TryBecomeLeader", Server__TryBecomeLeader%V);
-  ("WeakRead", Server__WeakRead%V);
-  ("applyAsFollower", Server__applyAsFollower%V);
-  ("enterNewEpoch", Server__enterNewEpoch%V);
-  ("withLock", Server__withLock%V)
+Definition Server__mset_ptr : list (go_string * val) := [
+  ("TryAcquire"%go, Server__TryAcquire%V);
+  ("TryBecomeLeader"%go, Server__TryBecomeLeader%V);
+  ("WeakRead"%go, Server__WeakRead%V);
+  ("applyAsFollower"%go, Server__applyAsFollower%V);
+  ("enterNewEpoch"%go, Server__enterNewEpoch%V);
+  ("withLock"%go, Server__withLock%V)
 ].
 
 (* go: server.go:242:6 *)
@@ -956,3 +956,23 @@ Definition StartServer : val :=
     do:  (let: "$a0" := (![uint64T] "me") in
     (urpc.Server__Serve (![ptrT] "r")) "$a0");;;
     return: (![ptrT] "s")).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/vrsm/paxos".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  urpc.initialize';;;
+      do:  asyncfile.initialize';;;
+      do:  std.initialize';;;
+      do:  sync.initialize';;;
+      do:  log.initialize';;;
+      do:  marshal.initialize';;;
+      do:  reconnectclient.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  (define' #()))
+      ).

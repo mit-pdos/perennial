@@ -34,7 +34,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Theorem wp_txn__Read txn tid view (k : u64) dbv γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv }}}
     Txn__Read #txn #k
-  {{{ (v : string) (found : bool), RET (#(LitString v), #found);
+  {{{ (v : byte_string) (found : bool), RET (#(LitString v), #found);
       own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Proof.
@@ -223,7 +223,7 @@ Proof.
   by iFrame "Hptsto".
 Qed.
 
-Theorem wp_txn__Read_found txn tid view (k : u64) (v : string) γ τ :
+Theorem wp_txn__Read_found txn tid view (k : u64) (v : byte_string) γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k (Some v) }}}
     Txn__Read #txn #k
   {{{ RET (#(LitString v), #true);

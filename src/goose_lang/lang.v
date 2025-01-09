@@ -1,14 +1,16 @@
 From Coq.Program Require Import Equality.
 From RecordUpdate Require Import RecordSet.
-From stdpp Require Export binders strings.
+From stdpp Require Export binders.
 From stdpp Require Import gmap.
 From iris.algebra Require Export ofe.
 From Perennial.program_logic Require Export language ectx_language ectxi_language.
 From Perennial.Helpers Require Import CountableTactics.
 From Perennial.Helpers Require Import Transitions.
+From Perennial.Helpers Require Import ByteString.
 From Perennial.program_logic Require Export crash_lang.
 From Perennial.goose_lang Require Export locations.
 From Perennial Require Export Helpers.Integers.
+
 Set Default Proof Using "Type".
 
 Open Scope Z_scope.
@@ -64,10 +66,9 @@ behavior. So we erase to the poison value instead, making sure that no legal
 comparisons could be affected. *)
 Inductive base_lit : Type :=
   | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : u8)
-  | LitString (s : string) | LitUnit | LitPoison
+  | LitString (s : byte_string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
-  (* TODO: operation to take length of string *)
   | NegOp | MinusUnOp
   | UToW64Op | UToW32Op | UToW8Op
   | SToW64Op | SToW32Op | SToW8Op
@@ -82,7 +83,7 @@ Inductive bin_op : Set :=
   | StringGetOp
 .
 
-Inductive prim_op0 : Set :=
+Inductive prim_op0 : Type :=
   (* a stuck expression, to represent undefined behavior *)
 | PanicOp (s: string)
   (* non-deterministically pick an integer *)
@@ -111,7 +112,7 @@ Inductive prim_op2 : Set :=
 .
 
 Inductive arity : Set := args0 | args1 | args2.
-Definition prim_op (ar:arity) : Set :=
+Definition prim_op (ar:arity) : Type :=
   match ar with
   | args0 => prim_op0
   | args1 => prim_op1
@@ -229,7 +230,7 @@ Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0)
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc (nonAtomic val);
-  globals : gmap string val;
+  globals : gmap byte_string val;
   world: ffi_state;
   trace: Trace;
   oracle: Oracle;
@@ -547,7 +548,7 @@ Proof. solve_countable prim_op1_rec 7%nat. Qed.
 Instance prim_op2_countable : Countable prim_op2.
 Proof. solve_countable prim_op2_rec 5%nat. Qed.
 
-Definition prim_op' : Set := prim_op0 + prim_op1 + prim_op2.
+Definition prim_op' : Type := prim_op0 + prim_op1 + prim_op2.
 
 Definition a_prim_op {ar} (op: prim_op ar) : prim_op'.
   rewrite /prim_op'.
@@ -782,7 +783,7 @@ Definition fill_item (Ki : ectx_item) (e : expr) : expr :=
   end.
 
 (** Substitution *)
-Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
+Fixpoint subst (x : String.string) (v : val) (e : expr)  : expr :=
   match e with
   | Val _ => e
   | Var y => if decide (x = y) then Val v else Var y
@@ -839,9 +840,9 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | SToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (sint.Z v))
   | SToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (sint.Z v))
   | SToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (sint.Z v))
-  | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
-  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (String.length v))
-  | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide ((String.length v) < 2^64))
+  | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString [v]
+  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (Z.of_nat (length v)))
+  | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide (Z.of_nat (length v) < 2^64))
   | _, _ => None
   end.
 
@@ -886,18 +887,15 @@ Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option bool :=
   | _ => None
   end.
 
-Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option string :=
+Definition bin_op_eval_string (op : bin_op) (s1 s2 : byte_string) : option byte_string :=
   match op with
-  | PlusOp => Some $ (s1 +:+ s2)
+  | PlusOp => Some $ (s1 ++ s2)
   | _ => None
   end.
 
-Definition string_to_bytes (s:string): list u8 :=
-  (λ x, W8 $ Ascii.nat_of_ascii x) <$> String.list_ascii_of_string s.
-
-Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option w8 :=
+Definition bin_op_eval_string_word (op : bin_op) (s1 : byte_string) {width} {word: Interface.word width} (w2 : word): option w8 :=
   match op with
-  | StringGetOp => ((string_to_bytes s1) !! (uint.nat w2))
+  | StringGetOp => (s1 !! (uint.nat w2))
   | _ => None
   end.
 
@@ -1208,7 +1206,11 @@ Definition base_trans (e: expr) :
       (modifyσ (set trace (add_event (Out_ev v)));;
        ret $ LitV $ LitUnit)
   | GlobalGet (Val (LitV (LitString k))) =>
-      atomically (reads (λ '(σ, g), σ.(globals) !! k) ≫= unwrap)
+      atomically (x ← reads (λ '(σ, g), σ.(globals) !! k);
+                  ret (match x with
+                       | Some x => (InjRV x)
+                       | None => (InjLV (LitV LitUnit))
+                       end))
   | GlobalPut (Val (LitV (LitString k))) (Val v) =>
       atomically (modifyσ (set globals <[k := v]>);; ret $ LitV $ LitUnit)
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>

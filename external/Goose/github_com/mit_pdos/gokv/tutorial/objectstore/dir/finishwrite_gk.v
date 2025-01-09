@@ -10,35 +10,35 @@ Definition S := struct.decl [
   "Keyname" :: stringT
 ].
 
-Definition S__approxSize: val :=
-  rec: "S__approxSize" "f" :=
-    #0.
-
 Definition Marshal: val :=
   rec: "Marshal" "f" "prefix" :=
     let: "enc" := ref_to (slice.T byteT) "prefix" in
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF S "WriteId" "f"));;
-    let: "keynameBytes" := StringToBytes (struct.loadF S "Keyname" "f") in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "WriteId" "f"));;
+    let: "keynameBytes" := StringToBytes (struct.get S "Keyname" "f") in
     "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (slice.len "keynameBytes"));;
     "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") "keynameBytes");;
     ![slice.T byteT] "enc".
 
 Definition Unmarshal: val :=
   rec: "Unmarshal" "s" :=
-    let: "f" := struct.alloc S (zero_val (struct.t S)) in
     let: "enc" := ref_to (slice.T byteT) "s" in
+    let: "writeId" := ref (zero_val uint64T) in
+    let: "keyname" := ref (zero_val stringT) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF S "WriteId" "f" "0_ret";;
+    "writeId" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     let: "keynameLen" := ref (zero_val uint64T) in
     let: "keynameBytes" := ref (zero_val (slice.T byteT)) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     "keynameLen" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    let: ("0_ret", "1_ret") := marshal.ReadBytes (![slice.T byteT] "enc") (![uint64T] "keynameLen") in
+    let: ("0_ret", "1_ret") := marshal.ReadBytesCopy (![slice.T byteT] "enc") (![uint64T] "keynameLen") in
     "keynameBytes" <-[slice.T byteT] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    struct.storeF S "Keyname" "f" (StringFromBytes (![slice.T byteT] "keynameBytes"));;
-    ("f", ![slice.T byteT] "enc").
+    "keyname" <-[stringT] (StringFromBytes (![slice.T byteT] "keynameBytes"));;
+    (struct.mk S [
+       "WriteId" ::= ![uint64T] "writeId";
+       "Keyname" ::= ![stringT] "keyname"
+     ], ![slice.T byteT] "enc").
 
 End code.

@@ -15,10 +15,10 @@ Definition inflight : go_type := structT [
   "bytes" :: uint64T
 ].
 
-Definition inflight__mset : list (string * val) := [
+Definition inflight__mset : list (go_string * val) := [
 ].
 
-Definition inflight__mset_ptr : list (string * val) := [
+Definition inflight__mset_ptr : list (go_string * val) := [
 ].
 
 Definition Inflights : go_type := structT [
@@ -30,7 +30,7 @@ Definition Inflights : go_type := structT [
   "buffer" :: sliceT
 ].
 
-Definition Inflights__mset : list (string * val) := [
+Definition Inflights__mset : list (go_string * val) := [
 ].
 
 (* grow the inflight buffer by doubling up to inflights.size. We grow on demand
@@ -85,7 +85,7 @@ Definition Inflights__Add : val :=
     let: "index" := (ref_ty uint64T "index") in
     (if: (Inflights__Full (![ptrT] "in")) #()
     then
-      do:  (let: "$a0" := (interface.make string__mset #"cannot add into a Full inflights") in
+      do:  (let: "$a0" := (interface.make string__mset #"cannot add into a Full inflights"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "next" := (ref_ty intT (zero_val intT)) in
@@ -187,14 +187,14 @@ Definition Inflights__reset : val :=
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref Inflights "bytes" (![ptrT] "in")) <-[uint64T] "$r0")).
 
-Definition Inflights__mset_ptr : list (string * val) := [
-  ("Add", Inflights__Add%V);
-  ("Clone", Inflights__Clone%V);
-  ("Count", Inflights__Count%V);
-  ("FreeLE", Inflights__FreeLE%V);
-  ("Full", Inflights__Full%V);
-  ("grow", Inflights__grow%V);
-  ("reset", Inflights__reset%V)
+Definition Inflights__mset_ptr : list (go_string * val) := [
+  ("Add"%go, Inflights__Add%V);
+  ("Clone"%go, Inflights__Clone%V);
+  ("Count"%go, Inflights__Count%V);
+  ("FreeLE"%go, Inflights__FreeLE%V);
+  ("Full"%go, Inflights__Full%V);
+  ("grow"%go, Inflights__grow%V);
+  ("reset"%go, Inflights__reset%V)
 ].
 
 (* NewInflights sets up an Inflights that allows up to size inflight messages,
@@ -232,7 +232,7 @@ Definition Progress : go_type := structT [
   "IsLearner" :: boolT
 ].
 
-Definition Progress__mset : list (string * val) := [
+Definition Progress__mset : list (go_string * val) := [
 ].
 
 (* ResetState moves the Progress into the specified State, resetting MsgAppFlowPaused,
@@ -344,7 +344,7 @@ Definition Progress__IsPaused : val :=
         (if: "$sw" = StateSnapshot
         then return: (#true)
         else
-          do:  (let: "$a0" := (interface.make string__mset #"unexpected state") in
+          do:  (let: "$a0" := (interface.make string__mset #"unexpected state"%go) in
           Panic "$a0"))))).
 
 (* MaybeDecrTo adjusts the Progress to the receipt of a MsgApp rejection. The
@@ -427,14 +427,18 @@ Definition Progress__SentCommit : val :=
     let: "$r0" := (![uint64T] "commit") in
     do:  ((struct.field_ref Progress "sentCommit" (![ptrT] "pr")) <-[uint64T] "$r0")).
 
+Definition pkg_name' : go_string := "go.etcd.io/raft/v3/tracker".
+
+Definition prstmap : (go_string * go_string) := (pkg_name', "prstmap"%go).
+
 (* go: state.go:42:21 *)
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
     exception_do (let: "st" := (ref_ty StateType "st") in
-    return: (![stringT] (array.elem_ref stringT (![arrayT 3 stringT] "prstmap") (![StateType] "st")))).
+    return: (![stringT] (array.elem_ref stringT (![arrayT 3 stringT] (globals.get prstmap #())) (![StateType] "st")))).
 
-Definition StateType__mset : list (string * val) := [
-  ("String", StateType__String%V)
+Definition StateType__mset : list (go_string * val) := [
+  ("String"%go, StateType__String%V)
 ].
 
 (* SentEntries updates the progress on the given number of consecutive entries
@@ -470,7 +474,7 @@ Definition Progress__SentEntries : val :=
           do:  ((struct.field_ref Progress "MsgAppFlowPaused" (![ptrT] "pr")) <-[boolT] "$r0")
         else do:  #())
       else
-        do:  (let: "$a0" := (interface.make string__mset (let: "$a0" := #"sending append in unhandled state %s" in
+        do:  (let: "$a0" := (interface.make string__mset (let: "$a0" := #"sending append in unhandled state %s"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make StateType__mset (![StateType] (struct.field_ref Progress "State" (![ptrT] "pr")))) in
         slice.literal interfaceT ["$sl0"])) in
         fmt.Sprintf "$a0" "$a1")) in
@@ -482,7 +486,7 @@ Definition Progress__String : val :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-    let: "$a1" := #"%s match=%d next=%d" in
+    let: "$a1" := #"%s match=%d next=%d"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make StateType__mset (![StateType] (struct.field_ref Progress "State" (![ptrT] "pr")))) in
     let: "$sl1" := (interface.make uint64__mset (![uint64T] (struct.field_ref Progress "Match" (![ptrT] "pr")))) in
     let: "$sl2" := (interface.make uint64__mset (![uint64T] (struct.field_ref Progress "Next" (![ptrT] "pr")))) in
@@ -491,21 +495,21 @@ Definition Progress__String : val :=
     (if: ![boolT] (struct.field_ref Progress "IsLearner" (![ptrT] "pr"))
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" learner") in
+      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" learner"%go) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprint "$a0" "$a1")
     else do:  #());;;
     (if: (Progress__IsPaused (![ptrT] "pr")) #()
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" paused") in
+      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" paused"%go) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprint "$a0" "$a1")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref Progress "PendingSnapshot" (![ptrT] "pr"))) > #(W64 0)
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #" pendingSnap=%d" in
+      let: "$a1" := #" pendingSnap=%d"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] (struct.field_ref Progress "PendingSnapshot" (![ptrT] "pr")))) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")
@@ -513,7 +517,7 @@ Definition Progress__String : val :=
     (if: (~ (![boolT] (struct.field_ref Progress "RecentActive" (![ptrT] "pr"))))
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" inactive") in
+      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" inactive"%go) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprint "$a0" "$a1")
     else do:  #());;;
@@ -523,32 +527,32 @@ Definition Progress__String : val :=
     (if: int_gt (![intT] "n") #(W64 0)
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #" inflight=%d" in
+      let: "$a1" := #" inflight=%d"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make int__mset (![intT] "n")) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprintf "$a0" "$a1" "$a2");;;
       (if: (Inflights__Full (![ptrT] (struct.field_ref Progress "Inflights" (![ptrT] "pr")))) #()
       then
         do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-        let: "$a1" := ((let: "$sl0" := (interface.make string__mset #"[full]") in
+        let: "$a1" := ((let: "$sl0" := (interface.make string__mset #"[full]"%go) in
         slice.literal interfaceT ["$sl0"])) in
         fmt.Fprint "$a0" "$a1")
       else do:  #())
     else do:  #()));;;
     return: ((strings.Builder__String "buf") #())).
 
-Definition Progress__mset_ptr : list (string * val) := [
-  ("BecomeProbe", Progress__BecomeProbe%V);
-  ("BecomeReplicate", Progress__BecomeReplicate%V);
-  ("BecomeSnapshot", Progress__BecomeSnapshot%V);
-  ("CanBumpCommit", Progress__CanBumpCommit%V);
-  ("IsPaused", Progress__IsPaused%V);
-  ("MaybeDecrTo", Progress__MaybeDecrTo%V);
-  ("MaybeUpdate", Progress__MaybeUpdate%V);
-  ("ResetState", Progress__ResetState%V);
-  ("SentCommit", Progress__SentCommit%V);
-  ("SentEntries", Progress__SentEntries%V);
-  ("String", Progress__String%V)
+Definition Progress__mset_ptr : list (go_string * val) := [
+  ("BecomeProbe"%go, Progress__BecomeProbe%V);
+  ("BecomeReplicate"%go, Progress__BecomeReplicate%V);
+  ("BecomeSnapshot"%go, Progress__BecomeSnapshot%V);
+  ("CanBumpCommit"%go, Progress__CanBumpCommit%V);
+  ("IsPaused"%go, Progress__IsPaused%V);
+  ("MaybeDecrTo"%go, Progress__MaybeDecrTo%V);
+  ("MaybeUpdate"%go, Progress__MaybeUpdate%V);
+  ("ResetState"%go, Progress__ResetState%V);
+  ("SentCommit"%go, Progress__SentCommit%V);
+  ("SentEntries"%go, Progress__SentEntries%V);
+  ("String"%go, Progress__String%V)
 ].
 
 Definition ProgressMap : go_type := mapT uint64T ptrT.
@@ -582,25 +586,25 @@ Definition ProgressMap__String : val :=
       let: "id" := ref_ty uint64T "id" in
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
       let: "$a1" := #"%d: %s
-      " in
+      "%go in
       let: "$a2" := ((let: "$sl0" := (interface.make uint64__mset (![uint64T] "id")) in
       let: "$sl1" := (interface.make Progress__mset_ptr (Fst (map.get (![ProgressMap] "m") (![uint64T] "id")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       fmt.Fprintf "$a0" "$a1" "$a2")));;;
     return: ((strings.Builder__String "buf") #())).
 
-Definition ProgressMap__mset : list (string * val) := [
-  ("String", ProgressMap__String%V)
+Definition ProgressMap__mset : list (go_string * val) := [
+  ("String"%go, ProgressMap__String%V)
 ].
 
-Definition ProgressMap__mset_ptr : list (string * val) := [
-  ("String", (λ: "$recvAddr",
+Definition ProgressMap__mset_ptr : list (go_string * val) := [
+  ("String"%go, (λ: "$recvAddr",
     ProgressMap__String (![ProgressMap] "$recvAddr")
     )%V)
 ].
 
-Definition StateType__mset_ptr : list (string * val) := [
-  ("String", (λ: "$recvAddr",
+Definition StateType__mset_ptr : list (go_string * val) := [
+  ("String"%go, (λ: "$recvAddr",
     StateType__String (![StateType] "$recvAddr")
     )%V)
 ].
@@ -620,7 +624,7 @@ Definition Config__String : val :=
     exception_do (let: "c" := (ref_ty Config "c") in
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-    let: "$a1" := #"voters=%s" in
+    let: "$a1" := #"voters=%s"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make quorum.JointConfig__mset (![quorum.JointConfig] (struct.field_ref Config "Voters" "c"))) in
     slice.literal interfaceT ["$sl0"])) in
     fmt.Fprintf "$a0" "$a1" "$a2");;;
@@ -628,7 +632,7 @@ Definition Config__String : val :=
     ])] (struct.field_ref Config "Learners" "c")) ≠ #null
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #" learners=%s" in
+      let: "$a1" := #" learners=%s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make string__mset ((quorum.MajorityConfig__String (![mapT uint64T (structT [
       ])] (struct.field_ref Config "Learners" "c"))) #())) in
       slice.literal interfaceT ["$sl0"])) in
@@ -638,7 +642,7 @@ Definition Config__String : val :=
     ])] (struct.field_ref Config "LearnersNext" "c")) ≠ #null
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := #" learners_next=%s" in
+      let: "$a1" := #" learners_next=%s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make string__mset ((quorum.MajorityConfig__String (![mapT uint64T (structT [
       ])] (struct.field_ref Config "LearnersNext" "c"))) #())) in
       slice.literal interfaceT ["$sl0"])) in
@@ -647,14 +651,14 @@ Definition Config__String : val :=
     (if: ![boolT] (struct.field_ref Config "AutoLeave" "c")
     then
       do:  (let: "$a0" := (interface.make strings.Builder__mset_ptr "buf") in
-      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" autoleave") in
+      let: "$a1" := ((let: "$sl0" := (interface.make string__mset #" autoleave"%go) in
       slice.literal interfaceT ["$sl0"])) in
       fmt.Fprint "$a0" "$a1")
     else do:  #());;;
     return: ((strings.Builder__String "buf") #())).
 
-Definition Config__mset : list (string * val) := [
-  ("String", Config__String%V)
+Definition Config__mset : list (go_string * val) := [
+  ("String"%go, Config__String%V)
 ].
 
 (* Clone returns a copy of the Config that shares no memory with the original.
@@ -707,9 +711,9 @@ Definition Config__Clone : val :=
        "LearnersNext" ::= "$LearnersNext"
      }])).
 
-Definition Config__mset_ptr : list (string * val) := [
-  ("Clone", Config__Clone%V);
-  ("String", (λ: "$recvAddr",
+Definition Config__mset_ptr : list (go_string * val) := [
+  ("Clone"%go, Config__Clone%V);
+  ("String"%go, (λ: "$recvAddr",
     Config__String (![Config] "$recvAddr")
     )%V)
 ].
@@ -722,8 +726,8 @@ Definition ProgressTracker : go_type := structT [
   "MaxInflightBytes" :: uint64T
 ].
 
-Definition ProgressTracker__mset : list (string * val) := [
-  ("String", (λ: "$recv",
+Definition ProgressTracker__mset : list (go_string * val) := [
+  ("String"%go, (λ: "$recv",
     Config__String (struct.field_get ProgressTracker "Config" "$recv")
     )%V)
 ].
@@ -749,8 +753,8 @@ Definition matchAckIndexer__AckedIndex : val :=
     else do:  #());;;
     return: (![uint64T] (struct.field_ref Progress "Match" (![ptrT] "pr")), #true)).
 
-Definition matchAckIndexer__mset : list (string * val) := [
-  ("AckedIndex", matchAckIndexer__AckedIndex%V)
+Definition matchAckIndexer__mset : list (go_string * val) := [
+  ("AckedIndex"%go, matchAckIndexer__AckedIndex%V)
 ].
 
 (* Committed returns the largest log index known to be committed based on what
@@ -979,23 +983,23 @@ Definition ProgressTracker__VoterNodes : val :=
     sort.Slice "$a0" "$a1");;;
     return: (![sliceT] "nodes")).
 
-Definition ProgressTracker__mset_ptr : list (string * val) := [
-  ("Clone", (λ: "$recvAddr",
+Definition ProgressTracker__mset_ptr : list (go_string * val) := [
+  ("Clone"%go, (λ: "$recvAddr",
     Config__Clone (struct.field_ref ProgressTracker "Config" "$recvAddr")
     )%V);
-  ("Committed", ProgressTracker__Committed%V);
-  ("ConfState", ProgressTracker__ConfState%V);
-  ("IsSingleton", ProgressTracker__IsSingleton%V);
-  ("LearnerNodes", ProgressTracker__LearnerNodes%V);
-  ("QuorumActive", ProgressTracker__QuorumActive%V);
-  ("RecordVote", ProgressTracker__RecordVote%V);
-  ("ResetVotes", ProgressTracker__ResetVotes%V);
-  ("String", (λ: "$recvAddr",
+  ("Committed"%go, ProgressTracker__Committed%V);
+  ("ConfState"%go, ProgressTracker__ConfState%V);
+  ("IsSingleton"%go, ProgressTracker__IsSingleton%V);
+  ("LearnerNodes"%go, ProgressTracker__LearnerNodes%V);
+  ("QuorumActive"%go, ProgressTracker__QuorumActive%V);
+  ("RecordVote"%go, ProgressTracker__RecordVote%V);
+  ("ResetVotes"%go, ProgressTracker__ResetVotes%V);
+  ("String"%go, (λ: "$recvAddr",
     Config__String (![Config] (struct.field_ref ProgressTracker "Config" "$recvAddr"))
     )%V);
-  ("TallyVotes", ProgressTracker__TallyVotes%V);
-  ("Visit", ProgressTracker__Visit%V);
-  ("VoterNodes", ProgressTracker__VoterNodes%V)
+  ("TallyVotes"%go, ProgressTracker__TallyVotes%V);
+  ("Visit"%go, ProgressTracker__Visit%V);
+  ("VoterNodes"%go, ProgressTracker__VoterNodes%V)
 ].
 
 (* MakeProgressTracker initializes a ProgressTracker.
@@ -1032,10 +1036,33 @@ Definition MakeProgressTracker : val :=
     do:  ("p" <-[ProgressTracker] "$r0");;;
     return: (![ProgressTracker] "p")).
 
-Definition matchAckIndexer__mset_ptr : list (string * val) := [
-  ("AckedIndex", (λ: "$recvAddr",
+Definition matchAckIndexer__mset_ptr : list (go_string * val) := [
+  ("AckedIndex"%go, (λ: "$recvAddr",
     matchAckIndexer__AckedIndex (![matchAckIndexer] "$recvAddr")
     )%V)
 ].
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  (globals.put prstmap (ref_ty (arrayT 3 stringT) (zero_val (arrayT 3 stringT))))).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  raftpb.initialize';;;
+      do:  slices64.initialize';;;
+      do:  quorum.initialize';;;
+      do:  strings.initialize';;;
+      do:  sort.initialize';;;
+      do:  fmt.initialize';;;
+      do:  (define' #());;;
+      let: "$r0" := ((let: "$ar0" := #"StateProbe"%go in
+      let: "$ar1" := #"StateReplicate"%go in
+      let: "$ar2" := #"StateSnapshot"%go in
+      array.literal ["$ar0"; "$ar1"; "$ar2"])) in
+      do:  ((globals.get prstmap #()) <-[arrayT 3 stringT] "$r0");;;
+      let: "$r0" := (interface.make matchAckIndexer__mset #null) in
+      do:  #())
+      ).
 
 End code.

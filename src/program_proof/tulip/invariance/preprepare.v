@@ -1,6 +1,7 @@
 From Perennial.program_proof.tulip Require Import prelude.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
   Lemma txnsys_inv_preprepare γ p Qr tid wrs :

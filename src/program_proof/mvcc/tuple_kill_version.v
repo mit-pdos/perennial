@@ -9,7 +9,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Theorem wp_tuple__killVersion tuple (tid : u64) owned tidlast vers :
   {{{ own_tuple_phys tuple owned tidlast vers }}}
     Tuple__killVersion #tuple #tid
-  {{{ (ok : bool), RET #ok; own_tuple_phys tuple false (uint.Z tid + 1) (vers ++ [(tid, true, "")]) }}}.
+  {{{ (ok : bool), RET #ok; own_tuple_phys tuple false (uint.Z tid + 1) (vers ++ [(tid, true, ""%go)]) }}}.
 Proof.
   iIntros (Φ) "HtuplePhys HΦ".
   iNamed "HtuplePhys".

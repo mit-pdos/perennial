@@ -6,23 +6,23 @@ Context `{ffi_syntax}.
 
 Axiom Accuracy__String : val.
 Axiom Word : go_type.
-Axiom Word__mset : list (string * val).
-Axiom Word__mset_ptr : list (string * val).
+Axiom Word__mset : list (go_string * val).
+Axiom Word__mset_ptr : list (go_string * val).
 Axiom decimal__String : val.
 Axiom Float : go_type.
-Axiom Float__mset : list (string * val).
-Axiom Float__mset_ptr : list (string * val).
+Axiom Float__mset : list (go_string * val).
+Axiom Float__mset_ptr : list (go_string * val).
 Axiom ErrNaN : go_type.
-Axiom ErrNaN__mset : list (string * val).
-Axiom ErrNaN__mset_ptr : list (string * val).
+Axiom ErrNaN__mset : list (go_string * val).
+Axiom ErrNaN__mset_ptr : list (go_string * val).
 Axiom ErrNaN__Error : val.
 Axiom NewFloat : val.
 Axiom MaxExp : Z.
 Axiom MinExp : Z.
 Axiom MaxPrec : Z.
 Axiom RoundingMode : go_type.
-Axiom RoundingMode__mset : list (string * val).
-Axiom RoundingMode__mset_ptr : list (string * val).
+Axiom RoundingMode__mset : list (go_string * val).
+Axiom RoundingMode__mset_ptr : list (go_string * val).
 Axiom ToNearestEven : expr.
 Axiom ToNearestAway : expr.
 Axiom ToZero : expr.
@@ -30,8 +30,8 @@ Axiom AwayFromZero : expr.
 Axiom ToNegativeInf : expr.
 Axiom ToPositiveInf : expr.
 Axiom Accuracy : go_type.
-Axiom Accuracy__mset : list (string * val).
-Axiom Accuracy__mset_ptr : list (string * val).
+Axiom Accuracy__mset : list (go_string * val).
+Axiom Accuracy__mset_ptr : list (go_string * val).
 Axiom Below : expr.
 Axiom Exact : expr.
 Axiom Above : expr.
@@ -81,8 +81,8 @@ Axiom Float__String : val.
 Axiom Float__Append : val.
 Axiom Float__Format : val.
 Axiom Int : go_type.
-Axiom Int__mset : list (string * val).
-Axiom Int__mset_ptr : list (string * val).
+Axiom Int__mset : list (go_string * val).
+Axiom Int__mset_ptr : list (go_string * val).
 Axiom Int__Sign : val.
 Axiom Int__SetInt64 : val.
 Axiom Int__SetUint64 : val.
@@ -149,8 +149,8 @@ Axiom nat__String : val.
 Axiom MaxBase : expr.
 Axiom Int__ProbablyPrime : val.
 Axiom Rat : go_type.
-Axiom Rat__mset : list (string * val).
-Axiom Rat__mset_ptr : list (string * val).
+Axiom Rat__mset : list (go_string * val).
+Axiom Rat__mset_ptr : list (go_string * val).
 Axiom NewRat : val.
 Axiom Rat__SetFloat64 : val.
 Axiom Rat__Float32 : val.
@@ -185,5 +185,5 @@ Axiom Rat__MarshalText : val.
 Axiom Rat__UnmarshalText : val.
 Axiom RoundingMode__String : val.
 Axiom Float__Sqrt : val.
-
+Axiom initialize' : val.
 End axioms.

@@ -21,6 +21,7 @@ Example testAssignBitwise_ok : testAssignBitwise #() ~~> #true := t.
 
 (* atomic.go *)
 Example testAtomicLoadStore64_ok : testAtomicLoadStore64 #() ~~> #true := t.
+Example testAtomicPointers_ok : testAtomicPointers #() ~~> #true := t.
 
 (* closures.go *)
 Example testClosureBasic_ok : testClosureBasic #() ~~> #true := t.

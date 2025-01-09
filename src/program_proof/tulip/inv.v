@@ -23,7 +23,7 @@ Section inv.
   #[global]
   Instance tulip_inv_with_proph_timeless γ p :
     Timeless (tulip_inv_with_proph γ p).
-  Admitted.
+  Proof. apply _. Qed.
 
   Definition know_tulip_inv_with_proph γ p : iProp Σ :=
     inv tulipNS (tulip_inv_with_proph γ p).
@@ -64,6 +64,11 @@ Section def.
     Persistent (fast_or_slow_read γ rid key lts ts v slow).
   Proof. rewrite /fast_or_slow_read. apply _. Defined.
 
+  #[global]
+  Instance fast_or_slow_read_timeless γ rid key lts ts v slow :
+    Timeless (fast_or_slow_read γ rid key lts ts v slow).
+  Proof. rewrite /fast_or_slow_read. apply _. Defined.
+
   Definition validate_outcome γ gid rid ts res : iProp Σ :=
     match res with
     | ReplicaOK => is_replica_validated_ts γ gid rid ts
@@ -78,6 +83,11 @@ Section def.
   #[global]
   Instance validate_outcome_persistent γ gid rid ts res :
     Persistent (validate_outcome γ gid rid ts res).
+  Proof. destruct res; apply _. Defined.
+
+  #[global]
+  Instance validate_outcome_timeless γ gid rid ts res :
+    Timeless (validate_outcome γ gid rid ts res).
   Proof. destruct res; apply _. Defined.
 
   Definition fast_prepare_outcome γ gid rid ts res : iProp Σ :=
@@ -97,6 +107,11 @@ Section def.
     Persistent (fast_prepare_outcome γ gid rid ts res).
   Proof. destruct res; apply _. Defined.
 
+  #[global]
+  Instance fast_prepare_outcome_timeless γ gid rid ts res :
+    Timeless (fast_prepare_outcome γ gid rid ts res).
+  Proof. destruct res; apply _. Defined.
+
   Definition accept_outcome γ gid rid ts rank pdec res : iProp Σ :=
     match res with
     | ReplicaOK => is_replica_pdec_at_rank γ gid rid ts rank pdec
@@ -113,6 +128,11 @@ Section def.
     Persistent (accept_outcome γ gid rid ts rank pdec res).
   Proof. destruct res; apply _. Defined.
 
+  #[global]
+  Instance accept_outcome_timeless γ gid rid ts rank pdec res :
+    Timeless (accept_outcome γ gid rid ts rank pdec res).
+  Proof. destruct res; apply _. Defined.
+
   Definition query_outcome γ ts res : iProp Σ :=
     match res with
     | ReplicaOK => True
@@ -127,6 +147,11 @@ Section def.
   #[global]
   Instance query_outcome_persistent γ ts res :
     Persistent (query_outcome γ ts res).
+  Proof. destruct res; apply _. Defined.
+
+  #[global]
+  Instance query_outcome_timeless γ ts res :
+    Timeless (query_outcome γ ts res).
   Proof. destruct res; apply _. Defined.
 
 End def.
@@ -162,8 +187,13 @@ Section inv_network.
     Persistent (safe_txnreq γ gid req).
   Proof. destruct req; apply _. Defined.
 
+  #[global]
+  Instance safe_txnreq_timeless γ gid req :
+    Timeless (safe_txnreq γ gid req).
+  Proof. destruct req; apply _. Defined.
+
   Definition safe_read_resp
-    γ (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) : iProp Σ :=
+    γ (ts rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) : iProp Σ :=
     "#Hsafe" ∷ fast_or_slow_read γ rid key (uint.nat ver.1) (uint.nat ts) ver.2 slow ∗
     "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
 
@@ -209,6 +239,11 @@ Section inv_network.
     Persistent (safe_txnresp γ gid resp).
   Proof. destruct resp; apply _. Defined.
 
+  #[global]
+  Instance safe_txnresp_timeless γ gid resp :
+    Timeless (safe_txnresp γ gid resp).
+  Proof. destruct resp; apply _. Defined.
+
   Definition listen_inv
     (addr : chan) (ms : gset message) gid γ : iProp Σ :=
     ∃ (reqs : gset txnreq),
@@ -236,7 +271,7 @@ Section inv_network.
   #[global]
   Instance tulip_network_inv_timeless γ gid addrm :
     Timeless (tulip_network_inv γ gid addrm).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition know_tulip_network_inv γ gid addrm : iProp Σ :=
     inv tulipnetNS (tulip_network_inv γ gid addrm).
@@ -262,6 +297,7 @@ Section alloc.
       ([∗ set] gid ∈ dom gaddrm, own_txn_cpool_half γ gid ∅) ∗
       (* tulip atomic invariant *)
       tulip_inv_with_proph γ p ∗
+      gentid_init γ ∗
       ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm).
   Proof.
     iIntros (Hdomgaddrm Hdomaddrm) "Hchans".
@@ -428,6 +464,7 @@ Section alloc.
       rewrite dom_gset_to_gmap.
       assert (Hlip : locked_impl_prepared ∅ (gset_to_gmap O keys_all)).
       { intros k t Ht Hnz. by apply lookup_gset_to_gmap_Some in Ht as [_ <-]. }
+      rewrite /txn_cpool_subsume_log Forall_nil.
       done.
     }
     iAssert ([∗ set] gid ∈ gids_all, [∗ set] rid ∈ rids_all, replica_inv γ gid rid)%I

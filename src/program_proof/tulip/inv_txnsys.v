@@ -1,3 +1,4 @@
+From Perennial.base_logic Require Import ghost_map saved_prop mono_nat.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import dual_lookup vslice nat.
 From Perennial.program_proof.tulip Require Import action base res.
@@ -125,6 +126,7 @@ Instance incorrect_fcc_decision Qr {H : ∀ m, Decision (Qr m)} form :
 Proof. destruct form; apply _. Defined.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
@@ -200,6 +202,11 @@ Section inv.
     Persistent (past_action_witness γ a).
   Proof. destruct a; apply _. Qed.
 
+  #[global]
+  Instance past_action_witness_timeless γ a :
+    Timeless (past_action_witness γ a).
+  Proof. destruct a; apply _. Qed.
+
   Definition all_prepared γ ts wrs : iProp Σ :=
     is_txn_wrs γ ts wrs ∗
     [∗ set] gid ∈ ptgroups (dom wrs), is_group_prepared γ gid ts.
@@ -226,6 +233,11 @@ Section inv.
     Persistent (incorrect_wrs_in_fcc γ ts form).
   Proof. destruct form; apply _. Qed.
 
+  #[global]
+  Instance incorrect_wrs_in_fcc_timeless γ ts form :
+    Timeless (incorrect_wrs_in_fcc γ ts form).
+  Proof. destruct form; apply _. Qed.
+
   Lemma correct_incorrect_wrs γ ts wrs :
     correct_wrs γ ts wrs -∗
     incorrect_wrs γ ts wrs -∗
@@ -245,6 +257,11 @@ Section inv.
   #[global]
   Instance valid_res_persistent γ ts res :
     Persistent (valid_res γ ts res).
+  Proof. destruct res; apply _. Qed.
+
+  #[global]
+  Instance valid_res_timeless γ ts res :
+    Timeless (valid_res γ ts res).
   Proof. destruct res; apply _. Qed.
   
   Lemma all_prepared_some_aborted γ ts wrs :
@@ -360,4 +377,189 @@ Section inv.
     txnsys_inv γ p.
   Proof. iIntros "Hproph Htxn". iNamed "Htxn". iFrame "∗ # %". Qed.
 
+  #[global]
+  Instance txnsys_inv_timeless γ p :
+    Timeless (txnsys_inv γ p).
+  Proof. apply _. Qed.
+
 End inv.
+
+Section tidinv.
+  Context `{!heapGS Σ}.
+  Context `{!tulip_ghostG Σ}.
+
+  Definition zN_TXN_SITES : Z := 1024.
+
+  Definition sid_of (ts: u64) : u64 := word.modu ts (W64 zN_TXN_SITES).
+
+  Local Definition gentid_au γ (sid : u64) (Φ : val → iProp Σ) : iProp Σ :=
+    (|NC={⊤ ∖ ↑tsNS,∅}=>
+      ∃ ts : nat, own_largest_ts γ ts ∗
+         (∀ ts' : nat, own_largest_ts γ ts' ∗ ⌜(ts < ts')%nat⌝ -∗
+           |NC={∅,⊤ ∖ ↑tsNS}=> ∀ tid : u64, ⌜uint.nat tid = ts'⌝ ∗ own_sid γ sid -∗ Φ #tid)).
+
+  Definition reserved_inv γ γr now (ts : u64): iProp Σ :=
+    ∃ Φ, let sid := sid_of ts in
+      saved_pred_own γr DfracDiscarded Φ ∗
+      own_sid γ sid ∗
+      if bool_decide (uint.nat ts ≤ now)%nat then
+        (* This ts has already happened *)
+        own_sid γ sid -∗ Φ #ts
+      else
+        (* This ts is still in the future *)
+        gentid_au γ sid Φ
+      .
+
+  Definition gentid_inv (γ : tulip_names) now : iProp Σ :=
+    ∃ prev (reserved : gmap u64 gname),
+      ⌜prev ≤ now⌝%nat ∗ own_largest_ts γ prev ∗ tsc_lb now ∗
+      ghost_map_auth γ.(gentid_reserved) 1 reserved ∗
+      [∗ map] ts ↦ 'γr ∈ reserved,
+        reserved_inv γ γr now ts.
+
+  Definition have_gentid (γ : tulip_names) : iProp Σ :=
+    inv tsNS (∃ now, gentid_inv γ now).
+
+  Local Definition tid_reserved γ γr ts (Φ : val → iProp Σ) : iProp Σ :=
+    ghost_map_elem γ.(gentid_reserved) ts (DfracOwn 1) γr ∗
+    saved_pred_own γr DfracDiscarded Φ.
+
+  Global Instance have_gentid_persistent γ : Persistent (have_gentid γ).
+  Proof. apply _. Qed.
+
+  Lemma init_GenTID γ E :
+    gentid_init γ -∗
+    |={E}=> have_gentid γ.
+  Proof.
+    iIntros "[Hts Hres]".
+    iMod tsc_lb_0.
+    iApply inv_alloc. iNext. iExists _, 0%nat, ∅.
+    iFrame. rewrite big_sepM_empty. eauto.
+  Qed.
+
+  Lemma gentid_reserve γ now sid Φ :
+    gentid_inv γ now -∗
+    own_sid γ sid -∗
+    gentid_au γ sid Φ -∗
+    |==> tsc_lb now ∗
+      (* The user can pick a timestamp with the right sid, but only gets something
+      out of this if they pick one that is strictly greater than [clock]. *)
+      (∀ ts, ⌜sid = sid_of ts⌝ ==∗
+         (if bool_decide (now < uint.Z ts) then ∃ γr, tid_reserved γ γr ts Φ else True) ∗
+         gentid_inv γ now).
+  Proof.
+    iIntros "(%last & %reserved & %Hlast & Hts & #Htsc & Hreserved_map & Hreserved) Hsid HAU".
+    iFrame "Htsc". iIntros "!> %ts %Hsid".
+    iAssert (⌜reserved !! ts = None⌝)%I as %Hfresh.
+    { destruct (reserved !! ts) as [γr|] eqn:Hts; last done. iExFalso.
+      iDestruct (big_sepM_lookup _ _ _ _ Hts with "Hreserved") as (Φ2) "(_ & Hsid2 & _)".
+      rewrite -Hsid.
+      iDestruct (own_valid_2 with "Hsid Hsid2") as %Hval. iPureIntro. move:Hval.
+      rewrite singleton_op singleton_valid. done. }
+    case_bool_decide; last first.
+    { (* They gave us an outdated timestamp. *)
+      iSplitR; first done. eauto with iFrame. }
+    iMod (saved_pred_alloc Φ DfracDiscarded) as (γr) "#HΦ"; first done.
+    iMod (ghost_map_insert ts γr with "Hreserved_map") as "[Hreserved_map Hreserved_ts]"; first done.
+    iSplitL "Hreserved_ts".
+    { rewrite /tid_reserved. eauto. }
+    iExists last, _. iFrame "Hreserved_map Hts". iSplitR; first done.
+    iApply big_sepM_insert; first done.
+    iFrame. rewrite /reserved_inv. rewrite bool_decide_false; last lia.
+    iExists Φ. iFrame "HΦ". rewrite -Hsid. iFrame. done.
+  Qed.
+
+  Local Lemma reserved_inc_clock γ now reserved :
+    reserved !! (W64 (S now)) = None →
+    ([∗ map] ts↦γr ∈ reserved, reserved_inv γ γr now ts) -∗
+    [∗ map] ts↦γr ∈ reserved, reserved_inv γ γr (S now) ts.
+  Proof.
+    intros Hnotnow.
+    iIntros "Hm". iApply (big_sepM_impl with "Hm").
+    iIntros "!> %ts %γr %Hts (%Φ & HΦ & Hsid & HAU)".
+    assert (uint.nat ts ≠ S now).
+    { intros Heq. rewrite -Heq in Hnotnow.
+      replace (W64 (uint.nat ts)) with ts in Hnotnow by word. congruence. }
+    iExists _. iFrame.
+    case_bool_decide.
+    - rewrite bool_decide_true. 2:lia. done.
+    - rewrite bool_decide_false. 2:lia. done.
+  Qed.
+
+  Local Lemma gentid_inc_clock γ old now :
+    (old ≤ now)%nat →
+    (now < 2^64) →
+    gentid_inv γ old -∗
+    tsc_lb now -∗
+    |NC={⊤∖↑tsNS}=> gentid_inv γ now.
+  Proof.
+    induction 1 using le_ind.
+    { eauto. }
+    iIntros (?) "Hgentid #Htsc".
+    iDestruct (IHle with "Hgentid [Htsc]") as ">Hgentid".
+    { lia. }
+    { iApply tsc_lb_weaken; last done. lia. }
+    iDestruct "Hgentid" as "(%last & %reserved & %Hlast & Hts & _ & Hreserved_map & Hreserved)".
+    set ts := S m.
+    destruct (reserved !! (W64 ts)) as [γr|] eqn:Hts; last first.
+    { (* Nothing reserved at this timestamp, not much to do. *)
+      iExists _, _. iFrame. iSplitR; first by eauto with lia.
+      iFrame "Htsc".
+      iApply reserved_inc_clock; done. }
+    (* Bump our timestamp. *)
+    iExists ts, _. iFrame. iFrame "Htsc".
+    iSplitR; first done.
+    rewrite !(big_sepM_delete _ _ _ _ Hts).
+    iDestruct "Hreserved" as "[Hthis Hreserved]".
+    rewrite !assoc. iSplitR "Hreserved"; last first.
+    { iApply reserved_inc_clock; last done.
+      rewrite lookup_delete. done. }
+    iDestruct "Hthis" as (Φ) "(HΦ & Hsid & HAU)".
+    rewrite bool_decide_false. 2:word.
+    iMod "HAU" as (ts') "[Hts' Hclose]".
+    rewrite /own_largest_ts.
+    iDestruct (mono_nat_auth_own_agree with "Hts Hts'") as %[_ <-].
+    iCombine "Hts Hts'" as "Hts".
+    iMod (mono_nat_own_update ts with "Hts") as "[[Hts $] _]".
+    { lia. }
+    iMod ("Hclose" with "[Hts]") as "Hfin".
+    { iFrame. eauto with lia. }
+    iModIntro. iExists _. iFrame. rewrite bool_decide_true.
+    2:word.
+    iIntros "Hsid". iApply "Hfin". iFrame. word.
+  Qed.
+
+  Lemma gentid_completed γ γr clock ts Φ :
+    £1 -∗
+    gentid_inv γ clock -∗
+    tid_reserved γ γr ts Φ -∗
+    tsc_lb (uint.nat ts) -∗
+    |NC={⊤∖↑tsNS}=> ∃ clock', gentid_inv γ clock' ∗ Φ #ts.
+  Proof.
+    iIntros "LC Hgentid Hreserved Htsc".
+    set clock' := max clock (uint.nat ts).
+    iAssert (|NC={⊤∖↑tsNS}=> gentid_inv γ clock')%I with "[Htsc Hgentid]" as ">Hgentid".
+    { destruct (decide (clock <= uint.nat ts)%nat); last first.
+      { replace clock' with clock by lia. done. }
+      iMod (gentid_inc_clock with "Hgentid Htsc") as "Hgentid"; first done.
+      { word. }
+      replace clock' with (uint.nat ts) by lia. done.
+    }
+    iDestruct "Hgentid" as "(%last & %reserved & %Hlast & Hts & #Htsc & Hreserved_map & Hreserved_all)".
+    iExists clock'.
+    iDestruct "Hreserved" as "[Hmap HΦ]".
+    iDestruct (ghost_map_lookup with "Hreserved_map Hmap") as %Hts.
+    iMod (ghost_map_delete with "Hreserved_map Hmap") as "Hreserved_map".
+    iDestruct (big_sepM_delete _ _ _ _ Hts with "Hreserved_all") as "[Hreserved Hreserved_all]".
+    iDestruct "Hreserved" as (Φ') "(HΦ' & Hsid & HAU)".
+    iDestruct (saved_pred_agree _ _ _ _ _ (#ts) with "HΦ HΦ'") as "EQ".
+    iMod (lc_fupd_elim_later with "LC EQ") as "EQ".
+    iRewrite "EQ". clear Φ.
+    rewrite bool_decide_true.
+    2:lia.
+    iModIntro. iSplitR "Hsid HAU".
+    - iExists _, _. iFrame. eauto.
+    - iApply "HAU". done.
+  Qed.
+
+End tidinv.

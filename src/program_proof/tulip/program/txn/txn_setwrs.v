@@ -1,23 +1,25 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
-From Perennial.program_proof.tulip.program.txn Require Import txn_repr key_to_group.
+From Perennial.program_proof.tulip.program.txn Require Import txn_repr txn_key_to_group.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_Txn__setwrs (txn : loc) (key : string) (value : dbval) wrs :
+  Theorem wp_Txn__setwrs (txn : loc) (key : byte_string) (value : dbval) wrs :
+    valid_key key ->
     {{{ own_txn_wrs txn (DfracOwn 1) wrs }}}
       Txn__setwrs #txn #(LitString key) (dbval_to_val value)
     {{{ RET #(); own_txn_wrs txn (DfracOwn 1) (<[key := value]> wrs) }}}.
   Proof.
-    iIntros (Φ) "Hwrs HΦ".
+    iIntros (Hvk Φ) "Hwrs HΦ".
     wp_rec.
 
     (*@ func (txn *Txn) setwrs(key string, value Value) {                       @*)
     (*@     gid := KeyToGroup(key)                                              @*)
     (*@     pwrs := txn.wrs[gid]                                                @*)
     (*@                                                                         @*)
-    wp_apply wp_KeyToGroup.
-    iIntros (gid Hgid).
+    wp_apply (wp_Txn__keyToGroup with "Hwrs").
+    { apply Hvk. }
+    iIntros (gid) "[Hwrs %Hgid]".
     do 2 iNamed "Hwrs".
     wp_loadField.
     wp_apply (wp_MapGet with "HpwrsmP").

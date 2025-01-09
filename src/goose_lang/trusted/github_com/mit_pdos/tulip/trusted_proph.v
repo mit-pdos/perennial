@@ -18,8 +18,8 @@ Definition ResolveAbort : val :=
   λ: "p" "tid", goose_lang.ResolveProph "p" (#ActAbortId, "tid").
 
 (* TODO *)
-Definition WrsToVal : val.
-Admitted.
+Definition WrsToVal : val :=
+  λ: "mref", (!"mref").
 
 Definition ResolveCommit : val :=
   λ: "p" "tid" "wrbuf",

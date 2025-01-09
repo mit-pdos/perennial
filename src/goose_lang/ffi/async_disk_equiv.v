@@ -352,13 +352,10 @@ Section translate.
       * inversion Hstep; monad_inv.
         simpl in H1.
         inv H1. inv H2. monad_inv.
-        destruct (globals σ1 !! s) eqn:Heq; subst.
-        ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H); monad_inv.
-           inversion H.
+        ** inversion H.
            intuition.
            do 2 eexists. split_and!; eauto.
            repeat econstructor; rewrite -?H6 ?Heq; eauto; repeat econstructor.
-        ** inversion H3; intuition.
     - (* Primitive2 *)
       rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
@@ -878,13 +875,10 @@ Section translate.
       * inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1.
         simpl in *. monad_inv.
-        destruct (globals pσ1 !! s) eqn:Heq; subst.
-        ** inversion H3; monad_inv; subst.
-           inversion H.
-           intuition.
-           do 3 eexists. split_and!; eauto.
-           repeat econstructor; rewrite ?H7 ?Heq; eauto; repeat econstructor.
-        ** inversion H3; intuition.
+        monad_inv; subst.
+        inversion H. intuition.
+        do 3 eexists. split_and!; eauto.
+        repeat econstructor; rewrite ?H6 ?Heq; eauto; repeat econstructor.
     - rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
       * (* AllocN *)
@@ -1597,17 +1591,15 @@ Section translate.
            *** rewrite //=. intros; split; eauto.
       * inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H.
-        destruct (globals pσ1 !! s) eqn:Heq; subst.
-        ** simpl in *. monad_inv.
-           destruct Hmatch_curr as (?&?&?&?&?).
-           do 4 eexists.
-           split_and!.
-           *** econstructor; eauto; repeat econstructor; eauto.
-               { rewrite //=. rewrite -H3 Heq. econstructor; eauto. }
-           *** split_and!; eauto.
-           *** eauto.
-           *** econstructor; eauto; repeat econstructor; eauto.
-        ** simpl in *. monad_inv.
+        simpl in *. monad_inv.
+        destruct Hmatch_curr as (?&?&?&?&?).
+        do 4 eexists.
+        split_and!.
+        ** repeat econstructor.
+        ** split_and!; eauto.
+        ** eauto.
+        ** intros. econstructor; eauto. right. repeat econstructor; eauto.
+           rewrite H3. done.
     - (* Primitive2 *)
       rewrite /base_step//= in Hstep.
       destruct op; monad_inv; destruct_head.

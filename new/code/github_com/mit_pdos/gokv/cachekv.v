@@ -12,10 +12,10 @@ Definition cacheValue : go_type := structT [
   "l" :: uint64T
 ].
 
-Definition cacheValue__mset : list (string * val) := [
+Definition cacheValue__mset : list (go_string * val) := [
 ].
 
-Definition cacheValue__mset_ptr : list (string * val) := [
+Definition cacheValue__mset_ptr : list (go_string * val) := [
 ].
 
 Definition CacheKv : go_type := structT [
@@ -24,7 +24,7 @@ Definition CacheKv : go_type := structT [
   "cache" :: mapT stringT cacheValue
 ].
 
-Definition CacheKv__mset : list (string * val) := [
+Definition CacheKv__mset : list (go_string * val) := [
 ].
 
 (* go: clerk.go:24:6 *)
@@ -146,7 +146,7 @@ Definition CacheKv__GetAndCache : val :=
       EncodeValue "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[stringT] "$r0");;;
-      (if: (![stringT] "resp") = #"ok"
+      (if: (![stringT] "resp") = #"ok"%go
       then
         do:  ((sync.Mutex__Lock (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
         let: "$r0" := (let: "$v" := (![stringT] (struct.field_ref cacheValue "v" "old")) in
@@ -200,14 +200,14 @@ Definition CacheKv__Put : val :=
       EncodeValue "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[stringT] "$r0");;;
-      (if: (![stringT] "resp") = #"ok"
+      (if: (![stringT] "resp") = #"ok"%go
       then break: #()
       else do:  #()))).
 
-Definition CacheKv__mset_ptr : list (string * val) := [
-  ("Get", CacheKv__Get%V);
-  ("GetAndCache", CacheKv__GetAndCache%V);
-  ("Put", CacheKv__Put%V)
+Definition CacheKv__mset_ptr : list (go_string * val) := [
+  ("Get"%go, CacheKv__Get%V);
+  ("GetAndCache"%go, CacheKv__GetAndCache%V);
+  ("Put"%go, CacheKv__Put%V)
 ].
 
 (* go: clerk.go:47:6 *)
@@ -222,3 +222,19 @@ Definition Make : val :=
        "mu" ::= "$mu";
        "cache" ::= "$cache"
      }]))).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/cachekv".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  marshal.initialize';;;
+      do:  kv.initialize';;;
+      do:  grove_ffi.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).

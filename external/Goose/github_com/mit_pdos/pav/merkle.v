@@ -77,17 +77,20 @@ Definition context__updInteriorHash: val :=
     ![slice.T byteT] "b0".
 
 Definition context__getProof: val :=
-  rec: "context__getProof" "ctx" "interiors" "label" :=
-    let: "interiorsLen" := slice.len "interiors" in
-    let: "proof" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ("interiorsLen" * hashesPerProofDepth)) in
+  rec: "context__getProof" "ctx" "root" "label" :=
+    let: "proof" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (cryptoffi.HashLen * hashesPerProofDepth)) in
+    let: "currNode" := ref_to ptrT "root" in
     let: "depth" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "depth") < "interiorsLen"); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
-      let: "children" := struct.loadF node "children" (SliceGet ptrT "interiors" (![uint64T] "depth")) in
+    Skip;;
+    (for: (λ: <>, ((![uint64T] "depth") < cryptoffi.HashLen) && ((![ptrT] "currNode") ≠ #null)); (λ: <>, Skip) := λ: <>,
+      let: "children" := struct.loadF node "children" (![ptrT] "currNode") in
       let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
       ForSlice ptrT <> "n" (SliceTake "children" "pos")
         ("proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (context__getHash "ctx" "n")));;
+      "currNode" <-[ptrT] (SliceGet ptrT (struct.loadF node "children" (![ptrT] "currNode")) "pos");;
       ForSlice ptrT <> "n" (SliceSkip ptrT "children" ("pos" + #1))
         ("proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (context__getHash "ctx" "n")));;
+      "depth" <-[uint64T] ((![uint64T] "depth") + #1);;
       Continue);;
     ![slice.T byteT] "proof".
 
@@ -113,43 +116,34 @@ Definition Tree__Put: val :=
         "interiors" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "interiors") (SliceGet ptrT (struct.loadF node "children" "currNode") "pos"));;
         Continue);;
       let: "lastInterior" := SliceGet ptrT (![slice.T ptrT] "interiors") (cryptoffi.HashLen - #1) in
-      let: "lastPos" := SliceGet byteT "label" (cryptoffi.HashLen - #1) in
+      let: "lastPos" := to_u64 (SliceGet byteT "label" (cryptoffi.HashLen - #1)) in
       SliceSet ptrT (struct.loadF node "children" "lastInterior") "lastPos" (struct.new node [
         "mapVal" ::= "mapVal";
         "hash" ::= compLeafNodeHash "mapVal"
       ]);;
       let: "loopBuf" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((numChildren * cryptoffi.HashLen) + #1)) in
       let: "depth" := ref_to uint64T cryptoffi.HashLen in
-      (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
+      Skip;;
+      (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, Skip) := λ: <>,
         "loopBuf" <-[slice.T byteT] (context__updInteriorHash (struct.loadF Tree "ctx" "t") (![slice.T byteT] "loopBuf") (SliceGet ptrT (![slice.T ptrT] "interiors") ((![uint64T] "depth") - #1)));;
         "loopBuf" <-[slice.T byteT] (SliceTake (![slice.T byteT] "loopBuf") #0);;
+        "depth" <-[uint64T] ((![uint64T] "depth") - #1);;
         Continue);;
       let: "dig" := context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") in
-      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (![slice.T ptrT] "interiors") "label" in
+      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") "label" in
       ("dig", "proof", #false)).
 
-(* getPath fetches the maximal path to label, including the leaf node.
+(* getPath fetches including the leaf node.
    if the path doesn't exist, it terminates in an empty node. *)
 Definition getPath: val :=
   rec: "getPath" "root" "label" :=
-    let: "nodePath" := ref (zero_val (slice.T ptrT)) in
-    "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") "root");;
-    (if: "root" = #null
-    then ![slice.T ptrT] "nodePath"
-    else
-      let: "isEmpty" := ref_to boolT #false in
-      let: "depth" := ref_to uint64T #0 in
-      (for: (λ: <>, ((![uint64T] "depth") < cryptoffi.HashLen) && (~ (![boolT] "isEmpty"))); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
-        let: "currNode" := SliceGet ptrT (![slice.T ptrT] "nodePath") (![uint64T] "depth") in
-        let: "pos" := SliceGet byteT "label" (![uint64T] "depth") in
-        let: "nextNode" := SliceGet ptrT (struct.loadF node "children" "currNode") "pos" in
-        "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") "nextNode");;
-        (if: "nextNode" = #null
-        then
-          "isEmpty" <-[boolT] #true;;
-          Continue
-        else Continue));;
-      ![slice.T ptrT] "nodePath").
+    let: "currNode" := ref_to ptrT "root" in
+    let: "depth" := ref_to uint64T #0 in
+    (for: (λ: <>, ((![uint64T] "depth") < cryptoffi.HashLen) && ((![ptrT] "currNode") ≠ #null)); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+      let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
+      "currNode" <-[ptrT] (SliceGet ptrT (struct.loadF node "children" (![ptrT] "currNode")) "pos");;
+      Continue);;
+    ![ptrT] "currNode".
 
 (* Get returns the mapVal, digest, proofTy, proof, and error.
    return ProofTy vs. having sep funcs bc regardless, would want a proof. *)
@@ -158,11 +152,9 @@ Definition Tree__Get: val :=
     (if: (slice.len "label") ≠ cryptoffi.HashLen
     then (slice.nil, slice.nil, #false, slice.nil, #true)
     else
-      let: "nodePath" := getPath (struct.loadF Tree "root" "t") "label" in
-      let: "lastIdx" := (slice.len "nodePath") - #1 in
-      let: "lastNode" := SliceGet ptrT "nodePath" "lastIdx" in
+      let: "lastNode" := getPath (struct.loadF Tree "root" "t") "label" in
       let: "dig" := context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") in
-      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (SliceTake "nodePath" "lastIdx") "label" in
+      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") "label" in
       (if: "lastNode" = #null
       then (slice.nil, "dig", NonmembProofTy, "proof", #false)
       else

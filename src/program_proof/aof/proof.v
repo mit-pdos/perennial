@@ -320,7 +320,7 @@ Proof.
   done.
 Qed.
 
-Lemma wp_CreateAppendOnlyFile (fname:string) data P Pcrash :
+Lemma wp_CreateAppendOnlyFile fname data P Pcrash :
 □(∀ data, ▷ P data ={⊤}=∗ ▷ Pcrash data) -∗
   {{{
        crash_borrow (fname f↦ data ∗ P data)

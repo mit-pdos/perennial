@@ -71,6 +71,9 @@ From Perennial.tutorial Require
 (* WIP slice library *)
 From Perennial.goose_lang.lib Require
      slice.pred_slice.
+(* sync/atomic library (not yet used) *)
+From Perennial.goose_lang.lib Require
+     atomic.atomic.
 
 (* WIP Z-based list library *)
 From Perennial.Helpers Require ListZ.

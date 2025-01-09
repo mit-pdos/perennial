@@ -13,46 +13,46 @@ From Perennial.algebra Require Import map.
 Section defns.
 
 Inductive kvOp :=
-  | putOp : string → string → kvOp
-  | getOp : string → kvOp
-  | condPutOp : string → string → string → kvOp
+  | putOp (k : byte_string) (v : byte_string) : kvOp
+  | getOp (k : byte_string) : kvOp
+  | condPutOp (k : byte_string) (e : byte_string) (v : byte_string) : kvOp
 .
 
-Definition apply_op (state:gmap string string) (op:kvOp) :=
+Definition apply_op (state:gmap byte_string byte_string) (op:kvOp) :=
   match op with
     | getOp _ => state
     | putOp k v => <[k:=v]> state
     | condPutOp k e v =>
-        if decide (default "" (state !! k) = e) then
+        if decide (default ""%go (state !! k) = e) then
           <[k:=v]> state
         else
           state
   end
 .
 
-Definition compute_state ops : gmap string string :=
+Definition compute_state ops : gmap byte_string byte_string :=
   foldl apply_op ∅ ops.
 
 Definition compute_reply ops op : list u8 :=
   match op with
-    | getOp k => string_to_bytes (default "" ((compute_state ops) !! k))
+    | getOp k => (default ""%go ((compute_state ops) !! k))
     | putOp k v => []
-    | condPutOp k e v => if decide (default "" ((compute_state ops) !! k) = e) then
-                          string_to_bytes ("ok")
+    | condPutOp k e v => if decide (default ""%go ((compute_state ops) !! k) = e) then
+                          ("ok"%go)
                         else []
   end
 .
 
 Definition encode_op op : list u8 :=
   match op with
-    | putOp k v => [W8 0] ++ u64_le (length (string_to_bytes k)) ++
-                         string_to_bytes k ++ string_to_bytes v
-    | getOp k => [W8 1] ++ string_to_bytes k
-    | condPutOp k e v => [W8 2] ++ u64_le (length (string_to_bytes k)) ++
-                         string_to_bytes k ++
-                         u64_le (length (string_to_bytes e)) ++
-                         string_to_bytes e ++
-                         string_to_bytes v
+    | putOp k v => [W8 0] ++ u64_le (length k) ++
+                         k ++ v
+    | getOp k => [W8 1] ++ k
+    | condPutOp k e v => [W8 2] ++ u64_le (length k) ++
+                         k ++
+                         u64_le (length e) ++
+                         e ++
+                         v
   end
 .
 
@@ -86,7 +86,7 @@ Existing Instance kv_record.
 
 Context `{!heapGS Σ}.
 
-Lemma wp_encodePutArgs (args_ptr:loc) (key val:string) :
+Lemma wp_encodePutArgs (args_ptr:loc) (key val:byte_string) :
   {{{
       "Hargs_key" ∷ args_ptr ↦[vkv.PutArgs :: "Key"] #(str key) ∗
       "Hargs_val" ∷ args_ptr ↦[vkv.PutArgs :: "Val"] #(str val)
@@ -132,11 +132,10 @@ Proof.
   wp_store. clear sl.
   wp_load.
   iApply "HΦ". iModIntro. iFrame.
-  iPureIntro.
-  by rewrite string_bytes_length.
+  done.
 Qed.
 
-Lemma wp_decodePutArgs enc_sl enc q (key val:string) :
+Lemma wp_decodePutArgs enc_sl enc q (key val:byte_string) :
   {{{
         "%Henc" ∷ ⌜has_op_encoding enc (putOp key val)⌝ ∗
         "Hsl" ∷ own_slice_small enc_sl byteT q enc
@@ -187,13 +186,11 @@ Proof.
   simpl in Hsl_sz. rewrite length_app in Hkv_sz.
   wp_apply wp_SliceTake.
   { word. }
-  iDestruct (slice_small_split with "Hkv_sl") as "[Hk Hv]".
-  { shelve. }
-  replace (uint.nat (length (string_to_bytes key))) with (length (string_to_bytes key)) by word.
-  Unshelve.
-  2:{ rewrite length_app. word. }
+  iDestruct (slice_small_split _ (length key) with "Hkv_sl") as "[Hk Hv]".
+  { rewrite length_app. word. }
   wp_apply (wp_StringFromBytes with "[$Hk]").
   iIntros "Hk".
+  replace (uint.nat (W64 (length key))) with (length key) by word.
   rewrite take_app_length.
   wp_storeField.
   rewrite drop_app_length.
@@ -203,13 +200,12 @@ Proof.
   { word. }
   wp_apply (wp_StringFromBytes with "[$Hv]").
   iIntros "Hv".
-  do 2 rewrite string_to_bytes_to_string.
   wp_storeField.
   iModIntro. iApply "HΦ".
   iFrame.
 Qed.
 
-Lemma wp_encodeGetArgs (key:string) :
+Lemma wp_encodeGetArgs (key:byte_string) :
   {{{
         True
   }}}
@@ -246,7 +242,7 @@ Proof.
   done.
 Qed.
 
-Lemma wp_decodeGetArgs enc_sl enc q (key:string) :
+Lemma wp_decodeGetArgs enc_sl enc q (key:byte_string) :
   {{{
         "%Henc" ∷ ⌜has_op_encoding enc (getOp key)⌝ ∗
         "Hsl" ∷ own_slice_small enc_sl byteT q enc
@@ -268,11 +264,10 @@ Proof.
   wp_apply (wp_StringFromBytes with "[$]").
   iIntros "_".
   wp_pures.
-  rewrite string_to_bytes_to_string.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_encodeCondPutArgs (args_ptr:loc) (key expect val:string) :
+Lemma wp_encodeCondPutArgs (args_ptr:loc) (key expect val:byte_string) :
   {{{
       "Hargs_key" ∷ args_ptr ↦[vkv.CondPutArgs :: "Key"] #(str key) ∗
       "Hargs_expect" ∷ args_ptr ↦[vkv.CondPutArgs :: "Expect"] #(str expect) ∗
@@ -336,7 +331,7 @@ Proof.
   repeat rewrite -app_assoc. done.
 Qed.
 
-Lemma wp_decodeCondPutArgs enc_sl enc q (key expect val:string) :
+Lemma wp_decodeCondPutArgs enc_sl enc q (key expect val:byte_string) :
   {{{
         "%Henc" ∷ ⌜has_op_encoding enc (condPutOp key expect val)⌝ ∗
         "Hsl" ∷ own_slice_small enc_sl byteT q enc
@@ -385,7 +380,6 @@ Proof.
   wp_pures.
   wp_apply (wp_StringFromBytes with "[$Hkey_sl]").
   iIntros "_".
-  rewrite string_to_bytes_to_string.
   wp_storeField.
   wp_apply (wp_ReadInt with "[$]").
   iIntros (?) "Hsl".
@@ -403,7 +397,7 @@ Proof.
   { word. }
   iDestruct (slice_small_split with "Hsl") as "[He Hv]".
   { shelve. }
-  replace (uint.nat (length (string_to_bytes expect))) with (length (string_to_bytes expect)) by word.
+  replace (uint.nat (length expect)) with (length expect) by word.
   Unshelve.
   2:{ rewrite length_app. word. }
   wp_apply (wp_StringFromBytes with "[$He]").
@@ -418,7 +412,6 @@ Proof.
   wp_apply (wp_StringFromBytes with "[$Hv]").
   iIntros "Hv".
   wp_storeField.
-  do 2 rewrite string_to_bytes_to_string.
   iModIntro. iApply "HΦ".
   iFrame.
 Qed.
@@ -428,18 +421,18 @@ Notation is_state := (is_state (sm_record:=kv_record)).
 Context `{!vsmG (sm_record:=kv_record) Σ}.
 
 Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp Σ :=
-  ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap string u64) (minVnum:u64),
+  ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap byte_string u64) (minVnum:u64),
   "Hkvs" ∷ s ↦[KVState :: "kvs"] #kvs_loc ∗
   "Hvnums" ∷ s ↦[KVState :: "vnums"] #vnums_loc ∗
   "HminVnum" ∷ s ↦[KVState :: "minVnum"] #minVnum ∗
   "Hkvs_map" ∷ own_map kvs_loc (DfracOwn 1) (compute_state ops) ∗
   "Hvnums_map" ∷ own_map vnums_loc (DfracOwn 1) vnumsM ∗
-  "#Hst" ∷ □ (∀ (k:string),
+  "#Hst" ∷ □ (∀ (k:byte_string),
               (∀ (vnum':u64), ⌜uint.nat vnum' <= uint.nat latestVnum⌝ →
                              ⌜uint.nat (default minVnum (vnumsM !! k)) <= uint.nat vnum'⌝ →
               ∃ someOps, is_state γst vnum' someOps ∗
                       ⌜compute_reply someOps (getOp k) = compute_reply ops (getOp k)⌝)) ∗
-  "%Hle" ∷ ⌜∀ (k:string), uint.nat (default minVnum (vnumsM !! k)) <= uint.nat latestVnum⌝
+  "%Hle" ∷ ⌜∀ (k:byte_string), uint.nat (default minVnum (vnumsM !! k)) <= uint.nat latestVnum⌝
 .
 
 Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.
@@ -511,17 +504,17 @@ Proof.
         iModIntro.
         iIntros.
         rewrite /typed_map.map_insert /= in H0.
-        destruct (decide (k = s0)).
+        destruct (decide (k = k0)).
         { subst. rewrite lookup_insert /= in H0.
           replace (vnum) with (vnum') by word.
           iExists _. by iDestruct "Hintermediate" as "[_ $]".
         }
-        assert (compute_reply (ops ++ [putOp s0 s1]) (getOp k) =
-                  compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+        assert (compute_reply (ops ++ [putOp k v]) (getOp k0) =
+                  compute_reply (ops) (getOp k0)) as Heq; last setoid_rewrite Heq.
         {
           rewrite /compute_reply /= /compute_state.
           rewrite foldl_snoc /=.
-          by rewrite lookup_insert_ne.
+          rewrite lookup_insert_ne //.
         }
         rewrite lookup_insert_ne in H0; last done.
         destruct (decide (uint.nat vnum' <= uint.nat latestVnum)).
@@ -543,7 +536,7 @@ Proof.
       }
       {
         iPureIntro. intros.
-        destruct (decide (k = s0)).
+        destruct (decide (k = k0)).
         { subst.
           by rewrite /typed_map.map_insert lookup_insert /=.
         }
@@ -597,7 +590,7 @@ Proof.
       iSplitL.
       2: {
         iPureIntro. intros.
-        destruct (decide (k = s0)).
+        destruct (decide (k = k0)).
         { subst.
           by rewrite /typed_map.map_insert lookup_insert /=. }
         { rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
@@ -608,13 +601,13 @@ Proof.
       iModIntro.
       iIntros.
       rewrite /typed_map.map_insert /= in H0.
-      destruct (decide (k = s0)).
+      destruct (decide (k = k0)).
       { subst. rewrite lookup_insert /= in H0.
         replace (vnum) with (vnum') by word.
         iExists _. by iDestruct "Hintermediate" as "[_ $]".
       }
-      eassert (compute_reply (ops ++ [_]) (getOp k) =
-                compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+      eassert (compute_reply (ops ++ [_]) (getOp k0) =
+                compute_reply (ops) (getOp k0)) as Heq; last setoid_rewrite Heq.
       {
         rewrite /compute_reply /= /compute_state.
         rewrite foldl_snoc /=. done.
@@ -697,13 +690,13 @@ Proof.
           iModIntro.
           iIntros.
           rewrite /typed_map.map_insert /= in H0.
-          destruct (decide (k = s0)).
+          destruct (decide (k = k0)).
           { subst. rewrite lookup_insert /= in H1.
             replace (vnum) with (vnum') by word.
             iExists _. by iDestruct "Hintermediate" as "[_ $]".
           }
-          eassert (compute_reply (ops ++ [condPutOp s0 _ s2]) (getOp k) =
-                  compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+          eassert (compute_reply (ops ++ [condPutOp k _ _]) (getOp k0) =
+                  compute_reply (ops) (getOp k0)) as Heq; last setoid_rewrite Heq.
           {
             rewrite /compute_reply /= /compute_state.
             rewrite foldl_snoc /=.
@@ -733,7 +726,7 @@ Proof.
         }
         {
           iPureIntro. intros.
-          destruct (decide (k = s0)).
+          destruct (decide (k = k0)).
           { subst.
             by rewrite /typed_map.map_insert lookup_insert /=.
           }
@@ -753,8 +746,6 @@ Proof.
       wp_apply wp_StringToBytes.
       injection Hlookup as <-.
       iIntros (?) "Hreply_sl".
-      assert (default "" (foldl apply_op ∅ ops !! s0) ≠ s1) as Hnot.
-      { intros x. apply Heqb. repeat f_equal. done. }
       iApply "HΦ".
       iSplitL "Hkvs Hkvs_map Hvnums HminVnum Hvnums_map".
       {
@@ -769,7 +760,7 @@ Proof.
           iModIntro.
           iIntros.
           iDestruct "Hintermediate" as "[Hintermediate Hcurst]".
-          assert (compute_state (ops ++ [condPutOp s0 s1 s2])
+          assert (compute_state (ops ++ [condPutOp k e v])
                                 = (compute_state ops)) as Heq.
           { rewrite /compute_state foldl_snoc /=.
             rewrite decide_False; done.
@@ -794,7 +785,7 @@ Proof.
         }
         {
           iPureIntro. intros.
-          specialize (Hle k).
+          specialize (Hle k0).
           word.
         }
       }
@@ -857,7 +848,7 @@ Proof.
   {
     wp_pures. iApply "HΦ". iModIntro.
     apply map_get_true in Hlookup.
-    pose proof (Hle s0) as Hle2.
+    pose proof (Hle k) as Hle2.
     rewrite Hlookup /= in Hle2.
     iSplitR. { word. }
     injection Hkv_lookup as <- ?.
@@ -865,7 +856,7 @@ Proof.
     rewrite /kv_record /compute_reply /= /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
-    iSpecialize ("Hst" $! s0).
+    iSpecialize ("Hst" $! k).
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".
@@ -876,7 +867,7 @@ Proof.
     wp_loadField. wp_pures. iApply "HΦ". iModIntro.
     apply map_get_false in Hlookup as [Hlookup Hv].
     subst.
-    pose proof (Hle s0) as Hle2.
+    pose proof (Hle k) as Hle2.
     rewrite Hlookup /= in Hle2.
     iSplitR. { word. }
     injection Hkv_lookup as <- ?.
@@ -884,7 +875,7 @@ Proof.
     rewrite /kv_record /compute_reply /= /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
-    iSpecialize ("Hst" $! s0).
+    iSpecialize ("Hst" $! k).
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".
@@ -922,7 +913,7 @@ Proof.
   iNamed "Hown".
   iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iClear "Hvnums_map".
   iIntros (?) "Hvnums_map".
   wp_storeField.
@@ -993,10 +984,10 @@ Proof.
   iDestruct (struct_fields_split with "Hs") as "Hs".
   iNamed "Hs".
   wp_pures.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (?) "Hmap".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (?) "Hvnums_map".
   wp_storeField.
   wp_apply (wp_KVState__apply).

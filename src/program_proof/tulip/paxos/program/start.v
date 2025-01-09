@@ -9,8 +9,8 @@ Section start.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Start
-    (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list string)
-    (addrmP : loc) (addrm : gmap u64 chan) (fname : string) γ :
+    (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string)
+    (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) γ :
     termc = (W64 0) ->
     terml = (W64 0) ->
     lsnc = (W64 0) ->

@@ -7,8 +7,8 @@ Section collect.
 
   Theorem wp_Paxos__collect
     (px : loc) (nid : u64) (term : u64)
-    (nidme : u64) (entsP : Slice.t) (ents : list string)
-    (termc lsnc : u64) (logpeer : list string) nids γ :
+    (nidme : u64) (entsP : Slice.t) (ents : list byte_string)
+    (termc lsnc : u64) (logpeer : list byte_string) nids γ :
     nid ∈ nids ->
     drop (uint.nat lsnc) logpeer = ents ->
     past_nodedecs_latest_before γ nid (uint.nat termc) (uint.nat term) logpeer -∗

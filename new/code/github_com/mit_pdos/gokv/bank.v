@@ -16,7 +16,7 @@ Definition BankClerk : go_type := structT [
   "accts" :: sliceT
 ].
 
-Definition BankClerk__mset : list (string * val) := [
+Definition BankClerk__mset : list (go_string * val) := [
 ].
 
 (* go: bank.go:47:6 *)
@@ -60,7 +60,7 @@ Definition BankClerk__SimpleAudit : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((BankClerk__get_total (![ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
-        do:  (let: "$a0" := (interface.make string__mset #"Balance total invariant violated") in
+        do:  (let: "$a0" := (interface.make string__mset #"Balance total invariant violated"%go) in
         Panic "$a0")
       else do:  #()))).
 
@@ -157,11 +157,11 @@ Definition BankClerk__SimpleTransfer : val :=
         (BankClerk__transfer_internal (![ptrT] "bck")) "$a0" "$a1" "$a2")
       else do:  #()))).
 
-Definition BankClerk__mset_ptr : list (string * val) := [
-  ("SimpleAudit", BankClerk__SimpleAudit%V);
-  ("SimpleTransfer", BankClerk__SimpleTransfer%V);
-  ("get_total", BankClerk__get_total%V);
-  ("transfer_internal", BankClerk__transfer_internal%V)
+Definition BankClerk__mset_ptr : list (go_string * val) := [
+  ("SimpleAudit"%go, BankClerk__SimpleAudit%V);
+  ("SimpleTransfer"%go, BankClerk__SimpleTransfer%V);
+  ("get_total"%go, BankClerk__get_total%V);
+  ("transfer_internal"%go, BankClerk__transfer_internal%V)
 ].
 
 (* go: bank.go:19:6 *)
@@ -202,7 +202,7 @@ Definition MakeBankClerkSlice : val :=
     do:  (let: "$a0" := (![stringT] "init_flag") in
     (lockservice.LockClerk__Lock (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck")))) "$a0");;;
     (if: (let: "$a0" := (![stringT] "init_flag") in
-    (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") = #""
+    (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") = #""%go
     then
       do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) #(W64 0))) in
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
@@ -217,7 +217,7 @@ Definition MakeBankClerkSlice : val :=
         encodeInt "$a0") in
         (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")));;;
       do:  (let: "$a0" := (![stringT] "init_flag") in
-      let: "$a1" := #"1" in
+      let: "$a1" := #"1"%go in
       (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![stringT] "init_flag") in
@@ -248,5 +248,21 @@ Definition MakeBankClerk : val :=
      let: "$a2" := (![stringT] "init_flag") in
      let: "$a3" := (![sliceT] "accts") in
      MakeBankClerkSlice "$a0" "$a1" "$a2" "$a3")).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/bank".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  marshal.initialize';;;
+      do:  lockservice.initialize';;;
+      do:  kv.initialize';;;
+      do:  primitive.initialize';;;
+      do:  (define' #()))
+      ).
 
 End code.

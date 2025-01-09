@@ -29,7 +29,7 @@ Section log.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_logAdvance
-    (fname : string) (termW : u64) (lsnW : u64) (entsS : Slice.t) (ents : list string) :
+    (fname : byte_string) (termW : u64) (lsnW : u64) (entsS : Slice.t) (ents : list byte_string) :
     let lsn := uint.nat lsnW in
     let term := uint.nat termW in
     ⊢
@@ -90,7 +90,7 @@ Section log.
   Qed.
 
   Theorem wp_logAccept
-    (fname : string) (lsnW : u64) (entsS : Slice.t) (ents : list string) :
+    (fname : byte_string) (lsnW : u64) (entsS : Slice.t) (ents : list byte_string) :
     let lsn := uint.nat lsnW in
     ⊢
     {{{ own_slice_small entsS stringT (DfracOwn 1) ents }}}
@@ -146,7 +146,7 @@ Section log.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_logPrepare (fname : string) (termW : u64) :
+  Theorem wp_logPrepare (fname : byte_string) (termW : u64) :
     let term := uint.nat termW in
     ⊢
     {{{ True }}}
@@ -199,7 +199,7 @@ Section log.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_logAppend (fname : string) (ent : string) :
+  Theorem wp_logAppend (fname : byte_string) (ent : byte_string) :
     ⊢
     {{{ True }}}
     <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
@@ -251,7 +251,7 @@ Section log.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_logExtend (fname : string) (entsS : Slice.t) (ents : list string) :
+  Theorem wp_logExtend (fname : byte_string) (entsS : Slice.t) (ents : list byte_string) :
     ⊢
     {{{ own_slice_small entsS stringT (DfracOwn 1) ents }}}
     <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
@@ -304,7 +304,7 @@ Section log.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_logExpand (fname : string) (lsnW : u64) :
+  Theorem wp_logExpand (fname : byte_string) (lsnW : u64) :
     let lsn := uint.nat lsnW in
     ⊢
     {{{ True }}}

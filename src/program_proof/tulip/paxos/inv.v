@@ -498,12 +498,14 @@ Section inv.
       "#Hsafepsb"   ∷ ([∗ map] t ↦ v ∈ psb, safe_base_proposal γ nids t v) ∗
       "%Hvp"        ∷ ⌜valid_proposals ps psb⌝ ∗
       "%Hdomtermlm" ∷ ⌜dom termlm = nids⌝ ∗
-      "%Hdompsb"    ∷ ⌜free_terms (dom psb) termlm⌝.
+      "%Hdompsb"    ∷ ⌜free_terms (dom psb) termlm⌝ ∗
+      (* constraint on the external states *)
+      "%Hcsincl"    ∷ ⌜cpool_subsume_log log cpool⌝.
 
   #[global]
   Instance paxos_inv_timeless γ nids :
     Timeless (paxos_inv γ nids).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition paxoscoreNS := paxosNS .@ "core".
 
@@ -518,7 +520,7 @@ Section inv_file.
   Definition paxosfileNS := paxosNS .@ "file".
 
   Definition node_file_inv (γ : paxos_names) (nid : u64) : iProp Σ :=
-    ∃ (wal : list pxcmd) (fname : string) (content : list u8),
+    ∃ (wal : list pxcmd) (fname : byte_string) (content : list u8),
       "Hwalfile"   ∷ own_node_wal_half γ nid wal ∗
       "Hfile"      ∷ fname f↦ content ∗
       "#Hwalfname" ∷ is_node_wal_fname γ nid fname ∗
@@ -530,7 +532,7 @@ Section inv_file.
   #[global]
   Instance paxos_file_inv_timeless γ nids :
     Timeless (paxos_file_inv γ nids).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition know_paxos_file_inv γ nids : iProp Σ :=
     inv paxosfileNS (paxos_file_inv γ nids).
@@ -546,8 +548,8 @@ Section inv_network.
     is_prepare_lsn γ (uint.nat term) (uint.nat lsnlc).
 
   Definition safe_append_entries_req
-    γ nids (term lsnlc lsne : u64) (ents : list string) : iProp Σ :=
-    ∃ (logleader logcmt : list string),
+    γ nids (term lsnlc lsne : u64) (ents : list byte_string) : iProp Σ :=
+    ∃ (logleader logcmt : list byte_string),
       "#Hpfb"       ∷ prefix_base_ledger γ (uint.nat term) logleader ∗
       "#Hpfg"       ∷ prefix_growing_ledger γ (uint.nat term) logleader ∗
       "#Hlogcmt"    ∷ safe_ledger_above γ nids (uint.nat term) logcmt ∗
@@ -567,9 +569,14 @@ Section inv_network.
     Persistent (safe_pxreq γ nids req).
   Proof. destruct req; apply _. Defined.
 
+  #[global]
+  Instance safe_pxreq_timeless γ nids req :
+    Timeless (safe_pxreq γ nids req).
+  Proof. destruct req; apply _. Defined.
+
   Definition safe_request_vote_resp
-    γ (nids : gset u64) (nid term terme : u64) (ents : list string) : iProp Σ :=
-    ∃ (logpeer : list string) (lsne : u64),
+    γ (nids : gset u64) (nid term terme : u64) (ents : list byte_string) : iProp Σ :=
+    ∃ (logpeer : list byte_string) (lsne : u64),
       "#Hpromise" ∷ past_nodedecs_latest_before γ nid (uint.nat term) (uint.nat terme) logpeer ∗
       "#Hlsne"    ∷ is_prepare_lsn γ (uint.nat term) (uint.nat lsne) ∗
       "%Hents"    ∷ ⌜drop (uint.nat lsne) logpeer = ents⌝ ∗
@@ -577,7 +584,7 @@ Section inv_network.
 
   Definition safe_append_entries_resp
     γ (nids : gset u64) (nid term lsneq : u64) : iProp Σ :=
-    ∃ (logacpt : list string),
+    ∃ (logacpt : list byte_string),
       "#Haoc"     ∷ (is_accepted_proposal_lb γ nid (uint.nat term) logacpt ∨
                      safe_ledger_above γ nids (uint.nat term) logacpt) ∗
       "%Hlogacpt" ∷ ⌜length logacpt = uint.nat lsneq⌝ ∗
@@ -594,6 +601,11 @@ Section inv_network.
   #[global]
   Instance safe_pxresp_persistent γ nids resp :
     Persistent (safe_pxresp γ nids resp).
+  Proof. destruct resp; apply _. Defined.
+
+  #[global]
+  Instance safe_pxresp_timeless γ nids resp :
+    Timeless (safe_pxresp γ nids resp).
   Proof. destruct resp; apply _. Defined.
 
   Definition listen_inv
@@ -622,7 +634,7 @@ Section inv_network.
   #[global]
   Instance paxos_network_inv_timeless γ addrm :
     Timeless (paxos_network_inv γ addrm).
-  Admitted.
+  Proof. apply _. Defined.
 
   Definition know_paxos_network_inv γ addrm : iProp Σ :=
     inv paxosnetNS (paxos_network_inv γ addrm).
@@ -631,6 +643,19 @@ End inv_network.
 
 Section lemma.
   Context `{!paxos_ghostG Σ}.
+
+  Lemma paxos_inv_impl_cpool_subsume_log γ nids log cpool :
+    own_log_half γ log -∗
+    own_cpool_half γ cpool -∗
+    paxos_inv γ nids -∗
+    ⌜cpool_subsume_log log cpool⌝.
+  Proof.
+    iIntros "HlogX HcpoolX Hinv".
+    iNamed "Hinv".
+    iDestruct (log_agree with "Hlog HlogX") as %->.
+    iDestruct (cpool_agree with "Hcpool HcpoolX") as %->.
+    done.
+  Qed.
 
   Lemma equal_latest_longest_proposal_nodedec_prefix dss dsslb t v :
     map_Forall2 (λ _ dslb ds, prefix dslb ds ∧ (t ≤ length dslb)%nat) dsslb dss ->
@@ -1170,7 +1195,7 @@ End lemma.
 Section alloc.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Lemma paxos_inv_alloc addrm (fnames : gmap u64 string) :
+  Lemma paxos_inv_alloc addrm (fnames : gmap u64 byte_string) :
     let nids := dom addrm in
     (1 < size addrm)%nat ->
     dom fnames = dom addrm ->
@@ -1326,12 +1351,14 @@ Section alloc.
     { by rewrite insert_empty /valid_proposals map_Forall2_singleton. }
     split.
     { by rewrite dom_gset_to_gmap. }
+    split.
     { rewrite insert_empty dom_singleton_L.
       split; first apply is_term_of_node_partitioned.
       intros nid terml Hterml t Hton Hlt.
       rewrite not_elem_of_singleton.
       lia.
     }
+    { by rewrite /cpool_subsume_log Forall_nil. }
   Qed.
 
 End alloc.

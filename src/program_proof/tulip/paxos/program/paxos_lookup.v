@@ -9,10 +9,10 @@ Section lookup.
   Theorem wp_Paxos__Lookup (px : loc) (lsn : u64) nidme γ :
     is_paxos px nidme γ -∗
     {{{ True }}}
-    <<< ∀∀ log, own_log_half γ log >>>
+    <<< ∀∀ log cpool, own_consensus_half γ log cpool >>>
       Paxos__Lookup #px #lsn @ ↑paxosNS
-    <<< ∃∃ log', own_log_half γ log' >>>
-    {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
+    <<< ∃∃ log', own_consensus_half γ log' cpool ∗ ⌜cpool_subsume_log log' cpool⌝ >>>
+    {{{ (v : byte_string) (ok : bool), RET (#(LitString v), #ok);
         ⌜if ok then log' !! (uint.nat lsn) = Some v else True⌝
     }}}.
   Proof.
@@ -41,11 +41,15 @@ Section lookup.
         iFrame "∗ # %".
       }
       wp_pures.
-      (* Simply take and give back the same log. *)
+      (* Open the invariant to obtain subsumption property. *)
+      iInv "Hinv" as "> HinvO" "HinvC".
       iMod (ncfupd_mask_subseteq (⊤ ∖ ↑paxosNS)) as "Hclose"; first solve_ndisj.
-      iMod "HAU" as (logcli) "[Hlogcli HAU]".
-      iMod ("HAU" with "Hlogcli") as "HΦ".
+      iMod "HAU" as (logcli cpoolcli) "[[Hlogcli Hcpoolcli] HAU]".
+      iDestruct (paxos_inv_impl_cpool_subsume_log with "Hlogcli Hcpoolcli HinvO") as %Hincl.
+      iMod ("HAU" with "[$Hlogcli $Hcpoolcli]") as "HΦ".
+      { done. }
       iMod "Hclose" as "_".
+      iMod ("HinvC" with "HinvO") as "_".
       by iApply "HΦ".
     }
     rename Heqb into Hlt.
@@ -68,7 +72,7 @@ Section lookup.
     iApply ncfupd_wp.
     iInv "Hinv" as "> HinvO" "HinvC".
     iMod (ncfupd_mask_subseteq (⊤ ∖ ↑paxosNS)) as "Hmask"; first solve_ndisj.
-    iMod "HAU" as (logcli) "[Hlogcli HAU]".
+    iMod "HAU" as (logcli cpoolcli) "[[Hlogcli Hcpoolcli] HAU]".
     set logc := take _ log.
     iNamed "Hnids".
     iMod (paxos_inv_commit logc with "[] Hlogcli Hlogn HinvO") as "(Hlogcli & Hlogn & HinvO)".
@@ -78,7 +82,10 @@ Section lookup.
       iFrame "Hsafe".
     }
     iDestruct "Hlogcli" as (logcli') "[Hlogcli %Hprefix]".
-    iMod ("HAU" with "Hlogcli") as "HΦ".
+    (* Obtain subsumption. *)
+    iDestruct (paxos_inv_impl_cpool_subsume_log with "Hlogcli Hcpoolcli HinvO") as %Hincl.
+    iMod ("HAU" with "[$Hlogcli $Hcpoolcli]") as "HΦ".
+    { done. }
     iMod "Hmask" as "_".
     iMod ("HinvC" with "HinvO") as "_".
     iModIntro.

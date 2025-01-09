@@ -6,7 +6,7 @@ Section forward.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__forward
-    (px : loc) (nid lsn : u64) (nidme termc : u64) (loga : list string) nids γ :
+    (px : loc) (nid lsn : u64) (nidme termc : u64) (loga : list byte_string) nids γ :
     nid ≠ nidme ->
     nid ∈ nids ->
     length loga = uint.nat lsn ->

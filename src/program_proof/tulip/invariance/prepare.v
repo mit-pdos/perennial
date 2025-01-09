@@ -78,6 +78,7 @@ Definition ballot_map_at_ts (bmm : gmap u64 (gmap nat ballot)) (ts : nat) :=
               end) bmm.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
   Lemma quorum_pdec_impl_chosen γ gid bmm ts d :

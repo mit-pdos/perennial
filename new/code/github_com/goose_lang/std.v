@@ -100,7 +100,7 @@ Definition JoinHandle : go_type := structT [
   "cond" :: ptrT
 ].
 
-Definition JoinHandle__mset : list (string * val) := [
+Definition JoinHandle__mset : list (go_string * val) := [
 ].
 
 (* go: goose_std.go:106:22 *)
@@ -128,9 +128,9 @@ Definition JoinHandle__finish : val :=
     do:  ((sync.Cond__Signal (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #());;;
     do:  ((sync.Mutex__Unlock (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
 
-Definition JoinHandle__mset_ptr : list (string * val) := [
-  ("Join", JoinHandle__Join%V);
-  ("finish", JoinHandle__finish%V)
+Definition JoinHandle__mset_ptr : list (go_string * val) := [
+  ("Join"%go, JoinHandle__Join%V);
+  ("finish"%go, JoinHandle__finish%V)
 ].
 
 (* go: goose_std.go:73:6 *)
@@ -228,5 +228,19 @@ Definition Multipar : val :=
 Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
+
+Definition pkg_name' : go_string := "github.com/goose-lang/std".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  primitive.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).
 
 End code.

@@ -87,10 +87,10 @@ Definition Clerk__Put: val :=
       else Continue));;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "args" := struct.new put_gk.S [
+      let: "args" := struct.mk put_gk.S [
         "OpId" ::= ![uint64T] "opId";
         "Key" ::= "key";
-        "Val" ::= "val"
+        "Value" ::= "val"
       ] in
       (if: (Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args") = urpc.ErrNone
       then Break
@@ -122,7 +122,7 @@ Definition Clerk__ConditionalPut: val :=
     let: "ret" := ref (zero_val boolT) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "args" := struct.new conditionalput_gk.S [
+      let: "args" := struct.mk conditionalput_gk.S [
         "OpId" ::= ![uint64T] "opId";
         "Key" ::= "key";
         "ExpectedVal" ::= "expectedVal";
@@ -161,7 +161,7 @@ Definition Clerk__Get: val :=
     let: "ret" := ref (zero_val stringT) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "args" := struct.new get_gk.S [
+      let: "args" := struct.mk get_gk.S [
         "OpId" ::= ![uint64T] "opId";
         "Key" ::= "key"
       ] in
@@ -305,47 +305,47 @@ Definition Server__getFreshNum: val :=
 Definition Server__put: val :=
   rec: "Server__put" "s" "args" :=
     Mutex__Lock (struct.loadF Server "mu" "s");;
-    let: (<>, "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.loadF put_gk.S "OpId" "args") in
+    let: (<>, "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.get put_gk.S "OpId" "args") in
     (if: "ok"
     then
       Mutex__Unlock (struct.loadF Server "mu" "s");;
       #()
     else
-      MapInsert (struct.loadF Server "kvs" "s") (struct.loadF put_gk.S "Key" "args") (struct.loadF put_gk.S "Val" "args");;
-      MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF put_gk.S "OpId" "args") #(str"");;
+      MapInsert (struct.loadF Server "kvs" "s") (struct.get put_gk.S "Key" "args") (struct.get put_gk.S "Value" "args");;
+      MapInsert (struct.loadF Server "lastReplies" "s") (struct.get put_gk.S "OpId" "args") #(str"");;
       Mutex__Unlock (struct.loadF Server "mu" "s");;
       #()).
 
 Definition Server__conditionalPut: val :=
   rec: "Server__conditionalPut" "s" "args" :=
     Mutex__Lock (struct.loadF Server "mu" "s");;
-    let: ("ret", "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.loadF conditionalput_gk.S "OpId" "args") in
+    let: ("ret", "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.get conditionalput_gk.S "OpId" "args") in
     (if: "ok"
     then
       Mutex__Unlock (struct.loadF Server "mu" "s");;
       "ret"
     else
       let: "ret2" := ref_to stringT #(str"") in
-      (if: (Fst (MapGet (struct.loadF Server "kvs" "s") (struct.loadF conditionalput_gk.S "Key" "args"))) = (struct.loadF conditionalput_gk.S "ExpectedVal" "args")
+      (if: (Fst (MapGet (struct.loadF Server "kvs" "s") (struct.get conditionalput_gk.S "Key" "args"))) = (struct.get conditionalput_gk.S "ExpectedVal" "args")
       then
-        MapInsert (struct.loadF Server "kvs" "s") (struct.loadF conditionalput_gk.S "Key" "args") (struct.loadF conditionalput_gk.S "NewVal" "args");;
+        MapInsert (struct.loadF Server "kvs" "s") (struct.get conditionalput_gk.S "Key" "args") (struct.get conditionalput_gk.S "NewVal" "args");;
         "ret2" <-[stringT] #(str"ok")
       else #());;
-      MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF conditionalput_gk.S "OpId" "args") (![stringT] "ret2");;
+      MapInsert (struct.loadF Server "lastReplies" "s") (struct.get conditionalput_gk.S "OpId" "args") (![stringT] "ret2");;
       Mutex__Unlock (struct.loadF Server "mu" "s");;
       ![stringT] "ret2").
 
 Definition Server__get: val :=
   rec: "Server__get" "s" "args" :=
     Mutex__Lock (struct.loadF Server "mu" "s");;
-    let: ("ret", "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.loadF get_gk.S "OpId" "args") in
+    let: ("ret", "ok") := MapGet (struct.loadF Server "lastReplies" "s") (struct.get get_gk.S "OpId" "args") in
     (if: "ok"
     then
       Mutex__Unlock (struct.loadF Server "mu" "s");;
       "ret"
     else
-      let: "ret2" := Fst (MapGet (struct.loadF Server "kvs" "s") (struct.loadF get_gk.S "Key" "args")) in
-      MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF get_gk.S "OpId" "args") "ret2";;
+      let: "ret2" := Fst (MapGet (struct.loadF Server "kvs" "s") (struct.get get_gk.S "Key" "args")) in
+      MapInsert (struct.loadF Server "lastReplies" "s") (struct.get get_gk.S "OpId" "args") "ret2";;
       Mutex__Unlock (struct.loadF Server "mu" "s");;
       "ret2").
 

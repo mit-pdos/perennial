@@ -12,43 +12,47 @@ Definition S := struct.decl [
   "Index" :: uint64T
 ].
 
-Definition S__approxSize: val :=
-  rec: "S__approxSize" "r" :=
-    #0.
-
 Definition Marshal: val :=
   rec: "Marshal" "r" "prefix" :=
     let: "enc" := ref_to (slice.T byteT) "prefix" in
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF S "WriteId" "r"));;
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF S "Server" "r"));;
-    let: "contenthashBytes" := StringToBytes (struct.loadF S "ContentHash" "r") in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "WriteId" "r"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "Server" "r"));;
+    let: "contenthashBytes" := StringToBytes (struct.get S "ContentHash" "r") in
     "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (slice.len "contenthashBytes"));;
     "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") "contenthashBytes");;
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF S "Index" "r"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "Index" "r"));;
     ![slice.T byteT] "enc".
 
 Definition Unmarshal: val :=
   rec: "Unmarshal" "s" :=
-    let: "r" := struct.alloc S (zero_val (struct.t S)) in
     let: "enc" := ref_to (slice.T byteT) "s" in
+    let: "writeId" := ref (zero_val uint64T) in
+    let: "server" := ref (zero_val uint64T) in
+    let: "contentHash" := ref (zero_val stringT) in
+    let: "index" := ref (zero_val uint64T) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF S "WriteId" "r" "0_ret";;
+    "writeId" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF S "Server" "r" "0_ret";;
+    "server" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     let: "contentHashLen" := ref (zero_val uint64T) in
     let: "contentHashBytes" := ref (zero_val (slice.T byteT)) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     "contentHashLen" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    let: ("0_ret", "1_ret") := marshal.ReadBytes (![slice.T byteT] "enc") (![uint64T] "contentHashLen") in
+    let: ("0_ret", "1_ret") := marshal.ReadBytesCopy (![slice.T byteT] "enc") (![uint64T] "contentHashLen") in
     "contentHashBytes" <-[slice.T byteT] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    struct.storeF S "ContentHash" "r" (StringFromBytes (![slice.T byteT] "contentHashBytes"));;
+    "contentHash" <-[stringT] (StringFromBytes (![slice.T byteT] "contentHashBytes"));;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF S "Index" "r" "0_ret";;
+    "index" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    ("r", ![slice.T byteT] "enc").
+    (struct.mk S [
+       "WriteId" ::= ![uint64T] "writeId";
+       "Server" ::= ![uint64T] "server";
+       "ContentHash" ::= ![stringT] "contentHash";
+       "Index" ::= ![uint64T] "index"
+     ], ![slice.T byteT] "enc").
 
 End code.

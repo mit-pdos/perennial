@@ -1,17 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip.paxos Require Import base.
 
-Inductive pxst :=
-| PaxosState (termc terml lsnc : nat) (ledger : ledger)
-| PaxosStuck.
-
-Inductive pxcmd :=
-| CmdPaxosExtend (ents : ledger)
-| CmdPaxosPrepare (term : nat)
-| CmdPaxosAdvance (term lsn : nat) (ents : ledger)
-| CmdPaxosAccept (lsn : nat) (ents : ledger)
-| CmdPaxosExpand (lsn : nat).
-
 Definition execute_paxos_extend st ents :=
   match st with
   | PaxosState termc terml lsnc ledger =>

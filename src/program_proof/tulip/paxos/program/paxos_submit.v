@@ -6,13 +6,12 @@ From Goose.github_com.mit_pdos.tulip Require Import paxos.
 Section submit.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_Paxos__Submit (px : loc) (c : string) nidme γ :
+  Theorem wp_Paxos__Submit (px : loc) (c : byte_string) nidme γ :
     is_paxos px nidme γ -∗
     {{{ True }}}
     <<< ∀∀ cpool, own_cpool_half γ cpool >>>
       Paxos__Submit #px #(LitString c) @ ↑paxosNS
     <<< own_cpool_half γ ({[c]} ∪ cpool) >>>
-    (* TODO: return a receipt for checking committedness from the client. *)
     {{{ (lsn : u64) (term : u64), RET (#lsn, #term); True }}}.
   Proof.
     iIntros "#Hinv" (Φ) "!> _ HAU".
@@ -32,10 +31,15 @@ Section submit.
     iMod ("HAU" with "Hcpoolcli") as "HΦ".
     iMod "Hmask" as "_".
     iMod ("HinvC" with "[-HΦ]") as "_".
-    { iFrame "∗ # %". }
+    { iFrame "∗ # %".
+      iPureIntro.
+      rewrite /cpool_subsume_log.
+      apply (Forall_impl _ _ _ Hcsincl).
+      set_solver.
+    }
     iModIntro.
     (* Some cleanup to avoid name collision. *)
-    iClear "Hsafelog". clear log.
+    iClear "Hsafelog". clear Hcsincl log.
 
     (*@ func (px *Paxos) Submit(v string) (uint64, uint64) {                    @*)
     (*@     px.mu.Lock()                                                        @*)

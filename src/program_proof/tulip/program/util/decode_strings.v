@@ -5,7 +5,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_DecodeStrings (bsP : Slice.t) (strs : list string) (bstail : list u8) :
+  Theorem wp_DecodeStrings (bsP : Slice.t) (strs : list byte_string) (bstail : list u8) :
     {{{ own_slice_small bsP byteT (DfracOwn 1) (encode_strings strs ++ bstail) }}}
       DecodeStrings (to_val bsP)
     {{{ (strsP : Slice.t) (dataP : Slice.t), RET (to_val strsP, to_val dataP);

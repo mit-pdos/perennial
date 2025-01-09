@@ -19,7 +19,7 @@ Definition AsyncFile : go_type := structT [
   "closedCond" :: ptrT
 ].
 
-Definition AsyncFile__mset : list (string * val) := [
+Definition AsyncFile__mset : list (go_string * val) := [
 ].
 
 (* go: storage.go:73:21 *)
@@ -121,11 +121,11 @@ Definition AsyncFile__flushThread : val :=
       do:  ((struct.field_ref AsyncFile "durableIndex" (![ptrT] "s")) <-[uint64T] "$r0");;;
       do:  ((sync.Cond__Broadcast (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #()))).
 
-Definition AsyncFile__mset_ptr : list (string * val) := [
-  ("Close", AsyncFile__Close%V);
-  ("Write", AsyncFile__Write%V);
-  ("flushThread", AsyncFile__flushThread%V);
-  ("wait", AsyncFile__wait%V)
+Definition AsyncFile__mset_ptr : list (go_string * val) := [
+  ("Close"%go, AsyncFile__Close%V);
+  ("Write"%go, AsyncFile__Write%V);
+  ("flushThread"%go, AsyncFile__flushThread%V);
+  ("wait"%go, AsyncFile__wait%V)
 ].
 
 (* returns the state, then the File object
@@ -169,3 +169,18 @@ Definition MakeAsyncFile : val :=
     let: "$go" := (AsyncFile__flushThread (![ptrT] "s")) in
     do:  (Fork ("$go" #()));;;
     return: (![sliceT] "data", ![ptrT] "s")).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/asyncfile".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  grove_ffi.initialize';;;
+      do:  std.initialize';;;
+      do:  sync.initialize';;;
+      do:  (define' #()))
+      ).

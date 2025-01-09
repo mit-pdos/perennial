@@ -200,8 +200,7 @@ Proof.
   wp_apply (wp_CheckProof with "[$His_merk_proof $Hsl_label $Hsl_map_val $Hsl_dig]").
   iClear "Hsl_dig". iIntros (err0). iNamed 1.
   iApply "HΦ". iFrame "∗#". destruct err0; [done|].
-  iDestruct "Hgenie" as "[_ H]". iDestruct ("H" with "[//]") as "H".
-  iDestruct (is_merkle_proof_to_entry with "H") as "#Hhas_merk_proof".
+  iDestruct (is_merkle_proof_to_entry with "Hgenie") as "#Hhas_merk_proof".
   iFrame "∗#".
 Qed.
 
@@ -231,8 +230,7 @@ Proof.
   wp_apply (wp_CheckProof _ sl_map_val sl_dig with "[$His_merk_proof $Hsl_label $Hsl_map_val $Hsl_dig]").
   iClear "Hsl_map_val Hsl_dig". iIntros (err0). iNamed 1.
   iApply "HΦ". iFrame "∗#". destruct err0; [done|].
-  iDestruct "Hgenie" as "[_ H]". iDestruct ("H" with "[//]") as "H".
-  iDestruct (is_merkle_proof_to_entry with "H") as "#Hhas_merk_proof".
+  iDestruct (is_merkle_proof_to_entry with "Hgenie") as "#Hhas_merk_proof".
   iFrame "∗#".
 Qed.
 
@@ -326,8 +324,7 @@ Proof.
   { iApply own_slice_to_small. iApply (own_slice_zero _ (DfracOwn 1)). }
   iClear "Hsl_dig". iIntros (err0). iNamed 1.
   iApply "HΦ". iFrame "∗#". destruct err0; [done|].
-  iDestruct "Hgenie" as "[_ H]". iDestruct ("H" with "[//]") as "H".
-  iDestruct (is_merkle_proof_to_entry with "H") as "#Hhas_merk_proof".
+  iDestruct (is_merkle_proof_to_entry with "Hgenie") as "#Hhas_merk_proof".
   iFrame "∗#".
 Qed.
 
@@ -991,8 +988,7 @@ Proof.
   iMod (struct_field_pointsto_persist with "servVrfPk") as "#servVrfPk".
   iMod (struct_field_pointsto_persist with "seenDigs") as "#seenDigs".
   iMod (mono_list_own_alloc []) as (?) "[Hown_digs _]".
-  iApply "HΦ". iFrame "∗#". iExists ∅. iModIntro.
-  repeat try iSplit; naive_solver.
+  iApply "HΦ". iFrame "∗#". iExists ∅. iModIntro. naive_solver.
 Qed.
 
 End wps.

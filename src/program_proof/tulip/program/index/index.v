@@ -17,12 +17,12 @@ Section program.
       "#Hreplm" ∷ ([∗ set] key ∈ keys_all, is_repl_hist_lb γ key [None]) ∗
       "#Htpls"  ∷ ([∗ map] key ↦ tpl ∈ tplm, is_tuple tpl key γ α).
 
-  Definition is_index (idx : loc) (γ : tulip_names) (α : replica_names) : iProp Σ :=
+  Definition is_index (idx : loc) (γ : tulip_names) α : iProp Σ :=
     ∃ (muP : loc),
       "#HmuP" ∷ readonly (idx ↦[Index :: "mu"] #muP) ∗
       "#Hmu"  ∷ is_lock tulipNS #muP (own_index idx γ α).
 
-  Theorem wp_Index__GetTuple (idx : loc) (key : string) γ α :
+  Theorem wp_Index__GetTuple (idx : loc) (key : byte_string) γ α :
     key ∈ keys_all ->
     is_index idx γ α -∗
     {{{ True }}}

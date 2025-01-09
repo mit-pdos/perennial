@@ -9,10 +9,6 @@ From Perennial.Helpers Require Import NamedProps range_set.
 
 Local Transparent load_ty store_ty.
 
-Ltac word := try lazymatch goal with
-                 | |- envs_entails _ _ => iPureIntro
-                 end; Integers.word.
-
 Ltac len := autorewrite with len; try word.
 
 Class lockmapG Σ : Set := #[global] lockmap_inG :: ghost_mapG Σ u64 bool.

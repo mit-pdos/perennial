@@ -215,13 +215,13 @@ Definition StartServer: val :=
       );;
     MapInsert "handlers" RecordChunkId (λ: "req" "reply",
       let: ("args", <>) := recordchunk_gk.Unmarshal "req" in
-      Server__RecordChunk "s" (struct.load recordchunk_gk.S "args");;
+      Server__RecordChunk "s" "args";;
       "reply" <-[slice.T byteT] (NewSlice byteT #0);;
       #()
       );;
     MapInsert "handlers" FinishWriteId (λ: "req" "reply",
       let: ("args", <>) := finishwrite_gk.Unmarshal "req" in
-      Server__FinishWrite "s" (struct.load finishwrite_gk.S "args");;
+      Server__FinishWrite "s" "args";;
       "reply" <-[slice.T byteT] (NewSlice byteT #0);;
       #()
       );;

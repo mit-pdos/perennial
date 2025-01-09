@@ -31,7 +31,7 @@ Definition Put_Pre γ : RPCValsC -> iProp Σ := (λ args, args.(W64_1) [[γ.(ks_
 Definition Put_Post γ : RPCValsC -> u64 -> iProp Σ := (λ args _, args.(W64_1) [[γ.(ks_kvMapGN)]]↦ args.(W64_2))%I.
 
 (* FIXME: this is currently just a placeholder *)
-Definition KVClerk_own γ ck_ptr (host : string) : iProp Σ :=
+Definition KVClerk_own γ ck_ptr (host : byte_string) : iProp Σ :=
   ∃ (cl_ptr:loc),
    "Hcl_ptr" ∷ ck_ptr ↦[KVClerk :: "client"] #cl_ptr ∗
    "Hprimary" ∷ ck_ptr ↦[KVClerk :: "primary"] #(str host) ∗
@@ -250,14 +250,14 @@ Qed.
 
 (* TODO: see if any more repetition can be removed *)
 
-Definition is_kvserver_host γ (host:string) : iProp Σ :=
+Definition is_kvserver_host γ (host:byte_string) : iProp Σ :=
     "#Hputspec" ∷ (
       handler_is2 host (W64 1) γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)) ∗
     "#Hgetspec" ∷ (∀ va,
       handler_is2 host (W64 2) γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)) ∗
     "#Hrpcserver" ∷ is_RPCServer γ.(ks_rpcGN).
 
-Lemma KVClerk__Get_spec (kck:loc) (srv:string) (key va:u64) γ  :
+Lemma KVClerk__Get_spec (kck:loc) (srv:byte_string) (key va:u64) γ  :
 is_kvserver_host γ srv -∗
 {{{
      KVClerk_own γ kck srv ∗ (key [[γ.(ks_kvMapGN)]]↦ va)
@@ -289,7 +289,7 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Lemma KVClerk__Put_spec (kck:loc) (srv:string) (key va:u64) γ :
+Lemma KVClerk__Put_spec (kck:loc) (srv:byte_string) (key va:u64) γ :
 is_kvserver_host γ srv -∗
 {{{
      KVClerk_own γ kck srv ∗ (key [[γ.(ks_kvMapGN)]]↦ _ )

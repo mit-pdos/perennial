@@ -137,7 +137,7 @@ Definition append_op_trans (op: log_spec_ext.(@spec_ffi_op_field).(@external)) :
   end.
 
 Inductive append_trans : @val log_op -> @val disk_op -> Prop :=
-| AppendTrans (x: string) op:
+| AppendTrans (x: byte_string) op:
     append_trans (λ: x, ExternalOp op (Var x)) (append_op_trans op).
 
 

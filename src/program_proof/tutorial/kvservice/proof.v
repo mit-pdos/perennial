@@ -548,14 +548,14 @@ Definition put_core_spec (args:put.C) (Φ:unit → iPropO Σ): iPropO Σ :=
 Global Instance put_core_MonotonicPred args : MonotonicPred (put_core_spec args).
 Proof. apply _. Qed.
 
-Definition conditionalPut_core_spec (args:conditionalPut.C) (Φ:string → iPropO Σ): iPropO Σ :=
+Definition conditionalPut_core_spec (args:conditionalPut.C) (Φ:byte_string → iPropO Σ): iPropO Σ :=
   (* TUTORIAL: write a more useful spec *)
   (∀ status, Φ status)%I.
 
 Global Instance conditionalPut_core_MonotonicPred args : MonotonicPred (conditionalPut_core_spec args).
 Proof. apply _. Qed.
 
-Definition get_core_spec (args:get.C) (Φ:string → iPropO Σ): iPropO Σ :=
+Definition get_core_spec (args:get.C) (Φ:byte_string → iPropO Σ): iPropO Σ :=
   (* TUTORIAL: write a more useful spec *)
   (∀ ret, Φ ret)%I.
 
@@ -568,7 +568,7 @@ Section rpc_server_proofs.
 Context `{!heapGS Σ}.
 
 Definition own_Server (s:loc) : iProp Σ :=
-  ∃ (nextFreshId:u64) (lastReplies:gmap u64 string) (kvs:gmap string string)
+  ∃ (nextFreshId:u64) (lastReplies:gmap u64 byte_string) (kvs:gmap byte_string byte_string)
     (lastReplies_loc kvs_loc:loc),
   "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #nextFreshId ∗
   "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
@@ -609,13 +609,13 @@ Proof.
   iApply "Hspec".
 Qed.
 
-Lemma wp_Server__put (s:loc) args_ptr (args:put.C) Ψ :
+Lemma wp_Server__put (s:loc) args__v (args:put.C) Ψ :
   {{{
         "#Hsrv" ∷ is_Server s ∗
         "Hspec" ∷ put_core_spec args Ψ ∗
-        "Hargs" ∷ put.own args_ptr args (DfracOwn 1)
+        "Hargs" ∷ put.own args__v args (DfracOwn 1)
   }}}
-  Server__put #s #args_ptr
+  Server__put #s args__v
   {{{
         RET #(); Ψ ()
   }}}
@@ -625,7 +625,7 @@ Proof.
   iNamed "Hsrv".
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
-  iNamed "Hargs".
+  iUnfold put.own in "Hargs". iNamed "Hargs". rewrite Hown_struct. wp_pures.
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
   wp_if_destruct; wp_auto.
@@ -651,13 +651,13 @@ Proof.
   iApply ("HΦ" with "Hspec").
 Qed.
 
-Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPut.C) Ψ :
+Lemma wp_Server__conditionalPut (s:loc) args__v (args:conditionalPut.C) Ψ :
   {{{
         "#Hsrv" ∷ is_Server s ∗
         "Hspec" ∷ conditionalPut_core_spec args Ψ ∗
-        "Hargs" ∷ conditionalPut.own args_ptr args (DfracOwn 1)
+        "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1)
   }}}
-    Server__conditionalPut #s #args_ptr
+    Server__conditionalPut #s args__v
   {{{ r, RET #(str r); Ψ r }}}
 .
 Proof.
@@ -665,7 +665,7 @@ Proof.
   iNamed "Hsrv".
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
-  iNamed "Hargs".
+  iUnfold conditionalPut.own in "Hargs". iNamed "Hargs". rewrite Hown_struct.
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
   wp_if_destruct; wp_auto.
@@ -711,13 +711,13 @@ Proof.
   iApply ("HΦ" with "Hspec").
 Qed.
 
-Lemma wp_Server__get (s:loc) args_ptr (args:get.C) Ψ :
+Lemma wp_Server__get (s:loc) args__v (args:get.C) Ψ :
   {{{
         "#Hsrv" ∷ is_Server s ∗
         "Hspec" ∷ get_core_spec args Ψ ∗
-        "Hargs" ∷ get.own args_ptr args (DfracOwn 1)
+        "Hargs" ∷ get.own args__v args (DfracOwn 1)
   }}}
-    Server__get #s #args_ptr
+    Server__get #s args__v
   {{{
         r, RET #(str r); Ψ r
   }}}
@@ -727,7 +727,7 @@ Proof.
   iNamed "Hsrv".
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]"; iNamed "Hown".
-  iNamed "Hargs".
+  iUnfold get.own in "Hargs". iNamed "Hargs". rewrite Hown_struct.
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
   wp_if_destruct; wp_auto.
@@ -776,7 +776,7 @@ Proof.
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (kvs_loc) "HkvsM".
   wp_storeField.
   wp_apply (wp_NewMap u64).
@@ -822,7 +822,7 @@ Program Definition conditionalPut_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜conditionalPut.has_encoding enc_args args⌝ ∗
-   conditionalPut_core_spec args (λ rep, Φ (string_to_bytes rep))
+   conditionalPut_core_spec args (λ rep, Φ rep)
   )%I
 .
 Next Obligation.
@@ -833,7 +833,7 @@ Program Definition get_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜get.has_encoding enc_args args⌝ ∗
-   get_core_spec args (λ rep, Φ (string_to_bytes rep))
+   get_core_spec args (λ rep, Φ rep)
   )%I
 .
 Next Obligation.
@@ -1086,13 +1086,13 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__putRpc Post cl args args_ptr:
+Lemma wp_Client__putRpc Post cl args args__v:
   {{{
-        "Hargs" ∷ put.own args_ptr args (DfracOwn 1) ∗
+        "Hargs" ∷ put.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl ∗
         "#Hspec" ∷ □ put_core_spec args Post
   }}}
-    Client__putRpc #cl #args_ptr
+    Client__putRpc #cl args__v
   {{{
         (err:u64), RET #err; if decide (err = 0) then Post () else True
   }}}
@@ -1145,15 +1145,15 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__conditionalPutRpc Post cl args args_ptr :
+Lemma wp_Client__conditionalPutRpc Post cl args args__v :
   {{{
-        "Hargs" ∷ conditionalPut.own args_ptr args (DfracOwn 1) ∗
+        "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl ∗
         "#Hspec" ∷ □ conditionalPut_core_spec args Post
   }}}
-    Client__conditionalPutRpc #cl #args_ptr
+    Client__conditionalPutRpc #cl args__v
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
   }}}
 .
 Proof.
@@ -1195,7 +1195,6 @@ Proof.
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".
-    repeat rewrite string_to_bytes_to_string.
     iFrame.
   }
   {
@@ -1209,15 +1208,15 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__getRpc Post cl args args_ptr :
+Lemma wp_Client__getRpc Post cl args args__v :
   {{{
-        "Hargs" ∷ get.own args_ptr args (DfracOwn 1) ∗
+        "Hargs" ∷ get.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl ∗
         "#Hspec" ∷ □ get_core_spec args Post
   }}}
-    Client__getRpc #cl #args_ptr
+    Client__getRpc #cl args__v
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
   }}}
 .
 Proof.
@@ -1259,7 +1258,6 @@ Proof.
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".
-    repeat rewrite string_to_bytes_to_string.
     iFrame.
   }
   {
@@ -1334,16 +1332,10 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__putRpc (λ _, True)%I with "[Hcl OpId Key Val]").
+  wp_apply (wp_Client__putRpc (λ _, True)%I with "[Hcl]").
   { instantiate (2:=put.mkC _ _ _). iFrame "∗#". done. }
   iClear "Hpost".
   iIntros (err) "Hpost".
@@ -1414,16 +1406,10 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__conditionalPutRpc (λ _, True)%I with "[Hcl OpId Key ExpectedVal NewVal]").
+  wp_apply (wp_Client__conditionalPutRpc (λ _, True)%I with "[Hcl]").
   { instantiate (2:=conditionalPut.mkC _ _ _ _). iFrame "∗#". done. }
   iClear "Hpost".
   iIntros (ret err) "Hpost".
@@ -1497,16 +1483,10 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__getRpc (λ _, True)%I with "[Hcl OpId Key]").
+  wp_apply (wp_Client__getRpc (λ _, True)%I with "[Hcl]").
   { instantiate (2:=get.mkC _ _). iFrame "∗#". done. }
   iClear "Hpost".
   iIntros (ret err) "Hpost".

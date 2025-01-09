@@ -93,32 +93,32 @@ Definition Enc__PutInts : val :=
       do:  (let: "$a0" := (![uint64T] "x") in
       (Enc__PutInt (![Enc] "enc")) "$a0")))).
 
-Definition Enc__mset : list (string * val) := [
-  ("Finish", Enc__Finish%V);
-  ("PutBool", Enc__PutBool%V);
-  ("PutBytes", Enc__PutBytes%V);
-  ("PutInt", Enc__PutInt%V);
-  ("PutInt32", Enc__PutInt32%V);
-  ("PutInts", Enc__PutInts%V)
+Definition Enc__mset : list (go_string * val) := [
+  ("Finish"%go, Enc__Finish%V);
+  ("PutBool"%go, Enc__PutBool%V);
+  ("PutBytes"%go, Enc__PutBytes%V);
+  ("PutInt"%go, Enc__PutInt%V);
+  ("PutInt32"%go, Enc__PutInt32%V);
+  ("PutInts"%go, Enc__PutInts%V)
 ].
 
-Definition Enc__mset_ptr : list (string * val) := [
-  ("Finish", (λ: "$recvAddr",
+Definition Enc__mset_ptr : list (go_string * val) := [
+  ("Finish"%go, (λ: "$recvAddr",
     Enc__Finish (![Enc] "$recvAddr")
     )%V);
-  ("PutBool", (λ: "$recvAddr",
+  ("PutBool"%go, (λ: "$recvAddr",
     Enc__PutBool (![Enc] "$recvAddr")
     )%V);
-  ("PutBytes", (λ: "$recvAddr",
+  ("PutBytes"%go, (λ: "$recvAddr",
     Enc__PutBytes (![Enc] "$recvAddr")
     )%V);
-  ("PutInt", (λ: "$recvAddr",
+  ("PutInt"%go, (λ: "$recvAddr",
     Enc__PutInt (![Enc] "$recvAddr")
     )%V);
-  ("PutInt32", (λ: "$recvAddr",
+  ("PutInt32"%go, (λ: "$recvAddr",
     Enc__PutInt32 (![Enc] "$recvAddr")
     )%V);
-  ("PutInts", (λ: "$recvAddr",
+  ("PutInts"%go, (λ: "$recvAddr",
     Enc__PutInts (![Enc] "$recvAddr")
     )%V)
 ].
@@ -217,28 +217,28 @@ Definition Dec__GetInts : val :=
       do:  ("xs" <-[sliceT] "$r0")));;;
     return: (![sliceT] "xs")).
 
-Definition Dec__mset : list (string * val) := [
-  ("GetBool", Dec__GetBool%V);
-  ("GetBytes", Dec__GetBytes%V);
-  ("GetInt", Dec__GetInt%V);
-  ("GetInt32", Dec__GetInt32%V);
-  ("GetInts", Dec__GetInts%V)
+Definition Dec__mset : list (go_string * val) := [
+  ("GetBool"%go, Dec__GetBool%V);
+  ("GetBytes"%go, Dec__GetBytes%V);
+  ("GetInt"%go, Dec__GetInt%V);
+  ("GetInt32"%go, Dec__GetInt32%V);
+  ("GetInts"%go, Dec__GetInts%V)
 ].
 
-Definition Dec__mset_ptr : list (string * val) := [
-  ("GetBool", (λ: "$recvAddr",
+Definition Dec__mset_ptr : list (go_string * val) := [
+  ("GetBool"%go, (λ: "$recvAddr",
     Dec__GetBool (![Dec] "$recvAddr")
     )%V);
-  ("GetBytes", (λ: "$recvAddr",
+  ("GetBytes"%go, (λ: "$recvAddr",
     Dec__GetBytes (![Dec] "$recvAddr")
     )%V);
-  ("GetInt", (λ: "$recvAddr",
+  ("GetInt"%go, (λ: "$recvAddr",
     Dec__GetInt (![Dec] "$recvAddr")
     )%V);
-  ("GetInt32", (λ: "$recvAddr",
+  ("GetInt32"%go, (λ: "$recvAddr",
     Dec__GetInt32 (![Dec] "$recvAddr")
     )%V);
-  ("GetInts", (λ: "$recvAddr",
+  ("GetInts"%go, (λ: "$recvAddr",
     Dec__GetInts (![Dec] "$recvAddr")
     )%V)
 ].
@@ -572,5 +572,19 @@ Definition WriteSliceLenPrefix (T: go_type) : val :=
     (WriteSlice T) "$a0" "$a1" "$a2") in
     do:  ("b3" <-[sliceT] "$r0");;;
     return: (![sliceT] "b3")).
+
+Definition pkg_name' : go_string := "github.com/tchajed/marshal".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  std.initialize';;;
+      do:  primitive.initialize';;;
+      do:  (define' #()))
+      ).
 
 End code.

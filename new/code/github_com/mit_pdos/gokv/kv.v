@@ -8,4 +8,16 @@ Definition Kv : go_type := interfaceT.
 
 Definition KvCput : go_type := interfaceT.
 
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/kv".
+
+Definition define' : val :=
+  rec: "define'" <> :=
+    exception_do (do:  #()).
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' (λ: <>,
+      exception_do (do:  (define' #()))
+      ).
+
 End code.

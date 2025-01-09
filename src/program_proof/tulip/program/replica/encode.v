@@ -7,7 +7,7 @@ Section encode.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_EncodeTxnReadResponse
-    (rid : u64) (ts : u64) (key : string) (ver : dbpver) (slow : bool) :
+    (rid : u64) (ts : u64) (key : byte_string) (ver : dbpver) (slow : bool) :
     {{{ True }}}
       EncodeTxnReadResponse #ts #rid #(LitString key) (dbpver_to_val ver) #slow
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);

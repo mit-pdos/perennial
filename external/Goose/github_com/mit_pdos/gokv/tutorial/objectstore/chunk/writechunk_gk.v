@@ -11,38 +11,40 @@ Definition S := struct.decl [
   "Index" :: uint64T
 ].
 
-Definition S__approxSize: val :=
-  rec: "S__approxSize" "w" :=
-    #0.
-
 Definition Marshal: val :=
   rec: "Marshal" "w" "prefix" :=
     let: "enc" := ref_to (slice.T byteT) "prefix" in
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF S "WriteId" "w"));;
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (slice.len (struct.loadF S "Chunk" "w")));;
-    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF S "Chunk" "w"));;
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF S "Index" "w"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "WriteId" "w"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (slice.len (struct.get S "Chunk" "w")));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.get S "Chunk" "w"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "Index" "w"));;
     ![slice.T byteT] "enc".
 
 Definition Unmarshal: val :=
   rec: "Unmarshal" "s" :=
-    let: "w" := struct.alloc S (zero_val (struct.t S)) in
     let: "enc" := ref_to (slice.T byteT) "s" in
+    let: "writeId" := ref (zero_val uint64T) in
+    let: "chunk" := ref (zero_val (slice.T byteT)) in
+    let: "index" := ref (zero_val uint64T) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF S "WriteId" "w" "0_ret";;
+    "writeId" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     let: "chunkLen" := ref (zero_val uint64T) in
     let: "chunkBytes" := ref (zero_val (slice.T byteT)) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     "chunkLen" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    let: ("0_ret", "1_ret") := marshal.ReadBytes (![slice.T byteT] "enc") (![uint64T] "chunkLen") in
+    let: ("0_ret", "1_ret") := marshal.ReadBytesCopy (![slice.T byteT] "enc") (![uint64T] "chunkLen") in
     "chunkBytes" <-[slice.T byteT] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    struct.storeF S "Chunk" "w" (![slice.T byteT] "chunkBytes");;
+    "chunk" <-[slice.T byteT] (![slice.T byteT] "chunkBytes");;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF S "Index" "w" "0_ret";;
+    "index" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    ("w", ![slice.T byteT] "enc").
+    (struct.mk S [
+       "WriteId" ::= ![uint64T] "writeId";
+       "Chunk" ::= ![slice.T byteT] "chunk";
+       "Index" ::= ![uint64T] "index"
+     ], ![slice.T byteT] "enc").
 
 End code.

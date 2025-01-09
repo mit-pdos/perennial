@@ -1,7 +1,7 @@
 From Perennial.program_proof.tulip.invariance Require Import read.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.txn Require Import
-  res txn_repr txn_getwrs proph key_to_group.
+  res txn_repr txn_getwrs proph txn_key_to_group.
 From Perennial.program_proof.tulip.program.gcoord Require Import gcoord_read.
 
 Section program.
@@ -26,6 +26,7 @@ Section program.
     (*@                                                                         @*)
     iNamed "Htxn".
     wp_apply (wp_Txn__getwrs with "Hwrs").
+    { apply Hvk. }
     iIntros (vlocal ok) "[Hwrs %Hv]".
     iDestruct (txnmap_lookup with "Htxnmap Hpt") as %Hvalue.
     wp_if_destruct.
@@ -43,8 +44,9 @@ Section program.
     (*@     gcoord := txn.gcoords[gid]                                          @*)
     (*@     v, ok := gcoord.Read(txn.ts, key)                                   @*)
     (*@                                                                         @*)
-    wp_apply wp_KeyToGroup.
-    iIntros (gid Hgid).
+    wp_apply (wp_Txn__keyToGroup with "Hwrs").
+    { apply Hvk. }
+    iIntros (gid) "[Hwrs %Hgid]".
     iNamed "Hgcoords".
     wp_loadField.
     wp_apply (wp_MapGet with "Hgcoords").

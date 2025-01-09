@@ -50,6 +50,10 @@ Definition MSG_TXN_COMMIT : expr := #300.
 
 Definition MSG_TXN_ABORT : expr := #301.
 
+Definition MSG_DUMP_STATE : expr := #10000.
+
+Definition MSG_FORCE_ELECTION : expr := #10001.
+
 Definition EncodeTxnReadRequest: val :=
   rec: "EncodeTxnReadRequest" "ts" "key" :=
     let: "bs" := NewSliceWithCap byteT #0 #32 in
@@ -332,6 +336,33 @@ Definition DecodeTxnCommitRequest: val :=
       "PartialWrites" ::= "pwrs"
     ].
 
+Definition EncodeDumpStateRequest: val :=
+  rec: "EncodeDumpStateRequest" "gid" :=
+    let: "bs" := NewSliceWithCap byteT #0 #16 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_DUMP_STATE in
+    let: "data" := marshal.WriteInt "bs1" "gid" in
+    "data".
+
+Definition DecodeDumpStateRequest: val :=
+  rec: "DecodeDumpStateRequest" "bs" :=
+    let: ("gid", <>) := marshal.ReadInt "bs" in
+    struct.mk TxnRequest [
+      "Kind" ::= MSG_DUMP_STATE;
+      "Timestamp" ::= "gid"
+    ].
+
+Definition EncodeForceElectionRequest: val :=
+  rec: "EncodeForceElectionRequest" <> :=
+    let: "bs" := NewSliceWithCap byteT #0 #8 in
+    let: "data" := marshal.WriteInt "bs" MSG_FORCE_ELECTION in
+    "data".
+
+Definition DecodeForceElectionRequest: val :=
+  rec: "DecodeForceElectionRequest" <> :=
+    struct.mk TxnRequest [
+      "Kind" ::= MSG_FORCE_ELECTION
+    ].
+
 Definition EncodeTxnCommitResponse: val :=
   rec: "EncodeTxnCommitResponse" "ts" "res" :=
     let: "bs" := NewSliceWithCap byteT #0 #24 in
@@ -413,8 +444,14 @@ Definition DecodeTxnRequest: val :=
                     (if: "kind" = MSG_TXN_ABORT
                     then DecodeTxnAbortRequest "bs1"
                     else
-                      struct.mk TxnRequest [
-                      ]))))))))).
+                      (if: "kind" = MSG_DUMP_STATE
+                      then DecodeDumpStateRequest "bs1"
+                      else
+                        (if: "kind" = MSG_FORCE_ELECTION
+                        then DecodeForceElectionRequest #()
+                        else
+                          struct.mk TxnRequest [
+                          ]))))))))))).
 
 Definition DecodeTxnResponse: val :=
   rec: "DecodeTxnResponse" "bs" :=

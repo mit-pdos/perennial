@@ -81,7 +81,7 @@ Calls grackle on all gokv go modules known to have proto files for grackle usage
 
 --compile-grackle [-c] : Takes the path to the grackle repository, recompiles and installs grackle
 
---gokv [-g] : Regenerate Coq proofs for the gokv project
+--gokv [-g] : Regenerate Coq proofs for the gokv project, takes path to gokv as argument
 EOF
         shift
         exit 0

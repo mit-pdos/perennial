@@ -7,15 +7,15 @@ Context `{ffi_syntax}.
 Axiom Rand__ExpFloat64 : val.
 Axiom Rand__NormFloat64 : val.
 Axiom Source : go_type.
-Axiom Source__mset : list (string * val).
-Axiom Source__mset_ptr : list (string * val).
+Axiom Source__mset : list (go_string * val).
+Axiom Source__mset_ptr : list (go_string * val).
 Axiom Source64 : go_type.
-Axiom Source64__mset : list (string * val).
-Axiom Source64__mset_ptr : list (string * val).
+Axiom Source64__mset : list (go_string * val).
+Axiom Source64__mset_ptr : list (go_string * val).
 Axiom NewSource : val.
 Axiom Rand : go_type.
-Axiom Rand__mset : list (string * val).
-Axiom Rand__mset_ptr : list (string * val).
+Axiom Rand__mset : list (go_string * val).
+Axiom Rand__mset_ptr : list (go_string * val).
 Axiom New : val.
 Axiom Rand__Seed : val.
 Axiom Rand__Int63 : val.
@@ -57,9 +57,9 @@ Axiom rngSource__Seed : val.
 Axiom rngSource__Int63 : val.
 Axiom rngSource__Uint64 : val.
 Axiom Zipf : go_type.
-Axiom Zipf__mset : list (string * val).
-Axiom Zipf__mset_ptr : list (string * val).
+Axiom Zipf__mset : list (go_string * val).
+Axiom Zipf__mset_ptr : list (go_string * val).
 Axiom NewZipf : val.
 Axiom Zipf__Uint64 : val.
-
+Axiom initialize' : val.
 End axioms.

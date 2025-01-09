@@ -1,21 +1,16 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 
-(* TODO: this really should be made general. *)
+Definition encode_string (x : byte_string) : list u8 :=
+  u64_le (U64 (length x)) ++ x.
 
-Definition encode_string (x : string) : list u8 :=
-  let bs := string_to_bytes x in
-  u64_le (U64 (length bs)) ++ bs.
-
-Opaque encode_string.
-
-Definition encode_strings_step (bs : list u8) (x : string) : list u8 :=
+Definition encode_strings_step (bs : list u8) (x : byte_string) : list u8 :=
   bs ++ encode_string x.
 
-Definition encode_strings_xlen (xs : list string) : list u8 :=
+Definition encode_strings_xlen (xs : list byte_string) : list u8 :=
   foldl encode_strings_step [] xs.
 
-Definition encode_strings (xs : list string) : list u8 :=
+Definition encode_strings (xs : list byte_string) : list u8 :=
   u64_le (U64 (length xs)) ++ encode_strings_xlen xs.
 
 Lemma encode_strings_xlen_snoc xs x :
@@ -24,7 +19,7 @@ Proof.
   by rewrite /encode_strings_xlen foldl_snoc /encode_strings_step.
 Qed.
 
-Lemma foldl_encode_strings_step_app (bs : list u8) (xs : list string) :
+Lemma foldl_encode_strings_step_app (bs : list u8) (xs : list byte_string) :
   foldl encode_strings_step bs xs = bs ++ foldl encode_strings_step [] xs.
 Proof.
   generalize dependent bs.
@@ -117,7 +112,7 @@ Proof.
   induction xs as [| x xs IH]; intros n; first done.
   rewrite encode_dbmods_xlen_cons length_app /=.
   assert (length (encode_dbmod x) ≠ O).
-  { by destruct (nil_or_length_pos (encode_dbmod x)). }
+  { by destruct x as [[] []]. }
   intros Hlen.
   assert (Hlenxs : (length xs ≤ pred n)%nat).
   { apply IH. lia. }

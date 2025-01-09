@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base encode.
 
 Inductive txnreq :=
-| ReadReq        (ts : u64) (key : string)
+| ReadReq        (ts : u64) (key : byte_string)
 | FastPrepareReq (ts : u64) (pwrs : dbmap)
 | ValidateReq    (ts : u64) (rank : u64) (pwrs : dbmap)
 | PrepareReq     (ts : u64) (rank : u64)
@@ -20,12 +20,47 @@ Proof. solve_decision. Qed.
 #[global]
 Instance txnreq_countable :
   Countable txnreq.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | ReadReq ts key => inl (ts, key)
+                  | FastPrepareReq ts pwrs => inr (inl (ts, pwrs))
+                  | ValidateReq ts rank pwrs => inr (inr (inl (ts, rank, pwrs)))
+                  | PrepareReq ts rank => inr (inr (inr (inl (ts, rank))))
+                  | UnprepareReq ts rank =>
+                      inr (inr (inr (inr (inl (ts, rank)))))
+                  | QueryReq ts rank =>
+                      inr (inr (inr (inr (inr (inl (ts, rank))))))
+                  | RefreshReq ts rank =>
+                      inr (inr (inr (inr (inr (inr (inl (ts, rank)))))))
+                  | CommitReq ts pwrs =>
+                      inr (inr (inr (inr (inr (inr (inr (inl (ts, pwrs))))))))
+                  | AbortReq ts =>
+                      inr (inr (inr (inr (inr (inr (inr (inr ts)))))))
+                  end)
+            (λ x, match x with
+                  | inl (ts, key) => ReadReq ts key
+                  | inr (inl (ts, pwrs)) => FastPrepareReq ts pwrs
+                  | inr (inr (inl (ts, rank, pwrs))) => ValidateReq ts rank pwrs
+                  | inr (inr (inr (inl (ts, rank)))) => PrepareReq ts rank
+                  | inr (inr (inr (inr (inl (ts, rank))))) => UnprepareReq ts rank
+                  | inr (inr (inr (inr (inr (inl (ts, rank)))))) =>
+                      QueryReq ts rank
+                  | inr (inr (inr (inr (inr (inr (inl (ts, rank))))))) =>
+                      RefreshReq ts rank
+                  | inr (inr (inr (inr (inr (inr (inr (inl (ts, pwrs)))))))) =>
+                      CommitReq ts pwrs
+                  | inr (inr (inr (inr (inr (inr (inr (inr ts))))))) =>
+                      AbortReq ts
+                  end)
+            _).
+  intros [| | | | | | | |] => //=.
+Qed.
 
-Definition encode_read_req_xkind (ts : u64) (key : string) :=
+Definition encode_read_req_xkind (ts : u64) (key : byte_string) :=
   u64_le ts ++ encode_string key.
 
-Definition encode_read_req (ts : u64) (key : string) (data : list u8) :=
+Definition encode_read_req (ts : u64) (key : byte_string) (data : list u8) :=
   data = u64_le (U64 100) ++ encode_read_req_xkind ts key.
 
 Definition encode_fast_prepare_req_xkind (ts : u64) (m : dbmap) (data : list u8) :=
@@ -83,6 +118,33 @@ Instance rpres_eq_decision :
   EqDecision rpres.
 Proof. solve_decision. Qed.
 
+#[global]
+Instance rpres_countable :
+  Countable rpres.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | ReplicaOK => 0
+                  | ReplicaCommittedTxn => 1
+                  | ReplicaAbortedTxn => 2
+                  | ReplicaStaleCoordinator => 3
+                  | ReplicaFailedValidation => 4
+                  | ReplicaInvalidRank => 5
+                  | ReplicaWrongLeader => 6
+                  end)
+            (λ x, match x with
+                  | 0 => _
+                  | 1 => _
+                  | 2 => _
+                  | 3 => _
+                  | 4 => _
+                  | 5 => _
+                  | _ => ReplicaWrongLeader
+                  end)
+            _).
+  intros [| | | | | |] => //=.
+Qed.
+
 Definition rpres_to_u64 (r : rpres) :=
   match r with
   | ReplicaOK => (U64 0)
@@ -100,7 +162,7 @@ Instance rpres_to_u64_inj :
 Proof. intros x y H. by destruct x, y. Defined.
 
 Inductive txnresp :=
-| ReadResp        (ts : u64) (rid : u64) (key : string) (ver : dbpver) (slow : bool)
+| ReadResp        (ts : u64) (rid : u64) (key : byte_string) (ver : dbpver) (slow : bool)
 | FastPrepareResp (ts : u64) (rid : u64) (res : rpres)
 | ValidateResp    (ts : u64) (rid : u64) (res : rpres)
 | PrepareResp     (ts : u64) (rank : u64) (rid : u64) (res : rpres)
@@ -117,15 +179,47 @@ Proof. solve_decision. Qed.
 #[global]
 Instance txnresp_countable :
   Countable txnresp.
-Admitted.
+Proof.
+  refine (inj_countable'
+            (λ x, match x with
+                  | ReadResp ts rid key ver slow => inl (ts, rid, key, ver, slow)
+                  | FastPrepareResp ts rid res => inr (inl (ts, rid, res))
+                  | ValidateResp ts rid res => inr (inr (inl (ts, rid, res)))
+                  | PrepareResp ts rank rid res => inr (inr (inr (inl (ts, rank, rid, res))))
+                  | UnprepareResp ts rank rid res =>
+                      inr (inr (inr (inr (inl (ts, rank, rid, res)))))
+                  | QueryResp ts res =>
+                      inr (inr (inr (inr (inr (inl (ts, res))))))
+                  | CommitResp ts res =>
+                      inr (inr (inr (inr (inr (inr (inl (ts, res)))))))
+                  | AbortResp ts res =>
+                      inr (inr (inr (inr (inr (inr (inr (ts, res)))))))
+                  end)
+            (λ x, match x with
+                  | inl (ts, rid, key, ver, slow) => ReadResp ts rid key ver slow
+                  | inr (inl (ts, rid, res)) => FastPrepareResp ts rid res
+                  | inr (inr (inl (ts, rid, res))) => ValidateResp ts rid res
+                  | inr (inr (inr (inl (ts, rank, rid, res)))) => PrepareResp ts rank rid res
+                  | inr (inr (inr (inr (inl (ts, rank, rid, res))))) =>
+                      UnprepareResp ts rank rid res
+                  | inr (inr (inr (inr (inr (inl (ts, res)))))) =>
+                      QueryResp ts res
+                  | inr (inr (inr (inr (inr (inr (inl (ts, res))))))) =>
+                      CommitResp ts res
+                  | inr (inr (inr (inr (inr (inr (inr (ts, res))))))) =>
+                      AbortResp ts res
+                  end)
+            _).
+  intros [| | | | | | |] => //=.
+Qed.
 
 Definition encode_read_resp_xkind
-  (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) :=
+  (ts rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) :=
   u64_le ts ++ u64_le rid ++ encode_string key ++
     encode_dbpver ver ++ [if slow then U8 1 else U8 0].
 
 Definition encode_read_resp
-  (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) :=
+  (ts rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) :=
   u64_le (U64 100) ++ encode_read_resp_xkind ts rid key ver slow.
 
 Definition encode_ts_rid_res (ts rid : u64) (res : rpres) :=

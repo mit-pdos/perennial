@@ -7,72 +7,77 @@ Context `{ffi_syntax}.
 Axiom SeekStart : Z.
 Axiom SeekCurrent : Z.
 Axiom SeekEnd : Z.
+Axiom ErrShortWrite : (go_string * go_string).
+Axiom ErrShortBuffer : (go_string * go_string).
+Axiom EOF : (go_string * go_string).
+Axiom ErrUnexpectedEOF : (go_string * go_string).
+Axiom ErrNoProgress : (go_string * go_string).
 Axiom Reader : go_type.
-Axiom Reader__mset : list (string * val).
-Axiom Reader__mset_ptr : list (string * val).
+Axiom Reader__mset : list (go_string * val).
+Axiom Reader__mset_ptr : list (go_string * val).
 Axiom Writer : go_type.
-Axiom Writer__mset : list (string * val).
-Axiom Writer__mset_ptr : list (string * val).
+Axiom Writer__mset : list (go_string * val).
+Axiom Writer__mset_ptr : list (go_string * val).
 Axiom Closer : go_type.
-Axiom Closer__mset : list (string * val).
-Axiom Closer__mset_ptr : list (string * val).
+Axiom Closer__mset : list (go_string * val).
+Axiom Closer__mset_ptr : list (go_string * val).
 Axiom Seeker : go_type.
-Axiom Seeker__mset : list (string * val).
-Axiom Seeker__mset_ptr : list (string * val).
+Axiom Seeker__mset : list (go_string * val).
+Axiom Seeker__mset_ptr : list (go_string * val).
 Axiom ReadWriter : go_type.
-Axiom ReadWriter__mset : list (string * val).
-Axiom ReadWriter__mset_ptr : list (string * val).
+Axiom ReadWriter__mset : list (go_string * val).
+Axiom ReadWriter__mset_ptr : list (go_string * val).
 Axiom ReadCloser : go_type.
-Axiom ReadCloser__mset : list (string * val).
-Axiom ReadCloser__mset_ptr : list (string * val).
+Axiom ReadCloser__mset : list (go_string * val).
+Axiom ReadCloser__mset_ptr : list (go_string * val).
 Axiom WriteCloser : go_type.
-Axiom WriteCloser__mset : list (string * val).
-Axiom WriteCloser__mset_ptr : list (string * val).
+Axiom WriteCloser__mset : list (go_string * val).
+Axiom WriteCloser__mset_ptr : list (go_string * val).
 Axiom ReadWriteCloser : go_type.
-Axiom ReadWriteCloser__mset : list (string * val).
-Axiom ReadWriteCloser__mset_ptr : list (string * val).
+Axiom ReadWriteCloser__mset : list (go_string * val).
+Axiom ReadWriteCloser__mset_ptr : list (go_string * val).
 Axiom ReadSeeker : go_type.
-Axiom ReadSeeker__mset : list (string * val).
-Axiom ReadSeeker__mset_ptr : list (string * val).
+Axiom ReadSeeker__mset : list (go_string * val).
+Axiom ReadSeeker__mset_ptr : list (go_string * val).
 Axiom ReadSeekCloser : go_type.
-Axiom ReadSeekCloser__mset : list (string * val).
-Axiom ReadSeekCloser__mset_ptr : list (string * val).
+Axiom ReadSeekCloser__mset : list (go_string * val).
+Axiom ReadSeekCloser__mset_ptr : list (go_string * val).
 Axiom WriteSeeker : go_type.
-Axiom WriteSeeker__mset : list (string * val).
-Axiom WriteSeeker__mset_ptr : list (string * val).
+Axiom WriteSeeker__mset : list (go_string * val).
+Axiom WriteSeeker__mset_ptr : list (go_string * val).
 Axiom ReadWriteSeeker : go_type.
-Axiom ReadWriteSeeker__mset : list (string * val).
-Axiom ReadWriteSeeker__mset_ptr : list (string * val).
+Axiom ReadWriteSeeker__mset : list (go_string * val).
+Axiom ReadWriteSeeker__mset_ptr : list (go_string * val).
 Axiom ReaderFrom : go_type.
-Axiom ReaderFrom__mset : list (string * val).
-Axiom ReaderFrom__mset_ptr : list (string * val).
+Axiom ReaderFrom__mset : list (go_string * val).
+Axiom ReaderFrom__mset_ptr : list (go_string * val).
 Axiom WriterTo : go_type.
-Axiom WriterTo__mset : list (string * val).
-Axiom WriterTo__mset_ptr : list (string * val).
+Axiom WriterTo__mset : list (go_string * val).
+Axiom WriterTo__mset_ptr : list (go_string * val).
 Axiom ReaderAt : go_type.
-Axiom ReaderAt__mset : list (string * val).
-Axiom ReaderAt__mset_ptr : list (string * val).
+Axiom ReaderAt__mset : list (go_string * val).
+Axiom ReaderAt__mset_ptr : list (go_string * val).
 Axiom WriterAt : go_type.
-Axiom WriterAt__mset : list (string * val).
-Axiom WriterAt__mset_ptr : list (string * val).
+Axiom WriterAt__mset : list (go_string * val).
+Axiom WriterAt__mset_ptr : list (go_string * val).
 Axiom ByteReader : go_type.
-Axiom ByteReader__mset : list (string * val).
-Axiom ByteReader__mset_ptr : list (string * val).
+Axiom ByteReader__mset : list (go_string * val).
+Axiom ByteReader__mset_ptr : list (go_string * val).
 Axiom ByteScanner : go_type.
-Axiom ByteScanner__mset : list (string * val).
-Axiom ByteScanner__mset_ptr : list (string * val).
+Axiom ByteScanner__mset : list (go_string * val).
+Axiom ByteScanner__mset_ptr : list (go_string * val).
 Axiom ByteWriter : go_type.
-Axiom ByteWriter__mset : list (string * val).
-Axiom ByteWriter__mset_ptr : list (string * val).
+Axiom ByteWriter__mset : list (go_string * val).
+Axiom ByteWriter__mset_ptr : list (go_string * val).
 Axiom RuneReader : go_type.
-Axiom RuneReader__mset : list (string * val).
-Axiom RuneReader__mset_ptr : list (string * val).
+Axiom RuneReader__mset : list (go_string * val).
+Axiom RuneReader__mset_ptr : list (go_string * val).
 Axiom RuneScanner : go_type.
-Axiom RuneScanner__mset : list (string * val).
-Axiom RuneScanner__mset_ptr : list (string * val).
+Axiom RuneScanner__mset : list (go_string * val).
+Axiom RuneScanner__mset_ptr : list (go_string * val).
 Axiom StringWriter : go_type.
-Axiom StringWriter__mset : list (string * val).
-Axiom StringWriter__mset_ptr : list (string * val).
+Axiom StringWriter__mset : list (go_string * val).
+Axiom StringWriter__mset_ptr : list (go_string * val).
 Axiom WriteString : val.
 Axiom ReadAtLeast : val.
 Axiom ReadFull : val.
@@ -81,27 +86,28 @@ Axiom Copy : val.
 Axiom CopyBuffer : val.
 Axiom LimitReader : val.
 Axiom LimitedReader : go_type.
-Axiom LimitedReader__mset : list (string * val).
-Axiom LimitedReader__mset_ptr : list (string * val).
+Axiom LimitedReader__mset : list (go_string * val).
+Axiom LimitedReader__mset_ptr : list (go_string * val).
 Axiom LimitedReader__Read : val.
 Axiom NewSectionReader : val.
 Axiom SectionReader : go_type.
-Axiom SectionReader__mset : list (string * val).
-Axiom SectionReader__mset_ptr : list (string * val).
+Axiom SectionReader__mset : list (go_string * val).
+Axiom SectionReader__mset_ptr : list (go_string * val).
 Axiom SectionReader__Read : val.
 Axiom SectionReader__Seek : val.
 Axiom SectionReader__ReadAt : val.
 Axiom SectionReader__Size : val.
 Axiom SectionReader__Outer : val.
 Axiom OffsetWriter : go_type.
-Axiom OffsetWriter__mset : list (string * val).
-Axiom OffsetWriter__mset_ptr : list (string * val).
+Axiom OffsetWriter__mset : list (go_string * val).
+Axiom OffsetWriter__mset_ptr : list (go_string * val).
 Axiom NewOffsetWriter : val.
 Axiom OffsetWriter__Write : val.
 Axiom OffsetWriter__WriteAt : val.
 Axiom OffsetWriter__Seek : val.
 Axiom TeeReader : val.
 Axiom teeReader__Read : val.
+Axiom Discard : (go_string * go_string).
 Axiom discard__Write : val.
 Axiom discard__WriteString : val.
 Axiom discard__ReadFrom : val.
@@ -119,18 +125,19 @@ Axiom multiWriter__WriteString : val.
 Axiom MultiWriter : val.
 Axiom onceError__Store : val.
 Axiom onceError__Load : val.
+Axiom ErrClosedPipe : (go_string * go_string).
 Axiom PipeReader : go_type.
-Axiom PipeReader__mset : list (string * val).
-Axiom PipeReader__mset_ptr : list (string * val).
+Axiom PipeReader__mset : list (go_string * val).
+Axiom PipeReader__mset_ptr : list (go_string * val).
 Axiom PipeReader__Read : val.
 Axiom PipeReader__Close : val.
 Axiom PipeReader__CloseWithError : val.
 Axiom PipeWriter : go_type.
-Axiom PipeWriter__mset : list (string * val).
-Axiom PipeWriter__mset_ptr : list (string * val).
+Axiom PipeWriter__mset : list (go_string * val).
+Axiom PipeWriter__mset_ptr : list (go_string * val).
 Axiom PipeWriter__Write : val.
 Axiom PipeWriter__Close : val.
 Axiom PipeWriter__CloseWithError : val.
 Axiom Pipe : val.
-
+Axiom initialize' : val.
 End axioms.

@@ -9,23 +9,21 @@ Definition S := struct.decl [
   "Id" :: uint64T
 ].
 
-Definition S__approxSize: val :=
-  rec: "S__approxSize" "l" :=
-    #0.
-
 Definition Marshal: val :=
   rec: "Marshal" "l" "prefix" :=
     let: "enc" := ref_to (slice.T byteT) "prefix" in
-    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF S "Id" "l"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "Id" "l"));;
     ![slice.T byteT] "enc".
 
 Definition Unmarshal: val :=
   rec: "Unmarshal" "s" :=
-    let: "l" := struct.alloc S (zero_val (struct.t S)) in
     let: "enc" := ref_to (slice.T byteT) "s" in
+    let: "id" := ref (zero_val uint64T) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF S "Id" "l" "0_ret";;
+    "id" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    ("l", ![slice.T byteT] "enc").
+    (struct.mk S [
+       "Id" ::= ![uint64T] "id"
+     ], ![slice.T byteT] "enc").
 
 End code.

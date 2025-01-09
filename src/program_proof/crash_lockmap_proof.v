@@ -11,10 +11,6 @@ From Perennial.goose_lang Require Import proofmode wpc_proofmode notation crash_
 
 Local Transparent load_ty store_ty.
 
-Ltac word := try lazymatch goal with
-                 | |- envs_entails _ _ => iPureIntro
-                 end; Integers.word.
-
 Ltac len := autorewrite with len; try word.
 
 Class lockmapG Σ := #[global] lockmap_inG :: ghost_mapG Σ u64 bool.

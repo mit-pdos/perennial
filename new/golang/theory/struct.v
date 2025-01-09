@@ -9,7 +9,7 @@ Section goose_lang.
 Context `{ffi_syntax}.
 
 Implicit Types (d : struct.descriptor).
-Infix "=?" := (String.eqb).
+Infix "=?" := (ByteString.eqb).
 
 (* FIXME: what does _f mean? Want better name. *)
 Definition field_get_f t f0: val -> val :=
@@ -84,7 +84,7 @@ Global Hint Extern 3 (struct.Wf (structT ?d)) => exact (proj_descriptor_wf d) : 
 Section lemmas.
 Context `{heapGS Σ}.
 
-Class IntoValStructField (f : string) (t : go_type) {V Vf : Type} {tf}
+Class IntoValStructField (f : go_string) (t : go_type) {V Vf : Type} {tf}
   (field_proj : V → Vf)
   `{!IntoVal V} `{!IntoVal Vf}
   `{!IntoValTyped Vf tf}
@@ -96,7 +96,9 @@ Class IntoValStructField (f : string) (t : go_type) {V Vf : Type} {tf}
 Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
   (fs : struct.descriptor) (v : V) : iProp Σ :=
   [∗ list] '(f, _) ∈ fs,
-    ∀ `(H:IntoValStructField f t V Vf tf field_proj), ("H" +:+ f) ∷ l ↦s[t :: f]{dq} (field_proj v).
+    ∀ `(H:IntoValStructField f t V Vf tf field_proj), ("H" +:+
+                                                         (String.string_of_list_byte $
+                                                            w8_to_byte <$> f)) ∷ l ↦s[t :: f]{dq} (field_proj v).
 
 Lemma struct_val_inj d fvs1 fvs2 :
   struct.val_aux (structT d) fvs1 = struct.val_aux (structT d) fvs2 →
@@ -182,7 +184,7 @@ Definition is_structT (t : go_type) : Prop :=
   | _ => False
   end.
 
-Global Instance wp_struct_fields_cons_nil (k : string) (l : list (string * val)) (v : val) :
+Global Instance wp_struct_fields_cons_nil (k : go_string) (l : list (go_string * val)) (v : val) :
   PureWp  True
     (list.Cons (PairV #k v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
@@ -193,7 +195,7 @@ Proof.
   wp_call_lc "?". by iApply "HΦ".
 Qed.
 
-Global Instance wp_struct_fields_cons (k : string) (l : list (string * val)) (v : val) :
+Global Instance wp_struct_fields_cons (k : go_string) (l : list (go_string * val)) (v : val) :
   PureWp True
     (list.Cons (PairV #k v) (struct.fields_val l))
     (struct.fields_val ((pair k v) :: l))
@@ -204,7 +206,7 @@ Proof.
   wp_call_lc "?". by iApply "HΦ".
 Qed.
 
-Global Instance wp_struct_assocl_lookup (k : string) (l : list (string * val)) :
+Global Instance wp_struct_assocl_lookup (k : go_string) (l : list (go_string * val)) :
   PureWp True
     (struct.assocl_lookup #k (struct.fields_val l))
     (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
@@ -226,21 +228,22 @@ Proof.
       rewrite bool_decide_eq_true in Heqb.
       subst.
       wp_pures.
-      rewrite (String.eqb_refl).
+      rewrite /ByteString.eqb bool_decide_true //.
       by iApply "HΦ".
     }
     {
       rewrite bool_decide_eq_false in Heqb.
       wp_pures.
       iApply "IH".
-      destruct (s =? _)%string eqn:Hx.
-      { exfalso. apply Heqb. repeat f_equal. symmetry. by apply String.eqb_eq. }
+      destruct (ByteString.eqb g _)%go eqn:Hx.
+      { exfalso. apply Heqb. repeat f_equal. symmetry.
+        rewrite /ByteString.eqb bool_decide_eq_true // in Hx. }
       by iApply "HΦ".
     }
   }
 Qed.
 
-Definition wp_struct_make (t : go_type) (l : list (string*val)) :
+Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
   PureWp (is_structT t)
   (struct.make t (struct.fields_val l))
   (struct.val_aux t l).

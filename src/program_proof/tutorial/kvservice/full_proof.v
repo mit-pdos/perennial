@@ -547,7 +547,7 @@ Record erpc_names :=
 Implicit Types γ:erpc_names.
 
 Class erpcG Σ := {
-    #[global] receiptG :: ghost_mapG Σ u64 string ;
+    #[global] receiptG :: ghost_mapG Σ u64 byte_string ;
     #[global] tokenG :: ghost_mapG Σ u64 unit ;
     #[global] clientTokenG :: inG Σ dfracR ;
 }.
@@ -560,20 +560,20 @@ Definition own_unexecuted_token γ (opId:u64) : iProp Σ :=
 Definition is_executed_witness γ (opId:u64) : iProp Σ :=
   opId ↪[γ.(req_gn)]□ ().
 
-Definition is_request_receipt γ (opId:u64) (r:string) : iProp Σ :=
+Definition is_request_receipt γ (opId:u64) (r:byte_string) : iProp Σ :=
   opId ↪[γ.(reply_gn)]□ r.
 
 Definition own_client_token γcl : iProp Σ :=
   own γcl (DfracOwn 1).
 
-Definition is_request_inv γ γcl (opId:u64) (pre:iProp Σ) (post:string → iProp Σ) : iProp Σ :=
+Definition is_request_inv γ γcl (opId:u64) (pre:iProp Σ) (post:byte_string → iProp Σ) : iProp Σ :=
   inv reqN (own_unexecuted_token γ opId ∗
             pre ∨
             is_executed_witness γ opId ∗
               (∃ r, is_request_receipt γ opId r ∗
                     (post r ∨ own_client_token γcl))).
 
-Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 string) : iProp Σ :=
+Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 byte_string) : iProp Σ :=
   ∃ (usedIds:gset u64),
   "Htoks" ∷ ghost_map_auth γ.(req_gn) 1 (gset_to_gmap () usedIds) ∗
   "Hreplies" ∷ ghost_map_auth γ.(reply_gn) 1 lastReplies ∗
@@ -585,7 +585,7 @@ Lemma alloc_erpc_server :
   ⊢ |==> ∃ γ, own_erpc_server γ 0 ∅.
 Proof.
   iMod (ghost_map_alloc_empty (V:=())) as (γreq) "Htoks".
-  iMod (ghost_map_alloc_empty (V:=string)) as (γreply) "Hreplies".
+  iMod (ghost_map_alloc_empty (V:=byte_string)) as (γreply) "Hreplies".
   iModIntro.
   iExists {| req_gn := _ ; reply_gn := _ |}.
   iExists ∅.
@@ -646,7 +646,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma server_duplicate_request_step opId r γ (lastReplies:gmap u64 string) nextFreshId:
+Lemma server_duplicate_request_step opId r γ (lastReplies:gmap u64 byte_string) nextFreshId:
   lastReplies !! opId = Some r →
   own_erpc_server γ nextFreshId lastReplies -∗
   is_executed_witness γ opId ∗
@@ -657,7 +657,7 @@ Proof.
   by iDestruct (big_sepM_lookup_acc with "Hwits") as "[$ HH]".
 Qed.
 
-Lemma server_execute_step opId γ γcl pre post (lastReplies:gmap u64 string) nextFreshId:
+Lemma server_execute_step opId γ γcl pre post (lastReplies:gmap u64 byte_string) nextFreshId:
   lastReplies !! opId = None →
   £ 1 -∗
   is_request_inv γ γcl opId pre post -∗
@@ -748,7 +748,7 @@ Record kvservice_names :=
 Class kvserviceG Σ :=
   {
     #[global] erpc_inG :: erpcG Σ ;
-    #[global] kvs_inG :: ghost_mapG Σ string string ;
+    #[global] kvs_inG :: ghost_mapG Σ byte_string byte_string ;
   }.
 
 End ghost_proof.
@@ -769,7 +769,7 @@ Definition getFreshNum_core_post : u64 → iProp Σ :=
 Definition put_core_pre (args : put.C) : iProp Σ :=
   ∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(put.opId)
     (|={⊤∖↑reqN,∅}=> ∃ oldv, args.(put.key) ↪[γ.(kv_gn)] oldv ∗
-                            (args.(put.key) ↪[γ.(kv_gn)] args.(put.val) ={∅,⊤∖↑reqN}=∗
+                            (args.(put.key) ↪[γ.(kv_gn)] args.(put.value) ={∅,⊤∖↑reqN}=∗
                              Q))%I
     (λ _, Q).
 
@@ -785,7 +785,7 @@ Definition conditionalPut_core_pre (args:conditionalPut.C) : iProp Σ :=
                   args.(conditionalPut.newVal)
                 else oldv) ={∅,⊤∖↑reqN}=∗
                  (Q (bool_decide (oldv = args.(conditionalPut.expectedVal))))))
-    (λ r, if decide (r = "ok") then Q true else Q false)
+    (λ r, if decide (r = "ok"%go) then Q true else Q false)
 .
 
 Definition conditionalPut_core_post (args:conditionalPut.C) r : iProp Σ :=
@@ -809,15 +809,15 @@ Module server.
 Record t :=
   mk {
       nextFreshId : u64 ;
-      lastReplies : gmap u64 string ;
-      kvs : gmap string string ;
+      lastReplies : gmap u64 byte_string ;
+      kvs : gmap byte_string byte_string ;
     }.
 
 Global Instance etaServer : Settable _ :=
   settable! (mk) <nextFreshId; lastReplies; kvs>.
 
-Definition gauge_eq : relation (gmap string string) :=
-  λ m1 m2, ∀ k, default "" (m1 !! k) = default "" (m2 !! k).
+Definition gauge_eq : relation (gmap byte_string byte_string) :=
+  λ m1 m2, ∀ k, default ""%go (m1 !! k) = default ""%go (m2 !! k).
 
 Global Instance gauge_eq_Equivalence: Equivalence (gauge_eq).
 Proof.
@@ -835,14 +835,14 @@ Proof. intros ????. destruct (decide (k = k0)).
        - do 2 (rewrite lookup_insert_ne; last done). done.
 Qed.
 
-Global Instance gauge_proper_default_lookup (k:string) :
-  Proper (gauge_eq ==> eq) (λ m, default "" (lookup k m)).
+Global Instance gauge_proper_default_lookup (k:byte_string) :
+  Proper (gauge_eq ==> eq) (λ m, default ""%go (lookup k m)).
 Proof. intros ???. apply H. Qed.
 
 Section local_defns.
 Context `{!heapGS Σ}.
 Definition own_mem (s:loc) (st:t) : iProp Σ :=
-  ∃ (lastReplies_loc kvs_loc:loc) (kvs_phys:gmap string string),
+  ∃ (lastReplies_loc kvs_loc:loc) (kvs_phys:gmap byte_string byte_string),
   "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #st.(nextFreshId) ∗
   "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
   "Hkvs" ∷ s ↦[Server :: "kvs"] #kvs_loc ∗
@@ -953,8 +953,8 @@ Lemma ghost_put γ st args :
   put_core_pre γ args -∗
   server.own_ghost γ st ={⊤}=∗
   server.own_ghost γ
-        (st <|server.lastReplies := <[args.(put.opId) := ""]> st.(server.lastReplies)|>
-            <|server.kvs := <[args.(put.key) := args.(put.val)]> st.(server.kvs)|>) ∗
+        (st <|server.lastReplies := <[args.(put.opId) := ""%go]> st.(server.lastReplies)|>
+            <|server.kvs := <[args.(put.key) := args.(put.value)]> st.(server.kvs)|>) ∗
   put_core_post γ args.
 Proof.
   intros.
@@ -971,13 +971,13 @@ Proof.
   iPureIntro. simpl. by f_equiv.
 Qed.
 
-Lemma wp_Server__put (s:loc) γ args_ptr (args:put.C) :
+Lemma wp_Server__put (s:loc) γ (args__v:val) (args:put.C) :
   {{{
         "#Hsrv" ∷ is_Server s γ ∗
         "Hspec" ∷ put_core_pre γ args ∗
-        "Hargs" ∷ put.own args_ptr args (DfracOwn 1)
+        "Hargs" ∷ put.own args__v args (DfracOwn 1)
   }}}
-  Server__put #s #args_ptr
+  Server__put #s args__v
   {{{
         RET #(); put_core_post γ args
   }}}
@@ -993,8 +993,8 @@ Proof.
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
-  iNamed "Hargs".
-  wp_loadField.
+  iUnfold put.own in "Hargs". iNamed "Hargs".
+  rewrite Hown_struct. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HlastRepliesM").
   iIntros (??) "[%HlastReply HlastRepliesM]".
@@ -1016,13 +1016,10 @@ Proof.
     iApply "Hspec".
   }
   wp_loadField.
-  wp_loadField.
-  wp_loadField.
   wp_apply (wp_MapInsert with "HkvsM").
   { done. }
   iIntros "HkvsM".
   wp_pures.
-  wp_loadField.
   wp_loadField.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
@@ -1060,19 +1057,19 @@ Qed.
 Local Definition cond_put_ok st args :=
   (st
      <|server.lastReplies :=
-        <[args.(conditionalPut.opId) := "ok"]> st.(server.lastReplies)|>
+        <[args.(conditionalPut.opId) := "ok"%go]> st.(server.lastReplies)|>
      <|server.kvs :=
         <[args.(conditionalPut.key) := args.(conditionalPut.newVal)]> st.(server.kvs)|>)
 .
 
 Local Definition cond_put_not_ok st args :=
-  (st <|server.lastReplies := <[args.(conditionalPut.opId) := ""]>
+  (st <|server.lastReplies := <[args.(conditionalPut.opId) := ""%go]>
                                 st.(server.lastReplies)|>)
 .
 
 Lemma ghost_conditionalPut_ok γ st args :
   st.(server.lastReplies) !! args.(conditionalPut.opId) = None →
-  default "" (st.(server.kvs) !! args.(conditionalPut.key)) = args.(conditionalPut.expectedVal) →
+  default ""%go (st.(server.kvs) !! args.(conditionalPut.key)) = args.(conditionalPut.expectedVal) →
   £ 1 -∗
   conditionalPut_core_pre γ args -∗
   server.own_ghost γ st ={⊤}=∗
@@ -1095,19 +1092,19 @@ Proof.
     by rewrite H1.
   }
 
-  iMod ("Hclose" $! "ok" with "HQ") as "[Herpc #Hwit]".
+  iMod ("Hclose" $! "ok"%go with "HQ") as "[Herpc #Hwit]".
   iModIntro.
   iFrame "∗#%". iPureIntro. simpl. by f_equiv.
 Qed.
 
 Lemma ghost_conditionalPut_not_ok γ st args :
   st.(server.lastReplies) !! args.(conditionalPut.opId) = None →
-  default "" (st.(server.kvs) !! args.(conditionalPut.key)) ≠ args.(conditionalPut.expectedVal) →
+  default ""%go (st.(server.kvs) !! args.(conditionalPut.key)) ≠ args.(conditionalPut.expectedVal) →
   £ 1 -∗
   conditionalPut_core_pre γ args -∗
   server.own_ghost γ st ={⊤}=∗
   server.own_ghost γ (cond_put_not_ok st args) ∗
-  conditionalPut_core_post γ args "".
+  conditionalPut_core_post γ args ""%go.
 Proof.
   intros.
   iIntros "Hlc Hspec". iNamed 1.
@@ -1123,18 +1120,18 @@ Proof.
     by rewrite H1.
   }
   iMod ("Hau" with "Hptsto") as "HQ".
-  iMod ("Hclose" $! "" with "HQ") as "[Herpc #Hwit]".
+  iMod ("Hclose" $! ""%go with "HQ") as "[Herpc #Hwit]".
   iModIntro.
   iFrame "∗#%" .
 Qed.
 
-Lemma wp_Server__conditionalPut γ (s:loc) args_ptr (args:conditionalPut.C) :
+Lemma wp_Server__conditionalPut γ (s:loc) (args__v:val) (args:conditionalPut.C) :
   {{{
         "#Hsrv" ∷ is_Server s γ ∗
         "Hspec" ∷ conditionalPut_core_pre γ args ∗
-        "Hargs" ∷ conditionalPut.own args_ptr args (DfracOwn 1)
+        "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1)
   }}}
-    Server__conditionalPut #s #args_ptr
+    Server__conditionalPut #s args__v
   {{{ r, RET #(str r); conditionalPut_core_post γ args r }}}
 .
 Proof.
@@ -1148,8 +1145,8 @@ Proof.
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
-  iNamed "Hargs".
-  wp_loadField.
+  iUnfold conditionalPut.own in "Hargs". iNamed "Hargs".
+  rewrite Hown_struct. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HlastRepliesM").
   iIntros (??) "[%HlastReply HlastRepliesM]".
@@ -1174,16 +1171,11 @@ Proof.
   iIntros (ret2_ptr) "Hret".
   wp_pures.
   wp_loadField.
-  wp_loadField.
   wp_apply (wp_MapGet with "HkvsM").
   iIntros (??) "[%Hlookup HkvsM]".
   wp_pures.
-  wp_loadField.
-  wp_pures.
   wp_if_destruct.
   { (* case: the old value matches the expected value *)
-    wp_loadField.
-    wp_loadField.
     wp_loadField.
     wp_apply (wp_MapInsert with "HkvsM").
     { done. }
@@ -1194,7 +1186,6 @@ Proof.
     wp_store.
     wp_pures.
     wp_load.
-    wp_loadField.
     wp_loadField.
     wp_apply (wp_MapInsert with "HlastRepliesM").
     { done. }
@@ -1227,7 +1218,6 @@ Proof.
 
   wp_pures.
   wp_load.
-  wp_loadField.
   wp_loadField.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
@@ -1279,9 +1269,9 @@ Lemma ghost_get γ st args :
   server.own_ghost γ st ={⊤}=∗
   server.own_ghost γ
         (st <|server.lastReplies :=
-        <[args.(get.opId) := (default "" (st.(server.kvs) !! args.(get.key)))]>
+        <[args.(get.opId) := (default ""%go (st.(server.kvs) !! args.(get.key)))]>
           st.(server.lastReplies)|>) ∗
-  get_core_post γ args (default "" (st.(server.kvs) !! args.(get.key))).
+  get_core_post γ args (default ""%go (st.(server.kvs) !! args.(get.key))).
 Proof.
   intros.
   iIntros "Hlc Hspec". iNamed 1.
@@ -1298,13 +1288,13 @@ Proof.
   iFrame "∗#%".
 Qed.
 
-Lemma wp_Server__get (s:loc) γ args_ptr (args:get.C) :
+Lemma wp_Server__get (s:loc) γ (args__v:val) (args:get.C) :
   {{{
         "#Hsrv" ∷ is_Server s γ ∗
         "Hspec" ∷ get_core_pre γ args ∗
-        "Hargs" ∷ get.own args_ptr args (DfracOwn 1)
+        "Hargs" ∷ get.own args__v args (DfracOwn 1)
   }}}
-    Server__get #s #args_ptr
+    Server__get #s args__v
   {{{
         r, RET #(str r); get_core_post γ args r
   }}}
@@ -1320,8 +1310,8 @@ Proof.
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
-  iNamed "Hargs".
-  wp_loadField.
+  iUnfold get.own in "Hargs". iNamed "Hargs".
+  rewrite Hown_struct. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HlastRepliesM").
   iIntros (??) "[%HlastReply HlastRepliesM]".
@@ -1342,11 +1332,9 @@ Proof.
     iApply "Hspec".
   }
   wp_loadField.
-  wp_loadField.
   wp_apply (wp_MapGet with "HkvsM").
   iIntros (?? )"[%Hlookup HkvsM]".
   wp_pures.
-  wp_loadField.
   wp_loadField.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
@@ -1410,7 +1398,7 @@ Proof.
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (kvs_loc) "HkvsM".
   wp_storeField.
   wp_apply (wp_NewMap u64).
@@ -1455,9 +1443,8 @@ Program Definition conditionalPut_spec γ :=
     spec_ty := conditionalPut.C ;
     spec_Pre := (λ args enc_args, ⌜ conditionalPut.has_encoding enc_args args ⌝ ∗
                                        conditionalPut_core_pre γ args)%I;
-    spec_Post := (λ args enc_args enc_reply, ∃ reply,
-                     ⌜ enc_reply = string_to_bytes reply ⌝ ∗
-                     conditionalPut_core_post γ args reply)%I;
+    spec_Post := (λ args enc_args enc_reply,
+                     conditionalPut_core_post γ args enc_reply)%I;
   |}.
 
 Program Definition get_spec γ :=
@@ -1465,9 +1452,8 @@ Program Definition get_spec γ :=
     spec_ty := get.C ;
     spec_Pre := (λ args enc_args, ⌜ get.has_encoding enc_args args ⌝ ∗
                                        get_core_pre γ args)%I;
-    spec_Post := (λ args enc_args enc_reply, ∃ reply,
-                     ⌜ enc_reply = string_to_bytes reply ⌝ ∗
-                     get_core_post γ args reply)%I;
+    spec_Post := (λ args enc_args enc_reply,
+                     get_core_post γ args enc_reply)%I;
   |}.
 
 Definition is_kvserver_host host γ : iProp Σ :=
@@ -1706,13 +1692,13 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__putRpc cl args args_ptr γ :
+Lemma wp_Client__putRpc cl args args__v γ :
   {{{
-        "Hargs" ∷ put.own args_ptr args (DfracOwn 1) ∗
+        "Hargs" ∷ put.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl γ ∗
         "#Hspec" ∷ □ put_core_pre γ args
   }}}
-    Client__putRpc #cl #args_ptr
+    Client__putRpc #cl args__v
   {{{
         (err:u64), RET #err; if decide (err = 0) then put_core_post γ args else True
   }}}.
@@ -1749,15 +1735,15 @@ Proof.
   { iApply "HΦ". rewrite decide_False //. }
 Qed.
 
-Lemma wp_Client__conditionalPutRpc γ cl args args_ptr :
+Lemma wp_Client__conditionalPutRpc γ cl args args__v :
   {{{
-        "Hargs" ∷ conditionalPut.own args_ptr args (DfracOwn 1) ∗
+        "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl γ ∗
         "#Hspec" ∷ □ conditionalPut_core_pre γ args
   }}}
-    Client__conditionalPutRpc #cl #args_ptr
+    Client__conditionalPutRpc #cl args__v
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then
                                                     conditionalPut_core_post γ args s
                                                   else True
   }}}.
@@ -1786,26 +1772,26 @@ Proof.
   {
     destruct err.
     { destruct c; by exfalso. }
-    iDestruct "Hpost" as "(? & (% & % & ? & ? & (% & % & ?)))".
+    iDestruct "Hpost" as "(? & (% & % & ? & ? & ?))".
     subst.
     wp_load.
     wp_apply (wp_StringFromBytes with "[$]").
     iIntros "?".
     wp_pures. iApply "HΦ".
-    iModIntro. rewrite string_to_bytes_to_string. iFrame.
+    iModIntro. iFrame.
   }
   { wp_pures. iApply "HΦ". rewrite decide_False //. }
 Qed.
 
-Lemma wp_Client__getRpc γ cl args args_ptr :
+Lemma wp_Client__getRpc γ cl args args__v :
   {{{
-        "Hargs" ∷ get.own args_ptr args (DfracOwn 1) ∗
+        "Hargs" ∷ get.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl γ ∗
         "#Hspec" ∷ □ get_core_pre γ args
   }}}
-    Client__getRpc #cl #args_ptr
+    Client__getRpc #cl args__v
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then get_core_post γ args s else True
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then get_core_post γ args s else True
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -1832,13 +1818,13 @@ Proof.
   {
     destruct err.
     { destruct c; by exfalso. }
-    iDestruct "Hpost" as "(? & (% & % & ? & ? & (% & % & ?)))".
+    iDestruct "Hpost" as "(? & (% & % & ? & ? & ?))".
     subst.
     wp_load.
     wp_apply (wp_StringFromBytes with "[$]").
     iIntros "?".
     wp_pures. iApply "HΦ".
-    iModIntro. rewrite string_to_bytes_to_string. iFrame.
+    iModIntro. iFrame.
   }
   { wp_pures. iApply "HΦ". rewrite decide_False //. }
 Qed.
@@ -1908,17 +1894,13 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
-  wp_loadField.
+  wp_loadField. 
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__putRpc with "[Hcl OpId Key Val]").
-  { instantiate (1:=put.mkC _ _ _). iFrame "∗#". }
+  wp_apply (wp_Client__putRpc with "[Hcl]").
+  { instantiate (1:=put.mkC _ _ _). iFrame "∗#".
+    iUnfold put.own. iPureIntro. reflexivity.
+  }
   Unshelve.
   2:{ iFrame. }
   iIntros (err) "Hpost".
@@ -1997,17 +1979,13 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__conditionalPutRpc with "[Hcl OpId Key ExpectedVal NewVal]").
-  { instantiate (1:=conditionalPut.mkC _ _ _ _). iFrame "∗#". }
+  wp_apply (wp_Client__conditionalPutRpc with "[Hcl]").
+  { instantiate (1:=conditionalPut.mkC _ _ _ _). iFrame "∗#".
+    iUnfold conditionalPut.own. iPureIntro. reflexivity.
+  }
   Unshelve.
   2:{
     instantiate (1:=(λ x, True -∗ Φ #x)%I).
@@ -2095,17 +2073,13 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__getRpc with "[Hcl OpId Key]").
-  { instantiate (1:=get.mkC _ _). iFrame "∗#". }
+  wp_apply (wp_Client__getRpc with "[Hcl]").
+  { instantiate (1:=get.mkC _ _). iFrame "∗#".
+    iUnfold get.own. iPureIntro. reflexivity.
+  }
   Unshelve.
   3:{ iFrame. }
   iIntros (ret err) "Hpost".

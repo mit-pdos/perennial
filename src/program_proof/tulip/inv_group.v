@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.rsm.pure Require Import list quorum fin_maps.
+From Perennial.program_proof.rsm.pure Require Import list quorum fin_maps fin_sets.
 From Perennial.program_proof.tulip Require Import base cmd res stability.
 
 Lemma tpls_group_keys_group_dom gid tpls :
@@ -334,7 +334,8 @@ Section inv.
       "%Hcm"      ∷ ⌜cm = omap txnst_to_option_bool stm⌝ ∗
       "%Hpil"     ∷ ⌜prepared_impl_locked stm tspreps⌝ ∗
       "%Hlip"     ∷ ⌜locked_impl_prepared stm tspreps⌝ ∗
-      "%Htsnz"    ∷ ⌜stm !! O = None⌝.
+      "%Htsnz"    ∷ ⌜stm !! O = None⌝ ∗
+      "%Hcscincl" ∷ ⌜txn_cpool_subsume_log cpool log⌝.
 
   Definition group_inv_no_log_with_cpool
     γ (gid : u64) (log : dblog) (cpool : gset ccommand) : iProp Σ :=
@@ -358,6 +359,45 @@ Section inv.
       "Hlog"    ∷ own_txn_log_half γ gid log ∗
       "Hcpool"  ∷ own_txn_cpool_half γ gid cpool ∗
       "Hgroup"  ∷ group_inv_no_log_no_cpool γ gid log cpool.
+
+  #[global]
+  Instance group_inv_timeless γ gid :
+    Timeless (group_inv γ gid).
+  Proof.
+    rewrite /group_inv.
+    repeat (apply exist_timeless => ?).
+    repeat (apply sep_timeless; try apply _).
+    rewrite /group_inv_no_log_no_cpool.
+    repeat (apply exist_timeless => ?).
+    repeat (apply sep_timeless; try apply _).
+    - rewrite /group_inv_proposals_map.
+      repeat (apply exist_timeless => ?).
+      repeat (apply sep_timeless; try apply _).
+      * apply big_sepM_timeless. intros ???.
+        rewrite /exclusive_proposals.
+        apply big_sepS_timeless. intros y Hin.
+        rewrite /exclusive_proposal.
+        destruct (decide _); apply _.
+      * apply big_sepM_timeless. intros ???.
+        rewrite /safe_proposals.
+        apply big_sepM_timeless. intros y b Hlook.
+        rewrite /safe_proposal.
+        repeat (apply exist_timeless => ?).
+        repeat (apply sep_timeless; try apply _).
+        rewrite /is_group_prepare_proposal_if_classic.
+        destruct (decide _); apply _.
+    - apply big_sepM_timeless. intros x ??.
+      rewrite /safe_txnst.
+      destruct x; try apply _.
+    - apply big_sepM_timeless. intros x y ?.
+      rewrite /safe_prepare.
+      rewrite /quorum_prepared/quorum_pdec/quorum_unprepared/quorum_validated/quorum_pdec.
+      rewrite /quorum_pdec_at_rank.
+      destruct y; try apply _.
+    - apply big_sepS_timeless. intros x ?.
+      rewrite /safe_submit.
+      destruct x; try apply _.
+  Qed.
 
 End inv.
 
@@ -446,7 +486,13 @@ Section lemma.
       iPureIntro.
       split; first done.
       rewrite /valid_pwrs Hwg wrs_group_keys_group_dom.
-      set_solver.
+      rewrite /valid_wrs in Hvw.
+      rewrite /keys_group.
+      (* [set_solver] is able to solve this directly when [key_to_group] is
+      admitted, but is unable to solve this after it is defined, so we apply an
+      additional lemma [filter_subseteq_mono]. *)
+      (* set_solver. *)
+      by apply filter_subseteq_mono.
     }
     { by iDestruct "Hsafec" as "[_ %Hvts]". }
   Qed.

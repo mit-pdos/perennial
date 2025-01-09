@@ -2,6 +2,7 @@ From Perennial.program_proof.tulip Require Import prelude.
 From Perennial.program_proof.tulip.invariance Require Import prepare.
 
 Section inv.
+  Context `{!heapGS Σ}.
   Context `{!tulip_ghostG Σ}.
 
   Lemma txnsys_group_inv_unprepare γ p gid ts pwrs :

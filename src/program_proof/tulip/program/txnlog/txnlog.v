@@ -23,9 +23,9 @@ Section program.
   Theorem wp_TxnLog__Lookup (log : loc) (lsn : u64) (gid : u64) γ :
     is_txnlog log gid γ -∗
     {{{ True }}}
-    <<< ∀∀ l, own_txn_log_half γ gid l >>>
+    <<< ∀∀ l s, own_txn_consensus_half γ gid l s >>>
       TxnLog__Lookup #log #lsn @ ↑paxosNS ∪ ↑txnlogNS
-    <<< ∃∃ l', own_txn_log_half γ gid l' >>>
+    <<< ∃∃ l', own_txn_consensus_half γ gid l' s ∗ ⌜txn_cpool_subsume_log s l'⌝ >>>
     {{{ (c : ccommand) (ok : bool) (pwrsP : Slice.t), RET (ccommand_to_val pwrsP c, #ok);
         (if ok then own_pwrs_slice pwrsP c else True) ∗
         ⌜if ok then l' !! (uint.nat lsn) = Some c else True⌝
@@ -42,17 +42,15 @@ Section program.
     wp_apply (wp_Paxos__Lookup with "Hpx").
     iInv "Hinv" as "> HinvO" "HinvC".
     rewrite difference_difference_l_L.
-    iMod "HAU" as (tlogX) "[HtlogX HAU]".
+    iMod "HAU" as (tlogX tcpoolX) "[[HtlogX HtcpoolX] HAU]".
     iModIntro.
     iNamed "HinvO".
     (* Witness a lower bound of the paxos log. *)
     iDestruct (log_witness with "Hplog") as "#Hploglb".
     (* Pass the paxos log to the paxos library. *)
-    iFrame "Hplog".
+    iFrame "Hplog Hpcpool".
     (* Get back the updated paxos log. *)
-    iIntros (plog') "Hplog".
-    (* Derive inclusion property between paxos log and cpool. *)
-    iDestruct (log_cpool_subsume with "Hplog Hpcpool") as %Hincl.
+    iIntros (plog') "[[Hplog Hpcool] %Hincl]".
     (* Prove that the new paxos log is an extension of the old one. *)
     iDestruct (log_prefix with "Hplog Hploglb") as %Hprefix.
     destruct Hprefix as [plogext Hplog].
@@ -69,23 +67,26 @@ Section program.
       destruct Hcpoolabs as (tc & Htc & Henc).
       by exists tc.
     }
-    (* Agreement of txn log. *)
+    (* Agreement of txn log and command pool. *)
     iDestruct (txn_log_agree with "Htlog HtlogX") as %->.
+    iDestruct (txn_cpool_agree with "Htcpool HtcpoolX") as %->.
     (* Update the txn log. *)
-    iMod (txn_log_extend tlogext with "Htlog HtlogX Htcpool")
-      as "(Htlog & HtlogX & Htcpool)".
+    iMod (txn_log_extend tlogext with "Htlog HtlogX")
+      as "[Htlog HtlogX]".
+    assert (Hcsincl' : txn_cpool_subsume_log tcpool (tlog ++ tlogext)).
     { rewrite /txn_cpool_subsume_log Forall_forall.
-      intros x Hx.
-      rewrite Forall2_lookup in Hext.
-      apply elem_of_list_lookup in Hx as [i Hx].
-      specialize (Hext i).
-      rewrite Hx in Hext.
-      destruct (plogext !! i) as [y |]; last inv Hext.
-      inv Hext.
-      by destruct H1 as [? _].
+      intros c Hc.
+      apply elem_of_app in Hc.
+      destruct Hc as [Hintlog | Hinext]; last first.
+      { apply elem_of_list_lookup in Hinext as [i Hc].
+        by pose proof (Forall2_lookup_r _ _ _ _ _ Hext Hc) as (x & _ & ? & _).
+      }
+      rewrite /txn_cpool_subsume_log Forall_forall in Hcsincl.
+      by apply Hcsincl.
     }
     (* Apply the view shift. *)
-    iMod ("HAU" with "HtlogX") as "HΦ".
+    iMod ("HAU" with "[$HtlogX $HtcpoolX]") as "HΦ".
+    { done. }
     (* Re-establish the txnlog invariant. *)
     set tlog' := tlog ++ tlogext.
     assert (Hlogabs' : Forall2 (λ tc pc, encode_ccommand tc pc) tlog' plog').
@@ -98,6 +99,7 @@ Section program.
     iMod ("HinvC" with "[-HΦ]") as "_".
     { iFrame.
       iPureIntro.
+      split; first apply Hcsincl'.
       split; [apply Hlogabs' | apply Hcpoolabs].
     }
     iModIntro.
@@ -228,13 +230,17 @@ Section program.
     (* Update the txn cpool. *)
     set tcpool' := _ ∪ tcpool.
     iMod (txn_cpool_update tcpool' with "Htcpool HtcpoolX") as "[Htcpool HtcpoolX]".
-    { set_solver. }
     (* Apply the view shift. *)
     iMod ("HAU" with "HtcpoolX") as "HΦ".
     (* Re-establish the txnlog invariant. *)
     iMod ("HinvC" with "[-HΦ]") as "_".
     { iFrame.
       iPureIntro.
+      split.
+      { rewrite /txn_cpool_subsume_log.
+        apply (Forall_impl _ _ _ Hcsincl).
+        set_solver.
+      }
       split; first done.
       apply set_Forall_union; last first.
       { apply (set_Forall_impl _ _ _ Hcpoolabs).
@@ -246,7 +252,6 @@ Section program.
       exists (CmdAbort (uint.nat ts)).
       split; first set_solver.
       simpl.
-      rewrite bytes_to_string_to_bytes.
       rewrite /encode_abort_cmd.
       by rewrite w64_to_nat_id.
     }
@@ -308,13 +313,17 @@ Section program.
     (* Update the txn cpool. *)
     set tcpool' := _ ∪ tcpool.
     iMod (txn_cpool_update tcpool' with "Htcpool HtcpoolX") as "[Htcpool HtcpoolX]".
-    { set_solver. }
     (* Apply the view shift. *)
     iMod ("HAU" with "HtcpoolX") as "HΦ".
     (* Re-establish the txnlog invariant. *)
     iMod ("HinvC" with "[-HΦ]") as "_".
     { iFrame.
       iPureIntro.
+      split.
+      { rewrite /txn_cpool_subsume_log.
+        apply (Forall_impl _ _ _ Hcsincl).
+        set_solver.
+      }
       split; first done.
       apply set_Forall_union; last first.
       { apply (set_Forall_impl _ _ _ Hcpoolabs).
@@ -325,7 +334,7 @@ Section program.
       apply set_Forall_singleton.
       exists (CmdCommit (uint.nat ts) pwrs).
       split; first set_solver.
-      rewrite /= bytes_to_string_to_bytes -app_assoc.
+      rewrite /= -app_assoc.
       exists (u64_le ts ++ mdata).
       split; first done.
       exists mdata.
@@ -359,8 +368,8 @@ Section program.
   Qed.
 
   Theorem wp_Start
-    (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list string)
-    (addrmP : loc) (addrm : gmap u64 chan) (fname : string) gid γ π :
+    (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string)
+    (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) gid γ π :
     termc = (W64 0) ->
     terml = (W64 0) ->
     lsnc = (W64 0) ->

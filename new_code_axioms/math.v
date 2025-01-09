@@ -101,5 +101,5 @@ Axiom Float32bits : val.
 Axiom Float32frombits : val.
 Axiom Float64bits : val.
 Axiom Float64frombits : val.
-
+Axiom initialize' : val.
 End axioms.

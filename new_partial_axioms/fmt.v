@@ -10,17 +10,17 @@ Axiom wrapError__Unwrap : val.
 Axiom wrapErrors__Error : val.
 Axiom wrapErrors__Unwrap : val.
 Axiom State : go_type.
-Axiom State__mset : list (string * val).
-Axiom State__mset_ptr : list (string * val).
+Axiom State__mset : list (go_string * val).
+Axiom State__mset_ptr : list (go_string * val).
 Axiom Formatter : go_type.
-Axiom Formatter__mset : list (string * val).
-Axiom Formatter__mset_ptr : list (string * val).
+Axiom Formatter__mset : list (go_string * val).
+Axiom Formatter__mset_ptr : list (go_string * val).
 Axiom Stringer : go_type.
-Axiom Stringer__mset : list (string * val).
-Axiom Stringer__mset_ptr : list (string * val).
+Axiom Stringer__mset : list (go_string * val).
+Axiom Stringer__mset_ptr : list (go_string * val).
 Axiom GoStringer : go_type.
-Axiom GoStringer__mset : list (string * val).
-Axiom GoStringer__mset_ptr : list (string * val).
+Axiom GoStringer__mset : list (go_string * val).
+Axiom GoStringer__mset_ptr : list (go_string * val).
 Axiom FormatString : val.
 Axiom pp__Width : val.
 Axiom pp__Precision : val.
@@ -40,11 +40,11 @@ Axiom Println : val.
 Axiom Sprintln : val.
 Axiom Appendln : val.
 Axiom ScanState : go_type.
-Axiom ScanState__mset : list (string * val).
-Axiom ScanState__mset_ptr : list (string * val).
+Axiom ScanState__mset : list (go_string * val).
+Axiom ScanState__mset_ptr : list (go_string * val).
 Axiom Scanner : go_type.
-Axiom Scanner__mset : list (string * val).
-Axiom Scanner__mset_ptr : list (string * val).
+Axiom Scanner__mset : list (go_string * val).
+Axiom Scanner__mset_ptr : list (go_string * val).
 Axiom Scan : val.
 Axiom Scanln : val.
 Axiom Scanf : val.
@@ -63,5 +63,5 @@ Axiom ss__Token : val.
 Axiom readRune__ReadRune : val.
 Axiom readRune__UnreadRune : val.
 Axiom ss__SkipSpace : val.
-
+Axiom initialize' : val.
 End axioms.

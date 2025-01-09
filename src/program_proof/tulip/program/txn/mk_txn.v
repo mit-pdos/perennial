@@ -9,18 +9,20 @@ Section program.
   Theorem wp_mkTxn
     (sid : u64) (gaddrmPP : loc) (gaddrmP : gmap u64 loc)
     (gaddrm : gmap u64 (gmap u64 chan)) (proph : proph_id) γ :
+    uint.Z sid < zN_TXN_SITES →
     dom gaddrm = gids_all ->
     map_Forall (λ _ addrm, dom addrm = rids_all) gaddrm ->
     own_map gaddrmPP DfracDiscarded gaddrmP -∗
     ([∗ map] addrmP; addrm ∈ gaddrmP; gaddrm, own_map addrmP DfracDiscarded addrm) -∗
+    have_gentid γ -∗
     know_tulip_inv_with_proph γ proph -∗
     ([∗ map] gid ↦ addrm ∈ gaddrm, know_tulip_network_inv γ gid addrm) -∗
-    {{{ True }}}
+    {{{ own_sid γ sid }}}
       mkTxn #sid #gaddrmPP #proph
     {{{ (txn : loc), RET #txn; own_txn_uninit txn γ }}}.
   Proof.
-    iIntros (Hgid Hrids) "#HgaddrmP #Hgaddrm #Hinv #Hinvnets".
-    iIntros (Φ) "!> _ HΦ".
+    iIntros (Hlt Hgid Hrids) "#HgaddrmP #Hgaddrm #Hgentid #Hinv #Hinvnets".
+    iIntros (Φ) "!> Hown_sid HΦ".
     wp_rec.
 
     (*@ func mkTxn(sid uint64, gaddrm map[uint64]map[uint64]grove_ffi.Address, proph primitive.ProphId) *Txn { @*)

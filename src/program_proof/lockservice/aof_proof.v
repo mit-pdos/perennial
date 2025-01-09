@@ -72,7 +72,7 @@ Definition is_aof aof_ptr γ (aof_ctx : (list u8) → iProp Σ) : iProp Σ :=
 .
 
 (* TODO: upgrade to WPC *)
-Lemma wp_CreateAppendOnlyFile (fname:string) data aof_ctx :
+Lemma wp_CreateAppendOnlyFile (fname:byte_string) data aof_ctx :
   {{{
        fname f↦{1} data ∗
        aof_ctx data

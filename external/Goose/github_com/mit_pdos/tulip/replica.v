@@ -64,7 +64,7 @@ Definition Replica__Commit: val :=
     then #true
     else
       let: ("lsn", "term") := txnlog.TxnLog__SubmitCommit (struct.loadF Replica "txnlog" "rp") "ts" "pwrs" in
-      (if: "lsn" = #0
+      (if: "term" = #0
       then #false
       else
         let: "safe" := txnlog.TxnLog__WaitUntilSafe (struct.loadF Replica "txnlog" "rp") "lsn" "term" in
@@ -84,7 +84,7 @@ Definition Replica__Abort: val :=
     then #true
     else
       let: ("lsn", "term") := txnlog.TxnLog__SubmitAbort (struct.loadF Replica "txnlog" "rp") "ts" in
-      (if: "lsn" = #0
+      (if: "term" = #0
       then #false
       else
         let: "safe" := txnlog.TxnLog__WaitUntilSafe (struct.loadF Replica "txnlog" "rp") "lsn" "term" in
@@ -547,6 +547,29 @@ Definition Replica__StartBackupTxnCoordinator: val :=
     backup.BackupTxnCoordinator__Finalize "tcoord";;
     #().
 
+(* For debugging and evaluation purpose. *)
+Definition Replica__DumpState: val :=
+  rec: "Replica__DumpState" "rp" "gid" :=
+    Mutex__Lock (struct.loadF Replica "mu" "rp");;
+    (* fmt.Printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n") *)
+    (* fmt.Printf("[G %d / R %d] Dumping replica state:\n", gid, rp.rid) *)
+    (* fmt.Printf("-------------------------------------------------------------\n") *)
+    (* fmt.Printf("Number of finalized txns: %d\n", uint64(len(rp.txntbl))) *)
+    (* fmt.Printf("Number of prepared txns: %d\n", uint64(len(rp.prepm))) *)
+    (* fmt.Printf("Number of acquired keys: %d\n", uint64(len(rp.ptsm))) *)
+    (* fmt.Printf("Applied LSN: %d\n\n", rp.lsna) *)
+    (* fmt.Printf("[G %d / R %d] Dumping paxos state:\n", gid, rp.rid) *)
+    (* fmt.Printf("-------------------------------------------------------------\n") *)
+    txnlog.TxnLog__DumpState (struct.loadF Replica "txnlog" "rp");;
+    (* fmt.Printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n") *)
+    Mutex__Unlock (struct.loadF Replica "mu" "rp");;
+    #().
+
+Definition Replica__ForceElection: val :=
+  rec: "Replica__ForceElection" "rp" :=
+    txnlog.TxnLog__ForceElection (struct.loadF Replica "txnlog" "rp");;
+    #().
+
 Definition Replica__RequestSession: val :=
   rec: "Replica__RequestSession" "rp" "conn" :=
     Skip;;
@@ -636,7 +659,18 @@ Definition Replica__RequestSession: val :=
                           let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_WRONG_LEADER in
                           grove_ffi.Send "conn" "data";;
                           Continue)
-                      else Continue))))))))));;
+                      else
+                        (if: "kind" = message.MSG_DUMP_STATE
+                        then
+                          let: "gid" := struct.get message.TxnRequest "Timestamp" "req" in
+                          Replica__DumpState "rp" "gid";;
+                          Continue
+                        else
+                          (if: "kind" = message.MSG_FORCE_ELECTION
+                          then
+                            Replica__ForceElection "rp";;
+                            Continue
+                          else Continue))))))))))));;
     #().
 
 Definition Replica__Serve: val :=
