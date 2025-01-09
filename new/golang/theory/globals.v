@@ -1,7 +1,14 @@
-From New.golang.theory Require Import exception mem typing hex list.
+From New.golang.theory Require Import exception mem typing list.
 From New.golang.defn Require Import globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.
 From Coq Require Import Ascii Equality.
+
+Section context.
+Context {PROP:bi}.
+Class BiContextRoot := { is_bi_context : PROP ; bi_context_pers :: Persistent is_bi_context }.
+Class BiContext `{BiContextRoot} (P : PROP) := { contains : is_bi_context -∗ P }.
+Global Arguments contains {_ _} (_).
+End context.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -28,15 +35,12 @@ End ghost_map_lemmas.
 Class goGlobals_preG `{ffi_syntax} (Σ: gFunctors) : Set :=
   {
     #[global] go_globals_inG :: ghost_mapG Σ go_string val ;
-    #[global] go_postcond_tok_inG :: ghost_mapG Σ go_string () ;
   }.
 
 Class goGlobalsGS `{ffi_syntax} Σ : Set :=
   GoGlobalsGS {
       #[global] go_globals_pre_inG :: goGlobals_preG Σ ;
       go_globals_name : gname ;
-      go_package_postcond_tok_name : gname ;
-      (* go_access_prev_state_name : gname ; *)
     }.
 
 Definition goGlobalsΣ `{ffi_syntax} : gFunctors :=
@@ -109,43 +113,47 @@ Proof.
   by iFrame.
 Qed.
 
+Lemma wp_GlobalGet_full k m :
+  {{{ own_globals m }}}
+    GlobalGet #k
+  {{{ RET (match (m !! k) with
+           | None => InjLV #()
+           | Some v => InjRV v
+           end); own_globals m  }}}.
+Proof.
+  iIntros (?) "Hg HΦ".
+  iNamed "Hg".
+  iInv "Hinv" as ">Hi".
+  iNamed "Hi".
+  rewrite to_val_unseal.
+  iApply (lifting.wp_GlobalGet with "[$]").
+  iIntros " !> Hg".
+  iCombine "Hauth Hauth2" gives %[_ ->].
+  iSpecialize ("HΦ" with "[$]").
+  by iFrame.
+Qed.
+
 (* This must be owned by the `init` thread. *)
 Definition own_globals_tok_def (pending_packages : gset go_string)
-  (pkg_postconds : gmap go_string (iProp Σ)): iProp Σ :=
+  (pkg_postconds : gmap go_string (∀ `(!BiContextRoot (PROP:=iProp Σ)), Type)): iProp Σ :=
   ∃ g (pkg_initialized : gmap go_string ()),
   "Hglobals" ∷ own_globals g ∗
-  "#Hinited" ∷ ([∗ map] pkg_name ↦ _ ∈ pkg_initialized,
+  "%Hpkg" ∷ (⌜ ∀ (pkg_name : go_string),
+               is_Some (g !! ("pkg:"%go ++ pkg_name)) ↔
+               is_Some (((gset_to_gmap tt pending_packages) ∪ pkg_initialized) !! pkg_name)
+               ⌝) ∗
+  "#Hinited" ∷ □ ([∗ map] pkg_name ↦ _ ∈ pkg_initialized,
                   match (pkg_postconds !! pkg_name) with
                   | None => False
-                  | Some P => inv nroot (pkg_name ↪[go_package_postcond_tok_name] () ∨ P)
+                  | Some InitializedContext => (∃ (root:BiContextRoot (PROP:=iProp Σ))
+                                                 (H:InitializedContext root), is_bi_context)
                   end
     ).
 Program Definition own_globals_tok := unseal (_:seal (@own_globals_tok_def)). Obligation 1. by eexists. Qed.
 Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
 
-Definition own_package_post_toks_def (used_pkgs : gset go_string) : iProp Σ :=
-  ghost_map_auth go_package_postcond_tok_name 1%Qp (gset_to_gmap () used_pkgs).
-Program Definition own_package_post_toks := unseal (_:seal (@own_package_post_toks_def)). Obligation 1. by eexists. Qed.
-Definition own_package_post_toks_unseal : own_package_post_toks = _ := seal_eq _.
-
-Definition own_package_post_tok_def (pkg_name : go_string) : iProp Σ :=
-  pkg_name ↪[go_package_postcond_tok_name] ().
-Program Definition own_package_post_tok := unseal (_:seal (@own_package_post_tok_def)). Obligation 1. by eexists. Qed.
-Definition own_package_post_tok_unseal : own_package_post_tok = _ := seal_eq _.
-
-Definition is_initialized_def (pkg_name : go_string) (P : iProp Σ) : iProp Σ :=
-  inv nroot (pkg_name ↪[go_package_postcond_tok_name] () ∨ P).
-Program Definition is_initialized := unseal (_:seal (@is_initialized_def)). Obligation 1. by eexists. Qed.
-Definition is_initialized_unseal : is_initialized = _ := seal_eq _.
-
 End definitions_and_lemmas.
 
-Section context.
-Context {PROP:bi}.
-Class BiContextRoot := { is_bi_context : PROP ; bi_context_pers :: Persistent is_bi_context }.
-Class BiContext `{BiContextRoot} (P : PROP) := { contains : is_bi_context -∗ P }.
-Global Arguments contains {_ _} (_).
-End context.
 
 Section global_vars.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -156,8 +164,15 @@ Class WpGlobalsGet (pkg_var_name : go_string * go_string) (addr : loc)
   := wp_globals_get : ⊢ ∀ Φ, is_bi_context -∗ (▷ Φ #addr) -∗
                              WP (globals.get pkg_var_name #()) {{ Φ }}.
 
-Definition is_defined (pkg_name : go_string) (var_addrs : list (go_string * loc)) : iProp Σ :=
-  is_global ("vars:"%go ++ pkg_name) (alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs)).
+Definition is_global_definitions (pkg_name : go_string)
+  (var_addrs : list (go_string * loc))
+  (functions : list (go_string * val))
+  (msets: list (go_string * (list (go_string * val))))
+  : iProp Σ :=
+  let var_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs) in
+  let functions_val := alist_val functions in
+  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
+  is_global ("pkg:"%go ++ pkg_name) (var_addrs_val, functions_val, msets_val).
 
 Lemma alist_lookup_f_loc n (var_addrs : list (go_string * loc)) :
   alist_lookup_f n ((λ '(name, addr), (name, #addr)) <$> var_addrs) =
@@ -172,8 +187,8 @@ Proof.
   rewrite IHvar_addrs //.
 Qed.
 
-Lemma wp_global_get_generic {pkg_name var_name var_addrs addr}
-  {Hdefined : BiContext (is_defined pkg_name var_addrs)} :
+Lemma wp_global_get' {pkg_name var_name var_addrs functions msets addr}
+  {Hdefined : BiContext (is_global_definitions pkg_name var_addrs functions msets)} :
   alist_lookup_f var_name var_addrs = Some addr →
   WpGlobalsGet (pkg_name, var_name) addr.
 Proof.
@@ -191,349 +206,122 @@ Proof.
   wp_pures. iApply "HΦ".
 Qed.
 
+(* No generic globals.alloc lemma. WPs for [globals.alloc vars] get proved for
+   each package individually. This is here so something useful shows up from
+   [Search]. *)
+Lemma there_is_no_generic_lemma_for_globals_alloc_and_define:
+  ∀ Φ pkg_name vars functions msets,
+  False -∗ WP (globals.alloc_and_define pkg_name vars functions msets #()) {{ Φ }}.
+Proof. iIntros. done. Qed.
+
 End global_vars.
 
-(** Example *)
-Module bar.
-(* XXX: these two are defined in a different module. *)
-Definition pkg_name := "bar"%go.
-Definition globalX'name := (pkg_name, "globalX")%go.
-
-Section bar.
-Class GlobalAddrs :=
-  {
-    globalX: loc;
-  }.
-
-Definition var_addrs {addrs : GlobalAddrs} : list (go_string * loc) :=
-  [(bar.globalX'name.2, globalX)].
-
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!BiContextRoot (PROP:=iProp Σ)}.
-Context `{!goGlobalsGS Σ}.
-Class GoDefinedContext :=
-  {
-    #[global] addrs :: GlobalAddrs;
-    #[global] is_defined :: BiContext (is_defined bar.pkg_name var_addrs);
-  }.
-
-Context `{!GoDefinedContext}.
-
-Global Instance wp_global_get_globalX : WpGlobalsGet (bar.pkg_name, "globalX")%go globalX.
-Proof.
-  apply wp_global_get_generic; reflexivity.
-Qed.
-End bar.
-End bar.
-
-Module foo.
-Definition pkg_name := "foo"%go.
-Definition globalA'name := (pkg_name, "globalA")%go.
-Definition globalB'name := (pkg_name, "globalB")%go.
-
-Section foo.
-
-Class GlobalAddrs :=
-  {
-    globalA: loc;
-    globalB: loc;
-  }.
-
-Definition var_addrs {addrs : GlobalAddrs} : list (go_string * loc) :=
-  [(foo.globalA'name.2, globalA);
-   (foo.globalB'name.2, globalB)].
-
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-Context `{!BiContextRoot (PROP:=iProp Σ)}.
-
-Class GoDefinedContext :=
-  {
-    #[global] addrs :: GlobalAddrs;
-    #[global] is_defined :: BiContext (is_defined foo.pkg_name var_addrs);
-    #[global] to_bar :: bar.GoDefinedContext;
-  }.
-
-Context `{!GoDefinedContext}.
-
-Lemma bar :
-  {{{ is_bi_context }}}
-    globals.get bar.globalX'name #()
-  {{{ RET #bar.globalX; True }}}.
-Proof.
-  iIntros (?) "#Hctx HΦ".
-  wp_apply (wp_globals_get with "[$]").
-  by iApply "HΦ".
-Qed.
-
-Instance wp_global_get_globalA : WpGlobalsGet globalA'name globalA.
-Proof.
-  apply wp_global_get_generic; reflexivity.
-Qed.
-
 Local Ltac unseal :=
-  rewrite ?own_globals_tok_unseal
-    ?is_initialized_unseal
-    ?own_package_post_toks_unseal
-    ?own_package_post_tok_unseal.
+  rewrite ?own_globals_tok_unseal.
 
-Global Instance is_initialized_persistent a b:
-  Persistent (is_initialized a b).
-Proof. unseal. apply _. Qed.
+Section package_init.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!goGlobalsGS Σ}.
 
-Lemma own_package_post_toks_get (pkg_name : go_string) (used_pkgs : gset go_string) :
-  pkg_name ∉ used_pkgs →
-  own_package_post_toks used_pkgs ==∗
-  own_package_post_tok pkg_name ∗
-  own_package_post_toks ({[ pkg_name ]} ∪ used_pkgs).
-Proof.
-  unseal.
-  iIntros (?) "Hpkg".
-  iMod (ghost_map_insert with "Hpkg") as "[H H2]".
-  { by rewrite lookup_gset_to_gmap_None. }
-  iFrame.
-  rewrite -gset_to_gmap_union_singleton.
-  by iFrame.
-Qed.
-
-Lemma is_initialized_get_post pkg_name P :
-  own_package_post_tok pkg_name -∗
-  is_initialized pkg_name P ={⊤}=∗
-  ▷ P.
-Proof.
-  unseal.
-  iIntros "Htok #Hinv".
-  iInv "Hinv" as "Hi" "Hclose".
-  iDestruct "Hi" as "[>Hbad|$]".
-  { iCombine "Hbad Htok" gives %Hbad. exfalso. naive_solver. }
-  by iMod ("Hclose" with "[$Htok]").
-Qed.
-
-Lemma wp_globals_put pkg_var_name used_pkg_vars (addr : loc) :
-  pkg_var_name ∉ used_pkg_vars →
-  {{{ own_unused_vars pkg_var_name.1 used_pkg_vars }}}
-    globals.put pkg_var_name #addr
-  {{{ RET #();
-      own_unused_vars pkg_var_name.1 ({[ pkg_var_name ]} ∪ used_pkg_vars) ∗
-      is_global_addr pkg_var_name addr
-  }}}.
-Proof.
-  iIntros (??) "Hu HΦ".
-  wp_call_lc "Hlc".
-  rewrite to_val_unseal.
-  simpl.
-  unseal.
-  iNamed "Hu".
-  unseal.
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-  iNamed "Hi".
-  iCombine "Hglobals Hglobals_i" gives %[_ Heq]. subst.
-  iCombine "Hglobals Hglobals_i" as "Hglobals".
-  iApply (wp_GlobalPut with "[$]").
-  iNext. iIntros "Hglobals".
-  iMod (ghost_map_insert_persist pkg_var_name addr with "Haddrs")
-    as "[Haddrs #Hptsto]".
-  {
-    eapply lookup_weaken_None in Hvars.
-    { rewrite lookup_fmap fmap_None // in Hvars.
-      erewrite lookup_kmap in Hvars.
-      - done.
-      - apply _.
-    }
-    rewrite lookup_union lookup_kmap Hold_unused.
-    rewrite (not_elem_of_dom_1 var_addrs) //.
-  }
-  iDestruct "Hglobals" as "[Hglobals Hglobals_i]".
-  iMod ("Hclose" with "[-HΦ Hglobals Hacc]") as "_".
-  {
-    iFrame "∗#%". iPureIntro.
-    rewrite kmap_insert fmap_insert [in #addr]to_val_unseal /=.
-    by apply insert_mono.
-  }
-  iApply "HΦ".
-  rewrite insert_union_l -kmap_insert.
-  iFrame "∗#%".
-  iPureIntro.
-  set_solver.
-Qed.
-
-Lemma wp_globals_get pkg_var_name (addr : loc) :
-  {{{ is_global_addr pkg_var_name addr }}}
-    globals.get pkg_var_name #()
-  {{{ RET #addr; True }}}.
-Proof.
-  unseal.
-  iIntros (?) "Hu HΦ".
-  iDestruct "Hu" as "(#Hinv & #Haddr)".
-  wp_call_lc "Hlc".
-  wp_bind (GlobalGet _).
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-  iNamed "Hi".
-  rewrite [in (GlobalGet _)]to_val_unseal.
-  iApply (wp_GlobalGet with "[$]").
-  iNext. iIntros.
-  iCombine "Haddrs Haddr" gives %Hlookup.
-  erewrite lookup_weaken; try eassumption.
-  2:{ rewrite lookup_fmap lookup_kmap Hlookup //. }
-  iMod ("Hclose" with "[-HΦ]").
-  { iFrame "∗#%". }
-  iModIntro. wp_pures. by iApply "HΦ".
-Qed.
-
-Lemma wp_package_init pending postconds (pkg_name : go_string) (init_func : val) P Φ :
-  postconds !! pkg_name = Some P →
+Lemma wp_package_init
+  pending Φ
+  (postconds : gmap go_string (∀ `{!BiContextRoot (PROP:=iProp Σ)}, Type))
+  (pkg_name : go_string) (init_func : val)
+  vars functions msets
+  (GoDefinedContext : ∀ `{!BiContextRoot (PROP:=iProp Σ)}, Type)
+  (GoInitializedContext : (∀ `{!BiContextRoot (PROP:=iProp Σ)}, Type))
+  :
+  (∀ g,
+     g !! ("pkg:"%go ++ pkg_name) = None →
+     {{{ own_globals g }}}
+       globals.alloc_and_define pkg_name vars functions msets (# ())
+     {{{ `(!BiContextRoot) `(!GoDefinedContext) v, RET #();
+         is_bi_context ∗
+         own_globals (<[("pkg:"%go ++ pkg_name) := v]> g)
+     }}}
+  ) →
+  (∀ `(!BiContextRoot) `(!GoDefinedContext),
+     own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
+     WP init_func #()
+       {{ v, ⌜ v = #tt ⌝ ∗ ∃ (r: BiContextRoot) `(!GoInitializedContext),
+             is_bi_context ∗
+             own_globals_tok ({[ pkg_name ]} ∪ pending) postconds
+       }}
+  ) →
+  postconds !! pkg_name = Some (@GoInitializedContext) →
   pkg_name ∉ pending →
   own_globals_tok pending postconds -∗
-  (own_unused_vars pkg_name ∅ -∗
-   (∀ vars, own_unused_vars pkg_name vars ==∗ own_globals_tok ({[ pkg_name ]} ∪ pending) postconds) -∗
-   WP init_func #()
-     {{ _, P ∗
-           own_globals_tok ({[ pkg_name ]} ∪ pending) postconds
-     }}
-  ) -∗
-  (is_initialized pkg_name P -∗ own_globals_tok pending postconds -∗ Φ #()) -∗
-  WP (globals.package_init pkg_name init_func) {{ Φ }}.
+  (∀ `(!BiContextRoot) `(!GoInitializedContext),
+     is_bi_context -∗ own_globals_tok pending postconds -∗ Φ #()) -∗
+  WP (globals.package_init pkg_name vars functions msets init_func) {{ Φ }}.
 Proof.
   unseal.
-  intros Hpost Hnot_pending.
-  iIntros "Htok Hinit HΦ".
+  intros Hwp_alloc Hwp_init Hpost Hnot_pending.
+  iIntros "Htok HΦ".
   wp_call.
   iNamed "Htok".
   wp_bind (GlobalGet _).
-  rewrite [in GlobalGet _]to_val_unseal.
-  iApply (wp_GlobalGet with "[$]").
+  iApply (wp_GlobalGet_full with "[$]").
   iNext. iIntros "Hglobals".
-  destruct (lookup (globals.encode_package pkg_name) g) eqn:Hlookup; rewrite Hlookup.
-  { (* don't bother running init *)
+  destruct (lookup _ g) eqn:Hlookup.
+  { (* don't run init because the package has already been initialized *)
     wp_pures.
     pose proof (Hpkg pkg_name) as Hpkg'.
     rewrite Hlookup /= in Hpkg'.
-    destruct Hpkg' as [|Hpkg']; first done.
-    destruct (pkg_initialized !! pkg_name) as [[]|] eqn:Hpkg_lookup; last naive_solver.
-    inversion_clear Hpkg'.
+    symmetry in Hpkg'.
+    rewrite lookup_union in Hpkg'.
+    rewrite lookup_gset_to_gmap option_guard_False //=
+      left_id in Hpkg'.
+    destruct Hpkg' as [_ Hpkg'].
+    specialize (Hpkg' ltac:(done)).
+    destruct Hpkg'.
     iDestruct (big_sepM_lookup with "Hinited") as "H".
     { done. }
     rewrite Hpost /=.
-    wp_pures.
-    iApply "HΦ".
-    { iFrame "#". }
+    iDestruct "H" as (? ?) "Hctx".
+    unshelve iApply ("HΦ" $! _ ltac:(done) with "[$]").
     iFrame "∗#%".
   }
   (* actually run init *)
-  iMod (ghost_var_update (Some g) with "Hacc") as "[Hacc Hacc2]".
   wp_pures.
-  wp_bind (init_func _).
-  iSpecialize ("Hinit" with "[Hglobals Hacc2]").
-  {
-    iFrame "∗#%".
-    iExists ∅.
-    rewrite kmap_empty left_id.
-    iFrame.
-    iPureIntro.
-    split; first done.
-    specialize (Hpkg pkg_name).
-    destruct Hpkg as [|Hpkg]; first done.
-    destruct (pkg_initialized !! pkg_name); first naive_solver.
-    destruct Hpkg as [_ Hnone].
-    done.
-  }
-  iSpecialize ("Hinit" with "[Hacc]").
-  {
-    iRename "Hacc" into "Hacc2".
-    rename g into g_old.
-    iClear "Hinv".
-    iIntros (?). iNamed 1.
-    iCombine "Hacc Hacc2" gives %[_ [=Heq]].
-    subst.
-    iCombine "Hacc Hacc2" as "Hacc".
-    iMod (ghost_var_update None with "Hacc") as "Hacc".
-    iModIntro.
-    iFrame "∗#%".
-    iPureIntro.
+  wp_apply (Hwp_alloc with "[$]").
+  { done. }
+  iIntros "* [#Hctx Hglobals]".
+  wp_pures.
+  iDestruct (Hwp_init with "[Hglobals]") as "Hinit".
+  { done. }
+  { iFrame "∗#%". iPureIntro.
     intros pkg_name'.
-    destruct (decide (pkg_name' ∈ {[pkg_name]} ∪ pending)).
-    { by left. }
-    right.
     specialize (Hpkg pkg_name').
-    destruct Hpkg as [|Hpkg].
-    { set_solver. }
-    destruct (pkg_initialized !! pkg_name').
-    {
-      rewrite lookup_union_r // lookup_kmap_None.
-      intros. exfalso.
-      by eapply encode_var_name_package_name_ne.
-    }
-    {
-      destruct Hpkg as [? Hpkg].
-      split.
-      { rewrite lookup_union_r // lookup_kmap_None.
-        intros. exfalso.
-        by eapply encode_var_name_package_name_ne. }
-      {
-        intros.
-        rewrite lookup_union_r //.
-        rewrite lookup_kmap.
-        rewrite -not_elem_of_dom.
-        intros Hin.
-        specialize (Hused_pkg (pkg_name', var_name) ltac:(done)).
-        subst. set_solver.
-      }
-    }
+    destruct (decide (pkg_name = pkg_name')).
+    - subst. rewrite lookup_insert. rewrite lookup_union.
+      rewrite lookup_gset_to_gmap option_guard_True //.
+      2:{ set_solver. }
+      rewrite union_Some_l //.
+    - rewrite lookup_insert_ne //.
+      2:{ naive_solver. }
+      rewrite Hpkg gset_to_gmap_union_singleton lookup_union lookup_union lookup_insert_ne //.
   }
-  iApply (wp_wand with "Hinit").
-  iIntros (?) "[HP Htok]".
-  wp_pure_lc "Hlc".
-  clear Hpkg. iClear "Hinv Hinited".
+  wp_apply (wp_wand with "Hinit").
+  iIntros (?) "H".
+  iClear "Hctx". clear H H0.
+  iDestruct "H" as (???) "[#Hctx Htok]". subst.
+  unshelve iApply ("HΦ" $! _ _ with "[$]").
+  { done. }
+  clear Hpkg.
+  iClear "Hinited".
   iNamed "Htok".
-  wp_pures.
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-  iNamed "Hi".
-  iCombine "Hglobals Hglobals_i" gives %[_ Heq]. subst.
-  iCombine "Hglobals Hglobals_i" as "H".
-  rewrite to_val_unseal.
-  iApply (wp_GlobalPut with "[$]").
-  iNext. iIntros "[Hglobals Hglobals_i]".
-  iMod ("Hclose" with "[Hglobals_i Haddrs]").
-  {
-    iFrame "∗#%". iPureIntro.
-    apply insert_subseteq_r; try done.
-    rewrite lookup_fmap fmap_None lookup_kmap_None.
-    intros. exfalso. by eapply encode_var_name_package_name_ne.
-  }
-  iMod (inv_alloc with "[HP]") as "#Hinit";
-    last iSpecialize ("HΦ" with "Hinit").
-  { iFrame. }
-  iApply "HΦ".
   iDestruct (big_sepM_insert_2 _ _ pkg_name () with "[] Hinited") as "Hinited2".
-  { simpl. rewrite Hpost. iFrame "#". }
+  { simpl. rewrite Hpost. iFrame "#". done. }
   iFrame "∗#%".
   iPureIntro.
   intros pkg_name'.
   specialize (Hpkg pkg_name').
-  destruct (decide (pkg_name' = pkg_name)).
-  {
-    subst. right.
-    rewrite !lookup_insert to_val_unseal //.
-  }
-  destruct Hpkg as [|Hpkg].
-  { set_solver. }
-  right.
-  rewrite lookup_insert_ne //.
-  destruct (_ !! pkg_name').
-  { rewrite lookup_insert_ne //. intros H. eapply encode_package_inj in H. done. }
-  rewrite lookup_insert_ne //.
-  2:{ intros H. eapply encode_package_inj in H. done. }
-  destruct Hpkg as [? ?].
-  split; first done.
-  setoid_rewrite lookup_insert_ne.
-  { done. }
-  by apply encode_var_name_package_name_ne.
+  rewrite Hpkg gset_to_gmap_union_singleton -insert_union_l
+          -insert_union_r // lookup_gset_to_gmap option_guard_False //.
 Qed.
 
-End definitions_and_lemmas.
+End package_init.
 
 Section init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.

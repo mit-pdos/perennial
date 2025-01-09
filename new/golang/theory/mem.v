@@ -4,8 +4,9 @@ From iris.proofmode Require Import environments.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
 From New.golang.defn Require Export mem.
-From New.golang.theory Require Import proofmode typing hex.
+From New.golang.theory Require Import proofmode list typing.
 Require Import Coq.Program.Equality.
+
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 
@@ -92,11 +93,6 @@ Section goose_lang.
       end
     .
     all: repeat ltac2:(step ()).
-    {
-      simpl.
-      apply hex_encode_app_inj in H0.
-      intuition. subst. done.
-    }
     {
       (* XXX: need to reorder hyps to avoid an error in [dependent induction].... *)
       move a after a0.

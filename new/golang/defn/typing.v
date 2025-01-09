@@ -1,5 +1,4 @@
 From Perennial.goose_lang Require Export lang notation.
-From New.golang.defn Require Import hex.
 
 Definition go_string := byte_string.
 Delimit Scope byte_string_scope with go.
@@ -137,8 +136,7 @@ Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
           match i.(interface.pkg_type_name) with
           | None => NONEV
           | Some pkg_type_name =>
-              SOMEV #((hex_encode pkg_type_name.1) ++ " "%go
-                        ++ hex_encode pkg_type_name.2)
+              SOMEV (#pkg_type_name.1, #pkg_type_name.2)
           end,
             i.(interface.v))%V
   |}.

@@ -42,6 +42,15 @@ Definition alist_lookup : val :=
               (λ: "fv" "fvs",
                  let: ("f'", "v") := "fv" in
                  if: "f" = "f'" then SOME "v" else "alist_lookup" "f" "fvs").
+
+Fixpoint alist_val_def (m : list (go_string * val)) : val :=
+  match m with
+  | [] => InjLV #()
+  | (f, v) :: tl => InjRV ((#f, v), alist_val_def tl)
+  end.
+Program Definition alist_val := unseal (_:seal (@alist_val_def)). Obligation 1. by eexists. Qed.
+Definition alist_val_unseal : alist_val = _ := seal_eq _.
+
 End defn.
 
 Notation "[ ]" := (list.Nil) (only parsing) : expr_scope.

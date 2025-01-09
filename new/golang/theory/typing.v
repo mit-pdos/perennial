@@ -1,7 +1,6 @@
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Program.Equality.
 From New.golang.defn Require Export typing.
-From New.golang.theory Require Import hex.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 
@@ -14,16 +13,6 @@ Fixpoint alist_lookup_f {A} (f : go_string) (l : list (go_string * A)) : option 
   | [] => None
   | (f', v)::l => if ByteString.eqb f' f then Some v else alist_lookup_f f l
   end.
-
-Context `{ffi_syntax}.
-
-Fixpoint alist_val_def (m : list (go_string * val)) : val :=
-  match m with
-  | [] => InjLV #()
-  | (f, v) :: tl => InjRV ((#f, v), alist_val_def tl)
-  end.
-Program Definition alist_val := unseal (_:seal (@alist_val_def)). Obligation 1. by eexists. Qed.
-Definition alist_val_unseal : alist_val = _ := seal_eq _.
 
 End alist.
 
@@ -430,8 +419,8 @@ Next Obligation.
   do 2 destruct (_ : option (go_string * go_string)).
   {
     f_equal. destruct p, p0. simpl in *.
-    injection Heq as Heq.
-    apply to_val_inj, hex_encode_app_inj in Heq.
+    injection Heq as Heq1 Heq2.
+    apply to_val_inj in Heq1, Heq2.
     intuition. subst. done.
   }
   all: first [discriminate | reflexivity].
