@@ -63,30 +63,99 @@ Proof.
   iIntros "HΨ". iFrame. iApply ("Hxs" with "HΨ").
 Qed.
 
-(* FIXME: Remove the to_val in the precondition and call to SliceAppend.
-   I don't know how to do this, since that causes `apply to_val_ty` 12 lines
-   below to not work since the goal is `impl.val_ty v t`, not
-   `impl.val_ty (to_val v) t` *)
 Theorem wp_SliceAppend {stk E} s l v x :
-  {{{ is_pred_slice s (DfracOwn 1) l ∗ own_slice_cap s t ∗ Ψ (to_val v) x (DfracOwn 1) }}}
-    SliceAppend t (slice_val s) (to_val v) @ stk; E
+  to_val v = v ->
+  {{{ is_pred_slice s (DfracOwn 1) l ∗ own_slice_cap s t ∗ Ψ v x (DfracOwn 1) }}}
+    SliceAppend t (slice_val s) v @ stk; E
   {{{ s', RET slice_val s'; is_pred_slice s' (DfracOwn 1) (l ++ [x]) ∗ own_slice_cap s' t }}}.
 Proof using IntoValForType0.
-  iIntros (Φ) "(Hs&Hcap&Hx) HΦ".
+  iIntros (to_val_v Φ) "(Hs&Hcap&Hx) HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
   wp_apply (slice.wp_SliceAppend' with "[Hs Hcap]").
   { apply to_val_has_zero. }
-  { apply to_val_ty. }
+  { replace v with (to_val v).
+    apply to_val_ty. 
+  }
   { iFrame. }
   iIntros (s') "Hs".
   iApply "HΦ".
   iDestruct "Hs" as "[Hs $]".
-  iExists (vs ++ [to_val v]).
+  iExists (vs ++ [v]).
   iFrame "Hs".
   iApply (big_sepL2_app with "Hxs").
   simpl; iFrame.
 Qed.
 
+Theorem wp_SliceSet {stk E} s l (i: u64) (x : A) v :
+  to_val v = v -> l !! uint.nat i = Some x ->
+  {{{
+        is_pred_slice s (DfracOwn 1) l ∗
+        Ψ v x (DfracOwn 1)
+  }}}
+    SliceSet t (slice_val s) #i v @ stk; E
+  {{{
+        RET #(); Ψ v x (DfracOwn 1) ∗
+                 (Ψ v x (DfracOwn 1) -∗ is_pred_slice s (DfracOwn 1) (<[uint.nat i:=x]> l))
+  }}}.
+Proof using IntoValForType0.
+  iIntros (Hto_val Hlookup Φ) "[Hs HΨ] HΦ".
+  iDestruct "Hs" as (vs) "[Hs Hxs]".
+  iDestruct (big_sepL2_lookup_2 (uint.nat i) with "Hxs") as (v') "%Hlookup1"; eauto.
+  iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
+  wp_apply (slice.wp_SliceSet with "[$Hs]").
+  { iPureIntro. split; first done.
+    replace v with (to_val v). apply to_val_ty. }
+  iIntros "Hs".
+  iApply "HΦ"; iFrame.
+  iIntros "Hv".
+  iExists (<[uint.nat i:=v]> vs).
+  iFrame "Hs".
+  iApply "Hxs" in "Hx".
+  iDestruct (big_sepL2_insert_acc with "Hx") as "[_ Hxs]".
+  { done. } { done. }
+  iApply "Hxs". iFrame.
+Qed.
+
+Theorem wp_NewSlice {stk E} x q (sz: u64) :
+  {{{ Ψ (zero_val t) x q }}}
+    NewSlice t #sz @ stk; E
+  {{{ s, RET slice_val s; is_pred_slice s (DfracOwn 1) (replicate (uint.nat sz) x) }}}.
+Proof.
+  iIntros (Φ) "HΨ HΦ".
+  wp_apply (slice.wp_new_slice).
+  { apply to_val_has_zero. }
+  iIntros (sl) "Hs".
+  iApply "HΦ".
+  iApply own_slice_to_small in "Hs".
+  iExists (replicate (uint.nat sz) (zero_val t)).
+  iFrame.
+  iApply (big_sepL2_replicate_l).
+  { apply length_replicate. }
+(* TODO: Figure out how to complete the proof.
+   I think I need some lemma about replicating in a big sep where Φ doesn't
+   use the list index. *)
+Admitted.
+  
+  (*
+big_sepL_replicate:
+  ∀ {PROP : bi} {A : Type} (l : list A) (P : PROP),
+    [∗] replicate (length l) P ⊣⊢ ([∗ list] _ ∈ l, P)
+  *)
+
+  (*
+big_sepL2_replicate_l:
+  ∀ {PROP : bi} {A B : Type} (l : list B) (x : A) (Φ : nat → A → B → PROP) (n : nat),
+    length l = n
+    → ([∗ list] k↦x1;x2 ∈ replicate n x;l, Φ k x1 x2) ⊣⊢ ([∗ list] k↦x2 ∈ l, Φ k x x2)
+  *)
+
+  (*
+big_sepL2_replicate_r:
+  ∀ {PROP : bi} {A B : Type} (l : list A) (x : B) (Φ : nat → A → B → PROP) (n : nat),
+    length l = n
+    → ([∗ list] k↦x1;x2 ∈ l;replicate n x, Φ k x1 x2) ⊣⊢ ([∗ list] k↦x1 ∈ l, Φ k x1 x)
+  *)
+  
 Theorem wp_forSlice {stk E} (I: u64 → iProp Σ) s q xs (body: val) :
   (∀ (i: u64) v x,
       {{{ I i ∗ Ψ v x q }}}
