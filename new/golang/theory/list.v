@@ -78,7 +78,18 @@ Proof.
       wp_pures. iLöb as "IH". wp_pures. done.
 Qed.
 
-Global Instance wp_struct_alist_lookup (k : go_string) (l : list (go_string * val)) :
+Global Instance wp_alist_cons (k : go_string) (l : list (go_string * val)) (v : val) :
+  PureWp  True
+    (list.Cons (PairV #k v) (alist_val l))
+    (alist_val ((pair k v) :: l))
+.
+Proof.
+  iIntros (?????) "HΦ".
+  rewrite alist_val_unseal list.Cons_unseal.
+  wp_call_lc "?". by iApply "HΦ".
+Qed.
+
+Global Instance wp_alist_lookup (k : go_string) (l : list (go_string * val)) :
   PureWp True
     (alist_lookup #k (alist_val l))
     (match (alist_lookup_f k l) with | None => InjLV #() | Some v => InjRV v end)

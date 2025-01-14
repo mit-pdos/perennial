@@ -166,15 +166,10 @@ Definition MakeAsyncFile' : val :=
 
 Definition MakeAsyncFile : (go_string * go_string) := (pkg_name', "MakeAsyncFile"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  grove_ffi.initialize';;;
       do:  std.initialize';;;
-      do:  sync.initialize';;;
-      do:  (define' #()))
+      do:  sync.initialize')
       ).

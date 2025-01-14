@@ -48,18 +48,10 @@ Definition main' : val :=
 
 Definition main : (go_string * go_string) := (pkg_name', "main"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  (globals.put globalB (ref_ty stringT (zero_val stringT)));;;
-    do:  (globals.put globalA (ref_ty stringT (zero_val stringT)));;;
-    do:  (globals.put globalY (ref_ty stringT (zero_val stringT)));;;
-    do:  (globals.put GlobalX (ref_ty uint64T (zero_val uint64T)))).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
-      exception_do (do:  (define' #());;;
-      let: "$r0" := ((func_call foo #()) #()) in
+      exception_do (let: "$r0" := ((func_call foo #()) #()) in
       do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
       let: "$r0" := #"a"%go in
       do:  ((globals.get globalA #()) <-[stringT] "$r0");;;

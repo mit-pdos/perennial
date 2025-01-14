@@ -960,10 +960,6 @@ Definition ProgressTracker__TallyVotes' : val :=
     do:  ("result" <-[quorum.VoteResult] "$r0");;;
     return: (![intT] "granted", ![intT] "rejected", ![quorum.VoteResult] "result")).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  (globals.put prstmap (ref_ty (arrayT 3 stringT) (zero_val (arrayT 3 stringT))))).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
@@ -973,7 +969,6 @@ Definition initialize' : val :=
       do:  strings.initialize';;;
       do:  sort.initialize';;;
       do:  fmt.initialize';;;
-      do:  (define' #());;;
       let: "$r0" := ((let: "$ar0" := #"StateProbe"%go in
       let: "$ar1" := #"StateReplicate"%go in
       let: "$ar2" := #"StateSnapshot"%go in

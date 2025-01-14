@@ -104,7 +104,7 @@ End slice.
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.
-  Record t := mk { v: val; pkg_type_name : option (go_string*go_string) }.
+  Record t := mk { v: val; opt_pkg_type_name : option (go_string*go_string) }.
 
   Definition nil := mk #null None.
 End goose_lang.
@@ -133,7 +133,7 @@ Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
   {|
     to_val_def (i: interface.t) :=
       InjRV (
-          match i.(interface.pkg_type_name) with
+          match i.(interface.opt_pkg_type_name) with
           | None => NONEV
           | Some pkg_type_name =>
               SOMEV (#pkg_type_name.1, #pkg_type_name.2)

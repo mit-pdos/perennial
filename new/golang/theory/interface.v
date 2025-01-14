@@ -1,15 +1,14 @@
 From Perennial.goose_lang Require Import notation.
 From New.golang.theory Require Import struct typing proofmode.
-From New.golang.defn Require Import interface.
+From New.golang.defn Require Import interface globals.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Lemma wp_interface_get (i : interface.t) (method : go_string) :
-  {{{ True }}}
-    interface.get method #i
-  {{{ RET #(); True }}}
-.
+Global Instance wp_interface_get (i : interface.t) (method : go_string) :
+  PureWp (True) (interface.get method #i)
+         (method_call i.(interface.pkg_type_name) method i.(interface.v)).
+
     (match (assocl_lookup method i.(interface.mset)) with
      | None => (App #() i.(interface.v))
      | Some m => (App m i.(interface.v))

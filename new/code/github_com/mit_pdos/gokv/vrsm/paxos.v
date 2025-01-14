@@ -946,10 +946,6 @@ Definition StartServer' : val :=
 
 Definition StartServer : (go_string * go_string) := (pkg_name', "StartServer"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
@@ -960,6 +956,5 @@ Definition initialize' : val :=
       do:  log.initialize';;;
       do:  marshal.initialize';;;
       do:  reconnectclient.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  (define' #()))
+      do:  grove_ffi.initialize')
       ).

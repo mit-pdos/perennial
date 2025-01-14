@@ -8927,31 +8927,6 @@ Definition extend' : val :=
     (slice.copy raftpb.Entry) "$a0" "$a1");;;
     return: (![sliceT] "buf")).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  (globals.put isResponseMsg (ref_ty (arrayT 23 boolT) (zero_val (arrayT 23 boolT))));;;
-    do:  (globals.put isLocalMsg (ref_ty (arrayT 23 boolT) (zero_val (arrayT 23 boolT))));;;
-    do:  (globals.put ErrSnapshotTemporarilyUnavailable (ref_ty error (zero_val error)));;;
-    do:  (globals.put ErrUnavailable (ref_ty error (zero_val error)));;;
-    do:  (globals.put ErrSnapOutOfDate (ref_ty error (zero_val error)));;;
-    do:  (globals.put ErrCompacted (ref_ty error (zero_val error)));;;
-    do:  (globals.put ErrStepPeerNotFound (ref_ty error (zero_val error)));;;
-    do:  (globals.put ErrStepLocalMsg (ref_ty error (zero_val error)));;;
-    do:  (globals.put nopStepper (ref_ty ptrT (zero_val ptrT)));;;
-    do:  (globals.put stepFollowerGlobal (ref_ty funcT (zero_val funcT)));;;
-    do:  (globals.put stepCandidateGlobal (ref_ty funcT (zero_val funcT)));;;
-    do:  (globals.put stepLeaderGlobal (ref_ty funcT (zero_val funcT)));;;
-    do:  (globals.put errBreak (ref_ty error (zero_val error)));;;
-    do:  (globals.put stmap (ref_ty (arrayT 4 stringT) (zero_val (arrayT 4 stringT))));;;
-    do:  (globals.put globalRand (ref_ty ptrT (zero_val ptrT)));;;
-    do:  (globals.put ErrProposalDropped (ref_ty error (zero_val error)));;;
-    do:  (globals.put ErrStopped (ref_ty error (zero_val error)));;;
-    do:  (globals.put emptyState (ref_ty raftpb.HardState (zero_val raftpb.HardState)));;;
-    do:  (globals.put raftLogger (ref_ty Logger (zero_val Logger)));;;
-    do:  (globals.put raftLoggerMu (ref_ty sync.Mutex (zero_val sync.Mutex)));;;
-    do:  (globals.put discardLogger (ref_ty ptrT (zero_val ptrT)));;;
-    do:  (globals.put defaultLogger (ref_ty ptrT (zero_val ptrT)))).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
@@ -8974,7 +8949,6 @@ Definition initialize' : val :=
       do:  fmt.initialize';;;
       do:  raftpb.initialize';;;
       do:  errors.initialize';;;
-      do:  (define' #());;;
       let: "$r0" := (ref_ty DefaultLogger (let: "$Logger" := (let: "$a0" := (interface.make os.File'ptr (![ptrT] (globals.get os.Stderr #()))) in
       let: "$a1" := #"raft"%go in
       let: "$a2" := #(W64 log.LstdFlags) in

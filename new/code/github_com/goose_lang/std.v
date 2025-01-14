@@ -243,16 +243,11 @@ Definition Skip' : val :=
 
 Definition Skip : (go_string * go_string) := (pkg_name', "Skip"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  (define' #()))
+      do:  sync.initialize')
       ).
 
 End code.

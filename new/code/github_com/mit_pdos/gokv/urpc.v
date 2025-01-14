@@ -393,10 +393,6 @@ Definition Client__Call' : val :=
      let: "$a2" := (![uint64T] "timeout_ms") in
      ((method_call Client' "CallComplete" #()) (![ptrT] "cl")) "$a0" "$a1" "$a2")).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
@@ -405,6 +401,5 @@ Definition initialize' : val :=
       do:  std.initialize';;;
       do:  primitive.initialize';;;
       do:  sync.initialize';;;
-      do:  log.initialize';;;
-      do:  (define' #()))
+      do:  log.initialize')
       ).

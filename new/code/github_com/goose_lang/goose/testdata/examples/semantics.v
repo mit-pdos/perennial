@@ -3250,15 +3250,10 @@ Definition disabled_testWal' : val :=
 
 Definition disabled_testWal : (go_string * go_string) := (pkg_name', "disabled_testWal"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  disk.initialize';;;
       do:  sync.initialize';;;
-      do:  primitive.initialize';;;
-      do:  (define' #()))
+      do:  primitive.initialize')
       ).

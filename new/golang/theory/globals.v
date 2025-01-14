@@ -3,13 +3,6 @@ From New.golang.defn Require Import globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.
 From Coq Require Import Ascii Equality.
 
-Section context.
-Context {PROP:bi}.
-Class BiContextRoot := { is_bi_context : PROP ; bi_context_pers :: Persistent is_bi_context }.
-Class BiContext `{BiContextRoot} (P : PROP) := { contains : is_bi_context -∗ P }.
-Global Arguments contains {_ _} (_).
-End context.
-
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Global Instance wp_unwrap (v : val) :
@@ -67,7 +60,7 @@ Definition is_global (k : go_string) (v : val) : iProp Σ :=
   "#Hinv" ∷ is_globals_inv ∗
   "#Hptsto" ∷ k ↪[go_globals_name]□ v.
 
-Definition own_globals (g : gmap go_string val) : iProp Σ :=
+Local Definition own_globals (g : gmap go_string val) : iProp Σ :=
   "#Hinv" ∷ is_globals_inv ∗
   "Hauth2" ∷ ghost_map_auth go_globals_name (1/2)%Qp g.
 
@@ -135,7 +128,7 @@ Qed.
 
 (* This must be owned by the `init` thread. *)
 Definition own_globals_tok_def (pending_packages : gset go_string)
-  (pkg_postconds : gmap go_string (∀ `(!BiContextRoot (PROP:=iProp Σ)), Type)): iProp Σ :=
+  (pkg_postconds : gmap go_string (iProp Σ)): iProp Σ :=
   ∃ g (pkg_initialized : gmap go_string ()),
   "Hglobals" ∷ own_globals g ∗
   "%Hpkg" ∷ (⌜ ∀ (pkg_name : go_string),
@@ -143,11 +136,7 @@ Definition own_globals_tok_def (pending_packages : gset go_string)
                is_Some (((gset_to_gmap tt pending_packages) ∪ pkg_initialized) !! pkg_name)
                ⌝) ∗
   "#Hinited" ∷ □ ([∗ map] pkg_name ↦ _ ∈ pkg_initialized,
-                  match (pkg_postconds !! pkg_name) with
-                  | None => False
-                  | Some InitializedContext => (∃ (root:BiContextRoot (PROP:=iProp Σ))
-                                                 (H:InitializedContext root), is_bi_context)
-                  end
+                  default False (pkg_postconds !! pkg_name)
     ).
 Program Definition own_globals_tok := unseal (_:seal (@own_globals_tok_def)). Obligation 1. by eexists. Qed.
 Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
@@ -157,11 +146,11 @@ End definitions_and_lemmas.
 
 Section global_vars.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!BiContextRoot (PROP:=iProp Σ)}.
 Context `{!goGlobalsGS Σ}.
 
 Class WpGlobalsGet (pkg_var_name : go_string * go_string) (addr : loc)
-  := wp_globals_get : ⊢ ∀ Φ, is_bi_context -∗ (▷ Φ #addr) -∗
+                   (P : iProp Σ)
+  := wp_globals_get : ⊢ ∀ Φ, P -∗ (▷ Φ #addr) -∗
                              WP (globals.get pkg_var_name #()) {{ Φ }}.
 
 Definition is_global_definitions (pkg_name : go_string)
@@ -187,16 +176,14 @@ Proof.
   rewrite IHvar_addrs //.
 Qed.
 
-Lemma wp_global_get' {pkg_name var_name var_addrs functions msets addr}
-  {Hdefined : BiContext (is_global_definitions pkg_name var_addrs functions msets)} :
+Lemma wp_global_get' {pkg_name var_name var_addrs functions msets addr} :
   alist_lookup_f var_name var_addrs = Some addr →
-  WpGlobalsGet (pkg_name, var_name) addr.
+  WpGlobalsGet (pkg_name, var_name) addr (is_global_definitions pkg_name var_addrs functions msets).
 Proof.
   intros Hlookup. rewrite /WpGlobalsGet.
   iIntros (?) "#Hctx HΦ".
   wp_call.
   wp_pures.
-  iDestruct (Hdefined.(contains) with "[$]") as "#Hdefined".
   wp_bind (GlobalGet _).
   (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
   iApply (wp_GlobalGet with "[$]").
@@ -225,34 +212,35 @@ Context `{!goGlobalsGS Σ}.
 
 Lemma wp_package_init
   pending Φ
-  (postconds : gmap go_string (∀ `{!BiContextRoot (PROP:=iProp Σ)}, Type))
+  (postconds : gmap go_string (iProp Σ))
   (pkg_name : go_string) (init_func : val)
   vars functions msets
-  (GoDefinedContext : ∀ `{!BiContextRoot (PROP:=iProp Σ)}, Type)
-  (GoInitializedContext : (∀ `{!BiContextRoot (PROP:=iProp Σ)}, Type))
+  (GoDefns : Type)
+  (is_defined : GoDefns → iProp Σ)
+  (is_initialized : GoDefns → iProp Σ)
   :
   (∀ g,
      g !! ("pkg:"%go ++ pkg_name) = None →
      {{{ own_globals g }}}
-       globals.alloc_and_define pkg_name vars functions msets (# ())
-     {{{ `(!BiContextRoot) `(!GoDefinedContext) v, RET #();
-         is_bi_context ∗
+       globals.alloc_and_define pkg_name vars functions msets #()
+     {{{ (d : GoDefns) v, RET #();
+         is_defined d ∗
          own_globals (<[("pkg:"%go ++ pkg_name) := v]> g)
      }}}
   ) →
-  (∀ `(!BiContextRoot) `(!GoDefinedContext),
+  (∀ (d : GoDefns),
+     is_defined d -∗
      own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
      WP init_func #()
-       {{ v, ⌜ v = #tt ⌝ ∗ ∃ (r: BiContextRoot) `(!GoInitializedContext),
-             is_bi_context ∗
+       {{ v, ⌜ v = #tt ⌝ ∗
+             □ is_initialized d ∗
              own_globals_tok ({[ pkg_name ]} ∪ pending) postconds
        }}
   ) →
-  postconds !! pkg_name = Some (@GoInitializedContext) →
+  postconds !! pkg_name = Some (∃ d, is_initialized d)%I →
   pkg_name ∉ pending →
   own_globals_tok pending postconds -∗
-  (∀ `(!BiContextRoot) `(!GoInitializedContext),
-     is_bi_context -∗ own_globals_tok pending postconds -∗ Φ #()) -∗
+  (∀ (d : GoDefns), is_initialized d -∗ own_globals_tok pending postconds -∗ Φ #()) -∗
   WP (globals.package_init pkg_name vars functions msets init_func) {{ Φ }}.
 Proof.
   unseal.
@@ -278,18 +266,17 @@ Proof.
     iDestruct (big_sepM_lookup with "Hinited") as "H".
     { done. }
     rewrite Hpost /=.
-    iDestruct "H" as (? ?) "Hctx".
-    unshelve iApply ("HΦ" $! _ ltac:(done) with "[$]").
+    iDestruct "H" as (?) "Hinit".
+    iApply ("HΦ" with "[$]").
     iFrame "∗#%".
   }
   (* actually run init *)
   wp_pures.
   wp_apply (Hwp_alloc with "[$]").
   { done. }
-  iIntros "* [#Hctx Hglobals]".
+  iIntros "* [Hdef Hglobals]".
   wp_pures.
-  iDestruct (Hwp_init with "[Hglobals]") as "Hinit".
-  { done. }
+  iDestruct (Hwp_init with "[$Hdef] [Hglobals]") as "Hinit".
   { iFrame "∗#%". iPureIntro.
     intros pkg_name'.
     specialize (Hpkg pkg_name').
@@ -304,15 +291,13 @@ Proof.
   }
   wp_apply (wp_wand with "Hinit").
   iIntros (?) "H".
-  iClear "Hctx". clear H H0.
-  iDestruct "H" as (???) "[#Hctx Htok]". subst.
-  unshelve iApply ("HΦ" $! _ _ with "[$]").
-  { done. }
-  clear Hpkg.
+  iDestruct "H" as (?) "[#Hinit Htok]". subst.
+  iApply ("HΦ" with "[$]").
   iClear "Hinited".
+  clear Hpkg.
   iNamed "Htok".
   iDestruct (big_sepM_insert_2 _ _ pkg_name () with "[] Hinited") as "Hinited2".
-  { simpl. rewrite Hpost. iFrame "#". done. }
+  { simpl. rewrite Hpost. iFrame "#". }
   iFrame "∗#%".
   iPureIntro.
   intros pkg_name'.
@@ -329,31 +314,27 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Lemma go_global_init (posts : ∀ {H : goGlobalsGS Σ}, gmap go_string (iProp Σ))
   {hT: goGlobals_preG Σ}
   :
-  ⊢
-    own_globals (DfracOwn 1) ∅ ={⊤}=∗ ∃ (H : goGlobalsGS Σ),
-      own_package_post_toks ∅ ∗ own_globals_tok ∅ posts.
+  ⊢ lifting.own_globals (DfracOwn 1) ∅ ={⊤}=∗ ∃ (H : goGlobalsGS Σ),
+      own_globals_tok ∅ posts.
 Proof.
-  iMod (ghost_map_alloc (∅ : gmap (go_string * go_string) loc)) as (new_globals_name) "[Haddrs _]".
-  iMod (ghost_map_alloc (∅ : gmap go_string ())) as (new_package_postcond_name) "[Hpost _]".
-  iMod (ghost_var_alloc None) as (new_access_prev_state_name) "Hacc".
-  iIntros "[Hg Hg2]".
-  iExists (GoGlobalsGS _ _ _ _ _ _).
+  iMod (ghost_map_alloc (∅ : gmap go_string val)) as (new_globals_name) "[[Haddrs Haddrs2] _]".
+  iIntros "Hg".
+  iExists (GoGlobalsGS _ _ _ new_globals_name).
   rewrite own_globals_tok_unseal.
-  iMod (inv_alloc with "[Hg2 Haddrs]") as "#Hinv".
+  iMod (inv_alloc with "[Hg Haddrs]") as "#Hinv".
   2:{
     iModIntro.
-    rewrite own_package_post_toks_unseal.
     iFrame "#∗".
     repeat iExists _.
     instantiate (1:=∅).
     iSplit.
-    { iPureIntro. intros. right. rewrite lookup_empty //. }
+    { iPureIntro. intros. rewrite gset_to_gmap_empty right_id !lookup_empty //.
+      split; by intros []. }
+    iModIntro.
     by iApply big_sepM_empty.
   }
   iNext.
   iFrame.
-  iPureIntro. intros.
-  rewrite kmap_empty fmap_empty //.
 Qed.
 
 End init.

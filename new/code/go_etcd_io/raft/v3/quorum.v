@@ -467,10 +467,6 @@ Definition _VoteResult_name : go_string := "VotePendingVoteLostVoteWon"%go.
 
 Definition _VoteResult_index : (go_string * go_string) := (pkg_name', "_VoteResult_index"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  (globals.put _VoteResult_index (ref_ty (arrayT 4 uint8T) (zero_val (arrayT 4 uint8T))))).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
@@ -480,7 +476,6 @@ Definition initialize' : val :=
       do:  slices64.initialize';;;
       do:  math.initialize';;;
       do:  fmt.initialize';;;
-      do:  (define' #());;;
       let: "$r0" := ((let: "$ar0" := #(W8 0) in
       let: "$ar1" := #(W8 11) in
       let: "$ar2" := #(W8 19) in

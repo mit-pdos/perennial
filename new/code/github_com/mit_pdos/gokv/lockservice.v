@@ -44,15 +44,10 @@ Definition MakeLockClerk' : val :=
 
 Definition MakeLockClerk : (go_string * go_string) := (pkg_name', "MakeLockClerk"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
-      exception_do (do:  kv.initialize';;;
-      do:  (define' #()))
+      exception_do (do:  kv.initialize')
       ).
 
 End code.

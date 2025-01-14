@@ -222,16 +222,11 @@ Definition CacheKv__Put' : val :=
       then break: #()
       else do:  #()))).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  kv.initialize';;;
       do:  grove_ffi.initialize';;;
-      do:  sync.initialize';;;
-      do:  (define' #()))
+      do:  sync.initialize')
       ).

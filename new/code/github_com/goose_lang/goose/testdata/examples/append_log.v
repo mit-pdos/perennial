@@ -192,15 +192,10 @@ Definition Log__Reset' : val :=
     do:  (((method_call Log' "reset" #()) (![ptrT] "log")) #());;;
     do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] (struct.field_ref Log "m" (![ptrT] "log")))) #())).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  disk.initialize';;;
       do:  marshal.initialize';;;
-      do:  sync.initialize';;;
-      do:  (define' #()))
+      do:  sync.initialize')
       ).

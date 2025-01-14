@@ -2529,13 +2529,6 @@ Definition testVariadicPassThrough' : val :=
 
 Definition testVariadicPassThrough : (go_string * go_string) := (pkg_name', "testVariadicPassThrough"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  (globals.put globalB (ref_ty stringT (zero_val stringT)));;;
-    do:  (globals.put globalA (ref_ty stringT (zero_val stringT)));;;
-    do:  (globals.put globalY (ref_ty stringT (zero_val stringT)));;;
-    do:  (globals.put GlobalX (ref_ty uint64T (zero_val uint64T)))).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
@@ -2545,7 +2538,6 @@ Definition initialize' : val :=
       do:  primitive.initialize';;;
       do:  sync.initialize';;;
       do:  fmt.initialize';;;
-      do:  (define' #());;;
       let: "$r0" := ((func_call foo #()) #()) in
       do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
       let: "$r0" := #"a"%go in

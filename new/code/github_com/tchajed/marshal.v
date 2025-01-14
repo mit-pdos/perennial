@@ -565,16 +565,11 @@ Definition WriteSliceLenPrefix' (T: go_type) : val :=
 
 Definition WriteSliceLenPrefix : (go_string * go_string) := (pkg_name', "WriteSliceLenPrefix"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  std.initialize';;;
-      do:  primitive.initialize';;;
-      do:  (define' #()))
+      do:  primitive.initialize')
       ).
 
 End code.

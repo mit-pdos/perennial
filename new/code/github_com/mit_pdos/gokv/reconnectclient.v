@@ -107,16 +107,11 @@ Definition ReconnectingClient__Call' : val :=
     else do:  #());;;
     return: (![uint64T] "err")).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  urpc.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  (define' #()))
+      do:  sync.initialize')
       ).

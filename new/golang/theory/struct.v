@@ -103,7 +103,7 @@ Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
 Lemma struct_val_inj d fvs1 fvs2 :
   struct.val_aux (structT d) fvs1 = struct.val_aux (structT d) fvs2 →
   ∀ f, In f d.*1 →
-       match (assocl_lookup f fvs1), (assocl_lookup f fvs2) with
+       match (alist_lookup_f f fvs1), (alist_lookup_f f fvs2) with
        | Some v1, Some v2 => v1 = v2
        | _, _ => True
        end.
@@ -114,7 +114,7 @@ Proof.
   intros Heq ? [].
   - subst. simpl in Heq.
     injection Heq as ??.
-    repeat destruct assocl_lookup; naive_solver.
+    repeat destruct alist_lookup_f; naive_solver.
   - simpl in *. injection Heq as ??. by apply IHd.
 Qed.
 
@@ -184,31 +184,9 @@ Definition is_structT (t : go_type) : Prop :=
   | _ => False
   end.
 
-Global Instance wp_struct_fields_cons_nil (k : go_string) (l : list (go_string * val)) (v : val) :
-  PureWp  True
-    (list.Cons (PairV #k v) (struct.fields_val l))
-    (struct.fields_val ((pair k v) :: l))
-.
-Proof.
-  iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal list.Cons_unseal.
-  wp_call_lc "?". by iApply "HΦ".
-Qed.
-
-Global Instance wp_struct_fields_cons (k : go_string) (l : list (go_string * val)) (v : val) :
-  PureWp True
-    (list.Cons (PairV #k v) (struct.fields_val l))
-    (struct.fields_val ((pair k v) :: l))
-.
-Proof.
-  iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal list.Cons_unseal /=.
-  wp_call_lc "?". by iApply "HΦ".
-Qed.
-
 Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
   PureWp (is_structT t)
-  (struct.make t (struct.fields_val l))
+  (struct.make t (alist_val l))
   (struct.val_aux t l).
 Proof.
   intros ?????K.
@@ -221,7 +199,7 @@ Proof.
   - destruct a.
     wp_pure_lc "?". wp_pures.
     unfold struct.val_aux_def.
-    destruct (assocl_lookup _ _).
+    destruct (alist_lookup_f _ _).
     + wp_pures.
       unshelve wp_apply ("IH" $! _ _ []); first done.
       iIntros "_".

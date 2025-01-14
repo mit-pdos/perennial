@@ -257,18 +257,13 @@ Definition MakeBankClerk' : val :=
 
 Definition MakeBankClerk : (go_string * go_string) := (pkg_name', "MakeBankClerk"%go).
 
-Definition define' : val :=
-  rec: "define'" <> :=
-    exception_do (do:  #()).
-
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  lockservice.initialize';;;
       do:  kv.initialize';;;
-      do:  primitive.initialize';;;
-      do:  (define' #()))
+      do:  primitive.initialize')
       ).
 
 End code.

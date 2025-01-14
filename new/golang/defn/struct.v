@@ -67,6 +67,6 @@ Definition make_unseal : make = _ := seal_eq _.
 End goose_lang.
 End struct.
 
-Notation "[{ }]" := (struct.fields_val []) (only parsing) : expr_scope.
+Notation "[{ }]" := (alist_val []) (only parsing) : expr_scope.
 Notation "[{ x }]" := (list.Cons x [{ }]%E) : expr_scope.
 Notation "[{ x ; y ; .. ; z }]" := (list.Cons x (list.Cons y .. (list.Cons z [{ }]%E) ..)) : expr_scope.
