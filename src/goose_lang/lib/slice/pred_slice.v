@@ -37,8 +37,6 @@ Context `{!IntoVal val}.
 Context (Ψ: val → A → dfrac -> iProp Σ).
 
 Implicit Types (s: Slice.t) (t: ty) (l: list A).
-(* V is the type that represents the values in the slice (through IntoVal),
-while A is the type that represents the larger predicates at each address *)
 Implicit Types (v: val) (x: A).
 
 Definition is_pred_slice s t q l: iProp Σ :=
@@ -71,10 +69,7 @@ Proof.
   iIntros (Hval Hzero Φ) "(Hs&Hcap&Hx) HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
   wp_apply (slice.wp_SliceAppend' with "[Hs Hcap]").
-  { (* TODO? It seems like the only way to get has_zero t is to use
-       to_val_has_zero or assume it. I'm currently going to assume it.
-       I think it will be easy for the caller to produce this. *)
-    done. }
+  { done. }
   { done. }
   { iFrame. }
   iIntros (s') "Hs".
@@ -95,7 +90,8 @@ Theorem wp_SliceSet {stk E} s t l (i: u64) (x : A) v :
     SliceSet t (slice_val s) #i v @ stk; E
   {{{
         RET #(); Ψ v x (DfracOwn 1) ∗
-                 (Ψ v x (DfracOwn 1) -∗ is_pred_slice s t (DfracOwn 1) (<[uint.nat i:=x]> l))
+                 (Ψ v x (DfracOwn 1) -∗
+                  is_pred_slice s t (DfracOwn 1) (<[uint.nat i:=x]> l))
   }}}.
 Proof.
   iIntros (Hto_val Hlookup Φ) "[Hs HΨ] HΦ".
@@ -116,9 +112,8 @@ Proof.
 Qed.
 
 Theorem wp_NewSlice {stk E} t x (sz: u64) :
-  (* FIXME: Remove usage of y binder. *)
   has_zero t ->
-  {{{ [∗ list] y ∈ replicate (uint.nat sz) x, Ψ (zero_val t) y (DfracOwn 1) }}}
+  {{{ [∗ list] _ ∈ replicate (uint.nat sz) x, Ψ (zero_val t) x (DfracOwn 1) }}}
     NewSlice t #sz @ stk; E
   {{{ s, RET slice_val s; is_pred_slice s t (DfracOwn 1) (replicate (uint.nat sz) x) }}}.
 Proof.
@@ -132,30 +127,14 @@ Proof.
   iFrame.
   iApply (big_sepL2_replicate_l).
   { apply length_replicate. }
-  (* TODO: Figure out how to change _ ∈ replicate (uint.nat sz) x
-     into y ∈ replicate (uint.nat sz) x or vice versa. *)
-  done.
+  iApply (big_sepL_impl with "HΨ").
+  iModIntro.
+  iIntros (k x0) "%Hrep".
+  apply lookup_replicate in Hrep.
+  destruct Hrep as [Hrep_eq Hk].
+  rewrite Hrep_eq.
+  iIntros "H". done.
 Qed.
-  
-  (*
-big_sepL_replicate:
-  ∀ {PROP : bi} {A : Type} (l : list A) (P : PROP),
-    [∗] replicate (length l) P ⊣⊢ ([∗ list] _ ∈ l, P)
-  *)
-
-  (*
-big_sepL2_replicate_l:
-  ∀ {PROP : bi} {A B : Type} (l : list B) (x : A) (Φ : nat → A → B → PROP) (n : nat),
-    length l = n
-    → ([∗ list] k↦x1;x2 ∈ replicate n x;l, Φ k x1 x2) ⊣⊢ ([∗ list] k↦x2 ∈ l, Φ k x x2)
-  *)
-
-  (*
-big_sepL2_replicate_r:
-  ∀ {PROP : bi} {A B : Type} (l : list A) (x : B) (Φ : nat → A → B → PROP) (n : nat),
-    length l = n
-    → ([∗ list] k↦x1;x2 ∈ l;replicate n x, Φ k x1 x2) ⊣⊢ ([∗ list] k↦x1 ∈ l, Φ k x1 x)
-  *)
   
 Theorem wp_forSlice {stk E} (I: u64 → iProp Σ) s t q xs (body: val) :
   (∀ (i: u64) v x,
