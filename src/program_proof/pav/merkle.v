@@ -100,6 +100,7 @@ Proof.
   intros. by eapply tree_ind_strong_aux.
 Qed.
 
+(* TODO: could use stdpp's elem_of, which has better support than rocq's In. *)
 Lemma list_lookup_In (V : Type) (l : list V) i v : l !! i = Some v → In v l.
 Proof.
   revert i v.
@@ -183,7 +184,8 @@ Qed.
 
 (* Ownership of a merkle tree node, where the hashes on all nodes down path
    [path] may be invalid. *)
-Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iPropO Σ) : option (list w8) -d> loc -d> tree -d> iPropO Σ :=
+Definition own_node_except' (recur : option (list w8) -d> loc -d> tree -d> iPropO Σ) :
+    option (list w8) -d> loc -d> tree -d> iPropO Σ :=
   (λ path ptr_tr tr,
      ∃ (hash val : list w8) sl_hash sl_children ptr_children sl_val,
        "Hptr_hash" ∷ ptr_tr ↦[node :: "hash"] (slice_val sl_hash) ∗
@@ -299,6 +301,7 @@ Context `{!heapGS Σ}.
 
 Definition full_height := (W64 32).
 
+(* TODO: duplicates tree_height? *)
 Definition has_tree_height tr (height : nat) : Prop :=
   (fix go tr height {struct height} :=
      match height with
@@ -978,7 +981,6 @@ Proof.
   { iRight. iFrame "#". }
   { iLeft. iFrame "#". }
 Qed.
-
 
 Lemma own_node_except_None_is_node_hash n tr :
   own_node_except None n tr -∗
