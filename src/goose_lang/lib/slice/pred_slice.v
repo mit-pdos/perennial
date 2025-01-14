@@ -1,6 +1,6 @@
 From Perennial.Helpers Require Import List.
 From Perennial.goose_lang Require Import proofmode array typing.
-From Perennial.goose_lang.lib Require Import slice into_val.
+From Perennial.goose_lang.lib Require Import slice typed_slice into_val.
 
 Set Default Proof Using "Type".
 
@@ -33,14 +33,30 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
 
 Context {A: Type}.
-Context `{!IntoVal val}.
 Context (Ψ: val → A → dfrac -> iProp Σ).
 
-Implicit Types (s: Slice.t) (t: ty) (l: list A).
-Implicit Types (v: val) (x: A).
+Global Instance val_IntoVal : IntoVal val.
+Proof.
+  refine {|
+      to_val := λ v, v;
+      from_val := λ v, Some v;
+      IntoVal_def := #();
+    |}.
+  intros v; auto.
+Defined.
+
+Theorem untype_val_list :
+  ∀ vs : list val, list.untype vs = vs.
+Proof.
+  iIntros (vs).
+  unfold list.untype.
+  induction vs.
+  + done.
+  + rewrite fmap_cons. rewrite IHvs. done.
+Qed.
 
 Definition is_pred_slice s t q l: iProp Σ :=
-  ∃ (vs: list val), own_slice_small s t q vs ∗
+  ∃ (vs: list val), typed_slice.own_slice_small s t q vs ∗
                   [∗ list] v;x ∈ vs;l, Ψ v x q.
 
 Theorem wp_SliceGet {stk E} s t q l (i: u64) (x: A) :
@@ -54,7 +70,7 @@ Proof.
   iDestruct (big_sepL2_lookup_2 (uint.nat i) with "Hxs") as (v) "%Hlookup1"; eauto.
   iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
   wp_apply (slice.wp_SliceGet with "[$Hs]").
-  { iPureIntro. done. }
+  { iPureIntro. rewrite untype_val_list. done. }
   iIntros "[Hs %Hty]".
   iApply "HΦ"; iFrame.
   iIntros "HΨ". iFrame. iApply ("Hxs" with "HΨ").
@@ -68,7 +84,7 @@ Theorem wp_SliceAppend {stk E} s t l v x :
 Proof.
   iIntros (Hval Hzero Φ) "(Hs&Hcap&Hx) HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
-  wp_apply (slice.wp_SliceAppend' with "[Hs Hcap]").
+  wp_apply (wp_SliceAppend' with "[Hs Hcap]").
   { done. }
   { done. }
   { iFrame. }
@@ -76,6 +92,8 @@ Proof.
   iApply "HΦ".
   iDestruct "Hs" as "[Hs $]".
   iExists (vs ++ [v]).
+  unfold own_slice_small.
+  rewrite ?untype_val_list.
   iFrame "Hs".
   iApply (big_sepL2_app with "Hxs").
   simpl; iFrame.
@@ -99,11 +117,13 @@ Proof.
   iDestruct (big_sepL2_lookup_2 (uint.nat i) with "Hxs") as (v') "%Hlookup1"; eauto.
   iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
   wp_apply (slice.wp_SliceSet with "[$Hs]").
-  { iPureIntro. split; first done. done. }
+  { iPureIntro. rewrite untype_val_list. split; first done. done. }
   iIntros "Hs".
   iApply "HΦ"; iFrame.
   iIntros "Hv".
   iExists (<[uint.nat i:=v]> vs).
+  unfold own_slice_small.
+  rewrite ?untype_val_list.
   iFrame "Hs".
   iApply "Hxs" in "Hx".
   iDestruct (big_sepL2_insert_acc with "Hx") as "[_ Hxs]".
@@ -122,9 +142,11 @@ Proof.
   { done. }
   iIntros (sl) "Hs".
   iApply "HΦ".
-  iApply own_slice_to_small in "Hs".
+  iApply slice.own_slice_to_small in "Hs".
   iExists (replicate (uint.nat sz) (zero_val t)).
-  iFrame.
+  unfold own_slice_small.
+  rewrite ?untype_val_list.
+  iFrame "Hs".
   iApply (big_sepL2_replicate_l).
   { apply length_replicate. }
   iApply (big_sepL_impl with "HΨ").
@@ -153,6 +175,7 @@ Proof.
   { clear Φ.
     iIntros (i x) "!>".
     iIntros (Φ) "((Hi&Hxs)&%Hbound&%Hlookup) HΦ".
+    rewrite untype_val_list in Hlookup.
     iDestruct (big_sepL2_lookup_1 with "Hxs") as (y) "%Hlookup2"; eauto.
     iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
     wp_apply ("Hwp" with "[$Hi $Hx]").
