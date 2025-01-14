@@ -34,7 +34,6 @@ Context {ext_ty: ext_types ext}.
 
 Context {A: Type}.
 Context `{!IntoVal val}.
-Context `{!IntoValForType val t}.
 Context (Ψ: val → A → dfrac -> iProp Σ).
 
 Implicit Types (s: Slice.t) (t: ty) (l: list A).
@@ -42,15 +41,15 @@ Implicit Types (s: Slice.t) (t: ty) (l: list A).
 while A is the type that represents the larger predicates at each address *)
 Implicit Types (v: val) (x: A).
 
-Definition is_pred_slice s q l: iProp Σ :=
+Definition is_pred_slice s t q l: iProp Σ :=
   ∃ (vs: list val), own_slice_small s t q vs ∗
                   [∗ list] v;x ∈ vs;l, Ψ v x q.
 
-Theorem wp_SliceGet {stk E} s q l (i: u64) (x: A) :
+Theorem wp_SliceGet {stk E} s t q l (i: u64) (x: A) :
   l !! uint.nat i = Some x →
-  {{{ is_pred_slice s q l }}}
+  {{{ is_pred_slice s t q l }}}
     SliceGet t (slice_val s) #i @ stk; E
-  {{{ (v:val), RET v; Ψ v x q ∗ (Ψ v x q -∗ is_pred_slice s q l) }}}.
+  {{{ (v:val), RET v; Ψ v x q ∗ (Ψ v x q -∗ is_pred_slice s t q l) }}}.
 Proof.
   iIntros (Hlookup Φ) "Hs HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
@@ -63,19 +62,20 @@ Proof.
   iIntros "HΨ". iFrame. iApply ("Hxs" with "HΨ").
 Qed.
 
-Theorem wp_SliceAppend {stk E} s l v x :
-  to_val v = v ->
-  {{{ is_pred_slice s (DfracOwn 1) l ∗ own_slice_cap s t ∗ Ψ v x (DfracOwn 1) }}}
+Theorem wp_SliceAppend {stk E} s t l v x :
+  impl.val_ty v t -> has_zero t ->
+  {{{ is_pred_slice s t (DfracOwn 1) l ∗ own_slice_cap s t ∗ Ψ v x (DfracOwn 1) }}}
     SliceAppend t (slice_val s) v @ stk; E
-  {{{ s', RET slice_val s'; is_pred_slice s' (DfracOwn 1) (l ++ [x]) ∗ own_slice_cap s' t }}}.
-Proof using IntoValForType0.
-  iIntros (to_val_v Φ) "(Hs&Hcap&Hx) HΦ".
+  {{{ s', RET slice_val s'; is_pred_slice s' t (DfracOwn 1) (l ++ [x]) ∗ own_slice_cap s' t }}}.
+Proof.
+  iIntros (Hval Hzero Φ) "(Hs&Hcap&Hx) HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
   wp_apply (slice.wp_SliceAppend' with "[Hs Hcap]").
-  { apply to_val_has_zero. }
-  { replace v with (to_val v).
-    apply to_val_ty. 
-  }
+  { (* TODO? It seems like the only way to get has_zero t is to use
+       to_val_has_zero or assume it. I'm currently going to assume it.
+       I think it will be easy for the caller to produce this. *)
+    done. }
+  { done. }
   { iFrame. }
   iIntros (s') "Hs".
   iApply "HΦ".
@@ -86,25 +86,24 @@ Proof using IntoValForType0.
   simpl; iFrame.
 Qed.
 
-Theorem wp_SliceSet {stk E} s l (i: u64) (x : A) v :
-  to_val v = v -> l !! uint.nat i = Some x ->
+Theorem wp_SliceSet {stk E} s t l (i: u64) (x : A) v :
+  impl.val_ty v t -> l !! uint.nat i = Some x ->
   {{{
-        is_pred_slice s (DfracOwn 1) l ∗
+        is_pred_slice s t (DfracOwn 1) l ∗
         Ψ v x (DfracOwn 1)
   }}}
     SliceSet t (slice_val s) #i v @ stk; E
   {{{
         RET #(); Ψ v x (DfracOwn 1) ∗
-                 (Ψ v x (DfracOwn 1) -∗ is_pred_slice s (DfracOwn 1) (<[uint.nat i:=x]> l))
+                 (Ψ v x (DfracOwn 1) -∗ is_pred_slice s t (DfracOwn 1) (<[uint.nat i:=x]> l))
   }}}.
-Proof using IntoValForType0.
+Proof.
   iIntros (Hto_val Hlookup Φ) "[Hs HΨ] HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
   iDestruct (big_sepL2_lookup_2 (uint.nat i) with "Hxs") as (v') "%Hlookup1"; eauto.
   iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
   wp_apply (slice.wp_SliceSet with "[$Hs]").
-  { iPureIntro. split; first done.
-    replace v with (to_val v). apply to_val_ty. }
+  { iPureIntro. split; first done. done. }
   iIntros "Hs".
   iApply "HΦ"; iFrame.
   iIntros "Hv".
@@ -116,14 +115,16 @@ Proof using IntoValForType0.
   iApply "Hxs". iFrame.
 Qed.
 
-Theorem wp_NewSlice {stk E} x q (sz: u64) :
-  {{{ Ψ (zero_val t) x q }}}
+Theorem wp_NewSlice {stk E} t x (sz: u64) :
+  (* FIXME: Remove usage of y binder. *)
+  has_zero t ->
+  {{{ [∗ list] y ∈ replicate (uint.nat sz) x, Ψ (zero_val t) y (DfracOwn 1) }}}
     NewSlice t #sz @ stk; E
-  {{{ s, RET slice_val s; is_pred_slice s (DfracOwn 1) (replicate (uint.nat sz) x) }}}.
+  {{{ s, RET slice_val s; is_pred_slice s t (DfracOwn 1) (replicate (uint.nat sz) x) }}}.
 Proof.
-  iIntros (Φ) "HΨ HΦ".
+  iIntros (Hzero Φ) "HΨ HΦ".
   wp_apply (slice.wp_new_slice).
-  { apply to_val_has_zero. }
+  { done. }
   iIntros (sl) "Hs".
   iApply "HΦ".
   iApply own_slice_to_small in "Hs".
@@ -131,10 +132,10 @@ Proof.
   iFrame.
   iApply (big_sepL2_replicate_l).
   { apply length_replicate. }
-(* TODO: Figure out how to complete the proof.
-   I think I need some lemma about replicating in a big sep where Φ doesn't
-   use the list index. *)
-Admitted.
+  (* TODO: Figure out how to change _ ∈ replicate (uint.nat sz) x
+     into y ∈ replicate (uint.nat sz) x or vice versa. *)
+  done.
+Qed.
   
   (*
 big_sepL_replicate:
@@ -156,14 +157,14 @@ big_sepL2_replicate_r:
     → ([∗ list] k↦x1;x2 ∈ l;replicate n x, Φ k x1 x2) ⊣⊢ ([∗ list] k↦x1 ∈ l, Φ k x1 x)
   *)
   
-Theorem wp_forSlice {stk E} (I: u64 → iProp Σ) s q xs (body: val) :
+Theorem wp_forSlice {stk E} (I: u64 → iProp Σ) s t q xs (body: val) :
   (∀ (i: u64) v x,
       {{{ I i ∗ Ψ v x q }}}
         body #i v @ stk; E
       {{{ RET #(); I (word.add i (W64 1)) ∗ Ψ v x q }}}) -∗
-    {{{ I (W64 0) ∗ is_pred_slice s q xs }}}
+    {{{ I (W64 0) ∗ is_pred_slice s t q xs }}}
       forSlice t body (slice_val s) @ stk; E
-    {{{ RET #(); I s.(Slice.sz) ∗ is_pred_slice s q xs }}}.
+    {{{ RET #(); I s.(Slice.sz) ∗ is_pred_slice s t q xs }}}.
 Proof.
   iIntros "#Hwp".
   iIntros "!>" (Φ) "(HI0 & Hs) HΦ".
