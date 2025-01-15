@@ -13,7 +13,7 @@ Definition Enc : go_type := structT [
 
 Definition pkg_name' : go_string := "github.com/tchajed/marshal".
 
-Definition Enc' : (go_string * go_string) := (pkg_name', "Enc").
+Definition Enc' : (go_string * go_string) := (pkg_name', "Enc"%go).
 
 (* go: marshal.go:13:6 *)
 Definition NewEncFromSlice' : val :=
@@ -77,7 +77,7 @@ Definition Enc__PutInts' : val :=
     slice.for_range uint64T "$range" (λ: <> "x",
       let: "x" := ref_ty uint64T "x" in
       do:  (let: "$a0" := (![uint64T] "x") in
-      ((method_call Enc' "PutInt" #()) (![Enc] "enc")) "$a0")))).
+      (method_call Enc' "PutInt" #() (![Enc] "enc")) "$a0")))).
 
 (* go: marshal.go:43:16 *)
 Definition Enc__PutBytes' : val :=
@@ -129,7 +129,7 @@ Definition Dec : go_type := structT [
   "off" :: ptrT
 ].
 
-Definition Dec' : (go_string * go_string) := (pkg_name', "Dec").
+Definition Dec' : (go_string * go_string) := (pkg_name', "Dec"%go).
 
 (* go: marshal.go:74:6 *)
 Definition NewDec' : val :=
@@ -179,7 +179,7 @@ Definition Dec__GetInts' : val :=
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "num")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
       let: "$r0" := (let: "$a0" := (![sliceT] "xs") in
-      let: "$a1" := ((let: "$sl0" := (((method_call Dec' "GetInt" #()) (![Dec] "dec")) #()) in
+      let: "$a1" := ((let: "$sl0" := ((method_call Dec' "GetInt" #() (![Dec] "dec")) #()) in
       slice.literal uint64T ["$sl0"])) in
       (slice.append sliceT) "$a0" "$a1") in
       do:  ("xs" <-[sliceT] "$r0")));;;
@@ -565,9 +565,37 @@ Definition WriteSliceLenPrefix' (T: go_type) : val :=
 
 Definition WriteSliceLenPrefix : (go_string * go_string) := (pkg_name', "WriteSliceLenPrefix"%go).
 
+Definition vars' : list (go_string * go_type) := [].
+
+Definition functions' : list (go_string * val) := [("NewEncFromSlice"%go, NewEncFromSlice'); ("NewEnc"%go, NewEnc'); ("bool2byte"%go, bool2byte'); ("NewDec"%go, NewDec'); ("compute_new_cap"%go, compute_new_cap'); ("reserve"%go, reserve'); ("ReadInt"%go, ReadInt'); ("ReadInt32"%go, ReadInt32'); ("ReadBytes"%go, ReadBytes'); ("ReadBytesCopy"%go, ReadBytesCopy'); ("ReadBool"%go, ReadBool'); ("ReadLenPrefixedBytes"%go, ReadLenPrefixedBytes'); ("WriteInt"%go, WriteInt'); ("WriteInt32"%go, WriteInt32'); ("WriteBytes"%go, WriteBytes'); ("WriteBool"%go, WriteBool'); ("WriteLenPrefixedBytes"%go, WriteLenPrefixedBytes'); ("ReadSlice"%go, ReadSlice'); ("ReadSliceLenPrefix"%go, ReadSliceLenPrefix'); ("WriteSlice"%go, WriteSlice'); ("WriteSliceLenPrefix"%go, WriteSliceLenPrefix')].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [("Enc"%go, [("Finish"%go, Enc__Finish); ("PutBool"%go, Enc__PutBool); ("PutBytes"%go, Enc__PutBytes); ("PutInt"%go, Enc__PutInt); ("PutInt32"%go, Enc__PutInt32); ("PutInts"%go, Enc__PutInts)]); ("Enc'ptr"%go, [("Finish"%go, (λ: "$recvAddr",
+                 method_call Enc' "Finish" #() (![Enc] "$recvAddr")
+                 )); ("PutBool"%go, (λ: "$recvAddr",
+                 method_call Enc' "PutBool" #() (![Enc] "$recvAddr")
+                 )); ("PutBytes"%go, (λ: "$recvAddr",
+                 method_call Enc' "PutBytes" #() (![Enc] "$recvAddr")
+                 )); ("PutInt"%go, (λ: "$recvAddr",
+                 method_call Enc' "PutInt" #() (![Enc] "$recvAddr")
+                 )); ("PutInt32"%go, (λ: "$recvAddr",
+                 method_call Enc' "PutInt32" #() (![Enc] "$recvAddr")
+                 )); ("PutInts"%go, (λ: "$recvAddr",
+                 method_call Enc' "PutInts" #() (![Enc] "$recvAddr")
+                 ))]); ("Dec"%go, [("GetBool"%go, Dec__GetBool); ("GetBytes"%go, Dec__GetBytes); ("GetInt"%go, Dec__GetInt); ("GetInt32"%go, Dec__GetInt32); ("GetInts"%go, Dec__GetInts)]); ("Dec'ptr"%go, [("GetBool"%go, (λ: "$recvAddr",
+                 method_call Dec' "GetBool" #() (![Dec] "$recvAddr")
+                 )); ("GetBytes"%go, (λ: "$recvAddr",
+                 method_call Dec' "GetBytes" #() (![Dec] "$recvAddr")
+                 )); ("GetInt"%go, (λ: "$recvAddr",
+                 method_call Dec' "GetInt" #() (![Dec] "$recvAddr")
+                 )); ("GetInt32"%go, (λ: "$recvAddr",
+                 method_call Dec' "GetInt32" #() (![Dec] "$recvAddr")
+                 )); ("GetInts"%go, (λ: "$recvAddr",
+                 method_call Dec' "GetInts" #() (![Dec] "$recvAddr")
+                 ))])].
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  std.initialize';;;
       do:  primitive.initialize')
       ).

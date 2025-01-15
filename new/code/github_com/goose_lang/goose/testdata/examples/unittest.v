@@ -13,7 +13,7 @@ Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/exampl
 
 Definition Foo : go_type := arrayT 10 uint64T.
 
-Definition Foo' : (go_string * go_string) := (pkg_name', "Foo").
+Definition Foo' : (go_string * go_string) := (pkg_name', "Foo"%go).
 
 (* go: array.go:5:6 *)
 Definition takesArray' : val :=
@@ -229,7 +229,7 @@ Definition chanDirectional : (go_string * go_string) := (pkg_name', "chanDirecti
 Definition importantStruct : go_type := structT [
 ].
 
-Definition importantStruct' : (go_string * go_string) := (pkg_name', "importantStruct").
+Definition importantStruct' : (go_string * go_string) := (pkg_name', "importantStruct"%go).
 
 (* doSubtleThings does a number of subtle things:
 
@@ -272,7 +272,7 @@ Definition condvarWrapping' : val :=
     do:  ("cond1" <-[ptrT] "$r0");;;
     let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
     do:  ("mu" <-[ptrT] "$r0");;;
-    do:  (((method_call sync.Cond' "Wait" #()) (![ptrT] "cond1")) #())).
+    do:  ((method_call sync.Cond'ptr "Wait" #() (![ptrT] "cond1")) #())).
 
 Definition condvarWrapping : (go_string * go_string) := (pkg_name', "condvarWrapping"%go).
 
@@ -445,7 +445,7 @@ Definition ifStmtInitialization : (go_string * go_string) := (pkg_name', "ifStmt
 
 Definition stringWrapper : go_type := stringT.
 
-Definition stringWrapper' : (go_string * go_string) := (pkg_name', "stringWrapper").
+Definition stringWrapper' : (go_string * go_string) := (pkg_name', "stringWrapper"%go).
 
 (* go: conversions.go:5:6 *)
 Definition typedLiteral' : val :=
@@ -698,7 +698,7 @@ Definition diskWrapper : go_type := structT [
   "d" :: disk.Disk
 ].
 
-Definition diskWrapper' : (go_string * go_string) := (pkg_name', "diskWrapper").
+Definition diskWrapper' : (go_string * go_string) := (pkg_name', "diskWrapper"%go).
 
 (* go: disk.go:9:6 *)
 Definition diskArgument' : val :=
@@ -718,25 +718,25 @@ Definition embedA : go_type := structT [
   "a" :: uint64T
 ].
 
-Definition embedA' : (go_string * go_string) := (pkg_name', "embedA").
+Definition embedA' : (go_string * go_string) := (pkg_name', "embedA"%go).
 
 Definition embedB : go_type := structT [
   "embedA" :: embedA
 ].
 
-Definition embedB' : (go_string * go_string) := (pkg_name', "embedB").
+Definition embedB' : (go_string * go_string) := (pkg_name', "embedB"%go).
 
 Definition embedC : go_type := structT [
   "embedB" :: ptrT
 ].
 
-Definition embedC' : (go_string * go_string) := (pkg_name', "embedC").
+Definition embedC' : (go_string * go_string) := (pkg_name', "embedC"%go).
 
 Definition embedD : go_type := structT [
   "embedC" :: embedC
 ].
 
-Definition embedD' : (go_string * go_string) := (pkg_name', "embedD").
+Definition embedD' : (go_string * go_string) := (pkg_name', "embedD"%go).
 
 (* go: embedded.go:19:17 *)
 Definition embedA__Foo' : val :=
@@ -818,7 +818,7 @@ Definition useEmbeddedValField : (go_string * go_string) := (pkg_name', "useEmbe
 Definition useEmbeddedMethod' : val :=
   rec: "useEmbeddedMethod'" "d" :=
     exception_do (let: "d" := (ref_ty embedD "d") in
-    return: ((((method_call embedB' "Foo" #()) (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()) = (((method_call embedA' "Foo" #()) (![embedA] (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))))) #()))).
+    return: (((method_call embedB' "Foo" #() (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()) = ((method_call embedA' "Foo" #() (![embedA] (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))))) #()))).
 
 Definition useEmbeddedMethod : (go_string * go_string) := (pkg_name', "useEmbeddedMethod"%go).
 
@@ -826,8 +826,8 @@ Definition useEmbeddedMethod : (go_string * go_string) := (pkg_name', "useEmbedd
 Definition useEmbeddedMethod2' : val :=
   rec: "useEmbeddedMethod2'" "d" :=
     exception_do (let: "d" := (ref_ty embedD "d") in
-    do:  (((method_call embedB' "Car" #()) (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))) #());;;
-    return: ((((method_call embedA' "Bar" #()) (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()) = (((method_call embedA' "Bar" #()) (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()))).
+    do:  ((method_call embedB'ptr "Car" #() (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))) #());;;
+    return: (((method_call embedA'ptr "Bar" #() (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()) = ((method_call embedA'ptr "Bar" #() (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()))).
 
 Definition useEmbeddedMethod2 : (go_string * go_string) := (pkg_name', "useEmbeddedMethod2"%go).
 
@@ -849,7 +849,7 @@ Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Enc' : (go_string * go_string) := (pkg_name', "Enc").
+Definition Enc' : (go_string * go_string) := (pkg_name', "Enc"%go).
 
 (* go: encoding.go:9:15 *)
 Definition Enc__consume' : val :=
@@ -871,7 +871,7 @@ Definition Enc__UInt64' : val :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "x" := (ref_ty uint64T "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    ((method_call Enc' "consume" #()) (![ptrT] "e")) "$a0") in
+    (method_call Enc'ptr "consume" #() (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint64T] "x") in
     (func_call primitive.UInt64Put #()) "$a0" "$a1")).
 
@@ -881,7 +881,7 @@ Definition Enc__UInt32' : val :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "x" := (ref_ty uint32T "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    ((method_call Enc' "consume" #()) (![ptrT] "e")) "$a0") in
+    (method_call Enc'ptr "consume" #() (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint32T] "x") in
     (func_call primitive.UInt32Put #()) "$a0" "$a1")).
 
@@ -889,7 +889,7 @@ Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Dec' : (go_string * go_string) := (pkg_name', "Dec").
+Definition Dec' : (go_string * go_string) := (pkg_name', "Dec"%go).
 
 (* go: encoding.go:27:15 *)
 Definition Dec__consume' : val :=
@@ -910,7 +910,7 @@ Definition Dec__UInt64' : val :=
   rec: "Dec__UInt64'" "d" <> :=
     exception_do (let: "d" := (ref_ty ptrT "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     ((method_call Dec' "consume" #()) (![ptrT] "d")) "$a0") in
+     (method_call Dec'ptr "consume" #() (![ptrT] "d")) "$a0") in
      (func_call primitive.UInt64Get #()) "$a0")).
 
 (* go: encoding.go:37:15 *)
@@ -918,7 +918,7 @@ Definition Dec__UInt32' : val :=
   rec: "Dec__UInt32'" "d" <> :=
     exception_do (let: "d" := (ref_ty ptrT "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     ((method_call Dec' "consume" #()) (![ptrT] "d")) "$a0") in
+     (method_call Dec'ptr "consume" #() (![ptrT] "d")) "$a0") in
      (func_call primitive.UInt32Get #()) "$a0")).
 
 (* go: globals.go:3:6 *)
@@ -966,19 +966,19 @@ Definition TakesFunctionType : (go_string * go_string) := (pkg_name', "TakesFunc
 
 Definition Fooer : go_type := interfaceT.
 
-Definition Fooer' : (go_string * go_string) := (pkg_name', "Fooer").
+Definition Fooer' : (go_string * go_string) := (pkg_name', "Fooer"%go).
 
 Definition concreteFooer : go_type := structT [
   "a" :: uint64T
 ].
 
-Definition concreteFooer' : (go_string * go_string) := (pkg_name', "concreteFooer").
+Definition concreteFooer' : (go_string * go_string) := (pkg_name', "concreteFooer"%go).
 
 Definition FooerUser : go_type := structT [
   "f" :: Fooer
 ].
 
-Definition FooerUser' : (go_string * go_string) := (pkg_name', "FooerUser").
+Definition FooerUser' : (go_string * go_string) := (pkg_name', "FooerUser"%go).
 
 (* go: interfaces.go:15:25 *)
 Definition concreteFooer__Foo' : val :=
@@ -1023,7 +1023,7 @@ Definition testPassConcreteToInterfaceArg' : val :=
     do:  ("f" <-[Fooer] "$r0");;;
     do:  (let: "$a0" := (![Fooer] "f") in
     (func_call fooConsumer #()) "$a0");;;
-    do:  (((method_call concreteFooer' "Foo" #()) (![ptrT] "c")) #());;;
+    do:  ((method_call concreteFooer'ptr "Foo" #() (![ptrT] "c")) #());;;
     do:  ((interface.get "Foo" (![Fooer] "f")) #())).
 
 Definition testPassConcreteToInterfaceArg : (go_string * go_string) := (pkg_name', "testPassConcreteToInterfaceArg"%go).
@@ -1178,12 +1178,12 @@ Definition testConversionInMultiplePassThrough : (go_string * go_string) := (pkg
 
 Definition PointerInterface : go_type := interfaceT.
 
-Definition PointerInterface' : (go_string * go_string) := (pkg_name', "PointerInterface").
+Definition PointerInterface' : (go_string * go_string) := (pkg_name', "PointerInterface"%go).
 
 Definition concrete1 : go_type := structT [
 ].
 
-Definition concrete1' : (go_string * go_string) := (pkg_name', "concrete1").
+Definition concrete1' : (go_string * go_string) := (pkg_name', "concrete1"%go).
 
 (* go: interfaces.go:106:20 *)
 Definition concrete1__Foo' : val :=
@@ -1234,11 +1234,11 @@ Definition useInts : (go_string * go_string) := (pkg_name', "useInts"%go).
 
 Definition my_u32 : go_type := uint32T.
 
-Definition my_u32' : (go_string * go_string) := (pkg_name', "my_u32").
+Definition my_u32' : (go_string * go_string) := (pkg_name', "my_u32"%go).
 
 Definition also_u32 : go_type := my_u32.
 
-Definition also_u32' : (go_string * go_string) := (pkg_name', "also_u32").
+Definition also_u32' : (go_string * go_string) := (pkg_name', "also_u32"%go).
 
 Definition ConstWithAbbrevType : expr := #(W32 3).
 
@@ -1248,7 +1248,7 @@ Definition allTheLiterals : go_type := structT [
   "b" :: boolT
 ].
 
-Definition allTheLiterals' : (go_string * go_string) := (pkg_name', "allTheLiterals").
+Definition allTheLiterals' : (go_string * go_string) := (pkg_name', "allTheLiterals"%go).
 
 (* go: literals.go:9:6 *)
 Definition normalLiterals' : val :=
@@ -1323,8 +1323,8 @@ Definition useLocks' : val :=
     exception_do (let: "m" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
     do:  ("m" <-[ptrT] "$r0");;;
-    do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] "m")) #());;;
-    do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] "m")) #())).
+    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "m")) #());;;
+    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "m")) #())).
 
 Definition useLocks : (go_string * go_string) := (pkg_name', "useLocks"%go).
 
@@ -1338,10 +1338,10 @@ Definition useCondVar' : val :=
     let: "$r0" := (let: "$a0" := (interface.make sync.Mutex'ptr (![ptrT] "m")) in
     (func_call sync.NewCond #()) "$a0") in
     do:  ("c" <-[ptrT] "$r0");;;
-    do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] "m")) #());;;
-    do:  (((method_call sync.Cond' "Signal" #()) (![ptrT] "c")) #());;;
-    do:  (((method_call sync.Cond' "Wait" #()) (![ptrT] "c")) #());;;
-    do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] "m")) #())).
+    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "m")) #());;;
+    do:  ((method_call sync.Cond'ptr "Signal" #() (![ptrT] "c")) #());;;
+    do:  ((method_call sync.Cond'ptr "Wait" #() (![ptrT] "c")) #());;;
+    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "m")) #())).
 
 Definition useCondVar : (go_string * go_string) := (pkg_name', "useCondVar"%go).
 
@@ -1349,7 +1349,7 @@ Definition hasCondVar : go_type := structT [
   "cond" :: ptrT
 ].
 
-Definition hasCondVar' : (go_string * go_string) := (pkg_name', "hasCondVar").
+Definition hasCondVar' : (go_string * go_string) := (pkg_name', "hasCondVar"%go).
 
 (* go: log_debugging.go:5:6 *)
 Definition ToBeDebugged' : val :=
@@ -1618,11 +1618,11 @@ Definition MapSize : (go_string * go_string) := (pkg_name', "MapSize"%go).
 
 Definition IntWrapper : go_type := uint64T.
 
-Definition IntWrapper' : (go_string * go_string) := (pkg_name', "IntWrapper").
+Definition IntWrapper' : (go_string * go_string) := (pkg_name', "IntWrapper"%go).
 
 Definition MapWrapper : go_type := mapT uint64T boolT.
 
-Definition MapWrapper' : (go_string * go_string) := (pkg_name', "MapWrapper").
+Definition MapWrapper' : (go_string * go_string) := (pkg_name', "MapWrapper"%go).
 
 (* go: maps.go:24:6 *)
 Definition MapTypeAliases' : val :=
@@ -1647,7 +1647,7 @@ Definition mapElem : go_type := structT [
   "b" :: uint64T
 ].
 
-Definition mapElem' : (go_string * go_string) := (pkg_name', "mapElem").
+Definition mapElem' : (go_string * go_string) := (pkg_name', "mapElem"%go).
 
 (* go: maps.go:37:6 *)
 Definition mapUpdateField' : val :=
@@ -1831,14 +1831,14 @@ Definition wrapExternalStruct : go_type := structT [
   "d" :: marshal.Dec
 ].
 
-Definition wrapExternalStruct' : (go_string * go_string) := (pkg_name', "wrapExternalStruct").
+Definition wrapExternalStruct' : (go_string * go_string) := (pkg_name', "wrapExternalStruct"%go).
 
 (* go: package.go:14:29 *)
 Definition wrapExternalStruct__moveUint64' : val :=
   rec: "wrapExternalStruct__moveUint64'" "w" <> :=
     exception_do (let: "w" := (ref_ty wrapExternalStruct "w") in
-    do:  (let: "$a0" := (((method_call marshal.Dec' "GetInt" #()) (![marshal.Dec] (struct.field_ref wrapExternalStruct "d" "w"))) #()) in
-    ((method_call marshal.Enc' "PutInt" #()) (![marshal.Enc] (struct.field_ref wrapExternalStruct "e" "w"))) "$a0")).
+    do:  (let: "$a0" := ((method_call marshal.Dec' "GetInt" #() (![marshal.Dec] (struct.field_ref wrapExternalStruct "d" "w"))) #()) in
+    (method_call marshal.Enc' "PutInt" #() (![marshal.Enc] (struct.field_ref wrapExternalStruct "e" "w"))) "$a0")).
 
 (* go: panic.go:3:6 *)
 Definition PanicAtTheDisco' : val :=
@@ -1863,14 +1863,14 @@ Definition typing : go_type := structT [
   "proph" :: ptrT
 ].
 
-Definition typing' : (go_string * go_string) := (pkg_name', "typing").
+Definition typing' : (go_string * go_string) := (pkg_name', "typing"%go).
 
 Definition composite : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
 
-Definition composite' : (go_string * go_string) := (pkg_name', "composite").
+Definition composite' : (go_string * go_string) := (pkg_name', "composite"%go).
 
 (* go: reassign.go:8:6 *)
 Definition ReassignVars' : val :=
@@ -1911,37 +1911,37 @@ Definition recur' : val :=
 Definition R : go_type := structT [
 ].
 
-Definition R' : (go_string * go_string) := (pkg_name', "R").
+Definition R' : (go_string * go_string) := (pkg_name', "R"%go).
 
 (* go: recursive.go:10:13 *)
 Definition R__recurMethod' : val :=
   rec: "R__recurMethod'" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
-    do:  (((method_call R' "recurMethod" #()) (![ptrT] "r")) #())).
+    do:  ((method_call R'ptr "recurMethod" #() (![ptrT] "r")) #())).
 
 Definition Other : go_type := structT [
   "RecursiveEmbedded" :: ptrT
 ].
 
-Definition Other' : (go_string * go_string) := (pkg_name', "Other").
+Definition Other' : (go_string * go_string) := (pkg_name', "Other"%go).
 
 Definition RecursiveEmbedded : go_type := structT [
   "Other" :: Other
 ].
 
-Definition RecursiveEmbedded' : (go_string * go_string) := (pkg_name', "RecursiveEmbedded").
+Definition RecursiveEmbedded' : (go_string * go_string) := (pkg_name', "RecursiveEmbedded"%go).
 
 (* go: recursive.go:22:29 *)
 Definition RecursiveEmbedded__recurEmbeddedMethod' : val :=
   rec: "RecursiveEmbedded__recurEmbeddedMethod'" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
-    do:  (((method_call RecursiveEmbedded' "recurEmbeddedMethod" #()) (![ptrT] (struct.field_ref Other "RecursiveEmbedded" (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r"))))) #())).
+    do:  ((method_call RecursiveEmbedded'ptr "recurEmbeddedMethod" #() (![ptrT] (struct.field_ref Other "RecursiveEmbedded" (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r"))))) #())).
 
 Definition Block : go_type := structT [
   "Value" :: uint64T
 ].
 
-Definition Block' : (go_string * go_string) := (pkg_name', "Block").
+Definition Block' : (go_string * go_string) := (pkg_name', "Block"%go).
 
 Definition Disk1 : expr := #(W64 0).
 
@@ -2086,7 +2086,7 @@ Definition ReplicatedDiskRecover : (go_string * go_string) := (pkg_name', "Repli
 
 Definition SliceAlias : go_type := sliceT.
 
-Definition SliceAlias' : (go_string * go_string) := (pkg_name', "SliceAlias").
+Definition SliceAlias' : (go_string * go_string) := (pkg_name', "SliceAlias"%go).
 
 (* go: slices.go:5:6 *)
 Definition sliceOps' : val :=
@@ -2127,13 +2127,13 @@ Definition thing : go_type := structT [
   "x" :: uint64T
 ].
 
-Definition thing' : (go_string * go_string) := (pkg_name', "thing").
+Definition thing' : (go_string * go_string) := (pkg_name', "thing"%go).
 
 Definition sliceOfThings : go_type := structT [
   "things" :: sliceT
 ].
 
-Definition sliceOfThings' : (go_string * go_string) := (pkg_name', "sliceOfThings").
+Definition sliceOfThings' : (go_string * go_string) := (pkg_name', "sliceOfThings"%go).
 
 (* go: slices.go:26:25 *)
 Definition sliceOfThings__getThingRef' : val :=
@@ -2168,20 +2168,20 @@ Definition simpleSpawn' : val :=
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("v" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] "l")) #());;;
+      exception_do (do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "l")) #());;;
       let: "x" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (![uint64T] (![ptrT] "v")) in
       do:  ("x" <-[uint64T] "$r0");;;
       (if: (![uint64T] "x") > #(W64 0)
       then do:  ((func_call Skip #()) #())
       else do:  #());;;
-      do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] "l")) #()))
+      do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "l")) #()))
       ) in
     do:  (Fork ("$go" #()));;;
-    do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] "l")) #());;;
+    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "l")) #());;;
     let: "$r0" := #(W64 1) in
     do:  ((![ptrT] "v") <-[uint64T] "$r0");;;
-    do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] "l")) #())).
+    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "l")) #())).
 
 Definition simpleSpawn : (go_string * go_string) := (pkg_name', "simpleSpawn"%go).
 
@@ -2248,7 +2248,7 @@ Definition Point : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition Point' : (go_string * go_string) := (pkg_name', "Point").
+Definition Point' : (go_string * go_string) := (pkg_name', "Point"%go).
 
 (* go: struct_method.go:8:16 *)
 Definition Point__Add' : val :=
@@ -2282,7 +2282,7 @@ Definition UseAdd' : val :=
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    ((method_call Point' "Add" #()) (![Point] "c")) "$a0") in
+    (method_call Point' "Add" #() (![Point] "c")) "$a0") in
     do:  ("r" <-[uint64T] "$r0");;;
     return: (![uint64T] "r")).
 
@@ -2293,7 +2293,7 @@ Definition UseAddWithLiteral' : val :=
   rec: "UseAddWithLiteral'" <> :=
     exception_do (let: "r" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    ((method_call Point' "Add" #()) (let: "$x" := #(W64 2) in
+    (method_call Point' "Add" #() (let: "$x" := #(W64 2) in
     let: "$y" := #(W64 3) in
     struct.make Point [{
       "x" ::= "$x";
@@ -2309,7 +2309,7 @@ Definition TwoInts : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition TwoInts' : (go_string * go_string) := (pkg_name', "TwoInts").
+Definition TwoInts' : (go_string * go_string) := (pkg_name', "TwoInts"%go).
 
 Definition S : go_type := structT [
   "a" :: uint64T;
@@ -2317,7 +2317,7 @@ Definition S : go_type := structT [
   "c" :: boolT
 ].
 
-Definition S' : (go_string * go_string) := (pkg_name', "S").
+Definition S' : (go_string * go_string) := (pkg_name', "S"%go).
 
 (* go: struct_pointers.go:14:6 *)
 Definition NewS' : val :=
@@ -2403,8 +2403,8 @@ Definition setField : (go_string * go_string) := (pkg_name', "setField"%go).
 Definition DoSomeLocking' : val :=
   rec: "DoSomeLocking'" "l" :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] "l")) #());;;
-    do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] "l")) #())).
+    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "l")) #());;;
+    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "l")) #())).
 
 Definition DoSomeLocking : (go_string * go_string) := (pkg_name', "DoSomeLocking"%go).
 
@@ -2434,9 +2434,9 @@ Definition B : go_type := structT [
   "a" :: sliceT
 ].
 
-Definition B' : (go_string * go_string) := (pkg_name', "B").
+Definition B' : (go_string * go_string) := (pkg_name', "B"%go).
 
-Definition A' : (go_string * go_string) := (pkg_name', "A").
+Definition A' : (go_string * go_string) := (pkg_name', "A"%go).
 
 (* go: trailing_call.go:3:6 *)
 Definition mkInt' : val :=
@@ -2456,15 +2456,15 @@ Definition my_u64 : go_type := uint64T.
 
 Definition Timestamp : go_type := uint64T.
 
-Definition Timestamp' : (go_string * go_string) := (pkg_name', "Timestamp").
+Definition Timestamp' : (go_string * go_string) := (pkg_name', "Timestamp"%go).
 
 Definition UseTypeAbbrev : go_type := uint64T.
 
-Definition UseTypeAbbrev' : (go_string * go_string) := (pkg_name', "UseTypeAbbrev").
+Definition UseTypeAbbrev' : (go_string * go_string) := (pkg_name', "UseTypeAbbrev"%go).
 
 Definition UseNamedType : go_type := Timestamp.
 
-Definition UseNamedType' : (go_string * go_string) := (pkg_name', "UseNamedType").
+Definition UseNamedType' : (go_string * go_string) := (pkg_name', "UseNamedType"%go).
 
 (* go: type_alias.go:11:6 *)
 Definition convertToAlias' : val :=
@@ -2529,9 +2529,61 @@ Definition testVariadicPassThrough' : val :=
 
 Definition testVariadicPassThrough : (go_string * go_string) := (pkg_name', "testVariadicPassThrough"%go).
 
+Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT)].
+
+Definition functions' : list (go_string * val) := [("takesArray"%go, takesArray'); ("takesPtr"%go, takesPtr'); ("usesArrayElemRef"%go, usesArrayElemRef'); ("sum"%go, sum'); ("arrayToSlice"%go, arrayToSlice'); ("arrayLiteralKeyed"%go, arrayLiteralKeyed'); ("chanBasic"%go, chanBasic'); ("f"%go, f'); ("chanSelect"%go, chanSelect'); ("chanDirectional"%go, chanDirectional'); ("doSubtleThings"%go, doSubtleThings'); ("hasStartComment"%go, hasStartComment'); ("hasEndComment"%go, hasEndComment'); ("condvarWrapping"%go, condvarWrapping'); ("useUntypedInt"%go, useUntypedInt'); ("useUntypedString"%go, useUntypedString'); ("conditionalReturn"%go, conditionalReturn'); ("alwaysReturn"%go, alwaysReturn'); ("alwaysReturnInNestedBranches"%go, alwaysReturnInNestedBranches'); ("earlyReturn"%go, earlyReturn'); ("conditionalAssign"%go, conditionalAssign'); ("elseIf"%go, elseIf'); ("ifStmtInitialization"%go, ifStmtInitialization'); ("typedLiteral"%go, typedLiteral'); ("literalCast"%go, literalCast'); ("castInt"%go, castInt'); ("stringToByteSlice"%go, stringToByteSlice'); ("byteSliceToString"%go, byteSliceToString'); ("stringToStringWrapper"%go, stringToStringWrapper'); ("stringWrapperToString"%go, stringWrapperToString'); ("testCopySimple"%go, testCopySimple'); ("testCopyDifferentLengths"%go, testCopyDifferentLengths'); ("atomicCreateStub"%go, atomicCreateStub'); ("useSlice"%go, useSlice'); ("useSliceIndexing"%go, useSliceIndexing'); ("useMap"%go, useMap'); ("usePtr"%go, usePtr'); ("iterMapKeysAndValues"%go, iterMapKeysAndValues'); ("iterMapKeys"%go, iterMapKeys'); ("getRandom"%go, getRandom'); ("diskArgument"%go, diskArgument'); ("returnEmbedVal"%go, returnEmbedVal'); ("returnEmbedValWithPointer"%go, returnEmbedValWithPointer'); ("useEmbeddedField"%go, useEmbeddedField'); ("useEmbeddedValField"%go, useEmbeddedValField'); ("useEmbeddedMethod"%go, useEmbeddedMethod'); ("useEmbeddedMethod2"%go, useEmbeddedMethod2'); ("empty"%go, empty'); ("emptyReturn"%go, emptyReturn'); ("foo"%go, foo'); ("other"%go, other'); ("bar"%go, bar'); ("TakesFunctionType"%go, TakesFunctionType'); ("fooConsumer"%go, fooConsumer'); ("testAssignConcreteToInterface"%go, testAssignConcreteToInterface'); ("testPassConcreteToInterfaceArg"%go, testPassConcreteToInterfaceArg'); ("testPassConcreteToInterfaceArgSpecial"%go, testPassConcreteToInterfaceArgSpecial'); ("takesVarArgsInterface"%go, takesVarArgsInterface'); ("test"%go, test'); ("returnConcrete"%go, returnConcrete'); ("testMultiReturn"%go, testMultiReturn'); ("testReturnStatment"%go, testReturnStatment'); ("testConversionInEq"%go, testConversionInEq'); ("takeMultiple"%go, takeMultiple'); ("giveMultiple"%go, giveMultiple'); ("testConversionInMultipleReturnPassThrough"%go, testConversionInMultipleReturnPassThrough'); ("testConversionInMultiplePassThrough"%go, testConversionInMultiplePassThrough'); ("testPtrMset"%go, testPtrMset'); ("useInts"%go, useInts'); ("normalLiterals"%go, normalLiterals'); ("outOfOrderLiteral"%go, outOfOrderLiteral'); ("specialLiterals"%go, specialLiterals'); ("oddLiterals"%go, oddLiterals'); ("unKeyedLiteral"%go, unKeyedLiteral'); ("useLocks"%go, useLocks'); ("useCondVar"%go, useCondVar'); ("ToBeDebugged"%go, ToBeDebugged'); ("DoNothing"%go, DoNothing'); ("DoSomething"%go, DoSomething'); ("standardForLoop"%go, standardForLoop'); ("conditionalInLoop"%go, conditionalInLoop'); ("conditionalInLoopElse"%go, conditionalInLoopElse'); ("nestedConditionalInLoopImplicitContinue"%go, nestedConditionalInLoopImplicitContinue'); ("ImplicitLoopContinue"%go, ImplicitLoopContinue'); ("ImplicitLoopContinue2"%go, ImplicitLoopContinue2'); ("ImplicitLoopContinueAfterIfBreak"%go, ImplicitLoopContinueAfterIfBreak'); ("nestedLoops"%go, nestedLoops'); ("nestedGoStyleLoops"%go, nestedGoStyleLoops'); ("sumSlice"%go, sumSlice'); ("breakFromLoop"%go, breakFromLoop'); ("clearMap"%go, clearMap'); ("IterateMapKeys"%go, IterateMapKeys'); ("MapSize"%go, MapSize'); ("MapTypeAliases"%go, MapTypeAliases'); ("StringMap"%go, StringMap'); ("mapUpdateField"%go, mapUpdateField'); ("returnTwo"%go, returnTwo'); ("returnTwoWrapper"%go, returnTwoWrapper'); ("multipleVar"%go, multipleVar'); ("multiplePassThrough"%go, multiplePassThrough'); ("multipleReturnPassThrough"%go, multipleReturnPassThrough'); ("AssignNilSlice"%go, AssignNilSlice'); ("AssignNilPointer"%go, AssignNilPointer'); ("CompareSliceToNil"%go, CompareSliceToNil'); ("ComparePointerToNil"%go, ComparePointerToNil'); ("LogicalOperators"%go, LogicalOperators'); ("LogicalAndEqualityOperators"%go, LogicalAndEqualityOperators'); ("ArithmeticShifts"%go, ArithmeticShifts'); ("BitwiseOps"%go, BitwiseOps'); ("Comparison"%go, Comparison'); ("AssignOps"%go, AssignOps'); ("PanicAtTheDisco"%go, PanicAtTheDisco'); ("Oracle"%go, Oracle'); ("ReassignVars"%go, ReassignVars'); ("recur"%go, recur'); ("TwoDiskWrite"%go, TwoDiskWrite'); ("TwoDiskRead"%go, TwoDiskRead'); ("TwoDiskLock"%go, TwoDiskLock'); ("TwoDiskUnlock"%go, TwoDiskUnlock'); ("ReplicatedDiskRead"%go, ReplicatedDiskRead'); ("ReplicatedDiskWrite"%go, ReplicatedDiskWrite'); ("ReplicatedDiskRecover"%go, ReplicatedDiskRecover'); ("sliceOps"%go, sliceOps'); ("makeSingletonSlice"%go, makeSingletonSlice'); ("makeAlias"%go, makeAlias'); ("Skip"%go, Skip'); ("simpleSpawn"%go, simpleSpawn'); ("threadCode"%go, threadCode'); ("loopSpawn"%go, loopSpawn'); ("stringAppend"%go, stringAppend'); ("stringLength"%go, stringLength'); ("x"%go, x'); ("UseAdd"%go, UseAdd'); ("UseAddWithLiteral"%go, UseAddWithLiteral'); ("NewS"%go, NewS'); ("localSRef"%go, localSRef'); ("setField"%go, setField'); ("DoSomeLocking"%go, DoSomeLocking'); ("makeLock"%go, makeLock'); ("sleep"%go, sleep'); ("mkInt"%go, mkInt'); ("mkNothing"%go, mkNothing'); ("convertToAlias"%go, convertToAlias'); ("variadicFunc"%go, variadicFunc'); ("testVariadicCall"%go, testVariadicCall'); ("returnMultiple"%go, returnMultiple'); ("testVariadicPassThrough"%go, testVariadicPassThrough')].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, []); ("Foo'ptr"%go, []); ("importantStruct"%go, []); ("importantStruct'ptr"%go, []); ("stringWrapper"%go, []); ("stringWrapper'ptr"%go, []); ("diskWrapper"%go, []); ("diskWrapper'ptr"%go, []); ("embedA"%go, [("Foo"%go, embedA__Foo)]); ("embedA'ptr"%go, [("Bar"%go, embedA__Bar); ("Foo"%go, (λ: "$recvAddr",
+                 method_call embedA' "Foo" #() (![embedA] "$recvAddr")
+                 ))]); ("embedB"%go, [("Foo"%go, embedB__Foo)]); ("embedB'ptr"%go, [("Bar"%go, (λ: "$recvAddr",
+                 method_call embedA'ptr "Bar" #() (struct.field_ref embedB "embedA" "$recvAddr")
+                 )); ("Car"%go, embedB__Car); ("Foo"%go, (λ: "$recvAddr",
+                 method_call embedB' "Foo" #() (![embedB] "$recvAddr")
+                 ))]); ("embedC"%go, [("Bar"%go, (λ: "$recv",
+                 method_call embedA'ptr "Bar" #() (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" "$recv"))
+                 )); ("Car"%go, (λ: "$recv",
+                 method_call embedB'ptr "Car" #() (struct.field_get embedC "embedB" "$recv")
+                 )); ("Foo"%go, (λ: "$recv",
+                 method_call embedB' "Foo" #() (![embedB] (struct.field_get embedC "embedB" "$recv"))
+                 ))]); ("embedC'ptr"%go, [("Bar"%go, (λ: "$recvAddr",
+                 method_call embedA'ptr "Bar" #() (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
+                 )); ("Car"%go, (λ: "$recvAddr",
+                 method_call embedB'ptr "Car" #() (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr"))
+                 )); ("Foo"%go, (λ: "$recvAddr",
+                 method_call embedB' "Foo" #() (![embedB] (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
+                 ))]); ("embedD"%go, [("Bar"%go, (λ: "$recv",
+                 method_call embedA'ptr "Bar" #() (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
+                 )); ("Car"%go, (λ: "$recv",
+                 method_call embedB'ptr "Car" #() (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv"))
+                 )); ("Foo"%go, (λ: "$recv",
+                 method_call embedB' "Foo" #() (![embedB] (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
+                 ))]); ("embedD'ptr"%go, [("Bar"%go, (λ: "$recvAddr",
+                 method_call embedA'ptr "Bar" #() (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
+                 )); ("Car"%go, (λ: "$recvAddr",
+                 method_call embedB'ptr "Car" #() (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr")))
+                 )); ("Foo"%go, (λ: "$recvAddr",
+                 method_call embedB' "Foo" #() (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
+                 ))]); ("Enc"%go, []); ("Enc'ptr"%go, [("UInt32"%go, Enc__UInt32); ("UInt64"%go, Enc__UInt64); ("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("UInt32"%go, Dec__UInt32); ("UInt64"%go, Dec__UInt64); ("consume"%go, Dec__consume)]); ("concreteFooer"%go, []); ("concreteFooer'ptr"%go, [("Foo"%go, concreteFooer__Foo)]); ("FooerUser"%go, []); ("FooerUser'ptr"%go, []); ("concrete1"%go, [("Foo"%go, concrete1__Foo)]); ("concrete1'ptr"%go, [("B"%go, concrete1__B); ("Foo"%go, (λ: "$recvAddr",
+                 method_call concrete1' "Foo" #() (![concrete1] "$recvAddr")
+                 ))]); ("my_u32"%go, []); ("my_u32'ptr"%go, []); ("also_u32"%go, []); ("also_u32'ptr"%go, []); ("allTheLiterals"%go, []); ("allTheLiterals'ptr"%go, []); ("hasCondVar"%go, []); ("hasCondVar'ptr"%go, []); ("IntWrapper"%go, []); ("IntWrapper'ptr"%go, []); ("MapWrapper"%go, []); ("MapWrapper'ptr"%go, []); ("mapElem"%go, []); ("mapElem'ptr"%go, []); ("wrapExternalStruct"%go, [("moveUint64"%go, wrapExternalStruct__moveUint64)]); ("wrapExternalStruct'ptr"%go, [("moveUint64"%go, (λ: "$recvAddr",
+                 method_call wrapExternalStruct' "moveUint64" #() (![wrapExternalStruct] "$recvAddr")
+                 ))]); ("typing"%go, []); ("typing'ptr"%go, []); ("composite"%go, []); ("composite'ptr"%go, []); ("R"%go, []); ("R'ptr"%go, [("recurMethod"%go, R__recurMethod)]); ("Other"%go, [("recurEmbeddedMethod"%go, (λ: "$recv",
+                 method_call RecursiveEmbedded'ptr "recurEmbeddedMethod" #() (struct.field_get Other "RecursiveEmbedded" "$recv")
+                 ))]); ("Other'ptr"%go, [("recurEmbeddedMethod"%go, (λ: "$recvAddr",
+                 method_call RecursiveEmbedded'ptr "recurEmbeddedMethod" #() (![ptrT] (struct.field_ref Other "RecursiveEmbedded" "$recvAddr"))
+                 ))]); ("RecursiveEmbedded"%go, []); ("RecursiveEmbedded'ptr"%go, [("recurEmbeddedMethod"%go, RecursiveEmbedded__recurEmbeddedMethod)]); ("Block"%go, []); ("Block'ptr"%go, []); ("SliceAlias"%go, []); ("SliceAlias'ptr"%go, []); ("thing"%go, []); ("thing'ptr"%go, []); ("sliceOfThings"%go, [("getThingRef"%go, sliceOfThings__getThingRef)]); ("sliceOfThings'ptr"%go, [("getThingRef"%go, (λ: "$recvAddr",
+                 method_call sliceOfThings' "getThingRef" #() (![sliceOfThings] "$recvAddr")
+                 ))]); ("Point"%go, [("Add"%go, Point__Add); ("GetField"%go, Point__GetField)]); ("Point'ptr"%go, [("Add"%go, (λ: "$recvAddr",
+                 method_call Point' "Add" #() (![Point] "$recvAddr")
+                 )); ("GetField"%go, (λ: "$recvAddr",
+                 method_call Point' "GetField" #() (![Point] "$recvAddr")
+                 ))]); ("TwoInts"%go, []); ("TwoInts'ptr"%go, []); ("S"%go, [("readBVal"%go, S__readBVal)]); ("S'ptr"%go, [("negateC"%go, S__negateC); ("readA"%go, S__readA); ("readB"%go, S__readB); ("readBVal"%go, (λ: "$recvAddr",
+                 method_call S' "readBVal" #() (![S] "$recvAddr")
+                 )); ("refC"%go, S__refC); ("writeB"%go, S__writeB)]); ("B"%go, []); ("B'ptr"%go, []); ("A"%go, []); ("A'ptr"%go, []); ("Timestamp"%go, []); ("Timestamp'ptr"%go, []); ("UseTypeAbbrev"%go, []); ("UseTypeAbbrev'ptr"%go, []); ("UseNamedType"%go, []); ("UseNamedType'ptr"%go, [])].
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  log.initialize';;;
       do:  disk.initialize';;;

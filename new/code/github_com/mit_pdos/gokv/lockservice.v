@@ -11,7 +11,7 @@ Definition LockClerk : go_type := structT [
 
 Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/lockservice".
 
-Definition LockClerk' : (go_string * go_string) := (pkg_name', "LockClerk").
+Definition LockClerk' : (go_string * go_string) := (pkg_name', "LockClerk"%go).
 
 (* go: lock_clerk.go:11:22 *)
 Definition LockClerk__Lock' : val :=
@@ -44,9 +44,15 @@ Definition MakeLockClerk' : val :=
 
 Definition MakeLockClerk : (go_string * go_string) := (pkg_name', "MakeLockClerk"%go).
 
+Definition vars' : list (go_string * go_type) := [].
+
+Definition functions' : list (go_string * val) := [("MakeLockClerk"%go, MakeLockClerk')].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"%go, []); ("LockClerk'ptr"%go, [("Lock"%go, LockClerk__Lock); ("Unlock"%go, LockClerk__Unlock)])].
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  kv.initialize')
       ).
 

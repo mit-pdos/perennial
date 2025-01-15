@@ -8,15 +8,21 @@ Definition Kv : go_type := interfaceT.
 
 Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/kv".
 
-Definition Kv' : (go_string * go_string) := (pkg_name', "Kv").
+Definition Kv' : (go_string * go_string) := (pkg_name', "Kv"%go).
 
 Definition KvCput : go_type := interfaceT.
 
-Definition KvCput' : (go_string * go_string) := (pkg_name', "KvCput").
+Definition KvCput' : (go_string * go_string) := (pkg_name', "KvCput"%go).
+
+Definition vars' : list (go_string * go_type) := [].
+
+Definition functions' : list (go_string * val) := [].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [].
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  #())
       ).
 

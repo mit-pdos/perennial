@@ -98,6 +98,6 @@ Section grove.
 
   Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>, #()).
+    globals.package_init pkg_name' [] [] [] (λ: <>, #()).
 
 End grove.

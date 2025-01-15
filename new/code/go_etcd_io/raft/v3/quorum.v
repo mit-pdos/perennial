@@ -17,9 +17,9 @@ Definition JointConfig : go_type := arrayT 2 MajorityConfig.
 
 Definition pkg_name' : go_string := "go.etcd.io/raft/v3/quorum".
 
-Definition JointConfig' : (go_string * go_string) := (pkg_name', "JointConfig").
+Definition JointConfig' : (go_string * go_string) := (pkg_name', "JointConfig"%go).
 
-Definition MajorityConfig' : (go_string * go_string) := (pkg_name', "MajorityConfig").
+Definition MajorityConfig' : (go_string * go_string) := (pkg_name', "MajorityConfig"%go).
 
 (* go: joint.go:21:22 *)
 Definition JointConfig__String' : val :=
@@ -27,9 +27,9 @@ Definition JointConfig__String' : val :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
     (if: int_gt (let: "$a0" := (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1))) in
     map.len "$a0") #(W64 0)
-    then return: (((((method_call MajorityConfig' "String" #()) (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #()) + #"&&"%go) + (((method_call MajorityConfig' "String" #()) (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) #()))
+    then return: ((((method_call MajorityConfig' "String" #() (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #()) + #"&&"%go) + ((method_call MajorityConfig' "String" #() (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) #()))
     else do:  #());;;
-    return: (((method_call MajorityConfig' "String" #()) (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #())).
+    return: ((method_call MajorityConfig' "String" #() (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #())).
 
 Definition unit : go_type := structT [
 ].
@@ -74,7 +74,7 @@ Definition JointConfig__Describe' : val :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
     let: "l" := (ref_ty AckedIndexer "l") in
     return: (let: "$a0" := (![AckedIndexer] "l") in
-     ((method_call MajorityConfig' "Describe" #()) (((method_call JointConfig' "IDs" #()) (![JointConfig] "c")) #())) "$a0")).
+     (method_call MajorityConfig' "Describe" #() ((method_call JointConfig' "IDs" #() (![JointConfig] "c")) #())) "$a0")).
 
 Definition Index : go_type := uint64T.
 
@@ -89,11 +89,11 @@ Definition JointConfig__CommittedIndex' : val :=
     let: "l" := (ref_ty AckedIndexer "l") in
     let: "idx0" := (ref_ty Index (zero_val Index)) in
     let: "$r0" := (let: "$a0" := (![AckedIndexer] "l") in
-    ((method_call MajorityConfig' "CommittedIndex" #()) (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call MajorityConfig' "CommittedIndex" #() (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
     do:  ("idx0" <-[Index] "$r0");;;
     let: "idx1" := (ref_ty Index (zero_val Index)) in
     let: "$r0" := (let: "$a0" := (![AckedIndexer] "l") in
-    ((method_call MajorityConfig' "CommittedIndex" #()) (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call MajorityConfig' "CommittedIndex" #() (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
     do:  ("idx1" <-[Index] "$r0");;;
     (if: (![Index] "idx0") < (![Index] "idx1")
     then return: (![Index] "idx0")
@@ -117,11 +117,11 @@ Definition JointConfig__VoteResult' : val :=
     let: "votes" := (ref_ty (mapT uint64T boolT) "votes") in
     let: "r1" := (ref_ty VoteResult (zero_val VoteResult)) in
     let: "$r0" := (let: "$a0" := (![mapT uint64T boolT] "votes") in
-    ((method_call MajorityConfig' "VoteResult" #()) (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call MajorityConfig' "VoteResult" #() (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
     do:  ("r1" <-[VoteResult] "$r0");;;
     let: "r2" := (ref_ty VoteResult (zero_val VoteResult)) in
     let: "$r0" := (let: "$a0" := (![mapT uint64T boolT] "votes") in
-    ((method_call MajorityConfig' "VoteResult" #()) (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call MajorityConfig' "VoteResult" #() (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
     do:  ("r2" <-[VoteResult] "$r0");;;
     (if: (![VoteResult] "r1") = (![VoteResult] "r2")
     then return: (![VoteResult] "r1")
@@ -154,22 +154,22 @@ Definition MajorityConfig__String' : val :=
     (func_call sort.Slice #()) "$a0" "$a1");;;
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     do:  (let: "$a0" := #(W8 40) in
-    ((method_call strings.Builder' "WriteByte" #()) "buf") "$a0");;;
+    (method_call strings.Builder'ptr "WriteByte" #() "buf") "$a0");;;
     do:  (let: "$range" := (![sliceT] "sl") in
     slice.for_range uint64T "$range" (λ: "i" <>,
       let: "i" := ref_ty uint64T "i" in
       (if: int_gt (![intT] "i") #(W64 0)
       then
         do:  (let: "$a0" := #(W8 32) in
-        ((method_call strings.Builder' "WriteByte" #()) "buf") "$a0")
+        (method_call strings.Builder'ptr "WriteByte" #() "buf") "$a0")
       else do:  #());;;
       do:  (let: "$a0" := (interface.make strings.Builder'ptr "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make uint64' (![uint64T] (slice.elem_ref uint64T (![sliceT] "sl") (![intT] "i")))) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call fmt.Fprint #()) "$a0" "$a1")));;;
     do:  (let: "$a0" := #(W8 41) in
-    ((method_call strings.Builder' "WriteByte" #()) "buf") "$a0");;;
-    return: (((method_call strings.Builder' "String" #()) "buf") #())).
+    (method_call strings.Builder'ptr "WriteByte" #() "buf") "$a0");;;
+    return: ((method_call strings.Builder'ptr "String" #() "buf") #())).
 
 Definition tup : go_type := structT [
   "id" :: uint64T;
@@ -178,9 +178,9 @@ Definition tup : go_type := structT [
   "bar" :: intT
 ].
 
-Definition tup' : (go_string * go_string) := (pkg_name', "tup").
+Definition tup' : (go_string * go_string) := (pkg_name', "tup"%go).
 
-Definition Index' : (go_string * go_string) := (pkg_name', "Index").
+Definition Index' : (go_string * go_string) := (pkg_name', "Index"%go).
 
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
@@ -286,7 +286,7 @@ Definition MajorityConfig__Describe' : val :=
       let: "$sl1" := (interface.make uint64' (![uint64T] (struct.field_ref tup "id" (slice.elem_ref tup (![sliceT] "info") (![intT] "i"))))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (func_call fmt.Fprintf #()) "$a0" "$a1" "$a2")));;;
-    return: (((method_call strings.Builder' "String" #()) "buf") #())).
+    return: ((method_call strings.Builder'ptr "String" #() "buf") #())).
 
 (* Slice returns the MajorityConfig as a sorted slice.
 
@@ -417,11 +417,11 @@ Definition Index__String' : val :=
      let: "$a1" := #(W64 10) in
      (func_call strconv.FormatUint #()) "$a0" "$a1")).
 
-Definition AckedIndexer' : (go_string * go_string) := (pkg_name', "AckedIndexer").
+Definition AckedIndexer' : (go_string * go_string) := (pkg_name', "AckedIndexer"%go).
 
 Definition mapAckIndexer : go_type := mapT uint64T Index.
 
-Definition mapAckIndexer' : (go_string * go_string) := (pkg_name', "mapAckIndexer").
+Definition mapAckIndexer' : (go_string * go_string) := (pkg_name', "mapAckIndexer"%go).
 
 (* go: quorum.go:40:24 *)
 Definition mapAckIndexer__AckedIndex' : val :=
@@ -437,7 +437,7 @@ Definition mapAckIndexer__AckedIndex' : val :=
     do:  ("ok" <-[boolT] "$r1");;;
     return: (![Index] "idx", ![boolT] "ok")).
 
-Definition VoteResult' : (go_string * go_string) := (pkg_name', "VoteResult").
+Definition VoteResult' : (go_string * go_string) := (pkg_name', "VoteResult"%go).
 
 (* go: voteresult_string.go:7:6 *)
 Definition _unused' : val :=
@@ -467,9 +467,39 @@ Definition _VoteResult_name : go_string := "VotePendingVoteLostVoteWon"%go.
 
 Definition _VoteResult_index : (go_string * go_string) := (pkg_name', "_VoteResult_index"%go).
 
+Definition vars' : list (go_string * go_type) := [("_VoteResult_index"%go, arrayT 4 uint8T)].
+
+Definition functions' : list (go_string * val) := [("_unused"%go, _unused')].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfig"%go, [("CommittedIndex"%go, JointConfig__CommittedIndex); ("Describe"%go, JointConfig__Describe); ("IDs"%go, JointConfig__IDs); ("String"%go, JointConfig__String); ("VoteResult"%go, JointConfig__VoteResult)]); ("JointConfig'ptr"%go, [("CommittedIndex"%go, (λ: "$recvAddr",
+                 method_call JointConfig' "CommittedIndex" #() (![JointConfig] "$recvAddr")
+                 )); ("Describe"%go, (λ: "$recvAddr",
+                 method_call JointConfig' "Describe" #() (![JointConfig] "$recvAddr")
+                 )); ("IDs"%go, (λ: "$recvAddr",
+                 method_call JointConfig' "IDs" #() (![JointConfig] "$recvAddr")
+                 )); ("String"%go, (λ: "$recvAddr",
+                 method_call JointConfig' "String" #() (![JointConfig] "$recvAddr")
+                 )); ("VoteResult"%go, (λ: "$recvAddr",
+                 method_call JointConfig' "VoteResult" #() (![JointConfig] "$recvAddr")
+                 ))]); ("MajorityConfig"%go, [("CommittedIndex"%go, MajorityConfig__CommittedIndex); ("Describe"%go, MajorityConfig__Describe); ("Slice"%go, MajorityConfig__Slice); ("String"%go, MajorityConfig__String); ("VoteResult"%go, MajorityConfig__VoteResult)]); ("MajorityConfig'ptr"%go, [("CommittedIndex"%go, (λ: "$recvAddr",
+                 method_call MajorityConfig' "CommittedIndex" #() (![MajorityConfig] "$recvAddr")
+                 )); ("Describe"%go, (λ: "$recvAddr",
+                 method_call MajorityConfig' "Describe" #() (![MajorityConfig] "$recvAddr")
+                 )); ("Slice"%go, (λ: "$recvAddr",
+                 method_call MajorityConfig' "Slice" #() (![MajorityConfig] "$recvAddr")
+                 )); ("String"%go, (λ: "$recvAddr",
+                 method_call MajorityConfig' "String" #() (![MajorityConfig] "$recvAddr")
+                 )); ("VoteResult"%go, (λ: "$recvAddr",
+                 method_call MajorityConfig' "VoteResult" #() (![MajorityConfig] "$recvAddr")
+                 ))]); ("tup"%go, []); ("tup'ptr"%go, []); ("Index"%go, [("String"%go, Index__String)]); ("Index'ptr"%go, [("String"%go, (λ: "$recvAddr",
+                 method_call Index' "String" #() (![Index] "$recvAddr")
+                 ))]); ("mapAckIndexer"%go, [("AckedIndex"%go, mapAckIndexer__AckedIndex)]); ("mapAckIndexer'ptr"%go, [("AckedIndex"%go, (λ: "$recvAddr",
+                 method_call mapAckIndexer' "AckedIndex" #() (![mapAckIndexer] "$recvAddr")
+                 ))]); ("VoteResult"%go, []); ("VoteResult'ptr"%go, [])].
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  strconv.initialize';;;
       do:  strings.initialize';;;
       do:  sort.initialize';;;

@@ -148,10 +148,10 @@ Section global_vars.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
-Class WpGlobalsGet (pkg_var_name : go_string * go_string) (addr : loc)
+Class WpGlobalsGet (pkg_name : go_string) (var_name : go_string) (addr : loc)
                    (P : iProp Σ)
   := wp_globals_get : ⊢ ∀ Φ, P -∗ (▷ Φ #addr) -∗
-                             WP (globals.get pkg_var_name #()) {{ Φ }}.
+                             WP (globals.get #pkg_name #var_name) {{ Φ }}.
 
 Definition is_global_definitions (pkg_name : go_string)
   (var_addrs : list (go_string * loc))
@@ -178,7 +178,7 @@ Qed.
 
 Lemma wp_global_get' {pkg_name var_name var_addrs functions msets addr} :
   alist_lookup_f var_name var_addrs = Some addr →
-  WpGlobalsGet (pkg_name, var_name) addr (is_global_definitions pkg_name var_addrs functions msets).
+  WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs functions msets).
 Proof.
   intros Hlookup. rewrite /WpGlobalsGet.
   iIntros (?) "#Hctx HΦ".

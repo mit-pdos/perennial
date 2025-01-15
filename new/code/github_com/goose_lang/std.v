@@ -112,7 +112,7 @@ Definition JoinHandle : go_type := structT [
   "cond" :: ptrT
 ].
 
-Definition JoinHandle' : (go_string * go_string) := (pkg_name', "JoinHandle").
+Definition JoinHandle' : (go_string * go_string) := (pkg_name', "JoinHandle"%go).
 
 (* go: goose_std.go:73:6 *)
 Definition newJoinHandle' : val :=
@@ -139,11 +139,11 @@ Definition newJoinHandle : (go_string * go_string) := (pkg_name', "newJoinHandle
 Definition JoinHandle__finish' : val :=
   rec: "JoinHandle__finish'" "h" <> :=
     exception_do (let: "h" := (ref_ty ptrT "h") in
-    do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
+    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
     let: "$r0" := #true in
     do:  ((struct.field_ref JoinHandle "done" (![ptrT] "h")) <-[boolT] "$r0");;;
-    do:  (((method_call sync.Cond' "Signal" #()) (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #());;;
-    do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
+    do:  ((method_call sync.Cond'ptr "Signal" #() (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #());;;
+    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
 
 (* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
    it to finish.
@@ -162,7 +162,7 @@ Definition Spawn' : val :=
     do:  ("h" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  ((![funcT] "f") #());;;
-      do:  (((method_call JoinHandle' "finish" #()) (![ptrT] "h")) #()))
+      do:  ((method_call JoinHandle'ptr "finish" #() (![ptrT] "h")) #()))
       ) in
     do:  (Fork ("$go" #()));;;
     return: (![ptrT] "h")).
@@ -173,7 +173,7 @@ Definition Spawn : (go_string * go_string) := (pkg_name', "Spawn"%go).
 Definition JoinHandle__Join' : val :=
   rec: "JoinHandle__Join'" "h" <> :=
     exception_do (let: "h" := (ref_ty ptrT "h") in
-    do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
+    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![boolT] (struct.field_ref JoinHandle "done" (![ptrT] "h"))
       then
@@ -181,8 +181,8 @@ Definition JoinHandle__Join' : val :=
         do:  ((struct.field_ref JoinHandle "done" (![ptrT] "h")) <-[boolT] "$r0");;;
         break: #()
       else do:  #());;;
-      do:  (((method_call sync.Cond' "Wait" #()) (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #()));;;
-    do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
+      do:  ((method_call sync.Cond'ptr "Wait" #() (![ptrT] (struct.field_ref JoinHandle "cond" (![ptrT] "h")))) #()));;;
+    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] (struct.field_ref JoinHandle "mu" (![ptrT] "h")))) #())).
 
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
 
@@ -215,16 +215,16 @@ Definition Multipar' : val :=
       let: "$go" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![uint64T] "i") in
         (![funcT] "op") "$a0");;;
-        do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] "num_left_mu")) #());;;
+        do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "num_left_mu")) #());;;
         do:  ("num_left" <-[uint64T] ((![uint64T] "num_left") - #(W64 1)));;;
-        do:  (((method_call sync.Cond' "Signal" #()) (![ptrT] "num_left_cond")) #());;;
-        do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] "num_left_mu")) #()))
+        do:  ((method_call sync.Cond'ptr "Signal" #() (![ptrT] "num_left_cond")) #());;;
+        do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "num_left_mu")) #()))
         ) in
       do:  (Fork ("$go" #()))));;;
-    do:  (((method_call sync.Mutex' "Lock" #()) (![ptrT] "num_left_mu")) #());;;
+    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "num_left_mu")) #());;;
     (for: (λ: <>, (![uint64T] "num_left") > #(W64 0)); (λ: <>, Skip) := λ: <>,
-      do:  (((method_call sync.Cond' "Wait" #()) (![ptrT] "num_left_cond")) #()));;;
-    do:  (((method_call sync.Mutex' "Unlock" #()) (![ptrT] "num_left_mu")) #())).
+      do:  ((method_call sync.Cond'ptr "Wait" #() (![ptrT] "num_left_cond")) #()));;;
+    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "num_left_mu")) #())).
 
 Definition Multipar : (go_string * go_string) := (pkg_name', "Multipar"%go).
 
@@ -243,9 +243,15 @@ Definition Skip' : val :=
 
 Definition Skip : (go_string * go_string) := (pkg_name', "Skip"%go).
 
+Definition vars' : list (go_string * go_type) := [].
+
+Definition functions' : list (go_string * val) := [("BytesEqual"%go, BytesEqual'); ("BytesClone"%go, BytesClone'); ("SliceSplit"%go, SliceSplit'); ("SumNoOverflow"%go, SumNoOverflow'); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow'); ("newJoinHandle"%go, newJoinHandle'); ("Spawn"%go, Spawn'); ("Multipar"%go, Multipar'); ("Skip"%go, Skip')].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [("JoinHandle"%go, []); ("JoinHandle'ptr"%go, [("Join"%go, JoinHandle__Join); ("finish"%go, JoinHandle__finish)])].
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  primitive.initialize';;;
       do:  sync.initialize')
       ).

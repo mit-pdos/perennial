@@ -5,17 +5,15 @@ Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition get (f : go_string) : val :=
-  λ: "v",
-    let: "v" := (match: "v" with SOME "v" => "v" | NONE => #() #() end) in
-    let: ("pkg_type_name", "val") := "v" in
-    (match: GlobalGet (#"method:"%go + "encoded_type_name" + #" "%go + #f) with
-       InjL <> => #() #()
-     | InjR "m" => "m"
-     end) "val".
+Definition get : val :=
+  λ: "method_name" "v",
+    let: ("pkg_type_name", "val") := globals.unwrap "v" in
+    let: ("pkg_name", "type_name") := globals.unwrap "pkg_type_name" in
+    method_call "pkg_name" "type_name" "method_name" "val"
+.
 
-Local Definition make_def (pkg_type_name : go_string * go_string): val :=
-  λ: "v", InjR (InjRV (#pkg_type_name.1, #pkg_type_name.2), "v").
+Local Definition make_def : val :=
+  λ: "pkg_name" "type_name" "v", InjR (InjR ("pkg_name", "type_name"), "v").
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 

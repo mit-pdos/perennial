@@ -48,9 +48,15 @@ Definition main' : val :=
 
 Definition main : (go_string * go_string) := (pkg_name', "main"%go).
 
+Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT)].
+
+Definition functions' : list (go_string * val) := [("foo"%go, foo'); ("other"%go, other'); ("bar"%go, bar'); ("main"%go, main')].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [].
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (let: "$r0" := ((func_call foo #()) #()) in
       do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
       let: "$r0" := #"a"%go in

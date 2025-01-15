@@ -10,10 +10,10 @@ Definition unwrap : val :=
           | SOME "x" => "x"
           end.
 
-Definition get (pkg_var_name : (go_string * go_string)): val :=
-  λ: <>,
-    let: (("varAddrs", "functions"), "typeToMethodSets") := unwrap $ GlobalGet #("pkg:" ++ pkg_var_name.1) in
-    unwrap $ alist_lookup #(pkg_var_name.2) "varAddrs".
+Definition get : val :=
+  λ: "pkg_name" "var_name",
+    let: (("varAddrs", "functions"), "typeToMethodSets") := unwrap $ GlobalGet (#"pkg:" + "pkg_name") in
+    unwrap $ alist_lookup "var_name" "varAddrs".
 
 Definition alloc_and_define
   (pkg_name : go_string)
@@ -46,21 +46,15 @@ End globals.
 Section defns.
 Context `{ffi_syntax}.
 
-Definition func_call (pkg_func_name : go_string * go_string) : val :=
-  λ: <>,
-    let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet #("pkg:" ++ pkg_func_name.1) in
-    globals.unwrap $ alist_lookup #(pkg_func_name.2) "functions".
+Definition func_call : val :=
+  λ: "pkg_name" "func_name",
+    let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet (#"pkg:" + "pkg_name") in
+    globals.unwrap $ alist_lookup "func_name" "functions".
 
-(* FIXME: make the pkg_type a runtime (i.e. GooseLang) parameter instead of a
-   static (Gallina) parameter. *)
-Definition method_call (pkg_type_name : go_string * go_string) (method_name : go_string) : val :=
-  λ: <>,
-    let pkg_name := pkg_type_name.1 in
-    let type_name := pkg_type_name.2 in
-    let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet #("pkg:" ++ pkg_name) in
-    let: "methodSet" := globals.unwrap $ GlobalGet #("type:" ++ type_name) in
-    globals.unwrap $ alist_lookup #method_name "methodSet".
+Definition method_call : val :=
+  λ: "pkg_name" "type_name" "method_name",
+    let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet (#"pkg:" + "pkg_name") in
+    let: "methodSet" := globals.unwrap $ GlobalGet (#"type:" + "type_name") in
+    globals.unwrap $ alist_lookup "method_name" "methodSet".
 
 End defns.
-
-Global Arguments globals.get {_} (_)%go.
