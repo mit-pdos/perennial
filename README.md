@@ -28,8 +28,6 @@ To compile dependencies for proofs do (`make src/program_proof/session/dependenc
 10. writeToServer (easy)
 11. readFromServer (easy)
 
-## ToDo
-
 # Verifying concurrent, crash-safe systems with Perennial
 
 [![CI](https://github.com/mit-pdos/perennial/actions/workflows/ci.yml/badge.svg)](https://github.com/mit-pdos/perennial/actions/workflows/ci.yml)
