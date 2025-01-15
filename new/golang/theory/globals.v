@@ -8,7 +8,7 @@ Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Global Instance wp_unwrap (v : val) :
   PureWp True (globals.unwrap $ InjRV v) v.
 Proof.
-  rewrite /globals.unwrap.
+  rewrite globals.unwrap_unseal /globals.unwrap_def.
   intros ?????. iIntros "Hwp". wp_pure_lc "?".
   wp_pures. by iApply "Hwp".
 Qed.
@@ -143,15 +143,9 @@ Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
 
 End definitions_and_lemmas.
 
-
-Section global_vars.
+Section globals.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Class WpGlobalsGet (pkg_name : go_string) (var_name : go_string) (addr : loc)
-                   (P : iProp Σ)
-  := wp_globals_get : ⊢ ∀ Φ, P -∗ (▷ Φ #addr) -∗
-                             WP (globals.get #pkg_name #var_name) {{ Φ }}.
 
 Definition is_global_definitions (pkg_name : go_string)
   (var_addrs : list (go_string * loc))
@@ -163,18 +157,33 @@ Definition is_global_definitions (pkg_name : go_string)
   let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
   is_global ("pkg:"%go ++ pkg_name) (var_addrs_val, functions_val, msets_val).
 
-Lemma alist_lookup_f_loc n (var_addrs : list (go_string * loc)) :
-  alist_lookup_f n ((λ '(name, addr), (name, #addr)) <$> var_addrs) =
-  # <$> (alist_lookup_f n var_addrs).
+Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
+  alist_lookup_f n ((λ '(name, a), (name, f a)) <$> l) =
+  f <$> (alist_lookup_f n l).
 Proof.
-  induction var_addrs.
+  induction l.
   { done. }
   simpl.
   destruct a.
   destruct (ByteString.eqb g n).
   { done. }
-  rewrite IHvar_addrs //.
+  rewrite IHl //.
 Qed.
+
+Class WpGlobalsGet (pkg_name : go_string) (var_name : go_string) (addr : loc)
+                   (P : iProp Σ)
+  := wp_globals_get : ⊢ ∀ Φ, P -∗ (▷ Φ #addr) -∗
+                             WP (globals.get #pkg_name #var_name) {{ Φ }}.
+
+Class WpFuncCall (pkg_name : go_string) (func_name : go_string) (func : val)
+                   (P : iProp Σ)
+  := wp_func_call : ⊢ ∀ Φ, P -∗ (▷ Φ func) -∗
+                           WP (func_call #pkg_name #func_name) {{ Φ }}.
+
+Class WpMethodCall (pkg_name : go_string) (type_name : go_string) (func_name : go_string) (m : val)
+                   (P : iProp Σ)
+  := wp_method_call : ⊢ ∀ Φ, P -∗ (▷ Φ m) -∗
+                           WP (method_call #pkg_name #type_name #func_name) {{ Φ }}.
 
 Lemma wp_global_get' {pkg_name var_name var_addrs functions msets addr} :
   alist_lookup_f var_name var_addrs = Some addr →
@@ -182,6 +191,7 @@ Lemma wp_global_get' {pkg_name var_name var_addrs functions msets addr} :
 Proof.
   intros Hlookup. rewrite /WpGlobalsGet.
   iIntros (?) "#Hctx HΦ".
+  rewrite globals.get_unseal.
   wp_call.
   wp_pures.
   wp_bind (GlobalGet _).
@@ -189,7 +199,48 @@ Proof.
   iApply (wp_GlobalGet with "[$]").
   iNext. iIntros "_".
   wp_pures.
-  rewrite alist_lookup_f_loc Hlookup.
+  rewrite alist_lookup_f_fmap Hlookup.
+  wp_pures. iApply "HΦ".
+Qed.
+
+Lemma wp_func_call' {pkg_name func_name var_addrs functions msets func} :
+  alist_lookup_f func_name functions = Some func →
+  WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs functions msets).
+Proof.
+  intros Hlookup. rewrite /WpFuncCall.
+  iIntros (?) "#Hctx HΦ".
+  rewrite func_call_unseal.
+  wp_call.
+  wp_pures.
+  wp_bind (GlobalGet _).
+  (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
+  iApply (wp_GlobalGet with "[$]").
+  iNext. iIntros "_".
+  wp_pures.
+  rewrite Hlookup.
+  wp_pures. iApply "HΦ".
+Qed.
+
+Lemma wp_method_call' {pkg_name type_name method_name var_addrs functions msets m} :
+  ((alist_lookup_f method_name) <$> (alist_lookup_f type_name msets)) = Some (Some m) →
+  WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs functions msets).
+Proof.
+  intros Hlookup. rewrite /WpMethodCall.
+  iIntros (?) "#Hctx HΦ".
+  rewrite method_call_unseal.
+  wp_call.
+  wp_pures.
+  wp_bind (GlobalGet _).
+  (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
+  iApply (wp_GlobalGet with "[$]").
+  iNext. iIntros "_".
+  wp_pures.
+  rewrite fmap_Some in Hlookup.
+  destruct Hlookup as (? & Heq1 & Heq2).
+  rewrite alist_lookup_f_fmap.
+  rewrite Heq1.
+  wp_pures.
+  rewrite -Heq2.
   wp_pures. iApply "HΦ".
 Qed.
 
@@ -201,7 +252,7 @@ Lemma there_is_no_generic_lemma_for_globals_alloc_and_define:
   False -∗ WP (globals.alloc_and_define pkg_name vars functions msets #()) {{ Φ }}.
 Proof. iIntros. done. Qed.
 
-End global_vars.
+End globals.
 
 Local Ltac unseal :=
   rewrite ?own_globals_tok_unseal.
@@ -246,6 +297,7 @@ Proof.
   unseal.
   intros Hwp_alloc Hwp_init Hpost Hnot_pending.
   iIntros "Htok HΦ".
+  rewrite globals.package_init_unseal.
   wp_call.
   iNamed "Htok".
   wp_bind (GlobalGet _).

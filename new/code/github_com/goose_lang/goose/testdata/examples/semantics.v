@@ -14,8 +14,8 @@ Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/exampl
 Definition unit' : (go_string * go_string) := (pkg_name', "unit"%go).
 
 (* go: allocator.go:7:6 *)
-Definition findKey' : val :=
-  rec: "findKey'" "m" :=
+Definition findKey : val :=
+  rec: "findKey" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T unit) "m") in
     let: "found" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
@@ -33,16 +33,14 @@ Definition findKey' : val :=
       else do:  #())));;;
     return: (![uint64T] "found", ![boolT] "ok")).
 
-Definition findKey : (go_string * go_string) := (pkg_name', "findKey"%go).
-
 (* go: allocator.go:20:6 *)
-Definition allocate' : val :=
-  rec: "allocate'" "m" :=
+Definition allocate : val :=
+  rec: "allocate" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T unit) "m") in
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "m") in
-    (func_call findKey #()) "$a0") in
+    (func_call #pkg_name' #"findKey"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("k" <-[uint64T] "$r0");;;
@@ -52,11 +50,9 @@ Definition allocate' : val :=
     map.delete "$a0" "$a1");;;
     return: (![uint64T] "k", ![boolT] "ok")).
 
-Definition allocate : (go_string * go_string) := (pkg_name', "allocate"%go).
-
 (* go: allocator.go:26:6 *)
-Definition freeRange' : val :=
-  rec: "freeRange'" "sz" :=
+Definition freeRange : val :=
+  rec: "freeRange" "sz" :=
     exception_do (let: "sz" := (ref_ty uint64T "sz") in
     let: "m" := (ref_ty (mapT uint64T unit) (zero_val (mapT uint64T unit))) in
     let: "$r0" := (map.make uint64T unit #()) in
@@ -70,68 +66,62 @@ Definition freeRange' : val :=
       do:  (map.insert (![mapT uint64T unit] "m") (![uint64T] "i") "$r0")));;;
     return: (![mapT uint64T unit] "m")).
 
-Definition freeRange : (go_string * go_string) := (pkg_name', "freeRange"%go).
-
 (* go: allocator.go:34:6 *)
-Definition testAllocateDistinct' : val :=
-  rec: "testAllocateDistinct'" <> :=
+Definition testAllocateDistinct : val :=
+  rec: "testAllocateDistinct" <> :=
     exception_do (let: "free" := (ref_ty (mapT uint64T unit) (zero_val (mapT uint64T unit))) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (func_call freeRange #()) "$a0") in
+    (func_call #pkg_name' #"freeRange"%go) "$a0") in
     do:  ("free" <-[mapT uint64T unit] "$r0");;;
     let: "a1" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
-    (func_call allocate #()) "$a0") in
+    (func_call #pkg_name' #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("a1" <-[uint64T] "$r0");;;
     do:  "$r1";;;
     let: "a2" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
-    (func_call allocate #()) "$a0") in
+    (func_call #pkg_name' #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("a2" <-[uint64T] "$r0");;;
     do:  "$r1";;;
     return: ((![uint64T] "a1") ≠ (![uint64T] "a2"))).
 
-Definition testAllocateDistinct : (go_string * go_string) := (pkg_name', "testAllocateDistinct"%go).
-
 (* go: allocator.go:41:6 *)
-Definition testAllocateFull' : val :=
-  rec: "testAllocateFull'" <> :=
+Definition testAllocateFull : val :=
+  rec: "testAllocateFull" <> :=
     exception_do (let: "free" := (ref_ty (mapT uint64T unit) (zero_val (mapT uint64T unit))) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
-    (func_call freeRange #()) "$a0") in
+    (func_call #pkg_name' #"freeRange"%go) "$a0") in
     do:  ("free" <-[mapT uint64T unit] "$r0");;;
     let: "ok1" := (ref_ty boolT (zero_val boolT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
-    (func_call allocate #()) "$a0") in
+    (func_call #pkg_name' #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok1" <-[boolT] "$r1");;;
     let: "ok2" := (ref_ty boolT (zero_val boolT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
-    (func_call allocate #()) "$a0") in
+    (func_call #pkg_name' #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok2" <-[boolT] "$r1");;;
     let: "ok3" := (ref_ty boolT (zero_val boolT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
-    (func_call allocate #()) "$a0") in
+    (func_call #pkg_name' #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok3" <-[boolT] "$r1");;;
     return: (((![boolT] "ok1") && (![boolT] "ok2")) && (~ (![boolT] "ok3")))).
 
-Definition testAllocateFull : (go_string * go_string) := (pkg_name', "testAllocateFull"%go).
-
 (* go: block.go:3:6 *)
-Definition testExplicitBlockStmt' : val :=
-  rec: "testExplicitBlockStmt'" <> :=
+Definition testExplicitBlockStmt : val :=
+  rec: "testExplicitBlockStmt" <> :=
     exception_do (let: "x" := (ref_ty intT (zero_val intT)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[intT] "$r0");;;
@@ -141,11 +131,9 @@ Definition testExplicitBlockStmt' : val :=
     do:  ("x" <-[intT] ((![intT] "x") + #(W64 1)));;;
     return: ((![intT] "x") = #(W64 10))).
 
-Definition testExplicitBlockStmt : (go_string * go_string) := (pkg_name', "testExplicitBlockStmt"%go).
-
 (* go: builtin.go:3:6 *)
-Definition testMinUint64' : val :=
-  rec: "testMinUint64'" <> :=
+Definition testMinUint64 : val :=
+  rec: "testMinUint64" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -153,11 +141,9 @@ Definition testMinUint64' : val :=
      let: "$a1" := #(W64 1) in
      (minUint64 2) "$a0" "$a1") = #(W64 1))).
 
-Definition testMinUint64 : (go_string * go_string) := (pkg_name', "testMinUint64"%go).
-
 (* go: builtin.go:8:6 *)
-Definition testMaxUint64' : val :=
-  rec: "testMaxUint64'" <> :=
+Definition testMaxUint64 : val :=
+  rec: "testMaxUint64" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -165,15 +151,13 @@ Definition testMaxUint64' : val :=
      let: "$a1" := #(W64 1) in
      (maxUint64 2) "$a0" "$a1") = #(W64 10))).
 
-Definition testMaxUint64 : (go_string * go_string) := (pkg_name', "testMaxUint64"%go).
-
 Definition AdderType : go_type := funcT.
 
 Definition MultipleArgsType : go_type := funcT.
 
 (* go: closures.go:6:6 *)
-Definition adder' : val :=
-  rec: "adder'" <> :=
+Definition adder : val :=
+  rec: "adder" <> :=
     exception_do (let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("sum" <-[uint64T] "$r0");;;
@@ -183,16 +167,14 @@ Definition adder' : val :=
        return: (![uint64T] "sum"))
        ))).
 
-Definition adder : (go_string * go_string) := (pkg_name', "adder"%go).
-
 (* go: closures.go:14:6 *)
-Definition testClosureBasic' : val :=
-  rec: "testClosureBasic'" <> :=
+Definition testClosureBasic : val :=
+  rec: "testClosureBasic" <> :=
     exception_do (let: "pos" := (ref_ty funcT (zero_val funcT)) in
-    let: "$r0" := ((func_call adder #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"adder"%go) #()) in
     do:  ("pos" <-[funcT] "$r0");;;
     let: "doub" := (ref_ty funcT (zero_val funcT)) in
-    let: "$r0" := ((func_call adder #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"adder"%go) #()) in
     do:  ("doub" <-[funcT] "$r0");;;
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
@@ -209,11 +191,9 @@ Definition testClosureBasic' : val :=
     else do:  #());;;
     return: (#false)).
 
-Definition testClosureBasic : (go_string * go_string) := (pkg_name', "testClosureBasic"%go).
-
 (* go: comparisons.go:3:6 *)
-Definition testCompareAll' : val :=
-  rec: "testCompareAll'" <> :=
+Definition testCompareAll : val :=
+  rec: "testCompareAll" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -235,11 +215,9 @@ Definition testCompareAll' : val :=
     else do:  #());;;
     return: (![boolT] "ok")).
 
-Definition testCompareAll : (go_string * go_string) := (pkg_name', "testCompareAll"%go).
-
 (* go: comparisons.go:20:6 *)
-Definition testCompareGT' : val :=
-  rec: "testCompareGT'" <> :=
+Definition testCompareGT : val :=
+  rec: "testCompareGT" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -255,11 +233,9 @@ Definition testCompareGT' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testCompareGT : (go_string * go_string) := (pkg_name', "testCompareGT"%go).
-
 (* go: comparisons.go:31:6 *)
-Definition testCompareGE' : val :=
-  rec: "testCompareGE'" <> :=
+Definition testCompareGE : val :=
+  rec: "testCompareGE" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -280,11 +256,9 @@ Definition testCompareGE' : val :=
     else do:  #());;;
     return: (![boolT] "ok")).
 
-Definition testCompareGE : (go_string * go_string) := (pkg_name', "testCompareGE"%go).
-
 (* go: comparisons.go:47:6 *)
-Definition testCompareLT' : val :=
-  rec: "testCompareLT'" <> :=
+Definition testCompareLT : val :=
+  rec: "testCompareLT" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -300,11 +274,9 @@ Definition testCompareLT' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testCompareLT : (go_string * go_string) := (pkg_name', "testCompareLT"%go).
-
 (* go: comparisons.go:58:6 *)
-Definition testCompareLE' : val :=
-  rec: "testCompareLE'" <> :=
+Definition testCompareLE : val :=
+  rec: "testCompareLE" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -325,42 +297,34 @@ Definition testCompareLE' : val :=
     else do:  #());;;
     return: (![boolT] "ok")).
 
-Definition testCompareLE : (go_string * go_string) := (pkg_name', "testCompareLE"%go).
-
 (* go: conversions.go:5:6 *)
-Definition literalCast' : val :=
-  rec: "literalCast'" <> :=
+Definition literalCast : val :=
+  rec: "literalCast" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 2) in
     do:  ("x" <-[uint64T] "$r0");;;
     return: ((![uint64T] "x") + #(W64 2))).
 
-Definition literalCast : (go_string * go_string) := (pkg_name', "literalCast"%go).
-
 (* go: conversions.go:11:6 *)
-Definition stringToByteSlice' : val :=
-  rec: "stringToByteSlice'" "s" :=
+Definition stringToByteSlice : val :=
+  rec: "stringToByteSlice" "s" :=
     exception_do (let: "s" := (ref_ty stringT "s") in
     let: "p" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (string.to_bytes (![stringT] "s")) in
     do:  ("p" <-[sliceT] "$r0");;;
     return: (![sliceT] "p")).
 
-Definition stringToByteSlice : (go_string * go_string) := (pkg_name', "stringToByteSlice"%go).
-
 (* go: conversions.go:17:6 *)
-Definition byteSliceToString' : val :=
-  rec: "byteSliceToString'" "p" :=
+Definition byteSliceToString : val :=
+  rec: "byteSliceToString" "p" :=
     exception_do (let: "p" := (ref_ty sliceT "p") in
     return: (string.from_bytes (![sliceT] "p"))).
-
-Definition byteSliceToString : (go_string * go_string) := (pkg_name', "byteSliceToString"%go).
 
 (* tests
 
    go: conversions.go:23:6 *)
-Definition testByteSliceToString' : val :=
-  rec: "testByteSliceToString'" <> :=
+Definition testByteSliceToString : val :=
+  rec: "testByteSliceToString" <> :=
     exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 3)) in
     do:  ("x" <-[sliceT] "$r0");;;
@@ -371,13 +335,11 @@ Definition testByteSliceToString' : val :=
     let: "$r0" := #(W8 67) in
     do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 2)) <-[byteT] "$r0");;;
     return: ((let: "$a0" := (![sliceT] "x") in
-     (func_call byteSliceToString #()) "$a0") = #"ABC"%go)).
-
-Definition testByteSliceToString : (go_string * go_string) := (pkg_name', "testByteSliceToString"%go).
+     (func_call #pkg_name' #"byteSliceToString"%go) "$a0") = #"ABC"%go)).
 
 (* go: copy.go:3:6 *)
-Definition testCopySimple' : val :=
-  rec: "testCopySimple'" <> :=
+Definition testCopySimple : val :=
+  rec: "testCopySimple" <> :=
     exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 10)) in
     do:  ("x" <-[sliceT] "$r0");;;
@@ -391,11 +353,9 @@ Definition testCopySimple' : val :=
     (slice.copy byteT) "$a0" "$a1");;;
     return: ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1))).
 
-Definition testCopySimple : (go_string * go_string) := (pkg_name', "testCopySimple"%go).
-
 (* go: copy.go:11:6 *)
-Definition testCopyShorterDst' : val :=
-  rec: "testCopyShorterDst'" <> :=
+Definition testCopyShorterDst : val :=
+  rec: "testCopyShorterDst" <> :=
     exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 15)) in
     do:  ("x" <-[sliceT] "$r0");;;
@@ -413,11 +373,9 @@ Definition testCopyShorterDst' : val :=
     do:  ("n" <-[uint64T] "$r0");;;
     return: (((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1)))).
 
-Definition testCopyShorterDst : (go_string * go_string) := (pkg_name', "testCopyShorterDst"%go).
-
 (* go: copy.go:20:6 *)
-Definition testCopyShorterSrc' : val :=
-  rec: "testCopyShorterSrc'" <> :=
+Definition testCopyShorterSrc : val :=
+  rec: "testCopyShorterSrc" <> :=
     exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 10)) in
     do:  ("x" <-[sliceT] "$r0");;;
@@ -435,11 +393,9 @@ Definition testCopyShorterSrc' : val :=
     do:  ("n" <-[uint64T] "$r0");;;
     return: ((((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1))) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 12))) = #(W8 2)))).
 
-Definition testCopyShorterSrc : (go_string * go_string) := (pkg_name', "testCopyShorterSrc"%go).
-
 (* go: defer.go:3:6 *)
-Definition deferSimple' : val :=
-  rec: "deferSimple'" <> :=
+Definition deferSimple : val :=
+  rec: "deferSimple" <> :=
     with_defer: (let: "x" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("x" <-[ptrT] "$r0");;;
@@ -457,18 +413,14 @@ Definition deferSimple' : val :=
         )))));;;
     return: (![ptrT] "x")).
 
-Definition deferSimple : (go_string * go_string) := (pkg_name', "deferSimple"%go).
-
 (* go: defer.go:13:6 *)
-Definition testDefer' : val :=
-  rec: "testDefer'" <> :=
-    exception_do (return: ((![uint64T] ((func_call deferSimple #()) #())) = #(W64 10))).
-
-Definition testDefer : (go_string * go_string) := (pkg_name', "testDefer"%go).
+Definition testDefer : val :=
+  rec: "testDefer" <> :=
+    exception_do (return: ((![uint64T] ((func_call #pkg_name' #"deferSimple"%go) #())) = #(W64 10))).
 
 (* go: defer.go:17:6 *)
-Definition testDeferFuncLit' : val :=
-  rec: "testDeferFuncLit'" <> :=
+Definition testDeferFuncLit : val :=
+  rec: "testDeferFuncLit" <> :=
     exception_do (let: "x" := (ref_ty intT (zero_val intT)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[intT] "$r0");;;
@@ -487,8 +439,6 @@ Definition testDeferFuncLit' : val :=
     do:  ((![funcT] "f") #());;;
     return: ((![intT] "x") = #(W64 11))).
 
-Definition testDeferFuncLit : (go_string * go_string) := (pkg_name', "testDeferFuncLit"%go).
-
 Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
@@ -496,8 +446,8 @@ Definition Enc : go_type := structT [
 Definition Enc' : (go_string * go_string) := (pkg_name', "Enc"%go).
 
 (* go: encoding.go:10:15 *)
-Definition Enc__consume' : val :=
-  rec: "Enc__consume'" "e" "n" :=
+Definition Enc__consume : val :=
+  rec: "Enc__consume" "e" "n" :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "n" := (ref_ty uint64T "n") in
     let: "b" := (ref_ty sliceT (zero_val sliceT)) in
@@ -516,8 +466,8 @@ Definition Dec : go_type := structT [
 Definition Dec' : (go_string * go_string) := (pkg_name', "Dec"%go).
 
 (* go: encoding.go:20:15 *)
-Definition Dec__consume' : val :=
-  rec: "Dec__consume'" "d" "n" :=
+Definition Dec__consume : val :=
+  rec: "Dec__consume" "d" "n" :=
     exception_do (let: "d" := (ref_ty ptrT "d") in
     let: "n" := (ref_ty uint64T "n") in
     let: "b" := (ref_ty sliceT (zero_val sliceT)) in
@@ -530,8 +480,8 @@ Definition Dec__consume' : val :=
     return: (![sliceT] "b")).
 
 (* go: encoding.go:26:6 *)
-Definition roundtripEncDec32' : val :=
-  rec: "roundtripEncDec32'" "x" :=
+Definition roundtripEncDec32 : val :=
+  rec: "roundtripEncDec32" "x" :=
     exception_do (let: "x" := (ref_ty uint32T "x") in
     let: "r" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 4)) in
@@ -549,18 +499,16 @@ Definition roundtripEncDec32' : val :=
     }])) in
     do:  ("d" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (method_call Enc'ptr "consume" #() (![ptrT] "e")) "$a0") in
+    (method_call #pkg_name' #"Enc'ptr" #"consume" #() (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint32T] "x") in
-    (func_call primitive.UInt32Put #()) "$a0" "$a1");;;
+    (func_call #primitive.pkg_name' #"UInt32Put"%go) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (method_call Dec'ptr "consume" #() (![ptrT] "d")) "$a0") in
-     (func_call primitive.UInt32Get #()) "$a0")).
-
-Definition roundtripEncDec32 : (go_string * go_string) := (pkg_name', "roundtripEncDec32"%go).
+     (method_call #pkg_name' #"Dec'ptr" #"consume" #() (![ptrT] "d")) "$a0") in
+     (func_call #primitive.pkg_name' #"UInt32Get"%go) "$a0")).
 
 (* go: encoding.go:34:6 *)
-Definition roundtripEncDec64' : val :=
-  rec: "roundtripEncDec64'" "x" :=
+Definition roundtripEncDec64 : val :=
+  rec: "roundtripEncDec64" "x" :=
     exception_do (let: "x" := (ref_ty uint64T "x") in
     let: "r" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 8)) in
@@ -578,143 +526,127 @@ Definition roundtripEncDec64' : val :=
     }])) in
     do:  ("d" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (method_call Enc'ptr "consume" #() (![ptrT] "e")) "$a0") in
+    (method_call #pkg_name' #"Enc'ptr" #"consume" #() (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint64T] "x") in
-    (func_call primitive.UInt64Put #()) "$a0" "$a1");;;
+    (func_call #primitive.pkg_name' #"UInt64Put"%go) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (method_call Dec'ptr "consume" #() (![ptrT] "d")) "$a0") in
-     (func_call primitive.UInt64Get #()) "$a0")).
-
-Definition roundtripEncDec64 : (go_string * go_string) := (pkg_name', "roundtripEncDec64"%go).
+     (method_call #pkg_name' #"Dec'ptr" #"consume" #() (![ptrT] "d")) "$a0") in
+     (func_call #primitive.pkg_name' #"UInt64Get"%go) "$a0")).
 
 (* tests
 
    go: encoding.go:43:6 *)
-Definition testEncDec32Simple' : val :=
-  rec: "testEncDec32Simple'" <> :=
+Definition testEncDec32Simple : val :=
+  rec: "testEncDec32Simple" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 0) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 1))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 1231234))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 1231234))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testEncDec32Simple : (go_string * go_string) := (pkg_name', "testEncDec32Simple"%go).
-
 (* go: encoding.go:51:6 *)
-Definition failing_testEncDec32' : val :=
-  rec: "failing_testEncDec32'" <> :=
+Definition failing_testEncDec32 : val :=
+  rec: "failing_testEncDec32" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 3434807466))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 3434807466))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 1048576))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 1048576))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 262144) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 262144))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 262144))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1024) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 1024))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 1024))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 1))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
-    (func_call roundtripEncDec32 #()) "$a0") = #(W32 (4294967296 - 1)))) in
+    (func_call #pkg_name' #"roundtripEncDec32"%go) "$a0") = #(W32 (4294967296 - 1)))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition failing_testEncDec32 : (go_string * go_string) := (pkg_name', "failing_testEncDec32"%go).
-
 (* go: encoding.go:62:6 *)
-Definition testEncDec64Simple' : val :=
-  rec: "testEncDec64Simple'" <> :=
+Definition testEncDec64Simple : val :=
+  rec: "testEncDec64Simple" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 0) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 1))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 1231234))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 1231234))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testEncDec64Simple : (go_string * go_string) := (pkg_name', "testEncDec64Simple"%go).
-
 (* go: encoding.go:70:6 *)
-Definition testEncDec64' : val :=
-  rec: "testEncDec64'" <> :=
+Definition testEncDec64 : val :=
+  rec: "testEncDec64" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 62206846038638762))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 62206846038638762))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 9223372036854775808))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 9223372036854775808))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 140737488355328))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 140737488355328))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 1048576))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 1048576))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 262144) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 262144))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 262144))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1024) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 1024))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 1024))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 1))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
-    (func_call roundtripEncDec64 #()) "$a0") = #(W64 (18446744073709551616 - 1)))) in
+    (func_call #pkg_name' #"roundtripEncDec64"%go) "$a0") = #(W64 (18446744073709551616 - 1)))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testEncDec64 : (go_string * go_string) := (pkg_name', "testEncDec64"%go).
-
 (* go: first_class_function.go:3:6 *)
-Definition FirstClassFunction' : val :=
-  rec: "FirstClassFunction'" "a" :=
+Definition FirstClassFunction : val :=
+  rec: "FirstClassFunction" "a" :=
     exception_do (let: "a" := (ref_ty uint64T "a") in
     return: ((![uint64T] "a") + #(W64 10))).
 
-Definition FirstClassFunction : (go_string * go_string) := (pkg_name', "FirstClassFunction"%go).
-
 (* go: first_class_function.go:7:6 *)
-Definition ApplyF' : val :=
-  rec: "ApplyF'" "a" "f" :=
+Definition ApplyF : val :=
+  rec: "ApplyF" "a" "f" :=
     exception_do (let: "f" := (ref_ty funcT "f") in
     let: "a" := (ref_ty uint64T "a") in
     return: (let: "$a0" := (![uint64T] "a") in
      (![funcT] "f") "$a0")).
 
-Definition ApplyF : (go_string * go_string) := (pkg_name', "ApplyF"%go).
-
 (* go: first_class_function.go:11:6 *)
-Definition testFirstClassFunction' : val :=
-  rec: "testFirstClassFunction'" <> :=
+Definition testFirstClassFunction : val :=
+  rec: "testFirstClassFunction" <> :=
     exception_do (return: ((let: "$a0" := #(W64 1) in
-     let: "$a1" := (func_call FirstClassFunction #()) in
-     (func_call ApplyF #()) "$a0" "$a1") = #(W64 11))).
-
-Definition testFirstClassFunction : (go_string * go_string) := (pkg_name', "testFirstClassFunction"%go).
+     let: "$a1" := (func_call #pkg_name' #"FirstClassFunction"%go) in
+     (func_call #pkg_name' #"ApplyF"%go) "$a0" "$a1") = #(W64 11))).
 
 Definition Editor : go_type := structT [
   "s" :: sliceT;
@@ -727,8 +659,8 @@ Definition Editor' : (go_string * go_string) := (pkg_name', "Editor"%go).
    "next" in next_val
 
    go: function_ordering.go:11:18 *)
-Definition Editor__AdvanceReturn' : val :=
-  rec: "Editor__AdvanceReturn'" "e" "next" :=
+Definition Editor__AdvanceReturn : val :=
+  rec: "Editor__AdvanceReturn" "e" "next" :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "next" := (ref_ty uint64T "next") in
     let: "tmp" := (ref_ty uint64T (zero_val uint64T)) in
@@ -747,15 +679,13 @@ Definition Editor__AdvanceReturn' : val :=
    its implementation is unimportant
 
    go: function_ordering.go:21:6 *)
-Definition addFour64' : val :=
-  rec: "addFour64'" "a" "b" "c" "d" :=
+Definition addFour64 : val :=
+  rec: "addFour64" "a" "b" "c" "d" :=
     exception_do (let: "d" := (ref_ty uint64T "d") in
     let: "c" := (ref_ty uint64T "c") in
     let: "b" := (ref_ty uint64T "b") in
     let: "a" := (ref_ty uint64T "a") in
     return: ((((![uint64T] "a") + (![uint64T] "b")) + (![uint64T] "c")) + (![uint64T] "d"))).
-
-Definition addFour64 : (go_string * go_string) := (pkg_name', "addFour64"%go).
 
 Definition Pair : go_type := structT [
   "x" :: uint64T;
@@ -767,8 +697,8 @@ Definition Pair' : (go_string * go_string) := (pkg_name', "Pair"%go).
 (* tests
 
    go: function_ordering.go:31:6 *)
-Definition failing_testFunctionOrdering' : val :=
-  rec: "failing_testFunctionOrdering'" <> :=
+Definition failing_testFunctionOrdering : val :=
+  rec: "failing_testFunctionOrdering" <> :=
     exception_do (let: "arr" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 uint64T #(W64 5)) in
     do:  ("arr" <-[sliceT] "$r0");;;
@@ -791,22 +721,22 @@ Definition failing_testFunctionOrdering' : val :=
     }]) in
     do:  ("e2" <-[Editor] "$r0");;;
     (if: ((let: "$a0" := #(W64 2) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e1") "$a0") + (let: "$a0" := #(W64 102) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e2") "$a0")) ≠ #(W64 102)
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e1") "$a0") + (let: "$a0" := #(W64 102) in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e2") "$a0")) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
     (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) ≠ #(W64 101)
     then return: (#false)
     else do:  #());;;
     (if: (let: "$a0" := (let: "$a0" := #(W64 3) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e1") "$a0") in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e1") "$a0") in
     let: "$a1" := (let: "$a0" := #(W64 103) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e2") "$a0") in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e2") "$a0") in
     let: "$a2" := (let: "$a0" := #(W64 104) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e2") "$a0") in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e2") "$a0") in
     let: "$a3" := (let: "$a0" := #(W64 4) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e1") "$a0") in
-    (func_call addFour64 #()) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e1") "$a0") in
+    (func_call #pkg_name' #"addFour64"%go) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
     then return: (#false)
     else do:  #());;;
     (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 1))) ≠ #(W64 102)
@@ -817,9 +747,9 @@ Definition failing_testFunctionOrdering' : val :=
     else do:  #());;;
     let: "p" := (ref_ty Pair (zero_val Pair)) in
     let: "$r0" := (let: "$x" := (let: "$a0" := #(W64 5) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e1") "$a0") in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e1") "$a0") in
     let: "$y" := (let: "$a0" := #(W64 105) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e2") "$a0") in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e2") "$a0") in
     struct.make Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
@@ -830,9 +760,9 @@ Definition failing_testFunctionOrdering' : val :=
     else do:  #());;;
     let: "q" := (ref_ty Pair (zero_val Pair)) in
     let: "$r0" := (let: "$y" := (let: "$a0" := #(W64 6) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e1") "$a0") in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e1") "$a0") in
     let: "$x" := (let: "$a0" := #(W64 106) in
-    (method_call Editor'ptr "AdvanceReturn" #() "e2") "$a0") in
+    (method_call #pkg_name' #"Editor'ptr" #"AdvanceReturn" #() "e2") "$a0") in
     struct.make Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
@@ -843,47 +773,41 @@ Definition failing_testFunctionOrdering' : val :=
     else do:  #());;;
     return: (((![uint64T] (struct.field_ref Pair "x" "p")) + (![uint64T] (struct.field_ref Pair "x" "q"))) = #(W64 109))).
 
-Definition failing_testFunctionOrdering : (go_string * go_string) := (pkg_name', "failing_testFunctionOrdering"%go).
-
 (* go: function_ordering.go:74:6 *)
-Definition storeAndReturn' : val :=
-  rec: "storeAndReturn'" "x" "v" :=
+Definition storeAndReturn : val :=
+  rec: "storeAndReturn" "x" "v" :=
     exception_do (let: "v" := (ref_ty uint64T "v") in
     let: "x" := (ref_ty ptrT "x") in
     let: "$r0" := (![uint64T] "v") in
     do:  ((![ptrT] "x") <-[uint64T] "$r0");;;
     return: (![uint64T] "v")).
 
-Definition storeAndReturn : (go_string * go_string) := (pkg_name', "storeAndReturn"%go).
-
 (* Goose has a right-to-left evaluation order for function arguments,
    which is incorrect.
 
    go: function_ordering.go:81:6 *)
-Definition failing_testArgumentOrder' : val :=
-  rec: "failing_testArgumentOrder'" <> :=
+Definition failing_testArgumentOrder : val :=
+  rec: "failing_testArgumentOrder" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("x" <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 1) in
-    (func_call storeAndReturn #()) "$a0" "$a1") in
+    (func_call #pkg_name' #"storeAndReturn"%go) "$a0" "$a1") in
     let: "$a1" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 2) in
-    (func_call storeAndReturn #()) "$a0" "$a1") in
+    (func_call #pkg_name' #"storeAndReturn"%go) "$a0" "$a1") in
     let: "$a2" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 3) in
-    (func_call storeAndReturn #()) "$a0" "$a1") in
+    (func_call #pkg_name' #"storeAndReturn"%go) "$a0" "$a1") in
     let: "$a3" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 4) in
-    (func_call storeAndReturn #()) "$a0" "$a1") in
-    (func_call addFour64 #()) "$a0" "$a1" "$a2" "$a3");;;
+    (func_call #pkg_name' #"storeAndReturn"%go) "$a0" "$a1") in
+    (func_call #pkg_name' #"addFour64"%go) "$a0" "$a1" "$a2" "$a3");;;
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := ((![uint64T] "x") = #(W64 4)) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
-
-Definition failing_testArgumentOrder : (go_string * go_string) := (pkg_name', "failing_testArgumentOrder"%go).
 
 Definition genericStruct (A: go_type) (B: go_type) : go_type := structT [
   "x" :: A;
@@ -909,25 +833,21 @@ Definition IntMap (T: go_type) : go_type := mapT uint64T T.
 Definition IntMap' : (go_string * go_string) := (pkg_name', "IntMap"%go).
 
 (* go: generics.go:18:6 *)
-Definition identity' (A: go_type) (B: go_type) : val :=
-  rec: "identity'" "a" "b" :=
+Definition identity (A: go_type) (B: go_type) : val :=
+  rec: "identity" "a" "b" :=
     exception_do (let: "b" := (ref_ty B "b") in
     let: "a" := (ref_ty A "a") in
     return: (![A] "a", ![B] "b")).
 
-Definition identity : (go_string * go_string) := (pkg_name', "identity"%go).
-
 (* go: generics.go:22:6 *)
-Definition identity2' (A: go_type) : val :=
-  rec: "identity2'" "a" :=
+Definition identity2 (A: go_type) : val :=
+  rec: "identity2" "a" :=
     exception_do (let: "a" := (ref_ty A "a") in
     return: (![A] "a")).
 
-Definition identity2 : (go_string * go_string) := (pkg_name', "identity2"%go).
-
 (* go: generics.go:26:6 *)
-Definition testGenericStructs' : val :=
-  rec: "testGenericStructs'" <> :=
+Definition testGenericStructs : val :=
+  rec: "testGenericStructs" <> :=
     exception_do (let: "intMap" := (ref_ty (IntMap uint64T) (zero_val (IntMap uint64T))) in
     let: "$r0" := (map.make uint64T uint64T #()) in
     do:  ("intMap" <-[IntMap uint64T] "$r0");;;
@@ -978,11 +898,9 @@ Definition testGenericStructs' : val :=
     do:  ("h" <-[nonGenericStruct] "$r0");;;
     return: ((((((((![uint64T] "d") + (![uint64T] "d2")) + (![uint64T] (struct.field_ref (genericStruct2 uint64T) "g" "c"))) + (![uint64T] (struct.field_ref (genericStruct stringT uint64T) "y" "u"))) + (![uint64T] "b")) + (![uint64T] (struct.field_ref nonGenericStruct "p" "h"))) + (Fst (map.get (![IntMap uint64T] "intMap") #(W64 1)))) = #(W64 27))).
 
-Definition testGenericStructs : (go_string * go_string) := (pkg_name', "testGenericStructs"%go).
-
 (* go: int_conversions.go:3:6 *)
-Definition testU64ToU32' : val :=
-  rec: "testU64ToU32'" <> :=
+Definition testU64ToU32 : val :=
+  rec: "testU64ToU32" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -998,18 +916,14 @@ Definition testU64ToU32' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testU64ToU32 : (go_string * go_string) := (pkg_name', "testU64ToU32"%go).
-
 (* go: int_conversions.go:12:6 *)
-Definition testU32Len' : val :=
-  rec: "testU32Len'" <> :=
+Definition testU32Len : val :=
+  rec: "testU32Len" <> :=
     exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 100)) in
     do:  ("s" <-[sliceT] "$r0");;;
     return: ((to_u32 (let: "$a0" := (![sliceT] "s") in
      slice.len "$a0")) = #(W32 100))).
-
-Definition testU32Len : (go_string * go_string) := (pkg_name', "testU32Len"%go).
 
 Definition Uint32 : go_type := uint32T.
 
@@ -1018,45 +932,37 @@ Definition Uint32' : (go_string * go_string) := (pkg_name', "Uint32"%go).
 (* https://github.com/goose-lang/goose/issues/14
 
    go: int_conversions.go:20:6 *)
-Definition failing_testU32NewtypeLen' : val :=
-  rec: "failing_testU32NewtypeLen'" <> :=
+Definition failing_testU32NewtypeLen : val :=
+  rec: "failing_testU32NewtypeLen" <> :=
     exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 20)) in
     do:  ("s" <-[sliceT] "$r0");;;
     return: ((to_u32 (let: "$a0" := (![sliceT] "s") in
      slice.len "$a0")) = #(W32 20))).
 
-Definition failing_testU32NewtypeLen : (go_string * go_string) := (pkg_name', "failing_testU32NewtypeLen"%go).
-
 Definition geometryInterface : go_type := interfaceT.
 
 Definition geometryInterface' : (go_string * go_string) := (pkg_name', "geometryInterface"%go).
 
 (* go: interfaces.go:12:6 *)
-Definition measureArea' : val :=
-  rec: "measureArea'" "t" :=
+Definition measureArea : val :=
+  rec: "measureArea" "t" :=
     exception_do (let: "t" := (ref_ty geometryInterface "t") in
     return: ((interface.get "Square" (![geometryInterface] "t")) #())).
 
-Definition measureArea : (go_string * go_string) := (pkg_name', "measureArea"%go).
-
 (* go: interfaces.go:16:6 *)
-Definition measureVolumePlusNM' : val :=
-  rec: "measureVolumePlusNM'" "t" "n" "m" :=
+Definition measureVolumePlusNM : val :=
+  rec: "measureVolumePlusNM" "t" "n" "m" :=
     exception_do (let: "m" := (ref_ty uint64T "m") in
     let: "n" := (ref_ty uint64T "n") in
     let: "t" := (ref_ty geometryInterface "t") in
     return: ((((interface.get "Volume" (![geometryInterface] "t")) #()) + (![uint64T] "n")) + (![uint64T] "m"))).
 
-Definition measureVolumePlusNM : (go_string * go_string) := (pkg_name', "measureVolumePlusNM"%go).
-
 (* go: interfaces.go:20:6 *)
-Definition measureVolume' : val :=
-  rec: "measureVolume'" "t" :=
+Definition measureVolume : val :=
+  rec: "measureVolume" "t" :=
     exception_do (let: "t" := (ref_ty geometryInterface "t") in
     return: ((interface.get "Volume" (![geometryInterface] "t")) #())).
-
-Definition measureVolume : (go_string * go_string) := (pkg_name', "measureVolume"%go).
 
 Definition SquareStruct : go_type := structT [
   "Side" :: uint64T
@@ -1065,34 +971,32 @@ Definition SquareStruct : go_type := structT [
 Definition SquareStruct' : (go_string * go_string) := (pkg_name', "SquareStruct"%go).
 
 (* go: interfaces.go:28:23 *)
-Definition SquareStruct__Square' : val :=
-  rec: "SquareStruct__Square'" "t" <> :=
+Definition SquareStruct__Square : val :=
+  rec: "SquareStruct__Square" "t" <> :=
     exception_do (let: "t" := (ref_ty SquareStruct "t") in
     return: ((![uint64T] (struct.field_ref SquareStruct "Side" "t")) * (![uint64T] (struct.field_ref SquareStruct "Side" "t")))).
 
 (* go: interfaces.go:32:23 *)
-Definition SquareStruct__Volume' : val :=
-  rec: "SquareStruct__Volume'" "t" <> :=
+Definition SquareStruct__Volume : val :=
+  rec: "SquareStruct__Volume" "t" <> :=
     exception_do (let: "t" := (ref_ty SquareStruct "t") in
     return: (((![uint64T] (struct.field_ref SquareStruct "Side" "t")) * (![uint64T] (struct.field_ref SquareStruct "Side" "t"))) * (![uint64T] (struct.field_ref SquareStruct "Side" "t")))).
 
 (* go: interfaces.go:40:6 *)
-Definition testBasicInterface' : val :=
-  rec: "testBasicInterface'" <> :=
+Definition testBasicInterface : val :=
+  rec: "testBasicInterface" <> :=
     exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 2) in
     struct.make SquareStruct [{
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    return: ((let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-     (func_call measureArea #()) "$a0") = #(W64 4))).
-
-Definition testBasicInterface : (go_string * go_string) := (pkg_name', "testBasicInterface"%go).
+    return: ((let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+     (func_call #pkg_name' #"measureArea"%go) "$a0") = #(W64 4))).
 
 (* go: interfaces.go:47:6 *)
-Definition testAssignInterface' : val :=
-  rec: "testAssignInterface'" <> :=
+Definition testAssignInterface : val :=
+  rec: "testAssignInterface" <> :=
     exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
     struct.make SquareStruct [{
@@ -1100,16 +1004,14 @@ Definition testAssignInterface' : val :=
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "area" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-    (func_call measureArea #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+    (func_call #pkg_name' #"measureArea"%go) "$a0") in
     do:  ("area" <-[uint64T] "$r0");;;
     return: ((![uint64T] "area") = #(W64 9))).
 
-Definition testAssignInterface : (go_string * go_string) := (pkg_name', "testAssignInterface"%go).
-
 (* go: interfaces.go:55:6 *)
-Definition testMultipleInterface' : val :=
-  rec: "testMultipleInterface'" <> :=
+Definition testMultipleInterface : val :=
+  rec: "testMultipleInterface" <> :=
     exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
     struct.make SquareStruct [{
@@ -1117,20 +1019,18 @@ Definition testMultipleInterface' : val :=
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "square1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-    (func_call measureArea #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+    (func_call #pkg_name' #"measureArea"%go) "$a0") in
     do:  ("square1" <-[uint64T] "$r0");;;
     let: "square2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-    (func_call measureArea #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+    (func_call #pkg_name' #"measureArea"%go) "$a0") in
     do:  ("square2" <-[uint64T] "$r0");;;
     return: ((![uint64T] "square1") = (![uint64T] "square2"))).
 
-Definition testMultipleInterface : (go_string * go_string) := (pkg_name', "testMultipleInterface"%go).
-
 (* go: interfaces.go:64:6 *)
-Definition testBinaryExprInterface' : val :=
-  rec: "testBinaryExprInterface'" <> :=
+Definition testBinaryExprInterface : val :=
+  rec: "testBinaryExprInterface" <> :=
     exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
     struct.make SquareStruct [{
@@ -1138,56 +1038,50 @@ Definition testBinaryExprInterface' : val :=
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "square1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-    (func_call measureArea #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+    (func_call #pkg_name' #"measureArea"%go) "$a0") in
     do:  ("square1" <-[uint64T] "$r0");;;
     let: "square2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-    (func_call measureVolume #()) "$a0") in
+    let: "$r0" := (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+    (func_call #pkg_name' #"measureVolume"%go) "$a0") in
     do:  ("square2" <-[uint64T] "$r0");;;
-    return: (((![uint64T] "square1") = (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-     (func_call measureArea #()) "$a0")) && ((![uint64T] "square2") = (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-     (func_call measureVolume #()) "$a0")))).
-
-Definition testBinaryExprInterface : (go_string * go_string) := (pkg_name', "testBinaryExprInterface"%go).
+    return: (((![uint64T] "square1") = (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+     (func_call #pkg_name' #"measureArea"%go) "$a0")) && ((![uint64T] "square2") = (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+     (func_call #pkg_name' #"measureVolume"%go) "$a0")))).
 
 (* go: interfaces.go:73:6 *)
-Definition testIfStmtInterface' : val :=
-  rec: "testIfStmtInterface'" <> :=
+Definition testIfStmtInterface : val :=
+  rec: "testIfStmtInterface" <> :=
     exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
     struct.make SquareStruct [{
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    (if: (let: "$a0" := (interface.make SquareStruct' (![SquareStruct] "s")) in
-    (func_call measureArea #()) "$a0") = #(W64 9)
+    (if: (let: "$a0" := (interface.make #pkg_name' #"SquareStruct" (![SquareStruct] "s")) in
+    (func_call #pkg_name' #"measureArea"%go) "$a0") = #(W64 9)
     then return: (#true)
     else do:  #());;;
     return: (#false)).
-
-Definition testIfStmtInterface : (go_string * go_string) := (pkg_name', "testIfStmtInterface"%go).
 
 (* We can't interpret multithreaded code, so this just checks that
    locks are correctly interpreted
 
    go: lock.go:7:6 *)
-Definition testsUseLocks' : val :=
-  rec: "testsUseLocks'" <> :=
+Definition testsUseLocks : val :=
+  rec: "testsUseLocks" <> :=
     exception_do (let: "m" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
     do:  ("m" <-[ptrT] "$r0");;;
-    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "m")) #());;;
-    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "m")) #());;;
+    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #() (![ptrT] "m")) #());;;
+    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #() (![ptrT] "m")) #());;;
     return: (#true)).
-
-Definition testsUseLocks : (go_string * go_string) := (pkg_name', "testsUseLocks"%go).
 
 (* helpers
 
    go: loops.go:4:6 *)
-Definition standardForLoop' : val :=
-  rec: "standardForLoop'" "s" :=
+Definition standardForLoop : val :=
+  rec: "standardForLoop" "s" :=
     exception_do (let: "s" := (ref_ty sliceT "s") in
     let: "sumPtr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
@@ -1217,8 +1111,6 @@ Definition standardForLoop' : val :=
     do:  ("sum" <-[uint64T] "$r0");;;
     return: (![uint64T] "sum")).
 
-Definition standardForLoop : (go_string * go_string) := (pkg_name', "standardForLoop"%go).
-
 Definition LoopStruct : go_type := structT [
   "loopNext" :: ptrT
 ].
@@ -1226,8 +1118,8 @@ Definition LoopStruct : go_type := structT [
 Definition LoopStruct' : (go_string * go_string) := (pkg_name', "LoopStruct"%go).
 
 (* go: loops.go:28:22 *)
-Definition LoopStruct__forLoopWait' : val :=
-  rec: "LoopStruct__forLoopWait'" "ls" "i" :=
+Definition LoopStruct__forLoopWait : val :=
+  rec: "LoopStruct__forLoopWait" "ls" "i" :=
     exception_do (let: "ls" := (ref_ty LoopStruct "ls") in
     let: "i" := (ref_ty uint64T "i") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -1244,8 +1136,8 @@ Definition LoopStruct__forLoopWait' : val :=
 (* tests
 
    go: loops.go:40:6 *)
-Definition testStandardForLoop' : val :=
-  rec: "testStandardForLoop'" <> :=
+Definition testStandardForLoop : val :=
+  rec: "testStandardForLoop" <> :=
     exception_do (let: "arr" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 uint64T #(W64 4)) in
     do:  ("arr" <-[sliceT] "$r0");;;
@@ -1254,13 +1146,11 @@ Definition testStandardForLoop' : val :=
     do:  ((slice.elem_ref uint64T (![sliceT] "arr") #(W64 2)) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 2))) + #(W64 5)));;;
     do:  ((slice.elem_ref uint64T (![sliceT] "arr") #(W64 3)) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3))) + #(W64 7)));;;
     return: ((let: "$a0" := (![sliceT] "arr") in
-     (func_call standardForLoop #()) "$a0") = #(W64 16))).
-
-Definition testStandardForLoop : (go_string * go_string) := (pkg_name', "testStandardForLoop"%go).
+     (func_call #pkg_name' #"standardForLoop"%go) "$a0") = #(W64 16))).
 
 (* go: loops.go:49:6 *)
-Definition testForLoopWait' : val :=
-  rec: "testForLoopWait'" <> :=
+Definition testForLoopWait : val :=
+  rec: "testForLoopWait" <> :=
     exception_do (let: "ls" := (ref_ty LoopStruct (zero_val LoopStruct)) in
     let: "$r0" := (let: "$loopNext" := (ref_ty uint64T (zero_val uint64T)) in
     struct.make LoopStruct [{
@@ -1268,14 +1158,12 @@ Definition testForLoopWait' : val :=
     }]) in
     do:  ("ls" <-[LoopStruct] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
-    (method_call LoopStruct' "forLoopWait" #() (![LoopStruct] "ls")) "$a0");;;
+    (method_call #pkg_name' #"LoopStruct" #"forLoopWait" "forLoopWait" #() (![LoopStruct] "ls")) "$a0");;;
     return: ((![uint64T] (![ptrT] (struct.field_ref LoopStruct "loopNext" "ls"))) = #(W64 4))).
 
-Definition testForLoopWait : (go_string * go_string) := (pkg_name', "testForLoopWait"%go).
-
 (* go: loops.go:59:6 *)
-Definition testBreakFromLoopWithContinue' : val :=
-  rec: "testBreakFromLoopWithContinue'" <> :=
+Definition testBreakFromLoopWithContinue : val :=
+  rec: "testBreakFromLoopWithContinue" <> :=
     exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1289,11 +1177,9 @@ Definition testBreakFromLoopWithContinue' : val :=
       continue: #());;;
     return: ((![uint64T] "i") = #(W64 1))).
 
-Definition testBreakFromLoopWithContinue : (go_string * go_string) := (pkg_name', "testBreakFromLoopWithContinue"%go).
-
 (* go: loops.go:71:6 *)
-Definition testBreakFromLoopNoContinue' : val :=
-  rec: "testBreakFromLoopNoContinue'" <> :=
+Definition testBreakFromLoopNoContinue : val :=
+  rec: "testBreakFromLoopNoContinue" <> :=
     exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1308,11 +1194,9 @@ Definition testBreakFromLoopNoContinue' : val :=
       do:  ("i" <-[uint64T] "$r0"));;;
     return: ((![uint64T] "i") = #(W64 1))).
 
-Definition testBreakFromLoopNoContinue : (go_string * go_string) := (pkg_name', "testBreakFromLoopNoContinue"%go).
-
 (* go: loops.go:83:6 *)
-Definition testBreakFromLoopNoContinueDouble' : val :=
-  rec: "testBreakFromLoopNoContinueDouble'" <> :=
+Definition testBreakFromLoopNoContinueDouble : val :=
+  rec: "testBreakFromLoopNoContinueDouble" <> :=
     exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1329,11 +1213,9 @@ Definition testBreakFromLoopNoContinueDouble' : val :=
       do:  ("i" <-[uint64T] "$r0"));;;
     return: ((![uint64T] "i") = #(W64 4))).
 
-Definition testBreakFromLoopNoContinueDouble : (go_string * go_string) := (pkg_name', "testBreakFromLoopNoContinueDouble"%go).
-
 (* go: loops.go:96:6 *)
-Definition testBreakFromLoopForOnly' : val :=
-  rec: "testBreakFromLoopForOnly'" <> :=
+Definition testBreakFromLoopForOnly : val :=
+  rec: "testBreakFromLoopForOnly" <> :=
     exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1342,11 +1224,9 @@ Definition testBreakFromLoopForOnly' : val :=
       do:  ("i" <-[uint64T] "$r0"));;;
     return: ((![uint64T] "i") = #(W64 4))).
 
-Definition testBreakFromLoopForOnly : (go_string * go_string) := (pkg_name', "testBreakFromLoopForOnly"%go).
-
 (* go: loops.go:104:6 *)
-Definition testBreakFromLoopAssignAndContinue' : val :=
-  rec: "testBreakFromLoopAssignAndContinue'" <> :=
+Definition testBreakFromLoopAssignAndContinue : val :=
+  rec: "testBreakFromLoopAssignAndContinue" <> :=
     exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -1362,11 +1242,9 @@ Definition testBreakFromLoopAssignAndContinue' : val :=
       continue: #());;;
     return: ((![uint64T] "i") = #(W64 1))).
 
-Definition testBreakFromLoopAssignAndContinue : (go_string * go_string) := (pkg_name', "testBreakFromLoopAssignAndContinue"%go).
-
 (* go: loops.go:117:6 *)
-Definition testNestedLoops' : val :=
-  rec: "testNestedLoops'" <> :=
+Definition testNestedLoops : val :=
+  rec: "testNestedLoops" <> :=
     exception_do (let: "ok1" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #false in
     do:  ("ok1" <-[boolT] "$r0");;;
@@ -1396,11 +1274,9 @@ Definition testNestedLoops' : val :=
       break: #()));;;
     return: ((![boolT] "ok1") && (![boolT] "ok2"))).
 
-Definition testNestedLoops : (go_string * go_string) := (pkg_name', "testNestedLoops"%go).
-
 (* go: loops.go:136:6 *)
-Definition testNestedGoStyleLoops' : val :=
-  rec: "testNestedGoStyleLoops'" <> :=
+Definition testNestedGoStyleLoops : val :=
+  rec: "testNestedGoStyleLoops" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #false in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1419,12 +1295,10 @@ Definition testNestedGoStyleLoops' : val :=
       let: "$r0" := ((![uint64T] "i") = #(W64 9)) in
       do:  ("ok" <-[boolT] "$r0")));;;
     return: (![boolT] "ok")).
-
-Definition testNestedGoStyleLoops : (go_string * go_string) := (pkg_name', "testNestedGoStyleLoops"%go).
 
 (* go: loops.go:150:6 *)
-Definition testNestedGoStyleLoopsNoComparison' : val :=
-  rec: "testNestedGoStyleLoopsNoComparison'" <> :=
+Definition testNestedGoStyleLoopsNoComparison : val :=
+  rec: "testNestedGoStyleLoopsNoComparison" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #false in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1444,11 +1318,9 @@ Definition testNestedGoStyleLoopsNoComparison' : val :=
       do:  ("ok" <-[boolT] "$r0")));;;
     return: (![boolT] "ok")).
 
-Definition testNestedGoStyleLoopsNoComparison : (go_string * go_string) := (pkg_name', "testNestedGoStyleLoopsNoComparison"%go).
-
 (* go: maps.go:3:6 *)
-Definition IterateMapKeys' : val :=
-  rec: "IterateMapKeys'" "m" :=
+Definition IterateMapKeys : val :=
+  rec: "IterateMapKeys" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
     let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
     do:  (map.for_range (![mapT uint64T uint64T] "m") (λ: "k" <>,
@@ -1456,11 +1328,9 @@ Definition IterateMapKeys' : val :=
       do:  ("sum" <-[uint64T] "$r0")));;;
     return: (![uint64T] "sum")).
 
-Definition IterateMapKeys : (go_string * go_string) := (pkg_name', "IterateMapKeys"%go).
-
 (* go: maps.go:11:6 *)
-Definition IterateMapValues' : val :=
-  rec: "IterateMapValues'" "m" :=
+Definition IterateMapValues : val :=
+  rec: "IterateMapValues" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
     let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
     do:  (map.for_range (![mapT uint64T uint64T] "m") (λ: <> "v",
@@ -1468,11 +1338,9 @@ Definition IterateMapValues' : val :=
       do:  ("sum" <-[uint64T] "$r0")));;;
     return: (![uint64T] "sum")).
 
-Definition IterateMapValues : (go_string * go_string) := (pkg_name', "IterateMapValues"%go).
-
 (* go: maps.go:19:6 *)
-Definition testIterateMap' : val :=
-  rec: "testIterateMap'" <> :=
+Definition testIterateMap : val :=
+  rec: "testIterateMap" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1486,18 +1354,16 @@ Definition testIterateMap' : val :=
     let: "$r0" := #(W64 4) in
     do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 3) "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![mapT uint64T uint64T] "m") in
-    (func_call IterateMapKeys #()) "$a0") = #(W64 4))) in
+    (func_call #pkg_name' #"IterateMapKeys"%go) "$a0") = #(W64 4))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![mapT uint64T uint64T] "m") in
-    (func_call IterateMapValues #()) "$a0") = #(W64 7))) in
+    (func_call #pkg_name' #"IterateMapValues"%go) "$a0") = #(W64 7))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testIterateMap : (go_string * go_string) := (pkg_name', "testIterateMap"%go).
-
 (* go: maps.go:37:6 *)
-Definition testMapSize' : val :=
-  rec: "testMapSize'" <> :=
+Definition testMapSize : val :=
+  rec: "testMapSize" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1518,43 +1384,35 @@ Definition testMapSize' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testMapSize : (go_string * go_string) := (pkg_name', "testMapSize"%go).
-
 (* go: multiple_assign.go:3:6 *)
-Definition multReturnTwo' : val :=
-  rec: "multReturnTwo'" <> :=
+Definition multReturnTwo : val :=
+  rec: "multReturnTwo" <> :=
     exception_do (return: (#(W64 2), #(W64 3))).
 
-Definition multReturnTwo : (go_string * go_string) := (pkg_name', "multReturnTwo"%go).
-
 (* go: multiple_assign.go:7:6 *)
-Definition testAssignTwo' : val :=
-  rec: "testAssignTwo'" <> :=
+Definition testAssignTwo : val :=
+  rec: "testAssignTwo" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[uint64T] "$r0");;;
     let: "y" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 15) in
     do:  ("y" <-[uint64T] "$r0");;;
-    let: ("$ret0", "$ret1") := ((func_call multReturnTwo #()) #()) in
+    let: ("$ret0", "$ret1") := ((func_call #pkg_name' #"multReturnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[uint64T] "$r0");;;
     do:  ("y" <-[uint64T] "$r1");;;
     return: (((![uint64T] "x") = #(W64 2)) && ((![uint64T] "y") = #(W64 3)))).
 
-Definition testAssignTwo : (go_string * go_string) := (pkg_name', "testAssignTwo"%go).
-
 (* go: multiple_assign.go:14:6 *)
-Definition multReturnThree' : val :=
-  rec: "multReturnThree'" <> :=
+Definition multReturnThree : val :=
+  rec: "multReturnThree" <> :=
     exception_do (return: (#(W64 2), #true, #(W32 1))).
 
-Definition multReturnThree : (go_string * go_string) := (pkg_name', "multReturnThree"%go).
-
 (* go: multiple_assign.go:18:6 *)
-Definition testAssignThree' : val :=
-  rec: "testAssignThree'" <> :=
+Definition testAssignThree : val :=
+  rec: "testAssignThree" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -1564,7 +1422,7 @@ Definition testAssignThree' : val :=
     let: "z" := (ref_ty uint32T (zero_val uint32T)) in
     let: "$r0" := #(W32 15) in
     do:  ("z" <-[uint32T] "$r0");;;
-    let: (("$ret0", "$ret1"), "$ret2") := ((func_call multReturnThree #()) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := ((func_call #pkg_name' #"multReturnThree"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -1573,74 +1431,62 @@ Definition testAssignThree' : val :=
     do:  ("z" <-[uint32T] "$r2");;;
     return: ((((![uint64T] "x") = #(W64 2)) && ((![boolT] "y") = #true)) && ((![uint32T] "z") = #(W32 1)))).
 
-Definition testAssignThree : (go_string * go_string) := (pkg_name', "testAssignThree"%go).
-
 (* go: multiple_assign.go:26:6 *)
-Definition testMultipleAssignToMap' : val :=
-  rec: "testMultipleAssignToMap'" <> :=
+Definition testMultipleAssignToMap : val :=
+  rec: "testMultipleAssignToMap" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[uint64T] "$r0");;;
     let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
     let: "$r0" := (map.make uint64T uint64T #()) in
     do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
-    let: ("$ret0", "$ret1") := ((func_call multReturnTwo #()) #()) in
+    let: ("$ret0", "$ret1") := ((func_call #pkg_name' #"multReturnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[uint64T] "$r0");;;
     do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 0) "$r1");;;
     return: (((![uint64T] "x") = #(W64 2)) && ((Fst (map.get (![mapT uint64T uint64T] "m") #(W64 0))) = #(W64 3)))).
 
-Definition testMultipleAssignToMap : (go_string * go_string) := (pkg_name', "testMultipleAssignToMap"%go).
-
 (* go: multiple_return.go:3:6 *)
-Definition returnTwo' : val :=
-  rec: "returnTwo'" <> :=
+Definition returnTwo : val :=
+  rec: "returnTwo" <> :=
     exception_do (return: (#(W64 2), #(W64 3))).
 
-Definition returnTwo : (go_string * go_string) := (pkg_name', "returnTwo"%go).
-
 (* go: multiple_return.go:7:6 *)
-Definition testReturnTwo' : val :=
-  rec: "testReturnTwo'" <> :=
+Definition testReturnTwo : val :=
+  rec: "testReturnTwo" <> :=
     exception_do (let: "y" := (ref_ty uint64T (zero_val uint64T)) in
     let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call returnTwo #()) #()) in
+    let: ("$ret0", "$ret1") := ((func_call #pkg_name' #"returnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[uint64T] "$r0");;;
     do:  ("y" <-[uint64T] "$r1");;;
     return: (((![uint64T] "x") = #(W64 2)) && ((![uint64T] "y") = #(W64 3)))).
 
-Definition testReturnTwo : (go_string * go_string) := (pkg_name', "testReturnTwo"%go).
-
 (* go: multiple_return.go:12:6 *)
-Definition testAnonymousBinding' : val :=
-  rec: "testAnonymousBinding'" <> :=
+Definition testAnonymousBinding : val :=
+  rec: "testAnonymousBinding" <> :=
     exception_do (let: "y" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call returnTwo #()) #()) in
+    let: ("$ret0", "$ret1") := ((func_call #pkg_name' #"returnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("y" <-[uint64T] "$r1");;;
     return: ((![uint64T] "y") = #(W64 3))).
 
-Definition testAnonymousBinding : (go_string * go_string) := (pkg_name', "testAnonymousBinding"%go).
-
 (* go: multiple_return.go:17:6 *)
-Definition returnThree' : val :=
-  rec: "returnThree'" <> :=
+Definition returnThree : val :=
+  rec: "returnThree" <> :=
     exception_do (return: (#(W64 2), #true, #(W32 1))).
 
-Definition returnThree : (go_string * go_string) := (pkg_name', "returnThree"%go).
-
 (* go: multiple_return.go:21:6 *)
-Definition testReturnThree' : val :=
-  rec: "testReturnThree'" <> :=
+Definition testReturnThree : val :=
+  rec: "testReturnThree" <> :=
     exception_do (let: "z" := (ref_ty uint32T (zero_val uint32T)) in
     let: "y" := (ref_ty boolT (zero_val boolT)) in
     let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := ((func_call returnThree #()) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := ((func_call #pkg_name' #"returnThree"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -1649,23 +1495,19 @@ Definition testReturnThree' : val :=
     do:  ("z" <-[uint32T] "$r2");;;
     return: ((((![uint64T] "x") = #(W64 2)) && ((![boolT] "y") = #true)) && ((![uint32T] "z") = #(W32 1)))).
 
-Definition testReturnThree : (go_string * go_string) := (pkg_name', "testReturnThree"%go).
-
 (* go: multiple_return.go:26:6 *)
-Definition returnFour' : val :=
-  rec: "returnFour'" <> :=
+Definition returnFour : val :=
+  rec: "returnFour" <> :=
     exception_do (return: (#(W64 2), #true, #(W32 1), #(W64 7))).
 
-Definition returnFour : (go_string * go_string) := (pkg_name', "returnFour"%go).
-
 (* go: multiple_return.go:30:6 *)
-Definition testReturnFour' : val :=
-  rec: "testReturnFour'" <> :=
+Definition testReturnFour : val :=
+  rec: "testReturnFour" <> :=
     exception_do (let: "w" := (ref_ty uint64T (zero_val uint64T)) in
     let: "z" := (ref_ty uint32T (zero_val uint32T)) in
     let: "y" := (ref_ty boolT (zero_val boolT)) in
     let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := ((func_call returnFour #()) #()) in
+    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := ((func_call #pkg_name' #"returnFour"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -1676,61 +1518,49 @@ Definition testReturnFour' : val :=
     do:  ("w" <-[uint64T] "$r3");;;
     return: (((((![uint64T] "x") = #(W64 2)) && ((![boolT] "y") = #true)) && ((![uint32T] "z") = #(W32 1))) && ((![uint64T] "w") = #(W64 7)))).
 
-Definition testReturnFour : (go_string * go_string) := (pkg_name', "testReturnFour"%go).
-
 (* go: nil.go:3:6 *)
-Definition failing_testCompareSliceToNil' : val :=
-  rec: "failing_testCompareSliceToNil'" <> :=
+Definition failing_testCompareSliceToNil : val :=
+  rec: "failing_testCompareSliceToNil" <> :=
     exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 0)) in
     do:  ("s" <-[sliceT] "$r0");;;
     return: ((![sliceT] "s") ≠ #slice.nil)).
 
-Definition failing_testCompareSliceToNil : (go_string * go_string) := (pkg_name', "failing_testCompareSliceToNil"%go).
-
 (* go: nil.go:8:6 *)
-Definition testComparePointerToNil' : val :=
-  rec: "testComparePointerToNil'" <> :=
+Definition testComparePointerToNil : val :=
+  rec: "testComparePointerToNil" <> :=
     exception_do (let: "s" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("s" <-[ptrT] "$r0");;;
     return: ((![ptrT] "s") ≠ #null)).
 
-Definition testComparePointerToNil : (go_string * go_string) := (pkg_name', "testComparePointerToNil"%go).
-
 (* go: nil.go:13:6 *)
-Definition testCompareNilToNil' : val :=
-  rec: "testCompareNilToNil'" <> :=
+Definition testCompareNilToNil : val :=
+  rec: "testCompareNilToNil" <> :=
     exception_do (let: "s" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty ptrT (zero_val ptrT)) in
     do:  ("s" <-[ptrT] "$r0");;;
     return: ((![ptrT] (![ptrT] "s")) = #null)).
 
-Definition testCompareNilToNil : (go_string * go_string) := (pkg_name', "testCompareNilToNil"%go).
-
 (* go: nil.go:18:6 *)
-Definition testComparePointerWrappedToNil' : val :=
-  rec: "testComparePointerWrappedToNil'" <> :=
+Definition testComparePointerWrappedToNil : val :=
+  rec: "testComparePointerWrappedToNil" <> :=
     exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 1)) in
     do:  ("s" <-[sliceT] "$r0");;;
     return: ((![sliceT] "s") ≠ #slice.nil)).
 
-Definition testComparePointerWrappedToNil : (go_string * go_string) := (pkg_name', "testComparePointerWrappedToNil"%go).
-
 (* go: nil.go:24:6 *)
-Definition testComparePointerWrappedDefaultToNil' : val :=
-  rec: "testComparePointerWrappedDefaultToNil'" <> :=
+Definition testComparePointerWrappedDefaultToNil : val :=
+  rec: "testComparePointerWrappedDefaultToNil" <> :=
     exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
     return: ((![sliceT] "s") = #slice.nil)).
-
-Definition testComparePointerWrappedDefaultToNil : (go_string * go_string) := (pkg_name', "testComparePointerWrappedDefaultToNil"%go).
 
 (* helpers
 
    go: operations.go:4:6 *)
-Definition reverseAssignOps64' : val :=
-  rec: "reverseAssignOps64'" "x" :=
+Definition reverseAssignOps64 : val :=
+  rec: "reverseAssignOps64" "x" :=
     exception_do (let: "x" := (ref_ty uint64T "x") in
     let: "y" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("y" <-[uint64T] ((![uint64T] "y") + (![uint64T] "x")));;;
@@ -1739,11 +1569,9 @@ Definition reverseAssignOps64' : val :=
     do:  ("y" <-[uint64T] ((![uint64T] "y") - #(W64 1)));;;
     return: (![uint64T] "y")).
 
-Definition reverseAssignOps64 : (go_string * go_string) := (pkg_name', "reverseAssignOps64"%go).
-
 (* go: operations.go:13:6 *)
-Definition reverseAssignOps32' : val :=
-  rec: "reverseAssignOps32'" "x" :=
+Definition reverseAssignOps32 : val :=
+  rec: "reverseAssignOps32" "x" :=
     exception_do (let: "x" := (ref_ty uint32T "x") in
     let: "y" := (ref_ty uint32T (zero_val uint32T)) in
     do:  ("y" <-[uint32T] ((![uint32T] "y") + (![uint32T] "x")));;;
@@ -1752,158 +1580,144 @@ Definition reverseAssignOps32' : val :=
     do:  ("y" <-[uint32T] ((![uint32T] "y") - #(W64 1)));;;
     return: (![uint32T] "y")).
 
-Definition reverseAssignOps32 : (go_string * go_string) := (pkg_name', "reverseAssignOps32"%go).
-
 (* go: operations.go:22:6 *)
-Definition add64Equals' : val :=
-  rec: "add64Equals'" "x" "y" "z" :=
+Definition add64Equals : val :=
+  rec: "add64Equals" "x" "y" "z" :=
     exception_do (let: "z" := (ref_ty uint64T "z") in
     let: "y" := (ref_ty uint64T "y") in
     let: "x" := (ref_ty uint64T "x") in
     return: (((![uint64T] "x") + (![uint64T] "y")) = (![uint64T] "z"))).
 
-Definition add64Equals : (go_string * go_string) := (pkg_name', "add64Equals"%go).
-
 (* go: operations.go:26:6 *)
-Definition sub64Equals' : val :=
-  rec: "sub64Equals'" "x" "y" "z" :=
+Definition sub64Equals : val :=
+  rec: "sub64Equals" "x" "y" "z" :=
     exception_do (let: "z" := (ref_ty uint64T "z") in
     let: "y" := (ref_ty uint64T "y") in
     let: "x" := (ref_ty uint64T "x") in
     return: (((![uint64T] "x") - (![uint64T] "y")) = (![uint64T] "z"))).
 
-Definition sub64Equals : (go_string * go_string) := (pkg_name', "sub64Equals"%go).
-
 (* tests
 
    go: operations.go:31:6 *)
-Definition testReverseAssignOps64' : val :=
-  rec: "testReverseAssignOps64'" <> :=
+Definition testReverseAssignOps64 : val :=
+  rec: "testReverseAssignOps64" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 0) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 262144) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1024) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
-    (func_call reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testReverseAssignOps64 : (go_string * go_string) := (pkg_name', "testReverseAssignOps64"%go).
-
 (* go: operations.go:47:6 *)
-Definition failing_testReverseAssignOps32' : val :=
-  rec: "failing_testReverseAssignOps32'" <> :=
+Definition failing_testReverseAssignOps32 : val :=
+  rec: "failing_testReverseAssignOps32" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 0) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 262144) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1024) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
-    (func_call reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    (func_call #pkg_name' #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition failing_testReverseAssignOps32 : (go_string * go_string) := (pkg_name', "failing_testReverseAssignOps32"%go).
-
 (* go: operations.go:61:6 *)
-Definition testAdd64Equals' : val :=
-  rec: "testAdd64Equals'" <> :=
+Definition testAdd64Equals : val :=
+  rec: "testAdd64Equals" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 3) in
     let: "$a2" := #(W64 5) in
-    (func_call add64Equals #()) "$a0" "$a1" "$a2")) in
+    (func_call #pkg_name' #"add64Equals"%go) "$a0" "$a1" "$a2")) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     let: "$a1" := #(W64 1) in
     let: "$a2" := #(W64 0) in
-    (func_call add64Equals #()) "$a0" "$a1" "$a2")) in
+    (func_call #pkg_name' #"add64Equals"%go) "$a0" "$a1" "$a2")) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testAdd64Equals : (go_string * go_string) := (pkg_name', "testAdd64Equals"%go).
-
 (* go: operations.go:68:6 *)
-Definition testSub64Equals' : val :=
-  rec: "testSub64Equals'" <> :=
+Definition testSub64Equals : val :=
+  rec: "testSub64Equals" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 1) in
     let: "$a2" := #(W64 1) in
-    (func_call sub64Equals #()) "$a0" "$a1" "$a2")) in
+    (func_call #pkg_name' #"sub64Equals"%go) "$a0" "$a1" "$a2")) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     let: "$a1" := #(W64 9223372036854775808) in
     let: "$a2" := #(W64 (9223372036854775808 - 1)) in
-    (func_call sub64Equals #()) "$a0" "$a1" "$a2")) in
+    (func_call #pkg_name' #"sub64Equals"%go) "$a0" "$a1" "$a2")) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 8) in
     let: "$a2" := #(W64 (18446744073709551616 - 6)) in
-    (func_call sub64Equals #()) "$a0" "$a1" "$a2")) in
+    (func_call #pkg_name' #"sub64Equals"%go) "$a0" "$a1" "$a2")) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testSub64Equals : (go_string * go_string) := (pkg_name', "testSub64Equals"%go).
-
 (* go: operations.go:76:6 *)
-Definition testDivisionPrecedence' : val :=
-  rec: "testDivisionPrecedence'" <> :=
+Definition testDivisionPrecedence : val :=
+  rec: "testDivisionPrecedence" <> :=
     exception_do (let: "blockSize" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 4096) in
     do:  ("blockSize" <-[uint64T] "$r0");;;
@@ -1915,11 +1729,9 @@ Definition testDivisionPrecedence' : val :=
     do:  ("hdraddrs" <-[uint64T] "$r0");;;
     return: ((![uint64T] "hdraddrs") = #(W64 511))).
 
-Definition testDivisionPrecedence : (go_string * go_string) := (pkg_name', "testDivisionPrecedence"%go).
-
 (* go: operations.go:83:6 *)
-Definition testModPrecedence' : val :=
-  rec: "testModPrecedence'" <> :=
+Definition testModPrecedence : val :=
+  rec: "testModPrecedence" <> :=
     exception_do (let: "x1" := (ref_ty intT (zero_val intT)) in
     let: "$r0" := #(W64 (513 + (12 `rem` 8))) in
     do:  ("x1" <-[intT] "$r0");;;
@@ -1928,11 +1740,9 @@ Definition testModPrecedence' : val :=
     do:  ("x2" <-[intT] "$r0");;;
     return: (((![intT] "x1") = #(W64 517)) && ((![intT] "x2") = #(W64 5)))).
 
-Definition testModPrecedence : (go_string * go_string) := (pkg_name', "testModPrecedence"%go).
-
 (* go: operations.go:89:6 *)
-Definition testBitwiseOpsPrecedence' : val :=
-  rec: "testBitwiseOpsPrecedence'" <> :=
+Definition testBitwiseOpsPrecedence : val :=
+  rec: "testBitwiseOpsPrecedence" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1950,11 +1760,9 @@ Definition testBitwiseOpsPrecedence' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testBitwiseOpsPrecedence : (go_string * go_string) := (pkg_name', "testBitwiseOpsPrecedence"%go).
-
 (* go: operations.go:102:6 *)
-Definition testArithmeticShifts' : val :=
-  rec: "testArithmeticShifts'" <> :=
+Definition testArithmeticShifts : val :=
+  rec: "testArithmeticShifts" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -1970,11 +1778,9 @@ Definition testArithmeticShifts' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testArithmeticShifts : (go_string * go_string) := (pkg_name', "testArithmeticShifts"%go).
-
 (* go: operations.go:114:6 *)
-Definition testBitAddAnd' : val :=
-  rec: "testBitAddAnd'" <> :=
+Definition testBitAddAnd : val :=
+  rec: "testBitAddAnd" <> :=
     exception_do (let: "tid" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 17) in
     do:  ("tid" <-[uint64T] "$r0");;;
@@ -1983,35 +1789,27 @@ Definition testBitAddAnd' : val :=
     do:  ("n" <-[uint64T] "$r0");;;
     return: ((((![uint64T] "tid") + (![uint64T] "n")) `and` (~ ((![uint64T] "n") - #(W64 1)))) = #(W64 32))).
 
-Definition testBitAddAnd : (go_string * go_string) := (pkg_name', "testBitAddAnd"%go).
-
 (* go: operations.go:120:6 *)
-Definition testManyParentheses' : val :=
-  rec: "testManyParentheses'" <> :=
+Definition testManyParentheses : val :=
+  rec: "testManyParentheses" <> :=
     exception_do (return: (#((3 * 6) =? (3 * 6)))).
 
-Definition testManyParentheses : (go_string * go_string) := (pkg_name', "testManyParentheses"%go).
-
 (* go: operations.go:124:6 *)
-Definition testPlusTimes' : val :=
-  rec: "testPlusTimes'" <> :=
+Definition testPlusTimes : val :=
+  rec: "testPlusTimes" <> :=
     exception_do (return: (#(((2 + 5) * 2) =? 14))).
 
-Definition testPlusTimes : (go_string * go_string) := (pkg_name', "testPlusTimes"%go).
-
 (* go: precedence.go:3:6 *)
-Definition testOrCompareSimple' : val :=
-  rec: "testOrCompareSimple'" <> :=
+Definition testOrCompareSimple : val :=
+  rec: "testOrCompareSimple" <> :=
     exception_do ((if: #(3 >? 4) || #(4 >? 3)
     then return: (#true)
     else do:  #());;;
     return: (#false)).
 
-Definition testOrCompareSimple : (go_string * go_string) := (pkg_name', "testOrCompareSimple"%go).
-
 (* go: precedence.go:10:6 *)
-Definition testOrCompare' : val :=
-  rec: "testOrCompare'" <> :=
+Definition testOrCompare : val :=
+  rec: "testOrCompare" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -2027,11 +1825,9 @@ Definition testOrCompare' : val :=
     else do:  #());;;
     return: (![boolT] "ok")).
 
-Definition testOrCompare : (go_string * go_string) := (pkg_name', "testOrCompare"%go).
-
 (* go: precedence.go:22:6 *)
-Definition testAndCompare' : val :=
-  rec: "testAndCompare'" <> :=
+Definition testAndCompare : val :=
+  rec: "testAndCompare" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -2047,27 +1843,21 @@ Definition testAndCompare' : val :=
       do:  ("ok" <-[boolT] "$r0"));;;
     return: (![boolT] "ok")).
 
-Definition testAndCompare : (go_string * go_string) := (pkg_name', "testAndCompare"%go).
-
 (* go: precedence.go:34:6 *)
-Definition testShiftMod' : val :=
-  rec: "testShiftMod'" <> :=
+Definition testShiftMod : val :=
+  rec: "testShiftMod" <> :=
     exception_do (return: (#(20 =? 20))).
 
-Definition testShiftMod : (go_string * go_string) := (pkg_name', "testShiftMod"%go).
-
 (* go: prims.go:9:6 *)
-Definition testLinearize' : val :=
-  rec: "testLinearize'" <> :=
+Definition testLinearize : val :=
+  rec: "testLinearize" <> :=
     exception_do (let: "m" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
     do:  ("m" <-[ptrT] "$r0");;;
-    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] "m")) #());;;
-    do:  ((func_call primitive.Linearize #()) #());;;
-    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] "m")) #());;;
+    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #() (![ptrT] "m")) #());;;
+    do:  ((func_call #primitive.pkg_name' #"Linearize"%go) #());;;
+    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #() (![ptrT] "m")) #());;;
     return: (#true)).
-
-Definition testLinearize : (go_string * go_string) := (pkg_name', "testLinearize"%go).
 
 Definition BoolTest : go_type := structT [
   "t" :: boolT;
@@ -2079,28 +1869,24 @@ Definition BoolTest : go_type := structT [
 Definition BoolTest' : (go_string * go_string) := (pkg_name', "BoolTest"%go).
 
 (* go: shortcircuiting.go:11:6 *)
-Definition CheckTrue' : val :=
-  rec: "CheckTrue'" "b" :=
+Definition CheckTrue : val :=
+  rec: "CheckTrue" "b" :=
     exception_do (let: "b" := (ref_ty ptrT "b") in
     do:  ((struct.field_ref BoolTest "tc" (![ptrT] "b")) <-[uint64T] ((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) + #(W64 1)));;;
     return: (![boolT] (struct.field_ref BoolTest "t" (![ptrT] "b")))).
 
-Definition CheckTrue : (go_string * go_string) := (pkg_name', "CheckTrue"%go).
-
 (* go: shortcircuiting.go:16:6 *)
-Definition CheckFalse' : val :=
-  rec: "CheckFalse'" "b" :=
+Definition CheckFalse : val :=
+  rec: "CheckFalse" "b" :=
     exception_do (let: "b" := (ref_ty ptrT "b") in
     do:  ((struct.field_ref BoolTest "fc" (![ptrT] "b")) <-[uint64T] ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) + #(W64 1)));;;
     return: (![boolT] (struct.field_ref BoolTest "f" (![ptrT] "b")))).
 
-Definition CheckFalse : (go_string * go_string) := (pkg_name', "CheckFalse"%go).
-
 (* tests
 
    go: shortcircuiting.go:22:6 *)
-Definition testShortcircuitAndTF' : val :=
-  rec: "testShortcircuitAndTF'" <> :=
+Definition testShortcircuitAndTF : val :=
+  rec: "testShortcircuitAndTF" <> :=
     exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
     let: "$f" := #false in
@@ -2114,17 +1900,15 @@ Definition testShortcircuitAndTF' : val :=
     }])) in
     do:  ("b" <-[ptrT] "$r0");;;
     (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckTrue #()) "$a0") && (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckFalse #()) "$a0")
+    (func_call #pkg_name' #"CheckTrue"%go) "$a0") && (let: "$a0" := (![ptrT] "b") in
+    (func_call #pkg_name' #"CheckFalse"%go) "$a0")
     then return: (#false)
     else do:  #());;;
     return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 1)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 1)))).
 
-Definition testShortcircuitAndTF : (go_string * go_string) := (pkg_name', "testShortcircuitAndTF"%go).
-
 (* go: shortcircuiting.go:31:6 *)
-Definition testShortcircuitAndFT' : val :=
-  rec: "testShortcircuitAndFT'" <> :=
+Definition testShortcircuitAndFT : val :=
+  rec: "testShortcircuitAndFT" <> :=
     exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
     let: "$f" := #false in
@@ -2138,17 +1922,15 @@ Definition testShortcircuitAndFT' : val :=
     }])) in
     do:  ("b" <-[ptrT] "$r0");;;
     (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckFalse #()) "$a0") && (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckTrue #()) "$a0")
+    (func_call #pkg_name' #"CheckFalse"%go) "$a0") && (let: "$a0" := (![ptrT] "b") in
+    (func_call #pkg_name' #"CheckTrue"%go) "$a0")
     then return: (#false)
     else do:  #());;;
     return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 0)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 1)))).
 
-Definition testShortcircuitAndFT : (go_string * go_string) := (pkg_name', "testShortcircuitAndFT"%go).
-
 (* go: shortcircuiting.go:40:6 *)
-Definition testShortcircuitOrTF' : val :=
-  rec: "testShortcircuitOrTF'" <> :=
+Definition testShortcircuitOrTF : val :=
+  rec: "testShortcircuitOrTF" <> :=
     exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
     let: "$f" := #false in
@@ -2162,17 +1944,15 @@ Definition testShortcircuitOrTF' : val :=
     }])) in
     do:  ("b" <-[ptrT] "$r0");;;
     (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckTrue #()) "$a0") || (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckFalse #()) "$a0")
+    (func_call #pkg_name' #"CheckTrue"%go) "$a0") || (let: "$a0" := (![ptrT] "b") in
+    (func_call #pkg_name' #"CheckFalse"%go) "$a0")
     then return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 1)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 0)))
     else do:  #());;;
     return: (#false)).
 
-Definition testShortcircuitOrTF : (go_string * go_string) := (pkg_name', "testShortcircuitOrTF"%go).
-
 (* go: shortcircuiting.go:48:6 *)
-Definition testShortcircuitOrFT' : val :=
-  rec: "testShortcircuitOrFT'" <> :=
+Definition testShortcircuitOrFT : val :=
+  rec: "testShortcircuitOrFT" <> :=
     exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
     let: "$f" := #false in
@@ -2186,13 +1966,11 @@ Definition testShortcircuitOrFT' : val :=
     }])) in
     do:  ("b" <-[ptrT] "$r0");;;
     (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckFalse #()) "$a0") || (let: "$a0" := (![ptrT] "b") in
-    (func_call CheckTrue #()) "$a0")
+    (func_call #pkg_name' #"CheckFalse"%go) "$a0") || (let: "$a0" := (![ptrT] "b") in
+    (func_call #pkg_name' #"CheckTrue"%go) "$a0")
     then return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 1)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 1)))
     else do:  #());;;
     return: (#false)).
-
-Definition testShortcircuitOrFT : (go_string * go_string) := (pkg_name', "testShortcircuitOrFT"%go).
 
 Definition ArrayEditor : go_type := structT [
   "s" :: sliceT;
@@ -2202,8 +1980,8 @@ Definition ArrayEditor : go_type := structT [
 Definition ArrayEditor' : (go_string * go_string) := (pkg_name', "ArrayEditor"%go).
 
 (* go: slices.go:9:24 *)
-Definition ArrayEditor__Advance' : val :=
-  rec: "ArrayEditor__Advance'" "ae" "arr" "next" :=
+Definition ArrayEditor__Advance : val :=
+  rec: "ArrayEditor__Advance" "ae" "arr" "next" :=
     exception_do (let: "ae" := (ref_ty ptrT "ae") in
     let: "next" := (ref_ty uint64T "next") in
     let: "arr" := (ref_ty sliceT "arr") in
@@ -2219,8 +1997,8 @@ Definition ArrayEditor__Advance' : val :=
 (* tests
 
    go: slices.go:17:6 *)
-Definition testSliceOps' : val :=
-  rec: "testSliceOps'" <> :=
+Definition testSliceOps : val :=
+  rec: "testSliceOps" <> :=
     exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 uint64T #(W64 10)) in
     do:  ("x" <-[sliceT] "$r0");;;
@@ -2267,11 +2045,9 @@ Definition testSliceOps' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testSliceOps : (go_string * go_string) := (pkg_name', "testSliceOps"%go).
-
 (* go: slices.go:40:6 *)
-Definition testSliceCapacityOps' : val :=
-  rec: "testSliceCapacityOps'" <> :=
+Definition testSliceCapacityOps : val :=
+  rec: "testSliceCapacityOps" <> :=
     exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make3 uint64T #(W64 0) #(W64 10)) in
     do:  ("x" <-[sliceT] "$r0");;;
@@ -2310,11 +2086,9 @@ Definition testSliceCapacityOps' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testSliceCapacityOps : (go_string * go_string) := (pkg_name', "testSliceCapacityOps"%go).
-
 (* go: slices.go:59:6 *)
-Definition testOverwriteArray' : val :=
-  rec: "testOverwriteArray'" <> :=
+Definition testOverwriteArray : val :=
+  rec: "testOverwriteArray" <> :=
     exception_do (let: "arr" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 uint64T #(W64 4)) in
     do:  ("arr" <-[sliceT] "$r0");;;
@@ -2338,35 +2112,33 @@ Definition testOverwriteArray' : val :=
     do:  ("ae2" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 103) in
-    (method_call ArrayEditor'ptr "Advance" #() (![ptrT] "ae2")) "$a0" "$a1");;;
+    (method_call #pkg_name' #"ArrayEditor'ptr" #"Advance" #() (![ptrT] "ae2")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 104) in
-    (method_call ArrayEditor'ptr "Advance" #() (![ptrT] "ae2")) "$a0" "$a1");;;
+    (method_call #pkg_name' #"ArrayEditor'ptr" #"Advance" #() (![ptrT] "ae2")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 105) in
-    (method_call ArrayEditor'ptr "Advance" #() (![ptrT] "ae2")) "$a0" "$a1");;;
+    (method_call #pkg_name' #"ArrayEditor'ptr" #"Advance" #() (![ptrT] "ae2")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 2) in
-    (method_call ArrayEditor'ptr "Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #pkg_name' #"ArrayEditor'ptr" #"Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 3) in
-    (method_call ArrayEditor'ptr "Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #pkg_name' #"ArrayEditor'ptr" #"Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 4) in
-    (method_call ArrayEditor'ptr "Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #pkg_name' #"ArrayEditor'ptr" #"Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 5) in
-    (method_call ArrayEditor'ptr "Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #pkg_name' #"ArrayEditor'ptr" #"Advance" #() (![ptrT] "ae1")) "$a0" "$a1");;;
     (if: ((((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 1)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 2)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3)))) ≥ #(W64 100)
     then return: (#false)
     else do:  #());;;
     return: (((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3))) = #(W64 4)) && ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) = #(W64 4)))).
 
-Definition testOverwriteArray : (go_string * go_string) := (pkg_name', "testOverwriteArray"%go).
-
 (* go: slices.go:80:6 *)
-Definition testSliceLiteral' : val :=
-  rec: "testSliceLiteral'" <> :=
+Definition testSliceLiteral : val :=
+  rec: "testSliceLiteral" <> :=
     exception_do (let: "bytes" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := ((let: "$sl0" := #(W8 1) in
     let: "$sl1" := #(W8 2) in
@@ -2387,8 +2159,6 @@ Definition testSliceLiteral' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testSliceLiteral : (go_string * go_string) := (pkg_name', "testSliceLiteral"%go).
-
 Definition Bar : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
@@ -2403,8 +2173,8 @@ Definition Foo : go_type := structT [
 Definition Foo' : (go_string * go_string) := (pkg_name', "Foo"%go).
 
 (* go: struct_pointers.go:14:17 *)
-Definition Bar__mutate' : val :=
-  rec: "Bar__mutate'" "bar" <> :=
+Definition Bar__mutate : val :=
+  rec: "Bar__mutate" "bar" <> :=
     exception_do (let: "bar" := (ref_ty ptrT "bar") in
     let: "$r0" := #(W64 2) in
     do:  ((struct.field_ref Bar "a" (![ptrT] "bar")) <-[uint64T] "$r0");;;
@@ -2412,14 +2182,14 @@ Definition Bar__mutate' : val :=
     do:  ((struct.field_ref Bar "b" (![ptrT] "bar")) <-[uint64T] "$r0")).
 
 (* go: struct_pointers.go:19:17 *)
-Definition Foo__mutateBar' : val :=
-  rec: "Foo__mutateBar'" "foo" <> :=
+Definition Foo__mutateBar : val :=
+  rec: "Foo__mutateBar" "foo" <> :=
     exception_do (let: "foo" := (ref_ty ptrT "foo") in
-    do:  ((method_call Bar'ptr "mutate" #() (struct.field_ref Foo "bar" (![ptrT] "foo"))) #())).
+    do:  ((method_call #pkg_name' #"Bar'ptr" #"mutate" #() (struct.field_ref Foo "bar" (![ptrT] "foo"))) #())).
 
 (* go: struct_pointers.go:23:6 *)
-Definition testFooBarMutation' : val :=
-  rec: "testFooBarMutation'" <> :=
+Definition testFooBarMutation : val :=
+  rec: "testFooBarMutation" <> :=
     exception_do (let: "x" := (ref_ty Foo (zero_val Foo)) in
     let: "$r0" := (let: "$bar" := (let: "$a" := #(W64 0) in
     let: "$b" := #(W64 0) in
@@ -2431,10 +2201,8 @@ Definition testFooBarMutation' : val :=
       "bar" ::= "$bar"
     }]) in
     do:  ("x" <-[Foo] "$r0");;;
-    do:  ((method_call Foo'ptr "mutateBar" #() "x") #());;;
+    do:  ((method_call #pkg_name' #"Foo'ptr" #"mutateBar" #() "x") #());;;
     return: ((![uint64T] (struct.field_ref Bar "a" (struct.field_ref Foo "bar" "x"))) = #(W64 2))).
-
-Definition testFooBarMutation : (go_string * go_string) := (pkg_name', "testFooBarMutation"%go).
 
 Definition TwoInts : go_type := structT [
   "x" :: uint64T;
@@ -2452,8 +2220,8 @@ Definition S : go_type := structT [
 Definition S' : (go_string * go_string) := (pkg_name', "S"%go).
 
 (* go: structs.go:14:6 *)
-Definition NewS' : val :=
-  rec: "NewS'" <> :=
+Definition NewS : val :=
+  rec: "NewS" <> :=
     exception_do (return: (ref_ty S (let: "$a" := #(W64 2) in
      let: "$b" := (let: "$x" := #(W64 1) in
      let: "$y" := #(W64 2) in
@@ -2468,64 +2236,62 @@ Definition NewS' : val :=
        "c" ::= "$c"
      }]))).
 
-Definition NewS : (go_string * go_string) := (pkg_name', "NewS"%go).
-
 (* go: structs.go:22:13 *)
-Definition S__readA' : val :=
-  rec: "S__readA'" "s" <> :=
+Definition S__readA : val :=
+  rec: "S__readA" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     return: (![uint64T] (struct.field_ref S "a" (![ptrT] "s")))).
 
 (* go: structs.go:26:13 *)
-Definition S__readB' : val :=
-  rec: "S__readB'" "s" <> :=
+Definition S__readB : val :=
+  rec: "S__readB" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     return: (![TwoInts] (struct.field_ref S "b" (![ptrT] "s")))).
 
 (* go: structs.go:30:12 *)
-Definition S__readBVal' : val :=
-  rec: "S__readBVal'" "s" <> :=
+Definition S__readBVal : val :=
+  rec: "S__readBVal" "s" <> :=
     exception_do (let: "s" := (ref_ty S "s") in
     return: (![TwoInts] (struct.field_ref S "b" "s"))).
 
 (* go: structs.go:34:13 *)
-Definition S__updateBValX' : val :=
-  rec: "S__updateBValX'" "s" "i" :=
+Definition S__updateBValX : val :=
+  rec: "S__updateBValX" "s" "i" :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     let: "i" := (ref_ty uint64T "i") in
     let: "$r0" := (![uint64T] "i") in
     do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "s"))) <-[uint64T] "$r0")).
 
 (* go: structs.go:38:13 *)
-Definition S__negateC' : val :=
-  rec: "S__negateC'" "s" <> :=
+Definition S__negateC : val :=
+  rec: "S__negateC" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     let: "$r0" := (~ (![boolT] (struct.field_ref S "c" (![ptrT] "s")))) in
     do:  ((struct.field_ref S "c" (![ptrT] "s")) <-[boolT] "$r0")).
 
 (* go: structs.go:42:6 *)
-Definition testStructUpdates' : val :=
-  rec: "testStructUpdates'" <> :=
+Definition testStructUpdates : val :=
+  rec: "testStructUpdates" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "ns" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((func_call NewS #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"NewS"%go) #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (((method_call S'ptr "readA" #() (![ptrT] "ns")) #()) = #(W64 2))) in
+    let: "$r0" := ((![boolT] "ok") && (((method_call #pkg_name' #"S'ptr" #"readA" #() (![ptrT] "ns")) #()) = #(W64 2))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "b1" := (ref_ty TwoInts (zero_val TwoInts)) in
-    let: "$r0" := ((method_call S'ptr "readB" #() (![ptrT] "ns")) #()) in
+    let: "$r0" := ((method_call #pkg_name' #"S'ptr" #"readB" #() (![ptrT] "ns")) #()) in
     do:  ("b1" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b1")) = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call S'ptr "negateC" #() (![ptrT] "ns")) #());;;
+    do:  ((method_call #pkg_name' #"S'ptr" #"negateC" #() (![ptrT] "ns")) #());;;
     let: "$r0" := ((![boolT] "ok") && ((![boolT] (struct.field_ref S "c" (![ptrT] "ns"))) = #false)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := #(W64 3) in
     do:  ((struct.field_ref TwoInts "x" "b1") <-[uint64T] "$r0");;;
     let: "b2" := (ref_ty TwoInts (zero_val TwoInts)) in
-    let: "$r0" := ((method_call S'ptr "readB" #() (![ptrT] "ns")) #()) in
+    let: "$r0" := ((method_call #pkg_name' #"S'ptr" #"readB" #() (![ptrT] "ns")) #()) in
     do:  ("b2" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b2")) = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -2535,27 +2301,25 @@ Definition testStructUpdates' : val :=
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (![ptrT] "b3"))) = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
     do:  (let: "$a0" := #(W64 4) in
-    (method_call S'ptr "updateBValX" #() (![ptrT] "ns")) "$a0");;;
-    let: "$r0" := ((![boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call S' "readBVal" #() (![S] (![ptrT] "ns"))) #())) = #(W64 4))) in
+    (method_call #pkg_name' #"S'ptr" #"updateBValX" #() (![ptrT] "ns")) "$a0");;;
+    let: "$r0" := ((![boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call #pkg_name' #"S" #"readBVal" "readBVal" #() (![S] (![ptrT] "ns"))) #())) = #(W64 4))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testStructUpdates : (go_string * go_string) := (pkg_name', "testStructUpdates"%go).
-
 (* go: structs.go:65:6 *)
-Definition testNestedStructUpdates' : val :=
-  rec: "testNestedStructUpdates'" <> :=
+Definition testNestedStructUpdates : val :=
+  rec: "testNestedStructUpdates" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "ns" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((func_call NewS #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"NewS"%go) #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
     do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns"))) <-[uint64T] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns")))) = #(W64 5))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((func_call NewS #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"NewS"%go) #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
     let: "p" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
@@ -2564,7 +2328,7 @@ Definition testNestedStructUpdates' : val :=
     do:  ((struct.field_ref TwoInts "x" (![ptrT] "p")) <-[uint64T] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns")))) = #(W64 5))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((func_call NewS #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"NewS"%go) #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
     let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
     do:  ("p" <-[ptrT] "$r0");;;
@@ -2572,7 +2336,7 @@ Definition testNestedStructUpdates' : val :=
     do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns"))) <-[uint64T] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (![ptrT] "p"))) = #(W64 5))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((func_call NewS #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"NewS"%go) #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
     let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
     do:  ("p" <-[ptrT] "$r0");;;
@@ -2582,11 +2346,9 @@ Definition testNestedStructUpdates' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testNestedStructUpdates : (go_string * go_string) := (pkg_name', "testNestedStructUpdates"%go).
-
 (* go: structs.go:90:6 *)
-Definition testStructConstructions' : val :=
-  rec: "testStructConstructions'" <> :=
+Definition testStructConstructions : val :=
+  rec: "testStructConstructions" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -2622,11 +2384,9 @@ Definition testStructConstructions' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testStructConstructions : (go_string * go_string) := (pkg_name', "testStructConstructions"%go).
-
 (* go: structs.go:109:6 *)
-Definition testIncompleteStruct' : val :=
-  rec: "testIncompleteStruct'" <> :=
+Definition testIncompleteStruct : val :=
+  rec: "testIncompleteStruct" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -2653,8 +2413,6 @@ Definition testIncompleteStruct' : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition testIncompleteStruct : (go_string * go_string) := (pkg_name', "testIncompleteStruct"%go).
-
 Definition StructWrap : go_type := structT [
   "i" :: uint64T
 ].
@@ -2662,8 +2420,8 @@ Definition StructWrap : go_type := structT [
 Definition StructWrap' : (go_string * go_string) := (pkg_name', "StructWrap"%go).
 
 (* go: structs.go:126:6 *)
-Definition testStoreInStructVar' : val :=
-  rec: "testStoreInStructVar'" <> :=
+Definition testStoreInStructVar : val :=
+  rec: "testStoreInStructVar" <> :=
     exception_do (let: "p" := (ref_ty StructWrap (zero_val StructWrap)) in
     let: "$r0" := (let: "$i" := #(W64 0) in
     struct.make StructWrap [{
@@ -2674,11 +2432,9 @@ Definition testStoreInStructVar' : val :=
     do:  ((struct.field_ref StructWrap "i" "p") <-[uint64T] "$r0");;;
     return: ((![uint64T] (struct.field_ref StructWrap "i" "p")) = #(W64 5))).
 
-Definition testStoreInStructVar : (go_string * go_string) := (pkg_name', "testStoreInStructVar"%go).
-
 (* go: structs.go:132:6 *)
-Definition testStoreInStructPointerVar' : val :=
-  rec: "testStoreInStructPointerVar'" <> :=
+Definition testStoreInStructPointerVar : val :=
+  rec: "testStoreInStructPointerVar" <> :=
     exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty StructWrap (zero_val StructWrap)) in
     do:  ("p" <-[ptrT] "$r0");;;
@@ -2686,11 +2442,9 @@ Definition testStoreInStructPointerVar' : val :=
     do:  ((struct.field_ref StructWrap "i" (![ptrT] "p")) <-[uint64T] "$r0");;;
     return: ((![uint64T] (struct.field_ref StructWrap "i" (![ptrT] "p"))) = #(W64 5))).
 
-Definition testStoreInStructPointerVar : (go_string * go_string) := (pkg_name', "testStoreInStructPointerVar"%go).
-
 (* go: structs.go:138:6 *)
-Definition testStoreComposite' : val :=
-  rec: "testStoreComposite'" <> :=
+Definition testStoreComposite : val :=
+  rec: "testStoreComposite" <> :=
     exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty TwoInts (zero_val TwoInts)) in
     do:  ("p" <-[ptrT] "$r0");;;
@@ -2703,11 +2457,9 @@ Definition testStoreComposite' : val :=
     do:  ((![ptrT] "p") <-[TwoInts] "$r0");;;
     return: ((![uint64T] (struct.field_ref TwoInts "y" (![ptrT] "p"))) = #(W64 4))).
 
-Definition testStoreComposite : (go_string * go_string) := (pkg_name', "testStoreComposite"%go).
-
 (* go: structs.go:144:6 *)
-Definition testStoreSlice' : val :=
-  rec: "testStoreSlice'" <> :=
+Definition testStoreSlice : val :=
+  rec: "testStoreSlice" <> :=
     exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty sliceT (zero_val sliceT)) in
     do:  ("p" <-[ptrT] "$r0");;;
@@ -2719,8 +2471,6 @@ Definition testStoreSlice' : val :=
     return: ((let: "$a0" := (![sliceT] (![ptrT] "p")) in
      slice.len "$a0") = #(W64 3))).
 
-Definition testStoreSlice : (go_string * go_string) := (pkg_name', "testStoreSlice"%go).
-
 Definition StructWithFunc : go_type := structT [
   "fn" :: funcT
 ].
@@ -2728,8 +2478,8 @@ Definition StructWithFunc : go_type := structT [
 Definition StructWithFunc' : (go_string * go_string) := (pkg_name', "StructWithFunc"%go).
 
 (* go: structs.go:155:6 *)
-Definition testStructFieldFunc' : val :=
-  rec: "testStructFieldFunc'" <> :=
+Definition testStructFieldFunc : val :=
+  rec: "testStructFieldFunc" <> :=
     exception_do (let: "a" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty StructWithFunc (zero_val StructWithFunc)) in
     do:  ("a" <-[ptrT] "$r0");;;
@@ -2741,11 +2491,9 @@ Definition testStructFieldFunc' : val :=
     return: ((let: "$a0" := #(W64 10) in
      (![funcT] (struct.field_ref StructWithFunc "fn" (![ptrT] "a"))) "$a0") = #(W64 20))).
 
-Definition testStructFieldFunc : (go_string * go_string) := (pkg_name', "testStructFieldFunc"%go).
-
 (* go: switch.go:3:6 *)
-Definition testSwitchVal' : val :=
-  rec: "testSwitchVal'" <> :=
+Definition testSwitchVal : val :=
+  rec: "testSwitchVal" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -2757,11 +2505,9 @@ Definition testSwitchVal' : val :=
       then return: (#false)
       else return: (#false)))).
 
-Definition testSwitchVal : (go_string * go_string) := (pkg_name', "testSwitchVal"%go).
-
 (* go: switch.go:15:6 *)
-Definition testSwitchMultiple' : val :=
-  rec: "testSwitchMultiple'" <> :=
+Definition testSwitchMultiple : val :=
+  rec: "testSwitchMultiple" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -2774,11 +2520,9 @@ Definition testSwitchMultiple' : val :=
       else #()));;;
     return: (#false)).
 
-Definition testSwitchMultiple : (go_string * go_string) := (pkg_name', "testSwitchMultiple"%go).
-
 (* go: switch.go:26:6 *)
-Definition testSwitchDefaultTrue' : val :=
-  rec: "testSwitchDefaultTrue'" <> :=
+Definition testSwitchDefaultTrue : val :=
+  rec: "testSwitchDefaultTrue" <> :=
     exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 1) in
     do:  ("x" <-[uint64T] "$r0");;;
@@ -2790,8 +2534,6 @@ Definition testSwitchDefaultTrue' : val :=
       then return: (#false)
       else return: (#true)))).
 
-Definition testSwitchDefaultTrue : (go_string * go_string) := (pkg_name', "testSwitchDefaultTrue"%go).
-
 Definition switchConcrete : go_type := structT [
 ].
 
@@ -2802,46 +2544,42 @@ Definition switchInterface : go_type := interfaceT.
 Definition switchInterface' : (go_string * go_string) := (pkg_name', "switchInterface"%go).
 
 (* go: switch.go:45:26 *)
-Definition switchConcrete__marker' : val :=
-  rec: "switchConcrete__marker'" "c" <> :=
+Definition switchConcrete__marker : val :=
+  rec: "switchConcrete__marker" "c" <> :=
     exception_do (let: "c" := (ref_ty ptrT "c") in
     do:  #()).
 
 (* go: switch.go:48:6 *)
-Definition testSwitchConversion' : val :=
-  rec: "testSwitchConversion'" <> :=
+Definition testSwitchConversion : val :=
+  rec: "testSwitchConversion" <> :=
     exception_do (let: "v" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty switchConcrete (struct.make switchConcrete [{
     }])) in
     do:  ("v" <-[ptrT] "$r0");;;
     let: "x" := (ref_ty switchInterface (zero_val switchInterface)) in
-    let: "$r0" := (interface.make switchConcrete'ptr (![ptrT] "v")) in
+    let: "$r0" := (interface.make #pkg_name' #"switchConcrete'ptr" (![ptrT] "v")) in
     do:  ("x" <-[switchInterface] "$r0");;;
     let: "$sw" := (![switchInterface] "x") in
-    (if: "$sw" = (interface.make switchConcrete'ptr (![ptrT] "v"))
+    (if: "$sw" = (interface.make #pkg_name' #"switchConcrete'ptr" (![ptrT] "v"))
     then do:  #()
     else return: (#false));;;
     let: "$sw" := (![ptrT] "v") in
-    (if: (interface.make switchConcrete'ptr "$sw") = (![switchInterface] "x")
+    (if: (interface.make #pkg_name' #"switchConcrete'ptr" "$sw") = (![switchInterface] "x")
     then do:  #()
     else return: (#false));;;
     return: (#true)).
 
-Definition testSwitchConversion : (go_string * go_string) := (pkg_name', "testSwitchConversion"%go).
-
 (* go: vars.go:3:6 *)
-Definition testPointerAssignment' : val :=
-  rec: "testPointerAssignment'" <> :=
+Definition testPointerAssignment : val :=
+  rec: "testPointerAssignment" <> :=
     exception_do (let: "x" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("x" <-[boolT] "$r0");;;
     return: (![boolT] "x")).
 
-Definition testPointerAssignment : (go_string * go_string) := (pkg_name', "testPointerAssignment"%go).
-
 (* go: vars.go:9:6 *)
-Definition testAddressOfLocal' : val :=
-  rec: "testAddressOfLocal'" <> :=
+Definition testAddressOfLocal : val :=
+  rec: "testAddressOfLocal" <> :=
     exception_do (let: "x" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #false in
     do:  ("x" <-[boolT] "$r0");;;
@@ -2852,16 +2590,12 @@ Definition testAddressOfLocal' : val :=
     do:  ((![ptrT] "xptr") <-[boolT] "$r0");;;
     return: ((![boolT] "x") && (![boolT] (![ptrT] "xptr")))).
 
-Definition testAddressOfLocal : (go_string * go_string) := (pkg_name', "testAddressOfLocal"%go).
-
 (* go: vars.go:16:6 *)
-Definition testAnonymousAssign' : val :=
-  rec: "testAnonymousAssign'" <> :=
+Definition testAnonymousAssign : val :=
+  rec: "testAnonymousAssign" <> :=
     exception_do (let: "$r0" := (#(W64 1) + #(W64 2)) in
     do:  "$r0";;;
     return: (#true)).
-
-Definition testAnonymousAssign : (go_string * go_string) := (pkg_name', "testAnonymousAssign"%go).
 
 (* 10 is completely arbitrary *)
 Definition MaxTxnWrites : expr := #(W64 10).
@@ -2878,45 +2612,41 @@ Definition Log : go_type := structT [
 Definition Log' : (go_string * go_string) := (pkg_name', "Log"%go).
 
 (* go: wal.go:25:6 *)
-Definition intToBlock' : val :=
-  rec: "intToBlock'" "a" :=
+Definition intToBlock : val :=
+  rec: "intToBlock" "a" :=
     exception_do (let: "a" := (ref_ty uint64T "a") in
     let: "b" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT disk.BlockSize) in
     do:  ("b" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := (![sliceT] "b") in
     let: "$a1" := (![uint64T] "a") in
-    (func_call primitive.UInt64Put #()) "$a0" "$a1");;;
+    (func_call #primitive.pkg_name' #"UInt64Put"%go) "$a0" "$a1");;;
     return: (![sliceT] "b")).
 
-Definition intToBlock : (go_string * go_string) := (pkg_name', "intToBlock"%go).
-
 (* go: wal.go:31:6 *)
-Definition blockToInt' : val :=
-  rec: "blockToInt'" "v" :=
+Definition blockToInt : val :=
+  rec: "blockToInt" "v" :=
     exception_do (let: "v" := (ref_ty sliceT "v") in
     let: "a" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "v") in
-    (func_call primitive.UInt64Get #()) "$a0") in
+    (func_call #primitive.pkg_name' #"UInt64Get"%go) "$a0") in
     do:  ("a" <-[uint64T] "$r0");;;
     return: (![uint64T] "a")).
-
-Definition blockToInt : (go_string * go_string) := (pkg_name', "blockToInt"%go).
 
 (* New initializes a fresh log
 
    go: wal.go:37:6 *)
-Definition New' : val :=
-  rec: "New'" <> :=
+Definition New : val :=
+  rec: "New" <> :=
     exception_do (let: "d" := (ref_ty disk.Disk (zero_val disk.Disk)) in
-    let: "$r0" := ((func_call disk.Get #()) #()) in
+    let: "$r0" := ((func_call #disk.pkg_name' #"Get"%go) #()) in
     do:  ("d" <-[disk.Disk] "$r0");;;
     let: "diskSize" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((interface.get "Size" (![disk.Disk] "d")) #()) in
     do:  ("diskSize" <-[uint64T] "$r0");;;
     (if: (![uint64T] "diskSize") ≤ logLength
     then
-      do:  (let: "$a0" := (interface.make string' #"disk is too small to host log"%go) in
+      do:  (let: "$a0" := (interface.make string #"disk is too small to host log"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "cache" := (ref_ty (mapT uint64T sliceT) (zero_val (mapT uint64T sliceT))) in
@@ -2924,7 +2654,7 @@ Definition New' : val :=
     do:  ("cache" <-[mapT uint64T sliceT] "$r0");;;
     let: "header" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call intToBlock #()) "$a0") in
+    (func_call #pkg_name' #"intToBlock"%go) "$a0") in
     do:  ("header" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![sliceT] "header") in
@@ -2948,38 +2678,36 @@ Definition New' : val :=
        "length" ::= "$length"
      }])).
 
-Definition New : (go_string * go_string) := (pkg_name', "New"%go).
-
 (* go: wal.go:52:14 *)
-Definition Log__lock' : val :=
-  rec: "Log__lock'" "l" <> :=
+Definition Log__lock : val :=
+  rec: "Log__lock" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call sync.Mutex'ptr "Lock" #() (![ptrT] (struct.field_ref Log "l" "l"))) #())).
+    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #() (![ptrT] (struct.field_ref Log "l" "l"))) #())).
 
 (* go: wal.go:56:14 *)
-Definition Log__unlock' : val :=
-  rec: "Log__unlock'" "l" <> :=
+Definition Log__unlock : val :=
+  rec: "Log__unlock" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call sync.Mutex'ptr "Unlock" #() (![ptrT] (struct.field_ref Log "l" "l"))) #())).
+    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #() (![ptrT] (struct.field_ref Log "l" "l"))) #())).
 
 (* BeginTxn allocates space for a new transaction in the log.
 
    Returns true if the allocation succeeded.
 
    go: wal.go:63:14 *)
-Definition Log__BeginTxn' : val :=
-  rec: "Log__BeginTxn'" "l" <> :=
+Definition Log__BeginTxn : val :=
+  rec: "Log__BeginTxn" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call Log' "lock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"lock" "lock" #() (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
     (if: (![uint64T] "length") = #(W64 0)
     then
-      do:  ((method_call Log' "unlock" #() (![Log] "l")) #());;;
+      do:  ((method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "l")) #());;;
       return: (#true)
     else do:  #());;;
-    do:  ((method_call Log' "unlock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "l")) #());;;
     return: (#false)).
 
 (* Read from the logical disk.
@@ -2987,11 +2715,11 @@ Definition Log__BeginTxn' : val :=
    Reads must go through the log to return committed but un-applied writes.
 
    go: wal.go:77:14 *)
-Definition Log__Read' : val :=
-  rec: "Log__Read'" "l" "a" :=
+Definition Log__Read : val :=
+  rec: "Log__Read" "l" "a" :=
     exception_do (let: "l" := (ref_ty Log "l") in
     let: "a" := (ref_ty uint64T "a") in
-    do:  ((method_call Log' "lock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"lock" "lock" #() (![Log] "l")) #());;;
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "v" := (ref_ty sliceT (zero_val sliceT)) in
     let: ("$ret0", "$ret1") := (map.get (![mapT uint64T sliceT] (struct.field_ref Log "cache" "l")) (![uint64T] "a")) in
@@ -3001,10 +2729,10 @@ Definition Log__Read' : val :=
     do:  ("ok" <-[boolT] "$r1");;;
     (if: ![boolT] "ok"
     then
-      do:  ((method_call Log' "unlock" #() (![Log] "l")) #());;;
+      do:  ((method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "l")) #());;;
       return: (![sliceT] "v")
     else do:  #());;;
-    do:  ((method_call Log' "unlock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "l")) #());;;
     let: "dv" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (logLength + (![uint64T] "a")) in
     (interface.get "Read" (![disk.Disk] (struct.field_ref Log "d" "l"))) "$a0") in
@@ -3012,8 +2740,8 @@ Definition Log__Read' : val :=
     return: (![sliceT] "dv")).
 
 (* go: wal.go:90:14 *)
-Definition Log__Size' : val :=
-  rec: "Log__Size'" "l" <> :=
+Definition Log__Size : val :=
+  rec: "Log__Size" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
     let: "sz" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((interface.get "Size" (![disk.Disk] (struct.field_ref Log "d" "l"))) #()) in
@@ -3023,23 +2751,23 @@ Definition Log__Size' : val :=
 (* Write to the disk through the log.
 
    go: wal.go:97:14 *)
-Definition Log__Write' : val :=
-  rec: "Log__Write'" "l" "a" "v" :=
+Definition Log__Write : val :=
+  rec: "Log__Write" "l" "a" "v" :=
     exception_do (let: "l" := (ref_ty Log "l") in
     let: "v" := (ref_ty sliceT "v") in
     let: "a" := (ref_ty uint64T "a") in
-    do:  ((method_call Log' "lock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"lock" "lock" #() (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
     (if: (![uint64T] "length") ≥ MaxTxnWrites
     then
-      do:  (let: "$a0" := (interface.make string' #"transaction is at capacity"%go) in
+      do:  (let: "$a0" := (interface.make string #"transaction is at capacity"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "aBlock" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "a") in
-    (func_call intToBlock #()) "$a0") in
+    (func_call #pkg_name' #"intToBlock"%go) "$a0") in
     do:  ("aBlock" <-[sliceT] "$r0");;;
     let: "nextAddr" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (#(W64 1) + (#(W64 2) * (![uint64T] "length"))) in
@@ -3054,30 +2782,30 @@ Definition Log__Write' : val :=
     do:  (map.insert (![mapT uint64T sliceT] (struct.field_ref Log "cache" "l")) (![uint64T] "a") "$r0");;;
     let: "$r0" := ((![uint64T] "length") + #(W64 1)) in
     do:  ((![ptrT] (struct.field_ref Log "length" "l")) <-[uint64T] "$r0");;;
-    do:  ((method_call Log' "unlock" #() (![Log] "l")) #())).
+    do:  ((method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "l")) #())).
 
 (* Commit the current transaction.
 
    go: wal.go:113:14 *)
-Definition Log__Commit' : val :=
-  rec: "Log__Commit'" "l" <> :=
+Definition Log__Commit : val :=
+  rec: "Log__Commit" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call Log' "lock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"lock" "lock" #() (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
-    do:  ((method_call Log' "unlock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "l")) #());;;
     let: "header" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "length") in
-    (func_call intToBlock #()) "$a0") in
+    (func_call #pkg_name' #"intToBlock"%go) "$a0") in
     do:  ("header" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![sliceT] "header") in
     (interface.get "Write" (![disk.Disk] (struct.field_ref Log "d" "l"))) "$a0" "$a1")).
 
 (* go: wal.go:122:6 *)
-Definition getLogEntry' : val :=
-  rec: "getLogEntry'" "d" "logOffset" :=
+Definition getLogEntry : val :=
+  rec: "getLogEntry" "d" "logOffset" :=
     exception_do (let: "logOffset" := (ref_ty uint64T "logOffset") in
     let: "d" := (ref_ty disk.Disk "d") in
     let: "diskAddr" := (ref_ty uint64T (zero_val uint64T)) in
@@ -3089,7 +2817,7 @@ Definition getLogEntry' : val :=
     do:  ("aBlock" <-[sliceT] "$r0");;;
     let: "a" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "aBlock") in
-    (func_call blockToInt #()) "$a0") in
+    (func_call #pkg_name' #"blockToInt"%go) "$a0") in
     do:  ("a" <-[uint64T] "$r0");;;
     let: "v" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := ((![uint64T] "diskAddr") + #(W64 1)) in
@@ -3097,13 +2825,11 @@ Definition getLogEntry' : val :=
     do:  ("v" <-[sliceT] "$r0");;;
     return: (![uint64T] "a", ![sliceT] "v")).
 
-Definition getLogEntry : (go_string * go_string) := (pkg_name', "getLogEntry"%go).
-
 (* applyLog assumes we are running sequentially
 
    go: wal.go:131:6 *)
-Definition applyLog' : val :=
-  rec: "applyLog'" "d" "length" :=
+Definition applyLog : val :=
+  rec: "applyLog" "d" "length" :=
     exception_do (let: "length" := (ref_ty uint64T "length") in
     let: "d" := (ref_ty disk.Disk "d") in
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
@@ -3116,7 +2842,7 @@ Definition applyLog' : val :=
         let: "a" := (ref_ty uint64T (zero_val uint64T)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![disk.Disk] "d") in
         let: "$a1" := (![uint64T] "i") in
-        (func_call getLogEntry #()) "$a0" "$a1") in
+        (func_call #pkg_name' #"getLogEntry"%go) "$a0" "$a1") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("a" <-[uint64T] "$r0");;;
@@ -3130,50 +2856,46 @@ Definition applyLog' : val :=
       else do:  #());;;
       break: #()))).
 
-Definition applyLog : (go_string * go_string) := (pkg_name', "applyLog"%go).
-
 (* go: wal.go:142:6 *)
-Definition clearLog' : val :=
-  rec: "clearLog'" "d" :=
+Definition clearLog : val :=
+  rec: "clearLog" "d" :=
     exception_do (let: "d" := (ref_ty disk.Disk "d") in
     let: "header" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call intToBlock #()) "$a0") in
+    (func_call #pkg_name' #"intToBlock"%go) "$a0") in
     do:  ("header" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![sliceT] "header") in
     (interface.get "Write" (![disk.Disk] "d")) "$a0" "$a1")).
-
-Definition clearLog : (go_string * go_string) := (pkg_name', "clearLog"%go).
 
 (* Apply all the committed transactions.
 
    Frees all the space in the log.
 
    go: wal.go:150:14 *)
-Definition Log__Apply' : val :=
-  rec: "Log__Apply'" "l" <> :=
+Definition Log__Apply : val :=
+  rec: "Log__Apply" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call Log' "lock" #() (![Log] "l")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"lock" "lock" #() (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (![disk.Disk] (struct.field_ref Log "d" "l")) in
     let: "$a1" := (![uint64T] "length") in
-    (func_call applyLog #()) "$a0" "$a1");;;
+    (func_call #pkg_name' #"applyLog"%go) "$a0" "$a1");;;
     do:  (let: "$a0" := (![disk.Disk] (struct.field_ref Log "d" "l")) in
-    (func_call clearLog #()) "$a0");;;
+    (func_call #pkg_name' #"clearLog"%go) "$a0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![ptrT] (struct.field_ref Log "length" "l")) <-[uint64T] "$r0");;;
-    do:  ((method_call Log' "unlock" #() (![Log] "l")) #())).
+    do:  ((method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "l")) #())).
 
 (* Open recovers the log following a crash or shutdown
 
    go: wal.go:163:6 *)
-Definition Open' : val :=
-  rec: "Open'" <> :=
+Definition Open : val :=
+  rec: "Open" <> :=
     exception_do (let: "d" := (ref_ty disk.Disk (zero_val disk.Disk)) in
-    let: "$r0" := ((func_call disk.Get #()) #()) in
+    let: "$r0" := ((func_call #disk.pkg_name' #"Get"%go) #()) in
     do:  ("d" <-[disk.Disk] "$r0");;;
     let: "header" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
@@ -3181,13 +2903,13 @@ Definition Open' : val :=
     do:  ("header" <-[sliceT] "$r0");;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "header") in
-    (func_call blockToInt #()) "$a0") in
+    (func_call #pkg_name' #"blockToInt"%go) "$a0") in
     do:  ("length" <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (![disk.Disk] "d") in
     let: "$a1" := (![uint64T] "length") in
-    (func_call applyLog #()) "$a0" "$a1");;;
+    (func_call #pkg_name' #"applyLog"%go) "$a0" "$a1");;;
     do:  (let: "$a0" := (![disk.Disk] "d") in
-    (func_call clearLog #()) "$a0");;;
+    (func_call #pkg_name' #"clearLog"%go) "$a0");;;
     let: "cache" := (ref_ty (mapT uint64T sliceT) (zero_val (mapT uint64T sliceT))) in
     let: "$r0" := (map.make uint64T sliceT #()) in
     do:  ("cache" <-[mapT uint64T sliceT] "$r0");;;
@@ -3210,74 +2932,70 @@ Definition Open' : val :=
        "length" ::= "$length"
      }])).
 
-Definition Open : (go_string * go_string) := (pkg_name', "Open"%go).
-
 (* disabled since performance is quite poor
 
    go: wal.go:178:6 *)
-Definition disabled_testWal' : val :=
-  rec: "disabled_testWal'" <> :=
+Definition disabled_testWal : val :=
+  rec: "disabled_testWal" <> :=
     exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "lg" := (ref_ty Log (zero_val Log)) in
-    let: "$r0" := ((func_call New #()) #()) in
+    let: "$r0" := ((func_call #pkg_name' #"New"%go) #()) in
     do:  ("lg" <-[Log] "$r0");;;
-    (if: (method_call Log' "BeginTxn" #() (![Log] "lg")) #()
+    (if: (method_call #pkg_name' #"Log" #"BeginTxn" "BeginTxn" #() (![Log] "lg")) #()
     then
       do:  (let: "$a0" := #(W64 2) in
       let: "$a1" := (let: "$a0" := #(W64 11) in
-      (func_call intToBlock #()) "$a0") in
-      (method_call Log' "Write" #() (![Log] "lg")) "$a0" "$a1")
+      (func_call #pkg_name' #"intToBlock"%go) "$a0") in
+      (method_call #pkg_name' #"Log" #"Write" "Write" #() (![Log] "lg")) "$a0" "$a1")
     else do:  #());;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 2) in
-    (method_call Log' "Read" #() (![Log] "lg")) "$a0") in
-    (func_call blockToInt #()) "$a0") = #(W64 11))) in
+    (method_call #pkg_name' #"Log" #"Read" "Read" #() (![Log] "lg")) "$a0") in
+    (func_call #pkg_name' #"blockToInt"%go) "$a0") = #(W64 11))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
     (interface.get "Read" (![disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
-    (func_call blockToInt #()) "$a0") = #(W64 0))) in
+    (func_call #pkg_name' #"blockToInt"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call Log' "Commit" #() (![Log] "lg")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"Commit" "Commit" #() (![Log] "lg")) #());;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
     (interface.get "Read" (![disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
-    (func_call blockToInt #()) "$a0") = #(W64 1))) in
+    (func_call #pkg_name' #"blockToInt"%go) "$a0") = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call Log' "Apply" #() (![Log] "lg")) #());;;
+    do:  ((method_call #pkg_name' #"Log" #"Apply" "Apply" #() (![Log] "lg")) #());;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (![ptrT] (struct.field_ref Log "length" "lg"))) = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition disabled_testWal : (go_string * go_string) := (pkg_name', "disabled_testWal"%go).
-
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("findKey"%go, findKey'); ("allocate"%go, allocate'); ("freeRange"%go, freeRange'); ("testAllocateDistinct"%go, testAllocateDistinct'); ("testAllocateFull"%go, testAllocateFull'); ("testExplicitBlockStmt"%go, testExplicitBlockStmt'); ("testMinUint64"%go, testMinUint64'); ("testMaxUint64"%go, testMaxUint64'); ("adder"%go, adder'); ("testClosureBasic"%go, testClosureBasic'); ("testCompareAll"%go, testCompareAll'); ("testCompareGT"%go, testCompareGT'); ("testCompareGE"%go, testCompareGE'); ("testCompareLT"%go, testCompareLT'); ("testCompareLE"%go, testCompareLE'); ("literalCast"%go, literalCast'); ("stringToByteSlice"%go, stringToByteSlice'); ("byteSliceToString"%go, byteSliceToString'); ("testByteSliceToString"%go, testByteSliceToString'); ("testCopySimple"%go, testCopySimple'); ("testCopyShorterDst"%go, testCopyShorterDst'); ("testCopyShorterSrc"%go, testCopyShorterSrc'); ("deferSimple"%go, deferSimple'); ("testDefer"%go, testDefer'); ("testDeferFuncLit"%go, testDeferFuncLit'); ("roundtripEncDec32"%go, roundtripEncDec32'); ("roundtripEncDec64"%go, roundtripEncDec64'); ("testEncDec32Simple"%go, testEncDec32Simple'); ("failing_testEncDec32"%go, failing_testEncDec32'); ("testEncDec64Simple"%go, testEncDec64Simple'); ("testEncDec64"%go, testEncDec64'); ("FirstClassFunction"%go, FirstClassFunction'); ("ApplyF"%go, ApplyF'); ("testFirstClassFunction"%go, testFirstClassFunction'); ("addFour64"%go, addFour64'); ("failing_testFunctionOrdering"%go, failing_testFunctionOrdering'); ("storeAndReturn"%go, storeAndReturn'); ("failing_testArgumentOrder"%go, failing_testArgumentOrder'); ("identity"%go, identity'); ("identity2"%go, identity2'); ("testGenericStructs"%go, testGenericStructs'); ("testU64ToU32"%go, testU64ToU32'); ("testU32Len"%go, testU32Len'); ("failing_testU32NewtypeLen"%go, failing_testU32NewtypeLen'); ("measureArea"%go, measureArea'); ("measureVolumePlusNM"%go, measureVolumePlusNM'); ("measureVolume"%go, measureVolume'); ("testBasicInterface"%go, testBasicInterface'); ("testAssignInterface"%go, testAssignInterface'); ("testMultipleInterface"%go, testMultipleInterface'); ("testBinaryExprInterface"%go, testBinaryExprInterface'); ("testIfStmtInterface"%go, testIfStmtInterface'); ("testsUseLocks"%go, testsUseLocks'); ("standardForLoop"%go, standardForLoop'); ("testStandardForLoop"%go, testStandardForLoop'); ("testForLoopWait"%go, testForLoopWait'); ("testBreakFromLoopWithContinue"%go, testBreakFromLoopWithContinue'); ("testBreakFromLoopNoContinue"%go, testBreakFromLoopNoContinue'); ("testBreakFromLoopNoContinueDouble"%go, testBreakFromLoopNoContinueDouble'); ("testBreakFromLoopForOnly"%go, testBreakFromLoopForOnly'); ("testBreakFromLoopAssignAndContinue"%go, testBreakFromLoopAssignAndContinue'); ("testNestedLoops"%go, testNestedLoops'); ("testNestedGoStyleLoops"%go, testNestedGoStyleLoops'); ("testNestedGoStyleLoopsNoComparison"%go, testNestedGoStyleLoopsNoComparison'); ("IterateMapKeys"%go, IterateMapKeys'); ("IterateMapValues"%go, IterateMapValues'); ("testIterateMap"%go, testIterateMap'); ("testMapSize"%go, testMapSize'); ("multReturnTwo"%go, multReturnTwo'); ("testAssignTwo"%go, testAssignTwo'); ("multReturnThree"%go, multReturnThree'); ("testAssignThree"%go, testAssignThree'); ("testMultipleAssignToMap"%go, testMultipleAssignToMap'); ("returnTwo"%go, returnTwo'); ("testReturnTwo"%go, testReturnTwo'); ("testAnonymousBinding"%go, testAnonymousBinding'); ("returnThree"%go, returnThree'); ("testReturnThree"%go, testReturnThree'); ("returnFour"%go, returnFour'); ("testReturnFour"%go, testReturnFour'); ("failing_testCompareSliceToNil"%go, failing_testCompareSliceToNil'); ("testComparePointerToNil"%go, testComparePointerToNil'); ("testCompareNilToNil"%go, testCompareNilToNil'); ("testComparePointerWrappedToNil"%go, testComparePointerWrappedToNil'); ("testComparePointerWrappedDefaultToNil"%go, testComparePointerWrappedDefaultToNil'); ("reverseAssignOps64"%go, reverseAssignOps64'); ("reverseAssignOps32"%go, reverseAssignOps32'); ("add64Equals"%go, add64Equals'); ("sub64Equals"%go, sub64Equals'); ("testReverseAssignOps64"%go, testReverseAssignOps64'); ("failing_testReverseAssignOps32"%go, failing_testReverseAssignOps32'); ("testAdd64Equals"%go, testAdd64Equals'); ("testSub64Equals"%go, testSub64Equals'); ("testDivisionPrecedence"%go, testDivisionPrecedence'); ("testModPrecedence"%go, testModPrecedence'); ("testBitwiseOpsPrecedence"%go, testBitwiseOpsPrecedence'); ("testArithmeticShifts"%go, testArithmeticShifts'); ("testBitAddAnd"%go, testBitAddAnd'); ("testManyParentheses"%go, testManyParentheses'); ("testPlusTimes"%go, testPlusTimes'); ("testOrCompareSimple"%go, testOrCompareSimple'); ("testOrCompare"%go, testOrCompare'); ("testAndCompare"%go, testAndCompare'); ("testShiftMod"%go, testShiftMod'); ("testLinearize"%go, testLinearize'); ("CheckTrue"%go, CheckTrue'); ("CheckFalse"%go, CheckFalse'); ("testShortcircuitAndTF"%go, testShortcircuitAndTF'); ("testShortcircuitAndFT"%go, testShortcircuitAndFT'); ("testShortcircuitOrTF"%go, testShortcircuitOrTF'); ("testShortcircuitOrFT"%go, testShortcircuitOrFT'); ("testSliceOps"%go, testSliceOps'); ("testSliceCapacityOps"%go, testSliceCapacityOps'); ("testOverwriteArray"%go, testOverwriteArray'); ("testSliceLiteral"%go, testSliceLiteral'); ("testFooBarMutation"%go, testFooBarMutation'); ("NewS"%go, NewS'); ("testStructUpdates"%go, testStructUpdates'); ("testNestedStructUpdates"%go, testNestedStructUpdates'); ("testStructConstructions"%go, testStructConstructions'); ("testIncompleteStruct"%go, testIncompleteStruct'); ("testStoreInStructVar"%go, testStoreInStructVar'); ("testStoreInStructPointerVar"%go, testStoreInStructPointerVar'); ("testStoreComposite"%go, testStoreComposite'); ("testStoreSlice"%go, testStoreSlice'); ("testStructFieldFunc"%go, testStructFieldFunc'); ("testSwitchVal"%go, testSwitchVal'); ("testSwitchMultiple"%go, testSwitchMultiple'); ("testSwitchDefaultTrue"%go, testSwitchDefaultTrue'); ("testSwitchConversion"%go, testSwitchConversion'); ("testPointerAssignment"%go, testPointerAssignment'); ("testAddressOfLocal"%go, testAddressOfLocal'); ("testAnonymousAssign"%go, testAnonymousAssign'); ("intToBlock"%go, intToBlock'); ("blockToInt"%go, blockToInt'); ("New"%go, New'); ("getLogEntry"%go, getLogEntry'); ("applyLog"%go, applyLog'); ("clearLog"%go, clearLog'); ("Open"%go, Open'); ("disabled_testWal"%go, disabled_testWal')].
+Definition functions' : list (go_string * val) := [("findKey"%go, findKey); ("allocate"%go, allocate); ("freeRange"%go, freeRange); ("testAllocateDistinct"%go, testAllocateDistinct); ("testAllocateFull"%go, testAllocateFull); ("testExplicitBlockStmt"%go, testExplicitBlockStmt); ("testMinUint64"%go, testMinUint64); ("testMaxUint64"%go, testMaxUint64); ("adder"%go, adder); ("testClosureBasic"%go, testClosureBasic); ("testCompareAll"%go, testCompareAll); ("testCompareGT"%go, testCompareGT); ("testCompareGE"%go, testCompareGE); ("testCompareLT"%go, testCompareLT); ("testCompareLE"%go, testCompareLE); ("literalCast"%go, literalCast); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("testByteSliceToString"%go, testByteSliceToString); ("testCopySimple"%go, testCopySimple); ("testCopyShorterDst"%go, testCopyShorterDst); ("testCopyShorterSrc"%go, testCopyShorterSrc); ("deferSimple"%go, deferSimple); ("testDefer"%go, testDefer); ("testDeferFuncLit"%go, testDeferFuncLit); ("roundtripEncDec32"%go, roundtripEncDec32); ("roundtripEncDec64"%go, roundtripEncDec64); ("testEncDec32Simple"%go, testEncDec32Simple); ("failing_testEncDec32"%go, failing_testEncDec32); ("testEncDec64Simple"%go, testEncDec64Simple); ("testEncDec64"%go, testEncDec64); ("FirstClassFunction"%go, FirstClassFunction); ("ApplyF"%go, ApplyF); ("testFirstClassFunction"%go, testFirstClassFunction); ("addFour64"%go, addFour64); ("failing_testFunctionOrdering"%go, failing_testFunctionOrdering); ("storeAndReturn"%go, storeAndReturn); ("failing_testArgumentOrder"%go, failing_testArgumentOrder); ("identity"%go, identity); ("identity2"%go, identity2); ("testGenericStructs"%go, testGenericStructs); ("testU64ToU32"%go, testU64ToU32); ("testU32Len"%go, testU32Len); ("failing_testU32NewtypeLen"%go, failing_testU32NewtypeLen); ("measureArea"%go, measureArea); ("measureVolumePlusNM"%go, measureVolumePlusNM); ("measureVolume"%go, measureVolume); ("testBasicInterface"%go, testBasicInterface); ("testAssignInterface"%go, testAssignInterface); ("testMultipleInterface"%go, testMultipleInterface); ("testBinaryExprInterface"%go, testBinaryExprInterface); ("testIfStmtInterface"%go, testIfStmtInterface); ("testsUseLocks"%go, testsUseLocks); ("standardForLoop"%go, standardForLoop); ("testStandardForLoop"%go, testStandardForLoop); ("testForLoopWait"%go, testForLoopWait); ("testBreakFromLoopWithContinue"%go, testBreakFromLoopWithContinue); ("testBreakFromLoopNoContinue"%go, testBreakFromLoopNoContinue); ("testBreakFromLoopNoContinueDouble"%go, testBreakFromLoopNoContinueDouble); ("testBreakFromLoopForOnly"%go, testBreakFromLoopForOnly); ("testBreakFromLoopAssignAndContinue"%go, testBreakFromLoopAssignAndContinue); ("testNestedLoops"%go, testNestedLoops); ("testNestedGoStyleLoops"%go, testNestedGoStyleLoops); ("testNestedGoStyleLoopsNoComparison"%go, testNestedGoStyleLoopsNoComparison); ("IterateMapKeys"%go, IterateMapKeys); ("IterateMapValues"%go, IterateMapValues); ("testIterateMap"%go, testIterateMap); ("testMapSize"%go, testMapSize); ("multReturnTwo"%go, multReturnTwo); ("testAssignTwo"%go, testAssignTwo); ("multReturnThree"%go, multReturnThree); ("testAssignThree"%go, testAssignThree); ("testMultipleAssignToMap"%go, testMultipleAssignToMap); ("returnTwo"%go, returnTwo); ("testReturnTwo"%go, testReturnTwo); ("testAnonymousBinding"%go, testAnonymousBinding); ("returnThree"%go, returnThree); ("testReturnThree"%go, testReturnThree); ("returnFour"%go, returnFour); ("testReturnFour"%go, testReturnFour); ("failing_testCompareSliceToNil"%go, failing_testCompareSliceToNil); ("testComparePointerToNil"%go, testComparePointerToNil); ("testCompareNilToNil"%go, testCompareNilToNil); ("testComparePointerWrappedToNil"%go, testComparePointerWrappedToNil); ("testComparePointerWrappedDefaultToNil"%go, testComparePointerWrappedDefaultToNil); ("reverseAssignOps64"%go, reverseAssignOps64); ("reverseAssignOps32"%go, reverseAssignOps32); ("add64Equals"%go, add64Equals); ("sub64Equals"%go, sub64Equals); ("testReverseAssignOps64"%go, testReverseAssignOps64); ("failing_testReverseAssignOps32"%go, failing_testReverseAssignOps32); ("testAdd64Equals"%go, testAdd64Equals); ("testSub64Equals"%go, testSub64Equals); ("testDivisionPrecedence"%go, testDivisionPrecedence); ("testModPrecedence"%go, testModPrecedence); ("testBitwiseOpsPrecedence"%go, testBitwiseOpsPrecedence); ("testArithmeticShifts"%go, testArithmeticShifts); ("testBitAddAnd"%go, testBitAddAnd); ("testManyParentheses"%go, testManyParentheses); ("testPlusTimes"%go, testPlusTimes); ("testOrCompareSimple"%go, testOrCompareSimple); ("testOrCompare"%go, testOrCompare); ("testAndCompare"%go, testAndCompare); ("testShiftMod"%go, testShiftMod); ("testLinearize"%go, testLinearize); ("CheckTrue"%go, CheckTrue); ("CheckFalse"%go, CheckFalse); ("testShortcircuitAndTF"%go, testShortcircuitAndTF); ("testShortcircuitAndFT"%go, testShortcircuitAndFT); ("testShortcircuitOrTF"%go, testShortcircuitOrTF); ("testShortcircuitOrFT"%go, testShortcircuitOrFT); ("testSliceOps"%go, testSliceOps); ("testSliceCapacityOps"%go, testSliceCapacityOps); ("testOverwriteArray"%go, testOverwriteArray); ("testSliceLiteral"%go, testSliceLiteral); ("testFooBarMutation"%go, testFooBarMutation); ("NewS"%go, NewS); ("testStructUpdates"%go, testStructUpdates); ("testNestedStructUpdates"%go, testNestedStructUpdates); ("testStructConstructions"%go, testStructConstructions); ("testIncompleteStruct"%go, testIncompleteStruct); ("testStoreInStructVar"%go, testStoreInStructVar); ("testStoreInStructPointerVar"%go, testStoreInStructPointerVar); ("testStoreComposite"%go, testStoreComposite); ("testStoreSlice"%go, testStoreSlice); ("testStructFieldFunc"%go, testStructFieldFunc); ("testSwitchVal"%go, testSwitchVal); ("testSwitchMultiple"%go, testSwitchMultiple); ("testSwitchDefaultTrue"%go, testSwitchDefaultTrue); ("testSwitchConversion"%go, testSwitchConversion); ("testPointerAssignment"%go, testPointerAssignment); ("testAddressOfLocal"%go, testAddressOfLocal); ("testAnonymousAssign"%go, testAnonymousAssign); ("intToBlock"%go, intToBlock); ("blockToInt"%go, blockToInt); ("New"%go, New); ("getLogEntry"%go, getLogEntry); ("applyLog"%go, applyLog); ("clearLog"%go, clearLog); ("Open"%go, Open); ("disabled_testWal"%go, disabled_testWal)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("unit"%go, []); ("unit'ptr"%go, []); ("Enc"%go, []); ("Enc'ptr"%go, [("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("consume"%go, Dec__consume)]); ("Editor"%go, []); ("Editor'ptr"%go, [("AdvanceReturn"%go, Editor__AdvanceReturn)]); ("Pair"%go, []); ("Pair'ptr"%go, []); ("genericStruct"%go, []); ("genericStruct'ptr"%go, []); ("genericStruct2"%go, []); ("genericStruct2'ptr"%go, []); ("nonGenericStruct"%go, []); ("nonGenericStruct'ptr"%go, []); ("IntMap"%go, []); ("IntMap'ptr"%go, []); ("Uint32"%go, []); ("Uint32'ptr"%go, []); ("SquareStruct"%go, [("Square"%go, SquareStruct__Square); ("Volume"%go, SquareStruct__Volume)]); ("SquareStruct'ptr"%go, [("Square"%go, (λ: "$recvAddr",
-                 method_call SquareStruct' "Square" #() (![SquareStruct] "$recvAddr")
+                 method_call #pkg_name' #"SquareStruct" #"Square" "Square" #() (![SquareStruct] "$recvAddr")
                  )); ("Volume"%go, (λ: "$recvAddr",
-                 method_call SquareStruct' "Volume" #() (![SquareStruct] "$recvAddr")
+                 method_call #pkg_name' #"SquareStruct" #"Volume" "Volume" #() (![SquareStruct] "$recvAddr")
                  ))]); ("LoopStruct"%go, [("forLoopWait"%go, LoopStruct__forLoopWait)]); ("LoopStruct'ptr"%go, [("forLoopWait"%go, (λ: "$recvAddr",
-                 method_call LoopStruct' "forLoopWait" #() (![LoopStruct] "$recvAddr")
+                 method_call #pkg_name' #"LoopStruct" #"forLoopWait" "forLoopWait" #() (![LoopStruct] "$recvAddr")
                  ))]); ("BoolTest"%go, []); ("BoolTest'ptr"%go, []); ("ArrayEditor"%go, []); ("ArrayEditor'ptr"%go, [("Advance"%go, ArrayEditor__Advance)]); ("Bar"%go, []); ("Bar'ptr"%go, [("mutate"%go, Bar__mutate)]); ("Foo"%go, []); ("Foo'ptr"%go, [("mutateBar"%go, Foo__mutateBar)]); ("TwoInts"%go, []); ("TwoInts'ptr"%go, []); ("S"%go, [("readBVal"%go, S__readBVal)]); ("S'ptr"%go, [("negateC"%go, S__negateC); ("readA"%go, S__readA); ("readB"%go, S__readB); ("readBVal"%go, (λ: "$recvAddr",
-                 method_call S' "readBVal" #() (![S] "$recvAddr")
+                 method_call #pkg_name' #"S" #"readBVal" "readBVal" #() (![S] "$recvAddr")
                  )); ("updateBValX"%go, S__updateBValX)]); ("StructWrap"%go, []); ("StructWrap'ptr"%go, []); ("StructWithFunc"%go, []); ("StructWithFunc'ptr"%go, []); ("switchConcrete"%go, []); ("switchConcrete'ptr"%go, [("marker"%go, switchConcrete__marker)]); ("Log"%go, [("Apply"%go, Log__Apply); ("BeginTxn"%go, Log__BeginTxn); ("Commit"%go, Log__Commit); ("Read"%go, Log__Read); ("Size"%go, Log__Size); ("Write"%go, Log__Write); ("lock"%go, Log__lock); ("unlock"%go, Log__unlock)]); ("Log'ptr"%go, [("Apply"%go, (λ: "$recvAddr",
-                 method_call Log' "Apply" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"Apply" "Apply" #() (![Log] "$recvAddr")
                  )); ("BeginTxn"%go, (λ: "$recvAddr",
-                 method_call Log' "BeginTxn" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"BeginTxn" "BeginTxn" #() (![Log] "$recvAddr")
                  )); ("Commit"%go, (λ: "$recvAddr",
-                 method_call Log' "Commit" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"Commit" "Commit" #() (![Log] "$recvAddr")
                  )); ("Read"%go, (λ: "$recvAddr",
-                 method_call Log' "Read" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"Read" "Read" #() (![Log] "$recvAddr")
                  )); ("Size"%go, (λ: "$recvAddr",
-                 method_call Log' "Size" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"Size" "Size" #() (![Log] "$recvAddr")
                  )); ("Write"%go, (λ: "$recvAddr",
-                 method_call Log' "Write" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"Write" "Write" #() (![Log] "$recvAddr")
                  )); ("lock"%go, (λ: "$recvAddr",
-                 method_call Log' "lock" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"lock" "lock" #() (![Log] "$recvAddr")
                  )); ("unlock"%go, (λ: "$recvAddr",
-                 method_call Log' "unlock" #() (![Log] "$recvAddr")
+                 method_call #pkg_name' #"Log" #"unlock" "unlock" #() (![Log] "$recvAddr")
                  ))])].
 
 Definition initialize' : val :=

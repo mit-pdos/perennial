@@ -44,7 +44,7 @@ Admitted.
 
 Instance wp_struct_make_Entry `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term Index Type' Data:
   PureWp True
-    (struct.make Entry (struct.fields_val [
+    (struct.make Entry (alist_val [
       "Term" ::= #Term;
       "Index" ::= #Index;
       "Type" ::= #Type';
@@ -97,7 +97,7 @@ Admitted.
 
 Instance wp_struct_make_ConfState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters Learners VotersOutgoing LearnersNext AutoLeave:
   PureWp True
-    (struct.make ConfState (struct.fields_val [
+    (struct.make ConfState (alist_val [
       "Voters" ::= #Voters;
       "Learners" ::= #Learners;
       "VotersOutgoing" ::= #VotersOutgoing;
@@ -143,7 +143,7 @@ Admitted.
 
 Instance wp_struct_make_SnapshotMetadata `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ConfState Index Term:
   PureWp True
-    (struct.make SnapshotMetadata (struct.fields_val [
+    (struct.make SnapshotMetadata (alist_val [
       "ConfState" ::= #ConfState;
       "Index" ::= #Index;
       "Term" ::= #Term
@@ -183,7 +183,7 @@ Admitted.
 
 Instance wp_struct_make_Snapshot `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Data Metadata:
   PureWp True
-    (struct.make Snapshot (struct.fields_val [
+    (struct.make Snapshot (alist_val [
       "Data" ::= #Data;
       "Metadata" ::= #Metadata
     ]))%V 
@@ -270,7 +270,7 @@ Admitted.
 
 Instance wp_struct_make_Message `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' To From Term LogTerm Index Entries Commit Vote Snapshot Reject RejectHint Context Responses:
   PureWp True
-    (struct.make Message (struct.fields_val [
+    (struct.make Message (alist_val [
       "Type" ::= #Type';
       "To" ::= #To;
       "From" ::= #From;
@@ -325,7 +325,7 @@ Admitted.
 
 Instance wp_struct_make_HardState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term Vote Commit:
   PureWp True
-    (struct.make HardState (struct.fields_val [
+    (struct.make HardState (alist_val [
       "Term" ::= #Term;
       "Vote" ::= #Vote;
       "Commit" ::= #Commit
@@ -373,7 +373,7 @@ Admitted.
 
 Instance wp_struct_make_ConfChange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' NodeID Context ID:
   PureWp True
-    (struct.make ConfChange (struct.fields_val [
+    (struct.make ConfChange (alist_val [
       "Type" ::= #Type';
       "NodeID" ::= #NodeID;
       "Context" ::= #Context;
@@ -414,7 +414,7 @@ Admitted.
 
 Instance wp_struct_make_ConfChangeSingle `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' NodeID:
   PureWp True
-    (struct.make ConfChangeSingle (struct.fields_val [
+    (struct.make ConfChangeSingle (alist_val [
       "Type" ::= #Type';
       "NodeID" ::= #NodeID
     ]))%V 
@@ -457,7 +457,7 @@ Admitted.
 
 Instance wp_struct_make_ConfChangeV2 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Transition Changes Context:
   PureWp True
-    (struct.make ConfChangeV2 (struct.fields_val [
+    (struct.make ConfChangeV2 (alist_val [
       "Transition" ::= #Transition;
       "Changes" ::= #Changes;
       "Context" ::= #Context

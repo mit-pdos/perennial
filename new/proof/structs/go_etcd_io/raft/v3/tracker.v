@@ -36,7 +36,7 @@ Admitted.
 
 Instance wp_struct_make_inflight `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} index bytes:
   PureWp True
-    (struct.make inflight (struct.fields_val [
+    (struct.make inflight (alist_val [
       "index" ::= #index;
       "bytes" ::= #bytes
     ]))%V 
@@ -91,7 +91,7 @@ Admitted.
 
 Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} start count bytes size maxBytes buffer:
   PureWp True
-    (struct.make Inflights (struct.fields_val [
+    (struct.make Inflights (alist_val [
       "start" ::= #start;
       "count" ::= #count;
       "bytes" ::= #bytes;
@@ -162,7 +162,7 @@ Admitted.
 
 Instance wp_struct_make_Progress `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Match Next sentCommit State PendingSnapshot RecentActive MsgAppFlowPaused Inflights IsLearner:
   PureWp True
-    (struct.make Progress (struct.fields_val [
+    (struct.make Progress (alist_val [
       "Match" ::= #Match;
       "Next" ::= #Next;
       "sentCommit" ::= #sentCommit;
@@ -216,7 +216,7 @@ Admitted.
 
 Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters AutoLeave Learners LearnersNext:
   PureWp True
-    (struct.make Config (struct.fields_val [
+    (struct.make Config (alist_val [
       "Voters" ::= #Voters;
       "AutoLeave" ::= #AutoLeave;
       "Learners" ::= #Learners;
@@ -269,7 +269,7 @@ Admitted.
 
 Instance wp_struct_make_ProgressTracker `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Config Progress Votes MaxInflight MaxInflightBytes:
   PureWp True
-    (struct.make ProgressTracker (struct.fields_val [
+    (struct.make ProgressTracker (alist_val [
       "Config" ::= #Config;
       "Progress" ::= #Progress;
       "Votes" ::= #Votes;

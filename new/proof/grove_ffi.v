@@ -28,7 +28,7 @@ Global Instance into_val_ConnectRet `{ffi_syntax} : IntoVal ConnectRet.t :=
 Instance wp_struct_make_ConnectRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   err conn :
   PureWp True
-  (struct.make ConnectRet (struct.fields_val [("Err" ::= #err)%V; ("Connection" ::= #conn)%V]))
+  (struct.make ConnectRet (alist_val [("Err" ::= #err)%V; ("Connection" ::= #conn)%V]))
   #(ConnectRet.mk err conn).
 Proof.
   pose proof wp_struct_make.
@@ -58,7 +58,7 @@ Global Instance into_val_ReceiveRet `{ffi_syntax} : IntoVal ReceiveRet.t :=
 Instance wp_struct_make_ReceiveRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   err data :
   PureWp True
-  (struct.make ReceiveRet (struct.fields_val [("Err" ::= #err)%V; ("Data" ::= #data)%V]))
+  (struct.make ReceiveRet (alist_val [("Err" ::= #err)%V; ("Data" ::= #data)%V]))
   #(ReceiveRet.mk err data).
 Proof.
   pose proof wp_struct_make.

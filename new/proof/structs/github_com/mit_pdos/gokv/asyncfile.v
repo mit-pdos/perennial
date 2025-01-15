@@ -68,7 +68,7 @@ Admitted.
 
 Instance wp_struct_make_AsyncFile `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu data filename index indexCond durableIndex durableIndexCond closeRequested closed closedCond:
   PureWp True
-    (struct.make AsyncFile (struct.fields_val [
+    (struct.make AsyncFile (alist_val [
       "mu" ::= #mu;
       "data" ::= #data;
       "filename" ::= #filename;

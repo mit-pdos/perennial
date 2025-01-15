@@ -5,12 +5,14 @@ Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition get : val :=
+Definition get_def : val :=
   λ: "method_name" "v",
     let: ("pkg_type_name", "val") := globals.unwrap "v" in
     let: ("pkg_name", "type_name") := globals.unwrap "pkg_type_name" in
     method_call "pkg_name" "type_name" "method_name" "val"
 .
+Program Definition get := unseal (_:seal (@get_def)). Obligation 1. by eexists. Qed.
+Definition get_unseal : get = _ := seal_eq _.
 
 Local Definition make_def : val :=
   λ: "pkg_name" "type_name" "v", InjR (InjR ("pkg_name", "type_name"), "v").

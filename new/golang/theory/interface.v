@@ -11,7 +11,7 @@ Global Instance wp_interface_get (i : interface.t) (method : go_string) pkg_name
     (method_call #pkg_name #type_name #method i.(interface.v)).
 Proof.
   iIntros (?????) "Hwp".
-  rewrite [in #i]to_val_unseal.
+  rewrite [in #i]to_val_unseal interface.get_unseal.
   wp_call_lc "?". rewrite H.
   wp_pures. by iApply "Hwp".
 Qed.
