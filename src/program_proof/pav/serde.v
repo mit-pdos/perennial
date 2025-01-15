@@ -20,9 +20,23 @@ Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_Dig,
-  "Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"] #obj.(Epoch) ∗
-  "Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"] (slice_val sl_Dig) ∗
+  "Hptr_Epoch" ∷ ptr ↦[PreSigDig :: "Epoch"] #obj.(Epoch) ∗
+  "Hptr_Dig" ∷ ptr ↦[PreSigDig :: "Dig"] (slice_val sl_Dig) ∗
   "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig).
+
+Lemma wp_enc obj sl_enc (enc : list w8) ptr :
+  {{{
+    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}
+  PreSigDigEncode (slice_val sl_enc) #ptr
+  {{{
+    sl_enc', RET (slice_val sl_enc');
+    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}.
+Proof. Admitted.
+
 End defs.
 End PreSigDig.
 
@@ -179,13 +193,13 @@ Record t : Type :=
 Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ (updates_mref : loc) (updatesM : gmap byte_string (Slice.t)) sig_sl,
-    "HUpdates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
-    "HSig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sig_sl) ∗
+  ∃ (updates_mref : loc) (updatesM : gmap byte_string (Slice.t)) sl_sig,
+    "Hptr_updates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
+    "Hptr_sig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sl_sig) ∗
     "#HUpdatesM" ∷ own_map updates_mref DfracDiscarded updatesM ∗
     "#HUpdatesMSl" ∷ ([∗ map] k ↦ sl; upd ∈ updatesM; obj.(Updates),
                        own_slice_small sl byteT DfracDiscarded upd) ∗
-    "#HSigSl" ∷ own_slice_small sig_sl byteT DfracDiscarded obj.(Sig)
+    "#Hsl_sig" ∷ own_slice_small sl_sig byteT DfracDiscarded obj.(Sig)
 .
 
 End defs.
