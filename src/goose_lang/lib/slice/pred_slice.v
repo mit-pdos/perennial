@@ -55,6 +55,36 @@ Proof.
   + rewrite fmap_cons. rewrite IHvs. done.
 Qed.
 
+Definition own_val {X:Type} {I:IntoVal X} (v: val) (x: X) (dq: dfrac) : iProp Σ :=
+  ⌜v = to_val x⌝.
+
+Lemma big_sepL2_own_val {X:Type} {I:IntoVal X} (dq: dfrac) :
+  ∀ (xs:list X) (vs:list val),
+  big_sepL2 (λ k v x, own_val v x dq) vs xs -∗ ⌜vs = list.untype xs⌝.
+Proof.
+  iIntros (xs).
+  iInduction xs as [|x].
+  + iIntros (vs) "Hsep". unfold list.untype, own_val.
+    iDestruct (big_sepL2_nil_inv_r with "Hsep") as "%Hvs".
+    rewrite Hvs. done.
+  + iIntros (vs).
+    destruct (vs) as [|v].
+  - iIntros "Hsep".
+    iDestruct (big_sepL2_nil_inv_l with "Hsep") as "%Hnil".
+    discriminate Hnil.
+  - iIntros "Hsep".
+    iDestruct (big_sepL2_cons with "Hsep") as "[Hhead Hsep]".
+    iPoseProof ("IHxs" with "Hsep") as "IH".
+    unfold list.untype, own_val.
+    iDestruct "Hhead" as "%Hhead".
+    iDestruct "IH" as "%IH".
+    iPureIntro.
+    rewrite fmap_cons.
+    rewrite Hhead.
+    rewrite IH.
+    reflexivity.
+Qed.    
+    
 Definition is_pred_slice s t q l: iProp Σ :=
   ∃ (vs: list val), typed_slice.own_slice_small s t q vs ∗
                   [∗ list] v;x ∈ vs;l, Ψ v x q.
