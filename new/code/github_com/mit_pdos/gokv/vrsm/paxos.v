@@ -565,13 +565,13 @@ Definition Server__enterNewEpoch : val :=
 Definition Server__TryBecomeLeader : val :=
   rec: "Server__TryBecomeLeader" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"started trybecomeleader"%go) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"started trybecomeleader"%go) in
     slice.literal interfaceT ["$sl0"])) in
     (func_call #log.pkg_name' #"Println"%go) "$a0");;;
     do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #() (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
     (if: ![boolT] (struct.field_ref paxosState "isLeader" (![ptrT] (struct.field_ref Server "ps" (![ptrT] "s"))))
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"already leader"%go) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"already leader"%go) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call #log.pkg_name' #"Println"%go) "$a0");;;
       do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #() (![ptrT] (struct.field_ref Server "mu" (![ptrT] "s")))) #());;;
@@ -664,7 +664,7 @@ Definition Server__TryBecomeLeader : val :=
         then
           do:  (let: "$a0" := #"succeeded becomeleader in epoch %d
           "%go in
-          let: "$a1" := ((let: "$sl0" := (interface.make uint64 (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args")))) in
+          let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args")))) in
           slice.literal interfaceT ["$sl0"])) in
           (func_call #log.pkg_name' #"Printf"%go) "$a0" "$a1");;;
           let: "$r0" := (![uint64T] (struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "args"))) in
@@ -683,7 +683,7 @@ Definition Server__TryBecomeLeader : val :=
       do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #() (![ptrT] "mu")) #())
     else
       do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #() (![ptrT] "mu")) #());;;
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"failed becomeleader"%go) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"failed becomeleader"%go) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call #log.pkg_name' #"Println"%go) "$a0"))).
 

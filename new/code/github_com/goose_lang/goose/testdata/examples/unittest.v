@@ -140,9 +140,9 @@ Definition chanSelect : val :=
     let: "i2" := (ref_ty intT (zero_val intT)) in
     let: "i1" := (ref_ty intT (zero_val intT)) in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"sent "%go) in
-        let: "$sl1" := (interface.make int (![intT] "i2")) in
-        let: "$sl2" := (interface.make string #" to c2
+        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"sent "%go) in
+        let: "$sl1" := (interface.make #""%go #"int"%go (![intT] "i2")) in
+        let: "$sl2" := (interface.make #""%go #"string"%go #" to c2
         "%go) in
         slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
         (func_call #fmt.pkg_name' #"Print"%go) "$a0")
@@ -151,9 +151,9 @@ Definition chanSelect : val :=
         )); ("$recvChan1", (λ: "$recvVal",
         let: "$r0" := (Fst "$recvVal") in
         do:  ("i1" <-[intT] "$r0");;;
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"received "%go) in
-        let: "$sl1" := (interface.make int (![intT] "i1")) in
-        let: "$sl2" := (interface.make string #" from c1
+        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"received "%go) in
+        let: "$sl1" := (interface.make #""%go #"int"%go (![intT] "i1")) in
+        let: "$sl2" := (interface.make #""%go #"string"%go #" from c1
         "%go) in
         slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
         (func_call #fmt.pkg_name' #"Print"%go) "$a0")
@@ -167,14 +167,14 @@ Definition chanSelect : val :=
         do:  ("ok" <-[boolT] "$r1");;;
         (if: ![boolT] "ok"
         then
-          do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"received "%go) in
-          let: "$sl1" := (interface.make int (![intT] "i3")) in
-          let: "$sl2" := (interface.make string #" from c3
+          do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"received "%go) in
+          let: "$sl1" := (interface.make #""%go #"int"%go (![intT] "i3")) in
+          let: "$sl2" := (interface.make #""%go #"string"%go #" from c3
           "%go) in
           slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           (func_call #fmt.pkg_name' #"Print"%go) "$a0")
         else
-          do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"c3 is closed
+          do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"c3 is closed
           "%go) in
           slice.literal interfaceT ["$sl0"])) in
           (func_call #fmt.pkg_name' #"Print"%go) "$a0"))
@@ -183,7 +183,7 @@ Definition chanSelect : val :=
         do:  ((slice.elem_ref intT (![sliceT] "a") ((func_call #pkg_name' #"f"%go) #())) <-[intT] "$r0");;;
         do:  #()
         ))] (InjR (λ: <>,
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"no communication
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"no communication
       "%go) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call #fmt.pkg_name' #"Print"%go) "$a0")
@@ -828,27 +828,19 @@ Definition foo : val :=
   rec: "foo" <> :=
     exception_do (return: (#(W64 10))).
 
-Definition GlobalX : (go_string * go_string) := (pkg_name', "GlobalX"%go).
-
-Definition globalY : (go_string * go_string) := (pkg_name', "globalY"%go).
-
-Definition globalA : (go_string * go_string) := (pkg_name', "globalA"%go).
-
-Definition globalB : (go_string * go_string) := (pkg_name', "globalB"%go).
-
 (* go: globals.go:14:6 *)
 Definition other : val :=
   rec: "other" <> :=
     exception_do (let: "$r0" := #"ok"%go in
-    do:  ((globals.get globalY #()) <-[stringT] "$r0")).
+    do:  ((globals.get #pkg_name' #"globalY"%go #()) <-[stringT] "$r0")).
 
 (* go: globals.go:18:6 *)
 Definition bar : val :=
   rec: "bar" <> :=
     exception_do (do:  ((func_call #pkg_name' #"other"%go) #());;;
-    (if: ((![uint64T] (globals.get GlobalX #())) ≠ #(W64 10)) || ((![stringT] (globals.get globalY #())) ≠ #"ok"%go)
+    (if: ((![uint64T] (globals.get #pkg_name' #"GlobalX"%go #())) ≠ #(W64 10)) || ((![stringT] (globals.get #pkg_name' #"globalY"%go #())) ≠ #"ok"%go)
     then
-      do:  (let: "$a0" := (interface.make string #"bad"%go) in
+      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"bad"%go) in
       Panic "$a0")
     else do:  #())).
 
@@ -1203,14 +1195,14 @@ Definition hasCondVar' : (go_string * go_string) := (pkg_name', "hasCondVar"%go)
 Definition ToBeDebugged : val :=
   rec: "ToBeDebugged" "x" :=
     exception_do (let: "x" := (ref_ty uint64T "x") in
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"starting function"%go) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"starting function"%go) in
     slice.literal interfaceT ["$sl0"])) in
     (func_call #log.pkg_name' #"Println"%go) "$a0");;;
     do:  (let: "$a0" := #"called with %d"%go in
-    let: "$a1" := ((let: "$sl0" := (interface.make uint64 (![uint64T] "x")) in
+    let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "x")) in
     slice.literal interfaceT ["$sl0"])) in
     (func_call #log.pkg_name' #"Printf"%go) "$a0" "$a1");;;
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"ending function"%go) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"ending function"%go) in
     slice.literal interfaceT ["$sl0"])) in
     (func_call #log.pkg_name' #"Println"%go) "$a0");;;
     return: (![uint64T] "x")).
@@ -1218,7 +1210,7 @@ Definition ToBeDebugged : val :=
 (* go: log_debugging.go:12:6 *)
 Definition DoNothing : val :=
   rec: "DoNothing" <> :=
-    exception_do (do:  (let: "$a0" := ((let: "$sl0" := (interface.make string #"doing nothing"%go) in
+    exception_do (do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"doing nothing"%go) in
     slice.literal interfaceT ["$sl0"])) in
     (func_call #log.pkg_name' #"Println"%go) "$a0")).
 
@@ -1621,7 +1613,7 @@ Definition wrapExternalStruct__moveUint64 : val :=
 (* go: panic.go:3:6 *)
 Definition PanicAtTheDisco : val :=
   rec: "PanicAtTheDisco" <> :=
-    exception_do (do:  (let: "$a0" := (interface.make string #"disco"%go) in
+    exception_do (do:  (let: "$a0" := (interface.make #""%go #"string"%go #"disco"%go) in
     Panic "$a0")).
 
 (* go: proph.go:5:6 *)
@@ -2235,7 +2227,7 @@ Definition testVariadicPassThrough : val :=
     slice.literal byteT ["$sl0"; "$sl1"])) in
     (func_call #pkg_name' #"variadicFunc"%go) "$a0" "$a1" "$a2")).
 
-Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT)].
+Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT); ("_"%go, uint64T)].
 
 Definition functions' : list (go_string * val) := [("takesArray"%go, takesArray); ("takesPtr"%go, takesPtr); ("usesArrayElemRef"%go, usesArrayElemRef); ("sum"%go, sum); ("arrayToSlice"%go, arrayToSlice); ("arrayLiteralKeyed"%go, arrayLiteralKeyed); ("chanBasic"%go, chanBasic); ("f"%go, f); ("chanSelect"%go, chanSelect); ("chanDirectional"%go, chanDirectional); ("doSubtleThings"%go, doSubtleThings); ("hasStartComment"%go, hasStartComment); ("hasEndComment"%go, hasEndComment); ("condvarWrapping"%go, condvarWrapping); ("useUntypedInt"%go, useUntypedInt); ("useUntypedString"%go, useUntypedString); ("conditionalReturn"%go, conditionalReturn); ("alwaysReturn"%go, alwaysReturn); ("alwaysReturnInNestedBranches"%go, alwaysReturnInNestedBranches); ("earlyReturn"%go, earlyReturn); ("conditionalAssign"%go, conditionalAssign); ("elseIf"%go, elseIf); ("ifStmtInitialization"%go, ifStmtInitialization); ("typedLiteral"%go, typedLiteral); ("literalCast"%go, literalCast); ("castInt"%go, castInt); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("stringToStringWrapper"%go, stringToStringWrapper); ("stringWrapperToString"%go, stringWrapperToString); ("testCopySimple"%go, testCopySimple); ("testCopyDifferentLengths"%go, testCopyDifferentLengths); ("atomicCreateStub"%go, atomicCreateStub); ("useSlice"%go, useSlice); ("useSliceIndexing"%go, useSliceIndexing); ("useMap"%go, useMap); ("usePtr"%go, usePtr); ("iterMapKeysAndValues"%go, iterMapKeysAndValues); ("iterMapKeys"%go, iterMapKeys); ("getRandom"%go, getRandom); ("diskArgument"%go, diskArgument); ("returnEmbedVal"%go, returnEmbedVal); ("returnEmbedValWithPointer"%go, returnEmbedValWithPointer); ("useEmbeddedField"%go, useEmbeddedField); ("useEmbeddedValField"%go, useEmbeddedValField); ("useEmbeddedMethod"%go, useEmbeddedMethod); ("useEmbeddedMethod2"%go, useEmbeddedMethod2); ("empty"%go, empty); ("emptyReturn"%go, emptyReturn); ("foo"%go, foo); ("other"%go, other); ("bar"%go, bar); ("TakesFunctionType"%go, TakesFunctionType); ("fooConsumer"%go, fooConsumer); ("testAssignConcreteToInterface"%go, testAssignConcreteToInterface); ("testPassConcreteToInterfaceArg"%go, testPassConcreteToInterfaceArg); ("testPassConcreteToInterfaceArgSpecial"%go, testPassConcreteToInterfaceArgSpecial); ("takesVarArgsInterface"%go, takesVarArgsInterface); ("test"%go, test); ("returnConcrete"%go, returnConcrete); ("testMultiReturn"%go, testMultiReturn); ("testReturnStatment"%go, testReturnStatment); ("testConversionInEq"%go, testConversionInEq); ("takeMultiple"%go, takeMultiple); ("giveMultiple"%go, giveMultiple); ("testConversionInMultipleReturnPassThrough"%go, testConversionInMultipleReturnPassThrough); ("testConversionInMultiplePassThrough"%go, testConversionInMultiplePassThrough); ("testPtrMset"%go, testPtrMset); ("useInts"%go, useInts); ("normalLiterals"%go, normalLiterals); ("outOfOrderLiteral"%go, outOfOrderLiteral); ("specialLiterals"%go, specialLiterals); ("oddLiterals"%go, oddLiterals); ("unKeyedLiteral"%go, unKeyedLiteral); ("useLocks"%go, useLocks); ("useCondVar"%go, useCondVar); ("ToBeDebugged"%go, ToBeDebugged); ("DoNothing"%go, DoNothing); ("DoSomething"%go, DoSomething); ("standardForLoop"%go, standardForLoop); ("conditionalInLoop"%go, conditionalInLoop); ("conditionalInLoopElse"%go, conditionalInLoopElse); ("nestedConditionalInLoopImplicitContinue"%go, nestedConditionalInLoopImplicitContinue); ("ImplicitLoopContinue"%go, ImplicitLoopContinue); ("ImplicitLoopContinue2"%go, ImplicitLoopContinue2); ("ImplicitLoopContinueAfterIfBreak"%go, ImplicitLoopContinueAfterIfBreak); ("nestedLoops"%go, nestedLoops); ("nestedGoStyleLoops"%go, nestedGoStyleLoops); ("sumSlice"%go, sumSlice); ("breakFromLoop"%go, breakFromLoop); ("clearMap"%go, clearMap); ("IterateMapKeys"%go, IterateMapKeys); ("MapSize"%go, MapSize); ("MapTypeAliases"%go, MapTypeAliases); ("StringMap"%go, StringMap); ("mapUpdateField"%go, mapUpdateField); ("returnTwo"%go, returnTwo); ("returnTwoWrapper"%go, returnTwoWrapper); ("multipleVar"%go, multipleVar); ("multiplePassThrough"%go, multiplePassThrough); ("multipleReturnPassThrough"%go, multipleReturnPassThrough); ("AssignNilSlice"%go, AssignNilSlice); ("AssignNilPointer"%go, AssignNilPointer); ("CompareSliceToNil"%go, CompareSliceToNil); ("ComparePointerToNil"%go, ComparePointerToNil); ("LogicalOperators"%go, LogicalOperators); ("LogicalAndEqualityOperators"%go, LogicalAndEqualityOperators); ("ArithmeticShifts"%go, ArithmeticShifts); ("BitwiseOps"%go, BitwiseOps); ("Comparison"%go, Comparison); ("AssignOps"%go, AssignOps); ("PanicAtTheDisco"%go, PanicAtTheDisco); ("Oracle"%go, Oracle); ("ReassignVars"%go, ReassignVars); ("recur"%go, recur); ("TwoDiskWrite"%go, TwoDiskWrite); ("TwoDiskRead"%go, TwoDiskRead); ("TwoDiskLock"%go, TwoDiskLock); ("TwoDiskUnlock"%go, TwoDiskUnlock); ("ReplicatedDiskRead"%go, ReplicatedDiskRead); ("ReplicatedDiskWrite"%go, ReplicatedDiskWrite); ("ReplicatedDiskRecover"%go, ReplicatedDiskRecover); ("sliceOps"%go, sliceOps); ("makeSingletonSlice"%go, makeSingletonSlice); ("makeAlias"%go, makeAlias); ("Skip"%go, Skip); ("simpleSpawn"%go, simpleSpawn); ("threadCode"%go, threadCode); ("loopSpawn"%go, loopSpawn); ("stringAppend"%go, stringAppend); ("stringLength"%go, stringLength); ("x"%go, x); ("UseAdd"%go, UseAdd); ("UseAddWithLiteral"%go, UseAddWithLiteral); ("NewS"%go, NewS); ("localSRef"%go, localSRef); ("setField"%go, setField); ("DoSomeLocking"%go, DoSomeLocking); ("makeLock"%go, makeLock); ("sleep"%go, sleep); ("mkInt"%go, mkInt); ("mkNothing"%go, mkNothing); ("convertToAlias"%go, convertToAlias); ("variadicFunc"%go, variadicFunc); ("testVariadicCall"%go, testVariadicCall); ("returnMultiple"%go, returnMultiple); ("testVariadicPassThrough"%go, testVariadicPassThrough)].
 
@@ -2297,18 +2289,18 @@ Definition initialize' : val :=
       do:  sync.initialize';;;
       do:  fmt.initialize';;;
       let: "$r0" := ((func_call #pkg_name' #"foo"%go) #()) in
-      do:  ((globals.get GlobalX #()) <-[uint64T] "$r0");;;
+      do:  ((globals.get #pkg_name' #"GlobalX"%go #()) <-[uint64T] "$r0");;;
       let: "$r0" := #"a"%go in
-      do:  ((globals.get globalA #()) <-[stringT] "$r0");;;
+      do:  ((globals.get #pkg_name' #"globalA"%go #()) <-[stringT] "$r0");;;
       let: "$r0" := #"b"%go in
-      do:  ((globals.get globalB #()) <-[stringT] "$r0");;;
+      do:  ((globals.get #pkg_name' #"globalB"%go #()) <-[stringT] "$r0");;;
       let: "$r0" := ((func_call #pkg_name' #"foo"%go) #()) in
       do:  ((λ: <>,
-        exception_do (let: "$r0" := (![uint64T] (globals.get GlobalX #())) in
-        do:  ((globals.get GlobalX #()) <-[uint64T] "$r0"))
+        exception_do (let: "$r0" := (![uint64T] (globals.get #pkg_name' #"GlobalX"%go #())) in
+        do:  ((globals.get #pkg_name' #"GlobalX"%go #()) <-[uint64T] "$r0"))
         ) #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := #""%go in
-        do:  ((globals.get globalY #()) <-[stringT] "$r0"))
+        do:  ((globals.get #pkg_name' #"globalY"%go #()) <-[stringT] "$r0"))
         ) #()))
       ).

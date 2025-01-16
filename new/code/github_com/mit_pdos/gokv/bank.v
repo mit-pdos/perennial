@@ -173,7 +173,7 @@ Definition BankClerk__SimpleAudit : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((method_call #pkg_name' #"BankClerk'ptr" #"get_total" #() (![ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
-        do:  (let: "$a0" := (interface.make string #"Balance total invariant violated"%go) in
+        do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Balance total invariant violated"%go) in
         Panic "$a0")
       else do:  #()))).
 

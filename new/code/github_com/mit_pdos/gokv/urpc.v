@@ -252,7 +252,7 @@ Definition MakeClient : val :=
     (if: (![uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #"Unable to connect to %s"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make string (let: "$a0" := (![uint64T] "host_name") in
+      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![uint64T] "host_name") in
       (func_call #grove_ffi.pkg_name' #"AddressToStr"%go) "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call #log.pkg_name' #"Printf"%go) "$a0" "$a1")

@@ -60,7 +60,7 @@ Definition is_global (k : go_string) (v : val) : iProp Σ :=
   "#Hinv" ∷ is_globals_inv ∗
   "#Hptsto" ∷ k ↪[go_globals_name]□ v.
 
-Local Definition own_globals (g : gmap go_string val) : iProp Σ :=
+Definition own_globals (g : gmap go_string val) : iProp Σ :=
   "#Hinv" ∷ is_globals_inv ∗
   "Hauth2" ∷ ghost_map_auth go_globals_name (1/2)%Qp g.
 
@@ -129,13 +129,10 @@ Qed.
 (* This must be owned by the `init` thread. *)
 Definition own_globals_tok_def (pending_packages : gset go_string)
   (pkg_postconds : gmap go_string (iProp Σ)): iProp Σ :=
-  ∃ g (pkg_initialized : gmap go_string ()),
+  ∃ g (pkg_initialized : gset go_string),
   "Hglobals" ∷ own_globals g ∗
-  "%Hpkg" ∷ (⌜ ∀ (pkg_name : go_string),
-               is_Some (g !! ("pkg:"%go ++ pkg_name)) ↔
-               is_Some (((gset_to_gmap tt pending_packages) ∪ pkg_initialized) !! pkg_name)
-               ⌝) ∗
-  "#Hinited" ∷ □ ([∗ map] pkg_name ↦ _ ∈ pkg_initialized,
+  "%Hpkg" ∷ (⌜ dom g = pending_packages ∪ pkg_initialized ⌝) ∗
+  "#Hinited" ∷ □ ([∗ set] pkg_name ∈ pkg_initialized,
                   default False (pkg_postconds !! pkg_name)
     ).
 Program Definition own_globals_tok := unseal (_:seal (@own_globals_tok_def)). Obligation 1. by eexists. Qed.
@@ -155,7 +152,7 @@ Definition is_global_definitions (pkg_name : go_string)
   let var_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs) in
   let functions_val := alist_val functions in
   let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
-  is_global ("pkg:"%go ++ pkg_name) (var_addrs_val, functions_val, msets_val).
+  is_global pkg_name (var_addrs_val, functions_val, msets_val).
 
 Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
   alist_lookup_f n ((λ '(name, a), (name, f a)) <$> l) =
@@ -271,12 +268,12 @@ Lemma wp_package_init
   (is_initialized : GoDefns → iProp Σ)
   :
   (∀ g,
-     g !! ("pkg:"%go ++ pkg_name) = None →
+     g !! pkg_name = None →
      {{{ own_globals g }}}
        globals.alloc_and_define pkg_name vars functions msets #()
      {{{ (d : GoDefns) v, RET #();
          is_defined d ∗
-         own_globals (<[("pkg:"%go ++ pkg_name) := v]> g)
+         own_globals (<[pkg_name := v]> g)
      }}}
   ) →
   (∀ (d : GoDefns),
@@ -306,16 +303,9 @@ Proof.
   destruct (lookup _ g) eqn:Hlookup.
   { (* don't run init because the package has already been initialized *)
     wp_pures.
-    pose proof (Hpkg pkg_name) as Hpkg'.
-    rewrite Hlookup /= in Hpkg'.
-    symmetry in Hpkg'.
-    rewrite lookup_union in Hpkg'.
-    rewrite lookup_gset_to_gmap option_guard_False //=
-      left_id in Hpkg'.
-    destruct Hpkg' as [_ Hpkg'].
-    specialize (Hpkg' ltac:(done)).
-    destruct Hpkg'.
-    iDestruct (big_sepM_lookup with "Hinited") as "H".
+    apply elem_of_dom_2 in Hlookup.
+    rewrite Hpkg elem_of_union or_r // in Hlookup.
+    iDestruct (big_sepS_elem_of with "Hinited") as "H".
     { done. }
     rewrite Hpost /=.
     iDestruct "H" as (?) "Hinit".
@@ -329,18 +319,7 @@ Proof.
   iIntros "* [Hdef Hglobals]".
   wp_pures.
   iDestruct (Hwp_init with "[$Hdef] [Hglobals]") as "Hinit".
-  { iFrame "∗#%". iPureIntro.
-    intros pkg_name'.
-    specialize (Hpkg pkg_name').
-    destruct (decide (pkg_name = pkg_name')).
-    - subst. rewrite lookup_insert. rewrite lookup_union.
-      rewrite lookup_gset_to_gmap option_guard_True //.
-      2:{ set_solver. }
-      rewrite union_Some_l //.
-    - rewrite lookup_insert_ne //.
-      2:{ naive_solver. }
-      rewrite Hpkg gset_to_gmap_union_singleton lookup_union lookup_union lookup_insert_ne //.
-  }
+  { iFrame "∗#%". iPureIntro. set_solver. }
   wp_apply (wp_wand with "Hinit").
   iIntros (?) "H".
   iDestruct "H" as (?) "[#Hinit Htok]". subst.
@@ -348,14 +327,10 @@ Proof.
   iClear "Hinited".
   clear Hpkg.
   iNamed "Htok".
-  iDestruct (big_sepM_insert_2 _ _ pkg_name () with "[] Hinited") as "Hinited2".
+  iDestruct (big_sepS_insert_2 pkg_name with "[] Hinited") as "Hinited2".
   { simpl. rewrite Hpost. iFrame "#". }
   iFrame "∗#%".
-  iPureIntro.
-  intros pkg_name'.
-  specialize (Hpkg pkg_name').
-  rewrite Hpkg gset_to_gmap_union_singleton -insert_union_l
-          -insert_union_r // lookup_gset_to_gmap option_guard_False //.
+  iPureIntro. set_solver.
 Qed.
 
 End package_init.
@@ -380,10 +355,9 @@ Proof.
     repeat iExists _.
     instantiate (1:=∅).
     iSplit.
-    { iPureIntro. intros. rewrite gset_to_gmap_empty right_id !lookup_empty //.
-      split; by intros []. }
+    { iPureIntro. done. }
     iModIntro.
-    by iApply big_sepM_empty.
+    by iApply big_sepS_empty.
   }
   iNext.
   iFrame.

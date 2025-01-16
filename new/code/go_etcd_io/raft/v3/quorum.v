@@ -164,7 +164,7 @@ Definition MajorityConfig__String : val :=
         (method_call #strings.pkg_name' #"Builder'ptr" #"WriteByte" #() "buf") "$a0")
       else do:  #());;;
       do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
-      let: "$a1" := ((let: "$sl0" := (interface.make uint64 (![uint64T] (slice.elem_ref uint64T (![sliceT] "sl") (![intT] "i")))) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (slice.elem_ref uint64T (![sliceT] "sl") (![intT] "i")))) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call #fmt.pkg_name' #"Fprint"%go) "$a0" "$a1")));;;
     do:  (let: "$a0" := #(W8 41) in
@@ -248,7 +248,7 @@ Definition MajorityConfig__Describe : val :=
     (func_call #sort.pkg_name' #"Slice"%go) "$a0" "$a1");;;
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
-    let: "$a1" := ((let: "$sl0" := (interface.make string ((let: "$a0" := #" "%go in
+    let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((let: "$a0" := #" "%go in
     let: "$a1" := (![intT] "n") in
     (func_call #strings.pkg_name' #"Repeat"%go) "$a0" "$a1") + #"    idx
     "%go)) in
@@ -263,14 +263,14 @@ Definition MajorityConfig__Describe : val :=
       (if: (~ (![boolT] (struct.field_ref tup "ok" (slice.elem_ref tup (![sliceT] "info") (![intT] "i")))))
       then
         do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
-        let: "$a1" := ((let: "$sl0" := (interface.make string (#"?"%go + (let: "$a0" := #" "%go in
+        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (#"?"%go + (let: "$a0" := #" "%go in
         let: "$a1" := (![intT] "n") in
         (func_call #strings.pkg_name' #"Repeat"%go) "$a0" "$a1"))) in
         slice.literal interfaceT ["$sl0"])) in
         (func_call #fmt.pkg_name' #"Fprint"%go) "$a0" "$a1")
       else
         do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
-        let: "$a1" := ((let: "$sl0" := (interface.make string (((let: "$a0" := #"x"%go in
+        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (((let: "$a0" := #"x"%go in
         let: "$a1" := (![intT] "bar") in
         (func_call #strings.pkg_name' #"Repeat"%go) "$a0" "$a1") + #">"%go) + (let: "$a0" := #" "%go in
         let: "$a1" := ((![intT] "n") - (![intT] "bar")) in
@@ -281,7 +281,7 @@ Definition MajorityConfig__Describe : val :=
       let: "$a1" := #" %5d    (id=%d)
       "%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #pkg_name' #"Index" (![Index] (struct.field_ref tup "idx" (slice.elem_ref tup (![sliceT] "info") (![intT] "i"))))) in
-      let: "$sl1" := (interface.make uint64 (![uint64T] (struct.field_ref tup "id" (slice.elem_ref tup (![sliceT] "info") (![intT] "i"))))) in
+      let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref tup "id" (slice.elem_ref tup (![sliceT] "info") (![intT] "i"))))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")));;;
     return: ((method_call #strings.pkg_name' #"Builder'ptr" #"String" #() "buf") #())).
@@ -463,8 +463,6 @@ Definition _unused : val :=
 
 Definition _VoteResult_name : go_string := "VotePendingVoteLostVoteWon"%go.
 
-Definition _VoteResult_index : (go_string * go_string) := (pkg_name', "_VoteResult_index"%go).
-
 Definition vars' : list (go_string * go_type) := [("_VoteResult_index"%go, arrayT 4 uint8T)].
 
 Definition functions' : list (go_string * val) := [("_unused"%go, _unused)].
@@ -509,7 +507,7 @@ Definition initialize' : val :=
       let: "$ar2" := #(W8 19) in
       let: "$ar3" := #(W8 26) in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"])) in
-      do:  ((globals.get _VoteResult_index #()) <-[arrayT 4 uint8T] "$r0"))
+      do:  ((globals.get #pkg_name' #"_VoteResult_index"%go #()) <-[arrayT 4 uint8T] "$r0"))
       ).
 
 End code.
