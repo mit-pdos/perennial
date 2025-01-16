@@ -185,11 +185,12 @@ Definition is_structT (t : go_type) : Prop :=
   end.
 
 Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
-  PureWp (is_structT t)
+  is_structT t →
+  PureWp True
   (struct.make t (alist_val l))
   (struct.val_aux t l).
 Proof.
-  intros ?????K.
+  intros ??????K.
   rewrite struct.make_unseal struct.val_aux_unseal.
   destruct t; try by exfalso.
   unfold struct.make_def.

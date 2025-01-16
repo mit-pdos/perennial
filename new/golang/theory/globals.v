@@ -390,3 +390,11 @@ Proof.
 Qed.
 
 End init.
+
+Tactic Notation "wp_func_call" :=
+  (wp_bind (func_call _ _);
+   unshelve wp_apply (wp_func_call with "[]"); [| | tc_solve | | ]; try iFrame "#").
+
+Tactic Notation "wp_method_call" :=
+  (wp_bind (method_call _ _ _);
+   unshelve wp_apply (wp_method_call with "[]"); [| | tc_solve | |]; try iFrame "#").

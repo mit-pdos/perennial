@@ -31,12 +31,9 @@ Instance wp_struct_make_ConnectRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
   (struct.make ConnectRet (alist_val [("Err" ::= #err)%V; ("Connection" ::= #conn)%V]))
   #(ConnectRet.mk err conn).
 Proof.
-  pose proof wp_struct_make.
-  rewrite /PureWp => *. iIntros "Hwp".
-  wp_pure_lc "Hlc".
-  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+  rewrite [in #(_ : ConnectRet.t)]to_val_unseal.
+  by apply wp_struct_make.
 Qed.
-
 
 Module ReceiveRet.
 Record t :=
@@ -61,10 +58,8 @@ Instance wp_struct_make_ReceiveRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
   (struct.make ReceiveRet (alist_val [("Err" ::= #err)%V; ("Data" ::= #data)%V]))
   #(ReceiveRet.mk err data).
 Proof.
-  pose proof wp_struct_make.
-  rewrite /PureWp => *. iIntros "Hwp".
-  wp_pure_lc "Hlc".
-  iEval (rewrite to_val_unseal /=) in "Hwp". by iApply "Hwp".
+  rewrite [in #(_ : ReceiveRet.t)]to_val_unseal.
+  by apply wp_struct_make.
 Qed.
 
 (** * Specs for user-facing operations *)

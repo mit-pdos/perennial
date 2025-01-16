@@ -1,16 +1,19 @@
 From New.proof Require Import proof_prelude.
-From New.code.github_com.goose_lang Require Import std.
+From New.code.github_com.goose_lang Require std.
 From New.proof Require Import machine.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 Lemma wp_SumNoOverflow (x y : u64) :
-  ∀ Φ : val → iProp Σ,
-    Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
-    WP std.SumNoOverflow #x #y {{ Φ }}.
+  {{{ True }}}
+    func_call #std.pkg_name' #"SumNoOverflow" #x #y
+  {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
-  iIntros (Φ) "HΦ".
+  iIntros (Φ) "#Hdef HΦ".
+  wp_bind (func_call _ _).
+  unshelve wp_apply (wp_func_call with "[]"); [| | tc_solve | | ]; try iFrame "#".
+  wp_func_call.
   rewrite /SumNoOverflow. wp_pures.
   wp_alloc y_ptr as "Hy".
   wp_pures.

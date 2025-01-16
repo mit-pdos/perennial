@@ -101,10 +101,6 @@ Qed.
 Global Hint Mode WpMethodCall - - - - - - + + + - - : typeclass_instances.
 Global Hint Mode WpFuncCall - - - - - - + + - - : typeclass_instances.
 
-Tactic Notation "wp_method_call" :=
-  (wp_bind (method_call _ _ _);
-   unshelve wp_apply (wp_method_call with "[]"); [| | tc_solve | |]; try iFrame "#").
-
 Lemma wp_Mutex__Lock m R :
   {{{ is_defined ∗ is_Mutex m R }}}
     method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #m #()
@@ -211,13 +207,9 @@ Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
-  c ↦□ m.
+  c ↦s[Cond :: "L"]□ m.
 
 Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
-
-Tactic Notation "wp_func_call" :=
-  (wp_bind (func_call _ _);
-   unshelve wp_apply (wp_func_call with "[]"); [| | tc_solve | | ]; try iFrame "#").
 
 Theorem wp_NewCond (m : interface.t) :
   {{{ is_defined }}}
@@ -228,7 +220,15 @@ Proof.
   wp_func_call. wp_call. wp_apply wp_fupd.
   wp_alloc c as "Hc".
   wp_pures.
-  iApply "HΦ". iMod (typed_pointsto_persist with "Hc") as "$".
+  iApply "HΦ".
+
+  iDestruct (struct_fields_split with "Hc") as "Hl".
+  rewrite /struct_fields /=.
+  repeat (iDestruct "Hl" as "[H1 Hl]";
+          unshelve iSpecialize ("H1" $! _ _ _ _ _ _ _); try tc_solve;
+          iNamed "H1").
+  simpl.
+  iMod (typed_pointsto_persist with "HL") as "$".
   done.
 Qed.
 

@@ -65,9 +65,58 @@ String Notation byte_string parse_string print_string
   (via IndByteString mapping [id_byte_string => IByteString] )
   : byte_string_scope.
 
-(* TODO: replace with more computationally efficient version *)
-#[local] Definition eqb (s1 s2: byte_string) : bool :=
-  bool_decide (s1 = s2).
+#[local] Fixpoint eqb (s1 s2: byte_string) : bool :=
+  match s1 with
+  | [] => match s2 with
+         | [] => true
+         | _ => false
+         end
+  | c1 :: s1' =>
+      match s2 with
+      | [] => false
+      | c2 :: s2' => if word.eqb c1 c2 then eqb s1' s2' else false
+      end
+  end.
+
+#[local] Lemma eqb_refl x :
+  eqb x x = true.
+Proof.
+  induction x; first done. simpl. rewrite word.eqb_eq //.
+Qed.
+
+#[local] Lemma eqb_eq x y :
+  x = y → eqb x y = true.
+Proof.
+  intros ?. subst. apply eqb_refl.
+Qed.
+
+#[local] Lemma eqb_true x y :
+  eqb x y = true → x = y.
+Proof.
+  revert y. induction x.
+  - by destruct y.
+  - destruct y; first done.
+    simpl.
+    destruct (word.eqb) eqn:?; last done.
+    apply word.eqb_true in Heqb. subst.
+    intros H. f_equal.
+    by apply IHx.
+Qed.
+
+#[local] Lemma eqb_false x y :
+  eqb x y = false → x ≠ y.
+Proof.
+  intros Heqb.
+  intros Heq. apply eqb_eq in Heq. rewrite Heqb in Heq. done.
+Qed.
+
+#[local] Lemma eqb_ne x y :
+  x ≠ y → eqb x y = false.
+Proof.
+  destruct eqb eqn:?.
+  { intros ?. apply eqb_true in Heqb. done. }
+  { done. }
+Qed.
 
 (* These theorems are not actually required, but they are a sanity check that
 the code above is implemented correctly. *)

@@ -43,8 +43,7 @@ Global Instance wp_list_Match (l : list V) (handleNil handleCons : val) :
     (match l with
      | nil => (handleNil #())%V
      | cons v l => (handleCons #v #l)%V
-     end)
-.
+     end).
 Proof.
   rewrite list.Match_unseal.
   intros ?????. iIntros "Hwp".
@@ -81,8 +80,7 @@ Qed.
 Global Instance wp_alist_cons (k : go_string) (l : list (go_string * val)) (v : val) :
   PureWp  True
     (list.Cons (PairV #k v) (alist_val l))
-    (alist_val ((pair k v) :: l))
-.
+    (alist_val ((pair k v) :: l)).
 Proof.
   iIntros (?????) "HΦ".
   rewrite alist_val_unseal list.Cons_unseal.
@@ -92,8 +90,7 @@ Qed.
 Global Instance wp_alist_lookup (k : go_string) (l : list (go_string * val)) :
   PureWp True
     (alist_lookup #k (alist_val l))
-    (match (alist_lookup_f k l) with | None => InjLV #() | Some v => InjRV v end)
-.
+    (match (alist_lookup_f k l) with | None => InjLV #() | Some v => InjRV v end).
 Proof.
   iIntros (?????) "HΦ".
   rewrite alist_val_unseal.
@@ -110,18 +107,14 @@ Proof.
     {
       rewrite bool_decide_eq_true in Heqb.
       subst.
-      wp_pures.
-      rewrite /ByteString.eqb bool_decide_true //.
+      rewrite ByteString.eqb_refl.
       by iApply "HΦ".
     }
     {
       rewrite bool_decide_eq_false in Heqb.
       wp_pures.
       iApply "IH".
-      destruct (ByteString.eqb g _)%go eqn:Hx.
-      { exfalso. apply Heqb. repeat f_equal. symmetry.
-        rewrite /ByteString.eqb bool_decide_eq_true // in Hx. }
-      by iApply "HΦ".
+      rewrite ByteString.eqb_ne //.
     }
   }
 Qed.
