@@ -35,26 +35,6 @@ Context {ext_ty: ext_types ext}.
 Context {A: Type}.
 Context (Ψ: val → A → dfrac -> iProp Σ).
 
-Global Instance val_IntoVal : IntoVal val.
-Proof.
-  refine {|
-      to_val := λ v, v;
-      from_val := λ v, Some v;
-      IntoVal_def := #();
-    |}.
-  intros v; auto.
-Defined.
-
-Theorem untype_val_list :
-  ∀ vs : list val, list.untype vs = vs.
-Proof.
-  iIntros (vs).
-  unfold list.untype.
-  induction vs.
-  + done.
-  + rewrite fmap_cons. rewrite IHvs. done.
-Qed.
-
 Definition own_val {X:Type} {I:IntoVal X} (v: val) (x: X) (dq: dfrac) : iProp Σ :=
   ⌜v = to_val x⌝.
 
@@ -100,7 +80,7 @@ Proof.
   iDestruct (big_sepL2_lookup_2 (uint.nat i) with "Hxs") as (v) "%Hlookup1"; eauto.
   iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
   wp_apply (slice.wp_SliceGet with "[$Hs]").
-  { iPureIntro. rewrite untype_val_list. done. }
+  { iPureIntro. rewrite list_untype_val. done. }
   iIntros "[Hs %Hty]".
   iApply "HΦ"; iFrame.
   iIntros "HΨ". iFrame. iApply ("Hxs" with "HΨ").
@@ -123,7 +103,7 @@ Proof.
   iDestruct "Hs" as "[Hs $]".
   iExists (vs ++ [v]).
   unfold own_slice_small.
-  rewrite ?untype_val_list.
+  rewrite ?list_untype_val.
   iFrame "Hs".
   iApply (big_sepL2_app with "Hxs").
   simpl; iFrame.
@@ -147,13 +127,13 @@ Proof.
   iDestruct (big_sepL2_lookup_2 (uint.nat i) with "Hxs") as (v') "%Hlookup1"; eauto.
   iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
   wp_apply (slice.wp_SliceSet with "[$Hs]").
-  { iPureIntro. rewrite untype_val_list. split; first done. done. }
+  { iPureIntro. rewrite list_untype_val. split; first done. done. }
   iIntros "Hs".
   iApply "HΦ"; iFrame.
   iIntros "Hv".
   iExists (<[uint.nat i:=v]> vs).
   unfold own_slice_small.
-  rewrite ?untype_val_list.
+  rewrite ?list_untype_val.
   iFrame "Hs".
   iApply "Hxs" in "Hx".
   iDestruct (big_sepL2_insert_acc with "Hx") as "[_ Hxs]".
@@ -175,7 +155,7 @@ Proof.
   iApply slice.own_slice_to_small in "Hs".
   iExists (replicate (uint.nat sz) (zero_val t)).
   unfold own_slice_small.
-  rewrite ?untype_val_list.
+  rewrite ?list_untype_val.
   iFrame "Hs".
   iApply (big_sepL2_replicate_l).
   { apply length_replicate. }
@@ -205,7 +185,7 @@ Proof.
   { clear Φ.
     iIntros (i x) "!>".
     iIntros (Φ) "((Hi&Hxs)&%Hbound&%Hlookup) HΦ".
-    rewrite untype_val_list in Hlookup.
+    rewrite list_untype_val in Hlookup.
     iDestruct (big_sepL2_lookup_1 with "Hxs") as (y) "%Hlookup2"; eauto.
     iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
     wp_apply ("Hwp" with "[$Hi $Hx]").

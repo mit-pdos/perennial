@@ -36,6 +36,15 @@ Proof.
   rewrite /list.untype fmap_drop //.
 Qed.
 
+Lemma list_untype_val `{ffi_syn: ffi_syntax} (l: list val) :
+  list.untype l = l.
+Proof.
+  unfold list.untype.
+  induction l.
+  + done.
+  + rewrite fmap_cons. rewrite IHl. done.
+Qed.
+
 #[global]
 Hint Rewrite @list_untype_length : len.
 

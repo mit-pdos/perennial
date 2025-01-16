@@ -262,4 +262,14 @@ Section instances.
     destruct vval; try done; destruct l; try done.
   Qed.
 
+Global Instance val_IntoVal : IntoVal val.
+Proof.
+  refine {|
+      to_val := λ v, v;
+      from_val := λ v, Some v;
+      IntoVal_def := #();
+    |}.
+  intros v; auto.
+Defined.
+
 End instances.
