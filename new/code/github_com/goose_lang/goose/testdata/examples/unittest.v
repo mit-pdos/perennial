@@ -11,10 +11,6 @@ From New Require Import disk_prelude.
 
 Definition Foo : go_type := arrayT 10 uint64T.
 
-Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/unittest".
-
-Definition Foo' : (go_string * go_string) := (pkg_name', "Foo"%go).
-
 (* go: array.go:5:6 *)
 Definition takesArray : val :=
   rec: "takesArray" "x" :=
@@ -26,6 +22,8 @@ Definition takesPtr : val :=
   rec: "takesPtr" "x" :=
     exception_do (let: "x" := (ref_ty ptrT "x") in
     do:  ((![ptrT] "x") <-[stringT] ((![stringT] (![ptrT] "x")) + #"bar"%go))).
+
+Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/unittest".
 
 (* go: array.go:13:6 *)
 Definition usesArrayElemRef : val :=
@@ -208,8 +206,6 @@ Definition chanDirectional : val :=
 
 Definition importantStruct : go_type := structT [
 ].
-
-Definition importantStruct' : (go_string * go_string) := (pkg_name', "importantStruct"%go).
 
 (* doSubtleThings does a number of subtle things:
 
@@ -398,8 +394,6 @@ Definition ifStmtInitialization : val :=
     else return: ((![uint64T] "y") - #(W64 1))))).
 
 Definition stringWrapper : go_type := stringT.
-
-Definition stringWrapper' : (go_string * go_string) := (pkg_name', "stringWrapper"%go).
 
 (* go: conversions.go:5:6 *)
 Definition typedLiteral : val :=
@@ -618,8 +612,6 @@ Definition diskWrapper : go_type := structT [
   "d" :: disk.Disk
 ].
 
-Definition diskWrapper' : (go_string * go_string) := (pkg_name', "diskWrapper"%go).
-
 (* go: disk.go:9:6 *)
 Definition diskArgument : val :=
   rec: "diskArgument" "d" :=
@@ -636,25 +628,17 @@ Definition embedA : go_type := structT [
   "a" :: uint64T
 ].
 
-Definition embedA' : (go_string * go_string) := (pkg_name', "embedA"%go).
-
 Definition embedB : go_type := structT [
   "embedA" :: embedA
 ].
-
-Definition embedB' : (go_string * go_string) := (pkg_name', "embedB"%go).
 
 Definition embedC : go_type := structT [
   "embedB" :: ptrT
 ].
 
-Definition embedC' : (go_string * go_string) := (pkg_name', "embedC"%go).
-
 Definition embedD : go_type := structT [
   "embedC" :: embedC
 ].
-
-Definition embedD' : (go_string * go_string) := (pkg_name', "embedD"%go).
 
 (* go: embedded.go:19:17 *)
 Definition embedA__Foo : val :=
@@ -751,8 +735,6 @@ Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Enc' : (go_string * go_string) := (pkg_name', "Enc"%go).
-
 (* go: encoding.go:9:15 *)
 Definition Enc__consume : val :=
   rec: "Enc__consume" "e" "n" :=
@@ -790,8 +772,6 @@ Definition Enc__UInt32 : val :=
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
-
-Definition Dec' : (go_string * go_string) := (pkg_name', "Dec"%go).
 
 (* go: encoding.go:27:15 *)
 Definition Dec__consume : val :=
@@ -852,19 +832,13 @@ Definition TakesFunctionType : val :=
 
 Definition Fooer : go_type := interfaceT.
 
-Definition Fooer' : (go_string * go_string) := (pkg_name', "Fooer"%go).
-
 Definition concreteFooer : go_type := structT [
   "a" :: uint64T
 ].
 
-Definition concreteFooer' : (go_string * go_string) := (pkg_name', "concreteFooer"%go).
-
 Definition FooerUser : go_type := structT [
   "f" :: Fooer
 ].
-
-Definition FooerUser' : (go_string * go_string) := (pkg_name', "FooerUser"%go).
 
 (* go: interfaces.go:15:25 *)
 Definition concreteFooer__Foo : val :=
@@ -1036,12 +1010,8 @@ Definition testConversionInMultiplePassThrough : val :=
 
 Definition PointerInterface : go_type := interfaceT.
 
-Definition PointerInterface' : (go_string * go_string) := (pkg_name', "PointerInterface"%go).
-
 Definition concrete1 : go_type := structT [
 ].
-
-Definition concrete1' : (go_string * go_string) := (pkg_name', "concrete1"%go).
 
 (* go: interfaces.go:106:20 *)
 Definition concrete1__Foo : val :=
@@ -1088,11 +1058,7 @@ Definition useInts : val :=
 
 Definition my_u32 : go_type := uint32T.
 
-Definition my_u32' : (go_string * go_string) := (pkg_name', "my_u32"%go).
-
 Definition also_u32 : go_type := my_u32.
-
-Definition also_u32' : (go_string * go_string) := (pkg_name', "also_u32"%go).
 
 Definition ConstWithAbbrevType : expr := #(W32 3).
 
@@ -1101,8 +1067,6 @@ Definition allTheLiterals : go_type := structT [
   "s" :: stringT;
   "b" :: boolT
 ].
-
-Definition allTheLiterals' : (go_string * go_string) := (pkg_name', "allTheLiterals"%go).
 
 (* go: literals.go:9:6 *)
 Definition normalLiterals : val :=
@@ -1188,8 +1152,6 @@ Definition useCondVar : val :=
 Definition hasCondVar : go_type := structT [
   "cond" :: ptrT
 ].
-
-Definition hasCondVar' : (go_string * go_string) := (pkg_name', "hasCondVar"%go).
 
 (* go: log_debugging.go:5:6 *)
 Definition ToBeDebugged : val :=
@@ -1424,11 +1386,7 @@ Definition MapSize : val :=
 
 Definition IntWrapper : go_type := uint64T.
 
-Definition IntWrapper' : (go_string * go_string) := (pkg_name', "IntWrapper"%go).
-
 Definition MapWrapper : go_type := mapT uint64T boolT.
-
-Definition MapWrapper' : (go_string * go_string) := (pkg_name', "MapWrapper"%go).
 
 (* go: maps.go:24:6 *)
 Definition MapTypeAliases : val :=
@@ -1448,8 +1406,6 @@ Definition mapElem : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
-
-Definition mapElem' : (go_string * go_string) := (pkg_name', "mapElem"%go).
 
 (* go: maps.go:37:6 *)
 Definition mapUpdateField : val :=
@@ -1601,8 +1557,6 @@ Definition wrapExternalStruct : go_type := structT [
   "d" :: marshal.Dec
 ].
 
-Definition wrapExternalStruct' : (go_string * go_string) := (pkg_name', "wrapExternalStruct"%go).
-
 (* go: package.go:14:29 *)
 Definition wrapExternalStruct__moveUint64 : val :=
   rec: "wrapExternalStruct__moveUint64" "w" <> :=
@@ -1629,14 +1583,10 @@ Definition typing : go_type := structT [
   "proph" :: ptrT
 ].
 
-Definition typing' : (go_string * go_string) := (pkg_name', "typing"%go).
-
 Definition composite : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
-
-Definition composite' : (go_string * go_string) := (pkg_name', "composite"%go).
 
 (* go: reassign.go:8:6 *)
 Definition ReassignVars : val :=
@@ -1673,8 +1623,6 @@ Definition recur : val :=
 Definition R : go_type := structT [
 ].
 
-Definition R' : (go_string * go_string) := (pkg_name', "R"%go).
-
 (* go: recursive.go:10:13 *)
 Definition R__recurMethod : val :=
   rec: "R__recurMethod" "r" <> :=
@@ -1685,13 +1633,9 @@ Definition Other : go_type := structT [
   "RecursiveEmbedded" :: ptrT
 ].
 
-Definition Other' : (go_string * go_string) := (pkg_name', "Other"%go).
-
 Definition RecursiveEmbedded : go_type := structT [
   "Other" :: Other
 ].
-
-Definition RecursiveEmbedded' : (go_string * go_string) := (pkg_name', "RecursiveEmbedded"%go).
 
 (* go: recursive.go:22:29 *)
 Definition RecursiveEmbedded__recurEmbeddedMethod : val :=
@@ -1702,8 +1646,6 @@ Definition RecursiveEmbedded__recurEmbeddedMethod : val :=
 Definition Block : go_type := structT [
   "Value" :: uint64T
 ].
-
-Definition Block' : (go_string * go_string) := (pkg_name', "Block"%go).
 
 Definition Disk1 : expr := #(W64 0).
 
@@ -1834,8 +1776,6 @@ Definition ReplicatedDiskRecover : val :=
 
 Definition SliceAlias : go_type := sliceT.
 
-Definition SliceAlias' : (go_string * go_string) := (pkg_name', "SliceAlias"%go).
-
 (* go: slices.go:5:6 *)
 Definition sliceOps : val :=
   rec: "sliceOps" <> :=
@@ -1871,13 +1811,9 @@ Definition thing : go_type := structT [
   "x" :: uint64T
 ].
 
-Definition thing' : (go_string * go_string) := (pkg_name', "thing"%go).
-
 Definition sliceOfThings : go_type := structT [
   "things" :: sliceT
 ].
-
-Definition sliceOfThings' : (go_string * go_string) := (pkg_name', "sliceOfThings"%go).
 
 (* go: slices.go:26:25 *)
 Definition sliceOfThings__getThingRef : val :=
@@ -1976,8 +1912,6 @@ Definition Point : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition Point' : (go_string * go_string) := (pkg_name', "Point"%go).
-
 (* go: struct_method.go:8:16 *)
 Definition Point__Add : val :=
   rec: "Point__Add" "c" "z" :=
@@ -2033,15 +1967,11 @@ Definition TwoInts : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition TwoInts' : (go_string * go_string) := (pkg_name', "TwoInts"%go).
-
 Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
 ].
-
-Definition S' : (go_string * go_string) := (pkg_name', "S"%go).
 
 (* go: struct_pointers.go:14:6 *)
 Definition NewS : val :=
@@ -2146,10 +2076,6 @@ Definition B : go_type := structT [
   "a" :: sliceT
 ].
 
-Definition B' : (go_string * go_string) := (pkg_name', "B"%go).
-
-Definition A' : (go_string * go_string) := (pkg_name', "A"%go).
-
 (* go: trailing_call.go:3:6 *)
 Definition mkInt : val :=
   rec: "mkInt" <> :=
@@ -2164,15 +2090,9 @@ Definition my_u64 : go_type := uint64T.
 
 Definition Timestamp : go_type := uint64T.
 
-Definition Timestamp' : (go_string * go_string) := (pkg_name', "Timestamp"%go).
-
 Definition UseTypeAbbrev : go_type := uint64T.
 
-Definition UseTypeAbbrev' : (go_string * go_string) := (pkg_name', "UseTypeAbbrev"%go).
-
 Definition UseNamedType : go_type := Timestamp.
-
-Definition UseNamedType' : (go_string * go_string) := (pkg_name', "UseNamedType"%go).
 
 (* go: type_alias.go:11:6 *)
 Definition convertToAlias : val :=

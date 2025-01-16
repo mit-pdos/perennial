@@ -6,13 +6,9 @@ Context `{ffi_syntax}.
 
 Definition Kv : go_type := interfaceT.
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/kv".
-
-Definition Kv' : (go_string * go_string) := (pkg_name', "Kv"%go).
-
 Definition KvCput : go_type := interfaceT.
 
-Definition KvCput' : (go_string * go_string) := (pkg_name', "KvCput"%go).
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/kv".
 
 Definition vars' : list (go_string * go_type) := [].
 

@@ -157,6 +157,7 @@ Section val_types.
 
   Definition byteT := uint8T.
   Definition intT := int64T.
+  Definition uintT := uint64T.
 
   Context `{ffi_syntax}.
   Fixpoint zero_val_def (t : go_type) : val :=

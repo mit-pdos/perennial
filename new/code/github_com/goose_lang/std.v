@@ -102,8 +102,6 @@ Definition JoinHandle : go_type := structT [
   "cond" :: ptrT
 ].
 
-Definition JoinHandle' : (go_string * go_string) := (pkg_name', "JoinHandle"%go).
-
 (* go: goose_std.go:73:6 *)
 Definition newJoinHandle : val :=
   rec: "newJoinHandle" <> :=

@@ -12,17 +12,11 @@ Definition cacheValue : go_type := structT [
   "l" :: uint64T
 ].
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/cachekv".
-
-Definition cacheValue' : (go_string * go_string) := (pkg_name', "cacheValue"%go).
-
 Definition CacheKv : go_type := structT [
   "kv" :: kv.KvCput;
   "mu" :: ptrT;
   "cache" :: mapT stringT cacheValue
 ].
-
-Definition CacheKv' : (go_string * go_string) := (pkg_name', "CacheKv"%go).
 
 (* go: clerk.go:24:6 *)
 Definition DecodeValue : val :=
@@ -85,6 +79,8 @@ Definition Make : val :=
        "mu" ::= "$mu";
        "cache" ::= "$cache"
      }]))).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/cachekv".
 
 (* go: clerk.go:55:19 *)
 Definition CacheKv__Get : val :=

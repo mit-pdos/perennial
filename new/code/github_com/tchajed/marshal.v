@@ -11,10 +11,6 @@ Definition Enc : go_type := structT [
   "off" :: ptrT
 ].
 
-Definition pkg_name' : go_string := "github.com/tchajed/marshal".
-
-Definition Enc' : (go_string * go_string) := (pkg_name', "Enc"%go).
-
 (* go: marshal.go:13:6 *)
 Definition NewEncFromSlice : val :=
   rec: "NewEncFromSlice" "b" :=
@@ -25,6 +21,8 @@ Definition NewEncFromSlice : val :=
        "b" ::= "$b";
        "off" ::= "$off"
      }])).
+
+Definition pkg_name' : go_string := "github.com/tchajed/marshal".
 
 (* go: marshal.go:20:6 *)
 Definition NewEnc : val :=
@@ -122,8 +120,6 @@ Definition Dec : go_type := structT [
   "b" :: sliceT;
   "off" :: ptrT
 ].
-
-Definition Dec' : (go_string * go_string) := (pkg_name', "Dec"%go).
 
 (* go: marshal.go:74:6 *)
 Definition NewDec : val :=

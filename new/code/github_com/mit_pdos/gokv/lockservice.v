@@ -9,10 +9,6 @@ Definition LockClerk : go_type := structT [
   "kv" :: kv.KvCput
 ].
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/lockservice".
-
-Definition LockClerk' : (go_string * go_string) := (pkg_name', "LockClerk"%go).
-
 (* go: lock_clerk.go:11:22 *)
 Definition LockClerk__Lock : val :=
   rec: "LockClerk__Lock" "ck" "key" :=
@@ -41,6 +37,8 @@ Definition MakeLockClerk : val :=
      struct.make LockClerk [{
        "kv" ::= "$kv"
      }]))).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/lockservice".
 
 Definition vars' : list (go_string * go_type) := [].
 

@@ -14,10 +14,6 @@ Definition ReconnectingClient : go_type := structT [
   "addr" :: uint64T
 ].
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/reconnectclient".
-
-Definition ReconnectingClient' : (go_string * go_string) := (pkg_name', "ReconnectingClient"%go).
-
 (* go: client.go:20:6 *)
 Definition MakeReconnectingClient : val :=
   rec: "MakeReconnectingClient" "addr" :=
@@ -70,6 +66,8 @@ Definition ReconnectingClient__getClient : val :=
     else do:  #());;;
     do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #() (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     return: (![uint64T] "err", ![ptrT] "newRpcCl")).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/reconnectclient".
 
 (* go: client.go:63:31 *)
 Definition ReconnectingClient__Call : val :=

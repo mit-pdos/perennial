@@ -15,10 +15,6 @@ Definition inflight : go_type := structT [
   "bytes" :: uint64T
 ].
 
-Definition pkg_name' : go_string := "go.etcd.io/raft/v3/tracker".
-
-Definition inflight' : (go_string * go_string) := (pkg_name', "inflight"%go).
-
 Definition Inflights : go_type := structT [
   "start" :: intT;
   "count" :: intT;
@@ -27,8 +23,6 @@ Definition Inflights : go_type := structT [
   "maxBytes" :: uint64T;
   "buffer" :: sliceT
 ].
-
-Definition Inflights' : (go_string * go_string) := (pkg_name', "Inflights"%go).
 
 (* NewInflights sets up an Inflights that allows up to size inflight messages,
    with the total byte size up to maxBytes. If maxBytes is 0 then there is no
@@ -66,6 +60,8 @@ Definition Inflights__Clone : val :=
     (slice.append sliceT) "$a0" "$a1") in
     do:  ((struct.field_ref Inflights "buffer" "ins") <-[sliceT] "$r0");;;
     return: ("ins")).
+
+Definition pkg_name' : go_string := "go.etcd.io/raft/v3/tracker".
 
 (* Add notifies the Inflights that a new message with the given index and byte
    size is being dispatched. Full() must be called prior to Add() to verify that
@@ -218,8 +214,6 @@ Definition Progress : go_type := structT [
   "Inflights" :: ptrT;
   "IsLearner" :: boolT
 ].
-
-Definition Progress' : (go_string * go_string) := (pkg_name', "Progress"%go).
 
 (* ResetState moves the Progress into the specified State, resetting MsgAppFlowPaused,
    PendingSnapshot, and Inflights.
@@ -515,8 +509,6 @@ Definition Progress__String : val :=
 
 Definition ProgressMap : go_type := mapT uint64T ptrT.
 
-Definition ProgressMap' : (go_string * go_string) := (pkg_name', "ProgressMap"%go).
-
 (* String prints the ProgressMap in sorted key order, one Progress per line.
 
    go: progress.go:303:22 *)
@@ -553,8 +545,6 @@ Definition ProgressMap__String : val :=
       (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")));;;
     return: ((method_call #strings.pkg_name' #"Builder'ptr" #"String" #() "buf") #())).
 
-Definition StateType' : (go_string * go_string) := (pkg_name', "StateType"%go).
-
 (* go: state.go:42:21 *)
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
@@ -569,8 +559,6 @@ Definition Config : go_type := structT [
   "LearnersNext" :: mapT uint64T (structT [
   ])
 ].
-
-Definition Config' : (go_string * go_string) := (pkg_name', "Config"%go).
 
 (* go: tracker.go:81:17 *)
 Definition Config__String : val :=
@@ -669,8 +657,6 @@ Definition ProgressTracker : go_type := structT [
   "MaxInflightBytes" :: uint64T
 ].
 
-Definition ProgressTracker' : (go_string * go_string) := (pkg_name', "ProgressTracker"%go).
-
 (* MakeProgressTracker initializes a ProgressTracker.
 
    go: tracker.go:130:6 *)
@@ -738,8 +724,6 @@ Definition ProgressTracker__IsSingleton : val :=
      map.len "$a0") = #(W64 0)))).
 
 Definition matchAckIndexer : go_type := mapT uint64T ptrT.
-
-Definition matchAckIndexer' : (go_string * go_string) := (pkg_name', "matchAckIndexer"%go).
 
 (* AckedIndex implements IndexLookuper.
 

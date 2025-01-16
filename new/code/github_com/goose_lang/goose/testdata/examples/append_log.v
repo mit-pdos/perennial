@@ -12,10 +12,6 @@ Definition Log : go_type := structT [
   "diskSz" :: uint64T
 ].
 
-Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/append_log".
-
-Definition Log' : (go_string * go_string) := (pkg_name', "Log"%go).
-
 (* go: append_log.go:22:17 *)
 Definition Log__mkHdr : val :=
   rec: "Log__mkHdr" "log" <> :=
@@ -29,6 +25,8 @@ Definition Log__mkHdr : val :=
     do:  (let: "$a0" := (![uint64T] (struct.field_ref Log "diskSz" (![ptrT] "log"))) in
     (method_call #marshal.pkg_name' #"Enc" #"PutInt" "PutInt" #() (![marshal.Enc] "enc")) "$a0");;;
     return: ((method_call #marshal.pkg_name' #"Enc" #"Finish" "Finish" #() (![marshal.Enc] "enc")) #())).
+
+Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/append_log".
 
 (* go: append_log.go:29:17 *)
 Definition Log__writeHdr : val :=

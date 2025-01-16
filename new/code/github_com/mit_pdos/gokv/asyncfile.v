@@ -21,8 +21,6 @@ Definition AsyncFile : go_type := structT [
 
 Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/asyncfile".
 
-Definition AsyncFile' : (go_string * go_string) := (pkg_name', "AsyncFile"%go).
-
 (* go: storage.go:24:21 *)
 Definition AsyncFile__Write : val :=
   rec: "AsyncFile__Write" "s" "data" :=

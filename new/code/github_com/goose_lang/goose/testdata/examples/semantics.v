@@ -9,10 +9,6 @@ From New Require Import disk_prelude.
 Definition unit : go_type := structT [
 ].
 
-Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/semantics".
-
-Definition unit' : (go_string * go_string) := (pkg_name', "unit"%go).
-
 (* go: allocator.go:7:6 *)
 Definition findKey : val :=
   rec: "findKey" "m" :=
@@ -32,6 +28,8 @@ Definition findKey : val :=
         do:  ("ok" <-[boolT] "$r0")
       else do:  #())));;;
     return: (![uint64T] "found", ![boolT] "ok")).
+
+Definition pkg_name' : go_string := "github.com/goose-lang/goose/testdata/examples/semantics".
 
 (* go: allocator.go:20:6 *)
 Definition allocate : val :=
@@ -443,8 +441,6 @@ Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
 
-Definition Enc' : (go_string * go_string) := (pkg_name', "Enc"%go).
-
 (* go: encoding.go:10:15 *)
 Definition Enc__consume : val :=
   rec: "Enc__consume" "e" "n" :=
@@ -462,8 +458,6 @@ Definition Enc__consume : val :=
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
-
-Definition Dec' : (go_string * go_string) := (pkg_name', "Dec"%go).
 
 (* go: encoding.go:20:15 *)
 Definition Dec__consume : val :=
@@ -653,8 +647,6 @@ Definition Editor : go_type := structT [
   "next_val" :: uint64T
 ].
 
-Definition Editor' : (go_string * go_string) := (pkg_name', "Editor"%go).
-
 (* advances the array editor, and returns the value it wrote, storing
    "next" in next_val
 
@@ -691,8 +683,6 @@ Definition Pair : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
-
-Definition Pair' : (go_string * go_string) := (pkg_name', "Pair"%go).
 
 (* tests
 
@@ -814,23 +804,15 @@ Definition genericStruct (A: go_type) (B: go_type) : go_type := structT [
   "y" :: B
 ].
 
-Definition genericStruct' : (go_string * go_string) := (pkg_name', "genericStruct"%go).
-
 Definition genericStruct2 (T: go_type) : go_type := structT [
   "g" :: T
 ].
-
-Definition genericStruct2' : (go_string * go_string) := (pkg_name', "genericStruct2"%go).
 
 Definition nonGenericStruct : go_type := structT [
   "p" :: uint64T
 ].
 
-Definition nonGenericStruct' : (go_string * go_string) := (pkg_name', "nonGenericStruct"%go).
-
 Definition IntMap (T: go_type) : go_type := mapT uint64T T.
-
-Definition IntMap' : (go_string * go_string) := (pkg_name', "IntMap"%go).
 
 (* go: generics.go:18:6 *)
 Definition identity (A: go_type) (B: go_type) : val :=
@@ -927,8 +909,6 @@ Definition testU32Len : val :=
 
 Definition Uint32 : go_type := uint32T.
 
-Definition Uint32' : (go_string * go_string) := (pkg_name', "Uint32"%go).
-
 (* https://github.com/goose-lang/goose/issues/14
 
    go: int_conversions.go:20:6 *)
@@ -941,8 +921,6 @@ Definition failing_testU32NewtypeLen : val :=
      slice.len "$a0")) = #(W32 20))).
 
 Definition geometryInterface : go_type := interfaceT.
-
-Definition geometryInterface' : (go_string * go_string) := (pkg_name', "geometryInterface"%go).
 
 (* go: interfaces.go:12:6 *)
 Definition measureArea : val :=
@@ -967,8 +945,6 @@ Definition measureVolume : val :=
 Definition SquareStruct : go_type := structT [
   "Side" :: uint64T
 ].
-
-Definition SquareStruct' : (go_string * go_string) := (pkg_name', "SquareStruct"%go).
 
 (* go: interfaces.go:28:23 *)
 Definition SquareStruct__Square : val :=
@@ -1114,8 +1090,6 @@ Definition standardForLoop : val :=
 Definition LoopStruct : go_type := structT [
   "loopNext" :: ptrT
 ].
-
-Definition LoopStruct' : (go_string * go_string) := (pkg_name', "LoopStruct"%go).
 
 (* go: loops.go:28:22 *)
 Definition LoopStruct__forLoopWait : val :=
@@ -1866,8 +1840,6 @@ Definition BoolTest : go_type := structT [
   "fc" :: uint64T
 ].
 
-Definition BoolTest' : (go_string * go_string) := (pkg_name', "BoolTest"%go).
-
 (* go: shortcircuiting.go:11:6 *)
 Definition CheckTrue : val :=
   rec: "CheckTrue" "b" :=
@@ -1976,8 +1948,6 @@ Definition ArrayEditor : go_type := structT [
   "s" :: sliceT;
   "next_val" :: uint64T
 ].
-
-Definition ArrayEditor' : (go_string * go_string) := (pkg_name', "ArrayEditor"%go).
 
 (* go: slices.go:9:24 *)
 Definition ArrayEditor__Advance : val :=
@@ -2164,13 +2134,9 @@ Definition Bar : go_type := structT [
   "b" :: uint64T
 ].
 
-Definition Bar' : (go_string * go_string) := (pkg_name', "Bar"%go).
-
 Definition Foo : go_type := structT [
   "bar" :: Bar
 ].
-
-Definition Foo' : (go_string * go_string) := (pkg_name', "Foo"%go).
 
 (* go: struct_pointers.go:14:17 *)
 Definition Bar__mutate : val :=
@@ -2209,15 +2175,11 @@ Definition TwoInts : go_type := structT [
   "y" :: uint64T
 ].
 
-Definition TwoInts' : (go_string * go_string) := (pkg_name', "TwoInts"%go).
-
 Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
 ].
-
-Definition S' : (go_string * go_string) := (pkg_name', "S"%go).
 
 (* go: structs.go:14:6 *)
 Definition NewS : val :=
@@ -2417,8 +2379,6 @@ Definition StructWrap : go_type := structT [
   "i" :: uint64T
 ].
 
-Definition StructWrap' : (go_string * go_string) := (pkg_name', "StructWrap"%go).
-
 (* go: structs.go:126:6 *)
 Definition testStoreInStructVar : val :=
   rec: "testStoreInStructVar" <> :=
@@ -2474,8 +2434,6 @@ Definition testStoreSlice : val :=
 Definition StructWithFunc : go_type := structT [
   "fn" :: funcT
 ].
-
-Definition StructWithFunc' : (go_string * go_string) := (pkg_name', "StructWithFunc"%go).
 
 (* go: structs.go:155:6 *)
 Definition testStructFieldFunc : val :=
@@ -2537,11 +2495,7 @@ Definition testSwitchDefaultTrue : val :=
 Definition switchConcrete : go_type := structT [
 ].
 
-Definition switchConcrete' : (go_string * go_string) := (pkg_name', "switchConcrete"%go).
-
 Definition switchInterface : go_type := interfaceT.
-
-Definition switchInterface' : (go_string * go_string) := (pkg_name', "switchInterface"%go).
 
 (* go: switch.go:45:26 *)
 Definition switchConcrete__marker : val :=
@@ -2608,8 +2562,6 @@ Definition Log : go_type := structT [
   "cache" :: mapT uint64T sliceT;
   "length" :: ptrT
 ].
-
-Definition Log' : (go_string * go_string) := (pkg_name', "Log"%go).
 
 (* go: wal.go:25:6 *)
 Definition intToBlock : val :=

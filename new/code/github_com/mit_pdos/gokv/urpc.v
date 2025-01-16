@@ -13,10 +13,6 @@ Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/urpc".
-
-Definition Server' : (go_string * go_string) := (pkg_name', "Server"%go).
-
 (* go: urpc.go:19:20 *)
 Definition Server__rpcHandle : val :=
   rec: "Server__rpcHandle" "srv" "conn" "rpcid" "seqno" "data" :=
@@ -60,6 +56,8 @@ Definition MakeServer : val :=
      struct.make Server [{
        "handlers" ::= "$handlers"
      }]))).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/urpc".
 
 (* go: urpc.go:36:20 *)
 Definition Server__readThread : val :=
@@ -139,16 +137,12 @@ Definition Callback : go_type := structT [
   "cond" :: ptrT
 ].
 
-Definition Callback' : (go_string * go_string) := (pkg_name', "Callback"%go).
-
 Definition Client : go_type := structT [
   "mu" :: ptrT;
   "conn" :: grove_ffi.Connection;
   "seq" :: uint64T;
   "pending" :: mapT uint64T ptrT
 ].
-
-Definition Client' : (go_string * go_string) := (pkg_name', "Client"%go).
 
 (* go: urpc.go:88:19 *)
 Definition Client__replyThread : val :=

@@ -213,8 +213,6 @@ Definition RawNode__Bootstrap : val :=
       (method_call #pkg_name' #"raft'ptr" #"applyConfChange" #() (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")));;;
     return: (#interface.nil)).
 
-Definition raftLog' : (go_string * go_string) := (pkg_name', "raftLog"%go).
-
 Definition noLimit : Z := math.MaxUint64.
 
 (* newLog returns log using the given storage and default options. It
@@ -1174,8 +1172,6 @@ Definition raftLog__zeroTermOnOutOfBounds : val :=
     (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1");;;
     return: (#(W64 0))).
 
-Definition unstable' : (go_string * go_string) := (pkg_name', "unstable"%go).
-
 (* maybeFirstIndex returns the index of the first possible entry in entries
    if it has a snapshot.
 
@@ -1506,8 +1502,6 @@ Definition unstable__mustCheckOutOfBounds : val :=
       (interface.get "Panicf" (![Logger] (struct.field_ref unstable "logger" (![ptrT] "u")))) "$a0" "$a1")
     else do:  #())).
 
-Definition Logger' : (go_string * go_string) := (pkg_name', "Logger"%go).
-
 (* go: logger.go:45:6 *)
 Definition SetLogger : val :=
   rec: "SetLogger" "l" :=
@@ -1541,8 +1535,6 @@ Definition getLogger : val :=
     return: (![Logger] (globals.get #pkg_name' #"raftLogger"%go #()))).
 
 Definition calldepth : Z := 2.
-
-Definition DefaultLogger' : (go_string * go_string) := (pkg_name', "DefaultLogger"%go).
 
 (* go: logger.go:78:25 *)
 Definition DefaultLogger__EnableTimestamps : val :=
@@ -1729,8 +1721,6 @@ Definition header : val :=
 
 Definition SnapshotStatus : go_type := intT.
 
-Definition SnapshotStatus' : (go_string * go_string) := (pkg_name', "SnapshotStatus"%go).
-
 Definition SnapshotFinish : expr := #(W64 1).
 
 Definition SnapshotFailure : expr := #(W64 2).
@@ -1739,8 +1729,6 @@ Definition SoftState : go_type := structT [
   "Lead" :: uint64T;
   "RaftState" :: StateType
 ].
-
-Definition SoftState' : (go_string * go_string) := (pkg_name', "SoftState"%go).
 
 (* go: node.go:45:21 *)
 Definition SoftState__equal : val :=
@@ -1759,8 +1747,6 @@ Definition Ready : go_type := structT [
   "Messages" :: sliceT;
   "MustSync" :: boolT
 ].
-
-Definition Ready' : (go_string * go_string) := (pkg_name', "Ready"%go).
 
 (* go: node.go:117:6 *)
 Definition isHardStateEqual : val :=
@@ -1788,10 +1774,6 @@ Definition IsEmptySnap : val :=
     return: ((![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" "sp"))) = #(W64 0))).
 
 Definition Node : go_type := interfaceT.
-
-Definition Node' : (go_string * go_string) := (pkg_name', "Node"%go).
-
-Definition Peer' : (go_string * go_string) := (pkg_name', "Peer"%go).
 
 Definition msgWithResult : go_type := structT [
   "m" :: raftpb.Message;
@@ -1942,10 +1924,6 @@ Definition RestartNode : val :=
     let: "$go" := (method_call #pkg_name' #"node'ptr" #"run" #() "n") in
     do:  (Fork ("$go" #()));;;
     return: (interface.make #pkg_name' #"node'ptr" "n")).
-
-Definition msgWithResult' : (go_string * go_string) := (pkg_name', "msgWithResult"%go).
-
-Definition node' : (go_string * go_string) := (pkg_name', "node"%go).
 
 (* go: node.go:312:6 *)
 Definition newNode : val :=
@@ -2612,8 +2590,6 @@ Definition StatePreCandidate : expr := #(W64 3).
 
 Definition numStates : expr := #(W64 4).
 
-Definition ReadOnlyOption' : (go_string * go_string) := (pkg_name', "ReadOnlyOption"%go).
-
 Definition ReadOnlySafe : expr := #(W64 0).
 
 Definition ReadOnlyLeaseBased : expr := #(W64 1).
@@ -2627,8 +2603,6 @@ Definition campaignTransfer : expr := #"CampaignTransfer"%go.
 Definition lockedRand : go_type := structT [
   "mu" :: sync.Mutex
 ].
-
-Definition lockedRand' : (go_string * go_string) := (pkg_name', "lockedRand"%go).
 
 (* go: raft.go:95:22 *)
 Definition lockedRand__Intn : val :=
@@ -2650,17 +2624,11 @@ Definition lockedRand__Intn : val :=
 
 Definition CampaignType : go_type := stringT.
 
-Definition CampaignType' : (go_string * go_string) := (pkg_name', "CampaignType"%go).
-
-Definition StateType' : (go_string * go_string) := (pkg_name', "StateType"%go).
-
 (* go: raft.go:119:21 *)
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
     exception_do (let: "st" := (ref_ty StateType "st") in
     return: (![stringT] (array.elem_ref stringT (![arrayT 4 stringT] (globals.get #pkg_name' #"stmap"%go #())) (![StateType] "st")))).
-
-Definition Config' : (go_string * go_string) := (pkg_name', "Config"%go).
 
 (* go: raft.go:291:18 *)
 Definition Config__validate : val :=
@@ -2728,8 +2696,6 @@ Definition Config__validate : val :=
        (func_call #errors.pkg_name' #"New"%go) "$a0")
     else do:  #());;;
     return: (#interface.nil)).
-
-Definition raft' : (go_string * go_string) := (pkg_name', "raft"%go).
 
 Definition tickElectionId : expr := #(W64 0).
 
@@ -4307,8 +4273,6 @@ Definition raft__Step : val :=
 
 Definition stepFunc : go_type := funcT.
 
-Definition stepFunc' : (go_string * go_string) := (pkg_name', "stepFunc"%go).
-
 Definition readIndexStatus : go_type := structT [
   "req" :: raftpb.Message;
   "index" :: uint64T;
@@ -5874,8 +5838,6 @@ Definition entsWithConfig : val :=
 Definition blackHole : go_type := structT [
 ].
 
-Definition blackHole' : (go_string * go_string) := (pkg_name', "blackHole"%go).
-
 (* go: raft2.go:37:18 *)
 Definition blackHole__Step : val :=
   rec: "blackHole__Step" <> "" :=
@@ -5904,14 +5866,10 @@ Definition preVoteConfig : val :=
 
 Definition stateMachine : go_type := interfaceT.
 
-Definition stateMachine' : (go_string * go_string) := (pkg_name', "stateMachine"%go).
-
 Definition connem : go_type := structT [
   "from" :: uint64T;
   "to" :: uint64T
 ].
-
-Definition connem' : (go_string * go_string) := (pkg_name', "connem"%go).
 
 Definition network : go_type := structT [
   "t" :: ptrT;
@@ -5921,8 +5879,6 @@ Definition network : go_type := structT [
   "ignorem" :: mapT raftpb.MessageType boolT;
   "msgHook" :: funcT
 ].
-
-Definition network' : (go_string * go_string) := (pkg_name', "network"%go).
 
 (* go: raft2.go:70:6 *)
 Definition idsBySize : val :=
@@ -5950,8 +5906,6 @@ Definition withPeers : val :=
        let: "$r0" := (![sliceT] "peers") in
        do:  ((struct.field_ref raftpb.ConfState "Voters" (struct.field_ref raftpb.SnapshotMetadata "ConfState" (struct.field_ref raftpb.Snapshot "Metadata" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms"))))) <-[sliceT] "$r0"))
        ))).
-
-Definition testMemoryStorageOptions' : (go_string * go_string) := (pkg_name', "testMemoryStorageOptions"%go).
 
 (* go: raft2.go:86:6 *)
 Definition newTestMemoryStorage : val :=
@@ -6179,8 +6133,6 @@ Definition testLeaderElectionStruct : go_type := structT [
   "expTerm" :: uint64T
 ].
 
-Definition testLeaderElectionStruct' : (go_string * go_string) := (pkg_name', "testLeaderElectionStruct"%go).
-
 (* go: raft2.go:204:6 *)
 Definition testLeaderElection2 : val :=
   rec: "testLeaderElection2" "t" "preVote" :=
@@ -6326,8 +6278,6 @@ Definition testLeaderElection2 : val :=
       let: "$sl1" := (interface.make #""%go #"int"%go (![intT] "i")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (func_call #assert.pkg_name' #"Equal"%go) "$a0" "$a1" "$a2" "$a3")))).
-
-Definition RawNode' : (go_string * go_string) := (pkg_name', "RawNode"%go).
 
 (* NewRawNode instantiates a RawNode from the given configuration.
 
@@ -7092,8 +7042,6 @@ Definition RawNode__BasicStatus : val :=
 
 Definition ProgressType : go_type := byteT.
 
-Definition ProgressType' : (go_string * go_string) := (pkg_name', "ProgressType"%go).
-
 Definition ProgressTypePeer : expr := #(W8 0).
 
 Definition ProgressTypeLearner : expr := #(W8 1).
@@ -7282,12 +7230,6 @@ Definition RawNode__ReadIndex : val :=
     (method_call #pkg_name' #"raft'ptr" #"Step" #() (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
     do:  "$r0").
 
-Definition ReadState' : (go_string * go_string) := (pkg_name', "ReadState"%go).
-
-Definition readIndexStatus' : (go_string * go_string) := (pkg_name', "readIndexStatus"%go).
-
-Definition readOnly' : (go_string * go_string) := (pkg_name', "readOnly"%go).
-
 (* go: read_only.go:45:6 *)
 Definition newReadOnly : val :=
   rec: "newReadOnly" "option" :=
@@ -7435,12 +7377,8 @@ Definition readOnly__lastPendingRequestCtx : val :=
 
 Definition StateTraceDeployed : expr := #false.
 
-Definition TraceLogger' : (go_string * go_string) := (pkg_name', "TraceLogger"%go).
-
 Definition TracingEvent : go_type := structT [
 ].
-
-Definition TracingEvent' : (go_string * go_string) := (pkg_name', "TracingEvent"%go).
 
 (* go: state_trace_nop.go:30:6 *)
 Definition traceInitState : val :=
@@ -7512,10 +7450,6 @@ Definition traceReceiveMessage : val :=
     exception_do (let: "" := (ref_ty ptrT "") in
     let: "" := (ref_ty ptrT "") in
     do:  #()).
-
-Definition Status' : (go_string * go_string) := (pkg_name', "Status"%go).
-
-Definition BasicStatus' : (go_string * go_string) := (pkg_name', "BasicStatus"%go).
 
 (* go: status.go:44:6 *)
 Definition getProgressCopy : val :=
@@ -7646,12 +7580,6 @@ Definition Status__String : val :=
       (interface.get "Panicf" ((func_call #pkg_name' #"getLogger"%go) #())) "$a0" "$a1")
     else do:  #());;;
     return: (string.from_bytes (![sliceT] "b"))).
-
-Definition Storage' : (go_string * go_string) := (pkg_name', "Storage"%go).
-
-Definition inMemStorageCallStats' : (go_string * go_string) := (pkg_name', "inMemStorageCallStats"%go).
-
-Definition MemoryStorage' : (go_string * go_string) := (pkg_name', "MemoryStorage"%go).
 
 (* NewMemoryStorage creates an empty MemoryStorage.
 
@@ -8030,8 +7958,6 @@ Definition MemoryStorage__Append : val :=
         (interface.get "Panicf" ((func_call #pkg_name' #"getLogger"%go) #())) "$a0" "$a1")));;;
     return: (#interface.nil)).
 
-Definition entryID' : (go_string * go_string) := (pkg_name', "entryID"%go).
-
 (* pbEntryID returns the ID of the given raftpb.Entry.
 
    go: types.go:34:6 *)
@@ -8044,8 +7970,6 @@ Definition pbEntryID : val :=
        "term" ::= "$term";
        "index" ::= "$index"
      }])).
-
-Definition logSlice' : (go_string * go_string) := (pkg_name', "logSlice"%go).
 
 (* lastIndex returns the index of the last entry in this log slice. Returns
    prev.index if there are no entries.
@@ -8345,8 +8269,6 @@ Definition DescribeReady : val :=
     else do:  #());;;
     return: (#"<empty Ready>"%go)).
 
-Definition EntryFormatter' : (go_string * go_string) := (pkg_name', "EntryFormatter"%go).
-
 (* DescribeMessage returns a concise human-readable description of a
    Message for debugging.
 
@@ -8607,8 +8529,6 @@ Definition DescribeEntries : val :=
       do:  "$r1"));;;
     return: ((method_call #bytes.pkg_name' #"Buffer'ptr" #"String" #() "buf") #())).
 
-Definition entryEncodingSize' : (go_string * go_string) := (pkg_name', "entryEncodingSize"%go).
-
 (* go: util.go:256:6 *)
 Definition entsSize : val :=
   rec: "entsSize" "ents" :=
@@ -8649,8 +8569,6 @@ Definition limitSize : val :=
          slice.slice raftpb.Entry "$s" #(W64 0) (![intT] "limit"))
       else do:  #())));;;
     return: (![sliceT] "ents")).
-
-Definition entryPayloadSize' : (go_string * go_string) := (pkg_name', "entryPayloadSize"%go).
 
 (* payloadSize is the size of the payload of the provided entry.
 

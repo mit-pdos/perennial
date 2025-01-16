@@ -21,10 +21,6 @@ Definition singleClerk : go_type := structT [
   "cl" :: ptrT
 ].
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/vrsm/paxos".
-
-Definition singleClerk' : (go_string * go_string) := (pkg_name', "singleClerk"%go).
-
 (* go: internalclerk.go:19:6 *)
 Definition MakeSingleClerk : val :=
   rec: "MakeSingleClerk" "addr" :=
@@ -48,6 +44,8 @@ Definition enterNewEpochReply : go_type := structT [
 ].
 
 Definition ETimeout : expr := #(W64 3).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/vrsm/paxos".
 
 (* go: internalclerk.go:28:23 *)
 Definition singleClerk__enterNewEpoch : val :=
@@ -127,8 +125,6 @@ Definition singleClerk__TryBecomeLeader : val :=
     let: "$a3" := #(W64 500) in
     (method_call #reconnectclient.pkg_name' #"ReconnectingClient'ptr" #"Call" #() (![ptrT] (struct.field_ref singleClerk "cl" (![ptrT] "s")))) "$a0" "$a1" "$a2" "$a3")).
 
-Definition Error' : (go_string * go_string) := (pkg_name', "Error"%go).
-
 Definition ENone : expr := #(W64 0).
 
 Definition EEpochStale : expr := #(W64 1).
@@ -142,8 +138,6 @@ Definition applyAsFollowerArgs : go_type := structT [
   "nextIndex" :: uint64T;
   "state" :: sliceT
 ].
-
-Definition applyAsFollowerArgs' : (go_string * go_string) := (pkg_name', "applyAsFollowerArgs"%go).
 
 (* go: marshal.go:21:6 *)
 Definition encodeApplyAsFollowerArgs : val :=
@@ -190,8 +184,6 @@ Definition decodeApplyAsFollowerArgs : val :=
     do:  ((struct.field_ref applyAsFollowerArgs "state" (![ptrT] "o")) <-[sliceT] "$r0");;;
     return: (![ptrT] "o")).
 
-Definition applyAsFollowerReply' : (go_string * go_string) := (pkg_name', "applyAsFollowerReply"%go).
-
 (* go: marshal.go:41:6 *)
 Definition decodeApplyAsFollowerReply : val :=
   rec: "decodeApplyAsFollowerReply" "s" :=
@@ -229,8 +221,6 @@ Definition enterNewEpochArgs : go_type := structT [
   "epoch" :: uint64T
 ].
 
-Definition enterNewEpochArgs' : (go_string * go_string) := (pkg_name', "enterNewEpochArgs"%go).
-
 (* go: marshal.go:58:6 *)
 Definition encodeEnterNewEpochArgs : val :=
   rec: "encodeEnterNewEpochArgs" "o" :=
@@ -258,8 +248,6 @@ Definition decodeEnterNewEpochArgs : val :=
     do:  ((struct.field_ref enterNewEpochArgs "epoch" (![ptrT] "o")) <-[uint64T] "$r0");;;
     do:  "$r1";;;
     return: (![ptrT] "o")).
-
-Definition enterNewEpochReply' : (go_string * go_string) := (pkg_name', "enterNewEpochReply"%go).
 
 (* go: marshal.go:77:6 *)
 Definition decodeEnterNewEpochReply : val :=
@@ -328,8 +316,6 @@ Definition applyReply : go_type := structT [
   "err" :: Error;
   "ret" :: sliceT
 ].
-
-Definition applyReply' : (go_string * go_string) := (pkg_name', "applyReply"%go).
 
 (* go: marshal.go:103:6 *)
 Definition encodeApplyReply : val :=
@@ -457,16 +443,12 @@ Definition decodePaxosState : val :=
     do:  ((struct.field_ref paxosState "isLeader" (![ptrT] "ps")) <-[boolT] "$r0");;;
     return: (![ptrT] "ps")).
 
-Definition paxosState' : (go_string * go_string) := (pkg_name', "paxosState"%go).
-
 Definition Server : go_type := structT [
   "mu" :: ptrT;
   "ps" :: ptrT;
   "storage" :: ptrT;
   "clerks" :: sliceT
 ].
-
-Definition Server' : (go_string * go_string) := (pkg_name', "Server"%go).
 
 (* go: server.go:28:18 *)
 Definition Server__withLock : val :=

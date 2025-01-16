@@ -17,8 +17,6 @@ Definition JointConfig : go_type := arrayT 2 MajorityConfig.
 
 Definition pkg_name' : go_string := "go.etcd.io/raft/v3/quorum".
 
-Definition JointConfig' : (go_string * go_string) := (pkg_name', "JointConfig"%go).
-
 (* go: joint.go:21:22 *)
 Definition JointConfig__String : val :=
   rec: "JointConfig__String" "c" <> :=
@@ -129,8 +127,6 @@ Definition JointConfig__VoteResult : val :=
     else do:  #());;;
     return: (VotePending)).
 
-Definition MajorityConfig' : (go_string * go_string) := (pkg_name', "MajorityConfig"%go).
-
 (* go: majority.go:28:25 *)
 Definition MajorityConfig__String : val :=
   rec: "MajorityConfig__String" "c" <> :=
@@ -177,8 +173,6 @@ Definition tup : go_type := structT [
   "ok" :: boolT;
   "bar" :: intT
 ].
-
-Definition tup' : (go_string * go_string) := (pkg_name', "tup"%go).
 
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
@@ -404,8 +398,6 @@ Definition MajorityConfig__VoteResult : val :=
     else do:  #());;;
     return: (VoteLost)).
 
-Definition Index' : (go_string * go_string) := (pkg_name', "Index"%go).
-
 (* go: quorum.go:25:16 *)
 Definition Index__String : val :=
   rec: "Index__String" "i" <> :=
@@ -417,11 +409,7 @@ Definition Index__String : val :=
      let: "$a1" := #(W64 10) in
      (func_call #strconv.pkg_name' #"FormatUint"%go) "$a0" "$a1")).
 
-Definition AckedIndexer' : (go_string * go_string) := (pkg_name', "AckedIndexer"%go).
-
 Definition mapAckIndexer : go_type := mapT uint64T Index.
-
-Definition mapAckIndexer' : (go_string * go_string) := (pkg_name', "mapAckIndexer"%go).
 
 (* go: quorum.go:40:24 *)
 Definition mapAckIndexer__AckedIndex : val :=
@@ -436,8 +424,6 @@ Definition mapAckIndexer__AckedIndex : val :=
     do:  ("idx" <-[Index] "$r0");;;
     do:  ("ok" <-[boolT] "$r1");;;
     return: (![Index] "idx", ![boolT] "ok")).
-
-Definition VoteResult' : (go_string * go_string) := (pkg_name', "VoteResult"%go).
 
 (* go: voteresult_string.go:7:6 *)
 Definition _unused : val :=

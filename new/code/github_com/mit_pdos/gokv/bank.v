@@ -16,10 +16,6 @@ Definition BankClerk : go_type := structT [
   "accts" :: sliceT
 ].
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/bank".
-
-Definition BankClerk' : (go_string * go_string) := (pkg_name', "BankClerk"%go).
-
 (* go: bank.go:19:6 *)
 Definition acquire_two_good : val :=
   rec: "acquire_two_good" "lck" "l1" "l2" :=
@@ -83,6 +79,8 @@ Definition decodeInt : val :=
     do:  ("v" <-[uint64T] "$r0");;;
     do:  "$r1";;;
     return: (![uint64T] "v")).
+
+Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/bank".
 
 (* Requires that the account numbers are smaller than num_accounts
    If account balance in acc_from is at least amount, transfer amount to acc_to
