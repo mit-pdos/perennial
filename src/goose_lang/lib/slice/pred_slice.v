@@ -145,29 +145,54 @@ Theorem wp_NewSlice {stk E} t x (sz: u64) :
   has_zero t ->
   {{{ [∗ list] _ ∈ replicate (uint.nat sz) x, Ψ (zero_val t) x (DfracOwn 1) }}}
     NewSlice t #sz @ stk; E
-  {{{ s, RET slice_val s; is_pred_slice s t (DfracOwn 1) (replicate (uint.nat sz) x) }}}.
+  {{{ s, RET slice_val s; is_pred_slice s t (DfracOwn 1) (replicate (uint.nat sz) x) ∗
+                          own_slice_cap s t }}}.
 Proof.
   iIntros (Hzero Φ) "HΨ HΦ".
   wp_apply (slice.wp_new_slice).
   { done. }
   iIntros (sl) "Hs".
   iApply "HΦ".
-  iApply slice.own_slice_to_small in "Hs".
-  iExists (replicate (uint.nat sz) (zero_val t)).
-  unfold own_slice_small.
-  rewrite ?list_untype_val.
-  iFrame "Hs".
-  iApply (big_sepL2_replicate_l).
-  { apply length_replicate. }
-  iApply (big_sepL_impl with "HΨ").
-  iModIntro.
-  iIntros (k x0) "%Hrep".
-  apply lookup_replicate in Hrep.
-  destruct Hrep as [Hrep_eq Hk].
-  rewrite Hrep_eq.
-  iIntros "H". done.
+  iDestruct (slice.own_slice_split with "Hs") as "[Hs Hscap]".
+  iSplitR "Hscap".
+  + iExists (replicate (uint.nat sz) (zero_val t)).
+    unfold own_slice_small.
+    rewrite ?list_untype_val.
+    iFrame "Hs".
+    iApply (big_sepL2_replicate_l).
+    { apply length_replicate. }
+    iApply (big_sepL_impl with "HΨ").
+    iModIntro.
+    iIntros (k x0) "%Hrep".
+    apply lookup_replicate in Hrep.
+    destruct Hrep as [Hrep_eq Hk].
+    rewrite Hrep_eq.
+    iIntros "H". done.
+  + iFrame.
 Qed.
-  
+
+Theorem wp_NewSlice_0 {stk E} t :
+  has_zero t ->
+  {{{ True }}}
+    NewSlice t #(W64 0) @ stk; E
+  {{{ s, RET slice_val s; is_pred_slice s t (DfracOwn 1) [] ∗
+                          own_slice_cap s t }}}.
+Proof.
+  iIntros (Hzero Φ) "_ HΦ".
+  wp_apply (slice.wp_new_slice); first done.
+  iIntros (sl) "Hs".
+  iApply "HΦ".
+  iDestruct (slice.own_slice_split with "Hs") as "[Hs Hscap]".
+  iSplitR "Hscap".
+  + iExists [].
+    unfold own_slice_small.
+    rewrite ?list_untype_val.
+    iFrame "Hs".
+    rewrite big_sepL2_nil.
+    done.
+  + iFrame.
+Qed.
+
 Theorem wp_forSlice {stk E} (I: u64 → iProp Σ) s t q xs (body: val) :
   (∀ (i: u64) v x,
       {{{ I i ∗ Ψ v x q }}}

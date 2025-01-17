@@ -4,6 +4,7 @@ From Goose.github_com.tchajed Require Import marshal.
 From Perennial.goose_lang.lib Require Import encoding.
 
 From Perennial.program_proof Require Import proof_prelude std_proof.
+From Perennial.goose_lang.lib Require Import slice.pred_slice.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section goose_lang.
@@ -133,13 +134,131 @@ Proof.
   inversion Hd. reflexivity.
 Qed.
 
-Fixpoint encodes {A:Type} (enc : list u8) (xs : list A) (has_encoding : list u8 -> A -> Prop): Prop :=
+Fixpoint encodes {A:Type} (enc : list u8) (xs : list A)
+  (has_encoding : list u8 -> A -> Prop): Prop :=
   match xs with
-    | [] => enc = []
-    | x :: xs' => exists bs bs', xs = x :: xs' /\ enc = bs ++ bs' /\ has_encoding bs x /\ encodes bs' xs' has_encoding
+  | [] => enc = []
+  | x :: xs' => exists bs bs', xs = x :: xs' /\
+                         enc = bs ++ bs' /\
+                         has_encoding bs x /\
+                         encodes bs' xs' has_encoding
   end.
 
-Theorem wp_ReadSlice {X : Type} {V : IntoVal X} {goT: ty}
+Theorem wp_ReadSlice {X : Type} {goT : ty} (enc : list u8) (enc_sl : Slice.t)
+  (xs : list X) (count : w64) (has_encoding : list u8 -> X -> Prop)
+  (own : val -> X -> dfrac -> iProp Σ) (readOne : val) (suffix : list u8) (dq : dfrac) :
+  (∀ (v : val) (x : X) (dq : dfrac), own v x dq -∗ ⌜val_ty v goT⌝) ->
+  has_zero goT ->
+  {{{
+        "Hsl" ∷ own_slice_small enc_sl byteT dq (enc ++ suffix) ∗
+        "%Henc" ∷ ⌜encodes enc xs has_encoding⌝ ∗
+        "%Hcount" ∷ ⌜uint.nat count = length xs⌝ ∗
+        "#HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
+          {{{
+                own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
+                ⌜has_encoding enc' x⌝
+          }}}
+            readOne (slice_val enc_sl')
+          {{{
+                (v : val) (suff_sl : Slice.t), RET (v, slice_val suff_sl);
+                own v x (DfracOwn 1) ∗
+                own_slice_small suff_sl byteT dq suffix'
+          }}}
+  }}}
+    ReadSlice goT (slice_val enc_sl) #count readOne
+  {{{
+        vals b2, RET (slice_val vals, slice_val b2);
+        is_pred_slice own vals goT (DfracOwn 1) xs ∗
+        own_slice_small b2 byteT dq suffix
+  }}}.
+Proof.
+  iIntros (Hval_ty Hzero Φ) "Hpre HΦ". iNamed "Hpre".
+  iUnfold is_pred_slice in "Hsl".
+  wp_rec. wp_pures.
+
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Henc_sl".
+  wp_pures.
+
+  wp_apply (pred_slice.wp_NewSlice_0 own); first done.
+  iIntros (gxs) "[Hgxs Hgxs_cap]".
+
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__xs) "Hxs_sl".
+  wp_pures.
+
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__i) "Hi".
+  wp_pures.
+
+  wp_apply (wp_forUpto'
+              (λ i, ∃ (enc' : list u8) (enc_sl' gxs' : Slice.t),
+                   (* Loop Bounds *)
+                   "%Hi_ge" ∷ ⌜0 ≤ uint.nat i⌝ ∗
+                   "%Hi_le" ∷ ⌜uint.nat i <= length xs⌝ ∗
+                   (* Encoding *)
+                   "%H_b2_enc" ∷ ⌜encodes enc' (drop (uint.nat i) xs) has_encoding⌝ ∗
+                   "H_b2_sl" ∷ own_slice_small enc_sl' byteT dq (enc' ++ suffix) ∗
+                   (* Outside variables *)
+                   "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl' ∗
+                   "Hxs_sl" ∷ l__xs ↦[slice.T goT] gxs' ∗
+                   "Hxs" ∷ is_pred_slice own gxs' goT (DfracOwn 1) (take (uint.nat i) xs) ∗
+                   "Hxs_cap" ∷ own_slice_cap gxs' goT
+              )%I
+              with "[$Hi $Hsl $Henc_sl $Hgxs $Hgxs_cap $Hxs_sl]"
+           ).
+  - iSplit; first word. 
+    iPureIntro.
+    split; first word. split; first word. done.
+  - clear Φ. iIntros "!>" (i Φ) "[IH (i & %Hle)] HΦ". iNamed "IH".
+    wp_pures. wp_load.
+    assert ((uint.nat i <= length xs)%nat) as Hi_length. { word. }
+    assert ((uint.nat i < length xs)%nat) as Hi_l_ne. { word. }
+    apply drop_lt in Hi_l_ne.
+    unfold encodes in H_b2_enc.
+    destruct (drop (uint.nat i) xs) eqn:Hdrop. { contradiction. }
+    destruct H_b2_enc as (H_b2_bs & H_b2_bs' & H_b2_enc &
+                            H_b2_enc' & H_b2_encoding & H_b2_enc_next).
+    rewrite H_b2_enc'. rewrite <- app_assoc.
+    wp_apply ("HreadOne" with "[$H_b2_sl //]").
+    iIntros (??) "(Hown_x & Hsuff_sl)".
+    wp_pures. wp_load.
+    pose proof (Hval_ty v x (DfracOwn 1)) as Hval.
+    iDestruct (Hval with "Hown_x") as "%Hval_x".
+    wp_apply (pred_slice.wp_SliceAppend with "[$Hxs $Hxs_cap $Hown_x]").
+    { done. } { done. }
+    iIntros (s') "Hs'".
+    wp_store. wp_store.
+
+    iModIntro. iApply "HΦ". iFrame.
+    pose proof (take_drop (uint.nat i) xs) as H_td.
+    rewrite Hdrop in H_td.
+    pose proof (length_take_le xs $ uint.nat i) as H_tl.
+    apply H_tl in Hi_length. symmetry in Hi_length.
+    pose proof (list_lookup_middle (take (uint.nat i) xs) l x $ uint.nat i) as Hmiddle. 
+    apply Hmiddle in Hi_length as Hlookup.
+    apply take_S_r in Hlookup as Htake.
+    rewrite H_td in Htake.
+    rewrite <- Htake.
+    replace (uint.nat (w64_word_instance.(word.add) i (W64 1)))
+      with (S (uint.nat i)) by word.
+
+    iFrame. iPureIntro.
+    split; first word. split; first word.
+    apply drop_succ in Hdrop.
+    + rewrite Hdrop. done.
+    + rewrite <- H_td. done.
+
+  - iIntros "[Hloop Hi]". iNamed "Hloop".
+    wp_pures. wp_load. wp_load. wp_pures.
+    iModIntro. iApply "HΦ".
+    rewrite take_ge; [ | word ].
+    rewrite Hcount in H_b2_enc.
+    rewrite drop_all in H_b2_enc.
+    unfold encodes in H_b2_enc.
+    rewrite H_b2_enc.
+    rewrite app_nil_l.
+    iFrame.
+Qed.
+
+Theorem wp_ReadSlice' {X : Type} {V : IntoVal X} {goT: ty}
   (enc : list u8) (enc_sl : Slice.t) (xs : list X) (count : w64) (ValRel: IntoValForType X goT)
   (has_encoding : list u8 -> X -> Prop) (own : val -> X -> dfrac -> iProp Σ) (readOne : val)
   (suffix : list u8) (dq : dfrac) :
