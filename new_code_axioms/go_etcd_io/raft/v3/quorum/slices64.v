@@ -4,6 +4,7 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
-Axiom Sort : val.
+Definition pkg_name' : go_string := "go.etcd.io/raft/v3/quorum/slices64".
 Axiom initialize' : val.
+
 End axioms.

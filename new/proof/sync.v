@@ -98,9 +98,6 @@ Proof.
   }
 Qed.
 
-Global Hint Mode WpMethodCall - - - - - - + + + - - : typeclass_instances.
-Global Hint Mode WpFuncCall - - - - - - + + - - : typeclass_instances.
-
 Lemma wp_Mutex__Lock m R :
   {{{ is_defined ∗ is_Mutex m R }}}
     method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #m #()

@@ -4,64 +4,13 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
-Axiom Errorf : val.
-Axiom wrapError__Error : val.
-Axiom wrapError__Unwrap : val.
-Axiom wrapErrors__Error : val.
-Axiom wrapErrors__Unwrap : val.
 Axiom State : go_type.
-Axiom State__mset : list (go_string * val).
-Axiom State__mset_ptr : list (go_string * val).
 Axiom Formatter : go_type.
-Axiom Formatter__mset : list (go_string * val).
-Axiom Formatter__mset_ptr : list (go_string * val).
 Axiom Stringer : go_type.
-Axiom Stringer__mset : list (go_string * val).
-Axiom Stringer__mset_ptr : list (go_string * val).
 Axiom GoStringer : go_type.
-Axiom GoStringer__mset : list (go_string * val).
-Axiom GoStringer__mset_ptr : list (go_string * val).
-Axiom FormatString : val.
-Axiom pp__Width : val.
-Axiom pp__Precision : val.
-Axiom pp__Flag : val.
-Axiom pp__Write : val.
-Axiom pp__WriteString : val.
-Axiom Fprintf : val.
-Axiom Printf : val.
-Axiom Sprintf : val.
-Axiom Appendf : val.
-Axiom Fprint : val.
-Axiom Print : val.
-Axiom Sprint : val.
-Axiom Append : val.
-Axiom Fprintln : val.
-Axiom Println : val.
-Axiom Sprintln : val.
-Axiom Appendln : val.
 Axiom ScanState : go_type.
-Axiom ScanState__mset : list (go_string * val).
-Axiom ScanState__mset_ptr : list (go_string * val).
 Axiom Scanner : go_type.
-Axiom Scanner__mset : list (go_string * val).
-Axiom Scanner__mset_ptr : list (go_string * val).
-Axiom Scan : val.
-Axiom Scanln : val.
-Axiom Scanf : val.
-Axiom stringReader__Read : val.
-Axiom Sscan : val.
-Axiom Sscanln : val.
-Axiom Sscanf : val.
-Axiom Fscan : val.
-Axiom Fscanln : val.
-Axiom Fscanf : val.
-Axiom ss__Read : val.
-Axiom ss__ReadRune : val.
-Axiom ss__Width : val.
-Axiom ss__UnreadRune : val.
-Axiom ss__Token : val.
-Axiom readRune__ReadRune : val.
-Axiom readRune__UnreadRune : val.
-Axiom ss__SkipSpace : val.
+Definition pkg_name' : go_string := "fmt".
 Axiom initialize' : val.
+
 End axioms.

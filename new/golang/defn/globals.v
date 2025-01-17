@@ -19,30 +19,26 @@ Definition get_def : val :=
 Program Definition get := unseal (_:seal (@get_def)). Obligation 1. by eexists. Qed.
 Definition get_unseal : get = _ := seal_eq _.
 
-Definition alloc_and_define_def
-  (pkg_name : go_string)
-  (vars : list (go_string * go_type))
-  (functions : list (go_string * val))
-  (msets : list (go_string * (list (go_string * val)))) : val :=
-  let functions_val := alist_val functions in
-  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
-  λ: <>,
-    GlobalPut #pkg_name ((fix alloc (vars : list (go_string * go_type)) : expr :=
-        (match vars with
-         | Datatypes.nil => alist_val []
-         | (pair name t) :: vars =>
-             list.Cons (#name, ref_ty t (zero_val t)) (alloc vars)
-         end)%E) vars, functions_val, msets_val)
+(* XXX: unsealed because user has to prove WPs for this by unfolding. *)
+Definition alloc (vars : list (go_string * go_type)) : val :=
+  λ: <>, (fix alloc (vars : list (go_string * go_type)) : expr :=
+           (match vars with
+            | Datatypes.nil => alist_val []
+            | (pair name t) :: vars =>
+                list.Cons (#name, ref_ty t (zero_val t)) (alloc vars)
+            end)%E) vars
 .
-Program Definition alloc_and_define := unseal (_:seal (@alloc_and_define_def)). Obligation 1. by eexists. Qed.
-Definition alloc_and_define_unseal : alloc_and_define = _ := seal_eq _.
 
 Definition package_init_def (pkg_name : go_string) vars functions msets : val :=
+  let functions_val := alist_val functions in
+  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
   λ: "init",
     match: GlobalGet #pkg_name with
       SOME <> => #()
-    | NONE => alloc_and_define pkg_name vars functions msets #() ;;
-             "init" #()
+    | NONE =>
+        let: "var_addrs" := alloc vars #() in
+        GlobalPut #pkg_name ("var_addrs", functions_val, msets_val) ;;
+        "init" #()
     end.
 Program Definition package_init := unseal (_:seal (@package_init_def)). Obligation 1. by eexists. Qed.
 Definition package_init_unseal : package_init = _ := seal_eq _.

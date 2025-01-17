@@ -15,13 +15,13 @@ Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/globals_test".
 Definition other : val :=
   rec: "other" <> :=
     exception_do (let: "$r0" := #"ok"%go in
-    do:  ((globals.get #pkg_name' #"globalY"%go #()) <-[stringT] "$r0")).
+    do:  ((globals.get #pkg_name' #"globalY"%go) <-[stringT] "$r0")).
 
 (* go: globals.go:16:6 *)
 Definition bar : val :=
   rec: "bar" <> :=
     exception_do (do:  ((func_call #pkg_name' #"other"%go) #());;;
-    (if: ((![uint64T] (globals.get #pkg_name' #"GlobalX"%go #())) ≠ #(W64 10)) || ((![stringT] (globals.get #pkg_name' #"globalY"%go #())) ≠ #"ok"%go)
+    (if: ((![uint64T] (globals.get #pkg_name' #"GlobalX"%go)) ≠ #(W64 10)) || ((![stringT] (globals.get #pkg_name' #"globalY"%go)) ≠ #"ok"%go)
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"bad"%go) in
       Panic "$a0")
@@ -42,18 +42,18 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (let: "$r0" := ((func_call #pkg_name' #"foo"%go) #()) in
-      do:  ((globals.get #pkg_name' #"GlobalX"%go #()) <-[uint64T] "$r0");;;
+      do:  ((globals.get #pkg_name' #"GlobalX"%go) <-[uint64T] "$r0");;;
       let: "$r0" := #"a"%go in
-      do:  ((globals.get #pkg_name' #"globalA"%go #()) <-[stringT] "$r0");;;
+      do:  ((globals.get #pkg_name' #"globalA"%go) <-[stringT] "$r0");;;
       let: "$r0" := #"b"%go in
-      do:  ((globals.get #pkg_name' #"globalB"%go #()) <-[stringT] "$r0");;;
+      do:  ((globals.get #pkg_name' #"globalB"%go) <-[stringT] "$r0");;;
       do:  ((λ: <>,
-        exception_do (let: "$r0" := ((![uint64T] (globals.get #pkg_name' #"GlobalX"%go #())) + #(W64 0)) in
-        do:  ((globals.get #pkg_name' #"GlobalX"%go #()) <-[uint64T] "$r0"))
+        exception_do (let: "$r0" := ((![uint64T] (globals.get #pkg_name' #"GlobalX"%go)) + #(W64 0)) in
+        do:  ((globals.get #pkg_name' #"GlobalX"%go) <-[uint64T] "$r0"))
         ) #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := #""%go in
-        do:  ((globals.get #pkg_name' #"globalY"%go #()) <-[stringT] "$r0"))
+        do:  ((globals.get #pkg_name' #"globalY"%go) <-[stringT] "$r0"))
         ) #()))
       ).
 

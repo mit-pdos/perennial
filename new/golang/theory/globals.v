@@ -169,25 +169,34 @@ Qed.
 
 Class WpGlobalsGet (pkg_name : go_string) (var_name : go_string) (addr : loc)
                    (P : iProp Σ)
-  := wp_globals_get : ⊢ ∀ Φ, P -∗ (▷ Φ #addr) -∗
-                             WP (globals.get #pkg_name #var_name) {{ Φ }}.
+  := wp_globals_get : ⊢ {{{ P }}} (globals.get #pkg_name #var_name) {{{ RET #addr; True }}}.
 
 Class WpFuncCall (pkg_name : go_string) (func_name : go_string) (func : val)
                    (P : iProp Σ)
-  := wp_func_call : ⊢ ∀ Φ, P -∗ (▷ Φ func) -∗
-                           WP (func_call #pkg_name #func_name) {{ Φ }}.
+  := wp_func_call : ⊢ {{{ P }}} (func_call #pkg_name #func_name) {{{ RET func; True }}}.
 
 Class WpMethodCall (pkg_name : go_string) (type_name : go_string) (func_name : go_string) (m : val)
                    (P : iProp Σ)
-  := wp_method_call : ⊢ ∀ Φ, P -∗ (▷ Φ m) -∗
-                           WP (method_call #pkg_name #type_name #func_name) {{ Φ }}.
+  := wp_method_call : ⊢ {{{ P }}} (method_call #pkg_name #type_name #func_name) {{{ RET m; True }}}.
 
-Lemma wp_global_get' {pkg_name var_name var_addrs functions msets addr} :
+Class WpGlobalsAlloc (vars : list (go_string * go_type)) (GlobalAddrs : Type)
+                     (var_addrs : GlobalAddrs → list (go_string * loc))
+                     (own_allocated : GlobalAddrs → iProp Σ)
+  := wp_globals_alloc :
+    ⊢ {{{ True }}}
+        (globals.alloc vars #())
+      {{{ (d : GlobalAddrs),
+            RET (alist_val $ (λ '(pair name addr), (pair name #addr)) <$> var_addrs d);
+          own_allocated d
+      }}}.
+
+Lemma wp_globals_get' {pkg_name var_name var_addrs functions msets addr} :
   alist_lookup_f var_name var_addrs = Some addr →
   WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs functions msets).
 Proof.
   intros Hlookup. rewrite /WpGlobalsGet.
-  iIntros (?) "#Hctx HΦ".
+  iStartProof.
+  iIntros (?) "!# #Hctx HΦ".
   rewrite globals.get_unseal.
   wp_call.
   wp_pures.
@@ -197,7 +206,7 @@ Proof.
   iNext. iIntros "_".
   wp_pures.
   rewrite alist_lookup_f_fmap Hlookup.
-  wp_pures. iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_func_call' {pkg_name func_name var_addrs functions msets func} :
@@ -205,7 +214,7 @@ Lemma wp_func_call' {pkg_name func_name var_addrs functions msets func} :
   WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs functions msets).
 Proof.
   intros Hlookup. rewrite /WpFuncCall.
-  iIntros (?) "#Hctx HΦ".
+  iIntros (?) "!# #Hctx HΦ".
   rewrite func_call_unseal.
   wp_call.
   wp_pures.
@@ -215,7 +224,7 @@ Proof.
   iNext. iIntros "_".
   wp_pures.
   rewrite Hlookup.
-  wp_pures. iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_method_call' {pkg_name type_name method_name var_addrs functions msets m} :
@@ -223,7 +232,7 @@ Lemma wp_method_call' {pkg_name type_name method_name var_addrs functions msets 
   WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs functions msets).
 Proof.
   intros Hlookup. rewrite /WpMethodCall.
-  iIntros (?) "#Hctx HΦ".
+  iIntros (?) "!# #Hctx HΦ".
   rewrite method_call_unseal.
   wp_call.
   wp_pures.
@@ -238,16 +247,8 @@ Proof.
   rewrite Heq1.
   wp_pures.
   rewrite -Heq2.
-  wp_pures. iApply "HΦ".
+  wp_pures. by iApply "HΦ".
 Qed.
-
-(* No generic globals.alloc lemma. WPs for [globals.alloc vars] get proved for
-   each package individually. This is here so something useful shows up from
-   [Search]. *)
-Lemma there_is_no_generic_lemma_for_globals_alloc_and_define:
-  ∀ Φ pkg_name vars functions msets,
-  False -∗ WP (globals.alloc_and_define pkg_name vars functions msets #()) {{ Φ }}.
-Proof. iIntros. done. Qed.
 
 End globals.
 
@@ -259,41 +260,33 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
 Lemma wp_package_init
-  pending Φ
+  pending
   (postconds : gmap go_string (iProp Σ))
   (pkg_name : go_string) (init_func : val)
-  vars functions msets
-  (GoDefns : Type)
-  (is_defined : GoDefns → iProp Σ)
-  (is_initialized : GoDefns → iProp Σ)
+  functions msets
+  `{!WpGlobalsAlloc vars GlobalAddrs var_addrs own_allocated}
+  (is_initialized : GlobalAddrs → iProp Σ)
+  (is_defined : GlobalAddrs → iProp Σ)
   :
-  (∀ g,
-     g !! pkg_name = None →
-     {{{ own_globals g }}}
-       globals.alloc_and_define pkg_name vars functions msets #()
-     {{{ (d : GoDefns) v, RET #();
-         is_defined d ∗
-         own_globals (<[pkg_name := v]> g)
-     }}}
-  ) →
-  (∀ (d : GoDefns),
-     is_defined d -∗
+  postconds !! pkg_name = Some (∃ d, is_defined d ∗ is_initialized d)%I →
+  pkg_name ∉ pending →
+  (∀ (d : GlobalAddrs),
+     is_global_definitions pkg_name (var_addrs d) functions msets -∗
+     own_allocated d -∗
      own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
      WP init_func #()
        {{ v, ⌜ v = #tt ⌝ ∗
-             □ is_initialized d ∗
+             □ (is_defined d ∗ is_initialized d) ∗
              own_globals_tok ({[ pkg_name ]} ∪ pending) postconds
        }}
   ) →
-  postconds !! pkg_name = Some (∃ d, is_initialized d)%I →
-  pkg_name ∉ pending →
-  own_globals_tok pending postconds -∗
-  (∀ (d : GoDefns), is_initialized d -∗ own_globals_tok pending postconds -∗ Φ #()) -∗
-  WP (globals.package_init pkg_name vars functions msets init_func) {{ Φ }}.
+  {{{ own_globals_tok pending postconds }}}
+    globals.package_init pkg_name vars functions msets init_func
+  {{{ (d : GlobalAddrs), RET #(); is_defined d ∗ is_initialized d ∗ own_globals_tok pending postconds }}}.
 Proof.
   unseal.
-  intros Hwp_alloc Hwp_init Hpost Hnot_pending.
-  iIntros "Htok HΦ".
+  intros Hpost Hnot_pending Hwp_init.
+  iIntros (?) "Htok HΦ".
   rewrite globals.package_init_unseal.
   wp_call.
   iNamed "Htok".
@@ -308,22 +301,26 @@ Proof.
     iDestruct (big_sepS_elem_of with "Hinited") as "H".
     { done. }
     rewrite Hpost /=.
-    iDestruct "H" as (?) "Hinit".
-    iApply ("HΦ" with "[$]").
+    iDestruct "H" as (?) "#[? ?]".
+    iApply ("HΦ" with "[-]").
     iFrame "∗#%".
   }
   (* actually run init *)
   wp_pures.
-  wp_apply (Hwp_alloc with "[$]").
-  { done. }
-  iIntros "* [Hdef Hglobals]".
+  wp_apply wp_globals_alloc.
+  iIntros "* Halloc".
   wp_pures.
-  iDestruct (Hwp_init with "[$Hdef] [Hglobals]") as "Hinit".
+  wp_bind (GlobalPut _ _).
+  iApply (wp_GlobalPut with "[$]").
+  { done. }
+  iNext. iIntros "[Hg #Hdef]".
+  wp_pures.
+  iDestruct (Hwp_init with "[$Hdef] [$Halloc] [Hg]") as "Hinit".
   { iFrame "∗#%". iPureIntro. set_solver. }
   wp_apply (wp_wand with "Hinit").
   iIntros (?) "H".
-  iDestruct "H" as (?) "[#Hinit Htok]". subst.
-  iApply ("HΦ" with "[$]").
+  iDestruct "H" as (?) "[#[? ?] Htok]". subst.
+  iApply ("HΦ" with "[-]").
   iClear "Hinited".
   clear Hpkg.
   iNamed "Htok".
@@ -364,6 +361,14 @@ Proof.
 Qed.
 
 End init.
+
+Global Hint Mode WpGlobalsGet - - - - - - + + - - : typeclass_instances.
+Global Hint Mode WpMethodCall - - - - - - + + + - - : typeclass_instances.
+Global Hint Mode WpFuncCall - - - - - - + + - - : typeclass_instances.
+
+Tactic Notation "wp_globals_get" :=
+  (wp_bind (globals.get _ _);
+   unshelve wp_apply (wp_globals_get with "[]"); [| | tc_solve | |]; try iFrame "#").
 
 Tactic Notation "wp_func_call" :=
   (wp_bind (func_call _ _);

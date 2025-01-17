@@ -5,33 +5,11 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom ConfChangeI : go_type.
-Axiom ConfChangeI__mset : list (go_string * val).
-Axiom ConfChangeI__mset_ptr : list (go_string * val).
-Axiom MarshalConfChange : val.
-Axiom ConfChange__AsV2 : val.
-Axiom ConfChange__AsV1 : val.
-Axiom ConfChangeV2__AsV2 : val.
-Axiom ConfChangeV2__AsV1 : val.
-Axiom ConfChangeV2__EnterJoint : val.
-Axiom ConfChangeV2__LeaveJoint : val.
-Axiom ConfChangesFromString : val.
-Axiom ConfChangesToString : val.
-Axiom ConfState__Equivalent : val.
 Axiom EntryType : go_type.
-Axiom EntryType__mset : list (go_string * val).
-Axiom EntryType__mset_ptr : list (go_string * val).
 Axiom EntryNormal : expr.
 Axiom EntryConfChange : expr.
 Axiom EntryConfChangeV2 : expr.
-Axiom EntryType_name : (go_string * go_string).
-Axiom EntryType_value : (go_string * go_string).
-Axiom EntryType__Enum : val.
-Axiom EntryType__String : val.
-Axiom EntryType__UnmarshalJSON : val.
-Axiom EntryType__EnumDescriptor : val.
 Axiom MessageType : go_type.
-Axiom MessageType__mset : list (go_string * val).
-Axiom MessageType__mset_ptr : list (go_string * val).
 Axiom MsgHup : expr.
 Axiom MsgBeat : expr.
 Axiom MsgProp : expr.
@@ -56,192 +34,25 @@ Axiom MsgStorageAppendResp : expr.
 Axiom MsgStorageApply : expr.
 Axiom MsgStorageApplyResp : expr.
 Axiom MsgForgetLeader : expr.
-Axiom MessageType_name : (go_string * go_string).
-Axiom MessageType_value : (go_string * go_string).
-Axiom MessageType__Enum : val.
-Axiom MessageType__String : val.
-Axiom MessageType__UnmarshalJSON : val.
-Axiom MessageType__EnumDescriptor : val.
 Axiom ConfChangeTransition : go_type.
-Axiom ConfChangeTransition__mset : list (go_string * val).
-Axiom ConfChangeTransition__mset_ptr : list (go_string * val).
 Axiom ConfChangeTransitionAuto : expr.
 Axiom ConfChangeTransitionJointImplicit : expr.
 Axiom ConfChangeTransitionJointExplicit : expr.
-Axiom ConfChangeTransition_name : (go_string * go_string).
-Axiom ConfChangeTransition_value : (go_string * go_string).
-Axiom ConfChangeTransition__Enum : val.
-Axiom ConfChangeTransition__String : val.
-Axiom ConfChangeTransition__UnmarshalJSON : val.
-Axiom ConfChangeTransition__EnumDescriptor : val.
 Axiom ConfChangeType : go_type.
-Axiom ConfChangeType__mset : list (go_string * val).
-Axiom ConfChangeType__mset_ptr : list (go_string * val).
 Axiom ConfChangeAddNode : expr.
 Axiom ConfChangeRemoveNode : expr.
 Axiom ConfChangeUpdateNode : expr.
 Axiom ConfChangeAddLearnerNode : expr.
-Axiom ConfChangeType_name : (go_string * go_string).
-Axiom ConfChangeType_value : (go_string * go_string).
-Axiom ConfChangeType__Enum : val.
-Axiom ConfChangeType__String : val.
-Axiom ConfChangeType__UnmarshalJSON : val.
-Axiom ConfChangeType__EnumDescriptor : val.
 Axiom Entry : go_type.
-Axiom Entry__mset : list (go_string * val).
-Axiom Entry__mset_ptr : list (go_string * val).
-Axiom Entry__Reset : val.
-Axiom Entry__String : val.
-Axiom Entry__ProtoMessage : val.
-Axiom Entry__Descriptor : val.
-Axiom Entry__XXX_Unmarshal : val.
-Axiom Entry__XXX_Marshal : val.
-Axiom Entry__XXX_Merge : val.
-Axiom Entry__XXX_Size : val.
-Axiom Entry__XXX_DiscardUnknown : val.
 Axiom SnapshotMetadata : go_type.
-Axiom SnapshotMetadata__mset : list (go_string * val).
-Axiom SnapshotMetadata__mset_ptr : list (go_string * val).
-Axiom SnapshotMetadata__Reset : val.
-Axiom SnapshotMetadata__String : val.
-Axiom SnapshotMetadata__ProtoMessage : val.
-Axiom SnapshotMetadata__Descriptor : val.
-Axiom SnapshotMetadata__XXX_Unmarshal : val.
-Axiom SnapshotMetadata__XXX_Marshal : val.
-Axiom SnapshotMetadata__XXX_Merge : val.
-Axiom SnapshotMetadata__XXX_Size : val.
-Axiom SnapshotMetadata__XXX_DiscardUnknown : val.
 Axiom Snapshot : go_type.
-Axiom Snapshot__mset : list (go_string * val).
-Axiom Snapshot__mset_ptr : list (go_string * val).
-Axiom Snapshot__Reset : val.
-Axiom Snapshot__String : val.
-Axiom Snapshot__ProtoMessage : val.
-Axiom Snapshot__Descriptor : val.
-Axiom Snapshot__XXX_Unmarshal : val.
-Axiom Snapshot__XXX_Marshal : val.
-Axiom Snapshot__XXX_Merge : val.
-Axiom Snapshot__XXX_Size : val.
-Axiom Snapshot__XXX_DiscardUnknown : val.
 Axiom Message : go_type.
-Axiom Message__mset : list (go_string * val).
-Axiom Message__mset_ptr : list (go_string * val).
-Axiom Message__Reset : val.
-Axiom Message__String : val.
-Axiom Message__ProtoMessage : val.
-Axiom Message__Descriptor : val.
-Axiom Message__XXX_Unmarshal : val.
-Axiom Message__XXX_Marshal : val.
-Axiom Message__XXX_Merge : val.
-Axiom Message__XXX_Size : val.
-Axiom Message__XXX_DiscardUnknown : val.
 Axiom HardState : go_type.
-Axiom HardState__mset : list (go_string * val).
-Axiom HardState__mset_ptr : list (go_string * val).
-Axiom HardState__Reset : val.
-Axiom HardState__String : val.
-Axiom HardState__ProtoMessage : val.
-Axiom HardState__Descriptor : val.
-Axiom HardState__XXX_Unmarshal : val.
-Axiom HardState__XXX_Marshal : val.
-Axiom HardState__XXX_Merge : val.
-Axiom HardState__XXX_Size : val.
-Axiom HardState__XXX_DiscardUnknown : val.
 Axiom ConfState : go_type.
-Axiom ConfState__mset : list (go_string * val).
-Axiom ConfState__mset_ptr : list (go_string * val).
-Axiom ConfState__Reset : val.
-Axiom ConfState__String : val.
-Axiom ConfState__ProtoMessage : val.
-Axiom ConfState__Descriptor : val.
-Axiom ConfState__XXX_Unmarshal : val.
-Axiom ConfState__XXX_Marshal : val.
-Axiom ConfState__XXX_Merge : val.
-Axiom ConfState__XXX_Size : val.
-Axiom ConfState__XXX_DiscardUnknown : val.
 Axiom ConfChange : go_type.
-Axiom ConfChange__mset : list (go_string * val).
-Axiom ConfChange__mset_ptr : list (go_string * val).
-Axiom ConfChange__Reset : val.
-Axiom ConfChange__String : val.
-Axiom ConfChange__ProtoMessage : val.
-Axiom ConfChange__Descriptor : val.
-Axiom ConfChange__XXX_Unmarshal : val.
-Axiom ConfChange__XXX_Marshal : val.
-Axiom ConfChange__XXX_Merge : val.
-Axiom ConfChange__XXX_Size : val.
-Axiom ConfChange__XXX_DiscardUnknown : val.
 Axiom ConfChangeSingle : go_type.
-Axiom ConfChangeSingle__mset : list (go_string * val).
-Axiom ConfChangeSingle__mset_ptr : list (go_string * val).
-Axiom ConfChangeSingle__Reset : val.
-Axiom ConfChangeSingle__String : val.
-Axiom ConfChangeSingle__ProtoMessage : val.
-Axiom ConfChangeSingle__Descriptor : val.
-Axiom ConfChangeSingle__XXX_Unmarshal : val.
-Axiom ConfChangeSingle__XXX_Marshal : val.
-Axiom ConfChangeSingle__XXX_Merge : val.
-Axiom ConfChangeSingle__XXX_Size : val.
-Axiom ConfChangeSingle__XXX_DiscardUnknown : val.
 Axiom ConfChangeV2 : go_type.
-Axiom ConfChangeV2__mset : list (go_string * val).
-Axiom ConfChangeV2__mset_ptr : list (go_string * val).
-Axiom ConfChangeV2__Reset : val.
-Axiom ConfChangeV2__String : val.
-Axiom ConfChangeV2__ProtoMessage : val.
-Axiom ConfChangeV2__Descriptor : val.
-Axiom ConfChangeV2__XXX_Unmarshal : val.
-Axiom ConfChangeV2__XXX_Marshal : val.
-Axiom ConfChangeV2__XXX_Merge : val.
-Axiom ConfChangeV2__XXX_Size : val.
-Axiom ConfChangeV2__XXX_DiscardUnknown : val.
-Axiom Entry__Marshal : val.
-Axiom Entry__MarshalTo : val.
-Axiom Entry__MarshalToSizedBuffer : val.
-Axiom SnapshotMetadata__Marshal : val.
-Axiom SnapshotMetadata__MarshalTo : val.
-Axiom SnapshotMetadata__MarshalToSizedBuffer : val.
-Axiom Snapshot__Marshal : val.
-Axiom Snapshot__MarshalTo : val.
-Axiom Snapshot__MarshalToSizedBuffer : val.
-Axiom Message__Marshal : val.
-Axiom Message__MarshalTo : val.
-Axiom Message__MarshalToSizedBuffer : val.
-Axiom HardState__Marshal : val.
-Axiom HardState__MarshalTo : val.
-Axiom HardState__MarshalToSizedBuffer : val.
-Axiom ConfState__Marshal : val.
-Axiom ConfState__MarshalTo : val.
-Axiom ConfState__MarshalToSizedBuffer : val.
-Axiom ConfChange__Marshal : val.
-Axiom ConfChange__MarshalTo : val.
-Axiom ConfChange__MarshalToSizedBuffer : val.
-Axiom ConfChangeSingle__Marshal : val.
-Axiom ConfChangeSingle__MarshalTo : val.
-Axiom ConfChangeSingle__MarshalToSizedBuffer : val.
-Axiom ConfChangeV2__Marshal : val.
-Axiom ConfChangeV2__MarshalTo : val.
-Axiom ConfChangeV2__MarshalToSizedBuffer : val.
-Axiom Entry__Size : val.
-Axiom SnapshotMetadata__Size : val.
-Axiom Snapshot__Size : val.
-Axiom Message__Size : val.
-Axiom HardState__Size : val.
-Axiom ConfState__Size : val.
-Axiom ConfChange__Size : val.
-Axiom ConfChangeSingle__Size : val.
-Axiom ConfChangeV2__Size : val.
-Axiom Entry__Unmarshal : val.
-Axiom SnapshotMetadata__Unmarshal : val.
-Axiom Snapshot__Unmarshal : val.
-Axiom Message__Unmarshal : val.
-Axiom HardState__Unmarshal : val.
-Axiom ConfState__Unmarshal : val.
-Axiom ConfChange__Unmarshal : val.
-Axiom ConfChangeSingle__Unmarshal : val.
-Axiom ConfChangeV2__Unmarshal : val.
-Axiom ErrInvalidLengthRaft : (go_string * go_string).
-Axiom ErrIntOverflowRaft : (go_string * go_string).
-Axiom ErrUnexpectedEndOfGroupRaft : (go_string * go_string).
+Definition pkg_name' : go_string := "go.etcd.io/raft/v3/raftpb".
 Axiom initialize' : val.
+
 End axioms.

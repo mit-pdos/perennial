@@ -4,46 +4,7 @@ From New.golang Require Import defn.
 Section axioms.
 Context `{ffi_syntax}.
 
-Axiom All : val.
-Axiom Backward : val.
-Axiom Values : val.
-Axiom AppendSeq : val.
-Axiom Collect : val.
-Axiom Sorted : val.
-Axiom SortedFunc : val.
-Axiom SortedStableFunc : val.
-Axiom Chunk : val.
-Axiom Equal : val.
-Axiom EqualFunc : val.
-Axiom Compare : val.
-Axiom CompareFunc : val.
-Axiom Index : val.
-Axiom IndexFunc : val.
-Axiom Contains : val.
-Axiom ContainsFunc : val.
-Axiom Insert : val.
-Axiom Delete : val.
-Axiom DeleteFunc : val.
-Axiom Replace : val.
-Axiom Clone : val.
-Axiom Compact : val.
-Axiom CompactFunc : val.
-Axiom Grow : val.
-Axiom Clip : val.
-Axiom Reverse : val.
-Axiom Concat : val.
-Axiom Repeat : val.
-Axiom Sort : val.
-Axiom SortFunc : val.
-Axiom SortStableFunc : val.
-Axiom IsSorted : val.
-Axiom IsSortedFunc : val.
-Axiom Min : val.
-Axiom MinFunc : val.
-Axiom Max : val.
-Axiom MaxFunc : val.
-Axiom BinarySearch : val.
-Axiom BinarySearchFunc : val.
-Axiom xorshift__Next : val.
+Definition pkg_name' : go_string := "slices".
 Axiom initialize' : val.
+
 End axioms.

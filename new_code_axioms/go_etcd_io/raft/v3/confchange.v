@@ -5,12 +5,7 @@ Section axioms.
 Context `{ffi_syntax}.
 
 Axiom Changer : go_type.
-Axiom Changer__mset : list (go_string * val).
-Axiom Changer__mset_ptr : list (go_string * val).
-Axiom Changer__EnterJoint : val.
-Axiom Changer__LeaveJoint : val.
-Axiom Changer__Simple : val.
-Axiom Describe : val.
-Axiom Restore : val.
+Definition pkg_name' : go_string := "go.etcd.io/raft/v3/confchange".
 Axiom initialize' : val.
+
 End axioms.
