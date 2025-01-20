@@ -799,87 +799,6 @@ Definition failing_testArgumentOrder : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
-Definition genericStruct (A: go_type) (B: go_type) : go_type := structT [
-  "x" :: A;
-  "y" :: B
-].
-
-Definition genericStruct2 (T: go_type) : go_type := structT [
-  "g" :: T
-].
-
-Definition nonGenericStruct : go_type := structT [
-  "p" :: uint64T
-].
-
-Definition IntMap (T: go_type) : go_type := mapT uint64T T.
-
-(* go: generics.go:18:6 *)
-Definition identity (A: go_type) (B: go_type) : val :=
-  rec: "identity" "a" "b" :=
-    exception_do (let: "b" := (ref_ty B "b") in
-    let: "a" := (ref_ty A "a") in
-    return: (![A] "a", ![B] "b")).
-
-(* go: generics.go:22:6 *)
-Definition identity2 (A: go_type) : val :=
-  rec: "identity2" "a" :=
-    exception_do (let: "a" := (ref_ty A "a") in
-    return: (![A] "a")).
-
-(* go: generics.go:26:6 *)
-Definition testGenericStructs : val :=
-  rec: "testGenericStructs" <> :=
-    exception_do (let: "intMap" := (ref_ty (IntMap uint64T) (zero_val (IntMap uint64T))) in
-    let: "$r0" := (map.make uint64T uint64T #()) in
-    do:  ("intMap" <-[IntMap uint64T] "$r0");;;
-    let: "$r0" := #(W64 2) in
-    do:  (map.insert (![IntMap uint64T] "intMap") #(W64 1) "$r0");;;
-    let: "c" := (ref_ty (genericStruct2 uint64T) (zero_val (genericStruct2 uint64T))) in
-    let: "$r0" := (let: "$g" := #(W64 2) in
-    struct.make (genericStruct2 uint64T) [{
-      "g" ::= "$g"
-    }]) in
-    do:  ("c" <-[genericStruct2 uint64T] "$r0");;;
-    let: "u" := (ref_ty (genericStruct stringT uint64T) (zero_val (genericStruct stringT uint64T))) in
-    let: "$r0" := (let: "$x" := #"test"%go in
-    let: "$y" := #(W64 7) in
-    struct.make (genericStruct stringT uint64T) [{
-      "x" ::= "$x";
-      "y" ::= "$y"
-    }]) in
-    do:  ("u" <-[genericStruct stringT uint64T] "$r0");;;
-    let: "d" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := #(W64 5) in
-    (identity2 uint64T) "$a0") in
-    do:  ("d" <-[uint64T] "$r0");;;
-    let: "d2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #"test"%go in
-    let: "$a1" := #(W64 5) in
-    (identity stringT uint64T) "$a0" "$a1") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  "$r0";;;
-    do:  ("d2" <-[uint64T] "$r1");;;
-    let: "g" := (ref_ty funcT (zero_val funcT)) in
-    let: "$r0" := (identity stringT uint64T) in
-    do:  ("g" <-[funcT] "$r0");;;
-    let: "b" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #"test"%go in
-    let: "$a1" := #(W64 3) in
-    (![funcT] "g") "$a0" "$a1") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  "$r0";;;
-    do:  ("b" <-[uint64T] "$r1");;;
-    let: "h" := (ref_ty nonGenericStruct (zero_val nonGenericStruct)) in
-    let: "$r0" := (let: "$p" := #(W64 3) in
-    struct.make nonGenericStruct [{
-      "p" ::= "$p"
-    }]) in
-    do:  ("h" <-[nonGenericStruct] "$r0");;;
-    return: ((((((((![uint64T] "d") + (![uint64T] "d2")) + (![uint64T] (struct.field_ref (genericStruct2 uint64T) "g" "c"))) + (![uint64T] (struct.field_ref (genericStruct stringT uint64T) "y" "u"))) + (![uint64T] "b")) + (![uint64T] (struct.field_ref nonGenericStruct "p" "h"))) + (Fst (map.get (![IntMap uint64T] "intMap") #(W64 1)))) = #(W64 27))).
-
 (* go: int_conversions.go:3:6 *)
 Definition testU64ToU32 : val :=
   rec: "testU64ToU32" <> :=
@@ -2922,9 +2841,9 @@ Definition disabled_testWal : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("findKey"%go, findKey); ("allocate"%go, allocate); ("freeRange"%go, freeRange); ("testAllocateDistinct"%go, testAllocateDistinct); ("testAllocateFull"%go, testAllocateFull); ("testExplicitBlockStmt"%go, testExplicitBlockStmt); ("testMinUint64"%go, testMinUint64); ("testMaxUint64"%go, testMaxUint64); ("adder"%go, adder); ("testClosureBasic"%go, testClosureBasic); ("testCompareAll"%go, testCompareAll); ("testCompareGT"%go, testCompareGT); ("testCompareGE"%go, testCompareGE); ("testCompareLT"%go, testCompareLT); ("testCompareLE"%go, testCompareLE); ("literalCast"%go, literalCast); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("testByteSliceToString"%go, testByteSliceToString); ("testCopySimple"%go, testCopySimple); ("testCopyShorterDst"%go, testCopyShorterDst); ("testCopyShorterSrc"%go, testCopyShorterSrc); ("deferSimple"%go, deferSimple); ("testDefer"%go, testDefer); ("testDeferFuncLit"%go, testDeferFuncLit); ("roundtripEncDec32"%go, roundtripEncDec32); ("roundtripEncDec64"%go, roundtripEncDec64); ("testEncDec32Simple"%go, testEncDec32Simple); ("failing_testEncDec32"%go, failing_testEncDec32); ("testEncDec64Simple"%go, testEncDec64Simple); ("testEncDec64"%go, testEncDec64); ("FirstClassFunction"%go, FirstClassFunction); ("ApplyF"%go, ApplyF); ("testFirstClassFunction"%go, testFirstClassFunction); ("addFour64"%go, addFour64); ("failing_testFunctionOrdering"%go, failing_testFunctionOrdering); ("storeAndReturn"%go, storeAndReturn); ("failing_testArgumentOrder"%go, failing_testArgumentOrder); ("identity"%go, identity); ("identity2"%go, identity2); ("testGenericStructs"%go, testGenericStructs); ("testU64ToU32"%go, testU64ToU32); ("testU32Len"%go, testU32Len); ("failing_testU32NewtypeLen"%go, failing_testU32NewtypeLen); ("measureArea"%go, measureArea); ("measureVolumePlusNM"%go, measureVolumePlusNM); ("measureVolume"%go, measureVolume); ("testBasicInterface"%go, testBasicInterface); ("testAssignInterface"%go, testAssignInterface); ("testMultipleInterface"%go, testMultipleInterface); ("testBinaryExprInterface"%go, testBinaryExprInterface); ("testIfStmtInterface"%go, testIfStmtInterface); ("testsUseLocks"%go, testsUseLocks); ("standardForLoop"%go, standardForLoop); ("testStandardForLoop"%go, testStandardForLoop); ("testForLoopWait"%go, testForLoopWait); ("testBreakFromLoopWithContinue"%go, testBreakFromLoopWithContinue); ("testBreakFromLoopNoContinue"%go, testBreakFromLoopNoContinue); ("testBreakFromLoopNoContinueDouble"%go, testBreakFromLoopNoContinueDouble); ("testBreakFromLoopForOnly"%go, testBreakFromLoopForOnly); ("testBreakFromLoopAssignAndContinue"%go, testBreakFromLoopAssignAndContinue); ("testNestedLoops"%go, testNestedLoops); ("testNestedGoStyleLoops"%go, testNestedGoStyleLoops); ("testNestedGoStyleLoopsNoComparison"%go, testNestedGoStyleLoopsNoComparison); ("IterateMapKeys"%go, IterateMapKeys); ("IterateMapValues"%go, IterateMapValues); ("testIterateMap"%go, testIterateMap); ("testMapSize"%go, testMapSize); ("multReturnTwo"%go, multReturnTwo); ("testAssignTwo"%go, testAssignTwo); ("multReturnThree"%go, multReturnThree); ("testAssignThree"%go, testAssignThree); ("testMultipleAssignToMap"%go, testMultipleAssignToMap); ("returnTwo"%go, returnTwo); ("testReturnTwo"%go, testReturnTwo); ("testAnonymousBinding"%go, testAnonymousBinding); ("returnThree"%go, returnThree); ("testReturnThree"%go, testReturnThree); ("returnFour"%go, returnFour); ("testReturnFour"%go, testReturnFour); ("failing_testCompareSliceToNil"%go, failing_testCompareSliceToNil); ("testComparePointerToNil"%go, testComparePointerToNil); ("testCompareNilToNil"%go, testCompareNilToNil); ("testComparePointerWrappedToNil"%go, testComparePointerWrappedToNil); ("testComparePointerWrappedDefaultToNil"%go, testComparePointerWrappedDefaultToNil); ("reverseAssignOps64"%go, reverseAssignOps64); ("reverseAssignOps32"%go, reverseAssignOps32); ("add64Equals"%go, add64Equals); ("sub64Equals"%go, sub64Equals); ("testReverseAssignOps64"%go, testReverseAssignOps64); ("failing_testReverseAssignOps32"%go, failing_testReverseAssignOps32); ("testAdd64Equals"%go, testAdd64Equals); ("testSub64Equals"%go, testSub64Equals); ("testDivisionPrecedence"%go, testDivisionPrecedence); ("testModPrecedence"%go, testModPrecedence); ("testBitwiseOpsPrecedence"%go, testBitwiseOpsPrecedence); ("testArithmeticShifts"%go, testArithmeticShifts); ("testBitAddAnd"%go, testBitAddAnd); ("testManyParentheses"%go, testManyParentheses); ("testPlusTimes"%go, testPlusTimes); ("testOrCompareSimple"%go, testOrCompareSimple); ("testOrCompare"%go, testOrCompare); ("testAndCompare"%go, testAndCompare); ("testShiftMod"%go, testShiftMod); ("testLinearize"%go, testLinearize); ("CheckTrue"%go, CheckTrue); ("CheckFalse"%go, CheckFalse); ("testShortcircuitAndTF"%go, testShortcircuitAndTF); ("testShortcircuitAndFT"%go, testShortcircuitAndFT); ("testShortcircuitOrTF"%go, testShortcircuitOrTF); ("testShortcircuitOrFT"%go, testShortcircuitOrFT); ("testSliceOps"%go, testSliceOps); ("testSliceCapacityOps"%go, testSliceCapacityOps); ("testOverwriteArray"%go, testOverwriteArray); ("testSliceLiteral"%go, testSliceLiteral); ("testFooBarMutation"%go, testFooBarMutation); ("NewS"%go, NewS); ("testStructUpdates"%go, testStructUpdates); ("testNestedStructUpdates"%go, testNestedStructUpdates); ("testStructConstructions"%go, testStructConstructions); ("testIncompleteStruct"%go, testIncompleteStruct); ("testStoreInStructVar"%go, testStoreInStructVar); ("testStoreInStructPointerVar"%go, testStoreInStructPointerVar); ("testStoreComposite"%go, testStoreComposite); ("testStoreSlice"%go, testStoreSlice); ("testStructFieldFunc"%go, testStructFieldFunc); ("testSwitchVal"%go, testSwitchVal); ("testSwitchMultiple"%go, testSwitchMultiple); ("testSwitchDefaultTrue"%go, testSwitchDefaultTrue); ("testSwitchConversion"%go, testSwitchConversion); ("testPointerAssignment"%go, testPointerAssignment); ("testAddressOfLocal"%go, testAddressOfLocal); ("testAnonymousAssign"%go, testAnonymousAssign); ("intToBlock"%go, intToBlock); ("blockToInt"%go, blockToInt); ("New"%go, New); ("getLogEntry"%go, getLogEntry); ("applyLog"%go, applyLog); ("clearLog"%go, clearLog); ("Open"%go, Open); ("disabled_testWal"%go, disabled_testWal)].
+Definition functions' : list (go_string * val) := [("findKey"%go, findKey); ("allocate"%go, allocate); ("freeRange"%go, freeRange); ("testAllocateDistinct"%go, testAllocateDistinct); ("testAllocateFull"%go, testAllocateFull); ("testExplicitBlockStmt"%go, testExplicitBlockStmt); ("testMinUint64"%go, testMinUint64); ("testMaxUint64"%go, testMaxUint64); ("adder"%go, adder); ("testClosureBasic"%go, testClosureBasic); ("testCompareAll"%go, testCompareAll); ("testCompareGT"%go, testCompareGT); ("testCompareGE"%go, testCompareGE); ("testCompareLT"%go, testCompareLT); ("testCompareLE"%go, testCompareLE); ("literalCast"%go, literalCast); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("testByteSliceToString"%go, testByteSliceToString); ("testCopySimple"%go, testCopySimple); ("testCopyShorterDst"%go, testCopyShorterDst); ("testCopyShorterSrc"%go, testCopyShorterSrc); ("deferSimple"%go, deferSimple); ("testDefer"%go, testDefer); ("testDeferFuncLit"%go, testDeferFuncLit); ("roundtripEncDec32"%go, roundtripEncDec32); ("roundtripEncDec64"%go, roundtripEncDec64); ("testEncDec32Simple"%go, testEncDec32Simple); ("failing_testEncDec32"%go, failing_testEncDec32); ("testEncDec64Simple"%go, testEncDec64Simple); ("testEncDec64"%go, testEncDec64); ("FirstClassFunction"%go, FirstClassFunction); ("ApplyF"%go, ApplyF); ("testFirstClassFunction"%go, testFirstClassFunction); ("addFour64"%go, addFour64); ("failing_testFunctionOrdering"%go, failing_testFunctionOrdering); ("storeAndReturn"%go, storeAndReturn); ("failing_testArgumentOrder"%go, failing_testArgumentOrder); ("testU64ToU32"%go, testU64ToU32); ("testU32Len"%go, testU32Len); ("failing_testU32NewtypeLen"%go, failing_testU32NewtypeLen); ("measureArea"%go, measureArea); ("measureVolumePlusNM"%go, measureVolumePlusNM); ("measureVolume"%go, measureVolume); ("testBasicInterface"%go, testBasicInterface); ("testAssignInterface"%go, testAssignInterface); ("testMultipleInterface"%go, testMultipleInterface); ("testBinaryExprInterface"%go, testBinaryExprInterface); ("testIfStmtInterface"%go, testIfStmtInterface); ("testsUseLocks"%go, testsUseLocks); ("standardForLoop"%go, standardForLoop); ("testStandardForLoop"%go, testStandardForLoop); ("testForLoopWait"%go, testForLoopWait); ("testBreakFromLoopWithContinue"%go, testBreakFromLoopWithContinue); ("testBreakFromLoopNoContinue"%go, testBreakFromLoopNoContinue); ("testBreakFromLoopNoContinueDouble"%go, testBreakFromLoopNoContinueDouble); ("testBreakFromLoopForOnly"%go, testBreakFromLoopForOnly); ("testBreakFromLoopAssignAndContinue"%go, testBreakFromLoopAssignAndContinue); ("testNestedLoops"%go, testNestedLoops); ("testNestedGoStyleLoops"%go, testNestedGoStyleLoops); ("testNestedGoStyleLoopsNoComparison"%go, testNestedGoStyleLoopsNoComparison); ("IterateMapKeys"%go, IterateMapKeys); ("IterateMapValues"%go, IterateMapValues); ("testIterateMap"%go, testIterateMap); ("testMapSize"%go, testMapSize); ("multReturnTwo"%go, multReturnTwo); ("testAssignTwo"%go, testAssignTwo); ("multReturnThree"%go, multReturnThree); ("testAssignThree"%go, testAssignThree); ("testMultipleAssignToMap"%go, testMultipleAssignToMap); ("returnTwo"%go, returnTwo); ("testReturnTwo"%go, testReturnTwo); ("testAnonymousBinding"%go, testAnonymousBinding); ("returnThree"%go, returnThree); ("testReturnThree"%go, testReturnThree); ("returnFour"%go, returnFour); ("testReturnFour"%go, testReturnFour); ("failing_testCompareSliceToNil"%go, failing_testCompareSliceToNil); ("testComparePointerToNil"%go, testComparePointerToNil); ("testCompareNilToNil"%go, testCompareNilToNil); ("testComparePointerWrappedToNil"%go, testComparePointerWrappedToNil); ("testComparePointerWrappedDefaultToNil"%go, testComparePointerWrappedDefaultToNil); ("reverseAssignOps64"%go, reverseAssignOps64); ("reverseAssignOps32"%go, reverseAssignOps32); ("add64Equals"%go, add64Equals); ("sub64Equals"%go, sub64Equals); ("testReverseAssignOps64"%go, testReverseAssignOps64); ("failing_testReverseAssignOps32"%go, failing_testReverseAssignOps32); ("testAdd64Equals"%go, testAdd64Equals); ("testSub64Equals"%go, testSub64Equals); ("testDivisionPrecedence"%go, testDivisionPrecedence); ("testModPrecedence"%go, testModPrecedence); ("testBitwiseOpsPrecedence"%go, testBitwiseOpsPrecedence); ("testArithmeticShifts"%go, testArithmeticShifts); ("testBitAddAnd"%go, testBitAddAnd); ("testManyParentheses"%go, testManyParentheses); ("testPlusTimes"%go, testPlusTimes); ("testOrCompareSimple"%go, testOrCompareSimple); ("testOrCompare"%go, testOrCompare); ("testAndCompare"%go, testAndCompare); ("testShiftMod"%go, testShiftMod); ("testLinearize"%go, testLinearize); ("CheckTrue"%go, CheckTrue); ("CheckFalse"%go, CheckFalse); ("testShortcircuitAndTF"%go, testShortcircuitAndTF); ("testShortcircuitAndFT"%go, testShortcircuitAndFT); ("testShortcircuitOrTF"%go, testShortcircuitOrTF); ("testShortcircuitOrFT"%go, testShortcircuitOrFT); ("testSliceOps"%go, testSliceOps); ("testSliceCapacityOps"%go, testSliceCapacityOps); ("testOverwriteArray"%go, testOverwriteArray); ("testSliceLiteral"%go, testSliceLiteral); ("testFooBarMutation"%go, testFooBarMutation); ("NewS"%go, NewS); ("testStructUpdates"%go, testStructUpdates); ("testNestedStructUpdates"%go, testNestedStructUpdates); ("testStructConstructions"%go, testStructConstructions); ("testIncompleteStruct"%go, testIncompleteStruct); ("testStoreInStructVar"%go, testStoreInStructVar); ("testStoreInStructPointerVar"%go, testStoreInStructPointerVar); ("testStoreComposite"%go, testStoreComposite); ("testStoreSlice"%go, testStoreSlice); ("testStructFieldFunc"%go, testStructFieldFunc); ("testSwitchVal"%go, testSwitchVal); ("testSwitchMultiple"%go, testSwitchMultiple); ("testSwitchDefaultTrue"%go, testSwitchDefaultTrue); ("testSwitchConversion"%go, testSwitchConversion); ("testPointerAssignment"%go, testPointerAssignment); ("testAddressOfLocal"%go, testAddressOfLocal); ("testAnonymousAssign"%go, testAnonymousAssign); ("intToBlock"%go, intToBlock); ("blockToInt"%go, blockToInt); ("New"%go, New); ("getLogEntry"%go, getLogEntry); ("applyLog"%go, applyLog); ("clearLog"%go, clearLog); ("Open"%go, Open); ("disabled_testWal"%go, disabled_testWal)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("unit"%go, []); ("unit'ptr"%go, []); ("Enc"%go, []); ("Enc'ptr"%go, [("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("consume"%go, Dec__consume)]); ("Editor"%go, []); ("Editor'ptr"%go, [("AdvanceReturn"%go, Editor__AdvanceReturn)]); ("Pair"%go, []); ("Pair'ptr"%go, []); ("genericStruct"%go, []); ("genericStruct'ptr"%go, []); ("genericStruct2"%go, []); ("genericStruct2'ptr"%go, []); ("nonGenericStruct"%go, []); ("nonGenericStruct'ptr"%go, []); ("IntMap"%go, []); ("IntMap'ptr"%go, []); ("Uint32"%go, []); ("Uint32'ptr"%go, []); ("SquareStruct"%go, [("Square"%go, SquareStruct__Square); ("Volume"%go, SquareStruct__Volume)]); ("SquareStruct'ptr"%go, [("Square"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [("unit"%go, []); ("unit'ptr"%go, []); ("Enc"%go, []); ("Enc'ptr"%go, [("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("consume"%go, Dec__consume)]); ("Editor"%go, []); ("Editor'ptr"%go, [("AdvanceReturn"%go, Editor__AdvanceReturn)]); ("Pair"%go, []); ("Pair'ptr"%go, []); ("Uint32"%go, []); ("Uint32'ptr"%go, []); ("SquareStruct"%go, [("Square"%go, SquareStruct__Square); ("Volume"%go, SquareStruct__Volume)]); ("SquareStruct'ptr"%go, [("Square"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"SquareStruct" #"Square" (![SquareStruct] "$recvAddr")
                  )%V); ("Volume"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"SquareStruct" #"Volume" (![SquareStruct] "$recvAddr")

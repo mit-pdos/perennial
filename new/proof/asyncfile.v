@@ -142,7 +142,8 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
   "#Hmu" ∷ f ↦s[AsyncFile :: "mu"]□ mu ∗
-  "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P (interface.mk #mu Mutex__mset_ptr))
+  "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
+                             (interface.mk #mu (Some (sync.pkg_name', "Mutex'ptr"%go))))
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=
@@ -193,7 +194,6 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
         "#His" ∷ is_AsyncFile N f γ P ∗
         "#Hinv" ∷ is_write_inv N γ i Q ∗
         "Htok" ∷ own_escrow_token γ i
-
   }}}
     AsyncFile__wait #f #i
   {{{
