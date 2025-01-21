@@ -173,7 +173,6 @@ Theorem wp_ReadSlice {X : Type} {goT : ty} (enc : list u8) (enc_sl : Slice.t)
   }}}.
 Proof.
   iIntros (Hval_ty Hzero Φ) "Hpre HΦ". iNamed "Hpre".
-  iUnfold is_pred_slice in "Hsl".
   wp_rec. wp_pures.
 
   wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Henc_sl".
@@ -354,6 +353,82 @@ Proof.
     unfold encodes in H_b2_enc. rewrite H_b2_enc. rewrite app_nil_l.
     iFrame.
 Qed.
+
+Theorem wp_ReadSliceLenPrefix {X : Type} {goT : ty} (enc : list u8) (enc_sl : Slice.t)
+  (xs : list X) (count : w64) (has_encoding : list u8 -> X -> Prop)
+  (own : val -> X -> dfrac -> iProp Σ) (readOne : val) (suffix : list u8) (dq : dfrac) :
+  (∀ (v : val) (x : X) (dq : dfrac), own v x dq -∗ ⌜val_ty v goT⌝) ->
+  has_zero goT ->
+  {{{
+        "Hsl" ∷ own_slice_small enc_sl byteT dq (u64_le count ++ enc ++ suffix) ∗
+        "%Henc" ∷ ⌜encodes enc xs has_encoding⌝ ∗
+        "%Hcount" ∷ ⌜uint.nat count = length xs⌝ ∗
+        "#HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
+          {{{
+                own_slice_small enc_sl' byteT dq (enc' ++ suffix') ∗
+                ⌜has_encoding enc' x⌝
+          }}}
+            readOne (slice_val enc_sl')
+          {{{
+                (v : val) (suff_sl : Slice.t), RET (v, slice_val suff_sl);
+                own v x (DfracOwn 1) ∗
+                own_slice_small suff_sl byteT dq suffix'
+          }}}
+  }}}
+    ReadSliceLenPrefix goT (slice_val enc_sl) readOne
+  {{{
+        vals b2, RET (slice_val vals, slice_val b2);
+        is_pred_slice own vals goT (DfracOwn 1) xs ∗
+        own_slice_small b2 byteT dq suffix
+  }}}.
+Proof.
+  iIntros (Hval_ty Hzero Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_rec. wp_pures.
+
+  wp_apply (wp_ReadInt with "[$Hsl]").
+  iIntros (?) "Hsl". wp_pures.
+
+  wp_apply (wp_ReadSlice with "[Hsl]").
+  { done. } { done. }
+  {
+    iFrame.
+    iSplit; first done.
+    iSplit; first done.
+    done.
+  }
+  iApply "HΦ".
+Qed.
+
+Theorem wp_WriteSlice {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t) (xs : list X)
+  (has_encoding : list u8 -> X -> Prop)
+  (own : val -> X -> dfrac -> iProp Σ) (writeOne : val) (prefix : list u8) (dq : dfrac) :
+  (∀ (v : val) (x : X) (dq : dfrac), own v x dq -∗ ⌜val_ty v goT⌝) ->
+  has_zero goT ->
+  {{{
+        "Hsl" ∷ own_slice pre_sl byteT (DfracOwn 1) prefix ∗
+        "Hown" ∷ is_pred_slice own xsl goT (DfracOwn 1) xs ∗
+        "#HwriteOne" ∷ ∀ v pre_sl' (prefix' : list u8) x,
+          {{{
+                own v x dq ∗
+                own_slice pre_sl' byteT (DfracOwn 1) prefix'
+          }}}
+            writeOne v (slice_val pre_sl')
+          {{{
+                (enc : list u8) (enc_sl : Slice.t), RET slice_val enc_sl;
+                ⌜ has_encoding enc x ⌝ ∗
+                own v x dq ∗
+                own_slice enc_sl byteT (DfracOwn 1) (prefix ++ enc)
+          }}}
+  }}}
+    WriteSlice goT (slice_val pre_sl) (slice_val xsl) writeOne
+  {{{
+        enc enc_sl, RET slice_val enc_sl;
+        is_pred_slice own xsl goT (DfracOwn 1) xs ∗
+        ⌜ encodes enc xs has_encoding ⌝ ∗
+        own_slice enc_sl byteT dq (prefix ++ enc)
+  }}}.
+Proof.
+Admitted.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
