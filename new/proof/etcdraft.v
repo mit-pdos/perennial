@@ -166,6 +166,9 @@ Lemma wp_testLeaderElection2_symbolic_execute :
 Proof.
   Set Ltac Profiling.
   iIntros (?) "_ HΦ".
+  wp_call.
+  rewrite -!default_val_eq_zero_val.
+  let x := fresh "ptr" in wp_alloc x as "?".
   Ltac wp_progress := (first [progress (rewrite -!default_val_eq_zero_val)|
                                progress wp_pures |
                                wp_load |

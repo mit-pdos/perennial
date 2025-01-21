@@ -2,9 +2,9 @@
 From New.code Require Import go_etcd_io.raft.v3.
 From New.golang Require Import theory.
 
-From New.proof.structs Require go_etcd_io.raft.v3.raftpb.
-From New.proof.structs Require sync.
-From New.proof.structs Require go_etcd_io.raft.v3.tracker.
+From New.generatedproof.structs Require go_etcd_io.raft.v3.raftpb.
+From New.generatedproof.structs Require sync.
+From New.generatedproof.structs Require go_etcd_io.raft.v3.tracker.
 Axiom falso : False.
 
 Module unstable.

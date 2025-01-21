@@ -4,7 +4,6 @@ import os
 from os import path
 import subprocess
 
-
 def run_command(args, dry_run=False, verbose=False):
     if dry_run or verbose:
         print(" ".join(args))
@@ -87,6 +86,7 @@ def main():
         do_run(["go", "install", "./cmd/goose"])
         do_run(["go", "install", "./cmd/goose_axiom"])
         do_run(["go", "install", "./cmd/recordgen"])
+        do_run(["go", "install", "./cmd/namegen"])
         os.chdir(old_dir)
 
     def run_goose(src_path, *pkgs):
@@ -94,18 +94,44 @@ def main():
             return
         if not pkgs:
             pkgs = ["."]
+        else:
+            pkgs = list(pkgs)
 
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
-        goose_bin = path.join(gopath, "bin", "goose")
-        args = [goose_bin]
 
-        output = path.join(perennial_dir, "new/code/")
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
+        goose_bin = path.join(gopath, "bin", "goose")
+        do_run([goose_bin,
+                "-out", path.join(perennial_dir, "new/code/"),
+                "-dir", src_path] + pkgs)
+
+        recordgen_bin = path.join(gopath, "bin", "recordgen")
+        do_run([recordgen_bin,
+                "-out", path.join(perennial_dir, "new/generatedproof/structs"),
+                "-dir", src_path] + pkgs)
+
+        namegen_bin = path.join(gopath, "bin", "namegen")
+        do_run([namegen_bin,
+                "-out", path.join(perennial_dir, "new/generatedproof/names"),
+                "-dir", src_path] + pkgs)
+
+    def run_recordgen(src_path, *pkgs):
+        if src_path is None:
+            return
+        if not pkgs:
+            pkgs = ["."]
+        else:
+            pkgs = list(pkgs)
+
+        gopath = os.getenv("GOPATH", default=None)
+        if gopath is None or gopath == "":
+            gopath = path.join(path.expanduser("~"), "go")
+
+        recordgen_bin = path.join(gopath, "bin", "recordgen")
+        do_run([recordgen_bin,
+                "-out", path.join(perennial_dir, "new/generatedproof/structs"),
+                "-dir", src_path] + pkgs)
 
     def run_axiomgen(dst_path, src_path, *pkgs):
         if src_path is None:
@@ -117,24 +143,6 @@ def main():
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
         goose_bin = path.join(gopath, "bin", "goose_axiom")
-        args = [goose_bin]
-
-        output = path.join(perennial_dir, dst_path)
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
-
-    def run_recordgen(dst_path, src_path, *pkgs):
-        if src_path is None:
-            return
-        if not pkgs:
-            pkgs = ["."]
-
-        gopath = os.getenv("GOPATH", default=None)
-        if gopath is None or gopath == "":
-            gopath = path.join(path.expanduser("~"), "go")
-        goose_bin = path.join(gopath, "bin", "recordgen")
         args = [goose_bin]
 
         output = path.join(perennial_dir, dst_path)
@@ -175,12 +183,6 @@ def main():
         # "./vrsm/replica",
     )
 
-    run_recordgen(
-        "new/proof/structs/",
-        gokv_dir,
-        "./asyncfile",
-    )
-
     run_axiomgen(
         "new_code_axioms/",
         etcd_raft_dir,
@@ -218,23 +220,10 @@ def main():
         "go.etcd.io/raft/v3/quorum",
     )
 
-    run_goose(
-        etcd_raft_dir,
-        "-partial",
-        "Message,MessageType,MsgHup,Entry,ConfState,SnapshotMetadata,Snapshot,HardState,"
-        + "ConfChange,ConfChangeType,ConfChangeSingle,ConfChangeV2,ConfChangeTransition,EntryType",
-        "-ignore-errors",
-        "go.etcd.io/raft/v3/raftpb",
-    )
-
     run_recordgen(
-        "new/proof/structs/",
         etcd_raft_dir,
         "go.etcd.io/raft/v3/raftpb",
-        "go.etcd.io/raft/v3/tracker",
-        "go.etcd.io/raft/v3",
     )
-
 
 if __name__ == "__main__":
     main()

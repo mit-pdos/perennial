@@ -52,6 +52,10 @@ Global Instance wp_func_call_other :
 Proof. apply wp_func_call'. reflexivity. Qed.
 
 Global Instance wp_func_call_bar :
+  WpFuncCall globals_test.pkg_name' "bar" _ is_defined :=
+ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_bar :
   WpFuncCall globals_test.pkg_name' "bar" globals_test.bar is_defined.
 Proof. apply wp_func_call'. reflexivity. Qed.
 
