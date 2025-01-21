@@ -195,7 +195,7 @@ Qed.
 
 Theorem wp_forSlice {stk E} (I: u64 → iProp Σ) s t q xs (body: val) :
   (∀ (i: u64) v x,
-      {{{ I i ∗ Ψ v x q }}}
+      {{{ I i ∗ Ψ v x q ∗ ⌜uint.Z i < uint.Z s.(Slice.sz)⌝ ∗ ⌜xs !! uint.nat i = Some x⌝ }}}
         body #i v @ stk; E
       {{{ RET #(); I (word.add i (W64 1)) ∗ Ψ v x q }}}) -∗
     {{{ I (W64 0) ∗ is_pred_slice s t q xs }}}
@@ -213,7 +213,7 @@ Proof.
     rewrite list_untype_val in Hlookup.
     iDestruct (big_sepL2_lookup_1 with "Hxs") as (y) "%Hlookup2"; eauto.
     iDestruct (big_sepL2_lookup_acc with "Hxs") as "[Hx Hxs]"; eauto.
-    wp_apply ("Hwp" with "[$Hi $Hx]").
+    wp_apply ("Hwp" with "[$Hi $Hx]"); first done.
     iIntros "[HI Hx]".
     iSpecialize ("Hxs" with "Hx").
     iApply "HΦ"; iFrame. }

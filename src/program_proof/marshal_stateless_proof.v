@@ -406,7 +406,7 @@ Theorem wp_WriteSlice {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t) (
   has_zero goT ->
   {{{
         "Hsl" ∷ own_slice pre_sl byteT (DfracOwn 1) prefix ∗
-        "Hown" ∷ is_pred_slice own xsl goT (DfracOwn 1) xs ∗
+        "Hown" ∷ is_pred_slice own xsl goT dq xs ∗
         "#HwriteOne" ∷ ∀ v pre_sl' (prefix' : list u8) x,
           {{{
                 own v x dq ∗
@@ -417,7 +417,7 @@ Theorem wp_WriteSlice {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t) (
                 (enc : list u8) (enc_sl : Slice.t), RET slice_val enc_sl;
                 ⌜ has_encoding enc x ⌝ ∗
                 own v x dq ∗
-                own_slice enc_sl byteT (DfracOwn 1) (prefix ++ enc)
+                own_slice enc_sl byteT (DfracOwn 1) (prefix' ++ enc)
           }}}
   }}}
     WriteSlice goT (slice_val pre_sl) (slice_val xsl) writeOne
@@ -428,7 +428,47 @@ Theorem wp_WriteSlice {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t) (
         own_slice enc_sl byteT dq (prefix ++ enc)
   }}}.
 Proof.
-Admitted.
+  iIntros (Hval_ty Hzero Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_rec. wp_pures.
+
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Hb2".
+  wp_pures.
+
+  iUnfold is_pred_slice in "Hown".
+  iDestruct "Hown" as "[%vs [Hxsl Hown]]".
+  iDestruct (own_slice_small_sz with "Hxsl") as "%Hxsz".
+  iDestruct (big_sepL2_length with "Hown") as "%Hlen".
+
+  wp_apply (pred_slice.wp_forSlice own
+              (λ i, ∃ (enc' : list u8) (enc_sl' : Slice.t),
+                  (* Encoding *)
+                  "%H_b2_enc" ∷ ⌜ encodes enc' (take (uint.nat i) xs) has_encoding ⌝ ∗
+                  "H_b2_sl" ∷ own_slice enc_sl' byteT (DfracOwn 1) (prefix ++ enc') ∗
+                  (* Outside Variables *)
+                  "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl'
+              )%I
+             with "[] [Hxsl Hown Hsl $Hb2]").
+  2:{ iUnfold is_pred_slice. iSplitL "Hsl".
+      + iExists []. rewrite app_nil_r. iFrame. done.
+      + iExists vs. iFrame. }
+  {
+    clear Φ.
+    iIntros (??? Φ) "!> (HI0 & Hownx & %Hsz & %Hxsi) HΦ".
+    iNamed "HI0". wp_pures.
+    wp_load.
+    wp_apply ("HwriteOne" with "[$Hownx $H_b2_sl]").
+    iIntros (encx enc_slx) "(%Hencx & Hownx & Hsl)".
+    rewrite <- app_assoc.
+    wp_store.
+
+    iModIntro. iApply "HΦ".
+    iSplitR "Hownx".
+    + iExists (enc' ++ encx), enc_slx. iFrame.
+      iPureIntro. 
+      replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
+      assert (uint.nat i < length xs) by word.
+      destruct (take (S (uint.nat i)) xs) eqn:Htake. {  }
+  }
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
