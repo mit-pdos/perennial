@@ -3,7 +3,7 @@ From New.golang Require Import defn.
 From New.code Require fmt.
 From New.code Require github_com.goose_lang.primitive.
 From New.code Require github_com.goose_lang.primitive.disk.
-From New.code Require github_com.tchajed.marshal.
+From New.code Require github_com.goose_lang.std.
 From New.code Require log.
 From New.code Require sync.
 
@@ -1553,16 +1553,14 @@ Definition AssignOps : val :=
     do:  ("x" <-[uint64T] ((![uint64T] "x") - #(W64 1)))).
 
 Definition wrapExternalStruct : go_type := structT [
-  "e" :: marshal.Enc;
-  "d" :: marshal.Dec
+  "j" :: ptrT
 ].
 
-(* go: package.go:14:29 *)
-Definition wrapExternalStruct__moveUint64 : val :=
-  rec: "wrapExternalStruct__moveUint64" "w" <> :=
+(* go: package.go:13:29 *)
+Definition wrapExternalStruct__join : val :=
+  rec: "wrapExternalStruct__join" "w" <> :=
     exception_do (let: "w" := (ref_ty wrapExternalStruct "w") in
-    do:  (let: "$a0" := ((method_call #marshal.pkg_name' #"Dec" #"GetInt" (![marshal.Dec] (struct.field_ref wrapExternalStruct "d" "w"))) #()) in
-    (method_call #marshal.pkg_name' #"Enc" #"PutInt" (![marshal.Enc] (struct.field_ref wrapExternalStruct "e" "w"))) "$a0")).
+    do:  ((method_call #std.pkg_name' #"JoinHandle'ptr" #"Join" (![ptrT] (struct.field_ref wrapExternalStruct "j" "w"))) #())).
 
 (* go: panic.go:3:6 *)
 Definition PanicAtTheDisco : val :=
@@ -2183,8 +2181,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
                  method_call #pkg_name' #"embedB" #"Foo" (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
                  )%V)]); ("Enc"%go, []); ("Enc'ptr"%go, [("UInt32"%go, Enc__UInt32); ("UInt64"%go, Enc__UInt64); ("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("UInt32"%go, Dec__UInt32); ("UInt64"%go, Dec__UInt64); ("consume"%go, Dec__consume)]); ("concreteFooer"%go, []); ("concreteFooer'ptr"%go, [("Foo"%go, concreteFooer__Foo)]); ("FooerUser"%go, []); ("FooerUser'ptr"%go, []); ("concrete1"%go, [("Foo"%go, concrete1__Foo)]); ("concrete1'ptr"%go, [("B"%go, concrete1__B); ("Foo"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"concrete1" #"Foo" (![concrete1] "$recvAddr")
-                 )%V)]); ("my_u32"%go, []); ("my_u32'ptr"%go, []); ("also_u32"%go, []); ("also_u32'ptr"%go, []); ("allTheLiterals"%go, []); ("allTheLiterals'ptr"%go, []); ("hasCondVar"%go, []); ("hasCondVar'ptr"%go, []); ("IntWrapper"%go, []); ("IntWrapper'ptr"%go, []); ("MapWrapper"%go, []); ("MapWrapper'ptr"%go, []); ("mapElem"%go, []); ("mapElem'ptr"%go, []); ("wrapExternalStruct"%go, [("moveUint64"%go, wrapExternalStruct__moveUint64)]); ("wrapExternalStruct'ptr"%go, [("moveUint64"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"wrapExternalStruct" #"moveUint64" (![wrapExternalStruct] "$recvAddr")
+                 )%V)]); ("my_u32"%go, []); ("my_u32'ptr"%go, []); ("also_u32"%go, []); ("also_u32'ptr"%go, []); ("allTheLiterals"%go, []); ("allTheLiterals'ptr"%go, []); ("hasCondVar"%go, []); ("hasCondVar'ptr"%go, []); ("IntWrapper"%go, []); ("IntWrapper'ptr"%go, []); ("MapWrapper"%go, []); ("MapWrapper'ptr"%go, []); ("mapElem"%go, []); ("mapElem'ptr"%go, []); ("wrapExternalStruct"%go, [("join"%go, wrapExternalStruct__join)]); ("wrapExternalStruct'ptr"%go, [("join"%go, (λ: "$recvAddr",
+                 method_call #pkg_name' #"wrapExternalStruct" #"join" (![wrapExternalStruct] "$recvAddr")
                  )%V)]); ("typing"%go, []); ("typing'ptr"%go, []); ("composite"%go, []); ("composite'ptr"%go, []); ("R"%go, []); ("R'ptr"%go, [("recurMethod"%go, R__recurMethod)]); ("Other"%go, [("recurEmbeddedMethod"%go, (λ: "$recv",
                  method_call #pkg_name' #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (struct.field_get Other "RecursiveEmbedded" "$recv")
                  )%V)]); ("Other'ptr"%go, [("recurEmbeddedMethod"%go, (λ: "$recvAddr",
@@ -2202,7 +2200,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  marshal.initialize';;;
+      exception_do (do:  std.initialize';;;
       do:  log.initialize';;;
       do:  disk.initialize';;;
       do:  primitive.initialize';;;

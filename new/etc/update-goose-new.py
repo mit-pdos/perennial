@@ -43,12 +43,6 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--marshal",
-        help="path to marshal repo (skip translation if not provided)",
-        metavar="MARSHAL_PATH",
-        default=None,
-    )
-    parser.add_argument(
         "--std",
         help="path to goose-lang/std repo (skip translation if not provided)",
         metavar="STD_PATH",
@@ -71,15 +65,12 @@ def main():
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose
-    marshal_dir = args.marshal
     std_dir = args.std
     gokv_dir = args.gokv
     etcd_raft_dir = args.etcd_raft
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if marshal_dir is not None and not os.path.isdir(marshal_dir):
-        parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
@@ -167,8 +158,6 @@ def main():
             "./semantics",
             "./unittest",
         )
-
-    run_goose(marshal_dir, ".")
 
     run_goose(std_dir, ".")
 
