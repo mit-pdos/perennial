@@ -33,8 +33,8 @@ Module Server.
         operationsPerformed: list Operation.t ;
         myOperations: list Operation.t ;
         pendingOperations: list Operation.t ;
-        data: w64 ;
-        gossipAcknowledgments: list u64 ;
+        data: u64 ;
+        gossipAcknowledgements: list u64 ;
       }.
 
 
@@ -74,19 +74,19 @@ Module Request.
 
   Record val_t :=
     mkRequest {
-        vRequestType: u64 ;
-        vClient_OperationType: u64 ;
-	vClient_SessionType: u64 ;
-	vClient_Data: u64;
-	vClient_Vector: Slice.t ;
+        v_RequestType: u64 ;
+        v_Client_OperationType: u64 ;
+	v_Client_SessionType: u64 ;
+	v_Client_Data: u64;
+	v_Client_Vector: Slice.t ;
 
-	vReceive_Gossip_ServerId: u64 ;
-	vReceive_Gossip_Operations: Slice.t ;
+	v_Receive_Gossip_ServerId: u64 ;
+	v_Receive_Gossip_Operations: Slice.t ;
 
-	vAcknowledge_Gossip_ServerId: u64 ;
-	vAcknowledge_Gossip_Index: u64 ;
+	v_Acknowledge_Gossip_ServerId: u64 ;
+	v_Acknowledge_Gossip_Index: u64 ;
 
-	vReceiver_ServerId: u64
+	v_Receiver_ServerId: u64
       }.
 
 End Request.
@@ -229,8 +229,6 @@ Section heap.
     #[global] Instance into_val_for_type : IntoValForType (u64*Slice.t*u64) (struct.t Operation).
     Proof. constructor; auto. Qed.
 
-    Search "readonly".
-
     Definition is_operation (opv: u64*Slice.t*u64) (op: Operation.t): iProp Σ :=
       ⌜opv.1.1 = op.(Operation.operationType)⌝ ∗
       ⌜opv.2 = op.(Operation.data)⌝ ∗
@@ -252,21 +250,55 @@ Section heap.
   
   Definition is_server (s: Server.val_t) (q: dfrac) (ser: Server.t) : iProp Σ :=
     (operation_slice s.(Server.v_myOperations) (ser.(Server.myOperations)) ∗
-     own_slice s.(Server.v_gossipAcknowledgments) (uint64T) (DfracOwn 1) ser.(Server.gossipAcknowledgments))%I.
+     own_slice s.(Server.v_gossipAcknowledgments) (uint64T) (DfracOwn 1) ser.(Server.gossipAcknowledgements))%I.
+
+  Global Instance request_into_val : IntoVal (u64*Slice.t*u64).
+    Proof.
+      refine {| into_val.to_val := operation_val;
+               from_val := λ v, match v with
+                                | (#(LitInt a), (slice_v, (#(LitInt b), #())))%V =>
+                                    match from_val slice_v with
+                                    | Some s => Some (a, s, b)
+                                    | None => None
+                                    end
+                                | _ => None
+                                end;
+               IntoVal_def := (W64 0, IntoVal_def Slice.t, W64 0);
+             |}.
+      destruct v as [[a []] c] ; done.
+    Defined.
+
+  Definition is_request (r: Request.val_t) (q: dfrac) (req: Request.t) : iProp Σ :=
+    ⌜req.(Request.acknowledge_Gossip_ServerId) = r.(Request.v_Acknowledge_Gossip_ServerId)⌝ ∗
+    ⌜req.(Request.acknowledge_Gossip_Index) = r.(Request.v_Acknowledge_Gossip_Index)⌝.
 
   Definition coq_getGossipOperations (server: Server.t) (serverId: u64) :=
-    let x := list_lookup_total (uint.nat serverId) (server.(Server.gossipAcknowledgments)) in
+    let x := list_lookup_total (uint.nat serverId) (server.(Server.gossipAcknowledgements)) in
     drop (uint.nat x) (server.(Server.myOperations)).
 
   Definition server_val (s: Server.val_t) : val :=
-    (#(s.(Server.v_id)), ((#s.(Server.v_numberOfServers)),
-                            ((slice_val s.(Server.v_vectorClock),
-                                ((slice_val s.(Server.v_operationsPerformed)),
-                                   ((slice_val s.(Server.v_myOperations)),
-                                      ((slice_val s.(Server.v_pendingOperations)),
-                                         ((#s.(Server.v_data)),
-                                            ((slice_val s.(Server.v_gossipAcknowledgments)),
-                                               #())))))))))%V.
+    (#(s.(Server.v_id)),
+       ((#s.(Server.v_numberOfServers)),
+          ((slice_val s.(Server.v_vectorClock),
+              ((slice_val s.(Server.v_operationsPerformed)),
+                 ((slice_val s.(Server.v_myOperations)),
+                    ((slice_val s.(Server.v_pendingOperations)),
+                       ((#s.(Server.v_data)),
+                          ((slice_val s.(Server.v_gossipAcknowledgments)),
+                             #())))))))))%V.
+
+  Definition request_val (r: Request.val_t) : val :=
+    (#(r.(Request.v_RequestType)),
+       ((#r.(Request.v_Client_OperationType)),
+          ((#r.(Request.v_Client_SessionType),
+              ((#r.(Request.v_Client_Data)),
+                 ((slice_val r.(Request.v_Client_Vector)),
+                    ((#r.(Request.v_Receive_Gossip_ServerId)),
+                       ((slice_val r.(Request.v_Receive_Gossip_Operations)),
+                          ((#r.(Request.v_Acknowledge_Gossip_ServerId)),
+                             ((#r.(Request.v_Acknowledge_Gossip_Index)),
+                                (#r.(Request.v_Receiver_ServerId),
+                                   #())))))))))))%V.
 
   (* what is the difference between readonly and discarding the frac *)
   (* I think points-to is not *)
@@ -277,7 +309,7 @@ Section heap.
   Lemma wp_getGossipOperations (s: Server.val_t) (ser: Server.t) (serverId: u64) :
     {{{
           is_server s (DfracOwn 1) ser ∗
-          ⌜uint.nat serverId < length (ser.(Server.gossipAcknowledgments))⌝%nat
+          ⌜uint.nat serverId < length (ser.(Server.gossipAcknowledgements))⌝%nat
                                       (* We need to add another precondition that x is less than the length *)
                                       
     }}}
@@ -339,11 +371,60 @@ Section heap.
                 + simpl. iApply "H".
             - unfold coq_getGossipOperations. iPureIntro.
                 assert ((list_lookup_total (uint.nat serverId)
-                               ser.(Server.gossipAcknowledgments)) = x). { 
+                               ser.(Server.gossipAcknowledgements)) = x). { 
                   apply list_lookup_total_correct. auto. }
                 rewrite H0. simpl. auto.
-  Admitted. 
+  Admitted.
+  
+  Definition coq_acknowledgeGossip (server: Server.t) (request: Request.t) :=
+    (* change the index of the list *)
+    let i := request.(Request.acknowledge_Gossip_ServerId) in
+    let l : (list u64) := server.(Server.gossipAcknowledgements) in
+    let gossipAcknowedgements: (list u64) :=
+      <[uint.nat i := request.(Request.acknowledge_Gossip_Index)]> l in
+    Server.mk 
+      server.(Server.id) server.(Server.numberOfServers) server.(Server.vectorClock) server.(Server.operationsPerformed) server.(Server.myOperations) server.(Server.pendingOperations) server.(Server.data) gossipAcknowedgements.
 
+
+  Lemma wp_acknowledgeGossip (s: Server.val_t) (ser: Server.t) (r: Request.val_t) (req: Request.t) :
+    {{{
+          is_server s (DfracOwn 1) ser ∗
+          is_request r (DfracOwn 1) req
+    }}}
+      acknowledgeGossip (server_val s) (request_val r)
+      {{{
+            s0, RET (server_val s0);
+            is_server s0 (DfracOwn 1) (coq_acknowledgeGossip ser req)
+      }}}.
+  Proof.
+    iIntros (Φ) "(H & %H1) H2". unfold acknowledgeGossip.
+    wp_pures.
+    wp_bind (SliceSet _ _ _ _)%E.
+    unfold is_server.
+    iDestruct "H" as "[H [H1 H3]]".
+    wp_apply (slice.wp_SliceSet with "[H1]").
+    - iSplitL "H1".
+      + iFrame.
+      + iSplitR; auto.
+        admit. (* need to put in precondition *)
+    - iIntros "H1". wp_pures. iModIntro. iApply "H2".
+      iSplitL "H".
+      + iFrame.
+      + unfold own_slice. unfold slice.own_slice. iSplitL "H1".
+        * simpl.
+          assert ((<[uint.nat r.(Request.v_Acknowledge_Gossip_ServerId):=#
+                                  r.(Request.v_Acknowledge_Gossip_Index)]>
+                     (list.untype ser.(Server.gossipAcknowledgements))) =
+                  (list.untype
+                     (<[uint.nat req.(Request.acknowledge_Gossip_ServerId):=
+                          req.(Request.acknowledge_Gossip_Index)]>
+                        ser.(Server.gossipAcknowledgements)))). {
+            destruct H1. rewrite H. rewrite H0. unfold list.untype.
+            simpl. rewrite list_fmap_insert. auto.
+          }
+          rewrite H. iFrame.
+        * iFrame.
+  Admitted.
 
 End heap.
   
