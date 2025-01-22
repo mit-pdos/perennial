@@ -144,6 +144,31 @@ Fixpoint encodes {A:Type} (enc : list u8) (xs : list A)
                          encodes bs' xs' has_encoding
   end.
 
+Local Lemma encodes_app {A:Type} (has_encoding : list u8 -> A -> Prop) :
+  forall (xs : list A) (enc : list u8) (enc' : list u8) (x : A),
+  encodes enc xs has_encoding /\
+  has_encoding enc' x ->
+  encodes (enc ++ enc') (xs ++ [x]) has_encoding.
+Proof.
+  intros xs.
+  induction xs as [|x].
+  - intros enc enc' x [Henc Hhe]. unfold encodes in Henc. rewrite Henc.
+    simpl. exists enc', []. rewrite app_nil_r. split; done.
+  - intros enc enc' x' [Henc Hhe].
+    unfold encodes in Henc.
+    destruct Henc as (enc__x & enc__xs & ? & Hbreak_enc & Hencx & Hbase_enc).
+    fold (encodes enc__xs xs has_encoding) in Hbase_enc.
+    rewrite Hbreak_enc.
+    unfold encodes. simpl.
+    exists enc__x, (enc__xs ++ enc').
+    fold (encodes (enc__xs ++ enc') (xs ++ [x']) has_encoding).
+    rewrite app_assoc.
+    split; first reflexivity.
+    split; first reflexivity.
+    split; first exact.
+    apply IHxs. exact.
+Qed.  
+
 Theorem wp_ReadSlice {X : Type} {goT : ty} (enc : list u8) (enc_sl : Slice.t)
   (xs : list X) (count : w64) (has_encoding : list u8 -> X -> Prop)
   (own : val -> X -> dfrac -> iProp Σ) (readOne : val) (suffix : list u8) (dq : dfrac) :
@@ -399,77 +424,6 @@ Proof.
   iApply "HΦ".
 Qed.
 
-Theorem wp_WriteSlice {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t) (xs : list X)
-  (has_encoding : list u8 -> X -> Prop)
-  (own : val -> X -> dfrac -> iProp Σ) (writeOne : val) (prefix : list u8) (dq : dfrac) :
-  (∀ (v : val) (x : X) (dq : dfrac), own v x dq -∗ ⌜val_ty v goT⌝) ->
-  has_zero goT ->
-  {{{
-        "Hsl" ∷ own_slice pre_sl byteT (DfracOwn 1) prefix ∗
-        "Hown" ∷ is_pred_slice own xsl goT dq xs ∗
-        "#HwriteOne" ∷ ∀ v pre_sl' (prefix' : list u8) x,
-          {{{
-                own v x dq ∗
-                own_slice pre_sl' byteT (DfracOwn 1) prefix'
-          }}}
-            writeOne v (slice_val pre_sl')
-          {{{
-                (enc : list u8) (enc_sl : Slice.t), RET slice_val enc_sl;
-                ⌜ has_encoding enc x ⌝ ∗
-                own v x dq ∗
-                own_slice enc_sl byteT (DfracOwn 1) (prefix' ++ enc)
-          }}}
-  }}}
-    WriteSlice goT (slice_val pre_sl) (slice_val xsl) writeOne
-  {{{
-        enc enc_sl, RET slice_val enc_sl;
-        is_pred_slice own xsl goT (DfracOwn 1) xs ∗
-        ⌜ encodes enc xs has_encoding ⌝ ∗
-        own_slice enc_sl byteT dq (prefix ++ enc)
-  }}}.
-Proof.
-  iIntros (Hval_ty Hzero Φ) "Hpre HΦ". iNamed "Hpre".
-  wp_rec. wp_pures.
-
-  wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Hb2".
-  wp_pures.
-
-  iUnfold is_pred_slice in "Hown".
-  iDestruct "Hown" as "[%vs [Hxsl Hown]]".
-  iDestruct (own_slice_small_sz with "Hxsl") as "%Hxsz".
-  iDestruct (big_sepL2_length with "Hown") as "%Hlen".
-
-  wp_apply (pred_slice.wp_forSlice own
-              (λ i, ∃ (enc' : list u8) (enc_sl' : Slice.t),
-                  (* Encoding *)
-                  "%H_b2_enc" ∷ ⌜ encodes enc' (take (uint.nat i) xs) has_encoding ⌝ ∗
-                  "H_b2_sl" ∷ own_slice enc_sl' byteT (DfracOwn 1) (prefix ++ enc') ∗
-                  (* Outside Variables *)
-                  "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl'
-              )%I
-             with "[] [Hxsl Hown Hsl $Hb2]").
-  2:{ iUnfold is_pred_slice. iSplitL "Hsl".
-      + iExists []. rewrite app_nil_r. iFrame. done.
-      + iExists vs. iFrame. }
-  {
-    clear Φ.
-    iIntros (??? Φ) "!> (HI0 & Hownx & %Hsz & %Hxsi) HΦ".
-    iNamed "HI0". wp_pures.
-    wp_load.
-    wp_apply ("HwriteOne" with "[$Hownx $H_b2_sl]").
-    iIntros (encx enc_slx) "(%Hencx & Hownx & Hsl)".
-    rewrite <- app_assoc.
-    wp_store.
-
-    iModIntro. iApply "HΦ".
-    iSplitR "Hownx".
-    + iExists (enc' ++ encx), enc_slx. iFrame.
-      iPureIntro. 
-      replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
-      assert (uint.nat i < length xs) by word.
-      destruct (take (S (uint.nat i)) xs) eqn:Htake. {  }
-  }
-
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
     compute_new_cap #old_cap #min_cap
@@ -596,4 +550,142 @@ Proof.
   - wp_apply (wp_SliceAppend with "Hs"); auto.
 Qed.
 
+Theorem wp_WriteSlice {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t)
+  (xs : list X) (has_encoding : list u8 -> X -> Prop) (own : val -> X -> dfrac -> iProp Σ)
+  (writeOne : val) (prefix : list u8) (dq : dfrac) :
+  {{{
+        "Hsl" ∷ own_slice pre_sl byteT (DfracOwn 1) prefix ∗
+        "Hown" ∷ is_pred_slice own xsl goT dq xs ∗
+        "#HwriteOne" ∷ ∀ v pre_sl' (prefix' : list u8) x,
+          {{{
+                own v x dq ∗
+                own_slice pre_sl' byteT (DfracOwn 1) prefix'
+          }}}
+            writeOne v (slice_val pre_sl')
+          {{{
+                (enc : list u8) (enc_sl : Slice.t), RET slice_val enc_sl;
+                ⌜ has_encoding enc x ⌝ ∗
+                own v x dq ∗
+                own_slice enc_sl byteT (DfracOwn 1) (prefix' ++ enc)
+          }}}
+  }}}
+    WriteSlice goT (slice_val pre_sl) (slice_val xsl) writeOne
+  {{{
+        enc enc_sl, RET slice_val enc_sl;
+        is_pred_slice own xsl goT dq xs ∗
+        ⌜ encodes enc xs has_encoding ⌝ ∗
+        own_slice enc_sl byteT (DfracOwn 1) (prefix ++ enc)
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_rec. wp_pures.
+
+  wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Hb2".
+  wp_pures.
+
+  iUnfold is_pred_slice in "Hown".
+  iDestruct "Hown" as "[%vs [Hxsl Hown]]".
+  iDestruct (own_slice_small_sz with "Hxsl") as "%Hxsz".
+  iDestruct (big_sepL2_length with "Hown") as "%Hlen".
+
+  wp_apply (pred_slice.wp_forSlice own
+              (λ i, ∃ (enc' : list u8) (enc_sl' : Slice.t),
+                  (* Encoding *)
+                  "%H_b2_enc" ∷ ⌜ encodes enc' (take (uint.nat i) xs) has_encoding ⌝ ∗
+                  "H_b2_sl" ∷ own_slice enc_sl' byteT (DfracOwn 1) (prefix ++ enc') ∗
+                  (* Outside Variables *)
+                  "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl'
+              )%I
+             with "[] [Hxsl Hown Hsl $Hb2]").
+  2:{ iUnfold is_pred_slice. iSplitL "Hsl".
+      + iExists []. rewrite app_nil_r. iFrame. done.
+      + iExists vs. iFrame. }
+  {
+    clear Φ.
+    iIntros (??? Φ) "!> (HI0 & Hownx & %Hsz & %Hxsi) HΦ".
+    iNamed "HI0". wp_pures.
+    wp_load.
+    wp_apply ("HwriteOne" with "[$Hownx $H_b2_sl]").
+    iIntros (encx enc_slx) "(%Hencx & Hownx & Hsl)".
+    rewrite <- app_assoc.
+    wp_store.
+
+    iModIntro. iApply "HΦ".
+    iSplitR "Hownx".
+    + iExists (enc' ++ encx), enc_slx. iFrame.
+      iPureIntro. 
+      replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
+      assert (uint.nat i < length xs) as Hixs by word.
+      pose proof (take_S_r xs (uint.nat i) x) as Htsr.
+      apply Htsr in Hxsi as Htsrs.
+      rewrite Htsrs.
+      destruct (take (uint.nat i) xs) eqn:Htake.
+      - unfold encodes in H_b2_enc.
+        rewrite H_b2_enc.
+        simpl. exists encx, [].
+        repeat split.
+        { rewrite app_nil_r. reflexivity. }
+        done.
+      - apply encodes_app. done.
+    + iFrame.
+  }
+  iIntros "[Hloop Hsl]". iNamed "Hloop".
+  wp_pures. wp_load. iModIntro.
+  iApply "HΦ". iFrame.
+  rewrite Hlen in Hxsz.
+  rewrite <- Hxsz in H_b2_enc.
+  rewrite firstn_all in H_b2_enc.
+  done.
+Qed.
+
+Theorem wp_WriteSliceLenPrefix {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t)
+  (xs : list X) (has_encoding : list u8 -> X -> Prop) (own : val -> X -> dfrac -> iProp Σ)
+  (writeOne : val) (prefix : list u8) (dq : dfrac) :
+  {{{
+        "Hsl" ∷ own_slice pre_sl byteT (DfracOwn 1) prefix ∗
+        "Hown" ∷ is_pred_slice own xsl goT dq xs ∗
+        "#HwriteOne" ∷ ∀ v pre_sl' (prefix' : list u8) x,
+          {{{
+                own v x dq ∗
+                own_slice pre_sl' byteT (DfracOwn 1) prefix'
+          }}}
+            writeOne v (slice_val pre_sl')
+          {{{
+                (enc : list u8) (enc_sl : Slice.t), RET slice_val enc_sl;
+                ⌜ has_encoding enc x ⌝ ∗
+                own v x dq ∗
+                own_slice enc_sl byteT (DfracOwn 1) (prefix' ++ enc)
+          }}}
+  }}}
+    WriteSliceLenPrefix goT (slice_val pre_sl) (slice_val xsl) writeOne
+  {{{
+        enc enc_sl, RET slice_val enc_sl;
+        is_pred_slice own xsl goT dq xs ∗
+        ⌜ encodes enc xs has_encoding ⌝ ∗
+        own_slice enc_sl byteT (DfracOwn 1) (prefix ++ (u64_le $ length xs) ++ enc)
+  }}}.
+Proof. 
+  iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_rec. wp_pures.
+
+  wp_apply (wp_slice_len).
+  wp_apply (wp_WriteInt with "[$Hsl]").
+  iIntros (?) "Hsl". wp_pures.
+
+  wp_apply (wp_WriteSlice with "[Hown Hsl]").
+  {
+    iFrame.
+    iApply "HwriteOne".
+  }
+  iIntros (??) "(Hown & %Henc & Hsl)".
+  wp_pures. iModIntro.
+  iDestruct (pred_slice_sz with "Hown") as "%Hsz".
+  iApply "HΦ".
+  rewrite <- app_assoc.
+  rewrite Hsz.
+  rewrite w64_to_nat_id.
+  iFrame.
+  done.
+Qed.
+  
 End goose_lang.

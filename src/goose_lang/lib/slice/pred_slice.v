@@ -69,6 +69,18 @@ Definition is_pred_slice s t q l: iProp Σ :=
   ∃ (vs: list val), typed_slice.own_slice_small s t q vs ∗
                   [∗ list] v;x ∈ vs;l, Ψ v x q.
 
+Lemma pred_slice_sz s t q xs :
+  is_pred_slice s t q xs ⊢@{_} ⌜length xs = uint.nat s.(Slice.sz)⌝.
+Proof.
+  iIntros "Hsl".
+  iUnfold is_pred_slice in "Hsl".
+  iDestruct "Hsl" as "[%vs [Hsl HΨ]]".
+  iDestruct (own_slice_small_sz with "Hsl") as "%Hslsz".
+  iDestruct (big_sepL2_length with "HΨ") as "%HΨsz".
+  rewrite HΨsz in Hslsz.
+  done.
+Qed.
+
 Theorem wp_SliceGet {stk E} s t q l (i: u64) (x: A) :
   l !! uint.nat i = Some x →
   {{{ is_pred_slice s t q l }}}
