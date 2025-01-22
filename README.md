@@ -14,19 +14,19 @@ To compile dependencies for proofs do (`make src/program_proof/session/dependenc
 6. equalOperations
 7. deleteAtIndex
 8. sortedInsert
+9. dependencyCheck
+10. acknowledgeGossip (contains admit)
+11. getGossipOperations (contains admit)
+12. binarySearch (contains admits)
 
 ## Functions left to complete:
-1. dependencyCheck (easy) 
-2. ProcessClientRequest (medium)
-3. oneOffVersionVector (medium)
-4. binarySearch (easy)
-5. mergeOperations (medium)
-6. receiveGossip (medium)
-7. acknowledgeGossip (easy, 2 lines)
-8. getGossipOperations (easy, 1 line)
-9. ProcessRequest (medium) 
-10. writeToServer (easy)
-11. readFromServer (easy)
+1. ProcessClientRequest (medium)
+2. oneOffVersionVector (medium)
+4. mergeOperations (medium)
+5. receiveGossip (medium)
+6. ProcessRequest (medium) 
+7. writeToServer (easy)
+8. readFromServer (easy)
 
 # Verifying concurrent, crash-safe systems with Perennial
 
