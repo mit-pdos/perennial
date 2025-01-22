@@ -28,7 +28,7 @@ Global Instance settable_AsyncFile `{ffi_syntax}: Settable _ :=
 Global Instance into_val_AsyncFile `{ffi_syntax} : IntoVal AsyncFile.t.
 Admitted.
 
-Global Instance into_val_typed_AsyncFile `{ffi_syntax} : IntoValTyped AsyncFile.t AsyncFile :=
+Global Instance into_val_typed_AsyncFile `{ffi_syntax} : IntoValTyped AsyncFile.t asyncfile.AsyncFile :=
 {|
   default_val := AsyncFile.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -36,39 +36,39 @@ Global Instance into_val_typed_AsyncFile `{ffi_syntax} : IntoValTyped AsyncFile.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" AsyncFile AsyncFile.mu.
+Global Instance into_val_struct_field_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" asyncfile.AsyncFile AsyncFile.mu.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_data `{ffi_syntax} : IntoValStructField "data" AsyncFile AsyncFile.data.
+Global Instance into_val_struct_field_AsyncFile_data `{ffi_syntax} : IntoValStructField "data" asyncfile.AsyncFile AsyncFile.data.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_filename `{ffi_syntax} : IntoValStructField "filename" AsyncFile AsyncFile.filename.
+Global Instance into_val_struct_field_AsyncFile_filename `{ffi_syntax} : IntoValStructField "filename" asyncfile.AsyncFile AsyncFile.filename.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_index `{ffi_syntax} : IntoValStructField "index" AsyncFile AsyncFile.index.
+Global Instance into_val_struct_field_AsyncFile_index `{ffi_syntax} : IntoValStructField "index" asyncfile.AsyncFile AsyncFile.index.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_indexCond `{ffi_syntax} : IntoValStructField "indexCond" AsyncFile AsyncFile.indexCond.
+Global Instance into_val_struct_field_AsyncFile_indexCond `{ffi_syntax} : IntoValStructField "indexCond" asyncfile.AsyncFile AsyncFile.indexCond.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_durableIndex `{ffi_syntax} : IntoValStructField "durableIndex" AsyncFile AsyncFile.durableIndex.
+Global Instance into_val_struct_field_AsyncFile_durableIndex `{ffi_syntax} : IntoValStructField "durableIndex" asyncfile.AsyncFile AsyncFile.durableIndex.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_durableIndexCond `{ffi_syntax} : IntoValStructField "durableIndexCond" AsyncFile AsyncFile.durableIndexCond.
+Global Instance into_val_struct_field_AsyncFile_durableIndexCond `{ffi_syntax} : IntoValStructField "durableIndexCond" asyncfile.AsyncFile AsyncFile.durableIndexCond.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" AsyncFile AsyncFile.closeRequested.
+Global Instance into_val_struct_field_AsyncFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" asyncfile.AsyncFile AsyncFile.closeRequested.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_closed `{ffi_syntax} : IntoValStructField "closed" AsyncFile AsyncFile.closed.
+Global Instance into_val_struct_field_AsyncFile_closed `{ffi_syntax} : IntoValStructField "closed" asyncfile.AsyncFile AsyncFile.closed.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" AsyncFile AsyncFile.closedCond.
+Global Instance into_val_struct_field_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" asyncfile.AsyncFile AsyncFile.closedCond.
 Admitted.
 
 Instance wp_struct_make_AsyncFile `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu data filename index indexCond durableIndex durableIndexCond closeRequested closed closedCond:
   PureWp True
-    (struct.make AsyncFile (alist_val [
+    (struct.make asyncfile.AsyncFile (alist_val [
       "mu" ::= #mu;
       "data" ::= #data;
       "filename" ::= #filename;

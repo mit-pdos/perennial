@@ -19,7 +19,7 @@ Global Instance settable_LockClerk `{ffi_syntax}: Settable _ :=
 Global Instance into_val_LockClerk `{ffi_syntax} : IntoVal LockClerk.t.
 Admitted.
 
-Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.t LockClerk :=
+Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.t lockservice.LockClerk :=
 {|
   default_val := LockClerk.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -27,12 +27,12 @@ Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LockClerk_kv `{ffi_syntax} : IntoValStructField "kv" LockClerk LockClerk.kv.
+Global Instance into_val_struct_field_LockClerk_kv `{ffi_syntax} : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv.
 Admitted.
 
 Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv:
   PureWp True
-    (struct.make LockClerk (alist_val [
+    (struct.make lockservice.LockClerk (alist_val [
       "kv" ::= #kv
     ]))%V 
     #(LockClerk.mk kv).

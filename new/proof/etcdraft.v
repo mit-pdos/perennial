@@ -1,6 +1,6 @@
 From New.code.go_etcd_io.raft Require Import v3.
-From New.proof Require Import structs.go_etcd_io.raft.v3.
-From New.proof Require Import structs.go_etcd_io.raft.v3.raftpb.
+From New.generatedproof Require Import structs.go_etcd_io.raft.v3.
+From New.generatedproof Require Import structs.go_etcd_io.raft.v3.raftpb.
 From New.proof Require Import grove_prelude.
 
 Section proof.
@@ -168,6 +168,8 @@ Proof.
   iIntros (?) "_ HΦ".
   wp_call.
   rewrite -!default_val_eq_zero_val.
+  let x := fresh "ptr" in wp_alloc x as "?".
+  Time wp_pures.
   let x := fresh "ptr" in wp_alloc x as "?".
   Ltac wp_progress := (first [progress (rewrite -!default_val_eq_zero_val)|
                                progress wp_pures |

@@ -20,7 +20,7 @@ Global Instance settable_inflight `{ffi_syntax}: Settable _ :=
 Global Instance into_val_inflight `{ffi_syntax} : IntoVal inflight.t.
 Admitted.
 
-Global Instance into_val_typed_inflight `{ffi_syntax} : IntoValTyped inflight.t inflight :=
+Global Instance into_val_typed_inflight `{ffi_syntax} : IntoValTyped inflight.t tracker.inflight :=
 {|
   default_val := inflight.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -28,15 +28,15 @@ Global Instance into_val_typed_inflight `{ffi_syntax} : IntoValTyped inflight.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_inflight_index `{ffi_syntax} : IntoValStructField "index" inflight inflight.index.
+Global Instance into_val_struct_field_inflight_index `{ffi_syntax} : IntoValStructField "index" tracker.inflight inflight.index.
 Admitted.
 
-Global Instance into_val_struct_field_inflight_bytes `{ffi_syntax} : IntoValStructField "bytes" inflight inflight.bytes.
+Global Instance into_val_struct_field_inflight_bytes `{ffi_syntax} : IntoValStructField "bytes" tracker.inflight inflight.bytes.
 Admitted.
 
 Instance wp_struct_make_inflight `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} index bytes:
   PureWp True
-    (struct.make inflight (alist_val [
+    (struct.make tracker.inflight (alist_val [
       "index" ::= #index;
       "bytes" ::= #bytes
     ]))%V 
@@ -63,7 +63,7 @@ Global Instance settable_Inflights `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Inflights `{ffi_syntax} : IntoVal Inflights.t.
 Admitted.
 
-Global Instance into_val_typed_Inflights `{ffi_syntax} : IntoValTyped Inflights.t Inflights :=
+Global Instance into_val_typed_Inflights `{ffi_syntax} : IntoValTyped Inflights.t tracker.Inflights :=
 {|
   default_val := Inflights.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -71,27 +71,27 @@ Global Instance into_val_typed_Inflights `{ffi_syntax} : IntoValTyped Inflights.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Inflights_start `{ffi_syntax} : IntoValStructField "start" Inflights Inflights.start.
+Global Instance into_val_struct_field_Inflights_start `{ffi_syntax} : IntoValStructField "start" tracker.Inflights Inflights.start.
 Admitted.
 
-Global Instance into_val_struct_field_Inflights_count `{ffi_syntax} : IntoValStructField "count" Inflights Inflights.count.
+Global Instance into_val_struct_field_Inflights_count `{ffi_syntax} : IntoValStructField "count" tracker.Inflights Inflights.count.
 Admitted.
 
-Global Instance into_val_struct_field_Inflights_bytes `{ffi_syntax} : IntoValStructField "bytes" Inflights Inflights.bytes.
+Global Instance into_val_struct_field_Inflights_bytes `{ffi_syntax} : IntoValStructField "bytes" tracker.Inflights Inflights.bytes.
 Admitted.
 
-Global Instance into_val_struct_field_Inflights_size `{ffi_syntax} : IntoValStructField "size" Inflights Inflights.size.
+Global Instance into_val_struct_field_Inflights_size `{ffi_syntax} : IntoValStructField "size" tracker.Inflights Inflights.size.
 Admitted.
 
-Global Instance into_val_struct_field_Inflights_maxBytes `{ffi_syntax} : IntoValStructField "maxBytes" Inflights Inflights.maxBytes.
+Global Instance into_val_struct_field_Inflights_maxBytes `{ffi_syntax} : IntoValStructField "maxBytes" tracker.Inflights Inflights.maxBytes.
 Admitted.
 
-Global Instance into_val_struct_field_Inflights_buffer `{ffi_syntax} : IntoValStructField "buffer" Inflights Inflights.buffer.
+Global Instance into_val_struct_field_Inflights_buffer `{ffi_syntax} : IntoValStructField "buffer" tracker.Inflights Inflights.buffer.
 Admitted.
 
 Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} start count bytes size maxBytes buffer:
   PureWp True
-    (struct.make Inflights (alist_val [
+    (struct.make tracker.Inflights (alist_val [
       "start" ::= #start;
       "count" ::= #count;
       "bytes" ::= #bytes;
@@ -125,7 +125,7 @@ Global Instance settable_Progress `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Progress `{ffi_syntax} : IntoVal Progress.t.
 Admitted.
 
-Global Instance into_val_typed_Progress `{ffi_syntax} : IntoValTyped Progress.t Progress :=
+Global Instance into_val_typed_Progress `{ffi_syntax} : IntoValTyped Progress.t tracker.Progress :=
 {|
   default_val := Progress.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -133,36 +133,36 @@ Global Instance into_val_typed_Progress `{ffi_syntax} : IntoValTyped Progress.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Progress_Match `{ffi_syntax} : IntoValStructField "Match" Progress Progress.Match.
+Global Instance into_val_struct_field_Progress_Match `{ffi_syntax} : IntoValStructField "Match" tracker.Progress Progress.Match.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_Next `{ffi_syntax} : IntoValStructField "Next" Progress Progress.Next.
+Global Instance into_val_struct_field_Progress_Next `{ffi_syntax} : IntoValStructField "Next" tracker.Progress Progress.Next.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_sentCommit `{ffi_syntax} : IntoValStructField "sentCommit" Progress Progress.sentCommit.
+Global Instance into_val_struct_field_Progress_sentCommit `{ffi_syntax} : IntoValStructField "sentCommit" tracker.Progress Progress.sentCommit.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_State `{ffi_syntax} : IntoValStructField "State" Progress Progress.State.
+Global Instance into_val_struct_field_Progress_State `{ffi_syntax} : IntoValStructField "State" tracker.Progress Progress.State.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_PendingSnapshot `{ffi_syntax} : IntoValStructField "PendingSnapshot" Progress Progress.PendingSnapshot.
+Global Instance into_val_struct_field_Progress_PendingSnapshot `{ffi_syntax} : IntoValStructField "PendingSnapshot" tracker.Progress Progress.PendingSnapshot.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_RecentActive `{ffi_syntax} : IntoValStructField "RecentActive" Progress Progress.RecentActive.
+Global Instance into_val_struct_field_Progress_RecentActive `{ffi_syntax} : IntoValStructField "RecentActive" tracker.Progress Progress.RecentActive.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_MsgAppFlowPaused `{ffi_syntax} : IntoValStructField "MsgAppFlowPaused" Progress Progress.MsgAppFlowPaused.
+Global Instance into_val_struct_field_Progress_MsgAppFlowPaused `{ffi_syntax} : IntoValStructField "MsgAppFlowPaused" tracker.Progress Progress.MsgAppFlowPaused.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_Inflights `{ffi_syntax} : IntoValStructField "Inflights" Progress Progress.Inflights.
+Global Instance into_val_struct_field_Progress_Inflights `{ffi_syntax} : IntoValStructField "Inflights" tracker.Progress Progress.Inflights.
 Admitted.
 
-Global Instance into_val_struct_field_Progress_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" Progress Progress.IsLearner.
+Global Instance into_val_struct_field_Progress_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" tracker.Progress Progress.IsLearner.
 Admitted.
 
 Instance wp_struct_make_Progress `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Match Next sentCommit State PendingSnapshot RecentActive MsgAppFlowPaused Inflights IsLearner:
   PureWp True
-    (struct.make Progress (alist_val [
+    (struct.make tracker.Progress (alist_val [
       "Match" ::= #Match;
       "Next" ::= #Next;
       "sentCommit" ::= #sentCommit;
@@ -194,7 +194,7 @@ Global Instance settable_Config `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
 Admitted.
 
-Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t Config :=
+Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t tracker.Config :=
 {|
   default_val := Config.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -202,21 +202,21 @@ Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t Conf
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Config_Voters `{ffi_syntax} : IntoValStructField "Voters" Config Config.Voters.
+Global Instance into_val_struct_field_Config_Voters `{ffi_syntax} : IntoValStructField "Voters" tracker.Config Config.Voters.
 Admitted.
 
-Global Instance into_val_struct_field_Config_AutoLeave `{ffi_syntax} : IntoValStructField "AutoLeave" Config Config.AutoLeave.
+Global Instance into_val_struct_field_Config_AutoLeave `{ffi_syntax} : IntoValStructField "AutoLeave" tracker.Config Config.AutoLeave.
 Admitted.
 
-Global Instance into_val_struct_field_Config_Learners `{ffi_syntax} : IntoValStructField "Learners" Config Config.Learners.
+Global Instance into_val_struct_field_Config_Learners `{ffi_syntax} : IntoValStructField "Learners" tracker.Config Config.Learners.
 Admitted.
 
-Global Instance into_val_struct_field_Config_LearnersNext `{ffi_syntax} : IntoValStructField "LearnersNext" Config Config.LearnersNext.
+Global Instance into_val_struct_field_Config_LearnersNext `{ffi_syntax} : IntoValStructField "LearnersNext" tracker.Config Config.LearnersNext.
 Admitted.
 
 Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters AutoLeave Learners LearnersNext:
   PureWp True
-    (struct.make Config (alist_val [
+    (struct.make tracker.Config (alist_val [
       "Voters" ::= #Voters;
       "AutoLeave" ::= #AutoLeave;
       "Learners" ::= #Learners;
@@ -244,7 +244,7 @@ Global Instance settable_ProgressTracker `{ffi_syntax}: Settable _ :=
 Global Instance into_val_ProgressTracker `{ffi_syntax} : IntoVal ProgressTracker.t.
 Admitted.
 
-Global Instance into_val_typed_ProgressTracker `{ffi_syntax} : IntoValTyped ProgressTracker.t ProgressTracker :=
+Global Instance into_val_typed_ProgressTracker `{ffi_syntax} : IntoValTyped ProgressTracker.t tracker.ProgressTracker :=
 {|
   default_val := ProgressTracker.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -252,24 +252,24 @@ Global Instance into_val_typed_ProgressTracker `{ffi_syntax} : IntoValTyped Prog
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ProgressTracker_Config `{ffi_syntax} : IntoValStructField "Config" ProgressTracker ProgressTracker.Config.
+Global Instance into_val_struct_field_ProgressTracker_Config `{ffi_syntax} : IntoValStructField "Config" tracker.ProgressTracker ProgressTracker.Config.
 Admitted.
 
-Global Instance into_val_struct_field_ProgressTracker_Progress `{ffi_syntax} : IntoValStructField "Progress" ProgressTracker ProgressTracker.Progress.
+Global Instance into_val_struct_field_ProgressTracker_Progress `{ffi_syntax} : IntoValStructField "Progress" tracker.ProgressTracker ProgressTracker.Progress.
 Admitted.
 
-Global Instance into_val_struct_field_ProgressTracker_Votes `{ffi_syntax} : IntoValStructField "Votes" ProgressTracker ProgressTracker.Votes.
+Global Instance into_val_struct_field_ProgressTracker_Votes `{ffi_syntax} : IntoValStructField "Votes" tracker.ProgressTracker ProgressTracker.Votes.
 Admitted.
 
-Global Instance into_val_struct_field_ProgressTracker_MaxInflight `{ffi_syntax} : IntoValStructField "MaxInflight" ProgressTracker ProgressTracker.MaxInflight.
+Global Instance into_val_struct_field_ProgressTracker_MaxInflight `{ffi_syntax} : IntoValStructField "MaxInflight" tracker.ProgressTracker ProgressTracker.MaxInflight.
 Admitted.
 
-Global Instance into_val_struct_field_ProgressTracker_MaxInflightBytes `{ffi_syntax} : IntoValStructField "MaxInflightBytes" ProgressTracker ProgressTracker.MaxInflightBytes.
+Global Instance into_val_struct_field_ProgressTracker_MaxInflightBytes `{ffi_syntax} : IntoValStructField "MaxInflightBytes" tracker.ProgressTracker ProgressTracker.MaxInflightBytes.
 Admitted.
 
 Instance wp_struct_make_ProgressTracker `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Config Progress Votes MaxInflight MaxInflightBytes:
   PureWp True
-    (struct.make ProgressTracker (alist_val [
+    (struct.make tracker.ProgressTracker (alist_val [
       "Config" ::= #Config;
       "Progress" ::= #Progress;
       "Votes" ::= #Votes;

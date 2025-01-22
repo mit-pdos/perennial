@@ -15,7 +15,7 @@ End unit.
 Global Instance into_val_unit `{ffi_syntax} : IntoVal unit.t.
 Admitted.
 
-Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t unit :=
+Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t quorum.unit :=
 {|
   default_val := unit.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -25,7 +25,7 @@ Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t unit :=
 |}.
 Instance wp_struct_make_unit `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make unit (alist_val [
+    (struct.make quorum.unit (alist_val [
     ]))%V 
     #(unit.mk).
 Admitted.
@@ -48,7 +48,7 @@ Global Instance settable_tup `{ffi_syntax}: Settable _ :=
 Global Instance into_val_tup `{ffi_syntax} : IntoVal tup.t.
 Admitted.
 
-Global Instance into_val_typed_tup `{ffi_syntax} : IntoValTyped tup.t tup :=
+Global Instance into_val_typed_tup `{ffi_syntax} : IntoValTyped tup.t quorum.tup :=
 {|
   default_val := tup.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -56,21 +56,21 @@ Global Instance into_val_typed_tup `{ffi_syntax} : IntoValTyped tup.t tup :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_tup_id `{ffi_syntax} : IntoValStructField "id" tup tup.id.
+Global Instance into_val_struct_field_tup_id `{ffi_syntax} : IntoValStructField "id" quorum.tup tup.id.
 Admitted.
 
-Global Instance into_val_struct_field_tup_idx `{ffi_syntax} : IntoValStructField "idx" tup tup.idx.
+Global Instance into_val_struct_field_tup_idx `{ffi_syntax} : IntoValStructField "idx" quorum.tup tup.idx.
 Admitted.
 
-Global Instance into_val_struct_field_tup_ok `{ffi_syntax} : IntoValStructField "ok" tup tup.ok.
+Global Instance into_val_struct_field_tup_ok `{ffi_syntax} : IntoValStructField "ok" quorum.tup tup.ok.
 Admitted.
 
-Global Instance into_val_struct_field_tup_bar `{ffi_syntax} : IntoValStructField "bar" tup tup.bar.
+Global Instance into_val_struct_field_tup_bar `{ffi_syntax} : IntoValStructField "bar" quorum.tup tup.bar.
 Admitted.
 
 Instance wp_struct_make_tup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id idx ok bar:
   PureWp True
-    (struct.make tup (alist_val [
+    (struct.make quorum.tup (alist_val [
       "id" ::= #id;
       "idx" ::= #idx;
       "ok" ::= #ok;

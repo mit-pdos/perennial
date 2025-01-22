@@ -3,7 +3,7 @@ From New.code.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From New.proof Require Import std.
 From New.proof Require Import sync own_crash.
-From New.proof.structs Require Import github_com.mit_pdos.gokv.asyncfile.
+Require Import New.generatedproof.structs.github_com.mit_pdos.gokv.asyncfile.
 
 Record af_names := mk_af_names {
   index_gn : gname ;

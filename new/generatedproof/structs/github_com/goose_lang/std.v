@@ -21,7 +21,7 @@ Global Instance settable_JoinHandle `{ffi_syntax}: Settable _ :=
 Global Instance into_val_JoinHandle `{ffi_syntax} : IntoVal JoinHandle.t.
 Admitted.
 
-Global Instance into_val_typed_JoinHandle `{ffi_syntax} : IntoValTyped JoinHandle.t JoinHandle :=
+Global Instance into_val_typed_JoinHandle `{ffi_syntax} : IntoValTyped JoinHandle.t std.JoinHandle :=
 {|
   default_val := JoinHandle.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -29,18 +29,18 @@ Global Instance into_val_typed_JoinHandle `{ffi_syntax} : IntoValTyped JoinHandl
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_JoinHandle_mu `{ffi_syntax} : IntoValStructField "mu" JoinHandle JoinHandle.mu.
+Global Instance into_val_struct_field_JoinHandle_mu `{ffi_syntax} : IntoValStructField "mu" std.JoinHandle JoinHandle.mu.
 Admitted.
 
-Global Instance into_val_struct_field_JoinHandle_done `{ffi_syntax} : IntoValStructField "done" JoinHandle JoinHandle.done.
+Global Instance into_val_struct_field_JoinHandle_done `{ffi_syntax} : IntoValStructField "done" std.JoinHandle JoinHandle.done.
 Admitted.
 
-Global Instance into_val_struct_field_JoinHandle_cond `{ffi_syntax} : IntoValStructField "cond" JoinHandle JoinHandle.cond.
+Global Instance into_val_struct_field_JoinHandle_cond `{ffi_syntax} : IntoValStructField "cond" std.JoinHandle JoinHandle.cond.
 Admitted.
 
 Instance wp_struct_make_JoinHandle `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu done cond:
   PureWp True
-    (struct.make JoinHandle (alist_val [
+    (struct.make std.JoinHandle (alist_val [
       "mu" ::= #mu;
       "done" ::= #done;
       "cond" ::= #cond

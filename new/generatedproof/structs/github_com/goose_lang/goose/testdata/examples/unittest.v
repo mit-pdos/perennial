@@ -15,7 +15,7 @@ End importantStruct.
 Global Instance into_val_importantStruct `{ffi_syntax} : IntoVal importantStruct.t.
 Admitted.
 
-Global Instance into_val_typed_importantStruct `{ffi_syntax} : IntoValTyped importantStruct.t importantStruct :=
+Global Instance into_val_typed_importantStruct `{ffi_syntax} : IntoValTyped importantStruct.t unittest.importantStruct :=
 {|
   default_val := importantStruct.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -25,7 +25,7 @@ Global Instance into_val_typed_importantStruct `{ffi_syntax} : IntoValTyped impo
 |}.
 Instance wp_struct_make_importantStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make importantStruct (alist_val [
+    (struct.make unittest.importantStruct (alist_val [
     ]))%V 
     #(importantStruct.mk).
 Admitted.
@@ -45,7 +45,7 @@ Global Instance settable_diskWrapper `{ffi_syntax}: Settable _ :=
 Global Instance into_val_diskWrapper `{ffi_syntax} : IntoVal diskWrapper.t.
 Admitted.
 
-Global Instance into_val_typed_diskWrapper `{ffi_syntax} : IntoValTyped diskWrapper.t diskWrapper :=
+Global Instance into_val_typed_diskWrapper `{ffi_syntax} : IntoValTyped diskWrapper.t unittest.diskWrapper :=
 {|
   default_val := diskWrapper.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -53,12 +53,12 @@ Global Instance into_val_typed_diskWrapper `{ffi_syntax} : IntoValTyped diskWrap
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_diskWrapper_d `{ffi_syntax} : IntoValStructField "d" diskWrapper diskWrapper.d.
+Global Instance into_val_struct_field_diskWrapper_d `{ffi_syntax} : IntoValStructField "d" unittest.diskWrapper diskWrapper.d.
 Admitted.
 
 Instance wp_struct_make_diskWrapper `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} d:
   PureWp True
-    (struct.make diskWrapper (alist_val [
+    (struct.make unittest.diskWrapper (alist_val [
       "d" ::= #d
     ]))%V 
     #(diskWrapper.mk d).
@@ -79,7 +79,7 @@ Global Instance settable_embedA `{ffi_syntax}: Settable _ :=
 Global Instance into_val_embedA `{ffi_syntax} : IntoVal embedA.t.
 Admitted.
 
-Global Instance into_val_typed_embedA `{ffi_syntax} : IntoValTyped embedA.t embedA :=
+Global Instance into_val_typed_embedA `{ffi_syntax} : IntoValTyped embedA.t unittest.embedA :=
 {|
   default_val := embedA.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -87,12 +87,12 @@ Global Instance into_val_typed_embedA `{ffi_syntax} : IntoValTyped embedA.t embe
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_embedA_a `{ffi_syntax} : IntoValStructField "a" embedA embedA.a.
+Global Instance into_val_struct_field_embedA_a `{ffi_syntax} : IntoValStructField "a" unittest.embedA embedA.a.
 Admitted.
 
 Instance wp_struct_make_embedA `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a:
   PureWp True
-    (struct.make embedA (alist_val [
+    (struct.make unittest.embedA (alist_val [
       "a" ::= #a
     ]))%V 
     #(embedA.mk a).
@@ -113,7 +113,7 @@ Global Instance settable_embedB `{ffi_syntax}: Settable _ :=
 Global Instance into_val_embedB `{ffi_syntax} : IntoVal embedB.t.
 Admitted.
 
-Global Instance into_val_typed_embedB `{ffi_syntax} : IntoValTyped embedB.t embedB :=
+Global Instance into_val_typed_embedB `{ffi_syntax} : IntoValTyped embedB.t unittest.embedB :=
 {|
   default_val := embedB.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -121,12 +121,12 @@ Global Instance into_val_typed_embedB `{ffi_syntax} : IntoValTyped embedB.t embe
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_embedB_embedA `{ffi_syntax} : IntoValStructField "embedA" embedB embedB.embedA.
+Global Instance into_val_struct_field_embedB_embedA `{ffi_syntax} : IntoValStructField "embedA" unittest.embedB embedB.embedA.
 Admitted.
 
 Instance wp_struct_make_embedB `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} embedA:
   PureWp True
-    (struct.make embedB (alist_val [
+    (struct.make unittest.embedB (alist_val [
       "embedA" ::= #embedA
     ]))%V 
     #(embedB.mk embedA).
@@ -147,7 +147,7 @@ Global Instance settable_embedC `{ffi_syntax}: Settable _ :=
 Global Instance into_val_embedC `{ffi_syntax} : IntoVal embedC.t.
 Admitted.
 
-Global Instance into_val_typed_embedC `{ffi_syntax} : IntoValTyped embedC.t embedC :=
+Global Instance into_val_typed_embedC `{ffi_syntax} : IntoValTyped embedC.t unittest.embedC :=
 {|
   default_val := embedC.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -155,12 +155,12 @@ Global Instance into_val_typed_embedC `{ffi_syntax} : IntoValTyped embedC.t embe
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_embedC_embedB `{ffi_syntax} : IntoValStructField "embedB" embedC embedC.embedB.
+Global Instance into_val_struct_field_embedC_embedB `{ffi_syntax} : IntoValStructField "embedB" unittest.embedC embedC.embedB.
 Admitted.
 
 Instance wp_struct_make_embedC `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} embedB:
   PureWp True
-    (struct.make embedC (alist_val [
+    (struct.make unittest.embedC (alist_val [
       "embedB" ::= #embedB
     ]))%V 
     #(embedC.mk embedB).
@@ -181,7 +181,7 @@ Global Instance settable_embedD `{ffi_syntax}: Settable _ :=
 Global Instance into_val_embedD `{ffi_syntax} : IntoVal embedD.t.
 Admitted.
 
-Global Instance into_val_typed_embedD `{ffi_syntax} : IntoValTyped embedD.t embedD :=
+Global Instance into_val_typed_embedD `{ffi_syntax} : IntoValTyped embedD.t unittest.embedD :=
 {|
   default_val := embedD.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -189,12 +189,12 @@ Global Instance into_val_typed_embedD `{ffi_syntax} : IntoValTyped embedD.t embe
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_embedD_embedC `{ffi_syntax} : IntoValStructField "embedC" embedD embedD.embedC.
+Global Instance into_val_struct_field_embedD_embedC `{ffi_syntax} : IntoValStructField "embedC" unittest.embedD embedD.embedC.
 Admitted.
 
 Instance wp_struct_make_embedD `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} embedC:
   PureWp True
-    (struct.make embedD (alist_val [
+    (struct.make unittest.embedD (alist_val [
       "embedC" ::= #embedC
     ]))%V 
     #(embedD.mk embedC).
@@ -215,7 +215,7 @@ Global Instance settable_Enc `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Enc `{ffi_syntax} : IntoVal Enc.t.
 Admitted.
 
-Global Instance into_val_typed_Enc `{ffi_syntax} : IntoValTyped Enc.t Enc :=
+Global Instance into_val_typed_Enc `{ffi_syntax} : IntoValTyped Enc.t unittest.Enc :=
 {|
   default_val := Enc.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -223,12 +223,12 @@ Global Instance into_val_typed_Enc `{ffi_syntax} : IntoValTyped Enc.t Enc :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Enc_p `{ffi_syntax} : IntoValStructField "p" Enc Enc.p.
+Global Instance into_val_struct_field_Enc_p `{ffi_syntax} : IntoValStructField "p" unittest.Enc Enc.p.
 Admitted.
 
 Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p:
   PureWp True
-    (struct.make Enc (alist_val [
+    (struct.make unittest.Enc (alist_val [
       "p" ::= #p
     ]))%V 
     #(Enc.mk p).
@@ -249,7 +249,7 @@ Global Instance settable_Dec `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Dec `{ffi_syntax} : IntoVal Dec.t.
 Admitted.
 
-Global Instance into_val_typed_Dec `{ffi_syntax} : IntoValTyped Dec.t Dec :=
+Global Instance into_val_typed_Dec `{ffi_syntax} : IntoValTyped Dec.t unittest.Dec :=
 {|
   default_val := Dec.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -257,12 +257,12 @@ Global Instance into_val_typed_Dec `{ffi_syntax} : IntoValTyped Dec.t Dec :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Dec_p `{ffi_syntax} : IntoValStructField "p" Dec Dec.p.
+Global Instance into_val_struct_field_Dec_p `{ffi_syntax} : IntoValStructField "p" unittest.Dec Dec.p.
 Admitted.
 
 Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p:
   PureWp True
-    (struct.make Dec (alist_val [
+    (struct.make unittest.Dec (alist_val [
       "p" ::= #p
     ]))%V 
     #(Dec.mk p).
@@ -283,7 +283,7 @@ Global Instance settable_concreteFooer `{ffi_syntax}: Settable _ :=
 Global Instance into_val_concreteFooer `{ffi_syntax} : IntoVal concreteFooer.t.
 Admitted.
 
-Global Instance into_val_typed_concreteFooer `{ffi_syntax} : IntoValTyped concreteFooer.t concreteFooer :=
+Global Instance into_val_typed_concreteFooer `{ffi_syntax} : IntoValTyped concreteFooer.t unittest.concreteFooer :=
 {|
   default_val := concreteFooer.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -291,12 +291,12 @@ Global Instance into_val_typed_concreteFooer `{ffi_syntax} : IntoValTyped concre
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_concreteFooer_a `{ffi_syntax} : IntoValStructField "a" concreteFooer concreteFooer.a.
+Global Instance into_val_struct_field_concreteFooer_a `{ffi_syntax} : IntoValStructField "a" unittest.concreteFooer concreteFooer.a.
 Admitted.
 
 Instance wp_struct_make_concreteFooer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a:
   PureWp True
-    (struct.make concreteFooer (alist_val [
+    (struct.make unittest.concreteFooer (alist_val [
       "a" ::= #a
     ]))%V 
     #(concreteFooer.mk a).
@@ -317,7 +317,7 @@ Global Instance settable_FooerUser `{ffi_syntax}: Settable _ :=
 Global Instance into_val_FooerUser `{ffi_syntax} : IntoVal FooerUser.t.
 Admitted.
 
-Global Instance into_val_typed_FooerUser `{ffi_syntax} : IntoValTyped FooerUser.t FooerUser :=
+Global Instance into_val_typed_FooerUser `{ffi_syntax} : IntoValTyped FooerUser.t unittest.FooerUser :=
 {|
   default_val := FooerUser.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -325,12 +325,12 @@ Global Instance into_val_typed_FooerUser `{ffi_syntax} : IntoValTyped FooerUser.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_FooerUser_f `{ffi_syntax} : IntoValStructField "f" FooerUser FooerUser.f.
+Global Instance into_val_struct_field_FooerUser_f `{ffi_syntax} : IntoValStructField "f" unittest.FooerUser FooerUser.f.
 Admitted.
 
 Instance wp_struct_make_FooerUser `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} f:
   PureWp True
-    (struct.make FooerUser (alist_val [
+    (struct.make unittest.FooerUser (alist_val [
       "f" ::= #f
     ]))%V 
     #(FooerUser.mk f).
@@ -347,7 +347,7 @@ End concrete1.
 Global Instance into_val_concrete1 `{ffi_syntax} : IntoVal concrete1.t.
 Admitted.
 
-Global Instance into_val_typed_concrete1 `{ffi_syntax} : IntoValTyped concrete1.t concrete1 :=
+Global Instance into_val_typed_concrete1 `{ffi_syntax} : IntoValTyped concrete1.t unittest.concrete1 :=
 {|
   default_val := concrete1.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -357,7 +357,7 @@ Global Instance into_val_typed_concrete1 `{ffi_syntax} : IntoValTyped concrete1.
 |}.
 Instance wp_struct_make_concrete1 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make concrete1 (alist_val [
+    (struct.make unittest.concrete1 (alist_val [
     ]))%V 
     #(concrete1.mk).
 Admitted.
@@ -379,7 +379,7 @@ Global Instance settable_allTheLiterals `{ffi_syntax}: Settable _ :=
 Global Instance into_val_allTheLiterals `{ffi_syntax} : IntoVal allTheLiterals.t.
 Admitted.
 
-Global Instance into_val_typed_allTheLiterals `{ffi_syntax} : IntoValTyped allTheLiterals.t allTheLiterals :=
+Global Instance into_val_typed_allTheLiterals `{ffi_syntax} : IntoValTyped allTheLiterals.t unittest.allTheLiterals :=
 {|
   default_val := allTheLiterals.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -387,18 +387,18 @@ Global Instance into_val_typed_allTheLiterals `{ffi_syntax} : IntoValTyped allTh
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_allTheLiterals_int `{ffi_syntax} : IntoValStructField "int" allTheLiterals allTheLiterals.int.
+Global Instance into_val_struct_field_allTheLiterals_int `{ffi_syntax} : IntoValStructField "int" unittest.allTheLiterals allTheLiterals.int.
 Admitted.
 
-Global Instance into_val_struct_field_allTheLiterals_s `{ffi_syntax} : IntoValStructField "s" allTheLiterals allTheLiterals.s.
+Global Instance into_val_struct_field_allTheLiterals_s `{ffi_syntax} : IntoValStructField "s" unittest.allTheLiterals allTheLiterals.s.
 Admitted.
 
-Global Instance into_val_struct_field_allTheLiterals_b `{ffi_syntax} : IntoValStructField "b" allTheLiterals allTheLiterals.b.
+Global Instance into_val_struct_field_allTheLiterals_b `{ffi_syntax} : IntoValStructField "b" unittest.allTheLiterals allTheLiterals.b.
 Admitted.
 
 Instance wp_struct_make_allTheLiterals `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} int s b:
   PureWp True
-    (struct.make allTheLiterals (alist_val [
+    (struct.make unittest.allTheLiterals (alist_val [
       "int" ::= #int;
       "s" ::= #s;
       "b" ::= #b
@@ -421,7 +421,7 @@ Global Instance settable_hasCondVar `{ffi_syntax}: Settable _ :=
 Global Instance into_val_hasCondVar `{ffi_syntax} : IntoVal hasCondVar.t.
 Admitted.
 
-Global Instance into_val_typed_hasCondVar `{ffi_syntax} : IntoValTyped hasCondVar.t hasCondVar :=
+Global Instance into_val_typed_hasCondVar `{ffi_syntax} : IntoValTyped hasCondVar.t unittest.hasCondVar :=
 {|
   default_val := hasCondVar.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -429,12 +429,12 @@ Global Instance into_val_typed_hasCondVar `{ffi_syntax} : IntoValTyped hasCondVa
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_hasCondVar_cond `{ffi_syntax} : IntoValStructField "cond" hasCondVar hasCondVar.cond.
+Global Instance into_val_struct_field_hasCondVar_cond `{ffi_syntax} : IntoValStructField "cond" unittest.hasCondVar hasCondVar.cond.
 Admitted.
 
 Instance wp_struct_make_hasCondVar `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cond:
   PureWp True
-    (struct.make hasCondVar (alist_val [
+    (struct.make unittest.hasCondVar (alist_val [
       "cond" ::= #cond
     ]))%V 
     #(hasCondVar.mk cond).
@@ -456,7 +456,7 @@ Global Instance settable_mapElem `{ffi_syntax}: Settable _ :=
 Global Instance into_val_mapElem `{ffi_syntax} : IntoVal mapElem.t.
 Admitted.
 
-Global Instance into_val_typed_mapElem `{ffi_syntax} : IntoValTyped mapElem.t mapElem :=
+Global Instance into_val_typed_mapElem `{ffi_syntax} : IntoValTyped mapElem.t unittest.mapElem :=
 {|
   default_val := mapElem.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -464,15 +464,15 @@ Global Instance into_val_typed_mapElem `{ffi_syntax} : IntoValTyped mapElem.t ma
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_mapElem_a `{ffi_syntax} : IntoValStructField "a" mapElem mapElem.a.
+Global Instance into_val_struct_field_mapElem_a `{ffi_syntax} : IntoValStructField "a" unittest.mapElem mapElem.a.
 Admitted.
 
-Global Instance into_val_struct_field_mapElem_b `{ffi_syntax} : IntoValStructField "b" mapElem mapElem.b.
+Global Instance into_val_struct_field_mapElem_b `{ffi_syntax} : IntoValStructField "b" unittest.mapElem mapElem.b.
 Admitted.
 
 Instance wp_struct_make_mapElem `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a b:
   PureWp True
-    (struct.make mapElem (alist_val [
+    (struct.make unittest.mapElem (alist_val [
       "a" ::= #a;
       "b" ::= #b
     ]))%V 
@@ -494,7 +494,7 @@ Global Instance settable_wrapExternalStruct `{ffi_syntax}: Settable _ :=
 Global Instance into_val_wrapExternalStruct `{ffi_syntax} : IntoVal wrapExternalStruct.t.
 Admitted.
 
-Global Instance into_val_typed_wrapExternalStruct `{ffi_syntax} : IntoValTyped wrapExternalStruct.t wrapExternalStruct :=
+Global Instance into_val_typed_wrapExternalStruct `{ffi_syntax} : IntoValTyped wrapExternalStruct.t unittest.wrapExternalStruct :=
 {|
   default_val := wrapExternalStruct.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -502,12 +502,12 @@ Global Instance into_val_typed_wrapExternalStruct `{ffi_syntax} : IntoValTyped w
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_wrapExternalStruct_j `{ffi_syntax} : IntoValStructField "j" wrapExternalStruct wrapExternalStruct.j.
+Global Instance into_val_struct_field_wrapExternalStruct_j `{ffi_syntax} : IntoValStructField "j" unittest.wrapExternalStruct wrapExternalStruct.j.
 Admitted.
 
 Instance wp_struct_make_wrapExternalStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} j:
   PureWp True
-    (struct.make wrapExternalStruct (alist_val [
+    (struct.make unittest.wrapExternalStruct (alist_val [
       "j" ::= #j
     ]))%V 
     #(wrapExternalStruct.mk j).
@@ -528,7 +528,7 @@ Global Instance settable_typing `{ffi_syntax}: Settable _ :=
 Global Instance into_val_typing `{ffi_syntax} : IntoVal typing.t.
 Admitted.
 
-Global Instance into_val_typed_typing `{ffi_syntax} : IntoValTyped typing.t typing :=
+Global Instance into_val_typed_typing `{ffi_syntax} : IntoValTyped typing.t unittest.typing :=
 {|
   default_val := typing.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -536,12 +536,12 @@ Global Instance into_val_typed_typing `{ffi_syntax} : IntoValTyped typing.t typi
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_typing_proph `{ffi_syntax} : IntoValStructField "proph" typing typing.proph.
+Global Instance into_val_struct_field_typing_proph `{ffi_syntax} : IntoValStructField "proph" unittest.typing typing.proph.
 Admitted.
 
 Instance wp_struct_make_typing `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} proph:
   PureWp True
-    (struct.make typing (alist_val [
+    (struct.make unittest.typing (alist_val [
       "proph" ::= #proph
     ]))%V 
     #(typing.mk proph).
@@ -563,7 +563,7 @@ Global Instance settable_composite `{ffi_syntax}: Settable _ :=
 Global Instance into_val_composite `{ffi_syntax} : IntoVal composite.t.
 Admitted.
 
-Global Instance into_val_typed_composite `{ffi_syntax} : IntoValTyped composite.t composite :=
+Global Instance into_val_typed_composite `{ffi_syntax} : IntoValTyped composite.t unittest.composite :=
 {|
   default_val := composite.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -571,15 +571,15 @@ Global Instance into_val_typed_composite `{ffi_syntax} : IntoValTyped composite.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_composite_a `{ffi_syntax} : IntoValStructField "a" composite composite.a.
+Global Instance into_val_struct_field_composite_a `{ffi_syntax} : IntoValStructField "a" unittest.composite composite.a.
 Admitted.
 
-Global Instance into_val_struct_field_composite_b `{ffi_syntax} : IntoValStructField "b" composite composite.b.
+Global Instance into_val_struct_field_composite_b `{ffi_syntax} : IntoValStructField "b" unittest.composite composite.b.
 Admitted.
 
 Instance wp_struct_make_composite `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a b:
   PureWp True
-    (struct.make composite (alist_val [
+    (struct.make unittest.composite (alist_val [
       "a" ::= #a;
       "b" ::= #b
     ]))%V 
@@ -597,7 +597,7 @@ End R.
 Global Instance into_val_R `{ffi_syntax} : IntoVal R.t.
 Admitted.
 
-Global Instance into_val_typed_R `{ffi_syntax} : IntoValTyped R.t R :=
+Global Instance into_val_typed_R `{ffi_syntax} : IntoValTyped R.t unittest.R :=
 {|
   default_val := R.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -607,7 +607,7 @@ Global Instance into_val_typed_R `{ffi_syntax} : IntoValTyped R.t R :=
 |}.
 Instance wp_struct_make_R `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make R (alist_val [
+    (struct.make unittest.R (alist_val [
     ]))%V 
     #(R.mk).
 Admitted.
@@ -627,7 +627,7 @@ Global Instance settable_Other `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Other `{ffi_syntax} : IntoVal Other.t.
 Admitted.
 
-Global Instance into_val_typed_Other `{ffi_syntax} : IntoValTyped Other.t Other :=
+Global Instance into_val_typed_Other `{ffi_syntax} : IntoValTyped Other.t unittest.Other :=
 {|
   default_val := Other.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -635,12 +635,12 @@ Global Instance into_val_typed_Other `{ffi_syntax} : IntoValTyped Other.t Other 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Other_RecursiveEmbedded `{ffi_syntax} : IntoValStructField "RecursiveEmbedded" Other Other.RecursiveEmbedded.
+Global Instance into_val_struct_field_Other_RecursiveEmbedded `{ffi_syntax} : IntoValStructField "RecursiveEmbedded" unittest.Other Other.RecursiveEmbedded.
 Admitted.
 
 Instance wp_struct_make_Other `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RecursiveEmbedded:
   PureWp True
-    (struct.make Other (alist_val [
+    (struct.make unittest.Other (alist_val [
       "RecursiveEmbedded" ::= #RecursiveEmbedded
     ]))%V 
     #(Other.mk RecursiveEmbedded).
@@ -661,7 +661,7 @@ Global Instance settable_RecursiveEmbedded `{ffi_syntax}: Settable _ :=
 Global Instance into_val_RecursiveEmbedded `{ffi_syntax} : IntoVal RecursiveEmbedded.t.
 Admitted.
 
-Global Instance into_val_typed_RecursiveEmbedded `{ffi_syntax} : IntoValTyped RecursiveEmbedded.t RecursiveEmbedded :=
+Global Instance into_val_typed_RecursiveEmbedded `{ffi_syntax} : IntoValTyped RecursiveEmbedded.t unittest.RecursiveEmbedded :=
 {|
   default_val := RecursiveEmbedded.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -669,12 +669,12 @@ Global Instance into_val_typed_RecursiveEmbedded `{ffi_syntax} : IntoValTyped Re
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RecursiveEmbedded_Other `{ffi_syntax} : IntoValStructField "Other" RecursiveEmbedded RecursiveEmbedded.Other.
+Global Instance into_val_struct_field_RecursiveEmbedded_Other `{ffi_syntax} : IntoValStructField "Other" unittest.RecursiveEmbedded RecursiveEmbedded.Other.
 Admitted.
 
 Instance wp_struct_make_RecursiveEmbedded `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Other:
   PureWp True
-    (struct.make RecursiveEmbedded (alist_val [
+    (struct.make unittest.RecursiveEmbedded (alist_val [
       "Other" ::= #Other
     ]))%V 
     #(RecursiveEmbedded.mk Other).
@@ -695,7 +695,7 @@ Global Instance settable_Block `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Block `{ffi_syntax} : IntoVal Block.t.
 Admitted.
 
-Global Instance into_val_typed_Block `{ffi_syntax} : IntoValTyped Block.t Block :=
+Global Instance into_val_typed_Block `{ffi_syntax} : IntoValTyped Block.t unittest.Block :=
 {|
   default_val := Block.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -703,12 +703,12 @@ Global Instance into_val_typed_Block `{ffi_syntax} : IntoValTyped Block.t Block 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Block_Value `{ffi_syntax} : IntoValStructField "Value" Block Block.Value.
+Global Instance into_val_struct_field_Block_Value `{ffi_syntax} : IntoValStructField "Value" unittest.Block Block.Value.
 Admitted.
 
 Instance wp_struct_make_Block `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Value:
   PureWp True
-    (struct.make Block (alist_val [
+    (struct.make unittest.Block (alist_val [
       "Value" ::= #Value
     ]))%V 
     #(Block.mk Value).
@@ -729,7 +729,7 @@ Global Instance settable_thing `{ffi_syntax}: Settable _ :=
 Global Instance into_val_thing `{ffi_syntax} : IntoVal thing.t.
 Admitted.
 
-Global Instance into_val_typed_thing `{ffi_syntax} : IntoValTyped thing.t thing :=
+Global Instance into_val_typed_thing `{ffi_syntax} : IntoValTyped thing.t unittest.thing :=
 {|
   default_val := thing.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -737,12 +737,12 @@ Global Instance into_val_typed_thing `{ffi_syntax} : IntoValTyped thing.t thing 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_thing_x `{ffi_syntax} : IntoValStructField "x" thing thing.x.
+Global Instance into_val_struct_field_thing_x `{ffi_syntax} : IntoValStructField "x" unittest.thing thing.x.
 Admitted.
 
 Instance wp_struct_make_thing `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x:
   PureWp True
-    (struct.make thing (alist_val [
+    (struct.make unittest.thing (alist_val [
       "x" ::= #x
     ]))%V 
     #(thing.mk x).
@@ -763,7 +763,7 @@ Global Instance settable_sliceOfThings `{ffi_syntax}: Settable _ :=
 Global Instance into_val_sliceOfThings `{ffi_syntax} : IntoVal sliceOfThings.t.
 Admitted.
 
-Global Instance into_val_typed_sliceOfThings `{ffi_syntax} : IntoValTyped sliceOfThings.t sliceOfThings :=
+Global Instance into_val_typed_sliceOfThings `{ffi_syntax} : IntoValTyped sliceOfThings.t unittest.sliceOfThings :=
 {|
   default_val := sliceOfThings.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -771,12 +771,12 @@ Global Instance into_val_typed_sliceOfThings `{ffi_syntax} : IntoValTyped sliceO
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_sliceOfThings_things `{ffi_syntax} : IntoValStructField "things" sliceOfThings sliceOfThings.things.
+Global Instance into_val_struct_field_sliceOfThings_things `{ffi_syntax} : IntoValStructField "things" unittest.sliceOfThings sliceOfThings.things.
 Admitted.
 
 Instance wp_struct_make_sliceOfThings `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} things:
   PureWp True
-    (struct.make sliceOfThings (alist_val [
+    (struct.make unittest.sliceOfThings (alist_val [
       "things" ::= #things
     ]))%V 
     #(sliceOfThings.mk things).
@@ -798,7 +798,7 @@ Global Instance settable_Point `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Point `{ffi_syntax} : IntoVal Point.t.
 Admitted.
 
-Global Instance into_val_typed_Point `{ffi_syntax} : IntoValTyped Point.t Point :=
+Global Instance into_val_typed_Point `{ffi_syntax} : IntoValTyped Point.t unittest.Point :=
 {|
   default_val := Point.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -806,15 +806,15 @@ Global Instance into_val_typed_Point `{ffi_syntax} : IntoValTyped Point.t Point 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Point_x `{ffi_syntax} : IntoValStructField "x" Point Point.x.
+Global Instance into_val_struct_field_Point_x `{ffi_syntax} : IntoValStructField "x" unittest.Point Point.x.
 Admitted.
 
-Global Instance into_val_struct_field_Point_y `{ffi_syntax} : IntoValStructField "y" Point Point.y.
+Global Instance into_val_struct_field_Point_y `{ffi_syntax} : IntoValStructField "y" unittest.Point Point.y.
 Admitted.
 
 Instance wp_struct_make_Point `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x y:
   PureWp True
-    (struct.make Point (alist_val [
+    (struct.make unittest.Point (alist_val [
       "x" ::= #x;
       "y" ::= #y
     ]))%V 
@@ -837,7 +837,7 @@ Global Instance settable_TwoInts `{ffi_syntax}: Settable _ :=
 Global Instance into_val_TwoInts `{ffi_syntax} : IntoVal TwoInts.t.
 Admitted.
 
-Global Instance into_val_typed_TwoInts `{ffi_syntax} : IntoValTyped TwoInts.t TwoInts :=
+Global Instance into_val_typed_TwoInts `{ffi_syntax} : IntoValTyped TwoInts.t unittest.TwoInts :=
 {|
   default_val := TwoInts.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -845,15 +845,15 @@ Global Instance into_val_typed_TwoInts `{ffi_syntax} : IntoValTyped TwoInts.t Tw
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_TwoInts_x `{ffi_syntax} : IntoValStructField "x" TwoInts TwoInts.x.
+Global Instance into_val_struct_field_TwoInts_x `{ffi_syntax} : IntoValStructField "x" unittest.TwoInts TwoInts.x.
 Admitted.
 
-Global Instance into_val_struct_field_TwoInts_y `{ffi_syntax} : IntoValStructField "y" TwoInts TwoInts.y.
+Global Instance into_val_struct_field_TwoInts_y `{ffi_syntax} : IntoValStructField "y" unittest.TwoInts TwoInts.y.
 Admitted.
 
 Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x y:
   PureWp True
-    (struct.make TwoInts (alist_val [
+    (struct.make unittest.TwoInts (alist_val [
       "x" ::= #x;
       "y" ::= #y
     ]))%V 
@@ -877,7 +877,7 @@ Global Instance settable_S `{ffi_syntax}: Settable _ :=
 Global Instance into_val_S `{ffi_syntax} : IntoVal S.t.
 Admitted.
 
-Global Instance into_val_typed_S `{ffi_syntax} : IntoValTyped S.t S :=
+Global Instance into_val_typed_S `{ffi_syntax} : IntoValTyped S.t unittest.S :=
 {|
   default_val := S.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -885,18 +885,18 @@ Global Instance into_val_typed_S `{ffi_syntax} : IntoValTyped S.t S :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_S_a `{ffi_syntax} : IntoValStructField "a" S S.a.
+Global Instance into_val_struct_field_S_a `{ffi_syntax} : IntoValStructField "a" unittest.S S.a.
 Admitted.
 
-Global Instance into_val_struct_field_S_b `{ffi_syntax} : IntoValStructField "b" S S.b.
+Global Instance into_val_struct_field_S_b `{ffi_syntax} : IntoValStructField "b" unittest.S S.b.
 Admitted.
 
-Global Instance into_val_struct_field_S_c `{ffi_syntax} : IntoValStructField "c" S S.c.
+Global Instance into_val_struct_field_S_c `{ffi_syntax} : IntoValStructField "c" unittest.S S.c.
 Admitted.
 
 Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a b c:
   PureWp True
-    (struct.make S (alist_val [
+    (struct.make unittest.S (alist_val [
       "a" ::= #a;
       "b" ::= #b;
       "c" ::= #c
@@ -919,7 +919,7 @@ Global Instance settable_B `{ffi_syntax}: Settable _ :=
 Global Instance into_val_B `{ffi_syntax} : IntoVal B.t.
 Admitted.
 
-Global Instance into_val_typed_B `{ffi_syntax} : IntoValTyped B.t B :=
+Global Instance into_val_typed_B `{ffi_syntax} : IntoValTyped B.t unittest.B :=
 {|
   default_val := B.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -927,12 +927,12 @@ Global Instance into_val_typed_B `{ffi_syntax} : IntoValTyped B.t B :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_B_a `{ffi_syntax} : IntoValStructField "a" B B.a.
+Global Instance into_val_struct_field_B_a `{ffi_syntax} : IntoValStructField "a" unittest.B B.a.
 Admitted.
 
 Instance wp_struct_make_B `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a:
   PureWp True
-    (struct.make B (alist_val [
+    (struct.make unittest.B (alist_val [
       "a" ::= #a
     ]))%V 
     #(B.mk a).
@@ -949,7 +949,7 @@ End A.
 Global Instance into_val_A `{ffi_syntax} : IntoVal A.t.
 Admitted.
 
-Global Instance into_val_typed_A `{ffi_syntax} : IntoValTyped A.t A :=
+Global Instance into_val_typed_A `{ffi_syntax} : IntoValTyped A.t unittest.A :=
 {|
   default_val := A.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -959,7 +959,7 @@ Global Instance into_val_typed_A `{ffi_syntax} : IntoValTyped A.t A :=
 |}.
 Instance wp_struct_make_A `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make A (alist_val [
+    (struct.make unittest.A (alist_val [
     ]))%V 
     #(A.mk).
 Admitted.

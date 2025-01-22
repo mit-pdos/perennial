@@ -59,6 +59,12 @@ def main():
         metavar="ETCD_RAFT_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--etcd",
+        help="path to upamanyus/etcd repo (skip translation if not provided)",
+        metavar="ETCD_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -67,6 +73,7 @@ def main():
     std_dir = args.std
     gokv_dir = args.gokv
     etcd_raft_dir = args.etcd_raft
+    etcd_dir = args.etcd
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -218,11 +225,23 @@ def main():
         ".",
         "go.etcd.io/raft/v3/tracker",
         "go.etcd.io/raft/v3/quorum",
+        # "go.etcd.io/raft/v3/raftpb",
     )
 
+    run_axiomgen(
+        "new_code_axioms/",
+        etcd_dir,
+        "time",
+        "google.golang.org/grpc",
+        "go.etcd.io/etcd/api/v3/etcdserverpb",
+        "go.etcd.io/etcd/client/v3",
+    )
     run_recordgen(
-        etcd_raft_dir,
-        "go.etcd.io/raft/v3/raftpb",
+        etcd_dir,
+        "time",
+        "google.golang.org/grpc",
+        "go.etcd.io/etcd/api/v3/etcdserverpb",
+        "go.etcd.io/etcd/client/v3",
     )
 
 if __name__ == "__main__":

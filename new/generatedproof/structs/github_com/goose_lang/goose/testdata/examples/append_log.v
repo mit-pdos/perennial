@@ -21,7 +21,7 @@ Global Instance settable_Log `{ffi_syntax}: Settable _ :=
 Global Instance into_val_Log `{ffi_syntax} : IntoVal Log.t.
 Admitted.
 
-Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t Log :=
+Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t append_log.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -29,18 +29,18 @@ Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t Log :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Log_m `{ffi_syntax} : IntoValStructField "m" Log Log.m.
+Global Instance into_val_struct_field_Log_m `{ffi_syntax} : IntoValStructField "m" append_log.Log Log.m.
 Admitted.
 
-Global Instance into_val_struct_field_Log_sz `{ffi_syntax} : IntoValStructField "sz" Log Log.sz.
+Global Instance into_val_struct_field_Log_sz `{ffi_syntax} : IntoValStructField "sz" append_log.Log Log.sz.
 Admitted.
 
-Global Instance into_val_struct_field_Log_diskSz `{ffi_syntax} : IntoValStructField "diskSz" Log Log.diskSz.
+Global Instance into_val_struct_field_Log_diskSz `{ffi_syntax} : IntoValStructField "diskSz" append_log.Log Log.diskSz.
 Admitted.
 
 Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} m sz diskSz:
   PureWp True
-    (struct.make Log (alist_val [
+    (struct.make append_log.Log (alist_val [
       "m" ::= #m;
       "sz" ::= #sz;
       "diskSz" ::= #diskSz

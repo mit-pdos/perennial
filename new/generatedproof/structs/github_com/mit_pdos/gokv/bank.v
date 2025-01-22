@@ -21,7 +21,7 @@ Global Instance settable_BankClerk `{ffi_syntax}: Settable _ :=
 Global Instance into_val_BankClerk `{ffi_syntax} : IntoVal BankClerk.t.
 Admitted.
 
-Global Instance into_val_typed_BankClerk `{ffi_syntax} : IntoValTyped BankClerk.t BankClerk :=
+Global Instance into_val_typed_BankClerk `{ffi_syntax} : IntoValTyped BankClerk.t bank.BankClerk :=
 {|
   default_val := BankClerk.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -29,18 +29,18 @@ Global Instance into_val_typed_BankClerk `{ffi_syntax} : IntoValTyped BankClerk.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_BankClerk_lck `{ffi_syntax} : IntoValStructField "lck" BankClerk BankClerk.lck.
+Global Instance into_val_struct_field_BankClerk_lck `{ffi_syntax} : IntoValStructField "lck" bank.BankClerk BankClerk.lck.
 Admitted.
 
-Global Instance into_val_struct_field_BankClerk_kvck `{ffi_syntax} : IntoValStructField "kvck" BankClerk BankClerk.kvck.
+Global Instance into_val_struct_field_BankClerk_kvck `{ffi_syntax} : IntoValStructField "kvck" bank.BankClerk BankClerk.kvck.
 Admitted.
 
-Global Instance into_val_struct_field_BankClerk_accts `{ffi_syntax} : IntoValStructField "accts" BankClerk BankClerk.accts.
+Global Instance into_val_struct_field_BankClerk_accts `{ffi_syntax} : IntoValStructField "accts" bank.BankClerk BankClerk.accts.
 Admitted.
 
 Instance wp_struct_make_BankClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} lck kvck accts:
   PureWp True
-    (struct.make BankClerk (alist_val [
+    (struct.make bank.BankClerk (alist_val [
       "lck" ::= #lck;
       "kvck" ::= #kvck;
       "accts" ::= #accts

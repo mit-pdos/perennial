@@ -81,8 +81,11 @@ this in GooseLang, so we just loop. *)
   Definition Linearize : val := λ: <>, #().
 
   Definition vars' : list (go_string * go_type) := [].
-  Definition functions' : list (go_string * val) := [].
+  Definition functions' : list (go_string * val) := [
+      ("Assume"%go, Assume)
+    ].
   Definition msets' : list (go_string * (list (go_string * val))) := [].
+
   Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
