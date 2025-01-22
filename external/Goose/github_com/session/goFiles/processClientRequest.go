@@ -10,10 +10,8 @@ type Request struct {
 	RequestType uint64
 
 	Client_OperationType uint64
-	Client_SessionType   uint64
 	Client_Data          uint64
 	Client_Vector        []uint64
-
 
 	Receive_Gossip_ServerId   uint64
 	Receive_Gossip_Operations []Operation
@@ -25,8 +23,6 @@ type Request struct {
 }
 
 type Reply struct {
-	ReplyType uint64
-
 	Client_Succeeded     bool
 	Client_OperationType uint64
 	Client_Data          uint64
@@ -83,7 +79,7 @@ func dependencyCheck(TS []uint64, request Request) bool {
 }
 
 func processClientRequest(server Server, request Request) (Server, Reply) {
-	reply := Reply{}
+	var reply = Reply{}
 
 	if !(dependencyCheck(server.VectorClock, request)) {
 		reply.Client_Succeeded = false
@@ -101,14 +97,16 @@ func processClientRequest(server Server, request Request) (Server, Reply) {
 		server.VectorClock[server.Id] += 1
 		server.Data = request.Client_Data
 
-		op := Operation{
+		server.OperationsPerformed = append(server.OperationsPerformed, Operation{
 			OperationType: 1,
 			VersionVector: append([]uint64(nil), server.VectorClock...),
 			Data:          server.Data,
-		}
-
-		server.OperationsPerformed = append(server.OperationsPerformed, op) // would we need to do anything here since we are mutating the underlying slice?
-		server.MyOperations = append(server.MyOperations, op)               // we can reuse op because it should be immutable
+		}) 
+		server.MyOperations = append(server.MyOperations, Operation{
+			OperationType: 1,
+			VersionVector: append([]uint64(nil), server.VectorClock...),
+			Data:          server.Data,
+		})           
 
 		reply.Client_Succeeded = true
 		reply.Client_OperationType = 1

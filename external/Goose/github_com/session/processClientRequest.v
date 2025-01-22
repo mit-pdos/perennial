@@ -13,7 +13,6 @@ Definition Operation := struct.decl [
 Definition Request := struct.decl [
   "RequestType" :: uint64T;
   "Client_OperationType" :: uint64T;
-  "Client_SessionType" :: uint64T;
   "Client_Data" :: uint64T;
   "Client_Vector" :: slice.T uint64T;
   "Receive_Gossip_ServerId" :: uint64T;
@@ -24,7 +23,6 @@ Definition Request := struct.decl [
 ].
 
 Definition Reply := struct.decl [
-  "ReplyType" :: uint64T;
   "Client_Succeeded" :: boolT;
   "Client_OperationType" :: uint64T;
   "Client_Data" :: uint64T;
@@ -82,12 +80,12 @@ Definition dependencyCheck: val :=
 
 Definition processClientRequest: val :=
   rec: "processClientRequest" "server" "request" :=
-    let: "reply" := struct.mk Reply [
-    ] in
+    let: "reply" := ref_to (struct.t Reply) (struct.mk Reply [
+    ]) in
     (if: (~ (dependencyCheck (struct.get Server "VectorClock" "server") "request"))
     then
       struct.storeF Reply "Client_Succeeded" "reply" #false;;
-      ("server", "reply")
+      ("server", ![struct.t Reply] "reply")
     else
       (if: (struct.get Request "Client_OperationType" "request") = #0
       then
@@ -95,22 +93,25 @@ Definition processClientRequest: val :=
         struct.storeF Reply "Client_OperationType" "reply" #0;;
         struct.storeF Reply "Client_Data" "reply" (struct.get Server "Data" "server");;
         struct.storeF Reply "Client_Vector" "reply" (maxTS (struct.get Request "Client_Vector" "request") (struct.get Server "VectorClock" "server"));;
-        ("server", "reply")
+        ("server", ![struct.t Reply] "reply")
       else
         SliceSet uint64T (struct.get Server "VectorClock" "server") (struct.get Server "Id" "server") ((SliceGet uint64T (struct.get Server "VectorClock" "server") (struct.get Server "Id" "server")) + #1);;
         struct.storeF Server "Data" "server" (struct.get Request "Client_Data" "request");;
-        let: "op" := struct.mk Operation [
+        struct.storeF Server "OperationsPerformed" "server" (SliceAppend (struct.t Operation) (struct.get Server "OperationsPerformed" "server") (struct.mk Operation [
           "OperationType" ::= #1;
           "VersionVector" ::= SliceAppendSlice uint64T slice.nil (struct.get Server "VectorClock" "server");
           "Data" ::= struct.get Server "Data" "server"
-        ] in
-        struct.storeF Server "OperationsPerformed" "server" (SliceAppend (struct.t Operation) (struct.get Server "OperationsPerformed" "server") "op");;
-        struct.storeF Server "MyOperations" "server" (SliceAppend (struct.t Operation) (struct.get Server "MyOperations" "server") "op");;
+        ]));;
+        struct.storeF Server "MyOperations" "server" (SliceAppend (struct.t Operation) (struct.get Server "MyOperations" "server") (struct.mk Operation [
+          "OperationType" ::= #1;
+          "VersionVector" ::= SliceAppendSlice uint64T slice.nil (struct.get Server "VectorClock" "server");
+          "Data" ::= struct.get Server "Data" "server"
+        ]));;
         struct.storeF Reply "Client_Succeeded" "reply" #true;;
         struct.storeF Reply "Client_OperationType" "reply" #1;;
         struct.storeF Reply "Client_Data" "reply" (struct.get Server "Data" "server");;
         struct.storeF Reply "Client_Vector" "reply" (SliceAppendSlice uint64T slice.nil (struct.get Server "VectorClock" "server"));;
-        ("server", "reply"))).
+        ("server", ![struct.t Reply] "reply"))).
 
 Definition acknowledgeGossip: val :=
   rec: "acknowledgeGossip" "server" "request" :=
