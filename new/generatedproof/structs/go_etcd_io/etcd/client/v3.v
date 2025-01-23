@@ -1204,7 +1204,7 @@ Context `{ffi_syntax}.
 Record t := mk {
   t' : w64;
   key : slice.t;
-  end : slice.t;
+  end' : slice.t;
   limit : w64;
   sort : loc;
   serializable : bool;
@@ -1236,7 +1236,7 @@ End Op.
 
 
 Global Instance settable_Op `{ffi_syntax}: Settable _ :=
-  settable! Op.mk < Op.t'; Op.key; Op.end; Op.limit; Op.sort; Op.serializable; Op.keysOnly; Op.countOnly; Op.minModRev; Op.maxModRev; Op.minCreateRev; Op.maxCreateRev; Op.rev; Op.prevKV; Op.fragment; Op.ignoreValue; Op.ignoreLease; Op.progressNotify; Op.createdNotify; Op.filterPut; Op.filterDelete; Op.val; Op.leaseID; Op.cmps; Op.thenOps; Op.elseOps; Op.isOptsWithFromKey; Op.isOptsWithPrefix >.
+  settable! Op.mk < Op.t'; Op.key; Op.end'; Op.limit; Op.sort; Op.serializable; Op.keysOnly; Op.countOnly; Op.minModRev; Op.maxModRev; Op.minCreateRev; Op.maxCreateRev; Op.rev; Op.prevKV; Op.fragment; Op.ignoreValue; Op.ignoreLease; Op.progressNotify; Op.createdNotify; Op.filterPut; Op.filterDelete; Op.val; Op.leaseID; Op.cmps; Op.thenOps; Op.elseOps; Op.isOptsWithFromKey; Op.isOptsWithPrefix >.
 Global Instance into_val_Op `{ffi_syntax} : IntoVal Op.t.
 Admitted.
 
@@ -1254,7 +1254,7 @@ Admitted.
 Global Instance into_val_struct_field_Op_key `{ffi_syntax} : IntoValStructField "key" clientv3.Op Op.key.
 Admitted.
 
-Global Instance into_val_struct_field_Op_end `{ffi_syntax} : IntoValStructField "end" clientv3.Op Op.end.
+Global Instance into_val_struct_field_Op_end `{ffi_syntax} : IntoValStructField "end" clientv3.Op Op.end'.
 Admitted.
 
 Global Instance into_val_struct_field_Op_limit `{ffi_syntax} : IntoValStructField "limit" clientv3.Op Op.limit.
@@ -1332,12 +1332,12 @@ Admitted.
 Global Instance into_val_struct_field_Op_isOptsWithPrefix `{ffi_syntax} : IntoValStructField "isOptsWithPrefix" clientv3.Op Op.isOptsWithPrefix.
 Admitted.
 
-Instance wp_struct_make_Op `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' key end limit sort serializable keysOnly countOnly minModRev maxModRev minCreateRev maxCreateRev rev prevKV fragment ignoreValue ignoreLease progressNotify createdNotify filterPut filterDelete val leaseID cmps thenOps elseOps isOptsWithFromKey isOptsWithPrefix:
+Instance wp_struct_make_Op `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' key end' limit sort serializable keysOnly countOnly minModRev maxModRev minCreateRev maxCreateRev rev prevKV fragment ignoreValue ignoreLease progressNotify createdNotify filterPut filterDelete val leaseID cmps thenOps elseOps isOptsWithFromKey isOptsWithPrefix:
   PureWp True
     (struct.make clientv3.Op (alist_val [
       "t" ::= #t';
       "key" ::= #key;
-      "end" ::= #end;
+      "end" ::= #end';
       "limit" ::= #limit;
       "sort" ::= #sort;
       "serializable" ::= #serializable;
@@ -1364,7 +1364,7 @@ Instance wp_struct_make_Op `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' 
       "isOptsWithFromKey" ::= #isOptsWithFromKey;
       "isOptsWithPrefix" ::= #isOptsWithPrefix
     ]))%V 
-    #(Op.mk t' key end limit sort serializable keysOnly countOnly minModRev maxModRev minCreateRev maxCreateRev rev prevKV fragment ignoreValue ignoreLease progressNotify createdNotify filterPut filterDelete val leaseID cmps thenOps elseOps isOptsWithFromKey isOptsWithPrefix).
+    #(Op.mk t' key end' limit sort serializable keysOnly countOnly minModRev maxModRev minCreateRev maxCreateRev rev prevKV fragment ignoreValue ignoreLease progressNotify createdNotify filterPut filterDelete val leaseID cmps thenOps elseOps isOptsWithFromKey isOptsWithPrefix).
 Admitted.
 
 Module LeaseOp.
@@ -2099,7 +2099,7 @@ Context `{ffi_syntax}.
 Record t := mk {
   ctx : interface.t;
   key : go_string;
-  end : go_string;
+  end' : go_string;
   rev : w64;
   createdNotify : bool;
   progressNotify : bool;
@@ -2113,7 +2113,7 @@ End watchRequest.
 
 
 Global Instance settable_watchRequest `{ffi_syntax}: Settable _ :=
-  settable! watchRequest.mk < watchRequest.ctx; watchRequest.key; watchRequest.end; watchRequest.rev; watchRequest.createdNotify; watchRequest.progressNotify; watchRequest.fragment; watchRequest.filters; watchRequest.prevKV; watchRequest.retc >.
+  settable! watchRequest.mk < watchRequest.ctx; watchRequest.key; watchRequest.end'; watchRequest.rev; watchRequest.createdNotify; watchRequest.progressNotify; watchRequest.fragment; watchRequest.filters; watchRequest.prevKV; watchRequest.retc >.
 Global Instance into_val_watchRequest `{ffi_syntax} : IntoVal watchRequest.t.
 Admitted.
 
@@ -2131,7 +2131,7 @@ Admitted.
 Global Instance into_val_struct_field_watchRequest_key `{ffi_syntax} : IntoValStructField "key" clientv3.watchRequest watchRequest.key.
 Admitted.
 
-Global Instance into_val_struct_field_watchRequest_end `{ffi_syntax} : IntoValStructField "end" clientv3.watchRequest watchRequest.end.
+Global Instance into_val_struct_field_watchRequest_end `{ffi_syntax} : IntoValStructField "end" clientv3.watchRequest watchRequest.end'.
 Admitted.
 
 Global Instance into_val_struct_field_watchRequest_rev `{ffi_syntax} : IntoValStructField "rev" clientv3.watchRequest watchRequest.rev.
@@ -2155,12 +2155,12 @@ Admitted.
 Global Instance into_val_struct_field_watchRequest_retc `{ffi_syntax} : IntoValStructField "retc" clientv3.watchRequest watchRequest.retc.
 Admitted.
 
-Instance wp_struct_make_watchRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ctx key end rev createdNotify progressNotify fragment filters prevKV retc:
+Instance wp_struct_make_watchRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ctx key end' rev createdNotify progressNotify fragment filters prevKV retc:
   PureWp True
     (struct.make clientv3.watchRequest (alist_val [
       "ctx" ::= #ctx;
       "key" ::= #key;
-      "end" ::= #end;
+      "end" ::= #end';
       "rev" ::= #rev;
       "createdNotify" ::= #createdNotify;
       "progressNotify" ::= #progressNotify;
@@ -2169,7 +2169,7 @@ Instance wp_struct_make_watchRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heap
       "prevKV" ::= #prevKV;
       "retc" ::= #retc
     ]))%V 
-    #(watchRequest.mk ctx key end rev createdNotify progressNotify fragment filters prevKV retc).
+    #(watchRequest.mk ctx key end' rev createdNotify progressNotify fragment filters prevKV retc).
 Admitted.
 
 Module progressRequest.

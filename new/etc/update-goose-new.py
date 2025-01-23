@@ -236,12 +236,18 @@ def main():
         "go.etcd.io/etcd/api/v3/etcdserverpb",
         "go.etcd.io/etcd/client/v3",
     )
+
     run_recordgen(
         etcd_dir,
         "time",
         "google.golang.org/grpc",
         "go.etcd.io/etcd/api/v3/etcdserverpb",
         "go.etcd.io/etcd/client/v3",
+    )
+
+    run_goose(
+        "../etcdclient",
+        ".",
     )
 
 if __name__ == "__main__":

@@ -429,4 +429,17 @@ Final Obligation.
   solve_decision.
 Qed.
 
+Program Global Instance into_val_typed_unit : IntoValTyped unit (structT []) :=
+{| default_val := tt |}.
+Next Obligation.
+  intros [].
+  replace (#()) with (struct.val_aux (structT []) []).
+  2:{ rewrite struct.val_aux_unseal //. }
+  by constructor.
+Qed.
+Next Obligation. rewrite zero_val_eq /= struct.val_aux_unseal //. Qed.
+Final Obligation.
+  intros ???. destruct x, y. done.
+Qed.
+
 End into_val_instances.
