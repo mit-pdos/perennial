@@ -16,7 +16,18 @@ Definition NewQueue: val :=
   rec: "NewQueue" "queue_size" :=
     let: "lock" := newMutex #() in
     struct.mk Queue [
-      "queue" ::= NewSliceWithCap uint64T "queue_size" "queue_size";
+      "queue" ::= NewSlice uint64T "queue_size";
+      "cond" ::= NewCond "lock";
+      "lock" ::= "lock";
+      "first" ::= #0;
+      "count" ::= #0
+    ].
+
+Definition NewQueueRef: val :=
+  rec: "NewQueueRef" "queue_size" :=
+    let: "lock" := newMutex #() in
+    struct.new Queue [
+      "queue" ::= NewSlice uint64T "queue_size";
       "cond" ::= NewCond "lock";
       "lock" ::= "lock";
       "first" ::= #0;
