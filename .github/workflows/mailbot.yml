@@ -1,0 +1,13 @@
+name: Commit mailbot
+on: push
+
+jobs:
+  mailbot:
+    uses: sanjit-bhat/github-mailbot/.github/workflows/mailbot.yml@main
+    with:
+      host: smtp.gmail.com
+      port: 587
+      from: mit.pdos.mailbot@gmail.com
+      to: chajed@wisc.edu,kaashoek@mit.edu,nickolai@csail.mit.edu,jt4767@nyu.edu,sanjit.bhat@gmail.com,upamanyu@mit.edu,schwennesen@cs.wisc.edu
+    secrets:
+      password: ${{ secrets.MAILBOT_PASSWORD }}
