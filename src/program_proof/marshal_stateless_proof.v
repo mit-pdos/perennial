@@ -561,7 +561,7 @@ Theorem wp_WriteSlice {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : Slice.t)
                 own v x dq ∗
                 own_slice pre_sl' byteT (DfracOwn 1) prefix'
           }}}
-            writeOne v (slice_val pre_sl')
+            writeOne (slice_val pre_sl') v
           {{{
                 (enc : list u8) (enc_sl : Slice.t), RET slice_val enc_sl;
                 ⌜ has_encoding enc x ⌝ ∗
@@ -649,7 +649,7 @@ Theorem wp_WriteSliceLenPrefix {X : Type} {goT : ty} (pre_sl : Slice.t) (xsl : S
                 own v x dq ∗
                 own_slice pre_sl' byteT (DfracOwn 1) prefix'
           }}}
-            writeOne v (slice_val pre_sl')
+            writeOne (slice_val pre_sl') v
           {{{
                 (enc : list u8) (enc_sl : Slice.t), RET slice_val enc_sl;
                 ⌜ has_encoding enc x ⌝ ∗
