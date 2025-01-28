@@ -233,7 +233,7 @@ Definition WriteSlice (T:ty): val :=
   rec: "WriteSlice" "b" "xs" "writeOne" :=
     let: "b2" := ref_to (slice.T byteT) "b" in
     ForSlice T <> "x" "xs"
-      ("b2" <-[slice.T byteT] (("writeOne" ([]byte__to__T (![slice.T byteT] "b2"))) "x"));;
+      ("b2" <-[slice.T byteT] ("writeOne" (![slice.T byteT] "b2") "x"));;
     ![slice.T byteT] "b2".
 
 Definition WriteSliceLenPrefix (T:ty): val :=

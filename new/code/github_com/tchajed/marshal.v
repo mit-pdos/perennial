@@ -547,8 +547,8 @@ Definition WriteSlice (T: go_type) : val :=
     do:  (let: "$range" := (![sliceT] "xs") in
     slice.for_range T "$range" (λ: <> "x",
       let: "x" := ref_ty T "x" in
-      let: "$r0" := (let: "$a0" := (![T] "x") in
-      let: "$a1" := (![sliceT] "b2") in
+      let: "$r0" := (let: "$a0" := (![sliceT] "b2") in
+      let: "$a1" := (![T] "x") in
       (![funcT] "writeOne") "$a0" "$a1") in
       do:  ("b2" <-[sliceT] "$r0")));;;
     return: (![sliceT] "b2")).
