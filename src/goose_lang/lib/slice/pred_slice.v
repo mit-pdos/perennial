@@ -38,6 +38,14 @@ Context (Ψ: val → A → dfrac -> iProp Σ).
 Definition own_val {X:Type} {I:IntoVal X} (v: val) (x: X) (dq: dfrac) : iProp Σ :=
   ⌜v = to_val x⌝.
 
+Lemma own_val_to_val {X:Type} {I:IntoVal X} (v: val) (x: X) (dq: dfrac) :
+  own_val v x dq ⊢@{_} ⌜v = to_val x⌝.
+Proof.
+  iIntros "Hown".
+  iUnfold own_val in "Hown".
+  iFrame.
+Qed.
+
 Lemma big_sepL2_own_val {X:Type} {I:IntoVal X} (dq: dfrac) :
   ∀ (xs:list X) (vs:list val),
   big_sepL2 (λ k v x, own_val v x dq) vs xs -∗ ⌜vs = list.untype xs⌝.
