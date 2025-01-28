@@ -12,10 +12,10 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
 
-Definition int64_has_encoding (encoded : list u8) (x : u64) : Prop :=
+Definition uint64_has_encoding (encoded : list u8) (x : u64) : Prop :=
   encoded = u64_le x.
 
-Definition int32_has_encoding (encoded : list u8) (x : u32) : Prop :=
+Definition uint32_has_encoding (encoded : list u8) (x : u32) : Prop :=
   encoded = u32_le x.
 
 Definition bool_has_encoding (encoded : list u8) (x : bool) : Prop :=
@@ -24,7 +24,7 @@ Definition bool_has_encoding (encoded : list u8) (x : bool) : Prop :=
 Definition string_has_encoding (encoded : list u8) (x : byte_string) : Prop :=
   encoded = x.
 
-Definition bytes_has_encoding (encoded : list u8) (x : list u8) : Prop :=
+Definition byte_has_encoding (encoded : list u8) (x : list u8) : Prop :=
   encoded = x.
 
 Theorem wp_ReadInt s q x tail :
