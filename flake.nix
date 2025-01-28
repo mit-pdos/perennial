@@ -17,10 +17,10 @@
         src = pkgs.fetchFromGitHub {
           owner = "mjschwenne";
           repo = "grackle";
-          rev = "101412356cdfbcad78f8aaa724101312928c4978";
-          sha256 = "06zf2bvrbbjhgrd6994h3wcaml7m83m6f9r61pj7y09xq9nw10br";
+          rev = "3a83c3b22f163da77d75bfdb3923f007af2ad515";
+          sha256 = "1bl8lx50qhl6yczjnwfwywx29nvinr20v2zjdc2zjqi8kcls7kqr";
         };
-        vendorHash = "sha256-Wk2v0HSAkrzxHJvCfbw6xOn0OQ1xukvYjDxk3c2LmH8=";
+        vendorHash = "sha256-c9+npmcdynfqSnxEZSdubVeN8Y3eYAwjya52vTJayY0=";
         checkPhase = false;
       };
       goose = pkgs.buildGoModule {
@@ -28,8 +28,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "goose-lang";
           repo = "goose";
-          rev = "a4f2f84193d34f56dd84fc623adc43a6441da1eb";
-          sha256 = "1b1dfa1qsv2h7hy5x20zhic2npr5gz1zp76m1lab4v490adxj2rx";
+          rev = "67cf95ebfc80e80ddc40b0518e6d761cde44977c";
+          sha256 = "16040c4frxn9dk3xmajzg4jb7fi7q39hasfp94rpnphmpr4hvr51";
         };
         vendorHash = "sha256-HCJ8v3TSv4UrkOsRuENWVz5Z7zQ1UsOygx0Mo7MELzY=";
       };

@@ -8,9 +8,9 @@ From Perennial.program_logic Require Import atomic_fupd.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.program_proof.tutorial.kvservice Require Import get_proof.
-From Perennial.program_proof.tutorial.kvservice Require Import conditionalput_proof.
-From Perennial.program_proof.tutorial.kvservice Require Import put_proof.
+From Perennial.program_proof.tutorial.kvservice Require Import get_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import conditionalput_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import put_proof_gk.
 
 Section marshal_proof.
 Context `{!heapGS Σ}.
