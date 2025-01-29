@@ -8,14 +8,16 @@ Class GlobalAddrs :=
 }.
 
 Context `{!GlobalAddrs}.
-Context `{ffi_syntax}Context `{!heapGS Σ}.
+Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
-Definition var_addrs `{!GlobalAddrs} : list (go_string * loc) := [
+Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions urpc.pkg_name' var_addrs urpc.functions' urpc.msets'.
-
+Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+True.
+Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 Global Instance wp_func_call_MakeServer : 
   WpFuncCall urpc.pkg_name' "MakeServer" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).

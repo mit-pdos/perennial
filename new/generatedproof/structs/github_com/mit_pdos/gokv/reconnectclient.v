@@ -8,17 +8,17 @@ Module ReconnectingClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  mu : loc;
-  valid : bool;
-  urpcCl : loc;
-  addr : w64;
+  mu' : loc;
+  valid' : bool;
+  urpcCl' : loc;
+  addr' : w64;
 }.
 End def.
 End ReconnectingClient.
 
 
 Global Instance settable_ReconnectingClient `{ffi_syntax}: Settable _ :=
-  settable! ReconnectingClient.mk < ReconnectingClient.mu; ReconnectingClient.valid; ReconnectingClient.urpcCl; ReconnectingClient.addr >.
+  settable! ReconnectingClient.mk < ReconnectingClient.mu'; ReconnectingClient.valid'; ReconnectingClient.urpcCl'; ReconnectingClient.addr' >.
 Global Instance into_val_ReconnectingClient `{ffi_syntax} : IntoVal ReconnectingClient.t.
 Admitted.
 
@@ -30,26 +30,26 @@ Global Instance into_val_typed_ReconnectingClient `{ffi_syntax} : IntoValTyped R
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ReconnectingClient_mu `{ffi_syntax} : IntoValStructField "mu" reconnectclient.ReconnectingClient ReconnectingClient.mu.
+Global Instance into_val_struct_field_ReconnectingClient_mu `{ffi_syntax} : IntoValStructField "mu" reconnectclient.ReconnectingClient ReconnectingClient.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_ReconnectingClient_valid `{ffi_syntax} : IntoValStructField "valid" reconnectclient.ReconnectingClient ReconnectingClient.valid.
+Global Instance into_val_struct_field_ReconnectingClient_valid `{ffi_syntax} : IntoValStructField "valid" reconnectclient.ReconnectingClient ReconnectingClient.valid'.
 Admitted.
 
-Global Instance into_val_struct_field_ReconnectingClient_urpcCl `{ffi_syntax} : IntoValStructField "urpcCl" reconnectclient.ReconnectingClient ReconnectingClient.urpcCl.
+Global Instance into_val_struct_field_ReconnectingClient_urpcCl `{ffi_syntax} : IntoValStructField "urpcCl" reconnectclient.ReconnectingClient ReconnectingClient.urpcCl'.
 Admitted.
 
-Global Instance into_val_struct_field_ReconnectingClient_addr `{ffi_syntax} : IntoValStructField "addr" reconnectclient.ReconnectingClient ReconnectingClient.addr.
+Global Instance into_val_struct_field_ReconnectingClient_addr `{ffi_syntax} : IntoValStructField "addr" reconnectclient.ReconnectingClient ReconnectingClient.addr'.
 Admitted.
 
-Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu valid urpcCl addr:
+Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' valid' urpcCl' addr':
   PureWp True
     (struct.make reconnectclient.ReconnectingClient (alist_val [
-      "mu" ::= #mu;
-      "valid" ::= #valid;
-      "urpcCl" ::= #urpcCl;
-      "addr" ::= #addr
-    ]))%V 
-    #(ReconnectingClient.mk mu valid urpcCl addr).
+      "mu" ::= #mu';
+      "valid" ::= #valid';
+      "urpcCl" ::= #urpcCl';
+      "addr" ::= #addr'
+    ]))%V
+    #(ReconnectingClient.mk mu' valid' urpcCl' addr').
 Admitted.
 

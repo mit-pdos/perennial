@@ -8,14 +8,16 @@ Class GlobalAddrs :=
 }.
 
 Context `{!GlobalAddrs}.
-Context `{ffi_syntax}Context `{!heapGS Σ}.
+Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
-Definition var_addrs `{!GlobalAddrs} : list (go_string * loc) := [
+Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions reconnectclient.pkg_name' var_addrs reconnectclient.functions' reconnectclient.msets'.
-
+Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+True.
+Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 Global Instance wp_func_call_MakeReconnectingClient : 
   WpFuncCall reconnectclient.pkg_name' "MakeReconnectingClient" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).

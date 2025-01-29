@@ -8,15 +8,15 @@ Module cacheValue.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  v : go_string;
-  l : w64;
+  v' : go_string;
+  l' : w64;
 }.
 End def.
 End cacheValue.
 
 
 Global Instance settable_cacheValue `{ffi_syntax}: Settable _ :=
-  settable! cacheValue.mk < cacheValue.v; cacheValue.l >.
+  settable! cacheValue.mk < cacheValue.v'; cacheValue.l' >.
 Global Instance into_val_cacheValue `{ffi_syntax} : IntoVal cacheValue.t.
 Admitted.
 
@@ -28,35 +28,35 @@ Global Instance into_val_typed_cacheValue `{ffi_syntax} : IntoValTyped cacheValu
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_cacheValue_v `{ffi_syntax} : IntoValStructField "v" cachekv.cacheValue cacheValue.v.
+Global Instance into_val_struct_field_cacheValue_v `{ffi_syntax} : IntoValStructField "v" cachekv.cacheValue cacheValue.v'.
 Admitted.
 
-Global Instance into_val_struct_field_cacheValue_l `{ffi_syntax} : IntoValStructField "l" cachekv.cacheValue cacheValue.l.
+Global Instance into_val_struct_field_cacheValue_l `{ffi_syntax} : IntoValStructField "l" cachekv.cacheValue cacheValue.l'.
 Admitted.
 
-Instance wp_struct_make_cacheValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} v l:
+Instance wp_struct_make_cacheValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} v' l':
   PureWp True
     (struct.make cachekv.cacheValue (alist_val [
-      "v" ::= #v;
-      "l" ::= #l
-    ]))%V 
-    #(cacheValue.mk v l).
+      "v" ::= #v';
+      "l" ::= #l'
+    ]))%V
+    #(cacheValue.mk v' l').
 Admitted.
 
 Module CacheKv.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  kv : interface.t;
-  mu : loc;
-  cache : loc;
+  kv' : interface.t;
+  mu' : loc;
+  cache' : loc;
 }.
 End def.
 End CacheKv.
 
 
 Global Instance settable_CacheKv `{ffi_syntax}: Settable _ :=
-  settable! CacheKv.mk < CacheKv.kv; CacheKv.mu; CacheKv.cache >.
+  settable! CacheKv.mk < CacheKv.kv'; CacheKv.mu'; CacheKv.cache' >.
 Global Instance into_val_CacheKv `{ffi_syntax} : IntoVal CacheKv.t.
 Admitted.
 
@@ -68,22 +68,22 @@ Global Instance into_val_typed_CacheKv `{ffi_syntax} : IntoValTyped CacheKv.t ca
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_CacheKv_kv `{ffi_syntax} : IntoValStructField "kv" cachekv.CacheKv CacheKv.kv.
+Global Instance into_val_struct_field_CacheKv_kv `{ffi_syntax} : IntoValStructField "kv" cachekv.CacheKv CacheKv.kv'.
 Admitted.
 
-Global Instance into_val_struct_field_CacheKv_mu `{ffi_syntax} : IntoValStructField "mu" cachekv.CacheKv CacheKv.mu.
+Global Instance into_val_struct_field_CacheKv_mu `{ffi_syntax} : IntoValStructField "mu" cachekv.CacheKv CacheKv.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_CacheKv_cache `{ffi_syntax} : IntoValStructField "cache" cachekv.CacheKv CacheKv.cache.
+Global Instance into_val_struct_field_CacheKv_cache `{ffi_syntax} : IntoValStructField "cache" cachekv.CacheKv CacheKv.cache'.
 Admitted.
 
-Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv mu cache:
+Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv' mu' cache':
   PureWp True
     (struct.make cachekv.CacheKv (alist_val [
-      "kv" ::= #kv;
-      "mu" ::= #mu;
-      "cache" ::= #cache
-    ]))%V 
-    #(CacheKv.mk kv mu cache).
+      "kv" ::= #kv';
+      "mu" ::= #mu';
+      "cache" ::= #cache'
+    ]))%V
+    #(CacheKv.mk kv' mu' cache').
 Admitted.
 

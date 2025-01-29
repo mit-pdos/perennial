@@ -91,7 +91,6 @@ def main():
         old_dir = os.getcwd()
         os.chdir(goose_dir)
         do_run(["go", "install", "./cmd/goose"])
-        do_run(["go", "install", "./cmd/goose_axiom"])
         do_run(["go", "install", "./cmd/recordgen"])
         do_run(["go", "install", "./cmd/namegen"])
         os.chdir(old_dir)
@@ -140,24 +139,6 @@ def main():
                 "-out", path.join(perennial_dir, "new/generatedproof/structs"),
                 "-dir", src_path] + pkgs)
 
-    def run_axiomgen(dst_path, src_path, *pkgs):
-        if src_path is None:
-            return
-        if not pkgs:
-            pkgs = ["."]
-
-        gopath = os.getenv("GOPATH", default=None)
-        if gopath is None or gopath == "":
-            gopath = path.join(path.expanduser("~"), "go")
-        goose_bin = path.join(gopath, "bin", "goose_axiom")
-        args = [goose_bin]
-
-        output = path.join(perennial_dir, dst_path)
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
-
     def run_goose_test_gen(src_path, output):
         gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
         args = ["go", "run", gen_bin, "-coq", "-out", output, src_path]
@@ -190,8 +171,7 @@ def main():
         # "./vrsm/replica",
     )
 
-    run_axiomgen(
-        "new_code_axioms/",
+    run_goose(
         etcd_raft_dir,
         "testing",
         "bytes",
@@ -212,8 +192,7 @@ def main():
         "strings",
     )
 
-    run_axiomgen(
-        "new_partial_axioms/",
+    run_goose(
         etcd_raft_dir,
         "fmt",
         "log",
@@ -228,8 +207,7 @@ def main():
         # "go.etcd.io/raft/v3/raftpb",
     )
 
-    run_axiomgen(
-        "new_code_axioms/",
+    run_goose(
         etcd_dir,
         "time",
         "google.golang.org/grpc",

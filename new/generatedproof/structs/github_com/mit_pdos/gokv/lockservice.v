@@ -8,14 +8,14 @@ Module LockClerk.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  kv : interface.t;
+  kv' : interface.t;
 }.
 End def.
 End LockClerk.
 
 
 Global Instance settable_LockClerk `{ffi_syntax}: Settable _ :=
-  settable! LockClerk.mk < LockClerk.kv >.
+  settable! LockClerk.mk < LockClerk.kv' >.
 Global Instance into_val_LockClerk `{ffi_syntax} : IntoVal LockClerk.t.
 Admitted.
 
@@ -27,14 +27,14 @@ Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LockClerk_kv `{ffi_syntax} : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv.
+Global Instance into_val_struct_field_LockClerk_kv `{ffi_syntax} : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv'.
 Admitted.
 
-Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv:
+Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv':
   PureWp True
     (struct.make lockservice.LockClerk (alist_val [
-      "kv" ::= #kv
-    ]))%V 
-    #(LockClerk.mk kv).
+      "kv" ::= #kv'
+    ]))%V
+    #(LockClerk.mk kv').
 Admitted.
 

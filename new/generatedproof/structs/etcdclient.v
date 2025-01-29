@@ -8,22 +8,22 @@ Module KeyValue.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Key : slice.t;
-  CreateRevision : w64;
-  ModRevision : w64;
-  Version : w64;
-  Value : slice.t;
-  Lease : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Key' : slice.t;
+  CreateRevision' : w64;
+  ModRevision' : w64;
+  Version' : w64;
+  Value' : slice.t;
+  Lease' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End KeyValue.
 
 
 Global Instance settable_KeyValue `{ffi_syntax}: Settable _ :=
-  settable! KeyValue.mk < KeyValue.Key; KeyValue.CreateRevision; KeyValue.ModRevision; KeyValue.Version; KeyValue.Value; KeyValue.Lease; KeyValue.XXX_NoUnkeyedLiteral; KeyValue.XXX_unrecognized; KeyValue.XXX_sizecache >.
+  settable! KeyValue.mk < KeyValue.Key'; KeyValue.CreateRevision'; KeyValue.ModRevision'; KeyValue.Version'; KeyValue.Value'; KeyValue.Lease'; KeyValue.XXX_NoUnkeyedLiteral'; KeyValue.XXX_unrecognized'; KeyValue.XXX_sizecache' >.
 Global Instance into_val_KeyValue `{ffi_syntax} : IntoVal KeyValue.t.
 Admitted.
 
@@ -35,67 +35,67 @@ Global Instance into_val_typed_KeyValue `{ffi_syntax} : IntoValTyped KeyValue.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_KeyValue_Key `{ffi_syntax} : IntoValStructField "Key" etcdclient.KeyValue KeyValue.Key.
+Global Instance into_val_struct_field_KeyValue_Key `{ffi_syntax} : IntoValStructField "Key" etcdclient.KeyValue KeyValue.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_CreateRevision `{ffi_syntax} : IntoValStructField "CreateRevision" etcdclient.KeyValue KeyValue.CreateRevision.
+Global Instance into_val_struct_field_KeyValue_CreateRevision `{ffi_syntax} : IntoValStructField "CreateRevision" etcdclient.KeyValue KeyValue.CreateRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_ModRevision `{ffi_syntax} : IntoValStructField "ModRevision" etcdclient.KeyValue KeyValue.ModRevision.
+Global Instance into_val_struct_field_KeyValue_ModRevision `{ffi_syntax} : IntoValStructField "ModRevision" etcdclient.KeyValue KeyValue.ModRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_Version `{ffi_syntax} : IntoValStructField "Version" etcdclient.KeyValue KeyValue.Version.
+Global Instance into_val_struct_field_KeyValue_Version `{ffi_syntax} : IntoValStructField "Version" etcdclient.KeyValue KeyValue.Version'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_Value `{ffi_syntax} : IntoValStructField "Value" etcdclient.KeyValue KeyValue.Value.
+Global Instance into_val_struct_field_KeyValue_Value `{ffi_syntax} : IntoValStructField "Value" etcdclient.KeyValue KeyValue.Value'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdclient.KeyValue KeyValue.Lease.
+Global Instance into_val_struct_field_KeyValue_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdclient.KeyValue KeyValue.Lease'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.KeyValue KeyValue.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_KeyValue_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.KeyValue KeyValue.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.KeyValue KeyValue.XXX_unrecognized.
+Global Instance into_val_struct_field_KeyValue_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.KeyValue KeyValue.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.KeyValue KeyValue.XXX_sizecache.
+Global Instance into_val_struct_field_KeyValue_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.KeyValue KeyValue.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_KeyValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key CreateRevision ModRevision Version Value Lease XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_KeyValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdclient.KeyValue (alist_val [
-      "Key" ::= #Key;
-      "CreateRevision" ::= #CreateRevision;
-      "ModRevision" ::= #ModRevision;
-      "Version" ::= #Version;
-      "Value" ::= #Value;
-      "Lease" ::= #Lease;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(KeyValue.mk Key CreateRevision ModRevision Version Value Lease XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Key" ::= #Key';
+      "CreateRevision" ::= #CreateRevision';
+      "ModRevision" ::= #ModRevision';
+      "Version" ::= #Version';
+      "Value" ::= #Value';
+      "Lease" ::= #Lease';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(KeyValue.mk Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module ResponseHeader.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ClusterId : w64;
-  MemberId : w64;
-  Revision : w64;
-  RaftTerm : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ClusterId' : w64;
+  MemberId' : w64;
+  Revision' : w64;
+  RaftTerm' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End ResponseHeader.
 
 
 Global Instance settable_ResponseHeader `{ffi_syntax}: Settable _ :=
-  settable! ResponseHeader.mk < ResponseHeader.ClusterId; ResponseHeader.MemberId; ResponseHeader.Revision; ResponseHeader.RaftTerm; ResponseHeader.XXX_NoUnkeyedLiteral; ResponseHeader.XXX_unrecognized; ResponseHeader.XXX_sizecache >.
+  settable! ResponseHeader.mk < ResponseHeader.ClusterId'; ResponseHeader.MemberId'; ResponseHeader.Revision'; ResponseHeader.RaftTerm'; ResponseHeader.XXX_NoUnkeyedLiteral'; ResponseHeader.XXX_unrecognized'; ResponseHeader.XXX_sizecache' >.
 Global Instance into_val_ResponseHeader `{ffi_syntax} : IntoVal ResponseHeader.t.
 Admitted.
 
@@ -107,61 +107,61 @@ Global Instance into_val_typed_ResponseHeader `{ffi_syntax} : IntoValTyped Respo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ResponseHeader_ClusterId `{ffi_syntax} : IntoValStructField "ClusterId" etcdclient.ResponseHeader ResponseHeader.ClusterId.
+Global Instance into_val_struct_field_ResponseHeader_ClusterId `{ffi_syntax} : IntoValStructField "ClusterId" etcdclient.ResponseHeader ResponseHeader.ClusterId'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_MemberId `{ffi_syntax} : IntoValStructField "MemberId" etcdclient.ResponseHeader ResponseHeader.MemberId.
+Global Instance into_val_struct_field_ResponseHeader_MemberId `{ffi_syntax} : IntoValStructField "MemberId" etcdclient.ResponseHeader ResponseHeader.MemberId'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdclient.ResponseHeader ResponseHeader.Revision.
+Global Instance into_val_struct_field_ResponseHeader_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdclient.ResponseHeader ResponseHeader.Revision'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_RaftTerm `{ffi_syntax} : IntoValStructField "RaftTerm" etcdclient.ResponseHeader ResponseHeader.RaftTerm.
+Global Instance into_val_struct_field_ResponseHeader_RaftTerm `{ffi_syntax} : IntoValStructField "RaftTerm" etcdclient.ResponseHeader ResponseHeader.RaftTerm'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.ResponseHeader ResponseHeader.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_ResponseHeader_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.ResponseHeader ResponseHeader.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.ResponseHeader ResponseHeader.XXX_unrecognized.
+Global Instance into_val_struct_field_ResponseHeader_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.ResponseHeader ResponseHeader.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.ResponseHeader ResponseHeader.XXX_sizecache.
+Global Instance into_val_struct_field_ResponseHeader_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.ResponseHeader ResponseHeader.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClusterId MemberId Revision RaftTerm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdclient.ResponseHeader (alist_val [
-      "ClusterId" ::= #ClusterId;
-      "MemberId" ::= #MemberId;
-      "Revision" ::= #Revision;
-      "RaftTerm" ::= #RaftTerm;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(ResponseHeader.mk ClusterId MemberId Revision RaftTerm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ClusterId" ::= #ClusterId';
+      "MemberId" ::= #MemberId';
+      "Revision" ::= #Revision';
+      "RaftTerm" ::= #RaftTerm';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(ResponseHeader.mk ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module PutRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Key : slice.t;
-  Value : slice.t;
-  Lease : w64;
-  PrevKv : bool;
-  IgnoreValue : bool;
-  IgnoreLease : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Key' : slice.t;
+  Value' : slice.t;
+  Lease' : w64;
+  PrevKv' : bool;
+  IgnoreValue' : bool;
+  IgnoreLease' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End PutRequest.
 
 
 Global Instance settable_PutRequest `{ffi_syntax}: Settable _ :=
-  settable! PutRequest.mk < PutRequest.Key; PutRequest.Value; PutRequest.Lease; PutRequest.PrevKv; PutRequest.IgnoreValue; PutRequest.IgnoreLease; PutRequest.XXX_NoUnkeyedLiteral; PutRequest.XXX_unrecognized; PutRequest.XXX_sizecache >.
+  settable! PutRequest.mk < PutRequest.Key'; PutRequest.Value'; PutRequest.Lease'; PutRequest.PrevKv'; PutRequest.IgnoreValue'; PutRequest.IgnoreLease'; PutRequest.XXX_NoUnkeyedLiteral'; PutRequest.XXX_unrecognized'; PutRequest.XXX_sizecache' >.
 Global Instance into_val_PutRequest `{ffi_syntax} : IntoVal PutRequest.t.
 Admitted.
 
@@ -173,65 +173,65 @@ Global Instance into_val_typed_PutRequest `{ffi_syntax} : IntoValTyped PutReques
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_PutRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdclient.PutRequest PutRequest.Key.
+Global Instance into_val_struct_field_PutRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdclient.PutRequest PutRequest.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_Value `{ffi_syntax} : IntoValStructField "Value" etcdclient.PutRequest PutRequest.Value.
+Global Instance into_val_struct_field_PutRequest_Value `{ffi_syntax} : IntoValStructField "Value" etcdclient.PutRequest PutRequest.Value'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdclient.PutRequest PutRequest.Lease.
+Global Instance into_val_struct_field_PutRequest_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdclient.PutRequest PutRequest.Lease'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdclient.PutRequest PutRequest.PrevKv.
+Global Instance into_val_struct_field_PutRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdclient.PutRequest PutRequest.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_IgnoreValue `{ffi_syntax} : IntoValStructField "IgnoreValue" etcdclient.PutRequest PutRequest.IgnoreValue.
+Global Instance into_val_struct_field_PutRequest_IgnoreValue `{ffi_syntax} : IntoValStructField "IgnoreValue" etcdclient.PutRequest PutRequest.IgnoreValue'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_IgnoreLease `{ffi_syntax} : IntoValStructField "IgnoreLease" etcdclient.PutRequest PutRequest.IgnoreLease.
+Global Instance into_val_struct_field_PutRequest_IgnoreLease `{ffi_syntax} : IntoValStructField "IgnoreLease" etcdclient.PutRequest PutRequest.IgnoreLease'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.PutRequest PutRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_PutRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.PutRequest PutRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.PutRequest PutRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_PutRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.PutRequest PutRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.PutRequest PutRequest.XXX_sizecache.
+Global Instance into_val_struct_field_PutRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.PutRequest PutRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_PutRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key Value Lease PrevKv IgnoreValue IgnoreLease XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_PutRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdclient.PutRequest (alist_val [
-      "Key" ::= #Key;
-      "Value" ::= #Value;
-      "Lease" ::= #Lease;
-      "PrevKv" ::= #PrevKv;
-      "IgnoreValue" ::= #IgnoreValue;
-      "IgnoreLease" ::= #IgnoreLease;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(PutRequest.mk Key Value Lease PrevKv IgnoreValue IgnoreLease XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Key" ::= #Key';
+      "Value" ::= #Value';
+      "Lease" ::= #Lease';
+      "PrevKv" ::= #PrevKv';
+      "IgnoreValue" ::= #IgnoreValue';
+      "IgnoreLease" ::= #IgnoreLease';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(PutRequest.mk Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module PutResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  PrevKv : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  PrevKv' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End PutResponse.
 
 
 Global Instance settable_PutResponse `{ffi_syntax}: Settable _ :=
-  settable! PutResponse.mk < PutResponse.Header; PutResponse.PrevKv; PutResponse.XXX_NoUnkeyedLiteral; PutResponse.XXX_unrecognized; PutResponse.XXX_sizecache >.
+  settable! PutResponse.mk < PutResponse.Header'; PutResponse.PrevKv'; PutResponse.XXX_NoUnkeyedLiteral'; PutResponse.XXX_unrecognized'; PutResponse.XXX_sizecache' >.
 Global Instance into_val_PutResponse `{ffi_syntax} : IntoVal PutResponse.t.
 Admitted.
 
@@ -243,31 +243,31 @@ Global Instance into_val_typed_PutResponse `{ffi_syntax} : IntoValTyped PutRespo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_PutResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdclient.PutResponse PutResponse.Header.
+Global Instance into_val_struct_field_PutResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdclient.PutResponse PutResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdclient.PutResponse PutResponse.PrevKv.
+Global Instance into_val_struct_field_PutResponse_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdclient.PutResponse PutResponse.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.PutResponse PutResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_PutResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.PutResponse PutResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.PutResponse PutResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_PutResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.PutResponse PutResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.PutResponse PutResponse.XXX_sizecache.
+Global Instance into_val_struct_field_PutResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.PutResponse PutResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_PutResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header PrevKv XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_PutResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdclient.PutResponse (alist_val [
-      "Header" ::= #Header;
-      "PrevKv" ::= #PrevKv;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(PutResponse.mk Header PrevKv XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "PrevKv" ::= #PrevKv';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(PutResponse.mk Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module Op.
@@ -275,40 +275,40 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   t' : w64;
-  key : slice.t;
+  key' : slice.t;
   end' : slice.t;
-  limit : w64;
-  sort : loc;
-  serializable : bool;
-  keysOnly : bool;
-  countOnly : bool;
-  minModRev : w64;
-  maxModRev : w64;
-  minCreateRev : w64;
-  maxCreateRev : w64;
-  rev : w64;
-  prevKV : bool;
-  fragment : bool;
-  ignoreValue : bool;
-  ignoreLease : bool;
-  progressNotify : bool;
-  createdNotify : bool;
-  filterPut : bool;
-  filterDelete : bool;
-  val : slice.t;
-  leaseID : w64;
-  cmps : slice.t;
-  thenOps : slice.t;
-  elseOps : slice.t;
-  isOptsWithFromKey : bool;
-  isOptsWithPrefix : bool;
+  limit' : w64;
+  sort' : loc;
+  serializable' : bool;
+  keysOnly' : bool;
+  countOnly' : bool;
+  minModRev' : w64;
+  maxModRev' : w64;
+  minCreateRev' : w64;
+  maxCreateRev' : w64;
+  rev' : w64;
+  prevKV' : bool;
+  fragment' : bool;
+  ignoreValue' : bool;
+  ignoreLease' : bool;
+  progressNotify' : bool;
+  createdNotify' : bool;
+  filterPut' : bool;
+  filterDelete' : bool;
+  val' : slice.t;
+  leaseID' : w64;
+  cmps' : slice.t;
+  thenOps' : slice.t;
+  elseOps' : slice.t;
+  isOptsWithFromKey' : bool;
+  isOptsWithPrefix' : bool;
 }.
 End def.
 End Op.
 
 
 Global Instance settable_Op `{ffi_syntax}: Settable _ :=
-  settable! Op.mk < Op.t'; Op.key; Op.end'; Op.limit; Op.sort; Op.serializable; Op.keysOnly; Op.countOnly; Op.minModRev; Op.maxModRev; Op.minCreateRev; Op.maxCreateRev; Op.rev; Op.prevKV; Op.fragment; Op.ignoreValue; Op.ignoreLease; Op.progressNotify; Op.createdNotify; Op.filterPut; Op.filterDelete; Op.val; Op.leaseID; Op.cmps; Op.thenOps; Op.elseOps; Op.isOptsWithFromKey; Op.isOptsWithPrefix >.
+  settable! Op.mk < Op.t'; Op.key'; Op.end'; Op.limit'; Op.sort'; Op.serializable'; Op.keysOnly'; Op.countOnly'; Op.minModRev'; Op.maxModRev'; Op.minCreateRev'; Op.maxCreateRev'; Op.rev'; Op.prevKV'; Op.fragment'; Op.ignoreValue'; Op.ignoreLease'; Op.progressNotify'; Op.createdNotify'; Op.filterPut'; Op.filterDelete'; Op.val'; Op.leaseID'; Op.cmps'; Op.thenOps'; Op.elseOps'; Op.isOptsWithFromKey'; Op.isOptsWithPrefix' >.
 Global Instance into_val_Op `{ffi_syntax} : IntoVal Op.t.
 Admitted.
 
@@ -323,135 +323,135 @@ Global Instance into_val_typed_Op `{ffi_syntax} : IntoValTyped Op.t etcdclient.O
 Global Instance into_val_struct_field_Op_t `{ffi_syntax} : IntoValStructField "t" etcdclient.Op Op.t'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_key `{ffi_syntax} : IntoValStructField "key" etcdclient.Op Op.key.
+Global Instance into_val_struct_field_Op_key `{ffi_syntax} : IntoValStructField "key" etcdclient.Op Op.key'.
 Admitted.
 
 Global Instance into_val_struct_field_Op_end `{ffi_syntax} : IntoValStructField "end" etcdclient.Op Op.end'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_limit `{ffi_syntax} : IntoValStructField "limit" etcdclient.Op Op.limit.
+Global Instance into_val_struct_field_Op_limit `{ffi_syntax} : IntoValStructField "limit" etcdclient.Op Op.limit'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_sort `{ffi_syntax} : IntoValStructField "sort" etcdclient.Op Op.sort.
+Global Instance into_val_struct_field_Op_sort `{ffi_syntax} : IntoValStructField "sort" etcdclient.Op Op.sort'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_serializable `{ffi_syntax} : IntoValStructField "serializable" etcdclient.Op Op.serializable.
+Global Instance into_val_struct_field_Op_serializable `{ffi_syntax} : IntoValStructField "serializable" etcdclient.Op Op.serializable'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_keysOnly `{ffi_syntax} : IntoValStructField "keysOnly" etcdclient.Op Op.keysOnly.
+Global Instance into_val_struct_field_Op_keysOnly `{ffi_syntax} : IntoValStructField "keysOnly" etcdclient.Op Op.keysOnly'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_countOnly `{ffi_syntax} : IntoValStructField "countOnly" etcdclient.Op Op.countOnly.
+Global Instance into_val_struct_field_Op_countOnly `{ffi_syntax} : IntoValStructField "countOnly" etcdclient.Op Op.countOnly'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_minModRev `{ffi_syntax} : IntoValStructField "minModRev" etcdclient.Op Op.minModRev.
+Global Instance into_val_struct_field_Op_minModRev `{ffi_syntax} : IntoValStructField "minModRev" etcdclient.Op Op.minModRev'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_maxModRev `{ffi_syntax} : IntoValStructField "maxModRev" etcdclient.Op Op.maxModRev.
+Global Instance into_val_struct_field_Op_maxModRev `{ffi_syntax} : IntoValStructField "maxModRev" etcdclient.Op Op.maxModRev'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_minCreateRev `{ffi_syntax} : IntoValStructField "minCreateRev" etcdclient.Op Op.minCreateRev.
+Global Instance into_val_struct_field_Op_minCreateRev `{ffi_syntax} : IntoValStructField "minCreateRev" etcdclient.Op Op.minCreateRev'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_maxCreateRev `{ffi_syntax} : IntoValStructField "maxCreateRev" etcdclient.Op Op.maxCreateRev.
+Global Instance into_val_struct_field_Op_maxCreateRev `{ffi_syntax} : IntoValStructField "maxCreateRev" etcdclient.Op Op.maxCreateRev'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_rev `{ffi_syntax} : IntoValStructField "rev" etcdclient.Op Op.rev.
+Global Instance into_val_struct_field_Op_rev `{ffi_syntax} : IntoValStructField "rev" etcdclient.Op Op.rev'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_prevKV `{ffi_syntax} : IntoValStructField "prevKV" etcdclient.Op Op.prevKV.
+Global Instance into_val_struct_field_Op_prevKV `{ffi_syntax} : IntoValStructField "prevKV" etcdclient.Op Op.prevKV'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_fragment `{ffi_syntax} : IntoValStructField "fragment" etcdclient.Op Op.fragment.
+Global Instance into_val_struct_field_Op_fragment `{ffi_syntax} : IntoValStructField "fragment" etcdclient.Op Op.fragment'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_ignoreValue `{ffi_syntax} : IntoValStructField "ignoreValue" etcdclient.Op Op.ignoreValue.
+Global Instance into_val_struct_field_Op_ignoreValue `{ffi_syntax} : IntoValStructField "ignoreValue" etcdclient.Op Op.ignoreValue'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_ignoreLease `{ffi_syntax} : IntoValStructField "ignoreLease" etcdclient.Op Op.ignoreLease.
+Global Instance into_val_struct_field_Op_ignoreLease `{ffi_syntax} : IntoValStructField "ignoreLease" etcdclient.Op Op.ignoreLease'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_progressNotify `{ffi_syntax} : IntoValStructField "progressNotify" etcdclient.Op Op.progressNotify.
+Global Instance into_val_struct_field_Op_progressNotify `{ffi_syntax} : IntoValStructField "progressNotify" etcdclient.Op Op.progressNotify'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_createdNotify `{ffi_syntax} : IntoValStructField "createdNotify" etcdclient.Op Op.createdNotify.
+Global Instance into_val_struct_field_Op_createdNotify `{ffi_syntax} : IntoValStructField "createdNotify" etcdclient.Op Op.createdNotify'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_filterPut `{ffi_syntax} : IntoValStructField "filterPut" etcdclient.Op Op.filterPut.
+Global Instance into_val_struct_field_Op_filterPut `{ffi_syntax} : IntoValStructField "filterPut" etcdclient.Op Op.filterPut'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_filterDelete `{ffi_syntax} : IntoValStructField "filterDelete" etcdclient.Op Op.filterDelete.
+Global Instance into_val_struct_field_Op_filterDelete `{ffi_syntax} : IntoValStructField "filterDelete" etcdclient.Op Op.filterDelete'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_val `{ffi_syntax} : IntoValStructField "val" etcdclient.Op Op.val.
+Global Instance into_val_struct_field_Op_val `{ffi_syntax} : IntoValStructField "val" etcdclient.Op Op.val'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_leaseID `{ffi_syntax} : IntoValStructField "leaseID" etcdclient.Op Op.leaseID.
+Global Instance into_val_struct_field_Op_leaseID `{ffi_syntax} : IntoValStructField "leaseID" etcdclient.Op Op.leaseID'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_cmps `{ffi_syntax} : IntoValStructField "cmps" etcdclient.Op Op.cmps.
+Global Instance into_val_struct_field_Op_cmps `{ffi_syntax} : IntoValStructField "cmps" etcdclient.Op Op.cmps'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_thenOps `{ffi_syntax} : IntoValStructField "thenOps" etcdclient.Op Op.thenOps.
+Global Instance into_val_struct_field_Op_thenOps `{ffi_syntax} : IntoValStructField "thenOps" etcdclient.Op Op.thenOps'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_elseOps `{ffi_syntax} : IntoValStructField "elseOps" etcdclient.Op Op.elseOps.
+Global Instance into_val_struct_field_Op_elseOps `{ffi_syntax} : IntoValStructField "elseOps" etcdclient.Op Op.elseOps'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_isOptsWithFromKey `{ffi_syntax} : IntoValStructField "isOptsWithFromKey" etcdclient.Op Op.isOptsWithFromKey.
+Global Instance into_val_struct_field_Op_isOptsWithFromKey `{ffi_syntax} : IntoValStructField "isOptsWithFromKey" etcdclient.Op Op.isOptsWithFromKey'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_isOptsWithPrefix `{ffi_syntax} : IntoValStructField "isOptsWithPrefix" etcdclient.Op Op.isOptsWithPrefix.
+Global Instance into_val_struct_field_Op_isOptsWithPrefix `{ffi_syntax} : IntoValStructField "isOptsWithPrefix" etcdclient.Op Op.isOptsWithPrefix'.
 Admitted.
 
-Instance wp_struct_make_Op `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' key end' limit sort serializable keysOnly countOnly minModRev maxModRev minCreateRev maxCreateRev rev prevKV fragment ignoreValue ignoreLease progressNotify createdNotify filterPut filterDelete val leaseID cmps thenOps elseOps isOptsWithFromKey isOptsWithPrefix:
+Instance wp_struct_make_Op `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' key' end' limit' sort' serializable' keysOnly' countOnly' minModRev' maxModRev' minCreateRev' maxCreateRev' rev' prevKV' fragment' ignoreValue' ignoreLease' progressNotify' createdNotify' filterPut' filterDelete' val' leaseID' cmps' thenOps' elseOps' isOptsWithFromKey' isOptsWithPrefix':
   PureWp True
     (struct.make etcdclient.Op (alist_val [
       "t" ::= #t';
-      "key" ::= #key;
+      "key" ::= #key';
       "end" ::= #end';
-      "limit" ::= #limit;
-      "sort" ::= #sort;
-      "serializable" ::= #serializable;
-      "keysOnly" ::= #keysOnly;
-      "countOnly" ::= #countOnly;
-      "minModRev" ::= #minModRev;
-      "maxModRev" ::= #maxModRev;
-      "minCreateRev" ::= #minCreateRev;
-      "maxCreateRev" ::= #maxCreateRev;
-      "rev" ::= #rev;
-      "prevKV" ::= #prevKV;
-      "fragment" ::= #fragment;
-      "ignoreValue" ::= #ignoreValue;
-      "ignoreLease" ::= #ignoreLease;
-      "progressNotify" ::= #progressNotify;
-      "createdNotify" ::= #createdNotify;
-      "filterPut" ::= #filterPut;
-      "filterDelete" ::= #filterDelete;
-      "val" ::= #val;
-      "leaseID" ::= #leaseID;
-      "cmps" ::= #cmps;
-      "thenOps" ::= #thenOps;
-      "elseOps" ::= #elseOps;
-      "isOptsWithFromKey" ::= #isOptsWithFromKey;
-      "isOptsWithPrefix" ::= #isOptsWithPrefix
-    ]))%V 
-    #(Op.mk t' key end' limit sort serializable keysOnly countOnly minModRev maxModRev minCreateRev maxCreateRev rev prevKV fragment ignoreValue ignoreLease progressNotify createdNotify filterPut filterDelete val leaseID cmps thenOps elseOps isOptsWithFromKey isOptsWithPrefix).
+      "limit" ::= #limit';
+      "sort" ::= #sort';
+      "serializable" ::= #serializable';
+      "keysOnly" ::= #keysOnly';
+      "countOnly" ::= #countOnly';
+      "minModRev" ::= #minModRev';
+      "maxModRev" ::= #maxModRev';
+      "minCreateRev" ::= #minCreateRev';
+      "maxCreateRev" ::= #maxCreateRev';
+      "rev" ::= #rev';
+      "prevKV" ::= #prevKV';
+      "fragment" ::= #fragment';
+      "ignoreValue" ::= #ignoreValue';
+      "ignoreLease" ::= #ignoreLease';
+      "progressNotify" ::= #progressNotify';
+      "createdNotify" ::= #createdNotify';
+      "filterPut" ::= #filterPut';
+      "filterDelete" ::= #filterDelete';
+      "val" ::= #val';
+      "leaseID" ::= #leaseID';
+      "cmps" ::= #cmps';
+      "thenOps" ::= #thenOps';
+      "elseOps" ::= #elseOps';
+      "isOptsWithFromKey" ::= #isOptsWithFromKey';
+      "isOptsWithPrefix" ::= #isOptsWithPrefix'
+    ]))%V
+    #(Op.mk t' key' end' limit' sort' serializable' keysOnly' countOnly' minModRev' maxModRev' minCreateRev' maxCreateRev' rev' prevKV' fragment' ignoreValue' ignoreLease' progressNotify' createdNotify' filterPut' filterDelete' val' leaseID' cmps' thenOps' elseOps' isOptsWithFromKey' isOptsWithPrefix').
 Admitted.
 
 Module SortOption.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Target : w64;
-  Order : w64;
+  Target' : w64;
+  Order' : w64;
 }.
 End def.
 End SortOption.
 
 
 Global Instance settable_SortOption `{ffi_syntax}: Settable _ :=
-  settable! SortOption.mk < SortOption.Target; SortOption.Order >.
+  settable! SortOption.mk < SortOption.Target'; SortOption.Order' >.
 Global Instance into_val_SortOption `{ffi_syntax} : IntoVal SortOption.t.
 Admitted.
 
@@ -463,40 +463,40 @@ Global Instance into_val_typed_SortOption `{ffi_syntax} : IntoValTyped SortOptio
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SortOption_Target `{ffi_syntax} : IntoValStructField "Target" etcdclient.SortOption SortOption.Target.
+Global Instance into_val_struct_field_SortOption_Target `{ffi_syntax} : IntoValStructField "Target" etcdclient.SortOption SortOption.Target'.
 Admitted.
 
-Global Instance into_val_struct_field_SortOption_Order `{ffi_syntax} : IntoValStructField "Order" etcdclient.SortOption SortOption.Order.
+Global Instance into_val_struct_field_SortOption_Order `{ffi_syntax} : IntoValStructField "Order" etcdclient.SortOption SortOption.Order'.
 Admitted.
 
-Instance wp_struct_make_SortOption `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Target Order:
+Instance wp_struct_make_SortOption `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Target' Order':
   PureWp True
     (struct.make etcdclient.SortOption (alist_val [
-      "Target" ::= #Target;
-      "Order" ::= #Order
-    ]))%V 
-    #(SortOption.mk Target Order).
+      "Target" ::= #Target';
+      "Order" ::= #Order'
+    ]))%V
+    #(SortOption.mk Target' Order').
 Admitted.
 
 Module Compare.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Result : w32;
-  Target : w32;
-  Key : slice.t;
-  TargetUnion : interface.t;
-  RangeEnd : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Result' : w32;
+  Target' : w32;
+  Key' : slice.t;
+  TargetUnion' : interface.t;
+  RangeEnd' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End Compare.
 
 
 Global Instance settable_Compare `{ffi_syntax}: Settable _ :=
-  settable! Compare.mk < Compare.Result; Compare.Target; Compare.Key; Compare.TargetUnion; Compare.RangeEnd; Compare.XXX_NoUnkeyedLiteral; Compare.XXX_unrecognized; Compare.XXX_sizecache >.
+  settable! Compare.mk < Compare.Result'; Compare.Target'; Compare.Key'; Compare.TargetUnion'; Compare.RangeEnd'; Compare.XXX_NoUnkeyedLiteral'; Compare.XXX_unrecognized'; Compare.XXX_sizecache' >.
 Global Instance into_val_Compare `{ffi_syntax} : IntoVal Compare.t.
 Admitted.
 
@@ -508,42 +508,42 @@ Global Instance into_val_typed_Compare `{ffi_syntax} : IntoValTyped Compare.t et
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Compare_Result `{ffi_syntax} : IntoValStructField "Result" etcdclient.Compare Compare.Result.
+Global Instance into_val_struct_field_Compare_Result `{ffi_syntax} : IntoValStructField "Result" etcdclient.Compare Compare.Result'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_Target `{ffi_syntax} : IntoValStructField "Target" etcdclient.Compare Compare.Target.
+Global Instance into_val_struct_field_Compare_Target `{ffi_syntax} : IntoValStructField "Target" etcdclient.Compare Compare.Target'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_Key `{ffi_syntax} : IntoValStructField "Key" etcdclient.Compare Compare.Key.
+Global Instance into_val_struct_field_Compare_Key `{ffi_syntax} : IntoValStructField "Key" etcdclient.Compare Compare.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_TargetUnion `{ffi_syntax} : IntoValStructField "TargetUnion" etcdclient.Compare Compare.TargetUnion.
+Global Instance into_val_struct_field_Compare_TargetUnion `{ffi_syntax} : IntoValStructField "TargetUnion" etcdclient.Compare Compare.TargetUnion'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdclient.Compare Compare.RangeEnd.
+Global Instance into_val_struct_field_Compare_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdclient.Compare Compare.RangeEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.Compare Compare.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_Compare_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdclient.Compare Compare.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.Compare Compare.XXX_unrecognized.
+Global Instance into_val_struct_field_Compare_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdclient.Compare Compare.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.Compare Compare.XXX_sizecache.
+Global Instance into_val_struct_field_Compare_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdclient.Compare Compare.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result Target Key TargetUnion RangeEnd XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdclient.Compare (alist_val [
-      "Result" ::= #Result;
-      "Target" ::= #Target;
-      "Key" ::= #Key;
-      "TargetUnion" ::= #TargetUnion;
-      "RangeEnd" ::= #RangeEnd;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(Compare.mk Result Target Key TargetUnion RangeEnd XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Result" ::= #Result';
+      "Target" ::= #Target';
+      "Key" ::= #Key';
+      "TargetUnion" ::= #TargetUnion';
+      "RangeEnd" ::= #RangeEnd';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(Compare.mk Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 

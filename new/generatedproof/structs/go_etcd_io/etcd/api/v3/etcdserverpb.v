@@ -8,33 +8,33 @@ Module Request.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  Method : go_string;
-  Path : go_string;
-  Val : go_string;
-  Dir : bool;
-  PrevValue : go_string;
-  PrevIndex : w64;
-  PrevExist : loc;
-  Expiration : w64;
-  Wait : bool;
-  Since : w64;
-  Recursive : bool;
-  Sorted : bool;
-  Quorum : bool;
-  Time : w64;
-  Stream : bool;
-  Refresh : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  Method' : go_string;
+  Path' : go_string;
+  Val' : go_string;
+  Dir' : bool;
+  PrevValue' : go_string;
+  PrevIndex' : w64;
+  PrevExist' : loc;
+  Expiration' : w64;
+  Wait' : bool;
+  Since' : w64;
+  Recursive' : bool;
+  Sorted' : bool;
+  Quorum' : bool;
+  Time' : w64;
+  Stream' : bool;
+  Refresh' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End Request.
 
 
 Global Instance settable_Request `{ffi_syntax}: Settable _ :=
-  settable! Request.mk < Request.ID; Request.Method; Request.Path; Request.Val; Request.Dir; Request.PrevValue; Request.PrevIndex; Request.PrevExist; Request.Expiration; Request.Wait; Request.Since; Request.Recursive; Request.Sorted; Request.Quorum; Request.Time; Request.Stream; Request.Refresh; Request.XXX_NoUnkeyedLiteral; Request.XXX_unrecognized; Request.XXX_sizecache >.
+  settable! Request.mk < Request.ID'; Request.Method'; Request.Path'; Request.Val'; Request.Dir'; Request.PrevValue'; Request.PrevIndex'; Request.PrevExist'; Request.Expiration'; Request.Wait'; Request.Since'; Request.Recursive'; Request.Sorted'; Request.Quorum'; Request.Time'; Request.Stream'; Request.Refresh'; Request.XXX_NoUnkeyedLiteral'; Request.XXX_unrecognized'; Request.XXX_sizecache' >.
 Global Instance into_val_Request `{ffi_syntax} : IntoVal Request.t.
 Admitted.
 
@@ -46,109 +46,109 @@ Global Instance into_val_typed_Request `{ffi_syntax} : IntoValTyped Request.t et
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Request_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.Request Request.ID.
+Global Instance into_val_struct_field_Request_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.Request Request.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Method `{ffi_syntax} : IntoValStructField "Method" etcdserverpb.Request Request.Method.
+Global Instance into_val_struct_field_Request_Method `{ffi_syntax} : IntoValStructField "Method" etcdserverpb.Request Request.Method'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Path `{ffi_syntax} : IntoValStructField "Path" etcdserverpb.Request Request.Path.
+Global Instance into_val_struct_field_Request_Path `{ffi_syntax} : IntoValStructField "Path" etcdserverpb.Request Request.Path'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Val `{ffi_syntax} : IntoValStructField "Val" etcdserverpb.Request Request.Val.
+Global Instance into_val_struct_field_Request_Val `{ffi_syntax} : IntoValStructField "Val" etcdserverpb.Request Request.Val'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Dir `{ffi_syntax} : IntoValStructField "Dir" etcdserverpb.Request Request.Dir.
+Global Instance into_val_struct_field_Request_Dir `{ffi_syntax} : IntoValStructField "Dir" etcdserverpb.Request Request.Dir'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_PrevValue `{ffi_syntax} : IntoValStructField "PrevValue" etcdserverpb.Request Request.PrevValue.
+Global Instance into_val_struct_field_Request_PrevValue `{ffi_syntax} : IntoValStructField "PrevValue" etcdserverpb.Request Request.PrevValue'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_PrevIndex `{ffi_syntax} : IntoValStructField "PrevIndex" etcdserverpb.Request Request.PrevIndex.
+Global Instance into_val_struct_field_Request_PrevIndex `{ffi_syntax} : IntoValStructField "PrevIndex" etcdserverpb.Request Request.PrevIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_PrevExist `{ffi_syntax} : IntoValStructField "PrevExist" etcdserverpb.Request Request.PrevExist.
+Global Instance into_val_struct_field_Request_PrevExist `{ffi_syntax} : IntoValStructField "PrevExist" etcdserverpb.Request Request.PrevExist'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Expiration `{ffi_syntax} : IntoValStructField "Expiration" etcdserverpb.Request Request.Expiration.
+Global Instance into_val_struct_field_Request_Expiration `{ffi_syntax} : IntoValStructField "Expiration" etcdserverpb.Request Request.Expiration'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Wait `{ffi_syntax} : IntoValStructField "Wait" etcdserverpb.Request Request.Wait.
+Global Instance into_val_struct_field_Request_Wait `{ffi_syntax} : IntoValStructField "Wait" etcdserverpb.Request Request.Wait'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Since `{ffi_syntax} : IntoValStructField "Since" etcdserverpb.Request Request.Since.
+Global Instance into_val_struct_field_Request_Since `{ffi_syntax} : IntoValStructField "Since" etcdserverpb.Request Request.Since'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Recursive `{ffi_syntax} : IntoValStructField "Recursive" etcdserverpb.Request Request.Recursive.
+Global Instance into_val_struct_field_Request_Recursive `{ffi_syntax} : IntoValStructField "Recursive" etcdserverpb.Request Request.Recursive'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Sorted `{ffi_syntax} : IntoValStructField "Sorted" etcdserverpb.Request Request.Sorted.
+Global Instance into_val_struct_field_Request_Sorted `{ffi_syntax} : IntoValStructField "Sorted" etcdserverpb.Request Request.Sorted'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Quorum `{ffi_syntax} : IntoValStructField "Quorum" etcdserverpb.Request Request.Quorum.
+Global Instance into_val_struct_field_Request_Quorum `{ffi_syntax} : IntoValStructField "Quorum" etcdserverpb.Request Request.Quorum'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Time `{ffi_syntax} : IntoValStructField "Time" etcdserverpb.Request Request.Time.
+Global Instance into_val_struct_field_Request_Time `{ffi_syntax} : IntoValStructField "Time" etcdserverpb.Request Request.Time'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Stream `{ffi_syntax} : IntoValStructField "Stream" etcdserverpb.Request Request.Stream.
+Global Instance into_val_struct_field_Request_Stream `{ffi_syntax} : IntoValStructField "Stream" etcdserverpb.Request Request.Stream'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_Refresh `{ffi_syntax} : IntoValStructField "Refresh" etcdserverpb.Request Request.Refresh.
+Global Instance into_val_struct_field_Request_Refresh `{ffi_syntax} : IntoValStructField "Refresh" etcdserverpb.Request Request.Refresh'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Request Request.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_Request_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Request Request.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Request Request.XXX_unrecognized.
+Global Instance into_val_struct_field_Request_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Request Request.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_Request_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Request Request.XXX_sizecache.
+Global Instance into_val_struct_field_Request_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Request Request.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_Request `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID Method Path Val Dir PrevValue PrevIndex PrevExist Expiration Wait Since Recursive Sorted Quorum Time Stream Refresh XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_Request `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Method' Path' Val' Dir' PrevValue' PrevIndex' PrevExist' Expiration' Wait' Since' Recursive' Sorted' Quorum' Time' Stream' Refresh' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.Request (alist_val [
-      "ID" ::= #ID;
-      "Method" ::= #Method;
-      "Path" ::= #Path;
-      "Val" ::= #Val;
-      "Dir" ::= #Dir;
-      "PrevValue" ::= #PrevValue;
-      "PrevIndex" ::= #PrevIndex;
-      "PrevExist" ::= #PrevExist;
-      "Expiration" ::= #Expiration;
-      "Wait" ::= #Wait;
-      "Since" ::= #Since;
-      "Recursive" ::= #Recursive;
-      "Sorted" ::= #Sorted;
-      "Quorum" ::= #Quorum;
-      "Time" ::= #Time;
-      "Stream" ::= #Stream;
-      "Refresh" ::= #Refresh;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(Request.mk ID Method Path Val Dir PrevValue PrevIndex PrevExist Expiration Wait Since Recursive Sorted Quorum Time Stream Refresh XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "Method" ::= #Method';
+      "Path" ::= #Path';
+      "Val" ::= #Val';
+      "Dir" ::= #Dir';
+      "PrevValue" ::= #PrevValue';
+      "PrevIndex" ::= #PrevIndex';
+      "PrevExist" ::= #PrevExist';
+      "Expiration" ::= #Expiration';
+      "Wait" ::= #Wait';
+      "Since" ::= #Since';
+      "Recursive" ::= #Recursive';
+      "Sorted" ::= #Sorted';
+      "Quorum" ::= #Quorum';
+      "Time" ::= #Time';
+      "Stream" ::= #Stream';
+      "Refresh" ::= #Refresh';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(Request.mk ID' Method' Path' Val' Dir' PrevValue' PrevIndex' PrevExist' Expiration' Wait' Since' Recursive' Sorted' Quorum' Time' Stream' Refresh' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module Metadata.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  NodeID : w64;
-  ClusterID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  NodeID' : w64;
+  ClusterID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End Metadata.
 
 
 Global Instance settable_Metadata `{ffi_syntax}: Settable _ :=
-  settable! Metadata.mk < Metadata.NodeID; Metadata.ClusterID; Metadata.XXX_NoUnkeyedLiteral; Metadata.XXX_unrecognized; Metadata.XXX_sizecache >.
+  settable! Metadata.mk < Metadata.NodeID'; Metadata.ClusterID'; Metadata.XXX_NoUnkeyedLiteral'; Metadata.XXX_unrecognized'; Metadata.XXX_sizecache' >.
 Global Instance into_val_Metadata `{ffi_syntax} : IntoVal Metadata.t.
 Admitted.
 
@@ -160,50 +160,50 @@ Global Instance into_val_typed_Metadata `{ffi_syntax} : IntoValTyped Metadata.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Metadata_NodeID `{ffi_syntax} : IntoValStructField "NodeID" etcdserverpb.Metadata Metadata.NodeID.
+Global Instance into_val_struct_field_Metadata_NodeID `{ffi_syntax} : IntoValStructField "NodeID" etcdserverpb.Metadata Metadata.NodeID'.
 Admitted.
 
-Global Instance into_val_struct_field_Metadata_ClusterID `{ffi_syntax} : IntoValStructField "ClusterID" etcdserverpb.Metadata Metadata.ClusterID.
+Global Instance into_val_struct_field_Metadata_ClusterID `{ffi_syntax} : IntoValStructField "ClusterID" etcdserverpb.Metadata Metadata.ClusterID'.
 Admitted.
 
-Global Instance into_val_struct_field_Metadata_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Metadata Metadata.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_Metadata_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Metadata Metadata.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_Metadata_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Metadata Metadata.XXX_unrecognized.
+Global Instance into_val_struct_field_Metadata_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Metadata Metadata.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_Metadata_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Metadata Metadata.XXX_sizecache.
+Global Instance into_val_struct_field_Metadata_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Metadata Metadata.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_Metadata `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} NodeID ClusterID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_Metadata `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} NodeID' ClusterID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.Metadata (alist_val [
-      "NodeID" ::= #NodeID;
-      "ClusterID" ::= #ClusterID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(Metadata.mk NodeID ClusterID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "NodeID" ::= #NodeID';
+      "ClusterID" ::= #ClusterID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(Metadata.mk NodeID' ClusterID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module RequestHeader.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  Username : go_string;
-  AuthRevision : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  Username' : go_string;
+  AuthRevision' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End RequestHeader.
 
 
 Global Instance settable_RequestHeader `{ffi_syntax}: Settable _ :=
-  settable! RequestHeader.mk < RequestHeader.ID; RequestHeader.Username; RequestHeader.AuthRevision; RequestHeader.XXX_NoUnkeyedLiteral; RequestHeader.XXX_unrecognized; RequestHeader.XXX_sizecache >.
+  settable! RequestHeader.mk < RequestHeader.ID'; RequestHeader.Username'; RequestHeader.AuthRevision'; RequestHeader.XXX_NoUnkeyedLiteral'; RequestHeader.XXX_unrecognized'; RequestHeader.XXX_sizecache' >.
 Global Instance into_val_RequestHeader `{ffi_syntax} : IntoVal RequestHeader.t.
 Admitted.
 
@@ -215,83 +215,83 @@ Global Instance into_val_typed_RequestHeader `{ffi_syntax} : IntoValTyped Reques
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RequestHeader_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.RequestHeader RequestHeader.ID.
+Global Instance into_val_struct_field_RequestHeader_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.RequestHeader RequestHeader.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestHeader_Username `{ffi_syntax} : IntoValStructField "Username" etcdserverpb.RequestHeader RequestHeader.Username.
+Global Instance into_val_struct_field_RequestHeader_Username `{ffi_syntax} : IntoValStructField "Username" etcdserverpb.RequestHeader RequestHeader.Username'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestHeader_AuthRevision `{ffi_syntax} : IntoValStructField "AuthRevision" etcdserverpb.RequestHeader RequestHeader.AuthRevision.
+Global Instance into_val_struct_field_RequestHeader_AuthRevision `{ffi_syntax} : IntoValStructField "AuthRevision" etcdserverpb.RequestHeader RequestHeader.AuthRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestHeader_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RequestHeader RequestHeader.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_RequestHeader_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RequestHeader RequestHeader.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestHeader_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RequestHeader RequestHeader.XXX_unrecognized.
+Global Instance into_val_struct_field_RequestHeader_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RequestHeader RequestHeader.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestHeader_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RequestHeader RequestHeader.XXX_sizecache.
+Global Instance into_val_struct_field_RequestHeader_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RequestHeader RequestHeader.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_RequestHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID Username AuthRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_RequestHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Username' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.RequestHeader (alist_val [
-      "ID" ::= #ID;
-      "Username" ::= #Username;
-      "AuthRevision" ::= #AuthRevision;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(RequestHeader.mk ID Username AuthRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "Username" ::= #Username';
+      "AuthRevision" ::= #AuthRevision';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(RequestHeader.mk ID' Username' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module InternalRaftRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  ID : w64;
-  V2 : loc;
-  Range : loc;
-  Put : loc;
-  DeleteRange : loc;
-  Txn : loc;
-  Compaction : loc;
-  LeaseGrant : loc;
-  LeaseRevoke : loc;
-  Alarm : loc;
-  LeaseCheckpoint : loc;
-  AuthEnable : loc;
-  AuthDisable : loc;
-  AuthStatus : loc;
-  Authenticate : loc;
-  AuthUserAdd : loc;
-  AuthUserDelete : loc;
-  AuthUserGet : loc;
-  AuthUserChangePassword : loc;
-  AuthUserGrantRole : loc;
-  AuthUserRevokeRole : loc;
-  AuthUserList : loc;
-  AuthRoleList : loc;
-  AuthRoleAdd : loc;
-  AuthRoleDelete : loc;
-  AuthRoleGet : loc;
-  AuthRoleGrantPermission : loc;
-  AuthRoleRevokePermission : loc;
-  ClusterVersionSet : loc;
-  ClusterMemberAttrSet : loc;
-  DowngradeInfoSet : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  ID' : w64;
+  V2' : loc;
+  Range' : loc;
+  Put' : loc;
+  DeleteRange' : loc;
+  Txn' : loc;
+  Compaction' : loc;
+  LeaseGrant' : loc;
+  LeaseRevoke' : loc;
+  Alarm' : loc;
+  LeaseCheckpoint' : loc;
+  AuthEnable' : loc;
+  AuthDisable' : loc;
+  AuthStatus' : loc;
+  Authenticate' : loc;
+  AuthUserAdd' : loc;
+  AuthUserDelete' : loc;
+  AuthUserGet' : loc;
+  AuthUserChangePassword' : loc;
+  AuthUserGrantRole' : loc;
+  AuthUserRevokeRole' : loc;
+  AuthUserList' : loc;
+  AuthRoleList' : loc;
+  AuthRoleAdd' : loc;
+  AuthRoleDelete' : loc;
+  AuthRoleGet' : loc;
+  AuthRoleGrantPermission' : loc;
+  AuthRoleRevokePermission' : loc;
+  ClusterVersionSet' : loc;
+  ClusterMemberAttrSet' : loc;
+  DowngradeInfoSet' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End InternalRaftRequest.
 
 
 Global Instance settable_InternalRaftRequest `{ffi_syntax}: Settable _ :=
-  settable! InternalRaftRequest.mk < InternalRaftRequest.Header; InternalRaftRequest.ID; InternalRaftRequest.V2; InternalRaftRequest.Range; InternalRaftRequest.Put; InternalRaftRequest.DeleteRange; InternalRaftRequest.Txn; InternalRaftRequest.Compaction; InternalRaftRequest.LeaseGrant; InternalRaftRequest.LeaseRevoke; InternalRaftRequest.Alarm; InternalRaftRequest.LeaseCheckpoint; InternalRaftRequest.AuthEnable; InternalRaftRequest.AuthDisable; InternalRaftRequest.AuthStatus; InternalRaftRequest.Authenticate; InternalRaftRequest.AuthUserAdd; InternalRaftRequest.AuthUserDelete; InternalRaftRequest.AuthUserGet; InternalRaftRequest.AuthUserChangePassword; InternalRaftRequest.AuthUserGrantRole; InternalRaftRequest.AuthUserRevokeRole; InternalRaftRequest.AuthUserList; InternalRaftRequest.AuthRoleList; InternalRaftRequest.AuthRoleAdd; InternalRaftRequest.AuthRoleDelete; InternalRaftRequest.AuthRoleGet; InternalRaftRequest.AuthRoleGrantPermission; InternalRaftRequest.AuthRoleRevokePermission; InternalRaftRequest.ClusterVersionSet; InternalRaftRequest.ClusterMemberAttrSet; InternalRaftRequest.DowngradeInfoSet; InternalRaftRequest.XXX_NoUnkeyedLiteral; InternalRaftRequest.XXX_unrecognized; InternalRaftRequest.XXX_sizecache >.
+  settable! InternalRaftRequest.mk < InternalRaftRequest.Header'; InternalRaftRequest.ID'; InternalRaftRequest.V2'; InternalRaftRequest.Range'; InternalRaftRequest.Put'; InternalRaftRequest.DeleteRange'; InternalRaftRequest.Txn'; InternalRaftRequest.Compaction'; InternalRaftRequest.LeaseGrant'; InternalRaftRequest.LeaseRevoke'; InternalRaftRequest.Alarm'; InternalRaftRequest.LeaseCheckpoint'; InternalRaftRequest.AuthEnable'; InternalRaftRequest.AuthDisable'; InternalRaftRequest.AuthStatus'; InternalRaftRequest.Authenticate'; InternalRaftRequest.AuthUserAdd'; InternalRaftRequest.AuthUserDelete'; InternalRaftRequest.AuthUserGet'; InternalRaftRequest.AuthUserChangePassword'; InternalRaftRequest.AuthUserGrantRole'; InternalRaftRequest.AuthUserRevokeRole'; InternalRaftRequest.AuthUserList'; InternalRaftRequest.AuthRoleList'; InternalRaftRequest.AuthRoleAdd'; InternalRaftRequest.AuthRoleDelete'; InternalRaftRequest.AuthRoleGet'; InternalRaftRequest.AuthRoleGrantPermission'; InternalRaftRequest.AuthRoleRevokePermission'; InternalRaftRequest.ClusterVersionSet'; InternalRaftRequest.ClusterMemberAttrSet'; InternalRaftRequest.DowngradeInfoSet'; InternalRaftRequest.XXX_NoUnkeyedLiteral'; InternalRaftRequest.XXX_unrecognized'; InternalRaftRequest.XXX_sizecache' >.
 Global Instance into_val_InternalRaftRequest `{ffi_syntax} : IntoVal InternalRaftRequest.t.
 Admitted.
 
@@ -303,167 +303,167 @@ Global Instance into_val_typed_InternalRaftRequest `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_InternalRaftRequest_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.InternalRaftRequest InternalRaftRequest.Header.
+Global Instance into_val_struct_field_InternalRaftRequest_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.InternalRaftRequest InternalRaftRequest.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.InternalRaftRequest InternalRaftRequest.ID.
+Global Instance into_val_struct_field_InternalRaftRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.InternalRaftRequest InternalRaftRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_V2 `{ffi_syntax} : IntoValStructField "V2" etcdserverpb.InternalRaftRequest InternalRaftRequest.V2.
+Global Instance into_val_struct_field_InternalRaftRequest_V2 `{ffi_syntax} : IntoValStructField "V2" etcdserverpb.InternalRaftRequest InternalRaftRequest.V2'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_Range `{ffi_syntax} : IntoValStructField "Range" etcdserverpb.InternalRaftRequest InternalRaftRequest.Range.
+Global Instance into_val_struct_field_InternalRaftRequest_Range `{ffi_syntax} : IntoValStructField "Range" etcdserverpb.InternalRaftRequest InternalRaftRequest.Range'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_Put `{ffi_syntax} : IntoValStructField "Put" etcdserverpb.InternalRaftRequest InternalRaftRequest.Put.
+Global Instance into_val_struct_field_InternalRaftRequest_Put `{ffi_syntax} : IntoValStructField "Put" etcdserverpb.InternalRaftRequest InternalRaftRequest.Put'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_DeleteRange `{ffi_syntax} : IntoValStructField "DeleteRange" etcdserverpb.InternalRaftRequest InternalRaftRequest.DeleteRange.
+Global Instance into_val_struct_field_InternalRaftRequest_DeleteRange `{ffi_syntax} : IntoValStructField "DeleteRange" etcdserverpb.InternalRaftRequest InternalRaftRequest.DeleteRange'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_Txn `{ffi_syntax} : IntoValStructField "Txn" etcdserverpb.InternalRaftRequest InternalRaftRequest.Txn.
+Global Instance into_val_struct_field_InternalRaftRequest_Txn `{ffi_syntax} : IntoValStructField "Txn" etcdserverpb.InternalRaftRequest InternalRaftRequest.Txn'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_Compaction `{ffi_syntax} : IntoValStructField "Compaction" etcdserverpb.InternalRaftRequest InternalRaftRequest.Compaction.
+Global Instance into_val_struct_field_InternalRaftRequest_Compaction `{ffi_syntax} : IntoValStructField "Compaction" etcdserverpb.InternalRaftRequest InternalRaftRequest.Compaction'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_LeaseGrant `{ffi_syntax} : IntoValStructField "LeaseGrant" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseGrant.
+Global Instance into_val_struct_field_InternalRaftRequest_LeaseGrant `{ffi_syntax} : IntoValStructField "LeaseGrant" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseGrant'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_LeaseRevoke `{ffi_syntax} : IntoValStructField "LeaseRevoke" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseRevoke.
+Global Instance into_val_struct_field_InternalRaftRequest_LeaseRevoke `{ffi_syntax} : IntoValStructField "LeaseRevoke" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseRevoke'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_Alarm `{ffi_syntax} : IntoValStructField "Alarm" etcdserverpb.InternalRaftRequest InternalRaftRequest.Alarm.
+Global Instance into_val_struct_field_InternalRaftRequest_Alarm `{ffi_syntax} : IntoValStructField "Alarm" etcdserverpb.InternalRaftRequest InternalRaftRequest.Alarm'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_LeaseCheckpoint `{ffi_syntax} : IntoValStructField "LeaseCheckpoint" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseCheckpoint.
+Global Instance into_val_struct_field_InternalRaftRequest_LeaseCheckpoint `{ffi_syntax} : IntoValStructField "LeaseCheckpoint" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseCheckpoint'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthEnable `{ffi_syntax} : IntoValStructField "AuthEnable" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthEnable.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthEnable `{ffi_syntax} : IntoValStructField "AuthEnable" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthEnable'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthDisable `{ffi_syntax} : IntoValStructField "AuthDisable" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthDisable.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthDisable `{ffi_syntax} : IntoValStructField "AuthDisable" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthDisable'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthStatus `{ffi_syntax} : IntoValStructField "AuthStatus" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthStatus.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthStatus `{ffi_syntax} : IntoValStructField "AuthStatus" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthStatus'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_Authenticate `{ffi_syntax} : IntoValStructField "Authenticate" etcdserverpb.InternalRaftRequest InternalRaftRequest.Authenticate.
+Global Instance into_val_struct_field_InternalRaftRequest_Authenticate `{ffi_syntax} : IntoValStructField "Authenticate" etcdserverpb.InternalRaftRequest InternalRaftRequest.Authenticate'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthUserAdd `{ffi_syntax} : IntoValStructField "AuthUserAdd" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserAdd.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserAdd `{ffi_syntax} : IntoValStructField "AuthUserAdd" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserAdd'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthUserDelete `{ffi_syntax} : IntoValStructField "AuthUserDelete" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserDelete.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserDelete `{ffi_syntax} : IntoValStructField "AuthUserDelete" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserDelete'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthUserGet `{ffi_syntax} : IntoValStructField "AuthUserGet" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserGet.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserGet `{ffi_syntax} : IntoValStructField "AuthUserGet" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserGet'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthUserChangePassword `{ffi_syntax} : IntoValStructField "AuthUserChangePassword" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserChangePassword.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserChangePassword `{ffi_syntax} : IntoValStructField "AuthUserChangePassword" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserChangePassword'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthUserGrantRole `{ffi_syntax} : IntoValStructField "AuthUserGrantRole" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserGrantRole.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserGrantRole `{ffi_syntax} : IntoValStructField "AuthUserGrantRole" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserGrantRole'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthUserRevokeRole `{ffi_syntax} : IntoValStructField "AuthUserRevokeRole" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserRevokeRole.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserRevokeRole `{ffi_syntax} : IntoValStructField "AuthUserRevokeRole" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserRevokeRole'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthUserList `{ffi_syntax} : IntoValStructField "AuthUserList" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserList.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserList `{ffi_syntax} : IntoValStructField "AuthUserList" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserList'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleList `{ffi_syntax} : IntoValStructField "AuthRoleList" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleList.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleList `{ffi_syntax} : IntoValStructField "AuthRoleList" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleList'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleAdd `{ffi_syntax} : IntoValStructField "AuthRoleAdd" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleAdd.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleAdd `{ffi_syntax} : IntoValStructField "AuthRoleAdd" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleAdd'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleDelete `{ffi_syntax} : IntoValStructField "AuthRoleDelete" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleDelete.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleDelete `{ffi_syntax} : IntoValStructField "AuthRoleDelete" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleDelete'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleGet `{ffi_syntax} : IntoValStructField "AuthRoleGet" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleGet.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleGet `{ffi_syntax} : IntoValStructField "AuthRoleGet" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleGet'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleGrantPermission `{ffi_syntax} : IntoValStructField "AuthRoleGrantPermission" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleGrantPermission.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleGrantPermission `{ffi_syntax} : IntoValStructField "AuthRoleGrantPermission" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleGrantPermission'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleRevokePermission `{ffi_syntax} : IntoValStructField "AuthRoleRevokePermission" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleRevokePermission.
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleRevokePermission `{ffi_syntax} : IntoValStructField "AuthRoleRevokePermission" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleRevokePermission'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_ClusterVersionSet `{ffi_syntax} : IntoValStructField "ClusterVersionSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.ClusterVersionSet.
+Global Instance into_val_struct_field_InternalRaftRequest_ClusterVersionSet `{ffi_syntax} : IntoValStructField "ClusterVersionSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.ClusterVersionSet'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_ClusterMemberAttrSet `{ffi_syntax} : IntoValStructField "ClusterMemberAttrSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.ClusterMemberAttrSet.
+Global Instance into_val_struct_field_InternalRaftRequest_ClusterMemberAttrSet `{ffi_syntax} : IntoValStructField "ClusterMemberAttrSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.ClusterMemberAttrSet'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_DowngradeInfoSet `{ffi_syntax} : IntoValStructField "DowngradeInfoSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.DowngradeInfoSet.
+Global Instance into_val_struct_field_InternalRaftRequest_DowngradeInfoSet `{ffi_syntax} : IntoValStructField "DowngradeInfoSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.DowngradeInfoSet'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_InternalRaftRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_InternalRaftRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalRaftRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_sizecache.
+Global Instance into_val_struct_field_InternalRaftRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_InternalRaftRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header ID V2 Range Put DeleteRange Txn Compaction LeaseGrant LeaseRevoke Alarm LeaseCheckpoint AuthEnable AuthDisable AuthStatus Authenticate AuthUserAdd AuthUserDelete AuthUserGet AuthUserChangePassword AuthUserGrantRole AuthUserRevokeRole AuthUserList AuthRoleList AuthRoleAdd AuthRoleDelete AuthRoleGet AuthRoleGrantPermission AuthRoleRevokePermission ClusterVersionSet ClusterMemberAttrSet DowngradeInfoSet XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_InternalRaftRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' ID' V2' Range' Put' DeleteRange' Txn' Compaction' LeaseGrant' LeaseRevoke' Alarm' LeaseCheckpoint' AuthEnable' AuthDisable' AuthStatus' Authenticate' AuthUserAdd' AuthUserDelete' AuthUserGet' AuthUserChangePassword' AuthUserGrantRole' AuthUserRevokeRole' AuthUserList' AuthRoleList' AuthRoleAdd' AuthRoleDelete' AuthRoleGet' AuthRoleGrantPermission' AuthRoleRevokePermission' ClusterVersionSet' ClusterMemberAttrSet' DowngradeInfoSet' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.InternalRaftRequest (alist_val [
-      "Header" ::= #Header;
-      "ID" ::= #ID;
-      "V2" ::= #V2;
-      "Range" ::= #Range;
-      "Put" ::= #Put;
-      "DeleteRange" ::= #DeleteRange;
-      "Txn" ::= #Txn;
-      "Compaction" ::= #Compaction;
-      "LeaseGrant" ::= #LeaseGrant;
-      "LeaseRevoke" ::= #LeaseRevoke;
-      "Alarm" ::= #Alarm;
-      "LeaseCheckpoint" ::= #LeaseCheckpoint;
-      "AuthEnable" ::= #AuthEnable;
-      "AuthDisable" ::= #AuthDisable;
-      "AuthStatus" ::= #AuthStatus;
-      "Authenticate" ::= #Authenticate;
-      "AuthUserAdd" ::= #AuthUserAdd;
-      "AuthUserDelete" ::= #AuthUserDelete;
-      "AuthUserGet" ::= #AuthUserGet;
-      "AuthUserChangePassword" ::= #AuthUserChangePassword;
-      "AuthUserGrantRole" ::= #AuthUserGrantRole;
-      "AuthUserRevokeRole" ::= #AuthUserRevokeRole;
-      "AuthUserList" ::= #AuthUserList;
-      "AuthRoleList" ::= #AuthRoleList;
-      "AuthRoleAdd" ::= #AuthRoleAdd;
-      "AuthRoleDelete" ::= #AuthRoleDelete;
-      "AuthRoleGet" ::= #AuthRoleGet;
-      "AuthRoleGrantPermission" ::= #AuthRoleGrantPermission;
-      "AuthRoleRevokePermission" ::= #AuthRoleRevokePermission;
-      "ClusterVersionSet" ::= #ClusterVersionSet;
-      "ClusterMemberAttrSet" ::= #ClusterMemberAttrSet;
-      "DowngradeInfoSet" ::= #DowngradeInfoSet;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(InternalRaftRequest.mk Header ID V2 Range Put DeleteRange Txn Compaction LeaseGrant LeaseRevoke Alarm LeaseCheckpoint AuthEnable AuthDisable AuthStatus Authenticate AuthUserAdd AuthUserDelete AuthUserGet AuthUserChangePassword AuthUserGrantRole AuthUserRevokeRole AuthUserList AuthRoleList AuthRoleAdd AuthRoleDelete AuthRoleGet AuthRoleGrantPermission AuthRoleRevokePermission ClusterVersionSet ClusterMemberAttrSet DowngradeInfoSet XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "ID" ::= #ID';
+      "V2" ::= #V2';
+      "Range" ::= #Range';
+      "Put" ::= #Put';
+      "DeleteRange" ::= #DeleteRange';
+      "Txn" ::= #Txn';
+      "Compaction" ::= #Compaction';
+      "LeaseGrant" ::= #LeaseGrant';
+      "LeaseRevoke" ::= #LeaseRevoke';
+      "Alarm" ::= #Alarm';
+      "LeaseCheckpoint" ::= #LeaseCheckpoint';
+      "AuthEnable" ::= #AuthEnable';
+      "AuthDisable" ::= #AuthDisable';
+      "AuthStatus" ::= #AuthStatus';
+      "Authenticate" ::= #Authenticate';
+      "AuthUserAdd" ::= #AuthUserAdd';
+      "AuthUserDelete" ::= #AuthUserDelete';
+      "AuthUserGet" ::= #AuthUserGet';
+      "AuthUserChangePassword" ::= #AuthUserChangePassword';
+      "AuthUserGrantRole" ::= #AuthUserGrantRole';
+      "AuthUserRevokeRole" ::= #AuthUserRevokeRole';
+      "AuthUserList" ::= #AuthUserList';
+      "AuthRoleList" ::= #AuthRoleList';
+      "AuthRoleAdd" ::= #AuthRoleAdd';
+      "AuthRoleDelete" ::= #AuthRoleDelete';
+      "AuthRoleGet" ::= #AuthRoleGet';
+      "AuthRoleGrantPermission" ::= #AuthRoleGrantPermission';
+      "AuthRoleRevokePermission" ::= #AuthRoleRevokePermission';
+      "ClusterVersionSet" ::= #ClusterVersionSet';
+      "ClusterMemberAttrSet" ::= #ClusterMemberAttrSet';
+      "DowngradeInfoSet" ::= #DowngradeInfoSet';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(InternalRaftRequest.mk Header' ID' V2' Range' Put' DeleteRange' Txn' Compaction' LeaseGrant' LeaseRevoke' Alarm' LeaseCheckpoint' AuthEnable' AuthDisable' AuthStatus' Authenticate' AuthUserAdd' AuthUserDelete' AuthUserGet' AuthUserChangePassword' AuthUserGrantRole' AuthUserRevokeRole' AuthUserList' AuthRoleList' AuthRoleAdd' AuthRoleDelete' AuthRoleGet' AuthRoleGrantPermission' AuthRoleRevokePermission' ClusterVersionSet' ClusterMemberAttrSet' DowngradeInfoSet' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module EmptyResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End EmptyResponse.
 
 
 Global Instance settable_EmptyResponse `{ffi_syntax}: Settable _ :=
-  settable! EmptyResponse.mk < EmptyResponse.XXX_NoUnkeyedLiteral; EmptyResponse.XXX_unrecognized; EmptyResponse.XXX_sizecache >.
+  settable! EmptyResponse.mk < EmptyResponse.XXX_NoUnkeyedLiteral'; EmptyResponse.XXX_unrecognized'; EmptyResponse.XXX_sizecache' >.
 Global Instance into_val_EmptyResponse `{ffi_syntax} : IntoVal EmptyResponse.t.
 Admitted.
 
@@ -475,42 +475,42 @@ Global Instance into_val_typed_EmptyResponse `{ffi_syntax} : IntoValTyped EmptyR
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_EmptyResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.EmptyResponse EmptyResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_EmptyResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.EmptyResponse EmptyResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_EmptyResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.EmptyResponse EmptyResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_EmptyResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.EmptyResponse EmptyResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_EmptyResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.EmptyResponse EmptyResponse.XXX_sizecache.
+Global Instance into_val_struct_field_EmptyResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.EmptyResponse EmptyResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_EmptyResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_EmptyResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.EmptyResponse (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(EmptyResponse.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(EmptyResponse.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module InternalAuthenticateRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  Password : go_string;
-  SimpleToken : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  Password' : go_string;
+  SimpleToken' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End InternalAuthenticateRequest.
 
 
 Global Instance settable_InternalAuthenticateRequest `{ffi_syntax}: Settable _ :=
-  settable! InternalAuthenticateRequest.mk < InternalAuthenticateRequest.Name; InternalAuthenticateRequest.Password; InternalAuthenticateRequest.SimpleToken; InternalAuthenticateRequest.XXX_NoUnkeyedLiteral; InternalAuthenticateRequest.XXX_unrecognized; InternalAuthenticateRequest.XXX_sizecache >.
+  settable! InternalAuthenticateRequest.mk < InternalAuthenticateRequest.Name'; InternalAuthenticateRequest.Password'; InternalAuthenticateRequest.SimpleToken'; InternalAuthenticateRequest.XXX_NoUnkeyedLiteral'; InternalAuthenticateRequest.XXX_unrecognized'; InternalAuthenticateRequest.XXX_sizecache' >.
 Global Instance into_val_InternalAuthenticateRequest `{ffi_syntax} : IntoVal InternalAuthenticateRequest.t.
 Admitted.
 
@@ -522,49 +522,49 @@ Global Instance into_val_typed_InternalAuthenticateRequest `{ffi_syntax} : IntoV
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_InternalAuthenticateRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.Name.
+Global Instance into_val_struct_field_InternalAuthenticateRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalAuthenticateRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.Password.
+Global Instance into_val_struct_field_InternalAuthenticateRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.Password'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalAuthenticateRequest_SimpleToken `{ffi_syntax} : IntoValStructField "SimpleToken" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.SimpleToken.
+Global Instance into_val_struct_field_InternalAuthenticateRequest_SimpleToken `{ffi_syntax} : IntoValStructField "SimpleToken" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.SimpleToken'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalAuthenticateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_InternalAuthenticateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalAuthenticateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_InternalAuthenticateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_InternalAuthenticateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.XXX_sizecache.
+Global Instance into_val_struct_field_InternalAuthenticateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.InternalAuthenticateRequest InternalAuthenticateRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_InternalAuthenticateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name Password SimpleToken XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_InternalAuthenticateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' Password' SimpleToken' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.InternalAuthenticateRequest (alist_val [
-      "Name" ::= #Name;
-      "Password" ::= #Password;
-      "SimpleToken" ::= #SimpleToken;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(InternalAuthenticateRequest.mk Name Password SimpleToken XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "Password" ::= #Password';
+      "SimpleToken" ::= #SimpleToken';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(InternalAuthenticateRequest.mk Name' Password' SimpleToken' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module InternalRaftStringer.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Request : loc;
+  Request' : loc;
 }.
 End def.
 End InternalRaftStringer.
 
 
 Global Instance settable_InternalRaftStringer `{ffi_syntax}: Settable _ :=
-  settable! InternalRaftStringer.mk < InternalRaftStringer.Request >.
+  settable! InternalRaftStringer.mk < InternalRaftStringer.Request' >.
 Global Instance into_val_InternalRaftStringer `{ffi_syntax} : IntoVal InternalRaftStringer.t.
 Admitted.
 
@@ -576,29 +576,29 @@ Global Instance into_val_typed_InternalRaftStringer `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_InternalRaftStringer_Request `{ffi_syntax} : IntoValStructField "Request" etcdserverpb.InternalRaftStringer InternalRaftStringer.Request.
+Global Instance into_val_struct_field_InternalRaftStringer_Request `{ffi_syntax} : IntoValStructField "Request" etcdserverpb.InternalRaftStringer InternalRaftStringer.Request'.
 Admitted.
 
-Instance wp_struct_make_InternalRaftStringer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Request:
+Instance wp_struct_make_InternalRaftStringer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Request':
   PureWp True
     (struct.make etcdserverpb.InternalRaftStringer (alist_val [
-      "Request" ::= #Request
-    ]))%V 
-    #(InternalRaftStringer.mk Request).
+      "Request" ::= #Request'
+    ]))%V
+    #(InternalRaftStringer.mk Request').
 Admitted.
 
 Module txnRequestStringer.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Request : loc;
+  Request' : loc;
 }.
 End def.
 End txnRequestStringer.
 
 
 Global Instance settable_txnRequestStringer `{ffi_syntax}: Settable _ :=
-  settable! txnRequestStringer.mk < txnRequestStringer.Request >.
+  settable! txnRequestStringer.mk < txnRequestStringer.Request' >.
 Global Instance into_val_txnRequestStringer `{ffi_syntax} : IntoVal txnRequestStringer.t.
 Admitted.
 
@@ -610,29 +610,29 @@ Global Instance into_val_typed_txnRequestStringer `{ffi_syntax} : IntoValTyped t
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_txnRequestStringer_Request `{ffi_syntax} : IntoValStructField "Request" etcdserverpb.txnRequestStringer txnRequestStringer.Request.
+Global Instance into_val_struct_field_txnRequestStringer_Request `{ffi_syntax} : IntoValStructField "Request" etcdserverpb.txnRequestStringer txnRequestStringer.Request'.
 Admitted.
 
-Instance wp_struct_make_txnRequestStringer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Request:
+Instance wp_struct_make_txnRequestStringer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Request':
   PureWp True
     (struct.make etcdserverpb.txnRequestStringer (alist_val [
-      "Request" ::= #Request
-    ]))%V 
-    #(txnRequestStringer.mk Request).
+      "Request" ::= #Request'
+    ]))%V
+    #(txnRequestStringer.mk Request').
 Admitted.
 
 Module requestOpStringer.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Op : loc;
+  Op' : loc;
 }.
 End def.
 End requestOpStringer.
 
 
 Global Instance settable_requestOpStringer `{ffi_syntax}: Settable _ :=
-  settable! requestOpStringer.mk < requestOpStringer.Op >.
+  settable! requestOpStringer.mk < requestOpStringer.Op' >.
 Global Instance into_val_requestOpStringer `{ffi_syntax} : IntoVal requestOpStringer.t.
 Admitted.
 
@@ -644,33 +644,33 @@ Global Instance into_val_typed_requestOpStringer `{ffi_syntax} : IntoValTyped re
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_requestOpStringer_Op `{ffi_syntax} : IntoValStructField "Op" etcdserverpb.requestOpStringer requestOpStringer.Op.
+Global Instance into_val_struct_field_requestOpStringer_Op `{ffi_syntax} : IntoValStructField "Op" etcdserverpb.requestOpStringer requestOpStringer.Op'.
 Admitted.
 
-Instance wp_struct_make_requestOpStringer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Op:
+Instance wp_struct_make_requestOpStringer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Op':
   PureWp True
     (struct.make etcdserverpb.requestOpStringer (alist_val [
-      "Op" ::= #Op
-    ]))%V 
-    #(requestOpStringer.mk Op).
+      "Op" ::= #Op'
+    ]))%V
+    #(requestOpStringer.mk Op').
 Admitted.
 
 Module loggableValueCompare.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Result : w32;
-  Target : w32;
-  Key : slice.t;
-  ValueSize : w64;
-  RangeEnd : slice.t;
+  Result' : w32;
+  Target' : w32;
+  Key' : slice.t;
+  ValueSize' : w64;
+  RangeEnd' : slice.t;
 }.
 End def.
 End loggableValueCompare.
 
 
 Global Instance settable_loggableValueCompare `{ffi_syntax}: Settable _ :=
-  settable! loggableValueCompare.mk < loggableValueCompare.Result; loggableValueCompare.Target; loggableValueCompare.Key; loggableValueCompare.ValueSize; loggableValueCompare.RangeEnd >.
+  settable! loggableValueCompare.mk < loggableValueCompare.Result'; loggableValueCompare.Target'; loggableValueCompare.Key'; loggableValueCompare.ValueSize'; loggableValueCompare.RangeEnd' >.
 Global Instance into_val_loggableValueCompare `{ffi_syntax} : IntoVal loggableValueCompare.t.
 Admitted.
 
@@ -682,50 +682,50 @@ Global Instance into_val_typed_loggableValueCompare `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_loggableValueCompare_Result `{ffi_syntax} : IntoValStructField "Result" etcdserverpb.loggableValueCompare loggableValueCompare.Result.
+Global Instance into_val_struct_field_loggableValueCompare_Result `{ffi_syntax} : IntoValStructField "Result" etcdserverpb.loggableValueCompare loggableValueCompare.Result'.
 Admitted.
 
-Global Instance into_val_struct_field_loggableValueCompare_Target `{ffi_syntax} : IntoValStructField "Target" etcdserverpb.loggableValueCompare loggableValueCompare.Target.
+Global Instance into_val_struct_field_loggableValueCompare_Target `{ffi_syntax} : IntoValStructField "Target" etcdserverpb.loggableValueCompare loggableValueCompare.Target'.
 Admitted.
 
-Global Instance into_val_struct_field_loggableValueCompare_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.loggableValueCompare loggableValueCompare.Key.
+Global Instance into_val_struct_field_loggableValueCompare_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.loggableValueCompare loggableValueCompare.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_loggableValueCompare_ValueSize `{ffi_syntax} : IntoValStructField "ValueSize" etcdserverpb.loggableValueCompare loggableValueCompare.ValueSize.
+Global Instance into_val_struct_field_loggableValueCompare_ValueSize `{ffi_syntax} : IntoValStructField "ValueSize" etcdserverpb.loggableValueCompare loggableValueCompare.ValueSize'.
 Admitted.
 
-Global Instance into_val_struct_field_loggableValueCompare_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.loggableValueCompare loggableValueCompare.RangeEnd.
+Global Instance into_val_struct_field_loggableValueCompare_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.loggableValueCompare loggableValueCompare.RangeEnd'.
 Admitted.
 
-Instance wp_struct_make_loggableValueCompare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result Target Key ValueSize RangeEnd:
+Instance wp_struct_make_loggableValueCompare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result' Target' Key' ValueSize' RangeEnd':
   PureWp True
     (struct.make etcdserverpb.loggableValueCompare (alist_val [
-      "Result" ::= #Result;
-      "Target" ::= #Target;
-      "Key" ::= #Key;
-      "ValueSize" ::= #ValueSize;
-      "RangeEnd" ::= #RangeEnd
-    ]))%V 
-    #(loggableValueCompare.mk Result Target Key ValueSize RangeEnd).
+      "Result" ::= #Result';
+      "Target" ::= #Target';
+      "Key" ::= #Key';
+      "ValueSize" ::= #ValueSize';
+      "RangeEnd" ::= #RangeEnd'
+    ]))%V
+    #(loggableValueCompare.mk Result' Target' Key' ValueSize' RangeEnd').
 Admitted.
 
 Module loggablePutRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Key : slice.t;
-  ValueSize : w64;
-  Lease : w64;
-  PrevKv : bool;
-  IgnoreValue : bool;
-  IgnoreLease : bool;
+  Key' : slice.t;
+  ValueSize' : w64;
+  Lease' : w64;
+  PrevKv' : bool;
+  IgnoreValue' : bool;
+  IgnoreLease' : bool;
 }.
 End def.
 End loggablePutRequest.
 
 
 Global Instance settable_loggablePutRequest `{ffi_syntax}: Settable _ :=
-  settable! loggablePutRequest.mk < loggablePutRequest.Key; loggablePutRequest.ValueSize; loggablePutRequest.Lease; loggablePutRequest.PrevKv; loggablePutRequest.IgnoreValue; loggablePutRequest.IgnoreLease >.
+  settable! loggablePutRequest.mk < loggablePutRequest.Key'; loggablePutRequest.ValueSize'; loggablePutRequest.Lease'; loggablePutRequest.PrevKv'; loggablePutRequest.IgnoreValue'; loggablePutRequest.IgnoreLease' >.
 Global Instance into_val_loggablePutRequest `{ffi_syntax} : IntoVal loggablePutRequest.t.
 Admitted.
 
@@ -737,55 +737,55 @@ Global Instance into_val_typed_loggablePutRequest `{ffi_syntax} : IntoValTyped l
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_loggablePutRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.loggablePutRequest loggablePutRequest.Key.
+Global Instance into_val_struct_field_loggablePutRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.loggablePutRequest loggablePutRequest.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_loggablePutRequest_ValueSize `{ffi_syntax} : IntoValStructField "ValueSize" etcdserverpb.loggablePutRequest loggablePutRequest.ValueSize.
+Global Instance into_val_struct_field_loggablePutRequest_ValueSize `{ffi_syntax} : IntoValStructField "ValueSize" etcdserverpb.loggablePutRequest loggablePutRequest.ValueSize'.
 Admitted.
 
-Global Instance into_val_struct_field_loggablePutRequest_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdserverpb.loggablePutRequest loggablePutRequest.Lease.
+Global Instance into_val_struct_field_loggablePutRequest_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdserverpb.loggablePutRequest loggablePutRequest.Lease'.
 Admitted.
 
-Global Instance into_val_struct_field_loggablePutRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.loggablePutRequest loggablePutRequest.PrevKv.
+Global Instance into_val_struct_field_loggablePutRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.loggablePutRequest loggablePutRequest.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_loggablePutRequest_IgnoreValue `{ffi_syntax} : IntoValStructField "IgnoreValue" etcdserverpb.loggablePutRequest loggablePutRequest.IgnoreValue.
+Global Instance into_val_struct_field_loggablePutRequest_IgnoreValue `{ffi_syntax} : IntoValStructField "IgnoreValue" etcdserverpb.loggablePutRequest loggablePutRequest.IgnoreValue'.
 Admitted.
 
-Global Instance into_val_struct_field_loggablePutRequest_IgnoreLease `{ffi_syntax} : IntoValStructField "IgnoreLease" etcdserverpb.loggablePutRequest loggablePutRequest.IgnoreLease.
+Global Instance into_val_struct_field_loggablePutRequest_IgnoreLease `{ffi_syntax} : IntoValStructField "IgnoreLease" etcdserverpb.loggablePutRequest loggablePutRequest.IgnoreLease'.
 Admitted.
 
-Instance wp_struct_make_loggablePutRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key ValueSize Lease PrevKv IgnoreValue IgnoreLease:
+Instance wp_struct_make_loggablePutRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' ValueSize' Lease' PrevKv' IgnoreValue' IgnoreLease':
   PureWp True
     (struct.make etcdserverpb.loggablePutRequest (alist_val [
-      "Key" ::= #Key;
-      "ValueSize" ::= #ValueSize;
-      "Lease" ::= #Lease;
-      "PrevKv" ::= #PrevKv;
-      "IgnoreValue" ::= #IgnoreValue;
-      "IgnoreLease" ::= #IgnoreLease
-    ]))%V 
-    #(loggablePutRequest.mk Key ValueSize Lease PrevKv IgnoreValue IgnoreLease).
+      "Key" ::= #Key';
+      "ValueSize" ::= #ValueSize';
+      "Lease" ::= #Lease';
+      "PrevKv" ::= #PrevKv';
+      "IgnoreValue" ::= #IgnoreValue';
+      "IgnoreLease" ::= #IgnoreLease'
+    ]))%V
+    #(loggablePutRequest.mk Key' ValueSize' Lease' PrevKv' IgnoreValue' IgnoreLease').
 Admitted.
 
 Module ResponseHeader.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ClusterId : w64;
-  MemberId : w64;
-  Revision : w64;
-  RaftTerm : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ClusterId' : w64;
+  MemberId' : w64;
+  Revision' : w64;
+  RaftTerm' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End ResponseHeader.
 
 
 Global Instance settable_ResponseHeader `{ffi_syntax}: Settable _ :=
-  settable! ResponseHeader.mk < ResponseHeader.ClusterId; ResponseHeader.MemberId; ResponseHeader.Revision; ResponseHeader.RaftTerm; ResponseHeader.XXX_NoUnkeyedLiteral; ResponseHeader.XXX_unrecognized; ResponseHeader.XXX_sizecache >.
+  settable! ResponseHeader.mk < ResponseHeader.ClusterId'; ResponseHeader.MemberId'; ResponseHeader.Revision'; ResponseHeader.RaftTerm'; ResponseHeader.XXX_NoUnkeyedLiteral'; ResponseHeader.XXX_unrecognized'; ResponseHeader.XXX_sizecache' >.
 Global Instance into_val_ResponseHeader `{ffi_syntax} : IntoVal ResponseHeader.t.
 Admitted.
 
@@ -797,68 +797,68 @@ Global Instance into_val_typed_ResponseHeader `{ffi_syntax} : IntoValTyped Respo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ResponseHeader_ClusterId `{ffi_syntax} : IntoValStructField "ClusterId" etcdserverpb.ResponseHeader ResponseHeader.ClusterId.
+Global Instance into_val_struct_field_ResponseHeader_ClusterId `{ffi_syntax} : IntoValStructField "ClusterId" etcdserverpb.ResponseHeader ResponseHeader.ClusterId'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_MemberId `{ffi_syntax} : IntoValStructField "MemberId" etcdserverpb.ResponseHeader ResponseHeader.MemberId.
+Global Instance into_val_struct_field_ResponseHeader_MemberId `{ffi_syntax} : IntoValStructField "MemberId" etcdserverpb.ResponseHeader ResponseHeader.MemberId'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.ResponseHeader ResponseHeader.Revision.
+Global Instance into_val_struct_field_ResponseHeader_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.ResponseHeader ResponseHeader.Revision'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_RaftTerm `{ffi_syntax} : IntoValStructField "RaftTerm" etcdserverpb.ResponseHeader ResponseHeader.RaftTerm.
+Global Instance into_val_struct_field_ResponseHeader_RaftTerm `{ffi_syntax} : IntoValStructField "RaftTerm" etcdserverpb.ResponseHeader ResponseHeader.RaftTerm'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.ResponseHeader ResponseHeader.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_ResponseHeader_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.ResponseHeader ResponseHeader.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.ResponseHeader ResponseHeader.XXX_unrecognized.
+Global Instance into_val_struct_field_ResponseHeader_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.ResponseHeader ResponseHeader.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseHeader_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.ResponseHeader ResponseHeader.XXX_sizecache.
+Global Instance into_val_struct_field_ResponseHeader_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.ResponseHeader ResponseHeader.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClusterId MemberId Revision RaftTerm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.ResponseHeader (alist_val [
-      "ClusterId" ::= #ClusterId;
-      "MemberId" ::= #MemberId;
-      "Revision" ::= #Revision;
-      "RaftTerm" ::= #RaftTerm;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(ResponseHeader.mk ClusterId MemberId Revision RaftTerm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ClusterId" ::= #ClusterId';
+      "MemberId" ::= #MemberId';
+      "Revision" ::= #Revision';
+      "RaftTerm" ::= #RaftTerm';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(ResponseHeader.mk ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module RangeRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Key : slice.t;
-  RangeEnd : slice.t;
-  Limit : w64;
-  Revision : w64;
-  SortOrder : w32;
-  SortTarget : w32;
-  Serializable : bool;
-  KeysOnly : bool;
-  CountOnly : bool;
-  MinModRevision : w64;
-  MaxModRevision : w64;
-  MinCreateRevision : w64;
-  MaxCreateRevision : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Key' : slice.t;
+  RangeEnd' : slice.t;
+  Limit' : w64;
+  Revision' : w64;
+  SortOrder' : w32;
+  SortTarget' : w32;
+  Serializable' : bool;
+  KeysOnly' : bool;
+  CountOnly' : bool;
+  MinModRevision' : w64;
+  MaxModRevision' : w64;
+  MinCreateRevision' : w64;
+  MaxCreateRevision' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End RangeRequest.
 
 
 Global Instance settable_RangeRequest `{ffi_syntax}: Settable _ :=
-  settable! RangeRequest.mk < RangeRequest.Key; RangeRequest.RangeEnd; RangeRequest.Limit; RangeRequest.Revision; RangeRequest.SortOrder; RangeRequest.SortTarget; RangeRequest.Serializable; RangeRequest.KeysOnly; RangeRequest.CountOnly; RangeRequest.MinModRevision; RangeRequest.MaxModRevision; RangeRequest.MinCreateRevision; RangeRequest.MaxCreateRevision; RangeRequest.XXX_NoUnkeyedLiteral; RangeRequest.XXX_unrecognized; RangeRequest.XXX_sizecache >.
+  settable! RangeRequest.mk < RangeRequest.Key'; RangeRequest.RangeEnd'; RangeRequest.Limit'; RangeRequest.Revision'; RangeRequest.SortOrder'; RangeRequest.SortTarget'; RangeRequest.Serializable'; RangeRequest.KeysOnly'; RangeRequest.CountOnly'; RangeRequest.MinModRevision'; RangeRequest.MaxModRevision'; RangeRequest.MinCreateRevision'; RangeRequest.MaxCreateRevision'; RangeRequest.XXX_NoUnkeyedLiteral'; RangeRequest.XXX_unrecognized'; RangeRequest.XXX_sizecache' >.
 Global Instance into_val_RangeRequest `{ffi_syntax} : IntoVal RangeRequest.t.
 Admitted.
 
@@ -870,95 +870,95 @@ Global Instance into_val_typed_RangeRequest `{ffi_syntax} : IntoValTyped RangeRe
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RangeRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.RangeRequest RangeRequest.Key.
+Global Instance into_val_struct_field_RangeRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.RangeRequest RangeRequest.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.RangeRequest RangeRequest.RangeEnd.
+Global Instance into_val_struct_field_RangeRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.RangeRequest RangeRequest.RangeEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_Limit `{ffi_syntax} : IntoValStructField "Limit" etcdserverpb.RangeRequest RangeRequest.Limit.
+Global Instance into_val_struct_field_RangeRequest_Limit `{ffi_syntax} : IntoValStructField "Limit" etcdserverpb.RangeRequest RangeRequest.Limit'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.RangeRequest RangeRequest.Revision.
+Global Instance into_val_struct_field_RangeRequest_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.RangeRequest RangeRequest.Revision'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_SortOrder `{ffi_syntax} : IntoValStructField "SortOrder" etcdserverpb.RangeRequest RangeRequest.SortOrder.
+Global Instance into_val_struct_field_RangeRequest_SortOrder `{ffi_syntax} : IntoValStructField "SortOrder" etcdserverpb.RangeRequest RangeRequest.SortOrder'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_SortTarget `{ffi_syntax} : IntoValStructField "SortTarget" etcdserverpb.RangeRequest RangeRequest.SortTarget.
+Global Instance into_val_struct_field_RangeRequest_SortTarget `{ffi_syntax} : IntoValStructField "SortTarget" etcdserverpb.RangeRequest RangeRequest.SortTarget'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_Serializable `{ffi_syntax} : IntoValStructField "Serializable" etcdserverpb.RangeRequest RangeRequest.Serializable.
+Global Instance into_val_struct_field_RangeRequest_Serializable `{ffi_syntax} : IntoValStructField "Serializable" etcdserverpb.RangeRequest RangeRequest.Serializable'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_KeysOnly `{ffi_syntax} : IntoValStructField "KeysOnly" etcdserverpb.RangeRequest RangeRequest.KeysOnly.
+Global Instance into_val_struct_field_RangeRequest_KeysOnly `{ffi_syntax} : IntoValStructField "KeysOnly" etcdserverpb.RangeRequest RangeRequest.KeysOnly'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_CountOnly `{ffi_syntax} : IntoValStructField "CountOnly" etcdserverpb.RangeRequest RangeRequest.CountOnly.
+Global Instance into_val_struct_field_RangeRequest_CountOnly `{ffi_syntax} : IntoValStructField "CountOnly" etcdserverpb.RangeRequest RangeRequest.CountOnly'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_MinModRevision `{ffi_syntax} : IntoValStructField "MinModRevision" etcdserverpb.RangeRequest RangeRequest.MinModRevision.
+Global Instance into_val_struct_field_RangeRequest_MinModRevision `{ffi_syntax} : IntoValStructField "MinModRevision" etcdserverpb.RangeRequest RangeRequest.MinModRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_MaxModRevision `{ffi_syntax} : IntoValStructField "MaxModRevision" etcdserverpb.RangeRequest RangeRequest.MaxModRevision.
+Global Instance into_val_struct_field_RangeRequest_MaxModRevision `{ffi_syntax} : IntoValStructField "MaxModRevision" etcdserverpb.RangeRequest RangeRequest.MaxModRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_MinCreateRevision `{ffi_syntax} : IntoValStructField "MinCreateRevision" etcdserverpb.RangeRequest RangeRequest.MinCreateRevision.
+Global Instance into_val_struct_field_RangeRequest_MinCreateRevision `{ffi_syntax} : IntoValStructField "MinCreateRevision" etcdserverpb.RangeRequest RangeRequest.MinCreateRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_MaxCreateRevision `{ffi_syntax} : IntoValStructField "MaxCreateRevision" etcdserverpb.RangeRequest RangeRequest.MaxCreateRevision.
+Global Instance into_val_struct_field_RangeRequest_MaxCreateRevision `{ffi_syntax} : IntoValStructField "MaxCreateRevision" etcdserverpb.RangeRequest RangeRequest.MaxCreateRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RangeRequest RangeRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_RangeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RangeRequest RangeRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RangeRequest RangeRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_RangeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RangeRequest RangeRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RangeRequest RangeRequest.XXX_sizecache.
+Global Instance into_val_struct_field_RangeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RangeRequest RangeRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_RangeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key RangeEnd Limit Revision SortOrder SortTarget Serializable KeysOnly CountOnly MinModRevision MaxModRevision MinCreateRevision MaxCreateRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_RangeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' RangeEnd' Limit' Revision' SortOrder' SortTarget' Serializable' KeysOnly' CountOnly' MinModRevision' MaxModRevision' MinCreateRevision' MaxCreateRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.RangeRequest (alist_val [
-      "Key" ::= #Key;
-      "RangeEnd" ::= #RangeEnd;
-      "Limit" ::= #Limit;
-      "Revision" ::= #Revision;
-      "SortOrder" ::= #SortOrder;
-      "SortTarget" ::= #SortTarget;
-      "Serializable" ::= #Serializable;
-      "KeysOnly" ::= #KeysOnly;
-      "CountOnly" ::= #CountOnly;
-      "MinModRevision" ::= #MinModRevision;
-      "MaxModRevision" ::= #MaxModRevision;
-      "MinCreateRevision" ::= #MinCreateRevision;
-      "MaxCreateRevision" ::= #MaxCreateRevision;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(RangeRequest.mk Key RangeEnd Limit Revision SortOrder SortTarget Serializable KeysOnly CountOnly MinModRevision MaxModRevision MinCreateRevision MaxCreateRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Key" ::= #Key';
+      "RangeEnd" ::= #RangeEnd';
+      "Limit" ::= #Limit';
+      "Revision" ::= #Revision';
+      "SortOrder" ::= #SortOrder';
+      "SortTarget" ::= #SortTarget';
+      "Serializable" ::= #Serializable';
+      "KeysOnly" ::= #KeysOnly';
+      "CountOnly" ::= #CountOnly';
+      "MinModRevision" ::= #MinModRevision';
+      "MaxModRevision" ::= #MaxModRevision';
+      "MinCreateRevision" ::= #MinCreateRevision';
+      "MaxCreateRevision" ::= #MaxCreateRevision';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(RangeRequest.mk Key' RangeEnd' Limit' Revision' SortOrder' SortTarget' Serializable' KeysOnly' CountOnly' MinModRevision' MaxModRevision' MinCreateRevision' MaxCreateRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module RangeResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Kvs : slice.t;
-  More : bool;
-  Count : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Kvs' : slice.t;
+  More' : bool;
+  Count' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End RangeResponse.
 
 
 Global Instance settable_RangeResponse `{ffi_syntax}: Settable _ :=
-  settable! RangeResponse.mk < RangeResponse.Header; RangeResponse.Kvs; RangeResponse.More; RangeResponse.Count; RangeResponse.XXX_NoUnkeyedLiteral; RangeResponse.XXX_unrecognized; RangeResponse.XXX_sizecache >.
+  settable! RangeResponse.mk < RangeResponse.Header'; RangeResponse.Kvs'; RangeResponse.More'; RangeResponse.Count'; RangeResponse.XXX_NoUnkeyedLiteral'; RangeResponse.XXX_unrecognized'; RangeResponse.XXX_sizecache' >.
 Global Instance into_val_RangeResponse `{ffi_syntax} : IntoVal RangeResponse.t.
 Admitted.
 
@@ -970,61 +970,61 @@ Global Instance into_val_typed_RangeResponse `{ffi_syntax} : IntoValTyped RangeR
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RangeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.RangeResponse RangeResponse.Header.
+Global Instance into_val_struct_field_RangeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.RangeResponse RangeResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeResponse_Kvs `{ffi_syntax} : IntoValStructField "Kvs" etcdserverpb.RangeResponse RangeResponse.Kvs.
+Global Instance into_val_struct_field_RangeResponse_Kvs `{ffi_syntax} : IntoValStructField "Kvs" etcdserverpb.RangeResponse RangeResponse.Kvs'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeResponse_More `{ffi_syntax} : IntoValStructField "More" etcdserverpb.RangeResponse RangeResponse.More.
+Global Instance into_val_struct_field_RangeResponse_More `{ffi_syntax} : IntoValStructField "More" etcdserverpb.RangeResponse RangeResponse.More'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeResponse_Count `{ffi_syntax} : IntoValStructField "Count" etcdserverpb.RangeResponse RangeResponse.Count.
+Global Instance into_val_struct_field_RangeResponse_Count `{ffi_syntax} : IntoValStructField "Count" etcdserverpb.RangeResponse RangeResponse.Count'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RangeResponse RangeResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_RangeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RangeResponse RangeResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RangeResponse RangeResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_RangeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RangeResponse RangeResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_RangeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RangeResponse RangeResponse.XXX_sizecache.
+Global Instance into_val_struct_field_RangeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RangeResponse RangeResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_RangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Kvs More Count XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_RangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.RangeResponse (alist_val [
-      "Header" ::= #Header;
-      "Kvs" ::= #Kvs;
-      "More" ::= #More;
-      "Count" ::= #Count;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(RangeResponse.mk Header Kvs More Count XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Kvs" ::= #Kvs';
+      "More" ::= #More';
+      "Count" ::= #Count';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(RangeResponse.mk Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module PutRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Key : slice.t;
-  Value : slice.t;
-  Lease : w64;
-  PrevKv : bool;
-  IgnoreValue : bool;
-  IgnoreLease : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Key' : slice.t;
+  Value' : slice.t;
+  Lease' : w64;
+  PrevKv' : bool;
+  IgnoreValue' : bool;
+  IgnoreLease' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End PutRequest.
 
 
 Global Instance settable_PutRequest `{ffi_syntax}: Settable _ :=
-  settable! PutRequest.mk < PutRequest.Key; PutRequest.Value; PutRequest.Lease; PutRequest.PrevKv; PutRequest.IgnoreValue; PutRequest.IgnoreLease; PutRequest.XXX_NoUnkeyedLiteral; PutRequest.XXX_unrecognized; PutRequest.XXX_sizecache >.
+  settable! PutRequest.mk < PutRequest.Key'; PutRequest.Value'; PutRequest.Lease'; PutRequest.PrevKv'; PutRequest.IgnoreValue'; PutRequest.IgnoreLease'; PutRequest.XXX_NoUnkeyedLiteral'; PutRequest.XXX_unrecognized'; PutRequest.XXX_sizecache' >.
 Global Instance into_val_PutRequest `{ffi_syntax} : IntoVal PutRequest.t.
 Admitted.
 
@@ -1036,65 +1036,65 @@ Global Instance into_val_typed_PutRequest `{ffi_syntax} : IntoValTyped PutReques
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_PutRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.PutRequest PutRequest.Key.
+Global Instance into_val_struct_field_PutRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.PutRequest PutRequest.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_Value `{ffi_syntax} : IntoValStructField "Value" etcdserverpb.PutRequest PutRequest.Value.
+Global Instance into_val_struct_field_PutRequest_Value `{ffi_syntax} : IntoValStructField "Value" etcdserverpb.PutRequest PutRequest.Value'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdserverpb.PutRequest PutRequest.Lease.
+Global Instance into_val_struct_field_PutRequest_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdserverpb.PutRequest PutRequest.Lease'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.PutRequest PutRequest.PrevKv.
+Global Instance into_val_struct_field_PutRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.PutRequest PutRequest.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_IgnoreValue `{ffi_syntax} : IntoValStructField "IgnoreValue" etcdserverpb.PutRequest PutRequest.IgnoreValue.
+Global Instance into_val_struct_field_PutRequest_IgnoreValue `{ffi_syntax} : IntoValStructField "IgnoreValue" etcdserverpb.PutRequest PutRequest.IgnoreValue'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_IgnoreLease `{ffi_syntax} : IntoValStructField "IgnoreLease" etcdserverpb.PutRequest PutRequest.IgnoreLease.
+Global Instance into_val_struct_field_PutRequest_IgnoreLease `{ffi_syntax} : IntoValStructField "IgnoreLease" etcdserverpb.PutRequest PutRequest.IgnoreLease'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.PutRequest PutRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_PutRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.PutRequest PutRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.PutRequest PutRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_PutRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.PutRequest PutRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_PutRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.PutRequest PutRequest.XXX_sizecache.
+Global Instance into_val_struct_field_PutRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.PutRequest PutRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_PutRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key Value Lease PrevKv IgnoreValue IgnoreLease XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_PutRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.PutRequest (alist_val [
-      "Key" ::= #Key;
-      "Value" ::= #Value;
-      "Lease" ::= #Lease;
-      "PrevKv" ::= #PrevKv;
-      "IgnoreValue" ::= #IgnoreValue;
-      "IgnoreLease" ::= #IgnoreLease;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(PutRequest.mk Key Value Lease PrevKv IgnoreValue IgnoreLease XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Key" ::= #Key';
+      "Value" ::= #Value';
+      "Lease" ::= #Lease';
+      "PrevKv" ::= #PrevKv';
+      "IgnoreValue" ::= #IgnoreValue';
+      "IgnoreLease" ::= #IgnoreLease';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(PutRequest.mk Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module PutResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  PrevKv : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  PrevKv' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End PutResponse.
 
 
 Global Instance settable_PutResponse `{ffi_syntax}: Settable _ :=
-  settable! PutResponse.mk < PutResponse.Header; PutResponse.PrevKv; PutResponse.XXX_NoUnkeyedLiteral; PutResponse.XXX_unrecognized; PutResponse.XXX_sizecache >.
+  settable! PutResponse.mk < PutResponse.Header'; PutResponse.PrevKv'; PutResponse.XXX_NoUnkeyedLiteral'; PutResponse.XXX_unrecognized'; PutResponse.XXX_sizecache' >.
 Global Instance into_val_PutResponse `{ffi_syntax} : IntoVal PutResponse.t.
 Admitted.
 
@@ -1106,50 +1106,50 @@ Global Instance into_val_typed_PutResponse `{ffi_syntax} : IntoValTyped PutRespo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_PutResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.PutResponse PutResponse.Header.
+Global Instance into_val_struct_field_PutResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.PutResponse PutResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.PutResponse PutResponse.PrevKv.
+Global Instance into_val_struct_field_PutResponse_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.PutResponse PutResponse.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.PutResponse PutResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_PutResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.PutResponse PutResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.PutResponse PutResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_PutResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.PutResponse PutResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_PutResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.PutResponse PutResponse.XXX_sizecache.
+Global Instance into_val_struct_field_PutResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.PutResponse PutResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_PutResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header PrevKv XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_PutResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.PutResponse (alist_val [
-      "Header" ::= #Header;
-      "PrevKv" ::= #PrevKv;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(PutResponse.mk Header PrevKv XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "PrevKv" ::= #PrevKv';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(PutResponse.mk Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module DeleteRangeRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Key : slice.t;
-  RangeEnd : slice.t;
-  PrevKv : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Key' : slice.t;
+  RangeEnd' : slice.t;
+  PrevKv' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End DeleteRangeRequest.
 
 
 Global Instance settable_DeleteRangeRequest `{ffi_syntax}: Settable _ :=
-  settable! DeleteRangeRequest.mk < DeleteRangeRequest.Key; DeleteRangeRequest.RangeEnd; DeleteRangeRequest.PrevKv; DeleteRangeRequest.XXX_NoUnkeyedLiteral; DeleteRangeRequest.XXX_unrecognized; DeleteRangeRequest.XXX_sizecache >.
+  settable! DeleteRangeRequest.mk < DeleteRangeRequest.Key'; DeleteRangeRequest.RangeEnd'; DeleteRangeRequest.PrevKv'; DeleteRangeRequest.XXX_NoUnkeyedLiteral'; DeleteRangeRequest.XXX_unrecognized'; DeleteRangeRequest.XXX_sizecache' >.
 Global Instance into_val_DeleteRangeRequest `{ffi_syntax} : IntoVal DeleteRangeRequest.t.
 Admitted.
 
@@ -1161,54 +1161,54 @@ Global Instance into_val_typed_DeleteRangeRequest `{ffi_syntax} : IntoValTyped D
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_DeleteRangeRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.Key.
+Global Instance into_val_struct_field_DeleteRangeRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.RangeEnd.
+Global Instance into_val_struct_field_DeleteRangeRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.RangeEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.PrevKv.
+Global Instance into_val_struct_field_DeleteRangeRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_DeleteRangeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_DeleteRangeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_sizecache.
+Global Instance into_val_struct_field_DeleteRangeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_DeleteRangeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key RangeEnd PrevKv XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_DeleteRangeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' RangeEnd' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.DeleteRangeRequest (alist_val [
-      "Key" ::= #Key;
-      "RangeEnd" ::= #RangeEnd;
-      "PrevKv" ::= #PrevKv;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(DeleteRangeRequest.mk Key RangeEnd PrevKv XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Key" ::= #Key';
+      "RangeEnd" ::= #RangeEnd';
+      "PrevKv" ::= #PrevKv';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(DeleteRangeRequest.mk Key' RangeEnd' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module DeleteRangeResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Deleted : w64;
-  PrevKvs : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Deleted' : w64;
+  PrevKvs' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End DeleteRangeResponse.
 
 
 Global Instance settable_DeleteRangeResponse `{ffi_syntax}: Settable _ :=
-  settable! DeleteRangeResponse.mk < DeleteRangeResponse.Header; DeleteRangeResponse.Deleted; DeleteRangeResponse.PrevKvs; DeleteRangeResponse.XXX_NoUnkeyedLiteral; DeleteRangeResponse.XXX_unrecognized; DeleteRangeResponse.XXX_sizecache >.
+  settable! DeleteRangeResponse.mk < DeleteRangeResponse.Header'; DeleteRangeResponse.Deleted'; DeleteRangeResponse.PrevKvs'; DeleteRangeResponse.XXX_NoUnkeyedLiteral'; DeleteRangeResponse.XXX_unrecognized'; DeleteRangeResponse.XXX_sizecache' >.
 Global Instance into_val_DeleteRangeResponse `{ffi_syntax} : IntoVal DeleteRangeResponse.t.
 Admitted.
 
@@ -1220,52 +1220,52 @@ Global Instance into_val_typed_DeleteRangeResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_DeleteRangeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.Header.
+Global Instance into_val_struct_field_DeleteRangeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeResponse_Deleted `{ffi_syntax} : IntoValStructField "Deleted" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.Deleted.
+Global Instance into_val_struct_field_DeleteRangeResponse_Deleted `{ffi_syntax} : IntoValStructField "Deleted" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.Deleted'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeResponse_PrevKvs `{ffi_syntax} : IntoValStructField "PrevKvs" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.PrevKvs.
+Global Instance into_val_struct_field_DeleteRangeResponse_PrevKvs `{ffi_syntax} : IntoValStructField "PrevKvs" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.PrevKvs'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_DeleteRangeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_DeleteRangeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_DeleteRangeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_sizecache.
+Global Instance into_val_struct_field_DeleteRangeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_DeleteRangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Deleted PrevKvs XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_DeleteRangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Deleted' PrevKvs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.DeleteRangeResponse (alist_val [
-      "Header" ::= #Header;
-      "Deleted" ::= #Deleted;
-      "PrevKvs" ::= #PrevKvs;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(DeleteRangeResponse.mk Header Deleted PrevKvs XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Deleted" ::= #Deleted';
+      "PrevKvs" ::= #PrevKvs';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(DeleteRangeResponse.mk Header' Deleted' PrevKvs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module RequestOp.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Request : interface.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Request' : interface.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End RequestOp.
 
 
 Global Instance settable_RequestOp `{ffi_syntax}: Settable _ :=
-  settable! RequestOp.mk < RequestOp.Request; RequestOp.XXX_NoUnkeyedLiteral; RequestOp.XXX_unrecognized; RequestOp.XXX_sizecache >.
+  settable! RequestOp.mk < RequestOp.Request'; RequestOp.XXX_NoUnkeyedLiteral'; RequestOp.XXX_unrecognized'; RequestOp.XXX_sizecache' >.
 Global Instance into_val_RequestOp `{ffi_syntax} : IntoVal RequestOp.t.
 Admitted.
 
@@ -1277,41 +1277,41 @@ Global Instance into_val_typed_RequestOp `{ffi_syntax} : IntoValTyped RequestOp.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RequestOp_Request `{ffi_syntax} : IntoValStructField "Request" etcdserverpb.RequestOp RequestOp.Request.
+Global Instance into_val_struct_field_RequestOp_Request `{ffi_syntax} : IntoValStructField "Request" etcdserverpb.RequestOp RequestOp.Request'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestOp_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RequestOp RequestOp.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_RequestOp_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RequestOp RequestOp.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestOp_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RequestOp RequestOp.XXX_unrecognized.
+Global Instance into_val_struct_field_RequestOp_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.RequestOp RequestOp.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_RequestOp_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RequestOp RequestOp.XXX_sizecache.
+Global Instance into_val_struct_field_RequestOp_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RequestOp RequestOp.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_RequestOp `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Request XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_RequestOp `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Request' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.RequestOp (alist_val [
-      "Request" ::= #Request;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(RequestOp.mk Request XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Request" ::= #Request';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(RequestOp.mk Request' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module RequestOp_RequestRange.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  RequestRange : loc;
+  RequestRange' : loc;
 }.
 End def.
 End RequestOp_RequestRange.
 
 
 Global Instance settable_RequestOp_RequestRange `{ffi_syntax}: Settable _ :=
-  settable! RequestOp_RequestRange.mk < RequestOp_RequestRange.RequestRange >.
+  settable! RequestOp_RequestRange.mk < RequestOp_RequestRange.RequestRange' >.
 Global Instance into_val_RequestOp_RequestRange `{ffi_syntax} : IntoVal RequestOp_RequestRange.t.
 Admitted.
 
@@ -1323,29 +1323,29 @@ Global Instance into_val_typed_RequestOp_RequestRange `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RequestOp_RequestRange_RequestRange `{ffi_syntax} : IntoValStructField "RequestRange" etcdserverpb.RequestOp_RequestRange RequestOp_RequestRange.RequestRange.
+Global Instance into_val_struct_field_RequestOp_RequestRange_RequestRange `{ffi_syntax} : IntoValStructField "RequestRange" etcdserverpb.RequestOp_RequestRange RequestOp_RequestRange.RequestRange'.
 Admitted.
 
-Instance wp_struct_make_RequestOp_RequestRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestRange:
+Instance wp_struct_make_RequestOp_RequestRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestRange':
   PureWp True
     (struct.make etcdserverpb.RequestOp_RequestRange (alist_val [
-      "RequestRange" ::= #RequestRange
-    ]))%V 
-    #(RequestOp_RequestRange.mk RequestRange).
+      "RequestRange" ::= #RequestRange'
+    ]))%V
+    #(RequestOp_RequestRange.mk RequestRange').
 Admitted.
 
 Module RequestOp_RequestPut.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  RequestPut : loc;
+  RequestPut' : loc;
 }.
 End def.
 End RequestOp_RequestPut.
 
 
 Global Instance settable_RequestOp_RequestPut `{ffi_syntax}: Settable _ :=
-  settable! RequestOp_RequestPut.mk < RequestOp_RequestPut.RequestPut >.
+  settable! RequestOp_RequestPut.mk < RequestOp_RequestPut.RequestPut' >.
 Global Instance into_val_RequestOp_RequestPut `{ffi_syntax} : IntoVal RequestOp_RequestPut.t.
 Admitted.
 
@@ -1357,29 +1357,29 @@ Global Instance into_val_typed_RequestOp_RequestPut `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RequestOp_RequestPut_RequestPut `{ffi_syntax} : IntoValStructField "RequestPut" etcdserverpb.RequestOp_RequestPut RequestOp_RequestPut.RequestPut.
+Global Instance into_val_struct_field_RequestOp_RequestPut_RequestPut `{ffi_syntax} : IntoValStructField "RequestPut" etcdserverpb.RequestOp_RequestPut RequestOp_RequestPut.RequestPut'.
 Admitted.
 
-Instance wp_struct_make_RequestOp_RequestPut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestPut:
+Instance wp_struct_make_RequestOp_RequestPut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestPut':
   PureWp True
     (struct.make etcdserverpb.RequestOp_RequestPut (alist_val [
-      "RequestPut" ::= #RequestPut
-    ]))%V 
-    #(RequestOp_RequestPut.mk RequestPut).
+      "RequestPut" ::= #RequestPut'
+    ]))%V
+    #(RequestOp_RequestPut.mk RequestPut').
 Admitted.
 
 Module RequestOp_RequestDeleteRange.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  RequestDeleteRange : loc;
+  RequestDeleteRange' : loc;
 }.
 End def.
 End RequestOp_RequestDeleteRange.
 
 
 Global Instance settable_RequestOp_RequestDeleteRange `{ffi_syntax}: Settable _ :=
-  settable! RequestOp_RequestDeleteRange.mk < RequestOp_RequestDeleteRange.RequestDeleteRange >.
+  settable! RequestOp_RequestDeleteRange.mk < RequestOp_RequestDeleteRange.RequestDeleteRange' >.
 Global Instance into_val_RequestOp_RequestDeleteRange `{ffi_syntax} : IntoVal RequestOp_RequestDeleteRange.t.
 Admitted.
 
@@ -1391,29 +1391,29 @@ Global Instance into_val_typed_RequestOp_RequestDeleteRange `{ffi_syntax} : Into
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RequestOp_RequestDeleteRange_RequestDeleteRange `{ffi_syntax} : IntoValStructField "RequestDeleteRange" etcdserverpb.RequestOp_RequestDeleteRange RequestOp_RequestDeleteRange.RequestDeleteRange.
+Global Instance into_val_struct_field_RequestOp_RequestDeleteRange_RequestDeleteRange `{ffi_syntax} : IntoValStructField "RequestDeleteRange" etcdserverpb.RequestOp_RequestDeleteRange RequestOp_RequestDeleteRange.RequestDeleteRange'.
 Admitted.
 
-Instance wp_struct_make_RequestOp_RequestDeleteRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestDeleteRange:
+Instance wp_struct_make_RequestOp_RequestDeleteRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestDeleteRange':
   PureWp True
     (struct.make etcdserverpb.RequestOp_RequestDeleteRange (alist_val [
-      "RequestDeleteRange" ::= #RequestDeleteRange
-    ]))%V 
-    #(RequestOp_RequestDeleteRange.mk RequestDeleteRange).
+      "RequestDeleteRange" ::= #RequestDeleteRange'
+    ]))%V
+    #(RequestOp_RequestDeleteRange.mk RequestDeleteRange').
 Admitted.
 
 Module RequestOp_RequestTxn.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  RequestTxn : loc;
+  RequestTxn' : loc;
 }.
 End def.
 End RequestOp_RequestTxn.
 
 
 Global Instance settable_RequestOp_RequestTxn `{ffi_syntax}: Settable _ :=
-  settable! RequestOp_RequestTxn.mk < RequestOp_RequestTxn.RequestTxn >.
+  settable! RequestOp_RequestTxn.mk < RequestOp_RequestTxn.RequestTxn' >.
 Global Instance into_val_RequestOp_RequestTxn `{ffi_syntax} : IntoVal RequestOp_RequestTxn.t.
 Admitted.
 
@@ -1425,32 +1425,32 @@ Global Instance into_val_typed_RequestOp_RequestTxn `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RequestOp_RequestTxn_RequestTxn `{ffi_syntax} : IntoValStructField "RequestTxn" etcdserverpb.RequestOp_RequestTxn RequestOp_RequestTxn.RequestTxn.
+Global Instance into_val_struct_field_RequestOp_RequestTxn_RequestTxn `{ffi_syntax} : IntoValStructField "RequestTxn" etcdserverpb.RequestOp_RequestTxn RequestOp_RequestTxn.RequestTxn'.
 Admitted.
 
-Instance wp_struct_make_RequestOp_RequestTxn `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestTxn:
+Instance wp_struct_make_RequestOp_RequestTxn `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestTxn':
   PureWp True
     (struct.make etcdserverpb.RequestOp_RequestTxn (alist_val [
-      "RequestTxn" ::= #RequestTxn
-    ]))%V 
-    #(RequestOp_RequestTxn.mk RequestTxn).
+      "RequestTxn" ::= #RequestTxn'
+    ]))%V
+    #(RequestOp_RequestTxn.mk RequestTxn').
 Admitted.
 
 Module ResponseOp.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Response : interface.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Response' : interface.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End ResponseOp.
 
 
 Global Instance settable_ResponseOp `{ffi_syntax}: Settable _ :=
-  settable! ResponseOp.mk < ResponseOp.Response; ResponseOp.XXX_NoUnkeyedLiteral; ResponseOp.XXX_unrecognized; ResponseOp.XXX_sizecache >.
+  settable! ResponseOp.mk < ResponseOp.Response'; ResponseOp.XXX_NoUnkeyedLiteral'; ResponseOp.XXX_unrecognized'; ResponseOp.XXX_sizecache' >.
 Global Instance into_val_ResponseOp `{ffi_syntax} : IntoVal ResponseOp.t.
 Admitted.
 
@@ -1462,41 +1462,41 @@ Global Instance into_val_typed_ResponseOp `{ffi_syntax} : IntoValTyped ResponseO
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ResponseOp_Response `{ffi_syntax} : IntoValStructField "Response" etcdserverpb.ResponseOp ResponseOp.Response.
+Global Instance into_val_struct_field_ResponseOp_Response `{ffi_syntax} : IntoValStructField "Response" etcdserverpb.ResponseOp ResponseOp.Response'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseOp_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.ResponseOp ResponseOp.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_ResponseOp_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.ResponseOp ResponseOp.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseOp_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.ResponseOp ResponseOp.XXX_unrecognized.
+Global Instance into_val_struct_field_ResponseOp_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.ResponseOp ResponseOp.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_ResponseOp_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.ResponseOp ResponseOp.XXX_sizecache.
+Global Instance into_val_struct_field_ResponseOp_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.ResponseOp ResponseOp.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_ResponseOp `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Response XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_ResponseOp `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Response' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.ResponseOp (alist_val [
-      "Response" ::= #Response;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(ResponseOp.mk Response XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Response" ::= #Response';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(ResponseOp.mk Response' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module ResponseOp_ResponseRange.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ResponseRange : loc;
+  ResponseRange' : loc;
 }.
 End def.
 End ResponseOp_ResponseRange.
 
 
 Global Instance settable_ResponseOp_ResponseRange `{ffi_syntax}: Settable _ :=
-  settable! ResponseOp_ResponseRange.mk < ResponseOp_ResponseRange.ResponseRange >.
+  settable! ResponseOp_ResponseRange.mk < ResponseOp_ResponseRange.ResponseRange' >.
 Global Instance into_val_ResponseOp_ResponseRange `{ffi_syntax} : IntoVal ResponseOp_ResponseRange.t.
 Admitted.
 
@@ -1508,29 +1508,29 @@ Global Instance into_val_typed_ResponseOp_ResponseRange `{ffi_syntax} : IntoValT
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ResponseOp_ResponseRange_ResponseRange `{ffi_syntax} : IntoValStructField "ResponseRange" etcdserverpb.ResponseOp_ResponseRange ResponseOp_ResponseRange.ResponseRange.
+Global Instance into_val_struct_field_ResponseOp_ResponseRange_ResponseRange `{ffi_syntax} : IntoValStructField "ResponseRange" etcdserverpb.ResponseOp_ResponseRange ResponseOp_ResponseRange.ResponseRange'.
 Admitted.
 
-Instance wp_struct_make_ResponseOp_ResponseRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseRange:
+Instance wp_struct_make_ResponseOp_ResponseRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseRange':
   PureWp True
     (struct.make etcdserverpb.ResponseOp_ResponseRange (alist_val [
-      "ResponseRange" ::= #ResponseRange
-    ]))%V 
-    #(ResponseOp_ResponseRange.mk ResponseRange).
+      "ResponseRange" ::= #ResponseRange'
+    ]))%V
+    #(ResponseOp_ResponseRange.mk ResponseRange').
 Admitted.
 
 Module ResponseOp_ResponsePut.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ResponsePut : loc;
+  ResponsePut' : loc;
 }.
 End def.
 End ResponseOp_ResponsePut.
 
 
 Global Instance settable_ResponseOp_ResponsePut `{ffi_syntax}: Settable _ :=
-  settable! ResponseOp_ResponsePut.mk < ResponseOp_ResponsePut.ResponsePut >.
+  settable! ResponseOp_ResponsePut.mk < ResponseOp_ResponsePut.ResponsePut' >.
 Global Instance into_val_ResponseOp_ResponsePut `{ffi_syntax} : IntoVal ResponseOp_ResponsePut.t.
 Admitted.
 
@@ -1542,29 +1542,29 @@ Global Instance into_val_typed_ResponseOp_ResponsePut `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ResponseOp_ResponsePut_ResponsePut `{ffi_syntax} : IntoValStructField "ResponsePut" etcdserverpb.ResponseOp_ResponsePut ResponseOp_ResponsePut.ResponsePut.
+Global Instance into_val_struct_field_ResponseOp_ResponsePut_ResponsePut `{ffi_syntax} : IntoValStructField "ResponsePut" etcdserverpb.ResponseOp_ResponsePut ResponseOp_ResponsePut.ResponsePut'.
 Admitted.
 
-Instance wp_struct_make_ResponseOp_ResponsePut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponsePut:
+Instance wp_struct_make_ResponseOp_ResponsePut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponsePut':
   PureWp True
     (struct.make etcdserverpb.ResponseOp_ResponsePut (alist_val [
-      "ResponsePut" ::= #ResponsePut
-    ]))%V 
-    #(ResponseOp_ResponsePut.mk ResponsePut).
+      "ResponsePut" ::= #ResponsePut'
+    ]))%V
+    #(ResponseOp_ResponsePut.mk ResponsePut').
 Admitted.
 
 Module ResponseOp_ResponseDeleteRange.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ResponseDeleteRange : loc;
+  ResponseDeleteRange' : loc;
 }.
 End def.
 End ResponseOp_ResponseDeleteRange.
 
 
 Global Instance settable_ResponseOp_ResponseDeleteRange `{ffi_syntax}: Settable _ :=
-  settable! ResponseOp_ResponseDeleteRange.mk < ResponseOp_ResponseDeleteRange.ResponseDeleteRange >.
+  settable! ResponseOp_ResponseDeleteRange.mk < ResponseOp_ResponseDeleteRange.ResponseDeleteRange' >.
 Global Instance into_val_ResponseOp_ResponseDeleteRange `{ffi_syntax} : IntoVal ResponseOp_ResponseDeleteRange.t.
 Admitted.
 
@@ -1576,29 +1576,29 @@ Global Instance into_val_typed_ResponseOp_ResponseDeleteRange `{ffi_syntax} : In
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ResponseOp_ResponseDeleteRange_ResponseDeleteRange `{ffi_syntax} : IntoValStructField "ResponseDeleteRange" etcdserverpb.ResponseOp_ResponseDeleteRange ResponseOp_ResponseDeleteRange.ResponseDeleteRange.
+Global Instance into_val_struct_field_ResponseOp_ResponseDeleteRange_ResponseDeleteRange `{ffi_syntax} : IntoValStructField "ResponseDeleteRange" etcdserverpb.ResponseOp_ResponseDeleteRange ResponseOp_ResponseDeleteRange.ResponseDeleteRange'.
 Admitted.
 
-Instance wp_struct_make_ResponseOp_ResponseDeleteRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseDeleteRange:
+Instance wp_struct_make_ResponseOp_ResponseDeleteRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseDeleteRange':
   PureWp True
     (struct.make etcdserverpb.ResponseOp_ResponseDeleteRange (alist_val [
-      "ResponseDeleteRange" ::= #ResponseDeleteRange
-    ]))%V 
-    #(ResponseOp_ResponseDeleteRange.mk ResponseDeleteRange).
+      "ResponseDeleteRange" ::= #ResponseDeleteRange'
+    ]))%V
+    #(ResponseOp_ResponseDeleteRange.mk ResponseDeleteRange').
 Admitted.
 
 Module ResponseOp_ResponseTxn.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ResponseTxn : loc;
+  ResponseTxn' : loc;
 }.
 End def.
 End ResponseOp_ResponseTxn.
 
 
 Global Instance settable_ResponseOp_ResponseTxn `{ffi_syntax}: Settable _ :=
-  settable! ResponseOp_ResponseTxn.mk < ResponseOp_ResponseTxn.ResponseTxn >.
+  settable! ResponseOp_ResponseTxn.mk < ResponseOp_ResponseTxn.ResponseTxn' >.
 Global Instance into_val_ResponseOp_ResponseTxn `{ffi_syntax} : IntoVal ResponseOp_ResponseTxn.t.
 Admitted.
 
@@ -1610,36 +1610,36 @@ Global Instance into_val_typed_ResponseOp_ResponseTxn `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ResponseOp_ResponseTxn_ResponseTxn `{ffi_syntax} : IntoValStructField "ResponseTxn" etcdserverpb.ResponseOp_ResponseTxn ResponseOp_ResponseTxn.ResponseTxn.
+Global Instance into_val_struct_field_ResponseOp_ResponseTxn_ResponseTxn `{ffi_syntax} : IntoValStructField "ResponseTxn" etcdserverpb.ResponseOp_ResponseTxn ResponseOp_ResponseTxn.ResponseTxn'.
 Admitted.
 
-Instance wp_struct_make_ResponseOp_ResponseTxn `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseTxn:
+Instance wp_struct_make_ResponseOp_ResponseTxn `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseTxn':
   PureWp True
     (struct.make etcdserverpb.ResponseOp_ResponseTxn (alist_val [
-      "ResponseTxn" ::= #ResponseTxn
-    ]))%V 
-    #(ResponseOp_ResponseTxn.mk ResponseTxn).
+      "ResponseTxn" ::= #ResponseTxn'
+    ]))%V
+    #(ResponseOp_ResponseTxn.mk ResponseTxn').
 Admitted.
 
 Module Compare.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Result : w32;
-  Target : w32;
-  Key : slice.t;
-  TargetUnion : interface.t;
-  RangeEnd : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Result' : w32;
+  Target' : w32;
+  Key' : slice.t;
+  TargetUnion' : interface.t;
+  RangeEnd' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End Compare.
 
 
 Global Instance settable_Compare `{ffi_syntax}: Settable _ :=
-  settable! Compare.mk < Compare.Result; Compare.Target; Compare.Key; Compare.TargetUnion; Compare.RangeEnd; Compare.XXX_NoUnkeyedLiteral; Compare.XXX_unrecognized; Compare.XXX_sizecache >.
+  settable! Compare.mk < Compare.Result'; Compare.Target'; Compare.Key'; Compare.TargetUnion'; Compare.RangeEnd'; Compare.XXX_NoUnkeyedLiteral'; Compare.XXX_unrecognized'; Compare.XXX_sizecache' >.
 Global Instance into_val_Compare `{ffi_syntax} : IntoVal Compare.t.
 Admitted.
 
@@ -1651,57 +1651,57 @@ Global Instance into_val_typed_Compare `{ffi_syntax} : IntoValTyped Compare.t et
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Compare_Result `{ffi_syntax} : IntoValStructField "Result" etcdserverpb.Compare Compare.Result.
+Global Instance into_val_struct_field_Compare_Result `{ffi_syntax} : IntoValStructField "Result" etcdserverpb.Compare Compare.Result'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_Target `{ffi_syntax} : IntoValStructField "Target" etcdserverpb.Compare Compare.Target.
+Global Instance into_val_struct_field_Compare_Target `{ffi_syntax} : IntoValStructField "Target" etcdserverpb.Compare Compare.Target'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.Compare Compare.Key.
+Global Instance into_val_struct_field_Compare_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.Compare Compare.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_TargetUnion `{ffi_syntax} : IntoValStructField "TargetUnion" etcdserverpb.Compare Compare.TargetUnion.
+Global Instance into_val_struct_field_Compare_TargetUnion `{ffi_syntax} : IntoValStructField "TargetUnion" etcdserverpb.Compare Compare.TargetUnion'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.Compare Compare.RangeEnd.
+Global Instance into_val_struct_field_Compare_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.Compare Compare.RangeEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Compare Compare.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_Compare_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Compare Compare.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Compare Compare.XXX_unrecognized.
+Global Instance into_val_struct_field_Compare_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Compare Compare.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_Compare_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Compare Compare.XXX_sizecache.
+Global Instance into_val_struct_field_Compare_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Compare Compare.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result Target Key TargetUnion RangeEnd XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.Compare (alist_val [
-      "Result" ::= #Result;
-      "Target" ::= #Target;
-      "Key" ::= #Key;
-      "TargetUnion" ::= #TargetUnion;
-      "RangeEnd" ::= #RangeEnd;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(Compare.mk Result Target Key TargetUnion RangeEnd XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Result" ::= #Result';
+      "Target" ::= #Target';
+      "Key" ::= #Key';
+      "TargetUnion" ::= #TargetUnion';
+      "RangeEnd" ::= #RangeEnd';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(Compare.mk Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module Compare_Version.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Version : w64;
+  Version' : w64;
 }.
 End def.
 End Compare_Version.
 
 
 Global Instance settable_Compare_Version `{ffi_syntax}: Settable _ :=
-  settable! Compare_Version.mk < Compare_Version.Version >.
+  settable! Compare_Version.mk < Compare_Version.Version' >.
 Global Instance into_val_Compare_Version `{ffi_syntax} : IntoVal Compare_Version.t.
 Admitted.
 
@@ -1713,29 +1713,29 @@ Global Instance into_val_typed_Compare_Version `{ffi_syntax} : IntoValTyped Comp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Compare_Version_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.Compare_Version Compare_Version.Version.
+Global Instance into_val_struct_field_Compare_Version_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.Compare_Version Compare_Version.Version'.
 Admitted.
 
-Instance wp_struct_make_Compare_Version `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Version:
+Instance wp_struct_make_Compare_Version `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Version':
   PureWp True
     (struct.make etcdserverpb.Compare_Version (alist_val [
-      "Version" ::= #Version
-    ]))%V 
-    #(Compare_Version.mk Version).
+      "Version" ::= #Version'
+    ]))%V
+    #(Compare_Version.mk Version').
 Admitted.
 
 Module Compare_CreateRevision.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  CreateRevision : w64;
+  CreateRevision' : w64;
 }.
 End def.
 End Compare_CreateRevision.
 
 
 Global Instance settable_Compare_CreateRevision `{ffi_syntax}: Settable _ :=
-  settable! Compare_CreateRevision.mk < Compare_CreateRevision.CreateRevision >.
+  settable! Compare_CreateRevision.mk < Compare_CreateRevision.CreateRevision' >.
 Global Instance into_val_Compare_CreateRevision `{ffi_syntax} : IntoVal Compare_CreateRevision.t.
 Admitted.
 
@@ -1747,29 +1747,29 @@ Global Instance into_val_typed_Compare_CreateRevision `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Compare_CreateRevision_CreateRevision `{ffi_syntax} : IntoValStructField "CreateRevision" etcdserverpb.Compare_CreateRevision Compare_CreateRevision.CreateRevision.
+Global Instance into_val_struct_field_Compare_CreateRevision_CreateRevision `{ffi_syntax} : IntoValStructField "CreateRevision" etcdserverpb.Compare_CreateRevision Compare_CreateRevision.CreateRevision'.
 Admitted.
 
-Instance wp_struct_make_Compare_CreateRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CreateRevision:
+Instance wp_struct_make_Compare_CreateRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CreateRevision':
   PureWp True
     (struct.make etcdserverpb.Compare_CreateRevision (alist_val [
-      "CreateRevision" ::= #CreateRevision
-    ]))%V 
-    #(Compare_CreateRevision.mk CreateRevision).
+      "CreateRevision" ::= #CreateRevision'
+    ]))%V
+    #(Compare_CreateRevision.mk CreateRevision').
 Admitted.
 
 Module Compare_ModRevision.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ModRevision : w64;
+  ModRevision' : w64;
 }.
 End def.
 End Compare_ModRevision.
 
 
 Global Instance settable_Compare_ModRevision `{ffi_syntax}: Settable _ :=
-  settable! Compare_ModRevision.mk < Compare_ModRevision.ModRevision >.
+  settable! Compare_ModRevision.mk < Compare_ModRevision.ModRevision' >.
 Global Instance into_val_Compare_ModRevision `{ffi_syntax} : IntoVal Compare_ModRevision.t.
 Admitted.
 
@@ -1781,29 +1781,29 @@ Global Instance into_val_typed_Compare_ModRevision `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Compare_ModRevision_ModRevision `{ffi_syntax} : IntoValStructField "ModRevision" etcdserverpb.Compare_ModRevision Compare_ModRevision.ModRevision.
+Global Instance into_val_struct_field_Compare_ModRevision_ModRevision `{ffi_syntax} : IntoValStructField "ModRevision" etcdserverpb.Compare_ModRevision Compare_ModRevision.ModRevision'.
 Admitted.
 
-Instance wp_struct_make_Compare_ModRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ModRevision:
+Instance wp_struct_make_Compare_ModRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ModRevision':
   PureWp True
     (struct.make etcdserverpb.Compare_ModRevision (alist_val [
-      "ModRevision" ::= #ModRevision
-    ]))%V 
-    #(Compare_ModRevision.mk ModRevision).
+      "ModRevision" ::= #ModRevision'
+    ]))%V
+    #(Compare_ModRevision.mk ModRevision').
 Admitted.
 
 Module Compare_Value.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Value : slice.t;
+  Value' : slice.t;
 }.
 End def.
 End Compare_Value.
 
 
 Global Instance settable_Compare_Value `{ffi_syntax}: Settable _ :=
-  settable! Compare_Value.mk < Compare_Value.Value >.
+  settable! Compare_Value.mk < Compare_Value.Value' >.
 Global Instance into_val_Compare_Value `{ffi_syntax} : IntoVal Compare_Value.t.
 Admitted.
 
@@ -1815,29 +1815,29 @@ Global Instance into_val_typed_Compare_Value `{ffi_syntax} : IntoValTyped Compar
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Compare_Value_Value `{ffi_syntax} : IntoValStructField "Value" etcdserverpb.Compare_Value Compare_Value.Value.
+Global Instance into_val_struct_field_Compare_Value_Value `{ffi_syntax} : IntoValStructField "Value" etcdserverpb.Compare_Value Compare_Value.Value'.
 Admitted.
 
-Instance wp_struct_make_Compare_Value `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Value:
+Instance wp_struct_make_Compare_Value `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Value':
   PureWp True
     (struct.make etcdserverpb.Compare_Value (alist_val [
-      "Value" ::= #Value
-    ]))%V 
-    #(Compare_Value.mk Value).
+      "Value" ::= #Value'
+    ]))%V
+    #(Compare_Value.mk Value').
 Admitted.
 
 Module Compare_Lease.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Lease : w64;
+  Lease' : w64;
 }.
 End def.
 End Compare_Lease.
 
 
 Global Instance settable_Compare_Lease `{ffi_syntax}: Settable _ :=
-  settable! Compare_Lease.mk < Compare_Lease.Lease >.
+  settable! Compare_Lease.mk < Compare_Lease.Lease' >.
 Global Instance into_val_Compare_Lease `{ffi_syntax} : IntoVal Compare_Lease.t.
 Admitted.
 
@@ -1849,34 +1849,34 @@ Global Instance into_val_typed_Compare_Lease `{ffi_syntax} : IntoValTyped Compar
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Compare_Lease_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdserverpb.Compare_Lease Compare_Lease.Lease.
+Global Instance into_val_struct_field_Compare_Lease_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdserverpb.Compare_Lease Compare_Lease.Lease'.
 Admitted.
 
-Instance wp_struct_make_Compare_Lease `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Lease:
+Instance wp_struct_make_Compare_Lease `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Lease':
   PureWp True
     (struct.make etcdserverpb.Compare_Lease (alist_val [
-      "Lease" ::= #Lease
-    ]))%V 
-    #(Compare_Lease.mk Lease).
+      "Lease" ::= #Lease'
+    ]))%V
+    #(Compare_Lease.mk Lease').
 Admitted.
 
 Module TxnRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Compare : slice.t;
-  Success : slice.t;
-  Failure : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Compare' : slice.t;
+  Success' : slice.t;
+  Failure' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End TxnRequest.
 
 
 Global Instance settable_TxnRequest `{ffi_syntax}: Settable _ :=
-  settable! TxnRequest.mk < TxnRequest.Compare; TxnRequest.Success; TxnRequest.Failure; TxnRequest.XXX_NoUnkeyedLiteral; TxnRequest.XXX_unrecognized; TxnRequest.XXX_sizecache >.
+  settable! TxnRequest.mk < TxnRequest.Compare'; TxnRequest.Success'; TxnRequest.Failure'; TxnRequest.XXX_NoUnkeyedLiteral'; TxnRequest.XXX_unrecognized'; TxnRequest.XXX_sizecache' >.
 Global Instance into_val_TxnRequest `{ffi_syntax} : IntoVal TxnRequest.t.
 Admitted.
 
@@ -1888,54 +1888,54 @@ Global Instance into_val_typed_TxnRequest `{ffi_syntax} : IntoValTyped TxnReques
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_TxnRequest_Compare `{ffi_syntax} : IntoValStructField "Compare" etcdserverpb.TxnRequest TxnRequest.Compare.
+Global Instance into_val_struct_field_TxnRequest_Compare `{ffi_syntax} : IntoValStructField "Compare" etcdserverpb.TxnRequest TxnRequest.Compare'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnRequest_Success `{ffi_syntax} : IntoValStructField "Success" etcdserverpb.TxnRequest TxnRequest.Success.
+Global Instance into_val_struct_field_TxnRequest_Success `{ffi_syntax} : IntoValStructField "Success" etcdserverpb.TxnRequest TxnRequest.Success'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnRequest_Failure `{ffi_syntax} : IntoValStructField "Failure" etcdserverpb.TxnRequest TxnRequest.Failure.
+Global Instance into_val_struct_field_TxnRequest_Failure `{ffi_syntax} : IntoValStructField "Failure" etcdserverpb.TxnRequest TxnRequest.Failure'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.TxnRequest TxnRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_TxnRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.TxnRequest TxnRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.TxnRequest TxnRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_TxnRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.TxnRequest TxnRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.TxnRequest TxnRequest.XXX_sizecache.
+Global Instance into_val_struct_field_TxnRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.TxnRequest TxnRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_TxnRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Compare Success Failure XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_TxnRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Compare' Success' Failure' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.TxnRequest (alist_val [
-      "Compare" ::= #Compare;
-      "Success" ::= #Success;
-      "Failure" ::= #Failure;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(TxnRequest.mk Compare Success Failure XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Compare" ::= #Compare';
+      "Success" ::= #Success';
+      "Failure" ::= #Failure';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(TxnRequest.mk Compare' Success' Failure' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module TxnResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Succeeded : bool;
-  Responses : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Succeeded' : bool;
+  Responses' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End TxnResponse.
 
 
 Global Instance settable_TxnResponse `{ffi_syntax}: Settable _ :=
-  settable! TxnResponse.mk < TxnResponse.Header; TxnResponse.Succeeded; TxnResponse.Responses; TxnResponse.XXX_NoUnkeyedLiteral; TxnResponse.XXX_unrecognized; TxnResponse.XXX_sizecache >.
+  settable! TxnResponse.mk < TxnResponse.Header'; TxnResponse.Succeeded'; TxnResponse.Responses'; TxnResponse.XXX_NoUnkeyedLiteral'; TxnResponse.XXX_unrecognized'; TxnResponse.XXX_sizecache' >.
 Global Instance into_val_TxnResponse `{ffi_syntax} : IntoVal TxnResponse.t.
 Admitted.
 
@@ -1947,53 +1947,53 @@ Global Instance into_val_typed_TxnResponse `{ffi_syntax} : IntoValTyped TxnRespo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_TxnResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.TxnResponse TxnResponse.Header.
+Global Instance into_val_struct_field_TxnResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.TxnResponse TxnResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnResponse_Succeeded `{ffi_syntax} : IntoValStructField "Succeeded" etcdserverpb.TxnResponse TxnResponse.Succeeded.
+Global Instance into_val_struct_field_TxnResponse_Succeeded `{ffi_syntax} : IntoValStructField "Succeeded" etcdserverpb.TxnResponse TxnResponse.Succeeded'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnResponse_Responses `{ffi_syntax} : IntoValStructField "Responses" etcdserverpb.TxnResponse TxnResponse.Responses.
+Global Instance into_val_struct_field_TxnResponse_Responses `{ffi_syntax} : IntoValStructField "Responses" etcdserverpb.TxnResponse TxnResponse.Responses'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.TxnResponse TxnResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_TxnResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.TxnResponse TxnResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.TxnResponse TxnResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_TxnResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.TxnResponse TxnResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_TxnResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.TxnResponse TxnResponse.XXX_sizecache.
+Global Instance into_val_struct_field_TxnResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.TxnResponse TxnResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_TxnResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Succeeded Responses XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_TxnResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Succeeded' Responses' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.TxnResponse (alist_val [
-      "Header" ::= #Header;
-      "Succeeded" ::= #Succeeded;
-      "Responses" ::= #Responses;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(TxnResponse.mk Header Succeeded Responses XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Succeeded" ::= #Succeeded';
+      "Responses" ::= #Responses';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(TxnResponse.mk Header' Succeeded' Responses' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module CompactionRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Revision : w64;
-  Physical : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Revision' : w64;
+  Physical' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End CompactionRequest.
 
 
 Global Instance settable_CompactionRequest `{ffi_syntax}: Settable _ :=
-  settable! CompactionRequest.mk < CompactionRequest.Revision; CompactionRequest.Physical; CompactionRequest.XXX_NoUnkeyedLiteral; CompactionRequest.XXX_unrecognized; CompactionRequest.XXX_sizecache >.
+  settable! CompactionRequest.mk < CompactionRequest.Revision'; CompactionRequest.Physical'; CompactionRequest.XXX_NoUnkeyedLiteral'; CompactionRequest.XXX_unrecognized'; CompactionRequest.XXX_sizecache' >.
 Global Instance into_val_CompactionRequest `{ffi_syntax} : IntoVal CompactionRequest.t.
 Admitted.
 
@@ -2005,48 +2005,48 @@ Global Instance into_val_typed_CompactionRequest `{ffi_syntax} : IntoValTyped Co
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_CompactionRequest_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.CompactionRequest CompactionRequest.Revision.
+Global Instance into_val_struct_field_CompactionRequest_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.CompactionRequest CompactionRequest.Revision'.
 Admitted.
 
-Global Instance into_val_struct_field_CompactionRequest_Physical `{ffi_syntax} : IntoValStructField "Physical" etcdserverpb.CompactionRequest CompactionRequest.Physical.
+Global Instance into_val_struct_field_CompactionRequest_Physical `{ffi_syntax} : IntoValStructField "Physical" etcdserverpb.CompactionRequest CompactionRequest.Physical'.
 Admitted.
 
-Global Instance into_val_struct_field_CompactionRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.CompactionRequest CompactionRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_CompactionRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.CompactionRequest CompactionRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_CompactionRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.CompactionRequest CompactionRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_CompactionRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.CompactionRequest CompactionRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_CompactionRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.CompactionRequest CompactionRequest.XXX_sizecache.
+Global Instance into_val_struct_field_CompactionRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.CompactionRequest CompactionRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_CompactionRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Revision Physical XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_CompactionRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Revision' Physical' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.CompactionRequest (alist_val [
-      "Revision" ::= #Revision;
-      "Physical" ::= #Physical;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(CompactionRequest.mk Revision Physical XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Revision" ::= #Revision';
+      "Physical" ::= #Physical';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(CompactionRequest.mk Revision' Physical' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module CompactionResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End CompactionResponse.
 
 
 Global Instance settable_CompactionResponse `{ffi_syntax}: Settable _ :=
-  settable! CompactionResponse.mk < CompactionResponse.Header; CompactionResponse.XXX_NoUnkeyedLiteral; CompactionResponse.XXX_unrecognized; CompactionResponse.XXX_sizecache >.
+  settable! CompactionResponse.mk < CompactionResponse.Header'; CompactionResponse.XXX_NoUnkeyedLiteral'; CompactionResponse.XXX_unrecognized'; CompactionResponse.XXX_sizecache' >.
 Global Instance into_val_CompactionResponse `{ffi_syntax} : IntoVal CompactionResponse.t.
 Admitted.
 
@@ -2058,43 +2058,43 @@ Global Instance into_val_typed_CompactionResponse `{ffi_syntax} : IntoValTyped C
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_CompactionResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.CompactionResponse CompactionResponse.Header.
+Global Instance into_val_struct_field_CompactionResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.CompactionResponse CompactionResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_CompactionResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.CompactionResponse CompactionResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_CompactionResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.CompactionResponse CompactionResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_CompactionResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.CompactionResponse CompactionResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_CompactionResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.CompactionResponse CompactionResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_CompactionResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.CompactionResponse CompactionResponse.XXX_sizecache.
+Global Instance into_val_struct_field_CompactionResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.CompactionResponse CompactionResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_CompactionResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_CompactionResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.CompactionResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(CompactionResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(CompactionResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module HashRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End HashRequest.
 
 
 Global Instance settable_HashRequest `{ffi_syntax}: Settable _ :=
-  settable! HashRequest.mk < HashRequest.XXX_NoUnkeyedLiteral; HashRequest.XXX_unrecognized; HashRequest.XXX_sizecache >.
+  settable! HashRequest.mk < HashRequest.XXX_NoUnkeyedLiteral'; HashRequest.XXX_unrecognized'; HashRequest.XXX_sizecache' >.
 Global Instance into_val_HashRequest `{ffi_syntax} : IntoVal HashRequest.t.
 Admitted.
 
@@ -2106,40 +2106,40 @@ Global Instance into_val_typed_HashRequest `{ffi_syntax} : IntoValTyped HashRequ
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_HashRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashRequest HashRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_HashRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashRequest HashRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_HashRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashRequest HashRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_HashRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashRequest HashRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_HashRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashRequest HashRequest.XXX_sizecache.
+Global Instance into_val_struct_field_HashRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashRequest HashRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_HashRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_HashRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.HashRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(HashRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(HashRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module HashKVRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Revision : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Revision' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End HashKVRequest.
 
 
 Global Instance settable_HashKVRequest `{ffi_syntax}: Settable _ :=
-  settable! HashKVRequest.mk < HashKVRequest.Revision; HashKVRequest.XXX_NoUnkeyedLiteral; HashKVRequest.XXX_unrecognized; HashKVRequest.XXX_sizecache >.
+  settable! HashKVRequest.mk < HashKVRequest.Revision'; HashKVRequest.XXX_NoUnkeyedLiteral'; HashKVRequest.XXX_unrecognized'; HashKVRequest.XXX_sizecache' >.
 Global Instance into_val_HashKVRequest `{ffi_syntax} : IntoVal HashKVRequest.t.
 Admitted.
 
@@ -2151,47 +2151,47 @@ Global Instance into_val_typed_HashKVRequest `{ffi_syntax} : IntoValTyped HashKV
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_HashKVRequest_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.HashKVRequest HashKVRequest.Revision.
+Global Instance into_val_struct_field_HashKVRequest_Revision `{ffi_syntax} : IntoValStructField "Revision" etcdserverpb.HashKVRequest HashKVRequest.Revision'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashKVRequest HashKVRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_HashKVRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashKVRequest HashKVRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashKVRequest HashKVRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_HashKVRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashKVRequest HashKVRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashKVRequest HashKVRequest.XXX_sizecache.
+Global Instance into_val_struct_field_HashKVRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashKVRequest HashKVRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_HashKVRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Revision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_HashKVRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Revision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.HashKVRequest (alist_val [
-      "Revision" ::= #Revision;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(HashKVRequest.mk Revision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Revision" ::= #Revision';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(HashKVRequest.mk Revision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module HashKVResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Hash : w32;
-  CompactRevision : w64;
-  HashRevision : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Hash' : w32;
+  CompactRevision' : w64;
+  HashRevision' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End HashKVResponse.
 
 
 Global Instance settable_HashKVResponse `{ffi_syntax}: Settable _ :=
-  settable! HashKVResponse.mk < HashKVResponse.Header; HashKVResponse.Hash; HashKVResponse.CompactRevision; HashKVResponse.HashRevision; HashKVResponse.XXX_NoUnkeyedLiteral; HashKVResponse.XXX_unrecognized; HashKVResponse.XXX_sizecache >.
+  settable! HashKVResponse.mk < HashKVResponse.Header'; HashKVResponse.Hash'; HashKVResponse.CompactRevision'; HashKVResponse.HashRevision'; HashKVResponse.XXX_NoUnkeyedLiteral'; HashKVResponse.XXX_unrecognized'; HashKVResponse.XXX_sizecache' >.
 Global Instance into_val_HashKVResponse `{ffi_syntax} : IntoVal HashKVResponse.t.
 Admitted.
 
@@ -2203,57 +2203,57 @@ Global Instance into_val_typed_HashKVResponse `{ffi_syntax} : IntoValTyped HashK
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_HashKVResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.HashKVResponse HashKVResponse.Header.
+Global Instance into_val_struct_field_HashKVResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.HashKVResponse HashKVResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVResponse_Hash `{ffi_syntax} : IntoValStructField "Hash" etcdserverpb.HashKVResponse HashKVResponse.Hash.
+Global Instance into_val_struct_field_HashKVResponse_Hash `{ffi_syntax} : IntoValStructField "Hash" etcdserverpb.HashKVResponse HashKVResponse.Hash'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVResponse_CompactRevision `{ffi_syntax} : IntoValStructField "CompactRevision" etcdserverpb.HashKVResponse HashKVResponse.CompactRevision.
+Global Instance into_val_struct_field_HashKVResponse_CompactRevision `{ffi_syntax} : IntoValStructField "CompactRevision" etcdserverpb.HashKVResponse HashKVResponse.CompactRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVResponse_HashRevision `{ffi_syntax} : IntoValStructField "HashRevision" etcdserverpb.HashKVResponse HashKVResponse.HashRevision.
+Global Instance into_val_struct_field_HashKVResponse_HashRevision `{ffi_syntax} : IntoValStructField "HashRevision" etcdserverpb.HashKVResponse HashKVResponse.HashRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashKVResponse HashKVResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_HashKVResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashKVResponse HashKVResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashKVResponse HashKVResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_HashKVResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashKVResponse HashKVResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_HashKVResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashKVResponse HashKVResponse.XXX_sizecache.
+Global Instance into_val_struct_field_HashKVResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashKVResponse HashKVResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_HashKVResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Hash CompactRevision HashRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_HashKVResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Hash' CompactRevision' HashRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.HashKVResponse (alist_val [
-      "Header" ::= #Header;
-      "Hash" ::= #Hash;
-      "CompactRevision" ::= #CompactRevision;
-      "HashRevision" ::= #HashRevision;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(HashKVResponse.mk Header Hash CompactRevision HashRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Hash" ::= #Hash';
+      "CompactRevision" ::= #CompactRevision';
+      "HashRevision" ::= #HashRevision';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(HashKVResponse.mk Header' Hash' CompactRevision' HashRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module HashResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Hash : w32;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Hash' : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End HashResponse.
 
 
 Global Instance settable_HashResponse `{ffi_syntax}: Settable _ :=
-  settable! HashResponse.mk < HashResponse.Header; HashResponse.Hash; HashResponse.XXX_NoUnkeyedLiteral; HashResponse.XXX_unrecognized; HashResponse.XXX_sizecache >.
+  settable! HashResponse.mk < HashResponse.Header'; HashResponse.Hash'; HashResponse.XXX_NoUnkeyedLiteral'; HashResponse.XXX_unrecognized'; HashResponse.XXX_sizecache' >.
 Global Instance into_val_HashResponse `{ffi_syntax} : IntoVal HashResponse.t.
 Admitted.
 
@@ -2265,47 +2265,47 @@ Global Instance into_val_typed_HashResponse `{ffi_syntax} : IntoValTyped HashRes
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_HashResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.HashResponse HashResponse.Header.
+Global Instance into_val_struct_field_HashResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.HashResponse HashResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_HashResponse_Hash `{ffi_syntax} : IntoValStructField "Hash" etcdserverpb.HashResponse HashResponse.Hash.
+Global Instance into_val_struct_field_HashResponse_Hash `{ffi_syntax} : IntoValStructField "Hash" etcdserverpb.HashResponse HashResponse.Hash'.
 Admitted.
 
-Global Instance into_val_struct_field_HashResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashResponse HashResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_HashResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.HashResponse HashResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_HashResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashResponse HashResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_HashResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.HashResponse HashResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_HashResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashResponse HashResponse.XXX_sizecache.
+Global Instance into_val_struct_field_HashResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.HashResponse HashResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_HashResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Hash XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_HashResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Hash' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.HashResponse (alist_val [
-      "Header" ::= #Header;
-      "Hash" ::= #Hash;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(HashResponse.mk Header Hash XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Hash" ::= #Hash';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(HashResponse.mk Header' Hash' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module SnapshotRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End SnapshotRequest.
 
 
 Global Instance settable_SnapshotRequest `{ffi_syntax}: Settable _ :=
-  settable! SnapshotRequest.mk < SnapshotRequest.XXX_NoUnkeyedLiteral; SnapshotRequest.XXX_unrecognized; SnapshotRequest.XXX_sizecache >.
+  settable! SnapshotRequest.mk < SnapshotRequest.XXX_NoUnkeyedLiteral'; SnapshotRequest.XXX_unrecognized'; SnapshotRequest.XXX_sizecache' >.
 Global Instance into_val_SnapshotRequest `{ffi_syntax} : IntoVal SnapshotRequest.t.
 Admitted.
 
@@ -2317,43 +2317,43 @@ Global Instance into_val_typed_SnapshotRequest `{ffi_syntax} : IntoValTyped Snap
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SnapshotRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.SnapshotRequest SnapshotRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_SnapshotRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.SnapshotRequest SnapshotRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.SnapshotRequest SnapshotRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_SnapshotRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.SnapshotRequest SnapshotRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.SnapshotRequest SnapshotRequest.XXX_sizecache.
+Global Instance into_val_struct_field_SnapshotRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.SnapshotRequest SnapshotRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_SnapshotRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_SnapshotRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.SnapshotRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(SnapshotRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(SnapshotRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module SnapshotResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  RemainingBytes : w64;
-  Blob : slice.t;
-  Version : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  RemainingBytes' : w64;
+  Blob' : slice.t;
+  Version' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End SnapshotResponse.
 
 
 Global Instance settable_SnapshotResponse `{ffi_syntax}: Settable _ :=
-  settable! SnapshotResponse.mk < SnapshotResponse.Header; SnapshotResponse.RemainingBytes; SnapshotResponse.Blob; SnapshotResponse.Version; SnapshotResponse.XXX_NoUnkeyedLiteral; SnapshotResponse.XXX_unrecognized; SnapshotResponse.XXX_sizecache >.
+  settable! SnapshotResponse.mk < SnapshotResponse.Header'; SnapshotResponse.RemainingBytes'; SnapshotResponse.Blob'; SnapshotResponse.Version'; SnapshotResponse.XXX_NoUnkeyedLiteral'; SnapshotResponse.XXX_unrecognized'; SnapshotResponse.XXX_sizecache' >.
 Global Instance into_val_SnapshotResponse `{ffi_syntax} : IntoVal SnapshotResponse.t.
 Admitted.
 
@@ -2365,56 +2365,56 @@ Global Instance into_val_typed_SnapshotResponse `{ffi_syntax} : IntoValTyped Sna
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SnapshotResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.SnapshotResponse SnapshotResponse.Header.
+Global Instance into_val_struct_field_SnapshotResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.SnapshotResponse SnapshotResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotResponse_RemainingBytes `{ffi_syntax} : IntoValStructField "RemainingBytes" etcdserverpb.SnapshotResponse SnapshotResponse.RemainingBytes.
+Global Instance into_val_struct_field_SnapshotResponse_RemainingBytes `{ffi_syntax} : IntoValStructField "RemainingBytes" etcdserverpb.SnapshotResponse SnapshotResponse.RemainingBytes'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotResponse_Blob `{ffi_syntax} : IntoValStructField "Blob" etcdserverpb.SnapshotResponse SnapshotResponse.Blob.
+Global Instance into_val_struct_field_SnapshotResponse_Blob `{ffi_syntax} : IntoValStructField "Blob" etcdserverpb.SnapshotResponse SnapshotResponse.Blob'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotResponse_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.SnapshotResponse SnapshotResponse.Version.
+Global Instance into_val_struct_field_SnapshotResponse_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.SnapshotResponse SnapshotResponse.Version'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.SnapshotResponse SnapshotResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_SnapshotResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.SnapshotResponse SnapshotResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.SnapshotResponse SnapshotResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_SnapshotResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.SnapshotResponse SnapshotResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.SnapshotResponse SnapshotResponse.XXX_sizecache.
+Global Instance into_val_struct_field_SnapshotResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.SnapshotResponse SnapshotResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_SnapshotResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header RemainingBytes Blob Version XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_SnapshotResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' RemainingBytes' Blob' Version' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.SnapshotResponse (alist_val [
-      "Header" ::= #Header;
-      "RemainingBytes" ::= #RemainingBytes;
-      "Blob" ::= #Blob;
-      "Version" ::= #Version;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(SnapshotResponse.mk Header RemainingBytes Blob Version XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "RemainingBytes" ::= #RemainingBytes';
+      "Blob" ::= #Blob';
+      "Version" ::= #Version';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(SnapshotResponse.mk Header' RemainingBytes' Blob' Version' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module WatchRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  RequestUnion : interface.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  RequestUnion' : interface.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End WatchRequest.
 
 
 Global Instance settable_WatchRequest `{ffi_syntax}: Settable _ :=
-  settable! WatchRequest.mk < WatchRequest.RequestUnion; WatchRequest.XXX_NoUnkeyedLiteral; WatchRequest.XXX_unrecognized; WatchRequest.XXX_sizecache >.
+  settable! WatchRequest.mk < WatchRequest.RequestUnion'; WatchRequest.XXX_NoUnkeyedLiteral'; WatchRequest.XXX_unrecognized'; WatchRequest.XXX_sizecache' >.
 Global Instance into_val_WatchRequest `{ffi_syntax} : IntoVal WatchRequest.t.
 Admitted.
 
@@ -2426,41 +2426,41 @@ Global Instance into_val_typed_WatchRequest `{ffi_syntax} : IntoValTyped WatchRe
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchRequest_RequestUnion `{ffi_syntax} : IntoValStructField "RequestUnion" etcdserverpb.WatchRequest WatchRequest.RequestUnion.
+Global Instance into_val_struct_field_WatchRequest_RequestUnion `{ffi_syntax} : IntoValStructField "RequestUnion" etcdserverpb.WatchRequest WatchRequest.RequestUnion'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchRequest WatchRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_WatchRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchRequest WatchRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchRequest WatchRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_WatchRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchRequest WatchRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchRequest WatchRequest.XXX_sizecache.
+Global Instance into_val_struct_field_WatchRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchRequest WatchRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_WatchRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestUnion XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_WatchRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RequestUnion' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.WatchRequest (alist_val [
-      "RequestUnion" ::= #RequestUnion;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(WatchRequest.mk RequestUnion XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "RequestUnion" ::= #RequestUnion';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(WatchRequest.mk RequestUnion' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module WatchRequest_CreateRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  CreateRequest : loc;
+  CreateRequest' : loc;
 }.
 End def.
 End WatchRequest_CreateRequest.
 
 
 Global Instance settable_WatchRequest_CreateRequest `{ffi_syntax}: Settable _ :=
-  settable! WatchRequest_CreateRequest.mk < WatchRequest_CreateRequest.CreateRequest >.
+  settable! WatchRequest_CreateRequest.mk < WatchRequest_CreateRequest.CreateRequest' >.
 Global Instance into_val_WatchRequest_CreateRequest `{ffi_syntax} : IntoVal WatchRequest_CreateRequest.t.
 Admitted.
 
@@ -2472,29 +2472,29 @@ Global Instance into_val_typed_WatchRequest_CreateRequest `{ffi_syntax} : IntoVa
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchRequest_CreateRequest_CreateRequest `{ffi_syntax} : IntoValStructField "CreateRequest" etcdserverpb.WatchRequest_CreateRequest WatchRequest_CreateRequest.CreateRequest.
+Global Instance into_val_struct_field_WatchRequest_CreateRequest_CreateRequest `{ffi_syntax} : IntoValStructField "CreateRequest" etcdserverpb.WatchRequest_CreateRequest WatchRequest_CreateRequest.CreateRequest'.
 Admitted.
 
-Instance wp_struct_make_WatchRequest_CreateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CreateRequest:
+Instance wp_struct_make_WatchRequest_CreateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CreateRequest':
   PureWp True
     (struct.make etcdserverpb.WatchRequest_CreateRequest (alist_val [
-      "CreateRequest" ::= #CreateRequest
-    ]))%V 
-    #(WatchRequest_CreateRequest.mk CreateRequest).
+      "CreateRequest" ::= #CreateRequest'
+    ]))%V
+    #(WatchRequest_CreateRequest.mk CreateRequest').
 Admitted.
 
 Module WatchRequest_CancelRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  CancelRequest : loc;
+  CancelRequest' : loc;
 }.
 End def.
 End WatchRequest_CancelRequest.
 
 
 Global Instance settable_WatchRequest_CancelRequest `{ffi_syntax}: Settable _ :=
-  settable! WatchRequest_CancelRequest.mk < WatchRequest_CancelRequest.CancelRequest >.
+  settable! WatchRequest_CancelRequest.mk < WatchRequest_CancelRequest.CancelRequest' >.
 Global Instance into_val_WatchRequest_CancelRequest `{ffi_syntax} : IntoVal WatchRequest_CancelRequest.t.
 Admitted.
 
@@ -2506,29 +2506,29 @@ Global Instance into_val_typed_WatchRequest_CancelRequest `{ffi_syntax} : IntoVa
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchRequest_CancelRequest_CancelRequest `{ffi_syntax} : IntoValStructField "CancelRequest" etcdserverpb.WatchRequest_CancelRequest WatchRequest_CancelRequest.CancelRequest.
+Global Instance into_val_struct_field_WatchRequest_CancelRequest_CancelRequest `{ffi_syntax} : IntoValStructField "CancelRequest" etcdserverpb.WatchRequest_CancelRequest WatchRequest_CancelRequest.CancelRequest'.
 Admitted.
 
-Instance wp_struct_make_WatchRequest_CancelRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CancelRequest:
+Instance wp_struct_make_WatchRequest_CancelRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CancelRequest':
   PureWp True
     (struct.make etcdserverpb.WatchRequest_CancelRequest (alist_val [
-      "CancelRequest" ::= #CancelRequest
-    ]))%V 
-    #(WatchRequest_CancelRequest.mk CancelRequest).
+      "CancelRequest" ::= #CancelRequest'
+    ]))%V
+    #(WatchRequest_CancelRequest.mk CancelRequest').
 Admitted.
 
 Module WatchRequest_ProgressRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ProgressRequest : loc;
+  ProgressRequest' : loc;
 }.
 End def.
 End WatchRequest_ProgressRequest.
 
 
 Global Instance settable_WatchRequest_ProgressRequest `{ffi_syntax}: Settable _ :=
-  settable! WatchRequest_ProgressRequest.mk < WatchRequest_ProgressRequest.ProgressRequest >.
+  settable! WatchRequest_ProgressRequest.mk < WatchRequest_ProgressRequest.ProgressRequest' >.
 Global Instance into_val_WatchRequest_ProgressRequest `{ffi_syntax} : IntoVal WatchRequest_ProgressRequest.t.
 Admitted.
 
@@ -2540,39 +2540,39 @@ Global Instance into_val_typed_WatchRequest_ProgressRequest `{ffi_syntax} : Into
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchRequest_ProgressRequest_ProgressRequest `{ffi_syntax} : IntoValStructField "ProgressRequest" etcdserverpb.WatchRequest_ProgressRequest WatchRequest_ProgressRequest.ProgressRequest.
+Global Instance into_val_struct_field_WatchRequest_ProgressRequest_ProgressRequest `{ffi_syntax} : IntoValStructField "ProgressRequest" etcdserverpb.WatchRequest_ProgressRequest WatchRequest_ProgressRequest.ProgressRequest'.
 Admitted.
 
-Instance wp_struct_make_WatchRequest_ProgressRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ProgressRequest:
+Instance wp_struct_make_WatchRequest_ProgressRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ProgressRequest':
   PureWp True
     (struct.make etcdserverpb.WatchRequest_ProgressRequest (alist_val [
-      "ProgressRequest" ::= #ProgressRequest
-    ]))%V 
-    #(WatchRequest_ProgressRequest.mk ProgressRequest).
+      "ProgressRequest" ::= #ProgressRequest'
+    ]))%V
+    #(WatchRequest_ProgressRequest.mk ProgressRequest').
 Admitted.
 
 Module WatchCreateRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Key : slice.t;
-  RangeEnd : slice.t;
-  StartRevision : w64;
-  ProgressNotify : bool;
-  Filters : slice.t;
-  PrevKv : bool;
-  WatchId : w64;
-  Fragment : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Key' : slice.t;
+  RangeEnd' : slice.t;
+  StartRevision' : w64;
+  ProgressNotify' : bool;
+  Filters' : slice.t;
+  PrevKv' : bool;
+  WatchId' : w64;
+  Fragment' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End WatchCreateRequest.
 
 
 Global Instance settable_WatchCreateRequest `{ffi_syntax}: Settable _ :=
-  settable! WatchCreateRequest.mk < WatchCreateRequest.Key; WatchCreateRequest.RangeEnd; WatchCreateRequest.StartRevision; WatchCreateRequest.ProgressNotify; WatchCreateRequest.Filters; WatchCreateRequest.PrevKv; WatchCreateRequest.WatchId; WatchCreateRequest.Fragment; WatchCreateRequest.XXX_NoUnkeyedLiteral; WatchCreateRequest.XXX_unrecognized; WatchCreateRequest.XXX_sizecache >.
+  settable! WatchCreateRequest.mk < WatchCreateRequest.Key'; WatchCreateRequest.RangeEnd'; WatchCreateRequest.StartRevision'; WatchCreateRequest.ProgressNotify'; WatchCreateRequest.Filters'; WatchCreateRequest.PrevKv'; WatchCreateRequest.WatchId'; WatchCreateRequest.Fragment'; WatchCreateRequest.XXX_NoUnkeyedLiteral'; WatchCreateRequest.XXX_unrecognized'; WatchCreateRequest.XXX_sizecache' >.
 Global Instance into_val_WatchCreateRequest `{ffi_syntax} : IntoVal WatchCreateRequest.t.
 Admitted.
 
@@ -2584,72 +2584,72 @@ Global Instance into_val_typed_WatchCreateRequest `{ffi_syntax} : IntoValTyped W
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchCreateRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.WatchCreateRequest WatchCreateRequest.Key.
+Global Instance into_val_struct_field_WatchCreateRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.WatchCreateRequest WatchCreateRequest.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.WatchCreateRequest WatchCreateRequest.RangeEnd.
+Global Instance into_val_struct_field_WatchCreateRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.WatchCreateRequest WatchCreateRequest.RangeEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_StartRevision `{ffi_syntax} : IntoValStructField "StartRevision" etcdserverpb.WatchCreateRequest WatchCreateRequest.StartRevision.
+Global Instance into_val_struct_field_WatchCreateRequest_StartRevision `{ffi_syntax} : IntoValStructField "StartRevision" etcdserverpb.WatchCreateRequest WatchCreateRequest.StartRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_ProgressNotify `{ffi_syntax} : IntoValStructField "ProgressNotify" etcdserverpb.WatchCreateRequest WatchCreateRequest.ProgressNotify.
+Global Instance into_val_struct_field_WatchCreateRequest_ProgressNotify `{ffi_syntax} : IntoValStructField "ProgressNotify" etcdserverpb.WatchCreateRequest WatchCreateRequest.ProgressNotify'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_Filters `{ffi_syntax} : IntoValStructField "Filters" etcdserverpb.WatchCreateRequest WatchCreateRequest.Filters.
+Global Instance into_val_struct_field_WatchCreateRequest_Filters `{ffi_syntax} : IntoValStructField "Filters" etcdserverpb.WatchCreateRequest WatchCreateRequest.Filters'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.WatchCreateRequest WatchCreateRequest.PrevKv.
+Global Instance into_val_struct_field_WatchCreateRequest_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.WatchCreateRequest WatchCreateRequest.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_WatchId `{ffi_syntax} : IntoValStructField "WatchId" etcdserverpb.WatchCreateRequest WatchCreateRequest.WatchId.
+Global Instance into_val_struct_field_WatchCreateRequest_WatchId `{ffi_syntax} : IntoValStructField "WatchId" etcdserverpb.WatchCreateRequest WatchCreateRequest.WatchId'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_Fragment `{ffi_syntax} : IntoValStructField "Fragment" etcdserverpb.WatchCreateRequest WatchCreateRequest.Fragment.
+Global Instance into_val_struct_field_WatchCreateRequest_Fragment `{ffi_syntax} : IntoValStructField "Fragment" etcdserverpb.WatchCreateRequest WatchCreateRequest.Fragment'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchCreateRequest WatchCreateRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_WatchCreateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchCreateRequest WatchCreateRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchCreateRequest WatchCreateRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_WatchCreateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchCreateRequest WatchCreateRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCreateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchCreateRequest WatchCreateRequest.XXX_sizecache.
+Global Instance into_val_struct_field_WatchCreateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchCreateRequest WatchCreateRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_WatchCreateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key RangeEnd StartRevision ProgressNotify Filters PrevKv WatchId Fragment XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_WatchCreateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' RangeEnd' StartRevision' ProgressNotify' Filters' PrevKv' WatchId' Fragment' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.WatchCreateRequest (alist_val [
-      "Key" ::= #Key;
-      "RangeEnd" ::= #RangeEnd;
-      "StartRevision" ::= #StartRevision;
-      "ProgressNotify" ::= #ProgressNotify;
-      "Filters" ::= #Filters;
-      "PrevKv" ::= #PrevKv;
-      "WatchId" ::= #WatchId;
-      "Fragment" ::= #Fragment;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(WatchCreateRequest.mk Key RangeEnd StartRevision ProgressNotify Filters PrevKv WatchId Fragment XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Key" ::= #Key';
+      "RangeEnd" ::= #RangeEnd';
+      "StartRevision" ::= #StartRevision';
+      "ProgressNotify" ::= #ProgressNotify';
+      "Filters" ::= #Filters';
+      "PrevKv" ::= #PrevKv';
+      "WatchId" ::= #WatchId';
+      "Fragment" ::= #Fragment';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(WatchCreateRequest.mk Key' RangeEnd' StartRevision' ProgressNotify' Filters' PrevKv' WatchId' Fragment' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module WatchCancelRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  WatchId : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  WatchId' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End WatchCancelRequest.
 
 
 Global Instance settable_WatchCancelRequest `{ffi_syntax}: Settable _ :=
-  settable! WatchCancelRequest.mk < WatchCancelRequest.WatchId; WatchCancelRequest.XXX_NoUnkeyedLiteral; WatchCancelRequest.XXX_unrecognized; WatchCancelRequest.XXX_sizecache >.
+  settable! WatchCancelRequest.mk < WatchCancelRequest.WatchId'; WatchCancelRequest.XXX_NoUnkeyedLiteral'; WatchCancelRequest.XXX_unrecognized'; WatchCancelRequest.XXX_sizecache' >.
 Global Instance into_val_WatchCancelRequest `{ffi_syntax} : IntoVal WatchCancelRequest.t.
 Admitted.
 
@@ -2661,43 +2661,43 @@ Global Instance into_val_typed_WatchCancelRequest `{ffi_syntax} : IntoValTyped W
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchCancelRequest_WatchId `{ffi_syntax} : IntoValStructField "WatchId" etcdserverpb.WatchCancelRequest WatchCancelRequest.WatchId.
+Global Instance into_val_struct_field_WatchCancelRequest_WatchId `{ffi_syntax} : IntoValStructField "WatchId" etcdserverpb.WatchCancelRequest WatchCancelRequest.WatchId'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCancelRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchCancelRequest WatchCancelRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_WatchCancelRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchCancelRequest WatchCancelRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCancelRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchCancelRequest WatchCancelRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_WatchCancelRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchCancelRequest WatchCancelRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchCancelRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchCancelRequest WatchCancelRequest.XXX_sizecache.
+Global Instance into_val_struct_field_WatchCancelRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchCancelRequest WatchCancelRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_WatchCancelRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} WatchId XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_WatchCancelRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} WatchId' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.WatchCancelRequest (alist_val [
-      "WatchId" ::= #WatchId;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(WatchCancelRequest.mk WatchId XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "WatchId" ::= #WatchId';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(WatchCancelRequest.mk WatchId' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module WatchProgressRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End WatchProgressRequest.
 
 
 Global Instance settable_WatchProgressRequest `{ffi_syntax}: Settable _ :=
-  settable! WatchProgressRequest.mk < WatchProgressRequest.XXX_NoUnkeyedLiteral; WatchProgressRequest.XXX_unrecognized; WatchProgressRequest.XXX_sizecache >.
+  settable! WatchProgressRequest.mk < WatchProgressRequest.XXX_NoUnkeyedLiteral'; WatchProgressRequest.XXX_unrecognized'; WatchProgressRequest.XXX_sizecache' >.
 Global Instance into_val_WatchProgressRequest `{ffi_syntax} : IntoVal WatchProgressRequest.t.
 Admitted.
 
@@ -2709,47 +2709,47 @@ Global Instance into_val_typed_WatchProgressRequest `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchProgressRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchProgressRequest WatchProgressRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_WatchProgressRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchProgressRequest WatchProgressRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchProgressRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchProgressRequest WatchProgressRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_WatchProgressRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchProgressRequest WatchProgressRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchProgressRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchProgressRequest WatchProgressRequest.XXX_sizecache.
+Global Instance into_val_struct_field_WatchProgressRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchProgressRequest WatchProgressRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_WatchProgressRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_WatchProgressRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.WatchProgressRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(WatchProgressRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(WatchProgressRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module WatchResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  WatchId : w64;
-  Created : bool;
-  Canceled : bool;
-  CompactRevision : w64;
-  CancelReason : go_string;
-  Fragment : bool;
-  Events : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  WatchId' : w64;
+  Created' : bool;
+  Canceled' : bool;
+  CompactRevision' : w64;
+  CancelReason' : go_string;
+  Fragment' : bool;
+  Events' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End WatchResponse.
 
 
 Global Instance settable_WatchResponse `{ffi_syntax}: Settable _ :=
-  settable! WatchResponse.mk < WatchResponse.Header; WatchResponse.WatchId; WatchResponse.Created; WatchResponse.Canceled; WatchResponse.CompactRevision; WatchResponse.CancelReason; WatchResponse.Fragment; WatchResponse.Events; WatchResponse.XXX_NoUnkeyedLiteral; WatchResponse.XXX_unrecognized; WatchResponse.XXX_sizecache >.
+  settable! WatchResponse.mk < WatchResponse.Header'; WatchResponse.WatchId'; WatchResponse.Created'; WatchResponse.Canceled'; WatchResponse.CompactRevision'; WatchResponse.CancelReason'; WatchResponse.Fragment'; WatchResponse.Events'; WatchResponse.XXX_NoUnkeyedLiteral'; WatchResponse.XXX_unrecognized'; WatchResponse.XXX_sizecache' >.
 Global Instance into_val_WatchResponse `{ffi_syntax} : IntoVal WatchResponse.t.
 Admitted.
 
@@ -2761,73 +2761,73 @@ Global Instance into_val_typed_WatchResponse `{ffi_syntax} : IntoValTyped WatchR
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WatchResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.WatchResponse WatchResponse.Header.
+Global Instance into_val_struct_field_WatchResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.WatchResponse WatchResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_WatchId `{ffi_syntax} : IntoValStructField "WatchId" etcdserverpb.WatchResponse WatchResponse.WatchId.
+Global Instance into_val_struct_field_WatchResponse_WatchId `{ffi_syntax} : IntoValStructField "WatchId" etcdserverpb.WatchResponse WatchResponse.WatchId'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_Created `{ffi_syntax} : IntoValStructField "Created" etcdserverpb.WatchResponse WatchResponse.Created.
+Global Instance into_val_struct_field_WatchResponse_Created `{ffi_syntax} : IntoValStructField "Created" etcdserverpb.WatchResponse WatchResponse.Created'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_Canceled `{ffi_syntax} : IntoValStructField "Canceled" etcdserverpb.WatchResponse WatchResponse.Canceled.
+Global Instance into_val_struct_field_WatchResponse_Canceled `{ffi_syntax} : IntoValStructField "Canceled" etcdserverpb.WatchResponse WatchResponse.Canceled'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_CompactRevision `{ffi_syntax} : IntoValStructField "CompactRevision" etcdserverpb.WatchResponse WatchResponse.CompactRevision.
+Global Instance into_val_struct_field_WatchResponse_CompactRevision `{ffi_syntax} : IntoValStructField "CompactRevision" etcdserverpb.WatchResponse WatchResponse.CompactRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_CancelReason `{ffi_syntax} : IntoValStructField "CancelReason" etcdserverpb.WatchResponse WatchResponse.CancelReason.
+Global Instance into_val_struct_field_WatchResponse_CancelReason `{ffi_syntax} : IntoValStructField "CancelReason" etcdserverpb.WatchResponse WatchResponse.CancelReason'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_Fragment `{ffi_syntax} : IntoValStructField "Fragment" etcdserverpb.WatchResponse WatchResponse.Fragment.
+Global Instance into_val_struct_field_WatchResponse_Fragment `{ffi_syntax} : IntoValStructField "Fragment" etcdserverpb.WatchResponse WatchResponse.Fragment'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_Events `{ffi_syntax} : IntoValStructField "Events" etcdserverpb.WatchResponse WatchResponse.Events.
+Global Instance into_val_struct_field_WatchResponse_Events `{ffi_syntax} : IntoValStructField "Events" etcdserverpb.WatchResponse WatchResponse.Events'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchResponse WatchResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_WatchResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.WatchResponse WatchResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchResponse WatchResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_WatchResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.WatchResponse WatchResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_WatchResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchResponse WatchResponse.XXX_sizecache.
+Global Instance into_val_struct_field_WatchResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.WatchResponse WatchResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_WatchResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header WatchId Created Canceled CompactRevision CancelReason Fragment Events XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_WatchResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' WatchId' Created' Canceled' CompactRevision' CancelReason' Fragment' Events' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.WatchResponse (alist_val [
-      "Header" ::= #Header;
-      "WatchId" ::= #WatchId;
-      "Created" ::= #Created;
-      "Canceled" ::= #Canceled;
-      "CompactRevision" ::= #CompactRevision;
-      "CancelReason" ::= #CancelReason;
-      "Fragment" ::= #Fragment;
-      "Events" ::= #Events;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(WatchResponse.mk Header WatchId Created Canceled CompactRevision CancelReason Fragment Events XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "WatchId" ::= #WatchId';
+      "Created" ::= #Created';
+      "Canceled" ::= #Canceled';
+      "CompactRevision" ::= #CompactRevision';
+      "CancelReason" ::= #CancelReason';
+      "Fragment" ::= #Fragment';
+      "Events" ::= #Events';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(WatchResponse.mk Header' WatchId' Created' Canceled' CompactRevision' CancelReason' Fragment' Events' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseGrantRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  TTL : w64;
-  ID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  TTL' : w64;
+  ID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseGrantRequest.
 
 
 Global Instance settable_LeaseGrantRequest `{ffi_syntax}: Settable _ :=
-  settable! LeaseGrantRequest.mk < LeaseGrantRequest.TTL; LeaseGrantRequest.ID; LeaseGrantRequest.XXX_NoUnkeyedLiteral; LeaseGrantRequest.XXX_unrecognized; LeaseGrantRequest.XXX_sizecache >.
+  settable! LeaseGrantRequest.mk < LeaseGrantRequest.TTL'; LeaseGrantRequest.ID'; LeaseGrantRequest.XXX_NoUnkeyedLiteral'; LeaseGrantRequest.XXX_unrecognized'; LeaseGrantRequest.XXX_sizecache' >.
 Global Instance into_val_LeaseGrantRequest `{ffi_syntax} : IntoVal LeaseGrantRequest.t.
 Admitted.
 
@@ -2839,51 +2839,51 @@ Global Instance into_val_typed_LeaseGrantRequest `{ffi_syntax} : IntoValTyped Le
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseGrantRequest_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.TTL.
+Global Instance into_val_struct_field_LeaseGrantRequest_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.TTL'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.ID.
+Global Instance into_val_struct_field_LeaseGrantRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseGrantRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseGrantRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseGrantRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseGrantRequest LeaseGrantRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseGrantRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} TTL ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseGrantRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} TTL' ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseGrantRequest (alist_val [
-      "TTL" ::= #TTL;
-      "ID" ::= #ID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseGrantRequest.mk TTL ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "TTL" ::= #TTL';
+      "ID" ::= #ID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseGrantRequest.mk TTL' ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseGrantResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  ID : w64;
-  TTL : w64;
-  Error : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  ID' : w64;
+  TTL' : w64;
+  Error' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseGrantResponse.
 
 
 Global Instance settable_LeaseGrantResponse `{ffi_syntax}: Settable _ :=
-  settable! LeaseGrantResponse.mk < LeaseGrantResponse.Header; LeaseGrantResponse.ID; LeaseGrantResponse.TTL; LeaseGrantResponse.Error; LeaseGrantResponse.XXX_NoUnkeyedLiteral; LeaseGrantResponse.XXX_unrecognized; LeaseGrantResponse.XXX_sizecache >.
+  settable! LeaseGrantResponse.mk < LeaseGrantResponse.Header'; LeaseGrantResponse.ID'; LeaseGrantResponse.TTL'; LeaseGrantResponse.Error'; LeaseGrantResponse.XXX_NoUnkeyedLiteral'; LeaseGrantResponse.XXX_unrecognized'; LeaseGrantResponse.XXX_sizecache' >.
 Global Instance into_val_LeaseGrantResponse `{ffi_syntax} : IntoVal LeaseGrantResponse.t.
 Admitted.
 
@@ -2895,56 +2895,56 @@ Global Instance into_val_typed_LeaseGrantResponse `{ffi_syntax} : IntoValTyped L
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseGrantResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.Header.
+Global Instance into_val_struct_field_LeaseGrantResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantResponse_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.ID.
+Global Instance into_val_struct_field_LeaseGrantResponse_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantResponse_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.TTL.
+Global Instance into_val_struct_field_LeaseGrantResponse_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.TTL'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantResponse_Error `{ffi_syntax} : IntoValStructField "Error" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.Error.
+Global Instance into_val_struct_field_LeaseGrantResponse_Error `{ffi_syntax} : IntoValStructField "Error" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.Error'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseGrantResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseGrantResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseGrantResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseGrantResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseGrantResponse LeaseGrantResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseGrantResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header ID TTL Error XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseGrantResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' ID' TTL' Error' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseGrantResponse (alist_val [
-      "Header" ::= #Header;
-      "ID" ::= #ID;
-      "TTL" ::= #TTL;
-      "Error" ::= #Error;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseGrantResponse.mk Header ID TTL Error XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "ID" ::= #ID';
+      "TTL" ::= #TTL';
+      "Error" ::= #Error';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseGrantResponse.mk Header' ID' TTL' Error' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseRevokeRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseRevokeRequest.
 
 
 Global Instance settable_LeaseRevokeRequest `{ffi_syntax}: Settable _ :=
-  settable! LeaseRevokeRequest.mk < LeaseRevokeRequest.ID; LeaseRevokeRequest.XXX_NoUnkeyedLiteral; LeaseRevokeRequest.XXX_unrecognized; LeaseRevokeRequest.XXX_sizecache >.
+  settable! LeaseRevokeRequest.mk < LeaseRevokeRequest.ID'; LeaseRevokeRequest.XXX_NoUnkeyedLiteral'; LeaseRevokeRequest.XXX_unrecognized'; LeaseRevokeRequest.XXX_sizecache' >.
 Global Instance into_val_LeaseRevokeRequest `{ffi_syntax} : IntoVal LeaseRevokeRequest.t.
 Admitted.
 
@@ -2956,44 +2956,44 @@ Global Instance into_val_typed_LeaseRevokeRequest `{ffi_syntax} : IntoValTyped L
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseRevokeRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.ID.
+Global Instance into_val_struct_field_LeaseRevokeRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseRevokeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseRevokeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseRevokeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseRevokeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseRevokeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseRevokeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseRevokeRequest LeaseRevokeRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseRevokeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseRevokeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseRevokeRequest (alist_val [
-      "ID" ::= #ID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseRevokeRequest.mk ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseRevokeRequest.mk ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseRevokeResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseRevokeResponse.
 
 
 Global Instance settable_LeaseRevokeResponse `{ffi_syntax}: Settable _ :=
-  settable! LeaseRevokeResponse.mk < LeaseRevokeResponse.Header; LeaseRevokeResponse.XXX_NoUnkeyedLiteral; LeaseRevokeResponse.XXX_unrecognized; LeaseRevokeResponse.XXX_sizecache >.
+  settable! LeaseRevokeResponse.mk < LeaseRevokeResponse.Header'; LeaseRevokeResponse.XXX_NoUnkeyedLiteral'; LeaseRevokeResponse.XXX_unrecognized'; LeaseRevokeResponse.XXX_sizecache' >.
 Global Instance into_val_LeaseRevokeResponse `{ffi_syntax} : IntoVal LeaseRevokeResponse.t.
 Admitted.
 
@@ -3005,45 +3005,45 @@ Global Instance into_val_typed_LeaseRevokeResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseRevokeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.Header.
+Global Instance into_val_struct_field_LeaseRevokeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseRevokeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseRevokeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseRevokeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseRevokeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseRevokeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseRevokeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseRevokeResponse LeaseRevokeResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseRevokeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseRevokeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseRevokeResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseRevokeResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseRevokeResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseCheckpoint.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  Remaining_TTL : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  Remaining_TTL' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseCheckpoint.
 
 
 Global Instance settable_LeaseCheckpoint `{ffi_syntax}: Settable _ :=
-  settable! LeaseCheckpoint.mk < LeaseCheckpoint.ID; LeaseCheckpoint.Remaining_TTL; LeaseCheckpoint.XXX_NoUnkeyedLiteral; LeaseCheckpoint.XXX_unrecognized; LeaseCheckpoint.XXX_sizecache >.
+  settable! LeaseCheckpoint.mk < LeaseCheckpoint.ID'; LeaseCheckpoint.Remaining_TTL'; LeaseCheckpoint.XXX_NoUnkeyedLiteral'; LeaseCheckpoint.XXX_unrecognized'; LeaseCheckpoint.XXX_sizecache' >.
 Global Instance into_val_LeaseCheckpoint `{ffi_syntax} : IntoVal LeaseCheckpoint.t.
 Admitted.
 
@@ -3055,48 +3055,48 @@ Global Instance into_val_typed_LeaseCheckpoint `{ffi_syntax} : IntoValTyped Leas
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseCheckpoint_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.ID.
+Global Instance into_val_struct_field_LeaseCheckpoint_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpoint_Remaining_TTL `{ffi_syntax} : IntoValStructField "Remaining_TTL" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.Remaining_TTL.
+Global Instance into_val_struct_field_LeaseCheckpoint_Remaining_TTL `{ffi_syntax} : IntoValStructField "Remaining_TTL" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.Remaining_TTL'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpoint_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseCheckpoint_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpoint_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseCheckpoint_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpoint_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseCheckpoint_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseCheckpoint LeaseCheckpoint.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseCheckpoint `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID Remaining_TTL XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseCheckpoint `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Remaining_TTL' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseCheckpoint (alist_val [
-      "ID" ::= #ID;
-      "Remaining_TTL" ::= #Remaining_TTL;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseCheckpoint.mk ID Remaining_TTL XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "Remaining_TTL" ::= #Remaining_TTL';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseCheckpoint.mk ID' Remaining_TTL' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseCheckpointRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Checkpoints : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Checkpoints' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseCheckpointRequest.
 
 
 Global Instance settable_LeaseCheckpointRequest `{ffi_syntax}: Settable _ :=
-  settable! LeaseCheckpointRequest.mk < LeaseCheckpointRequest.Checkpoints; LeaseCheckpointRequest.XXX_NoUnkeyedLiteral; LeaseCheckpointRequest.XXX_unrecognized; LeaseCheckpointRequest.XXX_sizecache >.
+  settable! LeaseCheckpointRequest.mk < LeaseCheckpointRequest.Checkpoints'; LeaseCheckpointRequest.XXX_NoUnkeyedLiteral'; LeaseCheckpointRequest.XXX_unrecognized'; LeaseCheckpointRequest.XXX_sizecache' >.
 Global Instance into_val_LeaseCheckpointRequest `{ffi_syntax} : IntoVal LeaseCheckpointRequest.t.
 Admitted.
 
@@ -3108,44 +3108,44 @@ Global Instance into_val_typed_LeaseCheckpointRequest `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseCheckpointRequest_Checkpoints `{ffi_syntax} : IntoValStructField "Checkpoints" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.Checkpoints.
+Global Instance into_val_struct_field_LeaseCheckpointRequest_Checkpoints `{ffi_syntax} : IntoValStructField "Checkpoints" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.Checkpoints'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpointRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseCheckpointRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpointRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseCheckpointRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpointRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseCheckpointRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseCheckpointRequest LeaseCheckpointRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseCheckpointRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Checkpoints XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseCheckpointRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Checkpoints' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseCheckpointRequest (alist_val [
-      "Checkpoints" ::= #Checkpoints;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseCheckpointRequest.mk Checkpoints XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Checkpoints" ::= #Checkpoints';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseCheckpointRequest.mk Checkpoints' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseCheckpointResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseCheckpointResponse.
 
 
 Global Instance settable_LeaseCheckpointResponse `{ffi_syntax}: Settable _ :=
-  settable! LeaseCheckpointResponse.mk < LeaseCheckpointResponse.Header; LeaseCheckpointResponse.XXX_NoUnkeyedLiteral; LeaseCheckpointResponse.XXX_unrecognized; LeaseCheckpointResponse.XXX_sizecache >.
+  settable! LeaseCheckpointResponse.mk < LeaseCheckpointResponse.Header'; LeaseCheckpointResponse.XXX_NoUnkeyedLiteral'; LeaseCheckpointResponse.XXX_unrecognized'; LeaseCheckpointResponse.XXX_sizecache' >.
 Global Instance into_val_LeaseCheckpointResponse `{ffi_syntax} : IntoVal LeaseCheckpointResponse.t.
 Admitted.
 
@@ -3157,44 +3157,44 @@ Global Instance into_val_typed_LeaseCheckpointResponse `{ffi_syntax} : IntoValTy
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseCheckpointResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.Header.
+Global Instance into_val_struct_field_LeaseCheckpointResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpointResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseCheckpointResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpointResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseCheckpointResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseCheckpointResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseCheckpointResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseCheckpointResponse LeaseCheckpointResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseCheckpointResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseCheckpointResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseCheckpointResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseCheckpointResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseCheckpointResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseKeepAliveRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseKeepAliveRequest.
 
 
 Global Instance settable_LeaseKeepAliveRequest `{ffi_syntax}: Settable _ :=
-  settable! LeaseKeepAliveRequest.mk < LeaseKeepAliveRequest.ID; LeaseKeepAliveRequest.XXX_NoUnkeyedLiteral; LeaseKeepAliveRequest.XXX_unrecognized; LeaseKeepAliveRequest.XXX_sizecache >.
+  settable! LeaseKeepAliveRequest.mk < LeaseKeepAliveRequest.ID'; LeaseKeepAliveRequest.XXX_NoUnkeyedLiteral'; LeaseKeepAliveRequest.XXX_unrecognized'; LeaseKeepAliveRequest.XXX_sizecache' >.
 Global Instance into_val_LeaseKeepAliveRequest `{ffi_syntax} : IntoVal LeaseKeepAliveRequest.t.
 Admitted.
 
@@ -3206,46 +3206,46 @@ Global Instance into_val_typed_LeaseKeepAliveRequest `{ffi_syntax} : IntoValType
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseKeepAliveRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.ID.
+Global Instance into_val_struct_field_LeaseKeepAliveRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseKeepAliveRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseKeepAliveRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseKeepAliveRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseKeepAliveRequest LeaseKeepAliveRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseKeepAliveRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseKeepAliveRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseKeepAliveRequest (alist_val [
-      "ID" ::= #ID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseKeepAliveRequest.mk ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseKeepAliveRequest.mk ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseKeepAliveResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  ID : w64;
-  TTL : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  ID' : w64;
+  TTL' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseKeepAliveResponse.
 
 
 Global Instance settable_LeaseKeepAliveResponse `{ffi_syntax}: Settable _ :=
-  settable! LeaseKeepAliveResponse.mk < LeaseKeepAliveResponse.Header; LeaseKeepAliveResponse.ID; LeaseKeepAliveResponse.TTL; LeaseKeepAliveResponse.XXX_NoUnkeyedLiteral; LeaseKeepAliveResponse.XXX_unrecognized; LeaseKeepAliveResponse.XXX_sizecache >.
+  settable! LeaseKeepAliveResponse.mk < LeaseKeepAliveResponse.Header'; LeaseKeepAliveResponse.ID'; LeaseKeepAliveResponse.TTL'; LeaseKeepAliveResponse.XXX_NoUnkeyedLiteral'; LeaseKeepAliveResponse.XXX_unrecognized'; LeaseKeepAliveResponse.XXX_sizecache' >.
 Global Instance into_val_LeaseKeepAliveResponse `{ffi_syntax} : IntoVal LeaseKeepAliveResponse.t.
 Admitted.
 
@@ -3257,53 +3257,53 @@ Global Instance into_val_typed_LeaseKeepAliveResponse `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseKeepAliveResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.Header.
+Global Instance into_val_struct_field_LeaseKeepAliveResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveResponse_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.ID.
+Global Instance into_val_struct_field_LeaseKeepAliveResponse_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveResponse_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.TTL.
+Global Instance into_val_struct_field_LeaseKeepAliveResponse_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.TTL'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseKeepAliveResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseKeepAliveResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseKeepAliveResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseKeepAliveResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseKeepAliveResponse LeaseKeepAliveResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseKeepAliveResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header ID TTL XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseKeepAliveResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' ID' TTL' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseKeepAliveResponse (alist_val [
-      "Header" ::= #Header;
-      "ID" ::= #ID;
-      "TTL" ::= #TTL;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseKeepAliveResponse.mk Header ID TTL XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "ID" ::= #ID';
+      "TTL" ::= #TTL';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseKeepAliveResponse.mk Header' ID' TTL' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseTimeToLiveRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  Keys : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  Keys' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseTimeToLiveRequest.
 
 
 Global Instance settable_LeaseTimeToLiveRequest `{ffi_syntax}: Settable _ :=
-  settable! LeaseTimeToLiveRequest.mk < LeaseTimeToLiveRequest.ID; LeaseTimeToLiveRequest.Keys; LeaseTimeToLiveRequest.XXX_NoUnkeyedLiteral; LeaseTimeToLiveRequest.XXX_unrecognized; LeaseTimeToLiveRequest.XXX_sizecache >.
+  settable! LeaseTimeToLiveRequest.mk < LeaseTimeToLiveRequest.ID'; LeaseTimeToLiveRequest.Keys'; LeaseTimeToLiveRequest.XXX_NoUnkeyedLiteral'; LeaseTimeToLiveRequest.XXX_unrecognized'; LeaseTimeToLiveRequest.XXX_sizecache' >.
 Global Instance into_val_LeaseTimeToLiveRequest `{ffi_syntax} : IntoVal LeaseTimeToLiveRequest.t.
 Admitted.
 
@@ -3315,52 +3315,52 @@ Global Instance into_val_typed_LeaseTimeToLiveRequest `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseTimeToLiveRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.ID.
+Global Instance into_val_struct_field_LeaseTimeToLiveRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveRequest_Keys `{ffi_syntax} : IntoValStructField "Keys" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.Keys.
+Global Instance into_val_struct_field_LeaseTimeToLiveRequest_Keys `{ffi_syntax} : IntoValStructField "Keys" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.Keys'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseTimeToLiveRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseTimeToLiveRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseTimeToLiveRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseTimeToLiveRequest LeaseTimeToLiveRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseTimeToLiveRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID Keys XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseTimeToLiveRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Keys' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseTimeToLiveRequest (alist_val [
-      "ID" ::= #ID;
-      "Keys" ::= #Keys;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseTimeToLiveRequest.mk ID Keys XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "Keys" ::= #Keys';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseTimeToLiveRequest.mk ID' Keys' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseTimeToLiveResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  ID : w64;
-  TTL : w64;
-  GrantedTTL : w64;
-  Keys : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  ID' : w64;
+  TTL' : w64;
+  GrantedTTL' : w64;
+  Keys' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseTimeToLiveResponse.
 
 
 Global Instance settable_LeaseTimeToLiveResponse `{ffi_syntax}: Settable _ :=
-  settable! LeaseTimeToLiveResponse.mk < LeaseTimeToLiveResponse.Header; LeaseTimeToLiveResponse.ID; LeaseTimeToLiveResponse.TTL; LeaseTimeToLiveResponse.GrantedTTL; LeaseTimeToLiveResponse.Keys; LeaseTimeToLiveResponse.XXX_NoUnkeyedLiteral; LeaseTimeToLiveResponse.XXX_unrecognized; LeaseTimeToLiveResponse.XXX_sizecache >.
+  settable! LeaseTimeToLiveResponse.mk < LeaseTimeToLiveResponse.Header'; LeaseTimeToLiveResponse.ID'; LeaseTimeToLiveResponse.TTL'; LeaseTimeToLiveResponse.GrantedTTL'; LeaseTimeToLiveResponse.Keys'; LeaseTimeToLiveResponse.XXX_NoUnkeyedLiteral'; LeaseTimeToLiveResponse.XXX_unrecognized'; LeaseTimeToLiveResponse.XXX_sizecache' >.
 Global Instance into_val_LeaseTimeToLiveResponse `{ffi_syntax} : IntoVal LeaseTimeToLiveResponse.t.
 Admitted.
 
@@ -3372,59 +3372,59 @@ Global Instance into_val_typed_LeaseTimeToLiveResponse `{ffi_syntax} : IntoValTy
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.Header.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.ID.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.TTL.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_TTL `{ffi_syntax} : IntoValStructField "TTL" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.TTL'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_GrantedTTL `{ffi_syntax} : IntoValStructField "GrantedTTL" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.GrantedTTL.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_GrantedTTL `{ffi_syntax} : IntoValStructField "GrantedTTL" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.GrantedTTL'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_Keys `{ffi_syntax} : IntoValStructField "Keys" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.Keys.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_Keys `{ffi_syntax} : IntoValStructField "Keys" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.Keys'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseTimeToLiveResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseTimeToLiveResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseTimeToLiveResponse LeaseTimeToLiveResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseTimeToLiveResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header ID TTL GrantedTTL Keys XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseTimeToLiveResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' ID' TTL' GrantedTTL' Keys' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseTimeToLiveResponse (alist_val [
-      "Header" ::= #Header;
-      "ID" ::= #ID;
-      "TTL" ::= #TTL;
-      "GrantedTTL" ::= #GrantedTTL;
-      "Keys" ::= #Keys;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseTimeToLiveResponse.mk Header ID TTL GrantedTTL Keys XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "ID" ::= #ID';
+      "TTL" ::= #TTL';
+      "GrantedTTL" ::= #GrantedTTL';
+      "Keys" ::= #Keys';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseTimeToLiveResponse.mk Header' ID' TTL' GrantedTTL' Keys' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseLeasesRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseLeasesRequest.
 
 
 Global Instance settable_LeaseLeasesRequest `{ffi_syntax}: Settable _ :=
-  settable! LeaseLeasesRequest.mk < LeaseLeasesRequest.XXX_NoUnkeyedLiteral; LeaseLeasesRequest.XXX_unrecognized; LeaseLeasesRequest.XXX_sizecache >.
+  settable! LeaseLeasesRequest.mk < LeaseLeasesRequest.XXX_NoUnkeyedLiteral'; LeaseLeasesRequest.XXX_unrecognized'; LeaseLeasesRequest.XXX_sizecache' >.
 Global Instance into_val_LeaseLeasesRequest `{ffi_syntax} : IntoVal LeaseLeasesRequest.t.
 Admitted.
 
@@ -3436,40 +3436,40 @@ Global Instance into_val_typed_LeaseLeasesRequest `{ffi_syntax} : IntoValTyped L
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseLeasesRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseLeasesRequest LeaseLeasesRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseLeasesRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseLeasesRequest LeaseLeasesRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseLeasesRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseLeasesRequest LeaseLeasesRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseLeasesRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseLeasesRequest LeaseLeasesRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseLeasesRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseLeasesRequest LeaseLeasesRequest.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseLeasesRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseLeasesRequest LeaseLeasesRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseLeasesRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseLeasesRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseLeasesRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseLeasesRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseLeasesRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseStatus.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseStatus.
 
 
 Global Instance settable_LeaseStatus `{ffi_syntax}: Settable _ :=
-  settable! LeaseStatus.mk < LeaseStatus.ID; LeaseStatus.XXX_NoUnkeyedLiteral; LeaseStatus.XXX_unrecognized; LeaseStatus.XXX_sizecache >.
+  settable! LeaseStatus.mk < LeaseStatus.ID'; LeaseStatus.XXX_NoUnkeyedLiteral'; LeaseStatus.XXX_unrecognized'; LeaseStatus.XXX_sizecache' >.
 Global Instance into_val_LeaseStatus `{ffi_syntax} : IntoVal LeaseStatus.t.
 Admitted.
 
@@ -3481,45 +3481,45 @@ Global Instance into_val_typed_LeaseStatus `{ffi_syntax} : IntoValTyped LeaseSta
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseStatus_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseStatus LeaseStatus.ID.
+Global Instance into_val_struct_field_LeaseStatus_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.LeaseStatus LeaseStatus.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseStatus_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseStatus LeaseStatus.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseStatus_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseStatus LeaseStatus.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseStatus_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseStatus LeaseStatus.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseStatus_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseStatus LeaseStatus.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseStatus_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseStatus LeaseStatus.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseStatus_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseStatus LeaseStatus.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseStatus (alist_val [
-      "ID" ::= #ID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseStatus.mk ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseStatus.mk ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module LeaseLeasesResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Leases : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Leases' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End LeaseLeasesResponse.
 
 
 Global Instance settable_LeaseLeasesResponse `{ffi_syntax}: Settable _ :=
-  settable! LeaseLeasesResponse.mk < LeaseLeasesResponse.Header; LeaseLeasesResponse.Leases; LeaseLeasesResponse.XXX_NoUnkeyedLiteral; LeaseLeasesResponse.XXX_unrecognized; LeaseLeasesResponse.XXX_sizecache >.
+  settable! LeaseLeasesResponse.mk < LeaseLeasesResponse.Header'; LeaseLeasesResponse.Leases'; LeaseLeasesResponse.XXX_NoUnkeyedLiteral'; LeaseLeasesResponse.XXX_unrecognized'; LeaseLeasesResponse.XXX_sizecache' >.
 Global Instance into_val_LeaseLeasesResponse `{ffi_syntax} : IntoVal LeaseLeasesResponse.t.
 Admitted.
 
@@ -3531,52 +3531,52 @@ Global Instance into_val_typed_LeaseLeasesResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LeaseLeasesResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.Header.
+Global Instance into_val_struct_field_LeaseLeasesResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseLeasesResponse_Leases `{ffi_syntax} : IntoValStructField "Leases" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.Leases.
+Global Instance into_val_struct_field_LeaseLeasesResponse_Leases `{ffi_syntax} : IntoValStructField "Leases" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.Leases'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseLeasesResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_LeaseLeasesResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseLeasesResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_LeaseLeasesResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_LeaseLeasesResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.XXX_sizecache.
+Global Instance into_val_struct_field_LeaseLeasesResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.LeaseLeasesResponse LeaseLeasesResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_LeaseLeasesResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Leases XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_LeaseLeasesResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Leases' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.LeaseLeasesResponse (alist_val [
-      "Header" ::= #Header;
-      "Leases" ::= #Leases;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(LeaseLeasesResponse.mk Header Leases XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Leases" ::= #Leases';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(LeaseLeasesResponse.mk Header' Leases' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module Member.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  Name : go_string;
-  PeerURLs : slice.t;
-  ClientURLs : slice.t;
-  IsLearner : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  Name' : go_string;
+  PeerURLs' : slice.t;
+  ClientURLs' : slice.t;
+  IsLearner' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End Member.
 
 
 Global Instance settable_Member `{ffi_syntax}: Settable _ :=
-  settable! Member.mk < Member.ID; Member.Name; Member.PeerURLs; Member.ClientURLs; Member.IsLearner; Member.XXX_NoUnkeyedLiteral; Member.XXX_unrecognized; Member.XXX_sizecache >.
+  settable! Member.mk < Member.ID'; Member.Name'; Member.PeerURLs'; Member.ClientURLs'; Member.IsLearner'; Member.XXX_NoUnkeyedLiteral'; Member.XXX_unrecognized'; Member.XXX_sizecache' >.
 Global Instance into_val_Member `{ffi_syntax} : IntoVal Member.t.
 Admitted.
 
@@ -3588,61 +3588,61 @@ Global Instance into_val_typed_Member `{ffi_syntax} : IntoValTyped Member.t etcd
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Member_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.Member Member.ID.
+Global Instance into_val_struct_field_Member_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.Member Member.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_Member_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.Member Member.Name.
+Global Instance into_val_struct_field_Member_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.Member Member.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_Member_PeerURLs `{ffi_syntax} : IntoValStructField "PeerURLs" etcdserverpb.Member Member.PeerURLs.
+Global Instance into_val_struct_field_Member_PeerURLs `{ffi_syntax} : IntoValStructField "PeerURLs" etcdserverpb.Member Member.PeerURLs'.
 Admitted.
 
-Global Instance into_val_struct_field_Member_ClientURLs `{ffi_syntax} : IntoValStructField "ClientURLs" etcdserverpb.Member Member.ClientURLs.
+Global Instance into_val_struct_field_Member_ClientURLs `{ffi_syntax} : IntoValStructField "ClientURLs" etcdserverpb.Member Member.ClientURLs'.
 Admitted.
 
-Global Instance into_val_struct_field_Member_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" etcdserverpb.Member Member.IsLearner.
+Global Instance into_val_struct_field_Member_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" etcdserverpb.Member Member.IsLearner'.
 Admitted.
 
-Global Instance into_val_struct_field_Member_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Member Member.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_Member_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.Member Member.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_Member_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Member Member.XXX_unrecognized.
+Global Instance into_val_struct_field_Member_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.Member Member.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_Member_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Member Member.XXX_sizecache.
+Global Instance into_val_struct_field_Member_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Member Member.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_Member `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID Name PeerURLs ClientURLs IsLearner XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_Member `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Name' PeerURLs' ClientURLs' IsLearner' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.Member (alist_val [
-      "ID" ::= #ID;
-      "Name" ::= #Name;
-      "PeerURLs" ::= #PeerURLs;
-      "ClientURLs" ::= #ClientURLs;
-      "IsLearner" ::= #IsLearner;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(Member.mk ID Name PeerURLs ClientURLs IsLearner XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "Name" ::= #Name';
+      "PeerURLs" ::= #PeerURLs';
+      "ClientURLs" ::= #ClientURLs';
+      "IsLearner" ::= #IsLearner';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(Member.mk ID' Name' PeerURLs' ClientURLs' IsLearner' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberAddRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  PeerURLs : slice.t;
-  IsLearner : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  PeerURLs' : slice.t;
+  IsLearner' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberAddRequest.
 
 
 Global Instance settable_MemberAddRequest `{ffi_syntax}: Settable _ :=
-  settable! MemberAddRequest.mk < MemberAddRequest.PeerURLs; MemberAddRequest.IsLearner; MemberAddRequest.XXX_NoUnkeyedLiteral; MemberAddRequest.XXX_unrecognized; MemberAddRequest.XXX_sizecache >.
+  settable! MemberAddRequest.mk < MemberAddRequest.PeerURLs'; MemberAddRequest.IsLearner'; MemberAddRequest.XXX_NoUnkeyedLiteral'; MemberAddRequest.XXX_unrecognized'; MemberAddRequest.XXX_sizecache' >.
 Global Instance into_val_MemberAddRequest `{ffi_syntax} : IntoVal MemberAddRequest.t.
 Admitted.
 
@@ -3654,50 +3654,50 @@ Global Instance into_val_typed_MemberAddRequest `{ffi_syntax} : IntoValTyped Mem
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberAddRequest_PeerURLs `{ffi_syntax} : IntoValStructField "PeerURLs" etcdserverpb.MemberAddRequest MemberAddRequest.PeerURLs.
+Global Instance into_val_struct_field_MemberAddRequest_PeerURLs `{ffi_syntax} : IntoValStructField "PeerURLs" etcdserverpb.MemberAddRequest MemberAddRequest.PeerURLs'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddRequest_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" etcdserverpb.MemberAddRequest MemberAddRequest.IsLearner.
+Global Instance into_val_struct_field_MemberAddRequest_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" etcdserverpb.MemberAddRequest MemberAddRequest.IsLearner'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberAddRequest MemberAddRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberAddRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberAddRequest MemberAddRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberAddRequest MemberAddRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberAddRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberAddRequest MemberAddRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberAddRequest MemberAddRequest.XXX_sizecache.
+Global Instance into_val_struct_field_MemberAddRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberAddRequest MemberAddRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberAddRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} PeerURLs IsLearner XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberAddRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} PeerURLs' IsLearner' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberAddRequest (alist_val [
-      "PeerURLs" ::= #PeerURLs;
-      "IsLearner" ::= #IsLearner;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberAddRequest.mk PeerURLs IsLearner XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "PeerURLs" ::= #PeerURLs';
+      "IsLearner" ::= #IsLearner';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberAddRequest.mk PeerURLs' IsLearner' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberAddResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Member : loc;
-  Members : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Member' : loc;
+  Members' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberAddResponse.
 
 
 Global Instance settable_MemberAddResponse `{ffi_syntax}: Settable _ :=
-  settable! MemberAddResponse.mk < MemberAddResponse.Header; MemberAddResponse.Member; MemberAddResponse.Members; MemberAddResponse.XXX_NoUnkeyedLiteral; MemberAddResponse.XXX_unrecognized; MemberAddResponse.XXX_sizecache >.
+  settable! MemberAddResponse.mk < MemberAddResponse.Header'; MemberAddResponse.Member'; MemberAddResponse.Members'; MemberAddResponse.XXX_NoUnkeyedLiteral'; MemberAddResponse.XXX_unrecognized'; MemberAddResponse.XXX_sizecache' >.
 Global Instance into_val_MemberAddResponse `{ffi_syntax} : IntoVal MemberAddResponse.t.
 Admitted.
 
@@ -3709,52 +3709,52 @@ Global Instance into_val_typed_MemberAddResponse `{ffi_syntax} : IntoValTyped Me
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberAddResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberAddResponse MemberAddResponse.Header.
+Global Instance into_val_struct_field_MemberAddResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberAddResponse MemberAddResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddResponse_Member `{ffi_syntax} : IntoValStructField "Member" etcdserverpb.MemberAddResponse MemberAddResponse.Member.
+Global Instance into_val_struct_field_MemberAddResponse_Member `{ffi_syntax} : IntoValStructField "Member" etcdserverpb.MemberAddResponse MemberAddResponse.Member'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberAddResponse MemberAddResponse.Members.
+Global Instance into_val_struct_field_MemberAddResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberAddResponse MemberAddResponse.Members'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberAddResponse MemberAddResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberAddResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberAddResponse MemberAddResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberAddResponse MemberAddResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberAddResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberAddResponse MemberAddResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberAddResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberAddResponse MemberAddResponse.XXX_sizecache.
+Global Instance into_val_struct_field_MemberAddResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberAddResponse MemberAddResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberAddResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Member Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberAddResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Member' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberAddResponse (alist_val [
-      "Header" ::= #Header;
-      "Member" ::= #Member;
-      "Members" ::= #Members;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberAddResponse.mk Header Member Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Member" ::= #Member';
+      "Members" ::= #Members';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberAddResponse.mk Header' Member' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberRemoveRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberRemoveRequest.
 
 
 Global Instance settable_MemberRemoveRequest `{ffi_syntax}: Settable _ :=
-  settable! MemberRemoveRequest.mk < MemberRemoveRequest.ID; MemberRemoveRequest.XXX_NoUnkeyedLiteral; MemberRemoveRequest.XXX_unrecognized; MemberRemoveRequest.XXX_sizecache >.
+  settable! MemberRemoveRequest.mk < MemberRemoveRequest.ID'; MemberRemoveRequest.XXX_NoUnkeyedLiteral'; MemberRemoveRequest.XXX_unrecognized'; MemberRemoveRequest.XXX_sizecache' >.
 Global Instance into_val_MemberRemoveRequest `{ffi_syntax} : IntoVal MemberRemoveRequest.t.
 Admitted.
 
@@ -3766,45 +3766,45 @@ Global Instance into_val_typed_MemberRemoveRequest `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberRemoveRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.ID.
+Global Instance into_val_struct_field_MemberRemoveRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberRemoveRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberRemoveRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberRemoveRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberRemoveRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberRemoveRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.XXX_sizecache.
+Global Instance into_val_struct_field_MemberRemoveRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberRemoveRequest MemberRemoveRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberRemoveRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberRemoveRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberRemoveRequest (alist_val [
-      "ID" ::= #ID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberRemoveRequest.mk ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberRemoveRequest.mk ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberRemoveResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Members : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Members' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberRemoveResponse.
 
 
 Global Instance settable_MemberRemoveResponse `{ffi_syntax}: Settable _ :=
-  settable! MemberRemoveResponse.mk < MemberRemoveResponse.Header; MemberRemoveResponse.Members; MemberRemoveResponse.XXX_NoUnkeyedLiteral; MemberRemoveResponse.XXX_unrecognized; MemberRemoveResponse.XXX_sizecache >.
+  settable! MemberRemoveResponse.mk < MemberRemoveResponse.Header'; MemberRemoveResponse.Members'; MemberRemoveResponse.XXX_NoUnkeyedLiteral'; MemberRemoveResponse.XXX_unrecognized'; MemberRemoveResponse.XXX_sizecache' >.
 Global Instance into_val_MemberRemoveResponse `{ffi_syntax} : IntoVal MemberRemoveResponse.t.
 Admitted.
 
@@ -3816,49 +3816,49 @@ Global Instance into_val_typed_MemberRemoveResponse `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberRemoveResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.Header.
+Global Instance into_val_struct_field_MemberRemoveResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberRemoveResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.Members.
+Global Instance into_val_struct_field_MemberRemoveResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.Members'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberRemoveResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberRemoveResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberRemoveResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberRemoveResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberRemoveResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.XXX_sizecache.
+Global Instance into_val_struct_field_MemberRemoveResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberRemoveResponse MemberRemoveResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberRemoveResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberRemoveResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberRemoveResponse (alist_val [
-      "Header" ::= #Header;
-      "Members" ::= #Members;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberRemoveResponse.mk Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Members" ::= #Members';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberRemoveResponse.mk Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberUpdateRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  PeerURLs : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  PeerURLs' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberUpdateRequest.
 
 
 Global Instance settable_MemberUpdateRequest `{ffi_syntax}: Settable _ :=
-  settable! MemberUpdateRequest.mk < MemberUpdateRequest.ID; MemberUpdateRequest.PeerURLs; MemberUpdateRequest.XXX_NoUnkeyedLiteral; MemberUpdateRequest.XXX_unrecognized; MemberUpdateRequest.XXX_sizecache >.
+  settable! MemberUpdateRequest.mk < MemberUpdateRequest.ID'; MemberUpdateRequest.PeerURLs'; MemberUpdateRequest.XXX_NoUnkeyedLiteral'; MemberUpdateRequest.XXX_unrecognized'; MemberUpdateRequest.XXX_sizecache' >.
 Global Instance into_val_MemberUpdateRequest `{ffi_syntax} : IntoVal MemberUpdateRequest.t.
 Admitted.
 
@@ -3870,49 +3870,49 @@ Global Instance into_val_typed_MemberUpdateRequest `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberUpdateRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.ID.
+Global Instance into_val_struct_field_MemberUpdateRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateRequest_PeerURLs `{ffi_syntax} : IntoValStructField "PeerURLs" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.PeerURLs.
+Global Instance into_val_struct_field_MemberUpdateRequest_PeerURLs `{ffi_syntax} : IntoValStructField "PeerURLs" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.PeerURLs'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberUpdateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberUpdateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.XXX_sizecache.
+Global Instance into_val_struct_field_MemberUpdateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberUpdateRequest MemberUpdateRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberUpdateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID PeerURLs XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberUpdateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' PeerURLs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberUpdateRequest (alist_val [
-      "ID" ::= #ID;
-      "PeerURLs" ::= #PeerURLs;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberUpdateRequest.mk ID PeerURLs XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "PeerURLs" ::= #PeerURLs';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberUpdateRequest.mk ID' PeerURLs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberUpdateResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Members : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Members' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberUpdateResponse.
 
 
 Global Instance settable_MemberUpdateResponse `{ffi_syntax}: Settable _ :=
-  settable! MemberUpdateResponse.mk < MemberUpdateResponse.Header; MemberUpdateResponse.Members; MemberUpdateResponse.XXX_NoUnkeyedLiteral; MemberUpdateResponse.XXX_unrecognized; MemberUpdateResponse.XXX_sizecache >.
+  settable! MemberUpdateResponse.mk < MemberUpdateResponse.Header'; MemberUpdateResponse.Members'; MemberUpdateResponse.XXX_NoUnkeyedLiteral'; MemberUpdateResponse.XXX_unrecognized'; MemberUpdateResponse.XXX_sizecache' >.
 Global Instance into_val_MemberUpdateResponse `{ffi_syntax} : IntoVal MemberUpdateResponse.t.
 Admitted.
 
@@ -3924,48 +3924,48 @@ Global Instance into_val_typed_MemberUpdateResponse `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberUpdateResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.Header.
+Global Instance into_val_struct_field_MemberUpdateResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.Members.
+Global Instance into_val_struct_field_MemberUpdateResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.Members'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberUpdateResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberUpdateResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberUpdateResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.XXX_sizecache.
+Global Instance into_val_struct_field_MemberUpdateResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberUpdateResponse MemberUpdateResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberUpdateResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberUpdateResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberUpdateResponse (alist_val [
-      "Header" ::= #Header;
-      "Members" ::= #Members;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberUpdateResponse.mk Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Members" ::= #Members';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberUpdateResponse.mk Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberListRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Linearizable : bool;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Linearizable' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberListRequest.
 
 
 Global Instance settable_MemberListRequest `{ffi_syntax}: Settable _ :=
-  settable! MemberListRequest.mk < MemberListRequest.Linearizable; MemberListRequest.XXX_NoUnkeyedLiteral; MemberListRequest.XXX_unrecognized; MemberListRequest.XXX_sizecache >.
+  settable! MemberListRequest.mk < MemberListRequest.Linearizable'; MemberListRequest.XXX_NoUnkeyedLiteral'; MemberListRequest.XXX_unrecognized'; MemberListRequest.XXX_sizecache' >.
 Global Instance into_val_MemberListRequest `{ffi_syntax} : IntoVal MemberListRequest.t.
 Admitted.
 
@@ -3977,45 +3977,45 @@ Global Instance into_val_typed_MemberListRequest `{ffi_syntax} : IntoValTyped Me
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberListRequest_Linearizable `{ffi_syntax} : IntoValStructField "Linearizable" etcdserverpb.MemberListRequest MemberListRequest.Linearizable.
+Global Instance into_val_struct_field_MemberListRequest_Linearizable `{ffi_syntax} : IntoValStructField "Linearizable" etcdserverpb.MemberListRequest MemberListRequest.Linearizable'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberListRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberListRequest MemberListRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberListRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberListRequest MemberListRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberListRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberListRequest MemberListRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberListRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberListRequest MemberListRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberListRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberListRequest MemberListRequest.XXX_sizecache.
+Global Instance into_val_struct_field_MemberListRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberListRequest MemberListRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberListRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Linearizable XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberListRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Linearizable' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberListRequest (alist_val [
-      "Linearizable" ::= #Linearizable;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberListRequest.mk Linearizable XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Linearizable" ::= #Linearizable';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberListRequest.mk Linearizable' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberListResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Members : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Members' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberListResponse.
 
 
 Global Instance settable_MemberListResponse `{ffi_syntax}: Settable _ :=
-  settable! MemberListResponse.mk < MemberListResponse.Header; MemberListResponse.Members; MemberListResponse.XXX_NoUnkeyedLiteral; MemberListResponse.XXX_unrecognized; MemberListResponse.XXX_sizecache >.
+  settable! MemberListResponse.mk < MemberListResponse.Header'; MemberListResponse.Members'; MemberListResponse.XXX_NoUnkeyedLiteral'; MemberListResponse.XXX_unrecognized'; MemberListResponse.XXX_sizecache' >.
 Global Instance into_val_MemberListResponse `{ffi_syntax} : IntoVal MemberListResponse.t.
 Admitted.
 
@@ -4027,48 +4027,48 @@ Global Instance into_val_typed_MemberListResponse `{ffi_syntax} : IntoValTyped M
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberListResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberListResponse MemberListResponse.Header.
+Global Instance into_val_struct_field_MemberListResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberListResponse MemberListResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberListResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberListResponse MemberListResponse.Members.
+Global Instance into_val_struct_field_MemberListResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberListResponse MemberListResponse.Members'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberListResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberListResponse MemberListResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberListResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberListResponse MemberListResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberListResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberListResponse MemberListResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberListResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberListResponse MemberListResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberListResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberListResponse MemberListResponse.XXX_sizecache.
+Global Instance into_val_struct_field_MemberListResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberListResponse MemberListResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberListResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberListResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberListResponse (alist_val [
-      "Header" ::= #Header;
-      "Members" ::= #Members;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberListResponse.mk Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Members" ::= #Members';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberListResponse.mk Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberPromoteRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  ID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberPromoteRequest.
 
 
 Global Instance settable_MemberPromoteRequest `{ffi_syntax}: Settable _ :=
-  settable! MemberPromoteRequest.mk < MemberPromoteRequest.ID; MemberPromoteRequest.XXX_NoUnkeyedLiteral; MemberPromoteRequest.XXX_unrecognized; MemberPromoteRequest.XXX_sizecache >.
+  settable! MemberPromoteRequest.mk < MemberPromoteRequest.ID'; MemberPromoteRequest.XXX_NoUnkeyedLiteral'; MemberPromoteRequest.XXX_unrecognized'; MemberPromoteRequest.XXX_sizecache' >.
 Global Instance into_val_MemberPromoteRequest `{ffi_syntax} : IntoVal MemberPromoteRequest.t.
 Admitted.
 
@@ -4080,45 +4080,45 @@ Global Instance into_val_typed_MemberPromoteRequest `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberPromoteRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.ID.
+Global Instance into_val_struct_field_MemberPromoteRequest_ID `{ffi_syntax} : IntoValStructField "ID" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberPromoteRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberPromoteRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberPromoteRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberPromoteRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberPromoteRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.XXX_sizecache.
+Global Instance into_val_struct_field_MemberPromoteRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberPromoteRequest MemberPromoteRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberPromoteRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberPromoteRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberPromoteRequest (alist_val [
-      "ID" ::= #ID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberPromoteRequest.mk ID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "ID" ::= #ID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberPromoteRequest.mk ID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MemberPromoteResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Members : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Members' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MemberPromoteResponse.
 
 
 Global Instance settable_MemberPromoteResponse `{ffi_syntax}: Settable _ :=
-  settable! MemberPromoteResponse.mk < MemberPromoteResponse.Header; MemberPromoteResponse.Members; MemberPromoteResponse.XXX_NoUnkeyedLiteral; MemberPromoteResponse.XXX_unrecognized; MemberPromoteResponse.XXX_sizecache >.
+  settable! MemberPromoteResponse.mk < MemberPromoteResponse.Header'; MemberPromoteResponse.Members'; MemberPromoteResponse.XXX_NoUnkeyedLiteral'; MemberPromoteResponse.XXX_unrecognized'; MemberPromoteResponse.XXX_sizecache' >.
 Global Instance into_val_MemberPromoteResponse `{ffi_syntax} : IntoVal MemberPromoteResponse.t.
 Admitted.
 
@@ -4130,47 +4130,47 @@ Global Instance into_val_typed_MemberPromoteResponse `{ffi_syntax} : IntoValType
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemberPromoteResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.Header.
+Global Instance into_val_struct_field_MemberPromoteResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberPromoteResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.Members.
+Global Instance into_val_struct_field_MemberPromoteResponse_Members `{ffi_syntax} : IntoValStructField "Members" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.Members'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberPromoteResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MemberPromoteResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberPromoteResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_MemberPromoteResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MemberPromoteResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.XXX_sizecache.
+Global Instance into_val_struct_field_MemberPromoteResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MemberPromoteResponse MemberPromoteResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MemberPromoteResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MemberPromoteResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MemberPromoteResponse (alist_val [
-      "Header" ::= #Header;
-      "Members" ::= #Members;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MemberPromoteResponse.mk Header Members XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Members" ::= #Members';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MemberPromoteResponse.mk Header' Members' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module DefragmentRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End DefragmentRequest.
 
 
 Global Instance settable_DefragmentRequest `{ffi_syntax}: Settable _ :=
-  settable! DefragmentRequest.mk < DefragmentRequest.XXX_NoUnkeyedLiteral; DefragmentRequest.XXX_unrecognized; DefragmentRequest.XXX_sizecache >.
+  settable! DefragmentRequest.mk < DefragmentRequest.XXX_NoUnkeyedLiteral'; DefragmentRequest.XXX_unrecognized'; DefragmentRequest.XXX_sizecache' >.
 Global Instance into_val_DefragmentRequest `{ffi_syntax} : IntoVal DefragmentRequest.t.
 Admitted.
 
@@ -4182,40 +4182,40 @@ Global Instance into_val_typed_DefragmentRequest `{ffi_syntax} : IntoValTyped De
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_DefragmentRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DefragmentRequest DefragmentRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_DefragmentRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DefragmentRequest DefragmentRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_DefragmentRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DefragmentRequest DefragmentRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_DefragmentRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DefragmentRequest DefragmentRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_DefragmentRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DefragmentRequest DefragmentRequest.XXX_sizecache.
+Global Instance into_val_struct_field_DefragmentRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DefragmentRequest DefragmentRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_DefragmentRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_DefragmentRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.DefragmentRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(DefragmentRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(DefragmentRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module DefragmentResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End DefragmentResponse.
 
 
 Global Instance settable_DefragmentResponse `{ffi_syntax}: Settable _ :=
-  settable! DefragmentResponse.mk < DefragmentResponse.Header; DefragmentResponse.XXX_NoUnkeyedLiteral; DefragmentResponse.XXX_unrecognized; DefragmentResponse.XXX_sizecache >.
+  settable! DefragmentResponse.mk < DefragmentResponse.Header'; DefragmentResponse.XXX_NoUnkeyedLiteral'; DefragmentResponse.XXX_unrecognized'; DefragmentResponse.XXX_sizecache' >.
 Global Instance into_val_DefragmentResponse `{ffi_syntax} : IntoVal DefragmentResponse.t.
 Admitted.
 
@@ -4227,44 +4227,44 @@ Global Instance into_val_typed_DefragmentResponse `{ffi_syntax} : IntoValTyped D
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_DefragmentResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.DefragmentResponse DefragmentResponse.Header.
+Global Instance into_val_struct_field_DefragmentResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.DefragmentResponse DefragmentResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_DefragmentResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DefragmentResponse DefragmentResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_DefragmentResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DefragmentResponse DefragmentResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_DefragmentResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DefragmentResponse DefragmentResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_DefragmentResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DefragmentResponse DefragmentResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_DefragmentResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DefragmentResponse DefragmentResponse.XXX_sizecache.
+Global Instance into_val_struct_field_DefragmentResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DefragmentResponse DefragmentResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_DefragmentResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_DefragmentResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.DefragmentResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(DefragmentResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(DefragmentResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MoveLeaderRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  TargetID : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  TargetID' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MoveLeaderRequest.
 
 
 Global Instance settable_MoveLeaderRequest `{ffi_syntax}: Settable _ :=
-  settable! MoveLeaderRequest.mk < MoveLeaderRequest.TargetID; MoveLeaderRequest.XXX_NoUnkeyedLiteral; MoveLeaderRequest.XXX_unrecognized; MoveLeaderRequest.XXX_sizecache >.
+  settable! MoveLeaderRequest.mk < MoveLeaderRequest.TargetID'; MoveLeaderRequest.XXX_NoUnkeyedLiteral'; MoveLeaderRequest.XXX_unrecognized'; MoveLeaderRequest.XXX_sizecache' >.
 Global Instance into_val_MoveLeaderRequest `{ffi_syntax} : IntoVal MoveLeaderRequest.t.
 Admitted.
 
@@ -4276,44 +4276,44 @@ Global Instance into_val_typed_MoveLeaderRequest `{ffi_syntax} : IntoValTyped Mo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MoveLeaderRequest_TargetID `{ffi_syntax} : IntoValStructField "TargetID" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.TargetID.
+Global Instance into_val_struct_field_MoveLeaderRequest_TargetID `{ffi_syntax} : IntoValStructField "TargetID" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.TargetID'.
 Admitted.
 
-Global Instance into_val_struct_field_MoveLeaderRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MoveLeaderRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MoveLeaderRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_MoveLeaderRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MoveLeaderRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.XXX_sizecache.
+Global Instance into_val_struct_field_MoveLeaderRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MoveLeaderRequest MoveLeaderRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MoveLeaderRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} TargetID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MoveLeaderRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} TargetID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MoveLeaderRequest (alist_val [
-      "TargetID" ::= #TargetID;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MoveLeaderRequest.mk TargetID XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "TargetID" ::= #TargetID';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MoveLeaderRequest.mk TargetID' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module MoveLeaderResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End MoveLeaderResponse.
 
 
 Global Instance settable_MoveLeaderResponse `{ffi_syntax}: Settable _ :=
-  settable! MoveLeaderResponse.mk < MoveLeaderResponse.Header; MoveLeaderResponse.XXX_NoUnkeyedLiteral; MoveLeaderResponse.XXX_unrecognized; MoveLeaderResponse.XXX_sizecache >.
+  settable! MoveLeaderResponse.mk < MoveLeaderResponse.Header'; MoveLeaderResponse.XXX_NoUnkeyedLiteral'; MoveLeaderResponse.XXX_unrecognized'; MoveLeaderResponse.XXX_sizecache' >.
 Global Instance into_val_MoveLeaderResponse `{ffi_syntax} : IntoVal MoveLeaderResponse.t.
 Admitted.
 
@@ -4325,46 +4325,46 @@ Global Instance into_val_typed_MoveLeaderResponse `{ffi_syntax} : IntoValTyped M
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MoveLeaderResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.Header.
+Global Instance into_val_struct_field_MoveLeaderResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_MoveLeaderResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_MoveLeaderResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_MoveLeaderResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_MoveLeaderResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_MoveLeaderResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.XXX_sizecache.
+Global Instance into_val_struct_field_MoveLeaderResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.MoveLeaderResponse MoveLeaderResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_MoveLeaderResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_MoveLeaderResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.MoveLeaderResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(MoveLeaderResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(MoveLeaderResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AlarmRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Action : w32;
-  MemberID : w64;
-  Alarm : w32;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Action' : w32;
+  MemberID' : w64;
+  Alarm' : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AlarmRequest.
 
 
 Global Instance settable_AlarmRequest `{ffi_syntax}: Settable _ :=
-  settable! AlarmRequest.mk < AlarmRequest.Action; AlarmRequest.MemberID; AlarmRequest.Alarm; AlarmRequest.XXX_NoUnkeyedLiteral; AlarmRequest.XXX_unrecognized; AlarmRequest.XXX_sizecache >.
+  settable! AlarmRequest.mk < AlarmRequest.Action'; AlarmRequest.MemberID'; AlarmRequest.Alarm'; AlarmRequest.XXX_NoUnkeyedLiteral'; AlarmRequest.XXX_unrecognized'; AlarmRequest.XXX_sizecache' >.
 Global Instance into_val_AlarmRequest `{ffi_syntax} : IntoVal AlarmRequest.t.
 Admitted.
 
@@ -4376,53 +4376,53 @@ Global Instance into_val_typed_AlarmRequest `{ffi_syntax} : IntoValTyped AlarmRe
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AlarmRequest_Action `{ffi_syntax} : IntoValStructField "Action" etcdserverpb.AlarmRequest AlarmRequest.Action.
+Global Instance into_val_struct_field_AlarmRequest_Action `{ffi_syntax} : IntoValStructField "Action" etcdserverpb.AlarmRequest AlarmRequest.Action'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmRequest_MemberID `{ffi_syntax} : IntoValStructField "MemberID" etcdserverpb.AlarmRequest AlarmRequest.MemberID.
+Global Instance into_val_struct_field_AlarmRequest_MemberID `{ffi_syntax} : IntoValStructField "MemberID" etcdserverpb.AlarmRequest AlarmRequest.MemberID'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmRequest_Alarm `{ffi_syntax} : IntoValStructField "Alarm" etcdserverpb.AlarmRequest AlarmRequest.Alarm.
+Global Instance into_val_struct_field_AlarmRequest_Alarm `{ffi_syntax} : IntoValStructField "Alarm" etcdserverpb.AlarmRequest AlarmRequest.Alarm'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AlarmRequest AlarmRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AlarmRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AlarmRequest AlarmRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AlarmRequest AlarmRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AlarmRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AlarmRequest AlarmRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AlarmRequest AlarmRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AlarmRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AlarmRequest AlarmRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AlarmRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Action MemberID Alarm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AlarmRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Action' MemberID' Alarm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AlarmRequest (alist_val [
-      "Action" ::= #Action;
-      "MemberID" ::= #MemberID;
-      "Alarm" ::= #Alarm;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AlarmRequest.mk Action MemberID Alarm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Action" ::= #Action';
+      "MemberID" ::= #MemberID';
+      "Alarm" ::= #Alarm';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AlarmRequest.mk Action' MemberID' Alarm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AlarmMember.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  MemberID : w64;
-  Alarm : w32;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  MemberID' : w64;
+  Alarm' : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AlarmMember.
 
 
 Global Instance settable_AlarmMember `{ffi_syntax}: Settable _ :=
-  settable! AlarmMember.mk < AlarmMember.MemberID; AlarmMember.Alarm; AlarmMember.XXX_NoUnkeyedLiteral; AlarmMember.XXX_unrecognized; AlarmMember.XXX_sizecache >.
+  settable! AlarmMember.mk < AlarmMember.MemberID'; AlarmMember.Alarm'; AlarmMember.XXX_NoUnkeyedLiteral'; AlarmMember.XXX_unrecognized'; AlarmMember.XXX_sizecache' >.
 Global Instance into_val_AlarmMember `{ffi_syntax} : IntoVal AlarmMember.t.
 Admitted.
 
@@ -4434,49 +4434,49 @@ Global Instance into_val_typed_AlarmMember `{ffi_syntax} : IntoValTyped AlarmMem
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AlarmMember_MemberID `{ffi_syntax} : IntoValStructField "MemberID" etcdserverpb.AlarmMember AlarmMember.MemberID.
+Global Instance into_val_struct_field_AlarmMember_MemberID `{ffi_syntax} : IntoValStructField "MemberID" etcdserverpb.AlarmMember AlarmMember.MemberID'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmMember_Alarm `{ffi_syntax} : IntoValStructField "Alarm" etcdserverpb.AlarmMember AlarmMember.Alarm.
+Global Instance into_val_struct_field_AlarmMember_Alarm `{ffi_syntax} : IntoValStructField "Alarm" etcdserverpb.AlarmMember AlarmMember.Alarm'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmMember_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AlarmMember AlarmMember.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AlarmMember_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AlarmMember AlarmMember.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmMember_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AlarmMember AlarmMember.XXX_unrecognized.
+Global Instance into_val_struct_field_AlarmMember_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AlarmMember AlarmMember.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmMember_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AlarmMember AlarmMember.XXX_sizecache.
+Global Instance into_val_struct_field_AlarmMember_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AlarmMember AlarmMember.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AlarmMember `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} MemberID Alarm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AlarmMember `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} MemberID' Alarm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AlarmMember (alist_val [
-      "MemberID" ::= #MemberID;
-      "Alarm" ::= #Alarm;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AlarmMember.mk MemberID Alarm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "MemberID" ::= #MemberID';
+      "Alarm" ::= #Alarm';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AlarmMember.mk MemberID' Alarm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AlarmResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Alarms : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Alarms' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AlarmResponse.
 
 
 Global Instance settable_AlarmResponse `{ffi_syntax}: Settable _ :=
-  settable! AlarmResponse.mk < AlarmResponse.Header; AlarmResponse.Alarms; AlarmResponse.XXX_NoUnkeyedLiteral; AlarmResponse.XXX_unrecognized; AlarmResponse.XXX_sizecache >.
+  settable! AlarmResponse.mk < AlarmResponse.Header'; AlarmResponse.Alarms'; AlarmResponse.XXX_NoUnkeyedLiteral'; AlarmResponse.XXX_unrecognized'; AlarmResponse.XXX_sizecache' >.
 Global Instance into_val_AlarmResponse `{ffi_syntax} : IntoVal AlarmResponse.t.
 Admitted.
 
@@ -4488,49 +4488,49 @@ Global Instance into_val_typed_AlarmResponse `{ffi_syntax} : IntoValTyped AlarmR
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AlarmResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AlarmResponse AlarmResponse.Header.
+Global Instance into_val_struct_field_AlarmResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AlarmResponse AlarmResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmResponse_Alarms `{ffi_syntax} : IntoValStructField "Alarms" etcdserverpb.AlarmResponse AlarmResponse.Alarms.
+Global Instance into_val_struct_field_AlarmResponse_Alarms `{ffi_syntax} : IntoValStructField "Alarms" etcdserverpb.AlarmResponse AlarmResponse.Alarms'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AlarmResponse AlarmResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AlarmResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AlarmResponse AlarmResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AlarmResponse AlarmResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AlarmResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AlarmResponse AlarmResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AlarmResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AlarmResponse AlarmResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AlarmResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AlarmResponse AlarmResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AlarmResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Alarms XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AlarmResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Alarms' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AlarmResponse (alist_val [
-      "Header" ::= #Header;
-      "Alarms" ::= #Alarms;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AlarmResponse.mk Header Alarms XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Alarms" ::= #Alarms';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AlarmResponse.mk Header' Alarms' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module DowngradeRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Action : w32;
-  Version : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Action' : w32;
+  Version' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End DowngradeRequest.
 
 
 Global Instance settable_DowngradeRequest `{ffi_syntax}: Settable _ :=
-  settable! DowngradeRequest.mk < DowngradeRequest.Action; DowngradeRequest.Version; DowngradeRequest.XXX_NoUnkeyedLiteral; DowngradeRequest.XXX_unrecognized; DowngradeRequest.XXX_sizecache >.
+  settable! DowngradeRequest.mk < DowngradeRequest.Action'; DowngradeRequest.Version'; DowngradeRequest.XXX_NoUnkeyedLiteral'; DowngradeRequest.XXX_unrecognized'; DowngradeRequest.XXX_sizecache' >.
 Global Instance into_val_DowngradeRequest `{ffi_syntax} : IntoVal DowngradeRequest.t.
 Admitted.
 
@@ -4542,49 +4542,49 @@ Global Instance into_val_typed_DowngradeRequest `{ffi_syntax} : IntoValTyped Dow
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_DowngradeRequest_Action `{ffi_syntax} : IntoValStructField "Action" etcdserverpb.DowngradeRequest DowngradeRequest.Action.
+Global Instance into_val_struct_field_DowngradeRequest_Action `{ffi_syntax} : IntoValStructField "Action" etcdserverpb.DowngradeRequest DowngradeRequest.Action'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeRequest_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.DowngradeRequest DowngradeRequest.Version.
+Global Instance into_val_struct_field_DowngradeRequest_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.DowngradeRequest DowngradeRequest.Version'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DowngradeRequest DowngradeRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_DowngradeRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DowngradeRequest DowngradeRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DowngradeRequest DowngradeRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_DowngradeRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DowngradeRequest DowngradeRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DowngradeRequest DowngradeRequest.XXX_sizecache.
+Global Instance into_val_struct_field_DowngradeRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DowngradeRequest DowngradeRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_DowngradeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Action Version XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_DowngradeRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Action' Version' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.DowngradeRequest (alist_val [
-      "Action" ::= #Action;
-      "Version" ::= #Version;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(DowngradeRequest.mk Action Version XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Action" ::= #Action';
+      "Version" ::= #Version';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(DowngradeRequest.mk Action' Version' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module DowngradeResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Version : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Version' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End DowngradeResponse.
 
 
 Global Instance settable_DowngradeResponse `{ffi_syntax}: Settable _ :=
-  settable! DowngradeResponse.mk < DowngradeResponse.Header; DowngradeResponse.Version; DowngradeResponse.XXX_NoUnkeyedLiteral; DowngradeResponse.XXX_unrecognized; DowngradeResponse.XXX_sizecache >.
+  settable! DowngradeResponse.mk < DowngradeResponse.Header'; DowngradeResponse.Version'; DowngradeResponse.XXX_NoUnkeyedLiteral'; DowngradeResponse.XXX_unrecognized'; DowngradeResponse.XXX_sizecache' >.
 Global Instance into_val_DowngradeResponse `{ffi_syntax} : IntoVal DowngradeResponse.t.
 Admitted.
 
@@ -4596,47 +4596,47 @@ Global Instance into_val_typed_DowngradeResponse `{ffi_syntax} : IntoValTyped Do
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_DowngradeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.DowngradeResponse DowngradeResponse.Header.
+Global Instance into_val_struct_field_DowngradeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.DowngradeResponse DowngradeResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeResponse_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.DowngradeResponse DowngradeResponse.Version.
+Global Instance into_val_struct_field_DowngradeResponse_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.DowngradeResponse DowngradeResponse.Version'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DowngradeResponse DowngradeResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_DowngradeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DowngradeResponse DowngradeResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DowngradeResponse DowngradeResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_DowngradeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DowngradeResponse DowngradeResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_DowngradeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DowngradeResponse DowngradeResponse.XXX_sizecache.
+Global Instance into_val_struct_field_DowngradeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DowngradeResponse DowngradeResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_DowngradeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Version XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_DowngradeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Version' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.DowngradeResponse (alist_val [
-      "Header" ::= #Header;
-      "Version" ::= #Version;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(DowngradeResponse.mk Header Version XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Version" ::= #Version';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(DowngradeResponse.mk Header' Version' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module StatusRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End StatusRequest.
 
 
 Global Instance settable_StatusRequest `{ffi_syntax}: Settable _ :=
-  settable! StatusRequest.mk < StatusRequest.XXX_NoUnkeyedLiteral; StatusRequest.XXX_unrecognized; StatusRequest.XXX_sizecache >.
+  settable! StatusRequest.mk < StatusRequest.XXX_NoUnkeyedLiteral'; StatusRequest.XXX_unrecognized'; StatusRequest.XXX_sizecache' >.
 Global Instance into_val_StatusRequest `{ffi_syntax} : IntoVal StatusRequest.t.
 Admitted.
 
@@ -4648,51 +4648,51 @@ Global Instance into_val_typed_StatusRequest `{ffi_syntax} : IntoValTyped Status
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_StatusRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.StatusRequest StatusRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_StatusRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.StatusRequest StatusRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.StatusRequest StatusRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_StatusRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.StatusRequest StatusRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.StatusRequest StatusRequest.XXX_sizecache.
+Global Instance into_val_struct_field_StatusRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.StatusRequest StatusRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_StatusRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_StatusRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.StatusRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(StatusRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(StatusRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module StatusResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Version : go_string;
-  DbSize : w64;
-  Leader : w64;
-  RaftIndex : w64;
-  RaftTerm : w64;
-  RaftAppliedIndex : w64;
-  Errors : slice.t;
-  DbSizeInUse : w64;
-  IsLearner : bool;
-  StorageVersion : go_string;
-  DbSizeQuota : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Version' : go_string;
+  DbSize' : w64;
+  Leader' : w64;
+  RaftIndex' : w64;
+  RaftTerm' : w64;
+  RaftAppliedIndex' : w64;
+  Errors' : slice.t;
+  DbSizeInUse' : w64;
+  IsLearner' : bool;
+  StorageVersion' : go_string;
+  DbSizeQuota' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End StatusResponse.
 
 
 Global Instance settable_StatusResponse `{ffi_syntax}: Settable _ :=
-  settable! StatusResponse.mk < StatusResponse.Header; StatusResponse.Version; StatusResponse.DbSize; StatusResponse.Leader; StatusResponse.RaftIndex; StatusResponse.RaftTerm; StatusResponse.RaftAppliedIndex; StatusResponse.Errors; StatusResponse.DbSizeInUse; StatusResponse.IsLearner; StatusResponse.StorageVersion; StatusResponse.DbSizeQuota; StatusResponse.XXX_NoUnkeyedLiteral; StatusResponse.XXX_unrecognized; StatusResponse.XXX_sizecache >.
+  settable! StatusResponse.mk < StatusResponse.Header'; StatusResponse.Version'; StatusResponse.DbSize'; StatusResponse.Leader'; StatusResponse.RaftIndex'; StatusResponse.RaftTerm'; StatusResponse.RaftAppliedIndex'; StatusResponse.Errors'; StatusResponse.DbSizeInUse'; StatusResponse.IsLearner'; StatusResponse.StorageVersion'; StatusResponse.DbSizeQuota'; StatusResponse.XXX_NoUnkeyedLiteral'; StatusResponse.XXX_unrecognized'; StatusResponse.XXX_sizecache' >.
 Global Instance into_val_StatusResponse `{ffi_syntax} : IntoVal StatusResponse.t.
 Admitted.
 
@@ -4704,87 +4704,87 @@ Global Instance into_val_typed_StatusResponse `{ffi_syntax} : IntoValTyped Statu
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_StatusResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.StatusResponse StatusResponse.Header.
+Global Instance into_val_struct_field_StatusResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.StatusResponse StatusResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.StatusResponse StatusResponse.Version.
+Global Instance into_val_struct_field_StatusResponse_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.StatusResponse StatusResponse.Version'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_DbSize `{ffi_syntax} : IntoValStructField "DbSize" etcdserverpb.StatusResponse StatusResponse.DbSize.
+Global Instance into_val_struct_field_StatusResponse_DbSize `{ffi_syntax} : IntoValStructField "DbSize" etcdserverpb.StatusResponse StatusResponse.DbSize'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_Leader `{ffi_syntax} : IntoValStructField "Leader" etcdserverpb.StatusResponse StatusResponse.Leader.
+Global Instance into_val_struct_field_StatusResponse_Leader `{ffi_syntax} : IntoValStructField "Leader" etcdserverpb.StatusResponse StatusResponse.Leader'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_RaftIndex `{ffi_syntax} : IntoValStructField "RaftIndex" etcdserverpb.StatusResponse StatusResponse.RaftIndex.
+Global Instance into_val_struct_field_StatusResponse_RaftIndex `{ffi_syntax} : IntoValStructField "RaftIndex" etcdserverpb.StatusResponse StatusResponse.RaftIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_RaftTerm `{ffi_syntax} : IntoValStructField "RaftTerm" etcdserverpb.StatusResponse StatusResponse.RaftTerm.
+Global Instance into_val_struct_field_StatusResponse_RaftTerm `{ffi_syntax} : IntoValStructField "RaftTerm" etcdserverpb.StatusResponse StatusResponse.RaftTerm'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_RaftAppliedIndex `{ffi_syntax} : IntoValStructField "RaftAppliedIndex" etcdserverpb.StatusResponse StatusResponse.RaftAppliedIndex.
+Global Instance into_val_struct_field_StatusResponse_RaftAppliedIndex `{ffi_syntax} : IntoValStructField "RaftAppliedIndex" etcdserverpb.StatusResponse StatusResponse.RaftAppliedIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_Errors `{ffi_syntax} : IntoValStructField "Errors" etcdserverpb.StatusResponse StatusResponse.Errors.
+Global Instance into_val_struct_field_StatusResponse_Errors `{ffi_syntax} : IntoValStructField "Errors" etcdserverpb.StatusResponse StatusResponse.Errors'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_DbSizeInUse `{ffi_syntax} : IntoValStructField "DbSizeInUse" etcdserverpb.StatusResponse StatusResponse.DbSizeInUse.
+Global Instance into_val_struct_field_StatusResponse_DbSizeInUse `{ffi_syntax} : IntoValStructField "DbSizeInUse" etcdserverpb.StatusResponse StatusResponse.DbSizeInUse'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" etcdserverpb.StatusResponse StatusResponse.IsLearner.
+Global Instance into_val_struct_field_StatusResponse_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" etcdserverpb.StatusResponse StatusResponse.IsLearner'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_StorageVersion `{ffi_syntax} : IntoValStructField "StorageVersion" etcdserverpb.StatusResponse StatusResponse.StorageVersion.
+Global Instance into_val_struct_field_StatusResponse_StorageVersion `{ffi_syntax} : IntoValStructField "StorageVersion" etcdserverpb.StatusResponse StatusResponse.StorageVersion'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_DbSizeQuota `{ffi_syntax} : IntoValStructField "DbSizeQuota" etcdserverpb.StatusResponse StatusResponse.DbSizeQuota.
+Global Instance into_val_struct_field_StatusResponse_DbSizeQuota `{ffi_syntax} : IntoValStructField "DbSizeQuota" etcdserverpb.StatusResponse StatusResponse.DbSizeQuota'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.StatusResponse StatusResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_StatusResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.StatusResponse StatusResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.StatusResponse StatusResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_StatusResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.StatusResponse StatusResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_StatusResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.StatusResponse StatusResponse.XXX_sizecache.
+Global Instance into_val_struct_field_StatusResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.StatusResponse StatusResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_StatusResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Version DbSize Leader RaftIndex RaftTerm RaftAppliedIndex Errors DbSizeInUse IsLearner StorageVersion DbSizeQuota XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_StatusResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Version' DbSize' Leader' RaftIndex' RaftTerm' RaftAppliedIndex' Errors' DbSizeInUse' IsLearner' StorageVersion' DbSizeQuota' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.StatusResponse (alist_val [
-      "Header" ::= #Header;
-      "Version" ::= #Version;
-      "DbSize" ::= #DbSize;
-      "Leader" ::= #Leader;
-      "RaftIndex" ::= #RaftIndex;
-      "RaftTerm" ::= #RaftTerm;
-      "RaftAppliedIndex" ::= #RaftAppliedIndex;
-      "Errors" ::= #Errors;
-      "DbSizeInUse" ::= #DbSizeInUse;
-      "IsLearner" ::= #IsLearner;
-      "StorageVersion" ::= #StorageVersion;
-      "DbSizeQuota" ::= #DbSizeQuota;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(StatusResponse.mk Header Version DbSize Leader RaftIndex RaftTerm RaftAppliedIndex Errors DbSizeInUse IsLearner StorageVersion DbSizeQuota XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Version" ::= #Version';
+      "DbSize" ::= #DbSize';
+      "Leader" ::= #Leader';
+      "RaftIndex" ::= #RaftIndex';
+      "RaftTerm" ::= #RaftTerm';
+      "RaftAppliedIndex" ::= #RaftAppliedIndex';
+      "Errors" ::= #Errors';
+      "DbSizeInUse" ::= #DbSizeInUse';
+      "IsLearner" ::= #IsLearner';
+      "StorageVersion" ::= #StorageVersion';
+      "DbSizeQuota" ::= #DbSizeQuota';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(StatusResponse.mk Header' Version' DbSize' Leader' RaftIndex' RaftTerm' RaftAppliedIndex' Errors' DbSizeInUse' IsLearner' StorageVersion' DbSizeQuota' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthEnableRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthEnableRequest.
 
 
 Global Instance settable_AuthEnableRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthEnableRequest.mk < AuthEnableRequest.XXX_NoUnkeyedLiteral; AuthEnableRequest.XXX_unrecognized; AuthEnableRequest.XXX_sizecache >.
+  settable! AuthEnableRequest.mk < AuthEnableRequest.XXX_NoUnkeyedLiteral'; AuthEnableRequest.XXX_unrecognized'; AuthEnableRequest.XXX_sizecache' >.
 Global Instance into_val_AuthEnableRequest `{ffi_syntax} : IntoVal AuthEnableRequest.t.
 Admitted.
 
@@ -4796,39 +4796,39 @@ Global Instance into_val_typed_AuthEnableRequest `{ffi_syntax} : IntoValTyped Au
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthEnableRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthEnableRequest AuthEnableRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthEnableRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthEnableRequest AuthEnableRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthEnableRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthEnableRequest AuthEnableRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthEnableRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthEnableRequest AuthEnableRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthEnableRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthEnableRequest AuthEnableRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthEnableRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthEnableRequest AuthEnableRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthEnableRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthEnableRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthEnableRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthEnableRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthEnableRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthDisableRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthDisableRequest.
 
 
 Global Instance settable_AuthDisableRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthDisableRequest.mk < AuthDisableRequest.XXX_NoUnkeyedLiteral; AuthDisableRequest.XXX_unrecognized; AuthDisableRequest.XXX_sizecache >.
+  settable! AuthDisableRequest.mk < AuthDisableRequest.XXX_NoUnkeyedLiteral'; AuthDisableRequest.XXX_unrecognized'; AuthDisableRequest.XXX_sizecache' >.
 Global Instance into_val_AuthDisableRequest `{ffi_syntax} : IntoVal AuthDisableRequest.t.
 Admitted.
 
@@ -4840,39 +4840,39 @@ Global Instance into_val_typed_AuthDisableRequest `{ffi_syntax} : IntoValTyped A
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthDisableRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthDisableRequest AuthDisableRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthDisableRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthDisableRequest AuthDisableRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthDisableRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthDisableRequest AuthDisableRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthDisableRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthDisableRequest AuthDisableRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthDisableRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthDisableRequest AuthDisableRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthDisableRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthDisableRequest AuthDisableRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthDisableRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthDisableRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthDisableRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthDisableRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthDisableRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthStatusRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthStatusRequest.
 
 
 Global Instance settable_AuthStatusRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthStatusRequest.mk < AuthStatusRequest.XXX_NoUnkeyedLiteral; AuthStatusRequest.XXX_unrecognized; AuthStatusRequest.XXX_sizecache >.
+  settable! AuthStatusRequest.mk < AuthStatusRequest.XXX_NoUnkeyedLiteral'; AuthStatusRequest.XXX_unrecognized'; AuthStatusRequest.XXX_sizecache' >.
 Global Instance into_val_AuthStatusRequest `{ffi_syntax} : IntoVal AuthStatusRequest.t.
 Admitted.
 
@@ -4884,41 +4884,41 @@ Global Instance into_val_typed_AuthStatusRequest `{ffi_syntax} : IntoValTyped Au
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthStatusRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthStatusRequest AuthStatusRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthStatusRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthStatusRequest AuthStatusRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthStatusRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthStatusRequest AuthStatusRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthStatusRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthStatusRequest AuthStatusRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthStatusRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthStatusRequest AuthStatusRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthStatusRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthStatusRequest AuthStatusRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthStatusRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthStatusRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthStatusRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthStatusRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthStatusRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthenticateRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  Password : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  Password' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthenticateRequest.
 
 
 Global Instance settable_AuthenticateRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthenticateRequest.mk < AuthenticateRequest.Name; AuthenticateRequest.Password; AuthenticateRequest.XXX_NoUnkeyedLiteral; AuthenticateRequest.XXX_unrecognized; AuthenticateRequest.XXX_sizecache >.
+  settable! AuthenticateRequest.mk < AuthenticateRequest.Name'; AuthenticateRequest.Password'; AuthenticateRequest.XXX_NoUnkeyedLiteral'; AuthenticateRequest.XXX_unrecognized'; AuthenticateRequest.XXX_sizecache' >.
 Global Instance into_val_AuthenticateRequest `{ffi_syntax} : IntoVal AuthenticateRequest.t.
 Admitted.
 
@@ -4930,51 +4930,51 @@ Global Instance into_val_typed_AuthenticateRequest `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthenticateRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthenticateRequest AuthenticateRequest.Name.
+Global Instance into_val_struct_field_AuthenticateRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthenticateRequest AuthenticateRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.AuthenticateRequest AuthenticateRequest.Password.
+Global Instance into_val_struct_field_AuthenticateRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.AuthenticateRequest AuthenticateRequest.Password'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthenticateRequest AuthenticateRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthenticateRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthenticateRequest AuthenticateRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthenticateRequest AuthenticateRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthenticateRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthenticateRequest AuthenticateRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthenticateRequest AuthenticateRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthenticateRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthenticateRequest AuthenticateRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthenticateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name Password XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthenticateRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' Password' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthenticateRequest (alist_val [
-      "Name" ::= #Name;
-      "Password" ::= #Password;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthenticateRequest.mk Name Password XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "Password" ::= #Password';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthenticateRequest.mk Name' Password' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserAddRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  Password : go_string;
-  Options : loc;
-  HashedPassword : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  Password' : go_string;
+  Options' : loc;
+  HashedPassword' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserAddRequest.
 
 
 Global Instance settable_AuthUserAddRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthUserAddRequest.mk < AuthUserAddRequest.Name; AuthUserAddRequest.Password; AuthUserAddRequest.Options; AuthUserAddRequest.HashedPassword; AuthUserAddRequest.XXX_NoUnkeyedLiteral; AuthUserAddRequest.XXX_unrecognized; AuthUserAddRequest.XXX_sizecache >.
+  settable! AuthUserAddRequest.mk < AuthUserAddRequest.Name'; AuthUserAddRequest.Password'; AuthUserAddRequest.Options'; AuthUserAddRequest.HashedPassword'; AuthUserAddRequest.XXX_NoUnkeyedLiteral'; AuthUserAddRequest.XXX_unrecognized'; AuthUserAddRequest.XXX_sizecache' >.
 Global Instance into_val_AuthUserAddRequest `{ffi_syntax} : IntoVal AuthUserAddRequest.t.
 Admitted.
 
@@ -4986,56 +4986,56 @@ Global Instance into_val_typed_AuthUserAddRequest `{ffi_syntax} : IntoValTyped A
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserAddRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.Name.
+Global Instance into_val_struct_field_AuthUserAddRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.Password.
+Global Instance into_val_struct_field_AuthUserAddRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.Password'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddRequest_Options `{ffi_syntax} : IntoValStructField "Options" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.Options.
+Global Instance into_val_struct_field_AuthUserAddRequest_Options `{ffi_syntax} : IntoValStructField "Options" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.Options'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddRequest_HashedPassword `{ffi_syntax} : IntoValStructField "HashedPassword" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.HashedPassword.
+Global Instance into_val_struct_field_AuthUserAddRequest_HashedPassword `{ffi_syntax} : IntoValStructField "HashedPassword" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.HashedPassword'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserAddRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserAddRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserAddRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserAddRequest AuthUserAddRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserAddRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name Password Options HashedPassword XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserAddRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' Password' Options' HashedPassword' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserAddRequest (alist_val [
-      "Name" ::= #Name;
-      "Password" ::= #Password;
-      "Options" ::= #Options;
-      "HashedPassword" ::= #HashedPassword;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserAddRequest.mk Name Password Options HashedPassword XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "Password" ::= #Password';
+      "Options" ::= #Options';
+      "HashedPassword" ::= #HashedPassword';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserAddRequest.mk Name' Password' Options' HashedPassword' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserGetRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserGetRequest.
 
 
 Global Instance settable_AuthUserGetRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthUserGetRequest.mk < AuthUserGetRequest.Name; AuthUserGetRequest.XXX_NoUnkeyedLiteral; AuthUserGetRequest.XXX_unrecognized; AuthUserGetRequest.XXX_sizecache >.
+  settable! AuthUserGetRequest.mk < AuthUserGetRequest.Name'; AuthUserGetRequest.XXX_NoUnkeyedLiteral'; AuthUserGetRequest.XXX_unrecognized'; AuthUserGetRequest.XXX_sizecache' >.
 Global Instance into_val_AuthUserGetRequest `{ffi_syntax} : IntoVal AuthUserGetRequest.t.
 Admitted.
 
@@ -5047,44 +5047,44 @@ Global Instance into_val_typed_AuthUserGetRequest `{ffi_syntax} : IntoValTyped A
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserGetRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.Name.
+Global Instance into_val_struct_field_AuthUserGetRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGetRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserGetRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGetRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserGetRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGetRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserGetRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGetRequest AuthUserGetRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserGetRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserGetRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserGetRequest (alist_val [
-      "Name" ::= #Name;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserGetRequest.mk Name XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserGetRequest.mk Name' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserDeleteRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserDeleteRequest.
 
 
 Global Instance settable_AuthUserDeleteRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthUserDeleteRequest.mk < AuthUserDeleteRequest.Name; AuthUserDeleteRequest.XXX_NoUnkeyedLiteral; AuthUserDeleteRequest.XXX_unrecognized; AuthUserDeleteRequest.XXX_sizecache >.
+  settable! AuthUserDeleteRequest.mk < AuthUserDeleteRequest.Name'; AuthUserDeleteRequest.XXX_NoUnkeyedLiteral'; AuthUserDeleteRequest.XXX_unrecognized'; AuthUserDeleteRequest.XXX_sizecache' >.
 Global Instance into_val_AuthUserDeleteRequest `{ffi_syntax} : IntoVal AuthUserDeleteRequest.t.
 Admitted.
 
@@ -5096,46 +5096,46 @@ Global Instance into_val_typed_AuthUserDeleteRequest `{ffi_syntax} : IntoValType
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserDeleteRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.Name.
+Global Instance into_val_struct_field_AuthUserDeleteRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserDeleteRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserDeleteRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserDeleteRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserDeleteRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserDeleteRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserDeleteRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserDeleteRequest AuthUserDeleteRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserDeleteRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserDeleteRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserDeleteRequest (alist_val [
-      "Name" ::= #Name;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserDeleteRequest.mk Name XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserDeleteRequest.mk Name' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserChangePasswordRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  Password : go_string;
-  HashedPassword : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  Password' : go_string;
+  HashedPassword' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserChangePasswordRequest.
 
 
 Global Instance settable_AuthUserChangePasswordRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthUserChangePasswordRequest.mk < AuthUserChangePasswordRequest.Name; AuthUserChangePasswordRequest.Password; AuthUserChangePasswordRequest.HashedPassword; AuthUserChangePasswordRequest.XXX_NoUnkeyedLiteral; AuthUserChangePasswordRequest.XXX_unrecognized; AuthUserChangePasswordRequest.XXX_sizecache >.
+  settable! AuthUserChangePasswordRequest.mk < AuthUserChangePasswordRequest.Name'; AuthUserChangePasswordRequest.Password'; AuthUserChangePasswordRequest.HashedPassword'; AuthUserChangePasswordRequest.XXX_NoUnkeyedLiteral'; AuthUserChangePasswordRequest.XXX_unrecognized'; AuthUserChangePasswordRequest.XXX_sizecache' >.
 Global Instance into_val_AuthUserChangePasswordRequest `{ffi_syntax} : IntoVal AuthUserChangePasswordRequest.t.
 Admitted.
 
@@ -5147,53 +5147,53 @@ Global Instance into_val_typed_AuthUserChangePasswordRequest `{ffi_syntax} : Int
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserChangePasswordRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.Name.
+Global Instance into_val_struct_field_AuthUserChangePasswordRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.Password.
+Global Instance into_val_struct_field_AuthUserChangePasswordRequest_Password `{ffi_syntax} : IntoValStructField "Password" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.Password'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordRequest_HashedPassword `{ffi_syntax} : IntoValStructField "HashedPassword" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.HashedPassword.
+Global Instance into_val_struct_field_AuthUserChangePasswordRequest_HashedPassword `{ffi_syntax} : IntoValStructField "HashedPassword" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.HashedPassword'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserChangePasswordRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserChangePasswordRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserChangePasswordRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserChangePasswordRequest AuthUserChangePasswordRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserChangePasswordRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name Password HashedPassword XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserChangePasswordRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' Password' HashedPassword' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserChangePasswordRequest (alist_val [
-      "Name" ::= #Name;
-      "Password" ::= #Password;
-      "HashedPassword" ::= #HashedPassword;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserChangePasswordRequest.mk Name Password HashedPassword XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "Password" ::= #Password';
+      "HashedPassword" ::= #HashedPassword';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserChangePasswordRequest.mk Name' Password' HashedPassword' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserGrantRoleRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  User : go_string;
-  Role : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  User' : go_string;
+  Role' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserGrantRoleRequest.
 
 
 Global Instance settable_AuthUserGrantRoleRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthUserGrantRoleRequest.mk < AuthUserGrantRoleRequest.User; AuthUserGrantRoleRequest.Role; AuthUserGrantRoleRequest.XXX_NoUnkeyedLiteral; AuthUserGrantRoleRequest.XXX_unrecognized; AuthUserGrantRoleRequest.XXX_sizecache >.
+  settable! AuthUserGrantRoleRequest.mk < AuthUserGrantRoleRequest.User'; AuthUserGrantRoleRequest.Role'; AuthUserGrantRoleRequest.XXX_NoUnkeyedLiteral'; AuthUserGrantRoleRequest.XXX_unrecognized'; AuthUserGrantRoleRequest.XXX_sizecache' >.
 Global Instance into_val_AuthUserGrantRoleRequest `{ffi_syntax} : IntoVal AuthUserGrantRoleRequest.t.
 Admitted.
 
@@ -5205,49 +5205,49 @@ Global Instance into_val_typed_AuthUserGrantRoleRequest `{ffi_syntax} : IntoValT
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserGrantRoleRequest_User `{ffi_syntax} : IntoValStructField "User" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.User.
+Global Instance into_val_struct_field_AuthUserGrantRoleRequest_User `{ffi_syntax} : IntoValStructField "User" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.User'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGrantRoleRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.Role.
+Global Instance into_val_struct_field_AuthUserGrantRoleRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.Role'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGrantRoleRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserGrantRoleRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGrantRoleRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserGrantRoleRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGrantRoleRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserGrantRoleRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGrantRoleRequest AuthUserGrantRoleRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserGrantRoleRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} User Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserGrantRoleRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} User' Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserGrantRoleRequest (alist_val [
-      "User" ::= #User;
-      "Role" ::= #Role;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserGrantRoleRequest.mk User Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "User" ::= #User';
+      "Role" ::= #Role';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserGrantRoleRequest.mk User' Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserRevokeRoleRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  Role : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  Role' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserRevokeRoleRequest.
 
 
 Global Instance settable_AuthUserRevokeRoleRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthUserRevokeRoleRequest.mk < AuthUserRevokeRoleRequest.Name; AuthUserRevokeRoleRequest.Role; AuthUserRevokeRoleRequest.XXX_NoUnkeyedLiteral; AuthUserRevokeRoleRequest.XXX_unrecognized; AuthUserRevokeRoleRequest.XXX_sizecache >.
+  settable! AuthUserRevokeRoleRequest.mk < AuthUserRevokeRoleRequest.Name'; AuthUserRevokeRoleRequest.Role'; AuthUserRevokeRoleRequest.XXX_NoUnkeyedLiteral'; AuthUserRevokeRoleRequest.XXX_unrecognized'; AuthUserRevokeRoleRequest.XXX_sizecache' >.
 Global Instance into_val_AuthUserRevokeRoleRequest `{ffi_syntax} : IntoVal AuthUserRevokeRoleRequest.t.
 Admitted.
 
@@ -5259,48 +5259,48 @@ Global Instance into_val_typed_AuthUserRevokeRoleRequest `{ffi_syntax} : IntoVal
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.Name.
+Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.Role.
+Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.Role'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserRevokeRoleRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserRevokeRoleRequest AuthUserRevokeRoleRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserRevokeRoleRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserRevokeRoleRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserRevokeRoleRequest (alist_val [
-      "Name" ::= #Name;
-      "Role" ::= #Role;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserRevokeRoleRequest.mk Name Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "Role" ::= #Role';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserRevokeRoleRequest.mk Name' Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleAddRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleAddRequest.
 
 
 Global Instance settable_AuthRoleAddRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleAddRequest.mk < AuthRoleAddRequest.Name; AuthRoleAddRequest.XXX_NoUnkeyedLiteral; AuthRoleAddRequest.XXX_unrecognized; AuthRoleAddRequest.XXX_sizecache >.
+  settable! AuthRoleAddRequest.mk < AuthRoleAddRequest.Name'; AuthRoleAddRequest.XXX_NoUnkeyedLiteral'; AuthRoleAddRequest.XXX_unrecognized'; AuthRoleAddRequest.XXX_sizecache' >.
 Global Instance into_val_AuthRoleAddRequest `{ffi_syntax} : IntoVal AuthRoleAddRequest.t.
 Admitted.
 
@@ -5312,44 +5312,44 @@ Global Instance into_val_typed_AuthRoleAddRequest `{ffi_syntax} : IntoValTyped A
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleAddRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.Name.
+Global Instance into_val_struct_field_AuthRoleAddRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleAddRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleAddRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleAddRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleAddRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleAddRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleAddRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleAddRequest AuthRoleAddRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleAddRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleAddRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleAddRequest (alist_val [
-      "Name" ::= #Name;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleAddRequest.mk Name XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleAddRequest.mk Name' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleGetRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Role : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Role' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleGetRequest.
 
 
 Global Instance settable_AuthRoleGetRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleGetRequest.mk < AuthRoleGetRequest.Role; AuthRoleGetRequest.XXX_NoUnkeyedLiteral; AuthRoleGetRequest.XXX_unrecognized; AuthRoleGetRequest.XXX_sizecache >.
+  settable! AuthRoleGetRequest.mk < AuthRoleGetRequest.Role'; AuthRoleGetRequest.XXX_NoUnkeyedLiteral'; AuthRoleGetRequest.XXX_unrecognized'; AuthRoleGetRequest.XXX_sizecache' >.
 Global Instance into_val_AuthRoleGetRequest `{ffi_syntax} : IntoVal AuthRoleGetRequest.t.
 Admitted.
 
@@ -5361,43 +5361,43 @@ Global Instance into_val_typed_AuthRoleGetRequest `{ffi_syntax} : IntoValTyped A
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleGetRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.Role.
+Global Instance into_val_struct_field_AuthRoleGetRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.Role'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGetRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleGetRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGetRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleGetRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGetRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleGetRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGetRequest AuthRoleGetRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleGetRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleGetRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleGetRequest (alist_val [
-      "Role" ::= #Role;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleGetRequest.mk Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Role" ::= #Role';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleGetRequest.mk Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserListRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserListRequest.
 
 
 Global Instance settable_AuthUserListRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthUserListRequest.mk < AuthUserListRequest.XXX_NoUnkeyedLiteral; AuthUserListRequest.XXX_unrecognized; AuthUserListRequest.XXX_sizecache >.
+  settable! AuthUserListRequest.mk < AuthUserListRequest.XXX_NoUnkeyedLiteral'; AuthUserListRequest.XXX_unrecognized'; AuthUserListRequest.XXX_sizecache' >.
 Global Instance into_val_AuthUserListRequest `{ffi_syntax} : IntoVal AuthUserListRequest.t.
 Admitted.
 
@@ -5409,39 +5409,39 @@ Global Instance into_val_typed_AuthUserListRequest `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserListRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserListRequest AuthUserListRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserListRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserListRequest AuthUserListRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserListRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserListRequest AuthUserListRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserListRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserListRequest AuthUserListRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserListRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserListRequest AuthUserListRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserListRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserListRequest AuthUserListRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserListRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserListRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserListRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserListRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserListRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleListRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleListRequest.
 
 
 Global Instance settable_AuthRoleListRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleListRequest.mk < AuthRoleListRequest.XXX_NoUnkeyedLiteral; AuthRoleListRequest.XXX_unrecognized; AuthRoleListRequest.XXX_sizecache >.
+  settable! AuthRoleListRequest.mk < AuthRoleListRequest.XXX_NoUnkeyedLiteral'; AuthRoleListRequest.XXX_unrecognized'; AuthRoleListRequest.XXX_sizecache' >.
 Global Instance into_val_AuthRoleListRequest `{ffi_syntax} : IntoVal AuthRoleListRequest.t.
 Admitted.
 
@@ -5453,40 +5453,40 @@ Global Instance into_val_typed_AuthRoleListRequest `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleListRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleListRequest AuthRoleListRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleListRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleListRequest AuthRoleListRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleListRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleListRequest AuthRoleListRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleListRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleListRequest AuthRoleListRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleListRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleListRequest AuthRoleListRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleListRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleListRequest AuthRoleListRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleListRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleListRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleListRequest (alist_val [
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleListRequest.mk XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleListRequest.mk XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleDeleteRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Role : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Role' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleDeleteRequest.
 
 
 Global Instance settable_AuthRoleDeleteRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleDeleteRequest.mk < AuthRoleDeleteRequest.Role; AuthRoleDeleteRequest.XXX_NoUnkeyedLiteral; AuthRoleDeleteRequest.XXX_unrecognized; AuthRoleDeleteRequest.XXX_sizecache >.
+  settable! AuthRoleDeleteRequest.mk < AuthRoleDeleteRequest.Role'; AuthRoleDeleteRequest.XXX_NoUnkeyedLiteral'; AuthRoleDeleteRequest.XXX_unrecognized'; AuthRoleDeleteRequest.XXX_sizecache' >.
 Global Instance into_val_AuthRoleDeleteRequest `{ffi_syntax} : IntoVal AuthRoleDeleteRequest.t.
 Admitted.
 
@@ -5498,45 +5498,45 @@ Global Instance into_val_typed_AuthRoleDeleteRequest `{ffi_syntax} : IntoValType
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleDeleteRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.Role.
+Global Instance into_val_struct_field_AuthRoleDeleteRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.Role'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleDeleteRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleDeleteRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleDeleteRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleDeleteRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleDeleteRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleDeleteRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleDeleteRequest AuthRoleDeleteRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleDeleteRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleDeleteRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleDeleteRequest (alist_val [
-      "Role" ::= #Role;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleDeleteRequest.mk Role XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Role" ::= #Role';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleDeleteRequest.mk Role' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleGrantPermissionRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Name : go_string;
-  Perm : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Name' : go_string;
+  Perm' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleGrantPermissionRequest.
 
 
 Global Instance settable_AuthRoleGrantPermissionRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleGrantPermissionRequest.mk < AuthRoleGrantPermissionRequest.Name; AuthRoleGrantPermissionRequest.Perm; AuthRoleGrantPermissionRequest.XXX_NoUnkeyedLiteral; AuthRoleGrantPermissionRequest.XXX_unrecognized; AuthRoleGrantPermissionRequest.XXX_sizecache >.
+  settable! AuthRoleGrantPermissionRequest.mk < AuthRoleGrantPermissionRequest.Name'; AuthRoleGrantPermissionRequest.Perm'; AuthRoleGrantPermissionRequest.XXX_NoUnkeyedLiteral'; AuthRoleGrantPermissionRequest.XXX_unrecognized'; AuthRoleGrantPermissionRequest.XXX_sizecache' >.
 Global Instance into_val_AuthRoleGrantPermissionRequest `{ffi_syntax} : IntoVal AuthRoleGrantPermissionRequest.t.
 Admitted.
 
@@ -5548,50 +5548,50 @@ Global Instance into_val_typed_AuthRoleGrantPermissionRequest `{ffi_syntax} : In
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.Name.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_Name `{ffi_syntax} : IntoValStructField "Name" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.Name'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_Perm `{ffi_syntax} : IntoValStructField "Perm" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.Perm.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_Perm `{ffi_syntax} : IntoValStructField "Perm" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.Perm'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGrantPermissionRequest AuthRoleGrantPermissionRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleGrantPermissionRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name Perm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleGrantPermissionRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Name' Perm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleGrantPermissionRequest (alist_val [
-      "Name" ::= #Name;
-      "Perm" ::= #Perm;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleGrantPermissionRequest.mk Name Perm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Name" ::= #Name';
+      "Perm" ::= #Perm';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleGrantPermissionRequest.mk Name' Perm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleRevokePermissionRequest.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Role : go_string;
-  Key : slice.t;
-  RangeEnd : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Role' : go_string;
+  Key' : slice.t;
+  RangeEnd' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleRevokePermissionRequest.
 
 
 Global Instance settable_AuthRoleRevokePermissionRequest `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleRevokePermissionRequest.mk < AuthRoleRevokePermissionRequest.Role; AuthRoleRevokePermissionRequest.Key; AuthRoleRevokePermissionRequest.RangeEnd; AuthRoleRevokePermissionRequest.XXX_NoUnkeyedLiteral; AuthRoleRevokePermissionRequest.XXX_unrecognized; AuthRoleRevokePermissionRequest.XXX_sizecache >.
+  settable! AuthRoleRevokePermissionRequest.mk < AuthRoleRevokePermissionRequest.Role'; AuthRoleRevokePermissionRequest.Key'; AuthRoleRevokePermissionRequest.RangeEnd'; AuthRoleRevokePermissionRequest.XXX_NoUnkeyedLiteral'; AuthRoleRevokePermissionRequest.XXX_unrecognized'; AuthRoleRevokePermissionRequest.XXX_sizecache' >.
 Global Instance into_val_AuthRoleRevokePermissionRequest `{ffi_syntax} : IntoVal AuthRoleRevokePermissionRequest.t.
 Admitted.
 
@@ -5603,52 +5603,52 @@ Global Instance into_val_typed_AuthRoleRevokePermissionRequest `{ffi_syntax} : I
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.Role.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_Role `{ffi_syntax} : IntoValStructField "Role" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.Role'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.Key.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_Key `{ffi_syntax} : IntoValStructField "Key" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.RangeEnd.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_RangeEnd `{ffi_syntax} : IntoValStructField "RangeEnd" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.RangeEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionRequest_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleRevokePermissionRequest AuthRoleRevokePermissionRequest.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleRevokePermissionRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Role Key RangeEnd XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleRevokePermissionRequest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Role' Key' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleRevokePermissionRequest (alist_val [
-      "Role" ::= #Role;
-      "Key" ::= #Key;
-      "RangeEnd" ::= #RangeEnd;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleRevokePermissionRequest.mk Role Key RangeEnd XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Role" ::= #Role';
+      "Key" ::= #Key';
+      "RangeEnd" ::= #RangeEnd';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleRevokePermissionRequest.mk Role' Key' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthEnableResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthEnableResponse.
 
 
 Global Instance settable_AuthEnableResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthEnableResponse.mk < AuthEnableResponse.Header; AuthEnableResponse.XXX_NoUnkeyedLiteral; AuthEnableResponse.XXX_unrecognized; AuthEnableResponse.XXX_sizecache >.
+  settable! AuthEnableResponse.mk < AuthEnableResponse.Header'; AuthEnableResponse.XXX_NoUnkeyedLiteral'; AuthEnableResponse.XXX_unrecognized'; AuthEnableResponse.XXX_sizecache' >.
 Global Instance into_val_AuthEnableResponse `{ffi_syntax} : IntoVal AuthEnableResponse.t.
 Admitted.
 
@@ -5660,44 +5660,44 @@ Global Instance into_val_typed_AuthEnableResponse `{ffi_syntax} : IntoValTyped A
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthEnableResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthEnableResponse AuthEnableResponse.Header.
+Global Instance into_val_struct_field_AuthEnableResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthEnableResponse AuthEnableResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthEnableResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthEnableResponse AuthEnableResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthEnableResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthEnableResponse AuthEnableResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthEnableResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthEnableResponse AuthEnableResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthEnableResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthEnableResponse AuthEnableResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthEnableResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthEnableResponse AuthEnableResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthEnableResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthEnableResponse AuthEnableResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthEnableResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthEnableResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthEnableResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthEnableResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthEnableResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthDisableResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthDisableResponse.
 
 
 Global Instance settable_AuthDisableResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthDisableResponse.mk < AuthDisableResponse.Header; AuthDisableResponse.XXX_NoUnkeyedLiteral; AuthDisableResponse.XXX_unrecognized; AuthDisableResponse.XXX_sizecache >.
+  settable! AuthDisableResponse.mk < AuthDisableResponse.Header'; AuthDisableResponse.XXX_NoUnkeyedLiteral'; AuthDisableResponse.XXX_unrecognized'; AuthDisableResponse.XXX_sizecache' >.
 Global Instance into_val_AuthDisableResponse `{ffi_syntax} : IntoVal AuthDisableResponse.t.
 Admitted.
 
@@ -5709,46 +5709,46 @@ Global Instance into_val_typed_AuthDisableResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthDisableResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthDisableResponse AuthDisableResponse.Header.
+Global Instance into_val_struct_field_AuthDisableResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthDisableResponse AuthDisableResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthDisableResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthDisableResponse AuthDisableResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthDisableResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthDisableResponse AuthDisableResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthDisableResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthDisableResponse AuthDisableResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthDisableResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthDisableResponse AuthDisableResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthDisableResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthDisableResponse AuthDisableResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthDisableResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthDisableResponse AuthDisableResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthDisableResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthDisableResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthDisableResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthDisableResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthDisableResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthStatusResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Enabled : bool;
-  AuthRevision : w64;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Enabled' : bool;
+  AuthRevision' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthStatusResponse.
 
 
 Global Instance settable_AuthStatusResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthStatusResponse.mk < AuthStatusResponse.Header; AuthStatusResponse.Enabled; AuthStatusResponse.AuthRevision; AuthStatusResponse.XXX_NoUnkeyedLiteral; AuthStatusResponse.XXX_unrecognized; AuthStatusResponse.XXX_sizecache >.
+  settable! AuthStatusResponse.mk < AuthStatusResponse.Header'; AuthStatusResponse.Enabled'; AuthStatusResponse.AuthRevision'; AuthStatusResponse.XXX_NoUnkeyedLiteral'; AuthStatusResponse.XXX_unrecognized'; AuthStatusResponse.XXX_sizecache' >.
 Global Instance into_val_AuthStatusResponse `{ffi_syntax} : IntoVal AuthStatusResponse.t.
 Admitted.
 
@@ -5760,53 +5760,53 @@ Global Instance into_val_typed_AuthStatusResponse `{ffi_syntax} : IntoValTyped A
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthStatusResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthStatusResponse AuthStatusResponse.Header.
+Global Instance into_val_struct_field_AuthStatusResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthStatusResponse AuthStatusResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthStatusResponse_Enabled `{ffi_syntax} : IntoValStructField "Enabled" etcdserverpb.AuthStatusResponse AuthStatusResponse.Enabled.
+Global Instance into_val_struct_field_AuthStatusResponse_Enabled `{ffi_syntax} : IntoValStructField "Enabled" etcdserverpb.AuthStatusResponse AuthStatusResponse.Enabled'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthStatusResponse_AuthRevision `{ffi_syntax} : IntoValStructField "AuthRevision" etcdserverpb.AuthStatusResponse AuthStatusResponse.AuthRevision.
+Global Instance into_val_struct_field_AuthStatusResponse_AuthRevision `{ffi_syntax} : IntoValStructField "AuthRevision" etcdserverpb.AuthStatusResponse AuthStatusResponse.AuthRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthStatusResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthStatusResponse AuthStatusResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthStatusResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthStatusResponse AuthStatusResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthStatusResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthStatusResponse AuthStatusResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthStatusResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthStatusResponse AuthStatusResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthStatusResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthStatusResponse AuthStatusResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthStatusResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthStatusResponse AuthStatusResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthStatusResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Enabled AuthRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthStatusResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Enabled' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthStatusResponse (alist_val [
-      "Header" ::= #Header;
-      "Enabled" ::= #Enabled;
-      "AuthRevision" ::= #AuthRevision;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthStatusResponse.mk Header Enabled AuthRevision XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Enabled" ::= #Enabled';
+      "AuthRevision" ::= #AuthRevision';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthStatusResponse.mk Header' Enabled' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthenticateResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Token : go_string;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Token' : go_string;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthenticateResponse.
 
 
 Global Instance settable_AuthenticateResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthenticateResponse.mk < AuthenticateResponse.Header; AuthenticateResponse.Token; AuthenticateResponse.XXX_NoUnkeyedLiteral; AuthenticateResponse.XXX_unrecognized; AuthenticateResponse.XXX_sizecache >.
+  settable! AuthenticateResponse.mk < AuthenticateResponse.Header'; AuthenticateResponse.Token'; AuthenticateResponse.XXX_NoUnkeyedLiteral'; AuthenticateResponse.XXX_unrecognized'; AuthenticateResponse.XXX_sizecache' >.
 Global Instance into_val_AuthenticateResponse `{ffi_syntax} : IntoVal AuthenticateResponse.t.
 Admitted.
 
@@ -5818,48 +5818,48 @@ Global Instance into_val_typed_AuthenticateResponse `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthenticateResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthenticateResponse AuthenticateResponse.Header.
+Global Instance into_val_struct_field_AuthenticateResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthenticateResponse AuthenticateResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateResponse_Token `{ffi_syntax} : IntoValStructField "Token" etcdserverpb.AuthenticateResponse AuthenticateResponse.Token.
+Global Instance into_val_struct_field_AuthenticateResponse_Token `{ffi_syntax} : IntoValStructField "Token" etcdserverpb.AuthenticateResponse AuthenticateResponse.Token'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthenticateResponse AuthenticateResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthenticateResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthenticateResponse AuthenticateResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthenticateResponse AuthenticateResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthenticateResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthenticateResponse AuthenticateResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthenticateResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthenticateResponse AuthenticateResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthenticateResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthenticateResponse AuthenticateResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthenticateResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Token XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthenticateResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Token' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthenticateResponse (alist_val [
-      "Header" ::= #Header;
-      "Token" ::= #Token;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthenticateResponse.mk Header Token XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Token" ::= #Token';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthenticateResponse.mk Header' Token' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserAddResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserAddResponse.
 
 
 Global Instance settable_AuthUserAddResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthUserAddResponse.mk < AuthUserAddResponse.Header; AuthUserAddResponse.XXX_NoUnkeyedLiteral; AuthUserAddResponse.XXX_unrecognized; AuthUserAddResponse.XXX_sizecache >.
+  settable! AuthUserAddResponse.mk < AuthUserAddResponse.Header'; AuthUserAddResponse.XXX_NoUnkeyedLiteral'; AuthUserAddResponse.XXX_unrecognized'; AuthUserAddResponse.XXX_sizecache' >.
 Global Instance into_val_AuthUserAddResponse `{ffi_syntax} : IntoVal AuthUserAddResponse.t.
 Admitted.
 
@@ -5871,45 +5871,45 @@ Global Instance into_val_typed_AuthUserAddResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserAddResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.Header.
+Global Instance into_val_struct_field_AuthUserAddResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserAddResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserAddResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserAddResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserAddResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserAddResponse AuthUserAddResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserAddResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserAddResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserAddResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserAddResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserAddResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserGetResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Roles : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Roles' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserGetResponse.
 
 
 Global Instance settable_AuthUserGetResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthUserGetResponse.mk < AuthUserGetResponse.Header; AuthUserGetResponse.Roles; AuthUserGetResponse.XXX_NoUnkeyedLiteral; AuthUserGetResponse.XXX_unrecognized; AuthUserGetResponse.XXX_sizecache >.
+  settable! AuthUserGetResponse.mk < AuthUserGetResponse.Header'; AuthUserGetResponse.Roles'; AuthUserGetResponse.XXX_NoUnkeyedLiteral'; AuthUserGetResponse.XXX_unrecognized'; AuthUserGetResponse.XXX_sizecache' >.
 Global Instance into_val_AuthUserGetResponse `{ffi_syntax} : IntoVal AuthUserGetResponse.t.
 Admitted.
 
@@ -5921,48 +5921,48 @@ Global Instance into_val_typed_AuthUserGetResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserGetResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.Header.
+Global Instance into_val_struct_field_AuthUserGetResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGetResponse_Roles `{ffi_syntax} : IntoValStructField "Roles" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.Roles.
+Global Instance into_val_struct_field_AuthUserGetResponse_Roles `{ffi_syntax} : IntoValStructField "Roles" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.Roles'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGetResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserGetResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGetResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserGetResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGetResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserGetResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGetResponse AuthUserGetResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserGetResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Roles XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserGetResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Roles' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserGetResponse (alist_val [
-      "Header" ::= #Header;
-      "Roles" ::= #Roles;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserGetResponse.mk Header Roles XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Roles" ::= #Roles';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserGetResponse.mk Header' Roles' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserDeleteResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserDeleteResponse.
 
 
 Global Instance settable_AuthUserDeleteResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthUserDeleteResponse.mk < AuthUserDeleteResponse.Header; AuthUserDeleteResponse.XXX_NoUnkeyedLiteral; AuthUserDeleteResponse.XXX_unrecognized; AuthUserDeleteResponse.XXX_sizecache >.
+  settable! AuthUserDeleteResponse.mk < AuthUserDeleteResponse.Header'; AuthUserDeleteResponse.XXX_NoUnkeyedLiteral'; AuthUserDeleteResponse.XXX_unrecognized'; AuthUserDeleteResponse.XXX_sizecache' >.
 Global Instance into_val_AuthUserDeleteResponse `{ffi_syntax} : IntoVal AuthUserDeleteResponse.t.
 Admitted.
 
@@ -5974,44 +5974,44 @@ Global Instance into_val_typed_AuthUserDeleteResponse `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserDeleteResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.Header.
+Global Instance into_val_struct_field_AuthUserDeleteResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserDeleteResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserDeleteResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserDeleteResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserDeleteResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserDeleteResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserDeleteResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserDeleteResponse AuthUserDeleteResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserDeleteResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserDeleteResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserDeleteResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserDeleteResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserDeleteResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserChangePasswordResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserChangePasswordResponse.
 
 
 Global Instance settable_AuthUserChangePasswordResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthUserChangePasswordResponse.mk < AuthUserChangePasswordResponse.Header; AuthUserChangePasswordResponse.XXX_NoUnkeyedLiteral; AuthUserChangePasswordResponse.XXX_unrecognized; AuthUserChangePasswordResponse.XXX_sizecache >.
+  settable! AuthUserChangePasswordResponse.mk < AuthUserChangePasswordResponse.Header'; AuthUserChangePasswordResponse.XXX_NoUnkeyedLiteral'; AuthUserChangePasswordResponse.XXX_unrecognized'; AuthUserChangePasswordResponse.XXX_sizecache' >.
 Global Instance into_val_AuthUserChangePasswordResponse `{ffi_syntax} : IntoVal AuthUserChangePasswordResponse.t.
 Admitted.
 
@@ -6023,44 +6023,44 @@ Global Instance into_val_typed_AuthUserChangePasswordResponse `{ffi_syntax} : In
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserChangePasswordResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.Header.
+Global Instance into_val_struct_field_AuthUserChangePasswordResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserChangePasswordResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserChangePasswordResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserChangePasswordResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserChangePasswordResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserChangePasswordResponse AuthUserChangePasswordResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserChangePasswordResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserChangePasswordResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserChangePasswordResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserChangePasswordResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserChangePasswordResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserGrantRoleResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserGrantRoleResponse.
 
 
 Global Instance settable_AuthUserGrantRoleResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthUserGrantRoleResponse.mk < AuthUserGrantRoleResponse.Header; AuthUserGrantRoleResponse.XXX_NoUnkeyedLiteral; AuthUserGrantRoleResponse.XXX_unrecognized; AuthUserGrantRoleResponse.XXX_sizecache >.
+  settable! AuthUserGrantRoleResponse.mk < AuthUserGrantRoleResponse.Header'; AuthUserGrantRoleResponse.XXX_NoUnkeyedLiteral'; AuthUserGrantRoleResponse.XXX_unrecognized'; AuthUserGrantRoleResponse.XXX_sizecache' >.
 Global Instance into_val_AuthUserGrantRoleResponse `{ffi_syntax} : IntoVal AuthUserGrantRoleResponse.t.
 Admitted.
 
@@ -6072,44 +6072,44 @@ Global Instance into_val_typed_AuthUserGrantRoleResponse `{ffi_syntax} : IntoVal
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserGrantRoleResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.Header.
+Global Instance into_val_struct_field_AuthUserGrantRoleResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGrantRoleResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserGrantRoleResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGrantRoleResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserGrantRoleResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserGrantRoleResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserGrantRoleResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserGrantRoleResponse AuthUserGrantRoleResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserGrantRoleResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserGrantRoleResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserGrantRoleResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserGrantRoleResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserGrantRoleResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserRevokeRoleResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserRevokeRoleResponse.
 
 
 Global Instance settable_AuthUserRevokeRoleResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthUserRevokeRoleResponse.mk < AuthUserRevokeRoleResponse.Header; AuthUserRevokeRoleResponse.XXX_NoUnkeyedLiteral; AuthUserRevokeRoleResponse.XXX_unrecognized; AuthUserRevokeRoleResponse.XXX_sizecache >.
+  settable! AuthUserRevokeRoleResponse.mk < AuthUserRevokeRoleResponse.Header'; AuthUserRevokeRoleResponse.XXX_NoUnkeyedLiteral'; AuthUserRevokeRoleResponse.XXX_unrecognized'; AuthUserRevokeRoleResponse.XXX_sizecache' >.
 Global Instance into_val_AuthUserRevokeRoleResponse `{ffi_syntax} : IntoVal AuthUserRevokeRoleResponse.t.
 Admitted.
 
@@ -6121,44 +6121,44 @@ Global Instance into_val_typed_AuthUserRevokeRoleResponse `{ffi_syntax} : IntoVa
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.Header.
+Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserRevokeRoleResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserRevokeRoleResponse AuthUserRevokeRoleResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserRevokeRoleResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserRevokeRoleResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserRevokeRoleResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserRevokeRoleResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserRevokeRoleResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleAddResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleAddResponse.
 
 
 Global Instance settable_AuthRoleAddResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleAddResponse.mk < AuthRoleAddResponse.Header; AuthRoleAddResponse.XXX_NoUnkeyedLiteral; AuthRoleAddResponse.XXX_unrecognized; AuthRoleAddResponse.XXX_sizecache >.
+  settable! AuthRoleAddResponse.mk < AuthRoleAddResponse.Header'; AuthRoleAddResponse.XXX_NoUnkeyedLiteral'; AuthRoleAddResponse.XXX_unrecognized'; AuthRoleAddResponse.XXX_sizecache' >.
 Global Instance into_val_AuthRoleAddResponse `{ffi_syntax} : IntoVal AuthRoleAddResponse.t.
 Admitted.
 
@@ -6170,45 +6170,45 @@ Global Instance into_val_typed_AuthRoleAddResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleAddResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.Header.
+Global Instance into_val_struct_field_AuthRoleAddResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleAddResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleAddResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleAddResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleAddResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleAddResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleAddResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleAddResponse AuthRoleAddResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleAddResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleAddResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleAddResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleAddResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleAddResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleGetResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Perm : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Perm' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleGetResponse.
 
 
 Global Instance settable_AuthRoleGetResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleGetResponse.mk < AuthRoleGetResponse.Header; AuthRoleGetResponse.Perm; AuthRoleGetResponse.XXX_NoUnkeyedLiteral; AuthRoleGetResponse.XXX_unrecognized; AuthRoleGetResponse.XXX_sizecache >.
+  settable! AuthRoleGetResponse.mk < AuthRoleGetResponse.Header'; AuthRoleGetResponse.Perm'; AuthRoleGetResponse.XXX_NoUnkeyedLiteral'; AuthRoleGetResponse.XXX_unrecognized'; AuthRoleGetResponse.XXX_sizecache' >.
 Global Instance into_val_AuthRoleGetResponse `{ffi_syntax} : IntoVal AuthRoleGetResponse.t.
 Admitted.
 
@@ -6220,49 +6220,49 @@ Global Instance into_val_typed_AuthRoleGetResponse `{ffi_syntax} : IntoValTyped 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleGetResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.Header.
+Global Instance into_val_struct_field_AuthRoleGetResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGetResponse_Perm `{ffi_syntax} : IntoValStructField "Perm" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.Perm.
+Global Instance into_val_struct_field_AuthRoleGetResponse_Perm `{ffi_syntax} : IntoValStructField "Perm" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.Perm'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGetResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleGetResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGetResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleGetResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGetResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleGetResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGetResponse AuthRoleGetResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleGetResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Perm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleGetResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Perm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleGetResponse (alist_val [
-      "Header" ::= #Header;
-      "Perm" ::= #Perm;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleGetResponse.mk Header Perm XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Perm" ::= #Perm';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleGetResponse.mk Header' Perm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleListResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Roles : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Roles' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleListResponse.
 
 
 Global Instance settable_AuthRoleListResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleListResponse.mk < AuthRoleListResponse.Header; AuthRoleListResponse.Roles; AuthRoleListResponse.XXX_NoUnkeyedLiteral; AuthRoleListResponse.XXX_unrecognized; AuthRoleListResponse.XXX_sizecache >.
+  settable! AuthRoleListResponse.mk < AuthRoleListResponse.Header'; AuthRoleListResponse.Roles'; AuthRoleListResponse.XXX_NoUnkeyedLiteral'; AuthRoleListResponse.XXX_unrecognized'; AuthRoleListResponse.XXX_sizecache' >.
 Global Instance into_val_AuthRoleListResponse `{ffi_syntax} : IntoVal AuthRoleListResponse.t.
 Admitted.
 
@@ -6274,49 +6274,49 @@ Global Instance into_val_typed_AuthRoleListResponse `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleListResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.Header.
+Global Instance into_val_struct_field_AuthRoleListResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleListResponse_Roles `{ffi_syntax} : IntoValStructField "Roles" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.Roles.
+Global Instance into_val_struct_field_AuthRoleListResponse_Roles `{ffi_syntax} : IntoValStructField "Roles" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.Roles'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleListResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleListResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleListResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleListResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleListResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleListResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleListResponse AuthRoleListResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleListResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Roles XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleListResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Roles' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleListResponse (alist_val [
-      "Header" ::= #Header;
-      "Roles" ::= #Roles;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleListResponse.mk Header Roles XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Roles" ::= #Roles';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleListResponse.mk Header' Roles' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthUserListResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  Users : slice.t;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  Users' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthUserListResponse.
 
 
 Global Instance settable_AuthUserListResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthUserListResponse.mk < AuthUserListResponse.Header; AuthUserListResponse.Users; AuthUserListResponse.XXX_NoUnkeyedLiteral; AuthUserListResponse.XXX_unrecognized; AuthUserListResponse.XXX_sizecache >.
+  settable! AuthUserListResponse.mk < AuthUserListResponse.Header'; AuthUserListResponse.Users'; AuthUserListResponse.XXX_NoUnkeyedLiteral'; AuthUserListResponse.XXX_unrecognized'; AuthUserListResponse.XXX_sizecache' >.
 Global Instance into_val_AuthUserListResponse `{ffi_syntax} : IntoVal AuthUserListResponse.t.
 Admitted.
 
@@ -6328,48 +6328,48 @@ Global Instance into_val_typed_AuthUserListResponse `{ffi_syntax} : IntoValTyped
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthUserListResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserListResponse AuthUserListResponse.Header.
+Global Instance into_val_struct_field_AuthUserListResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthUserListResponse AuthUserListResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserListResponse_Users `{ffi_syntax} : IntoValStructField "Users" etcdserverpb.AuthUserListResponse AuthUserListResponse.Users.
+Global Instance into_val_struct_field_AuthUserListResponse_Users `{ffi_syntax} : IntoValStructField "Users" etcdserverpb.AuthUserListResponse AuthUserListResponse.Users'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserListResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserListResponse AuthUserListResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthUserListResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthUserListResponse AuthUserListResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserListResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserListResponse AuthUserListResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthUserListResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthUserListResponse AuthUserListResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthUserListResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserListResponse AuthUserListResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthUserListResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthUserListResponse AuthUserListResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthUserListResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header Users XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthUserListResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Users' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthUserListResponse (alist_val [
-      "Header" ::= #Header;
-      "Users" ::= #Users;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthUserListResponse.mk Header Users XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "Users" ::= #Users';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthUserListResponse.mk Header' Users' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleDeleteResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleDeleteResponse.
 
 
 Global Instance settable_AuthRoleDeleteResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleDeleteResponse.mk < AuthRoleDeleteResponse.Header; AuthRoleDeleteResponse.XXX_NoUnkeyedLiteral; AuthRoleDeleteResponse.XXX_unrecognized; AuthRoleDeleteResponse.XXX_sizecache >.
+  settable! AuthRoleDeleteResponse.mk < AuthRoleDeleteResponse.Header'; AuthRoleDeleteResponse.XXX_NoUnkeyedLiteral'; AuthRoleDeleteResponse.XXX_unrecognized'; AuthRoleDeleteResponse.XXX_sizecache' >.
 Global Instance into_val_AuthRoleDeleteResponse `{ffi_syntax} : IntoVal AuthRoleDeleteResponse.t.
 Admitted.
 
@@ -6381,44 +6381,44 @@ Global Instance into_val_typed_AuthRoleDeleteResponse `{ffi_syntax} : IntoValTyp
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleDeleteResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.Header.
+Global Instance into_val_struct_field_AuthRoleDeleteResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleDeleteResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleDeleteResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleDeleteResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleDeleteResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleDeleteResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleDeleteResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleDeleteResponse AuthRoleDeleteResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleDeleteResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleDeleteResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleDeleteResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleDeleteResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleDeleteResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleGrantPermissionResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleGrantPermissionResponse.
 
 
 Global Instance settable_AuthRoleGrantPermissionResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleGrantPermissionResponse.mk < AuthRoleGrantPermissionResponse.Header; AuthRoleGrantPermissionResponse.XXX_NoUnkeyedLiteral; AuthRoleGrantPermissionResponse.XXX_unrecognized; AuthRoleGrantPermissionResponse.XXX_sizecache >.
+  settable! AuthRoleGrantPermissionResponse.mk < AuthRoleGrantPermissionResponse.Header'; AuthRoleGrantPermissionResponse.XXX_NoUnkeyedLiteral'; AuthRoleGrantPermissionResponse.XXX_unrecognized'; AuthRoleGrantPermissionResponse.XXX_sizecache' >.
 Global Instance into_val_AuthRoleGrantPermissionResponse `{ffi_syntax} : IntoVal AuthRoleGrantPermissionResponse.t.
 Admitted.
 
@@ -6430,44 +6430,44 @@ Global Instance into_val_typed_AuthRoleGrantPermissionResponse `{ffi_syntax} : I
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.Header.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleGrantPermissionResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleGrantPermissionResponse AuthRoleGrantPermissionResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleGrantPermissionResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleGrantPermissionResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleGrantPermissionResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleGrantPermissionResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleGrantPermissionResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module AuthRoleRevokePermissionResponse.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Header : loc;
-  XXX_NoUnkeyedLiteral : unit;
-  XXX_unrecognized : slice.t;
-  XXX_sizecache : w32;
+  Header' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
 }.
 End def.
 End AuthRoleRevokePermissionResponse.
 
 
 Global Instance settable_AuthRoleRevokePermissionResponse `{ffi_syntax}: Settable _ :=
-  settable! AuthRoleRevokePermissionResponse.mk < AuthRoleRevokePermissionResponse.Header; AuthRoleRevokePermissionResponse.XXX_NoUnkeyedLiteral; AuthRoleRevokePermissionResponse.XXX_unrecognized; AuthRoleRevokePermissionResponse.XXX_sizecache >.
+  settable! AuthRoleRevokePermissionResponse.mk < AuthRoleRevokePermissionResponse.Header'; AuthRoleRevokePermissionResponse.XXX_NoUnkeyedLiteral'; AuthRoleRevokePermissionResponse.XXX_unrecognized'; AuthRoleRevokePermissionResponse.XXX_sizecache' >.
 Global Instance into_val_AuthRoleRevokePermissionResponse `{ffi_syntax} : IntoVal AuthRoleRevokePermissionResponse.t.
 Admitted.
 
@@ -6479,41 +6479,41 @@ Global Instance into_val_typed_AuthRoleRevokePermissionResponse `{ffi_syntax} : 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.Header.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.Header'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.XXX_NoUnkeyedLiteral.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.XXX_unrecognized.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.XXX_sizecache.
+Global Instance into_val_struct_field_AuthRoleRevokePermissionResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.AuthRoleRevokePermissionResponse AuthRoleRevokePermissionResponse.XXX_sizecache'.
 Admitted.
 
-Instance wp_struct_make_AuthRoleRevokePermissionResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache:
+Instance wp_struct_make_AuthRoleRevokePermissionResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.AuthRoleRevokePermissionResponse (alist_val [
-      "Header" ::= #Header;
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral;
-      "XXX_unrecognized" ::= #XXX_unrecognized;
-      "XXX_sizecache" ::= #XXX_sizecache
-    ]))%V 
-    #(AuthRoleRevokePermissionResponse.mk Header XXX_NoUnkeyedLiteral XXX_unrecognized XXX_sizecache).
+      "Header" ::= #Header';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(AuthRoleRevokePermissionResponse.mk Header' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
 Module kVClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  cc : loc;
+  cc' : loc;
 }.
 End def.
 End kVClient.
 
 
 Global Instance settable_kVClient `{ffi_syntax}: Settable _ :=
-  settable! kVClient.mk < kVClient.cc >.
+  settable! kVClient.mk < kVClient.cc' >.
 Global Instance into_val_kVClient `{ffi_syntax} : IntoVal kVClient.t.
 Admitted.
 
@@ -6525,15 +6525,15 @@ Global Instance into_val_typed_kVClient `{ffi_syntax} : IntoValTyped kVClient.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_kVClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.kVClient kVClient.cc.
+Global Instance into_val_struct_field_kVClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.kVClient kVClient.cc'.
 Admitted.
 
-Instance wp_struct_make_kVClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc:
+Instance wp_struct_make_kVClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc':
   PureWp True
     (struct.make etcdserverpb.kVClient (alist_val [
-      "cc" ::= #cc
-    ]))%V 
-    #(kVClient.mk cc).
+      "cc" ::= #cc'
+    ]))%V
+    #(kVClient.mk cc').
 Admitted.
 
 Module UnimplementedKVServer.
@@ -6558,7 +6558,7 @@ Global Instance into_val_typed_UnimplementedKVServer `{ffi_syntax} : IntoValType
 Instance wp_struct_make_UnimplementedKVServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make etcdserverpb.UnimplementedKVServer (alist_val [
-    ]))%V 
+    ]))%V
     #(UnimplementedKVServer.mk).
 Admitted.
 
@@ -6566,14 +6566,14 @@ Module watchClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  cc : loc;
+  cc' : loc;
 }.
 End def.
 End watchClient.
 
 
 Global Instance settable_watchClient `{ffi_syntax}: Settable _ :=
-  settable! watchClient.mk < watchClient.cc >.
+  settable! watchClient.mk < watchClient.cc' >.
 Global Instance into_val_watchClient `{ffi_syntax} : IntoVal watchClient.t.
 Admitted.
 
@@ -6585,29 +6585,29 @@ Global Instance into_val_typed_watchClient `{ffi_syntax} : IntoValTyped watchCli
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_watchClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.watchClient watchClient.cc.
+Global Instance into_val_struct_field_watchClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.watchClient watchClient.cc'.
 Admitted.
 
-Instance wp_struct_make_watchClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc:
+Instance wp_struct_make_watchClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc':
   PureWp True
     (struct.make etcdserverpb.watchClient (alist_val [
-      "cc" ::= #cc
-    ]))%V 
-    #(watchClient.mk cc).
+      "cc" ::= #cc'
+    ]))%V
+    #(watchClient.mk cc').
 Admitted.
 
 Module watchWatchClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ClientStream : interface.t;
+  ClientStream' : interface.t;
 }.
 End def.
 End watchWatchClient.
 
 
 Global Instance settable_watchWatchClient `{ffi_syntax}: Settable _ :=
-  settable! watchWatchClient.mk < watchWatchClient.ClientStream >.
+  settable! watchWatchClient.mk < watchWatchClient.ClientStream' >.
 Global Instance into_val_watchWatchClient `{ffi_syntax} : IntoVal watchWatchClient.t.
 Admitted.
 
@@ -6619,15 +6619,15 @@ Global Instance into_val_typed_watchWatchClient `{ffi_syntax} : IntoValTyped wat
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_watchWatchClient_ClientStream `{ffi_syntax} : IntoValStructField "ClientStream" etcdserverpb.watchWatchClient watchWatchClient.ClientStream.
+Global Instance into_val_struct_field_watchWatchClient_ClientStream `{ffi_syntax} : IntoValStructField "ClientStream" etcdserverpb.watchWatchClient watchWatchClient.ClientStream'.
 Admitted.
 
-Instance wp_struct_make_watchWatchClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClientStream:
+Instance wp_struct_make_watchWatchClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClientStream':
   PureWp True
     (struct.make etcdserverpb.watchWatchClient (alist_val [
-      "ClientStream" ::= #ClientStream
-    ]))%V 
-    #(watchWatchClient.mk ClientStream).
+      "ClientStream" ::= #ClientStream'
+    ]))%V
+    #(watchWatchClient.mk ClientStream').
 Admitted.
 
 Module UnimplementedWatchServer.
@@ -6652,7 +6652,7 @@ Global Instance into_val_typed_UnimplementedWatchServer `{ffi_syntax} : IntoValT
 Instance wp_struct_make_UnimplementedWatchServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make etcdserverpb.UnimplementedWatchServer (alist_val [
-    ]))%V 
+    ]))%V
     #(UnimplementedWatchServer.mk).
 Admitted.
 
@@ -6660,14 +6660,14 @@ Module watchWatchServer.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ServerStream : interface.t;
+  ServerStream' : interface.t;
 }.
 End def.
 End watchWatchServer.
 
 
 Global Instance settable_watchWatchServer `{ffi_syntax}: Settable _ :=
-  settable! watchWatchServer.mk < watchWatchServer.ServerStream >.
+  settable! watchWatchServer.mk < watchWatchServer.ServerStream' >.
 Global Instance into_val_watchWatchServer `{ffi_syntax} : IntoVal watchWatchServer.t.
 Admitted.
 
@@ -6679,29 +6679,29 @@ Global Instance into_val_typed_watchWatchServer `{ffi_syntax} : IntoValTyped wat
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_watchWatchServer_ServerStream `{ffi_syntax} : IntoValStructField "ServerStream" etcdserverpb.watchWatchServer watchWatchServer.ServerStream.
+Global Instance into_val_struct_field_watchWatchServer_ServerStream `{ffi_syntax} : IntoValStructField "ServerStream" etcdserverpb.watchWatchServer watchWatchServer.ServerStream'.
 Admitted.
 
-Instance wp_struct_make_watchWatchServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ServerStream:
+Instance wp_struct_make_watchWatchServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ServerStream':
   PureWp True
     (struct.make etcdserverpb.watchWatchServer (alist_val [
-      "ServerStream" ::= #ServerStream
-    ]))%V 
-    #(watchWatchServer.mk ServerStream).
+      "ServerStream" ::= #ServerStream'
+    ]))%V
+    #(watchWatchServer.mk ServerStream').
 Admitted.
 
 Module leaseClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  cc : loc;
+  cc' : loc;
 }.
 End def.
 End leaseClient.
 
 
 Global Instance settable_leaseClient `{ffi_syntax}: Settable _ :=
-  settable! leaseClient.mk < leaseClient.cc >.
+  settable! leaseClient.mk < leaseClient.cc' >.
 Global Instance into_val_leaseClient `{ffi_syntax} : IntoVal leaseClient.t.
 Admitted.
 
@@ -6713,29 +6713,29 @@ Global Instance into_val_typed_leaseClient `{ffi_syntax} : IntoValTyped leaseCli
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leaseClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.leaseClient leaseClient.cc.
+Global Instance into_val_struct_field_leaseClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.leaseClient leaseClient.cc'.
 Admitted.
 
-Instance wp_struct_make_leaseClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc:
+Instance wp_struct_make_leaseClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc':
   PureWp True
     (struct.make etcdserverpb.leaseClient (alist_val [
-      "cc" ::= #cc
-    ]))%V 
-    #(leaseClient.mk cc).
+      "cc" ::= #cc'
+    ]))%V
+    #(leaseClient.mk cc').
 Admitted.
 
 Module leaseLeaseKeepAliveClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ClientStream : interface.t;
+  ClientStream' : interface.t;
 }.
 End def.
 End leaseLeaseKeepAliveClient.
 
 
 Global Instance settable_leaseLeaseKeepAliveClient `{ffi_syntax}: Settable _ :=
-  settable! leaseLeaseKeepAliveClient.mk < leaseLeaseKeepAliveClient.ClientStream >.
+  settable! leaseLeaseKeepAliveClient.mk < leaseLeaseKeepAliveClient.ClientStream' >.
 Global Instance into_val_leaseLeaseKeepAliveClient `{ffi_syntax} : IntoVal leaseLeaseKeepAliveClient.t.
 Admitted.
 
@@ -6747,15 +6747,15 @@ Global Instance into_val_typed_leaseLeaseKeepAliveClient `{ffi_syntax} : IntoVal
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leaseLeaseKeepAliveClient_ClientStream `{ffi_syntax} : IntoValStructField "ClientStream" etcdserverpb.leaseLeaseKeepAliveClient leaseLeaseKeepAliveClient.ClientStream.
+Global Instance into_val_struct_field_leaseLeaseKeepAliveClient_ClientStream `{ffi_syntax} : IntoValStructField "ClientStream" etcdserverpb.leaseLeaseKeepAliveClient leaseLeaseKeepAliveClient.ClientStream'.
 Admitted.
 
-Instance wp_struct_make_leaseLeaseKeepAliveClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClientStream:
+Instance wp_struct_make_leaseLeaseKeepAliveClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClientStream':
   PureWp True
     (struct.make etcdserverpb.leaseLeaseKeepAliveClient (alist_val [
-      "ClientStream" ::= #ClientStream
-    ]))%V 
-    #(leaseLeaseKeepAliveClient.mk ClientStream).
+      "ClientStream" ::= #ClientStream'
+    ]))%V
+    #(leaseLeaseKeepAliveClient.mk ClientStream').
 Admitted.
 
 Module UnimplementedLeaseServer.
@@ -6780,7 +6780,7 @@ Global Instance into_val_typed_UnimplementedLeaseServer `{ffi_syntax} : IntoValT
 Instance wp_struct_make_UnimplementedLeaseServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make etcdserverpb.UnimplementedLeaseServer (alist_val [
-    ]))%V 
+    ]))%V
     #(UnimplementedLeaseServer.mk).
 Admitted.
 
@@ -6788,14 +6788,14 @@ Module leaseLeaseKeepAliveServer.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ServerStream : interface.t;
+  ServerStream' : interface.t;
 }.
 End def.
 End leaseLeaseKeepAliveServer.
 
 
 Global Instance settable_leaseLeaseKeepAliveServer `{ffi_syntax}: Settable _ :=
-  settable! leaseLeaseKeepAliveServer.mk < leaseLeaseKeepAliveServer.ServerStream >.
+  settable! leaseLeaseKeepAliveServer.mk < leaseLeaseKeepAliveServer.ServerStream' >.
 Global Instance into_val_leaseLeaseKeepAliveServer `{ffi_syntax} : IntoVal leaseLeaseKeepAliveServer.t.
 Admitted.
 
@@ -6807,29 +6807,29 @@ Global Instance into_val_typed_leaseLeaseKeepAliveServer `{ffi_syntax} : IntoVal
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leaseLeaseKeepAliveServer_ServerStream `{ffi_syntax} : IntoValStructField "ServerStream" etcdserverpb.leaseLeaseKeepAliveServer leaseLeaseKeepAliveServer.ServerStream.
+Global Instance into_val_struct_field_leaseLeaseKeepAliveServer_ServerStream `{ffi_syntax} : IntoValStructField "ServerStream" etcdserverpb.leaseLeaseKeepAliveServer leaseLeaseKeepAliveServer.ServerStream'.
 Admitted.
 
-Instance wp_struct_make_leaseLeaseKeepAliveServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ServerStream:
+Instance wp_struct_make_leaseLeaseKeepAliveServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ServerStream':
   PureWp True
     (struct.make etcdserverpb.leaseLeaseKeepAliveServer (alist_val [
-      "ServerStream" ::= #ServerStream
-    ]))%V 
-    #(leaseLeaseKeepAliveServer.mk ServerStream).
+      "ServerStream" ::= #ServerStream'
+    ]))%V
+    #(leaseLeaseKeepAliveServer.mk ServerStream').
 Admitted.
 
 Module clusterClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  cc : loc;
+  cc' : loc;
 }.
 End def.
 End clusterClient.
 
 
 Global Instance settable_clusterClient `{ffi_syntax}: Settable _ :=
-  settable! clusterClient.mk < clusterClient.cc >.
+  settable! clusterClient.mk < clusterClient.cc' >.
 Global Instance into_val_clusterClient `{ffi_syntax} : IntoVal clusterClient.t.
 Admitted.
 
@@ -6841,15 +6841,15 @@ Global Instance into_val_typed_clusterClient `{ffi_syntax} : IntoValTyped cluste
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_clusterClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.clusterClient clusterClient.cc.
+Global Instance into_val_struct_field_clusterClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.clusterClient clusterClient.cc'.
 Admitted.
 
-Instance wp_struct_make_clusterClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc:
+Instance wp_struct_make_clusterClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc':
   PureWp True
     (struct.make etcdserverpb.clusterClient (alist_val [
-      "cc" ::= #cc
-    ]))%V 
-    #(clusterClient.mk cc).
+      "cc" ::= #cc'
+    ]))%V
+    #(clusterClient.mk cc').
 Admitted.
 
 Module UnimplementedClusterServer.
@@ -6874,7 +6874,7 @@ Global Instance into_val_typed_UnimplementedClusterServer `{ffi_syntax} : IntoVa
 Instance wp_struct_make_UnimplementedClusterServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make etcdserverpb.UnimplementedClusterServer (alist_val [
-    ]))%V 
+    ]))%V
     #(UnimplementedClusterServer.mk).
 Admitted.
 
@@ -6882,14 +6882,14 @@ Module maintenanceClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  cc : loc;
+  cc' : loc;
 }.
 End def.
 End maintenanceClient.
 
 
 Global Instance settable_maintenanceClient `{ffi_syntax}: Settable _ :=
-  settable! maintenanceClient.mk < maintenanceClient.cc >.
+  settable! maintenanceClient.mk < maintenanceClient.cc' >.
 Global Instance into_val_maintenanceClient `{ffi_syntax} : IntoVal maintenanceClient.t.
 Admitted.
 
@@ -6901,29 +6901,29 @@ Global Instance into_val_typed_maintenanceClient `{ffi_syntax} : IntoValTyped ma
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_maintenanceClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.maintenanceClient maintenanceClient.cc.
+Global Instance into_val_struct_field_maintenanceClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.maintenanceClient maintenanceClient.cc'.
 Admitted.
 
-Instance wp_struct_make_maintenanceClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc:
+Instance wp_struct_make_maintenanceClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc':
   PureWp True
     (struct.make etcdserverpb.maintenanceClient (alist_val [
-      "cc" ::= #cc
-    ]))%V 
-    #(maintenanceClient.mk cc).
+      "cc" ::= #cc'
+    ]))%V
+    #(maintenanceClient.mk cc').
 Admitted.
 
 Module maintenanceSnapshotClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ClientStream : interface.t;
+  ClientStream' : interface.t;
 }.
 End def.
 End maintenanceSnapshotClient.
 
 
 Global Instance settable_maintenanceSnapshotClient `{ffi_syntax}: Settable _ :=
-  settable! maintenanceSnapshotClient.mk < maintenanceSnapshotClient.ClientStream >.
+  settable! maintenanceSnapshotClient.mk < maintenanceSnapshotClient.ClientStream' >.
 Global Instance into_val_maintenanceSnapshotClient `{ffi_syntax} : IntoVal maintenanceSnapshotClient.t.
 Admitted.
 
@@ -6935,15 +6935,15 @@ Global Instance into_val_typed_maintenanceSnapshotClient `{ffi_syntax} : IntoVal
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_maintenanceSnapshotClient_ClientStream `{ffi_syntax} : IntoValStructField "ClientStream" etcdserverpb.maintenanceSnapshotClient maintenanceSnapshotClient.ClientStream.
+Global Instance into_val_struct_field_maintenanceSnapshotClient_ClientStream `{ffi_syntax} : IntoValStructField "ClientStream" etcdserverpb.maintenanceSnapshotClient maintenanceSnapshotClient.ClientStream'.
 Admitted.
 
-Instance wp_struct_make_maintenanceSnapshotClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClientStream:
+Instance wp_struct_make_maintenanceSnapshotClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClientStream':
   PureWp True
     (struct.make etcdserverpb.maintenanceSnapshotClient (alist_val [
-      "ClientStream" ::= #ClientStream
-    ]))%V 
-    #(maintenanceSnapshotClient.mk ClientStream).
+      "ClientStream" ::= #ClientStream'
+    ]))%V
+    #(maintenanceSnapshotClient.mk ClientStream').
 Admitted.
 
 Module UnimplementedMaintenanceServer.
@@ -6968,7 +6968,7 @@ Global Instance into_val_typed_UnimplementedMaintenanceServer `{ffi_syntax} : In
 Instance wp_struct_make_UnimplementedMaintenanceServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make etcdserverpb.UnimplementedMaintenanceServer (alist_val [
-    ]))%V 
+    ]))%V
     #(UnimplementedMaintenanceServer.mk).
 Admitted.
 
@@ -6976,14 +6976,14 @@ Module maintenanceSnapshotServer.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  ServerStream : interface.t;
+  ServerStream' : interface.t;
 }.
 End def.
 End maintenanceSnapshotServer.
 
 
 Global Instance settable_maintenanceSnapshotServer `{ffi_syntax}: Settable _ :=
-  settable! maintenanceSnapshotServer.mk < maintenanceSnapshotServer.ServerStream >.
+  settable! maintenanceSnapshotServer.mk < maintenanceSnapshotServer.ServerStream' >.
 Global Instance into_val_maintenanceSnapshotServer `{ffi_syntax} : IntoVal maintenanceSnapshotServer.t.
 Admitted.
 
@@ -6995,29 +6995,29 @@ Global Instance into_val_typed_maintenanceSnapshotServer `{ffi_syntax} : IntoVal
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_maintenanceSnapshotServer_ServerStream `{ffi_syntax} : IntoValStructField "ServerStream" etcdserverpb.maintenanceSnapshotServer maintenanceSnapshotServer.ServerStream.
+Global Instance into_val_struct_field_maintenanceSnapshotServer_ServerStream `{ffi_syntax} : IntoValStructField "ServerStream" etcdserverpb.maintenanceSnapshotServer maintenanceSnapshotServer.ServerStream'.
 Admitted.
 
-Instance wp_struct_make_maintenanceSnapshotServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ServerStream:
+Instance wp_struct_make_maintenanceSnapshotServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ServerStream':
   PureWp True
     (struct.make etcdserverpb.maintenanceSnapshotServer (alist_val [
-      "ServerStream" ::= #ServerStream
-    ]))%V 
-    #(maintenanceSnapshotServer.mk ServerStream).
+      "ServerStream" ::= #ServerStream'
+    ]))%V
+    #(maintenanceSnapshotServer.mk ServerStream').
 Admitted.
 
 Module authClient.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  cc : loc;
+  cc' : loc;
 }.
 End def.
 End authClient.
 
 
 Global Instance settable_authClient `{ffi_syntax}: Settable _ :=
-  settable! authClient.mk < authClient.cc >.
+  settable! authClient.mk < authClient.cc' >.
 Global Instance into_val_authClient `{ffi_syntax} : IntoVal authClient.t.
 Admitted.
 
@@ -7029,15 +7029,15 @@ Global Instance into_val_typed_authClient `{ffi_syntax} : IntoValTyped authClien
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_authClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.authClient authClient.cc.
+Global Instance into_val_struct_field_authClient_cc `{ffi_syntax} : IntoValStructField "cc" etcdserverpb.authClient authClient.cc'.
 Admitted.
 
-Instance wp_struct_make_authClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc:
+Instance wp_struct_make_authClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cc':
   PureWp True
     (struct.make etcdserverpb.authClient (alist_val [
-      "cc" ::= #cc
-    ]))%V 
-    #(authClient.mk cc).
+      "cc" ::= #cc'
+    ]))%V
+    #(authClient.mk cc').
 Admitted.
 
 Module UnimplementedAuthServer.
@@ -7062,7 +7062,7 @@ Global Instance into_val_typed_UnimplementedAuthServer `{ffi_syntax} : IntoValTy
 Instance wp_struct_make_UnimplementedAuthServer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make etcdserverpb.UnimplementedAuthServer (alist_val [
-    ]))%V 
+    ]))%V
     #(UnimplementedAuthServer.mk).
 Admitted.
 

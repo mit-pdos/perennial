@@ -8,14 +8,14 @@ Module Server.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  handlers : loc;
+  handlers' : loc;
 }.
 End def.
 End Server.
 
 
 Global Instance settable_Server `{ffi_syntax}: Settable _ :=
-  settable! Server.mk < Server.handlers >.
+  settable! Server.mk < Server.handlers' >.
 Global Instance into_val_Server `{ffi_syntax} : IntoVal Server.t.
 Admitted.
 
@@ -27,31 +27,31 @@ Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t urpc
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Server_handlers `{ffi_syntax} : IntoValStructField "handlers" urpc.Server Server.handlers.
+Global Instance into_val_struct_field_Server_handlers `{ffi_syntax} : IntoValStructField "handlers" urpc.Server Server.handlers'.
 Admitted.
 
-Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} handlers:
+Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} handlers':
   PureWp True
     (struct.make urpc.Server (alist_val [
-      "handlers" ::= #handlers
-    ]))%V 
-    #(Server.mk handlers).
+      "handlers" ::= #handlers'
+    ]))%V
+    #(Server.mk handlers').
 Admitted.
 
 Module Callback.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  reply : loc;
-  state : loc;
-  cond : loc;
+  reply' : loc;
+  state' : loc;
+  cond' : loc;
 }.
 End def.
 End Callback.
 
 
 Global Instance settable_Callback `{ffi_syntax}: Settable _ :=
-  settable! Callback.mk < Callback.reply; Callback.state; Callback.cond >.
+  settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
 Global Instance into_val_Callback `{ffi_syntax} : IntoVal Callback.t.
 Admitted.
 
@@ -63,40 +63,40 @@ Global Instance into_val_typed_Callback `{ffi_syntax} : IntoValTyped Callback.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Callback_reply `{ffi_syntax} : IntoValStructField "reply" urpc.Callback Callback.reply.
+Global Instance into_val_struct_field_Callback_reply `{ffi_syntax} : IntoValStructField "reply" urpc.Callback Callback.reply'.
 Admitted.
 
-Global Instance into_val_struct_field_Callback_state `{ffi_syntax} : IntoValStructField "state" urpc.Callback Callback.state.
+Global Instance into_val_struct_field_Callback_state `{ffi_syntax} : IntoValStructField "state" urpc.Callback Callback.state'.
 Admitted.
 
-Global Instance into_val_struct_field_Callback_cond `{ffi_syntax} : IntoValStructField "cond" urpc.Callback Callback.cond.
+Global Instance into_val_struct_field_Callback_cond `{ffi_syntax} : IntoValStructField "cond" urpc.Callback Callback.cond'.
 Admitted.
 
-Instance wp_struct_make_Callback `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} reply state cond:
+Instance wp_struct_make_Callback `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} reply' state' cond':
   PureWp True
     (struct.make urpc.Callback (alist_val [
-      "reply" ::= #reply;
-      "state" ::= #state;
-      "cond" ::= #cond
-    ]))%V 
-    #(Callback.mk reply state cond).
+      "reply" ::= #reply';
+      "state" ::= #state';
+      "cond" ::= #cond'
+    ]))%V
+    #(Callback.mk reply' state' cond').
 Admitted.
 
 Module Client.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  mu : loc;
-  conn : loc;
-  seq : w64;
-  pending : loc;
+  mu' : loc;
+  conn' : loc;
+  seq' : w64;
+  pending' : loc;
 }.
 End def.
 End Client.
 
 
 Global Instance settable_Client `{ffi_syntax}: Settable _ :=
-  settable! Client.mk < Client.mu; Client.conn; Client.seq; Client.pending >.
+  settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.
 Global Instance into_val_Client `{ffi_syntax} : IntoVal Client.t.
 Admitted.
 
@@ -108,26 +108,26 @@ Global Instance into_val_typed_Client `{ffi_syntax} : IntoValTyped Client.t urpc
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Client_mu `{ffi_syntax} : IntoValStructField "mu" urpc.Client Client.mu.
+Global Instance into_val_struct_field_Client_mu `{ffi_syntax} : IntoValStructField "mu" urpc.Client Client.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_Client_conn `{ffi_syntax} : IntoValStructField "conn" urpc.Client Client.conn.
+Global Instance into_val_struct_field_Client_conn `{ffi_syntax} : IntoValStructField "conn" urpc.Client Client.conn'.
 Admitted.
 
-Global Instance into_val_struct_field_Client_seq `{ffi_syntax} : IntoValStructField "seq" urpc.Client Client.seq.
+Global Instance into_val_struct_field_Client_seq `{ffi_syntax} : IntoValStructField "seq" urpc.Client Client.seq'.
 Admitted.
 
-Global Instance into_val_struct_field_Client_pending `{ffi_syntax} : IntoValStructField "pending" urpc.Client Client.pending.
+Global Instance into_val_struct_field_Client_pending `{ffi_syntax} : IntoValStructField "pending" urpc.Client Client.pending'.
 Admitted.
 
-Instance wp_struct_make_Client `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu conn seq pending:
+Instance wp_struct_make_Client `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' conn' seq' pending':
   PureWp True
     (struct.make urpc.Client (alist_val [
-      "mu" ::= #mu;
-      "conn" ::= #conn;
-      "seq" ::= #seq;
-      "pending" ::= #pending
-    ]))%V 
-    #(Client.mk mu conn seq pending).
+      "mu" ::= #mu';
+      "conn" ::= #conn';
+      "seq" ::= #seq';
+      "pending" ::= #pending'
+    ]))%V
+    #(Client.mk mu' conn' seq' pending').
 Admitted.
 

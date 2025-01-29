@@ -8,18 +8,18 @@ Module ParseError.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Layout : go_string;
-  Value : go_string;
-  LayoutElem : go_string;
-  ValueElem : go_string;
-  Message : go_string;
+  Layout' : go_string;
+  Value' : go_string;
+  LayoutElem' : go_string;
+  ValueElem' : go_string;
+  Message' : go_string;
 }.
 End def.
 End ParseError.
 
 
 Global Instance settable_ParseError `{ffi_syntax}: Settable _ :=
-  settable! ParseError.mk < ParseError.Layout; ParseError.Value; ParseError.LayoutElem; ParseError.ValueElem; ParseError.Message >.
+  settable! ParseError.mk < ParseError.Layout'; ParseError.Value'; ParseError.LayoutElem'; ParseError.ValueElem'; ParseError.Message' >.
 Global Instance into_val_ParseError `{ffi_syntax} : IntoVal ParseError.t.
 Admitted.
 
@@ -31,46 +31,46 @@ Global Instance into_val_typed_ParseError `{ffi_syntax} : IntoValTyped ParseErro
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ParseError_Layout `{ffi_syntax} : IntoValStructField "Layout" time.ParseError ParseError.Layout.
+Global Instance into_val_struct_field_ParseError_Layout `{ffi_syntax} : IntoValStructField "Layout" time.ParseError ParseError.Layout'.
 Admitted.
 
-Global Instance into_val_struct_field_ParseError_Value `{ffi_syntax} : IntoValStructField "Value" time.ParseError ParseError.Value.
+Global Instance into_val_struct_field_ParseError_Value `{ffi_syntax} : IntoValStructField "Value" time.ParseError ParseError.Value'.
 Admitted.
 
-Global Instance into_val_struct_field_ParseError_LayoutElem `{ffi_syntax} : IntoValStructField "LayoutElem" time.ParseError ParseError.LayoutElem.
+Global Instance into_val_struct_field_ParseError_LayoutElem `{ffi_syntax} : IntoValStructField "LayoutElem" time.ParseError ParseError.LayoutElem'.
 Admitted.
 
-Global Instance into_val_struct_field_ParseError_ValueElem `{ffi_syntax} : IntoValStructField "ValueElem" time.ParseError ParseError.ValueElem.
+Global Instance into_val_struct_field_ParseError_ValueElem `{ffi_syntax} : IntoValStructField "ValueElem" time.ParseError ParseError.ValueElem'.
 Admitted.
 
-Global Instance into_val_struct_field_ParseError_Message `{ffi_syntax} : IntoValStructField "Message" time.ParseError ParseError.Message.
+Global Instance into_val_struct_field_ParseError_Message `{ffi_syntax} : IntoValStructField "Message" time.ParseError ParseError.Message'.
 Admitted.
 
-Instance wp_struct_make_ParseError `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Layout Value LayoutElem ValueElem Message:
+Instance wp_struct_make_ParseError `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Layout' Value' LayoutElem' ValueElem' Message':
   PureWp True
     (struct.make time.ParseError (alist_val [
-      "Layout" ::= #Layout;
-      "Value" ::= #Value;
-      "LayoutElem" ::= #LayoutElem;
-      "ValueElem" ::= #ValueElem;
-      "Message" ::= #Message
-    ]))%V 
-    #(ParseError.mk Layout Value LayoutElem ValueElem Message).
+      "Layout" ::= #Layout';
+      "Value" ::= #Value';
+      "LayoutElem" ::= #LayoutElem';
+      "ValueElem" ::= #ValueElem';
+      "Message" ::= #Message'
+    ]))%V
+    #(ParseError.mk Layout' Value' LayoutElem' ValueElem' Message').
 Admitted.
 
 Module Timer.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  C : loc;
-  initTimer : bool;
+  C' : loc;
+  initTimer' : bool;
 }.
 End def.
 End Timer.
 
 
 Global Instance settable_Timer `{ffi_syntax}: Settable _ :=
-  settable! Timer.mk < Timer.C; Timer.initTimer >.
+  settable! Timer.mk < Timer.C'; Timer.initTimer' >.
 Global Instance into_val_Timer `{ffi_syntax} : IntoVal Timer.t.
 Admitted.
 
@@ -82,34 +82,34 @@ Global Instance into_val_typed_Timer `{ffi_syntax} : IntoValTyped Timer.t time.T
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Timer_C `{ffi_syntax} : IntoValStructField "C" time.Timer Timer.C.
+Global Instance into_val_struct_field_Timer_C `{ffi_syntax} : IntoValStructField "C" time.Timer Timer.C'.
 Admitted.
 
-Global Instance into_val_struct_field_Timer_initTimer `{ffi_syntax} : IntoValStructField "initTimer" time.Timer Timer.initTimer.
+Global Instance into_val_struct_field_Timer_initTimer `{ffi_syntax} : IntoValStructField "initTimer" time.Timer Timer.initTimer'.
 Admitted.
 
-Instance wp_struct_make_Timer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} C initTimer:
+Instance wp_struct_make_Timer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} C' initTimer':
   PureWp True
     (struct.make time.Timer (alist_val [
-      "C" ::= #C;
-      "initTimer" ::= #initTimer
-    ]))%V 
-    #(Timer.mk C initTimer).
+      "C" ::= #C';
+      "initTimer" ::= #initTimer'
+    ]))%V
+    #(Timer.mk C' initTimer').
 Admitted.
 
 Module Ticker.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  C : loc;
-  initTicker : bool;
+  C' : loc;
+  initTicker' : bool;
 }.
 End def.
 End Ticker.
 
 
 Global Instance settable_Ticker `{ffi_syntax}: Settable _ :=
-  settable! Ticker.mk < Ticker.C; Ticker.initTicker >.
+  settable! Ticker.mk < Ticker.C'; Ticker.initTicker' >.
 Global Instance into_val_Ticker `{ffi_syntax} : IntoVal Ticker.t.
 Admitted.
 
@@ -121,35 +121,35 @@ Global Instance into_val_typed_Ticker `{ffi_syntax} : IntoValTyped Ticker.t time
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Ticker_C `{ffi_syntax} : IntoValStructField "C" time.Ticker Ticker.C.
+Global Instance into_val_struct_field_Ticker_C `{ffi_syntax} : IntoValStructField "C" time.Ticker Ticker.C'.
 Admitted.
 
-Global Instance into_val_struct_field_Ticker_initTicker `{ffi_syntax} : IntoValStructField "initTicker" time.Ticker Ticker.initTicker.
+Global Instance into_val_struct_field_Ticker_initTicker `{ffi_syntax} : IntoValStructField "initTicker" time.Ticker Ticker.initTicker'.
 Admitted.
 
-Instance wp_struct_make_Ticker `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} C initTicker:
+Instance wp_struct_make_Ticker `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} C' initTicker':
   PureWp True
     (struct.make time.Ticker (alist_val [
-      "C" ::= #C;
-      "initTicker" ::= #initTicker
-    ]))%V 
-    #(Ticker.mk C initTicker).
+      "C" ::= #C';
+      "initTicker" ::= #initTicker'
+    ]))%V
+    #(Ticker.mk C' initTicker').
 Admitted.
 
 Module Time.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  wall : w64;
-  ext : w64;
-  loc : loc;
+  wall' : w64;
+  ext' : w64;
+  loc' : loc;
 }.
 End def.
 End Time.
 
 
 Global Instance settable_Time `{ffi_syntax}: Settable _ :=
-  settable! Time.mk < Time.wall; Time.ext; Time.loc >.
+  settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
 Global Instance into_val_Time `{ffi_syntax} : IntoVal Time.t.
 Admitted.
 
@@ -161,43 +161,43 @@ Global Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t time.Tim
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall.
+Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall'.
 Admitted.
 
-Global Instance into_val_struct_field_Time_ext `{ffi_syntax} : IntoValStructField "ext" time.Time Time.ext.
+Global Instance into_val_struct_field_Time_ext `{ffi_syntax} : IntoValStructField "ext" time.Time Time.ext'.
 Admitted.
 
-Global Instance into_val_struct_field_Time_loc `{ffi_syntax} : IntoValStructField "loc" time.Time Time.loc.
+Global Instance into_val_struct_field_Time_loc `{ffi_syntax} : IntoValStructField "loc" time.Time Time.loc'.
 Admitted.
 
-Instance wp_struct_make_Time `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} wall ext loc:
+Instance wp_struct_make_Time `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} wall' ext' loc':
   PureWp True
     (struct.make time.Time (alist_val [
-      "wall" ::= #wall;
-      "ext" ::= #ext;
-      "loc" ::= #loc
-    ]))%V 
-    #(Time.mk wall ext loc).
+      "wall" ::= #wall';
+      "ext" ::= #ext';
+      "loc" ::= #loc'
+    ]))%V
+    #(Time.mk wall' ext' loc').
 Admitted.
 
 Module Location.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  name : go_string;
-  zone : slice.t;
-  tx : slice.t;
-  extend : go_string;
-  cacheStart : w64;
-  cacheEnd : w64;
-  cacheZone : loc;
+  name' : go_string;
+  zone' : slice.t;
+  tx' : slice.t;
+  extend' : go_string;
+  cacheStart' : w64;
+  cacheEnd' : w64;
+  cacheZone' : loc;
 }.
 End def.
 End Location.
 
 
 Global Instance settable_Location `{ffi_syntax}: Settable _ :=
-  settable! Location.mk < Location.name; Location.zone; Location.tx; Location.extend; Location.cacheStart; Location.cacheEnd; Location.cacheZone >.
+  settable! Location.mk < Location.name'; Location.zone'; Location.tx'; Location.extend'; Location.cacheStart'; Location.cacheEnd'; Location.cacheZone' >.
 Global Instance into_val_Location `{ffi_syntax} : IntoVal Location.t.
 Admitted.
 
@@ -209,55 +209,55 @@ Global Instance into_val_typed_Location `{ffi_syntax} : IntoValTyped Location.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Location_name `{ffi_syntax} : IntoValStructField "name" time.Location Location.name.
+Global Instance into_val_struct_field_Location_name `{ffi_syntax} : IntoValStructField "name" time.Location Location.name'.
 Admitted.
 
-Global Instance into_val_struct_field_Location_zone `{ffi_syntax} : IntoValStructField "zone" time.Location Location.zone.
+Global Instance into_val_struct_field_Location_zone `{ffi_syntax} : IntoValStructField "zone" time.Location Location.zone'.
 Admitted.
 
-Global Instance into_val_struct_field_Location_tx `{ffi_syntax} : IntoValStructField "tx" time.Location Location.tx.
+Global Instance into_val_struct_field_Location_tx `{ffi_syntax} : IntoValStructField "tx" time.Location Location.tx'.
 Admitted.
 
-Global Instance into_val_struct_field_Location_extend `{ffi_syntax} : IntoValStructField "extend" time.Location Location.extend.
+Global Instance into_val_struct_field_Location_extend `{ffi_syntax} : IntoValStructField "extend" time.Location Location.extend'.
 Admitted.
 
-Global Instance into_val_struct_field_Location_cacheStart `{ffi_syntax} : IntoValStructField "cacheStart" time.Location Location.cacheStart.
+Global Instance into_val_struct_field_Location_cacheStart `{ffi_syntax} : IntoValStructField "cacheStart" time.Location Location.cacheStart'.
 Admitted.
 
-Global Instance into_val_struct_field_Location_cacheEnd `{ffi_syntax} : IntoValStructField "cacheEnd" time.Location Location.cacheEnd.
+Global Instance into_val_struct_field_Location_cacheEnd `{ffi_syntax} : IntoValStructField "cacheEnd" time.Location Location.cacheEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_Location_cacheZone `{ffi_syntax} : IntoValStructField "cacheZone" time.Location Location.cacheZone.
+Global Instance into_val_struct_field_Location_cacheZone `{ffi_syntax} : IntoValStructField "cacheZone" time.Location Location.cacheZone'.
 Admitted.
 
-Instance wp_struct_make_Location `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} name zone tx extend cacheStart cacheEnd cacheZone:
+Instance wp_struct_make_Location `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} name' zone' tx' extend' cacheStart' cacheEnd' cacheZone':
   PureWp True
     (struct.make time.Location (alist_val [
-      "name" ::= #name;
-      "zone" ::= #zone;
-      "tx" ::= #tx;
-      "extend" ::= #extend;
-      "cacheStart" ::= #cacheStart;
-      "cacheEnd" ::= #cacheEnd;
-      "cacheZone" ::= #cacheZone
-    ]))%V 
-    #(Location.mk name zone tx extend cacheStart cacheEnd cacheZone).
+      "name" ::= #name';
+      "zone" ::= #zone';
+      "tx" ::= #tx';
+      "extend" ::= #extend';
+      "cacheStart" ::= #cacheStart';
+      "cacheEnd" ::= #cacheEnd';
+      "cacheZone" ::= #cacheZone'
+    ]))%V
+    #(Location.mk name' zone' tx' extend' cacheStart' cacheEnd' cacheZone').
 Admitted.
 
 Module zone.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  name : go_string;
-  offset : w64;
-  isDST : bool;
+  name' : go_string;
+  offset' : w64;
+  isDST' : bool;
 }.
 End def.
 End zone.
 
 
 Global Instance settable_zone `{ffi_syntax}: Settable _ :=
-  settable! zone.mk < zone.name; zone.offset; zone.isDST >.
+  settable! zone.mk < zone.name'; zone.offset'; zone.isDST' >.
 Global Instance into_val_zone `{ffi_syntax} : IntoVal zone.t.
 Admitted.
 
@@ -269,40 +269,40 @@ Global Instance into_val_typed_zone `{ffi_syntax} : IntoValTyped zone.t time.zon
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_zone_name `{ffi_syntax} : IntoValStructField "name" time.zone zone.name.
+Global Instance into_val_struct_field_zone_name `{ffi_syntax} : IntoValStructField "name" time.zone zone.name'.
 Admitted.
 
-Global Instance into_val_struct_field_zone_offset `{ffi_syntax} : IntoValStructField "offset" time.zone zone.offset.
+Global Instance into_val_struct_field_zone_offset `{ffi_syntax} : IntoValStructField "offset" time.zone zone.offset'.
 Admitted.
 
-Global Instance into_val_struct_field_zone_isDST `{ffi_syntax} : IntoValStructField "isDST" time.zone zone.isDST.
+Global Instance into_val_struct_field_zone_isDST `{ffi_syntax} : IntoValStructField "isDST" time.zone zone.isDST'.
 Admitted.
 
-Instance wp_struct_make_zone `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} name offset isDST:
+Instance wp_struct_make_zone `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} name' offset' isDST':
   PureWp True
     (struct.make time.zone (alist_val [
-      "name" ::= #name;
-      "offset" ::= #offset;
-      "isDST" ::= #isDST
-    ]))%V 
-    #(zone.mk name offset isDST).
+      "name" ::= #name';
+      "offset" ::= #offset';
+      "isDST" ::= #isDST'
+    ]))%V
+    #(zone.mk name' offset' isDST').
 Admitted.
 
 Module zoneTrans.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  when : w64;
-  index : w8;
-  isstd : bool;
-  isutc : bool;
+  when' : w64;
+  index' : w8;
+  isstd' : bool;
+  isutc' : bool;
 }.
 End def.
 End zoneTrans.
 
 
 Global Instance settable_zoneTrans `{ffi_syntax}: Settable _ :=
-  settable! zoneTrans.mk < zoneTrans.when; zoneTrans.index; zoneTrans.isstd; zoneTrans.isutc >.
+  settable! zoneTrans.mk < zoneTrans.when'; zoneTrans.index'; zoneTrans.isstd'; zoneTrans.isutc' >.
 Global Instance into_val_zoneTrans `{ffi_syntax} : IntoVal zoneTrans.t.
 Admitted.
 
@@ -314,45 +314,45 @@ Global Instance into_val_typed_zoneTrans `{ffi_syntax} : IntoValTyped zoneTrans.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_zoneTrans_when `{ffi_syntax} : IntoValStructField "when" time.zoneTrans zoneTrans.when.
+Global Instance into_val_struct_field_zoneTrans_when `{ffi_syntax} : IntoValStructField "when" time.zoneTrans zoneTrans.when'.
 Admitted.
 
-Global Instance into_val_struct_field_zoneTrans_index `{ffi_syntax} : IntoValStructField "index" time.zoneTrans zoneTrans.index.
+Global Instance into_val_struct_field_zoneTrans_index `{ffi_syntax} : IntoValStructField "index" time.zoneTrans zoneTrans.index'.
 Admitted.
 
-Global Instance into_val_struct_field_zoneTrans_isstd `{ffi_syntax} : IntoValStructField "isstd" time.zoneTrans zoneTrans.isstd.
+Global Instance into_val_struct_field_zoneTrans_isstd `{ffi_syntax} : IntoValStructField "isstd" time.zoneTrans zoneTrans.isstd'.
 Admitted.
 
-Global Instance into_val_struct_field_zoneTrans_isutc `{ffi_syntax} : IntoValStructField "isutc" time.zoneTrans zoneTrans.isutc.
+Global Instance into_val_struct_field_zoneTrans_isutc `{ffi_syntax} : IntoValStructField "isutc" time.zoneTrans zoneTrans.isutc'.
 Admitted.
 
-Instance wp_struct_make_zoneTrans `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} when index isstd isutc:
+Instance wp_struct_make_zoneTrans `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} when' index' isstd' isutc':
   PureWp True
     (struct.make time.zoneTrans (alist_val [
-      "when" ::= #when;
-      "index" ::= #index;
-      "isstd" ::= #isstd;
-      "isutc" ::= #isutc
-    ]))%V 
-    #(zoneTrans.mk when index isstd isutc).
+      "when" ::= #when';
+      "index" ::= #index';
+      "isstd" ::= #isstd';
+      "isutc" ::= #isutc'
+    ]))%V
+    #(zoneTrans.mk when' index' isstd' isutc').
 Admitted.
 
 Module rule.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  kind : w64;
-  day : w64;
-  week : w64;
-  mon : w64;
-  time : w64;
+  kind' : w64;
+  day' : w64;
+  week' : w64;
+  mon' : w64;
+  time' : w64;
 }.
 End def.
 End rule.
 
 
 Global Instance settable_rule `{ffi_syntax}: Settable _ :=
-  settable! rule.mk < rule.kind; rule.day; rule.week; rule.mon; rule.time >.
+  settable! rule.mk < rule.kind'; rule.day'; rule.week'; rule.mon'; rule.time' >.
 Global Instance into_val_rule `{ffi_syntax} : IntoVal rule.t.
 Admitted.
 
@@ -364,46 +364,46 @@ Global Instance into_val_typed_rule `{ffi_syntax} : IntoValTyped rule.t time.rul
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_rule_kind `{ffi_syntax} : IntoValStructField "kind" time.rule rule.kind.
+Global Instance into_val_struct_field_rule_kind `{ffi_syntax} : IntoValStructField "kind" time.rule rule.kind'.
 Admitted.
 
-Global Instance into_val_struct_field_rule_day `{ffi_syntax} : IntoValStructField "day" time.rule rule.day.
+Global Instance into_val_struct_field_rule_day `{ffi_syntax} : IntoValStructField "day" time.rule rule.day'.
 Admitted.
 
-Global Instance into_val_struct_field_rule_week `{ffi_syntax} : IntoValStructField "week" time.rule rule.week.
+Global Instance into_val_struct_field_rule_week `{ffi_syntax} : IntoValStructField "week" time.rule rule.week'.
 Admitted.
 
-Global Instance into_val_struct_field_rule_mon `{ffi_syntax} : IntoValStructField "mon" time.rule rule.mon.
+Global Instance into_val_struct_field_rule_mon `{ffi_syntax} : IntoValStructField "mon" time.rule rule.mon'.
 Admitted.
 
-Global Instance into_val_struct_field_rule_time `{ffi_syntax} : IntoValStructField "time" time.rule rule.time.
+Global Instance into_val_struct_field_rule_time `{ffi_syntax} : IntoValStructField "time" time.rule rule.time'.
 Admitted.
 
-Instance wp_struct_make_rule `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kind day week mon time:
+Instance wp_struct_make_rule `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kind' day' week' mon' time':
   PureWp True
     (struct.make time.rule (alist_val [
-      "kind" ::= #kind;
-      "day" ::= #day;
-      "week" ::= #week;
-      "mon" ::= #mon;
-      "time" ::= #time
-    ]))%V 
-    #(rule.mk kind day week mon time).
+      "kind" ::= #kind';
+      "day" ::= #day';
+      "week" ::= #week';
+      "mon" ::= #mon';
+      "time" ::= #time'
+    ]))%V
+    #(rule.mk kind' day' week' mon' time').
 Admitted.
 
 Module dataIO.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  p : slice.t;
-  error : bool;
+  p' : slice.t;
+  error' : bool;
 }.
 End def.
 End dataIO.
 
 
 Global Instance settable_dataIO `{ffi_syntax}: Settable _ :=
-  settable! dataIO.mk < dataIO.p; dataIO.error >.
+  settable! dataIO.mk < dataIO.p'; dataIO.error' >.
 Global Instance into_val_dataIO `{ffi_syntax} : IntoVal dataIO.t.
 Admitted.
 
@@ -415,18 +415,18 @@ Global Instance into_val_typed_dataIO `{ffi_syntax} : IntoValTyped dataIO.t time
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_dataIO_p `{ffi_syntax} : IntoValStructField "p" time.dataIO dataIO.p.
+Global Instance into_val_struct_field_dataIO_p `{ffi_syntax} : IntoValStructField "p" time.dataIO dataIO.p'.
 Admitted.
 
-Global Instance into_val_struct_field_dataIO_error `{ffi_syntax} : IntoValStructField "error" time.dataIO dataIO.error.
+Global Instance into_val_struct_field_dataIO_error `{ffi_syntax} : IntoValStructField "error" time.dataIO dataIO.error'.
 Admitted.
 
-Instance wp_struct_make_dataIO `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p error:
+Instance wp_struct_make_dataIO `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p' error':
   PureWp True
     (struct.make time.dataIO (alist_val [
-      "p" ::= #p;
-      "error" ::= #error
-    ]))%V 
-    #(dataIO.mk p error).
+      "p" ::= #p';
+      "error" ::= #error'
+    ]))%V
+    #(dataIO.mk p' error').
 Admitted.
 

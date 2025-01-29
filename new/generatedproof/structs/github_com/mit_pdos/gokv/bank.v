@@ -8,16 +8,16 @@ Module BankClerk.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  lck : loc;
-  kvck : interface.t;
-  accts : slice.t;
+  lck' : loc;
+  kvck' : interface.t;
+  accts' : slice.t;
 }.
 End def.
 End BankClerk.
 
 
 Global Instance settable_BankClerk `{ffi_syntax}: Settable _ :=
-  settable! BankClerk.mk < BankClerk.lck; BankClerk.kvck; BankClerk.accts >.
+  settable! BankClerk.mk < BankClerk.lck'; BankClerk.kvck'; BankClerk.accts' >.
 Global Instance into_val_BankClerk `{ffi_syntax} : IntoVal BankClerk.t.
 Admitted.
 
@@ -29,22 +29,22 @@ Global Instance into_val_typed_BankClerk `{ffi_syntax} : IntoValTyped BankClerk.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_BankClerk_lck `{ffi_syntax} : IntoValStructField "lck" bank.BankClerk BankClerk.lck.
+Global Instance into_val_struct_field_BankClerk_lck `{ffi_syntax} : IntoValStructField "lck" bank.BankClerk BankClerk.lck'.
 Admitted.
 
-Global Instance into_val_struct_field_BankClerk_kvck `{ffi_syntax} : IntoValStructField "kvck" bank.BankClerk BankClerk.kvck.
+Global Instance into_val_struct_field_BankClerk_kvck `{ffi_syntax} : IntoValStructField "kvck" bank.BankClerk BankClerk.kvck'.
 Admitted.
 
-Global Instance into_val_struct_field_BankClerk_accts `{ffi_syntax} : IntoValStructField "accts" bank.BankClerk BankClerk.accts.
+Global Instance into_val_struct_field_BankClerk_accts `{ffi_syntax} : IntoValStructField "accts" bank.BankClerk BankClerk.accts'.
 Admitted.
 
-Instance wp_struct_make_BankClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} lck kvck accts:
+Instance wp_struct_make_BankClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} lck' kvck' accts':
   PureWp True
     (struct.make bank.BankClerk (alist_val [
-      "lck" ::= #lck;
-      "kvck" ::= #kvck;
-      "accts" ::= #accts
-    ]))%V 
-    #(BankClerk.mk lck kvck accts).
+      "lck" ::= #lck';
+      "kvck" ::= #kvck';
+      "accts" ::= #accts'
+    ]))%V
+    #(BankClerk.mk lck' kvck' accts').
 Admitted.
 

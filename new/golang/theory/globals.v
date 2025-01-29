@@ -366,6 +366,16 @@ Global Hint Mode WpGlobalsGet - - - - - - + + - - : typeclass_instances.
 Global Hint Mode WpMethodCall - - - - - - + + + - - : typeclass_instances.
 Global Hint Mode WpFuncCall - - - - - - + + - - : typeclass_instances.
 
+Ltac solve_wp_globals_alloc :=
+  rewrite /WpGlobalsAlloc;
+  iIntros (?) "!# _ HΦ";
+  wp_call;
+  rewrite -!default_val_eq_zero_val /=;
+    repeat (let x := fresh "l" in wp_alloc x as "?"; wp_pures);
+  unshelve iSpecialize ("HΦ" $! _); first (econstructor; shelve);
+  iApply "HΦ"; iFrame.
+
+
 Tactic Notation "wp_globals_get" :=
   (wp_bind (globals.get _ _);
    unshelve wp_apply (wp_globals_get with "[]"); [| | tc_solve | |]; try iFrame "#").

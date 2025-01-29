@@ -8,23 +8,23 @@ Module AsyncFile.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  mu : loc;
-  data : slice.t;
-  filename : go_string;
-  index : w64;
-  indexCond : loc;
-  durableIndex : w64;
-  durableIndexCond : loc;
-  closeRequested : bool;
-  closed : bool;
-  closedCond : loc;
+  mu' : loc;
+  data' : slice.t;
+  filename' : go_string;
+  index' : w64;
+  indexCond' : loc;
+  durableIndex' : w64;
+  durableIndexCond' : loc;
+  closeRequested' : bool;
+  closed' : bool;
+  closedCond' : loc;
 }.
 End def.
 End AsyncFile.
 
 
 Global Instance settable_AsyncFile `{ffi_syntax}: Settable _ :=
-  settable! AsyncFile.mk < AsyncFile.mu; AsyncFile.data; AsyncFile.filename; AsyncFile.index; AsyncFile.indexCond; AsyncFile.durableIndex; AsyncFile.durableIndexCond; AsyncFile.closeRequested; AsyncFile.closed; AsyncFile.closedCond >.
+  settable! AsyncFile.mk < AsyncFile.mu'; AsyncFile.data'; AsyncFile.filename'; AsyncFile.index'; AsyncFile.indexCond'; AsyncFile.durableIndex'; AsyncFile.durableIndexCond'; AsyncFile.closeRequested'; AsyncFile.closed'; AsyncFile.closedCond' >.
 Global Instance into_val_AsyncFile `{ffi_syntax} : IntoVal AsyncFile.t.
 Admitted.
 
@@ -36,50 +36,50 @@ Global Instance into_val_typed_AsyncFile `{ffi_syntax} : IntoValTyped AsyncFile.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" asyncfile.AsyncFile AsyncFile.mu.
+Global Instance into_val_struct_field_AsyncFile_mu `{ffi_syntax} : IntoValStructField "mu" asyncfile.AsyncFile AsyncFile.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_data `{ffi_syntax} : IntoValStructField "data" asyncfile.AsyncFile AsyncFile.data.
+Global Instance into_val_struct_field_AsyncFile_data `{ffi_syntax} : IntoValStructField "data" asyncfile.AsyncFile AsyncFile.data'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_filename `{ffi_syntax} : IntoValStructField "filename" asyncfile.AsyncFile AsyncFile.filename.
+Global Instance into_val_struct_field_AsyncFile_filename `{ffi_syntax} : IntoValStructField "filename" asyncfile.AsyncFile AsyncFile.filename'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_index `{ffi_syntax} : IntoValStructField "index" asyncfile.AsyncFile AsyncFile.index.
+Global Instance into_val_struct_field_AsyncFile_index `{ffi_syntax} : IntoValStructField "index" asyncfile.AsyncFile AsyncFile.index'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_indexCond `{ffi_syntax} : IntoValStructField "indexCond" asyncfile.AsyncFile AsyncFile.indexCond.
+Global Instance into_val_struct_field_AsyncFile_indexCond `{ffi_syntax} : IntoValStructField "indexCond" asyncfile.AsyncFile AsyncFile.indexCond'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_durableIndex `{ffi_syntax} : IntoValStructField "durableIndex" asyncfile.AsyncFile AsyncFile.durableIndex.
+Global Instance into_val_struct_field_AsyncFile_durableIndex `{ffi_syntax} : IntoValStructField "durableIndex" asyncfile.AsyncFile AsyncFile.durableIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_durableIndexCond `{ffi_syntax} : IntoValStructField "durableIndexCond" asyncfile.AsyncFile AsyncFile.durableIndexCond.
+Global Instance into_val_struct_field_AsyncFile_durableIndexCond `{ffi_syntax} : IntoValStructField "durableIndexCond" asyncfile.AsyncFile AsyncFile.durableIndexCond'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" asyncfile.AsyncFile AsyncFile.closeRequested.
+Global Instance into_val_struct_field_AsyncFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" asyncfile.AsyncFile AsyncFile.closeRequested'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_closed `{ffi_syntax} : IntoValStructField "closed" asyncfile.AsyncFile AsyncFile.closed.
+Global Instance into_val_struct_field_AsyncFile_closed `{ffi_syntax} : IntoValStructField "closed" asyncfile.AsyncFile AsyncFile.closed'.
 Admitted.
 
-Global Instance into_val_struct_field_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" asyncfile.AsyncFile AsyncFile.closedCond.
+Global Instance into_val_struct_field_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" asyncfile.AsyncFile AsyncFile.closedCond'.
 Admitted.
 
-Instance wp_struct_make_AsyncFile `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu data filename index indexCond durableIndex durableIndexCond closeRequested closed closedCond:
+Instance wp_struct_make_AsyncFile `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' data' filename' index' indexCond' durableIndex' durableIndexCond' closeRequested' closed' closedCond':
   PureWp True
     (struct.make asyncfile.AsyncFile (alist_val [
-      "mu" ::= #mu;
-      "data" ::= #data;
-      "filename" ::= #filename;
-      "index" ::= #index;
-      "indexCond" ::= #indexCond;
-      "durableIndex" ::= #durableIndex;
-      "durableIndexCond" ::= #durableIndexCond;
-      "closeRequested" ::= #closeRequested;
-      "closed" ::= #closed;
-      "closedCond" ::= #closedCond
-    ]))%V 
-    #(AsyncFile.mk mu data filename index indexCond durableIndex durableIndexCond closeRequested closed closedCond).
+      "mu" ::= #mu';
+      "data" ::= #data';
+      "filename" ::= #filename';
+      "index" ::= #index';
+      "indexCond" ::= #indexCond';
+      "durableIndex" ::= #durableIndex';
+      "durableIndexCond" ::= #durableIndexCond';
+      "closeRequested" ::= #closeRequested';
+      "closed" ::= #closed';
+      "closedCond" ::= #closedCond'
+    ]))%V
+    #(AsyncFile.mk mu' data' filename' index' indexCond' durableIndex' durableIndexCond' closeRequested' closed' closedCond').
 Admitted.
 
