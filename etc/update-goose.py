@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-from os import path
 import subprocess
+from os import path
 
 
 def run_command(args, dry_run=False, verbose=False):
@@ -284,10 +284,18 @@ def main():
             "./vrsm/apps/closed",
             "./tutorial",  # atomic commit
             "./tutorial/objectstore/dir",
+            "./tutorial/objectstore/dir/chunkhandle_gk",
+            "./tutorial/objectstore/dir/finishwrite_gk",
+            "./tutorial/objectstore/dir/recordchunk_gk",
             "./tutorial/objectstore/chunk",
+            "./tutorial/objectstore/chunk/writechunk_gk",
             "./tutorial/objectstore/client",
             "./tutorial/lockservice",
+            "./tutorial/lockservice/lockrequest_gk",
             "./tutorial/kvservice",
+            "./tutorial/kvservice/conditionalput_gk",
+            "./tutorial/kvservice/get_gk",
+            "./tutorial/kvservice/put_gk",
             "./tutorial/basics",
             "./tutorial/queue",
             "./map_marshal",
