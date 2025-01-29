@@ -12,7 +12,7 @@ Definition S := struct.decl [
 ].
 
 Definition Marshal: val :=
-  rec: "Marshal" "p" "prefix" :=
+  rec: "Marshal" "prefix" "p" :=
     let: "enc" := ref_to (slice.T byteT) "prefix" in
     "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.get S "OpId" "p"));;
     let: "keyBytes" := StringToBytes (struct.get S "Key" "p") in

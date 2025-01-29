@@ -68,7 +68,7 @@ Definition Client__getFreshNumRpc: val :=
 Definition Client__putRpc: val :=
   rec: "Client__putRpc" "cl" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdPut (put_gk.Marshal "args" (NewSlice byteT #0)) "reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdPut (put_gk.Marshal (NewSlice byteT #0) "args") "reply" #100 in
     (if: "err" = urpc.ErrNone
     then "err"
     else "err").
@@ -100,7 +100,7 @@ Definition Clerk__Put: val :=
 Definition Client__conditionalPutRpc: val :=
   rec: "Client__conditionalPutRpc" "cl" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdConditionalPut (conditionalput_gk.Marshal "args" (NewSlice byteT #0)) "reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdConditionalPut (conditionalput_gk.Marshal (NewSlice byteT #0) "args") "reply" #100 in
     (if: "err" = urpc.ErrNone
     then (StringFromBytes (![slice.T byteT] "reply"), "err")
     else (#(str""), "err")).
@@ -139,7 +139,7 @@ Definition Clerk__ConditionalPut: val :=
 Definition Client__getRpc: val :=
   rec: "Client__getRpc" "cl" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGet (get_gk.Marshal "args" (NewSlice byteT #0)) "reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGet (get_gk.Marshal (NewSlice byteT #0) "args") "reply" #100 in
     (if: "err" = urpc.ErrNone
     then (StringFromBytes (![slice.T byteT] "reply"), "err")
     else (#(str""), "err")).

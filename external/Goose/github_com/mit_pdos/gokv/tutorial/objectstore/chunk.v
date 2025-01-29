@@ -43,7 +43,7 @@ Definition ClerkPool := struct.decl [
 
 Definition ClerkPool__WriteChunk: val :=
   rec: "ClerkPool__WriteChunk" "ck" "addr" "args" :=
-    let: "req" := writechunk_gk.Marshal "args" (NewSlice byteT #0) in
+    let: "req" := writechunk_gk.Marshal (NewSlice byteT #0) "args" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
     connman.ConnMan__CallAtLeastOnce (struct.loadF ClerkPool "cm" "ck") "addr" WriteChunkId "req" "reply" #100;;
     #().
