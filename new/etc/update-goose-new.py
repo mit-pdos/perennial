@@ -91,8 +91,7 @@ def main():
         old_dir = os.getcwd()
         os.chdir(goose_dir)
         do_run(["go", "install", "./cmd/goose"])
-        do_run(["go", "install", "./cmd/recordgen"])
-        do_run(["go", "install", "./cmd/namegen"])
+        do_run(["go", "install", "./cmd/proofgen"])
         os.chdir(old_dir)
 
     def run_goose(src_path, *pkgs):
@@ -112,14 +111,9 @@ def main():
                 "-out", path.join(perennial_dir, "new/code/"),
                 "-dir", src_path] + pkgs)
 
-        recordgen_bin = path.join(gopath, "bin", "recordgen")
-        do_run([recordgen_bin,
-                "-out", path.join(perennial_dir, "new/generatedproof/structs"),
-                "-dir", src_path] + pkgs)
-
-        namegen_bin = path.join(gopath, "bin", "namegen")
-        do_run([namegen_bin,
-                "-out", path.join(perennial_dir, "new/generatedproof/names"),
+        proofgen_bin = path.join(gopath, "bin", "proofgen")
+        do_run([proofgen_bin,
+                "-out", path.join(perennial_dir, "new/generatedproof"),
                 "-dir", src_path] + pkgs)
 
     def run_recordgen(src_path, *pkgs):
