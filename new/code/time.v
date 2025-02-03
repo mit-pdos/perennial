@@ -60,11 +60,36 @@ Axiom platformZoneSources'init : val.
 
 Definition pkg_name' : go_string := "time".
 
-Definition vars' : list (go_string * go_type) := [("std0x"%go, arrayT 6 intT); ("longDayNames"%go, sliceT); ("shortDayNames"%go, sliceT); ("shortMonthNames"%go, sliceT); ("longMonthNames"%go, sliceT); ("errAtoi"%go, error); ("errBad"%go, error); ("errLeadingInt"%go, error); ("unitMap"%go, mapT stringT uint64T); ("asynctimerchan"%go, ptrT); ("daysBefore"%go, arrayT 13 int32T); ("startNano"%go, int64T); ("UTC"%go, ptrT); ("utcLoc"%go, Location); ("Local"%go, ptrT); ("localLoc"%go, Location); ("localOnce"%go, sync.Once); ("unnamedFixedZones"%go, sliceT); ("unnamedFixedZonesOnce"%go, sync.Once); ("errLocation"%go, error); ("zoneinfo"%go, ptrT); ("zoneinfoOnce"%go, sync.Once); ("loadFromEmbeddedTZData"%go, funcT); ("errBadData"%go, error); ("loadTzinfoFromTzdata"%go, funcT); ("platformZoneSources"%go, sliceT)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (std0x'init #());;;
+      do:  (longDayNames'init #());;;
+      do:  (shortDayNames'init #());;;
+      do:  (shortMonthNames'init #());;;
+      do:  (longMonthNames'init #());;;
+      do:  (errAtoi'init #());;;
+      do:  (errBad'init #());;;
+      do:  (errLeadingInt'init #());;;
+      do:  (unitMap'init #());;;
+      do:  (asynctimerchan'init #());;;
+      do:  (daysBefore'init #());;;
+      do:  (startNano'init #());;;
+      do:  (utcLoc'init #());;;
+      do:  (UTC'init #());;;
+      do:  (Local'init #());;;
+      do:  (errLocation'init #());;;
+      do:  (errBadData'init #());;;
+      do:  (platformZoneSources'init #()))
+      ).
 
 End code.
 End time.

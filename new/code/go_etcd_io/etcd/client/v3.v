@@ -8,11 +8,25 @@ Context `{ffi_syntax}.
 
 Axiom ErrNoAvailableEndpoints'init : val.
 
+Axiom ErrOldCluster'init : val.
+
 Axiom LeaseResponseChSize'init : val.
 
 Axiom noPrefixEnd'init : val.
 
 Axiom defaultWaitForReady'init : val.
+
+Axiom defaultMaxCallSendMsgSize'init : val.
+
+Axiom defaultMaxCallRecvMsgSize'init : val.
+
+Axiom defaultUnaryMaxRetries'init : val.
+
+Axiom defaultStreamMaxRetries'init : val.
+
+Axiom defaultBackoffWaitBetween'init : val.
+
+Axiom defaultBackoffJitterFraction'init : val.
 
 Axiom defaultCallOpts'init : val.
 
@@ -20,16 +34,40 @@ Axiom defaultOptions'init : val.
 
 Axiom valCtxCh'init : val.
 
+Axiom zeroTime'init : val.
+
 Axiom maxBackoff'init : val.
 
 Definition pkg_name' : go_string := "go.etcd.io/etcd/client/v3".
 
-Definition vars' : list (go_string * go_type) := [("ErrNoAvailableEndpoints"%go, error); ("LeaseResponseChSize"%go, intT); ("noPrefixEnd"%go, sliceT); ("defaultWaitForReady"%go, grpc.CallOption); ("defaultCallOpts"%go, sliceT); ("defaultOptions"%go, ptrT); ("valCtxCh"%go, chanT (structT [
-             ])); ("maxBackoff"%go, time.Duration)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (ErrNoAvailableEndpoints'init #());;;
+      do:  (ErrOldCluster'init #());;;
+      do:  (LeaseResponseChSize'init #());;;
+      do:  (noPrefixEnd'init #());;;
+      do:  (defaultWaitForReady'init #());;;
+      do:  (defaultMaxCallSendMsgSize'init #());;;
+      do:  (defaultMaxCallRecvMsgSize'init #());;;
+      do:  (defaultUnaryMaxRetries'init #());;;
+      do:  (defaultStreamMaxRetries'init #());;;
+      do:  (defaultBackoffWaitBetween'init #());;;
+      do:  (defaultBackoffJitterFraction'init #());;;
+      do:  (defaultCallOpts'init #());;;
+      do:  (defaultOptions'init #());;;
+      do:  (valCtxCh'init #());;;
+      do:  (zeroTime'init #());;;
+      do:  (maxBackoff'init #()))
+      ).
 
 End code.
 End clientv3.

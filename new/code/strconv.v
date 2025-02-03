@@ -40,11 +40,34 @@ Axiom isGraphic'init : val.
 
 Definition pkg_name' : go_string := "strconv".
 
-Definition vars' : list (go_string * go_type) := [("optimize"%go, boolT); ("powtab"%go, sliceT); ("float64pow10"%go, sliceT); ("float32pow10"%go, sliceT); ("ErrRange"%go, error); ("ErrSyntax"%go, error); ("leftcheats"%go, sliceT); ("detailedPowersOfTen"%go, arrayT 696 (arrayT 2 uint64T)); ("float32info"%go, floatInfo); ("float64info"%go, floatInfo); ("uint64pow10"%go, arrayT 20 uint64T); ("isPrint16"%go, sliceT); ("isNotPrint16"%go, sliceT); ("isPrint32"%go, sliceT); ("isNotPrint32"%go, sliceT); ("isGraphic"%go, sliceT)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (optimize'init #());;;
+      do:  (powtab'init #());;;
+      do:  (float64pow10'init #());;;
+      do:  (float32pow10'init #());;;
+      do:  (ErrRange'init #());;;
+      do:  (ErrSyntax'init #());;;
+      do:  (leftcheats'init #());;;
+      do:  (detailedPowersOfTen'init #());;;
+      do:  (float32info'init #());;;
+      do:  (float64info'init #());;;
+      do:  (uint64pow10'init #());;;
+      do:  (isPrint16'init #());;;
+      do:  (isNotPrint16'init #());;;
+      do:  (isPrint32'init #());;;
+      do:  (isNotPrint32'init #());;;
+      do:  (isGraphic'init #()))
+      ).
 
 End code.
 End strconv.

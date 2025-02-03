@@ -8,6 +8,10 @@ Context `{ffi_syntax}.
 
 Axiom matchBenchmarks'init : val.
 
+Axiom benchmarkMemory'init : val.
+
+Axiom benchTime'init : val.
+
 Axiom benchmarkLock'init : val.
 
 Axiom memStats'init : val.
@@ -20,7 +24,15 @@ Axiom cover'init : val.
 
 Axiom matchFuzz'init : val.
 
-Axiom _'init : val.
+Axiom fuzzDuration'init : val.
+
+Axiom minimizeDuration'init : val.
+
+Axiom fuzzCacheDir'init : val.
+
+Axiom isFuzzWorker'init : val.
+
+Axiom corpusDir'init : val.
 
 Axiom supportedTypes'init : val.
 
@@ -31,6 +43,64 @@ Axiom cover2'init : val.
 Axiom initRan'init : val.
 
 Axiom short'init : val.
+
+Axiom failFast'init : val.
+
+Axiom outputDir'init : val.
+
+Axiom chatty'init : val.
+
+Axiom count'init : val.
+
+Axiom coverProfile'init : val.
+
+Axiom gocoverdir'init : val.
+
+Axiom matchList'init : val.
+
+Axiom match'init : val.
+
+Axiom skip'init : val.
+
+Axiom memProfile'init : val.
+
+Axiom memProfileRate'init : val.
+
+Axiom cpuProfile'init : val.
+
+Axiom blockProfile'init : val.
+
+Axiom blockProfileRate'init : val.
+
+Axiom mutexProfile'init : val.
+
+Axiom mutexProfileFraction'init : val.
+
+Axiom panicOnExit0'init : val.
+
+Axiom traceFile'init : val.
+
+Axiom timeout'init : val.
+
+Axiom cpuListStr'init : val.
+
+Axiom parallel'init : val.
+
+Axiom shuffle'init : val.
+
+Axiom testlog'init : val.
+
+Axiom fullPath'init : val.
+
+Axiom haveExamples'init : val.
+
+Axiom cpuList'init : val.
+
+Axiom testlogFile'init : val.
+
+Axiom numFailed'init : val.
+
+Axiom running'init : val.
 
 Axiom testBinary'init : val.
 
@@ -44,15 +114,29 @@ Axiom realStderr'init : val.
 
 Definition pkg_name' : go_string := "testing".
 
-Definition vars' : list (go_string * go_type) := [("matchBenchmarks"%go, ptrT); ("benchmarkLock"%go, sync.Mutex); ("memStats"%go, runtime.MemStats); ("labelsOnce"%go, sync.Once); ("hideStdoutForTesting"%go, boolT); ("cover"%go, Cover); ("matchFuzz"%go, ptrT); ("_"%go, TB); ("supportedTypes"%go, mapT reflect.Type boolT); ("matchMutex"%go, sync.Mutex); ("cover2"%go, structT [
-               "mode" :: stringT;
-               "tearDown" :: funcT;
-               "snapshotcov" :: funcT
-             ]); ("initRan"%go, boolT); ("short"%go, ptrT); ("testBinary"%go, stringT); ("_"%go, TB); ("_"%go, TB); ("errNilPanicOrGoexit"%go, error); ("errMain"%go, error); ("testingTesting"%go, boolT); ("realStderr"%go, ptrT)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (benchTime'init #());;;
+      do:  (hideStdoutForTesting'init #());;;
+      do:  (minimizeDuration'init #());;;
+      do:  (corpusDir'init #());;;
+      do:  (_'init #());;;
+      do:  (supportedTypes'init #());;;
+      do:  (testBinary'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (errNilPanicOrGoexit'init #());;;
+      do:  (errMain'init #()))
+      ).
 
 End code.
 End testing.

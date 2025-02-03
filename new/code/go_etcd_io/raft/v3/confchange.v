@@ -14,5 +14,13 @@ Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  #())
+      ).
+
 End code.
 End confchange.

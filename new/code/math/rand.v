@@ -26,11 +26,26 @@ Axiom rngCooked'init : val.
 
 Definition pkg_name' : go_string := "math/rand".
 
-Definition vars' : list (go_string * go_type) := [("ke"%go, arrayT 256 uint32T); ("we"%go, arrayT 256 float32T); ("fe"%go, arrayT 256 float32T); ("kn"%go, arrayT 128 uint32T); ("wn"%go, arrayT 128 float32T); ("fn"%go, arrayT 128 float32T); ("globalRandGenerator"%go, atomic.Pointer Rand); ("randautoseed"%go, ptrT); ("rngCooked"%go, arrayT 607 int64T)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (ke'init #());;;
+      do:  (we'init #());;;
+      do:  (fe'init #());;;
+      do:  (kn'init #());;;
+      do:  (wn'init #());;;
+      do:  (fn'init #());;;
+      do:  (randautoseed'init #());;;
+      do:  (rngCooked'init #()))
+      ).
 
 End code.
 End rand.

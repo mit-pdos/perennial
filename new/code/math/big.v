@@ -14,11 +14,15 @@ Axiom floatZero'init : val.
 
 Axiom pow5tab'init : val.
 
-Axiom _'init : val.
-
 Axiom intOne'init : val.
 
 Axiom natOne'init : val.
+
+Axiom natTwo'init : val.
+
+Axiom natFive'init : val.
+
+Axiom natTen'init : val.
 
 Axiom karatsubaThreshold'init : val.
 
@@ -29,6 +33,8 @@ Axiom karatsubaSqrThreshold'init : val.
 Axiom natPool'init : val.
 
 Axiom errNoDigits'init : val.
+
+Axiom errInvalSep'init : val.
 
 Axiom leafSize'init : val.
 
@@ -42,17 +48,38 @@ Axiom threeOnce'init : val.
 
 Definition pkg_name' : go_string := "math/big".
 
-Definition vars' : list (go_string * go_type) := [("_Accuracy_index"%go, arrayT 4 uint8T); ("support_adx"%go, boolT); ("floatZero"%go, Float); ("pow5tab"%go, arrayT 28 uint64T); ("_"%go, fmt.Scanner); ("_"%go, fmt.Formatter); ("intOne"%go, ptrT); ("_"%go, fmt.Formatter); ("_"%go, fmt.Scanner); ("natOne"%go, nat); ("karatsubaThreshold"%go, intT); ("basicSqrThreshold"%go, intT); ("karatsubaSqrThreshold"%go, intT); ("natPool"%go, sync.Pool); ("errNoDigits"%go, error); ("leafSize"%go, intT); ("cacheBase10"%go, structT [
-               "Mutex" :: sync.Mutex;
-               "table" :: arrayT 64 divisor
-             ]); ("ratZero"%go, Rat); ("_"%go, fmt.Scanner); ("_RoundingMode_index"%go, arrayT 7 uint8T); ("threeOnce"%go, structT [
-               "Once" :: sync.Once;
-               "v" :: ptrT
-             ])].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (_Accuracy_index'init #());;;
+      do:  (support_adx'init #());;;
+      do:  (pow5tab'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (natOne'init #());;;
+      do:  (intOne'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (natTwo'init #());;;
+      do:  (natFive'init #());;;
+      do:  (natTen'init #());;;
+      do:  (karatsubaThreshold'init #());;;
+      do:  (basicSqrThreshold'init #());;;
+      do:  (karatsubaSqrThreshold'init #());;;
+      do:  (errNoDigits'init #());;;
+      do:  (errInvalSep'init #());;;
+      do:  (leafSize'init #());;;
+      do:  (_'init #());;;
+      do:  (_RoundingMode_index'init #()))
+      ).
 
 End code.
 End big.

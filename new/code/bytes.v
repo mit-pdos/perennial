@@ -16,11 +16,22 @@ Axiom asciiSpace'init : val.
 
 Definition pkg_name' : go_string := "bytes".
 
-Definition vars' : list (go_string * go_type) := [("ErrTooLarge"%go, error); ("errNegativeRead"%go, error); ("errUnreadByte"%go, error); ("asciiSpace"%go, arrayT 256 uint8T)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (ErrTooLarge'init #());;;
+      do:  (errNegativeRead'init #());;;
+      do:  (errUnreadByte'init #());;;
+      do:  (asciiSpace'init #()))
+      ).
 
 End code.
 End bytes.

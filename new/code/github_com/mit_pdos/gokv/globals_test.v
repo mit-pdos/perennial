@@ -40,5 +40,24 @@ Definition functions' : list (go_string * val) := [("foo"%go, foo); ("other"%go,
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (let: "$r0" := ((func_call #pkg_name' #"foo"%go) #()) in
+      do:  ((globals.get #pkg_name' #"GlobalX"%go) <-[uint64T] "$r0");;;
+      let: "$r0" := #"a"%go in
+      do:  ((globals.get #pkg_name' #"globalA"%go) <-[stringT] "$r0");;;
+      let: "$r0" := #"b"%go in
+      do:  ((globals.get #pkg_name' #"globalB"%go) <-[stringT] "$r0");;;
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := ((![uint64T] (globals.get #pkg_name' #"GlobalX"%go)) + #(W64 0)) in
+        do:  ((globals.get #pkg_name' #"GlobalX"%go) <-[uint64T] "$r0"))
+        ) #());;;
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := #""%go in
+        do:  ((globals.get #pkg_name' #"globalY"%go) <-[stringT] "$r0"))
+        ) #()))
+      ).
+
 End code.
 End main.

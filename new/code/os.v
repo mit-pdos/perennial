@@ -12,11 +12,29 @@ Axiom dirBufPool'init : val.
 
 Axiom ErrInvalid'init : val.
 
+Axiom ErrPermission'init : val.
+
+Axiom ErrExist'init : val.
+
+Axiom ErrNotExist'init : val.
+
+Axiom ErrClosed'init : val.
+
+Axiom ErrNoDeadline'init : val.
+
+Axiom ErrDeadlineExceeded'init : val.
+
 Axiom ErrProcessDone'init : val.
 
 Axiom Interrupt'init : val.
 
+Axiom Kill'init : val.
+
 Axiom Stdin'init : val.
+
+Axiom Stdout'init : val.
+
+Axiom Stderr'init : val.
 
 Axiom errWriteAtInAppendMode'init : val.
 
@@ -34,16 +52,43 @@ Axiom errPatternHasSeparator'init : val.
 
 Axiom pollCopyFileRange'init : val.
 
+Axiom pollSplice'init : val.
+
 Definition pkg_name' : go_string := "os".
 
-Definition vars' : list (go_string * go_type) := [("testingForceReadDirLstat"%go, boolT); ("dirBufPool"%go, sync.Pool); ("ErrInvalid"%go, error); ("ErrProcessDone"%go, error); ("Interrupt"%go, Signal); ("Stdin"%go, ptrT); ("errWriteAtInAppendMode"%go, error); ("lstat"%go, funcT); ("checkWrapErr"%go, boolT); ("getwdCache"%go, structT [
-               "Mutex" :: sync.Mutex;
-               "dir" :: stringT
-             ]); ("checkPidfdOnce"%go, funcT); ("Args"%go, sliceT); ("errPatternHasSeparator"%go, error); ("pollCopyFileRange"%go, funcT)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (dirBufPool'init #());;;
+      do:  (ErrInvalid'init #());;;
+      do:  (ErrPermission'init #());;;
+      do:  (ErrExist'init #());;;
+      do:  (ErrNotExist'init #());;;
+      do:  (ErrClosed'init #());;;
+      do:  (ErrNoDeadline'init #());;;
+      do:  (ErrDeadlineExceeded'init #());;;
+      do:  (ErrProcessDone'init #());;;
+      do:  (Interrupt'init #());;;
+      do:  (Kill'init #());;;
+      do:  (Stdin'init #());;;
+      do:  (Stdout'init #());;;
+      do:  (Stderr'init #());;;
+      do:  (errWriteAtInAppendMode'init #());;;
+      do:  (lstat'init #());;;
+      do:  (checkWrapErr'init #());;;
+      do:  (checkPidfdOnce'init #());;;
+      do:  (errPatternHasSeparator'init #());;;
+      do:  (pollCopyFileRange'init #());;;
+      do:  (pollSplice'init #()))
+      ).
 
 End code.
 End os.

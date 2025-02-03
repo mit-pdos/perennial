@@ -6,8 +6,6 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom _'init : val.
-
 Axiom xxx_messageInfo_Request'init : val.
 
 Axiom xxx_messageInfo_Metadata'init : val.
@@ -15,6 +13,10 @@ Axiom xxx_messageInfo_Metadata'init : val.
 Axiom fileDescriptor_09ffbeb3bebbce7e'init : val.
 
 Axiom ErrInvalidLengthEtcdserver'init : val.
+
+Axiom ErrIntOverflowEtcdserver'init : val.
+
+Axiom ErrUnexpectedEndOfGroupEtcdserver'init : val.
 
 Axiom xxx_messageInfo_RequestHeader'init : val.
 
@@ -27,6 +29,10 @@ Axiom xxx_messageInfo_InternalAuthenticateRequest'init : val.
 Axiom fileDescriptor_b4c9a9be0cfca103'init : val.
 
 Axiom ErrInvalidLengthRaftInternal'init : val.
+
+Axiom ErrIntOverflowRaftInternal'init : val.
+
+Axiom ErrUnexpectedEndOfGroupRaftInternal'init : val.
 
 Axiom AlarmType_name'init : val.
 
@@ -266,13 +272,67 @@ Axiom _Auth_serviceDesc'init : val.
 
 Axiom ErrInvalidLengthRpc'init : val.
 
+Axiom ErrIntOverflowRpc'init : val.
+
+Axiom ErrUnexpectedEndOfGroupRpc'init : val.
+
 Definition pkg_name' : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb".
 
-Definition vars' : list (go_string * go_type) := [("_"%go, funcT); ("_"%go, funcT); ("_"%go, funcT); ("xxx_messageInfo_Request"%go, proto.InternalMessageInfo); ("xxx_messageInfo_Metadata"%go, proto.InternalMessageInfo); ("fileDescriptor_09ffbeb3bebbce7e"%go, sliceT); ("ErrInvalidLengthEtcdserver"%go, error); ("_"%go, funcT); ("_"%go, funcT); ("_"%go, funcT); ("xxx_messageInfo_RequestHeader"%go, proto.InternalMessageInfo); ("xxx_messageInfo_InternalRaftRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_EmptyResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_InternalAuthenticateRequest"%go, proto.InternalMessageInfo); ("fileDescriptor_b4c9a9be0cfca103"%go, sliceT); ("ErrInvalidLengthRaftInternal"%go, error); ("_"%go, funcT); ("_"%go, funcT); ("_"%go, funcT); ("AlarmType_name"%go, mapT int32T stringT); ("AlarmType_value"%go, mapT stringT int32T); ("RangeRequest_SortOrder_name"%go, mapT int32T stringT); ("RangeRequest_SortOrder_value"%go, mapT stringT int32T); ("RangeRequest_SortTarget_name"%go, mapT int32T stringT); ("RangeRequest_SortTarget_value"%go, mapT stringT int32T); ("Compare_CompareResult_name"%go, mapT int32T stringT); ("Compare_CompareResult_value"%go, mapT stringT int32T); ("Compare_CompareTarget_name"%go, mapT int32T stringT); ("Compare_CompareTarget_value"%go, mapT stringT int32T); ("WatchCreateRequest_FilterType_name"%go, mapT int32T stringT); ("WatchCreateRequest_FilterType_value"%go, mapT stringT int32T); ("AlarmRequest_AlarmAction_name"%go, mapT int32T stringT); ("AlarmRequest_AlarmAction_value"%go, mapT stringT int32T); ("DowngradeRequest_DowngradeAction_name"%go, mapT int32T stringT); ("DowngradeRequest_DowngradeAction_value"%go, mapT stringT int32T); ("xxx_messageInfo_ResponseHeader"%go, proto.InternalMessageInfo); ("xxx_messageInfo_RangeRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_RangeResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_PutRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_PutResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_DeleteRangeRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_DeleteRangeResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_RequestOp"%go, proto.InternalMessageInfo); ("xxx_messageInfo_ResponseOp"%go, proto.InternalMessageInfo); ("xxx_messageInfo_Compare"%go, proto.InternalMessageInfo); ("xxx_messageInfo_TxnRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_TxnResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_CompactionRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_CompactionResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_HashRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_HashKVRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_HashKVResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_HashResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_SnapshotRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_SnapshotResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_WatchRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_WatchCreateRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_WatchCancelRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_WatchProgressRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_WatchResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseGrantRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseGrantResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseRevokeRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseRevokeResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseCheckpoint"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseCheckpointRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseCheckpointResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseKeepAliveRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseKeepAliveResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseTimeToLiveRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseTimeToLiveResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseLeasesRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseStatus"%go, proto.InternalMessageInfo); ("xxx_messageInfo_LeaseLeasesResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_Member"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberAddRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberAddResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberRemoveRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberRemoveResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberUpdateRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberUpdateResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberListRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberListResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberPromoteRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MemberPromoteResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_DefragmentRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_DefragmentResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MoveLeaderRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_MoveLeaderResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AlarmRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AlarmMember"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AlarmResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_DowngradeRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_DowngradeResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_StatusRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_StatusResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthEnableRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthDisableRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthStatusRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthenticateRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserAddRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserGetRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserDeleteRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserChangePasswordRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserGrantRoleRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserRevokeRoleRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleAddRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleGetRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserListRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleListRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleDeleteRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleGrantPermissionRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleRevokePermissionRequest"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthEnableResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthDisableResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthStatusResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthenticateResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserAddResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserGetResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserDeleteResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserChangePasswordResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserGrantRoleResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserRevokeRoleResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleAddResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleGetResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleListResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthUserListResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleDeleteResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleGrantPermissionResponse"%go, proto.InternalMessageInfo); ("xxx_messageInfo_AuthRoleRevokePermissionResponse"%go, proto.InternalMessageInfo); ("fileDescriptor_77a6da22d6a3feb1"%go, sliceT); ("_"%go, context.Context); ("_"%go, grpc.ClientConn); ("_KV_serviceDesc"%go, grpc.ServiceDesc); ("_Watch_serviceDesc"%go, grpc.ServiceDesc); ("_Lease_serviceDesc"%go, grpc.ServiceDesc); ("_Cluster_serviceDesc"%go, grpc.ServiceDesc); ("_Maintenance_serviceDesc"%go, grpc.ServiceDesc); ("_Auth_serviceDesc"%go, grpc.ServiceDesc); ("ErrInvalidLengthRpc"%go, error)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (fileDescriptor_09ffbeb3bebbce7e'init #());;;
+      do:  (ErrInvalidLengthEtcdserver'init #());;;
+      do:  (ErrIntOverflowEtcdserver'init #());;;
+      do:  (ErrUnexpectedEndOfGroupEtcdserver'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (fileDescriptor_b4c9a9be0cfca103'init #());;;
+      do:  (ErrInvalidLengthRaftInternal'init #());;;
+      do:  (ErrIntOverflowRaftInternal'init #());;;
+      do:  (ErrUnexpectedEndOfGroupRaftInternal'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (AlarmType_name'init #());;;
+      do:  (AlarmType_value'init #());;;
+      do:  (RangeRequest_SortOrder_name'init #());;;
+      do:  (RangeRequest_SortOrder_value'init #());;;
+      do:  (RangeRequest_SortTarget_name'init #());;;
+      do:  (RangeRequest_SortTarget_value'init #());;;
+      do:  (Compare_CompareResult_name'init #());;;
+      do:  (Compare_CompareResult_value'init #());;;
+      do:  (Compare_CompareTarget_name'init #());;;
+      do:  (Compare_CompareTarget_value'init #());;;
+      do:  (WatchCreateRequest_FilterType_name'init #());;;
+      do:  (WatchCreateRequest_FilterType_value'init #());;;
+      do:  (AlarmRequest_AlarmAction_name'init #());;;
+      do:  (AlarmRequest_AlarmAction_value'init #());;;
+      do:  (DowngradeRequest_DowngradeAction_name'init #());;;
+      do:  (DowngradeRequest_DowngradeAction_value'init #());;;
+      do:  (fileDescriptor_77a6da22d6a3feb1'init #());;;
+      do:  (_KV_serviceDesc'init #());;;
+      do:  (_Watch_serviceDesc'init #());;;
+      do:  (_Lease_serviceDesc'init #());;;
+      do:  (_Cluster_serviceDesc'init #());;;
+      do:  (_Maintenance_serviceDesc'init #());;;
+      do:  (_Auth_serviceDesc'init #());;;
+      do:  (ErrInvalidLengthRpc'init #());;;
+      do:  (ErrIntOverflowRpc'init #());;;
+      do:  (ErrUnexpectedEndOfGroupRpc'init #()))
+      ).
 
 End code.
 End etcdserverpb.

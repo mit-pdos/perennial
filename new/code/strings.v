@@ -10,11 +10,19 @@ Axiom asciiSpace'init : val.
 
 Definition pkg_name' : go_string := "strings".
 
-Definition vars' : list (go_string * go_type) := [("asciiSpace"%go, arrayT 256 uint8T)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (asciiSpace'init #()))
+      ).
 
 End code.
 End strings.

@@ -48,6 +48,18 @@ def main():
         default=None,
     )
     parser.add_argument(
+        "--marshal",
+        help="path to tchajed/marshal repo (skip translation if not provided)",
+        metavar="MARSHAL_PATH",
+        default=None,
+    )
+    parser.add_argument(
+        "--primitive",
+        help="path to goose-lang/primitive repo (skip translation if not provided)",
+        metavar="PRIMITIVE_PATH",
+        default=None,
+    )
+    parser.add_argument(
         "--gokv",
         help="path to gokv repo (skip translation if not provided)",
         metavar="GOKV_PATH",
@@ -70,19 +82,27 @@ def main():
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose
+    primitive_dir = args.primitive
     std_dir = args.std
+    marshal_dir = args.marshal
     gokv_dir = args.gokv
     etcd_raft_dir = args.etcd_raft
     etcd_dir = args.etcd
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
+    if primitive_dir is not None and not os.path.isdir(primitive_dir):
+        parser.error("primitive directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
+    if marshal_dir is not None and not os.path.isdir(marshal_dir):
+        parser.error("marshal directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
     if etcd_raft_dir is not None and not os.path.isdir(etcd_raft_dir):
         parser.error("etcd-raft directory does not exist")
+    if etcd_dir is not None and not os.path.isdir(etcd_raft_dir):
+        parser.error("etcd directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -152,6 +172,7 @@ def main():
         )
 
     run_goose(std_dir, ".")
+    run_goose(marshal_dir, ".")
 
     run_goose(
         gokv_dir,
@@ -164,6 +185,7 @@ def main():
         "./lockservice",
         "./bank",
         "./globals_test",
+        "./grove_ffi"
         # "./vrsm/replica",
     )
 
@@ -186,21 +208,13 @@ def main():
         "slices",
         "strconv",
         "strings",
-    )
-
-    run_goose(
-        etcd_raft_dir,
+        "sync",
         "fmt",
         "log",
         "go.etcd.io/raft/v3/raftpb",
-    )
-
-    run_goose(
-        etcd_raft_dir,
         ".",
         "go.etcd.io/raft/v3/tracker",
         "go.etcd.io/raft/v3/quorum",
-        # "go.etcd.io/raft/v3/raftpb",
     )
 
     run_goose(
@@ -209,6 +223,12 @@ def main():
         "google.golang.org/grpc",
         "go.etcd.io/etcd/api/v3/etcdserverpb",
         "go.etcd.io/etcd/client/v3",
+    )
+
+    run_goose(
+        primitive_dir,
+        ".",
+        "github.com/goose-lang/primitive/disk"
     )
 
     run_goose(

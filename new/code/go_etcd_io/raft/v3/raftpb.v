@@ -6,8 +6,6 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom _'init : val.
-
 Axiom EntryType_name'init : val.
 
 Axiom EntryType_value'init : val.
@@ -46,13 +44,39 @@ Axiom fileDescriptor_b042552c306ae59b'init : val.
 
 Axiom ErrInvalidLengthRaft'init : val.
 
+Axiom ErrIntOverflowRaft'init : val.
+
+Axiom ErrUnexpectedEndOfGroupRaft'init : val.
+
 Definition pkg_name' : go_string := "go.etcd.io/raft/v3/raftpb".
 
-Definition vars' : list (go_string * go_type) := [("_"%go, funcT); ("_"%go, funcT); ("_"%go, funcT); ("EntryType_name"%go, mapT int32T stringT); ("EntryType_value"%go, mapT stringT int32T); ("MessageType_name"%go, mapT int32T stringT); ("MessageType_value"%go, mapT stringT int32T); ("ConfChangeTransition_name"%go, mapT int32T stringT); ("ConfChangeTransition_value"%go, mapT stringT int32T); ("ConfChangeType_name"%go, mapT int32T stringT); ("ConfChangeType_value"%go, mapT stringT int32T); ("xxx_messageInfo_Entry"%go, proto.InternalMessageInfo); ("xxx_messageInfo_SnapshotMetadata"%go, proto.InternalMessageInfo); ("xxx_messageInfo_Snapshot"%go, proto.InternalMessageInfo); ("xxx_messageInfo_Message"%go, proto.InternalMessageInfo); ("xxx_messageInfo_HardState"%go, proto.InternalMessageInfo); ("xxx_messageInfo_ConfState"%go, proto.InternalMessageInfo); ("xxx_messageInfo_ConfChange"%go, proto.InternalMessageInfo); ("xxx_messageInfo_ConfChangeSingle"%go, proto.InternalMessageInfo); ("xxx_messageInfo_ConfChangeV2"%go, proto.InternalMessageInfo); ("fileDescriptor_b042552c306ae59b"%go, sliceT); ("ErrInvalidLengthRaft"%go, error)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (EntryType_name'init #());;;
+      do:  (EntryType_value'init #());;;
+      do:  (MessageType_name'init #());;;
+      do:  (MessageType_value'init #());;;
+      do:  (ConfChangeTransition_name'init #());;;
+      do:  (ConfChangeTransition_value'init #());;;
+      do:  (ConfChangeType_name'init #());;;
+      do:  (ConfChangeType_value'init #());;;
+      do:  (fileDescriptor_b042552c306ae59b'init #());;;
+      do:  (ErrInvalidLengthRaft'init #());;;
+      do:  (ErrIntOverflowRaft'init #());;;
+      do:  (ErrUnexpectedEndOfGroupRaft'init #()))
+      ).
 
 End code.
 End raftpb.

@@ -114,11 +114,71 @@ Axiom mPi4'init : val.
 
 Definition pkg_name' : go_string := "math".
 
-Definition vars' : list (go_string * go_type) := [("useFMA"%go, boolT); ("_gamP"%go, arrayT 7 float64T); ("_gamQ"%go, arrayT 8 float64T); ("_gamS"%go, arrayT 5 float64T); ("p0R8"%go, arrayT 6 float64T); ("p0S8"%go, arrayT 5 float64T); ("p0R5"%go, arrayT 6 float64T); ("p0S5"%go, arrayT 5 float64T); ("p0R3"%go, arrayT 6 float64T); ("p0S3"%go, arrayT 5 float64T); ("p0R2"%go, arrayT 6 float64T); ("p0S2"%go, arrayT 5 float64T); ("q0R8"%go, arrayT 6 float64T); ("q0S8"%go, arrayT 6 float64T); ("q0R5"%go, arrayT 6 float64T); ("q0S5"%go, arrayT 6 float64T); ("q0R3"%go, arrayT 6 float64T); ("q0S3"%go, arrayT 6 float64T); ("q0R2"%go, arrayT 6 float64T); ("q0S2"%go, arrayT 6 float64T); ("p1R8"%go, arrayT 6 float64T); ("p1S8"%go, arrayT 5 float64T); ("p1R5"%go, arrayT 6 float64T); ("p1S5"%go, arrayT 5 float64T); ("p1R3"%go, arrayT 6 float64T); ("p1S3"%go, arrayT 5 float64T); ("p1R2"%go, arrayT 6 float64T); ("p1S2"%go, arrayT 5 float64T); ("q1R8"%go, arrayT 6 float64T); ("q1S8"%go, arrayT 6 float64T); ("q1R5"%go, arrayT 6 float64T); ("q1S5"%go, arrayT 6 float64T); ("q1R3"%go, arrayT 6 float64T); ("q1S3"%go, arrayT 6 float64T); ("q1R2"%go, arrayT 6 float64T); ("q1S2"%go, arrayT 6 float64T); ("_lgamA"%go, arrayT 12 float64T); ("_lgamR"%go, arrayT 7 float64T); ("_lgamS"%go, arrayT 7 float64T); ("_lgamT"%go, arrayT 15 float64T); ("_lgamU"%go, arrayT 6 float64T); ("_lgamV"%go, arrayT 6 float64T); ("_lgamW"%go, arrayT 7 float64T); ("pow10tab"%go, arrayT 32 float64T); ("pow10postab32"%go, arrayT 10 float64T); ("pow10negtab32"%go, arrayT 11 float64T); ("_sin"%go, arrayT 6 float64T); ("_cos"%go, arrayT 6 float64T); ("_tanP"%go, arrayT 3 float64T); ("_tanQ"%go, arrayT 5 float64T); ("tanhP"%go, arrayT 3 float64T); ("tanhQ"%go, arrayT 3 float64T); ("mPi4"%go, arrayT 20 uint64T)].
+Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (useFMA'init #());;;
+      do:  (_gamP'init #());;;
+      do:  (_gamQ'init #());;;
+      do:  (_gamS'init #());;;
+      do:  (p0R8'init #());;;
+      do:  (p0S8'init #());;;
+      do:  (p0R5'init #());;;
+      do:  (p0S5'init #());;;
+      do:  (p0R3'init #());;;
+      do:  (p0S3'init #());;;
+      do:  (p0R2'init #());;;
+      do:  (p0S2'init #());;;
+      do:  (q0R8'init #());;;
+      do:  (q0S8'init #());;;
+      do:  (q0R5'init #());;;
+      do:  (q0S5'init #());;;
+      do:  (q0R3'init #());;;
+      do:  (q0S3'init #());;;
+      do:  (q0R2'init #());;;
+      do:  (q0S2'init #());;;
+      do:  (p1R8'init #());;;
+      do:  (p1S8'init #());;;
+      do:  (p1R5'init #());;;
+      do:  (p1S5'init #());;;
+      do:  (p1R3'init #());;;
+      do:  (p1S3'init #());;;
+      do:  (p1R2'init #());;;
+      do:  (p1S2'init #());;;
+      do:  (q1R8'init #());;;
+      do:  (q1S8'init #());;;
+      do:  (q1R5'init #());;;
+      do:  (q1S5'init #());;;
+      do:  (q1R3'init #());;;
+      do:  (q1S3'init #());;;
+      do:  (q1R2'init #());;;
+      do:  (q1S2'init #());;;
+      do:  (_lgamA'init #());;;
+      do:  (_lgamR'init #());;;
+      do:  (_lgamS'init #());;;
+      do:  (_lgamT'init #());;;
+      do:  (_lgamU'init #());;;
+      do:  (_lgamV'init #());;;
+      do:  (_lgamW'init #());;;
+      do:  (pow10tab'init #());;;
+      do:  (pow10postab32'init #());;;
+      do:  (pow10negtab32'init #());;;
+      do:  (_sin'init #());;;
+      do:  (_cos'init #());;;
+      do:  (_tanP'init #());;;
+      do:  (_tanQ'init #());;;
+      do:  (tanhP'init #());;;
+      do:  (tanhQ'init #());;;
+      do:  (mPi4'init #()))
+      ).
 
 End code.
 End math.
