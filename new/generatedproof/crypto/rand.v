@@ -25,41 +25,5 @@ Definition is_defined := is_global_definitions rand.pkg_name' var_addrs rand.fun
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_Read : 
-  WpFuncCall rand.pkg_name' "Read" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_batched : 
-  WpFuncCall rand.pkg_name' "batched" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_getRandom : 
-  WpFuncCall rand.pkg_name' "getRandom" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_warnBlocked : 
-  WpFuncCall rand.pkg_name' "warnBlocked" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_Prime : 
-  WpFuncCall rand.pkg_name' "Prime" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_Int : 
-  WpFuncCall rand.pkg_name' "Int" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_method_call_reader'ptr_Read : 
-  WpMethodCall rand.pkg_name' "reader'ptr" "Read" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_hideAgainReader_Read : 
-  WpMethodCall rand.pkg_name' "hideAgainReader" "Read" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_hideAgainReader'ptr_Read : 
-  WpMethodCall rand.pkg_name' "hideAgainReader'ptr" "Read" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
 End defs.
 End rand.

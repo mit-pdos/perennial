@@ -25,9 +25,5 @@ Definition is_defined := is_global_definitions slices64.pkg_name' var_addrs slic
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_Sort : 
-  WpFuncCall slices64.pkg_name' "Sort" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 End defs.
 End slices64.

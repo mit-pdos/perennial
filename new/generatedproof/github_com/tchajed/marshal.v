@@ -25,22 +25,6 @@ Definition is_defined := is_global_definitions marshal.pkg_name' var_addrs marsh
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_NewEncFromSlice : 
-  WpFuncCall marshal.pkg_name' "NewEncFromSlice" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_NewEnc : 
-  WpFuncCall marshal.pkg_name' "NewEnc" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_bool2byte : 
-  WpFuncCall marshal.pkg_name' "bool2byte" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_NewDec : 
-  WpFuncCall marshal.pkg_name' "NewDec" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_compute_new_cap : 
   WpFuncCall marshal.pkg_name' "compute_new_cap" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -69,10 +53,6 @@ Global Instance wp_func_call_ReadBool :
   WpFuncCall marshal.pkg_name' "ReadBool" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_ReadLenPrefixedBytes : 
-  WpFuncCall marshal.pkg_name' "ReadLenPrefixedBytes" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_WriteInt : 
   WpFuncCall marshal.pkg_name' "WriteInt" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -92,110 +72,6 @@ Global Instance wp_func_call_WriteBool :
 Global Instance wp_func_call_WriteLenPrefixedBytes : 
   WpFuncCall marshal.pkg_name' "WriteLenPrefixedBytes" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_ReadSlice : 
-  WpFuncCall marshal.pkg_name' "ReadSlice" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_ReadSliceLenPrefix : 
-  WpFuncCall marshal.pkg_name' "ReadSliceLenPrefix" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_WriteSlice : 
-  WpFuncCall marshal.pkg_name' "WriteSlice" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_WriteSliceLenPrefix : 
-  WpFuncCall marshal.pkg_name' "WriteSliceLenPrefix" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_method_call_Enc_Finish : 
-  WpMethodCall marshal.pkg_name' "Enc" "Finish" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc_PutBool : 
-  WpMethodCall marshal.pkg_name' "Enc" "PutBool" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc_PutBytes : 
-  WpMethodCall marshal.pkg_name' "Enc" "PutBytes" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc_PutInt : 
-  WpMethodCall marshal.pkg_name' "Enc" "PutInt" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc_PutInt32 : 
-  WpMethodCall marshal.pkg_name' "Enc" "PutInt32" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc_PutInts : 
-  WpMethodCall marshal.pkg_name' "Enc" "PutInts" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc'ptr_Finish : 
-  WpMethodCall marshal.pkg_name' "Enc'ptr" "Finish" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc'ptr_PutBool : 
-  WpMethodCall marshal.pkg_name' "Enc'ptr" "PutBool" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc'ptr_PutBytes : 
-  WpMethodCall marshal.pkg_name' "Enc'ptr" "PutBytes" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc'ptr_PutInt : 
-  WpMethodCall marshal.pkg_name' "Enc'ptr" "PutInt" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc'ptr_PutInt32 : 
-  WpMethodCall marshal.pkg_name' "Enc'ptr" "PutInt32" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Enc'ptr_PutInts : 
-  WpMethodCall marshal.pkg_name' "Enc'ptr" "PutInts" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec_GetBool : 
-  WpMethodCall marshal.pkg_name' "Dec" "GetBool" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec_GetBytes : 
-  WpMethodCall marshal.pkg_name' "Dec" "GetBytes" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec_GetInt : 
-  WpMethodCall marshal.pkg_name' "Dec" "GetInt" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec_GetInt32 : 
-  WpMethodCall marshal.pkg_name' "Dec" "GetInt32" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec_GetInts : 
-  WpMethodCall marshal.pkg_name' "Dec" "GetInts" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec'ptr_GetBool : 
-  WpMethodCall marshal.pkg_name' "Dec'ptr" "GetBool" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec'ptr_GetBytes : 
-  WpMethodCall marshal.pkg_name' "Dec'ptr" "GetBytes" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec'ptr_GetInt : 
-  WpMethodCall marshal.pkg_name' "Dec'ptr" "GetInt" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec'ptr_GetInt32 : 
-  WpMethodCall marshal.pkg_name' "Dec'ptr" "GetInt32" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_Dec'ptr_GetInts : 
-  WpMethodCall marshal.pkg_name' "Dec'ptr" "GetInts" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
 
 End defs.
 End marshal.

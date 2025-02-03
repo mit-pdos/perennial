@@ -25,45 +25,5 @@ Definition is_defined := is_global_definitions errors.pkg_name' var_addrs errors
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_New : 
-  WpFuncCall errors.pkg_name' "New" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_Join : 
-  WpFuncCall errors.pkg_name' "Join" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_Unwrap : 
-  WpFuncCall errors.pkg_name' "Unwrap" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_Is : 
-  WpFuncCall errors.pkg_name' "Is" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_is : 
-  WpFuncCall errors.pkg_name' "is" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_As : 
-  WpFuncCall errors.pkg_name' "As" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_as : 
-  WpFuncCall errors.pkg_name' "as" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_method_call_errorString'ptr_Error : 
-  WpMethodCall errors.pkg_name' "errorString'ptr" "Error" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_joinError'ptr_Error : 
-  WpMethodCall errors.pkg_name' "joinError'ptr" "Error" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_joinError'ptr_Unwrap : 
-  WpMethodCall errors.pkg_name' "joinError'ptr" "Unwrap" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
 End defs.
 End errors.
