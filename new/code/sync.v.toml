@@ -6,4 +6,5 @@ trusted = [
   "Cond.Wait",
   "Cond.Signal",
   "Cond.Broadcast",
+  "NewCond",
 ]

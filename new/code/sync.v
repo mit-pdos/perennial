@@ -14,7 +14,7 @@ Definition pkg_name' : go_string := "sync".
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)])].
 
