@@ -960,23 +960,5 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("inflight"%
                  method_call #pkg_name' #"matchAckIndexer" #"AckedIndex" (![matchAckIndexer] "$recvAddr")
                  )%V)])].
 
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  raftpb.initialize';;;
-      do:  slices64.initialize';;;
-      do:  quorum.initialize';;;
-      do:  strings.initialize';;;
-      do:  sort.initialize';;;
-      do:  fmt.initialize';;;
-      let: "$r0" := ((let: "$ar0" := #"StateProbe"%go in
-      let: "$ar1" := #"StateReplicate"%go in
-      let: "$ar2" := #"StateSnapshot"%go in
-      array.literal ["$ar0"; "$ar1"; "$ar2"])) in
-      do:  ((globals.get #pkg_name' #"prstmap"%go) <-[arrayT 3 stringT] "$r0");;;
-      let: "$r0" := (interface.make #pkg_name' #"matchAckIndexer" #null) in
-      do:  #())
-      ).
-
 End code.
 End tracker.

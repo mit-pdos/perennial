@@ -150,11 +150,5 @@ Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("KeyValue"%go, []); ("KeyValue'ptr"%go, []); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("PutRequest"%go, []); ("PutRequest'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("opType"%go, []); ("opType'ptr"%go, []); ("Op"%go, []); ("Op'ptr"%go, []); ("OpOption"%go, []); ("OpOption'ptr"%go, []); ("SortTarget"%go, []); ("SortTarget'ptr"%go, []); ("SortOrder"%go, []); ("SortOrder'ptr"%go, []); ("SortOption"%go, []); ("SortOption'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("Cmp"%go, []); ("Cmp'ptr"%go, []); ("Compare"%go, []); ("Compare'ptr"%go, []); ("Compare_CompareResult"%go, []); ("Compare_CompareResult'ptr"%go, []); ("Compare_CompareTarget"%go, []); ("Compare_CompareTarget'ptr"%go, [])].
 
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  #())
-      ).
-
 End code.
 End etcdclient.

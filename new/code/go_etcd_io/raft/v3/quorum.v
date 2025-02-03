@@ -481,22 +481,5 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfi
                  method_call #pkg_name' #"mapAckIndexer" #"AckedIndex" (![mapAckIndexer] "$recvAddr")
                  )%V)]); ("VoteResult"%go, []); ("VoteResult'ptr"%go, [])].
 
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  strconv.initialize';;;
-      do:  strings.initialize';;;
-      do:  sort.initialize';;;
-      do:  slices64.initialize';;;
-      do:  math.initialize';;;
-      do:  fmt.initialize';;;
-      let: "$r0" := ((let: "$ar0" := #(W8 0) in
-      let: "$ar1" := #(W8 11) in
-      let: "$ar2" := #(W8 19) in
-      let: "$ar3" := #(W8 26) in
-      array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"])) in
-      do:  ((globals.get #pkg_name' #"_VoteResult_index"%go) <-[arrayT 4 uint8T] "$r0"))
-      ).
-
 End code.
 End quorum.

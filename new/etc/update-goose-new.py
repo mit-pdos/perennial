@@ -112,9 +112,11 @@ def main():
                 "-dir", src_path] + pkgs)
 
         proofgen_bin = path.join(gopath, "bin", "proofgen")
-        do_run([proofgen_bin,
-                "-out", path.join(perennial_dir, "new/generatedproof"),
-                "-dir", src_path] + pkgs)
+
+        # FIXME: bring this back when proofgen handles axioms/skipped defns properly
+        # do_run([proofgen_bin,
+                # "-out", path.join(perennial_dir, "new/generatedproof"),
+                # "-dir", src_path] + pkgs)
 
     def run_recordgen(src_path, *pkgs):
         if src_path is None:
@@ -130,7 +132,7 @@ def main():
 
         recordgen_bin = path.join(gopath, "bin", "recordgen")
         do_run([recordgen_bin,
-                "-out", path.join(perennial_dir, "new/generatedproof/structs"),
+                "-out", path.join(perennial_dir, "new/generatedproof"),
                 "-dir", src_path] + pkgs)
 
     def run_goose_test_gen(src_path, output):
@@ -202,14 +204,6 @@ def main():
     )
 
     run_goose(
-        etcd_dir,
-        "time",
-        "google.golang.org/grpc",
-        "go.etcd.io/etcd/api/v3/etcdserverpb",
-        "go.etcd.io/etcd/client/v3",
-    )
-
-    run_recordgen(
         etcd_dir,
         "time",
         "google.golang.org/grpc",
