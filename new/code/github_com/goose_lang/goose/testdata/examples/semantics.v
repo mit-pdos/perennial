@@ -2872,13 +2872,5 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("unit"%go, 
                  method_call #pkg_name' #"Log" #"unlock" (![Log] "$recvAddr")
                  )%V)])].
 
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  disk.initialize';;;
-      do:  sync.initialize';;;
-      do:  primitive.initialize')
-      ).
-
 End code.
 End semantics.

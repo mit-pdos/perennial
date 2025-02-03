@@ -193,13 +193,5 @@ Definition functions' : list (go_string * val) := [("Init"%go, Init); ("Open"%go
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Log"%go, []); ("Log'ptr"%go, [("Append"%go, Log__Append); ("Get"%go, Log__Get); ("Reset"%go, Log__Reset); ("append"%go, Log__append); ("get"%go, Log__get); ("mkHdr"%go, Log__mkHdr); ("reset"%go, Log__reset); ("writeHdr"%go, Log__writeHdr)])].
 
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  disk.initialize';;;
-      do:  marshal.initialize';;;
-      do:  sync.initialize')
-      ).
-
 End code.
 End append_log.

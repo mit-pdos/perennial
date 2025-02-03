@@ -231,12 +231,5 @@ Definition functions' : list (go_string * val) := [("BytesEqual"%go, BytesEqual)
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("JoinHandle"%go, []); ("JoinHandle'ptr"%go, [("Join"%go, JoinHandle__Join); ("finish"%go, JoinHandle__finish)])].
 
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  primitive.initialize';;;
-      do:  sync.initialize')
-      ).
-
 End code.
 End std.

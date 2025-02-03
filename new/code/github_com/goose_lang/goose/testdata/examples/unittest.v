@@ -2148,7 +2148,7 @@ Definition testVariadicPassThrough : val :=
     slice.literal byteT ["$sl0"; "$sl1"])) in
     (func_call #pkg_name' #"variadicFunc"%go) "$a0" "$a1" "$a2")).
 
-Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT); ("_"%go, uint64T)].
+Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT); ("_"%go, uint64T); ("mapLiteral"%go, mapT stringT uint64T); ("mapLiteralWithConversion"%go, mapT interfaceT interfaceT)].
 
 Definition functions' : list (go_string * val) := [("takesArray"%go, takesArray); ("takesPtr"%go, takesPtr); ("usesArrayElemRef"%go, usesArrayElemRef); ("sum"%go, sum); ("arrayToSlice"%go, arrayToSlice); ("arrayLiteralKeyed"%go, arrayLiteralKeyed); ("chanBasic"%go, chanBasic); ("f"%go, f); ("chanSelect"%go, chanSelect); ("chanDirectional"%go, chanDirectional); ("doSubtleThings"%go, doSubtleThings); ("hasStartComment"%go, hasStartComment); ("hasEndComment"%go, hasEndComment); ("condvarWrapping"%go, condvarWrapping); ("useUntypedInt"%go, useUntypedInt); ("useUntypedString"%go, useUntypedString); ("conditionalReturn"%go, conditionalReturn); ("alwaysReturn"%go, alwaysReturn); ("alwaysReturnInNestedBranches"%go, alwaysReturnInNestedBranches); ("earlyReturn"%go, earlyReturn); ("conditionalAssign"%go, conditionalAssign); ("elseIf"%go, elseIf); ("ifStmtInitialization"%go, ifStmtInitialization); ("typedLiteral"%go, typedLiteral); ("literalCast"%go, literalCast); ("castInt"%go, castInt); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("stringToStringWrapper"%go, stringToStringWrapper); ("stringWrapperToString"%go, stringWrapperToString); ("testCopySimple"%go, testCopySimple); ("testCopyDifferentLengths"%go, testCopyDifferentLengths); ("atomicCreateStub"%go, atomicCreateStub); ("useSlice"%go, useSlice); ("useSliceIndexing"%go, useSliceIndexing); ("useMap"%go, useMap); ("usePtr"%go, usePtr); ("iterMapKeysAndValues"%go, iterMapKeysAndValues); ("iterMapKeys"%go, iterMapKeys); ("getRandom"%go, getRandom); ("diskArgument"%go, diskArgument); ("returnEmbedVal"%go, returnEmbedVal); ("returnEmbedValWithPointer"%go, returnEmbedValWithPointer); ("useEmbeddedField"%go, useEmbeddedField); ("useEmbeddedValField"%go, useEmbeddedValField); ("useEmbeddedMethod"%go, useEmbeddedMethod); ("useEmbeddedMethod2"%go, useEmbeddedMethod2); ("empty"%go, empty); ("emptyReturn"%go, emptyReturn); ("foo"%go, foo); ("other"%go, other); ("bar"%go, bar); ("TakesFunctionType"%go, TakesFunctionType); ("fooConsumer"%go, fooConsumer); ("testAssignConcreteToInterface"%go, testAssignConcreteToInterface); ("testPassConcreteToInterfaceArg"%go, testPassConcreteToInterfaceArg); ("testPassConcreteToInterfaceArgSpecial"%go, testPassConcreteToInterfaceArgSpecial); ("takesVarArgsInterface"%go, takesVarArgsInterface); ("test"%go, test); ("returnConcrete"%go, returnConcrete); ("testMultiReturn"%go, testMultiReturn); ("testReturnStatment"%go, testReturnStatment); ("testConversionInEq"%go, testConversionInEq); ("takeMultiple"%go, takeMultiple); ("giveMultiple"%go, giveMultiple); ("testConversionInMultipleReturnPassThrough"%go, testConversionInMultipleReturnPassThrough); ("testConversionInMultiplePassThrough"%go, testConversionInMultiplePassThrough); ("testPtrMset"%go, testPtrMset); ("useInts"%go, useInts); ("normalLiterals"%go, normalLiterals); ("outOfOrderLiteral"%go, outOfOrderLiteral); ("specialLiterals"%go, specialLiterals); ("oddLiterals"%go, oddLiterals); ("unKeyedLiteral"%go, unKeyedLiteral); ("useLocks"%go, useLocks); ("useCondVar"%go, useCondVar); ("ToBeDebugged"%go, ToBeDebugged); ("DoNothing"%go, DoNothing); ("DoSomething"%go, DoSomething); ("standardForLoop"%go, standardForLoop); ("conditionalInLoop"%go, conditionalInLoop); ("conditionalInLoopElse"%go, conditionalInLoopElse); ("nestedConditionalInLoopImplicitContinue"%go, nestedConditionalInLoopImplicitContinue); ("ImplicitLoopContinue"%go, ImplicitLoopContinue); ("ImplicitLoopContinue2"%go, ImplicitLoopContinue2); ("ImplicitLoopContinueAfterIfBreak"%go, ImplicitLoopContinueAfterIfBreak); ("nestedLoops"%go, nestedLoops); ("nestedGoStyleLoops"%go, nestedGoStyleLoops); ("sumSlice"%go, sumSlice); ("breakFromLoop"%go, breakFromLoop); ("clearMap"%go, clearMap); ("IterateMapKeys"%go, IterateMapKeys); ("MapSize"%go, MapSize); ("MapTypeAliases"%go, MapTypeAliases); ("StringMap"%go, StringMap); ("mapUpdateField"%go, mapUpdateField); ("returnTwo"%go, returnTwo); ("returnTwoWrapper"%go, returnTwoWrapper); ("multipleVar"%go, multipleVar); ("multiplePassThrough"%go, multiplePassThrough); ("multipleReturnPassThrough"%go, multipleReturnPassThrough); ("AssignNilSlice"%go, AssignNilSlice); ("AssignNilPointer"%go, AssignNilPointer); ("CompareSliceToNil"%go, CompareSliceToNil); ("ComparePointerToNil"%go, ComparePointerToNil); ("LogicalOperators"%go, LogicalOperators); ("LogicalAndEqualityOperators"%go, LogicalAndEqualityOperators); ("ArithmeticShifts"%go, ArithmeticShifts); ("BitwiseOps"%go, BitwiseOps); ("Comparison"%go, Comparison); ("AssignOps"%go, AssignOps); ("PanicAtTheDisco"%go, PanicAtTheDisco); ("Oracle"%go, Oracle); ("ReassignVars"%go, ReassignVars); ("recur"%go, recur); ("TwoDiskWrite"%go, TwoDiskWrite); ("TwoDiskRead"%go, TwoDiskRead); ("TwoDiskLock"%go, TwoDiskLock); ("TwoDiskUnlock"%go, TwoDiskUnlock); ("ReplicatedDiskRead"%go, ReplicatedDiskRead); ("ReplicatedDiskWrite"%go, ReplicatedDiskWrite); ("ReplicatedDiskRecover"%go, ReplicatedDiskRecover); ("sliceOps"%go, sliceOps); ("makeSingletonSlice"%go, makeSingletonSlice); ("makeAlias"%go, makeAlias); ("Skip"%go, Skip); ("simpleSpawn"%go, simpleSpawn); ("threadCode"%go, threadCode); ("loopSpawn"%go, loopSpawn); ("stringAppend"%go, stringAppend); ("stringLength"%go, stringLength); ("x"%go, x); ("UseAdd"%go, UseAdd); ("UseAddWithLiteral"%go, UseAddWithLiteral); ("NewS"%go, NewS); ("localSRef"%go, localSRef); ("setField"%go, setField); ("DoSomeLocking"%go, DoSomeLocking); ("makeLock"%go, makeLock); ("sleep"%go, sleep); ("mkInt"%go, mkInt); ("mkNothing"%go, mkNothing); ("convertToAlias"%go, convertToAlias); ("variadicFunc"%go, variadicFunc); ("testVariadicCall"%go, testVariadicCall); ("returnMultiple"%go, returnMultiple); ("testVariadicPassThrough"%go, testVariadicPassThrough)].
 
@@ -2199,32 +2199,6 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
                  )%V)]); ("TwoInts"%go, []); ("TwoInts'ptr"%go, []); ("S"%go, [("readBVal"%go, S__readBVal)]); ("S'ptr"%go, [("negateC"%go, S__negateC); ("readA"%go, S__readA); ("readB"%go, S__readB); ("readBVal"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"S" #"readBVal" (![S] "$recvAddr")
                  )%V); ("refC"%go, S__refC); ("writeB"%go, S__writeB)]); ("B"%go, []); ("B'ptr"%go, []); ("A"%go, []); ("A'ptr"%go, []); ("Timestamp"%go, []); ("Timestamp'ptr"%go, []); ("UseTypeAbbrev"%go, []); ("UseTypeAbbrev'ptr"%go, []); ("UseNamedType"%go, []); ("UseNamedType'ptr"%go, [])].
-
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  std.initialize';;;
-      do:  log.initialize';;;
-      do:  disk.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  fmt.initialize';;;
-      let: "$r0" := ((func_call #pkg_name' #"foo"%go) #()) in
-      do:  ((globals.get #pkg_name' #"GlobalX"%go) <-[uint64T] "$r0");;;
-      let: "$r0" := #"a"%go in
-      do:  ((globals.get #pkg_name' #"globalA"%go) <-[stringT] "$r0");;;
-      let: "$r0" := #"b"%go in
-      do:  ((globals.get #pkg_name' #"globalB"%go) <-[stringT] "$r0");;;
-      let: "$r0" := ((func_call #pkg_name' #"foo"%go) #()) in
-      do:  ((λ: <>,
-        exception_do (let: "$r0" := (![uint64T] (globals.get #pkg_name' #"GlobalX"%go)) in
-        do:  ((globals.get #pkg_name' #"GlobalX"%go) <-[uint64T] "$r0"))
-        ) #());;;
-      do:  ((λ: <>,
-        exception_do (let: "$r0" := #""%go in
-        do:  ((globals.get #pkg_name' #"globalY"%go) <-[stringT] "$r0"))
-        ) #()))
-      ).
 
 End code.
 End unittest.
