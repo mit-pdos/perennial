@@ -6,8 +6,6 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom testingForceReadDirLstat'init : val.
-
 Axiom dirBufPool'init : val.
 
 Axiom ErrInvalid'init : val.
@@ -42,11 +40,7 @@ Axiom lstat'init : val.
 
 Axiom checkWrapErr'init : val.
 
-Axiom getwdCache'init : val.
-
 Axiom checkPidfdOnce'init : val.
-
-Axiom Args'init : val.
 
 Axiom errPatternHasSeparator'init : val.
 

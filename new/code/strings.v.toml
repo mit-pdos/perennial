@@ -1,3 +1,2 @@
-Imports = []
-ToTranslate = []
-ToAxiomatize = []
+translate = ["Builder"]
+axiomatize = ["Builder"]

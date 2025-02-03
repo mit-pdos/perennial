@@ -6,10 +6,6 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom Reader'init : val.
-
-Axiom altGetRandom'init : val.
-
 Definition pkg_name' : go_string := "crypto/rand".
 
 Definition vars' : list (go_string * go_type) := [].

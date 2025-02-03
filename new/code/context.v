@@ -10,10 +10,6 @@ Axiom Canceled'init : val.
 
 Axiom DeadlineExceeded'init : val.
 
-Axiom goroutines'init : val.
-
-Axiom cancelCtxKey'init : val.
-
 Axiom closedchan'init : val.
 
 Definition pkg_name' : go_string := "context".

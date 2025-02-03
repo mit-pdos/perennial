@@ -10,8 +10,6 @@ Axiom _Accuracy_index'init : val.
 
 Axiom support_adx'init : val.
 
-Axiom floatZero'init : val.
-
 Axiom pow5tab'init : val.
 
 Axiom intOne'init : val.
@@ -30,21 +28,13 @@ Axiom basicSqrThreshold'init : val.
 
 Axiom karatsubaSqrThreshold'init : val.
 
-Axiom natPool'init : val.
-
 Axiom errNoDigits'init : val.
 
 Axiom errInvalSep'init : val.
 
 Axiom leafSize'init : val.
 
-Axiom cacheBase10'init : val.
-
-Axiom ratZero'init : val.
-
 Axiom _RoundingMode_index'init : val.
-
-Axiom threeOnce'init : val.
 
 Definition pkg_name' : go_string := "math/big".
 

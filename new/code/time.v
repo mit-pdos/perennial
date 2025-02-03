@@ -36,25 +36,9 @@ Axiom utcLoc'init : val.
 
 Axiom Local'init : val.
 
-Axiom localLoc'init : val.
-
-Axiom localOnce'init : val.
-
-Axiom unnamedFixedZones'init : val.
-
-Axiom unnamedFixedZonesOnce'init : val.
-
 Axiom errLocation'init : val.
 
-Axiom zoneinfo'init : val.
-
-Axiom zoneinfoOnce'init : val.
-
-Axiom loadFromEmbeddedTZData'init : val.
-
 Axiom errBadData'init : val.
-
-Axiom loadTzinfoFromTzdata'init : val.
 
 Axiom platformZoneSources'init : val.
 

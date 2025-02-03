@@ -32,13 +32,7 @@ Axiom errNoTransportCredsInBundle'init : val.
 
 Axiom errTransportCredentialsMissing'init : val.
 
-Axiom emptyServiceConfig'init : val.
-
 Axiom ErrClientConnTimeout'init : val.
-
-Axiom globalDialOptions'init : val.
-
-Axiom globalPerTargetDialOptions'init : val.
 
 Axiom errContextCanceled'init : val.
 
@@ -50,8 +44,6 @@ Axiom logger'init : val.
 
 Axiom defaultServerOptions'init : val.
 
-Axiom globalServerOptions'init : val.
-
 Axiom ErrServerStopped'init : val.
 
 Axiom errDuplicatedName'init : val.
@@ -59,8 +51,6 @@ Axiom errDuplicatedName'init : val.
 Axiom errEmptyServiceNonEmptyMethod'init : val.
 
 Axiom metadataFromOutgoingContextRaw'init : val.
-
-Axiom EnableTracing'init : val.
 
 Definition pkg_name' : go_string := "google.golang.org/grpc".
 

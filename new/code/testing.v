@@ -6,111 +6,21 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom matchBenchmarks'init : val.
-
-Axiom benchmarkMemory'init : val.
-
 Axiom benchTime'init : val.
-
-Axiom benchmarkLock'init : val.
-
-Axiom memStats'init : val.
-
-Axiom labelsOnce'init : val.
 
 Axiom hideStdoutForTesting'init : val.
 
-Axiom cover'init : val.
-
-Axiom matchFuzz'init : val.
-
-Axiom fuzzDuration'init : val.
-
 Axiom minimizeDuration'init : val.
-
-Axiom fuzzCacheDir'init : val.
-
-Axiom isFuzzWorker'init : val.
 
 Axiom corpusDir'init : val.
 
 Axiom supportedTypes'init : val.
-
-Axiom matchMutex'init : val.
-
-Axiom cover2'init : val.
-
-Axiom initRan'init : val.
-
-Axiom short'init : val.
-
-Axiom failFast'init : val.
-
-Axiom outputDir'init : val.
-
-Axiom chatty'init : val.
-
-Axiom count'init : val.
-
-Axiom coverProfile'init : val.
-
-Axiom gocoverdir'init : val.
-
-Axiom matchList'init : val.
-
-Axiom match'init : val.
-
-Axiom skip'init : val.
-
-Axiom memProfile'init : val.
-
-Axiom memProfileRate'init : val.
-
-Axiom cpuProfile'init : val.
-
-Axiom blockProfile'init : val.
-
-Axiom blockProfileRate'init : val.
-
-Axiom mutexProfile'init : val.
-
-Axiom mutexProfileFraction'init : val.
-
-Axiom panicOnExit0'init : val.
-
-Axiom traceFile'init : val.
-
-Axiom timeout'init : val.
-
-Axiom cpuListStr'init : val.
-
-Axiom parallel'init : val.
-
-Axiom shuffle'init : val.
-
-Axiom testlog'init : val.
-
-Axiom fullPath'init : val.
-
-Axiom haveExamples'init : val.
-
-Axiom cpuList'init : val.
-
-Axiom testlogFile'init : val.
-
-Axiom numFailed'init : val.
-
-Axiom running'init : val.
 
 Axiom testBinary'init : val.
 
 Axiom errNilPanicOrGoexit'init : val.
 
 Axiom errMain'init : val.
-
-Axiom testingTesting'init : val.
-
-Axiom realStderr'init : val.
 
 Definition pkg_name' : go_string := "testing".
 

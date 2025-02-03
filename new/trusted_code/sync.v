@@ -1,5 +1,6 @@
 From New.golang Require Import defn.
 
+Module sync.
 Section code.
 Context `{ffi_syntax}.
 
@@ -89,3 +90,4 @@ Definition initialize' : val :=
       ).
 
 End code.
+End sync.

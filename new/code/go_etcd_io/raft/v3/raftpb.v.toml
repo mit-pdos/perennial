@@ -1,3 +1,13 @@
-Imports = []
-ToTranslate = []
-ToAxiomatize = []
+translate = [
+  "HardState",
+  "Entry",
+  "ConfState",
+  "ConfChange",
+  "ConfChangeType",
+  "ConfChangeAddNode",
+  "EntryConfChange",
+  "Snapshot",
+  "EntryType",
+  "SnapshotMetadata",
+]
+axiomatize = []

@@ -1,1 +1,9 @@
-trusted = true
+trusted = [
+  "Mutex",
+  "Mutex.Lock",
+  "Mutex.Unlock",
+  "Cond",
+  "Cond.Wait",
+  "Cond.Signal",
+  "Cond.Broadcast",
+]

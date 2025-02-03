@@ -2,4 +2,32 @@
 From New.golang Require Import defn.
 
 Require Export New.trusted_code.log.
+Import log.
+Module log.
+Section code.
+Context `{ffi_syntax}.
 
+
+Axiom std'init : val.
+
+Axiom bufferPool'init : val.
+
+Definition pkg_name' : go_string := "log".
+
+Definition vars' : list (go_string * go_type) := [].
+
+Definition functions' : list (go_string * val) := [("Printf"%go, Printf); ("Println"%go, Println)].
+
+Definition msets' : list (go_string * (list (go_string * val))) := [].
+
+Axiom _'init : val.
+
+Definition initialize' : val :=
+  rec: "initialize'" <> :=
+    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+      exception_do (do:  (std'init #());;;
+      do:  (bufferPool'init #()))
+      ).
+
+End code.
+End log.

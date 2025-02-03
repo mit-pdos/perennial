@@ -6,6 +6,11 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Builder : go_type := structT [
+  "addr" :: ptrT;
+  "buf" :: sliceT
+].
+
 Axiom asciiSpace'init : val.
 
 Definition pkg_name' : go_string := "strings".
@@ -14,7 +19,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Builder"%go, []); ("Builder'ptr"%go, [])].
 
 Axiom _'init : val.
 

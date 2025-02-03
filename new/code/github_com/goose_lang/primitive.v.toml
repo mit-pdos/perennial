@@ -1,1 +1,4 @@
-trusted = true
+trusted = [
+  "UInt64Put",
+  # FIXME: add remaining functions
+]

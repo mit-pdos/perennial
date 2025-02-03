@@ -6,6 +6,10 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition EntryType : go_type := int32T.
+
+Definition EntryConfChange : expr := #(W32 1).
+
 Axiom EntryType_name'init : val.
 
 Axiom EntryType_value'init : val.
@@ -18,27 +22,52 @@ Axiom ConfChangeTransition_name'init : val.
 
 Axiom ConfChangeTransition_value'init : val.
 
+Definition ConfChangeType : go_type := int32T.
+
+Definition ConfChangeAddNode : expr := #(W32 0).
+
 Axiom ConfChangeType_name'init : val.
 
 Axiom ConfChangeType_value'init : val.
 
-Axiom xxx_messageInfo_Entry'init : val.
+Definition Entry : go_type := structT [
+  "Term" :: uint64T;
+  "Index" :: uint64T;
+  "Type" :: EntryType;
+  "Data" :: sliceT
+].
 
-Axiom xxx_messageInfo_SnapshotMetadata'init : val.
+Definition ConfState : go_type := structT [
+  "Voters" :: sliceT;
+  "Learners" :: sliceT;
+  "VotersOutgoing" :: sliceT;
+  "LearnersNext" :: sliceT;
+  "AutoLeave" :: boolT
+].
 
-Axiom xxx_messageInfo_Snapshot'init : val.
+Definition SnapshotMetadata : go_type := structT [
+  "ConfState" :: ConfState;
+  "Index" :: uint64T;
+  "Term" :: uint64T
+].
 
-Axiom xxx_messageInfo_Message'init : val.
+Definition Snapshot : go_type := structT [
+  "Data" :: sliceT;
+  "Metadata" :: SnapshotMetadata
+].
 
-Axiom xxx_messageInfo_HardState'init : val.
+Definition HardState : go_type := structT [
+  "Term" :: uint64T;
+  "Vote" :: uint64T;
+  "Commit" :: uint64T
+].
 
-Axiom xxx_messageInfo_ConfState'init : val.
-
-Axiom xxx_messageInfo_ConfChange'init : val.
-
-Axiom xxx_messageInfo_ConfChangeSingle'init : val.
-
-Axiom xxx_messageInfo_ConfChangeV2'init : val.
+Definition ConfChange : go_type := structT [
+  "Type" :: ConfChangeType;
+  "NodeID" :: uint64T;
+  "Context" :: sliceT;
+  "ID" :: uint64T
+].
 
 Axiom fileDescriptor_b042552c306ae59b'init : val.
 
@@ -54,7 +83,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("EntryType"%go, []); ("EntryType'ptr"%go, []); ("ConfChangeType"%go, []); ("ConfChangeType'ptr"%go, []); ("Entry"%go, []); ("Entry'ptr"%go, []); ("SnapshotMetadata"%go, []); ("SnapshotMetadata'ptr"%go, []); ("Snapshot"%go, []); ("Snapshot'ptr"%go, []); ("HardState"%go, []); ("HardState'ptr"%go, []); ("ConfState"%go, []); ("ConfState'ptr"%go, []); ("ConfChange"%go, []); ("ConfChange'ptr"%go, [])].
 
 Axiom _'init : val.
 

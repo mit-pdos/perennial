@@ -5,8 +5,8 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 Lemma wp_Assume {stk E} (cond : bool) :
-  {{{ is_defined }}}
-    machine.Assume #cond @ stk ; E
+  {{{ True }}}
+    primitive.Assume #cond @ stk ; E
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .
 Proof.

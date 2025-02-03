@@ -6,6 +6,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
+(* 18446744073709551615 *)
+Definition MaxUint64 : Z := 18446744073709551616 - 1.
+
 Axiom useFMA'init : val.
 
 Axiom _gamP'init : val.

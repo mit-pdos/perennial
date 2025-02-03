@@ -18,8 +18,6 @@ Axiom wn'init : val.
 
 Axiom fn'init : val.
 
-Axiom globalRandGenerator'init : val.
-
 Axiom randautoseed'init : val.
 
 Axiom rngCooked'init : val.

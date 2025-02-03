@@ -1,1 +1,13 @@
-trusted = true
+trusted = [
+  "Listener",
+  "Connection",
+  "Address",
+  "ConnectRet",
+  "ReceiveRet",
+
+  "Listen",
+  "Connect",
+  "Accept",
+  "Send",
+  "Receive",
+]
