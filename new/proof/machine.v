@@ -1,6 +1,5 @@
 From New.proof Require Import proof_prelude.
 From New.code Require Import github_com.goose_lang.primitive.
-Require Import New.generatedproof.github_com.goose_lang.primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

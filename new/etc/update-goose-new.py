@@ -133,26 +133,9 @@ def main():
 
         proofgen_bin = path.join(gopath, "bin", "proofgen")
 
-        # FIXME: bring this back when proofgen handles axioms/skipped defns properly
-        # do_run([proofgen_bin,
-                # "-out", path.join(perennial_dir, "new/generatedproof"),
-                # "-dir", src_path] + pkgs)
-
-    def run_recordgen(src_path, *pkgs):
-        if src_path is None:
-            return
-        if not pkgs:
-            pkgs = ["."]
-        else:
-            pkgs = list(pkgs)
-
-        gopath = os.getenv("GOPATH", default=None)
-        if gopath is None or gopath == "":
-            gopath = path.join(path.expanduser("~"), "go")
-
-        recordgen_bin = path.join(gopath, "bin", "recordgen")
-        do_run([recordgen_bin,
+        do_run([proofgen_bin,
                 "-out", path.join(perennial_dir, "new/generatedproof"),
+                "-configdir", path.join(perennial_dir, "new/code"),
                 "-dir", src_path] + pkgs)
 
     def run_goose_test_gen(src_path, output):

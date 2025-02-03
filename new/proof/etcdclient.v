@@ -1,5 +1,5 @@
 From New.proof Require Import proof_prelude.
-Require Import New.generatedproof.structs.etcdclient.
+Require Import New.generatedproof.etcdclient.
 
 Module context.
 Module Context.

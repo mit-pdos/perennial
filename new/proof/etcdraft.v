@@ -1,6 +1,6 @@
 From New.code.go_etcd_io.raft Require Import v3.
-From New.generatedproof Require Import structs.go_etcd_io.raft.v3.
-From New.generatedproof Require Import structs.go_etcd_io.raft.v3.raftpb.
+Require Import New.generatedproof.go_etcd_io.raft.v3
+  New.generatedproof.go_etcd_io.raft.v3.raftpb.
 From New.proof Require Import grove_prelude.
 
 Section proof.

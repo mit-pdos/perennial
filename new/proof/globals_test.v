@@ -1,7 +1,6 @@
 From New.proof Require Import grove_prelude.
 From New.code.github_com.mit_pdos.gokv Require Import globals_test.
-Require Import New.generatedproof.names.github_com.mit_pdos.gokv.globals_test.
-Require Import New.generatedproof.structs.github_com.mit_pdos.gokv.globals_test.
+Require Import New.generatedproof.github_com.mit_pdos.gokv.globals_test.
 From Perennial.algebra Require Import map.
 
 Section proof.

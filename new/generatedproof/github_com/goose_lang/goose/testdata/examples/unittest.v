@@ -1386,10 +1386,6 @@ Global Instance wp_func_call_breakFromLoop :
   WpFuncCall unittest.pkg_name' "breakFromLoop" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_clearMap : 
-  WpFuncCall unittest.pkg_name' "clearMap" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_IterateMapKeys : 
   WpFuncCall unittest.pkg_name' "IterateMapKeys" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
