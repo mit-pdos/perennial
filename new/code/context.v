@@ -6,6 +6,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Axiom Context : go_type.
+
 Axiom Canceled'init : val.
 
 Axiom DeadlineExceeded'init : val.

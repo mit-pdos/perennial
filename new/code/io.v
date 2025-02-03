@@ -18,6 +18,10 @@ Axiom ErrUnexpectedEOF'init : val.
 
 Axiom ErrNoProgress'init : val.
 
+Definition Reader : go_type := interfaceT.
+
+Definition Writer : go_type := interfaceT.
+
 Axiom errWhence'init : val.
 
 Axiom errOffset'init : val.

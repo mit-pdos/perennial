@@ -1,3 +1,4 @@
-Imports = []
-ToTranslate = []
-ToAxiomatize = []
+translate = [
+  "Reader",
+  "Writer",
+]

@@ -6,6 +6,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Axiom Buffer : go_type.
+
 Axiom ErrTooLarge'init : val.
 
 Axiom errNegativeRead'init : val.

@@ -8,6 +8,15 @@ Section code.
 Context `{ffi_syntax}.
 
 
+(* the date in the local time zone: 2009/01/23 *)
+Definition Ldate : Z := 64.
+
+(* the time in the local time zone: 01:23:23 *)
+Definition Ltime : Z := 2.
+
+(* initial values for the standard logger *)
+Definition LstdFlags : Z := 3.
+
 Axiom std'init : val.
 
 Axiom bufferPool'init : val.

@@ -18,6 +18,8 @@ Axiom supportedTypes'init : val.
 
 Axiom testBinary'init : val.
 
+Axiom T : go_type.
+
 Axiom errNilPanicOrGoexit'init : val.
 
 Axiom errMain'init : val.

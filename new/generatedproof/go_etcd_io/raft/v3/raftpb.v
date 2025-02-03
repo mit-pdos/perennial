@@ -190,6 +190,105 @@ Instance wp_struct_make_Snapshot `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
     #(Snapshot.mk Data' Metadata').
 Admitted.
 
+Module Message.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Type' : w32;
+  To' : w64;
+  From' : w64;
+  Term' : w64;
+  LogTerm' : w64;
+  Index' : w64;
+  Entries' : slice.t;
+  Commit' : w64;
+  Vote' : w64;
+  Snapshot' : loc;
+  Reject' : bool;
+  RejectHint' : w64;
+  Context' : slice.t;
+  Responses' : slice.t;
+}.
+End def.
+End Message.
+
+
+Global Instance settable_Message `{ffi_syntax}: Settable _ :=
+  settable! Message.mk < Message.Type'; Message.To'; Message.From'; Message.Term'; Message.LogTerm'; Message.Index'; Message.Entries'; Message.Commit'; Message.Vote'; Message.Snapshot'; Message.Reject'; Message.RejectHint'; Message.Context'; Message.Responses' >.
+Global Instance into_val_Message `{ffi_syntax} : IntoVal Message.t.
+Admitted.
+
+Global Instance into_val_typed_Message `{ffi_syntax} : IntoValTyped Message.t raftpb.Message :=
+{|
+  default_val := Message.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Message_Type `{ffi_syntax} : IntoValStructField "Type" raftpb.Message Message.Type'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_To `{ffi_syntax} : IntoValStructField "To" raftpb.Message Message.To'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_From `{ffi_syntax} : IntoValStructField "From" raftpb.Message Message.From'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Term `{ffi_syntax} : IntoValStructField "Term" raftpb.Message Message.Term'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_LogTerm `{ffi_syntax} : IntoValStructField "LogTerm" raftpb.Message Message.LogTerm'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Index `{ffi_syntax} : IntoValStructField "Index" raftpb.Message Message.Index'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Entries `{ffi_syntax} : IntoValStructField "Entries" raftpb.Message Message.Entries'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Commit `{ffi_syntax} : IntoValStructField "Commit" raftpb.Message Message.Commit'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Vote `{ffi_syntax} : IntoValStructField "Vote" raftpb.Message Message.Vote'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Snapshot `{ffi_syntax} : IntoValStructField "Snapshot" raftpb.Message Message.Snapshot'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Reject `{ffi_syntax} : IntoValStructField "Reject" raftpb.Message Message.Reject'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_RejectHint `{ffi_syntax} : IntoValStructField "RejectHint" raftpb.Message Message.RejectHint'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Context `{ffi_syntax} : IntoValStructField "Context" raftpb.Message Message.Context'.
+Admitted.
+
+Global Instance into_val_struct_field_Message_Responses `{ffi_syntax} : IntoValStructField "Responses" raftpb.Message Message.Responses'.
+Admitted.
+
+Instance wp_struct_make_Message `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' To' From' Term' LogTerm' Index' Entries' Commit' Vote' Snapshot' Reject' RejectHint' Context' Responses':
+  PureWp True
+    (struct.make raftpb.Message (alist_val [
+      "Type" ::= #Type';
+      "To" ::= #To';
+      "From" ::= #From';
+      "Term" ::= #Term';
+      "LogTerm" ::= #LogTerm';
+      "Index" ::= #Index';
+      "Entries" ::= #Entries';
+      "Commit" ::= #Commit';
+      "Vote" ::= #Vote';
+      "Snapshot" ::= #Snapshot';
+      "Reject" ::= #Reject';
+      "RejectHint" ::= #RejectHint';
+      "Context" ::= #Context';
+      "Responses" ::= #Responses'
+    ]))%V
+    #(Message.mk Type' To' From' Term' LogTerm' Index' Entries' Commit' Vote' Snapshot' Reject' RejectHint' Context' Responses').
+Admitted.
+
 Module HardState.
 Section def.
 Context `{ffi_syntax}.
@@ -281,6 +380,50 @@ Instance wp_struct_make_ConfChange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
       "ID" ::= #ID'
     ]))%V
     #(ConfChange.mk Type' NodeID' Context' ID').
+Admitted.
+
+Module ConfChangeV2.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Transition' : w32;
+  Changes' : slice.t;
+  Context' : slice.t;
+}.
+End def.
+End ConfChangeV2.
+
+
+Global Instance settable_ConfChangeV2 `{ffi_syntax}: Settable _ :=
+  settable! ConfChangeV2.mk < ConfChangeV2.Transition'; ConfChangeV2.Changes'; ConfChangeV2.Context' >.
+Global Instance into_val_ConfChangeV2 `{ffi_syntax} : IntoVal ConfChangeV2.t.
+Admitted.
+
+Global Instance into_val_typed_ConfChangeV2 `{ffi_syntax} : IntoValTyped ConfChangeV2.t raftpb.ConfChangeV2 :=
+{|
+  default_val := ConfChangeV2.mk (default_val _) (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_ConfChangeV2_Transition `{ffi_syntax} : IntoValStructField "Transition" raftpb.ConfChangeV2 ConfChangeV2.Transition'.
+Admitted.
+
+Global Instance into_val_struct_field_ConfChangeV2_Changes `{ffi_syntax} : IntoValStructField "Changes" raftpb.ConfChangeV2 ConfChangeV2.Changes'.
+Admitted.
+
+Global Instance into_val_struct_field_ConfChangeV2_Context `{ffi_syntax} : IntoValStructField "Context" raftpb.ConfChangeV2 ConfChangeV2.Context'.
+Admitted.
+
+Instance wp_struct_make_ConfChangeV2 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Transition' Changes' Context':
+  PureWp True
+    (struct.make raftpb.ConfChangeV2 (alist_val [
+      "Transition" ::= #Transition';
+      "Changes" ::= #Changes';
+      "Context" ::= #Context'
+    ]))%V
+    #(ConfChangeV2.mk Transition' Changes' Context').
 Admitted.
 
 (* autogenerated by proofgen (names); do not modify *)
