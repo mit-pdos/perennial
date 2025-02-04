@@ -240,7 +240,26 @@ Proof.
   wp_pures.
   wp_load.
   wp_pures.
-  wp_load.
+  wp_bind (load_ty _ _).
+  eapply (tac_wp_load_ty []).
+  { tc_solve. }
+  { iAssumptionCore. }
+  wp_pures.
+  (*
+  wp_apply (wp_load_ty with "[$]").
+  {
+    iFrame.
+    eapply coq_tactics.tac_frame with "Hclosed" _ _ _.
+    { done. }
+    { apply _.
+      Print Hint.
+    Disable Notation "↦s[" (all).
+    Set Printing Implicit.
+    Print Hint.
+    Set Typeclasses Debug Verbosity 2.
+    (* FIXME: tc search hangs *) *)
+  simpl.
+  wp_pures.
   wp_load.
   wp_pures.
   destruct bool_decide eqn:?.
@@ -250,6 +269,88 @@ Proof.
     wp_bind (load_ty _ _).
     Typeclasses Opaque asyncfile.is_defined.
     Typeclasses Opaque sync.is_defined.
+
+    iRevert "HdurableIndexCond HindexCond".
+    iClear "# ∗".
+    iIntros "HdurableIndexCond Hcond".
+    eapply (tac_wp_load_ty []).
+    { apply _. }
+    {
+
+
+      Check (eq_refl : (struct.field_offset asyncfile.AsyncFile "indexCond"%go) =
+        (struct.field_offset asyncfile.AsyncFile "durableIndexCond"%go)).
+      Eval simpl in (struct.field_offset asyncfile.AsyncFile "indexCond"%go).
+      Transparent w8_word_instance.
+      Eval simpl in (w8_word_instance.(word.add)). (W8 0) (W8 10)).
+      Eval simpl in (word.add (W8 0) (W8 10)).
+      Check w8_word_instance.(word.eqb).
+
+      (* FIXME: making this transparent allows reduction to finish. *)
+      eunify (struct.field_offset asyncfile.AsyncFile "indexCond"%go)
+        (struct.field_offset asyncfile.AsyncFile "durableIndexCond"%go).
+
+(struct.field_offset t f0)
+
+      (* this unify operation runs in iAssumptionCore and gets stuck. *)
+      eunify (struct.field_ref_f asyncfile.AsyncFile "indexCond"%go f)
+              (* ), indexCond) *)
+        (struct.field_ref_f asyncfile.AsyncFile "durableIndexCond"%go f)., _ : loc).
+      eunify
+        (f ↦s[asyncfile.AsyncFile :: "indexCond"%go] indexCond)%I
+        (f ↦s[asyncfile.AsyncFile :: "durableIndexCond"%go] (_ : loc))%I.
+
+
+      Set Ltac Debug.
+
+      Disable Notation "↦s[" (all).
+      Disable Notation "↦" (all).
+      eunify (@typed_pointsto grove_op grove_model grove_interp Σ heapGS0 loc (@into_val_loc grove_op)
+                (struct.field_ref_f asyncfile.AsyncFile "durableIndexCond" f) _
+                _)
+        (@typed_pointsto grove_op grove_model grove_interp Σ heapGS0 loc (@into_val_loc grove_op)
+           (struct.field_ref_f asyncfile.AsyncFile "indexCond" f) (DfracOwn 1) indexCond).
+
+      eunify (@typed_pointsto grove_op grove_model grove_interp Σ heapGS0 loc (@into_val_loc grove_op)
+                (struct.field_ref_f asyncfile.AsyncFile "durableIndexCond" f) _
+                _)
+        (@typed_pointsto grove_op grove_model grove_interp Σ heapGS0 loc (@into_val_loc grove_op)
+           (struct.field_ref_f asyncfile.AsyncFile "indexCond" f) (DfracOwn 1) indexCond).
+
+      Set Ltac Debug.
+      Disable Notation "↦s[" (all).
+      Disable Notation "↦" (all).
+
+      Set Printing Implicit.
+      iAssumptionCore.
+      Import environments reduction.
+      let rec find Γ i P :=
+        lazymatch Γ with
+        | Esnoc ?Γ ?j ?Q => first [unify P Q; unify i j|find Γ i P]
+        end in
+      match goal with
+      | |- envs_lookup ?i (Envs ?Γp ?Γs _) = Some (_, ?P) =>
+          (* find Γs i P *)
+          lazymatch Γs with
+          | Esnoc ?Γs ?j ?Q => set (y:=Q); set (z:=P)
+              (* first [unify P Q; unify i j|find Γs i P] *)
+          end
+      end.
+      unfold y. unfold z.
+      unify y z.
+      iAssumptionCore.
+
+      ltac_tactics.
+      reduction.pm_reflexivity.
+      iAssumptionCore.
+      instantiate (2:=(DfracOwn 1)).
+      instantiate (1:=durableIndexCond).
+      instantiate (1:=false).
+      instantiate (4:=INamed "HdurableIndexCond").
+      done.
+      simpl.
+      iAssumptionCore. }
+
     wp_apply (wp_load_ty with "[-]").
     {
       iClear "Hghost".
@@ -257,7 +358,7 @@ Proof.
       iClear "Htok HΦ Hlocal1 Hlocal2 Hlocked".
       Set Typeclasses Debug.
       iClear "HclosedCond".
-      From iris.proofmode Require Import coq_tactics.
+      iFrame.
       (* eapply tac_frame with "HdurableIndexCond" _ _ _. *)
       eapply tac_frame with "Hclosed" _ _ _.
       { done. }
@@ -267,9 +368,11 @@ Proof.
         Set Printing Implicit.
         Print Hint.
         Set Typeclasses Debug Verbosity 2.
-        (* FIXME: tc search hangs *)
-        typeclasses eauto 1.
+        instantiate (3:=(DfracOwn 1)).
+        instantiate (3:=(DfracOwn 1)).
+        apply _.
         simple apply @class_instances_frame.frame_here.
+        typeclasses eauto 1.
         tc_solve.
       }
       iFrameHyp "Hclosed".
