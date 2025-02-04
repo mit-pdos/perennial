@@ -46,7 +46,9 @@ Definition field_set_f t f0 fv: val -> val :=
   end
   .
 
-Definition field_ref_f t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
+Definition field_ref_f_def t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
+Program Definition field_ref_f := unseal (_:seal (@field_ref_f_def)). Obligation 1. by eexists. Qed.
+Definition field_ref_f_unseal : field_ref_f = _ := seal_eq _.
 
 Class Wf (t : go_type) : Set :=
   {
@@ -174,7 +176,7 @@ Proof.
   iIntros (?????) "HΦ".
   wp_call_lc "?".
   iSpecialize ("HΦ" with "[$]").
-  iExactEq "HΦ". rewrite /struct.field_ref_f.
+  iExactEq "HΦ". rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
   repeat (f_equal; try word).
 Qed.
 
