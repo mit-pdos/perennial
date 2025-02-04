@@ -35,6 +35,7 @@ Proof. solve_inG. Qed.
 Section asyncfile_proof.
 
 Context `{!heapGS Σ}.
+Context `{!goGlobalsGS Σ}.
 Context `{!asyncfileG Σ}.
 Implicit Types (P: list u8 → iProp Σ).
 
@@ -118,17 +119,17 @@ Definition own_AsyncFile_ghost N γ P fname data idx durableIndex (closeRequeste
 Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
   ∃ data_sl fname (data:list u8) (idx durableIndex : u64) (indexCond durableIndexCond closedCond : loc)
     (closed closeRequested : bool) ,
-  "#Hfilename" ∷ f ↦s[AsyncFile :: "filename"]□ fname ∗
-  "Hdata_sl" ∷ f ↦s[AsyncFile :: "data"] (data_sl) ∗
+  "#Hfilename" ∷ f ↦s[asyncfile.AsyncFile :: "filename"]□ fname ∗
+  "Hdata_sl" ∷ f ↦s[asyncfile.AsyncFile :: "data"] (data_sl) ∗
   "#Hdata" ∷ data_sl ↦*□ data ∗
-  "Hindex" ∷ f ↦s[AsyncFile :: "index"] idx ∗
-  "HdurableIndex" ∷ f ↦s[AsyncFile :: "durableIndex"] durableIndex ∗
-  "HindexCond" ∷ f ↦s[AsyncFile :: "indexCond"] indexCond ∗
-  "HdurableIndexCond" ∷ f ↦s[AsyncFile :: "durableIndexCond"] durableIndexCond ∗
+  "Hindex" ∷ f ↦s[asyncfile.AsyncFile :: "index"] idx ∗
+  "HdurableIndex" ∷ f ↦s[asyncfile.AsyncFile :: "durableIndex"] durableIndex ∗
+  "HindexCond" ∷ f ↦s[asyncfile.AsyncFile :: "indexCond"] indexCond ∗
+  "HdurableIndexCond" ∷ f ↦s[asyncfile.AsyncFile :: "durableIndexCond"] durableIndexCond ∗
 
-  "HcloseRequested" ∷ f ↦s[AsyncFile :: "closeRequested"] closeRequested ∗
-  "Hclosed" ∷ f ↦s[AsyncFile :: "closed"] closed ∗
-  "HclosedCond" ∷ f ↦s[AsyncFile :: "closedCond"] closedCond ∗
+  "HcloseRequested" ∷ f ↦s[asyncfile.AsyncFile :: "closeRequested"] closeRequested ∗
+  "Hclosed" ∷ f ↦s[asyncfile.AsyncFile :: "closed"] closed ∗
+  "HclosedCond" ∷ f ↦s[asyncfile.AsyncFile :: "closedCond"] closedCond ∗
 
   "#HindexCond_is" ∷ is_Cond indexCond lk ∗
   "#HdurableIndexCond_is" ∷ is_Cond durableIndexCond lk ∗
@@ -138,10 +139,15 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
   right now because it's unused. *)
 .
 
+Definition is_defined : iProp Σ :=
+  "#?" ∷ asyncfile.is_defined ∗
+  "#?" ∷ sync.is_defined
+.
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
-  "#Hmu" ∷ f ↦s[AsyncFile :: "mu"]□ mu ∗
+  "#Hdef" ∷ is_defined ∗
+  "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
                              (interface.mk #mu (Some (sync.pkg_name', "Mutex'ptr"%go))))
 .
@@ -195,19 +201,22 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
         "#Hinv" ∷ is_write_inv N γ i Q ∗
         "Htok" ∷ own_escrow_token γ i
   }}}
-    AsyncFile__wait #f #i
+    method_call #asyncfile.pkg_name' #"AsyncFile'ptr" #"wait" #f #i
   {{{
         RET #(); Q
   }}}
 .
 Proof.
   iIntros (Φ) "H HΦ".
-  wp_call.
   iNamed "H".
   iNamed "His".
-  iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
+  iNamed "Hdef".
+  wp_method_call.
+  wp_call.
   wp_apply wp_with_defer.
   iIntros (defer) "Hdefer". simpl subst.
+
+  iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
 
   wp_alloc s_addr as "Hlocal2".
   wp_pures.
@@ -219,7 +228,7 @@ Proof.
   iIntros "[Hlocked Hown]".
   wp_pures. wp_load.
   wp_pures. wp_load.
-  wp_apply wp_Mutex__Unlock'.
+  wp_apply (wp_Mutex__Unlock' with "[$]").
   iIntros (m_unlock) "#Hunlock".
   wp_pures.
   wp_load. wp_pures. wp_store.
@@ -237,7 +246,44 @@ Proof.
   destruct bool_decide eqn:?.
   { (* case: wait *)
     simpl. rewrite decide_True //.
-    wp_pures. wp_load. wp_pures. wp_load.
+    wp_pures. wp_load. wp_pures.
+    wp_bind (load_ty _ _).
+    Typeclasses Opaque asyncfile.is_defined.
+    Typeclasses Opaque sync.is_defined.
+    wp_apply (wp_load_ty with "[-]").
+    {
+      iClear "Hghost".
+      iClear "#".
+      iClear "Htok HΦ Hlocal1 Hlocal2 Hlocked".
+      Set Typeclasses Debug.
+      iClear "HclosedCond".
+      From iris.proofmode Require Import coq_tactics.
+      (* eapply tac_frame with "HdurableIndexCond" _ _ _. *)
+      eapply tac_frame with "Hclosed" _ _ _.
+      { done. }
+      {
+        Print Hint.
+        Disable Notation "↦s[" (all).
+        Set Printing Implicit.
+        Print Hint.
+        Set Typeclasses Debug Verbosity 2.
+        (* FIXME: tc search hangs *)
+        typeclasses eauto 1.
+        simple apply @class_instances_frame.frame_here.
+        tc_solve.
+      }
+      iFrameHyp "Hclosed".
+
+
+(Frame false (f ↦s[asyncfile.AsyncFile :: "closed"] closed)
+                  (f ↦s[asyncfile.AsyncFile :: "durableIndexCond"]{?Goal0} ?Goal1)
+                  ?b) with backtracking
+      iFrame.
+      iFrame "HdurableIndexCond".
+      iClear "Htok HΦ Hlocal1 Hlocal2 Hlocked".
+      iFrame.
+    }
+    wp_load.
     wp_apply (wp_Cond__Wait with "[-Htok HΦ Hlocal1 Hlocal2]").
     {
       iFrame "HdurableIndexCond_is Hlk".
