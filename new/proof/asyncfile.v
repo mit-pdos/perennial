@@ -2,7 +2,7 @@ From New.proof Require Import grove_prelude.
 From New.code.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From New.proof Require Import std.
-From New.proof Require Import sync std own_crash.
+From New.proof Require Import sync std grove_ffi own_crash.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.asyncfile.
 
 Record af_names := mk_af_names {
@@ -428,9 +428,7 @@ Proof.
   wp_apply (wp_SumAssumeNoOverflow with "[]").
   { iClear "Hmu". iNamed "His". iNamed "Hdef". done. }
   iIntros (Hno_overflow).
-  wp_pures.
-  wp_bind (load_ty _ _).
-  wp_load. wp_pures. wp_store.
+  wp_pures. wp_load. wp_pures. wp_store.
   wp_pures.
   rewrite -!default_val_eq_zero_val.
   wp_alloc index_ptr as "Hlocal3".
@@ -550,7 +548,8 @@ Proof.
   wp_load.
   wp_pures.
   wp_load.
-  wp_apply (wp_Mutex__Lock with "[$]").
+  wp_apply (wp_Mutex__Lock with "[]").
+  { iNamed "Hdef". iFrame "#". }
   iIntros "[Hlocked Hown]".
   wp_pures.
   iAssert (∃ curdata curidx,
@@ -576,8 +575,10 @@ Proof.
     wp_pures. wp_load. wp_pures. wp_load.
     wp_apply (wp_Cond__Wait with "[-HΦ HH Hlocal1]").
     {
+      iNamed "Hdef".
       iFrame "HindexCond_is".
-      iDestruct (Mutex_is_Locker with "[$]") as "$".
+      iDestruct (Mutex_is_Locker with "[]") as "$".
+      { iFrame "#". }
       iFrame "∗#%". done.
     }
     iIntros "[Hlocked Hown]".
@@ -600,8 +601,10 @@ Proof.
   iDestruct "H" as "(HpreData & HpreIdx & HdurIdx & Hupd & Hghost)".
   wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile Hlocal1 Hlocal2 Hlocal3]").
   {
+    iNamed "Hdef".
     iFrame "HmuInv Hlocked".
     repeat iExists _; iFrame "∗#%".
+    iFrame "#".
     done.
   }
   wp_pures.

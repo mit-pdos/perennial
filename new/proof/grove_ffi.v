@@ -5,6 +5,7 @@ From Perennial.program_logic Require Export atomic_fupd.
 From New.proof Require Export proof_prelude own_crash.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
 From New.code.github_com.mit_pdos.gokv Require Import grove_ffi.
+Require Import New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 
 Set Default Proof Using "Type".
 
@@ -71,41 +72,46 @@ Section grove.
   Existing Instances grove_op grove_model grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
 
   Context `{!heapGS Σ}.
+  Context `{!goGlobalsGS Σ}.
 
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
+    grove_ffi.is_defined ∗
     heap_pointsto l (DfracDiscarded) (listen_socket host).
 
   Global Instance is_Listener_persistent l host : Persistent (is_Listener l host) := _.
 
-  Lemma wp_Listen host s E :
-    {{{ True }}}
-      Listen #host @ s; E
+  Lemma wp_Listen host :
+    {{{ grove_ffi.is_defined }}}
+      func_call #grove_ffi.pkg_name' #"Listen" #host
     {{{ l, RET #l; is_Listener l host }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_call.
+    iIntros (Φ) "#Hdef HΦ". wp_func_call. wp_call.
     rewrite to_val_unseal. simpl. wp_bind (ExternalOp _ _).
     iApply wp_ListenOp; first done.
     iIntros "!# _".
     iApply wp_fupd.
     iApply wp_alloc_untyped; try done.
     iIntros "!> * Hl". iMod (heap_pointsto_persist with "[$]").
-    by iApply "HΦ".
+    iApply "HΦ". iModIntro.
+    iFrame "∗#".
   Qed.
 
   Definition is_Connection (c : loc) (local remote : u64) : iProp Σ :=
+    grove_ffi.is_defined ∗
     heap_pointsto c (DfracDiscarded) (connection_socket local remote).
 
   Global Instance is_Connection_persistent c local remote : Persistent (is_Connection c local remote) := _.
 
-  Lemma wp_Connect remote s E :
-    {{{ True }}}
-      Connect #remote @ s; E
+  Lemma wp_Connect remote :
+    {{{ grove_ffi.is_defined }}}
+      func_call #grove_ffi.pkg_name' #"Connect" #remote
     {{{ (err : bool) (local : chan) l,
         RET #(ConnectRet.mk err l);
         if err then True else is_Connection l local remote
     }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". wp_call.
+    iIntros (Φ) "#Hdef HΦ".
+    wp_func_call. wp_call.
     wp_bind (ExternalOp _ _)%E. rewrite [in #remote]to_val_unseal. iApply (wp_ConnectOp with "[//]").
     iNext. iIntros (err recv) "Hr". wp_pures.
     replace (LitV err) with #err.
@@ -123,15 +129,15 @@ Section grove.
       replace (LitV l) with #l.
       2:{ rewrite to_val_unseal //. }
       iMod (heap_pointsto_persist with "[$]").
-      wp_pures. by iApply "HΦ".
+      wp_pures. iApply "HΦ". iFrame "∗#".
   Qed.
 
-  Lemma wp_Accept l local s E :
+  Lemma wp_Accept l local :
     {{{ is_Listener l local }}}
-      Accept #l @ s; E
+      func_call #grove_ffi.pkg_name' #"Accept" #l
     {{{ c remote, RET #c; is_Connection c local remote }}}.
   Proof.
-    iIntros (Φ) "? HΦ". wp_call.
+    iIntros (Φ) "[#? ?] HΦ". wp_func_call. wp_call.
     wp_bind (! _)%E.
     rewrite [in #l]to_val_unseal.
     iApply (wp_load with "[$]").
@@ -144,7 +150,7 @@ Section grove.
     iNext. iIntros "* ?".
     iMod (heap_pointsto_persist with "[$]").
     replace (LitV l0) with #l0; last by rewrite to_val_unseal.
-    by iApply "HΦ".
+    iApply "HΦ". iModIntro. iFrame "∗#".
   Qed.
 
   Ltac inv_undefined :=
@@ -208,14 +214,15 @@ Section grove.
   Lemma wp_Send c local remote (s : slice.t) (data : list u8) (dq : dfrac) :
     ⊢ {{{ s ↦*{dq} data ∗ is_Connection c local remote }}}
       <<< ∀∀ ms, remote c↦ ms >>>
-        Send #c #s @ ∅
+        func_call #grove_ffi.pkg_name' #"Send" #c #s @ ∅
       <<< ∃∃ (msg_sent : bool),
         remote c↦ (if msg_sent then ms ∪ {[Message local data]} else ms)
       >>>
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
                                 s ↦*{dq} data }}}.
   Proof.
-    iIntros "!#" (Φ) "[Hs #Hconn] HΦ".
+    iIntros "!#" (Φ) "[Hs #[? ?]] HΦ".
+    wp_func_call.
     wp_call.
     wp_bind (! _)%E.
     rewrite [in #c]to_val_unseal.
@@ -247,13 +254,13 @@ Section grove.
   Lemma wp_Receive c local remote :
     ⊢ {{{ is_Connection c local remote }}}
       <<< ∀∀ ms, local c↦ ms >>>
-        Receive #c @ ∅
+        func_call #grove_ffi.pkg_name' #"Receive" #c @ ∅
       <<< ∃∃ (err : bool) (data : list u8),
         local c↦ ms ∗ if err then True else ⌜Message remote data ∈ ms⌝
       >>>
       {{{ s, RET #(ReceiveRet.mk err s); s ↦* data }}}.
   Proof.
-    iIntros "!#" (Φ) "#? HΦ". wp_call.
+    iIntros "!#" (Φ) "#[? ?] HΦ". wp_func_call. wp_call.
     wp_bind (! _)%E.
     rewrite [in #c]to_val_unseal.
     iApply (wp_load with "[$]").
@@ -292,13 +299,18 @@ Section grove.
      This avoids existentially quantifying c inside the fupd to require the
      caller to "know" the file contents before callin Read.
    *)
-  Lemma wp_FileRead f dq c E Φ :
-    ⊢ (|NC={E, ∅}=> f f↦{dq} c ∗ (f f↦{dq} c -∗ |NC={∅,E}=>
+  Lemma wp_FileRead f dq c Φ :
+    ⊢ grove_ffi.is_defined -∗
+      (|NC={⊤, ∅}=> f f↦{dq} c ∗ (f f↦{dq} c -∗ |NC={∅, ⊤}=>
                                  ∀ s, s ↦* c -∗ Φ #s)) -∗
-    WP FileRead #f @ E {{ Φ }}.
+    WP func_call #grove_ffi.pkg_name' #"FileRead" #f {{ Φ }}.
   Proof.
-    iIntros "Hau".
-    wp_call.
+    iIntros "#Hdef Hau".
+    wp_bind (func_call _ _).
+    unshelve wp_apply (wp_func_call with "[]"). [| | tc_solve | | ]; try iFrame "#".
+    wp_apply wp_func_call.
+    { iFrame "#". }
+    wp_func_call. wp_call.
     wp_bind (ExternalOp _ _).
     iApply wp_ncatomic.
     { solve_atomic2. }

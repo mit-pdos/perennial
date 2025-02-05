@@ -10,4 +10,11 @@ trusted = [
   "Accept",
   "Send",
   "Receive",
+
+  "FileRead",
+  "FileWrite",
+  "FileAppend",
+
+  "GetTSC",
+  "GetTimeRange",
 ]

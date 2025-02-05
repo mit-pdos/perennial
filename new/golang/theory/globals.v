@@ -376,14 +376,22 @@ Ltac solve_wp_globals_alloc :=
   iApply "HΦ"; iFrame.
 
 
+(* TODO: better error messages if tc_solve fails to find a val for the name. *)
 Tactic Notation "wp_globals_get" :=
   (wp_bind (globals.get _ _);
    unshelve wp_apply (wp_globals_get with "[]"); [| | tc_solve | |]; try iFrame "#").
 
 Tactic Notation "wp_func_call" :=
   (wp_bind (func_call _ _);
-   unshelve wp_apply (wp_func_call with "[]"); [| | tc_solve | | ]; try iFrame "#").
+   unshelve wp_apply (wp_func_call with "[]");
+   [| | (tc_solve || fail "could not find mapping from global var name to address") | | ]; try iFrame "#").
+
+Tactic Notation "wp_func_call" :=
+  (wp_bind (func_call _ _);
+   unshelve wp_apply (wp_func_call with "[]");
+   [| | (tc_solve || fail "could not find mapping from function name to val") | | ]; try iFrame "#").
 
 Tactic Notation "wp_method_call" :=
   (wp_bind (method_call _ _ _);
-   unshelve wp_apply (wp_method_call with "[]"); [| | tc_solve | |]; try iFrame "#").
+   unshelve wp_apply (wp_method_call with "[]");
+   [| | (tc_solve || fail "could not find mapping from method to val") | |]; try iFrame "#").

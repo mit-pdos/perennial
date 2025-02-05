@@ -25,10 +25,6 @@ Definition is_defined := is_global_definitions grove_ffi.pkg_name' var_addrs gro
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_panic_if_err : 
-  WpFuncCall grove_ffi.pkg_name' "panic_if_err" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_FileWrite : 
   WpFuncCall grove_ffi.pkg_name' "FileWrite" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -41,28 +37,12 @@ Global Instance wp_func_call_FileAppend :
   WpFuncCall grove_ffi.pkg_name' "FileAppend" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_U64ToString : 
-  WpFuncCall grove_ffi.pkg_name' "U64ToString" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_MakeAddress : 
-  WpFuncCall grove_ffi.pkg_name' "MakeAddress" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_AddressToStr : 
-  WpFuncCall grove_ffi.pkg_name' "AddressToStr" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_Listen : 
   WpFuncCall grove_ffi.pkg_name' "Listen" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Accept : 
   WpFuncCall grove_ffi.pkg_name' "Accept" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_makeConnection : 
-  WpFuncCall grove_ffi.pkg_name' "makeConnection" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Connect : 

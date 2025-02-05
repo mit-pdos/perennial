@@ -168,7 +168,7 @@ def main():
         "./lockservice",
         "./bank",
         "./globals_test",
-        "./grove_ffi"
+        "./grove_ffi",
         # "./vrsm/replica",
     )
 

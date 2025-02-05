@@ -12,7 +12,7 @@ Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/grove_ffi".
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Listen"%go, Listen); ("Accept"%go, Accept); ("Connect"%go, Connect); ("Send"%go, Send); ("Receive"%go, Receive)].
+Definition functions' : list (go_string * val) := [("FileWrite"%go, FileWrite); ("FileRead"%go, FileRead); ("FileAppend"%go, FileAppend); ("Listen"%go, Listen); ("Accept"%go, Accept); ("Connect"%go, Connect); ("Send"%go, Send); ("Receive"%go, Receive); ("GetTimeRange"%go, GetTimeRange); ("GetTSC"%go, GetTSC)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Listener"%go, []); ("Listener'ptr"%go, []); ("Connection"%go, []); ("Connection'ptr"%go, []); ("ConnectRet"%go, []); ("ConnectRet'ptr"%go, []); ("ReceiveRet"%go, []); ("ReceiveRet'ptr"%go, [])].
 

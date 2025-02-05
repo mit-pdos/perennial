@@ -12,7 +12,7 @@ Definition pkg_name' : go_string := "github.com/goose-lang/primitive".
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("UInt64Put"%go, UInt64Put)].
+Definition functions' : list (go_string * val) := [("UInt64Put"%go, UInt64Put); ("Assume"%go, Assume)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
