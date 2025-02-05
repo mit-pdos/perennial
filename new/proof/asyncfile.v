@@ -2,7 +2,7 @@ From New.proof Require Import grove_prelude.
 From New.code.github_com.mit_pdos.gokv Require Import asyncfile.
 From Perennial.algebra Require Import map.
 From New.proof Require Import std.
-From New.proof Require Import sync own_crash.
+From New.proof Require Import sync std own_crash.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.asyncfile.
 
 Record af_names := mk_af_names {
@@ -141,7 +141,8 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 
 Definition is_defined : iProp Σ :=
   "#?" ∷ asyncfile.is_defined ∗
-  "#?" ∷ sync.is_defined
+  "#?" ∷ sync.is_defined ∗
+  "#?" ∷ std.is_defined
 .
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
@@ -424,9 +425,12 @@ Proof.
   wp_pures.
   wp_load. wp_pures. wp_load. wp_pures. wp_store. wp_pures. wp_load.
   wp_pures. wp_load. wp_pures.
-  wp_apply wp_SumAssumeNoOverflow.
+  wp_apply (wp_SumAssumeNoOverflow with "[]").
+  { iClear "Hmu". iNamed "His". iNamed "Hdef". done. }
   iIntros (Hno_overflow).
-  wp_pures. wp_load. wp_pures. wp_store.
+  wp_pures.
+  wp_bind (load_ty _ _).
+  wp_load. wp_pures. wp_store.
   wp_pures.
   rewrite -!default_val_eq_zero_val.
   wp_alloc index_ptr as "Hlocal3".
@@ -524,7 +528,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data Φ :
         "HpreData" ∷ own_predurable_data γ data ∗
         "HpreIdx" ∷ own_predurable_index γ 0 ∗
         "HdurIdx" ∷ own_durable_index γ 0 ∗
-        "#Hfilename_in" ∷ f ↦s[AsyncFile :: "filename"]□ fname ∗
+        "#Hfilename_in" ∷ f ↦s[asyncfile.AsyncFile :: "filename"]□ fname ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
     (v #())

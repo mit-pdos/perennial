@@ -1,6 +1,6 @@
 From New.proof Require Import proof_prelude.
 From New.code.github_com.goose_lang Require Import std.
-Require Import New.generatedproof.github_com.goose_lang.std.
+Require Export New.generatedproof.github_com.goose_lang.std.
 From New.proof Require Import machine.
 
 Section wps.

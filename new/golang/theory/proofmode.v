@@ -380,11 +380,11 @@ Ltac2 Type exn ::= [ Walk_expr_not_found ].
 
 Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
   let rec walk_ctx (e : constr) (k : constr) :=
-    lazy_match! e with | Val _ => Control.backtrack_tactic_failure "walk_expr: reached a val" | _ => () end;
+    lazy_match! e with | Val _ => Control.zero Walk_expr_not_found | _ => () end;
     match Control.case (fun () => f e k) with
     | Val (a, _) => a
     | Err Walk_expr_more =>
-        match! e with
+        lazy_match! e with
         | fill ?k' ?e                     => walk_ctx e '($k ++ $k')
         | App ?e1 (Val ?v)                => walk_ctx e1 '(@AppLCtx _ $v :: $k)
         | App ?e1 ?e2                     => walk_ctx e2 '(@AppRCtx _ $e1 :: $k)
@@ -408,7 +408,6 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
         | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 '(CmpXchgLCtx $e1 $e2 :: $k)
         | ResolveProph (Val ?v) ?e        => walk_ctx e '(@ResolveProphRCtx _ $v :: $k)
         | ResolveProph ?e1 ?e2            => walk_ctx e1 '(@ResolveProphLCtx _ $e2 :: $k)
-        | _ => Control.zero Walk_expr_not_found
         end
     | Err e => Control.zero e
     end
