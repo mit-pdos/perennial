@@ -101,7 +101,7 @@ def main():
         parser.error("gokv directory does not exist")
     if etcd_raft_dir is not None and not os.path.isdir(etcd_raft_dir):
         parser.error("etcd-raft directory does not exist")
-    if etcd_dir is not None and not os.path.isdir(etcd_raft_dir):
+    if etcd_dir is not None and not os.path.isdir(etcd_dir):
         parser.error("etcd directory does not exist")
 
     def do_run(cmd_args):
@@ -155,7 +155,15 @@ def main():
         )
 
     run_goose(std_dir, ".")
+
     run_goose(marshal_dir, ".")
+
+    run_goose(
+        primitive_dir,
+        ".",
+        "github.com/goose-lang/primitive/disk"
+    )
+
 
     run_goose(
         gokv_dir,
@@ -203,20 +211,15 @@ def main():
     run_goose(
         etcd_dir,
         "time",
+        "math",
         "google.golang.org/grpc",
         "go.etcd.io/etcd/api/v3/etcdserverpb",
+        "go.etcd.io/etcd/api/v3/mvccpb",
         "go.etcd.io/etcd/client/v3",
-    )
-
-    run_goose(
-        primitive_dir,
-        ".",
-        "github.com/goose-lang/primitive/disk"
-    )
-
-    run_goose(
-        "../etcdclient",
-        ".",
+        "go.etcd.io/etcd/client/v3/concurrency",
+        "go.etcd.io/etcd/client/v3/concurrency",
+        "go.uber.org/zap",
+        "go.uber.org/zap/zapcore",
     )
 
 if __name__ == "__main__":

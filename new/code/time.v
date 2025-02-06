@@ -26,6 +26,14 @@ Axiom unitMap'init : val.
 
 Axiom asynctimerchan'init : val.
 
+Definition Nanosecond : expr := #(W64 1).
+
+Definition Microsecond : expr := #(W64 1000) * Nanosecond.
+
+Definition Millisecond : expr := #(W64 1000) * Microsecond.
+
+Definition Second : expr := #(W64 1000) * Millisecond.
+
 Axiom daysBefore'init : val.
 
 Axiom startNano'init : val.

@@ -2,6 +2,10 @@
 From New.code Require Import github_com.mit_pdos.gokv.cachekv.
 From New.golang Require Import theory.
 
+Require New.generatedproof.sync.
+Require New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
+Require New.generatedproof.github_com.mit_pdos.gokv.kv.
+Require New.generatedproof.github_com.tchajed.marshal.
 Axiom falso : False.
 
 Module cacheValue.

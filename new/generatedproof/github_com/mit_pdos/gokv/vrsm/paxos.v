@@ -2,6 +2,14 @@
 From New.code Require Import github_com.mit_pdos.gokv.vrsm.paxos.
 From New.golang Require Import theory.
 
+Require New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
+Require New.generatedproof.github_com.mit_pdos.gokv.reconnectclient.
+Require New.generatedproof.github_com.tchajed.marshal.
+Require New.generatedproof.log.
+Require New.generatedproof.sync.
+Require New.generatedproof.github_com.goose_lang.std.
+Require New.generatedproof.github_com.mit_pdos.gokv.asyncfile.
+Require New.generatedproof.github_com.mit_pdos.gokv.urpc.
 Axiom falso : False.
 
 Module singleClerk.
@@ -38,6 +46,12 @@ Instance wp_struct_make_singleClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
     #(singleClerk.mk cl').
 Admitted.
 
+Module Error.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End Error.
 Module applyAsFollowerArgs.
 Section def.
 Context `{ffi_syntax}.

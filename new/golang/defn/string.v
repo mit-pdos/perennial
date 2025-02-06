@@ -35,5 +35,9 @@ Section defn.
        else (to_string ![byteT] (slice.elem_ref byteT "b" #(W64 0))) +
               ("from_bytes" (slice.slice byteT "b" #(W64 1) (slice.len "b")))).
 
+  Definition slice : val :=
+    λ: "s" "low" "high",
+      from_bytes (slice.slice uint8T (to_bytes "s") "low" "high").
+
 End defn.
 End string.

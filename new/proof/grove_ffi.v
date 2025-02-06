@@ -306,10 +306,6 @@ Section grove.
     WP func_call #grove_ffi.pkg_name' #"FileRead" #f {{ Φ }}.
   Proof.
     iIntros "#Hdef Hau".
-    wp_bind (func_call _ _).
-    unshelve wp_apply (wp_func_call with "[]"). [| | tc_solve | | ]; try iFrame "#".
-    wp_apply wp_func_call.
-    { iFrame "#". }
     wp_func_call. wp_call.
     wp_bind (ExternalOp _ _).
     iApply wp_ncatomic.
@@ -345,15 +341,16 @@ Section grove.
     word.
   Qed.
 
-  Lemma wp_FileWrite f s dq old data E Φ :
-    ⊢ s ↦*{dq} data -∗
-    (|NC={E, ∅}=> f f↦ old ∗ (f f↦ data -∗ |NC={∅,E}=> s ↦*{dq} data -∗ Φ #()) ∧
-                            (f f↦ old -∗ |NC={∅,E}=> True)
+  Lemma wp_FileWrite f s dq old data Φ :
+    ⊢ (grove_ffi.is_defined ∗
+       s ↦*{dq} data) -∗
+    (|NC={⊤, ∅}=> f f↦ old ∗ (f f↦ data -∗ |NC={∅,⊤}=> s ↦*{dq} data -∗ Φ #()) ∧
+                            (f f↦ old -∗ |NC={∅,⊤}=> True)
     ) -∗
-    WP FileWrite #f #s @ E {{ Φ }}.
+    WP func_call #grove_ffi.pkg_name' #"FileWrite" #f #s {{ Φ }}.
   Proof.
-    iIntros "Hs Hau".
-    wp_call.
+    iIntros "[#Hdef Hs] Hau".
+    wp_func_call. wp_call.
     wp_bind (ExternalOp _ _).
     rewrite to_val_unseal /=.
     iApply wp_ncatomic.
@@ -383,15 +380,15 @@ Section grove.
       simpl in *. repeat f_equal. word.
   Qed.
 
-  Lemma wp_FileAppend f s dq old data E Φ :
-    ⊢ s ↦*{dq} data -∗
-    (|NC={E, ∅}=> f f↦ old ∗ (f f↦ (old ++ data) -∗ |NC={∅,E}=> s ↦*{dq} data -∗ Φ #()) ∧
-                            (f f↦ old -∗ |NC={∅,E}=> True)
+  Lemma wp_FileAppend f s dq old data Φ :
+    ⊢ (grove_ffi.is_defined ∗ s ↦*{dq} data) -∗
+    (|NC={⊤, ∅}=> f f↦ old ∗ (f f↦ (old ++ data) -∗ |NC={∅, ⊤}=> s ↦*{dq} data -∗ Φ #()) ∧
+                            (f f↦ old -∗ |NC={∅, ⊤}=> True)
     ) -∗
-    WP FileAppend #f #s @ E {{ Φ }}.
+    WP func_call #grove_ffi.pkg_name' #"FileAppend" #f #s {{ Φ }}.
   Proof.
-    iIntros "Hs Hau".
-    wp_call.
+    iIntros "[#Hdef Hs] Hau".
+    wp_func_call. wp_call.
     wp_bind (ExternalOp _ _).
     iApply wp_ncatomic.
     { solve_atomic2. }
@@ -422,12 +419,13 @@ Section grove.
   Qed.
 
   Lemma wp_GetTSC :
-  ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
-      GetTSC #() @ ∅
+  ⊢ {{{ grove_ffi.is_defined }}}
+    <<< ∀∀ prev_time, tsc_lb prev_time >>>
+      func_call #grove_ffi.pkg_name' #"GetTSC" #() @ ∅
     <<< ∃∃ (new_time: u64), ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time) >>>
     {{{ RET #new_time; True }}}.
   Proof.
-    iIntros "!>" (Φ) "HAU". wp_call.
+    iIntros "!>" (Φ) "#Hdef HAU". wp_func_call. wp_call.
     rewrite difference_empty_L.
     iMod "HAU" as (prev_time) "[Hlb HΦ]".
     { solve_atomic2. }
@@ -441,11 +439,12 @@ Section grove.
 
   Lemma wp_GetTimeRange :
     ⊢ ∀ (Φ:goose_lang.val → iProp Σ),
-    (∀ (l h t:u64), ⌜uint.nat t <= uint.nat h⌝ -∗ ⌜uint.nat l <= uint.nat t⌝ -∗
-                    own_time t -∗ |NC={⊤}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
-  WP GetTimeRange #() {{ Φ }}.
+    grove_ffi.is_defined -∗
+      (∀ (l h t:u64), ⌜uint.nat t <= uint.nat h⌝ -∗ ⌜uint.nat l <= uint.nat t⌝ -∗
+                      own_time t -∗ |NC={⊤}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
+    WP func_call #grove_ffi.pkg_name' #"GetTimeRange" #() {{ Φ }}.
   Proof.
-    iIntros (?) "HΦ".
+    iIntros (?) "#Hdef HΦ". wp_func_call.
     wp_call. rewrite to_val_unseal /=. iApply (wp_GetTimeRangeOp with "HΦ").
   Qed.
 

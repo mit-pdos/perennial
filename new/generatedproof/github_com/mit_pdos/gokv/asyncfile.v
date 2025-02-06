@@ -2,6 +2,9 @@
 From New.code Require Import github_com.mit_pdos.gokv.asyncfile.
 From New.golang Require Import theory.
 
+Require New.generatedproof.sync.
+Require New.generatedproof.github_com.goose_lang.std.
+Require New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Axiom falso : False.
 
 Module AsyncFile.

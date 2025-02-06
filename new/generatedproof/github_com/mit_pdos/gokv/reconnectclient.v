@@ -2,6 +2,10 @@
 From New.code Require Import github_com.mit_pdos.gokv.reconnectclient.
 From New.golang Require Import theory.
 
+Require New.generatedproof.sync.
+Require New.generatedproof.github_com.goose_lang.primitive.
+Require New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
+Require New.generatedproof.github_com.mit_pdos.gokv.urpc.
 Axiom falso : False.
 
 Module ReconnectingClient.

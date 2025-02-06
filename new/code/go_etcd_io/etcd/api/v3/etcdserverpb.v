@@ -34,9 +34,13 @@ Axiom RangeRequest_SortTarget_name'init : val.
 
 Axiom RangeRequest_SortTarget_value'init : val.
 
+Definition Compare_CompareResult : go_type := int32T.
+
 Axiom Compare_CompareResult_name'init : val.
 
 Axiom Compare_CompareResult_value'init : val.
+
+Definition Compare_CompareTarget : go_type := int32T.
 
 Axiom Compare_CompareTarget_name'init : val.
 
@@ -53,6 +57,52 @@ Axiom AlarmRequest_AlarmAction_value'init : val.
 Axiom DowngradeRequest_DowngradeAction_name'init : val.
 
 Axiom DowngradeRequest_DowngradeAction_value'init : val.
+
+Definition ResponseHeader : go_type := structT [
+  "ClusterId" :: uint64T;
+  "MemberId" :: uint64T;
+  "Revision" :: int64T;
+  "RaftTerm" :: uint64T;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition RangeResponse : go_type := structT [
+  "Header" :: ptrT;
+  "Kvs" :: sliceT;
+  "More" :: boolT;
+  "Count" :: int64T;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition isCompare_TargetUnion : go_type := interfaceT.
+
+Definition Compare : go_type := structT [
+  "Result" :: Compare_CompareResult;
+  "Target" :: Compare_CompareTarget;
+  "Key" :: sliceT;
+  "TargetUnion" :: isCompare_TargetUnion;
+  "RangeEnd" :: sliceT;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition TxnResponse : go_type := structT [
+  "Header" :: ptrT;
+  "Succeeded" :: boolT;
+  "Responses" :: sliceT;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
 
 Axiom fileDescriptor_77a6da22d6a3feb1'init : val.
 
@@ -80,7 +130,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Compare_CompareResult"%go, []); ("Compare_CompareResult'ptr"%go, []); ("Compare_CompareTarget"%go, []); ("Compare_CompareTarget'ptr"%go, []); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("RangeResponse"%go, []); ("RangeResponse'ptr"%go, []); ("Compare"%go, []); ("Compare'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, [])].
 
 Axiom _'init : val.
 

@@ -2,6 +2,7 @@
 From New.code Require Import go_etcd_io.raft.v3.confchange.
 From New.golang Require Import theory.
 
+Require New.generatedproof.go_etcd_io.raft.v3.tracker.
 Axiom falso : False.
 
 Module Changer.

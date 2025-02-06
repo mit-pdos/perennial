@@ -2,6 +2,7 @@
 From New.code Require Import github_com.mit_pdos.gokv.lockservice.
 From New.golang Require Import theory.
 
+Require New.generatedproof.github_com.mit_pdos.gokv.kv.
 Axiom falso : False.
 
 Module LockClerk.

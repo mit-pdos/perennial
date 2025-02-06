@@ -150,18 +150,22 @@ Definition BankClerk__get_total : val :=
   rec: "BankClerk__get_total" "bck" <> :=
     exception_do (let: "bck" := (ref_ty ptrT "bck") in
     let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  (let: "$range" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
-    slice.for_range stringT "$range" (λ: <> "acct",
-      let: "acct" := ref_ty stringT "acct" in
+    (let: "acct" := (ref_ty intT (zero_val intT)) in
+    let: "$range" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
+    slice.for_range stringT "$range" (λ: "$key" "$value",
+      do:  ("acct" <-[stringT] "$value");;;
+      do:  "$key";;;
       do:  (let: "$a0" := (![stringT] "acct") in
       (method_call #lockservice.pkg_name' #"LockClerk'ptr" #"Lock" (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck")))) "$a0");;;
       let: "$r0" := ((![uint64T] "sum") + (let: "$a0" := (let: "$a0" := (![stringT] "acct") in
       (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
       (func_call #pkg_name' #"decodeInt"%go) "$a0")) in
       do:  ("sum" <-[uint64T] "$r0")));;;
-    do:  (let: "$range" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
-    slice.for_range stringT "$range" (λ: <> "acct",
-      let: "acct" := ref_ty stringT "acct" in
+    (let: "acct" := (ref_ty intT (zero_val intT)) in
+    let: "$range" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
+    slice.for_range stringT "$range" (λ: "$key" "$value",
+      do:  ("acct" <-[stringT] "$value");;;
+      do:  "$key";;;
       do:  (let: "$a0" := (![stringT] "acct") in
       (method_call #lockservice.pkg_name' #"LockClerk'ptr" #"Unlock" (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck")))) "$a0")));;;
     return: (![uint64T] "sum")).
@@ -202,10 +206,12 @@ Definition MakeBankClerkSlice : val :=
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
       (func_call #pkg_name' #"encodeInt"%go) "$a0") in
       (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1");;;
-      do:  (let: "$range" := (let: "$s" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
+      (let: "acct" := (ref_ty intT (zero_val intT)) in
+      let: "$range" := (let: "$s" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
       slice.slice stringT "$s" #(W64 1) (slice.len "$s")) in
-      slice.for_range stringT "$range" (λ: <> "acct",
-        let: "acct" := ref_ty stringT "acct" in
+      slice.for_range stringT "$range" (λ: "$key" "$value",
+        do:  ("acct" <-[stringT] "$value");;;
+        do:  "$key";;;
         do:  (let: "$a0" := (![stringT] "acct") in
         let: "$a1" := (let: "$a0" := #(W64 0) in
         (func_call #pkg_name' #"encodeInt"%go) "$a0") in

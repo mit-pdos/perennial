@@ -159,7 +159,11 @@ Definition Client__replyThread : val :=
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then
         do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
-        do:  (map.for_range (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (λ: <> "cb",
+        (let: "cb" := (ref_ty uint64T (zero_val uint64T)) in
+        let: "$range" := (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) in
+        map.for_range "$range" (λ: "$key" "value",
+          do:  ("cb" <-[ptrT] "$value");;;
+          do:  "$key";;;
           let: "$r0" := callbackStateAborted in
           do:  ((![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb"))) <-[uint64T] "$r0");;;
           do:  ((method_call #sync.pkg_name' #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb")))) #())));;;

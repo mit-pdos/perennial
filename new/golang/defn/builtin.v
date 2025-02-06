@@ -24,6 +24,8 @@ Axiom int_leq : val.
 Axiom int_geq : val.
 Axiom int_gt : val.
 Axiom int_quot : val.
+Axiom int_negative: val.
+Axiom recover : val.
 
 (* method sets for primitive types are empty *)
 Section mset.

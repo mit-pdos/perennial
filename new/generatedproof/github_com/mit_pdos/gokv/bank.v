@@ -2,6 +2,10 @@
 From New.code Require Import github_com.mit_pdos.gokv.bank.
 From New.golang Require Import theory.
 
+Require New.generatedproof.github_com.goose_lang.primitive.
+Require New.generatedproof.github_com.mit_pdos.gokv.kv.
+Require New.generatedproof.github_com.mit_pdos.gokv.lockservice.
+Require New.generatedproof.github_com.tchajed.marshal.
 Axiom falso : False.
 
 Module BankClerk.

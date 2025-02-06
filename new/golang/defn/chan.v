@@ -12,6 +12,7 @@ Axiom nil : val.
 Axiom close : val.
 Axiom len : val.
 Axiom cap : val.
+Axiom for_range : val.
 
 End defns.
 End chan.

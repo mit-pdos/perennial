@@ -2,6 +2,8 @@
 From New.code Require Import github_com.goose_lang.std.
 From New.golang Require Import theory.
 
+Require New.generatedproof.sync.
+Require New.generatedproof.github_com.goose_lang.primitive.
 Axiom falso : False.
 
 Module JoinHandle.

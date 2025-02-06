@@ -590,10 +590,12 @@ Definition Server__TryBecomeLeader : val :=
     let: "$r0" := (let: "$a0" := (![sliceT] "clerks") in
     slice.len "$a0") in
     do:  ("n" <-[uint64T] "$r0");;;
-    do:  (let: "$range" := (![sliceT] "clerks") in
-    slice.for_range ptrT "$range" (λ: "i" "ck",
-      let: "i" := ref_ty uint64T "i" in
-      let: "ck" := ref_ty ptrT "ck" in
+    (let: "ck" := (ref_ty intT (zero_val intT)) in
+    let: "i" := (ref_ty intT (zero_val intT)) in
+    let: "$range" := (![sliceT] "clerks") in
+    slice.for_range ptrT "$range" (λ: "$key" "$value",
+      do:  ("ck" <-[ptrT] "$value");;;
+      do:  ("i" <-[intT] "$key");;;
       let: "$go" := (λ: <>,
         exception_do (let: "reply" := (ref_ty ptrT (zero_val ptrT)) in
         let: "$r0" := (let: "$a0" := (![ptrT] "args") in
@@ -616,9 +618,11 @@ Definition Server__TryBecomeLeader : val :=
     let: "numSuccesses" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("numSuccesses" <-[uint64T] "$r0");;;
-    do:  (let: "$range" := (![sliceT] "replies") in
-    slice.for_range ptrT "$range" (λ: <> "reply",
-      let: "reply" := ref_ty ptrT "reply" in
+    (let: "reply" := (ref_ty intT (zero_val intT)) in
+    let: "$range" := (![sliceT] "replies") in
+    slice.for_range ptrT "$range" (λ: "$key" "$value",
+      do:  ("reply" <-[ptrT] "$value");;;
+      do:  "$key";;;
       (if: (![ptrT] "reply") ≠ #null
       then
         (if: (![Error] (struct.field_ref enterNewEpochReply "err" (![ptrT] "reply"))) = ENone
@@ -728,10 +732,12 @@ Definition Server__TryAcquire : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "clerks") in
       slice.len "$a0") in
       do:  ("n" <-[uint64T] "$r0");;;
-      do:  (let: "$range" := (![sliceT] "clerks") in
-      slice.for_range ptrT "$range" (λ: "i" "ck",
-        let: "i" := ref_ty uint64T "i" in
-        let: "ck" := ref_ty ptrT "ck" in
+      (let: "ck" := (ref_ty intT (zero_val intT)) in
+      let: "i" := (ref_ty intT (zero_val intT)) in
+      let: "$range" := (![sliceT] "clerks") in
+      slice.for_range ptrT "$range" (λ: "$key" "$value",
+        do:  ("ck" <-[ptrT] "$value");;;
+        do:  ("i" <-[intT] "$key");;;
         let: "ck" := (ref_ty ptrT (zero_val ptrT)) in
         let: "$r0" := (![ptrT] "ck") in
         do:  ("ck" <-[ptrT] "$r0");;;
@@ -759,9 +765,11 @@ Definition Server__TryAcquire : val :=
       let: "numSuccesses" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := #(W64 0) in
       do:  ("numSuccesses" <-[uint64T] "$r0");;;
-      do:  (let: "$range" := (![sliceT] "replies") in
-      slice.for_range ptrT "$range" (λ: <> "reply",
-        let: "reply" := ref_ty ptrT "reply" in
+      (let: "reply" := (ref_ty intT (zero_val intT)) in
+      let: "$range" := (![sliceT] "replies") in
+      slice.for_range ptrT "$range" (λ: "$key" "$value",
+        do:  ("reply" <-[ptrT] "$value");;;
+        do:  "$key";;;
         (if: (![ptrT] "reply") ≠ #null
         then
           (if: (![Error] (struct.field_ref applyAsFollowerReply "err" (![ptrT] "reply"))) = ENone
@@ -804,9 +812,11 @@ Definition makeServer : val :=
     do:  ((struct.field_ref Server "mu" (![ptrT] "s")) <-[ptrT] "$r0");;;
     let: "$r0" := (slice.make2 ptrT #(W64 0)) in
     do:  ((struct.field_ref Server "clerks" (![ptrT] "s")) <-[sliceT] "$r0");;;
-    do:  (let: "$range" := (![sliceT] "config") in
-    slice.for_range uint64T "$range" (λ: <> "host",
-      let: "host" := ref_ty uint64T "host" in
+    (let: "host" := (ref_ty intT (zero_val intT)) in
+    let: "$range" := (![sliceT] "config") in
+    slice.for_range uint64T "$range" (λ: "$key" "$value",
+      do:  ("host" <-[uint64T] "$value");;;
+      do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref Server "clerks" (![ptrT] "s"))) in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![uint64T] "host") in
       (func_call #pkg_name' #"MakeSingleClerk"%go) "$a0") in

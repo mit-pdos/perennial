@@ -12,6 +12,8 @@ Axiom Canceled'init : val.
 
 Axiom DeadlineExceeded'init : val.
 
+Axiom CancelFunc : go_type.
+
 Axiom closedchan'init : val.
 
 Definition pkg_name' : go_string := "context".

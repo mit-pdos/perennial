@@ -2,6 +2,26 @@
 From New.code Require Import go_etcd_io.raft.v3.
 From New.golang Require Import theory.
 
+Require New.generatedproof.errors.
+Require New.generatedproof.go_etcd_io.raft.v3.raftpb.
+Require New.generatedproof.fmt.
+Require New.generatedproof.io.
+Require New.generatedproof.log.
+Require New.generatedproof.os.
+Require New.generatedproof.sync.
+Require New.generatedproof.context.
+Require New.generatedproof.bytes.
+Require New.generatedproof.crypto.rand.
+Require New.generatedproof.math.
+Require New.generatedproof.math.big.
+Require New.generatedproof.sort.
+Require New.generatedproof.strings.
+Require New.generatedproof.go_etcd_io.raft.v3.confchange.
+Require New.generatedproof.go_etcd_io.raft.v3.quorum.
+Require New.generatedproof.go_etcd_io.raft.v3.tracker.
+Require New.generatedproof.github_com.stretchr.testify.assert.
+Require New.generatedproof.math.rand.
+Require New.generatedproof.testing.
 Axiom falso : False.
 
 Module unstable.
@@ -137,6 +157,12 @@ Instance wp_struct_make_raftLog `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ
     #(raftLog.mk storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused').
 Admitted.
 
+Module Logger.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End Logger.
 Module DefaultLogger.
 Section def.
 Context `{ffi_syntax}.
@@ -176,6 +202,12 @@ Instance wp_struct_make_DefaultLogger `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(DefaultLogger.mk Logger' debug').
 Admitted.
 
+Module SnapshotStatus.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End SnapshotStatus.
 Module SoftState.
 Section def.
 Context `{ffi_syntax}.
@@ -284,6 +316,12 @@ Instance wp_struct_make_Ready `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} 
     #(Ready.mk SoftState' HardState' ReadStates' Entries' Snapshot' CommittedEntries' Messages' MustSync').
 Admitted.
 
+Module Node.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End Node.
 Module Peer.
 Section def.
 Context `{ffi_syntax}.
@@ -446,6 +484,12 @@ Instance wp_struct_make_node `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p
     #(node.mk propc' recvc' confc' confstatec' readyc' advancec' tickc' done' stop' status' rn').
 Admitted.
 
+Module ReadOnlyOption.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End ReadOnlyOption.
 Module lockedRand.
 Section def.
 Context `{ffi_syntax}.
@@ -480,6 +524,18 @@ Instance wp_struct_make_lockedRand `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(lockedRand.mk mu').
 Admitted.
 
+Module CampaignType.
+Section def.
+Context `{ffi_syntax}.
+Definition t := go_string.
+End def.
+End CampaignType.
+Module StateType.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End StateType.
 Module Config.
 Section def.
 Context `{ffi_syntax}.
@@ -635,9 +691,8 @@ Record t := mk {
   randomizedElectionTimeout' : w64;
   disableProposalForwarding' : bool;
   stepDownOnRemoval' : bool;
-  tickId' : w64;
+  tick' : func.t;
   step' : func.t;
-  StepHigherOrder' : func.t;
   logger' : interface.t;
   pendingReadIndexMessages' : slice.t;
   traceLogger' : interface.t;
@@ -647,13 +702,13 @@ End raft.
 
 
 Global Instance settable_raft `{ffi_syntax}: Settable _ :=
-  settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tickId'; raft.step'; raft.StepHigherOrder'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
+  settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tick'; raft.step'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
 Global Instance into_val_raft `{ffi_syntax} : IntoVal raft.t.
 Admitted.
 
 Global Instance into_val_typed_raft `{ffi_syntax} : IntoValTyped raft.t raft.raft :=
 {|
-  default_val := raft.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  default_val := raft.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
   default_val_eq_zero_val := ltac:(destruct falso);
   to_val_inj := ltac:(destruct falso);
@@ -740,13 +795,10 @@ Admitted.
 Global Instance into_val_struct_field_raft_stepDownOnRemoval `{ffi_syntax} : IntoValStructField "stepDownOnRemoval" raft.raft raft.stepDownOnRemoval'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_tickId `{ffi_syntax} : IntoValStructField "tickId" raft.raft raft.tickId'.
+Global Instance into_val_struct_field_raft_tick `{ffi_syntax} : IntoValStructField "tick" raft.raft raft.tick'.
 Admitted.
 
 Global Instance into_val_struct_field_raft_step `{ffi_syntax} : IntoValStructField "step" raft.raft raft.step'.
-Admitted.
-
-Global Instance into_val_struct_field_raft_StepHigherOrder `{ffi_syntax} : IntoValStructField "StepHigherOrder" raft.raft raft.StepHigherOrder'.
 Admitted.
 
 Global Instance into_val_struct_field_raft_logger `{ffi_syntax} : IntoValStructField "logger" raft.raft raft.logger'.
@@ -758,7 +810,7 @@ Admitted.
 Global Instance into_val_struct_field_raft_traceLogger `{ffi_syntax} : IntoValStructField "traceLogger" raft.raft raft.traceLogger'.
 Admitted.
 
-Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tickId' step' StepHigherOrder' logger' pendingReadIndexMessages' traceLogger':
+Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger':
   PureWp True
     (struct.make raft.raft (alist_val [
       "id" ::= #id';
@@ -788,16 +840,21 @@ Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} i
       "randomizedElectionTimeout" ::= #randomizedElectionTimeout';
       "disableProposalForwarding" ::= #disableProposalForwarding';
       "stepDownOnRemoval" ::= #stepDownOnRemoval';
-      "tickId" ::= #tickId';
+      "tick" ::= #tick';
       "step" ::= #step';
-      "StepHigherOrder" ::= #StepHigherOrder';
       "logger" ::= #logger';
       "pendingReadIndexMessages" ::= #pendingReadIndexMessages';
       "traceLogger" ::= #traceLogger'
     ]))%V
-    #(raft.mk id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tickId' step' StepHigherOrder' logger' pendingReadIndexMessages' traceLogger').
+    #(raft.mk id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger').
 Admitted.
 
+Module stepFunc.
+Section def.
+Context `{ffi_syntax}.
+Definition t := func.t.
+End def.
+End stepFunc.
 Module blackHole.
 Section def.
 Context `{ffi_syntax}.
@@ -824,6 +881,12 @@ Instance wp_struct_make_blackHole `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS 
     #(blackHole.mk).
 Admitted.
 
+Module stateMachine.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End stateMachine.
 Module connem.
 Section def.
 Context `{ffi_syntax}.
@@ -922,6 +985,12 @@ Instance wp_struct_make_network `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ
     #(network.mk t' peers' storage' dropm64' ignorem' msgHook').
 Admitted.
 
+Module testMemoryStorageOptions.
+Section def.
+Context `{ffi_syntax}.
+Definition t := func.t.
+End def.
+End testMemoryStorageOptions.
 Module testLeaderElectionStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -1020,6 +1089,12 @@ Instance wp_struct_make_RawNode `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ
     #(RawNode.mk raft' asyncStorageWrites' prevSoftSt' prevHardSt' stepsOnAdvance').
 Admitted.
 
+Module ProgressType.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w8.
+End def.
+End ProgressType.
 Module ReadState.
 Section def.
 Context `{ffi_syntax}.
@@ -1147,6 +1222,12 @@ Instance wp_struct_make_readOnly `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
     #(readOnly.mk option' pendingReadIndex' readIndexQueue').
 Admitted.
 
+Module TraceLogger.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End TraceLogger.
 Module TracingEvent.
 Section def.
 Context `{ffi_syntax}.
@@ -1271,6 +1352,12 @@ Instance wp_struct_make_Status `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
     #(Status.mk BasicStatus' Config' Progress').
 Admitted.
 
+Module Storage.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End Storage.
 Module inMemStorageCallStats.
 Section def.
 Context `{ffi_syntax}.
@@ -1467,6 +1554,24 @@ Instance wp_struct_make_logSlice `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
     #(logSlice.mk term' prev' entries').
 Admitted.
 
+Module EntryFormatter.
+Section def.
+Context `{ffi_syntax}.
+Definition t := func.t.
+End def.
+End EntryFormatter.
+Module entryEncodingSize.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End entryEncodingSize.
+Module entryPayloadSize.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End entryPayloadSize.
 (* autogenerated by proofgen (names); do not modify *)
 Require Import New.code.go_etcd_io.raft.v3.
 Require Export New.proof.proof_prelude.
@@ -1484,9 +1589,6 @@ Class GlobalAddrs :=
   globalRand : loc;
   stmap : loc;
   errBreak : loc;
-  stepLeaderGlobal : loc;
-  stepCandidateGlobal : loc;
-  stepFollowerGlobal : loc;
   nopStepper : loc;
   ErrStepLocalMsg : loc;
   ErrStepPeerNotFound : loc;
@@ -1513,9 +1615,6 @@ Definition var_addrs : list (go_string * loc) := [
     ("globalRand"%go, globalRand);
     ("stmap"%go, stmap);
     ("errBreak"%go, errBreak);
-    ("stepLeaderGlobal"%go, stepLeaderGlobal);
-    ("stepCandidateGlobal"%go, stepCandidateGlobal);
-    ("stepFollowerGlobal"%go, stepFollowerGlobal);
     ("nopStepper"%go, nopStepper);
     ("ErrStepLocalMsg"%go, ErrStepLocalMsg);
     ("ErrStepPeerNotFound"%go, ErrStepPeerNotFound);
@@ -1540,9 +1639,6 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HglobalRand" ∷ globalRand ↦ (default_val loc) ∗
   "Hstmap" ∷ stmap ↦ (default_val (vec go_string 4)) ∗
   "HerrBreak" ∷ errBreak ↦ (default_val interface.t) ∗
-  "HstepLeaderGlobal" ∷ stepLeaderGlobal ↦ (default_val func.t) ∗
-  "HstepCandidateGlobal" ∷ stepCandidateGlobal ↦ (default_val func.t) ∗
-  "HstepFollowerGlobal" ∷ stepFollowerGlobal ↦ (default_val func.t) ∗
   "HnopStepper" ∷ nopStepper ↦ (default_val loc) ∗
   "HErrStepLocalMsg" ∷ ErrStepLocalMsg ↦ (default_val interface.t) ∗
   "HErrStepPeerNotFound" ∷ ErrStepPeerNotFound ↦ (default_val interface.t) ∗
@@ -1591,18 +1687,6 @@ Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_errBreak : 
   WpGlobalsGet raft.pkg_name' "errBreak" errBreak is_defined.
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_stepLeaderGlobal : 
-  WpGlobalsGet raft.pkg_name' "stepLeaderGlobal" stepLeaderGlobal is_defined.
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_stepCandidateGlobal : 
-  WpGlobalsGet raft.pkg_name' "stepCandidateGlobal" stepCandidateGlobal is_defined.
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_stepFollowerGlobal : 
-  WpGlobalsGet raft.pkg_name' "stepFollowerGlobal" stepFollowerGlobal is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_nopStepper : 
@@ -2647,10 +2731,6 @@ Global Instance wp_method_call_raft'ptr_switchToConfig :
 
 Global Instance wp_method_call_raft'ptr_takeMessagesAfterAppend : 
   WpMethodCall raft.pkg_name' "raft'ptr" "takeMessagesAfterAppend" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_raft'ptr_tick : 
-  WpMethodCall raft.pkg_name' "raft'ptr" "tick" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_tickElection : 

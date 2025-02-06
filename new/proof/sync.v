@@ -8,7 +8,7 @@ Require Export New.code.sync.
 From New.proof Require Import proof_prelude.
 From Perennial.algebra Require Import map.
 
-(* Begin manually written version of recordgen output *)
+(* Begin manually written version of proofgen output *)
 Module Mutex.
 Record t := mk {
     state : bool
