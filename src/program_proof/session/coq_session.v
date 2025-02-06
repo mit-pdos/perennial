@@ -224,7 +224,10 @@ Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Me
       if succeeded then
         (server, [reply])
       else
-        (server, (r :: s.(Server.UnsatisfiedRequests))%list)
+        (* change that *)
+        let UnsatisfiedRequests := (r :: s.(Server.UnsatisfiedRequests))%list in 
+        let server := Server.mk s.(Server.Id) s.(Server.NumberOfServers) UnsatisfiedRequests s.(Server.VectorClock) s.(Server.OperationsPerformed) s.(Server.MyOperations) s.(Server.PendingOperations) s.(Server.GossipAcknowledgements) s.(Server.SeenRequests) in
+        (server, [])
   | 1%nat =>
       let s := coq_receiveGossip s r in
       let outGoingRequests := [Message.mk 0 0 0 0 0 [] 0 0 [] 0 (s.(Server.Id)) (r.(Message.S2S_Gossip_Sending_ServerId)) (r.(Message.S2S_Gossip_Index)) 0 0 [] 0 0] in
