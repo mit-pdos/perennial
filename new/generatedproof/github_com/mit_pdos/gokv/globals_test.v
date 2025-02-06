@@ -52,19 +52,19 @@ Global Instance wp_globals_get_globalB :
   WpGlobalsGet main.pkg_name' "globalB" globalB is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
-Global Instance wp_func_call_foo : 
+Global Instance wp_func_call_foo :
   WpFuncCall main.pkg_name' "foo" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_other : 
+Global Instance wp_func_call_other :
   WpFuncCall main.pkg_name' "other" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_bar : 
+Global Instance wp_func_call_bar :
   WpFuncCall main.pkg_name' "bar" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_main : 
+Global Instance wp_func_call_main :
   WpFuncCall main.pkg_name' "main" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

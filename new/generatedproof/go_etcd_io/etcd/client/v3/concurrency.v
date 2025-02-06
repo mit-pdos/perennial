@@ -610,87 +610,87 @@ Global Instance wp_globals_get_ErrLockReleased :
   WpGlobalsGet concurrency.pkg_name' "ErrLockReleased" ErrLockReleased is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
-Global Instance wp_func_call_NewElection : 
+Global Instance wp_func_call_NewElection :
   WpFuncCall concurrency.pkg_name' "NewElection" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_ResumeElection : 
+Global Instance wp_func_call_ResumeElection :
   WpFuncCall concurrency.pkg_name' "ResumeElection" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_waitDelete : 
+Global Instance wp_func_call_waitDelete :
   WpFuncCall concurrency.pkg_name' "waitDelete" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_waitDeletes : 
+Global Instance wp_func_call_waitDeletes :
   WpFuncCall concurrency.pkg_name' "waitDeletes" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_NewMutex : 
+Global Instance wp_func_call_NewMutex :
   WpFuncCall concurrency.pkg_name' "NewMutex" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_NewLocker : 
+Global Instance wp_func_call_NewLocker :
   WpFuncCall concurrency.pkg_name' "NewLocker" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_NewSession : 
+Global Instance wp_func_call_NewSession :
   WpFuncCall concurrency.pkg_name' "NewSession" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_WithTTL : 
+Global Instance wp_func_call_WithTTL :
   WpFuncCall concurrency.pkg_name' "WithTTL" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_WithLease : 
+Global Instance wp_func_call_WithLease :
   WpFuncCall concurrency.pkg_name' "WithLease" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_WithContext : 
+Global Instance wp_func_call_WithContext :
   WpFuncCall concurrency.pkg_name' "WithContext" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_WithIsolation : 
+Global Instance wp_func_call_WithIsolation :
   WpFuncCall concurrency.pkg_name' "WithIsolation" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_WithAbortContext : 
+Global Instance wp_func_call_WithAbortContext :
   WpFuncCall concurrency.pkg_name' "WithAbortContext" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_WithPrefetch : 
+Global Instance wp_func_call_WithPrefetch :
   WpFuncCall concurrency.pkg_name' "WithPrefetch" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_NewSTM : 
+Global Instance wp_func_call_NewSTM :
   WpFuncCall concurrency.pkg_name' "NewSTM" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_mkSTM : 
+Global Instance wp_func_call_mkSTM :
   WpFuncCall concurrency.pkg_name' "mkSTM" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_runSTM : 
+Global Instance wp_func_call_runSTM :
   WpFuncCall concurrency.pkg_name' "runSTM" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_isKeyCurrent : 
+Global Instance wp_func_call_isKeyCurrent :
   WpFuncCall concurrency.pkg_name' "isKeyCurrent" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_respToValue : 
+Global Instance wp_func_call_respToValue :
   WpFuncCall concurrency.pkg_name' "respToValue" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_NewSTMRepeatable : 
+Global Instance wp_func_call_NewSTMRepeatable :
   WpFuncCall concurrency.pkg_name' "NewSTMRepeatable" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_NewSTMSerializable : 
+Global Instance wp_func_call_NewSTMSerializable :
   WpFuncCall concurrency.pkg_name' "NewSTMSerializable" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_NewSTMReadCommitted : 
+Global Instance wp_func_call_NewSTMReadCommitted :
   WpFuncCall concurrency.pkg_name' "NewSTMReadCommitted" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

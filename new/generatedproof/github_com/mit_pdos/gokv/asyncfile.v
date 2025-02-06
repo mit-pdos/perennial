@@ -107,7 +107,7 @@ Definition is_defined := is_global_definitions asyncfile.pkg_name' var_addrs asy
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_MakeAsyncFile : 
+Global Instance wp_func_call_MakeAsyncFile :
   WpFuncCall asyncfile.pkg_name' "MakeAsyncFile" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

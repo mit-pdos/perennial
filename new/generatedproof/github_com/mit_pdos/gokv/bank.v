@@ -73,31 +73,31 @@ Definition is_defined := is_global_definitions bank.pkg_name' var_addrs bank.fun
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_acquire_two_good : 
+Global Instance wp_func_call_acquire_two_good :
   WpFuncCall bank.pkg_name' "acquire_two_good" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_acquire_two : 
+Global Instance wp_func_call_acquire_two :
   WpFuncCall bank.pkg_name' "acquire_two" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_release_two : 
+Global Instance wp_func_call_release_two :
   WpFuncCall bank.pkg_name' "release_two" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_encodeInt : 
+Global Instance wp_func_call_encodeInt :
   WpFuncCall bank.pkg_name' "encodeInt" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_decodeInt : 
+Global Instance wp_func_call_decodeInt :
   WpFuncCall bank.pkg_name' "decodeInt" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_MakeBankClerkSlice : 
+Global Instance wp_func_call_MakeBankClerkSlice :
   WpFuncCall bank.pkg_name' "MakeBankClerkSlice" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_MakeBankClerk : 
+Global Instance wp_func_call_MakeBankClerk :
   WpFuncCall bank.pkg_name' "MakeBankClerk" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

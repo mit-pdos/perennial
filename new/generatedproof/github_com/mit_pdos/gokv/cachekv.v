@@ -112,19 +112,19 @@ Definition is_defined := is_global_definitions cachekv.pkg_name' var_addrs cache
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_DecodeValue : 
+Global Instance wp_func_call_DecodeValue :
   WpFuncCall cachekv.pkg_name' "DecodeValue" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_EncodeValue : 
+Global Instance wp_func_call_EncodeValue :
   WpFuncCall cachekv.pkg_name' "EncodeValue" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_max : 
+Global Instance wp_func_call_max :
   WpFuncCall cachekv.pkg_name' "max" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Make : 
+Global Instance wp_func_call_Make :
   WpFuncCall cachekv.pkg_name' "Make" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

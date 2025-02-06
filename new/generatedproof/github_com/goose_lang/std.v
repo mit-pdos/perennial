@@ -71,39 +71,39 @@ Definition is_defined := is_global_definitions std.pkg_name' var_addrs std.funct
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_BytesEqual : 
+Global Instance wp_func_call_BytesEqual :
   WpFuncCall std.pkg_name' "BytesEqual" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_BytesClone : 
+Global Instance wp_func_call_BytesClone :
   WpFuncCall std.pkg_name' "BytesClone" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_SliceSplit : 
+Global Instance wp_func_call_SliceSplit :
   WpFuncCall std.pkg_name' "SliceSplit" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_SumNoOverflow : 
+Global Instance wp_func_call_SumNoOverflow :
   WpFuncCall std.pkg_name' "SumNoOverflow" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_SumAssumeNoOverflow : 
+Global Instance wp_func_call_SumAssumeNoOverflow :
   WpFuncCall std.pkg_name' "SumAssumeNoOverflow" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_newJoinHandle : 
+Global Instance wp_func_call_newJoinHandle :
   WpFuncCall std.pkg_name' "newJoinHandle" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Spawn : 
+Global Instance wp_func_call_Spawn :
   WpFuncCall std.pkg_name' "Spawn" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Multipar : 
+Global Instance wp_func_call_Multipar :
   WpFuncCall std.pkg_name' "Multipar" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Skip : 
+Global Instance wp_func_call_Skip :
   WpFuncCall std.pkg_name' "Skip" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

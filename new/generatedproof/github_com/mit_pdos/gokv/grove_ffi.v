@@ -26,43 +26,43 @@ Definition is_defined := is_global_definitions grove_ffi.pkg_name' var_addrs gro
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_FileWrite : 
+Global Instance wp_func_call_FileWrite :
   WpFuncCall grove_ffi.pkg_name' "FileWrite" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_FileRead : 
+Global Instance wp_func_call_FileRead :
   WpFuncCall grove_ffi.pkg_name' "FileRead" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_FileAppend : 
+Global Instance wp_func_call_FileAppend :
   WpFuncCall grove_ffi.pkg_name' "FileAppend" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Listen : 
+Global Instance wp_func_call_Listen :
   WpFuncCall grove_ffi.pkg_name' "Listen" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Accept : 
+Global Instance wp_func_call_Accept :
   WpFuncCall grove_ffi.pkg_name' "Accept" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Connect : 
+Global Instance wp_func_call_Connect :
   WpFuncCall grove_ffi.pkg_name' "Connect" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Send : 
+Global Instance wp_func_call_Send :
   WpFuncCall grove_ffi.pkg_name' "Send" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Receive : 
+Global Instance wp_func_call_Receive :
   WpFuncCall grove_ffi.pkg_name' "Receive" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_GetTimeRange : 
+Global Instance wp_func_call_GetTimeRange :
   WpFuncCall grove_ffi.pkg_name' "GetTimeRange" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_GetTSC : 
+Global Instance wp_func_call_GetTSC :
   WpFuncCall grove_ffi.pkg_name' "GetTSC" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

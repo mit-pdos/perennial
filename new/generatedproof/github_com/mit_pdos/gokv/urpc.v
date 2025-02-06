@@ -164,15 +164,15 @@ Definition is_defined := is_global_definitions urpc.pkg_name' var_addrs urpc.fun
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_MakeServer : 
+Global Instance wp_func_call_MakeServer :
   WpFuncCall urpc.pkg_name' "MakeServer" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_TryMakeClient : 
+Global Instance wp_func_call_TryMakeClient :
   WpFuncCall urpc.pkg_name' "TryMakeClient" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_MakeClient : 
+Global Instance wp_func_call_MakeClient :
   WpFuncCall urpc.pkg_name' "MakeClient" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

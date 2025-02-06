@@ -26,11 +26,11 @@ Definition is_defined := is_global_definitions fmt.pkg_name' var_addrs fmt.funct
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_Printf : 
+Global Instance wp_func_call_Printf :
   WpFuncCall fmt.pkg_name' "Printf" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Print : 
+Global Instance wp_func_call_Print :
   WpFuncCall fmt.pkg_name' "Print" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

@@ -2,6 +2,9 @@
 From New.code Require Import github_com.goose_lang.goose.testdata.examples.append_log.
 From New.golang Require Import theory.
 
+Require New.generatedproof.sync.
+Require New.generatedproof.github_com.tchajed.marshal.
+Require New.generatedproof.github_com.goose_lang.primitive.disk.
 Axiom falso : False.
 
 Module Log.
@@ -69,15 +72,15 @@ Definition is_defined := is_global_definitions append_log.pkg_name' var_addrs ap
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_Init : 
+Global Instance wp_func_call_Init :
   WpFuncCall append_log.pkg_name' "Init" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_Open : 
+Global Instance wp_func_call_Open :
   WpFuncCall append_log.pkg_name' "Open" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_writeAll : 
+Global Instance wp_func_call_writeAll :
   WpFuncCall append_log.pkg_name' "writeAll" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

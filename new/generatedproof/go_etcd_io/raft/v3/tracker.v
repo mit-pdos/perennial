@@ -330,11 +330,11 @@ Global Instance wp_globals_get_prstmap :
   WpGlobalsGet tracker.pkg_name' "prstmap" prstmap is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
-Global Instance wp_func_call_NewInflights : 
+Global Instance wp_func_call_NewInflights :
   WpFuncCall tracker.pkg_name' "NewInflights" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_MakeProgressTracker : 
+Global Instance wp_func_call_MakeProgressTracker :
   WpFuncCall tracker.pkg_name' "MakeProgressTracker" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

@@ -78,7 +78,7 @@ Definition is_defined := is_global_definitions reconnectclient.pkg_name' var_add
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_MakeReconnectingClient : 
+Global Instance wp_func_call_MakeReconnectingClient :
   WpFuncCall reconnectclient.pkg_name' "MakeReconnectingClient" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

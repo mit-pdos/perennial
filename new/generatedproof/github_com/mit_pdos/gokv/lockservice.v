@@ -60,7 +60,7 @@ Definition is_defined := is_global_definitions lockservice.pkg_name' var_addrs l
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_MakeLockClerk : 
+Global Instance wp_func_call_MakeLockClerk :
   WpFuncCall lockservice.pkg_name' "MakeLockClerk" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 

@@ -26,7 +26,7 @@ Definition is_defined := is_global_definitions sync.pkg_name' var_addrs sync.fun
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
-Global Instance wp_func_call_NewCond : 
+Global Instance wp_func_call_NewCond :
   WpFuncCall sync.pkg_name' "NewCond" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
