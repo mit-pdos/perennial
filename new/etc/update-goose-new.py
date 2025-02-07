@@ -4,6 +4,7 @@ import os
 from os import path
 import subprocess
 
+
 def run_command(args, dry_run=False, verbose=False):
     if dry_run or verbose:
         print(" ".join(args))
@@ -119,22 +120,33 @@ def main():
             return
         if not pkgs:
             pkgs = ["."]
+        else:
+            pkgs = list(pkgs)
 
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
 
         goose_bin = path.join(gopath, "bin", "goose")
-        do_run([goose_bin,
-                "-out", path.join(perennial_dir, "new/code/"),
-                "-dir", src_path] + pkgs)
+        do_run(
+            [goose_bin, "-out", path.join(perennial_dir, "new/code/"), "-dir", src_path]
+            + pkgs
+        )
 
         proofgen_bin = path.join(gopath, "bin", "proofgen")
 
-        do_run([proofgen_bin,
-                "-out", path.join(perennial_dir, "new/generatedproof"),
-                "-configdir", path.join(perennial_dir, "new/code"),
-                "-dir", src_path] + pkgs)
+        do_run(
+            [
+                proofgen_bin,
+                "-out",
+                path.join(perennial_dir, "new/generatedproof"),
+                "-configdir",
+                path.join(perennial_dir, "new/code"),
+                "-dir",
+                src_path,
+            ]
+            + pkgs
+        )
 
     def run_goose_test_gen(src_path, output):
         gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
@@ -156,12 +168,7 @@ def main():
 
     run_goose(marshal_dir, ".")
 
-    run_goose(
-        primitive_dir,
-        ".",
-        "github.com/goose-lang/primitive/disk"
-    )
-
+    run_goose(primitive_dir, ".", "github.com/goose-lang/primitive/disk")
 
     run_goose(
         gokv_dir,
@@ -219,6 +226,7 @@ def main():
         "go.uber.org/zap",
         "go.uber.org/zap/zapcore",
     )
+
 
 if __name__ == "__main__":
     main()
