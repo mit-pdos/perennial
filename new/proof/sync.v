@@ -177,7 +177,7 @@ Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
 Lemma Mutex_is_Locker (m : loc) R :
   is_Mutex m R -∗
-  is_Locker (interface.mk #m (Some (sync.pkg_name', "Mutex'ptr"%go))) (own_Mutex m ∗ R).
+  is_Locker (interface.mk sync.pkg_name' "Mutex'ptr"%go #m) (own_Mutex m ∗ R).
 Proof.
   iIntros "#[? ?]".
   iSplitL.

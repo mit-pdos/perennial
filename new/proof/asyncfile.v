@@ -151,7 +151,7 @@ Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   "#Hdef" ∷ is_initialized ∗
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
-                             (interface.mk #mu (Some (sync.pkg_name', "Mutex'ptr"%go))))
+                             (interface.mk sync.pkg_name' "Mutex'ptr"%go #mu))
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=
