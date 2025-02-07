@@ -283,7 +283,7 @@ Proof.
   rewrite /ptgroups elem_of_map in Hptg.
   destruct Hptg as (k & Hktg & Hin).
   apply elem_of_dom in Hin as [v Hv].
-  rewrite map_filter_empty_iff in Hempty.
+  rewrite map_empty_filter in Hempty.
   specialize (Hempty _ _ Hv). simpl in Hempty. done.
 Qed.
 

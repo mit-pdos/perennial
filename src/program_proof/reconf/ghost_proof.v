@@ -113,7 +113,7 @@ Definition overlapping_quorums (config1 config2:ConfigC) :=
   There isn't a real circularity, it's just that we want to recursive invoke
   old_conf and old_term. But, that'll result in later problems.
  *)
-From iris.bi.lib Require Import fixpoint.
+From iris.bi.lib Require Import fixpoint_mono.
 
 Definition old_conf_max_pre (Φ:(reconf_names -d> u64 -d> (list (leibnizO LogEntry)) -d> iPropO Σ)): (reconf_names -d> u64 -d> (list (leibnizO LogEntry)) -d> iPropO Σ) :=
   λ γ term mval,

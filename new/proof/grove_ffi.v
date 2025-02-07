@@ -1,5 +1,5 @@
 (** Iris specs for Grove FFI *)
-From iris.bi.lib Require Import fixpoint.
+From iris.bi.lib Require Import fixpoint_mono.
 From iris.base_logic.lib Require Import mono_nat saved_prop.
 From Perennial.program_logic Require Export atomic_fupd.
 From New.proof Require Export proof_prelude own_crash.
