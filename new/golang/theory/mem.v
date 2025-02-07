@@ -618,7 +618,8 @@ Ltac2 wp_alloc () :=
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   ltac2:(Control.enter wp_alloc);
-  iIntros (l) H.
+  intros l;
+  iIntros H.
 
 Tactic Notation "wp_load" := ltac2:(Control.enter wp_load).
 Tactic Notation "wp_store" := ltac2:(Control.enter wp_store).
