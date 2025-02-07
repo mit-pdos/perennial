@@ -74,14 +74,17 @@ Section grove.
   Context `{!heapGS Σ}.
   Context `{!goGlobalsGS Σ}.
 
+  Definition is_initialized :=
+    grove_ffi.is_defined.
+
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
-    grove_ffi.is_defined ∗
+    is_initialized ∗
     heap_pointsto l (DfracDiscarded) (listen_socket host).
 
   Global Instance is_Listener_persistent l host : Persistent (is_Listener l host) := _.
 
   Lemma wp_Listen host :
-    {{{ grove_ffi.is_defined }}}
+    {{{ is_initialized }}}
       func_call #grove_ffi.pkg_name' #"Listen" #host
     {{{ l, RET #l; is_Listener l host }}}.
   Proof.
@@ -97,13 +100,13 @@ Section grove.
   Qed.
 
   Definition is_Connection (c : loc) (local remote : u64) : iProp Σ :=
-    grove_ffi.is_defined ∗
+    is_initialized ∗
     heap_pointsto c (DfracDiscarded) (connection_socket local remote).
 
   Global Instance is_Connection_persistent c local remote : Persistent (is_Connection c local remote) := _.
 
   Lemma wp_Connect remote :
-    {{{ grove_ffi.is_defined }}}
+    {{{ is_initialized }}}
       func_call #grove_ffi.pkg_name' #"Connect" #remote
     {{{ (err : bool) (local : chan) l,
         RET #(ConnectRet.mk err l);

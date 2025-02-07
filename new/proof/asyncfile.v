@@ -139,15 +139,16 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
   right now because it's unused. *)
 .
 
-Definition is_defined : iProp Σ :=
+Definition is_initialized : iProp Σ :=
   "#?" ∷ asyncfile.is_defined ∗
-  "#?" ∷ sync.is_defined ∗
-  "#?" ∷ std.is_defined
+  "#?" ∷ sync.is_initialized ∗
+  "#?" ∷ std.is_initialized ∗
+  "#?" ∷ grove_ffi.is_initialized
 .
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
-  "#Hdef" ∷ is_defined ∗
+  "#Hdef" ∷ is_initialized ∗
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
                              (interface.mk #mu (Some (sync.pkg_name', "Mutex'ptr"%go))))
@@ -520,9 +521,9 @@ Proof.
 Qed.
 
 Lemma wp_AsyncFile__flushThread fname N f γ P data Φ :
+  is_AsyncFile N f γ P -∗
   (∀ (v : val),
   {{{
-        "His" ∷ is_AsyncFile N f γ P ∗
         "HpreData" ∷ own_predurable_data γ data ∗
         "HpreIdx" ∷ own_predurable_index γ 0 ∗
         "HdurIdx" ∷ own_durable_index γ 0 ∗
@@ -533,16 +534,18 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data Φ :
   {{{
         RET #(); True
   }}} -∗ Φ v) -∗
-  WP asyncfile.AsyncFile__flushThread #f {{ Φ }}.
+  WP method_call #asyncfile.pkg_name' #"AsyncFile'ptr" #"flushThread" #f {{ Φ }}.
 Proof.
-  iIntros "Hwp".
+  iIntros "His Hwp".
+  iNamed "His".
+  wp_method_call.
+  { by iNamed "Hdef". }
   wp_call.
   iApply "Hwp".
   clear Φ.
   iIntros (Φ) "!# H HΦ".
   iNamed "H".
   wp_pures.
-  iNamed "His".
   wp_alloc s_addr as "Hlocal1".
   wp_pures.
   wp_load.
@@ -615,6 +618,7 @@ Proof.
 
   iCombine "Hfilename_in Hfilename" gives %[_ [=<-]].
   wp_apply (wp_FileWrite with "[$Hdata]").
+  { iNamed "Hdef". iFrame "#". }
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   rewrite /own_crash_pre /=.
   unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
@@ -727,9 +731,10 @@ Qed.
 
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
+        "#Hinit" ∷ is_initialized ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    asyncfile.MakeAsyncFile #fname
+    func_call #asyncfile.pkg_name' #"MakeAsyncFile" #fname
   {{{
         γ sl f, RET (#sl, #f); sl ↦*□ data ∗ own_AsyncFile N f γ P data
   }}}
@@ -737,6 +742,8 @@ Lemma wp_MakeAsyncFile fname N P data :
 Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
+  iNamed "Hinit".
+  wp_func_call.
   wp_call.
   wp_alloc filename_addr as "Hlocal".
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
@@ -760,7 +767,7 @@ Proof.
   wp_load.
   wp_pure_lc "H1". wp_pure_lc "H2".
   iCombine "H1 H2" as "Hlc".
-  wp_apply wp_FileRead.
+  wp_apply (wp_FileRead with "[$]").
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
   { solve_ndisj. }
@@ -801,13 +808,13 @@ Proof.
   iNamed "H".
   iAssert (|={⊤}=> is_AsyncFile N l γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed]" as ">#His".
   {
-    iMod (init_Mutex with "[$] [-]") as "$"; last done.
+    iMod (init_Mutex with "[$] [$] [-]") as "$"; last by iFrame "#".
     iNext. by iFrame "∗#".
   }
 
   wp_pures.
   wp_load.
-  wp_apply wp_AsyncFile__flushThread.
+  wp_apply (wp_AsyncFile__flushThread with "[$]").
   iIntros (flush) "Hwp_flush".
   wp_pures.
   wp_bind (Fork (flush #()))%E.
@@ -824,5 +831,17 @@ Proof.
   iApply "HΦ".
   iFrame "∗#".
 Qed.
+
+(*
+Lemma wp_initialize' pending postconds γtok :
+  main.pkg_name' ∉ pending →
+  postconds !! main.pkg_name' = Some (∃ (d : main.GlobalAddrs), main.is_defined ∗ is_initialized γtok)%I →
+  {{{ own_globals_tok pending postconds }}}
+    asyncfile.initialize' #()
+  {{{ (_ : main.GlobalAddrs), RET #();
+      main.is_defined ∗ is_initialized γtok ∗ own_globals_tok pending postconds
+  }}}.
+Proof.
+Qed. *)
 
 End asyncfile_proof.

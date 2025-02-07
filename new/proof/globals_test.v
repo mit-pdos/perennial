@@ -9,15 +9,8 @@ Context `{!goGlobalsGS Σ}.
 Context `{!ghost_varG Σ ()}.
 
 (* FIXME: autogenerate this *)
-Definition own_allocated `{!main.GlobalAddrs} : iProp Σ :=
-  "HglobalB" ∷ main.globalB ↦ (default_val go_string) ∗
-  "HglobalA" ∷ main.globalA ↦ (default_val go_string) ∗
-  "HglobalY" ∷ main.globalY ↦ (default_val go_string) ∗
-  "HGlobalX" ∷ main.GlobalX ↦ (default_val w64).
-
-(* FIXME: autogenerate this *)
 Local Instance wp_globals_alloc_inst :
-  WpGlobalsAlloc main.vars' (@main.GlobalAddrs) (@main.var_addrs) (@own_allocated).
+  WpGlobalsAlloc main.vars' (@main.GlobalAddrs) (@main.var_addrs) (λ _, main.own_allocated).
 Proof.
   solve_wp_globals_alloc.
 Qed.
