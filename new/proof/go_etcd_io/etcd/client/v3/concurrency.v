@@ -155,6 +155,22 @@ Proof.
     rewrite decide_False //.
   }
   (* no error from Grant() call *)
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_store.
+  wp_pures.
+  wp_alloc cancel_ptr as "Hcancel_ptr".
+  wp_pures.
+  wp_alloc ctx_ptr as "Hctx_ptr".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  (* TODO: spec for context.WithCancel *)
 Admitted.
 
 End proof.
