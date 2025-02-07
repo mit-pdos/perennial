@@ -10,7 +10,7 @@ Module LockClerk.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  kv' : interface.t;
+  kv' : kv.KvCput.t;
 }.
 End def.
 End LockClerk.

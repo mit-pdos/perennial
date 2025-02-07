@@ -109,6 +109,13 @@ Global Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!
     #(Inflights.mk start' count' bytes' size' maxBytes' buffer').
 Admitted.
 
+
+Module StateType.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End StateType.
 Module Progress.
 Section def.
 Context `{ffi_syntax}.
@@ -116,7 +123,7 @@ Record t := mk {
   Match' : w64;
   Next' : w64;
   sentCommit' : w64;
-  State' : w64;
+  State' : StateType.t;
   PendingSnapshot' : w64;
   RecentActive' : bool;
   MsgAppFlowPaused' : bool;
@@ -190,18 +197,11 @@ Context `{ffi_syntax}.
 Definition t := loc.
 End def.
 End ProgressMap.
-
-Module StateType.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End StateType.
 Module Config.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Voters' : (vec loc 2);
+  Voters' : quorum.JointConfig.t;
   AutoLeave' : bool;
   Learners' : loc;
   LearnersNext' : loc;
@@ -251,7 +251,7 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   Config' : Config.t;
-  Progress' : loc;
+  Progress' : ProgressMap.t;
   Votes' : loc;
   MaxInflight' : w64;
   MaxInflightBytes' : w64;

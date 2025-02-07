@@ -6,7 +6,7 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom Context : go_type.
+Definition Context : go_type := interfaceT.
 
 Axiom Canceled'init : val.
 

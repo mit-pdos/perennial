@@ -66,7 +66,7 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   ResponseHeader' : loc;
-  ID' : w64;
+  ID' : LeaseID.t;
   TTL' : w64;
   Error' : go_string;
 }.
@@ -173,7 +173,7 @@ Record t := mk {
   CompactRevision' : w64;
   Canceled' : bool;
   Created' : bool;
-  closeErr' : interface.t;
+  closeErr' : error.t;
   cancelReason' : go_string;
 }.
 End def.

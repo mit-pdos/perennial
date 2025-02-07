@@ -12,25 +12,32 @@ Require Export New.golang.theory.
 Module quorum.
 Axiom falso : False.
 
-Module JointConfig.
-Section def.
-Context `{ffi_syntax}.
-Definition t := (vec loc 2).
-End def.
-End JointConfig.
-
 Module MajorityConfig.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
 End def.
 End MajorityConfig.
+
+Module JointConfig.
+Section def.
+Context `{ffi_syntax}.
+Definition t := (vec MajorityConfig.t 2).
+End def.
+End JointConfig.
+
+Module Index.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End Index.
 Module tup.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   id' : w64;
-  idx' : w64;
+  idx' : Index.t;
   ok' : bool;
   bar' : w64;
 }.
@@ -74,13 +81,6 @@ Global Instance wp_struct_make_tup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(tup.mk id' idx' ok' bar').
 Admitted.
 
-
-Module Index.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End Index.
 
 Module AckedIndexer.
 Section def.

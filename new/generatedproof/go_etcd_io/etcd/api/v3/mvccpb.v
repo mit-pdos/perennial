@@ -90,7 +90,7 @@ Module Event.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Type' : w32;
+  Type' : Event_EventType.t;
   Kv' : loc;
   PrevKv' : loc;
   XXX_NoUnkeyedLiteral' : unit;

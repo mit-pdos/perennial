@@ -169,9 +169,9 @@ Context `{ffi_syntax}.
 Record t := mk {
   client' : loc;
   opts' : loc;
-  id' : w64;
-  ctx' : interface.t;
-  cancel' : func.t;
+  id' : clientv3.LeaseID.t;
+  ctx' : context.Context.t;
+  cancel' : context.CancelFunc.t;
   donec' : loc;
 }.
 End def.
@@ -227,8 +227,8 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   ttl' : w64;
-  leaseID' : w64;
-  ctx' : interface.t;
+  leaseID' : clientv3.LeaseID.t;
+  ctx' : context.Context.t;
 }.
 End def.
 End sessionOptions.
@@ -291,7 +291,7 @@ Module stmError.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  err' : interface.t;
+  err' : error.t;
 }.
 End def.
 End stmError.
@@ -325,8 +325,8 @@ Module stmOptions.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  iso' : w64;
-  ctx' : interface.t;
+  iso' : Isolation.t;
+  ctx' : context.Context.t;
   prefetch' : slice.t;
 }.
 End def.
@@ -377,7 +377,7 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   resp' : loc;
-  err' : interface.t;
+  err' : error.t;
 }.
 End def.
 End stmResponse.
@@ -411,14 +411,28 @@ Global Instance wp_struct_make_stmResponse `{ffi_semantics} `{!ffi_interp ffi} `
     #(stmResponse.mk resp' err').
 Admitted.
 
+
+Module readSet.
+Section def.
+Context `{ffi_syntax}.
+Definition t := loc.
+End def.
+End readSet.
+
+Module writeSet.
+Section def.
+Context `{ffi_syntax}.
+Definition t := loc.
+End def.
+End writeSet.
 Module stm.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   client' : loc;
-  ctx' : interface.t;
-  rset' : loc;
-  wset' : loc;
+  ctx' : context.Context.t;
+  rset' : readSet.t;
+  wset' : writeSet.t;
   getOpts' : slice.t;
   conflicts' : func.t;
 }.
@@ -509,20 +523,6 @@ Global Instance wp_struct_make_stmPut `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(stmPut.mk val' op').
 Admitted.
 
-
-Module readSet.
-Section def.
-Context `{ffi_syntax}.
-Definition t := loc.
-End def.
-End readSet.
-
-Module writeSet.
-Section def.
-Context `{ffi_syntax}.
-Definition t := loc.
-End def.
-End writeSet.
 Module stmSerializable.
 Section def.
 Context `{ffi_syntax}.
@@ -589,11 +589,11 @@ Definition var_addrs : list (go_string * loc) := [
 Definition is_defined := is_global_definitions concurrency.pkg_name' var_addrs concurrency.functions' concurrency.msets'.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
-  "HErrElectionNotLeader" ∷ ErrElectionNotLeader ↦ (default_val interface.t) ∗
-  "HErrElectionNoLeader" ∷ ErrElectionNoLeader ↦ (default_val interface.t) ∗
-  "HErrLocked" ∷ ErrLocked ↦ (default_val interface.t) ∗
-  "HErrSessionExpired" ∷ ErrSessionExpired ↦ (default_val interface.t) ∗
-  "HErrLockReleased" ∷ ErrLockReleased ↦ (default_val interface.t).
+  "HErrElectionNotLeader" ∷ ErrElectionNotLeader ↦ (default_val error.t) ∗
+  "HErrElectionNoLeader" ∷ ErrElectionNoLeader ↦ (default_val error.t) ∗
+  "HErrLocked" ∷ ErrLocked ↦ (default_val error.t) ∗
+  "HErrSessionExpired" ∷ ErrSessionExpired ↦ (default_val error.t) ∗
+  "HErrLockReleased" ∷ ErrLockReleased ↦ (default_val error.t).
 
 Global Instance wp_globals_get_ErrElectionNotLeader : 
   WpGlobalsGet concurrency.pkg_name' "ErrElectionNotLeader" ErrElectionNotLeader is_defined.

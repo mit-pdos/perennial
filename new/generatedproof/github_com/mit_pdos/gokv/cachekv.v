@@ -52,7 +52,7 @@ Module CacheKv.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  kv' : interface.t;
+  kv' : kv.KvCput.t;
   mu' : loc;
   cache' : loc;
 }.

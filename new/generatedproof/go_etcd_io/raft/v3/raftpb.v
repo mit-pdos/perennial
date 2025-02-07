@@ -46,7 +46,7 @@ Context `{ffi_syntax}.
 Record t := mk {
   Term' : w64;
   Index' : w64;
-  Type' : w32;
+  Type' : EntryType.t;
   Data' : slice.t;
 }.
 End def.
@@ -286,7 +286,7 @@ Module ConfChange.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Type' : w32;
+  Type' : ConfChangeType.t;
   NodeID' : w64;
   Context' : slice.t;
   ID' : w64;
@@ -335,7 +335,7 @@ Module ConfChangeV2.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Transition' : w32;
+  Transition' : ConfChangeTransition.t;
   Changes' : slice.t;
   Context' : slice.t;
 }.

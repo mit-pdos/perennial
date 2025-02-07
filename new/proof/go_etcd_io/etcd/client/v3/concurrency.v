@@ -62,12 +62,12 @@ Definition is_initialized :=
 Definition is_Session (s : loc) : iProp Σ :=
   True.
 
-Lemma wp_NewSession (client : loc) (opts : slice.t) :
+Lemma wp_NewSession (client : loc) :
   {{{
         "#Hinit" ∷ is_initialized ∗
         "#His_client" ∷ is_Client client
   }}}
-    func_call #concurrency.pkg_name' #"NewSession" #client #opts
+    func_call #concurrency.pkg_name' #"NewSession" #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
         True
@@ -81,9 +81,9 @@ Proof.
   wp_alloc opts_ptr as "Hopts".
   rewrite -!default_val_eq_zero_val.
   wp_pures.
-  wp_alloc client_ptr as "Hclient".
+  wp_alloc client_ptr as "Hclient_ptr".
   wp_pures.
-  wp_alloc lg_ptr as "Hlg".
+  wp_alloc lg_ptr as "Hlg_ptr".
   wp_pures.
   wp_load.
   wp_apply (wp_Client__GetLogger with "[$]").
@@ -91,22 +91,31 @@ Proof.
   wp_pures.
   wp_store.
   wp_pures.
-  wp_alloc ops_ptr as "Hops".
+  wp_alloc ops_ptr as "Hops_ptr".
   wp_pures.
   wp_load.
   wp_apply (wp_Client__Ctx with "[$]").
   iIntros (?) "_".
   wp_pures.
+  wp_alloc ops as "Hops".
+  wp_pures.
+  wp_store.
+  wp_pures.
+  wp_alloc opt_ptr as "Hopt_ptr".
+  wp_pures.
+  wp_load.
+  wp_pures.
 
-  (* FIXME: multiple intoval instances for context.Context.t
-  wp_bind (struct.make _ _).
-  eapply (tac_wp_pure_wp []).
-  {
-    apply concurrency.wp_struct_make_sessionOptions.
-    apply _.
-  wp_pure.
-  Existing Instance concurrency.wp_struct_make_sessionOptions.
-  Search (struct.make concurrency.sessionOptions). *)
+  (* only consider nil options *)
+  wp_apply wp_slice_for_range.
+  { instantiate (1:=[] : list concurrency.SessionOption.t ). instantiate (1:=DfracOwn 1).
+    Unshelve. all: try apply _.
+    iApply own_slice_nil. }
+  simpl.
+  iIntros "_".
+
+  wp_pures.
+
 Admitted.
 
 End proof.

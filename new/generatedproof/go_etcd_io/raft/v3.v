@@ -22,6 +22,20 @@ Require Export New.golang.theory.
 
 Module raft.
 Axiom falso : False.
+
+Module Storage.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End Storage.
+
+Module Logger.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End Logger.
 Module unstable.
 Section def.
 Context `{ffi_syntax}.
@@ -31,7 +45,7 @@ Record t := mk {
   offset' : w64;
   snapshotInProgress' : bool;
   offsetInProgress' : w64;
-  logger' : interface.t;
+  logger' : Logger.t;
 }.
 End def.
 End unstable.
@@ -81,18 +95,25 @@ Global Instance wp_struct_make_unstable `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(unstable.mk snapshot' entries' offset' snapshotInProgress' offsetInProgress' logger').
 Admitted.
 
+
+Module entryEncodingSize.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End entryEncodingSize.
 Module raftLog.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  storage' : interface.t;
+  storage' : Storage.t;
   unstable' : unstable.t;
   committed' : w64;
   applying' : w64;
   applied' : w64;
-  logger' : interface.t;
-  maxApplyingEntsSize' : w64;
-  applyingEntsSize' : w64;
+  logger' : Logger.t;
+  maxApplyingEntsSize' : entryEncodingSize.t;
+  applyingEntsSize' : entryEncodingSize.t;
   applyingEntsPaused' : bool;
 }.
 End def.
@@ -155,13 +176,6 @@ Global Instance wp_struct_make_raftLog `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(raftLog.mk storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused').
 Admitted.
 
-
-Module Logger.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Logger.
 Module DefaultLogger.
 Section def.
 Context `{ffi_syntax}.
@@ -208,12 +222,19 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End SnapshotStatus.
+
+Module StateType.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End StateType.
 Module SoftState.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   Lead' : w64;
-  RaftState' : w64;
+  RaftState' : StateType.t;
 }.
 End def.
 End SoftState.
@@ -534,12 +555,12 @@ Definition t := go_string.
 End def.
 End CampaignType.
 
-Module StateType.
+Module TraceLogger.
 Section def.
 Context `{ffi_syntax}.
-Definition t := w64.
+Definition t := interface.t.
 End def.
-End StateType.
+End TraceLogger.
 Module Config.
 Section def.
 Context `{ffi_syntax}.
@@ -547,7 +568,7 @@ Record t := mk {
   ID' : w64;
   ElectionTick' : w64;
   HeartbeatTick' : w64;
-  Storage' : interface.t;
+  Storage' : Storage.t;
   Applied' : w64;
   AsyncStorageWrites' : bool;
   MaxSizePerMsg' : w64;
@@ -557,12 +578,12 @@ Record t := mk {
   MaxInflightBytes' : w64;
   CheckQuorum' : bool;
   PreVote' : bool;
-  ReadOnlyOption' : w64;
-  Logger' : interface.t;
+  ReadOnlyOption' : ReadOnlyOption.t;
+  Logger' : Logger.t;
   DisableProposalForwarding' : bool;
   DisableConfChangeValidation' : bool;
   StepDownOnRemoval' : bool;
-  TraceLogger' : interface.t;
+  TraceLogger' : TraceLogger.t;
 }.
 End def.
 End Config.
@@ -664,6 +685,20 @@ Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(Config.mk ID' ElectionTick' HeartbeatTick' Storage' Applied' AsyncStorageWrites' MaxSizePerMsg' MaxCommittedSizePerReady' MaxUncommittedEntriesSize' MaxInflightMsgs' MaxInflightBytes' CheckQuorum' PreVote' ReadOnlyOption' Logger' DisableProposalForwarding' DisableConfChangeValidation' StepDownOnRemoval' TraceLogger').
 Admitted.
 
+
+Module entryPayloadSize.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End entryPayloadSize.
+
+Module stepFunc.
+Section def.
+Context `{ffi_syntax}.
+Definition t := func.t.
+End def.
+End stepFunc.
 Module raft.
 Section def.
 Context `{ffi_syntax}.
@@ -673,10 +708,10 @@ Record t := mk {
   Vote' : w64;
   readStates' : slice.t;
   raftLog' : loc;
-  maxMsgSize' : w64;
-  maxUncommittedSize' : w64;
+  maxMsgSize' : entryEncodingSize.t;
+  maxUncommittedSize' : entryPayloadSize.t;
   trk' : tracker.ProgressTracker.t;
-  state' : w64;
+  state' : StateType.t;
   isLearner' : bool;
   msgs' : slice.t;
   msgsAfterAppend' : slice.t;
@@ -684,7 +719,7 @@ Record t := mk {
   leadTransferee' : w64;
   pendingConfIndex' : w64;
   disableConfChangeValidation' : bool;
-  uncommittedSize' : w64;
+  uncommittedSize' : entryPayloadSize.t;
   readOnly' : loc;
   electionElapsed' : w64;
   heartbeatElapsed' : w64;
@@ -696,10 +731,10 @@ Record t := mk {
   disableProposalForwarding' : bool;
   stepDownOnRemoval' : bool;
   tick' : func.t;
-  step' : func.t;
-  logger' : interface.t;
+  step' : stepFunc.t;
+  logger' : Logger.t;
   pendingReadIndexMessages' : slice.t;
-  traceLogger' : interface.t;
+  traceLogger' : TraceLogger.t;
 }.
 End def.
 End raft.
@@ -853,13 +888,6 @@ Global Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
     #(raft.mk id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger').
 Admitted.
 
-
-Module stepFunc.
-Section def.
-Context `{ffi_syntax}.
-Definition t := func.t.
-End def.
-End stepFunc.
 Module RawNode.
 Section def.
 Context `{ffi_syntax}.
@@ -1008,7 +1036,7 @@ Module readOnly.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  option' : w64;
+  option' : ReadOnlyOption.t;
   pendingReadIndex' : loc;
   readIndexQueue' : slice.t;
 }.
@@ -1048,13 +1076,6 @@ Global Instance wp_struct_make_readOnly `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(readOnly.mk option' pendingReadIndex' readIndexQueue').
 Admitted.
 
-
-Module TraceLogger.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End TraceLogger.
 Module TracingEvent.
 Section def.
 Context `{ffi_syntax}.
@@ -1179,13 +1200,6 @@ Global Instance wp_struct_make_Status `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(Status.mk BasicStatus' Config' Progress').
 Admitted.
 
-
-Module Storage.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Storage.
 Module inMemStorageCallStats.
 Section def.
 Context `{ffi_syntax}.
@@ -1390,20 +1404,6 @@ Definition t := func.t.
 End def.
 End EntryFormatter.
 
-Module entryEncodingSize.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End entryEncodingSize.
-
-Module entryPayloadSize.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End entryPayloadSize.
-
 Section names.
 
 Class GlobalAddrs :=
@@ -1459,19 +1459,19 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HdefaultLogger" ∷ defaultLogger ↦ (default_val loc) ∗
   "HdiscardLogger" ∷ discardLogger ↦ (default_val loc) ∗
   "HraftLoggerMu" ∷ raftLoggerMu ↦ (default_val sync.Mutex.t) ∗
-  "HraftLogger" ∷ raftLogger ↦ (default_val interface.t) ∗
+  "HraftLogger" ∷ raftLogger ↦ (default_val Logger.t) ∗
   "HemptyState" ∷ emptyState ↦ (default_val raftpb.HardState.t) ∗
-  "HErrStopped" ∷ ErrStopped ↦ (default_val interface.t) ∗
-  "HErrProposalDropped" ∷ ErrProposalDropped ↦ (default_val interface.t) ∗
+  "HErrStopped" ∷ ErrStopped ↦ (default_val error.t) ∗
+  "HErrProposalDropped" ∷ ErrProposalDropped ↦ (default_val error.t) ∗
   "HglobalRand" ∷ globalRand ↦ (default_val loc) ∗
   "Hstmap" ∷ stmap ↦ (default_val (vec go_string 4)) ∗
-  "HerrBreak" ∷ errBreak ↦ (default_val interface.t) ∗
-  "HErrStepLocalMsg" ∷ ErrStepLocalMsg ↦ (default_val interface.t) ∗
-  "HErrStepPeerNotFound" ∷ ErrStepPeerNotFound ↦ (default_val interface.t) ∗
-  "HErrCompacted" ∷ ErrCompacted ↦ (default_val interface.t) ∗
-  "HErrSnapOutOfDate" ∷ ErrSnapOutOfDate ↦ (default_val interface.t) ∗
-  "HErrUnavailable" ∷ ErrUnavailable ↦ (default_val interface.t) ∗
-  "HErrSnapshotTemporarilyUnavailable" ∷ ErrSnapshotTemporarilyUnavailable ↦ (default_val interface.t) ∗
+  "HerrBreak" ∷ errBreak ↦ (default_val error.t) ∗
+  "HErrStepLocalMsg" ∷ ErrStepLocalMsg ↦ (default_val error.t) ∗
+  "HErrStepPeerNotFound" ∷ ErrStepPeerNotFound ↦ (default_val error.t) ∗
+  "HErrCompacted" ∷ ErrCompacted ↦ (default_val error.t) ∗
+  "HErrSnapOutOfDate" ∷ ErrSnapOutOfDate ↦ (default_val error.t) ∗
+  "HErrUnavailable" ∷ ErrUnavailable ↦ (default_val error.t) ∗
+  "HErrSnapshotTemporarilyUnavailable" ∷ ErrSnapshotTemporarilyUnavailable ↦ (default_val error.t) ∗
   "HisLocalMsg" ∷ isLocalMsg ↦ (default_val (vec bool 23)) ∗
   "HisResponseMsg" ∷ isResponseMsg ↦ (default_val (vec bool 23)).
 

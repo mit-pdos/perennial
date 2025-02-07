@@ -5,18 +5,13 @@ Require Export New.golang.theory.
 
 Module context.
 Axiom falso : False.
+
 Module Context.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Definition t := interface.t.
 End def.
 End Context.
-
-Global Instance into_val_Context `{ffi_syntax} : IntoVal Context.t.
-Admitted.
-
-Global Instance into_val_typed_Context `{ffi_syntax} : IntoValTyped Context.t context.Context.
-Admitted.
 
 Module CancelFunc.
 Section def.

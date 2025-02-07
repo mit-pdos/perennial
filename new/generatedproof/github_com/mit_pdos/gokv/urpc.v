@@ -94,7 +94,7 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   mu' : loc;
-  conn' : loc;
+  conn' : grove_ffi.Connection.t;
   seq' : w64;
   pending' : loc;
 }.

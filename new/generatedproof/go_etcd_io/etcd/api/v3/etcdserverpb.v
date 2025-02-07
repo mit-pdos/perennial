@@ -147,14 +147,21 @@ Global Instance wp_struct_make_RangeResponse `{ffi_semantics} `{!ffi_interp ffi}
     #(RangeResponse.mk Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
+
+Module isCompare_TargetUnion.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End isCompare_TargetUnion.
 Module Compare.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Result' : w32;
-  Target' : w32;
+  Result' : Compare_CompareResult.t;
+  Target' : Compare_CompareTarget.t;
   Key' : slice.t;
-  TargetUnion' : interface.t;
+  TargetUnion' : isCompare_TargetUnion.t;
   RangeEnd' : slice.t;
   XXX_NoUnkeyedLiteral' : unit;
   XXX_unrecognized' : slice.t;
@@ -216,13 +223,6 @@ Global Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(Compare.mk Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
-
-Module isCompare_TargetUnion.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End isCompare_TargetUnion.
 Module TxnResponse.
 Section def.
 Context `{ffi_syntax}.

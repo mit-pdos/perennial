@@ -102,7 +102,7 @@ Module applyAsFollowerReply.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  err' : w64;
+  err' : Error.t;
 }.
 End def.
 End applyAsFollowerReply.
@@ -170,7 +170,7 @@ Module enterNewEpochReply.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  err' : w64;
+  err' : Error.t;
   acceptedEpoch' : w64;
   nextIndex' : w64;
   state' : slice.t;
@@ -219,7 +219,7 @@ Module applyReply.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  err' : w64;
+  err' : Error.t;
   ret' : slice.t;
 }.
 End def.

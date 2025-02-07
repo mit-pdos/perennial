@@ -1,7 +1,4 @@
-axiomatize = [
-  "Context",
-]
-
 translate = [
+  "Context",
   "CancelFunc",
 ]

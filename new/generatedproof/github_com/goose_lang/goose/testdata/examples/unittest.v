@@ -55,7 +55,7 @@ Module diskWrapper.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  d' : interface.t;
+  d' : disk.Disk.t;
 }.
 End def.
 End diskWrapper.
@@ -334,7 +334,7 @@ Module FooerUser.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  f' : interface.t;
+  f' : Fooer.t;
 }.
 End def.
 End FooerUser.
@@ -408,7 +408,7 @@ End my_u32.
 Module also_u32.
 Section def.
 Context `{ffi_syntax}.
-Definition t := w32.
+Definition t := my_u32.t.
 End def.
 End also_u32.
 Module allTheLiterals.
@@ -1059,7 +1059,7 @@ End UseTypeAbbrev.
 Module UseNamedType.
 Section def.
 Context `{ffi_syntax}.
-Definition t := w64.
+Definition t := Timestamp.t.
 End def.
 End UseNamedType.
 

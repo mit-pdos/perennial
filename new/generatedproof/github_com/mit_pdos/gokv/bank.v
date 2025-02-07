@@ -14,7 +14,7 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   lck' : loc;
-  kvck' : interface.t;
+  kvck' : kv.Kv.t;
   accts' : slice.t;
 }.
 End def.

@@ -625,7 +625,7 @@ Module Log.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  d' : interface.t;
+  d' : disk.Disk.t;
   l' : loc;
   cache' : loc;
   length' : loc;

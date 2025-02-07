@@ -17,7 +17,7 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   Key' : go_string;
-  Type' : w8;
+  Type' : FieldType.t;
   Integer' : w64;
   String' : go_string;
   Interface' : interface.t;
