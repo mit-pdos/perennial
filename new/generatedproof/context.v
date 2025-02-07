@@ -17,18 +17,13 @@ Admitted.
 
 Global Instance into_val_typed_Context `{ffi_syntax} : IntoValTyped Context.t context.Context.
 Admitted.
+
 Module CancelFunc.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Definition t := func.t.
 End def.
 End CancelFunc.
-
-Global Instance into_val_CancelFunc `{ffi_syntax} : IntoVal CancelFunc.t.
-Admitted.
-
-Global Instance into_val_typed_CancelFunc `{ffi_syntax} : IntoValTyped CancelFunc.t context.CancelFunc.
-Admitted.
 
 Section names.
 

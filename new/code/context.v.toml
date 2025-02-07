@@ -1,4 +1,7 @@
 axiomatize = [
   "Context",
+]
+
+translate = [
   "CancelFunc",
 ]

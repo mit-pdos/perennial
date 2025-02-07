@@ -12,7 +12,7 @@ Axiom Canceled'init : val.
 
 Axiom DeadlineExceeded'init : val.
 
-Axiom CancelFunc : go_type.
+Definition CancelFunc : go_type := funcT.
 
 Axiom closedchan'init : val.
 
@@ -22,7 +22,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("CancelFunc"%go, []); ("CancelFunc'ptr"%go, [])].
 
 Axiom _'init : val.
 
