@@ -1,22 +1,21 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import struct typing.
+From New.golang.defn Require Import struct typing globals.
 
 Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition get (f : go_string) : val :=
-  λ: "v",
-    let: "v" := (match: "v" with InjL "v" => "v" | InjR <> => #() end) in
-    let: (("typeid", "val"), "mset") := "v" in
-    (match: (struct.assocl_lookup #f "mset") with
-       InjL <> => #()
-     | InjR "m" => "m"
-     end) "val"
+Definition get_def : val :=
+  λ: "method_name" "v",
+    let: ("pkg_type_name", "val") := globals.unwrap "v" in
+    let: ("pkg_name", "type_name") := globals.unwrap "pkg_type_name" in
+    method_call "pkg_name" "type_name" "method_name" "val"
 .
+Program Definition get := unseal (_:seal (@get_def)). Obligation 1. by eexists. Qed.
+Definition get_unseal : get = _ := seal_eq _.
 
-Local Definition make_def (mset : list (go_string*val)) : val :=
-  λ: "v", InjL (#"NO TYPE IDS YET", "v", (struct.fields_val mset)).
+Local Definition make_def : val :=
+  λ: "pkg_name" "type_name" "v", InjR (InjR ("pkg_name", "type_name"), "v").
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 
@@ -29,14 +28,3 @@ Definition equals : val :=
 
 End goose_lang.
 End interface.
-
-(* method sets for primitive types are empty *)
-Section mset.
-Context `{ffi_syntax}.
-Definition uint64__mset : list (go_string * val) := [].
-Definition int__mset : list (go_string * val) := [].
-Definition bool__mset : list (go_string * val) := [].
-Definition string__mset : list (go_string * val) := [].
-Definition slice__mset : list (go_string * val) := [].
-Definition slice__mset_ptr : list (go_string * val) := [].
-End mset.

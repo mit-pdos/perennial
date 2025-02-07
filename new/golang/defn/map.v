@@ -1,4 +1,4 @@
-From New.golang.defn Require Export loop typing.
+From New.golang.defn Require Export loop typing list.
 
 Module map.
 (* FIXME: seal these functions *)
@@ -67,6 +67,13 @@ Definition len : val :=
 
 Definition make (kt vt : go_type) : val :=
   λ: <>, Alloc (InjLV (zero_val vt)).
+
+Definition literal (vt : go_type) : val :=
+  rec: "literal" "alist" :=
+    list.Match "alist"
+      (λ: <>, InjLV (zero_val vt))
+      (λ: "kv" "alist", InjR ("kv", ("literal" "alist")))
+.
 
 End goose_lang.
 End map.

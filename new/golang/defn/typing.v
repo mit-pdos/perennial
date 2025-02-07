@@ -1,6 +1,9 @@
 From Perennial.goose_lang Require Export lang notation.
 
 Definition go_string := byte_string.
+Delimit Scope byte_string_scope with go.
+Bind Scope byte_string_scope with go_string.
+Delimit Scope byte_char_scope with go_byte.
 
 Inductive go_type :=
 (* Boolean *)
@@ -47,8 +50,6 @@ Program Definition to_val := unseal (_:seal (@to_val_def)). Obligation 1. by eex
 Definition to_val_unseal : to_val = _ := seal_eq _.
 Arguments to_val {_ _ _} v.
 (* Disable Notation "# l". *)
-Delimit Scope byte_string_scope with go.
-Bind Scope byte_string_scope with go_string.
 Global Notation "# x" := (to_val x%go).
 Global Notation "#" := to_val.
 
@@ -103,33 +104,14 @@ End slice.
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.
-  Record t := mk { v: val; mset: list (go_string * val) }.
+  Record t := mk { v: val; opt_pkg_type_name : option (go_string*go_string) }.
 
-  (* FIXME: use the typeid to distinguish nil interface value from nil pointer
-     used as a non-nil interface value. *)
-  Definition nil := mk #null [].
+  Definition nil := mk #null None.
 End goose_lang.
 End interface.
 
-Fixpoint assocl_lookup {A} (f : go_string) (field_vals: list (go_string * A)) : option A :=
-  match field_vals with
-  | [] => None
-  | (f', v)::fs => if ByteString.eqb f' f then Some v else assocl_lookup f fs
-  end.
-
 Module struct.
 Definition descriptor := list (go_string * go_type).
-Section goose_lang.
-  Context `{ffi_syntax}.
-
-  Fixpoint fields_val_def (m : list (go_string * val)) : val :=
-    match m with
-    | [] => InjLV #()
-    | (f, v) :: tl => InjRV ((#f, v), fields_val_def tl)
-    end.
-  Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
-  Definition fields_val_unseal : fields_val = _ := seal_eq _.
-End goose_lang.
 End struct.
 
 Section instances.
@@ -150,7 +132,13 @@ Proof. solve_decision. Qed.
 Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
   {|
     to_val_def (i: interface.t) :=
-      InjLV (#"NO TYPE IDS YET", i.(interface.v), (struct.fields_val i.(interface.mset)))%V
+      InjRV (
+          match i.(interface.opt_pkg_type_name) with
+          | None => NONEV
+          | Some pkg_type_name =>
+              SOMEV (#pkg_type_name.1, #pkg_type_name.2)
+          end,
+            i.(interface.v))%V
   |}.
 
 End instances.
@@ -169,6 +157,7 @@ Section val_types.
 
   Definition byteT := uint8T.
   Definition intT := int64T.
+  Definition uintT := uint64T.
 
   Context `{ffi_syntax}.
   Fixpoint zero_val_def (t : go_type) : val :=

@@ -1,0 +1,55 @@
+translate = [
+  "HardState",
+  "Entry",
+  "ConfState",
+  "ConfChangeTransition",
+  "ConfChange",
+  "ConfChangeV2",
+  "ConfChangeType",
+  "ConfChangeAddNode",
+  "Snapshot",
+  "EntryType",
+  "SnapshotMetadata",
+
+  "MessageType",
+  "MsgHup",
+  "MsgBeat",
+  "MsgProp",
+  "MsgApp",
+  "MsgAppResp",
+  "MsgVote",
+  "MsgVoteResp",
+  "MsgSnap",
+  "MsgHeartbeat",
+  "MsgHeartbeatResp",
+  "MsgUnreachable",
+  "MsgSnapStatus",
+  "MsgCheckQuorum",
+  "MsgTransferLeader",
+  "MsgTimeoutNow",
+  "MsgReadIndex",
+  "MsgReadIndexResp",
+  "MsgPreVote",
+  "MsgPreVoteResp",
+  "MsgStorageAppend",
+  "MsgStorageAppendResp",
+  "MsgStorageApply",
+  "MsgStorageApplyResp",
+  "MsgForgetLeader",
+
+  "ConfChangeI",
+
+  "EntryNormal",
+  "EntryConfChangeV2",
+  "EntryConfChange",
+
+  "ConfChangeAddNode",
+  "ConfChangeRemoveNode",
+  "ConfChangeUpdateNode",
+  "ConfChangeAddLearnerNode",
+]
+
+axiomatize = [
+  # FIXME: translate this by allowing for recursion over sliceT
+  "Message",
+]

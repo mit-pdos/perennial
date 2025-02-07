@@ -48,21 +48,13 @@ Definition field_get (t : go_type) f : val :=
       | _ => (#())
   end.
 
-Definition assocl_lookup : val :=
-  rec: "assocl_lookup" "f" "fvs" :=
-    list.Match "fvs"
-              (λ: <>, InjLV #())
-              (λ: "fv" "fvs",
-                 let: ("f'", "v") := "fv" in
-                 if: "f" = "f'" then InjR "v" else "assocl_lookup" "f" "fvs").
-
 Definition make_def (t : go_type) : val :=
   match t with
   | structT d =>
       (fix make_def_struct (fs : struct.descriptor) : val :=
          match fs with
          | [] => (λ: "fvs", Val #())%V
-         | (f,ft)::fs => (λ: "fvs", ((match: (assocl_lookup #f "fvs") with
+         | (f,ft)::fs => (λ: "fvs", ((match: (alist_lookup #f "fvs") with
                                      InjL <> => (Val (zero_val ft))
                                      | InjR "x" => "x" end),
                                             (make_def_struct fs) "fvs"))%V
@@ -75,6 +67,6 @@ Definition make_unseal : make = _ := seal_eq _.
 End goose_lang.
 End struct.
 
-Notation "[{ }]" := (struct.fields_val []) (only parsing) : expr_scope.
+Notation "[{ }]" := (alist_val []) (only parsing) : expr_scope.
 Notation "[{ x }]" := (list.Cons x [{ }]%E) : expr_scope.
 Notation "[{ x ; y ; .. ; z }]" := (list.Cons x (list.Cons y .. (list.Cons z [{ }]%E) ..)) : expr_scope.

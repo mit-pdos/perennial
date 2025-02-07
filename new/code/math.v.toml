@@ -1,0 +1,4 @@
+translate = [
+  "MaxUint64",
+  "MaxInt64",
+]

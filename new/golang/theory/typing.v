@@ -6,6 +6,16 @@ Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
+Section alist.
+
+Fixpoint alist_lookup_f {A} (f : go_string) (l : list (go_string * A)) : option A :=
+  match l with
+  | [] => None
+  | (f', v)::l => if ByteString.eqb f' f then Some v else alist_lookup_f f l
+  end.
+
+End alist.
+
 (** * Typed data representations for struct and slice *)
 
 Module struct.
@@ -17,7 +27,7 @@ Section goose_lang.
     | structT d => (fix val_struct (fs : list (go_string*go_type)) :=
                      match fs with
                      | [] => (#())
-                     | (f,ft)::fs => (default (zero_val ft) (assocl_lookup f field_vals), val_struct fs)%V
+                     | (f,ft)::fs => (default (zero_val ft) (alist_lookup_f f field_vals), val_struct fs)%V
                      end) d
     | _ => LitV LitPoison
     end.
@@ -90,7 +100,7 @@ destruct a. apply Forall_cons. split.
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
-      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup f fvs)) t)
+      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (alist_lookup_f f fvs)) t)
     : has_go_type (struct.val_aux (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func (f : func.t) : has_go_type #f funcT
@@ -380,7 +390,17 @@ Next Obligation.
   rewrite -default_val_eq_zero_val to_val_unseal //.
 Qed.
 Final Obligation.
-Admitted.
+rewrite to_val_unseal.
+intros. intros ?? Heq.
+simpl in Heq.
+induction x.
+{ rewrite (VectorSpec.nil_spec y) //. }
+destruct y using vec_S_inv.
+simpl in *.
+injection Heq as Heq1 Heq.
+apply to_val_inj in Heq1. subst.
+f_equal. by apply IHx.
+Qed.
 
 Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
 {| default_val := func.nil |}.
@@ -390,32 +410,36 @@ Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
 Qed.
 Final Obligation. solve_decision. Qed.
 
-Lemma struct_fields_val_inj a b :
-  struct.fields_val a = struct.fields_val b →
-  a = b.
-Proof.
-  rewrite struct.fields_val_unseal.
-  dependent induction b generalizing a.
-  { by destruct a as [|[]]. }
-  destruct a0.
-  destruct a as [|[]]; first done.
-  rewrite /= => [=].
-  intros. subst.
-  repeat f_equal.
-  - by apply to_val_inj.
-  - by apply IHb.
-Qed.
-
 Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
 {| default_val := interface.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation. rewrite to_val_unseal => [[??] [??]] /= [??].
-                 f_equal; try done.
-                 apply struct_fields_val_inj. done.
+Next Obligation.
+  rewrite to_val_unseal =>[[??] [??]] [Heq ?]. subst.
+  do 2 destruct (_ : option (go_string * go_string)).
+  {
+    f_equal. destruct p, p0. simpl in *.
+    injection Heq as Heq1 Heq2.
+    apply to_val_inj in Heq1, Heq2.
+    intuition. subst. done.
+  }
+  all: first [discriminate | reflexivity].
 Qed.
 Final Obligation.
   solve_decision.
+Qed.
+
+Program Global Instance into_val_typed_unit : IntoValTyped unit (structT []) :=
+{| default_val := tt |}.
+Next Obligation.
+  intros [].
+  replace (#()) with (struct.val_aux (structT []) []).
+  2:{ rewrite struct.val_aux_unseal //. }
+  by constructor.
+Qed.
+Next Obligation. rewrite zero_val_eq /= struct.val_aux_unseal //. Qed.
+Final Obligation.
+  intros ???. destruct x, y. done.
 Qed.
 
 End into_val_instances.

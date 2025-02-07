@@ -33,6 +33,26 @@ Section defn.
 End defn.
 End list.
 
+Section defn.
+Context `{ffi_syntax}.
+Definition alist_lookup : val :=
+  rec: "alist_lookup" "f" "fvs" :=
+    list.Match "fvs"
+              (λ: <>, InjLV #())
+              (λ: "fv" "fvs",
+                 let: ("f'", "v") := "fv" in
+                 if: "f" = "f'" then SOME "v" else "alist_lookup" "f" "fvs").
+
+Fixpoint alist_val_def (m : list (go_string * val)) : val :=
+  match m with
+  | [] => InjLV #()
+  | (f, v) :: tl => InjRV ((#f, v), alist_val_def tl)
+  end.
+Program Definition alist_val := unseal (_:seal (@alist_val_def)). Obligation 1. by eexists. Qed.
+Definition alist_val_unseal : alist_val = _ := seal_eq _.
+
+End defn.
+
 Notation "[ ]" := (list.Nil) (only parsing) : expr_scope.
 Notation "[ x ]" := (list.Cons x []%E) : expr_scope.
 Notation "[ x ; y ; .. ; z ]" := (list.Cons x (list.Cons y .. (list.Cons z []%E) ..)) : expr_scope.

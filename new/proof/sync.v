@@ -4,10 +4,11 @@ From iris.algebra Require Import excl.
 From Perennial.base_logic.lib Require Import invariants.
 From Perennial.program_logic Require Import weakestpre.
 
-From New.code Require Export sync.
+Require Export New.code.sync.
 From New.proof Require Import proof_prelude.
-From New.proof.structs Require Import sync.
 From Perennial.algebra Require Import map.
+Require Export New.generatedproof.sync.
+
 
 Set Default Proof Using "Type".
 
@@ -26,19 +27,25 @@ Context `{!ffi_interp ffi}.
 
 Section proof.
 Context `{!heapGS Σ} `{!syncG Σ}.
+Context `{!goGlobalsGS Σ}.
+Context `{sync.GlobalAddrs}.
+
+Definition is_initialized : iProp Σ :=
+  "#?" ∷ sync.is_defined.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  inv nroot (
+  "#Hi" ∷ is_initialized ∗
+  "#Hinv" ∷ inv nroot (
         ∃ b : bool,
-          (m ↦s[ Mutex :: "state" ]{# 1/4} b) ∗
+          (m ↦s[ sync.Mutex :: "state" ]{# 1/4} b) ∗
                   if b then True else
-                    m ↦s[Mutex :: "state"]{# 3/4} b ∗ R
+                    m ↦s[sync.Mutex :: "state"]{# 3/4} b ∗ R
         ).
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := m ↦s[Mutex :: "state"]{# 3/4} true.
+Definition own_Mutex (m: loc) : iProp Σ := m ↦s[sync.Mutex :: "state"]{# 3/4} true.
 
 Lemma own_Mutex_exclusive (m : loc) : own_Mutex m -∗ own_Mutex m -∗ False.
 Proof.
@@ -58,15 +65,16 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Theorem init_Mutex R E m : m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : is_initialized -∗ m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
-  iIntros "Hl HR".
+  iIntros "#Hi Hl HR".
   simpl.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   rewrite /struct_fields /=.
   iDestruct "Hl" as "[Hl _]".
   unshelve iSpecialize ("Hl" $! _ _ _ _ _ _ _); try tc_solve.
   simpl. iNamed "Hl".
+  iFrame "#".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
   { iIntros "!>". iExists false. iFrame.
@@ -77,12 +85,14 @@ Qed.
 
 Lemma wp_Mutex__Lock m R :
   {{{ is_Mutex m R }}}
-    Mutex__Lock #m #()
+    method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #m #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
-  iIntros (Φ) "#Hinv HΦ".
+  iIntros (Φ) "H HΦ".
+  iNamed "H".
   iLöb as "IH".
-  wp_call.
+  unfold is_initialized.
+  wp_method_call. wp_call.
   wp_pures.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as ([]) "[Hl HR]".
@@ -114,17 +124,18 @@ Qed.
 
 (* this form is useful for defer statements *)
 Lemma wp_Mutex__Unlock' m :
-  {{{ True }}}
-    Mutex__Unlock #m
+  {{{ is_initialized }}}
+    method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #m
   {{{ (f : func.t), RET #f;
       ∀ R,
     {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} #f #() {{{ RET #(); True }}}
   }}}.
 Proof.
-  iIntros (Ψ) "_ HΨ".
-  wp_call.
+  iIntros (Ψ) "#Hdef HΨ".
+  wp_method_call. wp_call.
   iApply "HΨ". iIntros (R).
-  iIntros (Φ) "!# (#Hinv & Hlocked & HR) HΦ".
+  iIntros (Φ) "!# (#His & Hlocked & HR) HΦ".
+  iNamed "His".
   wp_pures.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as (b) "[>Hl _]".
@@ -145,27 +156,30 @@ Proof.
 Qed.
 
 Lemma wp_Mutex__Unlock m R :
-  {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} Mutex__Unlock #m #() {{{ RET #(); True }}}.
+  {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
+    method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #m #()
+  {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
-  wp_bind (Mutex__Unlock _).
-  wp_apply wp_Mutex__Unlock'. iIntros (?) "Hspec".
-  wp_apply ("Hspec" with "[$Hinv $Hlocked $HR]").
+  wp_bind (method_call _ _ _ #m)%E.
+  iNamed "Hinv".
+  wp_apply (wp_Mutex__Unlock' with "[$]"). iIntros (?) "Hspec".
+  wp_apply ("Hspec" with "[$Hinv $Hlocked $HR $Hi]").
   by iApply "HΦ".
 Qed.
 
 Definition is_Locker (i : interface.t) (P : iProp Σ) : iProp Σ :=
-  "#H_Lock" ∷ ({{{ True }}} (interface.get "Lock" #i) #() {{{ RET #(); P }}}) ∗
-  "#H_Unlock" ∷ ({{{ P }}} (interface.get "Unlock" #i) #() {{{ RET #(); True }}})
+  "#H_Lock" ∷ ({{{ True }}} (interface.get #"Lock" #i) #() {{{ RET #(); P }}}) ∗
+  "#H_Unlock" ∷ ({{{ P }}} (interface.get #"Unlock" #i) #() {{{ RET #(); True }}})
 .
 
 Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
 Lemma Mutex_is_Locker (m : loc) R :
   is_Mutex m R -∗
-  is_Locker (interface.mk #m Mutex__mset_ptr) (own_Mutex m ∗ R).
+  is_Locker (interface.mk #m (Some (sync.pkg_name', "Mutex'ptr"%go))) (own_Mutex m ∗ R).
 Proof.
-  iIntros "#?".
+  iIntros "#[? ?]".
   iSplitL.
   - iIntros (?) "!# _ HΦ".
     wp_pures.
@@ -179,50 +193,59 @@ Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
-  c ↦□ m.
+  "#Hi" ∷ is_initialized ∗
+  "#Hc" ∷ c ↦s[sync.Cond :: "L"]□ m.
 
 Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
 Theorem wp_NewCond (m : interface.t) :
-  {{{ True }}}
-    NewCond #m
+  {{{ is_initialized }}}
+    func_call #sync.pkg_name' #"NewCond" #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
-  iIntros (Φ) "Hl HΦ".
-  wp_call. wp_apply wp_fupd.
+  iIntros (Φ) "#Hdef HΦ".
+  wp_func_call. wp_call. wp_apply wp_fupd.
   wp_alloc c as "Hc".
   wp_pures.
-  iApply "HΦ". iMod (typed_pointsto_persist with "Hc") as "$".
+  iApply "HΦ".
+
+  iDestruct (struct_fields_split with "Hc") as "Hl".
+  rewrite /struct_fields /=.
+  repeat (iDestruct "Hl" as "[H1 Hl]";
+          unshelve iSpecialize ("H1" $! _ _ _ _ _ _ _); try tc_solve;
+          iNamed "H1").
+  simpl.
+  iMod (typed_pointsto_persist with "HL") as "$".
   done.
 Qed.
 
 Theorem wp_Cond__Signal c lk :
-  {{{ is_Cond c lk }}}
-    Cond__Signal #c #()
+  {{{ is_initialized ∗ is_Cond c lk }}}
+    method_call #sync.pkg_name' #"Cond'ptr" #"Signal" #c #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "Hc HΦ".
-  wp_call. iApply ("HΦ" with "[//]").
+  iIntros (Φ) "[#Hdef Hc] HΦ".
+  wp_method_call. wp_call. iApply ("HΦ" with "[//]").
 Qed.
 
 Theorem wp_Cond__Broadcast c lk :
   {{{ is_Cond c lk }}}
-    Cond__Broadcast #c #()
+    method_call #sync.pkg_name' #"Cond'ptr" #"Broadcast" #c #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "Hc HΦ".
-  wp_call. iApply ("HΦ" with "[//]").
+  iIntros (Φ) "[#Hdef Hc] HΦ".
+  wp_method_call. wp_call. iApply ("HΦ" with "[//]").
 Qed.
 
 Theorem wp_Cond__Wait c m R :
   {{{ is_Cond c m ∗ is_Locker m R ∗ R }}}
-    Cond__Wait #c #()
+    method_call #sync.pkg_name' #"Cond'ptr" #"Wait" #c #()
   {{{ RET #(); R }}}.
 Proof.
-  iIntros (Φ) "(#Hcond&#Hlock&HR) HΦ".
-  unfold Cond__Wait.
-  wp_pures.
-  iNamed "Hlock". iNamed "Hcond".
+  iIntros (Φ) "(#Hcond & #Hlock & HR) HΦ".
+  iNamed "Hcond".
+  wp_method_call. wp_call.
+  iNamed "Hlock".
   wp_load.
   wp_apply ("H_Unlock" with "[$]").
   wp_pures.
@@ -284,9 +307,10 @@ Proof. iIntros "[_ $]". Qed.
 (* FIXME: zero_val for WaitGroup *)
 
 Lemma free_WaitGroup_alloc P wg E :
-  own_free_WaitGroup wg ={E}=∗ (∃ γ, own_WaitGroup wg γ 0 P ).
+  is_initialized -∗ own_free_WaitGroup wg ={E}=∗ (∃ γ, own_WaitGroup wg γ 0 P ).
 Proof.
-  iIntros "Hwg".
+  clear H.
+  iIntros "#Hi Hwg".
   iDestruct "Hwg" as (??) "(%Hwg & His_Mutex & Hv)".
   iMod (ghost_map_alloc_fin ()) as (γtok) "Htokens".
   iMod (ghost_var_alloc (U64 0)) as (γtotal) "[Htotal Ht2]".
@@ -296,7 +320,7 @@ Proof.
   iSplitL ""; first done.
   simpl.
 
-  iMod (init_Mutex with "His_Mutex [-]") as "$"; last done.
+  iMod (init_Mutex with "[$] His_Mutex [-]") as "$"; last done.
   iNext.
   iExists ∅, (U64 0%Z).
   rewrite size_empty.
@@ -328,21 +352,21 @@ Qed.
 Lemma wp_WaitGroup__Add wg γ n P :
 uint.nat (word.add n 1) > uint.nat n →
   {{{ own_WaitGroup wg γ n P }}}
-    WaitGroup__Add wg #(W64 1)
+    method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" wg #(W64 1)
   {{{ RET #(); own_WaitGroup wg γ (word.add n 1) P ∗ own_WaitGroup_token γ n }}}.
 Proof.
 Admitted.
 
 Lemma wp_WaitGroup__Done wg γ P n :
   {{{ is_WaitGroup wg γ P ∗ own_WaitGroup_token γ n ∗ □ P n }}}
-    WaitGroup__Done wg
+    method_call #sync.pkg_name' #"WaitGroup'ptr" #"Done" wg
   {{{ RET #(); True }}}.
 Proof.
 Admitted.
 
 Lemma wp_WaitGroup__Wait wg γ P n :
   {{{ own_WaitGroup wg γ n P }}}
-    WaitGroup__Wait wg
+    method_call #sync.pkg_name' #"WaitGroup'ptr" #"Wait" wg
   {{{ RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat i ≥ uint.nat n ⌝ ∨ (P i) }}}.
 Proof.
 Admitted.

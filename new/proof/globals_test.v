@@ -1,139 +1,99 @@
 From New.proof Require Import grove_prelude.
-From New.code.github_com.mit_pdos.gokv Require globals_test.
+From New.code.github_com.mit_pdos.gokv Require Import globals_test.
+Require Import New.generatedproof.github_com.mit_pdos.gokv.globals_test.
 From Perennial.algebra Require Import map.
 
 Section proof.
-
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
+Context `{!ghost_varG Σ ()}.
 
-Definition own_defined : iProp Σ :=
-  ∃ globalB_addr globalA_addr globalY_addr GlobalX_addr,
-    "#HglobalB_addr" ∷ is_global_addr globals_test.globalB globalB_addr ∗
-    "HglobalB" ∷ globalB_addr ↦ (default_val go_string) ∗
-    "#HglobalA_addr" ∷ is_global_addr globals_test.globalA globalA_addr ∗
-    "HglobalA" ∷ globalA_addr ↦ (default_val go_string) ∗
-    "#HglobalY_addry" ∷ is_global_addr globals_test.globalY globalY_addr ∗
-    "HglobalY" ∷ globalY_addr ↦ (default_val go_string) ∗
-    "#HGlobalX_addr" ∷ is_global_addr globals_test.GlobalX GlobalX_addr ∗
-    "HGlobalX" ∷ GlobalX_addr ↦ (default_val w64)
-.
-
-Lemma wp_define' :
-  {{{ own_unused_vars globals_test.pkg_name' ∅ }}}
-    globals_test.define' #()
-  {{{ vars, RET #();
-      own_defined ∗
-      own_unused_vars globals_test.pkg_name' vars
-  }}}.
+(* FIXME: autogenerate this *)
+Local Instance wp_globals_alloc_inst :
+  WpGlobalsAlloc main.vars' (@main.GlobalAddrs) (@main.var_addrs) (λ _, main.own_allocated).
 Proof.
-  iIntros (?) "Hunused HΦ".
-  wp_call.
-  rewrite -!default_val_eq_zero_val /=.
-
-  wp_alloc globalB_ptr as "?".
-  wp_apply (wp_globals_put with "[Hunused]"); [| iFrame |]; [set_solver | ].
-  iIntros "[Hunused #?]".
-  wp_pures.
-
-  wp_alloc globalA_ptr as "?".
-  wp_apply (wp_globals_put with "[Hunused]"); [| iFrame |]; [set_solver | ].
-  iIntros "[Hunused #?]".
-  wp_pures.
-
-  wp_alloc globalY_ptr as "?".
-  wp_apply (wp_globals_put with "[Hunused]"); [| iFrame |]; [set_solver | ].
-  iIntros "[Hunused #?]".
-  wp_pures.
-
-  wp_alloc GlobalX_ptr as "?".
-  wp_apply (wp_globals_put with "[Hunused]"); [| iFrame |]; [set_solver | ].
-  iIntros "[Hunused #?]".
-  wp_pures.
-
-  iApply "HΦ".
-  iFrame "#∗".
+  solve_wp_globals_alloc.
 Qed.
 
-Definition own_initialized : iProp Σ :=
-  ∃ globalB_addr globalA_addr globalY_addr GlobalX_addr,
-  "#HglobalB_addr" ∷ is_global_addr globals_test.globalB globalB_addr ∗
-  "#HglobalA_addr" ∷ is_global_addr globals_test.globalA globalA_addr ∗
-  "#HglobalY_addr" ∷ is_global_addr globals_test.globalY globalY_addr ∗
-  "#HGlobalX_addr" ∷ is_global_addr globals_test.GlobalX GlobalX_addr ∗
+Definition own_initialized `{!main.GlobalAddrs} : iProp Σ :=
+  "HglobalB" ∷ main.globalB ↦ "b"%go ∗
+  "HglobalA" ∷ main.globalA ↦ "a"%go ∗
+  "HglobalY" ∷ main.globalY ↦ ""%go ∗
+  "HglobalX" ∷ main.GlobalX ↦ (W64 10).
 
-  "HglobalB" ∷ globalB_addr ↦ "b"%go ∗
-  "HglobalA" ∷ globalA_addr ↦ "a"%go ∗
-  "HglobalY" ∷ globalY_addr ↦ ""%go ∗
-  "HglobalX" ∷ GlobalX_addr ↦ (W64 10)
-.
+Definition is_initialized (γtok : gname) `{!main.GlobalAddrs} : iProp Σ :=
+  inv nroot (ghost_var γtok 1 () ∨ own_initialized).
 
-Lemma wp_initialize' pending postconds :
-  globals_test.pkg_name' ∉ pending →
-  postconds !! globals_test.pkg_name' = Some own_initialized →
+Lemma wp_initialize' pending postconds γtok :
+  main.pkg_name' ∉ pending →
+  postconds !! main.pkg_name' = Some (∃ (d : main.GlobalAddrs), main.is_defined ∗ is_initialized γtok)%I →
   {{{ own_globals_tok pending postconds }}}
-    globals_test.initialize' #()
-  {{{ RET #(); is_initialized globals_test.pkg_name' own_initialized }}}.
+    main.initialize' #()
+  {{{ (_ : main.GlobalAddrs), RET #();
+      main.is_defined ∗ is_initialized γtok ∗ own_globals_tok pending postconds
+  }}}.
 Proof.
   iIntros (???) "Hunused HΦ".
   wp_call.
   wp_apply (wp_package_init with "[$]").
-  { eassumption. }
+  { rewrite H0 //. }
   { set_solver. }
   { (* prove init function *)
-    iIntros "Hvars Htok".
+    iIntros "* #Hdefs Hvars Htok".
     wp_pures.
-    wp_apply (wp_define' with "[$]").
-    iIntros (?) "[Hdefined Hvars]".
-    iMod ("Htok" with "[$]") as "Htok".
-    iNamed "Hdefined".
-    wp_pures.
+
+    iNamed "Hvars".
 
     (* go into foo() *)
+    wp_func_call.
     wp_call.
-    wp_apply (wp_globals_get with "[]"); first iFrame "#".
+    wp_globals_get.
     wp_store.
     wp_pures.
-    wp_apply (wp_globals_get with "[]"); first iFrame "#".
+    wp_globals_get.
     wp_store.
     wp_pures.
-    wp_apply (wp_globals_get with "[]"); first iFrame "#".
+    wp_globals_get.
     wp_store.
     wp_pures.
-    wp_apply (wp_globals_get with "[]"); first iFrame "#".
+    wp_globals_get.
     wp_load.
     wp_pures.
-    wp_apply (wp_globals_get with "[]"); first iFrame "#".
+    wp_globals_get.
     wp_store.
     wp_pures.
-    wp_apply (wp_globals_get with "[]"); first iFrame "#".
+    wp_globals_get.
     wp_store.
+    iApply wp_fupd.
     wp_pures.
     iFrame "Htok".
+    iSplitR; first done.
+    unfold is_initialized.
+    iMod (inv_alloc with "[-]") as "#?".
+    2:{ repeat iModIntro. iFrame "#". }
+    iNext. iRight.
     iFrame "∗#".
   }
-  iIntros "His Htok".
   iApply "HΦ".
-  iFrame.
 Qed.
 
+Context `{!main.GlobalAddrs}.
 Lemma wp_main :
-  {{{ own_initialized }}}
-  globals_test.main #()
+  {{{ main.is_defined ∗ own_initialized }}}
+  func_call #main.pkg_name' #"main" #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (?) "Hpre HΦ".
+  iIntros (?) "[#Hdef Hpre] HΦ".
   iNamed "Hpre".
-  wp_call.
-  wp_call.
-  wp_call.
-  wp_apply wp_globals_get; first iFrame "#".
+  wp_func_call. wp_call.
+  wp_func_call. wp_call.
+  wp_func_call. wp_call.
+  wp_globals_get.
   wp_store.
   wp_pures.
-  wp_apply wp_globals_get; first iFrame "#".
-  wp_load.
-  wp_pures.
-  wp_apply wp_globals_get; first iFrame "#".
+  wp_globals_get.
+  wp_load. wp_pures.
+  wp_globals_get.
   wp_load.
   wp_pures.
   by iApply "HΦ".
@@ -146,14 +106,14 @@ From Perennial.goose_lang.ffi Require Import grove_ffi.adequacy.
 From New.proof Require Import grove_prelude.
 Section closed.
 
-Definition globals_testΣ : gFunctors := #[heapΣ ; goGlobalsΣ].
+Definition globals_testΣ : gFunctors := #[heapΣ ; goGlobalsΣ; ghost_varΣ ()].
 
 Lemma globals_test_boot σ (g : goose_lang.global_state) :
   ffi_initgP g.(global_world) →
   ffi_initP σ.(world) g.(global_world) →
   σ.(globals) = ∅ → (* FIXME: this should be abstracted into a "goose_lang.init" predicate or something. *)
   dist_adequate_failstop [
-      ((globals_test.initialize' #() ;; globals_test.main #())%E, σ) ] g (λ _, True).
+      ((main.initialize' #() ;; func_call #main.pkg_name' #"main" #())%E, σ) ] g (λ _, True).
 Proof.
   simpl.
   intros ? ? Hgempty.
@@ -172,18 +132,19 @@ Proof.
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iIntros "Hglobals".
     rewrite Hgempty.
+    iMod (ghost_var_alloc ()) as (γtok) "Hescrow".
     iMod (go_global_init
-            (λ _, {[ globals_test.pkg_name' := own_initialized ]}) with "[$]") as
-      (hGlobals) "[Hpost Hg]".
+            (λ _, {[ main.pkg_name' := _ ]}) with "[$]") as
+      (hGlobals) "Hpost".
     iModIntro.
     iExists (λ _, True)%I.
     wp_apply (wp_initialize' with "[$]").
     { set_solver. }
     { rewrite lookup_singleton. done. }
-    iIntros "Hinit".
-    iMod (own_package_post_toks_get globals_test.pkg_name' with "[$]") as "[? _]".
-    { set_solver. }
-    iMod (is_initialized_get_post with "[$] [$]") as "Hinit".
+    iIntros "* (Hdef & Hinit & Htok)".
+    iApply fupd_wp. iInv "Hinit" as ">[Hbad|Hi]" "Hclose".
+    { iCombine "Hbad Hescrow" gives %[Hbad _]. done. }
+    iMod ("Hclose" with "[$Hescrow]") as "_". iModIntro.
     wp_pures.
     by wp_apply (wp_main with "[$]").
   }

@@ -1,0 +1,4 @@
+trusted = [
+  "Print",
+  "Printf"
+]
